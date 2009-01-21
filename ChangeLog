@@ -1,0 +1,130 @@
+0.4 to 0.5
+
+	Changed the way symbolic directories are handled.
+
+	Fixed possible buffer overflow in colorschemes.
+
+	Fixed transparency in colorschemes.
+
+	Changed writing to vifmrc and colorschemes file to query user if
+	they would like to overwrite a file that has been modified.
+
+	Added filetype settings for mounting files with fuse-zip.
+
+	Pauseme script was changed to report errors.
+
+	Command line input now accepts wide characters and tab completion
+	now cycles through all possible matches.
+
+	ncursesw is now required to build vifm.
+
+
+0.3a to 0.4
+	Color schemes added - required a change to the vifmrc file.
+
+	UTF-8 support
+
+	Quick view of current file with :view command.
+
+	Hopefully fixed bug when starting vifm with a directory on the command 
+	line.
+
+	Changed executable file to check for filetypes.  If you have vifm set to 
+	not run executable files, it will now first check for a filetype setting
+	and if present will use the program you set to open the file.  If no 
+	filetype is set it will open the file in vi.
+
+	Fixed delete command when dd in :com window.
+
+0.3 to 0.3a
+
+	Files with % in the name should work now.
+
+	The symlinks in the tarball were replaced with the actual scripts.
+
+0.2 to 0.3
+	
+	Added error message for shell commands that are too long.  
+
+	Added :split, :only  for one window view.
+
+	Added :ls command for screen and %s macro.
+
+	Added . to repeat last command.  This currently only works with :commands.
+
+	When deleting or putting files the process is backgrounded but it now 
+	waits for the process to return so that the changes show up quicker 
+	in the file lists.
+
+	Removed the code to change the xterm title.
+
+	User commands and the builtin commands now work with <Tab> expansion.
+
+	:! and :!! now work with tab expansion.
+
+	Changed waitpid to a loop.
+
+	Removed the timing thread.
+
+	Redirected error messages of processes run in the background.
+
+	:jobs command shows menu of backgrounded processes.
+
+	:!! segfault fixed by Dmitry Suzdalev.
+
+	Readline like expansion of files now escapes the filename.
+
+	Fixed menu scrolling bug when the menu list was the same size as window rows.
+
+0.1 to 0.2
+	
+	File names are now escaped before going to the shell.
+
+	The menus are now searchable with / or ? and basic commands :45 or :quit.
+
+	The current position was changed to a solid bar instead of an arrow.
+
+	Basic readline file completion.
+
+	Command and pattern history.
+
+	Colors are now configurable.
+
+	cw can be used to rename files.
+
+	Added a keys pressed window in the status bar to show the first d of dd, 
+	numbers for 12G or 33j movement commands, and first y of yy.
+
+	User commands are now sorted in alphabetical order so that they may be
+	used in the shortest form that does not match another command.
+
+	The :command parsing was rewritten.
+
+	The default action on an executable file was changed to a configurable 
+	option.  The default is now to view the file instead of executing it.
+
+	New :commands
+		:locate command uses locate.
+		:apropos command - shows list of man pages in menu window.
+		:sync command - changes the other panel to the same directory as the 
+			current panel.
+
+	New Key bindings
+		Normal mode:
+		M - move to the middle of the window.
+		L - move to the bottom of the window.
+		H - move to the top of the window.
+		V - switch to visual mode.
+		Y - yank the currently selected files.
+
+		Visual mode:
+		M - select from the current position to the middle of the list.
+		L - select from the current position to the bottom of the list.
+		H - select from the current position to the top of the list.
+
+		The bookmarks code was rewritten.
+
+		The automatic updating of the file lists was rewritten.
+
+
+

@@ -1,0 +1,179 @@
+
+.TH vifm 1 "January 08, 2009" "" "Vifm"
+
+.SH NAME
+vifm [OPTION]
+.SH DESCRIPTION
+Vifm is a ncurses based file manager with vi like keybindings. If you use vi, vifm gives you complete keyboard control over your files without having to learn a new set of commands. 
+.SH OPTIONS
+.TP
+.BI <path>
+Starts Vifm in the specified path.
+.TP
+.BI --version
+Show version number and quit.
+.TP
+.BI --help
+Show an overview of the commandline options.
+.br
+.SH Basic Movement
+.TP
+.BI j
+moves down.
+.TP
+.BI k
+moves up.
+.TP
+.BI l
+moves into a directory or launches a file.
+.TP
+.BI h
+moves up one directory.
+.TP
+.BI gg
+move to the top of the file list.
+.TP
+.BI G
+move to the bottom of the file list.
+.TP
+.BI 14G
+move to the 14th file in the list.
+.TP
+.BI "Ctrl-F or Page Down"
+move forward one page.
+.TP
+.BI "Ctrl-B or Page Up"
+move back one page.
+.TP
+.BI 25%
+move to the file that is 25 percent from the top of the list.
+.TP
+.BI :34[Enter]
+move to the 34th file.
+.TP
+.BI "Space Bar or Tab Key"
+toggles between the two file lists.
+.TP
+.BI Ctrl+G
+creates a window showing detailed information about the current file.
+.SH Marks
+.TP
+Marks are set the same way as they are in vi. 
+.TP
+.BI m[a-z][A-Z][0-9]
+to set a mark for the current file.
+.TP
+.BI '[a-z][A-Z][0-9]
+moves to the file set for the mark.
+.SH Searching
+.TP
+.BI "/regular expression pattern[Return]"
+will highlight all files matching the pattern.
+.TP
+.BI N
+find the previous match.
+.TP
+.BI n
+find the next match.
+.SH Additional Normal Mode Keys
+.TP
+.BI [count]dd
+moves the selected files to the trash directory.
+.TP
+.BI [count]yy
+yanks the selected files.
+.TP
+.BI p
+puts the last yanked or deleted files.
+.TP
+.BI t
+tag the current file.
+.TP
+.BI v
+start visual mode.
+.SH Commands
+.TP
+.BI :com
+gives a menu of user commands.
+.TP
+.BI ":com name action"
+sets a new user command.
+.TP
+.BI ":delc command_name"
+will remove the command_name user command
+.TP
+.BI ":fil regular_expression pattern"
+will filter all the files out of the directory listing that match the regular expression.
+.TP
+.BI ":fil /\.o$"
+would filter all files ending in .o from the filelist. 
+.TP
+.BI :empty
+will permanently remove 'rm -fr' files from the Trash directory.
+.TP
+.BI :sh
+will start a shell.
+.TP
+.BI ":q or :x"
+will exit Vifm.
+.TP
+.BI :!
+program will execute the program in a shell
+.TP
+.BI ":!! <program>"
+is the same as :! but will pause the screen before returning to Vifm.
+.TP
+.BI :!!
+will execute the last command.
+.TP
+.BI :e
+load file into vi
+.TP
+.BI :pwd
+show the present working directory.
+.TP
+.BI :cd
+change directory.
+.TP
+.BI :s[ort]
+creates a popup menu of different sorting methods.
+.TP
+.BI :his[tory]
+creates a popup menu of directories visited.
+.TP
+.BI :h[elp]
+show the help file.
+.TP
+.BI :marks
+create a popup menu of bookmarks.
+.TP
+.BI :screen
+toggles whether or not to use the screen program.
+.TP
+.BI :split
+splits the window to show both file directories
+.TP
+.BI :only
+changes the window to show only the current file directory
+.SH File Filters
+The basic vim folding key bindings are used for filtering files. 
+.TP
+.BI zO
+Show the filtered files.
+.TP
+.BI zM
+Filter the files matching the filename filter.
+.TP
+.BI zo
+Show all of the dot files.
+.TP
+.BI zm
+Filter all of the dot files.
+.TP
+.BI zf
+Filter all of the selected files.
+
+.SH SEE ALSO
+Website: http://vifm.sourceforge.net/
+.SH AUTHOR
+Vifm was written by ksteen <ksteen@users.sourceforge.net>

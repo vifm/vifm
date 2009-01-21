@@ -1,0 +1,15 @@
+See the INSTALL file for building instructions and the TODO file for what 
+still needs to be implemented.
+
+If you are interested in playing with the source code.
+
+		vifm.c contains main() - which does basic initialization,
+		ui.c - setup_ncurses_interface()  
+		signals.c - setup_signals()  
+		keys.c - main_key_press_cb() - the main loop.
+
+		
+		
+
+
+	

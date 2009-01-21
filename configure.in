@@ -1,0 +1,75 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(configure.in)
+AM_INIT_AUTOMAKE(vifm, 0.5)
+AM_CONFIG_HEADER(config.h)
+
+
+AC_ISC_POSIX
+AC_PROG_CC
+AM_PROG_CC_STDC
+AC_HEADER_STDC
+AM_PROG_LIBTOOL
+AC_CONFIG_MACRO_DIR([m4])
+AC_CHECK_HEADERS(limits.h sys/time.h unistd.h wchar.h)
+AC_CHECK_FUNCS(getcwd mkdir regcomp strdup strstr)
+
+
+dnl Set PACKAGE_DATA_DIR in config.h.
+if test "x${datadir}" = 'x${prefix}/share'; then
+  if test "x${prefix}" = "xNONE"; then
+    AC_DEFINE_UNQUOTED(PACKAGE_DATA_DIR, "${ac_default_prefix}/share/${PACKAGE}")
+  else
+    AC_DEFINE_UNQUOTED(PACKAGE_DATA_DIR, "${prefix}/share/${PACKAGE}")
+  fi
+else
+  AC_DEFINE_UNQUOTED(PACKAGE_DATA_DIR, "${datadir}/${PACKAGE}")
+fi
+
+dnl Set PACKAGE_SOURCE_DIR in config.h.
+packagesrcdir=`cd $srcdir && pwd`
+AC_DEFINE_UNQUOTED(PACKAGE_SOURCE_DIR, "${packagesrcdir}")
+
+dnl Use -Wall if we have gcc.
+changequote(,)dnl
+if test "x$GCC" = "xyes"; then
+  case " $CFLAGS " in
+  *[\ \	]-Wall[\ \	]*) ;;
+  *) CFLAGS="$CFLAGS -Wall" ;;
+  esac
+fi
+changequote([,])dnl
+
+dnl AC_CHECK_LIB(XCurses, initscr)
+vifm_cv_curses=/usr
+AC_ARG_WITH(curses, [  --with-curses=DIR       Where ncurses is installed ],
+	[if test $withval != yes; then
+		vifm_cv_curses=$withval
+	fi
+	if test x$vifm_cv_curses != x/usr; then
+		LDFLAGS="-L${abook_cv_curses}/lib $LDFLAGS"
+		CPPFLAGS="$CPPFLAGS -I${vifm_cv_curses}/include"
+	fi])
+
+AC_CHECK_LIB(ncursesw, initscr,
+	[LIBS="$LIBS -lncursesw"
+	if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncursesw; then
+		CPPFLAGS="$CPPFLAGS -I/usr/include/ncursesw"
+	fi
+	AC_CHECK_HEADERS(ncurses.h)],[
+	ac_widec_possible=no
+	AC_CHECK_LIB(ncurses, initscr,
+		[LIBS="$LIBS -lncurses"
+		if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
+			CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
+		fi
+		AC_CHECK_HEADERS(ncurses.h)],
+		[CF_CURSES_LIBS])
+	])
+LIBS=$LIBS $GUI_LINK_OPTS_TERM
+
+AC_OUTPUT([
+Makefile
+src/Makefile
+])
+
