@@ -1059,14 +1059,17 @@ show_apropos_menu(FileView *view, char *args)
 	curr_stats.search = 0;
 	if (m.len <= 0)
 	{
-		show_error_msg("Nothing Appropriate", "No man pages found ");
+		snprintf(buf, sizeof(buf), "No matches for \'%s\'", m.title);
+		show_error_msg(" Nothing Appropriate ", buf);
 		return;
 	}
-
-	setup_menu(view);
-	draw_menu(view, &m);
-	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
+	else
+	{
+		setup_menu(view);
+		draw_menu(view, &m);
+		moveto_menu_pos(view, 0, &m);
+		menu_key_cb(view, &m);
+	}
 	reset_popup_menu(&m);
 }
 
