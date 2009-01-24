@@ -444,7 +444,7 @@ handle_file(FileView *view)
 				moveto_list_pos(view, view->curr_line);
 				return;
 			}
-/*_SZ_END_*/
+			/*_SZ_END_*/
 			if(strchr(program, '%'))
 			{
 				int m = 0;

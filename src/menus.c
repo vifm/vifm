@@ -1060,13 +1060,15 @@ show_apropos_menu(FileView *view, char *args)
 	if (m.len <= 0)
 	{
 		show_error_msg("Nothing Appropriate", "No man pages found ");
-		return;
+	}
+	else
+	{
+		setup_menu(view);
+		draw_menu(view, &m);
+		moveto_menu_pos(view, 0, &m);
+		menu_key_cb(view, &m);
 	}
 
-	setup_menu(view);
-	draw_menu(view, &m);
-	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
 	reset_popup_menu(&m);
 }
 
