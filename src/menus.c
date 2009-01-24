@@ -1061,7 +1061,6 @@ show_apropos_menu(FileView *view, char *args)
 	{
 		snprintf(buf, sizeof(buf), "No matches for \'%s\'", m.title);
 		show_error_msg(" Nothing Appropriate ", buf);
-		return;
 	}
 	else
 	{
