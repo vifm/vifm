@@ -185,6 +185,7 @@ check_background_jobs(void)
 	sigprocmask(SIG_UNBLOCK, &new_mask, NULL);
 }
 
+/* Used for fusezip mounting of files */
 int
 background_and_wait_for_status(char *cmd)
 {

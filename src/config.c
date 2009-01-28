@@ -68,6 +68,7 @@ create_help_file(void)
 	char command[PATH_MAX];
 
 	snprintf(command, sizeof(command), CP_HELP);
+	fprintf(stderr, command);
 	file_exec(command);
 }
 
@@ -342,11 +343,16 @@ write_config_file(void)
 		{
 			if (! query_user_menu(" Vifmrc file has been modified ",
 				 "File has been modified would you still like to write to file? "))
+			{
+				write_color_scheme_file();
 				return;
+			}
 		}
 	}
+	/*
 	else
 		return;
+		*/
 
 	if((fp = fopen(config_file, "w")) == NULL)
 		return;

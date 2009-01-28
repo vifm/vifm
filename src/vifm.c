@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#define VERSION "0.5"
 
 
 #include<ncurses.h>
@@ -45,7 +46,7 @@ Col_scheme *col_schemes;
 static void
 show_help_msg(void)
 {
-	printf("vifm usage:\n\n");
+	printf("\n\nvifm usage:\n\n");
 	printf("	To start in a specific directory give the directory path.\n\n");
 	printf("		vifm /path/to/start/dir/one\n");
 	printf("		or\n");
@@ -200,7 +201,7 @@ main(int argc, char *argv[])
 				else if(!strcmp(argv[x], "--version"))
 				{
 					endwin();
-					printf("vifm %.1f\n\n", VERSION);
+					printf("\n\nvifm %s\n\n", VERSION);
 					exit(0);
 				}
 				else if(!strcmp(argv[x], "--help"))

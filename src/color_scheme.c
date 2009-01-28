@@ -326,8 +326,6 @@ write_color_scheme_file()
 				return;
 		}
 	}
-	else
-		return;
 
 
 	if((fp = fopen(config_file, "w")) == NULL)

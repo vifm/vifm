@@ -19,8 +19,6 @@
 #ifndef __UI_H__
 #define __UI_H__
 
-#define VERSION 0.5
-
 #include<limits.h> /*  PATH_MAX */
 #include<ncurses.h>
 #include<stdlib.h> /* off_t mode_t... */
