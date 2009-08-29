@@ -1,0 +1,22 @@
+Basic things that need to be done.
+	Termcap or terminfo support for keybindings.
+	Backgrounding of commands with job control.
+	Fix window resizing.
+	Better documentation.
+	Handle commands that are too long to be passed directly to the shell.
+
+Vi specific features that need to be added.
+	Finish implementing range and count for user commands.
+	Fix '' to go back to all jumps G gg links. 
+	Key mapping  :nmap s  :sh<Return>
+	Change file list filters to use fold levels instead of just 
+		the dot filter and regular expression filter.
+	Named registers for yanked or deleted files.
+
+
+Possible things to add.
+	Use system wide mimetypes file. /etc/mailcap? 
+	Virtual File System - currently vifm can use fuse to mount most
+		file systems.  
+
+

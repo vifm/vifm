@@ -1,0 +1,44 @@
+All suggestions or complaints should be sent to ksteen@users.sourceforge.net.
+
+The pauseme script is from the tkdesk program.
+
+Some of the code is from emelfm by Michael Clark.
+
+The screen-open-region-with-program and screen-ren-program-in-region were
+written by Miciah Dashiel Butler Masters.
+
+The file sorting function is from the git program by Tudor Hulubei 
+	and Andrei Pitis.  
+
+A patch for filetypes detection was written by Stefan Walter.
+
+FreeBSD and NetBSD  ports by Stefan Walter.
+
+Debian package by Edelhard Becker.
+
+Terry Brown wrote part of the keybinding code.
+
+Gentoo package by Peter Johanson.
+
+Ralf Arens added the configurable color code and rewrote the bookmarks
+	code.
+
+Dmitry Suzdalev fixed the :!<Enter> bug.
+
+MacOSX Fink package by Damien Ferrand
+
+Karsten Schoelzel - submitted a patch to fix the handling of files with
+a % in the name.
+
+Ali Gholami Rudi - submitted patch fixing buffer overflow in
+colorschemes.
+
+Ondrej Martinak - Patch to fix handling of directories with spaces.
+	Patch for file sizes larger than 4 Gb and to correct typos.
+
+pld-linux group patch for malloc in colorschemes
+
+Woody Kiang - command completion and wide character support in
+:commands.
+
+Minozake - start vifm --help fix

@@ -1,0 +1,119 @@
+# You can edit this file by hand.  If you have vifm running
+# it will overwrite any changes you make when it quits.
+# The # character at the beginning of a line comments out the line.
+# Blank lines are ignored.
+# The basic format for each item is shown with an example.
+# The '=' character is used to separate fields within a single line.
+# Most settings are true = 1 or false = 0.
+
+# This is the actual command used to start vi.  The default is vi.
+# If you would like to use another vi clone such as Vim, Elvis, or Vile
+# you will need to change this setting.
+
+VI_COMMAND=vim
+# VI_COMMAND=vi
+# VI_COMMAND=elvis -G termcap
+# VI_COMMAND=vile
+
+# Trash Directory
+# The default is to move files that are deleted with dd or :d to
+# the trash directory.  1 means use the trash directory 0 means
+# just use rm.  If you change this you will not be able to move
+# files by deleting them and then using p to put the file in the new location.
+# I recommend not changing this until you are familiar with vifm.
+
+USE_TRASH=1
+
+# Screen configuration.  If you would like to use vifm with
+# the screen program set this to 1.
+
+USE_SCREEN=0
+
+
+# This is how many files to show in the directory history menu.
+
+HISTORY_LENGTH=15
+
+
+# The sort type is how the files will be sorted in the file listing.
+# Sort by File Extension = 0
+# Sort by File Name = 1
+# Sort by Group ID = 2
+# Sort by Group Name = 3
+# Sort by Mode = 4
+# Sort by Owner ID = 5
+# Sort by Owner Name = 6
+# Sort by Size = 7
+# Sort by Time Accessed =8
+# Sort by Time Changed =9
+# Sort by Time Modified =10
+# This can be set with the :sort command in vifm.
+
+LEFT_WINDOW_SORT_TYPE=1
+
+RIGHT_WINDOW_SORT_TYPE=1
+
+# The regular expression used to filter files out of
+# the directory listings.
+# LWIN_FILTER=\.o$ and LWIN_INVERT=1 would filter out all
+# of the .o files from the directory listing. LWIN_INVERT=0
+# would show only the .o files
+
+LWIN_FILTER=\.o$
+LWIN_INVERT=1
+RWIN_FILTER=\.o$
+RWIN_INVERT=1
+
+# Show the full file information in a  window
+# Ctrl G will toggle this value in vifm.
+# 1 will show the file information in a window
+# 0 will show the file information on the status bar.
+
+SHOW_FULL=0
+
+# If you installed the vim.txt help file change this to 1.
+# If would rather use a plain text help file set this to 0.
+
+USE_VIM_HELP=0
+
+# If you would like to run an executable file when you 
+# press return on the file name set this to 1.
+
+RUN_EXECUTABLE=0
+
+
+# BOOKMARKS=mark=/full/directory/path=filename
+
+BOOKMARKS=R=/=
+BOOKMARKS=U=/usr=../
+BOOKMARKS=L=/usr/local=../
+BOOKMARKS=S=/usr/local/share=../
+
+# COMMAND=command_name=action
+# The following macros can be used in a command
+# %a is replaced with the user arguments.
+# %f the current selected file, or files.
+# %F the current selected file, or files in the other directoy.
+# %d the current directory name.
+# %D the other window directory name.
+
+COMMAND=mv=mv %f %D &
+COMMAND=cp=cp %f %D &
+COMMAND=floppy=mount /dev/fd0
+COMMAND=run=!! ./%f
+COMMAND=make=!!make
+COMMAND=grep=vim \"+grep %a\"
+
+# The file type is for the default programs to be used with
+# a file extension. 
+# FILETYPE=description=extension1,extension2=defaultprogram, program2
+# FILETYPE=Web=html,htm,shtml=links,mozilla,elvis
+# would set links as the default program for .html .htm .shtml files
+# The other programs for the file type can be accessed with the :file command
+# The command macros %f, %F, %d, %F may be used in the commands.
+# The %a macro is ignored.  To use a % you must put %%.
+
+FILETYPE=Web=html,htm=links,mozilla
+FILETYPE=Object=o=nm %f | less
+FILETYPE=Image=jpg,jpeg,png,gif=eog,xv,gimp
+FILETYPE=Archive=tar.gz,tgz=tar -tzf %f | less,tar -zxvf %f
