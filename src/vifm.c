@@ -93,6 +93,7 @@ main(int argc, char *argv[])
 	lwin.color_scheme = 0;
 
 	/* These need to be initialized before reading the configuration file */
+	cfg.using_default_config = 0;
 	cfg.command_num = 0;
 	cfg.filetypes_num = 0;
 	cfg.nmapped_num = 0;

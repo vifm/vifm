@@ -89,6 +89,7 @@ create_rc_file(void)
 static void
 load_default_configuration(void)
 {
+	cfg.using_default_config = 1;
 	cfg.use_trash = 1;
 	cfg.vi_command = strdup("vim");
 /*_SZ_BEGIN_*/
@@ -335,7 +336,7 @@ write_config_file(void)
 
 
 	/* None of the user settings have changed. */
-	if (!curr_stats.setting_change)
+	if ((!curr_stats.setting_change) && (!cfg.using_default_config))
 		return;
 
 	curr_stats.getting_input = 1;
@@ -344,7 +345,8 @@ write_config_file(void)
 
 	if(stat(config_file, &stat_buf) == 0) 
 	{
-		if (stat_buf.st_mtime > curr_stats.config_file_mtime)
+		if ((stat_buf.st_mtime > curr_stats.config_file_mtime) &&
+				(!cfg.using_default_config))
 		{
 			if (! query_user_menu(" Vifmrc file has been modified ",
 				 "File has been modified would you still like to write to file? "))

@@ -49,6 +49,7 @@ typedef struct _Config {
 	int color_pairs_num;
 	int show_one_window;
 	long max_args;
+	int using_default_config;
 /*_SZ_BEGIN*/
 	char *fuse_home;
 /*_SZ_END*/

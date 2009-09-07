@@ -1,0 +1,550 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+APROPOS	menus.c	/^	APROPOS,$/;"	e	enum:__anon8	file:
+BOOKMARK	menus.c	/^	BOOKMARK,$/;"	e	enum:__anon8	file:
+BORDER_COLOR	color_scheme.h	26;"	d
+CHANGE_WINDOWS	keys.h	/^	CHANGE_WINDOWS,$/;"	e	enum:__anon7
+CMD_MAX_LEN	rline.c	42;"	d	file:
+COMMAND	menus.c	/^	COMMAND,$/;"	e	enum:__anon8	file:
+COM_APROPOS	commands.c	/^	COM_APROPOS,$/;"	e	enum:__anon2	file:
+COM_CD	commands.c	/^	COM_CD, 		$/;"	e	enum:__anon2	file:
+COM_CHANGE	commands.c	/^	COM_CHANGE,$/;"	e	enum:__anon2	file:
+COM_CMAP	commands.c	/^	COM_CMAP,			$/;"	e	enum:__anon2	file:
+COM_COLORSCHEME	commands.c	/^	COM_COLORSCHEME,$/;"	e	enum:__anon2	file:
+COM_COMMAND	commands.c	/^	COM_COMMAND,		$/;"	e	enum:__anon2	file:
+COM_DELCOMMAND	commands.c	/^	COM_DELCOMMAND,	$/;"	e	enum:__anon2	file:
+COM_DELETE	commands.c	/^	COM_DELETE, 		$/;"	e	enum:__anon2	file:
+COM_DISPLAY	commands.c	/^	COM_DISPLAY,$/;"	e	enum:__anon2	file:
+COM_EDIT	commands.c	/^	COM_EDIT,				$/;"	e	enum:__anon2	file:
+COM_EMPTY	commands.c	/^	COM_EMPTY,$/;"	e	enum:__anon2	file:
+COM_EXECUTE	commands.c	/^	COM_EXECUTE,$/;"	e	enum:__anon2	file:
+COM_FILE	commands.c	/^	COM_FILE,$/;"	e	enum:__anon2	file:
+COM_FILTER	commands.c	/^	COM_FILTER,$/;"	e	enum:__anon2	file:
+COM_HELP	commands.c	/^	COM_HELP,$/;"	e	enum:__anon2	file:
+COM_HISTORY	commands.c	/^	COM_HISTORY,$/;"	e	enum:__anon2	file:
+COM_INVERT	commands.c	/^	COM_INVERT,$/;"	e	enum:__anon2	file:
+COM_JOBS	commands.c	/^	COM_JOBS,	$/;"	e	enum:__anon2	file:
+COM_LOCATE	commands.c	/^	COM_LOCATE,$/;"	e	enum:__anon2	file:
+COM_LS	commands.c	/^	COM_LS,$/;"	e	enum:__anon2	file:
+COM_MAP	commands.c	/^	COM_MAP,$/;"	e	enum:__anon2	file:
+COM_MARKS	commands.c	/^	COM_MARKS,$/;"	e	enum:__anon2	file:
+COM_NMAP	commands.c	/^	COM_NMAP,$/;"	e	enum:__anon2	file:
+COM_NOH	commands.c	/^	COM_NOH,$/;"	e	enum:__anon2	file:
+COM_ONLY	commands.c	/^	COM_ONLY,$/;"	e	enum:__anon2	file:
+COM_PWD	commands.c	/^	COM_PWD,$/;"	e	enum:__anon2	file:
+COM_QUIT	commands.c	/^	COM_QUIT,$/;"	e	enum:__anon2	file:
+COM_REGISTER	commands.c	/^	COM_REGISTER,$/;"	e	enum:__anon2	file:
+COM_SCREEN	commands.c	/^	COM_SCREEN,$/;"	e	enum:__anon2	file:
+COM_SHELL	commands.c	/^	COM_SHELL,$/;"	e	enum:__anon2	file:
+COM_SORT	commands.c	/^	COM_SORT,$/;"	e	enum:__anon2	file:
+COM_SPLIT	commands.c	/^	COM_SPLIT,$/;"	e	enum:__anon2	file:
+COM_SYNC	commands.c	/^	COM_SYNC,$/;"	e	enum:__anon2	file:
+COM_UNMAP	commands.c	/^	COM_UNMAP,$/;"	e	enum:__anon2	file:
+COM_VIEW	commands.c	/^	COM_VIEW,$/;"	e	enum:__anon2	file:
+COM_VIFM	commands.c	/^	COM_VIFM,$/;"	e	enum:__anon2	file:
+COM_VMAP	commands.c	/^	COM_VMAP,$/;"	e	enum:__anon2	file:
+COM_X	commands.c	/^	COM_X$/;"	e	enum:__anon2	file:
+COM_YANK	commands.c	/^	COM_YANK,	$/;"	e	enum:__anon2	file:
+CP_HELP	config.c	19;"	d	file:
+CP_RC	config.c	20;"	d	file:
+CURRENT_COLOR	color_scheme.h	36;"	d
+CURR_LINE_COLOR	color_scheme.h	29;"	d
+Col_attr	color_scheme.h	/^} Col_attr;$/;"	t	typeref:struct:_Col_attr
+Col_scheme	color_scheme.h	/^} Col_scheme;$/;"	t	typeref:struct:_Col_Scheme
+Config	config.h	/^} Config;$/;"	t	typeref:struct:_Config
+DEFAULT_FILENAME_FILTER	config.c	41;"	d	file:
+DEVICE	filelist.h	/^	DEVICE,$/;"	e	enum:__anon4
+DEVICE_COLOR	color_scheme.h	33;"	d
+DIRECTORY	filelist.h	/^	DIRECTORY,$/;"	e	enum:__anon4
+DIRECTORY_COLOR	color_scheme.h	30;"	d
+DOWN	menus.c	/^	DOWN$/;"	e	enum:__anon9	file:
+DiffVifm	vifm.vim	/^	command DiffVifm :call s:StartVifm("diff ")$/;"	c
+EXECUTABLE	filelist.h	/^	EXECUTABLE,$/;"	e	enum:__anon4
+EXECUTABLE_COLOR	color_scheme.h	34;"	d
+EditVifm	vifm.vim	/^	command EditVifm :call s:StartVifm("edit ")$/;"	c
+FILETYPE	menus.c	/^	FILETYPE,$/;"	e	enum:__anon8	file:
+FILE_CHANGE	fileops.h	23;"	d
+FILE_GROUP	fileops.h	26;"	d
+FILE_NAME	fileops.h	24;"	d
+FILE_OWNER	fileops.h	25;"	d
+FILE_PERMISSIONS	fileops.h	27;"	d
+FileView	ui.h	/^}FileView;$/;"	t	typeref:struct:_FileView
+Finished_Jobs	background.h	/^typedef struct Finished_Jobs {$/;"	s
+Finished_Jobs	background.h	/^} Finished_Jobs;$/;"	t	typeref:struct:Finished_Jobs
+Fuse_List	utils.h	/^typedef struct Fuse_List {$/;"	s
+Fuse_List	utils.h	/^} Fuse_List;$/;"	t	typeref:struct:Fuse_List
+GET_BOOKMARK	keys.h	/^	GET_BOOKMARK,$/;"	e	enum:__anon7
+GET_COMMAND	keys.h	/^	GET_COMMAND,$/;"	e	enum:__anon7
+GET_SEARCH_PATTERN	keys.h	/^	GET_SEARCH_PATTERN,$/;"	e	enum:__anon7
+GET_VISUAL_COMMAND	keys.h	/^	GET_VISUAL_COMMAND,$/;"	e	enum:__anon7
+HISTORY	menus.c	/^	HISTORY,$/;"	e	enum:__anon8	file:
+JOBS	menus.c	/^	JOBS,$/;"	e	enum:__anon8	file:
+Jobs_List	background.h	/^typedef struct Jobs_List {$/;"	s
+Jobs_List	background.h	/^} Jobs_List;$/;"	t	typeref:struct:Jobs_List
+LINK	filelist.h	/^	LINK,$/;"	e	enum:__anon4
+LINK_COLOR	color_scheme.h	31;"	d
+LOCATE	menus.c	/^	LOCATE,$/;"	e	enum:__anon8	file:
+MAPPED_COMMAND	keys.h	/^	MAPPED_COMMAND,$/;"	e	enum:__anon7
+MAPPED_SEARCH	keys.h	/^	MAPPED_SEARCH,$/;"	e	enum:__anon7
+MAXNUM_COLOR	color_scheme.h	23;"	d
+MAX_LEN	color_scheme.c	32;"	d	file:
+MAX_LEN	config.c	40;"	d	file:
+MENU_COLOR	color_scheme.h	25;"	d
+MENU_COMMAND	keys.h	/^	MENU_COMMAND$/;"	e	enum:__anon7
+MENU_SEARCH	keys.h	/^	MENU_SEARCH,$/;"	e	enum:__anon7
+NAME_MAX	ui.h	31;"	d
+NEXT	search.c	/^	NEXT$/;"	e	enum:__anon10	file:
+NONE	menus.c	/^	NONE,$/;"	e	enum:__anon9	file:
+NUM_BOOKMARKS	bookmarks.h	24;"	d
+NUM_REGISTERS	registers.h	22;"	d
+NUM_SORT_OPTIONS	ui.h	/^	NUM_SORT_OPTIONS$/;"	e	enum:__anon12
+PREVIOUS	search.c	/^	PREVIOUS,$/;"	e	enum:__anon10	file:
+REGISTER	menus.c	/^	REGISTER,$/;"	e	enum:__anon8	file:
+REGULAR	filelist.h	/^	REGULAR,$/;"	e	enum:__anon4
+RESERVED	commands.c	134;"	d	file:
+SELECTED_COLOR	color_scheme.h	35;"	d
+SOCKET	filelist.h	/^	SOCKET,$/;"	e	enum:__anon4
+SOCKET_COLOR	color_scheme.h	32;"	d
+SORT_BY_EXTENSION	ui.h	/^	SORT_BY_EXTENSION,$/;"	e	enum:__anon12
+SORT_BY_GROUP_ID	ui.h	/^	SORT_BY_GROUP_ID,$/;"	e	enum:__anon12
+SORT_BY_GROUP_NAME	ui.h	/^	SORT_BY_GROUP_NAME,$/;"	e	enum:__anon12
+SORT_BY_MODE	ui.h	/^	SORT_BY_MODE,$/;"	e	enum:__anon12
+SORT_BY_NAME	ui.h	/^	SORT_BY_NAME,$/;"	e	enum:__anon12
+SORT_BY_OWNER_ID	ui.h	/^	SORT_BY_OWNER_ID,$/;"	e	enum:__anon12
+SORT_BY_OWNER_NAME	ui.h	/^	SORT_BY_OWNER_NAME,$/;"	e	enum:__anon12
+SORT_BY_SIZE_ASCENDING	ui.h	/^	SORT_BY_SIZE_ASCENDING,$/;"	e	enum:__anon12
+SORT_BY_SIZE_DESCENDING	ui.h	/^	SORT_BY_SIZE_DESCENDING,$/;"	e	enum:__anon12
+SORT_BY_TIME_ACCESSED	ui.h	/^	SORT_BY_TIME_ACCESSED,$/;"	e	enum:__anon12
+SORT_BY_TIME_CHANGED	ui.h	/^	SORT_BY_TIME_CHANGED,$/;"	e	enum:__anon12
+SORT_BY_TIME_MODIFIED	ui.h	/^	SORT_BY_TIME_MODIFIED,$/;"	e	enum:__anon12
+START_VISUAL_MODE	keys.h	/^	START_VISUAL_MODE,$/;"	e	enum:__anon7
+STATUS_BAR_COLOR	color_scheme.h	28;"	d
+S_ISEXE	filelist.c	/^S_ISEXE(mode_t mode)$/;"	f
+SplitVifm	vifm.vim	/^	command SplitVifm :call s:StartVifm("split ")$/;"	c
+StartVifm	vifm.vim	/^function! s:StartVifm(editcmd)$/;"	f
+Status	status.h	/^}Status;$/;"	t	typeref:struct:__anon11
+UNKNOWN	filelist.h	/^	UNKNOWN$/;"	e	enum:__anon4
+UP	menus.c	/^	UP,$/;"	e	enum:__anon9	file:
+USER	menus.c	/^	USER,$/;"	e	enum:__anon8	file:
+VERSION	vifm.c	19;"	d	file:
+VIFM	menus.c	/^	VIFM$/;"	e	enum:__anon8	file:
+VsplitVifm	vifm.vim	/^	command VsplitVifm :call s:StartVifm("vs ")$/;"	c
+WIN_COLOR	color_scheme.h	27;"	d
+_Col_Scheme	color_scheme.h	/^typedef struct _Col_Scheme {$/;"	s
+_Col_attr	color_scheme.h	/^typedef struct _Col_attr {$/;"	s
+_Config	config.h	/^typedef struct _Config {$/;"	s
+_FileView	ui.h	/^typedef struct _FileView$/;"	s
+_GNU_SOURCE	rline.c	18;"	d	file:
+_Registers	registers.h	/^typedef struct _Registers$/;"	s
+__BOOKMARKS_H__	bookmarks.h	20;"	d
+__COLOR_SCHEME_H__	color_scheme.h	20;"	d
+__CONFIG_H__	config.h	20;"	d
+__FILELIST_H__	filelist.h	20;"	d
+__FILEOPS_H__	fileops.h	19;"	d
+__KEYS_H__	keys.h	20;"	d
+__MENUS_H__	menus.h	20;"	d
+__REGISTERS_H_	registers.h	20;"	d
+__RLINE_H__	rline.h	20;"	d
+__UI_H__	ui.h	20;"	d
+__UTILS_H__	utils.h	20;"	d
+__VISUAL_MODE_H__	visual.h	20;"	d
+action	commands.h	/^	char *action;$/;"	m	struct:__anon3
+active_bookmarks	bookmarks.h	/^int active_bookmarks[NUM_BOOKMARKS];$/;"	v
+add_background_job	background.c	/^add_background_job(pid_t pid, char *cmd, int fd) $/;"	f	file:
+add_bookmark	bookmarks.c	/^add_bookmark(const char mark, const char *directory, const char *file)$/;"	f
+add_color	color_scheme.c	/^add_color(char s1[], char s2[], char s3[])$/;"	f
+add_command	commands.c	/^add_command(char *name, char *action)$/;"	f
+add_filetype	filetype.c	/^add_filetype(char *description, char *extension, char *program)$/;"	f
+add_finished_job	background.c	/^add_finished_job(pid_t pid, int status)$/;"	f
+add_sort_type_info	filelist.c	/^add_sort_type_info(FileView *view, int y, int x, int current_line)$/;"	f	file:
+append_to_register	registers.c	/^append_to_register(int key, char *file)$/;"	f
+args	commands.c	/^	char *args;$/;"	m	struct:current_command	file:
+args	menus.c	/^	char *args;$/;"	m	struct:menu_info	file:
+atime	ui.h	/^	time_t atime;$/;"	m	struct:__anon14
+auto_execute	config.h	/^	int auto_execute;$/;"	m	struct:_Config
+background	commands.c	/^	int background;$/;"	m	struct:current_command	file:
+background_and_wait_for_errors	background.c	/^background_and_wait_for_errors(char *cmd)$/;"	f
+background_and_wait_for_status	background.c	/^background_and_wait_for_status(char *cmd)$/;"	f
+bg	color_scheme.h	/^	int bg;$/;"	m	struct:_Col_attr
+bookmarks	bookmarks.h	/^bookmarks_t bookmarks[NUM_BOOKMARKS];$/;"	v
+bookmarks_t	bookmarks.h	/^} bookmarks_t;$/;"	t	typeref:struct:__anon1
+builtin	commands.c	/^	int builtin;$/;"	m	struct:current_command	file:
+cfg	vifm.c	/^Config cfg;$/;"	v
+change_directory	filelist.c	/^change_directory(FileView *view, char *directory)$/;"	f
+change_file_group	fileops.c	/^change_file_group(char *file)$/;"	f
+change_file_owner	fileops.c	/^change_file_owner(char *file)$/;"	f
+change_key_cb	fileops.c	/^change_key_cb(FileView *view, int type)$/;"	f	file:
+change_win	ui.h	/^WINDOW *change_win;$/;"	v
+change_window	keys.c	/^change_window(FileView **view)$/;"	f
+check_background_jobs	background.c	/^check_background_jobs(void)$/;"	f
+check_directory_for_color_scheme	color_scheme.c	/^check_directory_for_color_scheme(const char *dir)$/;"	f
+check_for_duplicate_file_names	registers.c	/^check_for_duplicate_file_names(int pos, char *file)$/;"	f	file:
+check_for_executable	rline.c	/^check_for_executable(char *string)$/;"	f	file:
+check_for_range	commands.c	/^check_for_range(FileView *view, char *command, cmd_t *cmd)$/;"	f	file:
+check_if_filelists_have_changed	keys.c	/^check_if_filelists_have_changed(FileView *view)$/;"	f	file:
+check_link_is_dir	fileops.c	/^check_link_is_dir(FileView *view, int pos)$/;"	f
+check_mark_directory	bookmarks.c	/^check_mark_directory(FileView *view, char mark)$/;"	f
+check_view_dir_history	filelist.c	/^check_view_dir_history(FileView *view)$/;"	f	file:
+chomp	utils.c	/^chomp(char *text)$/;"	f
+clean_menu_position	menus.c	/^clean_menu_position(menu_info *m)$/;"	f	file:
+clean_selected_files	filelist.c	/^clean_selected_files(FileView *view)$/;"	f
+clean_status_bar	keys.c	/^clean_status_bar(FileView *view)$/;"	f
+clear_filetypes	filetype.c	/^clear_filetypes(void)$/;"	f
+clear_num_window	keys.c	/^clear_num_window(void)$/;"	f	file:
+clear_register	registers.c	/^clear_register(int key)$/;"	f
+cmd	background.h	/^	char *cmd;$/;"	m	struct:Jobs_List
+cmd_history	config.h	/^	char **cmd_history;$/;"	m	struct:_Config
+cmd_history_len	config.h	/^	int cmd_history_len;$/;"	m	struct:_Config
+cmd_history_num	config.h	/^	int cmd_history_num;$/;"	m	struct:_Config
+cmd_name	commands.c	/^	char *cmd_name;$/;"	m	struct:current_command	file:
+cmd_pos	rline.c	/^    int cmd_pos;            \/* position in the historys *\/$/;"	m	struct:line_stats	file:
+cmd_t	commands.c	/^}cmd_t;$/;"	t	typeref:struct:current_command	file:
+col_schemes	vifm.c	/^Col_scheme *col_schemes;$/;"	v
+colname2int	color_scheme.c	/^colname2int(char col[])$/;"	f	file:
+color	color_scheme.h	/^	Col_attr color[12];$/;"	m	struct:_Col_Scheme
+color_pairs_num	config.h	/^	int color_pairs_num;$/;"	m	struct:_Config
+color_scheme	ui.h	/^	int color_scheme; \/* current color scheme being used *\/$/;"	m	struct:_FileView
+color_scheme_num	config.h	/^	int color_scheme_num;$/;"	m	struct:_Config
+command_completion	commands.c	/^command_completion(char *str)$/;"	f
+command_is_being_used	commands.c	/^command_is_being_used(char *command)$/;"	f
+command_is_reserved	commands.c	/^command_is_reserved(char *name)$/;"	f
+command_list	commands.h	/^command_t *command_list;$/;"	v
+command_num	config.h	/^	int command_num;$/;"	m	struct:_Config
+command_t	commands.h	/^}command_t;$/;"	t	typeref:struct:__anon3
+complete_continue	rline.c	/^    int complete_continue;  \/* If non-zero,$/;"	m	struct:line_stats	file:
+config_dir	config.h	/^	char config_dir[PATH_MAX];$/;"	m	struct:_Config
+config_file_mtime	status.h	/^	time_t config_file_mtime;$/;"	m	struct:__anon11
+count	commands.c	/^	int count;$/;"	m	struct:current_command	file:
+create_help_file	config.c	/^create_help_file(void)$/;"	f	file:
+create_rc_file	config.c	/^create_rc_file(void)$/;"	f	file:
+ctime	ui.h	/^	time_t ctime;$/;"	m	struct:__anon14
+curr_dir	ui.h	/^	char curr_dir[PATH_MAX];$/;"	m	struct:_FileView
+curr_files	commands.c	/^	char *curr_files; \/* holds %f macro files *\/$/;"	m	struct:current_command	file:
+curr_line	ui.h	/^	int curr_line; \/* current line # of the window  *\/$/;"	m	struct:_FileView
+curr_register	status.h	/^	int curr_register;$/;"	m	struct:__anon11
+curr_stats	vifm.c	/^Status curr_stats;$/;"	v
+curr_view	ui.h	/^FileView *curr_view;$/;"	v
+current	menus.c	/^	int current;$/;"	m	struct:menu_info	file:
+current_command	commands.c	/^typedef struct current_command$/;"	s	file:
+curs_pos	rline.c	/^    int curs_pos;           \/* position of the cursor *\/$/;"	m	struct:line_stats	file:
+data	menus.c	/^	char **data;$/;"	m	struct:menu_info	file:
+date	ui.h	/^	char date[16];$/;"	m	struct:__anon14
+delete_file	fileops.c	/^delete_file(FileView *view)$/;"	f
+deleted	registers.h	/^	int deleted;$/;"	m	struct:_Registers
+describe_file_size	file_info.c	/^describe_file_size (char* str, int str_size, int num)$/;"	f
+dir	color_scheme.h	/^	char dir[PATH_MAX];$/;"	m	struct:_Col_Scheme
+dir	fileops.h	/^	char *dir;$/;"	m	struct:__anon5
+dir	ui.h	/^	char dir[PATH_MAX];$/;"	m	struct:__anon13
+dir_entry	ui.h	/^	dir_entry_t *dir_entry;$/;"	m	struct:_FileView
+dir_entry_t	ui.h	/^}dir_entry_t;$/;"	t	typeref:struct:__anon14
+dir_mtime	ui.h	/^	time_t dir_mtime;$/;"	m	struct:_FileView
+directory	bookmarks.h	/^	char *directory;$/;"	m	struct:__anon1
+draw_dir_list	filelist.c	/^draw_dir_list(FileView *view, int top, int pos)$/;"	f
+draw_menu	menus.c	/^draw_menu(FileView *view,  menu_info *m)$/;"	f	file:
+duplicate	utils.c	/^duplicate (void *stuff, int size)$/;"	f
+end_range	commands.c	/^	int end_range;$/;"	m	struct:current_command	file:
+erase_current_line_bar	filelist.c	/^erase_current_line_bar(FileView *view)$/;"	f
+error_buf	background.h	/^	char *error_buf;$/;"	m	struct:Jobs_List
+error_win	ui.h	/^WINDOW *error_win;$/;"	v
+escape_filename	utils.c	/^escape_filename(const char *string, size_t len, int quote_percent)$/;"	f
+executable	ui.h	/^	char executable;$/;"	m	struct:__anon14
+execute	fileops.c	/^execute(char **args)$/;"	f	file:
+execute_apropos_cb	menus.c	/^execute_apropos_cb(FileView *view, menu_info *m)$/;"	f	file:
+execute_builtin_command	commands.c	/^execute_builtin_command(FileView *view, cmd_t *cmd)$/;"	f
+execute_command	commands.c	/^execute_command(FileView *view, char *command)$/;"	f
+execute_filetype_cb	menus.c	/^execute_filetype_cb(FileView *view, menu_info *m)$/;"	f	file:
+execute_jobs_cb	menus.c	/^execute_jobs_cb(FileView *view, menu_info *m)$/;"	f	file:
+execute_locate_cb	menus.c	/^execute_locate_cb(FileView *view, menu_info *m)$/;"	f	file:
+execute_menu_cb	menus.c	/^execute_menu_cb(FileView *view, menu_info *m)$/;"	f	file:
+execute_menu_command	menus.c	/^execute_menu_command(FileView *view, char * command, menu_info *m)$/;"	f
+execute_user_command	commands.c	/^execute_user_command(FileView *view, cmd_t *cmd)$/;"	f
+expand_macros	commands.c	/^expand_macros(FileView *view, char *command, char *args,$/;"	f
+ext	filetype.h	/^	char *ext;$/;"	m	struct:__anon6
+ext	ui.h	/^	char ext[24];$/;"	m	struct:__anon14
+fd	background.h	/^	int fd;$/;"	m	struct:Jobs_List
+fg	color_scheme.h	/^	int fg;$/;"	m	struct:_Col_attr
+file	bookmarks.h	/^	char *file;$/;"	m	struct:__anon1
+file	fileops.h	/^	char *file;$/;"	m	struct:__anon5
+file	ui.h	/^	char file[NAME_MAX];;$/;"	m	struct:__anon13
+file_chmod	fileops.c	/^file_chmod(FileView *view, char *path, char *mode, int recurse_dirs)$/;"	f
+file_exec	fileops.c	/^file_exec(char *command)$/;"	f
+filename_completion	rline.c	/^filename_completion(char *str)$/;"	f	file:
+filename_filter	ui.h	/^	char * filename_filter; \/* regexp for filtering files in dir list *\/ $/;"	m	struct:_FileView
+files	registers.h	/^	char ** files;$/;"	m	struct:_Registers
+filetype_t	filetype.h	/^}filetype_t;$/;"	t	typeref:struct:__anon6
+filetypes	filetype.h	/^filetype_t *filetypes;$/;"	v
+filetypes_num	config.h	/^	int filetypes_num;$/;"	m	struct:_Config
+filter_selected_files	keys.c	/^filter_selected_files(FileView *view)$/;"	f	file:
+filtered	ui.h	/^	int filtered;  \/* number of files filtered out and not shown in list *\/$/;"	m	struct:_FileView
+find_file_pos_in_list	filelist.c	/^find_file_pos_in_list(FileView *view, char *file)$/;"	f
+find_next_pattern	search.c	/^find_next_pattern(FileView *view)$/;"	f
+find_next_pattern_match	search.c	/^find_next_pattern_match(FileView *view, int start, int direction)$/;"	f	file:
+find_pattern	search.c	/^find_pattern(FileView *view, char *pattern)$/;"	f
+find_previous_pattern	search.c	/^find_previous_pattern(FileView *view)$/;"	f
+finish	ui.c	/^finish(char *message)$/;"	f	file:
+fjobs	background.c	/^struct Finished_Jobs *fjobs = NULL;$/;"	v	typeref:struct:Finished_Jobs
+free_selected_file_array	filelist.c	/^free_selected_file_array(FileView *view)$/;"	f
+freeze	status.h	/^	volatile int freeze;$/;"	m	struct:__anon11
+friendly_size_notation	filelist.c	/^friendly_size_notation(int num, int str_size, char *str)$/;"	f
+fuse_home	config.h	/^	char *fuse_home;$/;"	m	struct:_Config
+fuse_mounts	utils.c	/^struct Fuse_List *fuse_mounts = NULL;$/;"	v	typeref:struct:Fuse_List
+get_all_programs_for_file	filetype.c	/^get_all_programs_for_file(char *file)$/;"	f
+get_all_selected_files	filelist.c	/^get_all_selected_files(FileView *view)$/;"	f
+get_bookmark	bookmarks.c	/^get_bookmark(FileView *view)$/;"	f
+get_command	commands.c	/^get_command(FileView *view, int type, void * ptr)$/;"	f
+get_current_file_name	filelist.c	/^get_current_file_name(FileView *view)$/;"	f
+get_default_program_for_file	filetype.c	/^get_default_program_for_file(char *file)$/;"	f
+get_filetype_number	filetype.c	/^get_filetype_number(char *file)$/;"	f
+get_info_script	menus.c	/^	char *get_info_script; \/* program + args to fill in menu. *\/$/;"	m	struct:menu_info	file:
+get_last_word	rline.c	/^get_last_word(char * string)$/;"	f	file:
+get_perm_string	file_info.c	/^get_perm_string (char * buf, int len, mode_t mode)$/;"	f
+getting_input	status.h	/^	volatile int getting_input;$/;"	m	struct:__anon11
+gid	ui.h	/^	gid_t gid;$/;"	m	struct:__anon14
+group	ui.h	/^	char *group;$/;"	m	struct:__anon14
+handle_file	fileops.c	/^handle_file(FileView *view)$/;"	f
+handle_signal	signals.c	/^handle_signal(int sig)$/;"	f	file:
+hide_dot	ui.h	/^	int hide_dot;$/;"	m	struct:_FileView
+hide_dot_files	keys.c	/^hide_dot_files(FileView *view)$/;"	f	file:
+history	ui.h	/^	history_t history[15];$/;"	m	struct:_FileView
+history_len	config.h	/^	int history_len;$/;"	m	struct:_Config
+history_num	ui.h	/^	int history_num;$/;"	m	struct:_FileView
+history_t	ui.h	/^}history_t;$/;"	t	typeref:struct:__anon13
+index	rline.c	/^    int index;              \/* index of the current character *\/$/;"	m	struct:line_stats	file:
+index2mark	bookmarks.c	/^index2mark(const int x)$/;"	f
+init_active_bookmarks	menus.c	/^init_active_bookmarks(void)$/;"	f
+init_config	config.c	/^init_config(void)$/;"	f
+initialize_command_struct	commands.c	/^initialize_command_struct(cmd_t *cmd)$/;"	f	file:
+invert	ui.h	/^	bool invert; \/* whether to invert the filename pattern *\/$/;"	m	struct:_FileView
+is_bookmark	bookmarks.c	/^is_bookmark(const int x)$/;"	f
+is_console	status.h	/^	int is_console;$/;"	m	struct:__anon11
+is_dir	utils.c	/^is_dir(char *file)$/;"	f
+is_link_dir	filelist.c	/^is_link_dir(const dir_entry_t * path)$/;"	f
+is_updir	status.h	/^	int is_updir;$/;"	m	struct:__anon11
+is_user	commands.c	/^	int is_user;$/;"	m	struct:current_command	file:
+is_user_command	commands.c	/^is_user_command(char *command)$/;"	f
+is_valid_register	registers.c	/^is_valid_register(int key)$/;"	f
+jobs	background.c	/^struct Jobs_List *jobs = NULL;$/;"	v	typeref:struct:Jobs_List
+last_char	status.h	/^	int last_char;$/;"	m	struct:__anon11
+last_dir	ui.h	/^	char last_dir[PATH_MAX];$/;"	m	struct:_FileView
+lborder	ui.h	/^WINDOW *lborder;$/;"	v
+len	menus.c	/^	int len;$/;"	m	struct:menu_info	file:
+len	rline.c	/^    int len;                \/* length of the string *\/$/;"	m	struct:line_stats	file:
+line	rline.c	/^    wchar_t *line;          \/* the line reading *\/$/;"	m	struct:line_stats	file:
+line_completion	rline.c	/^line_completion(struct line_stats *stat)$/;"	f	file:
+line_stats	rline.c	/^struct line_stats$/;"	s	file:
+list_num	ui.h	/^	int list_num;$/;"	m	struct:__anon14
+list_pos	ui.h	/^	int list_pos; \/* actual position in the file list *\/$/;"	m	struct:_FileView
+list_rows	ui.h	/^	int list_rows; \/* size of the file list *\/$/;"	m	struct:_FileView
+load_color_scheme	color_scheme.c	/^load_color_scheme(char *name, char *dir)$/;"	f
+load_default_colors	color_scheme.c	/^load_default_colors()$/;"	f	file:
+load_default_configuration	config.c	/^load_default_configuration(void)$/;"	f	file:
+load_dir_list	filelist.c	/^load_dir_list(FileView *view, int reload)$/;"	f
+loaded_vifm	vifm.vim	/^let loaded_vifm=1$/;"	v
+lwin	ui.h	/^FileView lwin;$/;"	v
+main	vifm.c	/^main(int argc, char *argv[])$/;"	f
+main_key_press_cb	keys.c	/^main_key_press_cb(FileView *view)$/;"	f
+mark2index	bookmarks.c	/^mark2index(const char mark)$/;"	f
+match_dir	menus.c	/^	int match_dir;$/;"	m	struct:menu_info	file:
+matching_entries	menus.c	/^	int matching_entries;$/;"	m	struct:menu_info	file:
+max_args	config.h	/^	long max_args;$/;"	m	struct:_Config
+mborder	ui.h	/^WINDOW *mborder;$/;"	v
+menu	status.h	/^	volatile int menu;$/;"	m	struct:__anon11
+menu_info	menus.c	/^typedef struct menu_info $/;"	s	file:
+menu_info	menus.c	/^}menu_info;$/;"	t	typeref:struct:menu_info	file:
+menu_key_cb	menus.c	/^menu_key_cb(FileView *view, menu_info *m)$/;"	f	file:
+menu_win	ui.h	/^WINDOW *menu_win;$/;"	v
+mode	ui.h	/^	mode_t mode;$/;"	m	struct:__anon14
+mount_point	utils.h	/^	char mount_point[PATH_MAX];$/;"	m	struct:Fuse_List
+mount_point_id	utils.h	/^	int mount_point_id;$/;"	m	struct:Fuse_List
+move_to_bookmark	bookmarks.c	/^move_to_bookmark(FileView *view, char mark)$/;"	f
+moveto_list_pos	filelist.c	/^moveto_list_pos(FileView *view, int pos)$/;"	f
+moveto_menu_pos	menus.c	/^moveto_menu_pos(FileView *view, int pos,  menu_info *m)$/;"	f	file:
+mtime	ui.h	/^	time_t mtime;$/;"	m	struct:__anon14
+my_free	utils.c	/^my_free(void *stuff)$/;"	f
+my_rl_gets	rline.c	/^my_rl_gets(int type)$/;"	f
+my_system	fileops.c	/^my_system(char *command)$/;"	f
+name	color_scheme.h	/^	char name[NAME_MAX];$/;"	m	struct:_Col_Scheme
+name	color_scheme.h	/^	int name;$/;"	m	struct:_Col_attr
+name	commands.h	/^	char *name;$/;"	m	struct:__anon3
+name	registers.h	/^	int name;$/;"	m	struct:_Registers
+name	ui.h	/^	char *name;$/;"	m	struct:__anon14
+need_redraw	status.h	/^	int need_redraw;$/;"	m	struct:__anon11
+next	background.h	/^	struct Finished_Jobs *next;$/;"	m	struct:Finished_Jobs	typeref:struct:Finished_Jobs::Finished_Jobs
+next	background.h	/^	struct Jobs_List *next;$/;"	m	struct:Jobs_List	typeref:struct:Jobs_List::Jobs_List
+next	utils.h	/^	struct Fuse_List *next;$/;"	m	struct:Fuse_List	typeref:struct:Fuse_List::Fuse_List
+nmapped_num	config.h	/^	int nmapped_num;$/;"	m	struct:_Config
+num_bookmarks	config.h	/^	int num_bookmarks;$/;"	m	struct:_Config
+num_files	registers.h	/^	int num_files;$/;"	m	struct:_Registers
+num_win	ui.h	/^WINDOW *num_win;$/;"	v
+num_yanked_files	status.h	/^	int num_yanked_files;$/;"	m	struct:__anon11
+number_of_windows	status.h	/^	int number_of_windows;$/;"	m	struct:__anon11
+order	commands.c	/^	char *order; \/* holds the order of macros command %a %f or command %f %a *\/$/;"	m	struct:current_command	file:
+other_files	commands.c	/^	char *other_files; \/* holds %F macro files *\/$/;"	m	struct:current_command	file:
+other_view	ui.h	/^FileView *other_view;$/;"	v
+owner	ui.h	/^	char *owner;$/;"	m	struct:__anon14
+parse_command	commands.c	/^parse_command(FileView *view, char *command, cmd_t *cmd)$/;"	f	file:
+pause	commands.c	/^	int pause;$/;"	m	struct:current_command	file:
+permissions_key_cb	fileops.c	/^permissions_key_cb(FileView *view, int *perms, int isdir)$/;"	f	file:
+pid	background.h	/^	pid_t pid;$/;"	m	struct:Finished_Jobs
+pid	background.h	/^	pid_t pid;$/;"	m	struct:Jobs_List
+pipe_and_capture_errors	fileops.c	/^pipe_and_capture_errors(char *command)$/;"	f
+pos	commands.c	/^	int pos;$/;"	m	struct:current_command	file:
+pos	menus.c	/^	int pos;$/;"	m	struct:menu_info	file:
+pos_win	ui.h	/^WINDOW *pos_win;$/;"	v
+prev_filter	ui.h	/^	char * prev_filter;$/;"	m	struct:_FileView
+prev_invert	ui.h	/^	int prev_invert;$/;"	m	struct:_FileView
+programs	filetype.h	/^	char *programs;$/;"	m	struct:__anon6
+prompt	rline.c	/^    wchar_t prompt[8];      \/* prompt *\/$/;"	m	struct:line_stats	file:
+prompt_wid	rline.c	/^    int prompt_wid;         \/* width of prompt *\/$/;"	m	struct:line_stats	file:
+put_files	keys.c	/^put_files(FileView *view)$/;"	f
+put_files_from_register	keys.c	/^put_files_from_register(FileView *view)$/;"	f
+query_user_menu	menus.c	/^query_user_menu(char *title, char *message)$/;"	f
+quick_view_file	filelist.c	/^quick_view_file(FileView *view)$/;"	f
+rborder	ui.h	/^WINDOW *rborder;$/;"	v
+read_color_scheme_file	color_scheme.c	/^read_color_scheme_file()$/;"	f
+read_config_file	config.c	/^read_config_file(void)$/;"	f
+received_sigchld	signals.c	/^received_sigchld(void)$/;"	f	file:
+received_sigtstp	signals.c	/^received_sigtstp(void)$/;"	f	file:
+received_sigwinch	signals.c	/^received_sigwinch(void)$/;"	f	file:
+redraw_menu	menus.c	/^redraw_menu(FileView *view, menu_info *m)$/;"	f	file:
+redraw_menu	status.h	/^	int redraw_menu;$/;"	m	struct:__anon11
+redraw_window	ui.c	/^redraw_window(void)$/;"	f
+reg	registers.h	/^registers_t reg[NUM_REGISTERS];$/;"	v
+regexp	menus.c	/^	char *regexp;$/;"	m	struct:menu_info	file:
+regexp	ui.h	/^	char regexp[256]; \/* regular expression pattern for \/ searching *\/$/;"	m	struct:_FileView
+regexp_filter_match	filelist.c	/^regexp_filter_match(FileView *view,  char *filename)$/;"	f	file:
+register_saved	status.h	/^	int register_saved;$/;"	m	struct:__anon11
+registers_t	registers.h	/^}registers_t;$/;"	t	typeref:struct:_Registers
+reload_bookmarks_menu_list	menus.c	/^reload_bookmarks_menu_list(menu_info *m)$/;"	f	file:
+reload_command_menu_list	menus.c	/^reload_command_menu_list(menu_info *m)$/;"	f	file:
+reload_window	keys.c	/^reload_window(FileView *view)$/;"	f	file:
+remove	background.h	/^	int remove;$/;"	m	struct:Finished_Jobs
+remove_bookmark	bookmarks.c	/^remove_bookmark(const int x)$/;"	f
+remove_command	commands.c	/^remove_command(char *name)$/;"	f
+remove_filename_filter	keys.c	/^remove_filename_filter(FileView *view)$/;"	f
+rename_file	keys.c	/^rename_file(FileView *view)$/;"	f
+repeat_last_command	keys.c	/^repeat_last_command(FileView *view)$/;"	f	file:
+reserved_commands	commands.c	/^char *reserved_commands[] = {$/;"	v
+reset_change_window	fileops.c	/^reset_change_window(void)$/;"	f	file:
+reset_popup_menu	menus.c	/^reset_popup_menu(menu_info *m)$/;"	f
+reset_selected_files	filelist.c	/^reset_selected_files(FileView *view)$/;"	f	file:
+reset_sort_menu	sort.c	/^reset_sort_menu(void)$/;"	f	file:
+restore_filename_filter	keys.c	/^restore_filename_filter(FileView *view)$/;"	f	file:
+running	background.h	/^	int running;$/;"	m	struct:Jobs_List
+rwin	ui.h	/^FileView rwin;$/;"	v
+save_command_history	commands.c	/^save_command_history(char *command)$/;"	f
+save_msg	status.h	/^	int save_msg;$/;"	m	struct:__anon11
+save_search_history	commands.c	/^save_search_history(char *pattern)$/;"	f
+save_view_history	filelist.c	/^save_view_history(FileView *view)$/;"	f
+screen_num	config.h	/^	int screen_num;$/;"	m	struct:_Config
+search	status.h	/^	int search;$/;"	m	struct:__anon11
+search_history	config.h	/^	char **search_history;$/;"	m	struct:_Config
+search_history_len	config.h	/^	int search_history_len;$/;"	m	struct:_Config
+search_history_num	config.h	/^	int search_history_num;$/;"	m	struct:_Config
+search_menu_backwards	menus.c	/^search_menu_backwards(FileView *view, menu_info *m, int start_pos)$/;"	f
+search_menu_forwards	menus.c	/^search_menu_forwards(FileView *view, menu_info *m, int start_pos)$/;"	f
+search_menu_list	menus.c	/^search_menu_list(FileView *view, char * pattern, menu_info *m)$/;"	f
+select_down_one	visual.c	/^select_down_one(FileView *view, int start_pos) {$/;"	f
+select_files_in_range	commands.c	/^select_files_in_range(FileView *view, cmd_t * cmd)$/;"	f	file:
+select_up_one	visual.c	/^select_up_one(FileView *view, int start_pos) {$/;"	f
+selected	ui.h	/^	int selected;$/;"	m	struct:__anon14
+selected_filelist	ui.h	/^	char ** selected_filelist;$/;"	m	struct:_FileView
+selected_files	ui.h	/^	int selected_files;$/;"	m	struct:_FileView
+set_config_dir	config.c	/^set_config_dir(void)$/;"	f
+set_perm_string	fileops.c	/^set_perm_string(FileView *view, int *perms, char *file)$/;"	f
+set_user_command	commands.c	/^set_user_command(char * command, int overwrite, int background)$/;"	f	file:
+setting_change	status.h	/^	int setting_change;$/;"	m	struct:__anon11
+setup_menu	menus.c	/^setup_menu(FileView *view)$/;"	f
+setup_ncurses_interface	ui.c	/^setup_ncurses_interface()$/;"	f
+setup_signals	signals.c	/^setup_signals(void)$/;"	f
+shellout	commands.c	/^shellout(char *command, int pause)$/;"	f
+show_apropos_menu	menus.c	/^show_apropos_menu(FileView *view, char *args)$/;"	f
+show_bookmarks_menu	menus.c	/^show_bookmarks_menu(FileView *view)$/;"	f
+show_change_window	fileops.c	/^show_change_window(FileView *view, int type)$/;"	f
+show_commands_menu	menus.c	/^show_commands_menu(FileView *view)$/;"	f
+show_dot_files	keys.c	/^show_dot_files(FileView *view)$/;"	f
+show_error_msg	menus.c	/^show_error_msg(char *title, char *message)$/;"	f
+show_file_permissions_menu	fileops.c	/^show_file_permissions_menu(FileView *view, int x)$/;"	f
+show_filetypes_menu	menus.c	/^show_filetypes_menu(FileView *view)$/;"	f
+show_full	status.h	/^	int show_full;$/;"	m	struct:__anon11
+show_full_file_properties	file_info.c	/^show_full_file_properties(FileView *view)$/;"	f
+show_help_msg	vifm.c	/^show_help_msg(void)$/;"	f	file:
+show_history_menu	menus.c	/^show_history_menu(FileView *view)$/;"	f
+show_jobs_menu	menus.c	/^show_jobs_menu(FileView *view)$/;"	f
+show_locate_menu	menus.c	/^show_locate_menu(FileView *view, char *args)$/;"	f
+show_one_window	config.h	/^	int show_one_window;$/;"	m	struct:_Config
+show_position_in_menu	menus.c	/^show_position_in_menu(menu_info *m)$/;"	f	file:
+show_progress	menus.c	/^show_progress(void)$/;"	f
+show_register_menu	menus.c	/^show_register_menu(FileView *view)$/;"	f
+show_sort_menu	sort.c	/^show_sort_menu(FileView *view)$/;"	f
+show_user_menu	menus.c	/^show_user_menu(FileView *view, char *command)$/;"	f
+show_vifm_menu	menus.c	/^show_vifm_menu(FileView *view)$/;"	f
+shutdown_nicely	signals.c	/^shutdown_nicely(void)$/;"	f	file:
+silent_remove_bookmark	bookmarks.c	/^silent_remove_bookmark(const int x)$/;"	f
+size	ui.h	/^	uintmax_t size;$/;"	m	struct:__anon14
+sort_dir_list	sort.c	/^sort_dir_list(const void *one, const void *two)$/;"	f
+sort_key_cb	sort.c	/^sort_key_cb(FileView *view)$/;"	f	file:
+sort_this	commands.c	/^sort_this(const void *one, const void *two)$/;"	f
+sort_type	ui.h	/^	char sort_type;$/;"	m	struct:_FileView
+sort_win	ui.h	/^WINDOW *sort_win;$/;"	v
+source_file_dir	utils.h	/^	char source_file_dir[PATH_MAX];$/;"	m	struct:Fuse_List
+source_file_name	utils.h	/^	char source_file_name[PATH_MAX];$/;"	m	struct:Fuse_List
+split	commands.c	/^	int split;$/;"	m	struct:current_command	file:
+split_screen	commands.c	/^split_screen(FileView *view, char *command)$/;"	f	file:
+start_background_job	background.c	/^start_background_job(char *cmd)$/;"	f
+start_range	commands.c	/^	int start_range;$/;"	m	struct:current_command	file:
+start_visual_mode	visual.c	/^start_visual_mode(FileView *view)$/;"	f
+stat_win	ui.h	/^WINDOW *stat_win;$/;"	v
+status_bar	ui.h	/^WINDOW *status_bar;$/;"	v
+status_bar_message	ui.c	/^status_bar_message(char *message)$/;"	f
+switch_views	keys.c	/^switch_views(void)$/;"	f
+tag_file	keys.c	/^tag_file(FileView *view)$/;"	f	file:
+timer	config.h	/^	int timer;$/;"	m	struct:_Config
+title	menus.c	/^	char *title;$/;"	m	struct:menu_info	file:
+title	ui.h	/^	WINDOW *title;$/;"	m	struct:_FileView
+toggle_dot_files	keys.c	/^toggle_dot_files(FileView *view)$/;"	f	file:
+top	menus.c	/^	int top;$/;"	m	struct:menu_info	file:
+top_line	ui.h	/^	int top_line; \/* # of the list position that is the top line in window *\/$/;"	m	struct:_FileView
+trash_dir	config.h	/^	char trash_dir[PATH_MAX];$/;"	m	struct:_Config
+type	filetype.h	/^	char *type;$/;"	m	struct:__anon6
+type	menus.c	/^	int type;$/;"	m	struct:menu_info	file:
+type	rline.c	/^    int type;               \/* type *\/$/;"	m	struct:line_stats	file:
+type	ui.h	/^	char type;$/;"	m	struct:__anon14
+uid	ui.h	/^	uid_t uid;$/;"	m	struct:__anon14
+update_all_windows	keys.c	/^update_all_windows(void)$/;"	f
+update_num_window	keys.c	/^update_num_window(char *text)$/;"	f	file:
+update_pos_window	ui.c	/^update_pos_window(FileView *view)$/;"	f
+update_stat_window	ui.c	/^update_stat_window(FileView *view)$/;"	f
+updir_file	status.h	/^	char updir_file[NAME_MAX];$/;"	m	struct:__anon11
+use_register	status.h	/^	int use_register;$/;"	m	struct:__anon11
+use_screen	config.h	/^	int use_screen;$/;"	m	struct:_Config
+use_trash	config.h	/^	int use_trash;$/;"	m	struct:_Config
+use_vim_help	config.h	/^	int use_vim_help;$/;"	m	struct:_Config
+user_args	commands.c	/^	char *user_args; \/* holds %a macro string *\/$/;"	m	struct:current_command	file:
+valid_registers	registers.c	/^char valid_registers[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',$/;"	v
+verify_color_schemes	color_scheme.c	/^verify_color_schemes()$/;"	f
+vi_command	config.h	/^	char *vi_command;$/;"	m	struct:_Config
+view	status.h	/^	int view;$/;"	m	struct:__anon11
+view_file	fileops.c	/^view_file(FileView *view)$/;"	f
+vim_filter	config.h	/^	int vim_filter;$/;"	m	struct:_Config
+visual_key_cb	visual.c	/^visual_key_cb(FileView *view)$/;"	f
+wcsdel	rline.c	/^wcsdel(wchar_t *src, int pos, int len)$/;"	f	file:
+wcsins	rline.c	/^wcsins(wchar_t *src, wchar_t *ins, int pos)$/;"	f	file:
+win	ui.h	/^	WINDOW *win;$/;"	m	struct:_FileView
+win_rows	menus.c	/^	int win_rows;$/;"	m	struct:menu_info	file:
+window_rows	ui.h	/^	int window_rows; \/* number of rows shown in window *\/$/;"	m	struct:_FileView
+window_width	ui.h	/^	int window_width;$/;"	m	struct:_FileView
+write_color_scheme_file	color_scheme.c	/^write_color_scheme_file()$/;"	f	file:
+write_config_file	config.c	/^write_config_file(void)$/;"	f
+write_stat_win	ui.c	/^write_stat_win(char *message)$/;"	f
+write_string_to_file	utils.c	/^write_string_to_file(char *filename, char *string)$/;"	f
+yank_files	keys.c	/^yank_files(FileView *view, int count, char *count_buf)$/;"	f	file:
+yank_selected_files	fileops.c	/^yank_selected_files(FileView *view)$/;"	f
+yank_t	fileops.h	/^}yank_t;$/;"	t	typeref:struct:__anon5
+yanked_file	fileops.h	/^yank_t *yanked_file;$/;"	v
+yanked_files	status.h	/^	char **yanked_files;$/;"	m	struct:__anon11
+yanked_files_dir	status.h	/^	char yanked_files_dir[PATH_MAX];$/;"	m	struct:__anon11
