@@ -13,6 +13,9 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #define HAVE_DLFCN_H 1
 
+/* Define to 1 if fseeko (and presumably ftello) exists and is declared. */
+#define HAVE_FSEEKO 1
+
 /* Define to 1 if you have the `getcwd' function. */
 #define HAVE_GETCWD 1
 
@@ -93,4 +96,16 @@
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "0.5"
+#define VERSION "0.6"
+
+/* Number of bits in a file offset, on hosts where this is settable. */
+/* #undef _FILE_OFFSET_BITS */
+
+/* Define to 1 to make fseeko visible on some hosts (e.g. glibc 2.2). */
+/* #undef _LARGEFILE_SOURCE */
+
+/* Define for large files, on AIX-style hosts. */
+/* #undef _LARGE_FILES */
+
+/* Define to `long int' if <sys/types.h> does not define. */
+/* #undef off_t */

@@ -34,21 +34,36 @@
 #include "menus.h"
 #include "status.h"
 
+/*
+#ifndef OFF_T_MAX
+# define OFF_T_MAX TYPE_MAXIMUM(off_t)
+#endif
+
+#ifndef OFF_T_MIN
+# define OFF_T_MIN TYPE_MINIMUM(off_t)
+#endif
+
+uintmax_t
+unsigned_file_size(off_t size)
+{
+	return size + (size < 0) * ((uintmax_t) OFF_T_MAX - OFF_T_MIN + 1);
+}
+*/
 
 void
-describe_file_size (char* str, int str_size, int num)
+describe_file_size (char* str, int str_size, off_t num)
 {
 
 	const char* units[] = { " B", "KB", "MB", "GB", "TB", "PB" };
 	int u = 0;
-	double d = num;
+	off_t d = num;
 
-	while(d > 1024.0 && u < (sizeof(units)/sizeof(*units)))
+	while(d >= 1024.0 && u < 6)
 	{
-		d /= 1024.0;
+		d = (d / 1024);
 		++u;
 	}
-	snprintf(str, str_size, " %.1f %s", d, units[u]);
+	snprintf(str, str_size, " %zu %s", d, units[u]);
 }
 
 void

@@ -42,3 +42,6 @@ Woody Kiang - command completion and wide character support in
 :commands.
 
 Minozake - start vifm --help fix
+
+Dan Price - wrote the human friendly file size and the ascending and
+descending sort.

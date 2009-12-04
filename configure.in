@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(vifm, 0.5)
+AM_INIT_AUTOMAKE(vifm, 0.6)
 AM_CONFIG_HEADER(config.h)
 
 
@@ -13,6 +13,9 @@ AM_PROG_LIBTOOL
 AC_CONFIG_MACRO_DIR([m4])
 AC_CHECK_HEADERS(limits.h sys/time.h unistd.h wchar.h)
 AC_CHECK_FUNCS(getcwd mkdir regcomp strdup strstr)
+AC_SYS_LARGEFILE
+AC_FUNC_FSEEKO
+AC_TYPE_OFF_T
 
 
 dnl Set PACKAGE_DATA_DIR in config.h.

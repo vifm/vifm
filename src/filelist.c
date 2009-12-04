@@ -54,7 +54,7 @@ friendly_size_notation(int num, int str_size, char *str)
 	int u = 0;
 	double d = num;
 
-	while(d > 1024.0 && u < (sizeof(units)/sizeof(*units)))
+	while(d >= 1024.0 && u < (sizeof(units)/sizeof(*units)))
 	{
 		d /= 1024.0;
 		++u;

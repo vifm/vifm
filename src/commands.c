@@ -504,9 +504,9 @@ expand_macros(FileView *view, char *command, char *args,
 						show_error_msg("Memory Error", "Unable to allocate memory");
 						return NULL;
 					}
-					strcat(expanded, "\"");
+					strcat(expanded, "\'");
 					strcat(expanded, other_view->curr_dir);
-					strcat(expanded, "\"");
+					strcat(expanded, "\'");
 					len = strlen(expanded);
 				}
 				break;
