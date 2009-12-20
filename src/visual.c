@@ -229,7 +229,7 @@ visual_key_cb(FileView *view)
 			/* tbrown */
 			case 2: /* ascii Ctrl B */
 			case KEY_PPAGE:
-				while (view->list_pos > (view->top_line - view->window_rows -1))
+				while (view->list_pos > (view->top_line - view->window_rows -1) && view->list_pos)
 				{
            select_up_one(view,start_pos);
         }
