@@ -963,7 +963,7 @@ my_rl_gets(int type)
     if (!stat.line)
         return NULL;
     
-    if (abort)
+    if (!stat.line[0] || abort)
     {
         free(stat.line);
         return NULL;
