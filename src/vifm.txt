@@ -154,6 +154,9 @@ n - next file matching last search pattern.
 s - open a shell - this is temporary and will be removed.
 t - select or unselect a file.
 v, V - start visual selection of files.
+<Return>, l - handle file (run executable when RUN_EXECUTABLE is set)
+i - handle file (even through it's executable and RUN_EXECUTABLE is set) 
+ZZ, ZE - same as :q<Return>
 
 --------------------------------------------------------------------------------
 *Options*

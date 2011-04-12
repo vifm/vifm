@@ -34,7 +34,7 @@ typedef struct
 
 yank_t *yanked_file;
 
-void handle_file(FileView *view);
+void handle_file(FileView *view, int dont_execute);
 void delete_file(FileView *view);
 int my_system(char *command);
 void yank_selected_files(FileView *view);

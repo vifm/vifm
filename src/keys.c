@@ -965,7 +965,7 @@ main_key_press_cb(FileView *view)
 				curs_set(0);
 				break;
 			case 13: /* ascii Return */
-				handle_file(view);
+				handle_file(view, 0);
 				break;
 			case 21: /* ascii Ctrl U */
 				view->list_pos = view->list_pos - view->window_rows/2;
@@ -1132,6 +1132,9 @@ main_key_press_cb(FileView *view)
 					moveto_list_pos(view, view->list_pos);
 				}
 				break;
+            case 'i': /* edit file even thought it's executable */
+				handle_file(view, 1);
+                break;
 			case KEY_DOWN:
 			case 'j': /* Move down one line */
 				{
@@ -1158,7 +1161,7 @@ main_key_press_cb(FileView *view)
 				break;
 			case KEY_RIGHT:
 			case 'l':
-				handle_file(view);
+				handle_file(view, 0);
 				break;
 			case 'm': /*  'm' set mark  and 'zm' hide dot files */
 				{

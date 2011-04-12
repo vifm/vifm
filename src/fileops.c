@@ -214,7 +214,7 @@ check_link_is_dir(FileView *view, int pos)
 }
 
 void
-handle_file(FileView *view)
+handle_file(FileView *view, int dont_execute)
 {
 	if(DIRECTORY == view->dir_entry[view->list_pos].type)
 	{
@@ -241,7 +241,7 @@ handle_file(FileView *view)
 		exit(0);
 	}
 
-	if(EXECUTABLE == view->dir_entry[view->list_pos].type)
+	if(EXECUTABLE == view->dir_entry[view->list_pos].type && !dont_execute)
 	{
 		if(cfg.auto_execute)
 		{
