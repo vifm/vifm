@@ -139,7 +139,9 @@ clean_menu_position(menu_info *m)
 	buf = (char *)malloc(x + 2);
 
 
-	snprintf(buf, x, " %s", m->data[m->pos]);
+	if (m->data != NULL && m->data[m->pos] != NULL) {
+        snprintf(buf, x, " %s", m->data[m->pos]);
+    }
 
 	for (z = strlen(buf); z < x; z++)
 		buf[z] = ' ';
@@ -278,6 +280,9 @@ moveto_menu_pos(FileView *view, int pos,  menu_info *m)
 	if(pos > m->len -1)
 		pos = m->len -1;
 
+	if(pos < 0)
+        return;
+
 	if((m->top <=  pos) && (pos <= (m->top + m->win_rows +1)))
 	{
 		m->current = pos - m->top +1;
@@ -304,7 +309,9 @@ moveto_menu_pos(FileView *view, int pos,  menu_info *m)
 	buf = (char *)malloc((x + 2));
 	if (!buf)
 		return;
-	snprintf(buf, x, " %s", m->data[pos]);
+	if (m->data != NULL && m->data[pos] != NULL) {
+        snprintf(buf, x, " %s", m->data[pos]);
+    }
 
 	for (z = strlen(buf); z < x; z++)
 		buf[z] = ' ';
@@ -725,8 +732,10 @@ reload_bookmarks_menu_list(menu_info *m)
 
 	for (z = 0; z < m->len; z++)
 	{
-		if (m->data[z])
+		if (m->data[z]) {
 			my_free(m->data[z]);
+            m->data[z] = NULL;
+        }
 	}
 
 	init_active_bookmarks();
