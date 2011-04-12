@@ -25,6 +25,7 @@ The basic vi key bindings are used to move through the files and popup
 	p - will copy the yanked files to the current directory or move the files 
 		to the current directory if they were deleted with dd or :d or if the
 		files were yanked 'yy' from the Trash directory.
+    ZZ, ZE - same as :q<Return>
 
 	Space or Tab to switch lists.
 
@@ -48,6 +49,8 @@ The basic vi key bindings are used to move through the files and popup
 	Ctrl-g toggles full file information window.
 	Ctrl-b - jump back one page.
 	Ctrl-f - jump forward one page.
+	Ctrl-d - jump back one half page.
+	Ctrl-u - jump forward one half page.
 
 	/regular expression pattern - will highlight all files matching the pattern 
 	in the current file list. /\.c$ would highlight all the .c files.
