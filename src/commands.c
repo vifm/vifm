@@ -1581,7 +1581,9 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		int x;
 		for (x = 0; x < view->list_rows; x++)
 			view->dir_entry[x].selected = 0;
-
+        view->selected_files = 0;
+        draw_dir_list(view, view->top_line, view->list_pos);
+        moveto_list_pos(view, view->list_pos);
 	}
 
 	return save_msg;

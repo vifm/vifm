@@ -260,6 +260,12 @@ get_all_selected_files(FileView *view)
 	if(!view->selected_files)
 		view->dir_entry[view->list_pos].selected = 1;
 
+	for(x = 0; x < view->list_rows; x++)
+	{
+		y += view->dir_entry[x].selected;
+    }
+	view->selected_files = y;
+
 	view->selected_filelist = 
 		(char **)calloc(view->selected_files, sizeof(char *));
 	if(view->selected_filelist == NULL)
@@ -268,6 +274,7 @@ get_all_selected_files(FileView *view)
 		return;
 	}
 
+    y = 0;
 	for(x = 0; x < view->list_rows; x++)
 	{
 		if(view->dir_entry[x].selected)
@@ -284,7 +291,6 @@ get_all_selected_files(FileView *view)
 			y++;
 		}
 	}
-	view->selected_files = y;
 }
 
 
@@ -943,6 +949,7 @@ change_directory(FileView *view, char *directory)
 
 
 	clean_selected_files(view);
+    draw_dir_list(view, view->top_line, view->list_pos);
 
 	/* Need to use setenv instead of getcwd for a symlink directory */
 	setenv("PWD", dir_dup, 1);
