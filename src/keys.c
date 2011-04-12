@@ -1235,6 +1235,18 @@ main_key_press_cb(FileView *view)
 
 				}
 				break;
+			case 'Q': /* ZQ quit */
+			case 'Z': /* ZZ quit */
+				{
+					if(curr_stats.last_char == 'Z')
+					{
+                        comm_quit();
+                    }
+                    else
+                        if(key == 'Z')
+                            update_num_window("Z");
+                }
+                break;
 			default:
 				break;
 		} /* end of switch(key) */

@@ -38,3 +38,4 @@ int command_is_reserved(char *command);
 char * command_completion(char *str);
 char * expand_macros(FileView *view, char *command, char *args, int *menu, int *split);
 void remove_command(char *name);
+void comm_quit();

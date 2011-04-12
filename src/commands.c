@@ -1472,27 +1472,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_X:
 		case COM_QUIT:
-			{
-				if(cfg.vim_filter)
-				{
-					char buf[256];
-					FILE *fp;
-
-
-					snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
-					fp = fopen(buf, "w");
-					endwin();
-					fprintf(fp, "NULL");
-					fclose(fp);
-					exit(0);
-				}
-
-				write_config_file();
-
-				endwin();
-				system("clear");
-				exit(0);
-			}
+            comm_quit();
 			break;
 		case COM_SORT:
 			show_sort_menu(view);
@@ -1776,3 +1756,26 @@ get_command(FileView *view, int type, void * ptr)
 	return 0;
 }
 
+void
+comm_quit()
+{
+    if(cfg.vim_filter)
+    {
+        char buf[256];
+        FILE *fp;
+
+
+        snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
+        fp = fopen(buf, "w");
+        endwin();
+        fprintf(fp, "NULL");
+        fclose(fp);
+        exit(0);
+    }
+
+    write_config_file();
+
+    endwin();
+    system("clear");
+    exit(0);
+}
