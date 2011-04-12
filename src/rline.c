@@ -697,6 +697,7 @@ my_rl_gets(int type)
                     line_completion(&stat);
                 }
                 break;
+            case 16: /* ascii Ctrl P */
             case KEY_UP:
 
                 stat.complete_continue = 0;
@@ -763,6 +764,7 @@ my_rl_gets(int type)
 						stat.cmd_pos = cfg.search_history_len - 1;
 				}
 				break;
+            case 14: /* ascii Ctrl N */
             case KEY_DOWN:
 
                 stat.complete_continue = 0;
