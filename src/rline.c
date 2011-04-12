@@ -897,6 +897,25 @@ my_rl_gets(int type)
 
                 wmove(status_bar, 0, stat.curs_pos);
                 break;
+            case 21: /* ascii Ctrl U */
+                stat.complete_continue = 0;
+
+                if (stat.index == 0)
+                    break;
+
+                stat.len -= stat.index;
+
+                stat.curs_pos = 1;
+                wcsdel(stat.line, 1, stat.index);
+
+                stat.index = 0;
+
+                werase(status_bar);
+                mvwaddwstr(status_bar, 0, 0, stat.prompt);
+                mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
+
+                wmove(status_bar, 0, stat.curs_pos);
+                break;
             case KEY_DC: /* ncurses Delete */
 
                 stat.complete_continue = 0;
