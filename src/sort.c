@@ -55,6 +55,11 @@ sort_dir_list(const void *one, const void *two)
 	switch(curr_view->sort_type)
 	{
 		 case SORT_BY_NAME:
+                 if(first->name[0] == '.' && second->name[0] != '.')
+                     return -1;
+                 else
+                     if(first->name[0] != '.' && second->name[0] == '.')
+                         return 1;
 				 break;
 
 		 case SORT_BY_EXTENSION:
