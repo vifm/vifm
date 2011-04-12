@@ -292,6 +292,11 @@ read_config_file(void)
 				cfg.auto_execute = atoi(s1);
 				continue;
 			}
+			if(!strcmp(line, "USE_IEC_PREFIXES"))
+			{
+				cfg.use_iec_prefixes = atoi(s1);
+				continue;
+			}
 /*_SZ_BEGIN_*/
 			if(!strcmp(line, "FUSE_HOME"))
 			{

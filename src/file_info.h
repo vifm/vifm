@@ -18,7 +18,6 @@
 
 #include "ui.h"
 
-void describe_file_size(char *buf, int buf_size, int num);
 void get_perm_string(char *buf, int len, mode_t mode);
 void show_full_file_properties(FileView *view);
 

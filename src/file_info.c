@@ -51,22 +51,6 @@ unsigned_file_size(off_t size)
 */
 
 void
-describe_file_size (char* str, int str_size, off_t num)
-{
-
-	const char* units[] = { " B", "KB", "MB", "GB", "TB", "PB" };
-	int u = 0;
-	off_t d = num;
-
-	while(d >= 1024.0 && u < 6)
-	{
-		d = (d / 1024);
-		++u;
-	}
-	snprintf(str, str_size, " %zu %s", d, units[u]);
-}
-
-void
 get_perm_string (char * buf, int len, mode_t mode)
 {
   char *perm_sets[] =
@@ -126,8 +110,8 @@ show_full_file_properties(FileView *view)
 	snprintf(name_buf, sizeof(name_buf), "%s", 
 			view->dir_entry[view->list_pos].name);
 
-	describe_file_size(size_buf, sizeof(size_buf),
-			view->dir_entry[view->list_pos].size);
+	friendly_size_notation(view->dir_entry[view->list_pos].size,
+            sizeof(size_buf), size_buf);
 	
 	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
 	{

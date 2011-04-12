@@ -81,8 +81,8 @@ update_stat_window(FileView *view)
 
 	getmaxyx(stat_win, y, x);
 	snprintf(name_buf, sizeof(name_buf), "%s", get_current_file_name(view));
-	describe_file_size(size_buf, sizeof(size_buf),
-			view->dir_entry[view->list_pos].size);
+    friendly_size_notation(view->dir_entry[view->list_pos].size, 
+            sizeof(size_buf), size_buf);
 	
 	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
 	{

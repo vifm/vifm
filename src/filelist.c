@@ -50,11 +50,18 @@
 void
 friendly_size_notation(int num, int str_size, char *str)
 {
-	const char* units[] = { " B", "KB", "MB", "GB", "TB", "PB" };
+    const char* iec_units[] = { "  B", "KiB", "MiB", "GiB", "TiB", "PiB" };
+	const char* si_units[] = { " B", "KB", "MB", "GB", "TB", "PB" };
+	const char** units;
 	int u = 0;
 	double d = num;
 
-	while(d >= 1024.0 && u < (sizeof(units)/sizeof(*units)))
+    if (cfg.use_iec_prefixes)
+        units = iec_units;
+    else
+        units = si_units;
+
+	while(d >= 1024.0 && u < (sizeof(iec_units)/sizeof(iec_units[0])))
 	{
 		d /= 1024.0;
 		++u;
@@ -139,12 +146,8 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 			 {
 				 char str[24] = "";
 
-				 describe_file_size(str, sizeof(str),
-						 view->dir_entry[x].size);
-				 /*
 				 friendly_size_notation(view->dir_entry[x].size,
 						 sizeof(str), str);
-						 */
 
 				 snprintf(buf, sizeof(buf), " %s", str);
 			 }
