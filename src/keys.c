@@ -988,7 +988,9 @@ main_key_press_cb(FileView *view)
 			case '?': /* search backwards */
 				break;
 			case '\'': /* mark */
+                update_num_window("'");
 				curr_stats.save_msg = get_bookmark(view);
+                clear_num_window();
 				break;
 			case '%': /* Jump to percent of file. */
 				if(count)
@@ -1162,10 +1164,13 @@ main_key_press_cb(FileView *view)
 						int mark;
 						curr_stats.getting_input = 1;
 
+                        update_num_window("m");
+
 						wtimeout(curr_view->win, -1);
 						mark = wgetch(view->win);
 						wtimeout(curr_view->win, 1000);
 						curr_stats.getting_input = 0;
+                        clear_num_window();
 						if(key == ERR)
 							continue;
 						add_bookmark(mark, view->curr_dir, 
@@ -1234,6 +1239,8 @@ main_key_press_cb(FileView *view)
 				{
 
 				}
+                else
+                    update_num_window("z");
 				break;
 			case 'Q': /* ZQ quit */
 			case 'Z': /* ZZ quit */
