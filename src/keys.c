@@ -943,6 +943,10 @@ main_key_press_cb(FileView *view)
 					curs_set(0);
 				}
 				break;
+			case 4: /* ascii Ctrl D */
+				view->list_pos = view->list_pos + view->window_rows/2;
+				moveto_list_pos(view, view->list_pos);
+                break;
 			case 6: /* ascii Ctrl F */
 			case KEY_NPAGE:
 				view->list_pos = view->list_pos + view->window_rows;
@@ -962,6 +966,10 @@ main_key_press_cb(FileView *view)
 				break;
 			case 13: /* ascii Return */
 				handle_file(view);
+				break;
+			case 21: /* ascii Ctrl U */
+				view->list_pos = view->list_pos - view->window_rows/2;
+				moveto_list_pos(view, view->list_pos);
 				break;
 			case 23: /* ascii Ctrl W - change windows */
 				{
