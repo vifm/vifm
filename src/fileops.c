@@ -692,13 +692,13 @@ reset_change_window(void)
 void
 change_file_owner(char *file)
 {
-
+    // TODO write code
 }
 
 void
 change_file_group(char *file)
 {
-
+    // TODO write code
 }
 
 void

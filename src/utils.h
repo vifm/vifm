@@ -39,4 +39,5 @@ void my_free(void *);
 int is_dir(char *file);
 char * escape_filename(const char *string, size_t len, int quote_percent);
 int write_string_to_file(char *filename, char *string);
+size_t get_real_string_width(char *string, size_t max_len);
 #endif

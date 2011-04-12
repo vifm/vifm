@@ -145,3 +145,30 @@ write_string_to_file(char *filename, char *string)
 	return 1;
 }
 
+static size_t
+get_char_width(char* string)
+{
+    if ((string[0] & 0xe0) == 0xc0 && (string[1] & 0xc0) == 0x80) {
+        return 2;
+    } else if ((string[0] & 0xf0) == 0xe0 && (string[1] & 0xc0) == 0x80 &&
+             (string[2] & 0xc0) == 0x80) {
+        return 3;
+    } else if ((string[0] & 0xf8) == 0xf0 && (string[1] & 0xc0) == 0x80 &&
+             (string[2] & 0xc0) == 0x80 && (string[3] & 0xc0) == 0x80) {
+        return 4;
+    } else {
+        return 1;
+    }
+}
+
+size_t
+get_real_string_width(char *string, size_t max_len)
+{
+    size_t width = 0;
+    while (*string != '\0' && max_len-- != 0) {
+        size_t char_width = get_char_width(string);
+        width += char_width;
+        string += char_width;
+    }
+    return width;
+}

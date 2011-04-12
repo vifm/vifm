@@ -304,7 +304,7 @@ start_background_job(char *cmd)
 	if (pipe(error_pipe) != 0)
 	{
 		show_error_msg(" File pipe error", 
-				"Error creating pipe in background.c line 84");
+				"Error creating pipe in background.c line 307");
 		return -1;
 	}
 

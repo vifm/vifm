@@ -174,8 +174,11 @@ quick_view_file(FileView *view)
 	char buf[NAME_MAX];
 	int x = 1;
 	int y = 1;
+    size_t print_width;
 
-	snprintf(buf, view->window_width, "File: %s",
+    print_width = get_real_string_width(view->dir_entry[view->list_pos].name,
+            view->window_width - 6) + 6;
+	snprintf(buf, print_width, "File: %s",
 		   	view->dir_entry[view->list_pos].name);
 
 	wbkgdset(other_view->title, COLOR_PAIR(BORDER_COLOR + view->color_scheme));
@@ -314,12 +317,13 @@ find_file_pos_in_list(FileView *view, char *file)
 		return -1;
 }
 
+/* WARNING: unused parameter pos */
 void
 draw_dir_list(FileView *view, int top, int pos)
 {
 	int x;
 	int y = 0;
-	char file_name[view->window_width -2];
+	char file_name[view->window_width*2 -2];
 	int LINE_COLOR;
 	int bold = 1;
 	int color_scheme = 0;
@@ -376,10 +380,12 @@ draw_dir_list(FileView *view, int top, int pos)
 	
 	for(x = top; x < view->list_rows; x++)
 	{
+        size_t print_width;
 		/* Extra long file names are truncated to fit */
 
-		snprintf(file_name, view->window_width - 2, "%s", 
-				view->dir_entry[x].name);
+        print_width = get_real_string_width(view->dir_entry[x].name,
+                view->window_width - 2) + 2;
+		snprintf(file_name, print_width, "%s", view->dir_entry[x].name);
 
 		wmove(view->win, y, 1);
 		if(view->dir_entry[x].selected)
@@ -455,16 +461,19 @@ erase_current_line_bar(FileView *view)
 {
 	int old_cursor = view->curr_line;
 	int old_pos = view->top_line + old_cursor;
-	char file_name[view->window_width -2];
+	char file_name[view->window_width*2 -2];
 	int bold = 1;
 	int LINE_COLOR;
+    size_t print_width;
 
 	/* Extra long file names are truncated to fit */
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) | A_BOLD);
 	if((old_pos > -1)  && (old_pos < view->list_rows))
 	{
-		snprintf(file_name, view->window_width - 2, "%s", 
+        print_width = get_real_string_width(view->dir_entry[old_pos].name,
+                view->window_width - 2) + 2;
+		snprintf(file_name, print_width, "%s", 
 				view->dir_entry[old_pos].name);
 	}
 	else /* The entire list is going to be redrawn so just return. */
@@ -508,7 +517,7 @@ erase_current_line_bar(FileView *view)
 	{
 		wattrset(view->win, COLOR_PAIR(LINE_COLOR) | A_BOLD);
 		wattron(view->win, COLOR_PAIR(LINE_COLOR) | A_BOLD);
-		mvwaddnstr(view->win, old_cursor, 1, file_name, view->window_width -2);
+		mvwaddnstr(view->win, old_cursor, 1, file_name, print_width);
 		wattroff(view->win, COLOR_PAIR(LINE_COLOR) | A_BOLD);
 
 		add_sort_type_info(view, old_cursor, old_pos, 0);
@@ -517,7 +526,7 @@ erase_current_line_bar(FileView *view)
 	{
 		wattrset(view->win, COLOR_PAIR(LINE_COLOR));
 		wattron(view->win, COLOR_PAIR(LINE_COLOR));
-		mvwaddnstr(view->win, old_cursor, 1, file_name, view->window_width -2);
+		mvwaddnstr(view->win, old_cursor, 1, file_name, print_width);
 		wattroff(view->win, COLOR_PAIR(LINE_COLOR) | A_BOLD);
 		bold = 1;
 		add_sort_type_info(view, old_cursor, old_pos, 0);
@@ -529,7 +538,8 @@ moveto_list_pos(FileView *view, int pos)
 {
 	int redraw = 0;
 	int old_cursor = view->curr_line;
-	char file_name[view->window_width -2];
+	char file_name[view->window_width*2 + 1];
+    size_t print_width;
 
 	if(pos < 1)
 		pos = 0;
@@ -587,8 +597,9 @@ moveto_list_pos(FileView *view, int pos)
 
 	mvwaddstr(view->win, view->curr_line, 1, file_name);
 
-	snprintf(file_name, view->window_width - 2, " %s", 
-			view->dir_entry[pos].name);
+    print_width = get_real_string_width(view->dir_entry[pos].name,
+            view->window_width - 2) + 2;
+	snprintf(file_name, print_width, " %s", view->dir_entry[pos].name);
 
 	mvwaddstr(view->win, view->curr_line, 0, file_name);
 	add_sort_type_info(view, view->curr_line, pos, 1);
@@ -947,7 +958,6 @@ change_directory(FileView *view, char *directory)
 		return;
 	}
 
-
 	clean_selected_files(view);
     draw_dir_list(view, view->top_line, view->list_pos);
 
@@ -1166,7 +1176,6 @@ load_dir_list(FileView *view, int reload)
 	if(!reload)
 		check_view_dir_history(view);
 
-
 	/*
 	 * It is possible to set the file name filter so that no files are showing
 	 * in the / directory.  All other directorys will always show at least the
@@ -1191,6 +1200,7 @@ load_dir_list(FileView *view, int reload)
 			view->invert = 0;
 
 		load_dir_list(view, 1);
+
 		draw_dir_list(view, view->top_line, view->list_pos);
 		return;
 	}

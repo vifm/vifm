@@ -34,21 +34,6 @@
 #include "menus.h"
 #include "status.h"
 
-/*
-#ifndef OFF_T_MAX
-# define OFF_T_MAX TYPE_MAXIMUM(off_t)
-#endif
-
-#ifndef OFF_T_MIN
-# define OFF_T_MIN TYPE_MINIMUM(off_t)
-#endif
-
-uintmax_t
-unsigned_file_size(off_t size)
-{
-	return size + (size < 0) * ((uintmax_t) OFF_T_MAX - OFF_T_MIN + 1);
-}
-*/
 
 void
 get_perm_string (char * buf, int len, mode_t mode)
@@ -110,7 +95,7 @@ show_full_file_properties(FileView *view)
 	snprintf(name_buf, sizeof(name_buf), "%s", 
 			view->dir_entry[view->list_pos].name);
 
-	friendly_size_notation(view->dir_entry[view->list_pos].size,
+	friendly_size_notation(view->dir_entry[view->list_pos].size, 
             sizeof(size_buf), size_buf);
 	
 	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)

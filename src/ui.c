@@ -72,15 +72,19 @@ write_stat_win(char *message)
 void
 update_stat_window(FileView *view)
 {
-	char name_buf[20];
+	char name_buf[40];
 	char perm_buf[26];
 	char size_buf[56];
 	char uid_buf[26];
 	struct passwd *pwd_buf;
 	int x, y;
+    size_t print_width;
+    char *current_file;
 
 	getmaxyx(stat_win, y, x);
-	snprintf(name_buf, sizeof(name_buf), "%s", get_current_file_name(view));
+    current_file = get_current_file_name(view);
+    print_width = get_real_string_width(current_file, sizeof(name_buf)/2);
+	snprintf(name_buf, print_width + 1, "%s", current_file);
     friendly_size_notation(view->dir_entry[view->list_pos].size, 
             sizeof(size_buf), size_buf);
 	
@@ -181,7 +185,7 @@ setup_ncurses_interface()
 	werase(lborder);
 
 	if (curr_stats.number_of_windows == 1)
-		lwin.title = newwin(1, screen_x -2, 0, 1);
+		lwin.title = newwin(0, screen_x -2, 0, 1);
 	else
 		lwin.title = newwin(1, screen_x/2 -1, 0, 1);
 		

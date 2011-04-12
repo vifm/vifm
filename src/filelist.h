@@ -33,6 +33,7 @@ enum {
 };
 
 
+void friendly_size_notation(int num, int str_size, char *str);
 void quick_view_file(FileView * view);
 void change_directory(FileView *view, char *directory);
 void load_dir_list(FileView *view, int reload);
