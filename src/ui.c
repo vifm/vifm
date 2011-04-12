@@ -181,9 +181,9 @@ setup_ncurses_interface()
 	werase(lborder);
 
 	if (curr_stats.number_of_windows == 1)
-		lwin.title = newwin(0, screen_x -2, 0, 1);
+		lwin.title = newwin(1, screen_x -2, 0, 1);
 	else
-		lwin.title = newwin(0, screen_x/2 -1, 0, 1);
+		lwin.title = newwin(1, screen_x/2 -1, 0, 1);
 		
 	wattrset(lwin.title, A_BOLD);
 	wbkgdset(lwin.title, COLOR_PAIR(BORDER_COLOR));
