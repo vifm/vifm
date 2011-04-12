@@ -132,7 +132,7 @@ rename_file(FileView *view)
 	char * filename = get_current_file_name(view);
 	char command[1024];
 	int key;
-	int pos = strlen(filename) + 1;
+	int pos = get_utf8_string_length(filename) + 1;
 	int index = pos - 1;
 	int done = 0;
 	int abort = 0;
@@ -148,7 +148,7 @@ rename_file(FileView *view)
 	memset(buf, '\0', view->window_width -2);
 	strncpy(buf, filename, sizeof(buf));
 	len = strlen(filename);
-	wmove(view->win, view->curr_line, strlen(filename) + 1);
+	wmove(view->win, view->curr_line, pos);
 
 	curs_set(1);
 
@@ -226,26 +226,40 @@ rename_file(FileView *view)
 					wmove(view->win, view->curr_line, pos);
 				}
 				break;
+            case -1:
+                break;
 			default:
-				if(key > 31 && key < 127) 
 				{
-					mvwaddch(view->win, view->curr_line, pos, key);
-					buf[index] = key;
-					index++;
-					buf[index] = '\0';
-					if(len < index)
-					{
-						len++;
-						buf[index] = '\0';
-					}
-					if(index > 62)
-					{
-						abort = 1;
-						done = 1;
-					}
+                    char char_buf[5];
+                    size_t i, width = guess_char_width(key);
+                    for (i = 0; i < width; ++i)
+                    {
+                        buf[index++] = key;
+                        char_buf[i] = key;
+                        buf[index] = '\0';
+                        if(len < index)
+                        {
+                            len++;
+                            buf[index] = '\0';
+                        }
+                        if(index > 62)
+                        {
+                            abort = 1;
+                            done = 1;
+                            break;
+                        }
 
-					pos++;
-					len++;
+                        len++;
+
+                        if (i != width - 1) {
+                            key = wgetch(view->win);
+                        }
+                    }
+                    if(!done) {
+                        char_buf[i] = '\0';
+                        mvwaddstr(view->win, view->curr_line, pos, char_buf);
+                        pos++;
+                    }
 				}
 				break;
 		}
