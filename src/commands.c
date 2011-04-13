@@ -846,72 +846,72 @@ static int
 select_files_in_range(FileView *view, cmd_t * cmd)
 {
 
-				int x;
-				int y = 0;
+		int x;
+		int y = 0;
 
-				/* Both a starting range and an ending range are given. */
-				if(cmd->start_range > -1)
+		/* Both a starting range and an ending range are given. */
+		if(cmd->start_range > -1)
+		{
+			if(cmd->end_range < cmd->start_range)
+			{
+				show_error_msg(" Command Error ", "Backward range given.");
+				//save_msg = 1;
+				//break;
+			}
+
+			for(x = 0; x < view->list_rows; x++)
+				view->dir_entry[x].selected = 0;
+
+			for(x = cmd->start_range; x <= cmd->end_range; x++)
+			{
+				view->dir_entry[x].selected = 1;
+				y++;
+			}
+			view->selected_files = y;
+		}
+		/* A count is given */
+		else if(cmd->count)
+		{
+			if(!cmd->count)
+				cmd->count = 1;
+
+			/* A one digit range with a count. :4y5 */
+			if(cmd->end_range)
+			{
+				y = 0;
+				for(x = 0; x < view->list_rows; x++)
+					view->dir_entry[x].selected = 0;
+
+				for(x = cmd->end_range; x < view->list_rows; x++)
 				{
-					if(cmd->end_range < cmd->start_range)
-					{
-						show_error_msg(" Command Error ", "Backward range given.");
-						//save_msg = 1;
-						//break;
-					}
+					if(cmd->count == y)
+						break;
+					view->dir_entry[x].selected = 1;
+					y++;
 
-					for(x = 0; x < view->list_rows; x++)
-						view->dir_entry[x].selected = 0;
-
-					for(x = cmd->start_range; x <= cmd->end_range; x++)
-					{
-						view->dir_entry[x].selected = 1;
-						y++;
-					}
-					view->selected_files = y;
 				}
-				/* A count is given */
-				else if(cmd->count)
+				view->selected_files = y;
+			}
+			/* Just a count is given. */
+			else
+			{
+				y = 0;
+
+				for(x = 0; x < view->list_rows; x++)
+					view->dir_entry[x].selected = 0;
+
+				for(x = view->list_pos; x < view->list_rows; x++)
 				{
-					if(!cmd->count)
-						cmd->count = 1;
+					if(cmd->count == y )
+						break;
 
-					/* A one digit range with a count. :4y5 */
-					if(cmd->end_range)
-					{
-						y = 0;
-						for(x = 0; x < view->list_rows; x++)
-							view->dir_entry[x].selected = 0;
-
-						for(x = cmd->end_range; x < view->list_rows; x++)
-						{
-							if(cmd->count == y)
-								break;
-							view->dir_entry[x].selected = 1;
-							y++;
-
-						}
-						view->selected_files = y;
-					}
-					/* Just a count is given. */
-					else
-					{
-						y = 0;
-
-						for(x = 0; x < view->list_rows; x++)
-							view->dir_entry[x].selected = 0;
-
-						for(x = view->list_pos; x < view->list_rows; x++)
-						{
-							if(cmd->count == y )
-								break;
-
-							view->dir_entry[x].selected = 1;
-							y++;
-						}
-						view->selected_files = y;
-
-					}
+					view->dir_entry[x].selected = 1;
+					y++;
 				}
+				view->selected_files = y;
+
+			}
+		}
 
 	return 0;
 }
@@ -1574,10 +1574,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 
 	if (view->selected_files)
 	{
-		int x;
-		for (x = 0; x < view->list_rows; x++)
-			view->dir_entry[x].selected = 0;
-		view->selected_files = 0;
+		clean_selected_files(view);
 		draw_dir_list(view, view->top_line, view->list_pos);
 		moveto_list_pos(view, view->list_pos);
 	}

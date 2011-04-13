@@ -731,16 +731,14 @@ check_view_dir_history(FileView *view)
 void
 clean_selected_files(FileView *view)
 {
-	int x;
-
 	if(view->selected_files)
 	{
+		int x;
 		for(x = 0; x < view->list_rows; x++)
 			view->dir_entry[x].selected = 0;
 
 		view->selected_files = 0;
 	}
-
 }
 
 /*

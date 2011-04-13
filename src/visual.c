@@ -42,8 +42,8 @@ select_up_one(FileView *view, int start_pos) {
 		{
 			if(start_pos == 0)
 			{
-		view->dir_entry[view->list_pos +1].selected = 0;
-		view->selected_files = 0;
+				view->dir_entry[view->list_pos +1].selected = 0;
+				view->selected_files = 0;
 			}
 		}
 	else if(view->list_pos < start_pos)
@@ -254,14 +254,7 @@ visual_key_cb(FileView *view)
 		}
 		if(abort)
 		{
-			int x;
-			if(view->selected_files)
-			{
-				for(x = 0; x < view->list_rows; x++)
-					view->dir_entry[x].selected = 0;
-
-				view->selected_files = 0;
-			}
+			clean_selected_files(view);
 			done = 1;
 		}
 

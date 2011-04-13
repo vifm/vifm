@@ -178,11 +178,11 @@ restore_filename_filter(FileView *view)
 static void
 yank_files(FileView *view, int count, char *count_buf)
 {
-	int x;
 	char buf[32];
 
 	if(count)
 	{
+		int x;
 		int y = view->list_pos;
 
 		for(x = 0; x < view->list_rows; x++)
@@ -208,10 +208,7 @@ yank_files(FileView *view, int count, char *count_buf)
 	free_selected_file_array(view);
 	count = view->selected_files;
 
-	for(x = 0; x < view->list_rows; x++)
-		view->dir_entry[x].selected = 0;
-
-	view->selected_files = 0;
+	clean_selected_files(view);
 
 	draw_dir_list(view, view->top_line, view->list_pos);
 	moveto_list_pos(view, view->list_pos);
@@ -781,16 +778,9 @@ main_key_press_cb(FileView *view)
 				break;
 			case 3: /* ascii Ctrl C */
 			case 27: /* ascii Escape */
-				{
-					int x;
-
-					for(x = 0; x < view->list_rows; x++)
-						view->dir_entry[x].selected = 0;
-
-					view->selected_files = 0;
-					redraw_window();
-					curs_set(0);
-				}
+				clean_selected_files(view);
+				redraw_window();
+				curs_set(0);
 				break;
 			case 4: /* ascii Ctrl D */
 				view->list_pos = view->list_pos + view->window_rows/2;
