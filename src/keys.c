@@ -540,96 +540,55 @@ filter_selected_files(FileView *view)
 	moveto_list_pos(view, 0);
 }
 
+static void
+update_view(FileView *win)
+{
+	touchwin(win->title);
+	touchwin(win->win);
+
+	redrawwin(win->title);
+	redrawwin(win->win);
+
+	wnoutrefresh(win->title);
+	wnoutrefresh(win->win);
+}
+
 void
 update_all_windows(void)
 {
+	touchwin(lborder);
+	touchwin(stat_win);
+	touchwin(status_bar);
+	touchwin(pos_win);
+	touchwin(num_win);
+	touchwin(rborder);
+
+	/*
+	 * redrawwin() shouldn't be needed.  But without it there is a
+	 * lot of flickering when redrawing the windows?
+	 */
+
+	redrawwin(lborder);
+	redrawwin(stat_win);
+	redrawwin(status_bar);
+	redrawwin(pos_win);
+	redrawwin(num_win);
+	redrawwin(rborder);
+
 	/* In One window view */
 	if (curr_stats.number_of_windows == 1)
 	{
-		if (curr_view == &lwin)
-		{
-			touchwin(lwin.title);
-			touchwin(lwin.win);
-			touchwin(lborder);
-			touchwin(stat_win);
-			touchwin(status_bar);
-			touchwin(pos_win);
-			touchwin(num_win);
-			touchwin(rborder);
-
-			/*
-			 * redrawwin() shouldn't be needed.  But without it there is a
-			 * lot of flickering when redrawing the windows?
-			 */
-
-			redrawwin(lborder);
-			redrawwin(stat_win);
-			redrawwin(status_bar);
-			redrawwin(pos_win);
-			redrawwin(lwin.title);
-			redrawwin(lwin.win);
-			redrawwin(num_win);
-			redrawwin(rborder);
-
-			wnoutrefresh(lwin.title);
-			wnoutrefresh(lwin.win);
-		}
-		else
-		{
-			touchwin(rwin.title);
-			touchwin(rwin.win);
-			touchwin(lborder);
-			touchwin(stat_win);
-			touchwin(status_bar);
-			touchwin(pos_win);
-			touchwin(num_win);
-			touchwin(rborder);
-
-			redrawwin(rwin.title);
-			redrawwin(rwin.win);
-			redrawwin(lborder);
-			redrawwin(stat_win);
-			redrawwin(status_bar);
-			redrawwin(pos_win);
-			redrawwin(num_win);
-			redrawwin(rborder);
-
-			wnoutrefresh(rwin.title);
-			wnoutrefresh(rwin.win);
-		}
+		update_view(curr_view);
 	}
 	/* Two Pane View */
 	else
 	{
-		touchwin(lwin.title);
-		touchwin(lwin.win);
 		touchwin(mborder);
-		touchwin(rwin.title);
-		touchwin(rwin.win);
-		touchwin(lborder);
-		touchwin(stat_win);
-		touchwin(status_bar);
-		touchwin(pos_win);
-		touchwin(num_win);
-		touchwin(rborder);
-
-		redrawwin(lwin.title);
-		redrawwin(lwin.win);
 		redrawwin(mborder);
-		redrawwin(rwin.title);
-		redrawwin(rwin.win);
-		redrawwin(lborder);
-		redrawwin(stat_win);
-		redrawwin(status_bar);
-		redrawwin(pos_win);
-		redrawwin(num_win);
-		redrawwin(rborder);
-
-		wnoutrefresh(lwin.title);
-		wnoutrefresh(lwin.win);
 		wnoutrefresh(mborder);
-		wnoutrefresh(rwin.title);
-		wnoutrefresh(rwin.win);
+
+		update_view(&lwin);
+		update_view(&rwin);
 	}
 
 	wnoutrefresh(lborder);
