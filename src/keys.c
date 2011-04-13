@@ -749,7 +749,7 @@ main_key_press_cb(FileView *view)
 			case 4: /* ascii Ctrl D */
 				view->list_pos = view->list_pos + view->window_rows/2;
 				moveto_list_pos(view, view->list_pos);
-								break;
+				break;
 			case 6: /* ascii Ctrl F */
 			case KEY_NPAGE:
 				view->list_pos = view->list_pos + view->window_rows;
@@ -809,7 +809,7 @@ main_key_press_cb(FileView *view)
 				if(count)
 				{
 					int percent = atoi(count_buf);
-					int line =	(percent * (view->list_rows)/100);
+					int line = (percent * (view->list_rows)/100);
 					moveto_list_pos(view, line -1);
 					reset_last_char = 1;
 				}
@@ -1054,23 +1054,32 @@ main_key_press_cb(FileView *view)
 			case 'z': /* zz redraw with file in center of list */
 				if(curr_stats.last_char == 'z')
 				{
-
+					if(view->list_rows <= view->window_rows)
+						break;
+					else if(view->list_pos < view->window_rows/2)
+						view->top_line = 0;
+					else if(view->list_pos > view->list_rows - view->window_rows/2)
+						view->top_line = view->list_rows - view->window_rows;
+					else
+						view->top_line = view->list_pos - view->window_rows/2;
+					draw_dir_list(view, view->top_line, view->curr_line);
+					moveto_list_pos(view, view->list_pos);
 				}
-								else
-										update_num_window("z");
+				else
+					update_num_window("z");
 				break;
 			case 'Q': /* ZQ quit */
 			case 'Z': /* ZZ quit */
 				{
 					if(curr_stats.last_char == 'Z')
 					{
-												comm_quit();
-										}
-										else
-												if(key == 'Z')
-														update_num_window("Z");
-								}
-								break;
+						comm_quit();
+					}
+					else
+						if(key == 'Z')
+							update_num_window("Z");
+				}
+				break;
 			default:
 				break;
 		} /* end of switch(key) */
