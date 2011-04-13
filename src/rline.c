@@ -39,8 +39,6 @@
 #include"status.h"
 #include"utils.h"
 
-#define CMD_MAX_LEN 62
-
 struct line_stats
 {
 	int type;				/* type */

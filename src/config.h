@@ -22,7 +22,9 @@
 #include<limits.h>
 #include<ncurses.h>
 
-#define KEYPRESS_TIMEOUT 1000 // 1 second
+#define KEYPRESS_TIMEOUT 1000 /* 1 second */
+
+#define CMD_MAX_LEN 62 /* TODO figure out why */
 
 typedef struct _Config {
 	char config_dir[PATH_MAX];

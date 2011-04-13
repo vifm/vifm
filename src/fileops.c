@@ -1273,7 +1273,7 @@ rename_file(FileView *view)
 					for(i = 0; i < width; ++i)
 					{
 						buf[index++] = key;
-						if(index > 62)
+						if(index > CMD_MAX_LEN)
 						{
 							abort = 1;
 							done = 1;

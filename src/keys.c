@@ -749,7 +749,7 @@ main_key_press_cb(FileView *view)
 		}
 		else if((key > 47) && (key < 58)) /* ascii 0 - 9 */
 		{
-			if (count > 62)
+			if (count > CMD_MAX_LEN)
 			{
 				show_error_msg(" Number is too large ",
 						"Vifm cannot handle that large of a number as a count. ");
