@@ -282,7 +282,7 @@ rename_file(FileView *view)
                 index = len;
                 wmove(view->win, view->curr_line, pos);
                 break;
-            case -1: /* timeout */
+            case ERR: /* timeout */
                 break;
 			default:
 				{

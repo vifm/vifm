@@ -981,11 +981,10 @@ my_rl_gets(int type)
     werase(status_bar);
     wnoutrefresh(status_bar);
 
-    if (!stat.line)
-        return NULL;
-    
-    if (!stat.line[0] || abort)
+    if (!stat.line || !stat.line[0] || abort)
     {
+        if (abort && stat.len > CMD_MAX_LEN)
+			show_error_msg(" Error ", "Too long command line");
         free(stat.line);
         return NULL;
     }
