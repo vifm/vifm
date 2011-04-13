@@ -44,4 +44,5 @@ size_t get_char_width(char* string);
 size_t get_real_string_width(char *string, size_t max_len);
 size_t get_utf8_string_length(char *string);
 size_t get_utf8_prev_width(char *string, size_t cut_length);
+
 #endif

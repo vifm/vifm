@@ -16,6 +16,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifndef __BACKGROUND_H__
+#define __BACKGROUND_H__
+
 #include<sys/types.h>
 
 typedef struct Jobs_List {
@@ -43,3 +46,4 @@ void add_finished_job(pid_t pid, int status);
 void check_background_jobs(void);
 void update_jobs_list(void);
 
+#endif

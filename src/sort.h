@@ -16,7 +16,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifndef __SORT_H__
+#define __SORT_H__
+
 #include "ui.h"
 
 void show_sort_menu(FileView *view);
 int sort_dir_list(const void *one, const void *tow);
+
+#endif

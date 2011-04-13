@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifndef __STATUS_H__
+#define __STATUS_H__
 
 #include <sys/stat.h>
 
@@ -46,3 +48,5 @@ typedef struct
 }Status;
 
 extern Status curr_stats;
+
+#endif

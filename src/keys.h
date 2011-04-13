@@ -41,6 +41,5 @@ void show_dot_files(FileView *view);
 void remove_filename_filter(FileView *view);
 void rename_file(FileView *view);
 void switch_views(void);
+
 #endif
-
-

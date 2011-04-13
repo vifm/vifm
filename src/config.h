@@ -22,7 +22,6 @@
 #include<limits.h>
 #include<ncurses.h>
 
-
 typedef struct _Config {
 	char config_dir[PATH_MAX];
 	char trash_dir[PATH_MAX];

@@ -16,8 +16,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifndef __SEARCH_H__
+#define __SEARCH_H__
+
 #include "ui.h"
 
 int find_pattern(FileView *view, char *pattern);
 void find_next_pattern(FileView *view);
 void find_previous_pattern(FileView *view);
+
+#endif

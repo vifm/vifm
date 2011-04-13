@@ -38,5 +38,4 @@ int search_menu_list(FileView *view, char * command, void * ptr);
 int execute_menu_command(FileView *view, char * command, void * ptr);
 int query_user_menu(char *title, char *message);
 
-
 #endif

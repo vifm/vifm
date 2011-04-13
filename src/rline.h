@@ -20,4 +20,5 @@
 #define __RLINE_H__
 
 char * my_rl_gets(int type);
+
 #endif

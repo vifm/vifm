@@ -127,4 +127,5 @@ void update_stat_window(FileView *view);
 void redraw_window();
 void write_stat_win(char *message);
 void update_pos_window(FileView *view);
+
 #endif

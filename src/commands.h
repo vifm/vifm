@@ -16,6 +16,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifndef __COMMANDS_H__
+#define __COMMANDS_H__
+
 #include "ui.h"
 
 typedef struct
@@ -39,3 +42,5 @@ char * command_completion(char *str);
 char * expand_macros(FileView *view, char *command, char *args, int *menu, int *split);
 void remove_command(char *name);
 void comm_quit();
+
+#endif

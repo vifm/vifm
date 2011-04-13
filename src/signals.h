@@ -16,5 +16,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifndef __SIGNALS_H__
+#define __SIGNALS_H__
 
 void setup_signals(void);
+
+#endif
