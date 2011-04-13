@@ -239,7 +239,14 @@ setup_ncurses_interface()
 	rwin.window_rows = y - 1;
 	rwin.window_width = x -1;
 
-	rborder = newwin(screen_y - 2, 1, 0, screen_x -1);
+	if (screen_x % 2)
+	{
+		rborder = newwin(screen_y - 2, 2, 0, screen_x -2);
+	}
+	else
+	{
+		rborder = newwin(screen_y - 2, 1, 0, screen_x -1);
+	}
 
 	wbkgdset(rborder, COLOR_PAIR(BORDER_COLOR));
 
