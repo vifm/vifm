@@ -140,38 +140,39 @@ write_string_to_file(char *filename, char *string)
 size_t
 guess_char_width(char c)
 {
-	if ((c & 0xe0) == 0xc0) {
+	if ((c & 0xe0) == 0xc0)
 		return 2;
-	} else if ((c & 0xf0) == 0xe0) {
+	else if ((c & 0xf0) == 0xe0)
 		return 3;
-	} else if ((c & 0xf8) == 0xf0) {
+	else if ((c & 0xf8) == 0xf0)
 		return 4;
-	} else {
+	else
 		return 1;
-	}
 }
 
 size_t
 get_char_width(char* string)
 {
-	if ((string[0] & 0xe0) == 0xc0 && (string[1] & 0xc0) == 0x80) {
+	if((string[0] & 0xe0) == 0xc0 && (string[1] & 0xc0) == 0x80)
 		return 2;
-	} else if ((string[0] & 0xf0) == 0xe0 && (string[1] & 0xc0) == 0x80 &&
-			 (string[2] & 0xc0) == 0x80) {
+	else if((string[0] & 0xf0) == 0xe0 && (string[1] & 0xc0) == 0x80 &&
+			 (string[2] & 0xc0) == 0x80)
 		return 3;
-	} else if ((string[0] & 0xf8) == 0xf0 && (string[1] & 0xc0) == 0x80 &&
-			 (string[2] & 0xc0) == 0x80 && (string[3] & 0xc0) == 0x80) {
+	else if ((string[0] & 0xf8) == 0xf0 && (string[1] & 0xc0) == 0x80 &&
+			 (string[2] & 0xc0) == 0x80 && (string[3] & 0xc0) == 0x80)
 		return 4;
-	} else {
+	else if(string[0] == '\0')
+		return 0;
+	else
 		return 1;
-	}
 }
 
 size_t
 get_real_string_width(char *string, size_t max_len)
 {
 	size_t width = 0;
-	while (*string != '\0' && max_len-- != 0) {
+	while(*string != '\0' && max_len-- != 0)
+	{
 		size_t char_width = get_char_width(string);
 		width += char_width;
 		string += char_width;
@@ -184,7 +185,8 @@ size_t
 get_utf8_string_length(char *string)
 {
 	size_t length = 0;
-	while (*string != '\0') {
+	while(*string != '\0')
+	{
 		size_t char_width = get_char_width(string);
 		string += char_width;
 		length++;
@@ -198,9 +200,8 @@ get_utf8_prev_width(char *string, size_t cur_width)
 	size_t width = 0;
 	while (*string != '\0') {
 		size_t char_width = get_char_width(string);
-		if (width + char_width >= cur_width) {
+		if (width + char_width >= cur_width)
 			break;
-		}
 		width += char_width;
 		string += char_width;
 	}
