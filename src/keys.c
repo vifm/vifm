@@ -777,9 +777,11 @@ main_key_press_cb(FileView *view)
 			case 23: /* ascii Ctrl W - change windows */
 				{
 					int letter;
+					update_num_window("^W");
 					curr_stats.getting_input = 1;
 					letter = wgetch(view->win);
 					curr_stats.getting_input = 0;
+					clear_num_window();
 
 					if((letter == 'h') && (view->win == rwin.win))
 						change_window(&view);
@@ -799,9 +801,9 @@ main_key_press_cb(FileView *view)
 			case '?': /* search backwards */
 				break;
 			case '\'': /* mark */
-								update_num_window("'");
+				update_num_window("'");
 				curr_stats.save_msg = get_bookmark(view);
-								clear_num_window();
+				clear_num_window();
 				break;
 			case '%': /* Jump to percent of file. */
 				if(count)
