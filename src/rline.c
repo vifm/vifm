@@ -110,14 +110,14 @@ get_last_word(char * string)
 static char *
 filename_completion(char *str)
 {
-
 	static char *string;
 	static int offset;
+
 	DIR *dir;
 	struct dirent *d;
-	char * dirname = (char *)NULL;
-	char * filename = (char *)NULL;
-	char * temp =  (char *)NULL;
+	char * dirname = NULL;
+	char * filename = NULL;
+	char * temp = NULL;
 	int i = 0;
 	int found = 0;
 	int filename_len = 0;
@@ -206,47 +206,49 @@ filename_completion(char *str)
 
 	closedir(dir);
 
-	if (found)
+	if (!found)
 	{
-		int isdir = 0;
-		if (is_dir(d->d_name))
-		{
-			isdir = 1;
-		}
-		else if (strcmp(dirname, "."))
-		{
-			char * tempfile = (char *)NULL;
-			int len = strlen(dirname) + strlen(d->d_name) + 1;
-			tempfile = (char *)malloc((len) * sizeof(char));
-			if (!tempfile)
-				return NULL;
-			snprintf(tempfile, len, "%s%s", dirname, d->d_name);
-			if (is_dir(tempfile))
-				isdir = 1;
-			else
-				temp = strdup(d->d_name);
+		return NULL;
+	}
 
-			free(tempfile);
-		}
+	int isdir = 0;
+	if (is_dir(d->d_name))
+	{
+		isdir = 1;
+	}
+	else if (strcmp(dirname, "."))
+	{
+		char * tempfile = (char *)NULL;
+		int len = strlen(dirname) + strlen(d->d_name) + 1;
+		tempfile = (char *)malloc((len) * sizeof(char));
+		if (!tempfile)
+			return NULL;
+		snprintf(tempfile, len, "%s%s", dirname, d->d_name);
+		if (is_dir(tempfile))
+			isdir = 1;
 		else
 			temp = strdup(d->d_name);
 
-		if (isdir)
-		{
-			char * tempfile = (char *)NULL;
-			tempfile = (char *) malloc((strlen(d->d_name) + 2) * sizeof(char));
-			if (!tempfile)
-				return NULL;
-			snprintf(tempfile, strlen(d->d_name) + 2, "%s/", d->d_name);
-			temp = strdup(tempfile);
-
-			free(tempfile);
-		}
-
-		free(filename);
-		free(dirname);
-		return NULL;
+		free(tempfile);
 	}
+	else
+		temp = strdup(d->d_name);
+
+	if (isdir)
+	{
+		char * tempfile = (char *)NULL;
+		tempfile = (char *) malloc((strlen(d->d_name) + 2) * sizeof(char));
+		if (!tempfile)
+			return NULL;
+		snprintf(tempfile, strlen(d->d_name) + 2, "%s/", d->d_name);
+		temp = strdup(tempfile);
+
+		free(tempfile);
+	}
+
+	free(filename);
+	free(dirname);
+	return temp;
 }
 
 /* Insert a string into another string
