@@ -829,7 +829,9 @@ main_key_press_cb(FileView *view)
 					curr_stats.getting_input = 0;
 					clear_num_window();
 
-					if((letter == 'h') && (view->win == rwin.win))
+					if(letter == 23) /* Ctrl W + Ctrl W */
+						change_window(&view);
+					else if((letter == 'h') && (view->win == rwin.win))
 						change_window(&view);
 					else if((letter == 'l') && (view->win == lwin.win))
 						change_window(&view);

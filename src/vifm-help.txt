@@ -60,6 +60,7 @@ The basic vi key bindings are used to move through the files and popup
 	Ctrl-y - scroll pane one line up.
     Ctrl-w h - switch to the left pane.
     Ctrl-w l - switch to the right pane.
+    Ctrl-w Ctrl-w - switch to other pane.
 
 	/regular expression pattern - will highlight all files matching the pattern
 	in the current file list. /\.c$ would highlight all the .c files.
