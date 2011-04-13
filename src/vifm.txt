@@ -157,6 +157,7 @@ v, V - start visual selection of files.
 <Return>, l - handle file (run executable when RUN_EXECUTABLE is set)
 i - handle file (even through it's executable and RUN_EXECUTABLE is set) 
 ZZ, ZE - same as :q<Return>
+Ctrl-W h/Ctrl-W l - switch to left or right pane
 
 --------------------------------------------------------------------------------
 *Options*

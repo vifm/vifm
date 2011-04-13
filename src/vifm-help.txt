@@ -52,6 +52,8 @@ The basic vi key bindings are used to move through the files and popup
 	Ctrl-f - jump forward one page.
 	Ctrl-d - jump back one half page.
 	Ctrl-u - jump forward one half page.
+    Ctrl-w h - switch to the left pane.
+    Ctrl-w l - switch to the right pane.
 
 	/regular expression pattern - will highlight all files matching the pattern 
 	in the current file list. /\.c$ would highlight all the .c files.
