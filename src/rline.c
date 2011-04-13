@@ -41,16 +41,15 @@
 
 struct line_stats
 {
-	int type;				/* type */
-	wchar_t *line;			/* the line reading */
-	int index;				/* index of the current character */
-	int curs_pos;			/* position of the cursor */
-	int len;				/* length of the string */
-	int cmd_pos;			/* position in the historys */
-	wchar_t prompt[8];		/* prompt */
-	int prompt_wid;			/* width of prompt */
-	int complete_continue;	/* If non-zero,
-							   continue the previous completion */
+	int type;              /* type */
+	wchar_t *line;         /* the line reading */
+	int index;             /* index of the current character */
+	int curs_pos;          /* position of the cursor */
+	int len;               /* length of the string */
+	int cmd_pos;           /* position in the history */
+	wchar_t prompt[8];     /* prompt */
+	int prompt_wid;        /* width of prompt */
+	int complete_continue; /* If non-zero, continue the previous completion */
 };
 
 static char *
@@ -960,6 +959,7 @@ my_rl_gets(int type)
 				wcsins(stat.line, key, stat.index);
 				stat.len++;
 
+				mvwaddwstr(status_bar, 0, 0, stat.prompt);
 				mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
 
 				stat.curs_pos += wcwidth(*key);

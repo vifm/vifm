@@ -49,7 +49,7 @@ my_system(char *command)
 	int status;
 	extern char **environ;
 
-	if(command == 0)
+	if(command == NULL)
 		return 1;
 
 	pid = fork();
