@@ -657,12 +657,18 @@ my_rl_gets(int type)
 	stat.prompt_wid = stat.curs_pos = wcslen(stat.prompt);
 
 	curs_set(1);
+	wresize(status_bar, 1, getmaxx(stdscr));
 	werase(status_bar);
 
 	mvwaddwstr(status_bar, 0, 0, stat.prompt);
 
 	while (!done)
 	{
+		int line_width;
+		line_width = getmaxx(stdscr);
+		/* FIXME looks bad after terminal is resized
+		 * maybe store somewhere parameters and restore them every time */
+		wresize(status_bar, getmaxy(status_bar), getmaxx(stdscr));
 		if(curr_stats.freeze)
 		  continue;
 
@@ -685,7 +691,18 @@ my_rl_gets(int type)
 				if (   stat.type != MENU_SEARCH && stat.type != MENU_COMMAND
 					&& stat.line )
 				{
+					int len;
 					line_completion(&stat);
+					len = (1 + stat.len + line_width - 1 + 1)/line_width;
+					if (len > getmaxy(status_bar))
+					{
+						int delta = len - getmaxy(status_bar);
+						mvwin(status_bar, getbegy(status_bar) - delta, 0);
+						wresize(status_bar, getmaxy(status_bar) + delta, line_width);
+						werase(status_bar);
+						mvwaddwstr(status_bar, 0, 0, stat.prompt);
+						mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
+					}
 				}
 				break;
 			case 16: /* ascii Ctrl P */
@@ -715,6 +732,13 @@ my_rl_gets(int type)
 					stat.curs_pos = stat.prompt_wid
 									 + wcswidth(stat.line, stat.len);
 					stat.index = stat.len;
+
+					if (stat.len >= line_width - 1)
+					{
+						int new_height = (1 + stat.len + 1 + line_width - 1)/line_width;
+						mvwin(status_bar, getbegy(status_bar) - (new_height - 1), 0);
+						wresize(status_bar, new_height, line_width);
+					}
 
 					werase(status_bar);
 					mvwaddwstr(status_bar, 0, 0, stat.prompt);
@@ -831,7 +855,7 @@ my_rl_gets(int type)
 				{
 					stat.index--;
 					stat.curs_pos -= wcwidth(stat.line[stat.index]);
-					wmove(status_bar, 0, stat.curs_pos);
+					wmove(status_bar, stat.curs_pos/line_width, stat.curs_pos%line_width);
 				}
 				break;
 			case KEY_RIGHT:
@@ -842,7 +866,7 @@ my_rl_gets(int type)
 				{
 					stat.curs_pos += wcwidth(stat.line[stat.index]);
 					stat.index++;
-					wmove(status_bar, 0, stat.curs_pos);
+					wmove(status_bar, stat.curs_pos/line_width, stat.curs_pos%line_width);
 				}
 				break;
 			case 127: /* ascii Delete */
@@ -868,10 +892,12 @@ my_rl_gets(int type)
 					w = wcwidth(stat.line[stat.index]);
 					while (i - stat.curs_pos < w)
 					{
-						mvwaddch(status_bar, 0, stat.curs_pos, ' ');
+						mvwaddch(status_bar, stat.curs_pos/line_width,
+								stat.curs_pos%line_width, ' ');
 						stat.curs_pos--;
 					}
-					mvwaddch(status_bar, 0, stat.curs_pos, ' ');
+					mvwaddch(status_bar, stat.curs_pos/line_width,
+							stat.curs_pos%line_width, ' ');
 
 					stat.line[stat.index] = L'\0';
 				}
@@ -888,7 +914,7 @@ my_rl_gets(int type)
 					mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
 				}
 
-				wmove(status_bar, 0, stat.curs_pos);
+				wmove(status_bar, stat.curs_pos/line_width, stat.curs_pos%line_width);
 				break;
 			case 21: /* ascii Ctrl U */
 				stat.complete_continue = 0;
@@ -923,7 +949,7 @@ my_rl_gets(int type)
 				mvwaddwstr(status_bar, 0, 0, stat.prompt);
 				mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
 
-				wmove(status_bar, 0, stat.curs_pos);
+				wmove(status_bar, stat.curs_pos/line_width, stat.curs_pos%line_width);
 				break;
 			default:
 				if (	stat.complete_continue == 1
@@ -959,6 +985,13 @@ my_rl_gets(int type)
 				wcsins(stat.line, key, stat.index);
 				stat.len++;
 
+				if ((stat.len + 1) % getmaxx(status_bar) == 0)
+				{
+					mvwin(status_bar, getbegy(status_bar) - 1, 0);
+					wresize(status_bar, getmaxy(status_bar) + 1, getmaxx(status_bar));
+					werase(status_bar);
+				}
+
 				mvwaddwstr(status_bar, 0, 0, stat.prompt);
 				mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
 
@@ -970,6 +1003,12 @@ my_rl_gets(int type)
 	}
 
 	curs_set(0);
+	if (getmaxy(status_bar) > 1)
+	{
+		redraw_window();
+		mvwin(status_bar, getmaxy(stdscr) - 1, 0);
+		wresize(status_bar, 1, getmaxx(stdscr) -19);
+	}
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 

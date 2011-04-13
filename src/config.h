@@ -24,7 +24,7 @@
 
 #define KEYPRESS_TIMEOUT 1000 /* 1 second */
 
-#define CMD_MAX_LEN 62 /* TODO figure out why */
+#define CMD_MAX_LEN 6200000 /* TODO figure out why JUST TRYING */
 
 typedef struct _Config {
 	char config_dir[PATH_MAX];
