@@ -26,6 +26,7 @@ The basic vi key bindings are used to move through the files and popup
 		to the current directory if they were deleted with dd or :d or if the
 		files were yanked 'yy' from the Trash directory.
     ZZ, ZE - same as :q<Return>
+    . - repeat last command line command (not normal mode command).
 
 	Space or Tab to switch lists.
 

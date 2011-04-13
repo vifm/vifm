@@ -141,7 +141,7 @@ Most movement commands also accept a count 12j would move down 12 files.
 --------------------------------------------------------------------------------
 *Normal*
 
-/regular expression. - select files matching regular expression.
+/regular expression - select files matching regular expression.
 H - move to the first file in the window.
 L - move to the last file in the window.
 M - move to the file in the middle of the window.
@@ -157,6 +157,7 @@ v, V - start visual selection of files.
 <Return>, l - handle file (run executable when RUN_EXECUTABLE is set)
 i - handle file (even through it's executable and RUN_EXECUTABLE is set) 
 ZZ, ZE - same as :q<Return>
+. - repeat last command line command (not normal mode command).
 Ctrl-W h/Ctrl-W l - switch to left or right pane
 
 --------------------------------------------------------------------------------
