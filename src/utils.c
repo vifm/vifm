@@ -33,14 +33,6 @@
 struct Fuse_List *fuse_mounts = NULL;
 /*_SZ_END_*/
 
-/* Checks for a NULL pointer before calling free() */
-void
-my_free(void *stuff)
-{
-	if(stuff != NULL)
-		free(stuff);
-}
-
 int
 is_dir(char *file)
 {

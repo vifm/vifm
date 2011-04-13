@@ -92,7 +92,7 @@ clear_register(int key)
 			while (y)
 			{
 				y--;
-				my_free(reg[i].files[y]);
+				free(reg[i].files[y]);
 			}
 			reg[i].num_files = 0;
 			break;

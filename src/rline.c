@@ -171,8 +171,8 @@ filename_completion(char *str)
 
 	if(dir == NULL)
 	{
-		my_free(filename);
-		my_free(dirname);
+		free(filename);
+		free(dirname);
 		return NULL;
 	}
 
@@ -189,7 +189,7 @@ filename_completion(char *str)
                     offset = -1;
 
                     closedir(dir);
-                    my_free(dirname);
+                    free(dirname);
 
                     return strdup(filename);
                 }
@@ -226,7 +226,7 @@ filename_completion(char *str)
 			else
 				temp = strdup(d->d_name);
 
-			my_free(tempfile);
+			free(tempfile);
 		}
 		else
 			temp = strdup(d->d_name);
@@ -240,18 +240,11 @@ filename_completion(char *str)
 			snprintf(tempfile, strlen(d->d_name) + 2, "%s/", d->d_name);
 			temp = strdup(tempfile);
 
-			my_free(tempfile);
+			free(tempfile);
 		}
 
-		my_free(filename);
-		my_free(dirname);
-
-		return temp;
-	}
-	else
-	{
-		my_free(filename);
-		my_free(dirname);
+		free(filename);
+		free(dirname);
 		return NULL;
 	}
 }
@@ -339,7 +332,7 @@ line_completion(struct line_stats *stat)
 
         if (! (p = realloc(line_mb, i * sizeof(char))))
         {
-            my_free(line_mb);
+            free(line_mb);
             line_mb = NULL;
             return -1;
         }
@@ -373,9 +366,9 @@ line_completion(struct line_stats *stat)
 		{
             if (!stat->line)
             {
-                my_free(raw_name);
-                my_free(filename);
-                my_free(complete_command);
+                free(raw_name);
+                free(filename);
+                free(complete_command);
                 return 0;
             }
 
@@ -386,9 +379,9 @@ line_completion(struct line_stats *stat)
                 i = mbstowcs(NULL, complete_command, 0) + 1;
                 if (! (buf = (wchar_t *) malloc((i + 1) * sizeof(wchar_t))))
                 {
-                    my_free(raw_name);
-                    my_free(filename);
-                    my_free(complete_command);
+                    free(raw_name);
+                    free(filename);
+                    free(complete_command);
                     return -1;
                 }
                 mbstowcs(buf, complete_command, i);
@@ -399,9 +392,9 @@ line_completion(struct line_stats *stat)
 
                 if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
                 {
-                    my_free(raw_name);
-                    my_free(filename);
-                    my_free(complete_command);
+                    free(raw_name);
+                    free(filename);
+                    free(complete_command);
                     return -1;
                 }
                 stat->line = (wchar_t *) p;
@@ -420,9 +413,9 @@ line_completion(struct line_stats *stat)
                 i = mbstowcs(NULL, complete_command, 0) + 1;
                 if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
                 {
-                    my_free(raw_name);
-                    my_free(filename);
-                    my_free(complete_command);
+                    free(raw_name);
+                    free(filename);
+                    free(complete_command);
                     return -1;
                 }
                 stat->line = (wchar_t *) p;
@@ -439,9 +432,9 @@ line_completion(struct line_stats *stat)
             wmove(status_bar, 0, stat->curs_pos);
 		}
 
-        my_free(raw_name);
-        my_free(filename);
-		my_free(complete_command);
+        free(raw_name);
+        free(filename);
+		free(complete_command);
 
         stat->complete_continue = 1;
         return 0;
@@ -470,9 +463,9 @@ line_completion(struct line_stats *stat)
                          + stat->index) + 1) * sizeof(wchar_t));
                 if (!temp2)
                 {
-                    my_free(raw_name);
-                    my_free(filename);
-                    my_free(temp2);
+                    free(raw_name);
+                    free(filename);
+                    free(temp2);
                     return -1;
                 }
                 wcscpy(temp2, stat->line + stat->index);
@@ -483,9 +476,9 @@ line_completion(struct line_stats *stat)
                 if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
                 {
                     *temp = x;
-                    my_free(raw_name);
-                    my_free(filename);
-                    my_free(temp2);
+                    free(raw_name);
+                    free(filename);
+                    free(temp2);
                     return -1;
                 }
                 stat->line = (wchar_t *) p;
@@ -498,9 +491,9 @@ line_completion(struct line_stats *stat)
                 stat->len = i - 1;
 
                 *temp = x;
-                my_free(raw_name);
-                my_free(filename);
-                my_free(temp2);
+                free(raw_name);
+                free(filename);
+                free(temp2);
 		    }
 		    /* :command partial_filename anything_else... */
 		    else
@@ -516,9 +509,9 @@ line_completion(struct line_stats *stat)
                          + stat->index) + 1) * sizeof(wchar_t));
                 if (!temp2)
                 {
-                    my_free(raw_name);
-                    my_free(filename);
-                    my_free(temp2);
+                    free(raw_name);
+                    free(filename);
+                    free(temp2);
                     return -1;
                 }
                 wcscpy(temp2, stat->line + stat->index);
@@ -529,9 +522,9 @@ line_completion(struct line_stats *stat)
                 if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
                 {
                     *temp = x;
-                    my_free(raw_name);
-                    my_free(filename);
-                    my_free(temp2);
+                    free(raw_name);
+                    free(filename);
+                    free(temp2);
                     return -1;
                 }
                 stat->line = (wchar_t *) p;
@@ -544,9 +537,9 @@ line_completion(struct line_stats *stat)
                 stat->len = i - 1;
 
                 *temp = x;
-                my_free(raw_name);
-                my_free(filename);
-                my_free(temp2);
+                free(raw_name);
+                free(filename);
+                free(temp2);
 		    }
         }
 		/* :!partial_filename anthing_else...        or
@@ -564,9 +557,8 @@ line_completion(struct line_stats *stat)
                      + stat->index) + 1) * sizeof(wchar_t));
             if (!temp2)
             {
-                my_free(raw_name);
-                my_free(filename);
-                my_free(temp2);
+                free(raw_name);
+                free(filename);
                 return -1;
             }
             wcscpy(temp2, stat->line + stat->index);
@@ -577,9 +569,9 @@ line_completion(struct line_stats *stat)
 			if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
 			{
                 *temp = x;
-				my_free(raw_name);
-                my_free(filename);
-                my_free(temp2);
+				free(raw_name);
+                free(filename);
+                free(temp2);
                 return -1;
 			}
             stat->line = (wchar_t *) p;
@@ -592,17 +584,17 @@ line_completion(struct line_stats *stat)
             stat->len = i - 1;
 
             *temp = x;
-			my_free(raw_name);
-            my_free(filename);
-            my_free(temp2);
+			free(raw_name);
+            free(filename);
+            free(temp2);
 		}
 		/* error */
 		else
 		{
 			show_error_msg(" Debug Error ",
 					"Harmless error in rline.c line 564");
-			my_free(raw_name);
-            my_free(filename);
+			free(raw_name);
+            free(filename);
             return -1;
 		}
 
@@ -630,7 +622,7 @@ my_rl_gets(int type)
     int i;
 
     /* If the buffer has already been allocated, free the memory. */
-    my_free(line_read_mb);
+    free(line_read_mb);
     line_read_mb = (char *)NULL;
 
     stat.line = (wchar_t *) NULL;
@@ -999,7 +991,7 @@ my_rl_gets(int type)
     line_read_mb = p;
     wcstombs(line_read_mb, stat.line, i);
 
-    my_free(stat.line);
+    free(stat.line);
 
     return line_read_mb;
 }

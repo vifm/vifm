@@ -125,12 +125,9 @@ clear_filetypes(void)
 
 	for(x = 0; x < cfg.filetypes_num; x++)
 	{
-		if(filetypes[x].type)
-			free(filetypes[x].type);
-		if(filetypes[x].ext)
-			free(filetypes[x].ext);
-		if(filetypes[x].programs)
-			free(filetypes[x].programs);
+		free(filetypes[x].type);
+		free(filetypes[x].ext);
+		free(filetypes[x].programs);
 	}
 	cfg.filetypes_num = 0;
 }

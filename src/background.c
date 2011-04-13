@@ -126,7 +126,7 @@ check_background_jobs(void)
 			if (strlen(p->error_buf) > 1)
 			{
 				show_error_msg(" Background Process Error ", p->error_buf);
-				my_free(p->error_buf);
+				free(p->error_buf);
 				p->error_buf = (char *) calloc(1, sizeof(char));
 			}
 		}
@@ -141,12 +141,9 @@ check_background_jobs(void)
 				jobs = p->next;
 
 			p = p->next;
-			my_free(j->cmd);
-
-			if (strlen(j->error_buf))
-				my_free(j->error_buf);
-
-			my_free(j);
+			free(j->cmd);
+            free(j->error_buf);
+			free(j);
 		}
 		else
 		{
@@ -172,7 +169,7 @@ check_background_jobs(void)
 					fjobs = fj->next;
 
 				fj = fj->next;
-				my_free(j);
+				free(j);
 			}
 			else
 			{

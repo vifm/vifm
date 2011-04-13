@@ -380,7 +380,7 @@ expand_macros(FileView *view, char *command, char *args,
 									strlen(temp) +3);
 								strcat(expanded, temp);
 
-								my_free(temp);
+								free(temp);
 
 								strcat(expanded, " ");
 								len = strlen(expanded);
@@ -405,7 +405,7 @@ expand_macros(FileView *view, char *command, char *args,
 						expanded = (char *)realloc(expanded, strlen(expanded) + 
 							strlen(temp) +3);
 						strcat(expanded, temp);
-						my_free(temp);
+						free(temp);
 
 						len = strlen(expanded);
 					}
@@ -447,7 +447,7 @@ expand_macros(FileView *view, char *command, char *args,
 										strlen(temp +3));
 								strcat(expanded, temp);
 
-								my_free(temp);
+								free(temp);
 
 								strcat(expanded, " ");
 								len = strlen(expanded);
@@ -479,7 +479,7 @@ expand_macros(FileView *view, char *command, char *args,
 						expanded = (char *)realloc(expanded, strlen(expanded) +
 								strlen(temp) + 3);
 						strcat(expanded, temp);
-						my_free(temp);
+						free(temp);
 
 						len = strlen(expanded);
 					}
@@ -607,13 +607,9 @@ remove_command(char *name)
 			x++;
 		}
 
-		if(strlen(command_list[x].name))
-			my_free(command_list[x].name);
-
-		if(strlen(command_list[x].action))
-			my_free(command_list[x].action);
+        free(command_list[x].name);
+        free(command_list[x].action);
 		curr_stats.setting_change = 1;
-
 	}
 	else
 		show_error_msg(" Command Not Found ", s);
@@ -691,7 +687,7 @@ set_user_command(char * command, int overwrite, int background)
 	{
 		snprintf(buf, sizeof(buf), "%s is a reserved command name", com_name);
 		show_error_msg("", buf);
-		my_free(com_action);
+		free(com_action);
 		return;
 	}
 	if(command_is_being_used(com_name))
@@ -785,7 +781,7 @@ shellout(char *command, int pause)
 							title, command);
 				else
 					snprintf(buf, sizeof(buf), "screen -t \"%.10s\" sh -c \"%s\"", title, command);
-				my_free(title);
+				free(title);
 			}
 		}
 		else
@@ -1128,6 +1124,7 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 				strlen(reserved_commands[cmd->builtin]) +1);
 		snprintf(cmd->cmd_name, sizeof(reserved_commands[cmd->builtin]),
 				"%s", reserved_commands[cmd->builtin]);
+		return 1;
 	}
 	else if((cmd->is_user = is_user_command(cmd->cmd_name)) > -1)
 	{
@@ -1135,16 +1132,15 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 				strlen(command_list[cmd->is_user].name) + 1);
 		snprintf(cmd->cmd_name, sizeof(command_list[cmd->is_user].name),
 				"%s", command_list[cmd->is_user].name);
+		return 1;
 	}
 	else
 	{
-		my_free(cmd->cmd_name);
-		my_free(cmd->args);
+		free(cmd->cmd_name);
+		free(cmd->args);
 		status_bar_message("Unknown Command");
 		return -1;
 	}
-
-	return 1;
 }
 
 int
@@ -1183,7 +1179,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 						shellout(com +i, pause);
 					}
 					if(!cmd->background)
-						my_free(com);
+						free(com);
 						
 				}
 				else
@@ -1317,7 +1313,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 						snprintf(buf, sizeof(buf), "%s %s/%s", cfg.vi_command, 
 								view->curr_dir, temp); 
 						shellout(buf, 0);
-						my_free(temp);
+						free(temp);
 					}
 				}
 				else
@@ -1338,8 +1334,8 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 							"%s %s", cfg.vi_command, files);
 					
 					shellout(buf, 0);
-					my_free(files);
-					my_free(buf);
+					free(files);
+					free(buf);
 				}
 			}
 			break;
@@ -1618,7 +1614,7 @@ execute_user_command(FileView *view, cmd_t *cmd)
 		show_user_menu(view, expanded_com);
 
 		if(!cmd->background)
-			my_free(expanded_com);
+			free(expanded_com);
 
 		return 0;
 	}
@@ -1627,12 +1623,12 @@ execute_user_command(FileView *view, cmd_t *cmd)
 	{
 		if (!cfg.use_screen)
 		{
-			my_free(expanded_com);
+			free(expanded_com);
 			return 0;
 		}
 			
 		split_screen(view, expanded_com);
-		my_free(expanded_com);
+		free(expanded_com);
 		return 0;
 
 	}
@@ -1683,7 +1679,7 @@ execute_user_command(FileView *view, cmd_t *cmd)
 		shellout(expanded_com, 0);
 
 	if(!cmd->background)
-		my_free(expanded_com);
+		free(expanded_com);
 
 
 	if(view->selected_files)
@@ -1719,8 +1715,8 @@ execute_command(FileView *view, char *command)
 	else
 		execute_user_command(view, &cmd);
 
-	my_free(cmd.cmd_name);
-	my_free(cmd.args);
+	free(cmd.cmd_name);
+	free(cmd.args);
 
 	return 0;
 }

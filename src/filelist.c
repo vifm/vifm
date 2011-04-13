@@ -237,14 +237,9 @@ free_selected_file_array(FileView *view)
 	{
 		for(x = 0; x < view->selected_files; x++)
 		{
-			if(view->selected_filelist[x])
-			{
-				my_free(view->selected_filelist[x]);
-			}
-
+			free(view->selected_filelist[x]);
 		}
-		if(view->selected_filelist)
-			my_free(view->selected_filelist);
+		free(view->selected_filelist);
 		view->selected_filelist = NULL;
 	}
 }
@@ -831,7 +826,7 @@ change_directory(FileView *view, char *directory)
  			filen += strlen(runner->source_file_dir) + 1;
  			found = find_file_pos_in_list(view, filen);
 			moveto_list_pos(view, found);
- 			my_free(runner);
+ 			free(runner);
  			return;
  		}
  	}
@@ -1031,14 +1026,10 @@ load_dir_list(FileView *view, int reload)
 	{
 		for(x = 0; x < old_list; x++)
 		{
-			if(view->dir_entry[x].name)
-			{
-				my_free(view->dir_entry[x].name);
-				view->dir_entry[x].name = NULL;
-			}
+			free(view->dir_entry[x].name);
 		}
 
-		my_free(view->dir_entry);
+		free(view->dir_entry);
 		view->dir_entry = NULL;
 	}
 	view->dir_entry = (dir_entry_t *)malloc(sizeof(dir_entry_t));

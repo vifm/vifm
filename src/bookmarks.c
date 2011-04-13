@@ -84,8 +84,8 @@ void
 silent_remove_bookmark(const int x)
 {
 	curr_stats.setting_change = 1;
-	my_free(bookmarks[x].directory);
-	my_free(bookmarks[x].file);
+	free(bookmarks[x].directory);
+	free(bookmarks[x].file);
 	bookmarks[x].directory = NULL;
 	bookmarks[x].file = NULL;
 	/* decrease number of active bookmarks */

@@ -155,7 +155,7 @@ clean_menu_position(menu_info *m)
 
 	wattroff(menu_win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
 
-	my_free(buf);
+	free(buf);
 }
 
 void
@@ -198,7 +198,7 @@ truncated my messages by the last character.*/
 			done = 1;
 	}
 
-	my_free(dup);
+	free(dup);
 
 	curr_stats.freeze = 0;
 
@@ -218,20 +218,15 @@ reset_popup_menu(menu_info *m)
 {
 	int z;
 
-	if (m->args)
-		my_free(m->args);
+	free(m->args);
 
 	for (z = 0; z < m->len; z++)
 	{
-		if (m->data[z])
-			my_free(m->data[z]);
+		free(m->data[z]);
 	}
-	if (m->regexp)
-		my_free(m->regexp);
-	if (m->data)
-		my_free(m->data);
-	if (m->title)
-		my_free(m->title);
+	free(m->regexp);
+	free(m->data);
+	free(m->title);
 
 	werase(menu_win);
 	curr_stats.menu = 0;
@@ -326,7 +321,7 @@ moveto_menu_pos(FileView *view, int pos,  menu_info *m)
 	wattroff(menu_win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
 
 	m->pos = pos;
-	my_free(buf);
+	free(buf);
 	show_position_in_menu(m);
 }
 
@@ -543,10 +538,10 @@ execute_apropos_cb(FileView *view, menu_info *m)
 				man_page);
 
 		shellout(command, 0);
-		my_free(free_this);
+		free(free_this);
 	}
 	else
-		my_free(free_this);
+		free(free_this);
 
 }
 
@@ -599,7 +594,7 @@ execute_locate_cb(FileView *view, menu_info *m)
 			moveto_list_pos(view, find_file_pos_in_list(view, file));
 	}
 
-	my_free(free_this);
+	free(free_this);
 }
 
 static void
@@ -618,7 +613,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 			int m = 0;
 			char *expanded_command = expand_macros(view, prog_str, NULL, &m, 0);
 			shellout(expanded_command, 0);
-			my_free(expanded_command);
+			free(expanded_command);
 			return;
 		}
 		else
@@ -647,7 +642,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 					int m = 0;
 					char *expanded_command = expand_macros(view, prog_copy, NULL, &m, 0);
 					shellout(expanded_command, 0);
-					my_free(expanded_command);
+					free(expanded_command);
 					free(free_this);
 					return;
 				}
@@ -668,7 +663,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 			int m = 0;
 			char *expanded_command = expand_macros(view, prog_copy, NULL, &m, 0);
 			shellout(expanded_command, 0);
-			my_free(expanded_command);
+			free(expanded_command);
 			free(free_this);
 			return;
 		}
@@ -732,10 +727,8 @@ reload_bookmarks_menu_list(menu_info *m)
 
 	for (z = 0; z < m->len; z++)
 	{
-		if (m->data[z]) {
-			my_free(m->data[z]);
-            m->data[z] = NULL;
-        }
+        free(m->data[z]);
+        m->data[z] = NULL;
 	}
 
 	init_active_bookmarks();
@@ -773,8 +766,7 @@ reload_command_menu_list(menu_info *m)
 
 	for (z = 0; z < m->len; z++)
 	{
-		if (m->data[z])
-			my_free(m->data[z]);
+		free(m->data[z]);
 	}
 
 	m->len = cfg.command_num;
@@ -794,7 +786,7 @@ reload_command_menu_list(menu_info *m)
 		x++;
 		/* This will show the expanded command instead of the macros 
 		 * char *expanded = expand_macros(view, command_list[x].action, NULL);
-		 * my_free(expanded);
+		 * free(expanded);
 		*/
 	}
 }
@@ -821,8 +813,7 @@ menu_key_cb(FileView *view, menu_info *m)
 			case '/':
 				{
 					m->match_dir = NONE;
-					if (m->regexp)
-						my_free(m->regexp);
+					free(m->regexp);
 
 					get_command(view, MENU_SEARCH, m);
 				}
@@ -841,8 +832,7 @@ menu_key_cb(FileView *view, menu_info *m)
 				{
 					m->match_dir = UP;
 
-					if (m->regexp)
-						my_free(m->regexp);
+					free(m->regexp);
 
 					get_command(view, MENU_SEARCH, m);
 				}
@@ -1183,7 +1173,7 @@ show_commands_menu(FileView *view)
 		x++;
 		/* This will show the expanded command instead of the macros 
 		 * char *expanded = expand_macros(view, command_list[x].action, NULL);
-		 * my_free(expanded);
+		 * free(expanded);
 		*/
 	}
 
@@ -1703,7 +1693,7 @@ query_user_menu(char *title, char *message)
 			done = 1;
 	}
 
-	my_free(dup);
+	free(dup);
 
 	curr_stats.freeze = 0;
 
@@ -1722,8 +1712,3 @@ query_user_menu(char *title, char *message)
 	else
 		return 0;
 }
-
-
-
-
-

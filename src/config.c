@@ -215,9 +215,7 @@ read_config_file(void)
 		{
 			if(!strcmp(line, "VI_COMMAND"))
 			{
-				if(cfg.vi_command != NULL)
-					free(cfg.vi_command);
-
+				free(cfg.vi_command);
 				cfg.vi_command = strdup(s1);
 				continue;
 			}
@@ -300,9 +298,7 @@ read_config_file(void)
 /*_SZ_BEGIN_*/
 			if(!strcmp(line, "FUSE_HOME"))
 			{
-				if(cfg.fuse_home != NULL)
-					free(cfg.fuse_home);
-
+				free(cfg.fuse_home);
 				cfg.fuse_home = strdup(s1);
 				continue;
 			}

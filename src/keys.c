@@ -518,8 +518,8 @@ put_files_from_register(FileView *view)
 			if ( background_and_wait_for_errors(buf))
 				y++;
 		}
-		my_free(temp);
-		my_free(temp1);
+		free(temp);
+		free(temp1);
 	}
 
 	clear_register(curr_stats.curr_register);
@@ -589,8 +589,8 @@ put_files(FileView *view)
 				y++;
 		}
 
-		my_free(temp1);
-		my_free(temp2);
+		free(temp1);
+		free(temp2);
 	}
 
 	if (y)
@@ -746,7 +746,7 @@ filter_selected_files(FileView *view)
 							strlen(buf) +1);
 				strcat(view->filename_filter, buf);
 				view->filtered++;
-				my_free(buf);
+				free(buf);
 			}
 			else
 			{

@@ -109,13 +109,9 @@ yank_selected_files(FileView *view)
 	{
 		for(x = 0; x < old_list; x++)
 		{
-			if(curr_stats.yanked_files[x])
-			{
-				my_free(curr_stats.yanked_files[x]);
-				curr_stats.yanked_files[x] = NULL;
-			}
+			free(curr_stats.yanked_files[x]);
 		}
-		my_free(curr_stats.yanked_files);
+		free(curr_stats.yanked_files);
 		curr_stats.yanked_files = NULL;
 	}
 
@@ -181,7 +177,7 @@ view_file(FileView *view)
 	snprintf(command, sizeof(command), "%s %s", cfg.vi_command, filename);
 
 	shellout(command, 0);
-	my_free(filename);
+	free(filename);
 	curs_set(0);
 }
 
@@ -197,7 +193,7 @@ check_link_is_dir(FileView *view, int pos)
 
 	len = readlink (filename, linkto, sizeof (linkto));
 
-	my_free(filename);
+	free(filename);
 
 	if (len > 0)
 	{
@@ -263,7 +259,7 @@ handle_file(FileView *view, int dont_execute)
 					int s = 0;
 					char *command = expand_macros(view, program, NULL, &m, &s);
 					shellout(command, 0);
-					my_free(command);
+					free(command);
 					return;
 				}
 				else
@@ -274,8 +270,8 @@ handle_file(FileView *view, int dont_execute)
 
 					snprintf(buf, sizeof(buf), "%s %s", program, temp); 
 					shellout(buf, 0);
-					my_free(program);
-					my_free(temp);
+					free(program);
+					free(temp);
 					return;
 				}
 			}
@@ -451,7 +447,7 @@ handle_file(FileView *view, int dont_execute)
 				int s = 0;
 				char *command = expand_macros(view, program, NULL, &m, &s);
 				shellout(command, 0);
-				my_free(command);
+				free(command);
 				return;
 			}
 			else
@@ -462,8 +458,8 @@ handle_file(FileView *view, int dont_execute)
 
 				snprintf(buf, sizeof(buf), "%s %s", program, temp); 
 				shellout(buf, 0);
-				my_free(program);
-				my_free(temp);
+				free(program);
+				free(temp);
 				return;
 			}
 		}
@@ -483,7 +479,7 @@ handle_file(FileView *view, int dont_execute)
 
 		len = readlink (filename, linkto, sizeof (linkto));
 
-		my_free(filename);
+		free(filename);
 
 		if (len > 0)
 		{
@@ -544,8 +540,8 @@ handle_file(FileView *view, int dont_execute)
 				if(pos >= 0)
 					moveto_list_pos(view, pos);
 			}
-			my_free(link_dup);
-			my_free(dir);
+			free(link_dup);
+			free(dir);
 		}
 	  	else
 			status_bar_message("Couldn't Resolve Link");
@@ -675,8 +671,7 @@ file_chmod(FileView *view, char *path, char *mode, int recurse_dirs)
 
 	load_dir_list(view, 1);
 	moveto_list_pos(view, view->list_pos);
-	my_free(filename);
-  
+	free(filename);
 }
 
 static void
