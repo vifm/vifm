@@ -51,7 +51,7 @@ typedef struct _Config {
 	int show_one_window;
 	long max_args;
 	int using_default_config;
-    int use_iec_prefixes;
+	int use_iec_prefixes;
 /*_SZ_BEGIN*/
 	char *fuse_home;
 /*_SZ_END*/
@@ -65,3 +65,5 @@ void set_config_dir(void);
 void init_config(void);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

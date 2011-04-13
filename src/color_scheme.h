@@ -55,3 +55,5 @@ int check_directory_for_color_scheme(const char *);
 void load_color_scheme(char  *name, char *dir);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

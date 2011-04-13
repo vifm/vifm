@@ -54,7 +54,7 @@ typedef struct
 }history_t;
 
 
-typedef struct 
+typedef struct
 {
 	char *name;
 	off_t size;
@@ -83,7 +83,7 @@ typedef struct _FileView
 	char last_dir[PATH_MAX];
 	char regexp[256]; /* regular expression pattern for / searching */
 	char * prev_filter;
-	char * filename_filter; /* regexp for filtering files in dir list */ 
+	char * filename_filter; /* regexp for filtering files in dir list */
 	char sort_type;
 	int hide_dot;
 	int prev_invert;
@@ -129,3 +129,5 @@ void write_stat_win(char *message);
 void update_pos_window(FileView *view);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

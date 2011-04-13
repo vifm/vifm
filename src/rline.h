@@ -22,3 +22,5 @@
 char * my_rl_gets(int type);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

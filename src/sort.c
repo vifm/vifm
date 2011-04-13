@@ -28,7 +28,7 @@
 
 /*
  * This function is from the git program written by Tudor Hulubei and
- *  Andrei Pitis
+ *	Andrei Pitis
  */
 int
 sort_dir_list(const void *one, const void *two)
@@ -44,7 +44,7 @@ sort_dir_list(const void *one, const void *two)
 		first_is_dir = true;
 	else if (first->type == LINK)
 		first_is_dir = is_link_dir(one);
-	
+
 	if(second->type == DIRECTORY)
 		second_is_dir = true;
 	else if (second->type == LINK)
@@ -55,11 +55,11 @@ sort_dir_list(const void *one, const void *two)
 	switch(curr_view->sort_type)
 	{
 		 case SORT_BY_NAME:
-                 if(first->name[0] == '.' && second->name[0] != '.')
-                     return -1;
-                 else
-                     if(first->name[0] != '.' && second->name[0] == '.')
-                         return 1;
+				 if(first->name[0] == '.' && second->name[0] != '.')
+					 return -1;
+				 else
+					 if(first->name[0] != '.' && second->name[0] == '.')
+						 return 1;
 				 break;
 
 		 case SORT_BY_EXTENSION:
@@ -154,7 +154,7 @@ sort_key_cb(FileView *view)
 	int col = 6;
 	char filename[NAME_MAX];
 
-	snprintf(filename, sizeof(filename), "%s", 
+	snprintf(filename, sizeof(filename), "%s",
 			view->dir_entry[view->list_pos].name);
 
 	curs_set(0);
@@ -197,7 +197,7 @@ sort_key_cb(FileView *view)
 				done = 1;
 				abort = 1;
 				break;
-			case 'l': 
+			case 'l':
 			case 13: /* ascii Return */
 				view->sort_type = curr - 2;
 				done = 1;
@@ -227,7 +227,7 @@ show_sort_menu(FileView *view)
 	int x, y;
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
-	mvwaddstr(view->win, view->curr_line, 0, "  ");
+	mvwaddstr(view->win, view->curr_line, 0, "	");
 	curs_set(0);
 	update_all_windows();
 	//doupdate();
@@ -255,4 +255,4 @@ show_sort_menu(FileView *view)
 	sort_key_cb(view);
 }
 
-
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

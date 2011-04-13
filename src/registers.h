@@ -40,3 +40,5 @@ void append_to_register(int reg, char *file);
 void clear_register(int reg);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

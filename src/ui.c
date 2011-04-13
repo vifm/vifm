@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include<signal.h>  /* signal() */
+#include<signal.h>	/* signal() */
 #include<stdlib.h> /* malloc */
 #include<sys/stat.h> /* stat */
 #include<dirent.h> /* DIR */
@@ -34,7 +34,7 @@
 #include "menus.h"
 #include "signals.h"
 #include "status.h"
-#include "ui.h"  
+#include "ui.h"
 #include "utils.h"
 
 
@@ -78,26 +78,26 @@ update_stat_window(FileView *view)
 	char uid_buf[26];
 	struct passwd *pwd_buf;
 	int x, y;
-    size_t print_width;
-    char *current_file;
+	size_t print_width;
+	char *current_file;
 
 	getmaxyx(stat_win, y, x);
-    current_file = get_current_file_name(view);
-    print_width = get_real_string_width(current_file, sizeof(name_buf)/2);
+	current_file = get_current_file_name(view);
+	print_width = get_real_string_width(current_file, sizeof(name_buf)/2);
 	snprintf(name_buf, print_width + 1, "%s", current_file);
-    friendly_size_notation(view->dir_entry[view->list_pos].size, 
-            sizeof(size_buf), size_buf);
-	
+	friendly_size_notation(view->dir_entry[view->list_pos].size,
+			sizeof(size_buf), size_buf);
+
 	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
 	{
-		snprintf (uid_buf, sizeof(uid_buf), "  %d", 
+		snprintf (uid_buf, sizeof(uid_buf), "  %d",
 				(int) view->dir_entry[view->list_pos].uid);
 	}
 	else
 	{
 		snprintf(uid_buf, sizeof(uid_buf), "  %s", pwd_buf->pw_name);
 	}
-	get_perm_string(perm_buf, sizeof(perm_buf), 
+	get_perm_string(perm_buf, sizeof(perm_buf),
 			view->dir_entry[view->list_pos].mode);
 	werase(stat_win);
 
@@ -105,12 +105,12 @@ update_stat_window(FileView *view)
 	mvwaddstr(stat_win, 0, 24, size_buf);
 	mvwaddstr(stat_win, 0, 36, perm_buf);
 	mvwaddstr(stat_win, 0, 46, uid_buf);
-	snprintf(name_buf, sizeof(name_buf), "%d %s filtered", 
+	snprintf(name_buf, sizeof(name_buf), "%d %s filtered",
 			view->filtered, view->filtered == 1 ? "file" : "files");
 
 
 	if(view->filtered > 0)
-		mvwaddstr(stat_win, 0, x - (strlen(name_buf) +2) , name_buf);  
+		mvwaddstr(stat_win, 0, x - (strlen(name_buf) +2) , name_buf);
 
 
 	wnoutrefresh(stat_win);
@@ -159,7 +159,7 @@ setup_ncurses_interface()
 			init_pair(col_schemes[i].color[x].name,
 				col_schemes[i].color[x].fg, col_schemes[i].color[x].bg);
 	}
-	
+
 	werase(stdscr);
 
 	menu_win = newwin(screen_y - 1, screen_x , 0, 0);
@@ -188,7 +188,7 @@ setup_ncurses_interface()
 		lwin.title = newwin(0, screen_x -2, 0, 1);
 	else
 		lwin.title = newwin(1, screen_x/2 -1, 0, 1);
-		
+
 	wattrset(lwin.title, A_BOLD);
 	wbkgdset(lwin.title, COLOR_PAIR(BORDER_COLOR));
 
@@ -215,7 +215,7 @@ setup_ncurses_interface()
 	werase(mborder);
 
 	if (curr_stats.number_of_windows == 1)
-		rwin.title = newwin(0, screen_x -2  , 0, 1);
+		rwin.title = newwin(0, screen_x -2	, 0, 1);
 	else
 		rwin.title = newwin(1, screen_x/2 -1  , 0, screen_x/2 +1);
 
@@ -296,7 +296,7 @@ redraw_window(void)
 	curr_stats.freeze = 1;
 
 	ioctl(0, TIOCGWINSZ, &ws);
-	
+
 	// changed for pdcurses
 	resize_term(ws.ws_row, ws.ws_col);
 
@@ -322,7 +322,7 @@ redraw_window(void)
 
 	wclear(change_win);
 	wclear(sort_win);
-	
+
 	wresize(stdscr, screen_y, screen_x);
 	mvwin(sort_win, (screen_y - NUM_SORT_OPTIONS + 3)/2, (screen_x -30)/2);
 	mvwin(change_win, (screen_y - 10)/2, (screen_x -30)/2);
@@ -424,14 +424,14 @@ redraw_window(void)
 	{
 		char status_buf[24];
 		snprintf(status_buf, sizeof(status_buf), "%d %s Selected",
-				curr_view->selected_files, 
+				curr_view->selected_files,
 				curr_view->selected_files == 1 ? "File" : "Files");
 		status_bar_message(status_buf);
 	}
 	else
 		status_bar_message(" ");
 
-	
+
 	update_pos_window(curr_view);
 
 	update_all_windows();
@@ -440,8 +440,6 @@ redraw_window(void)
 	wrefresh(curr_view->win);
 	curr_stats.freeze = 0;
 	curr_stats.need_redraw = 0;
-
-
 }
 
-
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

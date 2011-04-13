@@ -43,3 +43,5 @@ void rename_file(FileView *view);
 void switch_views(void);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

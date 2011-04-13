@@ -44,3 +44,5 @@ void remove_command(char *name);
 void comm_quit();
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

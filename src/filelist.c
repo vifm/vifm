@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#if(defined(BSD) && (BSD>=199103)) 
+#if(defined(BSD) && (BSD>=199103))
 	#include<sys/types.h> /* required for regex.h on FreeBSD 4.2 */
 #endif
 
@@ -50,16 +50,16 @@
 void
 friendly_size_notation(int num, int str_size, char *str)
 {
-    const char* iec_units[] = { "  B", "KiB", "MiB", "GiB", "TiB", "PiB" };
+	const char* iec_units[] = { "  B", "KiB", "MiB", "GiB", "TiB", "PiB" };
 	const char* si_units[] = { " B", "KB", "MB", "GB", "TB", "PB" };
 	const char** units;
 	int u = 0;
 	double d = num;
 
-    if (cfg.use_iec_prefixes)
-        units = iec_units;
-    else
-        units = si_units;
+	if (cfg.use_iec_prefixes)
+		units = iec_units;
+	else
+		units = si_units;
 
 	while(d >= 1024.0 && u < (sizeof(iec_units)/sizeof(iec_units[0])))
 	{
@@ -152,18 +152,18 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 				 snprintf(buf, sizeof(buf), " %s", str);
 			 }
 			 break;
-    }
+	}
 
 	if (current_line)
 		wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
-			   	| A_BOLD);
+				| A_BOLD);
 
-	mvwaddstr(view->win, y, 
-				view->window_width - strlen(buf), buf); 
+	mvwaddstr(view->win, y,
+				view->window_width - strlen(buf), buf);
 
 	if (current_line)
 		wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
-			   	| A_BOLD);
+				| A_BOLD);
 }
 
 void
@@ -174,12 +174,12 @@ quick_view_file(FileView *view)
 	char buf[NAME_MAX];
 	int x = 1;
 	int y = 1;
-    size_t print_width;
+	size_t print_width;
 
-    print_width = get_real_string_width(view->dir_entry[view->list_pos].name,
-            view->window_width - 6) + 6;
+	print_width = get_real_string_width(view->dir_entry[view->list_pos].name,
+			view->window_width - 6) + 6;
 	snprintf(buf, print_width, "File: %s",
-		   	view->dir_entry[view->list_pos].name);
+			view->dir_entry[view->list_pos].name);
 
 	wbkgdset(other_view->title, COLOR_PAIR(BORDER_COLOR + view->color_scheme));
 	wbkgdset(other_view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
@@ -206,14 +206,14 @@ quick_view_file(FileView *view)
 				if((fp = fopen(view->dir_entry[view->list_pos].name, "r"))
 						== NULL)
 				{
-					mvwaddstr(other_view->win, ++x, y,  "Cannot open file");
+					mvwaddstr(other_view->win, ++x, y,	"Cannot open file");
 					return;
 				}
 
 				while(fgets(line, other_view->window_width, fp)
-						&& 	(x < other_view->window_rows - 2))
+						&&	(x < other_view->window_rows - 2))
 				{
-					mvwaddstr(other_view->win, ++x, y,  line);
+					mvwaddstr(other_view->win, ++x, y,	line);
 				}
 
 
@@ -244,7 +244,7 @@ free_selected_file_array(FileView *view)
 	}
 }
 
-/* If you use this function using the free_selected_file_array() 
+/* If you use this function using the free_selected_file_array()
  * will clean up the allocated memory
  */
 void
@@ -261,10 +261,10 @@ get_all_selected_files(FileView *view)
 	for(x = 0; x < view->list_rows; x++)
 	{
 		y += view->dir_entry[x].selected;
-    }
+	}
 	view->selected_files = y;
 
-	view->selected_filelist = 
+	view->selected_filelist =
 		(char **)calloc(view->selected_files, sizeof(char *));
 	if(view->selected_filelist == NULL)
 	{
@@ -272,7 +272,7 @@ get_all_selected_files(FileView *view)
 		return;
 	}
 
-    y = 0;
+	y = 0;
 	for(x = 0; x < view->list_rows; x++)
 	{
 		if(view->dir_entry[x].selected)
@@ -284,7 +284,7 @@ get_all_selected_files(FileView *view)
 				show_error_msg(" Memory Error ", "Unable to allocate enough memory");
 				return;
 			}
-			strcpy(view->selected_filelist[y], 
+			strcpy(view->selected_filelist[y],
 					view->dir_entry[x].name);
 			y++;
 		}
@@ -340,18 +340,18 @@ draw_dir_list(FileView *view, int top, int pos)
 	werase(view->win);
 	werase(view->title);
 
- 	/* Truncate long directory names */
- 	if (view->window_width < strlen(ptr) + 1)
- 	{
- 		while (view->window_width < strlen(ptr) + 4)
- 		{
- 			ptr++;
- 		}
- 
- 		wprintw(view->title, "...%s", ptr);
- 	}
- 	else
- 		wprintw(view->title, "%s", view->curr_dir);
+	/* Truncate long directory names */
+	if (view->window_width < strlen(ptr) + 1)
+	{
+		while (view->window_width < strlen(ptr) + 4)
+		{
+			ptr++;
+		}
+
+		wprintw(view->title, "...%s", ptr);
+	}
+	else
+		wprintw(view->title, "%s", view->curr_dir);
 
 	wnoutrefresh(view->title);
 
@@ -361,7 +361,7 @@ draw_dir_list(FileView *view, int top, int pos)
 		view->list_pos--;
 		view->curr_line--;
 	}
-		
+
 	/* Show as much of the directory as possible. */
 	if(view->window_rows >= view->list_rows)
 		top = 0;
@@ -372,14 +372,14 @@ draw_dir_list(FileView *view, int top, int pos)
 	}
 
 	/* Colorize the files */
-	
+
 	for(x = top; x < view->list_rows; x++)
 	{
-        size_t print_width;
+		size_t print_width;
 		/* Extra long file names are truncated to fit */
 
-        print_width = get_real_string_width(view->dir_entry[x].name,
-                view->window_width - 2) + 2;
+		print_width = get_real_string_width(view->dir_entry[x].name,
+				view->window_width - 2) + 2;
 		snprintf(file_name, print_width, "%s", view->dir_entry[x].name);
 
 		wmove(view->win, y, 1);
@@ -459,16 +459,16 @@ erase_current_line_bar(FileView *view)
 	char file_name[view->window_width*2 -2];
 	int bold = 1;
 	int LINE_COLOR;
-    size_t print_width;
+	size_t print_width;
 
 	/* Extra long file names are truncated to fit */
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) | A_BOLD);
 	if((old_pos > -1)  && (old_pos < view->list_rows))
 	{
-        print_width = get_real_string_width(view->dir_entry[old_pos].name,
-                view->window_width - 2) + 2;
-		snprintf(file_name, print_width, "%s", 
+		print_width = get_real_string_width(view->dir_entry[old_pos].name,
+				view->window_width - 2) + 2;
+		snprintf(file_name, print_width, "%s",
 				view->dir_entry[old_pos].name);
 	}
 	else /* The entire list is going to be redrawn so just return. */
@@ -534,7 +534,7 @@ moveto_list_pos(FileView *view, int pos)
 	int redraw = 0;
 	int old_cursor = view->curr_line;
 	char file_name[view->window_width*2 + 1];
-    size_t print_width;
+	size_t print_width;
 
 	if(pos < 1)
 		pos = 0;
@@ -542,7 +542,7 @@ moveto_list_pos(FileView *view, int pos)
 	if(pos > view->list_rows -1)
 		pos = (view->list_rows -1);
 
-	
+
 	if(view->curr_line > view->list_rows -1)
 		view->curr_line = view->list_rows -1;
 
@@ -586,14 +586,14 @@ moveto_list_pos(FileView *view, int pos)
 	 * print out the current line bar
 	 */
 
- 	memset(file_name, ' ', view->window_width);
-  
- 	file_name[view->window_width] = '\0';
+	memset(file_name, ' ', view->window_width);
+
+	file_name[view->window_width] = '\0';
 
 	mvwaddstr(view->win, view->curr_line, 1, file_name);
 
-    print_width = get_real_string_width(view->dir_entry[pos].name,
-            view->window_width - 2) + 2;
+	print_width = get_real_string_width(view->dir_entry[pos].name,
+			view->window_width - 2) + 2;
 	snprintf(file_name, print_width, " %s", view->dir_entry[pos].name);
 
 	mvwaddstr(view->win, view->curr_line, 0, file_name);
@@ -657,10 +657,10 @@ save_view_history(FileView *view)
 			snprintf(view->history[y].dir, sizeof(view->history[y].dir),
 					"%s", view->history[y +1].dir);
 		}
-		snprintf(view->history[cfg.history_len -1].file, 
+		snprintf(view->history[cfg.history_len -1].file,
 				sizeof(view->history[cfg.history_len -1].file),
 				"%s", view->dir_entry[view->list_pos].name);
-		snprintf(view->history[cfg.history_len -1].dir, 
+		snprintf(view->history[cfg.history_len -1].dir,
 				sizeof(view->history[cfg.history_len -1].dir),
 				"%s", view->curr_dir);
 	}
@@ -723,7 +723,7 @@ check_view_dir_history(FileView *view)
 		while(view->list_pos > (view->top_line + view->window_rows))
 			view->top_line++;
 
-		view->curr_line = view->window_rows; 
+		view->curr_line = view->window_rows;
 	}
 	return;
 }
@@ -744,7 +744,7 @@ clean_selected_files(FileView *view)
 }
 
 /*
- * The directory can either be relative to the current 
+ * The directory can either be relative to the current
  * directory - ../
  * or an absolute path - /usr/local/share
  * The *directory passed to change_directory() cannot be modified.
@@ -768,70 +768,70 @@ change_directory(FileView *view, char *directory)
 
  /*_SZ_BEGIN_*/
 /* check if we're exiting from a FUSE mounted top level dir. If so, unmount & let FUSE serialize */
- 	if(!strcmp(directory, "../") && !memcmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)))
- 	{
- 		Fuse_List *runner = fuse_mounts, *trailer = NULL, *sniffer = NULL;
- 		int found = 0;
- 		char buf[8192];
- 		while(runner)
- 		{
- 			if(!strcmp(runner->mount_point, view->curr_dir))
- 			{
- 				found = 1;
- 				break;
- 			}
- 			trailer = runner;
- 			runner = runner->next;
- 		}
- 		if(found) /*true if we ARE exiting a top level dir*/
- 		{
- 			status_bar_message("FUSE unmounting selected file, please stand by..");
- 			snprintf(buf, sizeof(buf), "sh -c \"fusermount -u '%s'\"", runner->mount_point);
- 			//snprintf(buf, sizeof(buf), "sh -c \"pauseme PAUSE_ON_ERROR_ONLY fusermount -u '%s'\"", runner->mount_point);
- 			/*have to chdir to parent temporarily, so that this DIR can be unmounted*/
- 			chdir(cfg.fuse_home);
+	if(!strcmp(directory, "../") && !memcmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)))
+	{
+		Fuse_List *runner = fuse_mounts, *trailer = NULL, *sniffer = NULL;
+		int found = 0;
+		char buf[8192];
+		while(runner)
+		{
+			if(!strcmp(runner->mount_point, view->curr_dir))
+			{
+				found = 1;
+				break;
+			}
+			trailer = runner;
+			runner = runner->next;
+		}
+		if(found) /*true if we ARE exiting a top level dir*/
+		{
+			status_bar_message("FUSE unmounting selected file, please stand by..");
+			snprintf(buf, sizeof(buf), "sh -c \"fusermount -u '%s'\"", runner->mount_point);
+			//snprintf(buf, sizeof(buf), "sh -c \"pauseme PAUSE_ON_ERROR_ONLY fusermount -u '%s'\"", runner->mount_point);
+			/*have to chdir to parent temporarily, so that this DIR can be unmounted*/
+			chdir(cfg.fuse_home);
 			/*
- 			def_prog_mode();
- 			endwin();
- 			my_system("clear");
- 			int status = my_system(buf);
+			def_prog_mode();
+			endwin();
+			my_system("clear");
+			int status = my_system(buf);
 			*/
 			int status = background_and_wait_for_status(buf);
- 			/*check child status*/
- 			if( !WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)) )
- 			{
- 				werase(status_bar);
- 				show_error_msg("FUSE UMOUNT ERROR", runner->source_file_name);
- 				chdir(view->curr_dir);
- 				return;
- 			}
- 			/*remove the DIR we created for the mount*/
- 			if(!access(runner->mount_point, F_OK))
- 				rmdir(runner->mount_point);
- 			status_bar_message("FUSE mount success.");
- 			/*remove mount point from Fuse_List*/
- 			sniffer = runner->next;
- 			if(trailer)
- 			{
- 				if(sniffer)
- 					trailer->next = sniffer;
- 				else
- 					trailer->next = NULL;
- 			}
- 			else
- 				fuse_mounts = runner->next;
+			/*check child status*/
+			if( !WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)) )
+			{
+				werase(status_bar);
+				show_error_msg("FUSE UMOUNT ERROR", runner->source_file_name);
+				chdir(view->curr_dir);
+				return;
+			}
+			/*remove the DIR we created for the mount*/
+			if(!access(runner->mount_point, F_OK))
+				rmdir(runner->mount_point);
+			status_bar_message("FUSE mount success.");
+			/*remove mount point from Fuse_List*/
+			sniffer = runner->next;
+			if(trailer)
+			{
+				if(sniffer)
+					trailer->next = sniffer;
+				else
+					trailer->next = NULL;
+			}
+			else
+				fuse_mounts = runner->next;
 
- 			change_directory(view, runner->source_file_dir);
- 			char *filen = runner->source_file_name;
- 			filen += strlen(runner->source_file_dir) + 1;
- 			found = find_file_pos_in_list(view, filen);
+			change_directory(view, runner->source_file_dir);
+			char *filen = runner->source_file_name;
+			filen += strlen(runner->source_file_dir) + 1;
+			found = find_file_pos_in_list(view, filen);
 			moveto_list_pos(view, found);
- 			free(runner);
- 			return;
- 		}
- 	}
+			free(runner);
+			return;
+		}
+	}
  /*_SZ_END_*/
- 
+
 	/* Moving up a directory */
 	if(!strcmp(dir_dup, "../"))
 	{
@@ -848,7 +848,7 @@ change_directory(FileView *view, char *directory)
 			str2 = str1;
 		}
 
-		snprintf(curr_stats.updir_file, sizeof(curr_stats.updir_file), 
+		snprintf(curr_stats.updir_file, sizeof(curr_stats.updir_file),
 				"%s/", str2);
 
 		strcpy(newdir,"");
@@ -869,11 +869,11 @@ change_directory(FileView *view, char *directory)
 		snprintf(dir_dup, PATH_MAX, "%s", newdir);
 
 		if(!strcmp(dir_dup,""))
-		   	strcpy(dir_dup,"/");
+			strcpy(dir_dup,"/");
 
 
 	}
-	/* Moving into a directory  or bookmarked dir or :cd directory*/
+	/* Moving into a directory	or bookmarked dir or :cd directory*/
 	else if(strcmp(dir_dup, view->curr_dir))
 	{
 		/* directory is a relative path */
@@ -905,10 +905,10 @@ change_directory(FileView *view, char *directory)
 		 */
 
 	}
-	/* else -  should only happen when reloading a directory, changing views, 
+	/* else -  should only happen when reloading a directory, changing views,
 	 * or when starting up and should already be an absolute path.
 	 */
-	
+
 	/* Clean up any excess separators */
 	if((view->curr_dir[strlen(view->curr_dir) -1] == '/') &&
 			(strcmp(view->curr_dir, "/")))
@@ -922,7 +922,7 @@ change_directory(FileView *view, char *directory)
 	if(access(dir_dup, F_OK) != 0)
 	{
 		show_error_msg(" Directory Access Error ",
-			   	"Cannot open that directory ");	
+				"Cannot open that directory ");
 		change_directory(view, getenv("HOME"));
 		clean_selected_files(view);
 		return;
@@ -931,7 +931,7 @@ change_directory(FileView *view, char *directory)
 	if(access(dir_dup, R_OK) != 0)
 	{
 		show_error_msg(" Directory Access Error ",
-			   	"You do not have read access on that directory");
+				"You do not have read access on that directory");
 
 		clean_selected_files(view);
 		return;
@@ -954,7 +954,7 @@ change_directory(FileView *view, char *directory)
 	}
 
 	clean_selected_files(view);
-    draw_dir_list(view, view->top_line, view->list_pos);
+	draw_dir_list(view, view->top_line, view->list_pos);
 
 	/* Need to use setenv instead of getcwd for a symlink directory */
 	setenv("PWD", dir_dup, 1);
@@ -963,7 +963,7 @@ change_directory(FileView *view, char *directory)
 		dir_dup[strlen(dir_dup) - 1] = '\0';
 
 	if(strcmp(dir_dup, view->curr_dir))
-	   	snprintf(view->curr_dir, PATH_MAX, "%s", dir_dup);
+		snprintf(view->curr_dir, PATH_MAX, "%s", dir_dup);
 
 
 
@@ -1007,7 +1007,7 @@ load_dir_list(FileView *view, int reload)
 
 
 	view->filtered = 0;
-	
+
 	lstat(view->curr_dir, &s);
 	view->dir_mtime = s.st_mtime;
 
@@ -1047,7 +1047,7 @@ load_dir_list(FileView *view, int reload)
 			view->list_rows--;
 			continue;
 		}
-		/* Always include the ../ directory unless it is the root directory. */ 
+		/* Always include the ../ directory unless it is the root directory. */
 		if(strcmp(d->d_name, "..") == 0)
 		{
 			if(!strcmp("/", view->curr_dir))
@@ -1064,7 +1064,7 @@ load_dir_list(FileView *view, int reload)
 		}
 
 
-		if(d->d_name[0] == '.') 
+		if(d->d_name[0] == '.')
 		{
 			if((strcmp(d->d_name, "..")) && (view->hide_dot))
 			{
@@ -1096,7 +1096,7 @@ load_dir_list(FileView *view, int reload)
 		/* All files start as unselected */
 		view->dir_entry[view->list_rows].selected = 0;
 
-		/* Load the inode info */ 
+		/* Load the inode info */
 		lstat(view->dir_entry[view->list_rows].name, &s);
 
 		view->dir_entry[view->list_rows].size = (uintmax_t)s.st_size;
@@ -1150,7 +1150,7 @@ load_dir_list(FileView *view, int reload)
 	}
 
 	closedir(dir);
-	
+
 	if(!reload && s.st_size > 2048)
 	{
 		status_bar_message("Sorting Directory...");
@@ -1161,7 +1161,7 @@ load_dir_list(FileView *view, int reload)
 	for(x = 0; x < view->list_rows; x++)
 		view->dir_entry[x].list_num = x;
 
-	/* If reloading the same directory don't jump to 
+	/* If reloading the same directory don't jump to
 	 * history position.  Stay at the current line
 	 */
 	if(!reload)
@@ -1169,14 +1169,14 @@ load_dir_list(FileView *view, int reload)
 
 	/*
 	 * It is possible to set the file name filter so that no files are showing
-	 * in the / directory.  All other directorys will always show at least the
+	 * in the / directory.	All other directorys will always show at least the
 	 * ../ file.  This resets the filter and reloads the directory.
 	 */
 	if(view->list_rows < 1)
 	{
 		char msg[64];
-		snprintf(msg, sizeof(msg), 
-				"The %s pattern %s did not match any files. It was reset.", 
+		snprintf(msg, sizeof(msg),
+				"The %s pattern %s did not match any files. It was reset.",
 				view->filename_filter, view->invert==1 ? "inverted" : "");
 		status_bar_message(msg);
 		view->filename_filter = (char *)realloc(view->filename_filter,
@@ -1204,7 +1204,7 @@ load_dir_list(FileView *view, int reload)
 }
 
 
-bool 
+bool
 is_link_dir(const dir_entry_t * path)
 {
 	struct stat s;
@@ -1212,7 +1212,9 @@ is_link_dir(const dir_entry_t * path)
 
 	//if(s.st_mode & S_IFMT == S_IFDIR) return true;
 	if(s.st_mode & S_IFDIR)
-	   	return true;
+		return true;
 	else
-	   	return false;
+		return false;
 }
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

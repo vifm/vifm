@@ -44,3 +44,5 @@ void show_change_window(FileView *view, int type);
 int check_link_is_dir(FileView *view, int pos);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

@@ -42,7 +42,7 @@
 
 
 
-int 
+int
 my_system(char *command)
 {
 	int pid;
@@ -115,7 +115,7 @@ yank_selected_files(FileView *view)
 		curr_stats.yanked_files = NULL;
 	}
 
-	curr_stats.yanked_files = (char **)calloc(view->selected_files, 
+	curr_stats.yanked_files = (char **)calloc(view->selected_files,
 			sizeof(char *));
 
 	if ((curr_stats.use_register) && (curr_stats.register_saved))
@@ -135,7 +135,7 @@ yank_selected_files(FileView *view)
 			namelen = strlen(view->selected_filelist[x]);
 			curr_stats.yanked_files[x] = malloc(namelen +1);
 			strcpy(curr_stats.yanked_files[x], view->selected_filelist[x]);
-			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, 
+			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
 					view->selected_filelist[x]);
 			append_to_register(curr_stats.curr_register, view->selected_filelist[x]);
 		}
@@ -200,12 +200,12 @@ check_link_is_dir(FileView *view, int pos)
 		struct stat s;
 		linkto[len] = '\0';
 		lstat(linkto, &s);
-		
+
 		if((s.st_mode & S_IFMT) == S_IFDIR)
 			return 1;
 	}
 
-	
+
 	return 0;
 }
 
@@ -268,7 +268,7 @@ handle_file(FileView *view, int dont_execute)
 					char *temp = escape_filename(view->dir_entry[view->list_pos].name,
 						   strlen(view->dir_entry[view->list_pos].name), 0);
 
-					snprintf(buf, sizeof(buf), "%s %s", program, temp); 
+					snprintf(buf, sizeof(buf), "%s %s", program, temp);
 					shellout(buf, 0);
 					free(program);
 					free(temp);
@@ -282,7 +282,7 @@ handle_file(FileView *view, int dont_execute)
 			return;
 		}
 	}
-	if((REGULAR == view->dir_entry[view->list_pos].type) 
+	if((REGULAR == view->dir_entry[view->list_pos].type)
 				|| (EXECUTABLE == view->dir_entry[view->list_pos].type))
 	{
 		char *program = NULL;
@@ -300,7 +300,7 @@ handle_file(FileView *view, int dont_execute)
 						show_error_msg("Unable to create FUSE mount home directory", (char *)cfg.fuse_home);
 						return;
 					}
-                                }
+								}
 				Fuse_List *runner = fuse_mounts, *fuse_item = NULL;
 				char filename[PATH_MAX];
 				char mount_point[PATH_MAX];
@@ -348,7 +348,7 @@ handle_file(FileView *view, int dont_execute)
 					char *cmd_pos;
 					char *buf_pos = buf;
 					char *prog_pos = program;
-/*Build the mount command based on the FUSE program config line in vifmrc. 
+/*Build the mount command based on the FUSE program config line in vifmrc.
   Accepted FORMAT: FUSE_MOUNT|some_mount_command %SOURCE_FILE %DESTINATION_DIR*/
 					strcpy(buf_pos, "sh -c \"");
 					//strcpy(buf_pos, "sh -c \"pauseme PAUSE_ON_ERROR_ONLY ");
@@ -371,17 +371,17 @@ handle_file(FileView *view, int dont_execute)
 							*cmd_pos = '\0';
 							if(!strcmp(cmd_buf, "%SOURCE_FILE") && (buf_pos+strlen(filename)<buf+sizeof(buf)+2))
 							{
-							    *buf_pos++='\'';
-							    strcpy(buf_pos, filename);
-							    buf_pos += strlen(filename);
-							    *buf_pos++='\'';
+								*buf_pos++='\'';
+								strcpy(buf_pos, filename);
+								buf_pos += strlen(filename);
+								*buf_pos++='\'';
 							}
 							else if(!strcmp(cmd_buf, "%DESTINATION_DIR") && (buf_pos+strlen(filename)<buf+sizeof(buf)+2))
 							{
-							    *buf_pos++='\'';
-							    strcpy(buf_pos, mount_point);
-							    buf_pos += strlen(mount_point);
-							    *buf_pos++='\'';
+								*buf_pos++='\'';
+								strcpy(buf_pos, mount_point);
+								buf_pos += strlen(mount_point);
+								*buf_pos++='\'';
 							}
 						}
 						else
@@ -391,18 +391,18 @@ handle_file(FileView *view, int dont_execute)
 								buf_pos++;
 							prog_pos++;
 						}
-                    }
+					}
 
 					*buf_pos = '"';
 					*(++buf_pos) = '\0';
 					/*uff, CMD built.*/
-					/*Just before running the mount, 
-					  I need to chdir out temporarily from any FUSE mounted 
-					  paths, Otherwise the fuse-zip command fails with 
-					  "fusermount: failed to open current 
-				    	directory: permission denied"
+					/*Just before running the mount,
+					  I need to chdir out temporarily from any FUSE mounted
+					  paths, Otherwise the fuse-zip command fails with
+					  "fusermount: failed to open current
+						directory: permission denied"
 					 *(this happens when mounting JARs from mounted JARs)*/
-                    chdir(cfg.fuse_home);
+					chdir(cfg.fuse_home);
 					/*
 					def_prog_mode();
 					endwin();
@@ -411,7 +411,7 @@ handle_file(FileView *view, int dont_execute)
 					*/
 					int status = background_and_wait_for_status(buf);
 					/*check child status*/
-					if( !WIFEXITED(status) || (WIFEXITED(status) && 
+					if( !WIFEXITED(status) || (WIFEXITED(status) &&
 								WEXITSTATUS(status)) )
 					{
 						werase(status_bar);
@@ -423,7 +423,7 @@ handle_file(FileView *view, int dont_execute)
 						return;
 					}
 					status_bar_message("FUSE mount success.");
-					
+
 					fuse_item = (Fuse_List *)malloc(sizeof(Fuse_List));
 					strcpy(fuse_item->source_file_name, filename);
 					strcpy(fuse_item->source_file_dir, view->curr_dir);
@@ -456,7 +456,7 @@ handle_file(FileView *view, int dont_execute)
 				char *temp = escape_filename(view->dir_entry[view->list_pos].name,
 						strlen(view->dir_entry[view->list_pos].name), 0);
 
-				snprintf(buf, sizeof(buf), "%s %s", program, temp); 
+				snprintf(buf, sizeof(buf), "%s %s", program, temp);
 				shellout(buf, 0);
 				free(program);
 				free(temp);
@@ -491,7 +491,7 @@ handle_file(FileView *view, int dont_execute)
 			char *link_dup = strdup(linkto);
 			linkto[len] = '\0';
 			lstat(linkto, &s);
-			
+
 			if((s.st_mode & S_IFMT) == S_IFDIR)
 			{
 				is_dir = 1;
@@ -543,7 +543,7 @@ handle_file(FileView *view, int dont_execute)
 			free(link_dup);
 			free(dir);
 		}
-	  	else
+		else
 			status_bar_message("Couldn't Resolve Link");
 	}
 }
@@ -559,30 +559,30 @@ pipe_and_capture_errors(char *command)
   char *args[4];
 
   if (pipe (file_pipes) != 0)
-      return 1;
+	  return 1;
 
   if ((pid = fork ()) == -1)
-      return 1;
+	  return 1;
 
   if (pid == 0)
-    {
+	{
 			close(1);
 			close(2);
 			dup(file_pipes[1]);
-      close (file_pipes[0]);
-      close (file_pipes[1]);
+	  close (file_pipes[0]);
+	  close (file_pipes[1]);
 
-      args[0] = "sh";
-      args[1] = "-c";
-      args[2] = command;
-      args[3] = NULL;
-      execvp (args[0], args);
-      exit (127);
-    }
+	  args[0] = "sh";
+	  args[1] = "-c";
+	  args[2] = command;
+	  args[3] = NULL;
+	  execvp (args[0], args);
+	  exit (127);
+	}
   else
-    {
+	{
 			char buf[1024];
-      close (file_pipes[1]);
+	  close (file_pipes[1]);
 			while((nread = read(*file_pipes, buf, sizeof(buf) -1)) > 0)
 			{
 				buf[nread] = '\0';
@@ -595,7 +595,7 @@ pipe_and_capture_errors(char *command)
 				show_error_msg(title, buf);
 				return 1;
 			}
-    }
+	}
 	return 0;
 }
 
@@ -619,7 +619,7 @@ delete_file(FileView *view)
 	{
 		if(!strcmp("../", view->selected_filelist[x]))
 		{
-			show_error_msg(" Background Process Error ", 
+			show_error_msg(" Background Process Error ",
 					"You cannot delete the ../ directory ");
 			continue;
 		}
@@ -628,8 +628,8 @@ delete_file(FileView *view)
 		{
 			strncpy(curr_stats.yanked_files_dir, cfg.trash_dir,
 					sizeof(curr_stats.yanked_files_dir) -1);
-			snprintf(buf, sizeof(buf), "mv \"%s\" %s/%s", 
-					view->selected_filelist[x], cfg.trash_dir, 
+			snprintf(buf, sizeof(buf), "mv \"%s\" %s/%s",
+					view->selected_filelist[x], cfg.trash_dir,
 					view->selected_filelist[x]);
 
 			curr_stats.register_saved = 0;
@@ -687,13 +687,13 @@ reset_change_window(void)
 void
 change_file_owner(char *file)
 {
-    // TODO write code
+	// TODO write code
 }
 
 void
 change_file_group(char *file)
 {
-    // TODO write code
+	// TODO write code
 }
 
 void
@@ -701,9 +701,9 @@ set_perm_string(FileView *view, int *perms, char *file)
 {
 	int i = 0;
 	char *add_perm[] = {"u+r", "u+w", "u+x", "u+s", "g+r", "g+w", "g+x", "g+s",
-											"o+r", "o+w", "o+x", "o+t"}; 
+											"o+r", "o+w", "o+x", "o+t"};
 	char *sub_perm[] = { "u-r", "u-w", "u-x", "u-s", "g-r", "g-w", "g-x", "g-s",
-											"o-r", "o-w", "o-x", "o-t"}; 
+											"o-r", "o-w", "o-x", "o-t"};
 	char perm_string[64] = " ";
 
 	for (i = 0; i < 12; i++)
@@ -738,9 +738,9 @@ permissions_key_cb(FileView *view, int *perms, int isdir)
 	if (isdir)
 		bottom = 17;
 
-	snprintf(filename, sizeof(filename), "%s", 
+	snprintf(filename, sizeof(filename), "%s",
 			view->dir_entry[view->list_pos].name);
-	snprintf(path, sizeof(path), "%s/%s", view->curr_dir, 
+	snprintf(path, sizeof(path), "%s/%s", view->curr_dir,
 			view->dir_entry[view->list_pos].name);
 
 	curs_set(1);
@@ -811,7 +811,7 @@ permissions_key_cb(FileView *view, int *perms, int isdir)
 				done = 1;
 				abort = 1;
 				break;
-			case 'l': 
+			case 'l':
 			case 13: /* ascii Return */
 				done = 1;
 				break;
@@ -851,7 +851,7 @@ change_key_cb(FileView *view, int type)
 	int col = 6;
 	char filename[NAME_MAX];
 
-	snprintf(filename, sizeof(filename), "%s", 
+	snprintf(filename, sizeof(filename), "%s",
 			view->dir_entry[view->list_pos].name);
 
 	curs_set(0);
@@ -895,7 +895,7 @@ change_key_cb(FileView *view, int type)
 				done = 1;
 				abort = 1;
 				break;
-			case 'l': 
+			case 'l':
 			case 13: /* ascii Return */
 				done = 1;
 				break;
@@ -924,7 +924,7 @@ change_key_cb(FileView *view, int type)
 			char * filename = get_current_file_name(view);
 			switch(curr)
 			{
-				case FILE_NAME: 
+				case FILE_NAME:
 					rename_file(view);
 					break;
 				case FILE_OWNER:
@@ -1010,14 +1010,14 @@ show_file_permissions_menu(FileView *view, int x)
 		mvwaddch(change_win, 9, 9, '*');
 	}
 
-	mvwaddstr(change_win, 10, 6, "  [ ] Execute");
+	mvwaddstr(change_win, 10, 6, "	[ ] Execute");
 	if (mode & S_IXGRP)
 	{
 		perms[6] = 1;
 		mvwaddch(change_win, 10, 9, '*');
 	}
 
-	mvwaddstr(change_win, 11, 6, "  [ ] SetGID");
+	mvwaddstr(change_win, 11, 6, "	[ ] SetGID");
 	if (mode & S_ISGID)
 	{
 		perms[7] = 1;
@@ -1031,21 +1031,21 @@ show_file_permissions_menu(FileView *view, int x)
 		mvwaddch(change_win, 13, 9, '*');
 	}
 
-	mvwaddstr(change_win, 14, 6, "  [ ] Write");
+	mvwaddstr(change_win, 14, 6, "	[ ] Write");
 	if (mode & S_IWOTH)
 	{
 		perms[9] = 1;
 		mvwaddch(change_win, 14, 9, '*');
 	}
 
-	mvwaddstr(change_win, 15, 6, "  [ ] Execute");
+	mvwaddstr(change_win, 15, 6, "	[ ] Execute");
 	if (mode & S_IXOTH)
 	{
 		perms[10] = 1;
 		mvwaddch(change_win, 15, 9, '*');
 	}
 
-	mvwaddstr(change_win, 16, 6, "  [ ] Sticky");
+	mvwaddstr(change_win, 16, 6, "	[ ] Sticky");
 	if (mode & S_ISVTX)
 	{
 		perms[11] = 1;
@@ -1054,7 +1054,7 @@ show_file_permissions_menu(FileView *view, int x)
 
 	if (is_dir(filename))
 	{
-		mvwaddstr(change_win, 17, 6, "  [ ] Set Recursively");
+		mvwaddstr(change_win, 17, 6, "	[ ] Set Recursively");
 		isdir = 1;
 	}
 
@@ -1093,7 +1093,7 @@ show_change_window(FileView *view, int type)
 			change_key_cb(view, type);
 		}
 			break;
-		case FILE_NAME: 
+		case FILE_NAME:
 			return;
 			break;
 		case FILE_OWNER:
@@ -1109,3 +1109,5 @@ show_change_window(FileView *view, int type)
 			break;
 	}
 }
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

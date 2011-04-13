@@ -47,3 +47,5 @@ void check_background_jobs(void);
 void update_jobs_list(void);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

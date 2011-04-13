@@ -22,3 +22,5 @@
 void setup_signals(void);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#if(defined(BSD) && (BSD>=199103)) 
+#if(defined(BSD) && (BSD>=199103))
 	#include<sys/types.h> /* required for regex.h on FreeBSD 4.2 */
 #endif
 #include<sys/types.h>
@@ -40,7 +40,7 @@ find_next_pattern_match(FileView *view, int start, int direction)
 	int found = 0;
 	int x;
 
-	if(direction == 	PREVIOUS)
+	if(direction ==		PREVIOUS)
 	{
 		for(x = start -1; x > 0; x--)
 		{
@@ -139,3 +139,5 @@ find_pattern(FileView *view, char *pattern)
 }
 
 
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

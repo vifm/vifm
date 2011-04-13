@@ -25,3 +25,5 @@
 int start_visual_mode(FileView *view);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

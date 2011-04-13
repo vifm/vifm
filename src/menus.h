@@ -29,7 +29,7 @@ void show_filetypes_menu(FileView *view);
 void show_jobs_menu(FileView *view);
 void show_locate_menu(FileView *view, char *args);
 void show_apropos_menu(FileView *view, char *args);
-void show_user_menu(FileView *view, char *command); 
+void show_user_menu(FileView *view, char *command);
 void show_register_menu(FileView *view);
 void reset_popup_menu(void);
 void setup_menu(FileView *view);
@@ -39,3 +39,5 @@ int execute_menu_command(FileView *view, char * command, void * ptr);
 int query_user_menu(char *title, char *message);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

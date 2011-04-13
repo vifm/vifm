@@ -193,7 +193,7 @@ main(int argc, char *argv[])
 	other_view = &lwin;
 	curr_view = &rwin;
 
-/* Get Command Line Arguments */ 
+/* Get Command Line Arguments */
 	for(x = 1; x < argc; x++)
 	{
 		if(argv[x] != NULL)
@@ -218,7 +218,7 @@ main(int argc, char *argv[])
 				{
 					if(lwin_args)
 					{
-						snprintf(rwin.curr_dir, sizeof(rwin.curr_dir), 
+						snprintf(rwin.curr_dir, sizeof(rwin.curr_dir),
 								"%s", argv[x]);
 
 						rwin_args++;
@@ -227,7 +227,7 @@ main(int argc, char *argv[])
 					else
 					{
 						snprintf(lwin.curr_dir, sizeof(lwin.curr_dir),
-							   	"%s", argv[x]);
+								"%s", argv[x]);
 
 
 						lwin_args++;
@@ -242,7 +242,7 @@ main(int argc, char *argv[])
 		}
 	}
 
-	
+
 	load_dir_list(&rwin, 0);
 
 	if (rwin_args)
@@ -251,7 +251,7 @@ main(int argc, char *argv[])
 		load_dir_list(&rwin, 0);
 	}
 
-	mvwaddstr(rwin.win, rwin.curr_line, 0, "*"); 
+	mvwaddstr(rwin.win, rwin.curr_line, 0, "*");
 	wrefresh(rwin.win);
 
 	/* This is needed for the sort_dir_list() which uses curr_view */
@@ -275,10 +275,10 @@ main(int argc, char *argv[])
 
 
 	/* Need to wait until both lists are loaded before changing one of the
-	 * lists to show the file stats.  This is only used for starting vifm 
+	 * lists to show the file stats.  This is only used for starting vifm
 	 * from the vifm.vim script
 	 */
-	
+
 	if(cfg.vim_filter)
 		curr_stats.number_of_windows = 1;
 
@@ -288,3 +288,4 @@ main(int argc, char *argv[])
 	return 0;
 }
 
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

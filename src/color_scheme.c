@@ -55,7 +55,7 @@ write_color_scheme_file()
 	char bg_buf[64];
 
 	snprintf(config_file, sizeof(config_file), "%s/colorschemes",
-		   	cfg.config_dir);
+			cfg.config_dir);
 
 
 	if((fp = fopen(config_file, "w")) == NULL)
@@ -66,11 +66,11 @@ write_color_scheme_file()
 	fprintf(fp, "# Blank lines are ignored.\n\n");
 
 	fprintf(fp, "# The Default color scheme is used for any directory that does not have\n");
-	fprintf(fp, "# a specified scheme.  A color scheme set for a base directory will also\n");
+	fprintf(fp, "# a specified scheme.	A color scheme set for a base directory will also\n");
 	fprintf(fp, "# be used for the sub directories.\n\n");
 
 	fprintf(fp, "# The standard ncurses colors are: \n");
- 	fprintf(fp, "# Default = -1 can be used for transparency\n");
+	fprintf(fp, "# Default = -1 can be used for transparency\n");
 	fprintf(fp, "# Black = 0\n");
 	fprintf(fp, "# Red = 1\n");
 	fprintf(fp, "# Green = 2\n");
@@ -99,7 +99,7 @@ write_color_scheme_file()
 			while(col_schemes[x].color[y].name > 11)
 			{
 				col_schemes[x].color[y].name =
-				   	col_schemes[x].color[y].name - 12;
+					col_schemes[x].color[y].name - 12;
 			}
 
 			switch(col_schemes[x].color[y].name)
@@ -181,9 +181,9 @@ write_color_scheme_file()
 
 			switch (col_schemes[x].color[y].bg)
 			{
- 				case -1:
- 					snprintf(bg_buf, sizeof(bg_buf), "default");
- 					break;
+				case -1:
+					snprintf(bg_buf, sizeof(bg_buf), "default");
+					break;
 				case 0:
 					snprintf(bg_buf, sizeof(bg_buf), "black");
 					break;
@@ -315,7 +315,7 @@ colname2int(char col[])
 void
 add_color(char s1[], char s2[], char s3[])
 {
- 	int fg, bg;
+	int fg, bg;
 	int scheme = 0;
 	int x = cfg.color_scheme_num -1;
 	int y = cfg.color_pairs_num;
@@ -481,7 +481,7 @@ read_color_scheme_file()
  * Second color scheme returns 12
  * Third color scheme returns 24
  *
- * The color scheme with the longest matching directory path is the one that 
+ * The color scheme with the longest matching directory path is the one that
  * should be returned.
  */
 int
@@ -509,3 +509,4 @@ check_directory_for_color_scheme(const char *dir)
 	return (v * 12);
 }
 
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

@@ -23,7 +23,7 @@
 #include "config.h"
 #include "filetype.h"
 
-int 
+int
 get_filetype_number(char *file)
 {
 	char *strptr;
@@ -64,7 +64,7 @@ get_filetype_number(char *file)
 						return x;
 					}
 
-					ex_copy = exptr2;	
+					ex_copy = exptr2;
 				}
 				if(!strcasecmp(ext, ex_copy))
 				{
@@ -136,7 +136,7 @@ void
 add_filetype(char *description, char *extension, char *program)
 {
 
-	filetypes = (filetype_t *)realloc(filetypes, 
+	filetypes = (filetype_t *)realloc(filetypes,
 			(cfg.filetypes_num +1) * sizeof(filetype_t));
 
 	filetypes[cfg.filetypes_num].type = strdup(description);
@@ -146,3 +146,5 @@ add_filetype(char *description, char *extension, char *program)
 	cfg.filetypes_num++;
 }
 
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

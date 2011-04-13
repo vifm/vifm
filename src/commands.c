@@ -48,21 +48,21 @@ enum
 	COM_EXECUTE,
 	COM_APROPOS,
 	COM_CHANGE,
-	COM_CD, 		
-	COM_CMAP,			
+	COM_CD,
+	COM_CMAP,
 	COM_COLORSCHEME,
-	COM_COMMAND,		
-	COM_DELETE, 		
-	COM_DELCOMMAND,	
+	COM_COMMAND,
+	COM_DELETE,
+	COM_DELCOMMAND,
 	COM_DISPLAY,
-	COM_EDIT,				
+	COM_EDIT,
 	COM_EMPTY,
 	COM_FILTER,
 	COM_FILE,
 	COM_HELP,
 	COM_HISTORY,
 	COM_INVERT,
-	COM_JOBS,	
+	COM_JOBS,
 	COM_LOCATE,
 	COM_LS,
 	COM_MAP,
@@ -82,11 +82,11 @@ enum
 	COM_VIEW,
 	COM_VIFM,
 	COM_VMAP,
-	COM_YANK,	
+	COM_YANK,
 	COM_X
 };
 
-	/* The order of the commands is important as :e will match the first 
+	/* The order of the commands is important as :e will match the first
 	 * command starting with e.
 	 */
 char *reserved_commands[] = {
@@ -165,7 +165,7 @@ int
 command_is_reserved(char *name)
 {
 	int x;
-    int len = strlen(name);
+	int len = strlen(name);
 
 	for(x = 0; x < RESERVED; x++)
 	{
@@ -185,7 +185,7 @@ command_is_being_used(char *command)
 				return 1;
 	}
 	return 0;
-		
+
 }
 
 /* On the first call to this function,
@@ -195,68 +195,68 @@ command_is_being_used(char *command)
 char *
 command_completion(char *str)
 {
-    static char *string;
-    static int offset;
-    int pos = -1;
-    int found = 0;
-    int i = 0;
-    int len;
+	static char *string;
+	static int offset;
+	int pos = -1;
+	int found = 0;
+	int i = 0;
+	int len;
 
-    if (str != NULL)
-    {
-        string = str;
-        offset = 0;
-    }
-    else
-        offset++;
+	if (str != NULL)
+	{
+		string = str;
+		offset = 0;
+	}
+	else
+		offset++;
 
-    len = strlen(string);
+	len = strlen(string);
 
-    if ((pos = command_is_reserved(string)) > -1)
-    {
-        found = 1;
+	if ((pos = command_is_reserved(string)) > -1)
+	{
+		found = 1;
 
-        while (i < offset)
-        {
-            if (pos >= RESERVED - 1)
-                break;
+		while (i < offset)
+		{
+			if (pos >= RESERVED - 1)
+				break;
 
-            if (!strncmp(string, reserved_commands[++pos], len))
-                i++;
-        }
+			if (!strncmp(string, reserved_commands[++pos], len))
+				i++;
+		}
 
-        if (i == offset)
-            return strdup(reserved_commands[pos]);
-    }
+		if (i == offset)
+			return strdup(reserved_commands[pos]);
+	}
 
-    if ((pos = is_user_command(string)) > -1)
-    {
-        found = 1;
+	if ((pos = is_user_command(string)) > -1)
+	{
+		found = 1;
 
-        while (i < offset)
-        {
-            if (pos >= cfg.command_num - 1)
-                break;
+		while (i < offset)
+		{
+			if (pos >= cfg.command_num - 1)
+				break;
 
-            if (!strncmp(string, command_list[++pos].name, len))
-                i++;
-        }
+			if (!strncmp(string, command_list[++pos].name, len))
+				i++;
+		}
 
-        if (i == offset)
-            return strdup(command_list[pos].name);
-    }
+		if (i == offset)
+			return strdup(command_list[pos].name);
+	}
 
-    if (!found)
-        return NULL;
-    else if (i != offset)
-    {
-        offset = -1;
-        return strdup(string);
-    }
+	if (!found)
+		return NULL;
+	else if (i != offset)
+	{
+		offset = -1;
+		return strdup(string);
+	}
 
-    show_error_msg(" Debug error ", "command_completion():"
-            " Harmless error in commands.c: line 254");
-    return NULL;
+	show_error_msg(" Debug error ", "command_completion():"
+			" Harmless error in commands.c: line 254");
+	return NULL;
 }
 
 void
@@ -265,18 +265,18 @@ save_search_history(char *pattern)
 	int x = 0;
 
 	if ((cfg.search_history_num + 1) >= cfg.search_history_len)
-		cfg.search_history_num = x  = cfg.search_history_len - 1;
+		cfg.search_history_num = x	= cfg.search_history_len - 1;
 	else
 		x = cfg.search_history_num + 1;
 
 	for (; x > 0; x--)
 	{
-		cfg.search_history[x] = (char *)realloc(cfg.search_history[x], 
+		cfg.search_history[x] = (char *)realloc(cfg.search_history[x],
 				strlen(cfg.search_history[x - 1]) + 1);
 		strcpy(cfg.search_history[x], cfg.search_history[x - 1]);
 	}
 
-	cfg.search_history[0] = (char *)realloc(cfg.search_history[0], 
+	cfg.search_history[0] = (char *)realloc(cfg.search_history[0],
 			strlen(pattern) + 1);
 	strcpy(cfg.search_history[0], pattern);
 	cfg.search_history_num++;
@@ -300,12 +300,12 @@ save_command_history(char *command)
 
 	for (; x > 0; x--)
 	{
-		cfg.cmd_history[x] = (char *)realloc(cfg.cmd_history[x], 
+		cfg.cmd_history[x] = (char *)realloc(cfg.cmd_history[x],
 				strlen(cfg.cmd_history[x - 1]) + 1);
 		strcpy(cfg.cmd_history[x], cfg.cmd_history[x - 1]);
 	}
 
-	cfg.cmd_history[0] = (char *)realloc(cfg.cmd_history[0], 
+	cfg.cmd_history[0] = (char *)realloc(cfg.cmd_history[0],
 			strlen(command) + 1);
 	strcpy(cfg.cmd_history[0], command);
 	cfg.cmd_history_num++;
@@ -348,7 +348,7 @@ expand_macros(FileView *view, char *command, char *args,
 					{
 						char arg_buf[strlen(args) +2];
 
-						expanded = (char *)realloc(expanded, 
+						expanded = (char *)realloc(expanded,
 								strlen(expanded) + strlen(args) +3);
 						snprintf(arg_buf, sizeof(arg_buf), "%s ", args);
 						strcat(expanded, arg_buf);
@@ -367,7 +367,7 @@ expand_macros(FileView *view, char *command, char *args,
 							{
 								int dir = 0;
 								char *temp = NULL;
-								expanded = (char *)realloc(expanded, 
+								expanded = (char *)realloc(expanded,
 									len + strlen(view->dir_entry[y].name) +5);
 
 					/* Directory has / appended to the name this removes it. */
@@ -376,7 +376,7 @@ expand_macros(FileView *view, char *command, char *args,
 
 								temp = escape_filename(view->dir_entry[y].name,
 										strlen(view->dir_entry[y].name)-dir, 1);
-								expanded = (char *)realloc(expanded, strlen(expanded) + 
+								expanded = (char *)realloc(expanded, strlen(expanded) +
 									strlen(temp) +3);
 								strcat(expanded, temp);
 
@@ -390,19 +390,19 @@ expand_macros(FileView *view, char *command, char *args,
 					else
 					{
 						int dir = 0;
-						char *temp = 
+						char *temp =
 						  escape_filename(view->dir_entry[view->list_pos].name,
-					      strlen(view->dir_entry[view->list_pos].name)-dir, 1);
+						  strlen(view->dir_entry[view->list_pos].name)-dir, 1);
 
 
-						expanded = (char *)realloc(expanded, strlen(expanded) + 
+						expanded = (char *)realloc(expanded, strlen(expanded) +
 								strlen(view->dir_entry[view->list_pos].name) +3);
 
 					/* Directory has / appended to the name this removes it. */
 						if (view->dir_entry[view->list_pos].type == DIRECTORY)
 							dir = 1;
 
-						expanded = (char *)realloc(expanded, strlen(expanded) + 
+						expanded = (char *)realloc(expanded, strlen(expanded) +
 							strlen(temp) +3);
 						strcat(expanded, temp);
 						free(temp);
@@ -456,7 +456,7 @@ expand_macros(FileView *view, char *command, char *args,
 					}
 					else
 					{
-						expanded = (char *)realloc(expanded, len + 
+						expanded = (char *)realloc(expanded, len +
 								strlen(other_view->dir_entry[other_view->list_pos].name) +
 								strlen(other_view->curr_dir) +4);
 						if(expanded == NULL)
@@ -487,7 +487,7 @@ expand_macros(FileView *view, char *command, char *args,
 				break;
 			case 'd': /* current directory */
 				{
-					expanded = (char *)realloc(expanded, 
+					expanded = (char *)realloc(expanded,
 							len + strlen(view->curr_dir) +3);
 					strcat(expanded, "\"");
 					strcat(expanded, view->curr_dir);
@@ -497,7 +497,7 @@ expand_macros(FileView *view, char *command, char *args,
 				break;
 			case 'D': /* other directory */
 				{
-					expanded = (char *)realloc(expanded, 
+					expanded = (char *)realloc(expanded,
 							len + strlen(other_view->curr_dir) +3);
 					if(!expanded)
 					{
@@ -515,7 +515,7 @@ expand_macros(FileView *view, char *command, char *args,
 				break;
 			case 's': /* split in new screen region */
 				*split = 1;
-				
+
 				break;
 			default:
 				break;
@@ -528,7 +528,7 @@ expand_macros(FileView *view, char *command, char *args,
 				if(command[x] == '%')
 					break;
 		}
-		expanded = (char *)realloc(expanded, len + strlen(command) +1); 
+		expanded = (char *)realloc(expanded, len + strlen(command) +1);
 		strncat(expanded, command + y, x - y);
 		len = strlen(expanded);
 		x++;
@@ -540,14 +540,14 @@ expand_macros(FileView *view, char *command, char *args,
 		show_error_msg("Argument is too long", " FIXME ");
 
 	curr_stats.getting_input = 0;
-	
+
 	return expanded;
 }
 
 int
 is_user_command(char *command)
 {
-	char buf[strlen(command) +1]; 
+	char buf[strlen(command) +1];
 	char *com;
 	char *ptr;
 	int x;
@@ -598,17 +598,17 @@ remove_command(char *name)
 		cfg.command_num--;
 		while(x < cfg.command_num)
 		{
-			command_list[x].name = (char *)realloc(command_list[x].name, 
+			command_list[x].name = (char *)realloc(command_list[x].name,
 					strlen(command_list[x +1].name +1));
 			strcpy(command_list[x].name, command_list[x +1].name);
-			command_list[x].action = (char *)realloc(command_list[x].action, 
+			command_list[x].action = (char *)realloc(command_list[x].action,
 					strlen(command_list[x +1].action +1));
 			strcpy(command_list[x].action, command_list[x +1].action);
 			x++;
 		}
 
-        free(command_list[x].name);
-        free(command_list[x].action);
+		free(command_list[x].name);
+		free(command_list[x].action);
 		curr_stats.setting_change = 1;
 	}
 	else
@@ -622,7 +622,7 @@ add_command(char *name, char *action)
 			return;
 	if(isdigit(*name))
 	{
-		show_error_msg(" Invalid Command Name ", 
+		show_error_msg(" Invalid Command Name ",
 				"Commands cannot start with a number.");
 		return;
 	}
@@ -632,7 +632,7 @@ add_command(char *name, char *action)
 		return;
 	}
 
-	command_list = (command_t *)realloc(command_list, 
+	command_list = (command_t *)realloc(command_list,
 			(cfg.command_num +1) * sizeof(command_t));
 
 	command_list[cfg.command_num].name = (char *)malloc(strlen(name) +1);
@@ -669,7 +669,7 @@ set_user_command(char * command, int overwrite, int background)
 
 	if((strlen(ptr) < 1))
 	{
-		show_error_msg(" To set a Command Use: ", 
+		show_error_msg(" To set a Command Use: ",
 				":com command_name command_action");
 		return;
 	}
@@ -678,7 +678,7 @@ set_user_command(char * command, int overwrite, int background)
 
 	if(background)
 	{
-		com_action = (char *)realloc(com_action, 
+		com_action = (char *)realloc(com_action,
 				(strlen(com_action) + 4) * sizeof(char));
 		snprintf(com_action, (strlen(com_action) + 3) * sizeof(char), "%s &", ptr);
 	}
@@ -751,17 +751,17 @@ shellout(char *command, int pause)
 
 			/* Needed for symlink directories and sshfs mounts */
 			snprintf(buf, sizeof(buf), "screen -X setenv PWD \'%s\'",
-				   	curr_view->curr_dir);
+					curr_view->curr_dir);
 
 			my_system(buf);
 
 			if(title != NULL)
 			{
 				if(pause)
-					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c \"pauseme %s\"", 
+					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c \"pauseme %s\"",
 							title + strlen(cfg.vi_command) +1, command);
 				else
-					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c \"%s\"", 
+					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c \"%s\"",
 							title + strlen(cfg.vi_command) +1, command);
 			}
 			else
@@ -777,7 +777,7 @@ shellout(char *command, int pause)
 					title = strdup("Shell");
 
 				if(pause)
-					snprintf(buf, sizeof(buf), "screen -t \"%.10s\" sh -c \"pauseme %s\"", 
+					snprintf(buf, sizeof(buf), "screen -t \"%.10s\" sh -c \"pauseme %s\"",
 							title, command);
 				else
 					snprintf(buf, sizeof(buf), "screen -t \"%.10s\" sh -c \"%s\"", title, command);
@@ -797,7 +797,7 @@ shellout(char *command, int pause)
 		if(cfg.use_screen)
 		{
 			snprintf(buf, sizeof(buf), "screen -X setenv PWD \'%s\'",
-				   	curr_view->curr_dir);
+					curr_view->curr_dir);
 
 			my_system(buf);
 
@@ -817,7 +817,7 @@ shellout(char *command, int pause)
 	my_system(buf);
 
 
-	/* There is a problem with using the screen program and 
+	/* There is a problem with using the screen program and
 	 * catching all the SIGWICH signals.  So just redraw the window.
 	 */
 	if (!isendwin())
@@ -892,7 +892,7 @@ select_files_in_range(FileView *view, cmd_t * cmd)
 						}
 						view->selected_files = y;
 					}
-					/* Just a count is given. */ 
+					/* Just a count is given. */
 					else
 					{
 						y = 0;
@@ -925,7 +925,7 @@ check_for_range(FileView *view, char *command, cmd_t *cmd)
 
 	/*
 	 * First check for a count or a range
-	 * This should be changed to include the rest of the range 
+	 * This should be changed to include the rest of the range
 	 * characters [/?\/\?\&]
 	 */
 	if(command[cmd->pos] == '\'')
@@ -998,7 +998,7 @@ check_for_range(FileView *view, char *command, cmd_t *cmd)
 			cmd->end_range = check_mark_directory(view, mark);
 			if(cmd->end_range < 0)
 			{
-				show_error_msg("Invalid mark in range", 
+				show_error_msg("Invalid mark in range",
 						"Trying to use an invalid mark.");
 				return -1;
 			}
@@ -1082,7 +1082,7 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 	/* The builtin commands do not contain numbers and ! is only used at the
 	 * end of the command name.
 	 */
-	while(cmd->cmd_name[cmd->pos] != ' ' && cmd->pos < strlen(cmd->cmd_name) 
+	while(cmd->cmd_name[cmd->pos] != ' ' && cmd->pos < strlen(cmd->cmd_name)
 			&& cmd->cmd_name[cmd->pos] != '!')
 		cmd->pos++;
 
@@ -1120,7 +1120,7 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 	/* Get the actual command name. */
 	if((cmd->builtin = command_is_reserved(cmd->cmd_name)) > -1)
 	{
-		cmd->cmd_name = (char *)realloc(cmd->cmd_name, 
+		cmd->cmd_name = (char *)realloc(cmd->cmd_name,
 				strlen(reserved_commands[cmd->builtin]) +1);
 		snprintf(cmd->cmd_name, sizeof(reserved_commands[cmd->builtin]),
 				"%s", reserved_commands[cmd->builtin]);
@@ -1180,13 +1180,13 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					}
 					if(!cmd->background)
 						free(com);
-						
+
 				}
 				else
 				{
 					show_error_msg(" Command Error ",
 						"The :! command requires an argument - :!command");
-			 		save_msg = 1;
+					save_msg = 1;
 				}
 			}
 			break;
@@ -1301,17 +1301,17 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_EDIT:
 			{
-				if((!view->selected_files) || 
+				if((!view->selected_files) ||
 						(!view->dir_entry[view->list_pos].selected))
 				{
 					char buf[PATH_MAX];
 					if(view->dir_entry[view->list_pos].name != NULL)
 					{
-						char *temp = 
+						char *temp =
 							escape_filename(view->dir_entry[view->list_pos].name,
 									strlen(view->dir_entry[view->list_pos].name), 0);
-						snprintf(buf, sizeof(buf), "%s %s/%s", cfg.vi_command, 
-								view->curr_dir, temp); 
+						snprintf(buf, sizeof(buf), "%s %s/%s", cfg.vi_command,
+								view->curr_dir, temp);
 						shellout(buf, 0);
 						free(temp);
 					}
@@ -1326,13 +1326,13 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					if((buf = (char *)malloc(strlen(cfg.vi_command) + strlen(files) + 2))
 							== NULL)
 					{
-						show_error_msg("Unable to allocate enough memory", 
+						show_error_msg("Unable to allocate enough memory",
 								"Cannot load file");
 						break;
 					}
-					snprintf(buf, strlen(cfg.vi_command) + strlen(files) +1, 
+					snprintf(buf, strlen(cfg.vi_command) + strlen(files) +1,
 							"%s %s", cfg.vi_command, files);
-					
+
 					shellout(buf, 0);
 					free(files);
 					free(buf);
@@ -1346,7 +1346,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				if(chdir(buf))
 					break;
 
-				start_background_job("rm -fr * .[!.]*"); 
+				start_background_job("rm -fr * .[!.]*");
 				chdir(view->curr_dir);
 			}
 			break;
@@ -1357,15 +1357,15 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					view->invert = 1;
 					view->filename_filter = (char *)realloc(view->filename_filter,
 						strlen(cmd->args) +2);
-					snprintf(view->filename_filter, strlen(cmd->args) +1, 
-							"%s", cmd->args); 
+					snprintf(view->filename_filter, strlen(cmd->args) +1,
+							"%s", cmd->args);
 					load_dir_list(view, 1);
 					moveto_list_pos(view, 0);
 					curr_stats.setting_change = 1;
 				}
 				else
 				{
-					show_error_msg(" Command Error ", 
+					show_error_msg(" Command Error ",
 							"The :filter command requires an argument - :filter pattern");
 					save_msg = 1;
 				}
@@ -1382,13 +1382,13 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				{
 					if(cmd->args)
 					{
-						snprintf(help_file, sizeof(help_file), 
+						snprintf(help_file, sizeof(help_file),
 								"%s -c \'help %s\' -c only", cfg.vi_command, cmd->args);
 						shellout(help_file, 0);
 					}
-					else 
+					else
 					{
-						snprintf(help_file, sizeof(help_file), 
+						snprintf(help_file, sizeof(help_file),
 								"%s -c \'help vifm\' -c only", cfg.vi_command);
 						shellout(help_file, 0);
 					}
@@ -1396,7 +1396,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				else
 				{
 					snprintf(help_file, sizeof(help_file),
-						   	"%s %s/vifm-help.txt",
+							"%s %s/vifm-help.txt",
 							cfg.vi_command, cfg.config_dir);
 
 					shellout(help_file, 0);
@@ -1417,7 +1417,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				curr_stats.setting_change = 1;
 			}
 			break;
-		case COM_JOBS:	
+		case COM_JOBS:
 			show_jobs_menu(view);
 			break;
 		case COM_LOCATE:
@@ -1468,7 +1468,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_X:
 		case COM_QUIT:
-            comm_quit();
+			comm_quit();
 			break;
 		case COM_SORT:
 			show_sort_menu(view);
@@ -1495,7 +1495,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				if (!cfg.use_screen)
 					break;
 
-				if (cmd->args) 
+				if (cmd->args)
 				{
 					if (strchr(cmd->args, '%'))
 					{
@@ -1558,7 +1558,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					yank_selected_files(view);
 					*/
 				show_error_msg(":yank is not implemented yet",
-					   	":yank is not implemented yet ");
+						":yank is not implemented yet ");
 			}
 			break;
 		case COM_VMAP:
@@ -1577,15 +1577,15 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		int x;
 		for (x = 0; x < view->list_rows; x++)
 			view->dir_entry[x].selected = 0;
-        view->selected_files = 0;
-        draw_dir_list(view, view->top_line, view->list_pos);
-        moveto_list_pos(view, view->list_pos);
+		view->selected_files = 0;
+		draw_dir_list(view, view->top_line, view->list_pos);
+		moveto_list_pos(view, view->list_pos);
 	}
 
 	return save_msg;
 }
 
-int 
+int
 execute_user_command(FileView *view, cmd_t *cmd)
 {
 	char *expanded_com = NULL;
@@ -1593,7 +1593,7 @@ execute_user_command(FileView *view, cmd_t *cmd)
 	int split = 0;
 
 	if(strchr(command_list[cmd->is_user].action, '%') != NULL)
-		expanded_com = expand_macros(view, command_list[cmd->is_user].action, 
+		expanded_com = expand_macros(view, command_list[cmd->is_user].action,
 		cmd->args, &use_menu, &split);
 	else
 		expanded_com = strdup(command_list[cmd->is_user].action);
@@ -1601,7 +1601,7 @@ execute_user_command(FileView *view, cmd_t *cmd)
 	while(isspace(expanded_com[strlen(expanded_com) -1]))
 		expanded_com[strlen(expanded_com) -1] = '\0';
 
-	if(expanded_com[strlen(expanded_com)-1] == '&' 
+	if(expanded_com[strlen(expanded_com)-1] == '&'
 			&& expanded_com[strlen(expanded_com) -2] == ' ')
 	{
 		expanded_com[strlen(expanded_com)-1] = '\0';
@@ -1626,21 +1626,21 @@ execute_user_command(FileView *view, cmd_t *cmd)
 			free(expanded_com);
 			return 0;
 		}
-			
+
 		split_screen(view, expanded_com);
 		free(expanded_com);
 		return 0;
 
 	}
 
-	if(!strncmp(expanded_com, "filter ", 7)) 
+	if(!strncmp(expanded_com, "filter ", 7))
 	{
 		view->invert = 1;
 		view->filename_filter = (char *)realloc(view->filename_filter,
 				strlen(strchr(expanded_com, ' ')) +1);
-		snprintf(view->filename_filter, 
-				strlen(strchr(expanded_com, ' ')) +1, "%s", 
-				strchr(expanded_com, ' ') +1); 
+		snprintf(view->filename_filter,
+				strlen(strchr(expanded_com, ' ')) +1, "%s",
+				strchr(expanded_com, ' ') +1);
 
 		load_dir_list(view, 1);
 		moveto_list_pos(view, 0);
@@ -1734,7 +1734,7 @@ get_command(FileView *view, int type, void * ptr)
 			return 1;
 	}
 
-	if(type == GET_COMMAND || type == MAPPED_COMMAND 
+	if(type == GET_COMMAND || type == MAPPED_COMMAND
 			|| type == GET_VISUAL_COMMAND)
 	{
 		save_command_history(command);
@@ -1757,23 +1757,25 @@ get_command(FileView *view, int type, void * ptr)
 void
 comm_quit()
 {
-    if(cfg.vim_filter)
-    {
-        char buf[256];
-        FILE *fp;
+	if(cfg.vim_filter)
+	{
+		char buf[256];
+		FILE *fp;
 
 
-        snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
-        fp = fopen(buf, "w");
-        endwin();
-        fprintf(fp, "NULL");
-        fclose(fp);
-        exit(0);
-    }
+		snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
+		fp = fopen(buf, "w");
+		endwin();
+		fprintf(fp, "NULL");
+		fclose(fp);
+		exit(0);
+	}
 
-    write_config_file();
+	write_config_file();
 
-    endwin();
-    system("clear");
-    exit(0);
+	endwin();
+	system("clear");
+	exit(0);
 }
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

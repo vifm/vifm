@@ -60,3 +60,5 @@ void remove_bookmark(const int x);
 int check_mark_directory(FileView *view, char mark);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

@@ -7,7 +7,7 @@
  *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * FITNESS FOR A PARTICULAR PURPOSE.	See the GNU General Public License for
  * more details.
  *
  * You should have received a copy of the GNU General Public License along with
@@ -25,7 +25,7 @@
 #include<sys/wait.h>
 #include<fcntl.h>
 
-#include"background.h" 
+#include"background.h"
 #include"config.h"
 #include"menus.h"
 #include"status.h"
@@ -34,27 +34,27 @@
 struct Jobs_List *jobs = NULL;
 struct Finished_Jobs *fjobs = NULL;
 
-static void 
-add_background_job(pid_t pid, char *cmd, int fd) 
+static void
+add_background_job(pid_t pid, char *cmd, int fd)
 {
 	Jobs_List *new;
 
-	new = (Jobs_List *)malloc(sizeof(Jobs_List)); 
+	new = (Jobs_List *)malloc(sizeof(Jobs_List));
 	new->pid = pid;
 	new->cmd = strdup(cmd);
 	new->next = jobs;
-	new->fd = fd; 
+	new->fd = fd;
 	new->error_buf = (char *)calloc(1, sizeof(char));
 	new->running = 1;
 	jobs = new;
 }
 
-void 
+void
 add_finished_job(pid_t pid, int status)
 {
 	Finished_Jobs *new;
 
-	new = (Finished_Jobs *)malloc(sizeof(Finished_Jobs)); 
+	new = (Finished_Jobs *)malloc(sizeof(Finished_Jobs));
 	new->pid = pid;
 	new->remove = 0;
 	new->next = fjobs;
@@ -78,7 +78,7 @@ check_background_jobs(void)
 		return;
 
 	/*
-	 * SIGCHLD  needs to be blocked anytime the Finished_Jobs list 
+	 * SIGCHLD	needs to be blocked anytime the Finished_Jobs list
 	 * is accessed from anywhere except the received_sigchld().
 	 */
 	sigemptyset(&new_mask);
@@ -118,7 +118,7 @@ check_background_jobs(void)
 
 			if (nread)
 			{
-				p->error_buf = (char *) realloc(p->error_buf, 
+				p->error_buf = (char *) realloc(p->error_buf,
 						sizeof(buf));
 
 				strncat(p->error_buf, buf, sizeof(buf) - 1);
@@ -137,12 +137,12 @@ check_background_jobs(void)
 			Jobs_List *j = p;
 			if (prev)
 				prev->next = p->next;
-			else 
+			else
 				jobs = p->next;
 
 			p = p->next;
 			free(j->cmd);
-            free(j->error_buf);
+						free(j->error_buf);
 			free(j);
 		}
 		else
@@ -151,7 +151,7 @@ check_background_jobs(void)
 			p = p->next;
 		}
 	}
-	 
+
 	/* Clean up Finished Jobs list */
 	fj = fjobs;
 	if (fj)
@@ -221,7 +221,7 @@ background_and_wait_for_status(char *cmd)
 	}while(1);
 }
 
-/* Only used for deleting and putting of files so that the changes show 
+/* Only used for deleting and putting of files so that the changes show
  * up immediately in the file lists.
  */
 int
@@ -235,7 +235,7 @@ background_and_wait_for_errors(char *cmd)
 
 	if (pipe(error_pipe) != 0)
 	{
-		show_error_msg(" File pipe error", 
+		show_error_msg(" File pipe error",
 				"Error creating pipe in background.c line 84");
 		return -1;
 	}
@@ -246,11 +246,11 @@ background_and_wait_for_errors(char *cmd)
 	if (pid == 0)
 	{
 		int nullfd;
-		close(2);        /* Close stderr */
+		close(2);				 /* Close stderr */
 		dup(error_pipe[1]);  /* Redirect stderr to write end of pipe. */
 		close(error_pipe[0]); /* Close read end of pipe. */
 		close(0); /* Close stdin */
-		close(1); /* Close stdout */ 
+		close(1); /* Close stdout */
 
 		/* Send stdout, stdin to /dev/null */
 		if ((nullfd = open("/dev/null", O_RDONLY)) != -1)
@@ -276,13 +276,13 @@ background_and_wait_for_errors(char *cmd)
 
 		close(error_pipe[1]); /* Close write end of pipe. */
 
-    while ((nread = read(error_pipe[0], buf, sizeof(buf)-1)) > 0)
-    {
+		while ((nread = read(error_pipe[0], buf, sizeof(buf)-1)) > 0)
+		{
 			error = 1;
-      buf[nread] = '\0';
+			buf[nread] = '\0';
 			show_error_msg("Background Process Error", buf);
-    }
-    close(error_pipe[0]);
+		}
+		close(error_pipe[0]);
 	}
 
 	if (error)
@@ -292,16 +292,16 @@ background_and_wait_for_errors(char *cmd)
 
 }
 
-int 
+int
 start_background_job(char *cmd)
-{ 
+{
 	pid_t pid;
 	char *args[4];
 	int error_pipe[2];
 
 	if (pipe(error_pipe) != 0)
 	{
-		show_error_msg(" File pipe error", 
+		show_error_msg(" File pipe error",
 				"Error creating pipe in background.c line 307");
 		return -1;
 	}
@@ -312,11 +312,11 @@ start_background_job(char *cmd)
 	if (pid == 0)
 	{
 		int nullfd;
-		close(2);        /* Close stderr */
+		close(2);				 /* Close stderr */
 		dup(error_pipe[1]);  /* Redirect stderr to write end of pipe. */
 		close(error_pipe[0]); /* Close read end of pipe. */
 		close(0); /* Close stdin */
-		close(1); /* Close stdout */ 
+		close(1); /* Close stdout */
 
 		/* Send stdout, stdin to /dev/null */
 		if ((nullfd = open("/dev/null", O_RDONLY)) != -1)
@@ -343,3 +343,5 @@ start_background_job(char *cmd)
 	}
 	return 0;
 }
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

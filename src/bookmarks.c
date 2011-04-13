@@ -117,7 +117,7 @@ add_bookmark(const char mark, const char *directory, const char *file)
 
 	x = mark2index(mark);
 
-	/* The mark is already being used.  Free pointers first! */
+	/* The mark is already being used.	Free pointers first! */
 	if (is_bookmark(x))
 		silent_remove_bookmark(x);
 
@@ -208,3 +208,5 @@ get_bookmark(FileView *view)
 	}
 	return 0;
 }
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

@@ -43,16 +43,16 @@
 
 struct line_stats
 {
-    int type;               /* type */
-    wchar_t *line;          /* the line reading */
-    int index;              /* index of the current character */
-    int curs_pos;           /* position of the cursor */
-    int len;                /* length of the string */
-    int cmd_pos;            /* position in the historys */
-    wchar_t prompt[8];      /* prompt */
-    int prompt_wid;         /* width of prompt */
-    int complete_continue;  /* If non-zero,
-                               continue the previous completion */
+	int type;				/* type */
+	wchar_t *line;			/* the line reading */
+	int index;				/* index of the current character */
+	int curs_pos;			/* position of the cursor */
+	int len;				/* length of the string */
+	int cmd_pos;			/* position in the historys */
+	wchar_t prompt[8];		/* prompt */
+	int prompt_wid;			/* width of prompt */
+	int complete_continue;	/* If non-zero,
+							   continue the previous completion */
 };
 
 static char *
@@ -86,7 +86,7 @@ get_last_word(char * string)
 
 	if (!string)
 		return NULL;
-		
+
 	/*:command filename */
 	temp = strrchr(string, ' ');
 
@@ -111,27 +111,27 @@ static char *
 filename_completion(char *str)
 {
 
-    static char *string;
-    static int offset;
+	static char *string;
+	static int offset;
 	DIR *dir;
 	struct dirent *d;
 	char * dirname = (char *)NULL;
 	char * filename = (char *)NULL;
 	char * temp =  (char *)NULL;
-    int i = 0;
+	int i = 0;
 	int found = 0;
 	int filename_len = 0;
 
-    if (str != NULL)
-    {
-        string = str;
-        offset = 0;
-    }
-    else
-    {
-        offset++;
-    }
-    
+	if (str != NULL)
+	{
+		string = str;
+		offset = 0;
+	}
+	else
+	{
+		offset++;
+	}
+
 	if (!strncmp(string, "~/", 2))
 	{
 		char * homedir = getenv("HOME");
@@ -176,31 +176,31 @@ filename_completion(char *str)
 		return NULL;
 	}
 
-    while ((d=readdir(dir)))
+	while ((d=readdir(dir)))
 	{
 		if ( ! strncmp(d->d_name, filename, filename_len)
-             && strcmp(d->d_name, ".") && strcmp(d->d_name, ".."))
+			 && strcmp(d->d_name, ".") && strcmp(d->d_name, ".."))
 		{
-            i = 0;
-            while (i < offset)
-            {
-                if (!(d=readdir(dir)))
-                {
-                    offset = -1;
+			i = 0;
+			while (i < offset)
+			{
+				if (!(d=readdir(dir)))
+				{
+					offset = -1;
 
-                    closedir(dir);
-                    free(dirname);
+					closedir(dir);
+					free(dirname);
 
-                    return strdup(filename);
-                }
-                if (    !strncmp(d->d_name, filename, filename_len)
-                     && strcmp(d->d_name, ".") && strcmp(d->d_name, ".."))
-                {
-                    i++;
-                }
-            }
+					return strdup(filename);
+				}
+				if (	!strncmp(d->d_name, filename, filename_len)
+					 && strcmp(d->d_name, ".") && strcmp(d->d_name, ".."))
+				{
+					i++;
+				}
+			}
 			found = 1;
-            break;
+			break;
 		}
 	}
 
@@ -256,25 +256,25 @@ filename_completion(char *str)
 static wchar_t *
 wcsins(wchar_t *src, wchar_t *ins, int pos)
 {
-    int i;
-    wchar_t *p;
+	int i;
+	wchar_t *p;
 
-    pos--;
+	pos--;
 
-    for (p = src + pos; *p; p++)
-        ;
+	for (p = src + pos; *p; p++)
+		;
 
-    for (i = 0; ins[i]; i++)
-        ;
+	for (i = 0; ins[i]; i++)
+		;
 
-    for (; p >= src + pos; p--)
-        *(p + i) = *p;
-    p++;
+	for (; p >= src + pos; p--)
+		*(p + i) = *p;
+	p++;
 
-    for (; *ins; ins++, p++)
-        *p = *ins;
+	for (; *ins; ins++, p++)
+		*p = *ins;
 
-    return src;
+	return src;
 }
 
 
@@ -283,74 +283,74 @@ wcsins(wchar_t *src, wchar_t *ins, int pos)
 static wchar_t *
 wcsdel(wchar_t *src, int pos, int len)
 {
-    int p;
+	int p;
 
-    pos--;
+	pos--;
 
-    for (p = pos; pos - p < len; pos++)
-        if (! src[pos])
-        {
-            src[p] = L'\0';
-            return src;
-        }
+	for (p = pos; pos - p < len; pos++)
+		if (! src[pos])
+		{
+			src[p] = L'\0';
+			return src;
+		}
 
-    pos--;
+	pos--;
 
-    while(src[++pos])
-        src[pos-len] = src[pos];
-    src[pos-len] = src[pos];
+	while(src[++pos])
+		src[pos-len] = src[pos];
+	src[pos-len] = src[pos];
 
-    return src;
+	return src;
 }
 
 
 static int
 line_completion(struct line_stats *stat)
 {
-    static char *line_mb = (char *)NULL;
+	static char *line_mb = (char *)NULL;
 	char *last_word = (char *)NULL;
 	char *raw_name = (char *)NULL;
 	char *filename = (char *)NULL;
-    void *p;
-    wchar_t t;
-    int i;
+	void *p;
+	wchar_t t;
+	int i;
 
-    if (stat->line[stat->index] != L' ' && stat->index != stat->len)
-    {
-        stat->complete_continue = 0;
-        return -1;
-    }
+	if (stat->line[stat->index] != L' ' && stat->index != stat->len)
+	{
+		stat->complete_continue = 0;
+		return -1;
+	}
 
-    if (stat->complete_continue == 0)
-    {
-        /* only complete the part before the curser
-         * so just copy that part to line_mb */
-        t = stat->line[stat->index];
-        stat->line[stat->index] = L'\0';
+	if (stat->complete_continue == 0)
+	{
+		/* only complete the part before the curser
+		 * so just copy that part to line_mb */
+		t = stat->line[stat->index];
+		stat->line[stat->index] = L'\0';
 
-        i = wcstombs(NULL, stat->line, 0) + 1;
+		i = wcstombs(NULL, stat->line, 0) + 1;
 
-        if (! (p = realloc(line_mb, i * sizeof(char))))
-        {
-            free(line_mb);
-            line_mb = NULL;
-            return -1;
-        }
-        
-        line_mb = (char *) p;
-        wcstombs(line_mb, stat->line, i);
+		if (! (p = realloc(line_mb, i * sizeof(char))))
+		{
+			free(line_mb);
+			line_mb = NULL;
+			return -1;
+		}
 
-        stat->line[stat->index] = t;
-    }
+		line_mb = (char *) p;
+		wcstombs(line_mb, stat->line, i);
+
+		stat->line[stat->index] = t;
+	}
 
 	last_word = get_last_word(line_mb);
 
 	if (last_word)
 	{
 		raw_name = filename_completion(
-                stat->complete_continue ? NULL : last_word);
+				stat->complete_continue ? NULL : last_word);
 
-        stat->complete_continue = 1;
+		stat->complete_continue = 1;
 
 		if (raw_name)
 			filename = escape_filename(raw_name, strlen(raw_name), 1);
@@ -359,234 +359,234 @@ line_completion(struct line_stats *stat)
 	else
 	{
 		char *complete_command = command_completion(
-                stat->complete_continue ? NULL : line_mb);
-        wchar_t *q;
+				stat->complete_continue ? NULL : line_mb);
+		wchar_t *q;
 
 		if (complete_command)
 		{
-            if (!stat->line)
-            {
-                free(raw_name);
-                free(filename);
-                free(complete_command);
-                return 0;
-            }
+			if (!stat->line)
+			{
+				free(raw_name);
+				free(filename);
+				free(complete_command);
+				return 0;
+			}
 
-            if ((q = wcschr(stat->line, L' ')) != NULL)
-            {   /* If the cursor is not at the end of the string... */
-                wchar_t *buf;
+			if ((q = wcschr(stat->line, L' ')) != NULL)
+			{	/* If the cursor is not at the end of the string... */
+				wchar_t *buf;
 
-                i = mbstowcs(NULL, complete_command, 0) + 1;
-                if (! (buf = (wchar_t *) malloc((i + 1) * sizeof(wchar_t))))
-                {
-                    free(raw_name);
-                    free(filename);
-                    free(complete_command);
-                    return -1;
-                }
-                mbstowcs(buf, complete_command, i);
+				i = mbstowcs(NULL, complete_command, 0) + 1;
+				if (! (buf = (wchar_t *) malloc((i + 1) * sizeof(wchar_t))))
+				{
+					free(raw_name);
+					free(filename);
+					free(complete_command);
+					return -1;
+				}
+				mbstowcs(buf, complete_command, i);
 
-                i += wcslen(q);
+				i += wcslen(q);
 
-                wcsdel(stat->line, 1, q - stat->line);
+				wcsdel(stat->line, 1, q - stat->line);
 
-                if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
-                {
-                    free(raw_name);
-                    free(filename);
-                    free(complete_command);
-                    return -1;
-                }
-                stat->line = (wchar_t *) p;
+				if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
+				{
+					free(raw_name);
+					free(filename);
+					free(complete_command);
+					return -1;
+				}
+				stat->line = (wchar_t *) p;
 
-                wcsins(stat->line, buf, 1);
+				wcsins(stat->line, buf, 1);
 
-                stat->index = wcschr(stat->line, L' ') - stat->line;
-                stat->curs_pos = wcswidth(stat->line, stat->index)
-                                  + stat->prompt_wid;
-                stat->len = wcslen(stat->line);
+				stat->index = wcschr(stat->line, L' ') - stat->line;
+				stat->curs_pos = wcswidth(stat->line, stat->index)
+								  + stat->prompt_wid;
+				stat->len = wcslen(stat->line);
 
-                free(buf);
-            }
-            else
-            {
-                i = mbstowcs(NULL, complete_command, 0) + 1;
-                if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
-                {
-                    free(raw_name);
-                    free(filename);
-                    free(complete_command);
-                    return -1;
-                }
-                stat->line = (wchar_t *) p;
+				free(buf);
+			}
+			else
+			{
+				i = mbstowcs(NULL, complete_command, 0) + 1;
+				if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
+				{
+					free(raw_name);
+					free(filename);
+					free(complete_command);
+					return -1;
+				}
+				stat->line = (wchar_t *) p;
 
-                mbstowcs(stat->line, complete_command, i);
-                stat->index = stat->len = i - 1;
-                stat->curs_pos = wcswidth(stat->line, stat->len)
-                                  + stat->prompt_wid;
-            }
+				mbstowcs(stat->line, complete_command, i);
+				stat->index = stat->len = i - 1;
+				stat->curs_pos = wcswidth(stat->line, stat->len)
+								  + stat->prompt_wid;
+			}
 
-            werase(status_bar);
-            mvwaddwstr(status_bar, 0, 0, stat->prompt);
+			werase(status_bar);
+			mvwaddwstr(status_bar, 0, 0, stat->prompt);
 			mvwaddwstr(status_bar, 0, stat->prompt_wid, stat->line);
-            wmove(status_bar, 0, stat->curs_pos);
+			wmove(status_bar, 0, stat->curs_pos);
 		}
 
-        free(raw_name);
-        free(filename);
+		free(raw_name);
+		free(filename);
 		free(complete_command);
 
-        stat->complete_continue = 1;
-        return 0;
+		stat->complete_continue = 1;
+		return 0;
 	}
 
 	if (filename)
 	{
-        char *cur_file_pos = strrchr(line_mb, ' ');
-        char *temp = (char *) NULL;
+		char *cur_file_pos = strrchr(line_mb, ' ');
+		char *temp = (char *) NULL;
 
 		if (cur_file_pos)
 		{
-		    /* :command /some/directory/partial_filename anything_else... */
-            if ((temp = strrchr(cur_file_pos, '/')))
-            {
-                char x;
-                wchar_t *temp2;
+			/* :command /some/directory/partial_filename anything_else... */
+			if ((temp = strrchr(cur_file_pos, '/')))
+			{
+				char x;
+				wchar_t *temp2;
 
-                temp++;
-                x = *temp;
-                *temp = '\0';
+				temp++;
+				x = *temp;
+				*temp = '\0';
 
-                /* I'm really worry about the portability... */
-//              temp2 = (wchar_t *) wcsdup(stat->line + stat->index)
-                temp2 = (wchar_t *) malloc((wcslen(stat->line
-                         + stat->index) + 1) * sizeof(wchar_t));
-                if (!temp2)
-                {
-                    free(raw_name);
-                    free(filename);
-                    free(temp2);
-                    return -1;
-                }
-                wcscpy(temp2, stat->line + stat->index);
+				/* I'm really worry about the portability... */
+//				temp2 = (wchar_t *) wcsdup(stat->line + stat->index)
+				temp2 = (wchar_t *) malloc((wcslen(stat->line
+						 + stat->index) + 1) * sizeof(wchar_t));
+				if (!temp2)
+				{
+					free(raw_name);
+					free(filename);
+					free(temp2);
+					return -1;
+				}
+				wcscpy(temp2, stat->line + stat->index);
 
-                i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
-                     + (stat->len - stat->index) + 1;
+				i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
+					 + (stat->len - stat->index) + 1;
 
-                if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
-                {
-                    *temp = x;
-                    free(raw_name);
-                    free(filename);
-                    free(temp2);
-                    return -1;
-                }
-                stat->line = (wchar_t *) p;
+				if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
+				{
+					*temp = x;
+					free(raw_name);
+					free(filename);
+					free(temp2);
+					return -1;
+				}
+				stat->line = (wchar_t *) p;
 
-                swprintf(stat->line, i, L"%s%s%ls", line_mb,filename,temp2);
+				swprintf(stat->line, i, L"%s%s%ls", line_mb,filename,temp2);
 
-                stat->index = i - (stat->len - stat->index) - 1;
-                stat->curs_pos = stat->prompt_wid
-                                  + wcswidth(stat->line, stat->index);
-                stat->len = i - 1;
+				stat->index = i - (stat->len - stat->index) - 1;
+				stat->curs_pos = stat->prompt_wid
+								  + wcswidth(stat->line, stat->index);
+				stat->len = i - 1;
 
-                *temp = x;
-                free(raw_name);
-                free(filename);
-                free(temp2);
-		    }
-		    /* :command partial_filename anything_else... */
-		    else
-		    {
-                char x;
-                wchar_t *temp2;
+				*temp = x;
+				free(raw_name);
+				free(filename);
+				free(temp2);
+			}
+			/* :command partial_filename anything_else... */
+			else
+			{
+				char x;
+				wchar_t *temp2;
 
-                temp = cur_file_pos + 1;
-                x = *temp;
-                *temp = '\0';
+				temp = cur_file_pos + 1;
+				x = *temp;
+				*temp = '\0';
 
-                temp2 = (wchar_t *) malloc((wcslen(stat->line
-                         + stat->index) + 1) * sizeof(wchar_t));
-                if (!temp2)
-                {
-                    free(raw_name);
-                    free(filename);
-                    free(temp2);
-                    return -1;
-                }
-                wcscpy(temp2, stat->line + stat->index);
+				temp2 = (wchar_t *) malloc((wcslen(stat->line
+						 + stat->index) + 1) * sizeof(wchar_t));
+				if (!temp2)
+				{
+					free(raw_name);
+					free(filename);
+					free(temp2);
+					return -1;
+				}
+				wcscpy(temp2, stat->line + stat->index);
 
-                i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
-                     + (stat->len - stat->index) + 1;
+				i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
+					 + (stat->len - stat->index) + 1;
 
-                if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
-                {
-                    *temp = x;
-                    free(raw_name);
-                    free(filename);
-                    free(temp2);
-                    return -1;
-                }
-                stat->line = (wchar_t *) p;
+				if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
+				{
+					*temp = x;
+					free(raw_name);
+					free(filename);
+					free(temp2);
+					return -1;
+				}
+				stat->line = (wchar_t *) p;
 
-                swprintf(stat->line, i, L"%s%s%ls", line_mb,filename,temp2);
+				swprintf(stat->line, i, L"%s%s%ls", line_mb,filename,temp2);
 
-                stat->index = i - (stat->len - stat->index) - 1;
-                stat->curs_pos = stat->prompt_wid
-                                  + wcswidth(stat->line, stat->index);
-                stat->len = i - 1;
+				stat->index = i - (stat->len - stat->index) - 1;
+				stat->curs_pos = stat->prompt_wid
+								  + wcswidth(stat->line, stat->index);
+				stat->len = i - 1;
 
-                *temp = x;
-                free(raw_name);
-                free(filename);
-                free(temp2);
-		    }
-        }
-		/* :!partial_filename anthing_else...        or
-         * :!!partial_filename anthing_else... */
+				*temp = x;
+				free(raw_name);
+				free(filename);
+				free(temp2);
+			}
+		}
+		/* :!partial_filename anthing_else...		 or
+		 * :!!partial_filename anthing_else... */
 		else if ((temp = strrchr(line_mb, '!')))
 		{
-            char x;
-            wchar_t *temp2;
+			char x;
+			wchar_t *temp2;
 
-            temp++;
-            x = *temp;
+			temp++;
+			x = *temp;
 			*temp = '\0';
 
-            temp2 = (wchar_t *) malloc((wcslen(stat->line
-                     + stat->index) + 1) * sizeof(wchar_t));
-            if (!temp2)
-            {
-                free(raw_name);
-                free(filename);
-                return -1;
-            }
-            wcscpy(temp2, stat->line + stat->index);
+			temp2 = (wchar_t *) malloc((wcslen(stat->line
+					 + stat->index) + 1) * sizeof(wchar_t));
+			if (!temp2)
+			{
+				free(raw_name);
+				free(filename);
+				return -1;
+			}
+			wcscpy(temp2, stat->line + stat->index);
 
-            i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
-                 + (stat->len - stat->index) + 1;
+			i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
+				 + (stat->len - stat->index) + 1;
 
 			if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
 			{
-                *temp = x;
+				*temp = x;
 				free(raw_name);
-                free(filename);
-                free(temp2);
-                return -1;
+				free(filename);
+				free(temp2);
+				return -1;
 			}
-            stat->line = (wchar_t *) p;
+			stat->line = (wchar_t *) p;
 
-            swprintf(stat->line, i , L"%s%s%ls", line_mb, filename, temp2);
+			swprintf(stat->line, i , L"%s%s%ls", line_mb, filename, temp2);
 
-		    stat->index = i - (stat->len - stat->index) - 1;
-            stat->curs_pos = stat->prompt_wid
-                              + wcswidth(stat->line, stat->index);
-            stat->len = i - 1;
+			stat->index = i - (stat->len - stat->index) - 1;
+			stat->curs_pos = stat->prompt_wid
+							  + wcswidth(stat->line, stat->index);
+			stat->len = i - 1;
 
-            *temp = x;
+			*temp = x;
 			free(raw_name);
-            free(filename);
-            free(temp2);
+			free(filename);
+			free(temp2);
 		}
 		/* error */
 		else
@@ -594,105 +594,105 @@ line_completion(struct line_stats *stat)
 			show_error_msg(" Debug Error ",
 					"Harmless error in rline.c line 564");
 			free(raw_name);
-            free(filename);
-            return -1;
+			free(filename);
+			return -1;
 		}
 
 
-        werase(status_bar);
+		werase(status_bar);
 		mvwaddwstr(status_bar, 0, 0, stat->prompt);
 		mvwaddwstr(status_bar, 0, stat->prompt_wid, stat->line);
-        wmove(status_bar, 0, stat->curs_pos);
-    }
+		wmove(status_bar, 0, stat->curs_pos);
+	}
 
-    stat->complete_continue = 1;
-    return 0;
+	stat->complete_continue = 1;
+	return 0;
 }
 
 char *
 my_rl_gets(int type)
 {
-    static char *line_read_mb = (char *) NULL;
-    struct line_stats stat;
-    wchar_t key[2] = { 0 };
-    int done = 0;
-    int abort = 0;
+	static char *line_read_mb = (char *) NULL;
+	struct line_stats stat;
+	wchar_t key[2] = { 0 };
+	int done = 0;
+	int abort = 0;
 
-    void *p;
-    int i;
+	void *p;
+	int i;
 
-    /* If the buffer has already been allocated, free the memory. */
-    free(line_read_mb);
-    line_read_mb = (char *)NULL;
+	/* If the buffer has already been allocated, free the memory. */
+	free(line_read_mb);
+	line_read_mb = (char *)NULL;
 
-    stat.line = (wchar_t *) NULL;
-    stat.index = 0;
-    stat.curs_pos = 0;
-    stat.len = 0;
-    stat.cmd_pos = -1;
-    stat.complete_continue = 0;
-    stat.type = type;
+	stat.line = (wchar_t *) NULL;
+	stat.index = 0;
+	stat.curs_pos = 0;
+	stat.len = 0;
+	stat.cmd_pos = -1;
+	stat.complete_continue = 0;
+	stat.type = type;
 
 	if (stat.type == GET_COMMAND || stat.type == MENU_COMMAND)
-        wcsncpy(stat.prompt, L":", sizeof(stat.prompt) / sizeof(wchar_t));
+		wcsncpy(stat.prompt, L":", sizeof(stat.prompt) / sizeof(wchar_t));
 	else if (stat.type == GET_SEARCH_PATTERN || stat.type == MENU_SEARCH)
-        wcsncpy(stat.prompt, L"/", sizeof(stat.prompt) / sizeof(wchar_t));
-    /*
-    else if (type == MAPPED_COMMAND || type == MAPPED_SEARCH)
-    {
-        snprintf(buf, sizeof(buf), "%s", string);
-        mvwaddstr(status_bar, 0, 0, string);
-        pos = strlen(string);
-        index = pos -1;    
-        len = index;
-    }
-    */
-   	else if (stat.type == GET_VISUAL_COMMAND)
-        wcsncpy(stat.prompt, L":'<,'>", sizeof(stat.prompt)
-                 / sizeof(wchar_t));
+		wcsncpy(stat.prompt, L"/", sizeof(stat.prompt) / sizeof(wchar_t));
+	/*
+	else if (type == MAPPED_COMMAND || type == MAPPED_SEARCH)
+	{
+		snprintf(buf, sizeof(buf), "%s", string);
+		mvwaddstr(status_bar, 0, 0, string);
+		pos = strlen(string);
+		index = pos -1;
+		len = index;
+	}
+	*/
+	else if (stat.type == GET_VISUAL_COMMAND)
+		wcsncpy(stat.prompt, L":'<,'>", sizeof(stat.prompt)
+				 / sizeof(wchar_t));
 
-    /* 
-    stat.prompt_wid = wcslen(prompt);
-    stat.curs_pos = wcswidth(prompt);
-     */
-    stat.prompt_wid = stat.curs_pos = wcslen(stat.prompt);
+	/*
+	stat.prompt_wid = wcslen(prompt);
+	stat.curs_pos = wcswidth(prompt);
+	 */
+	stat.prompt_wid = stat.curs_pos = wcslen(stat.prompt);
 
-    curs_set(1);
-    werase(status_bar);
+	curs_set(1);
+	werase(status_bar);
 
-    mvwaddwstr(status_bar, 0, 0, stat.prompt);
+	mvwaddwstr(status_bar, 0, 0, stat.prompt);
 
-    while (!done)
-    {
-        if(curr_stats.freeze)
+	while (!done)
+	{
+		if(curr_stats.freeze)
 		  continue;
 
-	    curs_set(1);
+		curs_set(1);
 		flushinp();
 		curr_stats.getting_input = 1;
 		wget_wch(status_bar, (wint_t *) key);
 
 		switch (*key)
-        {
-            case 27: /* ascii Escape */
-            case 3: /* ascii Ctrl C */
-                done = 1;
-                abort = 1;
-                break;
-            case 13: /* ascii Return */
-                done = 1;
-                break;
-            case 9: /* ascii Tab */
-                if (   stat.type != MENU_SEARCH && stat.type != MENU_COMMAND
-                    && stat.line ) 
-                {
-                    line_completion(&stat);
-                }
-                break;
-            case 16: /* ascii Ctrl P */
-            case KEY_UP:
+		{
+			case 27: /* ascii Escape */
+			case 3: /* ascii Ctrl C */
+				done = 1;
+				abort = 1;
+				break;
+			case 13: /* ascii Return */
+				done = 1;
+				break;
+			case 9: /* ascii Tab */
+				if (   stat.type != MENU_SEARCH && stat.type != MENU_COMMAND
+					&& stat.line )
+				{
+					line_completion(&stat);
+				}
+				break;
+			case 16: /* ascii Ctrl P */
+			case KEY_UP:
 
-                stat.complete_continue = 0;
+				stat.complete_continue = 0;
 
 				if (stat.type == GET_COMMAND)
 				{
@@ -702,23 +702,23 @@ my_rl_gets(int type)
 					if (++stat.cmd_pos > cfg.cmd_history_num)
 						stat.cmd_pos = 0;
 
-                    stat.len = mbstowcs(NULL, cfg.cmd_history[stat.cmd_pos]
-                                , 0);
+					stat.len = mbstowcs(NULL, cfg.cmd_history[stat.cmd_pos]
+								, 0);
 					p = realloc(stat.line, (stat.len+1) * sizeof(wchar_t));
 
-                    if (!p)
-                        break;
+					if (!p)
+						break;
 
-                    stat.line = (wchar_t *) p;
-                    mbstowcs(stat.line, cfg.cmd_history[stat.cmd_pos]
-                              , stat.len + 1);
+					stat.line = (wchar_t *) p;
+					mbstowcs(stat.line, cfg.cmd_history[stat.cmd_pos]
+							  , stat.len + 1);
 
 					stat.curs_pos = stat.prompt_wid
-                                     + wcswidth(stat.line, stat.len);
+									 + wcswidth(stat.line, stat.len);
 					stat.index = stat.len;
 
 					werase(status_bar);
-                    mvwaddwstr(status_bar, 0, 0, stat.prompt);
+					mvwaddwstr(status_bar, 0, 0, stat.prompt);
 					mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
 
 					if (stat.cmd_pos >= cfg.cmd_history_len - 1)
@@ -732,34 +732,34 @@ my_rl_gets(int type)
 					if(++stat.cmd_pos > cfg.search_history_num)
 						stat.cmd_pos = 0;
 
-                    stat.len = mbstowcs(NULL
-                            , cfg.search_history[stat.cmd_pos], 0);
+					stat.len = mbstowcs(NULL
+							, cfg.search_history[stat.cmd_pos], 0);
 
 					p = realloc(stat.line, (stat.len+1) * sizeof(wchar_t));
 
-                    if (!p)
-                        break;
+					if (!p)
+						break;
 
-                    stat.line = (wchar_t *) p;
-                    mbstowcs(stat.line, cfg.cmd_history[stat.cmd_pos]
-                            , stat.len + 1);
+					stat.line = (wchar_t *) p;
+					mbstowcs(stat.line, cfg.cmd_history[stat.cmd_pos]
+							, stat.len + 1);
 
 					stat.curs_pos = wcswidth(stat.line, stat.len)
-                                     + stat.prompt_wid;
+									 + stat.prompt_wid;
 					stat.index = stat.len;
 
 					werase(status_bar);
-                    mvwaddwstr(status_bar, 0, 0, stat.prompt);
+					mvwaddwstr(status_bar, 0, 0, stat.prompt);
 					mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
 
 					if (stat.cmd_pos >= cfg.search_history_len - 1)
 						stat.cmd_pos = cfg.search_history_len - 1;
 				}
 				break;
-            case 14: /* ascii Ctrl N */
-            case KEY_DOWN:
+			case 14: /* ascii Ctrl N */
+			case KEY_DOWN:
 
-                stat.complete_continue = 0;
+				stat.complete_continue = 0;
 
 				if (stat.type == GET_COMMAND)
 				{
@@ -769,24 +769,24 @@ my_rl_gets(int type)
 					if(--stat.cmd_pos < 0)
 						stat.cmd_pos = cfg.cmd_history_num;
 
-                    stat.len = mbstowcs(NULL, cfg.cmd_history[stat.cmd_pos]
-                                , 0);
+					stat.len = mbstowcs(NULL, cfg.cmd_history[stat.cmd_pos]
+								, 0);
 
 					p = realloc(stat.line, (stat.len+1) * sizeof(wchar_t));
 
-                    if (!p)
-                        break;
+					if (!p)
+						break;
 
-                    stat.line = (wchar_t *) p;
-                    mbstowcs(stat.line, cfg.cmd_history[stat.cmd_pos]
-                            , stat.len + 1);
+					stat.line = (wchar_t *) p;
+					mbstowcs(stat.line, cfg.cmd_history[stat.cmd_pos]
+							, stat.len + 1);
 
 					stat.curs_pos = wcswidth(stat.line, stat.len)
-                                     + stat.prompt_wid;
+									 + stat.prompt_wid;
 					stat.index = stat.len;
 
 					werase(status_bar);
-                    mvwaddwstr(status_bar, 0, 0, stat.prompt);
+					mvwaddwstr(status_bar, 0, 0, stat.prompt);
 					mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
 
 					if (stat.cmd_pos >= cfg.cmd_history_len - 1)
@@ -800,198 +800,200 @@ my_rl_gets(int type)
 					if(--stat.cmd_pos < 0)
 						stat.cmd_pos = cfg.search_history_num;
 
-                    stat.len = mbstowcs(NULL
-                                , cfg.search_history[stat.cmd_pos], 0);
+					stat.len = mbstowcs(NULL
+								, cfg.search_history[stat.cmd_pos], 0);
 
 					p = realloc(stat.line, (stat.len+1) * sizeof(wchar_t));
 
-                    if (!p)
-                        break;
+					if (!p)
+						break;
 
-                    stat.line = (wchar_t *) p;
-                    mbstowcs(stat.line, cfg.cmd_history[stat.cmd_pos]
-                              , stat.len + 1);
+					stat.line = (wchar_t *) p;
+					mbstowcs(stat.line, cfg.cmd_history[stat.cmd_pos]
+							  , stat.len + 1);
 
 					stat.curs_pos = stat.prompt_wid
-                                    + wcswidth(stat.line, stat.len);
+									+ wcswidth(stat.line, stat.len);
 					stat.index = stat.len;
 
 					werase(status_bar);
-                    mvwaddwstr(status_bar, 0, 0, stat.prompt);
+					mvwaddwstr(status_bar, 0, 0, stat.prompt);
 					mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
 
 					if (stat.cmd_pos >= cfg.search_history_len - 1)
 						stat.cmd_pos = cfg.search_history_len - 1;
 				}
 				break;
-            case KEY_LEFT:
+			case KEY_LEFT:
 
-                stat.complete_continue = 0;
+				stat.complete_continue = 0;
 
-                if (stat.index > 0)
-                {
-                    stat.index--;
-                    stat.curs_pos -= wcwidth(stat.line[stat.index]);
-                    wmove(status_bar, 0, stat.curs_pos);
-                }
-                break;
-            case KEY_RIGHT:
+				if (stat.index > 0)
+				{
+					stat.index--;
+					stat.curs_pos -= wcwidth(stat.line[stat.index]);
+					wmove(status_bar, 0, stat.curs_pos);
+				}
+				break;
+			case KEY_RIGHT:
 
-                stat.complete_continue = 0;
+				stat.complete_continue = 0;
 
-                if (stat.index < stat.len)
-                {
-                    stat.curs_pos += wcwidth(stat.line[stat.index]);
-                    stat.index++;
-                    wmove(status_bar, 0, stat.curs_pos);
-                }
-                break;
-            case 127: /* ascii Delete */
-            case 8: /* ascii Backspace ascii Ctrl H */
-            case KEY_BACKSPACE: /* ncurses BACKSPACE KEY */
+				if (stat.index < stat.len)
+				{
+					stat.curs_pos += wcwidth(stat.line[stat.index]);
+					stat.index++;
+					wmove(status_bar, 0, stat.curs_pos);
+				}
+				break;
+			case 127: /* ascii Delete */
+			case 8: /* ascii Backspace ascii Ctrl H */
+			case KEY_BACKSPACE: /* ncurses BACKSPACE KEY */
 
-                stat.complete_continue = 0;
-                
-                if (stat.index == 0)
-                    break;
-                
-                if (stat.index == stat.len)
-                { /* If the cursor is at the end of the line, maybe filling 
-                   * spaces by ourselves would goes faster then repaint
-                   * the whole window entirely :-) */
+				stat.complete_continue = 0;
 
-                    int w;
+				if (stat.index == 0)
+					break;
 
-                    stat.index--;
-                    stat.len--;
+				if (stat.index == stat.len)
+				{ /* If the cursor is at the end of the line, maybe filling
+				   * spaces by ourselves would goes faster then repaint
+				   * the whole window entirely :-) */
 
-                    i = stat.curs_pos;
-                    w = wcwidth(stat.line[stat.index]);
-                    while (i - stat.curs_pos < w)
-                    {
-                        mvwaddch(status_bar, 0, stat.curs_pos, ' ');
-                        stat.curs_pos--;
-                    }
-                    mvwaddch(status_bar, 0, stat.curs_pos, ' ');
+					int w;
 
-                    stat.line[stat.index] = L'\0';
-                }
-                else
-                {
-                    stat.index--;
-                    stat.len--;
+					stat.index--;
+					stat.len--;
 
-                    stat.curs_pos -= wcwidth(stat.line[stat.index]);
-                    wcsdel(stat.line, stat.index+1, 1);
+					i = stat.curs_pos;
+					w = wcwidth(stat.line[stat.index]);
+					while (i - stat.curs_pos < w)
+					{
+						mvwaddch(status_bar, 0, stat.curs_pos, ' ');
+						stat.curs_pos--;
+					}
+					mvwaddch(status_bar, 0, stat.curs_pos, ' ');
 
-                    werase(status_bar);
-                    mvwaddwstr(status_bar, 0, 0, stat.prompt);
-                    mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
-                }
+					stat.line[stat.index] = L'\0';
+				}
+				else
+				{
+					stat.index--;
+					stat.len--;
 
-                wmove(status_bar, 0, stat.curs_pos);
-                break;
-            case 21: /* ascii Ctrl U */
-                stat.complete_continue = 0;
+					stat.curs_pos -= wcwidth(stat.line[stat.index]);
+					wcsdel(stat.line, stat.index+1, 1);
 
-                if (stat.index == 0)
-                    break;
+					werase(status_bar);
+					mvwaddwstr(status_bar, 0, 0, stat.prompt);
+					mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
+				}
 
-                stat.len -= stat.index;
+				wmove(status_bar, 0, stat.curs_pos);
+				break;
+			case 21: /* ascii Ctrl U */
+				stat.complete_continue = 0;
 
-                stat.curs_pos = 1;
-                wcsdel(stat.line, 1, stat.index);
+				if (stat.index == 0)
+					break;
 
-                stat.index = 0;
+				stat.len -= stat.index;
 
-                werase(status_bar);
-                mvwaddwstr(status_bar, 0, 0, stat.prompt);
-                mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
+				stat.curs_pos = 1;
+				wcsdel(stat.line, 1, stat.index);
 
-                wmove(status_bar, 0, stat.curs_pos);
-                break;
-            case KEY_DC: /* ncurses Delete */
+				stat.index = 0;
 
-                stat.complete_continue = 0;
+				werase(status_bar);
+				mvwaddwstr(status_bar, 0, 0, stat.prompt);
+				mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
 
-                if (stat.index == stat.len)
-                    break;
+				wmove(status_bar, 0, stat.curs_pos);
+				break;
+			case KEY_DC: /* ncurses Delete */
 
-                wcsdel(stat.line, stat.index+1, 1);
-                stat.len--;
+				stat.complete_continue = 0;
 
-                werase(status_bar);
-                mvwaddwstr(status_bar, 0, 0, stat.prompt); 
-                mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line); 
+				if (stat.index == stat.len)
+					break;
 
-                wmove(status_bar, 0, stat.curs_pos);
-                break;
-            default:
-                if (    stat.complete_continue == 1
-                     && stat.line[stat.index - 1] == L'/'
-                     && *key == L'/' )
-                {
-                    stat.complete_continue = 0;
-                    break;
-                }
+				wcsdel(stat.line, stat.index+1, 1);
+				stat.len--;
 
-                stat.complete_continue = 0;
+				werase(status_bar);
+				mvwaddwstr(status_bar, 0, 0, stat.prompt);
+				mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
 
-                if (!iswprint(*key))
-                    break;
+				wmove(status_bar, 0, stat.curs_pos);
+				break;
+			default:
+				if (	stat.complete_continue == 1
+					 && stat.line[stat.index - 1] == L'/'
+					 && *key == L'/' )
+				{
+					stat.complete_continue = 0;
+					break;
+				}
 
-                if (stat.index + 1 > CMD_MAX_LEN)
-                {
-                    abort = 1;
-                    done = 1;
-                }
+				stat.complete_continue = 0;
 
-                p = realloc(stat.line, (stat.len+2) * sizeof(wchar_t));
+				if (!iswprint(*key))
+					break;
 
-                if (!p)
-                    return NULL;
+				if (stat.index + 1 > CMD_MAX_LEN)
+				{
+					abort = 1;
+					done = 1;
+				}
 
-                stat.line = (wchar_t *) p;
+				p = realloc(stat.line, (stat.len+2) * sizeof(wchar_t));
 
-                if (stat.len == 0)
-                    stat.line[0] = L'\0';
+				if (!p)
+					return NULL;
 
-                stat.index++;
-                wcsins(stat.line, key, stat.index);
-                stat.len++;
+				stat.line = (wchar_t *) p;
 
-                mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
+				if (stat.len == 0)
+					stat.line[0] = L'\0';
 
-                stat.curs_pos += wcwidth(*key);
-                wmove(status_bar, 0, stat.curs_pos);
-                break;
-        }
+				stat.index++;
+				wcsins(stat.line, key, stat.index);
+				stat.len++;
+
+				mvwaddwstr(status_bar, 0, stat.prompt_wid, stat.line);
+
+				stat.curs_pos += wcwidth(*key);
+				wmove(status_bar, 0, stat.curs_pos);
+				break;
+		}
 		curr_stats.getting_input = 0;
-    }
-    
-    curs_set(0);
-    werase(status_bar);
-    wnoutrefresh(status_bar);
+	}
 
-    if (!stat.line || !stat.line[0] || abort)
-    {
-        if (abort && stat.len > CMD_MAX_LEN)
+	curs_set(0);
+	werase(status_bar);
+	wnoutrefresh(status_bar);
+
+	if (!stat.line || !stat.line[0] || abort)
+	{
+		if (abort && stat.len > CMD_MAX_LEN)
 			show_error_msg(" Error ", "Too long command line");
-        free(stat.line);
-        return NULL;
-    }
+		free(stat.line);
+		return NULL;
+	}
 
-    i = wcstombs(NULL, stat.line, 0) + 1;
-    if (! (p = (char *) malloc(i * sizeof(char))))
-    {
-        free(stat.line);
-        return NULL;
-    }
+	i = wcstombs(NULL, stat.line, 0) + 1;
+	if (! (p = (char *) malloc(i * sizeof(char))))
+	{
+		free(stat.line);
+		return NULL;
+	}
 
-    line_read_mb = p;
-    wcstombs(line_read_mb, stat.line, i);
+	line_read_mb = p;
+	wcstombs(line_read_mb, stat.line, i);
 
-    free(stat.line);
+	free(stat.line);
 
-    return line_read_mb;
+	return line_read_mb;
 }
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

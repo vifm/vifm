@@ -24,15 +24,15 @@
 #include "status.h"
 #include<string.h>
 
-/* tbrown  
-	move up one position in the window, adding 
+/* tbrown
+	move up one position in the window, adding
   to the selection list */
 
 void
 select_up_one(FileView *view, int start_pos) {
 
-    view->list_pos--;
-    if(view->list_pos < 0)
+	view->list_pos--;
+	if(view->list_pos < 0)
 		{
 			if (start_pos == 0)
 				view->selected_files = 0;
@@ -42,39 +42,39 @@ select_up_one(FileView *view, int start_pos) {
 		{
 			if(start_pos == 0)
 			{
-        view->dir_entry[view->list_pos +1].selected = 0;
-        view->selected_files = 0;
+		view->dir_entry[view->list_pos +1].selected = 0;
+		view->selected_files = 0;
 			}
 		}
-    else if(view->list_pos < start_pos)
-    {
-        view->dir_entry[view->list_pos].selected = 1;
-        view->selected_files++;
-    }
-    else if(view->list_pos == start_pos)
-    {
-        view->dir_entry[view->list_pos].selected = 1;
-        view->dir_entry[view->list_pos +1].selected = 0;
-        view->selected_files = 1;
-    }
-    else
-    {
-        view->dir_entry[view->list_pos +1].selected = 0;
-        view->selected_files--;
-    }
+	else if(view->list_pos < start_pos)
+	{
+		view->dir_entry[view->list_pos].selected = 1;
+		view->selected_files++;
+	}
+	else if(view->list_pos == start_pos)
+	{
+		view->dir_entry[view->list_pos].selected = 1;
+		view->dir_entry[view->list_pos +1].selected = 0;
+		view->selected_files = 1;
+	}
+	else
+	{
+		view->dir_entry[view->list_pos +1].selected = 0;
+		view->selected_files--;
+	}
 }
 
-/*tbrown  
-  move down one position in the window, adding 
+/*tbrown
+  move down one position in the window, adding
   to the selection list */
 
-void 
+void
 select_down_one(FileView *view, int start_pos) {
 
-    view->list_pos++;
+	view->list_pos++;
 
-    if(view->list_pos >= view->list_rows)
-            ;
+	if(view->list_pos >= view->list_rows)
+			;
 		else if(view->list_pos == 0)
 		{
 			if (start_pos == 0)
@@ -84,22 +84,22 @@ select_down_one(FileView *view, int start_pos) {
 		{
 			return;
 		}
-    else if(view->list_pos > start_pos)
-    {
-        view->dir_entry[view->list_pos].selected = 1;
-        view->selected_files++;
-    }
-    else if(view->list_pos == start_pos)
-    {
-        view->dir_entry[view->list_pos].selected = 1;
-        view->dir_entry[view->list_pos -1].selected = 0;
-        view->selected_files = 1;
-    }
-    else
-    {
-        view->dir_entry[view->list_pos -1].selected = 0;
-        view->selected_files--;
-    }
+	else if(view->list_pos > start_pos)
+	{
+		view->dir_entry[view->list_pos].selected = 1;
+		view->selected_files++;
+	}
+	else if(view->list_pos == start_pos)
+	{
+		view->dir_entry[view->list_pos].selected = 1;
+		view->dir_entry[view->list_pos -1].selected = 0;
+		view->selected_files = 1;
+	}
+	else
+	{
+		view->dir_entry[view->list_pos -1].selected = 0;
+		view->selected_files--;
+	}
 }
 
 
@@ -195,7 +195,7 @@ visual_key_cb(FileView *view)
 					{
 						/* top half */
 						if (view->list_pos < (view->top_line+view->window_rows/2))
-						{ 
+						{
 							while (view->list_pos < (view->top_line+view->window_rows/2))
 							{
 								select_down_one(view,start_pos);
@@ -203,7 +203,7 @@ visual_key_cb(FileView *view)
 						}
 						/* bottom half */
 						else if (view->list_pos > (view->top_line+view->window_rows/2))
-						{ 
+						{
 							while (view->list_pos > (view->top_line+view->window_rows/2))
 							{
 								select_up_one(view,start_pos);
@@ -219,7 +219,7 @@ visual_key_cb(FileView *view)
 					}
 					break;
 			/* tbrown select all files */
-			case 1: /* ascii Ctrl A */ 
+			case 1: /* ascii Ctrl A */
 					moveto_list_pos(view,1);
 					while (view->list_pos < view->list_rows)
 					{
@@ -231,23 +231,23 @@ visual_key_cb(FileView *view)
 			case KEY_PPAGE:
 				while (view->list_pos > (view->top_line - view->window_rows -1) && view->list_pos)
 				{
-           select_up_one(view,start_pos);
-        }
+		   select_up_one(view,start_pos);
+		}
 				break;
-       /* tbrown */
-      case 'G':
+	   /* tbrown */
+	  case 'G':
 				while (view->list_pos < view->list_rows)
 				{
-           select_down_one(view,start_pos);
-        }
-        break;
-       /* tbrown */
+		   select_down_one(view,start_pos);
+		}
+		break;
+	   /* tbrown */
 			case 6: /* ascii Ctrl F */
 			case KEY_NPAGE:
-        while (view->list_pos < (view->top_line+(2*view->window_rows)+1))
+		while (view->list_pos < (view->top_line+(2*view->window_rows)+1))
 				{
-          select_down_one(view,start_pos);
-        }
+		  select_down_one(view,start_pos);
+		}
 				break;
 			default:
 			break;
@@ -317,3 +317,5 @@ start_visual_mode(FileView *view)
 	write_stat_win("  --VISUAL--");
 	return visual_key_cb(view);
 }
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

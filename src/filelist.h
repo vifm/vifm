@@ -46,3 +46,5 @@ void erase_current_line_bar(FileView *view);
 bool is_link_dir(const dir_entry_t * path);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

@@ -25,3 +25,5 @@ void show_sort_menu(FileView *view);
 int sort_dir_list(const void *one, const void *tow);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

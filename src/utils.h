@@ -45,3 +45,5 @@ size_t get_utf8_string_length(char *string);
 size_t get_utf8_prev_width(char *string, size_t cut_length);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

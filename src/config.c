@@ -100,22 +100,22 @@ load_default_configuration(void)
 	cfg.use_vim_help = 0;
 	strncpy(lwin.regexp, "\\..~$", sizeof(lwin.regexp) -1);
 
- 	lwin.filename_filter = (char *)realloc(lwin.filename_filter, 
- 			strlen(DEFAULT_FILENAME_FILTER) +1);
- 	strcpy(lwin.filename_filter, DEFAULT_FILENAME_FILTER);
-  	lwin.prev_filter = (char *)realloc(lwin.prev_filter, 
- 			strlen(DEFAULT_FILENAME_FILTER) +1);
- 	strcpy(lwin.prev_filter, DEFAULT_FILENAME_FILTER);
+	lwin.filename_filter = (char *)realloc(lwin.filename_filter,
+			strlen(DEFAULT_FILENAME_FILTER) +1);
+	strcpy(lwin.filename_filter, DEFAULT_FILENAME_FILTER);
+	lwin.prev_filter = (char *)realloc(lwin.prev_filter,
+			strlen(DEFAULT_FILENAME_FILTER) +1);
+	strcpy(lwin.prev_filter, DEFAULT_FILENAME_FILTER);
 
 	lwin.invert = TRUE;
 	strncpy(rwin.regexp, "\\..~$", sizeof(rwin.regexp) -1);
 
-    rwin.filename_filter = (char *)realloc(rwin.filename_filter, 
- 			strlen(DEFAULT_FILENAME_FILTER) +1);
- 	strcpy(rwin.filename_filter, DEFAULT_FILENAME_FILTER);
- 	rwin.prev_filter = (char *)realloc(rwin.prev_filter, 
- 			strlen(DEFAULT_FILENAME_FILTER) +1);
- 	strcpy(rwin.prev_filter, DEFAULT_FILENAME_FILTER);
+	rwin.filename_filter = (char *)realloc(rwin.filename_filter,
+			strlen(DEFAULT_FILENAME_FILTER) +1);
+	strcpy(rwin.filename_filter, DEFAULT_FILENAME_FILTER);
+	rwin.prev_filter = (char *)realloc(rwin.prev_filter,
+			strlen(DEFAULT_FILENAME_FILTER) +1);
+	strcpy(rwin.prev_filter, DEFAULT_FILENAME_FILTER);
 
 	rwin.invert = TRUE;
 	lwin.sort_type = SORT_BY_NAME;
@@ -136,7 +136,7 @@ set_config_dir(void)
 		char rc_file[PATH_MAX];
 
 		snprintf(rc_file, sizeof(rc_file), "%s/.vifm/vifmrc", home_dir);
-		snprintf(help_file, sizeof(help_file), "%s/.vifm/vifm-help_txt", 
+		snprintf(help_file, sizeof(help_file), "%s/.vifm/vifm-help_txt",
 				home_dir);
 		snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s/.vifm", home_dir);
 		snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/.vifm/Trash", home_dir);
@@ -252,10 +252,10 @@ read_config_file(void)
 			}
 			if(!strcmp(line, "LWIN_FILTER"))
 			{
-				lwin.filename_filter = (char *)realloc(lwin.filename_filter, 
+				lwin.filename_filter = (char *)realloc(lwin.filename_filter,
 				strlen(s1) +1);
 				strcpy(lwin.filename_filter, s1);
-				lwin.prev_filter = (char *)realloc(lwin.prev_filter, 
+				lwin.prev_filter = (char *)realloc(lwin.prev_filter,
 					strlen(s1) +1);
 				strcpy(lwin.prev_filter, s1);
 				continue;
@@ -267,10 +267,10 @@ read_config_file(void)
 			}
 			if(!strcmp(line, "RWIN_FILTER"))
 			{
-				rwin.filename_filter = (char *)realloc(rwin.filename_filter, 
+				rwin.filename_filter = (char *)realloc(rwin.filename_filter,
 				strlen(s1) +1);
 				strcpy(rwin.filename_filter, s1);
-				rwin.prev_filter = (char *)realloc(rwin.prev_filter, 
+				rwin.prev_filter = (char *)realloc(rwin.prev_filter,
 					strlen(s1) +1);
 				strcpy(rwin.prev_filter, s1);
 				continue;
@@ -344,7 +344,7 @@ write_config_file(void)
 
 	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
 
-	if(stat(config_file, &stat_buf) == 0) 
+	if(stat(config_file, &stat_buf) == 0)
 	{
 		if ((stat_buf.st_mtime > curr_stats.config_file_mtime) &&
 				(!cfg.using_default_config))
@@ -365,7 +365,7 @@ write_config_file(void)
 	fprintf(fp,
 		"# The '=' character is used to separate fields within a single line.\n");
 	fprintf(fp, "# Most settings are true = 1 or false = 0.\n");
-	
+
 	fprintf(fp, "\n# This is the actual command used to start vi.  The default is vi.\n");
 	fprintf(fp,
 			"# If you would like to use another vi clone such as Vim, Elvis, or Vile\n");
@@ -388,7 +388,7 @@ write_config_file(void)
 	fprintf(fp, "# If you would like to start vifm with only one window set this to 1\n");
 	fprintf(fp, "\nUSE_ONE_WINDOW=%d\n", curr_stats.number_of_windows == 1 ? 1 : 0);
 
-	fprintf(fp, "\n# Screen configuration.  If you would like to use vifm with\n"); 
+	fprintf(fp, "\n# Screen configuration.	If you would like to use vifm with\n");
 	fprintf(fp, "# the screen program set this to 1.\n");
 	fprintf(fp, "\nUSE_SCREEN=%d\n", cfg.use_screen);
 
@@ -455,7 +455,7 @@ write_config_file(void)
 	fprintf(fp, "# %%m run the command in a menu window\n\n");
 	for(x = 0; x < cfg.command_num; x++)
 	{
-		fprintf(fp, "COMMAND=%s=%s\n", command_list[x].name, 
+		fprintf(fp, "COMMAND=%s=%s\n", command_list[x].name,
 				command_list[x].action);
 	}
 
@@ -473,7 +473,7 @@ write_config_file(void)
 	}
 
 /*_SZ_BEGIN_*/
-	fprintf(fp, "\n# For automated FUSE mounts, you must register an extension with FILETYPE=..\n"); 
+	fprintf(fp, "\n# For automated FUSE mounts, you must register an extension with FILETYPE=..\n");
 	fprintf(fp, "# in the following format:\n");
 	fprintf(fp, "# FILETYPE=description=extensions=FUSE_MOUNT|some_mount_command using %%SOURCE_FILE and %%DESTINATION_DIR variables\n");
 	fprintf(fp, "# %%SOURCE_FILE and %%DESTINATION_DIR are filled in by vifm at runtime.\n");
@@ -488,3 +488,5 @@ write_config_file(void)
 
 	curr_stats.getting_input = 0;
 }
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

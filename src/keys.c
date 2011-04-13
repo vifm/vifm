@@ -141,14 +141,14 @@ rename_file(FileView *view)
 	int found = -1;
 	char buf[view->window_width -2];
 
-    len = strlen(filename);
-    if (filename[len - 1] == '/')
-    {
-        filename[len - 1] = '\0';
-        len--;
-        index--;
-        pos--;
-    }
+		len = strlen(filename);
+		if (filename[len - 1] == '/')
+		{
+				filename[len - 1] = '\0';
+				len--;
+				index--;
+				pos--;
+		}
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR));
 	wmove(view->win, view->curr_line, 0);
@@ -161,11 +161,11 @@ rename_file(FileView *view)
 
 	curs_set(1);
 
-  while(!done)
-  {
-	  if(curr_stats.freeze)
-		  continue;
-	  curs_set(1);
+	while(!done)
+	{
+		if(curr_stats.freeze)
+			continue;
+		curs_set(1);
 		flushinp();
 		curr_stats.getting_input = 1;
 		key = wgetch(view->win);
@@ -180,66 +180,66 @@ rename_file(FileView *view)
 			case 13: /* ascii Return */
 				done = 1;
 				break;
-			/* This needs to be changed to a value that is read from 
+			/* This needs to be changed to a value that is read from
 			 * the termcap file.
 			 */
 			case 0x7f: /* This is the one that works on my machine */
-			case 8: /* ascii Backspace  ascii Ctrl H */
+			case 8: /* ascii Backspace	ascii Ctrl H */
 			case KEY_BACKSPACE: /* ncurses BACKSPACE KEY */
 				{
-                    size_t prev;
-                    if(index == 0)
-                        break;
+										size_t prev;
+										if(index == 0)
+												break;
 
-                    pos--;
-                    prev = get_utf8_prev_width(buf, index);
+										pos--;
+										prev = get_utf8_prev_width(buf, index);
 
 					if(index == len)
 					{
-                        len -= index - prev;
-                        index = prev;
+												len -= index - prev;
+												index = prev;
 						if(pos < 1)
 							pos = 1;
 						if(index < 0)
 							index = 0;
-						
+
 						mvwdelch(view->win, view->curr_line, pos);
 						buf[index] = '\0';
 						buf[len] = '\0';
 					}
-                    else
-                    {
-                        memmove(buf + prev, buf + index, len - index + 1);
-                        len -= index - prev;
-                        index = prev;
+										else
+										{
+												memmove(buf + prev, buf + index, len - index + 1);
+												len -= index - prev;
+												index = prev;
 
 						mvwdelch(view->win, view->curr_line,
-                                 get_utf8_string_length(buf) + 1);
-                        mvwaddstr(view->win, view->curr_line, pos, buf + index);
-                        wmove(view->win, view->curr_line, pos);
-                    }
+																 get_utf8_string_length(buf) + 1);
+												mvwaddstr(view->win, view->curr_line, pos, buf + index);
+												wmove(view->win, view->curr_line, pos);
+										}
 				}
 				break;
-            case KEY_DC: /* Delete character */
-                {
-                    size_t cwidth;
-                    if(index == len)
-                        break;
+						case KEY_DC: /* Delete character */
+								{
+										size_t cwidth;
+										if(index == len)
+												break;
 
-                    cwidth = get_char_width(buf + index);
-                    memmove(buf + index, buf + index + cwidth,
-                            len - index + cwidth + 1);
-                    len -= cwidth;
+										cwidth = get_char_width(buf + index);
+										memmove(buf + index, buf + index + cwidth,
+														len - index + cwidth + 1);
+										len -= cwidth;
 
-                    mvwdelch(view->win, view->curr_line,
-                             get_utf8_string_length(buf) + 1);
-                    mvwaddstr(view->win, view->curr_line, pos, buf + index);
-                    wmove(view->win, view->curr_line, pos);
-                }
-                break;
+										mvwdelch(view->win, view->curr_line,
+														 get_utf8_string_length(buf) + 1);
+										mvwaddstr(view->win, view->curr_line, pos, buf + index);
+										wmove(view->win, view->curr_line, pos);
+								}
+								break;
 			case KEY_LEFT:
 				{
-                    index = get_utf8_prev_width(buf, index);
+										index = get_utf8_prev_width(buf, index);
 					pos--;
 
 					if(index < 0)
@@ -266,61 +266,61 @@ rename_file(FileView *view)
 					wmove(view->win, view->curr_line, pos);
 				}
 				break;
-            case KEY_HOME:
-                if(index == 0)
-                    break;
+						case KEY_HOME:
+								if(index == 0)
+										break;
 
-                pos = 1;
-                index = 0;
-                wmove(view->win, view->curr_line, pos);
-                break;
-            case KEY_END:
-                if(index == len)
-                    break;
+								pos = 1;
+								index = 0;
+								wmove(view->win, view->curr_line, pos);
+								break;
+						case KEY_END:
+								if(index == len)
+										break;
 
-                pos = get_utf8_string_length(buf) + 1;
-                index = len;
-                wmove(view->win, view->curr_line, pos);
-                break;
-            case ERR: /* timeout */
-                break;
+								pos = get_utf8_string_length(buf) + 1;
+								index = len;
+								wmove(view->win, view->curr_line, pos);
+								break;
+						case ERR: /* timeout */
+								break;
 			default:
 				{
-                    size_t i, width;
+										size_t i, width;
 
-                    if(key < 0x20) /* not a printable character */
-                        break;
+										if(key < 0x20) /* not a printable character */
+												break;
 
-                    width = guess_char_width(key);
-                    memmove(buf + index + width, buf + index, len - index + 1);
-                    len += width;
-                    for(i = 0; i < width; ++i)
-                    {
-                        buf[index++] = key;
-                        if(index > 62)
-                        {
-                            abort = 1;
-                            done = 1;
-                            break;
-                        }
+										width = guess_char_width(key);
+										memmove(buf + index + width, buf + index, len - index + 1);
+										len += width;
+										for(i = 0; i < width; ++i)
+										{
+												buf[index++] = key;
+												if(index > 62)
+												{
+														abort = 1;
+														done = 1;
+														break;
+												}
 
-                        len++;
+												len++;
 
-                        if (i != width - 1) {
-                            key = wgetch(view->win);
-                        }
-                    }
-                    if(!done) {
-                        mvwaddstr(view->win, view->curr_line, pos,
-                                buf + index - width);
-                        pos++;
-                        wmove(view->win, view->curr_line, pos);
-                    }
+												if (i != width - 1) {
+														key = wgetch(view->win);
+												}
+										}
+										if(!done) {
+												mvwaddstr(view->win, view->curr_line, pos,
+																buf + index - width);
+												pos++;
+												wmove(view->win, view->curr_line, pos);
+										}
 				}
 				break;
 		}
 		curr_stats.getting_input = 0;
-  }
+	}
 	curs_set(0);
 
 	if(abort)
@@ -360,11 +360,11 @@ remove_filename_filter(FileView *view)
 			view->dir_entry[view->list_pos].name);
 	view->prev_filter = (char *)realloc(view->prev_filter,
 			strlen(view->filename_filter) +1);
-	snprintf(view->prev_filter, 
+	snprintf(view->prev_filter,
 		sizeof(view->prev_filter), "%s", view->filename_filter);
 	view->filename_filter = (char *)realloc(view->filename_filter,
 			strlen("*") +1);
-	snprintf(view->filename_filter, 
+	snprintf(view->filename_filter,
 			sizeof(view->filename_filter), "*");
 	view->prev_invert = view->invert;
 	view->invert = 0;
@@ -382,17 +382,17 @@ restore_filename_filter(FileView *view)
 	int found;
 	char file[NAME_MAX];
 
-	snprintf(file, sizeof(file), "%s", 
+	snprintf(file, sizeof(file), "%s",
 			view->dir_entry[view->list_pos].name);
 
 	view->filename_filter = (char *)realloc(view->filename_filter,
 			strlen(view->prev_filter) +1);
-	snprintf(view->filename_filter, sizeof(view->filename_filter), 
+	snprintf(view->filename_filter, sizeof(view->filename_filter),
 			"%s", view->prev_filter);
 	view->invert = view->prev_invert;
 	load_dir_list(view, 0);
-	found = find_file_pos_in_list(view, file); 
-			
+	found = find_file_pos_in_list(view, file);
+
 
 	if(found >= 0)
 		moveto_list_pos(view, found);
@@ -438,9 +438,9 @@ yank_files(FileView *view, int count, char *count_buf)
 
 	view->selected_files = 0;
 
-	draw_dir_list(view, view->top_line, view->list_pos); 
+	draw_dir_list(view, view->top_line, view->list_pos);
 	moveto_list_pos(view, view->list_pos);
-	snprintf(buf, sizeof(buf), " %d %s yanked.", count, 
+	snprintf(buf, sizeof(buf), " %d %s yanked.", count,
 			count == 1 ? "file" : "files");
 	status_bar_message(buf);
 }
@@ -500,8 +500,8 @@ put_files_from_register(FileView *view)
 		char *temp1 = NULL;
 		snprintf(buf, sizeof(buf), "%s/%s", cfg.trash_dir, reg[i].files[x]);
 		temp = escape_filename(buf, strlen(buf), 1);
-		temp1 = escape_filename(view->curr_dir, 
-			  strlen(view->curr_dir), 1);
+		temp1 = escape_filename(view->curr_dir,
+				strlen(view->curr_dir), 1);
 		if (!access(buf, F_OK))
 		{
 
@@ -541,7 +541,7 @@ put_files_from_register(FileView *view)
 	return 0;
 }
 
-int 
+int
 put_files(FileView *view)
 {
 	char command[NAME_MAX];
@@ -574,11 +574,11 @@ put_files(FileView *view)
 		char *temp1 = NULL;
 		char *temp2 = NULL;
 
-		snprintf(buf, sizeof(buf), "%s/%s", directory, 
+		snprintf(buf, sizeof(buf), "%s/%s", directory,
 				curr_stats.yanked_files[x]);
 
 		temp1 = escape_filename(buf, strlen(buf), 1);
-		temp2 = escape_filename(view->curr_dir, 
+		temp2 = escape_filename(view->curr_dir,
 				strlen(view->curr_dir), 1);
 
 		if (!access(directory, F_OK))
@@ -615,7 +615,7 @@ show_dot_files(FileView *view)
 	int found;
 	char file[256];
 
-	snprintf(file, sizeof(file), "%s", 
+	snprintf(file, sizeof(file), "%s",
 			view->dir_entry[view->list_pos].name);
 	view->hide_dot = 0;
 	load_dir_list(view, 1);
@@ -687,9 +687,9 @@ change_window(FileView **view)
 	{
 
 		wbkgdset(curr_view->title,
-			   	COLOR_PAIR(BORDER_COLOR + curr_view->color_scheme));
+					COLOR_PAIR(BORDER_COLOR + curr_view->color_scheme));
 		wbkgdset(curr_view->win,
-			   	COLOR_PAIR(WIN_COLOR + curr_view->color_scheme));
+					COLOR_PAIR(WIN_COLOR + curr_view->color_scheme));
 		change_directory(other_view, other_view->curr_dir);
 		load_dir_list(other_view, 0);
 		change_directory(curr_view, curr_view->curr_dir);
@@ -713,7 +713,7 @@ change_window(FileView **view)
 	moveto_list_pos(curr_view, curr_view->list_pos);
 	werase(status_bar);
 	wnoutrefresh(status_bar);
-	
+
 	if (curr_stats.number_of_windows == 1)
 		update_all_windows();
 
@@ -783,7 +783,7 @@ update_all_windows(void)
 			touchwin(rborder);
 
 			/*
-			 * redrawwin() shouldn't be needed.  But without it there is a 
+			 * redrawwin() shouldn't be needed.  But without it there is a
 			 * lot of flickering when redrawing the windows?
 			 */
 
@@ -870,9 +870,9 @@ update_all_windows(void)
 
 
 /*
- *  Main Loop 
- * 	Everything is driven from this function with the exception of 
- * 	signals which are handled in signals.c
+ *	Main Loop
+ *	Everything is driven from this function with the exception of
+ *	signals which are handled in signals.c
  */
 void
 main_key_press_cb(FileView *view)
@@ -889,7 +889,7 @@ main_key_press_cb(FileView *view)
 	curs_set(0);
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR));
-	
+
 	wtimeout(curr_view->win, KEYPRESS_TIMEOUT);
 	wtimeout(other_view->win, KEYPRESS_TIMEOUT);
 
@@ -932,7 +932,7 @@ main_key_press_cb(FileView *view)
 			char buf[256];
 
 			getyx(view->win, y, x);
-			
+
 			snprintf(buf, sizeof(buf), "x is %d y is %d ", x, y);
 			show_error_msg("cursor curr_win", buf);
 
@@ -974,7 +974,7 @@ main_key_press_cb(FileView *view)
 		{
 			if (count > 62)
 			{
-				show_error_msg(" Number is too large ", 
+				show_error_msg(" Number is too large ",
 						"Vifm cannot handle that large of a number as a count. ");
 				clear_num_window();
 				continue;
@@ -988,7 +988,7 @@ main_key_press_cb(FileView *view)
 		}
 		else
 			clear_num_window();
-	  
+
 		switch(key)
 		{
 			case '"': /* "register */
@@ -1015,7 +1015,7 @@ main_key_press_cb(FileView *view)
 			case 4: /* ascii Ctrl D */
 				view->list_pos = view->list_pos + view->window_rows/2;
 				moveto_list_pos(view, view->list_pos);
-                break;
+								break;
 			case 6: /* ascii Ctrl F */
 			case KEY_NPAGE:
 				view->list_pos = view->list_pos + view->window_rows;
@@ -1026,7 +1026,7 @@ main_key_press_cb(FileView *view)
 					curr_stats.show_full = 1;
 				break;
 			case 9: /* ascii Tab */
-			case 32:  /* ascii Spacebar */
+			case 32:	/* ascii Spacebar */
 				change_window(&view);
 				break;
 			case 12: /* ascii Ctrl L - clear screen and redraw */
@@ -1065,15 +1065,15 @@ main_key_press_cb(FileView *view)
 			case '?': /* search backwards */
 				break;
 			case '\'': /* mark */
-                update_num_window("'");
+								update_num_window("'");
 				curr_stats.save_msg = get_bookmark(view);
-                clear_num_window();
+								clear_num_window();
 				break;
 			case '%': /* Jump to percent of file. */
 				if(count)
 				{
 					int percent = atoi(count_buf);
-					int line =  (percent * (view->list_rows)/100);
+					int line =	(percent * (view->list_rows)/100);
 					moveto_list_pos(view, line -1);
 					reset_last_char = 1;
 				}
@@ -1087,7 +1087,7 @@ main_key_press_cb(FileView *view)
 					reset_last_char = 1;
 				}
 				break;
-   		/* tbrown */
+			/* tbrown */
 			case 'H': /* go to first file in window */
 					view->list_pos = view->top_line;
 					moveto_list_pos(view, view->list_pos);
@@ -1106,19 +1106,19 @@ main_key_press_cb(FileView *view)
 					hide_dot_files(view);
 					reset_last_char = 1;
 				}
-				else 
+				else
 				{  /* tbrown go to middle of window */
-           if (view->list_rows<view->window_rows)
+					 if (view->list_rows<view->window_rows)
 					 {
-               view->list_pos = view->list_rows/2;
-           } 
-					 else 
+							 view->list_pos = view->list_rows/2;
+					 }
+					 else
 					 {
-               view->list_pos = view->top_line + (view->window_rows/2);
-           }
+							 view->list_pos = view->top_line + (view->window_rows/2);
+					 }
 					moveto_list_pos(view, view->list_pos);
 					reset_last_char = 1;
-        }
+				}
 				break;
 			case 'N':
 				find_previous_pattern(view);
@@ -1179,7 +1179,7 @@ main_key_press_cb(FileView *view)
 					if(curr_stats.last_char == 'z')
 						filter_selected_files(view);
 					break;
-			case 'g': /* gg   Jump to top of the list. */
+			case 'g': /* gg		Jump to top of the list. */
 				{
 					save_count = 1;
 					if(curr_stats.last_char == 'g')
@@ -1201,9 +1201,9 @@ main_key_press_cb(FileView *view)
 					moveto_list_pos(view, view->list_pos);
 				}
 				break;
-            case 'i': /* edit file even thought it's executable */
+						case 'i': /* edit file even thought it's executable */
 				handle_file(view, 1);
-                break;
+								break;
 			case KEY_DOWN:
 			case 'j': /* Move down one line */
 				{
@@ -1232,7 +1232,7 @@ main_key_press_cb(FileView *view)
 			case 'l':
 				handle_file(view, 0);
 				break;
-			case 'm': /*  'm' set mark  and 'zm' hide dot files */
+			case 'm': /*	'm' set mark	and 'zm' hide dot files */
 				{
 					if(curr_stats.last_char == 'z')
 					{
@@ -1244,16 +1244,16 @@ main_key_press_cb(FileView *view)
 						int mark;
 						curr_stats.getting_input = 1;
 
-                        update_num_window("m");
+												update_num_window("m");
 
 						wtimeout(curr_view->win, -1);
 						mark = wgetch(view->win);
 						wtimeout(curr_view->win, KEYPRESS_TIMEOUT);
 						curr_stats.getting_input = 0;
-                        clear_num_window();
+												clear_num_window();
 						if(key == ERR)
 							continue;
-						add_bookmark(mark, view->curr_dir, 
+						add_bookmark(mark, view->curr_dir,
 							get_current_file_name(view));
 					}
 				}
@@ -1269,7 +1269,8 @@ main_key_press_cb(FileView *view)
 			case 'p': /* put files */
 				curr_stats.save_msg = put_files(view);
 /*_SZ_BEGIN*/
-/*after pasting files inside a FUSE mounted dir the view was not picking up the change*/
+/* after pasting files inside a FUSE mounted dir the view was not picking up the
+ * change */
 				redraw_window();
 /*_SZ_END*/
 				break;
@@ -1290,7 +1291,7 @@ main_key_press_cb(FileView *view)
 						rename_file(view);
 				}
 				break;
-          /* tbrown */
+					/* tbrown */
 			case 'Y': /* Y yank file */
 					yank_files(view, count, count_buf);
 					reset_last_char++;
@@ -1319,21 +1320,21 @@ main_key_press_cb(FileView *view)
 				{
 
 				}
-                else
-                    update_num_window("z");
+								else
+										update_num_window("z");
 				break;
 			case 'Q': /* ZQ quit */
 			case 'Z': /* ZZ quit */
 				{
 					if(curr_stats.last_char == 'Z')
 					{
-                        comm_quit();
-                    }
-                    else
-                        if(key == 'Z')
-                            update_num_window("Z");
-                }
-                break;
+												comm_quit();
+										}
+										else
+												if(key == 'Z')
+														update_num_window("Z");
+								}
+								break;
 			default:
 				break;
 		} /* end of switch(key) */
@@ -1385,6 +1386,8 @@ main_key_press_cb(FileView *view)
 			redraw_window();
 
 		update_all_windows();
-	
-	} /* end of while(!done)  */
+
+	} /* end of while(!done) */
 }
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
