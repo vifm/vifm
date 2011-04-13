@@ -1110,4 +1110,220 @@ show_change_window(FileView *view, int type)
 	}
 }
 
+void
+rename_file(FileView *view)
+{
+	char *filename = get_current_file_name(view);
+	char command[1024];
+	int key;
+	int pos = get_utf8_string_length(filename) + 1;
+	int index = strlen(filename);
+	int done = 0;
+	int abort = 0;
+	int real_len = pos - 1;
+	int len;
+	int found = -1;
+	char buf[view->window_width -2];
+
+		len = strlen(filename);
+		if (filename[len - 1] == '/')
+		{
+				filename[len - 1] = '\0';
+				len--;
+				index--;
+				pos--;
+		}
+
+	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR));
+	wmove(view->win, view->curr_line, 0);
+	wclrtoeol(view->win);
+	wmove(view->win, view->curr_line, 1);
+	waddstr(view->win, filename);
+	memset(buf, '\0', view->window_width -2);
+	strncpy(buf, filename, sizeof(buf));
+	wmove(view->win, view->curr_line, pos);
+
+	curs_set(1);
+
+	while(!done)
+	{
+		if(curr_stats.freeze)
+			continue;
+		curs_set(1);
+		flushinp();
+		curr_stats.getting_input = 1;
+		key = wgetch(view->win);
+
+		switch(key)
+		{
+			case 27: /* ascii Escape */
+			case 3: /* ascii Ctrl C */
+				done = 1;
+				abort = 1;
+				break;
+			case 13: /* ascii Return */
+				done = 1;
+				break;
+				/* This needs to be changed to a value that is read from
+				 * the termcap file.
+				 */
+			case 0x7f: /* This is the one that works on my machine */
+			case 8: /* ascii Backspace	ascii Ctrl H */
+			case KEY_BACKSPACE: /* ncurses BACKSPACE KEY */
+				{
+					size_t prev;
+					if(index == 0)
+						break;
+
+					pos--;
+					prev = get_utf8_prev_width(buf, index);
+
+					if(index == len)
+					{
+						len -= index - prev;
+						index = prev;
+						if(pos < 1)
+							pos = 1;
+
+						mvwdelch(view->win, view->curr_line, pos);
+						buf[index] = '\0';
+						buf[len] = '\0';
+					}
+					else
+					{
+						memmove(buf + prev, buf + index, len - index + 1);
+						len -= index - prev;
+						index = prev;
+
+						mvwdelch(view->win, view->curr_line,
+										 get_utf8_string_length(buf) + 1);
+						mvwaddstr(view->win, view->curr_line, pos, buf + index);
+						wmove(view->win, view->curr_line, pos);
+					}
+				}
+				break;
+			case KEY_DC: /* Delete character */
+				{
+					size_t cwidth;
+					if(index == len)
+						break;
+
+					cwidth = get_char_width(buf + index);
+					memmove(buf + index, buf + index + cwidth,
+									len - index + cwidth + 1);
+					len -= cwidth;
+
+					mvwdelch(view->win, view->curr_line,
+									 get_utf8_string_length(buf) + 1);
+					mvwaddstr(view->win, view->curr_line, pos, buf + index);
+					wmove(view->win, view->curr_line, pos);
+				}
+				break;
+			case KEY_LEFT:
+				{
+					index = get_utf8_prev_width(buf, index);
+					pos--;
+
+					if(pos < 1)
+						pos = 1;
+
+					wmove(view->win, view->curr_line, pos);
+
+				}
+				break;
+			case KEY_RIGHT:
+				{
+					index += get_char_width(buf + index);
+					pos++;
+
+					if(pos > len + 1)
+						pos = len + 1;
+
+					wmove(view->win, view->curr_line, pos);
+				}
+				break;
+			case KEY_HOME:
+				if(index == 0)
+					break;
+
+				pos = 1;
+				index = 0;
+				wmove(view->win, view->curr_line, pos);
+				break;
+			case KEY_END:
+				if(index == len)
+					break;
+
+				pos = get_utf8_string_length(buf) + 1;
+				index = len;
+				wmove(view->win, view->curr_line, pos);
+				break;
+			case ERR: /* timeout */
+				break;
+			default:
+				{
+					size_t i, width;
+
+					if(key < 0x20) /* not a printable character */
+						break;
+
+					width = guess_char_width(key);
+					memmove(buf + index + width, buf + index, len - index + 1);
+					len += width;
+					for(i = 0; i < width; ++i)
+					{
+						buf[index++] = key;
+						if(index > 62)
+						{
+							abort = 1;
+							done = 1;
+							break;
+						}
+
+						len++;
+
+						if (i != width - 1) {
+							key = wgetch(view->win);
+						}
+					}
+					if(!done) {
+						mvwaddstr(view->win, view->curr_line, pos,
+											buf + index - width);
+						pos++;
+						wmove(view->win, view->curr_line, pos);
+					}
+				}
+				break;
+		}
+		curr_stats.getting_input = 0;
+	}
+	curs_set(0);
+
+	if(abort)
+	{
+		load_dir_list(view, 1);
+		moveto_list_pos(view, view->list_pos);
+		return;
+	}
+
+	if(access(buf, F_OK) == 0 && strncmp(filename, buf, len) != 0)
+	{
+		show_error_msg("File exists", "That file already exists. Will not overwrite.");
+
+		load_dir_list(view, 1);
+		moveto_list_pos(view, view->list_pos);
+		return;
+	}
+	snprintf(command, sizeof(command), "mv -f \'%s\' \'%s\'", filename, buf);
+
+	my_system(command);
+
+	load_dir_list(view, 0);
+	found = find_file_pos_in_list(view, buf);
+	if(found >= 0)
+		moveto_list_pos(view, found);
+	else
+		moveto_list_pos(view, view->list_pos);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
