@@ -617,7 +617,7 @@ zt_command(FileView *view)
 	if(view->list_rows - view->list_pos >= view->window_rows)
 		view->top_line = view->list_pos;
 	else
-		view->top_line = view->list_rows - view->window_rows/2;
+		view->top_line = view->list_rows - view->window_rows;
 	scroll_window(view);
 }
 
@@ -633,6 +633,19 @@ zz_command(FileView *view)
 		view->top_line = view->list_rows - view->window_rows;
 	else
 		view->top_line = view->list_pos - view->window_rows/2;
+	scroll_window(view);
+}
+
+static void
+zb_command(FileView *view)
+{
+	if(view->list_rows <= view->window_rows + 1)
+		return;
+
+	if(view->list_pos < view->window_rows)
+		return;
+
+	view->top_line = view->list_pos - view->window_rows;
 	scroll_window(view);
 }
 
@@ -912,6 +925,12 @@ main_key_press_cb(FileView *view)
 					toggle_dot_files(view);
 				reset_last_char = 1;
 				break;
+			case 'b': /* zb (redraw with file in bottom of list) */
+				if(curr_stats.last_char == 'z')
+				{
+					zb_command(view);
+				}
+				break;
 			case 'c': /* cw change word */
 				{
 					save_count = 1;
@@ -1046,7 +1065,7 @@ main_key_press_cb(FileView *view)
 			case 's': /* tmp shellout **** This should be done with key mapping */
 				shellout(NULL, 0);
 				break;
-			case 't': /* Tag file or zt */
+			case 't': /* Tag file or zt (redraw with file in top of list) */
 				if(curr_stats.last_char != 'z')
 				{
 					tag_file(view);

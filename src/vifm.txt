@@ -159,6 +159,7 @@ i - handle file (even through it's executable and RUN_EXECUTABLE is set).
 ZZ, ZE - same as :q<Return>
 zt - redraw pane with file in top of list.
 zz - redraw pane with file in center of list.
+zb - redraw pane with file in bottom of list.
 . - repeat last command line command (not normal mode command).
 Ctrl-W h/Ctrl-W l - switch to left or right pane.
 

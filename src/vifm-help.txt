@@ -28,6 +28,7 @@ The basic vi key bindings are used to move through the files and popup
     ZZ, ZE - same as :q<Return>
     zt - redraw pane with file in top of list.
     zz - redraw pane with file in center of list.
+    zb - redraw pane with file in bottom of list.
     . - repeat last command line command (not normal mode command).
 
 	Space or Tab to switch lists.
