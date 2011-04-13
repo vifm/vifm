@@ -182,7 +182,7 @@ get_bookmark(FileView *view)
 
 	key = wgetch(view->win);
 
-	wtimeout(curr_view->win, 1000);
+	wtimeout(curr_view->win, KEYPRESS_TIMEOUT);
 
 	if (key == ERR)
 		return 0;

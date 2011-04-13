@@ -890,9 +890,8 @@ main_key_press_cb(FileView *view)
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR));
 	
-	/* Set keypress timeout to 1 second */
-	wtimeout(curr_view->win, 1000);
-	wtimeout(other_view->win, 1000);
+	wtimeout(curr_view->win, KEYPRESS_TIMEOUT);
+	wtimeout(other_view->win, KEYPRESS_TIMEOUT);
 
 	update_stat_window(view);
 
@@ -1249,7 +1248,7 @@ main_key_press_cb(FileView *view)
 
 						wtimeout(curr_view->win, -1);
 						mark = wgetch(view->win);
-						wtimeout(curr_view->win, 1000);
+						wtimeout(curr_view->win, KEYPRESS_TIMEOUT);
 						curr_stats.getting_input = 0;
                         clear_num_window();
 						if(key == ERR)

@@ -26,6 +26,7 @@
 #include<fcntl.h>
 
 #include"background.h" 
+#include"config.h"
 #include"menus.h"
 #include"status.h"
 #include"utils.h"
@@ -87,7 +88,7 @@ check_background_jobs(void)
 	fj = fjobs;
 
 	ts.tv_sec = 0;
-	ts.tv_usec = 1000;
+	ts.tv_usec = KEYPRESS_TIMEOUT;
 
 	while (p)
 	{

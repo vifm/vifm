@@ -22,6 +22,8 @@
 #include<limits.h>
 #include<ncurses.h>
 
+#define KEYPRESS_TIMEOUT 1000 // 1 second
+
 typedef struct _Config {
 	char config_dir[PATH_MAX];
 	char trash_dir[PATH_MAX];

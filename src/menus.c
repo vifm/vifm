@@ -810,7 +810,7 @@ menu_key_cb(FileView *view, menu_info *m)
 	getmaxyx(menu_win, y, len);
 	keypad(menu_win, TRUE);
 	werase(status_bar);
-	wtimeout(menu_win, 1000);
+	wtimeout(menu_win, KEYPRESS_TIMEOUT);
 
 	while(!done)
 	{
