@@ -56,6 +56,8 @@ The basic vi key bindings are used to move through the files and popup
 	Ctrl-f - jump forward one page.
 	Ctrl-d - jump back one half page.
 	Ctrl-u - jump forward one half page.
+	Ctrl-e - scroll pane one line down.
+	Ctrl-y - scroll pane one line up.
     Ctrl-w h - switch to the left pane.
     Ctrl-w l - switch to the right pane.
 

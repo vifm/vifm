@@ -161,7 +161,8 @@ zt - redraw pane with file in top of list.
 zz - redraw pane with file in center of list.
 zb - redraw pane with file in bottom of list.
 . - repeat last command line command (not normal mode command).
-Ctrl-W h/Ctrl-W l - switch to left or right pane.
+Ctrl-w h/Ctrl-w l - switch to left or right pane.
+Ctrl-e/Ctrl-y - scroll pane one line down/up.
 
 --------------------------------------------------------------------------------
 *Options*

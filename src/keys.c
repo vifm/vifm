@@ -771,7 +771,7 @@ main_key_press_cb(FileView *view)
 			case '"': /* "register */
 				curr_stats.use_register = 1;
 				break;
-			case 2: /* ascii Ctrl B */
+			case 2: /* ascii Ctrl B one display up */
 			case KEY_PPAGE:
 				view->list_pos = view->list_pos - view->window_rows;
 				moveto_list_pos(view, view->list_pos);
@@ -782,11 +782,21 @@ main_key_press_cb(FileView *view)
 				redraw_window();
 				curs_set(0);
 				break;
-			case 4: /* ascii Ctrl D */
-				view->list_pos = view->list_pos + view->window_rows/2;
+			case 4: /* ascii Ctrl D half display down */
+				view->list_pos += view->window_rows/2;
 				moveto_list_pos(view, view->list_pos);
 				break;
-			case 6: /* ascii Ctrl F */
+			case 5: /* ascii Ctrl E scroll pane one line down */
+				if(view->list_rows <= view->window_rows + 1)
+					break;
+				if(view->top_line == view->list_rows - view->window_rows - 1)
+					break;
+				if(view->list_pos == view->top_line)
+					view->list_pos++;
+				view->top_line++;
+				scroll_window(view);
+				break;
+			case 6: /* ascii Ctrl F one display down */
 			case KEY_NPAGE:
 				view->list_pos = view->list_pos + view->window_rows;
 				moveto_list_pos(view, view->list_pos);
@@ -806,8 +816,8 @@ main_key_press_cb(FileView *view)
 			case 13: /* ascii Return */
 				handle_file(view, 0);
 				break;
-			case 21: /* ascii Ctrl U */
-				view->list_pos = view->list_pos - view->window_rows/2;
+			case 21: /* ascii Ctrl U half display up */
+				view->list_pos = view->window_rows/2;
 				moveto_list_pos(view, view->list_pos);
 				break;
 			case 23: /* ascii Ctrl W - change windows */
@@ -824,6 +834,14 @@ main_key_press_cb(FileView *view)
 					else if((letter == 'l') && (view->win == lwin.win))
 						change_window(&view);
 				}
+				break;
+			case 25: /* ascii Ctrl Y scroll pane one line up */
+				if(view->list_rows <= view->window_rows + 1 || view->top_line == 0)
+					break;
+				if(view->list_pos == view->top_line + view->window_rows)
+					view->list_pos--;
+				view->top_line--;
+				scroll_window(view);
 				break;
 			case '.': /* repeat last change */
 				repeat_last_command(view);
