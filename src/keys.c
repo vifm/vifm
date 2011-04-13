@@ -601,7 +601,40 @@ update_all_windows(void)
 	doupdate();
 }
 
+static void
+scroll_window(FileView *view)
+{
+	draw_dir_list(view, view->top_line, view->curr_line);
+	moveto_list_pos(view, view->list_pos);
+}
 
+static void
+zt_command(FileView *view)
+{
+	if(view->list_rows <= view->window_rows + 1)
+		return;
+
+	if(view->list_rows - view->list_pos >= view->window_rows)
+		view->top_line = view->list_pos;
+	else
+		view->top_line = view->list_rows - view->window_rows/2;
+	scroll_window(view);
+}
+
+static void
+zz_command(FileView *view)
+{
+	if(view->list_rows <= view->window_rows + 1)
+		return;
+
+	if(view->list_pos < view->window_rows/2)
+		view->top_line = 0;
+	else if(view->list_pos > view->list_rows - view->window_rows/2)
+		view->top_line = view->list_rows - view->window_rows;
+	else
+		view->top_line = view->list_pos - view->window_rows/2;
+	scroll_window(view);
+}
 
 /*
  *	Main Loop
@@ -1013,8 +1046,15 @@ main_key_press_cb(FileView *view)
 			case 's': /* tmp shellout **** This should be done with key mapping */
 				shellout(NULL, 0);
 				break;
-			case 't': /* Tag file. */
-				tag_file(view);
+			case 't': /* Tag file or zt */
+				if(curr_stats.last_char != 'z')
+				{
+					tag_file(view);
+				}
+				else
+				{
+					zt_command(view);
+				}
 				break;
 				/* tbrown */
 			case 'V':
@@ -1054,16 +1094,7 @@ main_key_press_cb(FileView *view)
 			case 'z': /* zz redraw with file in center of list */
 				if(curr_stats.last_char == 'z')
 				{
-					if(view->list_rows <= view->window_rows)
-						break;
-					else if(view->list_pos < view->window_rows/2)
-						view->top_line = 0;
-					else if(view->list_pos > view->list_rows - view->window_rows/2)
-						view->top_line = view->list_rows - view->window_rows;
-					else
-						view->top_line = view->list_pos - view->window_rows/2;
-					draw_dir_list(view, view->top_line, view->curr_line);
-					moveto_list_pos(view, view->list_pos);
+					zz_command(view);
 				}
 				else
 					update_num_window("z");
