@@ -1120,19 +1120,18 @@ rename_file(FileView *view)
 	int index = strlen(filename);
 	int done = 0;
 	int abort = 0;
-	int real_len = pos - 1;
 	int len;
 	int found = -1;
 	char buf[view->window_width -2];
 
-		len = strlen(filename);
-		if (filename[len - 1] == '/')
-		{
-				filename[len - 1] = '\0';
-				len--;
-				index--;
-				pos--;
-		}
+	len = strlen(filename);
+	if (filename[len - 1] == '/')
+	{
+		filename[len - 1] = '\0';
+		len--;
+		index--;
+		pos--;
+	}
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR));
 	wmove(view->win, view->curr_line, 0);
