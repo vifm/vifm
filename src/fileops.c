@@ -1114,6 +1114,7 @@ void
 rename_file(FileView *view)
 {
 	char *filename = get_current_file_name(view);
+	char *escaped_src, *escaped_dst;
 	char command[1024];
 	int key;
 	int pos = get_utf8_string_length(filename) + 1;
@@ -1313,11 +1314,22 @@ rename_file(FileView *view)
 		moveto_list_pos(view, view->list_pos);
 		return;
 	}
-	snprintf(command, sizeof(command), "mv -f \'%s\' \'%s\'", filename, buf);
+
+	escaped_src = escape_filename(filename, strlen(filename), 0);
+	escaped_dst = escape_filename(buf, strlen(buf), 0);
+	if(escaped_src == NULL || escaped_dst == NULL)
+	{
+		free(escaped_src);
+		free(escaped_dst);
+		return;
+	}
+	snprintf(command, sizeof(command), "mv -f %s %s", escaped_src, escaped_dst);
+	free(escaped_src);
+	free(escaped_dst);
 
 	if(my_system(command) != 0)
 	{
-		show_error_msg("Error", "Can't rename file");
+		show_error_msg("Error", "Can't rename file.");
 
 		load_dir_list(view, 1);
 		moveto_list_pos(view, view->list_pos);

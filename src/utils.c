@@ -55,6 +55,7 @@ duplicate (void *stuff, int size)
 
 /*
  * Escape the filename for the purpose of inserting it into the shell.
+ * Returns new string, caller should free it.
  */
 char *
 escape_filename(const char *string, size_t len, int quote_percent)
@@ -63,51 +64,51 @@ escape_filename(const char *string, size_t len, int quote_percent)
 
 	dup = ret = (char *)malloc (len * 2 + 2 + 1);
 
-		if (*string == '-')
-		{
-			*dup++ = '.';
-			*dup++ = '/';
-		}
+	if (*string == '-')
+	{
+		*dup++ = '.';
+		*dup++ = '/';
+	}
 
 	int i;
 	for (i = 0; i < len; i++, string++, dup++)
+	{
+		switch (*string)
 		{
-			switch (*string)
-			{
-				case '%':
-					if (quote_percent)
-						*dup++ = '%';
-					break;
-				case '\'':
-				case '\\':
-				case '\r':
-				case '\n':
-				case '\t':
-				case '"':
-				case ';':
-				case ' ':
-				case '?':
-				case '|':
-				case '[':
-				case ']':
-				case '{':
-				case '}':
-				case '<':
-				case '>':
-				case '`':
-				case '!':
-				case '$':
-				case '&':
-				case '*':
-				case '(':
-				case ')':
-						*dup++ = '\\';
-						break;
-				case '~':
-				case '#':
-						if (dup == ret)
-							*dup++ = '\\';
-						break;
+			case '%':
+				if (quote_percent)
+					*dup++ = '%';
+				break;
+			case '\'':
+			case '\\':
+			case '\r':
+			case '\n':
+			case '\t':
+			case '"':
+			case ';':
+			case ' ':
+			case '?':
+			case '|':
+			case '[':
+			case ']':
+			case '{':
+			case '}':
+			case '<':
+			case '>':
+			case '`':
+			case '!':
+			case '$':
+			case '&':
+			case '*':
+			case '(':
+			case ')':
+				*dup++ = '\\';
+				break;
+			case '~':
+			case '#':
+				if (dup == ret)
+					*dup++ = '\\';
+				break;
 		}
 		*dup = *string;
   }
