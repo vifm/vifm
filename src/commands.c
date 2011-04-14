@@ -129,7 +129,7 @@ char *reserved_commands[] = {
 	"vmap",
 	"yank",
 	"x"
-	};
+};
 
 #define RESERVED 39
 
@@ -1456,11 +1456,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			}
 			break;
 		case COM_ONLY:
-			{
-				curr_stats.number_of_windows = 1;
-				redraw_window();
-			//my_system("screen -X eval \"only\"");
-			}
+			comm_only();
 			break;
 		case COM_PWD:
 			status_bar_message(view->curr_dir);
@@ -1486,27 +1482,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			shellout(NULL, 0);
 			break;
 		case COM_SPLIT:
-			{
-				curr_stats.number_of_windows = 2;
-				redraw_window();
-				/*
-				char *tmp = NULL;
-
-				if (!cfg.use_screen)
-					break;
-
-				if (cmd->args)
-				{
-					if (strchr(cmd->args, '%'))
-					{
-						tmp = expand_macros(view, cmd->args, NULL, 0, 0);
-					}
-					else
-						tmp = strdup(cmd->args);
-				}
-				split_screen(view, tmp);
-				*/
-			}
+			comm_split();
 			break;
 		case COM_SYNC:
 			change_directory(other_view, view->curr_dir);
@@ -1752,7 +1728,7 @@ get_command(FileView *view, int type, void * ptr)
 }
 
 void
-comm_quit()
+comm_quit(void)
 {
 	if(cfg.vim_filter)
 	{
@@ -1773,6 +1749,38 @@ comm_quit()
 	endwin();
 	system("clear");
 	exit(0);
+}
+
+void
+comm_only(void)
+{
+	curr_stats.number_of_windows = 1;
+	redraw_window();
+	//my_system("screen -X eval \"only\"");
+}
+
+void
+comm_split(void)
+{
+	curr_stats.number_of_windows = 2;
+	redraw_window();
+	/*
+		 char *tmp = NULL;
+
+		 if (!cfg.use_screen)
+		 break;
+
+		 if (cmd->args)
+		 {
+		 if (strchr(cmd->args, '%'))
+		 {
+		 tmp = expand_macros(view, cmd->args, NULL, 0, 0);
+		 }
+		 else
+		 tmp = strdup(cmd->args);
+		 }
+		 split_screen(view, tmp);
+	*/
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

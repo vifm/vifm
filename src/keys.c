@@ -835,6 +835,10 @@ main_key_press_cb(FileView *view)
 						change_window(&view);
 					else if((letter == 'l') && (view->win == lwin.win))
 						change_window(&view);
+					else if(letter == 'o') /* Ctrl+w o to leave only one pane */
+						comm_only();
+					else if(letter == 'v') /* Ctrl+w v to split pane */
+						comm_split();
 				}
 				break;
 			case 25: /* ascii Ctrl Y scroll pane one line up */
