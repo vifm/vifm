@@ -1315,7 +1315,14 @@ rename_file(FileView *view)
 	}
 	snprintf(command, sizeof(command), "mv -f \'%s\' \'%s\'", filename, buf);
 
-	my_system(command);
+	if(my_system(command) != 0)
+	{
+		show_error_msg("Error", "Can't rename file");
+
+		load_dir_list(view, 1);
+		moveto_list_pos(view, view->list_pos);
+		return;
+	}
 
 	load_dir_list(view, 0);
 	found = find_file_pos_in_list(view, buf);
