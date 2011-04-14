@@ -869,6 +869,16 @@ my_rl_gets(int type)
 					wmove(status_bar, stat.curs_pos/line_width, stat.curs_pos%line_width);
 				}
 				break;
+			case KEY_HOME:
+				stat.index = 0;
+				stat.curs_pos = 1;
+				wmove(status_bar, 0, stat.curs_pos);
+				break;
+			case KEY_END:
+				stat.index = stat.len;
+				stat.curs_pos = 1 + stat.len;
+				wmove(status_bar, 0, stat.curs_pos);
+				break;
 			case 127: /* ascii Delete */
 			case 8: /* ascii Backspace ascii Ctrl H */
 			case KEY_BACKSPACE: /* ncurses BACKSPACE KEY */

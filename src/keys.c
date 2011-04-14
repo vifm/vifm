@@ -999,9 +999,9 @@ main_key_press_cb(FileView *view)
 					moveto_list_pos(view, view->list_pos);
 				}
 				break;
-						case 'i': /* edit file even thought it's executable */
+			case 'i': /* edit file even thought it's executable */
 				handle_file(view, 1);
-								break;
+				break;
 			case KEY_DOWN:
 			case 'j': /* Move down one line */
 				{
