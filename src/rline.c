@@ -886,7 +886,14 @@ my_rl_gets(int type)
 				stat.complete_continue = 0;
 
 				if (stat.index == 0)
+				{
+					if (stat.len == 0)
+					{
+						done = 1;
+						abort = 1;
+					}
 					break;
+				}
 
 				if (stat.index == stat.len)
 				{ /* If the cursor is at the end of the line, maybe filling
