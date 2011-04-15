@@ -1046,13 +1046,13 @@ main_key_press_cb(FileView *view)
 						int mark;
 						curr_stats.getting_input = 1;
 
-												update_num_window("m");
+						update_num_window("m");
 
 						wtimeout(curr_view->win, -1);
 						mark = wgetch(view->win);
 						wtimeout(curr_view->win, KEYPRESS_TIMEOUT);
 						curr_stats.getting_input = 0;
-												clear_num_window();
+						clear_num_window();
 						if(key == ERR)
 							continue;
 						add_bookmark(mark, view->curr_dir,

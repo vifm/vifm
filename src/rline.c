@@ -1017,8 +1017,8 @@ my_rl_gets(int type)
 	{
 		redraw_window();
 		mvwin(status_bar, getmaxy(stdscr) - 1, 0);
-		wresize(status_bar, 1, getmaxx(stdscr) -19);
 	}
+	wresize(status_bar, 1, getmaxx(stdscr) -19);
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
