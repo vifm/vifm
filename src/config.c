@@ -434,6 +434,9 @@ write_config_file(void)
 	fprintf(fp, "# press return on the file name set this to 1.\n");
 	fprintf(fp, "\nRUN_EXECUTABLE=%d\n", cfg.auto_execute);
 
+	fprintf(fp, "\n# Use KiB, MiB, ... instead of KB, MB, ...\n");
+	fprintf(fp, "\nUSE_IEC_PREFIXES=%d\n", cfg.use_iec_prefixes);
+
 	fprintf(fp, "\n# BOOKMARKS=mark=/full/directory/path=filename\n\n");
 	for(x = 0; x < NUM_BOOKMARKS; x++)
 	{
