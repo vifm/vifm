@@ -129,6 +129,10 @@ void write_stat_win(char *message);
 void update_pos_window(FileView *view);
 void clean_status_bar(void);
 void change_window(void);
+void update_all_windows(void);
+void update_input_bar(int c);
+void switch_views(void);
+void clear_num_window(void);
 
 #endif
 

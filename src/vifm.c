@@ -33,15 +33,13 @@
 #include"filelist.h"
 #include"filetype.h"
 #include"keys.h"
+#include"registers.h"
 #include"signals.h"
 #include"status.h"
 #include"ui.h"
 #include"utils.h"
 
 
-Config cfg;
-Status curr_stats;
-Col_scheme *col_schemes;
 
 static void
 show_help_msg(void)
@@ -56,7 +54,38 @@ show_help_msg(void)
 	printf("		show version number and quit.\n\n");
 	printf("	vifm --help\n");
 	printf("		show this help message and quit.\n\n");
+}
 
+static void
+init_window(FileView *win)
+{
+	win->curr_line = 0;
+	win->top_line = 0;
+	win->list_rows = 0;
+	win->list_pos = 0;
+	win->selected_filelist = NULL;
+	win->history_num = 0;
+	win->invert = 0;
+	win->color_scheme = 0;
+}
+
+static void
+load_initial_directory(const char *dir)
+{
+	snprintf(rwin.curr_dir, sizeof(rwin.curr_dir), "%s", dir);
+	snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s", dir);
+	rwin.dir_entry = (dir_entry_t *)malloc(sizeof(dir_entry_t));
+	lwin.dir_entry = (dir_entry_t *)malloc(sizeof(dir_entry_t));
+	rwin.dir_entry[0].name = malloc(sizeof("../") +1);
+	lwin.dir_entry[0].name = malloc(sizeof("../") +1);
+	strcpy(rwin.dir_entry[0].name, "../");
+	rwin.list_rows++;
+	strcpy(lwin.dir_entry[0].name, "../");
+	lwin.list_rows++;
+	change_directory(&rwin, dir);
+	change_directory(&lwin, dir);
+	other_view = &lwin;
+	curr_view = &rwin;
 }
 
 int
@@ -73,52 +102,15 @@ main(int argc, char *argv[])
 	setlocale(LC_ALL, "");
 	getcwd(dir, sizeof(dir));
 
-	/* Window initializations */
-	rwin.curr_line = 0;
-	rwin.top_line = 0;
-	rwin.list_rows = 0;
-	rwin.list_pos = 0;
-	rwin.selected_filelist = NULL;
-	rwin.history_num = 0;
-	rwin.invert = 0;
-	rwin.color_scheme = 0;
+	init_window(&rwin);
+	init_window(&lwin);
 
-	lwin.curr_line = 0;
-	lwin.top_line = 0;
-	lwin.list_rows = 0;
-	lwin.list_pos = 0;
-	lwin.selected_filelist = NULL;
-	lwin.history_num = 0;
-	lwin.invert = 0;
-	lwin.color_scheme = 0;
-
-	/* These need to be initialized before reading the configuration file */
-	cfg.using_default_config = 0;
-	cfg.command_num = 0;
-	cfg.filetypes_num = 0;
-	cfg.nmapped_num = 0;
-	cfg.vim_filter = 0;
-	cfg.show_one_window = 0;
 	command_list = NULL;
 	filetypes = NULL;
 
-	cfg.search_history_len = 15;
-	cfg.search_history_num = -1;
-	cfg.search_history = (char **)calloc(cfg.search_history_len, sizeof(char*));
-	cfg.cmd_history_len = 15;
-	cfg.cmd_history_num = -1;
-	cfg.cmd_history = (char **)calloc(cfg.cmd_history_len, sizeof(char *));
-	cfg.auto_execute = 0;
-	cfg.color_scheme_num = 0;
-	cfg.color_pairs_num = 0;
-
 	col_schemes = malloc(sizeof(Col_scheme) * 8);
 
-	/* Maximum argument length to pass to the shell */
-	if (! (cfg.max_args = sysconf(_SC_ARG_MAX)) > 0)
-		cfg.max_args = 4096; /* POSIX MINIMUM */
-
-
+  init_registers();
 	init_config();
 	set_config_dir();
 	read_config_file();
@@ -136,21 +128,7 @@ main(int argc, char *argv[])
 	rwin.hide_dot = 1;
 	strncpy(rwin.regexp, "\\.o$", sizeof(rwin.regexp));
 	cfg.timer = 10;
-	curr_stats.need_redraw = 0;
-	curr_stats.getting_input = 0;
-	curr_stats.menu = 0;
-	curr_stats.redraw_menu = 0;
-	curr_stats.is_updir = 0;
-	curr_stats.last_char = 0;
-	curr_stats.is_console = 0;
-	curr_stats.search = 0;
-	curr_stats.save_msg = 0;
-	curr_stats.use_register = 0;
-	curr_stats.curr_register = -1;
-	curr_stats.register_saved = 0;
-	curr_stats.show_full = 0;
-	curr_stats.view = 0;
-	curr_stats.setting_change = 0;
+	init_status();
 
 	if (cfg.show_one_window)
 		curr_stats.number_of_windows = 1;
@@ -175,71 +153,53 @@ main(int argc, char *argv[])
 	if(!setup_ncurses_interface())
 		return -1;
 
-	/* Load the initial directory */
-	snprintf(rwin.curr_dir, sizeof(rwin.curr_dir), "%s", dir);
-	snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s", dir);
-	rwin.dir_entry = (dir_entry_t *)malloc(sizeof(dir_entry_t));
-	lwin.dir_entry = (dir_entry_t *)malloc(sizeof(dir_entry_t));
-	rwin.dir_entry[0].name = malloc(sizeof("../") +1);
-	lwin.dir_entry[0].name = malloc(sizeof("../") +1);
-	strcpy(rwin.dir_entry[0].name, "../");
-	rwin.list_rows++;
-	strcpy(lwin.dir_entry[0].name, "../");
-	lwin.list_rows++;
-	change_directory(&rwin, dir);
-	change_directory(&lwin, dir);
-	other_view = &lwin;
-	curr_view = &rwin;
+	load_initial_directory(dir);
 
 /* Get Command Line Arguments */
 	for(x = 1; x < argc; x++)
 	{
-		if(argv[x] != NULL)
+		if(argv[x] == NULL)
 		{
-				if(!strcmp(argv[x], "-f"))
-				{
-					cfg.vim_filter = 1;
-				}
-				else if(!strcmp(argv[x], "--version"))
-				{
-					endwin();
-					printf("\n\nvifm %s\n\n", VERSION);
-					exit(0);
-				}
-				else if(!strcmp(argv[x], "--help"))
-				{
-					endwin();
-					show_help_msg();
-					exit(0);
-				}
-				else if(is_dir(argv[x]))
-				{
-					if(lwin_args)
-					{
-						snprintf(rwin.curr_dir, sizeof(rwin.curr_dir),
-								"%s", argv[x]);
-
-						rwin_args++;
-
-					}
-					else
-					{
-						snprintf(lwin.curr_dir, sizeof(lwin.curr_dir),
-								"%s", argv[x]);
-
-
-						lwin_args++;
-					}
-				}
-				else
-				{
-					endwin();
-					show_help_msg();
-					exit(0);
-				}
+			continue;
+		}
+		else if(!strcmp(argv[x], "-f"))
+		{
+			cfg.vim_filter = 1;
+		}
+		else if(!strcmp(argv[x], "--version"))
+		{
+			endwin();
+			printf("\n\nvifm %s\n\n", VERSION);
+			exit(0);
+		}
+		else if(!strcmp(argv[x], "--help"))
+		{
+			endwin();
+			show_help_msg();
+			exit(0);
+		}
+		else if(is_dir(argv[x]))
+		{
+			if(lwin_args)
+			{
+				snprintf(rwin.curr_dir, sizeof(rwin.curr_dir),
+						"%s", argv[x]);
+				rwin_args++;
+			}
+			else
+			{
+				snprintf(lwin.curr_dir, sizeof(lwin.curr_dir),
+						"%s", argv[x]);
+				lwin_args++;
+			}
+		}
+		else
+		{
+			endwin();
+			show_help_msg();
+			exit(0);
 		}
 	}
-
 
 	load_dir_list(&rwin, 0);
 
@@ -270,8 +230,6 @@ main(int argc, char *argv[])
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
-
-
 	/* Need to wait until both lists are loaded before changing one of the
 	 * lists to show the file stats.  This is only used for starting vifm
 	 * from the vifm.vim script
@@ -280,8 +238,7 @@ main(int argc, char *argv[])
 	if(cfg.vim_filter)
 		curr_stats.number_of_windows = 1;
 
-	/* Enter the main loop. */
-	main_key_press_cb();
+	main_loop();
 
 	return 0;
 }

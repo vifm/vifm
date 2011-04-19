@@ -40,25 +40,32 @@
 #define MAX_LEN 1024
 #define DEFAULT_FILENAME_FILTER "\\.o$"
 
+Config cfg;
+
 void
 init_config(void)
 {
-	int i;
-
-	/* init bookmarks */
-	for (i = 0; i < NUM_BOOKMARKS; ++i)
-	{
-		bookmarks[i].directory = NULL;
-		bookmarks[i].file = NULL;
-	}
 	cfg.num_bookmarks = 0;
-	for ( i = 0; i < NUM_REGISTERS; ++i)
-	{
-		reg[i].name = valid_registers[i];
-		reg[i].num_files = 0;
-		reg[i].files = NULL;
-		reg[i].deleted = 0;
-	}
+	cfg.using_default_config = 0;
+	cfg.command_num = 0;
+	cfg.filetypes_num = 0;
+	cfg.nmapped_num = 0;
+	cfg.vim_filter = 0;
+	cfg.show_one_window = 0;
+
+	cfg.search_history_len = 15;
+	cfg.search_history_num = -1;
+	cfg.search_history = (char **)calloc(cfg.search_history_len, sizeof(char*));
+	cfg.cmd_history_len = 15;
+	cfg.cmd_history_num = -1;
+	cfg.cmd_history = (char **)calloc(cfg.cmd_history_len, sizeof(char *));
+	cfg.auto_execute = 0;
+	cfg.color_scheme_num = 0;
+	cfg.color_pairs_num = 0;
+
+	/* Maximum argument length to pass to the shell */
+	if (! (cfg.max_args = sysconf(_SC_ARG_MAX)) > 0)
+		cfg.max_args = 4096; /* POSIX MINIMUM */
 }
 
 
@@ -152,7 +159,6 @@ set_config_dir(void)
 			if((f = fopen(rc_file, "r")) == NULL)
 				create_rc_file();
 		}
-
 	}
 }
 

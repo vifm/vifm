@@ -29,6 +29,7 @@ vifm_SOURCES = \
 	rline.c rline.h \
 	search.c search.h \
 	signals.c signals.h \
+	status.c status.h \
 	sort.c sort.h\
 	ui.c ui.h \
 	utils.c utils.h \

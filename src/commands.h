@@ -21,6 +21,19 @@
 
 #include "ui.h"
 
+enum {
+	CHANGE_WINDOWS,
+	GET_COMMAND,
+	GET_BOOKMARK,
+	GET_SEARCH_PATTERN,
+	GET_VISUAL_COMMAND,
+	START_VISUAL_MODE,
+	MAPPED_COMMAND,
+	MAPPED_SEARCH,
+	MENU_SEARCH,
+	MENU_COMMAND
+};
+
 typedef struct
 {
 	char *action;

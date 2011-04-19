@@ -46,6 +46,8 @@ typedef struct
 
 extern Status curr_stats;
 
+void init_status(void);
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

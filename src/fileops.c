@@ -96,6 +96,34 @@ execute(char **args)
 	return pid;
 }
 
+int
+yank_files(FileView *view, int reg, int count, int *indexes)
+{
+	if(count > 0)
+		get_selected_files(view, count, indexes);
+	else
+		get_all_selected_files(curr_view);
+
+	/* A - Z  append to register otherwise replace */
+	if ((reg < 'A') || (reg > 'Z'))
+		clear_register(reg);
+	else
+		reg += 'a' - 'A';
+
+	yank_selected_files(curr_view, reg);
+	free_selected_file_array(curr_view);
+
+	if(count == 0)
+	{
+		int tmp = curr_view->selected_files;
+		clean_selected_files(curr_view);
+		draw_dir_list(curr_view, curr_view->top_line, curr_view->list_pos);
+		moveto_list_pos(curr_view, curr_view->list_pos);
+		return tmp;
+	}
+	return count;
+}
+
 void
 yank_selected_files(FileView *view, int reg)
 {

@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-
 #include<ncurses.h>
 #include<unistd.h> /* for chdir */
 #include<string.h> /* strncpy */
@@ -25,175 +24,25 @@
 #include<unistd.h> /* select() */
 
 #include "background.h"
-#include "bookmarks.h"
 #include "color_scheme.h"
-#include "commands.h"
 #include "config.h"
 #include "file_info.h"
 #include "filelist.h"
-#include "fileops.h"
-#include "keys.h"
 #include "keys_buildin_n.h"
 #include "keys_eng.h"
-#include "menus.h"
 #include "modes.h"
-#include "registers.h"
-#include "search.h"
-#include "signals.h"
-#include "sort.h"
 #include "status.h"
 #include "ui.h"
-#include "utils.h"
-#include "visual.h"
 
-void
-switch_views(void)
-{
-	FileView *tmp = curr_view;
-	curr_view = other_view;
-	other_view = tmp;
-}
-
-static void
-update_num_window(char *text)
-{
-	werase(num_win);
-	mvwaddstr(num_win, 0, 0, text);
-	wrefresh(num_win);
-}
-
-static void
-clear_num_window(void)
-{
-	werase(num_win);
-	wrefresh(num_win);
-}
-
-static void
-reload_window(FileView *view)
-{
-	struct stat s;
-
-	stat(view->curr_dir, &s);
-	if(view != curr_view)
-		change_directory(view, view->curr_dir);
-
-	load_dir_list(view, 1);
-	view->dir_mtime = s.st_mtime;
-
-	if(view != curr_view)
-	{
-		change_directory(curr_view, curr_view->curr_dir);
-		mvwaddstr(view->win, view->curr_line, 0, "*");
-		wrefresh(view->win);
-	}
-	else
-		moveto_list_pos(view, view->list_pos);
-
-}
+#include "keys.h"
 
 /*
- * This checks the modified times of the directories.
- */
-static void
-check_if_filelists_have_changed(FileView *view)
-{
-	struct stat s;
-
-	stat(view->curr_dir, &s);
-	if(s.st_mtime  != view->dir_mtime)
-		reload_window(view);
-
-	if (curr_stats.number_of_windows != 1 && curr_stats.view != 1)
-	{
-		stat(other_view->curr_dir, &s);
-		if(s.st_mtime != other_view->dir_mtime)
-			reload_window(other_view);
-	}
-
-}
-
-static void
-update_view(FileView *win)
-{
-	touchwin(win->title);
-	touchwin(win->win);
-
-	redrawwin(win->title);
-	redrawwin(win->win);
-
-	wnoutrefresh(win->title);
-	wnoutrefresh(win->win);
-}
-
-void
-update_all_windows(void)
-{
-	touchwin(lborder);
-	touchwin(stat_win);
-	touchwin(status_bar);
-	touchwin(pos_win);
-	touchwin(num_win);
-	touchwin(rborder);
-
-	/*
-	 * redrawwin() shouldn't be needed.  But without it there is a
-	 * lot of flickering when redrawing the windows?
-	 */
-
-	redrawwin(lborder);
-	redrawwin(stat_win);
-	redrawwin(status_bar);
-	redrawwin(pos_win);
-	redrawwin(num_win);
-	redrawwin(rborder);
-
-	/* In One window view */
-	if (curr_stats.number_of_windows == 1)
-	{
-		update_view(curr_view);
-	}
-	/* Two Pane View */
-	else
-	{
-		touchwin(mborder);
-		redrawwin(mborder);
-		wnoutrefresh(mborder);
-
-		update_view(&lwin);
-		update_view(&rwin);
-	}
-
-	wnoutrefresh(lborder);
-	wnoutrefresh(stat_win);
-	wnoutrefresh(status_bar);
-	wnoutrefresh(pos_win);
-	wnoutrefresh(num_win);
-	wnoutrefresh(rborder);
-
-	doupdate();
-}
-
-static void
-update_input_bar(int c)
-{
-	if(getcurx(num_win) == getmaxx(num_win) - 1)
-	{
-		mvwdelch(num_win, 0, 0);
-		wmove(num_win, 0, getmaxx(num_win) - 2);
-	}
-
-	waddch(num_win, c);
-	wrefresh(num_win);
-}
-
-/*
- *	Main Loop
- *	Everything is driven from this function with the exception of
- *	signals which are handled in signals.c
+ * Main Loop
+ * Everything is driven from this function with the exception of
+ * signals which are handled in signals.c
  */
 void
-main_key_press_cb()
+main_loop(void)
 {
 	char status_buf[64] = "";
 	int mode = NORMAL_MODE;
@@ -210,7 +59,6 @@ main_key_press_cb()
 	/* TODO move this code where initialization occurs */
 	init_keys(MODES_COUNT, &mode, (int*)&mode_flags, NULL);
 	init_buildin_n_keys(&mode);
-	init_registers();
 
 	curs_set(0);
 

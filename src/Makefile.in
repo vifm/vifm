@@ -56,8 +56,8 @@ am_vifm_OBJECTS = vifm.$(OBJEXT) background.$(OBJEXT) \
 	fileops.$(OBJEXT) filetype.$(OBJEXT) keys.$(OBJEXT) \
 	keys_eng.$(OBJEXT) keys_buildin_n.$(OBJEXT) menus.$(OBJEXT) \
 	registers.$(OBJEXT) rline.$(OBJEXT) search.$(OBJEXT) \
-	signals.$(OBJEXT) sort.$(OBJEXT) ui.$(OBJEXT) utils.$(OBJEXT) \
-	visual.$(OBJEXT)
+	signals.$(OBJEXT) status.$(OBJEXT) sort.$(OBJEXT) ui.$(OBJEXT) \
+	utils.$(OBJEXT) visual.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -240,6 +240,7 @@ vifm_SOURCES = \
 	rline.c rline.h \
 	search.c search.h \
 	signals.c signals.h \
+	status.c status.h \
 	sort.c sort.h\
 	ui.c ui.h \
 	utils.c utils.h \
@@ -384,6 +385,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signals.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/status.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@

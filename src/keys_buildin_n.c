@@ -730,38 +730,27 @@ keys_yy(struct key_info key_info, struct keys_info *keys_info)
 
 	if(key_info.count != NO_COUNT_GIVEN)
 	{
-		int x;
-		int y = curr_view->list_pos;
-
-		for(x = 0; x < curr_view->list_rows; x++)
-			curr_view->dir_entry[x].selected = 0;
-
-		for(x = 0; x < key_info.count; x++)
+		int i, j, max;
+		max = MIN(curr_view->list_rows, curr_view->list_pos + key_info.count);
+		keys_info->count = (max - 1) - curr_view->list_pos + 1;
+		keys_info->indexes = calloc(keys_info->count, sizeof(int));
+		if(keys_info->indexes == NULL)
 		{
-			curr_view->dir_entry[y].selected = 1;
-			y++;
-			if (y >= curr_view->list_rows)
-				break;
+			show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+			return;
 		}
-		curr_view->selected_files = y - curr_view->list_pos;
+		for(i = curr_view->list_pos, j = 0; i < max; i++)
+			keys_info->indexes[j++] = i;
 	}
-	else if(!curr_view->selected_files)
-	{
-		curr_view->dir_entry[curr_view->list_pos].selected = 1;
-		curr_view->selected_files = 1;
-	}
-
-	get_all_selected_files(curr_view);
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
-	yank_selected_files(curr_view, key_info.reg);
-	free_selected_file_array(curr_view);
-	count = curr_view->selected_files;
 
-	clean_selected_files(curr_view);
+	count = yank_files(curr_view, key_info.reg, keys_info->count,
+			keys_info->indexes);
 
-	draw_dir_list(curr_view, curr_view->top_line, curr_view->list_pos);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	if(key_info.count != NO_COUNT_GIVEN)
+		free(keys_info->indexes);
+
 	snprintf(buf, sizeof(buf), " %d %s yanked.", count,
 			count == 1 ? "file" : "files");
 	status_bar_message(buf);

@@ -647,8 +647,7 @@ my_rl_gets(int type)
 	}
 	*/
 	else if (stat.type == GET_VISUAL_COMMAND)
-		wcsncpy(stat.prompt, L":'<,'>", sizeof(stat.prompt)
-				 / sizeof(wchar_t));
+		wcsncpy(stat.prompt, L":'<,'>", sizeof(stat.prompt)/sizeof(wchar_t));
 
 	/*
 	stat.prompt_wid = wcslen(prompt);

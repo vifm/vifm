@@ -28,6 +28,16 @@
 #include "ui.h"
 #include "utils.h"
 
+void
+init_bookmarks(void)
+{
+	int i;
+	for (i = 0; i < NUM_BOOKMARKS; ++i)
+	{
+		bookmarks[i].directory = NULL;
+		bookmarks[i].file = NULL;
+	}
+}
 
 /*
  * transform a mark to an index

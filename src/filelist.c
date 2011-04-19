@@ -783,7 +783,7 @@ clean_selected_files(FileView *view)
  * Symlink directories require an absolute path
  */
 void
-change_directory(FileView *view, char *directory)
+change_directory(FileView *view, const char *directory)
 {
 	DIR *dir;
 	struct stat s;
@@ -1406,6 +1406,49 @@ scroll_view(FileView *view)
 {
 	draw_dir_list(view, view->top_line, view->curr_line);
 	moveto_list_pos(view, view->list_pos);
+}
+
+static void
+reload_window(FileView *view)
+{
+	struct stat s;
+
+	stat(view->curr_dir, &s);
+	if(view != curr_view)
+		change_directory(view, view->curr_dir);
+
+	load_dir_list(view, 1);
+	view->dir_mtime = s.st_mtime;
+
+	if(view != curr_view)
+	{
+		change_directory(curr_view, curr_view->curr_dir);
+		mvwaddstr(view->win, view->curr_line, 0, "*");
+		wrefresh(view->win);
+	}
+	else
+		moveto_list_pos(view, view->list_pos);
+}
+
+/*
+ * This checks the modified times of the directories.
+ */
+void
+check_if_filelists_have_changed(FileView *view)
+{
+	struct stat s;
+
+	stat(view->curr_dir, &s);
+	if(s.st_mtime  != view->dir_mtime)
+		reload_window(view);
+
+	if (curr_stats.number_of_windows != 1 && curr_stats.view != 1)
+	{
+		stat(other_view->curr_dir, &s);
+		if(s.st_mtime != other_view->dir_mtime)
+			reload_window(other_view);
+	}
+
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

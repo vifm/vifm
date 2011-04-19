@@ -19,27 +19,7 @@
 #ifndef __KEYS_H__
 #define __KEYS_H__
 
-#include "ui.h"
-
-enum {
-	CHANGE_WINDOWS,
-	GET_COMMAND,
-	GET_BOOKMARK,
-	GET_SEARCH_PATTERN,
-	GET_VISUAL_COMMAND,
-	START_VISUAL_MODE,
-	MAPPED_COMMAND,
-	MAPPED_SEARCH,
-	MENU_SEARCH,
-	MENU_COMMAND
-};
-
-
-void main_key_press_cb();
-void update_all_windows(void);
-void show_dot_files(FileView *view);
-void remove_filename_filter(FileView *view);
-void switch_views(void);
+void main_loop(void);
 
 #endif
 

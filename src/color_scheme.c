@@ -31,6 +31,8 @@
 
 #define MAX_LEN 1024
 
+Col_scheme *col_schemes;
+
 void
 verify_color_schemes()
 {

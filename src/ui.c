@@ -446,8 +446,7 @@ redraw_window(void)
 	moveto_list_pos(curr_view, curr_view->list_pos);
 	wrefresh(curr_view->win);
 	curr_stats.freeze = 0;
-	curr_stats.need_redraw = 0;
-}
+	curr_stats.need_redraw = 0; }
 
 void
 clean_status_bar()
@@ -503,6 +502,95 @@ change_window(void)
 
 	if (curr_stats.number_of_windows == 1)
 		update_all_windows();
+}
+
+static void
+update_view(FileView *win)
+{
+	touchwin(win->title);
+	touchwin(win->win);
+
+	redrawwin(win->title);
+	redrawwin(win->win);
+
+	wnoutrefresh(win->title);
+	wnoutrefresh(win->win);
+}
+
+void
+update_all_windows(void)
+{
+	touchwin(lborder);
+	touchwin(stat_win);
+	touchwin(status_bar);
+	touchwin(pos_win);
+	touchwin(num_win);
+	touchwin(rborder);
+
+	/*
+	 * redrawwin() shouldn't be needed.  But without it there is a
+	 * lot of flickering when redrawing the windows?
+	 */
+
+	redrawwin(lborder);
+	redrawwin(stat_win);
+	redrawwin(status_bar);
+	redrawwin(pos_win);
+	redrawwin(num_win);
+	redrawwin(rborder);
+
+	/* In One window view */
+	if (curr_stats.number_of_windows == 1)
+	{
+		update_view(curr_view);
+	}
+	/* Two Pane View */
+	else
+	{
+		touchwin(mborder);
+		redrawwin(mborder);
+		wnoutrefresh(mborder);
+
+		update_view(&lwin);
+		update_view(&rwin);
+	}
+
+	wnoutrefresh(lborder);
+	wnoutrefresh(stat_win);
+	wnoutrefresh(status_bar);
+	wnoutrefresh(pos_win);
+	wnoutrefresh(num_win);
+	wnoutrefresh(rborder);
+
+	doupdate();
+}
+
+void
+update_input_bar(int c)
+{
+	if(getcurx(num_win) == getmaxx(num_win) - 1)
+	{
+		mvwdelch(num_win, 0, 0);
+		wmove(num_win, 0, getmaxx(num_win) - 2);
+	}
+
+	waddch(num_win, c);
+	wrefresh(num_win);
+}
+
+void
+switch_views(void)
+{
+	FileView *tmp = curr_view;
+	curr_view = other_view;
+	other_view = tmp;
+}
+
+void
+clear_num_window(void)
+{
+	werase(num_win);
+	wrefresh(num_win);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
