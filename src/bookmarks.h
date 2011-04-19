@@ -54,7 +54,7 @@ int active_bookmarks[NUM_BOOKMARKS];
 char index2mark(const int x);
 int is_bookmark(const int x);
 void add_bookmark(const char mark, const char *directory, const char *file);
-int get_bookmark(FileView *view);
+int get_bookmark(FileView *view, char key);
 int move_to_bookmark(FileView *view, const char mark);
 void remove_bookmark(const int x);
 int check_mark_directory(FileView *view, char mark);

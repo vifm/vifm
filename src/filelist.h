@@ -42,9 +42,17 @@ char * get_current_file_name(FileView *view);
 void moveto_list_pos(FileView *view, int pos);
 int find_file_pos_in_list(FileView *view, char *file);
 void get_all_selected_files(FileView *view);
+void get_selected_files(FileView *view, int count, int *indexes);
 void free_selected_file_array(FileView *view);
 void erase_current_line_bar(FileView *view);
 bool is_link_dir(const dir_entry_t * path);
+void filter_selected_files(FileView *view);
+void hide_dot_files(FileView *view);
+void show_dot_files(FileView *view);
+void toggle_dot_files(FileView *view);
+void remove_filename_filter(FileView *view);
+void restore_filename_filter(FileView *view);
+void scroll_view(FileView *view);
 
 #endif
 

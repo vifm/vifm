@@ -291,6 +291,40 @@ get_all_selected_files(FileView *view)
 	}
 }
 
+/* If you use this function using the free_selected_file_array()
+ * will clean up the allocated memory
+ */
+void
+get_selected_files(FileView *view, int count, int *indexes)
+{
+	size_t namelen;
+	int x;
+	int y = 0;
+
+	view->selected_filelist = (char **)calloc(count, sizeof(char *));
+	if(view->selected_filelist == NULL)
+	{
+		show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+		return;
+	}
+
+	y = 0;
+	for(x = 0; x < count; x++)
+	{
+		namelen = strlen(view->dir_entry[indexes[x]].name);
+		view->selected_filelist[y] = malloc(namelen +1);
+		if(view->selected_filelist[y] == NULL)
+		{
+			show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+			return;
+		}
+		strcpy(view->selected_filelist[y], view->dir_entry[indexes[x]].name);
+		y++;
+	}
+
+	view->selected_files = count;
+}
+
 
 int
 find_file_pos_in_list(FileView *view, char *file)
@@ -1213,6 +1247,165 @@ is_link_dir(const dir_entry_t * path)
 		return true;
 	else
 		return false;
+}
+
+void
+filter_selected_files(FileView *view)
+{
+	size_t buf_size = 0;
+	int x;
+
+	if(!view->selected_files)
+		view->dir_entry[view->list_pos].selected = 1;
+
+	for(x = 0; x < view->list_rows; x++)
+	{
+		if(view->dir_entry[x].selected)
+		{
+			if(view->filtered)
+			{
+				char *buf = NULL;
+
+				buf_size = strlen(view->dir_entry[x].name) +7;
+				buf = (char *)realloc(buf, strlen(view->dir_entry[x].name) +7);
+				snprintf(buf, buf_size,
+						"|\\<%s\\>$", view->dir_entry[x].name);
+				view->filename_filter = (char *)
+					realloc(view->filename_filter, strlen(view->filename_filter) +
+							strlen(buf) +1);
+				strcat(view->filename_filter, buf);
+				view->filtered++;
+				free(buf);
+			}
+			else
+			{
+				buf_size = strlen(view->dir_entry[x].name) +6;
+				view->filename_filter = (char *)
+					realloc(view->filename_filter, strlen(view->dir_entry[x].name) +6);
+				snprintf(view->filename_filter, buf_size,
+						"\\<%s\\>$", view->dir_entry[x].name);
+				view->filtered = 1;
+			}
+		}
+	}
+	view->invert = 1;
+	clean_status_bar();
+	load_dir_list(view, 1);
+	moveto_list_pos(view, 0);
+}
+
+void
+hide_dot_files(FileView *view)
+{
+	int found;
+	char file[NAME_MAX];
+
+	snprintf(file, sizeof(file), "%s",
+			view->dir_entry[view->list_pos].name);
+	view->hide_dot = 1;
+	load_dir_list(view, 1);
+	found = find_file_pos_in_list(view, file);
+
+	if(found >= 0)
+		moveto_list_pos(view, found);
+	else
+		moveto_list_pos(view, view->list_pos);
+}
+
+void
+show_dot_files(FileView *view)
+{
+	int found;
+	char file[256];
+
+	snprintf(file, sizeof(file), "%s",
+			view->dir_entry[view->list_pos].name);
+	view->hide_dot = 0;
+	load_dir_list(view, 1);
+	found = find_file_pos_in_list(view, file);
+
+	if(found >= 0)
+		moveto_list_pos(view, found);
+	else
+		moveto_list_pos(view, view->list_pos);
+}
+
+void
+toggle_dot_files(FileView *view)
+{
+	int found;
+	char file[NAME_MAX];
+
+	snprintf(file, sizeof(file), "%s",
+			view->dir_entry[view->list_pos].name);
+	if(view->hide_dot)
+		view->hide_dot = 0;
+	else
+		view->hide_dot = 1;
+	load_dir_list(view, 1);
+	found = find_file_pos_in_list(view, file);
+
+	if(found >= 0)
+		moveto_list_pos(view, found);
+	else
+		moveto_list_pos(view, view->list_pos);
+}
+
+void
+remove_filename_filter(FileView *view)
+{
+	int found;
+	char file[NAME_MAX];
+
+	snprintf(file, sizeof(file), "%s",
+			view->dir_entry[view->list_pos].name);
+	view->prev_filter = (char *)realloc(view->prev_filter,
+			strlen(view->filename_filter) +1);
+	snprintf(view->prev_filter,
+		sizeof(view->prev_filter), "%s", view->filename_filter);
+	view->filename_filter = (char *)realloc(view->filename_filter,
+			strlen("*") +1);
+	snprintf(view->filename_filter,
+			sizeof(view->filename_filter), "*");
+	view->prev_invert = view->invert;
+	view->invert = 0;
+	load_dir_list(view, 0);
+	found = find_file_pos_in_list(view, file);
+	if(found >= 0)
+		moveto_list_pos(view, found);
+	else
+		moveto_list_pos(view, view->list_pos);
+}
+
+void
+restore_filename_filter(FileView *view)
+{
+	int found;
+	char file[NAME_MAX];
+
+	snprintf(file, sizeof(file), "%s",
+			view->dir_entry[view->list_pos].name);
+
+	view->filename_filter = (char *)realloc(view->filename_filter,
+			strlen(view->prev_filter) +1);
+	snprintf(view->filename_filter, sizeof(view->filename_filter),
+			"%s", view->prev_filter);
+	view->invert = view->prev_invert;
+	load_dir_list(view, 0);
+	found = find_file_pos_in_list(view, file);
+
+
+	if(found >= 0)
+		moveto_list_pos(view, found);
+	else
+		moveto_list_pos(view, view->list_pos);
+}
+
+void
+scroll_view(FileView *view)
+{
+	draw_dir_list(view, view->top_line, view->curr_line);
+	moveto_list_pos(view, view->list_pos);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

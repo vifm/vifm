@@ -137,7 +137,7 @@ visual_key_cb(FileView *view)
 				}
 				break;
 			case 'd':
-				delete_file(view);
+				delete_file(view, DEFAULT_REG_NAME, 0, NULL);
 				done = 1;
 				break;
 			case KEY_DOWN:
@@ -155,7 +155,7 @@ visual_key_cb(FileView *view)
 			case 'y':
 				{
 					get_all_selected_files(view);
-					yank_selected_files(view);
+					yank_selected_files(view, DEFAULT_REG_NAME);
 					count = view->selected_files;
 					free_selected_file_array(view);
 					save_msg = 1;

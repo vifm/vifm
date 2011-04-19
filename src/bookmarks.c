@@ -174,19 +174,8 @@ check_mark_directory(FileView *view, char mark)
 }
 
 int
-get_bookmark(FileView *view)
+get_bookmark(FileView *view, char key)
 {
-	int key;
-
-	wtimeout(curr_view->win, -1);
-
-	key = wgetch(view->win);
-
-	wtimeout(curr_view->win, KEYPRESS_TIMEOUT);
-
-	if (key == ERR)
-		return 0;
-
 	switch(key)
 	{
 		case '\'':

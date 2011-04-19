@@ -97,13 +97,11 @@ execute(char **args)
 }
 
 void
-yank_selected_files(FileView *view)
+yank_selected_files(FileView *view, int reg)
 {
 	int x;
 	size_t namelen;
 	int old_list = curr_stats.num_yanked_files;
-
-
 
 	if(curr_stats.yanked_files)
 	{
@@ -118,14 +116,11 @@ yank_selected_files(FileView *view)
 	curr_stats.yanked_files = (char **)calloc(view->selected_files,
 			sizeof(char *));
 
-	if ((curr_stats.use_register) && (curr_stats.register_saved))
-	{
-		/* A - Z  append to register otherwise replace */
-		if ((curr_stats.curr_register < 65) || (curr_stats.curr_register > 90))
-			clear_register(curr_stats.curr_register);
-		else
-			curr_stats.curr_register = curr_stats.curr_register + 32;
-	}
+	/* A - Z  append to register otherwise replace */
+	if ((reg < 'A') || (reg > 'Z'))
+		clear_register(reg);
+	else
+		reg += 'a' - 'A';
 
 	for(x = 0; x < view->selected_files; x++)
 	{
@@ -137,7 +132,7 @@ yank_selected_files(FileView *view)
 			strcpy(curr_stats.yanked_files[x], view->selected_filelist[x]);
 			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
 					view->selected_filelist[x]);
-			append_to_register(curr_stats.curr_register, view->selected_filelist[x]);
+			append_to_register(reg, buf);
 		}
 		else
 		{
@@ -601,7 +596,7 @@ pipe_and_capture_errors(char *command)
 
 
 void
-delete_file(FileView *view)
+delete_file(FileView *view, int reg, int count, int *indexes)
 {
 	char buf[256];
 	int x;
@@ -612,8 +607,16 @@ delete_file(FileView *view)
 		view->selected_files = 1;
 	}
 
-	get_all_selected_files(view);
-	yank_selected_files(view);
+	if(count > 0)
+		get_selected_files(view, count, indexes);
+	else
+		get_all_selected_files(view);
+
+	/* A - Z  append to register otherwise replace */
+	if ((reg < 'A') || (reg > 'Z'))
+		clear_register(reg);
+	else
+		reg += 'a' - 'A';
 
 	for(x = 0; x < view->selected_files; x++)
 	{
@@ -624,29 +627,23 @@ delete_file(FileView *view)
 			continue;
 		}
 
-		if ((curr_stats.use_register) && (curr_stats.register_saved))
-		{
-			strncpy(curr_stats.yanked_files_dir, cfg.trash_dir,
-					sizeof(curr_stats.yanked_files_dir) -1);
-			snprintf(buf, sizeof(buf), "mv \"%s\" %s/%s",
-					view->selected_filelist[x], cfg.trash_dir,
-					view->selected_filelist[x]);
-
-			curr_stats.register_saved = 0;
-			curr_stats.use_register = 0;
-		}
-		else if(cfg.use_trash)
+		if(cfg.use_trash)
 		{
 			strncpy(curr_stats.yanked_files_dir, cfg.trash_dir,
 					sizeof(curr_stats.yanked_files_dir) -1);
 			snprintf(buf, sizeof(buf), "mv \"%s\" %s",
-				view->selected_filelist[x],  cfg.trash_dir);
+					view->selected_filelist[x],  cfg.trash_dir);
 		}
 		else
-			snprintf(buf, sizeof(buf), "rm -fr '%s'",
-					 view->selected_filelist[x]);
+			snprintf(buf, sizeof(buf), "rm -rf '%s'", view->selected_filelist[x]);
 
-		background_and_wait_for_errors(buf);
+		if(background_and_wait_for_errors(buf) == 0)
+		{
+			char reg_buf[PATH_MAX];
+			snprintf(reg_buf, sizeof(reg_buf), "%s/%s", cfg.trash_dir,
+					view->selected_filelist[x]);
+			append_to_register(reg, reg_buf);
+		}
 	}
 	free_selected_file_array(view);
 	view->selected_files = 0;
@@ -1342,6 +1339,76 @@ rename_file(FileView *view)
 		moveto_list_pos(view, found);
 	else
 		moveto_list_pos(view, view->list_pos);
+}
+
+int
+put_files_from_register(FileView *view, int name)
+{
+	int x;
+	int i = -1;
+	int y = 0;
+	char buf[PATH_MAX + (NAME_MAX * 2) + 4];
+
+	for (x = 0; x < NUM_REGISTERS; x++)
+	{
+		if (reg[x].name == name)
+		{
+			i = x;
+			break;
+		}
+	}
+
+	if ((i < 0) || (reg[i].num_files < 1))
+	{
+		status_bar_message("Register is empty");
+		wrefresh(status_bar);
+		return 1;
+	}
+
+	for (x = 0; x < reg[i].num_files; x++)
+	{
+		char *temp = NULL;
+		char *temp1 = NULL;
+		snprintf(buf, sizeof(buf), "%s", reg[i].files[x]);
+		temp = escape_filename(buf, strlen(buf), 1);
+		temp1 = escape_filename(view->curr_dir, strlen(view->curr_dir), 1);
+		if (!access(buf, F_OK))
+		{
+
+			if (!strcmp(buf, cfg.trash_dir))
+				snprintf(buf, sizeof(buf), "mv %s %s", temp, temp1);
+			else
+				snprintf(buf, sizeof(buf), "cp -pR %s %s", temp, temp1);
+			/*
+			snprintf(buf, sizeof(buf), "mv \"%s/%s\" %s",
+					cfg.trash_dir, temp, temp1);
+					*/
+			/*
+			snprintf(buf, sizeof(buf), "mv \"%s/%s\" %s",
+					cfg.trash_dir, reg[i].files[x], view->curr_dir);
+					*/
+			if ( background_and_wait_for_errors(buf))
+				y++;
+		}
+		free(temp);
+		free(temp1);
+	}
+
+	clear_register(name);
+
+	if (y)
+	{
+		snprintf(buf, sizeof(buf), " %d %s inserted", y,
+				y==1 ? "file" : "files");
+
+		load_dir_list(view, 0);
+		moveto_list_pos(view, view->curr_line);
+
+		status_bar_message(buf);
+		return 1;
+	}
+
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

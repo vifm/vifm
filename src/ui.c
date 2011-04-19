@@ -449,4 +449,60 @@ redraw_window(void)
 	curr_stats.need_redraw = 0;
 }
 
+void
+clean_status_bar()
+{
+	werase(status_bar);
+	wnoutrefresh(status_bar);
+}
+
+void
+change_window(void)
+{
+	switch_views();
+
+	if (curr_stats.number_of_windows != 1)
+	{
+		wattroff(other_view->title, A_BOLD);
+		wattroff(other_view->win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
+		mvwaddstr(other_view->win, other_view->curr_line, 0, "*");
+		erase_current_line_bar(other_view);
+		werase(other_view->title);
+		wprintw(other_view->title, "%s", other_view->curr_dir);
+		wnoutrefresh(other_view->title);
+	}
+
+	if (curr_stats.view)
+	{
+		wbkgdset(curr_view->title,
+					COLOR_PAIR(BORDER_COLOR + curr_view->color_scheme));
+		wbkgdset(curr_view->win,
+					COLOR_PAIR(WIN_COLOR + curr_view->color_scheme));
+		change_directory(other_view, other_view->curr_dir);
+		load_dir_list(other_view, 0);
+		change_directory(curr_view, curr_view->curr_dir);
+		load_dir_list(curr_view, 0);
+	}
+
+	wattron(curr_view->title, A_BOLD);
+	werase(curr_view->title);
+	wprintw(curr_view->title,  "%s", curr_view->curr_dir);
+	wnoutrefresh(curr_view->title);
+
+	wnoutrefresh(other_view->win);
+	wnoutrefresh(curr_view->win);
+
+	change_directory(curr_view, curr_view->curr_dir);
+
+	if (curr_stats.number_of_windows == 1)
+		load_dir_list(curr_view, 1);
+
+	moveto_list_pos(curr_view, curr_view->list_pos);
+	werase(status_bar);
+	wnoutrefresh(status_bar);
+
+	if (curr_stats.number_of_windows == 1)
+		update_all_windows();
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

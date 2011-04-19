@@ -22,6 +22,8 @@ vifm_SOURCES = \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
 	keys.c keys.h \
+	keys_eng.c keys_eng.h \
+	keys_buildin_n.c keys_buildin_n.h \
 	menus.c menus.h \
 	registers.c registers.h \
 	rline.c rline.h \

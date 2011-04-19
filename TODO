@@ -11,7 +11,7 @@ Vi specific features that need to be added.
 	Key mapping  :nmap s  :sh<Return>
 	Change file list filters to use fold levels instead of just 
 		the dot filter and regular expression filter.
-	Named registers for yanked or deleted files.
+    Implement backward search.
 
 
 Possible things to add.

@@ -283,7 +283,7 @@ main(int argc, char *argv[])
 		curr_stats.number_of_windows = 1;
 
 	/* Enter the main loop. */
-	main_key_press_cb(curr_view);
+	main_key_press_cb();
 
 	return 0;
 }

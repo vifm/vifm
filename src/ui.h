@@ -121,12 +121,14 @@ WINDOW *lborder;
 WINDOW *mborder;
 WINDOW *rborder;
 
-int setup_ncurses_interface();
+int setup_ncurses_interface(void);
 void status_bar_message(char *message);
 void update_stat_window(FileView *view);
-void redraw_window();
+void redraw_window(void);
 void write_stat_win(char *message);
 void update_pos_window(FileView *view);
+void clean_status_bar(void);
+void change_window(void);
 
 #endif
 
