@@ -753,9 +753,8 @@ keys_yy(struct key_info key_info, struct keys_info *keys_info)
 
 	get_all_selected_files(curr_view);
 	if(key_info.reg == NO_REG_GIVEN)
-		yank_selected_files(curr_view, DEFAULT_REG_NAME);
-	else
-		yank_selected_files(curr_view, key_info.reg);
+		key_info.reg = DEFAULT_REG_NAME;
+	yank_selected_files(curr_view, key_info.reg);
 	free_selected_file_array(curr_view);
 	count = curr_view->selected_files;
 

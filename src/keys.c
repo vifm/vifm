@@ -266,10 +266,12 @@ main_key_press_cb()
 			last_result = 0;
 		else
 		{
+			if(c != ERR)
+				curr_stats.save_msg = 0;
 			last_result = execute_keys(buf);
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
-				if (c != ERR)
+				if(c != ERR)
 					update_input_bar(c);
 				continue;
 			}
