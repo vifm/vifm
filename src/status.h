@@ -23,9 +23,6 @@
 
 typedef struct
 {
-	int num_yanked_files;
-	char yanked_files_dir[PATH_MAX];
-	char **yanked_files;
 	int need_redraw;
 	volatile int freeze;
 	volatile int getting_input;

@@ -101,20 +101,6 @@ yank_selected_files(FileView *view, int reg)
 {
 	int x;
 	size_t namelen;
-	int old_list = curr_stats.num_yanked_files;
-
-	if(curr_stats.yanked_files)
-	{
-		for(x = 0; x < old_list; x++)
-		{
-			free(curr_stats.yanked_files[x]);
-		}
-		free(curr_stats.yanked_files);
-		curr_stats.yanked_files = NULL;
-	}
-
-	curr_stats.yanked_files = (char **)calloc(view->selected_files,
-			sizeof(char *));
 
 	/* A - Z  append to register otherwise replace */
 	if ((reg < 'A') || (reg > 'Z'))
@@ -128,8 +114,6 @@ yank_selected_files(FileView *view, int reg)
 		{
 			char buf[PATH_MAX];
 			namelen = strlen(view->selected_filelist[x]);
-			curr_stats.yanked_files[x] = malloc(namelen +1);
-			strcpy(curr_stats.yanked_files[x], view->selected_filelist[x]);
 			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
 					view->selected_filelist[x]);
 			append_to_register(reg, buf);
@@ -140,10 +124,6 @@ yank_selected_files(FileView *view, int reg)
 			break;
 		}
 	}
-	curr_stats.num_yanked_files = x;
-
-	strncpy(curr_stats.yanked_files_dir, view->curr_dir,
-			sizeof(curr_stats.yanked_files_dir) -1);
 }
 
 /* execute command. */
@@ -629,10 +609,8 @@ delete_file(FileView *view, int reg, int count, int *indexes)
 
 		if(cfg.use_trash)
 		{
-			strncpy(curr_stats.yanked_files_dir, cfg.trash_dir,
-					sizeof(curr_stats.yanked_files_dir) -1);
-			snprintf(buf, sizeof(buf), "mv \"%s\" %s",
-					view->selected_filelist[x],  cfg.trash_dir);
+			snprintf(buf, sizeof(buf), "mv \"%s\" %s", view->selected_filelist[x],
+					cfg.trash_dir);
 		}
 		else
 			snprintf(buf, sizeof(buf), "rm -rf '%s'", view->selected_filelist[x]);

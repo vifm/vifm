@@ -136,8 +136,6 @@ main(int argc, char *argv[])
 	rwin.hide_dot = 1;
 	strncpy(rwin.regexp, "\\.o$", sizeof(rwin.regexp));
 	cfg.timer = 10;
-	curr_stats.yanked_files = NULL;
-	curr_stats.num_yanked_files = 0;
 	curr_stats.need_redraw = 0;
 	curr_stats.getting_input = 0;
 	curr_stats.menu = 0;
