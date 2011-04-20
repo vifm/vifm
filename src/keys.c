@@ -103,14 +103,7 @@ main_loop(void)
 			buf[pos] = '\0';
 		}
 
-		/* escape or ctrl c */
-		if(c == 27 || c == 3)
-		{
-			clean_selected_files(curr_view);
-			redraw_window();
-			curs_set(0);
-		}
-		else if(c == ERR && last_result == KEYS_WAIT_SHORT)
+		if(c == ERR && last_result == KEYS_WAIT_SHORT)
 			last_result = 0;
 		else
 		{

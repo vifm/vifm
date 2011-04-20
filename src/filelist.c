@@ -772,6 +772,7 @@ clean_selected_files(FileView *view)
 	int x;
 	for(x = 0; x < view->list_rows; x++)
 		view->dir_entry[x].selected = 0;
+	view->selected_files = 0;
 }
 
 /*

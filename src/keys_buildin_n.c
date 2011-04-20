@@ -13,8 +13,8 @@
 #include "modes.h"
 #include "registers.h"
 #include "search.h"
-#include "status.h"
 #include "ui.h"
+#include "status.h"
 #include "utils.h"
 #include "visual.h"
 
@@ -27,6 +27,7 @@ static int *mode;
 
 static void init_extendet_keys(void);
 static void keys_ctrl_b(struct key_info, struct keys_info *);
+static void keys_ctrl_c(struct key_info, struct keys_info *);
 static void keys_ctrl_d(struct key_info, struct keys_info *);
 static void keys_ctrl_e(struct key_info, struct keys_info *);
 static void keys_ctrl_f(struct key_info, struct keys_info *);
@@ -95,6 +96,9 @@ init_buildin_n_keys(int *key_mode)
 	curr = add_keys("\x02", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_b;
 
+	curr = add_keys("\x03", NORMAL_MODE);
+	curr->data.handler = keys_ctrl_c;
+
 	curr = add_keys("\x04", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_d;
 
@@ -151,6 +155,10 @@ init_buildin_n_keys(int *key_mode)
 
 	curr = add_keys("\x19", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_y;
+
+	/* escape */
+	curr = add_keys("\x1b", NORMAL_MODE);
+	curr->data.handler = keys_ctrl_c;
 
 	curr = add_keys("'", NORMAL_MODE);
 	curr->type = BUILDIN_WAIT_POINT;
@@ -338,6 +346,14 @@ keys_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 {
 	curr_view->list_pos = curr_view->list_pos - curr_view->window_rows;
 	moveto_list_pos(curr_view, curr_view->list_pos);
+}
+
+static void
+keys_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
+{
+	clean_selected_files(curr_view);
+	redraw_window();
+	curs_set(0);
 }
 
 static void
