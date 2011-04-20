@@ -149,7 +149,7 @@ init_buildin_n_keys(int *key_mode)
 	curr = add_keys("\x17w", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_ww;
 
-	curr = add_keys("\x1a", NORMAL_MODE);
+	curr = add_keys("\x19", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_y;
 
 	curr = add_keys("'", NORMAL_MODE);

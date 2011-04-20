@@ -74,7 +74,6 @@ find_previous_pattern(FileView *view)
 		moveto_list_pos(view, view->list_pos);
 	else if(find_next_pattern_match(view, view->list_rows, PREVIOUS))
 		moveto_list_pos(view, view->list_pos);
-
 }
 
 void
@@ -125,7 +124,8 @@ find_pattern(FileView *view, char *pattern)
 	if(found)
 	{
 		draw_dir_list(view, view->top_line, view->curr_line);
-		moveto_list_pos(view, first_match_pos);
+		view->list_pos--;
+		find_next_pattern(view);
 		return 0;
 	}
 	else
@@ -137,7 +137,5 @@ find_pattern(FileView *view, char *pattern)
 		return 1;
 	}
 }
-
-
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
