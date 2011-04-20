@@ -227,7 +227,6 @@ background_and_wait_for_status(char *cmd)
 int
 background_and_wait_for_errors(char *cmd)
 {
-
 	pid_t pid;
 	char *args[4];
 	int error_pipe[2];
@@ -280,6 +279,8 @@ background_and_wait_for_errors(char *cmd)
 		{
 			error = 1;
 			buf[nread] = '\0';
+			if(nread == 1 && buf[0] == '\n')
+				continue;
 			show_error_msg("Background Process Error", buf);
 		}
 		close(error_pipe[0]);
