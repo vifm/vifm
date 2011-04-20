@@ -255,15 +255,18 @@ get_all_selected_files(FileView *view)
 	int x;
 	int y = 0;
 
-	/* No selected files so just use the current file */
-	if(!view->selected_files)
-		view->dir_entry[view->list_pos].selected = 1;
-
 	for(x = 0; x < view->list_rows; x++)
 	{
 		y += view->dir_entry[x].selected;
 	}
 	view->selected_files = y;
+
+	/* No selected files so just use the current file */
+	if(view->selected_files == 0)
+	{
+		view->dir_entry[view->list_pos].selected = 1;
+		view->selected_files = 1;
+	}
 
 	view->selected_filelist =
 		(char **)calloc(view->selected_files, sizeof(char *));

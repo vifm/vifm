@@ -653,9 +653,10 @@ delete_file(FileView *view, int reg, int count, int *indexes)
 		}
 	}
 	free_selected_file_array(view);
-	view->selected_files = 0;
 
+	get_all_selected_files(view);
 	load_dir_list(view, 1);
+	free_selected_file_array(view);
 
 	moveto_list_pos(view, view->list_pos);
 }
