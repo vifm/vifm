@@ -130,6 +130,10 @@ gg will move to the first line of the file list.
 
 G will move to the last line in the file list.
 
+H - move to the first file in the window.
+L - move to the last file in the window.
+M - move to the file in the middle of the window.
+
 Space or Tab to switch file lists.
 
 Most movement commands also accept a count 12j would move down 12 files.
@@ -138,17 +142,21 @@ Most movement commands also accept a count 12j would move down 12 files.
 [count]k move up count files.
 [count]G or gg move to list position count.
 
+j, k, gg, G, H, L, M can be used as selectors for several commands. For example:
+dj delete file under cursor and one below.
+d2j delete file under cursor and two below.
+y6gg yank all files from cursor position to 6th file in the list.
+
 --------------------------------------------------------------------------------
 *Normal*
 
 /regular expression - select files matching regular expression.
-H - move to the first file in the window.
-L - move to the last file in the window.
-M - move to the file in the middle of the window.
 N - previous file matching last search pattern.
 cw - change word is used to rename a file.
 dd - move selected file or files to ~/.vifm/Trash
-yy, Y  - yank selected files.
+d<selector> - delete files.
+yy, Y - yank selected files.
+y<selector> - yank files.
 p - put last selected files.
 n - next file matching last search pattern.
 s - open a shell - this is temporary and will be removed.

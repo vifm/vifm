@@ -69,6 +69,8 @@ static void keys_s(struct key_info, struct keys_info *);
 static void keys_m(struct key_info, struct keys_info *);
 static void keys_t(struct key_info, struct keys_info *);
 static void keys_yy(struct key_info, struct keys_info *);
+static void keys_y_selector(struct key_info, struct keys_info *);
+static void yank_status_bar_msg(int count);
 static void keys_zM(struct key_info, struct keys_info *);
 static void keys_zO(struct key_info, struct keys_info *);
 static void keys_zR(struct key_info, struct keys_info *);
@@ -79,6 +81,7 @@ static void keys_zm(struct key_info, struct keys_info *);
 static void keys_zo(struct key_info, struct keys_info *);
 static void keys_zt(struct key_info, struct keys_info *);
 static void keys_zz(struct key_info, struct keys_info *);
+static void pick_files(FileView *view, int end, struct keys_info *keys_info);
 
 void
 init_buildin_n_keys(int *key_mode)
@@ -171,15 +174,19 @@ init_buildin_n_keys(int *key_mode)
 
 	curr = add_keys("G", NORMAL_MODE);
 	curr->data.handler = keys_G;
+	curr->selector = KS_SELECTOR_AND_CMD;
 
 	curr = add_keys("H", NORMAL_MODE);
 	curr->data.handler = keys_H;
+	curr->selector = KS_SELECTOR_AND_CMD;
 
 	curr = add_keys("L", NORMAL_MODE);
 	curr->data.handler = keys_L;
+	curr->selector = KS_SELECTOR_AND_CMD;
 
 	curr = add_keys("M", NORMAL_MODE);
 	curr->data.handler = keys_M;
+	curr->selector = KS_SELECTOR_AND_CMD;
 
 	curr = add_keys("N", NORMAL_MODE);
 	curr->data.handler = keys_N;
@@ -209,6 +216,7 @@ init_buildin_n_keys(int *key_mode)
 
 	curr = add_keys("gg", NORMAL_MODE);
 	curr->data.handler = keys_gg;
+	curr->selector = KS_SELECTOR_AND_CMD;
 
 	curr = add_keys("h", NORMAL_MODE);
 	curr->data.handler = keys_h;
@@ -246,6 +254,11 @@ init_buildin_n_keys(int *key_mode)
 
 	curr = add_keys("yy", NORMAL_MODE);
 	curr->data.handler = keys_yy;
+
+	curr = add_keys("y", NORMAL_MODE);
+	curr->data.handler = keys_y_selector;
+	curr->type = BUILDIN_WAIT_POINT;
+	curr->followed = FOLLOWED_BY_SELECTOR;
 
 	curr = add_keys("v", NORMAL_MODE);
 	curr->data.handler = keys_V;
@@ -435,55 +448,85 @@ keys_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 	scroll_view(curr_view);
 }
 
-/* Jump to bottom of list. */
+/* Jump to bottom of list or to specified line. */
 static void
 keys_G(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(key_info.count != NO_COUNT_GIVEN)
-		moveto_list_pos(curr_view, key_info.count - 1);
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = curr_view->list_rows;
+
+	if(keys_info->selector)
+		pick_files(curr_view, key_info.count - 1, keys_info);
 	else
-		moveto_list_pos(curr_view, curr_view->list_rows - 1);
+		moveto_list_pos(curr_view, key_info.count - 1);
 }
 
-/* Jump to top of the list. */
+/* Jump to top of the list or to specified line. */
 static void
 keys_gg(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(key_info.count != NO_COUNT_GIVEN)
-		moveto_list_pos(curr_view, key_info.count);
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+
+	if(keys_info->selector)
+		pick_files(curr_view, key_info.count - 1, keys_info);
 	else
-		moveto_list_pos(curr_view, 0);
+		moveto_list_pos(curr_view, key_info.count - 1);
 }
 
 /* Go to first file in window. */
 static void
 keys_H(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_view->list_pos = curr_view->top_line;
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	if(keys_info->selector)
+	{
+		pick_files(curr_view, curr_view->top_line, keys_info);
+	}
+	else
+	{
+		curr_view->list_pos = curr_view->top_line;
+		moveto_list_pos(curr_view, curr_view->list_pos);
+	}
 }
 
 /* Go to last file in window. */
 static void
 keys_L(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_view->list_pos = curr_view->top_line + curr_view->window_rows;
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	if(keys_info->selector)
+	{
+		pick_files(curr_view, curr_view->top_line + curr_view->window_rows,
+				keys_info);
+	}
+	else
+	{
+		curr_view->list_pos = curr_view->top_line + curr_view->window_rows;
+		moveto_list_pos(curr_view, curr_view->list_pos);
+	}
 }
 
 /* Go to middle of window. */
 static void
 keys_M(struct key_info key_info, struct keys_info *keys_info)
 {
-	if (curr_view->list_rows<curr_view->window_rows)
+	int new_pos;
+	if(curr_view->list_rows < curr_view->window_rows)
 	{
-		curr_view->list_pos = curr_view->list_rows/2;
+		new_pos = curr_view->list_rows/2;
 	}
 	else
 	{
-		curr_view->list_pos = curr_view->top_line + (curr_view->window_rows/2);
+		new_pos = curr_view->top_line + (curr_view->window_rows/2);
 	}
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	if(keys_info->selector)
+	{
+		pick_files(curr_view, new_pos, keys_info);
+	}
+	else
+	{
+		curr_view->list_pos = new_pos;
+		moveto_list_pos(curr_view, curr_view->list_pos);
+	}
 }
 
 static void
@@ -611,17 +654,7 @@ keys_j(struct key_info key_info, struct keys_info *keys_info)
 		key_info.count = 1;
 	if(keys_info->selector)
 	{
-		int i, j, max;
-		max = MIN(curr_view->list_rows - 1, curr_view->list_pos + key_info.count);
-		keys_info->count = max - curr_view->list_pos + 1;
-		keys_info->indexes = calloc(keys_info->count, sizeof(int));
-		if(keys_info->indexes == NULL)
-		{
-			show_error_msg(" Memory Error ", "Unable to allocate enough memory");
-			return;
-		}
-		for(i = curr_view->list_pos, j = 0; i <= max; i++)
-			keys_info->indexes[j++] = i;
+		pick_files(curr_view, curr_view->list_pos + key_info.count, keys_info);
 	}
 	else
 	{
@@ -638,18 +671,7 @@ keys_k(struct key_info key_info, struct keys_info *keys_info)
 		key_info.count = 1;
 	if(keys_info->selector)
 	{
-		int i, j, min;
-		min = MAX(0, curr_view->list_pos - key_info.count);
-		keys_info->count = curr_view->list_pos - min + 1;
-		keys_info->indexes = calloc(keys_info->count, sizeof(int));
-		if(keys_info->indexes == NULL)
-		{
-			show_error_msg(" Memory Error ", "Unable to allocate enough memory");
-			return;
-		}
-		for(i = curr_view->list_pos, j = 0; i >= min; i--)
-			keys_info->indexes[j++] = i;
-		curr_view->list_pos -= key_info.count;
+		pick_files(curr_view, curr_view->list_pos - key_info.count, keys_info);
 	}
 	else
 	{
@@ -716,9 +738,9 @@ keys_t(struct key_info key_info, struct keys_info *keys_info)
 
 	draw_dir_list(curr_view, curr_view->top_line, curr_view->list_pos);
 	wattron(curr_view->win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
-		mvwaddstr(curr_view->win, curr_view->curr_line, 0, " ");
+	mvwaddstr(curr_view->win, curr_view->curr_line, 0, " ");
 	wattroff(curr_view->win, COLOR_PAIR(CURR_LINE_COLOR));
-		wmove(curr_view->win, curr_view->curr_line, 0);
+	wmove(curr_view->win, curr_view->curr_line, 0);
 }
 
 /* Yank file. */
@@ -726,21 +748,10 @@ static void
 keys_yy(struct key_info key_info, struct keys_info *keys_info)
 {
 	int count;
-	char buf[32];
 
 	if(key_info.count != NO_COUNT_GIVEN)
 	{
-		int i, j, max;
-		max = MIN(curr_view->list_rows, curr_view->list_pos + key_info.count);
-		keys_info->count = (max - 1) - curr_view->list_pos + 1;
-		keys_info->indexes = calloc(keys_info->count, sizeof(int));
-		if(keys_info->indexes == NULL)
-		{
-			show_error_msg(" Memory Error ", "Unable to allocate enough memory");
-			return;
-		}
-		for(i = curr_view->list_pos, j = 0; i < max; i++)
-			keys_info->indexes[j++] = i;
+		pick_files(curr_view, curr_view->list_pos + key_info.count - 1, keys_info);
 	}
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
@@ -751,6 +762,29 @@ keys_yy(struct key_info key_info, struct keys_info *keys_info)
 	if(key_info.count != NO_COUNT_GIVEN)
 		free(keys_info->indexes);
 
+	yank_status_bar_msg(count);
+}
+
+static void
+keys_y_selector(struct key_info key_info, struct keys_info *keys_info)
+{
+	int count;
+	if(key_info.reg == NO_REG_GIVEN)
+		key_info.reg = DEFAULT_REG_NAME;
+	count = yank_files(curr_view, key_info.reg, keys_info->count,
+			keys_info->indexes);
+
+	free(keys_info->indexes);
+	keys_info->indexes = NULL;
+	keys_info->count = 0;
+
+	yank_status_bar_msg(count);
+}
+
+static void
+yank_status_bar_msg(int count)
+{
+	char buf[32];
 	snprintf(buf, sizeof(buf), " %d %s yanked.", count,
 			count == 1 ? "file" : "files");
 	status_bar_message(buf);
@@ -847,6 +881,31 @@ keys_zz(struct key_info key_info, struct keys_info *keys_info)
 	else
 		curr_view->top_line = curr_view->list_pos - curr_view->window_rows/2;
 	scroll_view(curr_view);
+}
+
+static void
+pick_files(FileView *view, int end, struct keys_info *keys_info)
+{
+	int delta, i, x;
+
+	end = MAX(0, end);
+	end = MIN(view->list_rows - 1, end);
+
+	keys_info->count = abs(view->list_pos - end) + 1;
+	keys_info->indexes = calloc(keys_info->count, sizeof(int));
+	if(keys_info->indexes == NULL)
+	{
+		show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+		return;
+	}
+
+	delta = (view->list_pos > end) ? -1 : +1;
+	i = 0;
+	x = view->list_pos - delta;
+	do {
+		x += delta;
+		keys_info->indexes[i++] = x;
+	} while(x != end);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
