@@ -3,23 +3,12 @@
 #include <assert.h>
 #include <string.h>
 
-//#include "background.h"
-//#include "bookmarks.h"
-//#include "color_scheme.h"
 #include "commands.h"
-//#include "config.h"
 #include "filelist.h"
 #include "fileops.h"
-//#include "keys.h"
 #include "keys_eng.h"
-//#include "menus.h"
 #include "modes.h"
-//#include "registers.h"
-//#include "search.h"
 #include "status.h"
-//#include "ui.h"
-//#include "utils.h"
-//#include "visual.h"
 
 #include "keys_buildin_v.h"
 
