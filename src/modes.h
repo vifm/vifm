@@ -9,6 +9,8 @@ enum
 	MODES_COUNT
 };
 
+void init_modes(void);
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

@@ -54,10 +54,11 @@ am_vifm_OBJECTS = vifm.$(OBJEXT) background.$(OBJEXT) \
 	bookmarks.$(OBJEXT) color_scheme.$(OBJEXT) commands.$(OBJEXT) \
 	config.$(OBJEXT) file_info.$(OBJEXT) filelist.$(OBJEXT) \
 	fileops.$(OBJEXT) filetype.$(OBJEXT) keys.$(OBJEXT) \
-	keys_eng.$(OBJEXT) keys_buildin_n.$(OBJEXT) menus.$(OBJEXT) \
+	keys_eng.$(OBJEXT) keys_buildin_n.$(OBJEXT) \
+	keys_buildin_v.$(OBJEXT) menus.$(OBJEXT) modes.$(OBJEXT) \
 	registers.$(OBJEXT) rline.$(OBJEXT) search.$(OBJEXT) \
 	signals.$(OBJEXT) status.$(OBJEXT) sort.$(OBJEXT) ui.$(OBJEXT) \
-	utils.$(OBJEXT) visual.$(OBJEXT)
+	utils.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -235,7 +236,9 @@ vifm_SOURCES = \
 	keys.c keys.h \
 	keys_eng.c keys_eng.h \
 	keys_buildin_n.c keys_buildin_n.h \
+	keys_buildin_v.c keys_buildin_v.h \
 	menus.c menus.h \
+	modes.c modes.h \
 	registers.c registers.h \
 	rline.c rline.h \
 	search.c search.h \
@@ -243,8 +246,7 @@ vifm_SOURCES = \
 	status.c status.h \
 	sort.c sort.h\
 	ui.c ui.h \
-	utils.c utils.h \
-	visual.c visual.h
+	utils.c utils.h
 
 all: all-am
 
@@ -378,8 +380,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filetype.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys_buildin_n.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys_buildin_v.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys_eng.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/menus.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/modes.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@
@@ -389,7 +393,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/visual.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -694,6 +697,8 @@ uninstall-man: uninstall-man1
 	uninstall-binPROGRAMS uninstall-binSCRIPTS uninstall-man \
 	uninstall-man1 uninstall-pkgdataDATA
 
+
+# vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

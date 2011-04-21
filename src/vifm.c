@@ -238,6 +238,7 @@ main(int argc, char *argv[])
 	if(cfg.vim_filter)
 		curr_stats.number_of_windows = 1;
 
+	init_modes();
 	main_loop();
 
 	return 0;

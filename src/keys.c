@@ -45,20 +45,10 @@ void
 main_loop(void)
 {
 	char status_buf[64] = "";
-	int mode = NORMAL_MODE;
-	int mode_flags[] = {
-		MF_USES_REGS | MF_USES_COUNT,
-		0,
-		MF_USES_COUNT
-	};
 	char buf[128];
 	int pos = 0;
 	int c;
 	int last_result = 0;
-
-	/* TODO move this code where initialization occurs */
-	init_keys(MODES_COUNT, &mode, (int*)&mode_flags, NULL);
-	init_buildin_n_keys(&mode);
 
 	curs_set(0);
 

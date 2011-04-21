@@ -9,6 +9,8 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "keys.h"
+#include "keys_buildin_v.h"
+#include "keys_eng.h"
 #include "menus.h"
 #include "modes.h"
 #include "registers.h"
@@ -16,7 +18,6 @@
 #include "ui.h"
 #include "status.h"
 #include "utils.h"
-#include "visual.h"
 
 #include "keys_buildin_n.h"
 
@@ -25,7 +26,7 @@
 
 static int *mode;
 
-static void init_extendet_keys(void);
+static void init_extended_keys(void);
 static void keys_ctrl_b(struct key_info, struct keys_info *);
 static void keys_ctrl_c(struct key_info, struct keys_info *);
 static void keys_ctrl_d(struct key_info, struct keys_info *);
@@ -301,11 +302,11 @@ init_buildin_n_keys(int *key_mode)
 	curr = add_keys("zz", NORMAL_MODE);
 	curr->data.handler = keys_zz;
 
-	init_extendet_keys();
+	init_extended_keys();
 }
 
 static void
-init_extendet_keys(void)
+init_extended_keys(void)
 {
 	struct key_t *curr;
 	char buf[] = {'\0', '\0', '\0'};
@@ -555,7 +556,8 @@ keys_N(struct key_info key_info, struct keys_info *keys_info)
 static void
 keys_V(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_stats.save_msg = start_visual_mode(curr_view);
+	//curr_stats.save_msg = start_visual_mode(curr_view);
+	enter_visual_mode();
 }
 
 static void
