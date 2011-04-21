@@ -12,9 +12,6 @@
 
 #include "keys_buildin_v.h"
 
-#define MAX(a,b) (((a) > (b)) ? (a) : (b))
-#define MIN(a,b) (((a) < (b)) ? (a) : (b))
-
 static int *mode;
 static FileView *view;
 static int start_pos;
