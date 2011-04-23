@@ -465,7 +465,7 @@ change_window(void)
 {
 	switch_views();
 
-	if (curr_stats.number_of_windows != 1)
+	if(curr_stats.number_of_windows != 1)
 	{
 		wattroff(other_view->title, A_BOLD);
 		wattroff(other_view->win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
@@ -476,12 +476,12 @@ change_window(void)
 		wnoutrefresh(other_view->title);
 	}
 
-	if (curr_stats.view)
+	if(curr_stats.view)
 	{
 		wbkgdset(curr_view->title,
-					COLOR_PAIR(BORDER_COLOR + curr_view->color_scheme));
+				COLOR_PAIR(BORDER_COLOR + curr_view->color_scheme));
 		wbkgdset(curr_view->win,
-					COLOR_PAIR(WIN_COLOR + curr_view->color_scheme));
+				COLOR_PAIR(WIN_COLOR + curr_view->color_scheme));
 		change_directory(other_view, other_view->curr_dir);
 		load_dir_list(other_view, 0);
 		change_directory(curr_view, curr_view->curr_dir);
@@ -490,7 +490,7 @@ change_window(void)
 
 	wattron(curr_view->title, A_BOLD);
 	werase(curr_view->title);
-	wprintw(curr_view->title,  "%s", curr_view->curr_dir);
+	wprintw(curr_view->title, "%s", curr_view->curr_dir);
 	wnoutrefresh(curr_view->title);
 
 	wnoutrefresh(other_view->win);

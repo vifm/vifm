@@ -167,6 +167,7 @@ execute_menu_command(FileView *view, char *command, menu_info *m)
 	{
 		clean_menu_position(m);
 		moveto_menu_pos(view, atoi(command) - 1, m);
+		wrefresh(menu_win);
 	}
 }
 
@@ -299,8 +300,11 @@ keys_gg(struct key_info key_info, struct keys_info *keys_info)
 static void
 keys_j(struct key_info key_info, struct keys_info *keys_info)
 {
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+
 	clean_menu_position(menu);
-	menu->pos++;
+	menu->pos += key_info.count;
 	moveto_menu_pos(view, menu->pos, menu);
 	wrefresh(menu_win);
 }
@@ -308,8 +312,11 @@ keys_j(struct key_info key_info, struct keys_info *keys_info)
 static void
 keys_k(struct key_info key_info, struct keys_info *keys_info)
 {
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+
 	clean_menu_position(menu);
-	menu->pos--;
+	menu->pos -= key_info.count;
 	moveto_menu_pos(view, menu->pos, menu);
 	wrefresh(menu_win);
 }

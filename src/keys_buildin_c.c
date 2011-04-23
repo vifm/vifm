@@ -18,6 +18,7 @@
 #include "commands.h"
 #include "config.h"
 #include "keys.h"
+#include "keys_buildin_m.h"
 #include "keys_buildin_v.h"
 #include "menus.h"
 #include "modes.h"
@@ -74,6 +75,8 @@ static void keys_ctrl_p(struct key_info, struct keys_info *);
 static void complete_cmd_prev(void);
 static void complete_search_prev(void);
 static int line_completion(struct line_stats *stat);
+static int file_completion(char* filename, char* line_mb, char* raw_name,
+		struct line_stats *stat);
 static char * get_last_word(char * string);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static char * filename_completion(char *str);
@@ -290,9 +293,9 @@ enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
 	input_stat.cmd_pos = -1;
 	input_stat.complete_continue = 0;
 
-	if (sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
+	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 		wcsncpy(input_stat.prompt, L":", sizeof(input_stat.prompt)/sizeof(wchar_t));
-	else if (sub_mode == SEARCH_FORWARD_SUBMODE
+	else if(sub_mode == SEARCH_FORWARD_SUBMODE
 			|| sub_mode == MENU_SEARCH_FORWARD_SUBMODE)
 		wcsncpy(input_stat.prompt, L"/", sizeof(input_stat.prompt)/sizeof(wchar_t));
 	else
@@ -416,21 +419,20 @@ keys_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 static void
 keys_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(sub_mode != MENU_CMD_SUBMODE && sub_mode != MENU_SEARCH_FORWARD_SUBMODE
-		 && sub_mode != MENU_SEARCH_BACKWARD_SUBMODE && input_stat.line)
+	int len;
+	if(sub_mode != CMD_SUBMODE || input_stat.line == NULL)
+		return;
+
+	line_completion(&input_stat);
+	len = (1 + input_stat.len + line_width - 1 + 1)/line_width;
+	if(len > getmaxy(status_bar))
 	{
-		int len;
-		line_completion(&input_stat);
-		len = (1 + input_stat.len + line_width - 1 + 1)/line_width;
-		if (len > getmaxy(status_bar))
-		{
-			int delta = len - getmaxy(status_bar);
-			mvwin(status_bar, getbegy(status_bar) - delta, 0);
-			wresize(status_bar, getmaxy(status_bar) + delta, line_width);
-			werase(status_bar);
-			mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-			mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
-		}
+		int delta = len - getmaxy(status_bar);
+		mvwin(status_bar, getbegy(status_bar) - delta, 0);
+		wresize(status_bar, getmaxy(status_bar) + delta, line_width);
+		werase(status_bar);
+		mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
+		mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
 	}
 }
 
@@ -443,14 +445,14 @@ keys_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
-	if (!input_stat.line || !input_stat.line[0])
+	if(!input_stat.line || !input_stat.line[0])
 	{
 		leave_cmdline_mode(0);
 		return;
 	}
 
 	i = wcstombs(NULL, input_stat.line, 0) + 1;
-	if ((p = (char *) malloc(i * sizeof(char))) == NULL)
+	if((p = (char *) malloc(i * sizeof(char))) == NULL)
 	{
 		leave_cmdline_mode(0);
 		return;
@@ -751,13 +753,13 @@ line_completion(struct line_stats *stat)
 	wchar_t t;
 	int i;
 
-	if (stat->line[stat->index] != L' ' && stat->index != stat->len)
+	if(stat->line[stat->index] != L' ' && stat->index != stat->len)
 	{
 		stat->complete_continue = 0;
 		return -1;
 	}
 
-	if (stat->complete_continue == 0)
+	if(stat->complete_continue == 0)
 	{
 		/* only complete the part before the curser
 		 * so just copy that part to line_mb */
@@ -766,7 +768,7 @@ line_completion(struct line_stats *stat)
 
 		i = wcstombs(NULL, stat->line, 0) + 1;
 
-		if (! (p = realloc(line_mb, i * sizeof(char))))
+		if(! (p = realloc(line_mb, i * sizeof(char))))
 		{
 			free(line_mb);
 			line_mb = NULL;
@@ -781,14 +783,14 @@ line_completion(struct line_stats *stat)
 
 	last_word = get_last_word(line_mb);
 
-	if (last_word)
+	if(last_word != NULL)
 	{
 		raw_name = filename_completion(
 				stat->complete_continue ? NULL : last_word);
 
 		stat->complete_continue = 1;
 
-		if (raw_name)
+		if(raw_name)
 			filename = escape_filename(raw_name, strlen(raw_name), 1);
 	}
 	 /* :partial_command */
@@ -798,9 +800,9 @@ line_completion(struct line_stats *stat)
 				stat->complete_continue ? NULL : line_mb);
 		wchar_t *q;
 
-		if (complete_command)
+		if(complete_command != NULL)
 		{
-			if (!stat->line)
+			if(stat->line == NULL)
 			{
 				free(raw_name);
 				free(filename);
@@ -808,12 +810,12 @@ line_completion(struct line_stats *stat)
 				return 0;
 			}
 
-			if ((q = wcschr(stat->line, L' ')) != NULL)
+			if((q = wcschr(stat->line, L' ')) != NULL)
 			{	/* If the cursor is not at the end of the string... */
 				wchar_t *buf;
 
 				i = mbstowcs(NULL, complete_command, 0) + 1;
-				if (! (buf = (wchar_t *) malloc((i + 1) * sizeof(wchar_t))))
+				if((buf = (wchar_t *) malloc((i + 1) * sizeof(wchar_t))) == NULL)
 				{
 					free(raw_name);
 					free(filename);
@@ -826,7 +828,7 @@ line_completion(struct line_stats *stat)
 
 				wcsdel(stat->line, 1, q - stat->line);
 
-				if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
+				if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
 				{
 					free(raw_name);
 					free(filename);
@@ -847,7 +849,7 @@ line_completion(struct line_stats *stat)
 			else
 			{
 				i = mbstowcs(NULL, complete_command, 0) + 1;
-				if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
+				if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
 				{
 					free(raw_name);
 					free(filename);
@@ -858,8 +860,7 @@ line_completion(struct line_stats *stat)
 
 				mbstowcs(stat->line, complete_command, i);
 				stat->index = stat->len = i - 1;
-				stat->curs_pos = wcswidth(stat->line, stat->len)
-								  + stat->prompt_wid;
+				stat->curs_pos = wcswidth(stat->line, stat->len) + stat->prompt_wid;
 			}
 
 			werase(status_bar);
@@ -876,111 +877,30 @@ line_completion(struct line_stats *stat)
 		return 0;
 	}
 
-	if (filename)
+	if(filename != NULL)
 	{
-		char *cur_file_pos = strrchr(line_mb, ' ');
-		char *temp = (char *) NULL;
+		int ret = file_completion(filename, line_mb, raw_name, stat);
+		if(ret != 0)
+			return ret;
+	}
 
-		if (cur_file_pos)
-		{
-			/* :command /some/directory/partial_filename anything_else... */
-			if ((temp = strrchr(cur_file_pos, '/')))
-			{
-				char x;
-				wchar_t *temp2;
+	stat->complete_continue = 1;
+	return 0;
+}
 
-				temp++;
-				x = *temp;
-				*temp = '\0';
+static int
+file_completion(char* filename, char* line_mb, char* raw_name,
+		struct line_stats *stat)
+{
+	char *cur_file_pos = strrchr(line_mb, ' ');
+	char *temp = (char *) NULL;
 
-				/* I'm really worry about the portability... */
-//				temp2 = (wchar_t *) wcsdup(stat->line + stat->index)
-				temp2 = (wchar_t *) malloc((wcslen(stat->line
-						 + stat->index) + 1) * sizeof(wchar_t));
-				if (!temp2)
-				{
-					free(raw_name);
-					free(filename);
-					free(temp2);
-					return -1;
-				}
-				wcscpy(temp2, stat->line + stat->index);
-
-				i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
-					 + (stat->len - stat->index) + 1;
-
-				if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
-				{
-					*temp = x;
-					free(raw_name);
-					free(filename);
-					free(temp2);
-					return -1;
-				}
-				stat->line = (wchar_t *) p;
-
-				swprintf(stat->line, i, L"%s%s%ls", line_mb,filename,temp2);
-
-				stat->index = i - (stat->len - stat->index) - 1;
-				stat->curs_pos = stat->prompt_wid
-								  + wcswidth(stat->line, stat->index);
-				stat->len = i - 1;
-
-				*temp = x;
-				free(raw_name);
-				free(filename);
-				free(temp2);
-			}
-			/* :command partial_filename anything_else... */
-			else
-			{
-				char x;
-				wchar_t *temp2;
-
-				temp = cur_file_pos + 1;
-				x = *temp;
-				*temp = '\0';
-
-				temp2 = (wchar_t *) malloc((wcslen(stat->line
-						 + stat->index) + 1) * sizeof(wchar_t));
-				if (!temp2)
-				{
-					free(raw_name);
-					free(filename);
-					free(temp2);
-					return -1;
-				}
-				wcscpy(temp2, stat->line + stat->index);
-
-				i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
-					 + (stat->len - stat->index) + 1;
-
-				if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
-				{
-					*temp = x;
-					free(raw_name);
-					free(filename);
-					free(temp2);
-					return -1;
-				}
-				stat->line = (wchar_t *) p;
-
-				swprintf(stat->line, i, L"%s%s%ls", line_mb,filename,temp2);
-
-				stat->index = i - (stat->len - stat->index) - 1;
-				stat->curs_pos = stat->prompt_wid
-								  + wcswidth(stat->line, stat->index);
-				stat->len = i - 1;
-
-				*temp = x;
-				free(raw_name);
-				free(filename);
-				free(temp2);
-			}
-		}
-		/* :!partial_filename anthing_else...		 or
-		 * :!!partial_filename anthing_else... */
-		else if ((temp = strrchr(line_mb, '!')))
+	if(cur_file_pos != NULL)
+	{
+		void *p;
+		int i;
+		/* :command /some/directory/partial_filename anything_else... */
+		if((temp = strrchr(cur_file_pos, '/')) != NULL)
 		{
 			char x;
 			wchar_t *temp2;
@@ -989,20 +909,23 @@ line_completion(struct line_stats *stat)
 			x = *temp;
 			*temp = '\0';
 
+			/* I'm really worry about the portability... */
+//				temp2 = (wchar_t *) wcsdup(stat->line + stat->index)
 			temp2 = (wchar_t *) malloc((wcslen(stat->line
-					 + stat->index) + 1) * sizeof(wchar_t));
-			if (!temp2)
+					+ stat->index) + 1) * sizeof(wchar_t));
+			if(temp2 == NULL)
 			{
 				free(raw_name);
 				free(filename);
+				free(temp2);
 				return -1;
 			}
 			wcscpy(temp2, stat->line + stat->index);
 
 			i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
-				 + (stat->len - stat->index) + 1;
+					+ (stat->len - stat->index) + 1;
 
-			if (! (p = realloc(stat->line, i * sizeof(wchar_t))))
+			if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
 			{
 				*temp = x;
 				free(raw_name);
@@ -1012,11 +935,10 @@ line_completion(struct line_stats *stat)
 			}
 			stat->line = (wchar_t *) p;
 
-			swprintf(stat->line, i , L"%s%s%ls", line_mb, filename, temp2);
+			swprintf(stat->line, i, L"%s%s%ls", line_mb,filename,temp2);
 
 			stat->index = i - (stat->len - stat->index) - 1;
-			stat->curs_pos = stat->prompt_wid
-							  + wcswidth(stat->line, stat->index);
+			stat->curs_pos = stat->prompt_wid + wcswidth(stat->line, stat->index);
 			stat->len = i - 1;
 
 			*temp = x;
@@ -1024,24 +946,115 @@ line_completion(struct line_stats *stat)
 			free(filename);
 			free(temp2);
 		}
-		/* error */
+		/* :command partial_filename anything_else... */
 		else
 		{
-			show_error_msg(" Debug Error ",
-					"Harmless error in rline.c line 564");
+			int i;
+			char x;
+			wchar_t *temp2;
+
+			temp = cur_file_pos + 1;
+			x = *temp;
+			*temp = '\0';
+
+			temp2 = (wchar_t *) malloc((wcslen(stat->line
+					 + stat->index) + 1) * sizeof(wchar_t));
+			if(temp2 == NULL)
+			{
+				free(raw_name);
+				free(filename);
+				free(temp2);
+				return -1;
+			}
+			wcscpy(temp2, stat->line + stat->index);
+
+			i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
+				 + (stat->len - stat->index) + 1;
+
+			if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
+			{
+				*temp = x;
+				free(raw_name);
+				free(filename);
+				free(temp2);
+				return -1;
+			}
+			stat->line = (wchar_t *) p;
+
+			swprintf(stat->line, i, L"%s%s%ls", line_mb,filename,temp2);
+
+			stat->index = i - (stat->len - stat->index) - 1;
+			stat->curs_pos = stat->prompt_wid
+								+ wcswidth(stat->line, stat->index);
+			stat->len = i - 1;
+
+			*temp = x;
+			free(raw_name);
+			free(filename);
+			free(temp2);
+		}
+	}
+	/* :!partial_filename anthing_else...		 or
+	 * :!!partial_filename anthing_else... */
+	else if((temp = strrchr(line_mb, '!')) != NULL)
+	{
+		int i;
+		char x;
+		wchar_t *temp2;
+		void *p;
+
+		temp++;
+		x = *temp;
+		*temp = '\0';
+
+		temp2 = (wchar_t *) malloc((wcslen(stat->line
+				 + stat->index) + 1) * sizeof(wchar_t));
+		if(temp2 == NULL)
+		{
 			free(raw_name);
 			free(filename);
 			return -1;
 		}
+		wcscpy(temp2, stat->line + stat->index);
 
+		i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
+			 + (stat->len - stat->index) + 1;
 
-		werase(status_bar);
-		mvwaddwstr(status_bar, 0, 0, stat->prompt);
-		mvwaddwstr(status_bar, 0, stat->prompt_wid, stat->line);
-		wmove(status_bar, 0, stat->curs_pos);
+		if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
+		{
+			*temp = x;
+			free(raw_name);
+			free(filename);
+			free(temp2);
+			return -1;
+		}
+		stat->line = (wchar_t *) p;
+
+		swprintf(stat->line, i , L"%s%s%ls", line_mb, filename, temp2);
+
+		stat->index = i - (stat->len - stat->index) - 1;
+		stat->curs_pos = stat->prompt_wid
+							+ wcswidth(stat->line, stat->index);
+		stat->len = i - 1;
+
+		*temp = x;
+		free(raw_name);
+		free(filename);
+		free(temp2);
+	}
+	/* error */
+	else
+	{
+		show_error_msg(" Debug Error ", "Harmless error in rline.c line 564");
+		free(raw_name);
+		free(filename);
+		return -1;
 	}
 
-	stat->complete_continue = 1;
+	werase(status_bar);
+	mvwaddwstr(status_bar, 0, 0, stat->prompt);
+	mvwaddwstr(status_bar, 0, stat->prompt_wid, stat->line);
+	wmove(status_bar, 0, stat->curs_pos);
 	return 0;
 }
 
@@ -1050,20 +1063,20 @@ get_last_word(char * string)
 {
 	char * temp = (char *)NULL;
 
-	if (!string)
+	if(string == NULL)
 		return NULL;
 
 	/*:command filename */
 	temp = strrchr(string, ' ');
 
-	if(temp)
+	if(temp != NULL)
 	{
 		temp++;
 		return temp;
 	}
  /* :!filename or :!!filename */
 	temp = check_for_executable(string);
-	if (temp)
+	if(temp != NULL)
 		return temp;
 
 	return NULL;
@@ -1078,8 +1091,8 @@ wcsdel(wchar_t *src, int pos, int len)
 
 	pos--;
 
-	for (p = pos; pos - p < len; pos++)
-		if (! src[pos])
+	for(p = pos; pos - p < len; pos++)
+		if(! src[pos])
 		{
 			src[p] = L'\0';
 			return src;
@@ -1087,7 +1100,7 @@ wcsdel(wchar_t *src, int pos, int len)
 
 	pos--;
 
-	while(src[++pos])
+	while(src[++pos] != L'\0')
 		src[pos-len] = src[pos];
 	src[pos-len] = src[pos];
 
@@ -1113,7 +1126,7 @@ filename_completion(char *str)
 	int found = 0;
 	int filename_len = 0;
 
-	if (str != NULL)
+	if(str != NULL)
 	{
 		string = str;
 		offset = 0;
@@ -1123,13 +1136,13 @@ filename_completion(char *str)
 		offset++;
 	}
 
-	if (!strncmp(string, "~/", 2))
+	if(strncmp(string, "~/", 2) == NULL)
 	{
 		char * homedir = getenv("HOME");
 
 		dirname = (char *)malloc((strlen(homedir) + strlen(string) + 1));
 
-		if (dirname == NULL)
+		if(dirname == NULL)
 			return NULL;
 
 		snprintf(dirname, strlen(homedir) + strlen(string) + 1, "%s/%s",
@@ -1145,7 +1158,7 @@ filename_completion(char *str)
 
 	temp = strrchr(dirname, '/');
 
-	if (temp)
+	if(temp)
 	{
 		strcpy(filename, ++temp);
 		*temp = '\0';
@@ -1168,13 +1181,13 @@ filename_completion(char *str)
 
 	while ((d=readdir(dir)))
 	{
-		if ( ! strncmp(d->d_name, filename, filename_len)
+		if( ! strncmp(d->d_name, filename, filename_len)
 			 && strcmp(d->d_name, ".") && strcmp(d->d_name, ".."))
 		{
 			i = 0;
 			while (i < offset)
 			{
-				if (!(d=readdir(dir)))
+				if(!(d=readdir(dir)))
 				{
 					offset = -1;
 
@@ -1183,7 +1196,7 @@ filename_completion(char *str)
 
 					return strdup(filename);
 				}
-				if (	!strncmp(d->d_name, filename, filename_len)
+				if(!strncmp(d->d_name, filename, filename_len)
 					 && strcmp(d->d_name, ".") && strcmp(d->d_name, ".."))
 				{
 					i++;
@@ -1196,25 +1209,25 @@ filename_completion(char *str)
 
 	closedir(dir);
 
-	if (!found)
+	if(!found)
 	{
 		return NULL;
 	}
 
 	int isdir = 0;
-	if (is_dir(d->d_name))
+	if(is_dir(d->d_name))
 	{
 		isdir = 1;
 	}
-	else if (strcmp(dirname, "."))
+	else if(strcmp(dirname, "."))
 	{
 		char * tempfile = (char *)NULL;
 		int len = strlen(dirname) + strlen(d->d_name) + 1;
 		tempfile = (char *)malloc((len) * sizeof(char));
-		if (!tempfile)
+		if(!tempfile)
 			return NULL;
 		snprintf(tempfile, len, "%s%s", dirname, d->d_name);
-		if (is_dir(tempfile))
+		if(is_dir(tempfile))
 			isdir = 1;
 		else
 			temp = strdup(d->d_name);
@@ -1224,11 +1237,11 @@ filename_completion(char *str)
 	else
 		temp = strdup(d->d_name);
 
-	if (isdir)
+	if(isdir)
 	{
 		char * tempfile = (char *)NULL;
 		tempfile = (char *) malloc((strlen(d->d_name) + 2) * sizeof(char));
-		if (!tempfile)
+		if(!tempfile)
 			return NULL;
 		snprintf(tempfile, strlen(d->d_name) + 2, "%s/", d->d_name);
 		temp = strdup(tempfile);
@@ -1246,19 +1259,19 @@ check_for_executable(char *string)
 {
 	char *temp = (char *)NULL;
 
-	if (!string)
+	if(!string)
 		return NULL;
 
-	if (string[0] == '!')
+	if(string[0] == '!')
 	{
-		if (strlen(string) > 2)
+		if(strlen(string) > 2)
 		{
-			if (string[1] == '!')
+			if(string[1] == '!')
 				temp = strdup(string + 2);
 			else
 				temp = strdup(string + 1);
 		}
-		else if (strlen(string) > 1)
+		else if(strlen(string) > 1)
 			temp = strdup(string + 1);
 	}
 	return temp;
