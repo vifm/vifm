@@ -154,6 +154,7 @@ typedef struct current_command
 	int pause;
 }cmd_t;
 
+static char* substitute_specs(const char *cmd);
 static const char *skip_spaces(const char *cmd);
 static const char *skip_word(const char *cmd);
 
@@ -1462,11 +1463,13 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				}
 				*p = '\0';
 				p = (char*)skip_spaces(p + 1);
+				p = substitute_specs(p);
 				keys = to_wide(cmd->args);
 				mapping = to_wide(p);
 				add_user_keys(keys, mapping, NORMAL_MODE);
 				free(mapping);
 				free(keys);
+				free(p);
 			}
 			break;
 		case COM_NOH:
@@ -1585,6 +1588,35 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 	}
 
 	return save_msg;
+}
+
+static char*
+substitute_specs(const char *cmd)
+{
+	char *buf, *p;
+
+	buf = malloc(strlen(cmd) + 1);
+	if(buf == NULL)
+	{
+		return NULL;
+	}
+
+	p = buf;
+	while(*cmd != '\0')
+	{
+		if(strncmp(cmd, "<cr>", 4) == 0)
+		{
+			*p++ = '\r';
+			cmd += 4;
+		}
+		else
+		{
+			*p++ = *cmd++;
+		}
+	}
+	*p = '\0';
+
+	return buf;
 }
 
 static const char *

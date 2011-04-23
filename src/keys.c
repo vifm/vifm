@@ -66,7 +66,8 @@ execute_keys(const wchar_t *keys)
 	result = execute_keys_inner(keys, &keys_info);
 	if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
 	{
-		result = def_handlers[*mode](keys);
+		result = def_handlers[*mode](*keys);
+		execute_keys(keys + 1);
 	}
 	return result;
 }

@@ -688,10 +688,10 @@ save_view_history(FileView *view)
 		}
 		x--;
 	}
-	snprintf(view->history[x].dir, sizeof(view->history[x].dir),
-			"%s", view->curr_dir);
-	snprintf(view->history[x].file, sizeof(view->history[x].file),
-			"%s", view->dir_entry[view->list_pos].name);
+	snprintf(view->history[x].dir, sizeof(view->history[x].dir), "%s",
+			view->curr_dir);
+	snprintf(view->history[x].file, sizeof(view->history[x].file), "%s",
+			view->dir_entry[view->list_pos].name);
 	view->history_num++;
 }
 

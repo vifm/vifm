@@ -54,8 +54,7 @@ static void *sub_mode_ptr;
 
 static void init_extended_keys(void);
 static void init_emacs_keys(void);
-static int def_handler(const wchar_t *keys);
-static void add_key(wchar_t key);
+static int def_handler(wchar_t keys);
 static wchar_t * wcsins(wchar_t *src, wchar_t *ins, int pos);
 static void leave_cmdline_mode(int save_msg);
 static void keys_ctrl_c(struct key_info, struct keys_info *);
@@ -193,15 +192,7 @@ init_emacs_keys(void)
 }
 
 static int
-def_handler(const wchar_t *keys)
-{
-	while(*keys != '\0')
-		add_key(*keys++);
-	return 0;
-}
-
-static void
-add_key(wchar_t key)
+def_handler(wchar_t key)
 {
 	void *p;
 	wchar_t buf[2] = {key, L'\0'};
@@ -210,19 +201,19 @@ add_key(wchar_t key)
 			&& input_stat.line[input_stat.index - 1] == L'/' && key == '/')
 	{
 		input_stat.complete_continue = 0;
-		return;
+		return 0;
 	}
 
 	input_stat.complete_continue = 0;
 
-	if(!iswprint(key))
-		return;
+	if(key != L'\r' && !iswprint(key))
+		return 0;
 
 	p = realloc(input_stat.line, (input_stat.len+2) * sizeof(wchar_t));
 	if(p == NULL)
 	{
 		leave_cmdline_mode(0);
-		return;
+		return 0;
 	}
 
 	input_stat.line = (wchar_t *) p;
@@ -246,6 +237,8 @@ add_key(wchar_t key)
 
 	input_stat.curs_pos += wcwidth(key);
 	wmove(status_bar, 0, input_stat.curs_pos);
+
+	return 0;
 }
 
 /* Insert a string into another string
