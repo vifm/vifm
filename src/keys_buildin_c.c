@@ -1136,7 +1136,7 @@ filename_completion(char *str)
 		offset++;
 	}
 
-	if(strncmp(string, "~/", 2) == NULL)
+	if(strncmp(string, "~/", 2) == 0)
 	{
 		char * homedir = getenv("HOME");
 

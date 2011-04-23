@@ -1,6 +1,7 @@
 #include <curses.h>
 
 #include <assert.h>
+#include <ctype.h>
 #include <string.h>
 
 #include "bookmarks.h"
@@ -10,6 +11,7 @@
 #include "fileops.h"
 #include "keys.h"
 #include "keys_buildin_c.h"
+#include "menus.h"
 #include "modes.h"
 #include "status.h"
 #include "ui.h"

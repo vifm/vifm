@@ -79,6 +79,7 @@ void redraw_menu(FileView *view, menu_info *m);
 void draw_menu(FileView *view,  menu_info *m);
 void execute_menu_cb(FileView *view, menu_info *m);
 void reload_command_menu_list(menu_info *m);
+void reload_bookmarks_menu_list(menu_info *m);
 
 #endif
 

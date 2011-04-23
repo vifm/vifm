@@ -28,7 +28,6 @@ enum {
 	GET_FSEARCH_PATTERN,
 	GET_BSEARCH_PATTERN,
 	GET_VISUAL_COMMAND,
-	START_VISUAL_MODE,
 	MAPPED_COMMAND,
 	MAPPED_SEARCH,
 	MENU_SEARCH,
@@ -45,7 +44,6 @@ extern char *reserved_commands[];
 
 command_t *command_list;
 
-int get_command(FileView *view, int type, void *ptr);
 void exec_command(char* cmd, FileView *view, int type, void * ptr);
 void shellout(char *command, int pause);
 void add_command(char *name, char *action);

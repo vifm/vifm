@@ -34,8 +34,10 @@
 #include"config.h"
 #include"filelist.h"
 #include"fileops.h"
+#include"keys.h"
 #include"keys_buildin_m.h"
 #include"menus.h"
+#include"modes.h"
 #include"search.h"
 #include"signals.h"
 #include"sort.h"
@@ -151,6 +153,9 @@ typedef struct current_command
 	int pos;
 	int pause;
 }cmd_t;
+
+static const char *skip_spaces(const char *cmd);
+static const char *skip_word(const char *cmd);
 
 int
 sort_this(const void *one, const void *two)
@@ -1436,6 +1441,33 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			show_bookmarks_menu(view);
 			break;
 		case COM_NMAP:
+			{
+				int t;
+				wchar_t *keys, *mapping;
+				char *p;
+				if(cmd->args == NULL || *cmd->args == '\0')
+				{
+					show_error_msg(" Command Error ",
+							"The :nmap command requires two arguments - :nmap lhs rhs");
+					save_msg = 1;
+					break;
+				}
+				p = (char*)skip_word(cmd->args);
+				if(*p == '\0')
+				{
+					show_error_msg(" Command Error ",
+							"The :nmap command requires an argument - :nmap lhs rhs");
+					save_msg = 1;
+					break;
+				}
+				*p = '\0';
+				p = (char*)skip_spaces(p + 1);
+				keys = to_wide(cmd->args);
+				mapping = to_wide(p);
+				add_user_keys(keys, mapping, NORMAL_MODE);
+				free(mapping);
+				free(keys);
+			}
 			break;
 		case COM_NOH:
 			{
@@ -1553,6 +1585,26 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 	}
 
 	return save_msg;
+}
+
+static const char *
+skip_spaces(const char *cmd)
+{
+	while(isspace(*cmd) && *cmd != '\0')
+	{
+		cmd++;
+	}
+	return cmd;
+}
+
+static const char *
+skip_word(const char *cmd)
+{
+	while(!isspace(*cmd) && *cmd != '\0')
+	{
+		cmd++;
+	}
+	return cmd;
 }
 
 int
@@ -1721,41 +1773,6 @@ exec_command(char* cmd, FileView *view, int type, void * ptr)
 		search_menu_list(view, cmd, ptr);
 	else if (type == MENU_COMMAND)
 		execute_menu_command(view, cmd, ptr);
-}
-
-int
-get_command(FileView *view, int type, void * ptr)
-{
-	char * command = NULL;
-
-	assert(0 && "Under construction");
-
-	if(command == NULL)
-	{
-		if (type == GET_FSEARCH_PATTERN || type == MAPPED_SEARCH)
-			return find_pattern(view, view->regexp, 0);
-		else
-			return 1;
-	}
-
-	if(type == GET_COMMAND || type == MAPPED_COMMAND
-			|| type == GET_VISUAL_COMMAND)
-	{
-		save_command_history(command);
-		return execute_command(view, command);
-	}
-	else if(type == GET_FSEARCH_PATTERN || type == MAPPED_SEARCH)
-	{
-		strncpy(view->regexp, command, sizeof(view->regexp));
-		save_search_history(command);
-		return find_pattern(view, command, 0);
-	}
-	else if (type == MENU_SEARCH)
-		return search_menu_list(view, command, ptr);
-	else if (type == MENU_COMMAND)
-		execute_menu_command(view, command, ptr);
-
-	return 0;
 }
 
 void

@@ -209,4 +209,17 @@ get_utf8_prev_width(char *string, size_t cur_width)
 	return width;
 }
 
+wchar_t *
+to_wide(const char *s)
+{
+	wchar_t *result;
+	int len;
+
+	len = mbstowcs(NULL, s, 0);
+	result = malloc((len + 1)*sizeof(wchar_t));
+	if(result != NULL)
+		mbstowcs(result, s, len + 1);
+	return result;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
