@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-
 #include<ncurses.h>
 #include<unistd.h>
 #include<errno.h> /* errno */
@@ -33,14 +32,11 @@
 #include"filelist.h"
 #include"fileops.h"
 #include"filetype.h"
-#include"keys.h"
 #include"menus.h"
 #include"registers.h"
 #include"status.h"
 #include"ui.h"
 #include"utils.h"
-
-
 
 int
 my_system(char *command)

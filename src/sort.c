@@ -22,7 +22,6 @@
 #include "color_scheme.h"
 #include "config.h"
 #include "filelist.h"
-#include "keys.h"
 #include "status.h"
 #include "ui.h"
 

@@ -17,6 +17,7 @@
  */
 
 
+#include<assert.h>
 #include<ctype.h> /* isspace() */
 #include<ncurses.h>
 #include<signal.h>
@@ -33,7 +34,7 @@
 #include"config.h"
 #include"filelist.h"
 #include"fileops.h"
-#include"keys.h"
+#include"keys_buildin_m.h"
 #include"menus.h"
 #include"search.h"
 #include"signals.h"
@@ -41,7 +42,6 @@
 #include"status.h"
 #include"ui.h"
 #include"utils.h"
-#include "rline.h"
 
 enum
 {
@@ -284,8 +284,8 @@ save_search_history(char *pattern)
 		cfg.search_history_num = cfg.search_history_len - 1;
 }
 
-void
-save_command_history(char *command)
+static void
+save_command_history(const char *command)
 {
 	int x = 0;
 
@@ -1637,7 +1637,7 @@ execute_user_command(FileView *view, cmd_t *cmd)
 	else if(!strncmp(expanded_com, "/", 1))
 	{
 		strncpy(view->regexp, expanded_com +1, sizeof(view->regexp));
-		return find_pattern(view, view->regexp);
+		return find_pattern(view, view->regexp, 0);
 	}
 	else if(cmd->background)
 	{
@@ -1691,15 +1691,49 @@ execute_command(FileView *view, char *command)
 	return 0;
 }
 
+void
+exec_command(char* cmd, FileView *view, int type, void * ptr)
+{
+	if(cmd == NULL)
+	{
+		if (type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN
+				|| type == MAPPED_SEARCH)
+			find_pattern(view, view->regexp, type == GET_BSEARCH_PATTERN);
+		return;
+	}
+
+	if(type == GET_COMMAND || type == MAPPED_COMMAND
+			|| type == GET_VISUAL_COMMAND)
+	{
+		save_command_history(cmd);
+		execute_command(view, cmd);
+		return;
+	}
+	else if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN
+			|| type == MAPPED_SEARCH)
+	{
+		strncpy(view->regexp, cmd, sizeof(view->regexp));
+		save_search_history(cmd);
+		find_pattern(view, cmd, type == GET_BSEARCH_PATTERN);
+		return;
+	}
+	else if (type == MENU_SEARCH)
+		search_menu_list(view, cmd, ptr);
+	else if (type == MENU_COMMAND)
+		execute_menu_command(view, cmd, ptr);
+}
+
 int
 get_command(FileView *view, int type, void * ptr)
 {
-	char * command = my_rl_gets(type);
+	char * command = NULL;
+
+	assert(0 && "Under construction");
 
 	if(command == NULL)
 	{
-		if (type == GET_SEARCH_PATTERN || type == MAPPED_SEARCH)
-			return find_pattern(view, view->regexp);
+		if (type == GET_FSEARCH_PATTERN || type == MAPPED_SEARCH)
+			return find_pattern(view, view->regexp, 0);
 		else
 			return 1;
 	}
@@ -1710,16 +1744,16 @@ get_command(FileView *view, int type, void * ptr)
 		save_command_history(command);
 		return execute_command(view, command);
 	}
-	else if(type == GET_SEARCH_PATTERN || type == MAPPED_SEARCH)
+	else if(type == GET_FSEARCH_PATTERN || type == MAPPED_SEARCH)
 	{
 		strncpy(view->regexp, command, sizeof(view->regexp));
 		save_search_history(command);
-		return find_pattern(view, command);
+		return find_pattern(view, command, 0);
 	}
 	else if (type == MENU_SEARCH)
 		return search_menu_list(view, command, ptr);
 	else if (type == MENU_COMMAND)
-		return execute_menu_command(view, command, ptr);
+		execute_menu_command(view, command, ptr);
 
 	return 0;
 }

@@ -38,7 +38,6 @@
 #include "config.h" /* menu colors */
 #include "filelist.h"
 #include "fileops.h"
-#include "keys.h"
 #include "menus.h"
 #include "sort.h"
 #include "status.h"

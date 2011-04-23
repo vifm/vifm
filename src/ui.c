@@ -16,6 +16,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#define _GNU_SOURCE /* I don't know how portable this is but it is
+					   needed in Linux for the ncurses wide char
+					   functions
+					   */
+
 #include<signal.h>	/* signal() */
 #include<stdlib.h> /* malloc */
 #include<sys/stat.h> /* stat */
@@ -30,7 +35,6 @@
 #include "config.h" /* for menu colors */
 #include "file_info.h"
 #include "filelist.h"
-#include "keys.h"
 #include "menus.h"
 #include "signals.h"
 #include "status.h"
@@ -446,7 +450,8 @@ redraw_window(void)
 	moveto_list_pos(curr_view, curr_view->list_pos);
 	wrefresh(curr_view->win);
 	curr_stats.freeze = 0;
-	curr_stats.need_redraw = 0; }
+	curr_stats.need_redraw = 0;
+}
 
 void
 clean_status_bar()
@@ -566,15 +571,17 @@ update_all_windows(void)
 }
 
 void
-update_input_bar(int c)
+update_input_bar(wchar_t c)
 {
+	wchar_t buf[] = {c, '\0'};
+
 	if(getcurx(num_win) == getmaxx(num_win) - 1)
 	{
 		mvwdelch(num_win, 0, 0);
 		wmove(num_win, 0, getmaxx(num_win) - 2);
 	}
 
-	waddch(num_win, c);
+	waddwstr(num_win, buf);
 	wrefresh(num_win);
 }
 

@@ -6,8 +6,12 @@ enum
 	NORMAL_MODE,
 	CMDLINE_MODE,
 	VISUAL_MODE,
+	MENU_MODE,
 	MODES_COUNT
 };
+
+void modes_pre(void);
+void modes_post(void);
 
 void init_modes(void);
 

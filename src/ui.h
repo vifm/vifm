@@ -19,7 +19,7 @@
 #ifndef __UI_H__
 #define __UI_H__
 
-#include<limits.h> /*  PATH_MAX */
+#include<limits.h> /* PATH_MAX NAME_MAX */
 #include<ncurses.h>
 #include<stdlib.h> /* off_t mode_t... */
 #include<inttypes.h> /* uintmax_t */
@@ -50,7 +50,7 @@ enum {
 typedef struct
 {
 	char dir[PATH_MAX];
-	char file[NAME_MAX];;
+	char file[NAME_MAX];
 }history_t;
 
 
@@ -130,7 +130,7 @@ void update_pos_window(FileView *view);
 void clean_status_bar(void);
 void change_window(void);
 void update_all_windows(void);
-void update_input_bar(int c);
+void update_input_bar(wchar_t c);
 void switch_views(void);
 void clear_num_window(void);
 

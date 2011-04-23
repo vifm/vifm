@@ -1,10 +1,9 @@
 #ifndef __KEYS_BUILDIN_V_H__
 #define __KEYS_BUILDIN_V_H__
 
-#include "keys_eng.h"
-
 void init_buildin_v_keys(int *key_mode);
 void enter_visual_mode(void);
+void leave_visual_mode(int save_msg);
 
 #endif
 

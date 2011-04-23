@@ -1,145 +1,307 @@
-/* vifm
- * Copyright (C) 2001 Ken Steen.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- */
-
-#include<ncurses.h>
-#include<unistd.h> /* for chdir */
-#include<string.h> /* strncpy */
-#include<sys/time.h> /* select() */
-#include<sys/types.h> /* select() */
-#include<unistd.h> /* select() */
-
-#include "background.h"
-#include "color_scheme.h"
-#include "config.h"
-#include "file_info.h"
-#include "filelist.h"
-#include "keys_buildin_n.h"
-#include "keys_eng.h"
-#include "modes.h"
-#include "status.h"
-#include "ui.h"
+#include <assert.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "keys.h"
 
-/*
- * Main Loop
- * Everything is driven from this function with the exception of
- * signals which are handled in signals.c
- */
-void
-main_loop(void)
+struct key_chunk_t
 {
-	char status_buf[64] = "";
-	char buf[128];
-	int pos = 0;
-	int c;
-	int last_result = 0;
+	wchar_t key;
+	struct key_t conf;
+	struct key_chunk_t *child;
+	struct key_chunk_t *next;
+};
 
-	curs_set(0);
+static struct key_chunk_t *root;
+static int *mode;
+static int *mode_flags;
+static default_handler *def_handlers;
 
-	wattroff(curr_view->win, COLOR_PAIR(CURR_LINE_COLOR));
+static int execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info);
+static int execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
+		struct key_info *key_info, struct keys_info *keys_info);
+static int run_cmd(struct key_info key_info, struct keys_info *keys_info,
+		struct key_t *key_t);
+static void init_keys_info(struct keys_info *keys_info);
+static const wchar_t* get_reg(const wchar_t *keys, int *reg);
+static const wchar_t* get_count(const wchar_t *keys, int *count);
 
-	wtimeout(curr_view->win, KEYPRESS_TIMEOUT);
-	wtimeout(other_view->win, KEYPRESS_TIMEOUT);
+void
+init_keys(int modes_count, int *key_mode, int *key_mode_flags)
+{
+	int i;
 
-	update_stat_window(curr_view);
+	assert(key_mode != NULL);
+	assert(key_mode_flags != NULL);
+	assert(modes_count > 0);
 
-	if (curr_view->selected_files)
+	mode = key_mode;
+	mode_flags = key_mode_flags;
+
+	root = calloc(modes_count, sizeof(*root));
+	assert(root != NULL);
+  for(i = 0; i < modes_count; i++)
 	{
-		snprintf(status_buf, sizeof(status_buf), "%d %s Selected",
-				curr_view->selected_files, curr_view->selected_files == 1 ? "File" :
-				"Files");
-		status_bar_message(status_buf);
+		/* little hack for execute_next_keys */
+		root[i].conf.selector = KS_SELECTOR_AND_CMD;
 	}
 
-	buf[0] = '\0';
+	def_handlers = calloc(modes_count, sizeof(*def_handlers));
+	assert(def_handlers != NULL);
+}
 
-	while (1) {
-		int need_clear;
+void
+set_def_handler(int mode, default_handler handler)
+{
+	def_handlers[mode] = handler;
+}
 
-		check_if_filelists_have_changed(curr_view);
-		check_background_jobs();
-
-		if (!curr_stats.save_msg)
-		{
-			clean_status_bar();
-			wrefresh(status_bar);
-		}
-
-		/* This waits for 1 second then skips if no keypress. */
-		c = wgetch(curr_view->win);
-
-		need_clear = (pos >= sizeof (buf) - 2);
-		if (c != ERR && pos != sizeof (buf) - 2)
-		{
-			if (c > 255)
-				buf[pos++] = c >> 8;
-			buf[pos++] = c;
-			buf[pos] = '\0';
-		}
-
-		if(c == ERR && last_result == KEYS_WAIT_SHORT)
-			last_result = 0;
-		else
-		{
-			if(c != ERR)
-				curr_stats.save_msg = 0;
-			last_result = execute_keys(buf);
-			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
-			{
-				if(c != ERR)
-					update_input_bar(c);
-				continue;
-			}
-		}
-		need_clear = 1;
-
-		if (need_clear == 1) {
-			clear_num_window();
-			pos = 0;
-			buf[0] = '\0';
-		}
-
-		if(curr_stats.show_full)
-			show_full_file_properties(curr_view);
-		else
-			update_stat_window(curr_view);
-
-		if(curr_view->selected_files)
-		{
-			static int number = 0;
-			if(number != curr_view->selected_files)
-			{
-				snprintf(status_buf, sizeof(status_buf), "%d %s Selected",
-						curr_view->selected_files, curr_view->selected_files == 1 ? "File" :
-						"Files");
-				status_bar_message(status_buf);
-				curr_stats.save_msg = 1;
-			}
-		}
-		else if(!curr_stats.save_msg)
-			clean_status_bar();
-
-		if(curr_stats.need_redraw)
-			redraw_window();
-
-		update_all_windows();
+int
+execute_keys(const wchar_t *keys)
+{
+	int result;
+	struct keys_info keys_info;
+	init_keys_info(&keys_info);
+	result = execute_keys_inner(keys, &keys_info);
+	if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
+	{
+		result = def_handlers[*mode](keys);
 	}
+	return result;
+}
+
+static int
+execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info)
+{
+	struct key_chunk_t *curr;
+	struct key_info key_info;
+
+	keys = get_reg(keys, &key_info.reg);
+	if(keys == NULL)
+	{
+		return KEYS_WAIT;
+	}
+	keys = get_count(keys, &key_info.count);
+	curr = &root[*mode];
+	while(*keys != L'\0')
+	{
+		struct key_chunk_t *p;
+		p = curr->child;
+		while(p != NULL && p->key < *keys)
+		{
+			p = p->next;
+		}
+		if(p == NULL || p->key != *keys)
+		{
+			int result;
+			if(curr == &root[*mode])
+			{
+				return KEYS_UNKNOWN;
+			}
+			if(curr->conf.followed != FOLLOWED_BY_NONE)
+			{
+				break;
+			}
+			if(curr->conf.type == BUILDIN_WAIT_POINT)
+			{
+				return KEYS_UNKNOWN;
+			}
+			result = execute_next_keys(curr, L"", &key_info, keys_info);
+			if(IS_KEYS_RET_CODE(result))
+			{
+				if(result == KEYS_WAIT_SHORT)
+				{
+					return KEYS_UNKNOWN;
+				}
+				return result;
+			}
+			return execute_keys(keys);
+		}
+		keys++;
+		curr = p;
+	}
+	return execute_next_keys(curr, keys, &key_info, keys_info);
+}
+
+static int
+execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
+		struct key_info *key_info, struct keys_info *keys_info)
+{
+	if(keys_info->selector && curr->conf.selector == KS_NOT_A_SELECTOR
+			&& (curr->conf.type != BUILDIN_WAIT_POINT
+			|| curr->conf.followed == FOLLOWED_BY_MULTIKEY))
+	{
+		return KEYS_UNKNOWN;
+	}
+	if(*keys == L'\0')
+	{
+		int wait_point = (curr->conf.type == BUILDIN_WAIT_POINT);
+		if(wait_point)
+		{
+			int with_input = (mode_flags[*mode] & MF_USES_INPUT);
+			return with_input ? KEYS_WAIT_SHORT : KEYS_WAIT;
+		}
+		else if(curr->conf.data.handler == NULL
+				|| curr->conf.followed != FOLLOWED_BY_NONE)
+		{
+			return KEYS_UNKNOWN;
+		}
+	}
+	if(*keys != L'\0')
+	{
+		int result;
+		if(keys[1] == L'\0' && curr->conf.followed == FOLLOWED_BY_MULTIKEY)
+		{
+			key_info->multi = keys[0];
+			return run_cmd(*key_info, keys_info, &curr->conf);
+		}
+		keys_info->selector = 1;
+		result = execute_keys_inner(keys, keys_info);
+		keys_info->selector = 0;
+		if(IS_KEYS_RET_CODE(result))
+		{
+			return result;
+		}
+	}
+	return run_cmd(*key_info, keys_info, &curr->conf);
+}
+
+static int
+run_cmd(struct key_info key_info, struct keys_info *keys_info,
+		struct key_t *key_t)
+{
+	if(!keys_info->selector && key_t->selector == KS_ONLY_SELECTOR)
+	{
+		return KEYS_UNKNOWN;
+	}
+	if(key_t->type != USER_CMD && key_t->type != BUILDIN_CMD)
+	{
+		key_t->data.handler(key_info, keys_info);
+		return 0;
+	}
+	else
+	{
+		struct keys_info keys_info;
+		init_keys_info(&keys_info);
+		return execute_keys_inner(key_t->data.cmd, &keys_info);
+	}
+}
+
+static void
+init_keys_info(struct keys_info *keys_info)
+{
+	keys_info->selector = 0;
+	keys_info->count = 0;
+	keys_info->indexes = NULL;
+}
+
+static const wchar_t*
+get_reg(const wchar_t *keys, int *reg)
+{
+	if((mode_flags[*mode] & MF_USES_REGS) == 0)
+	{
+		return keys;
+	}
+	if(keys[0] == L'"')
+	{
+		if(keys[1] == L'\0')
+		{
+			return NULL;
+		}
+		*reg = keys[1];
+		keys += 2;
+	}
+	else
+	{
+		*reg = NO_REG_GIVEN;
+	}
+
+	return keys;
+}
+
+static const wchar_t*
+get_count(const wchar_t *keys, int *count)
+{
+	if((mode_flags[*mode] & MF_USES_COUNT) == 0)
+	{
+		return keys;
+	}
+	if(isdigit(keys[0]))
+	{
+		*count = wcstof(keys, (wchar_t**)&keys);
+	}
+	else
+	{
+		*count = NO_COUNT_GIVEN;
+	}
+
+	return keys;
+}
+
+/* Returns:
+ * -1 - can't remap buildin keys
+ */
+int
+add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode)
+{
+	struct key_t *curr;
+	curr = add_keys(keys, mode);
+	if(curr->type != USER_CMD && curr->data.handler != NULL)
+	{
+		return -1;
+	}
+	else if(curr->type == USER_CMD)
+	{
+		free((void*)curr->data.cmd);
+	}
+	curr->type = USER_CMD;
+	curr->data.cmd = wcsdup(cmd);
+	return 0;
+}
+
+struct key_t*
+add_keys(const wchar_t *keys, int mode)
+{
+	struct key_chunk_t *curr = &root[mode];
+	while(*keys != L'\0')
+	{
+		struct key_chunk_t *prev, *p;
+		prev = NULL;
+		p = curr->child;
+		while(p != NULL && p->key < *keys)
+		{
+			prev = p;
+			p = p->next;
+		}
+		if(p == NULL || p->key != *keys)
+		{
+			struct key_chunk_t *c = malloc(sizeof(*c));
+			if(c == NULL)
+			{
+				return NULL;
+			}
+			c->key = *keys;
+			c->conf.type = (keys[1] == L'\0') ? BUILDIN_KEYS : BUILDIN_WAIT_POINT;
+			c->conf.data.handler = NULL;
+			c->conf.followed = FOLLOWED_BY_NONE;
+			c->conf.selector = KS_NOT_A_SELECTOR;
+			c->next = p;
+			c->child = NULL;
+			if(prev == NULL)
+			{
+				curr->child = c;
+			}
+			else
+			{
+				prev->next = c;
+			}
+			p = c;
+		}
+		keys++;
+		curr = p;
+	}
+	return &curr->conf;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

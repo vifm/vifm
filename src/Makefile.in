@@ -54,11 +54,11 @@ am_vifm_OBJECTS = vifm.$(OBJEXT) background.$(OBJEXT) \
 	bookmarks.$(OBJEXT) color_scheme.$(OBJEXT) commands.$(OBJEXT) \
 	config.$(OBJEXT) file_info.$(OBJEXT) filelist.$(OBJEXT) \
 	fileops.$(OBJEXT) filetype.$(OBJEXT) keys.$(OBJEXT) \
-	keys_eng.$(OBJEXT) keys_buildin_n.$(OBJEXT) \
-	keys_buildin_v.$(OBJEXT) menus.$(OBJEXT) modes.$(OBJEXT) \
-	registers.$(OBJEXT) rline.$(OBJEXT) search.$(OBJEXT) \
-	signals.$(OBJEXT) status.$(OBJEXT) sort.$(OBJEXT) ui.$(OBJEXT) \
-	utils.$(OBJEXT)
+	keys_buildin_c.$(OBJEXT) keys_buildin_m.$(OBJEXT) \
+	keys_buildin_n.$(OBJEXT) keys_buildin_v.$(OBJEXT) \
+	main_loop.$(OBJEXT) menus.$(OBJEXT) modes.$(OBJEXT) \
+	registers.$(OBJEXT) search.$(OBJEXT) signals.$(OBJEXT) \
+	status.$(OBJEXT) sort.$(OBJEXT) ui.$(OBJEXT) utils.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -234,13 +234,14 @@ vifm_SOURCES = \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
 	keys.c keys.h \
-	keys_eng.c keys_eng.h \
+	keys_buildin_c.c keys_buildin_c.h \
+	keys_buildin_m.c keys_buildin_m.h \
 	keys_buildin_n.c keys_buildin_n.h \
 	keys_buildin_v.c keys_buildin_v.h \
+	main_loop.c main_loop.h \
 	menus.c menus.h \
 	modes.c modes.h \
 	registers.c registers.h \
-	rline.c rline.h \
 	search.c search.h \
 	signals.c signals.h \
 	status.c status.h \
@@ -379,13 +380,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filetype.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys_buildin_c.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys_buildin_m.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys_buildin_n.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys_buildin_v.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys_eng.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main_loop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/menus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/modes.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registers.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signals.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort.Po@am__quote@

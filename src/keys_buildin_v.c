@@ -6,7 +6,8 @@
 #include "commands.h"
 #include "filelist.h"
 #include "fileops.h"
-#include "keys_eng.h"
+#include "keys.h"
+#include "keys_buildin_c.h"
 #include "modes.h"
 #include "status.h"
 
@@ -16,7 +17,7 @@ static int *mode;
 static FileView *view;
 static int start_pos;
 
-static void leave_visual_mode(int save_msg);
+void leave_visual_mode(int save_msg);
 static void init_extended_keys(void);
 static void keys_ctrl_b(struct key_info, struct keys_info *);
 static void keys_ctrl_c(struct key_info, struct keys_info *);
@@ -44,50 +45,50 @@ init_buildin_v_keys(int *key_mode)
 
 	mode = key_mode;
 
-	curr = add_keys("\x02", VISUAL_MODE);
+	curr = add_keys(L"\x02", VISUAL_MODE);
 	curr->data.handler = keys_ctrl_b;
 
-	curr = add_keys("\x03", VISUAL_MODE);
+	curr = add_keys(L"\x03", VISUAL_MODE);
 	curr->data.handler = keys_ctrl_c;
 
-	curr = add_keys("\x06", VISUAL_MODE);
+	curr = add_keys(L"\x06", VISUAL_MODE);
 	curr->data.handler = keys_ctrl_f;
 
-	curr = add_keys("\x1b", VISUAL_MODE);
+	curr = add_keys(L"\x1b", VISUAL_MODE);
 	curr->data.handler = keys_ctrl_c;
 
-	curr = add_keys(":", VISUAL_MODE);
+	curr = add_keys(L":", VISUAL_MODE);
 	curr->data.handler = keys_colon;
 
-	curr = add_keys("G", VISUAL_MODE);
+	curr = add_keys(L"G", VISUAL_MODE);
 	curr->data.handler = keys_G;
 	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys("H", VISUAL_MODE);
+	curr = add_keys(L"H", VISUAL_MODE);
 	curr->data.handler = keys_H;
 	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys("L", VISUAL_MODE);
+	curr = add_keys(L"L", VISUAL_MODE);
 	curr->data.handler = keys_L;
 	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys("M", VISUAL_MODE);
+	curr = add_keys(L"M", VISUAL_MODE);
 	curr->data.handler = keys_M;
 	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys("d", VISUAL_MODE);
+	curr = add_keys(L"d", VISUAL_MODE);
 	curr->data.handler = keys_d;
 
-	curr = add_keys("gg", VISUAL_MODE);
+	curr = add_keys(L"gg", VISUAL_MODE);
 	curr->data.handler = keys_gg;
 
-	curr = add_keys("j", VISUAL_MODE);
+	curr = add_keys(L"j", VISUAL_MODE);
 	curr->data.handler = keys_j;
 
-	curr = add_keys("k", VISUAL_MODE);
+	curr = add_keys(L"k", VISUAL_MODE);
 	curr->data.handler = keys_k;
 
-	curr = add_keys("y", VISUAL_MODE);
+	curr = add_keys(L"y", VISUAL_MODE);
 	curr->data.handler = keys_y;
 
 	init_extended_keys();
@@ -124,7 +125,7 @@ enter_visual_mode(void)
 	curr_stats.save_msg = 1;
 }
 
-static void
+void
 leave_visual_mode(int save_msg)
 {
 	clean_selected_files(view);
@@ -132,32 +133,29 @@ leave_visual_mode(int save_msg)
 	moveto_list_pos(view, view->list_pos);
 
 	curr_stats.save_msg = save_msg;
-	*mode = NORMAL_MODE;
+	if(*mode == VISUAL_MODE)
+		*mode = NORMAL_MODE;
 }
 
 static void
 init_extended_keys(void)
 {
 	struct key_t *curr;
-	char buf[] = {'\0', '\0', '\0'};
+	wchar_t buf[] = {L'\0', L'\0'};
 
-	buf[0] = KEY_PPAGE >> 8;
-	buf[1] = (char)KEY_PPAGE;
+	buf[0] = KEY_PPAGE;
 	curr = add_keys(buf, VISUAL_MODE);
 	curr->data.handler = keys_ctrl_b;
 
-	buf[0] = KEY_NPAGE >> 8;
-	buf[1] = (char)KEY_NPAGE;
+	buf[0] = KEY_NPAGE;
 	curr = add_keys(buf, VISUAL_MODE);
 	curr->data.handler = keys_ctrl_f;
 
-	buf[0] = KEY_DOWN >> 8;
-	buf[1] = (char)KEY_DOWN;
+	buf[0] = KEY_DOWN;
 	curr = add_keys(buf, VISUAL_MODE);
 	curr->data.handler = keys_j;
 
-	buf[0] = KEY_UP >> 8;
-	buf[1] = (char)KEY_UP;
+	buf[0] = KEY_UP;
 	curr = add_keys(buf, VISUAL_MODE);
 	curr->data.handler = keys_k;
 }
@@ -271,8 +269,7 @@ keys_M(struct key_info key_info, struct keys_info *keys_info)
 static void
 keys_colon(struct key_info key_info, struct keys_info *keys_info)
 {
-	get_command(view, GET_VISUAL_COMMAND, NULL);
-	leave_visual_mode(0);
+	enter_cmdline_mode(CMD_SUBMODE, L"'<,'>", NULL);
 }
 
 static void

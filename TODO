@@ -11,8 +11,6 @@ Vi specific features that need to be added.
 	Key mapping  :nmap s  :sh<Return>
 	Change file list filters to use fold levels instead of just 
 		the dot filter and regular expression filter.
-    Implement backward search.
-
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap? 

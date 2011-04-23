@@ -25,7 +25,8 @@ enum {
 	CHANGE_WINDOWS,
 	GET_COMMAND,
 	GET_BOOKMARK,
-	GET_SEARCH_PATTERN,
+	GET_FSEARCH_PATTERN,
+	GET_BSEARCH_PATTERN,
 	GET_VISUAL_COMMAND,
 	START_VISUAL_MODE,
 	MAPPED_COMMAND,
@@ -45,6 +46,7 @@ extern char *reserved_commands[];
 command_t *command_list;
 
 int get_command(FileView *view, int type, void *ptr);
+void exec_command(char* cmd, FileView *view, int type, void * ptr);
 void shellout(char *command, int pause);
 void add_command(char *name, char *action);
 int execute_command(FileView *view, char *action);

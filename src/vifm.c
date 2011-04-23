@@ -18,7 +18,6 @@
 
 #define VERSION "0.6"
 
-
 #include<ncurses.h>
 #include<unistd.h> /* getcwd  & sysconf */
 #include<string.h> /* strncpy */
@@ -32,14 +31,12 @@
 #include"config.h"
 #include"filelist.h"
 #include"filetype.h"
-#include"keys.h"
+#include"main_loop.h"
 #include"registers.h"
 #include"signals.h"
 #include"status.h"
 #include"ui.h"
 #include"utils.h"
-
-
 
 static void
 show_help_msg(void)

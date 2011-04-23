@@ -30,7 +30,6 @@
 #include"file_info.h"
 #include"filelist.h"
 #include"filetype.h"
-#include"keys.h"
 #include"menus.h"
 #include"signals.h"
 #include"status.h"

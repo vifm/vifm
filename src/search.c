@@ -25,7 +25,6 @@
 #include<regex.h>
 
 #include"filelist.h"
-#include"keys.h"
 #include"ui.h"
 
 enum
@@ -86,7 +85,7 @@ find_next_pattern(FileView *view)
 }
 
 int
-find_pattern(FileView *view, char *pattern)
+find_pattern(FileView *view, char *pattern, int backward)
 {
 	int found = 0;
 	regex_t re;
@@ -124,8 +123,16 @@ find_pattern(FileView *view, char *pattern)
 	if(found)
 	{
 		draw_dir_list(view, view->top_line, view->curr_line);
-		view->list_pos--;
-		find_next_pattern(view);
+		if(backward)
+		{
+			view->list_pos++;
+			find_previous_pattern(view);
+		}
+		else
+		{
+			view->list_pos--;
+			find_next_pattern(view);
+		}
 		return 0;
 	}
 	else

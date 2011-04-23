@@ -21,7 +21,7 @@
 
 #include "ui.h"
 
-int find_pattern(FileView *view, char *pattern);
+int find_pattern(FileView *view, char *pattern, int backward);
 void find_next_pattern(FileView *view);
 void find_previous_pattern(FileView *view);
 

@@ -16,10 +16,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef __RLINE_H__
-#define __RLINE_H__
+#ifndef __MAIN_LOOP_H__
+#define __MAIN_LOOP_H__
 
-char * my_rl_gets(int type);
+void main_loop(void);
 
 #endif
 

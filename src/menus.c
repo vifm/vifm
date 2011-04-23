@@ -33,50 +33,12 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
-#include "keys.h"
+#include "keys_buildin_c.h"
+#include "keys_buildin_m.h"
 #include "registers.h"
 #include "status.h"
 #include "ui.h"
 #include "utils.h"
-
-typedef struct menu_info
-{
-	int top;
-	int current;
-	int len;
-	int pos;
-	int win_rows;
-	int type;
-	int match_dir;
-	int matching_entries;
-	char *regexp;
-	char *title;
-	char *args;
-	char **data;
-	/* For user menus only */
-	char *get_info_script; /* program + args to fill in menu. */
-}menu_info;
-
-enum {
-	APROPOS,
-	BOOKMARK,
-	COMMAND,
-	FILETYPE,
-	HISTORY,
-	JOBS,
-	LOCATE,
-	REGISTER,
-	USER,
-	VIFM
-};
-
-enum {
-	NONE,
-	UP,
-	DOWN
-};
-
-static void draw_menu(FileView *view, menu_info *m);
 
 void
 show_progress(void)
@@ -128,7 +90,7 @@ show_position_in_menu(menu_info *m)
 	wrefresh(pos_win);
 }
 
-static void
+void
 clean_menu_position(menu_info *m)
 {
 	int x, y, z;
@@ -259,7 +221,7 @@ init_active_bookmarks(void)
 	}
 }
 
-static void
+void
 moveto_menu_pos(FileView *view, int pos,  menu_info *m)
 {
 	int redraw = 0;
@@ -325,7 +287,7 @@ moveto_menu_pos(FileView *view, int pos,  menu_info *m)
 	show_position_in_menu(m);
 }
 
-static void
+void
 redraw_menu(FileView *view, menu_info *m)
 {
 	int screen_x, screen_y;
@@ -677,7 +639,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 	}
 }
 
-static void
+void
 execute_menu_cb(FileView *view, menu_info *m)
 {
 	switch(m->type)
@@ -716,7 +678,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 	}
 }
 
-static void
+void
 reload_bookmarks_menu_list(menu_info *m)
 {
 	int x, i, z, len, j;
@@ -756,7 +718,7 @@ reload_bookmarks_menu_list(menu_info *m)
 	m->len = x;
 }
 
-static void
+void
 reload_command_menu_list(menu_info *m)
 {
 
@@ -791,186 +753,7 @@ reload_command_menu_list(menu_info *m)
 	}
 }
 
-static void
-menu_key_cb(FileView *view, menu_info *m)
-{
-	int done = 0;
-	int abort = 0;
-	int save_msg = 0;
-	int y, len;
-
-	getmaxyx(menu_win, y, len);
-	keypad(menu_win, TRUE);
-	werase(status_bar);
-	wtimeout(menu_win, KEYPRESS_TIMEOUT);
-
-	while(!done)
-	{
-		int key = wgetch(menu_win);
-
-		switch(key)
-		{
-			case '/':
-				{
-					m->match_dir = NONE;
-					free(m->regexp);
-
-					get_command(view, MENU_SEARCH, m);
-				}
-				break;
-			case ':':
-				{
-					save_msg = get_command(view, MENU_COMMAND, m);
-					if (save_msg < 0)
-					{
-						done = 1;
-						abort = 1;
-					}
-				}
-				break;
-			case '?':
-				{
-					m->match_dir = UP;
-
-					free(m->regexp);
-
-					get_command(view, MENU_SEARCH, m);
-				}
-				break;
-			case 2: /* ascii Ctrl B */
-			case KEY_PPAGE:
-				clean_menu_position(m);
-				moveto_menu_pos(view, m->top - m->win_rows + 2, m);
-				break;
-			case 3: /* ascii Ctrl C */
-			case 27: /* ascii Escape */
-				done = 1;
-				abort = 1;
-				break;
-			case 6: /* ascii Ctrl F */
-				{
-					clean_menu_position(m);
-					m->pos = m->pos + m->win_rows;
-					moveto_menu_pos(view, m->pos, m);
-				}
-				break;
-			case KEY_NPAGE:
-				break;
-			case 'l':
-			case 13: /* ascii Return */
-						done = 1;
-				break;
-			case 'G':
-				clean_menu_position(m);
-				moveto_menu_pos(view, m->len -1, m);
-				break;
-			case 'N':
-				{
-					if (m->regexp != NULL)
-					{
-						m->match_dir = UP;
-						m->matching_entries = 0;
-						search_menu_list(view, NULL, m);
-					}
-					else
-					{
-						status_bar_message("No search pattern set.");
-						wrefresh(status_bar);
-					}
-				}
-				break;
-			case 'g':
-				{
-					key = wgetch(menu_win);
-					if(key == 'g')
-					{
-						clean_menu_position(m);
-						moveto_menu_pos(view, 0, m);
-					}
-				}
-				break;
-			case 'd':
-				{
-					key = wgetch(menu_win);
-
-					if(key != 'd')
-						break;
-
-					if(m->type == COMMAND)
-					{
-						clean_menu_position(m);
-						remove_command(command_list[m->pos].name);
-
-						reload_command_menu_list(m);
-						draw_menu(view, m);
-
-						if(m->pos -1 >= 0)
-							moveto_menu_pos(view, m->pos -1, m);
-						else
-							moveto_menu_pos(view, 0, m);
-					}
-					else if(m->type == BOOKMARK)
-					{
-						clean_menu_position(m);
-						remove_bookmark(active_bookmarks[m->pos]);
-
-						reload_bookmarks_menu_list(m);
-						draw_menu(view, m);
-
-						if(m->pos -1 >= 0)
-							moveto_menu_pos(view, m->pos -1, m);
-						else
-							moveto_menu_pos(view, 0, m);
-					}
-				}
-				break;
-			case 'j':
-			case KEY_DOWN:
-				{
-					clean_menu_position(m);
-					m->pos++;
-					moveto_menu_pos(view, m->pos, m);
-				}
-				break;
-			case 'k':
-			case KEY_UP:
-				{
-					clean_menu_position(m);
-					m->pos--;
-					moveto_menu_pos(view, m->pos, m);
-					wrefresh(menu_win);
-				}
-				break;
-			case 'n':
-				{
-					if (m->regexp != NULL)
-					{
-						m->match_dir = DOWN;
-						m->matching_entries = 0;
-						search_menu_list(view, NULL, m);
-					}
-					else
-					{
-						status_bar_message("No search pattern set>");
-						wrefresh(status_bar);
-					}
-				}
-				break;
-			default:
-				break;
-		}
-		if (curr_stats.redraw_menu)
-			redraw_menu(view, m);
-
-	} /* end of while(!done) */
-
-	if (abort)
-		return;
-
-	execute_menu_cb(view, m);
-}
-
-static void
+void
 draw_menu(FileView *view,  menu_info *m)
 {
 	int i;
@@ -1015,7 +798,7 @@ show_apropos_menu(FileView *view, char *args)
 	FILE *file;
 	int len = 0;
 
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = 0;
@@ -1060,15 +843,15 @@ show_apropos_menu(FileView *view, char *args)
 	{
 		snprintf(buf, sizeof(buf), "No matches for \'%s\'", m.title);
 		show_error_msg(" Nothing Appropriate ", buf);
+		reset_popup_menu(&m);
 	}
 	else
 	{
 		setup_menu(view);
 		draw_menu(view, &m);
 		moveto_menu_pos(view, 0, &m);
-		menu_key_cb(view, &m);
+		enter_menu_mode(&m, view);
 	}
-	reset_popup_menu(&m);
 }
 
 void
@@ -1077,7 +860,7 @@ show_bookmarks_menu(FileView *view)
 	int i, j, x;
 	char buf[PATH_MAX];
 
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = cfg.num_bookmarks;
@@ -1123,8 +906,7 @@ show_bookmarks_menu(FileView *view)
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
+	enter_menu_mode(&m, view);
 }
 
 void
@@ -1132,7 +914,7 @@ show_commands_menu(FileView *view)
 {
 	int len, i, x;
 
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = cfg.command_num;
@@ -1180,8 +962,7 @@ show_commands_menu(FileView *view)
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
+	enter_menu_mode(&m, view);
 }
 
 void
@@ -1201,7 +982,7 @@ show_filetypes_menu(FileView *view)
 		int len = 0;
 		char *ptr = NULL;
 
-		menu_info m;
+		static menu_info m;
 		m.top = 0;
 		m.current = 1;
 		m.len = 0;
@@ -1249,8 +1030,7 @@ show_filetypes_menu(FileView *view)
 		setup_menu(view);
 		draw_menu(view, &m);
 		moveto_menu_pos(view, 0, &m);
-		menu_key_cb(view, &m);
-		reset_popup_menu(&m);
+		enter_menu_mode(&m, view);
 	}
 }
 
@@ -1258,7 +1038,7 @@ void
 show_history_menu(FileView *view)
 {
 	int x;
-	menu_info m;
+	static menu_info m;
 
 	if (view->history_num < 2)
 		return;
@@ -1310,8 +1090,7 @@ show_history_menu(FileView *view)
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
+	enter_menu_mode(&m, view);
 }
 
 void
@@ -1321,7 +1100,7 @@ show_locate_menu(FileView *view, char *args)
 	char buf[256];
 	FILE *file;
 
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = 0;
@@ -1377,8 +1156,7 @@ show_locate_menu(FileView *view, char *args)
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
+	enter_menu_mode(&m, view);
 }
 
 void
@@ -1388,7 +1166,7 @@ show_user_menu(FileView *view, char *command)
 	char buf[256];
 	FILE *file;
 
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = 0;
@@ -1457,8 +1235,7 @@ show_user_menu(FileView *view, char *command)
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
+	enter_menu_mode(&m, view);
 }
 
 void
@@ -1468,7 +1245,7 @@ show_jobs_menu(FileView *view)
 	Finished_Jobs *fj = NULL;
 	sigset_t new_mask;
 	int x;
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = 0;
@@ -1549,9 +1326,7 @@ show_jobs_menu(FileView *view)
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
-
+	enter_menu_mode(&m, view);
 }
 
 void
@@ -1559,7 +1334,7 @@ show_register_menu(FileView *view)
 {
 	int x;
 
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = 0;
@@ -1608,8 +1383,7 @@ show_register_menu(FileView *view)
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
+	enter_menu_mode(&m, view);
 }
 
 void
@@ -1617,7 +1391,7 @@ show_vifm_menu(FileView *view)
 {
 	int x;
 
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = 0;
@@ -1636,24 +1410,7 @@ show_vifm_menu(FileView *view)
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
-}
-
-int
-execute_menu_command(FileView *view, char * command, menu_info *m)
-{
-	if (!strncmp("quit", command, strlen(command)))
-		return -1;
-	else if (!strcmp("x", command))
-		return -1;
-	else if (isdigit(*command))
-	{
-		clean_menu_position(m);
-		moveto_menu_pos(view, atoi(command) - 1, m);
-	}
-
-	return 0;
+	enter_menu_mode(&m, view);
 }
 
 int
