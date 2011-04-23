@@ -599,7 +599,6 @@ pipe_and_capture_errors(char *command)
 	return 0;
 }
 
-
 void
 delete_file(FileView *view, int reg, int count, int *indexes)
 {
@@ -653,6 +652,12 @@ delete_file(FileView *view, int reg, int count, int *indexes)
 	get_all_selected_files(view);
 	load_dir_list(view, 1);
 	free_selected_file_array(view);
+
+	/* some files may still exist if there was an error */
+	for(x = 0; x < view->list_rows; x++)
+	{
+		view->selected_files += view->dir_entry[x].selected;
+	}
 
 	moveto_list_pos(view, view->list_pos);
 }
