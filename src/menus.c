@@ -658,10 +658,10 @@ execute_menu_cb(FileView *view, menu_info *m)
 			break;
 		case HISTORY:
 			{
-				change_directory(view, view->history[m->pos].dir);
+				change_directory(view, view->history[m->len - 1 - m->pos].dir);
 				load_dir_list(view, 1);
 				moveto_list_pos(view, find_file_pos_in_list(view,
-							view->history[m->pos].file));
+							view->history[m->len - 1 - m->pos].file));
 			}
 			break;
 		case JOBS:
@@ -1040,7 +1040,7 @@ show_history_menu(FileView *view)
 	int x;
 	static menu_info m;
 
-	if (view->history_num < 2)
+	if (view->history_num < 1)
 		return;
 
 	m.top = 0;
@@ -1068,24 +1068,16 @@ show_history_menu(FileView *view)
 			snprintf(view->history[x].file, sizeof(view->history[x].file),
 					"%s", view->dir_entry[view->list_pos].name);
 
-		if(strcmp(view->history[x].dir, "/") == 0)
-		{
-			m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
-			m.data[x] = (char *)malloc((strlen(view->history[x].file) + 1)
-					* sizeof(char));
-			snprintf(m.data[x], strlen(view->history[x].file),
-					"%s", view->history[x].file);
-		}
-		else
-		{
-			m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
-			m.data[x] = (char *)malloc((strlen(view->history[x].file) +
-					strlen(view->history[x].dir) + 4) * sizeof(char));
-			snprintf(m.data[x], strlen(view->history[x].file) +
-					strlen(view->history[x].dir) + 4, "%s [%s]",
-					view->history[x].dir, view->history[x].file);
-		}
+		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
+		m.data[x] = (char *)malloc((strlen(view->history[x].dir) + 1)*sizeof(char));
+		strcpy(m.data[x], view->history[x].dir);
 		m.len = x + 1;
+	}
+	for(x = 0; x < m.len/2; x++)
+	{
+		char *t = m.data[x];
+		m.data[x] = m.data[m.len - 1 - x];
+		m.data[m.len - 1 - x] = t;
 	}
 	setup_menu(view);
 	draw_menu(view, &m);

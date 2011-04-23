@@ -664,25 +664,19 @@ regexp_filter_match(FileView *view,  char *filename)
 void
 save_view_history(FileView *view)
 {
-	int x = 0;
-	int found = 0;
+	int x;
 
-	for(x = 0; x < view->history_num; x++)
-	{
-		if(strlen(view->history[x].dir) < 1)
-			break;
-		if(strcmp(view->history[x].dir, view->curr_dir) == 0)
-		{
-			found = 1;
-			break;
-		}
-	}
-	if(found && (x + 1 == cfg.history_len || view->history[x + 1].dir[0] == '\0'))
+	x = view->history_num;
+	while(x >= 0 && view->history[x].dir[0] == '\0')
+		x--;
+	if(x != -1 && strcmp(view->history[x].dir, view->curr_dir) == 0)
 	{
 		snprintf(view->history[x].file, sizeof(view->history[x].file),
 				"%s", view->dir_entry[view->list_pos].name);
 		return;
 	}
+
+	x = view->history_num;
 
 	if(x == cfg.history_len)
 	{
@@ -996,12 +990,12 @@ change_directory(FileView *view, const char *directory)
 	if(strcmp(dir_dup, view->curr_dir))
 		snprintf(view->curr_dir, PATH_MAX, "%s", dir_dup);
 
-
-
 	/* Save the directory modified time to check for file changes */
 	stat(view->curr_dir, &s);
 	view->dir_mtime = s.st_mtime;
 	closedir(dir);
+
+	save_view_history(view);
 }
 
 static void
