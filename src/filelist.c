@@ -683,26 +683,16 @@ save_view_history(FileView *view)
 		int y;
 		for(y = 0; y < cfg.history_len - 1; y++)
 		{
-			snprintf(view->history[y].file, sizeof(view->history[y].file),
-					"%s", view->history[y + 1].file);
-			snprintf(view->history[y].dir, sizeof(view->history[y].dir),
-					"%s", view->history[y + 1].dir);
+			strcpy(view->history[y].file, view->history[y + 1].file);
+			strcpy(view->history[y].dir, view->history[y + 1].dir);
 		}
-		snprintf(view->history[cfg.history_len - 1].file,
-				sizeof(view->history[cfg.history_len - 1].file),
-				"%s", view->dir_entry[view->list_pos].name);
-		snprintf(view->history[cfg.history_len - 1].dir,
-				sizeof(view->history[cfg.history_len - 1].dir),
-				"%s", view->curr_dir);
+		x--;
 	}
-	else
-	{
-		snprintf(view->history[x].dir, sizeof(view->history[x].dir),
-				"%s", view->curr_dir);
-		snprintf(view->history[x].file, sizeof(view->history[x].file),
-				"%s", view->dir_entry[view->list_pos].name);
-		view->history_num++;
-	}
+	snprintf(view->history[x].dir, sizeof(view->history[x].dir),
+			"%s", view->curr_dir);
+	snprintf(view->history[x].file, sizeof(view->history[x].file),
+			"%s", view->dir_entry[view->list_pos].name);
+	view->history_num++;
 }
 
 static void
