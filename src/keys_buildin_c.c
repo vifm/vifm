@@ -785,8 +785,7 @@ line_completion(struct line_stats *stat)
 
 	if(last_word != NULL)
 	{
-		raw_name = filename_completion(
-				stat->complete_continue ? NULL : last_word);
+		raw_name = filename_completion(stat->complete_continue ? NULL : last_word);
 
 		stat->complete_continue = 1;
 
@@ -828,20 +827,19 @@ line_completion(struct line_stats *stat)
 
 				wcsdel(stat->line, 1, q - stat->line);
 
-				if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
+				if((p = realloc(stat->line, i*sizeof(wchar_t))) == NULL)
 				{
 					free(raw_name);
 					free(filename);
 					free(complete_command);
 					return -1;
 				}
-				stat->line = (wchar_t *) p;
+				stat->line = (wchar_t *)p;
 
 				wcsins(stat->line, buf, 1);
 
 				stat->index = wcschr(stat->line, L' ') - stat->line;
-				stat->curs_pos = wcswidth(stat->line, stat->index)
-								  + stat->prompt_wid;
+				stat->curs_pos = wcswidth(stat->line, stat->index) + stat->prompt_wid;
 				stat->len = wcslen(stat->line);
 
 				free(buf);

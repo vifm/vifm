@@ -174,8 +174,8 @@ command_is_reserved(char *name)
 
 	for(x = 0; x < RESERVED; x++)
 	{
-		if(!strncmp(reserved_commands[x], name, len))
-				return x;
+		if(strncmp(reserved_commands[x], name, len) == 0)
+			return x;
 	}
 	return -1;
 }
@@ -207,7 +207,7 @@ command_completion(char *str)
 	int i = 0;
 	int len;
 
-	if (str != NULL)
+	if(str != NULL)
 	{
 		string = str;
 		offset = 0;
@@ -217,43 +217,44 @@ command_completion(char *str)
 
 	len = strlen(string);
 
-	if ((pos = command_is_reserved(string)) > -1)
+	if((pos = command_is_reserved(string)) > -1)
 	{
 		found = 1;
 
-		while (i < offset)
+		while(i < offset)
 		{
-			if (pos >= RESERVED - 1)
+			if(pos >= RESERVED - 1)
 				break;
 
-			if (!strncmp(string, reserved_commands[++pos], len))
+			if(!strncmp(string, reserved_commands[++pos], len))
 				i++;
 		}
 
-		if (i == offset)
+		if(i == offset)
 			return strdup(reserved_commands[pos]);
 	}
 
-	if ((pos = is_user_command(string)) > -1)
+	if((pos = is_user_command(string)) > -1)
 	{
 		found = 1;
 
-		while (i < offset)
+		--pos;
+		while(i < offset)
 		{
-			if (pos >= cfg.command_num - 1)
+			if(++pos > cfg.command_num - 1)
 				break;
 
-			if (!strncmp(string, command_list[++pos].name, len))
+			if(strncmp(string, command_list[pos].name, len) == 0)
 				i++;
 		}
 
-		if (i == offset)
+		if(i == offset)
 			return strdup(command_list[pos].name);
 	}
 
-	if (!found)
+	if(!found)
 		return NULL;
-	else if (i != offset)
+	else if(i != offset)
 	{
 		offset = -1;
 		return strdup(string);
@@ -564,7 +565,7 @@ is_user_command(char *command)
 
 	for(x = 0; x < cfg.command_num; x++)
 	{
-		if(!strncmp(com, command_list[x].name, strlen(com)))
+		if(strncmp(com, command_list[x].name, strlen(com)) == 0)
 		{
 			return x;
 		}
@@ -1442,7 +1443,6 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_NMAP:
 			{
-				int t;
 				wchar_t *keys, *mapping;
 				char *p;
 				if(cmd->args == NULL || *cmd->args == '\0')
