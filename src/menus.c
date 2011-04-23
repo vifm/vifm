@@ -1064,28 +1064,28 @@ show_history_menu(FileView *view)
 			break;
 
 		/* Change the current dir to reflect the current file. */
-		if(!strcmp(view->history[x].dir, view->curr_dir))
+		if(strcmp(view->history[x].dir, view->curr_dir) == 0)
 			snprintf(view->history[x].file, sizeof(view->history[x].file),
-						"%s", view->dir_entry[view->list_pos].name);
+					"%s", view->dir_entry[view->list_pos].name);
 
-		if(!strcmp(view->history[x].dir, "/"))
+		if(strcmp(view->history[x].dir, "/") == 0)
 		{
 			m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
 			m.data[x] = (char *)malloc((strlen(view->history[x].file) + 1)
 					* sizeof(char));
 			snprintf(m.data[x], strlen(view->history[x].file),
-						"%s", view->history[x].file);
+					"%s", view->history[x].file);
 		}
 		else
 		{
 			m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
 			m.data[x] = (char *)malloc((strlen(view->history[x].file) +
-						strlen(view->history[x].dir) + 2) * sizeof(char));
+					strlen(view->history[x].dir) + 4) * sizeof(char));
 			snprintf(m.data[x], strlen(view->history[x].file) +
-					strlen(view->history[x].dir) + 1, "%s/%s",
-						view->history[x].dir, view->history[x].file);
+					strlen(view->history[x].dir) + 4, "%s [%s]",
+					view->history[x].dir, view->history[x].file);
 		}
-		m.len = x;
+		m.len = x + 1;
 	}
 	setup_menu(view);
 	draw_menu(view, &m);

@@ -671,13 +671,13 @@ save_view_history(FileView *view)
 	{
 		if(strlen(view->history[x].dir) < 1)
 			break;
-		if(!strcmp(view->history[x].dir, view->curr_dir))
+		if(strcmp(view->history[x].dir, view->curr_dir) == 0)
 		{
 			found = 1;
 			break;
 		}
 	}
-	if(found)
+	if(found && (x + 1 == cfg.history_len || view->history[x + 1].dir[0] == '\0'))
 	{
 		snprintf(view->history[x].file, sizeof(view->history[x].file),
 				"%s", view->dir_entry[view->list_pos].name);
@@ -687,24 +687,24 @@ save_view_history(FileView *view)
 	if(x == cfg.history_len)
 	{
 		int y;
-		for(y = 0; y < cfg.history_len -1; y++)
+		for(y = 0; y < cfg.history_len - 1; y++)
 		{
 			snprintf(view->history[y].file, sizeof(view->history[y].file),
-						"%s", view->history[y +1].file);
+					"%s", view->history[y + 1].file);
 			snprintf(view->history[y].dir, sizeof(view->history[y].dir),
-					"%s", view->history[y +1].dir);
+					"%s", view->history[y + 1].dir);
 		}
-		snprintf(view->history[cfg.history_len -1].file,
-				sizeof(view->history[cfg.history_len -1].file),
+		snprintf(view->history[cfg.history_len - 1].file,
+				sizeof(view->history[cfg.history_len - 1].file),
 				"%s", view->dir_entry[view->list_pos].name);
-		snprintf(view->history[cfg.history_len -1].dir,
-				sizeof(view->history[cfg.history_len -1].dir),
+		snprintf(view->history[cfg.history_len - 1].dir,
+				sizeof(view->history[cfg.history_len - 1].dir),
 				"%s", view->curr_dir);
 	}
 	else
 	{
 		snprintf(view->history[x].dir, sizeof(view->history[x].dir),
-			"%s", view->curr_dir);
+				"%s", view->curr_dir);
 		snprintf(view->history[x].file, sizeof(view->history[x].file),
 				"%s", view->dir_entry[view->list_pos].name);
 		view->history_num++;

@@ -186,11 +186,10 @@ command_is_being_used(char *command)
 	int x;
 	for(x = 0; x < cfg.command_num; x++)
 	{
-		if(!strcmp(command_list[x].name, command))
-				return 1;
+		if(strcmp(command_list[x].name, command) == 0)
+			return 1;
 	}
 	return 0;
-
 }
 
 /* On the first call to this function,
@@ -270,23 +269,24 @@ save_search_history(char *pattern)
 {
 	int x = 0;
 
-	if ((cfg.search_history_num + 1) >= cfg.search_history_len)
+	if((cfg.search_history_num + 1) >= cfg.search_history_len)
 		cfg.search_history_num = x	= cfg.search_history_len - 1;
 	else
 		x = cfg.search_history_num + 1;
 
-	for (; x > 0; x--)
+	while(x > 0)
 	{
 		cfg.search_history[x] = (char *)realloc(cfg.search_history[x],
 				strlen(cfg.search_history[x - 1]) + 1);
 		strcpy(cfg.search_history[x], cfg.search_history[x - 1]);
+		x--;
 	}
 
 	cfg.search_history[0] = (char *)realloc(cfg.search_history[0],
 			strlen(pattern) + 1);
 	strcpy(cfg.search_history[0], pattern);
 	cfg.search_history_num++;
-	if (cfg.search_history_num >= cfg.search_history_len)
+	if(cfg.search_history_num >= cfg.search_history_len)
 		cfg.search_history_num = cfg.search_history_len - 1;
 }
 
@@ -296,23 +296,23 @@ save_command_history(const char *command)
 	int x = 0;
 
 	/* Don't add :!! or :! to history list */
-	if (!strcmp(command, "!!") || !strcmp(command, "!"))
+	if(!strcmp(command, "!!") || !strcmp(command, "!"))
 		return;
 
-	if ((cfg.cmd_history_num + 1) >= cfg.cmd_history_len)
+	if((cfg.cmd_history_num + 1) >= cfg.cmd_history_len)
 		cfg.cmd_history_num = x = cfg.cmd_history_len - 1;
 	else
 		x = cfg.cmd_history_num + 1;
 
-	for (; x > 0; x--)
+	while(x > 0)
 	{
 		cfg.cmd_history[x] = (char *)realloc(cfg.cmd_history[x],
 				strlen(cfg.cmd_history[x - 1]) + 1);
 		strcpy(cfg.cmd_history[x], cfg.cmd_history[x - 1]);
+		x--;
 	}
 
-	cfg.cmd_history[0] = (char *)realloc(cfg.cmd_history[0],
-			strlen(command) + 1);
+	cfg.cmd_history[0] = (char *)realloc(cfg.cmd_history[0], strlen(command) + 1);
 	strcpy(cfg.cmd_history[0], command);
 	cfg.cmd_history_num++;
 	if (cfg.cmd_history_num >= cfg.cmd_history_len)
