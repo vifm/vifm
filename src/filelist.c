@@ -349,6 +349,33 @@ find_file_pos_in_list(FileView *view, char *file)
 		return -1;
 }
 
+static void
+update_view_title(FileView *view)
+{
+	char *ptr;
+	size_t len;
+
+	werase(view->title);
+
+	ptr = view->curr_dir;
+	len = get_utf8_string_length(ptr);
+	if(view->window_width < len + 1)
+	{
+		/* Truncate long directory names */
+		while(view->window_width < len + 4)
+		{
+			len--;
+			ptr += get_char_width(ptr);
+		}
+
+		wprintw(view->title, "...%s", ptr);
+	}
+	else
+		wprintw(view->title, "%s", view->curr_dir);
+
+	wnoutrefresh(view->title);
+}
+
 /* WARNING: unused parameter pos */
 void
 draw_dir_list(FileView *view, int top, int pos)
@@ -359,7 +386,6 @@ draw_dir_list(FileView *view, int top, int pos)
 	int LINE_COLOR;
 	int bold = 1;
 	int color_scheme = 0;
-	char *ptr = view->curr_dir;
 
 	color_scheme = check_directory_for_color_scheme(view->curr_dir);
 
@@ -375,22 +401,8 @@ draw_dir_list(FileView *view, int top, int pos)
 	}
 
 	werase(view->win);
-	werase(view->title);
 
-	/* Truncate long directory names */
-	if (view->window_width < strlen(ptr) + 1)
-	{
-		while (view->window_width < strlen(ptr) + 4)
-		{
-			ptr++;
-		}
-
-		wprintw(view->title, "...%s", ptr);
-	}
-	else
-		wprintw(view->title, "%s", view->curr_dir);
-
-	wnoutrefresh(view->title);
+	update_view_title(view);
 
 	/* This is needed for reloading a list that has had files deleted */
 	while((view->list_rows - view->list_pos) <= 0)
@@ -885,8 +897,6 @@ change_directory(FileView *view, const char *directory)
 
 		if(!strcmp(dir_dup,""))
 			strcpy(dir_dup,"/");
-
-
 	}
 	/* Moving into a directory	or bookmarked dir or :cd directory*/
 	else if(strcmp(dir_dup, view->curr_dir))
