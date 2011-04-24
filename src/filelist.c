@@ -177,7 +177,7 @@ quick_view_file(FileView *view)
 
 	print_width = get_real_string_width(view->dir_entry[view->list_pos].name,
 			view->window_width - 6) + 6;
-	snprintf(buf, print_width, "File: %s",
+	snprintf(buf, print_width + 1, "File: %s",
 			view->dir_entry[view->list_pos].name);
 
 	wbkgdset(other_view->title, COLOR_PAIR(BORDER_COLOR + view->color_scheme));
@@ -231,9 +231,9 @@ get_current_file_name(FileView *view)
 void
 free_selected_file_array(FileView *view)
 {
-	int x;
 	if(view->selected_filelist)
 	{
+		int x;
 		for(x = 0; x < view->selected_files; x++)
 		{
 			free(view->selected_filelist[x]);
