@@ -19,10 +19,7 @@
 #ifndef __SORT_H__
 #define __SORT_H__
 
-#include "ui.h"
-
-void show_sort_menu(FileView *view);
-int sort_dir_list(const void *one, const void *tow);
+int sort_dir_list(const void *one, const void *two);
 
 #endif
 

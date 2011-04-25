@@ -1195,8 +1195,7 @@ load_dir_list(FileView *view, int reload)
 	{
 		status_bar_message("Sorting Directory...");
 	}
-	qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t),
-				sort_dir_list);
+	qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
 
 	for(x = 0; x < view->list_rows; x++)
 		view->dir_entry[x].list_num = x;

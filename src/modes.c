@@ -7,6 +7,7 @@
 #include "keys_buildin_c.h"
 #include "keys_buildin_m.h"
 #include "keys_buildin_n.h"
+#include "keys_buildin_s.h"
 #include "keys_buildin_v.h"
 #include "status.h"
 #include "ui.h"
@@ -19,6 +20,7 @@ static int mode_flags[] = {
     MF_USES_REGS | MF_USES_COUNT,
     MF_USES_INPUT,
     MF_USES_COUNT,
+    MF_USES_COUNT,
     MF_USES_COUNT
 };
 
@@ -29,6 +31,7 @@ init_modes(void)
 	init_buildin_c_keys(&mode);
 	init_buildin_m_keys(&mode);
 	init_buildin_n_keys(&mode);
+	init_buildin_s_keys(&mode);
 	init_buildin_v_keys(&mode);
 }
 
@@ -40,6 +43,8 @@ modes_pre(void)
 		wrefresh(status_bar);
 		return;
 	}
+	else if(mode == SORT_MODE)
+		return;
 	else if(mode == MENU_MODE)
 	{
 		menu_pre();
@@ -62,6 +67,8 @@ modes_post(void)
 	char status_buf[64] = "";
 
 	if(mode == CMDLINE_MODE)
+		return;
+	else if(mode == SORT_MODE)
 		return;
 	else if(mode == MENU_MODE)
 	{

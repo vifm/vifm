@@ -36,6 +36,7 @@
 #include"fileops.h"
 #include"keys.h"
 #include"keys_buildin_m.h"
+#include"keys_buildin_s.h"
 #include"menus.h"
 #include"modes.h"
 #include"search.h"
@@ -1499,7 +1500,8 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			comm_quit();
 			break;
 		case COM_SORT:
-			show_sort_menu(view);
+			enter_sort_mode(view);
+			//show_sort_menu(view);
 			break;
 		case COM_SCREEN:
 			{

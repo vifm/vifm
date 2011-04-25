@@ -181,18 +181,18 @@ leave_menu_mode(void)
 }
 
 static void
-keys_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
-{
-	leave_menu_mode();
-}
-
-static void
 keys_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
 	menu->pos -= menu->win_rows - 3;
 	moveto_menu_pos(view, menu->pos, menu);
 	wrefresh(menu_win);
+}
+
+static void
+keys_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
+{
+	leave_menu_mode();
 }
 
 static void
