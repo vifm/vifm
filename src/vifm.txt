@@ -154,6 +154,7 @@ y6gg yank all files from cursor position to 6th file in the list.
 
 /regular expression - select files matching regular expression.
 N - previous file matching last search pattern.
+cg - change group of file.
 co - change owner of file.
 cw - change word is used to rename a file.
 dd - move selected file or files to ~/.vifm/Trash

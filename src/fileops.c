@@ -830,7 +830,7 @@ permissions_key_cb(FileView *view, int *perms, int isdir)
 		{
 			case 'j':
 				{
-					curr+= step;
+					curr += step;
 					permnum++;
 
 					if(curr > bottom)
@@ -838,7 +838,7 @@ permissions_key_cb(FileView *view, int *perms, int isdir)
 						curr-= step;
 						permnum--;
 					}
-					if (curr == 7 || curr == 12)
+					if (curr == 7 || curr == 12 || curr == 17)
 						curr++;
 
 					wmove(change_win, curr, col);
@@ -855,7 +855,7 @@ permissions_key_cb(FileView *view, int *perms, int isdir)
 						permnum++;
 					}
 
-					if (curr == 7 || curr == 12)
+					if (curr == 7 || curr == 12 || curr == 17)
 						curr--;
 
 					wmove(change_win, curr, col);
@@ -910,123 +910,6 @@ permissions_key_cb(FileView *view, int *perms, int isdir)
 		set_perm_string(view, perms, path);
 		load_dir_list(view, 1);
 		moveto_list_pos(view, view->curr_line);
-	}
-
-}
-
-static void
-change_key_cb(FileView *view, int type)
-{
-	int done = 0;
-	int abort = 0;
-	int top = 2;
-	int bottom = 8;
-	int curr = 2;
-	int step = 2;
-	int col = 6;
-	char filename[NAME_MAX];
-
-	snprintf(filename, sizeof(filename), "%s",
-			view->dir_entry[view->list_pos].name);
-
-	curs_set(0);
-	wmove(change_win, curr, col);
-	wrefresh(change_win);
-
-	while(!done)
-	{
-		int key = wgetch(change_win);
-
-		switch(key)
-		{
-			case 'j':
-				{
-					mvwaddch(change_win, curr, col, ' ');
-					curr+= step;
-
-					if(curr > bottom)
-						curr-= step;
-
-					mvwaddch(change_win, curr, col, '*');
-					wmove(change_win, curr, col);
-					wrefresh(change_win);
-				}
-				break;
-			case 'k':
-				{
-
-					mvwaddch(change_win, curr, col, ' ');
-					curr-= step;
-					if(curr < top)
-						curr+= step;
-
-					mvwaddch(change_win, curr, col, '*');
-					wmove(change_win, curr, col);
-					wrefresh(change_win);
-				}
-				break;
-			case 3: /* ascii Ctrl C */
-			case 27: /* ascii Escape */
-				done = 1;
-				abort = 1;
-				break;
-			case 'l':
-			case 13: /* ascii Return */
-				done = 1;
-				break;
-			default:
-				break;
-		}
-	}
-
-	reset_change_window();
-
-	if(abort)
-	{
-		moveto_list_pos(view, find_file_pos_in_list(view, filename));
-		return;
-	}
-
-	switch(type)
-	{
-		case FILE_CHANGE:
-		{
-			if (curr == FILE_NAME)
-				rename_file(view);
-			else
-				show_change_window(view, curr);
-			/*
-			char * filename = get_current_file_name(view);
-			switch(curr)
-			{
-				case FILE_NAME:
-					rename_file(view);
-					break;
-				case FILE_OWNER:
-					change_file_owner(filename);
-					break;
-				case FILE_GROUP:
-					change_file_group(filename);
-					break;
-				case FILE_PERMISSIONS:
-					show_change_window(view, type);
-					break;
-				default:
-					break;
-			}
-			*/
-		}
-		break;
-		case FILE_NAME:
-			break;
-		case FILE_OWNER:
-			break;
-		case FILE_GROUP:
-			break;
-		case FILE_PERMISSIONS:
-			break;
-		default:
-			break;
 	}
 }
 
@@ -1127,9 +1010,9 @@ show_file_permissions_menu(FileView *view, int x)
 		mvwaddch(change_win, 16, 9, '*');
 	}
 
-	if (is_dir(filename))
+	if(is_dir(filename))
 	{
-		mvwaddstr(change_win, 17, 6, "	[ ] Set Recursively");
+		mvwaddstr(change_win, 18, 6, "	[ ] Set Recursively");
 		isdir = 1;
 	}
 
@@ -1154,35 +1037,7 @@ show_change_window(FileView *view, int type)
 	curs_set(1);
 	wrefresh(change_win);
 
-
-	switch(type)
-	{
-		case FILE_CHANGE:
-		{
-			mvwaddstr(change_win, 0, (x - 20)/2, " Change Current File ");
-			mvwaddstr(change_win, 2, 4, " [ ] Name");
-			mvwaddstr(change_win, 4, 4, " [ ] Owner");
-			mvwaddstr(change_win, 6, 4, " [ ] Group");
-			mvwaddstr(change_win, 8, 4, " [ ] Permissions");
-			mvwaddch(change_win, 2, 6, '*');
-			change_key_cb(view, type);
-		}
-			break;
-		case FILE_NAME:
-			return;
-			break;
-		case FILE_OWNER:
-			return;
-			break;
-		case FILE_GROUP:
-			return;
-			break;
-		case FILE_PERMISSIONS:
-			show_file_permissions_menu(view, x);
-			break;
-		default:
-			break;
-	}
+	show_file_permissions_menu(view, x);
 }
 
 static void
@@ -1267,6 +1122,31 @@ void
 change_owner(FileView *view)
 {
 	enter_prompt_mode(L"New owner: ", "", change_owner_cb);
+}
+
+static void
+change_group_cb(const char *new_owner)
+{
+	char *filename;
+	char command[1024];
+	char *escaped;
+
+	filename = get_current_file_name(curr_view);
+	escaped = escape_filename(filename, strlen(filename), 0);
+	snprintf(command, sizeof(command), "chown -fR :%s %s", new_owner, escaped);
+	free(escaped);
+
+	if(system_and_wait_for_errors(command) != 0)
+		return;
+
+	load_dir_list(curr_view, 1);
+	moveto_list_pos(curr_view, curr_view->list_pos);
+}
+
+void
+change_group(FileView *view)
+{
+	enter_prompt_mode(L"New group: ", "", change_group_cb);
 }
 
 int

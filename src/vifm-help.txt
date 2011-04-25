@@ -12,6 +12,7 @@ The basic vi key bindings are used to move through the files and popup
 
 	gg top of list
 	G bottom of list
+	cg change group of file.
 	co change owner of file.
 	cw change word is used to rename a file.
 	m [a-z][A-Z][0-9] to set bookmark
