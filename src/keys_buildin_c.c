@@ -64,7 +64,9 @@ static void keys_ctrl_i(struct key_info, struct keys_info *);
 static void keys_ctrl_m(struct key_info, struct keys_info *);
 static void keys_ctrl_n(struct key_info, struct keys_info *);
 static void keys_ctrl_u(struct key_info, struct keys_info *);
+static void keys_ctrl_w(struct key_info, struct keys_info *);
 static void keys_meta_b(struct key_info, struct keys_info *);
+static void find_prev_word(void);
 static void keys_meta_f(struct key_info, struct keys_info *);
 static void keys_left(struct key_info, struct keys_info *);
 static void keys_right(struct key_info, struct keys_info *);
@@ -190,9 +192,11 @@ init_emacs_keys(void)
 	curr = add_keys(L"\x04", CMDLINE_MODE);
 	curr->data.handler = keys_delete;
 
-	/* ctrl u */
 	curr = add_keys(L"\x15", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_u;
+
+	curr = add_keys(L"\x17", CMDLINE_MODE);
+	curr->data.handler = keys_ctrl_w;
 
 	curr = add_keys(L"\x1b"L"b", CMDLINE_MODE);
 	curr->data.handler = keys_meta_b;
@@ -568,7 +572,31 @@ keys_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+keys_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
+{
+	int old;
+
+	old = input_stat.index;
+	find_prev_word();
+
+	wcsdel(input_stat.line, input_stat.index + 1, old - input_stat.index);
+	input_stat.len -= old - input_stat.index;
+
+	werase(status_bar);
+	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
+	waddwstr(status_bar, input_stat.line);
+	wmove(status_bar, 0, input_stat.curs_pos);
+}
+
+static void
 keys_meta_b(struct key_info key_info, struct keys_info *keys_info)
+{
+	find_prev_word();
+	wmove(status_bar, 0, input_stat.curs_pos);
+}
+
+static void
+find_prev_word(void)
 {
 	while(input_stat.index > 0 && isspace(input_stat.line[input_stat.index - 1]))
 	{
@@ -580,18 +608,19 @@ keys_meta_b(struct key_info key_info, struct keys_info *keys_info)
 		input_stat.index--;
 		input_stat.curs_pos--;
 	}
-	wmove(status_bar, 0, input_stat.curs_pos);
 }
 
 static void
 keys_meta_f(struct key_info key_info, struct keys_info *keys_info)
 {
-	while(input_stat.index < input_stat.len && isspace(input_stat.line[input_stat.index]))
+	while(input_stat.index < input_stat.len
+			&& isspace(input_stat.line[input_stat.index]))
 	{
 		input_stat.index++;
 		input_stat.curs_pos++;
 	}
-	while(input_stat.index < input_stat.len && !isspace(input_stat.line[input_stat.index]))
+	while(input_stat.index < input_stat.len
+			&& !isspace(input_stat.line[input_stat.index]))
 	{
 		input_stat.index++;
 		input_stat.curs_pos++;
