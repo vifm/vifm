@@ -1799,10 +1799,6 @@ exec_command(char* cmd, FileView *view, int type, void * ptr)
 		save_search_history(cmd);
 		return find_pattern(view, cmd, type == GET_BSEARCH_PATTERN);
 	}
-	else if (type == MENU_SEARCH)
-		return search_menu_list(view, cmd, ptr);
-	else if (type == MENU_COMMAND)
-		execute_menu_command(view, cmd, ptr);
 	return 0;
 }
 

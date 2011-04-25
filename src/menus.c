@@ -444,19 +444,19 @@ search_menu_list(FileView *view, char * pattern, menu_info *m)
 {
 	int save = 0;
 
-	if (pattern)
+	if(pattern)
 		m->regexp = strdup(pattern);
 
-	switch (m->match_dir)
+	switch(m->match_dir)
 	{
 		case NONE:
-				save = search_menu_forwards(view, m, m->pos);
+			save = search_menu_forwards(view, m, m->pos);
 			break;
 		case UP:
-				save = search_menu_backwards(view, m, m->pos - 1);
+			save = search_menu_backwards(view, m, m->pos - 1);
 			break;
 		case DOWN:
-				save = search_menu_forwards(view, m, m->pos + 1);
+			save = search_menu_forwards(view, m, m->pos + 1);
 			break;
 		default:
 		break;

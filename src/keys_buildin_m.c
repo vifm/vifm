@@ -217,6 +217,7 @@ keys_slash(struct key_info key_info, struct keys_info *keys_info)
 	last_search_backward = 0;
 	menu->match_dir = NONE;
 	free(menu->regexp);
+	menu->regexp = NULL;
 	enter_cmdline_mode(MENU_SEARCH_FORWARD_SUBMODE, L"", menu);
 }
 
