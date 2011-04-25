@@ -68,6 +68,20 @@ init_window(FileView *win)
 }
 
 static void
+init_window_history(FileView *win)
+{
+	if(cfg.history_len == 0)
+		return;
+
+	win->history = malloc(sizeof(history_t)*cfg.history_len);
+	while(win->history == NULL)
+	{
+		cfg.history_len /= 2;
+		win->history = malloc(sizeof(history_t)*cfg.history_len);
+	}
+}
+
+static void
 load_initial_directory(const char *dir)
 {
 	snprintf(rwin.curr_dir, sizeof(rwin.curr_dir), "%s", dir);
@@ -122,10 +136,14 @@ main(int argc, char *argv[])
 	lwin.prev_invert = lwin.invert;
 	lwin.hide_dot = 1;
 	strncpy(lwin.regexp, "\\.o$", sizeof(lwin.regexp));
+	init_window_history(&lwin);
+
 	rwin.prev_invert = rwin.invert;
 	rwin.hide_dot = 1;
 	strncpy(rwin.regexp, "\\.o$", sizeof(rwin.regexp));
 	cfg.timer = 10;
+	init_window_history(&rwin);
+
 	init_status();
 
 	if (cfg.show_one_window)

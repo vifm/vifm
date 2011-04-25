@@ -682,8 +682,11 @@ save_view_history(FileView *view)
 {
 	int x;
 
+	if(cfg.history_len == 0)
+		return;
 	if(curr_stats.skip_history)
 		return;
+
 	if(view->history_num > 0
 			&& strcmp(view->history[view->history_pos].dir, view->curr_dir) == 0)
 	{

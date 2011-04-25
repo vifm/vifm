@@ -348,7 +348,7 @@ init_extended_keys(void)
 static void
 keys_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_view->list_pos = curr_view->list_pos - curr_view->window_rows;
+	curr_view->list_pos -= curr_view->window_rows;
 	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
@@ -384,7 +384,7 @@ keys_ctrl_e(struct key_info key_info, struct keys_info *keys_info)
 static void
 keys_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_view->list_pos = curr_view->list_pos + curr_view->window_rows;
+	curr_view->list_pos += curr_view->window_rows;
 	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 

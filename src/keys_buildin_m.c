@@ -24,7 +24,7 @@ static menu_info *menu;
 static int last_search_backward;
 
 static void init_extended_keys(void);
-static void leave_menu_mode(int save_msg);
+static void leave_menu_mode(void);
 static void keys_ctrl_b(struct key_info, struct keys_info *);
 static void keys_ctrl_c(struct key_info, struct keys_info *);
 static void keys_ctrl_f(struct key_info, struct keys_info *);
@@ -162,9 +162,9 @@ void
 execute_menu_command(FileView *view, char *command, menu_info *m)
 {
 	if(strncmp("quit", command, strlen(command)) == 0)
-		leave_menu_mode(0);
+		leave_menu_mode();
 	else if(strcmp("x", command) == 0)
-		leave_menu_mode(0);
+		leave_menu_mode();
 	else if(isdigit(*command))
 	{
 		clean_menu_position(m);
@@ -174,7 +174,7 @@ execute_menu_command(FileView *view, char *command, menu_info *m)
 }
 
 static void
-leave_menu_mode(int save_msg)
+leave_menu_mode(void)
 {
 	reset_popup_menu(menu);
 	*mode = NORMAL_MODE;
@@ -183,14 +183,15 @@ leave_menu_mode(int save_msg)
 static void
 keys_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
-	leave_menu_mode(0);
+	leave_menu_mode();
 }
 
 static void
 keys_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
-	moveto_menu_pos(view, menu->top - menu->win_rows + 2, menu);
+	menu->pos -= menu->win_rows - 3;
+	moveto_menu_pos(view, menu->pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -198,7 +199,7 @@ static void
 keys_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
-	menu->pos += menu->win_rows;
+	menu->pos += menu->win_rows - 3;
 	moveto_menu_pos(view, menu->pos, menu);
 	wrefresh(menu_win);
 }
@@ -207,7 +208,7 @@ static void
 keys_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 {
 	execute_menu_cb(curr_view, menu);
-	leave_menu_mode(0);
+	leave_menu_mode();
 }
 
 static void

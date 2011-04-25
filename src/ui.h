@@ -102,7 +102,7 @@ typedef struct _FileView
 
 	int history_num;
 	int history_pos;
-	history_t history[15];
+	history_t *history;
 }FileView;
 
 
