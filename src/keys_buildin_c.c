@@ -65,6 +65,7 @@ static void keys_ctrl_m(struct key_info, struct keys_info *);
 static void keys_ctrl_n(struct key_info, struct keys_info *);
 static void keys_ctrl_u(struct key_info, struct keys_info *);
 static void keys_meta_b(struct key_info, struct keys_info *);
+static void keys_meta_f(struct key_info, struct keys_info *);
 static void keys_left(struct key_info, struct keys_info *);
 static void keys_right(struct key_info, struct keys_info *);
 static void keys_home(struct key_info, struct keys_info *);
@@ -193,9 +194,11 @@ init_emacs_keys(void)
 	curr = add_keys(L"\x15", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_u;
 
-	/* meta b */
 	curr = add_keys(L"\x1b"L"b", CMDLINE_MODE);
 	curr->data.handler = keys_meta_b;
+
+	curr = add_keys(L"\x1b"L"f", CMDLINE_MODE);
+	curr->data.handler = keys_meta_f;
 }
 
 static int
@@ -576,6 +579,22 @@ keys_meta_b(struct key_info key_info, struct keys_info *keys_info)
 	{
 		input_stat.index--;
 		input_stat.curs_pos--;
+	}
+	wmove(status_bar, 0, input_stat.curs_pos);
+}
+
+static void
+keys_meta_f(struct key_info key_info, struct keys_info *keys_info)
+{
+	while(input_stat.index < input_stat.len && isspace(input_stat.line[input_stat.index]))
+	{
+		input_stat.index++;
+		input_stat.curs_pos++;
+	}
+	while(input_stat.index < input_stat.len && !isspace(input_stat.line[input_stat.index]))
+	{
+		input_stat.index++;
+		input_stat.curs_pos++;
 	}
 	wmove(status_bar, 0, input_stat.curs_pos);
 }
