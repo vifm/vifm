@@ -18,6 +18,7 @@ static int *mode;
 static int *mode_flags;
 static default_handler *def_handlers;
 
+static int execute_keys_general(const wchar_t *keys, int timed_out);
 static int execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info);
 static int execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
 		struct key_info *key_info, struct keys_info *keys_info);
@@ -60,9 +61,25 @@ set_def_handler(int mode, default_handler handler)
 int
 execute_keys(const wchar_t *keys)
 {
+	return execute_keys_general(keys, 0);
+}
+
+int execute_keys_timed_out(const wchar_t *keys)
+{
+	return execute_keys_general(keys, 1);
+}
+
+static int
+execute_keys_general(const wchar_t *keys, int timed_out)
+{
 	int result;
 	struct keys_info keys_info;
+
+	if(keys[0] == L'\0')
+		return KEYS_UNKNOWN;
+
 	init_keys_info(&keys_info);
+	keys_info.after_wait = timed_out;
 	result = execute_keys_inner(keys, &keys_info);
 	if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
 	{
@@ -141,7 +158,10 @@ execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
 		if(wait_point)
 		{
 			int with_input = (mode_flags[*mode] & MF_USES_INPUT);
-			return with_input ? KEYS_WAIT_SHORT : KEYS_WAIT;
+			if(!keys_info->after_wait)
+			{
+				return with_input ? KEYS_WAIT_SHORT : KEYS_WAIT;
+			}
 		}
 		else if(curr->conf.data.handler == NULL
 				|| curr->conf.followed != FOLLOWED_BY_NONE)
@@ -195,6 +215,7 @@ init_keys_info(struct keys_info *keys_info)
 	keys_info->selector = 0;
 	keys_info->count = 0;
 	keys_info->indexes = NULL;
+	keys_info->after_wait = 0;
 }
 
 static const wchar_t*

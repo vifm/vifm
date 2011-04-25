@@ -57,9 +57,10 @@ struct key_info
 
 struct keys_info
 {
-	int selector; /* selector passed */
-	int count;    /* count of selected items */
-	int *indexes; /* item indexes */
+	int selector;   /* selector passed */
+	int count;      /* count of selected items */
+	int *indexes;   /* item indexes */
+	int after_wait; /* after short timeout */
 };
 
 typedef void (*keys_handler)(struct key_info key_info,
@@ -87,6 +88,7 @@ typedef int (*default_handler)(wchar_t keys);
 void init_keys(int modes_count, int *key_mode, int *key_mode_flags);
 void set_def_handler(int mode, default_handler handler);
 int execute_keys(const wchar_t *keys);
+int execute_keys_timed_out(const wchar_t *keys);
 struct key_t* add_keys(const wchar_t *keys, int mode);
 int add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode);
 

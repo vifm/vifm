@@ -152,7 +152,7 @@ guess_char_width(char c)
 }
 
 size_t
-get_char_width(char* string)
+get_char_width(const char* string)
 {
 	if((string[0] & 0xe0) == 0xc0 && (string[1] & 0xc0) == 0x80)
 		return 2;
@@ -181,9 +181,8 @@ get_real_string_width(char *string, size_t max_len)
 	return width;
 }
 
-/* Returns length of utf8 */
 size_t
-get_utf8_string_length(char *string)
+get_utf8_string_length(const char *string)
 {
 	size_t length = 0;
 	while(*string != '\0')
@@ -193,6 +192,19 @@ get_utf8_string_length(char *string)
 		length++;
 	}
 	return length;
+}
+
+size_t
+get_utf8_overhead(const char *string)
+{
+	size_t overhead = 0;
+	while(*string != '\0')
+	{
+		size_t char_width = get_char_width(string);
+		string += char_width;
+		overhead += char_width - 1;
+	}
+	return overhead;
 }
 
 size_t

@@ -1648,7 +1648,7 @@ execute_user_command(FileView *view, cmd_t *cmd)
 
 	if(strchr(command_list[cmd->is_user].action, '%') != NULL)
 		expanded_com = expand_macros(view, command_list[cmd->is_user].action,
-		cmd->args, &use_menu, &split);
+				cmd->args, &use_menu, &split);
 	else
 		expanded_com = strdup(command_list[cmd->is_user].action);
 
@@ -1662,9 +1662,8 @@ execute_user_command(FileView *view, cmd_t *cmd)
 		cmd->background = 1;
 	}
 
-	if (use_menu)
+	if(use_menu)
 	{
-
 		show_user_menu(view, expanded_com);
 
 		if(!cmd->background)
@@ -1673,9 +1672,9 @@ execute_user_command(FileView *view, cmd_t *cmd)
 		return 0;
 	}
 
-	if (split)
+	if(split)
 	{
-		if (!cfg.use_screen)
+		if(!cfg.use_screen)
 		{
 			free(expanded_com);
 			return 0;
@@ -1684,10 +1683,9 @@ execute_user_command(FileView *view, cmd_t *cmd)
 		split_screen(view, expanded_com);
 		free(expanded_com);
 		return 0;
-
 	}
 
-	if(!strncmp(expanded_com, "filter ", 7))
+	if(strncmp(expanded_com, "filter ", 7) == 0)
 	{
 		view->invert = 1;
 		view->filename_filter = (char *)realloc(view->filename_filter,

@@ -73,6 +73,8 @@ command macros:
   %F all of the selected files in the other directory list.
   %d current directory name.
   %D other file list directory name.
+  %m show command output in a menu.
+  %s execute command in screen split.
 
 The command macros may be used in user commands.
 :com move mv %f %D - would set the :move command to move all of the files

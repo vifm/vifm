@@ -54,7 +54,7 @@ main_loop(void)
 
 	update_stat_window(curr_view);
 
-	if (curr_view->selected_files)
+	if(curr_view->selected_files)
 	{
 		char status_buf[64] = "";
 		snprintf(status_buf, sizeof(status_buf), "%d %s Selected",
@@ -84,7 +84,9 @@ main_loop(void)
 		}
 
 		if(ret == ERR && last_result == KEYS_WAIT_SHORT)
-			last_result = 0;
+		{
+			last_result = execute_keys_timed_out(buf);
+		}
 		else
 		{
 			if(ret != ERR)
@@ -94,9 +96,12 @@ main_loop(void)
 			{
 				if(ret != ERR)
 					update_input_bar(c);
+				if(last_result == KEYS_WAIT_SHORT)
+					wtimeout(curr_view->win, 0);
 				continue;
 			}
 		}
+		wtimeout(curr_view->win, KEYPRESS_TIMEOUT);
 		need_clear = 1;
 
 		if(need_clear == 1)

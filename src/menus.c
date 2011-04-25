@@ -48,32 +48,29 @@ show_progress(void)
 
 	pause++;
 
-	if ((pause % 1000) == 0)
-	{
-		pause = 1;
-
-		switch(count)
-		{
-			case 0:
-				status_bar_message("Loading Menu |");
-				break;
-			case 1:
-				status_bar_message("Loading Menu /");
-				break;
-			case 2:
-				status_bar_message("Loading Menu -");
-				break;
-			case 3:
-				status_bar_message("Loading Menu \\");
-				count = -1;
-				break;
-			default:
-				count = -1;
-				break;
-		}
-	}
-	else
+	if(pause % 1000 != 0)
 		return;
+
+	pause = 1;
+	switch(count)
+	{
+		case 0:
+			status_bar_message("Loading Menu |");
+			break;
+		case 1:
+			status_bar_message("Loading Menu /");
+			break;
+		case 2:
+			status_bar_message("Loading Menu -");
+			break;
+		case 3:
+			status_bar_message("Loading Menu \\");
+			count = -1;
+			break;
+		default:
+			count = -1;
+			break;
+	}
 
 	wrefresh(status_bar);
 
@@ -98,12 +95,12 @@ clean_menu_position(menu_info *m)
 
 	getmaxyx(menu_win, y, x);
 
+	x += get_utf8_overhead(m->data[m->pos]);
+
 	buf = (char *)malloc(x + 2);
 
-
-	if (m->data != NULL && m->data[m->pos] != NULL) {
+	if(m->data != NULL && m->data[m->pos] != NULL)
 		snprintf(buf, x, " %s", m->data[m->pos]);
-	}
 
 	for (z = strlen(buf); z < x; z++)
 		buf[z] = ' ';
@@ -230,7 +227,6 @@ moveto_menu_pos(FileView *view, int pos,  menu_info *m)
 
 	getmaxyx(menu_win, y, x);
 
-
 	if(pos < 1)
 		pos = 0;
 
@@ -239,6 +235,8 @@ moveto_menu_pos(FileView *view, int pos,  menu_info *m)
 
 	if(pos < 0)
 		return;
+
+	x += get_utf8_overhead(m->data[pos]);
 
 	if((m->top <=  pos) && (pos <= (m->top + m->win_rows +1)))
 	{
@@ -262,15 +260,13 @@ moveto_menu_pos(FileView *view, int pos,  menu_info *m)
 	if(redraw)
 		draw_menu(view, m);
 
-
 	buf = (char *)malloc((x + 2));
-	if (!buf)
+	if(buf == NULL)
 		return;
-	if (m->data != NULL && m->data[pos] != NULL) {
+	if(m->data != NULL && m->data[pos] != NULL)
 		snprintf(buf, x, " %s", m->data[pos]);
-	}
 
-	for (z = strlen(buf); z < x; z++)
+	for(z = strlen(buf); z < x; z++)
 		buf[z] = ' ';
 
 	buf[x] = ' ';

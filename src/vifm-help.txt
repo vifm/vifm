@@ -129,6 +129,8 @@ command macros
 	%F all of the selected files in the other directory list.
 	%d current directory name
 	%D other file list directory name
+    %m show command output in a menu
+    %s execute command in screen split
 	:com mv mv %f %D
 		would set the mv command to mv all of the selected files to the other
 		directory.

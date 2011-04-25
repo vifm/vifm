@@ -17,7 +17,7 @@ static int mode = NORMAL_MODE;
 
 static int mode_flags[] = {
     MF_USES_REGS | MF_USES_COUNT,
-    0,
+    MF_USES_INPUT,
     MF_USES_COUNT,
     MF_USES_COUNT
 };

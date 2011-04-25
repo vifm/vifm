@@ -114,6 +114,7 @@ init_buildin_c_keys(int *key_mode)
 	/* escape */
 	curr = add_keys(L"\x1b", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_c;
+	curr->type = BUILDIN_WAIT_POINT;
 
 	/* ascii Delete */
 	curr = add_keys(L"\x7f", CMDLINE_MODE);
