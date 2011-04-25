@@ -1765,46 +1765,45 @@ execute_command(FileView *view, char *command)
 		return 1;
 
 	if(cmd.builtin > -1)
-		execute_builtin_command(view, &cmd);
+		result = execute_builtin_command(view, &cmd);
 	else
-		execute_user_command(view, &cmd);
+		result = execute_user_command(view, &cmd);
 
 	free(cmd.cmd_name);
 	free(cmd.args);
 
-	return 0;
+	return result;
 }
 
-void
+int
 exec_command(char* cmd, FileView *view, int type, void * ptr)
 {
 	if(cmd == NULL)
 	{
 		if (type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN
 				|| type == MAPPED_SEARCH)
-			find_pattern(view, view->regexp, type == GET_BSEARCH_PATTERN);
-		return;
+			return find_pattern(view, view->regexp, type == GET_BSEARCH_PATTERN);
+		return 0;
 	}
 
 	if(type == GET_COMMAND || type == MAPPED_COMMAND
 			|| type == GET_VISUAL_COMMAND)
 	{
 		save_command_history(cmd);
-		execute_command(view, cmd);
-		return;
+		return execute_command(view, cmd);
 	}
 	else if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN
 			|| type == MAPPED_SEARCH)
 	{
 		strncpy(view->regexp, cmd, sizeof(view->regexp));
 		save_search_history(cmd);
-		find_pattern(view, cmd, type == GET_BSEARCH_PATTERN);
-		return;
+		return find_pattern(view, cmd, type == GET_BSEARCH_PATTERN);
 	}
 	else if (type == MENU_SEARCH)
-		search_menu_list(view, cmd, ptr);
+		return search_menu_list(view, cmd, ptr);
 	else if (type == MENU_COMMAND)
 		execute_menu_command(view, cmd, ptr);
+	return 0;
 }
 
 void
