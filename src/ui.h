@@ -87,7 +87,6 @@ typedef struct _FileView
 	char sort_type;
 	int hide_dot;
 	int prev_invert;
-	int history_num;
 	bool invert; /* whether to invert the filename pattern */
 	int curr_line; /* current line # of the window  */
 	int top_line; /* # of the list position that is the top line in window */
@@ -99,8 +98,11 @@ typedef struct _FileView
 	int selected_files;
 	int color_scheme; /* current color scheme being used */
 	dir_entry_t *dir_entry;
-	history_t history[15];
 	char ** selected_filelist;
+
+	int history_num;
+	int history_pos;
+	history_t history[15];
 }FileView;
 
 

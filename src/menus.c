@@ -645,24 +645,19 @@ execute_menu_cb(FileView *view, menu_info *m)
 	switch(m->type)
 	{
 		case APROPOS:
-				execute_apropos_cb(view, m);
+			execute_apropos_cb(view, m);
 			break;
 		case BOOKMARK:
-				move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
+			move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
 			break;
 		case COMMAND:
-				execute_command(view, command_list[m->pos].name);
+			execute_command(view, command_list[m->pos].name);
 			break;
 		case FILETYPE:
-				execute_filetype_cb(view, m);
+			execute_filetype_cb(view, m);
 			break;
 		case HISTORY:
-			{
-				change_directory(view, view->history[m->len - 1 - m->pos].dir);
-				load_dir_list(view, 1);
-				moveto_list_pos(view, find_file_pos_in_list(view,
-							view->history[m->len - 1 - m->pos].file));
-			}
+			goto_history_pos(view, m->len - 1 - m->pos);
 			break;
 		case JOBS:
 			execute_jobs_cb(view, m);
@@ -1040,13 +1035,13 @@ show_history_menu(FileView *view)
 	int x;
 	static menu_info m;
 
-	if (view->history_num < 1)
+	if(view->history_num < 1)
 		return;
 
 	m.top = 0;
 	m.current = 1;
 	m.len = view->history_num + 1;
-	m.pos = 0;
+	m.pos = view->history_num - 1 - view->history_pos;
 	m.win_rows = 0;
 	m.type = HISTORY;
 	m.matching_entries = 0;
@@ -1081,7 +1076,7 @@ show_history_menu(FileView *view)
 	}
 	setup_menu(view);
 	draw_menu(view, &m);
-	moveto_menu_pos(view, 0, &m);
+	moveto_menu_pos(view, m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 

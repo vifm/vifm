@@ -643,9 +643,7 @@ moveto_list_pos(FileView *view, int pos)
 
 	if(curr_stats.view)
 		quick_view_file(view);
-
 }
-
 
 static int
 regexp_filter_match(FileView *view,  char *filename)
@@ -667,20 +665,41 @@ regexp_filter_match(FileView *view,  char *filename)
 }
 
 void
+goto_history_pos(FileView *view, int pos)
+{
+	curr_stats.skip_history = 1;
+	change_directory(view, view->history[pos].dir);
+	curr_stats.skip_history = 0;
+
+	load_dir_list(view, 1);
+	moveto_list_pos(view, find_file_pos_in_list(view, view->history[pos].file));
+
+	view->history_pos = pos;
+}
+
+static void
 save_view_history(FileView *view)
 {
 	int x;
 
-	x = view->history_num;
-	while(x >= 0 && view->history[x].dir[0] == '\0')
-		x--;
-	if(x != -1 && strcmp(view->history[x].dir, view->curr_dir) == 0)
+	if(curr_stats.skip_history)
+		return;
+	if(view->history_num > 0
+			&& strcmp(view->history[view->history_pos].dir, view->curr_dir) == 0)
 	{
+		x = view->history_pos;
 		snprintf(view->history[x].file, sizeof(view->history[x].file),
 				"%s", view->dir_entry[view->list_pos].name);
 		return;
 	}
 
+	if(view->history_num > 0 && view->history_pos != view->history_num - 1)
+	{
+		x = view->history_num - 1;
+		while(x > view->history_pos)
+			view->history[x--].dir[0] = '\0';
+		view->history_num = view->history_pos + 1;
+	}
 	x = view->history_num;
 
 	if(x == cfg.history_len)
@@ -698,6 +717,7 @@ save_view_history(FileView *view)
 	snprintf(view->history[x].file, sizeof(view->history[x].file), "%s",
 			view->dir_entry[view->list_pos].name);
 	view->history_num++;
+	view->history_pos = view->history_num - 1;
 }
 
 static void
@@ -1398,6 +1418,8 @@ reload_window(FileView *view)
 {
 	struct stat s;
 
+	curr_stats.skip_history = 1;
+
 	stat(view->curr_dir, &s);
 	if(view != curr_view)
 		change_directory(view, view->curr_dir);
@@ -1413,6 +1435,8 @@ reload_window(FileView *view)
 	}
 	else
 		moveto_list_pos(view, view->list_pos);
+
+	curr_stats.skip_history = 0;
 }
 
 /*

@@ -37,6 +37,7 @@ static void keys_ctrl_g(struct key_info, struct keys_info *);
 static void keys_tab(struct key_info, struct keys_info *);
 static void keys_ctrl_l(struct key_info, struct keys_info *);
 static void keys_return(struct key_info, struct keys_info *);
+static void keys_ctrl_o(struct key_info, struct keys_info *);
 static void keys_ctrl_u(struct key_info, struct keys_info *);
 static void keys_ctrl_wl(struct key_info, struct keys_info *);
 static void keys_ctrl_wh(struct key_info, struct keys_info *);
@@ -122,6 +123,9 @@ init_buildin_n_keys(int *key_mode)
 
 	curr = add_keys(L"\x0d", NORMAL_MODE);
 	curr->data.handler = keys_return;
+
+	curr = add_keys(L"\x0f", NORMAL_MODE);
+	curr->data.handler = keys_ctrl_o;
 
 	curr = add_keys(L"\x15", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_u;
@@ -409,6 +413,15 @@ static void
 keys_return(struct key_info key_info, struct keys_info *keys_info)
 {
 	handle_file(curr_view, 0);
+}
+
+static void
+keys_ctrl_o(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(curr_view->history_pos == 0)
+		return;
+
+	goto_history_pos(curr_view, curr_view->history_pos - 1);
 }
 
 static void

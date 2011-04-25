@@ -1182,35 +1182,34 @@ put_files_from_register(FileView *view, int name)
 	int x;
 	int i = -1;
 	int y = 0;
-	char buf[PATH_MAX + (NAME_MAX * 2) + 4];
+	char buf[PATH_MAX + NAME_MAX*2 + 4];
 
-	for (x = 0; x < NUM_REGISTERS; x++)
+	for(x = 0; x < NUM_REGISTERS; x++)
 	{
-		if (reg[x].name == name)
+		if(reg[x].name == name)
 		{
 			i = x;
 			break;
 		}
 	}
 
-	if ((i < 0) || (reg[i].num_files < 1))
+	if(i < 0 || reg[i].num_files < 1)
 	{
 		status_bar_message("Register is empty");
 		wrefresh(status_bar);
 		return 1;
 	}
 
-	for (x = 0; x < reg[i].num_files; x++)
+	for(x = 0; x < reg[i].num_files; x++)
 	{
 		char *temp = NULL;
 		char *temp1 = NULL;
 		snprintf(buf, sizeof(buf), "%s", reg[i].files[x]);
 		temp = escape_filename(buf, strlen(buf), 1);
 		temp1 = escape_filename(view->curr_dir, strlen(view->curr_dir), 1);
-		if (!access(buf, F_OK))
+		if(access(buf, F_OK) == 0)
 		{
-
-			if (!strcmp(buf, cfg.trash_dir))
+			if(strcmp(buf, cfg.trash_dir) == 0)
 				snprintf(buf, sizeof(buf), "mv %s %s", temp, temp1);
 			else
 				snprintf(buf, sizeof(buf), "cp -pR %s %s", temp, temp1);
@@ -1222,7 +1221,7 @@ put_files_from_register(FileView *view, int name)
 			snprintf(buf, sizeof(buf), "mv \"%s/%s\" %s",
 					cfg.trash_dir, reg[i].files[x], view->curr_dir);
 					*/
-			if ( background_and_wait_for_errors(buf))
+			if(background_and_wait_for_errors(buf) == 0)
 				y++;
 		}
 		free(temp);
@@ -1231,10 +1230,9 @@ put_files_from_register(FileView *view, int name)
 
 	clear_register(name);
 
-	if (y)
+	if(y > 0)
 	{
-		snprintf(buf, sizeof(buf), " %d %s inserted", y,
-				y==1 ? "file" : "files");
+		snprintf(buf, sizeof(buf), " %d %s inserted", y, y==1 ? "file" : "files");
 
 		load_dir_list(view, 0);
 		moveto_list_pos(view, view->curr_line);

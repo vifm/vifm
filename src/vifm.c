@@ -62,6 +62,7 @@ init_window(FileView *win)
 	win->list_pos = 0;
 	win->selected_filelist = NULL;
 	win->history_num = 0;
+	win->history_pos = 0;
 	win->invert = 0;
 	win->color_scheme = 0;
 }
@@ -200,7 +201,7 @@ main(int argc, char *argv[])
 
 	load_dir_list(&rwin, 0);
 
-	if (rwin_args)
+	if(rwin_args)
 	{
 		change_directory(&rwin, rwin.curr_dir);
 		load_dir_list(&rwin, 0);
@@ -214,7 +215,7 @@ main(int argc, char *argv[])
 
 	load_dir_list(&lwin, 0);
 
-	if (lwin_args)
+	if(lwin_args)
 	{
 		change_directory(&lwin, lwin.curr_dir);
 		load_dir_list(&lwin, 0);

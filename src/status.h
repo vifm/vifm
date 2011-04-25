@@ -42,6 +42,7 @@ typedef struct
 	int view;
 	int show_full;
 	int setting_change;
+	int skip_history;
 }Status;
 
 extern Status curr_stats;

@@ -35,6 +35,7 @@ enum {
 void friendly_size_notation(int num, int str_size, char *str);
 void quick_view_file(FileView * view);
 void clean_selected_files(FileView *view);
+void goto_history_pos(FileView *view, int pos);
 void change_directory(FileView *view, const char *directory);
 void load_dir_list(FileView *view, int reload);
 void draw_dir_list(FileView *view, int top, int pos);
