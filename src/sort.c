@@ -219,20 +219,17 @@ sort_key_cb(FileView *view)
 	moveto_list_pos(view, find_file_pos_in_list(view, filename));
 }
 
-
 void
 show_sort_menu(FileView *view)
 {
 	int x, y;
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
-	mvwaddstr(view->win, view->curr_line, 0, "	");
 	curs_set(0);
 	update_all_windows();
 	//doupdate();
 	werase(sort_win);
 	box(sort_win, ACS_VLINE, ACS_HLINE);
-
 
 	getmaxyx(sort_win, y, x);
 	curs_set(1);
