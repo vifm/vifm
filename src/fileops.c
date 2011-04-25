@@ -24,6 +24,7 @@
 #include<sys/stat.h> /* stat */
 #include<stdio.h>
 #include<string.h>
+#include<fcntl.h>
 
 #include"background.h"
 #include"color_scheme.h"
@@ -74,6 +75,74 @@ my_system(char *command)
 			return status;
 
 	}while(1);
+}
+
+int
+system_and_wait_for_errors(char *cmd)
+{
+	pid_t pid;
+	int error_pipe[2];
+	int result = 0;
+
+	if(pipe(error_pipe) != 0)
+	{
+		show_error_msg(" File pipe error", "Error creating pipe");
+		return -1;
+	}
+
+	if((pid = fork()) == -1)
+		return -1;
+
+	if(pid == 0)
+	{
+		char *args[4];
+		int nullfd;
+
+		close(2);             /* Close stderr */
+		dup(error_pipe[1]);   /* Redirect stderr to write end of pipe. */
+		close(error_pipe[0]); /* Close read end of pipe. */
+		close(0);             /* Close stdin */
+		close(1);             /* Close stdout */
+
+		/* Send stdout, stdin to /dev/null */
+		if((nullfd = open("/dev/null", O_RDONLY)) != -1)
+		{
+			dup2(nullfd, 0);
+			dup2(nullfd, 1);
+		}
+
+		args[0] = "sh";
+		args[1] = "-c";
+		args[2] = cmd;
+		args[3] = NULL;
+
+		execvp(args[0], args);
+		exit(-1);
+	}
+	else
+	{
+		char buf[80*10];
+		char linebuf[80];
+		int nread = 0;
+
+		close(error_pipe[1]); /* Close write end of pipe. */
+
+		buf[0] = '\0';
+		while((nread = read(error_pipe[0], linebuf, sizeof(linebuf) - 1)) > 0)
+		{
+			result = -1;
+			linebuf[nread + 1] = '\0';
+			if(nread == 1 && linebuf[0] == '\n')
+				continue;
+			strcat(buf, linebuf);
+		}
+		close(error_pipe[0]);
+
+		if(result != 0)
+			show_error_msg("Background Process Error", buf);
+	}
+
+	return result;
 }
 
 static int
@@ -205,7 +274,6 @@ check_link_is_dir(FileView *view, int pos)
 		if((s.st_mode & S_IFMT) == S_IFDIR)
 			return 1;
 	}
-
 
 	return 0;
 }
@@ -669,7 +737,7 @@ file_chmod(FileView *view, char *path, char *mode, int recurse_dirs)
   char cmd[PATH_MAX + 128] = " ";
   char *filename = escape_filename(path, strlen(path), 1);
 
-	if (recurse_dirs)
+	if(recurse_dirs)
 		snprintf(cmd, sizeof(cmd), "chmod -R %s %s", mode, filename);
 	else
 		snprintf(cmd, sizeof(cmd), "chmod %s %s", mode, filename);
@@ -1174,6 +1242,31 @@ rename_file(FileView *view)
 {
 	char *filename = get_current_file_name(curr_view);
 	enter_prompt_mode(L"New name: ", filename, rename_file_cb);
+}
+
+static void
+change_owner_cb(const char *new_owner)
+{
+	char *filename;
+	char command[1024];
+	char *escaped;
+
+	filename = get_current_file_name(curr_view);
+	escaped = escape_filename(filename, strlen(filename), 0);
+	snprintf(command, sizeof(command), "chown -fR %s %s", new_owner, escaped);
+	free(escaped);
+
+	if(system_and_wait_for_errors(command) != 0)
+		return;
+
+	load_dir_list(curr_view, 1);
+	moveto_list_pos(curr_view, curr_view->list_pos);
+}
+
+void
+change_owner(FileView *view)
+{
+	enter_prompt_mode(L"New owner: ", "", change_owner_cb);
 }
 
 int

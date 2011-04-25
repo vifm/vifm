@@ -152,9 +152,9 @@ keys_j(struct key_info key_info, struct keys_info *keys_info)
 		key_info.count = 1;
 
 	mvwaddch(sort_win, curr, col, ' ');
-	curr++;
+	curr += key_info.count;
 	if(curr > bottom)
-		curr--;
+		curr = bottom;
 
 	mvwaddch(sort_win, curr, col, '*');
 	wmove(sort_win, curr, col);
@@ -168,9 +168,9 @@ keys_k(struct key_info key_info, struct keys_info *keys_info)
 		key_info.count = 1;
 
 	mvwaddch(sort_win, curr, col, ' ');
-	curr--;
+	curr -= key_info.count;
 	if(curr < top)
-		curr++;
+		curr = top;
 
 	mvwaddch(sort_win, curr, col, '*');
 	wmove(sort_win, curr, col);

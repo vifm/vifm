@@ -59,6 +59,7 @@ static void keys_N(struct key_info, struct keys_info *);
 static void keys_V(struct key_info, struct keys_info *);
 static void keys_ZQ(struct key_info, struct keys_info *);
 static void keys_ZZ(struct key_info, struct keys_info *);
+static void keys_co(struct key_info, struct keys_info *);
 static void keys_cw(struct key_info, struct keys_info *);
 static void keys_dd(struct key_info, struct keys_info *);
 static void keys_d_selector(struct key_info, struct keys_info *);
@@ -220,6 +221,9 @@ init_buildin_n_keys(int *key_mode)
 
 	curr = add_keys(L"ZZ", NORMAL_MODE);
 	curr->data.handler = keys_ZZ;
+
+	curr = add_keys(L"co", NORMAL_MODE);
+	curr->data.handler = keys_co;
 
 	curr = add_keys(L"cw", NORMAL_MODE);
 	curr->data.handler = keys_cw;
@@ -638,6 +642,13 @@ keys_question(struct key_info key_info, struct keys_info *keys_info)
 {
 	last_search_backward = 1;
 	enter_cmdline_mode(SEARCH_BACKWARD_SUBMODE, L"", NULL);
+}
+
+/* Change owner. */
+static void
+keys_co(struct key_info key_info, struct keys_info *keys_info)
+{
+	change_owner(curr_view);
 }
 
 /* Change word (rename file). */
