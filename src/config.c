@@ -40,25 +40,32 @@
 #define MAX_LEN 1024
 #define DEFAULT_FILENAME_FILTER "\\.o$"
 
+Config cfg;
+
 void
 init_config(void)
 {
-	int i;
-
-	/* init bookmarks */
-	for (i = 0; i < NUM_BOOKMARKS; ++i)
-	{
-		bookmarks[i].directory = NULL;
-		bookmarks[i].file = NULL;
-	}
 	cfg.num_bookmarks = 0;
-	for ( i = 0; i < NUM_REGISTERS; ++i)
-	{
-		reg[i].name = valid_registers[i];
-		reg[i].num_files = 0;
-		reg[i].files = NULL;
-		reg[i].deleted = 0;
-	}
+	cfg.using_default_config = 0;
+	cfg.command_num = 0;
+	cfg.filetypes_num = 0;
+	cfg.nmapped_num = 0;
+	cfg.vim_filter = 0;
+	cfg.show_one_window = 0;
+
+	cfg.search_history_len = 15;
+	cfg.search_history_num = -1;
+	cfg.search_history = (char **)calloc(cfg.search_history_len, sizeof(char*));
+	cfg.cmd_history_len = 15;
+	cfg.cmd_history_num = -1;
+	cfg.cmd_history = (char **)calloc(cfg.cmd_history_len, sizeof(char *));
+	cfg.auto_execute = 0;
+	cfg.color_scheme_num = 0;
+	cfg.color_pairs_num = 0;
+
+	/* Maximum argument length to pass to the shell */
+	if (! (cfg.max_args = sysconf(_SC_ARG_MAX)) > 0)
+		cfg.max_args = 4096; /* POSIX MINIMUM */
 }
 
 
@@ -68,7 +75,7 @@ create_help_file(void)
 	char command[PATH_MAX];
 
 	snprintf(command, sizeof(command), CP_HELP);
-	fprintf(stderr, command);
+	fprintf(stderr, "%s", command);
 	file_exec(command);
 }
 
@@ -89,6 +96,7 @@ create_rc_file(void)
 static void
 load_default_configuration(void)
 {
+	cfg.using_default_config = 1;
 	cfg.use_trash = 1;
 	cfg.vi_command = strdup("vim");
 /*_SZ_BEGIN_*/
@@ -99,22 +107,22 @@ load_default_configuration(void)
 	cfg.use_vim_help = 0;
 	strncpy(lwin.regexp, "\\..~$", sizeof(lwin.regexp) -1);
 
- 	lwin.filename_filter = (char *)realloc(lwin.filename_filter, 
- 			strlen(DEFAULT_FILENAME_FILTER) +1);
- 	strcpy(lwin.filename_filter, DEFAULT_FILENAME_FILTER);
-  	lwin.prev_filter = (char *)realloc(lwin.prev_filter, 
- 			strlen(DEFAULT_FILENAME_FILTER) +1);
- 	strcpy(lwin.prev_filter, DEFAULT_FILENAME_FILTER);
+	lwin.filename_filter = (char *)realloc(lwin.filename_filter,
+			strlen(DEFAULT_FILENAME_FILTER) +1);
+	strcpy(lwin.filename_filter, DEFAULT_FILENAME_FILTER);
+	lwin.prev_filter = (char *)realloc(lwin.prev_filter,
+			strlen(DEFAULT_FILENAME_FILTER) +1);
+	strcpy(lwin.prev_filter, DEFAULT_FILENAME_FILTER);
 
 	lwin.invert = TRUE;
 	strncpy(rwin.regexp, "\\..~$", sizeof(rwin.regexp) -1);
 
-    rwin.filename_filter = (char *)realloc(rwin.filename_filter, 
- 			strlen(DEFAULT_FILENAME_FILTER) +1);
- 	strcpy(rwin.filename_filter, DEFAULT_FILENAME_FILTER);
- 	rwin.prev_filter = (char *)realloc(rwin.prev_filter, 
- 			strlen(DEFAULT_FILENAME_FILTER) +1);
- 	strcpy(rwin.prev_filter, DEFAULT_FILENAME_FILTER);
+	rwin.filename_filter = (char *)realloc(rwin.filename_filter,
+			strlen(DEFAULT_FILENAME_FILTER) +1);
+	strcpy(rwin.filename_filter, DEFAULT_FILENAME_FILTER);
+	rwin.prev_filter = (char *)realloc(rwin.prev_filter,
+			strlen(DEFAULT_FILENAME_FILTER) +1);
+	strcpy(rwin.prev_filter, DEFAULT_FILENAME_FILTER);
 
 	rwin.invert = TRUE;
 	lwin.sort_type = SORT_BY_NAME;
@@ -135,7 +143,7 @@ set_config_dir(void)
 		char rc_file[PATH_MAX];
 
 		snprintf(rc_file, sizeof(rc_file), "%s/.vifm/vifmrc", home_dir);
-		snprintf(help_file, sizeof(help_file), "%s/.vifm/vifm-help_txt", 
+		snprintf(help_file, sizeof(help_file), "%s/.vifm/vifm-help_txt",
 				home_dir);
 		snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s/.vifm", home_dir);
 		snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/.vifm/Trash", home_dir);
@@ -151,7 +159,6 @@ set_config_dir(void)
 			if((f = fopen(rc_file, "r")) == NULL)
 				create_rc_file();
 		}
-
 	}
 }
 
@@ -214,9 +221,7 @@ read_config_file(void)
 		{
 			if(!strcmp(line, "VI_COMMAND"))
 			{
-				if(cfg.vi_command != NULL)
-					free(cfg.vi_command);
-
+				free(cfg.vi_command);
 				cfg.vi_command = strdup(s1);
 				continue;
 			}
@@ -253,12 +258,12 @@ read_config_file(void)
 			}
 			if(!strcmp(line, "LWIN_FILTER"))
 			{
-				lwin.filename_filter = (char *)realloc(lwin.filename_filter, 
+				lwin.filename_filter = (char *)realloc(lwin.filename_filter,
 				strlen(s1) +1);
-				strncpy(lwin.filename_filter, s1, strlen(s1));
-				lwin.prev_filter = (char *)realloc(lwin.prev_filter, 
+				strcpy(lwin.filename_filter, s1);
+				lwin.prev_filter = (char *)realloc(lwin.prev_filter,
 					strlen(s1) +1);
-				strncpy(lwin.prev_filter, s1, strlen(s1));
+				strcpy(lwin.prev_filter, s1);
 				continue;
 			}
 			if(!strcmp(line, "LWIN_INVERT"))
@@ -268,12 +273,12 @@ read_config_file(void)
 			}
 			if(!strcmp(line, "RWIN_FILTER"))
 			{
-				rwin.filename_filter = (char *)realloc(rwin.filename_filter, 
+				rwin.filename_filter = (char *)realloc(rwin.filename_filter,
 				strlen(s1) +1);
-				strncpy(rwin.filename_filter, s1, strlen(s1));
-				rwin.prev_filter = (char *)realloc(rwin.prev_filter, 
+				strcpy(rwin.filename_filter, s1);
+				rwin.prev_filter = (char *)realloc(rwin.prev_filter,
 					strlen(s1) +1);
-				strncpy(rwin.prev_filter, s1, strlen(s1));
+				strcpy(rwin.prev_filter, s1);
 				continue;
 			}
 			if(!strcmp(line, "RWIN_INVERT"))
@@ -291,12 +296,15 @@ read_config_file(void)
 				cfg.auto_execute = atoi(s1);
 				continue;
 			}
+			if(!strcmp(line, "USE_IEC_PREFIXES"))
+			{
+				cfg.use_iec_prefixes = atoi(s1);
+				continue;
+			}
 /*_SZ_BEGIN_*/
 			if(!strcmp(line, "FUSE_HOME"))
 			{
-				if(cfg.fuse_home != NULL)
-					free(cfg.fuse_home);
-
+				free(cfg.fuse_home);
 				cfg.fuse_home = strdup(s1);
 				continue;
 			}
@@ -329,30 +337,29 @@ void
 write_config_file(void)
 {
 	FILE *fp;
-	int x;
+	int x = 0;
 	char config_file[PATH_MAX];
 	struct stat stat_buf;
+
+
+	/* None of the user settings have changed. */
+	if ((!curr_stats.setting_change) && (!cfg.using_default_config))
+		return;
 
 	curr_stats.getting_input = 1;
 
 	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
 
-	if(stat(config_file, &stat_buf) == 0) 
+	if(stat(config_file, &stat_buf) == 0)
 	{
-		if (stat_buf.st_mtime > curr_stats.config_file_mtime)
+		if ((stat_buf.st_mtime > curr_stats.config_file_mtime) &&
+				(!cfg.using_default_config))
 		{
 			if (! query_user_menu(" Vifmrc file has been modified ",
 				 "File has been modified would you still like to write to file? "))
-			{
-				write_color_scheme_file();
 				return;
-			}
 		}
 	}
-	/*
-	else
-		return;
-		*/
 
 	if((fp = fopen(config_file, "w")) == NULL)
 		return;
@@ -364,7 +371,7 @@ write_config_file(void)
 	fprintf(fp,
 		"# The '=' character is used to separate fields within a single line.\n");
 	fprintf(fp, "# Most settings are true = 1 or false = 0.\n");
-	
+
 	fprintf(fp, "\n# This is the actual command used to start vi.  The default is vi.\n");
 	fprintf(fp,
 			"# If you would like to use another vi clone such as Vim, Elvis, or Vile\n");
@@ -387,7 +394,7 @@ write_config_file(void)
 	fprintf(fp, "# If you would like to start vifm with only one window set this to 1\n");
 	fprintf(fp, "\nUSE_ONE_WINDOW=%d\n", curr_stats.number_of_windows == 1 ? 1 : 0);
 
-	fprintf(fp, "\n# Screen configuration.  If you would like to use vifm with\n"); 
+	fprintf(fp, "\n# Screen configuration.	If you would like to use vifm with\n");
 	fprintf(fp, "# the screen program set this to 1.\n");
 	fprintf(fp, "\nUSE_SCREEN=%d\n", cfg.use_screen);
 
@@ -405,10 +412,12 @@ write_config_file(void)
 	fprintf(fp, "# Sort by Mode = 4\n");
 	fprintf(fp, "# Sort by Owner ID = 5\n");
 	fprintf(fp, "# Sort by Owner Name = 6\n");
-	fprintf(fp, "# Sort by Size = 7\n");
-	fprintf(fp, "# Sort by Time Accessed =8\n");
-	fprintf(fp, "# Sort by Time Changed =9\n");
-	fprintf(fp, "# Sort by Time Modified =10\n");
+	fprintf(fp, "# Sort by Size (Ascending) = 7\n");
+	fprintf(fp, "# Sort by Size (Descending) = 8\n");
+
+	fprintf(fp, "# Sort by Time Accessed =9\n");
+	fprintf(fp, "# Sort by Time Changed =10\n");
+	fprintf(fp, "# Sort by Time Modified =11\n");
 	fprintf(fp, "# This can be set with the :sort command in vifm.\n");
 	fprintf(fp, "\nLEFT_WINDOW_SORT_TYPE=%d\n", lwin.sort_type);
 	fprintf(fp, "\nRIGHT_WINDOW_SORT_TYPE=%d\n", rwin.sort_type);
@@ -431,6 +440,9 @@ write_config_file(void)
 	fprintf(fp, "# press return on the file name set this to 1.\n");
 	fprintf(fp, "\nRUN_EXECUTABLE=%d\n", cfg.auto_execute);
 
+	fprintf(fp, "\n# Use KiB, MiB, ... instead of KB, MB, ...\n");
+	fprintf(fp, "\nUSE_IEC_PREFIXES=%d\n", cfg.use_iec_prefixes);
+
 	fprintf(fp, "\n# BOOKMARKS=mark=/full/directory/path=filename\n\n");
 	for(x = 0; x < NUM_BOOKMARKS; x++)
 	{
@@ -452,7 +464,7 @@ write_config_file(void)
 	fprintf(fp, "# %%m run the command in a menu window\n\n");
 	for(x = 0; x < cfg.command_num; x++)
 	{
-		fprintf(fp, "COMMAND=%s=%s\n", command_list[x].name, 
+		fprintf(fp, "COMMAND=%s=%s\n", command_list[x].name,
 				command_list[x].action);
 	}
 
@@ -470,7 +482,7 @@ write_config_file(void)
 	}
 
 /*_SZ_BEGIN_*/
-	fprintf(fp, "\n# For automated FUSE mounts, you must register an extension with FILETYPE=..\n"); 
+	fprintf(fp, "\n# For automated FUSE mounts, you must register an extension with FILETYPE=..\n");
 	fprintf(fp, "# in the following format:\n");
 	fprintf(fp, "# FILETYPE=description=extensions=FUSE_MOUNT|some_mount_command using %%SOURCE_FILE and %%DESTINATION_DIR variables\n");
 	fprintf(fp, "# %%SOURCE_FILE and %%DESTINATION_DIR are filled in by vifm at runtime.\n");
@@ -483,7 +495,7 @@ write_config_file(void)
 
 	fclose(fp);
 
-	write_color_scheme_file();
-
 	curr_stats.getting_input = 0;
 }
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

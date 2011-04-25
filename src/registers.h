@@ -19,7 +19,7 @@
 #ifndef __REGISTERS_H_
 #define __REGISTERS_H_
 
-#define NUM_REGISTERS 26
+#define NUM_REGISTERS 27
 
 typedef struct _Registers
 {
@@ -33,10 +33,12 @@ typedef struct _Registers
 registers_t reg[NUM_REGISTERS];
 extern char valid_registers[];
 
-
+void init_registers(void);
 int is_valid_register(int key);
 void load_register(int reg, char *file);
 void append_to_register(int reg, char *file);
 void clear_register(int reg);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

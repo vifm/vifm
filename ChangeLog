@@ -1,4 +1,8 @@
 0.4 to 0.5
+	
+	Changed the file size to a human friendly notation.
+
+	Added ascending and descending sort types.
 
 	Changed the way symbolic directories are handled.
 
@@ -6,7 +10,7 @@
 
 	Fixed transparency in colorschemes.
 
-	Changed writing to vifmrc and colorschemes file to query user if
+	Changed writing to vifmrc file to query user if
 	they would like to overwrite a file that has been modified.
 
 	Added filetype settings for mounting files with fuse-zip.

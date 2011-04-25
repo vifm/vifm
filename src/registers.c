@@ -23,10 +23,23 @@
 #include"registers.h"
 #include"utils.h"
 
-char valid_registers[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
+char valid_registers[] = {'"', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
-'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 
+'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+
+void
+init_registers(void)
+{
+	int i;
+	for (i = 0; i < NUM_REGISTERS; i++)
+	{
+		reg[i].name = valid_registers[i];
+		reg[i].num_files = 0;
+		reg[i].files = NULL;
+		reg[i].deleted = 0;
+	}
+}
 
 int
 is_valid_register(int key)
@@ -92,10 +105,12 @@ clear_register(int key)
 			while (y)
 			{
 				y--;
-				my_free(reg[i].files[y]);
+				free(reg[i].files[y]);
 			}
 			reg[i].num_files = 0;
 			break;
 		}
 	}
 }
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

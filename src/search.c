@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#if(defined(BSD) && (BSD>=199103)) 
+#if(defined(BSD) && (BSD>=199103))
 	#include<sys/types.h> /* required for regex.h on FreeBSD 4.2 */
 #endif
 #include<sys/types.h>
@@ -25,7 +25,6 @@
 #include<regex.h>
 
 #include"filelist.h"
-#include"keys.h"
 #include"ui.h"
 
 enum
@@ -40,7 +39,7 @@ find_next_pattern_match(FileView *view, int start, int direction)
 	int found = 0;
 	int x;
 
-	if(direction == 	PREVIOUS)
+	if(direction == PREVIOUS)
 	{
 		for(x = start -1; x > 0; x--)
 		{
@@ -74,7 +73,6 @@ find_previous_pattern(FileView *view)
 		moveto_list_pos(view, view->list_pos);
 	else if(find_next_pattern_match(view, view->list_rows, PREVIOUS))
 		moveto_list_pos(view, view->list_pos);
-
 }
 
 void
@@ -87,7 +85,7 @@ find_next_pattern(FileView *view)
 }
 
 int
-find_pattern(FileView *view, char *pattern)
+find_pattern(FileView *view, char *pattern, int backward)
 {
 	int found = 0;
 	regex_t re;
@@ -125,7 +123,16 @@ find_pattern(FileView *view, char *pattern)
 	if(found)
 	{
 		draw_dir_list(view, view->top_line, view->curr_line);
-		moveto_list_pos(view, first_match_pos);
+		if(backward)
+		{
+			view->list_pos++;
+			find_previous_pattern(view);
+		}
+		else
+		{
+			view->list_pos--;
+			find_next_pattern(view);
+		}
 		return 0;
 	}
 	else
@@ -138,4 +145,4 @@ find_pattern(FileView *view, char *pattern)
 	}
 }
 
-
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

@@ -21,6 +21,43 @@
 
 #include "ui.h"
 
+enum {
+	APROPOS,
+	BOOKMARK,
+	COMMAND,
+	FILETYPE,
+	HISTORY,
+	JOBS,
+	LOCATE,
+	REGISTER,
+	USER,
+	VIFM
+};
+
+enum {
+	NONE,
+	UP,
+	DOWN
+};
+
+typedef struct menu_info
+{
+	int top;
+	int current;
+	int len;
+	int pos;
+	int win_rows;
+	int type;
+	int match_dir;
+	int matching_entries;
+	char *regexp;
+	char *title;
+	char *args;
+	char **data;
+	/* For user menus only */
+	char *get_info_script; /* program + args to fill in menu. */
+}menu_info;
+
 void show_bookmarks_menu(FileView *view);
 void show_commands_menu(FileView *view);
 void show_history_menu(FileView *view);
@@ -29,14 +66,21 @@ void show_filetypes_menu(FileView *view);
 void show_jobs_menu(FileView *view);
 void show_locate_menu(FileView *view, char *args);
 void show_apropos_menu(FileView *view, char *args);
-void show_user_menu(FileView *view, char *command); 
+void show_user_menu(FileView *view, char *command);
 void show_register_menu(FileView *view);
-void reset_popup_menu(void);
+void reset_popup_menu(menu_info *m);
 void setup_menu(FileView *view);
 void show_error_msg(char * title, char *message);
-int search_menu_list(FileView *view, char * command, void * ptr);
-int execute_menu_command(FileView *view, char * command, void * ptr);
+int search_menu_list(FileView *view, char *command, menu_info *ptr);
 int query_user_menu(char *title, char *message);
-
+void clean_menu_position(menu_info *m);
+void moveto_menu_pos(FileView *view, int pos, menu_info *m);
+void redraw_menu(FileView *view, menu_info *m);
+void draw_menu(FileView *view,  menu_info *m);
+void execute_menu_cb(FileView *view, menu_info *m);
+void reload_command_menu_list(menu_info *m);
+void reload_bookmarks_menu_list(menu_info *m);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

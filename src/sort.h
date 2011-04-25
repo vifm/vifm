@@ -16,7 +16,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include "ui.h"
+#ifndef __SORT_H__
+#define __SORT_H__
 
-void show_sort_menu(FileView *view);
-int sort_dir_list(const void *one, const void *tow);
+int sort_dir_list(const void *one, const void *two);
+
+#endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

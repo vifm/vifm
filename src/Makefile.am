@@ -22,14 +22,20 @@ vifm_SOURCES = \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
 	keys.c keys.h \
+	keys_buildin_c.c keys_buildin_c.h \
+	keys_buildin_m.c keys_buildin_m.h \
+	keys_buildin_n.c keys_buildin_n.h \
+	keys_buildin_s.c keys_buildin_s.h \
+	keys_buildin_v.c keys_buildin_v.h \
+	main_loop.c main_loop.h \
 	menus.c menus.h \
+	modes.c modes.h \
 	registers.c registers.h \
-	rline.c rline.h \
 	search.c search.h \
 	signals.c signals.h \
+	status.c status.h \
 	sort.c sort.h\
 	ui.c ui.h \
-	utils.c utils.h \
-	visual.c visual.h
+	utils.c utils.h
 
-
+# vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :

@@ -23,11 +23,20 @@
 #include "bookmarks.h"
 #include "config.h"
 #include "filelist.h"
-#include "keys.h"
 #include "status.h"
 #include "ui.h"
 #include "utils.h"
 
+void
+init_bookmarks(void)
+{
+	int i;
+	for (i = 0; i < NUM_BOOKMARKS; ++i)
+	{
+		bookmarks[i].directory = NULL;
+		bookmarks[i].file = NULL;
+	}
+}
 
 /*
  * transform a mark to an index
@@ -83,8 +92,9 @@ is_bookmark(const int x)
 void
 silent_remove_bookmark(const int x)
 {
-	my_free(bookmarks[x].directory);
-	my_free(bookmarks[x].file);
+	curr_stats.setting_change = 1;
+	free(bookmarks[x].directory);
+	free(bookmarks[x].file);
 	bookmarks[x].directory = NULL;
 	bookmarks[x].file = NULL;
 	/* decrease number of active bookmarks */
@@ -116,7 +126,7 @@ add_bookmark(const char mark, const char *directory, const char *file)
 
 	x = mark2index(mark);
 
-	/* The mark is already being used.  Free pointers first! */
+	/* The mark is already being used.	Free pointers first! */
 	if (is_bookmark(x))
 		silent_remove_bookmark(x);
 
@@ -124,6 +134,7 @@ add_bookmark(const char mark, const char *directory, const char *file)
 	bookmarks[x].file = strdup(file);
 	/* increase number of active bookmarks */
 	cfg.num_bookmarks++;
+	curr_stats.setting_change = 1;
 }
 
 
@@ -172,19 +183,8 @@ check_mark_directory(FileView *view, char mark)
 }
 
 int
-get_bookmark(FileView *view)
+get_bookmark(FileView *view, char key)
 {
-	int key;
-
-	wtimeout(curr_view->win, -1);
-
-	key = wgetch(view->win);
-
-	wtimeout(curr_view->win, 1000);
-
-	if (key == ERR)
-		return 0;
-
 	switch(key)
 	{
 		case '\'':
@@ -206,3 +206,5 @@ get_bookmark(FileView *view)
 	}
 	return 0;
 }
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

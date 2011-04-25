@@ -16,7 +16,21 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifndef __COMMANDS_H__
+#define __COMMANDS_H__
+
 #include "ui.h"
+
+enum {
+	CHANGE_WINDOWS,
+	GET_COMMAND,
+	GET_BOOKMARK,
+	GET_FSEARCH_PATTERN,
+	GET_BSEARCH_PATTERN,
+	GET_VISUAL_COMMAND,
+	MAPPED_COMMAND,
+	MAPPED_SEARCH
+};
 
 typedef struct
 {
@@ -28,7 +42,7 @@ extern char *reserved_commands[];
 
 command_t *command_list;
 
-int get_command(FileView *view, int type, void *ptr);
+int exec_command(char* cmd, FileView *view, int type, void * ptr);
 void shellout(char *command, int pause);
 void add_command(char *name, char *action);
 int execute_command(FileView *view, char *action);
@@ -38,3 +52,11 @@ int command_is_reserved(char *command);
 char * command_completion(char *str);
 char * expand_macros(FileView *view, char *command, char *args, int *menu, int *split);
 void remove_command(char *name);
+void comm_quit(void);
+void comm_only(void);
+void comm_split(void);
+
+
+#endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

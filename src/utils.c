@@ -33,14 +33,6 @@
 struct Fuse_List *fuse_mounts = NULL;
 /*_SZ_END_*/
 
-/* Checks for a NULL pointer before calling free() */
-void
-my_free(void *stuff)
-{
-	if(stuff != NULL)
-		free(stuff);
-}
-
 int
 is_dir(char *file)
 {
@@ -63,59 +55,60 @@ duplicate (void *stuff, int size)
 
 /*
  * Escape the filename for the purpose of inserting it into the shell.
+ * Returns new string, caller should free it.
  */
 char *
 escape_filename(const char *string, size_t len, int quote_percent)
 {
-    char *ret, *dup;
+	char *ret, *dup;
 
-    dup = ret = (char *)malloc (len * 2 + 2 + 1);
+	dup = ret = (char *)malloc (len * 2 + 2 + 1);
 
-		if (*string == '-')
-		{
-			*dup++ = '.';
-			*dup++ = '/';
-		}
+	if (*string == '-')
+	{
+		*dup++ = '.';
+		*dup++ = '/';
+	}
 
 	int i;
 	for (i = 0; i < len; i++, string++, dup++)
+	{
+		switch (*string)
 		{
-			switch (*string) 
-			{
-				case '%':
-					if (quote_percent)
-						*dup++ = '%';
-					break;
-				case '\'':
-				case '\\':
-				case '\r':
-				case '\n':
-				case '\t':
-				case '"':
-				case ';':
-				case ' ':
-				case '?':
-				case '|':
-				case '[':
-				case ']':
-				case '{':
-				case '}':
-				case '<':
-				case '>':
-				case '`':
-				case '!':
-				case '$':
-				case '&':
-				case '*':
-				case '(':
-				case ')':
-						*dup++ = '\\';
-						break;
-				case '~':
-				case '#':
-						if (dup == ret)
-							*dup++ = '\\';
-						break;
+			case '%':
+				if (quote_percent)
+					*dup++ = '%';
+				break;
+			case '\'':
+			case '\\':
+			case '\r':
+			case '\n':
+			case '\t':
+			case '"':
+			case ';':
+			case ' ':
+			case '?':
+			case '|':
+			case '[':
+			case ']':
+			case '{':
+			case '}':
+			case '<':
+			case '>':
+			case '`':
+			case '!':
+			case '$':
+			case '&':
+			case '*':
+			case '(':
+			case ')':
+				*dup++ = '\\';
+				break;
+			case '~':
+			case '#':
+				if (dup == ret)
+					*dup++ = '\\';
+				break;
 		}
 		*dup = *string;
   }
@@ -139,9 +132,106 @@ write_string_to_file(char *filename, char *string)
 	if((fp = fopen(filename, "w")) == NULL)
 		return 0;
 
-	fprintf(fp, string);
+	fprintf(fp, "%s", string);
 
 	fclose(fp);
 	return 1;
 }
 
+size_t
+guess_char_width(char c)
+{
+	if ((c & 0xe0) == 0xc0)
+		return 2;
+	else if ((c & 0xf0) == 0xe0)
+		return 3;
+	else if ((c & 0xf8) == 0xf0)
+		return 4;
+	else
+		return 1;
+}
+
+size_t
+get_char_width(const char* string)
+{
+	if((string[0] & 0xe0) == 0xc0 && (string[1] & 0xc0) == 0x80)
+		return 2;
+	else if((string[0] & 0xf0) == 0xe0 && (string[1] & 0xc0) == 0x80 &&
+			 (string[2] & 0xc0) == 0x80)
+		return 3;
+	else if ((string[0] & 0xf8) == 0xf0 && (string[1] & 0xc0) == 0x80 &&
+			 (string[2] & 0xc0) == 0x80 && (string[3] & 0xc0) == 0x80)
+		return 4;
+	else if(string[0] == '\0')
+		return 0;
+	else
+		return 1;
+}
+
+size_t
+get_real_string_width(char *string, size_t max_len)
+{
+	size_t width = 0;
+	while(*string != '\0' && max_len-- != 0)
+	{
+		size_t char_width = get_char_width(string);
+		width += char_width;
+		string += char_width;
+	}
+	return width;
+}
+
+size_t
+get_utf8_string_length(const char *string)
+{
+	size_t length = 0;
+	while(*string != '\0')
+	{
+		size_t char_width = get_char_width(string);
+		string += char_width;
+		length++;
+	}
+	return length;
+}
+
+size_t
+get_utf8_overhead(const char *string)
+{
+	size_t overhead = 0;
+	while(*string != '\0')
+	{
+		size_t char_width = get_char_width(string);
+		string += char_width;
+		overhead += char_width - 1;
+	}
+	return overhead;
+}
+
+size_t
+get_utf8_prev_width(char *string, size_t cur_width)
+{
+	size_t width = 0;
+	while (*string != '\0') {
+		size_t char_width = get_char_width(string);
+		if (width + char_width >= cur_width)
+			break;
+		width += char_width;
+		string += char_width;
+	}
+	return width;
+}
+
+wchar_t *
+to_wide(const char *s)
+{
+	wchar_t *result;
+	int len;
+
+	len = mbstowcs(NULL, s, 0);
+	result = malloc((len + 1)*sizeof(wchar_t));
+	if(result != NULL)
+		mbstowcs(result, s, len + 1);
+	return result;
+}
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

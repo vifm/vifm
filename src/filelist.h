@@ -19,7 +19,6 @@
 #ifndef __FILELIST_H__
 #define __FILELIST_H__
 
-
 #include "ui.h"
 
 enum {
@@ -33,16 +32,30 @@ enum {
 };
 
 
+void friendly_size_notation(int num, int str_size, char *str);
 void quick_view_file(FileView * view);
-void change_directory(FileView *view, char *directory);
+void clean_selected_files(FileView *view);
+void goto_history_pos(FileView *view, int pos);
+void change_directory(FileView *view, const char *directory);
 void load_dir_list(FileView *view, int reload);
 void draw_dir_list(FileView *view, int top, int pos);
 char * get_current_file_name(FileView *view);
 void moveto_list_pos(FileView *view, int pos);
-int find_file_pos_in_list(FileView *view, char *file);
+int find_file_pos_in_list(FileView *view, const char *file);
 void get_all_selected_files(FileView *view);
+void get_selected_files(FileView *view, int count, int *indexes);
 void free_selected_file_array(FileView *view);
 void erase_current_line_bar(FileView *view);
 bool is_link_dir(const dir_entry_t * path);
+void filter_selected_files(FileView *view);
+void hide_dot_files(FileView *view);
+void show_dot_files(FileView *view);
+void toggle_dot_files(FileView *view);
+void remove_filename_filter(FileView *view);
+void restore_filename_filter(FileView *view);
+void scroll_view(FileView *view);
+void check_if_filelists_have_changed(FileView *view);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

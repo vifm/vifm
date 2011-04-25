@@ -51,12 +51,15 @@ bookmarks_t bookmarks[NUM_BOOKMARKS];
 /* array of active bookmarks, populated in menu.c: init_active_bookmarks() */
 int active_bookmarks[NUM_BOOKMARKS];
 
+void init_bookmarks(void);
 char index2mark(const int x);
 int is_bookmark(const int x);
 void add_bookmark(const char mark, const char *directory, const char *file);
-int get_bookmark(FileView *view);
+int get_bookmark(FileView *view, char key);
 int move_to_bookmark(FileView *view, const char mark);
 void remove_bookmark(const int x);
 int check_mark_directory(FileView *view, char mark);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

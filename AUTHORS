@@ -34,6 +34,7 @@ Ali Gholami Rudi - submitted patch fixing buffer overflow in
 colorschemes.
 
 Ondrej Martinak - Patch to fix handling of directories with spaces.
+	Patch for file sizes larger than 4 Gb and to correct typos.
 
 pld-linux group patch for malloc in colorschemes
 
@@ -41,3 +42,6 @@ Woody Kiang - command completion and wide character support in
 :commands.
 
 Minozake - start vifm --help fix
+
+Dan Price - wrote the human friendly file size and the ascending and
+descending sort.

@@ -33,50 +33,12 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
-#include "keys.h"
+#include "keys_buildin_c.h"
+#include "keys_buildin_m.h"
 #include "registers.h"
 #include "status.h"
 #include "ui.h"
 #include "utils.h"
-
-typedef struct menu_info 
-{
-	int top;
-	int current;
-	int len;
-	int pos;
-	int win_rows;
-	int type;
-	int match_dir;
-	int matching_entries;
-	char *regexp;
-	char *title;
-	char *args;
-	char **data;
-	/* For user menus only */
-	char *get_info_script; /* program + args to fill in menu. */
-}menu_info;
-
-enum {
-	APROPOS,
-	BOOKMARK,
-	COMMAND,
-	FILETYPE,
-	HISTORY,
-	JOBS,
-	LOCATE,
-	REGISTER,
-	USER,
-	VIFM
-};
-
-enum {
-	NONE,
-	UP,
-	DOWN
-};
-
-static void draw_menu(FileView *view, menu_info *m);
 
 void
 show_progress(void)
@@ -86,32 +48,29 @@ show_progress(void)
 
 	pause++;
 
-	if ((pause % 1000) == 0)
-	{
-		pause = 1;
-				
-		switch(count)
-		{
-			case 0:
-				status_bar_message("Loading Menu |");
-				break;
-			case 1:
-				status_bar_message("Loading Menu /");
-				break;
-			case 2:
-				status_bar_message("Loading Menu -");
-				break;
-			case 3: 
-				status_bar_message("Loading Menu \\");
-				count = -1;
-				break;
-			default:
-				count = -1;
-				break;
-		}
-	}
-	else
+	if(pause % 1000 != 0)
 		return;
+
+	pause = 1;
+	switch(count)
+	{
+		case 0:
+			status_bar_message("Loading Menu |");
+			break;
+		case 1:
+			status_bar_message("Loading Menu /");
+			break;
+		case 2:
+			status_bar_message("Loading Menu -");
+			break;
+		case 3:
+			status_bar_message("Loading Menu \\");
+			count = -1;
+			break;
+		default:
+			count = -1;
+			break;
+	}
 
 	wrefresh(status_bar);
 
@@ -128,7 +87,7 @@ show_position_in_menu(menu_info *m)
 	wrefresh(pos_win);
 }
 
-static void
+void
 clean_menu_position(menu_info *m)
 {
 	int x, y, z;
@@ -136,10 +95,12 @@ clean_menu_position(menu_info *m)
 
 	getmaxyx(menu_win, y, x);
 
+	x += get_utf8_overhead(m->data[m->pos]);
+
 	buf = (char *)malloc(x + 2);
 
-
-	snprintf(buf, x, " %s", m->data[m->pos]);
+	if(m->data != NULL && m->data[m->pos] != NULL)
+		snprintf(buf, x, " %s", m->data[m->pos]);
 
 	for (z = strlen(buf); z < x; z++)
 		buf[z] = ' ';
@@ -153,7 +114,7 @@ clean_menu_position(menu_info *m)
 
 	wattroff(menu_win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
 
-	my_free(buf);
+	free(buf);
 }
 
 void
@@ -196,7 +157,7 @@ truncated my messages by the last character.*/
 			done = 1;
 	}
 
-	my_free(dup);
+	free(dup);
 
 	curr_stats.freeze = 0;
 
@@ -216,20 +177,15 @@ reset_popup_menu(menu_info *m)
 {
 	int z;
 
-	if (m->args)
-		my_free(m->args);
+	free(m->args);
 
 	for (z = 0; z < m->len; z++)
 	{
-		if (m->data[z])
-			my_free(m->data[z]);
+		free(m->data[z]);
 	}
-	if (m->regexp)
-		my_free(m->regexp);
-	if (m->data)
-		my_free(m->data);
-	if (m->title)
-		my_free(m->title);
+	free(m->regexp);
+	free(m->data);
+	free(m->title);
 
 	werase(menu_win);
 	curr_stats.menu = 0;
@@ -262,7 +218,7 @@ init_active_bookmarks(void)
 	}
 }
 
-static void
+void
 moveto_menu_pos(FileView *view, int pos,  menu_info *m)
 {
 	int redraw = 0;
@@ -271,12 +227,16 @@ moveto_menu_pos(FileView *view, int pos,  menu_info *m)
 
 	getmaxyx(menu_win, y, x);
 
-
 	if(pos < 1)
 		pos = 0;
 
 	if(pos > m->len -1)
 		pos = m->len -1;
+
+	if(pos < 0)
+		return;
+
+	x += get_utf8_overhead(m->data[pos]);
 
 	if((m->top <=  pos) && (pos <= (m->top + m->win_rows +1)))
 	{
@@ -300,30 +260,30 @@ moveto_menu_pos(FileView *view, int pos,  menu_info *m)
 	if(redraw)
 		draw_menu(view, m);
 
-
 	buf = (char *)malloc((x + 2));
-	if (!buf)
+	if(buf == NULL)
 		return;
-	snprintf(buf, x, " %s", m->data[pos]);
+	if(m->data != NULL && m->data[pos] != NULL)
+		snprintf(buf, x, " %s", m->data[pos]);
 
-	for (z = strlen(buf); z < x; z++)
+	for(z = strlen(buf); z < x; z++)
 		buf[z] = ' ';
 
 	buf[x] = ' ';
 	buf[x + 1] = '\0';
 
 	wattron(menu_win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
-	
+
 	mvwaddnstr(menu_win, m->current, 1, buf, x - 2);
 
 	wattroff(menu_win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
 
 	m->pos = pos;
-	my_free(buf);
+	free(buf);
 	show_position_in_menu(m);
 }
 
-static void
+void
 redraw_menu(FileView *view, menu_info *m)
 {
 	int screen_x, screen_y;
@@ -399,7 +359,7 @@ search_menu_forwards(FileView *view, menu_info *m, int start_pos)
 
 		clean_menu_position(m);
 		moveto_menu_pos(view, pos, m);
-		snprintf(buf, sizeof(buf), "%d %s", m->matching_entries, 
+		snprintf(buf, sizeof(buf), "%d %s", m->matching_entries,
 				m->matching_entries == 1 ? "match" : "matches");
 		status_bar_message(buf);
 		wrefresh(status_bar);
@@ -459,12 +419,12 @@ search_menu_backwards(FileView *view, menu_info *m, int start_pos)
 
 		clean_menu_position(m);
 		moveto_menu_pos(view, pos, m);
-		snprintf(buf, sizeof(buf), "%d %s", m->matching_entries, 
+		snprintf(buf, sizeof(buf), "%d %s", m->matching_entries,
 				m->matching_entries == 1 ? "match" : "matches");
 		status_bar_message(buf);
 		wrefresh(status_bar);
 	}
-	else 
+	else
 	{
 		char buf[48];
 		snprintf(buf, sizeof(buf), "No matches for %s", m->regexp);
@@ -475,24 +435,24 @@ search_menu_backwards(FileView *view, menu_info *m, int start_pos)
 	return 0;
 }
 
-int 
+int
 search_menu_list(FileView *view, char * pattern, menu_info *m)
 {
 	int save = 0;
 
-	if (pattern)
+	if(pattern)
 		m->regexp = strdup(pattern);
 
-	switch (m->match_dir)
+	switch(m->match_dir)
 	{
 		case NONE:
-				save = search_menu_forwards(view, m, m->pos);
+			save = search_menu_forwards(view, m, m->pos);
 			break;
 		case UP:
-				save = search_menu_backwards(view, m, m->pos - 1);
+			save = search_menu_backwards(view, m, m->pos - 1);
 			break;
 		case DOWN:
-				save = search_menu_forwards(view, m, m->pos + 1);
+			save = search_menu_forwards(view, m, m->pos + 1);
 			break;
 		default:
 		break;
@@ -536,10 +496,10 @@ execute_apropos_cb(FileView *view, menu_info *m)
 				man_page);
 
 		shellout(command, 0);
-		my_free(free_this);
+		free(free_this);
 	}
 	else
-		my_free(free_this);
+		free(free_this);
 
 }
 
@@ -564,7 +524,7 @@ execute_locate_cb(FileView *view, menu_info *m)
 		file = strrchr(dir, '/');
 		*file = '\0';
 		file++;
-		
+
 		change_directory(view, dir);
 
 		status_bar_message("Finding the correct directory.");
@@ -592,7 +552,7 @@ execute_locate_cb(FileView *view, menu_info *m)
 			moveto_list_pos(view, find_file_pos_in_list(view, file));
 	}
 
-	my_free(free_this);
+	free(free_this);
 }
 
 static void
@@ -611,7 +571,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 			int m = 0;
 			char *expanded_command = expand_macros(view, prog_str, NULL, &m, 0);
 			shellout(expanded_command, 0);
-			my_free(expanded_command);
+			free(expanded_command);
 			return;
 		}
 		else
@@ -640,13 +600,13 @@ execute_filetype_cb(FileView *view, menu_info *m)
 					int m = 0;
 					char *expanded_command = expand_macros(view, prog_copy, NULL, &m, 0);
 					shellout(expanded_command, 0);
-					my_free(expanded_command);
+					free(expanded_command);
 					free(free_this);
 					return;
 				}
 				else
 				{
-					snprintf(command, sizeof(command), "%s %s", 
+					snprintf(command, sizeof(command), "%s %s",
 							prog_copy, filename);
 					shellout(command, 0);
 					free(free_this);
@@ -661,7 +621,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 			int m = 0;
 			char *expanded_command = expand_macros(view, prog_copy, NULL, &m, 0);
 			shellout(expanded_command, 0);
-			my_free(expanded_command);
+			free(expanded_command);
 			free(free_this);
 			return;
 		}
@@ -675,30 +635,25 @@ execute_filetype_cb(FileView *view, menu_info *m)
 	}
 }
 
-static void
+void
 execute_menu_cb(FileView *view, menu_info *m)
 {
 	switch(m->type)
 	{
 		case APROPOS:
-				execute_apropos_cb(view, m);
+			execute_apropos_cb(view, m);
 			break;
 		case BOOKMARK:
-				move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
+			move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
 			break;
 		case COMMAND:
-				execute_command(view, command_list[m->pos].name);
+			execute_command(view, command_list[m->pos].name);
 			break;
 		case FILETYPE:
-				execute_filetype_cb(view, m);
+			execute_filetype_cb(view, m);
 			break;
 		case HISTORY:
-			{
-				change_directory(view, view->history[m->pos].dir);
-				load_dir_list(view, 1);
-				moveto_list_pos(view, find_file_pos_in_list(view, 
-							view->history[m->pos].file));
-			}
+			goto_history_pos(view, m->len - 1 - m->pos);
 			break;
 		case JOBS:
 			execute_jobs_cb(view, m);
@@ -714,7 +669,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 	}
 }
 
-static void
+void
 reload_bookmarks_menu_list(menu_info *m)
 {
 	int x, i, z, len, j;
@@ -725,8 +680,8 @@ reload_bookmarks_menu_list(menu_info *m)
 
 	for (z = 0; z < m->len; z++)
 	{
-		if (m->data[z])
-			my_free(m->data[z]);
+		free(m->data[z]);
+		m->data[z] = NULL;
 	}
 
 	init_active_bookmarks();
@@ -754,7 +709,7 @@ reload_bookmarks_menu_list(menu_info *m)
 	m->len = x;
 }
 
-static void
+void
 reload_command_menu_list(menu_info *m)
 {
 
@@ -764,8 +719,7 @@ reload_command_menu_list(menu_info *m)
 
 	for (z = 0; z < m->len; z++)
 	{
-		if (m->data[z])
-			my_free(m->data[z]);
+		free(m->data[z]);
 	}
 
 	m->len = cfg.command_num;
@@ -783,195 +737,14 @@ reload_command_menu_list(menu_info *m)
 				command_list[x].action);
 
 		x++;
-		/* This will show the expanded command instead of the macros 
+		/* This will show the expanded command instead of the macros
 		 * char *expanded = expand_macros(view, command_list[x].action, NULL);
-		 * my_free(expanded);
+		 * free(expanded);
 		*/
 	}
 }
 
-static void
-menu_key_cb(FileView *view, menu_info *m)
-{
-	int done = 0;
-	int abort = 0;
-	int save_msg = 0;
-	int y, len;
-
-	getmaxyx(menu_win, y, len);
-	keypad(menu_win, TRUE);
-	werase(status_bar);
-	wtimeout(menu_win, 1000);
-
-	while(!done)
-	{
-		int key = wgetch(menu_win);
-
-		switch(key)
-		{
-			case '/':
-				{
-					m->match_dir = NONE;
-					if (m->regexp)
-						my_free(m->regexp);
-
-					get_command(view, MENU_SEARCH, m);
-				}
-				break;
-			case ':':
-				{
-					save_msg = get_command(view, MENU_COMMAND, m);
-					if (save_msg < 0)
-					{
-						done = 1;
-						abort = 1;
-					}
-				}
-				break;
-			case '?':
-				{
-					m->match_dir = UP;
-
-					if (m->regexp)
-						my_free(m->regexp);
-
-					get_command(view, MENU_SEARCH, m);
-				}
-				break;
-			case 2: /* ascii Ctrl B */
-			case KEY_PPAGE:
-				clean_menu_position(m);
-				moveto_menu_pos(view, m->top - m->win_rows + 2, m);
-				break;
-			case 3: /* ascii Ctrl C */
-			case 27: /* ascii Escape */
-				done = 1;
-				abort = 1;
-				break;
-			case 6: /* ascii Ctrl F */
-				{
-					clean_menu_position(m);
-					m->pos = m->pos + m->win_rows;
-					moveto_menu_pos(view, m->pos, m);
-				}
-				break;
-			case KEY_NPAGE:
-				break;
-			case 'l':
-			case 13: /* ascii Return */
-						done = 1;
-				break;
-			case 'G':
-				clean_menu_position(m);
-				moveto_menu_pos(view, m->len -1, m);
-				break;
-			case 'N':
-				{
-					if (m->regexp != NULL)
-					{
-						m->match_dir = UP;
-						m->matching_entries = 0;
-						search_menu_list(view, NULL, m);
-					}
-					else
-					{
-						status_bar_message("No search pattern set.");
-						wrefresh(status_bar);
-					}
-				}
-				break;
-			case 'g':
-				{
-					key = wgetch(menu_win);
-					if(key == 'g')
-					{
-						clean_menu_position(m);
-						moveto_menu_pos(view, 0, m);
-					}
-				}
-				break;
-			case 'd':
-				{
-					key = wgetch(menu_win);
-
-					if(key != 'd')
-						break;
-
-					if(m->type == COMMAND)
-					{
-						clean_menu_position(m);
-						remove_command(command_list[m->pos].name);
-
-						reload_command_menu_list(m);
-						draw_menu(view, m);
-
-						if(m->pos -1 >= 0)
-							moveto_menu_pos(view, m->pos -1, m);
-						else
-							moveto_menu_pos(view, 0, m);
-					}
-					else if(m->type == BOOKMARK)
-					{
-						clean_menu_position(m);
-						remove_bookmark(active_bookmarks[m->pos]);
-
-						reload_bookmarks_menu_list(m);
-						draw_menu(view, m);
-
-						if(m->pos -1 >= 0)
-							moveto_menu_pos(view, m->pos -1, m);
-						else
-							moveto_menu_pos(view, 0, m);
-					}
-				}
-				break;
-			case 'j':
-			case KEY_DOWN:
-				{
-					clean_menu_position(m);
-					m->pos++;
-					moveto_menu_pos(view, m->pos, m);
-				}
-				break;
-			case 'k':
-			case KEY_UP:
-				{
-					clean_menu_position(m);
-					m->pos--;
-					moveto_menu_pos(view, m->pos, m);
-					wrefresh(menu_win);
-				}
-				break;
-			case 'n':
-				{
-					if (m->regexp != NULL)
-					{
-						m->match_dir = DOWN;
-						m->matching_entries = 0;
-						search_menu_list(view, NULL, m);
-					}
-					else
-					{
-						status_bar_message("No search pattern set>");
-						wrefresh(status_bar);
-					}
-				}
-				break;
-			default:
-				break;
-		}
-		if (curr_stats.redraw_menu)
-			redraw_menu(view, m);
-
-	} /* end of while(!done) */
-
-	if (abort)
-		return;
-
-	execute_menu_cb(view, m);
-}
-
-static void
+void
 draw_menu(FileView *view,  menu_info *m)
 {
 	int i;
@@ -1016,7 +789,7 @@ show_apropos_menu(FileView *view, char *args)
 	FILE *file;
 	int len = 0;
 
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = 0;
@@ -1031,7 +804,7 @@ show_apropos_menu(FileView *view, char *args)
 	m.data = NULL;
 
 	getmaxyx(menu_win, m.win_rows, len);
-	
+
 	m.title = (char *)malloc((strlen(args) + 12) * sizeof(char));
 	snprintf(m.title, strlen(args) + 11,  " Apropos %s ",  args);
 	snprintf(buf, sizeof(buf), "apropos %s", args);
@@ -1061,15 +834,15 @@ show_apropos_menu(FileView *view, char *args)
 	{
 		snprintf(buf, sizeof(buf), "No matches for \'%s\'", m.title);
 		show_error_msg(" Nothing Appropriate ", buf);
+		reset_popup_menu(&m);
 	}
 	else
 	{
 		setup_menu(view);
 		draw_menu(view, &m);
 		moveto_menu_pos(view, 0, &m);
-		menu_key_cb(view, &m);
+		enter_menu_mode(&m, view);
 	}
-	reset_popup_menu(&m);
 }
 
 void
@@ -1078,7 +851,7 @@ show_bookmarks_menu(FileView *view)
 	int i, j, x;
 	char buf[PATH_MAX];
 
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = cfg.num_bookmarks;
@@ -1124,8 +897,7 @@ show_bookmarks_menu(FileView *view)
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
+	enter_menu_mode(&m, view);
 }
 
 void
@@ -1133,7 +905,7 @@ show_commands_menu(FileView *view)
 {
 	int len, i, x;
 
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = cfg.command_num;
@@ -1157,9 +929,9 @@ show_commands_menu(FileView *view)
 	qsort(command_list, cfg.command_num, sizeof(command_t),
 			sort_this);
 
-	m.title = (char *)malloc((strlen(" Command ------ Action ") + 1) 
+	m.title = (char *)malloc((strlen(" Command ------ Action ") + 1)
 			* sizeof(char));
-	snprintf(m.title, strlen(" Command ------ Action "), 
+	snprintf(m.title, strlen(" Command ------ Action ") + 1,
 			" Command ------ Action  ");
 
 	x = 0;
@@ -1172,17 +944,16 @@ show_commands_menu(FileView *view)
 				command_list[x].action);
 
 		x++;
-		/* This will show the expanded command instead of the macros 
+		/* This will show the expanded command instead of the macros
 		 * char *expanded = expand_macros(view, command_list[x].action, NULL);
-		 * my_free(expanded);
+		 * free(expanded);
 		*/
 	}
 
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
+	enter_menu_mode(&m, view);
 }
 
 void
@@ -1192,7 +963,7 @@ show_filetypes_menu(FileView *view)
 	char *prog_str = get_all_programs_for_file(filename);
 	if (prog_str == NULL)
 	{
-		show_error_msg("  Filetype is not set.  ", 
+		show_error_msg("  Filetype is not set.	",
 				"No programs set for this filetype.");
 		return;
 	}
@@ -1202,7 +973,7 @@ show_filetypes_menu(FileView *view)
 		int len = 0;
 		char *ptr = NULL;
 
-		menu_info m;
+		static menu_info m;
 		m.top = 0;
 		m.current = 1;
 		m.len = 0;
@@ -1241,7 +1012,7 @@ show_filetypes_menu(FileView *view)
 				m.len = x;
 			}
 			m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
-			m.data[x] = (char *)malloc((len + 1) * sizeof(char)); 
+			m.data[x] = (char *)malloc((len + 1) * sizeof(char));
 			snprintf(m.data[x], len, "%s", prog_copy);
 			m.len++;
 
@@ -1250,8 +1021,7 @@ show_filetypes_menu(FileView *view)
 		setup_menu(view);
 		draw_menu(view, &m);
 		moveto_menu_pos(view, 0, &m);
-		menu_key_cb(view, &m);
-		reset_popup_menu(&m);
+		enter_menu_mode(&m, view);
 	}
 }
 
@@ -1259,15 +1029,15 @@ void
 show_history_menu(FileView *view)
 {
 	int x;
-	menu_info m;
+	static menu_info m;
 
-	if (view->history_num < 2)
+	if(view->history_num < 1)
 		return;
 
 	m.top = 0;
 	m.current = 1;
 	m.len = view->history_num + 1;
-	m.pos = 0;
+	m.pos = view->history_num - 1 - view->history_pos;
 	m.win_rows = 0;
 	m.type = HISTORY;
 	m.matching_entries = 0;
@@ -1284,35 +1054,26 @@ show_history_menu(FileView *view)
 		if(strlen(view->history[x].dir) < 1)
 			break;
 
-		/* Change the current dir to reflect the current file. */ 
-		if(!strcmp(view->history[x].dir, view->curr_dir))
+		/* Change the current dir to reflect the current file. */
+		if(strcmp(view->history[x].dir, view->curr_dir) == 0)
 			snprintf(view->history[x].file, sizeof(view->history[x].file),
-						"%s", view->dir_entry[view->list_pos].name);
+					"%s", view->dir_entry[view->list_pos].name);
 
-		if(!strcmp(view->history[x].dir, "/"))
-		{
-			m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
-			m.data[x] = (char *)malloc((strlen(view->history[x].file) + 1) 
-					* sizeof(char));
-			snprintf(m.data[x], strlen(view->history[x].file), 
-						"%s", view->history[x].file);
-		}
-		else
-		{
-			m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
-			m.data[x] = (char *)malloc((strlen(view->history[x].file) + 
-						strlen(view->history[x].dir) + 2) * sizeof(char));
-			snprintf(m.data[x], strlen(view->history[x].file) + 
-					strlen(view->history[x].dir) + 1, "%s/%s", 
-						view->history[x].dir, view->history[x].file); 
-		}
-		m.len = x;
+		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
+		m.data[x] = (char *)malloc((strlen(view->history[x].dir) + 1)*sizeof(char));
+		strcpy(m.data[x], view->history[x].dir);
+		m.len = x + 1;
+	}
+	for(x = 0; x < m.len/2; x++)
+	{
+		char *t = m.data[x];
+		m.data[x] = m.data[m.len - 1 - x];
+		m.data[m.len - 1 - x] = t;
 	}
 	setup_menu(view);
 	draw_menu(view, &m);
-	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
+	moveto_menu_pos(view, m.pos, &m);
+	enter_menu_mode(&m, view);
 }
 
 void
@@ -1322,7 +1083,7 @@ show_locate_menu(FileView *view, char *args)
 	char buf[256];
 	FILE *file;
 
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = 0;
@@ -1337,7 +1098,7 @@ show_locate_menu(FileView *view, char *args)
 	m.data = NULL;
 
 	getmaxyx(menu_win, m.win_rows, x);
-	
+
 	snprintf(buf, sizeof(buf), "locate %s",  args);
 	m.title = strdup(buf);
 	file = popen(buf, "r");
@@ -1378,8 +1139,7 @@ show_locate_menu(FileView *view, char *args)
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
+	enter_menu_mode(&m, view);
 }
 
 void
@@ -1389,7 +1149,7 @@ show_user_menu(FileView *view, char *command)
 	char buf[256];
 	FILE *file;
 
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = 0;
@@ -1416,7 +1176,7 @@ show_user_menu(FileView *view, char *command)
 
 	getmaxyx(menu_win, m.win_rows, x);
 
-	snprintf(buf, sizeof(buf), " %s ",  m.get_info_script);
+	snprintf(buf, sizeof(buf), " %s ",	m.get_info_script);
 	m.title = strdup(buf);
 	file = popen(buf, "r");
 
@@ -1458,8 +1218,7 @@ show_user_menu(FileView *view, char *command)
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
+	enter_menu_mode(&m, view);
 }
 
 void
@@ -1469,7 +1228,7 @@ show_jobs_menu(FileView *view)
 	Finished_Jobs *fj = NULL;
 	sigset_t new_mask;
 	int x;
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = 0;
@@ -1489,7 +1248,7 @@ show_jobs_menu(FileView *view)
 
 
 	/*
-	 * SIGCHLD  needs to be blocked anytime the Finished_Jobs list 
+	 * SIGCHLD	needs to be blocked anytime the Finished_Jobs list
 	 * is accessed from anywhere except the received_sigchld().
 	 */
 	sigemptyset(&new_mask);
@@ -1516,13 +1275,13 @@ show_jobs_menu(FileView *view)
 		{
 			m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
 			m.data[x] = (char *)malloc(strlen(p->cmd) + 24);
-			snprintf(m.data[x], strlen(p->cmd) + 22, " %d     %s ",
+			snprintf(m.data[x], strlen(p->cmd) + 22, " %d	  %s ",
 					p->pid, p->cmd);
 
 			x++;
 		}
 
-	
+
 		p = p->next;
 	}
 
@@ -1550,9 +1309,7 @@ show_jobs_menu(FileView *view)
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
-
+	enter_menu_mode(&m, view);
 }
 
 void
@@ -1560,7 +1317,7 @@ show_register_menu(FileView *view)
 {
 	int x;
 
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = 0;
@@ -1609,8 +1366,7 @@ show_register_menu(FileView *view)
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
+	enter_menu_mode(&m, view);
 }
 
 void
@@ -1618,7 +1374,7 @@ show_vifm_menu(FileView *view)
 {
 	int x;
 
-	menu_info m;
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = 0;
@@ -1637,24 +1393,7 @@ show_vifm_menu(FileView *view)
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, 0, &m);
-	menu_key_cb(view, &m);
-	reset_popup_menu(&m);
-}
-
-int
-execute_menu_command(FileView *view, char * command, menu_info *m)
-{
-	if (!strncmp("quit", command, strlen(command)))
-		return -1;
-	else if (!strcmp("x", command))
-		return -1;
-	else if (isdigit(*command))
-	{
-		clean_menu_position(m);
-		moveto_menu_pos(view, atoi(command) - 1, m);
-	}
-
-	return 0;
+	enter_menu_mode(&m, view);
 }
 
 int
@@ -1694,7 +1433,7 @@ query_user_menu(char *title, char *message)
 			done = 1;
 	}
 
-	my_free(dup);
+	free(dup);
 
 	curr_stats.freeze = 0;
 
@@ -1714,7 +1453,4 @@ query_user_menu(char *title, char *message)
 		return 0;
 }
 
-
-
-
-
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

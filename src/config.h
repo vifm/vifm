@@ -22,6 +22,7 @@
 #include<limits.h>
 #include<ncurses.h>
 
+#define KEYPRESS_TIMEOUT 1000 /* 1 second */
 
 typedef struct _Config {
 	char config_dir[PATH_MAX];
@@ -49,6 +50,8 @@ typedef struct _Config {
 	int color_pairs_num;
 	int show_one_window;
 	long max_args;
+	int using_default_config;
+	int use_iec_prefixes;
 /*_SZ_BEGIN*/
 	char *fuse_home;
 /*_SZ_END*/
@@ -62,3 +65,5 @@ void set_config_dir(void);
 void init_config(void);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

@@ -19,9 +19,10 @@
 #ifndef __UI_H__
 #define __UI_H__
 
-#include<limits.h> /*  PATH_MAX */
+#include<limits.h> /* PATH_MAX NAME_MAX */
 #include<ncurses.h>
 #include<stdlib.h> /* off_t mode_t... */
+#include<inttypes.h> /* uintmax_t */
 #include<sys/types.h>
 #include<unistd.h>
 /* For Solaris */
@@ -38,23 +39,25 @@ enum {
 	SORT_BY_MODE,
 	SORT_BY_OWNER_ID,
 	SORT_BY_OWNER_NAME,
-	SORT_BY_SIZE,
+	SORT_BY_SIZE_ASCENDING,
+	SORT_BY_SIZE_DESCENDING,
 	SORT_BY_TIME_ACCESSED,
 	SORT_BY_TIME_CHANGED,
-	SORT_BY_TIME_MODIFIED
+	SORT_BY_TIME_MODIFIED,
+	NUM_SORT_OPTIONS
 };
 
 typedef struct
 {
 	char dir[PATH_MAX];
-	char file[NAME_MAX];;
+	char file[NAME_MAX];
 }history_t;
 
 
-typedef struct 
+typedef struct
 {
 	char *name;
-	int size;
+	off_t size;
 	mode_t mode;
 	uid_t uid;
 	gid_t gid;
@@ -80,11 +83,10 @@ typedef struct _FileView
 	char last_dir[PATH_MAX];
 	char regexp[256]; /* regular expression pattern for / searching */
 	char * prev_filter;
-	char * filename_filter; /* regexp for filtering files in dir list */ 
+	char * filename_filter; /* regexp for filtering files in dir list */
 	char sort_type;
 	int hide_dot;
 	int prev_invert;
-	int history_num;
 	bool invert; /* whether to invert the filename pattern */
 	int curr_line; /* current line # of the window  */
 	int top_line; /* # of the list position that is the top line in window */
@@ -96,8 +98,11 @@ typedef struct _FileView
 	int selected_files;
 	int color_scheme; /* current color scheme being used */
 	dir_entry_t *dir_entry;
-	history_t history[15];
 	char ** selected_filelist;
+
+	int history_num;
+	int history_pos;
+	history_t *history;
 }FileView;
 
 
@@ -118,10 +123,19 @@ WINDOW *lborder;
 WINDOW *mborder;
 WINDOW *rborder;
 
-int setup_ncurses_interface();
+int setup_ncurses_interface(void);
 void status_bar_message(char *message);
 void update_stat_window(FileView *view);
-void redraw_window();
+void redraw_window(void);
 void write_stat_win(char *message);
 void update_pos_window(FileView *view);
+void clean_status_bar(void);
+void change_window(void);
+void update_all_windows(void);
+void update_input_bar(wchar_t c);
+void switch_views(void);
+void clear_num_window(void);
+
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

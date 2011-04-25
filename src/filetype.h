@@ -16,6 +16,9 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifndef __FILETYPE_H__
+#define __FILETYPE_H__
+
 typedef struct
 {
 	char *type;
@@ -28,3 +31,7 @@ char * get_default_program_for_file(char *file);
 void add_filetype(char *description, char *extension, char *program);
 char * get_all_programs_for_file(char *file);
 void clear_filetypes(void);
+
+#endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

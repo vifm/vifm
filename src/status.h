@@ -16,14 +16,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifndef __STATUS_H__
+#define __STATUS_H__
 
 #include <sys/stat.h>
 
 typedef struct
 {
-	int num_yanked_files;
-	char yanked_files_dir[PATH_MAX];
-	char **yanked_files;
 	int need_redraw;
 	volatile int freeze;
 	volatile int getting_input;
@@ -34,7 +33,6 @@ typedef struct
 	char updir_file[NAME_MAX];
 	int is_console;
 	time_t config_file_mtime;
-	time_t colorscheme_file_mtime;
 	int search;
 	int save_msg;
 	int use_register;
@@ -43,6 +41,14 @@ typedef struct
 	int number_of_windows;
 	int view;
 	int show_full;
+	int setting_change;
+	int skip_history;
 }Status;
 
 extern Status curr_stats;
+
+void init_status(void);
+
+#endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

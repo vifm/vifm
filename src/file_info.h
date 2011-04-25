@@ -16,9 +16,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifndef __FILE_INFO_H__
+#define __FILE_INFO_H__
+
 #include "ui.h"
 
-void describe_file_size(char *buf, int buf_size, FileView *view);
 void get_perm_string(char *buf, int len, mode_t mode);
 void show_full_file_properties(FileView *view);
 
+#endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

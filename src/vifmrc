@@ -81,6 +81,9 @@ USE_VIM_HELP=0
 
 RUN_EXECUTABLE=0
 
+# Use KiB, MiB, ... instead of KB, MB, ...
+
+USE_IEC_PREFIXES=1
 
 # BOOKMARKS=mark=/full/directory/path=filename
 

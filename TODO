@@ -4,6 +4,7 @@ Basic things that need to be done.
 	Fix window resizing.
 	Better documentation.
 	Handle commands that are too long to be passed directly to the shell.
+    :! command completion.
 
 Vi specific features that need to be added.
 	Finish implementing range and count for user commands.
@@ -11,11 +12,13 @@ Vi specific features that need to be added.
 	Key mapping  :nmap s  :sh<Return>
 	Change file list filters to use fold levels instead of just 
 		the dot filter and regular expression filter.
-	Named registers for yanked or deleted files.
-
+    Make some kind of undo command.
+    :set command for options.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap? 
-	Virtual File System  
-
-
+	Virtual File System - currently vifm can use fuse to mount most
+		file systems.  
+    Store panel directories with qw, w, qwa, wa (ZZ in normal mode)
+        end restore them on start up (possible problems with pwd and
+        argument, how to choose between them? arg > stored > pwd?).

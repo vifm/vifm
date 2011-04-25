@@ -36,35 +36,10 @@
 
 
 void
-describe_file_size (char* buf, int buf_size, FileView *view)
-{
-	if (view->dir_entry[view->list_pos].size < 10240)	/* less than 10K */
- 	{
- 		snprintf (buf, buf_size, "%5d  bytes", 
-				(int) view->dir_entry[view->list_pos].size);
- 	}
- 	else if (view->dir_entry[view->list_pos].size < 1048576)/*less than a meg */
- 	{
- 		snprintf (buf, buf_size, "%5.2f Kbytes",
- 			((float) view->dir_entry[view->list_pos].size  / 1024.0));
- 	}
- 	else if (view->dir_entry[view->list_pos].size < 1073741824)/*a  meg */
- 	{
- 		snprintf (buf, buf_size, "%5.2f Mbytes",
- 			((float) view->dir_entry[view->list_pos].size / 1048576.0));
- 	}
- 	else /* bigger than a Gigabyte */
- 	{
-  		snprintf (buf, buf_size, "%5.2f Gbytes",
-  			((float) view->dir_entry[view->list_pos].size / 1073741824.0));
- 	}
-}
-
-void
 get_perm_string (char * buf, int len, mode_t mode)
 {
   char *perm_sets[] =
-    { "---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx" };
+	{ "---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx" };
   int u, g, o;
 
   u = (mode & S_IRWXU) >> 6;
@@ -74,24 +49,24 @@ get_perm_string (char * buf, int len, mode_t mode)
   snprintf (buf, len, "-%s%s%s", perm_sets[u], perm_sets[g], perm_sets[o]);
 
   if (S_ISLNK (mode))
-    buf[0] = 'l';
+	buf[0] = 'l';
   else if (S_ISDIR (mode))
-    buf[0] = 'd';
+	buf[0] = 'd';
   else if (S_ISBLK (mode))
-    buf[0] = 'b';
+	buf[0] = 'b';
   else if (S_ISCHR (mode))
-    buf[0] = 'c';
+	buf[0] = 'c';
   else if (S_ISFIFO (mode))
-    buf[0] = 'f';
+	buf[0] = 'f';
   else if (S_ISSOCK (mode))
-    buf[0] = 's';
+	buf[0] = 's';
 
   if (mode & S_ISVTX)
-    buf[9] = (buf[9] == '-') ? 'T' : 't';
+	buf[9] = (buf[9] == '-') ? 'T' : 't';
   if (mode & S_ISGID)
-    buf[6] = (buf[6] == '-') ? 'S' : 's';
+	buf[6] = (buf[6] == '-') ? 'S' : 's';
   if (mode & S_ISUID)
-    buf[3] = (buf[3] == '-') ? 'S' : 's';
+	buf[3] = (buf[3] == '-') ? 'S' : 's';
 }
 
 void
@@ -103,7 +78,7 @@ show_full_file_properties(FileView *view)
 	char uid_buf[26];
 	char buf[256];
 	struct passwd *pwd_buf;
-  	struct group *grp_buf;
+	struct group *grp_buf;
 	struct tm *tm_ptr;
 	int x, y;
 	int key = 0;
@@ -117,21 +92,22 @@ show_full_file_properties(FileView *view)
 	getmaxyx(menu_win, y, x);
 	werase(menu_win);
 
-	snprintf(name_buf, sizeof(name_buf), "%s", 
+	snprintf(name_buf, sizeof(name_buf), "%s",
 			view->dir_entry[view->list_pos].name);
 
-	describe_file_size(size_buf, sizeof(size_buf), view);
-	
+	friendly_size_notation(view->dir_entry[view->list_pos].size,
+			sizeof(size_buf), size_buf);
+
 	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
 	{
-		snprintf (uid_buf, sizeof(uid_buf), "%d", 
+		snprintf (uid_buf, sizeof(uid_buf), "%d",
 				(int) view->dir_entry[view->list_pos].uid);
 	}
 	else
 	{
 		snprintf(uid_buf, sizeof(uid_buf), "%s", pwd_buf->pw_name);
 	}
-	get_perm_string(perm_buf, sizeof(perm_buf), 
+	get_perm_string(perm_buf, sizeof(perm_buf),
 			view->dir_entry[view->list_pos].mode);
 
 	mvwaddstr(menu_win, 2, 2, "File: ");
@@ -149,7 +125,7 @@ show_full_file_properties(FileView *view)
 		if (filename[len - 1] == '/')
 			filename[len - 1] = '\0';
 
-	  	mvwaddstr(menu_win, 6, 8, "Link");
+		mvwaddstr(menu_win, 6, 8, "Link");
 		len = readlink (filename, linkto, sizeof (linkto));
 
 		mvwaddstr(menu_win, 7, 2, "Link To: ");
@@ -158,17 +134,17 @@ show_full_file_properties(FileView *view)
 			linkto[len] = '\0';
 			mvwaddnstr(menu_win, 7, 11, linkto, x - 11);
 		}
-	  	else
+		else
 			mvwaddstr(menu_win, 7, 11, "Couldn't Resolve Link");
 	}
- 	else if (S_ISREG (view->dir_entry[view->list_pos].mode))
-   	{
+	else if (S_ISREG (view->dir_entry[view->list_pos].mode))
+	{
 		FILE *pipe;
 		char command[1024];
 		char buf[NAME_MAX];
 
 		/* Use the file command to get file information */
-		snprintf(command, sizeof(command), "file \"%s\" -b", 
+		snprintf(command, sizeof(command), "file \"%s\" -b",
 				view->dir_entry[view->list_pos].name);
 
 		if ((pipe = popen(command, "r")) == NULL)
@@ -208,28 +184,28 @@ show_full_file_properties(FileView *view)
 	{
 	  mvwaddstr(menu_win, 6, 8, "Fifo Pipe");
 	}
-    else if (S_ISSOCK (view->dir_entry[view->list_pos].mode))
-    {
+	else if (S_ISSOCK (view->dir_entry[view->list_pos].mode))
+	{
 	  mvwaddstr(menu_win, 6, 8, "Socket");
-    }
-  	else
-    {
+	}
+	else
+	{
 	  mvwaddstr(menu_win, 6, 8, "Unknown");
-    }
+	}
 
 	mvwaddstr(menu_win, 8, 2, "Permissions: ");
 	mvwaddstr(menu_win, 8, 15, perm_buf);
 	mvwaddstr(menu_win, 10, 2, "Modified: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
-  	strftime (buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
+	strftime (buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
 	mvwaddstr(menu_win, 10, 13, buf);
 	mvwaddstr(menu_win, 12, 2, "Accessed: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].atime);
-  	strftime (buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
+	strftime (buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
 	mvwaddstr(menu_win, 12, 13, buf);
 	mvwaddstr(menu_win, 14, 2, "Changed: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].ctime);
-  	strftime (buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
+	strftime (buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
 	mvwaddstr(menu_win, 14, 13, buf);
 	mvwaddstr(menu_win, 16, 2, "Owner: ");
 	mvwaddstr(menu_win, 16, 10, uid_buf);
@@ -245,7 +221,7 @@ show_full_file_properties(FileView *view)
 	while(!done)
 	{
 		key = wgetch(menu_win);
-	
+
 		/* ascii Return - Ctrl-c  - Escape */
 		if(key == 13 || key == 3 || key == 27)
 			done = 1;
@@ -255,4 +231,4 @@ show_full_file_properties(FileView *view)
 	redraw_window();
 }
 
-
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

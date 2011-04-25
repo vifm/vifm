@@ -26,6 +26,8 @@
 #define FILE_GROUP 6
 #define FILE_PERMISSIONS 8
 
+#define DEFAULT_REG_NAME '"'
+
 typedef struct
 {
 	char *dir;
@@ -34,13 +36,20 @@ typedef struct
 
 yank_t *yanked_file;
 
-void handle_file(FileView *view);
-void delete_file(FileView *view);
+void handle_file(FileView *view, int dont_execute);
+void delete_file(FileView *view, int reg, int count, int *indexes);
 int my_system(char *command);
-void yank_selected_files(FileView *view);
+int yank_files(FileView *view, int reg, int count, int *indexes);
+void yank_selected_files(FileView *view, int reg);
 int pipe_and_capture_errors(char *command);
 int file_exec(char *command);
 void show_change_window(FileView *view, int type);
 int check_link_is_dir(FileView *view, int pos);
+void rename_file(FileView *view);
+void change_owner(FileView *view);
+void change_group(FileView *view);
+int put_files_from_register(FileView *view, int name);
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

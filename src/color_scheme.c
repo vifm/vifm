@@ -31,6 +31,8 @@
 
 #define MAX_LEN 1024
 
+Col_scheme *col_schemes;
+
 void
 verify_color_schemes()
 {
@@ -45,265 +47,6 @@ load_color_scheme(char *name, char *dir)
 }
 
 static void
-load_default_colors()
-{
-
-	snprintf(col_schemes[0].name, NAME_MAX, "Default");
-	snprintf(col_schemes[0].dir, PATH_MAX, "/");
-
-	col_schemes[0].color[0].name = MENU_COLOR;
-	col_schemes[0].color[0].fg = 7;
-	col_schemes[0].color[0].bg = 0;
-
-	col_schemes[0].color[1].name = BORDER_COLOR;
-	col_schemes[0].color[1].fg = 0;
-	col_schemes[0].color[1].bg = 7;
-
-	col_schemes[0].color[2].name = WIN_COLOR;
-	col_schemes[0].color[2].fg = 7;
-	col_schemes[0].color[2].bg = 0;
-
-	col_schemes[0].color[3].name = STATUS_BAR_COLOR;
-	col_schemes[0].color[3].fg = 7;
-	col_schemes[0].color[3].bg = 0;
-
-	col_schemes[0].color[4].name = CURR_LINE_COLOR;
-	col_schemes[0].color[4].fg = 7;
-	col_schemes[0].color[4].bg = 4;
-
-	col_schemes[0].color[5].name = DIRECTORY_COLOR;
-	col_schemes[0].color[5].fg = 6;
-	col_schemes[0].color[5].bg = 0;
-
-	col_schemes[0].color[6].name = LINK_COLOR;
-	col_schemes[0].color[6].fg = 3;
-	col_schemes[0].color[6].bg = 0;
-
-	col_schemes[0].color[7].name = SOCKET_COLOR;
-	col_schemes[0].color[7].fg = 5;
-	col_schemes[0].color[7].bg = 0;
-
-	col_schemes[0].color[8].name = DEVICE_COLOR;
-	col_schemes[0].color[8].fg = 1;
-	col_schemes[0].color[8].bg = 0;
-
-	col_schemes[0].color[9].name = EXECUTABLE_COLOR;
-	col_schemes[0].color[9].fg = 2;
-	col_schemes[0].color[9].bg = 0;
-
-	col_schemes[0].color[10].name = SELECTED_COLOR;
-	col_schemes[0].color[10].fg = 5;
-	col_schemes[0].color[10].bg = 0;
-
-	col_schemes[0].color[11].name = CURRENT_COLOR;
-	col_schemes[0].color[11].fg = 4;
-	col_schemes[0].color[11].bg = 0;
-
-
-}
-
-
-/*
- * convert possible <color_name> to <int>
- */
-static int
-colname2int(char col[])
-{
- /* test if col[] is a number... */
-	 if (isdigit(col[0]))
-	   return atoi(col);
-
- /* otherwise convert */
- if(!strcmp(col, "black"))
-   return 0;
- if(!strcmp(col, "red"))
-   return 1;
- if(!strcmp(col, "green"))
-   return 2;
- if(!strcmp(col, "yellow"))
-   return 3;
- if(!strcmp(col, "blue"))
-   return 4;
- if(!strcmp(col, "magenta"))
-   return 5;
- if(!strcmp(col, "cyan"))
-   return 6;
- if(!strcmp(col, "white"))
-   return 7;
- /* return default color */
- return -1;
-}
-
-/*
- * add color
- */
-void
-add_color(char s1[], char s2[], char s3[])
-{
- 	int fg, bg;
-	int scheme = 0;
-	int x = cfg.color_scheme_num -1;
-	int y = cfg.color_pairs_num;
-
-	fg = colname2int(s2);
-	bg = colname2int(s3);
-
-	if(y > 11)
-		y =  (y % 12);
-
-	scheme = ((cfg.color_scheme_num - 1) * 12);
-
-
-	if(!strcmp(s1, "MENU"))
-		col_schemes[x].color[y].name = 0 + scheme;
-
-	if(!strcmp(s1, "BORDER"))
-		col_schemes[x].color[y].name = 1 + scheme;
-
-	if(!strcmp(s1, "WIN"))
-		col_schemes[x].color[y].name = 2 + scheme;
-
-	if(!strcmp(s1, "STATUS_BAR"))
-		col_schemes[x].color[y].name = 3 + scheme;
-
-	if(!strcmp(s1, "CURR_LINE"))
-		col_schemes[x].color[y].name = 4 + scheme;
-
-	if(!strcmp(s1, "DIRECTORY"))
-		col_schemes[x].color[y].name = 5 + scheme;
-
-	if(!strcmp(s1, "LINK"))
-		col_schemes[x].color[y].name = 6 + scheme;
-
-	if(!strcmp(s1, "SOCKET"))
-		col_schemes[x].color[y].name = 7 + scheme;
-
-	if(!strcmp(s1, "DEVICE"))
-		col_schemes[x].color[y].name = 8 + scheme;
-
-	if(!strcmp(s1, "EXECUTABLE"))
-		col_schemes[x].color[y].name = 9 + scheme;
-
-	if(!strcmp(s1, "SELECTED"))
-		col_schemes[x].color[y].name = 10 + scheme;
-
-	if(!strcmp(s1, "CURRENT"))
-		col_schemes[x].color[y].name = 11 + scheme;
-
-	col_schemes[x].color[y].fg = fg;
-	col_schemes[x].color[y].bg = bg;
-
-	cfg.color_pairs_num++;
-}
-
-
-void
-read_color_scheme_file()
-{
-
-	FILE *fp;
-	char config_file[PATH_MAX];
-	char line[MAX_LEN];
-	char *s1 = NULL;
-	char *s2 = NULL;
-	char *s3 = NULL;
-	char *sx = NULL;
-	int args;
-	struct stat stat_buf;
-
-	snprintf(config_file, sizeof(config_file), "%s/colorschemes",
-				  cfg.config_dir);
-
-	if(stat(config_file, &stat_buf) == 0)
-		curr_stats.colorscheme_file_mtime = stat_buf.st_mtime;
-	else
-		curr_stats.config_file_mtime = 0;
-
-	if((fp = fopen(config_file, "r")) == NULL)
-	{
-		load_default_colors();
-
-		cfg.color_scheme_num++;
-		cfg.color_pairs_num = 12;
-		return;
-	}
-
-	while(fgets(line, MAX_LEN, fp))
-	{
-		args = 0;
-
-		if(line[0] == '#')
-			continue;
-
-		if((sx = s1 = strchr(line, '=')) != NULL)
-		{
-			s1++;
-			chomp(s1);
-			*sx = '\0';
-			args = 1;
-		}
-		else
-			continue;
-		if((sx = s2 = strchr(s1, '=')) != NULL)
-		{
-			s2++;
-			chomp(s2);
-			*sx = '\0';
-			args = 2;
-		}
-		if((args == 2) && ((sx = s3 = strchr(s2, '=')) != NULL))
-		{
-			s3++;
-			chomp(s3);
-			*sx = '\0';
-			args = 3;
-		}
-
-		if(args == 1)
-		{
-			if(!strcmp(line, "COLORSCHEME"))
-			{
-
-				//check if last colorscheme is complete and pad it before starting
-				// a new scheme
-				// verify_scheme();
-
-					//col_schemes = (Col_scheme *)realloc(col_schemes,
-					//		sizeof(Col_scheme *) +1);
-
-				snprintf(col_schemes[cfg.color_scheme_num].name,
-						NAME_MAX, "%s", s1);
-
-				cfg.color_scheme_num++;
-
-				if (cfg.color_scheme_num > 8)
-					break;
-
-				continue;
-
-			}
-			if(!strcmp(line, "DIRECTORY"))
-			{
-				snprintf(col_schemes[cfg.color_scheme_num - 1].dir,
-							PATH_MAX, "%s", s1);
-
-				continue;
-			}
-		}
-		if(!strcmp(line, "COLOR") && args == 3)
-		{
-			add_color(s1, s2, s3);
-		}
-
-	}
-
-	fclose(fp);
-
-	//verify_color_schemes();
-	return;
-}
-
-void
 write_color_scheme_file()
 {
 	FILE *fp;
@@ -312,20 +55,9 @@ write_color_scheme_file()
 	char buf[128];
 	char fg_buf[64];
 	char bg_buf[64];
-	struct stat stat_buf;
 
 	snprintf(config_file, sizeof(config_file), "%s/colorschemes",
-		   	cfg.config_dir);
-
-	if(stat(config_file, &stat_buf) == 0) 
-	{
-		if (stat_buf.st_mtime > curr_stats.colorscheme_file_mtime)
-		{
-			if (! query_user_menu(" Colorscheme file has been modified ",
-				 "File has been modified would you still like to write to file? "))
-				return;
-		}
-	}
+			cfg.config_dir);
 
 
 	if((fp = fopen(config_file, "w")) == NULL)
@@ -336,11 +68,11 @@ write_color_scheme_file()
 	fprintf(fp, "# Blank lines are ignored.\n\n");
 
 	fprintf(fp, "# The Default color scheme is used for any directory that does not have\n");
-	fprintf(fp, "# a specified scheme.  A color scheme set for a base directory will also\n");
+	fprintf(fp, "# a specified scheme.	A color scheme set for a base directory will also\n");
 	fprintf(fp, "# be used for the sub directories.\n\n");
 
 	fprintf(fp, "# The standard ncurses colors are: \n");
- 	fprintf(fp, "# Default = -1 used for fake transparency\n");
+	fprintf(fp, "# Default = -1 can be used for transparency\n");
 	fprintf(fp, "# Black = 0\n");
 	fprintf(fp, "# Red = 1\n");
 	fprintf(fp, "# Green = 2\n");
@@ -349,6 +81,9 @@ write_color_scheme_file()
 	fprintf(fp, "# Magenta = 5\n");
 	fprintf(fp, "# Cyan = 6\n");
 	fprintf(fp, "# White = 7\n\n");
+
+	fprintf(fp, "# Vifm supports 256 colors you can use color numbers 0-255\n");
+	fprintf(fp, "#	(requires properly set up terminal).\n\n");
 
 	fprintf(fp, "# COLORSCHEME=OneWordDescription\n");
 	fprintf(fp, "# DIRECTORY=/Full/Path/To/Base/Directory\n");
@@ -366,7 +101,7 @@ write_color_scheme_file()
 			while(col_schemes[x].color[y].name > 11)
 			{
 				col_schemes[x].color[y].name =
-				   	col_schemes[x].color[y].name - 12;
+					col_schemes[x].color[y].name - 12;
 			}
 
 			switch(col_schemes[x].color[y].name)
@@ -448,9 +183,9 @@ write_color_scheme_file()
 
 			switch (col_schemes[x].color[y].bg)
 			{
- 				case -1:
- 					snprintf(bg_buf, sizeof(bg_buf), "default");
- 					break;
+				case -1:
+					snprintf(bg_buf, sizeof(bg_buf), "default");
+					break;
 				case 0:
 					snprintf(bg_buf, sizeof(bg_buf), "black");
 					break;
@@ -488,6 +223,258 @@ write_color_scheme_file()
 	fclose(fp);
 	return;
 }
+static void
+load_default_colors()
+{
+
+	snprintf(col_schemes[0].name, NAME_MAX, "Default");
+	snprintf(col_schemes[0].dir, PATH_MAX, "/");
+
+	col_schemes[0].color[0].name = MENU_COLOR;
+	col_schemes[0].color[0].fg = 7;
+	col_schemes[0].color[0].bg = 0;
+
+	col_schemes[0].color[1].name = BORDER_COLOR;
+	col_schemes[0].color[1].fg = 0;
+	col_schemes[0].color[1].bg = 7;
+
+	col_schemes[0].color[2].name = WIN_COLOR;
+	col_schemes[0].color[2].fg = 7;
+	col_schemes[0].color[2].bg = 0;
+
+	col_schemes[0].color[3].name = STATUS_BAR_COLOR;
+	col_schemes[0].color[3].fg = 7;
+	col_schemes[0].color[3].bg = 0;
+
+	col_schemes[0].color[4].name = CURR_LINE_COLOR;
+	col_schemes[0].color[4].fg = 7;
+	col_schemes[0].color[4].bg = 4;
+
+	col_schemes[0].color[5].name = DIRECTORY_COLOR;
+	col_schemes[0].color[5].fg = 6;
+	col_schemes[0].color[5].bg = 0;
+
+	col_schemes[0].color[6].name = LINK_COLOR;
+	col_schemes[0].color[6].fg = 3;
+	col_schemes[0].color[6].bg = 0;
+
+	col_schemes[0].color[7].name = SOCKET_COLOR;
+	col_schemes[0].color[7].fg = 5;
+	col_schemes[0].color[7].bg = 0;
+
+	col_schemes[0].color[8].name = DEVICE_COLOR;
+	col_schemes[0].color[8].fg = 1;
+	col_schemes[0].color[8].bg = 0;
+
+	col_schemes[0].color[9].name = EXECUTABLE_COLOR;
+	col_schemes[0].color[9].fg = 2;
+	col_schemes[0].color[9].bg = 0;
+
+	col_schemes[0].color[10].name = SELECTED_COLOR;
+	col_schemes[0].color[10].fg = 5;
+	col_schemes[0].color[10].bg = 0;
+
+	col_schemes[0].color[11].name = CURRENT_COLOR;
+	col_schemes[0].color[11].fg = 4;
+	col_schemes[0].color[11].bg = 0;
+}
+
+
+/*
+ * convert possible <color_name> to <int>
+ */
+static int
+colname2int(char col[])
+{
+ /* test if col[] is a number... */
+	 if (isdigit(col[0]))
+	   return atoi(col);
+
+ /* otherwise convert */
+ if(!strcmp(col, "black"))
+   return 0;
+ if(!strcmp(col, "red"))
+   return 1;
+ if(!strcmp(col, "green"))
+   return 2;
+ if(!strcmp(col, "yellow"))
+   return 3;
+ if(!strcmp(col, "blue"))
+   return 4;
+ if(!strcmp(col, "magenta"))
+   return 5;
+ if(!strcmp(col, "cyan"))
+   return 6;
+ if(!strcmp(col, "white"))
+   return 7;
+ /* return default color */
+ return -1;
+}
+
+/*
+ * add color
+ */
+void
+add_color(char s1[], char s2[], char s3[])
+{
+	int fg, bg;
+	int scheme = 0;
+	int x = cfg.color_scheme_num -1;
+	int y = cfg.color_pairs_num;
+
+	fg = colname2int(s2);
+	bg = colname2int(s3);
+
+	if(y > 11)
+		y =  (y % 12);
+
+	scheme = ((cfg.color_scheme_num - 1) * 12);
+
+
+	if(!strcmp(s1, "MENU"))
+		col_schemes[x].color[y].name = 0 + scheme;
+
+	if(!strcmp(s1, "BORDER"))
+		col_schemes[x].color[y].name = 1 + scheme;
+
+	if(!strcmp(s1, "WIN"))
+		col_schemes[x].color[y].name = 2 + scheme;
+
+	if(!strcmp(s1, "STATUS_BAR"))
+		col_schemes[x].color[y].name = 3 + scheme;
+
+	if(!strcmp(s1, "CURR_LINE"))
+		col_schemes[x].color[y].name = 4 + scheme;
+
+	if(!strcmp(s1, "DIRECTORY"))
+		col_schemes[x].color[y].name = 5 + scheme;
+
+	if(!strcmp(s1, "LINK"))
+		col_schemes[x].color[y].name = 6 + scheme;
+
+	if(!strcmp(s1, "SOCKET"))
+		col_schemes[x].color[y].name = 7 + scheme;
+
+	if(!strcmp(s1, "DEVICE"))
+		col_schemes[x].color[y].name = 8 + scheme;
+
+	if(!strcmp(s1, "EXECUTABLE"))
+		col_schemes[x].color[y].name = 9 + scheme;
+
+	if(!strcmp(s1, "SELECTED"))
+		col_schemes[x].color[y].name = 10 + scheme;
+
+	if(!strcmp(s1, "CURRENT"))
+		col_schemes[x].color[y].name = 11 + scheme;
+
+	col_schemes[x].color[y].fg = fg;
+	col_schemes[x].color[y].bg = bg;
+
+	cfg.color_pairs_num++;
+}
+
+
+void
+read_color_scheme_file()
+{
+
+	FILE *fp;
+	char config_file[PATH_MAX];
+	char line[MAX_LEN];
+	char *s1 = NULL;
+	char *s2 = NULL;
+	char *s3 = NULL;
+	char *sx = NULL;
+	int args;
+
+	snprintf(config_file, sizeof(config_file), "%s/colorschemes",
+				  cfg.config_dir);
+
+	if((fp = fopen(config_file, "r")) == NULL)
+	{
+		load_default_colors();
+
+		cfg.color_scheme_num++;
+		cfg.color_pairs_num = 12;
+		write_color_scheme_file();
+		return;
+	}
+
+	while(fgets(line, MAX_LEN, fp))
+	{
+		args = 0;
+
+		if(line[0] == '#')
+			continue;
+
+		if((sx = s1 = strchr(line, '=')) != NULL)
+		{
+			s1++;
+			chomp(s1);
+			*sx = '\0';
+			args = 1;
+		}
+		else
+			continue;
+		if((sx = s2 = strchr(s1, '=')) != NULL)
+		{
+			s2++;
+			chomp(s2);
+			*sx = '\0';
+			args = 2;
+		}
+		if((args == 2) && ((sx = s3 = strchr(s2, '=')) != NULL))
+		{
+			s3++;
+			chomp(s3);
+			*sx = '\0';
+			args = 3;
+		}
+
+		if(args == 1)
+		{
+			if(!strcmp(line, "COLORSCHEME"))
+			{
+
+				//check if last colorscheme is complete and pad it before starting
+				// a new scheme
+				// verify_scheme();
+
+					//col_schemes = (Col_scheme *)realloc(col_schemes,
+					//		sizeof(Col_scheme *) +1);
+
+				snprintf(col_schemes[cfg.color_scheme_num].name,
+						NAME_MAX, "%s", s1);
+
+				cfg.color_scheme_num++;
+
+				if (cfg.color_scheme_num > 8)
+					break;
+
+				continue;
+
+			}
+			if(!strcmp(line, "DIRECTORY"))
+			{
+				snprintf(col_schemes[cfg.color_scheme_num - 1].dir,
+							PATH_MAX, "%s", s1);
+
+				continue;
+			}
+		}
+		if(!strcmp(line, "COLOR") && args == 3)
+		{
+			add_color(s1, s2, s3);
+		}
+
+	}
+
+	fclose(fp);
+
+	//verify_color_schemes();
+	return;
+}
+
 
 /* The return value is the color scheme base number for the colorpairs.
  * There are 12 color pairs for each color scheme.
@@ -496,7 +483,7 @@ write_color_scheme_file()
  * Second color scheme returns 12
  * Third color scheme returns 24
  *
- * The color scheme with the longest matching directory path is the one that 
+ * The color scheme with the longest matching directory path is the one that
  * should be returned.
  */
 int
@@ -524,3 +511,4 @@ check_directory_for_color_scheme(const char *dir)
 	return (v * 12);
 }
 
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

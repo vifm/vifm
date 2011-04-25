@@ -16,7 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-
 #include<ncurses.h>
 #include<unistd.h>
 #include<errno.h> /* errno */
@@ -25,6 +24,7 @@
 #include<sys/stat.h> /* stat */
 #include<stdio.h>
 #include<string.h>
+#include<fcntl.h>
 
 #include"background.h"
 #include"color_scheme.h"
@@ -33,23 +33,21 @@
 #include"filelist.h"
 #include"fileops.h"
 #include"filetype.h"
-#include"keys.h"
+#include"keys_buildin_c.h"
 #include"menus.h"
 #include"registers.h"
 #include"status.h"
 #include"ui.h"
 #include"utils.h"
 
-
-
-int 
+int
 my_system(char *command)
 {
 	int pid;
 	int status;
 	extern char **environ;
 
-	if(command == 0)
+	if(command == NULL)
 		return 1;
 
 	pid = fork();
@@ -79,6 +77,74 @@ my_system(char *command)
 	}while(1);
 }
 
+int
+system_and_wait_for_errors(char *cmd)
+{
+	pid_t pid;
+	int error_pipe[2];
+	int result = 0;
+
+	if(pipe(error_pipe) != 0)
+	{
+		show_error_msg(" File pipe error", "Error creating pipe");
+		return -1;
+	}
+
+	if((pid = fork()) == -1)
+		return -1;
+
+	if(pid == 0)
+	{
+		char *args[4];
+		int nullfd;
+
+		close(2);             /* Close stderr */
+		dup(error_pipe[1]);   /* Redirect stderr to write end of pipe. */
+		close(error_pipe[0]); /* Close read end of pipe. */
+		close(0);             /* Close stdin */
+		close(1);             /* Close stdout */
+
+		/* Send stdout, stdin to /dev/null */
+		if((nullfd = open("/dev/null", O_RDONLY)) != -1)
+		{
+			dup2(nullfd, 0);
+			dup2(nullfd, 1);
+		}
+
+		args[0] = "sh";
+		args[1] = "-c";
+		args[2] = cmd;
+		args[3] = NULL;
+
+		execvp(args[0], args);
+		exit(-1);
+	}
+	else
+	{
+		char buf[80*10];
+		char linebuf[80];
+		int nread = 0;
+
+		close(error_pipe[1]); /* Close write end of pipe. */
+
+		buf[0] = '\0';
+		while((nread = read(error_pipe[0], linebuf, sizeof(linebuf) - 1)) > 0)
+		{
+			result = -1;
+			linebuf[nread + 1] = '\0';
+			if(nread == 1 && linebuf[0] == '\n')
+				continue;
+			strcat(buf, linebuf);
+		}
+		close(error_pipe[0]);
+
+		if(result != 0)
+			show_error_msg("Background Process Error", buf);
+	}
+
+	return result;
+}
+
 static int
 execute(char **args)
 {
@@ -96,40 +162,46 @@ execute(char **args)
 	return pid;
 }
 
+int
+yank_files(FileView *view, int reg, int count, int *indexes)
+{
+	int tmp;
+	if(count > 0)
+		get_selected_files(view, count, indexes);
+	else
+		get_all_selected_files(curr_view);
+
+	/* A - Z  append to register otherwise replace */
+	if ((reg < 'A') || (reg > 'Z'))
+		clear_register(reg);
+	else
+		reg += 'a' - 'A';
+
+	yank_selected_files(curr_view, reg);
+	tmp = curr_view->selected_files;
+	free_selected_file_array(curr_view);
+
+	if(count == 0)
+	{
+		clean_selected_files(curr_view);
+		draw_dir_list(curr_view, curr_view->top_line, curr_view->list_pos);
+		moveto_list_pos(curr_view, curr_view->list_pos);
+		return tmp;
+	}
+	return count;
+}
+
 void
-yank_selected_files(FileView *view)
+yank_selected_files(FileView *view, int reg)
 {
 	int x;
 	size_t namelen;
-	int old_list = curr_stats.num_yanked_files;
 
-
-
-	if(curr_stats.yanked_files)
-	{
-		for(x = 0; x < old_list; x++)
-		{
-			if(curr_stats.yanked_files[x])
-			{
-				my_free(curr_stats.yanked_files[x]);
-				curr_stats.yanked_files[x] = NULL;
-			}
-		}
-		my_free(curr_stats.yanked_files);
-		curr_stats.yanked_files = NULL;
-	}
-
-	curr_stats.yanked_files = (char **)calloc(view->selected_files, 
-			sizeof(char *));
-
-	if ((curr_stats.use_register) && (curr_stats.register_saved))
-	{
-		/* A - Z  append to register otherwise replace */
-		if ((curr_stats.curr_register < 65) || (curr_stats.curr_register > 90))
-			clear_register(curr_stats.curr_register);
-		else
-			curr_stats.curr_register = curr_stats.curr_register + 32;
-	}
+	/* A - Z  append to register otherwise replace */
+	if ((reg < 'A') || (reg > 'Z'))
+		clear_register(reg);
+	else
+		reg += 'a' - 'A';
 
 	for(x = 0; x < view->selected_files; x++)
 	{
@@ -137,11 +209,9 @@ yank_selected_files(FileView *view)
 		{
 			char buf[PATH_MAX];
 			namelen = strlen(view->selected_filelist[x]);
-			curr_stats.yanked_files[x] = malloc(namelen +1);
-			strcpy(curr_stats.yanked_files[x], view->selected_filelist[x]);
-			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, 
+			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
 					view->selected_filelist[x]);
-			append_to_register(curr_stats.curr_register, view->selected_filelist[x]);
+			append_to_register(reg, buf);
 		}
 		else
 		{
@@ -149,10 +219,6 @@ yank_selected_files(FileView *view)
 			break;
 		}
 	}
-	curr_stats.num_yanked_files = x;
-
-	strncpy(curr_stats.yanked_files_dir, view->curr_dir,
-			sizeof(curr_stats.yanked_files_dir) -1);
 }
 
 /* execute command. */
@@ -181,7 +247,7 @@ view_file(FileView *view)
 	snprintf(command, sizeof(command), "%s %s", cfg.vi_command, filename);
 
 	shellout(command, 0);
-	my_free(filename);
+	free(filename);
 	curs_set(0);
 }
 
@@ -197,24 +263,23 @@ check_link_is_dir(FileView *view, int pos)
 
 	len = readlink (filename, linkto, sizeof (linkto));
 
-	my_free(filename);
+	free(filename);
 
 	if (len > 0)
 	{
 		struct stat s;
 		linkto[len] = '\0';
 		lstat(linkto, &s);
-		
+
 		if((s.st_mode & S_IFMT) == S_IFDIR)
 			return 1;
 	}
 
-	
 	return 0;
 }
 
 void
-handle_file(FileView *view)
+handle_file(FileView *view, int dont_execute)
 {
 	if(DIRECTORY == view->dir_entry[view->list_pos].type)
 	{
@@ -241,7 +306,7 @@ handle_file(FileView *view)
 		exit(0);
 	}
 
-	if(EXECUTABLE == view->dir_entry[view->list_pos].type)
+	if(EXECUTABLE == view->dir_entry[view->list_pos].type && !dont_execute)
 	{
 		if(cfg.auto_execute)
 		{
@@ -263,7 +328,7 @@ handle_file(FileView *view)
 					int s = 0;
 					char *command = expand_macros(view, program, NULL, &m, &s);
 					shellout(command, 0);
-					my_free(command);
+					free(command);
 					return;
 				}
 				else
@@ -272,10 +337,10 @@ handle_file(FileView *view)
 					char *temp = escape_filename(view->dir_entry[view->list_pos].name,
 						   strlen(view->dir_entry[view->list_pos].name), 0);
 
-					snprintf(buf, sizeof(buf), "%s %s", program, temp); 
+					snprintf(buf, sizeof(buf), "%s %s", program, temp);
 					shellout(buf, 0);
-					my_free(program);
-					my_free(temp);
+					free(program);
+					free(temp);
 					return;
 				}
 			}
@@ -286,7 +351,7 @@ handle_file(FileView *view)
 			return;
 		}
 	}
-	if((REGULAR == view->dir_entry[view->list_pos].type) 
+	if((REGULAR == view->dir_entry[view->list_pos].type)
 				|| (EXECUTABLE == view->dir_entry[view->list_pos].type))
 	{
 		char *program = NULL;
@@ -304,7 +369,7 @@ handle_file(FileView *view)
 						show_error_msg("Unable to create FUSE mount home directory", (char *)cfg.fuse_home);
 						return;
 					}
-                                }
+								}
 				Fuse_List *runner = fuse_mounts, *fuse_item = NULL;
 				char filename[PATH_MAX];
 				char mount_point[PATH_MAX];
@@ -352,7 +417,7 @@ handle_file(FileView *view)
 					char *cmd_pos;
 					char *buf_pos = buf;
 					char *prog_pos = program;
-/*Build the mount command based on the FUSE program config line in vifmrc. 
+/*Build the mount command based on the FUSE program config line in vifmrc.
   Accepted FORMAT: FUSE_MOUNT|some_mount_command %SOURCE_FILE %DESTINATION_DIR*/
 					strcpy(buf_pos, "sh -c \"");
 					//strcpy(buf_pos, "sh -c \"pauseme PAUSE_ON_ERROR_ONLY ");
@@ -375,17 +440,17 @@ handle_file(FileView *view)
 							*cmd_pos = '\0';
 							if(!strcmp(cmd_buf, "%SOURCE_FILE") && (buf_pos+strlen(filename)<buf+sizeof(buf)+2))
 							{
-							    *buf_pos++='\'';
-							    strcpy(buf_pos, filename);
-							    buf_pos += strlen(filename);
-							    *buf_pos++='\'';
+								*buf_pos++='\'';
+								strcpy(buf_pos, filename);
+								buf_pos += strlen(filename);
+								*buf_pos++='\'';
 							}
 							else if(!strcmp(cmd_buf, "%DESTINATION_DIR") && (buf_pos+strlen(filename)<buf+sizeof(buf)+2))
 							{
-							    *buf_pos++='\'';
-							    strcpy(buf_pos, mount_point);
-							    buf_pos += strlen(mount_point);
-							    *buf_pos++='\'';
+								*buf_pos++='\'';
+								strcpy(buf_pos, mount_point);
+								buf_pos += strlen(mount_point);
+								*buf_pos++='\'';
 							}
 						}
 						else
@@ -395,18 +460,18 @@ handle_file(FileView *view)
 								buf_pos++;
 							prog_pos++;
 						}
-                    }
+					}
 
 					*buf_pos = '"';
 					*(++buf_pos) = '\0';
 					/*uff, CMD built.*/
-					/*Just before running the mount, 
-					  I need to chdir out temporarily from any FUSE mounted 
-					  paths, Otherwise the fuse-zip command fails with 
-					  "fusermount: failed to open current 
-				    	directory: permission denied"
+					/*Just before running the mount,
+					  I need to chdir out temporarily from any FUSE mounted
+					  paths, Otherwise the fuse-zip command fails with
+					  "fusermount: failed to open current
+						directory: permission denied"
 					 *(this happens when mounting JARs from mounted JARs)*/
-                    chdir(cfg.fuse_home);
+					chdir(cfg.fuse_home);
 					/*
 					def_prog_mode();
 					endwin();
@@ -415,7 +480,7 @@ handle_file(FileView *view)
 					*/
 					int status = background_and_wait_for_status(buf);
 					/*check child status*/
-					if( !WIFEXITED(status) || (WIFEXITED(status) && 
+					if( !WIFEXITED(status) || (WIFEXITED(status) &&
 								WEXITSTATUS(status)) )
 					{
 						werase(status_bar);
@@ -427,7 +492,7 @@ handle_file(FileView *view)
 						return;
 					}
 					status_bar_message("FUSE mount success.");
-					
+
 					fuse_item = (Fuse_List *)malloc(sizeof(Fuse_List));
 					strcpy(fuse_item->source_file_name, filename);
 					strcpy(fuse_item->source_file_dir, view->curr_dir);
@@ -451,7 +516,7 @@ handle_file(FileView *view)
 				int s = 0;
 				char *command = expand_macros(view, program, NULL, &m, &s);
 				shellout(command, 0);
-				my_free(command);
+				free(command);
 				return;
 			}
 			else
@@ -460,10 +525,10 @@ handle_file(FileView *view)
 				char *temp = escape_filename(view->dir_entry[view->list_pos].name,
 						strlen(view->dir_entry[view->list_pos].name), 0);
 
-				snprintf(buf, sizeof(buf), "%s %s", program, temp); 
+				snprintf(buf, sizeof(buf), "%s %s", program, temp);
 				shellout(buf, 0);
-				my_free(program);
-				my_free(temp);
+				free(program);
+				free(temp);
 				return;
 			}
 		}
@@ -483,7 +548,7 @@ handle_file(FileView *view)
 
 		len = readlink (filename, linkto, sizeof (linkto));
 
-		my_free(filename);
+		free(filename);
 
 		if (len > 0)
 		{
@@ -495,7 +560,7 @@ handle_file(FileView *view)
 			char *link_dup = strdup(linkto);
 			linkto[len] = '\0';
 			lstat(linkto, &s);
-			
+
 			if((s.st_mode & S_IFMT) == S_IFDIR)
 			{
 				is_dir = 1;
@@ -544,10 +609,10 @@ handle_file(FileView *view)
 				if(pos >= 0)
 					moveto_list_pos(view, pos);
 			}
-			my_free(link_dup);
-			my_free(dir);
+			free(link_dup);
+			free(dir);
 		}
-	  	else
+		else
 			status_bar_message("Couldn't Resolve Link");
 	}
 }
@@ -563,30 +628,30 @@ pipe_and_capture_errors(char *command)
   char *args[4];
 
   if (pipe (file_pipes) != 0)
-      return 1;
+	  return 1;
 
   if ((pid = fork ()) == -1)
-      return 1;
+	  return 1;
 
   if (pid == 0)
-    {
+	{
 			close(1);
 			close(2);
 			dup(file_pipes[1]);
-      close (file_pipes[0]);
-      close (file_pipes[1]);
+	  close (file_pipes[0]);
+	  close (file_pipes[1]);
 
-      args[0] = "sh";
-      args[1] = "-c";
-      args[2] = command;
-      args[3] = NULL;
-      execvp (args[0], args);
-      exit (127);
-    }
+	  args[0] = "sh";
+	  args[1] = "-c";
+	  args[2] = command;
+	  args[3] = NULL;
+	  execvp (args[0], args);
+	  exit (127);
+	}
   else
-    {
+	{
 			char buf[1024];
-      close (file_pipes[1]);
+	  close (file_pipes[1]);
 			while((nread = read(*file_pipes, buf, sizeof(buf) -1)) > 0)
 			{
 				buf[nread] = '\0';
@@ -599,13 +664,12 @@ pipe_and_capture_errors(char *command)
 				show_error_msg(title, buf);
 				return 1;
 			}
-    }
+	}
 	return 0;
 }
 
-
 void
-delete_file(FileView *view)
+delete_file(FileView *view, int reg, int count, int *indexes)
 {
 	char buf[256];
 	int x;
@@ -616,46 +680,53 @@ delete_file(FileView *view)
 		view->selected_files = 1;
 	}
 
-	get_all_selected_files(view);
-	yank_selected_files(view);
+	if(count > 0)
+		get_selected_files(view, count, indexes);
+	else
+		get_all_selected_files(view);
+
+	/* A - Z  append to register otherwise replace */
+	if ((reg < 'A') || (reg > 'Z'))
+		clear_register(reg);
+	else
+		reg += 'a' - 'A';
 
 	for(x = 0; x < view->selected_files; x++)
 	{
 		if(!strcmp("../", view->selected_filelist[x]))
 		{
-			show_error_msg(" Background Process Error ", 
+			show_error_msg(" Background Process Error ",
 					"You cannot delete the ../ directory ");
 			continue;
 		}
 
-		if ((curr_stats.use_register) && (curr_stats.register_saved))
+		if(cfg.use_trash)
 		{
-			strncpy(curr_stats.yanked_files_dir, cfg.trash_dir,
-					sizeof(curr_stats.yanked_files_dir) -1);
-			snprintf(buf, sizeof(buf), "mv \"%s\" %s/%s", 
-					view->selected_filelist[x], cfg.trash_dir, 
-					view->selected_filelist[x]);
-
-			curr_stats.register_saved = 0;
-			curr_stats.use_register = 0;
-		}
-		else if(cfg.use_trash)
-		{
-			strncpy(curr_stats.yanked_files_dir, cfg.trash_dir,
-					sizeof(curr_stats.yanked_files_dir) -1);
-			snprintf(buf, sizeof(buf), "mv \"%s\" %s",
-				view->selected_filelist[x],  cfg.trash_dir);
+			snprintf(buf, sizeof(buf), "mv \"%s\" %s", view->selected_filelist[x],
+					cfg.trash_dir);
 		}
 		else
-			snprintf(buf, sizeof(buf), "rm -fr '%s'",
-					 view->selected_filelist[x]);
+			snprintf(buf, sizeof(buf), "rm -rf '%s'", view->selected_filelist[x]);
 
-		background_and_wait_for_errors(buf);
+		if(background_and_wait_for_errors(buf) == 0)
+		{
+			char reg_buf[PATH_MAX];
+			snprintf(reg_buf, sizeof(reg_buf), "%s/%s", cfg.trash_dir,
+					view->selected_filelist[x]);
+			append_to_register(reg, reg_buf);
+		}
 	}
 	free_selected_file_array(view);
-	view->selected_files = 0;
 
+	get_all_selected_files(view);
 	load_dir_list(view, 1);
+	free_selected_file_array(view);
+
+	/* some files may still exist if there was an error */
+	for(x = 0; x < view->list_rows; x++)
+	{
+		view->selected_files += view->dir_entry[x].selected;
+	}
 
 	moveto_list_pos(view, view->list_pos);
 }
@@ -666,7 +737,7 @@ file_chmod(FileView *view, char *path, char *mode, int recurse_dirs)
   char cmd[PATH_MAX + 128] = " ";
   char *filename = escape_filename(path, strlen(path), 1);
 
-	if (recurse_dirs)
+	if(recurse_dirs)
 		snprintf(cmd, sizeof(cmd), "chmod -R %s %s", mode, filename);
 	else
 		snprintf(cmd, sizeof(cmd), "chmod %s %s", mode, filename);
@@ -675,8 +746,7 @@ file_chmod(FileView *view, char *path, char *mode, int recurse_dirs)
 
 	load_dir_list(view, 1);
 	moveto_list_pos(view, view->list_pos);
-	my_free(filename);
-  
+	free(filename);
 }
 
 static void
@@ -692,13 +762,13 @@ reset_change_window(void)
 void
 change_file_owner(char *file)
 {
-
+	// TODO write code
 }
 
 void
 change_file_group(char *file)
 {
-
+	// TODO write code
 }
 
 void
@@ -706,9 +776,9 @@ set_perm_string(FileView *view, int *perms, char *file)
 {
 	int i = 0;
 	char *add_perm[] = {"u+r", "u+w", "u+x", "u+s", "g+r", "g+w", "g+x", "g+s",
-											"o+r", "o+w", "o+x", "o+t"}; 
+											"o+r", "o+w", "o+x", "o+t"};
 	char *sub_perm[] = { "u-r", "u-w", "u-x", "u-s", "g-r", "g-w", "g-x", "g-s",
-											"o-r", "o-w", "o-x", "o-t"}; 
+											"o-r", "o-w", "o-x", "o-t"};
 	char perm_string[64] = " ";
 
 	for (i = 0; i < 12; i++)
@@ -743,9 +813,9 @@ permissions_key_cb(FileView *view, int *perms, int isdir)
 	if (isdir)
 		bottom = 17;
 
-	snprintf(filename, sizeof(filename), "%s", 
+	snprintf(filename, sizeof(filename), "%s",
 			view->dir_entry[view->list_pos].name);
-	snprintf(path, sizeof(path), "%s/%s", view->curr_dir, 
+	snprintf(path, sizeof(path), "%s/%s", view->curr_dir,
 			view->dir_entry[view->list_pos].name);
 
 	curs_set(1);
@@ -760,7 +830,7 @@ permissions_key_cb(FileView *view, int *perms, int isdir)
 		{
 			case 'j':
 				{
-					curr+= step;
+					curr += step;
 					permnum++;
 
 					if(curr > bottom)
@@ -768,7 +838,7 @@ permissions_key_cb(FileView *view, int *perms, int isdir)
 						curr-= step;
 						permnum--;
 					}
-					if (curr == 7 || curr == 12)
+					if (curr == 7 || curr == 12 || curr == 17)
 						curr++;
 
 					wmove(change_win, curr, col);
@@ -785,7 +855,7 @@ permissions_key_cb(FileView *view, int *perms, int isdir)
 						permnum++;
 					}
 
-					if (curr == 7 || curr == 12)
+					if (curr == 7 || curr == 12 || curr == 17)
 						curr--;
 
 					wmove(change_win, curr, col);
@@ -816,7 +886,7 @@ permissions_key_cb(FileView *view, int *perms, int isdir)
 				done = 1;
 				abort = 1;
 				break;
-			case 'l': 
+			case 'l':
 			case 13: /* ascii Return */
 				done = 1;
 				break;
@@ -840,123 +910,6 @@ permissions_key_cb(FileView *view, int *perms, int isdir)
 		set_perm_string(view, perms, path);
 		load_dir_list(view, 1);
 		moveto_list_pos(view, view->curr_line);
-	}
-
-}
-
-static void
-change_key_cb(FileView *view, int type)
-{
-	int done = 0;
-	int abort = 0;
-	int top = 2;
-	int bottom = 8;
-	int curr = 2;
-	int step = 2;
-	int col = 6;
-	char filename[NAME_MAX];
-
-	snprintf(filename, sizeof(filename), "%s", 
-			view->dir_entry[view->list_pos].name);
-
-	curs_set(0);
-	wmove(change_win, curr, col);
-	wrefresh(change_win);
-
-	while(!done)
-	{
-		int key = wgetch(change_win);
-
-		switch(key)
-		{
-			case 'j':
-				{
-					mvwaddch(change_win, curr, col, ' ');
-					curr+= step;
-
-					if(curr > bottom)
-						curr-= step;
-
-					mvwaddch(change_win, curr, col, '*');
-					wmove(change_win, curr, col);
-					wrefresh(change_win);
-				}
-				break;
-			case 'k':
-				{
-
-					mvwaddch(change_win, curr, col, ' ');
-					curr-= step;
-					if(curr < top)
-						curr+= step;
-
-					mvwaddch(change_win, curr, col, '*');
-					wmove(change_win, curr, col);
-					wrefresh(change_win);
-				}
-				break;
-			case 3: /* ascii Ctrl C */
-			case 27: /* ascii Escape */
-				done = 1;
-				abort = 1;
-				break;
-			case 'l': 
-			case 13: /* ascii Return */
-				done = 1;
-				break;
-			default:
-				break;
-		}
-	}
-
-	reset_change_window();
-
-	if(abort)
-	{
-		moveto_list_pos(view, find_file_pos_in_list(view, filename));
-		return;
-	}
-
-	switch(type)
-	{
-		case FILE_CHANGE:
-		{
-			if (curr == FILE_NAME)
-				rename_file(view);
-			else
-				show_change_window(view, curr);
-			/*
-			char * filename = get_current_file_name(view);
-			switch(curr)
-			{
-				case FILE_NAME: 
-					rename_file(view);
-					break;
-				case FILE_OWNER:
-					change_file_owner(filename);
-					break;
-				case FILE_GROUP:
-					change_file_group(filename);
-					break;
-				case FILE_PERMISSIONS:
-					show_change_window(view, type);
-					break;
-				default:
-					break;
-			}
-			*/
-		}
-		break;
-		case FILE_NAME:
-			break;
-		case FILE_OWNER:
-			break;
-		case FILE_GROUP:
-			break;
-		case FILE_PERMISSIONS:
-			break;
-		default:
-			break;
 	}
 }
 
@@ -1015,14 +968,14 @@ show_file_permissions_menu(FileView *view, int x)
 		mvwaddch(change_win, 9, 9, '*');
 	}
 
-	mvwaddstr(change_win, 10, 6, "  [ ] Execute");
+	mvwaddstr(change_win, 10, 6, "	[ ] Execute");
 	if (mode & S_IXGRP)
 	{
 		perms[6] = 1;
 		mvwaddch(change_win, 10, 9, '*');
 	}
 
-	mvwaddstr(change_win, 11, 6, "  [ ] SetGID");
+	mvwaddstr(change_win, 11, 6, "	[ ] SetGID");
 	if (mode & S_ISGID)
 	{
 		perms[7] = 1;
@@ -1036,30 +989,30 @@ show_file_permissions_menu(FileView *view, int x)
 		mvwaddch(change_win, 13, 9, '*');
 	}
 
-	mvwaddstr(change_win, 14, 6, "  [ ] Write");
+	mvwaddstr(change_win, 14, 6, "	[ ] Write");
 	if (mode & S_IWOTH)
 	{
 		perms[9] = 1;
 		mvwaddch(change_win, 14, 9, '*');
 	}
 
-	mvwaddstr(change_win, 15, 6, "  [ ] Execute");
+	mvwaddstr(change_win, 15, 6, "	[ ] Execute");
 	if (mode & S_IXOTH)
 	{
 		perms[10] = 1;
 		mvwaddch(change_win, 15, 9, '*');
 	}
 
-	mvwaddstr(change_win, 16, 6, "  [ ] Sticky");
+	mvwaddstr(change_win, 16, 6, "	[ ] Sticky");
 	if (mode & S_ISVTX)
 	{
 		perms[11] = 1;
 		mvwaddch(change_win, 16, 9, '*');
 	}
 
-	if (is_dir(filename))
+	if(is_dir(filename))
 	{
-		mvwaddstr(change_win, 17, 6, "  [ ] Set Recursively");
+		mvwaddstr(change_win, 18, 6, "	[ ] Set Recursively");
 		isdir = 1;
 	}
 
@@ -1084,33 +1037,184 @@ show_change_window(FileView *view, int type)
 	curs_set(1);
 	wrefresh(change_win);
 
-
-	switch(type)
-	{
-		case FILE_CHANGE:
-		{
-			mvwaddstr(change_win, 0, (x - 20)/2, " Change Current File ");
-			mvwaddstr(change_win, 2, 4, " [ ] Name");
-			mvwaddstr(change_win, 4, 4, " [ ] Owner");
-			mvwaddstr(change_win, 6, 4, " [ ] Group");
-			mvwaddstr(change_win, 8, 4, " [ ] Permissions");
-			mvwaddch(change_win, 2, 6, '*');
-			change_key_cb(view, type);
-		}
-			break;
-		case FILE_NAME: 
-			return;
-			break;
-		case FILE_OWNER:
-			return;
-			break;
-		case FILE_GROUP:
-			return;
-			break;
-		case FILE_PERMISSIONS:
-			show_file_permissions_menu(view, x);
-			break;
-		default:
-			break;
-	}
+	show_file_permissions_menu(view, x);
 }
+
+static void
+rename_file_cb(const char *new_name)
+{
+	char *filename = get_current_file_name(curr_view);
+	char *escaped_src, *escaped_dst;
+	char command[1024];
+	int found;
+
+	/* Filename unchanged */
+	if(strcmp(filename, new_name) == 0)
+		return;
+
+	if(access(new_name, F_OK) == 0
+			&& strncmp(filename, new_name, strlen(filename)) != 0)
+	{
+		show_error_msg("File exists",
+				"That file already exists. Will not overwrite.");
+
+		load_dir_list(curr_view, 1);
+		moveto_list_pos(curr_view, curr_view->list_pos);
+		return;
+	}
+
+	escaped_src = escape_filename(filename, strlen(filename), 0);
+	escaped_dst = escape_filename(new_name, strlen(new_name), 0);
+	if(escaped_src == NULL || escaped_dst == NULL)
+	{
+		free(escaped_src);
+		free(escaped_dst);
+		return;
+	}
+	snprintf(command, sizeof(command), "mv -f %s %s", escaped_src, escaped_dst);
+	free(escaped_src);
+	free(escaped_dst);
+
+	if(my_system(command) != 0)
+	{
+		show_error_msg("Error", "Can't rename file.");
+
+		load_dir_list(curr_view, 1);
+		moveto_list_pos(curr_view, curr_view->list_pos);
+		return;
+	}
+
+	load_dir_list(curr_view, 0);
+	found = find_file_pos_in_list(curr_view, new_name);
+	if(found >= 0)
+		moveto_list_pos(curr_view, found);
+	else
+		moveto_list_pos(curr_view, curr_view->list_pos);
+}
+
+void
+rename_file(FileView *view)
+{
+	char *filename = get_current_file_name(curr_view);
+	enter_prompt_mode(L"New name: ", filename, rename_file_cb);
+}
+
+static void
+change_owner_cb(const char *new_owner)
+{
+	char *filename;
+	char command[1024];
+	char *escaped;
+
+	filename = get_current_file_name(curr_view);
+	escaped = escape_filename(filename, strlen(filename), 0);
+	snprintf(command, sizeof(command), "chown -fR %s %s", new_owner, escaped);
+	free(escaped);
+
+	if(system_and_wait_for_errors(command) != 0)
+		return;
+
+	load_dir_list(curr_view, 1);
+	moveto_list_pos(curr_view, curr_view->list_pos);
+}
+
+void
+change_owner(FileView *view)
+{
+	enter_prompt_mode(L"New owner: ", "", change_owner_cb);
+}
+
+static void
+change_group_cb(const char *new_owner)
+{
+	char *filename;
+	char command[1024];
+	char *escaped;
+
+	filename = get_current_file_name(curr_view);
+	escaped = escape_filename(filename, strlen(filename), 0);
+	snprintf(command, sizeof(command), "chown -fR :%s %s", new_owner, escaped);
+	free(escaped);
+
+	if(system_and_wait_for_errors(command) != 0)
+		return;
+
+	load_dir_list(curr_view, 1);
+	moveto_list_pos(curr_view, curr_view->list_pos);
+}
+
+void
+change_group(FileView *view)
+{
+	enter_prompt_mode(L"New group: ", "", change_group_cb);
+}
+
+int
+put_files_from_register(FileView *view, int name)
+{
+	int x;
+	int i = -1;
+	int y = 0;
+	char buf[PATH_MAX + NAME_MAX*2 + 4];
+
+	for(x = 0; x < NUM_REGISTERS; x++)
+	{
+		if(reg[x].name == name)
+		{
+			i = x;
+			break;
+		}
+	}
+
+	if(i < 0 || reg[i].num_files < 1)
+	{
+		status_bar_message("Register is empty");
+		wrefresh(status_bar);
+		return 1;
+	}
+
+	for(x = 0; x < reg[i].num_files; x++)
+	{
+		char *temp = NULL;
+		char *temp1 = NULL;
+		snprintf(buf, sizeof(buf), "%s", reg[i].files[x]);
+		temp = escape_filename(buf, strlen(buf), 1);
+		temp1 = escape_filename(view->curr_dir, strlen(view->curr_dir), 1);
+		if(access(buf, F_OK) == 0)
+		{
+			if(strcmp(buf, cfg.trash_dir) == 0)
+				snprintf(buf, sizeof(buf), "mv %s %s", temp, temp1);
+			else
+				snprintf(buf, sizeof(buf), "cp -pR %s %s", temp, temp1);
+			/*
+			snprintf(buf, sizeof(buf), "mv \"%s/%s\" %s",
+					cfg.trash_dir, temp, temp1);
+					*/
+			/*
+			snprintf(buf, sizeof(buf), "mv \"%s/%s\" %s",
+					cfg.trash_dir, reg[i].files[x], view->curr_dir);
+					*/
+			if(background_and_wait_for_errors(buf) == 0)
+				y++;
+		}
+		free(temp);
+		free(temp1);
+	}
+
+	clear_register(name);
+
+	if(y > 0)
+	{
+		snprintf(buf, sizeof(buf), " %d %s inserted", y, y==1 ? "file" : "files");
+
+		load_dir_list(view, 0);
+		moveto_list_pos(view, view->curr_line);
+
+		status_bar_message(buf);
+		return 1;
+	}
+
+	return 0;
+}
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
