@@ -74,7 +74,7 @@ main_loop(void)
 		modes_pre();
 
 		/* This waits for 1 second then skips if no keypress. */
-    ret = wget_wch(curr_view->win, (wint_t*)&c);
+		ret = wget_wch(curr_view->win, (wint_t*)&c);
 
 		need_clear = (pos >= sizeof(buf) - 2);
 		if(ret != ERR && pos != sizeof(buf)/sizeof(buf[0]) - 2)

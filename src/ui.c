@@ -342,7 +342,7 @@ redraw_window(void)
 	mvwin(error_win, (screen_y -10)/2, 1);
 	wresize(lborder, screen_y -2, 1);
 
-	if (curr_stats.number_of_windows == 1)
+	if(curr_stats.number_of_windows == 1)
 	{
 		wresize(lwin.title, 1, screen_x -1);
 		wresize(lwin.win, screen_y -3, screen_x -2);
@@ -379,13 +379,11 @@ redraw_window(void)
 		rwin.window_rows = y -1;
 	}
 
-
-
 	/* For FreeBSD */
 	keypad(lwin.win, TRUE);
 	keypad(rwin.win, TRUE);
 
-	if (screen_x % 2)
+	if(screen_x % 2)
 	{
 		wresize(rborder, screen_y -2, 2);
 		mvwin(rborder, 0, screen_x -2);
@@ -431,7 +429,7 @@ redraw_window(void)
 
 	update_stat_window(curr_view);
 
-	if (curr_view->selected_files)
+	if(curr_view->selected_files)
 	{
 		char status_buf[24];
 		snprintf(status_buf, sizeof(status_buf), "%d %s Selected",
@@ -441,7 +439,6 @@ redraw_window(void)
 	}
 	else
 		status_bar_message(" ");
-
 
 	update_pos_window(curr_view);
 

@@ -77,7 +77,7 @@ struct key_t
 	}data;
 };
 
-typedef int (*default_handler)(const wchar_t *keys);
+typedef int (*default_handler)(wchar_t keys);
 
 /*
  * mode and mode_flags can't be NULL

@@ -328,40 +328,33 @@ get_selected_files(FileView *view, int count, int *indexes)
 	view->selected_files = count;
 }
 
-
 int
-find_file_pos_in_list(FileView *view, char *file)
+find_file_pos_in_list(FileView *view, const char *file)
 {
 	int x;
-	int found = 0;
-
 	for(x = 0; x < view->list_rows; x++)
 	{
-		if(!strcmp(view->dir_entry[x].name, file))
+		if(strcmp(view->dir_entry[x].name, file) == 0)
 		{
-			found = 1;
-			break;
+			return x;
 		}
 	}
-	if(found)
-		return x;
-	else
-		return -1;
+	return -1;
 }
 
 static void
 update_view_title(FileView *view)
 {
-	char *ptr;
 	size_t len;
 
 	werase(view->title);
 
-	ptr = view->curr_dir;
-	len = get_utf8_string_length(ptr);
+	len = get_utf8_string_length(view->curr_dir);
 	if(view->window_width < len + 1)
-	{
-		/* Truncate long directory names */
+	{ /* Truncate long directory names */
+		char *ptr;
+
+		ptr = view->curr_dir;
 		while(view->window_width < len + 4)
 		{
 			len--;
@@ -1088,7 +1081,6 @@ load_dir_list(FileView *view, int reload)
 			continue;
 		}
 
-
 		if(d->d_name[0] == '.')
 		{
 			if((strcmp(d->d_name, "..")) && (view->hide_dot))
@@ -1435,13 +1427,12 @@ check_if_filelists_have_changed(FileView *view)
 	if(s.st_mtime  != view->dir_mtime)
 		reload_window(view);
 
-	if (curr_stats.number_of_windows != 1 && curr_stats.view != 1)
+	if(curr_stats.number_of_windows != 1 && curr_stats.view != 1)
 	{
 		stat(other_view->curr_dir, &s);
 		if(s.st_mtime != other_view->dir_mtime)
 			reload_window(other_view);
 	}
-
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

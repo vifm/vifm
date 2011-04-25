@@ -40,7 +40,7 @@ struct line_stats
 	int curs_pos;          /* position of the cursor */
 	int len;               /* length of the string */
 	int cmd_pos;           /* position in the history */
-	wchar_t prompt[8];     /* prompt */
+	wchar_t prompt[80];    /* prompt */
 	int prompt_wid;        /* width of prompt */
 	int complete_continue; /* If non-zero, continue the previous completion */
 };
@@ -56,7 +56,8 @@ static void init_extended_keys(void);
 static void init_emacs_keys(void);
 static int def_handler(wchar_t keys);
 static wchar_t * wcsins(wchar_t *src, wchar_t *ins, int pos);
-static void leave_cmdline_mode(int save_msg);
+static void init_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd);
+static void leave_cmdline_mode(void);
 static void keys_ctrl_c(struct key_info, struct keys_info *);
 static void keys_ctrl_h(struct key_info, struct keys_info *);
 static void keys_ctrl_i(struct key_info, struct keys_info *);
@@ -212,7 +213,7 @@ def_handler(wchar_t key)
 	p = realloc(input_stat.line, (input_stat.len+2) * sizeof(wchar_t));
 	if(p == NULL)
 	{
-		leave_cmdline_mode(0);
+		leave_cmdline_mode();
 		return 0;
 	}
 
@@ -273,9 +274,47 @@ void
 enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
 		void *ptr)
 {
-	line_width = getmaxx(stdscr);
+	const wchar_t *prompt;
+
 	sub_mode_ptr = ptr;
 	sub_mode = cl_sub_mode;
+
+	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
+		prompt = L":";
+	else if(sub_mode == SEARCH_FORWARD_SUBMODE
+			|| sub_mode == MENU_SEARCH_FORWARD_SUBMODE)
+		prompt = L"/";
+	else if(sub_mode == SEARCH_BACKWARD_SUBMODE
+			|| sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
+		prompt = L"?";
+	else
+		prompt = L"E";
+
+	init_cmdline_mode(prompt, cmd);
+}
+
+void
+enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb)
+{
+	wchar_t *buf;
+	size_t len;
+
+	sub_mode_ptr = cb;
+	sub_mode = PROMPT_SUBMODE;
+
+	len = mbstowcs(NULL, cmd, 0);
+	buf = malloc(sizeof(wchar_t)*(len + 1));
+	if(buf == NULL)
+		return;
+	mbstowcs(buf, cmd, len + 1);
+	init_cmdline_mode(prompt, buf);
+	free(buf);
+}
+
+static void
+init_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
+{
+	line_width = getmaxx(stdscr);
 	prev_mode = *mode;
 	*mode = CMDLINE_MODE;
 
@@ -286,19 +325,12 @@ enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
 	input_stat.cmd_pos = -1;
 	input_stat.complete_continue = 0;
 
-	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
-		wcsncpy(input_stat.prompt, L":", sizeof(input_stat.prompt)/sizeof(wchar_t));
-	else if(sub_mode == SEARCH_FORWARD_SUBMODE
-			|| sub_mode == MENU_SEARCH_FORWARD_SUBMODE)
-		wcsncpy(input_stat.prompt, L"/", sizeof(input_stat.prompt)/sizeof(wchar_t));
-	else
-		wcsncpy(input_stat.prompt, L"?", sizeof(input_stat.prompt)/sizeof(wchar_t));
-
+	wcsncpy(input_stat.prompt, prompt, sizeof(input_stat.prompt)/sizeof(wchar_t));
 	input_stat.prompt_wid = input_stat.curs_pos = wcslen(input_stat.prompt);
 
 	if(input_stat.len != 0)
 	{
-		input_stat.line = malloc(input_stat.len + 1);
+		input_stat.line = malloc(sizeof(wchar_t)*(input_stat.len + 1));
 		if(input_stat.line == NULL)
 		{
 			input_stat.index = 0;
@@ -310,7 +342,6 @@ enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
 			input_stat.curs_pos += input_stat.len;
 		}
 	}
-
 
 	curs_set(1);
 	wresize(status_bar, 1, getmaxx(stdscr));
@@ -324,7 +355,7 @@ enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
 }
 
 static void
-leave_cmdline_mode(int save_msg)
+leave_cmdline_mode(void)
 {
 	if(getmaxy(status_bar) > 1)
 	{
@@ -336,13 +367,14 @@ leave_cmdline_mode(int save_msg)
 		wresize(status_bar, 1, getmaxx(stdscr) - 19);
 
 	curs_set(0);
-	curr_stats.save_msg = save_msg;
+	curr_stats.save_msg = 0;
 	free(input_stat.line);
+
 	if(*mode == CMDLINE_MODE)
 	{
 		*mode = prev_mode;
 		if(prev_mode == VISUAL_MODE)
-			leave_visual_mode(save_msg);
+			leave_visual_mode(0);
 	}
 }
 
@@ -352,7 +384,7 @@ keys_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
-	leave_cmdline_mode(0);
+	leave_cmdline_mode();
 }
 
 static void
@@ -364,7 +396,7 @@ keys_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 	{
 		if(input_stat.len == 0)
 		{
-			leave_cmdline_mode(0);
+			leave_cmdline_mode();
 		}
 		return;
 	}
@@ -440,20 +472,20 @@ keys_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	if(!input_stat.line || !input_stat.line[0])
 	{
-		leave_cmdline_mode(0);
+		leave_cmdline_mode();
 		return;
 	}
 
 	i = wcstombs(NULL, input_stat.line, 0) + 1;
 	if((p = (char *) malloc(i * sizeof(char))) == NULL)
 	{
-		leave_cmdline_mode(0);
+		leave_cmdline_mode();
 		return;
 	}
 
 	wcstombs(p, input_stat.line, i);
 
-	leave_cmdline_mode(0);
+	leave_cmdline_mode();
 
 	if(sub_mode == CMD_SUBMODE)
 	{
@@ -477,6 +509,14 @@ keys_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 		curr_stats.need_redraw = 1;
 		search_menu_list(curr_view, p, sub_mode_ptr);
 	}
+	else if(sub_mode == PROMPT_SUBMODE)
+	{
+		prompt_cb cb;
+
+		cb = (prompt_cb)sub_mode_ptr;
+		cb(p);
+	}
+
 	free(p);
 }
 
@@ -550,7 +590,7 @@ static void
 keys_home(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.index = 0;
-	input_stat.curs_pos = 1;
+	input_stat.curs_pos = wcslen(input_stat.prompt);
 	wmove(status_bar, 0, input_stat.curs_pos);
 }
 

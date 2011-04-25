@@ -40,7 +40,7 @@ void load_dir_list(FileView *view, int reload);
 void draw_dir_list(FileView *view, int top, int pos);
 char * get_current_file_name(FileView *view);
 void moveto_list_pos(FileView *view, int pos);
-int find_file_pos_in_list(FileView *view, char *file);
+int find_file_pos_in_list(FileView *view, const char *file);
 void get_all_selected_files(FileView *view);
 void get_selected_files(FileView *view, int count, int *indexes);
 void free_selected_file_array(FileView *view);
