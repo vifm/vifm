@@ -39,7 +39,7 @@ find_next_pattern_match(FileView *view, int start, int direction)
 	int found = 0;
 	int x;
 
-	if(direction ==		PREVIOUS)
+	if(direction == PREVIOUS)
 	{
 		for(x = start -1; x > 0; x--)
 		{
