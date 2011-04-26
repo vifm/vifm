@@ -1093,16 +1093,23 @@ rename_file_cb(const char *new_name)
 void
 rename_file(FileView *view)
 {
-	char *filename;
+	size_t len;
+	char buf[NAME_MAX + 1];
 
-	filename = get_current_file_name(curr_view);
-	if(strcmp(filename, "../") == 0)
+	strncpy(buf, get_current_file_name(curr_view), sizeof(buf));
+	buf[sizeof(buf) - 1] = '\0';
+	if(strcmp(buf, "../") == 0)
 	{
 		curr_stats.save_msg = 1;
-		status_bar_message("You can't rename '..' go up and try again.");
+		status_bar_message("You can't rename parent directory this way.");
 		return;
 	}
-	enter_prompt_mode(L"New name: ", filename, rename_file_cb);
+
+	len = strlen(buf);
+	if(buf[len - 1] == '/')
+		buf[len - 1] = '\0';
+
+	enter_prompt_mode(L"New name: ", buf, rename_file_cb);
 }
 
 static void
