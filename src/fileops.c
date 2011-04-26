@@ -1075,10 +1075,8 @@ rename_file_cb(const char *new_name)
 	free(escaped_src);
 	free(escaped_dst);
 
-	if(my_system(command) != 0)
+	if(system_and_wait_for_errors(command) != 0)
 	{
-		show_error_msg("Error", "Can't rename file.");
-
 		load_dir_list(curr_view, 1);
 		moveto_list_pos(curr_view, curr_view->list_pos);
 		return;
