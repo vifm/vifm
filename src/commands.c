@@ -1153,7 +1153,7 @@ do_map(cmd_t *cmd, const char *map_type, int mode)
 {
 	char err_msg[128];
 	wchar_t *keys, *mapping;
-	char *rhs, *p;
+	char *raw_rhs, *rhs;
 	char t;
 	int result;
 
@@ -1166,24 +1166,24 @@ do_map(cmd_t *cmd, const char *map_type, int mode)
 		return 0;
 	}
 
-	rhs = (char*)skip_word(cmd->args);
-	if(*rhs == '\0')
+	raw_rhs = (char*)skip_word(cmd->args);
+	if(*raw_rhs == '\0')
 	{
 		show_error_msg(" Command Error ", err_msg);
 		return 0;
 	}
-	t = *rhs;
-	*rhs = '\0';
+	t = *raw_rhs;
+	*raw_rhs = '\0';
 
-	p = (char*)skip_spaces(rhs + 1);
-	p = substitute_specs(p);
+	rhs = (char*)skip_spaces(raw_rhs + 1);
+	rhs = substitute_specs(rhs);
 	keys = to_wide(cmd->args);
-	mapping = to_wide(p);
+	mapping = to_wide(rhs);
 	result = add_user_keys(keys, mapping, mode);
 	free(mapping);
 	free(keys);
 
-	*rhs = t;
+	*raw_rhs = t;
 
 	if(result == -1)
 	{
@@ -1230,7 +1230,6 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					}
 					if(!cmd->background)
 						free(com);
-
 				}
 				else
 				{
@@ -1242,7 +1241,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_APROPOS:
 			{
-				if(cmd->args)
+				if(cmd->args != NULL)
 				{
 					show_apropos_menu(view, cmd->args);
 				}

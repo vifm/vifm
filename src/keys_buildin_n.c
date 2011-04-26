@@ -784,8 +784,8 @@ keys_p(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
-	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg);
 	redraw_window();
+	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg);
 }
 
 /* tmp shellout **** This should be done with key mapping */
