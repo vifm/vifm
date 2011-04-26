@@ -16,6 +16,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#define _GNU_SOURCE /* I don't know how portable this is but it is
+					   needed in Linux for the ncurses wide char
+					   functions
+					   */
+
 #include<ncurses.h>
 #include<unistd.h> /* for chdir */
 #include<string.h> /* strncpy */

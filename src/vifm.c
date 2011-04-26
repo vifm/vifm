@@ -32,6 +32,7 @@
 #include"filelist.h"
 #include"filetype.h"
 #include"main_loop.h"
+#include"modes.h"
 #include"registers.h"
 #include"signals.h"
 #include"status.h"

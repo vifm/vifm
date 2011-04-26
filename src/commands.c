@@ -1153,7 +1153,8 @@ do_map(cmd_t *cmd, const char *map_type, int mode)
 {
 	char err_msg[128];
 	wchar_t *keys, *mapping;
-	char *p;
+	char *rhs, *p;
+	char t;
 	int result;
 
 	sprintf(err_msg, "The :%s command requires two arguments - :%s lhs rhs",
@@ -1165,21 +1166,24 @@ do_map(cmd_t *cmd, const char *map_type, int mode)
 		return 0;
 	}
 
-	p = (char*)skip_word(cmd->args);
-	if(*p == '\0')
+	rhs = (char*)skip_word(cmd->args);
+	if(*rhs == '\0')
 	{
 		show_error_msg(" Command Error ", err_msg);
 		return 0;
 	}
-	*p = '\0';
+	t = *rhs;
+	*rhs = '\0';
 
-	p = (char*)skip_spaces(p + 1);
+	p = (char*)skip_spaces(rhs + 1);
 	p = substitute_specs(p);
 	keys = to_wide(cmd->args);
 	mapping = to_wide(p);
 	result = add_user_keys(keys, mapping, mode);
 	free(mapping);
 	free(keys);
+
+	*rhs = t;
 
 	if(result == -1)
 	{
@@ -1283,6 +1287,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			}
 			break;
 		case COM_CMAP:
+			save_msg = do_map(cmd, "cmap", CMDLINE_MODE);
 			break;
 		case COM_COLORSCHEME:
 		{
@@ -1480,6 +1485,11 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			my_system("screen -X eval 'windowlist'");
 			break;
 		case COM_MAP:
+			save_msg = do_map(cmd, "map", CMDLINE_MODE);
+			if(save_msg == 0)
+				save_msg = do_map(cmd, "map", NORMAL_MODE);
+			if(save_msg == 0)
+				save_msg = do_map(cmd, "map", VISUAL_MODE);
 			break;
 		case COM_MARKS:
 			show_bookmarks_menu(view);
@@ -1586,6 +1596,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			}
 			break;
 		case COM_VMAP:
+			save_msg = do_map(cmd, "vmap", VISUAL_MODE);
 			break;
 		default:
 			{

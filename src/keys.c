@@ -203,9 +203,18 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 	}
 	else
 	{
+		int result;
 		struct keys_info keys_info;
 		init_keys_info(&keys_info);
-		return execute_keys_inner(key_t->data.cmd, &keys_info);
+
+		result = execute_keys_inner(key_t->data.cmd, &keys_info);
+		if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
+		{
+			result = def_handlers[*mode](*key_t->data.cmd);
+			init_keys_info(&keys_info);
+			execute_keys_inner(key_t->data.cmd + 1, &keys_info);
+		}
+		return result;
 	}
 }
 
