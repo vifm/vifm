@@ -81,15 +81,16 @@ struct key_t
 typedef int (*default_handler)(wchar_t keys);
 
 /*
- * mode and mode_flags can't be NULL
- * mode_flags is a sequence of ints (combinations of MF_*)
- * handler can be NULL
+ * assumed that key_mode_flags is an array of at least modes_count items
  */
 void init_keys(int modes_count, int *key_mode, int *key_mode_flags);
 void set_def_handler(int mode, default_handler handler);
 int execute_keys(const wchar_t *keys);
 int execute_keys_timed_out(const wchar_t *keys);
 struct key_t* add_keys(const wchar_t *keys, int mode);
+/* Returns:
+ * -1 - can't remap buildin keys
+ */
 int add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode);
 
 #endif

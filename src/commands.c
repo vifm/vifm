@@ -1148,6 +1148,47 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 	}
 }
 
+static int
+do_map(cmd_t *cmd, const char *map_type, int mode)
+{
+	char err_msg[128];
+	wchar_t *keys, *mapping;
+	char *p;
+	int result;
+
+	sprintf(err_msg, "The :%s command requires two arguments - :%s lhs rhs",
+			map_type, map_type);
+
+	if(cmd->args == NULL || *cmd->args == '\0')
+	{
+		show_error_msg(" Command Error ", err_msg);
+		return 0;
+	}
+
+	p = (char*)skip_word(cmd->args);
+	if(*p == '\0')
+	{
+		show_error_msg(" Command Error ", err_msg);
+		return 0;
+	}
+	*p = '\0';
+
+	p = (char*)skip_spaces(p + 1);
+	p = substitute_specs(p);
+	keys = to_wide(cmd->args);
+	mapping = to_wide(p);
+	result = add_user_keys(keys, mapping, mode);
+	free(mapping);
+	free(keys);
+
+	if(result == -1)
+	{
+		show_error_msg(" Mapping Error ", "Can't remap buildin key");
+	}
+
+	return 0;
+}
+
 int
 execute_builtin_command(FileView *view, cmd_t *cmd)
 {
@@ -1444,34 +1485,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			show_bookmarks_menu(view);
 			break;
 		case COM_NMAP:
-			{
-				wchar_t *keys, *mapping;
-				char *p;
-				if(cmd->args == NULL || *cmd->args == '\0')
-				{
-					show_error_msg(" Command Error ",
-							"The :nmap command requires two arguments - :nmap lhs rhs");
-					save_msg = 1;
-					break;
-				}
-				p = (char*)skip_word(cmd->args);
-				if(*p == '\0')
-				{
-					show_error_msg(" Command Error ",
-							"The :nmap command requires an argument - :nmap lhs rhs");
-					save_msg = 1;
-					break;
-				}
-				*p = '\0';
-				p = (char*)skip_spaces(p + 1);
-				p = substitute_specs(p);
-				keys = to_wide(cmd->args);
-				mapping = to_wide(p);
-				add_user_keys(keys, mapping, NORMAL_MODE);
-				free(mapping);
-				free(keys);
-				free(p);
-			}
+			save_msg = do_map(cmd, "nmap", NORMAL_MODE);
 			break;
 		case COM_NOH:
 			{
