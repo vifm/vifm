@@ -1093,7 +1093,15 @@ rename_file_cb(const char *new_name)
 void
 rename_file(FileView *view)
 {
-	char *filename = get_current_file_name(curr_view);
+	char *filename;
+
+	filename = get_current_file_name(curr_view);
+	if(strcmp(filename, "../") == 0)
+	{
+		curr_stats.save_msg = 1;
+		status_bar_message("You can't rename '..' go up and try again.");
+		return;
+	}
 	enter_prompt_mode(L"New name: ", filename, rename_file_cb);
 }
 
