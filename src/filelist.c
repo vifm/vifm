@@ -153,14 +153,14 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 			 break;
 	}
 
-	if (current_line)
+	if(current_line)
 		wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
 				| A_BOLD);
 
 	mvwaddstr(view->win, y,
 				view->window_width - strlen(buf), buf);
 
-	if (current_line)
+	if(current_line)
 		wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
 				| A_BOLD);
 }
@@ -189,32 +189,30 @@ quick_view_file(FileView *view)
 	wattroff(other_view->win, A_BOLD);
 	x++;
 
-	switch (view->dir_entry[view->list_pos].type)
+	switch(view->dir_entry[view->list_pos].type)
 	{
 		case DIRECTORY:
-				mvwaddstr(other_view->win, ++x, y, "File is a Directory");
+			mvwaddstr(other_view->win, ++x, y, "File is a Directory");
 			break;
 		case DEVICE:
-				mvwaddstr(other_view->win, ++x, y, "File is a Device");
+			mvwaddstr(other_view->win, ++x, y, "File is a Device");
 			break;
 		case SOCKET:
-				mvwaddstr(other_view->win, ++x, y, "File is a Socket");
+			mvwaddstr(other_view->win, ++x, y, "File is a Socket");
 			break;
 		default:
 			{
-				if((fp = fopen(view->dir_entry[view->list_pos].name, "r"))
-						== NULL)
+				if((fp = fopen(view->dir_entry[view->list_pos].name, "r")) == NULL)
 				{
-					mvwaddstr(other_view->win, ++x, y,	"Cannot open file");
+					mvwaddstr(other_view->win, ++x, y, "Cannot open file");
 					return;
 				}
 
 				while(fgets(line, other_view->window_width, fp)
-						&&	(x < other_view->window_rows - 2))
+						&& (x < other_view->window_rows - 2))
 				{
 					mvwaddstr(other_view->win, ++x, y,	line);
 				}
-
 
 				fclose(fp);
 			}
@@ -225,7 +223,7 @@ quick_view_file(FileView *view)
 char *
 get_current_file_name(FileView *view)
 {
-		return view->dir_entry[view->list_pos].name;
+	return view->dir_entry[view->list_pos].name;
 }
 
 void

@@ -19,7 +19,7 @@
 #include<stdio.h>
 #include<sys/time.h>
 #include<time.h>
-#include <unistd.h>
+#include<unistd.h>
 #include<stdlib.h>
 #include<signal.h>
 #include<string.h>
@@ -33,7 +33,6 @@
 #include "utils.h"
 #include "menus.h"
 #include "status.h"
-
 
 void
 get_perm_string (char * buf, int len, mode_t mode)
