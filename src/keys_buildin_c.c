@@ -559,7 +559,7 @@ keys_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 
 	input_stat.len -= input_stat.index;
 
-	input_stat.curs_pos = 1;
+	input_stat.curs_pos = input_stat.prompt_wid;
 	wcsdel(input_stat.line, 1, input_stat.index);
 
 	input_stat.index = 0;
