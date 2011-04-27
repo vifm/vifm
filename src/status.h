@@ -25,7 +25,6 @@ typedef struct
 {
 	int need_redraw;
 	volatile int freeze;
-	volatile int getting_input;
 	volatile int menu;
 	int redraw_menu;
 	int is_updir;

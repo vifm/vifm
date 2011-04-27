@@ -332,8 +332,6 @@ expand_macros(FileView *view, char *command, char *args,
 	int y = 0;
 	int len = 0;
 
-	curr_stats.getting_input = 1;
-
 	expanded = (char *)calloc(strlen(command) +1, sizeof(char *));
 
 	for(x = 0; x < strlen(command); x++)
@@ -546,8 +544,6 @@ expand_macros(FileView *view, char *command, char *args,
 	expanded[len] = '\0';
 	if (len > cfg.max_args/2)
 		show_error_msg("Argument is too long", " FIXME ");
-
-	curr_stats.getting_input = 0;
 
 	return expanded;
 }

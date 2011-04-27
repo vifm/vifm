@@ -40,6 +40,7 @@ yank_t *yanked_file;
 void handle_file(FileView *view, int dont_execute);
 void delete_file(FileView *view, int reg, int count, int *indexes);
 int my_system(char *command);
+int system_and_wait_for_errors(char *cmd);
 int yank_files(FileView *view, int reg, int count, int *indexes);
 void yank_selected_files(FileView *view, int reg);
 int pipe_and_capture_errors(char *command);

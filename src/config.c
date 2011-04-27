@@ -346,8 +346,6 @@ write_config_file(void)
 	if ((!curr_stats.setting_change) && (!cfg.using_default_config))
 		return;
 
-	curr_stats.getting_input = 1;
-
 	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
 
 	if(stat(config_file, &stat_buf) == 0)
@@ -494,8 +492,6 @@ write_config_file(void)
 /*_SZ_END_*/
 
 	fclose(fp);
-
-	curr_stats.getting_input = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
