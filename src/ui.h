@@ -19,16 +19,16 @@
 #ifndef __UI_H__
 #define __UI_H__
 
-#include<limits.h> /* PATH_MAX NAME_MAX */
-#include<ncurses.h>
-#include<stdlib.h> /* off_t mode_t... */
-#include<inttypes.h> /* uintmax_t */
-#include<sys/types.h>
-#include<unistd.h>
+#include <limits.h> /* PATH_MAX NAME_MAX */
+#include <ncurses.h>
+#include <stdlib.h> /* off_t mode_t... */
+#include <inttypes.h> /* uintmax_t */
+#include <sys/types.h>
+#include <unistd.h>
 /* For Solaris */
 #ifndef NAME_MAX
-#	include<dirent.h>
-#	define NAME_MAX MAXNAMLEN
+#include <dirent.h>
+#define NAME_MAX MAXNAMLEN
 #endif
 
 enum {

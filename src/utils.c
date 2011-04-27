@@ -16,13 +16,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include<stdio.h>
-#include<sys/time.h>
+#include <stdio.h>
+#include <sys/time.h>
 #include <unistd.h>
-#include<stdlib.h>
-#include<signal.h>
-#include<string.h>
-#include<sys/stat.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <string.h>
+#include <sys/stat.h>
 
 #include "ui.h"
 #include "status.h"

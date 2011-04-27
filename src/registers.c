@@ -16,12 +16,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include<unistd.h>
-#include<string.h>
+#include <unistd.h>
+#include <string.h>
 
-#include"menus.h"
-#include"registers.h"
-#include"utils.h"
+#include "menus.h"
+#include "registers.h"
+#include "utils.h"
 
 char valid_registers[] = {'"', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',

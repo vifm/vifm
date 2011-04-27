@@ -16,26 +16,25 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include<errno.h>
-#include<ncurses.h>
-#include<signal.h>
-#include<unistd.h> /* alarm() */
-#include<sys/stat.h> /* stat */
-#include<sys/time.h> /* timeval */
-#include<sys/types.h> /* waitpid */
-#include<sys/wait.h> /* waitpid */
-#include<time.h>
+#include <errno.h>
+#include <ncurses.h>
+#include <signal.h>
+#include <unistd.h> /* alarm() */
+#include <sys/stat.h> /* stat */
+#include <sys/time.h> /* timeval */
+#include <sys/types.h> /* waitpid */
+#include <sys/wait.h> /* waitpid */
+#include <time.h>
 
-#include"background.h"
-#include"file_info.h"
-#include"filelist.h"
-#include"filetype.h"
-#include"menus.h"
-#include"signals.h"
-#include"status.h"
-#include"config.h"
-#include"ui.h"
-
+#include "background.h"
+#include "file_info.h"
+#include "filelist.h"
+#include "filetype.h"
+#include "menus.h"
+#include "signals.h"
+#include "status.h"
+#include "config.h"
+#include "ui.h"
 
 /* Handle term resizing in X */
 static void

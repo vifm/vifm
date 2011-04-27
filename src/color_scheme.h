@@ -19,7 +19,7 @@
 #ifndef __COLOR_SCHEME_H__
 #define __COLOR_SCHEME_H__
 
-#include<limits.h>
+#include <limits.h>
 #define MAXNUM_COLOR 12
 
 #define MENU_COLOR 0

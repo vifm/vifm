@@ -19,7 +19,7 @@
 #ifndef __FILEOPS_H__
 #define __FILEOPS_H__
 
-#include"ui.h"
+#include "ui.h"
 
 #define FILE_CHANGE 1
 #define FILE_NAME 2

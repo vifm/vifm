@@ -20,18 +20,18 @@
 	#include<sys/types.h> /* required for regex.h on FreeBSD 4.2 */
 #endif
 
-#include<ncurses.h>
-#include<unistd.h> /* chdir() */
-#include<stdlib.h> /* malloc  qsort */
-#include<sys/stat.h> /* stat */
-#include<sys/time.h> /* localtime */
-#include<sys/wait.h> /* WEXITSTATUS */
-#include<time.h>
-#include<regex.h>
-#include<dirent.h> /* DIR */
-#include<string.h> /* strcat() */
-#include<pwd.h>
-#include<grp.h>
+#include <ncurses.h>
+#include <unistd.h> /* chdir() */
+#include <stdlib.h> /* malloc  qsort */
+#include <sys/stat.h> /* stat */
+#include <sys/time.h> /* localtime */
+#include <sys/wait.h> /* WEXITSTATUS */
+#include <time.h>
+#include <regex.h>
+#include <dirent.h> /* DIR */
+#include <string.h> /* strcat() */
+#include <pwd.h>
+#include <grp.h>
 
 #include "background.h"
 #include "color_scheme.h"

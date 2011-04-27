@@ -16,14 +16,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include<sys/types.h>
-#include<regex.h>
-#include<ctype.h> /* isspace() */
-#include<string.h> /* strchr() */
-#include<unistd.h> /* access() */
-#include<termios.h> /* struct winsize */
-#include<sys/ioctl.h>
-#include<signal.h>
+#include <sys/types.h>
+#include <regex.h>
+#include <ctype.h> /* isspace() */
+#include <string.h> /* strchr() */
+#include <unistd.h> /* access() */
+#include <termios.h> /* struct winsize */
+#include <sys/ioctl.h>
+#include <signal.h>
 
 #include "background.h"
 #include "bookmarks.h"

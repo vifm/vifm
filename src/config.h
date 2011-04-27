@@ -19,8 +19,8 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include<limits.h>
-#include<ncurses.h>
+#include <limits.h>
+#include <ncurses.h>
 
 #define KEYPRESS_TIMEOUT 1000 /* 1 second */
 

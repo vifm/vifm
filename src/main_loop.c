@@ -21,12 +21,12 @@
 					   functions
 					   */
 
-#include<ncurses.h>
-#include<unistd.h> /* for chdir */
-#include<string.h> /* strncpy */
-#include<sys/time.h> /* select() */
-#include<sys/types.h> /* select() */
-#include<unistd.h> /* select() */
+#include <ncurses.h>
+#include <unistd.h> /* for chdir */
+#include <string.h> /* strncpy */
+#include <sys/time.h> /* select() */
+#include <sys/types.h> /* select() */
+#include <unistd.h> /* select() */
 
 #include "color_scheme.h"
 #include "config.h"

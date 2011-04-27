@@ -19,7 +19,7 @@
 #ifndef __BACKGROUND_H__
 #define __BACKGROUND_H__
 
-#include<sys/types.h>
+#include <sys/types.h>
 
 typedef struct Jobs_List {
 	int fd;

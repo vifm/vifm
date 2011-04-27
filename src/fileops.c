@@ -16,29 +16,29 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include<ncurses.h>
-#include<unistd.h>
-#include<errno.h> /* errno */
-#include<sys/wait.h> /* waitpid() */
-#include<sys/types.h> /* waitpid() */
-#include<sys/stat.h> /* stat */
-#include<stdio.h>
-#include<string.h>
-#include<fcntl.h>
+#include <ncurses.h>
+#include <unistd.h>
+#include <errno.h> /* errno */
+#include <sys/wait.h> /* waitpid() */
+#include <sys/types.h> /* waitpid() */
+#include <sys/stat.h> /* stat */
+#include <stdio.h>
+#include <string.h>
+#include <fcntl.h>
 
-#include"background.h"
-#include"color_scheme.h"
-#include"commands.h"
-#include"config.h"
-#include"filelist.h"
-#include"fileops.h"
-#include"filetype.h"
-#include"cmdline.h"
-#include"menus.h"
-#include"registers.h"
-#include"status.h"
-#include"ui.h"
-#include"utils.h"
+#include "background.h"
+#include "color_scheme.h"
+#include "commands.h"
+#include "config.h"
+#include "filelist.h"
+#include "fileops.h"
+#include "filetype.h"
+#include "cmdline.h"
+#include "menus.h"
+#include "registers.h"
+#include "status.h"
+#include "ui.h"
+#include "utils.h"
 
 int
 my_system(char *command)

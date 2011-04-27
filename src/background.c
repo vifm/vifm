@@ -16,21 +16,21 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include<string.h>
-#include<unistd.h>
-#include<errno.h>
-#include<time.h>
-#include<signal.h>
-#include<sys/types.h>
-#include<sys/stat.h>
-#include<sys/wait.h>
-#include<fcntl.h>
+#include <string.h>
+#include <unistd.h>
+#include <errno.h>
+#include <time.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <fcntl.h>
 
-#include"background.h"
-#include"config.h"
-#include"menus.h"
-#include"status.h"
-#include"utils.h"
+#include "background.h"
+#include "config.h"
+#include "menus.h"
+#include "status.h"
+#include "utils.h"
 
 struct Jobs_List *jobs = NULL;
 struct Finished_Jobs *fjobs = NULL;

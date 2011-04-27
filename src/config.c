@@ -19,23 +19,23 @@
 #define CP_HELP "cp /usr/local/share/vifm/vifm-help.txt ~/.vifm"
 #define CP_RC "cp /usr/local/share/vifm/vifmrc ~/.vifm"
 
-#include<stdio.h> /* FILE */
-#include<stdlib.h> /* getenv */
-#include<unistd.h> /* chdir */
-#include<sys/stat.h> /* mkdir */
-#include<string.h>
-#include<ctype.h> /* isalnum */
+#include <stdio.h> /* FILE */
+#include <stdlib.h> /* getenv */
+#include <unistd.h> /* chdir */
+#include <sys/stat.h> /* mkdir */
+#include <string.h>
+#include <ctype.h> /* isalnum */
 
-#include"utils.h"
-#include"bookmarks.h"
-#include"color_scheme.h"
-#include"fileops.h"
-#include"filetype.h"
-#include"registers.h"
-#include"status.h"
-#include"commands.h"
-#include"config.h"
-#include"menus.h"
+#include "utils.h"
+#include "bookmarks.h"
+#include "color_scheme.h"
+#include "fileops.h"
+#include "filetype.h"
+#include "registers.h"
+#include "status.h"
+#include "commands.h"
+#include "config.h"
+#include "menus.h"
 
 #define MAX_LEN 1024
 #define DEFAULT_FILENAME_FILTER "\\.o$"

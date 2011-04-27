@@ -16,35 +16,35 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include<assert.h>
-#include<ctype.h> /* isspace() */
-#include<ncurses.h>
-#include<signal.h>
-#include<stdio.h>
-#include<stdlib.h> /*  system() */
-#include<string.h> /* strncmp() */
-#include<time.h>
-#include<unistd.h> /* chdir() */
+#include <assert.h>
+#include <ctype.h> /* isspace() */
+#include <ncurses.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h> /*  system() */
+#include <string.h> /* strncmp() */
+#include <time.h>
+#include <unistd.h> /* chdir() */
 
-#include"background.h"
-#include"bookmarks.h"
-#include"color_scheme.h"
-#include"commands.h"
-#include"config.h"
-#include"filelist.h"
-#include"fileops.h"
-#include"keys.h"
-#include"menu.h"
-#include"menus.h"
-#include"modes.h"
-#include"permissions_dialog.h"
-#include"search.h"
-#include"signals.h"
-#include"sort.h"
-#include"sort_dialog.h"
-#include"status.h"
-#include"ui.h"
-#include"utils.h"
+#include "background.h"
+#include "bookmarks.h"
+#include "color_scheme.h"
+#include "commands.h"
+#include "config.h"
+#include "filelist.h"
+#include "fileops.h"
+#include "keys.h"
+#include "menu.h"
+#include "menus.h"
+#include "modes.h"
+#include "permissions_dialog.h"
+#include "search.h"
+#include "signals.h"
+#include "sort.h"
+#include "sort_dialog.h"
+#include "status.h"
+#include "ui.h"
+#include "utils.h"
 
 enum
 {

@@ -21,15 +21,15 @@
 					   functions
 					   */
 
-#include<signal.h>	/* signal() */
-#include<stdlib.h> /* malloc */
-#include<sys/stat.h> /* stat */
-#include<dirent.h> /* DIR */
-#include<pwd.h> /* getpwent() */
-#include<string.h>
-#include<time.h>
-#include<termios.h> /* struct winsize */
-#include<sys/ioctl.h>
+#include <signal.h> /* signal() */
+#include <stdlib.h> /* malloc */
+#include <sys/stat.h> /* stat */
+#include <dirent.h> /* DIR */
+#include <pwd.h> /* getpwent() */
+#include <string.h>
+#include <time.h>
+#include <termios.h> /* struct winsize */
+#include <sys/ioctl.h>
 
 #include "color_scheme.h"
 #include "config.h" /* for menu colors */

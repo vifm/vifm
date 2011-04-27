@@ -18,26 +18,26 @@
 
 #define VERSION "0.6"
 
-#include<ncurses.h>
-#include<unistd.h> /* getcwd  & sysconf */
-#include<string.h> /* strncpy */
-#include<sys/stat.h> /* stat */
-#include<unistd.h> /* stat */
-#include<locale.h> /* setlocale */
+#include <ncurses.h>
+#include <unistd.h> /* getcwd  & sysconf */
+#include <string.h> /* strncpy */
+#include <sys/stat.h> /* stat */
+#include <unistd.h> /* stat */
+#include <locale.h> /* setlocale */
 
-#include"bookmarks.h"
-#include"color_scheme.h"
-#include"commands.h"
-#include"config.h"
-#include"filelist.h"
-#include"filetype.h"
-#include"main_loop.h"
-#include"modes.h"
-#include"registers.h"
-#include"signals.h"
-#include"status.h"
-#include"ui.h"
-#include"utils.h"
+#include "bookmarks.h"
+#include "color_scheme.h"
+#include "commands.h"
+#include "config.h"
+#include "filelist.h"
+#include "filetype.h"
+#include "main_loop.h"
+#include "modes.h"
+#include "registers.h"
+#include "signals.h"
+#include "status.h"
+#include "ui.h"
+#include "utils.h"
 
 static void
 show_help_msg(void)

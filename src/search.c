@@ -17,15 +17,15 @@
  */
 
 #if(defined(BSD) && (BSD>=199103))
-	#include<sys/types.h> /* required for regex.h on FreeBSD 4.2 */
+	#include <sys/types.h> /* required for regex.h on FreeBSD 4.2 */
 #endif
-#include<sys/types.h>
+#include <sys/types.h>
 
-#include<ncurses.h>
-#include<regex.h>
+#include <ncurses.h>
+#include <regex.h>
 
-#include"filelist.h"
-#include"ui.h"
+#include "filelist.h"
+#include "ui.h"
 
 enum
 {
