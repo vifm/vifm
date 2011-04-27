@@ -33,7 +33,7 @@
 #include"filelist.h"
 #include"fileops.h"
 #include"filetype.h"
-#include"keys_buildin_c.h"
+#include"cmdline.h"
 #include"menus.h"
 #include"registers.h"
 #include"status.h"

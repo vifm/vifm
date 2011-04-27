@@ -19,16 +19,16 @@
 #include <stdlib.h>
 
 #include "background.h"
+#include "cmdline.h"
 #include "file_info.h"
 #include "filelist.h"
 #include "keys.h"
-#include "keys_buildin_c.h"
-#include "keys_buildin_m.h"
-#include "keys_buildin_n.h"
-#include "keys_buildin_s.h"
-#include "keys_buildin_v.h"
+#include "menu.h"
+#include "normal.h"
+#include "sort_dialog.h"
 #include "status.h"
 #include "ui.h"
+#include "visual.h"
 
 #include "modes.h"
 

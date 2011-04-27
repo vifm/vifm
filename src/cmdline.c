@@ -37,15 +37,15 @@
 #include "commands.h"
 #include "config.h"
 #include "keys.h"
-#include "keys_buildin_m.h"
-#include "keys_buildin_v.h"
+#include "menu.h"
+#include "visual.h"
 #include "menus.h"
 #include "modes.h"
 #include "status.h"
 #include "ui.h"
 #include "utils.h"
 
-#include "keys_buildin_c.h"
+#include "cmdline.h"
 
 /*
  * FIXME status bar looks bad after terminal is resized

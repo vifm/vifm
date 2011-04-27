@@ -16,13 +16,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef __KEYS_BUILDIN_S_H__
-#define __KEYS_BUILDIN_S_H__
+#ifndef __VISUAL_H__
+#define __VISUAL_H__
 
-#include "ui.h"
-
-void init_buildin_s_keys(int *key_mode);
-void enter_sort_mode(FileView *active_view);
+void init_buildin_v_keys(int *key_mode);
+void enter_visual_mode(void);
+void leave_visual_mode(int save_msg);
 
 #endif
 

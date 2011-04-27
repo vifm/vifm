@@ -30,7 +30,7 @@
 
 #include "color_scheme.h"
 #include "config.h"
-#include "keys_buildin_n.h"
+#include "normal.h"
 #include "keys.h"
 #include "modes.h"
 #include "status.h"

@@ -50,16 +50,15 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(pkgdatadir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_vifm_OBJECTS = vifm.$(OBJEXT) background.$(OBJEXT) \
-	bookmarks.$(OBJEXT) color_scheme.$(OBJEXT) commands.$(OBJEXT) \
+am_vifm_OBJECTS = background.$(OBJEXT) bookmarks.$(OBJEXT) \
+	cmdline.$(OBJEXT) color_scheme.$(OBJEXT) commands.$(OBJEXT) \
 	config.$(OBJEXT) file_info.$(OBJEXT) filelist.$(OBJEXT) \
 	fileops.$(OBJEXT) filetype.$(OBJEXT) keys.$(OBJEXT) \
-	keys_buildin_c.$(OBJEXT) keys_buildin_m.$(OBJEXT) \
-	keys_buildin_n.$(OBJEXT) keys_buildin_s.$(OBJEXT) \
-	keys_buildin_v.$(OBJEXT) main_loop.$(OBJEXT) menus.$(OBJEXT) \
-	modes.$(OBJEXT) registers.$(OBJEXT) search.$(OBJEXT) \
-	signals.$(OBJEXT) status.$(OBJEXT) sort.$(OBJEXT) ui.$(OBJEXT) \
-	utils.$(OBJEXT)
+	main_loop.$(OBJEXT) menu.$(OBJEXT) menus.$(OBJEXT) \
+	modes.$(OBJEXT) normal.$(OBJEXT) registers.$(OBJEXT) \
+	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
+	sort_dialog.$(OBJEXT) status.$(OBJEXT) ui.$(OBJEXT) \
+	utils.$(OBJEXT) vifm.$(OBJEXT) visual.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -224,9 +223,9 @@ pkgdata_DATA = vifm-help.txt \
 bin_SCRIPTS = pauseme 
 man_MANS = vifm.1
 vifm_SOURCES = \
-	vifm.c \
 	background.c background.h \
 	bookmarks.c bookmarks.h \
+	cmdline.c cmdline.h \
 	color_scheme.c colorscheme.h \
 	commands.c commands.h \
 	config.c config.h \
@@ -235,21 +234,21 @@ vifm_SOURCES = \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
 	keys.c keys.h \
-	keys_buildin_c.c keys_buildin_c.h \
-	keys_buildin_m.c keys_buildin_m.h \
-	keys_buildin_n.c keys_buildin_n.h \
-	keys_buildin_s.c keys_buildin_s.h \
-	keys_buildin_v.c keys_buildin_v.h \
 	main_loop.c main_loop.h \
+	menu.c menu.h \
 	menus.c menus.h \
 	modes.c modes.h \
+	normal.c normal.h \
 	registers.c registers.h \
 	search.c search.h \
 	signals.c signals.h \
+	sort.c sort.h \
+	sort_dialog.c sort_dialog.h \
 	status.c status.h \
-	sort.c sort.h\
 	ui.c ui.h \
-	utils.c utils.h
+	utils.c utils.h \
+	vifm.c \
+	visual.c visual.h
 
 all: all-am
 
@@ -374,6 +373,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/background.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bookmarks.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmdline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_scheme.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/config.Po@am__quote@
@@ -382,22 +382,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filetype.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys_buildin_c.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys_buildin_m.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys_buildin_n.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys_buildin_s.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys_buildin_v.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main_loop.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/menus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/modes.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/normal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signals.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/status.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/visual.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

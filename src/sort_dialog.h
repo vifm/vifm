@@ -16,17 +16,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef __KEYS_BUILDIN_M_H__
-#define __KEYS_BUILDIN_M_H__
+#ifndef __SORT_DIALOG_H__
+#define __SORT_DIALOG_H__
 
-#include "menus.h"
 #include "ui.h"
 
-void init_buildin_m_keys(int *key_mode);
-void enter_menu_mode(menu_info *m, FileView *active_view);
-void menu_pre(void);
-void menu_post(void);
-void execute_menu_command(FileView *view, char *command, menu_info *ptr);
+void init_buildin_s_keys(int *key_mode);
+void enter_sort_mode(FileView *active_view);
 
 #endif
 

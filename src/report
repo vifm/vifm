@@ -1,0 +1,32 @@
+==13222== Memcheck, a memory error detector
+==13222== Copyright (C) 2002-2010, and GNU GPL'd, by Julian Seward et al.
+==13222== Using Valgrind-3.6.1 and LibVEX; rerun with -h for copyright info
+==13222== Command: ./vifm
+==13222== 
+==13222== 
+==13222== HEAP SUMMARY:
+==13222==     in use at exit: 720,214 bytes in 774 blocks
+==13222==   total heap usage: 68,981 allocs, 68,207 frees, 40,455,084 bytes allocated
+==13222== 
+==13222== 292 (52 direct, 240 indirect) bytes in 1 blocks are definitely lost in loss record 197 of 260
+==13222==    at 0x4C27F61: malloc (vg_replace_malloc.c:236)
+==13222==    by 0x5182D26: nss_parse_service_list (in /lib64/libc-2.13.so)
+==13222==    by 0x5183305: __nss_database_lookup (in /lib64/libc-2.13.so)
+==13222==    by 0x5A385D3: ???
+==13222==    by 0x5136DDC: getpwuid_r@@GLIBC_2.2.5 (in /lib64/libc-2.13.so)
+==13222==    by 0x513669E: getpwuid (in /lib64/libc-2.13.so)
+==13222==    by 0x4226F1: update_stat_window (ui.c:95)
+==13222==    by 0x41CFE0: main_loop (main_loop.c:60)
+==13222==    by 0x4038BA: main (vifm.c:259)
+==13222== 
+==13222== LEAK SUMMARY:
+==13222==    definitely lost: 52 bytes in 1 blocks
+==13222==    indirectly lost: 240 bytes in 10 blocks
+==13222==      possibly lost: 0 bytes in 0 blocks
+==13222==    still reachable: 719,922 bytes in 763 blocks
+==13222==         suppressed: 0 bytes in 0 blocks
+==13222== Reachable blocks (those to which a pointer was found) are not shown.
+==13222== To see them, rerun with: --leak-check=full --show-reachable=yes
+==13222== 
+==13222== For counts of detected and suppressed errors, rerun with: -v
+==13222== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 2 from 2)

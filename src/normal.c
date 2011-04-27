@@ -21,23 +21,23 @@
 
 #include "background.h"
 #include "bookmarks.h"
+#include "cmdline.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "config.h"
 #include "filelist.h"
 #include "fileops.h"
-#include "keys_buildin_c.h"
-#include "keys_buildin_v.h"
 #include "keys.h"
 #include "menus.h"
 #include "modes.h"
 #include "registers.h"
 #include "search.h"
-#include "ui.h"
 #include "status.h"
+#include "ui.h"
 #include "utils.h"
+#include "visual.h"
 
-#include "keys_buildin_n.h"
+#include "normal.h"
 
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))

@@ -23,19 +23,19 @@
 #include <string.h>
 
 #include "bookmarks.h"
-#include "commands.h"
+#include "cmdline.h"
 #include "color_scheme.h"
+#include "commands.h"
 #include "config.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "keys.h"
-#include "keys_buildin_c.h"
 #include "menus.h"
 #include "modes.h"
 #include "status.h"
 #include "ui.h"
 
-#include "keys_buildin_m.h"
+#include "sort_dialog.h"
 
 static int *mode;
 static FileView *view;

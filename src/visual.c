@@ -21,15 +21,15 @@
 #include <assert.h>
 #include <string.h>
 
+#include "cmdline.h"
 #include "commands.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "keys.h"
-#include "keys_buildin_c.h"
 #include "modes.h"
 #include "status.h"
 
-#include "keys_buildin_v.h"
+#include "visual.h"
 
 static int *mode;
 static FileView *view;

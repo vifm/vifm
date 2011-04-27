@@ -154,12 +154,10 @@ main(int argc, char *argv[])
 	else
 		curr_stats.config_file_mtime = 0;
 
-
 	/* Check if running in X */
 	console = getenv("DISPLAY");
 	if(!console || !*console)
 		curr_stats.is_console = 1;
-
 
 	/* Setup the ncurses interface. */
 	if(!setup_ncurses_interface())

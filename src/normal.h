@@ -16,12 +16,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef __KEYS_BUILDIN_V_H__
-#define __KEYS_BUILDIN_V_H__
+#ifndef __NORMAL_H__
+#define __NORMAL_H__
 
-void init_buildin_v_keys(int *key_mode);
-void enter_visual_mode(void);
-void leave_visual_mode(int save_msg);
+void init_buildin_n_keys(int *key_mode);
 
 #endif
 

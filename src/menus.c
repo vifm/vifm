@@ -27,14 +27,14 @@
 
 #include "background.h"
 #include "bookmarks.h"
+#include "cmdline.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "config.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
-#include "keys_buildin_c.h"
-#include "keys_buildin_m.h"
+#include "menu.h"
 #include "registers.h"
 #include "status.h"
 #include "ui.h"
@@ -179,7 +179,7 @@ reset_popup_menu(menu_info *m)
 
 	free(m->args);
 
-	for (z = 0; z < m->len; z++)
+	for(z = 0; z < m->len; z++)
 	{
 		free(m->data[z]);
 	}

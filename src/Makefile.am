@@ -11,9 +11,9 @@ bin_SCRIPTS = pauseme
 man_MANS = vifm.1
 
 vifm_SOURCES = \
-	vifm.c \
 	background.c background.h \
 	bookmarks.c bookmarks.h \
+	cmdline.c cmdline.h \
 	color_scheme.c colorscheme.h \
 	commands.c commands.h \
 	config.c config.h \
@@ -22,20 +22,20 @@ vifm_SOURCES = \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
 	keys.c keys.h \
-	keys_buildin_c.c keys_buildin_c.h \
-	keys_buildin_m.c keys_buildin_m.h \
-	keys_buildin_n.c keys_buildin_n.h \
-	keys_buildin_s.c keys_buildin_s.h \
-	keys_buildin_v.c keys_buildin_v.h \
 	main_loop.c main_loop.h \
+	menu.c menu.h \
 	menus.c menus.h \
 	modes.c modes.h \
+	normal.c normal.h \
 	registers.c registers.h \
 	search.c search.h \
 	signals.c signals.h \
+	sort.c sort.h \
+	sort_dialog.c sort_dialog.h \
 	status.c status.h \
-	sort.c sort.h\
 	ui.c ui.h \
-	utils.c utils.h
+	utils.c utils.h \
+	vifm.c \
+	visual.c visual.h
 
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
