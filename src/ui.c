@@ -94,7 +94,7 @@ update_stat_window(FileView *view)
 
 	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
 	{
-		snprintf (uid_buf, sizeof(uid_buf), "  %d",
+		snprintf(uid_buf, sizeof(uid_buf), "  %d",
 				(int) view->dir_entry[view->list_pos].uid);
 	}
 	else
@@ -112,10 +112,8 @@ update_stat_window(FileView *view)
 	snprintf(name_buf, sizeof(name_buf), "%d %s filtered",
 			view->filtered, view->filtered == 1 ? "file" : "files");
 
-
 	if(view->filtered > 0)
 		mvwaddstr(stat_win, 0, x - (strlen(name_buf) +2) , name_buf);
-
 
 	wnoutrefresh(stat_win);
 	update_pos_window(view);
@@ -128,7 +126,6 @@ status_bar_message(char *message)
 	wprintw(status_bar, "%s", message);
 	wnoutrefresh(status_bar);
 }
-
 
 int
 setup_ncurses_interface()

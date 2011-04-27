@@ -918,13 +918,13 @@ change_directory(FileView *view, const char *directory)
 			char * symlink_dir = "/";
 			char * tok = strtok(dir_dup,"/");
 
-			while (tok != NULL)
+			while(tok != NULL)
 			{
 				symlink_dir = tok;
 				tok = strtok(NULL,"/");
 			}
 
-			strcpy(dir_dup, symlink_dir);
+			memmove(dir_dup, symlink_dir, strlen(symlink_dir) + 1);
 			strcat(dir_dup, "/");
 
 			if(view->curr_dir[strlen(view->curr_dir)-1] != '/')
