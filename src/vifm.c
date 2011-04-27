@@ -125,7 +125,7 @@ main(int argc, char *argv[])
 	read_config_file();
 
 	/* Safety check for existing vifmrc file without FUSE_HOME */
-	if (cfg.fuse_home == NULL)
+	if(cfg.fuse_home == NULL)
 		cfg.fuse_home = strdup("/tmp/vifm_FUSE");
 
 	/* Misc configuration */
@@ -138,12 +138,11 @@ main(int argc, char *argv[])
 	rwin.prev_invert = rwin.invert;
 	rwin.hide_dot = 1;
 	strncpy(rwin.regexp, "\\.o$", sizeof(rwin.regexp));
-	cfg.timer = 10;
 	init_window_history(&rwin);
 
 	init_status();
 
-	if (cfg.show_one_window)
+	if(cfg.show_one_window)
 		curr_stats.number_of_windows = 1;
 	else
 		curr_stats.number_of_windows = 2;

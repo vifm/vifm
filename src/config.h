@@ -38,7 +38,6 @@ typedef struct _Config {
 	int history_len;
 	int nmapped_num;
 	int screen_num;
-	int timer;
 	char **search_history;
 	int search_history_len;
 	int search_history_num;
