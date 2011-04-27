@@ -49,7 +49,7 @@ static void keys_j(struct key_info, struct keys_info *);
 static void keys_k(struct key_info, struct keys_info *);
 
 void
-init_buildin_s_keys(int *key_mode)
+init_sort_dialog_mode(int *key_mode)
 {
 	struct key_t *curr;
 

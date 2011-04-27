@@ -19,7 +19,7 @@
 #ifndef __VISUAL_H__
 #define __VISUAL_H__
 
-void init_buildin_v_keys(int *key_mode);
+void init_visual_mode(int *key_mode);
 void enter_visual_mode(void);
 void leave_visual_mode(int save_msg);
 

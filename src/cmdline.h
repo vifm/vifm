@@ -33,7 +33,7 @@ enum CmdLineSubModes {
 
 typedef void (*prompt_cb)(const char *renponse);
 
-void init_buildin_c_keys(int *key_mode);
+void init_cmdline_mode(int *key_mode);
 void enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
 		void *ptr);
 void enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb);

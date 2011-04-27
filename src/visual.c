@@ -55,7 +55,7 @@ static void select_down_one(FileView *view, int start_pos);
 static void update(const char *operation);
 
 void
-init_buildin_v_keys(int *key_mode)
+init_visual_mode(int *key_mode)
 {
 	struct key_t *curr;
 

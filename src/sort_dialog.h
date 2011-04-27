@@ -21,7 +21,7 @@
 
 #include "ui.h"
 
-void init_buildin_s_keys(int *key_mode);
+void init_sort_dialog_mode(int *key_mode);
 void enter_sort_mode(FileView *active_view);
 
 #endif

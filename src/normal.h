@@ -19,7 +19,7 @@
 #ifndef __NORMAL_H__
 #define __NORMAL_H__
 
-void init_buildin_n_keys(int *key_mode);
+void init_normal_mode(int *key_mode);
 
 #endif
 

@@ -46,11 +46,11 @@ void
 init_modes(void)
 {
 	init_keys(MODES_COUNT, &mode, (int*)&mode_flags);
-	init_buildin_c_keys(&mode);
-	init_buildin_m_keys(&mode);
-	init_buildin_n_keys(&mode);
-	init_buildin_s_keys(&mode);
-	init_buildin_v_keys(&mode);
+	init_cmdline_mode(&mode);
+	init_menu_mode(&mode);
+	init_normal_mode(&mode);
+	init_sort_dialog_mode(&mode);
+	init_visual_mode(&mode);
 }
 
 void

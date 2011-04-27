@@ -75,7 +75,7 @@ static void init_extended_keys(void);
 static void init_emacs_keys(void);
 static int def_handler(wchar_t keys);
 static wchar_t * wcsins(wchar_t *src, wchar_t *ins, int pos);
-static void init_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd);
+static void prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd);
 static void leave_cmdline_mode(void);
 static void keys_ctrl_c(struct key_info, struct keys_info *);
 static void keys_ctrl_h(struct key_info, struct keys_info *);
@@ -106,7 +106,7 @@ static char * filename_completion(char *str);
 static char * check_for_executable(char *string);
 
 void
-init_buildin_c_keys(int *key_mode)
+init_cmdline_mode(int *key_mode)
 {
 	struct key_t *curr;
 
@@ -322,7 +322,7 @@ enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
 	else
 		prompt = L"E";
 
-	init_cmdline_mode(prompt, cmd);
+	prepare_cmdline_mode(prompt, cmd);
 }
 
 void
@@ -339,12 +339,12 @@ enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb)
 	if(buf == NULL)
 		return;
 	mbstowcs(buf, cmd, len + 1);
-	init_cmdline_mode(prompt, buf);
+	prepare_cmdline_mode(prompt, buf);
 	free(buf);
 }
 
 static void
-init_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
+prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 {
 	line_width = getmaxx(stdscr);
 	prev_mode = *mode;
@@ -883,7 +883,7 @@ line_completion(struct line_stats *stat)
 
 	if(stat->complete_continue == 0)
 	{
-		/* only complete the part before the curser
+		/* only complete the part before the cursor
 		 * so just copy that part to line_mb */
 		t = stat->line[stat->index];
 		stat->line[stat->index] = L'\0';

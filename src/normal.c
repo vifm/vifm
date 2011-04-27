@@ -109,7 +109,7 @@ static void keys_zz(struct key_info, struct keys_info *);
 static void pick_files(FileView *view, int end, struct keys_info *keys_info);
 
 void
-init_buildin_n_keys(int *key_mode)
+init_normal_mode(int *key_mode)
 {
 	struct key_t *curr;
 
