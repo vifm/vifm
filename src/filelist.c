@@ -710,6 +710,7 @@ save_view_history(FileView *view)
 			strcpy(view->history[y].dir, view->history[y + 1].dir);
 		}
 		x--;
+		view->history_num = x;
 	}
 	snprintf(view->history[x].dir, sizeof(view->history[x].dir), "%s",
 			view->curr_dir);
