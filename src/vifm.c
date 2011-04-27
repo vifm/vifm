@@ -91,6 +91,7 @@ load_initial_directory(FileView *view, const char *dir)
 	view->dir_entry[0].name = malloc(sizeof("../") + 1);
 	strcpy(view->dir_entry[0].name, "../");
 	view->dir_entry[0].type = DIRECTORY;
+	view->dir_entry[0].size = 0;
 
 	view->list_rows = 1;
 	change_directory(view, dir);

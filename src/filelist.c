@@ -55,7 +55,7 @@ friendly_size_notation(int num, int str_size, char *str)
 	int u = 0;
 	double d = num;
 
-	if (cfg.use_iec_prefixes)
+	if(cfg.use_iec_prefixes)
 		units = iec_units;
 	else
 		units = si_units;
@@ -66,7 +66,6 @@ friendly_size_notation(int num, int str_size, char *str)
 		++u;
 	}
 	snprintf(str, str_size, "%.1f %s", d, units[u]);
-
 }
 
 static void
@@ -145,8 +144,7 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 			 {
 				 char str[24] = "";
 
-				 friendly_size_notation(view->dir_entry[x].size,
-						 sizeof(str), str);
+				 friendly_size_notation(view->dir_entry[x].size, sizeof(str), str);
 
 				 snprintf(buf, sizeof(buf), " %s", str);
 			 }
