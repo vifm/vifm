@@ -711,7 +711,7 @@ keys_delete(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-complete_cmd_next(void)
+complete_cmd_prev(void)
 {
 	char *p;
 
@@ -750,7 +750,7 @@ complete_cmd_next(void)
 }
 
 static void
-complete_search_next(void)
+complete_search_prev(void)
 {
 	char *p;
 
@@ -799,7 +799,7 @@ keys_ctrl_p(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-complete_cmd_prev(void)
+complete_cmd_next(void)
 {
 	char *p;
 
@@ -832,7 +832,7 @@ complete_cmd_prev(void)
 }
 
 static void
-complete_search_prev(void)
+complete_search_next(void)
 {
 	char *p;
 
