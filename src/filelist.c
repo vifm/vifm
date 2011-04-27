@@ -889,16 +889,15 @@ change_directory(FileView *view, const char *directory)
 			str2 = str1;
 		}
 
-		snprintf(curr_stats.updir_file, sizeof(curr_stats.updir_file),
-				"%s/", str2);
+		snprintf(curr_stats.updir_file, sizeof(curr_stats.updir_file), "%s/", str2);
 
 		strcpy(newdir,"");
 
 		tok =  strtok(view->curr_dir,"/");
 
-		while (tok != NULL)
+		while(tok != NULL)
 		{
-			if (tok != NULL && value != NULL)
+			if(tok != NULL && value != NULL)
 			{
 				strcat(newdir,"/");
 				strcat(newdir,value);
@@ -912,7 +911,7 @@ change_directory(FileView *view, const char *directory)
 		if(!strcmp(dir_dup,""))
 			strcpy(dir_dup,"/");
 	}
-	/* Moving into a directory	or bookmarked dir or :cd directory*/
+	/* Moving into a directory or bookmarked dir or :cd directory */
 	else if(strcmp(dir_dup, view->curr_dir))
 	{
 		/* directory is a relative path */
@@ -930,7 +929,7 @@ change_directory(FileView *view, const char *directory)
 			strcpy(dir_dup, symlink_dir);
 			strcat(dir_dup, "/");
 
-			if (view->curr_dir[strlen(view->curr_dir)-1] != '/')
+			if(view->curr_dir[strlen(view->curr_dir)-1] != '/')
 				strcat(view->curr_dir,"/");
 
 			snprintf(newdir, PATH_MAX, "%s", view->curr_dir);
@@ -956,7 +955,6 @@ change_directory(FileView *view, const char *directory)
 	if((view->last_dir[strlen(view->last_dir) -1] == '/') &&
 			(strcmp(view->last_dir, "/")))
 		view->last_dir[strlen(view->last_dir) - 1] = '\0';
-
 
 	if(access(dir_dup, F_OK) != 0)
 	{
@@ -1028,7 +1026,6 @@ reset_selected_files(FileView *view)
 	free_selected_file_array(view);
 }
 
-
 void
 load_dir_list(FileView *view, int reload)
 {
@@ -1044,7 +1041,6 @@ load_dir_list(FileView *view, int reload)
 	if(dir == NULL)
 		return;
 
-
 	view->filtered = 0;
 
 	lstat(view->curr_dir, &s);
@@ -1059,7 +1055,6 @@ load_dir_list(FileView *view, int reload)
 
 	if(reload && view->selected_files)
 		get_all_selected_files(view);
-
 
 	if(view->dir_entry)
 	{
@@ -1236,10 +1231,7 @@ load_dir_list(FileView *view, int reload)
 		reset_selected_files(view);
 
 	draw_dir_list(view, view->top_line, view->list_pos);
-
-	return;
 }
-
 
 bool
 is_link_dir(const dir_entry_t * path)

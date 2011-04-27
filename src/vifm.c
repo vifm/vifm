@@ -83,22 +83,17 @@ init_window_history(FileView *win)
 }
 
 static void
-load_initial_directory(const char *dir)
+load_initial_directory(FileView *view, const char *dir)
 {
-	snprintf(rwin.curr_dir, sizeof(rwin.curr_dir), "%s", dir);
-	snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s", dir);
-	rwin.dir_entry = (dir_entry_t *)malloc(sizeof(dir_entry_t));
-	lwin.dir_entry = (dir_entry_t *)malloc(sizeof(dir_entry_t));
-	rwin.dir_entry[0].name = malloc(sizeof("../") +1);
-	lwin.dir_entry[0].name = malloc(sizeof("../") +1);
-	strcpy(rwin.dir_entry[0].name, "../");
-	rwin.list_rows++;
-	strcpy(lwin.dir_entry[0].name, "../");
-	lwin.list_rows++;
-	change_directory(&rwin, dir);
-	change_directory(&lwin, dir);
-	other_view = &lwin;
-	curr_view = &rwin;
+	snprintf(view->curr_dir, sizeof(view->curr_dir), "%s", dir);
+	view->dir_entry = (dir_entry_t *)malloc(sizeof(dir_entry_t));
+
+	view->dir_entry[0].name = malloc(sizeof("../") + 1);
+	strcpy(view->dir_entry[0].name, "../");
+	view->dir_entry[0].type = DIRECTORY;
+
+	view->list_rows = 1;
+	change_directory(view, dir);
 }
 
 int
@@ -170,7 +165,11 @@ main(int argc, char *argv[])
 	if(!setup_ncurses_interface())
 		return -1;
 
-	load_initial_directory(dir);
+	load_initial_directory(&rwin, dir);
+	load_initial_directory(&lwin, dir);
+
+	other_view = &lwin;
+	curr_view = &rwin;
 
 /* Get Command Line Arguments */
 	for(x = 1; x < argc; x++)
