@@ -87,11 +87,11 @@ init_extended_keys(void)
 	wchar_t buf[] = {L'\0', L'\0'};
 
 	buf[0] = KEY_UP;
-	curr = add_keys(buf, VISUAL_MODE);
+	curr = add_keys(buf, SORT_MODE);
 	curr->data.handler = keys_k;
 
 	buf[0] = KEY_DOWN;
-	curr = add_keys(buf, VISUAL_MODE);
+	curr = add_keys(buf, SORT_MODE);
 	curr->data.handler = keys_j;
 }
 

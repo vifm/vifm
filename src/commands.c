@@ -26,8 +26,8 @@
 #include<time.h>
 #include<unistd.h> /* chdir() */
 
-#include"bookmarks.h"
 #include"background.h"
+#include"bookmarks.h"
 #include"color_scheme.h"
 #include"commands.h"
 #include"config.h"
@@ -35,12 +35,13 @@
 #include"fileops.h"
 #include"keys.h"
 #include"menu.h"
-#include"sort_dialog.h"
 #include"menus.h"
 #include"modes.h"
+#include"permissions_dialog.h"
 #include"search.h"
 #include"signals.h"
 #include"sort.h"
+#include"sort_dialog.h"
 #include"status.h"
 #include"ui.h"
 #include"utils.h"
@@ -1247,7 +1248,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			}
 			break;
 		case COM_CHANGE:
-			show_change_window(view, FILE_CHANGE);
+			enter_permissions_mode(view);
 			break;
 		case COM_CD:
 			{

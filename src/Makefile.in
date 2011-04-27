@@ -55,10 +55,10 @@ am_vifm_OBJECTS = background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	config.$(OBJEXT) file_info.$(OBJEXT) filelist.$(OBJEXT) \
 	fileops.$(OBJEXT) filetype.$(OBJEXT) keys.$(OBJEXT) \
 	main_loop.$(OBJEXT) menu.$(OBJEXT) menus.$(OBJEXT) \
-	modes.$(OBJEXT) normal.$(OBJEXT) registers.$(OBJEXT) \
-	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
-	sort_dialog.$(OBJEXT) status.$(OBJEXT) ui.$(OBJEXT) \
-	utils.$(OBJEXT) vifm.$(OBJEXT) visual.$(OBJEXT)
+	modes.$(OBJEXT) normal.$(OBJEXT) permissions_dialog.$(OBJEXT) \
+	registers.$(OBJEXT) search.$(OBJEXT) signals.$(OBJEXT) \
+	sort.$(OBJEXT) sort_dialog.$(OBJEXT) status.$(OBJEXT) \
+	ui.$(OBJEXT) utils.$(OBJEXT) vifm.$(OBJEXT) visual.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -239,6 +239,7 @@ vifm_SOURCES = \
 	menus.c menus.h \
 	modes.c modes.h \
 	normal.c normal.h \
+	permissions_dialog.c permissions_dialog.h \
 	registers.c registers.h \
 	search.c search.h \
 	signals.c signals.h \
@@ -387,6 +388,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/menus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/modes.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/normal.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/permissions_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signals.Po@am__quote@

@@ -40,6 +40,7 @@ init_status(void)
 	curr_stats.show_full = 0;
 	curr_stats.view = 0;
 	curr_stats.setting_change = 0;
+	curr_stats.use_input_bar = 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

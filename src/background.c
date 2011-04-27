@@ -74,8 +74,7 @@ check_background_jobs(void)
 	int nread;
 	struct timeval ts;
 
-
-	if (!p)
+	if(!p)
 		return;
 
 	/*
@@ -119,8 +118,7 @@ check_background_jobs(void)
 
 			if (nread)
 			{
-				p->error_buf = (char *) realloc(p->error_buf,
-						sizeof(buf));
+				p->error_buf = (char *) realloc(p->error_buf, sizeof(buf));
 
 				strncat(p->error_buf, buf, sizeof(buf) - 1);
 			}
@@ -143,7 +141,7 @@ check_background_jobs(void)
 
 			p = p->next;
 			free(j->cmd);
-						free(j->error_buf);
+			free(j->error_buf);
 			free(j);
 		}
 		else

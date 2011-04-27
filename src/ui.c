@@ -569,6 +569,11 @@ update_input_bar(wchar_t c)
 {
 	wchar_t buf[] = {c, '\0'};
 
+	if(!curr_stats.use_input_bar)
+	{
+		return;
+	}
+
 	if(getcurx(num_win) == getmaxx(num_win) - 1)
 	{
 		mvwdelch(num_win, 0, 0);
@@ -590,8 +595,11 @@ switch_views(void)
 void
 clear_num_window(void)
 {
-	werase(num_win);
-	wrefresh(num_win);
+	if(curr_stats.use_input_bar)
+	{
+		werase(num_win);
+		wrefresh(num_win);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

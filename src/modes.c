@@ -25,6 +25,7 @@
 #include "keys.h"
 #include "menu.h"
 #include "normal.h"
+#include "permissions_dialog.h"
 #include "sort_dialog.h"
 #include "status.h"
 #include "ui.h"
@@ -39,6 +40,7 @@ static int mode_flags[] = {
     MF_USES_INPUT,
     MF_USES_COUNT,
     MF_USES_COUNT,
+    MF_USES_COUNT,
     MF_USES_COUNT
 };
 
@@ -49,6 +51,7 @@ init_modes(void)
 	init_cmdline_mode(&mode);
 	init_menu_mode(&mode);
 	init_normal_mode(&mode);
+	init_permissions_dialog_mode(&mode);
 	init_sort_dialog_mode(&mode);
 	init_visual_mode(&mode);
 }
@@ -62,6 +65,8 @@ modes_pre(void)
 		return;
 	}
 	else if(mode == SORT_MODE)
+		return;
+	else if(mode == PERMISSIONS_MODE)
 		return;
 	else if(mode == MENU_MODE)
 	{
@@ -87,6 +92,8 @@ modes_post(void)
 	if(mode == CMDLINE_MODE)
 		return;
 	else if(mode == SORT_MODE)
+		return;
+	else if(mode == PERMISSIONS_MODE)
 		return;
 	else if(mode == MENU_MODE)
 	{

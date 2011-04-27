@@ -36,6 +36,7 @@ typedef struct
 	int search;
 	int save_msg;
 	int use_register;
+	int use_input_bar;
 	int curr_register;
 	int register_saved;
 	int number_of_windows;
