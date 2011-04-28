@@ -210,8 +210,11 @@ Menus
 	bookmarks escape or Ctrl-c to abort j and k to move through
 		dd on a bookmark to remove.
 
-	sort menu j and k to move - Escape or Ctrl-c to clear - return or l to
-	select and exit the menu.
+	sort dialog:
+        h to switch ascending/descending
+        j and k to move
+        Escape or Ctrl-c to clear
+        return or l to select and exit the menu
 
 Reserved :commands
 		!

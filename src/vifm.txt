@@ -180,6 +180,16 @@ Ctrl-w v - shortcut for :split
 Ctrl-e/Ctrl-y - scroll pane one line down/up.
 
 --------------------------------------------------------------------------------
+*Menus_and_dialogs*
+
+Sort dialog ~
+
+h - switch ascending/descending.
+j, k - move.
+<Escape>, Ctrl-c - clear.
+<Return>, l - select and exit the menu.
+
+--------------------------------------------------------------------------------
 *Options*
 
 The vifm executable will start vifm in the current directory unless it is
@@ -212,7 +222,6 @@ The :screen command toggles whether to use the screen program or not.
 
 	This requires screen version 3.9.9 or newer for the screen -X argument.
 
-
 --------------------------------------------------------------------------------
 *Plugin*  Plugin for using vifm in vim as a file selector.
 
@@ -234,6 +243,7 @@ directory add
 let loaded_vifm=1
 
 to your ~/.vimrc file.
+
 --------------------------------------------------------------------------------
 *Vifm_Ranges*
 
@@ -254,7 +264,6 @@ If a backward range is given :4,2delete - an error message is given and
 the operation is abandoned.
 
 The only builtin command that accepts a range is :delete.
-
 
 --------------------------------------------------------------------------------
 *Reserved*
@@ -294,3 +303,5 @@ The following command names are reserved and cannot be used for user commands.
   vmap - not used will be used for key mapping.
   x - exit vifm.
 
+--------------------------------------------------------------------------------
+ vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:ft=help:norl:
