@@ -1830,7 +1830,6 @@ comm_quit(void)
 		char buf[256];
 		FILE *fp;
 
-
 		snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
 		fp = fopen(buf, "w");
 		endwin();

@@ -174,6 +174,9 @@ Configuration.
 	If you want to change any settings vifm must not be running when you edit
 	the file as it will overwrite any changes you make when it exits.
 
+    The ~/.vifm/startup file contains commands that will be executed on vifm
+    startup. You can set your mappings there.
+
 	Screen configuration.  If you use the screen program, vifm can be configured
 	to use a new screen window for opening files or running :!programs.
 

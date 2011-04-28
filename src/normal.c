@@ -90,7 +90,6 @@ static void keys_k(struct key_info, struct keys_info *);
 static void keys_l(struct key_info, struct keys_info *);
 static void keys_n(struct key_info, struct keys_info *);
 static void keys_p(struct key_info, struct keys_info *);
-static void keys_s(struct key_info, struct keys_info *);
 static void keys_m(struct key_info, struct keys_info *);
 static void keys_t(struct key_info, struct keys_info *);
 static void keys_yy(struct key_info, struct keys_info *);
@@ -289,9 +288,6 @@ init_normal_mode(int *key_mode)
 
 	curr = add_keys(L"p", NORMAL_MODE);
 	curr->data.handler = keys_p;
-
-	curr = add_keys(L"s", NORMAL_MODE);
-	curr->data.handler = keys_s;
 
 	curr = add_keys(L"t", NORMAL_MODE);
 	curr->data.handler = keys_t;
@@ -804,13 +800,6 @@ keys_p(struct key_info key_info, struct keys_info *keys_info)
 		key_info.reg = DEFAULT_REG_NAME;
 	redraw_window();
 	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg);
-}
-
-/* tmp shellout **** This should be done with key mapping */
-static void
-keys_s(struct key_info key_info, struct keys_info *keys_info)
-{
-	shellout(NULL, 0);
 }
 
 /* Tag file. */

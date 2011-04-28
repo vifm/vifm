@@ -9,7 +9,6 @@ Basic things that need to be done.
 Vi specific features that need to be added.
 	Finish implementing range and count for user commands.
 	Fix '' to go back to all jumps G gg links. 
-	Key mapping  :nmap s  :sh<Return>
 	Change file list filters to use fold levels instead of just 
 		the dot filter and regular expression filter.
     Make some kind of undo command.

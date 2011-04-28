@@ -18,6 +18,7 @@
 
 #define CP_HELP "cp /usr/local/share/vifm/vifm-help.txt ~/.vifm"
 #define CP_RC "cp /usr/local/share/vifm/vifmrc ~/.vifm"
+#define CP_STARTUP "cp /usr/local/share/vifm/startup ~/.vifm"
 
 #include <stdio.h> /* FILE */
 #include <stdlib.h> /* getenv */
@@ -89,6 +90,15 @@ create_rc_file(void)
 	add_bookmark('z', cfg.config_dir, "../");
 }
 
+static void
+create_startup_file(void)
+{
+	char command[PATH_MAX];
+
+	snprintf(command, sizeof(command), CP_STARTUP);
+	file_exec(command);
+}
+
 /* This is just a safety check so that vifm will still load and run if
  * the configuration file is not present.
  */
@@ -140,10 +150,11 @@ set_config_dir(void)
 		FILE *f;
 		char help_file[PATH_MAX];
 		char rc_file[PATH_MAX];
+		char startup_file[PATH_MAX];
 
 		snprintf(rc_file, sizeof(rc_file), "%s/.vifm/vifmrc", home_dir);
-		snprintf(help_file, sizeof(help_file), "%s/.vifm/vifm-help_txt",
-				home_dir);
+		snprintf(help_file, sizeof(help_file), "%s/.vifm/vifm-help_txt", home_dir);
+		snprintf(startup_file, sizeof(startup_file), "%s/.vifm/startup", home_dir);
 		snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s/.vifm", home_dir);
 		snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/.vifm/Trash", home_dir);
 
@@ -157,6 +168,8 @@ set_config_dir(void)
 				create_help_file();
 			if((f = fopen(rc_file, "r")) == NULL)
 				create_rc_file();
+			if((f = fopen(startup_file, "r")) == NULL)
+				create_startup_file();
 		}
 	}
 }
@@ -350,7 +363,6 @@ write_config_file(void)
 	char config_file[PATH_MAX];
 	struct stat stat_buf;
 
-
 	/* None of the user settings have changed. */
 	if ((!curr_stats.setting_change) && (!cfg.using_default_config))
 		return;
@@ -500,6 +512,28 @@ write_config_file(void)
 	fprintf(fp, "# Unless it exists with write/exec permissions set, vifm will attempt to create it.\n");
 	fprintf(fp, "\nFUSE_HOME=%s\n", cfg.fuse_home);
 /*_SZ_END_*/
+
+	fclose(fp);
+}
+
+void
+exec_startup(void)
+{
+	FILE *fp;
+	char startup_file[PATH_MAX];
+	char line[MAX_LEN];
+
+	snprintf(startup_file, sizeof(startup_file), "%s/startup", cfg.config_dir);
+
+	if((fp = fopen(startup_file, "r")) == NULL)
+	{
+		return;
+	}
+
+	while(fgets(line, MAX_LEN, fp))
+	{
+		exec_command(line, curr_view, GET_COMMAND, NULL);
+	}
 
 	fclose(fp);
 }

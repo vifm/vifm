@@ -62,6 +62,7 @@ int read_config_file(void);
 void write_config_file(void);
 void set_config_dir(void);
 void init_config(void);
+void exec_startup(void);
 
 #endif
 

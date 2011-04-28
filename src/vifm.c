@@ -253,6 +253,7 @@ main(int argc, char *argv[])
 		curr_stats.number_of_windows = 1;
 
 	init_modes();
+	exec_startup();
 	main_loop();
 
 	return 0;

@@ -212,6 +212,9 @@ The only other command line arguments are:
 The ~/.vifm/vifmrc file contains all the configurable settings.  It is
 commented and you must edit it by hand to change the settings.
 
+The ~/.vifm/startup file contains commands that will be executed on vifm
+startup. You can set your mappings there.
+
 The :screen command toggles whether to use the screen program or not.
 
 	The default configuration has the screen option turned off.  The screen

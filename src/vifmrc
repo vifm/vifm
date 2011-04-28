@@ -50,9 +50,9 @@ HISTORY_LENGTH=15
 # For descending sort use negative numbers.
 # This can be set with the :sort command in vifm.
 
-LEFT_WINDOW_SORT_TYPE=1
+LEFT_WINDOW_SORT_TYPE=2
 
-RIGHT_WINDOW_SORT_TYPE=1
+RIGHT_WINDOW_SORT_TYPE=2
 
 # The regular expression used to filter files out of
 # the directory listings.
