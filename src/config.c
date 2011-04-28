@@ -532,6 +532,11 @@ exec_startup(void)
 
 	while(fgets(line, MAX_LEN, fp))
 	{
+		size_t len;
+
+		len = strlen(line);
+		if(len != 0 && line[len - 1] == '\n')
+			line[len - 1] = '\0';
 		exec_command(line, curr_view, GET_COMMAND, NULL);
 	}
 
