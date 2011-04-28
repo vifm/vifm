@@ -23,6 +23,7 @@
 
 #include "background.h"
 #include "filelist.h"
+#include "fileops.h"
 #include "keys.h"
 #include "modes.h"
 #include "status.h"
