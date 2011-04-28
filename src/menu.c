@@ -146,8 +146,6 @@ init_extended_keys(void)
 void
 enter_menu_mode(menu_info *m, FileView *active_view)
 {
-	int y, len;
-	getmaxyx(menu_win, y, len);
 	keypad(menu_win, TRUE);
 	werase(status_bar);
 	wtimeout(menu_win, KEYPRESS_TIMEOUT);

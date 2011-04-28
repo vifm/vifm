@@ -625,7 +625,7 @@ find_prev_word(void)
 		input_stat.index--;
 		input_stat.curs_pos--;
 	}
-	while(input_stat.index > 1 && !isspace(input_stat.line[input_stat.index - 1]))
+	while(input_stat.index > 0 && !isspace(input_stat.line[input_stat.index - 1]))
 	{
 		input_stat.index--;
 		input_stat.curs_pos--;
