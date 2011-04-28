@@ -80,6 +80,7 @@ static void leave_cmdline_mode(void);
 static void keys_ctrl_c(struct key_info, struct keys_info *);
 static void keys_ctrl_h(struct key_info, struct keys_info *);
 static void keys_ctrl_i(struct key_info, struct keys_info *);
+static void keys_ctrl_k(struct key_info, struct keys_info *);
 static void keys_ctrl_m(struct key_info, struct keys_info *);
 static void keys_ctrl_n(struct key_info, struct keys_info *);
 static void keys_ctrl_u(struct key_info, struct keys_info *);
@@ -124,6 +125,9 @@ init_cmdline_mode(int *key_mode)
 
 	curr = add_keys(L"\x09", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_i;
+
+	curr = add_keys(L"\x0b", CMDLINE_MODE);
+	curr->data.handler = keys_ctrl_k;
 
 	curr = add_keys(L"\x0d", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_m;
@@ -491,6 +495,23 @@ keys_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
 		mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 		mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
 	}
+}
+
+static void
+keys_ctrl_k(struct key_info key_info, struct keys_info *keys_info)
+{
+	input_stat.complete_continue = 0;
+
+	if(input_stat.index == input_stat.len)
+		return;
+
+	wcsdel(input_stat.line, input_stat.index + 1,
+			input_stat.len - input_stat.index);
+	input_stat.len = input_stat.index;
+
+	werase(status_bar);
+	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
+	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
 }
 
 static void

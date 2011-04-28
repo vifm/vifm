@@ -29,6 +29,8 @@
 
 	Added support for motions with d and y commands.
 
+	Added startup file.
+
 	Changed keys input handling.
 
 	Changed force dot files appear at the beginning of file list.
