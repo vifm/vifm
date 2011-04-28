@@ -1,5 +1,68 @@
+0.5 to 0.6
+
+	Added ZZ and ZE commands.
+
+	Added Ctrl+D and Ctrl+U commands.
+
+	Added zb, zt and zz commands.
+
+	Added Ctrl+E and Ctrl+Y commands.
+
+	Added Ctrl+W W, Ctrl+W O and Ctrl+W V commands.
+
+	Added i command to force file opening even for executables.
+
+	Added IEC abbreviations.
+
+	Added Ctrl+U, Ctrl+N, Ctrl+P, Ctrl+K, Ctrl+W, Meta+F and Meta+B in
+	command line mode.
+
+	Added Home and End keys support in command line mode.
+
+	Added backward search (?).
+
+	Added :map, :nmap:, :cmap, :vmap commands.
+
+	Added co (change owner) and cg (change group) commands.
+
+	Added utf8 support.
+
+	Added support for motions with d and y commands.
+
+	Changed keys input handling.
+
+	Changed force dot files appear at the beginning of file list.
+
+	Changed removed limit command line length limit.
+
+	Changed history of visited directories.
+
+	Changed ascending/descending sort for all types of criteria.
+
+	Fixed segmentation fault caused by newwin.
+
+	Fixed segmentation fault caused by bookmarks menu.
+
+	Fixed now view is updated after several commands.
+
+	Fixed bug with empty command line.
+
+	Fixed file renaming.
+
+	Fixed ranges handling.
+
+	Fixed behavior of n and N commands for different search directions.
+
+	Fixed filename completion.
+
+	Fixed user commands completion.
+
+	Fixed memory allocation for history.
+
+	Fixed work with registers.
+
 0.4 to 0.5
-	
+
 	Changed the file size to a human friendly notation.
 
 	Added ascending and descending sort types.
@@ -22,20 +85,20 @@
 
 	ncursesw is now required to build vifm.
 
-
 0.3a to 0.4
+
 	Color schemes added - required a change to the vifmrc file.
 
 	UTF-8 support
 
 	Quick view of current file with :view command.
 
-	Hopefully fixed bug when starting vifm with a directory on the command 
+	Hopefully fixed bug when starting vifm with a directory on the command
 	line.
 
-	Changed executable file to check for filetypes.  If you have vifm set to 
+	Changed executable file to check for filetypes.  If you have vifm set to
 	not run executable files, it will now first check for a filetype setting
-	and if present will use the program you set to open the file.  If no 
+	and if present will use the program you set to open the file.  If no
 	filetype is set it will open the file in vi.
 
 	Fixed delete command when dd in :com window.
@@ -47,8 +110,8 @@
 	The symlinks in the tarball were replaced with the actual scripts.
 
 0.2 to 0.3
-	
-	Added error message for shell commands that are too long.  
+
+	Added error message for shell commands that are too long.
 
 	Added :split, :only  for one window view.
 
@@ -56,8 +119,8 @@
 
 	Added . to repeat last command.  This currently only works with :commands.
 
-	When deleting or putting files the process is backgrounded but it now 
-	waits for the process to return so that the changes show up quicker 
+	When deleting or putting files the process is backgrounded but it now
+	waits for the process to return so that the changes show up quicker
 	in the file lists.
 
 	Removed the code to change the xterm title.
@@ -81,7 +144,7 @@
 	Fixed menu scrolling bug when the menu list was the same size as window rows.
 
 0.1 to 0.2
-	
+
 	File names are now escaped before going to the shell.
 
 	The menus are now searchable with / or ? and basic commands :45 or :quit.
@@ -96,7 +159,7 @@
 
 	cw can be used to rename files.
 
-	Added a keys pressed window in the status bar to show the first d of dd, 
+	Added a keys pressed window in the status bar to show the first d of dd,
 	numbers for 12G or 33j movement commands, and first y of yy.
 
 	User commands are now sorted in alphabetical order so that they may be
@@ -104,13 +167,13 @@
 
 	The :command parsing was rewritten.
 
-	The default action on an executable file was changed to a configurable 
+	The default action on an executable file was changed to a configurable
 	option.  The default is now to view the file instead of executing it.
 
 	New :commands
 		:locate command uses locate.
 		:apropos command - shows list of man pages in menu window.
-		:sync command - changes the other panel to the same directory as the 
+		:sync command - changes the other panel to the same directory as the
 			current panel.
 
 	New Key bindings
@@ -129,6 +192,3 @@
 		The bookmarks code was rewritten.
 
 		The automatic updating of the file lists was rewritten.
-
-
-
