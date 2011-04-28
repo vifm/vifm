@@ -1043,15 +1043,24 @@ check_for_range(FileView *view, char *command, cmd_t *cmd)
 static int
 parse_command(FileView *view, char *command, cmd_t *cmd)
 {
+	size_t len;
 	int result;
 
 	initialize_command_struct(cmd);
 
-	while(strlen(command) > 0 && isspace(command[strlen(command) -1]))
-			command[strlen(command) -1] = '\0';
+	len = strlen(command);
+	while(len > 0 && isspace(command[0]))
+	{
+		command++;
+		len--;
+	}
+	while(len > 0 && isspace(command[len - 1]))
+		command[--len] = '\0';
+
+	if(len == 0)
+		return 0;
 
 	result = check_for_range(view, command, cmd);
-
 
 	/* Just a :number - :12 - or :$ handled in check_for_range() */
 	if(result == -10)
@@ -1095,11 +1104,8 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 	else /* Prevent eating '!' after command name. by not doing cmd->pos++ */
 		cmd->cmd_name[cmd->pos] = '\0';
 
-
-
 	if(strlen(command) > cmd->pos)
 	{
-
 		/* Check whether to run command in background */
 		if(command[strlen(command) -1] == '&' && command[strlen(command) -2] == ' ')
 		{
@@ -1113,7 +1119,6 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 				x++;
 			}
 			cmd->background = 1;
-
 		}
 		cmd->args = strdup(command + cmd->pos);
 	}
