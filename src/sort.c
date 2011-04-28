@@ -38,95 +38,80 @@ sort_dir_list(const void *one, const void *two)
 
 	if(first->type == DIRECTORY)
 		first_is_dir = true;
-	else if (first->type == LINK)
+	else if(first->type == LINK)
 		first_is_dir = is_link_dir(one);
 
 	if(second->type == DIRECTORY)
 		second_is_dir = true;
-	else if (second->type == LINK)
+	else if(second->type == LINK)
 		second_is_dir = is_link_dir(two);
 
 	if(first_is_dir != second_is_dir)
 		return first_is_dir ? -1 : 1;
+
+	retval = 0;
 	switch(curr_view->sort_type)
 	{
-		 case SORT_BY_NAME:
-				 if(first->name[0] == '.' && second->name[0] != '.')
-					 return -1;
-				 else
-					 if(first->name[0] != '.' && second->name[0] == '.')
-						 return 1;
-				 break;
+		case SORT_BY_NAME:
+			if(first->name[0] == '.' && second->name[0] != '.')
+				retval = -1;
+			else if(first->name[0] != '.' && second->name[0] == '.')
+				retval = 1;
+			break;
 
-		 case SORT_BY_EXTENSION:
-				 pfirst  = strrchr(first->name,  '.');
-				 psecond = strrchr(second->name, '.');
+		case SORT_BY_EXTENSION:
+			pfirst  = strrchr(first->name,  '.');
+			psecond = strrchr(second->name, '.');
 
-				 if(pfirst && psecond)
-				 {
-					 retval = strcmp(++pfirst, ++psecond);
-					 if(retval != 0)
-							 return retval;
-				 }
-				 else
-					 if(pfirst || psecond)
-							 return (pfirst ? -1 : 1);
-				 break;
+			if(pfirst && psecond)
+				retval = strcmp(++pfirst, ++psecond);
+			else if(pfirst || psecond)
+				retval = pfirst ? -1 : 1;
+			break;
 
-		 case SORT_BY_SIZE_ASCENDING:
-				 if(first->size == second->size)
-						break;
-				 return first->size > second->size;
+		case SORT_BY_SIZE:
+			retval = first->size - second->size;
+			break;
 
-		 case SORT_BY_SIZE_DESCENDING:
-				 if(first->size == second->size)
-					 break;
-				 return first->size < second->size;
+		case SORT_BY_TIME_MODIFIED:
+			retval = first->mtime - second->mtime;
+			break;
 
-		 case SORT_BY_TIME_MODIFIED:
-				 if(first->mtime == second->mtime)
-						break;
-				 return first->mtime - second->mtime;
+		case SORT_BY_TIME_ACCESSED:
+			retval = first->atime - second->atime;
+			break;
 
-		 case SORT_BY_TIME_ACCESSED:
-				 if(first->atime == second->atime)
-						break;
-				 return first->atime - second->atime;
+		case SORT_BY_TIME_CHANGED:
+			retval = first->ctime - second->ctime;
+			break;
 
-		 case SORT_BY_TIME_CHANGED:
-				 if(first->ctime == second->ctime)
-						break;
-				 return first->ctime - second->ctime;
+		case SORT_BY_MODE:
+			retval = first->mode - second->mode;
+			break;
 
-		 case SORT_BY_MODE:
-				 if(first->mode == second->mode)
-						break;
-				 return first->mode - second->mode;
+		case SORT_BY_OWNER_ID:
+			retval = first->uid - second->uid;
+			break;
 
-		 case SORT_BY_OWNER_ID:
-				 if(first->uid == second->uid)
-						break;
-				 return first->uid - second->uid;
+		case SORT_BY_GROUP_ID:
+			retval = first->gid - second->gid;
+			break;
 
-		 case SORT_BY_GROUP_ID:
-				 if(first->gid == second->gid)
-						break;
-				 return first->gid - second->gid;
+		case SORT_BY_OWNER_NAME:
+			retval = first->uid - second->uid;
+			break;
 
-		 case SORT_BY_OWNER_NAME:
-				 if(first->uid == second->uid)
-						break;
-				 return first->uid - second->uid;
-
-		 case SORT_BY_GROUP_NAME:
-				 if(first->gid == second->gid)
-						break;
-				 return first->gid - second->gid;
-		 default:
-				 break;
+		case SORT_BY_GROUP_NAME:
+			retval = first->gid - second->gid;
+			break;
 	}
 
-	return strcmp(first->name, second->name);
+	if(retval == 0)
+		retval = strcmp(first->name, second->name);
+	if(curr_view->sort_descending)
+		retval = -retval;
+
+	return retval;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

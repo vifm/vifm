@@ -21,6 +21,7 @@ v0.6.0:
     - force dot files appear at the beginning of file list
     - removed limit command line length limit
     - history of visited directories
+    - ascending/descending sort for all types of criteria
 
     Fixed:
     - segmentation fault caused by newwin

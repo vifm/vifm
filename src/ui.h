@@ -39,8 +39,7 @@ enum {
 	SORT_BY_MODE,
 	SORT_BY_OWNER_ID,
 	SORT_BY_OWNER_NAME,
-	SORT_BY_SIZE_ASCENDING,
-	SORT_BY_SIZE_DESCENDING,
+	SORT_BY_SIZE,
 	SORT_BY_TIME_ACCESSED,
 	SORT_BY_TIME_CHANGED,
 	SORT_BY_TIME_MODIFIED,
@@ -84,7 +83,6 @@ typedef struct _FileView
 	char regexp[256]; /* regular expression pattern for / searching */
 	char * prev_filter;
 	char * filename_filter; /* regexp for filtering files in dir list */
-	char sort_type;
 	int hide_dot;
 	int prev_invert;
 	bool invert; /* whether to invert the filename pattern */
@@ -99,6 +97,9 @@ typedef struct _FileView
 	int color_scheme; /* current color scheme being used */
 	dir_entry_t *dir_entry;
 	char ** selected_filelist;
+
+	char sort_type;
+	char sort_descending;
 
 	int history_num;
 	int history_pos;

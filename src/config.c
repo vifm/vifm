@@ -68,7 +68,6 @@ init_config(void)
 		cfg.max_args = 4096; /* POSIX MINIMUM */
 }
 
-
 static void
 create_help_file(void)
 {
@@ -162,7 +161,6 @@ set_config_dir(void)
 	}
 }
 
-
 int
 read_config_file(void)
 {
@@ -176,7 +174,6 @@ read_config_file(void)
 	int args;
 
 	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
-
 
 	if((fp = fopen(config_file, "r")) == NULL)
 	{
@@ -249,11 +246,23 @@ read_config_file(void)
 			if(!strcmp(line, "LEFT_WINDOW_SORT_TYPE"))
 			{
 				lwin.sort_type = atoi(s1);
+				if(lwin.sort_type < 0)
+				{
+					lwin.sort_type = -lwin.sort_type;
+					lwin.sort_descending = 1;
+				}
+				lwin.sort_type--;
 				continue;
 			}
 			if(!strcmp(line, "RIGHT_WINDOW_SORT_TYPE"))
 			{
 				rwin.sort_type = atoi(s1);
+				if(rwin.sort_type < 0)
+				{
+					rwin.sort_type = -rwin.sort_type;
+					rwin.sort_descending = 1;
+				}
+				rwin.sort_type--;
 				continue;
 			}
 			if(!strcmp(line, "LWIN_FILTER"))
@@ -403,22 +412,23 @@ write_config_file(void)
 	fprintf(fp, "\nHISTORY_LENGTH=%d\n", cfg.history_len);
 
 	fprintf(fp, "\n# The sort type is how the files will be sorted in the file listing.\n");
-	fprintf(fp, "# Sort by File Extension = 0\n");
-	fprintf(fp, "# Sort by File Name = 1\n");
-	fprintf(fp, "# Sort by Group ID = 2\n");
-	fprintf(fp, "# Sort by Group Name = 3\n");
-	fprintf(fp, "# Sort by Mode = 4\n");
-	fprintf(fp, "# Sort by Owner ID = 5\n");
-	fprintf(fp, "# Sort by Owner Name = 6\n");
-	fprintf(fp, "# Sort by Size (Ascending) = 7\n");
-	fprintf(fp, "# Sort by Size (Descending) = 8\n");
-
-	fprintf(fp, "# Sort by Time Accessed =9\n");
-	fprintf(fp, "# Sort by Time Changed =10\n");
-	fprintf(fp, "# Sort by Time Modified =11\n");
+	fprintf(fp, "# Sort by File Extension = 1\n");
+	fprintf(fp, "# Sort by File Name = 2\n");
+	fprintf(fp, "# Sort by Group ID = 3\n");
+	fprintf(fp, "# Sort by Group Name = 4\n");
+	fprintf(fp, "# Sort by Mode = 5\n");
+	fprintf(fp, "# Sort by Owner ID = 6\n");
+	fprintf(fp, "# Sort by Owner Name = 7\n");
+	fprintf(fp, "# Sort by Size = 8\n");
+	fprintf(fp, "# Sort by Time Accessed = 9\n");
+	fprintf(fp, "# Sort by Time Changed = 10\n");
+	fprintf(fp, "# Sort by Time Modified = 11\n");
+	fprintf(fp, "# For descending sort use negative numbers.\n");
 	fprintf(fp, "# This can be set with the :sort command in vifm.\n");
-	fprintf(fp, "\nLEFT_WINDOW_SORT_TYPE=%d\n", lwin.sort_type);
-	fprintf(fp, "\nRIGHT_WINDOW_SORT_TYPE=%d\n", rwin.sort_type);
+	fprintf(fp, "\nLEFT_WINDOW_SORT_TYPE=%s%d\n", lwin.sort_descending ? "-" : "",
+			lwin.sort_type + 1);
+	fprintf(fp, "\nRIGHT_WINDOW_SORT_TYPE=%s%d\n",
+			rwin.sort_descending ? "-" : "", rwin.sort_type + 1);
 
 	fprintf(fp, "\n# The regular expression used to filter files out of\n");
 	fprintf(fp, "# the directory listings.\n");

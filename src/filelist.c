@@ -138,8 +138,7 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 			 break;
 		case SORT_BY_NAME:
 		case SORT_BY_EXTENSION:
-		case SORT_BY_SIZE_ASCENDING:
-		case SORT_BY_SIZE_DESCENDING:
+		case SORT_BY_SIZE:
 		default:
 			 {
 				 char str[24] = "";

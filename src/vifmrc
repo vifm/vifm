@@ -36,17 +36,18 @@ HISTORY_LENGTH=15
 
 
 # The sort type is how the files will be sorted in the file listing.
-# Sort by File Extension = 0
-# Sort by File Name = 1
-# Sort by Group ID = 2
-# Sort by Group Name = 3
-# Sort by Mode = 4
-# Sort by Owner ID = 5
-# Sort by Owner Name = 6
-# Sort by Size = 7
-# Sort by Time Accessed =8
-# Sort by Time Changed =9
-# Sort by Time Modified =10
+# Sort by File Extension = 1
+# Sort by File Name = 2
+# Sort by Group ID = 3
+# Sort by Group Name = 4
+# Sort by Mode = 5
+# Sort by Owner ID = 6
+# Sort by Owner Name = 7
+# Sort by Size = 8
+# Sort by Time Accessed = 9
+# Sort by Time Changed = 10
+# Sort by Time Modified = 11
+# For descending sort use negative numbers.
 # This can be set with the :sort command in vifm.
 
 LEFT_WINDOW_SORT_TYPE=1
