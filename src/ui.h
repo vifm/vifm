@@ -52,7 +52,6 @@ typedef struct
 	char file[NAME_MAX];
 }history_t;
 
-
 typedef struct
 {
 	char *name;
@@ -105,7 +104,6 @@ typedef struct _FileView
 	int history_pos;
 	history_t *history;
 }FileView;
-
 
 FileView lwin;
 FileView rwin;

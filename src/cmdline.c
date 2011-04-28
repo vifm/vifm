@@ -598,8 +598,11 @@ keys_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
 	old = input_stat.index;
 	find_prev_word();
 
-	wcsdel(input_stat.line, input_stat.index + 1, old - input_stat.index);
-	input_stat.len -= old - input_stat.index;
+	if(input_stat.index != old)
+	{
+		wcsdel(input_stat.line, input_stat.index + 1, old - input_stat.index);
+		input_stat.len -= old - input_stat.index;
+	}
 
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
