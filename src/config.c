@@ -183,6 +183,7 @@ read_config_file(void)
 	char *s1 = NULL;
 	char *s2 = NULL;
 	char *s3 = NULL;
+	char *s4 = NULL;
 	char *sx = NULL;
 	int args;
 
@@ -220,12 +221,22 @@ read_config_file(void)
 		/* COMMAND is handled here so that the command can have an '=' */
 		if(!strcmp(line, "COMMAND"))
 			add_command(s1, s2);
-		else if((args == 2) && ((sx = s3 = strchr(s2, '=')) != NULL))
+		else
 		{
-			s3++;
-			chomp(s3);
-			*sx = '\0';
-			args = 3;
+			if(args == 2 && (sx = s3 = strchr(s2, '=')) != NULL)
+			{
+				s3++;
+				chomp(s3);
+				*sx = '\0';
+				args = 3;
+			}
+			if(args == 3 && (sx = s4 = strchr(s3, '=')) != NULL)
+			{
+				s4++;
+				chomp(s4);
+				*sx = '\0';
+				args = 4;
+			}
 		}
 		if(args == 1)
 		{
@@ -343,15 +354,23 @@ read_config_file(void)
 		}
 		if(args == 3)
 		{
-			if(!strcmp(line, "FILETYPE"))
-			{
-				add_filetype(s1, s2, s3);
-				continue;
-			}
 			if(!strcmp(line, "BOOKMARKS"))
 			{
 				if(isalnum(*s1))
 					add_bookmark(*s1, s2, s3);
+				continue;
+			}
+			if(!strcmp(line, "FILETYPE")) /* backward compatibility */
+			{
+				add_filetype(s1, s2, "", s3);
+				continue;
+			}
+		}
+		if(args == 4)
+		{
+			if(!strcmp(line, "FILETYPE"))
+			{
+				add_filetype(s1, s2, s3, s4);
 				continue;
 			}
 		}
@@ -505,15 +524,16 @@ write_config_file(void)
 
 	fprintf(fp, "\n# The file type is for the default programs to be used with\n");
 	fprintf(fp, "# a file extension. \n");
-	fprintf(fp, "# FILETYPE=description=extension1,extension2=defaultprogram, program2\n");
-	fprintf(fp, "# FILETYPE=Web=html,htm,shtml=links,mozilla,elvis\n");
+	fprintf(fp, "# FILETYPE=description=extension1,extension2=consoleviewer=defaultprogram, program2\n");
+	fprintf(fp, "# FILETYPE=Web=html,htm,shtml==links,mozilla,elvis\n");
 	fprintf(fp, "# would set links as the default program for .html .htm .shtml files\n");
 	fprintf(fp, "# The other programs for the file type can be accessed with the :file command\n");
 	fprintf(fp, "# The command macros %%f, %%F, %%d, %%F may be used in the commands.\n");
 	fprintf(fp, "# The %%a macro is ignored.  To use a %% you must put %%%%.\n\n");
 	for(x = 0; x < cfg.filetypes_num; x++)
 	{
-		fprintf(fp, "FILETYPE=%s=%s=%s\n", filetypes[x].type, filetypes[x].ext, filetypes[x].programs);
+		fprintf(fp, "FILETYPE=%s=%s=%s=%s\n", filetypes[x].type, filetypes[x].ext,
+				filetypes[x].viewer, filetypes[x].programs);
 	}
 
 /*_SZ_BEGIN_*/

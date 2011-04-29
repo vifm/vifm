@@ -23,6 +23,7 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include "ui.h"
 #include "status.h"
@@ -231,6 +232,34 @@ to_wide(const char *s)
 	if(result != NULL)
 		mbstowcs(result, s, len + 1);
 	return result;
+}
+
+void
+run_from_fork(int pipe[2], int err, char *cmd)
+{
+	char *args[4];
+	int nullfd;
+
+	close(err ? 2 : 1); /* Close stderr or stdout */
+	dup(pipe[1]);       /* Redirect stderr or stdout to write end of pipe. */
+	close(pipe[0]);     /* Close read end of pipe. */
+	close(0);           /* Close stdin */
+	close(err ? 1 : 2); /* Close stdout or stderr */
+
+	/* Send stdout, stdin to /dev/null */
+	if((nullfd = open("/dev/null", O_RDONLY)) != -1)
+	{
+		dup2(nullfd, 0);
+		dup2(nullfd, err ? 1 : 2);
+	}
+
+	args[0] = "sh";
+	args[1] = "-c";
+	args[2] = cmd;
+	args[3] = NULL;
+
+	execvp(args[0], args);
+	exit(-1);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

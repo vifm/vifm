@@ -73,7 +73,6 @@ my_system(char *command)
 		}
 		else
 			return status;
-
 	}while(1);
 }
 
@@ -95,29 +94,7 @@ system_and_wait_for_errors(char *cmd)
 
 	if(pid == 0)
 	{
-		char *args[4];
-		int nullfd;
-
-		close(2);             /* Close stderr */
-		dup(error_pipe[1]);   /* Redirect stderr to write end of pipe. */
-		close(error_pipe[0]); /* Close read end of pipe. */
-		close(0);             /* Close stdin */
-		close(1);             /* Close stdout */
-
-		/* Send stdout, stdin to /dev/null */
-		if((nullfd = open("/dev/null", O_RDONLY)) != -1)
-		{
-			dup2(nullfd, 0);
-			dup2(nullfd, 1);
-		}
-
-		args[0] = "sh";
-		args[1] = "-c";
-		args[2] = cmd;
-		args[3] = NULL;
-
-		execvp(args[0], args);
-		exit(-1);
+		run_from_fork(error_pipe, 1, cmd);
 	}
 	else
 	{

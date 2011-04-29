@@ -106,6 +106,16 @@ get_default_program_for_file(char *file)
 	return program_name;
 }
 
+char *
+get_viewer_for_file(char *file)
+{
+	int x = get_filetype_number(file);
+
+	if(x < 0)
+		return NULL;
+
+	return filetypes[x].viewer;
+}
 
 char *
 get_all_programs_for_file(char *file)
@@ -133,18 +143,17 @@ clear_filetypes(void)
 }
 
 void
-add_filetype(char *description, char *extension, char *program)
+add_filetype(char *description, char *extension, char *viewer, char *programs)
 {
-
 	filetypes = (filetype_t *)realloc(filetypes,
 			(cfg.filetypes_num +1) * sizeof(filetype_t));
 
 	filetypes[cfg.filetypes_num].type = strdup(description);
 
 	filetypes[cfg.filetypes_num].ext = strdup(extension);
-	filetypes[cfg.filetypes_num].programs = strdup(program);
+	filetypes[cfg.filetypes_num].viewer = strdup(viewer);
+	filetypes[cfg.filetypes_num].programs = strdup(programs);
 	cfg.filetypes_num++;
 }
-
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

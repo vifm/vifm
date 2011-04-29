@@ -45,6 +45,7 @@ size_t get_utf8_string_length(const char *string);
 size_t get_utf8_overhead(const char *string);
 size_t get_utf8_prev_width(char *string, size_t cut_length);
 wchar_t * to_wide(const char *s);
+void run_from_fork(int pipe[2], int err, char *cmd);
 
 #endif
 

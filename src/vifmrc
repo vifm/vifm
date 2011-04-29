@@ -113,15 +113,16 @@ COMMAND=make=!!make
 COMMAND=grep=vim \"+grep %a\"
 
 # The file type is for the default programs to be used with
-# a file extension. 
-# FILETYPE=description=extension1,extension2=defaultprogram, program2
-# FILETYPE=Web=html,htm,shtml=links,mozilla,elvis
+# a file extension.
+# FILETYPE=description=extension1,extension2=consoleviewer=defaultprogram, program2
+# FILETYPE=Web=html,htm,shtml==links,mozilla,elvis
 # would set links as the default program for .html .htm .shtml files
 # The other programs for the file type can be accessed with the :file command
 # The command macros %f, %F, %d, %F may be used in the commands.
 # The %a macro is ignored.  To use a % you must put %%.
 
-FILETYPE=Web=html,htm=links,mozilla
-FILETYPE=Object=o=nm %f | less
-FILETYPE=Image=jpg,jpeg,png,gif=eog,xv,gimp
-FILETYPE=Archive=tar.gz,tgz=tar -tzf %f | less,tar -zxvf %f
+FILETYPE=Mp3=mp3=mp3info -p 'Artist: %%a\nAlbum: %%l\nTitle: %%n. %%t\nDate: %%y\n' %f=mpg123 %f
+FILETYPE=Web=html,htm==links,mozilla
+FILETYPE=Object=o==nm %f | less
+FILETYPE=Image=jpg,jpeg,png,gif==eog,xv,gimp
+FILETYPE=Archive=tar.gz,tgz==tar -tzf %f | less,tar -zxvf %f

@@ -227,45 +227,22 @@ int
 background_and_wait_for_errors(char *cmd)
 {
 	pid_t pid;
-	char *args[4];
 	int error_pipe[2];
 	int error = 0;
 
-	if (pipe(error_pipe) != 0)
+	if(pipe(error_pipe) != 0)
 	{
 		show_error_msg(" File pipe error",
 				"Error creating pipe in background.c line 84");
 		return -1;
 	}
 
-	if ((pid = fork()) == -1)
+	if((pid = fork()) == -1)
 		return -1;
 
-	if (pid == 0)
+	if(pid == 0)
 	{
-		int nullfd;
-		close(2);				 /* Close stderr */
-		dup(error_pipe[1]);  /* Redirect stderr to write end of pipe. */
-		close(error_pipe[0]); /* Close read end of pipe. */
-		close(0); /* Close stdin */
-		close(1); /* Close stdout */
-
-		/* Send stdout, stdin to /dev/null */
-		if ((nullfd = open("/dev/null", O_RDONLY)) != -1)
-		{
-			if (dup2(nullfd, 0) == -1)
-				;
-			if (dup2(nullfd, 1) == -1)
-				;
-		}
-
-		args[0] = "sh";
-		args[1] = "-c";
-		args[2] = cmd;
-		args[3] = NULL;
-
-		execvp(args[0], args);
-		exit(-1);
+		run_from_fork(error_pipe, 1, cmd);
 	}
 	else
 	{
@@ -274,7 +251,7 @@ background_and_wait_for_errors(char *cmd)
 
 		close(error_pipe[1]); /* Close write end of pipe. */
 
-		while ((nread = read(error_pipe[0], buf, sizeof(buf)-1)) > 0)
+		while((nread = read(error_pipe[0], buf, sizeof(buf)-1)) > 0)
 		{
 			error = 1;
 			buf[nread] = '\0';
@@ -285,11 +262,10 @@ background_and_wait_for_errors(char *cmd)
 		close(error_pipe[0]);
 	}
 
-	if (error)
+	if(error)
 		return -1;
 	else
-	return 0;
-
+		return 0;
 }
 
 int

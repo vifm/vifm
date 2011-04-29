@@ -37,6 +37,8 @@
 
 	Added group to stat line.
 
+	Added custom viewers for files.
+
 	Changed keys input handling.
 
 	Changed force dot files appear at the beginning of file list.

@@ -523,7 +523,11 @@ expand_macros(FileView *view, char *command, char *args,
 				break;
 			case 's': /* split in new screen region */
 				*split = 1;
-
+				break;
+			case '%':
+				expanded = (char *)realloc(expanded, len + 2);
+				strcat(expanded, "%");
+				len++;
 				break;
 			default:
 				break;
@@ -533,8 +537,8 @@ expand_macros(FileView *view, char *command, char *args,
 
 		for(; x < strlen(command); x++)
 		{
-				if(command[x] == '%')
-					break;
+			if(command[x] == '%')
+				break;
 		}
 		expanded = (char *)realloc(expanded, len + strlen(command) +1);
 		strncat(expanded, command + y, x - y);

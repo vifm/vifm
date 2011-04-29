@@ -36,8 +36,10 @@
 #include "background.h"
 #include "color_scheme.h"
 #include "config.h" /* menu colors */
+#include "commands.h"
 #include "filelist.h"
 #include "fileops.h"
+#include "filetype.h"
 #include "menus.h"
 #include "sort.h"
 #include "status.h"
@@ -162,6 +164,39 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 				| A_BOLD);
 }
 
+static FILE*
+use_info_prog(char *cmd, int x, int y)
+{
+	pid_t pid;
+	int error_pipe[2];
+	int menu, split;
+	char buf[100];
+
+	cmd = expand_macros(curr_view, cmd, buf, &menu, &split);
+
+	if(pipe(error_pipe) != 0)
+	{
+		show_error_msg(" File pipe error", "Error creating pipe");
+		return NULL;
+	}
+
+	if((pid = fork()) == -1)
+		return NULL;
+
+	if(pid == 0)
+	{
+		run_from_fork(error_pipe, 0, cmd);
+		free(cmd);
+		return NULL;
+	}
+	else
+	{
+		close(error_pipe[1]); /* Close write end of pipe. */
+		free(cmd);
+		return fdopen(error_pipe[0], "r");
+	}
+}
+
 void
 quick_view_file(FileView *view)
 {
@@ -199,7 +234,15 @@ quick_view_file(FileView *view)
 			break;
 		default:
 			{
-				if((fp = fopen(view->dir_entry[view->list_pos].name, "r")) == NULL)
+				char *viewer;
+
+				viewer = get_viewer_for_file(view->dir_entry[view->list_pos].name);
+				if(viewer != NULL && viewer[0] != '\0')
+					fp = use_info_prog(viewer, x, y);
+				else
+					fp = fopen(view->dir_entry[view->list_pos].name, "r");
+
+				if(fp == NULL)
 				{
 					mvwaddstr(other_view->win, ++x, y, "Cannot open file");
 					return;
