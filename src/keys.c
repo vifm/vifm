@@ -216,6 +216,8 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 	}
 	if(key_t->type != USER_CMD && key_t->type != BUILDIN_CMD)
 	{
+		if(key_t->data.handler == NULL)
+			return KEYS_UNKNOWN;
 		key_t->data.handler(key_info, keys_info);
 		return 0;
 	}
@@ -240,7 +242,7 @@ static void
 init_keys_info(struct keys_info *keys_info)
 {
 	keys_info->selector = 0;
-	keys_info->count = 0;
+	keys_info->count = NO_COUNT_GIVEN;
 	keys_info->indexes = NULL;
 	keys_info->after_wait = 0;
 }
