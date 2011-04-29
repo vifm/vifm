@@ -30,8 +30,8 @@ typedef struct
 filetype_t *filetypes;
 char * get_default_program_for_file(char *file);
 char * get_viewer_for_file(char *file);
-void add_filetype(char *description, char *extension, char *program,
-		char *viewer);
+void add_filetype(char *description, char *extension, char *viewer,
+		char *programs);
 char * get_all_programs_for_file(char *file);
 void clear_filetypes(void);
 

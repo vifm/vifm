@@ -942,9 +942,7 @@ keys_yy(struct key_info key_info, struct keys_info *keys_info)
 	int count;
 
 	if(key_info.count != NO_COUNT_GIVEN)
-	{
 		pick_files(curr_view, curr_view->list_pos + key_info.count - 1, keys_info);
-	}
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 

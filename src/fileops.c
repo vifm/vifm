@@ -714,14 +714,19 @@ rename_file_cb(const char *new_name)
 	char *filename = get_current_file_name(curr_view);
 	char *escaped_src, *escaped_dst;
 	char command[1024];
+	char new[NAME_MAX + 1];
+	size_t len;
 	int found;
 
+	len = strlen(filename);
+	snprintf(new, sizeof(new), "%s%s", new_name,
+			filename[len - 1] == '/' ? "/" : "");
+
 	/* Filename unchanged */
-	if(strcmp(filename, new_name) == 0)
+	if(strcmp(filename, new) == 0)
 		return;
 
-	if(access(new_name, F_OK) == 0
-			&& strncmp(filename, new_name, strlen(filename)) != 0)
+	if(access(new, F_OK) == 0 && strncmp(filename, new, strlen(filename)) != 0)
 	{
 		show_error_msg("File exists",
 				"That file already exists. Will not overwrite.");
@@ -732,7 +737,7 @@ rename_file_cb(const char *new_name)
 	}
 
 	escaped_src = escape_filename(filename, strlen(filename), 0);
-	escaped_dst = escape_filename(new_name, strlen(new_name), 0);
+	escaped_dst = escape_filename(new, strlen(new), 0);
 	if(escaped_src == NULL || escaped_dst == NULL)
 	{
 		free(escaped_src);
@@ -751,7 +756,7 @@ rename_file_cb(const char *new_name)
 	}
 
 	load_dir_list(curr_view, 0);
-	found = find_file_pos_in_list(curr_view, new_name);
+	found = find_file_pos_in_list(curr_view, new);
 	if(found >= 0)
 		moveto_list_pos(curr_view, found);
 	else

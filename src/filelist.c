@@ -164,7 +164,7 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 				| A_BOLD);
 }
 
-static FILE*
+static FILE *
 use_info_prog(char *cmd, int x, int y)
 {
 	pid_t pid;
@@ -191,9 +191,13 @@ use_info_prog(char *cmd, int x, int y)
 	}
 	else
 	{
+		FILE * f;
 		close(error_pipe[1]); /* Close write end of pipe. */
 		free(cmd);
-		return fdopen(error_pipe[0], "r");
+		f = fdopen(error_pipe[0], "r");
+		if(f == NULL)
+			close(error_pipe[0]);
+		return f;
 	}
 }
 
