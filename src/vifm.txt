@@ -159,6 +159,7 @@ co - change owner of file.
 cw - change word is used to rename a file.
 dd - move selected file or files to ~/.vifm/Trash
 d<selector> - delete files.
+f, F, ;, <comma> - search by first character in filename.
 yy, Y - yank selected files.
 y<selector> - yank files.
 p - put last selected files.

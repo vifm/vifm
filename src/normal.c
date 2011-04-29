@@ -44,6 +44,8 @@
 
 static int *mode;
 static int last_search_backward;
+static int last_fast_search_char;
+static int last_fast_search_backward = -1;
 
 static void init_extended_keys(void);
 static void keys_ctrl_b(struct key_info, struct keys_info *);
@@ -65,10 +67,14 @@ static void keys_ctrl_ww(struct key_info, struct keys_info *);
 static void keys_ctrl_y(struct key_info, struct keys_info *);
 static void keys_quote(struct key_info, struct keys_info *);
 static void keys_percent(struct key_info, struct keys_info *);
+static void keys_comma(struct key_info, struct keys_info *);
 static void keys_dot(struct key_info, struct keys_info *);
 static void keys_colon(struct key_info, struct keys_info *);
+static void keys_semicolon(struct key_info, struct keys_info *);
 static void keys_slash(struct key_info, struct keys_info *);
 static void keys_question(struct key_info, struct keys_info *);
+static void keys_F(struct key_info, struct keys_info *);
+static void find_F(int ch);
 static void keys_G(struct key_info, struct keys_info *);
 static void keys_H(struct key_info, struct keys_info *);
 static void keys_L(struct key_info, struct keys_info *);
@@ -82,6 +88,8 @@ static void keys_co(struct key_info, struct keys_info *);
 static void keys_cw(struct key_info, struct keys_info *);
 static void keys_dd(struct key_info, struct keys_info *);
 static void keys_d_selector(struct key_info, struct keys_info *);
+static void keys_f(struct key_info, struct keys_info *);
+static void find_f(int ch);
 static void keys_gg(struct key_info, struct keys_info *);
 static void keys_h(struct key_info, struct keys_info *);
 static void keys_i(struct key_info, struct keys_info *);
@@ -197,17 +205,28 @@ init_normal_mode(int *key_mode)
 	curr = add_keys(L"%", NORMAL_MODE);
 	curr->data.handler = keys_percent;
 
+	curr = add_keys(L",", NORMAL_MODE);
+	curr->data.handler = keys_comma;
+
 	curr = add_keys(L".", NORMAL_MODE);
 	curr->data.handler = keys_dot;
 
 	curr = add_keys(L":", NORMAL_MODE);
 	curr->data.handler = keys_colon;
 
+	curr = add_keys(L";", NORMAL_MODE);
+	curr->data.handler = keys_semicolon;
+
 	curr = add_keys(L"/", NORMAL_MODE);
 	curr->data.handler = keys_slash;
 
 	curr = add_keys(L"?", NORMAL_MODE);
 	curr->data.handler = keys_question;
+
+	curr = add_keys(L"F", NORMAL_MODE);
+	curr->type = BUILDIN_WAIT_POINT;
+	curr->data.handler = keys_F;
+	curr->followed = FOLLOWED_BY_MULTIKEY;
 
 	curr = add_keys(L"G", NORMAL_MODE);
 	curr->data.handler = keys_G;
@@ -256,6 +275,11 @@ init_normal_mode(int *key_mode)
 	curr->data.handler = keys_d_selector;
 	curr->type = BUILDIN_WAIT_POINT;
 	curr->followed = FOLLOWED_BY_SELECTOR;
+
+	curr = add_keys(L"f", NORMAL_MODE);
+	curr->type = BUILDIN_WAIT_POINT;
+	curr->data.handler = keys_f;
+	curr->followed = FOLLOWED_BY_MULTIKEY;
 
 	curr = add_keys(L"gg", NORMAL_MODE);
 	curr->data.handler = keys_gg;
@@ -499,6 +523,35 @@ keys_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 	scroll_view(curr_view);
 }
 
+static void
+keys_F(struct key_info key_info, struct keys_info *keys_info)
+{
+	last_fast_search_char = key_info.multi;
+	last_fast_search_backward = 1;
+	find_F(key_info.multi);
+}
+
+static void
+find_F(int ch)
+{
+	int x;
+
+	x = curr_view->list_pos;
+	do
+	{
+		x--;
+		if(x == 0)
+			x = curr_view->list_rows - 1;
+		if(curr_view->dir_entry[x].name[0] == ch)
+			break;
+	}while(x != curr_view->list_pos);
+
+	if(x == curr_view->list_pos)
+		return;
+
+	moveto_list_pos(curr_view, x);
+}
+
 /* Jump to bottom of list or to specified line. */
 static void
 keys_G(struct key_info key_info, struct keys_info *keys_info)
@@ -629,6 +682,17 @@ keys_percent(struct key_info key_info, struct keys_info *keys_info)
 	moveto_list_pos(curr_view, line - 1);
 }
 
+static void
+keys_comma(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(last_fast_search_backward == -1)
+		return;
+	if(last_fast_search_backward)
+		find_f(last_fast_search_char);
+	else
+		find_F(last_fast_search_char);
+}
+
 /* Repeat last change. */
 static void
 keys_dot(struct key_info key_info, struct keys_info *keys_info)
@@ -644,6 +708,17 @@ static void
 keys_colon(struct key_info key_info, struct keys_info *keys_info)
 {
 	enter_cmdline_mode(CMD_SUBMODE, L"", NULL);
+}
+
+static void
+keys_semicolon(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(last_fast_search_backward == -1)
+		return;
+	if(last_fast_search_backward)
+		find_F(last_fast_search_char);
+	else
+		find_f(last_fast_search_char);
 }
 
 /* Search forward. */
@@ -712,6 +787,35 @@ keys_d_selector(struct key_info key_info, struct keys_info *keys_info)
 	free(keys_info->indexes);
 	keys_info->indexes = NULL;
 	keys_info->count = 0;
+}
+
+static void
+keys_f(struct key_info key_info, struct keys_info *keys_info)
+{
+	last_fast_search_char = key_info.multi;
+	last_fast_search_backward = 0;
+	find_f(key_info.multi);
+}
+
+static void
+find_f(int ch)
+{
+	int x;
+
+	x = curr_view->list_pos;
+	do
+	{
+		x++;
+		if(x == curr_view->list_rows)
+			x = 0;
+		if(curr_view->dir_entry[x].name[0] == ch)
+			break;
+	}while(x != curr_view->list_pos);
+
+	if(x == curr_view->list_pos)
+		return;
+
+	moveto_list_pos(curr_view, x);
 }
 
 /* Updir. */

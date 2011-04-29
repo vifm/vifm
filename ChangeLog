@@ -31,6 +31,8 @@
 
 	Added startup file.
 
+	Added f, F, ; and <comma> normal mode commands.
+
 	Changed keys input handling.
 
 	Changed force dot files appear at the beginning of file list.

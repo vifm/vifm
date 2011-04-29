@@ -72,6 +72,8 @@ The basic vi key bindings are used to move through the files and popup
     Ctrl-w v - shortcut for :split
     Ctrl-w Ctrl-w - switch to other pane.
 
+    f, F, ;, <comma> - search by first character in filename.
+
 	/regular expression pattern - will highlight all files matching the pattern
 	in the current file list. /\.c$ would highlight all the .c files.
 		N find previous match.
