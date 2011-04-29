@@ -85,7 +85,11 @@ init_window_history(FileView *win)
 static void
 load_initial_directory(FileView *view, const char *dir)
 {
-	snprintf(view->curr_dir, sizeof(view->curr_dir), "%s", dir);
+	if(view->curr_dir[0] == '\0')
+		snprintf(view->curr_dir, sizeof(view->curr_dir), "%s", dir);
+	else
+		dir = view->curr_dir;
+
 	view->dir_entry = (dir_entry_t *)malloc(sizeof(dir_entry_t));
 
 	view->dir_entry[0].name = malloc(sizeof("../") + 1);

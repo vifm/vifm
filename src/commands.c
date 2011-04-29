@@ -85,6 +85,7 @@ enum
 	COM_VIEW,
 	COM_VIFM,
 	COM_VMAP,
+	COM_WQ,
 	COM_YANK,
 	COM_X
 };
@@ -130,6 +131,7 @@ char *reserved_commands[] = {
 	"view",
 	"vifm",
 	"vmap",
+	"wq",
 	"yank",
 	"x"
 };
@@ -1521,6 +1523,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_X:
 		case COM_QUIT:
+			curr_stats.setting_change = 1;
 			comm_quit();
 			break;
 		case COM_SORT:
@@ -1597,6 +1600,11 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_VMAP:
 			save_msg = do_map(cmd, "vmap", VISUAL_MODE);
+			break;
+		case COM_WQ:
+			curr_stats.save_locations = 1;
+			curr_stats.setting_change = 1;
+			comm_quit();
 			break;
 		default:
 			{

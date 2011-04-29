@@ -59,6 +59,7 @@ The builtin commands are:
 :o[nly] - switch to a one window view.
 :pwd - show the present working directory.
 :q[uit] or :x  - will exit vifm.
+:wq - will exit vifm saving pane locations.
 :sh[ell] - will start a shell.
 :sc[reen] - toggles whether to use the screen program or not.
 :s[ort] - menu of different sorting methods.
@@ -169,7 +170,8 @@ t - select or unselect a file.
 v, V - start visual selection of files.
 <Return>, l - handle file (run executable when RUN_EXECUTABLE is set).
 i - handle file (even through it's executable and RUN_EXECUTABLE is set).
-ZZ, ZE - same as :q<Return>
+ZQ - same as :q<Return>
+ZZ - same as :wq<Return>
 zt - redraw pane with file in top of list.
 zz - redraw pane with file in center of list.
 zb - redraw pane with file in bottom of list.

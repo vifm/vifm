@@ -235,7 +235,6 @@ read_config_file(void)
 				cfg.vi_command = strdup(s1);
 				continue;
 			}
-
 			if(!strcmp(line, "USE_TRASH"))
 			{
 				cfg.use_trash = atoi(s1);
@@ -306,6 +305,16 @@ read_config_file(void)
 			if(!strcmp(line, "RWIN_INVERT"))
 			{
 				rwin.invert = atoi(s1);
+				continue;
+			}
+			if(!strcmp(line, "LWIN_PATH"))
+			{
+				strcpy(lwin.curr_dir, s1);
+				continue;
+			}
+			if(!strcmp(line, "RWIN_PATH"))
+			{
+				strcpy(rwin.curr_dir, s1);
 				continue;
 			}
 			if(!strcmp(line, "USE_VIM_HELP"))
@@ -452,6 +461,12 @@ write_config_file(void)
 	fprintf(fp, "RWIN_FILTER=%s\n", rwin.filename_filter);
 	fprintf(fp, "RWIN_INVERT=%d\n", rwin.invert);
 
+	fprintf(fp, "\n# The startup location of panes after :wq.\n");
+	fprintf(fp, "\nLWIN_PATH=%s\n",
+			curr_stats.save_locations ? lwin.curr_dir : "");
+	fprintf(fp, "\nRWIN_PATH=%s\n",
+			curr_stats.save_locations ? rwin.curr_dir : "");
+
 	fprintf(fp, "\n# If you installed the vim.txt help file change this to 1.\n");
 	fprintf(fp, "# If would rather use a plain text help file set this to 0.\n");
 	fprintf(fp, "\nUSE_VIM_HELP=%d\n", cfg.use_vim_help);
@@ -466,7 +481,7 @@ write_config_file(void)
 	fprintf(fp, "\n# BOOKMARKS=mark=/full/directory/path=filename\n\n");
 	for(x = 0; x < NUM_BOOKMARKS; x++)
 	{
-		if (is_bookmark(x))
+		if(is_bookmark(x))
 		{
 			fprintf(fp, "BOOKMARKS=%c=%s=%s\n",
 					index2mark(x),

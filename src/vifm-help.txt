@@ -27,7 +27,8 @@ The basic vi key bindings are used to move through the files and popup
 	p - will copy the yanked files to the current directory or move the files
 		to the current directory if they were deleted with dd or :d or if the
 		files were yanked 'yy' from the Trash directory.
-    ZZ, ZE - same as :q<Return>
+    ZQ - same as :q<Return>
+    ZZ - same as :wq<Return>
     zt - redraw pane with file in top of list.
     zz - redraw pane with file in center of list.
     zb - redraw pane with file in bottom of list.
@@ -104,6 +105,7 @@ The basic vi key bindings are used to move through the files and popup
 		command.
 	:sh will start a shell
 	:q or :x will exit vifm
+    :wq will exit vifm saving pane locations
 	:! program will execute the program in a shell
 		:!command &   will run the process in the background.
 			programs that write to stdout like ls will create an error message
@@ -255,5 +257,5 @@ Reserved :commands
 		view
 		vifm
 		vmap
+        wq
 		x
-

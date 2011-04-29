@@ -1,5 +1,7 @@
 0.5 to 0.6
 
+	Added :wq command.
+
 	Added ZZ and ZE commands.
 
 	Added Ctrl+D and Ctrl+U commands.

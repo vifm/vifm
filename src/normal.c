@@ -658,12 +658,15 @@ keys_V(struct key_info key_info, struct keys_info *keys_info)
 static void
 keys_ZQ(struct key_info key_info, struct keys_info *keys_info)
 {
+	curr_stats.setting_change = 1;
 	comm_quit();
 }
 
 static void
 keys_ZZ(struct key_info key_info, struct keys_info *keys_info)
 {
+	curr_stats.save_locations = 1;
+	curr_stats.setting_change = 1;
 	comm_quit();
 }
 
