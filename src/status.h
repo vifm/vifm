@@ -43,7 +43,7 @@ typedef struct
 	int show_full;
 	int setting_change;
 	int skip_history;
-	int save_locations;
+	int save_locations; /* for :wq and ZZ */
 }Status;
 
 extern Status curr_stats;

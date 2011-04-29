@@ -21,6 +21,7 @@
 					   functions
 					   */
 
+#include <grp.h> /* getgrgid() */
 #include <signal.h> /* signal() */
 #include <stdlib.h> /* malloc */
 #include <sys/stat.h> /* stat */
@@ -40,7 +41,6 @@
 #include "status.h"
 #include "ui.h"
 #include "utils.h"
-
 
 static void
 finish(char *message)
@@ -73,14 +73,44 @@ write_stat_win(char *message)
 	wnoutrefresh(stat_win);
 }
 
+static void
+get_id_string(FileView *view, size_t len, char *buf)
+{
+	char uid_buf[26];
+	char gid_buf[26];
+	struct passwd *pwd_buf;
+	struct group *group_buf;
+
+	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
+	{
+		snprintf(uid_buf, sizeof(uid_buf), "%d",
+				(int) view->dir_entry[view->list_pos].uid);
+	}
+	else
+	{
+		snprintf(uid_buf, sizeof(uid_buf), "%s", pwd_buf->pw_name);
+	}
+
+	if((group_buf = getgrgid(view->dir_entry[view->list_pos].gid)) == NULL)
+	{
+		snprintf(gid_buf, sizeof(gid_buf), "%d",
+				(int) view->dir_entry[view->list_pos].gid);
+	}
+	else
+	{
+		snprintf(gid_buf, sizeof(gid_buf), "%s", group_buf->gr_name);
+	}
+
+	snprintf(buf, len, "  %s:%s", uid_buf, gid_buf);
+}
+
 void
 update_stat_window(FileView *view)
 {
 	char name_buf[40];
 	char perm_buf[26];
 	char size_buf[56];
-	char uid_buf[26];
-	struct passwd *pwd_buf;
+	char id_buf[52];
 	int x, y;
 	size_t print_width;
 	char *current_file;
@@ -92,23 +122,15 @@ update_stat_window(FileView *view)
 	friendly_size_notation(view->dir_entry[view->list_pos].size,
 			sizeof(size_buf), size_buf);
 
-	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
-	{
-		snprintf(uid_buf, sizeof(uid_buf), "  %d",
-				(int) view->dir_entry[view->list_pos].uid);
-	}
-	else
-	{
-		snprintf(uid_buf, sizeof(uid_buf), "  %s", pwd_buf->pw_name);
-	}
+	get_id_string(view, sizeof(id_buf), id_buf);
 	get_perm_string(perm_buf, sizeof(perm_buf),
 			view->dir_entry[view->list_pos].mode);
-	werase(stat_win);
 
+	werase(stat_win);
 	mvwaddstr(stat_win, 0, 2, name_buf);
 	mvwaddstr(stat_win, 0, 24, size_buf);
 	mvwaddstr(stat_win, 0, 36, perm_buf);
-	mvwaddstr(stat_win, 0, 46, uid_buf);
+	mvwaddstr(stat_win, 0, 46, id_buf);
 	snprintf(name_buf, sizeof(name_buf), "%d %s filtered",
 			view->filtered, view->filtered == 1 ? "file" : "files");
 

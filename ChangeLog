@@ -35,6 +35,8 @@
 
 	Added f, F, ; and <comma> normal mode commands.
 
+	Added group to stat line.
+
 	Changed keys input handling.
 
 	Changed force dot files appear at the beginning of file list.
