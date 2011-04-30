@@ -158,8 +158,11 @@ N - previous file matching last search pattern.
 cg - change group of file.
 co - change owner of file.
 cw - change word is used to rename a file.
-dd - move selected file or files to ~/.vifm/Trash
-d<selector> - delete files.
+dd - move selected file or files to ~/.vifm/Trash (if option USE_TRASH is set
+     otherwise delete)
+d<selector> - like dd.
+DD and D<selector> - like dd and d<selector>, but omitting trash directory
+     (even when option USE_TRASH is set).
 f, F, ;, <comma> - search by first character in filename.
 yy, Y - yank selected files.
 y<selector> - yank files.

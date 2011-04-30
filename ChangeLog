@@ -39,6 +39,8 @@
 
 	Added custom viewers for files.
 
+	Added D normal mode command.
+
 	Changed keys input handling.
 
 	Changed force dot files appear at the beginning of file list.

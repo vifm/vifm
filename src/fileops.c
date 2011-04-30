@@ -646,7 +646,7 @@ pipe_and_capture_errors(char *command)
 }
 
 void
-delete_file(FileView *view, int reg, int count, int *indexes)
+delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 {
 	char buf[256];
 	int x;
@@ -677,7 +677,7 @@ delete_file(FileView *view, int reg, int count, int *indexes)
 			continue;
 		}
 
-		if(cfg.use_trash)
+		if(cfg.use_trash && use_trash)
 		{
 			snprintf(buf, sizeof(buf), "mv \"%s\" %s", view->selected_filelist[x],
 					cfg.trash_dir);

@@ -41,11 +41,13 @@ static void keys_ctrl_b(struct key_info, struct keys_info *);
 static void keys_ctrl_c(struct key_info, struct keys_info *);
 static void keys_ctrl_f(struct key_info, struct keys_info *);
 static void keys_colon(struct key_info, struct keys_info *);
+static void keys_D(struct key_info, struct keys_info *);
 static void keys_G(struct key_info, struct keys_info *);
 static void keys_H(struct key_info, struct keys_info *);
 static void keys_L(struct key_info, struct keys_info *);
 static void keys_M(struct key_info, struct keys_info *);
 static void keys_d(struct key_info, struct keys_info *);
+static void delete(struct key_info key_info, int use_trash);
 static void keys_gg(struct key_info, struct keys_info *);
 static void keys_j(struct key_info, struct keys_info *);
 static void keys_k(struct key_info, struct keys_info *);
@@ -77,6 +79,9 @@ init_visual_mode(int *key_mode)
 
 	curr = add_keys(L":", VISUAL_MODE);
 	curr->data.handler = keys_colon;
+
+	curr = add_keys(L"D", VISUAL_MODE);
+	curr->data.handler = keys_D;
 
 	curr = add_keys(L"G", VISUAL_MODE);
 	curr->data.handler = keys_G;
@@ -207,6 +212,12 @@ keys_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+keys_D(struct key_info key_info, struct keys_info *keys_info)
+{
+	delete(key_info, 0);
+}
+
+static void
 keys_G(struct key_info key_info, struct keys_info *keys_info)
 {
 	while(view->list_pos < view->list_rows)
@@ -293,9 +304,15 @@ keys_colon(struct key_info key_info, struct keys_info *keys_info)
 static void
 keys_d(struct key_info key_info, struct keys_info *keys_info)
 {
+	delete(key_info, 1);
+}
+
+static void
+delete(struct key_info key_info, int use_trash)
+{
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
-	delete_file(view, key_info.reg, 0, NULL);
+	delete_file(view, key_info.reg, 0, NULL, use_trash);
 	leave_visual_mode(0);
 }
 

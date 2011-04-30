@@ -83,8 +83,13 @@ static void keys_ZZ(struct key_info, struct keys_info *);
 static void keys_cg(struct key_info, struct keys_info *);
 static void keys_co(struct key_info, struct keys_info *);
 static void keys_cw(struct key_info, struct keys_info *);
+static void keys_DD(struct key_info, struct keys_info *);
 static void keys_dd(struct key_info, struct keys_info *);
+static void delete(struct key_info, int use_trash);
+static void keys_D_selector(struct key_info, struct keys_info *);
 static void keys_d_selector(struct key_info, struct keys_info *);
+static void delete_with_selector(struct key_info, struct keys_info *,
+		int use_trash);
 static void keys_f(struct key_info, struct keys_info *);
 static void find_f(int ch);
 static void keys_gg(struct key_info, struct keys_info *);
@@ -265,8 +270,16 @@ init_normal_mode(int *key_mode)
 	curr = add_keys(L"cw", NORMAL_MODE);
 	curr->data.handler = keys_cw;
 
+	curr = add_keys(L"DD", NORMAL_MODE);
+	curr->data.handler = keys_DD;
+
 	curr = add_keys(L"dd", NORMAL_MODE);
 	curr->data.handler = keys_dd;
+
+	curr = add_keys(L"D", NORMAL_MODE);
+	curr->data.handler = keys_D_selector;
+	curr->type = BUILDIN_WAIT_POINT;
+	curr->followed = FOLLOWED_BY_SELECTOR;
 
 	curr = add_keys(L"d", NORMAL_MODE);
 	curr->data.handler = keys_d_selector;
@@ -760,7 +773,20 @@ keys_cw(struct key_info key_info, struct keys_info *keys_info)
 
 /* Delete file. */
 static void
+keys_DD(struct key_info key_info, struct keys_info *keys_info)
+{
+	delete(key_info, 0);
+}
+
+/* Delete file. */
+static void
 keys_dd(struct key_info key_info, struct keys_info *keys_info)
+{
+	delete(key_info, 1);
+}
+
+static void
+delete(struct key_info key_info, int use_trash)
 {
 	if(!curr_view->selected_files && key_info.count == NO_COUNT_GIVEN)
 	{
@@ -774,15 +800,29 @@ keys_dd(struct key_info key_info, struct keys_info *keys_info)
 	}
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
-	delete_file(curr_view, key_info.reg, 0, NULL);
+	delete_file(curr_view, key_info.reg, 0, NULL, use_trash);
+}
+
+static void
+keys_D_selector(struct key_info key_info, struct keys_info *keys_info)
+{
+	delete_with_selector(key_info, keys_info, 0);
 }
 
 static void
 keys_d_selector(struct key_info key_info, struct keys_info *keys_info)
 {
+	delete_with_selector(key_info, keys_info, 1);
+}
+
+static void
+delete_with_selector(struct key_info key_info, struct keys_info *keys_info,
+		int use_trash)
+{
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
-	delete_file(curr_view, key_info.reg, keys_info->count, keys_info->indexes);
+	delete_file(curr_view, key_info.reg, keys_info->count, keys_info->indexes,
+			use_trash);
 
 	free(keys_info->indexes);
 	keys_info->indexes = NULL;

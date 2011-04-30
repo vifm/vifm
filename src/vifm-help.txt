@@ -23,6 +23,7 @@ The basic vi key bindings are used to move through the files and popup
 		files Ctrl-c or Esc will unselect the files.
 	dd - the default setting is to move the selected files to the trash
 		directory.
+    DD - delete file omitting trash directory.
 	yy - will yank the selected files.
 	p - will copy the yanked files to the current directory or move the files
 		to the current directory if they were deleted with dd or :d or if the

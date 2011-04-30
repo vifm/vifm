@@ -1341,7 +1341,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				if (selection_worked)
 				*/
 				select_files_in_range(view, cmd);
-				delete_file(view, DEFAULT_REG_NAME, 0, NULL);
+				delete_file(view, DEFAULT_REG_NAME, 0, NULL, 1);
 			}
 			break;
 		case COM_DELCOMMAND:
