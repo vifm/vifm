@@ -23,16 +23,19 @@
 #include "registers.h"
 #include "utils.h"
 
-char valid_registers[] = {'"', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i',
-'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
-'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+char valid_registers[] = {
+	'"',
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+};
 
 void
 init_registers(void)
 {
 	int i;
-	for (i = 0; i < NUM_REGISTERS; i++)
+	for(i = 0; i < NUM_REGISTERS; i++)
 	{
 		reg[i].name = valid_registers[i];
 		reg[i].num_files = 0;
@@ -41,76 +44,80 @@ init_registers(void)
 	}
 }
 
-int
-is_valid_register(int key)
+static int
+check_for_duplicate_file_names(registers_t *reg, const char *file)
 {
-	int x = 0;
-
-	for (x = 0; x < strlen(valid_registers); x++)
+	int x;
+	for(x = 0; x < reg->num_files; x++)
 	{
-		if (key == (int)valid_registers[x])
+		if(strcmp(file, reg->files[x]) == 0)
 			return 1;
 	}
-
 	return 0;
 }
 
-static int
-check_for_duplicate_file_names(int pos, char *file)
+static registers_t *
+find_register(int key)
 {
-	int z;
-	int x = 0;
-	for (z = 0; z < reg[pos].num_files; z++)
+	int i;
+	for(i = 0; i < NUM_REGISTERS; i++)
 	{
-		if (!strcmp(file, reg[pos].files[z]))
-			return ++x;
+		if(reg[i].name == key)
+			return &reg[i];
 	}
-	return x;
+	return NULL;
 }
 
 void
 append_to_register(int key, char *file)
 {
-	int i = 0;
+	registers_t *reg;
 
-	if (access(file, F_OK))
+	if((reg = find_register(key)) == NULL)
 		return;
 
-	for (i = 0; i < NUM_REGISTERS; i++)
-	{
-		if (reg[i].name == key)
-		{
-			if (check_for_duplicate_file_names(i, file))
-				break;
-			reg[i].num_files++;
-			reg[i].files = (char **)realloc(reg[i].files,
-					reg[i].num_files  * sizeof(char *));
-			reg[i].files[reg[i].num_files - 1] = strdup(file);
-			break;
-		}
+	if(access(file, F_OK))
+		return;
 
-	}
+	if(check_for_duplicate_file_names(reg, file))
+		return;
+
+	reg->num_files++;
+	reg->files = (char **)realloc(reg->files, reg->num_files * sizeof(char *));
+	reg->files[reg->num_files - 1] = strdup(file);
 }
 
 void
 clear_register(int key)
 {
-	int i = 0;
+	int y;
+	registers_t *reg;
 
-	for (i = 0; i < NUM_REGISTERS; i++)
+	if((reg = find_register(key)) == NULL)
+		return;
+
+	y = reg->num_files;
+	while(y--)
 	{
-		if (reg[i].name == key)
-		{
-			int y = reg[i].num_files;
-			while (y)
-			{
-				y--;
-				free(reg[i].files[y]);
-			}
-			reg[i].num_files = 0;
-			break;
-		}
+		free(reg->files[y]);
 	}
+	reg->num_files = 0;
+}
+
+void
+pack_register(int key)
+{
+	int x, y;
+	registers_t *reg;
+
+	if((reg = find_register(key)) == NULL)
+		return;
+
+	x = 0;
+	for(y = 0; y < reg->num_files; y++)
+		if(reg->files[y] != NULL)
+			reg->files[x++] = reg->files[y];
+	reg->num_files = x;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
