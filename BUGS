@@ -1,2 +1,1 @@
-
-
+Sometimes strange segmentation faults ending in libncurses can be seen.

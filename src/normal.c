@@ -39,9 +39,6 @@
 
 #include "normal.h"
 
-#define MAX(a,b) (((a) > (b)) ? (a) : (b))
-#define MIN(a,b) (((a) < (b)) ? (a) : (b))
-
 static int *mode;
 static int last_search_backward;
 static int last_fast_search_char;

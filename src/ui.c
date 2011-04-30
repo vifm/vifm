@@ -107,18 +107,20 @@ get_id_string(FileView *view, size_t len, char *buf)
 void
 update_stat_window(FileView *view)
 {
-	char name_buf[40];
+	char name_buf[160*2 + 1];
 	char perm_buf[26];
 	char size_buf[56];
 	char id_buf[52];
 	int x, y;
+	int cur_x;
 	size_t print_width;
 	char *current_file;
 
 	getmaxyx(stat_win, y, x);
 	current_file = get_current_file_name(view);
-	print_width = get_real_string_width(current_file, sizeof(name_buf)/2);
-	snprintf(name_buf, print_width + 1, "%s", current_file);
+	print_width = get_real_string_width(current_file, 20 + MAX(0, x - 83));
+	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s",
+			current_file);
 	friendly_size_notation(view->dir_entry[view->list_pos].size,
 			sizeof(size_buf), size_buf);
 
@@ -127,10 +129,16 @@ update_stat_window(FileView *view)
 			view->dir_entry[view->list_pos].mode);
 
 	werase(stat_win);
-	mvwaddstr(stat_win, 0, 2, name_buf);
-	mvwaddstr(stat_win, 0, 24, size_buf);
-	mvwaddstr(stat_win, 0, 36, perm_buf);
-	mvwaddstr(stat_win, 0, 46, id_buf);
+	cur_x = 2;
+	mvwaddstr(stat_win, 0, cur_x, name_buf);
+	cur_x += 22;
+	if(x > 83)
+		cur_x += x - 83;
+	mvwaddstr(stat_win, 0, cur_x, size_buf);
+	cur_x += 12;
+	mvwaddstr(stat_win, 0, cur_x, perm_buf);
+	cur_x += 9;
+	mvwaddstr(stat_win, 0, cur_x, id_buf);
 	snprintf(name_buf, sizeof(name_buf), "%d %s filtered",
 			view->filtered, view->filtered == 1 ? "file" : "files");
 
@@ -332,9 +340,9 @@ redraw_window(void)
 
 	getmaxyx(stdscr, screen_y, screen_x);
 
-	if (screen_y < 10)
+	if(screen_y < 10)
 		finish("Terminal is too small to run vifm\n");
-	if (screen_x < 30)
+	if(screen_x < 30)
 		finish("Terminal is too small to run vifm\n");
 
 	wclear(stdscr);

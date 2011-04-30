@@ -49,6 +49,8 @@
 
 	Changed ascending/descending sort for all types of criteria.
 
+	Changed behavior of filename cell in stat line (automatic expands now).
+
 	Fixed segmentation fault caused by newwin.
 
 	Fixed segmentation fault caused by bookmarks menu.

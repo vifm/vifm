@@ -51,8 +51,8 @@
 void
 friendly_size_notation(int num, int str_size, char *str)
 {
-	const char* iec_units[] = { "  B", "KiB", "MiB", "GiB", "TiB", "PiB" };
-	const char* si_units[] = { " B", "KB", "MB", "GB", "TB", "PB" };
+	static const char* iec_units[] = { "  B", "KiB", "MiB", "GiB", "TiB", "PiB" };
+	static const char* si_units[] = { " B", "KB", "MB", "GB", "TB", "PB" };
 	const char** units;
 	int u = 0;
 	double d = num;
@@ -62,12 +62,12 @@ friendly_size_notation(int num, int str_size, char *str)
 	else
 		units = si_units;
 
-	while(d >= 1024.0 && u < (sizeof(iec_units)/sizeof(iec_units[0])))
+	while(d >= 1024.0 && u < (sizeof(iec_units)/sizeof(iec_units[0])) - 1)
 	{
 		d /= 1024.0;
-		++u;
+		u++;
 	}
-	snprintf(str, str_size, "%.1f %s", d, units[u]);
+	snprintf(str, str_size, "%.1lf %s", d, units[u]);
 }
 
 static void
