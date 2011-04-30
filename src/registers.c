@@ -44,6 +44,18 @@ init_registers(void)
 	}
 }
 
+registers_t *
+find_register(int key)
+{
+	int i;
+	for(i = 0; i < NUM_REGISTERS; i++)
+	{
+		if(reg[i].name == key)
+			return &reg[i];
+	}
+	return NULL;
+}
+
 static int
 check_for_duplicate_file_names(registers_t *reg, const char *file)
 {
@@ -54,18 +66,6 @@ check_for_duplicate_file_names(registers_t *reg, const char *file)
 			return 1;
 	}
 	return 0;
-}
-
-static registers_t *
-find_register(int key)
-{
-	int i;
-	for(i = 0; i < NUM_REGISTERS; i++)
-	{
-		if(reg[i].name == key)
-			return &reg[i];
-	}
-	return NULL;
 }
 
 void

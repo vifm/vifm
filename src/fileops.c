@@ -840,36 +840,30 @@ int
 put_files_from_register(FileView *view, int name, int force_move)
 {
 	int x;
-	int i = -1;
 	int y = 0;
 	char buf[PATH_MAX + NAME_MAX*2 + 4];
+	registers_t *reg;
 
-	for(x = 0; x < NUM_REGISTERS; x++)
-	{
-		if(reg[x].name == name)
-		{
-			i = x;
-			break;
-		}
-	}
+	reg = find_register(name);
 
-	if(i < 0 || reg[i].num_files < 1)
+	if(reg == NULL || reg->num_files < 1)
 	{
 		status_bar_message("Register is empty");
 		wrefresh(status_bar);
 		return 1;
 	}
 
-	for(x = 0; x < reg[i].num_files; x++)
+	for(x = 0; x < reg->num_files; x++)
 	{
 		char *temp = NULL;
 		char *temp1 = NULL;
-		snprintf(buf, sizeof(buf), "%s", reg[i].files[x]);
+		snprintf(buf, sizeof(buf), "%s", reg->files[x]);
 		temp = escape_filename(buf, strlen(buf), 1);
 		temp1 = escape_filename(view->curr_dir, strlen(view->curr_dir), 1);
 		if(access(buf, F_OK) == 0)
 		{
-			if(strcmp(buf, cfg.trash_dir) == 0 || force_move)
+			int move = strcmp(buf, cfg.trash_dir) == 0 || force_move;
+			if(move)
 				snprintf(buf, sizeof(buf), "mv %s %s", temp, temp1);
 			else
 				snprintf(buf, sizeof(buf), "cp -pR %s %s", temp, temp1);
@@ -879,16 +873,23 @@ put_files_from_register(FileView *view, int name, int force_move)
 					*/
 			/*
 			snprintf(buf, sizeof(buf), "mv \"%s/%s\" %s",
-					cfg.trash_dir, reg[i].files[x], view->curr_dir);
+					cfg.trash_dir, reg->files[x], view->curr_dir);
 					*/
 			if(background_and_wait_for_errors(buf) == 0)
+			{
 				y++;
+				if(move)
+				{
+					free(reg->files[x]);
+					reg->files[x] = NULL;
+				}
+			}
 		}
 		free(temp);
 		free(temp1);
 	}
 
-	clear_register(name);
+	pack_register(name);
 
 	if(y > 0)
 	{

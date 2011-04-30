@@ -34,6 +34,7 @@ registers_t reg[NUM_REGISTERS];
 
 void init_registers(void);
 void load_register(int reg, char *file);
+registers_t * find_register(int key);
 void append_to_register(int reg, char *file);
 void clear_register(int reg);
 void pack_register(int reg);
