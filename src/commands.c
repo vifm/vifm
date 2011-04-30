@@ -1187,6 +1187,7 @@ do_map(cmd_t *cmd, const char *map_type, int mode)
 	keys = to_wide(cmd->args);
 	mapping = to_wide(rhs);
 	result = add_user_keys(keys, mapping, mode);
+	free(rhs);
 	free(mapping);
 	free(keys);
 
