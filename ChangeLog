@@ -39,7 +39,9 @@
 
 	Added custom viewers for files.
 
-	Added D normal mode command.
+	Added D normal mode command (deletes files omitting trash directory).
+
+	Added P normal mode command (moves yanked files).
 
 	Changed keys input handling.
 

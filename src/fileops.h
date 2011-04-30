@@ -51,7 +51,8 @@ int check_link_is_dir(FileView *view, int pos);
 void rename_file(FileView *view);
 void change_owner(FileView *view);
 void change_group(FileView *view);
-int put_files_from_register(FileView *view, int name);
+/* Returns new value for save_msg flag. */
+int put_files_from_register(FileView *view, int name, int force_move);
 
 #endif
 

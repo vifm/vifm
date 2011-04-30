@@ -835,8 +835,9 @@ change_group(FileView *view)
 	enter_prompt_mode(L"New group: ", "", change_group_cb);
 }
 
+/* Returns new value for save_msg flag. */
 int
-put_files_from_register(FileView *view, int name)
+put_files_from_register(FileView *view, int name, int force_move)
 {
 	int x;
 	int i = -1;
@@ -868,7 +869,7 @@ put_files_from_register(FileView *view, int name)
 		temp1 = escape_filename(view->curr_dir, strlen(view->curr_dir), 1);
 		if(access(buf, F_OK) == 0)
 		{
-			if(strcmp(buf, cfg.trash_dir) == 0)
+			if(strcmp(buf, cfg.trash_dir) == 0 || force_move)
 				snprintf(buf, sizeof(buf), "mv %s %s", temp, temp1);
 			else
 				snprintf(buf, sizeof(buf), "cp -pR %s %s", temp, temp1);

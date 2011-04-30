@@ -28,6 +28,7 @@ The basic vi key bindings are used to move through the files and popup
 	p - will copy the yanked files to the current directory or move the files
 		to the current directory if they were deleted with dd or :d or if the
 		files were yanked 'yy' from the Trash directory.
+    P - will move yanked files.
     ZQ - same as :q<Return>
     ZZ - same as :wq<Return>
     zt - redraw pane with file in top of list.

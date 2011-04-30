@@ -77,6 +77,7 @@ static void keys_H(struct key_info, struct keys_info *);
 static void keys_L(struct key_info, struct keys_info *);
 static void keys_M(struct key_info, struct keys_info *);
 static void keys_N(struct key_info, struct keys_info *);
+static void keys_P(struct key_info, struct keys_info *);
 static void keys_V(struct key_info, struct keys_info *);
 static void keys_ZQ(struct key_info, struct keys_info *);
 static void keys_ZZ(struct key_info, struct keys_info *);
@@ -248,6 +249,9 @@ init_normal_mode(int *key_mode)
 
 	curr = add_keys(L"N", NORMAL_MODE);
 	curr->data.handler = keys_N;
+
+	curr = add_keys(L"P", NORMAL_MODE);
+	curr->data.handler = keys_P;
 
 	curr = add_keys(L"V", NORMAL_MODE);
 	curr->data.handler = keys_V;
@@ -658,6 +662,15 @@ keys_N(struct key_info key_info, struct keys_info *keys_info)
 		find_previous_pattern(curr_view);
 }
 
+/* Move files. */
+static void
+keys_P(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(key_info.reg == NO_REG_GIVEN)
+		key_info.reg = DEFAULT_REG_NAME;
+	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg, 1);
+}
+
 /* Visual selection of files. */
 static void
 keys_V(struct key_info key_info, struct keys_info *keys_info)
@@ -942,8 +955,7 @@ keys_p(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
-	redraw_window();
-	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg);
+	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg, 0);
 }
 
 /* Tag file. */

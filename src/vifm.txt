@@ -167,6 +167,7 @@ f, F, ;, <comma> - search by first character in filename.
 yy, Y - yank selected files.
 y<selector> - yank files.
 p - put last selected files.
+P - move yanked files.
 n - next file matching last search pattern.
 s - open a shell - this is temporary and will be removed.
 t - select or unselect a file.
