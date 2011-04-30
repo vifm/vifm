@@ -100,7 +100,7 @@ main_loop(void)
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
 				if(ret != ERR)
-					update_input_bar(c);
+					add_to_input_bar(c);
 				if(last_result == KEYS_WAIT_SHORT)
 					wtimeout(curr_view->win, 0);
 				continue;

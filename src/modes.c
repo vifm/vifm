@@ -36,12 +36,21 @@
 static int mode = NORMAL_MODE;
 
 static int mode_flags[] = {
-    MF_USES_REGS | MF_USES_COUNT,
-    MF_USES_INPUT,
-    MF_USES_COUNT,
-    MF_USES_COUNT,
-    MF_USES_COUNT,
-    MF_USES_COUNT
+	MF_USES_COUNT | MF_USES_REGS, // NORMAL_MODE
+	MF_USES_INPUT,                // CMDLINE_MODE
+	MF_USES_COUNT,                // VISUAL_MODE
+	MF_USES_COUNT,                // MENU_MODE
+	MF_USES_COUNT,                // SORT_MODE
+	MF_USES_COUNT                 // PERMISSIONS_MODE
+};
+
+static char uses_input_bar[] = {
+	1, // NORMAL_MODE
+	0, // CMDLINE_MODE
+	1, // VISUAL_MODE
+	1, // MENU_MODE
+	1, // SORT_MODE
+	1  // PERMISSIONS_MODE
 };
 
 void
@@ -125,6 +134,13 @@ modes_post(void)
 		redraw_window();
 
 	update_all_windows();
+}
+
+void
+add_to_input_bar(wchar_t c)
+{
+	if(uses_input_bar[mode])
+		update_input_bar(c);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

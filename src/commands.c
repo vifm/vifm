@@ -88,7 +88,8 @@ enum
 	COM_WRITE,
 	COM_WQ,
 	COM_YANK,
-	COM_X
+	COM_X,
+  RESERVED
 };
 
 	/* The order of the commands is important as :e will match the first
@@ -137,8 +138,6 @@ char *reserved_commands[] = {
 	"yank",
 	"x"
 };
-
-#define RESERVED 39
 
 typedef struct current_command
 {
