@@ -73,7 +73,6 @@ main_loop(void)
 	while(1)
 	{
 		wchar_t c;
-		int need_clear;
 		int ret;
 
 		modes_pre();
@@ -81,7 +80,6 @@ main_loop(void)
 		/* This waits for 1 second then skips if no keypress. */
 		ret = wget_wch(curr_view->win, (wint_t*)&c);
 
-		need_clear = (pos >= sizeof(buf) - 2);
 		if(ret != ERR && pos != sizeof(buf)/sizeof(buf[0]) - 2)
 		{
 			buf[pos++] = c;
@@ -107,14 +105,10 @@ main_loop(void)
 			}
 		}
 		wtimeout(curr_view->win, KEYPRESS_TIMEOUT);
-		need_clear = 1;
 
-		if(need_clear == 1)
-		{
-			clear_num_window();
-			pos = 0;
-			buf[0] = L'\0';
-		}
+		clear_num_window();
+		pos = 0;
+		buf[0] = L'\0';
 
 		modes_post();
 	}

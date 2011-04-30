@@ -143,6 +143,10 @@ init_cmdline_mode(int *key_mode)
 	curr->data.handler = keys_ctrl_c;
 	curr->type = BUILDIN_WAIT_POINT;
 
+	/* escape escape */
+	curr = add_keys(L"\x1b\x1b", CMDLINE_MODE);
+	curr->data.handler = keys_ctrl_c;
+
 	/* ascii Delete */
 	curr = add_keys(L"\x7f", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_h;
