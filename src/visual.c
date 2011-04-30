@@ -54,7 +54,7 @@ static void keys_k(struct key_info, struct keys_info *);
 static void keys_y(struct key_info, struct keys_info *);
 static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
-static void update(const char *operation);
+static void update(void);
 
 void
 init_visual_mode(int *key_mode)
@@ -140,11 +140,9 @@ enter_visual_mode(void)
 	moveto_list_pos(view, view->list_pos);
 
 	if(view->list_pos != 0)
-		status_bar_message(" 1 File Selected");
+		status_bar_message("-- VISUAL --\t1 File Selected");
 	else
-		status_bar_message("");
-
-	write_stat_win("  --VISUAL--");
+		status_bar_message("-- VISUAL --");
 	curr_stats.save_msg = 1;
 }
 
@@ -191,7 +189,7 @@ keys_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 	{
 		select_up_one(view, start_pos);
 	}
-	update("Selected");
+	update();
 }
 
 static void
@@ -208,7 +206,7 @@ keys_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 	{
 		select_down_one(view, start_pos);
 	}
-	update("Selected");
+	update();
 }
 
 static void
@@ -224,7 +222,7 @@ keys_G(struct key_info key_info, struct keys_info *keys_info)
 	{
 		select_down_one(view, start_pos);
 	}
-	update("Selected");
+	update();
 }
 
 static void
@@ -234,7 +232,7 @@ keys_H(struct key_info key_info, struct keys_info *keys_info)
 	{
 		select_up_one(view, start_pos);
 	}
-	update("Selected");
+	update();
 }
 
 /* move to last line of window, selecting as we go */
@@ -245,7 +243,7 @@ keys_L(struct key_info key_info, struct keys_info *keys_info)
 	{
 		select_down_one(view, start_pos);
 	}
-	update("Selected");
+	update();
 }
 
 /* move to middle of window, selecting from start position to there */
@@ -292,7 +290,7 @@ keys_M(struct key_info key_info, struct keys_info *keys_info)
 			}
 		}
 	}
-	update("Selected");
+	update();
 }
 
 static void
@@ -323,7 +321,7 @@ keys_gg(struct key_info key_info, struct keys_info *keys_info)
 	{
 		select_up_one(view, start_pos);
 	}
-	update("Selected");
+	update();
 }
 
 static void
@@ -333,7 +331,7 @@ keys_j(struct key_info key_info, struct keys_info *keys_info)
 		key_info.count = 1;
 	while(key_info.count-- > 0)
 		select_down_one(view, start_pos);
-	update("Selected");
+	update();
 }
 
 static void
@@ -343,17 +341,24 @@ keys_k(struct key_info key_info, struct keys_info *keys_info)
 		key_info.count = 1;
 	while(key_info.count-- > 0)
 		select_up_one(view, start_pos);
-	update("Selected");
+	update();
 }
 
 static void
 keys_y(struct key_info key_info, struct keys_info *keys_info)
 {
+	char status_buf[64] = "";
+
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	get_all_selected_files(view);
 	yank_selected_files(view, key_info.reg);
-	update("Yanked");
+
+	snprintf(status_buf, sizeof(status_buf), "%d %s Yanked", view->selected_files,
+			view->selected_files == 1 ? "File" : "Files");
+	status_bar_message(status_buf);
+	curr_stats.save_msg = 1;
+
 	free_selected_file_array(view);
 
 	leave_visual_mode(1);
@@ -432,19 +437,11 @@ select_down_one(FileView *view, int start_pos)
 }
 
 static void
-update(const char *operation)
+update(void)
 {
-	char status_buf[64] = "";
-
 	draw_dir_list(view, view->top_line, view->list_pos);
 	moveto_list_pos(view, view->list_pos);
 	update_pos_window(view);
-
-	snprintf(status_buf, sizeof(status_buf), " %d %s %s", view->selected_files,
-			view->selected_files == 1 ? "File" : "Files", operation);
-	status_bar_message(status_buf);
-
-	write_stat_win("  --VISUAL--");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

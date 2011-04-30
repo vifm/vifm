@@ -120,7 +120,8 @@ modes_post(void)
 		static int number = 0;
 		if(number != curr_view->selected_files)
 		{
-			snprintf(status_buf, sizeof(status_buf), "%d %s Selected",
+			snprintf(status_buf, sizeof(status_buf), "%s%d %s Selected",
+					(mode == VISUAL_MODE) ? "-- VISUAL -- " : "",
 					curr_view->selected_files, curr_view->selected_files == 1 ? "File" :
 					"Files");
 			status_bar_message(status_buf);
