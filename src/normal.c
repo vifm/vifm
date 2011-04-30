@@ -30,6 +30,7 @@
 #include "keys.h"
 #include "menus.h"
 #include "modes.h"
+#include "permissions_dialog.h"
 #include "registers.h"
 #include "search.h"
 #include "status.h"
@@ -83,6 +84,7 @@ static void keys_ZQ(struct key_info, struct keys_info *);
 static void keys_ZZ(struct key_info, struct keys_info *);
 static void keys_cg(struct key_info, struct keys_info *);
 static void keys_co(struct key_info, struct keys_info *);
+static void keys_cp(struct key_info, struct keys_info *);
 static void keys_cw(struct key_info, struct keys_info *);
 static void keys_DD(struct key_info, struct keys_info *);
 static void keys_dd(struct key_info, struct keys_info *);
@@ -270,6 +272,9 @@ init_normal_mode(int *key_mode)
 
 	curr = add_keys(L"co", NORMAL_MODE);
 	curr->data.handler = keys_co;
+
+	curr = add_keys(L"cp", NORMAL_MODE);
+	curr->data.handler = keys_cp;
 
 	curr = add_keys(L"cw", NORMAL_MODE);
 	curr->data.handler = keys_cw;
@@ -775,6 +780,13 @@ static void
 keys_co(struct key_info key_info, struct keys_info *keys_info)
 {
 	change_owner(curr_view);
+}
+
+/* Change permissions. */
+static void
+keys_cp(struct key_info key_info, struct keys_info *keys_info)
+{
+	enter_permissions_mode(curr_view);
 }
 
 /* Change word (rename file). */

@@ -25,7 +25,8 @@
 
 	Added :map, :nmap:, :cmap, :vmap commands.
 
-	Added co (change owner) and cg (change group) commands.
+	Added co (change owner), cg (change group) and cp (change permissions)
+	commands.
 
 	Added utf8 support.
 

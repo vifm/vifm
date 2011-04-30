@@ -158,6 +158,7 @@ y6gg yank all files from cursor position to 6th file in the list.
 N - previous file matching last search pattern.
 cg - change group of file.
 co - change owner of file.
+cp - change file permissions.
 cw - change word is used to rename a file.
 dd - move selected file or files to ~/.vifm/Trash (if option USE_TRASH is set
      otherwise delete)
