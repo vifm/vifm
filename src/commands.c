@@ -85,6 +85,7 @@ enum
 	COM_VIEW,
 	COM_VIFM,
 	COM_VMAP,
+	COM_WRITE,
 	COM_WQ,
 	COM_YANK,
 	COM_X
@@ -131,6 +132,7 @@ char *reserved_commands[] = {
 	"view",
 	"vifm",
 	"vmap",
+	"write",
 	"wq",
 	"yank",
 	"x"
@@ -1607,6 +1609,9 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_VMAP:
 			save_msg = do_map(cmd, "vmap", VISUAL_MODE);
+			break;
+		case COM_WRITE:
+			write_config_file();
 			break;
 		case COM_WQ:
 			curr_stats.save_locations = 1;

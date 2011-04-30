@@ -43,6 +43,8 @@
 
 	Added P normal mode command (moves yanked files).
 
+	Added :write command (write config file).
+
 	Changed keys input handling.
 
 	Changed force dot files appear at the beginning of file list.

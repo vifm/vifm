@@ -59,13 +59,14 @@ The builtin commands are:
 :o[nly] - switch to a one window view.
 :pwd - show the present working directory.
 :q[uit] or :x  - will exit vifm.
-:wq - will exit vifm saving pane locations.
 :sh[ell] - will start a shell.
 :sc[reen] - toggles whether to use the screen program or not.
 :s[ort] - menu of different sorting methods.
 :sp[lit] - switch to a two window view.
 :sy[nc] - change the other panel to the current panels directory.
 :vi[ew] - toggle on and off the quick file view.
+:wq - will exit vifm saving pane locations.
+:w[rite] - will write config.
 :x - exit vifm.
 
 command macros:
@@ -311,6 +312,8 @@ The following command names are reserved and cannot be used for user commands.
   view - toggle on and off the quick file view.
   vifm - not used saved for possible menu.
   vmap - not used will be used for key mapping.
+  wq - will exit vifm saving pane locations.
+  write - write config.
   x - exit vifm.
 
 --------------------------------------------------------------------------------
