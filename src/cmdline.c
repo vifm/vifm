@@ -914,7 +914,7 @@ line_completion(struct line_stats *stat)
 
 		i = wcstombs(NULL, stat->line, 0) + 1;
 
-		if(! (p = realloc(line_mb, i * sizeof(char))))
+		if((p = realloc(line_mb, i * sizeof(char))) == NULL)
 		{
 			free(line_mb);
 			line_mb = NULL;

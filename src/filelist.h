@@ -31,7 +31,7 @@ enum {
 	UNKNOWN
 };
 
-void friendly_size_notation(int num, int str_size, char *str);
+void friendly_size_notation(unsigned long long num, int str_size, char *str);
 void quick_view_file(FileView * view);
 void clean_selected_files(FileView *view);
 void goto_history_pos(FileView *view, int pos);

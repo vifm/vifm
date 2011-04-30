@@ -241,14 +241,16 @@ command_completion(char *str)
 	{
 		found = 1;
 
-		--pos;
 		while(i < offset)
 		{
-			if(++pos > cfg.command_num - 1)
-				break;
-
 			if(strncmp(string, command_list[pos].name, len) == 0)
 				i++;
+
+			if(i < offset)
+			{
+				if(++pos > cfg.command_num - 1)
+					break;
+			}
 		}
 
 		if(i == offset)

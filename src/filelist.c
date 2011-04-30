@@ -49,7 +49,7 @@
 #include "file_info.h"
 
 void
-friendly_size_notation(int num, int str_size, char *str)
+friendly_size_notation(unsigned long long num, int str_size, char *str)
 {
 	static const char* iec_units[] = { "  B", "KiB", "MiB", "GiB", "TiB", "PiB" };
 	static const char* si_units[] = { " B", "KB", "MB", "GB", "TB", "PB" };
@@ -67,7 +67,7 @@ friendly_size_notation(int num, int str_size, char *str)
 		d /= 1024.0;
 		u++;
 	}
-	snprintf(str, str_size, "%.1lf %s", d, units[u]);
+	snprintf(str, str_size, "%.1f %s", d, units[u]);
 }
 
 static void
