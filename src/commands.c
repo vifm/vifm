@@ -87,6 +87,7 @@ char *reserved_commands[] = {
 	"view",
 	"vifm",
 	"vmap",
+	"w",
 	"wq",
 	"write",
 	"x",
@@ -1563,6 +1564,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		case COM_VMAP:
 			save_msg = do_map(cmd, "vmap", VISUAL_MODE);
 			break;
+		case COM_W:
 		case COM_WRITE:
 			write_config_file();
 			break;

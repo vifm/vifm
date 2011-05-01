@@ -71,6 +71,7 @@ enum
 	COM_VIEW,
 	COM_VIFM,
 	COM_VMAP,
+	COM_W,
 	COM_WQ,
 	COM_WRITE,
 	COM_X,

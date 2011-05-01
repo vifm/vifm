@@ -65,6 +65,7 @@ The builtin commands are:
 :sp[lit] - switch to a two window view.
 :sy[nc] - change the other panel to the current panels directory.
 :v[iew] - toggle on and off the quick file view.
+:w - same as :write.
 :wq - will exit vifm saving pane locations.
 :w[rite] - will write config.
 :x - exit vifm.
@@ -312,6 +313,7 @@ The following command names are reserved and cannot be used for user commands.
   view - toggle on and off the quick file view.
   vifm - not used saved for possible menu.
   vmap - not used will be used for key mapping.
+  w - same as :write.
   wq - will exit vifm saving pane locations.
   write - write config.
   x - exit vifm.
