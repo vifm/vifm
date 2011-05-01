@@ -116,8 +116,6 @@ init_extended_keys(void)
 void
 enter_sort_mode(FileView *active_view)
 {
-	int x, y;
-
 	view = active_view;
 	descending = view->sort_descending;
 	*mode = SORT_MODE;
@@ -125,6 +123,20 @@ enter_sort_mode(FileView *active_view)
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
 	curs_set(0);
 	update_all_windows();
+
+	top = 2;
+	bottom = top + NUM_SORT_OPTIONS - 1;
+	curr = view->sort_type + 2;
+	col = 6;
+
+	redraw_sort_dialog();
+}
+
+void
+redraw_sort_dialog(void)
+{
+	int x, y;
+
 	werase(sort_win);
 	box(sort_win, ACS_VLINE, ACS_HLINE);
 
@@ -142,12 +154,7 @@ enter_sort_mode(FileView *active_view)
 	mvwaddstr(sort_win, 10, 4, " [   ] Time Accessed");
 	mvwaddstr(sort_win, 11, 4, " [   ] Time Changed");
 	mvwaddstr(sort_win, 12, 4, " [   ] Time Modified");
-	mvwaddstr(sort_win, view->sort_type + 2, 6, caps[descending]);
-
-	top = 2;
-	bottom = top + NUM_SORT_OPTIONS - 1;
-	curr = view->sort_type + 2;
-	col = 6;
+	mvwaddstr(sort_win, curr, 6, caps[descending]);
 
 	wrefresh(sort_win);
 }

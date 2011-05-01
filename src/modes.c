@@ -150,7 +150,10 @@ modes_redraw(void)
 	else if(mode == MENU_MODE)
 		menu_redraw();
 	else if(mode == SORT_MODE)
+	{
 		redraw_window();
+		redraw_sort_dialog();
+	}
 	else if(mode == PERMISSIONS_MODE)
 	{
 		redraw_window();

@@ -23,6 +23,7 @@
 
 void init_sort_dialog_mode(int *key_mode);
 void enter_sort_mode(FileView *active_view);
+void redraw_sort_dialog(void);
 
 #endif
 
