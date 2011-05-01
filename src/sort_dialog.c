@@ -48,6 +48,9 @@ static void init_extended_keys(void);
 static void leave_sort_mode(void);
 static void keys_ctrl_c(struct key_info, struct keys_info *);
 static void keys_ctrl_m(struct key_info, struct keys_info *);
+static void keys_G(struct key_info, struct keys_info *);
+static void keys_gg(struct key_info, struct keys_info *);
+static void goto_line(int line);
 static void keys_h(struct key_info, struct keys_info *);
 static void keys_j(struct key_info, struct keys_info *);
 static void keys_k(struct key_info, struct keys_info *);
@@ -73,6 +76,12 @@ init_sort_dialog_mode(int *key_mode)
 	/* escape */
 	curr = add_keys(L"\x1b", SORT_MODE);
 	curr->data.handler = keys_ctrl_c;
+
+	curr = add_keys(L"G", SORT_MODE);
+	curr->data.handler = keys_G;
+
+	curr = add_keys(L"gg", SORT_MODE);
+	curr->data.handler = keys_gg;
 
 	curr = add_keys(L"h", SORT_MODE);
 	curr->data.handler = keys_h;
@@ -170,6 +179,38 @@ keys_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 			view->dir_entry[view->list_pos].name);
 	load_dir_list(view, 1);
 	moveto_list_pos(view, find_file_pos_in_list(view, filename));
+}
+
+static void
+keys_G(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+		goto_line(bottom);
+	else
+		goto_line(key_info.count + top - 1);
+}
+
+static void
+keys_gg(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+		goto_line(top);
+	else
+		goto_line(key_info.count + top - 1);
+}
+
+static void
+goto_line(int line)
+{
+	if(line > bottom)
+		line = bottom;
+	if(curr == line)
+		return;
+
+	clear_at_pos();
+	curr = line;
+	print_at_pos();
+	wrefresh(sort_win);
 }
 
 static void
