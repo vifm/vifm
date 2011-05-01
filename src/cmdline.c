@@ -38,19 +38,16 @@
 #include "config.h"
 #include "keys.h"
 #include "menu.h"
-#include "visual.h"
 #include "menus.h"
 #include "modes.h"
+#include "permissions_dialog.h"
+#include "sort_dialog.h"
 #include "status.h"
 #include "ui.h"
 #include "utils.h"
+#include "visual.h"
 
 #include "cmdline.h"
-
-/*
- * FIXME status bar looks bad after terminal is resized
- * maybe store somewhere parameters and restore them every time
- */
 
 struct line_stats
 {
@@ -74,6 +71,8 @@ static void *sub_mode_ptr;
 static void init_extended_keys(void);
 static void init_emacs_keys(void);
 static int def_handler(wchar_t keys);
+static void update_cmdline_size(void);
+static void update_cmdline_text(void);
 static wchar_t * wcsins(wchar_t *src, wchar_t *ins, int pos);
 static void prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd);
 static void leave_cmdline_mode(void);
@@ -272,19 +271,30 @@ def_handler(wchar_t key)
 	input_stat.len++;
 
 	if((input_stat.len + 1) % getmaxx(status_bar) == 0)
-	{
-		mvwin(status_bar, getbegy(status_bar) - 1, 0);
-		wresize(status_bar, getmaxy(status_bar) + 1, getmaxx(status_bar));
-		werase(status_bar);
-	}
-
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
+		update_cmdline_size();
 
 	input_stat.curs_pos += wcwidth(key);
-	wmove(status_bar, 0, input_stat.curs_pos);
+	update_cmdline_text();
 
 	return 0;
+}
+
+static void
+update_cmdline_size(void)
+{
+	int d;
+	d = (input_stat.prompt_wid + input_stat.len + 1 + line_width - 1)/line_width;
+	mvwin(status_bar, getmaxy(stdscr) - d, 0);
+	wresize(status_bar, d, line_width);
+	werase(status_bar);
+}
+
+static void
+update_cmdline_text(void)
+{
+	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
+	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
+	wmove(status_bar, 0, input_stat.curs_pos);
 }
 
 /* Insert a string into another string
@@ -354,6 +364,26 @@ enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb)
 	mbstowcs(buf, cmd, len + 1);
 	prepare_cmdline_mode(prompt, buf);
 	free(buf);
+}
+
+void
+redraw_cmdline(void)
+{
+	if(prev_mode == MENU_MODE)
+		menu_redraw();
+	else
+	{
+		redraw_window();
+		if(prev_mode == SORT_MODE)
+			redraw_sort_dialog();
+		else if(prev_mode == PERMISSIONS_MODE)
+			redraw_permissions_dialog();
+	}
+
+	line_width = getmaxx(stdscr);
+	curs_set(TRUE);
+	update_cmdline_size();
+	update_cmdline_text();
 }
 
 static void

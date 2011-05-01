@@ -257,6 +257,7 @@ redraw_menu(FileView *view, menu_info *m)
 	ioctl(0, TIOCGWINSZ, &ws);
 	/* changed for pdcurses */
 	resizeterm(ws.ws_row, ws.ws_col);
+	flushinp(); /* without it we will get strange character on input */
 	getmaxyx(stdscr, screen_y, screen_x);
 
 	wclear(stdscr);

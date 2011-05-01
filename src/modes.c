@@ -141,24 +141,23 @@ modes_post(void)
 void
 modes_redraw(void)
 {
-	if(mode == NORMAL_MODE)
-		redraw_window();
-	else if(mode == CMDLINE_MODE)
-		redraw_window();
-	else if(mode == VISUAL_MODE)
-		redraw_window();
+	if(mode == CMDLINE_MODE)
+	{
+		redraw_cmdline();
+		return;
+	}
 	else if(mode == MENU_MODE)
+	{
 		menu_redraw();
-	else if(mode == SORT_MODE)
-	{
-		redraw_window();
+		return;
+	}
+
+	redraw_window();
+
+	if(mode == SORT_MODE)
 		redraw_sort_dialog();
-	}
 	else if(mode == PERMISSIONS_MODE)
-	{
-		redraw_window();
 		redraw_permissions_dialog();
-	}
 }
 
 void
@@ -166,6 +165,13 @@ add_to_input_bar(wchar_t c)
 {
 	if(uses_input_bar[mode])
 		update_input_bar(c);
+}
+
+void
+clear_input_bar(void)
+{
+	if(uses_input_bar[mode])
+		clear_num_window();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

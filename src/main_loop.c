@@ -106,7 +106,7 @@ main_loop(void)
 		}
 		wtimeout(curr_view->win, KEYPRESS_TIMEOUT);
 
-		clear_num_window();
+		clear_input_bar();
 		pos = 0;
 		buf[0] = L'\0';
 
