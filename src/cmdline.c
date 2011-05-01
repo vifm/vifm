@@ -893,15 +893,76 @@ complete_search_next(void)
 }
 
 static int
+insert_completed_command(struct line_stats *stat, const char *complete_command)
+{
+	wchar_t *q;
+	if(stat->line == NULL)
+	{
+		return 0;
+	}
+
+	if((q = wcschr(stat->line, L' ')) != NULL)
+	{	/* If the cursor is not at the end of the string... */
+		int i;
+		void *p;
+		wchar_t *buf;
+
+		i = mbstowcs(NULL, complete_command, 0) + 1;
+		if((buf = (wchar_t *) malloc((i + 1) * sizeof(wchar_t))) == NULL)
+		{
+			return -1;
+		}
+		mbstowcs(buf, complete_command, i);
+
+		i += wcslen(q);
+
+		wcsdel(stat->line, 1, q - stat->line);
+
+		if((p = realloc(stat->line, i*sizeof(wchar_t))) == NULL)
+		{
+			return -1;
+		}
+		stat->line = (wchar_t *)p;
+
+		wcsins(stat->line, buf, 1);
+
+		stat->index = wcschr(stat->line, L' ') - stat->line;
+		stat->curs_pos = wcswidth(stat->line, stat->index) + stat->prompt_wid;
+		stat->len = wcslen(stat->line);
+
+		free(buf);
+	}
+	else
+	{
+		int i;
+		void *p;
+
+		i = mbstowcs(NULL, complete_command, 0) + 1;
+		if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
+		{
+			return -1;
+		}
+		stat->line = (wchar_t *) p;
+
+		mbstowcs(stat->line, complete_command, i);
+		stat->index = stat->len = i - 1;
+		stat->curs_pos = wcswidth(stat->line, stat->len) + stat->prompt_wid;
+	}
+
+	werase(status_bar);
+	mvwaddwstr(status_bar, 0, 0, stat->prompt);
+	mvwaddwstr(status_bar, 0, stat->prompt_wid, stat->line);
+	wmove(status_bar, 0, stat->curs_pos);
+	
+	return 0;
+}
+
+static int
 line_completion(struct line_stats *stat)
 {
 	static char *line_mb = (char *)NULL;
+
 	char *last_word = (char *)NULL;
-	char *raw_name = (char *)NULL;
-	char *filename = (char *)NULL;
-	void *p;
-	wchar_t t;
-	int i;
 
 	if(stat->line[stat->index] != L' ' && stat->index != stat->len)
 	{
@@ -911,6 +972,10 @@ line_completion(struct line_stats *stat)
 
 	if(stat->complete_continue == 0)
 	{
+		int i;
+		void *p;
+		wchar_t t;
+
 		/* only complete the part before the cursor
 		 * so just copy that part to line_mb */
 		t = stat->line[stat->index];
@@ -935,101 +1000,40 @@ line_completion(struct line_stats *stat)
 
 	if(last_word != NULL)
 	{
+		char *filename = (char *)NULL;
+		char *raw_name = (char *)NULL;
+
 		raw_name = filename_completion(stat->complete_continue ? NULL : last_word);
 
 		stat->complete_continue = 1;
 
 		if(raw_name)
 			filename = escape_filename(raw_name, strlen(raw_name), 1);
+
+		if(filename != NULL)
+		{
+			int ret = file_completion(filename, line_mb, raw_name, stat);
+			free(raw_name);
+			free(filename);
+			if(ret != 0)
+			{
+				return ret;
+			}
+		}
 	}
 	 /* :partial_command */
 	else
 	{
 		char *complete_command = command_completion(
 				stat->complete_continue ? NULL : line_mb);
-		wchar_t *q;
 
 		if(complete_command != NULL)
 		{
-			if(stat->line == NULL)
-			{
-				free(raw_name);
-				free(filename);
-				free(complete_command);
-				return 0;
-			}
-
-			if((q = wcschr(stat->line, L' ')) != NULL)
-			{	/* If the cursor is not at the end of the string... */
-				wchar_t *buf;
-
-				i = mbstowcs(NULL, complete_command, 0) + 1;
-				if((buf = (wchar_t *) malloc((i + 1) * sizeof(wchar_t))) == NULL)
-				{
-					free(raw_name);
-					free(filename);
-					free(complete_command);
-					return -1;
-				}
-				mbstowcs(buf, complete_command, i);
-
-				i += wcslen(q);
-
-				wcsdel(stat->line, 1, q - stat->line);
-
-				if((p = realloc(stat->line, i*sizeof(wchar_t))) == NULL)
-				{
-					free(raw_name);
-					free(filename);
-					free(complete_command);
-					return -1;
-				}
-				stat->line = (wchar_t *)p;
-
-				wcsins(stat->line, buf, 1);
-
-				stat->index = wcschr(stat->line, L' ') - stat->line;
-				stat->curs_pos = wcswidth(stat->line, stat->index) + stat->prompt_wid;
-				stat->len = wcslen(stat->line);
-
-				free(buf);
-			}
-			else
-			{
-				i = mbstowcs(NULL, complete_command, 0) + 1;
-				if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
-				{
-					free(raw_name);
-					free(filename);
-					free(complete_command);
-					return -1;
-				}
-				stat->line = (wchar_t *) p;
-
-				mbstowcs(stat->line, complete_command, i);
-				stat->index = stat->len = i - 1;
-				stat->curs_pos = wcswidth(stat->line, stat->len) + stat->prompt_wid;
-			}
-
-			werase(status_bar);
-			mvwaddwstr(status_bar, 0, 0, stat->prompt);
-			mvwaddwstr(status_bar, 0, stat->prompt_wid, stat->line);
-			wmove(status_bar, 0, stat->curs_pos);
+			int ret = insert_completed_command(stat, complete_command);
+			free(complete_command);
+      if(ret != 0)
+				return ret;
 		}
-
-		free(raw_name);
-		free(filename);
-		free(complete_command);
-
-		stat->complete_continue = 1;
-		return 0;
-	}
-
-	if(filename != NULL)
-	{
-		int ret = file_completion(filename, line_mb, raw_name, stat);
-		if(ret != 0)
-			return ret;
 	}
 
 	stat->complete_continue = 1;
@@ -1063,8 +1067,6 @@ file_completion(char* filename, char* line_mb, char* raw_name,
 					+ stat->index) + 1) * sizeof(wchar_t));
 			if(temp2 == NULL)
 			{
-				free(raw_name);
-				free(filename);
 				free(temp2);
 				return -1;
 			}
@@ -1076,8 +1078,6 @@ file_completion(char* filename, char* line_mb, char* raw_name,
 			if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
 			{
 				*temp = x;
-				free(raw_name);
-				free(filename);
 				free(temp2);
 				return -1;
 			}
@@ -1090,8 +1090,6 @@ file_completion(char* filename, char* line_mb, char* raw_name,
 			stat->len = i - 1;
 
 			*temp = x;
-			free(raw_name);
-			free(filename);
 			free(temp2);
 		}
 		/* :command partial_filename anything_else... */
@@ -1109,8 +1107,6 @@ file_completion(char* filename, char* line_mb, char* raw_name,
 					 + stat->index) + 1) * sizeof(wchar_t));
 			if(temp2 == NULL)
 			{
-				free(raw_name);
-				free(filename);
 				free(temp2);
 				return -1;
 			}
@@ -1122,8 +1118,6 @@ file_completion(char* filename, char* line_mb, char* raw_name,
 			if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
 			{
 				*temp = x;
-				free(raw_name);
-				free(filename);
 				free(temp2);
 				return -1;
 			}
@@ -1132,13 +1126,10 @@ file_completion(char* filename, char* line_mb, char* raw_name,
 			swprintf(stat->line, i, L"%s%s%ls", line_mb,filename,temp2);
 
 			stat->index = i - (stat->len - stat->index) - 1;
-			stat->curs_pos = stat->prompt_wid
-								+ wcswidth(stat->line, stat->index);
+			stat->curs_pos = stat->prompt_wid + wcswidth(stat->line, stat->index);
 			stat->len = i - 1;
 
 			*temp = x;
-			free(raw_name);
-			free(filename);
 			free(temp2);
 		}
 	}
@@ -1159,8 +1150,6 @@ file_completion(char* filename, char* line_mb, char* raw_name,
 				 + stat->index) + 1) * sizeof(wchar_t));
 		if(temp2 == NULL)
 		{
-			free(raw_name);
-			free(filename);
 			return -1;
 		}
 		wcscpy(temp2, stat->line + stat->index);
@@ -1171,8 +1160,6 @@ file_completion(char* filename, char* line_mb, char* raw_name,
 		if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
 		{
 			*temp = x;
-			free(raw_name);
-			free(filename);
 			free(temp2);
 			return -1;
 		}
@@ -1186,16 +1173,12 @@ file_completion(char* filename, char* line_mb, char* raw_name,
 		stat->len = i - 1;
 
 		*temp = x;
-		free(raw_name);
-		free(filename);
 		free(temp2);
 	}
 	/* error */
 	else
 	{
 		show_error_msg(" Debug Error ", "Harmless error in rline.c line 564");
-		free(raw_name);
-		free(filename);
 		return -1;
 	}
 
