@@ -1153,6 +1153,7 @@ show_user_menu(FileView *view, char *command)
 
 	curr_stats.search = 1;
 
+	show_progress("", 0);
 	while(fgets(buf, sizeof(buf), file))
 	{
 		show_progress("Loading menu", 1000);

@@ -632,6 +632,10 @@ clear_num_window(void)
 	}
 }
 
+/* msg can't be NULL
+ * period - how often status bar should be updated
+ * if period equals 0 reset inner counter
+ */
 void
 show_progress(const char *msg, int period)
 {
@@ -640,6 +644,12 @@ show_progress(const char *msg, int period)
 	static int pause = 1;
 
 	char buf[strlen(msg) + 2 + 1];
+
+	if(period == 0)
+	{
+		pause = 1;
+		return;
+	}
 
 	pause++;
 

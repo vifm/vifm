@@ -639,6 +639,15 @@ pipe_and_capture_errors(char *command)
 	return 0;
 }
 
+static void
+progress_msg(const char *text, int ready, int total)
+{
+	char msg[strlen(text) + 32];
+
+	sprintf(msg, "%s %d/%d", text, ready, total);
+	show_progress(msg, 1);
+}
+
 void
 delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 {
@@ -657,14 +666,14 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		get_all_selected_files(view);
 
 	/* A - Z  append to register otherwise replace */
-	if ((reg < 'A') || (reg > 'Z'))
-		clear_register(reg);
-	else
+	if(reg >= 'A' && reg <= 'Z')
 		reg += 'a' - 'A';
+	else
+		clear_register(reg);
 
 	for(x = 0; x < view->selected_files; x++)
 	{
-		if(!strcmp("../", view->selected_filelist[x]))
+		if(strcmp("../", view->selected_filelist[x]) == 0)
 		{
 			show_error_msg(" Background Process Error ",
 					"You cannot delete the ../ directory ");
@@ -679,6 +688,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		else
 			snprintf(buf, sizeof(buf), "rm -rf '%s'", view->selected_filelist[x]);
 
+		progress_msg("Deleting files", x + 1, view->selected_files);
 		if(background_and_wait_for_errors(buf) == 0)
 		{
 			char reg_buf[PATH_MAX];
@@ -861,14 +871,8 @@ put_files_from_register(FileView *view, int name, int force_move)
 				snprintf(buf, sizeof(buf), "mv %s %s", temp, temp1);
 			else
 				snprintf(buf, sizeof(buf), "cp -pR %s %s", temp, temp1);
-			/*
-			snprintf(buf, sizeof(buf), "mv \"%s/%s\" %s",
-					cfg.trash_dir, temp, temp1);
-					*/
-			/*
-			snprintf(buf, sizeof(buf), "mv \"%s/%s\" %s",
-					cfg.trash_dir, reg->files[x], view->curr_dir);
-					*/
+
+			progress_msg("Putting files", x + 1, reg->num_files);
 			if(background_and_wait_for_errors(buf) == 0)
 			{
 				y++;
