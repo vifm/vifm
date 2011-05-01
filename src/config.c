@@ -392,17 +392,17 @@ write_config_file(void)
 	struct stat stat_buf;
 
 	/* None of the user settings have changed. */
-	if ((!curr_stats.setting_change) && (!cfg.using_default_config))
+	if((!curr_stats.setting_change) && (!cfg.using_default_config))
 		return;
 
 	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
 
 	if(stat(config_file, &stat_buf) == 0)
 	{
-		if ((stat_buf.st_mtime > curr_stats.config_file_mtime) &&
-				(!cfg.using_default_config))
+		if(stat_buf.st_mtime > curr_stats.config_file_mtime &&
+				!cfg.using_default_config)
 		{
-			if (! query_user_menu(" Vifmrc file has been modified ",
+			if(! query_user_menu(" Vifmrc file has been modified ",
 				 "File has been modified would you still like to write to file? "))
 				return;
 		}
@@ -549,6 +549,11 @@ write_config_file(void)
 /*_SZ_END_*/
 
 	fclose(fp);
+
+	if(stat(config_file, &stat_buf) == 0)
+	{
+		curr_stats.config_file_mtime = stat_buf.st_mtime;
+	}
 }
 
 void
