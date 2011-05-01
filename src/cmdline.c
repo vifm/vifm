@@ -87,7 +87,9 @@ static void keys_ctrl_u(struct key_info, struct keys_info *);
 static void keys_ctrl_w(struct key_info, struct keys_info *);
 static void keys_meta_b(struct key_info, struct keys_info *);
 static void find_prev_word(void);
+static void keys_meta_d(struct key_info, struct keys_info *);
 static void keys_meta_f(struct key_info, struct keys_info *);
+static void find_next_word(void);
 static void keys_left(struct key_info, struct keys_info *);
 static void keys_right(struct key_info, struct keys_info *);
 static void keys_home(struct key_info, struct keys_info *);
@@ -227,6 +229,9 @@ init_emacs_keys(void)
 
 	curr = add_keys(L"\x1b"L"b", CMDLINE_MODE);
 	curr->data.handler = keys_meta_b;
+
+	curr = add_keys(L"\x1b"L"d", CMDLINE_MODE);
+	curr->data.handler = keys_meta_d;
 
 	curr = add_keys(L"\x1b"L"f", CMDLINE_MODE);
 	curr->data.handler = keys_meta_f;
@@ -658,7 +663,39 @@ find_prev_word(void)
 }
 
 static void
+keys_meta_d(struct key_info key_info, struct keys_info *keys_info)
+{
+	int old_i, old_c;
+
+	old_i = input_stat.index;
+	old_c = input_stat.curs_pos;
+	find_next_word();
+
+	if(input_stat.index == old_i)
+	{
+		return;
+	}
+
+	wcsdel(input_stat.line, old_i + 1, input_stat.index - old_i);
+	input_stat.len -= input_stat.index - old_i;
+	input_stat.index = old_i;
+	input_stat.curs_pos = old_c;
+
+	werase(status_bar);
+	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
+	waddwstr(status_bar, input_stat.line);
+	wmove(status_bar, 0, input_stat.curs_pos);
+}
+
+static void
 keys_meta_f(struct key_info key_info, struct keys_info *keys_info)
+{
+	find_next_word();
+	wmove(status_bar, 0, input_stat.curs_pos);
+}
+
+static void
+find_next_word(void)
 {
 	while(input_stat.index < input_stat.len
 			&& isspace(input_stat.line[input_stat.index]))
@@ -672,7 +709,6 @@ keys_meta_f(struct key_info key_info, struct keys_info *keys_info)
 		input_stat.index++;
 		input_stat.curs_pos++;
 	}
-	wmove(status_bar, 0, input_stat.curs_pos);
 }
 
 static void

@@ -60,7 +60,7 @@ update_pos_window(FileView *view)
 	if(curr_stats.freeze)
 		return;
 	werase(pos_win);
-	snprintf(buf, sizeof(buf), "%d-%d ", view->list_pos +1, view->list_rows);
+	snprintf(buf, sizeof(buf), "%d-%d ", view->list_pos + 1, view->list_rows);
 	mvwaddstr(pos_win, 0, 13 - strlen(buf), buf);
 	wnoutrefresh(pos_win);
 }
@@ -335,7 +335,7 @@ redraw_window(void)
 
 	ioctl(0, TIOCGWINSZ, &ws);
 
-	// changed for pdcurses
+	/* changed for pdcurses */
 	resize_term(ws.ws_row, ws.ws_col);
 
 	getmaxyx(stdscr, screen_y, screen_x);
@@ -569,7 +569,7 @@ update_all_windows(void)
 	redrawwin(rborder);
 
 	/* In One window view */
-	if (curr_stats.number_of_windows == 1)
+	if(curr_stats.number_of_windows == 1)
 	{
 		update_view(curr_view);
 	}

@@ -623,22 +623,21 @@ moveto_list_pos(FileView *view, int pos)
 	if(pos < 1)
 		pos = 0;
 
-	if(pos > view->list_rows -1)
-		pos = (view->list_rows -1);
+	if(pos > view->list_rows - 1)
+		pos = view->list_rows - 1;
 
-
-	if(view->curr_line > view->list_rows -1)
-		view->curr_line = view->list_rows -1;
+	if(view->curr_line > view->list_rows - 1)
+		view->curr_line = view->list_rows - 1;
 
 	erase_current_line_bar(view);
 
-	if((view->top_line <=  pos) && (pos <= (view->top_line + view->window_rows)))
+	if(view->top_line <= pos && pos <= view->top_line + view->window_rows)
 	{
 		view->curr_line = pos - view->top_line;
 	}
-	else if((pos > (view->top_line + view->window_rows)))
+	else if(pos > view->top_line + view->window_rows)
 	{
-		while(pos > (view->top_line + view->window_rows))
+		while(pos > view->top_line + view->window_rows)
 			view->top_line++;
 
 		view->curr_line = view->window_rows;
@@ -655,11 +654,8 @@ moveto_list_pos(FileView *view, int pos)
 
 	view->list_pos = pos;
 
-
-
 	if(redraw)
 		draw_dir_list(view, view->top_line, view->curr_line);
-
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme));
 	mvwaddstr(view->win, old_cursor, 0, " ");
@@ -1466,12 +1462,12 @@ reload_window(FileView *view)
 
 	if(view != curr_view)
 	{
-		change_directory(curr_view, curr_view->curr_dir);
+		change_directory(view, view->curr_dir);
 		mvwaddstr(view->win, view->curr_line, 0, "*");
 		wrefresh(view->win);
 	}
 	else
-		moveto_list_pos(view, view->list_pos);
+		moveto_list_pos(curr_view, curr_view->list_pos);
 
 	curr_stats.skip_history = 0;
 }
@@ -1485,7 +1481,7 @@ check_if_filelists_have_changed(FileView *view)
 	struct stat s;
 
 	stat(view->curr_dir, &s);
-	if(s.st_mtime  != view->dir_mtime)
+	if(s.st_mtime != view->dir_mtime)
 		reload_window(view);
 
 	if(curr_stats.number_of_windows != 1 && curr_stats.view != 1)

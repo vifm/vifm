@@ -86,6 +86,8 @@
 
 	Fixed work with registers.
 
+	Fixed bug with disappearing pane cursor (for example after shellout).
+
 0.4 to 0.5
 
 	Changed the file size to a human friendly notation.

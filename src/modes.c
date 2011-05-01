@@ -85,7 +85,7 @@ modes_pre(void)
 	}
 
 	check_if_filelists_have_changed(curr_view);
-	check_background_jobs();
+	//check_background_jobs();
 
 	if(!curr_stats.save_msg)
 	{

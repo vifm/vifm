@@ -216,11 +216,13 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-pkgdata_DATA = vifm-help.txt \
+pkgdata_DATA = startup \
+							 vifmrc \
+							 vifm-help.txt \
 							 vifm.txt \
-							 vifm.vim 
+							 vifm.vim
 
-bin_SCRIPTS = pauseme 
+bin_SCRIPTS = pauseme
 man_MANS = vifm.1
 vifm_SOURCES = \
 	background.c background.h \

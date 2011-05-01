@@ -18,6 +18,3 @@ Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap? 
 	Virtual File System - currently vifm can use fuse to mount most
 		file systems.  
-    Store panel directories with qw, w, qwa, wa (ZZ in normal mode)
-        end restore them on start up (possible problems with pwd and
-        argument, how to choose between them? arg > stored > pwd?).

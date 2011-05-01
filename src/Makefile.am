@@ -1,12 +1,14 @@
 ## Process this file with automake to produce Makefile.in
 
-pkgdata_DATA = vifm-help.txt \
+pkgdata_DATA = startup \
+							 vifmrc \
+							 vifm-help.txt \
 							 vifm.txt \
-							 vifm.vim 
+							 vifm.vim
 
 bin_PROGRAMS = vifm
 
-bin_SCRIPTS = pauseme 
+bin_SCRIPTS = pauseme
 
 man_MANS = vifm.1
 

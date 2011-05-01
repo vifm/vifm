@@ -785,11 +785,10 @@ shellout(char *command, int pause)
 	my_system("clear");
 	my_system(buf);
 
-
 	/* There is a problem with using the screen program and
 	 * catching all the SIGWICH signals.  So just redraw the window.
 	 */
-	if (!isendwin())
+	if(!isendwin())
 		redraw_window();
 
 	curs_set(0);
