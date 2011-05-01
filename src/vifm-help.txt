@@ -106,7 +106,6 @@ The basic vi key bindings are used to move through the files and popup
 	:empty will permanently remove 'rm -fr' files from the Trash directory.
 	:locate filename - will create a menu with the results from the locate
 		command.
-	:sh will start a shell
 	:q or :x will exit vifm
     :wq will exit vifm saving pane locations
     :write will write config
@@ -122,14 +121,15 @@ The basic vi key bindings are used to move through the files and popup
 	:ch[ange] - create a menu window to alter a files properties.
 	:cd - change directory
 		:cd ~/bin
-	:s[ort] - popup menu of different sorting methods
+    :s[creen] toggles whether to use the screen program or not.
+    :sh[ell] will start a shell
+	:so[rt] - popup menu of different sorting methods
 	:sp[lit] - switch to a two window view.
 	:his[tory] - popup menu of directories visited
 	:jobs - shows menu of current backgrounded processes.
-	:view - toggle on and off the quick file view.
+	:v[iew] - toggle on and off the quick file view.
 	:h[elp] - this crude help file
 	:marks - popup menu of bookmarks
-	:screen toggles whether to use the screen program or not.
 	:sync - change the other panel to the current panel directory.
 
 

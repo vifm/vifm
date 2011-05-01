@@ -50,18 +50,18 @@ enum
 {
 	COM_EXECUTE,
 	COM_APROPOS,
-	COM_CHANGE,
 	COM_CD,
+	COM_CHANGE,
 	COM_CMAP,
 	COM_COLORSCHEME,
 	COM_COMMAND,
-	COM_DELETE,
 	COM_DELCOMMAND,
+	COM_DELETE,
 	COM_DISPLAY,
 	COM_EDIT,
 	COM_EMPTY,
-	COM_FILTER,
 	COM_FILE,
+	COM_FILTER,
 	COM_HELP,
 	COM_HISTORY,
 	COM_INVERT,
@@ -76,19 +76,19 @@ enum
 	COM_PWD,
 	COM_QUIT,
 	COM_REGISTER,
-	COM_SORT,
 	COM_SCREEN,
 	COM_SHELL,
+	COM_SORT,
 	COM_SPLIT,
 	COM_SYNC,
 	COM_UNMAP,
 	COM_VIEW,
 	COM_VIFM,
 	COM_VMAP,
-	COM_WRITE,
 	COM_WQ,
-	COM_YANK,
+	COM_WRITE,
 	COM_X,
+	COM_YANK,
   RESERVED
 };
 
@@ -98,18 +98,18 @@ enum
 char *reserved_commands[] = {
 	"!",
 	"apropos",
-	"change",
 	"cd",
+	"change",
 	"cmap",
 	"colorscheme",
 	"command",
-	"delete",
 	"delcommand",
+	"delete",
 	"display",
 	"edit",
 	"empty",
-	"filter",
 	"file",
+	"filter",
 	"help",
 	"history",
 	"invert",
@@ -124,19 +124,19 @@ char *reserved_commands[] = {
 	"pwd",
 	"quit",
 	"register",
-	"sort",
 	"screen",
 	"shell",
+	"sort",
 	"split",
 	"sync",
 	"unmap",
 	"view",
 	"vifm",
 	"vmap",
-	"write",
 	"wq",
-	"yank",
-	"x"
+	"write",
+	"x",
+	"yank"
 };
 
 typedef struct current_command
@@ -205,70 +205,70 @@ char *
 command_completion(char *str)
 {
 	static char *string;
+	static size_t len;
 	static int offset;
-	int pos = -1;
-	int found = 0;
-	int i = 0;
-	int len;
+
+	int pos_b, pos_u;
+	int i;
 
 	if(str != NULL)
 	{
 		string = str;
+		len = strlen(string);
 		offset = 0;
 	}
 	else
 		offset++;
 
-	len = strlen(string);
+	pos_b = command_is_reserved(string);
+	pos_u = is_user_command(string);
 
-	if((pos = command_is_reserved(string)) > -1)
+	i = 0;
+	while(i < offset && (pos_b != -1 || pos_u != -1))
 	{
-		found = 1;
-
-		while(i < offset)
+		i++;
+		if(pos_b != -1 && pos_u != -1)
 		{
-			if(pos >= RESERVED - 1)
-				break;
-
-			if(!strncmp(string, reserved_commands[++pos], len))
-				i++;
+			if(strcmp(reserved_commands[pos_b], command_list[pos_u].name) < 0)
+				pos_b++;
+			else
+				pos_u++;
+		}
+		else
+		{
+			if(pos_b != -1)
+				pos_b++;
+			else
+				pos_u++;
 		}
 
-		if(i == offset)
-			return strdup(reserved_commands[pos]);
+		if(pos_b == RESERVED
+				|| (pos_b >= 0 && strncmp(reserved_commands[pos_b], string, len) != 0))
+			pos_b = -1;
+		if(pos_u == cfg.command_num
+				|| (pos_u >= 0 && strncmp(command_list[pos_u].name, string, len) != 0))
+			pos_u = -1;
 	}
 
-	if((pos = is_user_command(string)) > -1)
-	{
-		found = 1;
-
-		while(i < offset)
-		{
-			if(strncmp(string, command_list[pos].name, len) == 0)
-				i++;
-
-			if(i < offset)
-			{
-				if(++pos > cfg.command_num - 1)
-					break;
-			}
-		}
-
-		if(i == offset)
-			return strdup(command_list[pos].name);
-	}
-
-	if(!found)
-		return NULL;
-	else if(i != offset)
+	if(pos_b == -1 && pos_u == -1)
 	{
 		offset = -1;
 		return strdup(string);
 	}
-
-	show_error_msg(" Debug error ", "command_completion():"
-			" Harmless error in commands.c: line 254");
-	return NULL;
+	else if(pos_b != -1 && pos_u != -1)
+	{
+		if(strcmp(reserved_commands[pos_b], command_list[pos_u].name) < 0)
+			return strdup(reserved_commands[pos_b]);
+		else
+			return strdup(command_list[pos_u].name);
+	}
+	else
+	{
+		if(pos_b != -1)
+			return strdup(reserved_commands[pos_b]);
+		else
+			return strdup(command_list[pos_u].name);
+	}
 }
 
 void
