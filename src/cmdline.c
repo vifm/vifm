@@ -103,7 +103,7 @@ static int file_completion(char* filename, char* line_mb, char* raw_name,
 		struct line_stats *stat);
 static char * get_last_word(char * string);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
-static char * filename_completion(char *str);
+static char * filename_completion(char *str, int dirs_only);
 static char * check_for_executable(char *string);
 
 void
@@ -966,7 +966,7 @@ insert_completed_command(struct line_stats *stat, const char *complete_command)
 static int
 get_buildin_id(const char *cmd_line)
 {
-	char *p, *q;
+	const char *p, *q;
 	char buf[128];
 
 	while(cmd_line[0] != '\0' && isspace(cmd_line[0]))
@@ -1035,7 +1035,8 @@ line_completion(struct line_stats *stat)
 		char *filename = (char *)NULL;
 		char *raw_name = (char *)NULL;
 
-		raw_name = filename_completion(stat->complete_continue ? NULL : last_word);
+		raw_name = filename_completion(stat->complete_continue ? NULL : last_word,
+				(id == COM_CD) ? 1 : 0);
 
 		stat->complete_continue = 1;
 
@@ -1277,7 +1278,7 @@ wcsdel(wchar_t *src, int pos, int len)
  * In each subsequent call that should parse the same string, str should be NULL
  */
 static char *
-filename_completion(char *str)
+filename_completion(char *str, int dirs_only)
 {
 	static char *string;
 	static int offset;
@@ -1288,7 +1289,7 @@ filename_completion(char *str)
 	char * filename = NULL;
 	char * temp = NULL;
 	int i = 0;
-	int found = 0;
+	int found;
 	int filename_len = 0;
 
 	if(str != NULL)
@@ -1344,40 +1345,58 @@ filename_completion(char *str)
 		return NULL;
 	}
 
-	while ((d=readdir(dir)))
+	found = 0;
+	while((d = readdir(dir)) != NULL)
 	{
-		if( ! strncmp(d->d_name, filename, filename_len)
-			 && strcmp(d->d_name, ".") && strcmp(d->d_name, ".."))
+		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
+			continue;
+		if(strncmp(d->d_name, filename, filename_len) != 0)
+			continue;
+		if(dirs_only)
 		{
-			i = 0;
-			while (i < offset)
-			{
-				if(!(d=readdir(dir)))
-				{
-					offset = -1;
-
-					closedir(dir);
-					free(dirname);
-
-					return strdup(filename);
-				}
-				if(!strncmp(d->d_name, filename, filename_len)
-					 && strcmp(d->d_name, ".") && strcmp(d->d_name, ".."))
-				{
-					i++;
-				}
-			}
-			found = 1;
-			break;
+			if(d->d_type != DT_DIR && d->d_type != DT_LNK)
+				continue;
+			if(d->d_type == DT_LNK && !is_dir(d->d_name))
+				continue;
 		}
+		found = 1;
+		break;
 	}
-
-	closedir(dir);
 
 	if(!found)
 	{
+		closedir(dir);
+		free(dirname);
 		return NULL;
 	}
+
+	i = 0;
+	while(i < offset)
+	{
+		if((d = readdir(dir)) == NULL)
+		{
+			offset = -1;
+
+			closedir(dir);
+			free(dirname);
+
+			return strdup(filename);
+		}
+		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
+			continue;
+		if(strncmp(d->d_name, filename, filename_len) != 0)
+			continue;
+		if(dirs_only)
+		{
+			if(d->d_type != DT_DIR && d->d_type != DT_LNK)
+				continue;
+			if(d->d_type == DT_LNK && !is_dir(d->d_name))
+				continue;
+		}
+		i++;
+	}
+
+	closedir(dir);
 
 	int isdir = 0;
 	if(is_dir(d->d_name))

@@ -62,6 +62,8 @@
 
 	Changed behavior of filename cell in stat line (automatic expands now).
 
+	Changed :cd completion to use only directories.
+
 	Fixed segmentation fault caused by newwin.
 
 	Fixed segmentation fault caused by bookmarks menu.
