@@ -134,6 +134,7 @@ void update_all_windows(void);
 void update_input_bar(wchar_t c);
 void switch_views(void);
 void clear_num_window(void);
+void show_progress(const char *msg, int period);
 
 #endif
 

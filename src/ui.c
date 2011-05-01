@@ -632,4 +632,27 @@ clear_num_window(void)
 	}
 }
 
+void
+show_progress(const char *msg, int period)
+{
+	static char marks[] = {'|', '/', '-', '\\'};
+	static int count = 0;
+	static int pause = 1;
+
+	char buf[strlen(msg) + 2 + 1];
+
+	pause++;
+
+	if(pause%period != 0)
+		return;
+
+	pause = 1;
+
+	sprintf(buf, "%s %c", msg, marks[count]);
+	status_bar_message(buf);
+	wrefresh(status_bar);
+
+	count = (count + 1) % sizeof(marks);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

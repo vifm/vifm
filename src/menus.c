@@ -40,43 +40,6 @@
 #include "ui.h"
 #include "utils.h"
 
-void
-show_progress(void)
-{
-	static int count = 0;
-	static int pause = 1;
-
-	pause++;
-
-	if(pause % 1000 != 0)
-		return;
-
-	pause = 1;
-	switch(count)
-	{
-		case 0:
-			status_bar_message("Loading Menu |");
-			break;
-		case 1:
-			status_bar_message("Loading Menu /");
-			break;
-		case 2:
-			status_bar_message("Loading Menu -");
-			break;
-		case 3:
-			status_bar_message("Loading Menu \\");
-			count = -1;
-			break;
-		default:
-			count = -1;
-			break;
-	}
-
-	wrefresh(status_bar);
-
-	count++;
-}
-
 static void
 show_position_in_menu(menu_info *m)
 {
@@ -1165,9 +1128,9 @@ show_user_menu(FileView *view, char *command)
 	m.get_info_script = command;
 
 
-	for ( x = 0; x < strlen(command); x++)
+	for( x = 0; x < strlen(command); x++)
 	{
-		if (command[x] == ',')
+		if(command[x] == ',')
 		{
 			command[x] = '\0';
 			break;
@@ -1184,7 +1147,7 @@ show_user_menu(FileView *view, char *command)
 	{
 		reset_popup_menu(&m);
 		show_error_msg("Trouble opening a file", "Unable to open file");
-		return ;
+		return;
 	}
 	x = 0;
 
@@ -1192,7 +1155,7 @@ show_user_menu(FileView *view, char *command)
 
 	while(fgets(buf, sizeof(buf), file))
 	{
-		show_progress();
+		show_progress("Loading menu", 1000);
 		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
 		m.data[x] = (char *)malloc(sizeof(buf) + 2);
 		snprintf(m.data[x], sizeof(buf), "%s", buf);
