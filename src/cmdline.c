@@ -1063,8 +1063,8 @@ line_completion(struct line_stats *stat)
 		stat->line[stat->index] = t;
 	}
 
-	id = get_buildin_id(line_mb);
 	last_word = get_last_word(line_mb);
+	id = get_buildin_id(line_mb);
 
 	if(id != COM_DELCOMMAND && last_word != NULL)
 	{
@@ -1093,10 +1093,9 @@ line_completion(struct line_stats *stat)
 	 /* :partial_command */
 	else
 	{
-		int users_only = (id == COM_DELCOMMAND);
+		int users_only = (id == COM_DELCOMMAND && last_word != NULL);
 		char *complete_command = command_completion(
-				stat->complete_continue ? NULL :
-				((id != COM_DELCOMMAND) ? line_mb : last_word),
+				stat->complete_continue ? NULL : (users_only ? last_word : line_mb),
 				users_only);
 
 		if(complete_command != NULL)
