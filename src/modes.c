@@ -38,7 +38,7 @@ static int mode = NORMAL_MODE;
 static int mode_flags[] = {
 	MF_USES_COUNT | MF_USES_REGS, // NORMAL_MODE
 	MF_USES_INPUT,                // CMDLINE_MODE
-	MF_USES_COUNT,                // VISUAL_MODE
+	MF_USES_COUNT | MF_USES_REGS, // VISUAL_MODE
 	MF_USES_COUNT,                // MENU_MODE
 	MF_USES_COUNT,                // SORT_MODE
 	MF_USES_COUNT                 // PERMISSIONS_MODE
