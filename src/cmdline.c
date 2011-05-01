@@ -1059,7 +1059,8 @@ line_completion(struct line_stats *stat)
 	{
 		int users_only = (id == COM_DELCOMMAND);
 		char *complete_command = command_completion(
-				stat->complete_continue ? NULL : ((id == -1) ? line_mb : last_word),
+				stat->complete_continue ? NULL :
+				((id != COM_DELCOMMAND) ? line_mb : last_word),
 				users_only);
 
 		if(complete_command != NULL)
