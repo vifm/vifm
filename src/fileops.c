@@ -148,12 +148,6 @@ yank_files(FileView *view, int reg, int count, int *indexes)
 	else
 		get_all_selected_files(curr_view);
 
-	/* A - Z  append to register otherwise replace */
-	if ((reg < 'A') || (reg > 'Z'))
-		clear_register(reg);
-	else
-		reg += 'a' - 'A';
-
 	yank_selected_files(curr_view, reg);
 	tmp = curr_view->selected_files;
 	free_selected_file_array(curr_view);
@@ -175,10 +169,10 @@ yank_selected_files(FileView *view, int reg)
 	size_t namelen;
 
 	/* A - Z  append to register otherwise replace */
-	if ((reg < 'A') || (reg > 'Z'))
-		clear_register(reg);
-	else
+	if(reg >= 'A' && reg <= 'Z')
 		reg += 'a' - 'A';
+	else
+		clear_register(reg);
 
 	for(x = 0; x < view->selected_files; x++)
 	{
