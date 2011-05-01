@@ -305,16 +305,9 @@ static void
 keys_space(struct key_info key_info, struct keys_info *keys_info)
 {
 	changed = 1;
-	if(perms[permnum])
-	{
-		perms[permnum] = 0;
-		mvwaddch(change_win, curr, col, ' ');
-	}
-	else
-	{
-		perms[permnum] = 1;
-		mvwaddch(change_win, curr, col, '*');
-	}
+
+	mvwaddch(change_win, curr, col, perms[permnum] ? ' ' : '*');
+	perms[permnum] = !perms[permnum];
 
 	wmove(change_win, curr, col);
 	wrefresh(change_win);

@@ -253,15 +253,13 @@ redraw_menu(FileView *view, menu_info *m)
 	struct winsize ws;
 
 	curr_stats.freeze = 1;
-	curr_stats.redraw_menu = 0;
 
 	ioctl(0, TIOCGWINSZ, &ws);
-	//changed for pdcurses
-	//resizeterm(ws.ws_row, ws.ws_col);
+	/* changed for pdcurses */
+	resizeterm(ws.ws_row, ws.ws_col);
 	getmaxyx(stdscr, screen_y, screen_x);
 
 	wclear(stdscr);
-	wclear(menu_win);
 	wclear(status_bar);
 	wclear(pos_win);
 
@@ -270,13 +268,13 @@ redraw_menu(FileView *view, menu_info *m)
 	mvwin(status_bar, screen_y -1, 0);
 	wresize(pos_win, 1, 13);
 	mvwin(pos_win, screen_y -1, screen_x -13);
-	box(menu_win, 0, 0);
 	wrefresh(status_bar);
 	wrefresh(pos_win);
-	wrefresh(menu_win);
 	curr_stats.freeze = 0;
+
 	draw_menu(view, m);
 	moveto_menu_pos(view, m->pos, m);
+	wrefresh(menu_win);
 }
 
 int
@@ -882,7 +880,7 @@ show_commands_menu(FileView *view)
 	m.args = NULL;
 	m.data = NULL;
 
-	if (cfg.command_num < 1)
+	if(cfg.command_num < 1)
 	{
 		show_error_msg("No commands set", "No commands are set.");
 		return;
@@ -899,7 +897,7 @@ show_commands_menu(FileView *view)
 
 	x = 0;
 
-	for (i = 1; x < m.len; i++)
+	for(i = 1; x < m.len; i++)
 	{
 		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
 		m.data[x] = (char *)malloc(len + 2);

@@ -175,6 +175,12 @@ menu_post(void)
 }
 
 void
+menu_redraw(void)
+{
+	redraw_menu(view, menu);
+}
+
+void
 execute_menu_command(FileView *view, char *command, menu_info *m)
 {
 	if(strncmp("quit", command, strlen(command)) == 0)

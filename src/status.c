@@ -27,7 +27,6 @@ init_status(void)
 {
 	curr_stats.need_redraw = 0;
 	curr_stats.menu = 0;
-	curr_stats.redraw_menu = 0;
 	curr_stats.is_updir = 0;
 	curr_stats.last_char = 0;
 	curr_stats.is_console = 0;

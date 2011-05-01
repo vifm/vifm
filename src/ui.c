@@ -361,7 +361,7 @@ redraw_window(void)
 	wresize(stdscr, screen_y, screen_x);
 	mvwin(sort_win, (screen_y - NUM_SORT_OPTIONS + 3)/2, (screen_x -30)/2);
 	mvwin(change_win, (screen_y - 10)/2, (screen_x -30)/2);
-	wresize(menu_win, screen_y - 1, screen_x);
+	//wresize(menu_win, screen_y - 1, screen_x);
 	wresize(error_win, (screen_y -10)/2, screen_x -2);
 	mvwin(error_win, (screen_y -10)/2, 1);
 	wresize(lborder, screen_y -2, 1);

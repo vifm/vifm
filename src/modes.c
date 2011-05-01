@@ -148,7 +148,7 @@ modes_redraw(void)
 	else if(mode == VISUAL_MODE)
 		redraw_window();
 	else if(mode == MENU_MODE)
-		curr_stats.redraw_menu = 1;
+		menu_redraw();
 	else if(mode == SORT_MODE)
 		redraw_window();
 	else if(mode == PERMISSIONS_MODE)

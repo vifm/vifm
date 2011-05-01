@@ -26,7 +26,6 @@ typedef struct
 	int need_redraw;
 	volatile int freeze;
 	volatile int menu;
-	int redraw_menu;
 	int is_updir;
 	int last_char;
 	char updir_file[NAME_MAX];
