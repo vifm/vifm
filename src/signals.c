@@ -31,6 +31,7 @@
 #include "filelist.h"
 #include "filetype.h"
 #include "menus.h"
+#include "modes.h"
 #include "signals.h"
 #include "status.h"
 #include "config.h"
@@ -41,12 +42,7 @@ static void
 received_sigwinch(void)
 {
 	if(!isendwin())
-	{
-		if (curr_stats.menu)
-			curr_stats.redraw_menu = 1;
-		else
-			redraw_window();
-	}
+		modes_redraw();
 	else
 		curr_stats.need_redraw = 1;
 }
@@ -62,7 +58,6 @@ received_sigtstp(void)
 	refresh();
 	curs_set(0);
 }
-
 
 static void
 received_sigchld(void)

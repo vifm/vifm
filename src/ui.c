@@ -358,9 +358,6 @@ redraw_window(void)
 	wclear(mborder);
 	wclear(lborder);
 
-	wclear(change_win);
-	wclear(sort_win);
-
 	wresize(stdscr, screen_y, screen_x);
 	mvwin(sort_win, (screen_y - NUM_SORT_OPTIONS + 3)/2, (screen_x -30)/2);
 	mvwin(change_win, (screen_y - 10)/2, (screen_x -30)/2);

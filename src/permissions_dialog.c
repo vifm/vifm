@@ -33,13 +33,13 @@
 
 static int *mode;
 static FileView *view;
-static int top;
-static int bottom;
+static int top, bottom;
 static int curr;
 static int permnum;
 static int step;
 static int col;
 static int changed;
+static int file_is_dir;
 static int perms[] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 static void init_extended_keys(void);
@@ -109,9 +109,6 @@ init_extended_keys(void)
 void
 enter_permissions_mode(FileView *active_view)
 {
-	int isdir;
-	int x, y;
-	char *filename;
 	mode_t fmode;
 
 	view = active_view;
@@ -119,118 +116,108 @@ enter_permissions_mode(FileView *active_view)
 	curr_stats.use_input_bar = 0;
 	memset(perms, 0, sizeof(perms));
 
-	getmaxyx(stdscr, y, x);
-
-	wclear(change_win);
-
 	fmode = view->dir_entry[view->list_pos].mode;
+	perms[0] = (fmode & S_IRUSR);
+	perms[1] = (fmode & S_IWUSR);
+	perms[2] = (fmode & S_IXUSR);
+	perms[3] = (fmode & S_ISUID);
+	perms[4] = (fmode & S_IRGRP);
+	perms[5] = (fmode & S_IWGRP);
+	perms[6] = (fmode & S_IXGRP);
+	perms[7] = (fmode & S_ISGID);
+	perms[8] = (fmode & S_IROTH);
+	perms[9] = (fmode & S_IWOTH);
+	perms[10] = (fmode & S_IXOTH);
+	perms[11] = (fmode & S_ISVTX);
 
-	filename = get_current_file_name(view);
-	if(strlen(filename) > x - 2)
-		filename[x - 4] = '\0';
-
-	mvwaddnstr(change_win, 1, (x - strlen(filename))/2, filename, x - 2);
-
-	mvwaddstr(change_win, 3, 2, "Owner [ ] Read");
-	if(fmode & S_IRUSR)
-	{
-		perms[0] = 1;
-		mvwaddch(change_win, 3, 9, '*');
-	}
-	mvwaddstr(change_win, 4, 6, "  [ ] Write");
-
-	if(fmode & S_IWUSR)
-	{
-		perms[1] = 1;
-		mvwaddch(change_win, 4, 9, '*');
-	}
-	mvwaddstr(change_win, 5, 6, "  [ ] Execute");
-
-	if(fmode & S_IXUSR)
-	{
-		perms[2] = 1;
-		mvwaddch(change_win, 5, 9, '*');
-	}
-
-	mvwaddstr(change_win, 6, 6, "  [ ] SetUID");
-	if(fmode & S_ISUID)
-	{
-		perms[3] = 1;
-		mvwaddch(change_win, 6, 9, '*');
-	}
-
-	mvwaddstr(change_win, 8, 2, "Group [ ] Read");
-	if(fmode & S_IRGRP)
-	{
-		perms[4] = 1;
-		mvwaddch(change_win, 8, 9, '*');
-	}
-
-	mvwaddstr(change_win, 9, 6, "  [ ] Write");
-	if(fmode & S_IWGRP)
-	{
-		perms[5] = 1;
-		mvwaddch(change_win, 9, 9, '*');
-	}
-
-	mvwaddstr(change_win, 10, 6, "	[ ] Execute");
-	if(fmode & S_IXGRP)
-	{
-		perms[6] = 1;
-		mvwaddch(change_win, 10, 9, '*');
-	}
-
-	mvwaddstr(change_win, 11, 6, "	[ ] SetGID");
-	if(fmode & S_ISGID)
-	{
-		perms[7] = 1;
-		mvwaddch(change_win, 11, 9, '*');
-	}
-
-	mvwaddstr(change_win, 13, 2, "Other [ ] Read");
-	if(fmode & S_IROTH)
-	{
-		perms[8] = 1;
-		mvwaddch(change_win, 13, 9, '*');
-	}
-
-	mvwaddstr(change_win, 14, 6, "	[ ] Write");
-	if(fmode & S_IWOTH)
-	{
-		perms[9] = 1;
-		mvwaddch(change_win, 14, 9, '*');
-	}
-
-	mvwaddstr(change_win, 15, 6, "	[ ] Execute");
-	if(fmode & S_IXOTH)
-	{
-		perms[10] = 1;
-		mvwaddch(change_win, 15, 9, '*');
-	}
-
-	mvwaddstr(change_win, 16, 6, "	[ ] Sticky");
-	if(fmode & S_ISVTX)
-	{
-		perms[11] = 1;
-		mvwaddch(change_win, 16, 9, '*');
-	}
-
-	if(is_dir(filename))
-	{
-		mvwaddstr(change_win, 18, 6, "	[ ] Set Recursively");
-		isdir = 1;
-	}
+	file_is_dir = is_dir(get_current_file_name(view));
 
 	top = 3;
-	bottom = isdir ? 17 : 16;
+	bottom = file_is_dir ? 17 : 16;
 	curr = 3;
 	permnum = 0;
 	step = 1;
 	col = 9;
 	changed = 0;
 
+	redraw_permissions_dialog();
+}
+
+void
+redraw_permissions_dialog(void)
+{
+	char *filename;
+	int x, y;
+
+	getmaxyx(stdscr, y, x);
+
+	wclear(change_win);
+
+	mvwaddstr(change_win, 3, 2, "Owner [ ] Read");
+	if(perms[0])
+		mvwaddch(change_win, 3, 9, '*');
+	mvwaddstr(change_win, 4, 6, "  [ ] Write");
+
+	if(perms[1])
+		mvwaddch(change_win, 4, 9, '*');
+	mvwaddstr(change_win, 5, 6, "  [ ] Execute");
+
+	if(perms[2])
+		mvwaddch(change_win, 5, 9, '*');
+
+	mvwaddstr(change_win, 6, 6, "  [ ] SetUID");
+	if(perms[3])
+		mvwaddch(change_win, 6, 9, '*');
+
+	mvwaddstr(change_win, 8, 2, "Group [ ] Read");
+	if(perms[4])
+		mvwaddch(change_win, 8, 9, '*');
+
+	mvwaddstr(change_win, 9, 6, "  [ ] Write");
+	if(perms[5])
+		mvwaddch(change_win, 9, 9, '*');
+
+	mvwaddstr(change_win, 10, 6, "	[ ] Execute");
+	if(perms[6])
+		mvwaddch(change_win, 10, 9, '*');
+
+	mvwaddstr(change_win, 11, 6, "	[ ] SetGID");
+	if(perms[7])
+		mvwaddch(change_win, 11, 9, '*');
+
+	mvwaddstr(change_win, 13, 2, "Other [ ] Read");
+	if(perms[8])
+		mvwaddch(change_win, 13, 9, '*');
+
+	mvwaddstr(change_win, 14, 6, "	[ ] Write");
+	if(perms[9])
+		mvwaddch(change_win, 14, 9, '*');
+
+	mvwaddstr(change_win, 15, 6, "	[ ] Execute");
+	if(perms[10])
+		mvwaddch(change_win, 15, 9, '*');
+
+	mvwaddstr(change_win, 16, 6, "	[ ] Sticky");
+	if(perms[11])
+		mvwaddch(change_win, 16, 9, '*');
+
+	if(file_is_dir)
+	{
+		wresize(change_win, 22, 30);
+		mvwaddstr(change_win, 18, 6, "	[ ] Set Recursively");
+	}
+	else
+		wresize(change_win, 20, 30);
+
 	mvwin(change_win, (y - 20)/2, (x - 30)/2);
 	box(change_win, ACS_VLINE, ACS_HLINE);
+
+	filename = get_current_file_name(view);
+	if(strlen(filename) > x - 2)
+		filename[x - 4] = '\0';
+	mvwaddnstr(change_win, 0, (getmaxx(change_win) - strlen(filename))/2,
+			filename, x - 2);
+
 	curs_set(1);
 	wmove(change_win, curr, col);
 	wrefresh(change_win);

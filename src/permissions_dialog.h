@@ -23,6 +23,7 @@
 
 void init_permissions_dialog_mode(int *key_mode);
 void enter_permissions_mode(FileView *active_view);
+void redraw_permissions_dialog(void);
 
 #endif
 

@@ -85,7 +85,7 @@ modes_pre(void)
 	}
 
 	check_if_filelists_have_changed(curr_view);
-	//check_background_jobs();
+	check_background_jobs();
 
 	if(!curr_stats.save_msg)
 	{
@@ -136,6 +136,26 @@ modes_post(void)
 		redraw_window();
 
 	update_all_windows();
+}
+
+void
+modes_redraw(void)
+{
+	if(mode == NORMAL_MODE)
+		redraw_window();
+	else if(mode == CMDLINE_MODE)
+		redraw_window();
+	else if(mode == VISUAL_MODE)
+		redraw_window();
+	else if(mode == MENU_MODE)
+		curr_stats.redraw_menu = 1;
+	else if(mode == SORT_MODE)
+		redraw_window();
+	else if(mode == PERMISSIONS_MODE)
+	{
+		redraw_window();
+		redraw_permissions_dialog();
+	}
 }
 
 void
