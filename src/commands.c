@@ -46,55 +46,9 @@
 #include "ui.h"
 #include "utils.h"
 
-enum
-{
-	COM_EXECUTE,
-	COM_APROPOS,
-	COM_CD,
-	COM_CHANGE,
-	COM_CMAP,
-	COM_COLORSCHEME,
-	COM_COMMAND,
-	COM_DELCOMMAND,
-	COM_DELETE,
-	COM_DISPLAY,
-	COM_EDIT,
-	COM_EMPTY,
-	COM_FILE,
-	COM_FILTER,
-	COM_HELP,
-	COM_HISTORY,
-	COM_INVERT,
-	COM_JOBS,
-	COM_LOCATE,
-	COM_LS,
-	COM_MAP,
-	COM_MARKS,
-	COM_NMAP,
-	COM_NOH,
-	COM_ONLY,
-	COM_PWD,
-	COM_QUIT,
-	COM_REGISTER,
-	COM_SCREEN,
-	COM_SHELL,
-	COM_SORT,
-	COM_SPLIT,
-	COM_SYNC,
-	COM_UNMAP,
-	COM_VIEW,
-	COM_VIFM,
-	COM_VMAP,
-	COM_WQ,
-	COM_WRITE,
-	COM_X,
-	COM_YANK,
-  RESERVED
-};
-
-	/* The order of the commands is important as :e will match the first
-	 * command starting with e.
-	 */
+/* The order of the commands is important as :e will match the first
+ * command starting with e.
+ */
 char *reserved_commands[] = {
 	"!",
 	"apropos",
@@ -200,9 +154,10 @@ command_is_being_used(char *command)
 /* On the first call to this function,
  * the string to be parsed should be specified in str.
  * In each subsequent call that should parse the same string, str should be NULL
+ * Returned string should be freed in caller.
  */
 char *
-command_completion(char *str)
+command_completion(char *str, int users_only)
 {
 	static char *string;
 	static size_t len;
@@ -220,7 +175,7 @@ command_completion(char *str)
 	else
 		offset++;
 
-	pos_b = command_is_reserved(string);
+	pos_b = users_only ? -1 : command_is_reserved(string);
 	pos_u = is_user_command(string);
 
 	i = 0;
@@ -931,7 +886,7 @@ static int
 check_for_range(FileView *view, char *command, cmd_t *cmd)
 {
 	while(isspace(command[cmd->pos]) && cmd->pos < strlen(command))
-			cmd->pos++;
+		cmd->pos++;
 
 	/*
 	 * First check for a count or a range
@@ -1047,7 +1002,6 @@ check_for_range(FileView *view, char *command, cmd_t *cmd)
 	}
 	return 1;
 }
-
 
 static int
 parse_command(FileView *view, char *command, cmd_t *cmd)

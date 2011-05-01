@@ -48,6 +48,8 @@
 
 	Added progress messages for putting and deleting.
 
+	Added users command completion for :delcommand.
+
 	Changed keys input handling.
 
 	Changed force dot files appear at the beginning of file list.

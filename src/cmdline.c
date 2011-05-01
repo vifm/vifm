@@ -901,7 +901,7 @@ insert_completed_command(struct line_stats *stat, const char *complete_command)
 		return 0;
 	}
 
-	if((q = wcschr(stat->line, L' ')) != NULL)
+	if(stat->index < stat->len && (q = wcschr(stat->line, L' ')) != NULL)
 	{	/* If the cursor is not at the end of the string... */
 		int i;
 		void *p;
@@ -938,14 +938,20 @@ insert_completed_command(struct line_stats *stat, const char *complete_command)
 		void *p;
 
 		i = mbstowcs(NULL, complete_command, 0) + 1;
-		if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
+		if((p = realloc(stat->line, (stat->len + i) * sizeof(wchar_t))) == NULL)
 		{
 			return -1;
 		}
 		stat->line = (wchar_t *) p;
 
-		mbstowcs(stat->line, complete_command, i);
-		stat->index = stat->len = i - 1;
+		q = wcschr(stat->line, L' ');
+		if(q == NULL)
+			q = stat->line;
+		else
+			q++;
+
+		mbstowcs(q, complete_command, i);
+		stat->index = stat->len = q - stat->line + i - 1;
 		stat->curs_pos = wcswidth(stat->line, stat->len) + stat->prompt_wid;
 	}
 
@@ -958,10 +964,35 @@ insert_completed_command(struct line_stats *stat, const char *complete_command)
 }
 
 static int
+get_buildin_id(const char *cmd_line)
+{
+	char *p, *q;
+	char buf[128];
+
+	while(cmd_line[0] != '\0' && isspace(cmd_line[0]))
+	{
+		cmd_line++;
+	}
+
+	if((p = strchr(cmd_line, ' ')) == NULL)
+		p = cmd_line + strlen(cmd_line);
+
+	q = p - 1;
+	while(q >= cmd_line && isalpha(*q))
+		q--;
+	q++;
+
+	snprintf(buf, p - q + 1, "%s", q);
+
+	return command_is_reserved(buf);
+}
+
+static int
 line_completion(struct line_stats *stat)
 {
 	static char *line_mb = (char *)NULL;
 
+	int id;
 	char *last_word = (char *)NULL;
 
 	if(stat->line[stat->index] != L' ' && stat->index != stat->len)
@@ -996,9 +1027,10 @@ line_completion(struct line_stats *stat)
 		stat->line[stat->index] = t;
 	}
 
+	id = get_buildin_id(line_mb);
 	last_word = get_last_word(line_mb);
 
-	if(last_word != NULL)
+	if(id != COM_DELCOMMAND && last_word != NULL)
 	{
 		char *filename = (char *)NULL;
 		char *raw_name = (char *)NULL;
@@ -1024,8 +1056,10 @@ line_completion(struct line_stats *stat)
 	 /* :partial_command */
 	else
 	{
+		int users_only = (id == COM_DELCOMMAND);
 		char *complete_command = command_completion(
-				stat->complete_continue ? NULL : line_mb);
+				stat->complete_continue ? NULL : ((id == -1) ? line_mb : last_word),
+				users_only);
 
 		if(complete_command != NULL)
 		{

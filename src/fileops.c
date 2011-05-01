@@ -889,18 +889,16 @@ put_files_from_register(FileView *view, int name, int force_move)
 
 	pack_register(name);
 
-	if(y > 0)
-	{
-		snprintf(buf, sizeof(buf), " %d %s inserted", y, y==1 ? "file" : "files");
+	if(y <= 0)
+		return 0;
 
-		load_dir_list(view, 0);
-		moveto_list_pos(view, view->curr_line);
+	load_dir_list(view, 0);
+	moveto_list_pos(view, view->curr_line);
 
-		status_bar_message(buf);
-		return 1;
-	}
+	snprintf(buf, sizeof(buf), " %d file%s inserted", y, (y == 1) ? "" : "s");
+	status_bar_message(buf);
 
-	return 0;
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

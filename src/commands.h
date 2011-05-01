@@ -32,6 +32,52 @@ enum {
 	MAPPED_SEARCH
 };
 
+enum
+{
+	COM_EXECUTE,
+	COM_APROPOS,
+	COM_CD,
+	COM_CHANGE,
+	COM_CMAP,
+	COM_COLORSCHEME,
+	COM_COMMAND,
+	COM_DELCOMMAND,
+	COM_DELETE,
+	COM_DISPLAY,
+	COM_EDIT,
+	COM_EMPTY,
+	COM_FILE,
+	COM_FILTER,
+	COM_HELP,
+	COM_HISTORY,
+	COM_INVERT,
+	COM_JOBS,
+	COM_LOCATE,
+	COM_LS,
+	COM_MAP,
+	COM_MARKS,
+	COM_NMAP,
+	COM_NOH,
+	COM_ONLY,
+	COM_PWD,
+	COM_QUIT,
+	COM_REGISTER,
+	COM_SCREEN,
+	COM_SHELL,
+	COM_SORT,
+	COM_SPLIT,
+	COM_SYNC,
+	COM_UNMAP,
+	COM_VIEW,
+	COM_VIFM,
+	COM_VMAP,
+	COM_WQ,
+	COM_WRITE,
+	COM_X,
+	COM_YANK,
+  RESERVED
+};
+
 typedef struct
 {
 	char *action;
@@ -49,13 +95,12 @@ int execute_command(FileView *view, char *action);
 int sort_this(const void *one, const void *two);
 int is_user_command(char *command);
 int command_is_reserved(char *command);
-char * command_completion(char *str);
+char * command_completion(char *str, int users_only);
 char * expand_macros(FileView *view, char *command, char *args, int *menu, int *split);
 void remove_command(char *name);
 void comm_quit(void);
 void comm_only(void);
 void comm_split(void);
-
 
 #endif
 
