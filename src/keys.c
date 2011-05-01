@@ -278,7 +278,7 @@ get_count(const wchar_t *keys, int *count)
 	{
 		return keys;
 	}
-	if(isdigit(keys[0]))
+	if(keys[0] != L'0' && isdigit(keys[0]))
 	{
 		*count = wcstof(keys, (wchar_t**)&keys);
 	}
