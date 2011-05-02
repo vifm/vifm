@@ -151,7 +151,6 @@ reset_popup_menu(menu_info *m)
 	free(m->title);
 
 	werase(menu_win);
-	curr_stats.menu = 0;
 	redraw_window();
 }
 
@@ -159,7 +158,6 @@ void
 setup_menu(FileView *view)
 {
 	scrollok(menu_win, FALSE);
-	curr_stats.menu = 1;
 	curs_set(0);
 	werase(menu_win);
 	werase(status_bar);

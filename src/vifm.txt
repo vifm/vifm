@@ -1,16 +1,17 @@
 *vifm.txt*
 
 
-|Filters|      Using the file filters.
-|Commands|     How to use and set :commands.
-|Configure|    Configuration of vifm.
-|Marks|        Bookmarking of files.
-|Movement|     How to move around.
-|Normal|       Normal mode keys.
-|Options|      Command line arguments.
-|Plugin|       Using the vifm.vim plugin.
-|Reserved|     List of reserved commands.
-|Vifm_Ranges|  How to use ranges in vifm.
+|Filters|            Using the file filters.
+|Commands|           How to use and set :commands.
+|Configure|          Configuration of vifm.
+|Marks|              Bookmarking of files.
+|Movement|           How to move around.
+|Normal|             Normal mode keys.
+|Options|            Command line arguments.
+|Plugin|             Using the vifm.vim plugin.
+|Compatibility_mode| Its description.
+|Reserved|           List of reserved commands.
+|Vifm_Ranges|        How to use ranges in vifm.
 
 --------------------------------------------------------------------------------
 *Commands*
@@ -146,7 +147,12 @@ Most movement commands also accept a count 12j would move down 12 files.
 [count]k move up count files.
 [count]G or gg move to list position count.
 
-j, k, gg, G, H, L, M can be used as selectors for several commands. For example:
+j, k, gg, G, H, L, M can be used as selectors for several commands.
+Also following selectors can be used:
+ a - all files in current view
+ os - only selected files
+ es - all files except selected
+For example:
 dj delete file under cursor and one below.
 d2j delete file under cursor and two below.
 y6gg yank all files from cursor position to 6th file in the list.
@@ -169,8 +175,7 @@ f, F, ;, <comma> - search by first character in filename.
 yy, Y - yank selected files.
 y<selector> - yank files.
 p - put last selected files.
-P - move yanked files.
-n - next file matching last search pattern.
+P - move yanked files.  n - next file matching last search pattern.
 s - open a shell - this is temporary and will be removed.
 t - select or unselect a file.
 v, V - start visual selection of files.
@@ -276,6 +281,16 @@ If a backward range is given :4,2delete - an error message is given and
 the operation is abandoned.
 
 The only builtin command that accepts a range is :delete.
+
+--------------------------------------------------------------------------------
+*Compatibility_mode*
+Compatibility mode:
+    - <tab> to switch between panes.
+    - dd deletes selected (or current if none) files.
+
+Vim like mode:
+    - <c-i> (<tab>) to go forward on history.
+    - dd deletes file under the cursor and ds works as dd in compatibility mode.
 
 --------------------------------------------------------------------------------
 *Reserved*

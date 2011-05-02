@@ -870,6 +870,7 @@ enable_libtool_lock
 enable_largefile
 with_curses
 enable_extended_keys
+enable_compatibility_mode
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1509,6 +1510,9 @@ Optional Features:
   --enable-extended-keys  enable extended keys (like arrows, home etc.).
                           Without it will be no delay after pressing escape
                           [default=yes]
+  --enable-compatibility-mode
+                          enable compatibility with previous versions of vifm
+                          (behaviour of dd and <tab>) [default=yes]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -6175,13 +6179,13 @@ if ${lt_cv_nm_interface+:} false; then :
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:6178: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:6182: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:6181: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:6185: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:6184: output\"" >&5)
+  (eval echo "\"\$as_me:6188: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -7386,7 +7390,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 7389 "configure"' > conftest.$ac_ext
+  echo '#line 7393 "configure"' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -8661,11 +8665,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8664: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8668: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:8668: \$? = $ac_status" >&5
+   echo "$as_me:8672: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -9000,11 +9004,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9003: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9007: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:9007: \$? = $ac_status" >&5
+   echo "$as_me:9011: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -9105,11 +9109,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9108: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9112: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:9112: \$? = $ac_status" >&5
+   echo "$as_me:9116: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -9160,11 +9164,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:9163: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:9167: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:9167: \$? = $ac_status" >&5
+   echo "$as_me:9171: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -11527,7 +11531,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11530 "configure"
+#line 11534 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11623,7 +11627,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11626 "configure"
+#line 11630 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12327,9 +12331,23 @@ else
 fi
 
 
+# Check whether --enable-compatibility_mode was given.
+if test "${enable_compatibility_mode+set}" = set; then :
+  enableval=$enable_compatibility_mode; compatibility_mode=$enableval
+else
+  compatibility_mode=yes
+fi
+
+
 if test "$extended_keys" = "yes"; then
 
 $as_echo "#define ENABLE_EXTENDED_KEYS 1" >>confdefs.h
+
+fi
+
+if test "$compatibility_mode" = "yes"; then
+
+$as_echo "#define ENABLE_COMPATIBILITY_MODE 1" >>confdefs.h
 
 fi
 

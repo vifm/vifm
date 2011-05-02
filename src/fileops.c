@@ -654,16 +654,17 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	char buf[256];
 	int x;
 
-	if(!view->selected_files)
-	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->selected_files = 1;
-	}
-
 	if(count > 0)
 		get_selected_files(view, count, indexes);
 	else
+	{
+		if(view->selected_files == 0)
+		{
+			view->dir_entry[view->list_pos].selected = 1;
+			view->selected_files = 1;
+		}
 		get_all_selected_files(view);
+	}
 
 	/* A - Z  append to register otherwise replace */
 	if(reg >= 'A' && reg <= 'Z')
@@ -671,6 +672,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	else
 		clear_register(reg);
 
+	chdir(curr_view->curr_dir);
 	for(x = 0; x < view->selected_files; x++)
 	{
 		if(strcmp("../", view->selected_filelist[x]) == 0)
@@ -857,6 +859,7 @@ put_files_from_register(FileView *view, int name, int force_move)
 		return 1;
 	}
 
+	chdir(curr_view->curr_dir);
 	for(x = 0; x < reg->num_files; x++)
 	{
 		char *temp = NULL;

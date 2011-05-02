@@ -226,7 +226,6 @@ show_full_file_properties(FileView *view)
 			done = 1;
 	}
 	werase(menu_win);
-	curr_stats.menu = 0;
 	redraw_window();
 }
 
