@@ -54,8 +54,7 @@ main_loop(void)
 
 	wattroff(curr_view->win, COLOR_PAIR(CURR_LINE_COLOR));
 
-	wtimeout(curr_view->win, KEYPRESS_TIMEOUT);
-	wtimeout(other_view->win, KEYPRESS_TIMEOUT);
+	wtimeout(status_bar, KEYPRESS_TIMEOUT);
 
 	update_stat_window(curr_view);
 
@@ -69,7 +68,6 @@ main_loop(void)
 	}
 
 	buf[0] = L'\0';
-
 	while(1)
 	{
 		wchar_t c;
@@ -77,8 +75,8 @@ main_loop(void)
 
 		modes_pre();
 
-		/* This waits for 1 second then skips if no keypress. */
-		ret = wget_wch(curr_view->win, (wint_t*)&c);
+		/* This waits for timeout then skips if no keypress. */
+		ret = wget_wch(status_bar, (wint_t*)&c);
 
 		if(ret != ERR && pos != sizeof(buf)/sizeof(buf[0]) - 2)
 		{
@@ -100,11 +98,11 @@ main_loop(void)
 				if(ret != ERR)
 					add_to_input_bar(c);
 				if(last_result == KEYS_WAIT_SHORT)
-					wtimeout(curr_view->win, 0);
+					wtimeout(status_bar, 0);
 				continue;
 			}
 		}
-		wtimeout(curr_view->win, KEYPRESS_TIMEOUT);
+		wtimeout(status_bar, KEYPRESS_TIMEOUT);
 
 		clear_input_bar();
 		pos = 0;

@@ -88,7 +88,7 @@ check_background_jobs(void)
 	fj = fjobs;
 
 	ts.tv_sec = 0;
-	ts.tv_usec = KEYPRESS_TIMEOUT;
+	ts.tv_usec = 1000;
 
 	while (p)
 	{

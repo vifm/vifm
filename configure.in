@@ -45,7 +45,7 @@ changequote([,])dnl
 
 dnl AC_CHECK_LIB(XCurses, initscr)
 vifm_cv_curses=/usr
-AC_ARG_WITH(curses, [  --with-curses=DIR       Where ncurses is installed ],
+AC_ARG_WITH(curses, [  --with-curses=DIR       where ncurses is installed ],
 	[if test $withval != yes; then
 		vifm_cv_curses=$withval
 	fi
@@ -70,6 +70,18 @@ AC_CHECK_LIB(ncursesw, initscr,
 		[CF_CURSES_LIBS])
 	])
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
+
+AC_ARG_ENABLE(extended_keys,
+	AS_HELP_STRING(
+		[--enable-extended-keys],
+		[enable extended keys (like arrows, home etc.). Without it will be no
+		 delay after pressing escape @<:@default=yes@:>@     ]),
+	[extended_keys=$enableval],
+	[extended_keys=yes])
+
+if test "$extended_keys" = "yes"; then
+	AC_DEFINE([ENABLE_EXTENDED_KEYS], [1], [enables extended keys (arrows etc.)])
+fi
 
 AC_OUTPUT([
 Makefile

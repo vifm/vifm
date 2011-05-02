@@ -22,6 +22,8 @@
 #include <ctype.h>
 #include <string.h>
 
+#include "../config.h"
+
 #include "bookmarks.h"
 #include "cmdline.h"
 #include "commands.h"
@@ -123,32 +125,32 @@ init_menu_mode(int *key_mode)
 static void
 init_extended_keys(void)
 {
+#ifdef ENABLE_EXTENDED_KEYS
 	struct key_t *curr;
 	wchar_t buf[] = {L'\0', L'\0'};
 
 	buf[0] = KEY_PPAGE;
-	curr = add_keys(buf, VISUAL_MODE);
+	curr = add_keys(buf, MENU_MODE);
 	curr->data.handler = keys_ctrl_b;
 
 	buf[0] = KEY_NPAGE;
-	curr = add_keys(buf, VISUAL_MODE);
+	curr = add_keys(buf, MENU_MODE);
 	curr->data.handler = keys_ctrl_f;
 
 	buf[0] = KEY_UP;
-	curr = add_keys(buf, VISUAL_MODE);
+	curr = add_keys(buf, MENU_MODE);
 	curr->data.handler = keys_k;
 
 	buf[0] = KEY_DOWN;
-	curr = add_keys(buf, VISUAL_MODE);
+	curr = add_keys(buf, MENU_MODE);
 	curr->data.handler = keys_j;
+#endif /* ENABLE_EXTENDED_KEYS */
 }
 
 void
 enter_menu_mode(menu_info *m, FileView *active_view)
 {
-	keypad(menu_win, TRUE);
 	werase(status_bar);
-	wtimeout(menu_win, KEYPRESS_TIMEOUT);
 
 	view = active_view;
 	menu = m;

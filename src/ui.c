@@ -32,6 +32,8 @@
 #include <termios.h> /* struct winsize */
 #include <sys/ioctl.h>
 
+#include "../config.h"
+
 #include "color_scheme.h"
 #include "config.h" /* for menu colors */
 #include "file_info.h"
@@ -215,7 +217,7 @@ setup_ncurses_interface()
 
 	werase(lborder);
 
-	if (curr_stats.number_of_windows == 1)
+	if(curr_stats.number_of_windows == 1)
 		lwin.title = newwin(0, screen_x -2, 0, 1);
 	else
 		lwin.title = newwin(1, screen_x/2 -1, 0, 1);
@@ -225,12 +227,11 @@ setup_ncurses_interface()
 
 	werase(lwin.title);
 
-	if (curr_stats.number_of_windows == 1)
+	if(curr_stats.number_of_windows == 1)
 		lwin.win = newwin(screen_y - 3, screen_x -2, 1, 1);
 	else
 		lwin.win = newwin(screen_y - 3, screen_x/2 -2, 1, 1);
 
-	keypad(lwin.win, TRUE);
 	wbkgdset(lwin.win, COLOR_PAIR(WIN_COLOR));
 	wattrset(lwin.win, A_BOLD);
 	wattron(lwin.win, A_BOLD);
@@ -261,7 +262,6 @@ setup_ncurses_interface()
 	else
 		rwin.win = newwin(screen_y - 3, screen_x/2 -2 , 1, screen_x/2 +1);
 
-	keypad(rwin.win, TRUE);
 	wattrset(rwin.win, A_BOLD);
 	wattron(rwin.win, A_BOLD);
 	wbkgdset(rwin.win, COLOR_PAIR(WIN_COLOR));
@@ -290,7 +290,9 @@ setup_ncurses_interface()
 	werase(stat_win);
 
 	status_bar = newwin(1, screen_x - 19, screen_y -1, 0);
+#ifdef ENABLE_EXTENDED_KEYS
 	keypad(status_bar, TRUE);
+#endif /* ENABLE_EXTENDED_KEYS */
 	wattrset(status_bar, A_BOLD);
 	wattron(status_bar, A_BOLD);
 	wbkgdset(status_bar, COLOR_PAIR(STATUS_BAR_COLOR));
@@ -307,7 +309,6 @@ setup_ncurses_interface()
 	wattron(num_win, A_BOLD);
 	wbkgdset(num_win, COLOR_PAIR(STATUS_BAR_COLOR));
 	werase(num_win);
-
 
 	wnoutrefresh(lwin.title);
 	wnoutrefresh(lwin.win);
@@ -402,10 +403,6 @@ redraw_window(void)
 		rwin.window_rows = y -1;
 	}
 
-	/* For FreeBSD */
-	keypad(lwin.win, TRUE);
-	keypad(rwin.win, TRUE);
-
 	if(screen_x % 2)
 	{
 		wresize(rborder, screen_y -2, 2);
@@ -421,8 +418,10 @@ redraw_window(void)
 	mvwin(stat_win, screen_y -2, 0);
 	wresize(status_bar, 1, screen_x -19);
 
+#ifdef ENABLE_EXTENDED_KEYS
 	/* For FreeBSD */
 	keypad(status_bar, TRUE);
+#endif /* ENABLE_EXTENDED_KEYS */
 
 	mvwin(status_bar, screen_y -1, 0);
 	wresize(pos_win, 1, 13);

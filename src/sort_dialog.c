@@ -22,6 +22,8 @@
 #include <ctype.h>
 #include <string.h>
 
+#include "../config.h"
+
 #include "bookmarks.h"
 #include "cmdline.h"
 #include "color_scheme.h"
@@ -101,6 +103,7 @@ init_sort_dialog_mode(int *key_mode)
 static void
 init_extended_keys(void)
 {
+#ifdef ENABLE_EXTENDED_KEYS
 	struct key_t *curr;
 	wchar_t buf[] = {L'\0', L'\0'};
 
@@ -111,6 +114,7 @@ init_extended_keys(void)
 	buf[0] = KEY_DOWN;
 	curr = add_keys(buf, SORT_MODE);
 	curr->data.handler = keys_j;
+#endif /* ENABLE_EXTENDED_KEYS */
 }
 
 void

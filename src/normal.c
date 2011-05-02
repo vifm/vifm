@@ -19,6 +19,8 @@
 #include <assert.h>
 #include <string.h>
 
+#include "../config.h"
+
 #include "background.h"
 #include "bookmarks.h"
 #include "cmdline.h"
@@ -382,6 +384,7 @@ init_normal_mode(int *key_mode)
 static void
 init_extended_keys(void)
 {
+#ifdef ENABLE_EXTENDED_KEYS
 	struct key_t *curr;
 	wchar_t buf[] = {L'\0', L'\0'};
 
@@ -408,6 +411,7 @@ init_extended_keys(void)
 	buf[0] = KEY_RIGHT;
 	curr = add_keys(buf, NORMAL_MODE);
 	curr->data.handler = keys_l;
+#endif /* ENABLE_EXTENDED_KEYS */
 }
 
 static void

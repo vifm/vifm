@@ -34,6 +34,8 @@
 #include <string.h>
 #include <wctype.h>
 
+#include "../config.h"
+
 #include "commands.h"
 #include "config.h"
 #include "keys.h"
@@ -159,6 +161,7 @@ init_cmdline_mode(int *key_mode)
 static void
 init_extended_keys(void)
 {
+#ifdef ENABLE_EXTENDED_KEYS
 	struct key_t *curr;
 	wchar_t buf[] = {L'\0', L'\0'};
 
@@ -193,6 +196,7 @@ init_extended_keys(void)
 	buf[0] = KEY_DC;
 	curr = add_keys(buf, CMDLINE_MODE);
 	curr->data.handler = keys_delete;
+#endif /* ENABLE_EXTENDED_KEYS */
 }
 
 static void

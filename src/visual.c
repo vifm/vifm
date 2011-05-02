@@ -21,6 +21,8 @@
 #include <assert.h>
 #include <string.h>
 
+#include "../config.h"
+
 #include "cmdline.h"
 #include "commands.h"
 #include "filelist.h"
@@ -161,6 +163,7 @@ leave_visual_mode(int save_msg)
 static void
 init_extended_keys(void)
 {
+#ifdef ENABLE_EXTENDED_KEYS
 	struct key_t *curr;
 	wchar_t buf[] = {L'\0', L'\0'};
 
@@ -179,6 +182,7 @@ init_extended_keys(void)
 	buf[0] = KEY_UP;
 	curr = add_keys(buf, VISUAL_MODE);
 	curr->data.handler = keys_k;
+#endif /* ENABLE_EXTENDED_KEYS */
 }
 
 static void
