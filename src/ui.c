@@ -517,14 +517,14 @@ change_window(void)
 
 	change_directory(curr_view, curr_view->curr_dir);
 
-	if (curr_stats.number_of_windows == 1)
+	if(curr_stats.number_of_windows == 1)
 		load_dir_list(curr_view, 1);
 
 	moveto_list_pos(curr_view, curr_view->list_pos);
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
-	if (curr_stats.number_of_windows == 1)
+	if(curr_stats.number_of_windows == 1)
 		update_all_windows();
 }
 

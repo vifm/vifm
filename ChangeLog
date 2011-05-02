@@ -50,6 +50,11 @@
 
 	Added users command completion for :delcommand.
 
+	Added a, es and os file selectors.
+
+	Added --enable-extended-keys and --enable-compatibility-mode configure
+	options.
+
 	Changed keys input handling.
 
 	Changed force dot files appear at the beginning of file list.

@@ -671,6 +671,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	else
 		clear_register(reg);
 
+	chdir(curr_view->curr_dir);
 	for(x = 0; x < view->selected_files; x++)
 	{
 		if(strcmp("../", view->selected_filelist[x]) == 0)
@@ -857,6 +858,7 @@ put_files_from_register(FileView *view, int name, int force_move)
 		return 1;
 	}
 
+	chdir(curr_view->curr_dir);
 	for(x = 0; x < reg->num_files; x++)
 	{
 		char *temp = NULL;

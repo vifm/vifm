@@ -53,8 +53,12 @@ The basic vi key bindings are used to move through the files and popup
 		:0 move to the top of the list.
 		:$ move to the bottom of the list.
 
-    j, k, gg, G, H, L, M can be used as selectors for several commands. For
-    example:
+    j, k, gg, G, H, L, M can be used as selectors for several commands.
+    Also following selectors can be used:
+     a - all files in current view
+     os - only selected files
+     es - all files except selected
+    For example:
     dj delete file under cursor and one below.
     d2j delete file under cursor and two below.
     y6gg yank all files from cursor position to 6th file in the list.

@@ -309,6 +309,8 @@ get_all_selected_files(FileView *view)
 		view->selected_files = 1;
 	}
 
+	if(view->selected_filelist != NULL)
+		free_selected_file_array(view);
 	view->selected_filelist =
 		(char **)calloc(view->selected_files, sizeof(char *));
 	if(view->selected_filelist == NULL)
@@ -346,6 +348,8 @@ get_selected_files(FileView *view, int count, int *indexes)
 	int x;
 	int y = 0;
 
+	if(view->selected_filelist != NULL)
+		free_selected_file_array(view);
 	view->selected_filelist = (char **)calloc(count, sizeof(char *));
 	if(view->selected_filelist == NULL)
 	{
@@ -1153,7 +1157,7 @@ load_dir_list(FileView *view, int reload)
 		if(view->dir_entry == NULL)
 		{
 			show_error_msg(" Memory Error ", "Unable to allocate enough memory");
-			return ;
+			return;
 		}
 
 		namelen = strlen(d->d_name);
@@ -1191,7 +1195,6 @@ load_dir_list(FileView *view, int reload)
 						{
 							namelen = sizeof(view->dir_entry[view->list_rows].name);
 							strcat(view->dir_entry[view->list_rows].name, "/");
-
 						}
 					view->dir_entry[view->list_rows].type = LINK;
 					}

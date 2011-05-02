@@ -3,8 +3,8 @@
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
+ * the Free Software Foundation; either version 2 of the License, or
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -54,7 +54,8 @@ static void keys_ctrl_d(struct key_info, struct keys_info *);
 static void keys_ctrl_e(struct key_info, struct keys_info *);
 static void keys_ctrl_f(struct key_info, struct keys_info *);
 static void keys_ctrl_g(struct key_info, struct keys_info *);
-static void keys_tab(struct key_info, struct keys_info *);
+static void keys_space(struct key_info, struct keys_info *);
+static void keys_ctrl_i(struct key_info, struct keys_info *);
 static void keys_ctrl_l(struct key_info, struct keys_info *);
 static void keys_return(struct key_info, struct keys_info *);
 static void keys_ctrl_o(struct key_info, struct keys_info *);
@@ -84,6 +85,7 @@ static void keys_P(struct key_info, struct keys_info *);
 static void keys_V(struct key_info, struct keys_info *);
 static void keys_ZQ(struct key_info, struct keys_info *);
 static void keys_ZZ(struct key_info, struct keys_info *);
+static void keys_a(struct key_info, struct keys_info *);
 static void keys_cg(struct key_info, struct keys_info *);
 static void keys_co(struct key_info, struct keys_info *);
 static void keys_cp(struct key_info, struct keys_info *);
@@ -95,6 +97,7 @@ static void keys_D_selector(struct key_info, struct keys_info *);
 static void keys_d_selector(struct key_info, struct keys_info *);
 static void delete_with_selector(struct key_info, struct keys_info *,
 		int use_trash);
+static void keys_es(struct key_info, struct keys_info *);
 static void keys_f(struct key_info, struct keys_info *);
 static void find_f(int ch);
 static void keys_gg(struct key_info, struct keys_info *);
@@ -105,6 +108,7 @@ static void keys_k(struct key_info, struct keys_info *);
 static void keys_l(struct key_info, struct keys_info *);
 static void keys_n(struct key_info, struct keys_info *);
 static void keys_p(struct key_info, struct keys_info *);
+static void keys_os(struct key_info, struct keys_info *);
 static void keys_m(struct key_info, struct keys_info *);
 static void keys_t(struct key_info, struct keys_info *);
 static void keys_yy(struct key_info, struct keys_info *);
@@ -150,7 +154,7 @@ init_normal_mode(int *key_mode)
 	curr->data.handler = keys_ctrl_g;
 
 	curr = add_keys(L"\x09", NORMAL_MODE);
-	curr->data.handler = keys_tab;
+	curr->data.handler = keys_ctrl_i;
 
 	curr = add_keys(L"\x0c", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_l;
@@ -207,7 +211,7 @@ init_normal_mode(int *key_mode)
 	curr->followed = FOLLOWED_BY_MULTIKEY;
 
 	curr = add_keys(L" ", NORMAL_MODE);
-	curr->data.handler = keys_tab;
+	curr->data.handler = keys_space;
 
 	curr = add_keys(L"%", NORMAL_MODE);
 	curr->data.handler = keys_percent;
@@ -269,6 +273,10 @@ init_normal_mode(int *key_mode)
 	curr = add_keys(L"ZZ", NORMAL_MODE);
 	curr->data.handler = keys_ZZ;
 
+	curr = add_keys(L"a", NORMAL_MODE);
+	curr->data.handler = keys_a;
+	curr->selector = KS_ONLY_SELECTOR;
+
 	curr = add_keys(L"cg", NORMAL_MODE);
 	curr->data.handler = keys_cg;
 
@@ -296,6 +304,10 @@ init_normal_mode(int *key_mode)
 	curr->data.handler = keys_d_selector;
 	curr->type = BUILDIN_WAIT_POINT;
 	curr->followed = FOLLOWED_BY_SELECTOR;
+
+	curr = add_keys(L"es", NORMAL_MODE);
+	curr->data.handler = keys_es;
+	curr->selector = KS_ONLY_SELECTOR;
 
 	curr = add_keys(L"f", NORMAL_MODE);
 	curr->type = BUILDIN_WAIT_POINT;
@@ -333,6 +345,10 @@ init_normal_mode(int *key_mode)
 
 	curr = add_keys(L"p", NORMAL_MODE);
 	curr->data.handler = keys_p;
+
+	curr = add_keys(L"os", NORMAL_MODE);
+	curr->data.handler = keys_os;
+	curr->selector = KS_ONLY_SELECTOR;
 
 	curr = add_keys(L"t", NORMAL_MODE);
 	curr->data.handler = keys_t;
@@ -465,9 +481,22 @@ keys_ctrl_g(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_tab(struct key_info key_info, struct keys_info *keys_info)
+keys_space(struct key_info key_info, struct keys_info *keys_info)
 {
 	change_window();
+}
+
+static void
+keys_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
+{
+#ifdef ENABLE_COMPATIBILITY_MODE
+	change_window();
+#else /* ENABLE_COMPATIBILITY_MODE */
+	if(curr_view->history_pos == curr_view->history_num - 1)
+		return;
+
+	goto_history_pos(curr_view, curr_view->history_pos + 1);
+#endif /* ENABLE_COMPATIBILITY_MODE */
 }
 
 /* Clear screen and redraw. */
@@ -544,6 +573,31 @@ keys_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 		curr_view->list_pos--;
 	curr_view->top_line--;
 	scroll_view(curr_view);
+}
+
+static void
+keys_es(struct key_info key_info, struct keys_info *keys_info)
+{
+	int i, x;
+
+	keys_info->count = curr_view->list_rows - curr_view->selected_files;
+	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
+	if(keys_info->indexes == NULL)
+	{
+		show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+		return;
+	}
+
+	i = 0;
+	for(x = 0; x < curr_view->list_rows; x++)
+	{
+		if(strcmp(curr_view->dir_entry[x].name, "../") == 0)
+			continue;
+		if(curr_view->dir_entry[x].selected)
+			continue;
+		keys_info->indexes[i++] = x;
+	}
+	keys_info->count = i;
 }
 
 static void
@@ -772,6 +826,29 @@ keys_question(struct key_info key_info, struct keys_info *keys_info)
 	enter_cmdline_mode(SEARCH_BACKWARD_SUBMODE, L"", NULL);
 }
 
+static void
+keys_a(struct key_info key_info, struct keys_info *keys_info)
+{
+	int i, x;
+
+	keys_info->count = curr_view->list_rows;
+	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
+	if(keys_info->indexes == NULL)
+	{
+		show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+		return;
+	}
+
+	i = 0;
+	for(x = 0; x < curr_view->list_rows; x++)
+	{
+		if(strcmp(curr_view->dir_entry[x].name, "../") == 0)
+			continue;
+		keys_info->indexes[i++] = x;
+	}
+	keys_info->count = i;
+}
+
 /* Change group. */
 static void
 keys_cg(struct key_info key_info, struct keys_info *keys_info)
@@ -972,6 +1049,27 @@ keys_p(struct key_info key_info, struct keys_info *keys_info)
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg, 0);
+}
+
+static void
+keys_os(struct key_info key_info, struct keys_info *keys_info)
+{
+	int i, x;
+
+	keys_info->count = curr_view->selected_files;
+	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
+	if(keys_info->indexes == NULL)
+	{
+		show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+		return;
+	}
+
+	i = 0;
+	for(x = 0; x < curr_view->list_rows; x++)
+	{
+		if(curr_view->dir_entry[x].selected)
+			keys_info->indexes[i++] = x;
+	}
 }
 
 /* Tag file. */
