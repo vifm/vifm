@@ -314,7 +314,6 @@ get_all_selected_files(FileView *view)
 		free_selected_file_array(view);
 		view->selected_files = y; /* this is needed to restore */
 	}
-
 	view->selected_filelist =
 		(char **)calloc(view->selected_files, sizeof(char *));
 	if(view->selected_filelist == NULL)
