@@ -5,6 +5,7 @@ Basic things that need to be done.
 	Better documentation.
 	Handle commands that are too long to be passed directly to the shell.
     :! command completion.
+    Make time format configurable.
 
 Vi specific features that need to be added.
 	Finish implementing range and count for user commands.

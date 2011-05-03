@@ -65,6 +65,7 @@ static void keys_ctrl_wh(struct key_info, struct keys_info *);
 static void keys_ctrl_wo(struct key_info, struct keys_info *);
 static void keys_ctrl_wv(struct key_info, struct keys_info *);
 static void keys_ctrl_ww(struct key_info, struct keys_info *);
+static void keys_ctrl_wx(struct key_info, struct keys_info *);
 static void keys_ctrl_y(struct key_info, struct keys_info *);
 static void keys_quote(struct key_info, struct keys_info *);
 static void keys_percent(struct key_info, struct keys_info *);
@@ -168,9 +169,6 @@ init_normal_mode(int *key_mode)
 	curr = add_keys(L"\x15", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_u;
 
-	curr = add_keys(L"\x17\x17", NORMAL_MODE);
-	curr->data.handler = keys_ctrl_ww;
-
 	curr = add_keys(L"\x17\x08", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_wh;
 
@@ -195,8 +193,17 @@ init_normal_mode(int *key_mode)
 	curr = add_keys(L"\x17v", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_wv;
 
+	curr = add_keys(L"\x17\x17", NORMAL_MODE);
+	curr->data.handler = keys_ctrl_ww;
+
 	curr = add_keys(L"\x17w", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_ww;
+
+	curr = add_keys(L"\x17\x18", NORMAL_MODE);
+	curr->data.handler = keys_ctrl_wx;
+
+	curr = add_keys(L"\x17x", NORMAL_MODE);
+	curr->data.handler = keys_ctrl_wx;
 
 	curr = add_keys(L"\x19", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_y;
@@ -561,6 +568,25 @@ static void
 keys_ctrl_ww(struct key_info key_info, struct keys_info *keys_info)
 {
 	change_window();
+}
+
+/* Switch views. */
+static void
+keys_ctrl_wx(struct key_info key_info, struct keys_info *keys_info)
+{
+  WINDOW* tmp;
+
+	tmp = lwin.win;
+	lwin.win = rwin.win;
+	rwin.win = tmp;
+
+	tmp = lwin.title;
+	lwin.title = rwin.title;
+	rwin.title = tmp;
+
+	load_dir_list(curr_view, 1);
+	moveto_list_pos(curr_view, curr_view->list_pos);
+	load_dir_list(other_view, 1);
 }
 
 static void

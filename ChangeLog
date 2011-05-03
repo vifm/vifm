@@ -10,7 +10,7 @@
 
 	Added Ctrl+E and Ctrl+Y commands.
 
-	Added Ctrl+W W, Ctrl+W O and Ctrl+W V commands.
+	Added Ctrl+W W, Ctrl+W O, Ctrl+W V and Ctrl+W X commands.
 
 	Added i command to force file opening even for executables.
 
