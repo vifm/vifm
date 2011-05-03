@@ -317,7 +317,7 @@ expand_macros(FileView *view, char *command, char *args,
 
 						expanded = (char *)realloc(expanded,
 								strlen(expanded) + strlen(args) +3);
-						snprintf(arg_buf, sizeof(arg_buf), "%s ", args);
+						snprintf(arg_buf, sizeof(arg_buf), "%s", args);
 						strcat(expanded, arg_buf);
 						len = strlen(expanded);
 					}
@@ -337,7 +337,7 @@ expand_macros(FileView *view, char *command, char *args,
 								expanded = (char *)realloc(expanded,
 									len + strlen(view->dir_entry[y].name) +5);
 
-					/* Directory has / appended to the name this removes it. */
+								/* Directory has / appended to the name this removes it. */
 								if (view->dir_entry[y].type == DIRECTORY)
 									dir = 1;
 
@@ -365,7 +365,7 @@ expand_macros(FileView *view, char *command, char *args,
 						expanded = (char *)realloc(expanded, strlen(expanded) +
 								strlen(view->dir_entry[view->list_pos].name) +3);
 
-					/* Directory has / appended to the name this removes it. */
+						/* Directory has / appended to the name this removes it. */
 						if (view->dir_entry[view->list_pos].type == DIRECTORY)
 							dir = 1;
 
@@ -507,7 +507,7 @@ expand_macros(FileView *view, char *command, char *args,
 
 	len++;
 	expanded[len] = '\0';
-	if (len > cfg.max_args/2)
+	if(len > cfg.max_args/2)
 		show_error_msg("Argument is too long", " FIXME ");
 
 	return expanded;
