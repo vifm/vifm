@@ -48,7 +48,7 @@
 
 	Added progress messages for putting and deleting.
 
-	Added users command completion for :delcommand.
+	Added users command completion for :delcommand and :command.
 
 	Added a, es and os file selectors.
 

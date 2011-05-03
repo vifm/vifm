@@ -1048,6 +1048,11 @@ get_buildin_id(const char *cmd_line)
 		p = cmd_line + strlen(cmd_line);
 
 	q = p - 1;
+	if(q >= cmd_line && *q == '!')
+	{
+		q--;
+		p--;
+	}
 	while(q >= cmd_line && isalpha(*q))
 		q--;
 	q++;
@@ -1100,7 +1105,7 @@ line_completion(struct line_stats *stat)
 	last_word = get_last_word(line_mb);
 	id = get_buildin_id(line_mb);
 
-	if(id != COM_DELCOMMAND && last_word != NULL)
+	if(id != COM_DELCOMMAND && id != COM_COMMAND && last_word != NULL)
 	{
 		char *filename = (char *)NULL;
 		char *raw_name = (char *)NULL;
@@ -1127,7 +1132,8 @@ line_completion(struct line_stats *stat)
 	 /* :partial_command */
 	else
 	{
-		int users_only = (id == COM_DELCOMMAND && last_word != NULL);
+		int users_only = ((id == COM_DELCOMMAND || id == COM_COMMAND)
+				&& last_word != NULL);
 		char *complete_command = command_completion(
 				stat->complete_continue ? NULL : (users_only ? last_word : line_mb),
 				users_only);

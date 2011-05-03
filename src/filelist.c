@@ -1084,6 +1084,7 @@ load_dir_list(FileView *view, int reload)
 	int namelen = 0;
 	int old_list = view->list_rows;
 
+	chdir(view->curr_dir);
 	dir = opendir(view->curr_dir);
 
 	if(dir == NULL)
