@@ -49,6 +49,11 @@ sort_dir_list(const void *one, const void *two)
 	if(first_is_dir != second_is_dir)
 		return first_is_dir ? -1 : 1;
 
+	if(strcmp(first->name, "../") == 0)
+		return -1;
+	else if(strcmp(second->name, "../") == 0)
+		return 1;
+
 	retval = 0;
 	switch(curr_view->sort_type)
 	{
