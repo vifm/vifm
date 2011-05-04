@@ -101,6 +101,9 @@ init_visual_mode(int *key_mode)
 	curr->data.handler = keys_M;
 	curr->selector = KS_SELECTOR_AND_CMD;
 
+	curr = add_keys(L"V", VISUAL_MODE);
+	curr->data.handler = keys_ctrl_c;
+
 	curr = add_keys(L"d", VISUAL_MODE);
 	curr->data.handler = keys_d;
 
@@ -112,6 +115,9 @@ init_visual_mode(int *key_mode)
 
 	curr = add_keys(L"k", VISUAL_MODE);
 	curr->data.handler = keys_k;
+
+	curr = add_keys(L"v", VISUAL_MODE);
+	curr->data.handler = keys_ctrl_c;
 
 	curr = add_keys(L"y", VISUAL_MODE);
 	curr->data.handler = keys_y;
