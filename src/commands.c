@@ -1171,7 +1171,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				int pause = 0;
 				char *com = NULL;
 
-				if (cmd->args)
+				if(cmd->args)
 				{
 					int m = 0;
 					int s = 0;
@@ -1187,11 +1187,12 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					}
 					while(isspace(com[i]) && i < strlen(com))
 							i++;
-					if((strlen(com + i) > 0) && cmd->background)
+					if(strlen(com + i) > 0 && cmd->background)
 						start_background_job(com + i);
 					else if(strlen(com + i) > 0)
 					{
-						shellout(com +i, pause);
+						chdir(view->curr_dir);
+						shellout(com + i, pause);
 					}
 					if(!cmd->background)
 						free(com);

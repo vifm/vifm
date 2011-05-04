@@ -92,6 +92,8 @@ modes_pre(void)
 		clean_status_bar();
 		wrefresh(status_bar);
 	}
+
+	update_all_windows();
 }
 
 void
@@ -134,8 +136,6 @@ modes_post(void)
 
 	if(curr_stats.need_redraw)
 		redraw_window();
-
-	update_all_windows();
 }
 
 void
