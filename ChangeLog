@@ -57,6 +57,8 @@
 
 	Added Ctrl+o and Ctrl+i normal mode commands to traverse through history.
 
+	Added ! and !! completion.
+
 	Changed keys input handling.
 
 	Changed force dot files appear at the beginning of file list.

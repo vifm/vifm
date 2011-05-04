@@ -536,10 +536,7 @@ draw_dir_list(FileView *view, int top, int pos)
 int
 S_ISEXE(mode_t mode)
 {
-	if((S_IXUSR & mode) || (S_IXGRP & mode) || (S_IXOTH & mode))
-		return 1;
-
-	return 0;
+	return ((S_IXUSR & mode) || (S_IXGRP & mode) || (S_IXOTH & mode));
 }
 
 void

@@ -38,6 +38,7 @@
 
 #include "commands.h"
 #include "config.h"
+#include "filelist.h"
 #include "keys.h"
 #include "menu.h"
 #include "menus.h"
@@ -69,7 +70,10 @@ static enum CmdLineSubModes sub_mode;
 static struct line_stats input_stat;
 static int line_width;
 static void *sub_mode_ptr;
+static char **paths;
+static int paths_count;
 
+static void split_path(void);
 static void init_extended_keys(void);
 static void init_emacs_keys(void);
 static int def_handler(wchar_t keys);
@@ -106,7 +110,8 @@ static int file_completion(char* filename, char* line_mb, char* raw_name,
 		struct line_stats *stat);
 static char * get_last_word(char * string);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
-static char * filename_completion(char *str, int dirs_only);
+static char * exec_completion(char *str);
+static char * filename_completion(char *str, int type);
 static char * check_for_executable(char *string);
 
 void
@@ -156,6 +161,72 @@ init_cmdline_mode(int *key_mode)
 
 	init_extended_keys();
 	init_emacs_keys();
+
+	split_path();
+}
+
+static void
+split_path(void)
+{
+	char *path, *p, *q;
+	int i;
+
+	path = getenv("PATH");
+
+	paths_count = 1;
+	p = path;
+	while((p = strchr(p, ':')) != NULL)
+	{
+		paths_count++;
+		p++;
+	}
+
+	paths = malloc(paths_count*sizeof(paths[0]));
+	if(paths == NULL)
+		return;
+
+	i = 0;
+	p = path - 1;
+	do
+	{
+		int j;
+		char *s;
+
+		p++;
+		q = strchr(p, ':');
+		if(q == NULL)
+		{
+			q = p + strlen(p);
+		}
+
+		s = malloc((q - p + 1)*sizeof(s[0]));
+		if(s == NULL)
+		{
+			for(j = 0; j < i - 1; j++)
+				free(paths[j]);
+			paths_count = 0;
+			return;
+		}
+		snprintf(s, q - p + 1, "%s", p);
+
+		if(access(s, F_OK) != 0)
+			continue;
+
+		p = q;
+		paths[i++] = s;
+
+		for(j = 0; j < i - 1; j++)
+		{
+			if(strcmp(paths[j], s) == 0)
+			{
+				free(s);
+				i--;
+				break;
+			}
+		}
+
+	} while (q[0] != '\0');
+	paths_count = i;
 }
 
 static void
@@ -1029,7 +1100,7 @@ insert_completed_command(struct line_stats *stat, const char *complete_command)
 	mvwaddwstr(status_bar, 0, 0, stat->prompt);
 	mvwaddwstr(status_bar, 0, stat->prompt_wid, stat->line);
 	wmove(status_bar, 0, stat->curs_pos);
-	
+
 	return 0;
 }
 
@@ -1043,6 +1114,9 @@ get_buildin_id(const char *cmd_line)
 	{
 		cmd_line++;
 	}
+
+	if(cmd_line[0] == '!')
+		return COM_EXECUTE;
 
 	if((p = strchr(cmd_line, ' ')) == NULL)
 		p = cmd_line + strlen(cmd_line);
@@ -1105,13 +1179,21 @@ line_completion(struct line_stats *stat)
 	last_word = get_last_word(line_mb);
 	id = get_buildin_id(line_mb);
 
-	if(id != COM_DELCOMMAND && id != COM_COMMAND && last_word != NULL)
+	if(id != COM_DELCOMMAND && id != COM_COMMAND
+			&& (last_word != NULL || id == COM_EXECUTE))
 	{
 		char *filename = (char *)NULL;
 		char *raw_name = (char *)NULL;
 
-		raw_name = filename_completion(stat->complete_continue ? NULL : last_word,
-				(id == COM_CD) ? 1 : 0);
+		if(id == COM_EXECUTE)
+		{
+			if(last_word == NULL)
+				last_word = "";
+			raw_name = exec_completion(stat->complete_continue ? NULL : last_word);
+		}
+		else
+			raw_name = filename_completion(stat->complete_continue ? NULL : last_word,
+					(id == COM_CD) ? 1 : 0);
 
 		stat->complete_continue = 1;
 
@@ -1354,8 +1436,56 @@ wcsdel(wchar_t *src, int pos, int len)
  * In each subsequent call that should parse the same string, str should be NULL
  */
 static char *
-filename_completion(char *str, int dirs_only)
+exec_completion(char *str)
 {
+	static char *string;
+	static int last_dir;
+	static int dir;
+
+	char *result;
+	int cur_dir;
+
+	if(str != NULL)
+	{
+		free(string);
+		string = strdup(str);
+		last_dir = -1;
+		dir = 0;
+	}
+	cur_dir = dir;
+	do
+	{
+		chdir(paths[dir]);
+		result = filename_completion((last_dir != dir) ? string : NULL, 2);
+		if(result == NULL || strcmp(result, string) == 0)
+		{
+			last_dir = dir;
+			dir = (dir + 1)%paths_count;
+			if(dir == 0)
+			{
+				last_dir = -1;
+				return strdup(string);
+			}
+		}
+	}while((result == NULL || strcmp(result, string) == 0) && cur_dir != dir);
+	if(result == NULL)
+	{
+		dir = 0;
+		last_dir = -1;
+	}
+	else
+		last_dir = dir;
+	return result;
+}
+
+/* On the first call to this function,
+ * the string to be parsed should be specified in str.
+ * In each subsequent call that should parse the same string, str should be NULL
+ */
+static char *
+filename_completion(char *str, int type)
+{
+	/* TODO refactor filename_completion(...) function */
 	static char *string;
 	static int offset;
 
@@ -1428,11 +1558,20 @@ filename_completion(char *str, int dirs_only)
 			continue;
 		if(strncmp(d->d_name, filename, filename_len) != 0)
 			continue;
-		if(dirs_only)
+		if(type == 1)
 		{
 			if(d->d_type != DT_DIR && d->d_type != DT_LNK)
 				continue;
 			if(d->d_type == DT_LNK && !is_dir(d->d_name))
+				continue;
+		}
+		else if(type == 2)
+		{
+			if(d->d_type == DT_DIR)
+				continue;
+			if(d->d_type == DT_LNK && is_dir(d->d_name))
+				continue;
+			if(access(d->d_name, X_OK) != 0)
 				continue;
 		}
 		found = 1;
@@ -1462,11 +1601,20 @@ filename_completion(char *str, int dirs_only)
 			continue;
 		if(strncmp(d->d_name, filename, filename_len) != 0)
 			continue;
-		if(dirs_only)
+		if(type == 1)
 		{
 			if(d->d_type != DT_DIR && d->d_type != DT_LNK)
 				continue;
+			if(d->d_type == DT_LNK && is_dir(d->d_name))
+				continue;
+		}
+		else if(type == 2)
+		{
+			if(d->d_type == DT_DIR)
+				continue;
 			if(d->d_type == DT_LNK && !is_dir(d->d_name))
+				continue;
+			if(access(d->d_name, X_OK) != 0)
 				continue;
 		}
 		i++;
