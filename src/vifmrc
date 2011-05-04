@@ -126,3 +126,21 @@ FILETYPE=Web=html,htm==links,mozilla
 FILETYPE=Object=o==nm %f | less
 FILETYPE=Image=jpg,jpeg,png,gif==eog,xv,gimp
 FILETYPE=Archive=tar.gz,tgz==tar -tzf %f | less,tar -zxvf %f
+
+# For automated FUSE mounts, you must register an extension with FILETYPE=..
+# in the following format:
+# FILETYPE=description=extensions=FUSE_MOUNT|some_mount_command using %SOURCE_FILE and %DESTINATION_DIR variables
+# %SOURCE_FILE and %DESTINATION_DIR are filled in by vifm at runtime.
+# A sample line might look like this:
+# FILETYPE=FuseZipMount=zip,jar,war,ear=FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+
+# The FUSE_HOME directory will be used as a root dir for all FUSE mounts.
+# Unless it exists with write/exec permissions set, vifm will attempt to create it.
+
+FUSE_HOME=/tmp/vifm_FUSE
+
+# Format for displaying time in file list. For example:
+# TIME_STAMP_FORMAT=%m/%d-%H:%M
+# See man date or man strftime for details.
+
+TIME_STAMP_FORMAT=%y.%m.%d %H:%M

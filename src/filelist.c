@@ -128,15 +128,15 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 			 }
 		case SORT_BY_TIME_MODIFIED:
 			 tm_ptr = localtime(&view->dir_entry[x].mtime);
-			 strftime(buf, sizeof(buf), " %m/%d-%H:%M", tm_ptr);
+			 strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
 			 break;
 		case SORT_BY_TIME_ACCESSED:
 			 tm_ptr = localtime(&view->dir_entry[x].atime);
-			 strftime(buf, sizeof(buf), " %m/%d-%H:%M", tm_ptr);
+			 strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
 			 break;
 		case SORT_BY_TIME_CHANGED:
 			 tm_ptr = localtime(&view->dir_entry[x].ctime);
-			 strftime(buf, sizeof(buf), " %m/%d-%H:%M", tm_ptr);
+			 strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
 			 break;
 		case SORT_BY_NAME:
 		case SORT_BY_EXTENSION:

@@ -51,6 +51,7 @@ typedef struct _Config {
 	long max_args;
 	int using_default_config;
 	int use_iec_prefixes;
+	char *time_format;
 /*_SZ_BEGIN*/
 	char *fuse_home;
 /*_SZ_END*/

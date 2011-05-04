@@ -343,6 +343,13 @@ read_config_file(void)
 				cfg.use_iec_prefixes = atoi(s1);
 				continue;
 			}
+			if(!strcmp(line, "TIME_STAMP_FORMAT"))
+			{
+				cfg.time_format = malloc(1 + strlen(s1) + 1);
+				strcpy(cfg.time_format, " ");
+				strcat(cfg.time_format, s1);
+				continue;
+			}
 /*_SZ_BEGIN_*/
 			if(!strcmp(line, "FUSE_HOME"))
 			{
@@ -547,6 +554,11 @@ write_config_file(void)
 	fprintf(fp, "# Unless it exists with write/exec permissions set, vifm will attempt to create it.\n");
 	fprintf(fp, "\nFUSE_HOME=%s\n", cfg.fuse_home);
 /*_SZ_END_*/
+
+	fprintf(fp, "\n# Format for displaying time in file list. For example:\n");
+	fprintf(fp, "# TIME_STAMP_FORMAT=%%m/%%d-%%H:%%M\n");
+	fprintf(fp, "# See man date or man strftime for details.\n");
+	fprintf(fp, "\nTIME_STAMP_FORMAT=%s\n", cfg.time_format + 1);
 
 	fclose(fp);
 
