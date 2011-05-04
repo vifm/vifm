@@ -63,6 +63,7 @@ init_config(void)
 	cfg.auto_execute = 0;
 	cfg.color_scheme_num = 0;
 	cfg.color_pairs_num = 0;
+	cfg.time_format = strdup("%y.%m.%d %H:%M");
 
 	/* Maximum argument length to pass to the shell */
 	if (! (cfg.max_args = sysconf(_SC_ARG_MAX)) > 0)
@@ -345,6 +346,7 @@ read_config_file(void)
 			}
 			if(!strcmp(line, "TIME_STAMP_FORMAT"))
 			{
+				free(cfg.time_format);
 				cfg.time_format = malloc(1 + strlen(s1) + 1);
 				strcpy(cfg.time_format, " ");
 				strcat(cfg.time_format, s1);
