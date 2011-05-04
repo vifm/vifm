@@ -24,7 +24,6 @@
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
 
-/*_SZ_BEGIN_*/
 typedef struct Fuse_List {
 	char source_file_name[PATH_MAX];
 	char source_file_dir[PATH_MAX];
@@ -34,7 +33,6 @@ typedef struct Fuse_List {
 } Fuse_List;
 
 extern struct Fuse_List *fuse_mounts;
-/*_SZ_END_*/
 
 void chomp(char *text);
 void * duplicate(void *stuff, int size);

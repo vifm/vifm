@@ -63,10 +63,10 @@ init_config(void)
 	cfg.auto_execute = 0;
 	cfg.color_scheme_num = 0;
 	cfg.color_pairs_num = 0;
-	cfg.time_format = strdup("%y.%m.%d %H:%M");
+	cfg.time_format = strdup("%m/%d %H:%M");
 
 	/* Maximum argument length to pass to the shell */
-	if (! (cfg.max_args = sysconf(_SC_ARG_MAX)) > 0)
+	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)
 		cfg.max_args = 4096; /* POSIX MINIMUM */
 }
 
@@ -109,9 +109,7 @@ load_default_configuration(void)
 	cfg.using_default_config = 1;
 	cfg.use_trash = 1;
 	cfg.vi_command = strdup("vim");
-/*_SZ_BEGIN_*/
 	cfg.fuse_home = strdup("/tmp/vifm_FUSE");
-/*_SZ_END_*/
 	cfg.use_screen = 0;
 	cfg.history_len = 15;
 	cfg.use_vim_help = 0;
@@ -352,14 +350,12 @@ read_config_file(void)
 				strcat(cfg.time_format, s1);
 				continue;
 			}
-/*_SZ_BEGIN_*/
 			if(!strcmp(line, "FUSE_HOME"))
 			{
 				free(cfg.fuse_home);
 				cfg.fuse_home = strdup(s1);
 				continue;
 			}
-/*_SZ_END_*/
 		}
 		if(args == 3)
 		{
@@ -545,7 +541,6 @@ write_config_file(void)
 				filetypes[x].viewer, filetypes[x].programs);
 	}
 
-/*_SZ_BEGIN_*/
 	fprintf(fp, "\n# For automated FUSE mounts, you must register an extension with FILETYPE=..\n");
 	fprintf(fp, "# in the following format:\n");
 	fprintf(fp, "# FILETYPE=description=extensions=FUSE_MOUNT|some_mount_command using %%SOURCE_FILE and %%DESTINATION_DIR variables\n");
@@ -555,7 +550,6 @@ write_config_file(void)
 	fprintf(fp, "# The FUSE_HOME directory will be used as a root dir for all FUSE mounts.\n");
 	fprintf(fp, "# Unless it exists with write/exec permissions set, vifm will attempt to create it.\n");
 	fprintf(fp, "\nFUSE_HOME=%s\n", cfg.fuse_home);
-/*_SZ_END_*/
 
 	fprintf(fp, "\n# Format for displaying time in file list. For example:\n");
 	fprintf(fp, "# TIME_STAMP_FORMAT=%%m/%%d-%%H:%%M\n");

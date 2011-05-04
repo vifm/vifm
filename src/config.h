@@ -52,9 +52,7 @@ typedef struct _Config {
 	int using_default_config;
 	int use_iec_prefixes;
 	char *time_format;
-/*_SZ_BEGIN*/
 	char *fuse_home;
-/*_SZ_END*/
 } Config;
 
 extern Config cfg;

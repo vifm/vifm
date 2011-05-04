@@ -95,14 +95,12 @@ show_error_msg(char *title, char *message)
 
 	getmaxyx(error_win, y, x);
 
-/*_SZ_BEGIN_*/
 	if(strlen(dup) > x-2)
 		dup[x-2] = '\0';
 /*you might have had a reason having (z < strlen(dup) -1) there before, but for me, it has just incorrectly
 truncated my messages by the last character.*/
 	while ((z < strlen(dup)) && isprint(dup[z]))
 		z++;
-/*_SZ_END_*/
 
 	dup[z] = '\0';
 

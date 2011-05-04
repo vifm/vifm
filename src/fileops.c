@@ -330,7 +330,6 @@ handle_file(FileView *view, int dont_execute)
 		if((program = get_default_program_for_file(
 					view->dir_entry[view->list_pos].name)) != NULL)
 		{
-/*_SZ_BEGIN_*/
 			if(!strncmp(program, "FUSE_MOUNT", 10))
 			{
 				if(access(cfg.fuse_home, F_OK|W_OK|X_OK) != 0)
@@ -480,7 +479,6 @@ handle_file(FileView *view, int dont_execute)
 				moveto_list_pos(view, view->curr_line);
 				return;
 			}
-			/*_SZ_END_*/
 			if(strchr(program, '%'))
 			{
 				int m = 0;

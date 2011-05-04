@@ -852,7 +852,6 @@ change_directory(FileView *view, const char *directory)
 
 	snprintf(view->last_dir, sizeof(view->last_dir), "%s", view->curr_dir);
 
- /*_SZ_BEGIN_*/
 /* check if we're exiting from a FUSE mounted top level dir. If so, unmount & let FUSE serialize */
 	if(!strcmp(directory, "../") && !memcmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)))
 	{
@@ -916,7 +915,6 @@ change_directory(FileView *view, const char *directory)
 			return;
 		}
 	}
- /*_SZ_END_*/
 
 	/* Moving up a directory */
 	if(!strcmp(dir_dup, "../"))

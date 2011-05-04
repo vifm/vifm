@@ -27,11 +27,9 @@
 
 #include "ui.h"
 #include "status.h"
-/*_SZ_BEGIN_*/
 #include "utils.h"
 
 struct Fuse_List *fuse_mounts = NULL;
-/*_SZ_END_*/
 
 int
 is_dir(char *file)
