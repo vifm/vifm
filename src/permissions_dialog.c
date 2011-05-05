@@ -153,8 +153,6 @@ redraw_permissions_dialog(void)
 	char *filename;
 	int x, y;
 
-	getmaxyx(stdscr, y, x);
-
 	wclear(change_win);
 
 	mvwaddstr(change_win, 3, 2, "Owner [ ] Read");
@@ -213,7 +211,8 @@ redraw_permissions_dialog(void)
 	else
 		wresize(change_win, 20, 30);
 
-	mvwin(change_win, (y - 20)/2, (x - 30)/2);
+	getmaxyx(stdscr, y, x);
+	mvwin(change_win, (y - (20 + (file_is_dir != 0)*2))/2, (x - 30)/2);
 	box(change_win, ACS_VLINE, ACS_HLINE);
 
 	filename = get_current_file_name(view);

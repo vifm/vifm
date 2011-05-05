@@ -160,6 +160,8 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, 12, 4, " [   ] Time Modified");
 	mvwaddstr(sort_win, curr, 6, caps[descending]);
 
+	getmaxyx(stdscr, y, x);
+	mvwin(sort_win, (y - (NUM_SORT_OPTIONS + 3))/2, (x - 30)/2);
 	wrefresh(sort_win);
 }
 
