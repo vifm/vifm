@@ -137,7 +137,6 @@ add_bookmark(const char mark, const char *directory, const char *file)
 	curr_stats.setting_change = 1;
 }
 
-
 int
 move_to_bookmark(FileView *view, char mark)
 {
@@ -146,7 +145,6 @@ move_to_bookmark(FileView *view, char mark)
 
 	if(x != -1 && is_bookmark(x))
 	{
-
 		change_directory(view, bookmarks[x].directory);
 
 		load_dir_list(view, 1);

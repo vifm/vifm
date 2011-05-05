@@ -74,6 +74,7 @@ main_loop(void)
 		int ret;
 
 		modes_pre();
+		chdir(curr_view->curr_dir);
 
 		/* This waits for timeout then skips if no keypress. */
 		ret = wget_wch(status_bar, (wint_t*)&c);

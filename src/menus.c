@@ -461,7 +461,6 @@ execute_apropos_cb(FileView *view, menu_info *m)
 
 }
 
-
 static void
 execute_locate_cb(FileView *view, menu_info *m)
 {
