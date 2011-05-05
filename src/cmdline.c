@@ -1478,7 +1478,7 @@ exec_completion(char *str)
 	{
 		chdir(paths[dir]);
 		result = filename_completion((last_dir != dir) ? string : NULL, 2);
-		if(result == NULL || strcmp(result, string) == 0)
+		if(result == NULL)
 		{
 			last_dir = dir;
 			dir = (dir + 1)%paths_count;
@@ -1489,7 +1489,7 @@ exec_completion(char *str)
 				return strdup(string);
 			}
 		}
-	}while((result == NULL || strcmp(result, string) == 0) && cur_dir != dir);
+	}while(result == NULL && cur_dir != dir);
 	if(result == NULL)
 	{
 		dir = 0;
@@ -1618,7 +1618,7 @@ filename_completion(char *str, int type)
 			closedir(dir);
 			free(dirname);
 
-			return strdup(filename);
+			return (type == 2) ? NULL : strdup(filename);
 		}
 		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
 			continue;
@@ -1635,7 +1635,7 @@ filename_completion(char *str, int type)
 		{
 			if(d->d_type == DT_DIR)
 				continue;
-			if(d->d_type == DT_LNK && !is_dir(d->d_name))
+			if(d->d_type == DT_LNK && is_dir(d->d_name))
 				continue;
 			if(access(d->d_name, X_OK) != 0)
 				continue;
