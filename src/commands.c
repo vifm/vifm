@@ -1191,7 +1191,6 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 						start_background_job(com + i);
 					else if(strlen(com + i) > 0)
 					{
-						chdir(view->curr_dir);
 						shellout(com + i, pause);
 					}
 					if(!cmd->background)

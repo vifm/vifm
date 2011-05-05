@@ -108,6 +108,7 @@ static void complete_search_prev(void);
 static int line_completion(struct line_stats *stat);
 static int file_completion(char* filename, char* line_mb, char* raw_name,
 		struct line_stats *stat);
+static size_t get_words_count(const char * string);
 static char * get_last_word(char * string);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static char * exec_completion(char *str);
@@ -1141,7 +1142,9 @@ line_completion(struct line_stats *stat)
 {
 	static char *line_mb = (char *)NULL;
 
+	size_t words_count;
 	int id;
+	int usercmd_completion;
 	char *last_word = (char *)NULL;
 
 	if(stat->line[stat->index] != L' ' && stat->index != stat->len)
@@ -1176,11 +1179,13 @@ line_completion(struct line_stats *stat)
 		stat->line[stat->index] = t;
 	}
 
+	words_count = get_words_count(line_mb);
 	last_word = get_last_word(line_mb);
 	id = get_buildin_id(line_mb);
 
-	if(id != COM_DELCOMMAND && id != COM_COMMAND
-			&& (last_word != NULL || id == COM_EXECUTE))
+	usercmd_completion = (id == COM_DELCOMMAND || id == COM_COMMAND)
+			&& words_count <= 2;
+	if(!usercmd_completion && (last_word != NULL || id == COM_EXECUTE))
 	{
 		char *filename = (char *)NULL;
 		char *raw_name = (char *)NULL;
@@ -1382,6 +1387,22 @@ file_completion(char* filename, char* line_mb, char* raw_name,
 	return 0;
 }
 
+static size_t
+get_words_count(const char * string)
+{
+	size_t result;
+
+	result = 1;
+	string--;
+	while((string = strchr(string + 1, ' ')) != NULL)
+	{
+		while(*string == ' ')
+			string++;
+		result++;
+	}
+	return result;
+}
+
 static char *
 get_last_word(char * string)
 {
@@ -1464,6 +1485,7 @@ exec_completion(char *str)
 			if(dir == 0)
 			{
 				last_dir = -1;
+				chdir(curr_view->curr_dir);
 				return strdup(string);
 			}
 		}
@@ -1475,6 +1497,7 @@ exec_completion(char *str)
 	}
 	else
 		last_dir = dir;
+	chdir(curr_view->curr_dir);
 	return result;
 }
 
