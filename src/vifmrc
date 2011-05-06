@@ -121,7 +121,7 @@ COMMAND=grep=vim \"+grep %a\"
 # The command macros %f, %F, %d, %F may be used in the commands.
 # The %a macro is ignored.  To use a % you must put %%.
 
-FILETYPE=Mp3=mp3=mp3info -p 'Artist: %%a\nAlbum: %%l\nTitle: %%n. %%t\nDate: %%y\n' %f=mpg123 %f
+FILETYPE=Mp3=mp3=ffprobe -show_format -pretty %f 2> /dev/null=ffplay %f
 FILETYPE=Web=html,htm==links,mozilla
 FILETYPE=Object=o==nm %f | less
 FILETYPE=Image=jpg,jpeg,png,gif==eog,xv,gimp

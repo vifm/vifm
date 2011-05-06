@@ -139,11 +139,11 @@ write_string_to_file(char *filename, char *string)
 size_t
 guess_char_width(char c)
 {
-	if ((c & 0xe0) == 0xc0)
+	if((c & 0xe0) == 0xc0)
 		return 2;
-	else if ((c & 0xf0) == 0xe0)
+	else if((c & 0xf0) == 0xe0)
 		return 3;
-	else if ((c & 0xf8) == 0xf0)
+	else if((c & 0xf8) == 0xf0)
 		return 4;
 	else
 		return 1;
@@ -166,6 +166,7 @@ get_char_width(const char* string)
 		return 1;
 }
 
+/* returns count of bytes of whole string or of first max_len utf8 characters */
 size_t
 get_real_string_width(char *string, size_t max_len)
 {
@@ -179,6 +180,41 @@ get_real_string_width(char *string, size_t max_len)
 	return width;
 }
 
+/* returns count utf8 characters excluding incomplete utf8 characters */
+size_t
+get_normal_utf8_string_length(const char *string)
+{
+	size_t length = 0;
+	while(*string != '\0')
+	{
+		size_t char_width = guess_char_width(*string);
+		if(char_width <= strlen(string))
+			length++;
+		else
+			break;
+		string += char_width;
+	}
+	return length;
+}
+
+/* returns count of bytes excluding incomplete utf8 characters */
+size_t
+get_normal_utf8_string_width(const char *string)
+{
+	size_t length = 0;
+	while(*string != '\0')
+	{
+		size_t char_width = guess_char_width(*string);
+		if(char_width <= strlen(string))
+			length += char_width;
+		else
+			break;
+		string += char_width;
+	}
+	return length;
+}
+
+/* returns count of utf8 characters in string */
 size_t
 get_utf8_string_length(const char *string)
 {
@@ -192,6 +228,7 @@ get_utf8_string_length(const char *string)
 	return length;
 }
 
+/* returns (string_width - string_length) */
 size_t
 get_utf8_overhead(const char *string)
 {
@@ -209,9 +246,10 @@ size_t
 get_utf8_prev_width(char *string, size_t cur_width)
 {
 	size_t width = 0;
-	while (*string != '\0') {
+	while(*string != '\0')
+	{
 		size_t char_width = get_char_width(string);
-		if (width + char_width >= cur_width)
+		if(width + char_width >= cur_width)
 			break;
 		width += char_width;
 		string += char_width;

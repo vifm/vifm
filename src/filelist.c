@@ -205,7 +205,6 @@ void
 quick_view_file(FileView *view)
 {
 	FILE *fp;
-	char line[1024];
 	char buf[NAME_MAX];
 	int x = 1;
 	int y = 1;
@@ -238,7 +237,9 @@ quick_view_file(FileView *view)
 			break;
 		default:
 			{
+				int offset;
 				char *viewer;
+				char line[1024];
 
 				viewer = get_viewer_for_file(view->dir_entry[view->list_pos].name);
 				if(viewer != NULL && viewer[0] != '\0')
@@ -252,10 +253,26 @@ quick_view_file(FileView *view)
 					return;
 				}
 
-				while(fgets(line, other_view->window_width, fp)
-						&& (x < other_view->window_rows - 2))
+				offset = 0;
+				while(fgets(line + offset, other_view->window_width, fp)
+						&& x < other_view->window_rows - 2)
 				{
-					mvwaddstr(other_view->win, ++x, y,	line);
+					size_t width;
+					size_t n_len = get_normal_utf8_string_length(line);
+					size_t len = strlen(line);
+					while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
+							&& !feof(fp))
+					{
+						fgets(line + len, other_view->window_width - n_len, fp);
+						n_len = get_normal_utf8_string_length(line);
+						len = strlen(line);
+					}
+					width = get_normal_utf8_string_width(line);
+					mvwaddnstr(other_view->win, ++x, y, line, width);
+
+					offset = strlen(line) - width;
+					if(offset != 0)
+						memmove(line, line + width, offset);
 				}
 
 				fclose(fp);
