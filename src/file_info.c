@@ -80,9 +80,8 @@ show_full_file_properties(FileView *view)
 	struct group *grp_buf;
 	struct tm *tm_ptr;
 	int x, y;
+	int curr_y;
 	int key = 0;
-	int done = 0;
-
 
 	curr_stats.show_full = 0;
 
@@ -109,12 +108,15 @@ show_full_file_properties(FileView *view)
 	get_perm_string(perm_buf, sizeof(perm_buf),
 			view->dir_entry[view->list_pos].mode);
 
-	mvwaddstr(menu_win, 2, 2, "File: ");
-	mvwaddnstr(menu_win, 2, 8, name_buf, x - 8);
-	mvwaddstr(menu_win, 4, 2, "Size: ");
-	mvwaddstr(menu_win, 4, 8, size_buf);
+	curr_y = 2;
+	mvwaddstr(menu_win, curr_y, 2, "File: ");
+	mvwaddnstr(menu_win, curr_y, 8, name_buf, x - 8);
+	curr_y += 2;
+	mvwaddstr(menu_win, curr_y, 2, "Size: ");
+	mvwaddstr(menu_win, curr_y, 8, size_buf);
+	curr_y += 2;
 
-	mvwaddstr(menu_win, 6, 2, "Type: ");
+	mvwaddstr(menu_win, curr_y, 2, "Type: ");
 	if(S_ISLNK(view->dir_entry[view->list_pos].mode))
 	{
 		char linkto[PATH_MAX +NAME_MAX];
@@ -124,17 +126,18 @@ show_full_file_properties(FileView *view)
 		if (filename[len - 1] == '/')
 			filename[len - 1] = '\0';
 
-		mvwaddstr(menu_win, 6, 8, "Link");
+		mvwaddstr(menu_win, curr_y, 8, "Link");
+		curr_y += 2;
 		len = readlink (filename, linkto, sizeof (linkto));
 
-		mvwaddstr(menu_win, 7, 2, "Link To: ");
+		mvwaddstr(menu_win, curr_y, 2, "Link To: ");
 		if (len > 0)
 		{
 			linkto[len] = '\0';
-			mvwaddnstr(menu_win, 7, 11, linkto, x - 11);
+			mvwaddnstr(menu_win, curr_y, 11, linkto, x - 11);
 		}
 		else
-			mvwaddstr(menu_win, 7, 11, "Couldn't Resolve Link");
+			mvwaddstr(menu_win, curr_y, 11, "Couldn't Resolve Link");
 	}
 	else if (S_ISREG (view->dir_entry[view->list_pos].mode))
 	{
@@ -148,7 +151,7 @@ show_full_file_properties(FileView *view)
 
 		if ((pipe = popen(command, "r")) == NULL)
 		{
-			mvwaddstr(menu_win, 6, 8, "Unable to open pipe to read file");
+			mvwaddstr(menu_win, curr_y, 8, "Unable to open pipe to read file");
 			return;
 		}
 
@@ -156,7 +159,7 @@ show_full_file_properties(FileView *view)
 
 		pclose(pipe);
 
-		mvwaddnstr(menu_win, 6, 8, buf, x - 9);
+		mvwaddnstr(menu_win, curr_y, 8, buf, x - 9);
 		/*
 		if((S_IXUSR &view->dir_entry[view->list_pos].mode)
 				|| (S_IXGRP &view->dir_entry[view->list_pos].mode)
@@ -169,62 +172,70 @@ show_full_file_properties(FileView *view)
 	}
 	else if (S_ISDIR (view->dir_entry[view->list_pos].mode))
 	{
-	  mvwaddstr(menu_win, 6, 8, "Directory");
+	  mvwaddstr(menu_win, curr_y, 8, "Directory");
 	}
 	else if (S_ISCHR (view->dir_entry[view->list_pos].mode))
 	{
-	  mvwaddstr(menu_win, 6, 8, "Character Device");
+	  mvwaddstr(menu_win, curr_y, 8, "Character Device");
 	}
 	else if (S_ISBLK (view->dir_entry[view->list_pos].mode))
 	{
-	  mvwaddstr(menu_win, 6, 8, "Block Device");
+	  mvwaddstr(menu_win, curr_y, 8, "Block Device");
 	}
 	else if (S_ISFIFO (view->dir_entry[view->list_pos].mode))
 	{
-	  mvwaddstr(menu_win, 6, 8, "Fifo Pipe");
+	  mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
 	}
 	else if (S_ISSOCK (view->dir_entry[view->list_pos].mode))
 	{
-	  mvwaddstr(menu_win, 6, 8, "Socket");
+	  mvwaddstr(menu_win, curr_y, 8, "Socket");
 	}
 	else
 	{
-	  mvwaddstr(menu_win, 6, 8, "Unknown");
+	  mvwaddstr(menu_win, curr_y, 8, "Unknown");
 	}
+	curr_y += 2;
 
-	mvwaddstr(menu_win, 8, 2, "Permissions: ");
-	mvwaddstr(menu_win, 8, 15, perm_buf);
-	mvwaddstr(menu_win, 10, 2, "Modified: ");
+	mvwaddstr(menu_win, curr_y, 2, "Permissions: ");
+	mvwaddstr(menu_win, curr_y, 15, perm_buf);
+	curr_y += 2;
+
+	mvwaddstr(menu_win, curr_y, 2, "Modified: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
 	strftime (buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
-	mvwaddstr(menu_win, 10, 13, buf);
-	mvwaddstr(menu_win, 12, 2, "Accessed: ");
+	mvwaddstr(menu_win, curr_y, 13, buf);
+	curr_y += 2;
+
+	mvwaddstr(menu_win, curr_y, 2, "Accessed: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].atime);
 	strftime (buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
-	mvwaddstr(menu_win, 12, 13, buf);
-	mvwaddstr(menu_win, 14, 2, "Changed: ");
+	mvwaddstr(menu_win, curr_y, 13, buf);
+	curr_y += 2;
+
+	mvwaddstr(menu_win, curr_y, 2, "Changed: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].ctime);
 	strftime (buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
-	mvwaddstr(menu_win, 14, 13, buf);
-	mvwaddstr(menu_win, 16, 2, "Owner: ");
-	mvwaddstr(menu_win, 16, 10, uid_buf);
-	mvwaddstr(menu_win, 18, 2, "Group: ");
+	mvwaddstr(menu_win, curr_y, 13, buf);
+	curr_y += 2;
+
+	mvwaddstr(menu_win, curr_y, 2, "Owner: ");
+	mvwaddstr(menu_win, curr_y, 10, uid_buf);
+	curr_y += 2;
+
+	mvwaddstr(menu_win, curr_y, 2, "Group: ");
 	if((grp_buf = getgrgid(view->dir_entry[view->list_pos].gid)) != NULL)
 	{
-		mvwaddstr(menu_win, 18, 10, grp_buf->gr_name);
+		mvwaddstr(menu_win, curr_y, 10, grp_buf->gr_name);
 	}
 	wnoutrefresh(menu_win);
 
 	box(menu_win, 0, 0);
 	wrefresh(menu_win);
-	while(!done)
+	do
 	{
 		key = wgetch(menu_win);
-
-		/* ascii Return - Ctrl-c  - Escape */
-		if(key == 13 || key == 3 || key == 27)
-			done = 1;
 	}
+	while(key != 13 && key != 3 && key != 27); /* ascii Return - Ctrl-c - Esc */
 	werase(menu_win);
 	redraw_window();
 }
