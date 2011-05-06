@@ -574,6 +574,7 @@ keys_ctrl_ww(struct key_info key_info, struct keys_info *keys_info)
 static void
 keys_ctrl_wx(struct key_info key_info, struct keys_info *keys_info)
 {
+  FileView tmp_view;
   WINDOW* tmp;
 
 	tmp = lwin.win;
@@ -583,6 +584,10 @@ keys_ctrl_wx(struct key_info key_info, struct keys_info *keys_info)
 	tmp = lwin.title;
 	lwin.title = rwin.title;
 	rwin.title = tmp;
+
+	tmp_view = lwin;
+	lwin = rwin;
+	rwin = tmp_view;
 
 	switch_views();
 	load_dir_list(curr_view, 1);
