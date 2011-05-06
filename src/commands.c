@@ -1230,7 +1230,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					}
 					else if(cmd->args[0] == '~')
 					{
-						snprintf(dir, sizeof(dir), "%s%s", getenv("HOME"), cmd->args +1);
+						snprintf(dir, sizeof(dir), "%s%s", getenv("HOME"), cmd->args + 1);
 						change_directory(view, dir);
 						load_dir_list(view, 0);
 						moveto_list_pos(view, view->list_pos);

@@ -848,7 +848,7 @@ change_directory(FileView *view, const char *directory)
 
 	save_view_history(view);
 
-	snprintf(dir_dup, PATH_MAX, "%s", directory);
+	realpath(directory, dir_dup);
 
 	snprintf(view->last_dir, sizeof(view->last_dir), "%s", view->curr_dir);
 
@@ -936,7 +936,7 @@ change_directory(FileView *view, const char *directory)
 
 		strcpy(newdir,"");
 
-		tok =  strtok(view->curr_dir,"/");
+		tok = strtok(view->curr_dir, "/");
 
 		while(tok != NULL)
 		{
