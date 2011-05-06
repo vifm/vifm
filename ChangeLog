@@ -59,6 +59,8 @@
 
 	Added ! and !! completion.
 
+	Added support of multiple commands per line (with | as delimiter).
+
 	Changed keys input handling.
 
 	Changed force dot files appear at the beginning of file list.

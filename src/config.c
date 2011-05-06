@@ -585,7 +585,7 @@ exec_startup(void)
 		len = strlen(line);
 		if(len != 0 && line[len - 1] == '\n')
 			line[len - 1] = '\0';
-		exec_command(line, curr_view, GET_COMMAND, NULL);
+		exec_commands(line, curr_view, GET_COMMAND, NULL);
 	}
 
 	fclose(fp);

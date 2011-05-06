@@ -116,6 +116,7 @@ typedef struct current_command
 static char* substitute_specs(const char *cmd);
 static const char *skip_spaces(const char *cmd);
 static const char *skip_word(const char *cmd);
+static int exec_command(char *cmd, FileView *view, int type, void * ptr);
 
 int
 sort_this(const void *one, const void *two)
@@ -1775,7 +1776,46 @@ execute_command(FileView *view, char *command)
 }
 
 int
-exec_command(char* cmd, FileView *view, int type, void * ptr)
+exec_commands(char *cmd, FileView *view, int type, void * ptr)
+{
+	int slash = 0;
+	int save_msg = 0;
+	char *p, *q;
+
+	p = cmd;
+	q = cmd;
+	while(*cmd != '\0')
+	{
+		if(slash == 1)
+		{
+			*q++ = *p++;
+			slash = 0;
+		}
+		else if(*p == '\\')
+		{
+			slash = 1;
+			p++;
+		}
+		else if(*p == '|' || *p == '\0')
+		{
+			if(*p != '\0')
+				p++;
+			*q = '\0';
+			q = p;
+
+			save_msg += exec_command(cmd, view, type, ptr);
+
+			cmd = q;
+		}
+		else
+			*q++ = *p++;
+	}
+
+	return save_msg;
+}
+
+static int
+exec_command(char *cmd, FileView *view, int type, void * ptr)
 {
 	if(cmd == NULL)
 	{

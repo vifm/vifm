@@ -657,15 +657,15 @@ keys_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	if(sub_mode == CMD_SUBMODE)
 	{
-		curr_stats.save_msg = exec_command(p, curr_view, GET_COMMAND, NULL);
+		curr_stats.save_msg = exec_commands(p, curr_view, GET_COMMAND, NULL);
 	}
 	else if(sub_mode == SEARCH_FORWARD_SUBMODE)
 	{
-		curr_stats.save_msg = exec_command(p, curr_view, GET_FSEARCH_PATTERN, NULL);
+		curr_stats.save_msg = exec_commands(p, curr_view, GET_FSEARCH_PATTERN, NULL);
 	}
 	else if(sub_mode == SEARCH_BACKWARD_SUBMODE)
 	{
-		curr_stats.save_msg = exec_command(p, curr_view, GET_BSEARCH_PATTERN, NULL);
+		curr_stats.save_msg = exec_commands(p, curr_view, GET_BSEARCH_PATTERN, NULL);
 	}
 	else if(sub_mode == MENU_CMD_SUBMODE)
 	{
