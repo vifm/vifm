@@ -4,6 +4,7 @@ Basic things that need to be done.
 	Fix window resizing.
 	Better documentation.
 	Handle commands that are too long to be passed directly to the shell.
+    Make ga work in background.
 
 Vi specific features that need to be added.
 	Finish implementing range and count for user commands.

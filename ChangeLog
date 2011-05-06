@@ -61,6 +61,8 @@
 
 	Added support of multiple commands per line (with | as delimiter).
 
+	Added ga command (calculate directory size).
+
 	Changed keys input handling.
 
 	Changed force dot files appear at the beginning of file list.

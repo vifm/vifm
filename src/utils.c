@@ -270,6 +270,7 @@ to_wide(const char *s)
 	return result;
 }
 
+/* if err == 1 then use stderr and close stdin and stdout */
 void
 run_from_fork(int pipe[2], int err, char *cmd)
 {
