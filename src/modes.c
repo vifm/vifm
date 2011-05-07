@@ -118,20 +118,17 @@ modes_post(void)
 	else
 		update_stat_window(curr_view);
 
-	if(curr_view->selected_files)
+	if(curr_stats.save_msg)
+		;
+	else if(curr_view->selected_files)
 	{
-		static int number = 0;
-		if(number != curr_view->selected_files)
-		{
-			snprintf(status_buf, sizeof(status_buf), "%s%d %s Selected",
-					(mode == VISUAL_MODE) ? "-- VISUAL -- " : "",
-					curr_view->selected_files, curr_view->selected_files == 1 ? "File" :
-					"Files");
-			status_bar_message(status_buf);
-			curr_stats.save_msg = 1;
-		}
+		snprintf(status_buf, sizeof(status_buf), "%s%d %s Selected",
+				(mode == VISUAL_MODE) ? "-- VISUAL -- " : "", curr_view->selected_files,
+				curr_view->selected_files == 1 ? "File" : "Files");
+		status_bar_message(status_buf);
+		curr_stats.save_msg = 1;
 	}
-	else if(!curr_stats.save_msg)
+	else
 		clean_status_bar();
 
 	if(curr_stats.need_redraw)

@@ -646,11 +646,12 @@ progress_msg(const char *text, int ready, int total)
 	show_progress(msg, 1);
 }
 
-void
+/* returns new value for save_msg */
+int
 delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 {
 	char buf[256];
-	int x;
+	int x, y;
 
 	if(count > 0)
 		get_selected_files(view, count, indexes);
@@ -670,6 +671,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	else
 		clear_register(reg);
 
+	y = 0;
 	chdir(curr_view->curr_dir);
 	for(x = 0; x < view->selected_files; x++)
 	{
@@ -695,6 +697,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 			snprintf(reg_buf, sizeof(reg_buf), "%s/%s", cfg.trash_dir,
 					view->selected_filelist[x]);
 			append_to_register(reg, reg_buf);
+			y++;
 		}
 	}
 	free_selected_file_array(view);
@@ -710,6 +713,10 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	}
 
 	moveto_list_pos(view, view->list_pos);
+
+	snprintf(buf, sizeof(buf), "%d %s Deleted", y, y == 1 ? "File" : "Files");
+	status_bar_message(buf);
+	return 1;
 }
 
 static void

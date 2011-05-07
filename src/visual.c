@@ -314,10 +314,12 @@ cmd_d(struct key_info key_info, struct keys_info *keys_info)
 static void
 delete(struct key_info key_info, int use_trash)
 {
+	int save_msg;
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
-	delete_file(view, key_info.reg, 0, NULL, use_trash);
-	leave_visual_mode(0);
+
+	save_msg = delete_file(view, key_info.reg, 0, NULL, use_trash);
+	leave_visual_mode(save_msg);
 }
 
 static void

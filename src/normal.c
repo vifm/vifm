@@ -1053,8 +1053,8 @@ delete_with_selector(struct key_info key_info, struct keys_info *keys_info,
 {
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
-	delete_file(curr_view, key_info.reg, keys_info->count, keys_info->indexes,
-			use_trash);
+	curr_stats.save_msg = delete_file(curr_view, key_info.reg, keys_info->count,
+			keys_info->indexes, use_trash);
 
 	free(keys_info->indexes);
 	keys_info->indexes = NULL;
