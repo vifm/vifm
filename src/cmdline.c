@@ -125,39 +125,39 @@ init_cmdline_mode(int *key_mode)
 	mode = key_mode;
 	set_def_handler(CMDLINE_MODE, def_handler);
 
-	curr = add_keys(L"\x03", CMDLINE_MODE);
+	curr = add_cmd(L"\x03", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_c;
 
 	/* backspace */
-	curr = add_keys(L"\x08", CMDLINE_MODE);
+	curr = add_cmd(L"\x08", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_h;
 
-	curr = add_keys(L"\x09", CMDLINE_MODE);
+	curr = add_cmd(L"\x09", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_i;
 
-	curr = add_keys(L"\x0b", CMDLINE_MODE);
+	curr = add_cmd(L"\x0b", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_k;
 
-	curr = add_keys(L"\x0d", CMDLINE_MODE);
+	curr = add_cmd(L"\x0d", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_m;
 
-	curr = add_keys(L"\x0e", CMDLINE_MODE);
+	curr = add_cmd(L"\x0e", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_n;
 
-	curr = add_keys(L"\x10", CMDLINE_MODE);
+	curr = add_cmd(L"\x10", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_p;
 
 	/* escape */
-	curr = add_keys(L"\x1b", CMDLINE_MODE);
+	curr = add_cmd(L"\x1b", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_c;
 	curr->type = BUILDIN_WAIT_POINT;
 
 	/* escape escape */
-	curr = add_keys(L"\x1b\x1b", CMDLINE_MODE);
+	curr = add_cmd(L"\x1b\x1b", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_c;
 
 	/* ascii Delete */
-	curr = add_keys(L"\x7f", CMDLINE_MODE);
+	curr = add_cmd(L"\x7f", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_h;
 
 	init_extended_keys();
@@ -238,35 +238,35 @@ init_extended_keys(void)
 	wchar_t buf[] = {L'\0', L'\0'};
 
 	buf[0] = KEY_BACKSPACE;
-	curr = add_keys(buf, CMDLINE_MODE);
+	curr = add_cmd(buf, CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_h;
 
 	buf[0] = KEY_DOWN;
-	curr = add_keys(buf, CMDLINE_MODE);
+	curr = add_cmd(buf, CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_n;
 
 	buf[0] = KEY_UP;
-	curr = add_keys(buf, CMDLINE_MODE);
+	curr = add_cmd(buf, CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_p;
 
 	buf[0] = KEY_LEFT;
-	curr = add_keys(buf, CMDLINE_MODE);
+	curr = add_cmd(buf, CMDLINE_MODE);
 	curr->data.handler = keys_left;
 
 	buf[0] = KEY_RIGHT;
-	curr = add_keys(buf, CMDLINE_MODE);
+	curr = add_cmd(buf, CMDLINE_MODE);
 	curr->data.handler = keys_right;
 
 	buf[0] = KEY_HOME;
-	curr = add_keys(buf, CMDLINE_MODE);
+	curr = add_cmd(buf, CMDLINE_MODE);
 	curr->data.handler = keys_home;
 
 	buf[0] = KEY_END;
-	curr = add_keys(buf, CMDLINE_MODE);
+	curr = add_cmd(buf, CMDLINE_MODE);
 	curr->data.handler = keys_end;
 
 	buf[0] = KEY_DC;
-	curr = add_keys(buf, CMDLINE_MODE);
+	curr = add_cmd(buf, CMDLINE_MODE);
 	curr->data.handler = keys_delete;
 #endif /* ENABLE_EXTENDED_KEYS */
 }
@@ -277,38 +277,38 @@ init_emacs_keys(void)
 	struct key_t *curr;
 
 	/* ctrl b */
-	curr = add_keys(L"\x02", CMDLINE_MODE);
+	curr = add_cmd(L"\x02", CMDLINE_MODE);
 	curr->data.handler = keys_left;
 
 	/* ctrl f */
-	curr = add_keys(L"\x06", CMDLINE_MODE);
+	curr = add_cmd(L"\x06", CMDLINE_MODE);
 	curr->data.handler = keys_right;
 
 	/* ctrl a */
-	curr = add_keys(L"\x01", CMDLINE_MODE);
+	curr = add_cmd(L"\x01", CMDLINE_MODE);
 	curr->data.handler = keys_home;
 
 	/* ctrl e */
-	curr = add_keys(L"\x05", CMDLINE_MODE);
+	curr = add_cmd(L"\x05", CMDLINE_MODE);
 	curr->data.handler = keys_end;
 
 	/* ctrl d */
-	curr = add_keys(L"\x04", CMDLINE_MODE);
+	curr = add_cmd(L"\x04", CMDLINE_MODE);
 	curr->data.handler = keys_delete;
 
-	curr = add_keys(L"\x15", CMDLINE_MODE);
+	curr = add_cmd(L"\x15", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_u;
 
-	curr = add_keys(L"\x17", CMDLINE_MODE);
+	curr = add_cmd(L"\x17", CMDLINE_MODE);
 	curr->data.handler = keys_ctrl_w;
 
-	curr = add_keys(L"\x1b"L"b", CMDLINE_MODE);
+	curr = add_cmd(L"\x1b"L"b", CMDLINE_MODE);
 	curr->data.handler = keys_meta_b;
 
-	curr = add_keys(L"\x1b"L"d", CMDLINE_MODE);
+	curr = add_cmd(L"\x1b"L"d", CMDLINE_MODE);
 	curr->data.handler = keys_meta_d;
 
-	curr = add_keys(L"\x1b"L"f", CMDLINE_MODE);
+	curr = add_cmd(L"\x1b"L"f", CMDLINE_MODE);
 	curr->data.handler = keys_meta_f;
 }
 

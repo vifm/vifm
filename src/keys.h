@@ -88,7 +88,7 @@ struct key_t
 {
 	enum KEYS_TYPE type;
 	enum FOLLOWED_BY followed;   /* what type of key should we wait for */
-	enum KEYS_SELECTOR selector; /* can this key be used as a selector? */
+	; /* can this key be used as a selector? */
 	union
 	{
 		keys_handler handler;
@@ -105,7 +105,8 @@ void init_keys(int modes_count, int *key_mode, int *key_mode_flags);
 void set_def_handler(int mode, default_handler handler);
 int execute_keys(const wchar_t *keys);
 int execute_keys_timed_out(const wchar_t *keys);
-struct key_t* add_keys(const wchar_t *keys, int mode);
+struct key_t* add_cmd(const wchar_t *keys, int mode);
+struct key_t* add_selector(const wchar_t *keys, int mode);
 /* Returns:
  * -1 - can't remap buildin keys
  */

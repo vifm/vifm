@@ -31,7 +31,8 @@ struct key_chunk_t
 	struct key_chunk_t *next;
 };
 
-static struct key_chunk_t *root;
+static struct key_chunk_t *cmds_root;
+static struct key_chunk_t *selectors_root;
 static int *mode;
 static int *mode_flags;
 static default_handler *def_handlers;
@@ -45,6 +46,8 @@ static int run_cmd(struct key_info key_info, struct keys_info *keys_info,
 static void init_keys_info(struct keys_info *keys_info);
 static const wchar_t* get_reg(const wchar_t *keys, int *reg);
 static const wchar_t* get_count(const wchar_t *keys, int *count);
+static struct key_t* add_keys_inner(struct key_chunk_t *root,
+		const wchar_t *keys);
 
 void
 init_keys(int modes_count, int *key_mode, int *key_mode_flags)
@@ -58,13 +61,10 @@ init_keys(int modes_count, int *key_mode, int *key_mode_flags)
 	mode = key_mode;
 	mode_flags = key_mode_flags;
 
-	root = calloc(modes_count, sizeof(*root));
-	assert(root != NULL);
-  for(i = 0; i < modes_count; i++)
-	{
-		/* little hack for execute_next_keys */
-		root[i].conf.selector = KS_SELECTOR_AND_CMD;
-	}
+	cmds_root = calloc(modes_count, sizeof(*cmds_root));
+	assert(cmds_root != NULL);
+	selectors_root = calloc(modes_count, sizeof(*selectors_root));
+	assert(selectors_root != NULL);
 
 	def_handlers = calloc(modes_count, sizeof(*def_handlers));
 	assert(def_handlers != NULL);
@@ -110,7 +110,7 @@ execute_keys_general(const wchar_t *keys, int timed_out)
 static int
 execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info)
 {
-	struct key_chunk_t *curr;
+	struct key_chunk_t *root, *curr;
 	struct key_info key_info;
 
 	keys = get_reg(keys, &key_info.reg);
@@ -119,7 +119,8 @@ execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info)
 		return KEYS_WAIT;
 	}
 	keys = get_count(keys, &key_info.count);
-	curr = &root[*mode];
+	root = keys_info->selector ? &selectors_root[*mode] : &cmds_root[*mode];
+	curr = root;
 	while(*keys != L'\0')
 	{
 		struct key_chunk_t *p;
@@ -131,7 +132,7 @@ execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info)
 		if(p == NULL || p->key != *keys)
 		{
 			int result;
-			if(curr == &root[*mode])
+			if(curr == root)
 			{
 				return KEYS_UNKNOWN;
 			}
@@ -164,12 +165,6 @@ static int
 execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
 		struct key_info *key_info, struct keys_info *keys_info)
 {
-	if(keys_info->selector && curr->conf.selector == KS_NOT_A_SELECTOR
-			&& (curr->conf.type != BUILDIN_WAIT_POINT
-			|| curr->conf.followed == FOLLOWED_BY_MULTIKEY))
-	{
-		return KEYS_UNKNOWN;
-	}
 	if(*keys == L'\0')
 	{
 		int wait_point = (curr->conf.type == BUILDIN_WAIT_POINT);
@@ -187,7 +182,7 @@ execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
 			return KEYS_UNKNOWN;
 		}
 	}
-	if(*keys != L'\0')
+	else
 	{
 		int result;
 		if(keys[1] == L'\0' && curr->conf.followed == FOLLOWED_BY_MULTIKEY)
@@ -210,10 +205,6 @@ static int
 run_cmd(struct key_info key_info, struct keys_info *keys_info,
 		struct key_t *key_t)
 {
-	if(!keys_info->selector && key_t->selector == KS_ONLY_SELECTOR)
-	{
-		return KEYS_UNKNOWN;
-	}
 	if(key_t->type != USER_CMD && key_t->type != BUILDIN_CMD)
 	{
 		if(key_t->data.handler == NULL)
@@ -297,7 +288,7 @@ int
 add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode)
 {
 	struct key_t *curr;
-	curr = add_keys(keys, mode);
+	curr = add_cmd(keys, mode);
 	if(curr->type != USER_CMD && curr->data.handler != NULL)
 	{
 		return -1;
@@ -312,9 +303,21 @@ add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode)
 }
 
 struct key_t*
-add_keys(const wchar_t *keys, int mode)
+add_cmd(const wchar_t *keys, int mode)
 {
-	struct key_chunk_t *curr = &root[mode];
+	return add_keys_inner(&cmds_root[mode], keys);
+}
+
+struct key_t*
+add_selector(const wchar_t *keys, int mode)
+{
+	return add_keys_inner(&selectors_root[mode], keys);
+}
+
+static struct key_t*
+add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
+{
+	struct key_chunk_t *curr = root;
 	while(*keys != L'\0')
 	{
 		struct key_chunk_t *prev, *p;
@@ -336,7 +339,6 @@ add_keys(const wchar_t *keys, int mode)
 			c->conf.type = (keys[1] == L'\0') ? BUILDIN_KEYS : BUILDIN_WAIT_POINT;
 			c->conf.data.handler = NULL;
 			c->conf.followed = FOLLOWED_BY_NONE;
-			c->conf.selector = KS_NOT_A_SELECTOR;
 			c->next = p;
 			c->child = NULL;
 			if(prev == NULL)

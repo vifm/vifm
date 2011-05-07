@@ -69,54 +69,54 @@ init_menu_mode(int *key_mode)
 
 	mode = key_mode;
 
-	curr = add_keys(L"\x02", MENU_MODE);
+	curr = add_cmd(L"\x02", MENU_MODE);
 	curr->data.handler = keys_ctrl_b;
 
-	curr = add_keys(L"\x03", MENU_MODE);
+	curr = add_cmd(L"\x03", MENU_MODE);
 	curr->data.handler = keys_ctrl_c;
 
-	curr = add_keys(L"\x06", MENU_MODE);
+	curr = add_cmd(L"\x06", MENU_MODE);
 	curr->data.handler = keys_ctrl_f;
 
 	/* return */
-	curr = add_keys(L"\x0d", MENU_MODE);
+	curr = add_cmd(L"\x0d", MENU_MODE);
 	curr->data.handler = keys_ctrl_m;
 
 	/* escape */
-	curr = add_keys(L"\x1b", MENU_MODE);
+	curr = add_cmd(L"\x1b", MENU_MODE);
 	curr->data.handler = keys_ctrl_c;
 
-	curr = add_keys(L"/", MENU_MODE);
+	curr = add_cmd(L"/", MENU_MODE);
 	curr->data.handler = keys_slash;
 
-	curr = add_keys(L":", MENU_MODE);
+	curr = add_cmd(L":", MENU_MODE);
 	curr->data.handler = keys_colon;
 
-	curr = add_keys(L"?", MENU_MODE);
+	curr = add_cmd(L"?", MENU_MODE);
 	curr->data.handler = keys_question;
 
-	curr = add_keys(L"G", MENU_MODE);
+	curr = add_cmd(L"G", MENU_MODE);
 	curr->data.handler = keys_G;
 
-	curr = add_keys(L"N", MENU_MODE);
+	curr = add_cmd(L"N", MENU_MODE);
 	curr->data.handler = keys_N;
 
-	curr = add_keys(L"dd", MENU_MODE);
+	curr = add_cmd(L"dd", MENU_MODE);
 	curr->data.handler = keys_dd;
 
-	curr = add_keys(L"gg", MENU_MODE);
+	curr = add_cmd(L"gg", MENU_MODE);
 	curr->data.handler = keys_gg;
 
-	curr = add_keys(L"j", MENU_MODE);
+	curr = add_cmd(L"j", MENU_MODE);
 	curr->data.handler = keys_j;
 
-	curr = add_keys(L"k", MENU_MODE);
+	curr = add_cmd(L"k", MENU_MODE);
 	curr->data.handler = keys_k;
 
-	curr = add_keys(L"l", MENU_MODE);
+	curr = add_cmd(L"l", MENU_MODE);
 	curr->data.handler = keys_ctrl_m;
 
-	curr = add_keys(L"n", MENU_MODE);
+	curr = add_cmd(L"n", MENU_MODE);
 	curr->data.handler = keys_n;
 
 	init_extended_keys();
@@ -130,19 +130,19 @@ init_extended_keys(void)
 	wchar_t buf[] = {L'\0', L'\0'};
 
 	buf[0] = KEY_PPAGE;
-	curr = add_keys(buf, MENU_MODE);
+	curr = add_cmd(buf, MENU_MODE);
 	curr->data.handler = keys_ctrl_b;
 
 	buf[0] = KEY_NPAGE;
-	curr = add_keys(buf, MENU_MODE);
+	curr = add_cmd(buf, MENU_MODE);
 	curr->data.handler = keys_ctrl_f;
 
 	buf[0] = KEY_UP;
-	curr = add_keys(buf, MENU_MODE);
+	curr = add_cmd(buf, MENU_MODE);
 	curr->data.handler = keys_k;
 
 	buf[0] = KEY_DOWN;
-	curr = add_keys(buf, MENU_MODE);
+	curr = add_cmd(buf, MENU_MODE);
 	curr->data.handler = keys_j;
 #endif /* ENABLE_EXTENDED_KEYS */
 }

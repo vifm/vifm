@@ -68,33 +68,33 @@ init_sort_dialog_mode(int *key_mode)
 
 	mode = key_mode;
 
-	curr = add_keys(L"\x03", SORT_MODE);
+	curr = add_cmd(L"\x03", SORT_MODE);
 	curr->data.handler = keys_ctrl_c;
 
 	/* return */
-	curr = add_keys(L"\x0d", SORT_MODE);
+	curr = add_cmd(L"\x0d", SORT_MODE);
 	curr->data.handler = keys_ctrl_m;
 
 	/* escape */
-	curr = add_keys(L"\x1b", SORT_MODE);
+	curr = add_cmd(L"\x1b", SORT_MODE);
 	curr->data.handler = keys_ctrl_c;
 
-	curr = add_keys(L"G", SORT_MODE);
+	curr = add_cmd(L"G", SORT_MODE);
 	curr->data.handler = keys_G;
 
-	curr = add_keys(L"gg", SORT_MODE);
+	curr = add_cmd(L"gg", SORT_MODE);
 	curr->data.handler = keys_gg;
 
-	curr = add_keys(L"h", SORT_MODE);
+	curr = add_cmd(L"h", SORT_MODE);
 	curr->data.handler = keys_h;
 
-	curr = add_keys(L"j", SORT_MODE);
+	curr = add_cmd(L"j", SORT_MODE);
 	curr->data.handler = keys_j;
 
-	curr = add_keys(L"k", SORT_MODE);
+	curr = add_cmd(L"k", SORT_MODE);
 	curr->data.handler = keys_k;
 
-	curr = add_keys(L"l", SORT_MODE);
+	curr = add_cmd(L"l", SORT_MODE);
 	curr->data.handler = keys_ctrl_m;
 
 	init_extended_keys();
@@ -108,11 +108,11 @@ init_extended_keys(void)
 	wchar_t buf[] = {L'\0', L'\0'};
 
 	buf[0] = KEY_UP;
-	curr = add_keys(buf, SORT_MODE);
+	curr = add_cmd(buf, SORT_MODE);
 	curr->data.handler = keys_k;
 
 	buf[0] = KEY_DOWN;
-	curr = add_keys(buf, SORT_MODE);
+	curr = add_cmd(buf, SORT_MODE);
 	curr->data.handler = keys_j;
 #endif /* ENABLE_EXTENDED_KEYS */
 }

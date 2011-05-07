@@ -137,272 +137,283 @@ init_normal_mode(int *key_mode)
 
 	mode = key_mode;
 
-	curr = add_keys(L"\x02", NORMAL_MODE);
+	curr = add_cmd(L"\x02", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_b;
 
-	curr = add_keys(L"\x03", NORMAL_MODE);
+	curr = add_cmd(L"\x03", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_c;
 
-	curr = add_keys(L"\x04", NORMAL_MODE);
+	curr = add_cmd(L"\x04", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_d;
 
-	curr = add_keys(L"\x05", NORMAL_MODE);
+	curr = add_cmd(L"\x05", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_e;
 
-	curr = add_keys(L"\x06", NORMAL_MODE);
+	curr = add_cmd(L"\x06", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_f;
 
-	curr = add_keys(L"\x07", NORMAL_MODE);
+	curr = add_cmd(L"\x07", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_g;
 
-	curr = add_keys(L"\x09", NORMAL_MODE);
+	curr = add_cmd(L"\x09", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_i;
 
-	curr = add_keys(L"\x0c", NORMAL_MODE);
+	curr = add_cmd(L"\x0c", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_l;
 
-	curr = add_keys(L"\x0d", NORMAL_MODE);
+	curr = add_cmd(L"\x0d", NORMAL_MODE);
 	curr->data.handler = keys_return;
 
-	curr = add_keys(L"\x0f", NORMAL_MODE);
+	curr = add_cmd(L"\x0f", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_o;
 
-	curr = add_keys(L"\x15", NORMAL_MODE);
+	curr = add_cmd(L"\x15", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_u;
 
-	curr = add_keys(L"\x17\x08", NORMAL_MODE);
+	curr = add_cmd(L"\x17\x08", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_wh;
 
-	curr = add_keys(L"\x17h", NORMAL_MODE);
+	curr = add_cmd(L"\x17h", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_wh;
 
-	curr = add_keys(L"\x17\x0f", NORMAL_MODE);
+	curr = add_cmd(L"\x17\x0f", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_wo;
 
-	curr = add_keys(L"\x17o", NORMAL_MODE);
+	curr = add_cmd(L"\x17o", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_wo;
 
-	curr = add_keys(L"\x17\x0c", NORMAL_MODE);
+	curr = add_cmd(L"\x17\x0c", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_wl;
 
-	curr = add_keys(L"\x17l", NORMAL_MODE);
+	curr = add_cmd(L"\x17l", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_wl;
 
-	curr = add_keys(L"\x17\x16", NORMAL_MODE);
+	curr = add_cmd(L"\x17\x16", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_wv;
 
-	curr = add_keys(L"\x17v", NORMAL_MODE);
+	curr = add_cmd(L"\x17v", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_wv;
 
-	curr = add_keys(L"\x17\x17", NORMAL_MODE);
+	curr = add_cmd(L"\x17\x17", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_ww;
 
-	curr = add_keys(L"\x17w", NORMAL_MODE);
+	curr = add_cmd(L"\x17w", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_ww;
 
-	curr = add_keys(L"\x17\x18", NORMAL_MODE);
+	curr = add_cmd(L"\x17\x18", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_wx;
 
-	curr = add_keys(L"\x17x", NORMAL_MODE);
+	curr = add_cmd(L"\x17x", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_wx;
 
-	curr = add_keys(L"\x19", NORMAL_MODE);
+	curr = add_cmd(L"\x19", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_y;
 
 	/* escape */
-	curr = add_keys(L"\x1b", NORMAL_MODE);
+	curr = add_cmd(L"\x1b", NORMAL_MODE);
 	curr->data.handler = keys_ctrl_c;
 
-	curr = add_keys(L"'", NORMAL_MODE);
+	curr = add_cmd(L"'", NORMAL_MODE);
 	curr->type = BUILDIN_WAIT_POINT;
 	curr->data.handler = keys_quote;
 	curr->followed = FOLLOWED_BY_MULTIKEY;
 
-	curr = add_keys(L" ", NORMAL_MODE);
+	curr = add_cmd(L" ", NORMAL_MODE);
 	curr->data.handler = keys_space;
 
-	curr = add_keys(L"%", NORMAL_MODE);
+	curr = add_cmd(L"%", NORMAL_MODE);
 	curr->data.handler = keys_percent;
 
-	curr = add_keys(L",", NORMAL_MODE);
+	curr = add_cmd(L",", NORMAL_MODE);
 	curr->data.handler = keys_comma;
 
-	curr = add_keys(L".", NORMAL_MODE);
+	curr = add_cmd(L".", NORMAL_MODE);
 	curr->data.handler = keys_dot;
 
-	curr = add_keys(L":", NORMAL_MODE);
+	curr = add_cmd(L":", NORMAL_MODE);
 	curr->data.handler = keys_colon;
 
-	curr = add_keys(L";", NORMAL_MODE);
+	curr = add_cmd(L";", NORMAL_MODE);
 	curr->data.handler = keys_semicolon;
 
-	curr = add_keys(L"/", NORMAL_MODE);
+	curr = add_cmd(L"/", NORMAL_MODE);
 	curr->data.handler = keys_slash;
 
-	curr = add_keys(L"?", NORMAL_MODE);
+	curr = add_cmd(L"?", NORMAL_MODE);
 	curr->data.handler = keys_question;
 
-	curr = add_keys(L"F", NORMAL_MODE);
+	curr = add_cmd(L"F", NORMAL_MODE);
 	curr->type = BUILDIN_WAIT_POINT;
 	curr->data.handler = keys_F;
 	curr->followed = FOLLOWED_BY_MULTIKEY;
 
-	curr = add_keys(L"G", NORMAL_MODE);
+	curr = add_cmd(L"G", NORMAL_MODE);
 	curr->data.handler = keys_G;
-	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys(L"H", NORMAL_MODE);
+	curr = add_selector(L"G", NORMAL_MODE);
+	curr->data.handler = keys_G;
+
+	curr = add_cmd(L"H", NORMAL_MODE);
 	curr->data.handler = keys_H;
-	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys(L"L", NORMAL_MODE);
+	curr = add_selector(L"H", NORMAL_MODE);
+	curr->data.handler = keys_H;
+
+	curr = add_cmd(L"L", NORMAL_MODE);
 	curr->data.handler = keys_L;
-	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys(L"M", NORMAL_MODE);
+	curr = add_selector(L"L", NORMAL_MODE);
+	curr->data.handler = keys_L;
+
+	curr = add_cmd(L"M", NORMAL_MODE);
 	curr->data.handler = keys_M;
-	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys(L"N", NORMAL_MODE);
+	curr = add_selector(L"M", NORMAL_MODE);
+	curr->data.handler = keys_M;
+
+	curr = add_cmd(L"N", NORMAL_MODE);
 	curr->data.handler = keys_N;
 
-	curr = add_keys(L"P", NORMAL_MODE);
+	curr = add_cmd(L"P", NORMAL_MODE);
 	curr->data.handler = keys_P;
 
-	curr = add_keys(L"V", NORMAL_MODE);
+	curr = add_cmd(L"V", NORMAL_MODE);
 	curr->data.handler = keys_V;
 
-	curr = add_keys(L"Y", NORMAL_MODE);
+	curr = add_cmd(L"Y", NORMAL_MODE);
 	curr->data.handler = keys_yy;
 
-	curr = add_keys(L"ZQ", NORMAL_MODE);
+	curr = add_cmd(L"ZQ", NORMAL_MODE);
 	curr->data.handler = keys_ZQ;
 
-	curr = add_keys(L"ZZ", NORMAL_MODE);
+	curr = add_cmd(L"ZZ", NORMAL_MODE);
 	curr->data.handler = keys_ZZ;
 
-	curr = add_keys(L"a", NORMAL_MODE);
+	curr = add_selector(L"a", NORMAL_MODE);
 	curr->data.handler = keys_a;
-	curr->selector = KS_ONLY_SELECTOR;
 
-	curr = add_keys(L"cg", NORMAL_MODE);
+	curr = add_cmd(L"cg", NORMAL_MODE);
 	curr->data.handler = keys_cg;
 
-	curr = add_keys(L"co", NORMAL_MODE);
+	curr = add_cmd(L"co", NORMAL_MODE);
 	curr->data.handler = keys_co;
 
-	curr = add_keys(L"cp", NORMAL_MODE);
+	curr = add_cmd(L"cp", NORMAL_MODE);
 	curr->data.handler = keys_cp;
 
-	curr = add_keys(L"cw", NORMAL_MODE);
+	curr = add_cmd(L"cw", NORMAL_MODE);
 	curr->data.handler = keys_cw;
 
-	curr = add_keys(L"DD", NORMAL_MODE);
+	curr = add_cmd(L"DD", NORMAL_MODE);
 	curr->data.handler = keys_DD;
 
-	curr = add_keys(L"dd", NORMAL_MODE);
+	curr = add_cmd(L"dd", NORMAL_MODE);
 	curr->data.handler = keys_dd;
 
-	curr = add_keys(L"D", NORMAL_MODE);
+	curr = add_cmd(L"D", NORMAL_MODE);
 	curr->data.handler = keys_D_selector;
 	curr->type = BUILDIN_WAIT_POINT;
 	curr->followed = FOLLOWED_BY_SELECTOR;
 
-	curr = add_keys(L"d", NORMAL_MODE);
+	curr = add_cmd(L"d", NORMAL_MODE);
 	curr->data.handler = keys_d_selector;
 	curr->type = BUILDIN_WAIT_POINT;
 	curr->followed = FOLLOWED_BY_SELECTOR;
 
-	curr = add_keys(L"es", NORMAL_MODE);
+	curr = add_selector(L"es", NORMAL_MODE);
 	curr->data.handler = keys_es;
-	curr->selector = KS_ONLY_SELECTOR;
 
-	curr = add_keys(L"f", NORMAL_MODE);
+	curr = add_cmd(L"f", NORMAL_MODE);
 	curr->type = BUILDIN_WAIT_POINT;
 	curr->data.handler = keys_f;
 	curr->followed = FOLLOWED_BY_MULTIKEY;
 
-	curr = add_keys(L"ga", NORMAL_MODE);
+	curr = add_cmd(L"ga", NORMAL_MODE);
 	curr->data.handler = keys_ga;
 
-	curr = add_keys(L"gg", NORMAL_MODE);
+	curr = add_cmd(L"gg", NORMAL_MODE);
 	curr->data.handler = keys_gg;
-	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys(L"h", NORMAL_MODE);
+	curr = add_selector(L"gg", NORMAL_MODE);
+	curr->data.handler = keys_gg;
+
+	curr = add_cmd(L"h", NORMAL_MODE);
 	curr->data.handler = keys_h;
 
-	curr = add_keys(L"i", NORMAL_MODE);
+	curr = add_cmd(L"i", NORMAL_MODE);
 	curr->data.handler = keys_i;
 
-	curr = add_keys(L"j", NORMAL_MODE);
+	curr = add_cmd(L"j", NORMAL_MODE);
 	curr->data.handler = keys_j;
-	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys(L"k", NORMAL_MODE);
+	curr = add_selector(L"j", NORMAL_MODE);
+	curr->data.handler = keys_j;
+
+	curr = add_cmd(L"k", NORMAL_MODE);
 	curr->data.handler = keys_k;
-	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys(L"l", NORMAL_MODE);
+	curr = add_selector(L"k", NORMAL_MODE);
+	curr->data.handler = keys_k;
+
+	curr = add_cmd(L"l", NORMAL_MODE);
 	curr->data.handler = keys_l;
 
-	curr = add_keys(L"m", NORMAL_MODE);
+	curr = add_cmd(L"m", NORMAL_MODE);
 	curr->type = BUILDIN_WAIT_POINT;
 	curr->data.handler = keys_m;
 	curr->followed = FOLLOWED_BY_MULTIKEY;
 
-	curr = add_keys(L"n", NORMAL_MODE);
+	curr = add_cmd(L"n", NORMAL_MODE);
 	curr->data.handler = keys_n;
 
-	curr = add_keys(L"p", NORMAL_MODE);
+	curr = add_cmd(L"p", NORMAL_MODE);
 	curr->data.handler = keys_p;
 
-	curr = add_keys(L"os", NORMAL_MODE);
+	curr = add_selector(L"os", NORMAL_MODE);
 	curr->data.handler = keys_os;
-	curr->selector = KS_ONLY_SELECTOR;
 
-	curr = add_keys(L"t", NORMAL_MODE);
+	curr = add_cmd(L"t", NORMAL_MODE);
 	curr->data.handler = keys_t;
 
-	curr = add_keys(L"yy", NORMAL_MODE);
+	curr = add_cmd(L"yy", NORMAL_MODE);
 	curr->data.handler = keys_yy;
 
-	curr = add_keys(L"y", NORMAL_MODE);
+	curr = add_cmd(L"y", NORMAL_MODE);
 	curr->data.handler = keys_y_selector;
 	curr->type = BUILDIN_WAIT_POINT;
 	curr->followed = FOLLOWED_BY_SELECTOR;
 
-	curr = add_keys(L"v", NORMAL_MODE);
+	curr = add_cmd(L"v", NORMAL_MODE);
 	curr->data.handler = keys_V;
 
-	curr = add_keys(L"zM", NORMAL_MODE);
+	curr = add_cmd(L"zM", NORMAL_MODE);
 	curr->data.handler = keys_zM;
 
-	curr = add_keys(L"zO", NORMAL_MODE);
+	curr = add_cmd(L"zO", NORMAL_MODE);
 	curr->data.handler = keys_zO;
 
-	curr = add_keys(L"zR", NORMAL_MODE);
+	curr = add_cmd(L"zR", NORMAL_MODE);
 	curr->data.handler = keys_zR;
 
-	curr = add_keys(L"za", NORMAL_MODE);
+	curr = add_cmd(L"za", NORMAL_MODE);
 	curr->data.handler = keys_za;
 
-	curr = add_keys(L"zb", NORMAL_MODE);
+	curr = add_cmd(L"zb", NORMAL_MODE);
 	curr->data.handler = keys_zb;
 
-	curr = add_keys(L"zf", NORMAL_MODE);
+	curr = add_cmd(L"zf", NORMAL_MODE);
 	curr->data.handler = keys_zf;
 
-	curr = add_keys(L"zm", NORMAL_MODE);
+	curr = add_cmd(L"zm", NORMAL_MODE);
 	curr->data.handler = keys_zm;
 
-	curr = add_keys(L"zo", NORMAL_MODE);
+	curr = add_cmd(L"zo", NORMAL_MODE);
 	curr->data.handler = keys_zo;
 
-	curr = add_keys(L"zt", NORMAL_MODE);
+	curr = add_cmd(L"zt", NORMAL_MODE);
 	curr->data.handler = keys_zt;
 
-	curr = add_keys(L"zz", NORMAL_MODE);
+	curr = add_cmd(L"zz", NORMAL_MODE);
 	curr->data.handler = keys_zz;
 
 	init_extended_keys();
@@ -416,27 +427,27 @@ init_extended_keys(void)
 	wchar_t buf[] = {L'\0', L'\0'};
 
 	buf[0] = KEY_PPAGE;
-	curr = add_keys(buf, NORMAL_MODE);
+	curr = add_cmd(buf, NORMAL_MODE);
 	curr->data.handler = keys_ctrl_b;
 
 	buf[0] = KEY_NPAGE;
-	curr = add_keys(buf, NORMAL_MODE);
+	curr = add_cmd(buf, NORMAL_MODE);
 	curr->data.handler = keys_ctrl_f;
 
 	buf[0] = KEY_LEFT;
-	curr = add_keys(buf, NORMAL_MODE);
+	curr = add_cmd(buf, NORMAL_MODE);
 	curr->data.handler = keys_h;
 
 	buf[0] = KEY_DOWN;
-	curr = add_keys(buf, NORMAL_MODE);
+	curr = add_cmd(buf, NORMAL_MODE);
 	curr->data.handler = keys_j;
 
 	buf[0] = KEY_UP;
-	curr = add_keys(buf, NORMAL_MODE);
+	curr = add_cmd(buf, NORMAL_MODE);
 	curr->data.handler = keys_k;
 
 	buf[0] = KEY_RIGHT;
-	curr = add_keys(buf, NORMAL_MODE);
+	curr = add_cmd(buf, NORMAL_MODE);
 	curr->data.handler = keys_l;
 #endif /* ENABLE_EXTENDED_KEYS */
 }

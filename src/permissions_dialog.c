@@ -64,30 +64,30 @@ init_permissions_dialog_mode(int *key_mode)
 
 	mode = key_mode;
 
-	curr = add_keys(L"\x03", PERMISSIONS_MODE);
+	curr = add_cmd(L"\x03", PERMISSIONS_MODE);
 	curr->data.handler = keys_ctrl_c;
 
 	/* return */
-	curr = add_keys(L"\x0d", PERMISSIONS_MODE);
+	curr = add_cmd(L"\x0d", PERMISSIONS_MODE);
 	curr->data.handler = keys_ctrl_m;
 
 	/* escape */
-	curr = add_keys(L"\x1b", PERMISSIONS_MODE);
+	curr = add_cmd(L"\x1b", PERMISSIONS_MODE);
 	curr->data.handler = keys_ctrl_c;
 
-	curr = add_keys(L" ", PERMISSIONS_MODE);
+	curr = add_cmd(L" ", PERMISSIONS_MODE);
 	curr->data.handler = keys_space;
 
-	curr = add_keys(L"j", PERMISSIONS_MODE);
+	curr = add_cmd(L"j", PERMISSIONS_MODE);
 	curr->data.handler = keys_j;
 
-	curr = add_keys(L"k", PERMISSIONS_MODE);
+	curr = add_cmd(L"k", PERMISSIONS_MODE);
 	curr->data.handler = keys_k;
 
-	curr = add_keys(L"l", PERMISSIONS_MODE);
+	curr = add_cmd(L"l", PERMISSIONS_MODE);
 	curr->data.handler = keys_ctrl_m;
 
-	curr = add_keys(L"t", PERMISSIONS_MODE);
+	curr = add_cmd(L"t", PERMISSIONS_MODE);
 	curr->data.handler = keys_space;
 
 	init_extended_keys();
@@ -101,11 +101,11 @@ init_extended_keys(void)
 	wchar_t buf[] = {L'\0', L'\0'};
 
 	buf[0] = KEY_UP;
-	curr = add_keys(buf, PERMISSIONS_MODE);
+	curr = add_cmd(buf, PERMISSIONS_MODE);
 	curr->data.handler = keys_k;
 
 	buf[0] = KEY_DOWN;
-	curr = add_keys(buf, PERMISSIONS_MODE);
+	curr = add_cmd(buf, PERMISSIONS_MODE);
 	curr->data.handler = keys_j;
 #endif /* ENABLE_EXTENDED_KEYS */
 }

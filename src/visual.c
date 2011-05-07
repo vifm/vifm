@@ -67,59 +67,67 @@ init_visual_mode(int *key_mode)
 
 	mode = key_mode;
 
-	curr = add_keys(L"\x02", VISUAL_MODE);
+	curr = add_cmd(L"\x02", VISUAL_MODE);
 	curr->data.handler = keys_ctrl_b;
 
-	curr = add_keys(L"\x03", VISUAL_MODE);
+	curr = add_cmd(L"\x03", VISUAL_MODE);
 	curr->data.handler = keys_ctrl_c;
 
-	curr = add_keys(L"\x06", VISUAL_MODE);
+	curr = add_cmd(L"\x06", VISUAL_MODE);
 	curr->data.handler = keys_ctrl_f;
 
-	curr = add_keys(L"\x1b", VISUAL_MODE);
+	curr = add_cmd(L"\x1b", VISUAL_MODE);
 	curr->data.handler = keys_ctrl_c;
 
-	curr = add_keys(L":", VISUAL_MODE);
+	curr = add_cmd(L":", VISUAL_MODE);
 	curr->data.handler = keys_colon;
 
-	curr = add_keys(L"D", VISUAL_MODE);
+	curr = add_cmd(L"D", VISUAL_MODE);
 	curr->data.handler = keys_D;
 
-	curr = add_keys(L"G", VISUAL_MODE);
+	curr = add_cmd(L"G", VISUAL_MODE);
 	curr->data.handler = keys_G;
-	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys(L"H", VISUAL_MODE);
+	curr = add_selector(L"G", VISUAL_MODE);
+	curr->data.handler = keys_G;
+
+	curr = add_cmd(L"H", VISUAL_MODE);
 	curr->data.handler = keys_H;
-	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys(L"L", VISUAL_MODE);
+	curr = add_selector(L"H", VISUAL_MODE);
+	curr->data.handler = keys_H;
+
+	curr = add_cmd(L"L", VISUAL_MODE);
 	curr->data.handler = keys_L;
-	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys(L"M", VISUAL_MODE);
+	curr = add_selector(L"L", VISUAL_MODE);
+	curr->data.handler = keys_L;
+
+	curr = add_cmd(L"M", VISUAL_MODE);
 	curr->data.handler = keys_M;
-	curr->selector = KS_SELECTOR_AND_CMD;
 
-	curr = add_keys(L"V", VISUAL_MODE);
+	curr = add_selector(L"M", VISUAL_MODE);
+	curr->data.handler = keys_M;
+
+	curr = add_cmd(L"V", VISUAL_MODE);
 	curr->data.handler = keys_ctrl_c;
 
-	curr = add_keys(L"d", VISUAL_MODE);
+	curr = add_cmd(L"d", VISUAL_MODE);
 	curr->data.handler = keys_d;
 
-	curr = add_keys(L"gg", VISUAL_MODE);
+	curr = add_cmd(L"gg", VISUAL_MODE);
 	curr->data.handler = keys_gg;
 
-	curr = add_keys(L"j", VISUAL_MODE);
+	curr = add_cmd(L"j", VISUAL_MODE);
 	curr->data.handler = keys_j;
 
-	curr = add_keys(L"k", VISUAL_MODE);
+	curr = add_cmd(L"k", VISUAL_MODE);
 	curr->data.handler = keys_k;
 
-	curr = add_keys(L"v", VISUAL_MODE);
+	curr = add_cmd(L"v", VISUAL_MODE);
 	curr->data.handler = keys_ctrl_c;
 
-	curr = add_keys(L"y", VISUAL_MODE);
+	curr = add_cmd(L"y", VISUAL_MODE);
 	curr->data.handler = keys_y;
 
 	init_extended_keys();
