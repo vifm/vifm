@@ -87,8 +87,6 @@ show_full_file_properties(FileView *view)
 
 	setup_menu(view);
 
-	getmaxyx(stdscr, y, x);
-	wresize(menu_win, y - 1, x);
 	getmaxyx(menu_win, y, x);
 	werase(menu_win);
 

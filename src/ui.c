@@ -360,6 +360,7 @@ redraw_window(void)
 	wclear(lborder);
 
 	wresize(stdscr, screen_y, screen_x);
+	wresize(menu_win, screen_y - 1, screen_x);
 	wresize(error_win, (screen_y -10)/2, screen_x -2);
 	mvwin(error_win, (screen_y -10)/2, 1);
 	wresize(lborder, screen_y -2, 1);
