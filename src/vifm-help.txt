@@ -11,6 +11,7 @@ The basic vi key bindings are used to move through the files and popup
 	Ctrl-l will clear and redraw the screen.
 
 	gg top of list
+	ga calculate size of directory
 	G bottom of list
 	cg change group of file.
 	co change owner of file.
