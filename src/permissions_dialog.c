@@ -46,14 +46,14 @@ static int perms[] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 static void init_extended_keys(void);
 static void leave_permissions_mode(void);
-static void keys_ctrl_c(struct key_info, struct keys_info *);
-static void keys_ctrl_m(struct key_info, struct keys_info *);
+static void cmd_ctrl_c(struct key_info, struct keys_info *);
+static void cmd_ctrl_m(struct key_info, struct keys_info *);
 static void set_perm_string(FileView *view, int *perms, char *file);
 static void file_chmod(FileView *view, char *path, char *mode,
 		int recurse_dirs);
-static void keys_space(struct key_info, struct keys_info *);
-static void keys_j(struct key_info, struct keys_info *);
-static void keys_k(struct key_info, struct keys_info *);
+static void cmd_space(struct key_info, struct keys_info *);
+static void cmd_j(struct key_info, struct keys_info *);
+static void cmd_k(struct key_info, struct keys_info *);
 
 void
 init_permissions_dialog_mode(int *key_mode)
@@ -65,30 +65,30 @@ init_permissions_dialog_mode(int *key_mode)
 	mode = key_mode;
 
 	curr = add_cmd(L"\x03", PERMISSIONS_MODE);
-	curr->data.handler = keys_ctrl_c;
+	curr->data.handler = cmd_ctrl_c;
 
 	/* return */
 	curr = add_cmd(L"\x0d", PERMISSIONS_MODE);
-	curr->data.handler = keys_ctrl_m;
+	curr->data.handler = cmd_ctrl_m;
 
 	/* escape */
 	curr = add_cmd(L"\x1b", PERMISSIONS_MODE);
-	curr->data.handler = keys_ctrl_c;
+	curr->data.handler = cmd_ctrl_c;
 
 	curr = add_cmd(L" ", PERMISSIONS_MODE);
-	curr->data.handler = keys_space;
+	curr->data.handler = cmd_space;
 
 	curr = add_cmd(L"j", PERMISSIONS_MODE);
-	curr->data.handler = keys_j;
+	curr->data.handler = cmd_j;
 
 	curr = add_cmd(L"k", PERMISSIONS_MODE);
-	curr->data.handler = keys_k;
+	curr->data.handler = cmd_k;
 
 	curr = add_cmd(L"l", PERMISSIONS_MODE);
-	curr->data.handler = keys_ctrl_m;
+	curr->data.handler = cmd_ctrl_m;
 
 	curr = add_cmd(L"t", PERMISSIONS_MODE);
-	curr->data.handler = keys_space;
+	curr->data.handler = cmd_space;
 
 	init_extended_keys();
 }
@@ -102,11 +102,11 @@ init_extended_keys(void)
 
 	buf[0] = KEY_UP;
 	curr = add_cmd(buf, PERMISSIONS_MODE);
-	curr->data.handler = keys_k;
+	curr->data.handler = cmd_k;
 
 	buf[0] = KEY_DOWN;
 	curr = add_cmd(buf, PERMISSIONS_MODE);
-	curr->data.handler = keys_j;
+	curr->data.handler = cmd_j;
 #endif /* ENABLE_EXTENDED_KEYS */
 }
 
@@ -235,13 +235,13 @@ leave_permissions_mode(void)
 }
 
 static void
-keys_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
 	leave_permissions_mode();
 }
 
 static void
-keys_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 {
 	char path[PATH_MAX];
 
@@ -305,7 +305,7 @@ file_chmod(FileView *view, char *path, char *mode, int recurse_dirs)
 }
 
 static void
-keys_space(struct key_info key_info, struct keys_info *keys_info)
+cmd_space(struct key_info key_info, struct keys_info *keys_info)
 {
 	changed = 1;
 
@@ -317,7 +317,7 @@ keys_space(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_j(struct key_info key_info, struct keys_info *keys_info)
+cmd_j(struct key_info key_info, struct keys_info *keys_info)
 {
 	curr += step;
 	permnum++;
@@ -335,7 +335,7 @@ keys_j(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_k(struct key_info key_info, struct keys_info *keys_info)
+cmd_k(struct key_info key_info, struct keys_info *keys_info)
 {
 	curr -= step;
 	permnum--;

@@ -45,20 +45,20 @@ static int last_search_backward;
 
 static void init_extended_keys(void);
 static void leave_menu_mode(void);
-static void keys_ctrl_b(struct key_info, struct keys_info *);
-static void keys_ctrl_c(struct key_info, struct keys_info *);
-static void keys_ctrl_f(struct key_info, struct keys_info *);
-static void keys_ctrl_m(struct key_info, struct keys_info *);
-static void keys_slash(struct key_info, struct keys_info *);
-static void keys_colon(struct key_info, struct keys_info *);
-static void keys_question(struct key_info, struct keys_info *);
-static void keys_G(struct key_info, struct keys_info *);
-static void keys_N(struct key_info, struct keys_info *);
-static void keys_dd(struct key_info, struct keys_info *);
-static void keys_gg(struct key_info, struct keys_info *);
-static void keys_j(struct key_info, struct keys_info *);
-static void keys_k(struct key_info, struct keys_info *);
-static void keys_n(struct key_info, struct keys_info *);
+static void cmd_ctrl_b(struct key_info, struct keys_info *);
+static void cmd_ctrl_c(struct key_info, struct keys_info *);
+static void cmd_ctrl_f(struct key_info, struct keys_info *);
+static void cmd_ctrl_m(struct key_info, struct keys_info *);
+static void cmd_slash(struct key_info, struct keys_info *);
+static void cmd_colon(struct key_info, struct keys_info *);
+static void cmd_question(struct key_info, struct keys_info *);
+static void cmd_G(struct key_info, struct keys_info *);
+static void cmd_N(struct key_info, struct keys_info *);
+static void cmd_dd(struct key_info, struct keys_info *);
+static void cmd_gg(struct key_info, struct keys_info *);
+static void cmd_j(struct key_info, struct keys_info *);
+static void cmd_k(struct key_info, struct keys_info *);
+static void cmd_n(struct key_info, struct keys_info *);
 
 void
 init_menu_mode(int *key_mode)
@@ -70,54 +70,54 @@ init_menu_mode(int *key_mode)
 	mode = key_mode;
 
 	curr = add_cmd(L"\x02", MENU_MODE);
-	curr->data.handler = keys_ctrl_b;
+	curr->data.handler = cmd_ctrl_b;
 
 	curr = add_cmd(L"\x03", MENU_MODE);
-	curr->data.handler = keys_ctrl_c;
+	curr->data.handler = cmd_ctrl_c;
 
 	curr = add_cmd(L"\x06", MENU_MODE);
-	curr->data.handler = keys_ctrl_f;
+	curr->data.handler = cmd_ctrl_f;
 
 	/* return */
 	curr = add_cmd(L"\x0d", MENU_MODE);
-	curr->data.handler = keys_ctrl_m;
+	curr->data.handler = cmd_ctrl_m;
 
 	/* escape */
 	curr = add_cmd(L"\x1b", MENU_MODE);
-	curr->data.handler = keys_ctrl_c;
+	curr->data.handler = cmd_ctrl_c;
 
 	curr = add_cmd(L"/", MENU_MODE);
-	curr->data.handler = keys_slash;
+	curr->data.handler = cmd_slash;
 
 	curr = add_cmd(L":", MENU_MODE);
-	curr->data.handler = keys_colon;
+	curr->data.handler = cmd_colon;
 
 	curr = add_cmd(L"?", MENU_MODE);
-	curr->data.handler = keys_question;
+	curr->data.handler = cmd_question;
 
 	curr = add_cmd(L"G", MENU_MODE);
-	curr->data.handler = keys_G;
+	curr->data.handler = cmd_G;
 
 	curr = add_cmd(L"N", MENU_MODE);
-	curr->data.handler = keys_N;
+	curr->data.handler = cmd_N;
 
 	curr = add_cmd(L"dd", MENU_MODE);
-	curr->data.handler = keys_dd;
+	curr->data.handler = cmd_dd;
 
 	curr = add_cmd(L"gg", MENU_MODE);
-	curr->data.handler = keys_gg;
+	curr->data.handler = cmd_gg;
 
 	curr = add_cmd(L"j", MENU_MODE);
-	curr->data.handler = keys_j;
+	curr->data.handler = cmd_j;
 
 	curr = add_cmd(L"k", MENU_MODE);
-	curr->data.handler = keys_k;
+	curr->data.handler = cmd_k;
 
 	curr = add_cmd(L"l", MENU_MODE);
-	curr->data.handler = keys_ctrl_m;
+	curr->data.handler = cmd_ctrl_m;
 
 	curr = add_cmd(L"n", MENU_MODE);
-	curr->data.handler = keys_n;
+	curr->data.handler = cmd_n;
 
 	init_extended_keys();
 }
@@ -131,19 +131,19 @@ init_extended_keys(void)
 
 	buf[0] = KEY_PPAGE;
 	curr = add_cmd(buf, MENU_MODE);
-	curr->data.handler = keys_ctrl_b;
+	curr->data.handler = cmd_ctrl_b;
 
 	buf[0] = KEY_NPAGE;
 	curr = add_cmd(buf, MENU_MODE);
-	curr->data.handler = keys_ctrl_f;
+	curr->data.handler = cmd_ctrl_f;
 
 	buf[0] = KEY_UP;
 	curr = add_cmd(buf, MENU_MODE);
-	curr->data.handler = keys_k;
+	curr->data.handler = cmd_k;
 
 	buf[0] = KEY_DOWN;
 	curr = add_cmd(buf, MENU_MODE);
-	curr->data.handler = keys_j;
+	curr->data.handler = cmd_j;
 #endif /* ENABLE_EXTENDED_KEYS */
 }
 
@@ -210,7 +210,7 @@ leave_menu_mode(void)
 }
 
 static void
-keys_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
 	menu->pos -= menu->win_rows - 3;
@@ -219,13 +219,13 @@ keys_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
 	leave_menu_mode();
 }
 
 static void
-keys_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
 	menu->pos += menu->win_rows - 3;
@@ -234,14 +234,14 @@ keys_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 {
 	execute_menu_cb(curr_view, menu);
 	leave_menu_mode();
 }
 
 static void
-keys_slash(struct key_info key_info, struct keys_info *keys_info)
+cmd_slash(struct key_info key_info, struct keys_info *keys_info)
 {
 	last_search_backward = 0;
 	menu->match_dir = NONE;
@@ -251,13 +251,13 @@ keys_slash(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_colon(struct key_info key_info, struct keys_info *keys_info)
+cmd_colon(struct key_info key_info, struct keys_info *keys_info)
 {
 	enter_cmdline_mode(MENU_CMD_SUBMODE, L"", menu);
 }
 
 static void
-keys_question(struct key_info key_info, struct keys_info *keys_info)
+cmd_question(struct key_info key_info, struct keys_info *keys_info)
 {
 	last_search_backward = 1;
 	menu->match_dir = NONE;
@@ -266,7 +266,7 @@ keys_question(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_G(struct key_info key_info, struct keys_info *keys_info)
+cmd_G(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
 	moveto_menu_pos(curr_view, menu->len - 1, menu);
@@ -274,7 +274,7 @@ keys_G(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_N(struct key_info key_info, struct keys_info *keys_info)
+cmd_N(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(menu->regexp != NULL)
 	{
@@ -291,7 +291,7 @@ keys_N(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_dd(struct key_info key_info, struct keys_info *keys_info)
+cmd_dd(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(menu->type == COMMAND)
 	{
@@ -323,7 +323,7 @@ keys_dd(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_gg(struct key_info key_info, struct keys_info *keys_info)
+cmd_gg(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
 	moveto_menu_pos(curr_view, 0, menu);
@@ -331,7 +331,7 @@ keys_gg(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_j(struct key_info key_info, struct keys_info *keys_info)
+cmd_j(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
@@ -343,7 +343,7 @@ keys_j(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_k(struct key_info key_info, struct keys_info *keys_info)
+cmd_k(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
@@ -355,7 +355,7 @@ keys_k(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_n(struct key_info key_info, struct keys_info *keys_info)
+cmd_n(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(menu->regexp != NULL)
 	{

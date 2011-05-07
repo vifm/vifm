@@ -48,14 +48,14 @@ static const char * caps[] = { "a-z", "z-a" };
 
 static void init_extended_keys(void);
 static void leave_sort_mode(void);
-static void keys_ctrl_c(struct key_info, struct keys_info *);
-static void keys_ctrl_m(struct key_info, struct keys_info *);
-static void keys_G(struct key_info, struct keys_info *);
-static void keys_gg(struct key_info, struct keys_info *);
+static void cmd_ctrl_c(struct key_info, struct keys_info *);
+static void cmd_ctrl_m(struct key_info, struct keys_info *);
+static void cmd_G(struct key_info, struct keys_info *);
+static void cmd_gg(struct key_info, struct keys_info *);
 static void goto_line(int line);
-static void keys_h(struct key_info, struct keys_info *);
-static void keys_j(struct key_info, struct keys_info *);
-static void keys_k(struct key_info, struct keys_info *);
+static void cmd_h(struct key_info, struct keys_info *);
+static void cmd_j(struct key_info, struct keys_info *);
+static void cmd_k(struct key_info, struct keys_info *);
 static void print_at_pos(void);
 static void clear_at_pos(void);
 
@@ -69,33 +69,33 @@ init_sort_dialog_mode(int *key_mode)
 	mode = key_mode;
 
 	curr = add_cmd(L"\x03", SORT_MODE);
-	curr->data.handler = keys_ctrl_c;
+	curr->data.handler = cmd_ctrl_c;
 
 	/* return */
 	curr = add_cmd(L"\x0d", SORT_MODE);
-	curr->data.handler = keys_ctrl_m;
+	curr->data.handler = cmd_ctrl_m;
 
 	/* escape */
 	curr = add_cmd(L"\x1b", SORT_MODE);
-	curr->data.handler = keys_ctrl_c;
+	curr->data.handler = cmd_ctrl_c;
 
 	curr = add_cmd(L"G", SORT_MODE);
-	curr->data.handler = keys_G;
+	curr->data.handler = cmd_G;
 
 	curr = add_cmd(L"gg", SORT_MODE);
-	curr->data.handler = keys_gg;
+	curr->data.handler = cmd_gg;
 
 	curr = add_cmd(L"h", SORT_MODE);
-	curr->data.handler = keys_h;
+	curr->data.handler = cmd_h;
 
 	curr = add_cmd(L"j", SORT_MODE);
-	curr->data.handler = keys_j;
+	curr->data.handler = cmd_j;
 
 	curr = add_cmd(L"k", SORT_MODE);
-	curr->data.handler = keys_k;
+	curr->data.handler = cmd_k;
 
 	curr = add_cmd(L"l", SORT_MODE);
-	curr->data.handler = keys_ctrl_m;
+	curr->data.handler = cmd_ctrl_m;
 
 	init_extended_keys();
 }
@@ -109,11 +109,11 @@ init_extended_keys(void)
 
 	buf[0] = KEY_UP;
 	curr = add_cmd(buf, SORT_MODE);
-	curr->data.handler = keys_k;
+	curr->data.handler = cmd_k;
 
 	buf[0] = KEY_DOWN;
 	curr = add_cmd(buf, SORT_MODE);
-	curr->data.handler = keys_j;
+	curr->data.handler = cmd_j;
 #endif /* ENABLE_EXTENDED_KEYS */
 }
 
@@ -172,13 +172,13 @@ leave_sort_mode(void)
 }
 
 static void
-keys_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
 	leave_sort_mode();
 }
 
 static void
-keys_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 {
 	char filename[NAME_MAX];
 
@@ -195,7 +195,7 @@ keys_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_G(struct key_info key_info, struct keys_info *keys_info)
+cmd_G(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		goto_line(bottom);
@@ -204,7 +204,7 @@ keys_G(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_gg(struct key_info key_info, struct keys_info *keys_info)
+cmd_gg(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		goto_line(top);
@@ -227,7 +227,7 @@ goto_line(int line)
 }
 
 static void
-keys_h(struct key_info key_info, struct keys_info *keys_info)
+cmd_h(struct key_info key_info, struct keys_info *keys_info)
 {
 	descending = !descending;
 	clear_at_pos();
@@ -236,7 +236,7 @@ keys_h(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_j(struct key_info key_info, struct keys_info *keys_info)
+cmd_j(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
@@ -251,7 +251,7 @@ keys_j(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_k(struct key_info key_info, struct keys_info *keys_info)
+cmd_k(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;

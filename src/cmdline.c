@@ -82,27 +82,27 @@ static void update_cmdline_text(void);
 static wchar_t * wcsins(wchar_t *src, wchar_t *ins, int pos);
 static void prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd);
 static void leave_cmdline_mode(void);
-static void keys_ctrl_c(struct key_info, struct keys_info *);
-static void keys_ctrl_h(struct key_info, struct keys_info *);
-static void keys_ctrl_i(struct key_info, struct keys_info *);
-static void keys_ctrl_k(struct key_info, struct keys_info *);
-static void keys_ctrl_m(struct key_info, struct keys_info *);
-static void keys_ctrl_n(struct key_info, struct keys_info *);
-static void keys_ctrl_u(struct key_info, struct keys_info *);
-static void keys_ctrl_w(struct key_info, struct keys_info *);
-static void keys_meta_b(struct key_info, struct keys_info *);
+static void cmd_ctrl_c(struct key_info, struct keys_info *);
+static void cmd_ctrl_h(struct key_info, struct keys_info *);
+static void cmd_ctrl_i(struct key_info, struct keys_info *);
+static void cmd_ctrl_k(struct key_info, struct keys_info *);
+static void cmd_ctrl_m(struct key_info, struct keys_info *);
+static void cmd_ctrl_n(struct key_info, struct keys_info *);
+static void cmd_ctrl_u(struct key_info, struct keys_info *);
+static void cmd_ctrl_w(struct key_info, struct keys_info *);
+static void cmd_meta_b(struct key_info, struct keys_info *);
 static void find_prev_word(void);
-static void keys_meta_d(struct key_info, struct keys_info *);
-static void keys_meta_f(struct key_info, struct keys_info *);
+static void cmd_meta_d(struct key_info, struct keys_info *);
+static void cmd_meta_f(struct key_info, struct keys_info *);
 static void find_next_word(void);
-static void keys_left(struct key_info, struct keys_info *);
-static void keys_right(struct key_info, struct keys_info *);
-static void keys_home(struct key_info, struct keys_info *);
-static void keys_end(struct key_info, struct keys_info *);
-static void keys_delete(struct key_info, struct keys_info *);
+static void cmd_left(struct key_info, struct keys_info *);
+static void cmd_right(struct key_info, struct keys_info *);
+static void cmd_home(struct key_info, struct keys_info *);
+static void cmd_end(struct key_info, struct keys_info *);
+static void cmd_delete(struct key_info, struct keys_info *);
 static void complete_cmd_next(void);
 static void complete_search_next(void);
-static void keys_ctrl_p(struct key_info, struct keys_info *);
+static void cmd_ctrl_p(struct key_info, struct keys_info *);
 static void complete_cmd_prev(void);
 static void complete_search_prev(void);
 static int line_completion(struct line_stats *stat);
@@ -126,39 +126,39 @@ init_cmdline_mode(int *key_mode)
 	set_def_handler(CMDLINE_MODE, def_handler);
 
 	curr = add_cmd(L"\x03", CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_c;
+	curr->data.handler = cmd_ctrl_c;
 
 	/* backspace */
 	curr = add_cmd(L"\x08", CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_h;
+	curr->data.handler = cmd_ctrl_h;
 
 	curr = add_cmd(L"\x09", CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_i;
+	curr->data.handler = cmd_ctrl_i;
 
 	curr = add_cmd(L"\x0b", CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_k;
+	curr->data.handler = cmd_ctrl_k;
 
 	curr = add_cmd(L"\x0d", CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_m;
+	curr->data.handler = cmd_ctrl_m;
 
 	curr = add_cmd(L"\x0e", CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_n;
+	curr->data.handler = cmd_ctrl_n;
 
 	curr = add_cmd(L"\x10", CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_p;
+	curr->data.handler = cmd_ctrl_p;
 
 	/* escape */
 	curr = add_cmd(L"\x1b", CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_c;
+	curr->data.handler = cmd_ctrl_c;
 	curr->type = BUILDIN_WAIT_POINT;
 
 	/* escape escape */
 	curr = add_cmd(L"\x1b\x1b", CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_c;
+	curr->data.handler = cmd_ctrl_c;
 
 	/* ascii Delete */
 	curr = add_cmd(L"\x7f", CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_h;
+	curr->data.handler = cmd_ctrl_h;
 
 	init_extended_keys();
 	init_emacs_keys();
@@ -239,35 +239,35 @@ init_extended_keys(void)
 
 	buf[0] = KEY_BACKSPACE;
 	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_h;
+	curr->data.handler = cmd_ctrl_h;
 
 	buf[0] = KEY_DOWN;
 	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_n;
+	curr->data.handler = cmd_ctrl_n;
 
 	buf[0] = KEY_UP;
 	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_p;
+	curr->data.handler = cmd_ctrl_p;
 
 	buf[0] = KEY_LEFT;
 	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = keys_left;
+	curr->data.handler = cmd_left;
 
 	buf[0] = KEY_RIGHT;
 	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = keys_right;
+	curr->data.handler = cmd_right;
 
 	buf[0] = KEY_HOME;
 	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = keys_home;
+	curr->data.handler = cmd_home;
 
 	buf[0] = KEY_END;
 	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = keys_end;
+	curr->data.handler = cmd_end;
 
 	buf[0] = KEY_DC;
 	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = keys_delete;
+	curr->data.handler = cmd_delete;
 #endif /* ENABLE_EXTENDED_KEYS */
 }
 
@@ -278,38 +278,38 @@ init_emacs_keys(void)
 
 	/* ctrl b */
 	curr = add_cmd(L"\x02", CMDLINE_MODE);
-	curr->data.handler = keys_left;
+	curr->data.handler = cmd_left;
 
 	/* ctrl f */
 	curr = add_cmd(L"\x06", CMDLINE_MODE);
-	curr->data.handler = keys_right;
+	curr->data.handler = cmd_right;
 
 	/* ctrl a */
 	curr = add_cmd(L"\x01", CMDLINE_MODE);
-	curr->data.handler = keys_home;
+	curr->data.handler = cmd_home;
 
 	/* ctrl e */
 	curr = add_cmd(L"\x05", CMDLINE_MODE);
-	curr->data.handler = keys_end;
+	curr->data.handler = cmd_end;
 
 	/* ctrl d */
 	curr = add_cmd(L"\x04", CMDLINE_MODE);
-	curr->data.handler = keys_delete;
+	curr->data.handler = cmd_delete;
 
 	curr = add_cmd(L"\x15", CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_u;
+	curr->data.handler = cmd_ctrl_u;
 
 	curr = add_cmd(L"\x17", CMDLINE_MODE);
-	curr->data.handler = keys_ctrl_w;
+	curr->data.handler = cmd_ctrl_w;
 
 	curr = add_cmd(L"\x1b"L"b", CMDLINE_MODE);
-	curr->data.handler = keys_meta_b;
+	curr->data.handler = cmd_meta_b;
 
 	curr = add_cmd(L"\x1b"L"d", CMDLINE_MODE);
-	curr->data.handler = keys_meta_d;
+	curr->data.handler = cmd_meta_d;
 
 	curr = add_cmd(L"\x1b"L"f", CMDLINE_MODE);
-	curr->data.handler = keys_meta_f;
+	curr->data.handler = cmd_meta_f;
 }
 
 static int
@@ -530,7 +530,7 @@ leave_cmdline_mode(void)
 }
 
 static void
-keys_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
 	werase(status_bar);
 	wnoutrefresh(status_bar);
@@ -539,7 +539,7 @@ keys_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.complete_continue = 0;
 
@@ -593,7 +593,7 @@ keys_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
 {
 	int len;
 	if(sub_mode != CMD_SUBMODE || input_stat.line == NULL)
@@ -613,7 +613,7 @@ keys_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_ctrl_k(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_k(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.complete_continue = 0;
 
@@ -630,7 +630,7 @@ keys_ctrl_k(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 {
 	char* p;
 	int i;
@@ -689,7 +689,7 @@ keys_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_ctrl_n(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_n(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.complete_continue = 0;
 
@@ -705,7 +705,7 @@ keys_ctrl_n(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.complete_continue = 0;
 
@@ -727,7 +727,7 @@ keys_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
 {
 	int old;
 
@@ -747,7 +747,7 @@ keys_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_meta_b(struct key_info key_info, struct keys_info *keys_info)
+cmd_meta_b(struct key_info key_info, struct keys_info *keys_info)
 {
 	find_prev_word();
 	wmove(status_bar, 0, input_stat.curs_pos);
@@ -769,7 +769,7 @@ find_prev_word(void)
 }
 
 static void
-keys_meta_d(struct key_info key_info, struct keys_info *keys_info)
+cmd_meta_d(struct key_info key_info, struct keys_info *keys_info)
 {
 	int old_i, old_c;
 
@@ -794,7 +794,7 @@ keys_meta_d(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_meta_f(struct key_info key_info, struct keys_info *keys_info)
+cmd_meta_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	find_next_word();
 	wmove(status_bar, 0, input_stat.curs_pos);
@@ -818,7 +818,7 @@ find_next_word(void)
 }
 
 static void
-keys_left(struct key_info key_info, struct keys_info *keys_info)
+cmd_left(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.complete_continue = 0;
 
@@ -832,7 +832,7 @@ keys_left(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_right(struct key_info key_info, struct keys_info *keys_info)
+cmd_right(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.complete_continue = 0;
 
@@ -846,7 +846,7 @@ keys_right(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_home(struct key_info key_info, struct keys_info *keys_info)
+cmd_home(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.index = 0;
 	input_stat.curs_pos = wcslen(input_stat.prompt);
@@ -854,7 +854,7 @@ keys_home(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_end(struct key_info key_info, struct keys_info *keys_info)
+cmd_end(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.index = input_stat.len;
 	input_stat.curs_pos = input_stat.prompt_wid + input_stat.len;
@@ -862,7 +862,7 @@ keys_end(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_delete(struct key_info key_info, struct keys_info *keys_info)
+cmd_delete(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.complete_continue = 0;
 
@@ -953,7 +953,7 @@ complete_search_prev(void)
 }
 
 static void
-keys_ctrl_p(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_p(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.complete_continue = 0;
 
