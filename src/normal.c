@@ -98,7 +98,7 @@ static void keys_D_selector(struct key_info, struct keys_info *);
 static void keys_d_selector(struct key_info, struct keys_info *);
 static void delete_with_selector(struct key_info, struct keys_info *,
 		int use_trash);
-static void keys_es(struct key_info, struct keys_info *);
+static void keys_S(struct key_info, struct keys_info *);
 static void keys_f(struct key_info, struct keys_info *);
 static void find_f(int ch);
 static void keys_ga(struct key_info, struct keys_info *);
@@ -110,7 +110,7 @@ static void keys_k(struct key_info, struct keys_info *);
 static void keys_l(struct key_info, struct keys_info *);
 static void keys_n(struct key_info, struct keys_info *);
 static void keys_p(struct key_info, struct keys_info *);
-static void keys_os(struct key_info, struct keys_info *);
+static void keys_s(struct key_info, struct keys_info *);
 static void keys_m(struct key_info, struct keys_info *);
 static void keys_t(struct key_info, struct keys_info *);
 static void keys_yy(struct key_info, struct keys_info *);
@@ -320,8 +320,8 @@ init_normal_mode(int *key_mode)
 	curr->type = BUILDIN_WAIT_POINT;
 	curr->followed = FOLLOWED_BY_SELECTOR;
 
-	curr = add_selector(L"es", NORMAL_MODE);
-	curr->data.handler = keys_es;
+	curr = add_selector(L"S", NORMAL_MODE);
+	curr->data.handler = keys_S;
 
 	curr = add_cmd(L"f", NORMAL_MODE);
 	curr->type = BUILDIN_WAIT_POINT;
@@ -369,8 +369,8 @@ init_normal_mode(int *key_mode)
 	curr = add_cmd(L"p", NORMAL_MODE);
 	curr->data.handler = keys_p;
 
-	curr = add_selector(L"os", NORMAL_MODE);
-	curr->data.handler = keys_os;
+	curr = add_selector(L"s", NORMAL_MODE);
+	curr->data.handler = keys_s;
 
 	curr = add_cmd(L"t", NORMAL_MODE);
 	curr->data.handler = keys_t;
@@ -623,7 +623,7 @@ keys_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_es(struct key_info key_info, struct keys_info *keys_info)
+keys_S(struct key_info key_info, struct keys_info *keys_info)
 {
 	int i, x;
 
@@ -1151,7 +1151,7 @@ keys_p(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_os(struct key_info key_info, struct keys_info *keys_info)
+keys_s(struct key_info key_info, struct keys_info *keys_info)
 {
 	int i, x;
 
