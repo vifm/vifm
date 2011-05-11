@@ -796,7 +796,7 @@ check_view_dir_history(FileView *view)
 	}
 	else
 	{
-		for(x = 0; x < view->history_num ; x++)
+		for(x = view->history_pos - 1; x >= 0; x--)
 		{
 			if(strlen(view->history[x].dir) < 1)
 				break;
@@ -1001,7 +1001,6 @@ change_directory(FileView *view, const char *directory)
 		}
 		/* else  It is an absolute path and does not need to be modified
 		 */
-
 	}
 	/* else -  should only happen when reloading a directory, changing views,
 	 * or when starting up and should already be an absolute path.

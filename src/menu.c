@@ -150,17 +150,12 @@ init_extended_keys(void)
 void
 enter_menu_mode(menu_info *m, FileView *active_view)
 {
-	int x, y;
-
 	werase(status_bar);
 
 	view = active_view;
 	menu = m;
 	*mode = MENU_MODE;
 	curr_stats.need_redraw = 1;
-
-	getmaxyx(stdscr, y, x);
-	wresize(menu_win, y - 1, x);
 }
 
 void
