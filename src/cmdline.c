@@ -1190,10 +1190,8 @@ line_completion(struct line_stats *stat)
 		char *filename = (char *)NULL;
 		char *raw_name = (char *)NULL;
 
-		if(id == COM_EXECUTE)
+		if(id == COM_EXECUTE && words_count == 1)
 		{
-			if(last_word == NULL)
-				last_word = "";
 			raw_name = exec_completion(stat->complete_continue ? NULL : last_word);
 		}
 		else
