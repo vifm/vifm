@@ -40,6 +40,8 @@
 #include "ui.h"
 #include "utils.h"
 
+static char rename_file_ext[NAME_MAX];
+
 int
 my_system(char *command)
 {
@@ -730,8 +732,8 @@ rename_file_cb(const char *new_name)
 	int found;
 
 	len = strlen(filename);
-	snprintf(new, sizeof(new), "%s%s", new_name,
-			filename[len - 1] == '/' ? "/" : "");
+	snprintf(new, sizeof(new), "%s%s%s", new_name,
+			filename[len - 1] == '/' ? "/" : "", rename_file_ext);
 
 	/* Filename unchanged */
 	if(strcmp(filename, new) == 0)
@@ -775,9 +777,10 @@ rename_file_cb(const char *new_name)
 }
 
 void
-rename_file(FileView *view)
+rename_file(FileView *view, int name_only)
 {
 	size_t len;
+	char* p;
 	char buf[NAME_MAX + 1];
 
 	strncpy(buf, get_current_file_name(curr_view), sizeof(buf));
@@ -792,6 +795,13 @@ rename_file(FileView *view)
 	len = strlen(buf);
 	if(buf[len - 1] == '/')
 		buf[len - 1] = '\0';
+
+	if (name_only || (p = strchr(buf, '.')) == NULL) {
+		rename_file_ext[0] = '\0';
+	} else {
+		strcpy(rename_file_ext, p);
+		*p = '\0';
+	}
 
 	enter_prompt_mode(L"New name: ", buf, rename_file_cb);
 }

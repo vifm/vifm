@@ -92,6 +92,7 @@ static void cmd_V(struct key_info, struct keys_info *);
 static void cmd_ZQ(struct key_info, struct keys_info *);
 static void cmd_ZZ(struct key_info, struct keys_info *);
 static void selector_a(struct key_info, struct keys_info *);
+static void cmd_cW(struct key_info, struct keys_info *);
 static void cmd_cg(struct key_info, struct keys_info *);
 static void cmd_co(struct key_info, struct keys_info *);
 static void cmd_cp(struct key_info, struct keys_info *);
@@ -284,6 +285,9 @@ init_normal_mode(int *key_mode)
 
 	curr = add_cmd(L"ZZ", NORMAL_MODE);
 	curr->data.handler = cmd_ZZ;
+
+	curr = add_cmd(L"cW", NORMAL_MODE);
+	curr->data.handler = cmd_cW;
 
 	curr = add_cmd(L"cg", NORMAL_MODE);
 	curr->data.handler = cmd_cg;
@@ -967,6 +971,13 @@ selector_a(struct key_info key_info, struct keys_info *keys_info)
 	keys_info->count = i;
 }
 
+/* Change word (rename file without extension). */
+static void
+cmd_cW(struct key_info key_info, struct keys_info *keys_info)
+{
+	rename_file(curr_view, 1);
+}
+
 /* Change group. */
 static void
 cmd_cg(struct key_info key_info, struct keys_info *keys_info)
@@ -992,7 +1003,7 @@ cmd_cp(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_cw(struct key_info key_info, struct keys_info *keys_info)
 {
-	rename_file(curr_view);
+	rename_file(curr_view, 0);
 }
 
 /* Delete file. */

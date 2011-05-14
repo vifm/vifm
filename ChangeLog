@@ -63,6 +63,8 @@
 
 	Added ga command (calculate directory size).
 
+	Added cW command (change only name of file and leave old extension).
+
 	Changed keys input handling.
 
 	Changed force dot files appear at the beginning of file list.

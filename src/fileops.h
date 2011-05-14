@@ -48,7 +48,7 @@ int pipe_and_capture_errors(char *command);
 int file_exec(char *command);
 void show_change_window(FileView *view, int type);
 int check_link_is_dir(FileView *view, int pos);
-void rename_file(FileView *view);
+void rename_file(FileView *view, int name_only);
 void change_owner(FileView *view);
 void change_group(FileView *view);
 /* Returns new value for save_msg flag. */
