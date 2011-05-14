@@ -1033,6 +1033,15 @@ change_directory(FileView *view, const char *directory)
 		return;
 	}
 
+	if(access(dir_dup, X_OK) != 0)
+	{
+		show_error_msg(" Directory Access Error ",
+				"You do not have execute access on that directory");
+
+		clean_selected_files(view);
+		return;
+	}
+
 	dir = opendir(dir_dup);
 
 	if(dir == NULL)
