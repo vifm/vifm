@@ -42,13 +42,15 @@ static int step;
 static int col;
 static int changed;
 static int file_is_dir;
-static int perms[] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
+static int perms[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
+static int origin_perms[13];
 
 static void init_extended_keys(void);
 static void leave_permissions_mode(void);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
-static void set_perm_string(FileView *view, int *perms, char *file);
+static void set_perm_string(FileView *view, const int *perms,
+		const int *origin_perms, char *file);
 static void file_chmod(FileView *view, char *path, char *mode,
 		int recurse_dirs);
 static void cmd_space(struct key_info, struct keys_info *);
@@ -133,6 +135,7 @@ enter_permissions_mode(FileView *active_view)
 	perms[9] = (fmode & S_IWOTH);
 	perms[10] = (fmode & S_IXOTH);
 	perms[11] = (fmode & S_ISVTX);
+	memcpy(origin_perms, perms, sizeof(perms));
 
 	file_is_dir = is_dir(get_current_file_name(view));
 
@@ -255,13 +258,14 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 	snprintf(path, sizeof(path), "%s/%s", view->curr_dir,
 			view->dir_entry[view->list_pos].name);
 
-	set_perm_string(view, perms, path);
+	set_perm_string(view, perms, origin_perms, path);
 	load_dir_list(view, 1);
 	moveto_list_pos(view, view->curr_line);
 }
 
 static void
-set_perm_string(FileView *view, int *perms, char *file)
+set_perm_string(FileView *view, const int *perms, const int *origin_perms,
+		char *file)
 {
 	int i = 0;
 	char *add_perm[] = {"u+r", "u+w", "u+x", "u+s", "g+r", "g+w", "g+x", "g+s",
@@ -272,6 +276,9 @@ set_perm_string(FileView *view, int *perms, char *file)
 
 	for(i = 0; i < 12; i++)
 	{
+		if(perms[i] == origin_perms[i])
+			continue;
+
 		if(perms[i])
 			strcat(perm_string, add_perm[i]);
 		else
