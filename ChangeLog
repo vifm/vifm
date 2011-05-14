@@ -79,6 +79,8 @@
 
 	Changed :cd completion to use only directories.
 
+	Changed permissions dialog to work with selected files.
+
 	Fixed segmentation fault caused by newwin.
 
 	Fixed segmentation fault caused by bookmarks menu.
