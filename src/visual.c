@@ -38,7 +38,6 @@ static int *mode;
 static FileView *view;
 static int start_pos;
 
-void leave_visual_mode(int save_msg);
 static void init_extended_keys(void);
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);

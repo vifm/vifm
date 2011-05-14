@@ -125,6 +125,7 @@ enter_permissions_mode(FileView *active_view)
 
 	view = active_view;
 	*mode = PERMISSIONS_MODE;
+	clear_input_bar();
 	curr_stats.use_input_bar = 0;
 	memset(perms, 0, sizeof(perms));
 
