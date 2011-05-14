@@ -29,6 +29,7 @@
 #include "fileops.h"
 #include "keys.h"
 #include "modes.h"
+#include "permissions_dialog.h"
 #include "status.h"
 
 #include "visual.h"
@@ -50,6 +51,7 @@ static void cmd_L(struct key_info, struct keys_info *);
 static void cmd_M(struct key_info, struct keys_info *);
 static void cmd_d(struct key_info, struct keys_info *);
 static void delete(struct key_info key_info, int use_trash);
+static void cmd_cp(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
@@ -102,6 +104,9 @@ init_visual_mode(int *key_mode)
 
 	curr = add_cmd(L"d", VISUAL_MODE);
 	curr->data.handler = cmd_d;
+
+	curr = add_cmd(L"cp", VISUAL_MODE);
+	curr->data.handler = cmd_cp;
 
 	curr = add_cmd(L"gg", VISUAL_MODE);
 	curr->data.handler = cmd_gg;
@@ -320,6 +325,13 @@ delete(struct key_info key_info, int use_trash)
 
 	save_msg = delete_file(view, key_info.reg, 0, NULL, use_trash);
 	leave_visual_mode(save_msg);
+}
+
+/* Change permissions. */
+static void
+cmd_cp(struct key_info key_info, struct keys_info *keys_info)
+{
+	enter_permissions_mode(curr_view);
 }
 
 static void
