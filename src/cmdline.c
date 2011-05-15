@@ -1604,6 +1604,7 @@ filename_completion(char *str, int type)
 	if(!found)
 	{
 		closedir(dir);
+		free(filename);
 		free(dirname);
 		return NULL;
 	}
