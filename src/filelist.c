@@ -1507,7 +1507,14 @@ check_if_filelists_have_changed(FileView *view)
 {
 	struct stat s;
 
-	stat(view->curr_dir, &s);
+	if(stat(view->curr_dir, &s) != 0)
+	{
+		show_error_msg(" Directory Access Error ",
+				"Cannot open directory");
+		change_directory(view, getenv("HOME"));
+		clean_selected_files(view);
+		s.st_mtime = -1; /* force window reload */
+	}
 	if(s.st_mtime != view->dir_mtime)
 		reload_window(view);
 
