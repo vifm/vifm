@@ -211,7 +211,10 @@ split_path(void)
 		snprintf(s, q - p + 1, "%s", p);
 
 		if(access(s, F_OK) != 0)
+		{
+			free(s);
 			continue;
+		}
 
 		p = q;
 		paths[i++] = s;
@@ -225,7 +228,6 @@ split_path(void)
 				break;
 			}
 		}
-
 	} while (q[0] != '\0');
 	paths_count = i;
 }
