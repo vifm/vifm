@@ -528,8 +528,11 @@ handle_file(FileView *view, int dont_execute)
 			int is_file = 0;
 			char *dir = NULL;
 			char *file = NULL;
-			char *link_dup = strdup(linkto);
+			char *link_dup;
+
 			linkto[len] = '\0';
+			link_dup = strdup(linkto);
+
 			lstat(linkto, &s);
 
 			if((s.st_mode & S_IFMT) == S_IFDIR)
@@ -571,7 +574,6 @@ handle_file(FileView *view, int dont_execute)
 					int pos = find_file_pos_in_list(view, file);
 					if(pos >= 0)
 						moveto_list_pos(view, pos);
-
 				}
 			}
 			else
