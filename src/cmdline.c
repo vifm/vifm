@@ -1212,6 +1212,7 @@ line_completion(struct line_stats *stat)
 			free(filename);
 			if(ret != 0)
 			{
+				free(last_word);
 				return ret;
 			}
 		}
@@ -1230,11 +1231,15 @@ line_completion(struct line_stats *stat)
 			int ret = insert_completed_command(stat, complete_command);
 			free(complete_command);
       if(ret != 0)
+			{
+				free(last_word);
 				return ret;
+			}
 		}
 	}
 
 	stat->complete_continue = 1;
+	free(last_word);
 	return 0;
 }
 
