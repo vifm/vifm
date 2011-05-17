@@ -1654,8 +1654,6 @@ filename_completion(char *str, int type)
 		i++;
 	}
 
-	closedir(dir);
-
 	int isdir = 0;
 	if(is_dir(d->d_name))
 	{
@@ -1667,7 +1665,10 @@ filename_completion(char *str, int type)
 		int len = strlen(dirname) + strlen(d->d_name) + 1;
 		tempfile = (char *)malloc((len) * sizeof(char));
 		if(!tempfile)
+		{
+			closedir(dir);
 			return NULL;
+		}
 		snprintf(tempfile, len, "%s%s", dirname, d->d_name);
 		if(is_dir(tempfile))
 			isdir = 1;
@@ -1684,7 +1685,10 @@ filename_completion(char *str, int type)
 		char * tempfile = (char *)NULL;
 		tempfile = (char *) malloc((strlen(d->d_name) + 2) * sizeof(char));
 		if(!tempfile)
+		{
+			closedir(dir);
 			return NULL;
+		}
 		snprintf(tempfile, strlen(d->d_name) + 2, "%s/", d->d_name);
 		temp = strdup(tempfile);
 
@@ -1693,6 +1697,7 @@ filename_completion(char *str, int type)
 
 	free(filename);
 	free(dirname);
+	closedir(dir);
 	return temp;
 }
 

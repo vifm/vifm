@@ -58,7 +58,6 @@ write_color_scheme_file()
 	snprintf(config_file, sizeof(config_file), "%s/colorschemes",
 			cfg.config_dir);
 
-
 	if((fp = fopen(config_file, "w")) == NULL)
 		return;
 
@@ -88,7 +87,6 @@ write_color_scheme_file()
 	fprintf(fp, "# DIRECTORY=/Full/Path/To/Base/Directory\n");
 	fprintf(fp, "# COLOR=Window_name=foreground_color_number=background_color_number\n\n");
 
-
 	for(x = 0; x < cfg.color_scheme_num; x++)
 	{
 		fprintf(fp, "\nCOLORSCHEME=%s\n", col_schemes[x].name);
@@ -96,7 +94,6 @@ write_color_scheme_file()
 
 		for(y = 0; y < 12; y++)
 		{
-
 			while(col_schemes[x].color[y].name > 11)
 			{
 				col_schemes[x].color[y].name =

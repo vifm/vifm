@@ -798,7 +798,7 @@ rename_file(FileView *view, int name_only)
 	if(buf[len - 1] == '/')
 		buf[len - 1] = '\0';
 
-	if (name_only || (p = strchr(buf, '.')) == NULL) {
+	if (!name_only || (p = strchr(buf, '.')) == NULL) {
 		rename_file_ext[0] = '\0';
 	} else {
 		strcpy(rename_file_ext, p);
