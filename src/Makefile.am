@@ -19,6 +19,7 @@ vifm_SOURCES = \
 	color_scheme.c colorscheme.h \
 	commands.c commands.h \
 	config.c config.h \
+	dir_stack.c dir_stack.h \
 	file_info.c file_info.h \
 	filelist.c filelist.h \
 	fileops.c fileops.h \

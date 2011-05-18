@@ -65,6 +65,8 @@
 
 	Added cW command (change only name of file and leave old extension).
 
+	Added pushd and popd commands.
+
 	Changed keys input handling.
 
 	Changed force dot files appear at the beginning of file list.

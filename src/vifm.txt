@@ -58,6 +58,8 @@ The builtin commands are:
 	to show the selected file.
 :marks - menu of bookmarks.
 :o[nly] - switch to a one window view.
+:popd - remove pane directories from stack.
+:pushd directory - add pane directories to stack.
 :pwd - show the present working directory.
 :q[uit] or :x  - will exit vifm.
 :s[creen] - toggles whether to use the screen program or not.

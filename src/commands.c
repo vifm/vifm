@@ -31,6 +31,7 @@
 #include "color_scheme.h"
 #include "commands.h"
 #include "config.h"
+#include "dir_stack.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "keys.h"
@@ -75,6 +76,8 @@ char *reserved_commands[] = {
 	"nmap",
 	"nohlsearch",
 	"only",
+	"popd",
+	"pushd",
 	"pwd",
 	"quit",
 	"register",
@@ -1159,6 +1162,39 @@ do_map(cmd_t *cmd, const char *map_type, int mode)
 	return 0;
 }
 
+static void
+comm_cd(FileView *view, cmd_t *cmd)
+{
+	if(cmd->args)
+	{
+		if(cmd->args[0] == '/')
+		{
+			change_directory(view, cmd->args);
+		}
+		else if(cmd->args[0] == '~')
+		{
+			char dir[PATH_MAX];
+
+			snprintf(dir, sizeof(dir), "%s%s", getenv("HOME"), cmd->args + 1);
+			change_directory(view, dir);
+		}
+		else
+		{
+			char dir[PATH_MAX];
+
+			snprintf(dir, sizeof(dir), "%s/%s", view->curr_dir, cmd->args);
+			change_directory(view, dir);
+		}
+	}
+	else
+	{
+		change_directory(view, getenv("HOME"));
+	}
+
+	load_dir_list(view, 0);
+	moveto_list_pos(view, view->list_pos);
+}
+
 int
 execute_builtin_command(FileView *view, cmd_t *cmd)
 {
@@ -1217,39 +1253,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			enter_permissions_mode(view);
 			break;
 		case COM_CD:
-			{
-				char dir[PATH_MAX];
-
-				if(cmd->args)
-				{
-					if(cmd->args[0] == '/')
-					{
-						change_directory(view, cmd->args);
-						load_dir_list(view, 0);
-						moveto_list_pos(view, view->list_pos);
-					}
-					else if(cmd->args[0] == '~')
-					{
-						snprintf(dir, sizeof(dir), "%s%s", getenv("HOME"), cmd->args + 1);
-						change_directory(view, dir);
-						load_dir_list(view, 0);
-						moveto_list_pos(view, view->list_pos);
-					}
-					else
-					{
-						snprintf(dir, sizeof(dir), "%s/%s", view->curr_dir, cmd->args);
-						change_directory(view, dir);
-						load_dir_list(view, 0);
-						moveto_list_pos(view, view->list_pos);
-					}
-				}
-				else
-				{
-					change_directory(view, getenv("HOME"));
-					load_dir_list(view, 0);
-					moveto_list_pos(view, view->list_pos);
-				}
-			}
+			comm_cd(view, cmd);
 			break;
 		case COM_CMAP:
 			save_msg = do_map(cmd, "cmap", CMDLINE_MODE);
@@ -1480,6 +1484,28 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		case COM_ONLY:
 			comm_only();
 			break;
+		case COM_POPD:
+			if(popd() != 0)
+			{
+				status_bar_message("Directory stack empty");
+				save_msg = 1;
+			}
+			break;
+		case COM_PUSHD:
+			if(cmd->args == NULL)
+			{
+				show_error_msg(" Command Error ",
+						"The :pushd command requires an argument - :pushd directory");
+				break;
+			}
+			if(pushd() != 0)
+			{
+				status_bar_message("Not enough memory");
+				save_msg = 1;
+				break;
+			}
+			comm_cd(view, cmd);
+			break;
 		case COM_PWD:
 			status_bar_message(view->curr_dir);
 			save_msg = 1;
@@ -1491,7 +1517,6 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_SORT:
 			enter_sort_mode(view);
-			//show_sort_menu(view);
 			break;
 		case COM_SCREEN:
 			{
