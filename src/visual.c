@@ -174,19 +174,19 @@ init_extended_keys(void)
 	wchar_t buf[] = {L'\0', L'\0'};
 
 	buf[0] = KEY_PPAGE;
-	curr = add_keys(buf, VISUAL_MODE);
+	curr = add_cmd(buf, VISUAL_MODE);
 	curr->data.handler = cmd_ctrl_b;
 
 	buf[0] = KEY_NPAGE;
-	curr = add_keys(buf, VISUAL_MODE);
+	curr = add_cmd(buf, VISUAL_MODE);
 	curr->data.handler = cmd_ctrl_f;
 
 	buf[0] = KEY_DOWN;
-	curr = add_keys(buf, VISUAL_MODE);
+	curr = add_cmd(buf, VISUAL_MODE);
 	curr->data.handler = cmd_j;
 
 	buf[0] = KEY_UP;
-	curr = add_keys(buf, VISUAL_MODE);
+	curr = add_cmd(buf, VISUAL_MODE);
 	curr->data.handler = cmd_k;
 #endif /* ENABLE_EXTENDED_KEYS */
 }
