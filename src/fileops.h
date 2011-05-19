@@ -37,6 +37,7 @@ typedef struct
 
 yank_t *yanked_file;
 
+void cd_updir(FileView *view);
 void handle_file(FileView *view, int dont_execute);
 int delete_file(FileView *view, int reg, int count, int *indexes,
 		int use_trash);

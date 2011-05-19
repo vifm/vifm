@@ -868,7 +868,10 @@ canonicalize_path(const char *directory, char *buf)
 		else if(prev_dir_present &&
 				(strncmp(p, "../", 3) == 0 || strcmp(p, "..") == 0))
 		{
-			while(--q >= buf && *q != '/');
+			p++;
+			q--;
+			while(q >= buf && *q != '/')
+				q--;
 		}
 		else if(*p == '/')
 		{

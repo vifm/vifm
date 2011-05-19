@@ -251,15 +251,51 @@ check_link_is_dir(FileView *view, int pos)
 	return 0;
 }
 
+static void
+get_last_path_component(const char *path, char* buf)
+{
+	const char *p, *q;
+
+	p = path + strlen(path) - 1;
+	if(*p == '/')
+		p--;
+
+	q = p;
+	while(p - 1 >= path && *(p - 1) != '/')
+		p--;
+
+	snprintf(buf, q - p + 1 + 1, "%s", p);
+}
+
+void
+cd_updir(FileView *view)
+{
+	char dir_name[NAME_MAX + 1] = "";
+
+	get_last_path_component(view->curr_dir, dir_name);
+	strcat(dir_name, "/");
+
+	change_directory(view, "../");
+	load_dir_list(view, 0);
+
+	moveto_list_pos(view, find_file_pos_in_list(view, dir_name));
+}
+
 void
 handle_file(FileView *view, int dont_execute)
 {
 	if(DIRECTORY == view->dir_entry[view->list_pos].type)
 	{
 		char *filename = get_current_file_name(view);
-		change_directory(view, filename);
-		load_dir_list(view, 0);
-		moveto_list_pos(view, view->curr_line);
+
+		if(strcmp(filename, "../") == 0)
+			cd_updir(view);
+    else
+		{
+			change_directory(view, filename);
+			load_dir_list(view, 0);
+			moveto_list_pos(view, view->curr_line);
+		}
 		return;
 	}
 

@@ -1105,9 +1105,7 @@ find_f(int ch)
 static void
 cmd_h(struct key_info key_info, struct keys_info *keys_info)
 {
-	change_directory(curr_view, "../");
-	load_dir_list(curr_view, 0);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	cd_updir(curr_view);
 }
 
 static void
