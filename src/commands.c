@@ -1557,9 +1557,6 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 						COLOR_PAIR(WIN_COLOR + other_view->color_scheme));
 					change_directory(other_view, other_view->curr_dir);
 					load_dir_list(other_view, 0);
-					change_directory(curr_view, curr_view->curr_dir);
-					load_dir_list(curr_view, 0);
-					moveto_list_pos(curr_view, curr_view->list_pos);
 				}
 				else
 				{
