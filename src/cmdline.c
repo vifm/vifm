@@ -1413,6 +1413,7 @@ get_words_count(const char * string)
 	return result;
 }
 
+/* String returned by this function should be freed by caller */
 static char *
 get_last_word(char * string)
 {
@@ -1427,7 +1428,7 @@ get_last_word(char * string)
 	if(temp != NULL)
 	{
 		temp++;
-		return temp;
+		return strdup(temp);
 	}
  /* :!filename or :!!filename */
 	temp = check_for_executable(string);
@@ -1701,6 +1702,7 @@ filename_completion(char *str, int type)
 	return temp;
 }
 
+/* String returned by this function should be freed by caller */
 static char *
 check_for_executable(char *string)
 {
