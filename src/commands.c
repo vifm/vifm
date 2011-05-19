@@ -361,17 +361,17 @@ expand_macros(FileView *view, char *command, char *args,
 					else
 					{
 						int dir = 0;
-						char *temp =
-						  escape_filename(view->dir_entry[view->list_pos].name,
-						  strlen(view->dir_entry[view->list_pos].name)-dir, 1);
-
-
-						expanded = (char *)realloc(expanded, strlen(expanded) +
-								strlen(view->dir_entry[view->list_pos].name) +3);
+						char *temp;
 
 						/* Directory has / appended to the name this removes it. */
 						if (view->dir_entry[view->list_pos].type == DIRECTORY)
 							dir = 1;
+
+						temp = escape_filename(view->dir_entry[view->list_pos].name,
+						  strlen(view->dir_entry[view->list_pos].name)-dir, 1);
+
+						expanded = (char *)realloc(expanded, strlen(expanded) +
+								strlen(view->dir_entry[view->list_pos].name) +3);
 
 						expanded = (char *)realloc(expanded, strlen(expanded) +
 							strlen(temp) +3);

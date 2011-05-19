@@ -107,6 +107,9 @@
 
 	Fixed bug with disappearing pane cursor (for example after shellout).
 
+	Fixed bug when trailing slash wasn't cut from directory name on macro
+	expanding.
+
 0.4 to 0.5
 
 	Changed the file size to a human friendly notation.
