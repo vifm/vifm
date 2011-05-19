@@ -887,6 +887,24 @@ canonicalize_path(const char *directory, char *buf)
 	*++q = '\0';
 }
 
+/* Modifies path */
+static void
+leave_invalid_dir(FileView *view, char *path)
+{
+	size_t len;
+	char *p;
+
+	do
+	{
+		len = strlen(path);
+		if(path[len - 1] == '/')
+			path[len - 1] = '\0';
+
+		p = strrchr(path, '/');
+		p[1] = '\0';
+	}while(access(path, F_OK) != 0);
+}
+
 /*
  * The directory can either be relative to the current
  * directory - ../
@@ -1066,7 +1084,8 @@ change_directory(FileView *view, const char *directory)
 	{
 		show_error_msg(" Directory Access Error ",
 				"Cannot open that directory ");
-		change_directory(view, getenv("HOME"));
+		leave_invalid_dir(view, dir_dup);
+		change_directory(view, dir_dup);
 		clean_selected_files(view);
 		return;
 	}
@@ -1558,7 +1577,8 @@ check_if_filelists_have_changed(FileView *view)
 	{
 		show_error_msg(" Directory Access Error ",
 				"Cannot open directory");
-		change_directory(view, getenv("HOME"));
+		leave_invalid_dir(view, view->curr_dir);
+		change_directory(view, view->curr_dir);
 		clean_selected_files(view);
 		s.st_mtime = -1; /* force window reload */
 	}
