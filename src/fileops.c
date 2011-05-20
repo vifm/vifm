@@ -290,9 +290,8 @@ handle_file(FileView *view, int dont_execute)
 
 		if(strcmp(filename, "../") == 0)
 			cd_updir(view);
-    else
+    else if(change_directory(view, filename) == 0)
 		{
-			change_directory(view, filename);
 			load_dir_list(view, 0);
 			moveto_list_pos(view, view->curr_line);
 		}

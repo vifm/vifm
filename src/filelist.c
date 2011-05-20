@@ -911,8 +911,10 @@ leave_invalid_dir(FileView *view, char *path)
  * or an absolute path - /usr/local/share
  * The *directory passed to change_directory() cannot be modified.
  * Symlink directories require an absolute path
+ *
+ * Returns 0 if there was no errors.
  */
-void
+int
 change_directory(FileView *view, const char *directory)
 {
 	DIR *dir;
@@ -970,7 +972,7 @@ change_directory(FileView *view, const char *directory)
 				werase(status_bar);
 				show_error_msg("FUSE UMOUNT ERROR", runner->source_file_name);
 				chdir(view->curr_dir);
-				return;
+				return -1;
 			}
 			/*remove the DIR we created for the mount*/
 			if(!access(runner->mount_point, F_OK))
@@ -994,7 +996,7 @@ change_directory(FileView *view, const char *directory)
 			found = find_file_pos_in_list(view, filen);
 			moveto_list_pos(view, found);
 			free(runner);
-			return;
+			return 0;
 		}
 	}
 
@@ -1087,7 +1089,7 @@ change_directory(FileView *view, const char *directory)
 		leave_invalid_dir(view, dir_dup);
 		change_directory(view, dir_dup);
 		clean_selected_files(view);
-		return;
+		return -1;
 	}
 
 	if(access(dir_dup, R_OK) != 0)
@@ -1096,7 +1098,7 @@ change_directory(FileView *view, const char *directory)
 				"You do not have read access on that directory");
 
 		clean_selected_files(view);
-		return;
+		return -1;
 	}
 
 	if(access(dir_dup, X_OK) != 0)
@@ -1105,7 +1107,7 @@ change_directory(FileView *view, const char *directory)
 				"You do not have execute access on that directory");
 
 		clean_selected_files(view);
-		return;
+		return -1;
 	}
 
 	dir = opendir(dir_dup);
@@ -1114,14 +1116,14 @@ change_directory(FileView *view, const char *directory)
 	{
 		show_error_msg("Dir is null", "Could not open directory. ");
 		clean_selected_files(view);
-		return;
+		return -1;
 	}
 
 	if(chdir(dir_dup) == -1)
 	{
 		closedir(dir);
 		status_bar_message("Couldn't open directory");
-		return;
+		return -1;
 	}
 
 	clean_selected_files(view);
@@ -1142,6 +1144,7 @@ change_directory(FileView *view, const char *directory)
 	closedir(dir);
 
 	save_view_history(view);
+	return 0;
 }
 
 static void
@@ -1367,19 +1370,6 @@ load_dir_list(FileView *view, int reload)
 	draw_dir_list(view, view->top_line, view->list_pos);
 }
 
-bool
-is_link_dir(const dir_entry_t * path)
-{
-	struct stat s;
-	stat(path->name, &s);
-
-	//if(s.st_mode & S_IFMT == S_IFDIR) return true;
-	if(s.st_mode & S_IFDIR)
-		return true;
-	else
-		return false;
-}
-
 void
 filter_selected_files(FileView *view)
 {
@@ -1575,8 +1565,7 @@ check_if_filelists_have_changed(FileView *view)
 
 	if(stat(view->curr_dir, &s) != 0)
 	{
-		show_error_msg(" Directory Access Error ",
-				"Cannot open directory");
+		show_error_msg(" Directory Access Error ", "Cannot open directory");
 		leave_invalid_dir(view, view->curr_dir);
 		change_directory(view, view->curr_dir);
 		clean_selected_files(view);

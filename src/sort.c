@@ -16,11 +16,21 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <fcntl.h> /* access */
 #include <ncurses.h>
 #include <string.h> /* strrchr */
 
 #include "filelist.h"
 #include "ui.h"
+
+bool
+is_link_dir(const dir_entry_t * path)
+{
+	struct stat s;
+	stat(path->name, &s);
+
+	return (s.st_mode & S_IFDIR);
+}
 
 /*
  * This function is from the git program written by Tudor Hulubei and
