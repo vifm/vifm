@@ -53,7 +53,6 @@ mark2index(const char mark)
 		return (int) mark - 55;
 }
 
-
 /*
  * transform an index to a mark
  */
@@ -85,7 +84,6 @@ is_bookmark(const int x)
 		return 0;
 }
 
-
 /*
  * low-level function without safety checks
  */
@@ -101,17 +99,14 @@ silent_remove_bookmark(const int x)
 	cfg.num_bookmarks--;
 }
 
-
 void
 remove_bookmark(const int x)
 {
-
 	if (is_bookmark(x))
 		silent_remove_bookmark(x);
 	else
 		status_bar_message("Could not find mark");
 }
-
 
 void
 add_bookmark(const char mark, const char *directory, const char *file)
@@ -177,7 +172,6 @@ check_mark_directory(FileView *view, char mark)
 		file_pos = find_file_pos_in_list(view, bookmarks[x].file);
 
 	return file_pos;
-
 }
 
 int

@@ -1,10 +1,10 @@
 
-.TH vifm 1 "January 08, 2009" "" "Vifm"
+.TH vifm 1 "May 20, 2011" "" "Vifm"
 
 .SH NAME
 vifm [OPTION]
 .SH DESCRIPTION
-Vifm is a ncurses based file manager with vi like keybindings. If you use vi, vifm gives you complete keyboard control over your files without having to learn a new set of commands. 
+Vifm is a ncurses based file manager with vi like keybindings. If you use vi, vifm gives you complete keyboard control over your files without having to learn a new set of commands.
 .SH OPTIONS
 .TP
 .BI <path>
@@ -27,6 +27,9 @@ moves up.
 .BI l
 moves into a directory or launches a file.
 .TP
+.BI i
+opens file with associated program even if it's an executable.
+.TP
 .BI h
 moves up one directory.
 .TP
@@ -39,11 +42,32 @@ move to the bottom of the file list.
 .BI 14G
 move to the 14th file in the list.
 .TP
+.BI H
+move to the first file in the window.
+.TP
+.BI M
+move to the file in the middle of the window.
+.TP
+.BI L
+move to the last file in the window.
+.TP
 .BI "Ctrl-F or Page Down"
 move forward one page.
 .TP
 .BI "Ctrl-B or Page Up"
 move back one page.
+.TP
+.BI Ctrl-D
+jump back one half page.
+.TP
+.BI Ctrl-U
+jump forward one half page.
+.TP
+.BI Ctrl-O
+go backward through history.
+.TP
+.BI Ctrl-I
+go forward through history.
 .TP
 .BI 25%
 move to the file that is 25 percent from the top of the list.
@@ -54,11 +78,49 @@ move to the 34th file.
 .BI "Space Bar or Tab Key"
 toggles between the two file lists.
 .TP
-.BI Ctrl+G
+.BI Ctrl-G
 creates a window showing detailed information about the current file.
+.TP
+.BI ga
+calculate directory size.
+.SH Scrolling panes
+.TP
+.BI zt
+redraw pane with file in top of list.
+.TP
+.BI zz
+redraw pane with file in center of list.
+.TP
+.BI zb
+redraw pane with file in bottom of list.
+.TP
+.BI Ctrl-E
+scroll pane one line down.
+.TP
+.BI Ctrl-Y
+scroll pane one line up.
+.SH Pane manipulation
+.TP
+.BI "Ctrl-W H"
+switch to the left pane.
+.TP
+.BI "Ctrl-W L"
+switch to the right pane.
+.TP
+.BI "Ctrl-W O"
+shortcut for :only
+.TP
+.BI "Ctrl-W V"
+shortcut for :split
+.TP
+.BI "Ctrl-W W"
+switch to other pane.
+.TP
+.BI "Ctrl+W X"
+exchange panes.
 .SH Marks
 .TP
-Marks are set the same way as they are in vi. 
+Marks are set the same way as they are in vi.
 .TP
 .BI m[a-z][A-Z][0-9]
 to set a mark for the current file.
@@ -68,29 +130,83 @@ moves to the file set for the mark.
 .SH Searching
 .TP
 .BI "/regular expression pattern[Return]"
-will highlight all files matching the pattern.
+will highlight all files matching the pattern and go to the next match.
+.TP
+.BI "?regular expression pattern[Return]"
+will highlight all files matching the pattern and go to the previous match.
 .TP
 .BI N
-find the previous match.
+find the previous match of / or ?.
 .TP
 .BI n
-find the next match.
+find the next match of / or ?.
+.TP
+.BI f[character]
+search forward for file with [character] as first character in name.
+.TP
+.BI F[character]
+search backward for file with [character] as first character in name.
+.TP
+.BI ;
+find the next match of f or F.
+.TP
+.BI ,
+find the previous match of f or F.
 .SH Additional Normal Mode Keys
 .TP
-.BI [count]dd
+.BI cw
+rename a file.
+.TP
+.BI cW
+change only name of file (without extension).
+.TP
+.BI co
+change file owner.
+.TP
+.BI cg
+change file group.
+.TP
+.BI cp
+change file permissions.
+.TP
+.BI "[count]d[selector] or [count]dd in compatibility mode"
 moves the selected files to the trash directory.
 .TP
-.BI [count]yy
+.BI [count]D[selector]
+removes the selected files.
+.TP
+.BI "[count]y[selector] or [count]yy in compatibility mode"
 yanks the selected files.
 .TP
 .BI p
 puts the last yanked or deleted files.
+.TP
+.BI P
+moves the last yanked files.
 .TP
 .BI t
 tag the current file.
 .TP
 .BI v
 start visual mode.
+.TP
+.BI ZQ
+same as :quit
+.TP
+.BI ZZ
+same as :wq
+.SH Selectors
+.TP
+Most of selectors are like vi motions: j, k, gg, G, H, L and M. But there are some additional ones.
+.TP
+.BI a
+all files in current view.
+.TP
+.BI s
+selected files.
+.TP
+.BI S
+all files except selected.
 .SH Commands
 .TP
 .BI :com
@@ -106,7 +222,7 @@ will remove the command_name user command
 will filter all the files out of the directory listing that match the regular expression.
 .TP
 .BI ":fil /\.o$"
-would filter all files ending in .o from the filelist. 
+would filter all files ending in .o from the filelist.
 .TP
 .BI :empty
 will permanently remove 'rm -fr' files from the Trash directory.
@@ -147,16 +263,31 @@ show the help file.
 .BI :marks
 create a popup menu of bookmarks.
 .TP
+.BI ":map :nmap :cmap and :vmap"
+map one key sequence to another in different modes.
+.TP
 .BI :screen
 toggles whether or not to use the screen program.
 .TP
 .BI :split
-splits the window to show both file directories
+splits the window to show both file directories.
 .TP
 .BI :only
-changes the window to show only the current file directory
+changes the window to show only the current file directory.
+.TP
+.BI :pushd
+add pane directories to stack.
+.TP
+.BI :popd
+remove pane directories from stack.
+.TP
+.BI :wq
+exit vifm saving pane locations.
+.TP
+.BI ":w or :write"
+write config file.
 .SH File Filters
-The basic vim folding key bindings are used for filtering files. 
+The basic vim folding key bindings are used for filtering files.
 .TP
 .BI zO
 Show the filtered files.

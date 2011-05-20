@@ -138,8 +138,8 @@ gg will move to the first line of the file list.
 G will move to the last line in the file list.
 
 H - move to the first file in the window.
-L - move to the last file in the window.
 M - move to the file in the middle of the window.
+L - move to the last file in the window.
 
 Space or Tab to switch file lists.
 
@@ -195,6 +195,7 @@ Ctrl-w h/Ctrl-w l - switch to left or right pane.
 Ctrl-w Ctrl-w - switch to other pane.
 Ctrl-w o - shortcut for :only
 Ctrl-w v - shortcut for :split
+Ctrl-w x - exchange panes
 Ctrl-e/Ctrl-y - scroll pane one line down/up.
 
 --------------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 
 	Added :wq command.
 
-	Added ZZ and ZE commands.
+	Added ZZ and ZQ commands.
 
 	Added Ctrl+D and Ctrl+U commands.
 
@@ -23,7 +23,7 @@
 
 	Added backward search (?).
 
-	Added :map, :nmap:, :cmap, :vmap commands.
+	Added :map, :nmap, :cmap, :vmap commands.
 
 	Added co (change owner), cg (change group) and cp (change permissions)
 	commands.
@@ -59,7 +59,7 @@
 
 	Added ! and !! completion.
 
-	Added support of multiple commands per line (with | as delimiter).
+	Added support for multiple commands per line (with | as delimiter).
 
 	Added ga command (calculate directory size).
 

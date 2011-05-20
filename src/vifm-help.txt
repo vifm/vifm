@@ -1,8 +1,8 @@
 The basic vi key bindings are used to move through the files and popup
 	windows.
 
-			k is up
-			j is down
+    k is up
+    j is down
 
 	h is updir
 	l is handle file and is the same as Return.
@@ -13,6 +13,9 @@ The basic vi key bindings are used to move through the files and popup
 	gg top of list
 	ga calculate size of directory
 	G bottom of list
+    H move to the first file in the window.
+    M move to the file in the middle of the window.
+    L move to the last file in the window.
 	cg change group of file.
 	co change owner of file.
     cp change file permissions.
@@ -80,7 +83,8 @@ The basic vi key bindings are used to move through the files and popup
     Ctrl-w l - switch to the right pane.
     Ctrl-w o - shortcut for :only
     Ctrl-w v - shortcut for :split
-    Ctrl-w Ctrl-w - switch to other pane.
+    Ctrl-w w - switch to other pane.
+    Ctrl-w x - exchange panes.
 
     f, F, ;, <comma> - search by first character in filename.
 
@@ -128,6 +132,8 @@ The basic vi key bindings are used to move through the files and popup
 	:ch[ange] - create a menu window to alter a files properties.
 	:cd - change directory
 		:cd ~/bin
+    :popd - remove pane directories from stack.
+    :pushd directory - add pane directories to stack.
     :s[creen] toggles whether to use the screen program or not.
     :sh[ell] will start a shell
 	:so[rt] - popup menu of different sorting methods
@@ -260,6 +266,8 @@ Reserved :commands
 		pw
 		pwd
 		q
+        popd
+        pushd
 		s
 		screen
 		sh

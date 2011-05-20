@@ -912,7 +912,7 @@ leave_invalid_dir(FileView *view, char *path)
  * The *directory passed to change_directory() cannot be modified.
  * Symlink directories require an absolute path
  *
- * Returns 0 if there was no errors.
+ * Returns 0 if there were no errors.
  */
 int
 change_directory(FileView *view, const char *directory)
