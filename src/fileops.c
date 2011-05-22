@@ -275,10 +275,11 @@ cd_updir(FileView *view)
 	get_last_path_component(view->curr_dir, dir_name);
 	strcat(dir_name, "/");
 
-	change_directory(view, "../");
-	load_dir_list(view, 0);
-
-	moveto_list_pos(view, find_file_pos_in_list(view, dir_name));
+	if(change_directory(view, "../") != 1)
+	{
+		load_dir_list(view, 0);
+		moveto_list_pos(view, find_file_pos_in_list(view, dir_name));
+	}
 }
 
 void

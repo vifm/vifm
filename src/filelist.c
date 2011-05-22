@@ -912,7 +912,11 @@ leave_invalid_dir(FileView *view, char *path)
  * The *directory passed to change_directory() cannot be modified.
  * Symlink directories require an absolute path
  *
- * Returns 0 if there were no errors.
+ * Returns:
+ *   -1 if there were errors.
+ *   0  if directory successfully changed and we didn't leave FUSE mount
+ *      directory.
+ *   1  if directory successfully changed and we left FUSE mount directory.
  */
 int
 change_directory(FileView *view, const char *directory)
@@ -993,10 +997,11 @@ change_directory(FileView *view, const char *directory)
 			change_directory(view, runner->source_file_dir);
 			char *filen = runner->source_file_name;
 			filen += strlen(runner->source_file_dir) + 1;
+			load_dir_list(view, 0);
 			found = find_file_pos_in_list(view, filen);
 			moveto_list_pos(view, found);
 			free(runner);
-			return 0;
+			return 1;
 		}
 	}
 
