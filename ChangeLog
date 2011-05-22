@@ -110,6 +110,8 @@
 	Fixed bug when trailing slash wasn't cut from directory name on macro
 	expanding.
 
+	Fixed running executables with spaces in their names.
+
 0.4 to 0.5
 
 	Changed the file size to a human friendly notation.

@@ -11,7 +11,7 @@ else
 	shift
 fi
 
-$PROG "$@"
+"$PROG" "$@"
 PRG_ST_EXIT=$?
 
 if [[ ($ON_ERROR == 0) || ( ($ON_ERROR == 1) && ($PRG_ST_EXIT != 0) ) ]]
