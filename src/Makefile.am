@@ -21,6 +21,7 @@ vifm_SOURCES = \
 	config.c config.h \
 	dir_stack.c dir_stack.h \
 	file_info.c file_info.h \
+	file_magic.c file_magic.h \
 	filelist.c filelist.h \
 	fileops.c fileops.h \
 	filetype.c filetype.h \

@@ -25,12 +25,15 @@
 #include <sys/ioctl.h>
 #include <signal.h>
 
+#include "../config.h"
+
 #include "background.h"
 #include "bookmarks.h"
 #include "cmdline.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "config.h"
+#include "file_magic.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
@@ -149,7 +152,6 @@ reset_popup_menu(menu_info *m)
 	free(m->title);
 
 	werase(menu_win);
-	redraw_window();
 }
 
 void
@@ -458,7 +460,6 @@ execute_apropos_cb(FileView *view, menu_info *m)
 	}
 	else
 		free(free_this);
-
 }
 
 static void
@@ -513,13 +514,27 @@ execute_locate_cb(FileView *view, menu_info *m)
 }
 
 static void
+execute_filetype(char *cmd, int background)
+{
+	if(!background)
+		shellout(cmd, 0);
+	else
+		start_background_job(cmd);
+}
+
+static void
 execute_filetype_cb(FileView *view, menu_info *m)
 {
 	char *filename = get_current_file_name(view);
 	char *prog_str = get_all_programs_for_file(filename);
 	char command[NAME_MAX];
 	char *ptr = NULL;
+	int background = m->extra_data;
 
+#if defined(HAVE_LIBGTK) || defined(HAVE_LIBMAGIC)
+	if(prog_str == NULL)
+		prog_str = get_magic_handlers(filename);
+#endif
 
 	if((ptr = strchr(prog_str, ',')) == NULL)
 	{
@@ -527,14 +542,14 @@ execute_filetype_cb(FileView *view, menu_info *m)
 		{
 			int m = 0;
 			char *expanded_command = expand_macros(view, prog_str, NULL, &m, 0);
-			shellout(expanded_command, 0);
+			execute_filetype(expanded_command, background);
 			free(expanded_command);
 			return;
 		}
 		else
 		{
 			snprintf(command, sizeof(command), "%s %s", prog_str, filename);
-			shellout(command, 0);
+			execute_filetype(command, background);
 			return;
 		}
 	}
@@ -556,16 +571,15 @@ execute_filetype_cb(FileView *view, menu_info *m)
 				{
 					int m = 0;
 					char *expanded_command = expand_macros(view, prog_copy, NULL, &m, 0);
-					shellout(expanded_command, 0);
+					execute_filetype(expanded_command, background);
 					free(expanded_command);
 					free(free_this);
 					return;
 				}
 				else
 				{
-					snprintf(command, sizeof(command), "%s %s",
-							prog_copy, filename);
-					shellout(command, 0);
+					snprintf(command, sizeof(command), "%s %s", prog_copy, filename);
+					execute_filetype(command, background);
 					free(free_this);
 					return;
 				}
@@ -577,7 +591,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 		{
 			int m = 0;
 			char *expanded_command = expand_macros(view, prog_copy, NULL, &m, 0);
-			shellout(expanded_command, 0);
+			execute_filetype(expanded_command, background);
 			free(expanded_command);
 			free(free_this);
 			return;
@@ -585,7 +599,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 		else
 		{
 			snprintf(command, sizeof(command), "%s %s", prog_copy, filename);
-			shellout(command, 0);
+			execute_filetype(command, background);
 			free(free_this);
 			return;
 		}
@@ -616,8 +630,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 			execute_jobs_cb(view, m);
 			break;
 		case LOCATE:
-				execute_locate_cb(view, m);
-			break;
+			execute_locate_cb(view, m);
 			break;
 		case VIFM:
 			break;
@@ -633,7 +646,6 @@ reload_bookmarks_menu_list(menu_info *m)
 	char buf[PATH_MAX];
 
 	getmaxyx(menu_win, z, len);
-
 
 	for (z = 0; z < m->len; z++)
 	{
@@ -914,17 +926,22 @@ show_commands_menu(FileView *view)
 }
 
 void
-show_filetypes_menu(FileView *view)
+show_filetypes_menu(FileView *view, int force_mime, int background)
 {
 	char *filename = get_current_file_name(view);
 	char *prog_str = get_all_programs_for_file(filename);
-	if (prog_str == NULL)
-	{
-		show_error_msg("  Filetype is not set.	",
+
+#if defined(HAVE_LIBGTK) || defined(HAVE_LIBMAGIC)
+	if(prog_str == NULL || force_mime)
+		prog_str = get_magic_handlers(filename);
+#endif
+
+	if(prog_str == NULL) {
+		show_error_msg("  Filetype is not set. ",
 				"No programs set for this filetype.");
 		return;
 	}
-	else
+
 	{
 		int x = 0;
 		int len = 0;
@@ -943,6 +960,7 @@ show_filetypes_menu(FileView *view)
 		m.title = NULL;
 		m.args = NULL;
 		m.data = NULL;
+		m.extra_data = background;
 
 		getmaxyx(menu_win, m.win_rows, len);
 

@@ -45,7 +45,9 @@ The builtin commands are:
 :delc[ommand] user_command - remove user_command.
 :e[dit} - will load the selected file or files into vi.
 :em[pty] - permanently remove files from the ~/.vifm/Trash directory.
-:f[ile] - popup menu of programs set for the file type of the current file.
+:f[ile] [mime] - popup menu of programs set for the file type of the current file.
+	When argument passed, show programs set based on file mimetype.
+        Add ' &' in the end of command if you want to start program in background. 
 :fil[ter] regular_expression - will filter files matching the pattern out of
 	the directory.  See |Filters|
 :h[elp] - show this help file.

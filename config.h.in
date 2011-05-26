@@ -27,6 +27,12 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* use gtk to determine mime type */
+#undef HAVE_LIBGTK
+
+/* Define to 1 if you have the `magic' library (-lmagic). */
+#undef HAVE_LIBMAGIC
+
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 

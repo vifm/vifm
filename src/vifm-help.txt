@@ -110,6 +110,9 @@ The basic vi key bindings are used to move through the files and popup
 		apropos command.
 	:com! name action - will overwrite a previously set command.
 	:delc command_name will remove the command_name user command
+	:f[ile] [mime] - popup menu of programs set for the file type of the current file.
+		When argument passed, show programs set based on file mimetype.
+        Add ' &' in the end of command if you want to start program in background. 
 	:fil regular_expression pattern will filter the files out of the directory
 		listing that match the regular expression.
 		:fil \.o$ - would filter all files ending in .o from the filelist.

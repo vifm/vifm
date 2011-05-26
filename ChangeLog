@@ -65,7 +65,10 @@
 
 	Added cW command (change only name of file and leave old extension).
 
-	Added pushd and popd commands.
+	Added :pushd and :popd commands.
+
+	Added detection of file handlers with GTK+ or libmagic and .desktop files
+	(it works only for :file command).
 
 	Changed keys input handling.
 

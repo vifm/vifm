@@ -81,7 +81,7 @@ SHOW_FULL=0
 
 USE_VIM_HELP=0
 
-# If you would like to run an executable file when you 
+# If you would like to run an executable file when you
 # press return on the file name set this to 1.
 
 RUN_EXECUTABLE=0
@@ -129,10 +129,10 @@ FILETYPE=Archive=tar.gz,tgz==tar -tzf %f | less,tar -zxvf %f
 
 # For automated FUSE mounts, you must register an extension with FILETYPE=..
 # in the following format:
-# FILETYPE=description=extensions=FUSE_MOUNT|some_mount_command using %SOURCE_FILE and %DESTINATION_DIR variables
+# FILETYPE=description=extensions=consoleviewer=FUSE_MOUNT|some_mount_command using %SOURCE_FILE and %DESTINATION_DIR variables
 # %SOURCE_FILE and %DESTINATION_DIR are filled in by vifm at runtime.
 # A sample line might look like this:
-# FILETYPE=FuseZipMount=zip,jar,war,ear=FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+# FILETYPE=FuseZipMount=zip,jar,war,ear==FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
 
 # The FUSE_HOME directory will be used as a root dir for all FUSE mounts.
 # Unless it exists with write/exec permissions set, vifm will attempt to create it.

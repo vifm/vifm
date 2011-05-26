@@ -18,6 +18,13 @@
 
 #define VERSION "0.6"
 
+#include "../config.h"
+
+#ifdef HAVE_LIBGTK
+#include <gtk/gtk.h>
+#include <glib-2.0/gio/gio.h>
+#endif
+
 #include <ncurses.h>
 #include <unistd.h> /* getcwd  & sysconf */
 #include <string.h> /* strncpy */
@@ -145,6 +152,10 @@ main(int argc, char *argv[])
 	init_window_history(&rwin);
 
 	init_status();
+
+#ifdef HAVE_LIBGTK
+	curr_stats.gtk_available = gtk_init_check(&argc, &argv);
+#endif
 
 	if(cfg.show_one_window)
 		curr_stats.number_of_windows = 1;

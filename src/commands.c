@@ -1392,7 +1392,10 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			}
 			break;
 		case COM_FILE:
-			show_filetypes_menu(view);
+			{
+				int has_argument = (cmd->args != NULL && *cmd->args != '\0');
+				show_filetypes_menu(view, has_argument, cmd->background);
+			}
 			break;
 		case COM_HELP:
 			{

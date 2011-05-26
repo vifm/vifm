@@ -71,6 +71,18 @@ AC_CHECK_LIB(ncursesw, initscr,
 	])
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
+dnl checks for mime type detection
+
+if pkg-config --exists glib-2.0 gtk+-2.0; then
+	CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
+	LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
+	AC_DEFINE([HAVE_LIBGTK], [1], [use gtk to determine mime type])
+fi
+
+AC_CHECK_LIB(magic, magic_open)
+
+dnl handle options
+
 AC_ARG_ENABLE(extended_keys,
 	AS_HELP_STRING(
 		[--enable-extended-keys],

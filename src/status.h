@@ -19,6 +19,8 @@
 #ifndef __STATUS_H__
 #define __STATUS_H__
 
+#include "../config.h"
+
 #include <sys/stat.h>
 
 typedef struct
@@ -42,6 +44,10 @@ typedef struct
 	int setting_change;
 	int skip_history;
 	int save_locations; /* for :wq and ZZ */
+
+#ifdef HAVE_LIBGTK
+	int gtk_available; /* for mimetype detection */
+#endif
 }Status;
 
 extern Status curr_stats;

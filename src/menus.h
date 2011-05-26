@@ -54,6 +54,7 @@ typedef struct menu_info
 	char *title;
 	char *args;
 	char **data;
+	int extra_data; /* for filetype background flag */
 	/* For user menus only */
 	char *get_info_script; /* program + args to fill in menu. */
 }menu_info;
@@ -62,7 +63,7 @@ void show_bookmarks_menu(FileView *view);
 void show_commands_menu(FileView *view);
 void show_history_menu(FileView *view);
 void show_vifm_menu(FileView *view);
-void show_filetypes_menu(FileView *view);
+void show_filetypes_menu(FileView *view, int force_mime, int background);
 void show_jobs_menu(FileView *view);
 void show_locate_menu(FileView *view, char *args);
 void show_apropos_menu(FileView *view, char *args);
