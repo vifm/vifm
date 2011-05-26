@@ -169,6 +169,9 @@ change file group.
 .BI cp
 change file permissions.
 .TP
+.BI C
+clone file.
+.TP
 .BI "[count]d[selector] or [count]dd in compatibility mode"
 moves the selected files to the trash directory.
 .TP
@@ -219,7 +222,7 @@ sets a new user command.
 will remove the command_name user command
 .TP
 .BI ":file [mime]"
-popup menu of programs set for the file type of the current file. When argument passed, show programs set based on file mimetype.
+popup menu of programs set for the file type of the current file. When argument passed, show programs set based on file mimetype. Add ' &' at the end of command to run program in background.
 .TP
 .BI ":fil regular_expression pattern"
 will filter all the files out of the directory listing that match the regular expression.

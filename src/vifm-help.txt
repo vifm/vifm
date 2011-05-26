@@ -21,6 +21,7 @@ The basic vi key bindings are used to move through the files and popup
     cp change file permissions.
 	cw change word is used to rename a file.
     cW change WORD is used to change only name of file (without extension).
+    C clone file.
 	m [a-z][A-Z][0-9] to set bookmark
 	' letter to goto bookmark
 	v start or stop visualy selecting files.  This works with the j and k keys

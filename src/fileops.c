@@ -178,19 +178,14 @@ yank_selected_files(FileView *view, int reg)
 
 	for(x = 0; x < view->selected_files; x++)
 	{
-		if(view->selected_filelist[x])
-		{
-			char buf[PATH_MAX];
-			namelen = strlen(view->selected_filelist[x]);
-			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
-					view->selected_filelist[x]);
-			append_to_register(reg, buf);
-		}
-		else
-		{
-			x--;
+		if(!view->selected_filelist[x])
 			break;
-		}
+
+		char buf[PATH_MAX];
+		namelen = strlen(view->selected_filelist[x]);
+		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
+				view->selected_filelist[x]);
+		append_to_register(reg, buf);
 	}
 }
 
@@ -955,6 +950,28 @@ put_files_from_register(FileView *view, int name, int force_move)
 	status_bar_message(buf);
 
 	return 1;
+}
+
+void
+clone_file(FileView* view)
+{
+	char buf[PATH_MAX + NAME_MAX*2 + 4];
+	char *escaped;
+	const char *filename;
+	
+	filename = get_current_file_name(view);
+	if(strcmp(filename, ".") == 0)
+		return;
+	if(strcmp(filename, "..") == 0)
+		return;
+
+	if(view->dir_entry[view->list_pos].type == DIRECTORY)
+		escaped = escape_filename(filename, strlen(filename) - 1, 1);
+	else
+		escaped = escape_filename(filename, strlen(filename), 1);
+	snprintf(buf, sizeof(buf), "cp -pR %s %s_clone", escaped, escaped);
+	background_and_wait_for_errors(buf);
+	free(escaped);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

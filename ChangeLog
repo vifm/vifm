@@ -70,6 +70,8 @@
 	Added detection of file handlers with GTK+ or libmagic and .desktop files
 	(it works only for :file command).
 
+	Added C command (clone file).
+
 	Changed keys input handling.
 
 	Changed force dot files appear at the beginning of file list.

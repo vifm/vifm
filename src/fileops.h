@@ -54,6 +54,7 @@ void change_owner(FileView *view);
 void change_group(FileView *view);
 /* Returns new value for save_msg flag. */
 int put_files_from_register(FileView *view, int name, int force_move);
+void clone_file(FileView* view);
 
 #endif
 

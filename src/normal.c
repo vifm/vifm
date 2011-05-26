@@ -76,6 +76,7 @@ static void cmd_colon(struct key_info, struct keys_info *);
 static void cmd_semicolon(struct key_info, struct keys_info *);
 static void cmd_slash(struct key_info, struct keys_info *);
 static void cmd_question(struct key_info, struct keys_info *);
+static void cmd_C(struct key_info, struct keys_info *);
 static void cmd_F(struct key_info, struct keys_info *);
 static void find_F(int ch);
 static void cmd_G(struct key_info, struct keys_info *);
@@ -250,6 +251,9 @@ init_normal_mode(int *key_mode)
 
 	curr = add_cmd(L"?", NORMAL_MODE);
 	curr->data.handler = cmd_question;
+
+	curr = add_cmd(L"C", NORMAL_MODE);
+	curr->data.handler = cmd_C;
 
 	curr = add_cmd(L"F", NORMAL_MODE);
 	curr->type = BUILDIN_WAIT_POINT;
@@ -664,6 +668,13 @@ selector_S(struct key_info key_info, struct keys_info *keys_info)
 		keys_info->indexes[i++] = x;
 	}
 	keys_info->count = i;
+}
+
+/* Clone file. */
+static void
+cmd_C(struct key_info key_info, struct keys_info *keys_info)
+{
+	clone_file(curr_view);
 }
 
 static void
