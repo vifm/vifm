@@ -1371,12 +1371,12 @@ Optional Features:
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-largefile     omit support for large files
-  --enable-extended-keys  enable extended keys (like arrows, home etc.).
+  --disable-extended-keys disable extended keys (like arrows, home etc.).
                           Without it will be no delay after pressing escape
-                          [default=yes]
-  --enable-compatibility-mode
-                          enable compatibility with previous versions of vifm
-                          (behaviour of dd and <tab>) [default=yes]
+                          [default=enabled]
+  --disable-compatibility-mode
+                          disable compatibility with previous versions of vifm
+                          (behaviour of dd and <tab>) [default=enabled]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]

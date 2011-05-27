@@ -85,17 +85,17 @@ dnl handle options
 
 AC_ARG_ENABLE(extended_keys,
 	AS_HELP_STRING(
-		[--enable-extended-keys],
-		[enable extended keys (like arrows, home etc.). Without it will be no
-		 delay after pressing escape @<:@default=yes@:>@     ]),
+		[--disable-extended-keys],
+		[disable extended keys (like arrows, home etc.). Without it will be no
+		 delay after pressing escape @<:@default=enabled@:>@     ]),
 	[extended_keys=$enableval],
 	[extended_keys=yes])
 
 AC_ARG_ENABLE(compatibility_mode,
 	AS_HELP_STRING(
-		[--enable-compatibility-mode],
-		[enable compatibility with previous versions of vifm (behaviour of dd
-		 and <tab>) @<:@default=yes@:>@     ]),
+		[--disable-compatibility-mode],
+		[disable compatibility with previous versions of vifm (behaviour of dd
+		 and <tab>) @<:@default=enabled@:>@     ]),
 	[compatibility_mode=$enableval],
 	[compatibility_mode=yes])
 
