@@ -486,7 +486,8 @@ static void
 cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_selected_files(curr_view);
-	redraw_window();
+	draw_dir_list(curr_view, curr_view->top_line, curr_view->list_pos);
+	moveto_list_pos(curr_view, curr_view->list_pos);
 	curs_set(0);
 }
 
