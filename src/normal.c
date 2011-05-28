@@ -849,8 +849,7 @@ cmd_N(struct key_info key_info, struct keys_info *keys_info)
 	if(cfg.search_history_num < 0)
 		return;
 	if(curr_view->selected_files == 0)
-		find_pattern(curr_view, cfg.search_history[cfg.search_history_num],
-				last_search_backward);
+		find_pattern(curr_view, cfg.search_history[0], last_search_backward);
 
 	if(last_search_backward)
 		find_next_pattern(curr_view);
@@ -1185,8 +1184,7 @@ cmd_n(struct key_info key_info, struct keys_info *keys_info)
 	if(cfg.search_history_num < 0)
 		return;
 	if(curr_view->selected_files == 0)
-		find_pattern(curr_view, cfg.search_history[cfg.search_history_num],
-				last_search_backward);
+		find_pattern(curr_view, cfg.search_history[0], last_search_backward);
 
 	if(last_search_backward)
 		find_previous_pattern(curr_view);
