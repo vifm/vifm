@@ -71,17 +71,41 @@ AC_CHECK_LIB(ncursesw, initscr,
 	])
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
-dnl checks for mime type detection
+dnl ----------------------------------------------------------------------------
+dnl checks for external libraries
+dnl ----------------------------------------------------------------------------
 
-if pkg-config --exists glib-2.0 gtk+-2.0; then
-	CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
-	LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
-	AC_DEFINE([HAVE_LIBGTK], [1], [use gtk to determine mime type])
+AC_ARG_WITH(gtk,
+	AS_HELP_STRING([--with-gtk],
+		[use GTK+ to determine mimetypes if available @<:@default=yes@:>@]),
+	[use_gtk=$withval],
+	[use_gtk=yes])
+
+AC_ARG_WITH(libmagic,
+	AS_HELP_STRING([--with-libmagic],
+		[use libmagic to determine mimetypes if available @<:@default=yes@:>@]),
+	[use_libmagic=$withval],
+	[use_libmagic=yes])
+
+dnl ----------------------------------------------------------------------------
+dnl checks for mimetype detection
+dnl ----------------------------------------------------------------------------
+
+if test "$use_gtk" = "yes"; then
+	if pkg-config --exists glib-2.0 gtk+-2.0; then
+		CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
+		LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
+		AC_DEFINE([HAVE_LIBGTK], [1], [use gtk to determine mime type])
+	fi
 fi
 
-AC_CHECK_LIB(magic, magic_open)
+if test "$use_libmagic" = "yes"; then
+	AC_CHECK_LIB(magic, magic_open)
+fi
 
+dnl ----------------------------------------------------------------------------
 dnl handle options
+dnl ----------------------------------------------------------------------------
 
 AC_ARG_ENABLE(extended_keys,
 	AS_HELP_STRING(

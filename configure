@@ -733,6 +733,8 @@ with_sysroot
 enable_libtool_lock
 enable_largefile
 with_curses
+with_gtk
+with_libmagic
 enable_extended_keys
 enable_compatibility_mode
 '
@@ -1387,6 +1389,10 @@ Optional Packages:
   --with-sysroot=DIR Search for dependent libraries within DIR
                         (or the compiler's sysroot if not specified).
   --with-curses=DIR       where ncurses is installed
+  --with-gtk              use GTK+ to determine mimetypes if available
+                          [default=yes]
+  --with-libmagic         use libmagic to determine mimetypes if available
+                          [default=yes]
 
 Some influential environment variables:
   CC          C compiler command
@@ -13108,15 +13114,37 @@ fi
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
 
-if pkg-config --exists glib-2.0 gtk+-2.0; then
-	CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
-	LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
+
+# Check whether --with-gtk was given.
+if test "${with_gtk+set}" = set; then :
+  withval=$with_gtk; use_gtk=$withval
+else
+  use_gtk=yes
+fi
+
+
+
+# Check whether --with-libmagic was given.
+if test "${with_libmagic+set}" = set; then :
+  withval=$with_libmagic; use_libmagic=$withval
+else
+  use_libmagic=yes
+fi
+
+
+
+if test "$use_gtk" = "yes"; then
+	if pkg-config --exists glib-2.0 gtk+-2.0; then
+		CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
+		LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
 
 $as_echo "#define HAVE_LIBGTK 1" >>confdefs.h
 
+	fi
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for magic_open in -lmagic" >&5
+if test "$use_libmagic" = "yes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for magic_open in -lmagic" >&5
 $as_echo_n "checking for magic_open in -lmagic... " >&6; }
 if ${ac_cv_lib_magic_magic_open+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -13161,6 +13189,7 @@ _ACEOF
 
 fi
 
+fi
 
 
 # Check whether --enable-extended_keys was given.
