@@ -88,7 +88,6 @@ show_error_msg(char *title, char *message)
 {
 	int x, y;
 	int key;
-	int done = 0;
 	int z = 0;
 	char *dup = strdup(message);
 
@@ -100,12 +99,14 @@ show_error_msg(char *title, char *message)
 
 	if(strlen(dup) > x-2)
 		dup[x-2] = '\0';
-	while (z < strlen(dup) && isprint(dup[z]))
+	while(z < strlen(dup) && isprint(dup[z]))
 		z++;
 
 	dup[z] = '\0';
 
 	mvwaddstr(error_win, 2, (x - strlen(dup))/2, dup);
+
+	free(dup);
 
 	box(error_win, 0, 0);
 	if(title[0] != '\0')
@@ -113,14 +114,9 @@ show_error_msg(char *title, char *message)
 
 	mvwaddstr(error_win, y -2, (x - 25)/2, "Press Return to continue");
 
-	while(!done)
-	{
+	do
 		key = wgetch(error_win);
-		if(key == 13 || key == 3) /* ascii Return  ascii Ctrl-c */
-			done = 1;
-	}
-
-	free(dup);
+	while(key != 13 && key != 3); /* ascii Return  ascii Ctrl-c */
 
 	curr_stats.freeze = 0;
 

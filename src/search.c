@@ -16,9 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#if(defined(BSD) && (BSD>=199103))
-	#include <sys/types.h> /* required for regex.h on FreeBSD 4.2 */
-#endif
 #include <sys/types.h>
 
 #include <ncurses.h>
