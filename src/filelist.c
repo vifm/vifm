@@ -176,7 +176,7 @@ use_info_prog(char *cmd, int x, int y)
 
 	if(pipe(error_pipe) != 0)
 	{
-		show_error_msg(" File pipe error", "Error creating pipe");
+		show_error_msg("File pipe error", "Error creating pipe");
 		return NULL;
 	}
 
@@ -335,7 +335,7 @@ get_all_selected_files(FileView *view)
 		(char **)calloc(view->selected_files, sizeof(char *));
 	if(view->selected_filelist == NULL)
 	{
-		show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -348,7 +348,7 @@ get_all_selected_files(FileView *view)
 			view->selected_filelist[y] = malloc(namelen +1);
 			if(view->selected_filelist[y] == NULL)
 			{
-				show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+				show_error_msg("Memory Error", "Unable to allocate enough memory");
 				return;
 			}
 			strcpy(view->selected_filelist[y],
@@ -373,7 +373,7 @@ get_selected_files(FileView *view, int count, int *indexes)
 	view->selected_filelist = (char **)calloc(count, sizeof(char *));
 	if(view->selected_filelist == NULL)
 	{
-		show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -384,7 +384,7 @@ get_selected_files(FileView *view, int count, int *indexes)
 		view->selected_filelist[y] = malloc(namelen +1);
 		if(view->selected_filelist[y] == NULL)
 		{
-			show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return;
 		}
 		strcpy(view->selected_filelist[y], view->dir_entry[indexes[x]].name);
@@ -982,6 +982,7 @@ change_directory(FileView *view, const char *directory)
 			if(!access(runner->mount_point, F_OK))
 				rmdir(runner->mount_point);
 			status_bar_message("FUSE mount success.");
+			curr_stats.save_msg = 1;
 			/*remove mount point from Fuse_List*/
 			sniffer = runner->next;
 			if(trailer)
@@ -1089,8 +1090,7 @@ change_directory(FileView *view, const char *directory)
 
 	if(access(dir_dup, F_OK) != 0)
 	{
-		show_error_msg(" Directory Access Error ",
-				"Cannot open that directory ");
+		show_error_msg("Directory Access Error", "Cannot open that directory");
 		leave_invalid_dir(view, dir_dup);
 		change_directory(view, dir_dup);
 		clean_selected_files(view);
@@ -1099,7 +1099,7 @@ change_directory(FileView *view, const char *directory)
 
 	if(access(dir_dup, R_OK) != 0)
 	{
-		show_error_msg(" Directory Access Error ",
+		show_error_msg("Directory Access Error",
 				"You do not have read access on that directory");
 
 		clean_selected_files(view);
@@ -1108,7 +1108,7 @@ change_directory(FileView *view, const char *directory)
 
 	if(access(dir_dup, X_OK) != 0)
 	{
-		show_error_msg(" Directory Access Error ",
+		show_error_msg("Directory Access Error",
 				"You do not have execute access on that directory");
 
 		clean_selected_files(view);
@@ -1119,7 +1119,7 @@ change_directory(FileView *view, const char *directory)
 
 	if(dir == NULL)
 	{
-		show_error_msg("Dir is null", "Could not open directory. ");
+		show_error_msg("Dir is null", "Could not open directory.");
 		clean_selected_files(view);
 		return -1;
 	}
@@ -1212,7 +1212,7 @@ load_dir_list(FileView *view, int reload)
 	view->dir_entry = (dir_entry_t *)malloc(sizeof(dir_entry_t));
 	if(view->dir_entry == NULL)
 	{
-		show_error_msg(" Memory Error ", "Unable to allocate enough memory.");
+		show_error_msg("Memory Error", "Unable to allocate enough memory.");
 		return;
 	}
 
@@ -1254,7 +1254,7 @@ load_dir_list(FileView *view, int reload)
 				(view->list_rows + 1) * sizeof(dir_entry_t));
 		if(view->dir_entry == NULL)
 		{
-			show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return;
 		}
 
@@ -1263,7 +1263,7 @@ load_dir_list(FileView *view, int reload)
 		view->dir_entry[view->list_rows].name = malloc(namelen + 2);
 		if(view->dir_entry[view->list_rows].name == NULL)
 		{
-			show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return;
 		}
 
@@ -1357,7 +1357,7 @@ load_dir_list(FileView *view, int reload)
 				strlen("*") +1);
 		if(view->filename_filter == NULL)
 		{
-			show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return;
 		}
 		snprintf(view->filename_filter, sizeof(view->filename_filter), "*");
@@ -1570,7 +1570,7 @@ check_if_filelists_have_changed(FileView *view)
 
 	if(stat(view->curr_dir, &s) != 0)
 	{
-		show_error_msg(" Directory Access Error ", "Cannot open directory");
+		show_error_msg("Directory Access Error", "Cannot open directory");
 		leave_invalid_dir(view, view->curr_dir);
 		change_directory(view, view->curr_dir);
 		clean_selected_files(view);

@@ -100,9 +100,7 @@ show_error_msg(char *title, char *message)
 
 	if(strlen(dup) > x-2)
 		dup[x-2] = '\0';
-/*you might have had a reason having (z < strlen(dup) -1) there before, but for me, it has just incorrectly
-truncated my messages by the last character.*/
-	while ((z < strlen(dup)) && isprint(dup[z]))
+	while (z < strlen(dup) && isprint(dup[z]))
 		z++;
 
 	dup[z] = '\0';
@@ -110,7 +108,8 @@ truncated my messages by the last character.*/
 	mvwaddstr(error_win, 2, (x - strlen(dup))/2, dup);
 
 	box(error_win, 0, 0);
-	mvwaddstr(error_win, 0, (x - strlen(title))/2, title);
+	if(title[0] != '\0')
+		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
 
 	mvwaddstr(error_win, y -2, (x - 25)/2, "Press Return to continue");
 
@@ -802,7 +801,7 @@ show_apropos_menu(FileView *view, char *args)
 	if (m.len <= 0)
 	{
 		snprintf(buf, sizeof(buf), "No matches for \'%s\'", m.title);
-		show_error_msg(" Nothing Appropriate ", buf);
+		show_error_msg("Nothing Appropriate", buf);
 		reset_popup_menu(&m);
 	}
 	else
@@ -937,7 +936,7 @@ show_filetypes_menu(FileView *view, int force_mime, int background)
 #endif
 
 	if(prog_str == NULL) {
-		show_error_msg("  Filetype is not set. ",
+		show_error_msg("Filetype is not set.",
 				"No programs set for this filetype.");
 		return;
 	}

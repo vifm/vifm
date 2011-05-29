@@ -87,7 +87,7 @@ system_and_wait_for_errors(char *cmd)
 
 	if(pipe(error_pipe) != 0)
 	{
-		show_error_msg(" File pipe error", "Error creating pipe");
+		show_error_msg("File pipe error", "Error creating pipe");
 		return -1;
 	}
 
@@ -712,8 +712,8 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	{
 		if(strcmp("../", view->selected_filelist[x]) == 0)
 		{
-			show_error_msg(" Background Process Error ",
-					"You cannot delete the ../ directory ");
+			show_error_msg("Background Process Error",
+					"You cannot delete the ../ directory");
 			continue;
 		}
 

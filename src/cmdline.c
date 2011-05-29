@@ -1386,7 +1386,7 @@ file_completion(char* filename, char* line_mb, char* raw_name,
 	/* error */
 	else
 	{
-		show_error_msg(" Debug Error ", "Harmless error in rline.c line 564");
+		show_error_msg("Debug Error", "Harmless error in rline.c line 564");
 		return -1;
 	}
 

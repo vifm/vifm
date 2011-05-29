@@ -554,7 +554,7 @@ remove_command(char *name)
 
 	if(command_is_reserved(s) > -1)
 	{
-		show_error_msg(" Trying to delete a reserved Command ", s);
+		show_error_msg("Trying to delete a reserved Command", s);
 		return;
 	}
 
@@ -595,7 +595,7 @@ add_command(char *name, char *action)
 			return;
 	if(isdigit(*name))
 	{
-		show_error_msg(" Invalid Command Name ",
+		show_error_msg("Invalid Command Name",
 				"Commands cannot start with a number.");
 		return;
 	}
@@ -642,8 +642,7 @@ set_user_command(char * command, int overwrite, int background)
 
 	if((strlen(ptr) < 1))
 	{
-		show_error_msg(" To set a Command Use: ",
-				":com command_name command_action");
+		show_error_msg("To set a Command Use:", ":com command_name command_action");
 		return;
 	}
 
@@ -825,7 +824,7 @@ select_files_in_range(FileView *view, cmd_t * cmd)
 	{
 		if(cmd->end_range < cmd->start_range)
 		{
-			show_error_msg(" Command Error ", "Backward range given.");
+			show_error_msg("Command Error", "Backward range given.");
 			//save_msg = 1;
 			//break;
 		}
@@ -1049,7 +1048,7 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 				execute_command(view, cfg.cmd_history[0]);
 		}
 		else
-			show_error_msg(" Command Error", "No Previous Commands in History List");
+			show_error_msg("Command Error", "No Previous Commands in History List");
 
 		return 0;
 	}
@@ -1130,14 +1129,14 @@ do_map(cmd_t *cmd, const char *map_type, int mode)
 
 	if(cmd->args == NULL || *cmd->args == '\0')
 	{
-		show_error_msg(" Command Error ", err_msg);
+		show_error_msg("Command Error", err_msg);
 		return 0;
 	}
 
 	raw_rhs = (char*)skip_word(cmd->args);
 	if(*raw_rhs == '\0')
 	{
-		show_error_msg(" Command Error ", err_msg);
+		show_error_msg("Command Error", err_msg);
 		return 0;
 	}
 	t = *raw_rhs;
@@ -1156,7 +1155,7 @@ do_map(cmd_t *cmd, const char *map_type, int mode)
 
 	if(result == -1)
 	{
-		show_error_msg(" Mapping Error ", "Can't remap buildin key");
+		show_error_msg("Mapping Error", "Can't remap buildin key");
 	}
 
 	return 0;
@@ -1235,7 +1234,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				}
 				else
 				{
-					show_error_msg(" Command Error ",
+					show_error_msg("Command Error",
 						"The :! command requires an argument - :!command");
 					save_msg = 1;
 				}
@@ -1262,10 +1261,8 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		{
 			if(cmd->args)
 			{
-				//snprintf(buf, sizeof(buf), "args are %s", cmd->args);
 				show_error_msg("Color Scheme",
 						"The :colorscheme command is reserved ");
-
 			}
 			else /* Should show error message with colorschemes listed */
 			{
@@ -1385,7 +1382,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				}
 				else
 				{
-					show_error_msg(" Command Error ",
+					show_error_msg("Command Error",
 							"The :filter command requires an argument - :filter pattern");
 					save_msg = 1;
 				}
@@ -1497,7 +1494,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		case COM_PUSHD:
 			if(cmd->args == NULL)
 			{
-				show_error_msg(" Command Error ",
+				show_error_msg("Command Error",
 						"The :pushd command requires an argument - :pushd directory");
 				break;
 			}
@@ -1547,7 +1544,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				if(curr_stats.number_of_windows == 1)
 				{
 					show_error_msg("Cannot view files",
-							"Cannot view files in one window mode ");
+							"Cannot view files in one window mode");
 					break;
 				}
 				if(curr_stats.view)
@@ -1569,8 +1566,8 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			}
 			break;
 		case COM_VIFM:
-			show_error_msg(" I haven't gotten here yet ",
-						"Sorry this is not implemented ");
+			show_error_msg("I haven't gotten here yet",
+						"Sorry this is not implemented");
 			break;
 		case COM_YANK:
 			{
@@ -1583,7 +1580,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					yank_selected_files(view);
 					*/
 				show_error_msg(":yank is not implemented yet",
-						":yank is not implemented yet ");
+						":yank is not implemented yet");
 			}
 			break;
 		case COM_VMAP:

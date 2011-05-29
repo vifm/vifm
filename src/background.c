@@ -124,7 +124,7 @@ check_background_jobs(void)
 			}
 			if (strlen(p->error_buf) > 1)
 			{
-				show_error_msg(" Background Process Error ", p->error_buf);
+				show_error_msg("Background Process Error", p->error_buf);
 				free(p->error_buf);
 				p->error_buf = (char *) calloc(1, sizeof(char));
 			}
@@ -232,7 +232,7 @@ background_and_wait_for_errors(char *cmd)
 
 	if(pipe(error_pipe) != 0)
 	{
-		show_error_msg(" File pipe error",
+		show_error_msg("File pipe error",
 				"Error creating pipe in background.c line 84");
 		return -1;
 	}
@@ -277,7 +277,7 @@ start_background_job(char *cmd)
 
 	if (pipe(error_pipe) != 0)
 	{
-		show_error_msg(" File pipe error",
+		show_error_msg("File pipe error",
 				"Error creating pipe in background.c line 307");
 		return -1;
 	}
