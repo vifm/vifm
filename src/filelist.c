@@ -44,7 +44,7 @@
 #include "sort.h"
 #include "status.h"
 #include "ui.h"
-#include "utils.h" /* update_term_title() */
+#include "utils.h"
 #include "fileops.h"
 #include "file_info.h"
 
@@ -102,9 +102,9 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 			 {
 				  if (S_ISREG (view->dir_entry[x].mode))
 					{
-						if((S_IXUSR &view->dir_entry[x].mode)
-								|| (S_IXGRP &view->dir_entry[x].mode)
-								|| (S_IXOTH &view->dir_entry[x].mode))
+						if((S_IXUSR & view->dir_entry[x].mode)
+								|| (S_IXGRP & view->dir_entry[x].mode)
+								|| (S_IXOTH & view->dir_entry[x].mode))
 
 							snprintf(buf, sizeof(buf), " exe");
 						else
@@ -156,8 +156,7 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 		wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
 				| A_BOLD);
 
-	mvwaddstr(view->win, y,
-				view->window_width - strlen(buf), buf);
+	mvwaddstr(view->win, y, view->window_width - strlen(buf), buf);
 
 	if(current_line)
 		wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
@@ -981,8 +980,6 @@ change_directory(FileView *view, const char *directory)
 			/*remove the DIR we created for the mount*/
 			if(!access(runner->mount_point, F_OK))
 				rmdir(runner->mount_point);
-			status_bar_message("FUSE mount success.");
-			curr_stats.save_msg = 1;
 			/*remove mount point from Fuse_List*/
 			sniffer = runner->next;
 			if(trailer)

@@ -113,7 +113,6 @@ find_pattern(FileView *view, char *pattern, int backward)
 		regfree(&re);
 	}
 
-
 	/* Need to redraw the list so that the matching files are highlighted */
 	draw_dir_list(view, view->top_line, view->curr_line);
 

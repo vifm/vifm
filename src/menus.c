@@ -1217,9 +1217,8 @@ show_jobs_menu(FileView *view)
 
 	x = 0;
 
-
 	/*
-	 * SIGCHLD	needs to be blocked anytime the Finished_Jobs list
+	 * SIGCHLD needs to be blocked anytime the Finished_Jobs list
 	 * is accessed from anywhere except the received_sigchld().
 	 */
 	sigemptyset(&new_mask);
@@ -1230,7 +1229,6 @@ show_jobs_menu(FileView *view)
 
 	while (p)
 	{
-
 		/* Mark any finished jobs */
 		while (fj)
 		{
@@ -1246,12 +1244,10 @@ show_jobs_menu(FileView *view)
 		{
 			m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
 			m.data[x] = (char *)malloc(strlen(p->cmd) + 24);
-			snprintf(m.data[x], strlen(p->cmd) + 22, " %d	  %s ",
-					p->pid, p->cmd);
+			snprintf(m.data[x], strlen(p->cmd) + 22, " %d %s ", p->pid, p->cmd);
 
 			x++;
 		}
-
 
 		p = p->next;
 	}
