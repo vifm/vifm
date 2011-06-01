@@ -1300,6 +1300,7 @@ option_completion(char* line_mb, struct line_stats *stat)
 	free(line_ending);
 	free(completed);
 
+	stat->complete_continue = 1;
 	update_line_stat(stat, new_len);
 	redraw_status_bar(stat);
 	return 0;
@@ -1792,3 +1793,4 @@ check_for_executable(char *string)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+
