@@ -534,12 +534,11 @@ complete_options(const char *cmd, const char **start)
 {
 	static char buf[1024] = "";
 	static size_t len;
+	static int bool_only;
 	static int last;
 
 	if(cmd != NULL)
 	{
-		const char *p;
-
 		last = -1;
 
 		*start = cmd;
@@ -549,9 +548,23 @@ complete_options(const char *cmd, const char **start)
 			cmd = extract_option(cmd, buf, 0);
 		}
 
-		p = skip_alphas(cmd);
-		if(*p != '\0')
-			return NULL;
+		if(strncmp(buf, "no", 2) == 0)
+		{
+			*start += 2;
+			memmove(buf, buf + 2, strlen(buf) - 2 + 1);
+			bool_only = 1;
+		}
+		else if(strncmp(buf, "inv", 3) == 0)
+		{
+			*start += 3;
+			memmove(buf, buf + 3, strlen(buf) - 3 + 1);
+			bool_only = 1;
+		}
+		else
+		{
+			bool_only = 0;
+		}
+
 		len = strlen(buf);
 	}
 	else if(last == options_count)
@@ -565,6 +578,8 @@ complete_options(const char *cmd, const char **start)
 
 	while(++last < options_count)
 	{
+		if(bool_only && options[last].type != OPT_BOOL)
+			continue;
 		if(strncmp(buf, options[last].name, len) == 0)
 			return strdup(options[last].name);
 	}
