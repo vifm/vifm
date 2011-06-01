@@ -266,7 +266,11 @@ save_command_history(const char *command)
 	if(!strcmp(command, "!!") || !strcmp(command, "!"))
 		return;
 
-	if((cfg.cmd_history_num + 1) >= cfg.cmd_history_len)
+	/* Don't add duplicates */
+	if(cfg.cmd_history_num > 0 && !strcmp(command, cfg.cmd_history[0]))
+		return;
+
+	if(cfg.cmd_history_num + 1 >= cfg.cmd_history_len)
 		cfg.cmd_history_num = x = cfg.cmd_history_len - 1;
 	else
 		x = cfg.cmd_history_num + 1;
@@ -1799,6 +1803,7 @@ execute_command(FileView *view, char *command)
 int
 exec_commands(char *cmd, FileView *view, int type, void * ptr)
 {
+	int slash = 0;
 	int save_msg = 0;
 	char *p, *q;
 
@@ -1923,4 +1928,5 @@ comm_split(void)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+
 
