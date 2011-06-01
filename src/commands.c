@@ -1757,7 +1757,6 @@ execute_user_command(FileView *view, cmd_t *cmd)
 	if(!cmd->background)
 		free(expanded_com);
 
-
 	if(view->selected_files)
 	{
 		free_selected_file_array(view);
@@ -1800,23 +1799,29 @@ execute_command(FileView *view, char *command)
 int
 exec_commands(char *cmd, FileView *view, int type, void * ptr)
 {
-	int slash = 0;
 	int save_msg = 0;
 	char *p, *q;
+
+	if(type == GET_COMMAND || type == MAPPED_COMMAND
+			|| type == GET_VISUAL_COMMAND)
+		save_command_history(cmd);
 
 	p = cmd;
 	q = cmd;
 	while(*cmd != '\0')
 	{
-		if(slash == 1)
+		if(*p == '\\')
 		{
-			*q++ = *p++;
-			slash = 0;
-		}
-		else if(*p == '\\')
-		{
-			slash = 1;
-			p++;
+			if(*(p + 1) == '|')
+			{
+				*q++ = '|';
+				p += 2;
+			}
+			else
+			{
+				*q++ = *p++;
+				*q++ = *p++;
+			}
 		}
 		else if(*p == '|' || *p == '\0')
 		{
@@ -1841,7 +1846,7 @@ exec_command(char *cmd, FileView *view, int type, void * ptr)
 {
 	if(cmd == NULL)
 	{
-		if (type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN
+		if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN
 				|| type == MAPPED_SEARCH)
 			return find_pattern(view, view->regexp, type == GET_BSEARCH_PATTERN);
 		return 0;
@@ -1850,7 +1855,6 @@ exec_command(char *cmd, FileView *view, int type, void * ptr)
 	if(type == GET_COMMAND || type == MAPPED_COMMAND
 			|| type == GET_VISUAL_COMMAND)
 	{
-		save_command_history(cmd);
 		return execute_command(view, cmd);
 	}
 	else if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN
@@ -1919,3 +1923,4 @@ comm_split(void)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+
