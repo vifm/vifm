@@ -63,7 +63,7 @@ init_config(void)
 	cfg.auto_execute = 0;
 	cfg.color_scheme_num = 0;
 	cfg.color_pairs_num = 0;
-	cfg.time_format = strdup("%m/%d %H:%M");
+	cfg.time_format = strdup(" %m/%d %H:%M");
 
 	/* Maximum argument length to pass to the shell */
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)

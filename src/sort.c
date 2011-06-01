@@ -17,6 +17,7 @@
  */
 
 #include <fcntl.h> /* access */
+#include <sys/stat.h>
 #include <ncurses.h>
 #include <string.h> /* strrchr */
 

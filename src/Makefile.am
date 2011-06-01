@@ -31,6 +31,8 @@ vifm_SOURCES = \
 	menus.c menus.h \
 	modes.c modes.h \
 	normal.c normal.h \
+	opt_handlers.c opt_handlers.h \
+	options.c options.h \
 	permissions_dialog.c permissions_dialog.h \
 	registers.c registers.h \
 	search.c search.h \

@@ -38,6 +38,7 @@
 #include "menu.h"
 #include "menus.h"
 #include "modes.h"
+#include "opt_handlers.h"
 #include "permissions_dialog.h"
 #include "search.h"
 #include "signals.h"
@@ -82,6 +83,7 @@ char *reserved_commands[] = {
 	"quit",
 	"register",
 	"screen",
+	"set",
 	"shell",
 	"sort",
 	"split",
@@ -288,7 +290,6 @@ save_command_history(const char *command)
 	cfg.cmd_history_num++;
 	if (cfg.cmd_history_num >= cfg.cmd_history_len)
 		cfg.cmd_history_num = cfg.cmd_history_len -1;
-
 }
 
 /* The string returned needs to be freed in the calling function */
@@ -1531,6 +1532,9 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				curr_stats.setting_change = 1;
 			}
 			break;
+		case COM_SET:
+			save_msg = process_set_args(cmd->args);
+			break;
 		case COM_SHELL:
 			shellout(NULL, 0);
 			break;
@@ -1770,6 +1774,31 @@ execute_user_command(FileView *view, cmd_t *cmd)
 	return 0;
 }
 
+static void
+filter_slashes(char *str)
+{
+	int slash = 0;
+	char *buf = str;
+	while(*str != '\0')
+	{
+		if(slash == 1)
+		{
+			*buf++ = *str++;
+			slash = 0;
+		}
+		else if(*str == '\\')
+		{
+			slash = 1;
+			str++;
+		}
+		else
+		{
+			*buf++ = *str++;
+		}
+	}
+	*buf = '\0';
+}
+
 int
 execute_command(FileView *view, char *command)
 {
@@ -1790,7 +1819,11 @@ execute_command(FileView *view, char *command)
 		return 1;
 
 	if(cmd.builtin > -1)
+	{
+		if(cmd.builtin != COM_SET && cmd.args != NULL)
+			filter_slashes(cmd.args);
 		result = execute_builtin_command(view, &cmd);
+	}
 	else
 		result = execute_user_command(view, &cmd);
 
@@ -1803,7 +1836,6 @@ execute_command(FileView *view, char *command)
 int
 exec_commands(char *cmd, FileView *view, int type, void * ptr)
 {
-	int slash = 0;
 	int save_msg = 0;
 	char *p, *q;
 
@@ -1900,7 +1932,9 @@ comm_only(void)
 {
 	curr_stats.number_of_windows = 1;
 	redraw_window();
-	//my_system("screen -X eval \"only\"");
+	/* TODO see what this code about and decide if it can be used
+	my_system("screen -X eval \"only\"");
+	*/
 }
 
 void
@@ -1908,25 +1942,21 @@ comm_split(void)
 {
 	curr_stats.number_of_windows = 2;
 	redraw_window();
-	/*
-		 char *tmp = NULL;
+	/* TODO see what this code about and decide if it can be used
+	char *tmp = NULL;
 
-		 if (!cfg.use_screen)
-		 break;
+	if(!cfg.use_screen)
+		break;
 
-		 if (cmd->args)
-		 {
-		 if (strchr(cmd->args, '%'))
-		 {
-		 tmp = expand_macros(view, cmd->args, NULL, 0, 0);
-		 }
-		 else
-		 tmp = strdup(cmd->args);
-		 }
-		 split_screen(view, tmp);
+	if(cmd->args)
+	{
+		if(strchr(cmd->args, '%'))
+			tmp = expand_macros(view, cmd->args, NULL, 0, 0);
+		else
+			tmp = strdup(cmd->args);
+	}
+	split_screen(view, tmp);
 	*/
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
-
-

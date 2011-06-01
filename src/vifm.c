@@ -40,6 +40,7 @@
 #include "filetype.h"
 #include "main_loop.h"
 #include "modes.h"
+#include "opt_handlers.h"
 #include "registers.h"
 #include "signals.h"
 #include "status.h"
@@ -268,6 +269,7 @@ main(int argc, char *argv[])
 		curr_stats.number_of_windows = 1;
 
 	init_modes();
+	init_options();
 	exec_startup();
 	main_loop();
 

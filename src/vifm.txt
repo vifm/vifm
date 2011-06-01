@@ -65,6 +65,7 @@ The builtin commands are:
 :pwd - show the present working directory.
 :q[uit] or :x  - will exit vifm.
 :s[creen] - toggles whether to use the screen program or not.
+:se[t] opt1=val1 opt2=val2 - sets given options.
 :sh[ell] - will start a shell.
 :so[rt] - menu of different sorting methods.
 :sp[lit] - switch to a two window view.
@@ -330,6 +331,7 @@ The following command names are reserved and cannot be used for user commands.
   pwd - show present working directory.
   quit - exit vifm.
   screen - toggles use of screen program.
+  set - set option.
   shell - shellout.
   sort - show sort menu.
   unmap - not used will be used with key mapping.

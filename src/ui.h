@@ -123,7 +123,7 @@ WINDOW *mborder;
 WINDOW *rborder;
 
 int setup_ncurses_interface(void);
-void status_bar_message(char *message);
+void status_bar_message(const char *message);
 void update_stat_window(FileView *view);
 void redraw_window(void);
 void write_stat_win(char *message);
@@ -135,6 +135,7 @@ void update_input_bar(wchar_t c);
 void switch_views(void);
 void clear_num_window(void);
 void show_progress(const char *msg, int period);
+void redraw_lists(void);
 
 #endif
 

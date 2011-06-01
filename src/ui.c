@@ -152,7 +152,7 @@ update_stat_window(FileView *view)
 }
 
 void
-status_bar_message(char *message)
+status_bar_message(const char *message)
 {
 	werase(status_bar);
 	wprintw(status_bar, "%s", message);
@@ -657,6 +657,14 @@ show_progress(const char *msg, int period)
 	wrefresh(status_bar);
 
 	count = (count + 1) % sizeof(marks);
+}
+
+void
+redraw_lists(void)
+{
+	draw_dir_list(&lwin, lwin.top_line, lwin.curr_line);
+	draw_dir_list(&rwin, rwin.top_line, rwin.curr_line);
+	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
