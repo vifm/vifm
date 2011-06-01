@@ -13,7 +13,7 @@ Vi specific features that need to be added.
 		the dot filter and regular expression filter.
     Make some kind of undo command.
     Add more options for :set command.
-    Add completion for :set command.
+    Add completion for enumerations and sets for :set command.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap? 

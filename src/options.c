@@ -37,7 +37,7 @@ struct opt_t {
 	const char **vals;
 };
 
-static const char * extract_option(const char *cmd, char *buf);
+static const char * extract_option(const char *cmd, char *buf, int replace);
 static void process_option(const char *cmd);
 static const char * skip_alphas(const char *cmd);
 static int get_option(const char *option);
@@ -112,16 +112,13 @@ set_options(const char *cmd)
 	{
 		char buf[1024];
 
-		cmd = extract_option(cmd, buf);
+		cmd = extract_option(cmd, buf, 1);
 		process_option(buf);
-
-		if(*cmd == '\0')
-			break;
 	}
 }
 
 static const char *
-extract_option(const char *cmd, char *buf)
+extract_option(const char *cmd, char *buf, int replace)
 {
 	int slash = 0;
 	while(*cmd != '\0')
@@ -134,7 +131,10 @@ extract_option(const char *cmd, char *buf)
 		else if(*cmd == '\\')
 		{
 			slash = 1;
-			cmd++;
+			if(replace)
+				cmd++;
+			else
+				*buf++ = *cmd++;
 		}
 		else if(*cmd == ' ')
 		{
@@ -527,6 +527,48 @@ print_msg(const char *msg, const char *description)
 {
 	if(print_func != NULL)
 		print_func(msg, description);
+}
+
+char *
+complete_options(const char *cmd, const char **start)
+{
+	static char buf[1024] = "";
+	static size_t len;
+	static int last;
+
+	if(cmd != NULL)
+	{
+		const char *p;
+
+		last = -1;
+
+		*start = cmd;
+		while(*cmd != '\0')
+		{
+			*start = cmd;
+			cmd = extract_option(cmd, buf, 0);
+		}
+
+		p = skip_alphas(cmd);
+		if(*p != '\0')
+			return NULL;
+		len = strlen(buf);
+	}
+	else if(last == options_count)
+	{
+		last = -1;
+	}
+	else if(last == -1)
+	{
+		return NULL;
+	}
+
+	while(++last < options_count)
+	{
+		if(strncmp(buf, options[last].name, len) == 0)
+			return strdup(options[last].name);
+	}
+	return strdup(buf);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

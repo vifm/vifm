@@ -51,6 +51,7 @@ void add_option(const char *name, enum opt_type type, int val_count,
 		const char **vals, opt_handler handler);
 void set_option(const char *name, union optval_t val);
 void set_options(const char *cmd);
+char * complete_options(const char *cmd, const char **start);
 
 #endif
 

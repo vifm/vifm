@@ -43,6 +43,7 @@
 #include "menu.h"
 #include "menus.h"
 #include "modes.h"
+#include "options.h"
 #include "permissions_dialog.h"
 #include "sort_dialog.h"
 #include "status.h"
@@ -106,8 +107,11 @@ static void cmd_ctrl_p(struct key_info, struct keys_info *);
 static void complete_cmd_prev(void);
 static void complete_search_prev(void);
 static int line_completion(struct line_stats *stat);
-static int file_completion(char* filename, char* line_mb, char* raw_name,
+static int option_completion(char* line_mb, struct line_stats *stat);
+static int file_completion(char* filename, char* line_mb,
 		struct line_stats *stat);
+static void update_line_stat(struct line_stats *stat, int new_len);
+static void redraw_status_bar(struct line_stats *stat);
 static size_t get_words_count(const char * string);
 static char * get_last_word(char * string);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
@@ -1187,7 +1191,7 @@ line_completion(struct line_stats *stat)
 
 	usercmd_completion = (id == COM_DELCOMMAND || id == COM_COMMAND)
 			&& words_count <= 2;
-	if(!usercmd_completion && (last_word != NULL || id == COM_EXECUTE))
+	if(!usercmd_completion && (last_word != NULL || id == COM_EXECUTE || id == COM_SET))
 	{
 		char *filename = (char *)NULL;
 		char *raw_name = (char *)NULL;
@@ -1197,10 +1201,14 @@ line_completion(struct line_stats *stat)
 		if(last_word == NULL)
 			return -1;
 
-		if(id == COM_EXECUTE && words_count == 1)
+		if(id == COM_SET)
 		{
-			raw_name = exec_completion(stat->complete_continue ? NULL : last_word);
+			int ret = option_completion(line_mb, stat);
+			free(last_word);
+			return ret;
 		}
+		else if(id == COM_EXECUTE && words_count == 1)
+			raw_name = exec_completion(stat->complete_continue ? NULL : last_word);
 		else
 			raw_name = filename_completion(stat->complete_continue ? NULL : last_word,
 					(id == COM_CD) ? 1 : 0);
@@ -1212,7 +1220,7 @@ line_completion(struct line_stats *stat)
 
 		if(filename != NULL)
 		{
-			int ret = file_completion(filename, line_mb, raw_name, stat);
+			int ret = file_completion(filename, line_mb, stat);
 			free(raw_name);
 			free(filename);
 			if(ret != 0)
@@ -1249,8 +1257,56 @@ line_completion(struct line_stats *stat)
 }
 
 static int
-file_completion(char* filename, char* line_mb, char* raw_name,
-		struct line_stats *stat)
+option_completion(char* line_mb, struct line_stats *stat)
+{
+	static const char *p;
+	void *t;
+	wchar_t *line_ending;
+	char *completed;
+	int new_len;
+
+	if(!stat->complete_continue)
+	{
+		completed = strchr(line_mb, ' ');
+		if(completed == NULL)
+			completed = "";
+		else
+			while(isspace(*completed))
+				completed++;
+	}
+	completed = complete_options(stat->complete_continue ? NULL : completed, &p);
+
+	new_len = (p - line_mb) + mbstowcs(NULL, completed, 0)
+			+ (stat->len - stat->index) + 1;
+
+	if((t = realloc(stat->line, new_len * sizeof(wchar_t))) == NULL)
+	{
+		free(completed);
+		return -1;
+	}
+	stat->line = (wchar_t *) t;
+
+	line_ending = (wchar_t *) malloc((wcslen(stat->line
+			+ stat->index) + 1) * sizeof(wchar_t));
+	if(line_ending == NULL)
+	{
+		free(completed);
+		return -1;
+	}
+	wcscpy(line_ending, stat->line + stat->index);
+
+	swprintf(stat->line + (p - line_mb), new_len, L"%s%ls", completed,
+			line_ending);
+	free(line_ending);
+	free(completed);
+
+	update_line_stat(stat, new_len);
+	redraw_status_bar(stat);
+	return 0;
+}
+
+static int
+file_completion(char* filename, char* line_mb, struct line_stats *stat)
 {
 	char *cur_file_pos = strrchr(line_mb, ' ');
 	char *temp = (char *) NULL;
@@ -1375,10 +1431,7 @@ file_completion(char* filename, char* line_mb, char* raw_name,
 
 		swprintf(stat->line, i , L"%s%s%ls", line_mb, filename, temp2);
 
-		stat->index = i - (stat->len - stat->index) - 1;
-		stat->curs_pos = stat->prompt_wid
-							+ wcswidth(stat->line, stat->index);
-		stat->len = i - 1;
+		update_line_stat(stat, i);
 
 		*temp = x;
 		free(temp2);
@@ -1390,11 +1443,23 @@ file_completion(char* filename, char* line_mb, char* raw_name,
 		return -1;
 	}
 
+	redraw_status_bar(stat);
+	return 0;
+}
+
+static void update_line_stat(struct line_stats *stat, int new_len)
+{
+	stat->index = new_len - (stat->len - stat->index) - 1;
+	stat->curs_pos = stat->prompt_wid + wcswidth(stat->line, stat->index);
+	stat->len = new_len - 1;
+}
+
+static void redraw_status_bar(struct line_stats *stat)
+{
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, stat->prompt);
 	mvwaddwstr(status_bar, 0, stat->prompt_wid, stat->line);
 	wmove(status_bar, 0, stat->curs_pos);
-	return 0;
 }
 
 static size_t
