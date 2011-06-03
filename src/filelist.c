@@ -1602,6 +1602,9 @@ change_sort_type(FileView *view, char type, char descending)
 
 	val.enum_item = type;
 	set_option("sort", val);
+
+	val.enum_item = descending;
+	set_option("sortorder", val);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

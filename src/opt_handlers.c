@@ -14,6 +14,7 @@ static void load_options(void);
 static void print_func(const char *msg, const char *description);
 static void iec_handler(enum opt_op op, union optval_t val);
 static void sort_handler(enum opt_op op, union optval_t val);
+static void sort_order_handler(enum opt_op op, union optval_t val);
 static void timefmt_handler(enum opt_op op, union optval_t val);
 
 static int save_msg;
@@ -32,6 +33,11 @@ static const char * sort_enum[] = {
 	"mtime",
 };
 
+static const char * sort_order_enum[] = {
+	"ascending",
+	"descending",
+};
+
 void
 init_options(void)
 {
@@ -48,6 +54,7 @@ add_options(void)
 
 	/* local options */
 	add_option("sort", OPT_ENUM, NUM_SORT_OPTIONS, sort_enum, &sort_handler);
+	add_option("sortorder", OPT_ENUM, 2, sort_order_enum, &sort_order_handler);
 }
 
 static void
@@ -69,6 +76,9 @@ load_local_options(FileView *view)
 
 	val.enum_item = view->sort_type;
 	set_option("sort", val);
+
+	val.enum_item = view->sort_descending;
+	set_option("sortorder", val);
 }
 
 int
@@ -107,6 +117,12 @@ static void
 sort_handler(enum opt_op op, union optval_t val)
 {
 	change_sort_type(curr_view, val.enum_item, curr_view->sort_descending);
+}
+
+static void
+sort_order_handler(enum opt_op op, union optval_t val)
+{
+	change_sort_type(curr_view, curr_view->sort_type, val.enum_item);
 }
 
 static void
