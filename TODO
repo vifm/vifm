@@ -5,6 +5,8 @@ Basic things that need to be done.
 	Better documentation.
 	Handle commands that are too long to be passed directly to the shell.
     Make ga work in background.
+    Document options.
+    Use checksum to determine if configuration file has been changed.
 
 Vi specific features that need to be added.
 	Finish implementing range and count for user commands.
