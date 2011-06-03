@@ -79,6 +79,13 @@ add_option(const char *name, enum opt_type type, int val_count,
 	options_count++;
 
 	p = options + options_count - 1;
+
+	while((p - 1) >= options && strcmp((p - 1)->name, name) > 0)
+	{
+		*p = *(p - 1);
+		--p;
+	}
+
 	p->name = strdup(name);
 	p->type = type;
 	p->handler = handler;
