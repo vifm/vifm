@@ -39,6 +39,7 @@
 #include "file_info.h"
 #include "filelist.h"
 #include "menus.h"
+#include "opt_handlers.h"
 #include "signals.h"
 #include "status.h"
 #include "ui.h"
@@ -614,6 +615,8 @@ switch_views(void)
 	FileView *tmp = curr_view;
 	curr_view = other_view;
 	other_view = tmp;
+
+	load_local_options(curr_view);
 }
 
 void

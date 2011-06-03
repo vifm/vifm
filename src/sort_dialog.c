@@ -180,18 +180,9 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 {
-	char filename[NAME_MAX];
-
 	leave_sort_mode();
 
-	view->sort_type = curr - 2;
-	view->sort_descending = descending;
-	curr_stats.setting_change = 1;
-
-	snprintf(filename, sizeof(filename), "%s",
-			view->dir_entry[view->list_pos].name);
-	load_dir_list(view, 1);
-	moveto_list_pos(view, find_file_pos_in_list(view, filename));
+	change_sort_type(view, curr - 2, descending);
 }
 
 static void

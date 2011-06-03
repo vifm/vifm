@@ -13,9 +13,24 @@ static void add_options(void);
 static void load_options(void);
 static void print_func(const char *msg, const char *description);
 static void iec_handler(enum opt_op op, union optval_t val);
+static void sort_handler(enum opt_op op, union optval_t val);
 static void timefmt_handler(enum opt_op op, union optval_t val);
 
 static int save_msg;
+
+static const char * sort_enum[] = {
+	"ext",
+	"name",
+	"gid",
+	"gname",
+	"mode",
+	"uid",
+	"uname",
+	"size",
+	"atime",
+	"ctime",
+	"mtime",
+};
 
 void
 init_options(void)
@@ -30,6 +45,9 @@ add_options(void)
 {
 	add_option("iec", OPT_BOOL, 0, NULL, &iec_handler);
 	add_option("timefmt", OPT_STR, 0, NULL, &timefmt_handler);
+
+	/* local options */
+	add_option("sort", OPT_ENUM, NUM_SORT_OPTIONS, sort_enum, &sort_handler);
 }
 
 static void
@@ -42,6 +60,15 @@ load_options(void)
 
 	val.str_val = cfg.time_format + 1;
 	set_option("timefmt", val);
+}
+
+void
+load_local_options(FileView *view)
+{
+	union optval_t val;
+
+	val.enum_item = view->sort_type;
+	set_option("sort", val);
 }
 
 int
@@ -74,6 +101,12 @@ iec_handler(enum opt_op op, union optval_t val)
 	cfg.use_iec_prefixes = val.int_val;
 
 	redraw_lists();
+}
+
+static void
+sort_handler(enum opt_op op, union optval_t val)
+{
+	change_sort_type(curr_view, val.enum_item, curr_view->sort_descending);
 }
 
 static void

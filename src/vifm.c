@@ -270,6 +270,7 @@ main(int argc, char *argv[])
 
 	init_modes();
 	init_options();
+	load_local_options(curr_view);
 	exec_startup();
 	main_loop();
 

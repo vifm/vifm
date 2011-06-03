@@ -54,6 +54,7 @@ void restore_filename_filter(FileView *view);
 void scroll_view(FileView *view);
 void check_if_filelists_have_changed(FileView *view);
 int S_ISEXE(mode_t mode);
+void change_sort_type(FileView *view, char type, char descending);
 
 #endif
 

@@ -35,18 +35,19 @@
 
 #include "background.h"
 #include "color_scheme.h"
-#include "config.h" /* menu colors */
 #include "commands.h"
+#include "config.h" /* menu colors */
+#include "file_info.h"
 #include "filelist.h"
+#include "fileops.h"
 #include "fileops.h"
 #include "filetype.h"
 #include "menus.h"
+#include "options.h"
 #include "sort.h"
 #include "status.h"
 #include "ui.h"
 #include "utils.h"
-#include "fileops.h"
-#include "file_info.h"
 
 void
 friendly_size_notation(unsigned long long num, int str_size, char *str)
@@ -1582,6 +1583,25 @@ check_if_filelists_have_changed(FileView *view)
 		if(s.st_mtime != other_view->dir_mtime)
 			reload_window(other_view);
 	}
+}
+
+void
+change_sort_type(FileView *view, char type, char descending)
+{
+	char filename[NAME_MAX];
+	union optval_t val;
+
+	view->sort_type = type;
+	view->sort_descending = descending;
+	curr_stats.setting_change = 1;
+
+	snprintf(filename, sizeof(filename), "%s",
+			view->dir_entry[view->list_pos].name);
+	load_dir_list(view, 1);
+	moveto_list_pos(view, find_file_pos_in_list(view, filename));
+
+	val.enum_item = type;
+	set_option("sort", val);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
