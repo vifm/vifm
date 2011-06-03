@@ -796,7 +796,7 @@ shellout(char *command, int pause)
 	/* There is a problem with using the screen program and
 	 * catching all the SIGWICH signals.  So just redraw the window.
 	 */
-	if(!isendwin())
+	if(!isendwin() && cfg.use_screen)
 		redraw_window();
 
 	curs_set(0);
