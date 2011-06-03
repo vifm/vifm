@@ -92,7 +92,8 @@ extern char *reserved_commands[];
 
 command_t *command_list;
 
-int exec_commands(char *cmd, FileView *view, int type, void * ptr);
+int exec_commands(char *cmd, FileView *view, int type, void * ptr,
+		int save_hist);
 void shellout(char *command, int pause);
 void add_command(char *name, char *action);
 int execute_command(FileView *view, char *action);

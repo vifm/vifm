@@ -4,21 +4,21 @@ Basic things that need to be done.
 	Fix window resizing.
 	Better documentation.
 	Handle commands that are too long to be passed directly to the shell.
-    Make ga work in background.
-    Document options.
-    Use checksum to determine if configuration file has been changed.
+	Make ga work in background.
+	Document options.
+	Use checksum to determine if configuration file has been changed.
 
 Vi specific features that need to be added.
 	Finish implementing range and count for user commands.
 	Fix '' to go back to all jumps G gg links. 
 	Change file list filters to use fold levels instead of just 
 		the dot filter and regular expression filter.
-    Make some kind of undo command.
-    Add more options for :set command.
-    Add set values completion for :set command.
+	Make some kind of undo command.
+	Add more options for :set command.
+	Add set values completion for :set command.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap? 
 	Virtual File System - currently vifm can use fuse to mount most
 		file systems.  
-    Make :file menu editable.
+	Make :file menu editable.

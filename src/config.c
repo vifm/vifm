@@ -574,18 +574,16 @@ exec_startup(void)
 	snprintf(startup_file, sizeof(startup_file), "%s/startup", cfg.config_dir);
 
 	if((fp = fopen(startup_file, "r")) == NULL)
-	{
 		return;
-	}
 
-	while(fgets(line, MAX_LEN, fp))
+	while(fgets(line, MAX_LEN, fp) > 0)
 	{
 		size_t len;
 
 		len = strlen(line);
 		if(len != 0 && line[len - 1] == '\n')
 			line[len - 1] = '\0';
-		exec_commands(line, curr_view, GET_COMMAND, NULL);
+		exec_commands(line, curr_view, GET_COMMAND, NULL, 0);
 	}
 
 	fclose(fp);

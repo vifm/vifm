@@ -639,6 +639,7 @@ static void
 cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 {
 	char* p;
+	int save_hist = !keys_info->mapped;
 	int i;
 
 	werase(status_bar);
@@ -663,15 +664,18 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	if(sub_mode == CMD_SUBMODE)
 	{
-		curr_stats.save_msg = exec_commands(p, curr_view, GET_COMMAND, NULL);
+		curr_stats.save_msg = exec_commands(p, curr_view, GET_COMMAND, NULL,
+				save_hist);
 	}
 	else if(sub_mode == SEARCH_FORWARD_SUBMODE)
 	{
-		curr_stats.save_msg = exec_commands(p, curr_view, GET_FSEARCH_PATTERN, NULL);
+		curr_stats.save_msg = exec_commands(p, curr_view, GET_FSEARCH_PATTERN, NULL,
+				save_hist);
 	}
 	else if(sub_mode == SEARCH_BACKWARD_SUBMODE)
 	{
-		curr_stats.save_msg = exec_commands(p, curr_view, GET_BSEARCH_PATTERN, NULL);
+		curr_stats.save_msg = exec_commands(p, curr_view, GET_BSEARCH_PATTERN, NULL,
+				save_hist);
 	}
 	else if(sub_mode == MENU_CMD_SUBMODE)
 	{

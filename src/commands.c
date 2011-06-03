@@ -1834,13 +1834,13 @@ execute_command(FileView *view, char *command)
 }
 
 int
-exec_commands(char *cmd, FileView *view, int type, void * ptr)
+exec_commands(char *cmd, FileView *view, int type, void * ptr, int save_hist)
 {
 	int save_msg = 0;
 	char *p, *q;
 
-	if(type == GET_COMMAND || type == MAPPED_COMMAND
-			|| type == GET_VISUAL_COMMAND)
+	if((type == GET_COMMAND || type == MAPPED_COMMAND
+			|| type == GET_VISUAL_COMMAND) && save_hist)
 		save_command_history(cmd);
 
 	p = cmd;

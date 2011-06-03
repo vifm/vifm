@@ -37,13 +37,13 @@ static int *mode;
 static int *mode_flags;
 static default_handler *def_handlers;
 
-static int execute_keys_general(const wchar_t *keys, int timed_out);
+static int execute_keys_general(const wchar_t *keys, int timed_out, int mapped);
 static int execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info);
 static int execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
 		struct key_info *key_info, struct keys_info *keys_info);
 static int run_cmd(struct key_info key_info, struct keys_info *keys_info,
 		struct key_t *key_t);
-static void init_keys_info(struct keys_info *keys_info);
+static void init_keys_info(struct keys_info *keys_info, int mapped);
 static const wchar_t* get_reg(const wchar_t *keys, int *reg);
 static const wchar_t* get_count(const wchar_t *keys, int *count);
 static struct key_t* add_keys_inner(struct key_chunk_t *root,
@@ -52,8 +52,6 @@ static struct key_t* add_keys_inner(struct key_chunk_t *root,
 void
 init_keys(int modes_count, int *key_mode, int *key_mode_flags)
 {
-	int i;
-
 	assert(key_mode != NULL);
 	assert(key_mode_flags != NULL);
 	assert(modes_count > 0);
@@ -79,16 +77,16 @@ set_def_handler(int mode, default_handler handler)
 int
 execute_keys(const wchar_t *keys)
 {
-	return execute_keys_general(keys, 0);
+	return execute_keys_general(keys, 0, 0);
 }
 
 int execute_keys_timed_out(const wchar_t *keys)
 {
-	return execute_keys_general(keys, 1);
+	return execute_keys_general(keys, 1, 0);
 }
 
 static int
-execute_keys_general(const wchar_t *keys, int timed_out)
+execute_keys_general(const wchar_t *keys, int timed_out, int mapped)
 {
 	int result;
 	struct keys_info keys_info;
@@ -96,13 +94,13 @@ execute_keys_general(const wchar_t *keys, int timed_out)
 	if(keys[0] == L'\0')
 		return KEYS_UNKNOWN;
 
-	init_keys_info(&keys_info);
+	init_keys_info(&keys_info, mapped);
 	keys_info.after_wait = timed_out;
 	result = execute_keys_inner(keys, &keys_info);
 	if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
 	{
 		result = def_handlers[*mode](*keys);
-		execute_keys(keys + 1);
+		execute_keys_general(keys + 1, 0, mapped);
 	}
 	return result;
 }
@@ -153,7 +151,7 @@ execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info)
 				}
 				return result;
 			}
-			return execute_keys(keys);
+			return execute_keys_general(keys, 0, keys_info->mapped);
 		}
 		keys++;
 		curr = p;
@@ -216,13 +214,13 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 	{
 		int result;
 		struct keys_info keys_info;
-		init_keys_info(&keys_info);
+		init_keys_info(&keys_info, 1);
 
 		result = execute_keys_inner(key_t->data.cmd, &keys_info);
 		if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
 		{
 			result = def_handlers[*mode](*key_t->data.cmd);
-			init_keys_info(&keys_info);
+			init_keys_info(&keys_info, 1);
 			execute_keys_inner(key_t->data.cmd + 1, &keys_info);
 		}
 		return result;
@@ -230,12 +228,13 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 }
 
 static void
-init_keys_info(struct keys_info *keys_info)
+init_keys_info(struct keys_info *keys_info, int mapped)
 {
 	keys_info->selector = 0;
 	keys_info->count = 0;
 	keys_info->indexes = NULL;
 	keys_info->after_wait = 0;
+	keys_info->mapped = mapped;
 }
 
 static const wchar_t*

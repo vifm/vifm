@@ -79,6 +79,7 @@ struct keys_info
 	int count;      /* count of selected items */
 	int *indexes;   /* item indexes */
 	int after_wait; /* after short timeout */
+	int mapped;     /* not users input */
 };
 
 typedef void (*keys_handler)(struct key_info key_info,
