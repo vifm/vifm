@@ -63,7 +63,7 @@ The builtin commands are:
 :popd - remove pane directories from stack.
 :pushd directory - add pane directories to stack.
 :pwd - show the present working directory.
-:q[uit] or :x  - will exit vifm.
+:q[uit] - will exit vifm (add ! if you don't want to save changes).
 :s[creen] - toggles whether to use the screen program or not.
 :se[t] opt1=val1 opt2=val2 - sets given options.
 :sh[ell] - will start a shell.
@@ -74,7 +74,7 @@ The builtin commands are:
 :w - same as :write.
 :wq - will exit vifm saving pane locations.
 :w[rite] - will write config.
-:x - exit vifm.
+:x - exit vifm (add ! if you don't want to save changes).
 
 command macros:
   %a user arguments.

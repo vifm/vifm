@@ -1517,7 +1517,8 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_X:
 		case COM_QUIT:
-			curr_stats.setting_change = 1;
+			if(cmd->args && cmd->args[0] == '!')
+				curr_stats.setting_change = 0;
 			comm_quit();
 			break;
 		case COM_SORT:

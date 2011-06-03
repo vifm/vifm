@@ -7,6 +7,7 @@ Basic things that need to be done.
 	Make ga work in background.
 	Document options.
 	Use checksum to determine if configuration file has been changed.
+    Add menu for viewing command line history.
 
 Vi specific features that need to be added.
 	Finish implementing range and count for user commands.

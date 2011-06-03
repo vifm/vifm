@@ -120,7 +120,7 @@ The basic vi key bindings are used to move through the files and popup
 	:empty will permanently remove 'rm -fr' files from the Trash directory.
 	:locate filename - will create a menu with the results from the locate
 		command.
-	:q or :x will exit vifm
+	:q or :x will exit vifm (add ! if you don't want to save changes).
     :w same as :write
     :wq will exit vifm saving pane locations
     :write will write config

@@ -397,7 +397,7 @@ write_config_file(void)
 	struct stat stat_buf;
 
 	/* None of the user settings have changed. */
-	if((!curr_stats.setting_change) && (!cfg.using_default_config))
+	if(!curr_stats.setting_change && !cfg.using_default_config)
 		return;
 
 	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
