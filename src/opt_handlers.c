@@ -18,6 +18,7 @@ static void sort_order_handler(enum opt_op op, union optval_t val);
 static void timefmt_handler(enum opt_op op, union optval_t val);
 static void trash_handler(enum opt_op op, union optval_t val);
 static void vicmd_handler(enum opt_op op, union optval_t val);
+static void vimhelp_handler(enum opt_op op, union optval_t val);
 
 static int save_msg;
 
@@ -55,6 +56,7 @@ add_options(void)
 	add_option("timefmt", OPT_STR, 0, NULL, &timefmt_handler);
 	add_option("trash", OPT_BOOL, 0, NULL, &trash_handler);
 	add_option("vicmd", OPT_STR, 0, NULL, &vicmd_handler);
+	add_option("vimhelp", OPT_BOOL, 0, NULL, &vimhelp_handler);
 
 	/* local options */
 	add_option("sort", OPT_ENUM, NUM_SORT_OPTIONS, sort_enum, &sort_handler);
@@ -77,6 +79,9 @@ load_options(void)
 
 	val.str_val = cfg.vi_command;
 	set_option("vicmd", val);
+
+	val.bool_val = cfg.use_vim_help;
+	set_option("vimhelp", val);
 }
 
 void
@@ -157,6 +162,12 @@ vicmd_handler(enum opt_op op, union optval_t val)
 {
 	free(cfg.vi_command);
 	cfg.vi_command = strdup(val.str_val);
+}
+
+static void
+vimhelp_handler(enum opt_op op, union optval_t val)
+{
+	cfg.use_vim_help = val.bool_val;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
