@@ -16,6 +16,7 @@ static void iec_handler(enum opt_op op, union optval_t val);
 static void sort_handler(enum opt_op op, union optval_t val);
 static void sort_order_handler(enum opt_op op, union optval_t val);
 static void timefmt_handler(enum opt_op op, union optval_t val);
+static void trash_handler(enum opt_op op, union optval_t val);
 static void vicmd_handler(enum opt_op op, union optval_t val);
 
 static int save_msg;
@@ -52,6 +53,7 @@ add_options(void)
 {
 	add_option("iec", OPT_BOOL, 0, NULL, &iec_handler);
 	add_option("timefmt", OPT_STR, 0, NULL, &timefmt_handler);
+	add_option("trash", OPT_BOOL, 0, NULL, &trash_handler);
 	add_option("vicmd", OPT_STR, 0, NULL, &vicmd_handler);
 
 	/* local options */
@@ -64,11 +66,14 @@ load_options(void)
 {
 	union optval_t val;
 
-	val.int_val = cfg.use_iec_prefixes;
+	val.bool_val = cfg.use_iec_prefixes;
 	set_option("iec", val);
 
 	val.str_val = cfg.time_format + 1;
 	set_option("timefmt", val);
+
+	val.bool_val = cfg.use_trash;
+	set_option("trash", val);
 
 	val.str_val = cfg.vi_command;
 	set_option("vicmd", val);
@@ -113,7 +118,7 @@ print_func(const char *msg, const char *description)
 static void
 iec_handler(enum opt_op op, union optval_t val)
 {
-	cfg.use_iec_prefixes = val.int_val;
+	cfg.use_iec_prefixes = val.bool_val;
 
 	redraw_lists();
 }
@@ -139,6 +144,12 @@ timefmt_handler(enum opt_op op, union optval_t val)
 	strcat(cfg.time_format, val.str_val);
 
 	redraw_lists();
+}
+
+static void
+trash_handler(enum opt_op op, union optval_t val)
+{
+	cfg.use_trash = val.bool_val;
 }
 
 static void
