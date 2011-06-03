@@ -13,6 +13,7 @@ static void add_options(void);
 static void load_options(void);
 static void print_func(const char *msg, const char *description);
 static void iec_handler(enum opt_op op, union optval_t val);
+static void runexec_handler(enum opt_op op, union optval_t val);
 static void sort_handler(enum opt_op op, union optval_t val);
 static void sort_order_handler(enum opt_op op, union optval_t val);
 static void timefmt_handler(enum opt_op op, union optval_t val);
@@ -53,6 +54,7 @@ static void
 add_options(void)
 {
 	add_option("iec", OPT_BOOL, 0, NULL, &iec_handler);
+	add_option("runexec", OPT_BOOL, 0, NULL, &runexec_handler);
 	add_option("timefmt", OPT_STR, 0, NULL, &timefmt_handler);
 	add_option("trash", OPT_BOOL, 0, NULL, &trash_handler);
 	add_option("vicmd", OPT_STR, 0, NULL, &vicmd_handler);
@@ -70,6 +72,9 @@ load_options(void)
 
 	val.bool_val = cfg.use_iec_prefixes;
 	set_option("iec", val);
+
+	val.bool_val = cfg.auto_execute;
+	set_option("runexec", val);
 
 	val.str_val = cfg.time_format + 1;
 	set_option("timefmt", val);
@@ -126,6 +131,12 @@ iec_handler(enum opt_op op, union optval_t val)
 	cfg.use_iec_prefixes = val.bool_val;
 
 	redraw_lists();
+}
+
+static void
+runexec_handler(enum opt_op op, union optval_t val)
+{
+	cfg.auto_execute = val.bool_val;
 }
 
 static void
