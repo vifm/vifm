@@ -1,15 +1,36 @@
-See the INSTALL file for building instructions and the TODO file for what 
+See the INSTALL file for building instructions and the TODO file for what
 still needs to be implemented.
 
 If you are interested in playing with the source code.
 
-		vifm.c contains main() - which does basic initialization,
-		ui.c - setup_ncurses_interface()  
-		signals.c - setup_signals()  
-		keys.c - main_key_press_cb() - the main loop.
-
-		
-		
-
-
-	
+src/background.c - runs commands in background
+src/bookmarks.c - stores information about bookmarked directories
+src/cmdline.c - command line mode
+src/color_scheme.c - color schemes
+src/commands.c - handles command line commands
+src/config.c - read and write vifmrc
+src/dir_stack.c - for :pushd and :popd commands
+src/file_info.c - Control+G
+src/file_magic.c - determines programs associated with file using its mime-type
+src/filelist.c - display/redraw/fill list
+src/fileops.c - delete/copy/put selected file(s)
+src/filetype.c - stores filetype information from vifmrc
+src/keys.c - analyzes users input
+src/main_loop.c - the main loop
+src/menu.c - handles commands in menus
+src/menus.c - handles all kinds of menus
+src/modes.c - general code (e.g. before and after key pressed) for modes
+src/normal.c - normal mode commands
+src/opt_handlers.c - initialization of options and option change handlers
+src/options.c - :set command
+src/permissions_dialog.c - permissions set dialog
+src/registers.c - realization of registers
+src/search.c - code for / and ? commands of normal mode
+src/signals.c - handlers for different signals
+src/sort.c - sort function
+src/sort_dialog.c - dialog to choose sort type
+src/status.c - definition of global status structure
+src/ui.c - setup_ncurses_interface() and other ui related functions
+src/utils.c - various utilities (e.g. functions to handle utf8 strings)
+src/vifm.c - contains main() which does basic initialization
+src/visual.c - implementation of visual mode commands
