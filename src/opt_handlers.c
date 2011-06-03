@@ -16,6 +16,7 @@ static void iec_handler(enum opt_op op, union optval_t val);
 static void sort_handler(enum opt_op op, union optval_t val);
 static void sort_order_handler(enum opt_op op, union optval_t val);
 static void timefmt_handler(enum opt_op op, union optval_t val);
+static void vicmd_handler(enum opt_op op, union optval_t val);
 
 static int save_msg;
 
@@ -51,6 +52,7 @@ add_options(void)
 {
 	add_option("iec", OPT_BOOL, 0, NULL, &iec_handler);
 	add_option("timefmt", OPT_STR, 0, NULL, &timefmt_handler);
+	add_option("vicmd", OPT_STR, 0, NULL, &vicmd_handler);
 
 	/* local options */
 	add_option("sort", OPT_ENUM, NUM_SORT_OPTIONS, sort_enum, &sort_handler);
@@ -67,6 +69,9 @@ load_options(void)
 
 	val.str_val = cfg.time_format + 1;
 	set_option("timefmt", val);
+
+	val.str_val = cfg.vi_command;
+	set_option("vicmd", val);
 }
 
 void
@@ -134,6 +139,13 @@ timefmt_handler(enum opt_op op, union optval_t val)
 	strcat(cfg.time_format, val.str_val);
 
 	redraw_lists();
+}
+
+static void
+vicmd_handler(enum opt_op op, union optval_t val)
+{
+	free(cfg.vi_command);
+	cfg.vi_command = strdup(val.str_val);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
