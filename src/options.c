@@ -54,6 +54,8 @@ static char * str_remove(char *old, const char *value);
 static int find_val(const struct opt_t *opt, const char *value);
 static int set_print(struct opt_t *opt);
 static void print_msg(const char *msg, const char *description);
+static char * complete_option(const char *buf, int bool_only);
+static const char * complete_value(const char *buf, struct opt_t *opt);
 
 static opt_print print_func;
 
@@ -540,13 +542,18 @@ char *
 complete_options(const char *cmd, const char **start)
 {
 	static char buf[1024] = "";
-	static size_t len;
 	static int bool_only;
-	static int last;
+	static int value;
+	static int id;
+	static char * p;
+
+	char * result;
 
 	if(cmd != NULL)
 	{
-		last = -1;
+		/* reset counters */
+		complete_option(NULL, 0);
+		complete_value(NULL, NULL);
 
 		*start = cmd;
 		while(*cmd != '\0')
@@ -555,7 +562,15 @@ complete_options(const char *cmd, const char **start)
 			cmd = extract_option(cmd, buf, 0);
 		}
 
-		if(strncmp(buf, "no", 2) == 0)
+		p = (char *)skip_alphas(buf);
+		value = (*p == '=');
+		if(value)
+		{
+			*p = '\0';
+			id = get_option(buf);
+			*p++ = '=';
+		}
+		else if(strncmp(buf, "no", 2) == 0)
 		{
 			*start += 2;
 			memmove(buf, buf + 2, strlen(buf) - 2 + 1);
@@ -571,17 +586,46 @@ complete_options(const char *cmd, const char **start)
 		{
 			bool_only = 0;
 		}
-
-		len = strlen(buf);
 	}
-	else if(last == options_count)
+
+	if(!value)
+	{
+		result = complete_option(buf, bool_only);
+	}
+	else
+	{
+		const char *s;
+		if((s = complete_value(p, (id != -1) ? &options[id] : NULL)) == NULL)
+		{
+			result = NULL;
+		}
+		else if((result = malloc(p - buf + strlen(s) + 1)) != NULL)
+		{
+			strcpy(result, buf);
+			strcpy(result + (p - buf), s);
+		}
+	}
+
+	return result ? result : strdup(buf);
+}
+
+static char *
+complete_option(const char *buf, int bool_only)
+{
+	static int last;
+
+	size_t len;
+
+	if(buf == NULL)
 	{
 		last = -1;
-	}
-	else if(last == -1)
-	{
 		return NULL;
 	}
+
+	len = strlen(buf);
+
+	if(last == options_count)
+		last = -1;
 
 	while(++last < options_count)
 	{
@@ -590,7 +634,33 @@ complete_options(const char *cmd, const char **start)
 		if(strncmp(buf, options[last].name, len) == 0)
 			return strdup(options[last].name);
 	}
-	return strdup(buf);
+	return NULL;
+}
+
+static const char *
+complete_value(const char *buf, struct opt_t *opt)
+{
+	static int last;
+
+	size_t len;
+
+	if(opt == NULL)
+	{
+		last = -1;
+		return NULL;
+	}
+
+	len = strlen(buf);
+
+	if(last == opt->val_count)
+		last = -1;
+
+	while(++last < opt->val_count)
+	{
+		if(strncmp(buf, opt->vals[last], len) == 0)
+			return opt->vals[last];
+	}
+	return NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
