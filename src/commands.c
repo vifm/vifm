@@ -1597,6 +1597,8 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_W:
 		case COM_WRITE:
+			if(cmd->args && cmd->args[0] == '!')
+				curr_stats.setting_change = 1;
 			write_config_file();
 			break;
 		case COM_WQ:

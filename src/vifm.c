@@ -25,12 +25,12 @@
 #include <gtk/gtk.h>
 #endif
 
-#include <locale.h> /* setlocale */
 #include <ncurses.h>
+
+#include <unistd.h> /* getcwd, stat, sysconf */
+
+#include <locale.h> /* setlocale */
 #include <string.h> /* strncpy */
-#include <sys/stat.h> /* stat */
-#include <unistd.h> /* getcwd  & sysconf */
-#include <unistd.h> /* stat */
 
 #include "bookmarks.h"
 #include "color_scheme.h"
