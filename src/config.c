@@ -20,23 +20,24 @@
 #define CP_RC "cp /usr/local/share/vifm/vifmrc ~/.vifm"
 #define CP_STARTUP "cp /usr/local/share/vifm/startup ~/.vifm"
 
+#include <ctype.h> /* isalnum */
 #include <stdio.h> /* FILE */
 #include <stdlib.h> /* getenv */
-#include <unistd.h> /* chdir */
-#include <sys/stat.h> /* mkdir */
 #include <string.h>
-#include <ctype.h> /* isalnum */
+#include <sys/stat.h> /* mkdir */
+#include <unistd.h> /* chdir */
 
-#include "utils.h"
 #include "bookmarks.h"
 #include "color_scheme.h"
-#include "fileops.h"
-#include "filetype.h"
-#include "registers.h"
-#include "status.h"
 #include "commands.h"
 #include "config.h"
+#include "crc32.h"
+#include "fileops.h"
+#include "filetype.h"
 #include "menus.h"
+#include "registers.h"
+#include "status.h"
+#include "utils.h"
 
 #define MAX_LEN 1024
 #define DEFAULT_FILENAME_FILTER "\\.o$"
@@ -388,13 +389,14 @@ read_config_file(void)
 	return 1;
 }
 
+
 void
 write_config_file(void)
 {
 	FILE *fp;
 	int x = 0;
+	uint32_t config_crc32;
 	char config_file[PATH_MAX];
-	struct stat stat_buf;
 
 	/* None of the user settings have changed. */
 	if(!curr_stats.setting_change && !cfg.using_default_config)
@@ -402,12 +404,11 @@ write_config_file(void)
 
 	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
 
-	if(stat(config_file, &stat_buf) == 0)
+	if(calculate_crc32(config_file, &config_crc32) == 0)
 	{
-		if(stat_buf.st_mtime > curr_stats.config_file_mtime &&
-				!cfg.using_default_config)
+		if(config_crc32 != curr_stats.config_crc32 && !cfg.using_default_config)
 		{
-			if(! query_user_menu(" Vifmrc file has been modified ",
+			if(!query_user_menu(" Vifmrc file has been modified ",
 				 "File has been modified would you still like to write to file? "))
 				return;
 		}
@@ -558,10 +559,7 @@ write_config_file(void)
 
 	fclose(fp);
 
-	if(stat(config_file, &stat_buf) == 0)
-	{
-		curr_stats.config_file_mtime = stat_buf.st_mtime;
-	}
+	calculate_crc32(config_file, &curr_stats.config_crc32);
 }
 
 void

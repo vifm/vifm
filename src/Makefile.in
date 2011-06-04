@@ -52,15 +52,15 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
 PROGRAMS = $(bin_PROGRAMS)
 am_vifm_OBJECTS = background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	cmdline.$(OBJEXT) color_scheme.$(OBJEXT) commands.$(OBJEXT) \
-	config.$(OBJEXT) dir_stack.$(OBJEXT) file_info.$(OBJEXT) \
-	file_magic.$(OBJEXT) filelist.$(OBJEXT) fileops.$(OBJEXT) \
-	filetype.$(OBJEXT) keys.$(OBJEXT) main_loop.$(OBJEXT) \
-	menu.$(OBJEXT) menus.$(OBJEXT) modes.$(OBJEXT) \
-	normal.$(OBJEXT) opt_handlers.$(OBJEXT) options.$(OBJEXT) \
-	permissions_dialog.$(OBJEXT) registers.$(OBJEXT) \
-	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
-	sort_dialog.$(OBJEXT) status.$(OBJEXT) ui.$(OBJEXT) \
-	utils.$(OBJEXT) vifm.$(OBJEXT) visual.$(OBJEXT)
+	config.$(OBJEXT) crc32.$(OBJEXT) dir_stack.$(OBJEXT) \
+	file_info.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
+	fileops.$(OBJEXT) filetype.$(OBJEXT) keys.$(OBJEXT) \
+	main_loop.$(OBJEXT) menu.$(OBJEXT) menus.$(OBJEXT) \
+	modes.$(OBJEXT) normal.$(OBJEXT) opt_handlers.$(OBJEXT) \
+	options.$(OBJEXT) permissions_dialog.$(OBJEXT) \
+	registers.$(OBJEXT) search.$(OBJEXT) signals.$(OBJEXT) \
+	sort.$(OBJEXT) sort_dialog.$(OBJEXT) status.$(OBJEXT) \
+	ui.$(OBJEXT) utils.$(OBJEXT) vifm.$(OBJEXT) visual.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -235,6 +235,7 @@ vifm_SOURCES = \
 	color_scheme.c colorscheme.h \
 	commands.c commands.h \
 	config.c config.h \
+	crc32.c crc32.h \
 	dir_stack.c dir_stack.h \
 	file_info.c file_info.h \
 	file_magic.c file_magic.h \
@@ -388,6 +389,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_scheme.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/config.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crc32.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dir_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_magic.Po@am__quote@

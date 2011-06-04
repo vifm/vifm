@@ -21,21 +21,22 @@
 #include "../config.h"
 
 #ifdef HAVE_LIBGTK
-#include <gtk/gtk.h>
 #include <glib-2.0/gio/gio.h>
+#include <gtk/gtk.h>
 #endif
 
+#include <locale.h> /* setlocale */
 #include <ncurses.h>
-#include <unistd.h> /* getcwd  & sysconf */
 #include <string.h> /* strncpy */
 #include <sys/stat.h> /* stat */
+#include <unistd.h> /* getcwd  & sysconf */
 #include <unistd.h> /* stat */
-#include <locale.h> /* setlocale */
 
 #include "bookmarks.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "config.h"
+#include "crc32.h"
 #include "filelist.h"
 #include "filetype.h"
 #include "main_loop.h"
@@ -118,7 +119,6 @@ main(int argc, char *argv[])
 	int x;
 	int rwin_args = 0;
 	int lwin_args = 0;
-	struct stat stat_buf;
 
 	setlocale(LC_ALL, "");
 	getcwd(dir, sizeof(dir));
@@ -165,10 +165,8 @@ main(int argc, char *argv[])
 
 	snprintf(config_dir, sizeof(config_dir), "%s/vifmrc", cfg.config_dir);
 
-	if(stat(config_dir, &stat_buf) == 0)
-		curr_stats.config_file_mtime = stat_buf.st_mtime;
-	else
-		curr_stats.config_file_mtime = 0;
+	if(calculate_crc32(config_dir, &curr_stats.config_crc32) != 0)
+		curr_stats.config_crc32 = 0;
 
 	/* Check if running in X */
 	console = getenv("DISPLAY");

@@ -1,5 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
+ * Copyright (C) 2011 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,45 +16,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef __STATUS_H__
-#define __STATUS_H__
-
-#include <sys/stat.h>
+#ifndef __CRC32_H__
+#define __CRC32_H__
 
 #include <inttypes.h>
+#include <stdio.h>
 
-#include "../config.h"
-
-typedef struct
-{
-	int need_redraw;
-	volatile int freeze;
-	int is_updir;
-	int last_char;
-	char updir_file[NAME_MAX];
-	int is_console;
-	uint32_t config_crc32;
-	int search;
-	int save_msg;
-	int use_register;
-	int use_input_bar;
-	int curr_register;
-	int register_saved;
-	int number_of_windows;
-	int view;
-	int show_full;
-	int setting_change;
-	int skip_history;
-	int save_locations; /* for :wq and ZZ */
-
-#ifdef HAVE_LIBGTK
-	int gtk_available; /* for mimetype detection */
-#endif
-}Status;
-
-extern Status curr_stats;
-
-void init_status(void);
+int calculate_crc32(const char *name, uint32_t *crc);
 
 #endif
 
