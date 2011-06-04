@@ -541,7 +541,7 @@ print_msg(const char *msg, const char *description)
 char *
 complete_options(const char *cmd, const char **start)
 {
-	static char buf[1024] = "";
+	static char buf[1024];
 	static int bool_only;
 	static int value;
 	static int id;
@@ -556,6 +556,7 @@ complete_options(const char *cmd, const char **start)
 		complete_value(NULL, NULL);
 
 		*start = cmd;
+		buf[0] = '\0';
 		while(*cmd != '\0')
 		{
 			*start = cmd;
