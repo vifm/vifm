@@ -432,22 +432,19 @@ redraw_window(void)
 
 	curs_set(0);
 
-	change_directory(&rwin, rwin.curr_dir);
-	load_dir_list(&rwin, 1);
-	change_directory(&lwin, lwin.curr_dir);
-	load_dir_list(&lwin, 1);
+	change_directory(curr_view, curr_view->curr_dir);
+	load_dir_list(curr_view, 1);
 
 	if(curr_stats.view)
 	{
 		wclear(other_view->win);
-
-		change_directory(curr_view, curr_view->curr_dir);
-		load_dir_list(curr_view, 0);
-
 		quick_view_file(curr_view);
 	}
 	else
-		change_directory(curr_view, curr_view->curr_dir);
+	{
+		change_directory(other_view, other_view->curr_dir);
+		load_dir_list(other_view, 1);
+	}
 
 	update_stat_window(curr_view);
 
