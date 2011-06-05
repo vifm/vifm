@@ -266,6 +266,14 @@ view_wraped(FILE *fp, int x)
 			n_len = get_normal_utf8_string_length(line);
 			len = strlen(line);
 		}
+
+		if(line[len - 1] != '\n')
+		{
+			int c = fgetc(fp);
+			if(c != '\n')
+				ungetc(c, fp);
+		}
+
 		width = get_normal_utf8_string_width(line);
 		mvwaddnstr(other_view->win, ++x, y, line, width);
 
