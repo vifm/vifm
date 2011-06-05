@@ -65,6 +65,7 @@ init_config(void)
 	cfg.color_scheme_num = 0;
 	cfg.color_pairs_num = 0;
 	cfg.time_format = strdup(" %m/%d %H:%M");
+	cfg.wrap_quick_view = 1;
 
 	/* Maximum argument length to pass to the shell */
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)

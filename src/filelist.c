@@ -20,7 +20,7 @@
 	#include<sys/types.h> /* required for regex.h on FreeBSD 4.2 */
 #endif
 
-#include <ncurses.h>
+#include <curses.h>
 #include <unistd.h> /* chdir() */
 #include <stdlib.h> /* malloc  qsort */
 #include <sys/stat.h> /* stat */
@@ -201,6 +201,80 @@ use_info_prog(char *cmd, int x, int y)
 	}
 }
 
+static void
+view_not_wraped(FILE *fp, int x)
+{
+	char line[1024];
+	int y = 1;
+
+	while(fgets(line, other_view->window_width - 2, fp)
+				&& x < other_view->window_rows - 2)
+	{
+		int i;
+		size_t n_len = get_normal_utf8_string_length(line);
+		size_t len = strlen(line);
+		while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
+					&& !feof(fp))
+		{
+			fgets(line + len, other_view->window_width - n_len, fp);
+			n_len = get_normal_utf8_string_length(line);
+			len = strlen(line);
+		}
+
+		if(line[len - 1] != '\n')
+			while(fgetc(fp) != '\n');
+
+		len = 0;
+		n_len = 0;
+		for(i = 0; line[i] != '\0' && len <= other_view->window_width - 1;)
+		{
+			size_t cl = get_char_width(line + i);
+			n_len++;
+
+			if(cl == 1 && (unsigned char)line[i] == '\t')
+				len += 8 - (y + len)%8;
+			else if(cl == 1 && (unsigned char)line[i] < ' ')
+				len += 2;
+			else
+				len++;
+
+			if(len <= other_view->window_width - 1)
+				i += cl;
+		}
+		line[i] = '\0';
+
+		mvwaddstr(other_view->win, ++x, y, line);
+	}
+}
+
+static void
+view_wraped(FILE *fp, int x)
+{
+	char line[1024];
+	int y = 1;
+	int offset = 0;
+	while(fgets(line + offset, other_view->window_width, fp)
+				&& x < other_view->window_rows - 2)
+	{
+		size_t width;
+		size_t n_len = get_normal_utf8_string_length(line);
+		size_t len = strlen(line);
+		while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
+					&& !feof(fp))
+		{
+			fgets(line + len, other_view->window_width - n_len, fp);
+			n_len = get_normal_utf8_string_length(line);
+			len = strlen(line);
+		}
+		width = get_normal_utf8_string_width(line);
+		mvwaddnstr(other_view->win, ++x, y, line, width);
+
+		offset = strlen(line) - width;
+		if(offset != 0)
+			memmove(line, line + width, offset);
+	}
+}
+
 void
 quick_view_file(FileView *view)
 {
@@ -237,9 +311,7 @@ quick_view_file(FileView *view)
 			break;
 		default:
 			{
-				int offset;
 				char *viewer;
-				char line[1024];
 
 				viewer = get_viewer_for_file(view->dir_entry[view->list_pos].name);
 				if(viewer != NULL && viewer[0] != '\0')
@@ -249,31 +321,14 @@ quick_view_file(FileView *view)
 
 				if(fp == NULL)
 				{
-					mvwaddstr(other_view->win, ++x, y, "Cannot open file");
-					return;
+					mvwaddstr(other_view->win, x, y, "Cannot open file");
+					break;
 				}
 
-				offset = 0;
-				while(fgets(line + offset, other_view->window_width, fp)
-						&& x < other_view->window_rows - 2)
-				{
-					size_t width;
-					size_t n_len = get_normal_utf8_string_length(line);
-					size_t len = strlen(line);
-					while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
-							&& !feof(fp))
-					{
-						fgets(line + len, other_view->window_width - n_len, fp);
-						n_len = get_normal_utf8_string_length(line);
-						len = strlen(line);
-					}
-					width = get_normal_utf8_string_width(line);
-					mvwaddnstr(other_view->win, ++x, y, line, width);
-
-					offset = strlen(line) - width;
-					if(offset != 0)
-						memmove(line, line + width, offset);
-				}
+				if(cfg.wrap_quick_view)
+					view_wraped(fp, x);
+				else
+					view_not_wraped(fp, x);
 
 				fclose(fp);
 			}

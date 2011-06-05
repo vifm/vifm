@@ -5,6 +5,7 @@
 #include "config.h"
 #include "filelist.h"
 #include "options.h"
+#include "status.h"
 #include "ui.h"
 
 #include "opt_handlers.h"
@@ -20,6 +21,7 @@ static void timefmt_handler(enum opt_op op, union optval_t val);
 static void trash_handler(enum opt_op op, union optval_t val);
 static void vicmd_handler(enum opt_op op, union optval_t val);
 static void vimhelp_handler(enum opt_op op, union optval_t val);
+static void wrap_handler(enum opt_op op, union optval_t val);
 
 static int save_msg;
 
@@ -59,6 +61,7 @@ add_options(void)
 	add_option("trash", OPT_BOOL, 0, NULL, &trash_handler);
 	add_option("vicmd", OPT_STR, 0, NULL, &vicmd_handler);
 	add_option("vimhelp", OPT_BOOL, 0, NULL, &vimhelp_handler);
+	add_option("wrap", OPT_BOOL, 0, NULL, &wrap_handler);
 
 	/* local options */
 	add_option("sort", OPT_ENUM, NUM_SORT_OPTIONS, sort_enum, &sort_handler);
@@ -87,6 +90,9 @@ load_options(void)
 
 	val.bool_val = cfg.use_vim_help;
 	set_option("vimhelp", val);
+
+	val.bool_val = cfg.wrap_quick_view;
+	set_option("wrap", val);
 }
 
 void
@@ -179,6 +185,14 @@ static void
 vimhelp_handler(enum opt_op op, union optval_t val)
 {
 	cfg.use_vim_help = val.bool_val;
+}
+
+static void
+wrap_handler(enum opt_op op, union optval_t val)
+{
+	cfg.wrap_quick_view = val.bool_val;
+	if(curr_stats.view)
+		quick_view_file(curr_view);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
