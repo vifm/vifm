@@ -487,10 +487,8 @@ write_config_file(void)
 	fprintf(fp, "RWIN_INVERT=%d\n", rwin.invert);
 
 	fprintf(fp, "\n# The startup location of panes after :wq.\n");
-	fprintf(fp, "\nLWIN_PATH=%s\n",
-			curr_stats.save_locations ? lwin.curr_dir : "");
-	fprintf(fp, "\nRWIN_PATH=%s\n",
-			curr_stats.save_locations ? rwin.curr_dir : "");
+	fprintf(fp, "\nLWIN_PATH=%s\n", lwin.curr_dir);
+	fprintf(fp, "\nRWIN_PATH=%s\n", rwin.curr_dir);
 
 	fprintf(fp, "\n# If you installed the vim.txt help file change this to 1.\n");
 	fprintf(fp, "# If would rather use a plain text help file set this to 0.\n");

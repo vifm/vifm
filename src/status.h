@@ -45,7 +45,6 @@ typedef struct
 	int show_full;
 	int setting_change;
 	int skip_history;
-	int save_locations; /* for :wq and ZZ */
 
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */

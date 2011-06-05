@@ -1517,6 +1517,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_X:
 		case COM_QUIT:
+			curr_stats.setting_change = 1;
 			if(cmd->args && cmd->args[0] == '!')
 				curr_stats.setting_change = 0;
 			comm_quit();
@@ -1602,7 +1603,6 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			write_config_file();
 			break;
 		case COM_WQ:
-			curr_stats.save_locations = 1;
 			curr_stats.setting_change = 1;
 			comm_quit();
 			break;

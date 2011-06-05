@@ -122,7 +122,7 @@ The basic vi key bindings are used to move through the files and popup
 		command.
 	:q or :x will exit vifm (add ! if you don't want to save changes).
     :w same as :write
-    :wq will exit vifm saving pane locations
+    :wq will exit vifm after writing config
     :write will write config (add ! to force even if settings weren't changed)
 	:! program will execute the program in a shell
 		:!command &   will run the process in the background.
