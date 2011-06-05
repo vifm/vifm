@@ -339,6 +339,8 @@ quick_view_file(FileView *view)
 char *
 get_current_file_name(FileView *view)
 {
+	if(view->list_pos == -1)
+		return "";
 	return view->dir_entry[view->list_pos].name;
 }
 
@@ -701,6 +703,9 @@ moveto_list_pos(FileView *view, int pos)
 
 	if(pos > view->list_rows - 1)
 		pos = view->list_rows - 1;
+
+	if(pos == -1)
+		return;
 
 	if(view->curr_line > view->list_rows - 1)
 		view->curr_line = view->list_rows - 1;

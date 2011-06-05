@@ -54,7 +54,7 @@ typedef struct menu_info
 	char *title;
 	char *args;
 	char **data;
-	int extra_data; /* for filetype background flag */
+	int extra_data; /* for filetype background and mime flags */
 	/* For user menus only */
 	char *get_info_script; /* program + args to fill in menu. */
 }menu_info;

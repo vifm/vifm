@@ -524,10 +524,11 @@ execute_filetype_cb(FileView *view, menu_info *m)
 	char *prog_str = get_all_programs_for_file(filename);
 	char command[NAME_MAX];
 	char *ptr = NULL;
-	int background = m->extra_data;
+	int background = m->extra_data & 1;
+	int force_mime = m->extra_data & 2;
 
 #if defined(HAVE_LIBGTK) || defined(HAVE_LIBMAGIC)
-	if(prog_str == NULL)
+	if(prog_str == NULL || force_mime)
 		prog_str = get_magic_handlers(filename);
 #endif
 
@@ -955,7 +956,7 @@ show_filetypes_menu(FileView *view, int force_mime, int background)
 		m.title = NULL;
 		m.args = NULL;
 		m.data = NULL;
-		m.extra_data = background;
+		m.extra_data = (background ? 1 : 0) | (force_mime ? 2 : 0);
 
 		getmaxyx(menu_win, m.win_rows, len);
 
