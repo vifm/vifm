@@ -433,9 +433,9 @@ redraw_window(void)
 	curs_set(0);
 
 	change_directory(&rwin, rwin.curr_dir);
-	load_dir_list(&rwin, 0);
+	load_dir_list(&rwin, 1);
 	change_directory(&lwin, lwin.curr_dir);
-	load_dir_list(&lwin, 0);
+	load_dir_list(&lwin, 1);
 
 	if(curr_stats.view)
 	{
