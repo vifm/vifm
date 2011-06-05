@@ -16,15 +16,25 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <ncurses.h>
+
 #include <fcntl.h> /* access */
 #include <sys/stat.h>
-#include <ncurses.h>
+
 #include <string.h> /* strrchr */
 
 #include "filelist.h"
 #include "ui.h"
 
-bool
+static FileView* view;
+
+void
+set_view_to_sort(FileView *view_to_sort)
+{
+	view = view_to_sort;
+}
+
+static bool
 is_link_dir(const dir_entry_t * path)
 {
 	struct stat s;
@@ -66,7 +76,7 @@ sort_dir_list(const void *one, const void *two)
 		return 1;
 
 	retval = 0;
-	switch(curr_view->sort_type)
+	switch(view->sort_type)
 	{
 		case SORT_BY_NAME:
 			if(first->name[0] == '.' && second->name[0] != '.')
@@ -124,7 +134,7 @@ sort_dir_list(const void *one, const void *two)
 
 	if(retval == 0)
 		retval = strcmp(first->name, second->name);
-	if(curr_view->sort_descending)
+	if(view->sort_descending)
 		retval = -retval;
 
 	return retval;

@@ -1328,6 +1328,7 @@ load_dir_list(FileView *view, int reload)
 	{
 		status_bar_message("Sorting Directory...");
 	}
+	set_view_to_sort(view);
 	qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
 
 	for(x = 0; x < view->list_rows; x++)
@@ -1548,7 +1549,6 @@ reload_window(FileView *view)
 
 	if(view != curr_view)
 	{
-		change_directory(view, view->curr_dir);
 		mvwaddstr(view->win, view->curr_line, 0, "*");
 		wrefresh(view->win);
 	}

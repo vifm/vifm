@@ -19,6 +19,9 @@
 #ifndef __SORT_H__
 #define __SORT_H__
 
+#include "ui.h"
+
+void set_view_to_sort(FileView *view_to_sort);
 int sort_dir_list(const void *one, const void *two);
 
 #endif
