@@ -45,6 +45,7 @@
 #include "registers.h"
 #include "signals.h"
 #include "status.h"
+#include "tree.h"
 #include "ui.h"
 #include "utils.h"
 
@@ -153,6 +154,12 @@ main(int argc, char *argv[])
 	init_window_history(&rwin);
 
 	init_status();
+	curr_stats.dirsize_cache = tree_create();
+	if(curr_stats.dirsize_cache == NULL)
+	{
+		puts("Not enough memory for initialization");
+		return -1;
+	}
 
 #ifdef HAVE_LIBGTK
 	curr_stats.gtk_available = gtk_init_check(&argc, &argv);

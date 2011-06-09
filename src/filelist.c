@@ -46,6 +46,7 @@
 #include "options.h"
 #include "sort.h"
 #include "status.h"
+#include "tree.h"
 #include "ui.h"
 #include "utils.h"
 
@@ -144,10 +145,17 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 		case SORT_BY_SIZE:
 		default:
 			 {
+				 size_t size = 0;
 				 char str[24] = "";
 
-				 friendly_size_notation(view->dir_entry[x].size, sizeof(str), str);
+				 if(view->dir_entry[x].type == DIRECTORY)
+					 size = (size_t)tree_get_data(curr_stats.dirsize_cache,
+							view->dir_entry[x].name);
 
+				 if(size == 0)
+					 size = view->dir_entry[x].size;
+
+				 friendly_size_notation(size, sizeof(str), str);
 				 snprintf(buf, sizeof(buf), " %s", str);
 			 }
 			 break;
@@ -513,7 +521,7 @@ draw_dir_list(FileView *view, int top, int pos)
 
 	color_scheme = check_directory_for_color_scheme(view->curr_dir);
 
-	/*
+	/* TODO do we need this code?
 	wattrset(view->title, COLOR_PAIR(BORDER_COLOR + color_scheme));
 	wattron(view->title, COLOR_PAIR(BORDER_COLOR + color_scheme));
 	*/

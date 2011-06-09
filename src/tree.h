@@ -1,5 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
+ * Copyright (C) 2011 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,47 +16,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef __STATUS_H__
-#define __STATUS_H__
+#ifndef __TREE_H__
+#define __TREE_H__
 
-#include <sys/stat.h>
+typedef struct node *tree_t;
 
-#include <inttypes.h>
-
-#include "../config.h"
-#include "tree.h"
-
-typedef struct
-{
-	int need_redraw;
-	volatile int freeze;
-	int is_updir;
-	int last_char;
-	char updir_file[NAME_MAX];
-	int is_console;
-	uint32_t config_crc32;
-	int search;
-	int save_msg;
-	int use_register;
-	int use_input_bar;
-	int curr_register;
-	int register_saved;
-	int number_of_windows;
-	int view;
-	int show_full;
-	int setting_change;
-	int skip_history;
-
-	tree_t dirsize_cache;
-
-#ifdef HAVE_LIBGTK
-	int gtk_available; /* for mimetype detection */
-#endif
-}Status;
-
-extern Status curr_stats;
-
-void init_status(void);
+tree_t tree_create(void);
+int tree_set_data(tree_t tree, const char *path, void* data);
+void * tree_get_data(tree_t tree, const char *path);
 
 #endif
 

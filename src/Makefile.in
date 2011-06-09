@@ -60,7 +60,8 @@ am_vifm_OBJECTS = background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	options.$(OBJEXT) permissions_dialog.$(OBJEXT) \
 	registers.$(OBJEXT) search.$(OBJEXT) signals.$(OBJEXT) \
 	sort.$(OBJEXT) sort_dialog.$(OBJEXT) status.$(OBJEXT) \
-	ui.$(OBJEXT) utils.$(OBJEXT) vifm.$(OBJEXT) visual.$(OBJEXT)
+	tree.$(OBJEXT) ui.$(OBJEXT) utils.$(OBJEXT) vifm.$(OBJEXT) \
+	visual.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -257,6 +258,7 @@ vifm_SOURCES = \
 	sort.c sort.h \
 	sort_dialog.c sort_dialog.h \
 	status.c status.h \
+	tree.c tree.h \
 	ui.c ui.h \
 	utils.c utils.h \
 	vifm.c \
@@ -411,6 +413,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/status.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@

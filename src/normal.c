@@ -36,6 +36,7 @@
 #include "registers.h"
 #include "search.h"
 #include "status.h"
+#include "tree.h"
 #include "ui.h"
 #include "utils.h"
 #include "visual.h"
@@ -765,6 +766,9 @@ cmd_ga(struct key_info key_info, struct keys_info *keys_info)
 		close(out_pipe[0]);
 
 		size = strtoul(buf, NULL, 10);
+		tree_set_data(curr_stats.dirsize_cache,
+				curr_view->dir_entry[curr_view->list_pos].name, (void*)size);
+
 		curr_view->dir_entry[curr_view->list_pos].size = size;
 		moveto_list_pos(curr_view, curr_view->list_pos);
 	}
