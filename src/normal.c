@@ -730,48 +730,12 @@ selector_G(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ga(struct key_info key_info, struct keys_info *keys_info)
 {
-	pid_t pid;
-	int out_pipe[2];
-
 	if(curr_view->dir_entry[curr_view->list_pos].type != DIRECTORY)
 		return;
 
-	if(pipe(out_pipe) != 0)
-	{
-		show_error_msg(" File pipe error", "Error creating pipe");
-		return;
-	}
+	calc_dirsize(curr_view->dir_entry[curr_view->list_pos].name);
 
-	if((pid = fork()) == -1)
-		return;
-
-	if(pid == 0)
-	{
-		char buf[PATH_MAX];
-		snprintf(buf, sizeof(buf), "du -sb '%s'",
-				curr_view->dir_entry[curr_view->list_pos].name);
-		run_from_fork(out_pipe, 0, buf);
-		return;
-	}
-	else
-	{
-		size_t size;
-		char buf[128];
-
-		status_bar_message("Please wait. Calculating directory size...");
-		wrefresh(status_bar);
-
-		close(out_pipe[1]); /* Close write end of pipe. */
-		read(out_pipe[0], buf, sizeof(buf) - 1);
-		close(out_pipe[0]);
-
-		size = strtoul(buf, NULL, 10);
-		tree_set_data(curr_stats.dirsize_cache,
-				curr_view->dir_entry[curr_view->list_pos].name, (void*)size);
-
-		curr_view->dir_entry[curr_view->list_pos].size = size;
-		moveto_list_pos(curr_view, curr_view->list_pos);
-	}
+	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
 /* Jump to top of the list or to specified line. */

@@ -16,15 +16,16 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <ncurses.h>
-#include <unistd.h>
+#include <dirent.h>
 #include <errno.h> /* errno */
-#include <sys/wait.h> /* waitpid() */
-#include <sys/types.h> /* waitpid() */
-#include <sys/stat.h> /* stat */
+#include <fcntl.h>
+#include <ncurses.h>
 #include <stdio.h>
 #include <string.h>
-#include <fcntl.h>
+#include <sys/stat.h> /* stat */
+#include <sys/types.h> /* waitpid() */
+#include <sys/wait.h> /* waitpid() */
+#include <unistd.h>
 
 #include "background.h"
 #include "color_scheme.h"
@@ -972,6 +973,54 @@ clone_file(FileView* view)
 	snprintf(buf, sizeof(buf), "cp -pR %s %s_clone", escaped, escaped);
 	background_and_wait_for_errors(buf);
 	free(escaped);
+}
+
+unsigned long long
+calc_dirsize(const char *path)
+{
+	DIR* dir;
+	struct dirent* dentry;
+	const char* slash = "";
+	size_t size;
+
+	dir = opendir(path);
+	if(dir == NULL)
+		return (0);
+
+	if(path[strlen(path) - 1] != '/')
+		slash = "/";
+
+	size = 0;
+	while((dentry = readdir(dir)) != NULL)
+	{
+		char buf[PATH_MAX];
+
+		if(strcmp(dentry->d_name, ".") == 0)
+			continue;
+		else if(strcmp(dentry->d_name, "..") == 0)
+			continue;
+
+		snprintf(buf, sizeof (buf), "%s%s%s", path, slash, dentry->d_name);
+		if(dentry->d_type == DT_DIR)
+		{
+			unsigned long long dir_size = (unsigned long long)tree_get_data(
+					curr_stats.dirsize_cache, buf);
+			if(dir_size == 0)
+				dir_size = calc_dirsize(buf);
+			size += dir_size;
+		}
+		else
+		{
+			struct stat st;
+			if(stat(buf, &st) == 0)
+				size += st.st_size;
+		}
+	}
+
+	closedir(dir);
+
+	tree_set_data(curr_stats.dirsize_cache, path, (void*)size);
+	return (size);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

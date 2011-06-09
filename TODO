@@ -5,7 +5,6 @@ Basic things that need to be done.
 	Better documentation.
 	Handle commands that are too long to be passed directly to the shell.
 	Make ga work in background.
-    Implement ga instead of using du command.
 	Document options.
     Add menu for viewing command line history.
     Replace escape sequences in quick view output with ^foo.
