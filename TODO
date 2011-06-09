@@ -7,6 +7,7 @@ Basic things that need to be done.
 	Make ga work in background.
 	Document options.
     Add menu for viewing command line history.
+    Replace escape sequences in quick view output with ^foo.
 
 Vi specific features that need to be added.
 	Finish implementing range and count for user commands.
@@ -22,3 +23,4 @@ Possible things to add.
 	Virtual File System - currently vifm can use fuse to mount most
 		file systems.  
 	Make :file menu editable.
+    Add a command to copy current pane location into X11 clipboard.
