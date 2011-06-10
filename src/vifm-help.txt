@@ -245,6 +245,50 @@ Menus
         Escape or Ctrl-c to clear
         return or l to select and exit the menu
 
+Options
+    iec
+    type: boolean
+    Use KiB, MiB, ... instead of KB, MB, ...
+
+    runexec
+    type: string
+    Run executable file on Enter or l
+
+    sort
+    type: enumeration
+    Sets one of these sort types:
+        ext   - sort by extension
+        name  - sort by name
+        gid   - sort by group id
+        gname - sort by group name
+        mode  - sort by mode
+        uid   - sort by owner id
+        uname - sort by owner name
+        size  - sort by size
+        atime - sort by time accessed
+        ctime - sort by time changed
+        mtime - sort by time modified
+
+    sortorder
+    type: enumeration
+    Sets sort order: ascending, descending
+
+    trash
+    type: boolean
+    Use trash directory
+
+    vicmd
+    type: string
+    The actual command used to start vi
+
+    vimhelp
+    type: string
+    Use vim help format
+
+    wrap
+    type: boolean
+    Controls whether to wrap text in quick view
+
 Reserved :commands
 		!
 		change
