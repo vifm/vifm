@@ -614,8 +614,8 @@ cmd_ctrl_ww(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_wx(struct key_info key_info, struct keys_info *keys_info)
 {
-  FileView tmp_view;
-  WINDOW* tmp;
+	FileView tmp_view;
+	WINDOW* tmp;
 
 	tmp = lwin.win;
 	lwin.win = rwin.win;
@@ -629,7 +629,6 @@ cmd_ctrl_wx(struct key_info key_info, struct keys_info *keys_info)
 	lwin = rwin;
 	rwin = tmp_view;
 
-	switch_views();
 	load_dir_list(curr_view, 1);
 	moveto_list_pos(curr_view, curr_view->list_pos);
 	load_dir_list(other_view, 1);
