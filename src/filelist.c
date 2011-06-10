@@ -922,8 +922,8 @@ clean_selected_files(FileView *view)
 	view->selected_files = 0;
 }
 
-static void
-canonicalize_path(const char *directory, char *buf)
+void
+canonicalize_path(const char *directory, char *buf, size_t buf_size)
 {
 	const char *p;
 	char *q;
@@ -932,7 +932,7 @@ canonicalize_path(const char *directory, char *buf)
 
 	q = buf - 1;
 	p = directory;
-	while(*p != '\0')
+	while(*p != '\0' && (q + 1) - buf < buf_size - 1)
 	{
 		int prev_dir_present = (q != buf - 1 && *q == '/');
 		if(prev_dir_present && strncmp(p, "./", 2) == 0)
@@ -1007,11 +1007,11 @@ change_directory(FileView *view, const char *directory)
 	save_view_history(view);
 
 	if(directory[0] == '/')
-		canonicalize_path(directory, dir_dup);
+		canonicalize_path(directory, dir_dup, sizeof(dir_dup));
 	else
 	{
 		snprintf(newdir, sizeof(newdir), "%s/%s", view->curr_dir, directory);
-		canonicalize_path(newdir, dir_dup);
+		canonicalize_path(newdir, dir_dup, sizeof(dir_dup));
 	}
 
 	snprintf(view->last_dir, sizeof(view->last_dir), "%s", view->curr_dir);

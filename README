@@ -31,6 +31,7 @@ src/signals.c - handlers for different signals
 src/sort.c - sort function
 src/sort_dialog.c - dialog to choose sort type
 src/status.c - definition of global status structure
+src/tree.c - cache for ga command results
 src/ui.c - setup_ncurses_interface() and other ui related functions
 src/utils.c - various utilities (e.g. functions to handle utf8 strings)
 src/vifm.c - contains main() which does basic initialization

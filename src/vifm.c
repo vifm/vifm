@@ -217,14 +217,26 @@ main(int argc, char *argv[])
 		{
 			if(lwin_args)
 			{
-				snprintf(rwin.curr_dir, sizeof(rwin.curr_dir),
-						"%s", argv[x]);
+				if(argv[x][0] == '/')
+					snprintf(rwin.curr_dir, sizeof(rwin.curr_dir), "%s", argv[x]);
+				else
+				{
+					char buf[PATH_MAX];
+					snprintf(buf, sizeof(buf), "%s/%s", dir, argv[x]);
+					canonicalize_path(buf, rwin.curr_dir, sizeof(rwin.curr_dir));
+				}
 				rwin_args++;
 			}
 			else
 			{
-				snprintf(lwin.curr_dir, sizeof(lwin.curr_dir),
-						"%s", argv[x]);
+				if(argv[x][0] == '/')
+					snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s", argv[x]);
+				else
+				{
+					char buf[PATH_MAX];
+					snprintf(buf, sizeof(buf), "%s/%s", dir, argv[x]);
+					canonicalize_path(buf, lwin.curr_dir, sizeof(lwin.curr_dir));
+				}
 				lwin_args++;
 			}
 		}
