@@ -1,3 +1,37 @@
+0.6 to current
+
+	Added :set command.
+
+	Added caching for results of ga command.
+
+	Don't reload pane on ctrl-c or escape, just clean selection.
+
+	Store commands separated by | as one history item.
+
+	Don't add duplicates into command history.
+
+	Don't add commands from startup file and mappings to command history.
+
+	Use ! with :quit or :x to discard configuration changes.
+
+	Use checksum to determine if configuration file has been modified.
+
+	:write! will write config even if no setting was changed.
+
+	Save pane locations on exit always except on :q!, :quit! and ZQ.
+
+	Don't switch active pane on Ctrl+W X.
+
+	Fixed bug with sorting (using sort type of invalid pane).
+
+	Bug Fix. Don't change selected items on terminal resize.
+
+	Fixed a couple of segmentation faults on unsuccessful FUSE mount.
+
+	Fixed n and N commands (used to repeat wrong search pattern).
+
+	Fixed a bug with relative paths in arguments.
+
 0.5 to 0.6
 
 	Added :wq command.
