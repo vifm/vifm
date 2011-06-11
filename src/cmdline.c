@@ -602,8 +602,11 @@ static void
 cmd_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
 {
 	int len;
-	if(sub_mode != CMD_SUBMODE || input_stat.line == NULL)
+	if(sub_mode != CMD_SUBMODE)
 		return;
+
+	if(input_stat.line == NULL)
+		input_stat.line = wcsdup(L"");
 
 	line_completion(&input_stat);
 	len = (1 + input_stat.len + line_width - 1 + 1)/line_width;
@@ -1144,6 +1147,9 @@ get_buildin_id(const char *cmd_line)
 
 	snprintf(buf, p - q + 1, "%s", q);
 
+	if(buf[0] == '\0')
+		return -1;
+
 	return command_is_reserved(buf);
 }
 
@@ -1402,8 +1408,8 @@ file_completion(char* filename, char* line_mb, struct line_stats *stat)
 			free(temp2);
 		}
 	}
-	/* :!partial_filename anthing_else...		 or
-	 * :!!partial_filename anthing_else... */
+	/* :!partial_filename anything_else...		 or
+	 * :!!partial_filename anything_else... */
 	else if((temp = strrchr(line_mb, '!')) != NULL)
 	{
 		int i;

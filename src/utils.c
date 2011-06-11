@@ -16,14 +16,16 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <stdio.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include <stdlib.h>
+
 #include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <wchar.h>
 
 #include "ui.h"
 #include "status.h"
@@ -297,6 +299,19 @@ run_from_fork(int pipe[2], int err, char *cmd)
 
 	execvp(args[0], args);
 	exit(-1);
+}
+
+/* I'm really worry about the portability... */
+wchar_t *
+my_wcsdup(wchar_t *ws)
+{
+	wchar_t *result;
+
+	result = (wchar_t *) malloc((wcslen(ws) + 1) * sizeof(wchar_t));
+	if(result == NULL)
+		return NULL;
+	wcscpy(result, ws);
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
