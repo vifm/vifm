@@ -16,15 +16,17 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <ncurses.h>
+
+#include <unistd.h> /* chdir() */
+
 #include <assert.h>
 #include <ctype.h> /* isspace() */
-#include <ncurses.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h> /*  system() */
 #include <string.h> /* strncmp() */
 #include <time.h>
-#include <unistd.h> /* chdir() */
 
 #include "background.h"
 #include "bookmarks.h"
@@ -118,7 +120,7 @@ typedef struct current_command
 	int pause;
 }cmd_t;
 
-static char* substitute_specs(const char *cmd);
+static wchar_t * substitute_specs(const char *cmd);
 static const char *skip_spaces(const char *cmd);
 static const char *skip_word(const char *cmd);
 static int exec_command(char *cmd, FileView *view, int type, void * ptr);
@@ -1148,11 +1150,9 @@ do_map(cmd_t *cmd, const char *map_type, int mode)
 	*raw_rhs = '\0';
 
 	rhs = (char*)skip_spaces(raw_rhs + 1);
-	rhs = substitute_specs(rhs);
-	keys = to_wide(cmd->args);
-	mapping = to_wide(rhs);
+	keys = substitute_specs(cmd->args);
+	mapping = substitute_specs(rhs);
 	result = add_user_keys(keys, mapping, mode);
-	free(rhs);
 	free(mapping);
 	free(keys);
 
@@ -1626,12 +1626,12 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 	return save_msg;
 }
 
-static char*
+static wchar_t  *
 substitute_specs(const char *cmd)
 {
-	char *buf, *p;
+	wchar_t *buf, *p;
 
-	buf = malloc(strlen(cmd) + 1);
+	buf = malloc((strlen(cmd) + 1)*sizeof(wchar_t));
 	if(buf == NULL)
 	{
 		return NULL;
@@ -1642,15 +1642,35 @@ substitute_specs(const char *cmd)
 	{
 		if(strncmp(cmd, "<cr>", 4) == 0)
 		{
-			*p++ = '\r';
+			*p++ = L'\r';
 			cmd += 4;
+		}
+		else if(strncmp(cmd, "<space>", 7) == 0)
+		{
+			*p++ = L' ';
+			cmd += 7;
+		}
+		else if(cmd[0] == '<' && cmd[1] == 'f' && isdigit(cmd[2]) && cmd[3] == '>')
+		{
+			*p++ = KEY_F0 + (cmd[2] - '0');
+			cmd += 4;
+		}
+		else if(cmd[0] == '<' && cmd[1] == 'f' && isdigit(cmd[2]) && isdigit(cmd[3])
+				&& cmd[4] == '>')
+		{
+			int num = (cmd[2] - '0')*10 + (cmd[3] - '0');
+			if(num < 64)
+			{
+				*p++ = KEY_F0 + num;
+				cmd += 5;
+			}
 		}
 		else
 		{
-			*p++ = *cmd++;
+			*p++ = (wchar_t)*cmd++;
 		}
 	}
-	*p = '\0';
+	*p = L'\0';
 
 	return buf;
 }

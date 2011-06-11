@@ -22,17 +22,18 @@
 					   */
 
 #include <ncurses.h>
-#include <unistd.h> /* for chdir */
-#include <string.h> /* strncpy */
+
 #include <sys/time.h> /* select() */
 #include <sys/types.h> /* select() */
-#include <unistd.h> /* select() */
+#include <unistd.h> /* chdir(), select() */
+
+#include <string.h> /* strncpy */
 
 #include "color_scheme.h"
 #include "config.h"
-#include "normal.h"
 #include "keys.h"
 #include "modes.h"
+#include "normal.h"
 #include "status.h"
 #include "ui.h"
 

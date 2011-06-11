@@ -6,6 +6,9 @@
 
 	Replace escape sequences in quick view output with ^foo.
 
+	Added support for spaces and functional keys in mappings (<space> and
+	<f0> - <f63>).
+
 0.6 to 0.6.1
 
 	Added :set command.

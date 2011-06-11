@@ -3,6 +3,7 @@
 
 |Filters|            Using the file filters.
 |Commands|           How to use and set :commands.
+|Mappings|           Special sequences.
 |Configure|          Configuration of vifm.
 |Marks|              Bookmarking of files.
 |Movement|           How to move around.
@@ -14,6 +15,20 @@
 |Reserved|           List of reserved commands.
 |Vifm_Ranges|        How to use ranges in vifm.
 |set-options|        Available options.
+
+--------------------------------------------------------------------------------
+*Filters*
+
+There are two basic file filters.  One for dot files and one for file names.
+
+The basic vim folding key-bindings are used for filters.
+za - toggles the showing and hiding of dot files.
+zo - show the dot files.
+zf - add the selected files to the file name filter.
+zm - hide the dot files.
+zO - show the hidden file name files.
+zM - restore all filters.
+zR - remove all filters.
 
 --------------------------------------------------------------------------------
 *Commands*
@@ -109,18 +124,14 @@ background.
 :!mv %f %D &
 
 --------------------------------------------------------------------------------
-*Filters*
+*Mappings*
 
-There are two basic file filters.  One for dot files and one for file names.
+Since it's not easy to enter special characters there are several special
+sequences that can be used in place of them. They are:
 
-The basic vim folding key-bindings are used for filters.
-za - toggles the showing and hiding of dot files.
-zo - show the dot files.
-zf - add the selected files to the file name filter.
-zm - hide the dot files.
-zO - show the hidden file name files.
-zM - restore all filters.
-zR - remove all filters.
+<cr> - Enter key
+<space> - Space key
+<f0> - <f63> - functional keys
 
 --------------------------------------------------------------------------------
 *Marks*

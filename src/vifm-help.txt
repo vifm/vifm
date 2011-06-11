@@ -190,8 +190,18 @@ search patterns can be set with :com name /pattern
 	Each file list has its own filter.
 	filtered files are not checked in / search or :commands
 
-	file name filters can be set with :com name fil pattern
-																	:com ofiles fil \.o$
+	file name filters can be set with
+        :com name fil pattern
+	    :com ofiles fil \.o$
+
+Mappings
+
+    Since it's not easy to enter special characters there are several special
+    sequences that can be used in place of them. They are:
+
+    <cr> - Enter key
+    <space> - Space key
+    <f0> - <f63> - functional keys
 
 Configuration.
 
