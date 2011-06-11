@@ -1,7 +1,5 @@
 #include "../config.h"
 
-#if defined(HAVE_LIBGTK) || defined(HAVE_LIBMAGIC)
-
 #ifdef HAVE_LIBGTK
 #include <gtk/gtk.h>
 #include <glib-2.0/gio/gio.h>
@@ -26,6 +24,7 @@ static size_t handlers_len;
 
 static int get_gtk_mimetype(const char* filename, char* buf);
 static int get_magic_mimetype(const char* filename, char* buf);
+static int get_file_mimetype(const char* filename, char* buf, size_t buf_sz);
 static char * get_handlers(const char* mime_type);
 static void enum_files(const char* path, const char* mime_type);
 static void process_file(const char* path, const char* mime_type);
@@ -47,7 +46,10 @@ get_mimetype(const char *file)
 	if(get_gtk_mimetype(file, mimetype) == -1)
 	{
 		if(get_magic_mimetype(file, mimetype) == -1)
-			return NULL;
+		{
+			if(get_file_mimetype(file, mimetype, sizeof(mimetype)) == -1)
+				return NULL;
+		}
 	}
 
 	return mimetype;
@@ -100,6 +102,25 @@ get_magic_mimetype(const char* filename, char* buf)
 #else /* #ifdef HAVE_LIBMAGIC */
 	return -1;
 #endif /* #ifdef HAVE_LIBMAGIC */
+}
+
+static int
+get_file_mimetype(const char* filename, char* buf, size_t buf_sz)
+{
+	FILE *pipe;
+	char command[1024];
+
+	/* Use the file command to get mimetype */
+	snprintf(command, sizeof(command), "file \"%s\" -b --mime-type", filename);
+
+	if((pipe = popen(command, "r")) == NULL)
+		return -1;
+
+	fgets(buf, buf_sz, pipe);
+
+	pclose(pipe);
+
+	return 0;
 }
 
 char *
@@ -250,7 +271,5 @@ expand_desktop(const char* str, char* buf)
 		strcpy(buf + 1, "%f");
 	}
 }
-
-#endif /* #if defined(HAVE_LIBGTK) || defined(HAVE_LIBMAGIC) */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

@@ -168,9 +168,7 @@ show_mime_type(FileView *view, int curr_y)
 {
 	const char* mimetype = NULL;
 
-#if defined(HAVE_LIBGTK) || defined(HAVE_LIBMAGIC)
 	mimetype = get_mimetype(get_current_file_name(view));
-#endif
 
 	mvwaddstr(menu_win, curr_y, 2, "Mime Type: ");
 
@@ -178,6 +176,31 @@ show_mime_type(FileView *view, int curr_y)
 	{
 		mvwaddstr(menu_win, curr_y, 13, mimetype);
 		return 2;
+	}
+	else
+	{
+		FILE *pipe;
+		char command[1024];
+		char buf[NAME_MAX];
+		int x, y;
+
+		getmaxyx(menu_win, y, x);
+
+		/* Use the file command to get mimetype */
+		snprintf(command, sizeof(command), "file \"%s\" -b --mime-type",
+				view->dir_entry[view->list_pos].name);
+
+		if ((pipe = popen(command, "r")) == NULL)
+		{
+			mvwaddstr(menu_win, curr_y, 13, "Unable to open pipe to read file");
+			return 2;
+		}
+
+		fgets(buf, sizeof(buf), pipe);
+
+		pclose(pipe);
+
+		mvwaddnstr(menu_win, curr_y, 13, buf, x - 9);
 	}
 
 	return 2;

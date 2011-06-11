@@ -527,10 +527,8 @@ execute_filetype_cb(FileView *view, menu_info *m)
 	int background = m->extra_data & 1;
 	int force_mime = m->extra_data & 2;
 
-#if defined(HAVE_LIBGTK) || defined(HAVE_LIBMAGIC)
 	if(prog_str == NULL || force_mime)
 		prog_str = get_magic_handlers(filename);
-#endif
 
 	if((ptr = strchr(prog_str, ',')) == NULL)
 	{
@@ -927,10 +925,8 @@ show_filetypes_menu(FileView *view, int force_mime, int background)
 	char *filename = get_current_file_name(view);
 	char *prog_str = get_all_programs_for_file(filename);
 
-#if defined(HAVE_LIBGTK) || defined(HAVE_LIBMAGIC)
 	if(prog_str == NULL || force_mime)
 		prog_str = get_magic_handlers(filename);
-#endif
 
 	if(prog_str == NULL) {
 		show_error_msg("Filetype is not set.",
