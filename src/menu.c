@@ -44,6 +44,7 @@ static menu_info *menu;
 static int last_search_backward;
 
 static void init_extended_keys(void);
+static int key_handler(wchar_t key);
 static void leave_menu_mode(void);
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
@@ -120,6 +121,8 @@ init_menu_mode(int *key_mode)
 	curr->data.handler = cmd_n;
 
 	init_extended_keys();
+
+	set_def_handler(MENU_MODE, key_handler);
 }
 
 static void
@@ -145,6 +148,18 @@ init_extended_keys(void)
 	curr = add_cmd(buf, MENU_MODE);
 	curr->data.handler = cmd_j;
 #endif /* ENABLE_EXTENDED_KEYS */
+}
+
+static int
+key_handler(wchar_t key)
+{
+	if(menu->key_handler == NULL)
+		return 0;
+
+	if(menu->key_handler(menu, key))
+		redraw_menu(view, menu);
+
+	return 0;
 }
 
 void

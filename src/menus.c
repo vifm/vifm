@@ -919,6 +919,65 @@ show_commands_menu(FileView *view)
 	enter_menu_mode(&m, view);
 }
 
+static int
+filetypes_khandler(struct menu_info *m, wchar_t c)
+{
+	if(c == L'K') /* move element up */
+	{
+		char* tmp;
+
+		if(m->pos == 0)
+			return 0;
+		tmp = m->data[m->pos - 1];
+		m->data[m->pos - 1] = m->data[m->pos];
+		m->data[m->pos] = tmp;
+
+		m->pos--;
+		m->current--;
+
+		return 1;
+	}
+	else if(c == L'J') /* move element down */
+	{
+		char* tmp;
+
+		if(m->pos == m->len - 1)
+			return 0;
+		tmp = m->data[m->pos];
+		m->data[m->pos] = m->data[m->pos + 1];
+		m->data[m->pos + 1] = tmp;
+
+		m->pos++;
+		m->current++;
+
+		return 1;
+	}
+	else if(c == L'L' && m->len != 0) /* store list */
+	{
+		char *tmp, *extension;
+		size_t len = 1;
+		int i;
+
+		extension = strchr(get_current_file_name(curr_view), '.');
+		if(extension == NULL)
+			return 0;
+
+		for(i = 0; i < m->len && m->data[i][0] != '\0'; i++)
+			len += strlen(m->data[i]) + 1;
+
+		tmp = malloc(len);
+		tmp[0] = '\0';
+		for(i = 0; i < m->len && m->data[i][0] != '\0'; i++)
+			strcat(strcat(tmp, m->data[i]), ",");
+		tmp[len - 2] = '\0';
+
+		set_programs(extension, tmp);
+		free(tmp);
+	}
+
+	return 0;
+}
+
 void
 show_filetypes_menu(FileView *view, int force_mime, int background)
 {
@@ -953,6 +1012,7 @@ show_filetypes_menu(FileView *view, int force_mime, int background)
 		m.args = NULL;
 		m.data = NULL;
 		m.extra_data = (background ? 1 : 0) | (force_mime ? 2 : 0);
+		m.key_handler = filetypes_khandler;
 
 		getmaxyx(menu_win, m.win_rows, len);
 

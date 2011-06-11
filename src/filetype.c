@@ -31,7 +31,6 @@ get_filetype_number(char *file)
 	char ext[24];
 	int x;
 
-	/* Stefan Walter fixed this to catch tar.gz extensions */
 	strptr = file;
 	while((ptr = strchr(strptr, '.')) != NULL)
 	{
@@ -154,6 +153,19 @@ add_filetype(char *description, char *extension, char *viewer, char *programs)
 	filetypes[cfg.filetypes_num].viewer = strdup(viewer);
 	filetypes[cfg.filetypes_num].programs = strdup(programs);
 	cfg.filetypes_num++;
+}
+
+void
+set_programs(char *extension, const char *programs)
+{
+	int x;
+
+	x = get_filetype_number(extension);
+	if(x < 0)
+		add_filetype("", extension, "", programs);
+
+	free(filetypes[x].programs);
+	filetypes[x].programs = strdup(programs);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

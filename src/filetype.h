@@ -32,6 +32,7 @@ char * get_default_program_for_file(char *file);
 char * get_viewer_for_file(char *file);
 void add_filetype(char *description, char *extension, char *viewer,
 		char *programs);
+void set_programs(char *extension, const char *programs);
 char * get_all_programs_for_file(char *file);
 void clear_filetypes(void);
 

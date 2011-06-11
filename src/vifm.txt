@@ -207,12 +207,20 @@ Ctrl-e/Ctrl-y - scroll pane one line down/up.
 --------------------------------------------------------------------------------
 *Menus_and_dialogs*
 
-Sort dialog ~
+General~
 
-h - switch ascending/descending.
 j, k - move.
 <Escape>, Ctrl-c - clear.
 <Return>, l - select and exit the menu.
+
+Sort dialog ~
+
+h - switch ascending/descending.
+
+Filetype menu~
+
+J and K - to move menu items
+L - to save program list
 
 --------------------------------------------------------------------------------
 *Options*
