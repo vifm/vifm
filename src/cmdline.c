@@ -606,7 +606,11 @@ cmd_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
 		return;
 
 	if(input_stat.line == NULL)
-		input_stat.line = wcsdup(L"");
+	{
+		input_stat.line = my_wcsdup(L"");
+		if(input_stat.line == NULL)
+			return;
+	}
 
 	line_completion(&input_stat);
 	len = (1 + input_stat.len + line_width - 1 + 1)/line_width;
@@ -1336,16 +1340,9 @@ file_completion(char* filename, char* line_mb, struct line_stats *stat)
 			x = *temp;
 			*temp = '\0';
 
-			/* I'm really worry about the portability... */
-//				temp2 = (wchar_t *) wcsdup(stat->line + stat->index)
-			temp2 = (wchar_t *) malloc((wcslen(stat->line
-					+ stat->index) + 1) * sizeof(wchar_t));
+			temp2 = my_wcsdup(stat->line + stat->index);
 			if(temp2 == NULL)
-			{
-				free(temp2);
 				return -1;
-			}
-			wcscpy(temp2, stat->line + stat->index);
 
 			i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
 					+ (stat->len - stat->index) + 1;

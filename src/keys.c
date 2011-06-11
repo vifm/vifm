@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils.h"
+
 #include "keys.h"
 
 struct key_chunk_t
@@ -297,7 +299,7 @@ add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode)
 		free((void*)curr->data.cmd);
 	}
 	curr->type = USER_CMD;
-	curr->data.cmd = wcsdup(cmd);
+	curr->data.cmd = my_wcsdup(cmd);
 	return 0;
 }
 
