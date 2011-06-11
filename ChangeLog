@@ -1,8 +1,8 @@
 0.6.1 to current
 
-	Added ability to rearrange programs in filetype menu.
-
 	Made filetype menu editable.
+
+	Restore SIGINT behaviour on shellout.
 
 0.6 to 0.6.1
 

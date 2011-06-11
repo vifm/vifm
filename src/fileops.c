@@ -16,25 +16,28 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <dirent.h>
-#include <errno.h> /* errno */
-#include <fcntl.h>
 #include <ncurses.h>
-#include <stdio.h>
-#include <string.h>
+
+#include <dirent.h>
+#include <fcntl.h>
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* waitpid() */
 #include <sys/wait.h> /* waitpid() */
 #include <unistd.h>
 
+#include <errno.h> /* errno */
+#include <signal.h>
+#include <stdio.h>
+#include <string.h>
+
 #include "background.h"
+#include "cmdline.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "config.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
-#include "cmdline.h"
 #include "menus.h"
 #include "registers.h"
 #include "status.h"
@@ -59,6 +62,8 @@ my_system(char *command)
 	if(pid == 0)
 	{
 		char *args[4];
+
+		signal(SIGINT, SIG_DFL);
 
 		args[0] = "sh";
 		args[1] = "-c";
