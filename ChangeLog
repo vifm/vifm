@@ -18,7 +18,7 @@
 
 	:write! will write config even if no setting was changed.
 
-	Save pane locations on exit always except on :q!, :quit! and ZQ.
+	Always save pane locations on exit except on :q!, :quit! and ZQ.
 
 	Don't switch active pane on Ctrl+W X.
 
@@ -110,7 +110,7 @@
 
 	Changed force dot files appear at the beginning of file list.
 
-	Changed removed limit command line length limit.
+	Changed command line length limit.
 
 	Changed history of visited directories.
 

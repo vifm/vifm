@@ -12,7 +12,7 @@
 |Compatibility_mode| Its description.
 |Reserved|           List of reserved commands.
 |Vifm_Ranges|        How to use ranges in vifm.
-|Options|            Available options.
+|set-options|        Available options.
 
 --------------------------------------------------------------------------------
 *Commands*
@@ -295,6 +295,7 @@ The only builtin command that accepts a range is :delete.
 
 --------------------------------------------------------------------------------
 *Compatibility_mode*
+
 Compatibility mode:
     - <tab> to switch between panes.
     - dd deletes selected (or current if none) files.
@@ -346,7 +347,7 @@ The following command names are reserved and cannot be used for user commands.
   x - exit vifm.
 
 --------------------------------------------------------------------------------
-*Options*
+*set-options*
 
 iec
 type: boolean
