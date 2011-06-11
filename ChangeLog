@@ -4,6 +4,8 @@
 
 	Restore SIGINT behaviour on shellout.
 
+	Replace escape sequences in quick view output with ^foo.
+
 0.6 to 0.6.1
 
 	Added :set command.

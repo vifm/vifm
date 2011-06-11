@@ -6,7 +6,6 @@ Basic things that need to be done.
 	Handle commands that are too long to be passed directly to the shell.
 	Make ga work in background.
     Add menu for viewing command line history.
-    Replace escape sequences in quick view output with ^foo.
 
 Vi specific features that need to be added.
 	Finish implementing range and count for user commands.
