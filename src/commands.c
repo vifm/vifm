@@ -1182,6 +1182,10 @@ comm_cd(FileView *view, cmd_t *cmd)
 			snprintf(dir, sizeof(dir), "%s%s", getenv("HOME"), cmd->args + 1);
 			change_directory(view, dir);
 		}
+		else if(strcmp(cmd->args, "%D") == 0)
+		{
+			change_directory(view, other_view->curr_dir);
+		}
 		else
 		{
 			char dir[PATH_MAX];
