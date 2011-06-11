@@ -16,9 +16,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#define CP_HELP "cp /usr/local/share/vifm/vifm-help.txt ~/.vifm"
-#define CP_RC "cp /usr/local/share/vifm/vifmrc ~/.vifm"
-#define CP_STARTUP "cp /usr/local/share/vifm/startup ~/.vifm"
+#include "../config.h"
+
+#define CP_HELP "cp " PACKAGE_DATA_DIR "/vifm-help.txt ~/.vifm"
+#define CP_RC "cp " PACKAGE_DATA_DIR "/vifmrc ~/.vifm"
+#define CP_STARTUP "cp " PACKAGE_DATA_DIR "/startup ~/.vifm"
 
 #include <ctype.h> /* isalnum */
 #include <stdio.h> /* FILE */

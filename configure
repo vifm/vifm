@@ -2704,7 +2704,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=vifm
- VERSION=0.6
+ VERSION=0.6.1
 
 
 cat >>confdefs.h <<_ACEOF
@@ -12962,10 +12962,26 @@ _ACEOF
 
   fi
 else
-  cat >>confdefs.h <<_ACEOF
+  if test "x${datadir}" = 'x${datarootdir}'; then
+    if test "x${datarootdir}" = 'x${prefix}/share'; then
+      if test "x${prefix}" = "xNONE"; then
+        cat >>confdefs.h <<_ACEOF
+#define PACKAGE_DATA_DIR "${ac_default_prefix}/share/${PACKAGE}"
+_ACEOF
+
+      else
+        cat >>confdefs.h <<_ACEOF
+#define PACKAGE_DATA_DIR "${prefix}/share/${PACKAGE}"
+_ACEOF
+
+      fi
+    fi
+  else
+    cat >>confdefs.h <<_ACEOF
 #define PACKAGE_DATA_DIR "${datadir}/${PACKAGE}"
 _ACEOF
 
+  fi
 fi
 
 packagesrcdir=`cd $srcdir && pwd`

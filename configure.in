@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(vifm, 0.6)
+AM_INIT_AUTOMAKE(vifm, 0.6.1)
 AM_CONFIG_HEADER(config.h)
 
 
@@ -26,7 +26,17 @@ if test "x${datadir}" = 'x${prefix}/share'; then
     AC_DEFINE_UNQUOTED(PACKAGE_DATA_DIR, "${prefix}/share/${PACKAGE}")
   fi
 else
-  AC_DEFINE_UNQUOTED(PACKAGE_DATA_DIR, "${datadir}/${PACKAGE}")
+  if test "x${datadir}" = 'x${datarootdir}'; then
+    if test "x${datarootdir}" = 'x${prefix}/share'; then
+      if test "x${prefix}" = "xNONE"; then
+        AC_DEFINE_UNQUOTED(PACKAGE_DATA_DIR, "${ac_default_prefix}/share/${PACKAGE}")
+      else
+        AC_DEFINE_UNQUOTED(PACKAGE_DATA_DIR, "${prefix}/share/${PACKAGE}")
+      fi
+    fi
+  else
+    AC_DEFINE_UNQUOTED(PACKAGE_DATA_DIR, "${datadir}/${PACKAGE}")
+  fi
 fi
 
 dnl Set PACKAGE_SOURCE_DIR in config.h.
