@@ -65,7 +65,7 @@ void show_bookmarks_menu(FileView *view);
 void show_commands_menu(FileView *view);
 void show_history_menu(FileView *view);
 void show_vifm_menu(FileView *view);
-void show_filetypes_menu(FileView *view, int force_mime, int background);
+void show_filetypes_menu(FileView *view, int background);
 void show_jobs_menu(FileView *view);
 void show_locate_menu(FileView *view, char *args);
 void show_apropos_menu(FileView *view, char *args);

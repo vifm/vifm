@@ -390,7 +390,6 @@ read_config_file(void)
 	return 1;
 }
 
-
 void
 write_config_file(void)
 {
@@ -537,6 +536,8 @@ write_config_file(void)
 	fprintf(fp, "# The %%a macro is ignored.  To use a %% you must put %%%%.\n\n");
 	for(x = 0; x < cfg.filetypes_num; x++)
 	{
+		if(filetypes[x].programs[0] == '\0')
+			continue;
 		fprintf(fp, "FILETYPE=%s=%s=%s=%s\n", filetypes[x].type, filetypes[x].ext,
 				filetypes[x].viewer, filetypes[x].programs);
 	}

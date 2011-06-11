@@ -7,6 +7,7 @@
 |Marks|              Bookmarking of files.
 |Movement|           How to move around.
 |Normal|             Normal mode keys.
+|Menus_and_dialogs|  Keys for menus and dialogs.
 |Options|            Command line arguments.
 |Plugin|             Using the vifm.vim plugin.
 |Compatibility_mode| Its description.
@@ -46,8 +47,7 @@ The builtin commands are:
 :delc[ommand] user_command - remove user_command.
 :e[dit} - will load the selected file or files into vi.
 :em[pty] - permanently remove files from the ~/.vifm/Trash directory.
-:f[ile] [mime] - popup menu of programs set for the file type of the current file.
-	When argument passed, show programs set based on file mimetype.
+:f[ile] - popup menu of programs set for the file type of the current file.
         Add ' &' in the end of command if you want to start program in background. 
 :fil[ter] regular_expression - will filter files matching the pattern out of
 	the directory.  See |Filters|
@@ -219,8 +219,12 @@ h - switch ascending/descending.
 
 Filetype menu~
 
+Commands from vifmrc are displayed above empty line. When all commands below
+empty line were found in .desktop files.
+Note: you can't save programs for files without extension.
+
 J and K - to move menu items
-L - to save program list
+L - save all commands above empty line as program list
 
 --------------------------------------------------------------------------------
 *Options*

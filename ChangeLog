@@ -2,6 +2,8 @@
 
 	Added ability to rearrange programs in filetype menu.
 
+	Made filetype menu editable.
+
 0.6 to 0.6.1
 
 	Added :set command.

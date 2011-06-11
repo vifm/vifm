@@ -119,6 +119,8 @@ escape_filename(const char *string, size_t len, int quote_percent)
 void
 chomp(char *text)
 {
+	if(text[0] == '\0')
+		return;
 	if(text[strlen(text) -1] == '\n')
 		text[strlen(text) -1] = '\0';
 }

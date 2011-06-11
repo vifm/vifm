@@ -156,13 +156,15 @@ add_filetype(char *description, char *extension, char *viewer, char *programs)
 }
 
 void
-set_programs(char *extension, const char *programs)
-{
+set_programs(char *extension, char *programs) {
 	int x;
 
 	x = get_filetype_number(extension);
 	if(x < 0)
-		add_filetype("", extension, "", programs);
+	{
+		add_filetype("", extension + 1, "", programs);
+		return;
+	}
 
 	free(filetypes[x].programs);
 	filetypes[x].programs = strdup(programs);

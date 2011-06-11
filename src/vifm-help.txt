@@ -111,8 +111,7 @@ The basic vi key bindings are used to move through the files and popup
 		apropos command.
 	:com! name action - will overwrite a previously set command.
 	:delc command_name will remove the command_name user command
-	:f[ile] [mime] - popup menu of programs set for the file type of the current file.
-		When argument passed, show programs set based on file mimetype.
+	:f[ile] - popup menu of programs set for the file type of the current file.
         Add ' &' in the end of command if you want to start program in background. 
 	:fil regular_expression pattern will filter the files out of the directory
 		listing that match the regular expression.
@@ -235,15 +234,26 @@ Misc.
 			~/.vifm/vimfiles instead of opening the file.  This is used for the
 			vifm.vim script to load files from vifm into a running vim.
 
-Menus
-	bookmarks escape or Ctrl-c to abort j and k to move through
+Menus and dialogs
+    general:
+        j and k to move
+        Escape or Ctrl-c to clear
+        return or l to select and exit the menu
+
+	bookmarks:
+        escape or Ctrl-c to abort j and k to move through
 		dd on a bookmark to remove.
 
 	sort dialog:
         h to switch ascending/descending
-        j and k to move
-        Escape or Ctrl-c to clear
-        return or l to select and exit the menu
+
+    filetype:
+        Commands from vifmrc are displayed above empty line. When all commands
+        below empty line were found in .desktop files.
+        Note: you can't save programs for files without extension.
+
+        J and K - to move menu items
+        L - save all commands above empty line as program list
 
 Options
     iec

@@ -520,83 +520,29 @@ execute_filetype(char *cmd, int background)
 static void
 execute_filetype_cb(FileView *view, menu_info *m)
 {
-	char *filename = get_current_file_name(view);
-	char *prog_str = get_all_programs_for_file(filename);
-	char command[NAME_MAX];
-	char *ptr = NULL;
+	char *prog_str;
 	int background = m->extra_data & 1;
-	int force_mime = m->extra_data & 2;
 
-	if(prog_str == NULL || force_mime)
-		prog_str = get_magic_handlers(filename);
+	prog_str = m->data[m->pos];
+	if(prog_str[0] == '\0')
+		return;
 
-	if((ptr = strchr(prog_str, ',')) == NULL)
+	if(strchr(prog_str, '%'))
 	{
-		if(strchr(prog_str, '%'))
-		{
-			int m = 0;
-			char *expanded_command = expand_macros(view, prog_str, NULL, &m, 0);
-			execute_filetype(expanded_command, background);
-			free(expanded_command);
-			return;
-		}
-		else
-		{
-			snprintf(command, sizeof(command), "%s %s", prog_str, filename);
-			execute_filetype(command, background);
-			return;
-		}
+		int m = 0;
+		char *expanded_command = expand_macros(view, prog_str, NULL, &m, 0);
+		execute_filetype(expanded_command, background);
+		free(expanded_command);
+		return;
 	}
 	else
 	{
-		char *prog_copy = strdup(prog_str);
-		char *free_this = prog_copy;
-		char *ptr1 = NULL;
-		int x = 1;
+		char command[NAME_MAX];
+		char *filename = get_current_file_name(view);
 
-		while((ptr = ptr1 = strchr(prog_copy, ',')) != NULL)
-		{
-			*ptr = '\0';
-			ptr1++;
-
-			if(x == m->pos +1)
-			{
-				if(strchr(prog_str, '%'))
-				{
-					int m = 0;
-					char *expanded_command = expand_macros(view, prog_copy, NULL, &m, 0);
-					execute_filetype(expanded_command, background);
-					free(expanded_command);
-					free(free_this);
-					return;
-				}
-				else
-				{
-					snprintf(command, sizeof(command), "%s %s", prog_copy, filename);
-					execute_filetype(command, background);
-					free(free_this);
-					return;
-				}
-			}
-			prog_copy = ptr1;
-			x++;
-		}
-		if(strchr(prog_str, '%'))
-		{
-			int m = 0;
-			char *expanded_command = expand_macros(view, prog_copy, NULL, &m, 0);
-			execute_filetype(expanded_command, background);
-			free(expanded_command);
-			free(free_this);
-			return;
-		}
-		else
-		{
-			snprintf(command, sizeof(command), "%s %s", prog_copy, filename);
-			execute_filetype(command, background);
-			free(free_this);
-			return;
-		}
+		snprintf(command, sizeof(command), "%s %s", prog_str, filename);
+		execute_filetype(command, background);
+		return;
 	}
 }
 
@@ -675,7 +621,6 @@ reload_bookmarks_menu_list(menu_info *m)
 void
 reload_command_menu_list(menu_info *m)
 {
-
 	int x, i, z, len;
 
 	getmaxyx(menu_win, z, len);
@@ -979,19 +924,32 @@ filetypes_khandler(struct menu_info *m, wchar_t c)
 }
 
 void
-show_filetypes_menu(FileView *view, int force_mime, int background)
+show_filetypes_menu(FileView *view, int background)
 {
 	char *filename = get_current_file_name(view);
-	char *prog_str = get_all_programs_for_file(filename);
+	char *ft_str, *prog_str, *mime_str;
 
-	if(prog_str == NULL || force_mime)
-		prog_str = get_magic_handlers(filename);
+	ft_str = get_all_programs_for_file(filename);
+	mime_str = get_magic_handlers(filename);
 
-	if(prog_str == NULL) {
+	if(ft_str == NULL && mime_str == NULL) {
 		show_error_msg("Filetype is not set.",
 				"No programs set for this filetype.");
 		return;
 	}
+
+	if(ft_str == NULL)
+		ft_str = "";
+	else if(mime_str == NULL)
+		mime_str = "";
+
+	prog_str = malloc(strlen(ft_str) + 3 + strlen(mime_str) + 1);
+	if(prog_str == NULL)
+		return;
+
+	strcpy(prog_str, ft_str);
+	strcat(prog_str, ",*,");
+	strcat(prog_str, mime_str);
 
 	{
 		int x = 0;
@@ -1011,7 +969,7 @@ show_filetypes_menu(FileView *view, int force_mime, int background)
 		m.title = NULL;
 		m.args = NULL;
 		m.data = NULL;
-		m.extra_data = (background ? 1 : 0) | (force_mime ? 2 : 0);
+		m.extra_data = (background ? 1 : 0);
 		m.key_handler = filetypes_khandler;
 
 		getmaxyx(menu_win, m.win_rows, len);
@@ -1027,21 +985,43 @@ show_filetypes_menu(FileView *view, int force_mime, int background)
 			char *prog_copy = strdup(prog_str);
 			char *free_this = prog_copy;
 			char *ptr1 = NULL;
+			int i;
+
+			while(*prog_copy == ',')
+				prog_copy++;
 
 			while ((ptr = ptr1 = strchr(prog_copy, ',')) != NULL)
 			{
+				int i;
 				*ptr = '\0';
 				ptr1++;
-				m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
-				m.data[x] = strdup(prog_copy);
+
+				for(i = 0; i < m.len; i++)
+					if(strcmp(m.data[i], prog_copy) == 0)
+						break;
+				if(i == m.len)
+				{
+					m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
+					if(strcmp(prog_copy, "*") == 0)
+						m.data[x] = strdup("");
+					else
+						m.data[x] = strdup(prog_copy);
+					x++;
+					m.len = x;
+				}
 				prog_copy = ptr1;
-				x++;
-				m.len = x;
 			}
-			m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
-			m.data[x] = (char *)malloc((len + 1) * sizeof(char));
-			snprintf(m.data[x], len, "%s", prog_copy);
-			m.len++;
+
+			for(i = 0; i < m.len; i++)
+				if(strcmp(m.data[i], prog_copy) == 0)
+					break;
+			if(i == m.len)
+			{
+				m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
+				m.data[x] = (char *)malloc((len + 1) * sizeof(char));
+				snprintf(m.data[x], len, "%s", prog_copy);
+				m.len++;
+			}
 
 			free(free_this);
 		}
@@ -1050,6 +1030,8 @@ show_filetypes_menu(FileView *view, int force_mime, int background)
 		moveto_menu_pos(view, 0, &m);
 		enter_menu_mode(&m, view);
 	}
+
+	free(prog_str);
 }
 
 void
