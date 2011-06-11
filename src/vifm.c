@@ -16,8 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#define VERSION "0.6.1"
-
 #include "../config.h"
 
 #ifdef HAVE_LIBGTK
@@ -52,16 +50,16 @@
 static void
 show_help_msg(void)
 {
-	printf("\n\nvifm usage:\n\n");
-	printf("	To start in a specific directory give the directory path.\n\n");
-	printf("		vifm /path/to/start/dir/one\n");
-	printf("		or\n");
-	printf("		vifm /path/to/start/dir/one  /path/to/start/dir/two\n\n");
-	printf("	If no path is given vifm will start in the current working directory.\n\n");
-	printf("	vifm --version \n");
-	printf("		show version number and quit.\n\n");
-	printf("	vifm --help\n");
-	printf("		show this help message and quit.\n\n");
+	puts("vifm usage:\n");
+	puts("  To start in a specific directory give the directory path.\n");
+	puts("    vifm /path/to/start/dir/one");
+	puts("    or");
+	puts("    vifm /path/to/start/dir/one  /path/to/start/dir/two\n");
+	puts("  If no path is given vifm will start in the current working directory.\n");
+	puts("  vifm --version");
+	puts("    show version number and quit.\n");
+	puts("  vifm --help");
+	puts("    show this help message and quit.");
 }
 
 static void
@@ -204,7 +202,7 @@ main(int argc, char *argv[])
 		else if(!strcmp(argv[x], "--version"))
 		{
 			endwin();
-			printf("\n\nvifm %s\n\n", VERSION);
+			printf("vifm %s\n", VERSION);
 			exit(0);
 		}
 		else if(!strcmp(argv[x], "--help"))

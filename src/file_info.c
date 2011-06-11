@@ -16,23 +16,26 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <grp.h>
+#include <pwd.h>
+#include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <pwd.h>
-#include <grp.h>
+
+#include "../config.h"
 
 #include "config.h"
 #include "filelist.h"
-#include "ui.h"
-#include "utils.h"
+#include "file_magic.h"
 #include "menus.h"
 #include "status.h"
+#include "ui.h"
+#include "utils.h"
 
 void
 get_perm_string (char * buf, int len, mode_t mode)
@@ -66,6 +69,118 @@ get_perm_string (char * buf, int len, mode_t mode)
 		buf[6] = (buf[6] == '-') ? 'S' : 's';
 	if (mode & S_ISUID)
 		buf[3] = (buf[3] == '-') ? 'S' : 's';
+}
+
+/* Returns increment for curr_y */
+static int
+show_file_type(FileView *view, int curr_y)
+{
+	int x, y;
+	int old_curr_y = curr_y;
+	getmaxyx(menu_win, y, x);
+
+	mvwaddstr(menu_win, curr_y, 2, "Type: ");
+	if(S_ISLNK(view->dir_entry[view->list_pos].mode))
+	{
+		char linkto[PATH_MAX +NAME_MAX];
+		int len;
+		char *filename = strdup(view->dir_entry[view->list_pos].name);
+		len = strlen(filename);
+		if (filename[len - 1] == '/')
+			filename[len - 1] = '\0';
+
+		mvwaddstr(menu_win, curr_y, 8, "Link");
+		curr_y += 2;
+		len = readlink (filename, linkto, sizeof (linkto));
+
+		mvwaddstr(menu_win, curr_y, 2, "Link To: ");
+		if (len > 0)
+		{
+			linkto[len] = '\0';
+			mvwaddnstr(menu_win, curr_y, 11, linkto, x - 11);
+		}
+		else
+			mvwaddstr(menu_win, curr_y, 11, "Couldn't Resolve Link");
+	}
+	else if (S_ISREG (view->dir_entry[view->list_pos].mode))
+	{
+		FILE *pipe;
+		char command[1024];
+		char buf[NAME_MAX];
+
+		/* Use the file command to get file information */
+		snprintf(command, sizeof(command), "file \"%s\" -b",
+				view->dir_entry[view->list_pos].name);
+
+		if ((pipe = popen(command, "r")) == NULL)
+		{
+			mvwaddstr(menu_win, curr_y, 8, "Unable to open pipe to read file");
+			return 2;
+		}
+
+		fgets(buf, sizeof(buf), pipe);
+
+		pclose(pipe);
+
+		mvwaddnstr(menu_win, curr_y, 8, buf, x - 9);
+		/* TODO maybe remove this
+		if((S_IXUSR &view->dir_entry[view->list_pos].mode)
+				|| (S_IXGRP &view->dir_entry[view->list_pos].mode)
+				|| (S_IXOTH &view->dir_entry[view->list_pos].mode))
+
+			mvwaddstr(other_view->win, 6, 8, "Executable");
+		else
+			mvwaddstr(other_view->win, 6, 8, "Regular File");
+			*/
+	}
+	else if (S_ISDIR (view->dir_entry[view->list_pos].mode))
+	{
+	  mvwaddstr(menu_win, curr_y, 8, "Directory");
+	}
+	else if (S_ISCHR (view->dir_entry[view->list_pos].mode))
+	{
+	  mvwaddstr(menu_win, curr_y, 8, "Character Device");
+	}
+	else if (S_ISBLK (view->dir_entry[view->list_pos].mode))
+	{
+	  mvwaddstr(menu_win, curr_y, 8, "Block Device");
+	}
+	else if (S_ISFIFO (view->dir_entry[view->list_pos].mode))
+	{
+	  mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
+	}
+	else if (S_ISSOCK (view->dir_entry[view->list_pos].mode))
+	{
+	  mvwaddstr(menu_win, curr_y, 8, "Socket");
+	}
+	else
+	{
+	  mvwaddstr(menu_win, curr_y, 8, "Unknown");
+	}
+	curr_y += 2;
+
+	return curr_y - old_curr_y;
+}
+
+/* Returns increment for curr_y */
+static int
+show_mime_type(FileView *view, int curr_y)
+{
+	const char* mimetype = NULL;
+
+#if defined(HAVE_LIBGTK) || defined(HAVE_LIBMAGIC)
+	mimetype = get_mimetype(get_current_file_name(view));
+#endif
+
+	mvwaddstr(menu_win, curr_y, 2, "Mime Type: ");
+
+	if(mimetype != NULL)
+	{
+		mvwaddstr(menu_win, curr_y, 13, mimetype);
+		return 2;
+	}
+
+	return 2;
 }
 
 void
@@ -116,85 +231,8 @@ show_full_file_properties(FileView *view)
 	mvwaddstr(menu_win, curr_y, 8, size_buf);
 	curr_y += 2;
 
-	mvwaddstr(menu_win, curr_y, 2, "Type: ");
-	if(S_ISLNK(view->dir_entry[view->list_pos].mode))
-	{
-		char linkto[PATH_MAX +NAME_MAX];
-		int len;
-		char *filename = strdup(view->dir_entry[view->list_pos].name);
-		len = strlen(filename);
-		if (filename[len - 1] == '/')
-			filename[len - 1] = '\0';
-
-		mvwaddstr(menu_win, curr_y, 8, "Link");
-		curr_y += 2;
-		len = readlink (filename, linkto, sizeof (linkto));
-
-		mvwaddstr(menu_win, curr_y, 2, "Link To: ");
-		if (len > 0)
-		{
-			linkto[len] = '\0';
-			mvwaddnstr(menu_win, curr_y, 11, linkto, x - 11);
-		}
-		else
-			mvwaddstr(menu_win, curr_y, 11, "Couldn't Resolve Link");
-	}
-	else if (S_ISREG (view->dir_entry[view->list_pos].mode))
-	{
-		FILE *pipe;
-		char command[1024];
-		char buf[NAME_MAX];
-
-		/* Use the file command to get file information */
-		snprintf(command, sizeof(command), "file \"%s\" -b",
-				view->dir_entry[view->list_pos].name);
-
-		if ((pipe = popen(command, "r")) == NULL)
-		{
-			mvwaddstr(menu_win, curr_y, 8, "Unable to open pipe to read file");
-			return;
-		}
-
-		fgets(buf, sizeof(buf), pipe);
-
-		pclose(pipe);
-
-		mvwaddnstr(menu_win, curr_y, 8, buf, x - 9);
-		/*
-		if((S_IXUSR &view->dir_entry[view->list_pos].mode)
-				|| (S_IXGRP &view->dir_entry[view->list_pos].mode)
-				|| (S_IXOTH &view->dir_entry[view->list_pos].mode))
-
-			mvwaddstr(other_view->win, 6, 8, "Executable");
-		else
-			mvwaddstr(other_view->win, 6, 8, "Regular File");
-			*/
-	}
-	else if (S_ISDIR (view->dir_entry[view->list_pos].mode))
-	{
-	  mvwaddstr(menu_win, curr_y, 8, "Directory");
-	}
-	else if (S_ISCHR (view->dir_entry[view->list_pos].mode))
-	{
-	  mvwaddstr(menu_win, curr_y, 8, "Character Device");
-	}
-	else if (S_ISBLK (view->dir_entry[view->list_pos].mode))
-	{
-	  mvwaddstr(menu_win, curr_y, 8, "Block Device");
-	}
-	else if (S_ISFIFO (view->dir_entry[view->list_pos].mode))
-	{
-	  mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
-	}
-	else if (S_ISSOCK (view->dir_entry[view->list_pos].mode))
-	{
-	  mvwaddstr(menu_win, curr_y, 8, "Socket");
-	}
-	else
-	{
-	  mvwaddstr(menu_win, curr_y, 8, "Unknown");
-	}
-	curr_y += 2;
+	curr_y += show_file_type(view, curr_y);
+	curr_y += show_mime_type(view, curr_y);
 
 	mvwaddstr(menu_win, curr_y, 2, "Permissions: ");
 	mvwaddstr(menu_win, curr_y, 15, perm_buf);

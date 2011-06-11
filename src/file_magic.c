@@ -35,7 +35,14 @@ static void expand_desktop(const char* str, char* buf);
 char*
 get_magic_handlers(const char* file)
 {
-	char mimetype[128];
+	return get_handlers(get_mimetype(file));
+}
+
+/* Returns pointer to a static buffer */
+const char *
+get_mimetype(const char *file)
+{
+	static char mimetype[128];
 
 	if(get_gtk_mimetype(file, mimetype) == -1)
 	{
@@ -43,7 +50,7 @@ get_magic_handlers(const char* file)
 			return NULL;
 	}
 
-	return get_handlers(mimetype);
+	return mimetype;
 }
 
 static int
