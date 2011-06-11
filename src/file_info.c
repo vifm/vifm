@@ -168,17 +168,14 @@ show_mime_type(FileView *view, int curr_y)
 {
 	const char* mimetype = NULL;
 
-#if defined(HAVE_LIBGTK) || defined(HAVE_LIBMAGIC)
 	mimetype = get_mimetype(get_current_file_name(view));
-#endif
 
 	mvwaddstr(menu_win, curr_y, 2, "Mime Type: ");
 
-	if(mimetype != NULL)
-	{
-		mvwaddstr(menu_win, curr_y, 13, mimetype);
-		return 2;
-	}
+	if(mimetype == NULL)
+		mimetype = "Unknown";
+
+	mvwaddstr(menu_win, curr_y, 13, mimetype);
 
 	return 2;
 }
