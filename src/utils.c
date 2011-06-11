@@ -303,7 +303,7 @@ run_from_fork(int pipe[2], int err, char *cmd)
 
 /* I'm really worry about the portability... */
 wchar_t *
-my_wcsdup(wchar_t *ws)
+my_wcsdup(const wchar_t *ws)
 {
 	wchar_t *result;
 

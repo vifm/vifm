@@ -1300,14 +1300,12 @@ option_completion(char* line_mb, struct line_stats *stat)
 	}
 	stat->line = (wchar_t *) t;
 
-	line_ending = (wchar_t *) malloc((wcslen(stat->line
-			+ stat->index) + 1) * sizeof(wchar_t));
+	line_ending = my_wcsdup(stat->line + stat->index);
 	if(line_ending == NULL)
 	{
 		free(completed);
 		return -1;
 	}
-	wcscpy(line_ending, stat->line + stat->index);
 
 	swprintf(stat->line + (p - line_mb), new_len, L"%s%ls", completed,
 			line_ending);
@@ -1375,14 +1373,9 @@ file_completion(char* filename, char* line_mb, struct line_stats *stat)
 			x = *temp;
 			*temp = '\0';
 
-			temp2 = (wchar_t *) malloc((wcslen(stat->line
-					 + stat->index) + 1) * sizeof(wchar_t));
+			temp2 = my_wcsdup(stat->line + stat->index);
 			if(temp2 == NULL)
-			{
-				free(temp2);
 				return -1;
-			}
-			wcscpy(temp2, stat->line + stat->index);
 
 			i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
 				 + (stat->len - stat->index) + 1;
@@ -1418,13 +1411,9 @@ file_completion(char* filename, char* line_mb, struct line_stats *stat)
 		x = *temp;
 		*temp = '\0';
 
-		temp2 = (wchar_t *) malloc((wcslen(stat->line
-				 + stat->index) + 1) * sizeof(wchar_t));
+		temp2 = my_wcsdup(stat->line + stat->index);
 		if(temp2 == NULL)
-		{
 			return -1;
-		}
-		wcscpy(temp2, stat->line + stat->index);
 
 		i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
 			 + (stat->len - stat->index) + 1;
@@ -1443,12 +1432,6 @@ file_completion(char* filename, char* line_mb, struct line_stats *stat)
 
 		*temp = x;
 		free(temp2);
-	}
-	/* error */
-	else
-	{
-		show_error_msg("Debug Error", "Harmless error in rline.c line 564");
-		return -1;
 	}
 
 	redraw_status_bar(stat);
