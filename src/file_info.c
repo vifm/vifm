@@ -276,3 +276,4 @@ show_full_file_properties(FileView *view)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+
