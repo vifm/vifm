@@ -57,10 +57,12 @@ The builtin commands are:
 :ch[ange] - create a menu window to alter a files properties.
 :cd - change to your home directory.
 	:cd /usr/local - change directory to /usr/local.
+:colorscheme - gives a messages with a list of available color schemes.
+:colorscheme color_scheme_name - changes color scheme.
 :[range]d[elete][count] - delete selected file or files.
 	See |Vifm_Ranges| for the ranges implemented.
 :delc[ommand] user_command - remove user_command.
-:e[dit} - will load the selected file or files into vi.
+:e[dit] - will load the selected file or files into vi.
 :em[pty] - permanently remove files from the ~/.vifm/Trash directory.
 :f[ile] - popup menu of programs set for the file type of the current file.
         Add ' &' in the end of command if you want to start program in background. 

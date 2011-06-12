@@ -518,7 +518,8 @@ write_config_file(void)
 	fprintf(fp, "# The following macros can be used in a command\n");
 	fprintf(fp, "# %%a is replaced with the user arguments.\n");
 	fprintf(fp, "# %%f the current selected file, or files.\n");
-	fprintf(fp, "# %%F the current selected file, or files in the other directoy.\n");
+	fprintf(fp, "# %%F the current selected file, or files in the other directory.\n");
+  fprintf(fp, "# %%b same as %%f %%F.\n");
 	fprintf(fp, "# %%d the current directory name.\n");
 	fprintf(fp, "# %%D the other window directory name.\n");
 	fprintf(fp, "# %%m run the command in a menu window\n\n");

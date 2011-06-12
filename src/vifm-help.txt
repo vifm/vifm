@@ -109,8 +109,10 @@ The basic vi key bindings are used to move through the files and popup
 
 	:apropos manpage - will create a menu with the results from the
 		apropos command.
-	:com! name action - will overwrite a previously set command.
-	:delc command_name will remove the command_name user command
+	:command! name action - will overwrite a previously set command.
+	:delcommand command_name - will remove the command_name user command
+    :colorscheme - gives a messages with a list of available color schemes.
+    :colorscheme color_scheme_name - changes color scheme.
 	:f[ile] - popup menu of programs set for the file type of the current file.
         Add ' &' in the end of command if you want to start program in background. 
 	:fil regular_expression pattern will filter the files out of the directory

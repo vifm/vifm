@@ -80,8 +80,6 @@ typedef struct _FileView
 	time_t dir_mtime;
 	char last_dir[PATH_MAX];
 	char regexp[256]; /* regular expression pattern for / searching */
-	char * prev_filter;
-	char * filename_filter; /* regexp for filtering files in dir list */
 	int hide_dot;
 	int prev_invert;
 	bool invert; /* whether to invert the filename pattern */
@@ -96,6 +94,9 @@ typedef struct _FileView
 	int color_scheme; /* current color scheme being used */
 	dir_entry_t *dir_entry;
 	char ** selected_filelist;
+
+	char * prev_filter;
+	char * filename_filter; /* regexp for filtering files in dir list */
 
 	char sort_type;
 	char sort_descending;

@@ -11,6 +11,8 @@
 
 	Give options if a file already exists in destination directory.
 
+	Implemented :colorscheme command.
+
 0.6 to 0.6.1
 
 	Added :set command.

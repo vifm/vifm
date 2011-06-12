@@ -50,9 +50,9 @@ typedef struct _Col_Scheme {
 
 extern Col_scheme *col_schemes;
 
-void read_color_scheme_file();
+void read_color_scheme_file(void);
 int check_directory_for_color_scheme(const char *);
-void load_color_scheme(char  *name, char *dir);
+void load_color_scheme(const char *name);
 
 #endif
 

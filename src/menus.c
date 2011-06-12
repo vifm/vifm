@@ -84,7 +84,7 @@ clean_menu_position(menu_info *m)
 }
 
 void
-show_error_msg(char *title, char *message)
+show_error_msg(char *title, const char *message)
 {
 	int x, y;
 	int key;

@@ -101,7 +101,8 @@ BOOKMARKS=S=/usr/local/share=../
 # The following macros can be used in a command
 # %a is replaced with the user arguments.
 # %f the current selected file, or files.
-# %F the current selected file, or files in the other directoy.
+# %F the current selected file, or files in the other directory.
+# %b same as %f %F.
 # %d the current directory name.
 # %D the other window directory name.
 

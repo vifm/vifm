@@ -1210,15 +1210,22 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		{
 			if(cmd->args)
 			{
-				show_error_msg("Color Scheme",
-						"The :colorscheme command is reserved ");
+				load_color_scheme(cmd->args);
 			}
-			else /* Should show error message with colorschemes listed */
+			else /* Show error message with colorschemes listed */
 			{
-				show_error_msg("Color Scheme",
-						"The :colorscheme command is reserved ");
-			}
+				int i;
+				char buf[cfg.color_scheme_num*32 + 1];
 
+				buf[0] = '\0';
+				for(i = 0; i < cfg.color_scheme_num; i++)
+				{
+					strcat(buf, col_schemes[i].name);
+					if(i < cfg.color_scheme_num - 1)
+						strcat(buf, " | ");
+				}
+				show_error_msg("Color Schemes", buf);
+			}
 			break;
 		}
 		case COM_COMMAND:
@@ -1320,11 +1327,12 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			{
 				if(cmd->args)
 				{
+					int offset = (cmd->args[0] == '!') ? 1 : 0;
 					view->invert = 1;
 					view->filename_filter = (char *)realloc(view->filename_filter,
-						strlen(cmd->args) +2);
-					snprintf(view->filename_filter, strlen(cmd->args) +1,
-							"%s", cmd->args);
+							strlen(cmd->args + offset) +2);
+					snprintf(view->filename_filter, strlen(cmd->args + offset) +1,
+							"%s", cmd->args + offset);
 					load_dir_list(view, 1);
 					moveto_list_pos(view, 0);
 					curr_stats.setting_change = 1;

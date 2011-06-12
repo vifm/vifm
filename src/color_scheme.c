@@ -38,15 +38,38 @@ verify_color_schemes()
 
 }
 
-void
-load_color_scheme(char *name, char *dir)
+static int
+find_color_scheme(const char *name)
 {
+	int i;
+	for(i = 0; i < cfg.color_scheme_num; i++)
+	{
+		if(strcmp(col_schemes[i].name, name) == 0)
+			return i;
+	}
+	return -1;
+}
 
+void
+load_color_scheme(const char *name)
+{
+	int x;
+	int i;
 
+	i = find_color_scheme(name);
+	if(i < 0)
+	{
+		show_error_msg("Color Scheme", "Invalid color scheme name");
+		return;
+	}
+
+	for(x = 0; x < 12; x++)
+		init_pair(col_schemes[i].color[x].name - i*12, col_schemes[i].color[x].fg,
+				col_schemes[i].color[x].bg);
 }
 
 static void
-write_color_scheme_file()
+write_color_scheme_file(void)
 {
 	FILE *fp;
 	char config_file[PATH_MAX];
@@ -55,8 +78,7 @@ write_color_scheme_file()
 	char fg_buf[64];
 	char bg_buf[64];
 
-	snprintf(config_file, sizeof(config_file), "%s/colorschemes",
-			cfg.config_dir);
+	snprintf(config_file, sizeof(config_file), "%s/colorschemes", cfg.config_dir);
 
 	if((fp = fopen(config_file, "w")) == NULL)
 		return;
@@ -96,8 +118,7 @@ write_color_scheme_file()
 		{
 			while(col_schemes[x].color[y].name > 11)
 			{
-				col_schemes[x].color[y].name =
-					col_schemes[x].color[y].name - 12;
+				col_schemes[x].color[y].name = col_schemes[x].color[y].name - 12;
 			}
 
 			switch(col_schemes[x].color[y].name)
@@ -219,10 +240,10 @@ write_color_scheme_file()
 	fclose(fp);
 	return;
 }
+
 static void
 load_default_colors()
 {
-
 	snprintf(col_schemes[0].name, NAME_MAX, "Default");
 	snprintf(col_schemes[0].dir, PATH_MAX, "/");
 
@@ -275,7 +296,6 @@ load_default_colors()
 	col_schemes[0].color[11].bg = 0;
 }
 
-
 /*
  * convert possible <color_name> to <int>
  */
@@ -326,7 +346,6 @@ add_color(char s1[], char s2[], char s3[])
 
 	scheme = ((cfg.color_scheme_num - 1) * 12);
 
-
 	if(!strcmp(s1, "MENU"))
 		col_schemes[x].color[y].name = 0 + scheme;
 
@@ -369,11 +388,9 @@ add_color(char s1[], char s2[], char s3[])
 	cfg.color_pairs_num++;
 }
 
-
 void
-read_color_scheme_file()
+read_color_scheme_file(void)
 {
-
 	FILE *fp;
 	char config_file[PATH_MAX];
 	char line[MAX_LEN];
@@ -383,8 +400,7 @@ read_color_scheme_file()
 	char *sx = NULL;
 	int args;
 
-	snprintf(config_file, sizeof(config_file), "%s/colorschemes",
-				  cfg.config_dir);
+	snprintf(config_file, sizeof(config_file), "%s/colorschemes", cfg.config_dir);
 
 	if((fp = fopen(config_file, "r")) == NULL)
 	{
@@ -431,16 +447,16 @@ read_color_scheme_file()
 		{
 			if(!strcmp(line, "COLORSCHEME"))
 			{
+				/* TODO
+				 check if last colorscheme is complete and pad it before starting
+				 a new scheme
+				 verify_scheme();
 
-				//check if last colorscheme is complete and pad it before starting
-				// a new scheme
-				// verify_scheme();
+					col_schemes = (Col_scheme *)realloc(col_schemes,
+							sizeof(Col_scheme *) +1);
+				*/
 
-					//col_schemes = (Col_scheme *)realloc(col_schemes,
-					//		sizeof(Col_scheme *) +1);
-
-				snprintf(col_schemes[cfg.color_scheme_num].name,
-						NAME_MAX, "%s", s1);
+				snprintf(col_schemes[cfg.color_scheme_num].name, NAME_MAX, "%s", s1);
 
 				cfg.color_scheme_num++;
 
@@ -448,13 +464,16 @@ read_color_scheme_file()
 					break;
 
 				continue;
-
 			}
 			if(!strcmp(line, "DIRECTORY"))
 			{
-				snprintf(col_schemes[cfg.color_scheme_num - 1].dir,
-							PATH_MAX, "%s", s1);
+				size_t len;
+				Col_scheme* cs = col_schemes + (cfg.color_scheme_num - 1);
 
+				snprintf(cs->dir, PATH_MAX, "%s", s1);
+				len = strlen(cs->dir);
+				if(cs->dir[len - 1] == '/')
+					cs->dir[len - 1] = '\0';
 				continue;
 			}
 		}
@@ -462,12 +481,11 @@ read_color_scheme_file()
 		{
 			add_color(s1, s2, s3);
 		}
-
 	}
 
 	fclose(fp);
 
-	//verify_color_schemes();
+	// TODO verify_color_schemes();
 	return;
 }
 
@@ -489,11 +507,12 @@ check_directory_for_color_scheme(const char *dir)
 	int z = 0;
 	int v = 0;
 
-	for(x = 0; x < cfg.color_scheme_num;  x++)
+	for(x = 0; x < cfg.color_scheme_num; x++)
 	{
 		y = strlen(col_schemes[x].dir);
 
-		if(!strncmp(col_schemes[x].dir, dir, y))
+		if(!strncmp(col_schemes[x].dir, dir, y)
+				&& (dir[y] == '\0' || dir[y] == '/'))
 		{
 			if (y > z)
 			{
@@ -501,7 +520,6 @@ check_directory_for_color_scheme(const char *dir)
 				v = x;
 			}
 		}
-
 	}
 
 	return (v * 12);
