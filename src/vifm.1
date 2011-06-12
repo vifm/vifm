@@ -358,6 +358,32 @@ Space key
 .TP
 .BI "<f0> - <f63>"
 Functional keys
+.SH Command macros
+The command macros may be used in user commands.
+.TP
+.BI %a
+User arguments.
+.TP
+.BI %f
+All of the selected files.
+.TP
+.BI %F
+All of the selected files in the other directory list.
+.TP
+.BI %b
+Same as %f %F.
+.TP
+.BI %d
+Current directory name.
+.TP
+.BI %D
+Other file list directory name.
+.TP
+.BI %m
+Show command output in a menu.
+.TP
+.BI %s
+Execute command in screen split.
 .SH File Filters
 The basic vim folding key bindings are used for filtering files.
 .TP

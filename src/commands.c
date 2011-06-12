@@ -390,6 +390,11 @@ expand_macros(FileView *view, char *command, char *args, int *use_menu,
 					}
 				}
 				break;
+			case 'b': /* selected files of both dirs */
+				expanded = append_selected_files(curr_view, expanded);
+				expanded = append_selected_files(other_view, expanded);
+				len = strlen(expanded);
+				break;
 			case 'f': /* current dir selected files */
 				expanded = append_selected_files(curr_view, expanded);
 				len = strlen(expanded);

@@ -97,6 +97,7 @@ command macros:
   %a user arguments.
   %f all of the selected files.
   %F all of the selected files in the other directory list.
+  %b same as %f %F.
   %d current directory name.
   %D other file list directory name.
   %m show command output in a menu.
