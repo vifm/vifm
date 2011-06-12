@@ -1232,7 +1232,7 @@ line_completion(struct line_stats *stat)
 			free(last_word);
 			return ret;
 		}
-		else if(id == COM_EXECUTE && words_count == 1)
+		else if(id == COM_EXECUTE && words_count == 1 && last_word[0] != '.')
 			raw_name = exec_completion(stat->complete_continue ? NULL : last_word);
 		else
 			raw_name = filename_completion(stat->complete_continue ? NULL : last_word,
@@ -1356,115 +1356,57 @@ file_completion(char* filename, char* line_mb, struct line_stats *stat)
 	char *cur_file_pos = strrchr(line_mb, ' ');
 	char *temp = (char *) NULL;
 
+	void *p;
+	int i;
+	char x;
+	wchar_t *temp2;
+
 	if(cur_file_pos != NULL)
 	{
-		void *p;
-		int i;
-		/* :command /some/directory/partial_filename anything_else... */
 		if((temp = strrchr(cur_file_pos, '/')) != NULL)
-		{
-			char x;
-			wchar_t *temp2;
-
+			/* :command /some/directory/partial_filename anything_else... */
 			temp++;
-			x = *temp;
-			*temp = '\0';
-
-			temp2 = my_wcsdup(stat->line + stat->index);
-			if(temp2 == NULL)
-				return -1;
-
-			i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
-					+ (stat->len - stat->index) + 1;
-
-			if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
-			{
-				*temp = x;
-				free(temp2);
-				return -1;
-			}
-			stat->line = (wchar_t *) p;
-
-			swprintf(stat->line, i, L"%s%s%ls", line_mb,filename,temp2);
-
-			stat->index = i - (stat->len - stat->index) - 1;
-			stat->curs_pos = stat->prompt_wid + wcswidth(stat->line, stat->index);
-			stat->len = i - 1;
-
-			*temp = x;
-			free(temp2);
-		}
-		/* :command partial_filename anything_else... */
 		else
-		{
-			int i;
-			char x;
-			wchar_t *temp2;
-
+			/* :command partial_filename anything_else... */
 			temp = cur_file_pos + 1;
-			x = *temp;
-			*temp = '\0';
-
-			temp2 = my_wcsdup(stat->line + stat->index);
-			if(temp2 == NULL)
-				return -1;
-
-			i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
-				 + (stat->len - stat->index) + 1;
-
-			if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
-			{
-				*temp = x;
-				free(temp2);
-				return -1;
-			}
-			stat->line = (wchar_t *) p;
-
-			swprintf(stat->line, i, L"%s%s%ls", line_mb,filename,temp2);
-
-			stat->index = i - (stat->len - stat->index) - 1;
-			stat->curs_pos = stat->prompt_wid + wcswidth(stat->line, stat->index);
-			stat->len = i - 1;
-
-			*temp = x;
-			free(temp2);
-		}
 	}
-	/* :!partial_filename anything_else...		 or
-	 * :!!partial_filename anything_else... */
 	else if((temp = strrchr(line_mb, '!')) != NULL)
 	{
-		int i;
-		char x;
-		wchar_t *temp2;
-		void *p;
-
+		/* :!partial_filename anything_else...		 or
+		 * :!!partial_filename anything_else... */
+		char *t;
 		temp++;
-		x = *temp;
-		*temp = '\0';
+		t = strrchr(temp, '/');
+		if(t != NULL)
+			temp = t + 1;
+	}
+	else
+		return 0;
 
-		temp2 = my_wcsdup(stat->line + stat->index);
-		if(temp2 == NULL)
-			return -1;
+	x = *temp;
+	*temp = '\0';
 
-		i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
-			 + (stat->len - stat->index) + 1;
+	temp2 = my_wcsdup(stat->line + stat->index);
+	if(temp2 == NULL)
+		return -1;
 
-		if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
-		{
-			*temp = x;
-			free(temp2);
-			return -1;
-		}
-		stat->line = (wchar_t *) p;
+	i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
+			+ (stat->len - stat->index) + 1;
 
-		swprintf(stat->line, i , L"%s%s%ls", line_mb, filename, temp2);
-
-		update_line_stat(stat, i);
-
+	if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
+	{
 		*temp = x;
 		free(temp2);
+		return -1;
 	}
+	stat->line = (wchar_t *) p;
+
+	swprintf(stat->line, i, L"%s%s%ls", line_mb, filename, temp2);
+
+	update_line_stat(stat, i);
+
+	*temp = x;
+	free(temp2);
 
 	redraw_status_bar(stat);
 	return 0;
