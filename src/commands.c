@@ -737,7 +737,7 @@ shellout(char *command, int pause)
 			if(title != NULL)
 			{
 				if(pause)
-					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c 'pauseme \"%s\"'",
+					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c 'pauseme %s'",
 							title + strlen(cfg.vi_command) +1, command);
 				else
 					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c \"%s\"",
@@ -757,7 +757,7 @@ shellout(char *command, int pause)
 
 				if(pause)
 					snprintf(buf, sizeof(buf),
-							"screen -t \"%.10s\" sh -c 'pauseme \"%s\"'", title, command);
+							"screen -t \"%.10s\" sh -c 'pauseme %s'", title, command);
 				else
 					snprintf(buf, sizeof(buf), "screen -t \"%.10s\" sh -c \"%s\"", title, command);
 				free(title);
@@ -766,7 +766,7 @@ shellout(char *command, int pause)
 		else
 		{
 			if(pause)
-				snprintf(buf, sizeof(buf), "sh -c 'pauseme \"%s\"'", command);
+				snprintf(buf, sizeof(buf), "sh -c 'pauseme %s'", command);
 			else
 				snprintf(buf, sizeof(buf), "sh -c \"%s\"", command);
 		}
@@ -1984,3 +1984,4 @@ comm_split(void)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+
