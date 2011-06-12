@@ -36,6 +36,7 @@
 
 #include "../config.h"
 
+#include "color_scheme.h"
 #include "commands.h"
 #include "config.h"
 #include "filelist.h"
@@ -107,8 +108,10 @@ static void cmd_ctrl_p(struct key_info, struct keys_info *);
 static void complete_cmd_prev(void);
 static void complete_search_prev(void);
 static int line_completion(struct line_stats *stat);
-static int option_completion(char* line_mb, struct line_stats *stat);
-static int file_completion(char* filename, char* line_mb,
+static int colorschemes_completion(char *line_mb, char *last_word,
+		struct line_stats *stat);
+static int option_completion(char *line_mb, struct line_stats *stat);
+static int file_completion(char *filename, char *line_mb,
 		struct line_stats *stat);
 static void update_line_stat(struct line_stats *stat, int new_len);
 static void redraw_status_bar(struct line_stats *stat);
@@ -1205,7 +1208,8 @@ line_completion(struct line_stats *stat)
 
 	usercmd_completion = (id == COM_DELCOMMAND || id == COM_COMMAND)
 			&& words_count <= 2;
-	if(!usercmd_completion && (last_word != NULL || id == COM_EXECUTE || id == COM_SET))
+	if(!usercmd_completion && (last_word != NULL || id == COM_EXECUTE ||
+			id == COM_SET || (id == COM_COLORSCHEME && words_count == 2)))
 	{
 		char *filename = (char *)NULL;
 		char *raw_name = (char *)NULL;
@@ -1218,6 +1222,13 @@ line_completion(struct line_stats *stat)
 		if(id == COM_SET)
 		{
 			int ret = option_completion(line_mb, stat);
+			free(last_word);
+			return ret;
+		}
+		else if(id == COM_COLORSCHEME)
+		{
+			int ret = colorschemes_completion(line_mb, stat->complete_continue
+					? NULL : last_word, stat);
 			free(last_word);
 			return ret;
 		}
@@ -1270,14 +1281,58 @@ line_completion(struct line_stats *stat)
 	return 0;
 }
 
+/*
+ * p - end of part that being completed
+ * completed - new part of command line
+ */
+static int
+line_part_complete(struct line_stats *stat, const char *line_mb, const char *p,
+		const char *completed)
+{
+	void *t;
+	wchar_t *line_ending;
+	int new_len;
+
+	new_len = (p - line_mb) + mbstowcs(NULL, completed, 0)
+			+ (stat->len - stat->index) + 1;
+
+	if((t = realloc(stat->line, new_len * sizeof(wchar_t))) == NULL)
+		return -1;
+	stat->line = (wchar_t *) t;
+
+	line_ending = my_wcsdup(stat->line + stat->index);
+	if(line_ending == NULL)
+		return -1;
+
+	swprintf(stat->line + (p - line_mb), new_len, L"%s%ls", completed,
+			line_ending);
+	free(line_ending);
+
+	stat->complete_continue = 1;
+	update_line_stat(stat, new_len);
+	redraw_status_bar(stat);
+	return 0;
+}
+
+static int
+colorschemes_completion(char *line_mb, char *last_word, struct line_stats *stat)
+{
+	char *completed;
+	int result;
+
+	completed = complete_colorschemes(last_word);
+	result = line_part_complete(stat, line_mb, line_mb + strlen(line_mb),
+			completed);
+	free(completed);
+	return result;
+}
+
 static int
 option_completion(char* line_mb, struct line_stats *stat)
 {
 	static const char *p;
-	void *t;
-	wchar_t *line_ending;
 	char *completed;
-	int new_len;
+	int result;
 
 	if(!stat->complete_continue)
 	{
@@ -1290,32 +1345,9 @@ option_completion(char* line_mb, struct line_stats *stat)
 	}
 	completed = complete_options(stat->complete_continue ? NULL : completed, &p);
 
-	new_len = (p - line_mb) + mbstowcs(NULL, completed, 0)
-			+ (stat->len - stat->index) + 1;
-
-	if((t = realloc(stat->line, new_len * sizeof(wchar_t))) == NULL)
-	{
-		free(completed);
-		return -1;
-	}
-	stat->line = (wchar_t *) t;
-
-	line_ending = my_wcsdup(stat->line + stat->index);
-	if(line_ending == NULL)
-	{
-		free(completed);
-		return -1;
-	}
-
-	swprintf(stat->line + (p - line_mb), new_len, L"%s%ls", completed,
-			line_ending);
-	free(line_ending);
+	result = line_part_complete(stat, line_mb, p, completed);
 	free(completed);
-
-	stat->complete_continue = 1;
-	update_line_stat(stat, new_len);
-	redraw_status_bar(stat);
-	return 0;
+	return result;
 }
 
 static int

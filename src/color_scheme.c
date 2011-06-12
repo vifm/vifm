@@ -525,4 +525,32 @@ check_directory_for_color_scheme(const char *dir)
 	return (v * 12);
 }
 
+char *
+complete_colorschemes(const char *name)
+{
+	static char *buf;
+	static int last;
+
+	size_t len;
+
+	if(name != NULL)
+	{
+		free(buf);
+		buf = strdup(name);
+		last = -1;
+	}
+
+	len = strlen(buf);
+
+	if(last == cfg.color_scheme_num)
+		last = -1;
+
+	while(++last < cfg.color_scheme_num)
+	{
+		if(strncmp(buf, col_schemes[last].name, len) == 0)
+			return strdup(col_schemes[last].name);
+	}
+	return strdup(buf);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
