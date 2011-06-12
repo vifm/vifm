@@ -294,10 +294,66 @@ save_command_history(const char *command)
 		cfg.cmd_history_num = cfg.cmd_history_len -1;
 }
 
+static char *
+append_selected_files(FileView *view, char *expanded)
+{
+	size_t len = strlen(expanded);
+
+	if(view->selected_files)
+	{
+		int y = 0;
+		for(y = 0; y < view->list_rows; y++)
+		{
+			if(view->dir_entry[y].selected)
+			{
+				int dir = 0;
+				char *temp = NULL;
+				expanded = (char *)realloc(expanded,
+						len + strlen(view->dir_entry[y].name) +5);
+
+				/* Directory has / appended to the name this removes it. */
+				if (view->dir_entry[y].type == DIRECTORY)
+					dir = 1;
+
+				temp = escape_filename(view->dir_entry[y].name,
+						strlen(view->dir_entry[y].name)-dir, 1);
+				expanded = (char *)realloc(expanded, strlen(expanded) +
+						strlen(temp) +3);
+				strcat(expanded, temp);
+
+				free(temp);
+
+				strcat(expanded, " ");
+			}
+		}
+	}
+	else
+	{
+		int dir = 0;
+		char *temp;
+
+		/* Directory has / appended to the name this removes it. */
+		if (view->dir_entry[view->list_pos].type == DIRECTORY)
+			dir = 1;
+
+		temp = escape_filename(view->dir_entry[view->list_pos].name,
+				strlen(view->dir_entry[view->list_pos].name)-dir, 1);
+
+		expanded = (char *)realloc(expanded, strlen(expanded) +
+				strlen(view->dir_entry[view->list_pos].name) +3);
+
+		expanded = (char *)realloc(expanded, strlen(expanded) + strlen(temp) + 3);
+		strcat(expanded, temp);
+		free(temp);
+	}
+
+	return expanded;
+}
+
 /* The string returned needs to be freed in the calling function */
 char *
-expand_macros(FileView *view, char *command, char *args,
-		int *use_menu, int *split)
+expand_macros(FileView *view, char *command, char *args, int *use_menu,
+		int *split)
 {
 	char * expanded = NULL;
 	int x;
@@ -335,138 +391,17 @@ expand_macros(FileView *view, char *command, char *args,
 				}
 				break;
 			case 'f': /* current dir selected files */
-				{
-					if(view->selected_files)
-					{
-						int y = 0;
-						for(y = 0; y < view->list_rows; y++)
-						{
-							if(view->dir_entry[y].selected)
-							{
-								int dir = 0;
-								char *temp = NULL;
-								expanded = (char *)realloc(expanded,
-									len + strlen(view->dir_entry[y].name) +5);
-
-								/* Directory has / appended to the name this removes it. */
-								if (view->dir_entry[y].type == DIRECTORY)
-									dir = 1;
-
-								temp = escape_filename(view->dir_entry[y].name,
-										strlen(view->dir_entry[y].name)-dir, 1);
-								expanded = (char *)realloc(expanded, strlen(expanded) +
-									strlen(temp) +3);
-								strcat(expanded, temp);
-
-								free(temp);
-
-								strcat(expanded, " ");
-								len = strlen(expanded);
-							}
-						}
-					}
-					else
-					{
-						int dir = 0;
-						char *temp;
-
-						/* Directory has / appended to the name this removes it. */
-						if (view->dir_entry[view->list_pos].type == DIRECTORY)
-							dir = 1;
-
-						temp = escape_filename(view->dir_entry[view->list_pos].name,
-						  strlen(view->dir_entry[view->list_pos].name)-dir, 1);
-
-						expanded = (char *)realloc(expanded, strlen(expanded) +
-								strlen(view->dir_entry[view->list_pos].name) +3);
-
-						expanded = (char *)realloc(expanded, strlen(expanded) +
-							strlen(temp) +3);
-						strcat(expanded, temp);
-						free(temp);
-
-						len = strlen(expanded);
-					}
-				}
+				expanded = append_selected_files(curr_view, expanded);
+				len = strlen(expanded);
 				break;
 			case 'F': /* other dir selected files */
-				{
-					if(other_view->selected_files)
-					{
-						int y = 0;
-
-						for(y = 0; y < other_view->list_rows; y++)
-						{
-							if(other_view->dir_entry[y].selected)
-							{
-								expanded = (char *)realloc(expanded, len +
-										strlen(other_view->dir_entry[y].name) +
-										strlen(other_view->curr_dir) + 3);
-
-								if(expanded == NULL)
-								{
-									show_error_msg("Memory Error", "Unable to allocate memory");
-									return NULL;
-								}
-
-								strcat(expanded, other_view->curr_dir);
-								strcat(expanded, "/");
-
-								int dir = 0;
-								/* Directory has / appended to the name this removes it. */
-								if (other_view->dir_entry[y].type == DIRECTORY)
-									dir = 1;
-
-								char *temp = NULL;
-								temp = escape_filename(other_view->dir_entry[y].name,
-										strlen(other_view->dir_entry[y].name)-dir, 1);
-
-								expanded = (char *)realloc(expanded, strlen(expanded) +
-										strlen(temp +3));
-								strcat(expanded, temp);
-
-								free(temp);
-
-								strcat(expanded, " ");
-								len = strlen(expanded);
-							}
-						}
-					}
-					else
-					{
-						expanded = (char *)realloc(expanded, len +
-								strlen(other_view->dir_entry[other_view->list_pos].name) +
-								strlen(other_view->curr_dir) +4);
-						if(expanded == NULL)
-						{
-							show_error_msg("Memory Error", "Unable to allocate memory");
-							return NULL;
-						}
-
-						strcat(expanded, other_view->curr_dir);
-						strcat(expanded, "/");
-
-						int dir = 0;
-						/* Directory has / appended to the name this removes it. */
-						if (other_view->dir_entry[other_view->list_pos].type == DIRECTORY)
-							dir = 1;
-
-						char *temp =
-							escape_filename(other_view->dir_entry[other_view->list_pos].name,
-									strlen(other_view->dir_entry[other_view->list_pos].name)-dir, 1);
-						expanded = (char *)realloc(expanded, strlen(expanded) +
-								strlen(temp) + 3);
-						strcat(expanded, temp);
-						free(temp);
-
-						len = strlen(expanded);
-					}
-				}
+				expanded = append_selected_files(other_view, expanded);
+				len = strlen(expanded);
 				break;
 			case 'd': /* current directory */
 				{
 					expanded = (char *)realloc(expanded,
-							len + strlen(view->curr_dir) +3);
+							len + strlen(view->curr_dir) + 3);
 					strcat(expanded, "\"");
 					strcat(expanded, view->curr_dir);
 					strcat(expanded, "\"");
@@ -1984,4 +1919,3 @@ comm_split(void)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
-
