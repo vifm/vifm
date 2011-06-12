@@ -35,6 +35,7 @@ typedef struct Fuse_List {
 extern struct Fuse_List *fuse_mounts;
 
 void chomp(char *text);
+void chosp(char *text);
 void * duplicate(void *stuff, int size);
 int is_dir(char *file);
 char * escape_filename(const char *string, size_t len, int quote_percent);

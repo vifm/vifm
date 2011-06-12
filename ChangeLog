@@ -9,6 +9,8 @@
 	Added support for spaces and functional keys in mappings (<space> and
 	<f0> - <f63>).
 
+	Give options if a file already exists in destination directory.
+
 0.6 to 0.6.1
 
 	Added :set command.

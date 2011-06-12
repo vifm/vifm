@@ -29,6 +29,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
+#include <wchar.h> /* swprintf */
 
 #include "background.h"
 #include "cmdline.h"
@@ -45,6 +46,18 @@
 #include "utils.h"
 
 static char rename_file_ext[NAME_MAX];
+
+static struct {
+	registers_t *reg;
+	FileView *view;
+	int force_move;
+	int x, y;
+	const char *name;
+} put_confirm;
+
+static void put_confirm_cb(const char *dest_name);
+static void put_decide_cb(const char *dest_name);
+static int put_files_from_register_i(FileView *view);
 
 int
 my_system(char *command)
@@ -895,13 +908,132 @@ change_group(FileView *view)
 	enter_prompt_mode(L"New group: ", "", change_group_cb);
 }
 
+static void
+prompt_dest_name(const char *src_name)
+{
+	wchar_t buf[256];
+
+	swprintf(buf, sizeof(buf)/sizeof(buf[0]), L"New name for %s: ", src_name);
+	enter_prompt_mode(buf, src_name, put_confirm_cb);
+}
+
+static void
+prompt_what_to_do(const char *src_name)
+{
+	wchar_t buf[256];
+
+	put_confirm.name = src_name;
+	swprintf(buf, sizeof(buf)/sizeof(buf[0]),
+			L"Name conflict for %s. s(skip)/r(rename)/(cancel): ", src_name);
+	enter_prompt_mode(buf, "r", put_decide_cb);
+}
+
+/* Returns 0 on success */
+static int
+put_next_file(const char *dest_name)
+{
+	char buf[PATH_MAX + NAME_MAX*2 + 4];
+	char *src_buf, *dst_buf;
+
+	snprintf(buf, sizeof(buf), "%s", reg->files[put_confirm.x]);
+	chosp(buf);
+	src_buf = escape_filename(buf, 0, 1);
+	dst_buf = escape_filename(put_confirm.view->curr_dir, 0, 1);
+	if(access(buf, F_OK) == 0 && src_buf != NULL && dst_buf != NULL)
+	{
+		const char *p = dest_name;
+		int move = strcmp(buf, cfg.trash_dir) == 0 || put_confirm.force_move;
+
+		if(p[0] == '\0')
+			p = strrchr(buf, '/') + 1;
+
+		if(access(p, F_OK) == 0)
+		{
+			free(src_buf);
+			free(dst_buf);
+			prompt_what_to_do(p);
+			return 1;
+		}
+
+		if(move)
+			snprintf(buf, sizeof(buf), "mv %s %s/%s", src_buf, dst_buf, dest_name);
+		else
+			snprintf(buf, sizeof(buf), "cp -pR %s %s/%s", src_buf, dst_buf, dest_name);
+
+		progress_msg("Putting files", put_confirm.x + 1, reg->num_files);
+		if(background_and_wait_for_errors(buf) == 0)
+		{
+			put_confirm.y++;
+			if(move)
+			{
+				free(reg->files[put_confirm.x]);
+				reg->files[put_confirm.x] = NULL;
+			}
+		}
+	}
+	free(src_buf);
+	free(dst_buf);
+	return 0;
+}
+
+static void
+put_confirm_cb(const char *dest_name)
+{
+	if(put_next_file(dest_name) == 0)
+	{
+		put_confirm.x++;
+		curr_stats.save_msg = put_files_from_register_i(put_confirm.view);
+	}
+}
+
+static void
+put_decide_cb(const char *choice)
+{
+	if(strcmp(choice, "s") == 0)
+	{
+		put_confirm.x++;
+		curr_stats.save_msg = put_files_from_register_i(put_confirm.view);
+	}
+	else if(strcmp(choice, "r") == 0)
+	{
+		prompt_dest_name(put_confirm.name);
+	}
+	else
+	{
+		prompt_what_to_do(put_confirm.name);
+	}
+}
+
+/* Returns new value for save_msg flag. */
+static int
+put_files_from_register_i(FileView *view)
+{
+	char buf[PATH_MAX + NAME_MAX*2 + 4];
+
+	chdir(view->curr_dir);
+	while(put_confirm.x < put_confirm.reg->num_files)
+	{
+		if(put_next_file("") != 0)
+			return 0;
+		put_confirm.x++;
+	}
+
+	pack_register(put_confirm.reg->name);
+
+	if(put_confirm.y <= 0)
+		return 0;
+
+	snprintf(buf, sizeof(buf), " %d file%s inserted", put_confirm.y,
+			(put_confirm.y == 1) ? "" : "s");
+	status_bar_message(buf);
+
+	return 1;
+}
+
 /* Returns new value for save_msg flag. */
 int
 put_files_from_register(FileView *view, int name, int force_move)
 {
-	int x;
-	int y = 0;
-	char buf[PATH_MAX + NAME_MAX*2 + 4];
 	registers_t *reg;
 
 	reg = find_register(name);
@@ -913,49 +1045,12 @@ put_files_from_register(FileView *view, int name, int force_move)
 		return 1;
 	}
 
-	chdir(curr_view->curr_dir);
-	for(x = 0; x < reg->num_files; x++)
-	{
-		char *temp = NULL;
-		char *temp1 = NULL;
-		snprintf(buf, sizeof(buf), "%s", reg->files[x]);
-		temp = escape_filename(buf, strlen(buf), 1);
-		temp1 = escape_filename(view->curr_dir, strlen(view->curr_dir), 1);
-		if(access(buf, F_OK) == 0)
-		{
-			int move = strcmp(buf, cfg.trash_dir) == 0 || force_move;
-			if(move)
-				snprintf(buf, sizeof(buf), "mv %s %s", temp, temp1);
-			else
-				snprintf(buf, sizeof(buf), "cp -pR %s %s", temp, temp1);
-
-			progress_msg("Putting files", x + 1, reg->num_files);
-			if(background_and_wait_for_errors(buf) == 0)
-			{
-				y++;
-				if(move)
-				{
-					free(reg->files[x]);
-					reg->files[x] = NULL;
-				}
-			}
-		}
-		free(temp);
-		free(temp1);
-	}
-
-	pack_register(name);
-
-	if(y <= 0)
-		return 0;
-
-	load_dir_list(view, 0);
-	moveto_list_pos(view, view->curr_line);
-
-	snprintf(buf, sizeof(buf), " %d file%s inserted", y, (y == 1) ? "" : "s");
-	status_bar_message(buf);
-
-	return 1;
+	put_confirm.reg = reg;
+	put_confirm.force_move = force_move;
+	put_confirm.x = 0;
+	put_confirm.y = 0;
+	put_confirm.view = view;
+	return put_files_from_register_i(view);
 }
 
 void

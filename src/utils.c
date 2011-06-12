@@ -55,12 +55,16 @@ duplicate (void *stuff, int size)
 
 /*
  * Escape the filename for the purpose of inserting it into the shell.
+ * Automatically calculates string length when len == 0.
  * Returns new string, caller should free it.
  */
 char *
 escape_filename(const char *string, size_t len, int quote_percent)
 {
 	char *ret, *dup;
+
+	if(len == 0)
+		len = strlen(string);
 
 	dup = ret = (char *)malloc (len * 2 + 2 + 1);
 
@@ -119,10 +123,27 @@ escape_filename(const char *string, size_t len, int quote_percent)
 void
 chomp(char *text)
 {
+	size_t len;
+
 	if(text[0] == '\0')
 		return;
-	if(text[strlen(text) -1] == '\n')
-		text[strlen(text) -1] = '\0';
+
+	len = strlen(text);
+	if(text[len - 1] == '\n')
+		text[len - 1] = '\0';
+}
+
+void
+chosp(char *text)
+{
+	size_t len;
+
+	if(text[0] == '\0')
+		return;
+
+	len = strlen(text);
+	if(text[len - 1] == '/')
+		text[len - 1] = '\0';
 }
 
 /* Only used for debugging */
