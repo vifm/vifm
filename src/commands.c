@@ -1212,7 +1212,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			{
 				load_color_scheme(cmd->args);
 			}
-			else /* Show error message with colorschemes listed */
+			else /* Show menu with colorschemes listed */
 			{
 				int i;
 				char buf[cfg.color_scheme_num*32 + 1];
@@ -1224,7 +1224,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					if(i < cfg.color_scheme_num - 1)
 						strcat(buf, " | ");
 				}
-				show_error_msg("Color Schemes", buf);
+				show_colorschemes_menu(view);
 			}
 			break;
 		}

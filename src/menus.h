@@ -24,6 +24,7 @@
 enum {
 	APROPOS,
 	BOOKMARK,
+	COLORSCHEME,
 	COMMAND,
 	FILETYPE,
 	HISTORY,
@@ -31,7 +32,7 @@ enum {
 	LOCATE,
 	REGISTER,
 	USER,
-	VIFM
+	VIFM,
 };
 
 enum {
@@ -62,6 +63,7 @@ typedef struct menu_info
 }menu_info;
 
 void show_bookmarks_menu(FileView *view);
+void show_colorschemes_menu(FileView *view);
 void show_commands_menu(FileView *view);
 void show_history_menu(FileView *view);
 void show_vifm_menu(FileView *view);

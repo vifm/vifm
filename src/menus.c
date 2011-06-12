@@ -422,6 +422,12 @@ execute_jobs_cb(FileView *view, menu_info *m)
 }
 
 static void
+execute_colorschemes_cb(FileView *view, menu_info *m)
+{
+	load_color_scheme(m->data[m->pos]);
+}
+
+static void
 execute_apropos_cb(FileView *view, menu_info *m)
 {
 	char *line = NULL;
@@ -556,6 +562,9 @@ execute_menu_cb(FileView *view, menu_info *m)
 			break;
 		case BOOKMARK:
 			move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
+			break;
+		case COLORSCHEME:
+			execute_colorschemes_cb(view, m);
 			break;
 		case COMMAND:
 			execute_command(view, command_list[m->pos].name);
@@ -809,6 +818,47 @@ show_bookmarks_menu(FileView *view)
 }
 
 void
+show_colorschemes_menu(FileView *view)
+{
+	int len, i, x;
+
+	static menu_info m;
+	m.top = 0;
+	m.current = 1;
+	m.len = cfg.color_scheme_num;
+	m.pos = 0;
+	m.win_rows = 0;
+	m.type = COLORSCHEME;
+	m.matching_entries = 0;
+	m.match_dir = NONE;
+	m.regexp = NULL;
+	m.title = NULL;
+	m.args = NULL;
+	m.data = NULL;
+
+	getmaxyx(menu_win, m.win_rows, len);
+
+	m.title = strdup(" Color Schemes ");
+
+	x = 0;
+	i = 1;
+	while(x < m.len)
+	{
+		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
+		m.data[x] = (char *)malloc(len + 2);
+		snprintf(m.data[x], len, "%s", col_schemes[x].name);
+
+		x++;
+		i++;
+	}
+
+	setup_menu(view);
+	draw_menu(view, &m);
+	moveto_menu_pos(view, 0, &m);
+	enter_menu_mode(&m, view);
+}
+
+void
 show_commands_menu(FileView *view)
 {
 	int len, i, x;
@@ -855,6 +905,7 @@ show_commands_menu(FileView *view)
 		/* This will show the expanded command instead of the macros
 		 * char *expanded = expand_macros(view, command_list[x].action, NULL);
 		 * free(expanded);
+		 * TODO maybe we can use this code in some kind of debug mode
 		*/
 	}
 
