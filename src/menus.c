@@ -1510,4 +1510,4 @@ query_user_menu(char *title, char *message)
 		return 0;
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

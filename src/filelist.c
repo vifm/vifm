@@ -1719,4 +1719,4 @@ change_sort_type(FileView *view, char type, char descending)
 	set_option("sortorder", val);
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

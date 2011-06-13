@@ -84,4 +84,4 @@ free_entry(const struct stack_entry * entry)
 	free(entry->rpane_file);
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

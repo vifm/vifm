@@ -140,4 +140,4 @@ sort_dir_list(const void *one, const void *two)
 	return retval;
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -133,4 +133,4 @@ find_node(struct node *root, const char *name, int create)
 	return find_node(new_node, end, create);
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

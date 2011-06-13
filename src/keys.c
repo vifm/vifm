@@ -358,4 +358,4 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 	return &curr->conf;
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

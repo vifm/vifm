@@ -190,8 +190,8 @@ setup_ncurses_interface()
 	for (i = 0; i < cfg.color_scheme_num; i++)
 	{
 		for(x = 0; x < MAXNUM_COLOR; x++)
-			init_pair(col_schemes[i].color[x].name,
-				col_schemes[i].color[x].fg, col_schemes[i].color[x].bg);
+			init_pair(col_schemes[i].color[x].name, col_schemes[i].color[x].fg,
+					col_schemes[i].color[x].bg);
 	}
 
 	werase(stdscr);
@@ -667,4 +667,4 @@ redraw_lists(void)
 	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

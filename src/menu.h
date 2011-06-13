@@ -31,4 +31,4 @@ void execute_menu_command(FileView *view, char *command, menu_info *ptr);
 
 #endif
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

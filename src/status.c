@@ -40,4 +40,4 @@ init_status(void)
 	curr_stats.use_input_bar = 1;
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
