@@ -16,26 +16,27 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <sys/stat.h>
+
+#include <ctype.h>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
-#include <limits.h>
-#include <ctype.h>
-#include <sys/stat.h>
 
 #include "color_scheme.h"
 #include "config.h"
-#include "utils.h"
-#include "status.h"
 #include "menus.h"
+#include "status.h"
+#include "utils.h"
 
 #define MAX_LEN 1024
 
 Col_scheme *col_schemes;
 
-void
-verify_color_schemes()
+static void
+verify_color_schemes(void)
 {
-
+	/* TODO implement */
 }
 
 static int

@@ -1296,13 +1296,13 @@ line_part_complete(struct line_stats *stat, const char *line_mb, const char *p,
 	new_len = (p - line_mb) + mbstowcs(NULL, completed, 0)
 			+ (stat->len - stat->index) + 1;
 
-	if((t = realloc(stat->line, new_len * sizeof(wchar_t))) == NULL)
-		return -1;
-	stat->line = (wchar_t *) t;
-
 	line_ending = my_wcsdup(stat->line + stat->index);
 	if(line_ending == NULL)
 		return -1;
+
+	if((t = realloc(stat->line, new_len * sizeof(wchar_t))) == NULL)
+		return -1;
+	stat->line = (wchar_t *) t;
 
 	swprintf(stat->line + (p - line_mb), new_len, L"%s%ls", completed,
 			line_ending);
@@ -1414,7 +1414,7 @@ file_completion(char* filename, char* line_mb, struct line_stats *stat)
 
 static void update_line_stat(struct line_stats *stat, int new_len)
 {
-	stat->index = new_len - (stat->len - stat->index) - 1;
+	stat->index += (new_len - 1) - stat->len;
 	stat->curs_pos = stat->prompt_wid + wcswidth(stat->line, stat->index);
 	stat->len = new_len - 1;
 }
@@ -1438,6 +1438,7 @@ get_words_count(const char * string)
 	{
 		while(*string == ' ')
 			string++;
+		string--;
 		result++;
 	}
 	return result;
