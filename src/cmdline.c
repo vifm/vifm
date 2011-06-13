@@ -1321,7 +1321,7 @@ colorschemes_completion(char *line_mb, char *last_word, struct line_stats *stat)
 	int result;
 
 	completed = complete_colorschemes(last_word);
-	result = line_part_complete(stat, line_mb, line_mb + strlen(line_mb),
+	result = line_part_complete(stat, line_mb, strchr(line_mb, ' ') + 1,
 			completed);
 	free(completed);
 	return result;
