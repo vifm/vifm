@@ -63,11 +63,12 @@ load_color_scheme(const char *name)
 		return;
 	}
 
-	for(x = 0; x < 12; x++)
-		init_pair(col_schemes[i].color[x].name - i*12, col_schemes[i].color[x].fg,
-				col_schemes[i].color[x].bg);
+	for(x = 0; x < MAXNUM_COLOR; x++)
+		init_pair(col_schemes[i].color[x].name - i*MAXNUM_COLOR,
+				col_schemes[i].color[x].fg, col_schemes[i].color[x].bg);
 }
 
+/* This function is called only when colorschemes file doesn't exist */
 static void
 write_color_scheme_file(void)
 {
@@ -114,126 +115,51 @@ write_color_scheme_file(void)
 		fprintf(fp, "\nCOLORSCHEME=%s\n", col_schemes[x].name);
 		fprintf(fp, "DIRECTORY=%s\n", col_schemes[x].dir);
 
-		for(y = 0; y < 12; y++)
+		for(y = 0; y < MAXNUM_COLOR; y++)
 		{
-			while(col_schemes[x].color[y].name > 11)
-			{
-				col_schemes[x].color[y].name = col_schemes[x].color[y].name - 12;
-			}
-
-			switch(col_schemes[x].color[y].name)
-			{
-				case 0:
-					snprintf(buf, sizeof(buf), "MENU");
-					break;
-				case 1:
-					snprintf(buf, sizeof(buf), "BORDER");
-					break;
-				case 2:
-					snprintf(buf, sizeof(buf), "WIN");
-					break;
-				case 3:
-					snprintf(buf, sizeof(buf), "STATUS_BAR");
-					break;
-				case 4:
-					snprintf(buf, sizeof(buf), "CURR_LINE");
-					break;
-				case 5:
-					snprintf(buf, sizeof(buf), "DIRECTORY");
-					break;
-				case 6:
-					snprintf(buf, sizeof(buf), "LINK");
-					break;
-				case 7:
-					snprintf(buf, sizeof(buf), "SOCKET");
-					break;
-				case 8:
-					snprintf(buf, sizeof(buf), "DEVICE");
-					break;
-				case 9:
-					snprintf(buf, sizeof(buf), "EXECUTABLE");
-					break;
-				case 10:
-					snprintf(buf, sizeof(buf), "SELECTED");
-					break;
-				case 11:
-					snprintf(buf, sizeof(buf), "CURRENT");
-					break;
-				default:
-					snprintf(buf, sizeof(buf), "# Unknown");
-					break;
+			static const char *ELEM_NAMES[] = {
+				"MENU",
+				"BORDER",
+				"WIN",
+				"STATUS_BAR",
+				"CURR_LINE",
+				"DIRECTORY",
+				"LINK",
+				"SOCKET",
+				"DEVICE",
+				"EXECUTABLE",
+				"SELECTED",
+				"CURRENT",
 			};
+			static const char *COLOR_STR[] = {
+				"default",
+				"black",
+				"red",
+				"green",
+				"yellow",
+				"blue",
+				"magenta",
+				"cyan",
+				"white",
+			};
+			int t;
 
-			switch (col_schemes[x].color[y].fg)
-			{
-				case -1:
-					snprintf(fg_buf, sizeof(fg_buf), "default");
-					break;
-				case 0:
-					snprintf(fg_buf, sizeof(fg_buf), "black");
-					break;
-				case 1:
-					snprintf(fg_buf, sizeof(fg_buf), "red");
-					break;
-				case 2:
-					snprintf(fg_buf, sizeof(fg_buf), "green");
-					break;
-				case 3:
-					snprintf(fg_buf, sizeof(fg_buf), "yellow");
-					break;
-				case 4:
-					snprintf(fg_buf, sizeof(fg_buf), "blue");
-					break;
-				case 5:
-					snprintf(fg_buf, sizeof(fg_buf), "magenta");
-					break;
-				case 6:
-					snprintf(fg_buf, sizeof(fg_buf), "cyan");
-					break;
-				case 7:
-					snprintf(fg_buf, sizeof(fg_buf), "white");
-					break;
-				default:
-					snprintf(fg_buf, sizeof(fg_buf), "-1");
-					break;
-			}
+			col_schemes[x].color[y].name %= MAXNUM_COLOR;
+			snprintf(buf, sizeof(buf), ELEM_NAMES[col_schemes[x].color[y].name]);
 
-			switch (col_schemes[x].color[y].bg)
-			{
-				case -1:
-					snprintf(bg_buf, sizeof(bg_buf), "default");
-					break;
-				case 0:
-					snprintf(bg_buf, sizeof(bg_buf), "black");
-					break;
-				case 1:
-					snprintf(bg_buf, sizeof(bg_buf), "red");
-					break;
-				case 2:
-					snprintf(bg_buf, sizeof(bg_buf), "green");
-					break;
-				case 3:
-					snprintf(bg_buf, sizeof(bg_buf), "yellow");
-					break;
-				case 4:
-					snprintf(bg_buf, sizeof(bg_buf), "blue");
-					break;
-				case 5:
-					snprintf(bg_buf, sizeof(bg_buf), "magenta");
-					break;
-				case 6:
-					snprintf(bg_buf, sizeof(bg_buf), "cyan");
-					break;
-				case 7:
-					snprintf(bg_buf, sizeof(bg_buf), "white");
-					break;
-				default:
-					snprintf(bg_buf, sizeof(bg_buf), "-1");
-					break;
-			}
+			t = col_schemes[x].color[y].fg + 1;
+			if(t < sizeof(COLOR_STR)/sizeof(COLOR_STR[0]))
+				snprintf(fg_buf, sizeof(fg_buf), "%s", COLOR_STR[t]);
+			else
+				snprintf(fg_buf, sizeof(fg_buf), "%d", t + 1);
+
+			t = col_schemes[x].color[y].bg + 1;
+			if(t < sizeof(COLOR_STR)/sizeof(COLOR_STR[0]))
+				snprintf(bg_buf, sizeof(bg_buf), "%s", COLOR_STR[t]);
+			else
+				snprintf(bg_buf, sizeof(bg_buf), "%d", t + 1);
 
 			fprintf(fp, "COLOR=%s=%s=%s\n", buf, fg_buf, bg_buf);
-
 		}
 	}
 
@@ -334,53 +260,52 @@ void
 add_color(char s1[], char s2[], char s3[])
 {
 	int fg, bg;
-	int scheme = 0;
-	int x = cfg.color_scheme_num -1;
+	int scheme;
+	const int x = cfg.color_scheme_num -1;
 	int y = cfg.color_pairs_num;
 
 	fg = colname2int(s2);
 	bg = colname2int(s3);
 
-	if(y > 11)
-		y =  (y % 12);
+	y %= MAXNUM_COLOR;
 
-	scheme = ((cfg.color_scheme_num - 1) * 12);
+	scheme = x * MAXNUM_COLOR;
 
 	if(!strcmp(s1, "MENU"))
-		col_schemes[x].color[y].name = 0 + scheme;
+		col_schemes[x].color[y].name = scheme + MENU_COLOR;
 
 	if(!strcmp(s1, "BORDER"))
-		col_schemes[x].color[y].name = 1 + scheme;
+		col_schemes[x].color[y].name = scheme + BORDER_COLOR;
 
 	if(!strcmp(s1, "WIN"))
-		col_schemes[x].color[y].name = 2 + scheme;
+		col_schemes[x].color[y].name = scheme + WIN_COLOR;
 
 	if(!strcmp(s1, "STATUS_BAR"))
-		col_schemes[x].color[y].name = 3 + scheme;
+		col_schemes[x].color[y].name = scheme + STATUS_BAR_COLOR;
 
 	if(!strcmp(s1, "CURR_LINE"))
-		col_schemes[x].color[y].name = 4 + scheme;
+		col_schemes[x].color[y].name = scheme + CURR_LINE_COLOR;
 
 	if(!strcmp(s1, "DIRECTORY"))
-		col_schemes[x].color[y].name = 5 + scheme;
+		col_schemes[x].color[y].name = scheme + DIRECTORY_COLOR;
 
 	if(!strcmp(s1, "LINK"))
-		col_schemes[x].color[y].name = 6 + scheme;
+		col_schemes[x].color[y].name = scheme + LINK_COLOR;
 
 	if(!strcmp(s1, "SOCKET"))
-		col_schemes[x].color[y].name = 7 + scheme;
+		col_schemes[x].color[y].name = scheme + SOCKET_COLOR;
 
 	if(!strcmp(s1, "DEVICE"))
-		col_schemes[x].color[y].name = 8 + scheme;
+		col_schemes[x].color[y].name = scheme + DEVICE_COLOR;
 
 	if(!strcmp(s1, "EXECUTABLE"))
-		col_schemes[x].color[y].name = 9 + scheme;
+		col_schemes[x].color[y].name = scheme + EXECUTABLE_COLOR;
 
 	if(!strcmp(s1, "SELECTED"))
-		col_schemes[x].color[y].name = 10 + scheme;
+		col_schemes[x].color[y].name = scheme + SELECTED_COLOR;
 
 	if(!strcmp(s1, "CURRENT"))
-		col_schemes[x].color[y].name = 11 + scheme;
+		col_schemes[x].color[y].name = scheme + CURRENT_COLOR;
 
 	col_schemes[x].color[y].fg = fg;
 	col_schemes[x].color[y].bg = bg;
@@ -407,7 +332,7 @@ read_color_scheme_file(void)
 		load_default_colors();
 
 		cfg.color_scheme_num++;
-		cfg.color_pairs_num = 12;
+		cfg.color_pairs_num = MAXNUM_COLOR;
 		write_color_scheme_file();
 		return;
 	}
@@ -522,7 +447,7 @@ check_directory_for_color_scheme(const char *dir)
 		}
 	}
 
-	return (v * 12);
+	return (v * MAXNUM_COLOR);
 }
 
 char *

@@ -45,8 +45,6 @@ typedef struct _Config {
 	int cmd_history_len;
 	int cmd_history_num;
 	int auto_execute;
-	int color_scheme_num;
-	int color_pairs_num;
 	int show_one_window;
 	long max_args;
 	int using_default_config;
@@ -54,6 +52,9 @@ typedef struct _Config {
 	int wrap_quick_view;
 	char *time_format;
 	char *fuse_home;
+
+	int color_scheme_num;
+	int color_pairs_num;
 } Config;
 
 extern Config cfg;

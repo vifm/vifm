@@ -189,7 +189,7 @@ setup_ncurses_interface()
 
 	for (i = 0; i < cfg.color_scheme_num; i++)
 	{
-		for(x = 0; x < 12; x++)
+		for(x = 0; x < MAXNUM_COLOR; x++)
 			init_pair(col_schemes[i].color[x].name,
 				col_schemes[i].color[x].fg, col_schemes[i].color[x].bg);
 	}

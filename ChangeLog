@@ -13,6 +13,8 @@
 
 	Implemented :colorscheme command.
 
+	Fixed :!./ completion.
+
 0.6 to 0.6.1
 
 	Added :set command.
