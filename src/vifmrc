@@ -1,5 +1,4 @@
-# You can edit this file by hand.  If you have vifm running
-# it will overwrite any changes you make when it quits.
+# You can edit this file by hand.
 # The # character at the beginning of a line comments out the line.
 # Blank lines are ignored.
 # The basic format for each item is shown with an example.
@@ -21,13 +20,22 @@ VI_COMMAND=vim
 # just use rm.  If you change this you will not be able to move
 # files by deleting them and then using p to put the file in the new location.
 # I recommend not changing this until you are familiar with vifm.
+# This probably shouldn't be an option.
 
 USE_TRASH=1
 
-# Screen configuration.  If you would like to use vifm with
+# Show only one Window
+# If you would like to start vifm with only one window set this to 1
+
+USE_ONE_WINDOW=0
+
+# Screen configuration.	If you would like to use vifm with
 # the screen program set this to 1.
 
 USE_SCREEN=0
+
+# 1 means use color if the terminal supports it.
+# 0 means don't use color even if supported.
 
 # This is how many files to show in the directory history menu.
 
@@ -65,16 +73,9 @@ RWIN_INVERT=1
 
 # The startup location of panes after :wq.
 
-LWIN_PATH=
+LWIN_PATH=/home/xaizek/repos/vifm/src
 
-RWIN_PATH=
-
-# Show the full file information in a  window
-# Ctrl G will toggle this value in vifm.
-# 1 will show the file information in a window
-# 0 will show the file information on the status bar.
-
-SHOW_FULL=0
+RWIN_PATH=/home/xaizek/src/_for_video
 
 # If you installed the vim.txt help file change this to 1.
 # If would rather use a plain text help file set this to 0.
@@ -105,6 +106,7 @@ BOOKMARKS=S=/usr/local/share=../
 # %b same as %f %F.
 # %d the current directory name.
 # %D the other window directory name.
+# %m run the command in a menu window
 
 COMMAND=mv=mv %f %D &
 COMMAND=cp=cp %f %D &
@@ -112,6 +114,12 @@ COMMAND=floppy=mount /dev/fd0
 COMMAND=run=!! ./%f
 COMMAND=make=!!make
 COMMAND=grep=vim \"+grep %a\"
+COMMAND=df=df -h %m
+COMMAND=diff=vim -d %f %F
+COMMAND=et=7z x -so %f | tar -C ~/tmp -xf -
+COMMAND=find=find . -name '%a' %m
+COMMAND=mv=vimv -e 'vim -X --noplugin'
+COMMAND=zip=zip -r %f.zip %f
 
 # The file type is for the default programs to be used with
 # a file extension.
@@ -122,11 +130,18 @@ COMMAND=grep=vim \"+grep %a\"
 # The command macros %f, %F, %d, %F may be used in the commands.
 # The %a macro is ignored.  To use a % you must put %%.
 
+FILETYPE=Pdf=pdf==zathura %f,apvlv %f
 FILETYPE=Mp3=mp3=ffprobe -show_format -pretty %f 2> /dev/null=ffplay %f
+FILETYPE=Video=avi,mp4,wmv,dat,3gp,ogv=ffprobe -show_format -pretty %f 2> /dev/null=ffplay %f
 FILETYPE=Web=html,htm==links,mozilla
 FILETYPE=Object=o==nm %f | less
 FILETYPE=Image=jpg,jpeg,png,gif==eog,xv,gimp
 FILETYPE=Archive=tar.gz,tgz==tar -tzf %f | less,tar -zxvf %f
+FILETYPE=Md5=md5==md5sum -c %f
+FILETYPE=FuseZipMount=zip,jar,war,ear==FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+FILETYPE=ArchiveMount=bz2,tgz,tar.gz=tar -tzf %f | less=FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR
+FILETYPE=Rar2FsMount=rar==FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR
+FILETYPE=IsoMount=iso==FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR
 
 # For automated FUSE mounts, you must register an extension with FILETYPE=..
 # in the following format:

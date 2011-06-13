@@ -496,7 +496,7 @@ write_config_file(void)
 	fprintf(fp, "# If would rather use a plain text help file set this to 0.\n");
 	fprintf(fp, "\nUSE_VIM_HELP=%d\n", cfg.use_vim_help);
 
-	fprintf(fp, "\n# If you would like to run an executable file when you \n");
+	fprintf(fp, "\n# If you would like to run an executable file when you\n");
 	fprintf(fp, "# press return on the file name set this to 1.\n");
 	fprintf(fp, "\nRUN_EXECUTABLE=%d\n", cfg.auto_execute);
 
@@ -530,7 +530,7 @@ write_config_file(void)
 	}
 
 	fprintf(fp, "\n# The file type is for the default programs to be used with\n");
-	fprintf(fp, "# a file extension. \n");
+	fprintf(fp, "# a file extension.\n");
 	fprintf(fp, "# FILETYPE=description=extension1,extension2=consoleviewer=defaultprogram, program2\n");
 	fprintf(fp, "# FILETYPE=Web=html,htm,shtml==links,mozilla,elvis\n");
 	fprintf(fp, "# would set links as the default program for .html .htm .shtml files\n");
@@ -547,10 +547,10 @@ write_config_file(void)
 
 	fprintf(fp, "\n# For automated FUSE mounts, you must register an extension with FILETYPE=..\n");
 	fprintf(fp, "# in the following format:\n");
-	fprintf(fp, "# FILETYPE=description=extensions=FUSE_MOUNT|some_mount_command using %%SOURCE_FILE and %%DESTINATION_DIR variables\n");
+	fprintf(fp, "# FILETYPE=description=extensions=consoleviewer=FUSE_MOUNT|some_mount_command using %%SOURCE_FILE and %%DESTINATION_DIR variables\n");
 	fprintf(fp, "# %%SOURCE_FILE and %%DESTINATION_DIR are filled in by vifm at runtime.\n");
 	fprintf(fp, "# A sample line might look like this:\n");
-	fprintf(fp, "# FILETYPE=FuseZipMount=zip,jar,war,ear=FUSE_MOUNT|fuse-zip %%SOURCE_FILE %%DESTINATION_DIR\n\n");
+	fprintf(fp, "# FILETYPE=FuseZipMount=zip,jar,war,ear==FUSE_MOUNT|fuse-zip %%SOURCE_FILE %%DESTINATION_DIR\n\n");
 	fprintf(fp, "# The FUSE_HOME directory will be used as a root dir for all FUSE mounts.\n");
 	fprintf(fp, "# Unless it exists with write/exec permissions set, vifm will attempt to create it.\n");
 	fprintf(fp, "\nFUSE_HOME=%s\n", cfg.fuse_home);

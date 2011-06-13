@@ -1282,7 +1282,7 @@ line_completion(struct line_stats *stat)
 }
 
 /*
- * p - end of part that being completed
+ * p - begin of part that being completed
  * completed - new part of command line
  */
 static int
