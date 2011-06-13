@@ -37,6 +37,7 @@ void clean_selected_files(FileView *view);
 void canonicalize_path(const char *directory, char *buf, size_t buf_size);
 void goto_history_pos(FileView *view, int pos);
 int change_directory(FileView *view, const char *directory);
+void leave_invalid_dir(FileView *view, char *path);
 void load_dir_list(FileView *view, int reload);
 void draw_dir_list(FileView *view, int top, int pos);
 char * get_current_file_name(FileView *view);

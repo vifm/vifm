@@ -1000,13 +1000,13 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 }
 
 /* Modifies path */
-static void
+void
 leave_invalid_dir(FileView *view, char *path)
 {
 	size_t len;
 	char *p;
 
-	do
+	while(access(path, F_OK) != 0)
 	{
 		len = strlen(path);
 		if(path[len - 1] == '/')
@@ -1014,7 +1014,7 @@ leave_invalid_dir(FileView *view, char *path)
 
 		p = strrchr(path, '/');
 		p[1] = '\0';
-	}while(access(path, F_OK) != 0);
+	}
 }
 
 /*
@@ -1072,10 +1072,12 @@ change_directory(FileView *view, const char *directory)
 		{
 			status_bar_message("FUSE unmounting selected file, please stand by..");
 			snprintf(buf, sizeof(buf), "sh -c \"fusermount -u '%s'\"", runner->mount_point);
+			// TODO look at this
 			//snprintf(buf, sizeof(buf), "sh -c \"pauseme PAUSE_ON_ERROR_ONLY fusermount -u '%s'\"", runner->mount_point);
 			/*have to chdir to parent temporarily, so that this DIR can be unmounted*/
 			chdir(cfg.fuse_home);
 			/*
+			// TODO look at this
 			def_prog_mode();
 			endwin();
 			my_system("clear");

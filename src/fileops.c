@@ -97,6 +97,27 @@ my_system(char *command)
 	}while(1);
 }
 
+void
+unmount_fuse(void)
+{
+	Fuse_List *runner = fuse_mounts;
+	char buf[8192];
+
+	chdir("/");
+	while(runner)
+	{
+		snprintf(buf, sizeof(buf), "sh -c \"fusermount -u '%s'\"",
+				runner->mount_point);
+		my_system(buf);
+		if(access(runner->mount_point, F_OK) == 0)
+			rmdir(runner->mount_point);
+		runner = runner->next;
+	}
+
+	leave_invalid_dir(&lwin, lwin.curr_dir);
+	leave_invalid_dir(&rwin, rwin.curr_dir);
+}
+
 int
 system_and_wait_for_errors(char *cmd)
 {

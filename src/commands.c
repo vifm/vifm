@@ -1879,6 +1879,8 @@ exec_command(char *cmd, FileView *view, int type, void * ptr)
 void
 comm_quit(void)
 {
+	unmount_fuse();
+
 	if(cfg.vim_filter)
 	{
 		char buf[256];
