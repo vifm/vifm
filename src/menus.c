@@ -824,9 +824,9 @@ show_colorschemes_menu(FileView *view)
 
 	static menu_info m;
 	m.top = 0;
-	m.current = 1;
+	m.current = 1 + cfg.color_scheme_cur;
 	m.len = cfg.color_scheme_num;
-	m.pos = 0;
+	m.pos = cfg.color_scheme_cur;
 	m.win_rows = 0;
 	m.type = COLORSCHEME;
 	m.matching_entries = 0;
@@ -854,7 +854,7 @@ show_colorschemes_menu(FileView *view)
 
 	setup_menu(view);
 	draw_menu(view, &m);
-	moveto_menu_pos(view, 0, &m);
+	moveto_menu_pos(view, m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 

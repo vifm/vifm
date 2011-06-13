@@ -39,7 +39,7 @@ verify_color_schemes(void)
 	/* TODO implement */
 }
 
-static int
+int
 find_color_scheme(const char *name)
 {
 	int i;
@@ -54,7 +54,6 @@ find_color_scheme(const char *name)
 void
 load_color_scheme(const char *name)
 {
-	int x;
 	int i;
 
 	i = find_color_scheme(name);
@@ -64,9 +63,18 @@ load_color_scheme(const char *name)
 		return;
 	}
 
+	load_color_scheme_id(i);
+}
+
+void
+load_color_scheme_id(int id)
+{
+	int x;
 	for(x = 0; x < MAXNUM_COLOR; x++)
-		init_pair(col_schemes[i].color[x].name - i*MAXNUM_COLOR,
-				col_schemes[i].color[x].fg, col_schemes[i].color[x].bg);
+		init_pair(col_schemes[id].color[x].name - id*MAXNUM_COLOR,
+				col_schemes[id].color[x].fg, col_schemes[id].color[x].bg);
+
+	cfg.color_scheme_cur = id;
 }
 
 /* This function is called only when colorschemes file doesn't exist */

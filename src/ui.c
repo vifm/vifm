@@ -185,14 +185,7 @@ setup_ncurses_interface()
 	// Changed for pdcurses
 	use_default_colors();
 
-	x = 0;
-
-	for (i = 0; i < cfg.color_scheme_num; i++)
-	{
-		for(x = 0; x < MAXNUM_COLOR; x++)
-			init_pair(col_schemes[i].color[x].name, col_schemes[i].color[x].fg,
-					col_schemes[i].color[x].bg);
-	}
+	load_color_scheme_id(cfg.color_scheme_cur);
 
 	werase(stdscr);
 

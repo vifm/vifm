@@ -55,6 +55,7 @@ typedef struct _Config {
 
 	int color_scheme_num;
 	int color_pairs_num;
+	int color_scheme_cur;
 } Config;
 
 extern Config cfg;

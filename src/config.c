@@ -64,10 +64,11 @@ init_config(void)
 	cfg.cmd_history_num = -1;
 	cfg.cmd_history = (char **)calloc(cfg.cmd_history_len, sizeof(char *));
 	cfg.auto_execute = 0;
-	cfg.color_scheme_num = 0;
-	cfg.color_pairs_num = 0;
 	cfg.time_format = strdup(" %m/%d %H:%M");
 	cfg.wrap_quick_view = 1;
+	cfg.color_scheme_num = 0;
+	cfg.color_pairs_num = 0;
+	cfg.color_scheme_cur = 0;
 
 	/* Maximum argument length to pass to the shell */
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)
@@ -183,6 +184,7 @@ read_config_file(void)
 	FILE *fp;
 	char config_file[PATH_MAX];
 	char line[MAX_LEN];
+	char *col_scheme = NULL;
 	char *s1 = NULL;
 	char *s2 = NULL;
 	char *s3 = NULL;
@@ -346,6 +348,11 @@ read_config_file(void)
 				cfg.use_iec_prefixes = atoi(s1);
 				continue;
 			}
+			if(!strcmp(line, "COLOR_SCHEME"))
+			{
+				col_scheme = strdup(s1);
+				continue;
+			}
 			if(!strcmp(line, "TIME_STAMP_FORMAT"))
 			{
 				free(cfg.time_format);
@@ -388,6 +395,13 @@ read_config_file(void)
 	fclose(fp);
 
 	read_color_scheme_file();
+	if(col_scheme != NULL)
+	{
+		cfg.color_scheme_cur = find_color_scheme(col_scheme);
+		if(cfg.color_scheme_cur < 0)
+			cfg.color_scheme_cur = 0;
+		free(col_scheme);
+	}
 
 	return 1;
 }
@@ -502,6 +516,9 @@ write_config_file(void)
 
 	fprintf(fp, "\n# Use KiB, MiB, ... instead of KB, MB, ...\n");
 	fprintf(fp, "\nUSE_IEC_PREFIXES=%d\n", cfg.use_iec_prefixes);
+
+	fprintf(fp, "\n# Selected color scheme\n");
+	fprintf(fp, "\nCOLOR_SCHEME=%s\n", col_schemes[cfg.color_scheme_cur].name);
 
 	fprintf(fp, "\n# BOOKMARKS=mark=/full/directory/path=filename\n\n");
 	for(x = 0; x < NUM_BOOKMARKS; x++)

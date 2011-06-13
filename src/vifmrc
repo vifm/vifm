@@ -91,6 +91,10 @@ RUN_EXECUTABLE=0
 
 USE_IEC_PREFIXES=1
 
+# Selected color scheme
+
+COLOR_SCHEME=Default
+
 # BOOKMARKS=mark=/full/directory/path=filename
 
 BOOKMARKS=R=/=
