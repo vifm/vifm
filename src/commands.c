@@ -732,6 +732,10 @@ shellout(char *command, int pause)
 	def_prog_mode();
 	endwin();
 
+	/* force views update */
+	lwin.dir_mtime = 0;
+	rwin.dir_mtime = 0;
+
 	my_system("clear");
 	my_system(buf);
 
@@ -1175,9 +1179,8 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					if(strlen(com + i) > 0 && cmd->background)
 						start_background_job(com + i);
 					else if(strlen(com + i) > 0)
-					{
 						shellout(com + i, pause);
-					}
+
 					if(!cmd->background)
 						free(com);
 				}
@@ -1293,7 +1296,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				{
 					int m = 0;
 					int s = 0;
-					char *buf = NULL;
+					char *buf;
 					char *files = expand_macros(view, "%f", NULL, &m, &s);
 
 					if((buf = (char *)malloc(strlen(cfg.vi_command) + strlen(files) + 2))
@@ -1319,7 +1322,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				if(chdir(buf))
 					break;
 
-				start_background_job("rm -fr * .[!.]*");
+				start_background_job("rm -rf * .[!.]*");
 				chdir(view->curr_dir);
 			}
 			break;
@@ -1381,15 +1384,10 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			show_history_menu(view);
 			break;
 		case COM_INVERT:
-			{
-				if(view->invert)
-					view->invert = 0;
-				else
-					view->invert = 1;
-				load_dir_list(view, 1);
-				moveto_list_pos(view, 0);
-				curr_stats.setting_change = 1;
-			}
+			view->invert = !view->invert;
+			load_dir_list(view, 1);
+			moveto_list_pos(view, 0);
+			curr_stats.setting_change = 1;
 			break;
 		case COM_JOBS:
 			show_jobs_menu(view);
