@@ -525,12 +525,12 @@ update_view_title(FileView *view)
 	werase(view->title);
 
 	len = get_utf8_string_length(view->curr_dir);
-	if(view->window_width < len + 1)
+	if(len + 1 > view->window_width && curr_view == view)
 	{ /* Truncate long directory names */
 		char *ptr;
 
 		ptr = view->curr_dir;
-		while(view->window_width < len + 4)
+		while(len > view->window_width - 2)
 		{
 			len--;
 			ptr += get_char_width(ptr);

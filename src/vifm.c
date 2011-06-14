@@ -42,6 +42,7 @@
 #include "opt_handlers.h"
 #include "registers.h"
 #include "signals.h"
+#include "sort.h"
 #include "status.h"
 #include "tree.h"
 #include "ui.h"
@@ -182,13 +183,13 @@ main(int argc, char *argv[])
 	if(!setup_ncurses_interface())
 		return -1;
 
+	curr_view = &lwin;
+	other_view = &rwin;
+
 	load_initial_directory(&rwin, dir);
 	load_initial_directory(&lwin, dir);
 
-	other_view = &lwin;
-	curr_view = &rwin;
-
-/* Get Command Line Arguments */
+	/* Get Command Line Arguments */
 	for(x = 1; x < argc; x++)
 	{
 		if(argv[x] == NULL)
@@ -246,6 +247,7 @@ main(int argc, char *argv[])
 		}
 	}
 
+	set_view_to_sort(&rwin);
 	load_dir_list(&rwin, 0);
 
 	if(rwin_args)
@@ -257,9 +259,7 @@ main(int argc, char *argv[])
 	mvwaddstr(rwin.win, rwin.curr_line, 0, "*");
 	wrefresh(rwin.win);
 
-	/* This is needed for the sort_dir_list() which uses curr_view */
-	switch_views();
-
+	set_view_to_sort(&lwin);
 	load_dir_list(&lwin, 0);
 
 	if(lwin_args)

@@ -1,7 +1,8 @@
 nmap s :shell<cr>
 nmap S :sort<cr>
 nmap w :view<cr>
-nmap o :!gvim %f<cr>
+nmap o :!gvim --remote-tab-silent %f<cr>
+nmap O :!gvim %f<cr>
 
 nmap <f3> :!less %f<cr>
 nmap <f4> :edit<cr>

@@ -164,7 +164,7 @@ int
 setup_ncurses_interface()
 {
 	int screen_x, screen_y;
-	int i, x, y;
+	int x, y;
 
 	initscr();
 	noecho();
@@ -212,9 +212,9 @@ setup_ncurses_interface()
 	werase(lborder);
 
 	if(curr_stats.number_of_windows == 1)
-		lwin.title = newwin(0, screen_x -2, 0, 1);
+		lwin.title = newwin(0, screen_x - 2, 0, 1);
 	else
-		lwin.title = newwin(1, screen_x/2 -1, 0, 1);
+		lwin.title = newwin(1, screen_x/2 - 2, 0, 1);
 
 	wattrset(lwin.title, A_BOLD);
 	wbkgdset(lwin.title, COLOR_PAIR(BORDER_COLOR));
@@ -222,9 +222,9 @@ setup_ncurses_interface()
 	werase(lwin.title);
 
 	if(curr_stats.number_of_windows == 1)
-		lwin.win = newwin(screen_y - 3, screen_x -2, 1, 1);
+		lwin.win = newwin(screen_y - 3, screen_x - 2, 1, 1);
 	else
-		lwin.win = newwin(screen_y - 3, screen_x/2 -2, 1, 1);
+		lwin.win = newwin(screen_y - 3, screen_x/2 - 2, 1, 1);
 
 	wbkgdset(lwin.win, COLOR_PAIR(WIN_COLOR));
 	wattrset(lwin.win, A_BOLD);
@@ -234,16 +234,16 @@ setup_ncurses_interface()
 	lwin.window_rows = y -1;
 	lwin.window_width = x -1;
 
-	mborder = newwin(screen_y, 2, 0, screen_x/2 -1);
+	mborder = newwin(screen_y, 2, 0, screen_x/2 - 1);
 
 	wbkgdset(mborder, COLOR_PAIR(BORDER_COLOR));
 
 	werase(mborder);
 
-	if (curr_stats.number_of_windows == 1)
-		rwin.title = newwin(0, screen_x -2	, 0, 1);
+	if(curr_stats.number_of_windows == 1)
+		rwin.title = newwin(0, screen_x - 2, 0, 1);
 	else
-		rwin.title = newwin(1, screen_x/2 -1  , 0, screen_x/2 +1);
+		rwin.title = newwin(1, screen_x/2 - 1, 0, screen_x/2 + 1);
 
 	wbkgdset(rwin.title, COLOR_PAIR(BORDER_COLOR));
 	wattrset(rwin.title, A_BOLD);
@@ -251,7 +251,7 @@ setup_ncurses_interface()
 
 	werase(rwin.title);
 
-	if (curr_stats.number_of_windows == 1)
+	if(curr_stats.number_of_windows == 1)
 		rwin.win = newwin(screen_y - 3, screen_x -2 , 1, 1);
 	else
 		rwin.win = newwin(screen_y - 3, screen_x/2 -2 , 1, screen_x/2 +1);
