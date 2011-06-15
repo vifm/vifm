@@ -31,6 +31,7 @@ struct key_chunk_t
 	size_t children_count;
 	struct key_t conf;
 	struct key_chunk_t *child;
+	struct key_chunk_t *parent;
 	struct key_chunk_t *next;
 };
 
@@ -341,6 +342,7 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 			c->conf.followed = FOLLOWED_BY_NONE;
 			c->next = p;
 			c->child = NULL;
+			c->parent = curr;
 			c->children_count = 0;
 			if(prev == NULL)
 			{
@@ -350,7 +352,16 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 			{
 				prev->next = c;
 			}
-			curr->children_count++;
+
+			if(keys[1] == L'\0')
+			{
+				while(curr != NULL)
+				{
+					curr->children_count++;
+					curr = curr->parent;
+				}
+			}
+
 			p = c;
 		}
 		keys++;
@@ -362,6 +373,7 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 wchar_t **
 list_cmds(int mode)
 {
+	int i;
 	int count;
 	wchar_t **result;
 
@@ -374,11 +386,21 @@ list_cmds(int mode)
 
 	if(fill_list(&cmds_root[mode], 0, result) != 0)
 	{
-		int i;
 		for(i = 0; i < count; i++)
+		{
 			free(result[i]);
+		}
 		free(result);
 		return NULL;
+	}
+
+	for(i = 0; i < count && result[i] != NULL; i++)
+	{
+		if(result[i][0] == L'\0')
+		{
+			free(result[i]);
+			result[i] = NULL;
+		}
 	}
 
 	return result;
@@ -390,7 +412,7 @@ fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
 	int i;
 	struct key_chunk_t *child;
 
-	for(i = 0; i < curr->children_count; i++)
+	for(i = 0; i < (curr->children_count ? curr->children_count : 1); i++)
 	{
 		wchar_t *t;
 
@@ -408,6 +430,23 @@ fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
 		t[len] = L'\0';
 	}
 
+	if(curr->children_count == 0)
+	{
+		const wchar_t *s;
+		wchar_t *t;
+
+		s = (curr->conf.type == USER_CMD) ? curr->conf.data.cmd : L"<built in>";
+		t = realloc(list[0], sizeof(wchar_t)*(len + 1 + 1 + wcslen(s)));
+		if(t == NULL)
+		{
+			return -1;
+		}
+
+		list[0] = t;
+		t[wcslen(t) + 1] = '\0';
+		wcscpy(t + wcslen(t) + 1, s);
+	}
+
 	child = curr->child;
 	while(child != NULL)
 	{
@@ -416,7 +455,7 @@ fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
 			return -1;
 		}
 
-		list += child->children_count;
+		list += child->children_count ? child->children_count : 1;
 		child = child->next;
 	}
 	return 0;

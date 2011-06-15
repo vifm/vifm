@@ -1068,7 +1068,7 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 }
 
 static int
-do_map(cmd_t *cmd, const char *map_type, int mode)
+do_map(cmd_t *cmd, const char *map_type, const char *map_cmd, int mode)
 {
 	char err_msg[128];
 	wchar_t *keys, *mapping;
@@ -1077,12 +1077,20 @@ do_map(cmd_t *cmd, const char *map_type, int mode)
 	int result;
 
 	sprintf(err_msg, "The :%s command requires two arguments - :%s lhs rhs",
-			map_type, map_type);
+			map_cmd, map_cmd);
 
 	if(cmd->args == NULL || *cmd->args == '\0')
 	{
-		show_error_msg("Command Error", err_msg);
-		return 0;
+		if(map_type[0] == '\0')
+		{
+			show_error_msg("Command Error", err_msg);
+			return -1;
+		}
+		else
+		{
+			show_map_menu(curr_view, map_type, list_cmds(mode));
+			return 0;
+		}
 	}
 
 	raw_rhs = (char*)skip_word(cmd->args);
@@ -1208,7 +1216,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			comm_cd(view, cmd);
 			break;
 		case COM_CMAP:
-			save_msg = do_map(cmd, "cmap", CMDLINE_MODE);
+			save_msg = do_map(cmd, "Command Line", "cmap", CMDLINE_MODE);
 			break;
 		case COM_COLORSCHEME:
 		{
@@ -1407,17 +1415,17 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			my_system("screen -X eval 'windowlist'");
 			break;
 		case COM_MAP:
-			save_msg = do_map(cmd, "map", CMDLINE_MODE);
+			save_msg = do_map(cmd, "", "map", CMDLINE_MODE);
 			if(save_msg == 0)
-				save_msg = do_map(cmd, "map", NORMAL_MODE);
+				save_msg = do_map(cmd, "", "map", NORMAL_MODE);
 			if(save_msg == 0)
-				save_msg = do_map(cmd, "map", VISUAL_MODE);
+				save_msg = do_map(cmd, "", "map", VISUAL_MODE);
 			break;
 		case COM_MARKS:
 			show_bookmarks_menu(view);
 			break;
 		case COM_NMAP:
-			save_msg = do_map(cmd, "nmap", NORMAL_MODE);
+			save_msg = do_map(cmd, "Normal", "nmap", NORMAL_MODE);
 			break;
 		case COM_NOH:
 			{
@@ -1530,6 +1538,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		case COM_YANK:
 			{
 				/*
+				TODO do we need this?
 				int selection_worked = 0;
 
 				selection_worked  = select_files_in_range(view);
@@ -1542,7 +1551,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			}
 			break;
 		case COM_VMAP:
-			save_msg = do_map(cmd, "vmap", VISUAL_MODE);
+			save_msg = do_map(cmd, "Visual", "vmap", VISUAL_MODE);
 			break;
 		case COM_W:
 		case COM_WRITE:

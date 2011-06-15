@@ -699,6 +699,65 @@ draw_menu(FileView *view,  menu_info *m)
 }
 
 void
+show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
+{
+	int x;
+	int len;
+
+	static menu_info m;
+	m.top = 0;
+	m.current = 1;
+	m.len = 0;
+	m.pos = 0;
+	m.win_rows = 0;
+	m.type = MAP;
+	m.matching_entries = 0;
+	m.match_dir = NONE;
+	m.regexp = NULL;
+	m.title = NULL;
+	m.args = NULL;
+	m.data = NULL;
+
+	getmaxyx(menu_win, m.win_rows, len);
+
+	m.title = (char *)malloc((strlen(mode_str) + 21) * sizeof(char));
+	sprintf(m.title, " Mappings for %s mode ", mode_str);
+
+	x = 0;
+	while(list[x] != NULL)
+	{
+		int i, str_len, buf_len;
+
+		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
+
+		str_len = wcslen(list[x]);
+		buf_len = 0;
+		for(i = 0; i < str_len; i++)
+			buf_len += strlen(uchar2str(list[x][i]));
+		buf_len += 1 + wcslen(list[x] + str_len + 1) + 1;
+
+		m.data[x] = (char *)malloc(buf_len);
+		m.data[x][0] = '\0';
+		for(i = 0; i < str_len; i++)
+			strcat(m.data[x], uchar2str(list[x][i]));
+
+		strcat(m.data[x], " ");
+		sprintf(m.data[x] + strlen(m.data[x]), "%ls", list[x] + str_len + 1);
+
+		free(list[x]);
+
+		x++;
+	}
+	free(list);
+	m.len = x;
+
+	setup_menu(view);
+	draw_menu(view, &m);
+	moveto_menu_pos(view, 0, &m);
+	enter_menu_mode(&m, view);
+}
+
+void
 show_apropos_menu(FileView *view, char *args)
 {
 	int x = 0;

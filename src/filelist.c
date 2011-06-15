@@ -209,26 +209,6 @@ use_info_prog(char *cmd, int x, int y)
 	}
 }
 
-static char *
-char2str(const char *str)
-{
-	static char buf[8];
-
-	size_t len = get_char_width(str);
-	if(len != 1 || str[0] >= ' ' || str[0] == '\n')
-	{
-		memcpy(buf, str, len);
-		buf[len] = '\0';
-	}
-	else
-	{
-		buf[0] = '^';
-		buf[1] = ('A' - 1) + str[0];
-		buf[2] = '\0';
-	}
-	return buf;
-}
-
 static void
 view_not_wraped(FILE *fp, int x)
 {
@@ -236,7 +216,7 @@ view_not_wraped(FILE *fp, int x)
 	int y = 1;
 
 	while(fgets(line, other_view->window_width - 2, fp)
-				&& x < other_view->window_rows - 2)
+			&& x < other_view->window_rows - 2)
 	{
 		int i;
 		size_t n_len = get_normal_utf8_string_length(line);
@@ -276,7 +256,7 @@ view_not_wraped(FILE *fp, int x)
 		i = 0;
 		while(n_len--)
 		{
-			waddstr(other_view->win, char2str(line + i));
+			waddstr(other_view->win, strchar2str(line + i));
 			i += get_char_width(line + i);
 		}
 	}
@@ -317,7 +297,7 @@ view_wraped(FILE *fp, int x)
 		k = width;
 		while(k--)
 		{
-			waddstr(other_view->win, char2str(line + i));
+			waddstr(other_view->win, strchar2str(line + i));
 			i += get_char_width(line + i);
 		}
 

@@ -17,6 +17,8 @@
 
 	Unmount all FUSE mounts on exit.
 
+	Added map menus (run :cmap, :vmap, :nmap commands without arguments).
+
 0.6 to 0.6.1
 
 	Added :set command.

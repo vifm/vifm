@@ -51,6 +51,8 @@ size_t get_utf8_prev_width(char *string, size_t cut_length);
 wchar_t * to_wide(const char *s);
 void run_from_fork(int pipe[2], int err, char *cmd);
 wchar_t * my_wcsdup(const wchar_t *ws);
+char * strchar2str(const char *str);
+char * uchar2str(wchar_t c);
 
 #endif
 

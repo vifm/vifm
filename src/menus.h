@@ -30,6 +30,7 @@ enum {
 	HISTORY,
 	JOBS,
 	LOCATE,
+	MAP,
 	REGISTER,
 	USER,
 	VIFM,
@@ -70,6 +71,7 @@ void show_vifm_menu(FileView *view);
 void show_filetypes_menu(FileView *view, int background);
 void show_jobs_menu(FileView *view);
 void show_locate_menu(FileView *view, char *args);
+void show_map_menu(FileView *view, const char *mode_str, wchar_t **list);
 void show_apropos_menu(FileView *view, char *args);
 void show_user_menu(FileView *view, char *command);
 void show_register_menu(FileView *view);

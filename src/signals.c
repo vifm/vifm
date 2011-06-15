@@ -32,6 +32,7 @@
 #include "config.h"
 #include "file_info.h"
 #include "filelist.h"
+#include "fileops.h"
 #include "filetype.h"
 #include "menus.h"
 #include "modes.h"

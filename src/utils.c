@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <curses.h>
+
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -335,6 +337,100 @@ my_wcsdup(const wchar_t *ws)
 		return NULL;
 	wcscpy(result, ws);
 	return result;
+}
+
+char *
+strchar2str(const char *str)
+{
+	static char buf[8];
+
+	size_t len = get_char_width(str);
+	if(len != 1 || str[0] >= ' ' || str[0] == '\n')
+	{
+		memcpy(buf, str, len);
+		buf[len] = '\0';
+	}
+	else
+	{
+		buf[0] = '^';
+		buf[1] = ('A' - 1) + str[0];
+		buf[2] = '\0';
+	}
+	return buf;
+}
+
+char *
+uchar2str(wchar_t c)
+{
+	static char buf[8];
+
+	switch(c)
+	{
+		case L' ':
+			strcpy(buf, "<space>");
+			break;
+		case L'\033':
+			strcpy(buf, "<esc>");
+			break;
+		case L'\177':
+			strcpy(buf, "<del>");
+			break;
+		case KEY_HOME:
+			strcpy(buf, "<home>");
+			break;
+		case KEY_END:
+			strcpy(buf, "<end>");
+			break;
+		case KEY_LEFT:
+			strcpy(buf, "<left>");
+			break;
+		case KEY_RIGHT:
+			strcpy(buf, "<right>");
+			break;
+		case KEY_UP:
+			strcpy(buf, "<up>");
+			break;
+		case KEY_DOWN:
+			strcpy(buf, "<down>");
+			break;
+		case KEY_BACKSPACE:
+			strcpy(buf, "<backspace>");
+			break;
+		case KEY_DC:
+			strcpy(buf, "<delete>");
+			break;
+		case KEY_PPAGE:
+			strcpy(buf, "<pageup>");
+			break;
+		case KEY_NPAGE:
+			strcpy(buf, "<pagedown>");
+			break;
+
+		default:
+			if(c == L'\n' || (c > L' ' && c < 256))
+			{
+				buf[0] = c;
+				buf[1] = '\0';
+			}
+			else if(c >= KEY_F0 && c < KEY_F0 + 10)
+			{
+				strcpy(buf, "<f0>");
+				buf[2] += c - KEY_F0;
+			}
+			else if(c >= KEY_F0 + 10 && c < KEY_F0 + 63)
+			{
+				strcpy(buf, "<f00>");
+				buf[2] += c/10 - KEY_F0;
+				buf[3] += c%10 - KEY_F0;
+			}
+			else
+			{
+				strcpy(buf, "^A");
+				buf[1] += c - 1;
+			}
+			break;
+	}
+	return buf;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

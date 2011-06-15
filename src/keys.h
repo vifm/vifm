@@ -147,7 +147,9 @@ struct key_t* add_selector(const wchar_t *keys, int mode);
 int add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode);
 
 /*
- * Lists all commands of the given mode.
+ * Lists all commands of the given mode with description.
+ *
+ * Every line is like L"command\0description\0".
  *
  * End of list could be determined by the NULL element.
  * Caller should free array and all its elements using free().
