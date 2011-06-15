@@ -28,6 +28,7 @@
 struct key_chunk_t
 {
 	wchar_t key;
+	size_t children_count;
 	struct key_t conf;
 	struct key_chunk_t *child;
 	struct key_chunk_t *next;
@@ -50,6 +51,7 @@ static const wchar_t* get_reg(const wchar_t *keys, int *reg);
 static const wchar_t* get_count(const wchar_t *keys, int *count);
 static struct key_t* add_keys_inner(struct key_chunk_t *root,
 		const wchar_t *keys);
+static int fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list);
 
 void
 init_keys(int modes_count, int *key_mode, int *key_mode_flags)
@@ -282,9 +284,6 @@ get_count(const wchar_t *keys, int *count)
 	return keys;
 }
 
-/* Returns:
- * -1 - can't remap buildin keys
- */
 int
 add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode)
 {
@@ -342,6 +341,7 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 			c->conf.followed = FOLLOWED_BY_NONE;
 			c->next = p;
 			c->child = NULL;
+			c->children_count = 0;
 			if(prev == NULL)
 			{
 				curr->child = c;
@@ -350,6 +350,7 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 			{
 				prev->next = c;
 			}
+			curr->children_count++;
 			p = c;
 		}
 		keys++;
@@ -358,4 +359,67 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 	return &curr->conf;
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+wchar_t **
+list_cmds(int mode)
+{
+	int count;
+	wchar_t **result;
+
+	count = cmds_root[mode].children_count;
+	result = calloc(count + 1, sizeof(*result));
+	if(result == NULL)
+	{
+		return NULL;
+	}
+
+	if(fill_list(&cmds_root[mode], 0, result) != 0)
+	{
+		int i;
+		for(i = 0; i < count; i++)
+			free(result[i]);
+		free(result);
+		return NULL;
+	}
+
+	return result;
+}
+
+static int
+fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
+{
+	int i;
+	struct key_chunk_t *child;
+
+	for(i = 0; i < curr->children_count; i++)
+	{
+		wchar_t *t;
+
+		t = realloc(list[i], sizeof(wchar_t)*(len + 1));
+		if(t == NULL)
+		{
+			return -1;
+		}
+
+		list[i] = t;
+		if(len > 0)
+		{
+			t[len - 1] = curr->key;
+		}
+		t[len] = L'\0';
+	}
+
+	child = curr->child;
+	while(child != NULL)
+	{
+		if(fill_list(child, len + 1, list) != 0)
+		{
+			return -1;
+		}
+
+		list += child->children_count;
+		child = child->next;
+	}
+	return 0;
+}
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */

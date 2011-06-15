@@ -945,13 +945,14 @@ prompt_what_to_do(const char *src_name)
 
 	put_confirm.name = src_name;
 	swprintf(buf, sizeof(buf)/sizeof(buf[0]),
-			L"Name conflict for %s. s(skip)/r(rename)/(cancel): ", src_name);
+			L"Name conflict for %s. s(skip)/r(rename)/o(override)/(cancel): ",
+			src_name);
 	enter_prompt_mode(buf, "r", put_decide_cb);
 }
 
 /* Returns 0 on success */
 static int
-put_next_file(const char *dest_name)
+put_next_file(const char *dest_name, int override)
 {
 	char buf[PATH_MAX + NAME_MAX*2 + 4];
 	char *src_buf, *dst_buf;
@@ -968,12 +969,16 @@ put_next_file(const char *dest_name)
 		if(p[0] == '\0')
 			p = strrchr(buf, '/') + 1;
 
-		if(access(p, F_OK) == 0)
+		if(access(p, F_OK) == 0 && !override)
 		{
 			free(src_buf);
 			free(dst_buf);
 			prompt_what_to_do(p);
 			return 1;
+		}
+		else if(override)
+		{
+			put_confirm.view->dir_mtime = 0;
 		}
 
 		if(move)
@@ -1000,7 +1005,7 @@ put_next_file(const char *dest_name)
 static void
 put_confirm_cb(const char *dest_name)
 {
-	if(put_next_file(dest_name) == 0)
+	if(put_next_file(dest_name, 0) == 0)
 	{
 		put_confirm.x++;
 		curr_stats.save_msg = put_files_from_register_i(put_confirm.view);
@@ -1019,6 +1024,14 @@ put_decide_cb(const char *choice)
 	{
 		prompt_dest_name(put_confirm.name);
 	}
+	else if(strcmp(choice, "o") == 0)
+	{
+		if(put_next_file("", 1) == 0)
+		{
+			put_confirm.x++;
+			curr_stats.save_msg = put_files_from_register_i(put_confirm.view);
+		}
+	}
 	else
 	{
 		prompt_what_to_do(put_confirm.name);
@@ -1034,7 +1047,7 @@ put_files_from_register_i(FileView *view)
 	chdir(view->curr_dir);
 	while(put_confirm.x < put_confirm.reg->num_files)
 	{
-		if(put_next_file("") != 0)
+		if(put_next_file("", 0) != 0)
 			return 0;
 		put_confirm.x++;
 	}

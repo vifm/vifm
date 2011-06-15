@@ -89,7 +89,6 @@ struct key_t
 {
 	enum KEYS_TYPE type;
 	enum FOLLOWED_BY followed;   /* what type of key should we wait for */
-	; /* can this key be used as a selector? */
 	union
 	{
 		keys_handler handler;
@@ -97,22 +96,65 @@ struct key_t
 	}data;
 };
 
+/*
+ * Return value:
+ *  - 0 - success
+ *  - something else - an error
+ */
 typedef int (*default_handler)(wchar_t keys);
 
 /*
- * assumed that key_mode_flags is an array of at least modes_count items
+ * Assumed that key_mode_flags is an array of at least modes_count items
  */
 void init_keys(int modes_count, int *key_mode, int *key_mode_flags);
+
+/*
+ * handler could be NULL to remove default handler
+ */
 void set_def_handler(int mode, default_handler handler);
+
+/*
+ * Return value:
+ *  - 0 - success
+ *  - KEYS_*
+ *  - something else from the default key handler
+ */
 int execute_keys(const wchar_t *keys);
+
+/*
+ * Return value:
+ *  - 0 - success
+ *  - KEYS_*
+ *  - something else from the default key handler
+ */
 int execute_keys_timed_out(const wchar_t *keys);
+
+/*
+ * Returns NULL on error
+ */
 struct key_t* add_cmd(const wchar_t *keys, int mode);
+
+/*
+ * Returns NULL on error
+ */
 struct key_t* add_selector(const wchar_t *keys, int mode);
-/* Returns:
- * -1 - can't remap buildin keys
+
+/*
+ * Return value:
+ *  - 0 - success
+ *  - -1 - can't remap built in keys
  */
 int add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode);
 
+/*
+ * Lists all commands of the given mode.
+ *
+ * End of list could be determined by the NULL element.
+ * Caller should free array and all its elements using free().
+ * Returns NULL on error.
+ */
+wchar_t ** list_cmds(int mode);
+
 #endif
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

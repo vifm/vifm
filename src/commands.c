@@ -776,8 +776,9 @@ select_files_in_range(FileView *view, cmd_t * cmd)
 		if(cmd->end_range < cmd->start_range)
 		{
 			show_error_msg("Command Error", "Backward range given.");
-			//save_msg = 1;
-			//break;
+			/* TODO decide what to do in such cases
+			save_msg = 1;
+			break; */
 		}
 
 		for(x = 0; x < view->list_rows; x++)
