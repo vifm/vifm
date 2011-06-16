@@ -106,8 +106,9 @@ unmount_fuse(void)
 	chdir("/");
 	while(runner)
 	{
-		snprintf(buf, sizeof(buf), "sh -c \"fusermount -u '%s'\"",
-				runner->mount_point);
+		char *tmp = escape_filename(runner->mount_point, 0, 1);
+		snprintf(buf, sizeof(buf), "sh -c \"fusermount -u %s\"", tmp);
+		free(tmp);
 		my_system(buf);
 		if(access(runner->mount_point, F_OK) == 0)
 			rmdir(runner->mount_point);
@@ -746,6 +747,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	chdir(curr_view->curr_dir);
 	for(x = 0; x < view->selected_files; x++)
 	{
+		char *esc_file;
 		if(strcmp("../", view->selected_filelist[x]) == 0)
 		{
 			show_error_msg("Background Process Error",
@@ -753,13 +755,14 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 			continue;
 		}
 
+		esc_file = escape_filename(view->selected_filelist[x], 0, 1);
 		if(cfg.use_trash && use_trash)
 		{
-			snprintf(buf, sizeof(buf), "mv \"%s\" %s", view->selected_filelist[x],
-					cfg.trash_dir);
+			snprintf(buf, sizeof(buf), "mv %s '%s'", esc_file, cfg.trash_dir);
 		}
 		else
-			snprintf(buf, sizeof(buf), "rm -rf '%s'", view->selected_filelist[x]);
+			snprintf(buf, sizeof(buf), "rm -rf %s", esc_file);
+		free(esc_file);
 
 		progress_msg("Deleting files", x + 1, view->selected_files);
 		if(background_and_wait_for_errors(buf) == 0)
