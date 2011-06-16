@@ -1182,7 +1182,9 @@ change_directory(FileView *view, const char *directory)
 
 	if(access(dir_dup, F_OK) != 0)
 	{
-		show_error_msg("Directory Access Error", "Cannot open that directory");
+		char buf[12 + PATH_MAX + 1];
+		snprintf(buf, sizeof(buf), "Cannot open %s", dir_dup);
+		show_error_msg("Directory Access Error", buf);
 		leave_invalid_dir(view, dir_dup);
 		change_directory(view, dir_dup);
 		clean_selected_files(view);
@@ -1191,8 +1193,9 @@ change_directory(FileView *view, const char *directory)
 
 	if(access(dir_dup, R_OK) != 0)
 	{
-		show_error_msg("Directory Access Error",
-				"You do not have read access on that directory");
+		char buf[31 + PATH_MAX + 1];
+		snprintf(buf, sizeof(buf), "You do not have read access on %s", dir_dup);
+		show_error_msg("Directory Access Error", buf);
 
 		clean_selected_files(view);
 		return -1;
@@ -1200,8 +1203,9 @@ change_directory(FileView *view, const char *directory)
 
 	if(access(dir_dup, X_OK) != 0)
 	{
-		show_error_msg("Directory Access Error",
-				"You do not have execute access on that directory");
+		char buf[32 + PATH_MAX + 1];
+		snprintf(buf, sizeof(buf), "You do not have execute access on %s", dir_dup);
+		show_error_msg("Directory Access Error", buf);
 
 		clean_selected_files(view);
 		return -1;
@@ -1211,7 +1215,9 @@ change_directory(FileView *view, const char *directory)
 
 	if(dir == NULL)
 	{
-		show_error_msg("Dir is null", "Could not open directory.");
+		char buf[15 + PATH_MAX + 1];
+		snprintf(buf, sizeof(buf), "Could not open %s", dir_dup);
+		show_error_msg("Dir is null", buf);
 		clean_selected_files(view);
 		return -1;
 	}
