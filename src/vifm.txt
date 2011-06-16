@@ -326,10 +326,12 @@ The only builtin command that accepts a range is :delete.
 Compatibility mode:
     - <tab> to switch between panes.
     - dd deletes selected (or current if none) files.
+    - yy yanks selected (or current if none) files.
 
 Vim like mode:
     - <c-i> (<tab>) to go forward on history.
     - dd deletes file under the cursor and ds works as dd in compatibility mode.
+    - yy yanks file under the cursor and ys works as dd in compatibility mode.
 
 --------------------------------------------------------------------------------
 *Reserved*

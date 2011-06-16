@@ -1226,8 +1226,12 @@ cmd_yy(struct key_info key_info, struct keys_info *keys_info)
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 
+#ifdef ENABLE_COMPATIBILITY_MODE
 	count = yank_files(curr_view, key_info.reg, keys_info->count,
 			keys_info->indexes);
+#else /* ENABLE_COMPATIBILITY_MODE */
+	count = yank_files(curr_view, key_info.reg, 1, &curr_view->list_pos);
+#endif /* ENABLE_COMPATIBILITY_MODE */
 
 	if(key_info.count != NO_COUNT_GIVEN)
 		free(keys_info->indexes);
