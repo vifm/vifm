@@ -245,20 +245,31 @@ background_and_wait_for_errors(char *cmd)
 	}
 	else
 	{
-		char buf[356];
-		int nread = 0;
+		char linebuf[160];
+		char buf[sizeof(linebuf)*5];
+		FILE *ef;
 
 		close(error_pipe[1]); /* Close write end of pipe. */
 
-		while((nread = read(error_pipe[0], buf, sizeof(buf)-1)) > 0)
+		ef = fdopen(error_pipe[0], "r");
+		buf[0] = '\0';
+		while(fgets(linebuf, sizeof(linebuf), ef) == linebuf)
 		{
 			error = 1;
-			buf[nread] = '\0';
-			if(nread == 1 && buf[0] == '\n')
+			if(linebuf[0] == '\n')
 				continue;
-			show_error_msg("Background Process Error", buf);
+			if(strlen(buf) + strlen(linebuf) + 1 >= sizeof(buf))
+			{
+				show_error_msg("Background Process Error", buf);
+				buf[0] = '\0';
+			}
+			strcat(buf, linebuf);
 		}
-		close(error_pipe[0]);
+
+		if(buf[0] != '\0')
+			show_error_msg("Background Process Error", buf);
+
+		fclose(ef);
 	}
 
 	if(error)

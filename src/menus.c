@@ -86,33 +86,59 @@ clean_menu_position(menu_info *m)
 void
 show_error_msg(char *title, const char *message)
 {
+	int sx, sy;
 	int x, y;
 	int key;
-	int z = 0;
-	char *dup = strdup(message);
+	int z;
 
 	curr_stats.freeze = 1;
 	curs_set(0);
 	werase(error_win);
 
+	getmaxyx(stdscr, sy, sx);
 	getmaxyx(error_win, y, x);
 
-	if(strlen(dup) > x-2)
-		dup[x-2] = '\0';
-	while(z < strlen(dup) && isprint(dup[z]))
-		z++;
+	z = strlen(message);
+	if(z <= x - 2)
+		mvwaddstr(error_win, 2, (x - z)/2, message);
+	else
+	{
+		int i;
+		int cy = 2;
+		i = 0;
+		while(i < z)
+		{
+			int j;
+			char buf[x - 2 + 1];
 
-	dup[z] = '\0';
+			snprintf(buf, sizeof(buf), "%s", message + i);
 
-	mvwaddstr(error_win, 2, (x - strlen(dup))/2, dup);
+			for(j = 0; buf[j] != '\0'; j++)
+				if(buf[j] == '\n')
+				{
+					break;
+				}
 
-	free(dup);
+			if(buf[j] != '\0')
+				buf[j] = '\0';
+			i += j + 1;
+
+			if(buf[0] == '\0')
+				continue;
+
+			y = cy + 4;
+			mvwin(error_win, (sy - y)/2, (sx - x)/2);
+			wresize(error_win, y, x);
+
+			mvwaddstr(error_win, cy++, 1, buf);
+		}
+	}
 
 	box(error_win, 0, 0);
 	if(title[0] != '\0')
 		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
 
-	mvwaddstr(error_win, y -2, (x - 25)/2, "Press Return to continue");
+	mvwaddstr(error_win, y - 2, (x - 25)/2, "Press Return to continue");
 
 	do
 		key = wgetch(error_win);
