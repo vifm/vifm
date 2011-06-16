@@ -95,14 +95,15 @@ command_t *command_list;
 
 int exec_commands(char *cmd, FileView *view, int type, void * ptr,
 		int save_hist);
-void shellout(char *command, int pause);
+int shellout(char *command, int pause);
 void add_command(char *name, char *action);
 int execute_command(FileView *view, char *action);
 int sort_this(const void *one, const void *two);
 int is_user_command(char *command);
 int command_is_reserved(char *command);
 char * command_completion(char *str, int users_only);
-char * expand_macros(FileView *view, char *command, char *args, int *menu, int *split);
+char * expand_macros(FileView *view, char *command, char *args, int *menu,
+		int *split);
 void remove_command(char *name);
 void comm_quit(void);
 void comm_only(void);

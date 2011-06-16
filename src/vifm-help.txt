@@ -270,6 +270,11 @@ Menus and dialogs
         L - save all commands above empty line as program list
 
 Options
+    fastrun
+    type: boolean
+    With this option turned on you can run commands using :! with unambiguous
+    beginning (e.g. :!Te instead of :!Terminal or :!Te<tab>).
+
     iec
     type: boolean
     Use KiB, MiB, ... instead of KB, MB, ...

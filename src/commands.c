@@ -30,6 +30,7 @@
 
 #include "background.h"
 #include "bookmarks.h"
+#include "cmdline.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "config.h"
@@ -657,10 +658,11 @@ split_screen(FileView *view, char *command)
 	}
 }
 
-void
+int
 shellout(char *command, int pause)
 {
 	char buf[1024];
+	int result;
 
 	if(command != NULL)
 	{
@@ -738,15 +740,19 @@ shellout(char *command, int pause)
 	rwin.dir_mtime = 0;
 
 	my_system("clear");
-	my_system(buf);
+	result = WEXITSTATUS(my_system(buf));
 
 	/* There is a problem with using the screen program and
 	 * catching all the SIGWICH signals.  So just redraw the window.
 	 */
 	if(!isendwin() && cfg.use_screen)
 		redraw_window();
+	else
+		reset_prog_mode();
 
 	curs_set(0);
+
+	return result;
 }
 
 static void
@@ -1189,7 +1195,34 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					if(strlen(com + i) > 0 && cmd->background)
 						start_background_job(com + i);
 					else if(strlen(com + i) > 0)
-						shellout(com + i, pause);
+					{
+						if(shellout(com + i, pause) == 127 && curr_stats.fast_run)
+						{
+							char *completed1, *completed2;
+							char *p = strchr(com + i, ' ');
+							if(p == NULL)
+								p = com + i + strlen(com + i);
+							else
+								*p = '\0';
+							completed1 = exec_completion(com + i);
+							completed2 = exec_completion(NULL);
+							if(strcmp(com + i, completed2) != 0)
+							{
+								status_bar_message("Command beginning is ambiguous");
+								save_msg = 1;
+							}
+							else
+							{
+								char *buf;
+								buf = malloc(strlen(completed1) + 1 + strlen(p) + 1);
+								sprintf(buf, "%s %s", completed1, p);
+								shellout(buf, pause);
+								free(buf);
+							}
+							free(completed2);
+							free(completed1);
+						}
+					}
 
 					if(!cmd->background)
 						free(com);

@@ -1,23 +1,23 @@
 Basic things that need to be done.
-	Termcap or terminfo support for keybindings.
-	Backgrounding of commands with job control.
-	Fix window resizing.
+	Termcap or terminfo support for keybindings (do we really need this?).
+	Backgrounding of commands with job control (pause/resume/kill).
+	Fix window resizing (I think it's almost done).
 	Better documentation.
-	Handle commands that are too long to be passed directly to the shell.
+	Handle commands that are too long to be passed directly to the shell (fixed??).
 	Make ga work in background.
 
 Vi specific features that need to be added.
-	Finish implementing range and count for user commands.
-	Fix '' to go back to all jumps G gg links. 
-	Change file list filters to use fold levels instead of just 
-		the dot filter and regular expression filter.
+	Finish implementing range and count for user commands (what commands left?).
+	Fix '' to go back to all jumps G gg links (in one directory?).
+	Change file list filters to use fold levels instead of just
+		the dot filter and regular expression filter (what does this mean?).
 	Make some kind of undo command.
 	Add more options for :set command.
 	Add set values completion for :set command.
 
 Possible things to add.
-	Use system wide mimetypes file. /etc/mailcap? 
+	Use system wide mimetypes file. /etc/mailcap?
     Use mimetypes in FILETYPE.
 	Virtual File System - currently vifm can use fuse to mount most
-		file systems.  
+		file systems.
     Add a command to copy current pane location into X11 clipboard.

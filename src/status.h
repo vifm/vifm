@@ -47,6 +47,8 @@ typedef struct
 	int setting_change;
 	int skip_history;
 
+	int fast_run;
+
 	int errmsg_shown;
 
 	tree_t dirsize_cache;

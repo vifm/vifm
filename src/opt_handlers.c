@@ -13,6 +13,7 @@
 static void add_options(void);
 static void load_options(void);
 static void print_func(const char *msg, const char *description);
+static void fastrun_handler(enum opt_op op, union optval_t val);
 static void iec_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
 static void sort_handler(enum opt_op op, union optval_t val);
@@ -55,6 +56,7 @@ init_options(void)
 static void
 add_options(void)
 {
+	add_option("fastrun", OPT_BOOL, 0, NULL, &fastrun_handler);
 	add_option("iec", OPT_BOOL, 0, NULL, &iec_handler);
 	add_option("runexec", OPT_BOOL, 0, NULL, &runexec_handler);
 	add_option("timefmt", OPT_STR, 0, NULL, &timefmt_handler);
@@ -129,6 +131,12 @@ print_func(const char *msg, const char *description)
 		status_bar_message(buf);
 	}
 	save_msg = 1;
+}
+
+static void
+fastrun_handler(enum opt_op op, union optval_t val)
+{
+	curr_stats.fast_run = val.bool_val;
 }
 
 static void

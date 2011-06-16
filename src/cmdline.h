@@ -38,6 +38,7 @@ void enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
 		void *ptr);
 void enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb);
 void redraw_cmdline(void);
+char * exec_completion(char *str);
 
 #endif
 

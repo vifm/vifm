@@ -118,7 +118,6 @@ static void redraw_status_bar(struct line_stats *stat);
 static size_t get_words_count(const char * string);
 static char * get_last_word(char * string);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
-static char * exec_completion(char *str);
 static char * filename_completion(char *str, int type);
 static char * check_for_executable(char *string);
 
@@ -1498,7 +1497,7 @@ wcsdel(wchar_t *src, int pos, int len)
  * the string to be parsed should be specified in str.
  * In each subsequent call that should parse the same string, str should be NULL
  */
-static char *
+char *
 exec_completion(char *str)
 {
 	static char *string;

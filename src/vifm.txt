@@ -379,6 +379,11 @@ The following command names are reserved and cannot be used for user commands.
 --------------------------------------------------------------------------------
 *set-options*
 
+fastrun
+type: boolean
+With this option turned on you can run commands using :! with unambiguous
+beginning (e.g. :!Te instead of :!Terminal or :!Te<tab>).
+
 iec
 type: boolean
 Use KiB, MiB, ... instead of KB, MB, ...
