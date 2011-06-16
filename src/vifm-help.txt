@@ -110,7 +110,8 @@ The basic vi key bindings are used to move through the files and popup
 	:apropos manpage - will create a menu with the results from the
 		apropos command.
 	:command! name action - will overwrite a previously set command.
-	:delcommand command_name - will remove the command_name user command
+	:delcommand command_name - will remove the command_name user command.
+    :cmdhistory - show command line history menu.
     :colorscheme - gives a messages with a list of available color schemes.
     :colorscheme color_scheme_name - changes color scheme.
 	:f[ile] - popup menu of programs set for the file type of the current file.
@@ -123,7 +124,7 @@ The basic vi key bindings are used to move through the files and popup
 		command.
 	:q or :x will exit vifm (add ! if you don't want to save changes).
     :w same as :write
-    :wq will exit vifm after writing config
+    :wq will exit vifm after writing config.
     :write will write config (add ! to force even if settings weren't changed)
 	:! program will execute the program in a shell
 		:!command &   will run the process in the background.
@@ -131,11 +132,11 @@ The basic vi key bindings are used to move through the files and popup
 			showing partial output of the command.
 	:!!  same as :! but will pause the screen before returning to vifm.
 		:!!ls -l
-	:e load file into vi
+	:e load file into vi.
 	:only - switch to a one window view.
-	:pwd - show the present working directory
+	:pwd - show the present working directory.
 	:ch[ange] - create a menu window to alter a files properties.
-	:cd - change directory
+	:cd - change directory.
 		:cd ~/bin
     :popd - remove pane directories from stack.
     :pushd directory - add pane directories to stack.
@@ -317,7 +318,8 @@ Reserved :commands
 		change
 		cd
 		cmap
-		com
+        cmdhistory
+		command
 		d
 		delc
 		e

@@ -57,6 +57,7 @@ The builtin commands are:
 :ch[ange] - create a menu window to alter a files properties.
 :cd - change to your home directory.
 	:cd /usr/local - change directory to /usr/local.
+:cmdhistory - show command line history menu.
 :colorscheme - gives a messages with a list of available color schemes.
 :colorscheme color_scheme_name - changes color scheme.
 :[range]d[elete][count] - delete selected file or files.
@@ -340,6 +341,7 @@ The following command names are reserved and cannot be used for user commands.
   cd - change directory
   change - alter a files properties
   cmap - not used will be used for key mapping.
+  cmdhistory - show command line history menu
   colorscheme - will be used to set a colorscheme for a directory.
   command - show user commands.
   delete - delete file.

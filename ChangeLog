@@ -2,7 +2,7 @@
 
 	Made filetype menu editable.
 
-	Restore SIGINT behaviour on shellout.
+	Restore SIGINT (Ctrl+C) default behaviour on shellout.
 
 	Replace escape sequences in quick view output with ^foo.
 
@@ -18,6 +18,8 @@
 	Unmount all FUSE mounts on exit.
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).
+
+	Added :cmdhistory command.
 
 0.6 to 0.6.1
 

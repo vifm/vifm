@@ -24,6 +24,7 @@
 enum {
 	APROPOS,
 	BOOKMARK,
+	CMDHISTORY,
 	COLORSCHEME,
 	COMMAND,
 	FILETYPE,
@@ -67,6 +68,7 @@ void show_bookmarks_menu(FileView *view);
 void show_colorschemes_menu(FileView *view);
 void show_commands_menu(FileView *view);
 void show_history_menu(FileView *view);
+void show_cmdhistory_menu(FileView *view);
 void show_vifm_menu(FileView *view);
 void show_filetypes_menu(FileView *view, int background);
 void show_jobs_menu(FileView *view);

@@ -612,6 +612,9 @@ execute_menu_cb(FileView *view, menu_info *m)
 		case BOOKMARK:
 			move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
 			break;
+		case CMDHISTORY:
+			exec_commands(m->data[m->pos], view, GET_COMMAND, NULL, 1);
+			break;
 		case COLORSCHEME:
 			execute_colorschemes_cb(view, m);
 			break;
@@ -1238,6 +1241,44 @@ show_history_menu(FileView *view)
 		m.data[x] = m.data[m.len - 1 - x];
 		m.data[m.len - 1 - x] = t;
 	}
+	setup_menu(view);
+	draw_menu(view, &m);
+	moveto_menu_pos(view, m.pos, &m);
+	enter_menu_mode(&m, view);
+}
+
+void
+show_cmdhistory_menu(FileView *view)
+{
+	int x;
+	static menu_info m;
+
+	if(view->history_num < 1)
+		return;
+
+	m.top = 0;
+	m.current = 1;
+	m.len = cfg.cmd_history_num + 1;
+	m.pos = 0;
+	m.win_rows = 0;
+	m.type = CMDHISTORY;
+	m.matching_entries = 0;
+	m.match_dir = NONE;
+	m.regexp = NULL;
+	m.title = NULL;
+	m.args = NULL;
+	m.data = NULL;
+
+	getmaxyx(menu_win, m.win_rows, x);
+
+	for(x = 0; x < cfg.cmd_history_num + 1; x++)
+	{
+		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
+		m.data[x] = (char *)malloc((strlen(cfg.cmd_history[x]) + 1)*sizeof(char));
+		strcpy(m.data[x], cfg.cmd_history[x]);
+	}
+	m.len = x;
+
 	setup_menu(view);
 	draw_menu(view, &m);
 	moveto_menu_pos(view, m.pos, &m);

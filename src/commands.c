@@ -61,6 +61,7 @@ char *reserved_commands[] = {
 	"cmap",
 	"colorscheme",
 	"command",
+	"cmdhistory",
 	"delcommand",
 	"delete",
 	"display",
@@ -1257,6 +1258,9 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				else
 					show_commands_menu(view);
 			}
+			break;
+		case COM_CMDHISTORY:
+			show_cmdhistory_menu(curr_view);
 			break;
 		case COM_DELETE:
 			{
