@@ -94,7 +94,7 @@ get_default_program_for_file(char *file)
 	/* Only one program */
 	if((ptr = strchr(strptr, ',')) == NULL)
 	{
-			program_name = strdup(strptr);
+		program_name = strdup(strptr);
 	}
 	else
 	{

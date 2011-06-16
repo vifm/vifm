@@ -180,23 +180,18 @@ get_bookmark(FileView *view, char key)
 	switch(key)
 	{
 		case '\'':
-			{
-				change_directory(view, view->last_dir);
-				load_dir_list(view, 0);
-				moveto_list_pos(view, view->list_pos);
-				return 0;
-			}
-			break;
+			change_directory(view, view->last_dir);
+			load_dir_list(view, 0);
+			moveto_list_pos(view, view->list_pos);
+			return 0;
 		case 27: /* ascii Escape */
 		case 3: /* ascii ctrl c */
 			moveto_list_pos(view, view->list_pos);
 			return 0;
-			break;
+
 		default:
 			return move_to_bookmark(view, key);
-			break;
 	}
-	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

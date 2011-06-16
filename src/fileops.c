@@ -317,10 +317,303 @@ cd_updir(FileView *view)
 	}
 }
 
+/* mount_point should be an array of at least PATH_MAX characters */
+static void
+fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
+{
+	Fuse_List *runner;
+	int mount_point_id = 0;
+	Fuse_List *fuse_item = NULL;
+	char buf[2*PATH_MAX];
+	char cmd_buf[96];
+	char *cmd_pos;
+	char *buf_pos;
+	char *prog_pos;
+
+	/* get mount_point_id + mount_point and set runner pointing to the list's
+	 * tail */
+	if(fuse_mounts)
+	{
+		runner = fuse_mounts;
+		while(runner->next != NULL)
+			runner = runner->next;
+		mount_point_id = runner->mount_point_id + 1;
+	}
+	snprintf(mount_point, PATH_MAX, "%s/%03d_%s", cfg.fuse_home, mount_point_id,
+			get_current_file_name(view));
+	if(mkdir(mount_point, S_IRWXU))
+	{
+		show_error_msg("Unable to create FUSE mount directory", mount_point);
+		return;
+	}
+	/* I need the return code of the mount command */
+	status_bar_message("FUSE mounting selected file, please stand by..");
+	buf_pos = buf;
+	prog_pos = program;
+	/* Build the mount command based on the FUSE program config line in vifmrc.
+		 Accepted FORMAT: FUSE_MOUNT|some_mount_command %SOURCE_FILE %DESTINATION_DIR */
+	strcpy(buf_pos, "sh -c \"");
+	/* TODO what is this?
+		 strcpy(buf_pos, "sh -c \"pauseme PAUSE_ON_ERROR_ONLY "); */
+	buf_pos += strlen(buf_pos);
+	while(*prog_pos != '\0' && *prog_pos != '|')
+		prog_pos++;
+	prog_pos++;
+	while(*prog_pos != '\0')
+	{
+		if(*prog_pos == '%')
+		{
+			cmd_pos = cmd_buf;
+			while(*prog_pos != '\0' && *prog_pos != ' ')
+			{
+				*cmd_pos = *prog_pos;
+				if(cmd_pos < cmd_pos+sizeof(cmd_buf))
+					cmd_pos++;
+				prog_pos++;
+			}
+			*cmd_pos = '\0';
+			if(buf_pos + strlen(filename) >= buf + sizeof(buf) + 2)
+				continue;
+			else if(!strcmp(cmd_buf, "%SOURCE_FILE"))
+			{
+				*buf_pos++ = '\'';
+				strcpy(buf_pos, filename);
+				buf_pos += strlen(filename);
+				*buf_pos++ = '\'';
+			}
+			else if(!strcmp(cmd_buf, "%DESTINATION_DIR"))
+			{
+				*buf_pos++ = '\'';
+				strcpy(buf_pos, mount_point);
+				buf_pos += strlen(mount_point);
+				*buf_pos++ = '\'';
+			}
+		}
+		else
+		{
+			*buf_pos = *prog_pos;
+			if(buf_pos < buf_pos + sizeof(buf) - 1)
+				buf_pos++;
+			prog_pos++;
+		}
+	}
+
+	*buf_pos = '"';
+	*(++buf_pos) = '\0';
+	/* CMD built */
+	/* Just before running the mount,
+		 I need to chdir out temporarily from any FUSE mounted
+		 paths, Otherwise the fuse-zip command fails with
+		 "fusermount: failed to open current directory: permission denied"
+		 (this happens when mounting JARs from mounted JARs) */
+	chdir(cfg.fuse_home);
+	/*
+		 TODO see what's here
+		 def_prog_mode();
+		 endwin();
+		 my_system("clear");
+		 int status = my_system(buf);
+		 */
+	int status = background_and_wait_for_status(buf);
+	/* check child status */
+	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
+	{
+		werase(status_bar);
+		/* remove the DIR we created for the mount */
+		if(!access(mount_point, F_OK))
+			rmdir(mount_point);
+		show_error_msg("FUSE MOUNT ERROR", filename);
+		chdir(view->curr_dir);
+		return;
+	}
+	status_bar_message("FUSE mount success.");
+
+	fuse_item = (Fuse_List *)malloc(sizeof(Fuse_List));
+	strcpy(fuse_item->source_file_name, filename);
+	strcpy(fuse_item->source_file_dir, view->curr_dir);
+	strcpy(fuse_item->mount_point, mount_point);
+	fuse_item->mount_point_id = mount_point_id;
+	fuse_item->next = NULL;
+	if(!fuse_mounts)
+		fuse_mounts = fuse_item;
+	else
+		runner->next = fuse_item;
+}
+
+/* wont mount same file twice */
+static void
+fuse_try_mount(FileView *view, char *program)
+{
+	Fuse_List *runner;
+	char filename[PATH_MAX];
+	char mount_point[PATH_MAX];
+	int mount_found;
+
+	if(access(cfg.fuse_home, F_OK|W_OK|X_OK) != 0)
+	{
+		if(mkdir(cfg.fuse_home, S_IRWXU))
+		{
+			show_error_msg("Unable to create FUSE mount home directory",
+					cfg.fuse_home);
+			return;
+		}
+	}
+
+	runner = fuse_mounts;
+	mount_found = 0;
+
+	snprintf(filename, PATH_MAX, "%s/%s", view->curr_dir,
+			get_current_file_name(view));
+	/* check if already mounted */
+	while(runner)
+	{
+		if(!strcmp(filename, runner->source_file_name))
+		{
+			strcpy(mount_point, runner->mount_point);
+			mount_found = 1;
+			break;
+		}
+		runner = runner->next;
+	}
+
+	if(!mount_found)
+	{
+		/* new file to be mounted */
+		fuse_mount(view, filename, program, mount_point);
+	}
+
+	change_directory(view, mount_point);
+	load_dir_list(view, 0);
+	moveto_list_pos(view, view->curr_line);
+}
+
+static void
+execute_file(FileView *view)
+{
+	char *program;
+
+	/* Check for a filetype */
+	/* vi is set as the default for any extension without a program */
+	if((program = get_default_program_for_file(
+			view->dir_entry[view->list_pos].name)) == NULL)
+	{
+		view_file(view);
+		return;
+	}
+
+	if(strncmp(program, "FUSE_MOUNT", 10) == 0)
+	{
+		fuse_try_mount(view, program);
+	}
+	else if(strchr(program, '%') != NULL)
+	{
+		int m, s;
+		char *command = expand_macros(view, program, NULL, &m, &s);
+		shellout(command, 0);
+		free(command);
+	}
+	else
+	{
+		char buf[NAME_MAX *2];
+		char *temp = escape_filename(view->dir_entry[view->list_pos].name,
+				strlen(view->dir_entry[view->list_pos].name), 0);
+
+		snprintf(buf, sizeof(buf), "%s %s", program, temp);
+		shellout(buf, 0);
+		free(temp);
+	}
+	free(program);
+}
+
+static void
+follow_link(FileView *view)
+{
+	struct stat s;
+	int is_dir = 0, is_file = 0;
+	char *dir = NULL, *file = NULL, *link_dup;
+	char linkto[PATH_MAX + NAME_MAX];
+	int len;
+	char *filename;
+
+	filename = strdup(view->dir_entry[view->list_pos].name);
+	len = strlen(filename);
+	if(filename[len - 1] == '/')
+		filename[len - 1] = '\0';
+
+	len = readlink (filename, linkto, sizeof (linkto));
+
+	free(filename);
+
+	if(len == 0)
+	{
+		status_bar_message("Couldn't Resolve Link");
+		return;
+	}
+
+	linkto[len] = '\0';
+	link_dup = strdup(linkto);
+
+	lstat(linkto, &s);
+
+	if((s.st_mode & S_IFMT) == S_IFDIR)
+	{
+		is_dir = 1;
+		dir = strdup(view->dir_entry[view->list_pos].name);
+	}
+	else
+	{
+		int x;
+		for(x = strlen(linkto); x > 0; x--)
+		{
+			if(linkto[x] == '/')
+			{
+				linkto[x] = '\0';
+				lstat(linkto, &s);
+				if((s.st_mode & S_IFMT) == S_IFDIR)
+				{
+					is_dir = 1;
+					dir = strdup(linkto);
+					break;
+				}
+			}
+		}
+		if((file = strrchr(link_dup, '/')) != NULL)
+		{
+			file++;
+			is_file = 1;
+		}
+	}
+	if(is_dir)
+	{
+		change_directory(view, dir);
+		load_dir_list(view, 0);
+		moveto_list_pos(view, view->curr_line);
+
+		if(is_file)
+		{
+			int pos = find_file_pos_in_list(view, file);
+			if(pos >= 0)
+				moveto_list_pos(view, pos);
+		}
+	}
+	else
+	{
+		int pos = find_file_pos_in_list(view, link_dup);
+		if(pos >= 0)
+			moveto_list_pos(view, pos);
+	}
+	free(link_dup);
+	free(dir);
+}
+
 void
 handle_file(FileView *view, int dont_execute)
 {
-	if(DIRECTORY == view->dir_entry[view->list_pos].type)
+	int type;
+
+	type = view->dir_entry[view->list_pos].type;
+
+	if(type == DIRECTORY)
 	{
 		char *filename = get_current_file_name(view);
 
@@ -341,8 +634,7 @@ handle_file(FileView *view, int dont_execute)
 
 		snprintf(filename, sizeof(filename), "%s/vimfiles", cfg.config_dir);
 		fp = fopen(filename, "w");
-		snprintf(filename, sizeof(filename), "%s/%s",
-				view->curr_dir,
+		snprintf(filename, sizeof(filename), "%s/%s", view->curr_dir,
 				view->dir_entry[view->list_pos].name);
 		endwin();
 		fprintf(fp, "%s", filename);
@@ -350,317 +642,21 @@ handle_file(FileView *view, int dont_execute)
 		exit(0);
 	}
 
-	if(EXECUTABLE == view->dir_entry[view->list_pos].type && !dont_execute)
+	if(type == EXECUTABLE && !dont_execute && cfg.auto_execute)
 	{
-		if(cfg.auto_execute)
-		{
-			char buf[NAME_MAX];
-			snprintf(buf, sizeof(buf), "./%s", get_current_file_name(view));
-			shellout(buf, 1);
-			return;
-		}
-		else /* Check for a filetype */
-		{
-			char *program = NULL;
-
-			if((program = get_default_program_for_file(
-						view->dir_entry[view->list_pos].name)) != NULL)
-			{
-				if(strchr(program, '%'))
-				{
-					int m = 0;
-					int s = 0;
-					char *command = expand_macros(view, program, NULL, &m, &s);
-					shellout(command, 0);
-					free(command);
-					return;
-				}
-				else
-				{
-					char buf[NAME_MAX *2];
-					char *temp = escape_filename(view->dir_entry[view->list_pos].name,
-						   strlen(view->dir_entry[view->list_pos].name), 0);
-
-					snprintf(buf, sizeof(buf), "%s %s", program, temp);
-					shellout(buf, 0);
-					free(program);
-					free(temp);
-					return;
-				}
-			}
-			else /* vi is set as the default for any extension without a program */
-			{
-				view_file(view);
-			}
-			return;
-		}
+		char buf[NAME_MAX];
+		snprintf(buf, sizeof(buf), "./%s", get_current_file_name(view));
+		shellout(buf, 1);
 	}
-	if((REGULAR == view->dir_entry[view->list_pos].type)
-				|| (EXECUTABLE == view->dir_entry[view->list_pos].type))
+	else if(type == REGULAR || type == EXECUTABLE)
 	{
-		char *program = NULL;
-
-		if((program = get_default_program_for_file(
-					view->dir_entry[view->list_pos].name)) != NULL)
-		{
-			if(!strncmp(program, "FUSE_MOUNT", 10))
-			{
-				if(access(cfg.fuse_home, F_OK|W_OK|X_OK) != 0)
-				{
-					if(mkdir(cfg.fuse_home, S_IRWXU))
-					{
-						show_error_msg("Unable to create FUSE mount home directory", (char *)cfg.fuse_home);
-						return;
-					}
-								}
-				Fuse_List *runner = fuse_mounts, *fuse_item = NULL;
-				char filename[PATH_MAX];
-				char mount_point[PATH_MAX];
-				int mount_point_id = 0, mount_found = 0;
-				snprintf(filename, PATH_MAX, "%s/%s",
-					view->curr_dir,
-					get_current_file_name(view)
-				);
-				/*check if already mounted*/
-				while(runner)
-				{
-					if(!strcmp(filename, runner->source_file_name))
-					{
-						strcpy(mount_point, runner->mount_point);
-						mount_found = 1;
-						break;
-					}
-					runner = runner->next;
-				}
-				/*new file to be mounted*/
-				if(!mount_found)
-				{
-					/*get mount_point_id + mount_point and set runner pointing to the list's tail*/
-					if(fuse_mounts)
-					{
-						runner = fuse_mounts;
-						while(runner->next != NULL)
-							runner = runner->next;
-						mount_point_id = runner->mount_point_id + 1;
-					}
-					snprintf(mount_point, PATH_MAX, "%s/%03d_%s",
-						cfg.fuse_home,
-						mount_point_id,
-						get_current_file_name(view)
-					);
-					if(mkdir(mount_point, S_IRWXU))
-					{
-						show_error_msg("Unable to create FUSE mount directory", mount_point);
-						return;
-					}
-					/*I need the return code of the mount command*/
-					status_bar_message("FUSE mounting selected file, please stand by..");
-					char buf[2*PATH_MAX];
-					char cmd_buf[96];
-					char *cmd_pos;
-					char *buf_pos = buf;
-					char *prog_pos = program;
-/*Build the mount command based on the FUSE program config line in vifmrc.
-  Accepted FORMAT: FUSE_MOUNT|some_mount_command %SOURCE_FILE %DESTINATION_DIR*/
-					strcpy(buf_pos, "sh -c \"");
-					//strcpy(buf_pos, "sh -c \"pauseme PAUSE_ON_ERROR_ONLY ");
-					buf_pos += strlen(buf_pos);
-					while(*prog_pos != '\0' && *prog_pos != '|')
-						prog_pos++;
-					prog_pos++;
-					while(*prog_pos != '\0')
-					{
-						if(*prog_pos == '%')
-						{
-							cmd_pos = cmd_buf;
-							while(*prog_pos != '\0' && *prog_pos != ' ')
-							{
-								*cmd_pos = *prog_pos;
-								if(cmd_pos < cmd_pos+sizeof(cmd_buf))
-									cmd_pos++;
-								prog_pos++;
-							}
-							*cmd_pos = '\0';
-							if(!strcmp(cmd_buf, "%SOURCE_FILE") && (buf_pos+strlen(filename)<buf+sizeof(buf)+2))
-							{
-								*buf_pos++='\'';
-								strcpy(buf_pos, filename);
-								buf_pos += strlen(filename);
-								*buf_pos++='\'';
-							}
-							else if(!strcmp(cmd_buf, "%DESTINATION_DIR") && (buf_pos+strlen(filename)<buf+sizeof(buf)+2))
-							{
-								*buf_pos++='\'';
-								strcpy(buf_pos, mount_point);
-								buf_pos += strlen(mount_point);
-								*buf_pos++='\'';
-							}
-						}
-						else
-						{
-							*buf_pos = *prog_pos;
-							if(buf_pos < buf_pos+sizeof(buf)-1)
-								buf_pos++;
-							prog_pos++;
-						}
-					}
-
-					*buf_pos = '"';
-					*(++buf_pos) = '\0';
-					/*uff, CMD built.*/
-					/*Just before running the mount,
-					  I need to chdir out temporarily from any FUSE mounted
-					  paths, Otherwise the fuse-zip command fails with
-					  "fusermount: failed to open current
-						directory: permission denied"
-					 *(this happens when mounting JARs from mounted JARs)*/
-					chdir(cfg.fuse_home);
-					/*
-					def_prog_mode();
-					endwin();
-					my_system("clear");
-					int status = my_system(buf);
-					*/
-					int status = background_and_wait_for_status(buf);
-					/*check child status*/
-					if( !WIFEXITED(status) || (WIFEXITED(status) &&
-								WEXITSTATUS(status)) )
-					{
-						werase(status_bar);
-						/*remove the DIR we created for the mount*/
-						if(!access(mount_point, F_OK))
-							rmdir(mount_point);
-						show_error_msg("FUSE MOUNT ERROR", filename);
-						chdir(view->curr_dir);
-						return;
-					}
-					status_bar_message("FUSE mount success.");
-
-					fuse_item = (Fuse_List *)malloc(sizeof(Fuse_List));
-					strcpy(fuse_item->source_file_name, filename);
-					strcpy(fuse_item->source_file_dir, view->curr_dir);
-					strcpy(fuse_item->mount_point, mount_point);
-					fuse_item->mount_point_id = mount_point_id;
-					fuse_item->next = NULL;
-					if(!fuse_mounts)
-						fuse_mounts = fuse_item;
-					else
-						runner->next = fuse_item;
-				}
-				change_directory(view, mount_point);
-				load_dir_list(view, 0);
-				moveto_list_pos(view, view->curr_line);
-				return;
-			}
-			if(strchr(program, '%'))
-			{
-				int m = 0;
-				int s = 0;
-				char *command = expand_macros(view, program, NULL, &m, &s);
-				shellout(command, 0);
-				free(command);
-				return;
-			}
-			else
-			{
-				char buf[NAME_MAX *2];
-				char *temp = escape_filename(view->dir_entry[view->list_pos].name,
-						strlen(view->dir_entry[view->list_pos].name), 0);
-
-				snprintf(buf, sizeof(buf), "%s %s", program, temp);
-				shellout(buf, 0);
-				free(program);
-				free(temp);
-				return;
-			}
-		}
-		else /* vi is set as the default for any extension without a program */
-			view_file(view);
-
-		return;
+		execute_file(view);
 	}
-	if(LINK == view->dir_entry[view->list_pos].type)
+	else if(type == LINK)
 	{
-		char linkto[PATH_MAX +NAME_MAX];
-		int len;
-		char *filename = strdup(view->dir_entry[view->list_pos].name);
-		len = strlen(filename);
-		if (filename[len - 1] == '/')
-			filename[len - 1] = '\0';
-
-		len = readlink (filename, linkto, sizeof (linkto));
-
-		free(filename);
-
-		if (len > 0)
-		{
-			struct stat s;
-			int is_dir = 0;
-			int is_file = 0;
-			char *dir = NULL;
-			char *file = NULL;
-			char *link_dup;
-
-			linkto[len] = '\0';
-			link_dup = strdup(linkto);
-
-			lstat(linkto, &s);
-
-			if((s.st_mode & S_IFMT) == S_IFDIR)
-			{
-				is_dir = 1;
-				dir = strdup(view->dir_entry[view->list_pos].name);
-			}
-			else
-			{
-				int x;
-				for(x = strlen(linkto); x > 0; x--)
-				{
-					if(linkto[x] == '/')
-					{
-						linkto[x] = '\0';
-						lstat(linkto, &s);
-						if((s.st_mode & S_IFMT) == S_IFDIR)
-						{
-							is_dir = 1;
-							dir = strdup(linkto);
-							break;
-						}
-					}
-				}
-				if((file = strrchr(link_dup, '/')))
-				{
-					file++;
-					is_file = 1;
-				}
-			}
-			if(is_dir)
-			{
-				change_directory(view, dir);
-				load_dir_list(view, 0);
-				moveto_list_pos(view, view->curr_line);
-
-				if(is_file)
-				{
-					int pos = find_file_pos_in_list(view, file);
-					if(pos >= 0)
-						moveto_list_pos(view, pos);
-				}
-			}
-			else
-			{
-				int pos = find_file_pos_in_list(view, link_dup);
-				if(pos >= 0)
-					moveto_list_pos(view, pos);
-			}
-			free(link_dup);
-			free(dir);
-		}
-		else
-			status_bar_message("Couldn't Resolve Link");
+		follow_link(view);
 	}
 }
-
 
 int
 pipe_and_capture_errors(char *command)
@@ -671,43 +667,43 @@ pipe_and_capture_errors(char *command)
 	int error = 0;
   char *args[4];
 
-  if (pipe (file_pipes) != 0)
+  if(pipe(file_pipes) != 0)
 	  return 1;
 
-  if ((pid = fork ()) == -1)
+  if((pid = fork()) == -1)
 	  return 1;
 
-  if (pid == 0)
+  if(pid == 0)
 	{
-			close(1);
-			close(2);
-			dup(file_pipes[1]);
-	  close (file_pipes[0]);
-	  close (file_pipes[1]);
+		close(1);
+		close(2);
+		dup(file_pipes[1]);
+		close(file_pipes[0]);
+		close(file_pipes[1]);
 
-	  args[0] = "sh";
-	  args[1] = "-c";
-	  args[2] = command;
-	  args[3] = NULL;
-	  execvp (args[0], args);
-	  exit (127);
+		args[0] = "sh";
+		args[1] = "-c";
+		args[2] = command;
+		args[3] = NULL;
+		execvp(args[0], args);
+		exit(127);
 	}
-  else
+	else
 	{
-			char buf[1024];
-	  close (file_pipes[1]);
-			while((nread = read(*file_pipes, buf, sizeof(buf) -1)) > 0)
-			{
-				buf[nread] = '\0';
-				error = nread;
-			}
-			if(error > 1)
-			{
-				char title[strlen(command) +4];
-				snprintf(title, sizeof(title), " %s ", command);
-				show_error_msg(title, buf);
-				return 1;
-			}
+		char buf[1024];
+		close (file_pipes[1]);
+		while((nread = read(*file_pipes, buf, sizeof(buf) -1)) > 0)
+		{
+			buf[nread] = '\0';
+			error = nread;
+		}
+		if(error > 1)
+		{
+			char title[strlen(command) +4];
+			snprintf(title, sizeof(title), " %s ", command);
+			show_error_msg(title, buf);
+			return 1;
+		}
 	}
 	return 0;
 }
