@@ -84,14 +84,23 @@ clean_menu_position(menu_info *m)
 }
 
 void
-show_error_msg(char *title, const char *message)
+redraw_error_msg(char *title_arg, const char *message_arg)
 {
+	static char *title;
+	static const char *message;
+	
 	int sx, sy;
 	int x, y;
-	int key;
 	int z;
 
+	if(title_arg != NULL && message_arg != NULL)
+	{
+		title = title_arg;
+		message = message_arg;
+	}
+
 	curr_stats.freeze = 1;
+	curr_stats.errmsg_shown = 1;
 	curs_set(0);
 	werase(error_win);
 
@@ -100,7 +109,12 @@ show_error_msg(char *title, const char *message)
 
 	z = strlen(message);
 	if(z <= x - 2)
+	{
+		y = 6;
+		wresize(error_win, y, x);
+		mvwin(error_win, (sy - y)/2, (sx - x)/2);
 		mvwaddstr(error_win, 2, (x - z)/2, message);
+	}
 	else
 	{
 		int i;
@@ -139,11 +153,20 @@ show_error_msg(char *title, const char *message)
 		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
 
 	mvwaddstr(error_win, y - 2, (x - 25)/2, "Press Return to continue");
+}
+
+void
+show_error_msg(char *title, const char *message)
+{
+	int key;
+
+	redraw_error_msg(title, message);
 
 	do
 		key = wgetch(error_win);
 	while(key != 13 && key != 3); /* ascii Return  ascii Ctrl-c */
 
+	curr_stats.errmsg_shown = 0;
 	curr_stats.freeze = 0;
 
 	werase(error_win);

@@ -38,6 +38,9 @@ init_status(void)
 	curr_stats.view = 0;
 	curr_stats.setting_change = 0;
 	curr_stats.use_input_bar = 1;
+	curr_stats.dirsize_cache = 0;
+	curr_stats.errmsg_shown = 0;
+	curr_stats.gtk_available = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

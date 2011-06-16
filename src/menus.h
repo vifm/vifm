@@ -77,6 +77,7 @@ void show_user_menu(FileView *view, char *command);
 void show_register_menu(FileView *view);
 void reset_popup_menu(menu_info *m);
 void setup_menu(FileView *view);
+void redraw_error_msg(char *title_arg, const char *message_arg);
 void show_error_msg(char * title, const char *message);
 int search_menu_list(FileView *view, char *command, menu_info *ptr);
 int query_user_menu(char *title, char *message);

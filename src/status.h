@@ -47,6 +47,8 @@ typedef struct
 	int setting_change;
 	int skip_history;
 
+	int errmsg_shown;
+
 	tree_t dirsize_cache;
 
 #ifdef HAVE_LIBGTK

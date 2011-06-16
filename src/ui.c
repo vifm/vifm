@@ -460,6 +460,14 @@ redraw_window(void)
 	wrefresh(curr_view->win);
 	curr_stats.freeze = 0;
 	curr_stats.need_redraw = 0;
+
+	if(curr_stats.errmsg_shown)
+	{
+		redraw_error_msg(NULL, NULL);
+		redrawwin(error_win);
+		wnoutrefresh(error_win);
+		doupdate();
+	}
 }
 
 void
@@ -576,7 +584,8 @@ update_all_windows(void)
 	wnoutrefresh(num_win);
 	wnoutrefresh(rborder);
 
-	doupdate();
+	if(!curr_stats.errmsg_shown)
+		doupdate();
 }
 
 void
