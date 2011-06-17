@@ -49,6 +49,24 @@
 #include "utils.h"
 
 static void
+show_version_msg(void)
+{
+	int i, len;
+	char **list;
+	list = malloc(sizeof(char*)*fill_version_info(NULL));
+
+	len = fill_version_info(list);
+	for(i = 0; i < len; i++)
+	{
+		puts(list[i]);
+		free(list[i]);
+	}
+
+	free(list);
+//	printf("vifm %s\n", VERSION);
+}
+
+static void
 show_help_msg(void)
 {
 	puts("vifm usage:\n");
@@ -203,7 +221,7 @@ main(int argc, char *argv[])
 		else if(!strcmp(argv[x], "--version") || !strcmp(argv[x], "-v"))
 		{
 			endwin();
-			printf("vifm %s\n", VERSION);
+			show_version_msg();
 			exit(0);
 		}
 		else if(!strcmp(argv[x], "--help") || !strcmp(argv[x], "-h"))

@@ -29,6 +29,8 @@
 #include <string.h>
 #include <wchar.h>
 
+#include "../config.h"
+
 #include "ui.h"
 #include "status.h"
 #include "utils.h"
@@ -431,6 +433,47 @@ uchar2str(wchar_t c)
 			break;
 	}
 	return buf;
+}
+
+/* When list is NULL returns maximum number of lines, otherwise returns number
+ * of filled lines */
+int
+fill_version_info(char **list)
+{
+	int x = 0;
+
+	if(list == NULL)
+		return 7;
+
+	list[x++] = strdup("Version: " VERSION);
+	list[x++] = strdup("Compiled at: " __DATE__ " " __TIME__);
+	list[x++] = strdup("");
+
+#ifdef ENABLE_COMPATIBILITY_MODE
+	list[x++] = strdup("Compatibility mode is on");
+#else
+	list[x++] = strdup("Compatibility mode is off");
+#endif
+
+#ifdef ENABLE_EXTENDED_KEYS
+	list[x++] = strdup("Support of extended keys is on");
+#else
+	list[x++] = strdup("Support of extended keys is off");
+#endif
+
+#ifdef HAVE_LIBGTK
+	list[x++] = strdup("With GTK+ library");
+#else
+	list[x++] = strdup("Without GTK+ library");
+#endif
+
+#ifdef HAVE_LIBMAGIC
+	list[x++] = strdup("With magic library");
+#else
+	list[x++] = strdup("Without magic library");
+#endif
+
+	return x;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

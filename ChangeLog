@@ -23,6 +23,10 @@
 
 	Added 'fastrun' option.
 
+	Implemented :vifm command.
+
+	More verbose --version (and -v) output.
+
 0.6 to 0.6.1
 
 	Added :set command.

@@ -1583,18 +1583,20 @@ show_vifm_menu(FileView *view)
 	static menu_info m;
 	m.top = 0;
 	m.current = 1;
-	m.len = 0;
+	m.len = fill_version_info(NULL);
 	m.pos = 0;
 	m.win_rows = 0;
 	m.type = VIFM;
 	m.matching_entries = 0;
 	m.match_dir = NONE;
 	m.regexp = NULL;
-	m.title = NULL;
+	m.title = strdup(" vifm information ");
 	m.args = NULL;
-	m.data = NULL;
+	m.data = malloc(sizeof(char*)*m.len);
 
 	getmaxyx(menu_win, m.win_rows, x);
+
+	m.len = fill_version_info(m.data);
 
 	setup_menu(view);
 	draw_menu(view, &m);

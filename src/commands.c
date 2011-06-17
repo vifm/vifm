@@ -1293,7 +1293,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			}
 			break;
 		case COM_CMDHISTORY:
-			show_cmdhistory_menu(curr_view);
+			show_cmdhistory_menu(view);
 			break;
 		case COM_DELETE:
 			{
@@ -1569,8 +1569,9 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			}
 			break;
 		case COM_VIFM:
-			show_error_msg("I haven't gotten here yet",
-						"Sorry this is not implemented");
+			show_vifm_menu(view);
+//			show_error_msg("I haven't gotten here yet",
+//						"Sorry this is not implemented");
 			break;
 		case COM_YANK:
 			{
