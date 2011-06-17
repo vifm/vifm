@@ -200,13 +200,13 @@ main(int argc, char *argv[])
 		{
 			cfg.vim_filter = 1;
 		}
-		else if(!strcmp(argv[x], "--version"))
+		else if(!strcmp(argv[x], "--version") || !strcmp(argv[x], "-v"))
 		{
 			endwin();
 			printf("vifm %s\n", VERSION);
 			exit(0);
 		}
-		else if(!strcmp(argv[x], "--help"))
+		else if(!strcmp(argv[x], "--help") || !strcmp(argv[x], "-h"))
 		{
 			endwin();
 			show_help_msg();
