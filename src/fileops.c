@@ -182,9 +182,11 @@ execute(char **args)
 	return pid;
 }
 
+/* returns new value for save_msg */
 int
 yank_files(FileView *view, int reg, int count, int *indexes)
 {
+	char buf[32];
 	int tmp;
 	if(count > 0)
 		get_selected_files(view, count, indexes);
@@ -200,8 +202,13 @@ yank_files(FileView *view, int reg, int count, int *indexes)
 		clean_selected_files(curr_view);
 		draw_dir_list(curr_view, curr_view->top_line, curr_view->list_pos);
 		moveto_list_pos(curr_view, curr_view->list_pos);
-		return tmp;
+		count = tmp;
 	}
+
+	snprintf(buf, sizeof(buf), " %d %s yanked.", count,
+			count == 1 ? "file" : "files");
+	status_bar_message(buf);
+
 	return count;
 }
 

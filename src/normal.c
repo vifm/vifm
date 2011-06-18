@@ -126,7 +126,6 @@ static void cmd_m(struct key_info, struct keys_info *);
 static void cmd_t(struct key_info, struct keys_info *);
 static void cmd_yy(struct key_info, struct keys_info *);
 static void cmd_y_selector(struct key_info, struct keys_info *);
-static void yank_status_bar_msg(int count);
 static void cmd_zM(struct key_info, struct keys_info *);
 static void cmd_zO(struct key_info, struct keys_info *);
 static void cmd_zR(struct key_info, struct keys_info *);
@@ -1013,13 +1012,14 @@ delete(struct key_info key_info, int use_trash)
 			y++;
 		}
 	}
-	delete_file(curr_view, key_info.reg, 0, NULL, use_trash);
+	curr_stats.save_msg = delete_file(curr_view, key_info.reg, 0, NULL,
+			use_trash);
 #else /* ENABLE_COMPATIBILITY_MODE */
 	int i;
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	i = curr_view->list_pos;
-	delete_file(curr_view, key_info.reg, 1, &i, use_trash);
+	curr_stats.save_msg = delete_file(curr_view, key_info.reg, 1, &i, use_trash);
 #endif /* ENABLE_COMPATIBILITY_MODE */
 }
 
@@ -1219,50 +1219,34 @@ cmd_t(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_yy(struct key_info key_info, struct keys_info *keys_info)
 {
-	int count;
-
 	if(key_info.count != NO_COUNT_GIVEN)
 		pick_files(curr_view, curr_view->list_pos + key_info.count - 1, keys_info);
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 
 #ifdef ENABLE_COMPATIBILITY_MODE
-	count = yank_files(curr_view, key_info.reg, keys_info->count,
+	curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
 			keys_info->indexes);
 #else /* ENABLE_COMPATIBILITY_MODE */
-	count = yank_files(curr_view, key_info.reg, 1, &curr_view->list_pos);
+	curr_stats.save_msg = yank_files(curr_view, key_info.reg, 1,
+			&curr_view->list_pos);
 #endif /* ENABLE_COMPATIBILITY_MODE */
 
 	if(key_info.count != NO_COUNT_GIVEN)
 		free(keys_info->indexes);
-
-	yank_status_bar_msg(count);
 }
 
 static void
 cmd_y_selector(struct key_info key_info, struct keys_info *keys_info)
 {
-	int count;
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
-	count = yank_files(curr_view, key_info.reg, keys_info->count,
+	curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
 			keys_info->indexes);
 
 	free(keys_info->indexes);
 	keys_info->indexes = NULL;
 	keys_info->count = 0;
-
-	yank_status_bar_msg(count);
-}
-
-static void
-yank_status_bar_msg(int count)
-{
-	char buf[32];
-	snprintf(buf, sizeof(buf), " %d %s yanked.", count,
-			count == 1 ? "file" : "files");
-	status_bar_message(buf);
-	curr_stats.save_msg = 1;
 }
 
 static void

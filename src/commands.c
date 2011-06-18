@@ -1297,14 +1297,13 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_DELETE:
 			select_files_in_range(view, cmd);
-			delete_file(view, DEFAULT_REG_NAME, 0, NULL, 1);
+			save_msg = delete_file(view, DEFAULT_REG_NAME, 0, NULL, 1);
 			break;
 		case COM_DELCOMMAND:
 			{
 				if(cmd->args)
 				{
 					remove_command(cmd->args);
-					//write_config_file();
 				}
 			}
 			break;
@@ -1314,8 +1313,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_EDIT:
 			{
-				if((!view->selected_files) ||
-						(!view->dir_entry[view->list_pos].selected))
+				if(!view->selected_files || !view->dir_entry[view->list_pos].selected)
 				{
 					char buf[PATH_MAX];
 					if(view->dir_entry[view->list_pos].name != NULL)
@@ -1564,7 +1562,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_YANK:
 			select_files_in_range(view, cmd);
-			yank_files(view, DEFAULT_REG_NAME, 0, NULL);
+			save_msg = yank_files(view, DEFAULT_REG_NAME, 0, NULL);
 			break;
 		case COM_VMAP:
 			save_msg = do_map(cmd, "Visual", "vmap", VISUAL_MODE);
@@ -1583,7 +1581,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			{
 				char buf[48];
 				snprintf(buf, sizeof(buf), "Builtin is %d", cmd->builtin);
-				show_error_msg("Internal Error in Command.c", buf);
+				show_error_msg("Internal Error in " __FILE__, buf);
 			}
 			break;
 	}
