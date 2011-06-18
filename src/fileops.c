@@ -278,7 +278,8 @@ check_link_is_dir(FileView *view, int pos)
 	{
 		struct stat s;
 		linkto[len] = '\0';
-		lstat(linkto, &s);
+		if(lstat(linkto, &s) != 0)
+			return 0;
 
 		if((s.st_mode & S_IFMT) == S_IFDIR)
 			return 1;

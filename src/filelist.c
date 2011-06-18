@@ -835,6 +835,10 @@ save_view_history(FileView *view)
 {
 	int x;
 
+	/* this could happen on FUSE error */
+	if(view->list_rows <= 0)
+		return;
+
 	if(cfg.history_len == 0)
 		return;
 	if(curr_stats.skip_history)
@@ -1670,7 +1674,9 @@ check_if_filelists_have_changed(FileView *view)
 
 	if(stat(view->curr_dir, &s) != 0)
 	{
-		show_error_msg("Directory Access Error", "Cannot open directory");
+		char buf[12 + PATH_MAX + 1];
+		snprintf(buf, sizeof(buf), "Cannot open %s", view->curr_dir);
+		show_error_msg("Directory Access Error", buf);
 		leave_invalid_dir(view, view->curr_dir);
 		change_directory(view, view->curr_dir);
 		clean_selected_files(view);
