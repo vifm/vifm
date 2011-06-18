@@ -33,6 +33,8 @@
 
 	Fixed '< and '> marks handling.
 
+	Added o and O keys for Visual mode (switch selection bound).
+
 0.6 to 0.6.1
 
 	Added :set command.

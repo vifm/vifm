@@ -24,10 +24,11 @@ The basic vi key bindings are used to move through the files and popup
     C clone file.
 	m [a-z][A-Z][0-9] to set bookmark
 	' letter to goto bookmark
-	v start or stop visualy selecting files.  This works with the j and k keys
+	v or V start or stop visualy selecting files.  This works with the j and k keys
 		for movement.  This is different then in vi in that v in visual mode will
 		leave the selected files highlighted.  If you want to clear the selected
-		files Ctrl-c or Esc will unselect the files.
+		files Ctrl-c or Esc will unselect the files.  You can use o or O keys to
+        switch active selection bound.
 	dd - the default setting is to move the selected files to the trash
 		directory.
     DD - delete file omitting trash directory.

@@ -49,6 +49,7 @@ static void cmd_G(struct key_info, struct keys_info *);
 static void cmd_H(struct key_info, struct keys_info *);
 static void cmd_L(struct key_info, struct keys_info *);
 static void cmd_M(struct key_info, struct keys_info *);
+static void cmd_O(struct key_info, struct keys_info *);
 static void cmd_d(struct key_info, struct keys_info *);
 static void delete(struct key_info key_info, int use_trash);
 static void cmd_cp(struct key_info, struct keys_info *);
@@ -100,6 +101,9 @@ init_visual_mode(int *key_mode)
 	curr = add_cmd(L"M", VISUAL_MODE);
 	curr->data.handler = cmd_M;
 
+	curr = add_cmd(L"O", VISUAL_MODE);
+	curr->data.handler = cmd_O;
+
 	curr = add_cmd(L"V", VISUAL_MODE);
 	curr->data.handler = cmd_ctrl_c;
 
@@ -117,6 +121,9 @@ init_visual_mode(int *key_mode)
 
 	curr = add_cmd(L"k", VISUAL_MODE);
 	curr->data.handler = cmd_k;
+
+	curr = add_cmd(L"o", VISUAL_MODE);
+	curr->data.handler = cmd_O;
 
 	curr = add_cmd(L"v", VISUAL_MODE);
 	curr->data.handler = cmd_ctrl_c;
@@ -300,10 +307,19 @@ cmd_M(struct key_info key_info, struct keys_info *keys_info)
 		{
 			while(view->list_pos > view->top_line + view->window_rows/2)
 			{
-				select_up_one(view,start_pos);
+				select_up_one(view, start_pos);
 			}
 		}
 	}
+	update();
+}
+
+static void
+cmd_O(struct key_info key_info, struct keys_info *keys_info)
+{
+	int t = start_pos;
+	start_pos = view->list_pos;
+	view->list_pos = t;
 	update();
 }
 
