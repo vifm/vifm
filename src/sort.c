@@ -24,6 +24,8 @@
 #include <string.h> /* strrchr */
 
 #include "filelist.h"
+#include "status.h"
+#include "tree.h"
 #include "ui.h"
 
 static FileView* view;
@@ -52,8 +54,8 @@ sort_dir_list(const void *one, const void *two)
 {
 	int retval;
 	char *pfirst, *psecond;
-	const dir_entry_t *first = (const dir_entry_t *) one;
-	const dir_entry_t *second = (const dir_entry_t *) two;
+	dir_entry_t *first = (dir_entry_t *) one;
+	dir_entry_t *second = (dir_entry_t *) two;
 	int first_is_dir = false;
 	int second_is_dir = false;
 
@@ -96,7 +98,23 @@ sort_dir_list(const void *one, const void *two)
 			break;
 
 		case SORT_BY_SIZE:
-			retval = first->size - second->size;
+			{
+				size_t size;
+
+				size = 0;
+				if(first_is_dir)
+					size = (size_t)tree_get_data(curr_stats.dirsize_cache, first->name);
+				if(size != 0)
+					first->size = size;
+
+				size = 0;
+				if(second_is_dir)
+					size = (size_t)tree_get_data(curr_stats.dirsize_cache, second->name);
+				if(size != 0)
+					second->size = size;
+
+				retval = first->size - second->size;
+			}
 			break;
 
 		case SORT_BY_TIME_MODIFIED:

@@ -65,6 +65,9 @@ tree_get_data(tree_t tree, const char *path)
 	struct node *node;
 	char real_path[PATH_MAX];
 
+	if(tree->child == NULL)
+		return NULL;
+
 	if(realpath(path, real_path) != real_path)
 		return NULL;
 
