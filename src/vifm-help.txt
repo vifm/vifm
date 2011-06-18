@@ -12,6 +12,7 @@ The basic vi key bindings are used to move through the files and popup
 
 	gg top of list
 	ga calculate size of directory
+    gv go to visual mode restoring last selection.
 	G bottom of list
     H move to the first file in the window.
     M move to the file in the middle of the window.

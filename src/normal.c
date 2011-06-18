@@ -112,6 +112,7 @@ static void find_f(int ch);
 static void cmd_ga(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
 static void selector_gg(struct key_info, struct keys_info *);
+static void cmd_gv(struct key_info, struct keys_info *);
 static void cmd_h(struct key_info, struct keys_info *);
 static void cmd_i(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
@@ -331,6 +332,9 @@ init_normal_mode(int *key_mode)
 
 	curr = add_cmd(L"gg", NORMAL_MODE);
 	curr->data.handler = cmd_gg;
+
+	curr = add_cmd(L"gv", NORMAL_MODE);
+	curr->data.handler = cmd_gv;
 
 	curr = add_cmd(L"h", NORMAL_MODE);
 	curr->data.handler = cmd_h;
@@ -755,6 +759,12 @@ selector_gg(struct key_info key_info, struct keys_info *keys_info)
 	pick_files(curr_view, key_info.count - 1, keys_info);
 }
 
+static void
+cmd_gv(struct key_info key_info, struct keys_info *keys_info)
+{
+	enter_visual_mode(1);
+}
+
 /* Go to first file in window. */
 static void
 cmd_H(struct key_info key_info, struct keys_info *keys_info)
@@ -837,7 +847,7 @@ cmd_P(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_V(struct key_info key_info, struct keys_info *keys_info)
 {
-	enter_visual_mode();
+	enter_visual_mode(0);
 }
 
 static void

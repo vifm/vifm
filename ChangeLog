@@ -35,6 +35,8 @@
 
 	Added o and O keys for Visual mode (switch selection bound).
 
+	Added gv normal mode command.
+
 0.6 to 0.6.1
 
 	Added :set command.

@@ -135,7 +135,7 @@ init_visual_mode(int *key_mode)
 }
 
 void
-enter_visual_mode(void)
+enter_visual_mode(int restore_selection)
 {
 	int x;
 
@@ -146,21 +146,33 @@ enter_visual_mode(void)
 	for(x = 0; x < view->list_rows; x++)
 		view->dir_entry[x].selected = 0;
 
-	/* Don't allow the ../ dir to be selected */
-	if(strcmp(view->dir_entry[view->list_pos].name, "../"))
+	if(restore_selection)
 	{
+		int ub = check_mark_directory(view, '<');
+		int lb = check_mark_directory(view, '>');
+
+		if(ub > 0 && lb > 0)
+		{
+			start_pos = ub;
+			view->list_pos = ub;
+
+			view->selected_files = 1;
+			view->dir_entry[view->list_pos].selected = 1;
+
+			while(view->list_pos != lb)
+				select_down_one(view, start_pos);
+			update();
+		}
+	}
+	else if(strcmp(view->dir_entry[view->list_pos].name, "../"))
+	{
+		/* Don't allow the ../ dir to be selected */
 		view->selected_files = 1;
 		view->dir_entry[view->list_pos].selected = 1;
 	}
 
 	draw_dir_list(view, view->top_line, view->list_pos);
 	moveto_list_pos(view, view->list_pos);
-
-	if(view->list_pos != 0)
-		status_bar_message("-- VISUAL --\t1 File Selected");
-	else
-		status_bar_message("-- VISUAL --");
-	curr_stats.save_msg = 1;
 
 	update_marks(view);
 }
@@ -410,7 +422,7 @@ select_up_one(FileView *view, int start_pos)
 	view->list_pos--;
 	if(view->list_pos < 0)
 	{
-		if (start_pos == 0)
+		if(start_pos == 0)
 			view->selected_files = 0;
 		view->list_pos = 0;
 	}

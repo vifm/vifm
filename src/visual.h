@@ -20,7 +20,7 @@
 #define __VISUAL_H__
 
 void init_visual_mode(int *key_mode);
-void enter_visual_mode(void);
+void enter_visual_mode(int restore_selection);
 void leave_visual_mode(int save_msg);
 
 #endif
