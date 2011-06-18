@@ -80,6 +80,8 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 	struct group *grp_buf;
 	struct tm *tm_ptr;
 
+	chdir(view->curr_dir);
+
 	switch(view->sort_type)
 	{
 		 case SORT_BY_OWNER_NAME:
@@ -100,7 +102,7 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 		 case SORT_BY_GROUP_ID:
 			 snprintf(buf, sizeof(buf), " %d", (int) view->dir_entry[x].gid);
 			 break;
-		case SORT_BY_MODE:
+		 case SORT_BY_MODE:
 			 {
 				  if (S_ISREG (view->dir_entry[x].mode))
 					{
