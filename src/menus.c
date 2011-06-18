@@ -152,10 +152,12 @@ redraw_error_msg(char *title_arg, const char *message_arg)
 	if(title[0] != '\0')
 		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
 
-	mvwaddstr(error_win, y - 2, (x - 25)/2, "Press Return to continue");
+	mvwaddstr(error_win, y - 2, (x - 63)/2,
+			"Press Return to continue or Ctrl-C to skip other error messages");
 }
 
-void
+/* Returns not zero when user asked to skip error messages that left */
+int
 show_error_msg(char *title, const char *message)
 {
 	int key;
@@ -178,6 +180,8 @@ show_error_msg(char *title, const char *message)
 
 	if(curr_stats.need_redraw)
 		redraw_window();
+
+	return key == 3;
 }
 
 void

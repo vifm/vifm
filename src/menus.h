@@ -80,7 +80,8 @@ void show_register_menu(FileView *view);
 void reset_popup_menu(menu_info *m);
 void setup_menu(FileView *view);
 void redraw_error_msg(char *title_arg, const char *message_arg);
-void show_error_msg(char * title, const char *message);
+/* Returns not zero when user asked to skip error messages that left */
+int show_error_msg(char * title, const char *message);
 int search_menu_list(FileView *view, char *command, menu_info *ptr);
 int query_user_menu(char *title, char *message);
 void clean_menu_position(menu_info *m);

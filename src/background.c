@@ -260,8 +260,10 @@ background_and_wait_for_errors(char *cmd)
 				continue;
 			if(strlen(buf) + strlen(linebuf) + 1 >= sizeof(buf))
 			{
-				show_error_msg("Background Process Error", buf);
+				int skip = (show_error_msg("Background Process Error", buf) != 0);
 				buf[0] = '\0';
+				if(skip)
+					break;
 			}
 			strcat(buf, linebuf);
 		}

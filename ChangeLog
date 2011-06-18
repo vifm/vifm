@@ -27,6 +27,8 @@
 
 	More verbose --version (and -v) output.
 
+	Added Ctrl-C key handling to error message dialog.
+
 0.6 to 0.6.1
 
 	Added :set command.
