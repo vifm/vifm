@@ -23,6 +23,7 @@
 
 #include "../config.h"
 
+#include "bookmarks.h"
 #include "cmdline.h"
 #include "commands.h"
 #include "filelist.h"
@@ -57,6 +58,7 @@ static void cmd_k(struct key_info, struct keys_info *);
 static void cmd_y(struct key_info, struct keys_info *);
 static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
+static void update_marks(FileView *view);
 static void update(void);
 
 void
@@ -152,6 +154,8 @@ enter_visual_mode(void)
 	else
 		status_bar_message("-- VISUAL --");
 	curr_stats.save_msg = 1;
+
+	update_marks(view);
 }
 
 void
@@ -418,6 +422,8 @@ select_up_one(FileView *view, int start_pos)
 		view->dir_entry[view->list_pos +1].selected = 0;
 		view->selected_files--;
 	}
+
+	update_marks(view);
 }
 
 /* move down one position in the window, adding to the selection list */
@@ -452,6 +458,23 @@ select_down_one(FileView *view, int start_pos)
 	{
 		view->dir_entry[view->list_pos -1].selected = 0;
 		view->selected_files--;
+	}
+
+	update_marks(view);
+}
+
+static void
+update_marks(FileView *view)
+{
+	if(view->list_pos < start_pos)
+	{
+		set_specmark('<', view->curr_dir, get_current_file_name(view));
+		set_specmark('>', view->curr_dir, view->dir_entry[start_pos].name);
+	}
+	else
+	{
+		set_specmark('<', view->curr_dir, view->dir_entry[start_pos].name);
+		set_specmark('>', view->curr_dir, get_current_file_name(view));
 	}
 }
 

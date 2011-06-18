@@ -108,16 +108,10 @@ remove_bookmark(const int x)
 		status_bar_message("Could not find mark");
 }
 
-void
-add_bookmark(const char mark, const char *directory, const char *file)
+static void
+add_mark(const char mark, const char *directory, const char *file)
 {
 	int x ;
-
-	if(!isalnum(mark))
-	{
-		status_bar_message("Invalid mark");
-		return;
-	}
 
 	x = mark2index(mark);
 
@@ -130,6 +124,27 @@ add_bookmark(const char mark, const char *directory, const char *file)
 	/* increase number of active bookmarks */
 	cfg.num_bookmarks++;
 	curr_stats.setting_change = 1;
+}
+
+void
+add_bookmark(const char mark, const char *directory, const char *file)
+{
+	if(!isalnum(mark))
+	{
+		status_bar_message("Invalid mark");
+		return;
+	}
+
+	add_mark(mark, directory, file);
+}
+
+void
+set_specmark(const char mark, const char *directory, const char *file)
+{
+	if(mark != '<' && mark != '>')
+		return;
+
+	add_mark(mark, directory, file);
 }
 
 int

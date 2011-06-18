@@ -1247,10 +1247,11 @@ change_directory(FileView *view, const char *directory)
 	if(strcmp(dir_dup, view->curr_dir))
 		snprintf(view->curr_dir, PATH_MAX, "%s", dir_dup);
 
+	closedir(dir);
+
 	/* Save the directory modified time to check for file changes */
 	stat(view->curr_dir, &s);
 	view->dir_mtime = s.st_mtime;
-	closedir(dir);
 
 	save_view_history(view);
 	return 0;
@@ -1290,7 +1291,7 @@ load_dir_list(FileView *view, int reload)
 
 	view->filtered = 0;
 
-	lstat(view->curr_dir, &s);
+	stat(view->curr_dir, &s);
 	view->dir_mtime = s.st_mtime;
 
 	if(!reload && s.st_size > 2048)
@@ -1642,16 +1643,10 @@ scroll_view(FileView *view)
 static void
 reload_window(FileView *view)
 {
-	struct stat s;
-
 	curr_stats.skip_history = 1;
 
-	stat(view->curr_dir, &s);
-	if(view != curr_view)
-		change_directory(view, view->curr_dir);
-
+	change_directory(view, view->curr_dir);
 	load_dir_list(view, 1);
-	view->dir_mtime = s.st_mtime;
 
 	if(view != curr_view)
 	{
@@ -1680,17 +1675,10 @@ check_if_filelists_have_changed(FileView *view)
 		leave_invalid_dir(view, view->curr_dir);
 		change_directory(view, view->curr_dir);
 		clean_selected_files(view);
-		s.st_mtime = -1; /* force window reload */
+		s.st_mtime = 0; /* force window reload */
 	}
 	if(s.st_mtime != view->dir_mtime)
 		reload_window(view);
-
-	if(curr_stats.number_of_windows != 1 && curr_stats.view != 1)
-	{
-		stat(other_view->curr_dir, &s);
-		if(s.st_mtime != other_view->dir_mtime)
-			reload_window(other_view);
-	}
 }
 
 void

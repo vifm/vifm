@@ -29,6 +29,10 @@
 
 	Added Ctrl-C key handling to error message dialog.
 
+	Implemented :yank command.
+
+	Fixed '< and '> marks handling.
+
 0.6 to 0.6.1
 
 	Added :set command.

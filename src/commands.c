@@ -1296,17 +1296,8 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			show_cmdhistory_menu(view);
 			break;
 		case COM_DELETE:
-			{
-				/*
-				int selection_worked;
-
-				selection_worked = select_files_in_range(view, cmd);
-
-				if (selection_worked)
-				*/
-				select_files_in_range(view, cmd);
-				delete_file(view, DEFAULT_REG_NAME, 0, NULL, 1);
-			}
+			select_files_in_range(view, cmd);
+			delete_file(view, DEFAULT_REG_NAME, 0, NULL, 1);
 			break;
 		case COM_DELCOMMAND:
 			{
@@ -1570,23 +1561,10 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_VIFM:
 			show_vifm_menu(view);
-//			show_error_msg("I haven't gotten here yet",
-//						"Sorry this is not implemented");
 			break;
 		case COM_YANK:
-			{
-				/*
-				TODO do we need this?
-				int selection_worked = 0;
-
-				selection_worked  = select_files_in_range(view);
-
-				if (selection_worked)
-					yank_selected_files(view);
-					*/
-				show_error_msg(":yank is not implemented yet",
-						":yank is not implemented yet");
-			}
+			select_files_in_range(view, cmd);
+			yank_files(view, DEFAULT_REG_NAME, 0, NULL);
 			break;
 		case COM_VMAP:
 			save_msg = do_map(cmd, "Visual", "vmap", VISUAL_MODE);
