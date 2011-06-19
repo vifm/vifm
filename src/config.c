@@ -563,11 +563,20 @@ write_config_file(void)
 	}
 
 	fprintf(fp, "\n# For automated FUSE mounts, you must register an extension with FILETYPE=..\n");
-	fprintf(fp, "# in the following format:\n");
+	fprintf(fp, "# in one of following formats:\n");
+	fprintf(fp, "#\n");
 	fprintf(fp, "# FILETYPE=description=extensions=consoleviewer=FUSE_MOUNT|some_mount_command using %%SOURCE_FILE and %%DESTINATION_DIR variables\n");
 	fprintf(fp, "# %%SOURCE_FILE and %%DESTINATION_DIR are filled in by vifm at runtime.\n");
 	fprintf(fp, "# A sample line might look like this:\n");
-	fprintf(fp, "# FILETYPE=FuseZipMount=zip,jar,war,ear==FUSE_MOUNT|fuse-zip %%SOURCE_FILE %%DESTINATION_DIR\n\n");
+	fprintf(fp, "# FILETYPE=FuseZipMount=zip,jar,war,ear==FUSE_MOUNT|fuse-zip %%SOURCE_FILE %%DESTINATION_DIR\n");
+	fprintf(fp, "#\n");
+	fprintf(fp, "# FILETYPE=description=extensions=consoleviewer=FUSE_MOUNT2|some_mount_command using %%PARAM and %%DESTINATION_DIR variables\n");
+	fprintf(fp, "# %%PARAM and %%DESTINATION_DIR are filled in by vifm at runtime.\n");
+	fprintf(fp, "# A sample line might look like this:\n");
+	fprintf(fp, "# FILETYPE=SshMount=ssh==FUSE_MOUNT2|sshfs %%PARAM %%DESTINATION_DIR\n");
+	fprintf(fp, "# %%PARAM value is filled from the first line of file (whole line).\n");
+	fprintf(fp, "# Example first line for SshMount filetype: root@127.0.0.1:/\n");
+	fprintf(fp, "#\n");
 	fprintf(fp, "# The FUSE_HOME directory will be used as a root dir for all FUSE mounts.\n");
 	fprintf(fp, "# Unless it exists with write/exec permissions set, vifm will attempt to create it.\n");
 	fprintf(fp, "\nFUSE_HOME=%s\n", cfg.fuse_home);

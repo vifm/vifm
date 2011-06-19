@@ -360,7 +360,9 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 	buf_pos = buf;
 	prog_pos = program;
 	/* Build the mount command based on the FUSE program config line in vifmrc.
-		 Accepted FORMAT: FUSE_MOUNT|some_mount_command %SOURCE_FILE %DESTINATION_DIR */
+		 Accepted FORMAT: FUSE_MOUNT|some_mount_command %SOURCE_FILE %DESTINATION_DIR
+		 or
+		 FUSE_MOUNT2|some_mount_command %PARAM %DESTINATION_DIR */
 	strcpy(buf_pos, "sh -c \"");
 	/* TODO what is this?
 		 strcpy(buf_pos, "sh -c \"pauseme PAUSE_ON_ERROR_ONLY "); */
@@ -383,7 +385,7 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 			*cmd_pos = '\0';
 			if(buf_pos + strlen(filename) >= buf + sizeof(buf) + 2)
 				continue;
-			else if(!strcmp(cmd_buf, "%SOURCE_FILE"))
+			else if(!strcmp(cmd_buf, "%SOURCE_FILE") || !strcmp(cmd_buf, "%PARAM"))
 			{
 				*buf_pos++ = '\'';
 				strcpy(buf_pos, filename);
@@ -423,6 +425,11 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 		 my_system("clear");
 		 int status = my_system(buf);
 		 */
+
+	def_prog_mode();
+	endwin();
+	my_system("clear");
+
 	int status = background_and_wait_for_status(buf);
 	/* check child status */
 	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
@@ -488,6 +495,32 @@ fuse_try_mount(FileView *view, char *program)
 	if(!mount_found)
 	{
 		/* new file to be mounted */
+		if(strncmp(program, "FUSE_MOUNT2", 11) == 0)
+		{
+			FILE *f;
+			size_t len;
+			if((f = fopen(filename, "r")) == NULL)
+			{
+				status_bar_message("SSH mount failed: can't open file for reading");
+				curr_stats.save_msg = 1;
+				return;
+			}
+
+			fgets(filename, sizeof(filename), f);
+			len = strlen(filename);
+
+			if(len == 0 || (len == 1 && filename[0] == '\n'))
+			{
+				status_bar_message("SSH mount failed: file is empty");
+				curr_stats.save_msg = 1;
+				return;
+			}
+
+			if(filename[len - 1] == '\n')
+				filename[len - 1] = '\0';
+
+			fclose(f);
+		}
 		fuse_mount(view, filename, program, mount_point);
 	}
 
@@ -497,7 +530,7 @@ fuse_try_mount(FileView *view, char *program)
 }
 
 static void
-execute_file(FileView *view)
+execute_file(FileView *view, int dont_execute)
 {
 	char *program;
 
@@ -510,9 +543,13 @@ execute_file(FileView *view)
 		return;
 	}
 
-	if(strncmp(program, "FUSE_MOUNT", 10) == 0)
+	if(strncmp(program, "FUSE_MOUNT", 10) == 0
+			|| strncmp(program, "FUSE_MOUNT2", 11) == 0)
 	{
-		fuse_try_mount(view, program);
+		if(dont_execute)
+			view_file(view);
+		else
+			fuse_try_mount(view, program);
 	}
 	else if(strchr(program, '%') != NULL)
 	{
@@ -659,7 +696,7 @@ handle_file(FileView *view, int dont_execute)
 	}
 	else if(type == REGULAR || type == EXECUTABLE)
 	{
-		execute_file(view);
+		execute_file(view, dont_execute);
 	}
 	else if(type == LINK)
 	{

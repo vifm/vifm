@@ -75,9 +75,9 @@ show_help_msg(void)
 	puts("    or");
 	puts("    vifm /path/to/start/dir/one  /path/to/start/dir/two\n");
 	puts("  If no path is given vifm will start in the current working directory.\n");
-	puts("  vifm --version");
+	puts("  vifm --version | -v");
 	puts("    show version number and quit.\n");
-	puts("  vifm --help");
+	puts("  vifm --help | -h");
 	puts("    show this help message and quit.");
 }
 

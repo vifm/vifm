@@ -146,14 +146,23 @@ FILETYPE=FuseZipMount=zip,jar,war,ear==FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINA
 FILETYPE=ArchiveMount=bz2,tgz,tar.gz=tar -tzf %f | less=FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR
 FILETYPE=Rar2FsMount=rar==FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR
 FILETYPE=IsoMount=iso==FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR
+FILETYPE=SshMount=ssh==SSH_MOUNT|sshfs %PARAM %DESTINATION_DIR
 
 # For automated FUSE mounts, you must register an extension with FILETYPE=..
-# in the following format:
+# in one of following formats:
+#
 # FILETYPE=description=extensions=consoleviewer=FUSE_MOUNT|some_mount_command using %SOURCE_FILE and %DESTINATION_DIR variables
 # %SOURCE_FILE and %DESTINATION_DIR are filled in by vifm at runtime.
 # A sample line might look like this:
 # FILETYPE=FuseZipMount=zip,jar,war,ear==FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
-
+#
+# FILETYPE=description=extensions=consoleviewer=FUSE_MOUNT2|some_mount_command using %PARAM and %DESTINATION_DIR variables
+# %PARAM and %DESTINATION_DIR are filled in by vifm at runtime.
+# A sample line might look like this:
+# FILETYPE=SshMount=ssh==FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
+# %PARAM value is filled from the first line of file (whole line).
+# Example first line for SshMount filetype: root@127.0.0.1:/
+#
 # The FUSE_HOME directory will be used as a root dir for all FUSE mounts.
 # Unless it exists with write/exec permissions set, vifm will attempt to create it.
 
