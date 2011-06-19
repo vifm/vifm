@@ -577,6 +577,9 @@ write_config_file(void)
 	fprintf(fp, "# %%PARAM value is filled from the first line of file (whole line).\n");
 	fprintf(fp, "# Example first line for SshMount filetype: root@127.0.0.1:/\n");
 	fprintf(fp, "#\n");
+	fprintf(fp, "# You can also add %%CLEAR if you want to clear screen before running FUSE\n");
+	fprintf(fp, "# program.\n");
+	fprintf(fp, "#\n");
 	fprintf(fp, "# The FUSE_HOME directory will be used as a root dir for all FUSE mounts.\n");
 	fprintf(fp, "# Unless it exists with write/exec permissions set, vifm will attempt to create it.\n");
 	fprintf(fp, "\nFUSE_HOME=%s\n", cfg.fuse_home);

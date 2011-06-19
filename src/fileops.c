@@ -338,6 +338,7 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 	char *cmd_pos;
 	char *buf_pos;
 	char *prog_pos;
+	int clear_before_mount = 0;
 
 	/* get mount_point_id + mount_point and set runner pointing to the list's
 	 * tail */
@@ -399,6 +400,10 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 				buf_pos += strlen(mount_point);
 				*buf_pos++ = '\'';
 			}
+			else if(!strcmp(cmd_buf, "%CLEAR"))
+			{
+				clear_before_mount = 1;
+			}
 		}
 		else
 		{
@@ -426,9 +431,12 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 		 int status = my_system(buf);
 		 */
 
-	def_prog_mode();
-	endwin();
-	my_system("clear");
+	if(clear_before_mount)
+	{
+		def_prog_mode();
+		endwin();
+		my_system("clear");
+	}
 
 	int status = background_and_wait_for_status(buf);
 	/* check child status */
