@@ -118,9 +118,9 @@ check_background_jobs(void)
 
 			if (nread)
 			{
-				p->error_buf = (char *) realloc(p->error_buf, sizeof(buf));
+				p->error_buf = (char *) realloc(p->error_buf, nread + 1);
 
-				strncat(p->error_buf, buf, sizeof(buf) - 1);
+				strncat(p->error_buf, buf, nread);
 			}
 			if (strlen(p->error_buf) > 1)
 			{
