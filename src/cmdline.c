@@ -1068,14 +1068,10 @@ insert_completed_command(struct line_stats *stat, const char *complete_command)
 		void *p;
 		wchar_t *buf;
 
-		i = mbstowcs(NULL, complete_command, 0) + 1;
-		if((buf = (wchar_t *) malloc((i + 1) * sizeof(wchar_t))) == NULL)
-		{
+		if((buf = to_wide(complete_command)) == NULL)
 			return -1;
-		}
-		mbstowcs(buf, complete_command, i);
 
-		i += wcslen(q);
+		i = wcslen(buf) + wcslen(q) + 1;
 
 		wcsdel(stat->line, 1, q - stat->line);
 
@@ -1096,14 +1092,13 @@ insert_completed_command(struct line_stats *stat, const char *complete_command)
 	else
 	{
 		int i;
-		void *p;
+		wchar_t *p;
 
-		i = mbstowcs(NULL, complete_command, 0) + 1;
-		if((p = realloc(stat->line, (stat->len + i) * sizeof(wchar_t))) == NULL)
-		{
+		if((p = to_wide(complete_command)) == NULL)
 			return -1;
-		}
-		stat->line = (wchar_t *) p;
+
+		i = wcslen(p) + 1;
+		stat->line = p;
 
 		q = wcschr(stat->line, L' ');
 		if(q == NULL)
@@ -1122,41 +1117,6 @@ insert_completed_command(struct line_stats *stat, const char *complete_command)
 	wmove(status_bar, 0, stat->curs_pos);
 
 	return 0;
-}
-
-static int
-get_buildin_id(const char *cmd_line)
-{
-	const char *p, *q;
-	char buf[128];
-
-	while(cmd_line[0] != '\0' && isspace(cmd_line[0]))
-	{
-		cmd_line++;
-	}
-
-	if(cmd_line[0] == '!')
-		return COM_EXECUTE;
-
-	if((p = strchr(cmd_line, ' ')) == NULL)
-		p = cmd_line + strlen(cmd_line);
-
-	q = p - 1;
-	if(q >= cmd_line && *q == '!')
-	{
-		q--;
-		p--;
-	}
-	while(q >= cmd_line && isalpha(*q))
-		q--;
-	q++;
-
-	snprintf(buf, p - q + 1, "%s", q);
-
-	if(buf[0] == '\0')
-		return -1;
-
-	return command_is_reserved(buf);
 }
 
 static int

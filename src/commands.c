@@ -150,6 +150,60 @@ command_is_reserved(char *name)
 	return -1;
 }
 
+/* len could be NULL */
+static const char *
+get_cmd_name_info(const char *cmd_line, size_t *len)
+{
+	const char *p, *q;
+
+	while(cmd_line[0] != '\0' && isspace(cmd_line[0]))
+	{
+		cmd_line++;
+	}
+
+	if(cmd_line[0] == '!')
+		return COM_EXECUTE;
+
+	if((p = strchr(cmd_line, ' ')) == NULL)
+		p = cmd_line + strlen(cmd_line);
+
+	q = p - 1;
+	if(q >= cmd_line && *q == '!')
+	{
+		q--;
+		p--;
+	}
+	while(q >= cmd_line && isalpha(*q))
+		q--;
+	q++;
+
+	if(q[0] == '\'' && q[1] != '\0')
+		q += 2;
+	if(q[0] == '\'' && q[1] != '\0')
+		q += 2;
+
+	if(len != NULL)
+		*len = p - q;
+	return q;
+}
+
+int
+get_buildin_id(const char *cmd_line)
+{
+	char buf[128];
+	size_t len;
+	const char *p;
+
+	p = get_cmd_name_info(cmd_line, &len);
+
+	snprintf(buf, len + 1, "%s", p);
+
+	if(buf[0] == '\0')
+		return -1;
+
+	return command_is_reserved(buf);
+}
+
 int
 command_is_being_used(char *command)
 {
@@ -160,6 +214,22 @@ command_is_being_used(char *command)
 			return 1;
 	}
 	return 0;
+}
+
+static char *
+add_prefixes(const char *str, const char *completed)
+{
+	char *result;
+	const char *p;
+	p = get_cmd_name_info(str, NULL);
+
+	result = malloc(p - str + strlen(completed) + 1);
+	if(result == NULL)
+		return NULL;
+
+	snprintf(result, p - str + 1, "%s", str);
+	strcat(result, completed);
+	return result;
 }
 
 /* On the first call to this function,
@@ -186,7 +256,7 @@ command_completion(char *str, int users_only)
 	else
 		offset++;
 
-	pos_b = users_only ? -1 : command_is_reserved(string);
+	pos_b = users_only ? -1 : get_buildin_id(string);
 	pos_u = is_user_command(string);
 
 	i = 0;
@@ -224,16 +294,16 @@ command_completion(char *str, int users_only)
 	else if(pos_b != -1 && pos_u != -1)
 	{
 		if(strcmp(reserved_commands[pos_b], command_list[pos_u].name) < 0)
-			return strdup(reserved_commands[pos_b]);
+			return add_prefixes(string, strdup(reserved_commands[pos_b]));
 		else
-			return strdup(command_list[pos_u].name);
+			return add_prefixes(string, strdup(command_list[pos_u].name));
 	}
 	else
 	{
 		if(pos_b != -1)
-			return strdup(reserved_commands[pos_b]);
+			return add_prefixes(string, strdup(reserved_commands[pos_b]));
 		else
-			return strdup(command_list[pos_u].name);
+			return add_prefixes(string, strdup(command_list[pos_u].name));
 	}
 }
 

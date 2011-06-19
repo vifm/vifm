@@ -37,6 +37,8 @@
 
 	Added gv normal mode command.
 
+	Made command completion work with marks.
+
 0.6 to 0.6.1
 
 	Added :set command.
