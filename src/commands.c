@@ -372,11 +372,10 @@ save_command_history(const char *command)
 static char *
 append_selected_files(FileView *view, char *expanded)
 {
-	size_t len = strlen(expanded);
-
 	if(view->selected_files)
 	{
-		int y = 0;
+		int y;
+		size_t len = strlen(expanded);
 		for(y = 0; y < view->list_rows; y++)
 		{
 			if(view->dir_entry[y].selected)
@@ -392,13 +391,14 @@ append_selected_files(FileView *view, char *expanded)
 
 				temp = escape_filename(view->dir_entry[y].name,
 						strlen(view->dir_entry[y].name)-dir, 1);
-				expanded = (char *)realloc(expanded, strlen(expanded) +
-						strlen(temp) +3);
+				expanded = (char *)realloc(expanded, len + strlen(temp) + 3);
 				strcat(expanded, temp);
 
 				free(temp);
 
 				strcat(expanded, " ");
+
+				len = strlen(expanded);
 			}
 		}
 	}
