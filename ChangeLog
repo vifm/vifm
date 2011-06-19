@@ -1,4 +1,21 @@
-0.6.1 to current
+0.6.1 to 0.6.2
+
+	Added map menus (run :cmap, :vmap, :nmap commands without arguments).
+
+	Added :cmdhistory command.
+
+	Added 'fastrun' option.
+
+	Added o and O keys for Visual mode (go to other end of selection).
+
+	Added gv normal mode command.
+
+	Added support for spaces and functional keys in mappings (<space> and
+	<f0> - <f63>).
+
+	Added mimetype to fileinfo dialog.
+
+	Added %b command macro.
 
 	Made filetype menu editable.
 
@@ -6,22 +23,11 @@
 
 	Replace escape sequences in quick view output with ^foo.
 
-	Added support for spaces and functional keys in mappings (<space> and
-	<f0> - <f63>).
-
 	Give options if a file already exists in destination directory.
 
 	Implemented :colorscheme command.
 
-	Fixed :!./ completion.
-
 	Unmount all FUSE mounts on exit.
-
-	Added map menus (run :cmap, :vmap, :nmap commands without arguments).
-
-	Added :cmdhistory command.
-
-	Added 'fastrun' option.
 
 	Implemented :vifm command.
 
@@ -31,13 +37,35 @@
 
 	Implemented :yank command.
 
+	Made command completion work with marks.
+
+	Use file command when GTK+ and libmagic are disabled.
+
+	Made :cd %D work.
+
+	Better error messages.
+
+	Use ga command results to sort by size.
+
 	Fixed '< and '> marks handling.
 
-	Added o and O keys for Visual mode (switch selection bound).
+	Fixed :!./ completion.
 
-	Added gv normal mode command.
+	Fixed paths in config.c to work with non standard install prefix.
 
-	Made command completion work with marks.
+	Fixed a bug with ':!!echo foo'.
+
+	Fixed some title related small bugs.
+
+	Fixed terminal resize when error message visible.
+
+	Fixed yy when compatibility mode is off.
+
+	Fixed some bugs with files with quotes in their names.
+
+	Fixed segmentation fault on FUSE mount.
+
+	Fixed missed status bar messages.
 
 0.6 to 0.6.1
 
