@@ -27,6 +27,7 @@
 #include <fcntl.h>
 
 #include "background.h"
+#include "commands.h"
 #include "config.h"
 #include "menus.h"
 #include "status.h"
@@ -59,6 +60,7 @@ add_finished_job(pid_t pid, int status)
 	new->pid = pid;
 	new->remove = 0;
 	new->next = fjobs;
+	new->exit_code = WEXITSTATUS(status);
 	fjobs = new;
 }
 
@@ -99,6 +101,7 @@ check_background_jobs(void)
 			{
 				p->running = 0;
 				fj->remove = 1;
+				p->exit_code = fj->exit_code;
 			}
 			fj = fj->next;
 		}
@@ -124,9 +127,20 @@ check_background_jobs(void)
 			}
 			if (strlen(p->error_buf) > 1)
 			{
-				show_error_msg("Background Process Error", p->error_buf);
-				free(p->error_buf);
-				p->error_buf = (char *) calloc(1, sizeof(char));
+				if (!p->running && p->exit_code == 127 && curr_stats.fast_run)
+				{
+					char *buf = fast_run_complete(p->cmd);
+					if(buf == NULL)
+						curr_stats.save_msg = 1;
+					else
+						start_background_job(buf);
+				}
+				else
+				{
+					show_error_msg("Background Process Error", p->error_buf);
+					free(p->error_buf);
+					p->error_buf = (char *) calloc(1, sizeof(char));
+				}
 			}
 		}
 

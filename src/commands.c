@@ -161,8 +161,11 @@ get_cmd_name_info(const char *cmd_line, size_t *len)
 		cmd_line++;
 	}
 
-	if(cmd_line[0] == '!')
-		return COM_EXECUTE;
+	if(cmd_line[0] == '!') {
+		if(len != NULL)
+			*len = 1;
+		return cmd_line;
+	}
 
 	if((p = strchr(cmd_line, ' ')) == NULL)
 		p = cmd_line + strlen(cmd_line);
@@ -1233,6 +1236,37 @@ comm_cd(FileView *view, cmd_t *cmd)
 	moveto_list_pos(view, view->list_pos);
 }
 
+char *
+fast_run_complete(char *cmd)
+{
+	char *buf = NULL;
+	char *completed1, *completed2;
+	char *p;
+
+	p = strchr(cmd, ' ');
+	if(p == NULL)
+		p = cmd + strlen(cmd);
+	else
+		*p = '\0';
+
+	completed1 = exec_completion(cmd);
+	completed2 = exec_completion(NULL);
+
+	if(strcmp(cmd, completed2) != 0)
+	{
+		status_bar_message("Command beginning is ambiguous");
+	}
+	else
+	{
+		buf = malloc(strlen(completed1) + 1 + strlen(p) + 1);
+		sprintf(buf, "%s %s", completed1, p);
+	}
+	free(completed2);
+	free(completed1);
+
+	return buf;
+}
+
 int
 execute_builtin_command(FileView *view, cmd_t *cmd)
 {
@@ -1262,35 +1296,25 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					}
 					while(isspace(com[i]) && i < strlen(com))
 							i++;
-					if(strlen(com + i) > 0 && cmd->background)
+
+					if(strlen(com + i) == 0)
+					{
+						free(com);
+						break;
+					}
+
+					if(cmd->background)
 						start_background_job(com + i);
-					else if(strlen(com + i) > 0)
+					else
 					{
 						if(shellout(com + i, pause) == 127 && curr_stats.fast_run)
 						{
-							char *completed1, *completed2;
-							char *p = strchr(com + i, ' ');
-							if(p == NULL)
-								p = com + i + strlen(com + i);
-							else
-								*p = '\0';
-							completed1 = exec_completion(com + i);
-							completed2 = exec_completion(NULL);
-							if(strcmp(com + i, completed2) != 0)
-							{
-								status_bar_message("Command beginning is ambiguous");
+							char *buf = fast_run_complete(com + i);
+							if(buf == NULL)
 								save_msg = 1;
-							}
 							else
-							{
-								char *buf;
-								buf = malloc(strlen(completed1) + 1 + strlen(p) + 1);
-								sprintf(buf, "%s %s", completed1, p);
 								shellout(buf, pause);
-								free(buf);
-							}
-							free(completed2);
-							free(completed1);
+							free(buf);
 						}
 					}
 

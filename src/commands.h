@@ -98,6 +98,7 @@ int exec_commands(char *cmd, FileView *view, int type, void * ptr,
 int shellout(char *command, int pause);
 void add_command(char *name, char *action);
 int execute_command(FileView *view, char *action);
+char * fast_run_complete(char *cmd);
 int sort_this(const void *one, const void *two);
 int is_user_command(char *command);
 int command_is_reserved(char *command);

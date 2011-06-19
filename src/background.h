@@ -27,12 +27,14 @@ typedef struct Jobs_List {
 	char *cmd;
 	char *error_buf;
 	int running;
+	int exit_code;
 	struct Jobs_List *next;
 } Jobs_List;
 
 typedef struct Finished_Jobs {
 	pid_t pid;
 	int remove;
+	int exit_code;
 	struct Finished_Jobs *next;
 } Finished_Jobs;
 
