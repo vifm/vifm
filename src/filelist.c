@@ -400,7 +400,6 @@ free_selected_file_array(FileView *view)
 void
 get_all_selected_files(FileView *view)
 {
-	size_t namelen;
 	int x;
 	int y = 0;
 
@@ -420,7 +419,8 @@ get_all_selected_files(FileView *view)
 	if(view->selected_filelist != NULL)
 	{
 		free_selected_file_array(view);
-		view->selected_files = y; /* this is needed to restore */
+		 /* restoring this because free_selected_file_array sets it to zero */
+		view->selected_files = y;
 	}
 	view->selected_filelist =
 		(char **)calloc(view->selected_files, sizeof(char *));
@@ -433,20 +433,23 @@ get_all_selected_files(FileView *view)
 	y = 0;
 	for(x = 0; x < view->list_rows; x++)
 	{
-		if(view->dir_entry[x].selected)
+		if(!view->dir_entry[x].selected)
+			continue;
+		if(strcmp(view->dir_entry[x].name, "../") == 0)
 		{
-			namelen = strlen(view->dir_entry[x].name);
-			view->selected_filelist[y] = malloc(namelen +1);
-			if(view->selected_filelist[y] == NULL)
-			{
-				show_error_msg("Memory Error", "Unable to allocate enough memory");
-				return;
-			}
-			strcpy(view->selected_filelist[y],
-					view->dir_entry[x].name);
-			y++;
+			view->dir_entry[x].selected = 0;
+			continue;
 		}
+
+		view->selected_filelist[y] = strdup(view->dir_entry[x].name);
+		if(view->selected_filelist[y] == NULL)
+		{
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			break;
+		}
+		y++;
 	}
+	view->selected_files = y;
 }
 
 /* If you use this function using the free_selected_file_array()
@@ -455,7 +458,6 @@ get_all_selected_files(FileView *view)
 void
 get_selected_files(FileView *view, int count, int *indexes)
 {
-	size_t namelen;
 	int x;
 	int y = 0;
 
@@ -471,18 +473,19 @@ get_selected_files(FileView *view, int count, int *indexes)
 	y = 0;
 	for(x = 0; x < count; x++)
 	{
-		namelen = strlen(view->dir_entry[indexes[x]].name);
-		view->selected_filelist[y] = malloc(namelen +1);
+		if(strcmp(view->dir_entry[indexes[x]].name, "../") == 0)
+			continue;
+
+		view->selected_filelist[y] = strdup(view->dir_entry[indexes[x]].name);
 		if(view->selected_filelist[y] == NULL)
 		{
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			return;
+			break;
 		}
-		strcpy(view->selected_filelist[y], view->dir_entry[indexes[x]].name);
 		y++;
 	}
 
-	view->selected_files = count;
+	view->selected_files = y;
 }
 
 int

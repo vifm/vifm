@@ -187,14 +187,14 @@ int
 yank_files(FileView *view, int reg, int count, int *indexes)
 {
 	char buf[32];
-	int tmp;
+	int yanked;
 	if(count > 0)
 		get_selected_files(view, count, indexes);
 	else
 		get_all_selected_files(curr_view);
 
 	yank_selected_files(curr_view, reg);
-	tmp = curr_view->selected_files;
+	yanked = curr_view->selected_files;
 	free_selected_file_array(curr_view);
 
 	if(count == 0)
@@ -202,14 +202,14 @@ yank_files(FileView *view, int reg, int count, int *indexes)
 		clean_selected_files(curr_view);
 		draw_dir_list(curr_view, curr_view->top_line, curr_view->list_pos);
 		moveto_list_pos(curr_view, curr_view->list_pos);
-		count = tmp;
+		count = yanked;
 	}
 
-	snprintf(buf, sizeof(buf), " %d %s yanked.", count,
-			count == 1 ? "file" : "files");
+	snprintf(buf, sizeof(buf), " %d %s yanked.", yanked,
+			yanked == 1 ? "file" : "files");
 	status_bar_message(buf);
 
-	return count;
+	return yanked;
 }
 
 void
