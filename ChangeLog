@@ -4,6 +4,9 @@
 
 	Added %CLEAR FUSE mount parameter (see vifmrc for details).
 
+	Added %c and %C macros (current file of current and other directories, not
+	selected file or files).
+
 	Don't change directory on unsuccessful FUSE mount.
 
 	Hide file group and owner names when they collide with message about

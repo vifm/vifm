@@ -105,6 +105,8 @@ BOOKMARKS=S=/usr/local/share=../
 # COMMAND=command_name=action
 # The following macros can be used in a command
 # %a is replaced with the user arguments.
+# %c the current file under the cursor.
+# %C the current file under the cursor in the other directory.
 # %f the current selected file, or files.
 # %F the current selected file, or files in the other directory.
 # %b same as %f %F.

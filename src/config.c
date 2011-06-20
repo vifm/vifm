@@ -534,6 +534,8 @@ write_config_file(void)
 	fprintf(fp, "\n# COMMAND=command_name=action\n");
 	fprintf(fp, "# The following macros can be used in a command\n");
 	fprintf(fp, "# %%a is replaced with the user arguments.\n");
+	fprintf(fp, "# %%c the current file under the cursor.\n");
+	fprintf(fp, "# %%C the current file under the cursor in the other directory.\n");
 	fprintf(fp, "# %%f the current selected file, or files.\n");
 	fprintf(fp, "# %%F the current selected file, or files in the other directory.\n");
   fprintf(fp, "# %%b same as %%f %%F.\n");

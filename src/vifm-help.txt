@@ -156,14 +156,16 @@ The basic vi key bindings are used to move through the files and popup
 
 
 command macros
-	%a user arguments
-	%f all of the selected files
+	%a user arguments.
+    %c the current file under the cursor.
+    %C the current file under the cursor in the other directory.
+	%f all of the selected files.
 	%F all of the selected files in the other directory list.
     %b same as %f %F.
-	%d current directory name
-	%D other file list directory name
-    %m show command output in a menu
-    %s execute command in screen split
+	%d current directory name.
+	%D other file list directory name.
+    %m show command output in a menu.
+    %s execute command in screen split.
 	:com mv mv %f %D
 		would set the mv command to mv all of the selected files to the other
 		directory.

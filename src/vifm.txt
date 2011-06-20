@@ -98,6 +98,8 @@ The builtin commands are:
 
 command macros:
   %a user arguments.
+  %c the current file under the cursor.
+  %C the current file under the cursor in the other directory.
   %f all of the selected files.
   %F all of the selected files in the other directory list.
   %b same as %f %F.

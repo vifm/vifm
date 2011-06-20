@@ -137,6 +137,7 @@ chomp(char *text)
 		text[len - 1] = '\0';
 }
 
+/* like chomp() but removes trailing slash */
 void
 chosp(char *text)
 {

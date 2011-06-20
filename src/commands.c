@@ -370,9 +370,9 @@ save_command_history(const char *command)
 }
 
 static char *
-append_selected_files(FileView *view, char *expanded)
+append_selected_files(FileView *view, char *expanded, int under_cursor)
 {
-	if(view->selected_files)
+	if(view->selected_files && !under_cursor)
 	{
 		int y;
 		size_t len = strlen(expanded);
@@ -455,7 +455,7 @@ expand_macros(FileView *view, char *command, char *args, int *use_menu,
 						break;
 					else
 					{
-						char arg_buf[strlen(args) +2];
+						char arg_buf[strlen(args) + 2];
 
 						expanded = (char *)realloc(expanded,
 								strlen(expanded) + strlen(args) +3);
@@ -466,16 +466,24 @@ expand_macros(FileView *view, char *command, char *args, int *use_menu,
 				}
 				break;
 			case 'b': /* selected files of both dirs */
-				expanded = append_selected_files(curr_view, expanded);
-				expanded = append_selected_files(other_view, expanded);
+				expanded = append_selected_files(curr_view, expanded, 0);
+				expanded = append_selected_files(other_view, expanded, 0);
+				len = strlen(expanded);
+				break;
+			case 'c': /* current dir file under the cursor */
+				expanded = append_selected_files(curr_view, expanded, 1);
+				len = strlen(expanded);
+				break;
+			case 'C': /* other dir file under the cursor */
+				expanded = append_selected_files(other_view, expanded, 1);
 				len = strlen(expanded);
 				break;
 			case 'f': /* current dir selected files */
-				expanded = append_selected_files(curr_view, expanded);
+				expanded = append_selected_files(curr_view, expanded, 0);
 				len = strlen(expanded);
 				break;
 			case 'F': /* other dir selected files */
-				expanded = append_selected_files(other_view, expanded);
+				expanded = append_selected_files(other_view, expanded, 0);
 				len = strlen(expanded);
 				break;
 			case 'd': /* current directory */
