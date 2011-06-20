@@ -141,12 +141,17 @@ update_stat_window(FileView *view)
 	cur_x += 12;
 	mvwaddstr(stat_win, 0, cur_x, perm_buf);
 	cur_x += 10;
-	mvwaddstr(stat_win, 0, cur_x, id_buf);
+
 	snprintf(name_buf, sizeof(name_buf), "%d %s filtered",
 			view->filtered, view->filtered == 1 ? "file" : "files");
-
 	if(view->filtered > 0)
-		mvwaddstr(stat_win, 0, x - (strlen(name_buf) +2) , name_buf);
+		mvwaddstr(stat_win, 0, x - (strlen(name_buf) + 2) , name_buf);
+
+	if(cur_x + strlen(id_buf) + 1 > x - (strlen(name_buf) + 2))
+		*strchr(id_buf, ':') = '\0';
+	if(cur_x + strlen(id_buf) + 1 > x - (strlen(name_buf) + 2))
+		id_buf[0] = '\0';
+	mvwaddstr(stat_win, 0, cur_x, id_buf);
 
 	wnoutrefresh(stat_win);
 	update_pos_window(view);

@@ -6,6 +6,9 @@
 
 	Don't change directory on unsuccessful FUSE mount.
 
+	Hide file group and owner names when they collide with message about
+	filtered files.
+
 	Fixed segmentation fault on %f or %F expanding.
 
 0.6.1 to 0.6.2
