@@ -9,7 +9,7 @@
 
 	Don't change directory on unsuccessful FUSE mount.
 
-	Don't change cursor of other directory position after disabling quick view.
+	Don't change cursor position of other directory after disabling quick view.
 
 	Hide file group and owner names when they collide with message about
 	filtered files.
@@ -19,6 +19,8 @@
 	Fixed bug with Ctrl+W, X and quick view.
 
 	Fixed bug with yanking the ".." directory (it shouldn't be possible).
+
+	Fixed %b macro (added space between file names).
 
 0.6.1 to 0.6.2
 

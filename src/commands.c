@@ -467,6 +467,8 @@ expand_macros(FileView *view, char *command, char *args, int *use_menu,
 				break;
 			case 'b': /* selected files of both dirs */
 				expanded = append_selected_files(curr_view, expanded, 0);
+				expanded = realloc(expanded, strlen(expanded) + 1 + 1);
+				strcat(expanded, " ");
 				expanded = append_selected_files(other_view, expanded, 0);
 				len = strlen(expanded);
 				break;
