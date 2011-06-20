@@ -22,6 +22,8 @@
 
 	Fixed %b macro (added space between file names).
 
+	Fixed directory leaving after FUSE error (go to mounted file, not just up).
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).

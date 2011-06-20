@@ -988,6 +988,35 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 	*++q = '\0';
 }
 
+static void
+updir_from_mount(FileView *view, Fuse_List *runner)
+{
+	char *file;
+	int pos;
+
+	change_directory(view, runner->source_file_dir);
+
+	load_dir_list(view, 0);
+
+	file = runner->source_file_name;
+	file += strlen(runner->source_file_dir) + 1;
+	pos = find_file_pos_in_list(view, file);
+	moveto_list_pos(view, pos);
+}
+
+static Fuse_List *
+find_fuse_mount(const char *dir)
+{
+	Fuse_List *runner = fuse_mounts;
+	while(runner)
+	{
+		if(strcmp(runner->mount_point, dir) == 0)
+			break;
+		runner = runner->next;
+	}
+	return runner;
+}
+
 /* Modifies path */
 void
 leave_invalid_dir(FileView *view, char *path)
@@ -997,6 +1026,13 @@ leave_invalid_dir(FileView *view, char *path)
 
 	while(access(path, F_OK) != 0)
 	{
+		Fuse_List *runner;
+		if((runner = find_fuse_mount(path)) != NULL)
+		{
+			updir_from_mount(view, runner);
+			break;
+		}
+
 		len = strlen(path);
 		if(path[len - 1] == '/')
 			path[len - 1] = '\0';
@@ -1096,12 +1132,7 @@ change_directory(FileView *view, const char *directory)
 			else
 				fuse_mounts = runner->next;
 
-			change_directory(view, runner->source_file_dir);
-			char *filen = runner->source_file_name;
-			filen += strlen(runner->source_file_dir) + 1;
-			load_dir_list(view, 0);
-			found = find_file_pos_in_list(view, filen);
-			moveto_list_pos(view, found);
+			updir_from_mount(view, runner);
 			free(runner);
 			return 1;
 		}
