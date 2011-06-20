@@ -1,6 +1,11 @@
 See the INSTALL file for building instructions and the TODO file for what
 still needs to be implemented.
 
+This project on the Web:
+Website: http://vifm.sourceforge.net/
+SorceForge: http://sourceforge.net/projects/vifm/
+GitHub: https://github.com/xaizek/vifm
+
 If you are interested in playing with the source code.
 
 src/background.c - runs commands in background
