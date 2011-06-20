@@ -1024,15 +1024,15 @@ leave_invalid_dir(FileView *view, char *path)
 	size_t len;
 	char *p;
 
+	Fuse_List *runner;
+	if((runner = find_fuse_mount(path)) != NULL)
+	{
+		updir_from_mount(view, runner);
+		return;
+	}
+
 	while(access(path, F_OK) != 0)
 	{
-		Fuse_List *runner;
-		if((runner = find_fuse_mount(path)) != NULL)
-		{
-			updir_from_mount(view, runner);
-			break;
-		}
-
 		len = strlen(path);
 		if(path[len - 1] == '/')
 			path[len - 1] = '\0';
