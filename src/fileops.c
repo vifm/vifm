@@ -326,8 +326,11 @@ cd_updir(FileView *view)
 	}
 }
 
-/* mount_point should be an array of at least PATH_MAX characters */
-static void
+/*
+ * mount_point should be an array of at least PATH_MAX characters
+ * Returns 0 on success.
+ */
+static int
 fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 {
 	Fuse_List *runner;
@@ -354,7 +357,7 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 	if(mkdir(mount_point, S_IRWXU))
 	{
 		show_error_msg("Unable to create FUSE mount directory", mount_point);
-		return;
+		return -1;
 	}
 	/* I need the return code of the mount command */
 	status_bar_message("FUSE mounting selected file, please stand by..");
@@ -448,7 +451,7 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 			rmdir(mount_point);
 		show_error_msg("FUSE MOUNT ERROR", filename);
 		chdir(view->curr_dir);
-		return;
+		return -1;
 	}
 	status_bar_message("FUSE mount success.");
 
@@ -462,6 +465,8 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 		fuse_mounts = fuse_item;
 	else
 		runner->next = fuse_item;
+
+	return 0;
 }
 
 /* wont mount same file twice */
@@ -529,7 +534,8 @@ fuse_try_mount(FileView *view, char *program)
 
 			fclose(f);
 		}
-		fuse_mount(view, filename, program, mount_point);
+		if(fuse_mount(view, filename, program, mount_point) != 0)
+			return;
 	}
 
 	change_directory(view, mount_point);
