@@ -9,6 +9,8 @@
 
 	Don't change directory on unsuccessful FUSE mount.
 
+	Don't change cursor of other directory position after disabling quick view.
+
 	Hide file group and owner names when they collide with message about
 	filtered files.
 

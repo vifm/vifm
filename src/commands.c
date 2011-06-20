@@ -1650,7 +1650,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					wbkgdset(other_view->win,
 						COLOR_PAIR(WIN_COLOR + other_view->color_scheme));
 					change_directory(other_view, other_view->curr_dir);
-					load_dir_list(other_view, 0);
+					load_dir_list(other_view, 1);
 				}
 				else
 				{
