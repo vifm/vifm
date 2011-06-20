@@ -112,7 +112,7 @@ BOOKMARKS=S=/usr/local/share=../
 # %b same as %f %F.
 # %d the current directory name.
 # %D the other window directory name.
-# %m run the command in a menu window
+# %m run the command in a menu window.
 
 COMMAND=mv=mv %f %D &
 COMMAND=cp=cp %f %D &
@@ -142,10 +142,9 @@ FILETYPE=Video=avi,mp4,wmv,dat,3gp,ogv=ffprobe -show_format -pretty %f 2> /dev/n
 FILETYPE=Web=html,htm==links,mozilla
 FILETYPE=Object=o==nm %f | less
 FILETYPE=Image=jpg,jpeg,png,gif==eog,xv,gimp
-FILETYPE=Archive=tar.gz,tgz==tar -tzf %f | less,tar -zxvf %f
 FILETYPE=Md5=md5==md5sum -c %f
 FILETYPE=FuseZipMount=zip,jar,war,ear==FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
-FILETYPE=ArchiveMount=bz2,tgz,tar.gz=tar -tzf %f | less=FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR
+FILETYPE=ArchiveMount=bz2,tgz,tar.gz=tar -tzf %c=FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR
 FILETYPE=Rar2FsMount=rar==FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR
 FILETYPE=IsoMount=iso==FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR
 FILETYPE=SshMount=ssh==SSH_MOUNT|sshfs %PARAM %DESTINATION_DIR

@@ -1323,6 +1323,8 @@ load_dir_list(FileView *view, int reload)
 
 	for(view->list_rows = 0; (d = readdir(dir)); view->list_rows++)
 	{
+		dir_entry_t *dir_entry;
+
 		/* Ignore the "." directory. */
 		if(strcmp(d->d_name, ".") == 0)
 		{
@@ -1338,21 +1340,17 @@ load_dir_list(FileView *view, int reload)
 				continue;
 			}
 		}
-		if(!regexp_filter_match(view, d->d_name) && strcmp("..", d->d_name))
+		else if(regexp_filter_match(view, d->d_name) == 0)
 		{
 			view->filtered++;
 			view->list_rows--;
 			continue;
 		}
-
-		if(d->d_name[0] == '.')
+		else if(view->hide_dot && d->d_name[0] == '.')
 		{
-			if((strcmp(d->d_name, "..")) && (view->hide_dot))
-			{
-				view->filtered++;
-				view->list_rows--;
-				continue;
-			}
+			view->filtered++;
+			view->list_rows--;
+			continue;
 		}
 
 		view->dir_entry = (dir_entry_t *)realloc(view->dir_entry,
@@ -1363,30 +1361,32 @@ load_dir_list(FileView *view, int reload)
 			return;
 		}
 
+		dir_entry = view->dir_entry + view->list_rows;
+
 		namelen = strlen(d->d_name);
 		/* Allocate extra for adding / to directories. */
-		view->dir_entry[view->list_rows].name = malloc(namelen + 2);
-		if(view->dir_entry[view->list_rows].name == NULL)
+		dir_entry->name = malloc(namelen + 1 + 1);
+		if(dir_entry->name == NULL)
 		{
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return;
 		}
 
-		strcpy(view->dir_entry[view->list_rows].name, d->d_name);
+		strcpy(dir_entry->name, d->d_name);
 
 		/* All files start as unselected */
-		view->dir_entry[view->list_rows].selected = 0;
+		dir_entry->selected = 0;
 
 		/* Load the inode info */
-		lstat(view->dir_entry[view->list_rows].name, &s);
+		lstat(dir_entry->name, &s);
 
-		view->dir_entry[view->list_rows].size = (uintmax_t)s.st_size;
-		view->dir_entry[view->list_rows].mode = s.st_mode;
-		view->dir_entry[view->list_rows].uid = s.st_uid;
-		view->dir_entry[view->list_rows].gid = s.st_gid;
-		view->dir_entry[view->list_rows].mtime = s.st_mtime;
-		view->dir_entry[view->list_rows].atime = s.st_atime;
-		view->dir_entry[view->list_rows].ctime = s.st_ctime;
+		dir_entry->size = (uintmax_t)s.st_size;
+		dir_entry->mode = s.st_mode;
+		dir_entry->uid = s.st_uid;
+		dir_entry->gid = s.st_gid;
+		dir_entry->mtime = s.st_mtime;
+		dir_entry->atime = s.st_atime;
+		dir_entry->ctime = s.st_ctime;
 
 		if(s.st_ino)
 		{
@@ -1396,34 +1396,34 @@ load_dir_list(FileView *view, int reload)
 					{
 						if(check_link_is_dir(view, view->list_rows))
 						{
-							namelen = sizeof(view->dir_entry[view->list_rows].name);
-							strcat(view->dir_entry[view->list_rows].name, "/");
+							namelen = sizeof(dir_entry->name);
+							strcat(dir_entry->name, "/");
 						}
-					view->dir_entry[view->list_rows].type = LINK;
+					dir_entry->type = LINK;
 					}
 					break;
 				case S_IFDIR:
-					namelen = sizeof(view->dir_entry[view->list_rows].name);
-					strcat(view->dir_entry[view->list_rows].name, "/");
-					view->dir_entry[view->list_rows].type = DIRECTORY;
+					namelen = sizeof(dir_entry->name);
+					strcat(dir_entry->name, "/");
+					dir_entry->type = DIRECTORY;
 					break;
 				case S_IFCHR:
 				case S_IFBLK:
-					view->dir_entry[view->list_rows].type = DEVICE;
+					dir_entry->type = DEVICE;
 					break;
 				case S_IFSOCK:
-					view->dir_entry[view->list_rows].type = SOCKET;
+					dir_entry->type = SOCKET;
 					break;
 				case S_IFREG:
 					if(S_ISEXE(s.st_mode))
 					{
-						view->dir_entry[view->list_rows].type = EXECUTABLE;
+						dir_entry->type = EXECUTABLE;
 						break;
 					}
-					view->dir_entry[view->list_rows].type = REGULAR;
+					dir_entry->type = REGULAR;
 					break;
 				default:
-					view->dir_entry[view->list_rows].type = UNKNOWN;
+					dir_entry->type = UNKNOWN;
 				break;
 			}
 		}

@@ -634,7 +634,11 @@ cmd_ctrl_wx(struct key_info key_info, struct keys_info *keys_info)
 
 	load_dir_list(curr_view, 1);
 	moveto_list_pos(curr_view, curr_view->list_pos);
-	load_dir_list(other_view, 1);
+
+	if(curr_stats.view)
+		quick_view_file(curr_view);
+	else
+		load_dir_list(other_view, 1);
 }
 
 static void
