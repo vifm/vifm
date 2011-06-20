@@ -4,6 +4,10 @@
 
 	Added %CLEAR FUSE mount parameter (see vifmrc for details).
 
+	Don't change directory on unsuccessful FUSE mount.
+
+	Fixed segmentation fault on %f or %F expanding.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).

@@ -436,16 +436,14 @@ void
 enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb)
 {
 	wchar_t *buf;
-	size_t len;
 
 	sub_mode_ptr = cb;
 	sub_mode = PROMPT_SUBMODE;
 
-	len = mbstowcs(NULL, cmd, 0);
-	buf = malloc(sizeof(wchar_t)*(len + 1));
+	buf = to_wide(cmd);
 	if(buf == NULL)
 		return;
-	mbstowcs(buf, cmd, len + 1);
+
 	prepare_cmdline_mode(prompt, buf);
 	free(buf);
 }
@@ -899,25 +897,34 @@ cmd_delete(struct key_info key_info, struct keys_info *keys_info)
 			input_stat.curs_pos%line_width);
 }
 
+/* Returns 0 on success */
+static int
+replace_input_line(const char *new)
+{
+	size_t len;
+	wchar_t *p;
+
+	len = mbstowcs(NULL, new, 0);
+	p = realloc(input_stat.line, (len + 1)*sizeof(wchar_t));
+	if(p == NULL)
+		return -1;
+
+	input_stat.line = p;
+	input_stat.len = len;
+	mbstowcs(input_stat.line, new, len + 1);
+	return 0;
+}
+
 static void
 complete_cmd_prev(void)
 {
-	char *p;
-
 	if(cfg.cmd_history_num < 0)
 		return;
 
 	if(++input_stat.cmd_pos > cfg.cmd_history_num)
 		input_stat.cmd_pos = 0;
 
-	input_stat.len = mbstowcs(NULL, cfg.cmd_history[input_stat.cmd_pos], 0);
-	p = realloc(input_stat.line, (input_stat.len + 1)*sizeof(wchar_t));
-	if(p == NULL)
-		return;
-
-	input_stat.line = (wchar_t *) p;
-	mbstowcs(input_stat.line, cfg.cmd_history[input_stat.cmd_pos],
-			input_stat.len + 1);
+	replace_input_line(cfg.cmd_history[input_stat.cmd_pos]);
 
 	input_stat.curs_pos = input_stat.prompt_wid
 			+ wcswidth(input_stat.line, input_stat.len);
@@ -941,23 +948,13 @@ complete_cmd_prev(void)
 static void
 complete_search_prev(void)
 {
-	char *p;
-
 	if(cfg.search_history_num < 0)
 		return;
 
 	if(++input_stat.cmd_pos > cfg.search_history_num)
 		input_stat.cmd_pos = 0;
 
-	input_stat.len = mbstowcs(NULL, cfg.search_history[input_stat.cmd_pos], 0);
-
-	p = realloc(input_stat.line, (input_stat.len + 1)*sizeof(wchar_t));
-	if(p == NULL)
-		return;
-
-	input_stat.line = (wchar_t *) p;
-	mbstowcs(input_stat.line, cfg.search_history[input_stat.cmd_pos],
-			input_stat.len + 1);
+	replace_input_line(cfg.search_history[input_stat.cmd_pos]);
 
 	input_stat.curs_pos = wcswidth(input_stat.line, input_stat.len)
 			+ input_stat.prompt_wid;
@@ -990,23 +987,13 @@ cmd_ctrl_p(struct key_info key_info, struct keys_info *keys_info)
 static void
 complete_cmd_next(void)
 {
-	char *p;
-
 	if(cfg.cmd_history_num < 0)
 		return;
 
 	if(--input_stat.cmd_pos < 0)
 		input_stat.cmd_pos = cfg.cmd_history_num;
 
-	input_stat.len = mbstowcs(NULL, cfg.cmd_history[input_stat.cmd_pos], 0);
-
-	p = realloc(input_stat.line, (input_stat.len + 1)*sizeof(wchar_t));
-	if(p == NULL)
-		return;
-
-	input_stat.line = (wchar_t *) p;
-	mbstowcs(input_stat.line, cfg.cmd_history[input_stat.cmd_pos],
-			input_stat.len + 1);
+	replace_input_line(cfg.cmd_history[input_stat.cmd_pos]);
 
 	input_stat.curs_pos = wcswidth(input_stat.line, input_stat.len)
 			+ input_stat.prompt_wid;
@@ -1023,23 +1010,13 @@ complete_cmd_next(void)
 static void
 complete_search_next(void)
 {
-	char *p;
-
 	if(cfg.search_history_num < 0)
 		return;
 
 	if(--input_stat.cmd_pos < 0)
 		input_stat.cmd_pos = cfg.search_history_num;
 
-	input_stat.len = mbstowcs(NULL, cfg.search_history[input_stat.cmd_pos], 0);
-
-	p = realloc(input_stat.line, (input_stat.len + 1)*sizeof(wchar_t));
-	if(p == NULL)
-		return;
-
-	input_stat.line = (wchar_t *) p;
-	mbstowcs(input_stat.line, cfg.search_history[input_stat.cmd_pos],
-			input_stat.len + 1);
+	replace_input_line(cfg.search_history[input_stat.cmd_pos]);
 
 	input_stat.curs_pos = input_stat.prompt_wid
 			+ wcswidth(input_stat.line, input_stat.len);
