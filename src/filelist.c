@@ -1459,6 +1459,8 @@ load_dir_list(FileView *view, int reload)
 	}
 	if(reload && view->selected_files)
 		reset_selected_files(view);
+	else if(view->selected_files)
+		view->selected_files = 0;
 
 	draw_dir_list(view, view->top_line, view->list_pos);
 }
