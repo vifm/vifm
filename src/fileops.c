@@ -100,18 +100,27 @@ my_system(char *command)
 void
 unmount_fuse(void)
 {
-	Fuse_List *runner = fuse_mounts;
-	char buf[8192];
+	Fuse_List *runner;
+
+	if(fuse_mounts == NULL)
+		return;
 
 	chdir("/");
+
+	runner = fuse_mounts;
 	while(runner)
 	{
-		char *tmp = escape_filename(runner->mount_point, 0, 1);
+		char buf[8192];
+		char *tmp;
+
+		tmp = escape_filename(runner->mount_point, 0, 1);
 		snprintf(buf, sizeof(buf), "sh -c \"fusermount -u %s\"", tmp);
 		free(tmp);
+
 		my_system(buf);
 		if(access(runner->mount_point, F_OK) == 0)
 			rmdir(runner->mount_point);
+
 		runner = runner->next;
 	}
 
@@ -816,9 +825,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 		esc_file = escape_filename(view->selected_filelist[x], 0, 1);
 		if(cfg.use_trash && use_trash)
-		{
 			snprintf(buf, sizeof(buf), "mv %s '%s'", esc_file, cfg.trash_dir);
-		}
 		else
 			snprintf(buf, sizeof(buf), "rm -rf %s", esc_file);
 		free(esc_file);

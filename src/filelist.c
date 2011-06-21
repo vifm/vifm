@@ -947,11 +947,12 @@ clean_selected_files(FileView *view)
 	view->selected_files = 0;
 }
 
+/* Removes excess slashes, all "../" and "./" parts of the path */
 void
 canonicalize_path(const char *directory, char *buf, size_t buf_size)
 {
-	const char *p;
-	char *q;
+	const char *p; /* source string pointer */
+	char *q; /* destination string pointer */
 
 	buf[0] = '\0';
 
@@ -959,11 +960,11 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 	p = directory;
 	while(*p != '\0' && (q + 1) - buf < buf_size - 1)
 	{
-		int prev_dir_present = (q != buf - 1 && *q == '/');
+		int prev_dir_present;
+
+		prev_dir_present = (q != buf - 1 && *q == '/');
 		if(prev_dir_present && strncmp(p, "./", 2) == 0)
-		{
 			p++;
-		}
 		else if(prev_dir_present && strcmp(p, ".") == 0)
 			;
 		else if(prev_dir_present &&
@@ -981,10 +982,13 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 		}
 		else
 			*++q = *p;
+
 		p++;
 	}
+
 	if(*q != '/')
 		*++q = '/';
+
 	*++q = '\0';
 }
 
@@ -1021,18 +1025,24 @@ find_fuse_mount(const char *dir)
 void
 leave_invalid_dir(FileView *view, char *path)
 {
+	Fuse_List *runner;
 	size_t len;
 	char *p;
 
-	Fuse_List *runner;
 	if((runner = find_fuse_mount(path)) != NULL)
 	{
 		updir_from_mount(view, runner);
 		return;
 	}
 
-	while(access(path, F_OK) != 0)
+	while(access(path, F_OK | R_OK) != 0)
 	{
+		if((runner = find_fuse_mount(path)) != NULL)
+		{
+			updir_from_mount(view, runner);
+			break;
+		}
+
 		len = strlen(path);
 		if(path[len - 1] == '/')
 			path[len - 1] = '\0';
@@ -1043,13 +1053,75 @@ leave_invalid_dir(FileView *view, char *path)
 }
 
 /*
+ * Return value:
+ *   -1 error occurred.
+ *   0  not mount point.
+ *   1  left FUSE mount directory.
+ */
+int
+try_unmount_fuse(FileView *view)
+{
+	char buf[8192];
+	Fuse_List *runner, *trailer;
+	int status;
+	Fuse_List *sniffer;
+
+	runner = fuse_mounts;
+	trailer = NULL;
+	while(runner)
+	{
+		if(!strcmp(runner->mount_point, view->curr_dir))
+			break;
+
+		trailer = runner;
+		runner = runner->next;
+	}
+
+	if(runner == NULL)
+		return 0;
+
+	/* we are exiting a top level dir */
+	status_bar_message("FUSE unmounting selected file, please stand by..");
+	snprintf(buf, sizeof(buf), "sh -c \"fusermount -u '%s'\"",
+			runner->mount_point);
+
+	/* have to chdir to parent temporarily, so that this DIR can be unmounted */
+	chdir(cfg.fuse_home);
+
+	status = background_and_wait_for_status(buf);
+	/* check child status */
+	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
+	{
+		werase(status_bar);
+		show_error_msg("FUSE UMOUNT ERROR", runner->source_file_name);
+		chdir(view->curr_dir);
+		return -1;
+	}
+
+	/* remove the DIR we created for the mount */
+	if(access(runner->mount_point, F_OK) == 0)
+		rmdir(runner->mount_point);
+
+	/* remove mount point from Fuse_List */
+	sniffer = runner->next;
+	if(trailer)
+		trailer->next = sniffer ? sniffer : NULL;
+	else
+		fuse_mounts = sniffer;
+
+	updir_from_mount(view, runner);
+	free(runner);
+	return 1;
+}
+
+/*
  * The directory can either be relative to the current
  * directory - ../
  * or an absolute path - /usr/local/share
  * The *directory passed to change_directory() cannot be modified.
  * Symlink directories require an absolute path
  *
- * Returns:
+ * Return value:
  *   -1 if there were errors.
  *   0  if directory successfully changed and we didn't leave FUSE mount
  *      directory.
@@ -1077,148 +1149,21 @@ change_directory(FileView *view, const char *directory)
 
 	snprintf(view->last_dir, sizeof(view->last_dir), "%s", view->curr_dir);
 
-/* check if we're exiting from a FUSE mounted top level dir. If so, unmount & let FUSE serialize */
-	if(!strcmp(directory, "../") && !memcmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)))
+	/* check if we're exiting from a FUSE mounted top level dir.
+	 * If so, unmount & let FUSE serialize */
+	if(!strcmp(directory, "../") &&
+			!memcmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)))
 	{
-		Fuse_List *runner = fuse_mounts, *trailer = NULL, *sniffer = NULL;
-		int found = 0;
-		char buf[8192];
-		while(runner)
-		{
-			if(!strcmp(runner->mount_point, view->curr_dir))
-			{
-				found = 1;
-				break;
-			}
-			trailer = runner;
-			runner = runner->next;
-		}
-		if(found) /*true if we ARE exiting a top level dir*/
-		{
-			status_bar_message("FUSE unmounting selected file, please stand by..");
-			snprintf(buf, sizeof(buf), "sh -c \"fusermount -u '%s'\"", runner->mount_point);
-			// TODO look at this
-			//snprintf(buf, sizeof(buf), "sh -c \"pauseme PAUSE_ON_ERROR_ONLY fusermount -u '%s'\"", runner->mount_point);
-			/*have to chdir to parent temporarily, so that this DIR can be unmounted*/
-			chdir(cfg.fuse_home);
-			/*
-			// TODO look at this
-			def_prog_mode();
-			endwin();
-			my_system("clear");
-			int status = my_system(buf);
-			*/
-			int status = background_and_wait_for_status(buf);
-			/*check child status*/
-			if( !WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)) )
-			{
-				werase(status_bar);
-				show_error_msg("FUSE UMOUNT ERROR", runner->source_file_name);
-				chdir(view->curr_dir);
-				return -1;
-			}
-			/*remove the DIR we created for the mount*/
-			if(!access(runner->mount_point, F_OK))
-				rmdir(runner->mount_point);
-			/*remove mount point from Fuse_List*/
-			sniffer = runner->next;
-			if(trailer)
-			{
-				if(sniffer)
-					trailer->next = sniffer;
-				else
-					trailer->next = NULL;
-			}
-			else
-				fuse_mounts = runner->next;
-
-			updir_from_mount(view, runner);
-			free(runner);
-			return 1;
-		}
+		int r = try_unmount_fuse(view);
+		if(r != 0)
+			return r;
 	}
-
-	/* Moving up a directory */
-	if(!strcmp(dir_dup, "../"))
-	{
-		char *str1, *str2;
-		char * value = NULL;
-		char * tok;
-
-		curr_stats.is_updir = 1;
-		str2 = str1 = view->curr_dir;
-
-		while((str1 = strstr(str1, "/")) != NULL)
-		{
-			str1++;
-			str2 = str1;
-		}
-
-		snprintf(curr_stats.updir_file, sizeof(curr_stats.updir_file), "%s/", str2);
-
-		strcpy(newdir,"");
-
-		tok = strtok(view->curr_dir, "/");
-
-		while(tok != NULL)
-		{
-			if(tok != NULL && value != NULL)
-			{
-				strcat(newdir,"/");
-				strcat(newdir,value);
-			}
-			value = tok;
-			tok = strtok(NULL, "/");
-		}
-
-		snprintf(dir_dup, PATH_MAX, "%s", newdir);
-
-		if(!strcmp(dir_dup,""))
-			strcpy(dir_dup,"/");
-	}
-	/* Moving into a directory or bookmarked dir or :cd directory */
-	else if(strcmp(dir_dup, view->curr_dir))
-	{
-		/* directory is a relative path */
-		if(dir_dup[0] != '/')
-		{
-			char * symlink_dir = "/";
-			char * tok = strtok(dir_dup,"/");
-
-			while(tok != NULL)
-			{
-				symlink_dir = tok;
-				tok = strtok(NULL,"/");
-			}
-
-			memmove(dir_dup, symlink_dir, strlen(symlink_dir) + 1);
-			strcat(dir_dup, "/");
-
-			if(view->curr_dir[strlen(view->curr_dir)-1] != '/')
-				strcat(view->curr_dir,"/");
-
-			snprintf(newdir, PATH_MAX, "%s", view->curr_dir);
-			strncat(newdir, dir_dup, strlen(dir_dup));
-
-			//view->curr_dir[strlen(view->curr_dir) -1] = '\0';
-
-			snprintf(dir_dup, PATH_MAX, "%s", newdir);
-		}
-		/* else  It is an absolute path and does not need to be modified
-		 */
-	}
-	/* else -  should only happen when reloading a directory, changing views,
-	 * or when starting up and should already be an absolute path.
-	 */
 
 	/* Clean up any excess separators */
-	if((view->curr_dir[strlen(view->curr_dir) -1] == '/') &&
-			(strcmp(view->curr_dir, "/")))
-		view->curr_dir[strlen(view->curr_dir) - 1] = '\0';
-
-	if((view->last_dir[strlen(view->last_dir) -1] == '/') &&
-			(strcmp(view->last_dir, "/")))
-		view->last_dir[strlen(view->last_dir) - 1] = '\0';
+	if(strcmp(view->curr_dir, "/") != 0)
+		chosp(view->curr_dir);
+	if(strcmp(view->last_dir, "/") != 0)
+		chosp(view->last_dir);
 
 	if(access(dir_dup, F_OK) != 0)
 	{
@@ -1264,8 +1209,12 @@ change_directory(FileView *view, const char *directory)
 
 	if(chdir(dir_dup) == -1)
 	{
+		char buf[14 + PATH_MAX + 1];
+
 		closedir(dir);
-		status_bar_message("Couldn't open directory");
+
+		snprintf(buf, sizeof(buf), "Couldn't open %s", dir_dup);
+		status_bar_message(buf);
 		return -1;
 	}
 
@@ -1275,11 +1224,10 @@ change_directory(FileView *view, const char *directory)
 	/* Need to use setenv instead of getcwd for a symlink directory */
 	setenv("PWD", dir_dup, 1);
 
-	if(dir_dup[strlen(dir_dup) -1] == '/' && strcmp(dir_dup, "/"))
-		dir_dup[strlen(dir_dup) - 1] = '\0';
+	if(strcmp(dir_dup, "/") != 0)
+		chosp(dir_dup);
 
-	if(strcmp(dir_dup, view->curr_dir))
-		snprintf(view->curr_dir, PATH_MAX, "%s", dir_dup);
+	snprintf(view->curr_dir, PATH_MAX, "%s", dir_dup);
 
 	closedir(dir);
 
