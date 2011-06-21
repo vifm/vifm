@@ -505,9 +505,9 @@ change_window(void)
 		wbkgdset(curr_view->win,
 				COLOR_PAIR(WIN_COLOR + curr_view->color_scheme));
 		change_directory(other_view, other_view->curr_dir);
-		load_dir_list(other_view, 0);
+		load_dir_list(other_view, 1);
 		change_directory(curr_view, curr_view->curr_dir);
-		load_dir_list(curr_view, 0);
+		load_dir_list(curr_view, 1);
 	}
 
 	wattron(curr_view->title, A_BOLD);
