@@ -61,7 +61,7 @@ struct line_stats
 	int curs_pos;          /* position of the cursor */
 	int len;               /* length of the string */
 	int cmd_pos;           /* position in the history */
-	wchar_t prompt[80];    /* prompt */
+	wchar_t prompt[320];   /* prompt */
 	int prompt_wid;        /* width of prompt */
 	int complete_continue; /* If non-zero, continue the previous completion */
 };
