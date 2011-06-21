@@ -262,17 +262,17 @@ file_exec(char *command)
 	return pid;
 }
 
-void
-view_file(FileView *view)
+static void
+view_file(const char *filename)
 {
 	char command[PATH_MAX + 5] = "";
-	char *filename = escape_filename(get_current_file_name(view),
-			strlen(get_current_file_name(view)), 0);
+	char *escaped;
 
-	snprintf(command, sizeof(command), "%s %s", cfg.vi_command, filename);
+	escaped = escape_filename(filename, 0, 0);
+	snprintf(command, sizeof(command), "%s %s", cfg.vi_command, escaped);
+	free(escaped);
 
 	shellout(command, 0);
-	free(filename);
 	curs_set(0);
 }
 
@@ -562,7 +562,7 @@ execute_file(FileView *view, int dont_execute)
 	if((program = get_default_program_for_file(
 			view->dir_entry[view->list_pos].name)) == NULL)
 	{
-		view_file(view);
+		view_file(get_current_file_name(view));
 		return;
 	}
 
@@ -570,7 +570,7 @@ execute_file(FileView *view, int dont_execute)
 			|| strncmp(program, "FUSE_MOUNT2", 11) == 0)
 	{
 		if(dont_execute)
-			view_file(view);
+			view_file(get_current_file_name(view));
 		else
 			fuse_try_mount(view, program);
 	}
@@ -859,12 +859,33 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	return 1;
 }
 
+static int
+mv_file(const char *src, const char *dst)
+{
+	char command[6 + NAME_MAX*2 + 1];
+	char *escaped_src, *escaped_dst;
+
+	escaped_src = escape_filename(src, 0, 0);
+	escaped_dst = escape_filename(dst, 0, 0);
+
+	if(escaped_src == NULL || escaped_dst == NULL)
+	{
+		free(escaped_src);
+		free(escaped_dst);
+		return -1;
+	}
+
+	snprintf(command, sizeof(command), "mv -f %s %s", escaped_src, escaped_dst);
+	free(escaped_src);
+	free(escaped_dst);
+
+	return system_and_wait_for_errors(command);
+}
+
 static void
 rename_file_cb(const char *new_name)
 {
 	char *filename = get_current_file_name(curr_view);
-	char *escaped_src, *escaped_dst;
-	char command[1024];
 	char new[NAME_MAX + 1];
 	size_t len;
 	int found;
@@ -887,19 +908,7 @@ rename_file_cb(const char *new_name)
 		return;
 	}
 
-	escaped_src = escape_filename(filename, strlen(filename), 0);
-	escaped_dst = escape_filename(new, strlen(new), 0);
-	if(escaped_src == NULL || escaped_dst == NULL)
-	{
-		free(escaped_src);
-		free(escaped_dst);
-		return;
-	}
-	snprintf(command, sizeof(command), "mv -f %s %s", escaped_src, escaped_dst);
-	free(escaped_src);
-	free(escaped_dst);
-
-	if(system_and_wait_for_errors(command) != 0)
+	if(mv_file(filename, new) != 0)
 	{
 		load_dir_list(curr_view, 1);
 		moveto_list_pos(curr_view, curr_view->list_pos);
@@ -925,7 +934,6 @@ rename_file(FileView *view, int name_only)
 	buf[sizeof(buf) - 1] = '\0';
 	if(strcmp(buf, "../") == 0)
 	{
-		curr_stats.save_msg = 1;
 		status_bar_message("You can't rename parent directory this way.");
 		return;
 	}
@@ -942,6 +950,124 @@ rename_file(FileView *view, int name_only)
 	}
 
 	enter_prompt_mode(L"New name: ", buf, rename_file_cb);
+}
+
+static void
+rename_files_ind(FileView *view, const int *indexes, int count)
+{
+	char buf[] = "vifm-rename-XXXXXX";
+	char msg_buf[128];
+	char *temp_file;
+	struct stat st_before, st_after;
+	FILE *f;
+	int i, renamed = 0;
+
+	if(count == 0)
+	{
+		status_bar_message("0 files renamed.");
+		return;
+	}
+
+	temp_file = mktemp(buf);
+	if(temp_file[0] == '\0')
+	{
+		status_bar_message("Can't create unique temp file name.");
+		return;
+	}
+
+	if((f = fopen(temp_file, "w")) == NULL)
+	{
+		status_bar_message("Can't create temp file.");
+		return;
+	}
+
+	for(i = 0; i < count; i++)
+		fprintf(f, "%s\n", view->dir_entry[indexes[i]].name);
+
+	fclose(f);
+
+	stat(temp_file, &st_before);
+
+	view_file(temp_file);
+
+	stat(temp_file, &st_after);
+
+	if(memcmp(&st_after.st_mtim, &st_before.st_mtim,
+			sizeof(st_after.st_mtime)) == 0)
+	{
+		unlink(temp_file);
+		status_bar_message("0 files renamed.");
+		return;
+	}
+
+	if((f = fopen(temp_file, "r")) == NULL)
+	{
+		unlink(temp_file);
+		status_bar_message("Can't open temp file.");
+		return;
+	}
+
+	for(i = 0; i < count; i++)
+	{
+		char name[NAME_MAX];
+
+		if(fgets(name, sizeof(name), f) == NULL)
+			break;
+		chomp(name);
+
+		if(strcmp(name, view->dir_entry[indexes[i]].name) == 0)
+			continue;
+		if(mv_file(view->dir_entry[indexes[i]].name, name) == 0)
+			renamed++;
+	}
+
+	fclose(f);
+
+	unlink(temp_file);
+
+	snprintf(msg_buf, sizeof(msg_buf), "%d file%s renamed.", renamed,
+			(renamed == 1) ? "" : "s");
+	status_bar_message(msg_buf);
+
+	load_dir_list(view, 1);
+	moveto_list_pos(view, view->list_pos);
+}
+
+void
+rename_files(FileView *view)
+{
+	int *indexes;
+	int count;
+	int i, j;
+
+	if(view->selected_files == 0)
+	{
+		view->dir_entry[view->list_pos].selected = 1;
+		view->selected_files = 1;
+	}
+
+	count = view->selected_files;
+	indexes = malloc(sizeof(*indexes)*count);
+	if(indexes == NULL)
+	{
+		status_bar_message("Not enough memory.");
+		return;
+	}
+
+	j = 0;
+	for(i = 0; i < view->list_rows; i++)
+	{
+		if(!view->dir_entry[i].selected)
+			continue;
+		else if(strcmp(view->dir_entry[i].name, "../") == 0)
+			count--;
+		else
+			indexes[j++] = i;
+	}
+
+	rename_files_ind(view, indexes, count);
+
+	free(indexes);
 }
 
 static void

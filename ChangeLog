@@ -7,6 +7,8 @@
 	Added %c and %C macros (current file of current and other directories, not
 	selected file or files).
 
+	Added :rename command.
+
 	Don't change directory on unsuccessful FUSE mount.
 
 	Don't change cursor position of other directory after disabling quick view.

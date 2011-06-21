@@ -385,9 +385,7 @@ free_selected_file_array(FileView *view)
 	{
 		int x;
 		for(x = 0; x < view->selected_files; x++)
-		{
 			free(view->selected_filelist[x]);
-		}
 		free(view->selected_filelist);
 		view->selected_filelist = NULL;
 		view->selected_files = 0;
@@ -1245,14 +1243,17 @@ reset_selected_files(FileView *view)
 	int x;
 	for(x = 0; x < view->selected_files; x++)
 	{
-		if(view->selected_filelist[x])
+		if(view->selected_filelist[x] != NULL)
 		{
 			int pos = find_file_pos_in_list(view, view->selected_filelist[x]);
 			if(pos >= 0 && pos < view->list_rows)
 				view->dir_entry[pos].selected = 1;
 		}
 	}
+
+	x = view->selected_files;
 	free_selected_file_array(view);
+	view->selected_files = x;
 }
 
 void

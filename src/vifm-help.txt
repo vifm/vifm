@@ -134,7 +134,7 @@ The basic vi key bindings are used to move through the files and popup
 			showing partial output of the command.
 	:!!  same as :! but will pause the screen before returning to vifm.
 		:!!ls -l
-	:e load file into vi.
+	:e - load file into vi.
 	:only - switch to a one window view.
 	:pwd - show the present working directory.
 	:ch[ange] - create a menu window to alter a files properties.
@@ -152,6 +152,8 @@ The basic vi key bindings are used to move through the files and popup
 	:v[iew] - toggle on and off the quick file view.
 	:h[elp] - this crude help file
 	:marks - popup menu of bookmarks
+    :display or :register - popup menu with registers content.
+    :rename - rename files using vi to edit names.
 	:sync - change the other panel to the current panel directory.
 
 
@@ -351,6 +353,8 @@ Reserved :commands
 		q
         popd
         pushd
+        register
+        rename
 		s
 		screen
         set

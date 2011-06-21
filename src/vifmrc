@@ -124,7 +124,6 @@ COMMAND=df=df -h %m
 COMMAND=diff=vim -d %f %F
 COMMAND=et=7z x -so %f | tar -C ~/tmp -xf -
 COMMAND=find=find . -name '%a' %m
-COMMAND=mv=vimv -e 'vim -X --noplugin'
 COMMAND=zip=zip -r %f.zip %f
 
 # The file type is for the default programs to be used with

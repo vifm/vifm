@@ -86,6 +86,7 @@ char *reserved_commands[] = {
 	"pwd",
 	"quit",
 	"register",
+	"rename",
 	"screen",
 	"set",
 	"shell",
@@ -1404,16 +1405,17 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			save_msg = delete_file(view, DEFAULT_REG_NAME, 0, NULL, 1);
 			break;
 		case COM_DELCOMMAND:
-			{
-				if(cmd->args)
-				{
-					remove_command(cmd->args);
-				}
-			}
+			if(cmd->args)
+				remove_command(cmd->args);
 			break;
 		case COM_DISPLAY:
 		case COM_REGISTER:
 			show_register_menu(view);
+			break;
+		case COM_RENAME:
+			select_files_in_range(view, cmd);
+			rename_files(view);
+			save_msg = 1;
 			break;
 		case COM_EDIT:
 			{
@@ -1690,7 +1692,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 	}
 
-	if (view->selected_files)
+	if(view->selected_files)
 	{
 		clean_selected_files(view);
 		draw_dir_list(view, view->top_line, view->list_pos);
