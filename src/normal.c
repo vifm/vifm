@@ -1263,11 +1263,12 @@ cmd_y_selector(struct key_info key_info, struct keys_info *keys_info)
 	keys_info->count = 0;
 }
 
+/* Filter the files matching the filename filter. */
 static void
 cmd_zM(struct key_info key_info, struct keys_info *keys_info)
 {
 	restore_filename_filter(curr_view);
-	hide_dot_files(curr_view);
+	set_dot_files_visible(curr_view, 0);
 }
 
 /* Remove filename filter. */
@@ -1282,9 +1283,10 @@ static void
 cmd_zR(struct key_info key_info, struct keys_info *keys_info)
 {
 	remove_filename_filter(curr_view);
-	show_dot_files(curr_view);
+	set_dot_files_visible(curr_view, 1);
 }
 
+/* Toggle dot files visibility. */
 static void
 cmd_za(struct key_info key_info, struct keys_info *keys_info)
 {
@@ -1316,13 +1318,14 @@ cmd_zf(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_zm(struct key_info key_info, struct keys_info *keys_info)
 {
-	hide_dot_files(curr_view);
+	set_dot_files_visible(curr_view, 0);
 }
 
+/* Show all the dot files. */
 static void
 cmd_zo(struct key_info key_info, struct keys_info *keys_info)
 {
-	show_dot_files(curr_view);
+	set_dot_files_visible(curr_view, 1);
 }
 
 /* Redraw with file in top of list. */

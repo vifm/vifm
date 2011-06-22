@@ -189,6 +189,7 @@ search patterns can be set with :com name /pattern
 	zO show the filtered files
 	zM Filter the files matching the filename filter.
 	zo show all the dot files
+    za toggle dot files visibility
 	zm filter all the .dot files
 	zf filter all the selected files
 		This will work with all selecting methods.  Visually selecting files,

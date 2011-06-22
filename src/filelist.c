@@ -1516,32 +1516,13 @@ filter_selected_files(FileView *view)
 }
 
 void
-hide_dot_files(FileView *view)
+set_dot_files_visible(FileView *view, int visible)
 {
 	int found;
 	char file[NAME_MAX];
 
-	snprintf(file, sizeof(file), "%s",
-			view->dir_entry[view->list_pos].name);
-	view->hide_dot = 1;
-	load_dir_list(view, 1);
-	found = find_file_pos_in_list(view, file);
-
-	if(found >= 0)
-		moveto_list_pos(view, found);
-	else
-		moveto_list_pos(view, view->list_pos);
-}
-
-void
-show_dot_files(FileView *view)
-{
-	int found;
-	char file[256];
-
-	snprintf(file, sizeof(file), "%s",
-			view->dir_entry[view->list_pos].name);
-	view->hide_dot = 0;
+	snprintf(file, sizeof(file), "%s", view->dir_entry[view->list_pos].name);
+	view->hide_dot = !visible;
 	load_dir_list(view, 1);
 	found = find_file_pos_in_list(view, file);
 
@@ -1554,22 +1535,7 @@ show_dot_files(FileView *view)
 void
 toggle_dot_files(FileView *view)
 {
-	int found;
-	char file[NAME_MAX];
-
-	snprintf(file, sizeof(file), "%s",
-			view->dir_entry[view->list_pos].name);
-	if(view->hide_dot)
-		view->hide_dot = 0;
-	else
-		view->hide_dot = 1;
-	load_dir_list(view, 1);
-	found = find_file_pos_in_list(view, file);
-
-	if(found >= 0)
-		moveto_list_pos(view, found);
-	else
-		moveto_list_pos(view, view->list_pos);
+	set_dot_files_visible(view, view->hide_dot);
 }
 
 void

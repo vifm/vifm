@@ -553,7 +553,7 @@ execute_locate_cb(FileView *view, menu_info *m)
 			}
 
 			if(file[0] == '.')
-				show_dot_files(view);
+				set_dot_files_visible(view, 1);
 
 			if(find_file_pos_in_list(view, file) < 0)
 				remove_filename_filter(view);
