@@ -373,6 +373,11 @@ save_command_history(const char *command)
 static char *
 append_selected_files(FileView *view, char *expanded, int under_cursor)
 {
+	int dir_name_len = 0;
+
+	if(view == other_view)
+		dir_name_len = strlen(other_view->curr_dir) + 1;
+
 	if(view->selected_files && !under_cursor)
 	{
 		int y;
@@ -382,17 +387,18 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 			if(view->dir_entry[y].selected)
 			{
 				int dir = 0;
-				char *temp = NULL;
-				expanded = (char *)realloc(expanded,
-						len + strlen(view->dir_entry[y].name) +5);
+				char *temp;
 
 				/* Directory has / appended to the name this removes it. */
-				if (view->dir_entry[y].type == DIRECTORY)
+				if(view->dir_entry[y].type == DIRECTORY)
 					dir = 1;
 
 				temp = escape_filename(view->dir_entry[y].name,
-						strlen(view->dir_entry[y].name)-dir, 1);
-				expanded = (char *)realloc(expanded, len + strlen(temp) + 3);
+						strlen(view->dir_entry[y].name) - dir, 1);
+				expanded = (char *)realloc(expanded,
+						len + dir_name_len + strlen(temp) + 3);
+				if(dir_name_len != 0)
+					strcat(strcat(expanded, view->curr_dir), "/");
 				strcat(expanded, temp);
 
 				free(temp);
@@ -409,16 +415,16 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 		char *temp;
 
 		/* Directory has / appended to the name this removes it. */
-		if (view->dir_entry[view->list_pos].type == DIRECTORY)
+		if(view->dir_entry[view->list_pos].type == DIRECTORY)
 			dir = 1;
 
 		temp = escape_filename(view->dir_entry[view->list_pos].name,
-				strlen(view->dir_entry[view->list_pos].name)-dir, 1);
+				strlen(view->dir_entry[view->list_pos].name) - dir, 1);
 
-		expanded = (char *)realloc(expanded, strlen(expanded) +
-				strlen(view->dir_entry[view->list_pos].name) +3);
-
-		expanded = (char *)realloc(expanded, strlen(expanded) + strlen(temp) + 3);
+		expanded = (char *)realloc(expanded,
+				strlen(expanded) + dir_name_len + strlen(temp) + 3);
+		if(dir_name_len != 0)
+			strcat(strcat(expanded, view->curr_dir), "/");
 		strcat(expanded, temp);
 		free(temp);
 	}
@@ -1415,7 +1421,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		case COM_RENAME:
 			select_files_in_range(view, cmd);
 			rename_files(view);
-			save_msg = 1;
+			save_msg = 1; /* there are always some message */
 			break;
 		case COM_EDIT:
 			{

@@ -16,6 +16,8 @@
 	Hide file group and owner names when they collide with message about
 	filtered files.
 
+	Fixed %F, accidentally broken in v0.6.2.
+
 	Fixed segmentation fault on %f or %F expanding.
 
 	Fixed bug with Ctrl+W, X and quick view.

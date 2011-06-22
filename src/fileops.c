@@ -584,8 +584,7 @@ execute_file(FileView *view, int dont_execute)
 	else
 	{
 		char buf[NAME_MAX *2];
-		char *temp = escape_filename(view->dir_entry[view->list_pos].name,
-				strlen(view->dir_entry[view->list_pos].name), 0);
+		char *temp = escape_filename(view->dir_entry[view->list_pos].name, 0, 0);
 
 		snprintf(buf, sizeof(buf), "%s %s", program, temp);
 		shellout(buf, 0);
@@ -1078,7 +1077,7 @@ change_owner_cb(const char *new_owner)
 	char *escaped;
 
 	filename = get_current_file_name(curr_view);
-	escaped = escape_filename(filename, strlen(filename), 0);
+	escaped = escape_filename(filename, 0, 0);
 	snprintf(command, sizeof(command), "chown -fR %s %s", new_owner, escaped);
 	free(escaped);
 
@@ -1103,7 +1102,7 @@ change_group_cb(const char *new_owner)
 	char *escaped;
 
 	filename = get_current_file_name(curr_view);
-	escaped = escape_filename(filename, strlen(filename), 0);
+	escaped = escape_filename(filename, 0, 0);
 	snprintf(command, sizeof(command), "chown -fR :%s %s", new_owner, escaped);
 	free(escaped);
 
@@ -1294,7 +1293,7 @@ clone_file(FileView* view)
 	if(view->dir_entry[view->list_pos].type == DIRECTORY)
 		escaped = escape_filename(filename, strlen(filename) - 1, 1);
 	else
-		escaped = escape_filename(filename, strlen(filename), 1);
+		escaped = escape_filename(filename, 0, 1);
 	snprintf(buf, sizeof(buf), "cp -pR %s %s_clone", escaped, escaped);
 	background_and_wait_for_errors(buf);
 	free(escaped);
