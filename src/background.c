@@ -322,10 +322,8 @@ start_background_job(char *cmd)
 		/* Send stdout, stdin to /dev/null */
 		if ((nullfd = open("/dev/null", O_RDONLY)) != -1)
 		{
-			if (dup2(nullfd, 0) == -1)
-				;
-			if (dup2(nullfd, 1) == -1)
-				;
+			dup2(nullfd, 0);
+			dup2(nullfd, 1);
 		}
 
 		args[0] = "sh";

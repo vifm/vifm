@@ -671,28 +671,27 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	if(sub_mode == CMD_SUBMODE)
 	{
-		curr_stats.save_msg = exec_commands(p, curr_view, GET_COMMAND, NULL,
-				save_hist);
+		curr_stats.save_msg = exec_commands(p, curr_view, GET_COMMAND, save_hist);
 	}
 	else if(sub_mode == SEARCH_FORWARD_SUBMODE)
 	{
-		curr_stats.save_msg = exec_commands(p, curr_view, GET_FSEARCH_PATTERN, NULL,
+		curr_stats.save_msg = exec_commands(p, curr_view, GET_FSEARCH_PATTERN,
 				save_hist);
 	}
 	else if(sub_mode == SEARCH_BACKWARD_SUBMODE)
 	{
-		curr_stats.save_msg = exec_commands(p, curr_view, GET_BSEARCH_PATTERN, NULL,
+		curr_stats.save_msg = exec_commands(p, curr_view, GET_BSEARCH_PATTERN,
 				save_hist);
 	}
 	else if(sub_mode == MENU_CMD_SUBMODE)
 	{
-		execute_menu_command(curr_view, p, sub_mode_ptr);
+		execute_menu_command(p, sub_mode_ptr);
 	}
 	else if(sub_mode == MENU_SEARCH_FORWARD_SUBMODE
 			|| sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
 	{
 		curr_stats.need_redraw = 1;
-		search_menu_list(curr_view, p, sub_mode_ptr);
+		search_menu_list(p, sub_mode_ptr);
 	}
 	else if(sub_mode == PROMPT_SUBMODE)
 	{

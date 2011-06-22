@@ -490,7 +490,7 @@ static void
 cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_selected_files(curr_view);
-	draw_dir_list(curr_view, curr_view->top_line, curr_view->list_pos);
+	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
 	curs_set(0);
 }
@@ -972,14 +972,14 @@ cmd_cW(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_cg(struct key_info key_info, struct keys_info *keys_info)
 {
-	change_group(curr_view);
+	change_group();
 }
 
 /* Change owner. */
 static void
 cmd_co(struct key_info key_info, struct keys_info *keys_info)
 {
-	change_owner(curr_view);
+	change_owner();
 }
 
 /* Change permissions. */
@@ -1222,7 +1222,7 @@ cmd_t(struct key_info key_info, struct keys_info *keys_info)
 		curr_view->selected_files--;
 	}
 
-	draw_dir_list(curr_view, curr_view->top_line, curr_view->list_pos);
+	draw_dir_list(curr_view, curr_view->top_line);
 	wattron(curr_view->win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
 	mvwaddstr(curr_view->win, curr_view->curr_line, 0, " ");
 	wattroff(curr_view->win, COLOR_PAIR(CURR_LINE_COLOR));

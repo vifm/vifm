@@ -171,7 +171,7 @@ enter_visual_mode(int restore_selection)
 		view->dir_entry[view->list_pos].selected = 1;
 	}
 
-	draw_dir_list(view, view->top_line, view->list_pos);
+	draw_dir_list(view, view->top_line);
 	moveto_list_pos(view, view->list_pos);
 
 	update_marks(view);
@@ -181,7 +181,7 @@ void
 leave_visual_mode(int save_msg)
 {
 	clean_selected_files(view);
-	draw_dir_list(view, view->top_line, view->list_pos);
+	draw_dir_list(view, view->top_line);
 	moveto_list_pos(view, view->list_pos);
 
 	curr_stats.save_msg = save_msg;
@@ -509,7 +509,7 @@ update_marks(FileView *view)
 static void
 update(void)
 {
-	draw_dir_list(view, view->top_line, view->list_pos);
+	draw_dir_list(view, view->top_line);
 	moveto_list_pos(view, view->list_pos);
 	update_pos_window(view);
 }

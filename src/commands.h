@@ -94,8 +94,7 @@ extern char *reserved_commands[];
 
 command_t *command_list;
 
-int exec_commands(char *cmd, FileView *view, int type, void * ptr,
-		int save_hist);
+int exec_commands(char *cmd, FileView *view, int type, int save_hist);
 int shellout(char *command, int pause);
 void add_command(char *name, char *action);
 int execute_command(FileView *view, char *action);
@@ -105,8 +104,8 @@ int is_user_command(char *command);
 int command_is_reserved(char *command);
 int get_buildin_id(const char *cmd_line);
 char * command_completion(char *str, int users_only);
-char * expand_macros(FileView *view, char *command, char *args, int *menu,
-		int *split);
+char * expand_macros(FileView *view, const char *command, const char *args,
+		int *menu, int *split);
 void remove_command(char *name);
 void comm_quit(void);
 void comm_only(void);

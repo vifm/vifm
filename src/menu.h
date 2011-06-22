@@ -27,7 +27,7 @@ void enter_menu_mode(menu_info *m, FileView *active_view);
 void menu_pre(void);
 void menu_post(void);
 void menu_redraw(void);
-void execute_menu_command(FileView *view, char *command, menu_info *ptr);
+void execute_menu_command(char *command, menu_info *ptr);
 
 #endif
 

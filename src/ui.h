@@ -88,7 +88,7 @@ typedef struct _FileView
 	int list_pos; /* actual position in the file list */
 	int list_rows; /* size of the file list */
 	int window_rows; /* number of rows shown in window */
-	int window_width;
+	unsigned int window_width;
 	int filtered;  /* number of files filtered out and not shown in list */
 	int selected_files;
 	int color_scheme; /* current color scheme being used */

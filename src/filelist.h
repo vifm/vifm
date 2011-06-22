@@ -39,7 +39,7 @@ void goto_history_pos(FileView *view, int pos);
 int change_directory(FileView *view, const char *directory);
 void leave_invalid_dir(FileView *view, char *path);
 void load_dir_list(FileView *view, int reload);
-void draw_dir_list(FileView *view, int top, int pos);
+void draw_dir_list(FileView *view, int top);
 char * get_current_file_name(FileView *view);
 void moveto_list_pos(FileView *view, int pos);
 int find_file_pos_in_list(FileView *view, const char *file);

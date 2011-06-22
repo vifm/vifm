@@ -157,13 +157,13 @@ write_color_scheme_file(void)
 			snprintf(buf, sizeof(buf), ELEM_NAMES[col_schemes[x].color[y].name]);
 
 			t = col_schemes[x].color[y].fg + 1;
-			if(t < sizeof(COLOR_STR)/sizeof(COLOR_STR[0]))
+			if((size_t)t < sizeof(COLOR_STR)/sizeof(COLOR_STR[0]))
 				snprintf(fg_buf, sizeof(fg_buf), "%s", COLOR_STR[t]);
 			else
 				snprintf(fg_buf, sizeof(fg_buf), "%d", t + 1);
 
 			t = col_schemes[x].color[y].bg + 1;
-			if(t < sizeof(COLOR_STR)/sizeof(COLOR_STR[0]))
+			if((size_t)t < sizeof(COLOR_STR)/sizeof(COLOR_STR[0]))
 				snprintf(bg_buf, sizeof(bg_buf), "%s", COLOR_STR[t]);
 			else
 				snprintf(bg_buf, sizeof(bg_buf), "%d", t + 1);

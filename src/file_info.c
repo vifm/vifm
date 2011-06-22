@@ -163,7 +163,7 @@ show_full_file_properties(FileView *view)
 
 	curr_stats.show_full = 0;
 
-	setup_menu(view);
+	setup_menu();
 
 	getmaxyx(menu_win, y, x);
 	werase(menu_win);

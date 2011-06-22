@@ -157,7 +157,7 @@ key_handler(wchar_t key)
 		return 0;
 
 	if(menu->key_handler(menu, key))
-		redraw_menu(view, menu);
+		redraw_menu(menu);
 
 	return 0;
 }
@@ -194,11 +194,11 @@ menu_post(void)
 void
 menu_redraw(void)
 {
-	redraw_menu(view, menu);
+	redraw_menu(menu);
 }
 
 void
-execute_menu_command(FileView *view, char *command, menu_info *m)
+execute_menu_command(char *command, menu_info *m)
 {
 	if(strncmp("quit", command, strlen(command)) == 0)
 		leave_menu_mode();
@@ -207,7 +207,7 @@ execute_menu_command(FileView *view, char *command, menu_info *m)
 	else if(isdigit(*command))
 	{
 		clean_menu_position(m);
-		moveto_menu_pos(view, atoi(command) - 1, m);
+		moveto_menu_pos(atoi(command) - 1, m);
 		wrefresh(menu_win);
 	}
 }
@@ -224,7 +224,7 @@ cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
 	menu->pos -= menu->win_rows - 3;
-	moveto_menu_pos(view, menu->pos, menu);
+	moveto_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -239,7 +239,7 @@ cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
 	menu->pos += menu->win_rows - 3;
-	moveto_menu_pos(view, menu->pos, menu);
+	moveto_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -279,7 +279,7 @@ static void
 cmd_G(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
-	moveto_menu_pos(curr_view, menu->len - 1, menu);
+	moveto_menu_pos(menu->len - 1, menu);
 	wrefresh(menu_win);
 }
 
@@ -290,7 +290,7 @@ cmd_N(struct key_info key_info, struct keys_info *keys_info)
 	{
 		menu->match_dir = last_search_backward ? DOWN : UP;
 		menu->matching_entries = 0;
-		search_menu_list(view, NULL, menu);
+		search_menu_list(NULL, menu);
 		wrefresh(menu_win);
 	}
 	else
@@ -309,12 +309,12 @@ cmd_dd(struct key_info key_info, struct keys_info *keys_info)
 		remove_command(command_list[menu->pos].name);
 
 		reload_command_menu_list(menu);
-		draw_menu(view, menu);
+		draw_menu(menu);
 
 		if(menu->pos -1 >= 0)
-			moveto_menu_pos(view, menu->pos -1, menu);
+			moveto_menu_pos(menu->pos -1, menu);
 		else
-			moveto_menu_pos(view, 0, menu);
+			moveto_menu_pos(0, menu);
 	}
 	else if(menu->type == BOOKMARK)
 	{
@@ -322,12 +322,12 @@ cmd_dd(struct key_info key_info, struct keys_info *keys_info)
 		remove_bookmark(active_bookmarks[menu->pos]);
 
 		reload_bookmarks_menu_list(menu);
-		draw_menu(view, menu);
+		draw_menu(menu);
 
 		if(menu->pos -1 >= 0)
-			moveto_menu_pos(view, menu->pos -1, menu);
+			moveto_menu_pos(menu->pos -1, menu);
 		else
-			moveto_menu_pos(view, 0, menu);
+			moveto_menu_pos(0, menu);
 	}
 	wrefresh(menu_win);
 }
@@ -336,7 +336,7 @@ static void
 cmd_gg(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
-	moveto_menu_pos(curr_view, 0, menu);
+	moveto_menu_pos(0, menu);
 	wrefresh(menu_win);
 }
 
@@ -348,7 +348,7 @@ cmd_j(struct key_info key_info, struct keys_info *keys_info)
 
 	clean_menu_position(menu);
 	menu->pos += key_info.count;
-	moveto_menu_pos(view, menu->pos, menu);
+	moveto_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -360,7 +360,7 @@ cmd_k(struct key_info key_info, struct keys_info *keys_info)
 
 	clean_menu_position(menu);
 	menu->pos -= key_info.count;
-	moveto_menu_pos(view, menu->pos, menu);
+	moveto_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -371,7 +371,7 @@ cmd_n(struct key_info key_info, struct keys_info *keys_info)
 	{
 		menu->match_dir = last_search_backward ? UP : DOWN;
 		menu->matching_entries = 0;
-		search_menu_list(view, NULL, menu);
+		search_menu_list(NULL, menu);
 		wrefresh(menu_win);
 	}
 	else

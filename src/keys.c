@@ -450,7 +450,7 @@ list_cmds(int mode)
 static int
 fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
 {
-	int i;
+	size_t i;
 	struct key_chunk_t *child;
 
 	for(i = 0; i < (curr->children_count ? curr->children_count : 1); i++)

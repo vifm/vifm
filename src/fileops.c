@@ -209,7 +209,7 @@ yank_files(FileView *view, int reg, int count, int *indexes)
 	if(count == 0)
 	{
 		clean_selected_files(curr_view);
-		draw_dir_list(curr_view, curr_view->top_line, curr_view->list_pos);
+		draw_dir_list(curr_view, curr_view->top_line);
 		moveto_list_pos(curr_view, curr_view->list_pos);
 		count = yanked;
 	}
@@ -576,8 +576,8 @@ execute_file(FileView *view, int dont_execute)
 	}
 	else if(strchr(program, '%') != NULL)
 	{
-		int m, s;
-		char *command = expand_macros(view, program, NULL, &m, &s);
+		int use_menu = 0, split = 0;
+		char *command = expand_macros(view, program, NULL, &use_menu, &split);
 		shellout(command, 0);
 		free(command);
 	}
@@ -929,7 +929,7 @@ rename_file(FileView *view, int name_only)
 	char* p;
 	char buf[NAME_MAX + 1];
 
-	strncpy(buf, get_current_file_name(curr_view), sizeof(buf));
+	strncpy(buf, get_current_file_name(view), sizeof(buf));
 	buf[sizeof(buf) - 1] = '\0';
 	if(strcmp(buf, "../") == 0)
 	{
@@ -1089,7 +1089,7 @@ change_owner_cb(const char *new_owner)
 }
 
 void
-change_owner(FileView *view)
+change_owner(void)
 {
 	enter_prompt_mode(L"New owner: ", "", change_owner_cb);
 }
@@ -1114,7 +1114,7 @@ change_group_cb(const char *new_owner)
 }
 
 void
-change_group(FileView *view)
+change_group(void)
 {
 	enter_prompt_mode(L"New group: ", "", change_group_cb);
 }

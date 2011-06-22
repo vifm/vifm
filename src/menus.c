@@ -203,7 +203,7 @@ reset_popup_menu(menu_info *m)
 }
 
 void
-setup_menu(FileView *view)
+setup_menu(void)
 {
 	scrollok(menu_win, FALSE);
 	curs_set(0);
@@ -228,7 +228,7 @@ init_active_bookmarks(void)
 }
 
 void
-moveto_menu_pos(FileView *view, int pos,  menu_info *m)
+moveto_menu_pos(int pos, menu_info *m)
 {
 	int redraw = 0;
 	int x, y, z;
@@ -267,7 +267,7 @@ moveto_menu_pos(FileView *view, int pos,  menu_info *m)
 		redraw = 1;
 	}
 	if(redraw)
-		draw_menu(view, m);
+		draw_menu(m);
 
 	buf = (char *)malloc((x + 2));
 	if(buf == NULL)
@@ -293,7 +293,7 @@ moveto_menu_pos(FileView *view, int pos,  menu_info *m)
 }
 
 void
-redraw_menu(FileView *view, menu_info *m)
+redraw_menu(menu_info *m)
 {
 	int screen_x, screen_y;
 	struct winsize ws;
@@ -319,13 +319,13 @@ redraw_menu(FileView *view, menu_info *m)
 	wrefresh(pos_win);
 	curr_stats.freeze = 0;
 
-	draw_menu(view, m);
-	moveto_menu_pos(view, m->pos, m);
+	draw_menu(m);
+	moveto_menu_pos(m->pos, m);
 	wrefresh(menu_win);
 }
 
-int
-search_menu_forwards(FileView *view, menu_info *m, int start_pos)
+static int
+search_menu_forwards(menu_info *m, int start_pos)
 {
 	int match_up = -1;
 	int match_down = -1;
@@ -366,7 +366,7 @@ search_menu_forwards(FileView *view, menu_info *m, int start_pos)
 			pos = match_up;
 
 		clean_menu_position(m);
-		moveto_menu_pos(view, pos, m);
+		moveto_menu_pos(pos, m);
 		snprintf(buf, sizeof(buf), "%d %s", m->matching_entries,
 				m->matching_entries == 1 ? "match" : "matches");
 		status_bar_message(buf);
@@ -381,11 +381,10 @@ search_menu_forwards(FileView *view, menu_info *m, int start_pos)
 		return 1;
 	}
 	return 0;
-
 }
 
-int
-search_menu_backwards(FileView *view, menu_info *m, int start_pos)
+static int
+search_menu_backwards(menu_info *m, int start_pos)
 {
 	int match_up = -1;
 	int match_down = -1;
@@ -426,7 +425,7 @@ search_menu_backwards(FileView *view, menu_info *m, int start_pos)
 			pos = match_down;
 
 		clean_menu_position(m);
-		moveto_menu_pos(view, pos, m);
+		moveto_menu_pos(pos, m);
 		snprintf(buf, sizeof(buf), "%d %s", m->matching_entries,
 				m->matching_entries == 1 ? "match" : "matches");
 		status_bar_message(buf);
@@ -444,7 +443,7 @@ search_menu_backwards(FileView *view, menu_info *m, int start_pos)
 }
 
 int
-search_menu_list(FileView *view, char * pattern, menu_info *m)
+search_menu_list(char * pattern, menu_info *m)
 {
 	int save = 0;
 
@@ -454,13 +453,13 @@ search_menu_list(FileView *view, char * pattern, menu_info *m)
 	switch(m->match_dir)
 	{
 		case NONE:
-			save = search_menu_forwards(view, m, m->pos);
+			save = search_menu_forwards(m, m->pos);
 			break;
 		case UP:
-			save = search_menu_backwards(view, m, m->pos - 1);
+			save = search_menu_backwards(m, m->pos - 1);
 			break;
 		case DOWN:
-			save = search_menu_forwards(view, m, m->pos + 1);
+			save = search_menu_forwards(m, m->pos + 1);
 			break;
 		default:
 		break;
@@ -471,17 +470,17 @@ search_menu_list(FileView *view, char * pattern, menu_info *m)
 static void
 execute_jobs_cb(FileView *view, menu_info *m)
 {
-
+	/* TODO write code for job control */
 }
 
 static void
-execute_colorschemes_cb(FileView *view, menu_info *m)
+execute_colorschemes_cb(menu_info *m)
 {
 	load_color_scheme(m->data[m->pos]);
 }
 
 static void
-execute_apropos_cb(FileView *view, menu_info *m)
+execute_apropos_cb(menu_info *m)
 {
 	char *line = NULL;
 	char *man_page = NULL;
@@ -588,8 +587,10 @@ execute_filetype_cb(FileView *view, menu_info *m)
 
 	if(strchr(prog_str, '%'))
 	{
-		int m = 0;
-		char *expanded_command = expand_macros(view, prog_str, NULL, &m, 0);
+		int use_menu = 0, split = 0;
+		char *expanded_command;
+
+		expanded_command = expand_macros(view, prog_str, NULL, &use_menu, &split);
 		execute_filetype(expanded_command, background);
 		free(expanded_command);
 		return;
@@ -611,16 +612,16 @@ execute_menu_cb(FileView *view, menu_info *m)
 	switch(m->type)
 	{
 		case APROPOS:
-			execute_apropos_cb(view, m);
+			execute_apropos_cb(m);
 			break;
 		case BOOKMARK:
 			move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
 			break;
 		case CMDHISTORY:
-			exec_commands(m->data[m->pos], view, GET_COMMAND, NULL, 1);
+			exec_commands(m->data[m->pos], view, GET_COMMAND, 1);
 			break;
 		case COLORSCHEME:
-			execute_colorschemes_cb(view, m);
+			execute_colorschemes_cb(m);
 			break;
 		case COMMAND:
 			execute_command(view, command_list[m->pos].name);
@@ -710,15 +711,11 @@ reload_command_menu_list(menu_info *m)
 				command_list[x].action);
 
 		x++;
-		/* This will show the expanded command instead of the macros
-		 * char *expanded = expand_macros(view, command_list[x].action, NULL);
-		 * free(expanded);
-		*/
 	}
 }
 
 void
-draw_menu(FileView *view,  menu_info *m)
+draw_menu(menu_info *m)
 {
 	int i;
 	int x, y;
@@ -807,9 +804,9 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 	free(list);
 	m.len = x;
 
-	setup_menu(view);
-	draw_menu(view, &m);
-	moveto_menu_pos(view, 0, &m);
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(0, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -870,9 +867,9 @@ show_apropos_menu(FileView *view, char *args)
 	}
 	else
 	{
-		setup_menu(view);
-		draw_menu(view, &m);
-		moveto_menu_pos(view, 0, &m);
+		setup_menu();
+		draw_menu(&m);
+		moveto_menu_pos(0, &m);
 		enter_menu_mode(&m, view);
 	}
 }
@@ -926,9 +923,9 @@ show_bookmarks_menu(FileView *view)
 	}
 	m.len = x;
 
-	setup_menu(view);
-	draw_menu(view, &m);
-	moveto_menu_pos(view, 0, &m);
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(0, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -967,9 +964,9 @@ show_colorschemes_menu(FileView *view)
 		i++;
 	}
 
-	setup_menu(view);
-	draw_menu(view, &m);
-	moveto_menu_pos(view, m.pos, &m);
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1017,16 +1014,11 @@ show_commands_menu(FileView *view)
 				command_list[x].action);
 
 		x++;
-		/* This will show the expanded command instead of the macros
-		 * char *expanded = expand_macros(view, command_list[x].action, NULL);
-		 * free(expanded);
-		 * TODO maybe we can use this code in some kind of debug mode
-		*/
 	}
 
-	setup_menu(view);
-	draw_menu(view, &m);
-	moveto_menu_pos(view, 0, &m);
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(0, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1191,9 +1183,9 @@ show_filetypes_menu(FileView *view, int background)
 
 			free(free_this);
 		}
-		setup_menu(view);
-		draw_menu(view, &m);
-		moveto_menu_pos(view, 0, &m);
+		setup_menu();
+		draw_menu(&m);
+		moveto_menu_pos(0, &m);
 		enter_menu_mode(&m, view);
 	}
 
@@ -1245,9 +1237,9 @@ show_history_menu(FileView *view)
 		m.data[x] = m.data[m.len - 1 - x];
 		m.data[m.len - 1 - x] = t;
 	}
-	setup_menu(view);
-	draw_menu(view, &m);
-	moveto_menu_pos(view, m.pos, &m);
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1283,9 +1275,9 @@ show_cmdhistory_menu(FileView *view)
 	}
 	m.len = x;
 
-	setup_menu(view);
-	draw_menu(view, &m);
-	moveto_menu_pos(view, m.pos, &m);
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1349,16 +1341,16 @@ show_locate_menu(FileView *view, char *args)
 		return;
 	}
 
-	setup_menu(view);
-	draw_menu(view, &m);
-	moveto_menu_pos(view, 0, &m);
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(0, &m);
 	enter_menu_mode(&m, view);
 }
 
 void
 show_user_menu(FileView *view, char *command)
 {
-	int x;
+	size_t x;
 	char buf[256];
 	FILE *file;
 
@@ -1377,8 +1369,7 @@ show_user_menu(FileView *view, char *command)
 	m.data = NULL;
 	m.get_info_script = command;
 
-
-	for( x = 0; x < strlen(command); x++)
+	for(x = 0; command[x] != '\0'; x++)
 	{
 		if(command[x] == ',')
 		{
@@ -1429,9 +1420,9 @@ show_user_menu(FileView *view, char *command)
 		return;
 	}
 
-	setup_menu(view);
-	draw_menu(view, &m);
-	moveto_menu_pos(view, 0, &m);
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(0, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1516,9 +1507,9 @@ show_jobs_menu(FileView *view)
 	else
 		m.title = strdup(" Pid --- Command ");
 
-	setup_menu(view);
-	draw_menu(view, &m);
-	moveto_menu_pos(view, 0, &m);
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(0, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1573,9 +1564,9 @@ show_register_menu(FileView *view)
 		m.len = 1;
 	}
 
-	setup_menu(view);
-	draw_menu(view, &m);
-	moveto_menu_pos(view, 0, &m);
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(0, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1602,19 +1593,19 @@ show_vifm_menu(FileView *view)
 
 	m.len = fill_version_info(m.data);
 
-	setup_menu(view);
-	draw_menu(view, &m);
-	moveto_menu_pos(view, 0, &m);
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(0, &m);
 	enter_menu_mode(&m, view);
 }
 
 int
 query_user_menu(char *title, char *message)
 {
-	int x, y;
+	size_t x, y;
 	int key;
 	int done = 0;
-	int z = 0;
+	size_t z;
 	char *dup = strdup(message);
 
 	curr_stats.freeze = 1;
@@ -1623,10 +1614,11 @@ query_user_menu(char *title, char *message)
 
 	getmaxyx(error_win, y, x);
 
-	if(strlen(dup) > x -2)
+	if(strlen(dup) > x - 2)
 		dup[x -2] = '\0';
 
-	while ((z < strlen(dup) -1) && isprint(dup[z]))
+	z = 0;
+	while((z < strlen(dup) - 1) && isprint(dup[z]))
 		z++;
 
 	dup[z] = '\0';

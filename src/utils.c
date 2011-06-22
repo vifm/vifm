@@ -65,6 +65,7 @@ duplicate (void *stuff, int size)
 char *
 escape_filename(const char *string, size_t len, int quote_percent)
 {
+	size_t i;
 	char *ret, *dup;
 
 	if(len == 0)
@@ -78,8 +79,7 @@ escape_filename(const char *string, size_t len, int quote_percent)
 		*dup++ = '/';
 	}
 
-	int i;
-	for (i = 0; i < len; i++, string++, dup++)
+	for(i = 0; i < len; i++, string++, dup++)
 	{
 		switch (*string)
 		{

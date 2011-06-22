@@ -51,7 +51,7 @@ static void leave_permissions_mode(void);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
 static void set_perm_string(FileView *view, const int *perms,
-		const int *origin_perms, char *file);
+		const int *origin_perms);
 static void files_chmod(FileView *view, char *mode, int recurse_dirs);
 static char * add_file_to_list(char *list, const char *filename);
 static void file_chmod(char *path, char *mode, int recurse_dirs);
@@ -148,18 +148,18 @@ enter_permissions_mode(FileView *active_view)
 		i++;
 	}
 
-	perms[0] = !(diff & S_IRUSR) ? (fmode & S_IRUSR) : -1;
-	perms[1] = !(diff & S_IWUSR) ? (fmode & S_IWUSR) : -1;
-	perms[2] = !(diff & S_IXUSR) ? (fmode & S_IXUSR) : -1;
-	perms[3] = !(diff & S_ISUID) ? (fmode & S_ISUID) : -1;
-	perms[4] = !(diff & S_IRGRP) ? (fmode & S_IRGRP) : -1;
-	perms[5] = !(diff & S_IWGRP) ? (fmode & S_IWGRP) : -1;
-	perms[6] = !(diff & S_IXGRP) ? (fmode & S_IXGRP) : -1;
-	perms[7] = !(diff & S_ISGID) ? (fmode & S_ISGID) : -1;
-	perms[8] = !(diff & S_IROTH) ? (fmode & S_IROTH) : -1;
-	perms[9] = !(diff & S_IWOTH) ? (fmode & S_IWOTH) : -1;
-	perms[10] = !(diff & S_IXOTH) ? (fmode & S_IXOTH) : -1;
-	perms[11] = !(diff & S_ISVTX) ? (fmode & S_ISVTX) : -1;
+	perms[0] = !(diff & S_IRUSR) ? (int)(fmode & S_IRUSR) : -1;
+	perms[1] = !(diff & S_IWUSR) ? (int)(fmode & S_IWUSR) : -1;
+	perms[2] = !(diff & S_IXUSR) ? (int)(fmode & S_IXUSR) : -1;
+	perms[3] = !(diff & S_ISUID) ? (int)(fmode & S_ISUID) : -1;
+	perms[4] = !(diff & S_IRGRP) ? (int)(fmode & S_IRGRP) : -1;
+	perms[5] = !(diff & S_IWGRP) ? (int)(fmode & S_IWGRP) : -1;
+	perms[6] = !(diff & S_IXGRP) ? (int)(fmode & S_IXGRP) : -1;
+	perms[7] = !(diff & S_ISGID) ? (int)(fmode & S_ISGID) : -1;
+	perms[8] = !(diff & S_IROTH) ? (int)(fmode & S_IROTH) : -1;
+	perms[9] = !(diff & S_IWOTH) ? (int)(fmode & S_IWOTH) : -1;
+	perms[10] = !(diff & S_IXOTH) ? (int)(fmode & S_IXOTH) : -1;
+	perms[11] = !(diff & S_ISVTX) ? (int)(fmode & S_ISVTX) : -1;
 	memcpy(origin_perms, perms, sizeof(perms));
 
 	top = 3;
@@ -255,7 +255,7 @@ redraw_permissions_dialog(void)
 	box(change_win, ACS_VLINE, ACS_HLINE);
 
 	filename = get_current_file_name(view);
-	if(strlen(filename) > x - 2)
+	if(strlen(filename) > (size_t)x - 2)
 		filename[x - 4] = '\0';
 	mvwaddnstr(change_win, 0, (getmaxx(change_win) - strlen(filename))/2,
 			filename, x - 2);
@@ -294,17 +294,16 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 	snprintf(path, sizeof(path), "%s/%s", view->curr_dir,
 			view->dir_entry[view->list_pos].name);
 
-	set_perm_string(view, perms, origin_perms, path);
+	set_perm_string(view, perms, origin_perms);
 	load_dir_list(view, 1);
 	moveto_list_pos(view, view->curr_line);
 	clean_selected_files(view);
-	draw_dir_list(view, view->top_line, view->list_pos);
+	draw_dir_list(view, view->top_line);
 	moveto_list_pos(view, view->list_pos);
 }
 
 static void
-set_perm_string(FileView *view, const int *perms, const int *origin_perms,
-		char *file)
+set_perm_string(FileView *view, const int *perms, const int *origin_perms)
 {
 	int i = 0;
 	char *add_perm[] = {"u+r", "u+w", "u+x", "u+s", "g+r", "g+w", "g+x", "g+s",

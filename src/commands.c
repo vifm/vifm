@@ -126,7 +126,7 @@ typedef struct current_command
 static wchar_t * substitute_specs(const char *cmd);
 static const char *skip_spaces(const char *cmd);
 static const char *skip_word(const char *cmd);
-static int exec_command(char *cmd, FileView *view, int type, void * ptr);
+static int exec_command(char *cmd, FileView *view, int type);
 
 int
 sort_this(const void *one, const void *two)
@@ -455,21 +455,25 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 	return expanded;
 }
 
-/* The string returned needs to be freed in the calling function */
+/* args could be equal NULL
+ * The string returned needs to be freed in the calling function */
 char *
-expand_macros(FileView *view, char *command, char *args, int *use_menu,
-		int *split)
+expand_macros(FileView *view, const char *command, const char *args,
+		int *use_menu, int *split)
 {
+	size_t cmd_len;
 	char *expanded;
-	int x;
+	size_t x;
 	int y = 0;
 	int len = 0;
 
-	expanded = (char *)calloc(strlen(command) + 1, sizeof(char *));
+	cmd_len = strlen(command);
 
-	for(x = 0; x < strlen(command); x++)
-			if(command[x] == '%')
-				break;
+	expanded = (char *)calloc(cmd_len + 1, sizeof(char *));
+
+	for(x = 0; x < cmd_len; x++)
+		if(command[x] == '%')
+			break;
 
 	strncat(expanded, command, x);
 	x++;
@@ -481,14 +485,14 @@ expand_macros(FileView *view, char *command, char *args, int *use_menu,
 		{
 			case 'a': /* user arguments */
 				{
-					if(!args)
+					if(args == NULL)
 						break;
 					else
 					{
 						char arg_buf[strlen(args) + 2];
 
 						expanded = (char *)realloc(expanded,
-								strlen(expanded) + strlen(args) +3);
+								strlen(expanded) + strlen(args) + 3);
 						snprintf(arg_buf, sizeof(arg_buf), "%s", args);
 						strcat(expanded, arg_buf);
 						len = strlen(expanded);
@@ -558,16 +562,17 @@ expand_macros(FileView *view, char *command, char *args, int *use_menu,
 		x++;
 		y = x;
 
-		for(; x < strlen(command); x++)
+		while(x < cmd_len)
 		{
 			if(command[x] == '%')
 				break;
+			x++;
 		}
-		expanded = (char *)realloc(expanded, len + strlen(command) +1);
+		expanded = (char *)realloc(expanded, len + cmd_len + 1);
 		strncat(expanded, command + y, x - y);
 		len = strlen(expanded);
 		x++;
-	}while(x < strlen(command));
+	}while(x < cmd_len);
 
 	len++;
 	expanded[len] = '\0';
@@ -958,7 +963,7 @@ select_files_in_range(FileView *view, cmd_t * cmd)
 static int
 check_for_range(FileView *view, char *command, cmd_t *cmd)
 {
-	while(isspace(command[cmd->pos]) && cmd->pos < strlen(command))
+	while(isspace(command[cmd->pos]) && (size_t)cmd->pos < strlen(command))
 		cmd->pos++;
 
 	/*
@@ -1007,8 +1012,8 @@ check_for_range(FileView *view, char *command, cmd_t *cmd)
 		while(isdigit(command[cmd->pos]))
 		{
 			num_buf[z] = command[cmd->pos];
-				cmd->pos++;
-				z++;
+			cmd->pos++;
+			z++;
 		}
 		num_buf[z] = '\0';
 		cmd->start_range = atoi(num_buf) - 1;
@@ -1020,8 +1025,8 @@ check_for_range(FileView *view, char *command, cmd_t *cmd)
 			return -10;
 		}
 	}
-	while(isspace(command[cmd->pos]) && cmd->pos < strlen(command))
-			cmd->pos++;
+	while(isspace(command[cmd->pos]) && (size_t)cmd->pos < strlen(command))
+		cmd->pos++;
 
 	/* Check for second number of range. */
 	if(command[cmd->pos] == ',')
@@ -1128,7 +1133,8 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 	/* The builtin commands do not contain numbers and ! is only used at the
 	 * end of the command name.
 	 */
-	while(cmd->cmd_name[cmd->pos] != ' ' && cmd->pos < strlen(cmd->cmd_name)
+	while(cmd->cmd_name[cmd->pos] != ' '
+			&& (size_t)cmd->pos < strlen(cmd->cmd_name)
 			&& cmd->cmd_name[cmd->pos] != '!')
 		cmd->pos++;
 
@@ -1140,7 +1146,7 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 	else /* Prevent eating '!' after command name. by not doing cmd->pos++ */
 		cmd->cmd_name[cmd->pos] = '\0';
 
-	if(strlen(command) > cmd->pos)
+	if(strlen(command) > (size_t)cmd->pos)
 	{
 		/* Check whether to run command in background */
 		if(command[strlen(command) -1] == '&' && command[strlen(command) -2] == ' ')
@@ -1320,10 +1326,10 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 
 				if(cmd->args)
 				{
-					int m = 0;
-					int s = 0;
+					int use_menu = 0;
+					int split = 0;
 					if(strchr(cmd->args, '%') != NULL)
-						com = expand_macros(view, cmd->args, NULL, &m, &s);
+						com = expand_macros(view, cmd->args, NULL, &use_menu, &split);
 					else
 						com = strdup(cmd->args);
 
@@ -1332,8 +1338,8 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 						pause = 1;
 						i++;
 					}
-					while(isspace(com[i]) && i < strlen(com))
-							i++;
+					while(isspace(com[i]) && (size_t)i < strlen(com))
+						i++;
 
 					if(strlen(com + i) == 0)
 					{
@@ -1413,7 +1419,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					if(cmd->args[0] == '!')
 					{
 						int x = 1;
-						while(isspace(cmd->args[x]) && x < strlen(cmd->args))
+						while(isspace(cmd->args[x]) && (size_t)x < strlen(cmd->args))
 							x++;
 						set_user_command(cmd->args + x, 1, cmd->background);
 					}
@@ -1462,10 +1468,10 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				}
 				else
 				{
-					int m = 0;
-					int s = 0;
+					int use_menu = 0;
+					int split = 0;
 					char *buf;
-					char *files = expand_macros(view, "%f", NULL, &m, &s);
+					char *files = expand_macros(view, "%f", NULL, &use_menu, &split);
 
 					if((buf = (char *)malloc(strlen(cfg.vi_command) + strlen(files) + 2))
 							== NULL)
@@ -1596,7 +1602,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 						if(view->dir_entry[y].selected)
 							view->dir_entry[y].selected = 0;
 					}
-					draw_dir_list(view, view->top_line, view->list_pos);
+					draw_dir_list(view, view->top_line);
 					moveto_list_pos(view, view->list_pos);
 				}
 			}
@@ -1722,7 +1728,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 	if(view->selected_files)
 	{
 		clean_selected_files(view);
-		draw_dir_list(view, view->top_line, view->list_pos);
+		draw_dir_list(view, view->top_line);
 		moveto_list_pos(view, view->list_pos);
 	}
 
@@ -1961,7 +1967,7 @@ execute_command(FileView *view, char *command)
 }
 
 int
-exec_commands(char *cmd, FileView *view, int type, void * ptr, int save_hist)
+exec_commands(char *cmd, FileView *view, int type, int save_hist)
 {
 	int save_msg = 0;
 	char *p, *q;
@@ -1994,7 +2000,7 @@ exec_commands(char *cmd, FileView *view, int type, void * ptr, int save_hist)
 			*q = '\0';
 			q = p;
 
-			save_msg += exec_command(cmd, view, type, ptr);
+			save_msg += exec_command(cmd, view, type);
 
 			cmd = q;
 		}
@@ -2006,7 +2012,7 @@ exec_commands(char *cmd, FileView *view, int type, void * ptr, int save_hist)
 }
 
 static int
-exec_command(char *cmd, FileView *view, int type, void * ptr)
+exec_command(char *cmd, FileView *view, int type)
 {
 	if(cmd == NULL)
 	{
@@ -2071,21 +2077,6 @@ comm_split(void)
 {
 	curr_stats.number_of_windows = 2;
 	redraw_window();
-	/* TODO see what this code about and decide if it can be used
-	char *tmp = NULL;
-
-	if(!cfg.use_screen)
-		break;
-
-	if(cmd->args)
-	{
-		if(strchr(cmd->args, '%'))
-			tmp = expand_macros(view, cmd->args, NULL, 0, 0);
-		else
-			tmp = strdup(cmd->args);
-	}
-	split_screen(view, tmp);
-	*/
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

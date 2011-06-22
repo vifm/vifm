@@ -613,7 +613,7 @@ complete_options(const char *cmd, const char **start)
 static char *
 complete_option(const char *buf, int bool_only)
 {
-	static int last;
+	static size_t last;
 
 	size_t len;
 

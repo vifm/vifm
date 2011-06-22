@@ -56,7 +56,7 @@ friendly_size_notation(unsigned long long num, int str_size, char *str)
 	static const char* iec_units[] = { "  B", "KiB", "MiB", "GiB", "TiB", "PiB" };
 	static const char* si_units[] = { " B", "KB", "MB", "GB", "TB", "PB" };
 	const char** units;
-	int u = 0;
+	size_t u;
 	double d = num;
 
 	if(cfg.use_iec_prefixes)
@@ -64,6 +64,7 @@ friendly_size_notation(unsigned long long num, int str_size, char *str)
 	else
 		units = si_units;
 
+	u = 0;
 	while(d >= 1024.0 && u < (sizeof(iec_units)/sizeof(iec_units[0])) - 1)
 	{
 		d /= 1024.0;
@@ -73,7 +74,7 @@ friendly_size_notation(unsigned long long num, int str_size, char *str)
 }
 
 static void
-add_sort_type_info(FileView *view, int y, int x, int current_line)
+add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 {
 	char buf[24];
 	struct passwd *pwd_buf;
@@ -84,105 +85,103 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 
 	switch(view->sort_type)
 	{
-		 case SORT_BY_OWNER_NAME:
-			 if((pwd_buf = getpwuid(view->dir_entry[x].uid)) != NULL)
-			 {
-				 snprintf(buf, sizeof(buf), " %s", pwd_buf->pw_name);
-				 break;
-			 }
-		 case SORT_BY_OWNER_ID:
-			 snprintf(buf, sizeof(buf), " %d", (int) view->dir_entry[x].uid);
-			 break;
-		 case SORT_BY_GROUP_NAME:
-			 if((grp_buf = getgrgid(view->dir_entry[x].gid)) != NULL)
-			 {
-				 snprintf(buf, sizeof(buf), " %s", grp_buf->gr_name);
-				 break;
-			 }
-		 case SORT_BY_GROUP_ID:
-			 snprintf(buf, sizeof(buf), " %d", (int) view->dir_entry[x].gid);
-			 break;
-		 case SORT_BY_MODE:
-			 {
-				  if (S_ISREG (view->dir_entry[x].mode))
-					{
-						if((S_IXUSR & view->dir_entry[x].mode)
-								|| (S_IXGRP & view->dir_entry[x].mode)
-								|| (S_IXOTH & view->dir_entry[x].mode))
-
-							snprintf(buf, sizeof(buf), " exe");
-						else
-							snprintf(buf, sizeof(buf), " reg");
-					}
-					else if(S_ISLNK(view->dir_entry[x].mode))
-						 snprintf(buf, sizeof(buf), " link");
-					else if (S_ISDIR (view->dir_entry[x].mode))
-						 snprintf(buf, sizeof(buf), " dir");
-					else if (S_ISCHR (view->dir_entry[x].mode))
-						 snprintf(buf, sizeof(buf), " char");
-					else if (S_ISBLK (view->dir_entry[x].mode))
-						 snprintf(buf, sizeof(buf), " block");
-					else if (S_ISFIFO (view->dir_entry[x].mode))
-						 snprintf(buf, sizeof(buf), " fifo");
-					else if (S_ISSOCK (view->dir_entry[x].mode))
-						 snprintf(buf, sizeof(buf), " sock");
-					else
-						 snprintf(buf, sizeof(buf), "  ?  ");
+		case SORT_BY_OWNER_NAME:
+			if((pwd_buf = getpwuid(view->dir_entry[x].uid)) != NULL)
+			{
+				snprintf(buf, sizeof(buf), " %s", pwd_buf->pw_name);
 				break;
-			 }
+			}
+		case SORT_BY_OWNER_ID:
+			snprintf(buf, sizeof(buf), " %d", (int) view->dir_entry[x].uid);
+			break;
+		case SORT_BY_GROUP_NAME:
+			if((grp_buf = getgrgid(view->dir_entry[x].gid)) != NULL)
+			{
+				snprintf(buf, sizeof(buf), " %s", grp_buf->gr_name);
+				break;
+			}
+		case SORT_BY_GROUP_ID:
+			snprintf(buf, sizeof(buf), " %d", (int) view->dir_entry[x].gid);
+			break;
+		case SORT_BY_MODE:
+			{
+				if(S_ISREG(view->dir_entry[x].mode))
+				{
+					if((S_IXUSR & view->dir_entry[x].mode)
+							|| (S_IXGRP & view->dir_entry[x].mode)
+							|| (S_IXOTH & view->dir_entry[x].mode))
+						snprintf(buf, sizeof(buf), " exe");
+					else
+						snprintf(buf, sizeof(buf), " reg");
+				}
+				else if(S_ISLNK(view->dir_entry[x].mode))
+					snprintf(buf, sizeof(buf), " link");
+				else if(S_ISDIR(view->dir_entry[x].mode))
+					snprintf(buf, sizeof(buf), " dir");
+				else if(S_ISCHR(view->dir_entry[x].mode))
+					snprintf(buf, sizeof(buf), " char");
+				else if(S_ISBLK(view->dir_entry[x].mode))
+					snprintf(buf, sizeof(buf), " block");
+				else if(S_ISFIFO(view->dir_entry[x].mode))
+					snprintf(buf, sizeof(buf), " fifo");
+				else if(S_ISSOCK(view->dir_entry[x].mode))
+					snprintf(buf, sizeof(buf), " sock");
+				else
+					snprintf(buf, sizeof(buf), "  ?  ");
+				break;
+			}
 		case SORT_BY_TIME_MODIFIED:
-			 tm_ptr = localtime(&view->dir_entry[x].mtime);
-			 strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
-			 break;
+			tm_ptr = localtime(&view->dir_entry[x].mtime);
+			strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
+			break;
 		case SORT_BY_TIME_ACCESSED:
-			 tm_ptr = localtime(&view->dir_entry[x].atime);
-			 strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
-			 break;
+			tm_ptr = localtime(&view->dir_entry[x].atime);
+			strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
+			break;
 		case SORT_BY_TIME_CHANGED:
-			 tm_ptr = localtime(&view->dir_entry[x].ctime);
-			 strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
-			 break;
+			tm_ptr = localtime(&view->dir_entry[x].ctime);
+			strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
+			break;
 		case SORT_BY_NAME:
 		case SORT_BY_EXTENSION:
 		case SORT_BY_SIZE:
 		default:
-			 {
-				 size_t size = 0;
-				 char str[24] = "";
+			{
+				size_t size = 0;
+				char str[24] = "";
 
-				 if(view->dir_entry[x].type == DIRECTORY)
-					 size = (size_t)tree_get_data(curr_stats.dirsize_cache,
+				if(view->dir_entry[x].type == DIRECTORY)
+					size = (size_t)tree_get_data(curr_stats.dirsize_cache,
 							view->dir_entry[x].name);
 
-				 if(size == 0)
-					 size = view->dir_entry[x].size;
+				if(size == 0)
+					size = view->dir_entry[x].size;
 
-				 friendly_size_notation(size, sizeof(str), str);
-				 snprintf(buf, sizeof(buf), " %s", str);
-			 }
-			 break;
+				friendly_size_notation(size, sizeof(str), str);
+				snprintf(buf, sizeof(buf), " %s", str);
+			}
+			break;
 	}
 
-	if(current_line)
+	if(is_current_line)
 		wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
 				| A_BOLD);
 
 	mvwaddstr(view->win, y, view->window_width - strlen(buf), buf);
 
-	if(current_line)
+	if(is_current_line)
 		wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
 				| A_BOLD);
 }
 
 static FILE *
-use_info_prog(char *cmd, int x, int y)
+use_info_prog(char *cmd)
 {
 	pid_t pid;
 	int error_pipe[2];
-	int menu, split;
-	char buf[100];
+	int use_menu = 0, split = 0;
 
-	cmd = expand_macros(curr_view, cmd, buf, &menu, &split);
+	cmd = expand_macros(curr_view, cmd, NULL, &use_menu, &split);
 
 	if(pipe(error_pipe) != 0)
 	{
@@ -349,7 +348,7 @@ quick_view_file(FileView *view)
 
 				viewer = get_viewer_for_file(view->dir_entry[view->list_pos].name);
 				if(viewer != NULL && viewer[0] != '\0')
-					fp = use_info_prog(viewer, x, y);
+					fp = use_info_prog(viewer);
 				else
 					fp = fopen(view->dir_entry[view->list_pos].name, "r");
 
@@ -527,9 +526,8 @@ update_view_title(FileView *view)
 	wnoutrefresh(view->title);
 }
 
-/* WARNING: unused parameter pos */
 void
-draw_dir_list(FileView *view, int top, int pos)
+draw_dir_list(FileView *view, int top)
 {
 	int x;
 	int y = 0;
@@ -771,7 +769,7 @@ moveto_list_pos(FileView *view, int pos)
 	view->list_pos = pos;
 
 	if(redraw)
-		draw_dir_list(view, view->top_line, view->curr_line);
+		draw_dir_list(view, view->top_line);
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme));
 	mvwaddstr(view->win, old_cursor, 0, " ");
@@ -951,13 +949,12 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 {
 	const char *p; /* source string pointer */
 	char *q; /* destination string pointer */
-	int was_twodots = 0;
 
 	buf[0] = '\0';
 
 	q = buf - 1;
 	p = directory;
-	while(*p != '\0' && (q + 1) - buf < buf_size - 1)
+	while(*p != '\0' && (size_t)((q + 1) - buf) < buf_size - 1)
 	{
 		int prev_dir_present;
 
@@ -1221,7 +1218,7 @@ change_directory(FileView *view, const char *directory)
 	}
 
 	clean_selected_files(view);
-	draw_dir_list(view, view->top_line, view->list_pos);
+	draw_dir_list(view, view->top_line);
 
 	/* Need to use setenv instead of getcwd for a symlink directory */
 	setenv("PWD", dir_dup, 1);
@@ -1459,7 +1456,7 @@ load_dir_list(FileView *view, int reload)
 
 		load_dir_list(view, 1);
 
-		draw_dir_list(view, view->top_line, view->list_pos);
+		draw_dir_list(view, view->top_line);
 		return;
 	}
 	if(reload && view->selected_files)
@@ -1467,7 +1464,7 @@ load_dir_list(FileView *view, int reload)
 	else if(view->selected_files)
 		view->selected_files = 0;
 
-	draw_dir_list(view, view->top_line, view->list_pos);
+	draw_dir_list(view, view->top_line);
 }
 
 void
@@ -1591,7 +1588,7 @@ restore_filename_filter(FileView *view)
 void
 scroll_view(FileView *view)
 {
-	draw_dir_list(view, view->top_line, view->curr_line);
+	draw_dir_list(view, view->top_line);
 	moveto_list_pos(view, view->list_pos);
 }
 

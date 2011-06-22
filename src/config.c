@@ -608,14 +608,14 @@ exec_startup(void)
 	if((fp = fopen(startup_file, "r")) == NULL)
 		return;
 
-	while(fgets(line, MAX_LEN, fp) > 0)
+	while(fgets(line, MAX_LEN, fp) != NULL)
 	{
 		size_t len;
 
 		len = strlen(line);
 		if(len != 0 && line[len - 1] == '\n')
 			line[len - 1] = '\0';
-		exec_commands(line, curr_view, GET_COMMAND, NULL, 0);
+		exec_commands(line, curr_view, GET_COMMAND, 0);
 	}
 
 	fclose(fp);
