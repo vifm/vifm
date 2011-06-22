@@ -37,10 +37,12 @@ struct key_chunk_t
 
 static struct key_chunk_t *cmds_root;
 static struct key_chunk_t *selectors_root;
+static int max_modes;
 static int *mode;
 static int *mode_flags;
 static default_handler *def_handlers;
 
+static void free_tree(struct key_chunk_t *root);
 static int execute_keys_general(const wchar_t *keys, int timed_out, int mapped);
 static int execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info);
 static int execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
@@ -61,16 +63,55 @@ init_keys(int modes_count, int *key_mode, int *key_mode_flags)
 	assert(key_mode_flags != NULL);
 	assert(modes_count > 0);
 
+	max_modes = modes_count;
 	mode = key_mode;
 	mode_flags = key_mode_flags;
 
 	cmds_root = calloc(modes_count, sizeof(*cmds_root));
 	assert(cmds_root != NULL);
+
 	selectors_root = calloc(modes_count, sizeof(*selectors_root));
 	assert(selectors_root != NULL);
 
 	def_handlers = calloc(modes_count, sizeof(*def_handlers));
 	assert(def_handlers != NULL);
+}
+
+void
+clear_keys(void)
+{
+	int i;
+
+	for(i = 0; i < max_modes; i++)
+		free_tree(&cmds_root[i]);
+	free(cmds_root);
+
+	for(i = 0; i < max_modes; i++)
+		free_tree(&selectors_root[i]);
+	free(selectors_root);
+
+	free(def_handlers);
+}
+
+static void
+free_tree(struct key_chunk_t *root)
+{
+	if(root->child != NULL)
+	{
+		free_tree(root->child);
+		free(root->child);
+	}
+
+	if(root->next != NULL)
+	{
+		free_tree(root->next);
+		free(root->next);
+	}
+
+	if(root->conf.type == USER_CMD || root->conf.type == BUILDIN_CMD)
+	{
+		free(root->conf.data.cmd);
+	}
 }
 
 void

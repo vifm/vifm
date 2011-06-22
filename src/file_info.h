@@ -21,7 +21,6 @@
 
 #include "ui.h"
 
-void get_perm_string(char *buf, int len, mode_t mode);
 void show_full_file_properties(FileView *view);
 
 #endif

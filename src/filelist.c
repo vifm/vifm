@@ -945,12 +945,13 @@ clean_selected_files(FileView *view)
 	view->selected_files = 0;
 }
 
-/* Removes excess slashes, all "../" and "./" parts of the path */
+/* Removes excess slashes, "../" and "./" from the path */
 void
 canonicalize_path(const char *directory, char *buf, size_t buf_size)
 {
 	const char *p; /* source string pointer */
 	char *q; /* destination string pointer */
+	int was_twodots = 0;
 
 	buf[0] = '\0';
 
@@ -966,7 +967,8 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 		else if(prev_dir_present && strcmp(p, ".") == 0)
 			;
 		else if(prev_dir_present &&
-				(strncmp(p, "../", 3) == 0 || strcmp(p, "..") == 0))
+				(strncmp(p, "../", 3) == 0 || strcmp(p, "..") == 0) &&
+				strcmp(buf, "../") != 0)
 		{
 			p++;
 			q--;
@@ -979,7 +981,9 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 				*++q = '/';
 		}
 		else
+		{
 			*++q = *p;
+		}
 
 		p++;
 	}

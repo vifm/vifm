@@ -371,6 +371,27 @@ save_command_history(const char *command)
 }
 
 static char *
+ensure_trailing_space(char *str)
+{
+	size_t len;
+	char *p;
+
+	len = strlen(str);
+	if(len == 0 || str[len - 1] == ' ')
+		return str;
+
+	p = realloc(str, len + 1 + 1);
+	if(p == NULL)
+		return NULL;
+
+	strcat(p, " ");
+	return p;
+}
+
+#ifndef TEST
+static
+#endif
+char *
 append_selected_files(FileView *view, char *expanded, int under_cursor)
 {
 	int dir_name_len = 0;
@@ -393,6 +414,8 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 				if(view->dir_entry[y].type == DIRECTORY)
 					dir = 1;
 
+				expanded = ensure_trailing_space(expanded);
+
 				temp = escape_filename(view->dir_entry[y].name,
 						strlen(view->dir_entry[y].name) - dir, 1);
 				expanded = (char *)realloc(expanded,
@@ -402,8 +425,6 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 				strcat(expanded, temp);
 
 				free(temp);
-
-				strcat(expanded, " ");
 
 				len = strlen(expanded);
 			}
@@ -421,6 +442,8 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 		temp = escape_filename(view->dir_entry[view->list_pos].name,
 				strlen(view->dir_entry[view->list_pos].name) - dir, 1);
 
+		expanded = ensure_trailing_space(expanded);
+
 		expanded = (char *)realloc(expanded,
 				strlen(expanded) + dir_name_len + strlen(temp) + 3);
 		if(dir_name_len != 0)
@@ -437,12 +460,12 @@ char *
 expand_macros(FileView *view, char *command, char *args, int *use_menu,
 		int *split)
 {
-	char * expanded = NULL;
+	char *expanded;
 	int x;
 	int y = 0;
 	int len = 0;
 
-	expanded = (char *)calloc(strlen(command) +1, sizeof(char *));
+	expanded = (char *)calloc(strlen(command) + 1, sizeof(char *));
 
 	for(x = 0; x < strlen(command); x++)
 			if(command[x] == '%')
@@ -474,8 +497,6 @@ expand_macros(FileView *view, char *command, char *args, int *use_menu,
 				break;
 			case 'b': /* selected files of both dirs */
 				expanded = append_selected_files(curr_view, expanded, 0);
-				expanded = realloc(expanded, strlen(expanded) + 1 + 1);
-				strcat(expanded, " ");
 				expanded = append_selected_files(other_view, expanded, 0);
 				len = strlen(expanded);
 				break;
@@ -508,7 +529,7 @@ expand_macros(FileView *view, char *command, char *args, int *use_menu,
 			case 'D': /* other directory */
 				{
 					expanded = (char *)realloc(expanded,
-							len + strlen(other_view->curr_dir) +3);
+							len + strlen(other_view->curr_dir) + 3);
 					if(!expanded)
 					{
 						show_error_msg("Memory Error", "Unable to allocate memory");
@@ -546,7 +567,7 @@ expand_macros(FileView *view, char *command, char *args, int *use_menu,
 		strncat(expanded, command + y, x - y);
 		len = strlen(expanded);
 		x++;
-		}while(x < strlen(command));
+	}while(x < strlen(command));
 
 	len++;
 	expanded[len] = '\0';

@@ -92,7 +92,7 @@ struct key_t
 	union
 	{
 		keys_handler handler;
-		const wchar_t *cmd;
+		wchar_t *cmd;
 	}data;
 };
 
@@ -107,6 +107,11 @@ typedef int (*default_handler)(wchar_t keys);
  * Assumed that key_mode_flags is an array of at least modes_count items
  */
 void init_keys(int modes_count, int *key_mode, int *key_mode_flags);
+
+/*
+ * Frees all allocated memory
+ */
+void clear_keys(void);
 
 /*
  * handler could be NULL to remove default handler

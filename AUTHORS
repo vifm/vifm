@@ -52,3 +52,5 @@ from fork of wsdookadr (Petrea Stefan Corneliu):
 - %b
 - unmount all FUSE mounts on exit
 - functional keys in user mappings
+
+seatest is written by Keith Nicholas

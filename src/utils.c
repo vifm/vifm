@@ -436,6 +436,40 @@ uchar2str(wchar_t c)
 	return buf;
 }
 
+void
+get_perm_string(char * buf, int len, mode_t mode)
+{
+	char *perm_sets[] =
+	{ "---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx" };
+	int u, g, o;
+
+	u = (mode & S_IRWXU) >> 6;
+	g = (mode & S_IRWXG) >> 3;
+	o = (mode & S_IRWXO);
+
+	snprintf (buf, len, "-%s%s%s", perm_sets[u], perm_sets[g], perm_sets[o]);
+
+	if (S_ISLNK (mode))
+		buf[0] = 'l';
+	else if (S_ISDIR (mode))
+		buf[0] = 'd';
+	else if (S_ISBLK (mode))
+		buf[0] = 'b';
+	else if (S_ISCHR (mode))
+		buf[0] = 'c';
+	else if (S_ISFIFO (mode))
+		buf[0] = 'f';
+	else if (S_ISSOCK (mode))
+		buf[0] = 's';
+
+	if (mode & S_ISVTX)
+		buf[9] = (buf[9] == '-') ? 'T' : 't';
+	if (mode & S_ISGID)
+		buf[6] = (buf[6] == '-') ? 'S' : 's';
+	if (mode & S_ISUID)
+		buf[3] = (buf[3] == '-') ? 'S' : 's';
+}
+
 /* When list is NULL returns maximum number of lines, otherwise returns number
  * of filled lines */
 int

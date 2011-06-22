@@ -53,6 +53,8 @@ void run_from_fork(int pipe[2], int err, char *cmd);
 wchar_t * my_wcsdup(const wchar_t *ws);
 char * strchar2str(const char *str);
 char * uchar2str(wchar_t c);
+void get_perm_string(char *buf, int len, mode_t mode);
+
 /* When list is NULL returns maximum number of lines, otherwise returns number
  * of filled lines */
 int fill_version_info(char **list);

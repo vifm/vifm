@@ -112,6 +112,11 @@ void comm_quit(void);
 void comm_only(void);
 void comm_split(void);
 
+
+#ifdef TEST
+char * append_selected_files(FileView *view, char *expanded, int under_cursor);
+#endif
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
