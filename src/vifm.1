@@ -193,6 +193,12 @@ moves the last yanked files.
 .BI t
 tag the current file.
 .TP
+.BI u
+undo last change.
+.TP
+.BI Ctrl-R
+redo last change.
+.TP
 .BI "v or V"
 start visual mode.
 .TP
@@ -298,6 +304,9 @@ toggles whether or not to use the screen program.
 .BI :split
 splits the window to show both file directories.
 .TP
+.BI :undolist
+show list of latest changes.  Add ! to see commands.
+.TP
 .BI :only
 changes the window to show only the current file directory.
 .TP
@@ -355,6 +364,11 @@ Sets sort order: ascending, descending
 type: boolean
 .br
 Use trash directory
+.TP
+.BI undolevels
+type: integer
+.br
+Maximum number of changes that can be undone.
 .TP
 .BI vicmd
 type: string

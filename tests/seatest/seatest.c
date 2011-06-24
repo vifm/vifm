@@ -126,35 +126,35 @@ void seatest_assert_double_equal( double expected, double actual, double delta, 
 	seatest_simple_test_result( result <= delta, s, function, line);	
 }
 
-void seatest_assert_string_equal(char* expected, char* actual, const char* function, unsigned int line)
+void seatest_assert_string_equal(const char* expected, const char* actual, const char* function, unsigned int line)
 {
 	char s[SEATEST_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected \"%s\" but was \"%s\"", expected, actual);
 	seatest_simple_test_result(strcmp(expected, actual)==0, s, function, line);	
 }
 
-void seatest_assert_string_ends_with(char* expected, char* actual, const char* function, unsigned int line)
+void seatest_assert_string_ends_with(const char* expected, const char* actual, const char* function, unsigned int line)
 {
 	char s[SEATEST_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected \"%s\" to end with \"%s\"", actual, expected);
 	seatest_simple_test_result(strcmp(expected, actual+(strlen(actual)-strlen(expected)))==0, s, function, line);	
 }
 
-void seatest_assert_string_starts_with(char* expected, char* actual, const char* function, unsigned int line)
+void seatest_assert_string_starts_with(const char* expected, const char* actual, const char* function, unsigned int line)
 {
 	char s[SEATEST_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected \"%s\" to start with \"%s\"", actual, expected);
 	seatest_simple_test_result(strncmp(expected, actual, strlen(expected))==0, s, function, line);	
 }
 
-void seatest_assert_string_contains(char* expected, char* actual, const char* function, unsigned int line)
+void seatest_assert_string_contains(const char* expected, const char* actual, const char* function, unsigned int line)
 {
 	char s[SEATEST_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected \"%s\" to be in \"%s\"", expected, actual);
 	seatest_simple_test_result(strstr(actual, expected)!=0, s, function, line);	
 }
 
-void seatest_assert_string_doesnt_contain(char* expected, char* actual, const char* function, unsigned int line)
+void seatest_assert_string_doesnt_contain(const char* expected, const char* actual, const char* function, unsigned int line)
 {
 	char s[SEATEST_PRINT_BUFFER_SIZE];
 	sprintf(s, "Expected \"%s\" not to have \"%s\" in it", actual, expected);

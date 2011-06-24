@@ -43,6 +43,7 @@ vifm_SOURCES = \
 	status.c status.h \
 	tree.c tree.h \
 	ui.c ui.h \
+	undo.c undo.h \
 	utils.c utils.h \
 	vifm.c \
 	visual.c visual.h

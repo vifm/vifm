@@ -72,6 +72,7 @@ enum
 	COM_SORT,
 	COM_SPLIT,
 	COM_SYNC,
+	COM_UNDOLIST,
 	COM_UNMAP,
 	COM_VIEW,
 	COM_VIFM,
@@ -81,7 +82,7 @@ enum
 	COM_WRITE,
 	COM_X,
 	COM_YANK,
-  RESERVED
+	RESERVED
 };
 
 typedef struct
@@ -90,7 +91,7 @@ typedef struct
 	char *name;
 }command_t;
 
-extern char *reserved_commands[];
+extern const char *reserved_commands[];
 
 command_t *command_list;
 

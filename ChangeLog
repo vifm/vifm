@@ -9,6 +9,8 @@
 
 	Added :rename command.
 
+	Added undo list (u, Ctrl-R and :undolist commands; 'undolevels' option).
+
 	Don't change directory on unsuccessful FUSE mount.
 
 	Don't change cursor position of other directory after disabling quick view.

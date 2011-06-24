@@ -186,8 +186,14 @@ y6gg yank all files from cursor position to 6th file in the list.
 --------------------------------------------------------------------------------
 *Normal*
 
-/regular expression - select files matching regular expression.
-N - previous file matching last search pattern.
+/regular expression - select files matching regular expression. Forward
+    search.
+?regular expression - select files matching regular expression. Backward
+    search.
+n - previous file matching last search pattern.  Considers last search
+    direction.
+N - previous file matching last search pattern.  Considers last search
+    direction.
 cg - change group of file.
 co - change owner of file.
 cp - change file permissions.
@@ -205,9 +211,11 @@ gv go to visual mode restoring last selection.
 yy, Y - yank selected files.
 y<selector> - yank files.
 p - put last selected files.
-P - move yanked files.  n - next file matching last search pattern.
+P - move yanked files.
 s - open a shell - this is temporary and will be removed.
 t - select or unselect a file.
+u - undo last command.
+Ctrl-r - redo last command.
 v, V - start visual selection of files.
 <Return>, l - handle file (run executable when RUN_EXECUTABLE is set).
 i - handle file (even through it's executable and RUN_EXECUTABLE is set).
@@ -372,6 +380,7 @@ The following command names are reserved and cannot be used for user commands.
   set - set option.
   shell - shellout.
   sort - show sort menu.
+  undolist - show list of latest changes.  Add ! to see commands.
   unmap - not used will be used with key mapping.
   view - toggle on and off the quick file view.
   vifm - not used saved for possible menu.
@@ -419,6 +428,10 @@ Sets sort order: ascending, descending
 trash
 type: boolean
 Use trash directory
+
+undolevels
+type: integer
+Maximum number of changes that can be undone.
 
 vicmd
 type: string

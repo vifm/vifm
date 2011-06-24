@@ -30,6 +30,7 @@
 #include <locale.h> /* setlocale */
 #include <string.h> /* strncpy */
 
+#include "background.h"
 #include "bookmarks.h"
 #include "color_scheme.h"
 #include "commands.h"
@@ -46,6 +47,7 @@
 #include "status.h"
 #include "tree.h"
 #include "ui.h"
+#include "undo.h"
 #include "utils.h"
 
 static void
@@ -126,6 +128,19 @@ load_initial_directory(FileView *view, const char *dir)
 
 	view->list_rows = 1;
 	change_directory(view, dir);
+}
+
+static void
+undo_exec(const char *cmd)
+{
+	if(cmd[0] == '\0')
+	{
+		status_bar_message("Can't undo/redo that operation");
+		curr_stats.save_msg = 1;
+		return;
+	}
+
+	background_and_wait_for_errors((char *)cmd);
 }
 
 int
@@ -303,6 +318,7 @@ main(int argc, char *argv[])
 
 	init_modes();
 	init_options();
+	init_undo_list(&undo_exec, &cfg.undo_levels);
 	load_local_options(curr_view);
 	exec_startup();
 	main_loop();

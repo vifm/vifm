@@ -38,6 +38,7 @@
 #include "config.h" /* for menu colors */
 #include "file_info.h"
 #include "filelist.h"
+#include "macros.h"
 #include "menus.h"
 #include "opt_handlers.h"
 #include "signals.h"

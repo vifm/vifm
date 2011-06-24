@@ -38,6 +38,7 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "keys.h"
+#include "macros.h"
 #include "menu.h"
 #include "menus.h"
 #include "modes.h"
@@ -54,7 +55,7 @@
 /* The order of the commands is important as :e will match the first
  * command starting with e.
  */
-char *reserved_commands[] = {
+const char *reserved_commands[] = {
 	"!",
 	"apropos",
 	"cd",
@@ -93,6 +94,7 @@ char *reserved_commands[] = {
 	"sort",
 	"split",
 	"sync",
+	"undolist",
 	"unmap",
 	"view",
 	"vifm",
@@ -101,8 +103,12 @@ char *reserved_commands[] = {
 	"wq",
 	"write",
 	"x",
-	"yank"
+	"yank",
 };
+
+static int __unused__ reserved_commands_size_guard[
+	(ARRAY_LEN(reserved_commands) == RESERVED) ? 1 : -1
+];
 
 typedef struct current_command
 {
@@ -1667,6 +1673,9 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		case COM_SYNC:
 			change_directory(other_view, view->curr_dir);
 			load_dir_list(other_view, 0);
+			break;
+		case COM_UNDOLIST:
+			show_undolist_menu(view, cmd->args && cmd->args[0] == '!');
 			break;
 		case COM_UNMAP:
 			break;

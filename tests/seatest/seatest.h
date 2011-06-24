@@ -23,11 +23,11 @@ void seatest_assert_int_equal(int expected, int actual, const char* function, un
 void seatest_assert_ulong_equal(unsigned long expected, unsigned long actual, const char* function, unsigned int line);
 void seatest_assert_float_equal(float expected, float actual, float delta, const char* function, unsigned int line);
 void seatest_assert_double_equal(double expected, double actual, double delta, const char* function, unsigned int line);
-void seatest_assert_string_equal(char* expected, char* actual, const char* function, unsigned int line);
-void seatest_assert_string_ends_with(char* expected, char* actual, const char* function, unsigned int line);
-void seatest_assert_string_starts_with(char* expected, char* actual, const char* function, unsigned int line);
-void seatest_assert_string_contains(char* expected, char* actual, const char* function, unsigned int line);
-void seatest_assert_string_doesnt_contain(char* expected, char* actual, const char* function, unsigned int line);
+void seatest_assert_string_equal(const char* expected, const char* actual, const char* function, unsigned int line);
+void seatest_assert_string_ends_with(const char* expected, const char* actual, const char* function, unsigned int line);
+void seatest_assert_string_starts_with(const char* expected, const char* actual, const char* function, unsigned int line);
+void seatest_assert_string_contains(const char* expected, const char* actual, const char* function, unsigned int line);
+void seatest_assert_string_doesnt_contain(const char* expected, const char* actual, const char* function, unsigned int line);
 int seatest_should_run( char* fixture, char* test);
 void seatest_run_test(void);
 void seatest_setup( void );

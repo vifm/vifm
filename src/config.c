@@ -70,6 +70,8 @@ init_config(void)
 	cfg.color_pairs_num = 0;
 	cfg.color_scheme_cur = 0;
 
+	cfg.undo_levels = 100;
+
 	/* Maximum argument length to pass to the shell */
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)
 		cfg.max_args = 4096; /* POSIX MINIMUM */

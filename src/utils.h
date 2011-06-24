@@ -21,9 +21,6 @@
 
 #include "ui.h"
 
-#define MAX(a,b) (((a) > (b)) ? (a) : (b))
-#define MIN(a,b) (((a) < (b)) ? (a) : (b))
-
 typedef struct Fuse_List {
 	char source_file_name[PATH_MAX];
 	char source_file_dir[PATH_MAX];

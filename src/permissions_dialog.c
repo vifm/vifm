@@ -30,6 +30,7 @@
 #include "menus.h"
 #include "modes.h"
 #include "status.h"
+#include "undo.h"
 #include "utils.h"
 
 #include "permissions_dialog.h"
@@ -52,9 +53,11 @@ static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
 static void set_perm_string(FileView *view, const int *perms,
 		const int *origin_perms);
-static void files_chmod(FileView *view, char *mode, int recurse_dirs);
+static void files_chmod(FileView *view, const char *mode, const char *inv_mode,
+		int recurse_dirs);
 static char * add_file_to_list(char *list, const char *filename);
-static void file_chmod(char *path, char *mode, int recurse_dirs);
+static void file_chmod(char *path, const char *mode, const char *inv_mode,
+		int recurse_dirs);
 static void cmd_space(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
@@ -287,9 +290,7 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 	leave_permissions_mode();
 
 	if(!changed)
-	{
 		return;
-	}
 
 	snprintf(path, sizeof(path), "%s/%s", view->curr_dir,
 			view->dir_entry[view->list_pos].name);
@@ -311,6 +312,7 @@ set_perm_string(FileView *view, const int *perms, const int *origin_perms)
 	char *sub_perm[] = {"u-r", "u-w", "u-x", "u-s", "g-r", "g-w", "g-x", "g-s",
 											"o-r", "o-w", "o-x", "o-t"};
 	char perm_string[64] = " ";
+	char inv_perm_string[64] = " ";
 
 	for(i = 0; i < 12; i++)
 	{
@@ -318,19 +320,28 @@ set_perm_string(FileView *view, const int *perms, const int *origin_perms)
 			continue;
 
 		if(perms[i])
+		{
 			strcat(perm_string, add_perm[i]);
+			strcat(inv_perm_string, sub_perm[i]);
+		}
 		else
+		{
 			strcat(perm_string, sub_perm[i]);
+			strcat(inv_perm_string, add_perm[i]);
+		}
 
 		strcat(perm_string, ",");
+		strcat(inv_perm_string, ",");
 	}
 	perm_string[strlen(perm_string) - 1] = '\0'; /* Remove last , */
+	inv_perm_string[strlen(inv_perm_string) - 1] = '\0'; /* Remove last , */
 
-	files_chmod(view, perm_string, perms[12]);
+	files_chmod(view, perm_string, inv_perm_string, perms[12]);
 }
 
 static void
-files_chmod(FileView *view, char *mode, int recurse_dirs)
+files_chmod(FileView *view, const char *mode, const char *inv_mode,
+		int recurse_dirs)
 {
 	int i;
 	char *file_list;
@@ -376,20 +387,20 @@ files_chmod(FileView *view, char *mode, int recurse_dirs)
 			i++;
 		}
 	}
-	file_chmod(file_list, mode, recurse_dirs);
+	file_chmod(file_list, mode, inv_mode, recurse_dirs);
 	free(file_list);
 }
 
 static char *
 add_file_to_list(char *list, const char *filename)
 {
+	char path_buf[PATH_MAX];
 	char *p, *escaped;
 
-	escaped = escape_filename(filename, strlen(filename), 1);
+	snprintf(path_buf, sizeof(path_buf), "%s/%s", view->curr_dir, filename);
+	escaped = escape_filename(path_buf, 0, 1);
 	if(escaped == NULL)
-	{
 		return NULL;
-	}
 
 	p = realloc(list, strlen(list) + strlen(escaped) + 2);
 	if(p == NULL)
@@ -405,20 +416,28 @@ add_file_to_list(char *list, const char *filename)
 }
 
 static void
-file_chmod(char *path, char *mode, int recurse_dirs)
+file_chmod(char *path, const char *mode, const char *inv_mode, int recurse_dirs)
 {
-  char cmd[128 + strlen(path)];
+	char cmd[128 + strlen(path)];
+	char undo_cmd[128 + strlen(path)];
 
 	if(recurse_dirs)
 	{
 		snprintf(cmd, sizeof(cmd), "chmod -R %s %s", mode, path);
+		snprintf(undo_cmd, sizeof(undo_cmd), "chmod -R %s %s", inv_mode, path);
 		start_background_job(cmd);
 	}
 	else
 	{
 		snprintf(cmd, sizeof(cmd), "chmod %s %s", mode, path);
-		system_and_wait_for_errors(cmd);
+		snprintf(undo_cmd, sizeof(undo_cmd), "chmod %s %s", inv_mode, path);
+		if(system_and_wait_for_errors(cmd) != 0)
+			return;
 	}
+
+	cmd_group_begin("Change permissions");
+	add_operation(cmd, undo_cmd);
+	cmd_group_end();
 }
 
 static void

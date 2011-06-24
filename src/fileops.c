@@ -43,6 +43,7 @@
 #include "registers.h"
 #include "status.h"
 #include "ui.h"
+#include "undo.h"
 #include "utils.h"
 
 static char rename_file_ext[NAME_MAX];
@@ -789,7 +790,8 @@ progress_msg(const char *text, int ready, int total)
 int
 delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 {
-	char buf[256];
+	char buf[8 + PATH_MAX*2];
+	char undo_buf[8 + PATH_MAX*2];
 	int x, y;
 
 	if(count > 0)
@@ -810,6 +812,11 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	else
 		clear_register(reg);
 
+	if(cfg.use_trash && use_trash)
+		cmd_group_begin("Move files to Trash");
+	else
+		cmd_group_begin("Delete files");
+
 	y = 0;
 	chdir(curr_view->curr_dir);
 	for(x = 0; x < view->selected_files; x++)
@@ -824,15 +831,33 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 		esc_file = escape_filename(view->selected_filelist[x], 0, 1);
 		if(cfg.use_trash && use_trash)
-			snprintf(buf, sizeof(buf), "mv %s '%s'", esc_file, cfg.trash_dir);
+		{
+			char *esc_full;
+			char full_buf[PATH_MAX];
+
+			snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir,
+					view->selected_filelist[x]);
+			esc_full = escape_filename(full_buf, 0, 1);
+			snprintf(buf, sizeof(buf), "mv %s '%s'", full_buf, cfg.trash_dir);
+			free(esc_full);
+
+			snprintf(undo_buf, sizeof(undo_buf), "mv %s/%s '%s'", cfg.trash_dir,
+					esc_file, view->curr_dir);
+		}
 		else
+		{
 			snprintf(buf, sizeof(buf), "rm -rf %s", esc_file);
+			undo_buf[0] = '\0';
+		}
 		free(esc_file);
 
 		progress_msg("Deleting files", x + 1, view->selected_files);
 		if(background_and_wait_for_errors(buf) == 0)
 		{
 			char reg_buf[PATH_MAX];
+
+			add_operation(buf, undo_buf);
+
 			snprintf(reg_buf, sizeof(reg_buf), "%s/%s", cfg.trash_dir,
 					view->selected_filelist[x]);
 			append_to_register(reg, reg_buf);
@@ -840,6 +865,8 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		}
 	}
 	free_selected_file_array(view);
+
+	cmd_group_end();
 
 	get_all_selected_files(view);
 	load_dir_list(view, 1);
@@ -861,11 +888,16 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 static int
 mv_file(const char *src, const char *dst)
 {
-	char command[6 + NAME_MAX*2 + 1];
+	char path_buf[PATH_MAX];
+	char do_command[6 + PATH_MAX*2 + 1];
+	char undo_command[6 + PATH_MAX*2 + 1];
 	char *escaped_src, *escaped_dst;
+	int result;
 
-	escaped_src = escape_filename(src, 0, 0);
-	escaped_dst = escape_filename(dst, 0, 0);
+	snprintf(path_buf, sizeof(path_buf), "%s/%s", curr_view->curr_dir, src);
+	escaped_src = escape_filename(path_buf, 0, 1);
+	snprintf(path_buf, sizeof(path_buf), "%s/%s", curr_view->curr_dir, dst);
+	escaped_dst = escape_filename(path_buf, 0, 1);
 
 	if(escaped_src == NULL || escaped_dst == NULL)
 	{
@@ -874,11 +906,17 @@ mv_file(const char *src, const char *dst)
 		return -1;
 	}
 
-	snprintf(command, sizeof(command), "mv -f %s %s", escaped_src, escaped_dst);
+	snprintf(do_command, sizeof(do_command), "mv -f %s %s", escaped_src,
+			escaped_dst);
+	snprintf(undo_command, sizeof(do_command), "mv -f %s %s", escaped_dst,
+			escaped_src);
 	free(escaped_src);
 	free(escaped_dst);
 
-	return system_and_wait_for_errors(command);
+	result = system_and_wait_for_errors(do_command);
+	if(result == 0)
+		add_operation(do_command, undo_command);
+	return result;
 }
 
 static void
@@ -888,6 +926,7 @@ rename_file_cb(const char *new_name)
 	char new[NAME_MAX + 1];
 	size_t len;
 	int found;
+	int tmp;
 
 	len = strlen(filename);
 	snprintf(new, sizeof(new), "%s%s%s", new_name,
@@ -907,7 +946,10 @@ rename_file_cb(const char *new_name)
 		return;
 	}
 
-	if(mv_file(filename, new) != 0)
+	cmd_group_begin("Single file rename");
+	tmp = mv_file(filename, new);
+	cmd_group_end();
+	if(tmp != 0)
 	{
 		load_dir_list(curr_view, 1);
 		moveto_list_pos(curr_view, curr_view->list_pos);
@@ -1006,6 +1048,8 @@ rename_files_ind(FileView *view, const int *indexes, int count)
 		return;
 	}
 
+	cmd_group_begin("Multiple files rename");
+
 	for(i = 0; i < count; i++)
 	{
 		char name[NAME_MAX];
@@ -1019,6 +1063,8 @@ rename_files_ind(FileView *view, const int *indexes, int count)
 		if(mv_file(view->dir_entry[indexes[i]].name, name) == 0)
 			renamed++;
 	}
+
+	cmd_group_end();
 
 	fclose(f);
 
@@ -1073,16 +1119,24 @@ static void
 change_owner_cb(const char *new_owner)
 {
 	char *filename;
-	char command[1024];
+	char command[10 + 32 + PATH_MAX];
+	char undo_command[10 + 32 + PATH_MAX];
 	char *escaped;
 
 	filename = get_current_file_name(curr_view);
-	escaped = escape_filename(filename, 0, 0);
+	snprintf(command, sizeof(command), "%s/%s", curr_view->curr_dir, filename);
+	escaped = escape_filename(command, 0, 0);
 	snprintf(command, sizeof(command), "chown -fR %s %s", new_owner, escaped);
+	snprintf(undo_command, sizeof(undo_command), "chown -fR %d %s",
+			curr_view->dir_entry[curr_view->list_pos].gid, escaped);
 	free(escaped);
 
 	if(system_and_wait_for_errors(command) != 0)
 		return;
+
+	cmd_group_begin("Change owner");
+	add_operation(command, undo_command);
+	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
 	moveto_list_pos(curr_view, curr_view->list_pos);
@@ -1098,16 +1152,24 @@ static void
 change_group_cb(const char *new_owner)
 {
 	char *filename;
-	char command[1024];
+	char command[10 + 32 + PATH_MAX];
+	char undo_command[10 + 32 + PATH_MAX];
 	char *escaped;
 
 	filename = get_current_file_name(curr_view);
-	escaped = escape_filename(filename, 0, 0);
+	snprintf(command, sizeof(command), "%s/%s", curr_view->curr_dir, filename);
+	escaped = escape_filename(command, 0, 1);
 	snprintf(command, sizeof(command), "chown -fR :%s %s", new_owner, escaped);
+	snprintf(undo_command, sizeof(undo_command), "chown -fR :%d %s",
+			curr_view->dir_entry[curr_view->list_pos].uid, escaped);
 	free(escaped);
 
 	if(system_and_wait_for_errors(command) != 0)
 		return;
+
+	cmd_group_begin("Change group");
+	add_operation(command, undo_command);
+	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
 	moveto_list_pos(curr_view, curr_view->list_pos);
@@ -1145,7 +1207,8 @@ static int
 put_next_file(const char *dest_name, int override)
 {
 	char buf[PATH_MAX + NAME_MAX*2 + 4];
-	char *src_buf, *dst_buf;
+	char undo_buf[PATH_MAX + NAME_MAX*2 + 4];
+	char *src_buf, *dst_buf, *name_buf = NULL;
 
 	snprintf(buf, sizeof(buf), "%s", reg->files[put_confirm.x]);
 	chosp(buf);
@@ -1171,10 +1234,24 @@ put_next_file(const char *dest_name, int override)
 			put_confirm.view->dir_mtime = 0;
 		}
 
+		if(dest_name[0] == '\0')
+		{
+			name_buf = escape_filename(strrchr(buf, '/') + 1, 0, 1);
+			dest_name = name_buf;
+		}
+
 		if(move)
+		{
 			snprintf(buf, sizeof(buf), "mv %s %s/%s", src_buf, dst_buf, dest_name);
+			snprintf(undo_buf, sizeof(undo_buf), "mv %s/%s %s", dst_buf, dest_name,
+					src_buf);
+		}
 		else
-			snprintf(buf, sizeof(buf), "cp -pR %s %s/%s", src_buf, dst_buf, dest_name);
+		{
+			snprintf(buf, sizeof(buf), "cp -pR %s %s/%s", src_buf, dst_buf,
+					dest_name);
+			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s/%s", dst_buf, dest_name);
+		}
 
 		progress_msg("Putting files", put_confirm.x + 1, reg->num_files);
 		if(background_and_wait_for_errors(buf) == 0)
@@ -1185,10 +1262,15 @@ put_next_file(const char *dest_name, int override)
 				free(reg->files[put_confirm.x]);
 				reg->files[put_confirm.x] = NULL;
 			}
+
+			cmd_group_continue();
+			add_operation(buf, undo_buf);
+			cmd_group_end();
 		}
 	}
 	free(src_buf);
 	free(dst_buf);
+	free(name_buf);
 	return 0;
 }
 
@@ -1233,6 +1315,9 @@ static int
 put_files_from_register_i(FileView *view)
 {
 	char buf[PATH_MAX + NAME_MAX*2 + 4];
+
+	cmd_group_begin(put_confirm.force_move ? "Move files" : "Copy files");
+	cmd_group_end();
 
 	chdir(view->curr_dir);
 	while(put_confirm.x < put_confirm.reg->num_files)

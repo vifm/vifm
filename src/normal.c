@@ -30,6 +30,7 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "keys.h"
+#include "macros.h"
 #include "menus.h"
 #include "modes.h"
 #include "permissions_dialog.h"
@@ -38,6 +39,7 @@
 #include "status.h"
 #include "tree.h"
 #include "ui.h"
+#include "undo.h"
 #include "utils.h"
 #include "visual.h"
 
@@ -61,6 +63,7 @@ static void cmd_ctrl_i(struct key_info, struct keys_info *);
 static void cmd_ctrl_l(struct key_info, struct keys_info *);
 static void cmd_return(struct key_info, struct keys_info *);
 static void cmd_ctrl_o(struct key_info, struct keys_info *);
+static void cmd_ctrl_r(struct key_info, struct keys_info *);
 static void cmd_ctrl_u(struct key_info, struct keys_info *);
 static void cmd_ctrl_wl(struct key_info, struct keys_info *);
 static void cmd_ctrl_wh(struct key_info, struct keys_info *);
@@ -125,6 +128,7 @@ static void cmd_p(struct key_info, struct keys_info *);
 static void cmd_s(struct key_info, struct keys_info *);
 static void cmd_m(struct key_info, struct keys_info *);
 static void cmd_t(struct key_info, struct keys_info *);
+static void cmd_u(struct key_info, struct keys_info *);
 static void cmd_yy(struct key_info, struct keys_info *);
 static void cmd_y_selector(struct key_info, struct keys_info *);
 static void cmd_zM(struct key_info, struct keys_info *);
@@ -177,6 +181,9 @@ init_normal_mode(int *key_mode)
 
 	curr = add_cmd(L"\x0f", NORMAL_MODE);
 	curr->data.handler = cmd_ctrl_o;
+
+	curr = add_cmd(L"\x12", NORMAL_MODE);
+	curr->data.handler = cmd_ctrl_r;
 
 	curr = add_cmd(L"\x15", NORMAL_MODE);
 	curr->data.handler = cmd_ctrl_u;
@@ -364,6 +371,9 @@ init_normal_mode(int *key_mode)
 
 	curr = add_cmd(L"t", NORMAL_MODE);
 	curr->data.handler = cmd_t;
+
+	curr = add_cmd(L"u", NORMAL_MODE);
+	curr->data.handler = cmd_u;
 
 	curr = add_cmd(L"yy", NORMAL_MODE);
 	curr->data.handler = cmd_yy;
@@ -570,6 +580,16 @@ cmd_ctrl_o(struct key_info key_info, struct keys_info *keys_info)
 		return;
 
 	goto_history_pos(curr_view, curr_view->history_pos - 1);
+}
+
+static void
+cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(redo_group() == 0)
+		return;
+
+	status_bar_message("Nothing to redo");
+	curr_stats.save_msg = 1;
 }
 
 static void
@@ -1227,6 +1247,17 @@ cmd_t(struct key_info key_info, struct keys_info *keys_info)
 	mvwaddstr(curr_view->win, curr_view->curr_line, 0, " ");
 	wattroff(curr_view->win, COLOR_PAIR(CURR_LINE_COLOR));
 	wmove(curr_view->win, curr_view->curr_line, 0);
+}
+
+/* Undo last command group. */
+static void
+cmd_u(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(undo_group() == 0)
+		return;
+
+	status_bar_message("Nothing to undo");
+	curr_stats.save_msg = 1;
 }
 
 /* Yank file. */

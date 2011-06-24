@@ -41,6 +41,7 @@
 #include "registers.h"
 #include "status.h"
 #include "ui.h"
+#include "undo.h"
 #include "utils.h"
 
 static void
@@ -1534,9 +1535,9 @@ show_register_menu(FileView *view)
 
 	getmaxyx(menu_win, m.win_rows, x);
 
-	for (x = 0; x < NUM_REGISTERS; x++)
+	for(x = 0; x < NUM_REGISTERS; x++)
 	{
-		if (reg[x].num_files > 0)
+		if(reg[x].num_files > 0)
 		{
 			char buf[56];
 			int y = reg[x].num_files;
@@ -1557,10 +1558,50 @@ show_register_menu(FileView *view)
 		}
 	}
 
-	if (!m.len)
+	if(!m.len)
 	{
 		m.data = (char **)realloc(m.data, sizeof(char *) * 1);
 		m.data[0] = strdup(" Registers are empty ");
+		m.len = 1;
+	}
+
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(0, &m);
+	enter_menu_mode(&m, view);
+}
+
+void
+show_undolist_menu(FileView *view, int with_details)
+{
+	int x;
+	char **p;
+
+	static menu_info m;
+	m.top = 0;
+	m.current = 1;
+	m.len = 0;
+	m.pos = 0;
+	m.win_rows = 0;
+	m.type = UNDOLIST;
+	m.matching_entries = 0;
+	m.match_dir = NONE;
+	m.regexp = NULL;
+	m.title = strdup(" Undolist ");
+	m.args = NULL;
+	m.data = NULL;
+
+	getmaxyx(menu_win, m.win_rows, x);
+
+	m.data = undolist(with_details);
+	p = m.data;
+	while(*p++ != NULL)
+		m.len++;
+
+	if(!m.len)
+	{
+		m.data = (char **)realloc(m.data, sizeof(char *) * 1);
+		m.data[0] = strdup(" Nothing to undone ");
 		m.len = 1;
 	}
 

@@ -149,6 +149,7 @@ The basic vi key bindings are used to move through the files and popup
 	:sp[lit] - switch to a two window view.
 	:his[tory] - popup menu of directories visited
 	:jobs - shows menu of current backgrounded processes.
+	:u[ndolist] - show list of latest changes. Add ! to see commands.
 	:v[iew] - toggle on and off the quick file view.
 	:h[elp] - this crude help file
 	:marks - popup menu of bookmarks
@@ -313,6 +314,10 @@ Options
     type: boolean
     Use trash directory
 
+    undolevels
+    type: integer
+	Maximum number of changes that can be undone.
+
     vicmd
     type: string
     The actual command used to start vi
@@ -361,6 +366,7 @@ Reserved :commands
         set
 		sh
 		sort
+		undolist
 		unmap
 		view
 		vifm

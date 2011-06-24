@@ -20,6 +20,7 @@ static void sort_handler(enum opt_op op, union optval_t val);
 static void sort_order_handler(enum opt_op op, union optval_t val);
 static void timefmt_handler(enum opt_op op, union optval_t val);
 static void trash_handler(enum opt_op op, union optval_t val);
+static void undolevels_handler(enum opt_op op, union optval_t val);
 static void vicmd_handler(enum opt_op op, union optval_t val);
 static void vimhelp_handler(enum opt_op op, union optval_t val);
 static void wrap_handler(enum opt_op op, union optval_t val);
@@ -61,6 +62,7 @@ add_options(void)
 	add_option("runexec", OPT_BOOL, 0, NULL, &runexec_handler);
 	add_option("timefmt", OPT_STR, 0, NULL, &timefmt_handler);
 	add_option("trash", OPT_BOOL, 0, NULL, &trash_handler);
+	add_option("undolevels", OPT_INT, 0, NULL, &undolevels_handler);
 	add_option("vicmd", OPT_STR, 0, NULL, &vicmd_handler);
 	add_option("vimhelp", OPT_BOOL, 0, NULL, &vimhelp_handler);
 	add_option("wrap", OPT_BOOL, 0, NULL, &wrap_handler);
@@ -86,6 +88,9 @@ load_options(void)
 
 	val.bool_val = cfg.use_trash;
 	set_option("trash", val);
+
+	val.int_val = cfg.undo_levels;
+	set_option("undolevels", val);
 
 	val.str_val = cfg.vi_command;
 	set_option("vicmd", val);
@@ -180,6 +185,12 @@ static void
 trash_handler(enum opt_op op, union optval_t val)
 {
 	cfg.use_trash = val.bool_val;
+}
+
+static void
+undolevels_handler(enum opt_op op, union optval_t val)
+{
+	cfg.undo_levels = val.int_val;
 }
 
 static void
