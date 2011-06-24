@@ -1,0 +1,42 @@
+Q: How can I use SSH with vifm?
+
+A: See an example in comments of vifmrc file (below lines starting with
+FILETYPE).
+
+--------------------------------------------------------------------------------
+
+Q: How can I customize vifm?
+
+A: There are several ways to do that:
+
+  - modifying virmrc (it's in ~/.vifm/)
+    It contains options that will be automatically written on vifm exit.
+
+  - using startup script (it's in ~/.vifm/ too)
+    This file can contain any of vifm commands.  You probably would like too set
+    mappings and options here.  vifm will never change this file (it's something
+    similar too ~/.vimrc).
+
+  - changing color scheme (~/.vifm/colorschemes)
+    You can set change colors of different TUI elements of vifm here. Or add
+    completely new color schemes.
+
+--------------------------------------------------------------------------------
+
+Q: What operations can be undone/redone?
+
+A: List of currently supported operations:
+  - rename
+  - move
+  - copy
+  - delete (when using Trash)
+  - permissions change
+  - owner change
+  - group change
+
+--------------------------------------------------------------------------------
+
+Q: How can I help vifm?
+
+A: Just use it and report any problems, bugs and suggestions to its developers
+by email or trackers.
