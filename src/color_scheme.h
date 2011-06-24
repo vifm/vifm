@@ -43,7 +43,6 @@ typedef struct _Col_attr {
 	int bg;
 } Col_attr;
 
-
 typedef struct _Col_Scheme {
 	char name[NAME_MAX];
 	char dir[PATH_MAX];

@@ -437,26 +437,25 @@ read_color_scheme_file(void)
 int
 check_directory_for_color_scheme(const char *dir)
 {
-	int x,y;
-	int z = 0;
-	int v = 0;
+	int i, y;
+	int max_len = 0;
+	int max_index = 0;
 
-	for(x = 0; x < cfg.color_scheme_num; x++)
+	for(i = 0; i < cfg.color_scheme_num; i++)
 	{
-		y = strlen(col_schemes[x].dir);
+		size_t len = strlen(col_schemes[i].dir);
 
-		if(!strncmp(col_schemes[x].dir, dir, y)
-				&& (dir[y] == '\0' || dir[y] == '/'))
+		if(path_starts_with(dir, col_schemes[i].dir))
 		{
-			if (y > z)
+			if(len > max_len)
 			{
-				z = y;
-				v = x;
+				max_len = len;
+				max_index = i;
 			}
 		}
 	}
 
-	return (v * MAXNUM_COLOR);
+	return (max_index * MAXNUM_COLOR);
 }
 
 char *

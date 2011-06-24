@@ -20,6 +20,9 @@
 	Hide file group and owner names when they collide with message about
 	filtered files.
 
+	Don't show error message when trying to delete something from Trash
+	directory.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.

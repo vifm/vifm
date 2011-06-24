@@ -794,6 +794,14 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	char undo_buf[8 + PATH_MAX*2];
 	int x, y;
 
+	if(cfg.use_trash && use_trash &&
+			path_starts_with(view->curr_dir, cfg.trash_dir))
+	{
+		status_bar_message("Can't perform deletion. "
+				"Current directory is under Trash directory");
+		return 1;
+	}
+
 	if(count > 0)
 		get_selected_files(view, count, indexes);
 	else

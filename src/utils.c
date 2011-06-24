@@ -511,4 +511,18 @@ fill_version_info(char **list)
 	return x;
 }
 
+int
+path_starts_with(const char *path, const char *begin)
+{
+	size_t len = strlen(begin);
+
+	if(begin[len - 1] == '/')
+		len--;
+
+	if(strncmp(path, begin, len) != 0)
+		return 0;
+
+	return (path[len] == '\0' || path[len] == '/');
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
