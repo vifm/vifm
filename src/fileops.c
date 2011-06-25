@@ -1448,7 +1448,7 @@ calc_dirsize(const char *path)
 				dir_size = calc_dirsize(buf);
 			size += dir_size;
 		}
-		else
+		else if(dentry->d_type != DT_LNK)
 		{
 			struct stat st;
 			if(stat(buf, &st) == 0)

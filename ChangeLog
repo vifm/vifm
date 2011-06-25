@@ -41,6 +41,8 @@
 
 	Fixed reaction on Ctrl+C for error messages from background processes.
 
+	Fix ga command (skip symbolic links).
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).
