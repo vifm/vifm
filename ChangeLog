@@ -23,6 +23,8 @@
 	Don't show error message when trying to delete something from Trash
 	directory.
 
+	Use only executables for :!./ completion.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.
