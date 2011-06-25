@@ -55,7 +55,7 @@ typedef struct
 typedef struct
 {
 	char *name;
-	off_t size;
+	unsigned long long size;
 	mode_t mode;
 	uid_t uid;
 	gid_t gid;

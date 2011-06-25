@@ -145,12 +145,12 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 		case SORT_BY_SIZE:
 		default:
 			{
-				size_t size = 0;
+				unsigned long long size = 0;
 				char str[24] = "";
 
 				if(view->dir_entry[x].type == DIRECTORY && chdir(view->curr_dir) == 0)
-					size = (size_t)tree_get_data(curr_stats.dirsize_cache,
-							view->dir_entry[x].name);
+					tree_get_data(curr_stats.dirsize_cache, view->dir_entry[x].name,
+							&size);
 
 				if(size == 0)
 					size = view->dir_entry[x].size;

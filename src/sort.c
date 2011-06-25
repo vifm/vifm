@@ -103,21 +103,14 @@ sort_dir_list(const void *one, const void *two)
 
 		case SORT_BY_SIZE:
 			{
-				size_t size;
-
-				size = 0;
 				if(first_is_dir)
-					size = (size_t)tree_get_data(curr_stats.dirsize_cache, first->name);
-				if(size != 0)
-					first->size = size;
+					tree_get_data(curr_stats.dirsize_cache, first->name, &first->size);
 
-				size = 0;
 				if(second_is_dir)
-					size = (size_t)tree_get_data(curr_stats.dirsize_cache, second->name);
-				if(size != 0)
-					second->size = size;
+					tree_get_data(curr_stats.dirsize_cache, second->name, &second->size);
 
-				retval = first->size - second->size;
+				retval = (first->size < second->size) ?
+						-1 : (first->size > second->size);
 			}
 			break;
 

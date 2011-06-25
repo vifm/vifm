@@ -56,7 +56,7 @@ void change_group(void);
 /* Returns new value for save_msg flag. */
 int put_files_from_register(FileView *view, int name, int force_move);
 void clone_file(FileView* view);
-off_t calc_dirsize(const char *path);
+unsigned long long calc_dirsize(const char *path);
 
 #endif
 

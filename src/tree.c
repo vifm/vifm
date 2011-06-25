@@ -26,7 +26,7 @@
 struct node {
 	char *name;
 	size_t name_len;
-	void *data;
+	unsigned long long data;
 	int valid;
 	struct node *next;
 	struct node *child;
@@ -45,7 +45,7 @@ tree_create(void)
 }
 
 int
-tree_set_data(tree_t tree, const char *path, void* data)
+tree_set_data(tree_t tree, const char *path, unsigned long long data)
 {
 	struct node *node;
 	char real_path[PATH_MAX];
@@ -59,23 +59,24 @@ tree_set_data(tree_t tree, const char *path, void* data)
 	return 0;
 }
 
-void *
-tree_get_data(tree_t tree, const char *path)
+int
+tree_get_data(tree_t tree, const char *path, unsigned long long *data)
 {
 	struct node *node;
 	char real_path[PATH_MAX];
 
 	if(tree->child == NULL)
-		return NULL;
+		return -1;
 
 	if(realpath(path, real_path) != real_path)
-		return NULL;
+		return -1;
 
 	node = find_node(tree, real_path, 0);
 	if(node == NULL || !node->valid)
-		return NULL;
+		return -1;
 	
-	return node->data;
+	*data = node->data;
+	return 0;
 }
 
 static struct node *

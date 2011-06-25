@@ -1415,13 +1415,13 @@ clone_file(FileView* view)
 	free(escaped);
 }
 
-off_t
+unsigned long long
 calc_dirsize(const char *path)
 {
 	DIR* dir;
 	struct dirent* dentry;
 	const char* slash = "";
-	off_t size;
+	unsigned long long size;
 
 	dir = opendir(path);
 	if(dir == NULL)
@@ -1443,8 +1443,8 @@ calc_dirsize(const char *path)
 		snprintf(buf, sizeof (buf), "%s%s%s", path, slash, dentry->d_name);
 		if(dentry->d_type == DT_DIR)
 		{
-			off_t dir_size = (off_t)tree_get_data(curr_stats.dirsize_cache, buf);
-			if(dir_size == 0)
+			unsigned long long dir_size = 0;
+			if(tree_get_data(curr_stats.dirsize_cache, buf, &dir_size) != 0)
 				dir_size = calc_dirsize(buf);
 			size += dir_size;
 		}
@@ -1458,7 +1458,7 @@ calc_dirsize(const char *path)
 
 	closedir(dir);
 
-	tree_set_data(curr_stats.dirsize_cache, path, (void*)size);
+	tree_set_data(curr_stats.dirsize_cache, path, size);
 	return (size);
 }
 
