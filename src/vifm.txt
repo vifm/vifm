@@ -206,7 +206,8 @@ d<selector> - like dd.
 DD and D<selector> - like dd and d<selector>, but omitting trash directory
      (even when option USE_TRASH is set).
 f, F, ;, <comma> - search by first character in filename.
-ga calculate size of directory.
+ga - calculate size of directory.
+gA - like ga, but force update.
 gv go to visual mode restoring last selection.
 yy, Y - yank selected files.
 y<selector> - yank files.

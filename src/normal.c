@@ -112,6 +112,7 @@ static void delete_with_selector(struct key_info, struct keys_info *,
 static void selector_S(struct key_info, struct keys_info *);
 static void cmd_f(struct key_info, struct keys_info *);
 static void find_f(int ch);
+static void cmd_gA(struct key_info, struct keys_info *);
 static void cmd_ga(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
 static void selector_gg(struct key_info, struct keys_info *);
@@ -333,6 +334,9 @@ init_normal_mode(int *key_mode)
 	curr->type = BUILDIN_WAIT_POINT;
 	curr->data.handler = cmd_f;
 	curr->followed = FOLLOWED_BY_MULTIKEY;
+
+	curr = add_cmd(L"gA", NORMAL_MODE);
+	curr->data.handler = cmd_gA;
 
 	curr = add_cmd(L"ga", NORMAL_MODE);
 	curr->data.handler = cmd_ga;
@@ -754,12 +758,23 @@ selector_G(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+cmd_gA(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(curr_view->dir_entry[curr_view->list_pos].type != DIRECTORY)
+		return;
+
+	calc_dirsize(curr_view->dir_entry[curr_view->list_pos].name, 1);
+
+	moveto_list_pos(curr_view, curr_view->list_pos);
+}
+
+static void
 cmd_ga(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_view->dir_entry[curr_view->list_pos].type != DIRECTORY)
 		return;
 
-	calc_dirsize(curr_view->dir_entry[curr_view->list_pos].name);
+	calc_dirsize(curr_view->dir_entry[curr_view->list_pos].name, 0);
 
 	moveto_list_pos(curr_view, curr_view->list_pos);
 }

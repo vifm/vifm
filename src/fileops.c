@@ -1416,7 +1416,7 @@ clone_file(FileView* view)
 }
 
 unsigned long long
-calc_dirsize(const char *path)
+calc_dirsize(const char *path, int force_update)
 {
 	DIR* dir;
 	struct dirent* dentry;
@@ -1444,8 +1444,9 @@ calc_dirsize(const char *path)
 		if(dentry->d_type == DT_DIR)
 		{
 			unsigned long long dir_size = 0;
-			if(tree_get_data(curr_stats.dirsize_cache, buf, &dir_size) != 0)
-				dir_size = calc_dirsize(buf);
+			if(tree_get_data(curr_stats.dirsize_cache, buf, &dir_size) != 0
+					|| force_update)
+				dir_size = calc_dirsize(buf, force_update);
 			size += dir_size;
 		}
 		else if(dentry->d_type != DT_LNK)

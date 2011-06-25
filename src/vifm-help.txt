@@ -10,8 +10,9 @@ The basic vi key bindings are used to move through the files and popup
 	Ctrl-c or the Escape key will cancel most operations.
 	Ctrl-l will clear and redraw the screen.
 
-	gg top of list
-	ga calculate size of directory
+	gg top of list.
+	ga calculate size of directory.
+    gA like ga, but force update.
     gv go to visual mode restoring last selection.
 	G bottom of list
     H move to the first file in the window.
