@@ -46,6 +46,7 @@ add_background_job(pid_t pid, char *cmd, int fd)
 	new->cmd = strdup(cmd);
 	new->next = jobs;
 	new->fd = fd;
+	new->skip_errors = 0;
 	new->error_buf = (char *)calloc(1, sizeof(char));
 	new->running = 1;
 	jobs = new;
@@ -137,7 +138,9 @@ check_background_jobs(void)
 				}
 				else
 				{
-					show_error_msg("Background Process Error", p->error_buf);
+					if(!p->skip_errors)
+						p->skip_errors = show_error_msg("Background Process Error",
+								p->error_buf);
 					free(p->error_buf);
 					p->error_buf = (char *) calloc(1, sizeof(char));
 				}
@@ -301,16 +304,16 @@ start_background_job(char *cmd)
 	char *args[4];
 	int error_pipe[2];
 
-	if (pipe(error_pipe) != 0)
+	if(pipe(error_pipe) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
 		return -1;
 	}
 
-	if ((pid = fork()) == -1)
+	if((pid = fork()) == -1)
 		return -1;
 
-	if (pid == 0)
+	if(pid == 0)
 	{
 		int nullfd;
 		close(2);				 /* Close stderr */

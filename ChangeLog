@@ -39,6 +39,8 @@
 
 	Fixed bug with selection and segmentation fault.
 
+	Fixed reaction on Ctrl+C for error messages from background processes.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).
@@ -74,7 +76,7 @@
 
 	More verbose --version (and -v) output.
 
-	Added Ctrl-C key handling to error message dialog.
+	Added Ctrl+C key handling to error message dialog.
 
 	Implemented :yank command.
 
