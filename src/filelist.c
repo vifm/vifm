@@ -81,8 +81,6 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 	struct group *grp_buf;
 	struct tm *tm_ptr;
 
-	chdir(view->curr_dir);
-
 	switch(view->sort_type)
 	{
 		case SORT_BY_OWNER_NAME:
@@ -150,7 +148,7 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 				size_t size = 0;
 				char str[24] = "";
 
-				if(view->dir_entry[x].type == DIRECTORY)
+				if(view->dir_entry[x].type == DIRECTORY && chdir(view->curr_dir) == 0)
 					size = (size_t)tree_get_data(curr_stats.dirsize_cache,
 							view->dir_entry[x].name);
 
@@ -225,7 +223,8 @@ view_not_wraped(FILE *fp, int x)
 		while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
 					&& !feof(fp))
 		{
-			fgets(line + len, other_view->window_width - n_len, fp);
+			if(fgets(line + len, other_view->window_width - n_len, fp) == NULL)
+				break;
 			n_len = get_normal_utf8_string_length(line);
 			len = strlen(line);
 		}
@@ -279,7 +278,8 @@ view_wraped(FILE *fp, int x)
 		while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
 				&& !feof(fp))
 		{
-			fgets(line + len, other_view->window_width - n_len, fp);
+			if(fgets(line + len, other_view->window_width - n_len, fp) == NULL)
+				break;
 			n_len = get_normal_utf8_string_length(line);
 			len = strlen(line);
 		}
@@ -1085,7 +1085,11 @@ try_unmount_fuse(FileView *view)
 			runner->mount_point);
 
 	/* have to chdir to parent temporarily, so that this DIR can be unmounted */
-	chdir(cfg.fuse_home);
+	if(chdir(cfg.fuse_home) != 0)
+	{
+		show_error_msg("FUSE UMOUNT ERROR", "Can't chdir to FUSE home");
+		return -1;
+	}
 
 	status = background_and_wait_for_status(buf);
 	/* check child status */
@@ -1093,7 +1097,7 @@ try_unmount_fuse(FileView *view)
 	{
 		werase(status_bar);
 		show_error_msg("FUSE UMOUNT ERROR", runner->source_file_name);
-		chdir(view->curr_dir);
+		(void)chdir(view->curr_dir);
 		return -1;
 	}
 
@@ -1267,7 +1271,6 @@ load_dir_list(FileView *view, int reload)
 	int namelen = 0;
 	int old_list = view->list_rows;
 
-	chdir(view->curr_dir);
 	dir = opendir(view->curr_dir);
 
 	if(dir == NULL)
@@ -1279,11 +1282,16 @@ load_dir_list(FileView *view, int reload)
 	view->dir_mtime = s.st_mtime;
 
 	if(!reload && s.st_size > 2048)
-	{
 		status_bar_message("Reading Directory...");
-	}
 
 	update_all_windows();
+
+	/* this is needed for lstat() below */
+	if(chdir(view->curr_dir) != 0)
+	{
+		closedir(dir);
+		return;
+	}
 
 	if(reload && view->selected_files)
 		get_all_selected_files(view);
@@ -1383,7 +1391,7 @@ load_dir_list(FileView *view, int reload)
 							namelen = sizeof(dir_entry->name);
 							strcat(dir_entry->name, "/");
 						}
-					dir_entry->type = LINK;
+						dir_entry->type = LINK;
 					}
 					break;
 				case S_IFDIR:
@@ -1606,7 +1614,9 @@ reload_window(FileView *view)
 		wrefresh(view->win);
 	}
 	else
+	{
 		moveto_list_pos(curr_view, curr_view->list_pos);
+	}
 
 	curr_stats.skip_history = 0;
 }

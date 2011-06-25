@@ -18,6 +18,7 @@
 
 #include <ncurses.h>
 
+#include <sys/wait.h>
 #include <unistd.h> /* chdir() */
 
 #include <assert.h>
@@ -106,7 +107,7 @@ const char *reserved_commands[] = {
 	"yank",
 };
 
-static int __unused__ reserved_commands_size_guard[
+static int _gnuc_unused reserved_commands_size_guard[
 	(ARRAY_LEN(reserved_commands) == RESERVED) ? 1 : -1
 ];
 
@@ -1497,13 +1498,10 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_EMPTY:
 			{
-				char buf[256];
-				snprintf(buf, sizeof(buf), "%s/Trash", cfg.config_dir);
-				if(chdir(buf))
-					break;
-
-				start_background_job("rm -rf * .[!.]*");
-				chdir(view->curr_dir);
+				char buf[24 + (strlen(cfg.trash_dir) + 1)*2 + 1];
+				snprintf(buf, sizeof(buf), "rm -rf %s/* %s/.[!.]*", cfg.trash_dir,
+						cfg.trash_dir);
+				start_background_job(buf);
 			}
 			break;
 		case COM_FILTER:
@@ -2046,7 +2044,7 @@ exec_command(char *cmd, FileView *view, int type)
 	return 0;
 }
 
-void
+void _gnuc_noreturn
 comm_quit(void)
 {
 	unmount_fuse();
@@ -2067,7 +2065,7 @@ comm_quit(void)
 	write_config_file();
 
 	endwin();
-	system("clear");
+	(void)system("clear");
 	exit(0);
 }
 

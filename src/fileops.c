@@ -106,7 +106,8 @@ unmount_fuse(void)
 	if(fuse_mounts == NULL)
 		return;
 
-	chdir("/");
+	if(chdir("/") != 0)
+		return;
 
 	runner = fuse_mounts;
 	while(runner)
@@ -435,7 +436,11 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 		 paths, Otherwise the fuse-zip command fails with
 		 "fusermount: failed to open current directory: permission denied"
 		 (this happens when mounting JARs from mounted JARs) */
-	chdir(cfg.fuse_home);
+	if(chdir(cfg.fuse_home) != 0)
+	{
+		show_error_msg("FUSE MOUNT ERROR", "Can't chdir() to FUSE home");
+		return -1;
+	}
 	/*
 		 TODO see what's here
 		 def_prog_mode();
@@ -460,7 +465,7 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 		if(!access(mount_point, F_OK))
 			rmdir(mount_point);
 		show_error_msg("FUSE MOUNT ERROR", filename);
-		chdir(view->curr_dir);
+		(void)chdir(view->curr_dir);
 		return -1;
 	}
 	status_bar_message("FUSE mount success.");
@@ -529,7 +534,13 @@ fuse_try_mount(FileView *view, char *program)
 				return;
 			}
 
-			fgets(filename, sizeof(filename), f);
+			if(fgets(filename, sizeof(filename), f) == NULL)
+			{
+				status_bar_message("Can't read file content");
+				curr_stats.save_msg = 1;
+				fclose(f);
+				return;
+			}
 			len = strlen(filename);
 
 			if(len == 0 || (len == 1 && filename[0] == '\n'))
@@ -746,7 +757,11 @@ pipe_and_capture_errors(char *command)
 	{
 		close(1);
 		close(2);
-		dup(file_pipes[1]);
+		if(dup(file_pipes[1]) == -1)
+		{
+			perror("dup");
+			exit(-1);
+		}
 		close(file_pipes[0]);
 		close(file_pipes[1]);
 
@@ -826,7 +841,11 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		cmd_group_begin("Delete files");
 
 	y = 0;
-	chdir(curr_view->curr_dir);
+	if(chdir(curr_view->curr_dir) != 0)
+	{
+		status_bar_message("Can't chdir() to current directory");
+		return 1;
+	}
 	for(x = 0; x < view->selected_files; x++)
 	{
 		char *esc_file;
@@ -1327,7 +1346,11 @@ put_files_from_register_i(FileView *view)
 	cmd_group_begin(put_confirm.force_move ? "Move files" : "Copy files");
 	cmd_group_end();
 
-	chdir(view->curr_dir);
+	if(chdir(view->curr_dir) != 0)
+	{
+		status_bar_message("Can't chdir() to current directory");
+		return 1;
+	}
 	while(put_confirm.x < put_confirm.reg->num_files)
 	{
 		if(put_next_file("", 0) != 0)
@@ -1392,13 +1415,13 @@ clone_file(FileView* view)
 	free(escaped);
 }
 
-unsigned long long
+off_t
 calc_dirsize(const char *path)
 {
 	DIR* dir;
 	struct dirent* dentry;
 	const char* slash = "";
-	size_t size;
+	off_t size;
 
 	dir = opendir(path);
 	if(dir == NULL)
@@ -1420,8 +1443,7 @@ calc_dirsize(const char *path)
 		snprintf(buf, sizeof (buf), "%s%s%s", path, slash, dentry->d_name);
 		if(dentry->d_type == DT_DIR)
 		{
-			unsigned long long dir_size = (unsigned long long)tree_get_data(
-					curr_stats.dirsize_cache, buf);
+			off_t dir_size = (off_t)tree_get_data(curr_stats.dirsize_cache, buf);
 			if(dir_size == 0)
 				dir_size = calc_dirsize(buf);
 			size += dir_size;

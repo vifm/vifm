@@ -1453,7 +1453,8 @@ exec_completion(char *str)
 	cur_dir = dir;
 	do
 	{
-		chdir(paths[dir]);
+		if(chdir(paths[dir]) != 0)
+			continue;
 		result = filename_completion((last_dir != dir) ? string : NULL, 2);
 		if(result == NULL)
 		{
@@ -1462,7 +1463,8 @@ exec_completion(char *str)
 			if(dir == 0)
 			{
 				last_dir = -1;
-				chdir(curr_view->curr_dir);
+				if(chdir(curr_view->curr_dir) != 0)
+					return NULL;
 				return strdup(string);
 			}
 		}
@@ -1474,7 +1476,11 @@ exec_completion(char *str)
 	}
 	else
 		last_dir = dir;
-	chdir(curr_view->curr_dir);
+	if(chdir(curr_view->curr_dir) != 0)
+	{
+		free(result);
+		return NULL;
+	}
 	return result;
 }
 

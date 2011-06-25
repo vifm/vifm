@@ -33,11 +33,13 @@
 
 Col_scheme *col_schemes;
 
+/*
 static void
 verify_color_schemes(void)
 {
-	/* TODO implement */
+	TODO implement
 }
+*/
 
 int
 find_color_scheme(const char *name)
@@ -154,7 +156,8 @@ write_color_scheme_file(void)
 			int t;
 
 			col_schemes[x].color[y].name %= MAXNUM_COLOR;
-			snprintf(buf, sizeof(buf), ELEM_NAMES[col_schemes[x].color[y].name]);
+			snprintf(buf, sizeof(buf), "%s",
+					ELEM_NAMES[col_schemes[x].color[y].name]);
 
 			t = col_schemes[x].color[y].fg + 1;
 			if((size_t)t < sizeof(COLOR_STR)/sizeof(COLOR_STR[0]))
@@ -437,7 +440,7 @@ read_color_scheme_file(void)
 int
 check_directory_for_color_scheme(const char *dir)
 {
-	int i, y;
+	int i;
 	int max_len = 0;
 	int max_index = 0;
 

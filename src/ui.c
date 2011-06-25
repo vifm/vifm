@@ -46,12 +46,12 @@
 #include "ui.h"
 #include "utils.h"
 
-static void
-finish(char *message)
+static void _gnuc_noreturn
+finish(const char *message)
 {
 	endwin();
 	write_config_file();
-	system("clear");
+	(void)system("clear");
 	printf("%s", message);
 	exit(0);
 }

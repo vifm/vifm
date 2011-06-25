@@ -116,7 +116,11 @@ get_file_mimetype(const char* filename, char* buf, size_t buf_sz)
 	if((pipe = popen(command, "r")) == NULL)
 		return -1;
 
-	fgets(buf, buf_sz, pipe);
+	if(fgets(buf, buf_sz, pipe) != buf)
+	{
+		pclose(pipe);
+		return -1;
+	}
 
 	pclose(pipe);
 

@@ -34,6 +34,7 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
+#include "macros.h"
 #include "menus.h"
 #include "modes.h"
 #include "signals.h"
@@ -56,7 +57,7 @@ received_sigtstp(void)
 	/* End program so key strokes are not registered while stopped. */
 	def_prog_mode();
 	endwin();
-	system("clear");
+	(void)system("clear");
 	pause();
 	refresh();
 	curs_set(0);
@@ -73,13 +74,13 @@ received_sigchld(void)
 		add_finished_job(pid, status);
 }
 
-static void
+static void _gnuc_noreturn
 shutdown_nicely(void)
 {
 	endwin();
 	unmount_fuse();
 	write_config_file();
-	system("clear");
+	(void)system("clear");
 	fprintf(stdout, "Vifm killed by signal.\n");
 	exit(0);
 }

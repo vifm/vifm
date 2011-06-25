@@ -69,16 +69,17 @@ AC_CHECK_LIB(ncursesw, initscr,
 	if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncursesw; then
 		CPPFLAGS="$CPPFLAGS -I/usr/include/ncursesw"
 	fi
-	AC_CHECK_HEADERS(ncurses.h)],[
-	ac_widec_possible=no
-	AC_CHECK_LIB(ncurses, initscr,
-		[LIBS="$LIBS -lncurses"
-		if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
-			CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
-		fi
-		AC_CHECK_HEADERS(ncurses.h)],
-		[CF_CURSES_LIBS])
-	])
+	AC_CHECK_HEADERS(ncurses.h)],
+	[AC_MSG_ERROR([libncursesw not found])])
+	#[ac_widec_possible=no
+	#AC_CHECK_LIB(ncurses, initscr,
+		#[LIBS="$LIBS -lncurses"
+		#if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
+			#CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
+		#fi
+		#AC_CHECK_HEADERS(ncurses.h)],
+		#[CF_CURSES_LIBS])
+	#])
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
 dnl ----------------------------------------------------------------------------

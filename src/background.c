@@ -314,7 +314,11 @@ start_background_job(char *cmd)
 	{
 		int nullfd;
 		close(2);				 /* Close stderr */
-		dup(error_pipe[1]);  /* Redirect stderr to write end of pipe. */
+		if(dup(error_pipe[1]) == -1) /* Redirect stderr to write end of pipe. */
+		{
+			perror("dup");
+			exit(-1);
+		}
 		close(error_pipe[0]); /* Close read end of pipe. */
 		close(0); /* Close stdin */
 		close(1); /* Close stdout */

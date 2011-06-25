@@ -19,6 +19,7 @@
 #ifndef __COMMANDS_H__
 #define __COMMANDS_H__
 
+#include "macros.h"
 #include "ui.h"
 
 enum {
@@ -108,7 +109,7 @@ char * command_completion(char *str, int users_only);
 char * expand_macros(FileView *view, const char *command, const char *args,
 		int *menu, int *split);
 void remove_command(char *name);
-void comm_quit(void);
+void _gnuc_noreturn comm_quit(void);
 void comm_only(void);
 void comm_split(void);
 

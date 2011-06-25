@@ -75,6 +75,8 @@ main_loop(void)
 		int ret;
 
 		modes_pre();
+
+		/* just in case... */
 		chdir(curr_view->curr_dir);
 
 		/* This waits for timeout then skips if no keypress. */

@@ -60,7 +60,7 @@ show_file_type(FileView *view, int curr_y)
 		len = readlink (filename, linkto, sizeof (linkto));
 
 		mvwaddstr(menu_win, curr_y, 2, "Link To: ");
-		if (len > 0)
+		if(len > 0)
 		{
 			linkto[len] = '\0';
 			mvwaddnstr(menu_win, curr_y, 11, linkto, x - 11);
@@ -68,7 +68,7 @@ show_file_type(FileView *view, int curr_y)
 		else
 			mvwaddstr(menu_win, curr_y, 11, "Couldn't Resolve Link");
 	}
-	else if (S_ISREG (view->dir_entry[view->list_pos].mode))
+	else if(S_ISREG(view->dir_entry[view->list_pos].mode))
 	{
 		FILE *pipe;
 		char command[1024];
@@ -78,13 +78,14 @@ show_file_type(FileView *view, int curr_y)
 		snprintf(command, sizeof(command), "file \"%s\" -b",
 				view->dir_entry[view->list_pos].name);
 
-		if ((pipe = popen(command, "r")) == NULL)
+		if((pipe = popen(command, "r")) == NULL)
 		{
 			mvwaddstr(menu_win, curr_y, 8, "Unable to open pipe to read file");
 			return 2;
 		}
 
-		fgets(buf, sizeof(buf), pipe);
+		if(fgets(buf, sizeof(buf), pipe) != buf)
+			strcpy(buf, "Pipe read error");
 
 		pclose(pipe);
 
@@ -99,23 +100,23 @@ show_file_type(FileView *view, int curr_y)
 			mvwaddstr(other_view->win, 6, 8, "Regular File");
 			*/
 	}
-	else if (S_ISDIR (view->dir_entry[view->list_pos].mode))
+	else if(S_ISDIR(view->dir_entry[view->list_pos].mode))
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Directory");
 	}
-	else if (S_ISCHR (view->dir_entry[view->list_pos].mode))
+	else if(S_ISCHR(view->dir_entry[view->list_pos].mode))
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Character Device");
 	}
-	else if (S_ISBLK (view->dir_entry[view->list_pos].mode))
+	else if(S_ISBLK(view->dir_entry[view->list_pos].mode))
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Block Device");
 	}
-	else if (S_ISFIFO (view->dir_entry[view->list_pos].mode))
+	else if(S_ISFIFO(view->dir_entry[view->list_pos].mode))
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
 	}
-	else if (S_ISSOCK (view->dir_entry[view->list_pos].mode))
+	else if(S_ISSOCK(view->dir_entry[view->list_pos].mode))
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Socket");
 	}

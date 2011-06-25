@@ -154,7 +154,11 @@ main(int argc, char *argv[])
 	int lwin_args = 0;
 
 	setlocale(LC_ALL, "");
-	getcwd(dir, sizeof(dir));
+	if(getcwd(dir, sizeof(dir)) == NULL)
+	{
+		perror("getcwd");
+		return -1;
+	}
 
 	init_window(&rwin);
 	init_window(&lwin);

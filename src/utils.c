@@ -33,6 +33,7 @@
 
 #include "ui.h"
 #include "status.h"
+
 #include "utils.h"
 
 struct Fuse_List *fuse_mounts = NULL;
@@ -301,14 +302,15 @@ to_wide(const char *s)
 }
 
 /* if err == 1 then use stderr and close stdin and stdout */
-void
+void _gnuc_noreturn
 run_from_fork(int pipe[2], int err, char *cmd)
 {
 	char *args[4];
 	int nullfd;
 
 	close(err ? 2 : 1); /* Close stderr or stdout */
-	dup(pipe[1]);       /* Redirect stderr or stdout to write end of pipe. */
+	if(dup(pipe[1]) == -1) /* Redirect stderr or stdout to write end of pipe. */
+		exit(-1);
 	close(pipe[0]);     /* Close read end of pipe. */
 	close(0);           /* Close stdin */
 	close(err ? 1 : 2); /* Close stdout or stderr */

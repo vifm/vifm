@@ -23,38 +23,38 @@
 
 /* for portable use of GNUC extensions (see Robert Love's book about system
  * programming in Linux) */
-#if __GNUC__ >= 3
+#if __GNUC__ > 3
 #undef inline
-#define inline inline   __attribute__ ((always_inline))
-#define __noinline__    __attribute__ ((noinline))
-#define __pure__        __attribute__ ((pure))
-#define __const__       __attribute__ ((const))
-#define __noreturn__    __attribute__ ((noreturn))
-#define __malloc__      __attribute__ ((malloc))
-#define __must_check__  __attribute__ ((must_check))
-#define __deprecated__  __attribute__ ((deprecated))
-#define __used__        __attribute__ ((used))
-#define __unused__      __attribute__ ((unused))
-#define __packed__      __attribute__ ((packed))
-#define __align__(x)    __attribute__ ((aligned(x)))
-#define __align_max__   __attribute__ ((aligned))
-#define __likely__      __builtin_expect (!!(x), 1)
-#define __unlikely__    __builtin_expect (!!(x), 0)
+#define inline inline     __attribute__ ((always_inline))
+#define _gnuc_noinline    __attribute__ ((noinline))
+#define _gnuc_pure        __attribute__ ((pure))
+#define _gnuc_const       __attribute__ ((const))
+#define _gnuc_noreturn    __attribute__ ((noreturn))
+#define _gnuc_malloc      __attribute__ ((malloc))
+#define _gnuc_must_check  __attribute__ ((must_check))
+#define _gnuc_deprecated  __attribute__ ((deprecated))
+#define _gnuc_used        __attribute__ ((used))
+#define _gnuc_unused      __attribute__ ((unused))
+#define _gnuc_packed      __attribute__ ((packed))
+#define _gnuc_align(x)    __attribute__ ((aligned(x)))
+#define _gnuc_align_max   __attribute__ ((aligned))
+#define _gnuc_likely      __builtin_expect (!!(x), 1)
+#define _gnuc_unlikely    __builtin_expect (!!(x), 0)
 #else
-#define __noinline__
-#define __pure__
-#define __const__
-#define __noreturn__
-#define __malloc__
-#define __must_check__
-#define __deprecated__
-#define __used__
-#define __unused__
-#define __packed__
-#define __align__
-#define __align_max__
-#define __likely__      (x)
-#define __unlikely__    (x)
+#define _gnuc_noinline
+#define _gnuc_pure
+#define _gnuc_const
+#define _gnuc_noreturn
+#define _gnuc_malloc
+#define _gnuc_must_check
+#define _gnuc_deprecated
+#define _gnuc_used
+#define _gnuc_unused
+#define _gnuc_packed
+#define _gnuc_align
+#define _gnuc_align_max
+#define _gnuc_likely      (x)
+#define _gnuc_unlikely    (x)
 #endif
 
 #define ARRAY_LEN(x) (sizeof(x)/sizeof((x)[0]))
