@@ -85,6 +85,8 @@ sort_dir_list(const void *one, const void *two)
 				retval = -1;
 			else if(first->name[0] != '.' && second->name[0] == '.')
 				retval = 1;
+			else
+				retval = strcmp(first->name, second->name);
 			break;
 
 		case SORT_BY_EXTENSION:
@@ -95,6 +97,8 @@ sort_dir_list(const void *one, const void *two)
 				retval = strcmp(++pfirst, ++psecond);
 			else if(pfirst || psecond)
 				retval = pfirst ? -1 : 1;
+			else
+				retval = strcmp(first->name, second->name);
 			break;
 
 		case SORT_BY_SIZE:
@@ -152,7 +156,7 @@ sort_dir_list(const void *one, const void *two)
 
 	if(retval == 0)
 		retval = strcmp(first->name, second->name);
-	if(view->sort_descending)
+	else if(view->sort_descending)
 		retval = -retval;
 
 	return retval;
