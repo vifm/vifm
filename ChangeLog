@@ -15,6 +15,8 @@
 
 	Added gA command (like ga, but forces update).
 
+	Added support for whole line comments (that start with double quote symbol).
+
 	Don't change directory on unsuccessful FUSE mount.
 
 	Don't change cursor position of other directory after disabling quick view.

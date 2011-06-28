@@ -1145,7 +1145,7 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 			&& cmd->cmd_name[cmd->pos] != '!')
 		cmd->pos++;
 
-	if (cmd->cmd_name[cmd->pos] != '!' || cmd->pos == 0)
+	if(cmd->cmd_name[cmd->pos] != '!' || cmd->pos == 0)
 	{
 		cmd->cmd_name[cmd->pos] = '\0';
 		cmd->pos++;
@@ -1946,6 +1946,12 @@ execute_command(FileView *view, char *command)
 
 	cmd.cmd_name = NULL;
 	cmd.args = NULL;
+
+	while(isspace(*command) && *command != '\0')
+		++command;
+
+	if(command[0] == '"')
+		return 0;
 
 	result = parse_command(view, command, &cmd);
 

@@ -5,6 +5,7 @@ void test_append_selected_files(void);
 void test_expand_macros(void);
 void path_starts_with_tests(void);
 void check_dir_for_colorscheme_tests(void);
+void comments_tests(void);
 
 void all_tests(void)
 {
@@ -13,6 +14,7 @@ void all_tests(void)
 	test_expand_macros();
 	path_starts_with_tests();
 	check_dir_for_colorscheme_tests();
+	comments_tests();
 }
 
 int main(int argc, char **argv)
