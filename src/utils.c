@@ -85,10 +85,10 @@ escape_filename(const char *string, size_t len, int quote_percent)
 
 	for(i = 0; i < len; i++, string++, dup++)
 	{
-		switch (*string)
+		switch(*string)
 		{
 			case '%':
-				if (quote_percent)
+				if(quote_percent)
 					*dup++ = '%';
 				break;
 			case '\'':

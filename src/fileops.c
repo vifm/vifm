@@ -865,7 +865,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 			snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir,
 					view->selected_filelist[x]);
 			esc_full = escape_filename(full_buf, 0, 0);
-			snprintf(buf, sizeof(buf), "mv %s '%s'", full_buf, cfg.trash_dir);
+			snprintf(buf, sizeof(buf), "mv %s '%s'", esc_full, cfg.trash_dir);
 			free(esc_full);
 
 			snprintf(undo_buf, sizeof(undo_buf), "mv %s/%s '%s'", cfg.trash_dir,
