@@ -1,8 +1,8 @@
 #include "../config.h"
 
 #ifdef HAVE_LIBGTK
+#include <glib.h>
 #include <gtk/gtk.h>
-#include <glib-2.0/gio/gio.h>
 #endif
 
 #ifdef HAVE_LIBMAGIC

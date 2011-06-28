@@ -424,7 +424,7 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 				expanded = ensure_trailing_space(expanded);
 
 				temp = escape_filename(view->dir_entry[y].name,
-						strlen(view->dir_entry[y].name) - dir, 1);
+						strlen(view->dir_entry[y].name) - dir, 0);
 				expanded = (char *)realloc(expanded,
 						len + dir_name_len + strlen(temp) + 3);
 				if(dir_name_len != 0)
@@ -447,7 +447,7 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 			dir = 1;
 
 		temp = escape_filename(view->dir_entry[view->list_pos].name,
-				strlen(view->dir_entry[view->list_pos].name) - dir, 1);
+				strlen(view->dir_entry[view->list_pos].name) - dir, 0);
 
 		expanded = ensure_trailing_space(expanded);
 
@@ -1464,13 +1464,12 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					char buf[PATH_MAX];
 					if(view->dir_entry[view->list_pos].name != NULL)
 					{
-						char *temp =
-							escape_filename(view->dir_entry[view->list_pos].name,
-									strlen(view->dir_entry[view->list_pos].name), 0);
+						char *escaped =
+								escape_filename(view->dir_entry[view->list_pos].name, 0, 0);
 						snprintf(buf, sizeof(buf), "%s %s/%s", cfg.vi_command,
-								view->curr_dir, temp);
+								view->curr_dir, escaped);
 						shellout(buf, 0);
-						free(temp);
+						free(escaped);
 					}
 				}
 				else

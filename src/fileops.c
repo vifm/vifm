@@ -115,7 +115,7 @@ unmount_fuse(void)
 		char buf[8192];
 		char *tmp;
 
-		tmp = escape_filename(runner->mount_point, 0, 1);
+		tmp = escape_filename(runner->mount_point, 0, 0);
 		snprintf(buf, sizeof(buf), "sh -c \"fusermount -u %s\"", tmp);
 		free(tmp);
 
@@ -595,7 +595,7 @@ execute_file(FileView *view, int dont_execute)
 	}
 	else
 	{
-		char buf[NAME_MAX *2];
+		char buf[NAME_MAX + 1 + NAME_MAX + 1];
 		char *temp = escape_filename(view->dir_entry[view->list_pos].name, 0, 0);
 
 		snprintf(buf, sizeof(buf), "%s %s", program, temp);
@@ -856,7 +856,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 			continue;
 		}
 
-		esc_file = escape_filename(view->selected_filelist[x], 0, 1);
+		esc_file = escape_filename(view->selected_filelist[x], 0, 0);
 		if(cfg.use_trash && use_trash)
 		{
 			char *esc_full;
@@ -864,7 +864,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 			snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir,
 					view->selected_filelist[x]);
-			esc_full = escape_filename(full_buf, 0, 1);
+			esc_full = escape_filename(full_buf, 0, 0);
 			snprintf(buf, sizeof(buf), "mv %s '%s'", full_buf, cfg.trash_dir);
 			free(esc_full);
 
@@ -922,9 +922,9 @@ mv_file(const char *src, const char *dst)
 	int result;
 
 	snprintf(path_buf, sizeof(path_buf), "%s/%s", curr_view->curr_dir, src);
-	escaped_src = escape_filename(path_buf, 0, 1);
+	escaped_src = escape_filename(path_buf, 0, 0);
 	snprintf(path_buf, sizeof(path_buf), "%s/%s", curr_view->curr_dir, dst);
-	escaped_dst = escape_filename(path_buf, 0, 1);
+	escaped_dst = escape_filename(path_buf, 0, 0);
 
 	if(escaped_src == NULL || escaped_dst == NULL)
 	{
@@ -1185,7 +1185,7 @@ change_group_cb(const char *new_owner)
 
 	filename = get_current_file_name(curr_view);
 	snprintf(command, sizeof(command), "%s/%s", curr_view->curr_dir, filename);
-	escaped = escape_filename(command, 0, 1);
+	escaped = escape_filename(command, 0, 0);
 	snprintf(command, sizeof(command), "chown -fR :%s %s", new_owner, escaped);
 	snprintf(undo_command, sizeof(undo_command), "chown -fR :%d %s",
 			curr_view->dir_entry[curr_view->list_pos].uid, escaped);
@@ -1239,8 +1239,8 @@ put_next_file(const char *dest_name, int override)
 
 	snprintf(buf, sizeof(buf), "%s", reg->files[put_confirm.x]);
 	chosp(buf);
-	src_buf = escape_filename(buf, 0, 1);
-	dst_buf = escape_filename(put_confirm.view->curr_dir, 0, 1);
+	src_buf = escape_filename(buf, 0, 0);
+	dst_buf = escape_filename(put_confirm.view->curr_dir, 0, 0);
 	if(access(buf, F_OK) == 0 && src_buf != NULL && dst_buf != NULL)
 	{
 		const char *p = dest_name;
@@ -1263,7 +1263,7 @@ put_next_file(const char *dest_name, int override)
 
 		if(dest_name[0] == '\0')
 		{
-			name_buf = escape_filename(strrchr(buf, '/') + 1, 0, 1);
+			name_buf = escape_filename(strrchr(buf, '/') + 1, 0, 0);
 			dest_name = name_buf;
 		}
 
@@ -1407,9 +1407,9 @@ clone_file(FileView* view)
 		return;
 
 	if(view->dir_entry[view->list_pos].type == DIRECTORY)
-		escaped = escape_filename(filename, strlen(filename) - 1, 1);
+		escaped = escape_filename(filename, strlen(filename) - 1, 0);
 	else
-		escaped = escape_filename(filename, 0, 1);
+		escaped = escape_filename(filename, 0, 0);
 	snprintf(buf, sizeof(buf), "cp -pR %s %s_clone", escaped, escaped);
 	background_and_wait_for_errors(buf);
 	free(escaped);

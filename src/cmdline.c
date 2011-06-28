@@ -1176,7 +1176,7 @@ line_completion(struct line_stats *stat)
 		stat->complete_continue = 1;
 
 		if(raw_name)
-			filename = escape_filename(raw_name, strlen(raw_name), 1);
+			filename = escape_filename(raw_name, 0, 1);
 
 		if(filename != NULL)
 		{

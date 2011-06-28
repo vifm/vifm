@@ -398,7 +398,7 @@ add_file_to_list(char *list, const char *filename)
 	char *p, *escaped;
 
 	snprintf(path_buf, sizeof(path_buf), "%s/%s", view->curr_dir, filename);
-	escaped = escape_filename(path_buf, 0, 1);
+	escaped = escape_filename(path_buf, 0, 0);
 	if(escaped == NULL)
 		return NULL;
 

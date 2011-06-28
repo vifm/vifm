@@ -43,7 +43,9 @@
 
 	Fixed reaction on Ctrl+C for error messages from background processes.
 
-	Fix ga command (skip symbolic links).
+	Fixed ga command (skip symbolic links).
+
+	Fixed processing files with percent sign in their name.
 
 0.6.1 to 0.6.2
 
