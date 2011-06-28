@@ -27,6 +27,8 @@
 
 	Use only executables for :!./ completion.
 
+	Complete :pushd like :cd.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.

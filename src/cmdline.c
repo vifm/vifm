@@ -1171,7 +1171,7 @@ line_completion(struct line_stats *stat)
 			raw_name = exec_completion(stat->complete_continue ? NULL : last_word);
 		else
 			raw_name = filename_completion(stat->complete_continue ? NULL : last_word,
-					(id == COM_CD) ? 1 : (id == COM_EXECUTE ? 2 : 0));
+					(id == COM_CD || id == COM_PUSHD) ? 1 : (id == COM_EXECUTE ? 2 : 0));
 
 		stat->complete_continue = 1;
 
