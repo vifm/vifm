@@ -47,7 +47,6 @@ static int file_is_dir;
 static int perms[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
 static int origin_perms[13];
 
-static void init_extended_keys(void);
 static void leave_permissions_mode(void);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
@@ -64,59 +63,32 @@ static void cmd_k(struct key_info, struct keys_info *);
 static void inc_curr(void);
 static void dec_curr(void);
 
+static struct keys_add_info builtin_cmds[] = {
+	{L"\x03", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	/* return */
+	{L"\x0d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
+	/* escape */
+	{L"\x1b", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L" ", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
+	{L"j", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"l", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
+	{L"t", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
+#ifdef ENABLE_EXTENDED_KEYS
+	{{KEY_UP}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{{KEY_DOWN}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+#endif /* ENABLE_EXTENDED_KEYS */
+};
+
 void
 init_permissions_dialog_mode(int *key_mode)
 {
-	struct key_t *curr;
-
 	assert(key_mode != NULL);
 
 	mode = key_mode;
 
-	curr = add_cmd(L"\x03", PERMISSIONS_MODE);
-	curr->data.handler = cmd_ctrl_c;
-
-	/* return */
-	curr = add_cmd(L"\x0d", PERMISSIONS_MODE);
-	curr->data.handler = cmd_ctrl_m;
-
-	/* escape */
-	curr = add_cmd(L"\x1b", PERMISSIONS_MODE);
-	curr->data.handler = cmd_ctrl_c;
-
-	curr = add_cmd(L" ", PERMISSIONS_MODE);
-	curr->data.handler = cmd_space;
-
-	curr = add_cmd(L"j", PERMISSIONS_MODE);
-	curr->data.handler = cmd_j;
-
-	curr = add_cmd(L"k", PERMISSIONS_MODE);
-	curr->data.handler = cmd_k;
-
-	curr = add_cmd(L"l", PERMISSIONS_MODE);
-	curr->data.handler = cmd_ctrl_m;
-
-	curr = add_cmd(L"t", PERMISSIONS_MODE);
-	curr->data.handler = cmd_space;
-
-	init_extended_keys();
-}
-
-static void
-init_extended_keys(void)
-{
-#ifdef ENABLE_EXTENDED_KEYS
-	struct key_t *curr;
-	wchar_t buf[] = {L'\0', L'\0'};
-
-	buf[0] = KEY_UP;
-	curr = add_cmd(buf, PERMISSIONS_MODE);
-	curr->data.handler = cmd_k;
-
-	buf[0] = KEY_DOWN;
-	curr = add_cmd(buf, PERMISSIONS_MODE);
-	curr->data.handler = cmd_j;
-#endif /* ENABLE_EXTENDED_KEYS */
+	assert(add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), PERMISSIONS_MODE)
+			== 0);
 }
 
 void

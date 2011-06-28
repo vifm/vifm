@@ -43,7 +43,6 @@ static FileView *view;
 static menu_info *menu;
 static int last_search_backward;
 
-static void init_extended_keys(void);
 static int key_handler(wchar_t key);
 static void leave_menu_mode(void);
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
@@ -61,93 +60,45 @@ static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
 static void cmd_n(struct key_info, struct keys_info *);
 
+static struct keys_add_info builtin_cmds[] = {
+	{L"\x02", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
+	{L"\x03", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x06", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
+	/* return */
+	{L"\x0d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
+	/* escape */
+	{L"\x1b", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"/", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_slash}}},
+	{L":", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
+	{L"?", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_question}}},
+	{L"G", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
+	{L"N", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
+	{L"dd", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dd}}},
+	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{L"j", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"l", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
+	{L"n", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
+#ifdef ENABLE_EXTENDED_KEYS
+	{{KEY_PPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
+	{{KEY_NPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
+	{{KEY_UP}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{{KEY_DOWN}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+	{{KEY_HOME}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{{KEY_END}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
+#endif /* ENABLE_EXTENDED_KEYS */
+};
+
 void
 init_menu_mode(int *key_mode)
 {
-	struct key_t *curr;
-
 	assert(key_mode != NULL);
 
 	mode = key_mode;
 
-	curr = add_cmd(L"\x02", MENU_MODE);
-	curr->data.handler = cmd_ctrl_b;
-
-	curr = add_cmd(L"\x03", MENU_MODE);
-	curr->data.handler = cmd_ctrl_c;
-
-	curr = add_cmd(L"\x06", MENU_MODE);
-	curr->data.handler = cmd_ctrl_f;
-
-	/* return */
-	curr = add_cmd(L"\x0d", MENU_MODE);
-	curr->data.handler = cmd_ctrl_m;
-
-	/* escape */
-	curr = add_cmd(L"\x1b", MENU_MODE);
-	curr->data.handler = cmd_ctrl_c;
-
-	curr = add_cmd(L"/", MENU_MODE);
-	curr->data.handler = cmd_slash;
-
-	curr = add_cmd(L":", MENU_MODE);
-	curr->data.handler = cmd_colon;
-
-	curr = add_cmd(L"?", MENU_MODE);
-	curr->data.handler = cmd_question;
-
-	curr = add_cmd(L"G", MENU_MODE);
-	curr->data.handler = cmd_G;
-
-	curr = add_cmd(L"N", MENU_MODE);
-	curr->data.handler = cmd_N;
-
-	curr = add_cmd(L"dd", MENU_MODE);
-	curr->data.handler = cmd_dd;
-
-	curr = add_cmd(L"gg", MENU_MODE);
-	curr->data.handler = cmd_gg;
-
-	curr = add_cmd(L"j", MENU_MODE);
-	curr->data.handler = cmd_j;
-
-	curr = add_cmd(L"k", MENU_MODE);
-	curr->data.handler = cmd_k;
-
-	curr = add_cmd(L"l", MENU_MODE);
-	curr->data.handler = cmd_ctrl_m;
-
-	curr = add_cmd(L"n", MENU_MODE);
-	curr->data.handler = cmd_n;
-
-	init_extended_keys();
+	assert(add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), MENU_MODE) == 0);
 
 	set_def_handler(MENU_MODE, key_handler);
-}
-
-static void
-init_extended_keys(void)
-{
-#ifdef ENABLE_EXTENDED_KEYS
-	struct key_t *curr;
-	wchar_t buf[] = {L'\0', L'\0'};
-
-	buf[0] = KEY_PPAGE;
-	curr = add_cmd(buf, MENU_MODE);
-	curr->data.handler = cmd_ctrl_b;
-
-	buf[0] = KEY_NPAGE;
-	curr = add_cmd(buf, MENU_MODE);
-	curr->data.handler = cmd_ctrl_f;
-
-	buf[0] = KEY_UP;
-	curr = add_cmd(buf, MENU_MODE);
-	curr->data.handler = cmd_k;
-
-	buf[0] = KEY_DOWN;
-	curr = add_cmd(buf, MENU_MODE);
-	curr->data.handler = cmd_j;
-#endif /* ENABLE_EXTENDED_KEYS */
 }
 
 static int

@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <curses.h>
+
 #include <assert.h>
 #include <string.h>
 
@@ -50,8 +52,6 @@ static int last_search_backward;
 static int last_fast_search_char;
 static int last_fast_search_backward = -1;
 
-static void init_selectors(void);
-static void init_extended_keys(void);
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_d(struct key_info, struct keys_info *);
@@ -123,8 +123,8 @@ static void cmd_j(struct key_info, struct keys_info *);
 static void selector_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
 static void selector_k(struct key_info, struct keys_info *);
-static void cmd_l(struct key_info, struct keys_info *);
 static void cmd_n(struct key_info, struct keys_info *);
+static void cmd_l(struct key_info, struct keys_info *);
 static void cmd_p(struct key_info, struct keys_info *);
 static void cmd_s(struct key_info, struct keys_info *);
 static void cmd_m(struct key_info, struct keys_info *);
@@ -144,353 +144,124 @@ static void cmd_zt(struct key_info, struct keys_info *);
 static void cmd_zz(struct key_info, struct keys_info *);
 static void pick_files(FileView *view, int end, struct keys_info *keys_info);
 
+static struct keys_add_info builtin_cmds[] = {
+	{L"\x02", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
+	{L"\x03", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x04", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_d}}},
+	{L"\x05", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_e}}},
+	{L"\x06", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
+	{L"\x07", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_g}}},
+	{L"\x09", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_i}}},
+	{L"\x0c", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
+	{L"\x0d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_return}}},
+	{L"\x0f", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_o}}},
+	{L"\x12", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_r}}},
+	{L"\x15", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
+	{L"\x17\x08", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wh}}},
+	{L"\x17h", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wh}}},
+	{L"\x17\x0f", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wo}}},
+	{L"\x17o", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wo}}},
+	{L"\x17\x0c", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wl}}},
+	{L"\x17l", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wl}}},
+	{L"\x17\x16", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wv}}},
+	{L"\x17v", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wv}}},
+	{L"\x17\x17", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
+	{L"\x17w", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
+	{L"\x17\x18", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wx}}},
+	{L"\x17x", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wx}}},
+	{L"\x19", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
+	/* escape */
+	{L"\x1b", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"'", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_quote}}},
+	{L" ", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
+	{L"%", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
+	{L",", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
+	{L".", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dot}}},
+	{L":", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
+	{L";", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_semicolon}}},
+	{L"/", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_slash}}},
+	{L"?", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_question}}},
+	{L"C", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_C}}},
+	{L"F", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_F}}},
+	{L"G", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
+	{L"H", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_H}}},
+	{L"L", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_L}}},
+	{L"M", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_M}}},
+	{L"N", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
+	{L"P", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_P}}},
+	{L"V", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_V}}},
+	{L"Y", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_yy}}},
+	{L"ZQ", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ZQ}}},
+	{L"ZZ", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ZZ}}},
+	{L"cW", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cW}}},
+	{L"cg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cg}}},
+	{L"co", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_co}}},
+	{L"cp", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
+	{L"cw", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cw}}},
+	{L"DD", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_DD}}},
+	{L"dd", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dd}}},
+	{L"D", {BUILDIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_D_selector}}},
+	{L"d", {BUILDIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_d_selector}}},
+	{L"f", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_f}}},
+	{L"gA", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gA}}},
+	{L"ga", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ga}}},
+	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{L"gv", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gv}}},
+	{L"h", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
+	{L"i", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_i}}},
+	{L"j", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"l", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_l}}},
+	{L"m", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_m}}},
+	{L"n", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
+	{L"p", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_p}}},
+	{L"t", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_t}}},
+	{L"u", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_u}}},
+	{L"yy", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_yy}}},
+	{L"y", {BUILDIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_y_selector}}},
+	{L"v", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_V}}},
+	{L"zM", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zM}}},
+	{L"zO", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zO}}},
+	{L"zR", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zR}}},
+	{L"za", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_za}}},
+	{L"zb", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zb}}},
+	{L"zf", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zf}}},
+	{L"zm", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zm}}},
+	{L"zo", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zo}}},
+	{L"zt", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zt}}},
+	{L"zz", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zz}}},
+#ifdef ENABLE_EXTENDED_KEYS
+	{{KEY_PPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
+	{{KEY_NPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
+	{{KEY_LEFT}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
+	{{KEY_DOWN}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+	{{KEY_UP}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{{KEY_RIGHT}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_l}}},
+#endif /* ENABLE_EXTENDED_KEYS */
+};
+
+static struct keys_add_info selectors[] = {
+	{L"G", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_G}}},
+	{L"H", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_H}}},
+	{L"L", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_L}}},
+	{L"M", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_M}}},
+	{L"a", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_a}}},
+	{L"S", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_S}}},
+	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_gg}}},
+	{L"j", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_j}}},
+	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_k}}},
+	{L"s", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_s}}},
+};
+
 void
 init_normal_mode(int *key_mode)
 {
-	struct key_t *curr;
-
 	assert(key_mode != NULL);
 
 	mode = key_mode;
 
-	curr = add_cmd(L"\x02", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_b;
-
-	curr = add_cmd(L"\x03", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_c;
-
-	curr = add_cmd(L"\x04", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_d;
-
-	curr = add_cmd(L"\x05", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_e;
-
-	curr = add_cmd(L"\x06", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_f;
-
-	curr = add_cmd(L"\x07", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_g;
-
-	curr = add_cmd(L"\x09", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_i;
-
-	curr = add_cmd(L"\x0c", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_l;
-
-	curr = add_cmd(L"\x0d", NORMAL_MODE);
-	curr->data.handler = cmd_return;
-
-	curr = add_cmd(L"\x0f", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_o;
-
-	curr = add_cmd(L"\x12", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_r;
-
-	curr = add_cmd(L"\x15", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_u;
-
-	curr = add_cmd(L"\x17\x08", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_wh;
-
-	curr = add_cmd(L"\x17h", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_wh;
-
-	curr = add_cmd(L"\x17\x0f", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_wo;
-
-	curr = add_cmd(L"\x17o", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_wo;
-
-	curr = add_cmd(L"\x17\x0c", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_wl;
-
-	curr = add_cmd(L"\x17l", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_wl;
-
-	curr = add_cmd(L"\x17\x16", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_wv;
-
-	curr = add_cmd(L"\x17v", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_wv;
-
-	curr = add_cmd(L"\x17\x17", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_ww;
-
-	curr = add_cmd(L"\x17w", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_ww;
-
-	curr = add_cmd(L"\x17\x18", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_wx;
-
-	curr = add_cmd(L"\x17x", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_wx;
-
-	curr = add_cmd(L"\x19", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_y;
-
-	/* escape */
-	curr = add_cmd(L"\x1b", NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_c;
-
-	curr = add_cmd(L"'", NORMAL_MODE);
-	curr->type = BUILDIN_WAIT_POINT;
-	curr->data.handler = cmd_quote;
-	curr->followed = FOLLOWED_BY_MULTIKEY;
-
-	curr = add_cmd(L" ", NORMAL_MODE);
-	curr->data.handler = cmd_space;
-
-	curr = add_cmd(L"%", NORMAL_MODE);
-	curr->data.handler = cmd_percent;
-
-	curr = add_cmd(L",", NORMAL_MODE);
-	curr->data.handler = cmd_comma;
-
-	curr = add_cmd(L".", NORMAL_MODE);
-	curr->data.handler = cmd_dot;
-
-	curr = add_cmd(L":", NORMAL_MODE);
-	curr->data.handler = cmd_colon;
-
-	curr = add_cmd(L";", NORMAL_MODE);
-	curr->data.handler = cmd_semicolon;
-
-	curr = add_cmd(L"/", NORMAL_MODE);
-	curr->data.handler = cmd_slash;
-
-	curr = add_cmd(L"?", NORMAL_MODE);
-	curr->data.handler = cmd_question;
-
-	curr = add_cmd(L"C", NORMAL_MODE);
-	curr->data.handler = cmd_C;
-
-	curr = add_cmd(L"F", NORMAL_MODE);
-	curr->type = BUILDIN_WAIT_POINT;
-	curr->data.handler = cmd_F;
-	curr->followed = FOLLOWED_BY_MULTIKEY;
-
-	curr = add_cmd(L"G", NORMAL_MODE);
-	curr->data.handler = cmd_G;
-
-	curr = add_cmd(L"H", NORMAL_MODE);
-	curr->data.handler = cmd_H;
-
-	curr = add_cmd(L"L", NORMAL_MODE);
-	curr->data.handler = cmd_L;
-
-	curr = add_cmd(L"M", NORMAL_MODE);
-	curr->data.handler = cmd_M;
-
-	curr = add_cmd(L"N", NORMAL_MODE);
-	curr->data.handler = cmd_N;
-
-	curr = add_cmd(L"P", NORMAL_MODE);
-	curr->data.handler = cmd_P;
-
-	curr = add_cmd(L"V", NORMAL_MODE);
-	curr->data.handler = cmd_V;
-
-	curr = add_cmd(L"Y", NORMAL_MODE);
-	curr->data.handler = cmd_yy;
-
-	curr = add_cmd(L"ZQ", NORMAL_MODE);
-	curr->data.handler = cmd_ZQ;
-
-	curr = add_cmd(L"ZZ", NORMAL_MODE);
-	curr->data.handler = cmd_ZZ;
-
-	curr = add_cmd(L"cW", NORMAL_MODE);
-	curr->data.handler = cmd_cW;
-
-	curr = add_cmd(L"cg", NORMAL_MODE);
-	curr->data.handler = cmd_cg;
-
-	curr = add_cmd(L"co", NORMAL_MODE);
-	curr->data.handler = cmd_co;
-
-	curr = add_cmd(L"cp", NORMAL_MODE);
-	curr->data.handler = cmd_cp;
-
-	curr = add_cmd(L"cw", NORMAL_MODE);
-	curr->data.handler = cmd_cw;
-
-	curr = add_cmd(L"DD", NORMAL_MODE);
-	curr->data.handler = cmd_DD;
-
-	curr = add_cmd(L"dd", NORMAL_MODE);
-	curr->data.handler = cmd_dd;
-
-	curr = add_cmd(L"D", NORMAL_MODE);
-	curr->data.handler = cmd_D_selector;
-	curr->type = BUILDIN_WAIT_POINT;
-	curr->followed = FOLLOWED_BY_SELECTOR;
-
-	curr = add_cmd(L"d", NORMAL_MODE);
-	curr->data.handler = cmd_d_selector;
-	curr->type = BUILDIN_WAIT_POINT;
-	curr->followed = FOLLOWED_BY_SELECTOR;
-
-	curr = add_cmd(L"f", NORMAL_MODE);
-	curr->type = BUILDIN_WAIT_POINT;
-	curr->data.handler = cmd_f;
-	curr->followed = FOLLOWED_BY_MULTIKEY;
-
-	curr = add_cmd(L"gA", NORMAL_MODE);
-	curr->data.handler = cmd_gA;
-
-	curr = add_cmd(L"ga", NORMAL_MODE);
-	curr->data.handler = cmd_ga;
-
-	curr = add_cmd(L"gg", NORMAL_MODE);
-	curr->data.handler = cmd_gg;
-
-	curr = add_cmd(L"gv", NORMAL_MODE);
-	curr->data.handler = cmd_gv;
-
-	curr = add_cmd(L"h", NORMAL_MODE);
-	curr->data.handler = cmd_h;
-
-	curr = add_cmd(L"i", NORMAL_MODE);
-	curr->data.handler = cmd_i;
-
-	curr = add_cmd(L"j", NORMAL_MODE);
-	curr->data.handler = cmd_j;
-
-	curr = add_cmd(L"k", NORMAL_MODE);
-	curr->data.handler = cmd_k;
-
-	curr = add_cmd(L"l", NORMAL_MODE);
-	curr->data.handler = cmd_l;
-
-	curr = add_cmd(L"m", NORMAL_MODE);
-	curr->type = BUILDIN_WAIT_POINT;
-	curr->data.handler = cmd_m;
-	curr->followed = FOLLOWED_BY_MULTIKEY;
-
-	curr = add_cmd(L"n", NORMAL_MODE);
-	curr->data.handler = cmd_n;
-
-	curr = add_cmd(L"p", NORMAL_MODE);
-	curr->data.handler = cmd_p;
-
-	curr = add_cmd(L"t", NORMAL_MODE);
-	curr->data.handler = cmd_t;
-
-	curr = add_cmd(L"u", NORMAL_MODE);
-	curr->data.handler = cmd_u;
-
-	curr = add_cmd(L"yy", NORMAL_MODE);
-	curr->data.handler = cmd_yy;
-
-	curr = add_cmd(L"y", NORMAL_MODE);
-	curr->data.handler = cmd_y_selector;
-	curr->type = BUILDIN_WAIT_POINT;
-	curr->followed = FOLLOWED_BY_SELECTOR;
-
-	curr = add_cmd(L"v", NORMAL_MODE);
-	curr->data.handler = cmd_V;
-
-	curr = add_cmd(L"zM", NORMAL_MODE);
-	curr->data.handler = cmd_zM;
-
-	curr = add_cmd(L"zO", NORMAL_MODE);
-	curr->data.handler = cmd_zO;
-
-	curr = add_cmd(L"zR", NORMAL_MODE);
-	curr->data.handler = cmd_zR;
-
-	curr = add_cmd(L"za", NORMAL_MODE);
-	curr->data.handler = cmd_za;
-
-	curr = add_cmd(L"zb", NORMAL_MODE);
-	curr->data.handler = cmd_zb;
-
-	curr = add_cmd(L"zf", NORMAL_MODE);
-	curr->data.handler = cmd_zf;
-
-	curr = add_cmd(L"zm", NORMAL_MODE);
-	curr->data.handler = cmd_zm;
-
-	curr = add_cmd(L"zo", NORMAL_MODE);
-	curr->data.handler = cmd_zo;
-
-	curr = add_cmd(L"zt", NORMAL_MODE);
-	curr->data.handler = cmd_zt;
-
-	curr = add_cmd(L"zz", NORMAL_MODE);
-	curr->data.handler = cmd_zz;
-
-	init_selectors();
-	init_extended_keys();
-}
-
-static void
-init_selectors(void)
-{
-	struct key_t *curr;
-
-	curr = add_selector(L"G", NORMAL_MODE);
-	curr->data.handler = selector_G;
-
-	curr = add_selector(L"H", NORMAL_MODE);
-	curr->data.handler = selector_H;
-
-	curr = add_selector(L"L", NORMAL_MODE);
-	curr->data.handler = selector_L;
-
-	curr = add_selector(L"M", NORMAL_MODE);
-	curr->data.handler = selector_M;
-
-	curr = add_selector(L"a", NORMAL_MODE);
-	curr->data.handler = selector_a;
-
-	curr = add_selector(L"S", NORMAL_MODE);
-	curr->data.handler = selector_S;
-
-	curr = add_selector(L"gg", NORMAL_MODE);
-	curr->data.handler = selector_gg;
-
-	curr = add_selector(L"j", NORMAL_MODE);
-	curr->data.handler = selector_j;
-
-	curr = add_selector(L"k", NORMAL_MODE);
-	curr->data.handler = selector_k;
-
-	curr = add_selector(L"s", NORMAL_MODE);
-	curr->data.handler = cmd_s;
-}
-
-static void
-init_extended_keys(void)
-{
-#ifdef ENABLE_EXTENDED_KEYS
-	struct key_t *curr;
-	wchar_t buf[] = {L'\0', L'\0'};
-
-	buf[0] = KEY_PPAGE;
-	curr = add_cmd(buf, NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_b;
-
-	buf[0] = KEY_NPAGE;
-	curr = add_cmd(buf, NORMAL_MODE);
-	curr->data.handler = cmd_ctrl_f;
-
-	buf[0] = KEY_LEFT;
-	curr = add_cmd(buf, NORMAL_MODE);
-	curr->data.handler = cmd_h;
-
-	buf[0] = KEY_DOWN;
-	curr = add_cmd(buf, NORMAL_MODE);
-	curr->data.handler = cmd_j;
-
-	buf[0] = KEY_UP;
-	curr = add_cmd(buf, NORMAL_MODE);
-	curr->data.handler = cmd_k;
-
-	buf[0] = KEY_RIGHT;
-	curr = add_cmd(buf, NORMAL_MODE);
-	curr->data.handler = cmd_l;
-#endif /* ENABLE_EXTENDED_KEYS */
+	assert(add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), NORMAL_MODE) == 0);
+	assert(add_selectors(selectors, ARRAY_LEN(selectors), NORMAL_MODE) == 0);
 }
 
 static void

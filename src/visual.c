@@ -39,7 +39,6 @@ static int *mode;
 static FileView *view;
 static int start_pos;
 
-static void init_extended_keys(void);
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_f(struct key_info, struct keys_info *);
@@ -62,76 +61,44 @@ static void select_down_one(FileView *view, int start_pos);
 static void update_marks(FileView *view);
 static void update(void);
 
+static struct keys_add_info builtin_cmds[] = {
+	{L"\x02", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
+	{L"\x03", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x06", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
+	/* escape */
+	{L"\x1b", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L":", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
+	{L"D", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_D}}},
+	{L"G", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
+	{L"H", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_H}}},
+	{L"L", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_L}}},
+	{L"M", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_M}}},
+	{L"O", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
+	{L"V", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_d}}},
+	{L"cp", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
+	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{L"j", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"o", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
+	{L"v", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"y", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_y}}},
+#ifdef ENABLE_EXTENDED_KEYS
+	{{KEY_PPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
+	{{KEY_NPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
+	{{KEY_DOWN}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+	{{KEY_UP}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+#endif /* ENABLE_EXTENDED_KEYS */
+};
+
 void
 init_visual_mode(int *key_mode)
 {
-	struct key_t *curr;
-
 	assert(key_mode != NULL);
 
 	mode = key_mode;
 
-	curr = add_cmd(L"\x02", VISUAL_MODE);
-	curr->data.handler = cmd_ctrl_b;
-
-	curr = add_cmd(L"\x03", VISUAL_MODE);
-	curr->data.handler = cmd_ctrl_c;
-
-	curr = add_cmd(L"\x06", VISUAL_MODE);
-	curr->data.handler = cmd_ctrl_f;
-
-	curr = add_cmd(L"\x1b", VISUAL_MODE);
-	curr->data.handler = cmd_ctrl_c;
-
-	curr = add_cmd(L":", VISUAL_MODE);
-	curr->data.handler = cmd_colon;
-
-	curr = add_cmd(L"D", VISUAL_MODE);
-	curr->data.handler = cmd_D;
-
-	curr = add_cmd(L"G", VISUAL_MODE);
-	curr->data.handler = cmd_G;
-
-	curr = add_cmd(L"H", VISUAL_MODE);
-	curr->data.handler = cmd_H;
-
-	curr = add_cmd(L"L", VISUAL_MODE);
-	curr->data.handler = cmd_L;
-
-	curr = add_cmd(L"M", VISUAL_MODE);
-	curr->data.handler = cmd_M;
-
-	curr = add_cmd(L"O", VISUAL_MODE);
-	curr->data.handler = cmd_O;
-
-	curr = add_cmd(L"V", VISUAL_MODE);
-	curr->data.handler = cmd_ctrl_c;
-
-	curr = add_cmd(L"d", VISUAL_MODE);
-	curr->data.handler = cmd_d;
-
-	curr = add_cmd(L"cp", VISUAL_MODE);
-	curr->data.handler = cmd_cp;
-
-	curr = add_cmd(L"gg", VISUAL_MODE);
-	curr->data.handler = cmd_gg;
-
-	curr = add_cmd(L"j", VISUAL_MODE);
-	curr->data.handler = cmd_j;
-
-	curr = add_cmd(L"k", VISUAL_MODE);
-	curr->data.handler = cmd_k;
-
-	curr = add_cmd(L"o", VISUAL_MODE);
-	curr->data.handler = cmd_O;
-
-	curr = add_cmd(L"v", VISUAL_MODE);
-	curr->data.handler = cmd_ctrl_c;
-
-	curr = add_cmd(L"y", VISUAL_MODE);
-	curr->data.handler = cmd_y;
-
-	init_extended_keys();
+	assert(add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), VISUAL_MODE) == 0);
 }
 
 void
@@ -187,31 +154,6 @@ leave_visual_mode(int save_msg)
 	curr_stats.save_msg = save_msg;
 	if(*mode == VISUAL_MODE)
 		*mode = NORMAL_MODE;
-}
-
-static void
-init_extended_keys(void)
-{
-#ifdef ENABLE_EXTENDED_KEYS
-	struct key_t *curr;
-	wchar_t buf[] = {L'\0', L'\0'};
-
-	buf[0] = KEY_PPAGE;
-	curr = add_cmd(buf, VISUAL_MODE);
-	curr->data.handler = cmd_ctrl_b;
-
-	buf[0] = KEY_NPAGE;
-	curr = add_cmd(buf, VISUAL_MODE);
-	curr->data.handler = cmd_ctrl_f;
-
-	buf[0] = KEY_DOWN;
-	curr = add_cmd(buf, VISUAL_MODE);
-	curr->data.handler = cmd_j;
-
-	buf[0] = KEY_UP;
-	curr = add_cmd(buf, VISUAL_MODE);
-	curr->data.handler = cmd_k;
-#endif /* ENABLE_EXTENDED_KEYS */
 }
 
 static void

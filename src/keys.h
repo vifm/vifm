@@ -96,6 +96,11 @@ struct key_t
 	}data;
 };
 
+struct keys_add_info {
+	const wchar_t keys[3];
+	struct key_t key_t;
+};
+
 /*
  * Return value:
  *  - 0 - success
@@ -135,14 +140,14 @@ int execute_keys(const wchar_t *keys);
 int execute_keys_timed_out(const wchar_t *keys);
 
 /*
- * Returns NULL on error
+ * Returns not zero on error
  */
-struct key_t* add_cmd(const wchar_t *keys, int mode);
+int add_cmds(struct keys_add_info *cmds, size_t len, int mode);
 
 /*
- * Returns NULL on error
+ * Returns not zero on error
  */
-struct key_t* add_selector(const wchar_t *keys, int mode);
+int add_selectors(struct keys_add_info *cmds, size_t len, int mode);
 
 /*
  * Return value:
@@ -161,6 +166,18 @@ int add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode);
  * Returns NULL on error.
  */
 wchar_t ** list_cmds(int mode);
+
+#ifdef TEST
+/*
+ * Returns NULL on error
+ */
+struct key_t * add_cmd(const wchar_t *keys, int mode);
+
+/*
+ * Returns NULL on error
+ */
+struct key_t* add_selector(const wchar_t *keys, int mode);
+#endif
 
 #endif
 

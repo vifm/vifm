@@ -76,8 +76,6 @@ static char **paths;
 static int paths_count;
 
 static void split_path(void);
-static void init_extended_keys(void);
-static void init_emacs_keys(void);
 static int def_handler(wchar_t keys);
 static void update_cmdline_size(void);
 static void update_cmdline_text(void);
@@ -121,53 +119,57 @@ static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static char * filename_completion(char *str, int type);
 static char * check_for_executable(char *string);
 
+static struct keys_add_info builtin_cmds[] = {
+	{L"\x03",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	/* backspace */
+	{L"\x08",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
+	{L"\x09",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_i}}},
+	{L"\x0b",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_k}}},
+	{L"\x0d",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
+	{L"\x0e",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_n}}},
+	{L"\x10",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_p}}},
+	/* escape */
+	{L"\x1b",         {BUILDIN_WAIT_POINT, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	/* escape escape */
+	{L"\x1b\x1b",     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	/* ascii Delete */
+	{L"\x7f",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
+#ifdef ENABLE_EXTENDED_KEYS
+	{{KEY_BACKSPACE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
+	{{KEY_DOWN},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_n}}},
+	{{KEY_UP},        {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_p}}},
+	{{KEY_LEFT},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left}}},
+	{{KEY_RIGHT},     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right}}},
+	{{KEY_HOME},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_home}}},
+	{{KEY_END},       {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_end}}},
+	{{KEY_DC},        {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
+#endif /* ENABLE_EXTENDED_KEYS */
+	/* ctrl b */
+	{L"\x02", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left}}},
+	/* ctrl f */
+	{L"\x06", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right}}},
+	/* ctrl a */
+	{L"\x01", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_home}}},
+	/* ctrl e */
+	{L"\x05", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_end}}},
+	/* ctrl d */
+	{L"\x04", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
+	{L"\x15", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
+	{L"\x17", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_w}}},
+	{L"\x1b"L"b", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
+	{L"\x1b"L"d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
+	{L"\x1b"L"f", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_f}}},
+};
+
 void
 init_cmdline_mode(int *key_mode)
 {
-	struct key_t *curr;
-
 	assert(key_mode != NULL);
 
 	mode = key_mode;
 	set_def_handler(CMDLINE_MODE, def_handler);
 
-	curr = add_cmd(L"\x03", CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_c;
-
-	/* backspace */
-	curr = add_cmd(L"\x08", CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_h;
-
-	curr = add_cmd(L"\x09", CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_i;
-
-	curr = add_cmd(L"\x0b", CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_k;
-
-	curr = add_cmd(L"\x0d", CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_m;
-
-	curr = add_cmd(L"\x0e", CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_n;
-
-	curr = add_cmd(L"\x10", CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_p;
-
-	/* escape */
-	curr = add_cmd(L"\x1b", CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_c;
-	curr->type = BUILDIN_WAIT_POINT;
-
-	/* escape escape */
-	curr = add_cmd(L"\x1b\x1b", CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_c;
-
-	/* ascii Delete */
-	curr = add_cmd(L"\x7f", CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_h;
-
-	init_extended_keys();
-	init_emacs_keys();
+	assert(add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), CMDLINE_MODE) == 0);
 
 	split_path();
 }
@@ -236,88 +238,6 @@ split_path(void)
 		}
 	} while (q[0] != '\0');
 	paths_count = i;
-}
-
-static void
-init_extended_keys(void)
-{
-#ifdef ENABLE_EXTENDED_KEYS
-	struct key_t *curr;
-	wchar_t buf[] = {L'\0', L'\0'};
-
-	buf[0] = KEY_BACKSPACE;
-	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_h;
-
-	buf[0] = KEY_DOWN;
-	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_n;
-
-	buf[0] = KEY_UP;
-	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_p;
-
-	buf[0] = KEY_LEFT;
-	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = cmd_left;
-
-	buf[0] = KEY_RIGHT;
-	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = cmd_right;
-
-	buf[0] = KEY_HOME;
-	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = cmd_home;
-
-	buf[0] = KEY_END;
-	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = cmd_end;
-
-	buf[0] = KEY_DC;
-	curr = add_cmd(buf, CMDLINE_MODE);
-	curr->data.handler = cmd_delete;
-#endif /* ENABLE_EXTENDED_KEYS */
-}
-
-static void
-init_emacs_keys(void)
-{
-	struct key_t *curr;
-
-	/* ctrl b */
-	curr = add_cmd(L"\x02", CMDLINE_MODE);
-	curr->data.handler = cmd_left;
-
-	/* ctrl f */
-	curr = add_cmd(L"\x06", CMDLINE_MODE);
-	curr->data.handler = cmd_right;
-
-	/* ctrl a */
-	curr = add_cmd(L"\x01", CMDLINE_MODE);
-	curr->data.handler = cmd_home;
-
-	/* ctrl e */
-	curr = add_cmd(L"\x05", CMDLINE_MODE);
-	curr->data.handler = cmd_end;
-
-	/* ctrl d */
-	curr = add_cmd(L"\x04", CMDLINE_MODE);
-	curr->data.handler = cmd_delete;
-
-	curr = add_cmd(L"\x15", CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_u;
-
-	curr = add_cmd(L"\x17", CMDLINE_MODE);
-	curr->data.handler = cmd_ctrl_w;
-
-	curr = add_cmd(L"\x1b"L"b", CMDLINE_MODE);
-	curr->data.handler = cmd_meta_b;
-
-	curr = add_cmd(L"\x1b"L"d", CMDLINE_MODE);
-	curr->data.handler = cmd_meta_d;
-
-	curr = add_cmd(L"\x1b"L"f", CMDLINE_MODE);
-	curr->data.handler = cmd_meta_f;
 }
 
 static int

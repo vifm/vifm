@@ -46,7 +46,6 @@ static int descending;
 
 static const char * caps[] = { "a-z", "z-a" };
 
-static void init_extended_keys(void);
 static void leave_sort_mode(void);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
@@ -59,62 +58,34 @@ static void cmd_k(struct key_info, struct keys_info *);
 static void print_at_pos(void);
 static void clear_at_pos(void);
 
+static struct keys_add_info builtin_cmds[] = {
+	{L"\x03", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	/* return */
+	{L"\x0d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
+	/* escape */
+	{L"\x1b", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"G", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
+	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{L"h", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
+	{L"j", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"l", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
+#ifdef ENABLE_EXTENDED_KEYS
+	{{KEY_UP}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{{KEY_DOWN}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+	{{KEY_HOME}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{{KEY_END}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
+#endif /* ENABLE_EXTENDED_KEYS */
+};
+
 void
 init_sort_dialog_mode(int *key_mode)
 {
-	struct key_t *curr;
-
 	assert(key_mode != NULL);
 
 	mode = key_mode;
 
-	curr = add_cmd(L"\x03", SORT_MODE);
-	curr->data.handler = cmd_ctrl_c;
-
-	/* return */
-	curr = add_cmd(L"\x0d", SORT_MODE);
-	curr->data.handler = cmd_ctrl_m;
-
-	/* escape */
-	curr = add_cmd(L"\x1b", SORT_MODE);
-	curr->data.handler = cmd_ctrl_c;
-
-	curr = add_cmd(L"G", SORT_MODE);
-	curr->data.handler = cmd_G;
-
-	curr = add_cmd(L"gg", SORT_MODE);
-	curr->data.handler = cmd_gg;
-
-	curr = add_cmd(L"h", SORT_MODE);
-	curr->data.handler = cmd_h;
-
-	curr = add_cmd(L"j", SORT_MODE);
-	curr->data.handler = cmd_j;
-
-	curr = add_cmd(L"k", SORT_MODE);
-	curr->data.handler = cmd_k;
-
-	curr = add_cmd(L"l", SORT_MODE);
-	curr->data.handler = cmd_ctrl_m;
-
-	init_extended_keys();
-}
-
-static void
-init_extended_keys(void)
-{
-#ifdef ENABLE_EXTENDED_KEYS
-	struct key_t *curr;
-	wchar_t buf[] = {L'\0', L'\0'};
-
-	buf[0] = KEY_UP;
-	curr = add_cmd(buf, SORT_MODE);
-	curr->data.handler = cmd_k;
-
-	buf[0] = KEY_DOWN;
-	curr = add_cmd(buf, SORT_MODE);
-	curr->data.handler = cmd_j;
-#endif /* ENABLE_EXTENDED_KEYS */
+	assert(add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), SORT_MODE) == 0);
 }
 
 void

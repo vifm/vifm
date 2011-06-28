@@ -326,6 +326,15 @@ get_count(const wchar_t *keys, int *count)
 	return keys;
 }
 
+#ifndef TEST
+static
+#endif
+struct key_t*
+add_cmd(const wchar_t *keys, int mode)
+{
+	return add_keys_inner(&cmds_root[mode], keys);
+}
+
 int
 add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode)
 {
@@ -344,16 +353,53 @@ add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode)
 	return 0;
 }
 
-struct key_t*
-add_cmd(const wchar_t *keys, int mode)
-{
-	return add_keys_inner(&cmds_root[mode], keys);
-}
-
+#ifndef TEST
+static
+#endif
 struct key_t*
 add_selector(const wchar_t *keys, int mode)
 {
 	return add_keys_inner(&selectors_root[mode], keys);
+}
+
+int
+add_cmds(struct keys_add_info *cmds, size_t len, int mode)
+{
+	int result = 0;
+	size_t i;
+
+	for(i = 0; i < len; i++)
+	{
+		struct key_t *curr;
+
+		curr = add_cmd(cmds[i].keys, mode);
+		if(curr == NULL)
+			result = -1;
+		else
+			*curr = cmds[i].key_t;
+	}
+
+	return result;
+}
+
+int
+add_selectors(struct keys_add_info *cmds, size_t len, int mode)
+{
+	int result = 0;
+	size_t i;
+
+	for(i = 0; i < len; i++)
+	{
+		struct key_t *curr;
+
+		curr = add_selector(cmds[i].keys, mode);
+		if(curr == NULL)
+			result = -1;
+		else
+			*curr = cmds[i].key_t;
+	}
+
+	return result;
 }
 
 static struct key_t*
