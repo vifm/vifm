@@ -951,7 +951,6 @@ rename_file_cb(const char *new_name)
 	char *filename = get_current_file_name(curr_view);
 	char new[NAME_MAX + 1];
 	size_t len;
-	int found;
 	int tmp;
 
 	len = strlen(filename);
@@ -966,9 +965,6 @@ rename_file_cb(const char *new_name)
 	{
 		show_error_msg("File exists",
 				"That file already exists. Will not overwrite.");
-
-		load_dir_list(curr_view, 1);
-		moveto_list_pos(curr_view, curr_view->list_pos);
 		return;
 	}
 
@@ -976,18 +972,11 @@ rename_file_cb(const char *new_name)
 	tmp = mv_file(filename, new);
 	cmd_group_end();
 	if(tmp != 0)
-	{
-		load_dir_list(curr_view, 1);
-		moveto_list_pos(curr_view, curr_view->list_pos);
 		return;
-	}
 
-	load_dir_list(curr_view, 0);
-	found = find_file_pos_in_list(curr_view, new);
-	if(found >= 0)
-		moveto_list_pos(curr_view, found);
-	else
-		moveto_list_pos(curr_view, curr_view->list_pos);
+	free(curr_view->dir_entry[curr_view->list_pos].name);
+	curr_view->dir_entry[curr_view->list_pos].name = strdup(new_name);
+	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
 void
