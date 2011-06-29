@@ -59,6 +59,8 @@ typedef struct _Config {
 	int color_scheme_cur;
 
 	int undo_levels; /* Maximum number of changes that can be undone. */
+
+	int sort_numbers; /* Natural sort of (version) numbers within text. */
 } Config;
 
 extern Config cfg;

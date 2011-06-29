@@ -1422,12 +1422,12 @@ filename_completion(char *str, int type)
 
 	DIR *dir;
 	struct dirent *d;
-	char * dirname = NULL;
-	char * filename = NULL;
-	char * temp = NULL;
-	int i = 0;
+	char * dirname;
+	char * filename;
+	char * temp;
+	int i;
 	int found;
-	int filename_len = 0;
+	int filename_len;
 
 	if(str != NULL)
 	{
@@ -1448,8 +1448,8 @@ filename_completion(char *str, int type)
 		if(dirname == NULL)
 			return NULL;
 
-		snprintf(dirname, strlen(homedir) + strlen(string) + 1, "%s/%s",
-				homedir, string + 2);
+		snprintf(dirname, strlen(homedir) + strlen(string) + 1, "%s/%s", homedir,
+				string + 2);
 
 		filename = strdup(dirname);
 	}

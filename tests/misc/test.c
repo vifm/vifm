@@ -6,6 +6,7 @@ void test_expand_macros(void);
 void path_starts_with_tests(void);
 void check_dir_for_colorscheme_tests(void);
 void comments_tests(void);
+void compare_file_names_tests(void);
 
 void all_tests(void)
 {
@@ -15,6 +16,7 @@ void all_tests(void)
 	path_starts_with_tests();
 	check_dir_for_colorscheme_tests();
 	comments_tests();
+	compare_file_names_tests();
 }
 
 int main(int argc, char **argv)

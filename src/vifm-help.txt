@@ -307,13 +307,17 @@ Options
         ctime - sort by time changed
         mtime - sort by time modified
 
+    sortnumbers
+    type: boolean
+    Natural sort of (version) numbers within text.
+
     sortorder
     type: enumeration
-    Sets sort order: ascending, descending
+    Sets sort order: ascending, descending.
 
     trash
     type: boolean
-    Use trash directory
+    Use trash directory.
 
     undolevels
     type: integer
@@ -321,15 +325,15 @@ Options
 
     vicmd
     type: string
-    The actual command used to start vi
+    The actual command used to start vi.
 
     vimhelp
     type: string
-    Use vim help format
+    Use vim help format.
 
     wrap
     type: boolean
-    Controls whether to wrap text in quick view
+    Controls whether to wrap text in quick view.
 
 Reserved :commands
 		!

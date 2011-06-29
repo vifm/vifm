@@ -358,15 +358,20 @@ Sets one of these sort types:
    ctime - sort by time changed
    mtime - sort by time modified
 .TP
+.BI sortnumbers
+type: boolean
+.br
+Natural sort of (version) numbers within text.
+.TP
 .BI sortorder
 type: enumeration
 .br
-Sets sort order: ascending, descending
+Sets sort order: ascending, descending.
 .TP
 .BI trash
 type: boolean
 .br
-Use trash directory
+Use trash directory.
 .TP
 .BI undolevels
 type: integer
@@ -376,17 +381,17 @@ Maximum number of changes that can be undone.
 .BI vicmd
 type: string
 .br
-The actual command used to start vi
+The actual command used to start vi.
 .TP
 .BI vimhelp
 type: string
 .br
-Use vim help format
+Use vim help format.
 .TP
 .BI wrap
 type: boolean
 .br
-Controls whether to wrap text in quick view
+Controls whether to wrap text in quick view.
 .SH Mappings
 Since it's not easy to enter special characters there are several special
 sequences that can be used in place of them. They are:

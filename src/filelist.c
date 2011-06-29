@@ -1500,18 +1500,8 @@ filter_selected_files(FileView *view)
 void
 set_dot_files_visible(FileView *view, int visible)
 {
-	int found;
-	char file[NAME_MAX];
-
-	snprintf(file, sizeof(file), "%s", view->dir_entry[view->list_pos].name);
 	view->hide_dot = !visible;
-	load_dir_list(view, 1);
-	found = find_file_pos_in_list(view, file);
-
-	if(found >= 0)
-		moveto_list_pos(view, found);
-	else
-		moveto_list_pos(view, view->list_pos);
+	load_saving_pos(view, 1);
 }
 
 void
@@ -1523,51 +1513,27 @@ toggle_dot_files(FileView *view)
 void
 remove_filename_filter(FileView *view)
 {
-	int found;
-	char file[NAME_MAX];
-
-	snprintf(file, sizeof(file), "%s",
-			view->dir_entry[view->list_pos].name);
 	view->prev_filter = (char *)realloc(view->prev_filter,
-			strlen(view->filename_filter) +1);
-	snprintf(view->prev_filter,
-		sizeof(view->prev_filter), "%s", view->filename_filter);
+			strlen(view->filename_filter) + 1);
+	snprintf(view->prev_filter, sizeof(view->prev_filter), "%s",
+			view->filename_filter);
 	view->filename_filter = (char *)realloc(view->filename_filter,
-			strlen("*") +1);
-	snprintf(view->filename_filter,
-			sizeof(view->filename_filter), "*");
+			strlen("*") + 1);
+	snprintf(view->filename_filter, sizeof(view->filename_filter), "*");
 	view->prev_invert = view->invert;
 	view->invert = 0;
-	load_dir_list(view, 0);
-	found = find_file_pos_in_list(view, file);
-	if(found >= 0)
-		moveto_list_pos(view, found);
-	else
-		moveto_list_pos(view, view->list_pos);
+	load_saving_pos(view, 0);
 }
 
 void
 restore_filename_filter(FileView *view)
 {
-	int found;
-	char file[NAME_MAX];
-
-	snprintf(file, sizeof(file), "%s",
-			view->dir_entry[view->list_pos].name);
-
 	view->filename_filter = (char *)realloc(view->filename_filter,
-			strlen(view->prev_filter) +1);
-	snprintf(view->filename_filter, sizeof(view->filename_filter),
-			"%s", view->prev_filter);
+			strlen(view->prev_filter) + 1);
+	snprintf(view->filename_filter, sizeof(view->filename_filter), "%s",
+			view->prev_filter);
 	view->invert = view->prev_invert;
-	load_dir_list(view, 0);
-	found = find_file_pos_in_list(view, file);
-
-
-	if(found >= 0)
-		moveto_list_pos(view, found);
-	else
-		moveto_list_pos(view, view->list_pos);
+	load_saving_pos(view, 0);
 }
 
 void
@@ -1621,19 +1587,28 @@ check_if_filelists_have_changed(FileView *view)
 }
 
 void
-change_sort_type(FileView *view, char type, char descending)
+load_saving_pos(FileView *view, int reload)
 {
 	char filename[NAME_MAX];
+	int pos;
+
+	snprintf(filename, sizeof(filename), "%s",
+			view->dir_entry[view->list_pos].name);
+	load_dir_list(view, reload);
+	pos = find_file_pos_in_list(view, filename);
+	moveto_list_pos(view, (pos >= 0) ? pos : view->list_pos);
+}
+
+void
+change_sort_type(FileView *view, char type, char descending)
+{
 	union optval_t val;
 
 	view->sort_type = type;
 	view->sort_descending = descending;
 	curr_stats.setting_change = 1;
 
-	snprintf(filename, sizeof(filename), "%s",
-			view->dir_entry[view->list_pos].name);
-	load_dir_list(view, 1);
-	moveto_list_pos(view, find_file_pos_in_list(view, filename));
+	load_saving_pos(view, 1);
 
 	val.enum_item = type;
 	set_option("sort", val);

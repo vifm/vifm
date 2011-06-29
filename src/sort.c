@@ -21,8 +21,10 @@
 #include <fcntl.h> /* access */
 #include <sys/stat.h>
 
+#include <ctype.h>
 #include <string.h> /* strrchr */
 
+#include "config.h"
 #include "filelist.h"
 #include "status.h"
 #include "tree.h"
@@ -43,6 +45,43 @@ is_link_dir(const dir_entry_t * path)
 	stat(path->name, &s);
 
 	return (s.st_mode & S_IFDIR);
+}
+
+#ifndef TEST
+static
+#endif
+int
+compare_file_names(const char *s, const char *t)
+{
+	if(!cfg.sort_numbers)
+		return strcmp(s, t);
+
+	while(*s != '\0' && *t != '\0')
+	{
+		if(*s == *t)
+		{
+			s++;
+			t++;
+		}
+		else if(isdigit(*s) && isdigit(*s))
+		{
+			int num_a, num_b;
+			char *p;
+
+			num_a = strtol(s, &p, 10);
+			s = p;
+
+			num_b = strtol(t, &p, 10);
+			t = p;
+
+			if(num_a != num_b)
+				return num_a - num_b;
+		}
+		else
+			break;
+	}
+
+	return *s - *t;
 }
 
 /*
@@ -86,7 +125,7 @@ sort_dir_list(const void *one, const void *two)
 			else if(first->name[0] != '.' && second->name[0] == '.')
 				retval = 1;
 			else
-				retval = strcmp(first->name, second->name);
+				retval = compare_file_names(first->name, second->name);
 			break;
 
 		case SORT_BY_EXTENSION:
@@ -94,11 +133,11 @@ sort_dir_list(const void *one, const void *two)
 			psecond = strrchr(second->name, '.');
 
 			if(pfirst && psecond)
-				retval = strcmp(++pfirst, ++psecond);
+				retval = compare_file_names(++pfirst, ++psecond);
 			else if(pfirst || psecond)
 				retval = pfirst ? -1 : 1;
 			else
-				retval = strcmp(first->name, second->name);
+				retval = compare_file_names(first->name, second->name);
 			break;
 
 		case SORT_BY_SIZE:
@@ -148,7 +187,7 @@ sort_dir_list(const void *one, const void *two)
 	}
 
 	if(retval == 0)
-		retval = strcmp(first->name, second->name);
+		retval = compare_file_names(first->name, second->name);
 	else if(view->sort_descending)
 		retval = -retval;
 

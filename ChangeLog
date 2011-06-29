@@ -17,6 +17,9 @@
 
 	Added support for whole line comments (that start with double quote symbol).
 
+	Added 'sortnumbers' option (natural sort of (version) numbers in
+	filenames).
+
 	Don't change directory on unsuccessful FUSE mount.
 
 	Don't change cursor position of other directory after disabling quick view.

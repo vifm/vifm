@@ -24,6 +24,10 @@
 void set_view_to_sort(FileView *view_to_sort);
 int sort_dir_list(const void *one, const void *two);
 
+#ifdef TEST
+int compare_file_names(const char *s, const char *t);
+#endif
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

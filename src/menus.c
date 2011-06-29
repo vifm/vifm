@@ -531,7 +531,6 @@ execute_locate_cb(FileView *view, menu_info *m)
 		wrefresh(status_bar);
 		load_dir_list(view, 1);
 
-
 		if(find_file_pos_in_list(view, file) < 0)
 		{
 			if(isdir)
