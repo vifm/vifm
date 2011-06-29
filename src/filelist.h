@@ -31,7 +31,6 @@ enum {
 	UNKNOWN
 };
 
-void friendly_size_notation(unsigned long long num, int str_size, char *str);
 void quick_view_file(FileView * view);
 void clean_selected_files(FileView *view);
 void canonicalize_path(const char *directory, char *buf, size_t buf_size);

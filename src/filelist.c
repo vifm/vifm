@@ -50,29 +50,6 @@
 #include "ui.h"
 #include "utils.h"
 
-void
-friendly_size_notation(unsigned long long num, int str_size, char *str)
-{
-	static const char* iec_units[] = { "  B", "KiB", "MiB", "GiB", "TiB", "PiB" };
-	static const char* si_units[] = { " B", "KB", "MB", "GB", "TB", "PB" };
-	const char** units;
-	size_t u;
-	double d = num;
-
-	if(cfg.use_iec_prefixes)
-		units = iec_units;
-	else
-		units = si_units;
-
-	u = 0;
-	while(d >= 1024.0 && u < (sizeof(iec_units)/sizeof(iec_units[0])) - 1)
-	{
-		d /= 1024.0;
-		u++;
-	}
-	snprintf(str, str_size, "%.1f %s", d, units[u]);
-}
-
 static void
 add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 {

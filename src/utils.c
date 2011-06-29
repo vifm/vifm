@@ -31,8 +31,9 @@
 
 #include "../config.h"
 
-#include "ui.h"
+#include "config.h"
 #include "status.h"
+#include "ui.h"
 
 #include "utils.h"
 
@@ -528,6 +529,29 @@ path_starts_with(const char *path, const char *begin)
 		return 0;
 
 	return (path[len] == '\0' || path[len] == '/');
+}
+
+void
+friendly_size_notation(unsigned long long num, int str_size, char *str)
+{
+	static const char* iec_units[] = { "  B", "KiB", "MiB", "GiB", "TiB", "PiB" };
+	static const char* si_units[] = { " B", "KB", "MB", "GB", "TB", "PB" };
+	const char** units;
+	size_t u;
+	double d = num;
+
+	if(cfg.use_iec_prefixes)
+		units = iec_units;
+	else
+		units = si_units;
+
+	u = 0;
+	while(d >= 1024.0 && u < (sizeof(iec_units)/sizeof(iec_units[0])) - 1)
+	{
+		d /= 1024.0;
+		u++;
+	}
+	snprintf(str, str_size, "%.1f %s", d, units[u]);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

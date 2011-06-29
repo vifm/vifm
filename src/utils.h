@@ -58,6 +58,8 @@ int path_starts_with(const char *path, const char *begin);
  * of filled lines */
 int fill_version_info(char **list);
 
+void friendly_size_notation(unsigned long long num, int str_size, char *str);
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
