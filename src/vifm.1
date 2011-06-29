@@ -329,21 +329,29 @@ write config file (add ! to force write even if settings weren't changed).
 .BI fastrun
 type: boolean
 .br
+default: false
+.br
 With this option turned on you can run commands using :! with unambiguous
 beginning (e.g. :!Te instead of :!Terminal or :!Te<tab>).
 .TP
 .BI iec
 type: boolean
 .br
+default: false
+.br
 Use KiB, MiB, ... instead of KB, MB, ...
 .TP
 .BI runexec
-type: string
+type: boolean
+.br
+default: false
 .br
 Run executable file on Enter or l
 .TP
 .BI sort
 type: enumeration
+.br
+default: name
 .br
 Sets one of these sort types:
    ext   - sort by extension
@@ -361,35 +369,49 @@ Sets one of these sort types:
 .BI sortnumbers
 type: boolean
 .br
+default: false
+.br
 Natural sort of (version) numbers within text.
 .TP
 .BI sortorder
 type: enumeration
+.br
+default: ascending
 .br
 Sets sort order: ascending, descending.
 .TP
 .BI trash
 type: boolean
 .br
+default: true
+.br
 Use trash directory.
 .TP
 .BI undolevels
 type: integer
+.br
+default: 100
 .br
 Maximum number of changes that can be undone.
 .TP
 .BI vicmd
 type: string
 .br
+default: "vim"
+.br
 The actual command used to start vi.
 .TP
 .BI vimhelp
-type: string
+type: boolean
+.br
+default: false
 .br
 Use vim help format.
 .TP
 .BI wrap
 type: boolean
+.br
+default: true
 .br
 Controls whether to wrap text in quick view.
 .SH Mappings

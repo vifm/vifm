@@ -281,58 +281,69 @@ Menus and dialogs
 Options
     fastrun
     type: boolean
+    default: false
     With this option turned on you can run commands using :! with unambiguous
     beginning (e.g. :!Te instead of :!Terminal or :!Te<tab>).
 
     iec
     type: boolean
+    default: false
     Use KiB, MiB, ... instead of KB, MB, ...
 
     runexec
-    type: string
+    type: boolean
+    default: false
     Run executable file on Enter or l
 
     sort
     type: enumeration
+    default: name
     Sets one of these sort types:
-        ext   - sort by extension
-        name  - sort by name
-        gid   - sort by group id
-        gname - sort by group name
-        mode  - sort by mode
-        uid   - sort by owner id
-        uname - sort by owner name
-        size  - sort by size
-        atime - sort by time accessed
-        ctime - sort by time changed
-        mtime - sort by time modified
+       ext   - sort by extension
+       name  - sort by name
+       gid   - sort by group id
+       gname - sort by group name
+       mode  - sort by mode
+       uid   - sort by owner id
+       uname - sort by owner name
+       size  - sort by size
+       atime - sort by time accessed
+       ctime - sort by time changed
+       mtime - sort by time modified
 
     sortnumbers
     type: boolean
+    default: false
     Natural sort of (version) numbers within text.
 
     sortorder
     type: enumeration
+    default: ascending
     Sets sort order: ascending, descending.
 
     trash
     type: boolean
+    default: true
     Use trash directory.
 
     undolevels
     type: integer
-	Maximum number of changes that can be undone.
+    default: 100
+    Maximum number of changes that can be undone.
 
     vicmd
     type: string
+    default: "vim"
     The actual command used to start vi.
 
     vimhelp
-    type: string
+    type: boolean
+    default: false
     Use vim help format.
 
     wrap
     type: boolean
+    default: true
     Controls whether to wrap text in quick view.
 
 Reserved :commands

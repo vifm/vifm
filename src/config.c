@@ -70,6 +70,8 @@ init_config(void)
 	cfg.color_pairs_num = 0;
 	cfg.color_scheme_cur = 0;
 
+	cfg.use_iec_prefixes = 0;
+
 	cfg.undo_levels = 100;
 
 	cfg.sort_numbers = 0;
