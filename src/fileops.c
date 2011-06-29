@@ -738,60 +738,6 @@ handle_file(FileView *view, int dont_execute)
 	}
 }
 
-int
-pipe_and_capture_errors(char *command)
-{
-  int file_pipes[2];
-  int pid;
-	int nread;
-	int error = 0;
-  char *args[4];
-
-  if(pipe(file_pipes) != 0)
-	  return 1;
-
-  if((pid = fork()) == -1)
-	  return 1;
-
-  if(pid == 0)
-	{
-		close(1);
-		close(2);
-		if(dup(file_pipes[1]) == -1)
-		{
-			perror("dup");
-			exit(-1);
-		}
-		close(file_pipes[0]);
-		close(file_pipes[1]);
-
-		args[0] = "sh";
-		args[1] = "-c";
-		args[2] = command;
-		args[3] = NULL;
-		execvp(args[0], args);
-		exit(127);
-	}
-	else
-	{
-		char buf[1024];
-		close (file_pipes[1]);
-		while((nread = read(*file_pipes, buf, sizeof(buf) -1)) > 0)
-		{
-			buf[nread] = '\0';
-			error = nread;
-		}
-		if(error > 1)
-		{
-			char title[strlen(command) +4];
-			snprintf(title, sizeof(title), " %s ", command);
-			show_error_msg(title, buf);
-			return 1;
-		}
-	}
-	return 0;
-}
-
 static void
 progress_msg(const char *text, int ready, int total)
 {

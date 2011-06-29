@@ -27,22 +27,11 @@
 #include "ui.h"
 #include "utils.h"
 
-void
-init_bookmarks(void)
-{
-	int i;
-	for (i = 0; i < NUM_BOOKMARKS; ++i)
-	{
-		bookmarks[i].directory = NULL;
-		bookmarks[i].file = NULL;
-	}
-}
-
 /*
  * transform a mark to an index
  * (0=48->0, 9=57->9, A=65->10,...,Z=90->35, a=97 -> 36,..., z=122 -> 61
  */
-int
+static int
 mark2index(const char mark)
 {
 	if ((int) mark > 96)
@@ -76,9 +65,9 @@ is_bookmark(const int x)
 
 	/* the bookmark is valid if the file and the directory exists.
 	 * (i know, checking both is a bit paranoid, one should be enough.) */
-	if (bookmarks[x].directory == NULL || bookmarks[x].file == NULL)
+	if(bookmarks[x].directory == NULL || bookmarks[x].file == NULL)
 		return 0;
-	else if (is_dir(bookmarks[x].directory))
+	else if(is_dir(bookmarks[x].directory))
 		return 1;
 	else
 		return 0;
@@ -87,7 +76,7 @@ is_bookmark(const int x)
 /*
  * low-level function without safety checks
  */
-void
+static void
 silent_remove_bookmark(const int x)
 {
 	curr_stats.setting_change = 1;
@@ -102,7 +91,7 @@ silent_remove_bookmark(const int x)
 void
 remove_bookmark(const int x)
 {
-	if (is_bookmark(x))
+	if(is_bookmark(x))
 		silent_remove_bookmark(x);
 	else
 		status_bar_message("Could not find mark");

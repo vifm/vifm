@@ -34,18 +34,14 @@ extern struct Fuse_List *fuse_mounts;
 
 void chomp(char *text);
 void chosp(char *text);
-void * duplicate(void *stuff, int size);
 int is_dir(char *file);
 char * escape_filename(const char *string, size_t len, int quote_percent);
-int write_string_to_file(char *filename, char *string);
-size_t guess_char_width(char c);
 size_t get_char_width(const char* string);
 size_t get_normal_utf8_string_length(const char *string);
 size_t get_real_string_width(char *string, size_t max_len);
 size_t get_normal_utf8_string_width(const char *string);
 size_t get_utf8_string_length(const char *string);
 size_t get_utf8_overhead(const char *string);
-size_t get_utf8_prev_width(char *string, size_t cut_length);
 wchar_t * to_wide(const char *s);
 void _gnuc_noreturn run_from_fork(int pipe[2], int err, char *cmd);
 wchar_t * my_wcsdup(const wchar_t *ws);

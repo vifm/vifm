@@ -69,14 +69,6 @@ update_pos_window(FileView *view)
 	wnoutrefresh(pos_win);
 }
 
-void
-write_stat_win(char *message)
-{
-	werase(stat_win);
-	wprintw(stat_win, "%s", message);
-	wnoutrefresh(stat_win);
-}
-
 static void
 get_id_string(FileView *view, size_t len, char *buf)
 {
@@ -483,6 +475,16 @@ clean_status_bar()
 	wnoutrefresh(status_bar);
 }
 
+static void
+switch_views(void)
+{
+	FileView *tmp = curr_view;
+	curr_view = other_view;
+	other_view = tmp;
+
+	load_local_options(curr_view);
+}
+
 void
 change_window(void)
 {
@@ -612,16 +614,6 @@ update_input_bar(wchar_t c)
 
 	waddwstr(num_win, buf);
 	wrefresh(num_win);
-}
-
-void
-switch_views(void)
-{
-	FileView *tmp = curr_view;
-	curr_view = other_view;
-	other_view = tmp;
-
-	load_local_options(curr_view);
 }
 
 void

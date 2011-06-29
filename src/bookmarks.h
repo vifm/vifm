@@ -51,7 +51,6 @@ bookmarks_t bookmarks[NUM_BOOKMARKS];
 /* array of active bookmarks, populated in menu.c: init_active_bookmarks() */
 int active_bookmarks[NUM_BOOKMARKS];
 
-void init_bookmarks(void);
 char index2mark(const int x);
 int is_bookmark(const int x);
 void add_bookmark(const char mark, const char *directory, const char *file);

@@ -216,19 +216,6 @@ setup_menu(void)
 }
 
 void
-init_active_bookmarks(void)
-{
-	int i, x;
-
-	i = 0;
-	for (x = 0; x < NUM_BOOKMARKS; ++x)
-	{
-		if (is_bookmark(x))
-			active_bookmarks[i++] = x;
-	}
-}
-
-void
 moveto_menu_pos(int pos, menu_info *m)
 {
 	int redraw = 0;
@@ -643,6 +630,19 @@ execute_menu_cb(FileView *view, menu_info *m)
 			break;
 		default:
 			break;
+	}
+}
+
+static void
+init_active_bookmarks(void)
+{
+	int i, x;
+
+	i = 0;
+	for (x = 0; x < NUM_BOOKMARKS; ++x)
+	{
+		if (is_bookmark(x))
+			active_bookmarks[i++] = x;
 	}
 }
 

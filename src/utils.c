@@ -51,14 +51,6 @@ is_dir(char *file)
 		return 0;
 }
 
-void *
-duplicate (void *stuff, int size)
-{
-  void *new_stuff = (void *) malloc (size);
-  memcpy (new_stuff, stuff, size);
-  return new_stuff;
-}
-
 /*
  * Escape the filename for the purpose of inserting it into the shell.
  *
@@ -156,34 +148,6 @@ chosp(char *text)
 		text[len - 1] = '\0';
 }
 
-/* Only used for debugging */
-int
-write_string_to_file(char *filename, char *string)
-{
-	FILE *fp;
-
-	if((fp = fopen(filename, "w")) == NULL)
-		return 0;
-
-	fprintf(fp, "%s", string);
-
-	fclose(fp);
-	return 1;
-}
-
-size_t
-guess_char_width(char c)
-{
-	if((c & 0xe0) == 0xc0)
-		return 2;
-	else if((c & 0xf0) == 0xe0)
-		return 3;
-	else if((c & 0xf8) == 0xf0)
-		return 4;
-	else
-		return 1;
-}
-
 size_t
 get_char_width(const char* string)
 {
@@ -213,6 +177,19 @@ get_real_string_width(char *string, size_t max_len)
 		string += char_width;
 	}
 	return width;
+}
+
+static size_t
+guess_char_width(char c)
+{
+	if((c & 0xe0) == 0xc0)
+		return 2;
+	else if((c & 0xf0) == 0xe0)
+		return 3;
+	else if((c & 0xf8) == 0xf0)
+		return 4;
+	else
+		return 1;
 }
 
 /* returns count utf8 characters excluding incomplete utf8 characters */
@@ -275,21 +252,6 @@ get_utf8_overhead(const char *string)
 		overhead += char_width - 1;
 	}
 	return overhead;
-}
-
-size_t
-get_utf8_prev_width(char *string, size_t cur_width)
-{
-	size_t width = 0;
-	while(*string != '\0')
-	{
-		size_t char_width = get_char_width(string);
-		if(width + char_width >= cur_width)
-			break;
-		width += char_width;
-		string += char_width;
-	}
-	return width;
 }
 
 wchar_t *

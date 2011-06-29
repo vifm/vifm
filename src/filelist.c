@@ -617,12 +617,6 @@ draw_dir_list(FileView *view, int top)
 	view->top_line = top;
 }
 
-int
-S_ISEXE(mode_t mode)
-{
-	return ((S_IXUSR & mode) || (S_IXGRP & mode) || (S_IXOTH & mode));
-}
-
 void
 erase_current_line_bar(FileView *view)
 {
@@ -1034,7 +1028,7 @@ leave_invalid_dir(FileView *view, char *path)
  *   0  not mount point.
  *   1  left FUSE mount directory.
  */
-int
+static int
 try_unmount_fuse(FileView *view)
 {
 	char buf[8192];
@@ -1236,6 +1230,12 @@ reset_selected_files(FileView *view)
 	x = view->selected_files;
 	free_selected_file_array(view);
 	view->selected_files = x;
+}
+
+static int
+S_ISEXE(mode_t mode)
+{
+	return ((S_IXUSR & mode) || (S_IXGRP & mode) || (S_IXOTH & mode));
 }
 
 void

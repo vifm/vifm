@@ -144,7 +144,7 @@ sort_this(const void *one, const void *two)
 	return strcmp(first->name, second->name);
 }
 
-int
+static int
 command_is_reserved(char *name)
 {
 	int x;
@@ -215,7 +215,7 @@ get_buildin_id(const char *cmd_line)
 	return command_is_reserved(buf);
 }
 
-int
+static int
 command_is_being_used(char *command)
 {
 	int x;
@@ -241,6 +241,30 @@ add_prefixes(const char *str, const char *completed)
 	snprintf(result, p - str + 1, "%s", str);
 	strcat(result, completed);
 	return result;
+}
+
+static int
+is_user_command(char *command)
+{
+	char buf[strlen(command) +1];
+	char *com;
+	char *ptr;
+	int x;
+
+	com = strcpy(buf, command);
+
+	if((ptr = strchr(com, ' ')) != NULL)
+		*ptr = '\0';
+
+	for(x = 0; x < cfg.command_num; x++)
+	{
+		if(strncmp(com, command_list[x].name, strlen(com)) == 0)
+		{
+			return x;
+		}
+	}
+
+	return -1;
 }
 
 /* On the first call to this function,
@@ -318,7 +342,7 @@ command_completion(char *str, int users_only)
 	}
 }
 
-void
+static void
 save_search_history(char *pattern)
 {
 	int x = 0;
@@ -587,30 +611,6 @@ expand_macros(FileView *view, const char *command, const char *args,
 		show_error_msg("Argument is too long", " FIXME ");
 
 	return expanded;
-}
-
-int
-is_user_command(char *command)
-{
-	char buf[strlen(command) +1];
-	char *com;
-	char *ptr;
-	int x;
-
-	com = strcpy(buf, command);
-
-	if((ptr = strchr(com, ' ')) != NULL)
-		*ptr = '\0';
-
-	for(x = 0; x < cfg.command_num; x++)
-	{
-		if(strncmp(com, command_list[x].name, strlen(com)) == 0)
-		{
-			return x;
-		}
-	}
-
-	return -1;
 }
 
 void
@@ -1318,7 +1318,7 @@ fast_run_complete(char *cmd)
 	return buf;
 }
 
-int
+static int
 execute_builtin_command(FileView *view, cmd_t *cmd)
 {
 	int save_msg = 0;
@@ -1810,7 +1810,7 @@ skip_word(const char *cmd)
 	return cmd;
 }
 
-int
+static int
 execute_user_command(FileView *view, cmd_t *cmd)
 {
 	char *expanded_com = NULL;

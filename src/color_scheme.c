@@ -265,10 +265,7 @@ colname2int(char col[])
  return -1;
 }
 
-/*
- * add color
- */
-void
+static void
 add_color(char s1[], char s2[], char s3[])
 {
 	int fg, bg;

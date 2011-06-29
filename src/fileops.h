@@ -45,7 +45,6 @@ void unmount_fuse(void);
 int system_and_wait_for_errors(char *cmd);
 int yank_files(FileView *view, int reg, int count, int *indexes);
 void yank_selected_files(FileView *view, int reg);
-int pipe_and_capture_errors(char *command);
 int file_exec(char *command);
 void show_change_window(FileView *view, int type);
 int check_link_is_dir(FileView *view, int pos);

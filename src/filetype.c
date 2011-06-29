@@ -23,7 +23,7 @@
 #include "config.h"
 #include "filetype.h"
 
-int
+static int
 get_filetype_number(char *file)
 {
 	char *strptr;
@@ -125,20 +125,6 @@ get_all_programs_for_file(char *file)
 		return filetypes[x].programs;
 
 	return NULL;
-}
-
-void
-clear_filetypes(void)
-{
-	int x;
-
-	for(x = 0; x < cfg.filetypes_num; x++)
-	{
-		free(filetypes[x].type);
-		free(filetypes[x].ext);
-		free(filetypes[x].programs);
-	}
-	cfg.filetypes_num = 0;
 }
 
 void

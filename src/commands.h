@@ -102,8 +102,6 @@ void add_command(char *name, char *action);
 int execute_command(FileView *view, char *action);
 char * fast_run_complete(char *cmd);
 int sort_this(const void *one, const void *two);
-int is_user_command(char *command);
-int command_is_reserved(char *command);
 int get_buildin_id(const char *cmd_line);
 char * command_completion(char *str, int users_only);
 char * expand_macros(FileView *view, const char *command, const char *args,
