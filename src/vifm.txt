@@ -64,6 +64,7 @@ The builtin commands are:
 	See |Vifm_Ranges| for the ranges implemented.
 :delc[ommand] user_command - remove user_command.
 :display or :register - popup menu with registers content.
+:dirs - display directory stack.
 :rename - rename files using vi to edit names.
 :e[dit] - will load the selected file or files into vi.
 :em[pty] - permanently remove files from the ~/.vifm/Trash directory.
@@ -353,7 +354,7 @@ Vim like mode:
 The following command names are reserved and cannot be used for user commands.
 
   ! - shellout and execute command.
-	apropos - run the apropos command in a menu window.
+  apropos - run the apropos command in a menu window.
   cd - change directory
   change - alter a files properties
   cmap - not used will be used for key mapping.
@@ -362,6 +363,7 @@ The following command names are reserved and cannot be used for user commands.
   command - show user commands.
   delete - delete file.
   delcommand - delete command.
+  dirs - display directory stack.
   edit - edit file.
   empty - empty trash directory.
   filter - set file name filter.
@@ -370,7 +372,7 @@ The following command names are reserved and cannot be used for user commands.
   help - show help file.
   history - show directory history.
   invert - invert file filter.
-	locate - run the locate command in a menu window.
+  locate - run the locate command in a menu window.
   map - not used will be used with key mapping.
   marks - show marks.
   nmap - not used will be used with key mapping.

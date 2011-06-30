@@ -19,9 +19,6 @@ static unsigned int stack_top;
 
 static void free_entry(const struct stack_entry * entry);
 
-/*
- * Returns 0 on success and -1 when not enough memory
- */
 int
 pushd(void)
 {
@@ -53,9 +50,6 @@ pushd(void)
 	return 0;
 }
 
-/*
- * Returns 0 on success and -1 on underflow
- */
 int
 popd(void)
 {
@@ -72,6 +66,8 @@ popd(void)
 
 	moveto_list_pos(curr_view, curr_view->list_pos);
 
+	free_entry(&stack[stack_top]);
+
 	return 0;
 }
 
@@ -82,6 +78,42 @@ free_entry(const struct stack_entry * entry)
 	free(entry->lpane_file);
 	free(entry->rpane_dir);
 	free(entry->rpane_file);
+}
+
+char **
+dir_stack_list(void)
+{
+	int i;
+	int len;
+	char **list, **p;
+
+	if(stack_size == 0)
+		len = 1;
+	else
+		len = stack_size*2 + stack_size - 1 + 1;
+	list = malloc(sizeof(char *)*len);
+
+	if(list == NULL)
+		return NULL;
+
+	p = list;
+	for(i = 0; i < stack_top; i++)
+	{
+		if((*p++ = strdup(stack[stack_top - 1 - i].lpane_dir)) == NULL)
+			return list;
+
+		if((*p++ = strdup(stack[stack_top - 1 - i].rpane_dir)) == NULL)
+			return list;
+
+		if(i == stack_top - 1)
+			continue;
+
+		if((*p++ = strdup("-----")) == NULL)
+			return list;
+	}
+	*p = NULL;
+
+	return list;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

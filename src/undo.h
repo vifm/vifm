@@ -28,7 +28,7 @@ int undo_group(void);
  * returned. */
 int redo_group(void);
 
-/* 
+/*
  * When detail is not 0 show detailed information for groups.
  * Last element of list returned is NULL.
  * Returns NULL on error.

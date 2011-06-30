@@ -20,6 +20,8 @@
 	Added 'sortnumbers' option (natural sort of (version) numbers in
 	filenames).
 
+	Added :dirs command.
+
 	Don't change directory on unsuccessful FUSE mount.
 
 	Don't change cursor position of other directory after disabling quick view.
@@ -53,6 +55,8 @@
 	Fixed ga command (skip symbolic links).
 
 	Fixed processing files with percent sign in their name.
+
+	Fixed memory leak in directory stack module.
 
 0.6.1 to 0.6.2
 

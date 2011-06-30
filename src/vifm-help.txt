@@ -114,6 +114,8 @@ The basic vi key bindings are used to move through the files and popup
 		apropos command.
 	:command! name action - will overwrite a previously set command.
 	:delcommand command_name - will remove the command_name user command.
+    :display or :register - popup menu with registers content.
+    :dirs - display directory stack.
     :cmdhistory - show command line history menu.
     :colorscheme - gives a messages with a list of available color schemes.
     :colorscheme color_scheme_name - changes color scheme.
@@ -154,7 +156,6 @@ The basic vi key bindings are used to move through the files and popup
 	:v[iew] - toggle on and off the quick file view.
 	:h[elp] - this crude help file
 	:marks - popup menu of bookmarks
-    :display or :register - popup menu with registers content.
     :rename - rename files using vi to edit names.
 	:sync - change the other panel to the current panel directory.
 
@@ -347,47 +348,52 @@ Options
     Controls whether to wrap text in quick view.
 
 Reserved :commands
-		!
-		change
-		cd
-		cmap
-        cmdhistory
-		command
-		d
-		delc
-		e
-		empty
-		fi
-		fil
-		file
-		filter
-		h
-		help
-		his
-		history
-		in
-		invert
-		map
-		marks
-		nmap
-		pw
-		pwd
-		q
-        popd
-        pushd
-        register
-        rename
-		s
-		screen
-        set
-		sh
-		sort
-		undolist
-		unmap
-		view
-		vifm
-		vmap
-        w
-        wq
-        write
-		x
+	!
+	apropos
+	cd
+	change
+	cmap
+	colorscheme
+	command
+	cmdhistory
+	delcommand
+	delete
+	dirs
+	display
+	edit
+	empty
+	file
+	filter
+	help
+	history
+	invert
+	jobs
+	locate
+	ls
+	map
+	marks
+	nmap
+	nohlsearch
+	only
+	popd
+	pushd
+	pwd
+	quit
+	register
+	rename
+	screen
+	set
+	shell
+	sort
+	split
+	sync
+	undolist
+	unmap
+	view
+	vifm
+	vmap
+	w
+	wq
+	write
+	x
+	yank

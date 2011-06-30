@@ -67,6 +67,7 @@ const char *reserved_commands[] = {
 	"cmdhistory",
 	"delcommand",
 	"delete",
+	"dirs",
 	"display",
 	"edit",
 	"empty",
@@ -1447,6 +1448,9 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		case COM_DELCOMMAND:
 			if(cmd->args)
 				remove_command(cmd->args);
+			break;
+		case COM_DIRS:
+			show_dirstack_menu(view);
 			break;
 		case COM_DISPLAY:
 		case COM_REGISTER:

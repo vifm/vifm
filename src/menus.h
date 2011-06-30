@@ -27,6 +27,7 @@ enum {
 	CMDHISTORY,
 	COLORSCHEME,
 	COMMAND,
+	DIRSTACK,
 	FILETYPE,
 	HISTORY,
 	JOBS,
@@ -66,6 +67,7 @@ typedef struct menu_info
 }menu_info;
 
 void show_bookmarks_menu(FileView *view);
+void show_dirstack_menu(FileView *view);
 void show_colorschemes_menu(FileView *view);
 void show_commands_menu(FileView *view);
 void show_history_menu(FileView *view);

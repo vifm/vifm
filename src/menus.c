@@ -33,6 +33,7 @@
 #include "color_scheme.h"
 #include "commands.h"
 #include "config.h"
+#include "dir_stack.h"
 #include "file_magic.h"
 #include "filelist.h"
 #include "fileops.h"
@@ -926,6 +927,47 @@ show_bookmarks_menu(FileView *view)
 	setup_menu();
 	draw_menu(&m);
 	moveto_menu_pos(0, &m);
+	enter_menu_mode(&m, view);
+}
+
+void
+show_dirstack_menu(FileView *view)
+{
+	int len, i;
+
+	static menu_info m;
+	m.top = 0;
+	m.current = 1;
+	m.len = 0;
+	m.pos = 0;
+	m.win_rows = 0;
+	m.type = DIRSTACK;
+	m.matching_entries = 0;
+	m.match_dir = NONE;
+	m.regexp = NULL;
+	m.title = NULL;
+	m.args = NULL;
+	m.data = NULL;
+
+	getmaxyx(menu_win, m.win_rows, len);
+
+	m.title = strdup(" Directory Stack ");
+
+	m.data = dir_stack_list();
+
+	i = -1;
+	while(m.data[++i] != NULL);
+	if(i != 0)
+		m.len = i;
+	else
+	{
+		m.data[0] = strdup("Directory stack is empty");
+		m.len = 1;
+	}
+
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 

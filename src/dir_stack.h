@@ -19,8 +19,21 @@
 #ifndef __DIR_STACK_H__
 #define __DIR_STACK_H__
 
+/*
+ * Returns 0 on success and -1 when not enough memory
+ */
 int pushd(void);
+
+/*
+ * Returns 0 on success and -1 on underflow
+ */
 int popd(void);
+
+/*
+ * Last element of list returned is NULL.
+ * Returns NULL on error.
+ */
+char ** dir_stack_list(void);
 
 #endif
 
