@@ -284,6 +284,12 @@ main(int argc, char *argv[])
 		}
 	}
 
+	init_modes();
+	init_options();
+	init_undo_list(&undo_exec, &cfg.undo_levels);
+	load_local_options(curr_view);
+	exec_startup();
+
 	set_view_to_sort(&rwin);
 	load_dir_list(&rwin, 0);
 
@@ -320,11 +326,6 @@ main(int argc, char *argv[])
 	if(cfg.vim_filter)
 		curr_stats.number_of_windows = 1;
 
-	init_modes();
-	init_options();
-	init_undo_list(&undo_exec, &cfg.undo_levels);
-	load_local_options(curr_view);
-	exec_startup();
 	main_loop();
 
 	return 0;

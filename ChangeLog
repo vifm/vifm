@@ -58,6 +58,8 @@
 
 	Fixed memory leak in directory stack module.
 
+	Fixed bug when options from startup file were not applied after startup.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).
