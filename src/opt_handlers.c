@@ -49,9 +49,9 @@ static const char * sort_order_enum[] = {
 };
 
 void
-init_options(void)
+init_option_handlers(void)
 {
-	set_print_handler(&print_func);
+	init_options(&curr_stats.setting_change, &print_func);
 	add_options();
 	load_options();
 }

@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,13 +59,17 @@ static char * complete_option(const char *buf, int bool_only);
 static const char * complete_value(const char *buf, struct opt_t *opt);
 
 static opt_print print_func;
+static int *opts_changed;
 
 static struct opt_t *options;
 static size_t options_count;
 
 void
-set_print_handler(opt_print handler)
+init_options(int *opts_changed_flag, opt_print handler)
 {
+	assert(opts_changed_flag != NULL);
+
+	opts_changed = opts_changed_flag;
 	print_func = handler;
 }
 
@@ -273,6 +278,7 @@ set_on(struct opt_t *opt)
 	if(!opt->val.bool_val)
 	{
 		opt->val.bool_val = 1;
+		*opts_changed = 1;
 		opt->handler(OP_ON, opt->val);
 	}
 
@@ -288,6 +294,7 @@ set_off(struct opt_t *opt)
 	if(opt->val.bool_val)
 	{
 		opt->val.bool_val = 0;
+		*opts_changed = 1;
 		opt->handler(OP_OFF, opt->val);
 	}
 
@@ -301,6 +308,7 @@ set_inv(struct opt_t *opt)
 		return -1;
 
 	opt->val.bool_val = !opt->val.bool_val;
+	*opts_changed = 1;
 	opt->handler(opt->val.bool_val ? OP_ON : OP_OFF, opt->val);
 
 	return 0;
@@ -321,6 +329,7 @@ set_set(struct opt_t *opt, const char *value)
 		if(opt->val.enum_item != i)
 		{
 			opt->val.enum_item = i;
+			*opts_changed = 1;
 			opt->handler(OP_SET, opt->val);
 		}
 	}
@@ -330,6 +339,7 @@ set_set(struct opt_t *opt, const char *value)
 		{
 			free(opt->val.str_val);
 			opt->val.str_val = strdup(value);
+			*opts_changed = 1;
 			opt->handler(OP_SET, opt->val);
 		}
 	}
@@ -340,6 +350,7 @@ set_set(struct opt_t *opt, const char *value)
 		if(opt->val.int_val != int_val)
 		{
 			opt->val.int_val = int_val;
+			*opts_changed = 1;
 			opt->handler(OP_SET, opt->val);
 		}
 	}
@@ -356,11 +367,15 @@ set_add(struct opt_t *opt, const char *value)
 	if(opt->type == OPT_SET)
 	{
 		if(set_op(opt, value, 1))
+		{
+			*opts_changed = 1;
 			opt->handler(OP_MODIFIED, opt->val);
+		}
 	}
 	else if(*value != '\0')
 	{
 		opt->val.str_val = str_add(opt->val.str_val, value);
+		*opts_changed = 1;
 		opt->handler(OP_MODIFIED, opt->val);
 	}
 
@@ -376,7 +391,10 @@ set_remove(struct opt_t *opt, const char *value)
 	if(opt->type == OPT_SET)
 	{
 		if(set_op(opt, value, 0))
+		{
+			*opts_changed = 1;
 			opt->handler(OP_MODIFIED, opt->val);
+		}
 	}
 	else if(*value != '\0')
 	{
@@ -387,7 +405,10 @@ set_remove(struct opt_t *opt, const char *value)
 		opt->val.str_val = str_remove(opt->val.str_val, value);
 
 		if(opt->val.str_val != NULL && len != strlen(opt->val.str_val))
+		{
+			*opts_changed = 1;
 			opt->handler(OP_MODIFIED, opt->val);
+		}
 	}
 
 	return 0;

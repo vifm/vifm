@@ -21,7 +21,7 @@
 
 #include "ui.h"
 
-void init_options(void);
+void init_option_handlers(void);
 void load_local_options(FileView *view);
 int process_set_args(const char *args);
 

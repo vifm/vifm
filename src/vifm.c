@@ -286,7 +286,7 @@ main(int argc, char *argv[])
 	}
 
 	init_modes();
-	init_options();
+	init_option_handlers();
 	init_undo_list(&undo_exec, &cfg.undo_levels);
 	load_local_options(curr_view);
 	exec_startup();
