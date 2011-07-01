@@ -172,6 +172,7 @@ main(int argc, char *argv[])
 	init_config();
 	set_config_dir();
 	read_config_file();
+	read_info_file();
 
 	/* Safety check for existing vifmrc file without FUSE_HOME */
 	if(cfg.fuse_home == NULL)

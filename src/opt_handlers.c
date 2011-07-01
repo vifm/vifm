@@ -16,6 +16,7 @@ static void print_func(const char *msg, const char *description);
 static void fastrun_handler(enum opt_op op, union optval_t val);
 static void iec_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
+static void savelocation_handler(enum opt_op op, union optval_t val);
 static void sortnumbers_handler(enum opt_op op, union optval_t val);
 static void sort_handler(enum opt_op op, union optval_t val);
 static void sort_order_handler(enum opt_op op, union optval_t val);
@@ -61,6 +62,7 @@ add_options(void)
 	add_option("fastrun", OPT_BOOL, 0, NULL, &fastrun_handler);
 	add_option("iec", OPT_BOOL, 0, NULL, &iec_handler);
 	add_option("runexec", OPT_BOOL, 0, NULL, &runexec_handler);
+	add_option("savelocation", OPT_BOOL, 0, NULL, &savelocation_handler);
 	add_option("sortnumbers", OPT_BOOL, 0, NULL, &sortnumbers_handler);
 	add_option("timefmt", OPT_STR, 0, NULL, &timefmt_handler);
 	add_option("trash", OPT_BOOL, 0, NULL, &trash_handler);
@@ -84,6 +86,9 @@ load_options(void)
 
 	val.bool_val = cfg.auto_execute;
 	set_option("runexec", val);
+
+	val.bool_val = cfg.save_location;
+	set_option("savelocation", val);
 
 	val.bool_val = cfg.sort_numbers;
 	set_option("sortnumbers", val);
@@ -161,6 +166,12 @@ static void
 runexec_handler(enum opt_op op, union optval_t val)
 {
 	cfg.auto_execute = val.bool_val;
+}
+
+static void
+savelocation_handler(enum opt_op op, union optval_t val)
+{
+	cfg.save_location = val.bool_val;
 }
 
 static void

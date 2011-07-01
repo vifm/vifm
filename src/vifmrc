@@ -41,6 +41,11 @@ USE_SCREEN=0
 
 HISTORY_LENGTH=15
 
+# To always save pane location on exit and start vifm in the
+# last visited directory set this to 1.
+
+SAVE_LOCATION=0
+
 # The sort type is how the files will be sorted in the file listing.
 # Sort by File Extension = 1
 # Sort by File Name = 2
@@ -70,12 +75,6 @@ LWIN_FILTER=\.o$
 LWIN_INVERT=1
 RWIN_FILTER=\.o$
 RWIN_INVERT=1
-
-# The startup location of panes after :wq.
-
-LWIN_PATH=/home/xaizek/repos/vifm/src
-
-RWIN_PATH=/home/xaizek/src/_for_video
 
 # If you installed the vim.txt help file change this to 1.
 # If would rather use a plain text help file set this to 0.

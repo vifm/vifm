@@ -61,12 +61,16 @@ typedef struct _Config {
 	int undo_levels; /* Maximum number of changes that can be undone. */
 
 	int sort_numbers; /* Natural sort of (version) numbers within text. */
+
+	int save_location; /* Start vifm in the last visited directory. */
 } Config;
 
 extern Config cfg;
 
 int read_config_file(void);
+void read_info_file(void);
 void write_config_file(void);
+void write_info_file(void);
 void set_config_dir(void);
 void init_config(void);
 void exec_startup(void);

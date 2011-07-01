@@ -76,6 +76,8 @@ init_config(void)
 
 	cfg.sort_numbers = 0;
 
+	cfg.save_location = 0;
+
 	/* Maximum argument length to pass to the shell */
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)
 		cfg.max_args = 4096; /* POSIX MINIMUM */
@@ -184,6 +186,7 @@ set_config_dir(void)
 	}
 }
 
+/* Returns zero when default configuration is used */
 int
 read_config_file(void)
 {
@@ -207,7 +210,7 @@ read_config_file(void)
 		return 0;
 	}
 
-	while(fgets(line, MAX_LEN, fp))
+	while(fgets(line, sizeof(line), fp))
 	{
 		args = 0;
 		if(line[0] == '#')
@@ -329,19 +332,14 @@ read_config_file(void)
 				rwin.invert = atoi(s1);
 				continue;
 			}
-			if(!strcmp(line, "LWIN_PATH"))
-			{
-				strcpy(lwin.curr_dir, s1);
-				continue;
-			}
-			if(!strcmp(line, "RWIN_PATH"))
-			{
-				strcpy(rwin.curr_dir, s1);
-				continue;
-			}
 			if(!strcmp(line, "USE_VIM_HELP"))
 			{
 				cfg.use_vim_help = atoi(s1);
+				continue;
+			}
+			if(!strcmp(line, "SAVE_LOCATION"))
+			{
+				cfg.save_location = atoi(s1);
 				continue;
 			}
 			if(!strcmp(line, "RUN_EXECUTABLE"))
@@ -413,10 +411,56 @@ read_config_file(void)
 }
 
 void
+read_info_file(void)
+{
+	FILE *fp;
+	char info_file[PATH_MAX];
+	char line[MAX_LEN];
+	char *s1 = NULL;
+	char *sx = NULL;
+	int args;
+
+	snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
+
+	if((fp = fopen(info_file, "r")) == NULL)
+		return;
+
+	while(fgets(line, sizeof(line), fp))
+	{
+		args = 0;
+		if(line[0] == '#')
+			continue;
+
+		if((sx = s1 = strchr(line, '=')) != NULL)
+		{
+			s1++;
+			chomp(s1);
+			*sx = '\0';
+			args = 1;
+		}
+		else
+			continue;
+
+		if(!strcmp(line, "LWIN_PATH") && cfg.save_location)
+		{
+			strcpy(lwin.curr_dir, s1);
+			continue;
+		}
+		if(!strcmp(line, "RWIN_PATH") && cfg.save_location)
+		{
+			strcpy(rwin.curr_dir, s1);
+			continue;
+		}
+	}
+
+	fclose(fp);
+}
+
+void
 write_config_file(void)
 {
 	FILE *fp;
-	int x = 0;
+	int x;
 	uint32_t config_crc32;
 	char config_file[PATH_MAX];
 
@@ -479,6 +523,10 @@ write_config_file(void)
 	fprintf(fp, "\n# This is how many files to show in the directory history menu.\n");
 	fprintf(fp, "\nHISTORY_LENGTH=%d\n", cfg.history_len);
 
+	fprintf(fp, "\n# To always save pane location on exit and start vifm in the");
+	fprintf(fp, "\n# last visited directory set this to 1.\n");
+	fprintf(fp, "\nSAVE_LOCATION=%d\n", cfg.save_location ? 1 : 0);
+
 	fprintf(fp, "\n# The sort type is how the files will be sorted in the file listing.\n");
 	fprintf(fp, "# Sort by File Extension = 1\n");
 	fprintf(fp, "# Sort by File Name = 2\n");
@@ -507,10 +555,6 @@ write_config_file(void)
 	fprintf(fp, "LWIN_INVERT=%d\n", lwin.invert);
 	fprintf(fp, "RWIN_FILTER=%s\n", rwin.filename_filter);
 	fprintf(fp, "RWIN_INVERT=%d\n", rwin.invert);
-
-	fprintf(fp, "\n# The startup location of panes after :wq.\n");
-	fprintf(fp, "\nLWIN_PATH=%s\n", lwin.curr_dir);
-	fprintf(fp, "\nRWIN_PATH=%s\n", rwin.curr_dir);
 
 	fprintf(fp, "\n# If you installed the vim.txt help file change this to 1.\n");
 	fprintf(fp, "# If would rather use a plain text help file set this to 0.\n");
@@ -600,6 +644,28 @@ write_config_file(void)
 	fclose(fp);
 
 	calculate_crc32(config_file, &curr_stats.config_crc32);
+}
+
+void
+write_info_file(void)
+{
+	FILE *fp;
+	char info_file[PATH_MAX];
+
+	if(!cfg.save_location)
+		return;
+
+	snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
+
+	if((fp = fopen(info_file, "w")) == NULL)
+		return;
+
+	fprintf(fp, "# The startup location of panes after :wq.\n");
+	fprintf(fp, "# Used only if SAVE_LOCATION in vifmrc is set to 1.\n");
+	fprintf(fp, "\nLWIN_PATH=%s\n", lwin.curr_dir);
+	fprintf(fp, "\nRWIN_PATH=%s\n", rwin.curr_dir);
+
+	fclose(fp);
 }
 
 void

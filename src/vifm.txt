@@ -410,7 +410,12 @@ Use KiB, MiB, ... instead of KB, MB, ...
 runexec
 type: boolean
 default: false
-Run executable file on Enter or l
+Run executable file on Enter or l.
+
+savelocation
+type: boolean
+default: false
+Start vifm in the last visited directory.
 
 sort
 type: enumeration

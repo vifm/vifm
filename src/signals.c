@@ -80,6 +80,7 @@ shutdown_nicely(void)
 	endwin();
 	unmount_fuse();
 	write_config_file();
+	write_info_file();
 	(void)system("clear");
 	fprintf(stdout, "Vifm killed by signal.\n");
 	exit(0);

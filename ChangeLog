@@ -22,6 +22,10 @@
 
 	Added :dirs command.
 
+	Added 'savelocation' option (start vifm in the last visited directory)
+	which is off be default thus returning old behaviour when vifm is started
+	with no argument.
+
 	Don't change directory on unsuccessful FUSE mount.
 
 	Don't change cursor position of other directory after disabling quick view.
@@ -35,6 +39,8 @@
 	Use only executables for :!./ completion.
 
 	Complete :pushd like :cd.
+
+	Now location of panes is saved in ~/.vifm/vifminfo instead of ~/.vifm/vifmrc
 
 	Fixed %F, accidentally broken in v0.6.2.
 

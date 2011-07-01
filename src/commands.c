@@ -1645,7 +1645,6 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_X:
 		case COM_QUIT:
-			curr_stats.setting_change = 1;
 			if(cmd->args && cmd->args[0] == '!')
 				curr_stats.setting_change = 0;
 			comm_quit();
@@ -1718,9 +1717,15 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_W:
 		case COM_WRITE:
-			if(cmd->args && cmd->args[0] == '!')
-				curr_stats.setting_change = 1;
-			write_config_file();
+			{
+				int tmp;
+
+				tmp = curr_stats.setting_change;
+				if(cmd->args && cmd->args[0] == '!')
+					curr_stats.setting_change = 1;
+				write_config_file();
+				curr_stats.setting_change = tmp;
+			}
 			break;
 		case COM_WQ:
 			curr_stats.setting_change = 1;
@@ -2072,6 +2077,7 @@ comm_quit(void)
 	}
 
 	write_config_file();
+	write_info_file();
 
 	endwin();
 	(void)system("clear");
