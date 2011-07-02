@@ -5,6 +5,10 @@ Basic things that need to be done.
 	Better documentation.
 	Handle commands that are too long to be passed directly to the shell (fixed??).
 	Make ga work in background.
+	Add 'runlink' option.
+	Make ranges modify %f macro.
+	Think about good key for creating links (like pl in ranger).
+	Fix :'<'>!echo %f
 
 Vi specific features that need to be added.
 	Finish implementing range and count for user commands (what commands left?).
@@ -12,6 +16,9 @@ Vi specific features that need to be added.
 	Change file list filters to use fold levels instead of just
 		the dot filter and regular expression filter (what does this mean?).
 	Add set values completion for :set command (there are no such options yet).
+	Add 'smartcase' option.
+	Add :s/pattern/replace/ command.
+	Modify :edit command.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -19,3 +26,5 @@ Possible things to add.
 	Virtual File System - currently vifm can use fuse to mount most
 		file systems.
     Add a command to copy current pane location into X11 clipboard.
+	Add mouse support.
+	View of directories.
