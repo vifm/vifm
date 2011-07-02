@@ -57,6 +57,7 @@ setup(void)
 	other_view = &rwin;
 
 	cfg.max_args = 8192;
+	cfg.vi_command = strdup("vim -p");
 }
 
 static void
@@ -71,84 +72,29 @@ teardown(void)
 	for(i = 0; i < rwin.list_rows; i++)
 		free(rwin.dir_entry[i].name);
 	free(rwin.dir_entry);
+
+	free(cfg.vi_command);
 }
 
 static void
-test_b_both_have_selection(void)
+test_edit_cmd_selection(void)
 {
-	int menu, split;
-	char *expanded;
+	char *cmd;
 
-	expanded = expand_macros(&lwin, " %b ", "", &menu, &split);
-	assert_string_equal(" lfile0 lfile2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5 ",
-			expanded);
-	free(expanded);
-}
-
-static void
-test_f_both_have_selection(void)
-{
-	int menu, split;
-	char *expanded;
-
-	lwin.dir_entry[2].selected = 0;
-
-	expanded = expand_macros(&lwin, "%f", "", &menu, &split);
-	assert_string_equal("lfile0", expanded);
-	free(expanded);
-}
-
-static void
-test_b_only_lwin_has_selection(void)
-{
-	int menu, split;
-	char *expanded;
-
-	clean_selected_files(&lwin);
-	expanded = expand_macros(&lwin, " %b ", "", &menu, &split);
-	assert_string_equal(" lfile2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5 ",
-			expanded);
-	free(expanded);
-}
-
-static void
-test_b_only_rwin_has_selection(void)
-{
-	int menu, split;
-	char *expanded;
-
-	clean_selected_files(&rwin);
-	expanded = expand_macros(&lwin, " %b ", "", &menu, &split);
-	assert_string_equal(" lfile0 lfile2 /rwin/rfile5 ", expanded);
-	free(expanded);
-}
-
-static void
-test_b_noone_has_selection(void)
-{
-	int menu, split;
-	char *expanded;
-
-	clean_selected_files(&lwin);
-	clean_selected_files(&rwin);
-	expanded = expand_macros(&lwin, " %b ", "", &menu, &split);
-	assert_string_equal(" lfile2 /rwin/rfile5 ", expanded);
-	free(expanded);
+	cmd = edit_cmd_selection(&lwin);
+	assert_string_equal("vim -p lfile0 lfile2", cmd);
+	free(cmd);
 }
 
 void
-test_expand_macros(void)
+edit_cmd_selection_tests(void)
 {
 	test_fixture_start();
 
 	fixture_setup(setup);
 	fixture_teardown(teardown);
 
-	run_test(test_b_both_have_selection);
-	run_test(test_f_both_have_selection);
-	run_test(test_b_only_lwin_has_selection);
-	run_test(test_b_only_rwin_has_selection);
-	run_test(test_b_noone_has_selection);
+	run_test(test_edit_cmd_selection);
 
 	test_fixture_end();
 }

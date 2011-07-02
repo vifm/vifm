@@ -70,6 +70,8 @@
 
 	Fixed problem when vifm hanged without terminal.
 
+	Fixed bug about truncation of the last character with selection and :e %f.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).

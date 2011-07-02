@@ -1319,6 +1319,25 @@ fast_run_complete(char *cmd)
 	return buf;
 }
 
+#ifndef TEST
+static
+#endif
+char *
+edit_cmd_selection(FileView *view)
+{
+	int use_menu = 0;
+	int split = 0;
+	char *buf;
+	char *files = expand_macros(view, "%f", NULL, &use_menu, &split);
+
+	if((buf = (char *)malloc(strlen(cfg.vi_command) + strlen(files) + 2)) != NULL)
+		snprintf(buf, strlen(cfg.vi_command) + 1 + strlen(files) + 1, "%s %s",
+				cfg.vi_command, files);
+
+	free(files);
+	return buf;
+}
+
 static int
 execute_builtin_command(FileView *view, cmd_t *cmd)
 {
@@ -1478,24 +1497,15 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 				}
 				else
 				{
-					int use_menu = 0;
-					int split = 0;
-					char *buf;
-					char *files = expand_macros(view, "%f", NULL, &use_menu, &split);
-
-					if((buf = (char *)malloc(strlen(cfg.vi_command) + strlen(files) + 2))
-							== NULL)
+					char *cmd = edit_cmd_selection(view);
+					if(cmd == NULL)
 					{
 						show_error_msg("Unable to allocate enough memory",
 								"Cannot load file");
 						break;
 					}
-					snprintf(buf, strlen(cfg.vi_command) + strlen(files) +1,
-							"%s %s", cfg.vi_command, files);
-
-					shellout(buf, 0);
-					free(files);
-					free(buf);
+					shellout(cmd, 0);
+					free(cmd);
 				}
 			}
 			break;

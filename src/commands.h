@@ -115,6 +115,7 @@ void comm_split(void);
 
 #ifdef TEST
 char * append_selected_files(FileView *view, char *expanded, int under_cursor);
+char * edit_cmd_selection(FileView *view);
 #endif
 
 #endif
