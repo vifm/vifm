@@ -448,11 +448,7 @@ leave_cmdline_mode(void)
 	free(input_stat.line);
 
 	if(*mode == CMDLINE_MODE)
-	{
 		*mode = prev_mode;
-		if(prev_mode == VISUAL_MODE)
-			leave_visual_mode(0);
-	}
 }
 
 static void
@@ -620,6 +616,9 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 		cb = (prompt_cb)sub_mode_ptr;
 		cb(p);
 	}
+
+	if(prev_mode == VISUAL_MODE)
+		leave_visual_mode(0);
 
 	free(p);
 }

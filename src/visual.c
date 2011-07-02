@@ -372,7 +372,7 @@ select_up_one(FileView *view, int start_pos)
 	{
 		if(start_pos == 0)
 		{
-			view->dir_entry[view->list_pos +1].selected = 0;
+			view->dir_entry[view->list_pos + 1].selected = 0;
 			view->selected_files = 0;
 		}
 	}
