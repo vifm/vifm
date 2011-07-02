@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ "$1" == "PAUSE_ON_ERROR_ONLY" ]
+if [ "$1" = "PAUSE_ON_ERROR_ONLY" ]
 then
 	ON_ERROR=1
 	PROG=$2
@@ -14,11 +14,10 @@ fi
 "$PROG" "$@"
 PRG_ST_EXIT=$?
 
-if [[ ($ON_ERROR == 0) || ( ($ON_ERROR == 1) && ($PRG_ST_EXIT != 0) ) ]]
+if [ $ON_ERROR = 0 ] || [ $ON_ERROR = 1 -a $PRG_ST_EXIT != 0 ]
 then
 	echo "Press return ..."
 	read dummy
 fi
 
 exit $PRG_ST_EXIT
-
