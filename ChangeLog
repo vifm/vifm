@@ -66,6 +66,8 @@
 
 	Fixed bug when options from startup file were not applied after startup.
 
+	Fixed bugs with color schemes.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).

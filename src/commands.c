@@ -1402,7 +1402,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		{
 			if(cmd->args)
 			{
-				load_color_scheme(cmd->args);
+				load_color_scheme(view, cmd->args);
 			}
 			else /* Show menu with colorschemes listed */
 			{

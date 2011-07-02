@@ -511,7 +511,7 @@ draw_dir_list(FileView *view, int top)
 	char file_name[view->window_width*2 -2];
 	int LINE_COLOR;
 	int bold = 1;
-	int color_scheme = 0;
+	int color_scheme;
 
 	color_scheme = check_directory_for_color_scheme(view->curr_dir);
 

@@ -53,32 +53,6 @@ find_color_scheme(const char *name)
 	return -1;
 }
 
-void
-load_color_scheme(const char *name)
-{
-	int i;
-
-	i = find_color_scheme(name);
-	if(i < 0)
-	{
-		show_error_msg("Color Scheme", "Invalid color scheme name");
-		return;
-	}
-
-	load_color_scheme_id(i);
-}
-
-void
-load_color_scheme_id(int id)
-{
-	int x;
-	for(x = 0; x < MAXNUM_COLOR; x++)
-		init_pair(col_schemes[id].color[x].name - id*MAXNUM_COLOR,
-				col_schemes[id].color[x].fg, col_schemes[id].color[x].bg);
-
-	cfg.color_scheme_cur = id;
-}
-
 /* This function is called only when colorschemes file doesn't exist */
 static void
 write_color_scheme_file(void)
@@ -270,7 +244,7 @@ add_color(char s1[], char s2[], char s3[])
 {
 	int fg, bg;
 	int scheme;
-	const int x = cfg.color_scheme_num -1;
+	const int x = cfg.color_scheme_num - 1;
 	int y = cfg.color_pairs_num;
 
 	fg = colname2int(s2);
@@ -394,20 +368,18 @@ read_color_scheme_file(void)
 
 				cfg.color_scheme_num++;
 
-				if (cfg.color_scheme_num > 8)
+				if(cfg.color_scheme_num > 8)
 					break;
 
 				continue;
 			}
 			if(!strcmp(line, "DIRECTORY"))
 			{
-				size_t len;
-				Col_scheme* cs = col_schemes + (cfg.color_scheme_num - 1);
+				Col_scheme* cs;
 
+				cs = col_schemes + (cfg.color_scheme_num - 1);
 				snprintf(cs->dir, PATH_MAX, "%s", s1);
-				len = strlen(cs->dir);
-				if(cs->dir[len - 1] == '/')
-					cs->dir[len - 1] = '\0';
+				chosp(cs->dir);
 				continue;
 			}
 		}
@@ -439,7 +411,7 @@ check_directory_for_color_scheme(const char *dir)
 {
 	int i;
 	int max_len = 0;
-	int max_index = 0;
+	int max_index = -1;
 
 	for(i = 0; i < cfg.color_scheme_num; i++)
 	{
@@ -455,7 +427,10 @@ check_directory_for_color_scheme(const char *dir)
 		}
 	}
 
-	return (max_index * MAXNUM_COLOR);
+	if(max_index == -1)
+		return cfg.color_scheme_cur*MAXNUM_COLOR;
+
+	return max_index*MAXNUM_COLOR;
 }
 
 char *

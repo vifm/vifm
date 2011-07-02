@@ -135,6 +135,7 @@ void update_input_bar(wchar_t c);
 void clear_num_window(void);
 void show_progress(const char *msg, int period);
 void redraw_lists(void);
+void load_color_scheme(FileView *view, const char *name);
 
 #endif
 

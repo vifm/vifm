@@ -164,6 +164,7 @@ setup_ncurses_interface()
 {
 	int screen_x, screen_y;
 	int x, y;
+	int i;
 
 	initscr();
 	noecho();
@@ -181,10 +182,19 @@ setup_ncurses_interface()
 		finish("Vifm requires a console that can support color.\n");
 
 	start_color();
-	// Changed for pdcurses
+	/* Changed for pdcurses */
 	use_default_colors();
 
-	load_color_scheme_id(cfg.color_scheme_cur);
+	for(i = 0; i < cfg.color_scheme_num; i++)
+	{
+		int x;
+		for(x = 0; x < MAXNUM_COLOR; x++)
+			init_pair(col_schemes[i].color[x].name, col_schemes[i].color[x].fg,
+					col_schemes[i].color[x].bg);
+	}
+
+	lwin.color_scheme = cfg.color_scheme_cur*MAXNUM_COLOR;
+	rwin.color_scheme = cfg.color_scheme_cur*MAXNUM_COLOR;
 
 	werase(stdscr);
 
@@ -666,6 +676,23 @@ redraw_lists(void)
 	draw_dir_list(&lwin, lwin.top_line);
 	draw_dir_list(&rwin, rwin.top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
+}
+
+void
+load_color_scheme(FileView *view, const char *name)
+{
+	int i;
+
+	i = find_color_scheme(name);
+	if(i < 0)
+	{
+		show_error_msg("Color Scheme", "Invalid color scheme name");
+		return;
+	}
+
+	cfg.color_scheme_cur = i;
+	draw_dir_list(view, view->top_line);
+	moveto_list_pos(view, view->list_pos);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

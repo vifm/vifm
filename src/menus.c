@@ -463,12 +463,6 @@ execute_jobs_cb(FileView *view, menu_info *m)
 }
 
 static void
-execute_colorschemes_cb(menu_info *m)
-{
-	load_color_scheme(m->data[m->pos]);
-}
-
-static void
 execute_apropos_cb(menu_info *m)
 {
 	char *line = NULL;
@@ -609,7 +603,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 			exec_commands(m->data[m->pos], view, GET_COMMAND, 1);
 			break;
 		case COLORSCHEME:
-			execute_colorschemes_cb(m);
+			load_color_scheme(view, m->data[m->pos]);
 			break;
 		case COMMAND:
 			execute_command(view, command_list[m->pos].name);
@@ -992,7 +986,7 @@ show_colorschemes_menu(FileView *view)
 
 	getmaxyx(menu_win, m.win_rows, len);
 
-	m.title = strdup(" Color Schemes ");
+	m.title = strdup(" Choose the default Color Scheme ");
 
 	x = 0;
 	i = 1;

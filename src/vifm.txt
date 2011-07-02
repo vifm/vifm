@@ -58,8 +58,10 @@ The builtin commands are:
 :cd - change to your home directory.
 	:cd /usr/local - change directory to /usr/local.
 :cmdhistory - show command line history menu.
-:colorscheme - gives a messages with a list of available color schemes.
-:colorscheme color_scheme_name - changes color scheme.
+:colorscheme - gives a menu with a list of available color schemes.  You can
+        choose default color scheme here.  It will be used if no DIRECTORY in
+        colorscheme file doesn't fit current path.  See :colorscheme.
+:colorscheme color_scheme_name - changes default color scheme.
 :[range]d[elete][count] - delete selected file or files.
 	See |Vifm_Ranges| for the ranges implemented.
 :delc[ommand] user_command - remove user_command.

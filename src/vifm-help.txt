@@ -117,8 +117,11 @@ The basic vi key bindings are used to move through the files and popup
     :display or :register - popup menu with registers content.
     :dirs - display directory stack.
     :cmdhistory - show command line history menu.
-    :colorscheme - gives a messages with a list of available color schemes.
-    :colorscheme color_scheme_name - changes color scheme.
+    :colorscheme - gives a menu with a list of available color schemes.  You
+        can choose default color scheme here.  It will be used if no DIRECTORY in
+        colorscheme file doesn't fit current path.
+    :colorscheme color_scheme_name - changes default color scheme.  See
+        :colorscheme.
 	:f[ile] - popup menu of programs set for the file type of the current file.
         Add ' &' in the end of command if you want to start program in background. 
 	:fil regular_expression pattern will filter the files out of the directory
