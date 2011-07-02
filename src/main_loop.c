@@ -74,6 +74,8 @@ main_loop(void)
 		wchar_t c;
 		int ret;
 
+		is_term_working();
+
 		modes_pre();
 
 		/* just in case... */

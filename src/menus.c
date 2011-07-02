@@ -1709,7 +1709,7 @@ query_user_menu(char *title, char *message)
 	while(!done)
 	{
 		key = wgetch(error_win);
-		if(key == 'y' || key == 'n') /* ascii Return  ascii Ctrl-c */
+		if(key == 'y' || key == 'n' || key == ERR)
 			done = 1;
 	}
 
