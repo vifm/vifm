@@ -329,6 +329,18 @@ setup_ncurses_interface()
 }
 
 void
+is_term_working(void)
+{
+	struct winsize ws;
+	if(ioctl(0, TIOCGWINSZ, &ws) == -1)
+		finish("Terminal error");
+	if(ws.ws_row < 10)
+		finish("Terminal is too small to run vifm\n");
+	if(ws.ws_col < 30)
+		finish("Terminal is too small to run vifm\n");
+}
+
+void
 redraw_window(void)
 {
 	int screen_x, screen_y;

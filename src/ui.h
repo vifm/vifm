@@ -123,6 +123,7 @@ WINDOW *lborder;
 WINDOW *mborder;
 WINDOW *rborder;
 
+void is_term_working(void);
 int setup_ncurses_interface(void);
 void status_bar_message(const char *message);
 void update_stat_window(FileView *view);
