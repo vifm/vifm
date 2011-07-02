@@ -26,9 +26,11 @@
 
 #include "config.h"
 #include "filelist.h"
+#include "macros.h"
 #include "status.h"
 #include "tree.h"
 #include "ui.h"
+#include "utils.h"
 
 static FileView* view;
 
@@ -36,15 +38,6 @@ void
 set_view_to_sort(FileView *view_to_sort)
 {
 	view = view_to_sort;
-}
-
-static bool
-is_link_dir(const dir_entry_t * path)
-{
-	struct stat s;
-	stat(path->name, &s);
-
-	return (s.st_mode & S_IFDIR);
 }
 
 #ifndef TEST
@@ -101,12 +94,12 @@ sort_dir_list(const void *one, const void *two)
 	if(first->type == DIRECTORY)
 		first_is_dir = true;
 	else if(first->type == LINK)
-		first_is_dir = is_link_dir(one);
+		first_is_dir = check_link_is_dir(one);
 
 	if(second->type == DIRECTORY)
 		second_is_dir = true;
 	else if(second->type == LINK)
-		second_is_dir = is_link_dir(two);
+		second_is_dir = check_link_is_dir(two);
 
 	if(first_is_dir != second_is_dir)
 		return first_is_dir ? -1 : 1;
@@ -125,7 +118,7 @@ sort_dir_list(const void *one, const void *two)
 			else if(first->name[0] != '.' && second->name[0] == '.')
 				retval = 1;
 			else
-				retval = compare_file_names(first->name, second->name);
+				retval = strcmp(first->name, second->name);
 			break;
 
 		case SORT_BY_EXTENSION:

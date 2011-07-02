@@ -47,7 +47,6 @@ int yank_files(FileView *view, int reg, int count, int *indexes);
 void yank_selected_files(FileView *view, int reg);
 int file_exec(char *command);
 void show_change_window(FileView *view, int type);
-int check_link_is_dir(FileView *view, int pos);
 void rename_file(FileView *view, int name_only);
 void rename_files(FileView *view);
 void change_owner(void);

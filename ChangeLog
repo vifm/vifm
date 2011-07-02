@@ -75,6 +75,8 @@
 	Fixed some bugs with files with single and double quotes in their names.
 	Yes, again.
 
+	Fixed bug with sorting symbolic links by name.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).

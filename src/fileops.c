@@ -278,34 +278,6 @@ view_file(const char *filename)
 	curs_set(0);
 }
 
-int
-check_link_is_dir(FileView *view, int pos)
-{
-	char linkto[PATH_MAX + NAME_MAX];
-	int len;
-	char *filename = strdup(view->dir_entry[pos].name);
-	len = strlen(filename);
-	if (filename[len - 1] == '/')
-		filename[len - 1] = '\0';
-
-	len = readlink (filename, linkto, sizeof (linkto));
-
-	free(filename);
-
-	if (len > 0)
-	{
-		struct stat s;
-		linkto[len] = '\0';
-		if(lstat(linkto, &s) != 0)
-			return 0;
-
-		if((s.st_mode & S_IFMT) == S_IFDIR)
-			return 1;
-	}
-
-	return 0;
-}
-
 static void
 get_last_path_component(const char *path, char* buf)
 {

@@ -516,4 +516,34 @@ friendly_size_notation(unsigned long long num, int str_size, char *str)
 	snprintf(str, str_size, "%.1f %s", d, units[u]);
 }
 
+int
+check_link_is_dir(const char *filename)
+{
+	char linkto[PATH_MAX + NAME_MAX];
+	int len;
+	char *filename_copy;
+
+	len = strlen(filename);
+	filename_copy = strdup(filename);
+	if(filename_copy[len - 1] == '/')
+		filename_copy[len - 1] = '\0';
+
+	len = readlink(filename_copy, linkto, sizeof (linkto));
+
+	free(filename_copy);
+
+	if(len > 0)
+	{
+		struct stat s;
+		linkto[len] = '\0';
+		if(lstat(linkto, &s) != 0)
+			return 0;
+
+		if((s.st_mode & S_IFMT) == S_IFDIR)
+			return 1;
+	}
+
+	return 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

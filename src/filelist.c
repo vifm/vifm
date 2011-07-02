@@ -1365,7 +1365,7 @@ load_dir_list(FileView *view, int reload)
 			{
 				case S_IFLNK:
 					{
-						if(check_link_is_dir(view, view->list_rows))
+						if(check_link_is_dir(view->dir_entry[view->list_rows].name))
 						{
 							namelen = sizeof(dir_entry->name);
 							strcat(dir_entry->name, "/");

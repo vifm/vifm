@@ -55,6 +55,7 @@ int path_starts_with(const char *path, const char *begin);
 int fill_version_info(char **list);
 
 void friendly_size_notation(unsigned long long num, int str_size, char *str);
+int check_link_is_dir(const char *filename);
 
 #endif
 
