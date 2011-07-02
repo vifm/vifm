@@ -72,6 +72,9 @@
 
 	Fixed bug about truncation of the last character with selection and :e %f.
 
+	Fixed some bugs with files with single and double quotes in their names.
+	Yes, again.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).

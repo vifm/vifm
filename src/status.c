@@ -41,7 +41,10 @@ init_status(void)
 	curr_stats.dirsize_cache = 0;
 	curr_stats.fast_run = 0;
 	curr_stats.errmsg_shown = 0;
+
+#ifdef HAVE_LIBGTK
 	curr_stats.gtk_available = 0;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

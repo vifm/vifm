@@ -136,6 +136,8 @@ static const char *skip_spaces(const char *cmd);
 static const char *skip_word(const char *cmd);
 static int exec_command(char *cmd, FileView *view, int type);
 
+/* TODO generalize command handling */
+
 int
 sort_this(const void *one, const void *two)
 {
@@ -792,12 +794,14 @@ shellout(char *command, int pause)
 	{
 		if(cfg.use_screen)
 		{
+			char *escaped;
 			char *ptr = (char *)NULL;
 			char *title = strstr(command, cfg.vi_command);
 
 			/* Needed for symlink directories and sshfs mounts */
-			snprintf(buf, sizeof(buf), "screen -X setenv PWD \'%s\'",
-					curr_view->curr_dir);
+			escaped = escape_filename(curr_view->curr_dir, 0, 0);
+			snprintf(buf, sizeof(buf), "screen -X setenv PWD %s", escaped);
+			free(escaped);
 
 			my_system(buf);
 
@@ -807,13 +811,17 @@ shellout(char *command, int pause)
 					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c 'pauseme %s'",
 							title + strlen(cfg.vi_command) +1, command);
 				else
-					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c \"%s\"",
-							title + strlen(cfg.vi_command) +1, command);
+				{
+					escaped = escape_filename(command, 0, 0);
+					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c %s",
+							title + strlen(cfg.vi_command) +1, escaped);
+					free(escaped);
+				}
 			}
 			else
 			{
 				ptr = strchr(command, ' ');
-				if (ptr != NULL)
+				if(ptr != NULL)
 				{
 					*ptr = '\0';
 					title = strdup(command);
@@ -826,16 +834,21 @@ shellout(char *command, int pause)
 					snprintf(buf, sizeof(buf),
 							"screen -t \"%.10s\" sh -c 'pauseme %s'", title, command);
 				else
-					snprintf(buf, sizeof(buf), "screen -t \"%.10s\" sh -c \"%s\"", title, command);
+				{
+					escaped = escape_filename(command, 0, 0);
+					snprintf(buf, sizeof(buf), "screen -t \"%.10s\" sh -c %s", title,
+							escaped);
+					free(escaped);
+				}
 				free(title);
 			}
 		}
 		else
 		{
 			if(pause)
-				snprintf(buf, sizeof(buf), "sh -c 'pauseme %s'", command);
+				snprintf(buf, sizeof(buf), "pauseme %s", command);
 			else
-				snprintf(buf, sizeof(buf), "sh -c \"%s\"", command);
+				snprintf(buf, sizeof(buf), "%s", command);
 		}
 	}
 	else
@@ -1482,6 +1495,11 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_EDIT:
 			{
+				if(cmd->args)
+				{
+					show_error_msg("Command Error", ":edit command takes no arguments");
+					break;
+				}
 				if(!view->selected_files || !view->dir_entry[view->list_pos].selected)
 				{
 					char buf[PATH_MAX];

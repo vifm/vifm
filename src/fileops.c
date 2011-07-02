@@ -116,7 +116,7 @@ unmount_fuse(void)
 		char *tmp;
 
 		tmp = escape_filename(runner->mount_point, 0, 0);
-		snprintf(buf, sizeof(buf), "sh -c \"fusermount -u %s\"", tmp);
+		snprintf(buf, sizeof(buf), "fusermount -u %s", tmp);
 		free(tmp);
 
 		my_system(buf);
@@ -352,7 +352,12 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 	char *cmd_pos;
 	char *buf_pos;
 	char *prog_pos;
+	char *escaped_path;
+	char *escaped_filename;
+	char *escaped_mount_point;
 	int clear_before_mount = 0;
+
+	escaped_filename = escape_filename(get_current_file_name(view), 0, 0);
 
 	/* get mount_point_id + mount_point and set runner pointing to the list's
 	 * tail */
@@ -367,9 +372,15 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 			get_current_file_name(view));
 	if(mkdir(mount_point, S_IRWXU))
 	{
+		free(escaped_filename);
 		show_error_msg("Unable to create FUSE mount directory", mount_point);
 		return -1;
 	}
+	free(escaped_filename);
+
+	escaped_path = escape_filename(filename, 0, 0);
+	escaped_mount_point = escape_filename(mount_point, 0, 0);
+
 	/* I need the return code of the mount command */
 	status_bar_message("FUSE mounting selected file, please stand by..");
 	buf_pos = buf;
@@ -378,7 +389,7 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 		 Accepted FORMAT: FUSE_MOUNT|some_mount_command %SOURCE_FILE %DESTINATION_DIR
 		 or
 		 FUSE_MOUNT2|some_mount_command %PARAM %DESTINATION_DIR */
-	strcpy(buf_pos, "sh -c \"");
+	strcpy(buf_pos, "");
 	/* TODO what is this?
 		 strcpy(buf_pos, "sh -c \"pauseme PAUSE_ON_ERROR_ONLY "); */
 	buf_pos += strlen(buf_pos);
@@ -398,21 +409,17 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 				prog_pos++;
 			}
 			*cmd_pos = '\0';
-			if(buf_pos + strlen(filename) >= buf + sizeof(buf) + 2)
+			if(buf_pos + strlen(escaped_path) >= buf + sizeof(buf) + 2)
 				continue;
 			else if(!strcmp(cmd_buf, "%SOURCE_FILE") || !strcmp(cmd_buf, "%PARAM"))
 			{
-				*buf_pos++ = '\'';
-				strcpy(buf_pos, filename);
-				buf_pos += strlen(filename);
-				*buf_pos++ = '\'';
+				strcpy(buf_pos, escaped_path);
+				buf_pos += strlen(escaped_path);
 			}
 			else if(!strcmp(cmd_buf, "%DESTINATION_DIR"))
 			{
-				*buf_pos++ = '\'';
-				strcpy(buf_pos, mount_point);
-				buf_pos += strlen(mount_point);
-				*buf_pos++ = '\'';
+				strcpy(buf_pos, escaped_mount_point);
+				buf_pos += strlen(escaped_mount_point);
 			}
 			else if(!strcmp(cmd_buf, "%CLEAR"))
 			{
@@ -428,8 +435,9 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 		}
 	}
 
-	*buf_pos = '"';
-	*(++buf_pos) = '\0';
+	*buf_pos = '\0';
+	free(escaped_mount_point);
+	free(escaped_path);
 	/* CMD built */
 	/* Just before running the mount,
 		 I need to chdir out temporarily from any FUSE mounted

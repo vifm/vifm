@@ -1035,6 +1035,7 @@ try_unmount_fuse(FileView *view)
 	Fuse_List *runner, *trailer;
 	int status;
 	Fuse_List *sniffer;
+	char *escaped_mount_point;
 
 	runner = fuse_mounts;
 	trailer = NULL;
@@ -1052,8 +1053,9 @@ try_unmount_fuse(FileView *view)
 
 	/* we are exiting a top level dir */
 	status_bar_message("FUSE unmounting selected file, please stand by..");
-	snprintf(buf, sizeof(buf), "sh -c \"fusermount -u '%s'\"",
-			runner->mount_point);
+	escaped_mount_point = escape_filename(runner->mount_point, 0, 0);
+	snprintf(buf, sizeof(buf), "fusermount -u %s", escaped_mount_point);
+	free(escaped_mount_point);
 
 	/* have to chdir to parent temporarily, so that this DIR can be unmounted */
 	if(chdir(cfg.fuse_home) != 0)
