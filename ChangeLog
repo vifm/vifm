@@ -92,6 +92,8 @@
 	Fixed bug with an empty line as filename for :rename command.  Now it
 	means don't rename appropriate file.
 
+	Fixed bug with :n
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).

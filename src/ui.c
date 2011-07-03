@@ -160,7 +160,7 @@ status_bar_message(const char *message)
 }
 
 int
-setup_ncurses_interface()
+setup_ncurses_interface(void)
 {
 	int screen_x, screen_y;
 	int x, y;

@@ -1043,7 +1043,7 @@ check_for_range(FileView *view, char *command, cmd_t *cmd)
 		/* The command is just a number */
 		if(strlen(num_buf) == strlen(command))
 		{
-			moveto_list_pos(view, cmd->start_range - 1);
+			moveto_list_pos(view, cmd->start_range);
 			return -10;
 		}
 	}
