@@ -46,6 +46,8 @@
 
 	Show message when :delcommand is called with no arguments.
 
+	More safe :rename command.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.

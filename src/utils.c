@@ -546,4 +546,14 @@ check_link_is_dir(const char *filename)
 	return 0;
 }
 
+void
+free_string_array(char **array, size_t len)
+{
+	int i;
+
+	for(i = 0; i < len; i++)
+		free(array[i]);
+	free(array);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

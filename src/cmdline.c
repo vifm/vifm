@@ -618,7 +618,7 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 	}
 
 	if(prev_mode == VISUAL_MODE)
-		leave_visual_mode(0);
+		leave_visual_mode(curr_stats.save_msg);
 
 	free(p);
 }

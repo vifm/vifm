@@ -934,12 +934,92 @@ rename_file(FileView *view, int name_only)
 	enter_prompt_mode(L"New name: ", buf, rename_file_cb);
 }
 
+/* Returns not NULL if file is OK */
+static char **
+check_rename_file(FileView *view, const int *indexes, int count, FILE *f)
+{
+	int i;
+	char **list = NULL;
+	size_t len = 0;
+
+	for(i = 0; i < count; i++)
+	{
+		int j;
+		char name[NAME_MAX];
+
+		if(fgets(name, sizeof(name), f) == NULL)
+		{
+			status_bar_message("Not enough lines");
+			curr_stats.save_msg = 1;
+			free_string_array(list, len);
+			return NULL;
+		}
+		chomp(name);
+
+		for(j = 0; j < len; j++)
+			if(strcmp(name, list[j]) == 0)
+			{
+				status_bar_message("There are duplicates");
+				curr_stats.save_msg = 1;
+				free_string_array(list, len);
+				return NULL;
+			}
+
+		list = realloc(list, sizeof(char*)*(len + 1));
+		list[len] = strdup(name);
+		len++;
+
+		if(name[0] == '\0')
+			continue;
+
+		if(strcmp(name, view->dir_entry[indexes[i]].name) == 0)
+			continue;
+
+		for(j = 0; j < count; j++)
+			if(j != i && strcmp(name, view->dir_entry[indexes[j]].name) == 0)
+			{
+				status_bar_message(
+						"Can't use one of old names as a new name for another file");
+				curr_stats.save_msg = 1;
+				free_string_array(list, len);
+				return NULL;
+			}
+	}
+
+	return list;
+}
+
+/* Returns count of renamed files */
+static int
+perform_renaming(FileView *view, const int *indexes, int count, char **list)
+{
+	int i;
+	int renamed = 0;
+	cmd_group_begin("Multiple files rename");
+
+	for(i = 0; i < count; i++)
+	{
+		if(list[i] == '\0')
+			continue;
+
+		if(strcmp(list[i], view->dir_entry[indexes[i]].name) == 0)
+			continue;
+
+		if(mv_file(view->dir_entry[indexes[i]].name, list[i]) == 0)
+			renamed++;
+	}
+
+	cmd_group_end();
+
+	return renamed;
+}
+
 static void
 rename_files_ind(FileView *view, const int *indexes, int count)
 {
 	char buf[] = "vifm-rename-XXXXXX";
-	char msg_buf[128];
 	char *temp_file;
+	char **list;
 	struct stat st_before, st_after;
 	FILE *f;
 	int i, renamed = 0;
@@ -985,38 +1065,27 @@ rename_files_ind(FileView *view, const int *indexes, int count)
 	if((f = fopen(temp_file, "r")) == NULL)
 	{
 		unlink(temp_file);
-		status_bar_message("Can't open temp file.");
+		status_bar_message("Can't open temporary file.");
 		return;
 	}
 
-	cmd_group_begin("Multiple files rename");
-
-	for(i = 0; i < count; i++)
-	{
-		char name[NAME_MAX];
-
-		if(fgets(name, sizeof(name), f) == NULL)
-			break;
-		chomp(name);
-
-		if(name[0] == '\0')
-			continue;
-
-		if(strcmp(name, view->dir_entry[indexes[i]].name) == 0)
-			continue;
-		if(mv_file(view->dir_entry[indexes[i]].name, name) == 0)
-			renamed++;
-	}
-
-	cmd_group_end();
+	if((list = check_rename_file(view, indexes, count, f)) != NULL)
+		renamed = perform_renaming(view, indexes, count, list);
 
 	fclose(f);
 
 	unlink(temp_file);
 
-	snprintf(msg_buf, sizeof(msg_buf), "%d file%s renamed.", renamed,
-			(renamed == 1) ? "" : "s");
-	status_bar_message(msg_buf);
+	if(list != NULL)
+	{
+		char msg_buf[128];
+
+		snprintf(msg_buf, sizeof(msg_buf), "%d file%s renamed.", renamed,
+				(renamed == 1) ? "" : "s");
+		status_bar_message(msg_buf);
+
+		free_string_array(list, count);
+	}
 
 	load_dir_list(view, 1);
 	moveto_list_pos(view, view->list_pos);
