@@ -131,20 +131,20 @@ load_default_configuration(void)
 	strncpy(lwin.regexp, "\\..~$", sizeof(lwin.regexp) -1);
 
 	lwin.filename_filter = (char *)realloc(lwin.filename_filter,
-			strlen(DEFAULT_FILENAME_FILTER) +1);
+			strlen(DEFAULT_FILENAME_FILTER) + 1);
 	strcpy(lwin.filename_filter, DEFAULT_FILENAME_FILTER);
 	lwin.prev_filter = (char *)realloc(lwin.prev_filter,
-			strlen(DEFAULT_FILENAME_FILTER) +1);
+			strlen(DEFAULT_FILENAME_FILTER) + 1);
 	strcpy(lwin.prev_filter, DEFAULT_FILENAME_FILTER);
 
 	lwin.invert = TRUE;
 	strncpy(rwin.regexp, "\\..~$", sizeof(rwin.regexp) -1);
 
 	rwin.filename_filter = (char *)realloc(rwin.filename_filter,
-			strlen(DEFAULT_FILENAME_FILTER) +1);
+			strlen(DEFAULT_FILENAME_FILTER) + 1);
 	strcpy(rwin.filename_filter, DEFAULT_FILENAME_FILTER);
 	rwin.prev_filter = (char *)realloc(rwin.prev_filter,
-			strlen(DEFAULT_FILENAME_FILTER) +1);
+			strlen(DEFAULT_FILENAME_FILTER) + 1);
 	strcpy(rwin.prev_filter, DEFAULT_FILENAME_FILTER);
 
 	rwin.invert = TRUE;
@@ -267,6 +267,11 @@ read_config_file(void)
 				cfg.use_trash = atoi(s1);
 				continue;
 			}
+			if(!strcmp(line, "UNDO_LEVELS"))
+			{
+				cfg.undo_levels = atoi(s1);
+				continue;
+			}
 			if(!strcmp(line, "USE_ONE_WINDOW"))
 			{
 				cfg.show_one_window = atoi(s1);
@@ -280,6 +285,16 @@ read_config_file(void)
 			if(!strcmp(line, "HISTORY_LENGTH"))
 			{
 				cfg.history_len = atoi(s1);
+				continue;
+			}
+			if(!strcmp(line, "FAST_RUN"))
+			{
+				curr_stats.fast_run = atoi(s1);
+				continue;
+			}
+			if(!strcmp(line, "SORT_NUMBERS"))
+			{
+				cfg.sort_numbers = atoi(s1);
 				continue;
 			}
 			if(!strcmp(line, "LEFT_WINDOW_SORT_TYPE"))
@@ -307,10 +322,9 @@ read_config_file(void)
 			if(!strcmp(line, "LWIN_FILTER"))
 			{
 				lwin.filename_filter = (char *)realloc(lwin.filename_filter,
-				strlen(s1) +1);
+						strlen(s1) +1);
 				strcpy(lwin.filename_filter, s1);
-				lwin.prev_filter = (char *)realloc(lwin.prev_filter,
-					strlen(s1) +1);
+				lwin.prev_filter = (char *)realloc(lwin.prev_filter, strlen(s1) + 1);
 				strcpy(lwin.prev_filter, s1);
 				continue;
 			}
@@ -322,10 +336,9 @@ read_config_file(void)
 			if(!strcmp(line, "RWIN_FILTER"))
 			{
 				rwin.filename_filter = (char *)realloc(rwin.filename_filter,
-				strlen(s1) +1);
+						strlen(s1) + 1);
 				strcpy(rwin.filename_filter, s1);
-				rwin.prev_filter = (char *)realloc(rwin.prev_filter,
-					strlen(s1) +1);
+				rwin.prev_filter = (char *)realloc(rwin.prev_filter, strlen(s1) + 1);
 				strcpy(rwin.prev_filter, s1);
 				continue;
 			}
@@ -342,6 +355,11 @@ read_config_file(void)
 			if(!strcmp(line, "SAVE_LOCATION"))
 			{
 				cfg.save_location = atoi(s1);
+				continue;
+			}
+			if(!strcmp(line, "FOLLOW_LINKS"))
+			{
+				cfg.follow_links = atoi(s1);
 				continue;
 			}
 			if(!strcmp(line, "RUN_EXECUTABLE"))
@@ -528,6 +546,20 @@ write_config_file(void)
 	fprintf(fp, "\n# To always save pane location on exit and start vifm in the");
 	fprintf(fp, "\n# last visited directory set this to 1.\n");
 	fprintf(fp, "\nSAVE_LOCATION=%d\n", cfg.save_location ? 1 : 0);
+
+	fprintf(fp, "\n# Follow links on l or Enter.\n");
+	fprintf(fp, "\nFOLLOW_LINKS=%d\n", cfg.follow_links ? 1 : 0);
+
+	fprintf(fp, "\n# If you want to run commands using :! with.");
+	fprintf(fp, "\n# With this option turned on you can run partially entered commands with");
+	fprintf(fp, "\n# unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).\n");
+	fprintf(fp, "\nFAST_RUN=%d\n", curr_stats.fast_run ? 1 : 0);
+
+	fprintf(fp, "\n# Natural sort of (version) numbers within text.\n");
+	fprintf(fp, "\nSORT_NUMBERS=%d\n", cfg.sort_numbers ? 1 : 0);
+
+	fprintf(fp, "\n# Maximum number of changes that can be undone.\n");
+	fprintf(fp, "\nUNDO_LEVELS=%d\n", cfg.undo_levels);
 
 	fprintf(fp, "\n# The sort type is how the files will be sorted in the file listing.\n");
 	fprintf(fp, "# Sort by File Extension = 1\n");

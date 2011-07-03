@@ -352,7 +352,7 @@ save_search_history(char *pattern)
 	int x = 0;
 
 	if((cfg.search_history_num + 1) >= cfg.search_history_len)
-		cfg.search_history_num = x	= cfg.search_history_len - 1;
+		cfg.search_history_num = x = cfg.search_history_len - 1;
 	else
 		x = cfg.search_history_num + 1;
 
@@ -684,9 +684,9 @@ add_command(char *name, char *action)
 	command_list = (command_t *)realloc(command_list,
 			(cfg.command_num +1) * sizeof(command_t));
 
-	command_list[cfg.command_num].name = (char *)malloc(strlen(name) +1);
+	command_list[cfg.command_num].name = (char *)malloc(strlen(name) + 1);
 	strcpy(command_list[cfg.command_num].name, name);
-	command_list[cfg.command_num].action = (char *)malloc(strlen(action) +1);
+	command_list[cfg.command_num].action = (char *)malloc(strlen(action) + 1);
 	strcpy(command_list[cfg.command_num].action, action);
 	cfg.command_num++;
 	curr_stats.setting_change = 1;
@@ -1188,15 +1188,15 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 	}
 
 	/* Get the actual command name. */
-	if((cmd->builtin = command_is_reserved(cmd->cmd_name)) > -1)
+	if((cmd->builtin = command_is_reserved(cmd->cmd_name)) > - 1)
 	{
 		cmd->cmd_name = (char *)realloc(cmd->cmd_name,
-				strlen(reserved_commands[cmd->builtin]) +1);
+				strlen(reserved_commands[cmd->builtin]) + 1);
 		snprintf(cmd->cmd_name, sizeof(reserved_commands[cmd->builtin]),
 				"%s", reserved_commands[cmd->builtin]);
 		return 1;
 	}
-	else if((cmd->is_user = is_user_command(cmd->cmd_name)) > -1)
+	else if((cmd->is_user = is_user_command(cmd->cmd_name)) > - 1)
 	{
 		cmd->cmd_name =(char *)realloc(cmd->cmd_name,
 				strlen(command_list[cmd->is_user].name) + 1);
@@ -1905,10 +1905,10 @@ execute_user_command(FileView *view, cmd_t *cmd)
 	{
 		view->invert = 1;
 		view->filename_filter = (char *)realloc(view->filename_filter,
-				strlen(strchr(expanded_com, ' ')) +1);
+				strlen(strchr(expanded_com, ' ')) + 1);
 		snprintf(view->filename_filter,
-				strlen(strchr(expanded_com, ' ')) +1, "%s",
-				strchr(expanded_com, ' ') +1);
+				strlen(strchr(expanded_com, ' ')) + 1, "%s",
+				strchr(expanded_com, ' ') + 1);
 
 		load_dir_list(view, 1);
 		moveto_list_pos(view, 0);

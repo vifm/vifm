@@ -1434,7 +1434,7 @@ load_dir_list(FileView *view, int reload)
 				view->filename_filter, view->invert==1 ? "inverted" : "");
 		status_bar_message(msg);
 		view->filename_filter = (char *)realloc(view->filename_filter,
-				strlen("*") +1);
+				strlen("*") + 1);
 		if(view->filename_filter == NULL)
 		{
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -1474,22 +1474,21 @@ filter_selected_files(FileView *view)
 			{
 				char *buf = NULL;
 
-				buf_size = strlen(view->dir_entry[x].name) +7;
-				buf = (char *)realloc(buf, strlen(view->dir_entry[x].name) +7);
-				snprintf(buf, buf_size,
-						"|\\<%s\\>$", view->dir_entry[x].name);
+				buf_size = strlen(view->dir_entry[x].name) + 7;
+				buf = (char *)realloc(buf, buf_size);
+				snprintf(buf, buf_size, "|\\<%s\\>$", view->dir_entry[x].name);
 				view->filename_filter = (char *)
-					realloc(view->filename_filter, strlen(view->filename_filter) +
-							strlen(buf) +1);
+						realloc(view->filename_filter, strlen(view->filename_filter) +
+						strlen(buf) + 1);
 				strcat(view->filename_filter, buf);
 				view->filtered++;
 				free(buf);
 			}
 			else
 			{
-				buf_size = strlen(view->dir_entry[x].name) +6;
+				buf_size = strlen(view->dir_entry[x].name) + 6;
 				view->filename_filter = (char *)
-					realloc(view->filename_filter, strlen(view->dir_entry[x].name) +6);
+						realloc(view->filename_filter, strlen(view->dir_entry[x].name) + 6);
 				snprintf(view->filename_filter, buf_size,
 						"\\<%s\\>$", view->dir_entry[x].name);
 				view->filtered = 1;

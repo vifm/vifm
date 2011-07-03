@@ -403,8 +403,8 @@ The following command names are reserved and cannot be used for user commands.
 fastrun
 type: boolean
 default: false
-With this option turned on you can run commands using :! with unambiguous
-beginning (e.g. :!Te instead of :!Terminal or :!Te<tab>).
+With this option turned on you can run partially entered commands with
+unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).
 
 followlinks
 type: boolean
