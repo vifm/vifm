@@ -224,8 +224,8 @@ main(int argc, char *argv[])
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	load_initial_directory(&rwin, dir);
 	load_initial_directory(&lwin, dir);
+	load_initial_directory(&rwin, dir);
 
 	/* Get Command Line Arguments */
 	for(x = 1; x < argc; x++)

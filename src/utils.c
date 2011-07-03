@@ -484,7 +484,7 @@ path_starts_with(const char *path, const char *begin)
 {
 	size_t len = strlen(begin);
 
-	if(begin[len - 1] == '/')
+	if(len > 0 && begin[len - 1] == '/')
 		len--;
 
 	if(strncmp(path, begin, len) != 0)

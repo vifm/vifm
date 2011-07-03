@@ -371,6 +371,8 @@ read_color_scheme_file(void)
 				if(cfg.color_scheme_num > 8)
 					break;
 
+				// TODO init_color_scheme(&col_schemes[cfg.color_scheme_num - 1]);
+
 				continue;
 			}
 			if(!strcmp(line, "DIRECTORY"))
