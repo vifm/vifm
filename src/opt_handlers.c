@@ -14,6 +14,7 @@ static void add_options(void);
 static void load_options(void);
 static void print_func(const char *msg, const char *description);
 static void fastrun_handler(enum opt_op op, union optval_t val);
+static void followlinks_handler(enum opt_op op, union optval_t val);
 static void iec_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
 static void savelocation_handler(enum opt_op op, union optval_t val);
@@ -60,6 +61,7 @@ static void
 add_options(void)
 {
 	add_option("fastrun", OPT_BOOL, 0, NULL, &fastrun_handler);
+	add_option("followlinks", OPT_BOOL, 0, NULL, &followlinks_handler);
 	add_option("iec", OPT_BOOL, 0, NULL, &iec_handler);
 	add_option("runexec", OPT_BOOL, 0, NULL, &runexec_handler);
 	add_option("savelocation", OPT_BOOL, 0, NULL, &savelocation_handler);
@@ -80,6 +82,12 @@ static void
 load_options(void)
 {
 	union optval_t val;
+
+	val.bool_val = curr_stats.fast_run;
+	set_option("fastrun", val);
+
+	val.bool_val = cfg.follow_links;
+	set_option("followlinks", val);
 
 	val.bool_val = cfg.use_iec_prefixes;
 	set_option("iec", val);
@@ -152,6 +160,12 @@ static void
 fastrun_handler(enum opt_op op, union optval_t val)
 {
 	curr_stats.fast_run = val.bool_val;
+}
+
+static void
+followlinks_handler(enum opt_op op, union optval_t val)
+{
+	cfg.follow_links = val.bool_val;
 }
 
 static void

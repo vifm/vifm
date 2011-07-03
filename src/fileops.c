@@ -670,13 +670,15 @@ void
 handle_file(FileView *view, int dont_execute)
 {
 	int type;
-
+	int runnable;
+	int run_link;
+	char *filename;
+	
+	filename = get_current_file_name(view);
 	type = view->dir_entry[view->list_pos].type;
 
 	if(type == DIRECTORY)
 	{
-		char *filename = get_current_file_name(view);
-
 		if(strcmp(filename, "../") == 0)
 			cd_updir(view);
 		else if(change_directory(view, filename) == 0)
@@ -690,25 +692,27 @@ handle_file(FileView *view, int dont_execute)
 	if(cfg.vim_filter)
 	{
 		FILE *fp;
-		char filename[PATH_MAX] = "";
+		char filepath[PATH_MAX] = "";
 
-		snprintf(filename, sizeof(filename), "%s/vimfiles", cfg.config_dir);
-		fp = fopen(filename, "w");
-		snprintf(filename, sizeof(filename), "%s/%s", view->curr_dir,
-				view->dir_entry[view->list_pos].name);
+		snprintf(filepath, sizeof(filepath), "%s/vimfiles", cfg.config_dir);
+		fp = fopen(filepath, "w");
+		snprintf(filepath, sizeof(filepath), "%s/%s", view->curr_dir, filename);
 		endwin();
-		fprintf(fp, "%s", filename);
+		fprintf(fp, "%s", filepath);
 		fclose(fp);
 		exit(0);
 	}
 
-	if(type == EXECUTABLE && !dont_execute && cfg.auto_execute)
+	run_link = !cfg.follow_links && type == LINK && !check_link_is_dir(filename);
+	runnable = type == EXECUTABLE || (run_link && access(filename, X_OK) == 0);
+
+	if(runnable && !dont_execute && cfg.auto_execute)
 	{
 		char buf[NAME_MAX];
-		snprintf(buf, sizeof(buf), "./%s", get_current_file_name(view));
+		snprintf(buf, sizeof(buf), "./%s", filename);
 		shellout(buf, 1);
 	}
-	else if(type == REGULAR || type == EXECUTABLE)
+	else if(type == REGULAR || type == EXECUTABLE || run_link)
 	{
 		execute_file(view, dont_execute);
 	}

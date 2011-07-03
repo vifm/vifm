@@ -64,7 +64,7 @@ typedef struct _Config {
 
 	int save_location; /* Start vifm in the last visited directory. */
 
-	int follow_links; /* Treat symlinks on files like regular files. */
+	int follow_links; /* Follow links on l or Enter. */
 } Config;
 
 extern Config cfg;

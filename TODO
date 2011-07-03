@@ -5,7 +5,6 @@ Basic things that need to be done.
 	Better documentation.
 	Handle commands that are too long to be passed directly to the shell (fixed??).
 	Make ga work in background.
-	Add 'runlink' option.
 	Make ranges modify %f macro.
 	Think about good key for creating links (like pl in ranger).
 	Fix :'<'>!echo %f

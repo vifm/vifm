@@ -77,10 +77,6 @@ compare_file_names(const char *s, const char *t)
 	return *s - *t;
 }
 
-/*
- * This function is from the git program written by Tudor Hulubei and
- * Andrei Pitis
- */
 int
 sort_dir_list(const void *one, const void *two)
 {

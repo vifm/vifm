@@ -292,6 +292,11 @@ Options
     With this option turned on you can run commands using :! with unambiguous
     beginning (e.g. :!Te instead of :!Terminal or :!Te<tab>).
 
+    followlinks
+    type: boolean
+    default: true
+    Follow links on l or Enter.
+
     iec
     type: boolean
     default: false

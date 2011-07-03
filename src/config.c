@@ -78,6 +78,8 @@ init_config(void)
 
 	cfg.save_location = 0;
 
+	cfg.follow_links = 1;
+
 	/* Maximum argument length to pass to the shell */
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)
 		cfg.max_args = 4096; /* POSIX MINIMUM */
