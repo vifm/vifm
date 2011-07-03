@@ -999,6 +999,9 @@ rename_files_ind(FileView *view, const int *indexes, int count)
 			break;
 		chomp(name);
 
+		if(name[0] == '\0')
+			continue;
+
 		if(strcmp(name, view->dir_entry[indexes[i]].name) == 0)
 			continue;
 		if(mv_file(view->dir_entry[indexes[i]].name, name) == 0)
