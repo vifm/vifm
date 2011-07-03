@@ -648,10 +648,10 @@ remove_command(char *name)
 		while(x < cfg.command_num)
 		{
 			command_list[x].name = (char *)realloc(command_list[x].name,
-					strlen(command_list[x +1].name +1));
+					strlen(command_list[x + 1].name) + 1);
 			strcpy(command_list[x].name, command_list[x +1].name);
 			command_list[x].action = (char *)realloc(command_list[x].action,
-					strlen(command_list[x +1].action +1));
+					strlen(command_list[x + 1].action) + 1);
 			strcpy(command_list[x].action, command_list[x +1].action);
 			x++;
 		}
