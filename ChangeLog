@@ -83,6 +83,8 @@
 
 	Fixed bugs with registers and segmentation fault.
 
+	Fixed :d command, it is an abbreviation to :delete now.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).

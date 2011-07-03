@@ -65,6 +65,7 @@ const char *reserved_commands[] = {
 	"colorscheme",
 	"command",
 	"cmdhistory",
+	"d",
 	"delcommand",
 	"delete",
 	"dirs",
@@ -1473,6 +1474,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		case COM_CMDHISTORY:
 			show_cmdhistory_menu(view);
 			break;
+		case COM_D:
 		case COM_DELETE:
 			select_files_in_range(view, cmd);
 			save_msg = delete_file(view, DEFAULT_REG_NAME, 0, NULL, 1);
