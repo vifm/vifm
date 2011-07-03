@@ -246,7 +246,6 @@ background_and_wait_for_errors(char *cmd)
 	pid_t pid;
 	int error_pipe[2];
 	int error = 0;
-	int status;
 
 	if(pipe(error_pipe) != 0)
 	{
@@ -295,8 +294,7 @@ background_and_wait_for_errors(char *cmd)
 	if(error)
 		return -1;
 
-	waitpid(pid, &status, 0);
-	return WEXITSTATUS(status);
+	return 0;
 }
 
 int

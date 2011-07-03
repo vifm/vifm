@@ -1480,8 +1480,14 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			save_msg = delete_file(view, DEFAULT_REG_NAME, 0, NULL, 1);
 			break;
 		case COM_DELCOMMAND:
-			if(cmd->args)
-				remove_command(cmd->args);
+			if(cmd->args == NULL)
+			{
+				show_error_msg("Command Error",
+						"The :delcommand command requires an argument - :delcommand cmd");
+				save_msg = 1;
+				break;
+			}
+			remove_command(cmd->args);
 			break;
 		case COM_DIRS:
 			show_dirstack_menu(view);

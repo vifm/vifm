@@ -44,6 +44,8 @@
 
 	Don't filter anything when filter is set to an empty string.
 
+	Show message when :delcommand is called with no arguments.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.
