@@ -28,3 +28,4 @@ Possible things to add.
     Add a command to copy current pane location into X11 clipboard.
 	Add mouse support.
 	View of directories.
+    Swap names of two files (selected or given as arguments).
