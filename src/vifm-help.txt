@@ -101,9 +101,9 @@ The basic vi key bindings are used to move through the files and popup
 	file will unselect it.  This can be used by itself to select files or with a
 	/search pattern  or with visually selected files.
 
-	:commands
-	:com is a menu of user commands
-	:com name action - will set a new user command
+	:com[mand]
+	:com[mand] is a menu of user commands
+	:com[mand] name action - will set a new user command
 		Unlike vim user commands do not have to start with a capital letter.
 		User commands are run in a shell by default.  To run a command in
 		the background you must set it as a background command with & at the end
@@ -112,7 +112,7 @@ The basic vi key bindings are used to move through the files and popup
 
 	:apropos manpage - will create a menu with the results from the
 		apropos command.
-	:command! name action - will overwrite a previously set command.
+	:com[mand]! name action - will overwrite a previously set command.
 	:delcommand command_name - will remove the command_name user command.
     :display or :register - popup menu with registers content.
     :dirs - display directory stack.
@@ -141,24 +141,24 @@ The basic vi key bindings are used to move through the files and popup
 			showing partial output of the command.
 	:!!  same as :! but will pause the screen before returning to vifm.
 		:!!ls -l
-	:edit - load file into vi.
+	:edit [file...] - load file(s) into vi.
 	:only - switch to a one window view.
 	:pwd - show the present working directory.
-	:ch[ange] - create a menu window to alter a files properties.
+	:change - create a menu window to alter a files properties.
 	:cd - change directory.
 		:cd ~/bin
     :popd - remove pane directories from stack.
     :pushd directory - add pane directories to stack.
-    :s[creen] toggles whether to use the screen program or not.
-    :se[t] opt1=val1 opt2=val2 - sets given options.
-    :sh[ell] will start a shell
-	:so[rt] - popup menu of different sorting methods
-	:sp[lit] - switch to a two window view.
-	:his[tory] - popup menu of directories visited
+    :screen] toggles whether to use the screen program or not.
+    :set opt1=val1 opt2=val2 - sets given options.
+    :shell will start a shell
+	:sort - popup menu of different sorting methods
+	:split - switch to a two window view.
+	:history - popup menu of directories visited
 	:jobs - shows menu of current backgrounded processes.
-	:u[ndolist] - show list of latest changes. Add ! to see commands.
-	:v[iew] - toggle on and off the quick file view.
-	:h[elp] - this crude help file
+	:undolist - show list of latest changes. Add ! to see commands.
+	:view - toggle on and off the quick file view.
+	:help - this crude help file
 	:marks - popup menu of bookmarks
     :rename - rename files using vi to edit names.
 	:sync - change the other panel to the current panel directory.
@@ -370,6 +370,7 @@ Reserved :commands
 	change
 	cmap
 	colorscheme
+    com
 	command
 	cmdhistory
 	delcommand
@@ -394,6 +395,7 @@ Reserved :commands
 	popd
 	pushd
 	pwd
+    q
 	quit
 	register
 	rename
@@ -401,6 +403,7 @@ Reserved :commands
 	set
 	shell
 	sort
+    sp
 	split
 	sync
 	undolist

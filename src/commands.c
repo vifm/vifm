@@ -63,6 +63,7 @@ const char *reserved_commands[] = {
 	"change",
 	"cmap",
 	"colorscheme",
+	"com",
 	"command",
 	"cmdhistory",
 	"d",
@@ -70,10 +71,12 @@ const char *reserved_commands[] = {
 	"delete",
 	"dirs",
 	"display",
+	"e",
 	"edit",
 	"empty",
 	"file",
 	"filter",
+	"h",
 	"help",
 	"history",
 	"invert",
@@ -88,6 +91,7 @@ const char *reserved_commands[] = {
 	"popd",
 	"pushd",
 	"pwd",
+	"q",
 	"quit",
 	"register",
 	"rename",
@@ -95,6 +99,7 @@ const char *reserved_commands[] = {
 	"set",
 	"shell",
 	"sort",
+	"sp",
 	"split",
 	"sync",
 	"undolist",
@@ -1452,6 +1457,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			}
 			break;
 		}
+		case COM_COM:
 		case COM_COMMAND:
 			{
 				if(cmd->args)
@@ -1500,11 +1506,14 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			rename_files(view);
 			save_msg = 1; /* there are always some message */
 			break;
+		case COM_E:
 		case COM_EDIT:
 			{
-				if(cmd->args)
+				if(cmd->args != NULL)
 				{
-					show_error_msg("Command Error", ":edit command takes no arguments");
+					char buf[PATH_MAX];
+					snprintf(buf, sizeof(buf), "%s %s", cfg.vi_command, cmd->args);
+					shellout(buf, 0);
 					break;
 				}
 				if(!view->selected_files || !view->dir_entry[view->list_pos].selected)
@@ -1567,6 +1576,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		case COM_FILE:
 			show_filetypes_menu(view, cmd->background);
 			break;
+		case COM_H:
 		case COM_HELP:
 			{
 				char help_file[PATH_MAX];
@@ -1679,6 +1689,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			save_msg = 1;
 			break;
 		case COM_X:
+		case COM_Q:
 		case COM_QUIT:
 			if(cmd->args && cmd->args[0] == '!')
 				curr_stats.setting_change = 0;
@@ -1702,6 +1713,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		case COM_SHELL:
 			shellout(NULL, 0);
 			break;
+		case COM_SP:
 		case COM_SPLIT:
 			comm_split();
 			break;

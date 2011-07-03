@@ -17,7 +17,6 @@ Vi specific features that need to be added.
 	Add set values completion for :set command (there are no such options yet).
 	Add 'smartcase' option.
 	Add :s/pattern/replace/ command.
-	Modify :edit command.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?

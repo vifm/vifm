@@ -224,13 +224,13 @@ selected files.
 all files except selected.
 .SH Commands
 .TP
-.BI :command
+.BI :com[mand]
 show command line history menu.
 .TP
-.BI :command
+.BI :com[mand]
 gives a menu of user commands.
 .TP
-.BI ":command name action"
+.BI ":com[mand] name action"
 sets a new user command.
 .TP
 .BI :colorscheme
@@ -239,7 +239,7 @@ gives a menu with a list of available color schemes.  You can choose default col
 .BI ":colorscheme color_scheme_name"
 changes default color scheme.  See :colorscheme.
 .TP
-.BI ":delc command_name"
+.BI ":delcommand command_name"
 will remove the command_name user command
 .TP
 .BI ":file"
@@ -261,10 +261,10 @@ will permanently remove 'rm -fr' files from the Trash directory.
 .TP
 .BI ":set opt1=val1 opt2=val2"
 will set options to given values.
-.BI :sh
+.BI :shell
 will start a shell.
 .TP
-.BI ":q or :x"
+.BI ":quit, :q or :x"
 will exit Vifm (add ! if you don't want to save changes).
 .TP
 .BI :!
@@ -276,8 +276,8 @@ is the same as :! but will pause the screen before returning to Vifm.
 .BI :!!
 will execute the last command.
 .TP
-.BI :e
-load file into vi
+.BI ":edit [file...]"
+load file(s) into vi
 .TP
 .BI ":display or :register"
 popup menu with registers content.
@@ -312,7 +312,7 @@ map one key sequence to another in different modes.
 .BI :screen
 toggles whether or not to use the screen program.
 .TP
-.BI :split
+.BI :sp[lit]
 splits the window to show both file directories.
 .TP
 .BI :undolist

@@ -56,7 +56,7 @@ The builtin commands are:
 :apropos manpage - will create a menu of items returned by the apropos
   command.  Selecting an item in the menu will open the corresponding
 	manpage.
-:ch[ange] - create a menu window to alter a files properties.
+:change - create a menu window to alter a files properties.
 :cd - change to your home directory.
 	:cd /usr/local - change directory to /usr/local.
 :cmdhistory - show command line history menu.
@@ -66,37 +66,37 @@ The builtin commands are:
 :colorscheme color_scheme_name - changes default color scheme.
 :[range]d[elete][count] - delete selected file or files.
 	See |Vifm_Ranges| for the ranges implemented.
-:delc[ommand] user_command - remove user_command.
+:delcommand user_command - remove user_command.
 :display or :register - popup menu with registers content.
 :dirs - display directory stack.
 :rename - rename files using vi to edit names.
-:e[dit] - will load the selected file or files into vi.
-:em[pty] - permanently remove files from the ~/.vifm/Trash directory.
-:f[ile] - popup menu of programs set for the file type of the current file.
+:edit [file...] - will load the selected or passed file or files into vi.
+:empty - permanently remove files from the ~/.vifm/Trash directory.
+:file - popup menu of programs set for the file type of the current file.
         Add ' &' in the end of command if you want to start program in background. 
-:fil[ter] regular_expression - will filter files matching the pattern out of
+:filter regular_expression - will filter files matching the pattern out of
 	the directory.  Use :filter! to show all files.  See |Filters|
 :h[elp] - show this help file.
 	:h argument - is the same as using ':h argument' in vim.
-:his[tory] - show directory history.
+:history - show directory history.
 :invert - invert file name filter.
 :jobs - shows menu of current backgrounded processes.
 :locate filename - uses the locate command to create a menu of filenames
 	Selecting a file from the menu will reload the current file list in vifm
 	to show the selected file.
 :marks - menu of bookmarks.
-:o[nly] - switch to a one window view.
+:only - switch to a one window view.
 :popd - remove pane directories from stack.
 :pushd directory - add pane directories to stack.
 :pwd - show the present working directory.
 :q[uit] - will exit vifm (add ! if you don't want to save changes).
-:s[creen] - toggles whether to use the screen program or not.
-:se[t] opt1=val1 opt2=val2 - sets given options.
-:sh[ell] - will start a shell.
-:so[rt] - menu of different sorting methods.
+:screen - toggles whether to use the screen program or not.
+:set opt1=val1 opt2=val2 - sets given options.
+:shell - will start a shell.
+:sort - menu of different sorting methods.
 :sp[lit] - switch to a two window view.
-:sy[nc] - change the other panel to the current panels directory.
-:v[iew] - toggle on and off the quick file view.
+:sync - change the other panel to the current panels directory.
+:view - toggle on and off the quick file view.
 :w - same as :write.
 :wq - will exit vifm after writing config.
 :w[rite] - will write config (add ! to force write even if settings weren't
@@ -382,6 +382,7 @@ The following command names are reserved and cannot be used for user commands.
   nmap - not used will be used with key mapping.
   noh -
   pwd - show present working directory.
+  q
   quit - exit vifm.
   screen - toggles use of screen program.
   set - set option.
