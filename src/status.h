@@ -46,6 +46,7 @@ typedef struct
 	int show_full;
 	int setting_change;
 	int skip_history;
+	int vifm_started;
 
 	int errmsg_shown;
 

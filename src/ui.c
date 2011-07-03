@@ -625,7 +625,7 @@ update_all_windows(void)
 	wnoutrefresh(num_win);
 	wnoutrefresh(rborder);
 
-	if(!curr_stats.errmsg_shown)
+	if(!curr_stats.errmsg_shown && curr_stats.vifm_started)
 		doupdate();
 }
 

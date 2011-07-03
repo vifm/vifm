@@ -327,6 +327,7 @@ main(int argc, char *argv[])
 	if(cfg.vim_filter)
 		curr_stats.number_of_windows = 1;
 
+	curr_stats.vifm_started = 1;
 	redraw_window();
 
 	curr_stats.setting_change = 0;
