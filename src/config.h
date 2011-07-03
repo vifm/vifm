@@ -63,6 +63,8 @@ typedef struct _Config {
 	int sort_numbers; /* Natural sort of (version) numbers within text. */
 
 	int save_location; /* Start vifm in the last visited directory. */
+
+	int follow_links; /* Treat symlinks on files like regular files. */
 } Config;
 
 extern Config cfg;

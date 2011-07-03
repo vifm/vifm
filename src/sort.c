@@ -94,12 +94,12 @@ sort_dir_list(const void *one, const void *two)
 	if(first->type == DIRECTORY)
 		first_is_dir = true;
 	else if(first->type == LINK)
-		first_is_dir = check_link_is_dir(one);
+		first_is_dir = check_link_is_dir(first->name);
 
 	if(second->type == DIRECTORY)
 		second_is_dir = true;
 	else if(second->type == LINK)
-		second_is_dir = check_link_is_dir(two);
+		second_is_dir = check_link_is_dir(second->name);
 
 	if(first_is_dir != second_is_dir)
 		return first_is_dir ? -1 : 1;
