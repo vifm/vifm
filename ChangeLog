@@ -94,6 +94,8 @@
 
 	Fixed bug with :n
 
+	Fixed bug with selecting last file in the view in visual mode.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).

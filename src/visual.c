@@ -403,7 +403,9 @@ select_down_one(FileView *view, int start_pos)
 	view->list_pos++;
 
 	if(view->list_pos >= view->list_rows)
-		;
+	{
+		view->list_pos = view->list_rows - 1;
+	}
 	else if(view->list_pos == 0)
 	{
 		if (start_pos == 0)
