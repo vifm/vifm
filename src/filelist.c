@@ -773,6 +773,9 @@ regexp_filter_match(FileView *view,  char *filename)
 {
 	regex_t re;
 
+	if(view->filename_filter[0] == '\0')
+		return view->invert;
+
 	if(regcomp(&re, view->filename_filter, REG_EXTENDED) == 0)
 	{
 		if(regexec(&re, filename, 0, NULL, 0) == 0)

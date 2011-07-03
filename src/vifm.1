@@ -245,11 +245,16 @@ will remove the command_name user command
 .BI ":file"
 popup menu of programs set for the file type of the current file. Add ' &' at the end of command to run program in background.
 .TP
-.BI ":fil regular_expression pattern"
+.BI ":filter regular_expression_pattern"
 will filter all the files out of the directory listing that match the regular expression.
+.br
+Note: vifm uses extended regular expressions.
 .TP
-.BI ":fil /\.o$"
+.BI ":filter /\.o$"
 would filter all files ending in .o from the filelist.
+.TP
+.BI ":filter!"
+would filter no files from the filelist.
 .TP
 .BI :empty
 will permanently remove 'rm -fr' files from the Trash directory.

@@ -1542,8 +1542,8 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					int offset = (cmd->args[0] == '!') ? 1 : 0;
 					view->invert = 1;
 					view->filename_filter = (char *)realloc(view->filename_filter,
-							strlen(cmd->args + offset) +2);
-					snprintf(view->filename_filter, strlen(cmd->args + offset) +1,
+							strlen(cmd->args + offset) + 2);
+					snprintf(view->filename_filter, strlen(cmd->args + offset) + 1,
 							"%s", cmd->args + offset);
 					load_dir_list(view, 1);
 					moveto_list_pos(view, 0);

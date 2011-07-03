@@ -42,6 +42,8 @@
 
 	Now location of panes is saved in ~/.vifm/vifminfo instead of ~/.vifm/vifmrc
 
+	Don't filter anything when filter is set to an empty string.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.
