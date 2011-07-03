@@ -69,16 +69,12 @@ init_config(void)
 	cfg.color_scheme_num = 0;
 	cfg.color_pairs_num = 0;
 	cfg.color_scheme_cur = 0;
-
 	cfg.use_iec_prefixes = 0;
-
 	cfg.undo_levels = 100;
-
 	cfg.sort_numbers = 0;
-
 	cfg.save_location = 0;
-
 	cfg.follow_links = 1;
+	cfg.fast_run = 0;
 
 	/* Maximum argument length to pass to the shell */
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)
@@ -289,7 +285,7 @@ read_config_file(void)
 			}
 			if(!strcmp(line, "FAST_RUN"))
 			{
-				curr_stats.fast_run = atoi(s1);
+				cfg.fast_run = atoi(s1);
 				continue;
 			}
 			if(!strcmp(line, "SORT_NUMBERS"))
@@ -553,7 +549,7 @@ write_config_file(void)
 	fprintf(fp, "\n# If you want to run commands using :! with.");
 	fprintf(fp, "\n# With this option turned on you can run partially entered commands with");
 	fprintf(fp, "\n# unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).\n");
-	fprintf(fp, "\nFAST_RUN=%d\n", curr_stats.fast_run ? 1 : 0);
+	fprintf(fp, "\nFAST_RUN=%d\n", cfg.fast_run ? 1 : 0);
 
 	fprintf(fp, "\n# Natural sort of (version) numbers within text.\n");
 	fprintf(fp, "\nSORT_NUMBERS=%d\n", cfg.sort_numbers ? 1 : 0);

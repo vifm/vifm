@@ -645,6 +645,7 @@ remove_command(char *name)
 	if(found)
 	{
 		cfg.command_num--;
+		/* TODO rewrite this strange piece of code */
 		while(x < cfg.command_num)
 		{
 			command_list[x].name = (char *)realloc(command_list[x].name,
@@ -661,14 +662,14 @@ remove_command(char *name)
 		curr_stats.setting_change = 1;
 	}
 	else
-		show_error_msg(" Command Not Found ", s);
+		show_error_msg("Command Not Found", s);
 }
 
 void
 add_command(char *name, char *action)
 {
 	if(command_is_reserved(name) > -1)
-			return;
+		return;
 	if(isdigit(*name))
 	{
 		show_error_msg("Invalid Command Name",
@@ -677,12 +678,10 @@ add_command(char *name, char *action)
 	}
 
 	if(command_is_being_used(name))
-	{
 		return;
-	}
 
 	command_list = (command_t *)realloc(command_list,
-			(cfg.command_num +1) * sizeof(command_t));
+			(cfg.command_num + 1) * sizeof(command_t));
 
 	command_list[cfg.command_num].name = (char *)malloc(strlen(name) + 1);
 	strcpy(command_list[cfg.command_num].name, name);
@@ -1392,7 +1391,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 						start_background_job(com + i);
 					else
 					{
-						if(shellout(com + i, pause) == 127 && curr_stats.fast_run)
+						if(shellout(com + i, pause) == 127 && cfg.fast_run)
 						{
 							char *buf = fast_run_complete(com + i);
 							if(buf == NULL)

@@ -153,8 +153,10 @@ show_mime_type(FileView *view, int curr_y)
 }
 
 void
-show_full_file_properties(FileView *view)
+redraw_full_file_properties(FileView *v)
 {
+	static FileView *view;
+
 	char name_buf[NAME_MAX];
 	char perm_buf[26];
 	char size_buf[56];
@@ -165,9 +167,9 @@ show_full_file_properties(FileView *view)
 	struct tm *tm_ptr;
 	int x, y;
 	int curr_y;
-	int key = 0;
 
-	curr_stats.show_full = 0;
+	if(v != NULL)
+		view = v;
 
 	setup_menu();
 
@@ -209,7 +211,7 @@ show_full_file_properties(FileView *view)
 
 	mvwaddstr(menu_win, curr_y, 2, "Modified: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
-	strftime (buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
+	strftime(buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
 	mvwaddstr(menu_win, curr_y, 13, buf);
 	curr_y += 2;
 
@@ -238,12 +240,28 @@ show_full_file_properties(FileView *view)
 
 	box(menu_win, 0, 0);
 	wrefresh(menu_win);
+}
+
+void
+show_full_file_properties(FileView *view)
+{
+	int key;
+
+	curr_stats.show_full = 1;
+
+	redraw_full_file_properties(view);
+
+  /* wait for Return or Ctrl-c or Esc or error */
 	do
 	{
 		key = wgetch(menu_win);
 	}
-	while(key != 13 && key != 3 && key != 27); /* ascii Return - Ctrl-c - Esc */
+	while(key != 13 && key != 3 && key != 27 && key != ERR);
+
 	werase(menu_win);
+
+	curr_stats.show_full = 0;
+
 	redraw_window();
 }
 

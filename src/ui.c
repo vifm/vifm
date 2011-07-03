@@ -448,6 +448,14 @@ redraw_window(void)
 
 	curs_set(0);
 
+	if(curr_stats.show_full)
+	{
+		redraw_full_file_properties(curr_view);
+		curr_stats.freeze = 0;
+		curr_stats.need_redraw = 0;
+		return;
+	}
+
 	change_directory(curr_view, curr_view->curr_dir);
 	load_dir_list(curr_view, 1);
 

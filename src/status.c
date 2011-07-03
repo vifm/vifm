@@ -39,7 +39,6 @@ init_status(void)
 	curr_stats.setting_change = 0;
 	curr_stats.use_input_bar = 1;
 	curr_stats.dirsize_cache = 0;
-	curr_stats.fast_run = 0;
 	curr_stats.errmsg_shown = 0;
 
 #ifdef HAVE_LIBGTK

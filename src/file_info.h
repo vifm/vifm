@@ -21,6 +21,7 @@
 
 #include "ui.h"
 
+void redraw_full_file_properties(FileView *v);
 void show_full_file_properties(FileView *view);
 
 #endif

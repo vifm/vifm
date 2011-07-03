@@ -128,7 +128,7 @@ check_background_jobs(void)
 			}
 			if (strlen(p->error_buf) > 1)
 			{
-				if (!p->running && p->exit_code == 127 && curr_stats.fast_run)
+				if (!p->running && p->exit_code == 127 && cfg.fast_run)
 				{
 					char *buf = fast_run_complete(p->cmd);
 					if(buf == NULL)

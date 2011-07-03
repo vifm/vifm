@@ -83,7 +83,7 @@ load_options(void)
 {
 	union optval_t val;
 
-	val.bool_val = curr_stats.fast_run;
+	val.bool_val = cfg.fast_run;
 	set_option("fastrun", val);
 
 	val.bool_val = cfg.follow_links;
@@ -159,7 +159,7 @@ print_func(const char *msg, const char *description)
 static void
 fastrun_handler(enum opt_op op, union optval_t val)
 {
-	curr_stats.fast_run = val.bool_val;
+	cfg.fast_run = val.bool_val;
 }
 
 static void
