@@ -1570,28 +1570,9 @@ show_register_menu(FileView *view)
 
 	getmaxyx(menu_win, m.win_rows, x);
 
-	for(x = 0; x < NUM_REGISTERS; x++)
-	{
-		if(reg[x].num_files > 0)
-		{
-			char buf[56];
-			int y = reg[x].num_files;
-			snprintf(buf, sizeof(buf), "\"%c", reg[x].name);
-			m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
-			m.data[m.len] = strdup(buf);
-			m.len++;
-
-			while (y)
-			{
-
-				y--;
-				m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
-				m.data[m.len] = strdup(reg[x].files[y]);
-
-				m.len++;
-			}
-		}
-	}
+	m.data = list_registers_content();
+	while(m.data[m.len] != NULL)
+		m.len++;
 
 	if(!m.len)
 	{

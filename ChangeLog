@@ -79,6 +79,8 @@
 
 	Fixed bug with loosing selection before running command from visual mode.
 
+	Fixed bugs with registers and segmentation fault.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).

@@ -17,13 +17,19 @@
  */
 
 #include <unistd.h>
+
 #include <string.h>
 
 #include "menus.h"
-#include "registers.h"
 #include "utils.h"
 
-char valid_registers[] = {
+#include "registers.h"
+
+#define NUM_REGISTERS 27
+
+static registers_t registers[NUM_REGISTERS];
+
+static char valid_registers[] = {
 	'"',
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
@@ -37,10 +43,10 @@ init_registers(void)
 	int i;
 	for(i = 0; i < NUM_REGISTERS; i++)
 	{
-		reg[i].name = valid_registers[i];
-		reg[i].num_files = 0;
-		reg[i].files = NULL;
-		reg[i].deleted = 0;
+		registers[i].name = valid_registers[i];
+		registers[i].num_files = 0;
+		registers[i].files = NULL;
+		registers[i].deleted = 0;
 	}
 }
 
@@ -50,8 +56,8 @@ find_register(int key)
 	int i;
 	for(i = 0; i < NUM_REGISTERS; i++)
 	{
-		if(reg[i].name == key)
-			return &reg[i];
+		if(registers[i].name == key)
+			return &registers[i];
 	}
 	return NULL;
 }
@@ -118,6 +124,42 @@ pack_register(int key)
 		if(reg->files[y] != NULL)
 			reg->files[x++] = reg->files[y];
 	reg->num_files = x;
+}
+
+char **
+list_registers_content(void)
+{
+	int x;
+	char **list = NULL;
+	size_t len = 0;
+
+	for(x = 0; x < NUM_REGISTERS; x++)
+	{
+		if(registers[x].num_files > 0)
+		{
+			char buf[56];
+			int y;
+			
+			y = registers[x].num_files;
+			snprintf(buf, sizeof(buf), "\"%c", registers[x].name);
+			list = (char **)realloc(list, sizeof(char *)*(len + 1));
+			list[len] = strdup(buf);
+			len++;
+
+			while (y)
+			{
+				y--;
+				list = (char **)realloc(list, sizeof(char *)*(len + 1));
+				list[len] = strdup(registers[x].files[y]);
+
+				len++;
+			}
+		}
+	}
+
+	list = (char **)realloc(list, sizeof(char *)*(len + 1));
+	list[len] = NULL;
+	return list;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1151,7 +1151,7 @@ put_next_file(const char *dest_name, int override)
 	char undo_buf[PATH_MAX + NAME_MAX*2 + 4];
 	char *src_buf, *dst_buf, *name_buf = NULL;
 
-	snprintf(buf, sizeof(buf), "%s", reg->files[put_confirm.x]);
+	snprintf(buf, sizeof(buf), "%s", put_confirm.reg->files[put_confirm.x]);
 	chosp(buf);
 	src_buf = escape_filename(buf, 0, 0);
 	dst_buf = escape_filename(put_confirm.view->curr_dir, 0, 0);
@@ -1194,14 +1194,15 @@ put_next_file(const char *dest_name, int override)
 			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s/%s", dst_buf, dest_name);
 		}
 
-		progress_msg("Putting files", put_confirm.x + 1, reg->num_files);
+		progress_msg("Putting files", put_confirm.x + 1,
+				put_confirm.reg->num_files);
 		if(background_and_wait_for_errors(buf) == 0)
 		{
 			put_confirm.y++;
 			if(move)
 			{
-				free(reg->files[put_confirm.x]);
-				reg->files[put_confirm.x] = NULL;
+				free(put_confirm.reg->files[put_confirm.x]);
+				put_confirm.reg->files[put_confirm.x] = NULL;
 			}
 
 			cmd_group_continue();
