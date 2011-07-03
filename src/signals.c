@@ -111,7 +111,6 @@ handle_signal(int sig)
 	}
 }
 
-
 void
 setup_signals(void)
 {

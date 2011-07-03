@@ -51,8 +51,6 @@ main_loop(void)
 	int pos = 0;
 	int last_result = 0;
 
-	curs_set(0);
-
 	wattroff(curr_view->win, COLOR_PAIR(CURR_LINE_COLOR));
 
 	wtimeout(status_bar, KEYPRESS_TIMEOUT);

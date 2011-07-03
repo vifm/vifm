@@ -171,6 +171,8 @@ setup_ncurses_interface(void)
 	nonl();
 	raw();
 
+	curs_set(0);
+
 	getmaxyx(stdscr, screen_y, screen_x);
 	/* screen is too small to be useful*/
 	if(screen_y < 10)
