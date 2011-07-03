@@ -600,13 +600,21 @@ follow_link(FileView *view)
 	if(filename[len - 1] == '/')
 		filename[len - 1] = '\0';
 
-	len = readlink (filename, linkto, sizeof (linkto));
+	len = readlink(filename, linkto, sizeof (linkto));
 
 	free(filename);
 
 	if(len == 0)
 	{
 		status_bar_message("Couldn't Resolve Link");
+		curr_stats.save_msg = 1;
+		return;
+	}
+
+	if(access(linkto, F_OK) != 0)
+	{
+		status_bar_message("Can't access link destination. It might be broken");
+		curr_stats.save_msg = 1;
 		return;
 	}
 

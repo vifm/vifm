@@ -64,6 +64,11 @@ show_file_type(FileView *view, int curr_y)
 		{
 			linkto[len] = '\0';
 			mvwaddnstr(menu_win, curr_y, 11, linkto, x - 11);
+
+			if(access(linkto, F_OK) != 0)
+			{
+				mvwaddstr(menu_win, curr_y - 2, 12, " (BROKEN)");
+			}
 		}
 		else
 			mvwaddstr(menu_win, curr_y, 11, "Couldn't Resolve Link");
