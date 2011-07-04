@@ -1553,24 +1553,18 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_FILTER:
 			{
-				if(cmd->args)
-				{
-					int offset = (cmd->args[0] == '!') ? 1 : 0;
-					view->invert = 1;
-					view->filename_filter = (char *)realloc(view->filename_filter,
-							strlen(cmd->args + offset) + 2);
-					snprintf(view->filename_filter, strlen(cmd->args + offset) + 1,
-							"%s", cmd->args + offset);
-					load_dir_list(view, 1);
-					moveto_list_pos(view, 0);
-					curr_stats.setting_change = 1;
-				}
-				else
-				{
-					show_error_msg("Command Error",
-							"The :filter command requires an argument - :filter pattern");
-					save_msg = 1;
-				}
+				const char *args;
+
+				args = (cmd->args != NULL) ? cmd->args : "";
+				if(args[0] == '!')
+					args++;
+
+				view->invert = 1;
+				view->filename_filter = realloc(view->filename_filter,
+						strlen(args) + 1);
+				strcpy(view->filename_filter, args);
+				load_saving_pos(view, 1);
+				curr_stats.setting_change = 1;
 			}
 			break;
 		case COM_FILE:

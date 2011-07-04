@@ -10,7 +10,6 @@ Basic things that need to be done.
 	Think about good key for creating links (like pl in ranger).
 	Fix :'<'>!echo %f
     Rename files in Trash.
-    Make :filter do the same as :filter!
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
         :chown commands.
     Better C command. Handle situation when destination already exists.

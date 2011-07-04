@@ -127,7 +127,7 @@ The basic vi key bindings are used to move through the files and popup
 	:filter regular_expression pattern will filter the files out of the directory
 		listing that match the regular expression.
 		:filter \.o$ - would filter all files ending in .o from the filelist.
-		:filter! - would filter no files from the filelist.
+		:filter - would filter no files from the filelist.
 	:empty will permanently remove 'rm -fr' files from the Trash directory.
 	:locate filename - will create a menu with the results from the locate
 		command.

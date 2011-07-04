@@ -75,7 +75,7 @@ The builtin commands are:
 :file - popup menu of programs set for the file type of the current file.
         Add ' &' in the end of command if you want to start program in background. 
 :filter regular_expression - will filter files matching the pattern out of
-	the directory.  Use :filter! to show all files.  See |Filters|
+	the directory.  Use :filter to show all files.  See |Filters|
 :h[elp] - show this help file.
 	:h argument - is the same as using ':h argument' in vim.
 :history - show directory history.
