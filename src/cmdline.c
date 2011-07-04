@@ -1090,7 +1090,7 @@ line_completion(struct line_stats *stat)
 			raw_name = exec_completion(stat->complete_continue ? NULL : last_word);
 		else
 			raw_name = filename_completion(stat->complete_continue ? NULL : last_word,
-					(id == COM_CD || id == COM_PUSHD) ? 1 : (id == COM_EXECUTE ? 2 : 0));
+					(id == COM_CD || id == COM_PUSHD) ? 1 : (id == COM_EXECUTE ? 3 : 0));
 
 		stat->complete_continue = 1;
 
@@ -1109,7 +1109,7 @@ line_completion(struct line_stats *stat)
 			}
 		}
 	}
-	 /* :partial_command */
+	/* :partial_command */
 	else
 	{
 		int users_only = ((id == COM_DELCOMMAND || id == COM_COMMAND)
@@ -1403,6 +1403,28 @@ exec_completion(char *str)
 	return result;
 }
 
+static int
+is_entry_dir(const struct dirent *d)
+{
+	if(d->d_type != DT_DIR && d->d_type != DT_LNK)
+		return 0;
+	if(d->d_type == DT_LNK && check_link_is_dir(d->d_name))
+		return 0;
+	return 1;
+}
+
+static int
+is_entry_exec(const struct dirent *d)
+{
+	if(d->d_type == DT_DIR)
+		return 0;
+	if(d->d_type == DT_LNK && check_link_is_dir(d->d_name))
+		return 0;
+	if(access(d->d_name, X_OK) != 0)
+		return 0;
+	return 1;
+}
+
 /* On the first call to this function,
  * the string to be parsed should be specified in str.
  * In each subsequent call that should parse the same string, str should be NULL
@@ -1411,6 +1433,7 @@ exec_completion(char *str)
  *  - 0 - all files and directories
  *  - 1 - only directories
  *  - 2 - only executable files
+ *  - 3 - directories and executable files
  */
 static char *
 filename_completion(char *str, int type)
@@ -1425,12 +1448,12 @@ filename_completion(char *str, int type)
 	char * filename;
 	char * temp;
 	int i;
-	int found;
 	int filename_len;
 
 	if(str != NULL)
 	{
-		string = str;
+		free(string);
+		string = strdup(str);
 		offset = 0;
 	}
 	else
@@ -1481,39 +1504,24 @@ filename_completion(char *str, int type)
 		return NULL;
 	}
 
-	found = 0;
 	while((d = readdir(dir)) != NULL)
 	{
 		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
 			continue;
 		if(strncmp(d->d_name, filename, filename_len) != 0)
 			continue;
-		if(type == 1)
-		{
-			if(d->d_type != DT_DIR && d->d_type != DT_LNK)
-				continue;
-			if(d->d_type == DT_LNK && !is_dir(d->d_name))
-				continue;
-		}
-		else if(type == 2)
-		{
-			if(d->d_type == DT_DIR)
-				continue;
-			if(d->d_type == DT_LNK && is_dir(d->d_name))
-				continue;
-			if(access(d->d_name, X_OK) != 0)
-				continue;
-		}
-		else if(type == 3)
-		{
-			if(d->d_type == DT_DIR)
-				continue;
-		}
-		found = 1;
+
+		if(type == 1 && !is_entry_dir(d))
+			continue;
+		else if(type == 2 && !is_entry_exec(d))
+			continue;
+		else if(type == 3 && !is_entry_dir(d) && !is_entry_exec(d))
+			continue;
+
 		break;
 	}
 
-	if(!found)
+	if(d == NULL)
 	{
 		closedir(dir);
 		free(filename);
@@ -1533,26 +1541,19 @@ filename_completion(char *str, int type)
 
 			return (type == 2) ? NULL : strdup(filename);
 		}
+
 		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
 			continue;
 		if(strncmp(d->d_name, filename, filename_len) != 0)
 			continue;
-		if(type == 1)
-		{
-			if(d->d_type != DT_DIR && d->d_type != DT_LNK)
-				continue;
-			if(d->d_type == DT_LNK && is_dir(d->d_name))
-				continue;
-		}
-		else if(type == 2)
-		{
-			if(d->d_type == DT_DIR)
-				continue;
-			if(d->d_type == DT_LNK && is_dir(d->d_name))
-				continue;
-			if(access(d->d_name, X_OK) != 0)
-				continue;
-		}
+
+		if(type == 1 && !is_entry_dir(d))
+			continue;
+		else if(type == 2 && !is_entry_exec(d))
+			continue;
+		else if(type == 3 && !is_entry_dir(d) && !is_entry_exec(d))
+			continue;
+
 		i++;
 	}
 
