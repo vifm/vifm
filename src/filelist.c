@@ -768,28 +768,6 @@ moveto_list_pos(FileView *view, int pos)
 		quick_view_file(view);
 }
 
-static int
-regexp_filter_match(FileView *view,  char *filename)
-{
-	regex_t re;
-
-	if(view->filename_filter[0] == '\0')
-		return view->invert;
-
-	if(regcomp(&re, view->filename_filter, REG_EXTENDED) == 0)
-	{
-		if(regexec(&re, filename, 0, NULL, 0) == 0)
-		{
-			regfree(&re);
-			return !view->invert;
-		}
-		regfree(&re);
-		return view->invert;
-	}
-	regfree(&re);
-	return 1;
-}
-
 void
 goto_history_pos(FileView *view, int pos)
 {
@@ -1243,6 +1221,28 @@ S_ISEXE(mode_t mode)
 	return ((S_IXUSR & mode) || (S_IXGRP & mode) || (S_IXOTH & mode));
 }
 
+static int
+regexp_filter_match(FileView *view, char *filename)
+{
+	regex_t re;
+
+	if(view->filename_filter[0] == '\0')
+		return view->invert;
+
+	if(regcomp(&re, view->filename_filter, REG_EXTENDED) == 0)
+	{
+		if(regexec(&re, filename, 0, NULL, 0) == 0)
+		{
+			regfree(&re);
+			return !view->invert;
+		}
+		regfree(&re);
+		return view->invert;
+	}
+	regfree(&re);
+	return 1;
+}
+
 void
 load_dir_list(FileView *view, int reload)
 {
@@ -1440,7 +1440,7 @@ load_dir_list(FileView *view, int reload)
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return;
 		}
-		snprintf(view->filename_filter, sizeof(view->filename_filter), "*");
+		strcpy(view->filename_filter, "");
 		if(view->invert)
 			view->invert = 0;
 
@@ -1460,7 +1460,6 @@ load_dir_list(FileView *view, int reload)
 void
 filter_selected_files(FileView *view)
 {
-	size_t buf_size = 0;
 	int x;
 
 	if(!view->selected_files)
@@ -1468,37 +1467,41 @@ filter_selected_files(FileView *view)
 
 	for(x = 0; x < view->list_rows; x++)
 	{
-		if(view->dir_entry[x].selected)
-		{
-			if(view->filtered)
-			{
-				char *buf = NULL;
+		if(!view->dir_entry[x].selected)
+			continue;
 
-				buf_size = strlen(view->dir_entry[x].name) + 7;
-				buf = (char *)realloc(buf, buf_size);
-				snprintf(buf, buf_size, "|\\<%s\\>$", view->dir_entry[x].name);
-				view->filename_filter = (char *)
-						realloc(view->filename_filter, strlen(view->filename_filter) +
-						strlen(buf) + 1);
-				strcat(view->filename_filter, buf);
-				view->filtered++;
-				free(buf);
-			}
-			else
-			{
-				buf_size = strlen(view->dir_entry[x].name) + 6;
-				view->filename_filter = (char *)
-						realloc(view->filename_filter, strlen(view->dir_entry[x].name) + 6);
-				snprintf(view->filename_filter, buf_size,
-						"\\<%s\\>$", view->dir_entry[x].name);
-				view->filtered = 1;
-			}
+		if(strcmp(view->dir_entry[x].name, "../") == 0)
+			continue;
+
+		if(view->filename_filter == NULL || view->filename_filter[0] == '\0')
+		{
+			size_t buf_size;
+
+			buf_size = 2 + strlen(view->dir_entry[x].name) + 3 + 1;
+			view->filename_filter = (char *)realloc(view->filename_filter, buf_size);
 		}
+		else
+		{
+			size_t buf_size;
+
+			buf_size = 3 + strlen(view->dir_entry[x].name) + 3 + 1;
+			view->filename_filter = (char *)realloc(view->filename_filter,
+					strlen(view->filename_filter) + buf_size);
+			strcat(view->filename_filter, "|");
+		}
+
+		strcat(view->filename_filter, "\\<");
+		strcat(view->filename_filter, view->dir_entry[x].name);
+		chosp(view->filename_filter);
+		strcat(view->filename_filter, "\\>$");
+		view->filtered++;
 	}
 	view->invert = 1;
 	clean_status_bar();
 	load_dir_list(view, 1);
-	moveto_list_pos(view, 0);
+	moveto_list_pos(view, view->list_pos);
+	curr_stats.setting_change = 1;
+	view->selected_files = 0;
 }
 
 void

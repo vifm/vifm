@@ -920,7 +920,6 @@ rename_file_cb(const char *new_name)
 void
 rename_file(FileView *view, int name_only)
 {
-	size_t len;
 	char* p;
 	char buf[NAME_MAX + 1];
 
@@ -932,13 +931,14 @@ rename_file(FileView *view, int name_only)
 		return;
 	}
 
-	len = strlen(buf);
-	if(buf[len - 1] == '/')
-		buf[len - 1] = '\0';
+	chosp(buf);
 
-	if (!name_only || (p = strchr(buf, '.')) == NULL) {
+	if(!name_only || (p = strchr(buf, '.')) == NULL)
+	{
 		rename_file_ext[0] = '\0';
-	} else {
+	}
+	else
+	{
 		strcpy(rename_file_ext, p);
 		*p = '\0';
 	}

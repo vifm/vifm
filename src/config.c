@@ -387,6 +387,16 @@ read_config_file(void)
 				cfg.fuse_home = strdup(s1);
 				continue;
 			}
+			if(!strcmp(line, "LWIN_PATH") && cfg.save_location)
+			{
+				strcpy(lwin.curr_dir, s1);
+				continue;
+			}
+			if(!strcmp(line, "RWIN_PATH") && cfg.save_location)
+			{
+				strcpy(rwin.curr_dir, s1);
+				continue;
+			}
 		}
 		if(args == 3)
 		{

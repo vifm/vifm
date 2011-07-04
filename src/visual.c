@@ -56,6 +56,7 @@ static void cmd_gg(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
 static void cmd_y(struct key_info, struct keys_info *);
+static void cmd_zf(struct key_info, struct keys_info *);
 static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
 static void update_marks(FileView *view);
@@ -83,6 +84,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"o", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
 	{L"v", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"y", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_y}}},
+	{L"zf", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zf}}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_PPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
 	{{KEY_NPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
@@ -355,6 +357,13 @@ cmd_y(struct key_info key_info, struct keys_info *keys_info)
 	free_selected_file_array(view);
 
 	leave_visual_mode(1);
+}
+
+static void
+cmd_zf(struct key_info key_info, struct keys_info *keys_info)
+{
+	filter_selected_files(curr_view);
+	leave_visual_mode(0);
 }
 
 /* move up one position in the window, adding to the selection list */

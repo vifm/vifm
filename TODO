@@ -39,6 +39,7 @@ Possible things to add.
     Swap names of two files (selected or given as arguments).
     Add :mark command.
     Add g/ and g? commands (search, but don't select files).
+    Invert selection?
 
 Other (questinable) things.
     %i macro to prompt user for input.
