@@ -14,6 +14,7 @@ Basic things that need to be done.
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
         :chown commands.
     Better C command. Handle situation when destination already exists.
+    Make child processes continue working after vifm shutdown.
 
 Vi(m) specific features that need to be added.
 	Finish implementing range and count for user commands (what commands left?).
