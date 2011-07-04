@@ -913,8 +913,8 @@ rename_file_cb(const char *new_name)
 		return;
 
 	free(curr_view->dir_entry[curr_view->list_pos].name);
-	curr_view->dir_entry[curr_view->list_pos].name = strdup(new_name);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	curr_view->dir_entry[curr_view->list_pos].name = strdup(new);
+	load_saving_pos(curr_view, 1);
 }
 
 void
