@@ -4,6 +4,8 @@
 #include "../../src/keys.h"
 #include "../../src/modes.h"
 
+int mode = NORMAL_MODE;
+
 void buildin_and_custom(void);
 void diff_motions(void);
 void discard_not_full_cmds(void);
@@ -37,14 +39,14 @@ void all_tests(void)
 	remap_users();
 	same_multi_and_motion();
 	users_key_to_key();
+	def_keys_and_user_mappings();
 }
 
 void my_suite_setup(void)
 {
-	static int mode = NORMAL_MODE;
 	static int mode_flags[]= {
 		MF_USES_REGS | MF_USES_COUNT,
-		0,
+		MF_USES_INPUT,
 		MF_USES_COUNT
 	};
 

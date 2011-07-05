@@ -145,9 +145,7 @@ execute_keys_general(const wchar_t *keys, int timed_out, int mapped)
 	result = execute_keys_inner(keys, &keys_info);
 	if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
 	{
-		const wchar_t *p = keys;
-		while(*p != L'\0')
-			result = def_handlers[*mode](*p++);
+		result = def_handlers[*mode](keys[0]);
 		execute_keys_general(keys + 1, 0, mapped);
 	}
 	return result;
@@ -267,11 +265,8 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 		result = execute_keys_inner(key_t->data.cmd, &keys_info);
 		if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
 		{
-			const wchar_t *p = key_t->data.cmd;
-			while(*p != L'\0')
-				result = def_handlers[*mode](*p++);
-			init_keys_info(&keys_info, 1);
-			execute_keys_inner(key_t->data.cmd + 1, &keys_info);
+			result = def_handlers[*mode](key_t->data.cmd[0]);
+			execute_keys_general(key_t->data.cmd + 1, 0, 1);
 		}
 		return result;
 	}

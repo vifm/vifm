@@ -14,6 +14,7 @@
 
 static int* mode;
 
+static void keys_colon(struct key_info key_info, struct keys_info *keys_info);
 static void keys_m(struct key_info key_info, struct keys_info *keys_info);
 static void keys_quote(struct key_info key_info, struct keys_info *keys_info);
 static void keys_H(struct key_info key_info, struct keys_info *keys_info);
@@ -36,6 +37,9 @@ init_buildin_keys(int *key_mode)
 	assert(key_mode != NULL);
 
 	mode = key_mode;
+
+	curr = add_cmd(L":", NORMAL_MODE);
+	curr->data.handler = keys_colon;
 
 	curr = add_cmd(L"m", NORMAL_MODE);
 	curr->type = BUILDIN_WAIT_POINT;
@@ -121,6 +125,12 @@ init_buildin_keys(int *key_mode)
 
 	curr = add_cmd(L"ZZ", VISUAL_MODE);
 	curr->data.handler = keys_quit;
+}
+
+static void
+keys_colon(struct key_info key_info, struct keys_info *keys_info)
+{
+	*mode = CMDLINE_MODE;
 }
 
 static void

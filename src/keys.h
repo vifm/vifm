@@ -42,7 +42,10 @@ enum
 };
 
 #define IS_KEYS_RET_CODE(c) \
-		((c) == KEYS_UNKNOWN || (c) == KEYS_WAIT || (c) == KEYS_WAIT_SHORT)
+		({ \
+			int tmp = (c); \
+			tmp == KEYS_UNKNOWN || tmp == KEYS_WAIT || tmp == KEYS_WAIT_SHORT; \
+		})
 
 enum FOLLOWED_BY
 {
