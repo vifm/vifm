@@ -998,6 +998,14 @@ check_rename_file(FileView *view, const int *indexes, int count, FILE *f)
 			}
 	}
 
+	if(fgetc(f) != EOF)
+	{
+		status_bar_message("Too many lines");
+		curr_stats.save_msg = 1;
+		free_string_array(list, len);
+		return NULL;
+	}
+
 	return list;
 }
 
