@@ -1,11 +1,19 @@
 
 .TH vifm 1 "June 11, 2011" "" "Vifm"
 
+.\" ---------------------------------------------------------------------------
 .SH NAME
+.\" ---------------------------------------------------------------------------
 vifm [OPTION]
+.\" ---------------------------------------------------------------------------
 .SH DESCRIPTION
-Vifm is a ncurses based file manager with vi like keybindings. If you use vi, vifm gives you complete keyboard control over your files without having to learn a new set of commands.
+.\" ---------------------------------------------------------------------------
+Vifm is a ncurses based file manager with vi like keybindings. If you use vi,
+vifm gives you complete keyboard control over your files without having to learn
+a new set of commands.
+.\" ---------------------------------------------------------------------------
 .SH OPTIONS
+.\" ---------------------------------------------------------------------------
 .TP
 .BI <path>
 Starts Vifm in the specified path.
@@ -16,7 +24,9 @@ Show version number and quit.
 .BI "--help, -h"
 Show an overview of the commandline options.
 .br
+.\" ---------------------------------------------------------------------------
 .SH Basic Movement
+.\" ---------------------------------------------------------------------------
 .TP
 .BI j
 moves down.
@@ -89,7 +99,9 @@ like ga, but force update.
 .TP
 .BI gv
 go to visual mode restoring last selection.
+.\" ---------------------------------------------------------------------------
 .SH Scrolling panes
+.\" ---------------------------------------------------------------------------
 .TP
 .BI zt
 redraw pane with file in top of list.
@@ -105,7 +117,9 @@ scroll pane one line down.
 .TP
 .BI Ctrl-Y
 scroll pane one line up.
+.\" ---------------------------------------------------------------------------
 .SH Pane manipulation
+.\" ---------------------------------------------------------------------------
 .TP
 .BI "Ctrl-W H"
 switch to the left pane.
@@ -124,7 +138,9 @@ switch to other pane.
 .TP
 .BI "Ctrl+W X"
 exchange panes.
+.\" ---------------------------------------------------------------------------
 .SH Marks
+.\" ---------------------------------------------------------------------------
 .TP
 Marks are set the same way as they are in vi.
 .TP
@@ -133,7 +149,9 @@ to set a mark for the current file.
 .TP
 .BI '[a-z][A-Z][0-9]
 moves to the file set for the mark.
+.\" ---------------------------------------------------------------------------
 .SH Searching
+.\" ---------------------------------------------------------------------------
 .TP
 .BI "/regular expression pattern[Return]"
 will highlight all files matching the pattern and go to the next match.
@@ -158,7 +176,9 @@ find the next match of f or F.
 .TP
 .BI ,
 find the previous match of f or F.
+.\" ---------------------------------------------------------------------------
 .SH Additional Normal Mode Keys
+.\" ---------------------------------------------------------------------------
 .TP
 .BI cw
 rename a file.
@@ -210,9 +230,12 @@ same as :quit
 .TP
 .BI ZZ
 same as :wq
+.\" ---------------------------------------------------------------------------
 .SH Selectors
+.\" ---------------------------------------------------------------------------
 .TP
-Most of selectors are like vi motions: j, k, gg, G, H, L and M. But there are some additional ones.
+Most of selectors are like vi motions: j, k, gg, G, H, L and M. But there are
+some additional ones.
 .TP
 .BI a
 all files in current view.
@@ -222,7 +245,9 @@ selected files.
 .TP
 .BI S
 all files except selected.
+.\" ---------------------------------------------------------------------------
 .SH Commands
+.\" ---------------------------------------------------------------------------
 .TP
 .BI :com[mand]
 show command line history menu.
@@ -234,7 +259,9 @@ gives a menu of user commands.
 sets a new user command.
 .TP
 .BI :colorscheme
-gives a menu with a list of available color schemes.  You can choose default color scheme here.  It will be used if no DIRECTORY in colorscheme file doesn't fit current path.
+gives a menu with a list of available color schemes.  You can choose default
+color scheme here.  It will be used if no DIRECTORY in colorscheme file doesn't
+fit current path.
 .TP
 .BI ":colorscheme color_scheme_name"
 changes default color scheme.  See :colorscheme.
@@ -243,10 +270,12 @@ changes default color scheme.  See :colorscheme.
 will remove the command_name user command
 .TP
 .BI ":file"
-popup menu of programs set for the file type of the current file. Add ' &' at the end of command to run program in background.
+popup menu of programs set for the file type of the current file. Add ' &' at
+the end of command to run program in background.
 .TP
 .BI ":filter regular_expression_pattern"
-will filter all the files out of the directory listing that match the regular expression.
+will filter all the files out of the directory listing that match the regular
+expression.
 .br
 Note: vifm uses extended regular expressions.
 .TP
@@ -259,12 +288,12 @@ would filter no files from the filelist.
 .BI :empty
 will permanently remove 'rm -fr' files from the Trash directory.
 .TP
-.BI ":set opt1=val1 opt2=val2"
+.BI ":set opt1=val1 opt2=val2 ..."
 will set options to given values.
 .BI :shell
 will start a shell.
 .TP
-.BI ":quit, :q or :x"
+.BI ":q[uit] or :x"
 will exit Vifm (add ! if you don't want to save changes).
 .TP
 .BI :!
@@ -276,7 +305,7 @@ is the same as :! but will pause the screen before returning to Vifm.
 .BI :!!
 will execute the last command.
 .TP
-.BI ":edit [file...]"
+.BI ":e[dit] [file...]"
 load file(s) into vi
 .TP
 .BI ":display or :register"
@@ -294,7 +323,7 @@ show the present working directory.
 .BI :cd
 change directory.
 .TP
-.BI :s[ort]
+.BI :sort
 creates a popup menu of different sorting methods.
 .TP
 .BI :his[tory]
@@ -302,6 +331,9 @@ creates a popup menu of directories visited.
 .TP
 .BI :h[elp]
 show the help file.
+.TP
+.BI :noh[lsearch]
+clear selection in current pane.
 .TP
 .BI :marks
 create a popup menu of bookmarks.
@@ -311,6 +343,9 @@ map one key sequence to another in different modes.
 .TP
 .BI :screen
 toggles whether or not to use the screen program.
+.TP
+.BI :sync
+change the other panel to the current panel directory.
 .TP
 .BI :sp[lit]
 splits the window to show both file directories.
@@ -332,7 +367,9 @@ exit vifm after writing config.
 .TP
 .BI ":w or :write"
 write config file (add ! to force write even if settings weren't changed).
+.\" ---------------------------------------------------------------------------
 .SH :set options
+.\" ---------------------------------------------------------------------------
 .TP
 .BI fastrun
 type: boolean
@@ -436,7 +473,9 @@ type: boolean
 default: true
 .br
 Controls whether to wrap text in quick view.
+.\" ---------------------------------------------------------------------------
 .SH Mappings
+.\" ---------------------------------------------------------------------------
 Since it's not easy to enter special characters there are several special
 sequences that can be used in place of them. They are:
 .TP
@@ -448,7 +487,9 @@ Space key
 .TP
 .BI "<f0> - <f63>"
 Functional keys
+.\" ---------------------------------------------------------------------------
 .SH Command macros
+.\" ---------------------------------------------------------------------------
 The command macros may be used in user commands.
 .TP
 .BI %a
@@ -480,7 +521,9 @@ Show command output in a menu.
 .TP
 .BI %s
 Execute command in screen split.
+.\" ---------------------------------------------------------------------------
 .SH File Filters
+.\" ---------------------------------------------------------------------------
 The basic vim folding key bindings are used for filtering files.
 .TP
 .BI zO
@@ -497,10 +540,13 @@ Filter all of the dot files.
 .TP
 .BI zf
 Filter all of the selected files.
-
+.\" ---------------------------------------------------------------------------
 .SH SEE ALSO
+.\" ---------------------------------------------------------------------------
 Website: http://vifm.sourceforge.net/
+.\" ---------------------------------------------------------------------------
 .SH AUTHOR
+.\" ---------------------------------------------------------------------------
 Vifm was written by ksteen <ksteen@users.sourceforge.net>
 .br
 And currently being developed by xaizek <xaizek@gmail.com>

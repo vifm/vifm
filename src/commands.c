@@ -62,10 +62,10 @@ const char *reserved_commands[] = {
 	"cd",
 	"change",
 	"cmap",
+	"cmdhistory",
 	"colorscheme",
 	"com",
 	"command",
-	"cmdhistory",
 	"d",
 	"delcommand",
 	"delete",
@@ -86,6 +86,7 @@ const char *reserved_commands[] = {
 	"map",
 	"marks",
 	"nmap",
+	"noh",
 	"nohlsearch",
 	"only",
 	"popd",
@@ -1648,6 +1649,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			save_msg = do_map(cmd, "Normal", "nmap", NORMAL_MODE);
 			break;
 		case COM_NOH:
+		case COM_NOHLSEARCH:
 			{
 				if(view->selected_files)
 				{

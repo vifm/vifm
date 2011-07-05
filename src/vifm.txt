@@ -1,8 +1,8 @@
 *vifm.txt*
 
 
-|Filters|            Using the file filters.
 |Commands|           How to use and set :commands.
+|Filters|            Using the file filters.
 |Mappings|           Special sequences.
 |Configure|          Configuration of vifm.
 |Marks|              Bookmarking of files.
@@ -15,22 +15,6 @@
 |Reserved|           List of reserved commands.
 |Vifm_Ranges|        How to use ranges in vifm.
 |set-options|        Available options.
-
---------------------------------------------------------------------------------
-*Filters*
-
-There are two basic file filters.  One for dot files and one for file names.
-
-The basic vim folding key-bindings are used for filters.
-za - toggles the showing and hiding of dot files.
-zo - show the dot files.
-zf - add the selected files to the file name filter.
-zm - hide the dot files.
-zO - show the hidden file name files.
-zM - restore all filters.
-zR - remove all filters.
-
-Note: vifm uses extended regular expressions.
 
 --------------------------------------------------------------------------------
 *Commands*
@@ -137,6 +121,22 @@ background.
 :!mv %f %D &
 
 --------------------------------------------------------------------------------
+*Filters*
+
+There are two basic file filters.  One for dot files and one for file names.
+
+The basic vim folding key-bindings are used for filters.
+za - toggles the showing and hiding of dot files.
+zo - show the dot files.
+zf - add the selected files to the file name filter.
+zm - hide the dot files.
+zO - show the hidden file name files.
+zM - restore all filters.
+zR - remove all filters.
+
+Note: vifm uses extended regular expressions.
+
+--------------------------------------------------------------------------------
 *Mappings*
 
 Since it's not easy to enter special characters there are several special
@@ -218,7 +218,6 @@ yy, Y - yank selected files.
 y<selector> - yank files.
 p - put last selected files.
 P - move yanked files.
-s - open a shell - this is temporary and will be removed.
 t - select or unselect a file.
 u - undo last command.
 Ctrl-r - redo last command.
@@ -353,52 +352,6 @@ Vim like mode:
     - yy yanks file under the cursor and ys works as dd in compatibility mode.
 
 --------------------------------------------------------------------------------
-*Reserved*
-
-The following command names are reserved and cannot be used for user commands.
-
-  ! - shellout and execute command.
-  apropos - run the apropos command in a menu window.
-  cd - change directory
-  change - alter a files properties
-  cmap - not used will be used for key mapping.
-  cmdhistory - show command line history menu
-  colorscheme - will be used to set a colorscheme for a directory.
-  command - show user commands.
-  delete - delete file.
-  delcommand - delete command.
-  dirs - display directory stack.
-  edit - edit file.
-  empty - empty trash directory.
-  filter - set file name filter.
-  file - show filetypes menu.
-  find - not yet implemented.
-  help - show help file.
-  history - show directory history.
-  invert - invert file filter.
-  locate - run the locate command in a menu window.
-  map - not used will be used with key mapping.
-  marks - show marks.
-  nmap - not used will be used with key mapping.
-  noh -
-  pwd - show present working directory.
-  q
-  quit - exit vifm.
-  screen - toggles use of screen program.
-  set - set option.
-  shell - shellout.
-  sort - show sort menu.
-  undolist - show list of latest changes.  Add ! to see commands.
-  unmap - not used will be used with key mapping.
-  view - toggle on and off the quick file view.
-  vifm - not used saved for possible menu.
-  vmap - not used will be used for key mapping.
-  w - same as :write.
-  wq - will exit vifm after writing config.
-  write - write config (add ! to force write even if settings weren't changed).
-  x - exit vifm.
-
---------------------------------------------------------------------------------
 *set-options*
 
 fastrun
@@ -477,6 +430,69 @@ wrap
 type: boolean
 default: true
 Controls whether to wrap text in quick view.
+
+--------------------------------------------------------------------------------
+*Reserved*
+
+The following command names are reserved and cannot be used for user commands.
+
+  ! - shellout and execute command.
+  apropos - run the apropos command in a menu window.
+  cd - change directory.
+  change - alter a files properties.
+  cmap - user mapping for command line mode.
+  cmdhistory - show command line history menu.
+  colorscheme - will be used to set a colorscheme for a directory.
+  com - show user commands.
+  command - show user commands.
+  d - delete file.
+  delcommand - delete command.
+  delete - delete file.
+  dirs - display directory stack.
+  display - popup menu with registers content.
+  e - edit file.
+  edit - edit file.
+  empty - empty trash directory.
+  file - show filetypes menu.
+  filter - set file name filter.
+  find - not yet implemented.
+  h - show help file.
+  help - show help file.
+  history - show directory history.
+  invert - invert file filter.
+  jobs - shows menu of current backgrounded processes.
+  locate - run the locate command in a menu window.
+  ls - not implemented.
+  map - user mapping for normal and visual modes.
+  marks - show marks.
+  nmap - user mapping for normal mode.
+  noh - clear selection in current pane.
+  nohlsearch - clear selection in current pane.
+  only - switch to a one window view.
+  popd - remove pane directories from stack.
+  pushd - add pane directories to stack.
+  pwd - show present working directory.
+  q - exit vifm.
+  quit - exit vifm.
+  register - popup menu with registers content.
+  rename - rename files using vi to edit names.
+  screen - toggles use of screen program.
+  set - set option.
+  shell - shellout.
+  sort - show sort menu.
+  sp - switch to a two window view.
+  split - switch to a two window view.
+  sync - change the other panel to the current panel directory.
+  undolist - show list of latest changes.  Add ! to see commands.
+  unmap - not used, will be used with key mapping.
+  view - toggle on and off the quick file view.
+  vifm - menu with version information.
+  vmap - user key mapping for visual mode.
+  w - same as :write.
+  wq - will exit vifm after writing config.
+  write - write config (add ! to force write even if settings weren't changed).
+  x - exit vifm.
+  yank - yank file.
 
 --------------------------------------------------------------------------------
  vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:ft=help:norl:

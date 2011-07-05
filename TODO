@@ -3,6 +3,7 @@ Basic things that need to be done.
 	Backgrounding of commands with job control (pause/resume/kill).
 	Fix window resizing (I think it's almost done).
 	Better documentation.
+    Remove vifm-help and generate it each time man page changed.
 	Handle commands that are too long to be passed directly to the shell
         (fixed??).
 	Make ga work in background.
@@ -18,6 +19,10 @@ Basic things that need to be done.
         until startup process will be finished.
     Add :filetype command.
     Make option parser understand quotes yet.
+    Make ~user_name/ work.
+    Remove s command from the documentation.
+    Implement :find command.
+    What :ls command should do?
 
 Vi(m) specific features that need to be added.
 	Finish implementing range and count for user commands (what commands left?).
@@ -32,6 +37,12 @@ Vi(m) specific features that need to be added.
         accidentally.
     :map shouldn't affect command line mode, :map! should.
     Add one more color to color scheme for error messages in status bar.
+    Add aliases for options (like 'go' for 'guioptions' in Vim).
+    Add 'confirm' option.
+    Add support of count for command line commands.
+    Add :unmap commands.
+    Add :noremap commands.
+    Skip command aliases on command completion.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -45,6 +56,12 @@ Possible things to add.
     Add :mark command.
     Add g/ and g? commands (search, but don't select files).
     Invert selection?
+    :g = grep :g! = grep -v
+    :filter! pattern same as :filter pattern | invert, but :filter! = :filter
+    :history! and :cmdhistory! same as normal versions but without duplicates.
+    Make :undolist more interactive.
+    A :restart function to reload everything.
+    Maybe something like :g/.../ and :v/.../ in Vim.
 
 Other (questinable) things.
     %i macro to prompt user for input.
@@ -54,6 +71,8 @@ Other (questinable) things.
     Save active files on exit (session).
     Make command line history persistent (session).
     Make directory history persistent (session).
+    Make search history persistent (session).
+    Make dirstack persistent ? (session).
     Add ... at the end of a title or always add it in the middle
     Command like ' but that executes bookmark ?
     Maybe we shouldn't clear screen on exit and add a command to view screen ?
@@ -61,14 +80,17 @@ Other (questinable) things.
     Completion for co and cg commands ?
     Directory create command ?
     Summarize size of selected files.  Need to decide to display it.
-    Add support for comments at the end of line ? just for fun?
+    Add support for comments at the end of line ? Just for fun?
     Make directory stack menu interactive ?
     With undo groups we can not only join commands, but maybe implement
         something like transaction rollback.  Or maybe better to leave this
         for user, he could always press u himself.
     Maybe add + and - commands to undo by commands, not command groups.
     :sellocal command.
+    :split directory, :only directory
+    Highlight for view window (see ranger).
 
 Code improvements.
     Move completion code from cmdline to a separate file.
     Write more tests.
+    Store escaped version of cfg.trash_dir somewhere and use it in commands.

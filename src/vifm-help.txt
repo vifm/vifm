@@ -390,6 +390,7 @@ Reserved :commands
 	map
 	marks
 	nmap
+	noh
 	nohlsearch
 	only
 	popd
