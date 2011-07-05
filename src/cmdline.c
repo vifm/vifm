@@ -76,7 +76,7 @@ static char **paths;
 static int paths_count;
 
 static void split_path(void);
-static int def_handler(wchar_t keys);
+static int def_handler(wchar_t key);
 static void update_cmdline_size(void);
 static void update_cmdline_text(void);
 static wchar_t * wcsins(wchar_t *src, wchar_t *ins, int pos);
