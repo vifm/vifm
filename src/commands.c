@@ -495,6 +495,30 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 	return expanded;
 }
 
+static char *
+expand_directory_path(FileView *view, char *expanded)
+{
+	char *t;
+	char *escaped;
+
+	if((escaped = escape_filename(view->curr_dir, 0, 0)) == NULL)
+	{
+		show_error_msg("Memory Error", "Unable to allocate memory");
+		free(expanded);
+		return NULL;
+	}
+
+	t = realloc(expanded, strlen(expanded) + strlen(escaped) + 1);
+	if(t == NULL)
+	{
+		show_error_msg("Memory Error", "Unable to allocate memory");
+		free(expanded);
+		return NULL;
+	}
+	strcat(t, escaped);
+	return t;
+}
+
 /* args could be equal NULL
  * The string returned needs to be freed in the calling function */
 char *
@@ -561,29 +585,12 @@ expand_macros(FileView *view, const char *command, const char *args,
 				len = strlen(expanded);
 				break;
 			case 'd': /* current directory */
-				{
-					expanded = (char *)realloc(expanded,
-							len + strlen(view->curr_dir) + 3);
-					strcat(expanded, "\"");
-					strcat(expanded, view->curr_dir);
-					strcat(expanded, "\"");
-					len = strlen(expanded);
-				}
+				expanded = expand_directory_path(curr_view, expanded);
+				len = strlen(expanded);
 				break;
 			case 'D': /* other directory */
-				{
-					expanded = (char *)realloc(expanded,
-							len + strlen(other_view->curr_dir) + 3);
-					if(!expanded)
-					{
-						show_error_msg("Memory Error", "Unable to allocate memory");
-						return NULL;
-					}
-					strcat(expanded, "\'");
-					strcat(expanded, other_view->curr_dir);
-					strcat(expanded, "\'");
-					len = strlen(expanded);
-				}
+				expanded = expand_directory_path(other_view, expanded);
+				len = strlen(expanded);
 				break;
 			case 'm': /* use menu */
 				*use_menu = 1;
