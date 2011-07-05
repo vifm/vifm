@@ -31,6 +31,7 @@ Vi(m) specific features that need to be added.
     Add something ('freezmarks' option ?) to prevent user loose his bookmarks 
         accidentally.
     :map shouldn't affect command line mode, :map! should.
+    Add one more color to color scheme for error messages in status bar.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?

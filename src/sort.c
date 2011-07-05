@@ -114,7 +114,7 @@ sort_dir_list(const void *one, const void *two)
 			else if(first->name[0] != '.' && second->name[0] == '.')
 				retval = 1;
 			else
-				retval = strcmp(first->name, second->name);
+				retval = compare_file_names(first->name, second->name);
 			break;
 
 		case SORT_BY_EXTENSION:
