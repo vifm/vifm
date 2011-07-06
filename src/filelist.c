@@ -1603,7 +1603,8 @@ load_saving_pos(FileView *view, int reload)
 			view->dir_entry[view->list_pos].name);
 	load_dir_list(view, reload);
 	pos = find_file_pos_in_list(view, filename);
-	moveto_list_pos(view, (pos >= 0) ? pos : view->list_pos);
+	if(view == curr_view)
+		moveto_list_pos(view, (pos >= 0) ? pos : view->list_pos);
 }
 
 void

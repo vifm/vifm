@@ -361,7 +361,11 @@ static void
 cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(redo_group() == 0)
+	{
+		load_saving_pos(&lwin, 1);
+		load_saving_pos(&rwin, 1);
 		return;
+	}
 
 	status_bar_message("Nothing to redo");
 	curr_stats.save_msg = 1;
@@ -986,6 +990,8 @@ cmd_p(struct key_info key_info, struct keys_info *keys_info)
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg, 0);
+	load_saving_pos(&lwin, 1);
+	load_saving_pos(&rwin, 1);
 }
 
 static void
@@ -1040,7 +1046,11 @@ static void
 cmd_u(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(undo_group() == 0)
+	{
+		load_saving_pos(&lwin, 1);
+		load_saving_pos(&rwin, 1);
 		return;
+	}
 
 	status_bar_message("Nothing to undo");
 	curr_stats.save_msg = 1;

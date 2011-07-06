@@ -1429,6 +1429,8 @@ clone_file(FileView* view)
 		cmd_group_begin("Clone file");
 		add_operation(do_cmd, undo_cmd);
 		cmd_group_end();
+
+		load_saving_pos(view, 1);
 	}
 }
 

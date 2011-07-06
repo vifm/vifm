@@ -3,5 +3,3 @@ Sometimes strange segmentation faults ending in libncurses can be seen.
 vifm doesn't always resize to fit terminal window.
 
 Strange piece of escape sequence 37m
-
-View is not refreshed sometimes after p of C commands.

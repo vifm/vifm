@@ -32,6 +32,7 @@
 #include "color_scheme.h"
 #include "config.h"
 #include "keys.h"
+#include "macros.h"
 #include "modes.h"
 #include "normal.h"
 #include "status.h"
@@ -82,7 +83,7 @@ main_loop(void)
 		/* This waits for timeout then skips if no keypress. */
 		ret = wget_wch(status_bar, (wint_t*)&c);
 
-		if(ret != ERR && pos != sizeof(buf)/sizeof(buf[0]) - 2)
+		if(ret != ERR && pos != ARRAY_LEN(buf) - 2)
 		{
 			buf[pos++] = c;
 			buf[pos] = L'\0';
