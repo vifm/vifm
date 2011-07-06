@@ -787,6 +787,9 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	for(x = 0; x < view->selected_files; x++)
 	{
 		char *esc_file;
+		char *esc_full;
+		char full_buf[PATH_MAX];
+
 		if(strcmp("../", view->selected_filelist[x]) == 0)
 		{
 			show_error_msg("Background Process Error",
@@ -794,27 +797,24 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 			continue;
 		}
 
+		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir,
+				view->selected_filelist[x]);
+		esc_full = escape_filename(full_buf, 0, 0);
 		esc_file = escape_filename(view->selected_filelist[x], 0, 0);
 		if(cfg.use_trash && use_trash)
 		{
-			char *esc_full;
-			char full_buf[PATH_MAX];
-
-			snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir,
-					view->selected_filelist[x]);
-			esc_full = escape_filename(full_buf, 0, 0);
 			snprintf(buf, sizeof(buf), "mv %s '%s'", esc_full, cfg.trash_dir);
-			free(esc_full);
 
 			snprintf(undo_buf, sizeof(undo_buf), "mv %s/%s '%s'", cfg.trash_dir,
 					esc_file, view->curr_dir);
 		}
 		else
 		{
-			snprintf(buf, sizeof(buf), "rm -rf %s", esc_file);
+			snprintf(buf, sizeof(buf), "rm -rf %s", esc_full);
 			undo_buf[0] = '\0';
 		}
 		free(esc_file);
+		free(esc_full);
 
 		progress_msg("Deleting files", x + 1, view->selected_files);
 		if(background_and_wait_for_errors(buf) == 0)
