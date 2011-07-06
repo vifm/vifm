@@ -161,12 +161,17 @@ set_config_dir(void)
 		char help_file[PATH_MAX];
 		char rc_file[PATH_MAX];
 		char startup_file[PATH_MAX];
+		char *escaped;
 
 		snprintf(rc_file, sizeof(rc_file), "%s/.vifm/vifmrc", home_dir);
 		snprintf(help_file, sizeof(help_file), "%s/.vifm/vifm-help_txt", home_dir);
 		snprintf(startup_file, sizeof(startup_file), "%s/.vifm/startup", home_dir);
 		snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s/.vifm", home_dir);
 		snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/.vifm/Trash", home_dir);
+
+		escaped = escape_filename(cfg.trash_dir, 0, 0);
+		strcpy(cfg.escaped_trash_dir, escaped);
+		free(escaped);
 
 		if(chdir(cfg.config_dir))
 		{

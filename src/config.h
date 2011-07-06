@@ -27,6 +27,7 @@
 typedef struct _Config {
 	char config_dir[PATH_MAX];
 	char trash_dir[PATH_MAX];
+	char escaped_trash_dir[PATH_MAX];
 	char *vi_command;
 	int num_bookmarks;
 	int use_trash;

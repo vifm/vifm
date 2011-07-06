@@ -1568,9 +1568,9 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 			break;
 		case COM_EMPTY:
 			{
-				char buf[24 + (strlen(cfg.trash_dir) + 1)*2 + 1];
-				snprintf(buf, sizeof(buf), "rm -rf %s/* %s/.[!.]*", cfg.trash_dir,
-						cfg.trash_dir);
+				char buf[24 + (strlen(cfg.escaped_trash_dir) + 1)*2 + 1];
+				snprintf(buf, sizeof(buf), "rm -rf %s/* %s/.[!.]*",
+						cfg.escaped_trash_dir, cfg.escaped_trash_dir);
 				start_background_job(buf);
 			}
 			break;

@@ -111,4 +111,3 @@ Other (questionable) things.
 Code improvements.
     Move completion code from cmdline to a separate file.
     Write more tests.
-    Store escaped version of cfg.trash_dir somewhere and use it in commands.

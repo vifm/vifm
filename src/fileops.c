@@ -803,9 +803,9 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		esc_file = escape_filename(view->selected_filelist[x], 0, 0);
 		if(cfg.use_trash && use_trash)
 		{
-			snprintf(buf, sizeof(buf), "mv %s '%s'", esc_full, cfg.trash_dir);
+			snprintf(buf, sizeof(buf), "mv %s %s", esc_full, cfg.escaped_trash_dir);
 
-			snprintf(undo_buf, sizeof(undo_buf), "mv %s/%s '%s'", cfg.trash_dir,
+			snprintf(undo_buf, sizeof(undo_buf), "mv %s/%s %s", cfg.escaped_trash_dir,
 					esc_file, view->curr_dir);
 		}
 		else
