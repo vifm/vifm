@@ -55,10 +55,11 @@ The basic vi key bindings are used to move through the files and popup
 	[count] dd or yy the count is from the current file downward.
 	:[count] user command is not yet implemented.
 	:[count] command
-		 The only builtin :[count] command is :[count]d[elete].  :3d would delete
-		 three files starting at the current file position moving down.
+		 The only builtin :[count] command is :[count]d[elete].  :d3 would delete
+		 three files starting at the current file position moving down.  And :3d
+         would delete files at the third line.
 
-    :number - move to the line number :12  would move to the 12th line.
+    :number - move to the line number :12  would move to the 12th file in the list.
 		:0 move to the top of the list.
 		:$ move to the bottom of the list.
 
@@ -72,7 +73,7 @@ The basic vi key bindings are used to move through the files and popup
     d2j delete file under cursor and two below.
     y6gg yank all files from cursor position to 6th file in the list.
 
-	Return  or l -  handle file (can run executables)
+	Return or l -  handle file (can run executables)
     i - handle file always
 		Default file type program or if on a directory enter the directory
 
@@ -117,11 +118,11 @@ The basic vi key bindings are used to move through the files and popup
     :display or :register - popup menu with registers content.
     :dirs - display directory stack.
     :cmdhistory - show command line history menu.
-    :colorscheme - gives a menu with a list of available color schemes.  You
+    :colo[rscheme] - gives a menu with a list of available color schemes.  You
         can choose default color scheme here.  It will be used if no DIRECTORY in
         colorscheme file doesn't fit current path.
-    :colorscheme color_scheme_name - changes default color scheme.  See
-        :colorscheme.
+    :colo[rscheme] color_scheme_name - changes default color scheme.  See
+        :colo[rscheme].
 	:file - popup menu of programs set for the file type of the current file.
         Add ' &' in the end of command if you want to start program in background. 
 	:filter regular_expression pattern will filter the files out of the directory
@@ -369,6 +370,7 @@ Reserved :commands
 	cd
 	change
 	cmap
+	colo
 	colorscheme
     com
 	command

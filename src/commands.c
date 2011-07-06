@@ -56,6 +56,9 @@
 /* The order of the commands is important as :e will match the first
  * command starting with e.
  */
+#ifndef TEST
+static
+#endif
 const char *reserved_commands[] = {
 	"!",
 	"apropos",
@@ -63,6 +66,7 @@ const char *reserved_commands[] = {
 	"change",
 	"cmap",
 	"cmdhistory",
+	"colo",
 	"colorscheme",
 	"com",
 	"command",
@@ -1453,6 +1457,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 		case COM_CMAP:
 			save_msg = do_map(cmd, "Command Line", "cmap", CMDLINE_MODE);
 			break;
+		case COM_COLO:
 		case COM_COLORSCHEME:
 		{
 			if(cmd->args)
@@ -2045,8 +2050,7 @@ exec_commands(char *cmd, FileView *view, int type, int save_hist)
 	int save_msg = 0;
 	char *p, *q;
 
-	if((type == GET_COMMAND || type == MAPPED_COMMAND
-			|| type == GET_VISUAL_COMMAND) && save_hist)
+	if((type == GET_COMMAND || type == GET_VISUAL_COMMAND) && save_hist)
 		save_command_history(cmd);
 
 	p = cmd;
@@ -2089,19 +2093,16 @@ exec_command(char *cmd, FileView *view, int type)
 {
 	if(cmd == NULL)
 	{
-		if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN
-				|| type == MAPPED_SEARCH)
+		if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN)
 			return find_pattern(view, view->regexp, type == GET_BSEARCH_PATTERN);
 		return 0;
 	}
 
-	if(type == GET_COMMAND || type == MAPPED_COMMAND
-			|| type == GET_VISUAL_COMMAND)
+	if(type == GET_COMMAND || type == GET_VISUAL_COMMAND)
 	{
 		return execute_command(view, cmd);
 	}
-	else if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN
-			|| type == MAPPED_SEARCH)
+	else if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN)
 	{
 		strncpy(view->regexp, cmd, sizeof(view->regexp));
 		save_search_history(cmd);

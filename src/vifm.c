@@ -330,7 +330,6 @@ main(int argc, char *argv[])
 	curr_stats.vifm_started = 1;
 	redraw_window();
 
-	curr_stats.setting_change = 0;
 	main_loop();
 
 	return 0;

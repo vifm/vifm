@@ -23,14 +23,10 @@
 #include "ui.h"
 
 enum {
-	CHANGE_WINDOWS,
 	GET_COMMAND,
-	GET_BOOKMARK,
 	GET_FSEARCH_PATTERN,
 	GET_BSEARCH_PATTERN,
 	GET_VISUAL_COMMAND,
-	MAPPED_COMMAND,
-	MAPPED_SEARCH
 };
 
 enum
@@ -41,6 +37,7 @@ enum
 	COM_CHANGE,
 	COM_CMAP,
 	COM_CMDHISTORY,
+	COM_COLO,
 	COM_COLORSCHEME,
 	COM_COM,
 	COM_COMMAND,
@@ -100,8 +97,6 @@ typedef struct
 	char *name;
 }command_t;
 
-extern const char *reserved_commands[];
-
 command_t *command_list;
 
 int exec_commands(char *cmd, FileView *view, int type, int save_hist);
@@ -119,8 +114,9 @@ void _gnuc_noreturn comm_quit(void);
 void comm_only(void);
 void comm_split(void);
 
-
 #ifdef TEST
+extern const char *reserved_commands[];
+
 char * append_selected_files(FileView *view, char *expanded, int under_cursor);
 char * edit_cmd_selection(FileView *view);
 #endif

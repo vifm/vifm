@@ -23,6 +23,7 @@ Basic things that need to be done.
     Remove s command from the documentation.
     Implement :find command.
     What :ls command should do?
+    Run commands from :cmdhistory menu.
 
 Vi(m) specific features that need to be added.
 	Finish implementing range and count for user commands (what commands left?).
@@ -57,11 +58,13 @@ Possible things to add.
     Add g/ and g? commands (search, but don't select files).
     Invert selection?
     :g = grep :g! = grep -v
-    :filter! pattern same as :filter pattern | invert, but :filter! = :filter
+    :filter! pattern same as :filter pattern | invert, and :filter! = :invert
     :history! and :cmdhistory! same as normal versions but without duplicates.
     Make :undolist more interactive.
     A :restart function to reload everything.
     Maybe something like :g/.../ and :v/.../ in Vim.
+    Reverse searching  (/ for search, g/ for selecting, g!/ for selecting
+        reverse)
 
 Other (questinable) things.
     %i macro to prompt user for input.
@@ -89,6 +92,7 @@ Other (questinable) things.
     :sellocal command.
     :split directory, :only directory
     Highlight for view window (see ranger).
+    Remove items from :cmdhistory
 
 Code improvements.
     Move completion code from cmdline to a separate file.

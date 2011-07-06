@@ -8,6 +8,7 @@ void check_dir_for_colorscheme_tests(void);
 void comments_tests(void);
 void compare_file_names_tests(void);
 void edit_cmd_selection_tests(void);
+void test_reserved_commands(void);
 
 void all_tests(void)
 {
@@ -19,6 +20,7 @@ void all_tests(void)
 	comments_tests();
 	compare_file_names_tests();
 	edit_cmd_selection_tests();
+	test_reserved_commands();
 }
 
 int main(int argc, char **argv)
