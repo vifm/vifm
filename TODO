@@ -10,7 +10,6 @@ Basic things that need to be done.
 	Make ga work in background.
 	Make ranges modify %f macro.
 	Think about good key for creating links (like pl in ranger).
-	Fix :'<'>!echo %f
     Rename files in Trash.
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
         :chown commands.
@@ -21,7 +20,6 @@ Basic things that need to be done.
     Add :filetype command.
     Make option parser understand quotes yet.
     Make ~user_name/ work.
-    Remove s command from the documentation.
     Implement :find command.
     What :ls command should do?
     Run commands from :cmdhistory menu.
@@ -105,7 +103,7 @@ Other (questionable) things.
     :sellocal command.
     :split directory, :only directory
     Highlight for view window (see ranger).
-    Remove items from :cmdhistory
+    Remove items from :cmdhistory ?
     Option with format of statwin.
 
 Code improvements.
@@ -113,3 +111,4 @@ Code improvements.
     Write more tests.
     Add function like status_bar_message() but with format and varargs.
     Think about escape_filename and it's len argument.
+    Rename exec_* to something.

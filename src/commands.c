@@ -1123,6 +1123,7 @@ static int
 parse_command(FileView *view, char *command, cmd_t *cmd)
 {
 	size_t len;
+	size_t pre_cmdname_len;
 	int result;
 
 	initialize_command_struct(cmd);
@@ -1166,23 +1167,25 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 		return 0;
 	}
 
+	pre_cmdname_len = cmd->pos;
 	cmd->cmd_name = strdup(command + cmd->pos);
 
 	/* The builtin commands do not contain numbers and ! is only used at the
 	 * end of the command name.
 	 */
-	while(cmd->cmd_name[cmd->pos] != ' '
-			&& (size_t)cmd->pos < strlen(cmd->cmd_name)
-			&& cmd->cmd_name[cmd->pos] != '!')
+	while(cmd->cmd_name[cmd->pos - pre_cmdname_len] != ' '
+			&& (size_t)cmd->pos < strlen(cmd->cmd_name) + pre_cmdname_len
+			&& cmd->cmd_name[cmd->pos - pre_cmdname_len] != '!')
 		cmd->pos++;
 
-	if(cmd->cmd_name[cmd->pos] != '!' || cmd->pos == 0)
+	if(cmd->cmd_name[cmd->pos - pre_cmdname_len] != '!'
+			|| cmd->pos == pre_cmdname_len)
 	{
-		cmd->cmd_name[cmd->pos] = '\0';
+		cmd->cmd_name[cmd->pos - pre_cmdname_len] = '\0';
 		cmd->pos++;
 	}
 	else /* Prevent eating '!' after command name. by not doing cmd->pos++ */
-		cmd->cmd_name[cmd->pos] = '\0';
+		cmd->cmd_name[cmd->pos - pre_cmdname_len] = '\0';
 
 	if(strlen(command) > (size_t)cmd->pos)
 	{
