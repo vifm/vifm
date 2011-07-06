@@ -111,3 +111,5 @@ Other (questionable) things.
 Code improvements.
     Move completion code from cmdline to a separate file.
     Write more tests.
+    Add function like status_bar_message() but with format and varargs.
+    Think about escape_filename and it's len argument.

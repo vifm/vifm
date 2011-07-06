@@ -870,9 +870,9 @@ mv_file(const char *src, const char *dst)
 		return -1;
 	}
 
-	snprintf(do_command, sizeof(do_command), "mv -f %s %s", escaped_src,
+	snprintf(do_command, sizeof(do_command), "mv -n %s %s", escaped_src,
 			escaped_dst);
-	snprintf(undo_command, sizeof(do_command), "mv -f %s %s", escaped_dst,
+	snprintf(undo_command, sizeof(do_command), "mv -n %s %s", escaped_dst,
 			escaped_src);
 	free(escaped_src);
 	free(escaped_dst);
@@ -948,7 +948,7 @@ rename_file(FileView *view, int name_only)
 
 /* Returns not NULL if file is OK */
 static char **
-check_rename_file(FileView *view, const int *indexes, int count, FILE *f)
+check_rename_file(FileView *view, int *indexes, int count, FILE *f)
 {
 	int i;
 	char **list = NULL;
@@ -988,14 +988,21 @@ check_rename_file(FileView *view, const int *indexes, int count, FILE *f)
 			continue;
 
 		for(j = 0; j < count; j++)
-			if(j != i && strcmp(name, view->dir_entry[indexes[j]].name) == 0)
+			if(j != i && strcmp(name, view->dir_entry[abs(indexes[j])].name) == 0)
 			{
-				status_bar_message(
-						"Can't use one of old names as a new name for another file");
-				curr_stats.save_msg = 1;
-				free_string_array(list, len);
-				return NULL;
+				indexes[i] = -indexes[i];
+				break;
 			}
+
+		if(indexes[i] >= 0 && access(name, F_OK) == 0)
+		{
+			char msg[5 + NAME_MAX + 15 + 1];
+			snprintf(msg, sizeof(msg), "File %s already exists", name);
+			status_bar_message(msg);
+			curr_stats.save_msg = 1;
+			free_string_array(list, len);
+			return NULL;
+		}
 	}
 
 	if(fgetc(f) != EOF)
@@ -1009,9 +1016,26 @@ check_rename_file(FileView *view, const int *indexes, int count, FILE *f)
 	return list;
 }
 
+/* Returns pointer to a statically allocated buffer */
+static const char *
+make_name_unique(const char *filename)
+{
+	static char unique[PATH_MAX];
+	size_t len;
+	int i;
+
+	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, getppid(),
+			getpid());
+	i = 0;
+
+	while(access(unique, F_OK) == 0)
+		sprintf(unique + len - 2, "%d", ++i);
+	return unique;
+}
+
 /* Returns count of renamed files */
 static int
-perform_renaming(FileView *view, const int *indexes, int count, char **list)
+perform_renaming(FileView *view, int *indexes, int count, char **list)
 {
 	int i;
 	int renamed = 0;
@@ -1019,9 +1043,34 @@ perform_renaming(FileView *view, const int *indexes, int count, char **list)
 
 	for(i = 0; i < count; i++)
 	{
-		if(list[i] == '\0')
+		const char *tmp;
+
+		if(list[i][0] == '\0')
+			continue;
+		if(strcmp(list[i], view->dir_entry[abs(indexes[i])].name) == 0)
+			continue;
+		if(indexes[i] >= 0)
 			continue;
 
+		indexes[i] = -indexes[i];
+
+		tmp = make_name_unique(view->dir_entry[indexes[i]].name);
+		if(mv_file(view->dir_entry[indexes[i]].name, tmp) != 0)
+		{
+			cmd_group_end();
+			undo_group();
+			status_bar_message("Temporary rename error");
+			curr_stats.save_msg = 1;
+			return 0;
+		}
+		free(view->dir_entry[indexes[i]].name);
+		view->dir_entry[indexes[i]].name = strdup(tmp);
+	}
+
+	for(i = 0; i < count; i++)
+	{
+		if(list[i][0] == '\0')
+			continue;
 		if(strcmp(list[i], view->dir_entry[indexes[i]].name) == 0)
 			continue;
 
@@ -1035,10 +1084,9 @@ perform_renaming(FileView *view, const int *indexes, int count, char **list)
 }
 
 static void
-rename_files_ind(FileView *view, const int *indexes, int count)
+rename_files_ind(FileView *view, int *indexes, int count)
 {
-	char buf[] = "vifm-rename-XXXXXX";
-	char *temp_file;
+	char temp_file[PATH_MAX];
 	char **list;
 	struct stat st_before, st_after;
 	FILE *f;
@@ -1050,12 +1098,7 @@ rename_files_ind(FileView *view, const int *indexes, int count)
 		return;
 	}
 
-	temp_file = mktemp(buf);
-	if(temp_file[0] == '\0')
-	{
-		status_bar_message("Can't create unique temp file name.");
-		return;
-	}
+	strncpy(temp_file, make_name_unique("vifm-rename"), sizeof(temp_file));
 
 	if((f = fopen(temp_file, "w")) == NULL)
 	{

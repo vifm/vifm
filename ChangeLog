@@ -48,8 +48,6 @@
 
 	Show message when :delcommand is called with no arguments.
 
-	More safe :rename command.
-
 	Handle broken links.
 
 	Make :edit command accept arguments.
@@ -94,9 +92,6 @@
 	Fixed bugs with registers and segmentation fault.
 
 	Fixed :d command, it is an abbreviation to :delete now.
-
-	Fixed bug with an empty line as filename for :rename command.  Now it
-	means don't rename appropriate file.
 
 	Fixed bug with :n
 
