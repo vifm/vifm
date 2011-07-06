@@ -178,11 +178,12 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
-	int bound = view->top_line + 2*view->window_rows + 1;
+	int bound;
+
+	bound = view->top_line + 2*view->window_rows + 1;
 	while(view->list_pos < bound)
-	{
 		select_down_one(view, start_pos);
-	}
+
 	update();
 }
 
@@ -195,10 +196,9 @@ cmd_D(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_G(struct key_info key_info, struct keys_info *keys_info)
 {
-	while(view->list_pos < view->list_rows)
-	{
+	while(view->list_pos < view->list_rows - 1)
 		select_down_one(view, start_pos);
-	}
+
 	update();
 }
 
