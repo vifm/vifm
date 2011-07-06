@@ -1403,7 +1403,8 @@ put_files_from_register(FileView *view, int name, int force_move)
 void
 clone_file(FileView* view)
 {
-	char buf[PATH_MAX + NAME_MAX*2 + 4];
+	char do_cmd[PATH_MAX + NAME_MAX*2 + 4];
+	char undo_cmd[3 + PATH_MAX + 6 + 1];
 	char *escaped;
 	const char *filename;
 	
@@ -1413,13 +1414,22 @@ clone_file(FileView* view)
 	if(strcmp(filename, "..") == 0)
 		return;
 
+	snprintf(do_cmd, sizeof(do_cmd), "%s/%s", view->curr_dir, filename);
+
 	if(view->dir_entry[view->list_pos].type == DIRECTORY)
-		escaped = escape_filename(filename, strlen(filename) - 1, 0);
+		escaped = escape_filename(do_cmd, strlen(do_cmd) - 1, 0);
 	else
-		escaped = escape_filename(filename, 0, 0);
-	snprintf(buf, sizeof(buf), "cp -pR %s %s_clone", escaped, escaped);
-	background_and_wait_for_errors(buf);
+		escaped = escape_filename(do_cmd, 0, 0);
+	snprintf(do_cmd, sizeof(do_cmd), "cp -pR %s %s_clone", escaped, escaped);
+	snprintf(undo_cmd, sizeof(undo_cmd), "rm %s_clone", escaped);
 	free(escaped);
+
+	if(background_and_wait_for_errors(do_cmd) == 0)
+	{
+		cmd_group_begin("Clone file");
+		add_operation(do_cmd, undo_cmd);
+		cmd_group_end();
+	}
 }
 
 unsigned long long

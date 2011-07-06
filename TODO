@@ -4,6 +4,7 @@ Basic things that need to be done.
 	Fix window resizing (I think it's almost done).
 	Better documentation.
     Remove vifm-help and generate it each time man page changed.
+    Document trimming of trailing spaces for maps.
 	Handle commands that are too long to be passed directly to the shell
         (fixed??).
 	Make ga work in background.
@@ -24,6 +25,11 @@ Basic things that need to be done.
     Implement :find command.
     What :ls command should do?
     Run commands from :cmdhistory menu.
+    Default filter string should be empty.
+    An option to choose shell.
+    Don't replace escape sequences for :! and :!! commands.
+    Make l work in visual mode.
+    Filetype support for directories.
 
 Vi(m) specific features that need to be added.
 	Finish implementing range and count for user commands (what commands left?).
@@ -68,7 +74,12 @@ Possible things to add.
     Reverse searching  (/ for search, g/ for selecting, g!/ for selecting
         reverse)
 
-Other (questinable) things.
+Vim plugin
+    Choose between one and two pane view on startup somehow.
+    Handle l when more then one file selected.
+    Look at the Ranousse patch for tabs.
+
+Other (questionable) things.
     %i macro to prompt user for input.
     Don't wrap command history (what about an option for this?).
     Maybe inotify support on Linux.
@@ -95,6 +106,7 @@ Other (questinable) things.
     :split directory, :only directory
     Highlight for view window (see ranger).
     Remove items from :cmdhistory
+    Option with format of statwin.
 
 Code improvements.
     Move completion code from cmdline to a separate file.
