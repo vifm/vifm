@@ -30,7 +30,8 @@ Basic things that need to be done.
     Filetype support for directories.
 
 Vi(m) specific features that need to be added.
-	Finish implementing range and count for user commands (what commands left?).
+	Finish implementing range and count for user commands.
+    Add support of count for command line commands (:y4, :d2).
 	Fix '' to go back to all jumps G gg links (in one directory?).
 	Change file list filters to use fold levels instead of just
 		the dot filter and regular expression filter (what does this mean?).
@@ -44,7 +45,6 @@ Vi(m) specific features that need to be added.
     Add one more color to color scheme for error messages in status bar.
     Add aliases for options (like 'go' for 'guioptions' in Vim).
     Add 'confirm' option.
-    Add support of count for command line commands.
     Add :unmap commands.
     Add :noremap commands.
     Skip command aliases on command completion.

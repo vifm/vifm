@@ -28,6 +28,8 @@
 
 	Added 'followlinks' option.
 
+	Added support for one number ranges for command line commands (:2d, :4y).
+
 	Don't change directory on unsuccessful FUSE mount.
 
 	Don't change cursor position of other directory after disabling quick view.

@@ -953,7 +953,7 @@ select_files_in_range(FileView *view, cmd_t * cmd)
 		view->selected_files = y;
 	}
 	/* A count is given */
-	else if(cmd->count)
+	else
 	{
 		if(!cmd->count)
 			cmd->count = 1;
@@ -961,17 +961,16 @@ select_files_in_range(FileView *view, cmd_t * cmd)
 		/* A one digit range with a count. :4y5 */
 		if(cmd->end_range)
 		{
-			y = 0;
 			for(x = 0; x < view->list_rows; x++)
 				view->dir_entry[x].selected = 0;
 
+			y = 0;
 			for(x = cmd->end_range; x < view->list_rows; x++)
 			{
-				if(cmd->count == y)
+				if(y == cmd->count)
 					break;
 				view->dir_entry[x].selected = 1;
 				y++;
-
 			}
 			view->selected_files = y;
 		}
@@ -985,7 +984,7 @@ select_files_in_range(FileView *view, cmd_t * cmd)
 
 			for(x = view->list_pos; x < view->list_rows; x++)
 			{
-				if(cmd->count == y )
+				if(cmd->count == y)
 					break;
 
 				view->dir_entry[x].selected = 1;
@@ -1027,7 +1026,7 @@ check_for_range(FileView *view, char *command, cmd_t *cmd)
 		cmd->count = view->list_rows;
 		if(strlen(command) == strlen("$"))
 		{
-			moveto_list_pos(view, cmd->count -1);
+			moveto_list_pos(view, cmd->count - 1);
 			return -10;
 		}
 		cmd->pos++;
