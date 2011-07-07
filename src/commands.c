@@ -1891,6 +1891,8 @@ execute_user_command(FileView *view, cmd_params *cmd)
 	int use_menu = 0;
 	int split = 0;
 
+	select_files_in_range(view, cmd);
+
 	if(strchr(command_list[cmd->is_user].action, '%') != NULL)
 		expanded_com = expand_macros(view, command_list[cmd->is_user].action,
 				cmd->args, &use_menu, &split);
@@ -1983,6 +1985,8 @@ execute_user_command(FileView *view, cmd_params *cmd)
 		free_selected_file_array(view);
 		view->selected_files = 0;
 		load_dir_list(view, 1);
+		if(view == curr_view)
+			moveto_list_pos(view, view->list_pos);
 	}
 	return 0;
 }

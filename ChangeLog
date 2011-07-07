@@ -56,7 +56,9 @@
 
 	Handle broken links.
 
-	Make :edit command accept arguments.
+	:edit command can accept arguments now.
+
+	:map don't affect command line mode, but :map! does.
 
 	Filter string is empty by default now.
 
