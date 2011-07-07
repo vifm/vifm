@@ -108,7 +108,7 @@ main_loop(void)
 				curr_stats.save_msg = 0;
 			last_result = execute_keys(buf);
 			counter = get_key_counter() - counter;
-			if(counter > 0)
+			if(counter > 0 && counter <= pos)
 			{
 				clear_input_bar();
 				pos -= counter;
