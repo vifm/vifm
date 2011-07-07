@@ -117,6 +117,8 @@
 
 	Fixed one number ranges for command line commands (:2d, :4y).
 
+	Fixed bug with too small inner buffer for shell commands.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).

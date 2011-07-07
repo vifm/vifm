@@ -1177,11 +1177,11 @@ change_directory(FileView *view, const char *directory)
 
 	clean_selected_files(view);
 
-	/* Need to use setenv instead of getcwd for a symlink directory */
-	setenv("PWD", dir_dup, 1);
-
 	if(strcmp(dir_dup, "/") != 0)
 		chosp(dir_dup);
+
+	/* Need to use setenv instead of getcwd for a symlink directory */
+	setenv("PWD", dir_dup, 1);
 
 	snprintf(view->curr_dir, PATH_MAX, "%s", dir_dup);
 	draw_dir_list(view, view->top_line);
