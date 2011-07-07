@@ -10,7 +10,7 @@ void buildin_and_custom(void);
 void diff_motions(void);
 void discard_not_full_cmds(void);
 void dont_exec_motions_only(void);
-void dont_remap_buildin(void);
+void remap_buildin(void);
 void long_motions_wait(void);
 void longest(void);
 void motions(void);
@@ -28,7 +28,7 @@ void all_tests(void)
 	diff_motions();
 	discard_not_full_cmds();
 	dont_exec_motions_only();
-	dont_remap_buildin();
+	remap_buildin();
 	long_motions_wait();
 	longest();
 	motions();

@@ -153,9 +153,7 @@ int add_cmds(struct keys_add_info *cmds, size_t len, int mode);
 int add_selectors(struct keys_add_info *cmds, size_t len, int mode);
 
 /*
- * Return value:
- *  - 0 - success
- *  - -1 - can't remap built in keys
+ * Returns not zero on error
  */
 int add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode);
 
@@ -169,6 +167,11 @@ int add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode);
  * Returns NULL on error.
  */
 wchar_t ** list_cmds(int mode);
+
+/*
+ * Returns count of processed keys
+ */
+size_t get_key_counter(void);
 
 #ifdef TEST
 /*

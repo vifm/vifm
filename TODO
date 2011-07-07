@@ -27,7 +27,6 @@ Basic things that need to be done.
     An option to choose shell.
     Don't replace escape sequences for :! and :!! commands.
     Make l work in visual mode.
-    Filetype support for directories.
 
 Vi(m) specific features that need to be added.
 	Finish implementing range and count for user commands.
@@ -76,6 +75,7 @@ Vim plugin
     Choose between one and two pane view on startup somehow.
     Handle l when more then one file selected.
     Look at the Ranousse patch for tabs.
+    Make :edit work like l (and support multiple files).
 
 Other (questionable) things.
     %i macro to prompt user for input.
@@ -105,6 +105,7 @@ Other (questionable) things.
     Highlight for view window (see ranger).
     Remove items from :cmdhistory ?
     Option with format of statwin.
+    Filetype support for directories.
 
 Code improvements.
     Move completion code from cmdline to a separate file.

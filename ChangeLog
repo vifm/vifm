@@ -28,7 +28,7 @@
 
 	Added 'followlinks' option.
 
-	Added support for one number ranges for command line commands (:2d, :4y).
+	Let builtin keys be remapped.
 
 	Don't change directory on unsuccessful FUSE mount.
 
@@ -112,6 +112,8 @@
 	Fixed refreshing after some commands.
 
 	Fixed commands like :'<'>!echo %f
+
+	Fixed one number ranges for command line commands (:2d, :4y).
 
 0.6.1 to 0.6.2
 

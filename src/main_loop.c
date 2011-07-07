@@ -71,6 +71,7 @@ main_loop(void)
 	while(1)
 	{
 		wchar_t c;
+		size_t counter;
 		int ret;
 
 		is_term_working();
@@ -89,24 +90,41 @@ main_loop(void)
 			buf[pos] = L'\0';
 		}
 
+		counter = get_key_counter();
 		if(ret == ERR && last_result == KEYS_WAIT_SHORT)
 		{
 			last_result = execute_keys_timed_out(buf);
+			counter = get_key_counter() - counter;
+			if(counter > 0)
+			{
+				pos -= counter;
+				memmove(buf, buf + counter,
+						(wcslen(buf) - counter + 1)*sizeof(wchar_t));
+			}
 		}
 		else
 		{
 			if(ret != ERR)
 				curr_stats.save_msg = 0;
 			last_result = execute_keys(buf);
+			counter = get_key_counter() - counter;
+			if(counter > 0)
+			{
+				clear_input_bar();
+				pos -= counter;
+				memmove(buf, buf + counter,
+						(wcslen(buf) - counter + 1)*sizeof(wchar_t));
+			}
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
 				if(ret != ERR)
 					add_to_input_bar(c);
-				if(last_result == KEYS_WAIT_SHORT)
+				if(last_result == KEYS_WAIT_SHORT && wcscmp(buf, L"\033") == 0)
 					wtimeout(status_bar, 0);
 				continue;
 			}
 		}
+
 		wtimeout(status_bar, KEYPRESS_TIMEOUT);
 
 		clear_input_bar();

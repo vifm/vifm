@@ -35,18 +35,24 @@ struct key_chunk_t
 	struct key_chunk_t *next;
 };
 
-static struct key_chunk_t *cmds_root;
+static struct key_chunk_t *builtin_cmds_root;
 static struct key_chunk_t *selectors_root;
+static struct key_chunk_t *user_cmds_root;
 static int max_modes;
 static int *mode;
 static int *mode_flags;
 static default_handler *def_handlers;
+static size_t counter;
 
 static void free_tree(struct key_chunk_t *root);
 static int execute_keys_general(const wchar_t *keys, int timed_out, int mapped);
 static int execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info);
+static int execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
+		struct key_chunk_t *root, struct key_info key_info);
+static int contains_chain(struct key_chunk_t *root, const wchar_t *begin,
+		const wchar_t *end);
 static int execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
-		struct key_info *key_info, struct keys_info *keys_info);
+		struct key_info *key_info, struct keys_info *keys_info, int has_duplicate);
 static int run_cmd(struct key_info key_info, struct keys_info *keys_info,
 		struct key_t *key_t);
 static void init_keys_info(struct keys_info *keys_info, int mapped);
@@ -67,8 +73,11 @@ init_keys(int modes_count, int *key_mode, int *key_mode_flags)
 	mode = key_mode;
 	mode_flags = key_mode_flags;
 
-	cmds_root = calloc(modes_count, sizeof(*cmds_root));
-	assert(cmds_root != NULL);
+	builtin_cmds_root = calloc(modes_count, sizeof(*builtin_cmds_root));
+	assert(builtin_cmds_root != NULL);
+
+	user_cmds_root = calloc(modes_count, sizeof(*user_cmds_root));
+	assert(user_cmds_root != NULL);
 
 	selectors_root = calloc(modes_count, sizeof(*selectors_root));
 	assert(selectors_root != NULL);
@@ -83,8 +92,12 @@ clear_keys(void)
 	int i;
 
 	for(i = 0; i < max_modes; i++)
-		free_tree(&cmds_root[i]);
-	free(cmds_root);
+		free_tree(&builtin_cmds_root[i]);
+	free(builtin_cmds_root);
+
+	for(i = 0; i < max_modes; i++)
+		free_tree(&user_cmds_root[i]);
+	free(user_cmds_root);
 
 	for(i = 0; i < max_modes; i++)
 		free_tree(&selectors_root[i]);
@@ -154,8 +167,9 @@ execute_keys_general(const wchar_t *keys, int timed_out, int mapped)
 static int
 execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info)
 {
-	struct key_chunk_t *root, *curr;
 	struct key_info key_info;
+	struct key_chunk_t *root;
+	int result;
 
 	keys = get_reg(keys, &key_info.reg);
 	if(keys == NULL)
@@ -163,7 +177,26 @@ execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info)
 		return KEYS_WAIT;
 	}
 	keys = get_count(keys, &key_info.count);
-	root = keys_info->selector ? &selectors_root[*mode] : &cmds_root[*mode];
+	root = keys_info->selector ?
+		&selectors_root[*mode] : &user_cmds_root[*mode];
+
+	result = execute_keys_loop(keys, keys_info, root, key_info);
+	if(result == KEYS_UNKNOWN && !keys_info->selector)
+		result = execute_keys_loop(keys, keys_info, &builtin_cmds_root[*mode],
+				key_info);
+
+	return result;
+}
+
+static int
+execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
+		struct key_chunk_t *root, struct key_info key_info)
+{
+	struct key_chunk_t *curr;
+	const wchar_t *keys_start = keys;
+	int has_duplicate;
+	int result;
+
 	curr = root;
 	while(*keys != L'\0')
 	{
@@ -175,7 +208,6 @@ execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info)
 		}
 		if(p == NULL || p->key != *keys)
 		{
-			int result;
 			if(curr == root)
 			{
 				return KEYS_UNKNOWN;
@@ -188,7 +220,10 @@ execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info)
 			{
 				return KEYS_UNKNOWN;
 			}
-			result = execute_next_keys(curr, L"", &key_info, keys_info);
+			has_duplicate = root == &user_cmds_root[*mode] &&
+					contains_chain(&builtin_cmds_root[*mode], keys_start, keys);
+			result = execute_next_keys(curr, L"", &key_info, keys_info,
+					has_duplicate);
 			if(IS_KEYS_RET_CODE(result))
 			{
 				if(result == KEYS_WAIT_SHORT)
@@ -197,17 +232,55 @@ execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info)
 				}
 				return result;
 			}
+			counter += keys - keys_start;
 			return execute_keys_general(keys, 0, keys_info->mapped);
 		}
 		keys++;
 		curr = p;
 	}
-	return execute_next_keys(curr, keys, &key_info, keys_info);
+	has_duplicate = root == &user_cmds_root[*mode] &&
+			contains_chain(&builtin_cmds_root[*mode], keys_start, keys);
+	result = execute_next_keys(curr, keys, &key_info, keys_info, has_duplicate);
+	if(!IS_KEYS_RET_CODE(result))
+	{
+		counter += keys - keys_start;
+	}
+	return result;
+}
+
+static int
+contains_chain(struct key_chunk_t *root, const wchar_t *begin,
+		const wchar_t *end)
+{
+	struct key_chunk_t *curr;
+
+	if(begin == end)
+	{
+		return 0;
+	}
+
+	curr = root;
+	while(begin != end)
+	{
+		struct key_chunk_t *p;
+		p = curr->child;
+		while(p != NULL && p->key < *begin)
+		{
+			p = p->next;
+		}
+		if(p == NULL || p->key != *begin)
+		{
+			return 0;
+		}
+		begin++;
+		curr = p;
+	}
+	return 1;
 }
 
 static int
 execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
-		struct key_info *key_info, struct keys_info *keys_info)
+		struct key_info *key_info, struct keys_info *keys_info, int has_duplicate)
 {
 	if(*keys == L'\0')
 	{
@@ -217,7 +290,7 @@ execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
 			int with_input = (mode_flags[*mode] & MF_USES_INPUT);
 			if(!keys_info->after_wait)
 			{
-				return with_input ? KEYS_WAIT_SHORT : KEYS_WAIT;
+				return (with_input || has_duplicate) ? KEYS_WAIT_SHORT : KEYS_WAIT;
 			}
 		}
 		else if(curr->conf.data.handler == NULL
@@ -331,19 +404,16 @@ static
 struct key_t*
 add_cmd(const wchar_t *keys, int mode)
 {
-	return add_keys_inner(&cmds_root[mode], keys);
+	return add_keys_inner(&builtin_cmds_root[mode], keys);
 }
 
 int
 add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode)
 {
 	struct key_t *curr;
-	curr = add_cmd(keys, mode);
-	if(curr->type != USER_CMD && curr->data.handler != NULL)
-	{
-		return -1;
-	}
-	else if(curr->type == USER_CMD)
+
+	curr = add_keys_inner(&user_cmds_root[mode], keys);
+	if(curr->type == USER_CMD)
 	{
 		free((void*)curr->data.cmd);
 	}
@@ -463,14 +533,14 @@ list_cmds(int mode)
 	int count;
 	wchar_t **result;
 
-	count = cmds_root[mode].children_count;
+	count = builtin_cmds_root[mode].children_count;
 	result = calloc(count + 1, sizeof(*result));
 	if(result == NULL)
 	{
 		return NULL;
 	}
 
-	if(fill_list(&cmds_root[mode], 0, result) != 0)
+	if(fill_list(&builtin_cmds_root[mode], 0, result) != 0)
 	{
 		for(i = 0; i < count; i++)
 		{
@@ -479,6 +549,8 @@ list_cmds(int mode)
 		free(result);
 		return NULL;
 	}
+
+	/* TODO add user commands to the list */
 
 	for(i = 0; i < count && result[i] != NULL; i++)
 	{
@@ -545,6 +617,12 @@ fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
 		child = child->next;
 	}
 	return 0;
+}
+
+size_t
+get_key_counter(void)
+{
+	return counter;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */
