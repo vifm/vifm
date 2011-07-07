@@ -115,10 +115,31 @@ void comm_only(void);
 void comm_split(void);
 
 #ifdef TEST
+typedef struct current_command
+{
+	int start_range;
+	int end_range;
+	int count;
+	char *cmd_name;
+	char *args;
+	char *curr_files; /* holds %f macro files */
+	char *other_files; /* holds %F macro files */
+	char *user_args; /* holds %a macro string */
+	char *order; /* holds the order of macros command %a %f or command %f %a */
+	int background;
+	int split;
+	int builtin;
+	int is_user;
+	int pos;
+	int pause;
+}cmd_params;
+
 extern const char *reserved_commands[];
 
 char * append_selected_files(FileView *view, char *expanded, int under_cursor);
 char * edit_cmd_selection(FileView *view);
+void initialize_command_struct(cmd_params *cmd);
+int select_files_in_range(FileView *view, cmd_params *cmd);
 #endif
 
 #endif

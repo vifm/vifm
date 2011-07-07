@@ -123,6 +123,7 @@ static int _gnuc_unused reserved_commands_size_guard[
 	(ARRAY_LEN(reserved_commands) == RESERVED) ? 1 : -1
 ];
 
+#ifndef TEST
 typedef struct current_command
 {
 	int start_range;
@@ -140,7 +141,8 @@ typedef struct current_command
 	int is_user;
 	int pos;
 	int pause;
-}cmd_t;
+}cmd_params;
+#endif
 
 static wchar_t * substitute_specs(const char *cmd);
 static const char *skip_spaces(const char *cmd);
@@ -909,8 +911,11 @@ shellout(char *command, int pause)
 	return result;
 }
 
-static void
-initialize_command_struct(cmd_t *cmd)
+#ifndef TEST
+static
+#endif
+void
+initialize_command_struct(cmd_params *cmd)
 {
 	cmd->start_range = 0;
 	cmd->end_range = 0;
@@ -925,8 +930,11 @@ initialize_command_struct(cmd_t *cmd)
 	cmd->pause = 0;
 }
 
-static int
-select_files_in_range(FileView *view, cmd_t *cmd)
+#ifndef TEST
+static
+#endif
+int
+select_files_in_range(FileView *view, cmd_params *cmd)
 {
 	int x;
 	int y = 0;
@@ -998,7 +1006,7 @@ select_files_in_range(FileView *view, cmd_t *cmd)
 }
 
 static int
-check_for_range(FileView *view, char *command, cmd_t *cmd)
+check_for_range(FileView *view, char *command, cmd_params *cmd)
 {
 	while(isspace(command[cmd->pos]) && (size_t)cmd->pos < strlen(command))
 		cmd->pos++;
@@ -1119,7 +1127,7 @@ check_for_range(FileView *view, char *command, cmd_t *cmd)
 }
 
 static int
-parse_command(FileView *view, char *command, cmd_t *cmd)
+parse_command(FileView *view, char *command, cmd_params *cmd)
 {
 	size_t len;
 	size_t pre_cmdname_len;
@@ -1232,7 +1240,7 @@ parse_command(FileView *view, char *command, cmd_t *cmd)
 }
 
 static int
-do_map(cmd_t *cmd, const char *map_type, const char *map_cmd, int mode)
+do_map(cmd_params *cmd, const char *map_type, const char *map_cmd, int mode)
 {
 	char err_msg[128];
 	wchar_t *keys, *mapping;
@@ -1282,7 +1290,7 @@ do_map(cmd_t *cmd, const char *map_type, const char *map_cmd, int mode)
 }
 
 static void
-comm_cd(FileView *view, cmd_t *cmd)
+comm_cd(FileView *view, cmd_params *cmd)
 {
 	if(cmd->args)
 	{
@@ -1379,7 +1387,7 @@ set_view_filter(FileView *view, const char *filter)
 }
 
 static int
-execute_builtin_command(FileView *view, cmd_t *cmd)
+execute_builtin_command(FileView *view, cmd_params *cmd)
 {
 	int save_msg = 0;
 
@@ -1877,7 +1885,7 @@ skip_word(const char *cmd)
 }
 
 static int
-execute_user_command(FileView *view, cmd_t *cmd)
+execute_user_command(FileView *view, cmd_params *cmd)
 {
 	char *expanded_com = NULL;
 	int use_menu = 0;
@@ -2007,7 +2015,7 @@ filter_slashes(char *str)
 int
 execute_command(FileView *view, char *command)
 {
-	cmd_t cmd;
+	cmd_params cmd;
 	int result;
 
 	cmd.cmd_name = NULL;
