@@ -926,7 +926,7 @@ initialize_command_struct(cmd_t *cmd)
 }
 
 static int
-select_files_in_range(FileView *view, cmd_t * cmd)
+select_files_in_range(FileView *view, cmd_t *cmd)
 {
 	int x;
 	int y = 0;
@@ -953,7 +953,7 @@ select_files_in_range(FileView *view, cmd_t * cmd)
 		view->selected_files = y;
 	}
 	/* A count is given */
-	else
+	else if(view->selected_files == 0)
 	{
 		if(!cmd->count)
 			cmd->count = 1;
@@ -1276,9 +1276,7 @@ do_map(cmd_t *cmd, const char *map_type, const char *map_cmd, int mode)
 	*raw_rhs = t;
 
 	if(result == -1)
-	{
-		show_error_msg("Mapping Error", "Can't remap buildin key");
-	}
+		show_error_msg("Mapping Error", "Not enough memory");
 
 	return 0;
 }
