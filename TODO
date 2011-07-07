@@ -76,6 +76,7 @@ Vim plugin
     Handle l when more then one file selected.
     Look at the Ranousse patch for tabs.
     Make :edit work like l (and support multiple files).
+    Problems with filenames containing spaces.
 
 Other (questionable) things.
     %i macro to prompt user for input.

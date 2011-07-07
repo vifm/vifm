@@ -30,6 +30,8 @@
 
 	Let builtin keys be remapped.
 
+	Don't cancel file renaming if user presses backspace and line is empty.
+
 	Don't change directory on unsuccessful FUSE mount.
 
 	Don't change cursor position of other directory after disabling quick view.

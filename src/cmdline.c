@@ -446,6 +446,7 @@ leave_cmdline_mode(void)
 	curs_set(0);
 	curr_stats.save_msg = 0;
 	free(input_stat.line);
+	clean_status_bar();
 
 	if(*mode == CMDLINE_MODE)
 		*mode = prev_mode;
@@ -467,10 +468,8 @@ cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 
 	if(input_stat.index == 0)
 	{
-		if(input_stat.len == 0)
-		{
+		if(input_stat.len == 0 && sub_mode != PROMPT_SUBMODE)
 			leave_cmdline_mode();
-		}
 		return;
 	}
 
