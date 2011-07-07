@@ -60,6 +60,8 @@
 
 	:map don't affect command line mode, but :map! does.
 
+	Let ranges modify %f macro for user defined commands.
+
 	Filter string is empty by default now.
 
 	Fixed %F, accidentally broken in v0.6.2.

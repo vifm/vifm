@@ -1649,11 +1649,17 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			my_system("screen -X eval 'windowlist'");
 			break;
 		case COM_MAP:
-			save_msg = do_map(cmd, "", "map", CMDLINE_MODE);
-			if(save_msg == 0)
+			if(cmd->args != NULL && cmd->args[0] == '!')
+			{
+				save_msg = do_map(cmd, "", "map", CMDLINE_MODE);
+			}
+			else
+			{
 				save_msg = do_map(cmd, "", "map", NORMAL_MODE);
-			if(save_msg == 0)
-				save_msg = do_map(cmd, "", "map", VISUAL_MODE);
+				if(save_msg == 0)
+					save_msg = do_map(cmd, "", "map", VISUAL_MODE);
+			}
+			break;
 			break;
 		case COM_MARKS:
 			show_bookmarks_menu(view);

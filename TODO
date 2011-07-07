@@ -8,7 +8,6 @@ Basic things that need to be done.
 	Handle commands that are too long to be passed directly to the shell
         (I think this can be done with xargs).
 	Make ga work in background.
-	Make ranges modify %f macro.
 	Think about good key for creating links (like pl in ranger).
     Rename files in Trash.
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
