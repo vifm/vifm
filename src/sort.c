@@ -56,7 +56,7 @@ compare_file_names(const char *s, const char *t)
 			s++;
 			t++;
 		}
-		else if(isdigit(*s) && isdigit(*s))
+		else if(isdigit(*s) && isdigit(*t))
 		{
 			int num_a, num_b;
 			char *p;

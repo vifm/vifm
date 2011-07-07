@@ -83,6 +83,50 @@ with_numbers(void)
 	assert_true(compare_file_names(s, t) > 0);
 }
 
+static void
+numbers_only(void)
+{
+	const char *s, *t;
+
+	s = "00";
+	t = "01";
+	assert_true(compare_file_names(s, t) < 0);
+
+	s = "01";
+	t = "10";
+	assert_true(compare_file_names(s, t) < 0);
+
+	s = "10";
+	t = "11";
+	assert_true(compare_file_names(s, t) < 0);
+
+	s = "01";
+	t = "00";
+	assert_true(compare_file_names(s, t) > 0);
+
+	s = "10";
+	t = "01";
+	assert_true(compare_file_names(s, t) > 0);
+
+	s = "11";
+	t = "10";
+	assert_true(compare_file_names(s, t) > 0);
+}
+
+static void
+numbers_only_and_letters_only(void)
+{
+	const char *s, *t;
+
+	s = "A";
+	t = "10";
+	assert_true(compare_file_names(s, t) > 0);
+
+	s = "10";
+	t = "A";
+	assert_true(compare_file_names(s, t) < 0);
+}
+
 void
 compare_file_names_tests(void)
 {
@@ -92,6 +136,8 @@ compare_file_names_tests(void)
 
 	run_test(without_numbers);
 	run_test(with_numbers);
+	run_test(numbers_only);
+	run_test(numbers_only_and_letters_only);
 
 	test_fixture_end();
 }
