@@ -1003,6 +1003,22 @@ leave_invalid_dir(FileView *view, char *path)
 	}
 }
 
+static int
+in_mounted_dir(const char *path)
+{
+	Fuse_List *runner;
+
+	runner = fuse_mounts;
+	while(runner)
+	{
+		if(strcmp(runner->mount_point, path) == 0)
+			return 1;
+
+		runner = runner->next;
+	}
+	return 0;
+}
+
 /*
  * Return value:
  *   -1 error occurred.
@@ -1012,7 +1028,7 @@ leave_invalid_dir(FileView *view, char *path)
 static int
 try_unmount_fuse(FileView *view)
 {
-	char buf[8192];
+	char buf[14 + PATH_MAX + 1];
 	Fuse_List *runner, *trailer;
 	int status;
 	Fuse_List *sniffer;
@@ -1108,8 +1124,7 @@ change_directory(FileView *view, const char *directory)
 
 	/* check if we're exiting from a FUSE mounted top level dir.
 	 * If so, unmount & let FUSE serialize */
-	if(!strcmp(directory, "../") &&
-			!memcmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)))
+	if(!strcmp(directory, "../") && in_mounted_dir(view->curr_dir))
 	{
 		int r = try_unmount_fuse(view);
 		if(r != 0)

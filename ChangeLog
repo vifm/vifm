@@ -28,6 +28,8 @@
 
 	Added 'followlinks' option.
 
+	Added 'fusehome' option.
+
 	Let builtin keys be remapped.
 
 	Don't cancel file renaming if user presses backspace and line is empty.

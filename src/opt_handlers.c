@@ -15,6 +15,7 @@ static void load_options(void);
 static void print_func(const char *msg, const char *description);
 static void fastrun_handler(enum opt_op op, union optval_t val);
 static void followlinks_handler(enum opt_op op, union optval_t val);
+static void fusehome_handler(enum opt_op op, union optval_t val);
 static void iec_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
 static void savelocation_handler(enum opt_op op, union optval_t val);
@@ -62,6 +63,7 @@ add_options(void)
 {
 	add_option("fastrun", OPT_BOOL, 0, NULL, &fastrun_handler);
 	add_option("followlinks", OPT_BOOL, 0, NULL, &followlinks_handler);
+	add_option("fusehome", OPT_STR, 0, NULL, &fusehome_handler);
 	add_option("iec", OPT_BOOL, 0, NULL, &iec_handler);
 	add_option("runexec", OPT_BOOL, 0, NULL, &runexec_handler);
 	add_option("savelocation", OPT_BOOL, 0, NULL, &savelocation_handler);
@@ -88,6 +90,9 @@ load_options(void)
 
 	val.bool_val = cfg.follow_links;
 	set_option("followlinks", val);
+
+	val.str_val = cfg.fuse_home;
+	set_option("fusehome", val);
 
 	val.bool_val = cfg.use_iec_prefixes;
 	set_option("iec", val);
@@ -166,6 +171,13 @@ static void
 followlinks_handler(enum opt_op op, union optval_t val)
 {
 	cfg.follow_links = val.bool_val;
+}
+
+static void
+fusehome_handler(enum opt_op op, union optval_t val)
+{
+	free(cfg.fuse_home);
+	cfg.fuse_home = strdup(val.str_val);
 }
 
 static void

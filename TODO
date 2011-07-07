@@ -16,13 +16,15 @@ Basic things that need to be done.
     Make child processes continue working after vifm shutdown.
     Ctrl-C on error message before vifm start should skip all error messages
         until startup process will be finished.
-    Add :filetype command.
+    Add :filetype command (separate programs and viewer).
     Make option parser understand quotes yet.
     Make ~user_name/ work.
     Implement :find command.
     What :ls command should do?
     Run commands from :cmdhistory menu.
     An option to choose shell.
+    Make l key handle selection.
+    Add 'filter' option.
 
 Vi(m) specific features that need to be added.
 	Finish implementing range and count for user commands.

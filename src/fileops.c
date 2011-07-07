@@ -112,7 +112,7 @@ unmount_fuse(void)
 	runner = fuse_mounts;
 	while(runner)
 	{
-		char buf[8192];
+		char buf[14 + PATH_MAX + 1];
 		char *tmp;
 
 		tmp = escape_filename(runner->mount_point, 0, 0);
