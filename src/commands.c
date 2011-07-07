@@ -2039,7 +2039,7 @@ execute_command(FileView *view, char *command)
 
 	if(cmd.builtin > -1)
 	{
-		if(cmd.builtin != COM_SET && cmd.args != NULL)
+		if(cmd.builtin != COM_SET && cmd.builtin != COM_EXECUTE && cmd.args != NULL)
 			filter_slashes(cmd.args);
 		result = execute_builtin_command(view, &cmd);
 	}

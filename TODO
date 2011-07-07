@@ -25,7 +25,6 @@ Basic things that need to be done.
     Run commands from :cmdhistory menu.
     Default filter string should be empty.
     An option to choose shell.
-    Don't replace escape sequences for :! and :!! commands.
     Make l work in visual mode.
 
 Vi(m) specific features that need to be added.
@@ -88,6 +87,7 @@ Other (questionable) things.
     Make directory history persistent (session).
     Make search history persistent (session).
     Make dirstack persistent ? (session).
+    Save registers ? (session).
     Add ... at the end of a title or always add it in the middle
     Command like ' but that executes bookmark ?
     Maybe we shouldn't clear screen on exit and add a command to view screen ?

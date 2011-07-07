@@ -42,6 +42,8 @@
 	Don't show error message when trying to delete something from Trash
 	directory.
 
+    Don't replace escape sequences for :! and :!! commands.
+
 	Use only executables for :!./ completion.
 
 	Complete :pushd like :cd.
