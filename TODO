@@ -23,9 +23,7 @@ Basic things that need to be done.
     Implement :find command.
     What :ls command should do?
     Run commands from :cmdhistory menu.
-    Default filter string should be empty.
     An option to choose shell.
-    Make l work in visual mode.
 
 Vi(m) specific features that need to be added.
 	Finish implementing range and count for user commands.
@@ -48,6 +46,14 @@ Vi(m) specific features that need to be added.
     Skip command aliases on command completion.
     Some kind of selection mode (multible blocks, mixing).
     Generalize gv to work with t selection.
+    Add :mksession command and 'sessionoptions' option.
+    Add 'vifminfo' option.
+    Save active pane (with positions) on exit (session and vifminfo).
+    Make directory history persistent (session and vifminfo).
+    Make command line history persistent (session and vifminfo).
+    Make search history persistent (session and vifminfo).
+    Make dirstack persistent (session and vifminfo).
+    Save registers (session and vifminfo).
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -81,13 +87,6 @@ Other (questionable) things.
     %i macro to prompt user for input.
     Don't wrap command history (what about an option for this?).
     Maybe inotify support on Linux.
-    Save active pane on exit (session).
-    Save active files on exit (session).
-    Make command line history persistent (session).
-    Make directory history persistent (session).
-    Make search history persistent (session).
-    Make dirstack persistent ? (session).
-    Save registers ? (session).
     Add ... at the end of a title or always add it in the middle
     Command like ' but that executes bookmark ?
     Maybe we shouldn't clear screen on exit and add a command to view screen ?

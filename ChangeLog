@@ -42,7 +42,7 @@
 	Don't show error message when trying to delete something from Trash
 	directory.
 
-    Don't replace escape sequences for :! and :!! commands.
+	Don't replace escape sequences for :! and :!! commands.
 
 	Use only executables for :!./ completion.
 
@@ -57,6 +57,8 @@
 	Handle broken links.
 
 	Make :edit command accept arguments.
+
+	Filter string is empty by default now.
 
 	Fixed %F, accidentally broken in v0.6.2.
 

@@ -42,7 +42,6 @@
 #include "utils.h"
 
 #define MAX_LEN 1024
-#define DEFAULT_FILENAME_FILTER "\\.o$"
 
 Config cfg;
 
@@ -111,6 +110,18 @@ create_startup_file(void)
 	file_exec(command);
 }
 
+static void
+load_view_defaults(FileView *view)
+{
+	strncpy(view->regexp, "\\..~$", sizeof(view->regexp) - 1);
+
+	view->filename_filter = strdup("");
+	view->prev_filter = strdup("");
+	view->invert = TRUE;
+
+	view->sort_type = SORT_BY_NAME;
+}
+
 /* This is just a safety check so that vifm will still load and run if
  * the configuration file is not present.
  */
@@ -124,28 +135,9 @@ load_default_configuration(void)
 	cfg.use_screen = 0;
 	cfg.history_len = 15;
 	cfg.use_vim_help = 0;
-	strncpy(lwin.regexp, "\\..~$", sizeof(lwin.regexp) -1);
 
-	lwin.filename_filter = (char *)realloc(lwin.filename_filter,
-			strlen(DEFAULT_FILENAME_FILTER) + 1);
-	strcpy(lwin.filename_filter, DEFAULT_FILENAME_FILTER);
-	lwin.prev_filter = (char *)realloc(lwin.prev_filter,
-			strlen(DEFAULT_FILENAME_FILTER) + 1);
-	strcpy(lwin.prev_filter, DEFAULT_FILENAME_FILTER);
-
-	lwin.invert = TRUE;
-	strncpy(rwin.regexp, "\\..~$", sizeof(rwin.regexp) -1);
-
-	rwin.filename_filter = (char *)realloc(rwin.filename_filter,
-			strlen(DEFAULT_FILENAME_FILTER) + 1);
-	strcpy(rwin.filename_filter, DEFAULT_FILENAME_FILTER);
-	rwin.prev_filter = (char *)realloc(rwin.prev_filter,
-			strlen(DEFAULT_FILENAME_FILTER) + 1);
-	strcpy(rwin.prev_filter, DEFAULT_FILENAME_FILTER);
-
-	rwin.invert = TRUE;
-	lwin.sort_type = SORT_BY_NAME;
-	rwin.sort_type = SORT_BY_NAME;
+	load_view_defaults(&lwin);
+	load_view_defaults(&rwin);
 
 	read_color_scheme_file();
 }
@@ -323,7 +315,7 @@ read_config_file(void)
 			if(!strcmp(line, "LWIN_FILTER"))
 			{
 				lwin.filename_filter = (char *)realloc(lwin.filename_filter,
-						strlen(s1) +1);
+						strlen(s1) + 1);
 				strcpy(lwin.filename_filter, s1);
 				lwin.prev_filter = (char *)realloc(lwin.prev_filter, strlen(s1) + 1);
 				strcpy(lwin.prev_filter, s1);
