@@ -23,15 +23,21 @@ typedef struct
 {
 	char *type;
 	char *ext;
-	char *viewer;
 	char *programs;
 }filetype_t;
 
+typedef struct
+{
+	char *ext;
+	char *viewer;
+}fileviewer_t;
+
 filetype_t *filetypes;
+fileviewer_t *fileviewers;
 char * get_default_program_for_file(char *file);
 char * get_viewer_for_file(char *file);
-void add_filetype(char *description, char *extension, char *viewer,
-		char *programs);
+void add_filetype(char *description, char *extension, char *programs);
+void add_fileviewer(char *extension, char *viewer);
 void set_programs(char *extension, char *programs);
 char * get_all_programs_for_file(char *file);
 

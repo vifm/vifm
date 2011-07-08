@@ -32,6 +32,7 @@
 #include "../config.h"
 
 #include "config.h"
+#include "macros.h"
 #include "status.h"
 #include "ui.h"
 
@@ -554,6 +555,54 @@ free_string_array(char **array, size_t len)
 	for(i = 0; i < len; i++)
 		free(array[i]);
 	free(array);
+}
+
+/* Removes excess slashes, "../" and "./" from the path */
+void
+canonicalize_path(const char *directory, char *buf, size_t buf_size)
+{
+	const char *p; /* source string pointer */
+	char *q; /* destination string pointer */
+
+	buf[0] = '\0';
+
+	q = buf - 1;
+	p = directory;
+	while(*p != '\0' && (size_t)((q + 1) - buf) < buf_size - 1)
+	{
+		int prev_dir_present;
+
+		prev_dir_present = (q != buf - 1 && *q == '/');
+		if(prev_dir_present && strncmp(p, "./", 2) == 0)
+			p++;
+		else if(prev_dir_present && strcmp(p, ".") == 0)
+			;
+		else if(prev_dir_present &&
+				(strncmp(p, "../", 3) == 0 || strcmp(p, "..") == 0) &&
+				strcmp(buf, "../") != 0)
+		{
+			p++;
+			q--;
+			while(q >= buf && *q != '/')
+				q--;
+		}
+		else if(*p == '/')
+		{
+			if(!prev_dir_present)
+				*++q = '/';
+		}
+		else
+		{
+			*++q = *p;
+		}
+
+		p++;
+	}
+
+	if(*q != '/')
+		*++q = '/';
+
+	*++q = '\0';
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

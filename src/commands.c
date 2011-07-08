@@ -1644,7 +1644,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			}
 			break;
 		case COM_LS:
-			if (!cfg.use_screen)
+			if(!cfg.use_screen)
 				break;
 			my_system("screen -X eval 'windowlist'");
 			break;

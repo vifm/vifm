@@ -405,7 +405,8 @@ read_config_file(void)
 			}
 			if(!strcmp(line, "FILETYPE")) /* backward compatibility */
 			{
-				add_filetype(s1, s2, "", s3);
+				add_filetype(s1, s2, s3);
+				add_fileviewer(s2, "");
 				continue;
 			}
 		}
@@ -413,7 +414,8 @@ read_config_file(void)
 		{
 			if(!strcmp(line, "FILETYPE"))
 			{
-				add_filetype(s1, s2, s3, s4);
+				add_filetype(s1, s2, s4);
+				add_fileviewer(s2, s3);
 				continue;
 			}
 		}
@@ -648,7 +650,7 @@ write_config_file(void)
 		if(filetypes[x].programs[0] == '\0')
 			continue;
 		fprintf(fp, "FILETYPE=%s=%s=%s=%s\n", filetypes[x].type, filetypes[x].ext,
-				filetypes[x].viewer, filetypes[x].programs);
+				fileviewers[x].viewer, filetypes[x].programs);
 	}
 
 	fprintf(fp, "\n# For automated FUSE mounts, you must register an extension with FILETYPE=..\n");

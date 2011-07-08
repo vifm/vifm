@@ -19,8 +19,11 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#include <limits.h> /* PATH_MAX */
+#include <sys/types.h> /* mode_t */
+#include <wchar.h> /* wchar_t ... */
+
 #include "macros.h"
-#include "ui.h"
 
 typedef struct Fuse_List {
 	char source_file_name[PATH_MAX];
@@ -57,6 +60,7 @@ int fill_version_info(char **list);
 void friendly_size_notation(unsigned long long num, int str_size, char *str);
 int check_link_is_dir(const char *filename);
 void free_string_array(char **array, size_t len);
+void canonicalize_path(const char *directory, char *buf, size_t buf_size);
 
 #endif
 

@@ -150,7 +150,7 @@ The basic vi key bindings are used to move through the files and popup
 		:cd ~/bin
     :popd - remove pane directories from stack.
     :pushd directory - add pane directories to stack.
-    :screen] toggles whether to use the screen program or not.
+    :screen - toggles whether to use the screen program or not.
     :set opt1=val1 opt2=val2 - sets given options.
     :shell will start a shell
 	:sort - popup menu of different sorting methods

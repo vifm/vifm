@@ -113,7 +113,7 @@ get_viewer_for_file(char *file)
 	if(x < 0)
 		return NULL;
 
-	return filetypes[x].viewer;
+	return fileviewers[x].viewer;
 }
 
 char *
@@ -128,27 +128,38 @@ get_all_programs_for_file(char *file)
 }
 
 void
-add_filetype(char *description, char *extension, char *viewer, char *programs)
+add_filetype(char *description, char *extension, char *programs)
 {
-	filetypes = (filetype_t *)realloc(filetypes,
-			(cfg.filetypes_num +1) * sizeof(filetype_t));
+	filetypes = realloc(filetypes, (cfg.filetypes_num + 1) * sizeof(filetype_t));
 
 	filetypes[cfg.filetypes_num].type = strdup(description);
 
 	filetypes[cfg.filetypes_num].ext = strdup(extension);
-	filetypes[cfg.filetypes_num].viewer = strdup(viewer);
 	filetypes[cfg.filetypes_num].programs = strdup(programs);
 	cfg.filetypes_num++;
 }
 
 void
-set_programs(char *extension, char *programs) {
+add_fileviewer(char *extension, char *viewer)
+{
+	fileviewers = realloc(fileviewers,
+			(cfg.fileviewers_num + 1) * sizeof(fileviewer_t));
+
+	fileviewers[cfg.fileviewers_num].ext = strdup(extension);
+	fileviewers[cfg.fileviewers_num].viewer = strdup(viewer);
+	cfg.fileviewers_num++;
+}
+
+void
+set_programs(char *extension, char *programs)
+{
 	int x;
 
 	x = get_filetype_number(extension);
 	if(x < 0)
 	{
-		add_filetype("", extension + 1, "", programs);
+		add_filetype("", extension + 1, programs);
+		add_fileviewer(extension + 1, programs);
 		return;
 	}
 

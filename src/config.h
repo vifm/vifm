@@ -20,7 +20,7 @@
 #define __CONFIG_H__
 
 #include <limits.h>
-#include <ncurses.h>
+#include <curses.h>
 
 #define KEYPRESS_TIMEOUT 1000 /* 1 second */
 
@@ -36,6 +36,7 @@ typedef struct _Config {
 	int use_vim_help;
 	int command_num;
 	int filetypes_num;
+	int fileviewers_num;
 	int history_len;
 	int nmapped_num;
 	int screen_num;

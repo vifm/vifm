@@ -6,6 +6,7 @@ Basic things that need to be done.
     Remove vifm-help and generate it each time man page changed.
     Document trimming of trailing spaces for maps.
     Document | in command line.
+    Decument :ls command (for screen program).
 	Handle commands that are too long to be passed directly to the shell
         (I think this can be done with xargs).
 	Make ga work in background.
@@ -21,12 +22,12 @@ Basic things that need to be done.
     Make option parser understand quotes yet.
     Make ~user_name/ work.
     Implement :find command.
-    What :ls command should do?
     Run commands from :cmdhistory menu.
     An option to choose shell.
     Make l key handle selection.
     Add 'filter' option.
     :filter? to display it's current value.
+    Implement :cd -
 
 Vi(m) specific features that need to be added.
 	Finish implementing range and count for user commands.
@@ -56,6 +57,8 @@ Vi(m) specific features that need to be added.
     Make search history persistent (session and vifminfo).
     Make dirstack persistent (session and vifminfo).
     Save registers (session and vifminfo).
+    Remove :cmdhistory and change :history to work like in Vim.
+    | after ! should mean pipe, not command separator.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -77,6 +80,8 @@ Possible things to add.
     Maybe something like :g/.../ and :v/.../ in Vim.
     Reverse searching  (/ for search, g/ for selecting, g!/ for selecting
         reverse)
+    Improve sorting ('sort' and 'gsort'; ignore case).
+    Reset options to it's default value (from docs) with set option&.
 
 Vim plugin
     Choose between one and two pane view on startup somehow.
