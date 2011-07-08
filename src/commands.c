@@ -1624,7 +1624,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			}
 			break;
 		case COM_HISTORY:
-			show_history_menu(view);
+			save_msg = show_history_menu(view);
 			break;
 		case COM_INVERT:
 			view->invert = !view->invert;

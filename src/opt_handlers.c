@@ -4,6 +4,7 @@
 
 #include "config.h"
 #include "filelist.h"
+#include "macros.h"
 #include "options.h"
 #include "status.h"
 #include "ui.h"
@@ -16,6 +17,7 @@ static void print_func(const char *msg, const char *description);
 static void fastrun_handler(enum opt_op op, union optval_t val);
 static void followlinks_handler(enum opt_op op, union optval_t val);
 static void fusehome_handler(enum opt_op op, union optval_t val);
+static void history_handler(enum opt_op op, union optval_t val);
 static void iec_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
 static void savelocation_handler(enum opt_op op, union optval_t val);
@@ -64,6 +66,7 @@ add_options(void)
 	add_option("fastrun", OPT_BOOL, 0, NULL, &fastrun_handler);
 	add_option("followlinks", OPT_BOOL, 0, NULL, &followlinks_handler);
 	add_option("fusehome", OPT_STR, 0, NULL, &fusehome_handler);
+	add_option("history", OPT_INT, 0, NULL, &history_handler);
 	add_option("iec", OPT_BOOL, 0, NULL, &iec_handler);
 	add_option("runexec", OPT_BOOL, 0, NULL, &runexec_handler);
 	add_option("savelocation", OPT_BOOL, 0, NULL, &savelocation_handler);
@@ -93,6 +96,9 @@ load_options(void)
 
 	val.str_val = cfg.fuse_home;
 	set_option("fusehome", val);
+
+	val.int_val = cfg.history_len;
+	set_option("history", val);
 
 	val.bool_val = cfg.use_iec_prefixes;
 	set_option("iec", val);
@@ -178,6 +184,71 @@ fusehome_handler(enum opt_op op, union optval_t val)
 {
 	free(cfg.fuse_home);
 	cfg.fuse_home = strdup(val.str_val);
+}
+
+static void
+reduce_view_history(FileView *view, int size)
+{
+	int i;
+	int delta;
+
+	delta = MIN(view->history_num - size, view->history_pos);
+	if(delta <= 0)
+		return;
+
+	for(i = 0; i < size && i + delta <= view->history_num; i++)
+	{
+		strncpy(view->history[i].file, view->history[i + delta].file,
+				sizeof(view->history[i].file));
+		strncpy(view->history[i].dir, view->history[i + delta].dir,
+				sizeof(view->history[i].dir));
+	}
+
+	if(view->history_num >= size)
+		view->history_num = size - 1;
+	view->history_pos -= delta;
+}
+
+static void free_view_history(FileView *view)
+{
+	free(view->history);
+	view->history = NULL;
+	view->history_num = 0;
+	view->history_pos = 0;
+}
+
+static void
+history_handler(enum opt_op op, union optval_t val)
+{
+	if(val.int_val <= 0)
+	{
+		free_view_history(&lwin);
+		free_view_history(&rwin);
+
+		cfg.history_len = val.int_val;
+		return;
+	}
+
+	if(cfg.history_len > val.int_val)
+	{
+		reduce_view_history(&lwin, val.int_val);
+		reduce_view_history(&rwin, val.int_val);
+	}
+
+	lwin.history = realloc(lwin.history, sizeof(history_t)*val.int_val);
+	rwin.history = realloc(rwin.history, sizeof(history_t)*val.int_val);
+
+	if(cfg.history_len <= 0)
+	{
+		cfg.history_len = val.int_val;
+
+		save_view_history(&lwin);
+		save_view_history(&rwin);
+	}
+	else
+	{
+		cfg.history_len = val.int_val;
+	}
 }
 
 static void

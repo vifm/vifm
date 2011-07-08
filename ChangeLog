@@ -30,6 +30,8 @@
 
 	Added 'fusehome' option.
 
+	Added 'history' option.
+
 	Let builtin keys be remapped.
 
 	Don't cancel file renaming if user presses backspace and line is empty.

@@ -327,7 +327,7 @@ cmd_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
 #ifdef ENABLE_COMPATIBILITY_MODE
 	change_window();
 #else /* ENABLE_COMPATIBILITY_MODE */
-	if(curr_view->history_pos == curr_view->history_num - 1)
+	if(curr_view->history_pos >= curr_view->history_num - 1)
 		return;
 
 	goto_history_pos(curr_view, curr_view->history_pos + 1);

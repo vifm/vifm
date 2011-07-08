@@ -1228,14 +1228,18 @@ show_filetypes_menu(FileView *view, int background)
 	free(prog_str);
 }
 
-void
+/* Returns new value for save_msg flag */
+int
 show_history_menu(FileView *view)
 {
 	int x;
 	static menu_info m;
 
-	if(view->history_num < 1)
-		return;
+	if(cfg.history_len <= 0)
+	{
+		status_bar_message("History is disabled");
+		return 1;
+	}
 
 	m.top = 0;
 	m.current = 1;
@@ -1252,7 +1256,7 @@ show_history_menu(FileView *view)
 
 	getmaxyx(menu_win, m.win_rows, x);
 
-	for(x = 0; x < view->history_num + 1; x++)
+	for(x = 0; x < view->history_num + 1 && x < cfg.history_len; x++)
 	{
 		if(strlen(view->history[x].dir) < 1)
 			break;
@@ -1277,6 +1281,8 @@ show_history_menu(FileView *view)
 	draw_menu(&m);
 	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
+
+	return 0;
 }
 
 void

@@ -781,7 +781,7 @@ goto_history_pos(FileView *view, int pos)
 	view->history_pos = pos;
 }
 
-static void
+void
 save_view_history(FileView *view)
 {
 	int x;
@@ -790,7 +790,7 @@ save_view_history(FileView *view)
 	if(view->list_rows <= 0)
 		return;
 
-	if(cfg.history_len == 0)
+	if(cfg.history_len <= 0)
 		return;
 	if(curr_stats.skip_history)
 		return;
@@ -838,6 +838,9 @@ check_view_dir_history(FileView *view)
 	int x = 0;
 	int found = 0;
 	int pos = 0;
+
+	if(cfg.history_len <= 0)
+		return;
 
 	if(curr_stats.is_updir)
 	{

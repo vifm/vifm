@@ -5,6 +5,7 @@ Basic things that need to be done.
 	Better documentation.
     Remove vifm-help and generate it each time man page changed.
     Document trimming of trailing spaces for maps.
+    Document | in command line.
 	Handle commands that are too long to be passed directly to the shell
         (I think this can be done with xargs).
 	Make ga work in background.
@@ -25,6 +26,7 @@ Basic things that need to be done.
     An option to choose shell.
     Make l key handle selection.
     Add 'filter' option.
+    :filter? to display it's current value.
 
 Vi(m) specific features that need to be added.
 	Finish implementing range and count for user commands.
