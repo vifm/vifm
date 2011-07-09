@@ -141,6 +141,8 @@
 
 	Fixed skipped range number (it should mean current position).
 
+	Fixed p (it should move files from trash, not copy them).
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).

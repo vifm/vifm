@@ -1293,7 +1293,8 @@ put_next_file(const char *dest_name, int override)
 	if(access(buf, F_OK) == 0 && src_buf != NULL && dst_buf != NULL)
 	{
 		const char *p = dest_name;
-		int move = strcmp(buf, cfg.trash_dir) == 0 || put_confirm.force_move;
+		int move = strncmp(buf, cfg.trash_dir, strlen(cfg.trash_dir)) == 0
+				|| put_confirm.force_move;
 
 		if(p[0] == '\0')
 			p = strrchr(buf, '/') + 1;
