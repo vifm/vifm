@@ -21,12 +21,13 @@
 					   functions
 					   */
 
-#include <ncurses.h>
+#include <curses.h>
 
 #include <sys/time.h> /* select() */
 #include <sys/types.h> /* select() */
 #include <unistd.h> /* chdir(), select() */
 
+#include <assert.h>
 #include <string.h> /* strncpy */
 
 #include "color_scheme.h"
@@ -95,6 +96,7 @@ main_loop(void)
 		{
 			last_result = execute_keys_timed_out(buf);
 			counter = get_key_counter() - counter;
+			assert(counter <= pos);
 			if(counter > 0)
 			{
 				pos -= counter;
@@ -108,7 +110,8 @@ main_loop(void)
 				curr_stats.save_msg = 0;
 			last_result = execute_keys(buf);
 			counter = get_key_counter() - counter;
-			if(counter > 0 && counter <= pos)
+			assert(counter <= pos);
+			if(counter > 0)
 			{
 				clear_input_bar();
 				pos -= counter;

@@ -12,7 +12,7 @@ setup(void)
 		{.dir = "/home"},
 		{.dir = "/root"},
 	};
-	col_schemes = &my_schemes;
+	col_schemes = (Col_scheme*)&my_schemes;
 	
 	cfg.color_scheme_num = ARRAY_LEN(my_schemes);
 }

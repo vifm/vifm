@@ -8,6 +8,9 @@ add_custom_keys(void)
 {
 	add_user_keys(L"jo", L"k", NORMAL_MODE);
 	add_user_keys(L"jl", L"k", NORMAL_MODE);
+
+	add_user_keys(L"S", L"dd", NORMAL_MODE);
+	add_user_keys(L"Sj", L"k", NORMAL_MODE);
 }
 
 static void
@@ -26,11 +29,19 @@ increase_counter_right(void)
 	size_t counter;
 
 	counter = get_key_counter();
-	assert_true(execute_keys(L"j") == KEYS_WAIT_SHORT);
+	assert_int_equal(KEYS_WAIT_SHORT, execute_keys(L"j"));
 	assert_int_equal(counter, get_key_counter());
 
 	counter = get_key_counter();
-	assert_true(execute_keys(L"jj") == KEYS_WAIT_SHORT);
+	assert_int_equal(KEYS_WAIT_SHORT, execute_keys(L"jj"));
+	assert_int_equal(counter + 1, get_key_counter());
+
+	counter = get_key_counter();
+	assert_int_equal(KEYS_WAIT_SHORT, execute_keys(L"S"));
+	assert_int_equal(counter, get_key_counter());
+
+	counter = get_key_counter();
+	assert_false(IS_KEYS_RET_CODE(execute_keys_timed_out(L"S")));
 	assert_int_equal(counter + 1, get_key_counter());
 }
 

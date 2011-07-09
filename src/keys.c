@@ -232,18 +232,30 @@ execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
 				}
 				return result;
 			}
-			counter += keys - keys_start;
+			counter += keys_info->mapped ? 0 : (keys - keys_start);
 			return execute_keys_general(keys, 0, keys_info->mapped);
 		}
 		keys++;
 		curr = p;
 	}
+
+	if(*keys == '\0' && curr->conf.type != BUILDIN_WAIT_POINT &&
+			curr->children_count > 0 && curr->conf.data.handler != NULL &&
+			!keys_info->after_wait)
+	{
+		return KEYS_WAIT_SHORT;
+	}
+
 	has_duplicate = root == &user_cmds_root[*mode] &&
 			contains_chain(&builtin_cmds_root[*mode], keys_start, keys);
 	result = execute_next_keys(curr, keys, &key_info, keys_info, has_duplicate);
 	if(!IS_KEYS_RET_CODE(result))
 	{
-		counter += keys - keys_start;
+		counter += keys_info->mapped ? 0 : (keys - keys_start);
+	}
+	else if(*keys == '\0' && result == KEYS_UNKNOWN && curr->children_count > 0)
+	{
+		return keys_info->after_wait ? KEYS_UNKNOWN : KEYS_WAIT_SHORT;
 	}
 	return result;
 }

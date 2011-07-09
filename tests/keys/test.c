@@ -21,6 +21,7 @@ void put_wait_points(void);
 void remap_users(void);
 void same_multi_and_motion(void);
 void users_key_to_key(void);
+void pick_longest(void);
 
 void all_tests(void)
 {
@@ -40,11 +41,12 @@ void all_tests(void)
 	same_multi_and_motion();
 	users_key_to_key();
 	def_keys_and_user_mappings();
+	pick_longest();
 }
 
 void my_suite_setup(void)
 {
-	static int mode_flags[]= {
+	static int mode_flags[] = {
 		MF_USES_REGS | MF_USES_COUNT,
 		MF_USES_INPUT,
 		MF_USES_COUNT
