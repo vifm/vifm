@@ -1040,6 +1040,10 @@ check_for_range(FileView *view, char *command, cmd_params *cmd)
 		}
 		cmd->pos++;
 	}
+	else if(command[cmd->pos] == ',')
+	{
+		cmd->start_range = view->list_pos;
+	}
 	else if(command[cmd->pos] == '.')
 	{
 		cmd->start_range = view->list_pos;
@@ -1119,7 +1123,7 @@ check_for_range(FileView *view, char *command, cmd_params *cmd)
 			cmd->end_range = atoi(num_buf) - 1;
 		}
 		else
-			cmd->pos--;
+			cmd->end_range = view->list_pos;
 	}
 	else if(!cmd->end_range)/* Only one number is given for the range */
 	{
@@ -2181,3 +2185,4 @@ comm_split(void)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+

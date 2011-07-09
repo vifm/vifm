@@ -74,6 +74,8 @@
 
 	Made f and F work with wide characters.
 
+	Added dialog to ask user about backwards range in command.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.
@@ -490,3 +492,4 @@
 		The bookmarks code was rewritten.
 
 		The automatic updating of the file lists was rewritten.
+
