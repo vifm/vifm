@@ -83,6 +83,7 @@ const char *reserved_commands[] = {
 	"filter",
 	"h",
 	"help",
+	"his",
 	"history",
 	"invert",
 	"jobs",
@@ -93,6 +94,7 @@ const char *reserved_commands[] = {
 	"nmap",
 	"noh",
 	"nohlsearch",
+	"on",
 	"only",
 	"popd",
 	"pushd",
@@ -117,6 +119,7 @@ const char *reserved_commands[] = {
 	"wq",
 	"write",
 	"x",
+	"y",
 	"yank",
 };
 
@@ -1641,6 +1644,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 				}
 			}
 			break;
+		case COM_HIS:
 		case COM_HISTORY:
 			save_msg = show_history_menu(view);
 			break;
@@ -1701,6 +1705,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 				}
 			}
 			break;
+		case COM_ON:
 		case COM_ONLY:
 			comm_only();
 			break;
@@ -1797,6 +1802,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 		case COM_VIFM:
 			show_vifm_menu(view);
 			break;
+		case COM_Y:
 		case COM_YANK:
 			if(select_files_in_range(view, cmd) != 0)
 				break;

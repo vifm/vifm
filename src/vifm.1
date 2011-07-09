@@ -1,6 +1,4 @@
-
-.TH vifm 1 "June 11, 2011" "" "Vifm"
-
+.TH vifm 1 "Jule 09, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -14,43 +12,59 @@ a new set of commands.
 .\" ---------------------------------------------------------------------------
 .SH OPTIONS
 .\" ---------------------------------------------------------------------------
+The vifm executable will start vifm in the current directory unless it is
+given a different directory on the command line.
 .TP
-.BI <path>
+.BI <lwinpath>
 Starts Vifm in the specified path.
 .TP
-.BI "--version, -v"
-Show version number and quit.
+.BI "<lwinpath> <rwinpath>"
+Starts Vifm in the specified paths.
+.TP
+.BI -f
+only used from the vifm.vim script.  The selected files are written
+to ~/.vifm/vimfiles and vifm exits.
 .TP
 .BI "--help, -h"
 Show an overview of the commandline options.
+.TP
+.BI "--version, -v"
+Show version information and quit.
 .br
+.\" ---------------------------------------------------------------------------
+.SH General keys
+.\" ---------------------------------------------------------------------------
+.TP
+.BI "Ctrl-c or Escape"
+cancel most operations.
+.TP
+.BI "Ctrl-c or Escape"
+clear all selected files.
+.TP
+.BI Ctrl-l
+clear and redraw the screen.
 .\" ---------------------------------------------------------------------------
 .SH Basic Movement
 .\" ---------------------------------------------------------------------------
-.TP
-.BI j
-moves down.
+The basic vi key bindings are used to move through the files and popup windows.
 .TP
 .BI k
 moves up.
 .TP
-.BI l
-moves into a directory or launches a file.
-.TP
-.BI i
-opens file with associated program even if it's an executable.
+.BI j
+moves down.
 .TP
 .BI h
 moves up one directory.
+.TP
+.BI "l or Enter"
+moves into a directory or launches a file.
 .TP
 .BI gg
 move to the top of the file list.
 .TP
 .BI G
 move to the bottom of the file list.
-.TP
-.BI 14G
-move to the 14th file in the list.
 .TP
 .BI H
 move to the first file in the window.
@@ -73,32 +87,28 @@ jump back one half page.
 .BI Ctrl-U
 jump forward one half page.
 .TP
-.BI Ctrl-O
-go backward through history.
-.TP
-.BI Ctrl-I
-go forward through history.
-.TP
-.BI 25%
-move to the file that is 25 percent from the top of the list.
-.TP
-.BI :34[Enter]
-move to the 34th file.
+.BI n%
+move to the file that is n percent from the top of the list (for example 25%).
 .TP
 .BI "Space Bar or Tab Key"
 toggles between the two file lists.
+.\" ---------------------------------------------------------------------------
+.SH Movement with Count
+.\" ---------------------------------------------------------------------------
 .TP
-.BI Ctrl-G
-creates a window showing detailed information about the current file.
+Most movement commands also accept a count, 12j would move down 12 files.
 .TP
-.BI ga
-calculate directory size.
+.BI [count]%
+move to percent of the file list.
 .TP
-.BI gA
-like ga, but force update.
+.BI [count]j
+move down count files.
 .TP
-.BI gv
-go to visual mode restoring last selection.
+.BI [count]k
+move up count files.
+.TP
+.BI "[count]G or [count]gg"
+move to list position count.
 .\" ---------------------------------------------------------------------------
 .SH Scrolling panes
 .\" ---------------------------------------------------------------------------
@@ -136,13 +146,15 @@ shortcut for :split
 .BI "Ctrl-W W"
 switch to other pane.
 .TP
-.BI "Ctrl+W X"
+.BI "Ctrl-W X"
 exchange panes.
 .\" ---------------------------------------------------------------------------
 .SH Marks
 .\" ---------------------------------------------------------------------------
 .TP
 Marks are set the same way as they are in vi.
+.br
+You can use this characters for marks [a-z][A-Z][0-9].
 .TP
 .BI m[a-z][A-Z][0-9]
 to set a mark for the current file.
@@ -159,11 +171,11 @@ will highlight all files matching the pattern and go to the next match.
 .BI "?regular expression pattern[Return]"
 will highlight all files matching the pattern and go to the previous match.
 .TP
-.BI N
-find the previous match of / or ?.
-.TP
 .BI n
 find the next match of / or ?.
+.TP
+.BI N
+find the previous match of / or ?.
 .TP
 .BI f[character]
 search forward for file with [character] as first character in name.
@@ -177,8 +189,63 @@ find the next match of f or F.
 .BI ,
 find the previous match of f or F.
 .\" ---------------------------------------------------------------------------
-.SH Additional Normal Mode Keys
+.SH File Filters
 .\" ---------------------------------------------------------------------------
+The basic vim folding key bindings are used for filtering files.
+.TP
+All directorys will show the ../ file no matter what the filter setting is with the exception of the / directory.
+.TP
+Each file list has its own filter.
+.TP
+Filtered files are not checked in / search or :commands.
+.TP
+.BI zo
+Show all of the dot files.
+.TP
+.BI zf
+Filter all of the selected files.
+.TP
+.BI za
+Toggle the showing and hiding of dot files.
+.TP
+.BI zm
+Filter all of the dot files.
+.TP
+.BI zO
+Show the filtered files.
+.TP
+.BI zM
+Filter the files matching the filename filter.
+.TP
+.BI zR
+Remove all filters.
+.\" ---------------------------------------------------------------------------
+.SH Other Normal Mode Keys
+.\" ---------------------------------------------------------------------------
+.TP
+.BI :
+enter command line mode.
+.TP
+.BI Ctrl-O
+go backward through history.
+.TP
+.BI Ctrl-I
+go forward through history.
+.TP
+.BI Ctrl-G
+creates a window showing detailed information about the current file.
+.TP
+.BI ga
+calculate directory size.
+.TP
+.BI gA
+like ga, but force update.
+.TP
+.BI gv
+go to visual mode restoring last selection.
+.TP
+.BI i
+opens file with associated program even if it's an executable.
 .TP
 .BI cw
 rename a file.
@@ -198,17 +265,27 @@ change file permissions.
 .BI C
 clone file.
 .TP
-.BI "[count]d[selector] or [count]dd in compatibility mode"
-moves the selected files to the trash directory.
+.BI "[count]dd or d[count]selector if compatibility mode is off"
 .TP
-.BI [count]D[selector]
+.BI "[count]dd if compatibility mode is on"
+moves the selected files to the trash directory (if option 'trash' is set
+otherwise delete)
+.TP
+.BI "[count]DD or D[count]selector"
 removes the selected files.
 .TP
-.BI "[count]y[selector] or [count]yy in compatibility mode"
+.BI "Y, [count]yy or y[count]selector if compatibility mode is off"
+.TP
+.BI "[count]yy if compatibility mode is on"
 yanks the selected files.
 .TP
+.BI Y
+same as yy.
+.TP
 .BI p
-puts the last yanked or deleted files.
+will copy the yanked files to the current directory or move the files
+to the current directory if they were deleted with dd or :d[elete] or if the
+files were yanked from the Trash directory.
 .TP
 .BI P
 moves the last yanked files.
@@ -222,18 +299,40 @@ undo last change.
 .BI Ctrl-R
 redo last change.
 .TP
-.BI "v or V"
-start visual mode.
+.BI v
+enter visual mode.
+.TP
+.BI V
+enter visual mode.
 .TP
 .BI ZQ
 same as :quit
 .TP
 .BI ZZ
 same as :wq
+.TP
+.BI .
+repeat last command line command (not normal mode command).
+.\" ---------------------------------------------------------------------------
+.SH Using Count with y, d and D
+.\" ---------------------------------------------------------------------------
+.TP
+You can use count with commands like yy.
+.TP
+.BI [count]yy
+yank (count + 1) files starting from current cursor position downward.
+.TP
+Or you can use count with motions passed to y, d or D.
+.TP
+.BI d[count]j
+delete (count + 1) files starting from current cursor position upward.
 .\" ---------------------------------------------------------------------------
 .SH Selectors
 .\" ---------------------------------------------------------------------------
 .TP
+y and d commands accept selectors.  You can combine them with every of
+selectors below to quickly remove or yank several files.
+.br
 Most of selectors are like vi motions: j, k, gg, G, H, L and M. But there are
 some additional ones.
 .TP
@@ -246,58 +345,58 @@ selected files.
 .BI S
 all files except selected.
 .\" ---------------------------------------------------------------------------
+.SH Visual Mode
+.\" ---------------------------------------------------------------------------
+In visual mode work almost all normal mode movement keys (except l and Enter).
+.TP
+.BI v
+leave visual mode.
+.TP
+.BI V
+leave visual mode.
+.TP
+.BI :
+enter command line mode.
+.TP
+.BI o
+switch active selection bound.
+.TP
+.BI O
+switch active selection bound.
+.\" ---------------------------------------------------------------------------
 .SH Commands
 .\" ---------------------------------------------------------------------------
+Commands are executed with :command_name<Return>
 .TP
-.BI :com[mand]
-show command line history menu.
+.BI :[count]
 .TP
-.BI :com[mand]
-gives a menu of user commands.
-.TP
-.BI ":com[mand] name action"
-sets a new user command.
-.TP
-.BI :colo[rscheme]
-gives a menu with a list of available color schemes.  You can choose default
-color scheme here.  It will be used if no DIRECTORY in colorscheme file doesn't
-fit current path.
-.TP
-.BI ":colo[rscheme] color_scheme_name"
-changes default color scheme.  See :colorscheme.
-.TP
-.BI ":delcommand command_name"
-will remove the command_name user command
-.TP
-.BI ":file"
-popup menu of programs set for the file type of the current file. Add ' &' at
-the end of command to run program in background.
-.TP
-.BI ":filter regular_expression_pattern"
-will filter all the files out of the directory listing that match the regular
-expression.
+.BI :number
+move to the file number.
 .br
-Note: vifm uses extended regular expressions.
+:12 would move to the 12th file in the list.
+.br
+:0 move to the top of the list.
+.br
+:$ move to the bottom of the list.
 .TP
-.BI ":filter /\.o$"
-would filter all files ending in .o from the filelist.
+.BI :[count]command
+The only builtin :[count]command are :[count]d[elete] and :[count]y[ank].
 .TP
-.BI ":filter"
-would filter no files from the filelist.
+.BI :d3
+would delete three files starting at the current file position moving down (not
+implemented yet).
 .TP
-.BI :empty
-will permanently remove 'rm -fr' files from the Trash directory.
+.BI :3d
+would delete one file at the third line in the list.
 .TP
-.BI ":set opt1=val1 opt2=val2 ..."
-will set options to given values.
-.BI :shell
-will start a shell.
-.TP
-.BI ":q[uit] or :x"
-will exit Vifm (add ! if you don't want to save changes).
+.BI ":command [args]"
 .TP
 .BI :!
 program will execute the program in a shell
+.br
+:!command & will run the process in the background.
+Programs that write to stdout like ls will create an error message
+showing partial output of the command.
 .TP
 .BI ":!! <program>"
 is the same as :! but will pause the screen before returning to Vifm.
@@ -305,68 +404,262 @@ is the same as :! but will pause the screen before returning to Vifm.
 .BI :!!
 will execute the last command.
 .TP
-.BI ":e[dit] [file...]"
-load file(s) into vi
+.BI ":apropos manpage"
+will create a menu of items returned by the apropos command. Selecting an item
+in the menu will open the corresponding manpage.
 .TP
-.BI ":display or :register"
+.BI :cd
+change to your home directory.
+.TP
+.BI ":cd ~/dir"
+change directory to ~/dir.
+.TP
+.BI :change
+create a menu window to alter a files properties.
+.TP
+.BI :cmdhistory
+show command line history menu.
+.TP
+.BI :colo[rscheme]
+gives a menu with a list of available color schemes.  You can choose default
+color scheme here.  It will be used if no DIRECTORY in colorscheme file fits
+current path.
+.TP
+.BI ":colo[rscheme] color_scheme_name"
+changes default color scheme to color_scheme_name.  See :colo[rscheme].
+.TP
+.BI :com[mand]
+gives a menu of user commands.
+.TP
+.BI ":com[mand] name action"
+sets a new user command.
+.br
+Trying to use a reserved command name will result in an error message.
+.br
+Use :com[mand]! to overwrite a previously set command.
+.br
+Unlike vim user commands do not have to start with a capital letter.
+User commands are run in a shell by default.  To run a command in
+the background you must set it as a background command with & at the end
+of the commands action (:com rm rm %f &).
+.TP
+.BI ":com[mand] backup /pattern"
+will set search pattern.
+.TP
+.BI ":com[mand] name filter pattern"
+will set file name filter.
+.TP
+.BI :[range]d[elete]
+delete selected file or files.
+.TP
+.BI ":delc[ommand] command_name"
+will remove the command_name user command.
+.TP
+.BI :display
 popup menu with registers content.
 .TP
 .BI :dirs
 display directory stack.
 .TP
-.BI :rename
-rename files using vi to edit names.
+.BI ":e[dit] [file...]"
+will load the selected or passed file or files into vi.
 .TP
-.BI :pwd
-show the present working directory.
+.BI :empty
+will permanently remove 'rm -fr' files from the Trash directory.
 .TP
-.BI :cd
-change directory.
+.BI :file
+popup menu of programs set for the file type of the current file. Add ' &' at
+the end of command to run program in background.
 .TP
-.BI :sort
-creates a popup menu of different sorting methods.
+.BI ":filter regular_expression_pattern"
+will filter all the files out of the directory listing that match the regular
+expression.
+.br
+:filter /\.o$ would filter all files ending in .o from the filelist.
+.br
+Note: vifm uses extended regular expressions.
 .TP
-.BI :his[tory]
-creates a popup menu of directories visited.
+.BI ":filter"
+would filter no files from the filelist.
 .TP
 .BI :h[elp]
 show the help file.
 .TP
-.BI :noh[lsearch]
-clear selection in current pane.
+.BI ":h[elp] argument"
+is the same as using ':h argument' in vim.
+.TP
+.BI :his[tory]
+creates a popup menu of directories visited.
+.TP
+.BI :invert
+invert file name filter.
+.TP
+.BI :jobs
+shows menu of current backgrounded processes.
+.TP
+.BI ":locate filename"
+uses the locate command to create a menu of filenames
+Selecting a file from the menu will reload the current file list in vifm
+to show the selected file.
 .TP
 .BI :marks
 create a popup menu of bookmarks.
 .TP
-.BI ":map :nmap :cmap and :vmap"
-map one key sequence to another in different modes.
+.BI :noh[lsearch]
+clear selection in current pane.
 .TP
-.BI :screen
-toggles whether or not to use the screen program.
-.TP
-.BI :sync
-change the other panel to the current panel directory.
-.TP
-.BI :sp[lit]
-splits the window to show both file directories.
-.TP
-.BI :undolist
-show list of latest changes.  Add ! to see commands.
-.TP
-.BI :only
+.BI :on[ly]
 changes the window to show only the current file directory.
-.TP
-.BI :pushd
-add pane directories to stack.
 .TP
 .BI :popd
 remove pane directories from stack.
 .TP
+.BI ":pushd directory"
+add pane directories to stack.  And change to directory.
+.TP
+.BI :pwd
+show the present working directory.
+.TP
+.BI :q[uit]
+will exit Vifm (add ! if you don't want to save changes).
+.TP
+.BI :rename
+rename files using vi to edit names.
+.TP
+.BI :screen
+toggles whether or not to use the screen program.
+.br
+The default configuration has the screen option turned off.  The screen program uses pseudo terminals to allow multiple windows to be used in the console or in a single xterm.  Starting vifm from screen with the screen option turned on will cause vifm to open a new screen window for each new file edited or program launched from vifm.
+.br
+This requires screen version 3.9.9 or newer for the screen -X argument.
+.TP
+.BI ":set opt1=val1 opt2=val2 ..."
+will set options to given values.
+.br
+You can use following syntax: option, nooption, invoption, option!,
+option?, option=x, option+=x, option-=x.
+.BI :shell
+will start a shell.
+.TP
+.BI :register
+popup menu with registers content.
+.TP
+.BI :sort
+creates a popup menu of different sorting methods.
+.TP
+.BI :sp[lit]
+splits the window to show both file directories.
+.TP
+.BI :sync
+change the other panel to the current panel directory.
+.TP
+.BI :undolist
+show list of latest changes.  Add ! to see commands.
+.TP
+.BI :view
+toggle on and off the quick file view.
+.TP
+.BI :w[rite]
+write config file (add ! to force write even if settings weren't changed).
+.TP
 .BI :wq
 exit vifm after writing config.
 .TP
-.BI ":w or :write"
-write config file (add ! to force write even if settings weren't changed).
+.BI ":x"
+will exit Vifm (add ! if you don't want to save changes).
+
+.TP
+.BI ":map lhs rhs"
+map lhs key sequence to rhs in normal and visual modes.
+.TP
+.BI ":map! lhs rhs"
+map lhs key sequence to rhs in command line mode.
+
+.TP
+.BI ":cmap lhs rhs"
+map lhs to rhs in command line mode.
+.TP
+.BI ":nmap lhs rhs"
+map lhs to rhs in normal mode.
+.TP
+.BI ":vmap lhs rhs"
+map lhs to rhs in visual mode.
+.\" ---------------------------------------------------------------------------
+.SH Ranges
+.\" ---------------------------------------------------------------------------
+The ranges implemented include:
+  Numbers :2,3
+  % - the entire directory.
+  . - the current position in the filelist.
+  $ - the end of the filelist.
+  't - the mark position t.
+
+  :%delete would delete all files in the directory.
+  :2,4delete would delete the files in the list positions 2 through 4.
+  :.,$delete would delete the files from the current position to the end
+    of the filelist.
+  :3delete4 would delete the files in the list positions 3, 4, 5, 6.
+
+If a backward range is given :4,2delete - an query message is given and
+user can chose what to do next.
+
+The builtin commands that accept a range are :d[elete] and :y[ank].
+.\" ---------------------------------------------------------------------------
+.SH Command macros
+.\" ---------------------------------------------------------------------------
+The command macros may be used in user commands.
+.TP
+.BI %a
+User arguments.
+.TP
+.BI %c
+The current file under the cursor.
+.TP
+.BI %C
+The current file under the cursor in the other directory.
+.TP
+.BI %f
+All of the selected files.
+.TP
+.BI %F
+All of the selected files in the other directory list.
+.TP
+.BI %b
+Same as %f %F.
+.TP
+.BI %d
+Current directory name.
+.TP
+.BI %D
+Other file list directory name.
+.TP
+.BI %m
+Show command output in a menu.
+.TP
+.BI %s
+Execute command in screen split.
+
+.TP
+.BI ":com move mv %f %D"
+would set the :move command to move all of the files
+selected in the current directory to the other directory.
+
+.TP
+The %a macro will substitute any arguments given in a command into the command.  All arguments are considered optional.  ":com lsl !!ls -l %a" will set the lsl command to execute ls -l with or without an argument.
+
+.TP
+.BI ":lsl<Return>"
+will list the directory contents of the current directory.
+.TP
+.BI ":lsl filename<Return>"
+will list only the given filename.
+
+.TP
+The macros can also be used in directly executing commands. ":!mv %f %D" would move the current directory selected files to the other directory.
+
+.TP
+Appending & to the end of a command will cause it to be executed in the background.
+.BI ":!mv %f %D &"
 .\" ---------------------------------------------------------------------------
 .SH :set options
 .\" ---------------------------------------------------------------------------
@@ -504,58 +797,77 @@ Space key
 .BI "<f0> - <f63>"
 Functional keys
 .\" ---------------------------------------------------------------------------
-.SH Command macros
+.SH Compatibility mode
 .\" ---------------------------------------------------------------------------
-The command macros may be used in user commands.
-.TP
-.BI %a
-User arguments.
-.TP
-.BI %c
-The current file under the cursor.
-.TP
-.BI %C
-The current file under the cursor in the other directory.
-.TP
-.BI %f
-All of the selected files.
-.TP
-.BI %F
-All of the selected files in the other directory list.
-.TP
-.BI %b
-Same as %f %F.
-.TP
-.BI %d
-Current directory name.
-.TP
-.BI %D
-Other file list directory name.
-.TP
-.BI %m
-Show command output in a menu.
-.TP
-.BI %s
-Execute command in screen split.
+Compatibility mode:
+    - <tab> to switch between panes.
+    - dd deletes selected (or current if none) files.
+    - yy yanks selected (or current if none) files.
+
+Vim like mode:
+    - <c-i> (<tab>) to go forward on history.
+    - dd deletes file under the cursor and ds works as dd in compatibility mode.
+    - yy yanks file under the cursor and ys works as dd in compatibility mode.
 .\" ---------------------------------------------------------------------------
-.SH File Filters
+.SH Menus and dialogs
 .\" ---------------------------------------------------------------------------
-The basic vim folding key bindings are used for filtering files.
-.TP
-.BI zO
-Show the filtered files.
-.TP
-.BI zM
-Filter the files matching the filename filter.
-.TP
-.BI zo
-Show all of the dot files.
-.TP
-.BI zm
-Filter all of the dot files.
-.TP
-.BI zf
-Filter all of the selected files.
+General
+
+j, k - move.
+<Escape>, Ctrl-c - clear.
+<Return>, l - select and exit the menu.
+
+Bookmarks
+
+Escape or Ctrl-c to abort j and k to move through.
+dd on a bookmark to remove.
+
+Sort dialog
+
+h - switch ascending/descending.
+
+Filetype menu
+
+Commands from vifmrc are displayed above empty line. When all commands below
+empty line were found in .desktop files.
+Note: you can't save programs for files without extension.
+
+J and K - to move menu items
+L - save all commands above empty line as program list
+.\" ---------------------------------------------------------------------------
+.SH Configure
+.\" ---------------------------------------------------------------------------
+The ~/.vifm/vifmrc file contains all the configurable settings.  It is
+commented and you may edit it by hand to change the settings.
+
+The ~/.vifm/vifminfo file contains session settings.  It is commented and you
+may edit it by hand to change the settings.
+
+The ~/.vifm/startup file contains commands that will be executed on vifm
+startup. You can set your mappings there.
+.\" ---------------------------------------------------------------------------
+.SH Plugin
+.\" ---------------------------------------------------------------------------
+Plugin for using vifm in vim as a file selector.
+
+Commands:
+
+  :EditVifm  select a file to open in the current buffer.
+  :SplitVifm split buffer and select a file to open.
+  :VsplitVifm vertically split buffer and select a file to open.
+  :DiffVifm select a file to compare to the current file with :vert diffsplit.
+
+The plugin does not have any settings.
+
+To use the plugin copy the vifm.vim file to either the system wide vim/plugin
+directory or into ~/.vim/plugin.
+
+If you would prefer not to use the plugin and it is in the system wide plugin
+directory add
+
+let loaded_vifm=1
+
+to your ~/.vimrc file.
 .\" ---------------------------------------------------------------------------
 .SH SEE ALSO
 .\" ---------------------------------------------------------------------------

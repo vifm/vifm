@@ -3,7 +3,6 @@ Basic things that need to be done.
 	Backgrounding of commands with job control (pause/resume/kill).
 	Fix window resizing (I think it's almost done).
 	Better documentation.
-    Remove vifm-help and generate it each time man page changed.
     Document trimming of trailing spaces for maps.
     Document | in command line.
     Decument :ls command (for screen program).
@@ -46,7 +45,7 @@ Vi(m) specific features that need to be added.
     Add 'confirm' option.
     Add :unmap commands.
     Add :noremap commands.
-    Skip command aliases on command completion.
+    Skip command aliases on completion.
     Some kind of selection mode (multible blocks, mixing).
     Generalize gv to work with t selection.
     Add :mksession command and 'sessionoptions' option.

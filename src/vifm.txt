@@ -1,93 +1,347 @@
 *vifm.txt*
 
 
-|Commands|           How to use and set :commands.
-|Filters|            Using the file filters.
+|Options|            Command line arguments.
+|General_keys|       General keys, that work in the most of modes.
+|Normal|             Normal mode keys.
+|Command|            How to use and set :commands.
+|set-options|        Available options.
 |Mappings|           Special sequences.
 |Configure|          Configuration of vifm.
-|Marks|              Bookmarking of files.
-|Movement|           How to move around.
-|Normal|             Normal mode keys.
-|Menus_and_dialogs|  Keys for menus and dialogs.
-|Options|            Command line arguments.
 |Plugin|             Using the vifm.vim plugin.
 |Compatibility_mode| Its description.
+|Menus_and_dialogs|  Keys for menus and dialogs.
 |Reserved|           List of reserved commands.
-|Vifm_Ranges|        How to use ranges in vifm.
-|set-options|        Available options.
+
+--------------------------------------------------------------------------------
+*Options*
+
+The vifm executable will start vifm in the current directory unless it is
+given a different directory on the command line.
+
+vifm /path/to/directory/one
+or
+vifm /path/to/directory/one /path/to/directory/two
+
+The only other command line arguments are:
+-f - only used from the vifm.vim script.  The selected files are written
+	to ~/.vifm/vimfiles and vifm exits.
+
+--help, -h - show a brief command summary and exit vifm.
+--version, -v - show the version information and exit.
+
+-------------------------------------------------------------------------------
+*General_keys*
+
+Ctrl-c or Escape - cancel most operations.
+Ctrl-c or Escape - clear all selected files.
+Ctrl-l - clear and redraw the screen.
+
+--------------------------------------------------------------------------------
+*Normal*
+
+Basic Movement~
+
+The basic vi key bindings are used to move through the files and popup windows.
+
+k is up
+j is down
+
+h is up directory
+l is handle file (enter directory or run program) and is the same as Return
+
+gg will move to the first line of the file list.
+
+G will move to the last line in the file list.
+
+H - move to the first file in the window.
+M - move to the file in the middle of the window.
+L - move to the last file in the window.
+
+Ctrl-F or Page Down - move forward one page.
+Ctrl-B or Page Up - move back one page.
+
+Ctrl-D - jump back one half page.
+Ctrl-U - jump forward one half page.
+
+n% move to nth file of the file list (for example 25%).
+
+Space or Tab to switch file lists.
+
+Movement with Count~
+
+Most movement commands also accept a count, 12j would move down 12 files.
+[count]% move to percent of the file list.
+[count]j move down count files.
+[count]k move up count files.
+[count]G or gg move to list position count.
+
+Scrolling panes~
+
+zt - redraw pane with file in top of list.
+zz - redraw pane with file in center of list.
+zb - redraw pane with file in bottom of list.
+Ctrl-e - scroll pane one line down.
+Ctrl-y - scroll pane one line up.
+
+Pane manipulation~
+
+Ctrl-w h - switch to left pane.
+Ctrl-w l - switch to right pane.
+Ctrl-w w - switch to other pane.
+Ctrl-w o - shortcut for :only
+Ctrl-w v - shortcut for :split
+Ctrl-w x - exchange panes
+
+Marks~
+
+You can use this characters for marks [a-z][A-Z][0-9].
+
+m[letter] will set a mark at the current cursor position.
+'[letter] will move to a mark.
+
+Searching~
+
+/regular expression - select files matching regular expression. Forward
+    search.
+?regular expression - select files matching regular expression. Backward
+    search.
+n - previous file matching last search pattern.  Considers last search
+    direction.
+N - previous file matching last search pattern.  Considers last search
+    direction.
+Note: vifm uses extended regular expressions for / and ?.
+
+f[character] - search forward for file with [character] as first
+    character in name.
+F[character] - search backward for file with [character] as first
+    character in name.
+; - find the next match of f or F.
+, - find the previous match of f or F.
+
+Filters~
+                                                               *Filters*
+There are two basic file filters.  One for dot files and one for file names.
+
+The basic vim folding key-bindings are used for filters.
+za - toggles the showing and hiding of dot files.
+zo - show the dot files.
+zf - add the selected files to the file name filter.
+zm - hide the dot files.
+zO - show the hidden file name files.
+zM - restore all filters.
+zR - remove all filters.
+
+All directorys will show the ../ file no matter what the filter setting is
+with the exception of the / directory.
+
+Each file list has its own filter.
+
+Filtered files are not checked in / search or :commands.
+
+Note: vifm uses extended regular expressions.
+
+Other Normal Mode Keys~
+
+: - enter command line mode.
+
+Ctrl-o - go backward through history.
+Ctrl-i - go forward through history.
+
+Ctrl-g - creates a window showing detailed information about the current
+    file.
+
+ga - calculate size of directory.
+gA - like ga, but force update.
+
+gv go to visual mode restoring last selection.
+
+i - handle file (even through it's executable and RUN_EXECUTABLE is set).
+
+cw - change word is used to rename a file.
+cW - change WORD is used to change only name of file (without extension).
+co - change owner of file.
+cg - change group of file.
+cp - change file permissions.
+C - clone file.
+
+dd - move selected file or files to ~/.vifm/Trash (if option 'trash' is set
+     otherwise delete)
+d<selector> - like dd.
+
+DD and D<selector> - like dd and d<selector>, but omitting trash directory
+     (even when option USE_TRASH is set).
+
+yy, Y - yank selected files.
+y<selector> - yank files.
+
+p - will copy the yanked files to the current directory or move the files
+    to the current directory if they were deleted with dd or :d[elete] or
+    if the files were yanked from the Trash directory.
+P - moves the last yanked files.
+
+t - select or unselect (tag) a the current file
+
+u - undo last command.
+Ctrl-r - redo last command.
+
+v, V - start visual selection of files.
+
+ZQ - same as :q<Return>
+ZZ - same as :wq<Return>
+
+. - repeat last command line command (not normal mode command).
+
+Using Count with y, d and D~
+
+You can use count with commands like yy.
+
+[count]yy yank (count + 1) files starting from current cursor position
+downward.
+
+Or you can use count with motions passed to y, d or D.
+
+d[count]j delete (count + 1) files starting from current cursor position
+upward.
+
+Selectors~
+
+y, d and Dcommands accept selectors.  You can combine them with every of
+selectors below to quickly remove or yank several files.
+
+j, k, gg, G, H, L, M can be used as selectors for several commands.
+Also following selectors can be used:
+ a - all files in current view
+ s - selected files
+ S - all files except selected
+
+For example:
+dj - delete file under cursor and one below.
+d2j - delete file under cursor and two below.
+y6gg - yank all files from cursor position to 6th file in the list.
 
 --------------------------------------------------------------------------------
 *Commands*
 
-Commands are set with :com command_name command_action<Return>
-:com! command_name command_action - will overwrite a previously set command.
-:delc[ommand] command_name - will remove the command.
-
 Commands are executed with :command_name<Return>
-	Command names do not have to start with a capital letter.
-	Trying to use a reserved command name will result in an error msg.
-	See |Reserved| for a list of reserved command names.
 
-:com<Return> creates a menu of user commands.
+:number - move to the file number.
+:12 would move to the 12th file in the list.
+:0 move to the top of the list.
+:$ move to the bottom of the list.
+
+:[count]command
+The only builtin :[count]command are :[count]d[elete] and :[count]y[ank].
+Examples:
+:d3 - would delete three files starting at the current file position
+    moving down (not implemented yet).
+:3d - would delete one file at the third line in the list.
+
+See |Reserved| for a list of reserved command names.
 
 The builtin commands are:
 
 :!program - shellout and execute program.
+    :!command & will run the process in the background.
+    Programs that write to stdout like ls will create an error message
+    showing partial output of the command.
 :!!program - same as :! but will pause before returning.
-  This will be changed for compatibility with vim.
-  :!! - repeat the last command.
-  :!!program - will pause before returning.
+:!! - repeat the last command.
 :apropos manpage - will create a menu of items returned by the apropos
-  command.  Selecting an item in the menu will open the corresponding
-	manpage.
-:change - create a menu window to alter a files properties.
+    command. Selecting an item in the menu will open the corresponding
+    manpage.
 :cd - change to your home directory.
-	:cd /usr/local - change directory to /usr/local.
+:cd ~/dir - change directory to ~/dir.
+:change - create a menu window to alter a files properties.
 :cmdhistory - show command line history menu.
 :colo[rscheme] - gives a menu with a list of available color schemes.  You can
-        choose default color scheme here.  It will be used if no DIRECTORY in
-        colorscheme file doesn't fit current path.  See :colorscheme.
+    choose default color scheme here.  It will be used if no DIRECTORY in
+    colorscheme file fits current path.  See :colorscheme.
 :colo[rscheme] color_scheme_name - changes default color scheme.
+:com[mand] - gives a menu of user commands.
+:com[mand] name action - sets a new user command.
+    Trying to use a reserved command name will result in an error message
+    Use :com[mand]! to overwrite a previously set command.
+    Unlike vim user commands do not have to start with a capital letter.
+    User commands are run in a shell by default.  To run a command in
+    the background you must set it as a background command with & at the end
+    of the commands action (:com rm rm %f &).
+:com[mand] backup /pattern - will set search pattern.
+:com[mand] name filter pattern - will set file name filter.
 :[range]d[elete][count] - delete selected file or files.
-	See |Vifm_Ranges| for the ranges implemented.
-:delcommand user_command - remove user_command.
-:display or :register - popup menu with registers content.
+    See |Vifm_Ranges| for the ranges implemented.
+:delc[ommand] user_command - remove user_command.
+:display - popup menu with registers content.
 :dirs - display directory stack.
-:rename - rename files using vi to edit names.
-:edit [file...] - will load the selected or passed file or files into vi.
+:e[dit] [file...] - will load the selected or passed file or files into vi.
 :empty - permanently remove files from the ~/.vifm/Trash directory.
 :file - popup menu of programs set for the file type of the current file.
         Add ' &' in the end of command if you want to start program in background. 
 :filter regular_expression - will filter files matching the pattern out of
 	the directory.  Use :filter to show all files.  See |Filters|
-:h[elp] - show this help file.
-	:h argument - is the same as using ':h argument' in vim.
+:filter - will show all files.  See |Filters|
+:h[elp] - show the help file.
+:h[elp] argument - is the same as using ':h argument' in vim.
 :history - show directory history.
 :invert - invert file name filter.
 :jobs - shows menu of current backgrounded processes.
 :locate filename - uses the locate command to create a menu of filenames
-	Selecting a file from the menu will reload the current file list in vifm
-	to show the selected file.
+    Selecting a file from the menu will reload the current file list in vifm
+    to show the selected file.
 :marks - menu of bookmarks.
-:only - switch to a one window view.
+:noh[lsearch] - clear selection in current pane.
+:on[ly] - switch to a one window view.
 :popd - remove pane directories from stack.
-:pushd directory - add pane directories to stack.
+:pushd directory - add pane directories to stack. And change to directory.
 :pwd - show the present working directory.
 :q[uit] - will exit vifm (add ! if you don't want to save changes).
+:rename - rename files using vi to edit names.
 :screen - toggles whether to use the screen program or not.
+    The default configuration has the screen option turned off.  The screen
+    program uses pseudo terminals to allow multiple windows to be used in
+    the console or in a single xterm.  Starting vifm from screen with the
+    screen option turned on will cause vifm to open a new screen window for
+    each new file edited or program launched from vifm.
+    This requires screen version 3.9.9 or newer for the screen -X argument.
+
 :set opt1=val1 opt2=val2 - sets given options.
+    You can use following syntax: option, nooption, invoption, option!,
+    option?, option=x, option+=x, option-=x.
 :shell - will start a shell.
+:register - popup menu with registers content.
 :sort - menu of different sorting methods.
 :sp[lit] - switch to a two window view.
 :sync - change the other panel to the current panels directory.
+:undolist - show list of latest changes.  Add ! to see commands.
 :view - toggle on and off the quick file view.
-:w - same as :write.
-:wq - will exit vifm after writing config.
 :w[rite] - will write config (add ! to force write even if settings weren't
 	changed).
+:wq - will exit vifm after writing config.
 :x - exit vifm (add ! if you don't want to save changes).
 
-command macros:
+Ranges~
+                                                               *Vifm_Ranges*
+The ranges implemented include:
+  Numbers :2,3
+  % - the entire directory.
+  . - the current position in the filelist.
+  $ - the end of the filelist.
+  't - the mark position t.
+
+  :%delete would delete all files in the directory.
+  :2,4delete would delete the files in the list positions 2 through 4.
+  :.,$delete would delete the files from the current position to the end
+    of the filelist.
+  :3delete4 would delete the files in the list positions 3, 4, 5, 6.
+
+If a backward range is given :4,2delete - an query message is given and
+user can chose what to do next.
+
+The builtin commands that accept a range are :d[elete] and :y[ank].
+
+Command macros~
+
+The command macros may be used in user commands.
   %a user arguments.
   %c the current file under the cursor.
   %C the current file under the cursor in the other directory.
@@ -99,7 +353,6 @@ command macros:
   %m show command output in a menu.
   %s execute command in screen split.
 
-The command macros may be used in user commands.
 :com move mv %f %D - would set the :move command to move all of the files
 selected in the current directory to the other directory.
 
@@ -119,237 +372,6 @@ Appending & to the end of a command will cause it to be executed in the
 background.
 
 :!mv %f %D &
-
---------------------------------------------------------------------------------
-*Filters*
-
-There are two basic file filters.  One for dot files and one for file names.
-
-The basic vim folding key-bindings are used for filters.
-za - toggles the showing and hiding of dot files.
-zo - show the dot files.
-zf - add the selected files to the file name filter.
-zm - hide the dot files.
-zO - show the hidden file name files.
-zM - restore all filters.
-zR - remove all filters.
-
-Note: vifm uses extended regular expressions.
-
---------------------------------------------------------------------------------
-*Mappings*
-
-Since it's not easy to enter special characters there are several special
-sequences that can be used in place of them. They are:
-
-<cr> - Enter key
-<space> - Space key
-<f0> - <f63> - functional keys
-
---------------------------------------------------------------------------------
-*Marks*
-
-:marks - will create a menu of the current marks.
-m[letter] will set a mark at the current cursor position.
-'[letter] will move to a mark.
-
---------------------------------------------------------------------------------
-*Movement*
-
-k is up
-j is down
-
-h is up directory
-l is handle file and is the same as Return
-
-gg will move to the first line of the file list.
-
-G will move to the last line in the file list.
-
-H - move to the first file in the window.
-M - move to the file in the middle of the window.
-L - move to the last file in the window.
-
-Space or Tab to switch file lists.
-
-Most movement commands also accept a count 12j would move down 12 files.
-[count]% move to percent of the file list.
-[count]j move down count files.
-[count]k move up count files.
-[count]G or gg move to list position count.
-
-j, k, gg, G, H, L, M can be used as selectors for several commands.
-Also following selectors can be used:
- a - all files in current view
- s - selected files
- S - all files except selected
-For example:
-dj delete file under cursor and one below.
-d2j delete file under cursor and two below.
-y6gg yank all files from cursor position to 6th file in the list.
-
---------------------------------------------------------------------------------
-*Normal*
-
-/regular expression - select files matching regular expression. Forward
-    search.
-?regular expression - select files matching regular expression. Backward
-    search.
-n - previous file matching last search pattern.  Considers last search
-    direction.
-N - previous file matching last search pattern.  Considers last search
-    direction.
-cg - change group of file.
-co - change owner of file.
-cp - change file permissions.
-cw - change word is used to rename a file.
-cW - change WORD is used to change only name of file (without extension).
-C - clone file.
-dd - move selected file or files to ~/.vifm/Trash (if option USE_TRASH is set
-     otherwise delete)
-d<selector> - like dd.
-DD and D<selector> - like dd and d<selector>, but omitting trash directory
-     (even when option USE_TRASH is set).
-f, F, ;, <comma> - search by first character in filename.
-ga - calculate size of directory.
-gA - like ga, but force update.
-gv go to visual mode restoring last selection.
-yy, Y - yank selected files.
-y<selector> - yank files.
-p - put last selected files.
-P - move yanked files.
-t - select or unselect a file.
-u - undo last command.
-Ctrl-r - redo last command.
-v, V - start visual selection of files.
-<Return>, l - handle file (run executable when RUN_EXECUTABLE is set).
-i - handle file (even through it's executable and RUN_EXECUTABLE is set).
-ZQ - same as :q<Return>
-ZZ - same as :wq<Return>
-zt - redraw pane with file in top of list.
-zz - redraw pane with file in center of list.
-zb - redraw pane with file in bottom of list.
-. - repeat last command line command (not normal mode command).
-Ctrl-w h/Ctrl-w l - switch to left or right pane.
-Ctrl-w Ctrl-w - switch to other pane.
-Ctrl-w o - shortcut for :only
-Ctrl-w v - shortcut for :split
-Ctrl-w x - exchange panes
-Ctrl-e/Ctrl-y - scroll pane one line down/up.
-
---------------------------------------------------------------------------------
-*Menus_and_dialogs*
-
-General~
-
-j, k - move.
-<Escape>, Ctrl-c - clear.
-<Return>, l - select and exit the menu.
-
-Sort dialog ~
-
-h - switch ascending/descending.
-
-Filetype menu~
-
-Commands from vifmrc are displayed above empty line. When all commands below
-empty line were found in .desktop files.
-Note: you can't save programs for files without extension.
-
-J and K - to move menu items
-L - save all commands above empty line as program list
-
---------------------------------------------------------------------------------
-*Options*
-
-The vifm executable will start vifm in the current directory unless it is
-given a different directory on the command line.
-
-vifm /path/to/directory/one
-or
-vifm /path/to/directory/one /path/to/directory/two
-
-The only other command line arguments are:
--f - only used from the vifm.vim script.  The selected files are written
-	to ~/.vifm/vimfiles and vifm exits.
-
---help - show a brief command summary and exit vifm.
---version - show the version number of vifm and exit.
-
---------------------------------------------------------------------------------
-*Configure*
-
-The ~/.vifm/vifmrc file contains all the configurable settings.  It is
-commented and you must edit it by hand to change the settings.
-
-The ~/.vifm/startup file contains commands that will be executed on vifm
-startup. You can set your mappings there.
-
-The :screen command toggles whether to use the screen program or not.
-
-	The default configuration has the screen option turned off.  The screen
-	program uses pseudo terminals to allow multiple windows to be used in
-	the console or in a single xterm.  Starting vifm from screen with the
-	screen option turned on will cause vifm to open a new screen window for
-	each new file edited or program launched from vifm.
-
-	This requires screen version 3.9.9 or newer for the screen -X argument.
-
---------------------------------------------------------------------------------
-*Plugin*  Plugin for using vifm in vim as a file selector.
-
-Commands:
-
-  :EditVifm  select a file to open in the current buffer.
-  :SplitVifm split buffer and select a file to open.
-  :VsplitVifm vertically split buffer and select a file to open.
-  :DiffVifm select a file to compare to the current file with :vert diffsplit.
-
-The plugin does not have any settings.
-
-To use the plugin copy the vifm.vim file to either the system wide vim/plugin
-directory or into ~/.vim/plugin.
-
-If you would prefer not to use the plugin and it is in the system wide plugin
-directory add
-
-let loaded_vifm=1
-
-to your ~/.vimrc file.
-
---------------------------------------------------------------------------------
-*Vifm_Ranges*
-
-The ranges implemented include:
-  Numbers :2,3
-  % - the entire directory.
-  . - the current position in the filelist.
-  $ - the end of the filelist.
-  't - the mark position t.
-
-  :%delete would delete all files in the directory.
-  :2,4delete would delete the files in the list positions 2 through 4.
-  :.,$delete would delete the files from the current position to the end
-    of the filelist.
-  :3delete4 would delete the files in the list positions 3, 4, 5, 6.
-
-If a backward range is given :4,2delete - an error message is given and
-the operation is abandoned.
-
-The only builtin command that accepts a range is :delete.
-
---------------------------------------------------------------------------------
-*Compatibility_mode*
-
-Compatibility mode:
-    - <tab> to switch between panes.
-    - dd deletes selected (or current if none) files.
-    - yy yanks selected (or current if none) files.
-
-Vim like mode:
-    - <c-i> (<tab>) to go forward on history.
-    - dd deletes file under the cursor and ds works as dd in compatibility mode.
-    - yy yanks file under the cursor and ys works as dd in compatibility mode.
 
 --------------------------------------------------------------------------------
 *set-options*
@@ -444,6 +466,92 @@ default: true
 Controls whether to wrap text in quick view.
 
 --------------------------------------------------------------------------------
+*Mappings*
+
+Since it's not easy to enter special characters there are several special
+sequences that can be used in place of them. They are:
+
+<cr> - Enter key
+<space> - Space key
+<f0> - <f63> - functional keys
+
+--------------------------------------------------------------------------------
+*Compatibility_mode*
+
+Compatibility mode:
+    - <tab> to switch between panes.
+    - dd deletes selected (or current if none) files.
+    - yy yanks selected (or current if none) files.
+
+Vim like mode:
+    - <c-i> (<tab>) to go forward on history.
+    - dd deletes file under the cursor and ds works as dd in compatibility mode.
+    - yy yanks file under the cursor and ys works as dd in compatibility mode.
+
+--------------------------------------------------------------------------------
+*Menus_and_dialogs*
+
+General~
+
+j, k - move.
+<Escape>, Ctrl-c - clear.
+<Return>, l - select and exit the menu.
+
+Bookmarks~
+
+Escape or Ctrl-c to abort j and k to move through.
+dd on a bookmark to remove.
+
+Sort dialog ~
+
+h - switch ascending/descending.
+
+Filetype menu~
+
+Commands from vifmrc are displayed above empty line. When all commands below
+empty line were found in .desktop files.
+Note: you can't save programs for files without extension.
+
+J and K - to move menu items
+L - save all commands above empty line as program list
+
+--------------------------------------------------------------------------------
+*Configure*
+
+The ~/.vifm/vifmrc file contains all the configurable settings.  It is
+commented and you may edit it by hand to change the settings.
+
+The ~/.vifm/vifminfo file contains session settings.  It is
+commented and you may edit it by hand to change the settings.
+
+The ~/.vifm/startup file contains commands that will be executed on vifm
+startup. You can set your mappings there.
+
+--------------------------------------------------------------------------------
+*Plugin*
+
+Plugin for using vifm in vim as a file selector.
+
+Commands:
+
+  :EditVifm  select a file to open in the current buffer.
+  :SplitVifm split buffer and select a file to open.
+  :VsplitVifm vertically split buffer and select a file to open.
+  :DiffVifm select a file to compare to the current file with :vert diffsplit.
+
+The plugin does not have any settings.
+
+To use the plugin copy the vifm.vim file to either the system wide vim/plugin
+directory or into ~/.vim/plugin.
+
+If you would prefer not to use the plugin and it is in the system wide plugin
+directory add
+
+let loaded_vifm=1
+
+to your ~/.vimrc file.
+
+--------------------------------------------------------------------------------
 *Reserved*
 
 The following command names are reserved and cannot be used for user commands.
@@ -459,6 +567,7 @@ The following command names are reserved and cannot be used for user commands.
   com - show user commands.
   command - show user commands.
   d - delete file.
+  delc - delete command.
   delcommand - delete command.
   delete - delete file.
   dirs - display directory stack.
@@ -471,6 +580,7 @@ The following command names are reserved and cannot be used for user commands.
   find - not yet implemented.
   h - show help file.
   help - show help file.
+  his - show directory history.
   history - show directory history.
   invert - invert file filter.
   jobs - shows menu of current backgrounded processes.
@@ -481,6 +591,7 @@ The following command names are reserved and cannot be used for user commands.
   nmap - user mapping for normal mode.
   noh - clear selection in current pane.
   nohlsearch - clear selection in current pane.
+  on - switch to a one window view.
   only - switch to a one window view.
   popd - remove pane directories from stack.
   pushd - add pane directories to stack.
@@ -505,6 +616,7 @@ The following command names are reserved and cannot be used for user commands.
   wq - will exit vifm after writing config.
   write - write config (add ! to force write even if settings weren't changed).
   x - exit vifm.
+  y - yank file.
   yank - yank file.
 
 --------------------------------------------------------------------------------
