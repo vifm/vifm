@@ -71,6 +71,7 @@ const char *reserved_commands[] = {
 	"com",
 	"command",
 	"d",
+	"delc",
 	"delcommand",
 	"delete",
 	"dirs",
@@ -1521,6 +1522,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			select_files_in_range(view, cmd);
 			save_msg = delete_file(view, DEFAULT_REG_NAME, 0, NULL, 1);
 			break;
+		case COM_DELC:
 		case COM_DELCOMMAND:
 			if(cmd->args == NULL)
 			{
