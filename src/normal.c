@@ -496,6 +496,7 @@ static void
 find_F(int ch)
 {
 	int x;
+	wchar_t ch_buf[] = {ch, L'\0'};
 
 	x = curr_view->list_pos;
 	do
@@ -503,8 +504,23 @@ find_F(int ch)
 		x--;
 		if(x == 0)
 			x = curr_view->list_rows - 1;
-		if(curr_view->dir_entry[x].name[0] == ch)
+
+		if(ch > 255)
+		{
+			wchar_t *wbuf;
+			wbuf = to_wide(curr_view->dir_entry[x].name);
+
+			if(wcsncmp(wbuf, ch_buf, 1) == 0)
+			{
+				free(wbuf);
+				break;
+			}
+			free(wbuf);
+		}
+		else if(curr_view->dir_entry[x].name[0] == ch)
+		{
 			break;
+		}
 	}while(x != curr_view->list_pos);
 
 	if(x == curr_view->list_pos)
@@ -885,6 +901,7 @@ static void
 find_f(int ch)
 {
 	int x;
+	wchar_t ch_buf[] = {ch, L'\0'};
 
 	x = curr_view->list_pos;
 	do
@@ -892,8 +909,23 @@ find_f(int ch)
 		x++;
 		if(x == curr_view->list_rows)
 			x = 0;
-		if(curr_view->dir_entry[x].name[0] == ch)
+
+		if(ch > 255)
+		{
+			wchar_t *wbuf;
+			wbuf = to_wide(curr_view->dir_entry[x].name);
+
+			if(wcsncmp(wbuf, ch_buf, 1) == 0)
+			{
+				free(wbuf);
+				break;
+			}
+			free(wbuf);
+		}
+		else if(curr_view->dir_entry[x].name[0] == ch)
+		{
 			break;
+		}
 	}while(x != curr_view->list_pos);
 
 	if(x == curr_view->list_pos)
