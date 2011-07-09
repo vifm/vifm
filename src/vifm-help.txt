@@ -298,6 +298,18 @@ Options
     default: true
     Follow links on l or Enter.
 
+    fusehome
+    type: string
+    default: "/tmp/vifm_FUSE/"
+    Directory to be used as a root dir for FUSE mounts.
+    If you change this option, vifm won't remount anything.  It affects future
+    mounts only.
+
+    history
+    type: integer
+    default: 15
+    Maximum number of directories in the view history.
+
     iec
     type: boolean
     default: false
