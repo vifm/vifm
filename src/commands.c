@@ -64,26 +64,28 @@ const char *reserved_commands[] = {
 	"apropos",
 	"cd",
 	"change",
+	"cm", /* alias */
 	"cmap",
 	"cmdhistory",
-	"colo",
+	"colo", /* alias */
 	"colorscheme",
-	"com",
+	"com", /* alias */
 	"command",
-	"d",
-	"delc",
+	"d", /* alias */
+	"delc", /* alias */
 	"delcommand",
 	"delete",
+	"di", /* alias */
 	"dirs",
 	"display",
-	"e",
+	"e", /* alias */
 	"edit",
 	"empty",
 	"file",
 	"filter",
-	"h",
+	"h", /* alias */
 	"help",
-	"his",
+	"his", /* alias */
 	"history",
 	"invert",
 	"jobs",
@@ -91,35 +93,42 @@ const char *reserved_commands[] = {
 	"ls",
 	"map",
 	"marks",
+	"nm", /* alias */
 	"nmap",
-	"noh",
+	"noh", /* alias */
 	"nohlsearch",
-	"on",
+	"on", /* alias */
 	"only",
 	"popd",
 	"pushd",
 	"pwd",
-	"q",
+	"q", /* alias */
 	"quit",
-	"register",
+	"reg", /* alias */
+	"registers",
 	"rename",
 	"screen",
+	"se", /* alias */
 	"set",
+	"sh", /* alias */
 	"shell",
+	"sor", /* alias */
 	"sort",
-	"sp",
+	"sp", /* alias */
 	"split",
 	"sync",
+	"undol", /* alias */
 	"undolist",
 	"unmap",
 	"view",
 	"vifm",
+	"vm", /* alias */
 	"vmap",
-	"w",
+	"w", /* alias */
 	"wq",
 	"write",
 	"x",
-	"y",
+	"y", /* alias */
 	"yank",
 };
 
@@ -311,7 +320,7 @@ command_completion(char *str, int users_only)
 	else
 		offset++;
 
-	pos_b = users_only ? -1 : get_buildin_id(string);
+	pos_b = users_only ? -1 : (string[0] == '\0' ? 0 : get_buildin_id(string));
 	pos_u = is_user_command(string);
 
 	i = 0;
@@ -1480,6 +1489,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 		case COM_CD:
 			comm_cd(view, cmd);
 			break;
+		case COM_CM:
 		case COM_CMAP:
 			save_msg = do_map(cmd, "Command Line", "cmap", CMDLINE_MODE);
 			break;
@@ -1548,8 +1558,10 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 		case COM_DIRS:
 			show_dirstack_menu(view);
 			break;
+		case COM_DI:
 		case COM_DISPLAY:
-		case COM_REGISTER:
+		case COM_REG:
+		case COM_REGISTERS:
 			show_register_menu(view);
 			break;
 		case COM_RENAME:
@@ -1686,6 +1698,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 		case COM_MARKS:
 			show_bookmarks_menu(view);
 			break;
+		case COM_NM:
 		case COM_NMAP:
 			save_msg = do_map(cmd, "Normal", "nmap", NORMAL_MODE);
 			break;
@@ -1742,6 +1755,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 				curr_stats.setting_change = 0;
 			comm_quit();
 			break;
+		case COM_SOR:
 		case COM_SORT:
 			enter_sort_mode(view);
 			break;
@@ -1754,9 +1768,11 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 				curr_stats.setting_change = 1;
 			}
 			break;
+		case COM_SE:
 		case COM_SET:
 			save_msg = process_set_args(cmd->args);
 			break;
+		case COM_SH:
 		case COM_SHELL:
 			shellout(NULL, 0);
 			break;
@@ -1768,6 +1784,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			change_directory(other_view, view->curr_dir);
 			load_dir_list(other_view, 0);
 			break;
+		case COM_UNDOL:
 		case COM_UNDOLIST:
 			show_undolist_menu(view, cmd->args && cmd->args[0] == '!');
 			break;
@@ -1786,9 +1803,9 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 					curr_stats.view = 0;
 
 					wbkgdset(other_view->title,
-						COLOR_PAIR(BORDER_COLOR + other_view->color_scheme));
+							COLOR_PAIR(BORDER_COLOR + other_view->color_scheme));
 					wbkgdset(other_view->win,
-						COLOR_PAIR(WIN_COLOR + other_view->color_scheme));
+							COLOR_PAIR(WIN_COLOR + other_view->color_scheme));
 					change_directory(other_view, other_view->curr_dir);
 					load_dir_list(other_view, 1);
 				}
@@ -1808,6 +1825,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 				break;
 			save_msg = yank_files(view, DEFAULT_REG_NAME, 0, NULL);
 			break;
+		case COM_VM:
 		case COM_VMAP:
 			save_msg = do_map(cmd, "Visual", "vmap", VISUAL_MODE);
 			break;

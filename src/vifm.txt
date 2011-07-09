@@ -271,7 +271,7 @@ The builtin commands are:
 :[range]d[elete][count] - delete selected file or files.
     See |Vifm_Ranges| for the ranges implemented.
 :delc[ommand] user_command - remove user_command.
-:display - popup menu with registers content.
+:di[splay] - popup menu with registers content.
 :dirs - display directory stack.
 :e[dit] [file...] - will load the selected or passed file or files into vi.
 :empty - permanently remove files from the ~/.vifm/Trash directory.
@@ -303,21 +303,27 @@ The builtin commands are:
     screen option turned on will cause vifm to open a new screen window for
     each new file edited or program launched from vifm.
     This requires screen version 3.9.9 or newer for the screen -X argument.
-
-:set opt1=val1 opt2=val2 - sets given options.
+:se[t] opt1=val1 opt2=val2 - sets given options.
     You can use following syntax: option, nooption, invoption, option!,
     option?, option=x, option+=x, option-=x.
-:shell - will start a shell.
-:register - popup menu with registers content.
-:sort - menu of different sorting methods.
+:sh[ell] - will start a shell.
+:reg[isters] - popup menu with registers content.
+:sor[t] - menu of different sorting methods.
 :sp[lit] - switch to a two window view.
 :sync - change the other panel to the current panels directory.
-:undolist - show list of latest changes.  Add ! to see commands.
+:undol[ist] - show list of latest changes.  Add ! to see commands.
 :view - toggle on and off the quick file view.
 :w[rite] - will write config (add ! to force write even if settings weren't
 	changed).
 :wq - will exit vifm after writing config.
 :x - exit vifm (add ! if you don't want to save changes).
+
+:map lhs rhs - map lhs key sequence to rhs in normal and visual modes.
+:map! lhs rhs - map lhs key sequence to rhs in command line mode.
+
+:cm[ap] lhs rhs - map lhs to rhs in command line mode.
+:nm[ap] lhs rhs - map lhs to rhs in normal mode.
+:vm[ap] lhs rhs - map lhs to rhs in visual mode.
 
 Ranges~
                                                                *Vifm_Ranges*
@@ -560,6 +566,7 @@ The following command names are reserved and cannot be used for user commands.
   apropos - run the apropos command in a menu window.
   cd - change directory.
   change - alter a files properties.
+  cm - user mapping for command line mode.
   cmap - user mapping for command line mode.
   cmdhistory - show command line history menu.
   colo - will be used to set a colorscheme for a directory.
@@ -570,6 +577,7 @@ The following command names are reserved and cannot be used for user commands.
   delc - delete command.
   delcommand - delete command.
   delete - delete file.
+  di - popup menu with registers content.
   dirs - display directory stack.
   display - popup menu with registers content.
   e - edit file.
@@ -588,6 +596,7 @@ The following command names are reserved and cannot be used for user commands.
   ls - not implemented.
   map - user mapping for normal and visual modes.
   marks - show marks.
+  nm - user mapping for normal mode.
   nmap - user mapping for normal mode.
   noh - clear selection in current pane.
   nohlsearch - clear selection in current pane.
@@ -598,19 +607,24 @@ The following command names are reserved and cannot be used for user commands.
   pwd - show present working directory.
   q - exit vifm.
   quit - exit vifm.
-  register - popup menu with registers content.
+  reg - popup menu with registers content.
+  registers - popup menu with registers content.
   rename - rename files using vi to edit names.
   screen - toggles use of screen program.
+  se - set option.
   set - set option.
+  sh - shellout.
   shell - shellout.
-  sort - show sort menu.
+  sor[t] - show sort menu.
   sp - switch to a two window view.
   split - switch to a two window view.
   sync - change the other panel to the current panel directory.
+  undol - show list of latest changes.  Add ! to see commands.
   undolist - show list of latest changes.  Add ! to see commands.
   unmap - not used, will be used with key mapping.
   view - toggle on and off the quick file view.
   vifm - menu with version information.
+  vm - user key mapping for visual mode.
   vmap - user key mapping for visual mode.
   w - same as :write.
   wq - will exit vifm after writing config.
