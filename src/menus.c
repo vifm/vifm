@@ -1714,7 +1714,7 @@ query_user_menu(char *title, char *message)
 	if(curr_stats.need_redraw)
 		redraw_window();
 
-	if (key == 'y')
+	if(key == 'y')
 		return 1;
 	else
 		return 0;

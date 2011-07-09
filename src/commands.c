@@ -931,6 +931,7 @@ initialize_command_struct(cmd_params *cmd)
 	cmd->pause = 0;
 }
 
+/* Returns zero on success */
 #ifndef TEST
 static
 #endif
@@ -945,10 +946,13 @@ select_files_in_range(FileView *view, cmd_params *cmd)
 	{
 		if(cmd->end_range < cmd->start_range)
 		{
-			show_error_msg("Command Error", "Backward range given.");
-			/* TODO decide what to do in such cases
-			save_msg = 1;
-			break; */
+			int t;
+			if(!query_user_menu("Command Error",
+						"Backwards range given, OK to swap?"))
+				return 1;
+			t = cmd->end_range;
+			cmd->end_range = cmd->start_range;
+			cmd->start_range = t;
 		}
 
 		for(x = 0; x < view->list_rows; x++)
@@ -1523,7 +1527,8 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			break;
 		case COM_D:
 		case COM_DELETE:
-			select_files_in_range(view, cmd);
+			if(select_files_in_range(view, cmd) != 0)
+				break;
 			save_msg = delete_file(view, DEFAULT_REG_NAME, 0, NULL, 1);
 			break;
 		case COM_DELC:
@@ -1545,7 +1550,8 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			show_register_menu(view);
 			break;
 		case COM_RENAME:
-			select_files_in_range(view, cmd);
+			if(select_files_in_range(view, cmd) != 0)
+				break;
 			rename_files(view);
 			save_msg = 1; /* there are always some message */
 			break;
@@ -1792,7 +1798,8 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			show_vifm_menu(view);
 			break;
 		case COM_YANK:
-			select_files_in_range(view, cmd);
+			if(select_files_in_range(view, cmd) != 0)
+				break;
 			save_msg = yank_files(view, DEFAULT_REG_NAME, 0, NULL);
 			break;
 		case COM_VMAP:
@@ -1909,7 +1916,8 @@ execute_user_command(FileView *view, cmd_params *cmd)
 	int use_menu = 0;
 	int split = 0;
 
-	select_files_in_range(view, cmd);
+	if(select_files_in_range(view, cmd) != 0)
+		return 0;
 
 	if(strchr(command_list[cmd->is_user].action, '%') != NULL)
 		expanded_com = expand_macros(view, command_list[cmd->is_user].action,
@@ -2185,4 +2193,3 @@ comm_split(void)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-

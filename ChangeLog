@@ -32,6 +32,8 @@
 
 	Added 'history' option.
 
+	Added dialog to ask user about backwards range in command.
+
 	Let builtin keys be remapped.
 
 	Don't cancel file renaming if user presses backspace and line is empty.
@@ -73,8 +75,6 @@
 	Filter string is empty by default now.
 
 	Made f and F work with wide characters.
-
-	Added dialog to ask user about backwards range in command.
 
 	Fixed %F, accidentally broken in v0.6.2.
 
@@ -138,6 +138,8 @@
 	Fixed one number ranges for command line commands (:2d, :4y).
 
 	Fixed bug with too small inner buffer for shell commands.
+
+	Fixed skipped range number (it should mean current position).
 
 0.6.1 to 0.6.2
 
@@ -492,4 +494,3 @@
 		The bookmarks code was rewritten.
 
 		The automatic updating of the file lists was rewritten.
-
