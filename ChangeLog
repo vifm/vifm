@@ -68,6 +68,8 @@
 
 	Skip spaces between numbers in range and a command.
 
+	Skip colons and spaces at the begging of cmdline command.
+
 	Filter string is empty by default now.
 
 	Fixed %F, accidentally broken in v0.6.2.

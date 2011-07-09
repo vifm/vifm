@@ -586,7 +586,10 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	if(sub_mode == CMD_SUBMODE)
 	{
-		curr_stats.save_msg = exec_commands(p, curr_view, GET_COMMAND, save_hist);
+		char* s = p;
+		while(*s == ' ' || *s == ':')
+			s++;
+		curr_stats.save_msg = exec_commands(s, curr_view, GET_COMMAND, save_hist);
 	}
 	else if(sub_mode == SEARCH_FORWARD_SUBMODE)
 	{
