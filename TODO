@@ -74,7 +74,7 @@ Possible things to add.
     Invert selection?
     :g = grep :g! = grep -v
     :filter! pattern same as :filter pattern | invert, and :filter! = :invert
-    :history! and :cmdhistory! same as normal versions but without duplicates.
+    :history without duplicates.
     Make :undolist more interactive.
     A :restart function to reload everything.
     Maybe something like :g/.../ and :v/.../ in Vim.

@@ -66,6 +66,8 @@
 
 	Let ranges modify %f macro for user defined commands.
 
+	Skip spaces between numbers in range and a command.
+
 	Filter string is empty by default now.
 
 	Fixed %F, accidentally broken in v0.6.2.

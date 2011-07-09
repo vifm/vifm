@@ -1077,6 +1077,8 @@ check_for_range(FileView *view, char *command, cmd_params *cmd)
 	if(command[cmd->pos] == ',')
 	{
 		cmd->pos++;
+		while(isspace(command[cmd->pos]) && (size_t)cmd->pos < strlen(command))
+			cmd->pos++;
 
 		if(command[cmd->pos] == '\'')
 		{
@@ -1123,6 +1125,10 @@ check_for_range(FileView *view, char *command, cmd_params *cmd)
 		cmd->end_range = cmd->start_range;
 		cmd->start_range = -1;
 	}
+
+	while(isspace(command[cmd->pos]) && (size_t)cmd->pos < strlen(command))
+		cmd->pos++;
+
 	return 1;
 }
 
