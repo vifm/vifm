@@ -66,6 +66,14 @@ struct line_stats
 	int complete_continue; /* If non-zero, continue the previous completion */
 };
 
+/* values of type argument for filename_completion() function */
+enum {
+	FNC_ALL,	    /* all files and directories */
+	FNC_DIRONLY,  /* only directories */
+	FNC_EXECONLY, /* only executable files */
+	FNC_DIREXEC   /* directories and executable files */
+};
+
 static int *mode;
 static int prev_mode;
 static enum CmdLineSubModes sub_mode;
@@ -109,15 +117,15 @@ static int line_completion(struct line_stats *stat);
 static int colorschemes_completion(char *line_mb, char *last_word,
 		struct line_stats *stat);
 static int option_completion(char *line_mb, struct line_stats *stat);
-static int file_completion(char *filename, char *line_mb,
+static int file_completion(const char *filename, const char *line_mb,
 		struct line_stats *stat);
 static void update_line_stat(struct line_stats *stat, int new_len);
 static void redraw_status_bar(struct line_stats *stat);
 static size_t get_words_count(const char * string);
-static char * get_last_word(char * string);
+static char * get_last_word(const char * string);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
-static char * filename_completion(char *str, int type);
-static char * check_for_executable(char *string);
+static char * filename_completion(const char *str, int type);
+static char * check_for_executable(const char *string);
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x03",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
@@ -1089,10 +1097,24 @@ line_completion(struct line_stats *stat)
 			return ret;
 		}
 		else if(id == COM_EXECUTE && words_count == 1 && last_word[0] != '.')
+		{
 			raw_name = exec_completion(stat->complete_continue ? NULL : last_word);
+		}
 		else
+		{
+			int type;
+			if(id == COM_CD || id == COM_PUSHD)
+				type = FNC_DIRONLY;
+			else if(id != COM_EXECUTE)
+				type = FNC_ALL;
+			else if(last_word[0] == '.')
+				type = FNC_DIREXEC;
+			else
+				type = FNC_ALL;
+
 			raw_name = filename_completion(stat->complete_continue ? NULL : last_word,
-					(id == COM_CD || id == COM_PUSHD) ? 1 : (id == COM_EXECUTE ? 3 : 0));
+					type);
+		}
 
 		stat->complete_continue = 1;
 
@@ -1207,7 +1229,8 @@ option_completion(char* line_mb, struct line_stats *stat)
 }
 
 static int
-file_completion(char* filename, char* line_mb, struct line_stats *stat)
+file_completion(const char* filename, const char* line_mb,
+		struct line_stats *stat)
 {
 	char *cur_file_pos = strrchr(line_mb, ' ');
 	char *temp = (char *) NULL;
@@ -1302,7 +1325,7 @@ get_words_count(const char * string)
 
 /* String returned by this function should be freed by caller */
 static char *
-get_last_word(char * string)
+get_last_word(const char * string)
 {
 	char * temp = (char *)NULL;
 
@@ -1376,7 +1399,8 @@ exec_completion(char *str)
 	{
 		if(chdir(paths[dir]) != 0)
 			continue;
-		result = filename_completion((last_dir != dir) ? string : NULL, 2);
+		result = filename_completion((last_dir != dir) ? string : NULL,
+				FNC_EXECONLY);
 		if(result == NULL)
 		{
 			last_dir = dir;
@@ -1438,7 +1462,7 @@ is_entry_exec(const struct dirent *d)
  *  - 3 - directories and executable files
  */
 static char *
-filename_completion(char *str, int type)
+filename_completion(const char *str, int type)
 {
 	/* TODO refactor filename_completion(...) function */
 	static char *string;
@@ -1513,11 +1537,11 @@ filename_completion(char *str, int type)
 		if(strncmp(d->d_name, filename, filename_len) != 0)
 			continue;
 
-		if(type == 1 && !is_entry_dir(d))
+		if(type == FNC_DIRONLY && !is_entry_dir(d))
 			continue;
-		else if(type == 2 && !is_entry_exec(d))
+		else if(type == FNC_EXECONLY && !is_entry_exec(d))
 			continue;
-		else if(type == 3 && !is_entry_dir(d) && !is_entry_exec(d))
+		else if(type == FNC_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
 			continue;
 
 		break;
@@ -1541,7 +1565,7 @@ filename_completion(char *str, int type)
 			closedir(dir);
 			free(dirname);
 
-			return (type == 2) ? NULL : strdup(filename);
+			return (type == FNC_EXECONLY) ? NULL : strdup(filename);
 		}
 
 		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
@@ -1549,11 +1573,11 @@ filename_completion(char *str, int type)
 		if(strncmp(d->d_name, filename, filename_len) != 0)
 			continue;
 
-		if(type == 1 && !is_entry_dir(d))
+		if(type == FNC_DIRONLY && !is_entry_dir(d))
 			continue;
-		else if(type == 2 && !is_entry_exec(d))
+		else if(type == FNC_EXECONLY && !is_entry_exec(d))
 			continue;
-		else if(type == 3 && !is_entry_dir(d) && !is_entry_exec(d))
+		else if(type == FNC_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
 			continue;
 
 		i++;
@@ -1608,11 +1632,11 @@ filename_completion(char *str, int type)
 
 /* String returned by this function should be freed by caller */
 static char *
-check_for_executable(char *string)
+check_for_executable(const char *string)
 {
 	char *temp = (char *)NULL;
 
-	if(!string)
+	if(string == NULL)
 		return NULL;
 
 	if(string[0] == '!')
