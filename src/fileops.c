@@ -1411,9 +1411,6 @@ put_files_from_register_i(FileView *view)
 
 	pack_register(put_confirm.reg->name);
 
-	if(put_confirm.y <= 0)
-		return 0;
-
 	snprintf(buf, sizeof(buf), " %d file%s inserted", put_confirm.y,
 			(put_confirm.y == 1) ? "" : "s");
 	status_bar_message(buf);

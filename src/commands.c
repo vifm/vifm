@@ -2188,6 +2188,15 @@ exec_commands(char *cmd, FileView *view, int type, int save_hist)
 		{
 			if(*p != '\0')
 				p++;
+
+			while(*cmd == ' ' || *cmd == ':')
+				cmd++;
+			if(*cmd == '!')
+			{
+				save_msg += exec_command(cmd, view, type);
+				break;
+			}
+
 			*q = '\0';
 			q = p;
 
