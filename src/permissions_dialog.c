@@ -77,6 +77,7 @@ static struct keys_add_info builtin_cmds[] = {
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_UP}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{{KEY_DOWN}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+	{{KEY_RIGHT}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
