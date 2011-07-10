@@ -27,7 +27,17 @@ init_logger(int verbosity_level)
 }
 
 void
-log_error(const char *file, const char *func, int line, int no)
+log_error(const char *file, const char *func, int line)
+{
+	if(verbosity <= 0)
+		return;
+
+	log_time();
+	fprintf(log, " at %s:%d (%s)\n", file, line, func);
+}
+
+void
+log_serror(const char *file, const char *func, int line, int no)
 {
 	if(verbosity <= 0)
 		return;

@@ -39,6 +39,7 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "keys.h"
+#include "log.h"
 #include "macros.h"
 #include "menu.h"
 #include "menus.h"
@@ -178,8 +179,12 @@ sort_this(const void *one, const void *two)
 	return strcmp(first->name, second->name);
 }
 
-static int
-command_is_reserved(char *name)
+/* Returns command id or -1 */
+#ifndef TEST
+static
+#endif
+int
+command_is_reserved(const char *name)
 {
 	int x;
 	int len = strlen(name);
@@ -791,7 +796,7 @@ set_user_command(char * command, int overwrite, int background)
 	com_name = command;
 
 	if((ptr = strchr(command, ' ')) == NULL)
-			return;
+		return;
 
 	*ptr = '\0';
 	ptr++;
@@ -816,7 +821,7 @@ set_user_command(char * command, int overwrite, int background)
 
 	if(command_is_reserved(com_name) > -1)
 	{
-		snprintf(buf, sizeof(buf), "%s is a reserved command name", com_name);
+		snprintf(buf, sizeof(buf), "\"%s\" is a reserved command name", com_name);
 		show_error_msg("", buf);
 		free(com_action);
 		return;
@@ -2169,7 +2174,7 @@ exec_commands(char *cmd, FileView *view, int type, int save_hist)
 
 			while(*cmd == ' ' || *cmd == ':')
 				cmd++;
-			if(*cmd == '!')
+			if(*cmd == '!' || strncmp(cmd, "com", 3) == 0)
 			{
 				save_msg += exec_command(cmd, view, type);
 				break;
@@ -2253,6 +2258,244 @@ comm_split(void)
 {
 	curr_stats.number_of_windows = 2;
 	redraw_window();
+}
+
+static void
+unescape(char *s)
+{
+	char *p;
+
+	p = s;
+	while(*s != '\0')
+	{
+		if(*s == '\\')
+			s++;
+		*p++ = *s++;
+	}
+	*p = '\0';
+}
+
+static void
+replace_esc(char *s)
+{
+	static const char table[] =
+						/* 00  01  02  03  04  05  06  07  08  09  0a  0b  0c  0d  0e  0f */
+	/* 00 */	"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f"
+	/* 10 */	"\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f"
+	/* 20 */	"\x20\x21\x22\x23\x24\x25\x26\x27\x28\x29\x2a\x2b\x2c\x2d\x2e\x2f"
+	/* 30 */	"\x00\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3a\x3b\x3c\x3d\x3e\x3f"
+	/* 40 */	"\x40\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f"
+	/* 50 */	"\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x5b\x5c\x5d\x5e\x5f"
+	/* 60 */	"\x60\x07\x0b\x63\x64\x65\x0c\x67\x68\x69\x6a\x6b\x6c\x6d\x0a\x6f"
+	/* 70 */	"\x70\x71\x0d\x73\x09\x75\x0b\x77\x78\x79\x7a\x7b\x7c\x7d\x7e\x7f"
+	/* 80 */	"\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f"
+	/* 90 */	"\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f"
+	/* a0 */	"\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf"
+	/* b0 */	"\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf"
+	/* c0 */	"\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf"
+	/* d0 */	"\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf"
+	/* e0 */	"\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef"
+	/* f0 */	"\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff";
+
+	char *str = s;
+	char *p;
+
+	p = s;
+	while(*s != '\0')
+	{
+		if(*s != '\\')
+		{
+			*p++ = *s++;
+			continue;
+		}
+		s++;
+		if(*s == '\0')
+		{
+			LOG_ERROR_MSG("Escaped eol in \"%s\"", str);
+			break;
+		}
+		*p++ = table[(int)*s++];
+	}
+	*p = '\0';
+}
+
+static int
+get_args_count(const char *cmdstr)
+{
+	int i, state;
+	int result = 0;
+	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING };
+
+	state = BEGIN;
+	for(i = 0; cmdstr[i] != '\0'; i++)
+		switch(state)
+		{
+			case BEGIN:
+				if(cmdstr[i] == '\'')
+					state = S_QUOTING;
+				else if(cmdstr[i] == '"')
+					state = D_QUOTING;
+				else if(cmdstr[i] == '/')
+					state = R_QUOTING;
+				else if(cmdstr[i] != ' ')
+					state = NO_QUOTING;
+				break;
+			case NO_QUOTING:
+				if(cmdstr[i] == ' ')
+				{
+					result++;
+					state = BEGIN;
+				}
+				else if(cmdstr[i] == '\\')
+				{
+					if(cmdstr[i + 1] != '\0')
+						i++;
+				}
+				break;
+			case S_QUOTING:
+				if(cmdstr[i] == '\'')
+				{
+					result++;
+					state = BEGIN;
+				}
+				break;
+			case D_QUOTING:
+				if(cmdstr[i] == '"')
+				{
+					result++;
+					state = BEGIN;
+				}
+				else if(cmdstr[i] == '\\')
+				{
+					if(cmdstr[i + 1] != '\0')
+						i++;
+				}
+				break;
+			case R_QUOTING:
+				if(cmdstr[i] == '/')
+				{
+					result++;
+					state = BEGIN;
+				}
+				else if(cmdstr[i] == '\\')
+				{
+					if(cmdstr[i + 1] != '\0')
+						i++;
+				}
+				break;
+		}
+	if(state == NO_QUOTING)
+		result++;
+	else if(state != BEGIN)
+		return 0; /* error: no closing quote */
+
+	return result;
+}
+
+#ifndef TEST
+static
+#endif
+char **
+dispatch_line(const char *args, int *count)
+{
+	char *cmdstr;
+	int len;
+	int i, j;
+	int state, st;
+	char** params;
+
+	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING, ARG };
+
+	*count = get_args_count(args);
+	if(*count == 0)
+		return NULL;
+
+	params = malloc(sizeof(char*)*(*count + 1));
+	if(params == NULL)
+		return NULL;
+
+	while(args[0] == ' ')
+		args++;
+	cmdstr = strdup(args);
+	len = strlen(cmdstr);
+	for(i = 0, st, j = 0, state = BEGIN; i <= len; ++i)
+	{
+		int prev_state = state;
+		switch(state)
+		{
+			case BEGIN:
+				if(cmdstr[i] == '\'')
+				{
+					st = i + 1;
+					state = S_QUOTING;
+				}
+				else if(cmdstr[i] == '"')
+				{
+					st = i + 1;
+					state = D_QUOTING;
+				}
+				else if(cmdstr[i] == '/')
+				{
+					st = i + 1;
+					state = R_QUOTING;
+				}
+				else if(cmdstr[i] != ' ')
+				{
+					st = i;
+					state = NO_QUOTING;
+				}
+				break;
+			case NO_QUOTING:
+				if(!cmdstr[i] || cmdstr[i] == ' ')
+					state = ARG;
+				else if(cmdstr[i] == '\\')
+				{
+					if(cmdstr[i + 1] != '\0')
+						i++;
+				}
+				break;
+			case S_QUOTING:
+				if(!cmdstr[i] || cmdstr[i] == '\'')
+					state = ARG;
+			case D_QUOTING:
+				if(!cmdstr[i] || cmdstr[i] == '"')
+					state = ARG;
+				else if(cmdstr[i] == '\\')
+				{
+					if(cmdstr[i + 1] != '\0')
+						i++;
+				}
+				break;
+			case R_QUOTING:
+				if(!cmdstr[i] || cmdstr[i] == '/')
+					state = ARG;
+				else if(cmdstr[i] == '\\')
+				{
+					if(cmdstr[i + 1] != '\0')
+						i++;
+				}
+				break;
+		}
+		if(state == ARG)
+		{
+			/* found another argument */
+			cmdstr[i] = '\0';
+			params[j] = strdup(&cmdstr[st]);
+			if(prev_state == NO_QUOTING)
+				unescape(params[j]);
+			else if(prev_state == D_QUOTING)
+				replace_esc(params[j]);
+			else if(prev_state == R_QUOTING)
+				unescape(params[j]);
+			j++;
+			state = BEGIN;
+		}
+	}
+
+	params[*count] = NULL;
+
+	free(cmdstr);
+	return params;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

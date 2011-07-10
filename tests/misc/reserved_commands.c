@@ -46,6 +46,12 @@ vim_like_completion(void)
 	free(buf);
 }
 
+static void
+name_is_reserved(void)
+{
+	assert_false(command_is_reserved("a") == -1);
+}
+
 void
 test_reserved_commands(void)
 {
@@ -53,6 +59,7 @@ test_reserved_commands(void)
 
 	run_test(should_be_sorted);
 	run_test(vim_like_completion);
+	run_test(name_is_reserved);
 
 	test_fixture_end();
 }

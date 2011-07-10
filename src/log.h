@@ -19,15 +19,21 @@
 #ifndef __LOG_H__
 #define __LOG_H__
 
-#define LOG_ERROR(no) log_error(__FILE__, __FUNCTION__, __LINE__, (no))
-#define LOG_ERROR_MSG(no, msg, args...) \
+#define LOG_ERROR_MSG(msg, args...) \
     { \
-        log_error(__FILE__, __FUNCTION__, __LINE__, (no)); \
+        log_error(__FILE__, __FUNCTION__, __LINE__); \
+        log_msg((msg), ## args); \
+    }
+#define LOG_SERROR(no) log_error(__FILE__, __FUNCTION__, __LINE__, (no))
+#define LOG_SERROR_MSG(no, msg, args...) \
+    { \
+        log_serror(__FILE__, __FUNCTION__, __LINE__, (no)); \
         log_msg((msg), ## args); \
     }
 
 void init_logger(int verbosity_level);
-void log_error(const char *file, const char *func, int line, int no);
+void log_error(const char *file, const char *func, int line);
+void log_serror(const char *file, const char *func, int line, int no);
 void log_msg(const char *msg, ...);
 
 #endif

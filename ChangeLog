@@ -80,6 +80,8 @@
 
 	| after ! means pipe, not command separator.
 
+	| after com means pipe, not command separator.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.

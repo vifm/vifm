@@ -158,6 +158,8 @@ char * append_selected_files(FileView *view, char *expanded, int under_cursor);
 char * edit_cmd_selection(FileView *view);
 void initialize_command_struct(cmd_params *cmd);
 int select_files_in_range(FileView *view, cmd_params *cmd);
+char ** dispatch_line(const char *args, int *count);
+int command_is_reserved(const char *name);
 #endif
 
 #endif
