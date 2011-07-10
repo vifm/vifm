@@ -43,6 +43,9 @@ log_msg(const char *msg, ...)
 	va_list ap;
 	va_start(ap, msg);
 
+	if(verbosity <= 0)
+		return;
+
 	fputc('\t', log);
 	fputc('\t', log);
 	vfprintf(log, msg, ap);
@@ -55,6 +58,9 @@ static void
 log_time(void)
 {
 	time_t t;
+
+	if(verbosity <= 0)
+		return;
 
 	t = time(NULL);
 	fprintf(log, "%s", ctime(&t));
