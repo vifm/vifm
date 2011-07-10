@@ -1109,8 +1109,7 @@ change_directory(FileView *view, const char *directory)
 	{
 		char buf[12 + PATH_MAX + 1];
 
-		LOG_ERROR(errno);
-		log_msg("Can't access(, F_OK) \"%s\"", dir_dup);
+		LOG_ERROR_MSG(errno, "Can't access(, F_OK) \"%s\"", dir_dup);
 		log_cwd();
 
 		snprintf(buf, sizeof(buf), "Cannot open %s", dir_dup);
@@ -1125,8 +1124,7 @@ change_directory(FileView *view, const char *directory)
 	{
 		char buf[31 + PATH_MAX + 1];
 
-		LOG_ERROR(errno);
-		log_msg("Can't access(, R_OK) \"%s\"", dir_dup);
+		LOG_ERROR_MSG(errno, "Can't access(, R_OK) \"%s\"", dir_dup);
 		log_cwd();
 
 		snprintf(buf, sizeof(buf), "You do not have read access on %s", dir_dup);
@@ -1140,8 +1138,7 @@ change_directory(FileView *view, const char *directory)
 	{
 		char buf[32 + PATH_MAX + 1];
 
-		LOG_ERROR(errno);
-		log_msg("Can't access(, X_OK) \"%s\"", dir_dup);
+		LOG_ERROR_MSG(errno, "Can't access(, X_OK) \"%s\"", dir_dup);
 		log_cwd();
 
 		snprintf(buf, sizeof(buf), "You do not have execute access on %s", dir_dup);
@@ -1157,8 +1154,7 @@ change_directory(FileView *view, const char *directory)
 	{
 		char buf[15 + PATH_MAX + 1];
 
-		LOG_ERROR(errno);
-		log_msg("Can't opendir() \"%s\"", dir_dup);
+		LOG_ERROR_MSG(errno, "Can't opendir() \"%s\"", dir_dup);
 		log_cwd();
 
 		snprintf(buf, sizeof(buf), "Could not open %s", dir_dup);
@@ -1171,8 +1167,7 @@ change_directory(FileView *view, const char *directory)
 	{
 		char buf[14 + PATH_MAX + 1];
 
-		LOG_ERROR(errno);
-		log_msg("Can't chdir() \"%s\"", dir_dup);
+		LOG_ERROR_MSG(errno, "Can't chdir() \"%s\"", dir_dup);
 		log_cwd();
 
 		closedir(dir);
@@ -1269,8 +1264,7 @@ load_dir_list(FileView *view, int reload)
 
 	if(stat(view->curr_dir, &s) != 0)
 	{
-		LOG_ERROR(errno);
-		log_msg("Can't stat() \"%s\"", view->curr_dir);
+		LOG_ERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
 		return;
 	}
 	view->dir_mtime = s.st_mtime;
@@ -1283,8 +1277,7 @@ load_dir_list(FileView *view, int reload)
 	/* this is needed for lstat() below */
 	if(chdir(view->curr_dir) != 0)
 	{
-		LOG_ERROR(errno);
-		log_msg("Can't chdir() into \"%s\"", view->curr_dir);
+		LOG_ERROR_MSG(errno, "Can't chdir() into \"%s\"", view->curr_dir);
 		closedir(dir);
 		return;
 	}
@@ -1368,8 +1361,8 @@ load_dir_list(FileView *view, int reload)
 		/* Load the inode info */
 		if(lstat(dir_entry->name, &s) != 0)
 		{
-			LOG_ERROR(errno);
-			log_msg("Can't lstat() \"%s/%s\"", view->curr_dir, dir_entry->name);
+			LOG_ERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
+					dir_entry->name);
 			log_cwd();
 
 			dir_entry->type = UNKNOWN;
@@ -1605,8 +1598,7 @@ check_if_filelists_have_changed(FileView *view)
 	{
 		char buf[12 + PATH_MAX + 1];
 
-		LOG_ERROR(errno);
-		log_msg("Can't stat() \"%s\"", view->curr_dir);
+		LOG_ERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
 		log_cwd();
 
 		snprintf(buf, sizeof(buf), "Cannot open %s", view->curr_dir);

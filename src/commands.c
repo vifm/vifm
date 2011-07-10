@@ -65,76 +65,76 @@ static const struct {
 #else
 const struct rescmd_info reserved_cmds[] = {
 #endif
-	{ .name = "!",           .alias = 0 },
-	{ .name = "apropos",     .alias = 0 },
-	{ .name = "cd",          .alias = 0 },
-	{ .name = "change",      .alias = 0 },
-	{ .name = "cm",          .alias = 1 },
-	{ .name = "cmap",        .alias = 0 },
-	{ .name = "cmdhistory",  .alias = 0 },
-	{ .name = "colo",        .alias = 1 },
-	{ .name = "colorscheme", .alias = 0 },
-	{ .name = "com",         .alias = 1 },
-	{ .name = "command",     .alias = 0 },
-	{ .name = "d",           .alias = 1 },
-	{ .name = "delc",        .alias = 1 },
-	{ .name = "delcommand",  .alias = 0 },
-	{ .name = "delete",      .alias = 0 },
-	{ .name = "di",          .alias = 1 },
-	{ .name = "dirs",        .alias = 0 },
-	{ .name = "display",     .alias = 0 },
-	{ .name = "e",           .alias = 1 },
-	{ .name = "edit",        .alias = 0 },
-	{ .name = "empty",       .alias = 0 },
-	{ .name = "file",        .alias = 0 },
-	{ .name = "filter",      .alias = 0 },
-	{ .name = "h",           .alias = 1 },
-	{ .name = "help",        .alias = 0 },
-	{ .name = "his",         .alias = 1 },
-	{ .name = "history",     .alias = 0 },
-	{ .name = "invert",      .alias = 0 },
-	{ .name = "jobs",        .alias = 0 },
-	{ .name = "locate",      .alias = 0 },
-	{ .name = "ls",          .alias = 0 },
-	{ .name = "map",         .alias = 0 },
-	{ .name = "marks",       .alias = 0 },
-	{ .name = "nm",          .alias = 1 },
-	{ .name = "nmap",        .alias = 0 },
-	{ .name = "noh",         .alias = 1 },
-	{ .name = "nohlsearch",  .alias = 0 },
-	{ .name = "on",          .alias = 1 },
-	{ .name = "only",        .alias = 0 },
-	{ .name = "popd",        .alias = 0 },
-	{ .name = "pushd",       .alias = 0 },
-	{ .name = "pwd",         .alias = 0 },
-	{ .name = "q",           .alias = 1 },
-	{ .name = "quit",        .alias = 0 },
-	{ .name = "reg",         .alias = 1 },
-	{ .name = "registers",   .alias = 0 },
-	{ .name = "rename",      .alias = 0 },
-	{ .name = "screen",      .alias = 0 },
-	{ .name = "se",          .alias = 1 },
-	{ .name = "set",         .alias = 0 },
-	{ .name = "sh",          .alias = 1 },
-	{ .name = "shell",       .alias = 0 },
-	{ .name = "sor",         .alias = 1 },
-	{ .name = "sort",        .alias = 0 },
-	{ .name = "sp",          .alias = 1 },
-	{ .name = "split",       .alias = 0 },
-	{ .name = "sync",        .alias = 0 },
-	{ .name = "undol",       .alias = 1 },
-	{ .name = "undolist",    .alias = 0 },
-	{ .name = "unmap",       .alias = 0 },
-	{ .name = "view",        .alias = 0 },
-	{ .name = "vifm",        .alias = 0 },
-	{ .name = "vm",          .alias = 1 },
-	{ .name = "vmap",        .alias = 0 },
-	{ .name = "w",           .alias = 1 },
-	{ .name = "wq",          .alias = 0 },
-	{ .name = "write",       .alias = 0 },
-	{ .name = "x",           .alias = 0 },
-	{ .name = "y",           .alias = 1 },
-	{ .name = "yank",        .alias = 0 },
+	{ .name = "!",           .alias = 0, .id = COM_EXECUTE     },
+	{ .name = "apropos",     .alias = 0, .id = COM_APROPOS     },
+	{ .name = "cd",          .alias = 0, .id = COM_CD          },
+	{ .name = "change",      .alias = 0, .id = COM_CHANGE      },
+	{ .name = "cm",          .alias = 1, .id = COM_CMAP        },
+	{ .name = "cmap",        .alias = 0, .id = COM_CMAP        },
+	{ .name = "cmdhistory",  .alias = 0, .id = COM_CMDHISTORY  },
+	{ .name = "colo",        .alias = 1, .id = COM_COLORSCHEME },
+	{ .name = "colorscheme", .alias = 0, .id = COM_COLORSCHEME },
+	{ .name = "com",         .alias = 1, .id = COM_COMMAND     },
+	{ .name = "command",     .alias = 0, .id = COM_COMMAND     },
+	{ .name = "d",           .alias = 1, .id = COM_DELETE      },
+	{ .name = "delc",        .alias = 1, .id = COM_DELCOMMAND  },
+	{ .name = "delcommand",  .alias = 0, .id = COM_DELCOMMAND  },
+	{ .name = "delete",      .alias = 0, .id = COM_DELETE      },
+	{ .name = "di",          .alias = 1, .id = COM_DISPLAY     },
+	{ .name = "dirs",        .alias = 0, .id = COM_DIRS        },
+	{ .name = "display",     .alias = 0, .id = COM_DISPLAY     },
+	{ .name = "e",           .alias = 1, .id = COM_EDIT        },
+	{ .name = "edit",        .alias = 0, .id = COM_EDIT        },
+	{ .name = "empty",       .alias = 0, .id = COM_EMPTY       },
+	{ .name = "file",        .alias = 0, .id = COM_FILE        },
+	{ .name = "filter",      .alias = 0, .id = COM_FILTER      },
+	{ .name = "h",           .alias = 1, .id = COM_HELP        },
+	{ .name = "help",        .alias = 0, .id = COM_HELP        },
+	{ .name = "his",         .alias = 1, .id = COM_HISTORY     },
+	{ .name = "history",     .alias = 0, .id = COM_HISTORY     },
+	{ .name = "invert",      .alias = 0, .id = COM_INVERT      },
+	{ .name = "jobs",        .alias = 0, .id = COM_JOBS        },
+	{ .name = "locate",      .alias = 0, .id = COM_LOCATE      },
+	{ .name = "ls",          .alias = 0, .id = COM_LS          },
+	{ .name = "map",         .alias = 0, .id = COM_MAP         },
+	{ .name = "marks",       .alias = 0, .id = COM_MARKS       },
+	{ .name = "nm",          .alias = 1, .id = COM_NMAP        },
+	{ .name = "nmap",        .alias = 0, .id = COM_NMAP        },
+	{ .name = "noh",         .alias = 1, .id = COM_NOHLSEARCH  },
+	{ .name = "nohlsearch",  .alias = 0, .id = COM_NOHLSEARCH  },
+	{ .name = "on",          .alias = 1, .id = COM_ONLY        },
+	{ .name = "only",        .alias = 0, .id = COM_ONLY        },
+	{ .name = "popd",        .alias = 0, .id = COM_POPD        },
+	{ .name = "pushd",       .alias = 0, .id = COM_PUSHD       },
+	{ .name = "pwd",         .alias = 0, .id = COM_PWD         },
+	{ .name = "q",           .alias = 1, .id = COM_QUIT        },
+	{ .name = "quit",        .alias = 0, .id = COM_QUIT        },
+	{ .name = "reg",         .alias = 1, .id = COM_REGISTERS   },
+	{ .name = "registers",   .alias = 0, .id = COM_REGISTERS   },
+	{ .name = "rename",      .alias = 0, .id = COM_RENAME      },
+	{ .name = "screen",      .alias = 0, .id = COM_SCREEN      },
+	{ .name = "se",          .alias = 1, .id = COM_SET         },
+	{ .name = "set",         .alias = 0, .id = COM_SET         },
+	{ .name = "sh",          .alias = 1, .id = COM_SHELL       },
+	{ .name = "shell",       .alias = 0, .id = COM_SHELL       },
+	{ .name = "sor",         .alias = 1, .id = COM_SORT        },
+	{ .name = "sort",        .alias = 0, .id = COM_SORT        },
+	{ .name = "sp",          .alias = 1, .id = COM_SPLIT       },
+	{ .name = "split",       .alias = 0, .id = COM_SPLIT       },
+	{ .name = "sync",        .alias = 0, .id = COM_SYNC        },
+	{ .name = "undol",       .alias = 1, .id = COM_UNDOLIST    },
+	{ .name = "undolist",    .alias = 0, .id = COM_UNDOLIST    },
+	{ .name = "unmap",       .alias = 0, .id = COM_UNMAP       },
+	{ .name = "view",        .alias = 0, .id = COM_VIEW        },
+	{ .name = "vifm",        .alias = 0, .id = COM_VIFM        },
+	{ .name = "vm",          .alias = 1, .id = COM_VMAP        },
+	{ .name = "vmap",        .alias = 0, .id = COM_VMAP        },
+	{ .name = "w",           .alias = 1, .id = COM_WRITE       },
+	{ .name = "wq",          .alias = 0, .id = COM_WQ          },
+	{ .name = "write",       .alias = 0, .id = COM_WRITE       },
+	{ .name = "x",           .alias = 0, .id = COM_X           },
+	{ .name = "y",           .alias = 1, .id = COM_YANK        },
+	{ .name = "yank",        .alias = 0, .id = COM_YANK        },
 };
 
 static int _gnuc_unused reserved_commands_size_guard[
@@ -187,7 +187,7 @@ command_is_reserved(char *name)
 	for(x = 0; x < RESERVED; x++)
 	{
 		if(strncmp(reserved_cmds[x].name, name, len) == 0)
-			return x;
+			return reserved_cmds[x].id;
 	}
 	return -1;
 }
@@ -1541,11 +1541,9 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 		case COM_CD:
 			comm_cd(view, cmd);
 			break;
-		case COM_CM:
 		case COM_CMAP:
 			save_msg = do_map(cmd, "Command Line", "cmap", CMDLINE_MODE);
 			break;
-		case COM_COLO:
 		case COM_COLORSCHEME:
 		{
 			if(cmd->args)
@@ -1568,7 +1566,6 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			}
 			break;
 		}
-		case COM_COM:
 		case COM_COMMAND:
 			{
 				if(cmd->args)
@@ -1590,13 +1587,11 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 		case COM_CMDHISTORY:
 			show_cmdhistory_menu(view);
 			break;
-		case COM_D:
 		case COM_DELETE:
 			if(select_files_in_range(view, cmd) != 0)
 				break;
 			save_msg = delete_file(view, DEFAULT_REG_NAME, 0, NULL, 1);
 			break;
-		case COM_DELC:
 		case COM_DELCOMMAND:
 			if(cmd->args == NULL)
 			{
@@ -1610,9 +1605,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 		case COM_DIRS:
 			show_dirstack_menu(view);
 			break;
-		case COM_DI:
 		case COM_DISPLAY:
-		case COM_REG:
 		case COM_REGISTERS:
 			show_register_menu(view);
 			break;
@@ -1622,7 +1615,6 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			rename_files(view);
 			save_msg = 1; /* there are always some message */
 			break;
-		case COM_E:
 		case COM_EDIT:
 			{
 				if(cmd->args != NULL)
@@ -1678,7 +1670,6 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 		case COM_FILE:
 			show_filetypes_menu(view, cmd->background);
 			break;
-		case COM_H:
 		case COM_HELP:
 			{
 				char help_file[PATH_MAX];
@@ -1708,7 +1699,6 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 				}
 			}
 			break;
-		case COM_HIS:
 		case COM_HISTORY:
 			save_msg = show_history_menu(view);
 			break;
@@ -1750,11 +1740,9 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 		case COM_MARKS:
 			show_bookmarks_menu(view);
 			break;
-		case COM_NM:
 		case COM_NMAP:
 			save_msg = do_map(cmd, "Normal", "nmap", NORMAL_MODE);
 			break;
-		case COM_NOH:
 		case COM_NOHLSEARCH:
 			{
 				if(view->selected_files)
@@ -1770,7 +1758,6 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 				}
 			}
 			break;
-		case COM_ON:
 		case COM_ONLY:
 			comm_only();
 			break;
@@ -1801,13 +1788,11 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			save_msg = 1;
 			break;
 		case COM_X:
-		case COM_Q:
 		case COM_QUIT:
 			if(cmd->args && cmd->args[0] == '!')
 				curr_stats.setting_change = 0;
 			comm_quit();
 			break;
-		case COM_SOR:
 		case COM_SORT:
 			enter_sort_mode(view);
 			break;
@@ -1820,15 +1805,12 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 				curr_stats.setting_change = 1;
 			}
 			break;
-		case COM_SE:
 		case COM_SET:
 			save_msg = process_set_args(cmd->args);
 			break;
-		case COM_SH:
 		case COM_SHELL:
 			shellout(NULL, 0);
 			break;
-		case COM_SP:
 		case COM_SPLIT:
 			comm_split();
 			break;
@@ -1836,7 +1818,6 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			change_directory(other_view, view->curr_dir);
 			load_dir_list(other_view, 0);
 			break;
-		case COM_UNDOL:
 		case COM_UNDOLIST:
 			show_undolist_menu(view, cmd->args && cmd->args[0] == '!');
 			break;
@@ -1871,17 +1852,14 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 		case COM_VIFM:
 			show_vifm_menu(view);
 			break;
-		case COM_Y:
 		case COM_YANK:
 			if(select_files_in_range(view, cmd) != 0)
 				break;
 			save_msg = yank_files(view, DEFAULT_REG_NAME, 0, NULL);
 			break;
-		case COM_VM:
 		case COM_VMAP:
 			save_msg = do_map(cmd, "Visual", "vmap", VISUAL_MODE);
 			break;
-		case COM_W:
 		case COM_WRITE:
 			{
 				int tmp;
