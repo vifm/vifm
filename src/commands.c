@@ -2141,6 +2141,95 @@ execute_command(FileView *view, char *command)
 	return result;
 }
 
+/*
+ * Return value:
+ *  - 0 not in arg
+ *  - 1 skip next char
+ *  - 2 in arg
+ */
+#ifndef TEST
+static
+#endif
+int
+line_pos(const char *begin, const char *end)
+{
+	int state;
+	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING };
+
+	state = BEGIN;
+	while(begin != end)
+	{
+		switch(state)
+		{
+			case BEGIN:
+				if(*begin == '\'')
+					state = S_QUOTING;
+				else if(*begin == '"')
+					state = D_QUOTING;
+				else if(*begin == '/')
+					state = R_QUOTING;
+				else if(*begin != ' ')
+					state = NO_QUOTING;
+				break;
+			case NO_QUOTING:
+				if(*begin == ' ')
+				{
+					state = BEGIN;
+				}
+				else if(*begin == '\'')
+				{
+					state = S_QUOTING;
+				}
+				else if(*begin == '"')
+				{
+					state = D_QUOTING;
+				}
+				else if(*begin == '\\')
+				{
+					begin++;
+					if(begin == end)
+						return 1;
+				}
+				break;
+			case S_QUOTING:
+				if(*begin == '\'')
+					state = BEGIN;
+				break;
+			case D_QUOTING:
+				if(*begin == '"')
+				{
+					state = BEGIN;
+				}
+				else if(*begin == '\\')
+				{
+					begin++;
+					if(begin == end)
+						return 1;
+				}
+				break;
+			case R_QUOTING:
+				if(*begin == '/')
+				{
+					state = BEGIN;
+				}
+				else if(*begin == '\\')
+				{
+					begin++;
+					if(begin == end)
+						return 1;
+				}
+				break;
+		}
+		begin++;
+	}
+	if(state == NO_QUOTING)
+		;
+	else if(state != BEGIN)
+		return 2; /* error: no closing quote */
+
+	return 0;
+}
+
 int
 exec_commands(char *cmd, FileView *view, int type, int save_hist)
 {
@@ -2167,7 +2256,7 @@ exec_commands(char *cmd, FileView *view, int type, int save_hist)
 				*q++ = *p++;
 			}
 		}
-		else if(*p == '|' || *p == '\0')
+		else if((*p == '|' && line_pos(cmd, q) == 0) || *p == '\0')
 		{
 			if(*p != '\0')
 				p++;

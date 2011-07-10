@@ -12,6 +12,7 @@ void test_reserved_commands(void);
 void test_user_commands(void);
 void test_cmdline_completion(void);
 void test_dispatch_line(void);
+void test_command_separation(void);
 
 void all_tests(void)
 {
@@ -27,6 +28,7 @@ void all_tests(void)
 	test_user_commands();
 	test_cmdline_completion();
 	test_dispatch_line();
+	test_command_separation();
 }
 
 int main(int argc, char **argv)
