@@ -304,7 +304,7 @@ The builtin commands are:
     screen option turned on will cause vifm to open a new screen window for
     each new file edited or program launched from vifm.
     This requires screen version 3.9.9 or newer for the screen -X argument.
-:se[t] opt1=val1 opt2=val2 - sets given options.
+:se[t] opt1=val1 opt2='val2' opt3="val3" ... - sets given options.
     You can use following syntax: option, nooption, invoption, option!,
     option?, option=x, option+=x, option-=x.
 :sh[ell] - will start a shell.

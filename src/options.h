@@ -46,7 +46,9 @@ union optval_t {
 typedef void (*opt_handler)(enum opt_op op, union optval_t val);
 typedef void (*opt_print)(const char *msg, const char *description);
 
+/* handler can be NULL */
 void init_options(int *opts_changed_flag, opt_print handler);
+void clear_options(void);
 void add_option(const char *name, enum opt_type type, int val_count,
 		const char **vals, opt_handler handler);
 void set_option(const char *name, union optval_t val);

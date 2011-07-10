@@ -74,6 +74,22 @@ init_options(int *opts_changed_flag, opt_print handler)
 }
 
 void
+clear_options(void)
+{
+	int i;
+
+	for(i = 0; i < options_count; i++)
+	{
+		free(options[i].name);
+		if(options[i].type == OPT_STR || options[i].type == OPT_STRLIST)
+			free(options[i].val.str_val);
+	}
+	free(options);
+	options = NULL;
+	options_count = 0;
+}
+
+void
 add_option(const char *name, enum opt_type type, int val_count,
 		const char **vals, opt_handler handler)
 {
@@ -134,6 +150,7 @@ set_options(const char *cmd)
 static const char *
 extract_option(const char *cmd, char *buf, int replace)
 {
+	int quote = 0;
 	int slash = 0;
 	while(*cmd != '\0')
 	{
@@ -145,16 +162,36 @@ extract_option(const char *cmd, char *buf, int replace)
 		else if(*cmd == '\\')
 		{
 			slash = 1;
-			if(replace)
+			if(replace && quote == 0)
 				cmd++;
 			else
 				*buf++ = *cmd++;
 		}
-		else if(*cmd == ' ')
+		else if(*cmd == ' ' && quote == 0)
 		{
 			while(isspace(*cmd))
 				++cmd;
 			break;
+		}
+		else if(*cmd == '\'' && quote == 0)
+		{
+			quote = 1;
+			cmd++;
+		}
+		else if(*cmd == '\'' && quote == 1)
+		{
+			quote = 0;
+			cmd++;
+		}
+		else if(*cmd == '"' && quote == 0)
+		{
+			quote = 2;
+			cmd++;
+		}
+		else if(*cmd == '"' && quote == 2)
+		{
+			quote = 0;
+			cmd++;
 		}
 		else
 		{

@@ -14,7 +14,7 @@ Basic things that need to be done.
     Ctrl-C on error message before vifm start should skip all error messages
         until startup process will be finished.
     Add :filetype command (separate programs and viewer).
-    Make option parser understand quotes.  Treat /..|../ as a regexp.
+    Treat /..|../ as a regexp.
     Make ~user_name/ work.
     Implement :find command.
     Run commands from :cmdhistory menu.
