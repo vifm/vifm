@@ -87,10 +87,13 @@ Ctrl-y - scroll pane one line up.
 
 Pane manipulation~
 
+Second character can be entered with or without Control key.
+
 Ctrl-w h - switch to left pane.
 Ctrl-w l - switch to right pane.
 Ctrl-w w - switch to other pane.
 Ctrl-w o - shortcut for :only
+Ctrl-w s - shortcut for :split
 Ctrl-w v - shortcut for :split
 Ctrl-w x - exchange panes
 

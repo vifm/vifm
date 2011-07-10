@@ -108,6 +108,8 @@ Scrolling panes
        Ctrl-Y scroll pane one line up.
 
 Pane manipulation
+       Second character can be entered with or without Control key.
+
        Ctrl-W H
               switch to the left pane.
 
@@ -116,6 +118,9 @@ Pane manipulation
 
        Ctrl-W O
               shortcut for :only
+
+       Ctrl-W S
+              shortcut for :split
 
        Ctrl-W V
               shortcut for :split
@@ -744,4 +749,4 @@ AUTHOR
 
 
 
-                                 Jule 09, 2011                         vifm(1)
+                                 Jule 11, 2011                         vifm(1)
