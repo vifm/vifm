@@ -58,7 +58,6 @@ Vi(m) specific features that need to be added.
     Remove :cmdhistory and change :history to work like in Vim.
     :registers "a ...
     :highlight command.
-    d<down>
     Better registers support.
     <up>, <down> through history like in Vim.
     :$ in the menus (check other command like this one).

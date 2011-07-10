@@ -237,6 +237,8 @@ static struct keys_add_info builtin_cmds[] = {
 	{{KEY_DOWN}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{{KEY_UP}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{{KEY_RIGHT}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_l}}},
+	{{KEY_HOME}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{{KEY_END}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -245,12 +247,18 @@ static struct keys_add_info selectors[] = {
 	{L"H", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_H}}},
 	{L"L", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_L}}},
 	{L"M", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_M}}},
-	{L"a", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_a}}},
 	{L"S", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_S}}},
+	{L"a", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_a}}},
 	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_gg}}},
 	{L"j", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_j}}},
 	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_k}}},
 	{L"s", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_s}}},
+#ifdef ENABLE_EXTENDED_KEYS
+	{{KEY_DOWN}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_j}}},
+	{{KEY_UP}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_k}}},
+	{{KEY_HOME}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_gg}}},
+	{{KEY_END}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_G}}},
+#endif /* ENABLE_EXTENDED_KEYS */
 };
 
 void
