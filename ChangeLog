@@ -86,6 +86,8 @@
 
 	Mapped Ctrl-W, S to :split.
 
+	Made :cd - work like in shell.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.

@@ -22,7 +22,6 @@ Basic things that need to be done.
     Make l key handle selection.
     Add 'filter' option.
     :filter? to display it's current value.
-    Implement :cd -
 
 Documentation.
 	Better documentation.

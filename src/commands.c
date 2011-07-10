@@ -1393,6 +1393,10 @@ comm_cd(FileView *view, cmd_params *cmd)
 		{
 			change_directory(view, other_view->curr_dir);
 		}
+		else if(strcmp(cmd->args, "-") == 0)
+		{
+			change_directory(view, view->last_dir);
+		}
 		else
 		{
 			char dir[PATH_MAX];
