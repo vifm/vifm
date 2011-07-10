@@ -524,10 +524,8 @@ check_link_is_dir(const char *filename)
 	int len;
 	char *filename_copy;
 
-	len = strlen(filename);
 	filename_copy = strdup(filename);
-	if(filename_copy[len - 1] == '/')
-		filename_copy[len - 1] = '\0';
+	chosp(filename_copy);
 
 	len = readlink(filename_copy, linkto, sizeof (linkto));
 

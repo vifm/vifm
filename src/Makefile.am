@@ -27,6 +27,7 @@ vifm_SOURCES = \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
 	keys.c keys.h \
+	log.c log.h \
 	main_loop.c main_loop.h \
 	menu.c menu.h \
 	menus.c menus.h \

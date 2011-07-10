@@ -34,6 +34,8 @@
 
 	Added dialog to ask user about backwards range in command.
 
+	Added primitive logging.
+
 	Let builtin keys be remapped.
 
 	Don't cancel file renaming if user presses backspace and line is empty.

@@ -32,6 +32,7 @@
 #include <string.h> /* strcat() */
 #include <pwd.h>
 #include <grp.h>
+#include <errno.h>
 
 #include "background.h"
 #include "color_scheme.h"
@@ -42,6 +43,7 @@
 #include "fileops.h"
 #include "fileops.h"
 #include "filetype.h"
+#include "log.h"
 #include "menus.h"
 #include "options.h"
 #include "sort.h"
@@ -1042,6 +1044,17 @@ try_unmount_fuse(FileView *view)
 	return 1;
 }
 
+static void
+log_cwd(void)
+{
+	char buf[PATH_MAX];
+
+	if(getcwd(buf, sizeof(buf)) == NULL)
+		log_msg("%s", "getwd() error");
+	else
+		log_msg("getwd() returned \"%s\"", buf);
+}
+
 /*
  * The directory can either be relative to the current
  * directory - ../
@@ -1095,6 +1108,11 @@ change_directory(FileView *view, const char *directory)
 	if(access(dir_dup, F_OK) != 0)
 	{
 		char buf[12 + PATH_MAX + 1];
+
+		LOG_ERROR(errno);
+		log_msg("Can't access(, F_OK) \"%s\"", dir_dup);
+		log_cwd();
+
 		snprintf(buf, sizeof(buf), "Cannot open %s", dir_dup);
 		show_error_msg("Directory Access Error", buf);
 		leave_invalid_dir(view, dir_dup);
@@ -1106,6 +1124,11 @@ change_directory(FileView *view, const char *directory)
 	if(access(dir_dup, R_OK) != 0)
 	{
 		char buf[31 + PATH_MAX + 1];
+
+		LOG_ERROR(errno);
+		log_msg("Can't access(, R_OK) \"%s\"", dir_dup);
+		log_cwd();
+
 		snprintf(buf, sizeof(buf), "You do not have read access on %s", dir_dup);
 		show_error_msg("Directory Access Error", buf);
 
@@ -1116,6 +1139,11 @@ change_directory(FileView *view, const char *directory)
 	if(access(dir_dup, X_OK) != 0)
 	{
 		char buf[32 + PATH_MAX + 1];
+
+		LOG_ERROR(errno);
+		log_msg("Can't access(, X_OK) \"%s\"", dir_dup);
+		log_cwd();
+
 		snprintf(buf, sizeof(buf), "You do not have execute access on %s", dir_dup);
 		show_error_msg("Directory Access Error", buf);
 
@@ -1128,6 +1156,11 @@ change_directory(FileView *view, const char *directory)
 	if(dir == NULL)
 	{
 		char buf[15 + PATH_MAX + 1];
+
+		LOG_ERROR(errno);
+		log_msg("Can't opendir() \"%s\"", dir_dup);
+		log_cwd();
+
 		snprintf(buf, sizeof(buf), "Could not open %s", dir_dup);
 		show_error_msg("Dir is null", buf);
 		clean_selected_files(view);
@@ -1137,6 +1170,10 @@ change_directory(FileView *view, const char *directory)
 	if(chdir(dir_dup) == -1)
 	{
 		char buf[14 + PATH_MAX + 1];
+
+		LOG_ERROR(errno);
+		log_msg("Can't chdir() \"%s\"", dir_dup);
+		log_cwd();
 
 		closedir(dir);
 
@@ -1230,7 +1267,12 @@ load_dir_list(FileView *view, int reload)
 
 	view->filtered = 0;
 
-	stat(view->curr_dir, &s);
+	if(stat(view->curr_dir, &s) != 0)
+	{
+		LOG_ERROR(errno);
+		log_msg("Can't stat() \"%s\"", view->curr_dir);
+		return;
+	}
 	view->dir_mtime = s.st_mtime;
 
 	if(!reload && s.st_size > 2048)
@@ -1241,6 +1283,8 @@ load_dir_list(FileView *view, int reload)
 	/* this is needed for lstat() below */
 	if(chdir(view->curr_dir) != 0)
 	{
+		LOG_ERROR(errno);
+		log_msg("Can't chdir() into \"%s\"", view->curr_dir);
 		closedir(dir);
 		return;
 	}
@@ -1324,6 +1368,10 @@ load_dir_list(FileView *view, int reload)
 		/* Load the inode info */
 		if(lstat(dir_entry->name, &s) != 0)
 		{
+			LOG_ERROR(errno);
+			log_msg("Can't lstat() \"%s/%s\"", view->curr_dir, dir_entry->name);
+			log_cwd();
+
 			dir_entry->type = UNKNOWN;
 			continue;
 		}
@@ -1556,8 +1604,14 @@ check_if_filelists_have_changed(FileView *view)
 	if(stat(view->curr_dir, &s) != 0)
 	{
 		char buf[12 + PATH_MAX + 1];
+
+		LOG_ERROR(errno);
+		log_msg("Can't stat() \"%s\"", view->curr_dir);
+		log_cwd();
+
 		snprintf(buf, sizeof(buf), "Cannot open %s", view->curr_dir);
 		show_error_msg("Directory Access Error", buf);
+
 		leave_invalid_dir(view, view->curr_dir);
 		change_directory(view, view->curr_dir);
 		clean_selected_files(view);

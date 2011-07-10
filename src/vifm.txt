@@ -27,6 +27,7 @@ The only other command line arguments are:
 -f - only used from the vifm.vim script.  The selected files are written
 	to ~/.vifm/vimfiles and vifm exits.
 
+--logging - log some errors to ~/.vifm/log.
 --help, -h - show a brief command summary and exit vifm.
 --version, -v - show the version information and exit.
 

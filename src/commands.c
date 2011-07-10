@@ -329,7 +329,7 @@ command_completion(char *str, int users_only)
 	static size_t len;
 	static int offset;
 
-	int pos_b_saved, pos_u_saved;
+	int pos_b_saved = 0, pos_u_saved = 0;
 	int pos_b, pos_u;
 	int i;
 

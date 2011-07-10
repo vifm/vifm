@@ -38,6 +38,7 @@
 #include "crc32.h"
 #include "filelist.h"
 #include "filetype.h"
+#include "log.h"
 #include "main_loop.h"
 #include "modes.h"
 #include "opt_handlers.h"
@@ -77,6 +78,8 @@ show_help_msg(void)
 	puts("    or");
 	puts("    vifm /path/to/start/dir/one  /path/to/start/dir/two\n");
 	puts("  If no path is given vifm will start in the current working directory.\n");
+	puts("  vifm --logging");
+	puts("    log some errors to ~/.vifm/log.\n");
 	puts("  vifm --version | -v");
 	puts("    show version number and quit.\n");
 	puts("  vifm --help | -h");
@@ -171,6 +174,7 @@ main(int argc, char *argv[])
   init_registers();
 	init_config();
 	set_config_dir();
+
 	read_config_file();
 	read_info_file();
 
@@ -182,12 +186,12 @@ main(int argc, char *argv[])
 
 	lwin.prev_invert = lwin.invert;
 	lwin.hide_dot = 1;
-	strncpy(lwin.regexp, "\\.o$", sizeof(lwin.regexp));
+	strncpy(lwin.regexp, "", sizeof(lwin.regexp));
 	init_window_history(&lwin);
 
 	rwin.prev_invert = rwin.invert;
 	rwin.hide_dot = 1;
-	strncpy(rwin.regexp, "\\.o$", sizeof(rwin.regexp));
+	strncpy(rwin.regexp, "", sizeof(rwin.regexp));
 	init_window_history(&rwin);
 
 	init_status();
@@ -249,6 +253,10 @@ main(int argc, char *argv[])
 			endwin();
 			show_help_msg();
 			exit(0);
+		}
+		else if(!strcmp(argv[x], "--logging"))
+		{
+			init_logger(1);
 		}
 		else if(is_dir(argv[x]))
 		{

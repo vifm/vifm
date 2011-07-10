@@ -23,6 +23,9 @@ OPTIONS
        -f     only used from the vifm.vim  script.   The  selected  files  are
               written to ~/.vifm/vimfiles and vifm exits.
 
+       --logging
+              Log some errors to ~/.vifm/log.
+
        --help, -h
               Show an overview of the commandline options.
 
@@ -372,7 +375,7 @@ Commands
        :delc[ommand] command_name
               will remove the command_name user command.
 
-       :display
+       :di[splay]
               popup menu with registers content.
 
        :dirs  display directory stack.
@@ -447,23 +450,24 @@ Commands
               This requires screen version 3.9.9 or newer for  the  screen  -X
               argument.
 
-       :set opt1=val1 opt2=val2 ...
+       :se[t] opt1=val1 opt2=val2 ...
               will set options to given values.
               You  can  use  following  syntax:  option,  nooption, invoption,
-              option!, option?, option=x, option+=x, option-=x.   :shell  will
+              option!, option?, option=x, option+=x, option-=x.  :sh[ell] will
               start a shell.
 
-       :register
+       :reg[isters]
               popup menu with registers content.
 
-       :sort  creates a popup menu of different sorting methods.
+       :sor[t]
+              creates a popup menu of different sorting methods.
 
        :sp[lit]
               splits the window to show both file directories.
 
        :sync  change the other panel to the current panel directory.
 
-       :undolist
+       :undol[ist]
               show list of latest changes.  Add ! to see commands.
 
        :view  toggle on and off the quick file view.
@@ -484,13 +488,13 @@ Commands
               map lhs key sequence to rhs in command line mode.
 
 
-       :cmap lhs rhs
+       :cm[ap] lhs rhs
               map lhs to rhs in command line mode.
 
-       :nmap lhs rhs
+       :nm[ap] lhs rhs
               map lhs to rhs in normal mode.
 
-       :vmap lhs rhs
+       :vm[ap] lhs rhs
               map lhs to rhs in visual mode.
 
 Ranges
