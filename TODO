@@ -60,6 +60,8 @@ Vi(m) specific features that need to be added.
     :highlight command.
     d<down>
     <right> should be equivalent to l everywhere.
+    Better registers support.
+    <up>, <down> through history like in Vim.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -122,3 +124,4 @@ Code improvements.
     Think about escape_filename and it's len argument.
     Rename exec_* to something.
     Use regexps for filetypes.
+    Add log.

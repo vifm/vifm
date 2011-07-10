@@ -1322,7 +1322,11 @@ load_dir_list(FileView *view, int reload)
 		dir_entry->selected = 0;
 
 		/* Load the inode info */
-		lstat(dir_entry->name, &s);
+		if(lstat(dir_entry->name, &s) != 0)
+		{
+			dir_entry->type = UNKNOWN;
+			continue;
+		}
 
 		dir_entry->size = (uintmax_t)s.st_size;
 		dir_entry->mode = s.st_mode;
