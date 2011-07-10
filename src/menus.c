@@ -1291,9 +1291,6 @@ show_cmdhistory_menu(FileView *view)
 	int x;
 	static menu_info m;
 
-	if(view->history_num < 1)
-		return;
-
 	m.top = 0;
 	m.current = 1;
 	m.len = cfg.cmd_history_num + 1;
@@ -1303,7 +1300,7 @@ show_cmdhistory_menu(FileView *view)
 	m.matching_entries = 0;
 	m.match_dir = NONE;
 	m.regexp = NULL;
-	m.title = NULL;
+	m.title = strdup(" Command Line History ");
 	m.args = NULL;
 	m.data = NULL;
 

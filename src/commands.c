@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <ncurses.h>
+#include <curses.h>
 
 #include <sys/wait.h>
 #include <unistd.h> /* chdir() */
@@ -57,83 +57,88 @@
  * command starting with e.
  */
 #ifndef TEST
-static
+static const struct {
+	const char *name;
+	int alias;
+	int id;
+}reserved_cmds[] = {
+#else
+const struct rescmd_info reserved_cmds[] = {
 #endif
-const char *reserved_commands[] = {
-	"!",
-	"apropos",
-	"cd",
-	"change",
-	"cm", /* alias */
-	"cmap",
-	"cmdhistory",
-	"colo", /* alias */
-	"colorscheme",
-	"com", /* alias */
-	"command",
-	"d", /* alias */
-	"delc", /* alias */
-	"delcommand",
-	"delete",
-	"di", /* alias */
-	"dirs",
-	"display",
-	"e", /* alias */
-	"edit",
-	"empty",
-	"file",
-	"filter",
-	"h", /* alias */
-	"help",
-	"his", /* alias */
-	"history",
-	"invert",
-	"jobs",
-	"locate",
-	"ls",
-	"map",
-	"marks",
-	"nm", /* alias */
-	"nmap",
-	"noh", /* alias */
-	"nohlsearch",
-	"on", /* alias */
-	"only",
-	"popd",
-	"pushd",
-	"pwd",
-	"q", /* alias */
-	"quit",
-	"reg", /* alias */
-	"registers",
-	"rename",
-	"screen",
-	"se", /* alias */
-	"set",
-	"sh", /* alias */
-	"shell",
-	"sor", /* alias */
-	"sort",
-	"sp", /* alias */
-	"split",
-	"sync",
-	"undol", /* alias */
-	"undolist",
-	"unmap",
-	"view",
-	"vifm",
-	"vm", /* alias */
-	"vmap",
-	"w", /* alias */
-	"wq",
-	"write",
-	"x",
-	"y", /* alias */
-	"yank",
+	{ .name = "!",           .alias = 0 },
+	{ .name = "apropos",     .alias = 0 },
+	{ .name = "cd",          .alias = 0 },
+	{ .name = "change",      .alias = 0 },
+	{ .name = "cm",          .alias = 1 },
+	{ .name = "cmap",        .alias = 0 },
+	{ .name = "cmdhistory",  .alias = 0 },
+	{ .name = "colo",        .alias = 1 },
+	{ .name = "colorscheme", .alias = 0 },
+	{ .name = "com",         .alias = 1 },
+	{ .name = "command",     .alias = 0 },
+	{ .name = "d",           .alias = 1 },
+	{ .name = "delc",        .alias = 1 },
+	{ .name = "delcommand",  .alias = 0 },
+	{ .name = "delete",      .alias = 0 },
+	{ .name = "di",          .alias = 1 },
+	{ .name = "dirs",        .alias = 0 },
+	{ .name = "display",     .alias = 0 },
+	{ .name = "e",           .alias = 1 },
+	{ .name = "edit",        .alias = 0 },
+	{ .name = "empty",       .alias = 0 },
+	{ .name = "file",        .alias = 0 },
+	{ .name = "filter",      .alias = 0 },
+	{ .name = "h",           .alias = 1 },
+	{ .name = "help",        .alias = 0 },
+	{ .name = "his",         .alias = 1 },
+	{ .name = "history",     .alias = 0 },
+	{ .name = "invert",      .alias = 0 },
+	{ .name = "jobs",        .alias = 0 },
+	{ .name = "locate",      .alias = 0 },
+	{ .name = "ls",          .alias = 0 },
+	{ .name = "map",         .alias = 0 },
+	{ .name = "marks",       .alias = 0 },
+	{ .name = "nm",          .alias = 1 },
+	{ .name = "nmap",        .alias = 0 },
+	{ .name = "noh",         .alias = 1 },
+	{ .name = "nohlsearch",  .alias = 0 },
+	{ .name = "on",          .alias = 1 },
+	{ .name = "only",        .alias = 0 },
+	{ .name = "popd",        .alias = 0 },
+	{ .name = "pushd",       .alias = 0 },
+	{ .name = "pwd",         .alias = 0 },
+	{ .name = "q",           .alias = 1 },
+	{ .name = "quit",        .alias = 0 },
+	{ .name = "reg",         .alias = 1 },
+	{ .name = "registers",   .alias = 0 },
+	{ .name = "rename",      .alias = 0 },
+	{ .name = "screen",      .alias = 0 },
+	{ .name = "se",          .alias = 1 },
+	{ .name = "set",         .alias = 0 },
+	{ .name = "sh",          .alias = 1 },
+	{ .name = "shell",       .alias = 0 },
+	{ .name = "sor",         .alias = 1 },
+	{ .name = "sort",        .alias = 0 },
+	{ .name = "sp",          .alias = 1 },
+	{ .name = "split",       .alias = 0 },
+	{ .name = "sync",        .alias = 0 },
+	{ .name = "undol",       .alias = 1 },
+	{ .name = "undolist",    .alias = 0 },
+	{ .name = "unmap",       .alias = 0 },
+	{ .name = "view",        .alias = 0 },
+	{ .name = "vifm",        .alias = 0 },
+	{ .name = "vm",          .alias = 1 },
+	{ .name = "vmap",        .alias = 0 },
+	{ .name = "w",           .alias = 1 },
+	{ .name = "wq",          .alias = 0 },
+	{ .name = "write",       .alias = 0 },
+	{ .name = "x",           .alias = 0 },
+	{ .name = "y",           .alias = 1 },
+	{ .name = "yank",        .alias = 0 },
 };
 
 static int _gnuc_unused reserved_commands_size_guard[
-	(ARRAY_LEN(reserved_commands) == RESERVED) ? 1 : -1
+	(ARRAY_LEN(reserved_cmds) == RESERVED) ? 1 : -1
 ];
 
 #ifndef TEST
@@ -181,7 +186,7 @@ command_is_reserved(char *name)
 
 	for(x = 0; x < RESERVED; x++)
 	{
-		if(strncmp(reserved_commands[x], name, len) == 0)
+		if(strncmp(reserved_cmds[x].name, name, len) == 0)
 			return x;
 	}
 	return -1;
@@ -234,6 +239,9 @@ get_buildin_id(const char *cmd_line)
 	size_t len;
 	const char *p;
 
+	while(*cmd_line == ' ' || *cmd_line == ':')
+		cmd_line++;
+
 	p = get_cmd_name_info(cmd_line, &len);
 
 	snprintf(buf, len + 1, "%s", p);
@@ -261,7 +269,11 @@ add_prefixes(const char *str, const char *completed)
 {
 	char *result;
 	const char *p;
-	p = get_cmd_name_info(str, NULL);
+	p = strrchr(str, ' ');
+	if(p == NULL)
+		p = str;
+	else
+		p++;
 
 	result = malloc(p - str + strlen(completed) + 1);
 	if(result == NULL)
@@ -275,7 +287,7 @@ add_prefixes(const char *str, const char *completed)
 static int
 is_user_command(char *command)
 {
-	char buf[strlen(command) +1];
+	char buf[strlen(command) + 1];
 	char *com;
 	char *ptr;
 	int x;
@@ -296,6 +308,14 @@ is_user_command(char *command)
 	return -1;
 }
 
+static int
+skip_aliases(int pos_b)
+{
+	while(pos_b < RESERVED && reserved_cmds[pos_b].alias)
+		pos_b++;
+	return pos_b;
+}
+
 /* On the first call to this function,
  * the string to be parsed should be specified in str.
  * In each subsequent call that should parse the same string, str should be NULL
@@ -304,70 +324,102 @@ is_user_command(char *command)
 char *
 command_completion(char *str, int users_only)
 {
+	static char *cmdstring;
 	static char *string;
 	static size_t len;
 	static int offset;
 
+	int pos_b_saved, pos_u_saved;
 	int pos_b, pos_u;
 	int i;
 
 	if(str != NULL)
 	{
-		string = str;
+		free(cmdstring);
+		cmdstring = strdup(str);
+		string = strrchr(cmdstring, ' ');
+		if(string == NULL)
+			string = cmdstring;
+		else
+			string++;
+
 		len = strlen(string);
 		offset = 0;
 	}
 	else
 		offset++;
 
-	pos_b = users_only ? -1 : (string[0] == '\0' ? 0 : get_buildin_id(string));
+	if(users_only)
+	{
+		pos_b = -1;
+	}
+	else
+	{
+		pos_b = (string[0] == '\0') ? 0 : get_buildin_id(string);
+		if(pos_b != -1)
+			pos_b = skip_aliases(pos_b);
+	}
 	pos_u = is_user_command(string);
 
 	i = 0;
 	while(i < offset && (pos_b != -1 || pos_u != -1))
 	{
+		pos_b_saved = pos_b;
+		pos_u_saved = pos_u;
+
 		i++;
 		if(pos_b != -1 && pos_u != -1)
 		{
-			if(strcmp(reserved_commands[pos_b], command_list[pos_u].name) < 0)
-				pos_b++;
+			if(strcmp(reserved_cmds[pos_b].name, command_list[pos_u].name) < 0)
+				pos_b = skip_aliases(pos_b + 1);
 			else
 				pos_u++;
 		}
 		else
 		{
 			if(pos_b != -1)
-				pos_b++;
+				pos_b = skip_aliases(pos_b + 1);
 			else
 				pos_u++;
 		}
 
-		if(pos_b == RESERVED
-				|| (pos_b >= 0 && strncmp(reserved_commands[pos_b], string, len) != 0))
+		if(pos_b == RESERVED)
 			pos_b = -1;
-		if(pos_u == cfg.command_num
-				|| (pos_u >= 0 && strncmp(command_list[pos_u].name, string, len) != 0))
+		else if(pos_b >= 0 && strncmp(reserved_cmds[pos_b].name, string, len) != 0)
+			pos_b = -1;
+
+		if(pos_u == cfg.command_num)
+			pos_u = -1;
+		else if(pos_u >= 0 && strncmp(command_list[pos_u].name, string, len) != 0)
 			pos_u = -1;
 	}
 
 	if(pos_b == -1 && pos_u == -1)
 	{
+		if(offset == 1)
+		{
+			offset = -1;
+			if(pos_b_saved != -1)
+				return add_prefixes(cmdstring, reserved_cmds[pos_b_saved].name);
+			else
+				return add_prefixes(cmdstring, command_list[pos_u_saved].name);
+		}
 		offset = -1;
-		return strdup(string);
+		return strdup(cmdstring);
 	}
 	else if(pos_b != -1 && pos_u != -1)
 	{
-		if(strcmp(reserved_commands[pos_b], command_list[pos_u].name) < 0)
-			return add_prefixes(string, strdup(reserved_commands[pos_b]));
+		if(strcmp(reserved_cmds[pos_b].name, command_list[pos_u].name) < 0)
+			return add_prefixes(cmdstring, reserved_cmds[pos_b].name);
 		else
-			return add_prefixes(string, strdup(command_list[pos_u].name));
+			return add_prefixes(cmdstring, command_list[pos_u].name);
 	}
 	else
 	{
 		if(pos_b != -1)
-			return add_prefixes(string, strdup(reserved_commands[pos_b]));
+			return add_prefixes(cmdstring, reserved_cmds[pos_b].name);
 		else
-			return add_prefixes(string, strdup(command_list[pos_u].name));
+			return add_prefixes(cmdstring, command_list[pos_u].name);
 	}
 }
 
@@ -1244,9 +1296,9 @@ parse_command(FileView *view, char *command, cmd_params *cmd)
 	if((cmd->builtin = command_is_reserved(cmd->cmd_name)) > - 1)
 	{
 		cmd->cmd_name = (char *)realloc(cmd->cmd_name,
-				strlen(reserved_commands[cmd->builtin]) + 1);
-		snprintf(cmd->cmd_name, sizeof(reserved_commands[cmd->builtin]),
-				"%s", reserved_commands[cmd->builtin]);
+				strlen(reserved_cmds[cmd->builtin].name) + 1);
+		snprintf(cmd->cmd_name, sizeof(reserved_cmds[cmd->builtin].name),
+				"%s", reserved_cmds[cmd->builtin].name);
 		return 1;
 	}
 	else if((cmd->is_user = is_user_command(cmd->cmd_name)) > - 1)

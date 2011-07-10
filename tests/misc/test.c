@@ -9,6 +9,8 @@ void comments_tests(void);
 void compare_file_names_tests(void);
 void edit_cmd_selection_tests(void);
 void test_reserved_commands(void);
+void test_user_commands(void);
+void test_cmdline_completion(void);
 
 void all_tests(void)
 {
@@ -20,7 +22,8 @@ void all_tests(void)
 	comments_tests();
 	compare_file_names_tests();
 	edit_cmd_selection_tests();
-	test_reserved_commands();
+	test_user_commands();
+	test_cmdline_completion();
 }
 
 int main(int argc, char **argv)

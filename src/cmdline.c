@@ -963,33 +963,36 @@ insert_completed_command(struct line_stats *stat, const char *complete_command)
 {
 	wchar_t *q;
 	if(stat->line == NULL)
-	{
 		return 0;
-	}
 
-	if(stat->index < stat->len && (q = wcschr(stat->line, L' ')) != NULL)
+	if(stat->index < stat->len && (q = wcsrchr(stat->line, L' ')) != NULL)
 	{	/* If the cursor is not at the end of the string... */
-		int i;
-		void *p;
+		int i, prefix_len;
+		wchar_t *p;
+		wchar_t *t;
 		wchar_t *buf;
 
 		if((buf = to_wide(complete_command)) == NULL)
 			return -1;
 
-		i = wcslen(buf) + wcslen(q) + 1;
+		i = wcslen(stat->line) + wcslen(buf) + 1;
 
-		wcsdel(stat->line, 1, q - stat->line);
+		p = q - 1;
+		while(p > stat->line && *p != L' ')
+			p--;
+		if(*p == L' ')
+			p++;
+		wcsdel(p, 1, q - p);
+		prefix_len = p - stat->line;
 
-		if((p = realloc(stat->line, i*sizeof(wchar_t))) == NULL)
-		{
+		if((t = realloc(stat->line, i*sizeof(wchar_t))) == NULL)
 			return -1;
-		}
-		stat->line = (wchar_t *)p;
+		stat->line = t;
 
-		wcsins(stat->line, buf, 1);
+		wcsins(stat->line, buf, prefix_len + 1);
 
-		stat->index = wcschr(stat->line, L' ') - stat->line;
-		stat->curs_pos = wcswidth(stat->line, stat->index) + stat->prompt_wid;
+		stat->index = prefix_len + wcslen(buf);
+		stat->curs_pos = stat->prompt_wid + wcswidth(stat->line, stat->index);
 		stat->len = wcslen(stat->line);
 
 		free(buf);
@@ -999,20 +1002,24 @@ insert_completed_command(struct line_stats *stat, const char *complete_command)
 		int i;
 		wchar_t *p;
 
-		if((p = to_wide(complete_command)) == NULL)
+		i = wcslen(stat->line) + strlen(complete_command) + 1;
+		if((p = realloc(stat->line, i*sizeof(wchar_t))) == NULL)
 			return -1;
-
-		i = wcslen(p) + 1;
 		stat->line = p;
 
-		q = wcschr(stat->line, L' ');
+		q = wcsrchr(stat->line, L' ');
 		if(q == NULL)
+		{
 			q = stat->line;
+			while(*q == ' ' || *q == ':')
+				q++;
+		}
 		else
 			q++;
 
-		mbstowcs(q, complete_command, i);
-		stat->index = stat->len = q - stat->line + i - 1;
+		mbstowcs(q, complete_command, i - (q - stat->line));
+		stat->index = wcslen(stat->line);
+		stat->len = wcslen(stat->line);
 		stat->curs_pos = wcswidth(stat->line, stat->len) + stat->prompt_wid;
 	}
 
@@ -1138,10 +1145,16 @@ line_completion(struct line_stats *stat)
 	{
 		int users_only = ((id == COM_DELCOMMAND || id == COM_COMMAND)
 				&& last_word != NULL);
-		char *complete_command = command_completion(
-				stat->complete_continue ? NULL : (users_only ? last_word : line_mb),
-				users_only);
+		char *q;
+		char *complete_command;
 
+		q = line_mb;
+		while(*q == ' ' || *q == ':')
+			q++;
+
+		complete_command = command_completion(
+				stat->complete_continue ? NULL : (users_only ? last_word : q),
+				users_only);
 		if(complete_command != NULL)
 		{
 			int ret = insert_completed_command(stat, complete_command);
@@ -1311,6 +1324,9 @@ get_words_count(const char * string)
 {
 	size_t result;
 
+	while(*string == ' ' || *string == ':')
+		string++;
+
 	result = 1;
 	string--;
 	while((string = strchr(string + 1, ' ')) != NULL)
@@ -1331,6 +1347,9 @@ get_last_word(const char * string)
 
 	if(string == NULL)
 		return NULL;
+
+	while(*string == ' ' || *string == ':')
+		string++;
 
 	/*:command filename */
 	temp = strrchr(string, ' ');

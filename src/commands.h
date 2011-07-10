@@ -147,7 +147,12 @@ typedef struct current_command
 	int pause;
 }cmd_params;
 
-extern const char *reserved_commands[];
+struct rescmd_info {
+	const char *name;
+	int alias;
+	int id;
+};
+extern const struct rescmd_info reserved_cmds[];
 
 char * append_selected_files(FileView *view, char *expanded, int under_cursor);
 char * edit_cmd_selection(FileView *view);
