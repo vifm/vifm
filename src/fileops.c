@@ -592,24 +592,24 @@ follow_link(FileView *view)
 	int is_dir = 0, is_file = 0;
 	char *dir = NULL, *file = NULL, *link_dup;
 	char linkto[PATH_MAX + NAME_MAX];
-	int len;
+	ssize_t len;
 	char *filename;
 
 	filename = strdup(view->dir_entry[view->list_pos].name);
-	len = strlen(filename);
-	if(filename[len - 1] == '/')
-		filename[len - 1] = '\0';
+	chosp(filename);
 
-	len = readlink(filename, linkto, sizeof (linkto));
+	len = readlink(filename, linkto, sizeof(linkto));
 
 	free(filename);
 
-	if(len == 0)
+	if(len == -1)
 	{
 		status_bar_message("Couldn't Resolve Link");
 		curr_stats.save_msg = 1;
 		return;
 	}
+
+	linkto[len] = '\0';
 
 	if(access(linkto, F_OK) != 0)
 	{
@@ -618,7 +618,6 @@ follow_link(FileView *view)
 		return;
 	}
 
-	linkto[len] = '\0';
 	link_dup = strdup(linkto);
 
 	lstat(linkto, &s);

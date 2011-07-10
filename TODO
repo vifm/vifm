@@ -57,6 +57,9 @@ Vi(m) specific features that need to be added.
     Save registers (session and vifminfo).
     Remove :cmdhistory and change :history to work like in Vim.
     :registers "a ...
+    :highlight command.
+    d<down>
+    <right> should be equivalent to l everywhere.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -118,3 +121,4 @@ Code improvements.
     Add function like status_bar_message() but with format and varargs.
     Think about escape_filename and it's len argument.
     Rename exec_* to something.
+    Use regexps for filetypes.
