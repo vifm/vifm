@@ -1,25 +1,16 @@
 #include "seatest.h"
 
 void one_number_range(void);
+void user_command_and_exclamation_mark(void);
 
 void all_tests(void)
 {
 	one_number_range();
-}
-
-void my_suite_setup(void)
-{
-}
-
-void my_suite_teardown(void)
-{
+	user_command_and_exclamation_mark();
 }
 
 int main(int argc, char **argv)
 {
-	suite_setup(my_suite_setup);
-	suite_teardown(my_suite_teardown);
-
 	return run_tests(all_tests) == 0;
 }
 

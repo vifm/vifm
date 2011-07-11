@@ -1214,7 +1214,10 @@ check_for_range(FileView *view, char *command, cmd_params *cmd)
 	return 1;
 }
 
-static int
+#ifndef TEST
+static
+#endif
+int
 parse_command(FileView *view, char *command, cmd_params *cmd)
 {
 	size_t len;

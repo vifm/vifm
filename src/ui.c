@@ -154,6 +154,9 @@ update_stat_window(FileView *view)
 void
 status_bar_message(const char *message)
 {
+	if(!curr_stats.vifm_started)
+		return;
+
 	werase(status_bar);
 	wprintw(status_bar, "%s", message);
 	wnoutrefresh(status_bar);
