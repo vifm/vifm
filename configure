@@ -12997,6 +12997,8 @@ if test "x$GCC" = "xyes"; then
   esac
 fi
 
+CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64"
+
 vifm_cv_curses=/usr
 
 # Check whether --with-curses was given.

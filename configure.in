@@ -53,6 +53,9 @@ if test "x$GCC" = "xyes"; then
 fi
 changequote([,])dnl
 
+dnl Use 64-bit off_t type
+CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64"
+
 dnl AC_CHECK_LIB(XCurses, initscr)
 vifm_cv_curses=/usr
 AC_ARG_WITH(curses, [  --with-curses=DIR       where ncurses is installed ],
