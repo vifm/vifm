@@ -65,7 +65,6 @@ Vi(m) specific features that need to be added.
     ctrl-u, ctrl-d, ctrl-e, ctrl-y, H, L, M, zz, zt and zb in the menus.
     'hlsearch' option.
     'letter as a selector.
-    :cd should check destination before changing directory.
     Fix :cd /bin/<tab>.
     File completion like command completion.
     Fix :cd .. or more generally :cd .foobar

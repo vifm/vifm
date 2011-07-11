@@ -23,6 +23,7 @@
 
 #include <assert.h>
 #include <ctype.h> /* isspace() */
+#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h> /*  system() */
@@ -1396,39 +1397,39 @@ do_map(cmd_params *cmd, const char *map_type, const char *map_cmd, int mode)
 static void
 comm_cd(FileView *view, cmd_params *cmd)
 {
+	char dir[PATH_MAX];
+
 	if(cmd->args)
 	{
 		if(cmd->args[0] == '/')
-		{
-			change_directory(view, cmd->args);
-		}
+			snprintf(dir, sizeof(dir), "%s", cmd->args);
 		else if(cmd->args[0] == '~')
-		{
-			char dir[PATH_MAX];
-
 			snprintf(dir, sizeof(dir), "%s%s", getenv("HOME"), cmd->args + 1);
-			change_directory(view, dir);
-		}
 		else if(strcmp(cmd->args, "%D") == 0)
-		{
-			change_directory(view, other_view->curr_dir);
-		}
+			snprintf(dir, sizeof(dir), "%s", other_view->curr_dir);
 		else if(strcmp(cmd->args, "-") == 0)
-		{
-			change_directory(view, view->last_dir);
-		}
+			snprintf(dir, sizeof(dir), "%s", view->last_dir);
 		else
-		{
-			char dir[PATH_MAX];
-
 			snprintf(dir, sizeof(dir), "%s/%s", view->curr_dir, cmd->args);
-			change_directory(view, dir);
-		}
 	}
 	else
 	{
-		change_directory(view, getenv("HOME"));
+		snprintf(dir, sizeof(dir), "%s", getenv("HOME"));
 	}
+
+	if(access(dir, F_OK) != 0)
+	{
+		char buf[1 + PATH_MAX + 1 + 1];
+
+		LOG_SERROR_MSG(errno, "Can't access(,F_OK) \"%s\"", dir);
+
+		snprintf(buf, sizeof(buf), "\"%s\"", dir);
+		show_error_msg("Can't access destination", buf);
+		return;
+	}
+
+	if(change_directory(view, dir) < 0)
+		return;
 
 	load_dir_list(view, 0);
 	moveto_list_pos(view, view->list_pos);
