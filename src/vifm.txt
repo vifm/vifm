@@ -257,7 +257,7 @@ The builtin commands are:
 :cd - change to your home directory.
 :cd ~/dir - change directory to ~/dir.
 :change - create a menu window to alter a files properties.
-:cmdhistory - show command line history menu.
+:cmdhistory - show command line history menu.  Note: will be removed.
 :colo[rscheme] - gives a menu with a list of available color schemes.  You can
     choose default color scheme here.  It will be used if no DIRECTORY in
     colorscheme file fits current path.  See :colorscheme.

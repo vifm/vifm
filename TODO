@@ -20,7 +20,6 @@ Basic things that need to be done.
     An option to choose shell.
     Make l key handle selection.
     :filter? to display it's current value.
-    Don't add additional spaces while expanding macros (before %f, %F, %c, %C).
     %something for absolute filenames.
 
 Documentation.
@@ -32,7 +31,7 @@ Documentation.
 
 Vi(m) specific features that need to be added.
 	Finish implementing range and count for user commands.
-    Add support of count for command line commands (:y4, :d2).
+        Add support of count for command line commands (:y4, :d2).
 	Fix '' to go back to all jumps G gg links (in one directory?).
 	Change file list filters to use fold levels instead of just
 		the dot filter and regular expression filter (what does this mean?).

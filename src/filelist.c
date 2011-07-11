@@ -1117,6 +1117,7 @@ change_directory(FileView *view, const char *directory)
 		leave_invalid_dir(view, dir_dup);
 		change_directory(view, dir_dup);
 		clean_selected_files(view);
+		moveto_list_pos(view, view->list_pos);
 		return -1;
 	}
 
@@ -1245,6 +1246,30 @@ regexp_filter_match(FileView *view, char *filename)
 	return 1;
 }
 
+static int
+type_from_dir_entry(const struct dirent *d)
+{
+	switch(d->d_type)
+	{
+		case DT_BLK:
+		case DT_CHR:
+			return DEVICE;
+		case DT_DIR:
+			return DIRECTORY;
+		case DT_LNK:
+			return LINK;
+		case DT_REG:
+			return REGULAR;
+		case DT_SOCK:
+			return SOCKET;
+
+		case DT_FIFO:
+		case DT_UNKNOWN:
+		default:
+			return UNKNOWN;
+	}
+}
+
 void
 load_dir_list(FileView *view, int reload)
 {
@@ -1365,7 +1390,16 @@ load_dir_list(FileView *view, int reload)
 					dir_entry->name);
 			log_cwd();
 
-			dir_entry->type = UNKNOWN;
+			dir_entry->type = type_from_dir_entry(d);
+			if(dir_entry->type == DIRECTORY)
+				strcat(dir_entry->name, "/");
+			dir_entry->size = 0;
+			dir_entry->mode = 0;
+			dir_entry->uid = -1;
+			dir_entry->gid = -1;
+			dir_entry->mtime = 0;
+			dir_entry->atime = 0;
+			dir_entry->ctime = 0;
 			continue;
 		}
 
@@ -1385,14 +1419,12 @@ load_dir_list(FileView *view, int reload)
 					{
 						if(check_link_is_dir(view->dir_entry[view->list_rows].name))
 						{
-							namelen = sizeof(dir_entry->name);
 							strcat(dir_entry->name, "/");
 						}
 						dir_entry->type = LINK;
 					}
 					break;
 				case S_IFDIR:
-					namelen = sizeof(dir_entry->name);
 					strcat(dir_entry->name, "/");
 					dir_entry->type = DIRECTORY;
 					break;

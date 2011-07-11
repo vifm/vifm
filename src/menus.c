@@ -164,6 +164,9 @@ show_error_msg(char *title, const char *message)
 {
 	int key;
 
+	if(!curr_stats.vifm_started)
+		return 1;
+
 	redraw_error_msg(title, message);
 
 	do

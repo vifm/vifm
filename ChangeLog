@@ -20,7 +20,7 @@
 	Added 'sortnumbers' option (natural sort of (version) numbers in
 	filenames).
 
-	Added :dirs command.
+	Added :dirs command (shows directory stack).
 
 	Added 'savelocation' option (start vifm in the last visited directory)
 	which is off be default thus returning old behaviour when vifm is started
@@ -89,6 +89,8 @@
 	Made :cd - work like in shell.
 
 	Now filter regular expression can be enclosed in slashes.
+
+	Don't add additional spaces before %f, %F, %c and %C macros.
 
 	Fixed %F, accidentally broken in v0.6.2.
 

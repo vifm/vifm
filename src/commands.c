@@ -493,24 +493,6 @@ save_command_history(const char *command)
 		cfg.cmd_history_num = cfg.cmd_history_len -1;
 }
 
-static char *
-ensure_trailing_space(char *str)
-{
-	size_t len;
-	char *p;
-
-	len = strlen(str);
-	if(len == 0 || str[len - 1] == ' ')
-		return str;
-
-	p = realloc(str, len + 1 + 1);
-	if(p == NULL)
-		return NULL;
-
-	strcat(p, " ");
-	return p;
-}
-
 #ifndef TEST
 static
 #endif
@@ -524,33 +506,33 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 
 	if(view->selected_files && !under_cursor)
 	{
-		int y;
+		int y, x = 0;
 		size_t len = strlen(expanded);
 		for(y = 0; y < view->list_rows; y++)
 		{
-			if(view->dir_entry[y].selected)
-			{
-				int dir = 0;
-				char *temp;
+			int dir = 0;
+			char *temp;
 
-				/* Directory has / appended to the name this removes it. */
-				if(view->dir_entry[y].type == DIRECTORY)
-					dir = 1;
+			if(!view->dir_entry[y].selected)
+				continue;
 
-				expanded = ensure_trailing_space(expanded);
+			/* Directory has / appended to the name this removes it. */
+			if(view->dir_entry[y].type == DIRECTORY)
+				dir = 1;
 
-				temp = escape_filename(view->dir_entry[y].name,
-						strlen(view->dir_entry[y].name) - dir, 0);
-				expanded = (char *)realloc(expanded,
-						len + dir_name_len + strlen(temp) + 3);
-				if(dir_name_len != 0)
-					strcat(strcat(expanded, view->curr_dir), "/");
-				strcat(expanded, temp);
+			temp = escape_filename(view->dir_entry[y].name,
+					strlen(view->dir_entry[y].name) - dir, 0);
+			expanded = (char *)realloc(expanded,
+					len + dir_name_len + 1 + strlen(temp) + 1 + 1);
+			if(dir_name_len != 0)
+				strcat(strcat(expanded, view->curr_dir), "/");
+			strcat(expanded, temp);
+			if(++x != view->selected_files)
+				strcat(expanded, " ");
 
-				free(temp);
+			free(temp);
 
-				len = strlen(expanded);
-			}
+			len = strlen(expanded);
 		}
 	}
 	else
@@ -565,13 +547,12 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 		temp = escape_filename(view->dir_entry[view->list_pos].name,
 				strlen(view->dir_entry[view->list_pos].name) - dir, 0);
 
-		expanded = ensure_trailing_space(expanded);
-
 		expanded = (char *)realloc(expanded,
-				strlen(expanded) + dir_name_len + strlen(temp) + 3);
+				strlen(expanded) + dir_name_len + 1 + strlen(temp) + 1 + 1);
 		if(dir_name_len != 0)
 			strcat(strcat(expanded, view->curr_dir), "/");
 		strcat(expanded, temp);
+
 		free(temp);
 	}
 
@@ -648,6 +629,9 @@ expand_macros(FileView *view, const char *command, const char *args,
 				break;
 			case 'b': /* selected files of both dirs */
 				expanded = append_selected_files(curr_view, expanded, 0);
+				len = strlen(expanded);
+				expanded = realloc(expanded, len + 1 + 1);
+				strcat(expanded, " ");
 				expanded = append_selected_files(other_view, expanded, 0);
 				len = strlen(expanded);
 				break;
@@ -791,8 +775,7 @@ add_command(char *name, char *action)
 
 	command_list[cfg.command_num].name = (char *)malloc(strlen(name) + 1);
 	strcpy(command_list[cfg.command_num].name, name);
-	command_list[cfg.command_num].action = (char *)malloc(strlen(action) + 1);
-	strcpy(command_list[cfg.command_num].action, action);
+	command_list[cfg.command_num].action = strdup(action);
 	cfg.command_num++;
 	curr_stats.setting_change = 1;
 
@@ -861,6 +844,8 @@ set_user_command(char * command, int overwrite, int background)
 	{
 		add_command(com_name, com_action);
 	}
+
+	free(com_action);
 }
 
 static void
