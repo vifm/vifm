@@ -88,6 +88,8 @@
 
 	Made :cd - work like in shell.
 
+	Now filter regular expression can be enclosed in slashes.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.
@@ -106,7 +108,7 @@
 
 	Fixed ga command (skip symbolic links).
 
-	Fixed processing files with percent sign in their name.
+	Fixed processing of files with percent sign in their name.
 
 	Fixed memory leak in directory stack module.
 

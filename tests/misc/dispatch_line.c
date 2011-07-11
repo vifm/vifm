@@ -80,7 +80,7 @@ test_regexp_quotes(void)
 }
 
 static void
-test_no_quotes_space_escaping(void)
+test_no_quotes_escaping(void)
 {
 	int count;
 	char **args;
@@ -95,7 +95,7 @@ test_no_quotes_space_escaping(void)
 }
 
 static void
-test_single_quotes_space_escaping(void)
+test_single_quotes_escaping(void)
 {
 	int count;
 	char **args;
@@ -110,7 +110,7 @@ test_single_quotes_space_escaping(void)
 }
 
 static void
-test_double_quotes_space_escaping(void)
+test_double_quotes_escaping(void)
 {
 	int count;
 	char **args;
@@ -124,7 +124,7 @@ test_double_quotes_space_escaping(void)
 }
 
 static void
-test_regexp_quotes_space_escaping(void)
+test_regexp_quotes_escaping(void)
 {
 	int count;
 	char **args;
@@ -134,6 +134,13 @@ test_regexp_quotes_space_escaping(void)
 	if(count != 1)
 		return;
 	assert_string_equal(" / ", args[0]);
+	free_string_array(args, count);
+
+	args = dispatch_line("/\\.c$/", &count);
+	assert_int_equal(1, count);
+	if(count != 1)
+		return;
+	assert_string_equal("\\.c$", args[0]);
 	free_string_array(args, count);
 }
 
@@ -175,10 +182,10 @@ test_dispatch_line(void)
 	run_test(test_double_quotes);
 	run_test(test_regexp_quotes);
 
-	run_test(test_no_quotes_space_escaping);
-	run_test(test_single_quotes_space_escaping);
-	run_test(test_double_quotes_space_escaping);
-	run_test(test_regexp_quotes_space_escaping);
+	run_test(test_no_quotes_escaping);
+	run_test(test_single_quotes_escaping);
+	run_test(test_double_quotes_escaping);
+	run_test(test_regexp_quotes_escaping);
 
 	run_test(test_start_and_end_spaces);
 

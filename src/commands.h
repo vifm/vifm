@@ -135,6 +135,8 @@ typedef struct current_command
 	int count;
 	char *cmd_name;
 	char *args;
+	char **argv;
+	int argc;
 	char *curr_files; /* holds %f macro files */
 	char *other_files; /* holds %F macro files */
 	char *user_args; /* holds %a macro string */

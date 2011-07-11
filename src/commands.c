@@ -150,6 +150,8 @@ typedef struct current_command
 	int count;
 	char *cmd_name;
 	char *args;
+	char **argv;
+	int argc;
 	char *curr_files; /* holds %f macro files */
 	char *other_files; /* holds %F macro files */
 	char *user_args; /* holds %a macro string */
@@ -167,6 +169,10 @@ static wchar_t * substitute_specs(const char *cmd);
 static const char *skip_spaces(const char *cmd);
 static const char *skip_word(const char *cmd);
 static int exec_command(char *cmd, FileView *view, int type);
+#ifndef TEST
+static
+#endif
+char ** dispatch_line(const char *args, int *count);
 
 /* TODO generalize command handling */
 
@@ -992,6 +998,8 @@ initialize_command_struct(cmd_params *cmd)
 	cmd->count = 0;
 	cmd->cmd_name = NULL;
 	cmd->args = NULL;
+	cmd->argv = NULL;
+	cmd->argc = 0;
 	cmd->background = 0;
 	cmd->split = 0;
 	cmd->builtin = -1;
@@ -1295,6 +1303,7 @@ parse_command(FileView *view, char *command, cmd_params *cmd)
 			cmd->background = 1;
 		}
 		cmd->args = strdup(command + cmd->pos);
+		cmd->argv =dispatch_line(cmd->args, &cmd->argc);
 	}
 
 	/* Get the actual command name. */
@@ -1318,6 +1327,7 @@ parse_command(FileView *view, char *command, cmd_params *cmd)
 	{
 		free(cmd->cmd_name);
 		free(cmd->args);
+		free_string_array(cmd->argv, cmd->argc);
 		status_bar_message("Unknown Command");
 		return -1;
 	}
@@ -1670,9 +1680,21 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			break;
 		case COM_FILTER:
 			{
-				const char *args = (cmd->args != NULL) ? cmd->args : "";
-				if(args[0] == '!')
+				const char *args = cmd->args;
+				if(args == NULL)
+					args = "";
+				else if(args[0] == '!')
 					args++;
+
+				args = skip_spaces(args);
+
+				if(args[0] != '\0' && args[0] == '/' && args[strlen(args) - 1] == '/')
+				{
+					if(cmd->argc == 2 && cmd->argv[0][0] == '!')
+						args = cmd->argv[1];
+					else if(cmd->argc == 1)
+						args = cmd->argv[0];
+				}
 				set_view_filter(view, args);
 			}
 			break;
@@ -2080,31 +2102,6 @@ execute_user_command(FileView *view, cmd_params *cmd)
 	return 0;
 }
 
-static void
-filter_slashes(char *str)
-{
-	int slash = 0;
-	char *buf = str;
-	while(*str != '\0')
-	{
-		if(slash == 1)
-		{
-			*buf++ = *str++;
-			slash = 0;
-		}
-		else if(*str == '\\')
-		{
-			slash = 1;
-			str++;
-		}
-		else
-		{
-			*buf++ = *str++;
-		}
-	}
-	*buf = '\0';
-}
-
 int
 execute_command(FileView *view, char *command)
 {
@@ -2131,16 +2128,13 @@ execute_command(FileView *view, char *command)
 		return 1;
 
 	if(cmd.builtin > -1)
-	{
-		if(cmd.builtin != COM_SET && cmd.builtin != COM_EXECUTE && cmd.args != NULL)
-			filter_slashes(cmd.args);
 		result = execute_builtin_command(view, &cmd);
-	}
 	else
 		result = execute_user_command(view, &cmd);
 
 	free(cmd.cmd_name);
 	free(cmd.args);
+	free_string_array(cmd.argv, cmd.argc);
 
 	return result;
 }
@@ -2354,14 +2348,14 @@ comm_split(void)
 }
 
 static void
-unescape(char *s)
+unescape(char *s, int regexp)
 {
 	char *p;
 
 	p = s;
-	while(*s != '\0')
+	while(s[0] != '\0')
 	{
-		if(*s == '\\')
+		if(s[0] == '\\' && (!regexp || s[1] == '/'))
 			s++;
 		*p++ = *s++;
 	}
@@ -2564,7 +2558,7 @@ dispatch_line(const char *args, int *count)
 					state = ARG;
 				else if(cmdstr[i] == '\\')
 				{
-					if(cmdstr[i + 1] != '\0')
+					if(cmdstr[i + 1] == '/')
 						i++;
 				}
 				break;
@@ -2575,11 +2569,11 @@ dispatch_line(const char *args, int *count)
 			cmdstr[i] = '\0';
 			params[j] = strdup(&cmdstr[st]);
 			if(prev_state == NO_QUOTING)
-				unescape(params[j]);
+				unescape(params[j], 0);
 			else if(prev_state == D_QUOTING)
 				replace_esc(params[j]);
 			else if(prev_state == R_QUOTING)
-				unescape(params[j]);
+				unescape(params[j], 1);
 			j++;
 			state = BEGIN;
 		}

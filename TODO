@@ -14,13 +14,11 @@ Basic things that need to be done.
     Ctrl-C on error message before vifm start should skip all error messages
         until startup process will be finished.
     Add :filetype command (separate programs and viewer).
-    Treat /..|../ as a regexp.
     Make ~user_name/ work.
     Implement :find command.
     Run commands from :cmdhistory menu.
     An option to choose shell.
     Make l key handle selection.
-    Add 'filter' option.
     :filter? to display it's current value.
 
 Documentation.
