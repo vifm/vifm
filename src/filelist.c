@@ -483,6 +483,9 @@ update_view_title(FileView *view)
 {
 	size_t len;
 
+	if(curr_stats.vifm_started != 2)
+		return;
+
 	werase(view->title);
 
 	len = get_utf8_string_length(view->curr_dir);
@@ -514,6 +517,9 @@ draw_dir_list(FileView *view, int top)
 	int LINE_COLOR;
 	int bold = 1;
 	int color_scheme;
+
+	if(curr_stats.vifm_started != 2)
+		return;
 
 	color_scheme = check_directory_for_color_scheme(view->curr_dir);
 
@@ -629,6 +635,9 @@ erase_current_line_bar(FileView *view)
 	int LINE_COLOR;
 	size_t print_width;
 
+	if(curr_stats.vifm_started != 2)
+		return;
+
 	/* Extra long file names are truncated to fit */
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) | A_BOLD);
@@ -641,7 +650,6 @@ erase_current_line_bar(FileView *view)
 	}
 	else /* The entire list is going to be redrawn so just return. */
 		return;
-
 
 	wmove(view->win, old_cursor, 1);
 
@@ -740,6 +748,9 @@ moveto_list_pos(FileView *view, int pos)
 	}
 
 	view->list_pos = pos;
+
+	if(curr_stats.vifm_started != 2)
+		return;
 
 	if(redraw)
 		draw_dir_list(view, view->top_line);

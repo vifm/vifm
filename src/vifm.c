@@ -146,15 +146,81 @@ undo_exec(const char *cmd)
 	background_and_wait_for_errors((char *)cmd);
 }
 
+static void
+parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
+		char *rwin_path)
+{
+	int x;
+
+	/* Get Command Line Arguments */
+	for(x = 1; x < argc; x++)
+	{
+		if(argv[x] == NULL)
+		{
+			continue;
+		}
+		else if(!strcmp(argv[x], "-f"))
+		{
+			cfg.vim_filter = 1;
+		}
+		else if(!strcmp(argv[x], "--version") || !strcmp(argv[x], "-v"))
+		{
+			endwin();
+			show_version_msg();
+			exit(0);
+		}
+		else if(!strcmp(argv[x], "--help") || !strcmp(argv[x], "-h"))
+		{
+			endwin();
+			show_help_msg();
+			exit(0);
+		}
+		else if(!strcmp(argv[x], "--logging"))
+		{
+			init_logger(1);
+		}
+		else if(is_dir(argv[x]))
+		{
+			if(lwin_path[0] != '\0')
+			{
+				if(argv[x][0] == '/')
+					snprintf(rwin_path, PATH_MAX, "%s", argv[x]);
+				else
+				{
+					char buf[PATH_MAX];
+					snprintf(buf, sizeof(buf), "%s/%s", dir, argv[x]);
+					canonicalize_path(buf, rwin_path, PATH_MAX);
+				}
+			}
+			else
+			{
+				if(argv[x][0] == '/')
+					snprintf(lwin_path, PATH_MAX, "%s", argv[x]);
+				else
+				{
+					char buf[PATH_MAX];
+					snprintf(buf, sizeof(buf), "%s/%s", dir, argv[x]);
+					canonicalize_path(buf, lwin_path, PATH_MAX);
+				}
+			}
+		}
+		else
+		{
+			endwin();
+			show_help_msg();
+			exit(0);
+		}
+	}
+}
+
 int
 main(int argc, char *argv[])
 {
 	char dir[PATH_MAX];
 	char config_dir[PATH_MAX];
 	char *console = NULL;
-	int x;
-	int rwin_args = 0;
-	int lwin_args = 0;
+	char lwin_path[PATH_MAX] = "";
+	char rwin_path[PATH_MAX] = "";
 
 	setlocale(LC_ALL, "");
 	if(getcwd(dir, sizeof(dir)) == NULL)
@@ -176,7 +242,6 @@ main(int argc, char *argv[])
 	set_config_dir();
 
 	read_config_file();
-	read_info_file();
 
 	/* Safety check for existing vifmrc file without FUSE_HOME */
 	if(cfg.fuse_home == NULL)
@@ -231,94 +296,29 @@ main(int argc, char *argv[])
 	load_initial_directory(&lwin, dir);
 	load_initial_directory(&rwin, dir);
 
-	/* Get Command Line Arguments */
-	for(x = 1; x < argc; x++)
-	{
-		if(argv[x] == NULL)
-		{
-			continue;
-		}
-		else if(!strcmp(argv[x], "-f"))
-		{
-			cfg.vim_filter = 1;
-		}
-		else if(!strcmp(argv[x], "--version") || !strcmp(argv[x], "-v"))
-		{
-			endwin();
-			show_version_msg();
-			exit(0);
-		}
-		else if(!strcmp(argv[x], "--help") || !strcmp(argv[x], "-h"))
-		{
-			endwin();
-			show_help_msg();
-			exit(0);
-		}
-		else if(!strcmp(argv[x], "--logging"))
-		{
-			init_logger(1);
-		}
-		else if(is_dir(argv[x]))
-		{
-			if(lwin_args)
-			{
-				if(argv[x][0] == '/')
-					snprintf(rwin.curr_dir, sizeof(rwin.curr_dir), "%s", argv[x]);
-				else
-				{
-					char buf[PATH_MAX];
-					snprintf(buf, sizeof(buf), "%s/%s", dir, argv[x]);
-					canonicalize_path(buf, rwin.curr_dir, sizeof(rwin.curr_dir));
-				}
-				rwin_args++;
-			}
-			else
-			{
-				if(argv[x][0] == '/')
-					snprintf(lwin.curr_dir, sizeof(lwin.curr_dir), "%s", argv[x]);
-				else
-				{
-					char buf[PATH_MAX];
-					snprintf(buf, sizeof(buf), "%s/%s", dir, argv[x]);
-					canonicalize_path(buf, lwin.curr_dir, sizeof(lwin.curr_dir));
-				}
-				lwin_args++;
-			}
-		}
-		else
-		{
-			endwin();
-			show_help_msg();
-			exit(0);
-		}
-	}
+	read_info_file();
+
+	parse_args(argc, argv, dir, lwin_path, rwin_path);
 
 	init_modes();
 	init_option_handlers();
 	init_undo_list(&undo_exec, &cfg.undo_levels);
 	load_local_options(curr_view);
+
+	curr_stats.vifm_started = 1;
+
 	exec_startup();
 
-	set_view_to_sort(&rwin);
+	if(rwin_path[0] != '\0')
+		change_directory(&rwin, rwin_path);
 	load_dir_list(&rwin, 0);
-
-	if(rwin_args)
-	{
-		change_directory(&rwin, rwin.curr_dir);
-		load_dir_list(&rwin, 0);
-	}
 
 	mvwaddstr(rwin.win, rwin.curr_line, 0, "*");
 	wrefresh(rwin.win);
 
-	set_view_to_sort(&lwin);
+	if(lwin_path[0] != '\0')
+		change_directory(&lwin, lwin_path);
 	load_dir_list(&lwin, 0);
-
-	if(lwin_args)
-	{
-		change_directory(&lwin, lwin.curr_dir);
-		load_dir_list(&lwin, 0);
-	}
 
 	moveto_list_pos(&lwin, 0);
 	update_all_windows();
@@ -330,12 +330,13 @@ main(int argc, char *argv[])
 	/* Need to wait until both lists are loaded before changing one of the
 	 * lists to show the file stats.  This is only used for starting vifm
 	 * from the vifm.vim script
+	 * TODO understand why we need to wait
 	 */
 
 	if(cfg.vim_filter)
 		curr_stats.number_of_windows = 1;
 
-	curr_stats.vifm_started = 1;
+	curr_stats.vifm_started = 2;
 	redraw_window();
 
 	main_loop();

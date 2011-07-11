@@ -278,14 +278,10 @@ setup_ncurses_interface(void)
 	rwin.window_rows = y - 1;
 	rwin.window_width = x -1;
 
-	if (screen_x % 2)
-	{
+	if(screen_x % 2)
 		rborder = newwin(screen_y - 2, 2, 0, screen_x -2);
-	}
 	else
-	{
 		rborder = newwin(screen_y - 2, 1, 0, screen_x -1);
-	}
 
 	wbkgdset(rborder, COLOR_PAIR(BORDER_COLOR));
 
@@ -323,12 +319,12 @@ setup_ncurses_interface(void)
 	wnoutrefresh(rwin.win);
 	wnoutrefresh(rwin.title);
 	wnoutrefresh(stat_win);
-	wnoutrefresh(status_bar);
 	wnoutrefresh(pos_win);
 	wnoutrefresh(num_win);
 	wnoutrefresh(lborder);
 	wnoutrefresh(mborder);
 	wnoutrefresh(rborder);
+	wnoutrefresh(status_bar);
 
 	return 1;
 }
@@ -628,7 +624,7 @@ update_all_windows(void)
 	wnoutrefresh(num_win);
 	wnoutrefresh(rborder);
 
-	if(!curr_stats.errmsg_shown && curr_stats.vifm_started)
+	if(!curr_stats.errmsg_shown && curr_stats.vifm_started == 2)
 		doupdate();
 }
 
@@ -638,9 +634,7 @@ update_input_bar(wchar_t c)
 	wchar_t buf[] = {c, '\0'};
 
 	if(!curr_stats.use_input_bar)
-	{
 		return;
-	}
 
 	if(getcurx(num_win) == getmaxx(num_win) - 1)
 	{
