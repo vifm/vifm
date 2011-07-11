@@ -1284,9 +1284,10 @@ parse_command(FileView *view, char *command, cmd_params *cmd)
 	}
 	else /* Prevent eating '!' after command name. by not doing cmd->pos++ */
 	{
+		int was_em = cmd->cmd_name[cmd->pos - pre_cmdname_len] == '!';
+
 		cmd->cmd_name[cmd->pos - pre_cmdname_len] = '\0';
-		if(cmd->cmd_name[cmd->pos - pre_cmdname_len] == '!' &&
-				command_is_reserved(cmd->cmd_name) < 0 &&
+		if(was_em && command_is_reserved(cmd->cmd_name) < 0 &&
 				is_user_command(cmd->cmd_name) > - 1)
 		{
 			cmd->cmd_name[cmd->pos - pre_cmdname_len] = '!';
