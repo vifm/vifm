@@ -157,6 +157,8 @@
 
 	Fixed p (it should move files from trash, not copy them).
 
+	Fixed bug with user commands and exclamation mark.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).

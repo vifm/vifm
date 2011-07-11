@@ -20,6 +20,8 @@ Basic things that need to be done.
     An option to choose shell.
     Make l key handle selection.
     :filter? to display it's current value.
+    Don't add additional spaces while expanding macros (before %f, %F, %c, %C).
+    %something for absolute filenames.
 
 Documentation.
 	Better documentation.
@@ -64,6 +66,11 @@ Vi(m) specific features that need to be added.
     ctrl-u, ctrl-d, ctrl-e, ctrl-y, H, L, M, zz, zt and zb in the menus.
     'hlsearch' option.
     'letter as a selector.
+    :cd should check destination before changing directory.
+    Fix :cd /bin/<tab>.
+    File completion like command completion.
+    Fix :cd .. or more generally :cd .foobar
+    :cd ~<tab> -> :cd ~/
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -120,6 +127,7 @@ Other (questionable) things.
     Option with format of statwin.
     Filetype support for directories.
     :edit, etc. in menus.
+    :alias
 
 Code improvements.
     Move completion code from cmdline to a separate file.

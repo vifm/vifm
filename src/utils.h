@@ -61,6 +61,7 @@ void friendly_size_notation(unsigned long long num, int str_size, char *str);
 int check_link_is_dir(const char *filename);
 void free_string_array(char **array, size_t len);
 void canonicalize_path(const char *directory, char *buf, size_t buf_size);
+int run_prog(char *program, char *command);
 
 #endif
 

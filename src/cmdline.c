@@ -1474,11 +1474,7 @@ is_entry_exec(const struct dirent *d)
  * the string to be parsed should be specified in str.
  * In each subsequent call that should parse the same string, str should be NULL
  *
- * type:
- *  - 0 - all files and directories
- *  - 1 - only directories
- *  - 2 - only executable files
- *  - 3 - directories and executable files
+ * type: FNC_*
  */
 static char *
 filename_completion(const char *str, int type)

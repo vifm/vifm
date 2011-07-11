@@ -763,6 +763,8 @@ remove_command(char *name)
 void
 add_command(char *name, char *action)
 {
+	int i, len;
+
 	if(command_is_reserved(name) > -1)
 		return;
 	if(isdigit(*name))
@@ -774,6 +776,15 @@ add_command(char *name, char *action)
 
 	if(command_is_being_used(name))
 		return;
+
+	len = strlen(name);
+	for(i = 0; i < len; i++)
+		if(name[i] == '!' && i != len - 1)
+		{
+			show_error_msg("Invalid Command Name",
+					"Commands can contain exclamation mark only as the last character.");
+			return;
+		}
 
 	command_list = (command_t *)realloc(command_list,
 			(cfg.command_num + 1) * sizeof(command_t));
@@ -1284,7 +1295,15 @@ parse_command(FileView *view, char *command, cmd_params *cmd)
 		cmd->pos++;
 	}
 	else /* Prevent eating '!' after command name. by not doing cmd->pos++ */
+	{
 		cmd->cmd_name[cmd->pos - pre_cmdname_len] = '\0';
+		if(is_user_command(cmd->cmd_name) > - 1)
+		{
+			cmd->cmd_name[cmd->pos - pre_cmdname_len] = '!';
+			cmd->cmd_name[cmd->pos - pre_cmdname_len + 1] = '\0';
+			cmd->pos++;
+		}
+	}
 
 	if(strlen(command) > (size_t)cmd->pos)
 	{
@@ -1303,7 +1322,7 @@ parse_command(FileView *view, char *command, cmd_params *cmd)
 			cmd->background = 1;
 		}
 		cmd->args = strdup(command + cmd->pos);
-		cmd->argv =dispatch_line(cmd->args, &cmd->argc);
+		cmd->argv = dispatch_line(cmd->args, &cmd->argc);
 	}
 
 	/* Get the actual command name. */
@@ -1317,7 +1336,7 @@ parse_command(FileView *view, char *command, cmd_params *cmd)
 	}
 	else if((cmd->is_user = is_user_command(cmd->cmd_name)) > - 1)
 	{
-		cmd->cmd_name =(char *)realloc(cmd->cmd_name,
+		cmd->cmd_name = realloc(cmd->cmd_name,
 				strlen(command_list[cmd->is_user].name) + 1);
 		snprintf(cmd->cmd_name, sizeof(command_list[cmd->is_user].name),
 				"%s", command_list[cmd->is_user].name);
