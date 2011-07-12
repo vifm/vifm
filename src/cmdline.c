@@ -1043,6 +1043,7 @@ line_completion(struct line_stats *stat)
 	size_t words_count;
 	int id;
 	int usercmd_completion;
+	int builtin_arg_completion;
 	char *last_word = (char *)NULL;
 
 	if(stat->line[stat->index] != L' ' && stat->index != stat->len)
@@ -1083,8 +1084,10 @@ line_completion(struct line_stats *stat)
 
 	usercmd_completion = (id == COM_DELCOMMAND || id == COM_COMMAND)
 			&& words_count <= 2;
-	if(!usercmd_completion && (last_word != NULL || id == COM_EXECUTE ||
-			id == COM_SET || (id == COM_COLORSCHEME && words_count == 2)))
+	builtin_arg_completion = (id == COM_EXECUTE)
+			|| (id == COM_SET && words_count > 1)
+			|| (id == COM_COLORSCHEME && words_count == 2);
+	if(!usercmd_completion && (last_word != NULL || builtin_arg_completion))
 	{
 		char *filename = (char *)NULL;
 		char *raw_name = (char *)NULL;
