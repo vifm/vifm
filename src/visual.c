@@ -212,9 +212,8 @@ static void
 cmd_H(struct key_info key_info, struct keys_info *keys_info)
 {
 	while(view->list_pos > view->top_line)
-	{
 		select_up_one(view, start_pos);
-	}
+
 	update();
 }
 
@@ -222,10 +221,14 @@ cmd_H(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_L(struct key_info key_info, struct keys_info *keys_info)
 {
-	while(view->list_pos < view->top_line + view->window_rows)
-	{
+	int bound;
+
+	bound = view->top_line + view->window_rows;
+	if(bound > view->list_rows - 1)
+		bound = view->list_rows - 1;
+	while(view->list_pos < bound)
 		select_down_one(view, start_pos);
-	}
+
 	update();
 }
 
