@@ -1834,6 +1834,13 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			}
 			break;
 		case COM_SET:
+			if(cmd->args == NULL)
+			{
+				show_error_msg("Command Error",
+						"The :set command requires at least one argument");
+				save_msg = 1;
+				break;
+			}
 			save_msg = process_set_args(cmd->args);
 			break;
 		case COM_SHELL:
