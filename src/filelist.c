@@ -1055,17 +1055,6 @@ try_unmount_fuse(FileView *view)
 	return 1;
 }
 
-static void
-log_cwd(void)
-{
-	char buf[PATH_MAX];
-
-	if(getcwd(buf, sizeof(buf)) == NULL)
-		log_msg("%s", "getwd() error");
-	else
-		log_msg("getwd() returned \"%s\"", buf);
-}
-
 /*
  * The directory can either be relative to the current
  * directory - ../

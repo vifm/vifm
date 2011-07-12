@@ -23,6 +23,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,6 +33,7 @@
 #include "../config.h"
 
 #include "config.h"
+#include "log.h"
 #include "macros.h"
 #include "status.h"
 #include "ui.h"
@@ -522,12 +524,14 @@ check_link_is_dir(const char *filename)
 {
 	char linkto[PATH_MAX + NAME_MAX];
 	int len;
+	int saved_errno;
 	char *filename_copy;
 
 	filename_copy = strdup(filename);
 	chosp(filename_copy);
 
 	len = readlink(filename_copy, linkto, sizeof (linkto));
+	saved_errno = errno;
 
 	free(filename_copy);
 
@@ -540,6 +544,11 @@ check_link_is_dir(const char *filename)
 
 		if((s.st_mode & S_IFMT) == S_IFDIR)
 			return 1;
+	}
+	else
+	{
+		LOG_SERROR_MSG(saved_errno, "Can't readlink \"%s\"", filename);
+		log_cwd();
 	}
 
 	return 0;

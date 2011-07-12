@@ -35,6 +35,7 @@ void init_logger(int verbosity_level);
 void log_error(const char *file, const char *func, int line);
 void log_serror(const char *file, const char *func, int line, int no);
 void log_msg(const char *msg, ...);
+void log_cwd(void);
 
 #endif
 

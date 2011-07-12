@@ -67,11 +67,10 @@ Vi(m) specific features that need to be added.
     ctrl-u, ctrl-d, ctrl-e, ctrl-y, H, L, M, zz, zt and zb in the menus.
     'hlsearch' option.
     'letter as a selector.
-    Fix :cd /bin/<tab>.
     File completion like command completion.
     Fix :cd .. or more generally :cd .foobar
     :cd ~<tab> -> :cd ~/
-    \ at the end of line.
+    \ at the start of line.
     :delete reg count
 
 Possible things to add.

@@ -1457,7 +1457,7 @@ is_entry_dir(const struct dirent *d)
 {
 	if(d->d_type != DT_DIR && d->d_type != DT_LNK)
 		return 0;
-	if(d->d_type == DT_LNK && check_link_is_dir(d->d_name))
+	if(d->d_type == DT_LNK && !check_link_is_dir(d->d_name))
 		return 0;
 	return 1;
 }
@@ -1494,6 +1494,7 @@ filename_completion(const char *str, int type)
 	char * temp;
 	int i;
 	int filename_len;
+	int isdir;
 
 	if(str != NULL)
 	{
@@ -1549,6 +1550,9 @@ filename_completion(const char *str, int type)
 		return NULL;
 	}
 
+	if(chdir(dirname) != 0)
+		return NULL;
+
 	while((d = readdir(dir)) != NULL)
 	{
 		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
@@ -1568,6 +1572,7 @@ filename_completion(const char *str, int type)
 
 	if(d == NULL)
 	{
+		chdir(curr_view->curr_dir);
 		closedir(dir);
 		free(filename);
 		free(dirname);
@@ -1583,6 +1588,7 @@ filename_completion(const char *str, int type)
 
 			closedir(dir);
 			free(dirname);
+			chdir(curr_view->curr_dir);
 
 			return (type == FNC_EXECONLY) ? NULL : strdup(filename);
 		}
@@ -1602,7 +1608,7 @@ filename_completion(const char *str, int type)
 		i++;
 	}
 
-	int isdir = 0;
+	isdir = 0;
 	if(is_dir(d->d_name))
 	{
 		isdir = 1;
@@ -1615,6 +1621,7 @@ filename_completion(const char *str, int type)
 		if(!tempfile)
 		{
 			closedir(dir);
+			chdir(curr_view->curr_dir);
 			return NULL;
 		}
 		snprintf(tempfile, len, "%s%s", dirname, d->d_name);
@@ -1627,6 +1634,8 @@ filename_completion(const char *str, int type)
 	}
 	else
 		temp = strdup(d->d_name);
+
+	chdir(curr_view->curr_dir);
 
 	if(isdir)
 	{

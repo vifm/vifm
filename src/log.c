@@ -76,4 +76,15 @@ log_time(void)
 	fprintf(log, "%s", ctime(&t));
 }
 
+void
+log_cwd(void)
+{
+	char buf[PATH_MAX];
+
+	if(getcwd(buf, sizeof(buf)) == NULL)
+		log_msg("%s", "getwd() error");
+	else
+		log_msg("getwd() returned \"%s\"", buf);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
