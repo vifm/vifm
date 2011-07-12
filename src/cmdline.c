@@ -678,6 +678,8 @@ cmd_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
 {
 	int old;
 
+	input_stat.complete_continue = 0;
+
 	old = input_stat.index;
 	find_prev_word();
 

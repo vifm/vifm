@@ -621,6 +621,11 @@ complete_options(const char *cmd, const char **start)
 			*start = cmd;
 			cmd = extract_option(cmd, buf, 0);
 		}
+		if(strlen(buf) != cmd - *start)
+		{
+			*start = cmd;
+			buf[0] = '\0';
+		}
 
 		p = (char *)skip_alphas(buf);
 		value = (*p == '=');

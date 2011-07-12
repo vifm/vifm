@@ -5,10 +5,12 @@
 const char *value;
 
 void test_quotes(void);
+void opt_completion(void);
 
 void all_tests(void)
 {
 	test_quotes();
+	opt_completion();
 }
 
 static void

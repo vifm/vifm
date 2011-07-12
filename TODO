@@ -72,7 +72,7 @@ Vi(m) specific features that need to be added.
     :cd ~<tab> -> :cd ~/
     \ at the end of line.
     :delete reg count
-    Completion of options (:set fastrun<space>tab, when only one choice).
+    Completion of options (when only one choice).
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
