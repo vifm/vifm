@@ -105,11 +105,13 @@ init_menu_mode(int *key_mode)
 static int
 key_handler(wchar_t key)
 {
+	wchar_t buf[] = {key, L'\0'};
+
 	if(menu->key_handler == NULL)
 		return 0;
 
-	if(menu->key_handler(menu, key))
-		redraw_menu(menu);
+	if(menu->key_handler(menu, buf))
+		wrefresh(menu_win);
 
 	return 0;
 }
@@ -268,33 +270,11 @@ cmd_N(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_dd(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(menu->type == COMMAND)
-	{
-		clean_menu_position(menu);
-		remove_command(command_list[menu->pos].name);
+	if(menu->key_handler == NULL)
+		return;
 
-		reload_command_menu_list(menu);
-		draw_menu(menu);
-
-		if(menu->pos -1 >= 0)
-			moveto_menu_pos(menu->pos -1, menu);
-		else
-			moveto_menu_pos(0, menu);
-	}
-	else if(menu->type == BOOKMARK)
-	{
-		clean_menu_position(menu);
-		remove_bookmark(active_bookmarks[menu->pos]);
-
-		reload_bookmarks_menu_list(menu);
-		draw_menu(menu);
-
-		if(menu->pos -1 >= 0)
-			moveto_menu_pos(menu->pos -1, menu);
-		else
-			moveto_menu_pos(0, menu);
-	}
-	wrefresh(menu_win);
+	if(menu->key_handler(menu, L"dd"))
+		wrefresh(menu_win);
 }
 
 static void

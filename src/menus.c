@@ -45,6 +45,24 @@
 #include "undo.h"
 #include "utils.h"
 
+enum {
+	APROPOS,
+	BOOKMARK,
+	CMDHISTORY,
+	COLORSCHEME,
+	COMMAND,
+	DIRSTACK,
+	FILETYPE,
+	HISTORY,
+	JOBS,
+	LOCATE,
+	MAP,
+	REGISTER,
+	UNDOLIST,
+	USER,
+	VIFM,
+};
+
 static void
 show_position_in_menu(menu_info *m)
 {
@@ -872,6 +890,26 @@ show_apropos_menu(FileView *view, char *args)
 	}
 }
 
+static int
+bookmark_khandler(struct menu_info *m, wchar_t *keys)
+{
+	if(wcscmp(keys, L"dd") == 0)
+	{
+		clean_menu_position(m);
+		remove_bookmark(active_bookmarks[m->pos]);
+
+		reload_bookmarks_menu_list(m);
+		draw_menu(m);
+
+		if(m->pos - 1 >= 0)
+			moveto_menu_pos(m->pos - 1, m);
+		else
+			moveto_menu_pos(0, m);
+		return 1;
+	}
+	return 0;
+}
+
 void
 show_bookmarks_menu(FileView *view)
 {
@@ -891,6 +929,7 @@ show_bookmarks_menu(FileView *view)
 	m.title = NULL;
 	m.args = NULL;
 	m.data = NULL;
+	m.key_handler = bookmark_khandler;
 
 	getmaxyx(menu_win, m.win_rows, x);
 
@@ -1009,6 +1048,26 @@ show_colorschemes_menu(FileView *view)
 	enter_menu_mode(&m, view);
 }
 
+static int
+command_khandler(struct menu_info *m, wchar_t *keys)
+{
+	if(wcscmp(keys, L"dd") == 0) /* remove element */
+	{
+		clean_menu_position(m);
+		remove_command(command_list[m->pos].name);
+
+		reload_command_menu_list(m);
+		draw_menu(m);
+
+		if(m->pos -1 >= 0)
+			moveto_menu_pos(m->pos -1, m);
+		else
+			moveto_menu_pos(0, m);
+		return 1;
+	}
+	return 0;
+}
+
 void
 show_commands_menu(FileView *view)
 {
@@ -1027,6 +1086,7 @@ show_commands_menu(FileView *view)
 	m.title = NULL;
 	m.args = NULL;
 	m.data = NULL;
+	m.key_handler = command_khandler;
 
 	if(cfg.command_num < 1)
 	{
@@ -1062,14 +1122,15 @@ show_commands_menu(FileView *view)
 }
 
 static int
-filetypes_khandler(struct menu_info *m, wchar_t c)
+filetypes_khandler(struct menu_info *m, wchar_t *keys)
 {
-	if(c == L'K') /* move element up */
+	if(wcscmp(keys, L"K") == 0) /* move element up */
 	{
 		char* tmp;
 
 		if(m->pos == 0)
 			return 0;
+
 		tmp = m->data[m->pos - 1];
 		m->data[m->pos - 1] = m->data[m->pos];
 		m->data[m->pos] = tmp;
@@ -1077,14 +1138,18 @@ filetypes_khandler(struct menu_info *m, wchar_t c)
 		m->pos--;
 		m->current--;
 
+		draw_menu(m);
+		moveto_menu_pos(m->pos, m);
+
 		return 1;
 	}
-	else if(c == L'J') /* move element down */
+	else if(wcscmp(keys, L"J") == 0) /* move element down */
 	{
 		char* tmp;
 
 		if(m->pos == m->len - 1)
 			return 0;
+
 		tmp = m->data[m->pos];
 		m->data[m->pos] = m->data[m->pos + 1];
 		m->data[m->pos + 1] = tmp;
@@ -1092,9 +1157,12 @@ filetypes_khandler(struct menu_info *m, wchar_t c)
 		m->pos++;
 		m->current++;
 
+		draw_menu(m);
+		moveto_menu_pos(m->pos, m);
+
 		return 1;
 	}
-	else if(c == L'L' && m->len != 0) /* store list */
+	else if(wcscmp(keys, L"L") == 0 && m->len != 0) /* store list */
 	{
 		char *tmp, *extension;
 		size_t len = 1;

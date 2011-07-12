@@ -22,24 +22,6 @@
 #include "ui.h"
 
 enum {
-	APROPOS,
-	BOOKMARK,
-	CMDHISTORY,
-	COLORSCHEME,
-	COMMAND,
-	DIRSTACK,
-	FILETYPE,
-	HISTORY,
-	JOBS,
-	LOCATE,
-	MAP,
-	REGISTER,
-	UNDOLIST,
-	USER,
-	VIFM,
-};
-
-enum {
 	NONE,
 	UP,
 	DOWN
@@ -59,8 +41,8 @@ typedef struct menu_info
 	char *title;
 	char *args;
 	char **data;
-	/* should return not zero value to request menu redraw */
-	int (*key_handler)(struct menu_info *m, wchar_t c);
+	/* should return not zero value to request menu window refresh */
+	int (*key_handler)(struct menu_info *m, wchar_t *keys);
 	int extra_data; /* for filetype background and mime flags */
 	/* For user menus only */
 	char *get_info_script; /* program + args to fill in menu. */
