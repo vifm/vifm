@@ -92,7 +92,7 @@
 
 	Don't add additional spaces before %f, %F, %c and %C macros.
 
-	Don't try to :cd into directory that doesn't exist.
+	Don't try to :cd into directory if we cannot.
 
 	Fixed %F, accidentally broken in v0.6.2.
 

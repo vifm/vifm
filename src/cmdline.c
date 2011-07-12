@@ -467,6 +467,8 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 	wnoutrefresh(status_bar);
 
 	leave_cmdline_mode();
+	if(prev_mode == VISUAL_MODE)
+		leave_visual_mode(curr_stats.save_msg);
 }
 
 static void

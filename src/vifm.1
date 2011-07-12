@@ -804,6 +804,16 @@ Space key
 .TP
 .BI "<f0> - <f63>"
 Functional keys
+.LP
+vifm removes whitespace characters at the beginning and end of commands.
+That's why you may want to use <space> at the end of rhs in mappings.  For
+example:
+
+.EX
+ cmap <f1> man<space>
+.EE
+
+will put "man " in line when you hit the <f1> key in the command line mode.
 .\" ---------------------------------------------------------------------------
 .SH Compatibility mode
 .\" ---------------------------------------------------------------------------

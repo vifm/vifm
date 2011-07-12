@@ -24,7 +24,6 @@ Basic things that need to be done.
 
 Documentation.
 	Better documentation.
-    Document trimming of trailing spaces for maps.
     Document | in command line.
     Document :ls command (for screen program).
     Document using P to move files on fs different from where /home is.
@@ -69,6 +68,7 @@ Vi(m) specific features that need to be added.
     File completion like command completion.
     Fix :cd .. or more generally :cd .foobar
     :cd ~<tab> -> :cd ~/
+    \ at the end of line.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -135,3 +135,5 @@ Code improvements.
     Rename exec_* to something.
     Use regexps for filetypes.
     Add log.
+    Stay at the same file in some cases (on directory change and somewhere
+        else were too).
