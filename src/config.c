@@ -613,7 +613,7 @@ write_config_file(void)
 	fprintf(fp, "\n# BOOKMARKS=mark=/full/directory/path=filename\n\n");
 	for(x = 0; x < NUM_BOOKMARKS; x++)
 	{
-		if(is_bookmark(x))
+		if(is_bookmark(x) && !is_spec_bookmark(x))
 		{
 			fprintf(fp, "BOOKMARKS=%c=%s=%s\n",
 					index2mark(x),

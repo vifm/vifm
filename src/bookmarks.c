@@ -29,17 +29,25 @@
 
 /*
  * transform a mark to an index
- * (0=48->0, 9=57->9, A=65->10,...,Z=90->35, a=97 -> 36,..., z=122 -> 61
+ * (0=48->0, 9=57->9, <=60->10, >=60->11, A=65->12,...,Z=90->37, a=97 -> 38,
+ * ..., z=122 -> 63)
  */
 static int
 mark2index(const char mark)
 {
-	if ((int) mark > 96)
-		return (int) mark - 61;
-	else if ((int) mark < 65)
-		return (int) mark - 48;
+	int im;
+
+	im = (int)mark;
+	if(im > 96)
+		return im - 59;
+	else if(im == 60)
+		return 10;
+	else if(im == 62)
+		return 11;
+	else if(im < 65)
+		return im - 48;
 	else
-		return (int) mark - 55;
+		return im - 53;
 }
 
 /*
@@ -48,12 +56,18 @@ mark2index(const char mark)
 char
 index2mark(const int x)
 {
-	if (x > 35)
-		return (char) (x + 61);
-	else if (x < 10)
-		return (char) (x + 48);
+	char c;
+	if(x > 35)
+		c = x + 59;
+	else if(x == 11)
+		c = '>';
+	else if(x == 10)
+		c = '<';
+	else if(x < 10)
+		c = x + 48;
 	else
-		return (char) (x + 55);
+		c = x + 53;
+	return c;
 }
 
 /*
@@ -62,7 +76,6 @@ index2mark(const int x)
 int
 is_bookmark(const int x)
 {
-
 	/* the bookmark is valid if the file and the directory exists.
 	 * (i know, checking both is a bit paranoid, one should be enough.) */
 	if(bookmarks[x].directory == NULL || bookmarks[x].file == NULL)
@@ -71,6 +84,13 @@ is_bookmark(const int x)
 		return 1;
 	else
 		return 0;
+}
+
+int
+is_spec_bookmark(const int x)
+{
+	char mark = index2mark(x);
+	return mark == '<' || mark == '>';
 }
 
 /*
@@ -105,7 +125,7 @@ add_mark(const char mark, const char *directory, const char *file)
 	x = mark2index(mark);
 
 	/* The mark is already being used.	Free pointers first! */
-	if (is_bookmark(x))
+	if(is_bookmark(x))
 		silent_remove_bookmark(x);
 
 	bookmarks[x].directory = strdup(directory);

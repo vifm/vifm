@@ -21,21 +21,23 @@
 
 #include "ui.h"
 
-#define NUM_BOOKMARKS 62
+#define NUM_BOOKMARKS 64
 
 typedef struct
 {
 	/*
 	 * 'mark' is unnecessary, we already reserve all possible bookmarks,
 	 * therfore we can use the mark as an index:
-	 *	0:  0		( 0=48, ascii)
-	 *	9:  9		( 9=57 )
-	 *	A: 10		( A=65 )
-	 *	...
-	 *	Z: 35
-	 *	a: 36		( a=97 )
-	 *	...
-	 *	z: 61
+	 *  0:  0   ( 0=48, ascii)
+	 *  9:  9   ( 9=57 )
+	 *  <: 10   ( <=60 )
+	 *  >: 11   ( >=62 )
+	 *  A: 12   ( A=65 )
+	 *  ...
+	 *  Z: 37
+	 *  a: 38   ( a=97 )
+	 *  ...
+	 *  z: 63
 	char mark;
 	*/
 	/* use pointers instead of fixed length char arrays -> save space!
@@ -53,6 +55,7 @@ int active_bookmarks[NUM_BOOKMARKS];
 
 char index2mark(const int x);
 int is_bookmark(const int x);
+int is_spec_bookmark(const int x);
 void add_bookmark(const char mark, const char *directory, const char *file);
 void set_specmark(const char mark, const char *directory, const char *file);
 int get_bookmark(FileView *view, char key);
