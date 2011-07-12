@@ -1,8 +1,23 @@
 #include "seatest.h"
 
+#include "../../src/macros.h"
 #include "../../src/options.h"
 
 const char *value;
+
+static const char * sort_enum[] = {
+	"ext",
+	"name",
+	"gid",
+	"gname",
+	"mode",
+	"uid",
+	"uname",
+	"size",
+	"atime",
+	"ctime",
+	"mtime",
+};
 
 void test_quotes(void);
 void opt_completion(void);
@@ -20,6 +35,11 @@ fusehome_handler(enum opt_op op, union optval_t val)
 }
 
 static void
+sort_handler(enum opt_op op, union optval_t val)
+{
+}
+
+static void
 setup(void)
 {
 	static int option_changed;
@@ -27,6 +47,7 @@ setup(void)
 	init_options(&option_changed, NULL);
 
 	add_option("fusehome", OPT_STR, 0, NULL, fusehome_handler);
+	add_option("sort", OPT_ENUM, ARRAY_LEN(sort_enum), sort_enum, &sort_handler);
 }
 
 int main(int argc, char **argv)

@@ -79,7 +79,7 @@ add_options(void)
 	add_option("wrap", OPT_BOOL, 0, NULL, &wrap_handler);
 
 	/* local options */
-	add_option("sort", OPT_ENUM, NUM_SORT_OPTIONS, sort_enum, &sort_handler);
+	add_option("sort", OPT_ENUM, ARRAY_LEN(sort_enum), sort_enum, &sort_handler);
 	add_option("sortorder", OPT_ENUM, 2, sort_order_enum, &sort_order_handler);
 }
 

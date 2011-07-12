@@ -677,12 +677,14 @@ complete_options(const char *cmd, const char **start)
 static char *
 complete_option(const char *buf, int bool_only)
 {
-	static size_t last;
+	static size_t times;
+	static int last;
 
 	size_t len;
 
 	if(buf == NULL)
 	{
+		times = 0;
 		last = -1;
 		return NULL;
 	}
@@ -697,20 +699,34 @@ complete_option(const char *buf, int bool_only)
 		if(bool_only && options[last].type != OPT_BOOL)
 			continue;
 		if(strncmp(buf, options[last].name, len) == 0)
+		{
+			times++;
 			return strdup(options[last].name);
+		}
 	}
-	return NULL;
+	if(times == 1)
+	{
+		times--;
+		return complete_option(buf, bool_only);
+	}
+	else
+	{
+		times++;
+		return NULL;
+	}
 }
 
 static const char *
 complete_value(const char *buf, struct opt_t *opt)
 {
+	static size_t times;
 	static int last;
 
 	size_t len;
 
 	if(opt == NULL)
 	{
+		times = 0;
 		last = -1;
 		return NULL;
 	}
@@ -723,9 +739,21 @@ complete_value(const char *buf, struct opt_t *opt)
 	while(++last < opt->val_count)
 	{
 		if(strncmp(buf, opt->vals[last], len) == 0)
+		{
+			times++;
 			return opt->vals[last];
+		}
 	}
-	return NULL;
+	if(times == 1)
+	{
+		times--;
+		return complete_value(buf, opt);
+	}
+	else
+	{
+		times++;
+		return NULL;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

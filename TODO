@@ -24,6 +24,7 @@ Basic things that need to be done.
     :file menu, l on FUSE command.
     Skip all directories in history that doesn't exist.
     Expand macros for builtin commands.
+    More states for permissions dialog (maybe 'f', 'd').
 
 Documentation.
 	Better documentation.
@@ -72,7 +73,6 @@ Vi(m) specific features that need to be added.
     :cd ~<tab> -> :cd ~/
     \ at the end of line.
     :delete reg count
-    Completion of options (when only one choice).
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
