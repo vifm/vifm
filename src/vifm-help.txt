@@ -551,16 +551,17 @@ Command macros
 
        %s     Execute command in screen split.
 
+       Position and quantity (if there is any) of %m and %s macros in the com‐
+       mand  is  unimportant.   All their occurrences will be removed from the
+       resulting command.
 
        :com move mv %f %D
               would set the :move command to move all of the files selected in
               the current directory to the other directory.
 
-
        The  %a macro will substitute any arguments given in a command into the
        command.  All arguments are considered optional.  ":com lsl !!ls -l %a"
        will set the lsl command to execute ls -l with or without an argument.
-
 
        :lsl<Return>
               will list the directory contents of the current directory.
@@ -568,11 +569,9 @@ Command macros
        :lsl filename<Return>
               will list only the given filename.
 
-
        The  macros  can  also be used in directly executing commands. ":!mv %f
        %D" would move the current directory selected files to the other direc‐
        tory.
-
 
        Appending & to the end of a command will cause it to be executed in the
        background.

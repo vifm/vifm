@@ -384,6 +384,10 @@ The command macros may be used in user commands.
   %m show command output in a menu.
   %s execute command in screen split.
 
+Position and quantity (if there is any) of %m and %s macros in the
+command is unimportant.  All their occurrences will be removed from the
+resulting command.
+
 :com move mv %f %D - would set the :move command to move all of the files
 selected in the current directory to the other directory.
 

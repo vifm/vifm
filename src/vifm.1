@@ -649,25 +649,24 @@ Show command output in a menu.
 .TP
 .BI %s
 Execute command in screen split.
-
+.LP
+Position and quantity (if there is any) of %m and %s macros in the
+command is unimportant.  All their occurrences will be removed from the
+resulting command.
 .TP
 .BI ":com move mv %f %D"
 would set the :move command to move all of the files
 selected in the current directory to the other directory.
-
 .TP
 The %a macro will substitute any arguments given in a command into the command.  All arguments are considered optional.  ":com lsl !!ls -l %a" will set the lsl command to execute ls -l with or without an argument.
-
 .TP
 .BI ":lsl<Return>"
 will list the directory contents of the current directory.
 .TP
 .BI ":lsl filename<Return>"
 will list only the given filename.
-
 .TP
 The macros can also be used in directly executing commands. ":!mv %f %D" would move the current directory selected files to the other directory.
-
 .TP
 Appending & to the end of a command will cause it to be executed in the background.
 .BI ":!mv %f %D &"

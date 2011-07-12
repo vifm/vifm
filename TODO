@@ -21,6 +21,9 @@ Basic things that need to be done.
     Make l key handle selection.
     :filter? to display it's current value.
     %something for absolute filenames.
+    :file menu, l on FUSE command.
+    Skip all directories in history that doesn't exist.
+    Expand macros for builtin commands.
 
 Documentation.
 	Better documentation.
@@ -95,6 +98,9 @@ Possible things to add.
     Reset options to it's default value (from docs) with set option&.
     :locate without arguments repeats last search.
     :cd [dir1] [dir2]; :cd! dir equivalent to :cd dir dir; or :gcd
+    Replace /home/my_login by ~ in view title.
+    cl key to modify links
+    cw = :rename on a selection.
 
 Vim plugin
     Choose between one and two pane view on startup somehow.
