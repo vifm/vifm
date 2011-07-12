@@ -1577,23 +1577,9 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 		case COM_COLORSCHEME:
 		{
 			if(cmd->args)
-			{
 				load_color_scheme(view, cmd->args);
-			}
 			else /* Show menu with colorschemes listed */
-			{
-				int i;
-				char buf[cfg.color_scheme_num*32 + 1];
-
-				buf[0] = '\0';
-				for(i = 0; i < cfg.color_scheme_num; i++)
-				{
-					strcat(buf, col_schemes[i].name);
-					if(i < cfg.color_scheme_num - 1)
-						strcat(buf, " | ");
-				}
 				show_colorschemes_menu(view);
-			}
 			break;
 		}
 		case COM_COMMAND:

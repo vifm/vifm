@@ -94,6 +94,8 @@
 
 	Don't try to :cd into directory if we cannot.
 
+	Leave visual mode when leaving cmdline mode started from visual mode.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.

@@ -68,6 +68,8 @@ Vi(m) specific features that need to be added.
     Fix :cd .. or more generally :cd .foobar
     :cd ~<tab> -> :cd ~/
     \ at the end of line.
+    :delete reg count
+    Completion of options (:set fastrun<space>tab, when only one choice).
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -92,6 +94,7 @@ Possible things to add.
     Improve sorting ('sort' and 'gsort'; ignore case).
     Reset options to it's default value (from docs) with set option&.
     :locate without arguments repeats last search.
+    :cd [dir1] [dir2]; :cd! dir equivalent to :cd dir dir; or :gcd
 
 Vim plugin
     Choose between one and two pane view on startup somehow.
@@ -125,6 +128,7 @@ Other (questionable) things.
     Filetype support for directories.
     :edit, etc. in menus.
     :alias
+    Like g. but to select just pasted files.
 
 Code improvements.
     Move completion code from cmdline to a separate file.

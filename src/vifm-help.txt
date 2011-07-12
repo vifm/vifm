@@ -291,7 +291,8 @@ Visual Mode
 
        V      leave visual mode.
 
-       :      enter command line mode.
+       :      enter  command  line  mode.  When you leave it selection will be
+              cleared.
 
        o      switch active selection bound.
 
@@ -299,6 +300,10 @@ Visual Mode
 
 Commands
        Commands are executed with :command_name<Return>
+
+       ´|' can be used to separate commands, so you can give multiple commands
+       in  one  line.   If you want to use '|' in an argument, precede it with
+       '\'.
 
        :[count]
 
@@ -309,10 +314,10 @@ Commands
               :$ move to the bottom of the list.
 
        :[count]command
-              The   only  builtin  :[count]command  are  :[count]d[elete]  and
+              The  only  builtin  :[count]command  are  :[count]d[elete]   and
               :[count]y[ank].
 
-       :d3    would delete three files starting at the current  file  position
+       :d3    would  delete  three files starting at the current file position
               moving down (not implemented yet).
 
        :3d    would delete one file at the third line in the list.
@@ -320,19 +325,19 @@ Commands
        :command [args]
 
        :!     program will execute the program in a shell
-              :!command  &  will  run the process in the background.  Programs
-              that write to stdout like ls will create an error message  show‐
+              :!command & will run the process in  the  background.   Programs
+              that  write to stdout like ls will create an error message show‐
               ing partial output of the command.
 
        :!! <program>
-              is  the same as :! but will pause the screen before returning to
+              is the same as :! but will pause the screen before returning  to
               Vifm.
 
        :!!    will execute the last command.
 
        :apropos manpage
-              will create a menu of items returned  by  the  apropos  command.
-              Selecting  an  item in the menu will open the corresponding man‐
+              will  create  a  menu  of items returned by the apropos command.
+              Selecting an item in the menu will open the  corresponding  man‐
               page.
 
        :cd    change to your home directory.
@@ -347,12 +352,12 @@ Commands
               show command line history menu.  Note: will be removed.
 
        :colo[rscheme]
-              gives a menu with a list of available color  schemes.   You  can
-              choose  default color scheme here.  It will be used if no DIREC‐
+              gives  a  menu  with a list of available color schemes.  You can
+              choose default color scheme here.  It will be used if no  DIREC‐
               TORY in colorscheme file fits current path.
 
        :colo[rscheme] color_scheme_name
-              changes  default  color  scheme   to   color_scheme_name.    See
+              changes   default   color   scheme  to  color_scheme_name.   See
               :colo[rscheme].
 
        :com[mand]
@@ -360,12 +365,12 @@ Commands
 
        :com[mand] name action
               sets a new user command.
-              Trying  to  use  a reserved command name will result in an error
+              Trying to use a reserved command name will result  in  an  error
               message.
               Use :com[mand]! to overwrite a previously set command.
-              Unlike vim user commands do not have to  start  with  a  capital
-              letter.   User commands are run in a shell by default.  To run a
-              command in the background you must set it as a  background  com‐
+              Unlike  vim  user  commands  do not have to start with a capital
+              letter.  User commands are run in a shell by default.  To run  a
+              command  in  the background you must set it as a background com‐
               mand with & at the end of the commands action (:com rm rm %f &).
 
        :com[mand] backup /pattern
@@ -390,15 +395,15 @@ Commands
 
        :empty will permanently remove 'rm -fr' files from the Trash directory.
 
-       :file  popup  menu  of  programs  set  for the file type of the current
-              file. Add ' &' at the end of command to  run  program  in  back‐
+       :file  popup menu of programs set for the  file  type  of  the  current
+              file.  Add  '  &'  at the end of command to run program in back‐
               ground.
 
        :filter regular_expression_pattern
-              :filter  /regular_expression_pattern/  will filter all the files
-              out of the directory listing that match the regular  expression.
+              :filter /regular_expression_pattern/ will filter all  the  files
+              out  of the directory listing that match the regular expression.
               Using second variant you can use | symbol without escaping.
-              :filter  /.o$  would  filter  all  files  ending  in .o from the
+              :filter /.o$ would filter  all  files  ending  in  .o  from  the
               filelist.
               Note: vifm uses extended regular expressions.
 
@@ -420,8 +425,8 @@ Commands
        :jobs  shows menu of current backgrounded processes.
 
        :locate filename
-              uses the locate command to create a menu of filenames  Selecting
-              a  file  from the menu will reload the current file list in vifm
+              uses  the locate command to create a menu of filenames Selecting
+              a file from the menu will reload the current file list  in  vifm
               to show the selected file.
 
        :marks create a popup menu of bookmarks.
@@ -448,17 +453,17 @@ Commands
        :screen
               toggles whether or not to use the screen program.
               The default configuration has the screen option turned off.  The
-              screen  program  uses pseudo terminals to allow multiple windows
-              to be used in the console or in a single xterm.   Starting  vifm
-              from  screen with the screen option turned on will cause vifm to
-              open a new screen window for each new  file  edited  or  program
+              screen program uses pseudo terminals to allow  multiple  windows
+              to  be  used in the console or in a single xterm.  Starting vifm
+              from screen with the screen option turned on will cause vifm  to
+              open  a  new  screen  window for each new file edited or program
               launched from vifm.
-              This  requires  screen  version 3.9.9 or newer for the screen -X
+              This requires screen version 3.9.9 or newer for  the  screen  -X
               argument.
 
        :se[t] opt1=val1 opt2=val2 ...
               will set options to given values.
-              You can  use  following  syntax:  option,  nooption,  invoption,
+              You  can  use  following  syntax:  option,  nooption, invoption,
               option!, option?, option=x, option+=x, option-=x.  :sh[ell] will
               start a shell.
 
@@ -513,7 +518,7 @@ Ranges
 
          :%delete would delete all files in the directory.
          :2,4delete would delete the files in the list positions 2 through 4.
-         :.,$delete  would  delete  the files from the current position to the
+         :.,$delete would delete the files from the current  position  to  the
        end
            of the filelist.
          :3delete4 would delete the files in the list positions 3, 4, 5, 6.
@@ -552,7 +557,7 @@ Command macros
               the current directory to the other directory.
 
 
-       The %a macro will substitute any arguments given in a command into  the
+       The  %a macro will substitute any arguments given in a command into the
        command.  All arguments are considered optional.  ":com lsl !!ls -l %a"
        will set the lsl command to execute ls -l with or without an argument.
 
@@ -564,7 +569,7 @@ Command macros
               will list only the given filename.
 
 
-       The macros can also be used in directly executing  commands.  ":!mv  %f
+       The  macros  can  also be used in directly executing commands. ":!mv %f
        %D" would move the current directory selected files to the other direc‐
        tory.
 
@@ -577,8 +582,8 @@ Command macros
        fastrun
               type: boolean
               default: false
-              With  this  option  turned on you can run partially entered com‐
-              mands with unambiguous beginning using :! (e.g. :!Te instead  of
+              With this option turned on you can run  partially  entered  com‐
+              mands  with unambiguous beginning using :! (e.g. :!Te instead of
               :!Terminal or :!Te<tab>).
 
        followlinks
@@ -589,8 +594,8 @@ Command macros
        fusehome
               type: string
               default: "/tmp/vifm_FUSE/"
-              Directory  to  be  used  as  a root dir for FUSE mounts.  If you
-              change this option, vifm won't  remount  anything.   It  affects
+              Directory to be used as a root dir  for  FUSE  mounts.   If  you
+              change  this  option,  vifm  won't remount anything.  It affects
               future mounts only.
 
        history
@@ -660,7 +665,7 @@ Command macros
               Controls whether to wrap text in quick view.
 
 Mappings
-       Since  it's not easy to enter special characters there are several spe‐
+       Since it's not easy to enter special characters there are several  spe‐
        cial sequences that can be used in place of them. They are:
 
        <cr>   Enter key
@@ -669,12 +674,16 @@ Mappings
               Space key
 
        <f0> - <f63>
+              Functional keys
 
-              vifm removes whitespace characters at the beginning and  end  of
-              commands.   That's why you may want to use <space> at the end of
-              rhs in mappings.  For example:
-               cmap <f1> man<space> will put "man " in line when you  hit  the
-              <f1> key in the command line mode.  Functional keys
+       vifm  removes  whitespace  characters  at the beginning and end of com‐
+       mands.  That's why you may want to use <space> at the  end  of  rhs  in
+       mappings.  For example:
+
+        cmap <f1> man<space>
+
+       will  put  "man " in line when you hit the <f1> key in the command line
+       mode.
 
 Compatibility mode
        Compatibility mode:
@@ -684,16 +693,20 @@ Compatibility mode
 
        Vim like mode:
            - <c-i> (<tab>) to go forward on history.
-           -  dd  deletes file under the cursor and ds works as dd in compati‐
+           - dd deletes file under the cursor and ds works as dd  in  compati‐
        bility mode.
-           - yy yanks file under the cursor and ys works as dd in  compatibil‐
+           -  yy yanks file under the cursor and ys works as dd in compatibil‐
        ity mode.
 
 Menus and dialogs
        General
 
-       j,  k - move.  <Escape>, Ctrl-c - clear.  <Return>, l - select and exit
+       j, k - move.  <Escape>, Ctrl-c - clear.  <Return>, l - select and  exit
        the menu.
+
+       Commands
+
+       dd on a command to remove.
 
        Bookmarks
 
@@ -706,21 +719,21 @@ Menus and dialogs
 
        Filetype menu
 
-       Commands  from vifmrc are displayed above empty line. When all commands
-       below empty line were found in .desktop files.  Note:  you  can't  save
+       Commands from vifmrc are displayed above empty line. When all  commands
+       below  empty  line  were found in .desktop files.  Note: you can't save
        programs for files without extension.
 
-       J  and K - to move menu items L - save all commands above empty line as
+       J and K - to move menu items L - save all commands above empty line  as
        program list
 
 Configure
-       The ~/.vifm/vifmrc file contains all the configurable settings.  It  is
+       The  ~/.vifm/vifmrc file contains all the configurable settings.  It is
        commented and you may edit it by hand to change the settings.
 
-       The  ~/.vifm/vifminfo  file contains session settings.  It is commented
+       The ~/.vifm/vifminfo file contains session settings.  It  is  commented
        and you may edit it by hand to change the settings.
 
-       The ~/.vifm/startup file contains commands that  will  be  executed  on
+       The  ~/.vifm/startup  file  contains  commands that will be executed on
        vifm startup. You can set your mappings there.
 
 Plugin
@@ -731,15 +744,15 @@ Plugin
          :EditVifm  select a file to open in the current buffer.
          :SplitVifm split buffer and select a file to open.
          :VsplitVifm vertically split buffer and select a file to open.
-         :DiffVifm  select  a  file  to compare to the current file with :vert
+         :DiffVifm select a file to compare to the  current  file  with  :vert
        diffsplit.
 
        The plugin does not have any settings.
 
-       To use the plugin copy the vifm.vim file  to  either  the  system  wide
+       To  use  the  plugin  copy  the vifm.vim file to either the system wide
        vim/plugin directory or into ~/.vim/plugin.
 
-       If  you would prefer not to use the plugin and it is in the system wide
+       If you would prefer not to use the plugin and it is in the system  wide
        plugin directory add
 
        let loaded_vifm=1

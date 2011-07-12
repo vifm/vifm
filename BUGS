@@ -6,3 +6,5 @@ Strange piece of escape sequence 37m
 
 !!echo 1; echo 2; echo 3
 pauses after 1 but not after 2 and 3.
+
+'< and '> marks have wrong name in :marks menu.

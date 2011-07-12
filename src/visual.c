@@ -161,7 +161,11 @@ leave_visual_mode(int save_msg)
 static void
 cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 {
-	int bound = view->top_line - view->window_rows - 1;
+	int bound;
+
+	bound = view->top_line - view->window_rows - 1;
+	if(bound < 0)
+		bound = 0;
 	while(view->list_pos > bound && view->list_pos > 0)
 	{
 		select_up_one(view, start_pos);
@@ -181,6 +185,8 @@ cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 	int bound;
 
 	bound = view->top_line + 2*view->window_rows + 1;
+	if(bound >= view->list_rows)
+		bound = view->list_rows - 1;
 	while(view->list_pos < bound)
 		select_down_one(view, start_pos);
 
