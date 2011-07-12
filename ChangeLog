@@ -167,6 +167,8 @@
 
 	Fixed running of commands from :cmdhistory menu.
 
+	Fixed execution of FUSE mount commands from :file menu.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).

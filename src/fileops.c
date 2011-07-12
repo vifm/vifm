@@ -465,7 +465,7 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 }
 
 /* wont mount same file twice */
-static void
+void
 fuse_try_mount(FileView *view, char *program)
 {
 	Fuse_List *runner;

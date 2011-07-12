@@ -20,7 +20,6 @@ Basic things that need to be done.
     Make l key handle selection.
     :filter? to display it's current value.
     %something for absolute filenames.
-    :file menu, l on FUSE command.
     Skip all directories in history that doesn't exist.
     Expand macros for builtin commands.
     More states for permissions dialog (maybe 'f', 'd').

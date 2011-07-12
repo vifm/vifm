@@ -588,7 +588,12 @@ execute_filetype_cb(FileView *view, menu_info *m)
 	if(prog_str[0] == '\0')
 		return;
 
-	if(strchr(prog_str, '%'))
+	if(strncmp(prog_str, "FUSE_MOUNT", 10) == 0
+			|| strncmp(prog_str, "FUSE_MOUNT2", 11) == 0)
+	{
+		fuse_try_mount(view, prog_str);
+	}
+	else if(strchr(prog_str, '%'))
 	{
 		int use_menu = 0, split = 0;
 		char *expanded_command;

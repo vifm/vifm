@@ -42,6 +42,7 @@ int delete_file(FileView *view, int reg, int count, int *indexes,
 		int use_trash);
 int my_system(char *command);
 void unmount_fuse(void);
+void fuse_try_mount(FileView *view, char *program);
 int system_and_wait_for_errors(char *cmd);
 int yank_files(FileView *view, int reg, int count, int *indexes);
 void yank_selected_files(FileView *view, int reg);
