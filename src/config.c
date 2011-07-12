@@ -616,8 +616,7 @@ write_config_file(void)
 		if(is_bookmark(x) && !is_spec_bookmark(x))
 		{
 			fprintf(fp, "BOOKMARKS=%c=%s=%s\n",
-					index2mark(x),
-					bookmarks[x].directory, bookmarks[x].file);
+					index2mark(x), bookmarks[x].directory, bookmarks[x].file);
 		}
 	}
 

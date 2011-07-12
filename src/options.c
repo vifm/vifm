@@ -152,6 +152,7 @@ extract_option(const char *cmd, char *buf, int replace)
 {
 	int quote = 0;
 	int slash = 0;
+
 	while(*cmd != '\0')
 	{
 		if(slash == 1)
@@ -162,7 +163,7 @@ extract_option(const char *cmd, char *buf, int replace)
 		else if(*cmd == '\\')
 		{
 			slash = 1;
-			if(replace && quote == 0)
+			if(replace && (quote == 0 || quote == 2))
 				cmd++;
 			else
 				*buf++ = *cmd++;

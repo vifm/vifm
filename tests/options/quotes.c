@@ -23,6 +23,9 @@ test_double_quotes(void)
 {
 	set_options("fusehome=\"a b\"");
 	assert_string_equal("a b", value);
+
+	set_options("fusehome=\"a \\\" b\"");
+	assert_string_equal("a \" b", value);
 }
 
 void
