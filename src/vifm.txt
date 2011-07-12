@@ -4,7 +4,8 @@
 |Options|            Command line arguments.
 |General_keys|       General keys, that work in the most of modes.
 |Normal|             Normal mode keys.
-|Command|            How to use and set :commands.
+|Visual|             Visual mode keys.
+|Commands|           How to use and set :commands.
 |set-options|        Available options.
 |Mappings|           Special sequences.
 |Configure|          Configuration of vifm.
@@ -225,9 +226,27 @@ d2j - delete file under cursor and two below.
 y6gg - yank all files from cursor position to 6th file in the list.
 
 --------------------------------------------------------------------------------
+*Visual*
+
+In visual mode work almost all normal mode movement keys (except l and Enter).
+
+v - leave visual mode.
+
+V - leave visual mode.
+
+: - enter command line mode.  When you leave it selection will be cleared.
+
+o - switch active selection bound.
+
+O - switch active selection bound.
+
+--------------------------------------------------------------------------------
 *Commands*
 
 Commands are executed with :command_name<Return>
+
+'|' can be used to separate commands, so you can give multiple commands in one
+line.  If you want to use '|' in an argument, precede it with '\'.
 
 :number - move to the file number.
 :12 would move to the 12th file in the list.

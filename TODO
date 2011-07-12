@@ -24,7 +24,6 @@ Basic things that need to be done.
 
 Documentation.
 	Better documentation.
-    Document | in command line.
     Document :ls command (for screen program).
     Document using P to move files on fs different from where /home is.
 

@@ -363,7 +363,7 @@ leave visual mode.
 leave visual mode.
 .TP
 .BI :
-enter command line mode.
+enter command line mode.  When you leave it selection will be cleared.
 .TP
 .BI o
 switch active selection bound.
@@ -374,6 +374,9 @@ switch active selection bound.
 .SH Commands
 .\" ---------------------------------------------------------------------------
 Commands are executed with :command_name<Return>
+
+\'|' can be used to separate commands, so you can give multiple commands in one
+line.  If you want to use '|' in an argument, precede it with '\\'.
 .TP
 .BI :[count]
 .TP
