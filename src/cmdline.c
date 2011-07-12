@@ -1091,11 +1091,15 @@ line_completion(struct line_stats *stat)
 	{
 		char *filename = (char *)NULL;
 		char *raw_name = (char *)NULL;
+		char *comp_arg;
 
 		if(last_word == NULL)
 			last_word = strdup("");
 		if(last_word == NULL)
 			return -1;
+
+		comp_arg = stat->complete_continue ? NULL : last_word;
+		stat->complete_continue = 1;
 
 		if(id == COM_SET)
 		{
@@ -1105,14 +1109,13 @@ line_completion(struct line_stats *stat)
 		}
 		else if(id == COM_COLORSCHEME)
 		{
-			int ret = colorschemes_completion(line_mb, stat->complete_continue
-					? NULL : last_word, stat);
+			int ret = colorschemes_completion(line_mb, comp_arg, stat);
 			free(last_word);
 			return ret;
 		}
 		else if(id == COM_EXECUTE && words_count == 1 && last_word[0] != '.')
 		{
-			raw_name = exec_completion(stat->complete_continue ? NULL : last_word);
+			raw_name = exec_completion(comp_arg);
 		}
 		else
 		{
@@ -1126,18 +1129,17 @@ line_completion(struct line_stats *stat)
 			else
 				type = FNC_ALL;
 
-			raw_name = filename_completion(stat->complete_continue ? NULL : last_word,
-					type);
+			raw_name = filename_completion(comp_arg, type);
 		}
-
-		stat->complete_continue = 1;
 
 		if(raw_name)
 			filename = escape_filename(raw_name, 0, 1);
 
 		if(filename != NULL)
 		{
-			int ret = file_completion(filename, line_mb, stat);
+			int ret = 0;
+			
+			ret = file_completion(filename, line_mb, stat);
 			free(raw_name);
 			free(filename);
 			if(ret != 0)
@@ -1174,7 +1176,6 @@ line_completion(struct line_stats *stat)
 		}
 	}
 
-	stat->complete_continue = 1;
 	free(last_word);
 	return 0;
 }
@@ -1587,11 +1588,11 @@ filename_completion(const char *str, int type)
 	{
 		if((d = readdir(dir)) == NULL)
 		{
-			offset = -1;
-
 			closedir(dir);
 			free(dirname);
 			chdir(curr_view->curr_dir);
+
+			offset = -1;
 
 			return (type == FNC_EXECONLY) ? NULL : strdup(filename);
 		}
@@ -1654,6 +1655,26 @@ filename_completion(const char *str, int type)
 
 		free(tempfile);
 	}
+
+	while((d = readdir(dir)) != NULL)
+	{
+		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
+			continue;
+		if(strncmp(d->d_name, filename, filename_len) != 0)
+			continue;
+
+		if(type == FNC_DIRONLY && !is_entry_dir(d))
+			continue;
+		else if(type == FNC_EXECONLY && !is_entry_exec(d))
+			continue;
+		else if(type == FNC_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
+			continue;
+
+		break;
+	}
+
+	if(offset == 0 && d == NULL)
+		input_stat.complete_continue = 0;
 
 	free(filename);
 	free(dirname);
