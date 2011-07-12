@@ -829,7 +829,10 @@ cmd_cp(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_cw(struct key_info key_info, struct keys_info *keys_info)
 {
-	rename_file(curr_view, 0);
+	if(curr_view->selected_files > 1)
+		rename_files(curr_view);
+	else
+		rename_file(curr_view, 0);
 }
 
 /* Delete file. */

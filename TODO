@@ -97,8 +97,7 @@ Possible things to add.
     :locate without arguments repeats last search.
     :cd [dir1] [dir2]; :cd! dir equivalent to :cd dir dir; or :gcd
     Replace /home/my_login by ~ in view title.
-    cl key to modify links
-    cw = :rename on a selection.
+    cl key to modify links.
 
 Vim plugin
     Choose between one and two pane view on startup somehow.
