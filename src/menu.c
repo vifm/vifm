@@ -198,8 +198,21 @@ cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 {
+	static menu_info *saved_menu;
+
+	*mode = NORMAL_MODE;
+	saved_menu = menu;
 	execute_menu_cb(curr_view, menu);
-	leave_menu_mode();
+
+	if(*mode != MENU_MODE)
+	{
+		reset_popup_menu(saved_menu);
+	}
+	else if(menu != saved_menu)
+	{
+		reset_popup_menu(saved_menu);
+		redraw_menu(menu);
+	}
 }
 
 static void

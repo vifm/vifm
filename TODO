@@ -16,7 +16,6 @@ Basic things that need to be done.
     Add :filetype command (separate programs and viewer).
     Make ~user_name/ work.
     Implement :find command.
-    Run commands from :cmdhistory menu (history :).
     An option to choose shell.
     Make l key handle selection.
     :filter? to display it's current value.

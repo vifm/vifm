@@ -165,6 +165,8 @@
 
 	Fixed bug with user commands and exclamation mark.
 
+	Fixed running of commands from :cmdhistory menu.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).
