@@ -110,6 +110,7 @@ static void cmd_end(struct key_info, struct keys_info *);
 static void cmd_delete(struct key_info, struct keys_info *);
 static void complete_cmd_next(void);
 static void complete_search_next(void);
+static void resize_cmd_line(void);
 static void cmd_ctrl_p(struct key_info, struct keys_info *);
 static void complete_cmd_prev(void);
 static void complete_search_prev(void);
@@ -864,12 +865,7 @@ complete_cmd_prev(void)
 			+ wcswidth(input_stat.line, input_stat.len);
 	input_stat.index = input_stat.len;
 
-	if(input_stat.len >= line_width - 1)
-	{
-		int new_height = (1 + input_stat.len + 1 + line_width - 1)/line_width;
-		mvwin(status_bar, getbegy(status_bar) - (new_height - 1), 0);
-		wresize(status_bar, new_height, line_width);
-	}
+	resize_cmd_line();
 
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
@@ -894,12 +890,31 @@ complete_search_prev(void)
 			+ input_stat.prompt_wid;
 	input_stat.index = input_stat.len;
 
+	resize_cmd_line();
+
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
 
 	if(input_stat.cmd_pos > cfg.search_history_len - 1)
 		input_stat.cmd_pos = cfg.search_history_len - 1;
+}
+
+static void
+resize_cmd_line(void)
+{
+  int x, y;
+	int new_height;
+
+	getmaxyx(stdscr, y, x);
+
+	if(input_stat.len < line_width - 1)
+		return;
+
+	new_height = (input_stat.prompt_wid + input_stat.len + 1
+			+ line_width - 1)/line_width;
+	mvwin(status_bar, (y - 1) - (new_height - 1), 0);
+	wresize(status_bar, new_height, line_width);
 }
 
 static void
@@ -933,6 +948,8 @@ complete_cmd_next(void)
 			+ input_stat.prompt_wid;
 	input_stat.index = input_stat.len;
 
+	resize_cmd_line();
+
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
@@ -955,6 +972,8 @@ complete_search_next(void)
 	input_stat.curs_pos = input_stat.prompt_wid
 			+ wcswidth(input_stat.line, input_stat.len);
 	input_stat.index = input_stat.len;
+
+	resize_cmd_line();
 
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
