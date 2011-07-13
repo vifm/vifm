@@ -168,6 +168,7 @@ setup_ncurses_interface(void)
 	int screen_x, screen_y;
 	int x, y;
 	int i;
+	int color_scheme;
 
 	initscr();
 	noecho();
@@ -198,30 +199,31 @@ setup_ncurses_interface(void)
 					col_schemes[i].color[x].bg);
 	}
 
-	lwin.color_scheme = cfg.color_scheme_cur*MAXNUM_COLOR;
-	rwin.color_scheme = cfg.color_scheme_cur*MAXNUM_COLOR;
+	color_scheme = cfg.color_scheme_cur*MAXNUM_COLOR;
+	lwin.color_scheme = color_scheme;
+	rwin.color_scheme = color_scheme;
 
 	werase(stdscr);
 
 	menu_win = newwin(screen_y - 1, screen_x , 0, 0);
-	wbkgdset(menu_win, COLOR_PAIR(WIN_COLOR));
+	wbkgdset(menu_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	werase(menu_win);
 
 	sort_win = newwin(NUM_SORT_OPTIONS + 3, 30, (screen_y -12)/2, (screen_x -30)/2);
-	wbkgdset(sort_win, COLOR_PAIR(WIN_COLOR));
+	wbkgdset(sort_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	werase(sort_win);
 
 	change_win = newwin(20, 30, (screen_y -20)/2, (screen_x -30)/2);
-	wbkgdset(change_win, COLOR_PAIR(WIN_COLOR));
+	wbkgdset(change_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	werase(change_win);
 
 	error_win = newwin(10, screen_x -2, (screen_y -10)/2, 1);
-	wbkgdset(error_win, COLOR_PAIR(WIN_COLOR));
+	wbkgdset(error_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	werase(error_win);
 
 	lborder = newwin(screen_y - 2, 1, 0, 0);
 
-	wbkgdset(lborder, COLOR_PAIR(BORDER_COLOR));
+	wbkgdset(lborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
 
 	werase(lborder);
 
@@ -231,7 +233,7 @@ setup_ncurses_interface(void)
 		lwin.title = newwin(1, screen_x/2 - 2, 0, 1);
 
 	wattrset(lwin.title, A_BOLD);
-	wbkgdset(lwin.title, COLOR_PAIR(BORDER_COLOR));
+	wbkgdset(lwin.title, COLOR_PAIR(color_scheme + BORDER_COLOR));
 
 	werase(lwin.title);
 
@@ -240,7 +242,7 @@ setup_ncurses_interface(void)
 	else
 		lwin.win = newwin(screen_y - 3, screen_x/2 - 2, 1, 1);
 
-	wbkgdset(lwin.win, COLOR_PAIR(WIN_COLOR));
+	wbkgdset(lwin.win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	wattrset(lwin.win, A_BOLD);
 	wattron(lwin.win, A_BOLD);
 	werase(lwin.win);
@@ -250,7 +252,7 @@ setup_ncurses_interface(void)
 
 	mborder = newwin(screen_y, 2, 0, screen_x/2 - 1);
 
-	wbkgdset(mborder, COLOR_PAIR(BORDER_COLOR));
+	wbkgdset(mborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
 
 	werase(mborder);
 
@@ -259,7 +261,7 @@ setup_ncurses_interface(void)
 	else
 		rwin.title = newwin(1, screen_x/2 - 1, 0, screen_x/2 + 1);
 
-	wbkgdset(rwin.title, COLOR_PAIR(BORDER_COLOR));
+	wbkgdset(rwin.title, COLOR_PAIR(color_scheme + BORDER_COLOR));
 	wattrset(rwin.title, A_BOLD);
 	wattroff(rwin.title, A_BOLD);
 
@@ -272,7 +274,7 @@ setup_ncurses_interface(void)
 
 	wattrset(rwin.win, A_BOLD);
 	wattron(rwin.win, A_BOLD);
-	wbkgdset(rwin.win, COLOR_PAIR(WIN_COLOR));
+	wbkgdset(rwin.win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	werase(rwin.win);
 	getmaxyx(rwin.win, y, x);
 	rwin.window_rows = y - 1;
@@ -283,13 +285,13 @@ setup_ncurses_interface(void)
 	else
 		rborder = newwin(screen_y - 2, 1, 0, screen_x -1);
 
-	wbkgdset(rborder, COLOR_PAIR(BORDER_COLOR));
+	wbkgdset(rborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
 
 	werase(rborder);
 
 	stat_win = newwin(1, screen_x, screen_y -2, 0);
 
-	wbkgdset(stat_win, COLOR_PAIR(BORDER_COLOR));
+	wbkgdset(stat_win, COLOR_PAIR(color_scheme + BORDER_COLOR));
 
 	werase(stat_win);
 
@@ -299,19 +301,19 @@ setup_ncurses_interface(void)
 #endif /* ENABLE_EXTENDED_KEYS */
 	wattrset(status_bar, A_BOLD);
 	wattron(status_bar, A_BOLD);
-	wbkgdset(status_bar, COLOR_PAIR(STATUS_BAR_COLOR));
+	wbkgdset(status_bar, COLOR_PAIR(color_scheme + STATUS_BAR_COLOR));
 	werase(status_bar);
 
 	pos_win = newwin(1, 13, screen_y - 1, screen_x -13);
 	wattrset(pos_win, A_BOLD);
 	wattron(pos_win, A_BOLD);
-	wbkgdset(pos_win, COLOR_PAIR(STATUS_BAR_COLOR));
+	wbkgdset(pos_win, COLOR_PAIR(color_scheme + STATUS_BAR_COLOR));
 	werase(pos_win);
 
 	num_win = newwin(1, 6, screen_y - 1, screen_x -19);
 	wattrset(num_win, A_BOLD);
 	wattron(num_win, A_BOLD);
-	wbkgdset(num_win, COLOR_PAIR(STATUS_BAR_COLOR));
+	wbkgdset(num_win, COLOR_PAIR(color_scheme + STATUS_BAR_COLOR));
 	werase(num_win);
 
 	wnoutrefresh(lwin.title);
@@ -525,7 +527,8 @@ change_window(void)
 	if(curr_stats.number_of_windows != 1)
 	{
 		wattroff(other_view->title, A_BOLD);
-		wattroff(other_view->win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
+		wattroff(other_view->win,
+				COLOR_PAIR(other_view->color_scheme + CURR_LINE_COLOR) | A_BOLD);
 		mvwaddstr(other_view->win, other_view->curr_line, 0, "*");
 		erase_current_line_bar(other_view);
 		werase(other_view->title);
@@ -698,9 +701,10 @@ redraw_lists(void)
 }
 
 void
-load_color_scheme(FileView *view, const char *name)
+load_color_scheme(const char *name)
 {
 	int i;
+	int color_scheme;
 
 	i = find_color_scheme(name);
 	if(i < 0)
@@ -710,8 +714,19 @@ load_color_scheme(FileView *view, const char *name)
 	}
 
 	cfg.color_scheme_cur = i;
-	draw_dir_list(view, view->top_line);
-	moveto_list_pos(view, view->list_pos);
+	color_scheme = i*MAXNUM_COLOR;
+
+	wbkgdset(lborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
+	werase(lborder);
+	wbkgdset(mborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
+	werase(mborder);
+	wbkgdset(rborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
+	werase(rborder);
+	wbkgdset(stat_win, COLOR_PAIR(color_scheme + BORDER_COLOR));
+
+	draw_dir_list(curr_view, curr_view->top_line);
+	moveto_list_pos(curr_view, curr_view->list_pos);
+	draw_dir_list(other_view, other_view->top_line);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

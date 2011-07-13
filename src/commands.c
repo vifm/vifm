@@ -1580,7 +1580,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 		case COM_COLORSCHEME:
 		{
 			if(cmd->args)
-				load_color_scheme(view, cmd->args);
+				load_color_scheme(cmd->args);
 			else /* Show menu with colorschemes listed */
 				show_colorschemes_menu(view);
 			break;

@@ -629,7 +629,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 			exec_commands(m->data[m->pos], view, GET_COMMAND, 1);
 			break;
 		case COLORSCHEME:
-			load_color_scheme(view, m->data[m->pos]);
+			load_color_scheme(m->data[m->pos]);
 			break;
 		case COMMAND:
 			execute_command(view, command_list[m->pos].name);
