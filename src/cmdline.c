@@ -110,7 +110,6 @@ static void cmd_end(struct key_info, struct keys_info *);
 static void cmd_delete(struct key_info, struct keys_info *);
 static void complete_cmd_next(void);
 static void complete_search_next(void);
-static void resize_cmd_line(void);
 static void cmd_ctrl_p(struct key_info, struct keys_info *);
 static void complete_cmd_prev(void);
 static void complete_search_prev(void);
@@ -300,12 +299,15 @@ update_cmdline_size(void)
 	d = (input_stat.prompt_wid + input_stat.len + 1 + line_width - 1)/line_width;
 	mvwin(status_bar, getmaxy(stdscr) - d, 0);
 	wresize(status_bar, d, line_width);
-	werase(status_bar);
+
+	mvwin(stat_win, getmaxy(stdscr) - d - 1, 0);
+	wrefresh(stat_win);
 }
 
 static void
 update_cmdline_text(void)
 {
+	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
 	wmove(status_bar, 0, input_stat.curs_pos);
@@ -865,11 +867,10 @@ complete_cmd_prev(void)
 			+ wcswidth(input_stat.line, input_stat.len);
 	input_stat.index = input_stat.len;
 
-	resize_cmd_line();
+	if(input_stat.len >= line_width - 1)
+		update_cmdline_size();
 
-	werase(status_bar);
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
+	update_cmdline_text();
 
 	if(input_stat.cmd_pos >= cfg.cmd_history_len - 1)
 		input_stat.cmd_pos = cfg.cmd_history_len - 1;
@@ -890,31 +891,13 @@ complete_search_prev(void)
 			+ input_stat.prompt_wid;
 	input_stat.index = input_stat.len;
 
-	resize_cmd_line();
+	if(input_stat.len >= line_width - 1)
+		update_cmdline_size();
 
-	werase(status_bar);
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
+	update_cmdline_text();
 
 	if(input_stat.cmd_pos > cfg.search_history_len - 1)
 		input_stat.cmd_pos = cfg.search_history_len - 1;
-}
-
-static void
-resize_cmd_line(void)
-{
-  int x, y;
-	int new_height;
-
-	getmaxyx(stdscr, y, x);
-
-	if(input_stat.len < line_width - 1)
-		return;
-
-	new_height = (input_stat.prompt_wid + input_stat.len + 1
-			+ line_width - 1)/line_width;
-	mvwin(status_bar, (y - 1) - (new_height - 1), 0);
-	wresize(status_bar, new_height, line_width);
 }
 
 static void
@@ -948,11 +931,10 @@ complete_cmd_next(void)
 			+ input_stat.prompt_wid;
 	input_stat.index = input_stat.len;
 
-	resize_cmd_line();
+	if(input_stat.len >= line_width - 1)
+		update_cmdline_size();
 
-	werase(status_bar);
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
+	update_cmdline_text();
 
 	if(input_stat.cmd_pos > cfg.cmd_history_len - 1)
 		input_stat.cmd_pos = cfg.cmd_history_len - 1;
@@ -973,11 +955,10 @@ complete_search_next(void)
 			+ wcswidth(input_stat.line, input_stat.len);
 	input_stat.index = input_stat.len;
 
-	resize_cmd_line();
+	if(input_stat.len >= line_width - 1)
+		update_cmdline_size();
 
-	werase(status_bar);
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
+	update_cmdline_text();
 
 	if(input_stat.cmd_pos > cfg.search_history_len - 1)
 		input_stat.cmd_pos = cfg.search_history_len - 1;
