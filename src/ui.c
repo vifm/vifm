@@ -714,6 +714,7 @@ load_color_scheme(const char *name)
 	}
 
 	cfg.color_scheme_cur = i;
+	cfg.color_scheme = MAXNUM_COLOR*cfg.color_scheme_cur;
 	color_scheme = i*MAXNUM_COLOR;
 
 	wbkgdset(lborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
@@ -723,6 +724,10 @@ load_color_scheme(const char *name)
 	wbkgdset(rborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
 	werase(rborder);
 	wbkgdset(stat_win, COLOR_PAIR(color_scheme + BORDER_COLOR));
+
+	wbkgdset(sort_win, COLOR_PAIR(color_scheme + WIN_COLOR));
+	wbkgdset(change_win, COLOR_PAIR(color_scheme + WIN_COLOR));
+	wbkgdset(error_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 
 	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);

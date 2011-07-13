@@ -1080,9 +1080,10 @@ cmd_t(struct key_info key_info, struct keys_info *keys_info)
 	}
 
 	draw_dir_list(curr_view, curr_view->top_line);
-	wattron(curr_view->win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
+	wattron(curr_view->win,
+			COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
 	mvwaddstr(curr_view->win, curr_view->curr_line, 0, " ");
-	wattroff(curr_view->win, COLOR_PAIR(CURR_LINE_COLOR));
+	wattroff(curr_view->win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR));
 	wmove(curr_view->win, curr_view->curr_line, 0);
 }
 

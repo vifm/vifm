@@ -94,11 +94,11 @@ clean_menu_position(menu_info *m)
 	buf[x] = ' ';
 	buf[x + 1] = '\0';
 
-	wattron(menu_win, COLOR_PAIR(WIN_COLOR));
+	wattron(menu_win, COLOR_PAIR(cfg.color_scheme + WIN_COLOR));
 
 	mvwaddnstr(menu_win, m->current, 1, buf, x - 2);
 
-	wattroff(menu_win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
+	wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
 
 	free(buf);
 }
@@ -291,11 +291,11 @@ moveto_menu_pos(int pos, menu_info *m)
 	buf[x] = ' ';
 	buf[x + 1] = '\0';
 
-	wattron(menu_win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
+	wattron(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
 
 	mvwaddnstr(menu_win, m->current, 1, buf, x - 2);
 
-	wattroff(menu_win, COLOR_PAIR(CURR_LINE_COLOR) | A_BOLD);
+	wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
 
 	m->pos = pos;
 	free(buf);

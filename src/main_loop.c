@@ -53,7 +53,7 @@ main_loop(void)
 	int pos = 0;
 	int last_result = 0;
 
-	wattroff(curr_view->win, COLOR_PAIR(CURR_LINE_COLOR));
+	wattroff(curr_view->win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR));
 
 	wtimeout(status_bar, KEYPRESS_TIMEOUT);
 
