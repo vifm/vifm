@@ -1019,7 +1019,8 @@ try_unmount_fuse(FileView *view)
 	/* we are exiting a top level dir */
 	status_bar_message("FUSE unmounting selected file, please stand by..");
 	escaped_mount_point = escape_filename(runner->mount_point, 0, 0);
-	snprintf(buf, sizeof(buf), "fusermount -u %s", escaped_mount_point);
+	snprintf(buf, sizeof(buf), "fusermount -u %s 2> /dev/null",
+			escaped_mount_point);
 	free(escaped_mount_point);
 
 	/* have to chdir to parent temporarily, so that this DIR can be unmounted */
@@ -1033,8 +1034,11 @@ try_unmount_fuse(FileView *view)
 	/* check child status */
 	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
 	{
+		char buf[PATH_MAX*2];
 		werase(status_bar);
-		show_error_msg("FUSE UMOUNT ERROR", runner->source_file_name);
+		snprintf(buf, sizeof(buf), "Can't unmount %s.  It may be busy.",
+				runner->source_file_name);
+		show_error_msg("FUSE UMOUNT ERROR", buf);
 		(void)chdir(view->curr_dir);
 		return -1;
 	}
