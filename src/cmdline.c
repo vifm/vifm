@@ -1177,14 +1177,16 @@ line_completion(struct line_stats *stat)
 				&& last_word != NULL);
 		char *q;
 		char *complete_command;
+		char *comp_arg;
 
 		q = line_mb;
 		while(*q == ' ' || *q == ':')
 			q++;
 
-		complete_command = command_completion(
-				stat->complete_continue ? NULL : (users_only ? last_word : q),
-				users_only);
+		comp_arg = stat->complete_continue ? NULL : (users_only ? last_word : q);
+		stat->complete_continue = 1;
+
+		complete_command = command_completion(comp_arg, users_only);
 		if(complete_command != NULL)
 		{
 			int ret = insert_completed_command(stat, complete_command);

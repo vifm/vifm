@@ -196,6 +196,9 @@ command_is_reserved(const char *name)
 	int x;
 	int len = strlen(name);
 
+	if(len > 0 && name[len - 1] == '!')
+		len--;
+
 	for(x = 0; x < RESERVED; x++)
 	{
 		if(strncmp(reserved_cmds[x].name, name, len) == 0)

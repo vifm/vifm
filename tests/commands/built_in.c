@@ -15,12 +15,27 @@ test_set(void)
 	free(buf);
 }
 
+static void
+test_empty_line_completion(void)
+{
+	char *buf;
+
+	buf = command_completion("", 0);
+	assert_string_equal("!", buf);
+	free(buf);
+
+	buf = command_completion(NULL, 0);
+	assert_string_equal("apropos", buf);
+	free(buf);
+}
+
 void
 built_in(void)
 {
 	test_fixture_start();
 
 	run_test(test_set);
+	run_test(test_empty_line_completion);
 
 	test_fixture_end();
 }

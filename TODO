@@ -24,6 +24,7 @@ Basic things that need to be done.
     Expand macros for builtin commands.
     More states for permissions dialog (maybe 'f', 'd').
     Backgrounding of vicmd (& at the end).
+    Don't ignore Ctrl-Z.
 
 Documentation.
 	Better documentation.
