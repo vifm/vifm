@@ -142,4 +142,3 @@ Code improvements.
     Add log.
     Stay at the same file in some cases (on directory change and somewhere
         else were too).
-    Save homedir in cfg.

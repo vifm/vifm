@@ -97,7 +97,7 @@ create_rc_file(void)
 
 	snprintf(command, sizeof(command), CP_RC);
 	file_exec(command);
-	add_bookmark('H', getenv("HOME"), "../");
+	add_bookmark('H', cfg.home_dir, "../");
 	add_bookmark('z', cfg.config_dir, "../");
 }
 
@@ -145,41 +145,41 @@ load_default_configuration(void)
 void
 set_config_dir(void)
 {
-	char *home_dir = getenv("HOME");
+	char *home_dir;
+	FILE *f;
+	char help_file[PATH_MAX];
+	char rc_file[PATH_MAX];
+	char startup_file[PATH_MAX];
+	char *escaped;
 
-	if(home_dir)
+	home_dir = getenv("HOME");
+	if(home_dir == NULL)
+		return;
+
+	snprintf(rc_file, sizeof(rc_file), "%s/.vifm/vifmrc", home_dir);
+	snprintf(help_file, sizeof(help_file), "%s/.vifm/vifm-help_txt", home_dir);
+	snprintf(startup_file, sizeof(startup_file), "%s/.vifm/startup", home_dir);
+	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", home_dir);
+	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s/.vifm", home_dir);
+	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/.vifm/Trash", home_dir);
+	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/.vifm/log", home_dir);
+
+	escaped = escape_filename(cfg.trash_dir, 0, 0);
+	strcpy(cfg.escaped_trash_dir, escaped);
+	free(escaped);
+
+	if(chdir(cfg.config_dir))
 	{
-		FILE *f;
-		char help_file[PATH_MAX];
-		char rc_file[PATH_MAX];
-		char startup_file[PATH_MAX];
-		char *escaped;
-
-		snprintf(rc_file, sizeof(rc_file), "%s/.vifm/vifmrc", home_dir);
-		snprintf(help_file, sizeof(help_file), "%s/.vifm/vifm-help_txt", home_dir);
-		snprintf(startup_file, sizeof(startup_file), "%s/.vifm/startup", home_dir);
-		snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", home_dir);
-		snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s/.vifm", home_dir);
-		snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/.vifm/Trash", home_dir);
-		snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/.vifm/log", home_dir);
-
-		escaped = escape_filename(cfg.trash_dir, 0, 0);
-		strcpy(cfg.escaped_trash_dir, escaped);
-		free(escaped);
-
-		if(chdir(cfg.config_dir))
-		{
-			if(mkdir(cfg.config_dir, 0777))
-				return;
-			if(mkdir(cfg.trash_dir, 0777))
-				return;
-			if((f = fopen(help_file, "r")) == NULL)
-				create_help_file();
-			if((f = fopen(rc_file, "r")) == NULL)
-				create_rc_file();
-			if((f = fopen(startup_file, "r")) == NULL)
-				create_startup_file();
-		}
+		if(mkdir(cfg.config_dir, 0777))
+			return;
+		if(mkdir(cfg.trash_dir, 0777))
+			return;
+		if((f = fopen(help_file, "r")) == NULL)
+			create_help_file();
+		if((f = fopen(rc_file, "r")) == NULL)
+			create_rc_file();
+		if((f = fopen(startup_file, "r")) == NULL)
+			create_startup_file();
 	}
 }
 

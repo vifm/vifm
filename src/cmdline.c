@@ -1680,15 +1680,13 @@ filename_completion(const char *str, int type)
 
 	if(strncmp(string, "~/", 2) == 0)
 	{
-		char * homedir = getenv("HOME");
-
-		dirname = (char *)malloc((strlen(homedir) + strlen(string) + 1));
+		dirname = (char *)malloc((strlen(cfg.home_dir) + strlen(string) + 1));
 
 		if(dirname == NULL)
 			return NULL;
 
-		snprintf(dirname, strlen(homedir) + strlen(string) + 1, "%s/%s", homedir,
-				string + 2);
+		snprintf(dirname, strlen(cfg.home_dir) + strlen(string) + 1, "%s/%s",
+				cfg.home_dir, string + 2);
 
 		filename = strdup(dirname);
 	}

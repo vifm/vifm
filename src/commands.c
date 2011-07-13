@@ -1407,7 +1407,7 @@ comm_cd(FileView *view, cmd_params *cmd)
 		if(cmd->args[0] == '/')
 			snprintf(dir, sizeof(dir), "%s", cmd->args);
 		else if(cmd->args[0] == '~')
-			snprintf(dir, sizeof(dir), "%s%s", getenv("HOME"), cmd->args + 1);
+			snprintf(dir, sizeof(dir), "%s%s", cfg.home_dir, cmd->args + 1);
 		else if(strcmp(cmd->args, "%D") == 0)
 			snprintf(dir, sizeof(dir), "%s", other_view->curr_dir);
 		else if(strcmp(cmd->args, "-") == 0)
@@ -1417,7 +1417,7 @@ comm_cd(FileView *view, cmd_params *cmd)
 	}
 	else
 	{
-		snprintf(dir, sizeof(dir), "%s", getenv("HOME"));
+		snprintf(dir, sizeof(dir), "%s", cfg.home_dir);
 	}
 
 	if(access(dir, F_OK) != 0)
