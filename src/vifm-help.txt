@@ -402,13 +402,16 @@ Commands
        :filter regular_expression_pattern
               :filter /regular_expression_pattern/ will filter all  the  files
               out  of the directory listing that match the regular expression.
-              Using second variant you can use | symbol without escaping.
+              Using second variant you can use | symbol without escaping.  Add
               :filter /.o$ would filter  all  files  ending  in  .o  from  the
               filelist.
               Note: vifm uses extended regular expressions.
 
        :filter
               would filter no files from the filelist.
+
+       :filter!
+              same as :invert.
 
        :h[elp]
               show the help file.
@@ -767,4 +770,4 @@ AUTHOR
 
 
 
-                                 Jule 11, 2011                         vifm(1)
+                                 Jule 13, 2011                         vifm(1)

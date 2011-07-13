@@ -303,8 +303,9 @@ The builtin commands are:
 :filter regular_expression
 :filter /regular_expression/ - will filter files matching the pattern out of
 	the directory.  Use :filter to show all files.  Using second variant
-        you can use | symbol without escaping.  See |Filters|
-:filter - will show all files.  See |Filters|
+        you can use | symbol without escaping.  Add '!' to invert filter.
+        See |Filters|
+:filter! - same as :invert.
 :h[elp] - show the help file.
 :h[elp] argument - is the same as using ':h argument' in vim.
 :history - show directory history.

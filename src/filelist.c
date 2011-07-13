@@ -1470,7 +1470,7 @@ load_dir_list(FileView *view, int reload)
 
 	/*
 	 * It is possible to set the file name filter so that no files are showing
-	 * in the / directory.	All other directorys will always show at least the
+	 * in the / directory.  All other directorys will always show at least the
 	 * ../ file.  This resets the filter and reloads the directory.
 	 */
 	if(view->list_rows < 1)
@@ -1479,17 +1479,15 @@ load_dir_list(FileView *view, int reload)
 		snprintf(msg, sizeof(msg),
 				"The %s pattern %s did not match any files. It was reset.",
 				view->filename_filter, view->invert==1 ? "inverted" : "");
-		status_bar_message(msg);
-		view->filename_filter = (char *)realloc(view->filename_filter,
-				strlen("*") + 1);
+		show_error_msg("Filter error", msg);
+		view->filename_filter = (char *)realloc(view->filename_filter, 1);
 		if(view->filename_filter == NULL)
 		{
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return;
 		}
 		strcpy(view->filename_filter, "");
-		if(view->invert)
-			view->invert = 0;
+		view->invert = !view->invert;
 
 		load_dir_list(view, 1);
 

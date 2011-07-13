@@ -474,7 +474,7 @@ save_command_history(const char *command)
 		return;
 
 	/* Don't add duplicates */
-	if(cfg.cmd_history_num > 0 && !strcmp(command, cfg.cmd_history[0]))
+	if(cfg.cmd_history_num >= 0 && !strcmp(command, cfg.cmd_history[0]))
 		return;
 
 	if(cfg.cmd_history_num + 1 >= cfg.cmd_history_len)
@@ -1706,7 +1706,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 						args = cmd->argv[0];
 					}
 				}
-				else if(args[0] == '\0')
+				else if(args[0] == '\0' && !invert)
 				{
 					view->invert = !view->invert;
 					load_dir_list(view, 1);

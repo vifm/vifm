@@ -1,4 +1,4 @@
-.TH vifm 1 "Jule 11, 2011" "" "Vifm"
+.TH vifm 1 "Jule 13, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -484,7 +484,8 @@ the end of command to run program in background.
 .BI ":filter regular_expression_pattern"
 .BI ":filter /regular_expression_pattern/"
 will filter all the files out of the directory listing that match the regular
-expression.  Using second variant you can use | symbol without escaping.
+expression.  Using second variant you can use | symbol without escaping.  Add
+'!' to invert filter.
 .br
 :filter /\.o$ would filter all files ending in .o from the filelist.
 .br
@@ -492,6 +493,9 @@ Note: vifm uses extended regular expressions.
 .TP
 .BI ":filter"
 would filter no files from the filelist.
+.TP
+.BI ":filter!"
+same as :invert.
 .TP
 .BI :h[elp]
 show the help file.

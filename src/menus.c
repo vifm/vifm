@@ -1326,7 +1326,7 @@ show_history_menu(FileView *view)
 	m.matching_entries = 0;
 	m.match_dir = NONE;
 	m.regexp = NULL;
-	m.title = NULL;
+	m.title = strdup(" Directory History ");
 	m.args = NULL;
 	m.data = NULL;
 
