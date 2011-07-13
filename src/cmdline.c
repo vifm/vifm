@@ -1047,11 +1047,13 @@ cmd_up(struct key_info key_info, struct keys_info *keys_info)
 static void
 update_cmdline(void)
 {
+	int d;
 	input_stat.curs_pos = input_stat.prompt_wid
 			+ wcswidth(input_stat.line, input_stat.len);
 	input_stat.index = input_stat.len;
 
-	if(input_stat.len >= line_width - 1)
+	d = (input_stat.prompt_wid + input_stat.len + 1 + line_width - 1)/line_width;
+	if(d > getmaxy(status_bar))
 		update_cmdline_size();
 
 	update_cmdline_text();
