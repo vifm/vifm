@@ -226,13 +226,14 @@ split_path(void)
 		}
 		snprintf(s, q - p + 1, "%s", p);
 
+		p = q;
+
 		if(access(s, F_OK) != 0)
 		{
 			free(s);
 			continue;
 		}
 
-		p = q;
 		paths[i++] = s;
 
 		for(j = 0; j < i - 1; j++)
@@ -1428,6 +1429,7 @@ exec_completion(char *str)
 			continue;
 		result = filename_completion((last_dir != dir) ? string : NULL,
 				FNC_EXECONLY);
+		input_stat.complete_continue = 1;
 		if(result == NULL)
 		{
 			last_dir = dir;

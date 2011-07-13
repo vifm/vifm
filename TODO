@@ -82,7 +82,6 @@ Possible things to add.
     Add :mark command.
     Invert selection?
     :g = grep :g! = grep -v
-    :filter! pattern same as :filter pattern | invert, and :filter! = :invert
     :history without duplicates.
     Make :undolist more interactive.
     A :restart function to reload everything.
@@ -129,7 +128,7 @@ Other (questionable) things.
     Filetype support for directories.
     :edit, etc. in menus.
     :alias
-    Like g. but to select just pasted files.
+    Like gv but to select just pasted files.
 
 Code improvements.
     Move completion code from cmdline to a separate file.
@@ -141,3 +140,4 @@ Code improvements.
     Add log.
     Stay at the same file in some cases (on directory change and somewhere
         else were too).
+    Save homedir in cfg.

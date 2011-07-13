@@ -1486,9 +1486,9 @@ edit_cmd_selection(FileView *view)
 }
 
 static void
-set_view_filter(FileView *view, const char *filter)
+set_view_filter(FileView *view, const char *filter, int invert)
 {
-	view->invert = 1;
+	view->invert = invert;
 	view->filename_filter = realloc(view->filename_filter, strlen(filter) + 1);
 	strcpy(view->filename_filter, filter);
 	load_saving_pos(view, 1);
@@ -1677,22 +1677,41 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			break;
 		case COM_FILTER:
 			{
+				int invert = 1;
 				const char *args = cmd->args;
 				if(args == NULL)
+				{
 					args = "";
+				}
 				else if(args[0] == '!')
+				{
+					invert = 0;
 					args++;
+				}
 
 				args = skip_spaces(args);
 
 				if(args[0] != '\0' && args[0] == '/' && args[strlen(args) - 1] == '/')
 				{
 					if(cmd->argc == 2 && cmd->argv[0][0] == '!')
+					{
+						invert = 0;
 						args = cmd->argv[1];
+					}
 					else if(cmd->argc == 1)
+					{
 						args = cmd->argv[0];
+					}
 				}
-				set_view_filter(view, args);
+				else if(args[0] == '\0')
+				{
+					view->invert = !view->invert;
+					load_dir_list(view, 1);
+					moveto_list_pos(view, 0);
+					curr_stats.setting_change = 1;
+				}
+				else
+					set_view_filter(view, args, invert);
 			}
 			break;
 		case COM_FILE:
