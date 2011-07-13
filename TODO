@@ -30,6 +30,7 @@ Documentation.
 	Better documentation.
     Document :ls command (for screen program).
     Document using P to move files on fs different from where /home is.
+    Document command line keys.
 
 Vi(m) specific features that need to be added.
 	Finish implementing range and count for user commands.

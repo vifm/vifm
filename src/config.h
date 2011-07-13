@@ -25,6 +25,7 @@
 #define KEYPRESS_TIMEOUT 1000 /* 1 second */
 
 typedef struct _Config {
+	char home_dir[PATH_MAX];
 	char config_dir[PATH_MAX];
 	char trash_dir[PATH_MAX];
 	char escaped_trash_dir[PATH_MAX];

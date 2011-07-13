@@ -1651,6 +1651,12 @@ filename_completion(const char *str, int type)
 
 	if(str != NULL)
 	{
+		if(strcmp(str, "~") == 0)
+		{
+			input_stat.complete_continue = 0;
+			return strdup(cfg.home_dir);
+		}
+
 		free(string);
 		string = strdup(str);
 		offset = 0;
@@ -1708,8 +1714,6 @@ filename_completion(const char *str, int type)
 
 	while((d = readdir(dir)) != NULL)
 	{
-		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
-			continue;
 		if(strncmp(d->d_name, filename, filename_len) != 0)
 			continue;
 
@@ -1746,8 +1750,6 @@ filename_completion(const char *str, int type)
 			return (type == FNC_EXECONLY) ? NULL : strdup(filename);
 		}
 
-		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
-			continue;
 		if(strncmp(d->d_name, filename, filename_len) != 0)
 			continue;
 
@@ -1807,8 +1809,6 @@ filename_completion(const char *str, int type)
 
 	while((d = readdir(dir)) != NULL)
 	{
-		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
-			continue;
 		if(strncmp(d->d_name, filename, filename_len) != 0)
 			continue;
 

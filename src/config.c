@@ -158,6 +158,7 @@ set_config_dir(void)
 		snprintf(rc_file, sizeof(rc_file), "%s/.vifm/vifmrc", home_dir);
 		snprintf(help_file, sizeof(help_file), "%s/.vifm/vifm-help_txt", home_dir);
 		snprintf(startup_file, sizeof(startup_file), "%s/.vifm/startup", home_dir);
+		snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", home_dir);
 		snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s/.vifm", home_dir);
 		snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/.vifm/Trash", home_dir);
 		snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/.vifm/log", home_dir);
