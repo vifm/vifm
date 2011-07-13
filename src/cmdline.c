@@ -899,7 +899,7 @@ complete_cmd_prev(void)
 		int i = cfg.cmd_history_num + 1;
 		int pos = input_stat.cmd_pos;
 		int len = input_stat.hist_search_len;
-		while(i-- > 0)
+		while(i > 0)
 		{
 			wchar_t *buf;
 			pos = (pos + 1)%(cfg.cmd_history_num + 1);
@@ -910,7 +910,10 @@ complete_cmd_prev(void)
 				break;
 			}
 			free(buf);
+			i--;
 		}
+		if(i == 0)
+			return;
 		input_stat.cmd_pos = pos;
 	}
 
@@ -945,7 +948,7 @@ complete_search_prev(void)
 		int i = cfg.search_history_num + 1;
 		int pos = input_stat.cmd_pos;
 		int len = input_stat.hist_search_len;
-		while(i-- > 0)
+		while(i > 0)
 		{
 			wchar_t *buf;
 			pos = (pos + 1)%(cfg.search_history_num + 1);
@@ -956,7 +959,10 @@ complete_search_prev(void)
 				break;
 			}
 			free(buf);
+			i--;
 		}
+		if(i == 0)
+			return;
 		input_stat.cmd_pos = pos;
 	}
 
@@ -1030,7 +1036,7 @@ complete_cmd_next(void)
 		int i = cfg.cmd_history_num + 1;
 		int pos = input_stat.cmd_pos;
 		int len = input_stat.hist_search_len;
-		while(i-- > 0)
+		while(i > 0)
 		{
 			wchar_t *buf;
 			if(--pos < 0)
@@ -1042,7 +1048,10 @@ complete_cmd_next(void)
 				break;
 			}
 			free(buf);
+			i--;
 		}
+		if(i == 0)
+			return;
 		input_stat.cmd_pos = pos;
 	}
 
@@ -1077,7 +1086,7 @@ complete_search_next(void)
 		int i = cfg.search_history_num + 1;
 		int pos = input_stat.cmd_pos;
 		int len = input_stat.hist_search_len;
-		while(i-- > 0)
+		while(i > 0)
 		{
 			wchar_t *buf;
 			if(--pos < 0)
@@ -1089,7 +1098,10 @@ complete_search_next(void)
 				break;
 			}
 			free(buf);
+			i--;
 		}
+		if(i == 0)
+			return;
 		input_stat.cmd_pos = pos;
 	}
 
