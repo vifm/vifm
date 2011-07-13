@@ -808,7 +808,8 @@ cmd_end(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.index = input_stat.len;
 	input_stat.curs_pos = input_stat.prompt_wid + input_stat.len;
-	wmove(status_bar, 0, input_stat.curs_pos);
+	wmove(status_bar, input_stat.curs_pos/line_width,
+			input_stat.curs_pos%line_width);
 }
 
 static void

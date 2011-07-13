@@ -23,6 +23,7 @@ Basic things that need to be done.
     Skip all directories in history that doesn't exist.
     Expand macros for builtin commands.
     More states for permissions dialog (maybe 'f', 'd').
+    Backgrounding of vicmd (& at the end).
 
 Documentation.
 	Better documentation.
@@ -69,6 +70,7 @@ Vi(m) specific features that need to be added.
     :cd ~<tab> -> :cd ~/
     \ at the start of line.
     :delete reg count
+    ! completion like in vi.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -95,6 +97,7 @@ Possible things to add.
     :cd [dir1] [dir2]; :cd! dir equivalent to :cd dir dir; or :gcd
     Replace /home/my_login by ~ in view title.
     cl key to modify links.
+    filetypes for X and for console
 
 Vim plugin
     Choose between one and two pane view on startup somehow.
