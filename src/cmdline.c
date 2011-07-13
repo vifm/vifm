@@ -1669,6 +1669,14 @@ exec_completion(char *str)
 static int
 is_entry_dir(const struct dirent *d)
 {
+	if(d->d_type == DT_UNKNOWN)
+	{
+		struct stat st;
+		if(stat(d->d_name, &st) != 0)
+			return 0;
+		return S_ISDIR(st.st_mode);
+	}
+
 	if(d->d_type != DT_DIR && d->d_type != DT_LNK)
 		return 0;
 	if(d->d_type == DT_LNK && !check_link_is_dir(d->d_name))
