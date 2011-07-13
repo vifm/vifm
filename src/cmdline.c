@@ -64,11 +64,13 @@ struct line_stats
 	wchar_t prompt[320];   /* prompt */
 	int prompt_wid;        /* width of prompt */
 	int complete_continue; /* If non-zero, continue the previous completion */
+	int history_search;    /* If != 0, continue the previous <up>/<down> search */
+	int hist_search_len;   /* Length of history search pattern */
 };
 
 /* values of type argument for filename_completion() function */
 enum {
-	FNC_ALL,	    /* all files and directories */
+	FNC_ALL,      /* all files and directories */
 	FNC_DIRONLY,  /* only directories */
 	FNC_EXECONLY, /* only executable files */
 	FNC_DIREXEC   /* directories and executable files */
@@ -96,6 +98,7 @@ static void cmd_ctrl_i(struct key_info, struct keys_info *);
 static void cmd_ctrl_k(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
 static void cmd_ctrl_n(struct key_info, struct keys_info *);
+static void cmd_down(struct key_info, struct keys_info *);
 static void cmd_ctrl_u(struct key_info, struct keys_info *);
 static void cmd_ctrl_w(struct key_info, struct keys_info *);
 static void cmd_meta_b(struct key_info, struct keys_info *);
@@ -111,6 +114,7 @@ static void cmd_delete(struct key_info, struct keys_info *);
 static void complete_cmd_next(void);
 static void complete_search_next(void);
 static void cmd_ctrl_p(struct key_info, struct keys_info *);
+static void cmd_up(struct key_info, struct keys_info *);
 static void complete_cmd_prev(void);
 static void complete_search_prev(void);
 static int line_completion(struct line_stats *stat);
@@ -144,8 +148,8 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x7f",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_BACKSPACE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
-	{{KEY_DOWN},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_n}}},
-	{{KEY_UP},        {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_p}}},
+	{{KEY_DOWN},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_down}}},
+	{{KEY_UP},        {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_up}}},
 	{{KEY_LEFT},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left}}},
 	{{KEY_RIGHT},     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right}}},
 	{{KEY_HOME},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_home}}},
@@ -254,6 +258,8 @@ def_handler(wchar_t key)
 {
 	void *p;
 	wchar_t buf[2] = {key, L'\0'};
+
+	input_stat.history_search = 0;
 
 	if(input_stat.complete_continue == 1
 			&& input_stat.line[input_stat.index - 1] == L'/' && key == '/')
@@ -413,6 +419,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 	input_stat.len = input_stat.index;
 	input_stat.cmd_pos = -1;
 	input_stat.complete_continue = 0;
+	input_stat.history_search = 0;
 
 	wcsncpy(input_stat.prompt, prompt, sizeof(input_stat.prompt)/sizeof(wchar_t));
 	input_stat.prompt_wid = input_stat.curs_pos = wcslen(input_stat.prompt);
@@ -478,6 +485,7 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 {
+	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
 
 	if(input_stat.index == 0)
@@ -557,6 +565,7 @@ cmd_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_k(struct key_info key_info, struct keys_info *keys_info)
 {
+	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
 
 	if(input_stat.index == input_stat.len)
@@ -642,6 +651,23 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_n(struct key_info key_info, struct keys_info *keys_info)
 {
+	input_stat.history_search = 0;
+	input_stat.complete_continue = 0;
+
+	if(sub_mode == CMD_SUBMODE)
+	{
+		complete_cmd_next();
+	}
+	else if(sub_mode == SEARCH_FORWARD_SUBMODE
+			|| sub_mode == SEARCH_BACKWARD_SUBMODE)
+	{
+		complete_search_next();
+	}
+}
+
+static void
+cmd_down(struct key_info key_info, struct keys_info *keys_info)
+{
 	input_stat.complete_continue = 0;
 
 	if(sub_mode == CMD_SUBMODE)
@@ -658,6 +684,7 @@ cmd_ctrl_n(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 {
+	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
 
 	if(input_stat.index == 0)
@@ -682,6 +709,7 @@ cmd_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
 {
 	int old;
 
+	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
 
 	old = input_stat.index;
@@ -773,6 +801,7 @@ find_next_word(void)
 static void
 cmd_left(struct key_info key_info, struct keys_info *keys_info)
 {
+	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
 
 	if(input_stat.index > 0)
@@ -787,6 +816,7 @@ cmd_left(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_right(struct key_info key_info, struct keys_info *keys_info)
 {
+	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
 
 	if(input_stat.index < input_stat.len)
@@ -818,6 +848,7 @@ cmd_end(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_delete(struct key_info key_info, struct keys_info *keys_info)
 {
+	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
 
 	if(input_stat.index == input_stat.len)
@@ -858,8 +889,30 @@ complete_cmd_prev(void)
 	if(cfg.cmd_history_num < 0)
 		return;
 
-	if(++input_stat.cmd_pos > cfg.cmd_history_num)
-		input_stat.cmd_pos = 0;
+	if(!input_stat.history_search)
+	{
+		if(++input_stat.cmd_pos > cfg.cmd_history_num)
+			input_stat.cmd_pos = 0;
+	}
+	else
+	{
+		int i = cfg.cmd_history_num + 1;
+		int pos = input_stat.cmd_pos;
+		int len = input_stat.hist_search_len;
+		while(i-- > 0)
+		{
+			wchar_t *buf;
+			pos = (pos + 1)%(cfg.cmd_history_num + 1);
+			buf = to_wide(cfg.cmd_history[pos]);
+			if(wcsncmp(input_stat.line, buf, len) == 0)
+			{
+				free(buf);
+				break;
+			}
+			free(buf);
+		}
+		input_stat.cmd_pos = pos;
+	}
 
 	replace_input_line(cfg.cmd_history[input_stat.cmd_pos]);
 
@@ -882,8 +935,30 @@ complete_search_prev(void)
 	if(cfg.search_history_num < 0)
 		return;
 
-	if(++input_stat.cmd_pos > cfg.search_history_num)
-		input_stat.cmd_pos = 0;
+	if(!input_stat.history_search)
+	{
+		if(++input_stat.cmd_pos > cfg.search_history_num)
+			input_stat.cmd_pos = 0;
+	}
+	else
+	{
+		int i = cfg.search_history_num + 1;
+		int pos = input_stat.cmd_pos;
+		int len = input_stat.hist_search_len;
+		while(i-- > 0)
+		{
+			wchar_t *buf;
+			pos = (pos + 1)%(cfg.search_history_num + 1);
+			buf = to_wide(cfg.search_history[pos]);
+			if(wcsncmp(input_stat.line, buf, len) == 0)
+			{
+				free(buf);
+				break;
+			}
+			free(buf);
+		}
+		input_stat.cmd_pos = pos;
+	}
 
 	replace_input_line(cfg.search_history[input_stat.cmd_pos]);
 
@@ -903,7 +978,30 @@ complete_search_prev(void)
 static void
 cmd_ctrl_p(struct key_info key_info, struct keys_info *keys_info)
 {
+	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
+
+	if(sub_mode == CMD_SUBMODE)
+	{
+		complete_cmd_prev();
+	}
+	else if(sub_mode == SEARCH_FORWARD_SUBMODE
+			|| sub_mode == SEARCH_BACKWARD_SUBMODE)
+	{
+		complete_search_prev();
+	}
+}
+
+static void
+cmd_up(struct key_info key_info, struct keys_info *keys_info)
+{
+	input_stat.complete_continue = 0;
+
+	if(!input_stat.history_search)
+	{
+		input_stat.history_search = 1;
+		input_stat.hist_search_len = input_stat.len;
+	}
 
 	if(sub_mode == CMD_SUBMODE)
 	{
@@ -922,8 +1020,31 @@ complete_cmd_next(void)
 	if(cfg.cmd_history_num < 0)
 		return;
 
-	if(--input_stat.cmd_pos < 0)
-		input_stat.cmd_pos = cfg.cmd_history_num;
+	if(!input_stat.history_search)
+	{
+		if(--input_stat.cmd_pos < 0)
+			input_stat.cmd_pos = cfg.cmd_history_num;
+	}
+	else
+	{
+		int i = cfg.cmd_history_num + 1;
+		int pos = input_stat.cmd_pos;
+		int len = input_stat.hist_search_len;
+		while(i-- > 0)
+		{
+			wchar_t *buf;
+			if(--pos < 0)
+				pos = cfg.cmd_history_num;
+			buf = to_wide(cfg.cmd_history[pos]);
+			if(wcsncmp(input_stat.line, buf, len) == 0)
+			{
+				free(buf);
+				break;
+			}
+			free(buf);
+		}
+		input_stat.cmd_pos = pos;
+	}
 
 	replace_input_line(cfg.cmd_history[input_stat.cmd_pos]);
 
@@ -946,8 +1067,31 @@ complete_search_next(void)
 	if(cfg.search_history_num < 0)
 		return;
 
-	if(--input_stat.cmd_pos < 0)
-		input_stat.cmd_pos = cfg.search_history_num;
+	if(!input_stat.history_search)
+	{
+		if(--input_stat.cmd_pos < 0)
+			input_stat.cmd_pos = cfg.search_history_num;
+	}
+	else
+	{
+		int i = cfg.search_history_num + 1;
+		int pos = input_stat.cmd_pos;
+		int len = input_stat.hist_search_len;
+		while(i-- > 0)
+		{
+			wchar_t *buf;
+			if(--pos < 0)
+				pos = cfg.search_history_num;
+			buf = to_wide(cfg.search_history[pos]);
+			if(wcsncmp(input_stat.line, buf, len) == 0)
+			{
+				free(buf);
+				break;
+			}
+			free(buf);
+		}
+		input_stat.cmd_pos = pos;
+	}
 
 	replace_input_line(cfg.search_history[input_stat.cmd_pos]);
 

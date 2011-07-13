@@ -96,6 +96,8 @@
 
 	Leave visual mode when leaving cmdline mode started from visual mode.
 
+	<up>, <down> keys to move through history like in Vim.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.
