@@ -64,7 +64,7 @@ struct line_stats
 	wchar_t prompt[320];   /* prompt */
 	int prompt_wid;        /* width of prompt */
 	int complete_continue; /* if non-zero, continue the previous completion */
-	int history_search;    /* if != 0, continue the previous <up>/<down> search */
+	int history_search;    /* 0 - none, 1 - <c-n>/<c-p>, 2 - <down>/<up> */
 	int hist_search_len;   /* length of history search pattern */
 	wchar_t *line_buf;     /* content of line before using history */
 };
@@ -112,6 +112,7 @@ static void cmd_right(struct key_info, struct keys_info *);
 static void cmd_home(struct key_info, struct keys_info *);
 static void cmd_end(struct key_info, struct keys_info *);
 static void cmd_delete(struct key_info, struct keys_info *);
+static void update_cmdline(void);
 static void complete_cmd_next(void);
 static void complete_search_next(void);
 static void cmd_ctrl_p(struct key_info, struct keys_info *);
@@ -654,12 +655,16 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_n(struct key_info key_info, struct keys_info *keys_info)
 {
-	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
 
-	free(input_stat.line_buf);
-	input_stat.line_buf = my_wcsdup(input_stat.line != NULL ?
-			input_stat.line : L"");
+	if(input_stat.history_search == 0)
+	{
+		free(input_stat.line_buf);
+		input_stat.line_buf = my_wcsdup(input_stat.line != NULL ?
+				input_stat.line : L"");
+	}
+
+	input_stat.history_search = 1;
 
 	if(sub_mode == CMD_SUBMODE)
 	{
@@ -677,9 +682,18 @@ cmd_down(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.complete_continue = 0;
 
-	free(input_stat.line_buf);
-	input_stat.line_buf = my_wcsdup(input_stat.line != NULL ?
-			input_stat.line : L"");
+	if(input_stat.history_search == 0)
+	{
+		free(input_stat.line_buf);
+		input_stat.line_buf = my_wcsdup(input_stat.line != NULL ?
+				input_stat.line : L"");
+	}
+
+	if(input_stat.history_search != 2)
+	{
+		input_stat.history_search = 2;
+		input_stat.hist_search_len = input_stat.len;
+	}
 
 	if(sub_mode == CMD_SUBMODE)
 	{
@@ -900,7 +914,7 @@ complete_cmd_prev(void)
 	if(cfg.cmd_history_num < 0)
 		return;
 
-	if(!input_stat.history_search)
+	if(input_stat.history_search != 2)
 	{
 		if(input_stat.cmd_pos == cfg.cmd_history_num)
 			return;
@@ -929,14 +943,7 @@ complete_cmd_prev(void)
 
 	replace_input_line(cfg.cmd_history[input_stat.cmd_pos]);
 
-	input_stat.curs_pos = input_stat.prompt_wid
-			+ wcswidth(input_stat.line, input_stat.len);
-	input_stat.index = input_stat.len;
-
-	if(input_stat.len >= line_width - 1)
-		update_cmdline_size();
-
-	update_cmdline_text();
+	update_cmdline();
 
 	if(input_stat.cmd_pos >= cfg.cmd_history_len - 1)
 		input_stat.cmd_pos = cfg.cmd_history_len - 1;
@@ -948,7 +955,7 @@ complete_search_prev(void)
 	if(cfg.search_history_num < 0)
 		return;
 
-	if(!input_stat.history_search)
+	if(input_stat.history_search != 2)
 	{
 		if(input_stat.cmd_pos == cfg.search_history_num)
 			return;
@@ -977,14 +984,7 @@ complete_search_prev(void)
 
 	replace_input_line(cfg.search_history[input_stat.cmd_pos]);
 
-	input_stat.curs_pos = wcswidth(input_stat.line, input_stat.len)
-			+ input_stat.prompt_wid;
-	input_stat.index = input_stat.len;
-
-	if(input_stat.len >= line_width - 1)
-		update_cmdline_size();
-
-	update_cmdline_text();
+	update_cmdline();
 
 	if(input_stat.cmd_pos > cfg.search_history_len - 1)
 		input_stat.cmd_pos = cfg.search_history_len - 1;
@@ -993,12 +993,16 @@ complete_search_prev(void)
 static void
 cmd_ctrl_p(struct key_info key_info, struct keys_info *keys_info)
 {
-	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
 
-	free(input_stat.line_buf);
-	input_stat.line_buf = my_wcsdup(input_stat.line != NULL ?
-			input_stat.line : L"");
+	if(input_stat.history_search == 0)
+	{
+		free(input_stat.line_buf);
+		input_stat.line_buf = my_wcsdup(input_stat.line != NULL ?
+				input_stat.line : L"");
+	}
+
+	input_stat.history_search = 1;
 
 	if(sub_mode == CMD_SUBMODE)
 	{
@@ -1016,13 +1020,16 @@ cmd_up(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.complete_continue = 0;
 
-	free(input_stat.line_buf);
-	input_stat.line_buf = my_wcsdup(input_stat.line != NULL ?
-			input_stat.line : L"");
-
-	if(!input_stat.history_search)
+	if(input_stat.history_search == 0)
 	{
-		input_stat.history_search = 1;
+		free(input_stat.line_buf);
+		input_stat.line_buf = my_wcsdup(input_stat.line != NULL ?
+				input_stat.line : L"");
+	}
+
+	if(input_stat.history_search != 2)
+	{
+		input_stat.history_search = 2;
 		input_stat.hist_search_len = input_stat.len;
 	}
 
@@ -1038,15 +1045,35 @@ cmd_up(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+update_cmdline(void)
+{
+	input_stat.curs_pos = input_stat.prompt_wid
+			+ wcswidth(input_stat.line, input_stat.len);
+	input_stat.index = input_stat.len;
+
+	if(input_stat.len >= line_width - 1)
+		update_cmdline_size();
+
+	update_cmdline_text();
+}
+
+static void
 complete_cmd_next(void)
 {
 	if(cfg.cmd_history_num < 0)
 		return;
 
-	if(!input_stat.history_search)
+	if(input_stat.history_search != 2)
 	{
 		if(input_stat.cmd_pos <= 0)
+		{
+			input_stat.cmd_pos = -1;
+			free(input_stat.line);
+			input_stat.line = my_wcsdup(input_stat.line_buf);
+			input_stat.len = wcslen(input_stat.line);
+			update_cmdline();
 			return;
+		}
 		input_stat.cmd_pos--;
 	}
 	else
@@ -1066,20 +1093,20 @@ complete_cmd_next(void)
 			free(buf);
 		}
 		if(pos < 0)
+		{
+			input_stat.cmd_pos = -1;
+			free(input_stat.line);
+			input_stat.line = my_wcsdup(input_stat.line_buf);
+			input_stat.len = wcslen(input_stat.line);
+			update_cmdline();
 			return;
+		}
 		input_stat.cmd_pos = pos;
 	}
 
 	replace_input_line(cfg.cmd_history[input_stat.cmd_pos]);
 
-	input_stat.curs_pos = wcswidth(input_stat.line, input_stat.len)
-			+ input_stat.prompt_wid;
-	input_stat.index = input_stat.len;
-
-	if(input_stat.len >= line_width - 1)
-		update_cmdline_size();
-
-	update_cmdline_text();
+	update_cmdline();
 
 	if(input_stat.cmd_pos > cfg.cmd_history_len - 1)
 		input_stat.cmd_pos = cfg.cmd_history_len - 1;
@@ -1091,10 +1118,17 @@ complete_search_next(void)
 	if(cfg.search_history_num < 0)
 		return;
 
-	if(!input_stat.history_search)
+	if(input_stat.history_search != 2)
 	{
 		if(input_stat.cmd_pos <= 0)
+		{
+			input_stat.cmd_pos = -1;
+			free(input_stat.line);
+			input_stat.line = my_wcsdup(input_stat.line_buf);
+			input_stat.len = wcslen(input_stat.line);
+			update_cmdline();
 			return;
+		}
 		input_stat.cmd_pos--;
 	}
 	else
@@ -1114,20 +1148,20 @@ complete_search_next(void)
 			free(buf);
 		}
 		if(pos < 0)
+		{
+			input_stat.cmd_pos = -1;
+			free(input_stat.line);
+			input_stat.line = my_wcsdup(input_stat.line_buf);
+			input_stat.len = wcslen(input_stat.line);
+			update_cmdline();
 			return;
+		}
 		input_stat.cmd_pos = pos;
 	}
 
 	replace_input_line(cfg.search_history[input_stat.cmd_pos]);
 
-	input_stat.curs_pos = input_stat.prompt_wid
-			+ wcswidth(input_stat.line, input_stat.len);
-	input_stat.index = input_stat.len;
-
-	if(input_stat.len >= line_width - 1)
-		update_cmdline_size();
-
-	update_cmdline_text();
+	update_cmdline();
 
 	if(input_stat.cmd_pos > cfg.search_history_len - 1)
 		input_stat.cmd_pos = cfg.search_history_len - 1;

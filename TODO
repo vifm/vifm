@@ -107,7 +107,6 @@ Vim plugin
 
 Other (questionable) things.
     %i macro to prompt user for input.
-    Don't wrap command history (what about an option for this?).
     Maybe inotify support on Linux.
     Add ... at the end of a title or always add it in the middle
     Command like ' but that executes bookmark ?

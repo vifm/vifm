@@ -98,6 +98,10 @@
 
 	<up>, <down> keys to move through history like in Vim.
 
+	No more cycling in history.
+
+	Don't loose input when going through history.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.
