@@ -338,10 +338,13 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 		runner = fuse_mounts;
 		while(runner->next != NULL)
 			runner = runner->next;
-		mount_point_id = runner->mount_point_id + 1;
+		mount_point_id = runner->mount_point_id;
 	}
-	snprintf(mount_point, PATH_MAX, "%s/%03d_%s", cfg.fuse_home, mount_point_id,
-			get_current_file_name(view));
+	do
+	{
+		snprintf(mount_point, PATH_MAX, "%s/%03d_%s", cfg.fuse_home,
+				++mount_point_id, get_current_file_name(view));
+	} while(access(mount_point, F_OK) == 0);
 	if(mkdir(mount_point, S_IRWXU))
 	{
 		free(escaped_filename);
