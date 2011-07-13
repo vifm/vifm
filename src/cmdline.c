@@ -1726,6 +1726,8 @@ filename_completion(const char *str, int type)
 
 	while((d = readdir(dir)) != NULL)
 	{
+		if(filename[0] == '\0' && d->d_name[0] == '.')
+			continue;
 		if(strncmp(d->d_name, filename, filename_len) != 0)
 			continue;
 
@@ -1762,6 +1764,8 @@ filename_completion(const char *str, int type)
 			return (type == FNC_EXECONLY) ? NULL : strdup(filename);
 		}
 
+		if(filename[0] == '\0' && d->d_name[0] == '.')
+			continue;
 		if(strncmp(d->d_name, filename, filename_len) != 0)
 			continue;
 
@@ -1821,6 +1825,8 @@ filename_completion(const char *str, int type)
 
 	while((d = readdir(dir)) != NULL)
 	{
+		if(filename[0] == '\0' && d->d_name[0] == '.')
+			continue;
 		if(strncmp(d->d_name, filename, filename_len) != 0)
 			continue;
 
