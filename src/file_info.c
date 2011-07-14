@@ -167,6 +167,7 @@ redraw_full_file_properties(FileView *v)
 	struct tm *tm_ptr;
 	int x, y;
 	int curr_y;
+	unsigned long long size;
 
 	if(v != NULL)
 		view = v;
@@ -179,8 +180,15 @@ redraw_full_file_properties(FileView *v)
 	snprintf(name_buf, sizeof(name_buf), "%s",
 			view->dir_entry[view->list_pos].name);
 
-	friendly_size_notation(view->dir_entry[view->list_pos].size,
-			sizeof(size_buf), size_buf);
+	size = 0;
+	if(view->dir_entry[view->list_pos].type == DIRECTORY)
+		tree_get_data(curr_stats.dirsize_cache,
+				view->dir_entry[view->list_pos].name, &size);
+
+	if(size == 0)
+		size = view->dir_entry[view->list_pos].size;
+
+	friendly_size_notation(size, sizeof(size_buf), size_buf);
 
 	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
 	{
