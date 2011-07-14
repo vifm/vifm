@@ -704,6 +704,46 @@ erase_current_line_bar(FileView *view)
 	}
 }
 
+/* Returns non-zero if redraw is needed */
+static int
+move_curr_line(FileView *view, int pos)
+{
+	if(pos < 1)
+		pos = 0;
+
+	if(pos > view->list_rows - 1)
+		pos = view->list_rows - 1;
+
+	if(pos == -1)
+		return 0;
+
+	if(view->curr_line > view->list_rows - 1)
+		view->curr_line = view->list_rows - 1;
+
+	if(view->top_line <= pos && pos <= view->top_line + view->window_rows)
+	{
+		view->curr_line = pos - view->top_line;
+	}
+	else if(pos > view->top_line + view->window_rows)
+	{
+		while(pos > view->top_line + view->window_rows)
+			view->top_line++;
+
+		view->curr_line = view->window_rows;
+		return 1;
+	}
+	else if(pos < view->top_line)
+	{
+		while(pos < view->top_line)
+			view->top_line--;
+
+		view->curr_line = 0;
+		return 1;
+	}
+
+	return 0;
+}
+
 void
 moveto_list_pos(FileView *view, int pos)
 {
@@ -726,26 +766,7 @@ moveto_list_pos(FileView *view, int pos)
 
 	erase_current_line_bar(view);
 
-	if(view->top_line <= pos && pos <= view->top_line + view->window_rows)
-	{
-		view->curr_line = pos - view->top_line;
-	}
-	else if(pos > view->top_line + view->window_rows)
-	{
-		while(pos > view->top_line + view->window_rows)
-			view->top_line++;
-
-		view->curr_line = view->window_rows;
-		redraw = 1;
-	}
-	else if(pos < view->top_line)
-	{
-		while(pos < view->top_line)
-			view->top_line--;
-
-		view->curr_line = 0;
-		redraw = 1;
-	}
+	redraw = move_curr_line(view, pos);
 
 	view->list_pos = pos;
 
@@ -1573,9 +1594,8 @@ remove_filename_filter(FileView *view)
 			strlen(view->filename_filter) + 1);
 	snprintf(view->prev_filter, sizeof(view->prev_filter), "%s",
 			view->filename_filter);
-	view->filename_filter = (char *)realloc(view->filename_filter,
-			strlen("*") + 1);
-	snprintf(view->filename_filter, sizeof(view->filename_filter), "*");
+	view->filename_filter = (char *)realloc(view->filename_filter, 1);
+	strcpy(view->filename_filter, "");
 	view->prev_invert = view->invert;
 	view->invert = 0;
 	load_saving_pos(view, 0);
@@ -1605,16 +1625,12 @@ reload_window(FileView *view)
 	curr_stats.skip_history = 1;
 
 	change_directory(view, view->curr_dir);
-	load_dir_list(view, 1);
+	load_saving_pos(view, 1);
 
 	if(view != curr_view)
 	{
 		mvwaddstr(view->win, view->curr_line, 0, "*");
 		wrefresh(view->win);
-	}
-	else
-	{
-		moveto_list_pos(curr_view, curr_view->list_pos);
 	}
 
 	curr_stats.skip_history = 0;
@@ -1657,8 +1673,19 @@ load_saving_pos(FileView *view, int reload)
 			view->dir_entry[view->list_pos].name);
 	load_dir_list(view, reload);
 	pos = find_file_pos_in_list(view, filename);
+	pos = (pos >= 0) ? pos : view->list_pos;
 	if(view == curr_view)
-		moveto_list_pos(view, (pos >= 0) ? pos : view->list_pos);
+	{
+		moveto_list_pos(view, pos);
+	}
+	else
+	{
+		mvwaddstr(view->win, view->curr_line, 0, " ");
+		view->list_pos = pos;
+		if(move_curr_line(view, pos))
+			draw_dir_list(view, view->top_line);
+		mvwaddstr(view->win, view->curr_line, 0, "*");
+	}
 }
 
 void

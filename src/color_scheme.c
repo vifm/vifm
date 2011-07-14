@@ -215,7 +215,7 @@ static int
 colname2int(char col[])
 {
  /* test if col[] is a number... */
-	 if (isdigit(col[0]))
+	 if(isdigit(col[0]))
 	   return atoi(col);
 
  /* otherwise convert */

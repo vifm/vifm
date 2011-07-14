@@ -193,7 +193,7 @@ setup_ncurses_interface(void)
 	if(screen_x < 30)
 		finish("Terminal is too small to run vifm\n");
 
-	if(! has_colors())
+	if(!has_colors())
 		finish("Vifm requires a console that can support color.\n");
 
 	start_color();
