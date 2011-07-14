@@ -40,6 +40,27 @@ void enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb);
 void redraw_cmdline(void);
 char * exec_completion(char *str);
 
+#ifdef TEST
+
+struct line_stats
+{
+	wchar_t *line;         /* the line reading */
+	int index;             /* index of the current character */
+	int curs_pos;          /* position of the cursor */
+	int len;               /* length of the string */
+	int cmd_pos;           /* position in the history */
+	wchar_t prompt[320];   /* prompt */
+	int prompt_wid;        /* width of prompt */
+	int complete_continue; /* if non-zero, continue the previous completion */
+	int history_search;    /* 0 - none, 1 - <c-n>/<c-p>, 2 - <down>/<up> */
+	int hist_search_len;   /* length of history search pattern */
+	wchar_t *line_buf;     /* content of line before using history */
+};
+
+int line_completion(struct line_stats *stat);
+
+#endif
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

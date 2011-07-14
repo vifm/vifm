@@ -54,6 +54,8 @@
 
 #include "cmdline.h"
 
+#ifndef TEST
+
 struct line_stats
 {
 	wchar_t *line;         /* the line reading */
@@ -68,6 +70,8 @@ struct line_stats
 	int hist_search_len;   /* length of history search pattern */
 	wchar_t *line_buf;     /* content of line before using history */
 };
+
+#endif
 
 /* values of type argument for filename_completion() function */
 enum {
@@ -119,7 +123,10 @@ static void cmd_ctrl_p(struct key_info, struct keys_info *);
 static void cmd_up(struct key_info, struct keys_info *);
 static void complete_cmd_prev(void);
 static void complete_search_prev(void);
-static int line_completion(struct line_stats *stat);
+#ifndef TEST
+static
+#endif
+int line_completion(struct line_stats *stat);
 static int colorschemes_completion(char *line_mb, char *last_word,
 		struct line_stats *stat);
 static int option_completion(char *line_mb, struct line_stats *stat);
@@ -1242,7 +1249,11 @@ insert_completed_command(struct line_stats *stat, const char *complete_command)
 	return 0;
 }
 
-static int
+/* Returns non-zero on error */
+#ifndef TEST
+static
+#endif
+int
 line_completion(struct line_stats *stat)
 {
 	static char *line_mb = (char *)NULL;
@@ -1305,16 +1316,18 @@ line_completion(struct line_stats *stat)
 		if(last_word == NULL)
 			return -1;
 
-		comp_arg = stat->complete_continue ? NULL : last_word;
-		stat->complete_continue = 1;
-
 		if(id == COM_SET)
 		{
-			int ret = option_completion(line_mb, stat);
+			int ret;
+			ret = option_completion(line_mb, stat);
 			free(last_word);
 			return ret;
 		}
-		else if(id == COM_COLORSCHEME)
+
+		comp_arg = stat->complete_continue ? NULL : last_word;
+		stat->complete_continue = 1;
+
+		if(id == COM_COLORSCHEME)
 		{
 			int ret = colorschemes_completion(line_mb, comp_arg, stat);
 			free(last_word);
