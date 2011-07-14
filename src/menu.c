@@ -42,6 +42,7 @@ static int *mode;
 static FileView *view;
 static menu_info *menu;
 static int last_search_backward;
+static int was_redraw;
 
 static int key_handler(wchar_t key);
 static void leave_menu_mode(void);
@@ -125,6 +126,7 @@ enter_menu_mode(menu_info *m, FileView *active_view)
 	menu = m;
 	*mode = MENU_MODE;
 	curr_stats.need_redraw = 1;
+	was_redraw = 0;
 }
 
 void
@@ -148,6 +150,7 @@ menu_post(void)
 void
 menu_redraw(void)
 {
+	was_redraw = 1;
 	redraw_menu(menu);
 }
 
@@ -171,6 +174,8 @@ leave_menu_mode(void)
 {
 	reset_popup_menu(menu);
 	*mode = NORMAL_MODE;
+	if(was_redraw)
+		curr_stats.need_redraw = 1;
 }
 
 static void

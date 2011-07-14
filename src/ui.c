@@ -352,8 +352,8 @@ is_term_working(void)
 		finish("Terminal is too small to run vifm\n");
 }
 
-void
-redraw_window(void)
+static void
+resize_window(void)
 {
 	int screen_x, screen_y;
 	int x, y;
@@ -457,6 +457,12 @@ redraw_window(void)
 	mvwin(num_win, screen_y -1, screen_x -19);
 
 	curs_set(0);
+}
+
+void
+redraw_window(void)
+{
+	resize_window();
 
 	if(curr_stats.show_full)
 	{
@@ -734,6 +740,7 @@ load_color_scheme(const char *name)
 	werase(rborder);
 	wbkgdset(stat_win, COLOR_PAIR(color_scheme + BORDER_COLOR));
 
+	wbkgdset(menu_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	wbkgdset(sort_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	wbkgdset(change_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	wbkgdset(error_win, COLOR_PAIR(color_scheme + WIN_COLOR));
