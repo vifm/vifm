@@ -800,7 +800,10 @@ set_user_command(char * command, int overwrite, int background)
 	com_name = command;
 
 	if((ptr = strchr(command, ' ')) == NULL)
+	{
+		show_error_msg("Not enough arguments", "Syntax is :com command_name command_action");
 		return;
+	}
 
 	*ptr = '\0';
 	ptr++;
