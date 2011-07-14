@@ -214,29 +214,29 @@ load_default_colors()
 static int
 colname2int(char col[])
 {
- /* test if col[] is a number... */
-	 if(isdigit(col[0]))
-	   return atoi(col);
+	/* test if col[] is a number... */
+	if(isdigit(col[0]))
+		return atoi(col);
 
- /* otherwise convert */
- if(!strcmp(col, "black"))
-   return 0;
- if(!strcmp(col, "red"))
-   return 1;
- if(!strcmp(col, "green"))
-   return 2;
- if(!strcmp(col, "yellow"))
-   return 3;
- if(!strcmp(col, "blue"))
-   return 4;
- if(!strcmp(col, "magenta"))
-   return 5;
- if(!strcmp(col, "cyan"))
-   return 6;
- if(!strcmp(col, "white"))
-   return 7;
- /* return default color */
- return -1;
+	/* otherwise convert */
+	if(!strcmp(col, "black"))
+		return 0;
+	if(!strcmp(col, "red"))
+		return 1;
+	if(!strcmp(col, "green"))
+		return 2;
+	if(!strcmp(col, "yellow"))
+		return 3;
+	if(!strcmp(col, "blue"))
+		return 4;
+	if(!strcmp(col, "magenta"))
+		return 5;
+	if(!strcmp(col, "cyan"))
+		return 6;
+	if(!strcmp(col, "white"))
+		return 7;
+	/* return default color */
+	return -1;
 }
 
 static void

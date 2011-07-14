@@ -1414,8 +1414,11 @@ static int
 put_files_from_register_i(FileView *view)
 {
 	char buf[PATH_MAX + NAME_MAX*2 + 4];
+	int from_trash = strncmp(put_confirm.reg->files[0], cfg.trash_dir,
+			strlen(cfg.trash_dir)) == 0;
 
-	cmd_group_begin(put_confirm.force_move ? "Move files" : "Copy files");
+	cmd_group_begin((put_confirm.force_move || from_trash) ?
+			"Move files" : "Copy files");
 	cmd_group_end();
 
 	if(chdir(view->curr_dir) != 0)

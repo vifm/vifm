@@ -4,9 +4,10 @@
 
 #include "../../src/undo.h"
 
-static void
+static int
 execute_dummy(const char *cmd)
 {
+	return 0;
 }
 
 static void

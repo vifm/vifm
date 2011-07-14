@@ -6,7 +6,7 @@
 
 static int i;
 
-static void
+static int
 execute(const char *cmd)
 {
 	static const char *execs[] = {
@@ -24,11 +24,13 @@ execute(const char *cmd)
 	};
 
 	assert_string_equal(execs[i++], cmd);
+	return 0;
 }
 
-static void
+static int
 exec_dummy(const char *cmd)
 {
+	return 0;
 }
 
 static void
@@ -102,6 +104,36 @@ test_cmd_1undo_1redo(void)
 	assert_int_equal(0, redo_group());
 }
 
+static int
+execute_fail(const char *cmd)
+{
+	return !strcmp(cmd, "undo_msg0");
+}
+
+static void
+test_failed_operation(void)
+{
+	static int undo_levels = 10;
+
+	init_undo_list(&execute_fail, &undo_levels);
+	reset_undo_list();
+
+	cmd_group_begin("msg0");
+	assert_int_equal(0, add_operation("do_msg0", "undo_msg0"));
+	cmd_group_end();
+
+	cmd_group_begin("msg1");
+	assert_int_equal(0, add_operation("do_msg1", "undo_msg1"));
+	cmd_group_end();
+
+	assert_int_equal(0, undo_group());
+	assert_int_equal(0, undo_group());
+	assert_int_equal(-1, undo_group());
+	assert_int_equal(1, redo_group());
+	assert_int_equal(0, redo_group());
+	assert_int_equal(-1, redo_group());
+}
+
 void
 undo_test(void)
 {
@@ -113,6 +145,7 @@ undo_test(void)
 	run_test(test_redo);
 	run_test(test_list_truncating);
 	run_test(test_cmd_1undo_1redo);
+	run_test(test_failed_operation);
 
 	test_fixture_end();
 }

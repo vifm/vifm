@@ -49,6 +49,12 @@ test_detail_after_reset(void)
 	free(list);
 }
 
+static int
+exec_func(const char *cmd)
+{
+	return 0;
+}
+
 static void
 test_detail_smaller_limit(void)
 {
@@ -57,7 +63,7 @@ test_detail_smaller_limit(void)
 	char ** list;
 	char ** p;
 
-	init_undo_list(NULL, &undo_levels);
+	init_undo_list(exec_func, &undo_levels);
 
 	list = undolist(1);
 
@@ -121,7 +127,7 @@ test_nondetail_smaller_limit(void)
 	char ** list;
 	char ** p;
 
-	init_undo_list(NULL, &undo_levels);
+	init_undo_list(exec_func, &undo_levels);
 
 	list = undolist(0);
 

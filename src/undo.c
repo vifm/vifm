@@ -5,17 +5,21 @@
 
 #include "undo.h"
 
-struct cmd_t {
+struct group_t {
 	char *msg;
+	int error;
+};
+
+struct cmd_t {
 	char *do_cmd;
 	char *undo_cmd;
-	long long group;
+	struct group_t *group;
 
 	struct cmd_t *prev;
 	struct cmd_t *next;
 };
 
-static void (*do_func)(const char*);
+static int (*do_func)(const char*);
 static const int *undo_levels;
 
 static struct cmd_t cmds = {
@@ -25,6 +29,7 @@ static struct cmd_t *current = &cmds;
 
 static int group_opened;
 static long long next_group;
+static struct group_t *last_group;
 static const char *group_msg;
 
 static int command_count;
@@ -34,8 +39,10 @@ static char **fill_undolist_detail(char **list);
 static char **fill_undolist_nondetail(char **list);
 
 void
-init_undo_list(void (*exec_func)(const char *), const int* max_levels)
+init_undo_list(int (*exec_func)(const char *), const int* max_levels)
 {
+	assert(exec_func != NULL);
+
 	do_func = exec_func;
 	undo_levels = max_levels;
 }
@@ -61,6 +68,7 @@ cmd_group_begin(const char *msg)
 	group_opened = 1;
 
 	group_msg = msg;
+	last_group = NULL;
 }
 
 void
@@ -100,15 +108,25 @@ add_operation(const char *do_cmd, const char *undo_cmd)
 	if(cmd == NULL)
 		return -1;
 
-	cmd->msg = strdup(group_msg);
 	cmd->do_cmd = strdup(do_cmd);
 	cmd->undo_cmd = strdup(undo_cmd);
-	if(cmd->msg == NULL || cmd->do_cmd == NULL || cmd->undo_cmd == NULL)
+	if(last_group != NULL)
+	{
+		cmd->group = last_group;
+	}
+	else
+	{
+		cmd->group = malloc(sizeof(struct group_t));
+		cmd->group->msg = strdup(group_msg);
+		cmd->group->error = 0;
+	}
+	if(cmd->do_cmd == NULL || cmd->undo_cmd == NULL ||
+			cmd->group == NULL || cmd->group->msg == NULL)
 	{
 		remove_cmd(cmd);
 		return -1;
 	}
-	cmd->group = next_group;
+	last_group = cmd->group;
 
 	cmd->prev = current;
 	current->next = cmd;
@@ -121,12 +139,26 @@ add_operation(const char *do_cmd, const char *undo_cmd)
 static void
 remove_cmd(struct cmd_t *cmd)
 {
-	if(cmd->prev != NULL)
-		cmd->prev->next = cmd->next;
-	if(cmd->next != NULL)
-		cmd->next->prev = cmd->prev;
+	int last_cmd_in_group = 1;
 
-	free(cmd->msg);
+	if(cmd->prev != NULL)
+	{
+		cmd->prev->next = cmd->next;
+		if(cmd->group == cmd->prev->group)
+			last_cmd_in_group = 0;
+	}
+	if(cmd->next != NULL)
+	{
+		cmd->next->prev = cmd->prev;
+		if(cmd->group == cmd->next->group)
+			last_cmd_in_group = 0;
+	}
+
+	if(last_cmd_in_group)
+	{
+		free(cmd->group->msg);
+		free(cmd->group);
+	}
 	free(cmd->do_cmd);
 	free(cmd->undo_cmd);
 
@@ -147,37 +179,63 @@ cmd_group_end(void)
 int
 undo_group(void)
 {
+	int errors;
 	assert(!group_opened);
 
 	if(current == &cmds)
 		return -1;
 
+	if(current->group->error != 0)
+	{
+		do
+			current = current->prev;
+		while(current != &cmds && current->group == current->next->group);
+		return 1;
+	}
+
 	do
 	{
-		do_func(current->undo_cmd);
+		if(do_func(current->undo_cmd) != 0)
+		{
+			current->group->error = 1;
+			errors = 1;
+		}
 		current = current->prev;
 	}
 	while(current != &cmds && current->group == current->next->group);
 
-	return 0;
+	return errors ? -2 : 0;
 }
 
 int
 redo_group(void)
 {
+	int errors = 0;
 	assert(!group_opened);
 
 	if(current->next == NULL)
 		return -1;
 
+	if(current->next->group->error != 0)
+	{
+		do
+			current = current->next;
+		while(current->next != NULL && current->group == current->next->group);
+		return 1;
+	}
+
 	do
 	{
 		current = current->next;
-		do_func(current->do_cmd);
+		if(do_func(current->do_cmd) != 0)
+		{
+			current->group->error = 1;
+			errors = 1;
+		}
 	}
 	while(current->next != NULL && current->group == current->next->group);
 
-	return 0;
+	return errors ? -2 : 0;
 }
 
 char **
@@ -185,10 +243,19 @@ undolist(int detail)
 {
 	char **list, **p;
 	int group_count;
+	struct cmd_t *cmd;
 
 	assert(!group_opened);
 
-	group_count = next_group - cmds.group + 1;
+	group_count = 1;
+	cmd = current;
+	while(cmd != &cmds)
+	{
+		if(cmd->group != cmd->prev->group)
+			group_count++;
+		cmd = cmd->prev;
+	}
+
 	if(detail)
 		list = malloc(sizeof(char *)*(group_count + command_count*2 + 1));
 	else
@@ -216,7 +283,7 @@ fill_undolist_detail(char **list)
 	cmd = cmds.prev;
 	while(cmd != &cmds && left > 0)
 	{
-		if((*list = strdup(cmd->msg)) == NULL)
+		if((*list = strdup(cmd->group->msg)) == NULL)
 			break;
 
 		list++;
@@ -251,7 +318,7 @@ fill_undolist_nondetail(char **list)
 	cmd = cmds.prev;
 	while(cmd != &cmds && left-- > 0)
 	{
-		if((*list = strdup(cmd->msg)) == NULL)
+		if((*list = strdup(cmd->group->msg)) == NULL)
 			break;
 
 		do

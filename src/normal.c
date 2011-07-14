@@ -370,14 +370,27 @@ cmd_ctrl_o(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(redo_group() == 0)
+	int ret = redo_group();
+	if(ret == 0)
 	{
 		load_saving_pos(&lwin, 1);
 		load_saving_pos(&rwin, 1);
-		return;
+		status_bar_message("Redone one group");
 	}
-
-	status_bar_message("Nothing to redo");
+	else if(ret == -2)
+	{
+		load_saving_pos(&lwin, 1);
+		load_saving_pos(&rwin, 1);
+		status_bar_message("Redone one group with errors");
+	}
+	else if(ret == -1)
+	{
+		status_bar_message("Nothing to redo");
+	}
+	else if(ret == 1)
+	{
+		status_bar_message("Redo operation was skipped due to previous errors");
+	}
 	curr_stats.save_msg = 1;
 }
 
@@ -1091,14 +1104,27 @@ cmd_t(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_u(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(undo_group() == 0)
+	int ret = undo_group();
+	if(ret == 0)
 	{
 		load_saving_pos(&lwin, 1);
 		load_saving_pos(&rwin, 1);
-		return;
+		status_bar_message("Undone one group");
 	}
-
-	status_bar_message("Nothing to undo");
+	else if(ret == -2)
+	{
+		load_saving_pos(&lwin, 1);
+		load_saving_pos(&rwin, 1);
+		status_bar_message("Undone one group with errors");
+	}
+	else if(ret == -1)
+	{
+		status_bar_message("Nothing to undo");
+	}
+	else if(ret == 1)
+	{
+		status_bar_message("Undo operation was skipped due to previous errors");
+	}
 	curr_stats.save_msg = 1;
 }
 

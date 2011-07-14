@@ -8,12 +8,18 @@ void undolist_test(void);
 void undo_test(void);
 void undolevels_test(void);
 
+static int
+exec_func(const char *cmd)
+{
+	return 0;
+}
+
 static void
 setup(void)
 {
 	static int undo_levels = 10;
 
-	init_undo_list(NULL, &undo_levels);
+	init_undo_list(exec_func, &undo_levels);
 
 	cmd_group_begin("msg1");
 	assert(add_operation("do_msg1", "undo_msg1") == 0);
