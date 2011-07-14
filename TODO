@@ -6,7 +6,6 @@ Basic things that need to be done.
         (I think this can be done with xargs).
 	Make ga work in background.
 	Think about good key for creating links (like pl in ranger, al, rl).
-    Rename files in Trash.
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
         :chown commands.
     Better C command. Handle situation when destination already exists.

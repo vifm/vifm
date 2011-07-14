@@ -102,6 +102,8 @@
 
 	Don't loose input when going through history.
 
+	Rename files in Trash (to avoid name conflicts).
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.

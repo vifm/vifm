@@ -25,6 +25,7 @@
 #include <sys/wait.h> /* waitpid() */
 #include <unistd.h>
 
+#include <ctype.h> /* isdigit */
 #include <errno.h> /* errno */
 #include <signal.h>
 #include <stdio.h>
@@ -741,6 +742,18 @@ progress_msg(const char *text, int ready, int total)
 	show_progress(msg, 1);
 }
 
+static char *
+gen_trash_name(const char *name)
+{
+	char buf[PATH_MAX];
+	int i = 0;
+
+	do
+		snprintf(buf, sizeof(buf), "%s/%03d_%s", cfg.trash_dir, i++, name);
+	while(access(buf, F_OK) == 0);
+	return strdup(buf);
+}
+
 /* returns new value for save_msg */
 int
 delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
@@ -788,8 +801,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	}
 	for(x = 0; x < view->selected_files; x++)
 	{
-		char *esc_file;
-		char *esc_full;
+		char *esc_file, *esc_full, *esc_dest, *dest;
 		char full_buf[PATH_MAX];
 
 		if(strcmp("../", view->selected_filelist[x]) == 0)
@@ -806,37 +818,30 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 				view->selected_filelist[x]);
 		esc_full = escape_filename(full_buf, 0, 0);
 		esc_file = escape_filename(view->selected_filelist[x], 0, 0);
+		dest = gen_trash_name(view->selected_filelist[x]);
+		esc_dest = escape_filename(dest, 0, 0);
 		if(cfg.use_trash && use_trash)
 		{
-			char *esc_curr;
-
-			snprintf(buf, sizeof(buf), "mv %s %s", esc_full, cfg.escaped_trash_dir);
-
-			esc_curr = escape_filename(view->curr_dir, 0, 0);
-			snprintf(undo_buf, sizeof(undo_buf), "mv %s/%s %s", cfg.escaped_trash_dir,
-					esc_file, esc_curr);
-			free(esc_curr);
+			snprintf(buf, sizeof(buf), "mv %s %s", esc_full, esc_dest);
+			snprintf(undo_buf, sizeof(undo_buf), "mv %s %s", esc_dest, esc_full);
 		}
 		else
 		{
 			snprintf(buf, sizeof(buf), "rm -rf %s", esc_full);
 			undo_buf[0] = '\0';
 		}
+		free(esc_dest);
 		free(esc_file);
 		free(esc_full);
 
 		progress_msg("Deleting files", x + 1, view->selected_files);
 		if(background_and_wait_for_errors(buf) == 0)
 		{
-			char reg_buf[PATH_MAX];
-
 			add_operation(buf, undo_buf);
-
-			snprintf(reg_buf, sizeof(reg_buf), "%s/%s", cfg.trash_dir,
-					view->selected_filelist[x]);
-			append_to_register(reg, reg_buf);
+			append_to_register(reg, dest);
 			y++;
 		}
+		free(dest);
 	}
 	free_selected_file_array(view);
 
@@ -1302,11 +1307,18 @@ put_next_file(const char *dest_name, int override)
 	if(access(buf, F_OK) == 0 && src_buf != NULL && dst_buf != NULL)
 	{
 		const char *p = dest_name;
-		int move = strncmp(buf, cfg.trash_dir, strlen(cfg.trash_dir)) == 0
-				|| put_confirm.force_move;
+		int from_trash = strncmp(buf, cfg.trash_dir, strlen(cfg.trash_dir)) == 0;
+		int move = from_trash || put_confirm.force_move;
 
 		if(p[0] == '\0')
 			p = strrchr(buf, '/') + 1;
+
+		if(from_trash)
+		{
+			while(isdigit(*p))
+				p++;
+			p++;
+		}
 
 		if(access(p, F_OK) == 0 && !override)
 		{
@@ -1322,7 +1334,7 @@ put_next_file(const char *dest_name, int override)
 
 		if(dest_name[0] == '\0')
 		{
-			name_buf = escape_filename(strrchr(buf, '/') + 1, 0, 0);
+			name_buf = escape_filename(p, 0, 0);
 			dest_name = name_buf;
 		}
 
