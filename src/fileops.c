@@ -822,8 +822,8 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		esc_dest = escape_filename(dest, 0, 0);
 		if(cfg.use_trash && use_trash)
 		{
-			snprintf(buf, sizeof(buf), "mv %s %s", esc_full, esc_dest);
-			snprintf(undo_buf, sizeof(undo_buf), "mv %s %s", esc_dest, esc_full);
+			snprintf(buf, sizeof(buf), "mv -n %s %s", esc_full, esc_dest);
+			snprintf(undo_buf, sizeof(undo_buf), "mv -n %s %s", esc_dest, esc_full);
 		}
 		else
 		{
@@ -1340,13 +1340,13 @@ put_next_file(const char *dest_name, int override)
 
 		if(move)
 		{
-			snprintf(buf, sizeof(buf), "mv %s %s/%s", src_buf, dst_buf, dest_name);
-			snprintf(undo_buf, sizeof(undo_buf), "mv %s/%s %s", dst_buf, dest_name,
+			snprintf(buf, sizeof(buf), "mv -n %s %s/%s", src_buf, dst_buf, dest_name);
+			snprintf(undo_buf, sizeof(undo_buf), "mv -n %s/%s %s", dst_buf, dest_name,
 					src_buf);
 		}
 		else
 		{
-			snprintf(buf, sizeof(buf), "cp -pR %s %s/%s", src_buf, dst_buf,
+			snprintf(buf, sizeof(buf), "cp -npR %s %s/%s", src_buf, dst_buf,
 					dest_name);
 			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s/%s", dst_buf, dest_name);
 		}
@@ -1482,7 +1482,7 @@ clone_file(FileView* view)
 		escaped = escape_filename(do_cmd, strlen(do_cmd) - 1, 0);
 	else
 		escaped = escape_filename(do_cmd, 0, 0);
-	snprintf(do_cmd, sizeof(do_cmd), "cp -pR %s %s_clone", escaped, escaped);
+	snprintf(do_cmd, sizeof(do_cmd), "cp -npR %s %s_clone", escaped, escaped);
 	snprintf(undo_cmd, sizeof(undo_cmd), "rm %s_clone", escaped);
 	free(escaped);
 
