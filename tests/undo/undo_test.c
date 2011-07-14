@@ -127,7 +127,7 @@ test_failed_operation(void)
 	cmd_group_end();
 
 	assert_int_equal(0, undo_group());
-	assert_int_equal(0, undo_group());
+	assert_int_equal(-2, undo_group());
 	assert_int_equal(-1, undo_group());
 	assert_int_equal(1, redo_group());
 	assert_int_equal(0, redo_group());

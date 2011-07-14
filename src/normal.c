@@ -387,6 +387,10 @@ cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
 	{
 		status_bar_message("Nothing to redo");
 	}
+	else if(ret == -3)
+	{
+		status_bar_message("Can't redo group, it's skipped");
+	}
 	else if(ret == 1)
 	{
 		status_bar_message("Redo operation was skipped due to previous errors");
@@ -1120,6 +1124,10 @@ cmd_u(struct key_info key_info, struct keys_info *keys_info)
 	else if(ret == -1)
 	{
 		status_bar_message("Nothing to undo");
+	}
+	else if(ret == -3)
+	{
+		status_bar_message("Can't undo group, it's skipped");
 	}
 	else if(ret == 1)
 	{

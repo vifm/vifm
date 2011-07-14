@@ -29,6 +29,15 @@ void cmd_group_continue(void);
  */
 int add_operation(const char *do_cmd, const char *undo_cmd);
 
+/*
+ * Returns 0 on success
+ */
+int add_operation2(const char *do_cmd, const char *do_src, const char *do_dst,
+		const char *undo_cmd, const char *undo_src, const char *undo_dst);
+
+/*
+ * Closes current group of commands
+ */
 void cmd_group_end(void);
 
 /*
@@ -36,6 +45,7 @@ void cmd_group_end(void);
  *   0 - on success
  *  -1 - no operation for undo is available
  *  -2 - there were errors
+ *  -3 - undoing group is impossible
  *   1 - operation was skipped due to previous errors (no command run)
  */
 int undo_group(void);
@@ -45,6 +55,7 @@ int undo_group(void);
  *   0 - on success
  *  -1 - no operation for undo is available
  *  -2 - there were errors
+ *  -3 - redoing group is impossible
  *   1 - operation was skipped due to previous errors (no command run)
  */
 int redo_group(void);

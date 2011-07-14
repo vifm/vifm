@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,9 +12,15 @@ struct group_t {
 	int error;
 };
 
+struct op_t {
+  char *cmd;
+  char *src;
+  char *dst;
+};
+
 struct cmd_t {
-	char *do_cmd;
-	char *undo_cmd;
+	struct op_t do_op;
+	struct op_t undo_op;
 	struct group_t *group;
 
 	struct cmd_t *prev;
@@ -35,6 +43,9 @@ static const char *group_msg;
 static int command_count;
 
 static void remove_cmd(struct cmd_t *cmd);
+static int is_undo_group_possible(void);
+static int is_redo_group_possible(void);
+static int is_op_possible(const struct op_t *op);
 static char **fill_undolist_detail(char **list);
 static char **fill_undolist_nondetail(char **list);
 
@@ -84,6 +95,13 @@ cmd_group_continue(void)
 int
 add_operation(const char *do_cmd, const char *undo_cmd)
 {
+	return add_operation2(do_cmd, "", "", undo_cmd, "", "");
+}
+
+int
+add_operation2(const char *do_cmd, const char *do_src, const char *do_dst,
+		const char *undo_cmd, const char *undo_src, const char *undo_dst)
+{
 	struct cmd_t *cmd;
 
 	assert(group_opened);
@@ -108,8 +126,12 @@ add_operation(const char *do_cmd, const char *undo_cmd)
 	if(cmd == NULL)
 		return -1;
 
-	cmd->do_cmd = strdup(do_cmd);
-	cmd->undo_cmd = strdup(undo_cmd);
+	cmd->do_op.cmd = strdup(do_cmd);
+	cmd->do_op.src = strdup(do_src);
+	cmd->do_op.dst = strdup(do_dst);
+	cmd->undo_op.cmd = strdup(undo_cmd);
+	cmd->undo_op.src = strdup(undo_src);
+	cmd->undo_op.dst = strdup(undo_dst);
 	if(last_group != NULL)
 	{
 		cmd->group = last_group;
@@ -120,7 +142,9 @@ add_operation(const char *do_cmd, const char *undo_cmd)
 		cmd->group->msg = strdup(group_msg);
 		cmd->group->error = 0;
 	}
-	if(cmd->do_cmd == NULL || cmd->undo_cmd == NULL ||
+	if(cmd->do_op.cmd == NULL || cmd->do_op.src == NULL ||
+			cmd->do_op.dst == NULL || cmd->undo_op.cmd == NULL ||
+			cmd->undo_op.src == NULL || cmd->undo_op.dst == NULL ||
 			cmd->group == NULL || cmd->group->msg == NULL)
 	{
 		remove_cmd(cmd);
@@ -159,8 +183,12 @@ remove_cmd(struct cmd_t *cmd)
 		free(cmd->group->msg);
 		free(cmd->group);
 	}
-	free(cmd->do_cmd);
-	free(cmd->undo_cmd);
+	free(cmd->do_op.cmd);
+	free(cmd->do_op.src);
+	free(cmd->do_op.dst);
+	free(cmd->undo_op.cmd);
+	free(cmd->undo_op.src);
+	free(cmd->undo_op.dst);
 
 	free(cmd);
 
@@ -185,17 +213,18 @@ undo_group(void)
 	if(current == &cmds)
 		return -1;
 
-	if(current->group->error != 0)
+	errors = current->group->error != 0;
+	if(errors || !is_undo_group_possible())
 	{
 		do
 			current = current->prev;
 		while(current != &cmds && current->group == current->next->group);
-		return 1;
+		return errors ? 1 : -3;
 	}
 
 	do
 	{
-		if(do_func(current->undo_cmd) != 0)
+		if(do_func(current->undo_op.cmd) != 0)
 		{
 			current->group->error = 1;
 			errors = 1;
@@ -207,27 +236,42 @@ undo_group(void)
 	return errors ? -2 : 0;
 }
 
+static int
+is_undo_group_possible(void)
+{
+	struct cmd_t *cmd = current;
+	do
+	{
+		if(!is_op_possible(&cmd->undo_op))
+			return 0;
+		cmd = cmd->prev;
+	}
+	while(cmd != &cmds && cmd->group == cmd->next->group);
+	return 1;
+}
+
 int
 redo_group(void)
 {
-	int errors = 0;
+	int errors;
 	assert(!group_opened);
 
 	if(current->next == NULL)
 		return -1;
 
-	if(current->next->group->error != 0)
+	errors = current->next->group->error != 0;
+	if(errors || !is_redo_group_possible())
 	{
 		do
 			current = current->next;
 		while(current->next != NULL && current->group == current->next->group);
-		return 1;
+		return errors ? 1 : -3;
 	}
 
 	do
 	{
 		current = current->next;
-		if(do_func(current->do_cmd) != 0)
+		if(do_func(current->do_op.cmd) != 0)
 		{
 			current->group->error = 1;
 			errors = 1;
@@ -236,6 +280,30 @@ redo_group(void)
 	while(current->next != NULL && current->group == current->next->group);
 
 	return errors ? -2 : 0;
+}
+
+static int
+is_redo_group_possible(void)
+{
+	struct cmd_t *cmd = current;
+	do
+	{
+		cmd = cmd->next;
+		if(!is_op_possible(&cmd->do_op))
+			return 0;
+	}
+	while(cmd->next != NULL && cmd->group == cmd->next->group);
+	return 1;
+}
+
+static int
+is_op_possible(const struct op_t *op)
+{
+	if(op->src[0] != '\0' && access(op->src, F_OK) != 0)
+		return 0;
+	if(op->dst[0] != '\0' && access(op->dst, F_OK) == 0)
+		return 0;
+	return 1;
 }
 
 char **
@@ -289,14 +357,14 @@ fill_undolist_detail(char **list)
 		list++;
 		do
 		{
-			if((*list = malloc(4 + strlen(cmd->do_cmd) + 1)) == NULL)
+			if((*list = malloc(4 + strlen(cmd->do_op.cmd) + 1)) == NULL)
 				return list;
-			sprintf(*list, "do: %s", cmd->do_cmd);
+			sprintf(*list, "do: %s", cmd->do_op.cmd);
 			list++;
 
-			if((*list = malloc(6 + strlen(cmd->undo_cmd) + 1)) == NULL)
+			if((*list = malloc(6 + strlen(cmd->undo_op.cmd) + 1)) == NULL)
 				return list;
-			sprintf(*list, "undo: %s", cmd->undo_cmd);
+			sprintf(*list, "undo: %s", cmd->undo_op.cmd);
 			list++;
 
 			cmd = cmd->prev;
