@@ -107,6 +107,11 @@ void
 enter_visual_mode(int restore_selection)
 {
 	int x;
+	int ub = check_mark_directory(view, '<');
+	int lb = check_mark_directory(view, '>');
+
+	if(restore_selection && (ub < 0 || lb < 0))
+		return;
 
 	view = curr_view;
 	start_pos = view->list_pos;
@@ -117,21 +122,15 @@ enter_visual_mode(int restore_selection)
 
 	if(restore_selection)
 	{
-		int ub = check_mark_directory(view, '<');
-		int lb = check_mark_directory(view, '>');
+		start_pos = ub;
+		view->list_pos = ub;
 
-		if(ub > 0 && lb > 0)
-		{
-			start_pos = ub;
-			view->list_pos = ub;
+		view->selected_files = 1;
+		view->dir_entry[view->list_pos].selected = 1;
 
-			view->selected_files = 1;
-			view->dir_entry[view->list_pos].selected = 1;
-
-			while(view->list_pos != lb)
-				select_down_one(view, start_pos);
-			update();
-		}
+		while(view->list_pos != lb)
+			select_down_one(view, start_pos);
+		update();
 	}
 	else if(strcmp(view->dir_entry[view->list_pos].name, "../"))
 	{
