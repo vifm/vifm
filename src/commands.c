@@ -1138,11 +1138,7 @@ check_for_range(FileView *view, char *command, cmd_params *cmd)
 	else if(command[cmd->pos] == '$')
 	{
 		cmd->count = view->list_rows;
-		if(strlen(command) == strlen("$"))
-		{
-			moveto_list_pos(view, cmd->count - 1);
-			return -10;
-		}
+		cmd->end_range = view->list_rows - 1;
 		cmd->pos++;
 	}
 	else if(command[cmd->pos] == ',')
@@ -1172,13 +1168,6 @@ check_for_range(FileView *view, char *command, cmd_params *cmd)
 		}
 		num_buf[z] = '\0';
 		cmd->start_range = atoi(num_buf) - 1;
-
-		/* The command is just a number */
-		if(strlen(num_buf) == strlen(command))
-		{
-			moveto_list_pos(view, cmd->start_range);
-			return -10;
-		}
 	}
 	while(isspace(command[cmd->pos]) && (size_t)cmd->pos < strlen(command))
 		cmd->pos++;
@@ -1238,6 +1227,12 @@ check_for_range(FileView *view, char *command, cmd_params *cmd)
 
 	while(isspace(command[cmd->pos]) && (size_t)cmd->pos < strlen(command))
 		cmd->pos++;
+
+	if(command[cmd->pos] == '\0')
+	{
+		moveto_list_pos(view, cmd->end_range);
+		return -10;
+	}
 
 	return 1;
 }
