@@ -35,6 +35,11 @@ int redo_group(void);
  */
 char ** undolist(int detail);
 
+/*
+ * Returns number of the group.
+ */
+int get_undolist_pos(int detail);
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

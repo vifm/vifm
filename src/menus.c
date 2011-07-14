@@ -827,7 +827,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(0, &m);
+	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -890,7 +890,7 @@ show_apropos_menu(FileView *view, char *args)
 	{
 		setup_menu();
 		draw_menu(&m);
-		moveto_menu_pos(0, &m);
+		moveto_menu_pos(m.pos, &m);
 		enter_menu_mode(&m, view);
 	}
 }
@@ -967,7 +967,7 @@ show_bookmarks_menu(FileView *view)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(0, &m);
+	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1122,7 +1122,7 @@ show_commands_menu(FileView *view)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(0, &m);
+	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1297,7 +1297,7 @@ show_filetypes_menu(FileView *view, int background)
 		}
 		setup_menu();
 		draw_menu(&m);
-		moveto_menu_pos(0, &m);
+		moveto_menu_pos(m.pos, &m);
 		enter_menu_mode(&m, view);
 	}
 
@@ -1458,7 +1458,7 @@ show_locate_menu(FileView *view, char *args)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(0, &m);
+	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1537,7 +1537,7 @@ show_user_menu(FileView *view, char *command)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(0, &m);
+	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1624,7 +1624,7 @@ show_jobs_menu(FileView *view)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(0, &m);
+	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1662,7 +1662,7 @@ show_register_menu(FileView *view)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(0, &m);
+	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1674,9 +1674,9 @@ show_undolist_menu(FileView *view, int with_details)
 
 	static menu_info m;
 	m.top = 0;
-	m.current = 1;
+	m.current = get_undolist_pos(with_details) + 1;
 	m.len = 0;
-	m.pos = 0;
+	m.pos = m.current - 1;
 	m.win_rows = 0;
 	m.type = UNDOLIST;
 	m.matching_entries = 0;
@@ -1699,10 +1699,15 @@ show_undolist_menu(FileView *view, int with_details)
 		m.data[0] = strdup(" Nothing to undone ");
 		m.len = 1;
 	}
+	else
+	{
+		m.data[m.len] = strdup(" [ List end ]");
+		m.len++;
+	}
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(0, &m);
+	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1731,7 +1736,7 @@ show_vifm_menu(FileView *view)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(0, &m);
+	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 

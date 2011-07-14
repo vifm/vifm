@@ -263,4 +263,22 @@ fill_undolist_nondetail(char **list)
 	return list;
 }
 
+int
+get_undolist_pos(int detail)
+{
+	struct cmd_t *cur = cmds.prev;
+	int result_group = 0;
+	int result_cmd = 0;
+	while(cur != current)
+	{
+		if(cur->group != cur->prev->group)
+			result_group++;
+		result_cmd += 2;
+		cur = cur->prev;
+	}
+	if(cur == &cmds)
+		result_group++;
+	return detail ? (result_group + result_cmd) : result_group;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
