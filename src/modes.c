@@ -116,6 +116,15 @@ modes_post(void)
 		return;
 	}
 
+	if(curr_stats.need_redraw)
+		redraw_window();
+
+	if(curr_stats.save_msg)
+	{
+		status_bar_message(NULL);
+		wrefresh(status_bar);
+	}
+
 	if(curr_stats.show_full)
 		show_full_file_properties(curr_view);
 	else if(curr_view->list_rows > 0)
@@ -133,9 +142,6 @@ modes_post(void)
 	}
 	else
 		clean_status_bar();
-
-	if(curr_stats.need_redraw)
-		redraw_window();
 }
 
 void

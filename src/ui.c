@@ -151,14 +151,23 @@ update_stat_window(FileView *view)
 	update_pos_window(view);
 }
 
+/*
+ * Repeats last message if message is NULL
+ */
 void
 status_bar_message(const char *message)
 {
+	static char msg[512];
+
 	if(!curr_stats.vifm_started)
 		return;
 
+	if(message != NULL)
+		snprintf(msg, sizeof(msg), "%s", message);
+
 	werase(status_bar);
-	wprintw(status_bar, "%s", message);
+	wmove(status_bar, 0, 0);
+	wprintw(status_bar, "%s", msg);
 	wnoutrefresh(status_bar);
 }
 
@@ -482,7 +491,7 @@ redraw_window(void)
 		status_bar_message(status_buf);
 	}
 	else
-		status_bar_message(" ");
+		clean_status_bar();
 
 	update_pos_window(curr_view);
 
