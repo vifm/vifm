@@ -497,6 +497,28 @@ save_command_history(const char *command)
 		cfg.cmd_history_num = cfg.cmd_history_len -1;
 }
 
+static int
+is_entry_dir(FileView *view, int pos)
+{
+	char full[PATH_MAX];
+
+	snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
+			view->dir_entry[pos].name);
+	if(view->dir_entry[pos].type == UNKNOWN)
+	{
+		struct stat st;
+		if(stat(full, &st) != 0)
+			return 0;
+		return S_ISDIR(st.st_mode);
+	}
+
+	if(view->dir_entry[pos].type == DIRECTORY)
+		return 1;
+	if(view->dir_entry[pos].type == LINK && check_link_is_dir(full))
+		return 1;
+	return 0;
+}
+
 #ifndef TEST
 static
 #endif
@@ -514,15 +536,14 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 		size_t len = strlen(expanded);
 		for(y = 0; y < view->list_rows; y++)
 		{
-			int dir = 0;
+			int dir;
 			char *temp;
 
 			if(!view->dir_entry[y].selected)
 				continue;
 
 			/* Directory has / appended to the name this removes it. */
-			if(view->dir_entry[y].type == DIRECTORY)
-				dir = 1;
+			dir = is_entry_dir(view, y);
 
 			temp = escape_filename(view->dir_entry[y].name,
 					strlen(view->dir_entry[y].name) - dir, 0);
@@ -541,12 +562,11 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 	}
 	else
 	{
-		int dir = 0;
+		int dir;
 		char *temp;
 
 		/* Directory has / appended to the name this removes it. */
-		if(view->dir_entry[view->list_pos].type == DIRECTORY)
-			dir = 1;
+		dir = is_entry_dir(view, view->list_pos);
 
 		temp = escape_filename(view->dir_entry[view->list_pos].name,
 				strlen(view->dir_entry[view->list_pos].name) - dir, 0);
@@ -801,7 +821,8 @@ set_user_command(char * command, int overwrite, int background)
 
 	if((ptr = strchr(command, ' ')) == NULL)
 	{
-		show_error_msg("Not enough arguments", "Syntax is :com command_name command_action");
+		show_error_msg("Not enough arguments",
+				"Syntax is :com command_name command_action");
 		return;
 	}
 

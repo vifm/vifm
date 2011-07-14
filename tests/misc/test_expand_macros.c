@@ -31,7 +31,7 @@ setup_rwin(void)
 {
 	strcpy(rwin.curr_dir, "/rwin");
 
-	rwin.list_rows = 6;
+	rwin.list_rows = 7;
 	rwin.list_pos = 5;
 	rwin.dir_entry = calloc(rwin.list_rows, sizeof(*rwin.dir_entry));
 	rwin.dir_entry[0].name = strdup("rfile0");
@@ -40,6 +40,7 @@ setup_rwin(void)
 	rwin.dir_entry[3].name = strdup("rfile3");
 	rwin.dir_entry[4].name = strdup("rfile4");
 	rwin.dir_entry[5].name = strdup("rfile5");
+	rwin.dir_entry[6].name = strdup("rdir6");
 
 	rwin.dir_entry[1].selected = 1;
 	rwin.dir_entry[3].selected = 1;
@@ -162,6 +163,20 @@ test_b_noone_has_selection(void)
 	free(expanded);
 }
 
+static void
+test_no_slash_after_dirname(void)
+{
+	int menu, split;
+	char *expanded;
+
+	rwin.list_pos = 6;
+	curr_view = &rwin;
+	other_view = &lwin;
+	expanded = expand_macros(&rwin, "%c", "", &menu, &split);
+	assert_string_equal("rdir6", expanded);
+	free(expanded);
+}
+
 void
 test_expand_macros(void)
 {
@@ -175,6 +190,7 @@ test_expand_macros(void)
 	run_test(test_b_only_lwin_has_selection);
 	run_test(test_b_only_rwin_has_selection);
 	run_test(test_b_noone_has_selection);
+	run_test(test_no_slash_after_dirname);
 
 	test_fixture_end();
 }
