@@ -799,6 +799,9 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 			continue;
 		}
 
+		if(check_link_is_dir(view->selected_filelist[x]))
+			chosp(view->selected_filelist[x]);
+
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir,
 				view->selected_filelist[x]);
 		esc_full = escape_filename(full_buf, 0, 0);

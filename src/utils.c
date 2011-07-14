@@ -48,10 +48,7 @@ is_dir(char *file)
 	struct stat statbuf;
 	stat(file, &statbuf);
 
-	if(S_ISDIR(statbuf.st_mode))
-		return 1;
-	else
-		return 0;
+	return S_ISDIR(statbuf.st_mode);
 }
 
 /*
