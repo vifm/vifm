@@ -551,6 +551,12 @@ dd on a bookmark to remove.
 Sort dialog ~
 
 h - switch ascending/descending.
+Space - switch ascending/descending.
+
+Permissions dialog~
+
+h - check/uncheck.
+Space - check/uncheck.
 
 Filetype menu~
 
