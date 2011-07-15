@@ -1210,13 +1210,14 @@ static void
 change_owner_cb(const char *new_owner)
 {
 	char *filename;
+	char full[PATH_MAX];
 	char command[10 + 32 + PATH_MAX];
 	char undo_command[10 + 32 + PATH_MAX];
 	char *escaped;
 
 	filename = get_current_file_name(curr_view);
-	snprintf(command, sizeof(command), "%s/%s", curr_view->curr_dir, filename);
-	escaped = escape_filename(command, 0, 0);
+	snprintf(full, sizeof(full), "%s/%s", curr_view->curr_dir, filename);
+	escaped = escape_filename(full, 0, 0);
 	snprintf(command, sizeof(command), "chown -fR %s %s", new_owner, escaped);
 	snprintf(undo_command, sizeof(undo_command), "chown -fR %d %s",
 			curr_view->dir_entry[curr_view->list_pos].gid, escaped);
@@ -1226,7 +1227,7 @@ change_owner_cb(const char *new_owner)
 		return;
 
 	cmd_group_begin("Change owner");
-	add_operation(command, undo_command);
+	add_operation2(command, full, "", undo_command, full, "");
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
@@ -1243,13 +1244,14 @@ static void
 change_group_cb(const char *new_owner)
 {
 	char *filename;
+	char full[PATH_MAX];
 	char command[10 + 32 + PATH_MAX];
 	char undo_command[10 + 32 + PATH_MAX];
 	char *escaped;
 
 	filename = get_current_file_name(curr_view);
-	snprintf(command, sizeof(command), "%s/%s", curr_view->curr_dir, filename);
-	escaped = escape_filename(command, 0, 0);
+	snprintf(full, sizeof(full), "%s/%s", curr_view->curr_dir, filename);
+	escaped = escape_filename(full, 0, 0);
 	snprintf(command, sizeof(command), "chown -fR :%s %s", new_owner, escaped);
 	snprintf(undo_command, sizeof(undo_command), "chown -fR :%d %s",
 			curr_view->dir_entry[curr_view->list_pos].uid, escaped);
@@ -1259,7 +1261,7 @@ change_group_cb(const char *new_owner)
 		return;
 
 	cmd_group_begin("Change group");
-	add_operation(command, undo_command);
+	add_operation2(command, full, "", undo_command, full, "");
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
@@ -1488,6 +1490,7 @@ clone_file(FileView* view)
 		escaped = escape_filename(do_cmd, strlen(do_cmd) - 1, 0);
 	else
 		escaped = escape_filename(do_cmd, 0, 0);
+	chosp(escaped);
 	snprintf(do_cmd, sizeof(do_cmd), "cp -npR %s %s_clone", escaped, escaped);
 	snprintf(undo_cmd, sizeof(undo_cmd), "rm %s_clone", escaped);
 	free(escaped);
