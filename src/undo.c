@@ -10,6 +10,7 @@
 struct group_t {
 	char *msg;
 	int error;
+	int balance;
 };
 
 struct op_t {
@@ -141,6 +142,7 @@ add_operation2(const char *do_cmd, const char *do_src, const char *do_dst,
 		cmd->group = malloc(sizeof(struct group_t));
 		cmd->group->msg = strdup(group_msg);
 		cmd->group->error = 0;
+		cmd->group->balance = 0;
 	}
 	if(cmd->do_op.cmd == NULL || cmd->do_op.src == NULL ||
 			cmd->do_op.dst == NULL || cmd->undo_op.cmd == NULL ||
@@ -207,20 +209,28 @@ cmd_group_end(void)
 int
 undo_group(void)
 {
-	int errors;
+	int errors, disbalance;
 	assert(!group_opened);
 
 	if(current == &cmds)
 		return -1;
 
 	errors = current->group->error != 0;
-	if(errors || !is_undo_group_possible())
+	disbalance = current->group->balance != 0;
+	if(errors || disbalance || !is_undo_group_possible())
 	{
 		do
 			current = current->prev;
 		while(current != &cmds && current->group == current->next->group);
-		return errors ? 1 : -3;
+		if(errors)
+			return 1;
+		else if(disbalance)
+			return -4;
+		else
+			return -3;
 	}
+
+	current->group->balance--;
 
 	do
 	{
@@ -253,20 +263,28 @@ is_undo_group_possible(void)
 int
 redo_group(void)
 {
-	int errors;
+	int errors, disbalance;
 	assert(!group_opened);
 
 	if(current->next == NULL)
 		return -1;
 
 	errors = current->next->group->error != 0;
-	if(errors || !is_redo_group_possible())
+	disbalance = current->next->group->balance == 0;
+	if(errors || disbalance || !is_redo_group_possible())
 	{
 		do
 			current = current->next;
 		while(current->next != NULL && current->group == current->next->group);
-		return errors ? 1 : -3;
+		if(errors)
+			return 1;
+		else if(disbalance)
+			return -4;
+		else
+			return -3;
 	}
+
+	current->next->group->balance++;
 
 	do
 	{

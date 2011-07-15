@@ -134,6 +134,31 @@ test_failed_operation(void)
 	assert_int_equal(-1, redo_group());
 }
 
+static void
+test_disbalance(void)
+{
+	static int undo_levels = 10;
+
+	init_undo_list(&execute_fail, &undo_levels);
+	reset_undo_list();
+
+	cmd_group_begin("msg0");
+	assert_int_equal(0, add_operation2("do_msg0", "", "",
+			"undo_msg0", "/nonbin", ""));
+	cmd_group_end();
+
+	cmd_group_begin("msg1");
+	assert_int_equal(0, add_operation("do_msg1", "undo_msg1"));
+	cmd_group_end();
+
+	assert_int_equal(0, undo_group());
+	assert_int_equal(-3, undo_group());
+	assert_int_equal(-1, undo_group());
+	assert_int_equal(-4, redo_group());
+	assert_int_equal(0, redo_group());
+	assert_int_equal(-1, redo_group());
+}
+
 void
 undo_test(void)
 {
@@ -146,6 +171,7 @@ undo_test(void)
 	run_test(test_list_truncating);
 	run_test(test_cmd_1undo_1redo);
 	run_test(test_failed_operation);
+	run_test(test_disbalance);
 
 	test_fixture_end();
 }

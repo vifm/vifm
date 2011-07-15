@@ -46,6 +46,7 @@ void cmd_group_end(void);
  *  -1 - no operation for undo is available
  *  -2 - there were errors
  *  -3 - undoing group is impossible
+ *  -4 - skipped unbalanced operation
  *   1 - operation was skipped due to previous errors (no command run)
  */
 int undo_group(void);
@@ -56,6 +57,7 @@ int undo_group(void);
  *  -1 - no operation for undo is available
  *  -2 - there were errors
  *  -3 - redoing group is impossible
+ *  -4 - skipped unbalanced operation
  *   1 - operation was skipped due to previous errors (no command run)
  */
 int redo_group(void);

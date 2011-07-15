@@ -54,9 +54,10 @@ static void set_perm_string(FileView *view, const int *perms,
 		const int *origin_perms);
 static void files_chmod(FileView *view, const char *mode, const char *inv_mode,
 		int recurse_dirs);
-static char * add_file_to_list(char *list, const char *filename);
-static void file_chmod(char *path, const char *mode, const char *inv_mode,
-		int recurse_dirs);
+static void chmod_file_in_list(FileView *view, int pos, const char *mode,
+		const char *inv_mode, int recurse_dirs);
+static void file_chmod(char *path, char *esc_path, const char *mode,
+		const char *inv_mode, int recurse_dirs);
 static void cmd_space(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
@@ -247,6 +248,10 @@ leave_permissions_mode(void)
 	*mode = NORMAL_MODE;
 	curs_set(0);
 	curr_stats.use_input_bar = 1;
+
+	clean_selected_files(curr_view);
+	draw_dir_list(view, view->top_line);
+	moveto_list_pos(view, view->list_pos);
 }
 
 static void
@@ -260,8 +265,6 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 {
 	char path[PATH_MAX];
 
-	leave_permissions_mode();
-
 	if(!changed)
 		return;
 
@@ -270,10 +273,8 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	set_perm_string(view, perms, origin_perms);
 	load_dir_list(view, 1);
-	moveto_list_pos(view, view->curr_line);
-	clean_selected_files(view);
-	draw_dir_list(view, view->top_line);
-	moveto_list_pos(view, view->list_pos);
+
+	leave_permissions_mode();
 }
 
 static void
@@ -317,100 +318,67 @@ files_chmod(FileView *view, const char *mode, const char *inv_mode,
 		int recurse_dirs)
 {
 	int i;
-	char *file_list;
-
-	file_list = malloc(1);
-	if(file_list == NULL)
-		return;
-	*file_list = '\0';
 
 	i = 0;
 	while(!view->dir_entry[i].selected && i < view->list_rows)
 		i++;
+
+	cmd_group_begin("Change permissions");
 	if(i == view->list_rows)
 	{
-		char *p, *filename;
-
-		filename = view->dir_entry[view->list_pos].name;
-		p = add_file_to_list(file_list, filename);
-		if(p == NULL)
-		{
-			free(file_list);
-			return;
-		}
-		file_list = p;
+		chmod_file_in_list(view, view->list_pos, mode, inv_mode, recurse_dirs);
 	}
 	else
 	{
 		while(i < view->list_rows)
 		{
 			if(view->dir_entry[i].selected)
-			{
-				char *p, *filename;
-
-				filename = view->dir_entry[i].name;
-				p = add_file_to_list(file_list, filename);
-				if(p == NULL)
-				{
-					free(file_list);
-					return;
-				}
-				file_list = p;
-			}
+				chmod_file_in_list(view, i, mode, inv_mode, recurse_dirs);
 			i++;
 		}
 	}
-	file_chmod(file_list, mode, inv_mode, recurse_dirs);
-	free(file_list);
-}
-
-static char *
-add_file_to_list(char *list, const char *filename)
-{
-	char path_buf[PATH_MAX];
-	char *p, *escaped;
-
-	snprintf(path_buf, sizeof(path_buf), "%s/%s", view->curr_dir, filename);
-	escaped = escape_filename(path_buf, 0, 0);
-	if(escaped == NULL)
-		return NULL;
-
-	p = realloc(list, strlen(list) + strlen(escaped) + 2);
-	if(p == NULL)
-	{
-		free(escaped);
-		return NULL;
-	}
-	list = p;
-	strcat(list, " ");
-	strcat(list, escaped);
-	free(escaped);
-	return list;
+	cmd_group_end();
 }
 
 static void
-file_chmod(char *path, const char *mode, const char *inv_mode, int recurse_dirs)
+chmod_file_in_list(FileView *view, int pos, const char *mode,
+		const char *inv_mode, int recurse_dirs)
 {
-	char cmd[128 + strlen(path)];
-	char undo_cmd[128 + strlen(path)];
+	char *filename;
+	char path_buf[PATH_MAX];
+	char *escaped;
+
+	filename = view->dir_entry[pos].name;
+	snprintf(path_buf, sizeof(path_buf), "%s/%s", view->curr_dir, filename);
+	escaped = escape_filename(path_buf, 0, 0);
+	if(escaped == NULL)
+		return;
+	file_chmod(path_buf, escaped, mode, inv_mode, recurse_dirs);
+	free(escaped);
+}
+
+static void
+file_chmod(char *path, char *esc_path, const char *mode, const char *inv_mode,
+		int recurse_dirs)
+{
+	char cmd[128 + strlen(esc_path)];
+	char undo_cmd[128 + strlen(esc_path)];
 
 	if(recurse_dirs)
 	{
-		snprintf(cmd, sizeof(cmd), "chmod -R %s %s", mode, path);
-		snprintf(undo_cmd, sizeof(undo_cmd), "chmod -R %s %s", inv_mode, path);
+		snprintf(cmd, sizeof(cmd), "chmod -R %s %s", mode, esc_path);
+		snprintf(undo_cmd, sizeof(undo_cmd), "chmod -R %s %s", inv_mode, esc_path);
 		start_background_job(cmd);
 	}
 	else
 	{
-		snprintf(cmd, sizeof(cmd), "chmod %s %s", mode, path);
-		snprintf(undo_cmd, sizeof(undo_cmd), "chmod %s %s", inv_mode, path);
+		snprintf(cmd, sizeof(cmd), "chmod %s %s", mode, esc_path);
+		snprintf(undo_cmd, sizeof(undo_cmd), "chmod %s %s", inv_mode, esc_path);
 		if(system_and_wait_for_errors(cmd) != 0)
 			return;
 	}
 
-	cmd_group_begin("Change permissions");
-	add_operation(cmd, undo_cmd);
-	cmd_group_end();
+	add_operation2(cmd, path, "", undo_cmd, path, "");
 }
 
 static void
