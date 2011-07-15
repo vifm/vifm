@@ -65,9 +65,14 @@ int redo_group(void);
 char ** undolist(int detail);
 
 /*
- * Returns number of the group.
+ * Returns position in the list returned by undolist().
  */
 int get_undolist_pos(int detail);
+
+/*
+ * Removes all commands which files are in trash dir.
+ */
+void clean_cmds_with_trash(void);
 
 #endif
 

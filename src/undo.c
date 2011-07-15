@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "config.h"
 #include "registers.h"
 #include "utils.h"
 
@@ -39,6 +40,8 @@ static struct cmd_t cmds = {
 };
 static struct cmd_t *current = &cmds;
 
+static size_t trash_dir_len;
+
 static int group_opened;
 static long long next_group;
 static struct group_t *last_group;
@@ -62,6 +65,8 @@ init_undo_list(int (*exec_func)(const char *), const int* max_levels)
 
 	do_func = exec_func;
 	undo_levels = max_levels;
+
+	trash_dir_len = strlen(cfg.trash_dir);
 }
 
 void
@@ -169,6 +174,9 @@ remove_cmd(struct cmd_t *cmd)
 {
 	int last_cmd_in_group = 1;
 
+	if(cmd == current)
+		current = cmd->prev;
+
 	if(cmd->prev != NULL)
 	{
 		cmd->prev->next = cmd->next;
@@ -180,6 +188,10 @@ remove_cmd(struct cmd_t *cmd)
 		cmd->next->prev = cmd->prev;
 		if(cmd->group == cmd->next->group)
 			last_cmd_in_group = 0;
+	}
+	else /* this is the last command in the list */
+	{
+		cmds.prev = cmd->prev;
 	}
 
 	if(last_cmd_in_group)
@@ -337,7 +349,7 @@ is_op_possible(const struct op_t *op)
 		return 0;
 	if(op->dst != NULL && access(op->dst, F_OK) == 0)
 	{
-		if(strncmp(op->dst, "/home/xaizek/.vifm/Trash", 24) == 0)
+		if(strncmp(op->dst, cfg.trash_dir, trash_dir_len) == 0)
 			return -1;
 		return 0;
 	}
@@ -347,21 +359,20 @@ is_op_possible(const struct op_t *op)
 static void
 change_filename_in_trash(struct cmd_t *cmd, const char *filename)
 {
-	const char trash[] = "/home/xaizek/.vifm/Trash";
 	char *escaped;
 	char *p;
 	char buf[PATH_MAX];
 	int i = -1;
 
-	p = strchr(filename + strlen(trash), '_') + 1;
+	p = strchr(filename + trash_dir_len, '_') + 1;
 
 	do
-		snprintf(buf, sizeof(buf), "%s/%03i_%s", trash, ++i, p);
+		snprintf(buf, sizeof(buf), "%s/%03i_%s", cfg.trash_dir, ++i, p);
 	while(access(buf, F_OK) == 0);
 	rename_in_registers(filename, buf);
 	escaped = escape_filename(buf, 0, 0);
 
-	p = strstr(cmd->do_op.cmd, trash);
+	p = strstr(cmd->do_op.cmd, cfg.escaped_trash_dir);
 	if(p != NULL)
 	{
 		*p = '\0';
@@ -371,7 +382,7 @@ change_filename_in_trash(struct cmd_t *cmd, const char *filename)
 		cmd->do_op.cmd = strdup(buf);
 	}
 
-	p = strstr(cmd->undo_op.cmd, trash);
+	p = strstr(cmd->undo_op.cmd, cfg.escaped_trash_dir);
 	if(p != NULL)
 	{
 		*p = '\0';
@@ -381,13 +392,13 @@ change_filename_in_trash(struct cmd_t *cmd, const char *filename)
 		cmd->undo_op.cmd = strdup(buf);
 	}
 
-	snprintf(buf, sizeof(buf), "%s/%03i%s", trash, ++i, filename);
-	if(strncmp(cmd->do_op.dst, trash, 24) == 0)
+	snprintf(buf, sizeof(buf), "%s/%03i%s", cfg.trash_dir, ++i, filename);
+	if(strncmp(cmd->do_op.dst, cfg.trash_dir, trash_dir_len) == 0)
 	{
 		free(cmd->do_op.dst);
 		cmd->do_op.dst = strdup(buf);
 	}
-	if(strncmp(cmd->undo_op.dst, trash, 24) == 0)
+	if(strncmp(cmd->undo_op.dst, cfg.trash_dir, trash_dir_len) == 0)
 	{
 		free(cmd->undo_op.dst);
 		cmd->undo_op.dst = strdup(buf);
@@ -406,7 +417,7 @@ undolist(int detail)
 	assert(!group_opened);
 
 	group_count = 1;
-	cmd = current;
+	cmd = cmds.prev;
 	while(cmd != &cmds)
 	{
 		if(cmd->group != cmd->prev->group)
@@ -494,6 +505,9 @@ get_undolist_pos(int detail)
 	struct cmd_t *cur = cmds.prev;
 	int result_group = 0;
 	int result_cmd = 0;
+
+	assert(!group_opened);
+
 	while(cur != current)
 	{
 		if(cur->group != cur->prev->group)
@@ -504,6 +518,33 @@ get_undolist_pos(int detail)
 	if(cur == &cmds)
 		result_group++;
 	return detail ? (result_group + result_cmd) : result_group;
+}
+
+void
+clean_cmds_with_trash(void)
+{
+	struct cmd_t *cur = cmds.prev;
+
+	assert(!group_opened);
+
+	while(cur != &cmds)
+	{
+		struct cmd_t *prev = cur->prev;
+
+		if(cur->group->balance < 0)
+		{
+			if(cur->do_op.src != NULL &&
+					strncmp(cur->do_op.src, cfg.trash_dir, trash_dir_len) == 0)
+				remove_cmd(cur);
+		}
+		else
+		{
+			if(cur->undo_op.src != NULL &&
+					strncmp(cur->undo_op.src, cfg.trash_dir, trash_dir_len) == 0)
+				remove_cmd(cur);
+		}
+		cur = prev;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

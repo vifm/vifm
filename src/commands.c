@@ -53,6 +53,7 @@
 #include "sort_dialog.h"
 #include "status.h"
 #include "ui.h"
+#include "undo.h"
 #include "utils.h"
 
 /* The order of the commands is important as :e will match the first
@@ -1694,7 +1695,9 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 				char buf[24 + (strlen(cfg.escaped_trash_dir) + 1)*2 + 1];
 				snprintf(buf, sizeof(buf), "rm -rf %s/* %s/.[!.]*",
 						cfg.escaped_trash_dir, cfg.escaped_trash_dir);
+				clean_regs_with_trash();
 				start_background_job(buf);
+				clean_cmds_with_trash();
 			}
 			break;
 		case COM_FILTER:

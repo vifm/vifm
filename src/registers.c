@@ -20,6 +20,7 @@
 
 #include <string.h>
 
+#include "config.h"
 #include "menus.h"
 #include "utils.h"
 
@@ -178,6 +179,31 @@ rename_in_registers(const char *old, const char *new)
 			registers[x].files[y] = strdup(new);
 			break; /* registers don't contain duplicates */
 		}
+	}
+}
+
+void
+clean_regs_with_trash(void)
+{
+	int x;
+	int trash_dir_len = strlen(cfg.trash_dir);
+	for(x = 0; x < NUM_REGISTERS; x++)
+	{
+		int y, n, needs_pack = 0;
+		n = registers[x].num_files;
+		for(y = 0; y < n; y++)
+		{
+			if(strncmp(registers[x].files[y], cfg.trash_dir, trash_dir_len) != 0)
+				continue;
+			if(access(registers[x].files[y], F_OK) != 0)
+				continue;
+
+			free(registers[x].files[y]);
+			registers[x].files[y] = NULL;
+			needs_pack = 1;
+		}
+		if(needs_pack)
+			pack_register(registers[x].name);
 	}
 }
 
