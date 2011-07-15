@@ -135,31 +135,50 @@ list_registers_content(void)
 
 	for(x = 0; x < NUM_REGISTERS; x++)
 	{
-		if(registers[x].num_files > 0)
-		{
-			char buf[56];
-			int y;
+		char buf[56];
+		int y;
 			
-			y = registers[x].num_files;
-			snprintf(buf, sizeof(buf), "\"%c", registers[x].name);
+		if(registers[x].num_files <= 0)
+			continue;
+
+		snprintf(buf, sizeof(buf), "\"%c", registers[x].name);
+		list = (char **)realloc(list, sizeof(char *)*(len + 1));
+		list[len] = strdup(buf);
+		len++;
+
+		y = registers[x].num_files;
+		while(y-- > 0)
+		{
 			list = (char **)realloc(list, sizeof(char *)*(len + 1));
-			list[len] = strdup(buf);
+			list[len] = strdup(registers[x].files[y]);
+
 			len++;
-
-			while (y)
-			{
-				y--;
-				list = (char **)realloc(list, sizeof(char *)*(len + 1));
-				list[len] = strdup(registers[x].files[y]);
-
-				len++;
-			}
 		}
 	}
 
 	list = (char **)realloc(list, sizeof(char *)*(len + 1));
 	list[len] = NULL;
 	return list;
+}
+
+void
+rename_in_registers(const char *old, const char *new)
+{
+	int x;
+	for(x = 0; x < NUM_REGISTERS; x++)
+	{
+		int y, n;
+		n = registers[x].num_files;
+		for(y = 0; y < n; y++)
+		{
+			if(strcmp(registers[x].files[y], old) != 0)
+				continue;
+
+			free(registers[x].files[y]);
+			registers[x].files[y] = strdup(new);
+			break; /* registers don't contain duplicates */
+		}
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

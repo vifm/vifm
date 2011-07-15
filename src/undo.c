@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "registers.h"
+#include "utils.h"
+
 #include "undo.h"
 
 struct group_t {
@@ -47,6 +50,8 @@ static void remove_cmd(struct cmd_t *cmd);
 static int is_undo_group_possible(void);
 static int is_redo_group_possible(void);
 static int is_op_possible(const struct op_t *op);
+static void change_filename_in_trash(struct cmd_t *cmd,
+		const char *filename);
 static char **fill_undolist_detail(char **list);
 static char **fill_undolist_nondetail(char **list);
 
@@ -249,8 +254,12 @@ is_undo_group_possible(void)
 	struct cmd_t *cmd = current;
 	do
 	{
-		if(!is_op_possible(&cmd->undo_op))
+		int ret;
+		ret = is_op_possible(&cmd->undo_op);
+		if(ret == 0)
 			return 0;
+		else if(ret < 0)
+			change_filename_in_trash(cmd, cmd->undo_op.dst);
 		cmd = cmd->prev;
 	}
 	while(cmd != &cmds && cmd->group == cmd->next->group);
@@ -303,22 +312,88 @@ is_redo_group_possible(void)
 	struct cmd_t *cmd = current;
 	do
 	{
+		int ret;
 		cmd = cmd->next;
-		if(!is_op_possible(&cmd->do_op))
+		ret = is_op_possible(&cmd->do_op);
+		if(ret == 0)
 			return 0;
+		else if(ret < 0)
+			change_filename_in_trash(cmd, cmd->do_op.dst);
 	}
 	while(cmd->next != NULL && cmd->group == cmd->next->group);
 	return 1;
 }
 
+/*
+ * Return value:
+ *   0 - impossible
+ * < 0 - possible with renaming file in trash
+ * > 0 -possible
+ */
 static int
 is_op_possible(const struct op_t *op)
 {
 	if(op->src != NULL && access(op->src, F_OK) != 0)
 		return 0;
 	if(op->dst != NULL && access(op->dst, F_OK) == 0)
+	{
+		if(strncmp(op->dst, "/home/xaizek/.vifm/Trash", 24) == 0)
+			return -1;
 		return 0;
+	}
 	return 1;
+}
+
+static void
+change_filename_in_trash(struct cmd_t *cmd, const char *filename)
+{
+	const char trash[] = "/home/xaizek/.vifm/Trash";
+	char *escaped;
+	char *p;
+	char buf[PATH_MAX];
+	int i = -1;
+
+	p = strchr(filename + strlen(trash), '_') + 1;
+
+	do
+		snprintf(buf, sizeof(buf), "%s/%03i_%s", trash, ++i, p);
+	while(access(buf, F_OK) == 0);
+	rename_in_registers(filename, buf);
+	escaped = escape_filename(buf, 0, 0);
+
+	p = strstr(cmd->do_op.cmd, trash);
+	if(p != NULL)
+	{
+		*p = '\0';
+		snprintf(buf, sizeof(buf), "%s%s%s", cmd->do_op.cmd, escaped,
+				p + strlen(filename));
+		free(cmd->do_op.cmd);
+		cmd->do_op.cmd = strdup(buf);
+	}
+
+	p = strstr(cmd->undo_op.cmd, trash);
+	if(p != NULL)
+	{
+		*p = '\0';
+		snprintf(buf, sizeof(buf), "%s%s%s", cmd->undo_op.cmd, escaped,
+				p + strlen(filename));
+		free(cmd->undo_op.cmd);
+		cmd->undo_op.cmd = strdup(buf);
+	}
+
+	snprintf(buf, sizeof(buf), "%s/%03i%s", trash, ++i, filename);
+	if(strncmp(cmd->do_op.dst, trash, 24) == 0)
+	{
+		free(cmd->do_op.dst);
+		cmd->do_op.dst = strdup(buf);
+	}
+	if(strncmp(cmd->undo_op.dst, trash, 24) == 0)
+	{
+		free(cmd->undo_op.dst);
+		cmd->undo_op.dst = strdup(buf);
+	}
+
+	free(escaped);
 }
 
 char **

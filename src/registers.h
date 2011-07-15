@@ -34,6 +34,7 @@ void append_to_register(int reg, char *file);
 void clear_register(int reg);
 void pack_register(int reg);
 char **list_registers_content(void);
+void rename_in_registers(const char *old, const char *new);
 
 #endif
 
