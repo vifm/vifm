@@ -136,12 +136,8 @@ load_initial_directory(FileView *view, const char *dir)
 static int
 undo_exec(const char *cmd)
 {
-	if(cmd[0] == '\0')
-	{
-		status_bar_message("Can't undo/redo that operation");
-		curr_stats.save_msg = 1;
-		return -1;
-	}
+	if(cmd[0] == '\0') /* for undo command of rm -rf operation */
+		return 0;
 
 	return background_and_wait_for_errors((char *)cmd);
 }

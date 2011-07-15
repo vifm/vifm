@@ -389,7 +389,7 @@ cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
 	}
 	else if(ret == -3)
 	{
-		status_bar_message("Can't redo group, it's skipped");
+		status_bar_message("Can't redo group, it was skipped");
 	}
 	else if(ret == -4)
 	{
@@ -1131,7 +1131,7 @@ cmd_u(struct key_info key_info, struct keys_info *keys_info)
 	}
 	else if(ret == -3)
 	{
-		status_bar_message("Can't undo group, it's skipped");
+		status_bar_message("Can't undo group, it was skipped");
 	}
 	else if(ret == -4)
 	{

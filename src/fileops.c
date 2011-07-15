@@ -866,16 +866,16 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 static int
 mv_file(const char *src, const char *dst)
 {
-	char path_buf[PATH_MAX];
+	char full_src[PATH_MAX], full_dst[PATH_MAX];
 	char do_command[6 + PATH_MAX*2 + 1];
 	char undo_command[6 + PATH_MAX*2 + 1];
 	char *escaped_src, *escaped_dst;
 	int result;
 
-	snprintf(path_buf, sizeof(path_buf), "%s/%s", curr_view->curr_dir, src);
-	escaped_src = escape_filename(path_buf, 0, 0);
-	snprintf(path_buf, sizeof(path_buf), "%s/%s", curr_view->curr_dir, dst);
-	escaped_dst = escape_filename(path_buf, 0, 0);
+	snprintf(full_src, sizeof(full_src), "%s/%s", curr_view->curr_dir, src);
+	escaped_src = escape_filename(full_src, 0, 0);
+	snprintf(full_dst, sizeof(full_dst), "%s/%s", curr_view->curr_dir, dst);
+	escaped_dst = escape_filename(full_dst, 0, 0);
 
 	if(escaped_src == NULL || escaped_dst == NULL)
 	{
@@ -893,7 +893,8 @@ mv_file(const char *src, const char *dst)
 
 	result = system_and_wait_for_errors(do_command);
 	if(result == 0)
-		add_operation(do_command, undo_command);
+		add_operation2(do_command, full_src, full_dst, undo_command, full_dst,
+				full_src);
 	return result;
 }
 
@@ -1470,6 +1471,7 @@ clone_file(FileView* view)
 {
 	char do_cmd[PATH_MAX + NAME_MAX*2 + 4];
 	char undo_cmd[3 + PATH_MAX + 6 + 1];
+	char clone_name[PATH_MAX];
 	char *escaped;
 	const char *filename;
 	
@@ -1479,6 +1481,7 @@ clone_file(FileView* view)
 	if(strcmp(filename, "..") == 0)
 		return;
 
+	snprintf(clone_name, sizeof(clone_name), "%s_clone", filename);
 	snprintf(do_cmd, sizeof(do_cmd), "%s/%s", view->curr_dir, filename);
 
 	if(view->dir_entry[view->list_pos].type == DIRECTORY)
@@ -1492,7 +1495,7 @@ clone_file(FileView* view)
 	if(background_and_wait_for_errors(do_cmd) == 0)
 	{
 		cmd_group_begin("Clone file");
-		add_operation(do_cmd, undo_cmd);
+		add_operation2(do_cmd, filename, clone_name, undo_cmd, clone_name, "");
 		cmd_group_end();
 
 		load_saving_pos(view, 1);

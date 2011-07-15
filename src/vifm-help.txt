@@ -717,7 +717,11 @@ Menus and dialogs
 
        Sort dialog
 
-       h - switch ascending/descending.
+       h - switch ascending/descending.  Space - switch ascending/descending.
+
+       Permissions dialog
+
+       h - check/uncheck.  Space - check/uncheck.
 
        Filetype menu
 
@@ -770,4 +774,4 @@ AUTHOR
 
 
 
-                                 Jule 13, 2011                         vifm(1)
+                                 Jule 15, 2011                         vifm(1)
