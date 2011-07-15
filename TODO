@@ -10,8 +10,6 @@ Basic things that need to be done.
         :chown commands.
     Better C command. Handle situation when destination already exists.
     Make child processes continue working after vifm shutdown.
-    Ctrl-C on error message before vifm start should skip all error messages
-        until startup process will be finished.
     Add :filetype command (separate programs and viewer).
     Make ~user_name/ work.
     Implement :find command.

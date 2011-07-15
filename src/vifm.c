@@ -130,6 +130,7 @@ load_initial_directory(FileView *view, const char *dir)
 	view->dir_entry[0].type = DIRECTORY;
 
 	view->list_rows = 1;
+	chosp(view->curr_dir);
 	change_directory(view, dir);
 }
 
@@ -289,12 +290,16 @@ main(int argc, char *argv[])
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	load_initial_directory(&lwin, dir);
-	load_initial_directory(&rwin, dir);
-
 	read_info_file();
 
 	parse_args(argc, argv, dir, lwin_path, rwin_path);
+	if(lwin_path[0] != '\0')
+		strcpy(lwin.curr_dir, lwin_path);
+	if(rwin_path[0] != '\0')
+		strcpy(rwin.curr_dir, rwin_path);
+
+	load_initial_directory(&lwin, dir);
+	load_initial_directory(&rwin, dir);
 
 	init_modes();
 	init_option_handlers();
@@ -305,20 +310,12 @@ main(int argc, char *argv[])
 
 	exec_startup();
 
-	if(rwin_path[0] != '\0')
-		change_directory(&rwin, rwin_path);
-	load_dir_list(&rwin, 0);
-
-	mvwaddstr(rwin.win, rwin.curr_line, 0, "*");
-	wrefresh(rwin.win);
-
-	if(lwin_path[0] != '\0')
-		change_directory(&lwin, lwin_path);
-	load_dir_list(&lwin, 0);
-
 	moveto_list_pos(&lwin, 0);
 	update_all_windows();
 	setup_signals();
+
+	mvwaddstr(rwin.win, rwin.curr_line, 0, "*");
+	wrefresh(rwin.win);
 
 	werase(status_bar);
 	wnoutrefresh(status_bar);

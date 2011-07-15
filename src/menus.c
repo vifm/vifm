@@ -180,16 +180,22 @@ redraw_error_msg(char *title_arg, const char *message_arg)
 int
 show_error_msg(char *title, const char *message)
 {
+	static int skip_until_started;
 	int key;
 
 	if(!curr_stats.vifm_started)
+		return 1;
+	if(curr_stats.vifm_started != 2 && skip_until_started)
 		return 1;
 
 	redraw_error_msg(title, message);
 
 	do
 		key = wgetch(error_win);
-	while(key != 13 && key != 3); /* ascii Return  ascii Ctrl-c */
+	while(key != 13 && key != 3); /* ascii Return, ascii Ctrl-c */
+
+	if(curr_stats.vifm_started != 2)
+		skip_until_started = key == 3;
 
 	curr_stats.errmsg_shown = 0;
 	curr_stats.freeze = 0;
