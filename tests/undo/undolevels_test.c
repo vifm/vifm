@@ -18,7 +18,8 @@ test_undolevel_change_to_smaller(void)
 	init_undo_list(&execute_dummy, &undo_levels);
 
 	cmd_group_begin("msg4");
-	assert_int_equal(0, add_operation("do_msg4", "", "", "undo_msg4", "", ""));
+	assert_int_equal(0, add_operation("do_msg4", NULL, NULL, "undo_msg4", NULL,
+			NULL));
 	cmd_group_end();
 
 	assert_int_equal(0, undo_group());
@@ -35,7 +36,8 @@ test_zero_undolevel(void)
 	init_undo_list(&execute_dummy, &undo_levels);
 
 	cmd_group_begin("msg4");
-	assert_int_equal(0, add_operation("do_msg4", "", "", "undo_msg4", "", ""));
+	assert_int_equal(0, add_operation("do_msg4", NULL, NULL, "undo_msg4", NULL,
+			NULL));
 	cmd_group_end();
 
 	assert_int_equal(-1, undo_group());
@@ -49,7 +51,8 @@ test_negative_undolevel(void)
 	init_undo_list(&execute_dummy, &undo_levels);
 
 	cmd_group_begin("msg4");
-	assert_int_equal(0, add_operation("do_msg4", "", "", "undo_msg4", "", ""));
+	assert_int_equal(0, add_operation("do_msg4", NULL, NULL, "undo_msg4", NULL,
+			NULL));
 	cmd_group_end();
 
 	assert_int_equal(-1, undo_group());

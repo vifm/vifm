@@ -20,7 +20,7 @@
 #define __UI_H__
 
 #include <limits.h> /* PATH_MAX NAME_MAX */
-#include <ncurses.h>
+#include <curses.h>
 #include <stdlib.h> /* off_t mode_t... */
 #include <inttypes.h> /* uintmax_t */
 #include <sys/types.h>

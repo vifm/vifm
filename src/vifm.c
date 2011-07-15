@@ -23,7 +23,7 @@
 #include <gtk/gtk.h>
 #endif
 
-#include <ncurses.h>
+#include <curses.h>
 
 #include <unistd.h> /* getcwd, stat, sysconf */
 

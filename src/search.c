@@ -18,7 +18,7 @@
 
 #include <sys/types.h>
 
-#include <ncurses.h>
+#include <curses.h>
 #include <regex.h>
 
 #include "filelist.h"

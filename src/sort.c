@@ -84,16 +84,16 @@ sort_dir_list(const void *one, const void *two)
 	char *pfirst, *psecond;
 	dir_entry_t *first = (dir_entry_t *) one;
 	dir_entry_t *second = (dir_entry_t *) two;
-	int first_is_dir = false;
-	int second_is_dir = false;
+	int first_is_dir = 0;
+	int second_is_dir = 0;
 
 	if(first->type == DIRECTORY)
-		first_is_dir = true;
+		first_is_dir = 1;
 	else if(first->type == LINK)
 		first_is_dir = check_link_is_dir(first->name);
 
 	if(second->type == DIRECTORY)
-		second_is_dir = true;
+		second_is_dir = 1;
 	else if(second->type == LINK)
 		second_is_dir = check_link_is_dir(second->name);
 

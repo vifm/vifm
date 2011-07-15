@@ -17,6 +17,10 @@ AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO
 AC_TYPE_OFF_T
 
+AC_CHECK_PROG(HAVE_FILE_PROG, file, 1)
+if test "x${HAVE_FILE_PROG}" = 'x1' ; then
+    AC_DEFINE_UNQUOTED(HAVE_FILE_PROG, 1, [Define if file program present])
+fi
 
 dnl Set PACKAGE_DATA_DIR in config.h.
 if test "x${datadir}" = 'x${prefix}/share'; then

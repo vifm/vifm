@@ -97,6 +97,7 @@ int
 add_operation(const char *do_cmd, const char *do_src, const char *do_dst,
 		const char *undo_cmd, const char *undo_src, const char *undo_dst)
 {
+	int mem_error;
 	struct cmd_t *cmd;
 
 	assert(group_opened);
@@ -122,26 +123,28 @@ add_operation(const char *do_cmd, const char *do_src, const char *do_dst,
 		return -1;
 
 	cmd->do_op.cmd = strdup(do_cmd);
-	cmd->do_op.src = strdup(do_src);
-	cmd->do_op.dst = strdup(do_dst);
 	cmd->undo_op.cmd = strdup(undo_cmd);
-	cmd->undo_op.src = strdup(undo_src);
-	cmd->undo_op.dst = strdup(undo_dst);
 	if(last_group != NULL)
 	{
 		cmd->group = last_group;
 	}
-	else
+	else if((cmd->group = malloc(sizeof(struct group_t))) != NULL)
 	{
-		cmd->group = malloc(sizeof(struct group_t));
 		cmd->group->msg = strdup(group_msg);
 		cmd->group->error = 0;
 		cmd->group->balance = 0;
 	}
-	if(cmd->do_op.cmd == NULL || cmd->do_op.src == NULL ||
-			cmd->do_op.dst == NULL || cmd->undo_op.cmd == NULL ||
-			cmd->undo_op.src == NULL || cmd->undo_op.dst == NULL ||
-			cmd->group == NULL || cmd->group->msg == NULL)
+	mem_error = cmd->do_op.cmd == NULL || cmd->undo_op.cmd == NULL ||
+			cmd->group == NULL || cmd->group->msg == NULL;
+	if(do_src != NULL && (cmd->do_op.src = strdup(do_src)) == NULL)
+		mem_error = 1;
+	if(do_dst != NULL && (cmd->do_op.dst = strdup(do_dst)) == NULL)
+		mem_error = 1;
+	if(undo_src != NULL && (cmd->undo_op.src = strdup(undo_src)) == NULL)
+		mem_error = 1;
+	if(undo_dst != NULL && (cmd->undo_op.dst = strdup(undo_dst)) == NULL)
+		mem_error = 1;
+	if(mem_error)
 	{
 		remove_cmd(cmd);
 		return -1;
@@ -311,9 +314,9 @@ is_redo_group_possible(void)
 static int
 is_op_possible(const struct op_t *op)
 {
-	if(op->src[0] != '\0' && access(op->src, F_OK) != 0)
+	if(op->src != NULL && access(op->src, F_OK) != 0)
 		return 0;
-	if(op->dst[0] != '\0' && access(op->dst, F_OK) == 0)
+	if(op->dst != NULL && access(op->dst, F_OK) == 0)
 		return 0;
 	return 1;
 }

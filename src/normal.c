@@ -585,6 +585,9 @@ cmd_gA(struct key_info key_info, struct keys_info *keys_info)
 	if(curr_view->dir_entry[curr_view->list_pos].type != DIRECTORY)
 		return;
 
+	status_bar_message("Calculating directory size...");
+	wrefresh(status_bar);
+
 	calc_dirsize(curr_view->dir_entry[curr_view->list_pos].name, 1);
 
 	moveto_list_pos(curr_view, curr_view->list_pos);
@@ -595,6 +598,9 @@ cmd_ga(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_view->dir_entry[curr_view->list_pos].type != DIRECTORY)
 		return;
+
+	status_bar_message("Calculating directory size...");
+	wrefresh(status_bar);
 
 	calc_dirsize(curr_view->dir_entry[curr_view->list_pos].name, 0);
 

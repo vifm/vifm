@@ -107,6 +107,7 @@ get_magic_mimetype(const char* filename, char* buf)
 static int
 get_file_mimetype(const char* filename, char* buf, size_t buf_sz)
 {
+#ifdef HAVE_FILE_PROG
 	FILE *pipe;
 	char command[1024];
 
@@ -125,6 +126,9 @@ get_file_mimetype(const char* filename, char* buf, size_t buf_sz)
 	pclose(pipe);
 
 	return 0;
+#else /* #ifdef HAVE_FILE_PROG */
+	return -1;
+#endif /* #ifdef HAVE_FILE_PROG */
 }
 
 char *

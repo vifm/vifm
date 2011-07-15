@@ -80,7 +80,8 @@ test_list_truncating(void)
 	assert_int_equal(0, undo_group());
 
 	cmd_group_begin("msg4");
-	assert_int_equal(0, add_operation("do_msg4", "", "", "undo_msg4", "", ""));
+	assert_int_equal(0, add_operation("do_msg4", NULL, NULL, "undo_msg4", NULL,
+			NULL));
 	cmd_group_end();
 
 	assert_int_equal(-1, redo_group());
@@ -97,7 +98,8 @@ test_cmd_1undo_1redo(void)
 	init_undo_list(&exec_dummy, &undo_levels);
 
 	cmd_group_begin("msg0");
-	assert_int_equal(0, add_operation("do_msg0", "", "", "undo_msg0", "", ""));
+	assert_int_equal(0, add_operation("do_msg0", NULL, NULL, "undo_msg0", NULL,
+			NULL));
 	cmd_group_end();
 
 	assert_int_equal(0, undo_group());
@@ -119,11 +121,13 @@ test_failed_operation(void)
 	reset_undo_list();
 
 	cmd_group_begin("msg0");
-	assert_int_equal(0, add_operation("do_msg0", "", "", "undo_msg0", "", ""));
+	assert_int_equal(0, add_operation("do_msg0", NULL, NULL, "undo_msg0", NULL,
+			NULL));
 	cmd_group_end();
 
 	cmd_group_begin("msg1");
-	assert_int_equal(0, add_operation("do_msg1", "", "", "undo_msg1", "", ""));
+	assert_int_equal(0, add_operation("do_msg1", NULL, NULL, "undo_msg1", NULL,
+		NULL));
 	cmd_group_end();
 
 	assert_int_equal(0, undo_group());
@@ -143,12 +147,13 @@ test_disbalance(void)
 	reset_undo_list();
 
 	cmd_group_begin("msg0");
-	assert_int_equal(0, add_operation("do_msg0", "", "",
-			"undo_msg0", "/nonbin", ""));
+	assert_int_equal(0, add_operation("do_msg0", NULL, NULL, "undo_msg0",
+			"/nonbin", NULL));
 	cmd_group_end();
 
 	cmd_group_begin("msg1");
-	assert_int_equal(0, add_operation("do_msg1", "", "", "undo_msg1", "", ""));
+	assert_int_equal(0, add_operation("do_msg1", NULL, NULL, "undo_msg1", NULL,
+			NULL));
 	cmd_group_end();
 
 	assert_int_equal(0, undo_group());

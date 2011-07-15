@@ -17,7 +17,7 @@ Basic things that need to be done.
     Implement :find command.
     An option to choose shell.
     Make l key handle selection.
-    :filter? to display it's current value. :invert? to.
+    :filter? to display it's current value. :invert? and :screen? too.
     %something for absolute filenames.
     Skip all directories in history that doesn't exist.
     Expand macros for builtin commands.

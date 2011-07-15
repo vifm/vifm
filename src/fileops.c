@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <ncurses.h>
+#include <curses.h>
 
 #include <dirent.h>
 #include <fcntl.h>
@@ -840,7 +840,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 			if(cfg.use_trash && use_trash)
 				add_operation(buf, full_buf, dest, undo_buf, dest, full_buf);
 			else
-				add_operation(buf, full_buf, "", undo_buf, "", "");
+				add_operation(buf, full_buf, NULL, undo_buf, NULL, NULL);
 			append_to_register(reg, dest);
 			y++;
 		}
@@ -1230,7 +1230,7 @@ change_owner_cb(const char *new_owner)
 		return;
 
 	cmd_group_begin("Change owner");
-	add_operation(command, full, "", undo_command, full, "");
+	add_operation(command, full, NULL, undo_command, full, NULL);
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
@@ -1264,7 +1264,7 @@ change_group_cb(const char *new_owner)
 		return;
 
 	cmd_group_begin("Change group");
-	add_operation(command, full, "", undo_command, full, "");
+	add_operation(command, full, NULL, undo_command, full, NULL);
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
@@ -1348,15 +1348,15 @@ put_next_file(const char *dest_name, int override)
 
 		if(move)
 		{
-			snprintf(do_buf, sizeof(do_buf), "mv -n %s %s/%s", src_buf, dst_buf,
-					dest_name);
+			snprintf(do_buf, sizeof(do_buf), "mv %s %s %s/%s", override ? "" : "-n",
+					src_buf, dst_buf, dest_name);
 			snprintf(undo_buf, sizeof(undo_buf), "mv -n %s/%s %s", dst_buf, dest_name,
 					src_buf);
 		}
 		else
 		{
-			snprintf(do_buf, sizeof(do_buf), "cp -npR %s %s/%s", src_buf, dst_buf,
-					dest_name);
+			snprintf(do_buf, sizeof(do_buf), "cp %s -pR %s %s/%s",
+					override ? "" : "-n", src_buf, dst_buf, dest_name);
 			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s/%s", dst_buf, dest_name);
 		}
 
@@ -1372,7 +1372,7 @@ put_next_file(const char *dest_name, int override)
 			if(move)
 				add_operation(do_buf, filename, dst_full, undo_buf, dst_full, filename);
 			else
-				add_operation(do_buf, filename, dst_full, undo_buf, dst_full, "");
+				add_operation(do_buf, filename, dst_full, undo_buf, dst_full, NULL);
 
 			cmd_group_end();
 			put_confirm.y++;
@@ -1511,7 +1511,7 @@ clone_file(FileView* view)
 	if(background_and_wait_for_errors(do_cmd) == 0)
 	{
 		cmd_group_begin("Clone file");
-		add_operation(do_cmd, filename, clone_name, undo_cmd, clone_name, "");
+		add_operation(do_cmd, filename, clone_name, undo_cmd, clone_name, NULL);
 		cmd_group_end();
 
 		load_saving_pos(view, 1);
