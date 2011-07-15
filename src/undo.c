@@ -94,13 +94,7 @@ cmd_group_continue(void)
 }
 
 int
-add_operation(const char *do_cmd, const char *undo_cmd)
-{
-	return add_operation2(do_cmd, "", "", undo_cmd, "", "");
-}
-
-int
-add_operation2(const char *do_cmd, const char *do_src, const char *do_dst,
+add_operation(const char *do_cmd, const char *do_src, const char *do_dst,
 		const char *undo_cmd, const char *undo_src, const char *undo_dst)
 {
 	struct cmd_t *cmd;

@@ -27,12 +27,7 @@ void cmd_group_continue(void);
 /*
  * Returns 0 on success
  */
-int add_operation(const char *do_cmd, const char *undo_cmd);
-
-/*
- * Returns 0 on success
- */
-int add_operation2(const char *do_cmd, const char *do_src, const char *do_dst,
+int add_operation(const char *do_cmd, const char *do_src, const char *do_dst,
 		const char *undo_cmd, const char *undo_src, const char *undo_dst);
 
 /*

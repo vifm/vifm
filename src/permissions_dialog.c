@@ -379,7 +379,7 @@ file_chmod(char *path, char *esc_path, const char *mode, const char *inv_mode,
 			return;
 	}
 
-	add_operation2(cmd, path, "", undo_cmd, path, "");
+	add_operation(cmd, path, "", undo_cmd, path, "");
 }
 
 static void

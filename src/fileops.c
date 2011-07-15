@@ -838,9 +838,9 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		if(background_and_wait_for_errors(buf) == 0)
 		{
 			if(cfg.use_trash && use_trash)
-				add_operation2(buf, full_buf, dest, undo_buf, dest, full_buf);
+				add_operation(buf, full_buf, dest, undo_buf, dest, full_buf);
 			else
-				add_operation2(buf, full_buf, "", undo_buf, "", "");
+				add_operation(buf, full_buf, "", undo_buf, "", "");
 			append_to_register(reg, dest);
 			y++;
 		}
@@ -896,7 +896,7 @@ mv_file(const char *src, const char *dst)
 
 	result = system_and_wait_for_errors(do_command);
 	if(result == 0)
-		add_operation2(do_command, full_src, full_dst, undo_command, full_dst,
+		add_operation(do_command, full_src, full_dst, undo_command, full_dst,
 				full_src);
 	return result;
 }
@@ -1230,7 +1230,7 @@ change_owner_cb(const char *new_owner)
 		return;
 
 	cmd_group_begin("Change owner");
-	add_operation2(command, full, "", undo_command, full, "");
+	add_operation(command, full, "", undo_command, full, "");
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
@@ -1264,7 +1264,7 @@ change_group_cb(const char *new_owner)
 		return;
 
 	cmd_group_begin("Change group");
-	add_operation2(command, full, "", undo_command, full, "");
+	add_operation(command, full, "", undo_command, full, "");
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
@@ -1370,10 +1370,9 @@ put_next_file(const char *dest_name, int override)
 					p);
 			cmd_group_continue();
 			if(move)
-				add_operation2(do_buf, filename, dst_full, undo_buf, dst_full,
-						filename);
+				add_operation(do_buf, filename, dst_full, undo_buf, dst_full, filename);
 			else
-				add_operation2(do_buf, filename, dst_full, undo_buf, dst_full, "");
+				add_operation(do_buf, filename, dst_full, undo_buf, dst_full, "");
 
 			cmd_group_end();
 			put_confirm.y++;
@@ -1512,7 +1511,7 @@ clone_file(FileView* view)
 	if(background_and_wait_for_errors(do_cmd) == 0)
 	{
 		cmd_group_begin("Clone file");
-		add_operation2(do_cmd, filename, clone_name, undo_cmd, clone_name, "");
+		add_operation(do_cmd, filename, clone_name, undo_cmd, clone_name, "");
 		cmd_group_end();
 
 		load_saving_pos(view, 1);
