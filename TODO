@@ -2,14 +2,12 @@ Basic things that need to be done.
 	Termcap or terminfo support for keybindings (do we really need this?).
 	Backgrounding of commands with job control (pause/resume/kill).
 	Fix window resizing (I think it's almost done).
-	Handle commands that are too long to be passed directly to the shell
-        (I think this can be done with xargs).
+	Handle commands that are too long to be passed directly to the shell.
 	Make ga work in background.
 	Think about good key for creating links (like pl in ranger, al, rl).
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
         :chown commands.
     Better C command. Handle situation when destination already exists.
-    Make child processes continue working after vifm shutdown.
     Add :filetype command (separate programs and viewer).
     Make ~user_name/ work.
     Implement :find command.

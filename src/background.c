@@ -47,7 +47,7 @@ add_background_job(pid_t pid, char *cmd, int fd)
 	new->next = jobs;
 	new->fd = fd;
 	new->skip_errors = 0;
-	new->error_buf = (char *)calloc(1, sizeof(char));
+	new->error_buf = NULL;
 	new->running = 1;
 	jobs = new;
 }
@@ -114,21 +114,24 @@ check_background_jobs(void)
 		FD_SET(p->fd, &ready);
 		maxfd = (p->fd > maxfd ? p->fd : maxfd);
 
-		if ((select(maxfd +1, &ready, NULL, NULL, &ts) > 0))
+		while(select(maxfd + 1, &ready, NULL, NULL, &ts) > 0)
 		{
 			char buf[256];
+			nread = read(p->fd, buf, sizeof(buf) - 1);
 
-			nread = read(p->fd, buf, sizeof(buf) -1);
-
-			if (nread)
+			if(nread == 0)
 			{
-				p->error_buf = (char *) realloc(p->error_buf, nread + 1);
-
-				strncat(p->error_buf, buf, nread);
+				break;
 			}
-			if (strlen(p->error_buf) > 1)
+			else if(nread > 0)
 			{
-				if (!p->running && p->exit_code == 127 && cfg.fast_run)
+				p->error_buf = (char *)realloc(p->error_buf, nread + 1);
+
+				strncpy(p->error_buf, buf, nread);
+			}
+			if(p->error_buf != NULL)
+			{
+				if(!p->running && p->exit_code == 127 && cfg.fast_run)
 				{
 					char *buf = fast_run_complete(p->cmd);
 					if(buf == NULL)
@@ -142,13 +145,13 @@ check_background_jobs(void)
 						p->skip_errors = show_error_msg("Background Process Error",
 								p->error_buf);
 					free(p->error_buf);
-					p->error_buf = (char *) calloc(1, sizeof(char));
+					p->error_buf = NULL;
 				}
 			}
 		}
 
 		/* Remove any finished jobs. */
-		if (!p->running)
+		if(!p->running)
 		{
 			Jobs_List *j = p;
 			if (prev)
@@ -316,7 +319,7 @@ start_background_job(char *cmd)
 	if(pid == 0)
 	{
 		int nullfd;
-		close(2);				 /* Close stderr */
+		close(2);                    /* Close stderr */
 		if(dup(error_pipe[1]) == -1) /* Redirect stderr to write end of pipe. */
 		{
 			perror("dup");
@@ -327,7 +330,7 @@ start_background_job(char *cmd)
 		close(1); /* Close stdout */
 
 		/* Send stdout, stdin to /dev/null */
-		if ((nullfd = open("/dev/null", O_RDONLY)) != -1)
+		if((nullfd = open("/dev/null", O_RDONLY)) != -1)
 		{
 			dup2(nullfd, 0);
 			dup2(nullfd, 1);
@@ -337,6 +340,8 @@ start_background_job(char *cmd)
 		args[1] = "-c";
 		args[2] = cmd;
 		args[3] = NULL;
+
+		setpgid(0, 0);
 
 		execvp(args[0], args);
 		exit(-1);

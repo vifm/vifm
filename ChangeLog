@@ -104,6 +104,8 @@
 
 	Rename files in Trash (to avoid name conflicts).
 
+	Don't terminate background processes on vifm exit.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.

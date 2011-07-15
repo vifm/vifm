@@ -478,7 +478,7 @@ search_menu_list(char * pattern, menu_info *m)
 			save = search_menu_forwards(m, m->pos + 1);
 			break;
 		default:
-		break;
+			break;
 	}
 	return save;
 }
@@ -1582,10 +1582,10 @@ show_jobs_menu(FileView *view)
 
 	fj = fjobs;
 
-	while (p)
+	while(p)
 	{
 		/* Mark any finished jobs */
-		while (fj)
+		while(fj)
 		{
 			if (p->pid == fj->pid)
 			{
@@ -1595,7 +1595,7 @@ show_jobs_menu(FileView *view)
 			fj = fj->next;
 		}
 
-		if (p->running)
+		if(p->running)
 		{
 			m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
 			m.data[x] = (char *)malloc(strlen(p->cmd) + 24);
