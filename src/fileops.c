@@ -837,7 +837,10 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		progress_msg("Deleting files", x + 1, view->selected_files);
 		if(background_and_wait_for_errors(buf) == 0)
 		{
-			add_operation(buf, undo_buf);
+			if(cfg.use_trash && use_trash)
+				add_operation2(buf, full_buf, dest, undo_buf, dest, full_buf);
+			else
+				add_operation2(buf, full_buf, "", undo_buf, "", "");
 			append_to_register(reg, dest);
 			y++;
 		}
@@ -1299,22 +1302,24 @@ prompt_what_to_do(const char *src_name)
 static int
 put_next_file(const char *dest_name, int override)
 {
-	char buf[PATH_MAX + NAME_MAX*2 + 4];
-	char undo_buf[PATH_MAX + NAME_MAX*2 + 4];
+	char *filename;
 	char *src_buf, *dst_buf, *name_buf = NULL;
 
-	snprintf(buf, sizeof(buf), "%s", put_confirm.reg->files[put_confirm.x]);
-	chosp(buf);
-	src_buf = escape_filename(buf, 0, 0);
+	filename = put_confirm.reg->files[put_confirm.x];
+	chosp(filename);
+	src_buf = escape_filename(filename, 0, 0);
 	dst_buf = escape_filename(put_confirm.view->curr_dir, 0, 0);
-	if(access(buf, F_OK) == 0 && src_buf != NULL && dst_buf != NULL)
+	if(access(filename, F_OK) == 0 && src_buf != NULL && dst_buf != NULL)
 	{
+		char do_buf[PATH_MAX + NAME_MAX*2 + 4];
+		char undo_buf[PATH_MAX + NAME_MAX*2 + 4];
 		const char *p = dest_name;
-		int from_trash = strncmp(buf, cfg.trash_dir, strlen(cfg.trash_dir)) == 0;
+		int from_trash = strncmp(filename, cfg.trash_dir,
+				strlen(cfg.trash_dir)) == 0;
 		int move = from_trash || put_confirm.force_move;
 
 		if(p[0] == '\0')
-			p = strrchr(buf, '/') + 1;
+			p = strrchr(filename, '/') + 1;
 
 		if(from_trash)
 		{
@@ -1343,31 +1348,40 @@ put_next_file(const char *dest_name, int override)
 
 		if(move)
 		{
-			snprintf(buf, sizeof(buf), "mv -n %s %s/%s", src_buf, dst_buf, dest_name);
+			snprintf(do_buf, sizeof(do_buf), "mv -n %s %s/%s", src_buf, dst_buf,
+					dest_name);
 			snprintf(undo_buf, sizeof(undo_buf), "mv -n %s/%s %s", dst_buf, dest_name,
 					src_buf);
 		}
 		else
 		{
-			snprintf(buf, sizeof(buf), "cp -npR %s %s/%s", src_buf, dst_buf,
+			snprintf(do_buf, sizeof(do_buf), "cp -npR %s %s/%s", src_buf, dst_buf,
 					dest_name);
 			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s/%s", dst_buf, dest_name);
 		}
 
 		progress_msg("Putting files", put_confirm.x + 1,
 				put_confirm.reg->num_files);
-		if(background_and_wait_for_errors(buf) == 0)
+		if(background_and_wait_for_errors(do_buf) == 0)
 		{
+			char dst_full[PATH_MAX];
+
+			snprintf(dst_full, sizeof(dst_full), "%s/%s", put_confirm.view->curr_dir,
+					p);
+			cmd_group_continue();
+			if(move)
+				add_operation2(do_buf, filename, dst_full, undo_buf, dst_full,
+						filename);
+			else
+				add_operation2(do_buf, filename, dst_full, undo_buf, dst_full, "");
+
+			cmd_group_end();
 			put_confirm.y++;
 			if(move)
 			{
 				free(put_confirm.reg->files[put_confirm.x]);
 				put_confirm.reg->files[put_confirm.x] = NULL;
 			}
-
-			cmd_group_continue();
-			add_operation(buf, undo_buf);
-			cmd_group_end();
 		}
 	}
 	free(src_buf);

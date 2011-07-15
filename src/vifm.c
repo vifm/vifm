@@ -137,7 +137,7 @@ static int
 undo_exec(const char *cmd)
 {
 	if(cmd[0] == '\0') /* for undo command of rm -rf operation */
-		return 0;
+		return -1;
 
 	return background_and_wait_for_errors((char *)cmd);
 }
