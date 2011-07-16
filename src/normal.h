@@ -19,7 +19,12 @@
 #ifndef __NORMAL_H__
 #define __NORMAL_H__
 
+#include "keys.h"
+
 void init_normal_mode(int *key_mode);
+void normal_cmd_zb(struct key_info, struct keys_info *);
+void normal_cmd_zt(struct key_info, struct keys_info *);
+void normal_cmd_zz(struct key_info, struct keys_info *);
 
 #endif
 

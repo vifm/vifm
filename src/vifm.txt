@@ -228,7 +228,7 @@ y6gg - yank all files from cursor position to 6th file in the list.
 --------------------------------------------------------------------------------
 *Visual*
 
-In visual mode work almost all normal mode movement keys (except l and Enter).
+In visual mode work almost all normal mode movement keys.
 
 v - leave visual mode.
 

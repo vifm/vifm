@@ -136,12 +136,9 @@ static void cmd_zM(struct key_info, struct keys_info *);
 static void cmd_zO(struct key_info, struct keys_info *);
 static void cmd_zR(struct key_info, struct keys_info *);
 static void cmd_za(struct key_info, struct keys_info *);
-static void cmd_zb(struct key_info, struct keys_info *);
 static void cmd_zf(struct key_info, struct keys_info *);
 static void cmd_zm(struct key_info, struct keys_info *);
 static void cmd_zo(struct key_info, struct keys_info *);
-static void cmd_zt(struct key_info, struct keys_info *);
-static void cmd_zz(struct key_info, struct keys_info *);
 static void pick_files(FileView *view, int end, struct keys_info *keys_info);
 
 static struct keys_add_info builtin_cmds[] = {
@@ -226,12 +223,12 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"zO", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zO}}},
 	{L"zR", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zR}}},
 	{L"za", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_za}}},
-	{L"zb", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zb}}},
+	{L"zb", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zb}}},
 	{L"zf", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zf}}},
 	{L"zm", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zm}}},
 	{L"zo", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zo}}},
-	{L"zt", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zt}}},
-	{L"zz", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zz}}},
+	{L"zt", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zt}}},
+	{L"zz", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zz}}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_PPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
 	{{KEY_NPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
@@ -1215,8 +1212,8 @@ cmd_za(struct key_info key_info, struct keys_info *keys_info)
 }
 
 /* Redraw with file in bottom of list. */
-static void
-cmd_zb(struct key_info key_info, struct keys_info *keys_info)
+void
+normal_cmd_zb(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_view->list_rows <= curr_view->window_rows + 1)
 		return;
@@ -1250,8 +1247,8 @@ cmd_zo(struct key_info key_info, struct keys_info *keys_info)
 }
 
 /* Redraw with file in top of list. */
-static void
-cmd_zt(struct key_info key_info, struct keys_info *keys_info)
+void
+normal_cmd_zt(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_view->list_rows <= curr_view->window_rows + 1)
 		return;
@@ -1264,8 +1261,8 @@ cmd_zt(struct key_info key_info, struct keys_info *keys_info)
 }
 
 /* Redraw with file in center of list. */
-static void
-cmd_zz(struct key_info key_info, struct keys_info *keys_info)
+void
+normal_cmd_zz(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_view->list_rows <= curr_view->window_rows + 1)
 		return;

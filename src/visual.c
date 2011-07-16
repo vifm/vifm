@@ -30,6 +30,7 @@
 #include "fileops.h"
 #include "keys.h"
 #include "modes.h"
+#include "normal.h"
 #include "permissions_dialog.h"
 #include "status.h"
 
@@ -86,7 +87,10 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"o", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
 	{L"v", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"y", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_y}}},
+	{L"zb", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zb}}},
 	{L"zf", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zf}}},
+	{L"zt", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zt}}},
+	{L"zz", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zz}}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_PPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
 	{{KEY_NPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
