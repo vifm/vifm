@@ -921,7 +921,7 @@ bookmark_khandler(struct menu_info *m, wchar_t *keys)
 			moveto_menu_pos(0, m);
 		return 1;
 	}
-	return 0;
+	return -1;
 }
 
 void
@@ -1079,7 +1079,7 @@ command_khandler(struct menu_info *m, wchar_t *keys)
 			moveto_menu_pos(0, m);
 		return 1;
 	}
-	return 0;
+	return -1;
 }
 
 void
@@ -1197,9 +1197,10 @@ filetypes_khandler(struct menu_info *m, wchar_t *keys)
 
 		set_programs(extension, tmp);
 		free(tmp);
+		return 0;
 	}
 
-	return 0;
+	return -1;
 }
 
 void

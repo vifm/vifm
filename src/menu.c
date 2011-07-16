@@ -132,7 +132,7 @@ key_handler(wchar_t key)
 	if(menu->key_handler == NULL)
 		return 0;
 
-	if(menu->key_handler(menu, buf))
+	if(menu->key_handler(menu, buf) > 0)
 		wrefresh(menu_win);
 
 	return 0;
@@ -334,6 +334,18 @@ cmd_H(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_L(struct key_info key_info, struct keys_info *keys_info)
 {
+	if(menu->key_handler != NULL)
+	{
+		int ret = menu->key_handler(menu, L"L");
+		if(ret == 0)
+			return;
+		else if(ret > 0)
+		{
+			wrefresh(menu_win);
+			return;
+		}
+	}
+
 	clean_menu_position(menu);
 	moveto_menu_pos(menu->top + menu->win_rows - 3, menu);
 	wrefresh(menu_win);
@@ -376,7 +388,7 @@ cmd_dd(struct key_info key_info, struct keys_info *keys_info)
 	if(menu->key_handler == NULL)
 		return;
 
-	if(menu->key_handler(menu, L"dd"))
+	if(menu->key_handler(menu, L"dd") > 0)
 		wrefresh(menu_win);
 }
 

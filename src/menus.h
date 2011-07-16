@@ -41,7 +41,8 @@ typedef struct menu_info
 	char *title;
 	char *args;
 	char **data;
-	/* should return not zero value to request menu window refresh */
+	/* should return value > 0 to request menu window refresh and < 0 on invalid
+	 * key */
 	int (*key_handler)(struct menu_info *m, wchar_t *keys);
 	int extra_data; /* for filetype background and mime flags */
 	/* For user menus only */

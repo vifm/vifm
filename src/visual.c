@@ -53,6 +53,7 @@ static void cmd_d(struct key_info, struct keys_info *);
 static void delete(struct key_info key_info, int use_trash);
 static void cmd_cp(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
+static void goto_pos(int pos);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
 static void cmd_y(struct key_info, struct keys_info *);
@@ -202,10 +203,9 @@ cmd_D(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_G(struct key_info key_info, struct keys_info *keys_info)
 {
-	while(view->list_pos < view->list_rows - 1)
-		select_down_one(view, start_pos);
-
-	update();
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = curr_view->list_rows;
+	goto_pos(key_info.count - 1);
 }
 
 static void
@@ -321,10 +321,22 @@ cmd_cp(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_gg(struct key_info key_info, struct keys_info *keys_info)
 {
-	while(view->list_pos > 0)
-	{
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	goto_pos(key_info.count - 1);
+}
+
+static void
+goto_pos(int pos)
+{
+	if(pos > curr_view->list_rows - 1)
+		pos = curr_view->list_rows - 1;
+
+	while(view->list_pos < pos)
+		select_down_one(view, start_pos);
+	while(view->list_pos > pos)
 		select_up_one(view, start_pos);
-	}
+
 	update();
 }
 

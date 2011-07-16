@@ -542,14 +542,39 @@ j, k - move.
 <Escape>, Ctrl-c - clear.
 <Return>, l - select and exit the menu.
 
-Commands~
+In all menus~
+
+Ctrl-b/Ctrl-f
+Ctrl-d/Ctrl-u
+Ctrl-e/Ctrl-y
+/ and ?, n/N
+[num]G/[num]gg
+H/M/L
+zb/zt/zz
+
+All these keys have the same meaning as in normal mode (but not L in filetype
+menu).
+
+: - enter command line mode for menus (currently only :q[uit], :x and :num are
+supported).
+
+Commands menu~
 
 dd on a command to remove.
 
-Bookmarks~
+Bookmarks menu~
 
 Escape or Ctrl-c to abort j and k to move through.
 dd on a bookmark to remove.
+
+Filetype menu~
+
+Commands from vifmrc are displayed above empty line. When all commands below
+empty line were found in .desktop files.
+Note: you can't save programs for files without extension.
+
+J and K - to move menu items
+L - save all commands above empty line as program list
 
 Sort dialog ~
 
@@ -560,15 +585,6 @@ Permissions dialog~
 
 h - check/uncheck.
 Space - check/uncheck.
-
-Filetype menu~
-
-Commands from vifmrc are displayed above empty line. When all commands below
-empty line were found in .desktop files.
-Note: you can't save programs for files without extension.
-
-J and K - to move menu items
-L - save all commands above empty line as program list
 
 --------------------------------------------------------------------------------
 *Configure*

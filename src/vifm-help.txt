@@ -709,14 +709,34 @@ Menus and dialogs
        j,  k - move.  <Escape>, Ctrl-c - clear.  <Return>, l - select and exit
        the menu.
 
-       Commands
+       In all menus
+
+       Ctrl-b/Ctrl-f Ctrl-d/Ctrl-u Ctrl-e/Ctrl-y / and ?,  n/N  [num]G/[num]gg
+       H/M/L zb/zt/zz
+
+       All  these  keys  have the same meaning as in normal mode (but not L in
+       filetype menu).
+
+       : - enter command line mode for menus (currently only :q[uit],  :x  and
+       :num are supported).
+
+       Commands menu
 
        dd on a command to remove.
 
-       Bookmarks
+       Bookmarks menu
 
        Escape or Ctrl-c to abort j and k to move through.  dd on a bookmark to
        remove.
+
+       Filetype menu
+
+       Commands from vifmrc are displayed above empty line. When all  commands
+       below  empty  line  were found in .desktop files.  Note: you can't save
+       programs for files without extension.
+
+       J and K - to move menu items L - save all commands above empty line  as
+       program list
 
        Sort dialog
 
@@ -726,23 +746,15 @@ Menus and dialogs
 
        h - check/uncheck.  Space - check/uncheck.
 
-       Filetype menu
-
-       Commands  from vifmrc are displayed above empty line. When all commands
-       below empty line were found in .desktop files.  Note:  you  can't  save
-       programs for files without extension.
-
-       J  and K - to move menu items L - save all commands above empty line as
-       program list
 
 Configure
-       The ~/.vifm/vifmrc file contains all the configurable settings.  It  is
+       The  ~/.vifm/vifmrc file contains all the configurable settings.  It is
        commented and you may edit it by hand to change the settings.
 
-       The  ~/.vifm/vifminfo  file contains session settings.  It is commented
+       The ~/.vifm/vifminfo file contains session settings.  It  is  commented
        and you may edit it by hand to change the settings.
 
-       The ~/.vifm/startup file contains commands that  will  be  executed  on
+       The  ~/.vifm/startup  file  contains  commands that will be executed on
        vifm startup. You can set your mappings there.
 
 Plugin
@@ -753,15 +765,15 @@ Plugin
          :EditVifm  select a file to open in the current buffer.
          :SplitVifm split buffer and select a file to open.
          :VsplitVifm vertically split buffer and select a file to open.
-         :DiffVifm  select  a  file  to compare to the current file with :vert
+         :DiffVifm select a file to compare to the  current  file  with  :vert
        diffsplit.
 
        The plugin does not have any settings.
 
-       To use the plugin copy the vifm.vim file  to  either  the  system  wide
+       To  use  the  plugin  copy  the vifm.vim file to either the system wide
        vim/plugin directory or into ~/.vim/plugin.
 
-       If  you would prefer not to use the plugin and it is in the system wide
+       If you would prefer not to use the plugin and it is in the system  wide
        plugin directory add
 
        let loaded_vifm=1
@@ -777,4 +789,4 @@ AUTHOR
 
 
 
-                                 Jule 15, 2011                         vifm(1)
+                                 Jule 16, 2011                         vifm(1)
