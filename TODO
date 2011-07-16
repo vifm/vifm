@@ -19,6 +19,8 @@ Basic things that need to be done.
     Expand macros for builtin commands.
     More states for permissions dialog (maybe 'f', 'd').
     Backgrounding of vicmd (& at the end).
+    Perform operations using system calls, not programs.  This is much faster
+        and will ease porting on Windows (less dependencies on Cygwin).
 
 Documentation.
 	Better documentation.
