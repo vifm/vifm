@@ -214,7 +214,8 @@ Selectors~
 y, d and Dcommands accept selectors.  You can combine them with every of
 selectors below to quickly remove or yank several files.
 
-j, k, gg, G, H, L, M can be used as selectors for several commands.
+j, k, gg, G, H, L, M, %, f, F, ;, comma and ' can be used as selectors for
+several commands.
 Also following selectors can be used:
  a - all files in current view
  s - selected files

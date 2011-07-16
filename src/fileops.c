@@ -1528,7 +1528,7 @@ calc_dirsize(const char *path, int force_update)
 
 	dir = opendir(path);
 	if(dir == NULL)
-		return (0);
+		return 0;
 
 	if(path[strlen(path) - 1] != '/')
 		slash = "/";
@@ -1563,7 +1563,7 @@ calc_dirsize(const char *path, int force_update)
 	closedir(dir);
 
 	tree_set_data(curr_stats.dirsize_cache, path, size);
-	return (size);
+	return size;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

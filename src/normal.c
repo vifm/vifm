@@ -82,7 +82,7 @@ static void cmd_slash(struct key_info, struct keys_info *);
 static void cmd_question(struct key_info, struct keys_info *);
 static void cmd_C(struct key_info, struct keys_info *);
 static void cmd_F(struct key_info, struct keys_info *);
-static void find_F(int ch);
+static void find_F(int ch, struct keys_info * keys_info);
 static void cmd_G(struct key_info, struct keys_info *);
 static void cmd_H(struct key_info, struct keys_info *);
 static void cmd_L(struct key_info, struct keys_info *);
@@ -105,7 +105,7 @@ static void cmd_d_selector(struct key_info, struct keys_info *);
 static void delete_with_selector(struct key_info, struct keys_info *,
 		int use_trash);
 static void cmd_f(struct key_info, struct keys_info *);
-static void find_f(int ch);
+static void find_f(int ch, struct keys_info * keys_info);
 static void cmd_gA(struct key_info, struct keys_info *);
 static void cmd_ga(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
@@ -117,7 +117,6 @@ static void cmd_k(struct key_info, struct keys_info *);
 static void cmd_n(struct key_info, struct keys_info *);
 static void cmd_l(struct key_info, struct keys_info *);
 static void cmd_p(struct key_info, struct keys_info *);
-static void cmd_s(struct key_info, struct keys_info *);
 static void cmd_m(struct key_info, struct keys_info *);
 static void cmd_t(struct key_info, struct keys_info *);
 static void cmd_u(struct key_info, struct keys_info *);
@@ -133,6 +132,7 @@ static void cmd_zo(struct key_info, struct keys_info *);
 static void pick_files(FileView *view, int end, struct keys_info *keys_info);
 static void selector_S(struct key_info, struct keys_info *);
 static void selector_a(struct key_info, struct keys_info *);
+static void selector_s(struct key_info, struct keys_info *);
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x02", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
@@ -235,17 +235,22 @@ static struct keys_add_info builtin_cmds[] = {
 };
 
 static struct keys_add_info selectors[] = {
+	{L"'", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_quote}}},
 	{L"%", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
+	{L",", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
+	{L";", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_semicolon}}},
+	{L"F", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_F}}},
 	{L"G", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
 	{L"H", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_H}}},
 	{L"L", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_L}}},
 	{L"M", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_M}}},
 	{L"S", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_S}}},
 	{L"a", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_a}}},
+	{L"f", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_f}}},
 	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
 	{L"j", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
-	{L"s", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_s}}},
+	{L"s", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_s}}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_DOWN}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{{KEY_UP}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
@@ -486,11 +491,11 @@ cmd_F(struct key_info key_info, struct keys_info *keys_info)
 {
 	last_fast_search_char = key_info.multi;
 	last_fast_search_backward = 1;
-	find_F(key_info.multi);
+	find_F(key_info.multi, keys_info);
 }
 
 static void
-find_F(int ch)
+find_F(int ch, struct keys_info *keys_info)
 {
 	int x;
 	wchar_t ch_buf[] = {ch, L'\0'};
@@ -500,7 +505,12 @@ find_F(int ch)
 	{
 		x--;
 		if(x == 0)
-			x = curr_view->list_rows - 1;
+		{
+			if(keys_info->selector)
+				return;
+			else
+				x = curr_view->list_rows - 1;
+		}
 
 		if(ch > 255)
 		{
@@ -523,10 +533,13 @@ find_F(int ch)
 	if(x == curr_view->list_pos)
 		return;
 
-	moveto_list_pos(curr_view, x);
+	if(keys_info->selector)
+		pick_files(curr_view, x, keys_info);
+	else
+		moveto_list_pos(curr_view, x);
 }
 
-/* Jump to bottom of list or to specified line. */
+/* Jump to bottom of the list or to specified line. */
 static void
 cmd_G(struct key_info key_info, struct keys_info *keys_info)
 {
@@ -671,7 +684,18 @@ cmd_ZZ(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_quote(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_stats.save_msg = get_bookmark(curr_view, key_info.multi);
+	if(keys_info->selector)
+	{
+		int pos;
+		pos = check_mark_directory(curr_view, key_info.multi);
+		if(pos < 0)
+			return;
+		pick_files(curr_view, pos, keys_info);
+	}
+	else
+	{
+		curr_stats.save_msg = get_bookmark(curr_view, key_info.multi);
+	}
 }
 
 /* Jump to percent of file. */
@@ -696,9 +720,9 @@ cmd_comma(struct key_info key_info, struct keys_info *keys_info)
 	if(last_fast_search_backward == -1)
 		return;
 	if(last_fast_search_backward)
-		find_f(last_fast_search_char);
+		find_f(last_fast_search_char, keys_info);
 	else
-		find_F(last_fast_search_char);
+		find_F(last_fast_search_char, keys_info);
 }
 
 /* Repeat last change. */
@@ -724,9 +748,9 @@ cmd_semicolon(struct key_info key_info, struct keys_info *keys_info)
 	if(last_fast_search_backward == -1)
 		return;
 	if(last_fast_search_backward)
-		find_F(last_fast_search_char);
+		find_F(last_fast_search_char, keys_info);
 	else
-		find_f(last_fast_search_char);
+		find_f(last_fast_search_char, keys_info);
 }
 
 /* Search forward. */
@@ -840,6 +864,8 @@ static void
 delete_with_selector(struct key_info key_info, struct keys_info *keys_info,
 		int use_trash)
 {
+	if(keys_info->count == 0)
+		return;
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	curr_stats.save_msg = delete_file(curr_view, key_info.reg, keys_info->count,
@@ -855,11 +881,11 @@ cmd_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	last_fast_search_char = key_info.multi;
 	last_fast_search_backward = 0;
-	find_f(key_info.multi);
+	find_f(key_info.multi, keys_info);
 }
 
 static void
-find_f(int ch)
+find_f(int ch, struct keys_info *keys_info)
 {
 	int x;
 	wchar_t ch_buf[] = {ch, L'\0'};
@@ -869,7 +895,12 @@ find_f(int ch)
 	{
 		x++;
 		if(x == curr_view->list_rows)
-			x = 0;
+		{
+			if(keys_info->selector)
+				return;
+			else
+				x = 0;
+		}
 
 		if(ch > 255)
 		{
@@ -892,7 +923,10 @@ find_f(int ch)
 	if(x == curr_view->list_pos)
 		return;
 
-	moveto_list_pos(curr_view, x);
+	if(keys_info->selector)
+		pick_files(curr_view, x, keys_info);
+	else
+		moveto_list_pos(curr_view, x);
 }
 
 /* Updir. */
@@ -971,27 +1005,6 @@ cmd_p(struct key_info key_info, struct keys_info *keys_info)
 	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg, 0);
 	load_saving_pos(&lwin, 1);
 	load_saving_pos(&rwin, 1);
-}
-
-static void
-cmd_s(struct key_info key_info, struct keys_info *keys_info)
-{
-	int i, x;
-
-	keys_info->count = curr_view->selected_files;
-	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
-	if(keys_info->indexes == NULL)
-	{
-		show_error_msg(" Memory Error ", "Unable to allocate enough memory");
-		return;
-	}
-
-	i = 0;
-	for(x = 0; x < curr_view->list_rows; x++)
-	{
-		if(curr_view->dir_entry[x].selected)
-			keys_info->indexes[i++] = x;
-	}
 }
 
 /* Tag file. */
@@ -1081,6 +1094,8 @@ cmd_yy(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_y_selector(struct key_info key_info, struct keys_info *keys_info)
 {
+	if(keys_info->count == 0)
+		return;
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
@@ -1257,6 +1272,27 @@ selector_a(struct key_info key_info, struct keys_info *keys_info)
 		keys_info->indexes[i++] = x;
 	}
 	keys_info->count = i;
+}
+
+static void
+selector_s(struct key_info key_info, struct keys_info *keys_info)
+{
+	int i, x;
+
+	keys_info->count = curr_view->selected_files;
+	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
+	if(keys_info->indexes == NULL)
+	{
+		show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+		return;
+	}
+
+	i = 0;
+	for(x = 0; x < curr_view->list_rows; x++)
+	{
+		if(curr_view->dir_entry[x].selected)
+			keys_info->indexes[i++] = x;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

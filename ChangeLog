@@ -115,6 +115,8 @@
 	Handle Ctrl-U, Ctrl-D, Ctrl-E, Ctrl-Y, H, L, M, zz, zt, zb, <num>g and
 	<num>G in the menus.
 
+	Let %, f, F, ;, comma and ' be used as selectors in normal mode.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.
