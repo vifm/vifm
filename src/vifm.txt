@@ -118,9 +118,9 @@ N - previous file matching last search pattern.  Considers last search
 Note: vifm uses extended regular expressions for / and ?.
 
 f[character] - search forward for file with [character] as first
-    character in name.
+    character in name.  Search wraps around the end of the list.
 F[character] - search backward for file with [character] as first
-    character in name.
+    character in name.  Search wraps around the end of the list.
 ; - find the next match of f or F.
 , - find the previous match of f or F.
 

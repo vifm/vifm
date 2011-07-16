@@ -156,11 +156,11 @@ Searching
 
        f[character]
               search forward for file with [character] as first  character  in
-              name.
+              name.  Search wraps around the end of the list.
 
        F[character]
               search  backward for file with [character] as first character in
-              name.
+              name.  Search wraps around the end of the list.
 
        ;      find the next match of f or F.
 

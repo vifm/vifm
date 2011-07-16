@@ -49,6 +49,7 @@ static void cmd_ctrl_e(struct key_info, struct keys_info *);
 static void cmd_ctrl_f(struct key_info, struct keys_info *);
 static void cmd_ctrl_u(struct key_info, struct keys_info *);
 static void cmd_ctrl_y(struct key_info, struct keys_info *);
+static void cmd_quote(struct key_info, struct keys_info *);
 static void cmd_percent(struct key_info, struct keys_info *);
 static void cmd_comma(struct key_info, struct keys_info *);
 static void cmd_colon(struct key_info, struct keys_info *);
@@ -86,6 +87,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x19", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
 	/* escape */
 	{L"\x1b", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"'", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_quote}}},
 	{L"%", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
 	{L",", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
 	{L":", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
@@ -290,6 +292,16 @@ cmd_O(struct key_info key_info, struct keys_info *keys_info)
 	start_pos = view->list_pos;
 	view->list_pos = t;
 	update();
+}
+
+static void
+cmd_quote(struct key_info key_info, struct keys_info *keys_info)
+{
+	int pos;
+	pos = check_mark_directory(curr_view, key_info.multi);
+	if(pos < 0)
+		return;
+	goto_pos(pos);
 }
 
 static void
