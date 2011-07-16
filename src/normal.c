@@ -739,7 +739,10 @@ cmd_quote(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_percent(struct key_info key_info, struct keys_info *keys_info)
 {
-	int line = (key_info.count * (curr_view->list_rows)/100);
+	int line;
+	if(key_info.count > 100)
+		return;
+	line = (key_info.count * curr_view->list_rows)/100;
 	moveto_list_pos(curr_view, line - 1);
 }
 

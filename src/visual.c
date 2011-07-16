@@ -47,6 +47,7 @@ static void cmd_ctrl_e(struct key_info, struct keys_info *);
 static void cmd_ctrl_f(struct key_info, struct keys_info *);
 static void cmd_ctrl_u(struct key_info, struct keys_info *);
 static void cmd_ctrl_y(struct key_info, struct keys_info *);
+static void cmd_percent(struct key_info, struct keys_info *);
 static void cmd_colon(struct key_info, struct keys_info *);
 static void cmd_D(struct key_info, struct keys_info *);
 static void cmd_G(struct key_info, struct keys_info *);
@@ -78,6 +79,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x19", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
 	/* escape */
 	{L"\x1b", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"%", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
 	{L":", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
 	{L"D", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_D}}},
 	{L"G", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
@@ -269,6 +271,16 @@ cmd_O(struct key_info key_info, struct keys_info *keys_info)
 	start_pos = view->list_pos;
 	view->list_pos = t;
 	update();
+}
+
+static void
+cmd_percent(struct key_info key_info, struct keys_info *keys_info)
+{
+	int line;
+	if(key_info.count > 100)
+		return;
+	line = (key_info.count * curr_view->list_rows)/100;
+	goto_pos(line - 1);
 }
 
 static void
