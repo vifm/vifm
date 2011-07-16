@@ -58,7 +58,6 @@ Vi(m) specific features that need to be added.
     :highlight command.
     Better registers support.
     :$ in the menus (check other command like this one).
-    ctrl-u, ctrl-d, ctrl-e, ctrl-y, H, L, M, zz, zt and zb in the menus.
     'hlsearch' option.
     'letter as a selector.
     \ at the start of line.
@@ -134,5 +133,4 @@ Code improvements.
     Rename exec_* to something.
     Use regexps for filetypes.
     Add log.
-    Stay at the same file in some cases (on directory change and somewhere
-        else were too).
+    Stay at the same file in some cases.

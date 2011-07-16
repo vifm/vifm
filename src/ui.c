@@ -213,7 +213,7 @@ setup_ncurses_interface(void)
 
 	werase(stdscr);
 
-	menu_win = newwin(screen_y - 1, screen_x , 0, 0);
+	menu_win = newwin(screen_y - 1, screen_x, 0, 0);
 	wbkgdset(menu_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	werase(menu_win);
 
@@ -312,17 +312,17 @@ setup_ncurses_interface(void)
 	wbkgdset(status_bar, COLOR_PAIR(color_scheme + STATUS_BAR_COLOR));
 	werase(status_bar);
 
-	pos_win = newwin(1, 13, screen_y - 1, screen_x -13);
+	pos_win = newwin(1, 13, screen_y - 1, screen_x - 13);
 	wattrset(pos_win, A_BOLD);
 	wattron(pos_win, A_BOLD);
 	wbkgdset(pos_win, COLOR_PAIR(color_scheme + STATUS_BAR_COLOR));
 	werase(pos_win);
 
-	num_win = newwin(1, 6, screen_y - 1, screen_x -19);
-	wattrset(num_win, A_BOLD);
-	wattron(num_win, A_BOLD);
-	wbkgdset(num_win, COLOR_PAIR(color_scheme + STATUS_BAR_COLOR));
-	werase(num_win);
+	input_win = newwin(1, 6, screen_y - 1, screen_x -19);
+	wattrset(input_win, A_BOLD);
+	wattron(input_win, A_BOLD);
+	wbkgdset(input_win, COLOR_PAIR(color_scheme + STATUS_BAR_COLOR));
+	werase(input_win);
 
 	wnoutrefresh(lwin.title);
 	wnoutrefresh(lwin.win);
@@ -330,7 +330,7 @@ setup_ncurses_interface(void)
 	wnoutrefresh(rwin.title);
 	wnoutrefresh(stat_win);
 	wnoutrefresh(pos_win);
-	wnoutrefresh(num_win);
+	wnoutrefresh(input_win);
 	wnoutrefresh(lborder);
 	wnoutrefresh(mborder);
 	wnoutrefresh(rborder);
@@ -380,7 +380,7 @@ resize_window(void)
 	wclear(stat_win);
 	wclear(status_bar);
 	wclear(pos_win);
-	wclear(num_win);
+	wclear(input_win);
 	wclear(rborder);
 	wclear(mborder);
 	wclear(lborder);
@@ -430,30 +430,30 @@ resize_window(void)
 
 	if(screen_x % 2)
 	{
-		wresize(rborder, screen_y -2, 2);
-		mvwin(rborder, 0, screen_x -2);
+		wresize(rborder, screen_y - 2, 2);
+		mvwin(rborder, 0, screen_x - 2);
 	}
 	else
 	{
-		wresize(rborder, screen_y -2, 1);
-		mvwin(rborder, 0, screen_x -1);
+		wresize(rborder, screen_y - 2, 1);
+		mvwin(rborder, 0, screen_x - 1);
 	}
 
 	wresize(stat_win, 1, screen_x);
-	mvwin(stat_win, screen_y -2, 0);
-	wresize(status_bar, 1, screen_x -19);
+	mvwin(stat_win, screen_y - 2, 0);
+	wresize(status_bar, 1, screen_x - 19);
 
 #ifdef ENABLE_EXTENDED_KEYS
 	/* For FreeBSD */
 	keypad(status_bar, TRUE);
 #endif /* ENABLE_EXTENDED_KEYS */
 
-	mvwin(status_bar, screen_y -1, 0);
+	mvwin(status_bar, screen_y - 1, 0);
 	wresize(pos_win, 1, 13);
-	mvwin(pos_win, screen_y -1, screen_x -13);
+	mvwin(pos_win, screen_y - 1, screen_x - 13);
 
-	wresize(num_win, 1, 6);
-	mvwin(num_win, screen_y -1, screen_x -19);
+	wresize(input_win, 1, 6);
+	mvwin(input_win, screen_y - 1, screen_x - 19);
 
 	curs_set(0);
 }
@@ -603,7 +603,7 @@ update_all_windows(void)
 	touchwin(stat_win);
 	touchwin(status_bar);
 	touchwin(pos_win);
-	touchwin(num_win);
+	touchwin(input_win);
 	touchwin(rborder);
 
 	/*
@@ -615,7 +615,7 @@ update_all_windows(void)
 	redrawwin(stat_win);
 	redrawwin(status_bar);
 	redrawwin(pos_win);
-	redrawwin(num_win);
+	redrawwin(input_win);
 	redrawwin(rborder);
 
 	/* In One window view */
@@ -638,7 +638,7 @@ update_all_windows(void)
 	wnoutrefresh(stat_win);
 	wnoutrefresh(status_bar);
 	wnoutrefresh(pos_win);
-	wnoutrefresh(num_win);
+	wnoutrefresh(input_win);
 	wnoutrefresh(rborder);
 
 	if(!curr_stats.errmsg_shown && curr_stats.vifm_started == 2)
@@ -653,14 +653,14 @@ update_input_bar(wchar_t c)
 	if(!curr_stats.use_input_bar)
 		return;
 
-	if(getcurx(num_win) == getmaxx(num_win) - 1)
+	if(getcurx(input_win) == getmaxx(input_win) - 1)
 	{
-		mvwdelch(num_win, 0, 0);
-		wmove(num_win, 0, getmaxx(num_win) - 2);
+		mvwdelch(input_win, 0, 0);
+		wmove(input_win, 0, getmaxx(input_win) - 2);
 	}
 
-	waddwstr(num_win, buf);
-	wrefresh(num_win);
+	waddwstr(input_win, buf);
+	wrefresh(input_win);
 }
 
 void
@@ -668,8 +668,8 @@ clear_num_window(void)
 {
 	if(curr_stats.use_input_bar)
 	{
-		werase(num_win);
-		wrefresh(num_win);
+		werase(input_win);
+		wrefresh(input_win);
 	}
 }
 

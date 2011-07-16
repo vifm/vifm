@@ -1222,9 +1222,9 @@ cmd_zb(struct key_info key_info, struct keys_info *keys_info)
 		return;
 
 	if(curr_view->list_pos < curr_view->window_rows)
-		return;
-
-	curr_view->top_line = curr_view->list_pos - curr_view->window_rows;
+		curr_view->top_line = 0;
+	else
+		curr_view->top_line = curr_view->list_pos - curr_view->window_rows;
 	scroll_view(curr_view);
 }
 

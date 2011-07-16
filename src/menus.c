@@ -255,24 +255,24 @@ moveto_menu_pos(int pos, menu_info *m)
 	if(pos < 1)
 		pos = 0;
 
-	if(pos > m->len -1)
-		pos = m->len -1;
+	if(pos > m->len - 1)
+		pos = m->len - 1;
 
 	if(pos < 0)
 		return;
 
 	x += get_utf8_overhead(m->data[pos]);
 
-	if((m->top <=  pos) && (pos <= (m->top + m->win_rows +1)))
+	if((m->top <=  pos) && (pos <= (m->top + m->win_rows + 1)))
 	{
-		m->current = pos - m->top +1;
+		m->current = pos - m->top + 1;
 	}
-	if((pos >= (m->top + m->win_rows -2)))
+	if((pos >= (m->top + m->win_rows - 3 + 1)))
 	{
-		while(pos >= (m->top + m->win_rows -2))
+		while(pos >= (m->top + m->win_rows - 3 + 1))
 			m->top++;
 
-		m->current = m->win_rows -2;
+		m->current = m->win_rows - 3 + 1;
 		redraw = 1;
 	}
 	else if(pos  < m->top)
@@ -327,13 +327,16 @@ redraw_menu(menu_info *m)
 	wclear(pos_win);
 
 	wresize(menu_win, screen_y - 1, screen_x);
-	wresize(status_bar, 1, screen_x -19);
-	mvwin(status_bar, screen_y -1, 0);
+	wresize(status_bar, 1, screen_x - 19);
+	mvwin(status_bar, screen_y - 1, 0);
 	wresize(pos_win, 1, 13);
-	mvwin(pos_win, screen_y -1, screen_x -13);
+	mvwin(pos_win, screen_y - 1, screen_x - 13);
+	mvwin(input_win, screen_y - 1, screen_x - 19);
 	wrefresh(status_bar);
 	wrefresh(pos_win);
+	wrefresh(input_win);
 	curr_stats.freeze = 0;
+	m->win_rows = screen_y - 1;
 
 	draw_menu(m);
 	moveto_menu_pos(m->pos, m);
@@ -755,9 +758,9 @@ draw_menu(menu_info *m)
 	box(menu_win, 0, 0);
 
 	if(m->win_rows - 2 >= m->len)
-	{
 		m->top = 0;
-	}
+	else if(m->len - m->top < m->win_rows - 2)
+		m->top = m->len - (m->win_rows - 2);
 	x = m->top;
 
 	wattron(menu_win, A_BOLD);

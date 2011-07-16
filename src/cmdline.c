@@ -103,7 +103,9 @@ static void cmd_ctrl_i(struct key_info, struct keys_info *);
 static void cmd_ctrl_k(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
 static void cmd_ctrl_n(struct key_info, struct keys_info *);
+#ifdef ENABLE_EXTENDED_KEYS
 static void cmd_down(struct key_info, struct keys_info *);
+#endif /* ENABLE_EXTENDED_KEYS */
 static void cmd_ctrl_u(struct key_info, struct keys_info *);
 static void cmd_ctrl_w(struct key_info, struct keys_info *);
 static void cmd_meta_b(struct key_info, struct keys_info *);
@@ -120,7 +122,9 @@ static void update_cmdline(void);
 static void complete_cmd_next(void);
 static void complete_search_next(void);
 static void cmd_ctrl_p(struct key_info, struct keys_info *);
+#ifdef ENABLE_EXTENDED_KEYS
 static void cmd_up(struct key_info, struct keys_info *);
+#endif /* ENABLE_EXTENDED_KEYS */
 static void complete_cmd_prev(void);
 static void complete_search_prev(void);
 #ifndef TEST
@@ -684,6 +688,7 @@ cmd_ctrl_n(struct key_info key_info, struct keys_info *keys_info)
 	}
 }
 
+#ifdef ENABLE_EXTENDED_KEYS
 static void
 cmd_down(struct key_info key_info, struct keys_info *keys_info)
 {
@@ -712,6 +717,7 @@ cmd_down(struct key_info key_info, struct keys_info *keys_info)
 		complete_search_next();
 	}
 }
+#endif /* ENABLE_EXTENDED_KEYS */
 
 static void
 cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
@@ -1022,6 +1028,7 @@ cmd_ctrl_p(struct key_info key_info, struct keys_info *keys_info)
 	}
 }
 
+#ifdef ENABLE_EXTENDED_KEYS
 static void
 cmd_up(struct key_info key_info, struct keys_info *keys_info)
 {
@@ -1050,6 +1057,7 @@ cmd_up(struct key_info key_info, struct keys_info *keys_info)
 		complete_search_prev();
 	}
 }
+#endif /* ENABLE_EXTENDED_KEYS */
 
 static void
 update_cmdline(void)

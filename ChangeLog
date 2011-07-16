@@ -112,6 +112,9 @@
 
 	Don't clear screen on shellout.
 
+	Handle Ctrl-U, Ctrl-D, Ctrl-E, Ctrl-Y, H, L, M, zz, zt, zb, <num>g and
+	<num>G in the menus.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.
@@ -184,6 +187,8 @@
 	Fixed running of commands from :cmdhistory menu.
 
 	Fixed execution of FUSE mount commands from :file menu.
+
+	Fixed zb in normal mode (when pos < number on lines in a view).
 
 0.6.1 to 0.6.2
 

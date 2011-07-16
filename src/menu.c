@@ -48,31 +48,49 @@ static int key_handler(wchar_t key);
 static void leave_menu_mode(void);
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
+static void cmd_ctrl_d(struct key_info, struct keys_info *);
+static void cmd_ctrl_e(struct key_info, struct keys_info *);
 static void cmd_ctrl_f(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
+static void cmd_ctrl_u(struct key_info, struct keys_info *);
+static void cmd_ctrl_y(struct key_info, struct keys_info *);
 static void cmd_slash(struct key_info, struct keys_info *);
 static void cmd_colon(struct key_info, struct keys_info *);
 static void cmd_question(struct key_info, struct keys_info *);
 static void cmd_G(struct key_info, struct keys_info *);
+static void cmd_H(struct key_info, struct keys_info *);
+static void cmd_L(struct key_info, struct keys_info *);
+static void cmd_M(struct key_info, struct keys_info *);
 static void cmd_N(struct key_info, struct keys_info *);
 static void cmd_dd(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
 static void cmd_n(struct key_info, struct keys_info *);
+static void cmd_zb(struct key_info, struct keys_info *);
+static void cmd_zt(struct key_info, struct keys_info *);
+static void cmd_zz(struct key_info, struct keys_info *);
+static void update_menu(void);
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x02", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
 	{L"\x03", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x04", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_d}}},
+	{L"\x05", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_e}}},
 	{L"\x06", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
 	/* return */
 	{L"\x0d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
+	{L"\x15", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
+	{L"\x19", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
 	/* escape */
 	{L"\x1b", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"/", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_slash}}},
 	{L":", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
 	{L"?", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_question}}},
 	{L"G", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
+	{L"H", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_H}}},
+	{L"L", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_L}}},
+	{L"M", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_M}}},
 	{L"N", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
 	{L"dd", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dd}}},
 	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
@@ -80,6 +98,9 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{L"l", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{L"n", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
+	{L"zb", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zb}}},
+	{L"zt", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zt}}},
+	{L"zz", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zz}}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_PPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
 	{{KEY_NPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
@@ -194,6 +215,29 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
+{
+	clean_menu_position(menu);
+	menu->pos += (menu->win_rows - 3)/2;
+	moveto_menu_pos(menu->pos, menu);
+	wrefresh(menu_win);
+}
+
+static void
+cmd_ctrl_e(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(menu->len <= menu->win_rows - 3)
+		return;
+	if(menu->top == menu->len - (menu->win_rows - 3) - 1)
+		return;
+	if(menu->pos == menu->top)
+		menu->pos++;
+
+	menu->top++;
+	update_menu();
+}
+
+static void
 cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
@@ -218,8 +262,29 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 	else if(menu != saved_menu)
 	{
 		reset_popup_menu(saved_menu);
-		redraw_menu(menu);
+		update_menu();
 	}
+}
+
+static void
+cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
+{
+	clean_menu_position(menu);
+	menu->pos -= (menu->win_rows - 3)/2;
+	moveto_menu_pos(menu->pos, menu);
+	wrefresh(menu_win);
+}
+
+static void
+cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(menu->len <= menu->win_rows - 3 || menu->top == 0)
+		return;
+	if(menu->pos == menu->top + menu->win_rows - 3)
+		menu->pos--;
+
+	menu->top--;
+	update_menu();
 }
 
 static void
@@ -250,8 +315,41 @@ cmd_question(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_G(struct key_info key_info, struct keys_info *keys_info)
 {
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = menu->len;
+
 	clean_menu_position(menu);
-	moveto_menu_pos(menu->len - 1, menu);
+	moveto_menu_pos(key_info.count - 1, menu);
+	wrefresh(menu_win);
+}
+
+static void
+cmd_H(struct key_info key_info, struct keys_info *keys_info)
+{
+	clean_menu_position(menu);
+	moveto_menu_pos(menu->top, menu);
+	wrefresh(menu_win);
+}
+
+static void
+cmd_L(struct key_info key_info, struct keys_info *keys_info)
+{
+	clean_menu_position(menu);
+	moveto_menu_pos(menu->top + menu->win_rows - 3, menu);
+	wrefresh(menu_win);
+}
+
+static void
+cmd_M(struct key_info key_info, struct keys_info *keys_info)
+{
+	int new_pos;
+	if(menu->len < menu->win_rows)
+		new_pos = menu->len/2;
+	else
+		new_pos = menu->top + (menu->win_rows - 3)/2;
+
+	clean_menu_position(menu);
+	moveto_menu_pos(new_pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -285,8 +383,11 @@ cmd_dd(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_gg(struct key_info key_info, struct keys_info *keys_info)
 {
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+
 	clean_menu_position(menu);
-	moveto_menu_pos(0, menu);
+	moveto_menu_pos(key_info.count - 1, menu);
 	wrefresh(menu_win);
 }
 
@@ -329,6 +430,56 @@ cmd_n(struct key_info key_info, struct keys_info *keys_info)
 		status_bar_message("No search pattern set.");
 		wrefresh(status_bar);
 	}
+}
+
+static void
+cmd_zb(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(menu->len <= menu->win_rows - 3)
+		return;
+
+	if(menu->pos < menu->win_rows)
+		menu->top = 0;
+	else
+		menu->top = menu->pos - (menu->win_rows - 3);
+	update_menu();
+}
+
+static void
+cmd_zt(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(menu->len <= menu->win_rows - 3)
+		return;
+
+	if(menu->len - menu->pos >= menu->win_rows - 3 + 1)
+		menu->top = menu->pos;
+	else
+		menu->top = menu->len - (menu->win_rows - 3 + 1);
+	update_menu();
+}
+
+static void
+cmd_zz(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(menu->len <= menu->win_rows - 3)
+		return;
+
+	if(menu->pos <= (menu->win_rows - 3)/2)
+		menu->top = 0;
+	else if(menu->pos > menu->len - (menu->win_rows - 3 + 1)/2)
+		menu->top = menu->len - (menu->win_rows - 3 + 1);
+	else
+		menu->top = menu->pos - (menu->win_rows - 3 + 1)/2;
+
+	update_menu();
+}
+
+static void
+update_menu(void)
+{
+	draw_menu(menu);
+	moveto_menu_pos(menu->pos, menu);
+	wrefresh(menu_win);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

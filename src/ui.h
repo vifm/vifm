@@ -114,7 +114,7 @@ FileView *curr_view;
 WINDOW *status_bar;
 WINDOW *stat_win;
 WINDOW *pos_win;
-WINDOW *num_win;
+WINDOW *input_win;
 WINDOW *menu_win;
 WINDOW *sort_win;
 WINDOW *change_win;
