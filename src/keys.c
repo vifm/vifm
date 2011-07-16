@@ -541,30 +541,48 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 wchar_t **
 list_cmds(int mode)
 {
-	int i;
+	int i, j;
 	int count;
 	wchar_t **result;
 
-	count = builtin_cmds_root[mode].children_count;
+	count = user_cmds_root[mode].children_count;
+	count += 1;
+	count += builtin_cmds_root[mode].children_count;
 	result = calloc(count + 1, sizeof(*result));
 	if(result == NULL)
 	{
 		return NULL;
 	}
 
-	if(fill_list(&builtin_cmds_root[mode], 0, result) != 0)
+	if(fill_list(&user_cmds_root[mode], 0, result) != 0)
 	{
-		for(i = 0; i < count; i++)
-		{
-			free(result[i]);
-		}
-		free(result);
+		free_wstring_array(result, count);
 		return NULL;
 	}
 
-	/* TODO add user commands to the list */
-
+	j = -1;
 	for(i = 0; i < count && result[i] != NULL; i++)
+	{
+		if(result[i][0] == L'\0')
+		{
+			free(result[i]);
+			result[i] = NULL;
+			if(j == -1)
+				j = i;
+		}
+	}
+	if(j == -1)
+		j = i;
+
+	result[j++] = my_wcsdup(L"");
+
+	if(fill_list(&builtin_cmds_root[mode], 0, result + j) != 0)
+	{
+		free_wstring_array(result, count);
+		return NULL;
+	}
+
+	for(i = j; i < count && result[i] != NULL; i++)
 	{
 		if(result[i][0] == L'\0')
 		{

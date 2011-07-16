@@ -75,6 +75,7 @@ show_file_type(FileView *view, int curr_y)
 	}
 	else if(S_ISREG(view->dir_entry[view->list_pos].mode))
 	{
+#ifdef HAVE_FILE_PROG
 		FILE *pipe;
 		char command[1024];
 		char buf[NAME_MAX];
@@ -95,15 +96,14 @@ show_file_type(FileView *view, int curr_y)
 		pclose(pipe);
 
 		mvwaddnstr(menu_win, curr_y, 8, buf, x - 9);
-		/* TODO maybe remove this
-		if((S_IXUSR &view->dir_entry[view->list_pos].mode)
-				|| (S_IXGRP &view->dir_entry[view->list_pos].mode)
-				|| (S_IXOTH &view->dir_entry[view->list_pos].mode))
-
-			mvwaddstr(other_view->win, 6, 8, "Executable");
+#else /* #ifdef HAVE_FILE_PROG */
+		if((S_IXUSR & view->dir_entry[view->list_pos].mode)
+				|| (S_IXGRP & view->dir_entry[view->list_pos].mode)
+				|| (S_IXOTH & view->dir_entry[view->list_pos].mode))
+			mvwaddstr(menu_win, curr_y, 8, "Executable");
 		else
-			mvwaddstr(other_view->win, 6, 8, "Regular File");
-			*/
+			mvwaddstr(menu_win, curr_y, 8, "Regular File");
+#endif /* #ifdef HAVE_FILE_PROG */
 	}
 	else if(S_ISDIR(view->dir_entry[view->list_pos].mode))
 	{

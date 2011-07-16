@@ -425,12 +425,6 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 		show_error_msg("FUSE MOUNT ERROR", "Can't chdir() to FUSE home");
 		return -1;
 	}
-	/*
-		 TODO see what's here
-		 def_prog_mode();
-		 endwin();
-		 int status = my_system(buf);
-		 */
 
 	if(clear_before_mount)
 	{

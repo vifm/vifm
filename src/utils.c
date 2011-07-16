@@ -561,6 +561,12 @@ free_string_array(char **array, size_t len)
 	free(array);
 }
 
+void
+free_wstring_array(wchar_t **array, size_t len)
+{
+	free_string_array((char **)array, len);
+}
+
 /* Removes excess slashes, "../" and "./" from the path */
 void
 canonicalize_path(const char *directory, char *buf, size_t buf_size)

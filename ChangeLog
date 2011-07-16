@@ -195,6 +195,8 @@
 
 	Fixed zb in normal mode (when pos < number on lines in a view).
 
+	Fixed map menus (added user commands).
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).
