@@ -25,6 +25,7 @@
 
 #include "color_scheme.h"
 #include "config.h"
+#include "macros.h"
 #include "menus.h"
 #include "status.h"
 #include "utils.h"
@@ -33,13 +34,24 @@
 
 Col_scheme *col_schemes;
 
-/*
-static void
-verify_color_schemes(void)
-{
-	TODO implement
-}
-*/
+static const int default_colors[][2] = {
+	{7, 0}, /* MENU_COLOR */
+	{0, 7}, /* BORDER_COLOR */
+	{7, 0}, /* WIN_COLOR */
+	{7, 0}, /* STATUS_BAR_COLOR */
+	{7, 4}, /* CURR_LINE_COLOR */
+	{6, 0}, /* DIRECTORY_COLOR */
+	{3, 0}, /* LINK_COLOR */
+	{5, 0}, /* SOCKET_COLOR */
+	{1, 0}, /* DEVICE_COLOR */
+	{2, 0}, /* EXECUTABLE_COLOR */
+	{5, 0}, /* SELECTED_COLOR */
+	{4, 0}, /* CURRENT_COLOR */
+};
+
+static int _gnuc_unused default_colors_size_guard[
+	(ARRAY_LEN(default_colors) == MAXNUM_COLOR) ? 1 : -1
+];
 
 int
 find_color_scheme(const char *name)
@@ -154,58 +166,26 @@ write_color_scheme_file(void)
 }
 
 static void
+init_color_scheme(Col_scheme *cs)
+{
+	int i;
+	strcpy(cs->dir, "");
+
+	for(i = 0; i < MAXNUM_COLOR; i++)
+	{
+		cs->color[i].name = i;
+		cs->color[i].fg = default_colors[i][0];
+		cs->color[i].bg = default_colors[i][1];
+	}
+}
+
+static void
 load_default_colors()
 {
+	init_color_scheme(&col_schemes[0]);
+
 	snprintf(col_schemes[0].name, NAME_MAX, "Default");
 	snprintf(col_schemes[0].dir, PATH_MAX, "/");
-
-	col_schemes[0].color[0].name = MENU_COLOR;
-	col_schemes[0].color[0].fg = 7;
-	col_schemes[0].color[0].bg = 0;
-
-	col_schemes[0].color[1].name = BORDER_COLOR;
-	col_schemes[0].color[1].fg = 0;
-	col_schemes[0].color[1].bg = 7;
-
-	col_schemes[0].color[2].name = WIN_COLOR;
-	col_schemes[0].color[2].fg = 7;
-	col_schemes[0].color[2].bg = 0;
-
-	col_schemes[0].color[3].name = STATUS_BAR_COLOR;
-	col_schemes[0].color[3].fg = 7;
-	col_schemes[0].color[3].bg = 0;
-
-	col_schemes[0].color[4].name = CURR_LINE_COLOR;
-	col_schemes[0].color[4].fg = 7;
-	col_schemes[0].color[4].bg = 4;
-
-	col_schemes[0].color[5].name = DIRECTORY_COLOR;
-	col_schemes[0].color[5].fg = 6;
-	col_schemes[0].color[5].bg = 0;
-
-	col_schemes[0].color[6].name = LINK_COLOR;
-	col_schemes[0].color[6].fg = 3;
-	col_schemes[0].color[6].bg = 0;
-
-	col_schemes[0].color[7].name = SOCKET_COLOR;
-	col_schemes[0].color[7].fg = 5;
-	col_schemes[0].color[7].bg = 0;
-
-	col_schemes[0].color[8].name = DEVICE_COLOR;
-	col_schemes[0].color[8].fg = 1;
-	col_schemes[0].color[8].bg = 0;
-
-	col_schemes[0].color[9].name = EXECUTABLE_COLOR;
-	col_schemes[0].color[9].fg = 2;
-	col_schemes[0].color[9].bg = 0;
-
-	col_schemes[0].color[10].name = SELECTED_COLOR;
-	col_schemes[0].color[10].fg = 5;
-	col_schemes[0].color[10].bg = 0;
-
-	col_schemes[0].color[11].name = CURRENT_COLOR;
-	col_schemes[0].color[11].fg = 4;
-	col_schemes[0].color[11].bg = 0;
 }
 
 /*
@@ -355,23 +335,15 @@ read_color_scheme_file(void)
 		{
 			if(!strcmp(line, "COLORSCHEME"))
 			{
-				/* TODO
-				 check if last colorscheme is complete and pad it before starting
-				 a new scheme
-				 verify_scheme();
-
-					col_schemes = (Col_scheme *)realloc(col_schemes,
-							sizeof(Col_scheme *) +1);
-				*/
-
-				snprintf(col_schemes[cfg.color_scheme_num].name, NAME_MAX, "%s", s1);
-
 				cfg.color_scheme_num++;
 
 				if(cfg.color_scheme_num > 8)
 					break;
 
-				// TODO init_color_scheme(&col_schemes[cfg.color_scheme_num - 1]);
+				init_color_scheme(&col_schemes[cfg.color_scheme_num - 1]);
+
+				snprintf(col_schemes[cfg.color_scheme_num - 1].name, NAME_MAX, "%s",
+						s1);
 
 				continue;
 			}
@@ -379,7 +351,7 @@ read_color_scheme_file(void)
 			{
 				Col_scheme* cs;
 
-				cs = col_schemes + (cfg.color_scheme_num - 1);
+				cs = col_schemes + cfg.color_scheme_num - 1;
 				snprintf(cs->dir, PATH_MAX, "%s", s1);
 				if(strcmp(cs->dir, "/") != 0)
 					chosp(cs->dir);
@@ -394,10 +366,8 @@ read_color_scheme_file(void)
 
 	fclose(fp);
 
-	// TODO verify_color_schemes();
 	return;
 }
-
 
 /* The return value is the color scheme base number for the colorpairs.
  * There are 12 color pairs for each color scheme.
