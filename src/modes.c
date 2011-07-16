@@ -132,7 +132,7 @@ modes_post(void)
 
 	if(curr_stats.save_msg)
 		;
-	else if(curr_view->selected_files)
+	else if(curr_view->selected_files || mode == VISUAL_MODE)
 	{
 		snprintf(status_buf, sizeof(status_buf), "%s%d %s Selected",
 				(mode == VISUAL_MODE) ? "-- VISUAL -- " : "", curr_view->selected_files,

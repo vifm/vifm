@@ -42,7 +42,11 @@ static int start_pos;
 
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
+static void cmd_ctrl_d(struct key_info, struct keys_info *);
+static void cmd_ctrl_e(struct key_info, struct keys_info *);
 static void cmd_ctrl_f(struct key_info, struct keys_info *);
+static void cmd_ctrl_u(struct key_info, struct keys_info *);
+static void cmd_ctrl_y(struct key_info, struct keys_info *);
 static void cmd_colon(struct key_info, struct keys_info *);
 static void cmd_D(struct key_info, struct keys_info *);
 static void cmd_G(struct key_info, struct keys_info *);
@@ -67,7 +71,11 @@ static void update(void);
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x02", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
 	{L"\x03", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x04", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_d}}},
+	{L"\x05", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_e}}},
 	{L"\x06", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
+	{L"\x15", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
+	{L"\x19", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
 	/* escape */
 	{L"\x1b", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L":", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
@@ -166,16 +174,7 @@ leave_visual_mode(int save_msg)
 static void
 cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 {
-	int bound;
-
-	bound = view->top_line - view->window_rows - 1;
-	if(bound < 0)
-		bound = 0;
-	while(view->list_pos > bound && view->list_pos > 0)
-	{
-		select_up_one(view, start_pos);
-	}
-	update();
+	goto_pos(view->top_line - view->window_rows - 1);
 }
 
 static void
@@ -185,17 +184,46 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
+{
+	goto_pos(curr_view->list_pos + curr_view->window_rows/2);
+}
+
+static void
+cmd_ctrl_e(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(curr_view->list_rows <= curr_view->window_rows + 1)
+		return;
+	if(curr_view->top_line == curr_view->list_rows - curr_view->window_rows - 1)
+		return;
+	if(curr_view->list_pos == curr_view->top_line)
+		goto_pos(curr_view->list_pos + 1);
+	curr_view->top_line++;
+	scroll_view(curr_view);
+}
+
+static void
 cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
-	int bound;
+	goto_pos(view->top_line + 2*view->window_rows + 1);
+}
 
-	bound = view->top_line + 2*view->window_rows + 1;
-	if(bound >= view->list_rows)
-		bound = view->list_rows - 1;
-	while(view->list_pos < bound)
-		select_down_one(view, start_pos);
+static void
+cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
+{
+	goto_pos(curr_view->list_pos - curr_view->window_rows/2);
+}
 
-	update();
+static void
+cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(curr_view->list_rows <= curr_view->window_rows + 1
+			|| curr_view->top_line == 0)
+		return;
+	if(curr_view->list_pos == curr_view->top_line + curr_view->window_rows)
+		goto_pos(curr_view->list_pos - 1);
+	curr_view->top_line--;
+	scroll_view(curr_view);
 }
 
 static void
@@ -215,72 +243,23 @@ cmd_G(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_H(struct key_info key_info, struct keys_info *keys_info)
 {
-	while(view->list_pos > view->top_line)
-		select_up_one(view, start_pos);
-
-	update();
+	goto_pos(view->top_line);
 }
 
 /* move to last line of window, selecting as we go */
 static void
 cmd_L(struct key_info key_info, struct keys_info *keys_info)
 {
-	int bound;
-
-	bound = view->top_line + view->window_rows;
-	if(bound > view->list_rows - 1)
-		bound = view->list_rows - 1;
-	while(view->list_pos < bound)
-		select_down_one(view, start_pos);
-
-	update();
+	goto_pos(view->top_line + view->window_rows);
 }
 
 /* move to middle of window, selecting from start position to there */
 static void
 cmd_M(struct key_info key_info, struct keys_info *keys_info)
 {
-	/*window smaller than file list */
-	if(view->list_rows < view->window_rows)
-	{
-		/*in upper portion */
-		if(view->list_pos < view->list_rows/2)
-		{
-			while(view->list_pos < view->list_rows/2)
-			{
-				select_down_one(view,start_pos);
-			}
-		}
-		/* lower portion */
-		else if(view->list_pos > view->list_rows/2)
-		{
-			while(view->list_pos > view->list_rows/2)
-			{
-				select_up_one(view,start_pos);
-			}
-		}
-	}
-	/* window larger than file list */
-	else
-	{
-		/* top half */
-		if(view->list_pos < view->top_line + view->window_rows/2)
-		{
-			while(view->list_pos < view->top_line + view->window_rows/2)
-			{
-				select_down_one(view,start_pos);
-			}
-		}
-		/* bottom half */
-		else if(view->list_pos > view->top_line + view->window_rows/2)
-		{
-			while(view->list_pos > view->top_line + view->window_rows/2)
-			{
-				select_up_one(view, start_pos);
-			}
-		}
-	}
-	update();
+	int pos1 = view->list_rows/2;
+	int pos2 = view->top_line + view->window_rows/2;
+	goto_pos(MIN(pos1, pos2));
 }
 
 static void
@@ -333,6 +312,8 @@ cmd_gg(struct key_info key_info, struct keys_info *keys_info)
 static void
 goto_pos(int pos)
 {
+	if(pos < 0)
+		pos = 0;
 	if(pos > curr_view->list_rows - 1)
 		pos = curr_view->list_rows - 1;
 
