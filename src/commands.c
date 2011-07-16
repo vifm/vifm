@@ -23,7 +23,7 @@
 
 #include <assert.h>
 #include <ctype.h> /* isspace() */
-#include <errno.h>
+#include <errno.h> /* errno */
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h> /*  system() */
