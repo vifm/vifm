@@ -52,12 +52,18 @@ received_sigwinch(void)
 }
 
 static void
+received_sigcont(void)
+{
+	reset_prog_mode();
+	modes_redraw();
+}
+
+static void
 received_sigtstp(void)
 {
 	/* End program so key strokes are not registered while stopped. */
 	def_prog_mode();
 	endwin();
-	(void)system("clear");
 	pause();
 	refresh();
 	curs_set(0);
@@ -81,7 +87,6 @@ shutdown_nicely(void)
 	unmount_fuse();
 	write_config_file();
 	write_info_file();
-	(void)system("clear");
 	fprintf(stdout, "Vifm killed by signal.\n");
 	exit(0);
 }
@@ -96,6 +101,9 @@ handle_signal(int sig)
 			break;
 		case SIGWINCH:
 			received_sigwinch();
+			break;
+		case SIGCONT:
+			received_sigcont();
 			break;
 		case SIGTSTP:
 			received_sigtstp();

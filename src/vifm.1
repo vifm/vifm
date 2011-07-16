@@ -475,7 +475,9 @@ display directory stack.
 will load the selected or passed file or files into vi.
 .TP
 .BI :empty
-will permanently remove 'rm -fr' files from the Trash directory.
+will permanently remove 'rm -fr' files from the Trash directory.  It will also
+remove all operations from undolist that have no sense after :empty and remove
+all records about files in the Trash directory from all registers.
 .TP
 .BI :file
 popup menu of programs set for the file type of the current file. Add ' &' at

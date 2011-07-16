@@ -429,7 +429,6 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 		 TODO see what's here
 		 def_prog_mode();
 		 endwin();
-		 my_system("clear");
 		 int status = my_system(buf);
 		 */
 
@@ -437,7 +436,6 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 	{
 		def_prog_mode();
 		endwin();
-		my_system("clear");
 	}
 
 	int status = background_and_wait_for_status(buf);
@@ -1496,7 +1494,9 @@ clone_file(FileView* view)
 	if(strcmp(filename, "..") == 0)
 		return;
 
-	snprintf(clone_name, sizeof(clone_name), "%s_clone", filename);
+	snprintf(clone_name, sizeof(clone_name), "%s", filename);
+	chosp(clone_name);
+	strncat(clone_name, "_clone", sizeof(clone_name));
 	snprintf(do_cmd, sizeof(do_cmd), "%s/%s", view->curr_dir, filename);
 
 	if(view->dir_entry[view->list_pos].type == DIRECTORY)
@@ -1505,7 +1505,7 @@ clone_file(FileView* view)
 		escaped = escape_filename(do_cmd, 0, 0);
 	chosp(escaped);
 	snprintf(do_cmd, sizeof(do_cmd), "cp -npR %s %s_clone", escaped, escaped);
-	snprintf(undo_cmd, sizeof(undo_cmd), "rm %s_clone", escaped);
+	snprintf(undo_cmd, sizeof(undo_cmd), "rm -rf %s_clone", escaped);
 	free(escaped);
 
 	if(background_and_wait_for_errors(do_cmd) == 0)

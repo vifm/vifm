@@ -19,7 +19,6 @@ Basic things that need to be done.
     Expand macros for builtin commands.
     More states for permissions dialog (maybe 'f', 'd').
     Backgrounding of vicmd (& at the end).
-    Don't ignore Ctrl-Z.
 
 Documentation.
 	Better documentation.
@@ -106,7 +105,7 @@ Other (questionable) things.
     Maybe inotify support on Linux.
     Add ... at the end of a title or always add it in the middle
     Command like ' but that executes bookmark ?
-    Maybe we shouldn't clear screen on exit and add a command to view screen ?
+    Maybe we should add a command to view screen ?
     Rename pauseme to vifm-pauseme to avoid possible conflicts ?
     Completion for co and cg commands ?
     Directory create command ?

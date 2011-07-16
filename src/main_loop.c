@@ -25,6 +25,7 @@
 
 #include <sys/time.h> /* select() */
 #include <sys/types.h> /* select() */
+#include <signal.h>
 #include <unistd.h> /* chdir(), select() */
 
 #include <assert.h>
@@ -87,6 +88,14 @@ main_loop(void)
 
 		if(ret != ERR && pos != ARRAY_LEN(buf) - 2)
 		{
+			if(c == L'\x1a') /* Ctrl-Z */
+			{
+				def_prog_mode();
+				endwin();
+				kill(0, SIGSTOP);
+				continue;
+			}
+
 			buf[pos++] = c;
 			buf[pos] = L'\0';
 		}

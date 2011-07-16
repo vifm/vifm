@@ -106,6 +106,12 @@
 
 	Don't terminate background processes on vifm exit.
 
+	Remove files that are in the Trash on :empty command from all registers.
+
+	Don't ignore Ctrl-Z.
+
+	Don't clear screen on shellout.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.

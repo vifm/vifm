@@ -47,6 +47,7 @@
 #include "modes.h"
 #include "opt_handlers.h"
 #include "permissions_dialog.h"
+#include "registers.h"
 #include "search.h"
 #include "signals.h"
 #include "sort.h"
@@ -996,7 +997,6 @@ shellout(char *command, int pause)
 	lwin.dir_mtime = 0;
 	rwin.dir_mtime = 0;
 
-	my_system("clear");
 	result = WEXITSTATUS(my_system(buf));
 
 	/* There is a problem with using the screen program and
@@ -2374,7 +2374,6 @@ comm_quit(void)
 	write_info_file();
 
 	endwin();
-	(void)system("clear");
 	exit(0);
 }
 

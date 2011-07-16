@@ -52,7 +52,6 @@ finish(const char *message)
 	endwin();
 	write_config_file();
 	write_info_file();
-	(void)system("clear");
 	printf("%s", message);
 	exit(0);
 }
