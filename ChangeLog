@@ -117,6 +117,9 @@
 
 	Let %, f, F, ;, comma and ' be used as selectors in normal mode.
 
+	<num>%, zb, zt, zz, <num>gg, <num>G, Ctrl+e, Ctrl+y, Ctrl+d, /Ctrl+u, f, F,
+	; and comma in visual mode.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.

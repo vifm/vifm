@@ -39,6 +39,8 @@
 static int *mode;
 static FileView *view;
 static int start_pos;
+static int last_fast_search_char;
+static int last_fast_search_backward = -1;
 
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
@@ -48,8 +50,11 @@ static void cmd_ctrl_f(struct key_info, struct keys_info *);
 static void cmd_ctrl_u(struct key_info, struct keys_info *);
 static void cmd_ctrl_y(struct key_info, struct keys_info *);
 static void cmd_percent(struct key_info, struct keys_info *);
+static void cmd_comma(struct key_info, struct keys_info *);
 static void cmd_colon(struct key_info, struct keys_info *);
+static void cmd_semicolon(struct key_info, struct keys_info *);
 static void cmd_D(struct key_info, struct keys_info *);
+static void cmd_F(struct key_info, struct keys_info *);
 static void cmd_G(struct key_info, struct keys_info *);
 static void cmd_H(struct key_info, struct keys_info *);
 static void cmd_L(struct key_info, struct keys_info *);
@@ -58,12 +63,14 @@ static void cmd_O(struct key_info, struct keys_info *);
 static void cmd_d(struct key_info, struct keys_info *);
 static void delete(struct key_info key_info, int use_trash);
 static void cmd_cp(struct key_info, struct keys_info *);
+static void cmd_f(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
 static void goto_pos(int pos);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
 static void cmd_y(struct key_info, struct keys_info *);
 static void cmd_zf(struct key_info, struct keys_info *);
+static void find_goto(int ch, int backward);
 static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
 static void update_marks(FileView *view);
@@ -80,8 +87,11 @@ static struct keys_add_info builtin_cmds[] = {
 	/* escape */
 	{L"\x1b", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"%", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
+	{L",", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
 	{L":", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
+	{L";", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_semicolon}}},
 	{L"D", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_D}}},
+	{L"F", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_F}}},
 	{L"G", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
 	{L"H", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_H}}},
 	{L"L", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_L}}},
@@ -89,6 +99,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"O", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
 	{L"V", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_d}}},
+	{L"f", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_f}}},
 	{L"cp", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
 	{L"cw", {BUILDIN_CMD, FOLLOWED_BY_NONE, {.cmd = L":rename\r"}}},
 	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
@@ -235,6 +246,14 @@ cmd_D(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+cmd_F(struct key_info key_info, struct keys_info *keys_info)
+{
+	last_fast_search_char = key_info.multi;
+	last_fast_search_backward = 1;
+	find_goto(key_info.multi, 1);
+}
+
+static void
 cmd_G(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
@@ -286,9 +305,25 @@ cmd_percent(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+cmd_comma(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(last_fast_search_backward == -1)
+		return;
+	find_goto(last_fast_search_char, !last_fast_search_backward);
+}
+
+static void
 cmd_colon(struct key_info key_info, struct keys_info *keys_info)
 {
 	enter_cmdline_mode(CMD_SUBMODE, L"'<,'>", NULL);
+}
+
+static void
+cmd_semicolon(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(last_fast_search_backward == -1)
+		return;
+	find_goto(last_fast_search_char, last_fast_search_backward);
 }
 
 static void
@@ -306,6 +341,14 @@ delete(struct key_info key_info, int use_trash)
 
 	save_msg = delete_file(view, key_info.reg, 0, NULL, use_trash);
 	leave_visual_mode(save_msg);
+}
+
+static void
+cmd_f(struct key_info key_info, struct keys_info *keys_info)
+{
+	last_fast_search_char = key_info.multi;
+	last_fast_search_backward = 0;
+	find_goto(key_info.multi, 0);
 }
 
 /* Change permissions. */
@@ -384,6 +427,17 @@ cmd_zf(struct key_info key_info, struct keys_info *keys_info)
 {
 	filter_selected_files(curr_view);
 	leave_visual_mode(0);
+}
+
+static void
+find_goto(int ch, int backward)
+{
+	int pos;
+	pos = ffind(ch, backward, 1);
+	if(pos < 0 || pos == curr_view->list_pos)
+		return;
+
+	goto_pos(pos);
 }
 
 /* move up one position in the window, adding to the selection list */

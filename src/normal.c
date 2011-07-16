@@ -82,7 +82,7 @@ static void cmd_slash(struct key_info, struct keys_info *);
 static void cmd_question(struct key_info, struct keys_info *);
 static void cmd_C(struct key_info, struct keys_info *);
 static void cmd_F(struct key_info, struct keys_info *);
-static void find_F(int ch, struct keys_info * keys_info);
+static void find_goto(int ch, int backward, struct keys_info * keys_info);
 static void cmd_G(struct key_info, struct keys_info *);
 static void cmd_H(struct key_info, struct keys_info *);
 static void cmd_L(struct key_info, struct keys_info *);
@@ -105,7 +105,6 @@ static void cmd_d_selector(struct key_info, struct keys_info *);
 static void delete_with_selector(struct key_info, struct keys_info *,
 		int use_trash);
 static void cmd_f(struct key_info, struct keys_info *);
-static void find_f(int ch, struct keys_info * keys_info);
 static void cmd_gA(struct key_info, struct keys_info *);
 static void cmd_ga(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
@@ -491,11 +490,12 @@ cmd_F(struct key_info key_info, struct keys_info *keys_info)
 {
 	last_fast_search_char = key_info.multi;
 	last_fast_search_backward = 1;
-	find_F(key_info.multi, keys_info);
+	find_goto(key_info.multi, 1, keys_info);
 }
 
-static void
-find_F(int ch, struct keys_info *keys_info)
+/* Returns negative number if nothing was found */
+int
+ffind(int ch, int backward, int wrap)
 {
 	int x;
 	wchar_t ch_buf[] = {ch, L'\0'};
@@ -503,26 +503,40 @@ find_F(int ch, struct keys_info *keys_info)
 	x = curr_view->list_pos;
 	do
 	{
-		x--;
-		if(x == 0)
+		if(backward)
 		{
-			if(keys_info->selector)
-				return;
-			else
-				x = curr_view->list_rows - 1;
+			x--;
+			if(x == 0)
+			{
+				if(wrap)
+					x = curr_view->list_rows - 1;
+				else
+					return -1;
+			}
+		}
+		else
+		{
+			x++;
+			if(x == curr_view->list_rows)
+			{
+				if(wrap)
+					x = 0;
+				else
+					return -1;
+			}
 		}
 
 		if(ch > 255)
 		{
-			wchar_t *wbuf;
-			wbuf = to_wide(curr_view->dir_entry[x].name);
+			char tbuf[9];
+			wchar_t wbuf[8];
+
+			strncpy(tbuf, curr_view->dir_entry[x].name, ARRAY_LEN(tbuf) - 1);
+			tbuf[ARRAY_LEN(tbuf) - 1] = '\0';
+			mbstowcs(wbuf, tbuf, ARRAY_LEN(wbuf));
 
 			if(wcsncmp(wbuf, ch_buf, 1) == 0)
-			{
-				free(wbuf);
 				break;
-			}
-			free(wbuf);
 		}
 		else if(curr_view->dir_entry[x].name[0] == ch)
 		{
@@ -530,13 +544,21 @@ find_F(int ch, struct keys_info *keys_info)
 		}
 	}while(x != curr_view->list_pos);
 
-	if(x == curr_view->list_pos)
+	return x;
+}
+
+static void
+find_goto(int ch, int backward, struct keys_info *keys_info)
+{
+	int pos;
+	pos = ffind(ch, backward, !keys_info->selector);
+	if(pos < 0 || pos == curr_view->list_pos)
 		return;
 
 	if(keys_info->selector)
-		pick_files(curr_view, x, keys_info);
+		pick_files(curr_view, pos, keys_info);
 	else
-		moveto_list_pos(curr_view, x);
+		moveto_list_pos(curr_view, pos);
 }
 
 /* Jump to bottom of the list or to specified line. */
@@ -719,10 +741,7 @@ cmd_comma(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(last_fast_search_backward == -1)
 		return;
-	if(last_fast_search_backward)
-		find_f(last_fast_search_char, keys_info);
-	else
-		find_F(last_fast_search_char, keys_info);
+	find_goto(last_fast_search_char, !last_fast_search_backward, keys_info);
 }
 
 /* Repeat last change. */
@@ -747,10 +766,7 @@ cmd_semicolon(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(last_fast_search_backward == -1)
 		return;
-	if(last_fast_search_backward)
-		find_F(last_fast_search_char, keys_info);
-	else
-		find_f(last_fast_search_char, keys_info);
+	find_goto(last_fast_search_char, last_fast_search_backward, keys_info);
 }
 
 /* Search forward. */
@@ -881,52 +897,7 @@ cmd_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	last_fast_search_char = key_info.multi;
 	last_fast_search_backward = 0;
-	find_f(key_info.multi, keys_info);
-}
-
-static void
-find_f(int ch, struct keys_info *keys_info)
-{
-	int x;
-	wchar_t ch_buf[] = {ch, L'\0'};
-
-	x = curr_view->list_pos;
-	do
-	{
-		x++;
-		if(x == curr_view->list_rows)
-		{
-			if(keys_info->selector)
-				return;
-			else
-				x = 0;
-		}
-
-		if(ch > 255)
-		{
-			wchar_t *wbuf;
-			wbuf = to_wide(curr_view->dir_entry[x].name);
-
-			if(wcsncmp(wbuf, ch_buf, 1) == 0)
-			{
-				free(wbuf);
-				break;
-			}
-			free(wbuf);
-		}
-		else if(curr_view->dir_entry[x].name[0] == ch)
-		{
-			break;
-		}
-	}while(x != curr_view->list_pos);
-
-	if(x == curr_view->list_pos)
-		return;
-
-	if(keys_info->selector)
-		pick_files(curr_view, x, keys_info);
-	else
-		moveto_list_pos(curr_view, x);
+	find_goto(key_info.multi, 0, keys_info);
 }
 
 /* Updir. */
