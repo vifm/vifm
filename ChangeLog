@@ -122,6 +122,8 @@
 
 	Replaced pauseme script with vifm-pause.
 
+	Replace /home/login by ~ in the view title.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.

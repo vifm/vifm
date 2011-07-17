@@ -91,7 +91,6 @@ Possible things to add.
     Reset options to it's default value (from docs) with set option&.
     :locate without arguments repeats last search.
     :cd [dir1] [dir2]; :cd! dir equivalent to :cd dir dir; or :gcd
-    Replace /home/my_login by ~ in view title.
     cl key to modify links.
     filetypes for X and for console
     What about yD to copy selected file(s) into other directory, and YD to move
@@ -109,7 +108,6 @@ Other (questionable) things.
     Add ... at the end of a title or always add it in the middle
     Command like ' but that executes bookmark ?
     Maybe we should add a command to view screen ?
-    Rename pauseme to vifm-pauseme to avoid possible conflicts ?
     Completion for co and cg commands ?
     Directory create command ?
     Summarize size of selected files.  Need to decide to display it.
