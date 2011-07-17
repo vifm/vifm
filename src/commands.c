@@ -1666,6 +1666,8 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			break;
 		case COM_EDIT:
 			{
+				if(cfg.vim_filter)
+					use_vim_plugin(view); /* no return */
 				if(cmd->args != NULL)
 				{
 					char buf[PATH_MAX];
@@ -2367,21 +2369,22 @@ comm_quit(void)
 {
 	unmount_fuse();
 
+	write_info_file();
+
 	if(cfg.vim_filter)
 	{
-		char buf[256];
+		char buf[PATH_MAX];
 		FILE *fp;
 
 		snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
 		fp = fopen(buf, "w");
-		endwin();
 		fprintf(fp, "NULL");
 		fclose(fp);
+		endwin();
 		exit(0);
 	}
 
 	write_config_file();
-	write_info_file();
 
 	endwin();
 	exit(0);

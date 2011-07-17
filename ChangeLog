@@ -36,6 +36,8 @@
 
 	Added primitive logging.
 
+	Added :TabVifm command in Vim plugin.
+
 	Let builtin keys be remapped.
 
 	Don't cancel file renaming if user presses backspace and line is empty.
@@ -124,6 +126,8 @@
 
 	Replace /home/login by ~ in the view title.
 
+	Handle multiple files in Vim plugin.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.
@@ -202,6 +206,8 @@
 	Fixed map menus (added user commands).
 
 	Fixed recursion in user mappings.
+
+	Fixed opening files containing spaces in their names using Vim plugin.
 
 0.6.1 to 0.6.2
 

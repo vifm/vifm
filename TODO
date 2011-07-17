@@ -94,13 +94,10 @@ Possible things to add.
     cl key to modify links.
     filetypes for X and for console
     What about yD to copy selected file(s) into other directory, and YD to move
+    Warn about ambiguous user defined command name.
 
 Vim plugin
     Choose between one and two pane view on startup somehow.
-    Handle l when more then one file selected.
-    Look at the Ranousse patch for tabs.
-    Make :edit work like l (and support multiple files).
-    Problems with filenames containing spaces.
 
 Other (questionable) things.
     %i macro to prompt user for input.

@@ -684,7 +684,9 @@ handle_file(FileView *view, int dont_execute)
 	if(type == DIRECTORY)
 	{
 		if(strcmp(filename, "../") == 0)
+		{
 			cd_updir(view);
+		}
 		else if(change_directory(view, filename) == 0)
 		{
 			load_dir_list(view, 0);
@@ -694,18 +696,7 @@ handle_file(FileView *view, int dont_execute)
 	}
 
 	if(cfg.vim_filter)
-	{
-		FILE *fp;
-		char filepath[PATH_MAX] = "";
-
-		snprintf(filepath, sizeof(filepath), "%s/vimfiles", cfg.config_dir);
-		fp = fopen(filepath, "w");
-		snprintf(filepath, sizeof(filepath), "%s/%s", view->curr_dir, filename);
-		endwin();
-		fprintf(fp, "%s", filepath);
-		fclose(fp);
-		exit(0);
-	}
+		use_vim_plugin(view); /* no return */
 
 	run_link = !cfg.follow_links && type == LINK && !check_link_is_dir(filename);
 	runnable = type == EXECUTABLE || (run_link && access(filename, X_OK) == 0);
@@ -724,6 +715,31 @@ handle_file(FileView *view, int dont_execute)
 	{
 		follow_link(view);
 	}
+}
+
+void _gnuc_noreturn
+use_vim_plugin(FileView *view)
+{
+	FILE *fp;
+	int i;
+	char filepath[PATH_MAX] = "";
+
+	snprintf(filepath, sizeof(filepath), "%s/vimfiles", cfg.config_dir);
+	fp = fopen(filepath, "w");
+	if(view->selected_files == 0)
+	{
+		view->dir_entry[view->list_pos].selected = 1;
+		view->selected_files = 1;
+	}
+	for(i = 0; i < view->list_rows; i++)
+		if(view->dir_entry[i].selected)
+			fprintf(fp, "%s/%s\n", view->curr_dir, view->dir_entry[i].name);
+	fclose(fp);
+
+	write_info_file();
+
+	endwin();
+	exit(0);
 }
 
 static void

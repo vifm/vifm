@@ -2,7 +2,7 @@ All suggestions or complaints should be sent to xaizek@gmail.com.
 
 Real author is Ken Steen ksteen@users.sourceforge.net.
 
-The pauseme script is from the tkdesk program.
+The pauseme script (removed in 0.6.3) was from the tkdesk program.
 
 Some of the code is from emelfm by Michael Clark.
 
@@ -54,3 +54,5 @@ from fork of wsdookadr (Petrea Stefan Corneliu):
 - functional keys in user mappings
 
 seatest is written by Keith Nicholas
+
+Patch for Vim plugin by Ranousse.
