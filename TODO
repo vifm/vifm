@@ -94,6 +94,7 @@ Possible things to add.
     Replace /home/my_login by ~ in view title.
     cl key to modify links.
     filetypes for X and for console
+    What about yD to copy selected file(s) into other directory, and YD to move
 
 Vim plugin
     Choose between one and two pane view on startup somehow.

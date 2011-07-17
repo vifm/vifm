@@ -229,7 +229,7 @@ pkgdata_DATA = startup \
 							 vifm.txt \
 							 vifm.vim
 
-bin_SCRIPTS = pauseme
+bin_SCRIPTS = vifm-pause
 man_MANS = vifm.1
 vifm_SOURCES = \
 	background.c background.h \

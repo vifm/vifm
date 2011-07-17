@@ -120,6 +120,8 @@
 	<num>%, zb, zt, zz, <num>gg, <num>G, Ctrl+e, Ctrl+y, Ctrl+d, /Ctrl+u, f, F,
 	;, comma and ' in visual mode.
 
+	Replaced pauseme script with vifm-pause.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.

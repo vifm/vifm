@@ -905,6 +905,12 @@ split_screen(FileView *view, char *command)
 	}
 }
 
+/*
+ * pause:
+ *  > 0 - pause always
+ *  = 0 - not pause
+ *  < 0 - pause on error
+ */
 int
 shellout(char *command, int pause)
 {
@@ -928,14 +934,14 @@ shellout(char *command, int pause)
 
 			if(title != NULL)
 			{
-				if(pause)
-					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c 'pauseme %s'",
+				if(pause > 0)
+					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c '%s; vifm-pause'",
 							title + strlen(cfg.vi_command) +1, command);
 				else
 				{
 					escaped = escape_filename(command, 0, 0);
 					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c %s",
-							title + strlen(cfg.vi_command) +1, escaped);
+							title + strlen(cfg.vi_command) + 1, escaped);
 					free(escaped);
 				}
 			}
@@ -951,9 +957,9 @@ shellout(char *command, int pause)
 				else
 					title = strdup("Shell");
 
-				if(pause)
+				if(pause > 0)
 					snprintf(buf, sizeof(buf),
-							"screen -t \"%.10s\" sh -c 'pauseme %s'", title, command);
+							"screen -t \"%.10s\" sh -c '%s; vifm-pause'", title, command);
 				else
 				{
 					escaped = escape_filename(command, 0, 0);
@@ -966,8 +972,8 @@ shellout(char *command, int pause)
 		}
 		else
 		{
-			if(pause)
-				snprintf(buf, sizeof(buf), "pauseme %s", command);
+			if(pause > 0)
+				snprintf(buf, sizeof(buf), "%s; vifm-pause", command);
 			else
 				snprintf(buf, sizeof(buf), "%s", command);
 		}
@@ -998,6 +1004,9 @@ shellout(char *command, int pause)
 	rwin.dir_mtime = 0;
 
 	result = WEXITSTATUS(my_system(buf));
+
+	if(result != 0 && pause < 0)
+		my_system("vifm-pause");
 
 	/* There is a problem with using the screen program and
 	 * catching all the SIGWICH signals.  So just redraw the window.
@@ -1558,13 +1567,14 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 						start_background_job(com + i);
 					else
 					{
-						if(shellout(com + i, pause) == 127 && cfg.fast_run)
+						if(shellout(com + i, pause ? 1 : (cfg.fast_run ? 0 : -1)) == 127 &&
+								cfg.fast_run)
 						{
 							char *buf = fast_run_complete(com + i);
 							if(buf == NULL)
 								save_msg = 1;
 							else
-								shellout(buf, pause);
+								shellout(buf, pause ? 1 : -1);
 							free(buf);
 						}
 					}
@@ -1660,7 +1670,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 				{
 					char buf[PATH_MAX];
 					snprintf(buf, sizeof(buf), "%s %s", cfg.vi_command, cmd->args);
-					shellout(buf, 0);
+					shellout(buf, -1);
 					break;
 				}
 				if(!view->selected_files || !view->dir_entry[view->list_pos].selected)
@@ -1672,8 +1682,8 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 								escape_filename(view->dir_entry[view->list_pos].name, 0, 0);
 						snprintf(buf, sizeof(buf), "%s %s/%s", cfg.vi_command,
 								view->curr_dir, escaped);
-						shellout(buf, 0);
 						free(escaped);
+						shellout(buf, -1);
 					}
 				}
 				else
@@ -1685,7 +1695,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 								"Cannot load file");
 						break;
 					}
-					shellout(cmd, 0);
+					shellout(cmd, -1);
 					free(cmd);
 				}
 			}
@@ -1752,13 +1762,13 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 					{
 						snprintf(help_file, sizeof(help_file),
 								"%s -c \'help %s\' -c only", cfg.vi_command, cmd->args);
-						shellout(help_file, 0);
+						shellout(help_file, -1);
 					}
 					else
 					{
 						snprintf(help_file, sizeof(help_file),
 								"%s -c \'help vifm\' -c only", cfg.vi_command);
-						shellout(help_file, 0);
+						shellout(help_file, -1);
 					}
 				}
 				else
@@ -1767,7 +1777,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 							"%s %s/vifm-help.txt",
 							cfg.vi_command, cfg.config_dir);
 
-					shellout(help_file, 0);
+					shellout(help_file, -1);
 				}
 			}
 			break;

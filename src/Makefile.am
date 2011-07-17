@@ -8,7 +8,7 @@ pkgdata_DATA = startup \
 
 bin_PROGRAMS = vifm
 
-bin_SCRIPTS = pauseme
+bin_SCRIPTS = vifm-pause
 
 man_MANS = vifm.1
 
