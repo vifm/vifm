@@ -46,9 +46,9 @@ typedef struct
 	int show_full;
 	int setting_change;
 	int skip_history;
-	int vifm_started; /* 0 - no TUI, 1 - TUI, 2 - all*/
+	int vifm_started; /* 0 - no TUI, 1 - TUI, 2 - all */
 
-	int errmsg_shown;
+	int errmsg_shown; /* 0 - none, 1 - error, 2 - query */
 
 	tree_t dirsize_cache;
 

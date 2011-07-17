@@ -120,7 +120,6 @@ redraw_error_msg(char *title_arg, const char *message_arg)
 	}
 
 	curr_stats.freeze = 1;
-	curr_stats.errmsg_shown = 1;
 	curs_set(0);
 	werase(error_win);
 
@@ -172,8 +171,11 @@ redraw_error_msg(char *title_arg, const char *message_arg)
 	if(title[0] != '\0')
 		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
 
-	mvwaddstr(error_win, y - 2, (x - 63)/2,
-			"Press Return to continue or Ctrl-C to skip other error messages");
+	if(curr_stats.errmsg_shown == 1)
+		mvwaddstr(error_win, y - 2, (x - 63)/2,
+				"Press Return to continue or Ctrl-C to skip other error messages");
+	else
+		mvwaddstr(error_win, y - 2, (x - 20)/2, "Enter y[es] or n[o]");
 }
 
 /* Returns not zero when user asked to skip error messages that left */
@@ -187,6 +189,8 @@ show_error_msg(char *title, const char *message)
 		return 1;
 	if(curr_stats.vifm_started != 2 && skip_until_started)
 		return 1;
+
+	curr_stats.errmsg_shown = 1;
 
 	redraw_error_msg(title, message);
 
@@ -1753,33 +1757,13 @@ show_vifm_menu(FileView *view)
 int
 query_user_menu(char *title, char *message)
 {
-	size_t x, y;
 	int key;
 	int done = 0;
-	size_t z;
 	char *dup = strdup(message);
 
-	curr_stats.freeze = 1;
-	curs_set(0);
-	werase(error_win);
+	curr_stats.errmsg_shown = 2;
 
-	getmaxyx(error_win, y, x);
-
-	if(strlen(dup) > x - 2)
-		dup[x -2] = '\0';
-
-	z = 0;
-	while((z < strlen(dup) - 1) && isprint(dup[z]))
-		z++;
-
-	dup[z] = '\0';
-
-	mvwaddstr(error_win, 2, (x - strlen(dup))/2, dup);
-
-	box(error_win, 0, 0);
-	mvwaddstr(error_win, 0, (x - strlen(title))/2, title);
-
-	mvwaddstr(error_win, y -2, (x - 25)/2, "Enter y[es] or n[o] ");
+	redraw_error_msg(title, message);
 
 	while(!done)
 	{
@@ -1791,6 +1775,7 @@ query_user_menu(char *title, char *message)
 	free(dup);
 
 	curr_stats.freeze = 0;
+	curr_stats.errmsg_shown = 0;
 
 	werase(error_win);
 	wrefresh(error_win);
