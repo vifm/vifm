@@ -90,7 +90,6 @@ cmd_group_begin(const char *msg)
 	group_opened = 1;
 
 	group_msg = msg;
-	last_group = NULL;
 }
 
 void
@@ -117,10 +116,7 @@ add_operation(const char *do_cmd, const char *do_src, const char *do_dst,
 		remove_cmd(current->next);
 
 	while(command_count > 0 && command_count >= *undo_levels)
-	{
-		current = current->prev;
-		remove_cmd(current->next);
-	}
+		remove_cmd(cmds.next);
 
 	if(*undo_levels <= 0)
 		return 0;
@@ -218,6 +214,7 @@ cmd_group_end(void)
 
 	group_opened = 0;
 	next_group++;
+	last_group = NULL;
 }
 
 int
