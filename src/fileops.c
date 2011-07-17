@@ -167,6 +167,7 @@ system_and_wait_for_errors(char *cmd)
 			if(nread == 1 && linebuf[0] == '\n')
 				continue;
 			strncat(buf, linebuf, sizeof(buf));
+			buf[sizeof(buf) - 1] = '\0';
 		}
 		close(error_pipe[0]);
 
@@ -868,8 +869,10 @@ mv_file(const char *src, const char *dst)
 	int result;
 
 	snprintf(full_src, sizeof(full_src), "%s/%s", curr_view->curr_dir, src);
+	chosp(full_src);
 	escaped_src = escape_filename(full_src, 0, 0);
 	snprintf(full_dst, sizeof(full_dst), "%s/%s", curr_view->curr_dir, dst);
+	chosp(full_dst);
 	escaped_dst = escape_filename(full_dst, 0, 0);
 
 	if(escaped_src == NULL || escaped_dst == NULL)
@@ -1003,16 +1006,6 @@ check_rename_file(FileView *view, int *indexes, int count, FILE *f)
 				indexes[i] = -indexes[i];
 				break;
 			}
-
-		if(indexes[i] >= 0 && access(name, F_OK) == 0)
-		{
-			char msg[5 + NAME_MAX + 15 + 1];
-			snprintf(msg, sizeof(msg), "File %s already exists", name);
-			status_bar_message(msg);
-			curr_stats.save_msg = 1;
-			free_string_array(list, len);
-			return NULL;
-		}
 	}
 
 	if(fgetc(f) != EOF)
@@ -1117,7 +1110,16 @@ rename_files_ind(FileView *view, int *indexes, int count)
 	}
 
 	for(i = 0; i < count; i++)
-		fprintf(f, "%s\n", view->dir_entry[indexes[i]].name);
+	{
+		char *name = view->dir_entry[indexes[i]].name;
+		size_t len = strlen(name);
+		int slash = name[len - 1] == '/';
+		if(slash)
+			name[len - 1] = '\0';
+		fprintf(f, "%s\n", name);
+		if(slash)
+			name[len - 1] = '/';
+	}
 
 	fclose(f);
 
