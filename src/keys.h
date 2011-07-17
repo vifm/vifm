@@ -109,7 +109,7 @@ struct keys_add_info {
  *  - 0 - success
  *  - something else - an error
  */
-typedef int (*default_handler)(wchar_t keys);
+typedef int (*default_handler)(wchar_t key);
 
 /*
  * Assumed that key_mode_flags is an array of at least modes_count items

@@ -29,6 +29,7 @@ struct key_chunk_t
 {
 	wchar_t key;
 	size_t children_count;
+	int enters; /* to prevent stack overflow */
 	struct key_t conf;
 	struct key_chunk_t *child;
 	struct key_chunk_t *parent;
@@ -54,7 +55,7 @@ static int contains_chain(struct key_chunk_t *root, const wchar_t *begin,
 static int execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
 		struct key_info *key_info, struct keys_info *keys_info, int has_duplicate);
 static int run_cmd(struct key_info key_info, struct keys_info *keys_info,
-		struct key_t *key_t);
+		struct key_chunk_t *curr);
 static void init_keys_info(struct keys_info *keys_info, int mapped);
 static const wchar_t* get_reg(const wchar_t *keys, int *reg);
 static const wchar_t* get_count(const wchar_t *keys, int *count);
@@ -317,7 +318,7 @@ execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
 		if(keys[1] == L'\0' && curr->conf.followed == FOLLOWED_BY_MULTIKEY)
 		{
 			key_info->multi = keys[0];
-			return run_cmd(*key_info, keys_info, &curr->conf);
+			return run_cmd(*key_info, keys_info, curr);
 		}
 		keys_info->selector = 1;
 		result = execute_keys_inner(keys, keys_info);
@@ -327,13 +328,15 @@ execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
 			return result;
 		}
 	}
-	return run_cmd(*key_info, keys_info, &curr->conf);
+	return run_cmd(*key_info, keys_info, curr);
 }
 
 static int
 run_cmd(struct key_info key_info, struct keys_info *keys_info,
-		struct key_t *key_t)
+		struct key_chunk_t *curr)
 {
+	struct key_t *key_t = &curr->conf;
+
 	if(key_t->type != USER_CMD && key_t->type != BUILDIN_CMD)
 	{
 		if(key_t->data.handler == NULL)
@@ -343,15 +346,35 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 	}
 	else
 	{
-		int result;
+		int result = (def_handlers[*mode] == NULL) ? KEYS_UNKNOWN : 0;
 		struct keys_info keys_info;
 		init_keys_info(&keys_info, 1);
 
-		result = execute_keys_inner(key_t->data.cmd, &keys_info);
+		if(curr->enters == 0)
+		{
+			curr->enters = 1;
+			result = execute_keys_inner(key_t->data.cmd, &keys_info);
+			curr->enters = 0;
+		}
+		else if(def_handlers[*mode] != NULL)
+		{
+			result = def_handlers[*mode](curr->key);
+		}
 		if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
 		{
-			result = def_handlers[*mode](key_t->data.cmd[0]);
-			execute_keys_general(key_t->data.cmd + 1, 0, 1);
+			if(curr->enters == 0)
+			{
+				result = def_handlers[*mode](key_t->data.cmd[0]);
+				curr->enters = 1;
+				execute_keys_general(key_t->data.cmd + 1, 0, 1);
+				curr->enters = 0;
+			}
+			else
+			{
+				int i;
+				for(i = 0; key_t->data.cmd[i] != '\0'; i++)
+					result = def_handlers[*mode](key_t->data.cmd[i]);
+			}
 		}
 		return result;
 	}
@@ -512,6 +535,7 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 			c->child = NULL;
 			c->parent = curr;
 			c->children_count = 0;
+			c->enters = 0;
 			if(prev == NULL)
 			{
 				curr->child = c;

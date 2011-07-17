@@ -197,6 +197,8 @@
 
 	Fixed map menus (added user commands).
 
+	Fixed recursion in user mappings.
+
 0.6.1 to 0.6.2
 
 	Added map menus (run :cmap, :vmap, :nmap commands without arguments).
