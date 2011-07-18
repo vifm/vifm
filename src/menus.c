@@ -525,7 +525,7 @@ execute_apropos_cb(menu_info *m)
 		snprintf(command, sizeof(command), "man %s %s", num_str,
 				man_page);
 
-		shellout(command, 0, 0);
+		shellout(command, 0);
 		free(free_this);
 	}
 	else
@@ -583,48 +583,17 @@ execute_locate_cb(FileView *view, menu_info *m)
 }
 
 static void
-execute_filetype(char *cmd, int background)
-{
-	if(!background)
-		shellout(cmd, 0, 0);
-	else
-		start_background_job(cmd);
-}
-
-static void
 execute_filetype_cb(FileView *view, menu_info *m)
 {
 	char *prog_str;
-	int background = m->extra_data & 1;
+	int background;
 
 	prog_str = m->data[m->pos];
 	if(prog_str[0] == '\0')
 		return;
 
-	if(strncmp(prog_str, "FUSE_MOUNT", 10) == 0
-			|| strncmp(prog_str, "FUSE_MOUNT2", 11) == 0)
-	{
-		fuse_try_mount(view, prog_str);
-	}
-	else if(strchr(prog_str, '%'))
-	{
-		int use_menu = 0, split = 0;
-		char *expanded_command;
-
-		expanded_command = expand_macros(view, prog_str, NULL, &use_menu, &split);
-		execute_filetype(expanded_command, background);
-		free(expanded_command);
-		return;
-	}
-	else
-	{
-		char command[NAME_MAX];
-		char *filename = get_current_file_name(view);
-
-		snprintf(command, sizeof(command), "%s %s", prog_str, filename);
-		execute_filetype(command, background);
-		return;
-	}
+	background = m->extra_data & 1;
+	run_using_prog(view, prog_str, 0, background);
 }
 
 void

@@ -62,7 +62,7 @@ static void put_decide_cb(const char *dest_name);
 static int put_files_from_register_i(FileView *view);
 
 int
-my_system(char *command, int detach)
+my_system(char *command)
 {
 	int pid;
 	int status;
@@ -80,14 +80,11 @@ my_system(char *command, int detach)
 
 		signal(SIGINT, SIG_DFL);
 
-		if(detach)
-			setpgid(0, 0);
-
 		args[0] = "sh";
 		args[1] = "-c";
 		args[2] = command;
 		args[3] = NULL;
-		execve(args[0], args, environ);
+		execve("/bin/sh", args, environ);
 		exit(127);
 	}
 	do
@@ -123,7 +120,7 @@ unmount_fuse(void)
 		snprintf(buf, sizeof(buf), "fusermount -u %s", tmp);
 		free(tmp);
 
-		my_system(buf, 0);
+		my_system(buf);
 		if(access(runner->mount_point, F_OK) == 0)
 			rmdir(runner->mount_point);
 
@@ -279,7 +276,7 @@ view_file(const char *filename)
 	snprintf(command, sizeof(command), "%s %s", cfg.vi_command, escaped);
 	free(escaped);
 
-	shellout(command, -1, 0);
+	shellout(command, -1);
 	curs_set(0);
 }
 
@@ -319,7 +316,8 @@ cd_updir(FileView *view)
  * Returns 0 on success.
  */
 static int
-fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
+fuse_mount(FileView *view, char *filename, const char *program,
+		char *mount_point)
 {
 	Fuse_List *runner;
 	int mount_point_id = 0;
@@ -328,7 +326,7 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 	char cmd_buf[96];
 	char *cmd_pos;
 	char *buf_pos;
-	char *prog_pos;
+	const char *prog_pos;
 	char *escaped_path;
 	char *escaped_filename;
 	char *escaped_mount_point;
@@ -465,8 +463,8 @@ fuse_mount(FileView *view, char *filename, char *program, char *mount_point)
 }
 
 /* wont mount same file twice */
-void
-fuse_try_mount(FileView *view, char *program)
+static void
+fuse_try_mount(FileView *view, const char *program)
 {
 	Fuse_List *runner;
 	char filename[PATH_MAX];
@@ -558,6 +556,14 @@ execute_file(FileView *view, int dont_execute)
 		return;
 	}
 
+	run_using_prog(view, program, dont_execute, 0);
+	free(program);
+}
+
+void
+run_using_prog(FileView *view, const char *program, int dont_execute,
+		int force_background)
+{
 	if(strncmp(program, "FUSE_MOUNT", 10) == 0
 			|| strncmp(program, "FUSE_MOUNT2", 11) == 0)
 	{
@@ -569,8 +575,20 @@ execute_file(FileView *view, int dont_execute)
 	else if(strchr(program, '%') != NULL)
 	{
 		int use_menu = 0, split = 0;
+		size_t len;
+		int background;
 		char *command = expand_macros(view, program, NULL, &use_menu, &split);
-		shellout(command, -1, 1);
+
+		len = strlen(command);
+		background = len > 1 && command[len - 1] == '&' && command[len - 2] == ' ';
+		if(background)
+			command[len - 2] = '\0';
+
+		if(background || force_background)
+			start_background_job(command);
+		else
+			shellout(command, -1);
+
 		free(command);
 	}
 	else
@@ -579,10 +597,9 @@ execute_file(FileView *view, int dont_execute)
 		char *temp = escape_filename(view->dir_entry[view->list_pos].name, 0, 0);
 
 		snprintf(buf, sizeof(buf), "%s %s", program, temp);
-		shellout(buf, -1, 1);
+		shellout(buf, -1);
 		free(temp);
 	}
-	free(program);
 }
 
 static void
@@ -708,7 +725,7 @@ handle_file(FileView *view, int dont_execute)
 	{
 		char buf[NAME_MAX];
 		snprintf(buf, sizeof(buf), "./%s", filename);
-		shellout(buf, 1, 0);
+		shellout(buf, 1);
 	}
 	else if(type == REGULAR || type == EXECUTABLE || run_link)
 	{

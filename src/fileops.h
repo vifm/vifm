@@ -42,10 +42,11 @@ void handle_file(FileView *view, int dont_execute);
 void _gnuc_noreturn use_vim_plugin(FileView *view, int argc, char **argv);
 int delete_file(FileView *view, int reg, int count, int *indexes,
 		int use_trash);
-int my_system(char *command, int detach);
+int my_system(char *command);
 void unmount_fuse(void);
-void fuse_try_mount(FileView *view, char *program);
 int system_and_wait_for_errors(char *cmd);
+void run_using_prog(FileView *view, const char *program, int dont_execute,
+		int force_background);
 int yank_files(FileView *view, int reg, int count, int *indexes);
 void yank_selected_files(FileView *view, int reg);
 int file_exec(char *command);

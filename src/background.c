@@ -318,6 +318,8 @@ start_background_job(char *cmd)
 
 	if(pid == 0)
 	{
+		extern char **environ;
+
 		int nullfd;
 		close(2);                    /* Close stderr */
 		if(dup(error_pipe[1]) == -1) /* Redirect stderr to write end of pipe. */
@@ -343,7 +345,7 @@ start_background_job(char *cmd)
 
 		setpgid(0, 0);
 
-		execvp(args[0], args);
+		execve("/bin/sh", args, environ);
 		exit(-1);
 	}
 	else
