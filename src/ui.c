@@ -546,7 +546,7 @@ change_window(void)
 		mvwaddstr(other_view->win, other_view->curr_line, 0, "*");
 		erase_current_line_bar(other_view);
 		werase(other_view->title);
-		wprintw(other_view->title, "%s", other_view->curr_dir);
+		wprintw(other_view->title, "%s", replace_home_part(other_view->curr_dir));
 		wnoutrefresh(other_view->title);
 	}
 
@@ -564,7 +564,7 @@ change_window(void)
 
 	wattron(curr_view->title, A_BOLD);
 	werase(curr_view->title);
-	wprintw(curr_view->title, "%s", curr_view->curr_dir);
+	wprintw(curr_view->title, "%s", replace_home_part(curr_view->curr_dir));
 	wnoutrefresh(curr_view->title);
 
 	wnoutrefresh(other_view->win);

@@ -629,4 +629,20 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 	*++q = '\0';
 }
 
+const char *
+replace_home_part(const char *directory)
+{
+	static char buf[PATH_MAX];
+	size_t len;
+
+	len = strlen(cfg.home_dir) - 1;
+	if(strncmp(directory, cfg.home_dir, len) == 0 &&
+			(directory[len] == '\0' || directory[len] == '/'))
+		strncat(strcpy(buf, "~"), directory + len, sizeof(buf));
+	else
+		strncpy(buf, directory, sizeof(buf));
+
+	return buf;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

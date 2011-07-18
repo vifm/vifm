@@ -792,7 +792,8 @@ add_command(char *name, char *action)
 		if(name[i] == '!' && i != len - 1)
 		{
 			show_error_msg("Invalid Command Name",
-					"Commands can contain exclamation mark only as the last character.");
+					"Command name can contain exclamation mark only as the last "
+					"character.");
 			return;
 		}
 

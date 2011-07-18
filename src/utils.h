@@ -63,6 +63,8 @@ int check_link_is_dir(const char *filename);
 void free_string_array(char **array, size_t len);
 void free_wstring_array(wchar_t **array, size_t len);
 void canonicalize_path(const char *directory, char *buf, size_t buf_size);
+/* Returns pointer to a statically allocated buffer */
+const char *replace_home_part(const char *directory);
 
 #endif
 

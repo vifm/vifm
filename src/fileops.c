@@ -54,7 +54,7 @@ static struct {
 	FileView *view;
 	int force_move;
 	int x, y;
-	const char *name;
+	char *name;
 	int overwrite_all;
 } put_confirm;
 
@@ -1334,16 +1334,17 @@ prompt_dest_name(const char *src_name)
 {
 	wchar_t buf[256];
 
-	swprintf(buf, sizeof(buf)/sizeof(buf[0]), L"New name for %s: ", src_name);
+	swprintf(buf, ARRAY_LEN(buf), L"New name for %s: ", src_name);
 	enter_prompt_mode(buf, src_name, put_confirm_cb);
 }
 
 static void
 prompt_what_to_do(const char *src_name)
 {
-	wchar_t buf[256];
+	wchar_t buf[NAME_MAX];
 
-	put_confirm.name = src_name;
+	free(put_confirm.name);
+	put_confirm.name = strdup(src_name);
 	swprintf(buf, sizeof(buf)/sizeof(buf[0]),
 			L"Name conflict for %s. [r]ename/[s]kip/[o]verwrite/overwrite [a]ll: ",
 			src_name);

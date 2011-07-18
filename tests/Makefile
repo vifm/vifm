@@ -1,4 +1,3 @@
-# маски файлов для удаления при очистке
 dirs := commands keys misc options undo
 
 .PHONY: tests $(dirs)

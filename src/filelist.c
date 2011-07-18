@@ -481,7 +481,7 @@ find_file_pos_in_list(FileView *view, const char *file)
 static void
 update_view_title(FileView *view)
 {
-	char buf[PATH_MAX];
+	const char *buf;
 	size_t len;
 
 	if(curr_stats.vifm_started != 2)
@@ -489,17 +489,12 @@ update_view_title(FileView *view)
 
 	werase(view->title);
 
-	len = strlen(cfg.home_dir) - 1;
-	if(strncmp(view->curr_dir, cfg.home_dir, len) == 0 &&
-			(view->curr_dir[len] == '\0' || view->curr_dir[len] == '/'))
-		strncat(strcpy(buf, "~"), view->curr_dir + len, sizeof(buf));
-	else
-		strncpy(buf, view->curr_dir, sizeof(buf));
+	buf = replace_home_part(view->curr_dir);
 
 	len = get_utf8_string_length(buf);
 	if(len + 1 > view->window_width && curr_view == view)
 	{ /* Truncate long directory names */
-		char *ptr;
+		const char *ptr;
 
 		ptr = buf;
 		while(len > view->window_width - 2)

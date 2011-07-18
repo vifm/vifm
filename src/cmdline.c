@@ -494,14 +494,6 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 
 	leave_cmdline_mode();
 
-	if(sub_mode == PROMPT_SUBMODE)
-	{
-		prompt_cb cb;
-
-		cb = (prompt_cb)sub_mode_ptr;
-		cb("");
-	}
-
 	if(prev_mode == VISUAL_MODE)
 		leave_visual_mode(curr_stats.save_msg);
 }
