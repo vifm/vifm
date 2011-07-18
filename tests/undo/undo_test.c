@@ -174,6 +174,29 @@ test_cannot_be_undone(void)
 	assert_int_equal(-5, undo_group());
 }
 
+static void
+test_removing_of_incomplete_groups(void)
+{
+	static int undo_levels = 10;
+	int i;
+
+	init_undo_list(&exec_dummy, &undo_levels);
+
+	cmd_group_begin("msg0");
+	for(i = 0; i < 10; i++)
+		assert_int_equal(0, add_operation("do_msg0", NULL, NULL, "undo_msg0", NULL,
+				NULL));
+	cmd_group_end();
+
+	cmd_group_begin("msg1");
+	assert_int_equal(0, add_operation("do_msg1", NULL, NULL, "undo_msg1", NULL,
+				NULL));
+	cmd_group_end();
+
+	assert_int_equal(0, undo_group());
+	assert_int_equal(-1, undo_group());
+}
+
 void
 undo_test(void)
 {
@@ -188,6 +211,7 @@ undo_test(void)
 	run_test(test_failed_operation);
 	run_test(test_disbalance);
 	run_test(test_cannot_be_undone);
+	run_test(test_removing_of_incomplete_groups);
 
 	test_fixture_end();
 }

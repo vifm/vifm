@@ -13,7 +13,7 @@ execute_dummy(const char *cmd)
 static void
 test_undolevel_change_to_smaller(void)
 {
-	static int undo_levels = 3;
+	static int undo_levels = 4;
 
 	init_undo_list(&execute_dummy, &undo_levels);
 

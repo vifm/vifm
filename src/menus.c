@@ -563,9 +563,7 @@ execute_locate_cb(FileView *view, menu_info *m)
 		if(find_file_pos_in_list(view, file) < 0)
 		{
 			if(isdir)
-			{
 				strcat(file, "/");
-			}
 
 			if(file[0] == '.')
 				set_dot_files_visible(view, 1);

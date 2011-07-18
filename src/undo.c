@@ -16,6 +16,7 @@ struct group_t {
 	int error;
 	int balance;
 	int can_undone;
+	int incomplete;
 };
 
 struct op_t {
@@ -141,6 +142,7 @@ add_operation(const char *do_cmd, const char *do_src, const char *do_dst,
 		cmd->group->error = 0;
 		cmd->group->balance = 0;
 		cmd->group->can_undone = 1;
+		cmd->group->incomplete = 0;
 	}
 	mem_error = cmd->do_op.cmd == NULL || cmd->undo_op.cmd == NULL ||
 			cmd->group == NULL || cmd->group->msg == NULL;
@@ -200,6 +202,10 @@ remove_cmd(struct cmd_t *cmd)
 		free(cmd->group->msg);
 		free(cmd->group);
 	}
+	else
+	{
+		cmd->group->incomplete = 1;
+	}
 	free(cmd->do_op.cmd);
 	free(cmd->do_op.src);
 	free(cmd->do_op.dst);
@@ -220,6 +226,9 @@ cmd_group_end(void)
 	group_opened = 0;
 	next_group++;
 	last_group = NULL;
+
+	while(cmds.next != NULL && cmds.next->group->incomplete)
+		remove_cmd(cmds.next);
 }
 
 int
