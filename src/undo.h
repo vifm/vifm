@@ -42,6 +42,7 @@ void cmd_group_end(void);
  *  -2 - there were errors
  *  -3 - undoing group is impossible
  *  -4 - skipped unbalanced operation
+ *  -5 - operation cannot be undone
  *   1 - operation was skipped due to previous errors (no command run)
  */
 int undo_group(void);

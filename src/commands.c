@@ -1580,8 +1580,14 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 						}
 					}
 
-					if(!cmd->background)
-						free(com);
+					if(cmd->background)
+						cmd_group_begin("Run external command in background using :!");
+					else
+						cmd_group_begin("Run external command in foreground using :!");
+					add_operation(com + i, NULL, NULL, "", NULL, NULL);
+					cmd_group_end();
+
+					free(com);
 				}
 				else
 				{
@@ -2061,6 +2067,8 @@ execute_user_command(FileView *view, cmd_params *cmd)
 	char *expanded_com = NULL;
 	int use_menu = 0;
 	int split = 0;
+	int result = 0;
+	int external = 1;
 
 	if(select_files_in_range(view, cmd) != 0)
 		return 0;
@@ -2083,15 +2091,10 @@ execute_user_command(FileView *view, cmd_params *cmd)
 
 	if(use_menu)
 	{
+		cmd->background = 0;
 		show_user_menu(view, expanded_com);
-
-		if(!cmd->background)
-			free(expanded_com);
-
-		return 0;
 	}
-
-	if(split)
+	else if(split)
 	{
 		if(!cfg.use_screen)
 		{
@@ -2099,12 +2102,10 @@ execute_user_command(FileView *view, cmd_params *cmd)
 			return 0;
 		}
 
+		cmd->background = 0;
 		split_screen(view, expanded_com);
-		free(expanded_com);
-		return 0;
 	}
-
-	if(strncmp(expanded_com, "filter ", 7) == 0)
+	else if(strncmp(expanded_com, "filter ", 7) == 0)
 	{
 		view->invert = 1;
 		view->filename_filter = (char *)realloc(view->filename_filter,
@@ -2113,8 +2114,8 @@ execute_user_command(FileView *view, cmd_params *cmd)
 				strlen(strchr(expanded_com, ' ')) + 1, "%s",
 				strchr(expanded_com, ' ') + 1);
 
-		load_dir_list(view, 1);
-		moveto_list_pos(view, 0);
+		load_saving_pos(view, 1);
+		external = 0;
 	}
 	else if(!strncmp(expanded_com, "!", 1))
 	{
@@ -2134,23 +2135,39 @@ execute_user_command(FileView *view, cmd_params *cmd)
 			start_background_job(tmp);
 		else if(strlen(tmp) > 0)
 			shellout(tmp, pause, 0);
+		external = 0;
 	}
 	else if(!strncmp(expanded_com, "/", 1))
 	{
-		strncpy(view->regexp, expanded_com +1, sizeof(view->regexp));
-		return find_pattern(view, view->regexp, 0);
+		strncpy(view->regexp, expanded_com + 1, sizeof(view->regexp));
+		result =  find_pattern(view, view->regexp, 0);
+		external = 0;
 	}
 	else if(cmd->background)
 	{
 		char buf[strlen(expanded_com) + 1];
-		char *tmp = strcpy(buf, expanded_com);
-		start_background_job(tmp);
+		strcpy(buf, expanded_com);
+		start_background_job(buf);
 	}
 	else
+	{
 		shellout(expanded_com, 0, 0);
+		cmd->background = 0;
+	}
 
-	if(!cmd->background)
-		free(expanded_com);
+	if(external)
+	{
+		if(cmd->background)
+			cmd_group_begin("Run external command in background using user defined "
+					"command");
+		else
+			cmd_group_begin("Run external command in foreground using user defined "
+					"command");
+		add_operation(expanded_com, NULL, NULL, "", NULL, NULL);
+		cmd_group_end();
+	}
+
+	free(expanded_com);
 
 	if(view->selected_files)
 	{

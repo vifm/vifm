@@ -15,6 +15,7 @@ struct group_t {
 	char *msg;
 	int error;
 	int balance;
+	int can_undone;
 };
 
 struct op_t {
@@ -139,6 +140,7 @@ add_operation(const char *do_cmd, const char *do_src, const char *do_dst,
 		cmd->group->msg = strdup(group_msg);
 		cmd->group->error = 0;
 		cmd->group->balance = 0;
+		cmd->group->can_undone = 1;
 	}
 	mem_error = cmd->do_op.cmd == NULL || cmd->undo_op.cmd == NULL ||
 			cmd->group == NULL || cmd->group->msg == NULL;
@@ -156,6 +158,9 @@ add_operation(const char *do_cmd, const char *do_src, const char *do_dst,
 		return -1;
 	}
 	last_group = cmd->group;
+
+	if(undo_cmd[0] == '\0')
+		cmd->group->can_undone = 0;
 
 	cmd->prev = current;
 	current->next = cmd;
@@ -220,7 +225,7 @@ cmd_group_end(void)
 int
 undo_group(void)
 {
-	int errors, disbalance;
+	int errors, disbalance, cant_undone;
 	assert(!group_opened);
 
 	if(current == &cmds)
@@ -228,7 +233,8 @@ undo_group(void)
 
 	errors = current->group->error != 0;
 	disbalance = current->group->balance != 0;
-	if(errors || disbalance || !is_undo_group_possible())
+	cant_undone = !current->group->can_undone;
+	if(errors || disbalance || cant_undone || !is_undo_group_possible())
 	{
 		do
 			current = current->prev;
@@ -237,6 +243,8 @@ undo_group(void)
 			return 1;
 		else if(disbalance)
 			return -4;
+		else if(cant_undone)
+			return -5;
 		else
 			return -3;
 	}

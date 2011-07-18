@@ -164,6 +164,16 @@ test_disbalance(void)
 	assert_int_equal(-1, redo_group());
 }
 
+static void
+test_cannot_be_undone(void)
+{
+	cmd_group_begin("msg0");
+	assert_int_equal(0, add_operation("do_msg0", NULL, NULL, "", NULL, NULL));
+	cmd_group_end();
+
+	assert_int_equal(-5, undo_group());
+}
+
 void
 undo_test(void)
 {
@@ -177,6 +187,7 @@ undo_test(void)
 	run_test(test_cmd_1undo_1redo);
 	run_test(test_failed_operation);
 	run_test(test_disbalance);
+	run_test(test_cannot_be_undone);
 
 	test_fixture_end();
 }

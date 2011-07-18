@@ -1034,6 +1034,10 @@ cmd_u(struct key_info key_info, struct keys_info *keys_info)
 	{
 		status_bar_message("Can't undo what wasn't redone");
 	}
+	else if(ret == -5)
+	{
+		status_bar_message("Operation cannot be undone");
+	}
 	else if(ret == 1)
 	{
 		status_bar_message("Undo operation was skipped due to previous errors");
