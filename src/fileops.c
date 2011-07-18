@@ -87,7 +87,7 @@ my_system(char *command, int detach)
 		args[1] = "-c";
 		args[2] = command;
 		args[3] = NULL;
-		execve("/bin/sh", args, environ);
+		execve(args[0], args, environ);
 		exit(127);
 	}
 	do
