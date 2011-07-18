@@ -647,10 +647,10 @@ All of the selected files in the other directory list.
 Same as %f %F.
 .TP
 .BI %d
-Current directory name.
+Full path to current directory.
 .TP
 .BI %D
-Other file list directory name.
+Full path to other file list directory.
 .TP
 .BI %m
 Show command output in a menu.
@@ -661,6 +661,9 @@ Execute command in screen split.
 Position and quantity (if there is any) of %m and %s macros in the
 command is unimportant.  All their occurrences will be removed from the
 resulting command.
+
+%c and %f macros are expanded to file names only, when %C and %F are expanded
+to full paths.  %f and %F follow this in %b too.
 .TP
 .BI ":com move mv %f %D"
 would set the :move command to move all of the files

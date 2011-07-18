@@ -69,16 +69,18 @@ function! s:StartVifm(editcmd)
 	let s:flist = split(s:r, "\n")
 
 	if len(s:flist) == 1
-		execute a:editcmd . ' ' . escape(s:r, ' "')
+		silent execute a:editcmd escape(s:r, ' "')
 		return
 	endif
 
-	map(s:flist, 'escape(v:val, " \"")')
+	let s:flist = map(s:flist, 'escape(v:val, " \"")')
 	if a:editcmd == 'edit'
-		silent execute 'args ' . join(s:flist)
+		silent execute 'args' join(s:flist)
+    elseif a:editcmd == 'tab drop'
+		silent execute 'tab drop' join(s:flist)
 	else
 		for s:file in s:flist
-			silent execute a:editcmd . ' ' . s:file
+			silent execute a:editcmd s:file
 		endfor
 	endif
 endfunction

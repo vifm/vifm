@@ -384,14 +384,17 @@ The command macros may be used in user commands.
   %f all of the selected files.
   %F all of the selected files in the other directory list.
   %b same as %f %F.
-  %d current directory name.
-  %D other file list directory name.
+  %d full path to current directory.
+  %D full path to other file list directory.
   %m show command output in a menu.
   %s execute command in screen split.
 
 Position and quantity (if there is any) of %m and %s macros in the
 command is unimportant.  All their occurrences will be removed from the
 resulting command.
+
+%c and %f macros are expanded to file names only, when %C and %F are expanded
+to full paths.  %f and %F follow this in %b too.
 
 :com move mv %f %D - would set the :move command to move all of the files
 selected in the current directory to the other directory.
