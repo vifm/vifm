@@ -1668,7 +1668,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 		case COM_EDIT:
 			{
 				if(cfg.vim_filter)
-					use_vim_plugin(view); /* no return */
+					use_vim_plugin(view, cmd->argc, cmd->argv); /* no return */
 				if(cmd->args != NULL)
 				{
 					char buf[PATH_MAX];

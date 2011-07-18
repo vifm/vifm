@@ -39,7 +39,7 @@ yank_t *yanked_file;
 
 void cd_updir(FileView *view);
 void handle_file(FileView *view, int dont_execute);
-void _gnuc_noreturn use_vim_plugin(FileView *view);
+void _gnuc_noreturn use_vim_plugin(FileView *view, int argc, char **argv);
 int delete_file(FileView *view, int reg, int count, int *indexes,
 		int use_trash);
 int my_system(char *command, int detach);
