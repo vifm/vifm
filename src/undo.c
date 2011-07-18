@@ -55,8 +55,7 @@ static void remove_cmd(struct cmd_t *cmd);
 static int is_undo_group_possible(void);
 static int is_redo_group_possible(void);
 static int is_op_possible(const struct op_t *op);
-static void change_filename_in_trash(struct cmd_t *cmd,
-		const char *filename);
+static void change_filename_in_trash(struct cmd_t *cmd, const char *filename);
 static char **fill_undolist_detail(char **list);
 static char **fill_undolist_nondetail(char **list);
 
@@ -92,6 +91,7 @@ cmd_group_begin(const char *msg)
 	group_opened = 1;
 
 	group_msg = msg;
+	last_group = NULL;
 }
 
 void
@@ -225,7 +225,6 @@ cmd_group_end(void)
 
 	group_opened = 0;
 	next_group++;
-	last_group = NULL;
 
 	while(cmds.next != NULL && cmds.next->group->incomplete)
 		remove_cmd(cmds.next);

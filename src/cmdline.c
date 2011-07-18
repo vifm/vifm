@@ -493,6 +493,15 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 	wnoutrefresh(status_bar);
 
 	leave_cmdline_mode();
+
+	if(sub_mode == PROMPT_SUBMODE)
+	{
+		prompt_cb cb;
+
+		cb = (prompt_cb)sub_mode_ptr;
+		cb("");
+	}
+
 	if(prev_mode == VISUAL_MODE)
 		leave_visual_mode(curr_stats.save_msg);
 }
@@ -600,25 +609,29 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 {
 	char* p;
 	int save_hist = !keys_info->mapped;
-	int i;
 
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
 	if(!input_stat.line || !input_stat.line[0])
 	{
-		leave_cmdline_mode();
+		if(sub_mode == PROMPT_SUBMODE)
+		{
+			char *p;
+			prompt_cb cb;
+
+			p = input_stat.line ? to_multibyte(input_stat.line) : NULL;
+			leave_cmdline_mode();
+			cb = (prompt_cb)sub_mode_ptr;
+			cb(p);
+			free(p);
+		}
+		else
+			leave_cmdline_mode();
 		return;
 	}
 
-	i = wcstombs(NULL, input_stat.line, 0) + 1;
-	if((p = (char *) malloc(i * sizeof(char))) == NULL)
-	{
-		leave_cmdline_mode();
-		return;
-	}
-
-	wcstombs(p, input_stat.line, i);
+	p = to_multibyte(input_stat.line);
 
 	leave_cmdline_mode();
 

@@ -267,6 +267,20 @@ to_wide(const char *s)
 	return result;
 }
 
+char *
+to_multibyte(const wchar_t *s)
+{
+	size_t len;
+	char *result;
+
+	len = wcstombs(NULL, s, 0) + 1;
+	if((result = malloc(len*sizeof(char))) == NULL)
+		return NULL;
+
+	wcstombs(result, s, len);
+	return result;
+}
+
 /* if err == 1 then use stderr and close stdin and stdout */
 void _gnuc_noreturn
 run_from_fork(int pipe[2], int err, char *cmd)

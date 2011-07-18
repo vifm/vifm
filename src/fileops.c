@@ -55,11 +55,12 @@ static struct {
 	int force_move;
 	int x, y;
 	const char *name;
+	int overwrite_all;
 } put_confirm;
 
 static void put_confirm_cb(const char *dest_name);
 static void put_decide_cb(const char *dest_name);
-static int put_files_from_register_i(FileView *view);
+static int put_files_from_register_i(FileView *view, int start);
 
 int
 my_system(char *command)
@@ -952,6 +953,9 @@ rename_file_cb(const char *new_name)
 	size_t len;
 	int tmp;
 
+	if(new_name == NULL || new_name[0] == '\0')
+		return;
+
 	len = strlen(filename);
 	snprintf(new, sizeof(new), "%s%s%s", new_name,
 			filename[len - 1] == '/' ? "/" : "", rename_file_ext);
@@ -1260,6 +1264,9 @@ change_owner_cb(const char *new_owner)
 	char undo_command[10 + 32 + PATH_MAX];
 	char *escaped;
 
+	if(new_owner == NULL || new_owner[0] == '\0')
+		return;
+
 	filename = get_current_file_name(curr_view);
 	snprintf(full, sizeof(full), "%s/%s", curr_view->curr_dir, filename);
 	escaped = escape_filename(full, 0, 0);
@@ -1286,7 +1293,7 @@ change_owner(void)
 }
 
 static void
-change_group_cb(const char *new_owner)
+change_group_cb(const char *new_group)
 {
 	char *filename;
 	char full[PATH_MAX];
@@ -1294,10 +1301,13 @@ change_group_cb(const char *new_owner)
 	char undo_command[10 + 32 + PATH_MAX];
 	char *escaped;
 
+	if(new_group == NULL || new_group[0] == '\0')
+		return;
+
 	filename = get_current_file_name(curr_view);
 	snprintf(full, sizeof(full), "%s/%s", curr_view->curr_dir, filename);
 	escaped = escape_filename(full, 0, 0);
-	snprintf(command, sizeof(command), "chown -fR :%s %s", new_owner, escaped);
+	snprintf(command, sizeof(command), "chown -fR :%s %s", new_group, escaped);
 	snprintf(undo_command, sizeof(undo_command), "chown -fR :%d %s",
 			curr_view->dir_entry[curr_view->list_pos].uid, escaped);
 	free(escaped);
@@ -1335,9 +1345,9 @@ prompt_what_to_do(const char *src_name)
 
 	put_confirm.name = src_name;
 	swprintf(buf, sizeof(buf)/sizeof(buf[0]),
-			L"Name conflict for %s. s(skip)/r(rename)/o(override)/(cancel): ",
+			L"Name conflict for %s. [r]ename/[s]kip/[o]verwrite/overwrite [a]ll: ",
 			src_name);
-	enter_prompt_mode(buf, "r", put_decide_cb);
+	enter_prompt_mode(buf, "", put_decide_cb);
 }
 
 /* Returns 0 on success */
@@ -1346,6 +1356,8 @@ put_next_file(const char *dest_name, int override)
 {
 	char *filename;
 	char *src_buf, *dst_buf, *name_buf = NULL;
+
+	override = override || put_confirm.overwrite_all;
 
 	filename = put_confirm.reg->files[put_confirm.x];
 	chosp(filename);
@@ -1434,31 +1446,43 @@ put_next_file(const char *dest_name, int override)
 static void
 put_confirm_cb(const char *dest_name)
 {
+	if(dest_name == NULL || dest_name[0] == '\0')
+		return;
+
 	if(put_next_file(dest_name, 0) == 0)
 	{
 		put_confirm.x++;
-		curr_stats.save_msg = put_files_from_register_i(put_confirm.view);
+		curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
 	}
 }
 
 static void
 put_decide_cb(const char *choice)
 {
-	if(strcmp(choice, "s") == 0)
-	{
-		put_confirm.x++;
-		curr_stats.save_msg = put_files_from_register_i(put_confirm.view);
-	}
-	else if(strcmp(choice, "r") == 0)
+	if(choice == NULL || choice[0] == '\0' || strcmp(choice, "r") == 0)
 	{
 		prompt_dest_name(put_confirm.name);
+	}
+	else if(strcmp(choice, "s") == 0)
+	{
+		put_confirm.x++;
+		curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
 	}
 	else if(strcmp(choice, "o") == 0)
 	{
 		if(put_next_file("", 1) == 0)
 		{
 			put_confirm.x++;
-			curr_stats.save_msg = put_files_from_register_i(put_confirm.view);
+			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
+		}
+	}
+	else if(strcmp(choice, "a") == 0)
+	{
+		put_confirm.overwrite_all = 1;
+		if(put_next_file("", 1) == 0)
+		{
+			put_confirm.x++;
+			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
 		}
 	}
 	else
@@ -1469,15 +1493,18 @@ put_decide_cb(const char *choice)
 
 /* Returns new value for save_msg flag. */
 static int
-put_files_from_register_i(FileView *view)
+put_files_from_register_i(FileView *view, int start)
 {
 	char buf[PATH_MAX + NAME_MAX*2 + 4];
-	int from_trash = strncmp(put_confirm.reg->files[0], cfg.trash_dir,
-			strlen(cfg.trash_dir)) == 0;
 
-	cmd_group_begin((put_confirm.force_move || from_trash) ?
-			"Move files" : "Copy files");
-	cmd_group_end();
+	if(start)
+	{
+		int from_trash = strncmp(put_confirm.reg->files[0], cfg.trash_dir,
+				strlen(cfg.trash_dir)) == 0;
+		cmd_group_begin((put_confirm.force_move || from_trash) ?
+				"Move files" : "Copy files");
+		cmd_group_end();
+	}
 
 	if(chdir(view->curr_dir) != 0)
 	{
@@ -1520,7 +1547,8 @@ put_files_from_register(FileView *view, int name, int force_move)
 	put_confirm.x = 0;
 	put_confirm.y = 0;
 	put_confirm.view = view;
-	return put_files_from_register_i(view);
+	put_confirm.overwrite_all = 0;
+	return put_files_from_register_i(view, 1);
 }
 
 void

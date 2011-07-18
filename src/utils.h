@@ -46,6 +46,7 @@ size_t get_normal_utf8_string_width(const char *string);
 size_t get_utf8_string_length(const char *string);
 size_t get_utf8_overhead(const char *string);
 wchar_t * to_wide(const char *s);
+char * to_multibyte(const wchar_t *s);
 void _gnuc_noreturn run_from_fork(int pipe[2], int err, char *cmd);
 wchar_t * my_wcsdup(const wchar_t *ws);
 char * strchar2str(const char *str);
