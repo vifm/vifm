@@ -42,7 +42,7 @@ void handle_file(FileView *view, int dont_execute);
 void _gnuc_noreturn use_vim_plugin(FileView *view);
 int delete_file(FileView *view, int reg, int count, int *indexes,
 		int use_trash);
-int my_system(char *command);
+int my_system(char *command, int detach);
 void unmount_fuse(void);
 void fuse_try_mount(FileView *view, char *program);
 int system_and_wait_for_errors(char *cmd);

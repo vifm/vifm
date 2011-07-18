@@ -525,7 +525,7 @@ execute_apropos_cb(menu_info *m)
 		snprintf(command, sizeof(command), "man %s %s", num_str,
 				man_page);
 
-		shellout(command, 0);
+		shellout(command, 0, 0);
 		free(free_this);
 	}
 	else
@@ -586,7 +586,7 @@ static void
 execute_filetype(char *cmd, int background)
 {
 	if(!background)
-		shellout(cmd, 0);
+		shellout(cmd, 0, 0);
 	else
 		start_background_job(cmd);
 }

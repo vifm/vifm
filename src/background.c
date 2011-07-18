@@ -223,7 +223,7 @@ background_and_wait_for_status(char *cmd)
 		args[0] = "sh";
 		args[1] = "-c";
 		args[2] = cmd;
-		args[3] = 0;
+		args[3] = NULL;
 		execve("/bin/sh", args, environ);
 		exit(127);
 	}

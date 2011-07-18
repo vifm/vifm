@@ -62,7 +62,7 @@ static void put_decide_cb(const char *dest_name);
 static int put_files_from_register_i(FileView *view);
 
 int
-my_system(char *command)
+my_system(char *command, int detach)
 {
 	int pid;
 	int status;
@@ -80,10 +80,13 @@ my_system(char *command)
 
 		signal(SIGINT, SIG_DFL);
 
+		if(detach)
+			setpgid(0, 0);
+
 		args[0] = "sh";
 		args[1] = "-c";
 		args[2] = command;
-		args[3] = 0;
+		args[3] = NULL;
 		execve("/bin/sh", args, environ);
 		exit(127);
 	}
@@ -120,7 +123,7 @@ unmount_fuse(void)
 		snprintf(buf, sizeof(buf), "fusermount -u %s", tmp);
 		free(tmp);
 
-		my_system(buf);
+		my_system(buf, 0);
 		if(access(runner->mount_point, F_OK) == 0)
 			rmdir(runner->mount_point);
 
@@ -276,7 +279,7 @@ view_file(const char *filename)
 	snprintf(command, sizeof(command), "%s %s", cfg.vi_command, escaped);
 	free(escaped);
 
-	shellout(command, -1);
+	shellout(command, -1, 0);
 	curs_set(0);
 }
 
@@ -567,7 +570,7 @@ execute_file(FileView *view, int dont_execute)
 	{
 		int use_menu = 0, split = 0;
 		char *command = expand_macros(view, program, NULL, &use_menu, &split);
-		shellout(command, -1);
+		shellout(command, -1, 1);
 		free(command);
 	}
 	else
@@ -576,7 +579,7 @@ execute_file(FileView *view, int dont_execute)
 		char *temp = escape_filename(view->dir_entry[view->list_pos].name, 0, 0);
 
 		snprintf(buf, sizeof(buf), "%s %s", program, temp);
-		shellout(buf, -1);
+		shellout(buf, -1, 1);
 		free(temp);
 	}
 	free(program);
@@ -705,7 +708,7 @@ handle_file(FileView *view, int dont_execute)
 	{
 		char buf[NAME_MAX];
 		snprintf(buf, sizeof(buf), "./%s", filename);
-		shellout(buf, 1);
+		shellout(buf, 1, 0);
 	}
 	else if(type == REGULAR || type == EXECUTABLE || run_link)
 	{

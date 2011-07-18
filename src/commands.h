@@ -113,7 +113,7 @@ typedef struct
 command_t *command_list;
 
 int exec_commands(char *cmd, FileView *view, int type, int save_hist);
-int shellout(char *command, int pause);
+int shellout(char *command, int pause, int detach_background);
 void add_command(char *name, char *action);
 int execute_command(FileView *view, char *action);
 char * fast_run_complete(char *cmd);
