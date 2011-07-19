@@ -14,6 +14,7 @@
 static void add_options(void);
 static void load_options(void);
 static void print_func(const char *msg, const char *description);
+static void confirm_handler(enum opt_op op, union optval_t val);
 static void fastrun_handler(enum opt_op op, union optval_t val);
 static void followlinks_handler(enum opt_op op, union optval_t val);
 static void fusehome_handler(enum opt_op op, union optval_t val);
@@ -63,6 +64,7 @@ init_option_handlers(void)
 static void
 add_options(void)
 {
+	add_option("confirm", OPT_BOOL, 0, NULL, &confirm_handler);
 	add_option("fastrun", OPT_BOOL, 0, NULL, &fastrun_handler);
 	add_option("followlinks", OPT_BOOL, 0, NULL, &followlinks_handler);
 	add_option("fusehome", OPT_STR, 0, NULL, &fusehome_handler);
@@ -87,6 +89,9 @@ static void
 load_options(void)
 {
 	union optval_t val;
+
+	val.bool_val = cfg.confirm;
+	set_option("confirm", val);
 
 	val.bool_val = cfg.fast_run;
 	set_option("fastrun", val);
@@ -165,6 +170,12 @@ print_func(const char *msg, const char *description)
 		status_bar_message(buf);
 	}
 	save_msg = 1;
+}
+
+static void
+confirm_handler(enum opt_op op, union optval_t val)
+{
+	cfg.confirm = val.bool_val;
 }
 
 static void

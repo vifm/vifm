@@ -419,6 +419,11 @@ background.
 --------------------------------------------------------------------------------
 *set-options*
 
+confirm
+type: boolean
+default: true
+Ask about permanent deletion of files (on D command or on undo/redo operation).
+
 fastrun
 type: boolean
 default: false

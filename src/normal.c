@@ -51,6 +51,7 @@ static int *mode;
 static int last_search_backward;
 static int last_fast_search_char;
 static int last_fast_search_backward = -1;
+static int rm_rf_confirmed;
 
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
@@ -365,7 +366,11 @@ cmd_ctrl_o(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
 {
-	int ret = redo_group();
+	int ret;
+
+	rm_rf_confirmed = 0;
+
+	ret = redo_group();
 	if(ret == 0)
 	{
 		load_saving_pos(&lwin, 1);
@@ -389,6 +394,10 @@ cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
 	else if(ret == -4)
 	{
 		status_bar_message("Can't redo what wasn't undone");
+	}
+	else if(ret == -6)
+	{
+		status_bar_message("Group redo skipped by user");
 	}
 	else if(ret == 1)
 	{
@@ -840,6 +849,13 @@ cmd_dd(struct key_info key_info, struct keys_info *keys_info)
 static void
 delete(struct key_info key_info, int use_trash)
 {
+	if(!use_trash && cfg.confirm)
+	{
+		if(!query_user_menu("Permanent deletion",
+				"Are you sure you want to delete files permanently?"))
+			return;
+	}
+
 #ifdef ENABLE_COMPATIBILITY_MODE
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
@@ -1009,7 +1025,11 @@ cmd_t(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_u(struct key_info key_info, struct keys_info *keys_info)
 {
-	int ret = undo_group();
+	int ret;
+
+	rm_rf_confirmed = 0;
+
+	ret = undo_group();
 	if(ret == 0)
 	{
 		load_saving_pos(&lwin, 1);
@@ -1037,6 +1057,10 @@ cmd_u(struct key_info key_info, struct keys_info *keys_info)
 	else if(ret == -5)
 	{
 		status_bar_message("Operation cannot be undone");
+	}
+	else if(ret == -6)
+	{
+		status_bar_message("Group undo skipped by user");
 	}
 	else if(ret == 1)
 	{
@@ -1188,7 +1212,7 @@ pick_files(FileView *view, int end, struct keys_info *keys_info)
 	keys_info->indexes = calloc(keys_info->count, sizeof(int));
 	if(keys_info->indexes == NULL)
 	{
-		show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -1210,7 +1234,7 @@ selector_S(struct key_info key_info, struct keys_info *keys_info)
 	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
 	if(keys_info->indexes == NULL)
 	{
-		show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -1235,7 +1259,7 @@ selector_a(struct key_info key_info, struct keys_info *keys_info)
 	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
 	if(keys_info->indexes == NULL)
 	{
-		show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -1258,7 +1282,7 @@ selector_s(struct key_info key_info, struct keys_info *keys_info)
 	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
 	if(keys_info->indexes == NULL)
 	{
-		show_error_msg(" Memory Error ", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -1268,6 +1292,19 @@ selector_s(struct key_info key_info, struct keys_info *keys_info)
 		if(curr_view->dir_entry[x].selected)
 			keys_info->indexes[i++] = x;
 	}
+}
+
+int
+undo_exec(const char *cmd)
+{
+	if(strncmp(cmd, "rm ", 3) == 0 && cfg.confirm && !rm_rf_confirmed)
+	{
+		rm_rf_confirmed = query_user_menu("Permanent deletion",
+				"Are you sure? If you want to see file names use :undolist! command");
+		if(!rm_rf_confirmed)
+			return SKIP_UNDO_REDO_OPERATION;
+	}
+	return background_and_wait_for_errors((char *)cmd);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

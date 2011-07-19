@@ -1,6 +1,11 @@
 #ifndef __UNDO_H__
 #define __UNDO_H__
 
+enum
+{
+	SKIP_UNDO_REDO_OPERATION = -8192,
+};
+
 /*
  * Won't call reset_undo_list, so this function could be called multiple
  * times.
@@ -43,6 +48,7 @@ void cmd_group_end(void);
  *  -3 - undoing group is impossible
  *  -4 - skipped unbalanced operation
  *  -5 - operation cannot be undone
+ *  -6 - operation skipped by user
  *   1 - operation was skipped due to previous errors (no command run)
  */
 int undo_group(void);
@@ -54,6 +60,7 @@ int undo_group(void);
  *  -2 - there were errors
  *  -3 - redoing group is impossible
  *  -4 - skipped unbalanced operation
+ *  -6 - operation skipped by user
  *   1 - operation was skipped due to previous errors (no command run)
  */
 int redo_group(void);

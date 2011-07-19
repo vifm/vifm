@@ -75,6 +75,7 @@ init_config(void)
 	cfg.save_location = 0;
 	cfg.follow_links = 1;
 	cfg.fast_run = 0;
+	cfg.confirm = 1;
 
 	/* Maximum argument length to pass to the shell */
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)

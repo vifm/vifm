@@ -197,6 +197,27 @@ test_removing_of_incomplete_groups(void)
 	assert_int_equal(-1, undo_group());
 }
 
+static int
+exec_skip(const char *cmd)
+{
+	return SKIP_UNDO_REDO_OPERATION;
+}
+
+static void
+test_skipping(void)
+{
+	static int undo_levels = 10;
+	init_undo_list(&exec_skip, &undo_levels);
+
+	cmd_group_begin("msg0");
+	assert_int_equal(0, add_operation("do_msg0", NULL, NULL, "undo_msg0", NULL,
+				NULL));
+	cmd_group_end();
+
+	assert_int_equal(-6, undo_group());
+	assert_int_equal(-4, redo_group());
+}
+
 void
 undo_test(void)
 {
@@ -212,6 +233,7 @@ undo_test(void)
 	run_test(test_disbalance);
 	run_test(test_cannot_be_undone);
 	run_test(test_removing_of_incomplete_groups);
+	run_test(test_skipping);
 
 	test_fixture_end();
 }

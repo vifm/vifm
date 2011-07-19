@@ -234,6 +234,7 @@ int
 undo_group(void)
 {
 	int errors, disbalance, cant_undone;
+	int skip;
 	assert(!group_opened);
 
 	if(current == &cmds)
@@ -259,16 +260,29 @@ undo_group(void)
 
 	current->group->balance--;
 
+	skip = 0;
 	do
 	{
-		if(do_func(current->undo_op.cmd) != 0)
+		if(!skip)
 		{
-			current->group->error = 1;
-			errors = 1;
+			int err = do_func(current->undo_op.cmd);
+			if(err == SKIP_UNDO_REDO_OPERATION)
+			{
+				skip = 1;
+				current->group->balance++;
+			}
+			else if(err != 0)
+			{
+				current->group->error = 1;
+				errors = 1;
+			}
 		}
 		current = current->prev;
 	}
 	while(current != &cmds && current->group == current->next->group);
+
+	if(skip)
+		return -6;
 
 	return errors ? -2 : 0;
 }
@@ -295,6 +309,7 @@ int
 redo_group(void)
 {
 	int errors, disbalance;
+	int skip;
 	assert(!group_opened);
 
 	if(current->next == NULL)
@@ -317,16 +332,29 @@ redo_group(void)
 
 	current->next->group->balance++;
 
+	skip = 0;
 	do
 	{
 		current = current->next;
-		if(do_func(current->do_op.cmd) != 0)
+		if(!skip)
 		{
-			current->group->error = 1;
-			errors = 1;
+			int err = do_func(current->do_op.cmd);
+			if(err == SKIP_UNDO_REDO_OPERATION)
+			{
+				current->next->group->balance--;
+				skip = 1;
+			}
+			else if(err != 0)
+			{
+				current->group->error = 1;
+				errors = 1;
+			}
 		}
 	}
 	while(current->next != NULL && current->group == current->next->group);
+
+	if(skip)
+		return -6;
 
 	return errors ? -2 : 0;
 }

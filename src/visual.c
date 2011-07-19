@@ -26,6 +26,7 @@
 #include "bookmarks.h"
 #include "cmdline.h"
 #include "commands.h"
+#include "config.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "keys.h"
@@ -350,6 +351,13 @@ delete(struct key_info key_info, int use_trash)
 	int save_msg;
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
+
+	if(!use_trash && cfg.confirm)
+	{
+		if(!query_user_menu("Permanent deletion",
+				"Are you sure you want to delete files permanently?"))
+			return;
+	}
 
 	save_msg = delete_file(view, key_info.reg, 0, NULL, use_trash);
 	leave_visual_mode(save_msg);

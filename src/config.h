@@ -71,6 +71,8 @@ typedef struct _Config {
 
 	int follow_links; /* Follow links on l or Enter. */
 
+	int confirm; /* Ask user about permanent deletion of files. */
+
 	int fast_run;
 } Config;
 

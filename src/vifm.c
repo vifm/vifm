@@ -41,6 +41,7 @@
 #include "log.h"
 #include "main_loop.h"
 #include "modes.h"
+#include "normal.h"
 #include "opt_handlers.h"
 #include "registers.h"
 #include "signals.h"
@@ -132,12 +133,6 @@ load_initial_directory(FileView *view, const char *dir)
 	view->list_rows = 1;
 	chosp(view->curr_dir);
 	change_directory(view, dir);
-}
-
-static int
-undo_exec(const char *cmd)
-{
-	return background_and_wait_for_errors((char *)cmd);
 }
 
 static void
