@@ -1547,6 +1547,8 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 
 				if(cmd->args)
 				{
+					char buf[COMMAND_GROUP_INFO_LEN];
+
 					int use_menu = 0;
 					int split = 0;
 					if(strchr(cmd->args, '%') != NULL)
@@ -1584,10 +1586,9 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 						}
 					}
 
-					if(cmd->background)
-						cmd_group_begin("Run external command in background using :!");
-					else
-						cmd_group_begin("Run external command in foreground using :!");
+					snprintf(buf, sizeof(buf), "Run :!%s in %s", com + i,
+							replace_home_part(view->curr_dir));
+					cmd_group_begin(buf);
 					add_operation(com + i, NULL, NULL, "", NULL, NULL);
 					cmd_group_end();
 
@@ -2160,12 +2161,12 @@ execute_user_command(FileView *view, cmd_params *cmd)
 
 	if(external)
 	{
-		if(cmd->background)
-			cmd_group_begin("Run external command in background using user defined "
-					"command");
-		else
-			cmd_group_begin("Run external command in foreground using user defined "
-					"command");
+		char buf[COMMAND_GROUP_INFO_LEN];
+
+		snprintf(buf, sizeof(buf), "Run %s in %s",
+				command_list[cmd->is_user].action, replace_home_part(view->curr_dir));
+
+		cmd_group_begin(buf);
 		add_operation(expanded_com, NULL, NULL, "", NULL, NULL);
 		cmd_group_end();
 	}

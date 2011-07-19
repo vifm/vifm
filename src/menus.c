@@ -1692,7 +1692,7 @@ show_undolist_menu(FileView *view, int with_details)
 	if(!m.len)
 	{
 		m.data = (char **)realloc(m.data, sizeof(char *) * 1);
-		m.data[0] = strdup(" Nothing to undone ");
+		m.data[0] = strdup(" Undolist is empty ");
 		m.len = 1;
 	}
 	else
