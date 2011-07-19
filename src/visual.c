@@ -182,13 +182,13 @@ leave_visual_mode(int save_msg)
 	curr_stats.save_msg = save_msg;
 	if(*mode == VISUAL_MODE)
 		*mode = NORMAL_MODE;
-
-	update_marks(view);
 }
 
 static void
 update_marks(FileView *view)
 {
+	if(start_pos >= view->list_rows)
+		start_pos = view->list_rows - 1;
 	upwards_range = view->list_pos < start_pos;
 	if(upwards_range)
 	{
@@ -211,6 +211,7 @@ cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
+	update_marks(view);
 	leave_visual_mode(0);
 }
 
