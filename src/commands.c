@@ -1586,7 +1586,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 						}
 					}
 
-					snprintf(buf, sizeof(buf), "Run :!%s in %s", com + i,
+					snprintf(buf, sizeof(buf), "!%s in %s", cmd->args,
 							replace_home_part(view->curr_dir));
 					cmd_group_begin(buf);
 					add_operation(com + i, NULL, NULL, "", NULL, NULL);
@@ -2163,8 +2163,8 @@ execute_user_command(FileView *view, cmd_params *cmd)
 	{
 		char buf[COMMAND_GROUP_INFO_LEN];
 
-		snprintf(buf, sizeof(buf), "Run %s in %s",
-				command_list[cmd->is_user].action, replace_home_part(view->curr_dir));
+		snprintf(buf, sizeof(buf), "Run %s user command in %s",
+				command_list[cmd->is_user].name, replace_home_part(view->curr_dir));
 
 		cmd_group_begin(buf);
 		add_operation(expanded_com, NULL, NULL, "", NULL, NULL);
