@@ -278,6 +278,9 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 		reset_popup_menu(saved_menu);
 		update_menu();
 	}
+
+	if(was_redraw)
+		redraw_window();
 }
 
 static void

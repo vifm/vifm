@@ -1586,8 +1586,8 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 						}
 					}
 
-					snprintf(buf, sizeof(buf), "!%s in %s", cmd->args,
-							replace_home_part(view->curr_dir));
+					snprintf(buf, sizeof(buf), "in %s: !%s",
+							replace_home_part(view->curr_dir), cmd->args);
 					cmd_group_begin(buf);
 					add_operation(com + i, NULL, NULL, "", NULL, NULL);
 					cmd_group_end();
@@ -2066,7 +2066,7 @@ skip_word(const char *cmd)
 }
 
 static int
-execute_user_command(FileView *view, cmd_params *cmd)
+execute_user_command(FileView *view, cmd_params *cmd, const char *command)
 {
 	char *expanded_com = NULL;
 	int use_menu = 0;
@@ -2163,8 +2163,8 @@ execute_user_command(FileView *view, cmd_params *cmd)
 	{
 		char buf[COMMAND_GROUP_INFO_LEN];
 
-		snprintf(buf, sizeof(buf), "Run %s user command in %s",
-				command_list[cmd->is_user].name, replace_home_part(view->curr_dir));
+		snprintf(buf, sizeof(buf), "in %s: !%s", replace_home_part(view->curr_dir),
+				command);
 
 		cmd_group_begin(buf);
 		add_operation(expanded_com, NULL, NULL, "", NULL, NULL);
@@ -2212,7 +2212,7 @@ execute_command(FileView *view, char *command)
 	if(cmd.builtin > -1)
 		result = execute_builtin_command(view, &cmd);
 	else
-		result = execute_user_command(view, &cmd);
+		result = execute_user_command(view, &cmd, command);
 
 	free(cmd.cmd_name);
 	free(cmd.args);
