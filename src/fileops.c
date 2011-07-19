@@ -930,7 +930,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 }
 
 static int
-mv_file(const char *src, const char *dst)
+mv_file(const char *src, const char *dst, int tmpfile_num)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 	char do_command[6 + PATH_MAX*2 + 1];
@@ -961,8 +961,15 @@ mv_file(const char *src, const char *dst)
 
 	result = system_and_wait_for_errors(do_command);
 	if(result == 0)
-		add_operation(do_command, full_src, full_dst, undo_command, full_dst,
-				full_src);
+	{
+		if(tmpfile_num == 0)
+			add_operation(do_command, full_src, full_dst, undo_command, full_dst,
+					full_src);
+		else if(tmpfile_num == 1)
+			add_operation(do_command, full_dst, NULL, undo_command, full_dst, NULL);
+		else if(tmpfile_num == 2)
+			add_operation(do_command, full_src, NULL, undo_command, full_src, NULL);
+	}
 	return result;
 }
 
@@ -996,7 +1003,7 @@ rename_file_cb(const char *new_name)
 	snprintf(buf, sizeof(buf), "rename in %s: %s to %s",
 			replace_home_part(curr_view->curr_dir), filename, new);
 	cmd_group_begin(buf);
-	tmp = mv_file(filename, new);
+	tmp = mv_file(filename, new, 0);
 	cmd_group_end();
 	if(tmp != 0)
 		return;
@@ -1142,6 +1149,7 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 	for(i = 0; i < count; i++)
 	{
 		const char *tmp;
+		int ind;
 
 		if(list[i][0] == '\0')
 			continue;
@@ -1150,10 +1158,10 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 		if(indexes[i] >= 0)
 			continue;
 
-		indexes[i] = -indexes[i];
+		ind = -indexes[i];
 
-		tmp = make_name_unique(view->dir_entry[indexes[i]].name);
-		if(mv_file(view->dir_entry[indexes[i]].name, tmp) != 0)
+		tmp = make_name_unique(view->dir_entry[ind].name);
+		if(mv_file(view->dir_entry[ind].name, tmp, 2) != 0)
 		{
 			cmd_group_end();
 			undo_group();
@@ -1161,18 +1169,19 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 			curr_stats.save_msg = 1;
 			return 0;
 		}
-		free(view->dir_entry[indexes[i]].name);
-		view->dir_entry[indexes[i]].name = strdup(tmp);
+		free(view->dir_entry[ind].name);
+		view->dir_entry[ind].name = strdup(tmp);
 	}
 
 	for(i = 0; i < count; i++)
 	{
 		if(list[i][0] == '\0')
 			continue;
-		if(strcmp(list[i], view->dir_entry[indexes[i]].name) == 0)
+		if(strcmp(list[i], view->dir_entry[abs(indexes[i])].name) == 0)
 			continue;
 
-		if(mv_file(view->dir_entry[indexes[i]].name, list[i]) == 0)
+		if(mv_file(view->dir_entry[abs(indexes[i])].name, list[i], indexes[i] < 0)
+				== 0)
 			renamed++;
 	}
 

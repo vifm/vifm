@@ -373,14 +373,28 @@ cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
 	ret = redo_group();
 	if(ret == 0)
 	{
-		load_saving_pos(&lwin, 1);
-		load_saving_pos(&rwin, 1);
+		if(curr_stats.view)
+		{
+			load_saving_pos(curr_view, 1);
+		}
+		else
+		{
+			load_saving_pos(&lwin, 1);
+			load_saving_pos(&rwin, 1);
+		}
 		status_bar_message("Redone one group");
 	}
 	else if(ret == -2)
 	{
-		load_saving_pos(&lwin, 1);
-		load_saving_pos(&rwin, 1);
+		if(curr_stats.view)
+		{
+			load_saving_pos(curr_view, 1);
+		}
+		else
+		{
+			load_saving_pos(&lwin, 1);
+			load_saving_pos(&rwin, 1);
+		}
 		status_bar_message("Redone one group with errors");
 	}
 	else if(ret == -1)
@@ -1032,14 +1046,28 @@ cmd_u(struct key_info key_info, struct keys_info *keys_info)
 	ret = undo_group();
 	if(ret == 0)
 	{
-		load_saving_pos(&lwin, 1);
-		load_saving_pos(&rwin, 1);
+		if(curr_stats.view)
+		{
+			load_saving_pos(curr_view, 1);
+		}
+		else
+		{
+			load_saving_pos(&lwin, 1);
+			load_saving_pos(&rwin, 1);
+		}
 		status_bar_message("Undone one group");
 	}
 	else if(ret == -2)
 	{
-		load_saving_pos(&lwin, 1);
-		load_saving_pos(&rwin, 1);
+		if(curr_stats.view)
+		{
+			load_saving_pos(curr_view, 1);
+		}
+		else
+		{
+			load_saving_pos(&lwin, 1);
+			load_saving_pos(&rwin, 1);
+		}
 		status_bar_message("Undone one group with errors");
 	}
 	else if(ret == -1)
