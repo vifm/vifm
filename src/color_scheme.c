@@ -413,6 +413,7 @@ char *
 complete_colorschemes(const char *name)
 {
 	static char *buf;
+	static int times;
 	static int last;
 
 	size_t len;
@@ -422,6 +423,7 @@ complete_colorschemes(const char *name)
 		free(buf);
 		buf = strdup(name);
 		last = -1;
+		times = 0;
 	}
 
 	len = strlen(buf);
@@ -432,7 +434,16 @@ complete_colorschemes(const char *name)
 	while(++last < cfg.color_scheme_num)
 	{
 		if(strncmp(buf, col_schemes[last].name, len) == 0)
+		{
+			times++;
 			return strdup(col_schemes[last].name);
+		}
+	}
+
+	if(times == 1)
+	{
+		times--;
+		return complete_colorschemes(name);
 	}
 	return strdup(buf);
 }
