@@ -565,6 +565,10 @@ void
 run_using_prog(FileView *view, const char *program, int dont_execute,
 		int force_background)
 {
+	int pause = strncmp(program, "!!", 2) == 0;
+	if(pause)
+		program += 2;
+
 	if(strncmp(program, "FUSE_MOUNT", 10) == 0
 			|| strncmp(program, "FUSE_MOUNT2", 11) == 0)
 	{
@@ -585,10 +589,10 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 		if(background)
 			command[len - 2] = '\0';
 
-		if(background || force_background)
+		if(!pause && (background || force_background))
 			start_background_job(command);
 		else
-			shellout(command, -1);
+			shellout(command, pause ? 1 : -1);
 
 		free(command);
 	}
@@ -598,7 +602,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 		char *temp = escape_filename(view->dir_entry[view->list_pos].name, 0, 0);
 
 		snprintf(buf, sizeof(buf), "%s %s", program, temp);
-		shellout(buf, -1);
+		shellout(buf, pause ? 1 : -1);
 		free(temp);
 	}
 }
