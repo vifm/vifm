@@ -112,8 +112,11 @@ replace_group_msg(const char *msg)
 
 	result = group_msg;
 	group_msg = (msg != NULL) ? strdup(msg) : NULL;
-	if(last_group != NULL)
-		last_group->msg = group_msg;
+	if(last_group != NULL && group_msg != NULL)
+	{
+		free(last_group->msg);
+		last_group->msg = strdup(group_msg);
+	}
 	return result;
 }
 
