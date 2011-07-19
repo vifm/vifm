@@ -2131,10 +2131,10 @@ execute_user_command(FileView *view, cmd_params *cmd)
 		while(isspace(*tmp))
 				tmp++;
 
-		if((strlen(tmp) > 0) && cmd->background)
+		if(strlen(tmp) > 0 && cmd->background)
 			start_background_job(tmp);
 		else if(strlen(tmp) > 0)
-			shellout(tmp, pause ? -1 : 0);
+			shellout(tmp, pause ? 1 : -1);
 		external = 1;
 	}
 	else if(!strncmp(expanded_com, "/", 1))
