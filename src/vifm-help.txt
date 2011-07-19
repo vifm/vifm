@@ -284,8 +284,12 @@ Selectors
        S      all files except selected.
 
 Visual Mode
-       In visual mode work almost all normal mode movement keys (except l  and
-       Enter).
+       In visual mode work almost all normal mode keys, but they do not accept
+       selectors.
+
+       Enter  save selection and go back to normal mode.
+
+       gv     restore previous visual selection.
 
        v      leave visual mode.
 

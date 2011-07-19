@@ -38,7 +38,13 @@
 
 	Added :TabVifm command in Vim plugin.
 
-	Add 'confirm' option.
+	Added 'confirm' option.
+
+	Added gv command for visual mode.
+
+	Enter key in visual mode will leave it saving selection.
+
+	Visual mode now remembers direction of the last selection.
 
 	Let builtin keys be remapped.
 

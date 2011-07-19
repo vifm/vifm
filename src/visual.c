@@ -30,6 +30,7 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "keys.h"
+#include "menus.h"
 #include "modes.h"
 #include "normal.h"
 #include "permissions_dialog.h"
@@ -42,12 +43,14 @@ static FileView *view;
 static int start_pos;
 static int last_fast_search_char;
 static int last_fast_search_backward = -1;
+static int upwards_range;
 
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_d(struct key_info, struct keys_info *);
 static void cmd_ctrl_e(struct key_info, struct keys_info *);
 static void cmd_ctrl_f(struct key_info, struct keys_info *);
+static void cmd_ctrl_m(struct key_info, struct keys_info *);
 static void cmd_ctrl_u(struct key_info, struct keys_info *);
 static void cmd_ctrl_y(struct key_info, struct keys_info *);
 static void cmd_quote(struct key_info, struct keys_info *);
@@ -68,6 +71,7 @@ static void cmd_cp(struct key_info, struct keys_info *);
 static void cmd_f(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
 static void goto_pos(int pos);
+static void cmd_gv(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
 static void cmd_y(struct key_info, struct keys_info *);
@@ -84,6 +88,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x04", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_d}}},
 	{L"\x05", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_e}}},
 	{L"\x06", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
+	{L"\x0d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{L"\x15", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
 	{L"\x19", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
 	/* escape */
@@ -106,6 +111,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"cp", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
 	{L"cw", {BUILDIN_CMD, FOLLOWED_BY_NONE, {.cmd = L":rename\r"}}},
 	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{L"gv", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gv}}},
 	{L"j", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{L"o", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
@@ -152,15 +158,8 @@ enter_visual_mode(int restore_selection)
 
 	if(restore_selection)
 	{
-		start_pos = ub;
-		view->list_pos = ub;
-
-		view->selected_files = 1;
-		view->dir_entry[view->list_pos].selected = 1;
-
-		while(view->list_pos != lb)
-			select_down_one(view, start_pos);
-		update();
+		struct key_info ki;
+		cmd_gv(ki, NULL);
 	}
 	else if(strcmp(view->dir_entry[view->list_pos].name, "../"))
 	{
@@ -171,8 +170,6 @@ enter_visual_mode(int restore_selection)
 
 	draw_dir_list(view, view->top_line);
 	moveto_list_pos(view, view->list_pos);
-
-	update_marks(view);
 }
 
 void
@@ -185,6 +182,24 @@ leave_visual_mode(int save_msg)
 	curr_stats.save_msg = save_msg;
 	if(*mode == VISUAL_MODE)
 		*mode = NORMAL_MODE;
+
+	update_marks(view);
+}
+
+static void
+update_marks(FileView *view)
+{
+	upwards_range = view->list_pos < start_pos;
+	if(upwards_range)
+	{
+		set_specmark('<', view->curr_dir, get_current_file_name(view));
+		set_specmark('>', view->curr_dir, view->dir_entry[start_pos].name);
+	}
+	else
+	{
+		set_specmark('<', view->curr_dir, view->dir_entry[start_pos].name);
+		set_specmark('>', view->curr_dir, get_current_file_name(view));
+	}
 }
 
 static void
@@ -222,6 +237,13 @@ static void
 cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	goto_pos(view->top_line + 2*view->window_rows + 1);
+}
+
+static void
+cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(*mode == VISUAL_MODE)
+		*mode = NORMAL_MODE;
 }
 
 static void
@@ -403,6 +425,35 @@ goto_pos(int pos)
 }
 
 static void
+cmd_gv(struct key_info key_info, struct keys_info *keys_info)
+{
+	int x;
+	int ub = check_mark_directory(view, '<');
+	int lb = check_mark_directory(view, '>');
+
+	for(x = 0; x < view->list_rows; x++)
+		view->dir_entry[x].selected = 0;
+
+	start_pos = ub;
+	view->list_pos = ub;
+
+	view->selected_files = 1;
+	view->dir_entry[view->list_pos].selected = 1;
+
+	while(view->list_pos != lb)
+		select_down_one(view, start_pos);
+
+	if(upwards_range)
+	{
+		int t = start_pos;
+		start_pos = view->list_pos;
+		view->list_pos = t;
+	}
+
+	update();
+}
+
+static void
 cmd_j(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
@@ -495,8 +546,6 @@ select_up_one(FileView *view, int start_pos)
 		view->dir_entry[view->list_pos +1].selected = 0;
 		view->selected_files--;
 	}
-
-	update_marks(view);
 }
 
 /* move down one position in the window, adding to the selection list */
@@ -533,23 +582,6 @@ select_down_one(FileView *view, int start_pos)
 	{
 		view->dir_entry[view->list_pos -1].selected = 0;
 		view->selected_files--;
-	}
-
-	update_marks(view);
-}
-
-static void
-update_marks(FileView *view)
-{
-	if(view->list_pos < start_pos)
-	{
-		set_specmark('<', view->curr_dir, get_current_file_name(view));
-		set_specmark('>', view->curr_dir, view->dir_entry[start_pos].name);
-	}
-	else
-	{
-		set_specmark('<', view->curr_dir, view->dir_entry[start_pos].name);
-		set_specmark('>', view->curr_dir, get_current_file_name(view));
 	}
 }
 

@@ -356,7 +356,14 @@ all files except selected.
 .\" ---------------------------------------------------------------------------
 .SH Visual Mode
 .\" ---------------------------------------------------------------------------
-In visual mode work almost all normal mode movement keys (except l and Enter).
+In visual mode work almost all normal mode keys, but they do not accept
+selectors.
+.TP
+.BI Enter
+save selection and go back to normal mode.
+.TP
+.BI gv
+restore previous visual selection.
 .TP
 .BI v
 leave visual mode.
