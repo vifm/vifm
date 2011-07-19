@@ -88,7 +88,7 @@ clean_menu_position(menu_info *m)
 	if(m->data != NULL && m->data[m->pos] != NULL)
 		snprintf(buf, x, " %s", m->data[m->pos]);
 
-	for (z = strlen(buf); z < x; z++)
+	for(z = strlen(buf); z < x; z++)
 		buf[z] = ' ';
 
 	buf[x] = ' ';
@@ -692,19 +692,16 @@ reload_command_menu_list(menu_info *m)
 
 	getmaxyx(menu_win, z, len);
 
-	for (z = 0; z < m->len; z++)
-	{
+	for(z = 0; z < m->len; z++)
 		free(m->data[z]);
-	}
 
 	m->len = cfg.command_num;
 
-	qsort(command_list, cfg.command_num, sizeof(command_t),
-			sort_this);
+	qsort(command_list, cfg.command_num, sizeof(command_t), sort_this);
 
 	x = 0;
 
-	for (i = 1; x < m->len; i++)
+	for(i = 1; x < m->len; i++)
 	{
 		m->data = (char **)realloc(m->data, sizeof(char *) * (x + 1));
 		m->data[x] = (char *)malloc(len + 2);
@@ -886,10 +883,7 @@ bookmark_khandler(struct menu_info *m, wchar_t *keys)
 		reload_bookmarks_menu_list(m);
 		draw_menu(m);
 
-		if(m->pos - 1 >= 0)
-			moveto_menu_pos(m->pos - 1, m);
-		else
-			moveto_menu_pos(0, m);
+		moveto_menu_pos(m->pos, m);
 		return 1;
 	}
 	return -1;
@@ -1044,10 +1038,7 @@ command_khandler(struct menu_info *m, wchar_t *keys)
 		reload_command_menu_list(m);
 		draw_menu(m);
 
-		if(m->pos -1 >= 0)
-			moveto_menu_pos(m->pos -1, m);
-		else
-			moveto_menu_pos(0, m);
+		moveto_menu_pos(m->pos, m);
 		return 1;
 	}
 	return -1;

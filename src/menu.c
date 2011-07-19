@@ -135,6 +135,12 @@ key_handler(wchar_t key)
 	if(menu->key_handler(menu, buf) > 0)
 		wrefresh(menu_win);
 
+	if(menu->len == 0)
+	{
+		show_error_msg("No more items in the menu", "Menu will be closed");
+		leave_menu_mode();
+	}
+
 	return 0;
 }
 
@@ -173,6 +179,14 @@ menu_redraw(void)
 {
 	was_redraw = 1;
 	redraw_menu(menu);
+
+	if(curr_stats.errmsg_shown)
+	{
+		redraw_error_msg(NULL, NULL);
+		redrawwin(error_win);
+		wnoutrefresh(error_win);
+		doupdate();
+	}
 }
 
 void
@@ -390,6 +404,12 @@ cmd_dd(struct key_info key_info, struct keys_info *keys_info)
 
 	if(menu->key_handler(menu, L"dd") > 0)
 		wrefresh(menu_win);
+
+	if(menu->len == 0)
+	{
+		show_error_msg("No more items in the menu", "Menu will be closed");
+		leave_menu_mode();
+	}
 }
 
 static void
