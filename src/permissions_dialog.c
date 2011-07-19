@@ -324,18 +324,45 @@ files_chmod(FileView *view, const char *mode, const char *inv_mode,
 	while(!view->dir_entry[i].selected && i < view->list_rows)
 		i++;
 
-	cmd_group_begin("Change permissions");
 	if(i == view->list_rows)
 	{
+		char buf[COMMAND_GROUP_INFO_LEN];
+		snprintf(buf, sizeof(buf), "chmod in %s: %s",
+				replace_home_part(view->curr_dir),
+				view->dir_entry[view->list_pos].name);
+		cmd_group_begin(buf);
 		chmod_file_in_list(view, view->list_pos, mode, inv_mode, recurse_dirs);
 	}
 	else
 	{
-		while(i < view->list_rows)
+		char buf[COMMAND_GROUP_INFO_LEN];
+		size_t len;
+		int j = i;
+		snprintf(buf, sizeof(buf), "chmod in %s: ",
+				replace_home_part(view->curr_dir));
+		len = strlen(buf);
+
+		while(i < view->list_rows && len < COMMAND_GROUP_INFO_LEN)
 		{
 			if(view->dir_entry[i].selected)
-				chmod_file_in_list(view, i, mode, inv_mode, recurse_dirs);
+			{
+				if(buf[len - 2] != ':')
+				{
+					strncat(buf, ", ", sizeof(buf));
+					buf[sizeof(buf) - 1] = '\0';
+				}
+				strncat(buf, view->dir_entry[i].name, sizeof(buf));
+				buf[sizeof(buf) - 1] = '\0';
+				len = strlen(buf);
+			}
 			i++;
+		}
+		cmd_group_begin(buf);
+		while(j < view->list_rows)
+		{
+			if(view->dir_entry[j].selected)
+				chmod_file_in_list(view, j, mode, inv_mode, recurse_dirs);
+			j++;
 		}
 	}
 	cmd_group_end();

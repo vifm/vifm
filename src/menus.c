@@ -96,7 +96,15 @@ clean_menu_position(menu_info *m)
 
 	wattron(menu_win, COLOR_PAIR(cfg.color_scheme + WIN_COLOR));
 
-	mvwaddnstr(menu_win, m->current, 1, buf, x - 2);
+	if(strlen(m->data[m->pos]) > x - 2)
+	{
+		mvwaddnstr(menu_win, m->current, 1, buf, x - 2 - 3);
+		waddstr(menu_win, "...");
+	}
+	else
+	{
+		mvwaddnstr(menu_win, m->current, 1, buf, x - 2);
+	}
 
 	wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
 
@@ -289,7 +297,7 @@ moveto_menu_pos(int pos, menu_info *m)
 	if(redraw)
 		draw_menu(m);
 
-	buf = (char *)malloc((x + 2));
+	buf = (char *)malloc(x + 2);
 	if(buf == NULL)
 		return;
 	if(m->data != NULL && m->data[pos] != NULL)
@@ -303,7 +311,15 @@ moveto_menu_pos(int pos, menu_info *m)
 
 	wattron(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
 
-	mvwaddnstr(menu_win, m->current, 1, buf, x - 2);
+	if(strlen(m->data[pos]) > x - 2)
+	{
+		mvwaddnstr(menu_win, m->current, 1, buf, x - 2 - 3);
+		waddstr(menu_win, "...");
+	}
+	else
+	{
+		mvwaddnstr(menu_win, m->current, 1, buf, x - 2);
+	}
 
 	wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
 
@@ -739,12 +755,20 @@ draw_menu(menu_info *m)
 	{
 		char *ptr = NULL;
 		chomp(m->data[x]);
-		if ((ptr = strchr(m->data[x], '\n')) || (ptr = strchr(m->data[x], '\r')))
+		if((ptr = strchr(m->data[x], '\n')) || (ptr = strchr(m->data[x], '\r')))
 			*ptr = '\0';
-		mvwaddnstr(menu_win, i, 2, m->data[x], len - 4);
+		if(strlen(m->data[x]) > len - 4)
+		{
+			mvwaddnstr(menu_win, i, 2, m->data[x], len - 3 - 4);
+			waddstr(menu_win, "...");
+		}
+		else
+		{
+			mvwaddnstr(menu_win, i, 2, m->data[x], len - 4);
+		}
 		x++;
 
-		if(i +3 > y)
+		if(i + 3 > y)
 			break;
 	}
 }
@@ -1675,7 +1699,7 @@ show_undolist_menu(FileView *view, int with_details)
 	{
 		size_t len;
 
-		m.data[m.len] = strdup("[ List end ]");
+		m.data[m.len] = strdup("list end");
 		m.len++;
 
 		len = (m.data[m.pos] != NULL) ? strlen(m.data[m.pos]) : 0;

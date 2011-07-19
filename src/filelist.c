@@ -17,7 +17,7 @@
  */
 
 #if(defined(BSD) && (BSD>=199103))
-	#include<sys/types.h> /* required for regex.h on FreeBSD 4.2 */
+	#include <sys/types.h> /* required for regex.h on FreeBSD 4.2 */
 #endif
 
 #include <curses.h>
@@ -1341,9 +1341,7 @@ load_dir_list(FileView *view, int reload)
 	if(view->dir_entry)
 	{
 		for(x = 0; x < old_list; x++)
-		{
 			free(view->dir_entry[x].name);
-		}
 
 		free(view->dir_entry);
 		view->dir_entry = NULL;

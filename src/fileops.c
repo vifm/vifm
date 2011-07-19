@@ -807,6 +807,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	char buf[8 + PATH_MAX*2];
 	char undo_buf[8 + PATH_MAX*2];
 	int x, y;
+	size_t len;
 
 	if(cfg.use_trash && use_trash &&
 			path_starts_with(view->curr_dir, cfg.trash_dir))
@@ -835,9 +836,25 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		clear_register(reg);
 
 	if(cfg.use_trash && use_trash)
-		cmd_group_begin("Move files to Trash");
+		snprintf(buf, sizeof(buf), "delete in %s: ",
+				replace_home_part(view->curr_dir));
 	else
-		cmd_group_begin("Delete files");
+		snprintf(buf, sizeof(buf), "Delete in %s: ",
+				replace_home_part(view->curr_dir));
+	len = strlen(buf);
+
+	for(x = 0; x < view->selected_files && len < COMMAND_GROUP_INFO_LEN; x++)
+	{
+		if(buf[len - 2] != ':')
+		{
+			strncat(buf, ", ", sizeof(buf));
+			buf[sizeof(buf) - 1] = '\0';
+		}
+		strncat(buf, view->selected_filelist[x], sizeof(buf));
+		buf[sizeof(buf) - 1] = '\0';
+		len = strlen(buf);
+	}
+	cmd_group_begin(buf);
 
 	y = 0;
 	if(chdir(curr_view->curr_dir) != 0)
@@ -953,6 +970,7 @@ static void
 rename_file_cb(const char *new_name)
 {
 	char *filename = get_current_file_name(curr_view);
+	char buf[10 + NAME_MAX + 1];
 	char new[NAME_MAX + 1];
 	size_t len;
 	int tmp;
@@ -975,7 +993,9 @@ rename_file_cb(const char *new_name)
 		return;
 	}
 
-	cmd_group_begin("Single file rename");
+	snprintf(buf, sizeof(buf), "rename in %s: %s to %s",
+			replace_home_part(curr_view->curr_dir), filename, new);
+	cmd_group_begin(buf);
 	tmp = mv_file(filename, new);
 	cmd_group_end();
 	if(tmp != 0)
@@ -1096,9 +1116,28 @@ make_name_unique(const char *filename)
 static int
 perform_renaming(FileView *view, int *indexes, int count, char **list)
 {
+	char buf[10 + NAME_MAX + 1];
+	size_t len;
 	int i;
 	int renamed = 0;
-	cmd_group_begin("Multiple files rename");
+
+	snprintf(buf, sizeof(buf), "rename in %s: ",
+			replace_home_part(view->curr_dir));
+	len = strlen(buf);
+
+	for(i = 0; i < count && len < COMMAND_GROUP_INFO_LEN; i++)
+	{
+		if(buf[len - 2] != ':')
+		{
+			strncat(buf, ", ", sizeof(buf));
+			buf[sizeof(buf) - 1] = '\0';
+		}
+		len = strlen(buf);
+		len += snprintf(buf + len, sizeof(buf) - len, "%s to %s",
+				view->dir_entry[abs(indexes[i])].name, list[i]);
+	}
+
+	cmd_group_begin(buf);
 
 	for(i = 0; i < count; i++)
 	{
@@ -1263,6 +1302,7 @@ static void
 change_owner_cb(const char *new_owner)
 {
 	char *filename;
+	char buf[8 + NAME_MAX + 1];
 	char full[PATH_MAX];
 	char command[10 + 32 + PATH_MAX];
 	char undo_command[10 + 32 + PATH_MAX];
@@ -1282,7 +1322,9 @@ change_owner_cb(const char *new_owner)
 	if(system_and_wait_for_errors(command) != 0)
 		return;
 
-	cmd_group_begin("Change owner");
+	snprintf(buf, sizeof(buf), "chown in %s: %s",
+			replace_home_part(curr_view->curr_dir), filename);
+	cmd_group_begin(buf);
 	add_operation(command, full, NULL, undo_command, full, NULL);
 	cmd_group_end();
 
@@ -1300,6 +1342,7 @@ static void
 change_group_cb(const char *new_group)
 {
 	char *filename;
+	char buf[8 + NAME_MAX + 1];
 	char full[PATH_MAX];
 	char command[10 + 32 + PATH_MAX];
 	char undo_command[10 + 32 + PATH_MAX];
@@ -1319,7 +1362,9 @@ change_group_cb(const char *new_group)
 	if(system_and_wait_for_errors(command) != 0)
 		return;
 
-	cmd_group_begin("Change group");
+	snprintf(buf, sizeof(buf), "chgrp in %s: %s",
+			replace_home_part(curr_view->curr_dir), filename);
+	cmd_group_begin(buf);
 	add_operation(command, full, NULL, undo_command, full, NULL);
 	cmd_group_end();
 
@@ -1423,11 +1468,22 @@ put_next_file(const char *dest_name, int override)
 				put_confirm.reg->num_files);
 		if(background_and_wait_for_errors(do_buf) == 0)
 		{
+			char *msg;
+			size_t len;
 			char dst_full[PATH_MAX];
 
 			snprintf(dst_full, sizeof(dst_full), "%s/%s", put_confirm.view->curr_dir,
 					p);
 			cmd_group_continue();
+
+			msg = replace_group_msg(NULL);
+			len = strlen(msg);
+			msg = realloc(msg, COMMAND_GROUP_INFO_LEN);
+			
+			snprintf(msg + len, COMMAND_GROUP_INFO_LEN - len, "%s%s",
+					(msg[len - 2] != ':') ? ", " : "", p);
+			replace_group_msg(msg);
+
 			if(move)
 				add_operation(do_buf, filename, dst_full, undo_buf, dst_full, filename);
 			else
@@ -1506,8 +1562,10 @@ put_files_from_register_i(FileView *view, int start)
 	{
 		int from_trash = strncmp(put_confirm.reg->files[0], cfg.trash_dir,
 				strlen(cfg.trash_dir)) == 0;
-		cmd_group_begin((put_confirm.force_move || from_trash) ?
-				"Move files" : "Copy files");
+		snprintf(buf, sizeof(buf), "%s in %s: ",
+				(put_confirm.force_move || from_trash) ?  "Put" : "put",
+				replace_home_part(view->curr_dir));
+		cmd_group_begin(buf);
 		cmd_group_end();
 	}
 
@@ -1587,7 +1645,10 @@ clone_file(FileView* view)
 
 	if(background_and_wait_for_errors(do_cmd) == 0)
 	{
-		cmd_group_begin("Clone file");
+		char buf[9 + NAME_MAX + 1];
+		snprintf(buf, sizeof(buf), "clone in %s: %s",
+				replace_home_part(view->curr_dir), clone_name);
+		cmd_group_begin(buf);
 		add_operation(do_cmd, filename, clone_name, undo_cmd, clone_name, NULL);
 		cmd_group_end();
 

@@ -3,6 +3,8 @@
 
 enum
 {
+	COMMAND_GROUP_INFO_LEN = 320,
+
 	SKIP_UNDO_REDO_OPERATION = -8192,
 };
 
@@ -28,6 +30,12 @@ void cmd_group_begin(const char *msg);
  * Reopens last command group
  */
 void cmd_group_continue(void);
+
+/*
+ * Replaces group message
+ * Returns previous value
+ */
+char * replace_group_msg(const char *msg);
 
 /*
  * Returns 0 on success

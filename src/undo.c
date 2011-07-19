@@ -47,7 +47,7 @@ static size_t trash_dir_len;
 static int group_opened;
 static long long next_group;
 static struct group_t *last_group;
-static const char *group_msg;
+static char *group_msg;
 
 static int command_count;
 
@@ -90,7 +90,8 @@ cmd_group_begin(const char *msg)
 
 	group_opened = 1;
 
-	group_msg = msg;
+	free(group_msg);
+	group_msg = strdup(msg);
 	last_group = NULL;
 }
 
@@ -102,6 +103,18 @@ cmd_group_continue(void)
 
 	group_opened = 1;
 	next_group--;
+}
+
+char *
+replace_group_msg(const char *msg)
+{
+	char *result;
+
+	result = group_msg;
+	group_msg = (msg != NULL) ? strdup(msg) : NULL;
+	if(last_group != NULL)
+		last_group->msg = group_msg;
+	return result;
 }
 
 int

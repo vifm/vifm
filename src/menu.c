@@ -210,7 +210,7 @@ leave_menu_mode(void)
 	reset_popup_menu(menu);
 	*mode = NORMAL_MODE;
 	if(was_redraw)
-		curr_stats.need_redraw = 1;
+		redraw_window();
 }
 
 static void

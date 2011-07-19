@@ -350,6 +350,7 @@ cmd_comma(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_colon(struct key_info key_info, struct keys_info *keys_info)
 {
+	update_marks(view);
 	enter_cmdline_mode(CMD_SUBMODE, L"'<,'>", NULL);
 }
 
