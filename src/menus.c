@@ -1674,7 +1674,7 @@ show_undolist_menu(FileView *view, int with_details)
 	else
 	{
 		m.data[m.pos] = realloc(m.data[m.pos], strlen(m.data[m.pos]) + 1 + 1);
-		memmove(m.data[m.pos] + 1, m.data[m.pos], strlen(m.data[m.pos]));
+		memmove(m.data[m.pos] + 1, m.data[m.pos], strlen(m.data[m.pos]) + 1);
 		m.data[m.pos][0] = '*';
 
 		m.data[m.len] = strdup(" [ List end ]");

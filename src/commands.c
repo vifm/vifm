@@ -1616,7 +1616,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			comm_cd(view, cmd);
 			break;
 		case COM_CMAP:
-			save_msg = do_map(cmd, "Command Line", "cmap", CMDLINE_MODE);
+			do_map(cmd, "Command Line", "cmap", CMDLINE_MODE);
 			break;
 		case COM_COLORSCHEME:
 		{
@@ -1822,21 +1822,19 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 		case COM_MAP:
 			if(cmd->args != NULL && cmd->args[0] == '!')
 			{
-				save_msg = do_map(cmd, "", "map", CMDLINE_MODE);
+				do_map(cmd, "", "map", CMDLINE_MODE);
 			}
 			else
 			{
-				save_msg = do_map(cmd, "", "map", NORMAL_MODE);
-				if(save_msg == 0)
-					save_msg = do_map(cmd, "", "map", VISUAL_MODE);
+				if(do_map(cmd, "", "map", NORMAL_MODE) == 0)
+					do_map(cmd, "", "map", VISUAL_MODE);
 			}
-			break;
 			break;
 		case COM_MARKS:
 			show_bookmarks_menu(view);
 			break;
 		case COM_NMAP:
-			save_msg = do_map(cmd, "Normal", "nmap", NORMAL_MODE);
+			do_map(cmd, "Normal", "nmap", NORMAL_MODE);
 			break;
 		case COM_NOHLSEARCH:
 			{
@@ -1960,7 +1958,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			save_msg = yank_files(view, DEFAULT_REG_NAME, 0, NULL);
 			break;
 		case COM_VMAP:
-			save_msg = do_map(cmd, "Visual", "vmap", VISUAL_MODE);
+			do_map(cmd, "Visual", "vmap", VISUAL_MODE);
 			break;
 		case COM_WRITE:
 			{
