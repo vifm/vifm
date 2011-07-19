@@ -915,8 +915,12 @@ split_screen(FileView *view, char *command)
 int
 shellout(char *command, int pause)
 {
+	size_t len = strlen(command);
 	char buf[cfg.max_args];
 	int result;
+
+	if(pause > 0 && len > 1 && command[len - 1] == '&')
+		pause = -1;
 
 	if(command != NULL)
 	{
