@@ -2163,7 +2163,7 @@ execute_user_command(FileView *view, cmd_params *cmd, const char *command)
 	{
 		char buf[COMMAND_GROUP_INFO_LEN];
 
-		snprintf(buf, sizeof(buf), "in %s: !%s", replace_home_part(view->curr_dir),
+		snprintf(buf, sizeof(buf), "in %s: %s", replace_home_part(view->curr_dir),
 				command);
 
 		cmd_group_begin(buf);
