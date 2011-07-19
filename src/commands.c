@@ -1750,6 +1750,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 					{
 						args = cmd->argv[0];
 					}
+					set_view_filter(view, args, invert);
 				}
 				else if(args[0] == '\0' && !invert)
 				{
