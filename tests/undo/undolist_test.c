@@ -143,6 +143,25 @@ test_nondetail_smaller_limit(void)
 	free(list);
 }
 
+static void
+test_pos(void)
+{
+	assert_int_equal(0, get_undolist_pos(0));
+	assert_int_equal(0, undo_group());
+	assert_int_equal(1, get_undolist_pos(0));
+	assert_int_equal(0, undo_group());
+	assert_int_equal(2, get_undolist_pos(0));
+	assert_int_equal(0, undo_group());
+	assert_int_equal(3, get_undolist_pos(0));
+	assert_int_equal(-1, undo_group());
+	assert_int_equal(3, get_undolist_pos(0));
+	assert_int_equal(-1, undo_group());
+	assert_int_equal(3, get_undolist_pos(0));
+	assert_int_equal(-1, undo_group());
+	assert_int_equal(3, get_undolist_pos(0));
+	assert_int_equal(-1, undo_group());
+}
+
 void
 undolist_test(void)
 {
@@ -154,6 +173,8 @@ undolist_test(void)
 	run_test(test_nondetail);
 	run_test(test_nondetail_after_reset);
 	run_test(test_nondetail_smaller_limit);
+
+	run_test(test_pos);
 
 	test_fixture_end();
 }

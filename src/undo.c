@@ -549,6 +549,8 @@ get_undolist_pos(int detail)
 
 	assert(!group_opened);
 
+	if(cur == &cmds)
+		result_group++;
 	while(cur != current)
 	{
 		if(cur->group != cur->prev->group)
@@ -556,8 +558,6 @@ get_undolist_pos(int detail)
 		result_cmd += 2;
 		cur = cur->prev;
 	}
-	if(cur == &cmds)
-		result_group++;
 	return detail ? (result_group + result_cmd) : result_group;
 }
 
