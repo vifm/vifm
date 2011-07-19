@@ -36,6 +36,7 @@
 
 #include "../config.h"
 
+#include "bookmarks.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "config.h"
@@ -495,7 +496,10 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 	leave_cmdline_mode();
 
 	if(prev_mode == VISUAL_MODE)
+	{
 		leave_visual_mode(curr_stats.save_msg);
+		moveto_list_pos(curr_view, check_mark_directory(curr_view, '<'));
+	}
 }
 
 static void
