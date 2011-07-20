@@ -287,7 +287,7 @@ def_handler(wchar_t key)
 	if(key != L'\r' && !iswprint(key))
 		return 0;
 
-	p = realloc(input_stat.line, (input_stat.len+2) * sizeof(wchar_t));
+	p = realloc(input_stat.line, (input_stat.len + 2) * sizeof(wchar_t));
 	if(p == NULL)
 	{
 		leave_cmdline_mode();
@@ -303,10 +303,9 @@ def_handler(wchar_t key)
 	wcsins(input_stat.line, buf, input_stat.index);
 	input_stat.len++;
 
-	if((input_stat.len + 1) % getmaxx(status_bar) == 0)
-		update_cmdline_size();
-
 	input_stat.curs_pos += wcwidth(key);
+
+	update_cmdline_size();
 	update_cmdline_text();
 
 	return 0;
@@ -316,7 +315,12 @@ static void
 update_cmdline_size(void)
 {
 	int d;
-	d = (input_stat.prompt_wid + input_stat.len + 1 + line_width - 1)/line_width;
+	int cursor_at_the_end;
+
+	cursor_at_the_end = ((input_stat.prompt_wid + input_stat.len) ==
+			input_stat.curs_pos);
+	d = (input_stat.prompt_wid + input_stat.len + cursor_at_the_end + line_width -
+			1)/line_width;
 	mvwin(status_bar, getmaxy(stdscr) - d, 0);
 	wresize(status_bar, d, line_width);
 
@@ -330,8 +334,11 @@ update_cmdline_text(void)
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	if(input_stat.line != NULL)
-		mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
-	wmove(status_bar, 0, input_stat.curs_pos);
+		mvwaddwstr(status_bar, input_stat.prompt_wid/line_width,
+				input_stat.prompt_wid%line_width, input_stat.line);
+	wmove(status_bar, input_stat.curs_pos/line_width,
+			input_stat.curs_pos%line_width);
+	wrefresh(status_bar);
 }
 
 /* Insert a string into another string
@@ -437,7 +444,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 	input_stat.history_search = 0;
 	input_stat.line_buf = NULL;
 
-	wcsncpy(input_stat.prompt, prompt, sizeof(input_stat.prompt)/sizeof(wchar_t));
+	wcsncpy(input_stat.prompt, prompt, ARRAY_LEN(input_stat.prompt));
 	input_stat.prompt_wid = input_stat.curs_pos = wcslen(input_stat.prompt);
 
 	if(input_stat.len != 0)
@@ -542,7 +549,7 @@ cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 		input_stat.len--;
 
 		input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index]);
-		wcsdel(input_stat.line, input_stat.index+1, 1);
+		wcsdel(input_stat.line, input_stat.index + 1, 1);
 
 		werase(status_bar);
 		mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
@@ -746,7 +753,8 @@ cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
 
-	wmove(status_bar, 0, input_stat.curs_pos);
+	wmove(status_bar, input_stat.curs_pos/line_width,
+			input_stat.curs_pos%line_width);
 }
 
 static void
@@ -769,14 +777,16 @@ cmd_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	waddwstr(status_bar, input_stat.line);
-	wmove(status_bar, 0, input_stat.curs_pos);
+	wmove(status_bar, input_stat.curs_pos/line_width,
+			input_stat.curs_pos%line_width);
 }
 
 static void
 cmd_meta_b(struct key_info key_info, struct keys_info *keys_info)
 {
 	find_prev_word();
-	wmove(status_bar, 0, input_stat.curs_pos);
+	wmove(status_bar, input_stat.curs_pos/line_width,
+			input_stat.curs_pos%line_width);
 }
 
 static void
@@ -816,14 +826,16 @@ cmd_meta_d(struct key_info key_info, struct keys_info *keys_info)
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	waddwstr(status_bar, input_stat.line);
-	wmove(status_bar, 0, input_stat.curs_pos);
+	wmove(status_bar, input_stat.curs_pos/line_width,
+			input_stat.curs_pos%line_width);
 }
 
 static void
 cmd_meta_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	find_next_word();
-	wmove(status_bar, 0, input_stat.curs_pos);
+	wmove(status_bar, input_stat.curs_pos/line_width,
+			input_stat.curs_pos%line_width);
 }
 
 static void
@@ -878,7 +890,8 @@ cmd_home(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.index = 0;
 	input_stat.curs_pos = wcslen(input_stat.prompt);
-	wmove(status_bar, 0, input_stat.curs_pos);
+	wmove(status_bar, input_stat.curs_pos/line_width,
+			input_stat.curs_pos%line_width);
 }
 
 static void
@@ -1070,8 +1083,8 @@ static void
 update_cmdline(void)
 {
 	int d;
-	input_stat.curs_pos = input_stat.prompt_wid
-			+ wcswidth(input_stat.line, input_stat.len);
+	input_stat.curs_pos = input_stat.prompt_wid +
+			wcswidth(input_stat.line, input_stat.len);
 	input_stat.index = input_stat.len;
 
 	d = (input_stat.prompt_wid + input_stat.len + 1 + line_width - 1)/line_width;
@@ -1259,7 +1272,8 @@ insert_completed_command(struct line_stats *stat, const char *complete_command)
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, stat->prompt);
 	mvwaddwstr(status_bar, 0, stat->prompt_wid, stat->line);
-	wmove(status_bar, 0, stat->curs_pos);
+	wmove(status_bar, input_stat.curs_pos/line_width,
+			input_stat.curs_pos%line_width);
 
 	return 0;
 }
@@ -1561,7 +1575,8 @@ static void redraw_status_bar(struct line_stats *stat)
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, stat->prompt);
 	mvwaddwstr(status_bar, 0, stat->prompt_wid, stat->line);
-	wmove(status_bar, 0, stat->curs_pos);
+	wmove(status_bar, input_stat.curs_pos/line_width,
+			input_stat.curs_pos%line_width);
 }
 
 static size_t

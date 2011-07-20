@@ -71,6 +71,7 @@ modes_pre(void)
 {
 	if(mode == CMDLINE_MODE)
 	{
+		touchwin(status_bar);
 		wrefresh(status_bar);
 		return;
 	}
@@ -126,9 +127,14 @@ modes_post(void)
 	}
 
 	if(curr_stats.show_full)
+	{
 		show_full_file_properties(curr_view);
+	}
 	else if(curr_view->list_rows > 0)
+	{
 		update_stat_window(curr_view);
+		update_pos_window(curr_view);
+	}
 
 	if(curr_stats.save_msg)
 		;

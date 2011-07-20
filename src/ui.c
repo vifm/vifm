@@ -147,7 +147,6 @@ update_stat_window(FileView *view)
 	mvwaddstr(stat_win, 0, cur_x, id_buf);
 
 	wnoutrefresh(stat_win);
-	update_pos_window(view);
 }
 
 /*
@@ -486,6 +485,7 @@ redraw_window(void)
 	}
 
 	update_stat_window(curr_view);
+	update_pos_window(curr_view);
 
 	if(curr_view->selected_files)
 	{
