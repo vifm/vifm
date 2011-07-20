@@ -86,7 +86,7 @@ static int *mode;
 static int prev_mode;
 static enum CmdLineSubModes sub_mode;
 static struct line_stats input_stat;
-static int line_width;
+static int line_width = 1;
 static void *sub_mode_ptr;
 static char **paths;
 static int paths_count;
