@@ -59,7 +59,7 @@ main_loop(void)
 	wtimeout(status_bar, KEYPRESS_TIMEOUT);
 
 	update_stat_window(curr_view);
-	update_pos_window(view);
+	update_pos_window(curr_view);
 
 	if(curr_view->selected_files)
 	{
