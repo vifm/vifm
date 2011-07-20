@@ -499,7 +499,7 @@ Commands
 
        :wq    exit vifm after writing config.
 
-       :x     will exit Vifm (add ! if you don't want to save changes).
+       :x[it] will exit Vifm (add ! if you don't want to save changes).
 
 
        :map lhs rhs
@@ -801,4 +801,4 @@ AUTHOR
 
 
 
-                                 Jule 19, 2011                         vifm(1)
+                                 Jule 20, 2011                         vifm(1)

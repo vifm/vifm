@@ -136,7 +136,8 @@ const struct rescmd_info reserved_cmds[] = {
 	{ .name = "w",           .alias = 1, .id = COM_WRITE       },
 	{ .name = "wq",          .alias = 0, .id = COM_WQ          },
 	{ .name = "write",       .alias = 0, .id = COM_WRITE       },
-	{ .name = "x",           .alias = 0, .id = COM_X           },
+	{ .name = "x",           .alias = 0, .id = COM_XIT         },
+	{ .name = "xit",         .alias = 0, .id = COM_XIT         },
 	{ .name = "y",           .alias = 1, .id = COM_YANK        },
 	{ .name = "yank",        .alias = 0, .id = COM_YANK        },
 };
@@ -1882,7 +1883,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 			status_bar_message(view->curr_dir);
 			save_msg = 1;
 			break;
-		case COM_X:
+		case COM_XIT:
 		case COM_QUIT:
 			if(cmd->args && cmd->args[0] == '!')
 				curr_stats.setting_change = 0;

@@ -1,4 +1,4 @@
-0.6.2 to current
+0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).
 
@@ -216,6 +216,8 @@
 	Fixed recursion in user mappings.
 
 	Fixed opening files containing spaces in their names using Vim plugin.
+
+	Fixed command line size when initial message doesn't fit in one line.
 
 0.6.1 to 0.6.2
 

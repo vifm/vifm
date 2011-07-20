@@ -2705,7 +2705,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=vifm
- VERSION=0.6.2
+ VERSION=0.6.3
 
 
 cat >>confdefs.h <<_ACEOF

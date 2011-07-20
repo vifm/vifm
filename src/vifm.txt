@@ -351,7 +351,7 @@ Add ' &' in the end of command if you want to start program in background.
 :w[rite] - will write config (add ! to force write even if settings weren't
 	changed).
 :wq - will exit vifm after writing config.
-:x - exit vifm (add ! if you don't want to save changes).
+:x[it] - exit vifm (add ! if you don't want to save changes).
 
 :map lhs rhs - map lhs key sequence to rhs in normal and visual modes.
 :map! lhs rhs - map lhs key sequence to rhs in command line mode.
@@ -709,6 +709,7 @@ The following command names are reserved and cannot be used for user commands.
   wq - will exit vifm after writing config.
   write - write config (add ! to force write even if settings weren't changed).
   x - exit vifm.
+  xit - exit vifm.
   y - yank file.
   yank - yank file.
 
