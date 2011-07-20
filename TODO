@@ -21,6 +21,7 @@ Basic things that need to be done.
     Backgrounding of vicmd (& at the end).
     Perform operations using system calls, not programs.  This is much faster
         and will ease porting on Windows (less dependencies on Cygwin).
+	:restore command to restore files from Trash
 
 Documentation.
 	Better documentation.

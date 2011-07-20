@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <string.h>
@@ -79,11 +81,12 @@ void
 append_to_register(int key, char *file)
 {
 	registers_t *reg;
+	struct stat st;
 
 	if((reg = find_register(key)) == NULL)
 		return;
 
-	if(access(file, F_OK))
+	if(lstat(file, &st) != 0)
 		return;
 
 	if(check_for_duplicate_file_names(reg, file))

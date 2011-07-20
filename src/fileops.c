@@ -1415,6 +1415,7 @@ put_next_file(const char *dest_name, int override)
 {
 	char *filename;
 	char *src_buf, *dst_buf, *name_buf = NULL;
+	struct stat st;
 
 	override = override || put_confirm.overwrite_all;
 
@@ -1422,7 +1423,7 @@ put_next_file(const char *dest_name, int override)
 	chosp(filename);
 	src_buf = escape_filename(filename, 0, 0);
 	dst_buf = escape_filename(put_confirm.view->curr_dir, 0, 0);
-	if(access(filename, F_OK) == 0 && src_buf != NULL && dst_buf != NULL)
+	if(lstat(filename, &st) == 0 && src_buf != NULL && dst_buf != NULL)
 	{
 		char do_buf[PATH_MAX + NAME_MAX*2 + 4];
 		char undo_buf[PATH_MAX + NAME_MAX*2 + 4];

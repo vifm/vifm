@@ -1,3 +1,5 @@
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <assert.h>
@@ -402,9 +404,11 @@ is_redo_group_possible(void)
 static int
 is_op_possible(const struct op_t *op)
 {
-	if(op->src != NULL && access(op->src, F_OK) != 0)
+	struct stat st;
+
+	if(op->src != NULL && lstat(op->src, &st) != 0)
 		return 0;
-	if(op->dst != NULL && access(op->dst, F_OK) == 0)
+	if(op->dst != NULL && lstat(op->dst, &st) == 0)
 	{
 		if(strncmp(op->dst, cfg.trash_dir, trash_dir_len) == 0)
 			return -1;
