@@ -267,11 +267,17 @@ file_exec(char *command)
 	return pid;
 }
 
-static void
+void
 view_file(const char *filename)
 {
 	char command[PATH_MAX + 5] = "";
 	char *escaped;
+
+	if(access(filename, F_OK) != 0)
+	{
+		show_error_msg("Broken Link", "Link destination doesn't exist");
+		return;
+	}
 
 	escaped = escape_filename(filename, 0, 0);
 	snprintf(command, sizeof(command), "%s %s", cfg.vi_command, escaped);
@@ -548,6 +554,12 @@ execute_file(FileView *view, int dont_execute)
 {
 	char *program;
 
+	if(access(view->dir_entry[view->list_pos].name, F_OK) != 0)
+	{
+		show_error_msg("Broken Link", "Link destination doesn't exist");
+		return;
+	}
+
 	/* Check for a filetype */
 	/* vi is set as the default for any extension without a program */
 	if((program = get_default_program_for_file(
@@ -568,6 +580,12 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 	int pause = strncmp(program, "!!", 2) == 0;
 	if(pause)
 		program += 2;
+
+	if(access(view->dir_entry[view->list_pos].name, F_OK) != 0)
+	{
+		show_error_msg("Broken Link", "Link destination doesn't exist");
+		return;
+	}
 
 	if(strncmp(program, "FUSE_MOUNT", 10) == 0
 			|| strncmp(program, "FUSE_MOUNT2", 11) == 0)

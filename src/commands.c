@@ -1690,16 +1690,7 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 				}
 				if(!view->selected_files || !view->dir_entry[view->list_pos].selected)
 				{
-					char buf[PATH_MAX];
-					if(view->dir_entry[view->list_pos].name != NULL)
-					{
-						char *escaped =
-								escape_filename(view->dir_entry[view->list_pos].name, 0, 0);
-						snprintf(buf, sizeof(buf), "%s %s/%s", cfg.vi_command,
-								view->curr_dir, escaped);
-						free(escaped);
-						shellout(buf, -1);
-					}
+					view_file(get_current_file_name(view));
 				}
 				else
 				{
