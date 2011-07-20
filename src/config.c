@@ -76,6 +76,12 @@ init_config(void)
 	cfg.follow_links = 1;
 	cfg.fast_run = 0;
 	cfg.confirm = 1;
+	cfg.vi_command = strdup("vim");
+	cfg.use_trash = 1;
+	cfg.fuse_home = strdup("/tmp/vifm_FUSE");
+	cfg.use_screen = 0;
+	cfg.history_len = 15;
+	cfg.use_vim_help = 0;
 
 	/* Maximum argument length to pass to the shell */
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)
@@ -112,18 +118,6 @@ create_startup_file(void)
 	file_exec(command);
 }
 
-static void
-load_view_defaults(FileView *view)
-{
-	strncpy(view->regexp, "\\..~$", sizeof(view->regexp) - 1);
-
-	view->filename_filter = strdup("");
-	view->prev_filter = strdup("");
-	view->invert = TRUE;
-
-	view->sort_type = SORT_BY_NAME;
-}
-
 /* This is just a safety check so that vifm will still load and run if
  * the configuration file is not present.
  */
@@ -131,15 +125,6 @@ static void
 load_default_configuration(void)
 {
 	cfg.using_default_config = 1;
-	cfg.use_trash = 1;
-	cfg.vi_command = strdup("vim");
-	cfg.fuse_home = strdup("/tmp/vifm_FUSE");
-	cfg.use_screen = 0;
-	cfg.history_len = 15;
-	cfg.use_vim_help = 0;
-
-	load_view_defaults(&lwin);
-	load_view_defaults(&rwin);
 
 	read_color_scheme_file();
 }
@@ -185,6 +170,18 @@ set_config_dir(void)
 	}
 }
 
+static void
+load_view_defaults(FileView *view)
+{
+	strncpy(view->regexp, "\\..~$", sizeof(view->regexp) - 1);
+
+	view->filename_filter = strdup("");
+	view->prev_filter = strdup("");
+	view->invert = TRUE;
+
+	view->sort_type = SORT_BY_NAME;
+}
+
 /* Returns zero when default configuration is used */
 int
 read_config_file(void)
@@ -201,6 +198,9 @@ read_config_file(void)
 	int args;
 
 	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
+
+	load_view_defaults(&lwin);
+	load_view_defaults(&rwin);
 
 	if((fp = fopen(config_file, "r")) == NULL)
 	{
