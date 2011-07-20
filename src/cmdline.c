@@ -329,7 +329,8 @@ update_cmdline_text(void)
 {
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
+	if(input_stat.line != NULL)
+		mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
 	wmove(status_bar, 0, input_stat.curs_pos);
 }
 
@@ -455,13 +456,10 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 	}
 
 	curs_set(1);
-	wresize(status_bar, 1, getmaxx(stdscr));
-	werase(status_bar);
 
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	if(input_stat.line != NULL)
-		waddwstr(status_bar, input_stat.line);
-	wrefresh(status_bar);
+	update_cmdline_size();
+	update_cmdline_text();
+
 	curr_stats.save_msg = 1;
 }
 
