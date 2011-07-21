@@ -847,11 +847,14 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		get_all_selected_files(view);
 	}
 
-	/* A - Z  append to register otherwise replace */
-	if(reg >= 'A' && reg <= 'Z')
-		reg += 'a' - 'A';
-	else
-		clear_register(reg);
+	if(cfg.use_trash && use_trash)
+	{
+		/* A - Z  append to register otherwise replace */
+		if(reg >= 'A' && reg <= 'Z')
+			reg += 'a' - 'A';
+		else
+			clear_register(reg);
+	}
 
 	if(cfg.use_trash && use_trash)
 		snprintf(buf, sizeof(buf), "delete in %s: ",
@@ -919,10 +922,14 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		if(background_and_wait_for_errors(buf) == 0)
 		{
 			if(cfg.use_trash && use_trash)
+			{
 				add_operation(buf, full_buf, dest, undo_buf, dest, full_buf);
+				append_to_register(reg, dest);
+			}
 			else
+			{
 				add_operation(buf, full_buf, NULL, undo_buf, NULL, NULL);
-			append_to_register(reg, dest);
+			}
 			y++;
 		}
 		free(dest);
