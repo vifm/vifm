@@ -18,6 +18,7 @@ vifm_SOURCES = \
 	cmdline.c cmdline.h \
 	color_scheme.c colorscheme.h \
 	commands.c commands.h \
+	completion.c completion.h \
 	config.c config.h \
 	crc32.c crc32.h \
 	dir_stack.c dir_stack.h \
