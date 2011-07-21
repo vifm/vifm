@@ -7,13 +7,15 @@
 
 	Corrected size units to be like in *nix utilities (KB = 1000, K = 1024...)
 
-	Fixed bug with name conflink of files and directories in the Trash.
+	Fixed bug with name conflict of files and directories in the Trash.
 
-	Fixed bug with broken symlinks in the Trash.
+	Fixed bug with broken symbolic links in the Trash.
 
 	Fixed bug with stat_win in the menus.
 
 	Fixed D<selector> when 'confirm' enabled.
+
+	Fixed '< and '> after Enter key in visual mode.
 
 0.6.2 to 0.6.3
 

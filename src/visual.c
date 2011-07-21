@@ -243,6 +243,7 @@ cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 {
+	update_marks(view);
 	if(*mode == VISUAL_MODE)
 		*mode = NORMAL_MODE;
 }
