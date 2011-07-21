@@ -11,6 +11,8 @@
 
 	Fix bug with stat_win in the menus.
 
+	Fix D<selector> when 'confirm' enabled.
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).

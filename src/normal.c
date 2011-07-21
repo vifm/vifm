@@ -897,6 +897,13 @@ delete(struct key_info key_info, int use_trash)
 static void
 cmd_D_selector(struct key_info key_info, struct keys_info *keys_info)
 {
+	if(cfg.confirm)
+	{
+		if(!query_user_menu("Permanent deletion",
+				"Are you sure you want to delete files permanently?"))
+			return;
+	}
+
 	delete_with_selector(key_info, keys_info, 0);
 }
 
