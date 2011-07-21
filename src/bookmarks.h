@@ -66,3 +66,4 @@ int check_mark_directory(FileView *view, char mark);
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

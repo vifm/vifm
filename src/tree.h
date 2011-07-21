@@ -30,3 +30,4 @@ int tree_get_data(tree_t tree, const char *path, unsigned long long *data);
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

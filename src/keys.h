@@ -188,3 +188,4 @@ struct key_t* add_selector(const wchar_t *keys, int mode);
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set cinoptions+=t0 : */

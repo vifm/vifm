@@ -359,3 +359,4 @@ wrap_handler(enum opt_op op, union optval_t val)
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

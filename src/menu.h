@@ -32,3 +32,4 @@ void execute_menu_command(char *command, menu_info *ptr);
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

@@ -63,3 +63,4 @@
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
 
 #endif
+/* vim: set cinoptions+=t0 : */
