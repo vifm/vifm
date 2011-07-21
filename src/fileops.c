@@ -809,12 +809,16 @@ progress_msg(const char *text, int ready, int total)
 static char *
 gen_trash_name(const char *name)
 {
+	struct stat st;
 	char buf[PATH_MAX];
 	int i = 0;
 
 	do
+	{
 		snprintf(buf, sizeof(buf), "%s/%03d_%s", cfg.trash_dir, i++, name);
-	while(access(buf, F_OK) == 0);
+		chosp(buf);
+	}
+	while(lstat(buf, &st) == 0);
 	return strdup(buf);
 }
 
