@@ -9,6 +9,8 @@
 
 	Update more items on ga and gA.
 
+	Changed file size format.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

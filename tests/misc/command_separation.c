@@ -8,19 +8,19 @@ test_pipe(void)
 	const char *buf;
 
 	buf = "filter /a|b/";
-	assert_int_equal(0, line_pos(buf, buf));
-	assert_int_equal(0, line_pos(buf, buf + 1));
-	assert_int_equal(2, line_pos(buf, buf + 9));
+	assert_int_equal(0, line_pos(buf, buf, ' '));
+	assert_int_equal(0, line_pos(buf, buf + 1, ' '));
+	assert_int_equal(2, line_pos(buf, buf + 9, ' '));
 
 	buf = "filter 'a|b'";
-	assert_int_equal(0, line_pos(buf, buf));
-	assert_int_equal(0, line_pos(buf, buf + 1));
-	assert_int_equal(2, line_pos(buf, buf + 9));
+	assert_int_equal(0, line_pos(buf, buf, ' '));
+	assert_int_equal(0, line_pos(buf, buf + 1, ' '));
+	assert_int_equal(2, line_pos(buf, buf + 9, ' '));
 
 	buf = "filter \"a|b\"";
-	assert_int_equal(0, line_pos(buf, buf));
-	assert_int_equal(0, line_pos(buf, buf + 1));
-	assert_int_equal(2, line_pos(buf, buf + 9));
+	assert_int_equal(0, line_pos(buf, buf, ' '));
+	assert_int_equal(0, line_pos(buf, buf + 1, ' '));
+	assert_int_equal(2, line_pos(buf, buf + 9, ' '));
 }
 
 static void
@@ -28,9 +28,9 @@ test_two_commands(void)
 {
 	const char buf[] = "apropos|locate";
 
-	assert_int_equal(0, line_pos(buf, buf));
-	assert_int_equal(0, line_pos(buf, buf + 1));
-	assert_int_equal(0, line_pos(buf, buf + 7));
+	assert_int_equal(0, line_pos(buf, buf, ' '));
+	assert_int_equal(0, line_pos(buf, buf + 1, ' '));
+	assert_int_equal(0, line_pos(buf, buf + 7, ' '));
 }
 
 static void
@@ -39,14 +39,14 @@ test_set_command(void)
 	const char *buf;
 
 	buf = "set fusehome=\"a|b\"";
-	assert_int_equal(0, line_pos(buf, buf));
-	assert_int_equal(0, line_pos(buf, buf + 1));
-	assert_int_equal(2, line_pos(buf, buf + 16));
+	assert_int_equal(0, line_pos(buf, buf, ' '));
+	assert_int_equal(0, line_pos(buf, buf + 1, ' '));
+	assert_int_equal(2, line_pos(buf, buf + 16, ' '));
 
 	buf = "set fusehome='a|b'";
-	assert_int_equal(0, line_pos(buf, buf));
-	assert_int_equal(0, line_pos(buf, buf + 1));
-	assert_int_equal(2, line_pos(buf, buf + 16));
+	assert_int_equal(0, line_pos(buf, buf, ' '));
+	assert_int_equal(0, line_pos(buf, buf + 1, ' '));
+	assert_int_equal(2, line_pos(buf, buf + 16, ' '));
 }
 
 static void
@@ -55,9 +55,25 @@ test_skip(void)
 	const char *buf;
 
 	buf = "set fusehome=a\\|b";
-	assert_int_equal(0, line_pos(buf, buf));
-	assert_int_equal(0, line_pos(buf, buf + 1));
-	assert_int_equal(1, line_pos(buf, buf + 15));
+	assert_int_equal(0, line_pos(buf, buf, ' '));
+	assert_int_equal(0, line_pos(buf, buf + 1, ' '));
+	assert_int_equal(1, line_pos(buf, buf + 15, ' '));
+}
+
+static void
+test_custom_separator(void)
+{
+	const char *buf;
+
+	buf = "s/a|b\\/c/d|e/g|";
+	assert_int_equal(0, line_pos(buf, buf, '/'));
+	assert_int_equal(0, line_pos(buf, buf + 1, '/'));
+	assert_int_equal(2, line_pos(buf, buf + 2, '/'));
+	assert_int_equal(2, line_pos(buf, buf + 3, '/'));
+	assert_int_equal(2, line_pos(buf, buf + 4, '/'));
+	assert_int_equal(1, line_pos(buf, buf + 6, '/'));
+	assert_int_equal(2, line_pos(buf, buf + 10, '/'));
+	assert_int_equal(0, line_pos(buf, buf + 14, '/'));
 }
 
 void
@@ -69,6 +85,7 @@ test_command_separation(void)
 	run_test(test_two_commands);
 	run_test(test_set_command);
 	run_test(test_skip);
+	run_test(test_custom_separator);
 
 	test_fixture_end();
 }

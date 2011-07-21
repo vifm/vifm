@@ -536,7 +536,17 @@ friendly_size_notation(unsigned long long num, int str_size, char *str)
 		d /= 1024.0;
 		u++;
 	}
-	snprintf(str, str_size, "%.1f %s", d, units[u]);
+	if(u == 0)
+	{
+		snprintf(str, str_size, "%.0f %s", d, units[u]);
+	}
+	else
+	{
+		if(d > 9)
+			snprintf(str, str_size, "%.0f %s", d, units[u]);
+		else
+			snprintf(str, str_size, "%.1f %s", d, units[u]);
+	}
 }
 
 int
