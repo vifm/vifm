@@ -35,6 +35,7 @@
 #include "cmdline.h"
 #include "color_scheme.h"
 #include "commands.h"
+#include "completion.h"
 #include "config.h"
 #include "dir_stack.h"
 #include "filelist.h"
@@ -340,32 +341,20 @@ skip_aliases(int pos_b)
  * Returned string should be freed in caller.
  */
 char *
-command_completion(char *str, int users_only)
+command_completion(char *cmdstring, int users_only)
 {
-	static char *cmdstring;
-	static char *string;
-	static size_t len;
-	static int offset;
-
-	int pos_b_saved = 0, pos_u_saved = 0;
+	char *str;
 	int pos_b, pos_u;
-	int i;
+	size_t len;
 
-	if(str != NULL)
-	{
-		free(cmdstring);
-		cmdstring = strdup(str);
-		string = strrchr(cmdstring, ' ');
-		if(string == NULL)
-			string = cmdstring;
-		else
-			string++;
+	if(cmdstring == NULL)
+		return next_completion();
 
-		len = strlen(string);
-		offset = 0;
-	}
+	str = strrchr(cmdstring, ' ');
+	if(str == NULL)
+		str = cmdstring;
 	else
-		offset++;
+		str++;
 
 	if(users_only)
 	{
@@ -373,72 +362,45 @@ command_completion(char *str, int users_only)
 	}
 	else
 	{
-		pos_b = (string[0] == '\0') ? 0 : get_buildin_id(string);
+		pos_b = (str[0] == '\0') ? 0 : get_buildin_id(str);
 		if(pos_b != -1)
 			pos_b = skip_aliases(pos_b);
 	}
-	pos_u = is_user_command(string);
+	pos_u = is_user_command(str);
 
-	i = 0;
-	while(i < offset && (pos_b != -1 || pos_u != -1))
+	len = strlen(str);
+	while(pos_b != -1 || pos_u != -1)
 	{
-		pos_b_saved = pos_b;
-		pos_u_saved = pos_u;
+		char *completion;
 
-		i++;
-		if(pos_b != -1 && pos_u != -1)
+		if(pos_u == -1 || (pos_b >= 0 &&
+				strcmp(reserved_cmds[pos_b].name, command_list[pos_u].name) < 0))
 		{
-			if(strcmp(reserved_cmds[pos_b].name, command_list[pos_u].name) < 0)
-				pos_b = skip_aliases(pos_b + 1);
-			else
-				pos_u++;
+			completion = add_prefixes(cmdstring, reserved_cmds[pos_b].name);
+			pos_b = skip_aliases(pos_b + 1);
 		}
 		else
 		{
-			if(pos_b != -1)
-				pos_b = skip_aliases(pos_b + 1);
-			else
-				pos_u++;
+			completion = add_prefixes(cmdstring, command_list[pos_u].name);
+			pos_u++;
 		}
+		add_completion(completion);
+		free(completion);
 
 		if(pos_b == RESERVED)
 			pos_b = -1;
-		else if(pos_b >= 0 && strncmp(reserved_cmds[pos_b].name, string, len) != 0)
+		else if(pos_b >= 0 && strncmp(reserved_cmds[pos_b].name, str, len) != 0)
 			pos_b = -1;
 
 		if(pos_u == cfg.command_num)
 			pos_u = -1;
-		else if(pos_u >= 0 && strncmp(command_list[pos_u].name, string, len) != 0)
+		else if(pos_u >= 0 && strncmp(command_list[pos_u].name, str, len) != 0)
 			pos_u = -1;
 	}
 
-	if(pos_b == -1 && pos_u == -1)
-	{
-		if(offset == 1)
-		{
-			offset = -1;
-			if(pos_b_saved != -1)
-				return add_prefixes(cmdstring, reserved_cmds[pos_b_saved].name);
-			else
-				return add_prefixes(cmdstring, command_list[pos_u_saved].name);
-		}
-		offset = -1;
-		return strdup(cmdstring);
-	}
-	else if(pos_b != -1 && pos_u != -1)
-	{
-		if(strcmp(reserved_cmds[pos_b].name, command_list[pos_u].name) < 0)
-			return add_prefixes(cmdstring, reserved_cmds[pos_b].name);
-		else
-			return add_prefixes(cmdstring, command_list[pos_u].name);
-	}
-	else
-	{
-		if(pos_b != -1)
-			return add_prefixes(cmdstring, reserved_cmds[pos_b].name);
-		else
-			return add_prefixes(cmdstring, command_list[pos_u].name);
-	}
+	completion_group_end();
+	add_completion(cmdstring);
+	return next_completion();
 }
 
 static void
