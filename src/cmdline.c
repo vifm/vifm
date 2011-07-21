@@ -324,8 +324,11 @@ update_cmdline_size(void)
 	mvwin(status_bar, getmaxy(stdscr) - d, 0);
 	wresize(status_bar, d, line_width);
 
-	mvwin(stat_win, getmaxy(stdscr) - d - 1, 0);
-	wrefresh(stat_win);
+	if(prev_mode != MENU_MODE)
+	{
+		mvwin(stat_win, getmaxy(stdscr) - d - 1, 0);
+		wrefresh(stat_win);
+	}
 }
 
 static void

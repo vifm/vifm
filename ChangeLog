@@ -5,6 +5,12 @@
 	Handle multi line output of :set command (for example,
 	":set confirm? fastrun?").
 
+	Fix bug with name conflink of files and directories in the Trash.
+
+	Fix bug with broken symlinks in the Trash.
+
+	Fix bug with stat_win in the menus.
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).
