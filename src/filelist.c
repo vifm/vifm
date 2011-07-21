@@ -1707,4 +1707,18 @@ change_sort_type(FileView *view, char type, char descending)
 	set_option("sortorder", val);
 }
 
+/* TODO maybe remove this
+int
+are_panes_in_one_dir(void)
+{
+	char ldir[PATH_MAX];
+	char rdir[PATH_MAX];
+	if(realpath(lwin.curr_dir, ldir) != ldir)
+		return 0;
+	if(realpath(rwin.curr_dir, rdir) != rdir)
+		return 0;
+	return strcmp(ldir, rdir) == 0;
+}
+*/
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

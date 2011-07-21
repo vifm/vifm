@@ -7,6 +7,8 @@
 
 	Corrected size units to be like in *nix utilities (KB = 1000, K = 1024...)
 
+	Update more items on ga and gA.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

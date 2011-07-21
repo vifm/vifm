@@ -608,7 +608,10 @@ cmd_gA(struct key_info key_info, struct keys_info *keys_info)
 
 	calc_dirsize(curr_view->dir_entry[curr_view->list_pos].name, 1);
 
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	if(strcmp(get_current_file_name(curr_view), "../") == 0)
+		load_saving_pos(curr_view, 0);
+	else
+		moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
 static void
@@ -622,7 +625,9 @@ cmd_ga(struct key_info key_info, struct keys_info *keys_info)
 
 	calc_dirsize(curr_view->dir_entry[curr_view->list_pos].name, 0);
 
+	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
+	draw_dir_list(other_view, other_view->top_line);
 }
 
 /* Jump to top of the list or to specified line. */
