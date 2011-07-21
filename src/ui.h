@@ -125,10 +125,11 @@ WINDOW *rborder;
 
 void is_term_working(void);
 int setup_ncurses_interface(void);
-void status_bar_message(const char *message);
 void update_stat_window(FileView *view);
 void redraw_window(void);
 void update_pos_window(FileView *view);
+void status_bar_message(const char *message);
+int is_status_bar_multiline(void);
 void clean_status_bar(void);
 void change_window(void);
 void update_all_windows(void);

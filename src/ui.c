@@ -46,6 +46,8 @@
 #include "ui.h"
 #include "utils.h"
 
+static int status_bar_lines;
+
 static void _gnuc_noreturn
 finish(const char *message)
 {
@@ -161,12 +163,49 @@ status_bar_message(const char *message)
 		return;
 
 	if(message != NULL)
+	{
 		snprintf(msg, sizeof(msg), "%s", message);
+		status_bar_lines = 1;
+		message--;
+		while((message = strchr(message + 1, '\n')) != NULL)
+			status_bar_lines++;
+		if(status_bar_lines > 1)
+		{
+			strncat(msg, "\nPress ENTER or type command to continue", sizeof(msg));
+			status_bar_lines++;
+		}
+	}
 
 	werase(status_bar);
+	mvwin(stat_win, getmaxy(stdscr) - status_bar_lines - 1, 0);
+	mvwin(status_bar, getmaxy(stdscr) - status_bar_lines, 0);
+	wresize(status_bar, status_bar_lines, getmaxx(stdscr));
 	wmove(status_bar, 0, 0);
 	wprintw(status_bar, "%s", msg);
 	wnoutrefresh(status_bar);
+}
+
+int
+is_status_bar_multiline(void)
+{
+	return status_bar_lines > 1;
+}
+
+void
+clean_status_bar(void)
+{
+	werase(status_bar);
+	mvwin(stat_win, getmaxy(stdscr) - 2, 0);
+	mvwin(status_bar, getmaxy(stdscr) - 1, 0);
+	wresize(status_bar, 1, getmaxx(stdscr) - 19);
+	wnoutrefresh(status_bar);
+
+	if(status_bar_lines > 1)
+	{
+		status_bar_lines = 1;
+		redraw_window();
+	}
+	status_bar_lines = 1;
 }
 
 int
@@ -377,12 +416,12 @@ resize_window(void)
 	wclear(rwin.title);
 	wclear(rwin.win);
 	wclear(stat_win);
-	wclear(status_bar);
 	wclear(pos_win);
 	wclear(input_win);
 	wclear(rborder);
 	wclear(mborder);
 	wclear(lborder);
+	wclear(status_bar);
 
 	wresize(stdscr, screen_y, screen_x);
 	wresize(menu_win, screen_y - 1, screen_x);
@@ -485,7 +524,6 @@ redraw_window(void)
 	}
 
 	update_stat_window(curr_view);
-	update_pos_window(curr_view);
 
 	if(curr_view->selected_files)
 	{
@@ -498,7 +536,8 @@ redraw_window(void)
 	else
 		clean_status_bar();
 
-	update_pos_window(curr_view);
+	if(!is_status_bar_multiline())
+		update_pos_window(curr_view);
 
 	update_all_windows();
 
@@ -514,13 +553,6 @@ redraw_window(void)
 		wnoutrefresh(error_win);
 		doupdate();
 	}
-}
-
-void
-clean_status_bar()
-{
-	werase(status_bar);
-	wnoutrefresh(status_bar);
 }
 
 static void
@@ -601,10 +633,10 @@ update_all_windows(void)
 {
 	touchwin(lborder);
 	touchwin(stat_win);
-	touchwin(status_bar);
 	touchwin(pos_win);
 	touchwin(input_win);
 	touchwin(rborder);
+	touchwin(status_bar);
 
 	/*
 	 * redrawwin() shouldn't be needed.  But without it there is a
@@ -613,10 +645,10 @@ update_all_windows(void)
 
 	redrawwin(lborder);
 	redrawwin(stat_win);
-	redrawwin(status_bar);
 	redrawwin(pos_win);
 	redrawwin(input_win);
 	redrawwin(rborder);
+	redrawwin(status_bar);
 
 	/* In One window view */
 	if(curr_stats.number_of_windows == 1)
@@ -636,10 +668,10 @@ update_all_windows(void)
 
 	wnoutrefresh(lborder);
 	wnoutrefresh(stat_win);
-	wnoutrefresh(status_bar);
 	wnoutrefresh(pos_win);
 	wnoutrefresh(input_win);
 	wnoutrefresh(rborder);
+	wnoutrefresh(status_bar);
 
 	if(!curr_stats.errmsg_shown && curr_stats.vifm_started == 2)
 		doupdate();

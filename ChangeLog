@@ -1,3 +1,7 @@
+0.6.3 to current
+
+	Now spaces between option name and '?' or '!' are allowed in :set command.
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).

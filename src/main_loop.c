@@ -53,6 +53,7 @@ main_loop(void)
 	wchar_t buf[128];
 	int pos = 0;
 	int last_result = 0;
+	int wait_enter = 0;
 
 	wattroff(curr_view->win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR));
 
@@ -95,6 +96,14 @@ main_loop(void)
 				endwin();
 				kill(0, SIGSTOP);
 				continue;
+			}
+
+			if(wait_enter)
+			{
+				clean_status_bar();
+				wait_enter = 0;
+				if(c == L'\x0d')
+					continue;
 			}
 
 			buf[pos++] = c;
@@ -143,6 +152,9 @@ main_loop(void)
 		clear_input_bar();
 		pos = 0;
 		buf[0] = L'\0';
+
+		if(is_status_bar_multiline())
+			wait_enter = 1;
 
 		modes_post();
 	}

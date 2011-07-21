@@ -133,7 +133,8 @@ modes_post(void)
 	else if(curr_view->list_rows > 0)
 	{
 		update_stat_window(curr_view);
-		update_pos_window(curr_view);
+		if(!is_status_bar_multiline())
+			update_pos_window(curr_view);
 	}
 
 	if(curr_stats.save_msg)
