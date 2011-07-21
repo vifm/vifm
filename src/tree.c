@@ -41,6 +41,7 @@ tree_create(void)
 
 	tree = malloc(sizeof(*tree));
 	tree->child = NULL;
+	tree->valid = 0;
 	return tree;
 }
 

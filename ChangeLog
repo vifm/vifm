@@ -19,6 +19,8 @@
 
 	Fixed '< and '> after Enter key in visual mode.
 
+	Fixed ga and gA bug with root directory size.
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).

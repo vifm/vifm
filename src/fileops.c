@@ -1729,10 +1729,10 @@ calc_dirsize(const char *path, int force_update)
 				dir_size = calc_dirsize(buf, force_update);
 			size += dir_size;
 		}
-		else if(dentry->d_type != DT_LNK)
+		else
 		{
 			struct stat st;
-			if(stat(buf, &st) == 0)
+			if(lstat(buf, &st) == 0)
 				size += st.st_size;
 		}
 	}
