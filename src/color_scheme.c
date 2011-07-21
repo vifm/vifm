@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "color_scheme.h"
+#include "completion.h"
 #include "config.h"
 #include "macros.h"
 #include "menus.h"
@@ -409,43 +410,21 @@ check_directory_for_color_scheme(const char *dir)
 	return max_index*MAXNUM_COLOR;
 }
 
-char *
+void
 complete_colorschemes(const char *name)
 {
-	static char *buf;
-	static int times;
-	static int last;
-
 	size_t len;
+	int i;
 
-	if(name != NULL)
+	len = strlen(name);
+
+	for(i = 0; i < cfg.color_scheme_num; i++)
 	{
-		free(buf);
-		buf = strdup(name);
-		last = -1;
-		times = 0;
+		if(strncmp(name, col_schemes[i].name, len) == 0)
+			add_completion(col_schemes[i].name);
 	}
-
-	len = strlen(buf);
-
-	if(last == cfg.color_scheme_num)
-		last = -1;
-
-	while(++last < cfg.color_scheme_num)
-	{
-		if(strncmp(buf, col_schemes[last].name, len) == 0)
-		{
-			times++;
-			return strdup(col_schemes[last].name);
-		}
-	}
-
-	if(times == 1)
-	{
-		times--;
-		return complete_colorschemes(name);
-	}
-	return strdup(buf);
+	completion_group_end();
+	add_completion(name);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

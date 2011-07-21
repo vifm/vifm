@@ -54,7 +54,7 @@ extern Col_scheme *col_schemes;
 void read_color_scheme_file(void);
 int check_directory_for_color_scheme(const char *);
 int find_color_scheme(const char *name);
-char * complete_colorschemes(const char *name);
+void complete_colorschemes(const char *name);
 
 #endif
 

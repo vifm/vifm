@@ -39,6 +39,7 @@
 #include "bookmarks.h"
 #include "color_scheme.h"
 #include "commands.h"
+#include "completion.h"
 #include "config.h"
 #include "filelist.h"
 #include "keys.h"
@@ -59,17 +60,17 @@
 
 struct line_stats
 {
-	wchar_t *line;         /* the line reading */
-	int index;             /* index of the current character */
-	int curs_pos;          /* position of the cursor */
-	int len;               /* length of the string */
-	int cmd_pos;           /* position in the history */
-	wchar_t prompt[320];   /* prompt */
-	int prompt_wid;        /* width of prompt */
-	int complete_continue; /* if non-zero, continue the previous completion */
-	int history_search;    /* 0 - none, 1 - <c-n>/<c-p>, 2 - <down>/<up> */
-	int hist_search_len;   /* length of history search pattern */
-	wchar_t *line_buf;     /* content of line before using history */
+	wchar_t *line;            /* the line reading */
+	int index;                /* index of the current character */
+	int curs_pos;             /* position of the cursor */
+	int len;                  /* length of the string */
+	int cmd_pos;              /* position in the history */
+	wchar_t prompt[NAME_MAX]; /* prompt */
+	int prompt_wid;           /* width of prompt */
+	int complete_continue;    /* if non-zero, continue the previous completion */
+	int history_search;       /* 0 - none, 1 - <c-n>/<c-p>, 2 - <down>/<up> */
+	int hist_search_len;      /* length of history search pattern */
+	wchar_t *line_buf;        /* content of line before using history */
 };
 
 #endif
@@ -275,14 +276,16 @@ def_handler(wchar_t key)
 
 	input_stat.history_search = 0;
 
-	if(input_stat.complete_continue == 1
+	if(input_stat.complete_continue
 			&& input_stat.line[input_stat.index - 1] == L'/' && key == '/')
 	{
 		input_stat.complete_continue = 0;
+		reset_completion();
 		return 0;
 	}
 
 	input_stat.complete_continue = 0;
+	reset_completion();
 
 	if(key != L'\r' && !iswprint(key))
 		return 0;
@@ -515,6 +518,7 @@ cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
+	reset_completion();
 
 	if(input_stat.index == 0)
 	{
@@ -595,6 +599,7 @@ cmd_ctrl_k(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
+	reset_completion();
 
 	if(input_stat.index == input_stat.len)
 		return;
@@ -684,6 +689,7 @@ static void
 cmd_ctrl_n(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.complete_continue = 0;
+	reset_completion();
 
 	if(input_stat.history_search == 0)
 	{
@@ -710,6 +716,7 @@ static void
 cmd_down(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.complete_continue = 0;
+	reset_completion();
 
 	if(input_stat.history_search == 0)
 	{
@@ -741,6 +748,7 @@ cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
+	reset_completion();
 
 	if(input_stat.index == 0)
 		return;
@@ -767,6 +775,7 @@ cmd_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
 
 	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
+	reset_completion();
 
 	old = input_stat.index;
 	find_prev_word();
@@ -863,6 +872,7 @@ cmd_left(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
+	reset_completion();
 
 	if(input_stat.index > 0)
 	{
@@ -878,6 +888,7 @@ cmd_right(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
+	reset_completion();
 
 	if(input_stat.index < input_stat.len)
 	{
@@ -911,6 +922,7 @@ cmd_delete(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.history_search = 0;
 	input_stat.complete_continue = 0;
+	reset_completion();
 
 	if(input_stat.index == input_stat.len)
 		return;
@@ -1030,6 +1042,7 @@ static void
 cmd_ctrl_p(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.complete_continue = 0;
+	reset_completion();
 
 	if(input_stat.history_search == 0)
 	{
@@ -1056,6 +1069,7 @@ static void
 cmd_up(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.complete_continue = 0;
+	reset_completion();
 
 	if(input_stat.history_search == 0)
 	{
@@ -1299,10 +1313,11 @@ line_completion(struct line_stats *stat)
 	if(stat->line[stat->index] != L' ' && stat->index != stat->len)
 	{
 		stat->complete_continue = 0;
+		reset_completion();
 		return -1;
 	}
 
-	if(stat->complete_continue == 0)
+	if(!stat->complete_continue)
 	{
 		int i;
 		void *p;
@@ -1473,7 +1488,10 @@ colorschemes_completion(char *line_mb, char *last_word, struct line_stats *stat)
 	char *completed;
 	int result;
 
-	completed = complete_colorschemes(last_word);
+	if(last_word != NULL)
+		complete_colorschemes(last_word);
+
+	completed = next_completion();
 	result = line_part_complete(stat, line_mb, strchr(line_mb, ' ') + 1,
 			completed);
 	free(completed);
@@ -1769,6 +1787,7 @@ filename_completion(const char *str, int type)
 		if(strcmp(str, "~") == 0)
 		{
 			input_stat.complete_continue = 0;
+			reset_completion();
 			return strdup(cfg.home_dir);
 		}
 
@@ -1942,7 +1961,10 @@ filename_completion(const char *str, int type)
 	}
 
 	if(offset == 0 && d == NULL)
+	{
 		input_stat.complete_continue = 0;
+		reset_completion();
+	}
 
 	free(filename);
 	free(dirname);
