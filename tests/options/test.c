@@ -3,6 +3,7 @@
 #include "../../src/macros.h"
 #include "../../src/options.h"
 
+int fastrun;
 const char *value;
 
 static const char * sort_enum[] = {
@@ -21,11 +22,19 @@ static const char * sort_enum[] = {
 
 void test_quotes(void);
 void opt_completion(void);
+void with_spaces_tests(void);
 
 void all_tests(void)
 {
 	test_quotes();
 	opt_completion();
+	with_spaces_tests();
+}
+
+static void
+fastrun_handler(enum opt_op op, union optval_t val)
+{
+	fastrun = val.bool_val;
 }
 
 static void
@@ -46,6 +55,7 @@ setup(void)
 
 	init_options(&option_changed, NULL);
 
+	add_option("fastrun", OPT_BOOL, 0, NULL, fastrun_handler);
 	add_option("fusehome", OPT_STR, 0, NULL, fusehome_handler);
 	add_option("sort", OPT_ENUM, ARRAY_LEN(sort_enum), sort_enum, &sort_handler);
 }

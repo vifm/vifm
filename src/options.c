@@ -135,7 +135,7 @@ set_option(const char *name, union optval_t val)
 	}
 }
 
-void
+int
 set_options(const char *cmd)
 {
 	while(*cmd != '\0')
@@ -143,8 +143,11 @@ set_options(const char *cmd)
 		char buf[1024];
 
 		cmd = extract_option(cmd, buf, 1);
+		if(cmd == NULL)
+			return -1;
 		process_option(buf);
 	}
+	return 0;
 }
 
 static const char *
@@ -170,8 +173,21 @@ extract_option(const char *cmd, char *buf, int replace)
 		}
 		else if(*cmd == ' ' && quote == 0)
 		{
+			const char *p = cmd;
 			while(isspace(*cmd))
 				++cmd;
+			if(*cmd == '?' || *cmd == '!')
+			{
+				*buf++ = *cmd++;
+				if(*cmd != '\0' && !isspace(*cmd))
+				{
+					buf -= cmd - p - 1;
+					while(*p != '\0')
+						*buf++ = *p++;
+					*buf = '\0';
+					return NULL;
+				}
+			}
 			break;
 		}
 		else if(*cmd == '\'' && quote == 0)
@@ -620,6 +636,8 @@ complete_options(const char *cmd, const char **start)
 		{
 			*start = cmd;
 			cmd = extract_option(cmd, buf, 0);
+			if(cmd == NULL)
+				return strdup(buf);
 		}
 		if(strlen(buf) != cmd - *start)
 		{

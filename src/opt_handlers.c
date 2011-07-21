@@ -152,7 +152,11 @@ int
 process_set_args(const char *args)
 {
 	save_msg = 0;
-	set_options(args);
+	if(set_options(args) != 0)
+	{
+		status_bar_message("Invalid argument for :set command");
+		return 1;
+	}
 	return save_msg;
 }
 
