@@ -980,6 +980,9 @@ static void
 cmd_l(struct key_info key_info, struct keys_info *keys_info)
 {
 	handle_file(curr_view, 0);
+	clean_selected_files(curr_view);
+	draw_dir_list(curr_view, curr_view->top_line);
+	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
 /* Set mark. */
