@@ -1089,7 +1089,7 @@ select_files_in_range(FileView *view, cmd_params *cmd)
 			cmd->count = 1;
 
 		/* A one digit range with a count. :4y5 */
-		if(cmd->end_range)
+		if(cmd->end_range > -1)
 		{
 			for(x = 0; x < view->list_rows; x++)
 				view->dir_entry[x].selected = 0;

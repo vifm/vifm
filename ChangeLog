@@ -23,6 +23,8 @@
 
 	Fixed ga and gA bug with root directory size.
 
+	Fixed bug with ":1 command".
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).
