@@ -434,6 +434,9 @@ cmd_gv(struct key_info key_info, struct keys_info *keys_info)
 	int ub = check_mark_directory(view, '<');
 	int lb = check_mark_directory(view, '>');
 
+	if(ub < 0 || lb < 0)
+		return;
+
 	for(x = 0; x < view->list_rows; x++)
 		view->dir_entry[x].selected = 0;
 

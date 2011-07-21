@@ -25,6 +25,8 @@
 
 	Fixed bug with ":1 command".
 
+	Fixed bug with gv in visual mode when '< and '> are undefined.
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).
