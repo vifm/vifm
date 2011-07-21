@@ -525,19 +525,21 @@ redraw_window(void)
 
 	update_stat_window(curr_view);
 
-	if(curr_view->selected_files)
-	{
-		char status_buf[24];
-		snprintf(status_buf, sizeof(status_buf), "%d %s Selected",
-				curr_view->selected_files,
-				curr_view->selected_files == 1 ? "File" : "Files");
-		status_bar_message(status_buf);
-	}
-	else
-		clean_status_bar();
-
 	if(!is_status_bar_multiline())
+	{
+		if(curr_view->selected_files)
+		{
+			char status_buf[24];
+			snprintf(status_buf, sizeof(status_buf), "%d %s Selected",
+					curr_view->selected_files,
+					curr_view->selected_files == 1 ? "File" : "Files");
+			status_bar_message(status_buf);
+		}
+		else
+			clean_status_bar();
+
 		update_pos_window(curr_view);
+	}
 
 	update_all_windows();
 

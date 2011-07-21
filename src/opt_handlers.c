@@ -33,6 +33,7 @@ static void vimhelp_handler(enum opt_op op, union optval_t val);
 static void wrap_handler(enum opt_op op, union optval_t val);
 
 static int save_msg;
+static char print_buf[320];
 
 static const char * sort_enum[] = {
 	"ext",
@@ -152,26 +153,34 @@ int
 process_set_args(const char *args)
 {
 	save_msg = 0;
+	print_buf[0] = '\0';
 	if(set_options(args) != 0)
-	{
-		status_bar_message("Invalid argument for :set command");
-		return 1;
-	}
+		print_func("", "Invalid argument for :set command");
+	status_bar_message(print_buf);
 	return save_msg;
 }
 
 static void
 print_func(const char *msg, const char *description)
 {
+	if(print_buf[0] != '\0')
+	{
+		strncat(print_buf, "\n", sizeof(print_buf));
+		print_buf[sizeof(print_buf) - 1] = '\0';
+	}
 	if(*msg == '\0')
 	{
-		status_bar_message(description);
+		strncat(print_buf, description, sizeof(print_buf));
+		print_buf[sizeof(print_buf) - 1] = '\0';
 	}
 	else
 	{
-		char buf[strlen(msg) + 2 + strlen(description) + 1];
-		sprintf(buf, "%s: %s", msg, description);
-		status_bar_message(buf);
+		strncat(print_buf, msg, sizeof(print_buf));
+		print_buf[sizeof(print_buf) - 1] = '\0';
+		strncat(print_buf, ": ", sizeof(print_buf));
+		print_buf[sizeof(print_buf) - 1] = '\0';
+		strncat(print_buf, description, sizeof(print_buf));
+		print_buf[sizeof(print_buf) - 1] = '\0';
 	}
 	save_msg = 1;
 }
