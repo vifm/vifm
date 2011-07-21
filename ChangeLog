@@ -5,13 +5,15 @@
 	Handle multi line output of :set command (for example,
 	":set confirm? fastrun?").
 
-	Fix bug with name conflink of files and directories in the Trash.
+	Corrected size units to be like in *nix utilities (KB = 1000, K = 1024...)
 
-	Fix bug with broken symlinks in the Trash.
+	Fixed bug with name conflink of files and directories in the Trash.
 
-	Fix bug with stat_win in the menus.
+	Fixed bug with broken symlinks in the Trash.
 
-	Fix D<selector> when 'confirm' enabled.
+	Fixed bug with stat_win in the menus.
+
+	Fixed D<selector> when 'confirm' enabled.
 
 0.6.2 to 0.6.3
 

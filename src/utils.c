@@ -510,8 +510,17 @@ path_starts_with(const char *path, const char *begin)
 void
 friendly_size_notation(unsigned long long num, int str_size, char *str)
 {
-	static const char* iec_units[] = { "  B", "KiB", "MiB", "GiB", "TiB", "PiB" };
-	static const char* si_units[] = { " B", "KB", "MB", "GB", "TB", "PB" };
+	static const char* iec_units[] = {
+		"  B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"
+	};
+	static const char* si_units[] = {
+		"B", "K", "M", "G", "T", "P", "E", "Z", "Y"
+	};
+
+	static int _gnuc_unused units_size_guard[
+		(ARRAY_LEN(iec_units) == ARRAY_LEN(si_units)) ? 1 : -1
+	];
+
 	const char** units;
 	size_t u;
 	double d = num;
@@ -522,7 +531,7 @@ friendly_size_notation(unsigned long long num, int str_size, char *str)
 		units = si_units;
 
 	u = 0;
-	while(d >= 1024.0 && u < (sizeof(iec_units)/sizeof(iec_units[0])) - 1)
+	while(d >= 1024.0 && u < ARRAY_LEN(iec_units) - 1)
 	{
 		d /= 1024.0;
 		u++;
