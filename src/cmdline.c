@@ -141,7 +141,6 @@ static int option_completion(char *line_mb, struct line_stats *stat);
 static int file_completion(const char *filename, const char *line_mb,
 		struct line_stats *stat);
 static void update_line_stat(struct line_stats *stat, int new_len);
-static void redraw_status_bar(struct line_stats *stat);
 static size_t get_words_count(const char * string);
 static char * get_last_word(const char * string);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
@@ -1503,7 +1502,8 @@ line_part_complete(struct line_stats *stat, const char *line_mb, const char *p,
 
 	stat->complete_continue = 1;
 	update_line_stat(stat, new_len);
-	redraw_status_bar(stat);
+	update_cmdline_size();
+	update_cmdline_text();
 	return 0;
 }
 
@@ -1606,7 +1606,8 @@ file_completion(const char* filename, const char* line_mb,
 	*temp = x;
 	free(temp2);
 
-	redraw_status_bar(stat);
+	update_cmdline_size();
+	update_cmdline_text();
 	return 0;
 }
 
@@ -1615,15 +1616,6 @@ static void update_line_stat(struct line_stats *stat, int new_len)
 	stat->index += (new_len - 1) - stat->len;
 	stat->curs_pos = stat->prompt_wid + wcswidth(stat->line, stat->index);
 	stat->len = new_len - 1;
-}
-
-static void redraw_status_bar(struct line_stats *stat)
-{
-	werase(status_bar);
-	mvwaddwstr(status_bar, 0, 0, stat->prompt);
-	mvwaddwstr(status_bar, 0, stat->prompt_wid, stat->line);
-	wmove(status_bar, input_stat.curs_pos/line_width,
-			input_stat.curs_pos%line_width);
 }
 
 static size_t
