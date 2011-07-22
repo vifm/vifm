@@ -1681,54 +1681,22 @@ wcsdel(wchar_t *src, int pos, int len)
 char *
 exec_completion(char *str)
 {
-	static char *string;
-	static int last_dir;
-	static int dir;
+	int i;
 
-	char *result;
-	int cur_dir;
+	if(str == NULL)
+		return next_completion();
 
-	if(str != NULL)
+	for(i = 0; i < paths_count; i++)
 	{
-		free(string);
-		string = strdup(str);
-		last_dir = -1;
-		dir = 0;
-	}
-	cur_dir = dir;
-	do
-	{
-		if(chdir(paths[dir]) != 0)
+		if(chdir(paths[i]) != 0)
 			continue;
-		result = filename_completion((last_dir != dir) ? string : NULL,
-				FNC_EXECONLY);
-		input_stat.complete_continue = 1;
-		if(result == NULL)
-		{
-			last_dir = dir;
-			dir = (dir + 1)%paths_count;
-			if(dir == 0)
-			{
-				last_dir = -1;
-				if(chdir(curr_view->curr_dir) != 0)
-					return NULL;
-				return strdup(string);
-			}
-		}
-	}while(result == NULL && cur_dir != dir);
-	if(result == NULL)
-	{
-		dir = 0;
-		last_dir = -1;
+		filename_completion(str, FNC_EXECONLY);
 	}
-	else
-		last_dir = dir;
+	add_completion(str);
 	if(chdir(curr_view->curr_dir) != 0)
-	{
-		free(result);
 		return NULL;
-	}
-	return result;
+
+	return next_completion();
 }
 
 static int
@@ -1771,42 +1739,39 @@ static char *
 filename_completion(const char *str, int type)
 {
 	/* TODO refactor filename_completion(...) function */
-	static char *string;
-	static int offset;
+	const char *string;
 
 	DIR *dir;
 	struct dirent *d;
 	char * dirname;
 	char * filename;
 	char * temp;
-	int i;
 	int filename_len;
 	int isdir;
 
-	if(str != NULL)
-	{
-		if(strcmp(str, "~") == 0)
-		{
-			input_stat.complete_continue = 0;
-			reset_completion();
-			return strdup(cfg.home_dir);
-		}
+	if(str == NULL)
+		return next_completion();
 
-		free(string);
-		string = strdup(str);
-		offset = 0;
-	}
-	else
+	if(strcmp(str, "~") == 0)
 	{
-		offset++;
+		input_stat.complete_continue = 0;
+		reset_completion();
+		return strdup(cfg.home_dir);
 	}
+
+	string = str;
+
+	temp = strrchr(str, '/');
 
 	if(strncmp(string, "~/", 2) == 0)
 	{
 		dirname = (char *)malloc((strlen(cfg.home_dir) + strlen(string) + 1));
 
 		if(dirname == NULL)
+		{
+			add_completion((temp != NULL) ? (temp + 1) : str);
 			return NULL;
+		}
 
 		snprintf(dirname, strlen(cfg.home_dir) + strlen(string) + 1, "%s/%s",
 				cfg.home_dir, string + 2);
@@ -1815,12 +1780,19 @@ filename_completion(const char *str, int type)
 	}
 	else
 	{
-		dirname = strdup(string);
+		if(strlen(string) > 0)
+		{
+			dirname = strdup(string);
+		}
+		else
+		{
+			dirname = malloc(strlen(string) + 2);
+			strcpy(dirname, string);
+		}
 		filename = strdup(string);
 	}
 
 	temp = strrchr(dirname, '/');
-
 	if(temp)
 	{
 		strcpy(filename, ++temp);
@@ -1837,113 +1809,20 @@ filename_completion(const char *str, int type)
 
 	if(dir == NULL)
 	{
+		add_completion(filename);
 		free(filename);
 		free(dirname);
 		return NULL;
 	}
 
 	if(chdir(dirname) != 0)
-		return NULL;
-
-	while((d = readdir(dir)) != NULL)
 	{
-		if(filename[0] == '\0' && d->d_name[0] == '.')
-			continue;
-		if(strncmp(d->d_name, filename, filename_len) != 0)
-			continue;
-
-		if(type == FNC_DIRONLY && !is_entry_dir(d))
-			continue;
-		else if(type == FNC_EXECONLY && !is_entry_exec(d))
-			continue;
-		else if(type == FNC_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
-			continue;
-
-		break;
-	}
-
-	if(d == NULL)
-	{
-		chdir(curr_view->curr_dir);
-		closedir(dir);
+		add_completion(filename);
 		free(filename);
 		free(dirname);
 		return NULL;
 	}
 
-	i = 0;
-	while(i < offset)
-	{
-		if((d = readdir(dir)) == NULL)
-		{
-			closedir(dir);
-			free(dirname);
-			chdir(curr_view->curr_dir);
-
-			offset = -1;
-
-			return (type == FNC_EXECONLY) ? NULL : strdup(filename);
-		}
-
-		if(filename[0] == '\0' && d->d_name[0] == '.')
-			continue;
-		if(strncmp(d->d_name, filename, filename_len) != 0)
-			continue;
-
-		if(type == FNC_DIRONLY && !is_entry_dir(d))
-			continue;
-		else if(type == FNC_EXECONLY && !is_entry_exec(d))
-			continue;
-		else if(type == FNC_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
-			continue;
-
-		i++;
-	}
-
-	isdir = 0;
-	if(is_dir(d->d_name))
-	{
-		isdir = 1;
-	}
-	else if(strcmp(dirname, "."))
-	{
-		char * tempfile = (char *)NULL;
-		int len = strlen(dirname) + strlen(d->d_name) + 1;
-		tempfile = (char *)malloc((len) * sizeof(char));
-		if(!tempfile)
-		{
-			closedir(dir);
-			chdir(curr_view->curr_dir);
-			return NULL;
-		}
-		snprintf(tempfile, len, "%s%s", dirname, d->d_name);
-		if(is_dir(tempfile))
-			isdir = 1;
-		else
-			temp = strdup(d->d_name);
-
-		free(tempfile);
-	}
-	else
-		temp = strdup(d->d_name);
-
-	chdir(curr_view->curr_dir);
-
-	if(isdir)
-	{
-		char * tempfile = (char *)NULL;
-		tempfile = (char *) malloc((strlen(d->d_name) + 2) * sizeof(char));
-		if(!tempfile)
-		{
-			closedir(dir);
-			return NULL;
-		}
-		snprintf(tempfile, strlen(d->d_name) + 2, "%s/", d->d_name);
-		temp = strdup(tempfile);
-
-		free(tempfile);
-	}
-
 	while((d = readdir(dir)) != NULL)
 	{
 		if(filename[0] == '\0' && d->d_name[0] == '.')
@@ -1958,18 +1837,77 @@ filename_completion(const char *str, int type)
 		else if(type == FNC_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
 			continue;
 
-		break;
+		isdir = 0;
+		if(is_dir(d->d_name))
+		{
+			isdir = 1;
+		}
+		else if(strcmp(dirname, "."))
+		{
+			char * tempfile = (char *)NULL;
+			int len = strlen(dirname) + strlen(d->d_name) + 1;
+			tempfile = (char *)malloc((len) * sizeof(char));
+			if(!tempfile)
+			{
+				closedir(dir);
+				chdir(curr_view->curr_dir);
+				add_completion(filename);
+				free(filename);
+				free(dirname);
+				return NULL;
+			}
+			snprintf(tempfile, len, "%s%s", dirname, d->d_name);
+			if(is_dir(tempfile))
+				isdir = 1;
+			else
+				temp = strdup(d->d_name);
+
+			free(tempfile);
+		}
+		else
+			temp = strdup(d->d_name);
+
+		if(isdir)
+		{
+			char * tempfile = (char *)NULL;
+			tempfile = (char *) malloc((strlen(d->d_name) + 2) * sizeof(char));
+			if(!tempfile)
+			{
+				closedir(dir);
+				chdir(curr_view->curr_dir);
+				add_completion(filename);
+				free(filename);
+				free(dirname);
+				return NULL;
+			}
+			snprintf(tempfile, strlen(d->d_name) + 2, "%s/", d->d_name);
+			temp = strdup(tempfile);
+
+			free(tempfile);
+		}
+		add_completion(temp);
+		free(temp);
 	}
 
-	if(offset == 0 && d == NULL)
-	{
-		input_stat.complete_continue = 0;
-		reset_completion();
-	}
+	chdir(curr_view->curr_dir);
+
+	completion_group_end();
+	if(type != FNC_EXECONLY)
+		add_completion(filename);
 
 	free(filename);
 	free(dirname);
 	closedir(dir);
+
+	if(type == FNC_EXECONLY)
+		return NULL;
+
+	temp = next_completion();
+	if(get_completion_count() <= 2)
+	{
+		input_stat.complete_continue = 0;
+		reset_completion();
+	}
 	return temp;
 }
 

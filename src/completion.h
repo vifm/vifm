@@ -33,7 +33,9 @@ void reset_completion(void);
  */
 char * next_completion(void);
 
-/* for 'wildmenu': const char ** get_completion_list(int *count); */
+int get_completion_count(void);
+
+/* for 'wildmenu': const char ** get_completion_list(void); */
 
 #endif
 

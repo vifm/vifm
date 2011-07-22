@@ -43,10 +43,14 @@
 struct Fuse_List *fuse_mounts = NULL;
 
 int
-is_dir(char *file)
+is_dir(const char *file)
 {
 	struct stat statbuf;
-	stat(file, &statbuf);
+	if(stat(file, &statbuf) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Can't stat \"%s\"", file);
+		log_cwd();
+	}
 
 	return S_ISDIR(statbuf.st_mode);
 }
@@ -460,7 +464,7 @@ fill_version_info(char **list)
 	int x = 0;
 
 	if(list == NULL)
-		return 7;
+		return 8;
 
 	list[x++] = strdup("Version: " VERSION);
 	list[x++] = strdup("Compiled at: " __DATE__ " " __TIME__);
@@ -488,6 +492,12 @@ fill_version_info(char **list)
 	list[x++] = strdup("With magic library");
 #else
 	list[x++] = strdup("Without magic library");
+#endif
+
+#ifdef HAVE_FILE_PROG
+	list[x++] = strdup("With file program");
+#else
+	list[x++] = strdup("Without file program");
 #endif
 
 	return x;
@@ -553,22 +563,21 @@ int
 check_link_is_dir(const char *filename)
 {
 	char linkto[PATH_MAX + NAME_MAX];
-	int len;
 	int saved_errno;
 	char *filename_copy;
+	char *p;
 
 	filename_copy = strdup(filename);
 	chosp(filename_copy);
 
-	len = readlink(filename_copy, linkto, sizeof (linkto));
+	p = realpath(filename, linkto);
 	saved_errno = errno;
 
 	free(filename_copy);
 
-	if(len > 0)
+	if(p == linkto)
 	{
 		struct stat s;
-		linkto[len] = '\0';
 		if(lstat(linkto, &s) != 0)
 			return 0;
 

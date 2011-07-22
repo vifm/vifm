@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "macros.h"
 #include "utils.h"
 
 #include "completion.h"
@@ -85,6 +86,12 @@ sorter(const void *first, const void *second)
 {
 	const char *stra = *(const char **)first;
 	const char *strb = *(const char **)second;
+	size_t lena = strlen(stra), lenb = strlen(strb);
+	if(stra[lena - 1] == '/' && strb[lenb - 1] == '/')
+	{
+		size_t len = MIN(lena - 1, lenb - 1);
+		return strncmp(stra, strb, len);
+	}
 	return strcmp(stra, strb);
 }
 
@@ -99,6 +106,12 @@ next_completion(void)
 
 	curr = (curr + 1) % count;
 	return strdup(lines[curr]);
+}
+
+int
+get_completion_count(void)
+{
+	return count;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
