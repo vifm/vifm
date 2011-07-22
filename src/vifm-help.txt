@@ -561,6 +561,8 @@ Command macros
 
        %s     Execute command in screen split.
 
+       Use %% if you need to put a percent sign in your command.
+
        Position and quantity (if there is any) of %m and %s macros in the com‐
        mand is unimportant.  All their occurrences will be  removed  from  the
        resulting command.
@@ -801,4 +803,4 @@ AUTHOR
 
 
 
-                                 Jule 20, 2011                         vifm(1)
+                                 Jule 22, 2011                         vifm(1)

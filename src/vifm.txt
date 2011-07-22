@@ -394,6 +394,8 @@ The command macros may be used in user commands.
   %m show command output in a menu.
   %s execute command in screen split.
 
+Use %% if you need to put a percent sign in your command.
+
 Position and quantity (if there is any) of %m and %s macros in the
 command is unimportant.  All their occurrences will be removed from the
 resulting command.
