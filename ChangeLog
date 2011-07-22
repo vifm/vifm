@@ -27,6 +27,8 @@
 
 	Fixed bug with gv in visual mode when '< and '> are undefined.
 
+	Fixed bug with 'sortnumbers'.
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).

@@ -111,6 +111,18 @@ numbers_only(void)
 	s = "11";
 	t = "10";
 	assert_true(compare_file_names(s, t) > 0);
+
+	s = "11";
+	t = "10";
+	assert_true(compare_file_names(s, t) > 0);
+
+	s = "13";
+	t = "100";
+	assert_true(compare_file_names(s, t) < 0);
+
+	s = "100";
+	t = "13";
+	assert_true(compare_file_names(s, t) > 0);
 }
 
 static void

@@ -51,12 +51,7 @@ compare_file_names(const char *s, const char *t)
 
 	while(*s != '\0' && *t != '\0')
 	{
-		if(*s == *t)
-		{
-			s++;
-			t++;
-		}
-		else if(isdigit(*s) && isdigit(*t))
+		if(isdigit(*s) && isdigit(*t))
 		{
 			int num_a, num_b;
 			char *p;
@@ -69,6 +64,11 @@ compare_file_names(const char *s, const char *t)
 
 			if(num_a != num_b)
 				return num_a - num_b;
+		}
+		else if(*s == *t)
+		{
+			s++;
+			t++;
 		}
 		else
 			break;
