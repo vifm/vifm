@@ -1048,6 +1048,9 @@ rename_file(FileView *view, int name_only)
 	char* p;
 	char buf[NAME_MAX + 1];
 
+	clean_selected_files(curr_view);
+	draw_dir_list(curr_view, curr_view->top_line);
+
 	strncpy(buf, get_current_file_name(view), sizeof(buf));
 	buf[sizeof(buf) - 1] = '\0';
 	if(strcmp(buf, "../") == 0)
