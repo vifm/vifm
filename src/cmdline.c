@@ -501,6 +501,8 @@ leave_cmdline_mode(void)
 static void
 cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
+	reset_completion();
+
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
@@ -618,6 +620,8 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 {
 	char* p;
 	int save_hist = !keys_info->mapped;
+
+	reset_completion();
 
 	werase(status_bar);
 	wnoutrefresh(status_bar);
