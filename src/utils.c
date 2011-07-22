@@ -24,6 +24,7 @@
 #include <unistd.h>
 
 #include <errno.h>
+#include <math.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -555,7 +556,11 @@ friendly_size_notation(unsigned long long num, int str_size, char *str)
 		if(d > 9)
 			snprintf(str, str_size, "%.0f %s", d, units[u]);
 		else
-			snprintf(str, str_size, "%.1f %s", d, units[u]);
+		{
+			size_t len = snprintf(str, str_size, "%.1f %s", d, units[u]);
+			if(str[len - strlen(units[u]) - 1 - 1] == '0')
+				snprintf(str, str_size, "%.0f %s", d, units[u]);
+		}
 	}
 }
 
