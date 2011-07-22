@@ -529,7 +529,7 @@ ffind(int ch, int backward, int wrap)
 		if(backward)
 		{
 			x--;
-			if(x == 0)
+			if(x < 0)
 			{
 				if(wrap)
 					x = curr_view->list_rows - 1;
@@ -540,7 +540,7 @@ ffind(int ch, int backward, int wrap)
 		else
 		{
 			x++;
-			if(x == curr_view->list_rows)
+			if(x > curr_view->list_rows - 1)
 			{
 				if(wrap)
 					x = 0;
