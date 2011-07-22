@@ -43,6 +43,8 @@
 
 	Fixed command line resizing in the menu mode.
 
+	Fixed bug with :view and infinite loop.
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).

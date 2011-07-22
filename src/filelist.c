@@ -193,8 +193,8 @@ view_not_wraped(FILE *fp, int x)
 	char line[1024];
 	int y = 1;
 
-	while(fgets(line, other_view->window_width - 2, fp)
-			&& x < other_view->window_rows - 2)
+	while(fgets(line, other_view->window_width - 2, fp) == line &&
+			x < other_view->window_rows - 2)
 	{
 		int i;
 		size_t n_len = get_normal_utf8_string_length(line);
@@ -209,7 +209,7 @@ view_not_wraped(FILE *fp, int x)
 		}
 
 		if(line[len - 1] != '\n')
-			while(fgetc(fp) != '\n');
+			while(fgetc(fp) != '\n' && !feof(fp));
 
 		len = 0;
 		n_len = 0;
@@ -321,6 +321,12 @@ quick_view_file(FileView *view)
 		case SOCKET:
 			mvwaddstr(other_view->win, ++x, y, "File is a Socket");
 			break;
+		case UNKNOWN:
+			if(S_ISFIFO(view->dir_entry[view->list_pos].mode))
+			{
+				mvwaddstr(other_view->win, ++x, y, "File is a Named Pipe");
+				break;
+			}
 		default:
 			{
 				char *viewer;
