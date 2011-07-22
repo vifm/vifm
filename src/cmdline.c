@@ -329,13 +329,21 @@ update_cmdline_size(void)
 			1)/line_width;
 	if(d >= getmaxy(status_bar))
 	{
-		mvwin(status_bar, getmaxy(stdscr) - d, 0);
+		int y = getmaxy(stdscr);
+
+		mvwin(status_bar, y - d, 0);
 		wresize(status_bar, d, line_width);
 
 		if(prev_mode != MENU_MODE)
 		{
-			mvwin(stat_win, getmaxy(stdscr) - d - 1, 0);
+			mvwin(stat_win, y - d - 1, 0);
 			wrefresh(stat_win);
+		}
+		else
+		{
+			wresize(menu_win, y - d, getmaxx(stdscr));
+			update_menu();
+			wrefresh(menu_win);
 		}
 	}
 }
@@ -424,7 +432,9 @@ void
 redraw_cmdline(void)
 {
 	if(prev_mode == MENU_MODE)
+	{
 		menu_redraw();
+	}
 	else
 	{
 		redraw_window();
@@ -487,12 +497,19 @@ leave_cmdline_mode(void)
 {
 	if(getmaxy(status_bar) > 1)
 	{
-		curr_stats.need_redraw = 1;
+		curr_stats.need_redraw = 2;
 		wresize(status_bar, 1, getmaxx(stdscr) - 19);
 		mvwin(status_bar, getmaxy(stdscr) - 1, 0);
+		if(prev_mode == MENU_MODE)
+		{
+			wresize(menu_win, getmaxy(stdscr) - 1, getmaxx(stdscr));
+			update_menu();
+		}
 	}
 	else
+	{
 		wresize(status_bar, 1, getmaxx(stdscr) - 19);
+	}
 
 	curs_set(0);
 	curr_stats.save_msg = 0;

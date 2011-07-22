@@ -967,14 +967,14 @@ shellout(char *command, int pause)
 	def_prog_mode();
 	endwin();
 
-	/* force views update */
-	lwin.dir_mtime = 0;
-	rwin.dir_mtime = 0;
-
 	result = WEXITSTATUS(my_system(buf));
 
 	if(result != 0 && pause < 0)
 		my_system("vifm-pause");
+
+	/* force views update */
+	lwin.dir_mtime = 0;
+	rwin.dir_mtime = 0;
 
 	/* There is a problem with using the screen program and
 	 * catching all the SIGWICH signals.  So just redraw the window.

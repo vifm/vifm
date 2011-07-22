@@ -70,7 +70,6 @@ static void cmd_n(struct key_info, struct keys_info *);
 static void cmd_zb(struct key_info, struct keys_info *);
 static void cmd_zt(struct key_info, struct keys_info *);
 static void cmd_zz(struct key_info, struct keys_info *);
-static void update_menu(void);
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x02", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
@@ -509,7 +508,7 @@ cmd_zz(struct key_info key_info, struct keys_info *keys_info)
 	update_menu();
 }
 
-static void
+void
 update_menu(void)
 {
 	draw_menu(menu);

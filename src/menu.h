@@ -28,6 +28,7 @@ void menu_pre(void);
 void menu_post(void);
 void menu_redraw(void);
 void execute_menu_command(char *command, menu_info *ptr);
+void update_menu(void);
 
 #endif
 

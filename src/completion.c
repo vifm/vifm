@@ -119,7 +119,7 @@ next_completion(void)
 		if(curr == -1)
 			curr = count - 2;
 		else
-			--curr;
+			curr--;
 		if(curr < 0)
 			curr = count - 1;
 	}
