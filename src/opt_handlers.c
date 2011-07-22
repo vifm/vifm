@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "color_scheme.h"
 #include "config.h"
 #include "filelist.h"
 #include "macros.h"
@@ -20,6 +21,7 @@ static void followlinks_handler(enum opt_op op, union optval_t val);
 static void fusehome_handler(enum opt_op op, union optval_t val);
 static void history_handler(enum opt_op op, union optval_t val);
 static void iec_handler(enum opt_op op, union optval_t val);
+static void reversecol_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
 static void savelocation_handler(enum opt_op op, union optval_t val);
 static void sortnumbers_handler(enum opt_op op, union optval_t val);
@@ -71,6 +73,7 @@ add_options(void)
 	add_option("fusehome", OPT_STR, 0, NULL, &fusehome_handler);
 	add_option("history", OPT_INT, 0, NULL, &history_handler);
 	add_option("iec", OPT_BOOL, 0, NULL, &iec_handler);
+	add_option("reversecol", OPT_BOOL, 0, NULL, &reversecol_handler);
 	add_option("runexec", OPT_BOOL, 0, NULL, &runexec_handler);
 	add_option("savelocation", OPT_BOOL, 0, NULL, &savelocation_handler);
 	add_option("sortnumbers", OPT_BOOL, 0, NULL, &sortnumbers_handler);
@@ -279,6 +282,26 @@ static void
 iec_handler(enum opt_op op, union optval_t val)
 {
 	cfg.use_iec_prefixes = val.bool_val;
+
+	redraw_lists();
+}
+
+static void
+reversecol_handler(enum opt_op op, union optval_t val)
+{
+	cfg.invert_cur_line = val.bool_val;
+	if(!cfg.invert_cur_line)
+	{
+		int i;
+		for(i = 0; i < cfg.color_scheme_num; i++)
+		{
+			int x;
+			for(x = 0; x < MAXNUM_COLOR; x++)
+				if(col_schemes[i].color[x].name == CURR_LINE_COLOR)
+					init_pair(col_schemes[i].color[x].name, col_schemes[i].color[x].fg,
+							col_schemes[i].color[x].bg);
+		}
+	}
 
 	redraw_lists();
 }

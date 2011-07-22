@@ -1025,7 +1025,7 @@ cmd_t(struct key_info key_info, struct keys_info *keys_info)
 	if(curr_view->dir_entry[curr_view->list_pos].selected == 0)
 	{
 		/* The ../ dir cannot be selected */
-		if (!strcmp(curr_view->dir_entry[curr_view->list_pos].name, "../"))
+		if(!strcmp(curr_view->dir_entry[curr_view->list_pos].name, "../"))
 				return;
 
 		curr_view->dir_entry[curr_view->list_pos].selected = 1;
@@ -1038,11 +1038,19 @@ cmd_t(struct key_info key_info, struct keys_info *keys_info)
 	}
 
 	draw_dir_list(curr_view, curr_view->top_line);
-	wattron(curr_view->win,
-			COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
-	mvwaddstr(curr_view->win, curr_view->curr_line, 0, " ");
-	wattroff(curr_view->win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR));
-	wmove(curr_view->win, curr_view->curr_line, 0);
+	if(cfg.invert_cur_line)
+	{
+		moveto_list_pos(curr_view, curr_view->list_pos);
+	}
+	else
+	{
+		wattron(curr_view->win,
+				COLOR_PAIR(curr_view->color_scheme + CURR_LINE_COLOR) | A_BOLD);
+		mvwaddstr(curr_view->win, curr_view->curr_line, 0, " ");
+		wattroff(curr_view->win,
+				COLOR_PAIR(curr_view->color_scheme + CURR_LINE_COLOR));
+		wmove(curr_view->win, curr_view->curr_line, 0);
+	}
 }
 
 /* Undo last command group. */

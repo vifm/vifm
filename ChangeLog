@@ -1,5 +1,7 @@
 0.6.3 to current
 
+	Added 'reversecol' option.
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,

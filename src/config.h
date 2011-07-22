@@ -74,6 +74,8 @@ typedef struct _Config {
 	int confirm; /* Ask user about permanent deletion of files. */
 
 	int fast_run;
+
+	int invert_cur_line;
 } Config;
 
 extern Config cfg;

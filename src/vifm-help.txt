@@ -626,6 +626,11 @@ Command macros
               default: false
               Use KiB, MiB, ... instead of KB, MB, ...
 
+       reverscol
+              type: boolean
+              default: false
+              Reverse colors of the line under the cursor.
+
        runexec
               type: boolean
               default: false
@@ -803,4 +808,4 @@ AUTHOR
 
 
 
-                                 Jule 22, 2011                         vifm(1)
+                                 Jule 23, 2011                         vifm(1)

@@ -459,6 +459,11 @@ type: boolean
 default: false
 Use KiB, MiB, ... instead of KB, MB, ...
 
+reverscol
+type: boolean
+default: false
+Reverse colors of the line under the cursor.
+
 runexec
 type: boolean
 default: false

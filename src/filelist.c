@@ -760,6 +760,8 @@ moveto_list_pos(FileView *view, int pos)
 	int old_cursor = view->curr_line;
 	char file_name[view->window_width*2 + 1];
 	size_t print_width;
+	int LINE_COLOR;
+	short f, b;
 
 	if(pos < 1)
 		pos = 0;
@@ -785,10 +787,47 @@ moveto_list_pos(FileView *view, int pos)
 	if(redraw)
 		draw_dir_list(view, view->top_line);
 
+	if(cfg.invert_cur_line)
+	{
+		switch(view->dir_entry[pos].type)
+		{
+			case DIRECTORY:
+				LINE_COLOR = DIRECTORY_COLOR + view->color_scheme;
+				break;
+			case LINK:
+				LINE_COLOR = LINK_COLOR + view->color_scheme;
+				break;
+			case SOCKET:
+				LINE_COLOR = SOCKET_COLOR + view->color_scheme;
+				break;
+			case DEVICE:
+				LINE_COLOR = DEVICE_COLOR + view->color_scheme;
+				break;
+			case EXECUTABLE:
+				LINE_COLOR = EXECUTABLE_COLOR + view->color_scheme;
+				break;
+			default:
+				LINE_COLOR = WIN_COLOR + view->color_scheme;
+				break;
+		}
+
+		if(view->dir_entry[pos].selected)
+			pair_content(SELECTED_COLOR + view->color_scheme, &f, &b);
+		else
+			pair_content(LINE_COLOR + view->color_scheme, &f, &b);
+		init_pair(CURR_LINE_COLOR + view->color_scheme, f, b);
+	}
+
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme));
+
 	mvwaddstr(view->win, old_cursor, 0, " ");
 
-	wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) | A_BOLD);
+	if(cfg.invert_cur_line)
+		wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
+				A_BOLD | A_REVERSE);
+	else
+		wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
+				A_BOLD);
 
 	/* Blank the current line and
 	 * print out the current line bar
@@ -809,6 +848,12 @@ moveto_list_pos(FileView *view, int pos)
 
 	if(curr_stats.view)
 		quick_view_file(view);
+
+	if(cfg.invert_cur_line)
+	{
+		wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
+				A_BOLD | A_REVERSE);
+	}
 }
 
 void
