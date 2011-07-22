@@ -541,7 +541,7 @@ friendly_size_notation(unsigned long long num, int str_size, char *str)
 		units = si_units;
 
 	u = 0;
-	while(d >= 1024.0 && u < ARRAY_LEN(iec_units) - 1)
+	while(d >= 1023.5 && u < ARRAY_LEN(iec_units) - 1)
 	{
 		d /= 1024.0;
 		u++;

@@ -35,6 +35,8 @@
 
 	Fixed bug with shrinking of status bar.
 
+	Fixed bug with displaying "1024 K".
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).
