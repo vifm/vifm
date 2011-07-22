@@ -11,6 +11,10 @@
 
 	Changed file size format.
 
+	Sort completion items.
+
+	Shift-Tab key to perform completion in reversed order.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

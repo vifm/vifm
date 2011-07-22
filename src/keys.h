@@ -100,7 +100,7 @@ struct key_t
 };
 
 struct keys_add_info {
-	const wchar_t keys[3];
+	const wchar_t keys[4];
 	struct key_t key_t;
 };
 

@@ -102,6 +102,8 @@ static void leave_cmdline_mode(void);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_h(struct key_info, struct keys_info *);
 static void cmd_ctrl_i(struct key_info, struct keys_info *);
+static void cmd_shift_tab(struct key_info, struct keys_info *);
+static void do_completion(void);
 static void cmd_ctrl_k(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
 static void cmd_ctrl_n(struct key_info, struct keys_info *);
@@ -170,7 +172,9 @@ static struct keys_add_info builtin_cmds[] = {
 	{{KEY_HOME},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_home}}},
 	{{KEY_END},       {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_end}}},
 	{{KEY_DC},        {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
+	{{KEY_BTAB},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
 #endif /* ENABLE_EXTENDED_KEYS */
+	{L"\x1b"L"[Z",    {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
 	/* ctrl b */
 	{L"\x02", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left}}},
 	/* ctrl f */
@@ -574,6 +578,20 @@ cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 
 static void
 cmd_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
+{
+	set_completion_order(0);
+	do_completion();
+}
+
+static void
+cmd_shift_tab(struct key_info key_info, struct keys_info *keys_info)
+{
+	set_completion_order(1);
+	do_completion();
+}
+
+static void
+do_completion(void)
 {
 	int len;
 	if(sub_mode != CMD_SUBMODE)

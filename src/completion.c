@@ -37,6 +37,7 @@ static char **lines;
 static int count;
 static int curr = -1;
 static int group_begin;
+static int order;
 
 static int sorter(const void *first, const void *second);
 
@@ -50,6 +51,7 @@ reset_completion(void)
 	state = NOT_STARTED;
 	curr = -1;
 	group_begin = 0;
+	order = 0;
 }
 
 int
@@ -108,7 +110,19 @@ next_completion(void)
 	if(count == 2)
 		return strdup(lines[0]);
 
-	curr = (curr + 1) % count;
+	if(!order) /* straight order */
+	{
+		curr = (curr + 1) % count;
+	}
+	else /* reverse order */
+	{
+		if(curr == -1)
+			curr = count - 2;
+		else
+			--curr;
+		if(curr < 0)
+			curr = count - 1;
+	}
 	return strdup(lines[curr]);
 }
 
@@ -116,6 +130,12 @@ int
 get_completion_count(void)
 {
 	return count;
+}
+
+void
+set_completion_order(int reversed)
+{
+	order = reversed;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

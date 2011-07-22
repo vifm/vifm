@@ -1534,7 +1534,9 @@ execute_builtin_command(FileView *view, cmd_params *cmd)
 					}
 
 					if(cmd->background)
+					{
 						start_background_job(com + i);
+					}
 					else
 					{
 						if(shellout(com + i, pause ? 1 : (cfg.fast_run ? 0 : -1)) == 127 &&
