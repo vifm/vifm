@@ -1050,6 +1050,7 @@ rename_file(FileView *view, int name_only)
 
 	clean_selected_files(curr_view);
 	draw_dir_list(curr_view, curr_view->top_line);
+	moveto_list_pos(curr_view, curr_view->list_pos);
 
 	strncpy(buf, get_current_file_name(view), sizeof(buf));
 	buf[sizeof(buf) - 1] = '\0';
@@ -1337,6 +1338,11 @@ rename_files(FileView *view)
 	rename_files_ind(view, indexes, count);
 
 	free(indexes);
+
+	clean_selected_files(curr_view);
+	draw_dir_list(curr_view, curr_view->top_line);
+	moveto_list_pos(curr_view, curr_view->list_pos);
+	curr_stats.save_msg = 1;
 }
 
 static void
