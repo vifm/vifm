@@ -3,6 +3,7 @@
 #include "seatest.h"
 
 #include "../../src/commands.h"
+#include "../../src/completion.h"
 
 static void
 should_be_sorted(void)
@@ -21,6 +22,7 @@ vim_like_completion(void)
 {
 	char *buf;
 
+	reset_completion();
 	buf = command_completion("e", 0);
 	assert_string_equal("edit", buf);
 	free(buf);
@@ -31,6 +33,7 @@ vim_like_completion(void)
 	assert_string_equal("e", buf);
 	free(buf);
 
+	reset_completion();
 	buf = command_completion("vm", 0);
 	assert_string_equal("vmap", buf);
 	free(buf);
@@ -38,6 +41,7 @@ vim_like_completion(void)
 	assert_string_equal("vmap", buf);
 	free(buf);
 
+	reset_completion();
 	buf = command_completion("j", 0);
 	assert_string_equal("jobs", buf);
 	free(buf);

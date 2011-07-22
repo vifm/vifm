@@ -2,6 +2,7 @@
 
 #include "seatest.h"
 
+#include "../../src/completion.h"
 #include "../../src/config.h"
 #include "../../src/commands.h"
 
@@ -10,6 +11,7 @@ test_set(void)
 {
 	char *buf;
 
+	reset_completion();
 	buf = command_completion("se", 0);
 	assert_string_equal("set", buf);
 	free(buf);
@@ -20,6 +22,7 @@ test_empty_line_completion(void)
 {
 	char *buf;
 
+	reset_completion();
 	buf = command_completion("", 0);
 	assert_string_equal("!", buf);
 	free(buf);

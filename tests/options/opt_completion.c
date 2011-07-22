@@ -1,18 +1,25 @@
+#include <stdlib.h>
+
 #include "seatest.h"
 
+#include "../../src/completion.h"
 #include "../../src/options.h"
 
 static void
 test_space_at_the_end(void)
 {
-	char *start;
+	const char *start;
 	char *completed;
 
-	completed = complete_options("fusehome=a\\ b\\ ", &start);
+	reset_completion();
+	complete_options("fusehome=a\\ b\\ ", &start);
+	completed = next_completion();
 	assert_string_equal("fusehome=a\\ b\\ ", completed);
 	free(completed);
 
-	completed = complete_options("fusehome=a\\ b ", &start);
+	reset_completion();
+	complete_options("fusehome=a\\ b ", &start);
+	completed = next_completion();
 	assert_string_equal("fastrun", completed);
 	free(completed);
 }
@@ -20,18 +27,21 @@ test_space_at_the_end(void)
 static void
 test_one_choice_opt(void)
 {
-	char *start;
+	const char *start;
 	char *completed;
 
-	completed = complete_options("fuse", &start);
+	reset_completion();
+	complete_options("fuse", &start);
+
+	completed = next_completion();
 	assert_string_equal("fusehome", completed);
 	free(completed);
 
-	completed = complete_options(NULL, &start);
+	completed = next_completion();
 	assert_string_equal("fusehome", completed);
 	free(completed);
 
-	completed = complete_options(NULL, &start);
+	completed = next_completion();
 	assert_string_equal("fusehome", completed);
 	free(completed);
 }
@@ -39,29 +49,36 @@ test_one_choice_opt(void)
 static void
 test_one_choice_val(void)
 {
-	char *start;
+	char buf[] = "sort=n";
+	const char *start;
 	char *completed;
 
-	completed = complete_options("sort=n", &start);
-	assert_string_equal("sort=name", completed);
+	reset_completion();
+	complete_options(buf, &start);
+	assert_true(start == buf + 5);
+
+	completed = next_completion();
+	assert_string_equal("name", completed);
 	free(completed);
 
-	completed = complete_options(NULL, &start);
-	assert_string_equal("sort=name", completed);
+	completed = next_completion();
+	assert_string_equal("name", completed);
 	free(completed);
 
-	completed = complete_options(NULL, &start);
-	assert_string_equal("sort=name", completed);
+	completed = next_completion();
+	assert_string_equal("name", completed);
 	free(completed);
 }
 
 static void
 test_invalid_input(void)
 {
-	char *start;
+	const char *start;
 	char *completed;
 
-	completed = complete_options("fast ?f", &start);
+	reset_completion();
+	complete_options("fast ?f", &start);
+	completed = next_completion();
 	assert_string_equal("fast ?f", completed);
 	free(completed);
 }

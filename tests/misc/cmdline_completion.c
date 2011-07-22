@@ -4,6 +4,7 @@
 
 #include "../../src/cmdline.h"
 #include "../../src/commands.h"
+#include "../../src/completion.h"
 #include "../../src/options.h"
 
 struct line_stats stats;
@@ -46,6 +47,7 @@ leave_spaces_at_begin(void)
 {
 	char *buf;
 
+	reset_completion();
 	buf = command_completion(" q", 0);
 	assert_string_equal(" quit", buf);
 	free(buf);
@@ -59,14 +61,17 @@ only_user(void)
 {
 	char *buf;
 
+	reset_completion();
 	buf = command_completion("command ", 1);
 	assert_string_equal("command bar", buf);
 	free(buf);
 
+	reset_completion();
 	buf = command_completion(" command ", 1);
 	assert_string_equal(" command bar", buf);
 	free(buf);
 
+	reset_completion();
 	buf = command_completion("  command ", 1);
 	assert_string_equal("  command bar", buf);
 	free(buf);
@@ -75,6 +80,7 @@ only_user(void)
 static void
 test_set_completion(void)
 {
+	reset_completion();
 	assert_int_equal(0, line_completion(&stats));
 	assert_true(wcscmp(stats.line, L"set fusehome") == 0);
 }
