@@ -1513,8 +1513,9 @@ option_completion(char* line_mb, struct line_stats *stat)
 		else
 			while(isspace(*completed))
 				completed++;
+		complete_options(stat->complete_continue ? NULL : completed, &p);
 	}
-	completed = complete_options(stat->complete_continue ? NULL : completed, &p);
+	completed = next_completion();
 
 	result = line_part_complete(stat, line_mb, p, completed);
 	free(completed);

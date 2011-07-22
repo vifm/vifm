@@ -203,7 +203,7 @@ clean_status_bar(void)
 	if(status_bar_lines > 1)
 	{
 		status_bar_lines = 1;
-		redraw_window();
+		update_all_windows();
 	}
 	status_bar_lines = 1;
 }

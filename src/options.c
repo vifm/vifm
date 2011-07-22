@@ -22,6 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "completion.h"
+
 #include "options.h"
 
 #define OPTION_NAME_MAX 64
@@ -55,8 +57,8 @@ static char * str_remove(char *old, const char *value);
 static int find_val(const struct opt_t *opt, const char *value);
 static int set_print(struct opt_t *opt);
 static void print_msg(const char *msg, const char *description);
-static char * complete_option(const char *buf, int bool_only);
-static const char * complete_value(const char *buf, struct opt_t *opt);
+static void complete_option(const char *buf, int bool_only);
+static void complete_value(const char *buf, struct opt_t *opt);
 
 static opt_print print_func;
 static int *opts_changed;
@@ -187,6 +189,8 @@ extract_option(const char *cmd, char *buf, int replace)
 					*buf = '\0';
 					return NULL;
 				}
+				while(isspace(*cmd))
+					++cmd;
 			}
 			break;
 		}
@@ -613,7 +617,7 @@ print_msg(const char *msg, const char *description)
 		print_func(msg, description);
 }
 
-char *
+void
 complete_options(const char *cmd, const char **start)
 {
 	static char buf[1024];
@@ -622,155 +626,87 @@ complete_options(const char *cmd, const char **start)
 	static int id;
 	static char * p;
 
-	char * result;
-
-	if(cmd != NULL)
+	*start = cmd;
+	buf[0] = '\0';
+	while(*cmd != '\0')
 	{
-		/* reset counters */
-		complete_option(NULL, 0);
-		complete_value(NULL, NULL);
-
+		*start = cmd;
+		cmd = extract_option(cmd, buf, 0);
+		if(cmd == NULL)
+		{
+			add_completion(buf);
+			return;
+		}
+	}
+	if(strlen(buf) != cmd - *start)
+	{
 		*start = cmd;
 		buf[0] = '\0';
-		while(*cmd != '\0')
-		{
-			*start = cmd;
-			cmd = extract_option(cmd, buf, 0);
-			if(cmd == NULL)
-				return strdup(buf);
-		}
-		if(strlen(buf) != cmd - *start)
-		{
-			*start = cmd;
-			buf[0] = '\0';
-		}
+	}
 
-		p = (char *)skip_alphas(buf);
-		value = (*p == '=');
-		if(value)
-		{
-			*p = '\0';
-			id = get_option(buf);
-			*p++ = '=';
-		}
-		else if(strncmp(buf, "no", 2) == 0)
-		{
-			*start += 2;
-			memmove(buf, buf + 2, strlen(buf) - 2 + 1);
-			bool_only = 1;
-		}
-		else if(strncmp(buf, "inv", 3) == 0)
-		{
-			*start += 3;
-			memmove(buf, buf + 3, strlen(buf) - 3 + 1);
-			bool_only = 1;
-		}
-		else
-		{
-			bool_only = 0;
-		}
+	p = (char *)skip_alphas(buf);
+	value = (*p == '=');
+	if(value)
+	{
+		*p = '\0';
+		id = get_option(buf);
+		*p++ = '=';
+		*start += p - buf;
+	}
+	else if(strncmp(buf, "no", 2) == 0)
+	{
+		*start += 2;
+		memmove(buf, buf + 2, strlen(buf) - 2 + 1);
+		bool_only = 1;
+	}
+	else if(strncmp(buf, "inv", 3) == 0)
+	{
+		*start += 3;
+		memmove(buf, buf + 3, strlen(buf) - 3 + 1);
+		bool_only = 1;
+	}
+	else
+	{
+		bool_only = 0;
 	}
 
 	if(!value)
-	{
-		result = complete_option(buf, bool_only);
-	}
-	else
-	{
-		const char *s;
-		if((s = complete_value(p, (id != -1) ? &options[id] : NULL)) == NULL)
-		{
-			result = NULL;
-		}
-		else if((result = malloc(p - buf + strlen(s) + 1)) != NULL)
-		{
-			strcpy(result, buf);
-			strcpy(result + (p - buf), s);
-		}
-	}
+		complete_option(buf, bool_only);
+	else if(id != -1)
+		complete_value(p, &options[id]);
 
-	return result ? result : strdup(buf);
+	completion_group_end();
+	add_completion(buf);
 }
 
-static char *
+static void
 complete_option(const char *buf, int bool_only)
 {
-	static size_t times;
-	static int last;
-
 	size_t len;
-
-	if(buf == NULL)
-	{
-		times = 0;
-		last = -1;
-		return NULL;
-	}
+	int i;
 
 	len = strlen(buf);
-
-	if(last == options_count)
-		last = -1;
-
-	while(++last < options_count)
+	for(i = 0; i < options_count; i++)
 	{
-		if(bool_only && options[last].type != OPT_BOOL)
+		if(bool_only && options[i].type != OPT_BOOL)
 			continue;
-		if(strncmp(buf, options[last].name, len) == 0)
-		{
-			times++;
-			return strdup(options[last].name);
-		}
-	}
-	if(times == 1)
-	{
-		times--;
-		return complete_option(buf, bool_only);
-	}
-	else
-	{
-		times++;
-		return NULL;
+		if(strncmp(buf, options[i].name, len) == 0)
+			add_completion(strdup(options[i].name));
 	}
 }
 
-static const char *
+static void
 complete_value(const char *buf, struct opt_t *opt)
 {
-	static size_t times;
-	static int last;
-
 	size_t len;
-
-	if(opt == NULL)
-	{
-		times = 0;
-		last = -1;
-		return NULL;
-	}
+	int i;
 
 	len = strlen(buf);
 
-	if(last == opt->val_count)
-		last = -1;
-
-	while(++last < opt->val_count)
+	for(i = 0; i < opt->val_count; i++)
 	{
-		if(strncmp(buf, opt->vals[last], len) == 0)
-		{
-			times++;
-			return opt->vals[last];
-		}
-	}
-	if(times == 1)
-	{
-		times--;
-		return complete_value(buf, opt);
-	}
-	else
-	{
-		times++;
-		return NULL;
+		if(strncmp(buf, opt->vals[i], len) == 0)
+			add_completion(opt->vals[i]);
 	}
 }
 
