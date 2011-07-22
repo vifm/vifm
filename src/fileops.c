@@ -1663,9 +1663,9 @@ clone_file(FileView* view)
 	const char *filename;
 	
 	filename = get_current_file_name(view);
-	if(strcmp(filename, ".") == 0)
+	if(strcmp(filename, "./") == 0)
 		return;
-	if(strcmp(filename, "..") == 0)
+	if(strcmp(filename, "../") == 0)
 		return;
 
 	snprintf(clone_name, sizeof(clone_name), "%s", filename);
