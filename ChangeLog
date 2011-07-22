@@ -33,6 +33,8 @@
 
 	Fixed bug with invalid value of %f for :udf.
 
+	Fixed bug with shrinking of status bar.
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).

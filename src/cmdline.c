@@ -324,13 +324,16 @@ update_cmdline_size(void)
 			input_stat.curs_pos);
 	d = (input_stat.prompt_wid + input_stat.len + cursor_at_the_end + line_width -
 			1)/line_width;
-	mvwin(status_bar, getmaxy(stdscr) - d, 0);
-	wresize(status_bar, d, line_width);
-
-	if(prev_mode != MENU_MODE)
+	if(d >= getmaxy(status_bar))
 	{
-		mvwin(stat_win, getmaxy(stdscr) - d - 1, 0);
-		wrefresh(stat_win);
+		mvwin(status_bar, getmaxy(stdscr) - d, 0);
+		wresize(status_bar, d, line_width);
+
+		if(prev_mode != MENU_MODE)
+		{
+			mvwin(stat_win, getmaxy(stdscr) - d - 1, 0);
+			wrefresh(stat_win);
+		}
 	}
 }
 
