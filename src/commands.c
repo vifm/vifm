@@ -995,8 +995,8 @@ static
 void
 initialize_command_struct(cmd_params *cmd)
 {
-	cmd->start_range = 0;
-	cmd->end_range = 0;
+	cmd->start_range = -1;
+	cmd->end_range = -1;
 	cmd->count = 0;
 	cmd->cmd_name = NULL;
 	cmd->args = NULL;
@@ -1197,7 +1197,7 @@ check_for_range(FileView *view, char *command, cmd_params *cmd)
 		else
 			cmd->end_range = view->list_pos;
 	}
-	else if(!cmd->end_range)/* Only one number is given for the range */
+	else if(cmd->end_range < 0)/* Only one number is given for the range */
 	{
 		cmd->end_range = cmd->start_range;
 		cmd->start_range = -1;
@@ -2003,9 +2003,7 @@ static const char *
 skip_spaces(const char *cmd)
 {
 	while(isspace(*cmd) && *cmd != '\0')
-	{
 		cmd++;
-	}
 	return cmd;
 }
 
@@ -2013,9 +2011,7 @@ static const char *
 skip_word(const char *cmd)
 {
 	while(!isspace(*cmd) && *cmd != '\0')
-	{
 		cmd++;
-	}
 	return cmd;
 }
 
