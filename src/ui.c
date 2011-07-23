@@ -513,7 +513,6 @@ redraw_window(void)
 		return;
 	}
 
-	change_directory(curr_view, curr_view->curr_dir);
 	load_dir_list(curr_view, 1);
 
 	if(curr_stats.view)
@@ -523,7 +522,6 @@ redraw_window(void)
 	}
 	else
 	{
-		change_directory(other_view, other_view->curr_dir);
 		load_dir_list(other_view, 1);
 	}
 
@@ -540,7 +538,9 @@ redraw_window(void)
 			status_bar_message(status_buf);
 		}
 		else
+		{
 			clean_status_bar();
+		}
 
 		update_pos_window(curr_view);
 	}

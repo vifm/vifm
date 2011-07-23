@@ -50,6 +50,7 @@ static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_d(struct key_info, struct keys_info *);
 static void cmd_ctrl_e(struct key_info, struct keys_info *);
 static void cmd_ctrl_f(struct key_info, struct keys_info *);
+static void cmd_ctrl_l(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
 static void cmd_ctrl_u(struct key_info, struct keys_info *);
 static void cmd_ctrl_y(struct key_info, struct keys_info *);
@@ -88,6 +89,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x04", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_d}}},
 	{L"\x05", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_e}}},
 	{L"\x06", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
+	{L"\x0c", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
 	{L"\x0d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{L"\x15", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
 	{L"\x19", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
@@ -238,6 +240,13 @@ static void
 cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	goto_pos(view->top_line + 2*view->window_rows + 1);
+}
+
+static void
+cmd_ctrl_l(struct key_info key_info, struct keys_info *keys_info)
+{
+	redraw_window();
+	curs_set(0);
 }
 
 static void
