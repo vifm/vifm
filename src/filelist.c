@@ -141,14 +141,26 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 	}
 
 	if(is_current_line)
-		wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
-				| A_BOLD);
+	{
+		if(cfg.invert_cur_line)
+			wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme)
+					| A_BOLD | A_REVERSE);
+		else
+			wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
+					| A_BOLD);
+	}
 
 	mvwaddstr(view->win, y, view->window_width - strlen(buf), buf);
 
 	if(is_current_line)
-		wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
-				| A_BOLD);
+	{
+		if(cfg.invert_cur_line)
+			wattroff(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme)
+					| A_BOLD | A_REVERSE);
+		else
+			wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
+					| A_BOLD);
+	}
 }
 
 static FILE *
@@ -815,7 +827,7 @@ moveto_list_pos(FileView *view, int pos)
 			pair_content(SELECTED_COLOR + view->color_scheme, &f, &b);
 		else
 			pair_content(LINE_COLOR + view->color_scheme, &f, &b);
-		init_pair(CURR_LINE_COLOR + view->color_scheme, f, b);
+		init_pair(CURRENT_COLOR + view->color_scheme, f, b);
 	}
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme));
@@ -823,8 +835,8 @@ moveto_list_pos(FileView *view, int pos)
 	mvwaddstr(view->win, old_cursor, 0, " ");
 
 	if(cfg.invert_cur_line)
-		wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
-				A_BOLD | A_REVERSE);
+		wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | A_BOLD |
+				A_REVERSE);
 	else
 		wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
 				A_BOLD);
@@ -851,7 +863,7 @@ moveto_list_pos(FileView *view, int pos)
 
 	if(cfg.invert_cur_line)
 	{
-		wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
+		wattroff(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) |
 				A_BOLD | A_REVERSE);
 	}
 }

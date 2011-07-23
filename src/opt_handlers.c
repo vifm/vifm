@@ -298,19 +298,6 @@ static void
 reversecol_handler(enum opt_op op, union optval_t val)
 {
 	cfg.invert_cur_line = val.bool_val;
-	if(!cfg.invert_cur_line)
-	{
-		int i;
-		for(i = 0; i < cfg.color_scheme_num; i++)
-		{
-			int x;
-			for(x = 0; x < MAXNUM_COLOR; x++)
-				if(col_schemes[i].color[x].name == CURR_LINE_COLOR)
-					init_pair(col_schemes[i].color[x].name, col_schemes[i].color[x].fg,
-							col_schemes[i].color[x].bg);
-		}
-	}
-
 	redraw_lists();
 }
 
