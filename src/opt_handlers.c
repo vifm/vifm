@@ -318,6 +318,7 @@ sortnumbers_handler(enum opt_op op, union optval_t val)
 {
 	cfg.sort_numbers = val.bool_val;
 	load_saving_pos(curr_view, 1);
+	load_dir_list(other_view, 1);
 }
 
 static void

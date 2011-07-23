@@ -1661,7 +1661,7 @@ remove_filename_filter(FileView *view)
 	view->filename_filter = (char *)realloc(view->filename_filter, 1);
 	strcpy(view->filename_filter, "");
 	view->prev_invert = view->invert;
-	view->invert = 0;
+	view->invert = 1;
 	load_saving_pos(view, 0);
 }
 

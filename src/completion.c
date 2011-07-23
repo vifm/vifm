@@ -96,7 +96,9 @@ sorter(const void *first, const void *second)
 	if(stra[lena - 1] == '/' && strb[lenb - 1] == '/')
 	{
 		size_t len = MIN(lena - 1, lenb - 1);
-		return strncmp(stra, strb, len);
+		int res = strncmp(stra, strb, len);
+		if(res == 0)
+			return lena - lenb;
 	}
 	return strcmp(stra, strb);
 }

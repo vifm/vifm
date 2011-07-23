@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#define _GNU_SOURCE
+
 #include <curses.h>
 
 #include <fcntl.h> /* access */
@@ -48,6 +50,8 @@ compare_file_names(const char *s, const char *t)
 {
 	if(!cfg.sort_numbers)
 		return strcmp(s, t);
+	else
+		return strverscmp(s, t);
 
 	while(*s != '\0' && *t != '\0')
 	{

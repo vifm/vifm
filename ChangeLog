@@ -49,6 +49,8 @@
 
 	Fixed bug with :view and infinite loop.
 
+	Fixed zR.
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).
