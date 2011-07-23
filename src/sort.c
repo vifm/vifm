@@ -54,6 +54,7 @@ compare_file_names(const char *s, const char *t)
 		if(isdigit(*s) && isdigit(*t))
 		{
 			int num_a, num_b;
+			const char *os = s, *ot = t;
 			char *p;
 
 			num_a = strtol(s, &p, 10);
@@ -64,6 +65,8 @@ compare_file_names(const char *s, const char *t)
 
 			if(num_a != num_b)
 				return num_a - num_b;
+			else if(*os != *ot)
+				return *os - *ot;
 		}
 		else if(*s == *t)
 		{

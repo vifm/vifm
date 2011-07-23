@@ -81,6 +81,14 @@ with_numbers(void)
 	s = "abcdef1.20.0";
 	t = "abcdef1.5.1";
 	assert_true(compare_file_names(s, t) > 0);
+
+	s = "x001";
+	t = "x1";
+	assert_true(compare_file_names(s, t) < 0);
+
+	s = "x1";
+	t = "x001";
+	assert_true(compare_file_names(s, t) > 0);
 }
 
 static void
