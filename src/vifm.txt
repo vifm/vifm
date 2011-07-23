@@ -520,6 +520,12 @@ type: boolean
 default: false
 Use vim help format.
 
+wildmenu
+type: boolean
+default: false
+Controls whether possible matches of completion will be shown above the
+command line.
+
 wrap
 type: boolean
 default: true

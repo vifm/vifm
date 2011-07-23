@@ -37,7 +37,9 @@ int get_completion_count(void);
 
 void set_completion_order(int reversed);
 
-/* for 'wildmenu': const char ** get_completion_list(void); */
+const char ** get_completion_list(void);
+
+int get_completion_pos(void);
 
 #endif
 

@@ -138,5 +138,17 @@ set_completion_order(int reversed)
 	order = reversed;
 }
 
+const char **
+get_completion_list(void)
+{
+	return (const char **)lines;
+}
+
+int
+get_completion_pos(void)
+{
+	return curr;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

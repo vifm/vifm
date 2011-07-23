@@ -1,6 +1,8 @@
 0.6.3 to current
 
-	Added 'reversecol' option.
+	Added 'reversecol' option (affects the look of current line in the views).
+
+	Added 'wildmenu' option.
 
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 

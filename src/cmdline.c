@@ -104,6 +104,7 @@ static void cmd_ctrl_h(struct key_info, struct keys_info *);
 static void cmd_ctrl_i(struct key_info, struct keys_info *);
 static void cmd_shift_tab(struct key_info, struct keys_info *);
 static void do_completion(void);
+static void draw_wild_menu(int op);
 static void cmd_ctrl_k(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
 static void cmd_ctrl_n(struct key_info, struct keys_info *);
@@ -146,6 +147,7 @@ static char * get_last_word(const char * string);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static char * filename_completion(const char *str, int type);
 static char * check_for_executable(const char *string);
+static void stop_completion(void);
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x03",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
@@ -282,13 +284,11 @@ def_handler(wchar_t key)
 	if(input_stat.complete_continue
 			&& input_stat.line[input_stat.index - 1] == L'/' && key == '/')
 	{
-		input_stat.complete_continue = 0;
-		reset_completion();
+		stop_completion();
 		return 0;
 	}
 
-	input_stat.complete_continue = 0;
-	reset_completion();
+	stop_completion();
 
 	if(key != L'\r' && !iswprint(key))
 		return 0;
@@ -444,6 +444,9 @@ redraw_cmdline(void)
 			redraw_permissions_dialog();
 	}
 
+	if(cfg.wild_menu)
+		draw_wild_menu(-1);
+
 	line_width = getmaxx(stdscr);
 	curs_set(TRUE);
 	update_cmdline_size();
@@ -524,8 +527,7 @@ leave_cmdline_mode(void)
 static void
 cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
-	reset_completion();
-
+	stop_completion();
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
@@ -542,8 +544,7 @@ static void
 cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.history_search = 0;
-	input_stat.complete_continue = 0;
-	reset_completion();
+	stop_completion();
 
 	if(input_stat.index == 0)
 	{
@@ -595,15 +596,23 @@ cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
 {
+	if(!input_stat.complete_continue)
+		draw_wild_menu(1);
 	set_completion_order(0);
 	do_completion();
+	if(cfg.wild_menu)
+		draw_wild_menu(0);
 }
 
 static void
 cmd_shift_tab(struct key_info key_info, struct keys_info *keys_info)
 {
+	if(!input_stat.complete_continue)
+		draw_wild_menu(1);
 	set_completion_order(1);
 	do_completion();
+	if(cfg.wild_menu)
+		draw_wild_menu(0);
 }
 
 static void
@@ -633,12 +642,101 @@ do_completion(void)
 	}
 }
 
+/*
+ * op == 0 - draw
+ * op < 0 - redraw
+ * op > 0 - reset
+ */
+static void
+draw_wild_menu(int op)
+{
+	static int last_pos;
+
+	const char ** list = get_completion_list();
+	int pos = get_completion_pos();
+	int count = get_completion_count() - 1;
+	int i;
+	int len = getmaxx(stdscr);
+	
+	if(count < 2)
+		return;
+
+	if(op > 0)
+	{
+		last_pos = 0;
+		return;
+	}
+
+	if(pos == 0)
+		last_pos = 0;
+	if(last_pos == 0 && pos == count - 1)
+		last_pos = count;
+	if(pos < last_pos)
+	{
+		int l = len;
+		while(last_pos > 0 && l > 2)
+		{
+			last_pos--;
+			l -= strlen(list[last_pos]);
+			if(last_pos != 0)
+				l -= 2;
+		}
+		if(l < 2)
+			last_pos++;
+	}
+
+	wclear(stat_win);
+	wmove(stat_win, 0, 0);
+
+	wattron(stat_win, A_BOLD);
+	for(i = last_pos; i < count && len > 0; i++)
+	{
+		len -= strlen(list[i]);
+		if(i != 0)
+			len -= 2;
+
+		if(i == last_pos && last_pos > 0)
+		{
+			wprintw(stat_win, "< ");
+		}
+		else if(i > last_pos)
+		{
+			if(len < 2)
+			{
+				wprintw(stat_win, " >");
+				break;
+			}
+			wprintw(stat_win, "  ");
+		}
+
+		if(i == pos)
+			wattron(stat_win, COLOR_PAIR(MENU_COLOR + cfg.color_scheme) |
+					A_UNDERLINE | A_REVERSE);
+		wprintw(stat_win, "%s", list[i]);
+		if(i == pos)
+		{
+			wattroff(stat_win, COLOR_PAIR(MENU_COLOR + cfg.color_scheme) |
+					A_UNDERLINE | A_REVERSE);
+			pos = -pos;
+		}
+	}
+	if(pos > 0 && pos != count)
+	{
+		last_pos = pos;
+		draw_wild_menu(op);
+		return;
+	}
+	wattroff(stat_win, A_BOLD);
+	if(op == 0 && len < 2 && i - 1 == pos)
+		last_pos = i;
+	wrefresh(stat_win);
+}
+
 static void
 cmd_ctrl_k(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.history_search = 0;
-	input_stat.complete_continue = 0;
-	reset_completion();
+	stop_completion();
 
 	if(input_stat.index == input_stat.len)
 		return;
@@ -658,8 +756,7 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 	char* p;
 	int save_hist = !keys_info->mapped;
 
-	reset_completion();
-
+	stop_completion();
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
@@ -729,8 +826,7 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_n(struct key_info key_info, struct keys_info *keys_info)
 {
-	input_stat.complete_continue = 0;
-	reset_completion();
+	stop_completion();
 
 	if(input_stat.history_search == 0)
 	{
@@ -756,8 +852,7 @@ cmd_ctrl_n(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_down(struct key_info key_info, struct keys_info *keys_info)
 {
-	input_stat.complete_continue = 0;
-	reset_completion();
+	stop_completion();
 
 	if(input_stat.history_search == 0)
 	{
@@ -788,8 +883,7 @@ static void
 cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.history_search = 0;
-	input_stat.complete_continue = 0;
-	reset_completion();
+	stop_completion();
 
 	if(input_stat.index == 0)
 		return;
@@ -815,8 +909,7 @@ cmd_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
 	int old;
 
 	input_stat.history_search = 0;
-	input_stat.complete_continue = 0;
-	reset_completion();
+	stop_completion();
 
 	old = input_stat.index;
 	find_prev_word();
@@ -912,8 +1005,7 @@ static void
 cmd_left(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.history_search = 0;
-	input_stat.complete_continue = 0;
-	reset_completion();
+	stop_completion();
 
 	if(input_stat.index > 0)
 	{
@@ -928,8 +1020,7 @@ static void
 cmd_right(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.history_search = 0;
-	input_stat.complete_continue = 0;
-	reset_completion();
+	stop_completion();
 
 	if(input_stat.index < input_stat.len)
 	{
@@ -962,8 +1053,7 @@ static void
 cmd_delete(struct key_info key_info, struct keys_info *keys_info)
 {
 	input_stat.history_search = 0;
-	input_stat.complete_continue = 0;
-	reset_completion();
+	stop_completion();
 
 	if(input_stat.index == input_stat.len)
 		return;
@@ -1082,8 +1172,7 @@ complete_search_prev(void)
 static void
 cmd_ctrl_p(struct key_info key_info, struct keys_info *keys_info)
 {
-	input_stat.complete_continue = 0;
-	reset_completion();
+	stop_completion();
 
 	if(input_stat.history_search == 0)
 	{
@@ -1109,8 +1198,7 @@ cmd_ctrl_p(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_up(struct key_info key_info, struct keys_info *keys_info)
 {
-	input_stat.complete_continue = 0;
-	reset_completion();
+	stop_completion();
 
 	if(input_stat.history_search == 0)
 	{
@@ -1353,8 +1441,7 @@ line_completion(struct line_stats *stat)
 
 	if(stat->line[stat->index] != L' ' && stat->index != stat->len)
 	{
-		stat->complete_continue = 0;
-		reset_completion();
+		stop_completion();
 		return -1;
 	}
 
@@ -1788,8 +1875,7 @@ filename_completion(const char *str, int type)
 
 	if(strcmp(str, "~") == 0)
 	{
-		input_stat.complete_continue = 0;
-		reset_completion();
+		stop_completion();
 		return strdup(cfg.home_dir);
 	}
 
@@ -1938,10 +2024,7 @@ filename_completion(const char *str, int type)
 
 	temp = next_completion();
 	if(get_completion_count() <= 2)
-	{
-		input_stat.complete_continue = 0;
-		reset_completion();
-	}
+		stop_completion();
 	return temp;
 }
 
@@ -1967,6 +2050,18 @@ check_for_executable(const char *string)
 			temp = strdup(string + 1);
 	}
 	return temp;
+}
+
+static void
+stop_completion(void)
+{
+	if(!input_stat.complete_continue)
+		return;
+
+	input_stat.complete_continue = 0;
+	reset_completion();
+	if(cfg.wild_menu)
+		update_stat_window(curr_view);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

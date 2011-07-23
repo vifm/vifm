@@ -32,6 +32,7 @@ static void trash_handler(enum opt_op op, union optval_t val);
 static void undolevels_handler(enum opt_op op, union optval_t val);
 static void vicmd_handler(enum opt_op op, union optval_t val);
 static void vimhelp_handler(enum opt_op op, union optval_t val);
+static void wildmenu_handler(enum opt_op op, union optval_t val);
 static void wrap_handler(enum opt_op op, union optval_t val);
 
 static int save_msg;
@@ -82,6 +83,7 @@ add_options(void)
 	add_option("undolevels", OPT_INT, 0, NULL, &undolevels_handler);
 	add_option("vicmd", OPT_STR, 0, NULL, &vicmd_handler);
 	add_option("vimhelp", OPT_BOOL, 0, NULL, &vimhelp_handler);
+	add_option("wildmenu", OPT_BOOL, 0, NULL, &wildmenu_handler);
 	add_option("wrap", OPT_BOOL, 0, NULL, &wrap_handler);
 
 	/* local options */
@@ -112,6 +114,9 @@ load_options(void)
 	val.bool_val = cfg.use_iec_prefixes;
 	set_option("iec", val);
 
+	val.bool_val = cfg.invert_cur_line;
+	set_option("reversecol", val);
+
 	val.bool_val = cfg.auto_execute;
 	set_option("runexec", val);
 
@@ -135,6 +140,9 @@ load_options(void)
 
 	val.bool_val = cfg.use_vim_help;
 	set_option("vimhelp", val);
+
+	val.bool_val = cfg.wild_menu;
+	set_option("wildmenu", val);
 
 	val.bool_val = cfg.wrap_quick_view;
 	set_option("wrap", val);
@@ -371,6 +379,12 @@ static void
 vimhelp_handler(enum opt_op op, union optval_t val)
 {
 	cfg.use_vim_help = val.bool_val;
+}
+
+static void
+wildmenu_handler(enum opt_op op, union optval_t val)
+{
+	cfg.wild_menu = val.bool_val;
 }
 
 static void

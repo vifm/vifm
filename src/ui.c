@@ -241,8 +241,12 @@ setup_ncurses_interface(void)
 	{
 		int x;
 		for(x = 0; x < MAXNUM_COLOR; x++)
-			init_pair(col_schemes[i].color[x].name, col_schemes[i].color[x].fg,
-					col_schemes[i].color[x].bg);
+			if(col_schemes[i].color[x].name == CURRENT_COLOR)
+				init_pair(col_schemes[i].color[x].name, col_schemes[i].color[x].bg,
+						col_schemes[i].color[x].fg);
+			else
+				init_pair(col_schemes[i].color[x].name, col_schemes[i].color[x].fg,
+						col_schemes[i].color[x].bg);
 	}
 
 	color_scheme = cfg.color_scheme_cur*MAXNUM_COLOR;

@@ -76,6 +76,8 @@ typedef struct _Config {
 	int fast_run;
 
 	int invert_cur_line;
+
+	int wild_menu;
 } Config;
 
 extern Config cfg;

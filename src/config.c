@@ -83,6 +83,7 @@ init_config(void)
 	cfg.history_len = 15;
 	cfg.use_vim_help = 0;
 	cfg.invert_cur_line = 0;
+	cfg.wild_menu = 0;
 
 	/* Maximum argument length to pass to the shell */
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)
