@@ -94,6 +94,8 @@ find_pattern(FileView *view, char *pattern, int backward)
 
 	for(x = 0; x < view->list_rows; x++)
 	{
+		if(strcmp(view->dir_entry[x].name, "../") == 0)
+			continue;
 		if(regcomp(&re, pattern, REG_EXTENDED) == 0)
 		{
 			if(regexec(&re, view->dir_entry[x].name, 0, NULL, 0) == 0)
