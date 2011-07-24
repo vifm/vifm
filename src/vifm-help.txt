@@ -356,8 +356,10 @@ Commands
 
        :colo[rscheme]
               gives a menu with a list of available color  schemes.   You  can
-              choose  default color scheme here.  It will be used if no DIREC‐
-              TORY in colorscheme file fits current path.
+              choose  default  color scheme here.  It will be used for view if
+              no DIRECTORY in colorscheme file fits current path.   It's  also
+              used  to set border color (except view titles) and colors in the
+              menus and dialogs.
 
        :colo[rscheme] color_scheme_name
               changes  default  color  scheme   to   color_scheme_name.    See
@@ -792,7 +794,12 @@ Configure
        and you may edit it by hand to change the settings.
 
        The ~/.vifm/startup file contains commands that  will  be  executed  on
-       vifm startup. You can set your mappings there.
+       vifm startup.  You can set your mappings there.  To use multi line com‐
+       mands precede each next line with a slash (whitespace before  slash  is
+       ignored,  but  all spaces at the end of lines are saved).  For example:
+       set
+           \smartcase equals "setsmartcase".  When set<space here>
+            smartcase<space here> equals "set  smartcase ".
 
 Plugin
        Plugin for using vifm in vim as a file selector.
@@ -802,15 +809,15 @@ Plugin
          :EditVifm  select a file to open in the current buffer.
          :SplitVifm split buffer and select a file to open.
          :VsplitVifm vertically split buffer and select a file to open.
-         :DiffVifm  select  a  file  to compare to the current file with :vert
+         :DiffVifm select a file to compare to the  current  file  with  :vert
        diffsplit.
 
        The plugin does not have any settings.
 
-       To use the plugin copy the vifm.vim file  to  either  the  system  wide
+       To  use  the  plugin  copy  the vifm.vim file to either the system wide
        vim/plugin directory or into ~/.vim/plugin.
 
-       If  you would prefer not to use the plugin and it is in the system wide
+       If you would prefer not to use the plugin and it is in the system  wide
        plugin directory add
 
        let loaded_vifm=1

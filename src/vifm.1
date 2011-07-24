@@ -441,8 +441,9 @@ show command line history menu.  Note: will be removed.
 .TP
 .BI :colo[rscheme]
 gives a menu with a list of available color schemes.  You can choose default
-color scheme here.  It will be used if no DIRECTORY in colorscheme file fits
-current path.
+color scheme here.  It will be used for view if no DIRECTORY in colorscheme
+file fits current path.  It's also used to set border color (except view titles)
+and colors in the menus and dialogs.
 .TP
 .BI ":colo[rscheme] color_scheme_name"
 changes default color scheme to color_scheme_name.  See :colo[rscheme].
@@ -954,7 +955,7 @@ startup.  You can set your mappings there.  To use multi line commands precede
 each next line with a slash (whitespace before slash is ignored, but all spaces
 at the end of lines are saved).  For example:
 set
-    \smartcase
+    \\smartcase
 equals "setsmartcase".  When
 set<space here>
     \ smartcase<space here>
