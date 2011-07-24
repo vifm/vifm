@@ -38,7 +38,6 @@ enum Ui_colors {
 };
 
 typedef struct _Col_attr {
-	int name;
 	int fg;
 	int bg;
 } Col_attr;
@@ -46,7 +45,7 @@ typedef struct _Col_attr {
 typedef struct _Col_Scheme {
 	char name[NAME_MAX];
 	char dir[PATH_MAX];
-	Col_attr color[12];
+	Col_attr color[MAXNUM_COLOR];
 } Col_scheme;
 
 extern Col_scheme *col_schemes;

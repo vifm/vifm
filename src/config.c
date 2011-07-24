@@ -66,7 +66,6 @@ init_config(void)
 	cfg.time_format = strdup(" %m/%d %H:%M");
 	cfg.wrap_quick_view = 1;
 	cfg.color_scheme_num = 0;
-	cfg.color_pairs_num = 0;
 	cfg.color_scheme_cur = 0;
 	cfg.color_scheme = 0;
 	cfg.use_iec_prefixes = 0;

@@ -568,7 +568,9 @@ draw_dir_list(FileView *view, int top)
 
 	/* Show as much of the directory as possible. */
 	if(view->window_rows >= view->list_rows)
+	{
 		top = 0;
+	}
 	else if((view->list_rows - top) <= view->window_rows)
 	{
 		top = view->list_rows - view->window_rows -1;
@@ -824,9 +826,9 @@ moveto_list_pos(FileView *view, int pos)
 		}
 
 		if(view->dir_entry[pos].selected)
-			pair_content(SELECTED_COLOR + view->color_scheme, &f, &b);
-		else
-			pair_content(LINE_COLOR + view->color_scheme, &f, &b);
+			LINE_COLOR = SELECTED_COLOR + view->color_scheme;
+
+		pair_content(LINE_COLOR, &f, &b);
 		init_pair(CURRENT_COLOR + view->color_scheme, f, b);
 	}
 

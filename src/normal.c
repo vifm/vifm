@@ -1026,7 +1026,7 @@ cmd_t(struct key_info key_info, struct keys_info *keys_info)
 	{
 		/* The ../ dir cannot be selected */
 		if(!strcmp(curr_view->dir_entry[curr_view->list_pos].name, "../"))
-				return;
+			return;
 
 		curr_view->dir_entry[curr_view->list_pos].selected = 1;
 		curr_view->selected_files++;
@@ -1048,7 +1048,7 @@ cmd_t(struct key_info key_info, struct keys_info *keys_info)
 				COLOR_PAIR(curr_view->color_scheme + CURR_LINE_COLOR) | A_BOLD);
 		mvwaddstr(curr_view->win, curr_view->curr_line, 0, " ");
 		wattroff(curr_view->win,
-				COLOR_PAIR(curr_view->color_scheme + CURR_LINE_COLOR));
+				COLOR_PAIR(curr_view->color_scheme + CURR_LINE_COLOR) | A_BOLD);
 		wmove(curr_view->win, curr_view->curr_line, 0);
 	}
 }

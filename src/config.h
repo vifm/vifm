@@ -59,7 +59,6 @@ typedef struct _Config {
 	int cmd_history_num;
 
 	int color_scheme_num;
-	int color_pairs_num;
 	int color_scheme_cur;
 	int color_scheme;
 

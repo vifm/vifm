@@ -145,9 +145,7 @@ write_color_scheme_file(void)
 			};
 			int t;
 
-			col_schemes[x].color[y].name %= MAXNUM_COLOR;
-			snprintf(buf, sizeof(buf), "%s",
-					ELEM_NAMES[col_schemes[x].color[y].name]);
+			snprintf(buf, sizeof(buf), "%s", ELEM_NAMES[y]);
 
 			t = col_schemes[x].color[y].fg + 1;
 			if((size_t)t < sizeof(COLOR_STR)/sizeof(COLOR_STR[0]))
@@ -170,14 +168,13 @@ write_color_scheme_file(void)
 }
 
 static void
-init_color_scheme(Col_scheme *cs)
+init_color_scheme(int num, Col_scheme *cs)
 {
 	int i;
 	strcpy(cs->dir, "");
 
 	for(i = 0; i < MAXNUM_COLOR; i++)
 	{
-		cs->color[i].name = i;
 		cs->color[i].fg = default_colors[i][0];
 		cs->color[i].bg = default_colors[i][1];
 	}
@@ -186,7 +183,7 @@ init_color_scheme(Col_scheme *cs)
 static void
 load_default_colors()
 {
-	init_color_scheme(&col_schemes[0]);
+	init_color_scheme(0, &col_schemes[0]);
 
 	snprintf(col_schemes[0].name, NAME_MAX, "Default");
 	snprintf(col_schemes[0].dir, PATH_MAX, "/");
@@ -229,55 +226,43 @@ add_color(char s1[], char s2[], char s3[])
 	int fg, bg;
 	int scheme;
 	const int x = cfg.color_scheme_num - 1;
-	int y = cfg.color_pairs_num;
+	int y;
 
 	fg = colname2int(s2);
 	bg = colname2int(s3);
 
-	y %= MAXNUM_COLOR;
-
 	scheme = x * MAXNUM_COLOR;
 
+	y = -1;
 	if(!strcmp(s1, "MENU"))
-		col_schemes[x].color[y].name = scheme + MENU_COLOR;
-
-	if(!strcmp(s1, "BORDER"))
-		col_schemes[x].color[y].name = scheme + BORDER_COLOR;
-
-	if(!strcmp(s1, "WIN"))
-		col_schemes[x].color[y].name = scheme + WIN_COLOR;
-
-	if(!strcmp(s1, "STATUS_BAR"))
-		col_schemes[x].color[y].name = scheme + STATUS_BAR_COLOR;
-
-	if(!strcmp(s1, "CURR_LINE"))
-		col_schemes[x].color[y].name = scheme + CURR_LINE_COLOR;
-
-	if(!strcmp(s1, "DIRECTORY"))
-		col_schemes[x].color[y].name = scheme + DIRECTORY_COLOR;
-
-	if(!strcmp(s1, "LINK"))
-		col_schemes[x].color[y].name = scheme + LINK_COLOR;
-
-	if(!strcmp(s1, "SOCKET"))
-		col_schemes[x].color[y].name = scheme + SOCKET_COLOR;
-
-	if(!strcmp(s1, "DEVICE"))
-		col_schemes[x].color[y].name = scheme + DEVICE_COLOR;
-
-	if(!strcmp(s1, "EXECUTABLE"))
-		col_schemes[x].color[y].name = scheme + EXECUTABLE_COLOR;
-
-	if(!strcmp(s1, "SELECTED"))
-		col_schemes[x].color[y].name = scheme + SELECTED_COLOR;
-
-	if(!strcmp(s1, "CURRENT"))
-		col_schemes[x].color[y].name = scheme + CURRENT_COLOR;
+		y = MENU_COLOR;
+	else if(!strcmp(s1, "BORDER"))
+		y = BORDER_COLOR;
+	else if(!strcmp(s1, "WIN"))
+		y = WIN_COLOR;
+	else if(!strcmp(s1, "STATUS_BAR"))
+		y = STATUS_BAR_COLOR;
+	else if(!strcmp(s1, "CURR_LINE"))
+		y = CURR_LINE_COLOR;
+	else if(!strcmp(s1, "DIRECTORY"))
+		y = DIRECTORY_COLOR;
+	else if(!strcmp(s1, "LINK"))
+		y = LINK_COLOR;
+	else if(!strcmp(s1, "SOCKET"))
+		y = SOCKET_COLOR;
+	else if(!strcmp(s1, "DEVICE"))
+		y = DEVICE_COLOR;
+	else if(!strcmp(s1, "EXECUTABLE"))
+		y = EXECUTABLE_COLOR;
+	else if(!strcmp(s1, "SELECTED"))
+		y = SELECTED_COLOR;
+	else if(!strcmp(s1, "CURRENT"))
+		y = CURRENT_COLOR;
+	else
+		return;
 
 	col_schemes[x].color[y].fg = fg;
 	col_schemes[x].color[y].bg = bg;
-
-	cfg.color_pairs_num++;
 }
 
 void
@@ -299,7 +284,6 @@ read_color_scheme_file(void)
 		load_default_colors();
 
 		cfg.color_scheme_num++;
-		cfg.color_pairs_num = MAXNUM_COLOR;
 		write_color_scheme_file();
 		return;
 	}
@@ -344,7 +328,8 @@ read_color_scheme_file(void)
 				if(cfg.color_scheme_num > 8)
 					break;
 
-				init_color_scheme(&col_schemes[cfg.color_scheme_num - 1]);
+				init_color_scheme(cfg.color_scheme_num - 1,
+						&col_schemes[cfg.color_scheme_num - 1]);
 
 				snprintf(col_schemes[cfg.color_scheme_num - 1].name, NAME_MAX, "%s",
 						s1);
@@ -363,14 +348,10 @@ read_color_scheme_file(void)
 			}
 		}
 		if(!strcmp(line, "COLOR") && args == 3)
-		{
 			add_color(s1, s2, s3);
-		}
 	}
 
 	fclose(fp);
-
-	return;
 }
 
 /* The return value is the color scheme base number for the colorpairs.
