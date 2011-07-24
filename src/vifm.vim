@@ -69,11 +69,11 @@ function! s:StartVifm(editcmd)
 	let s:flist = split(s:r, "\n")
 
 	if len(s:flist) == 1
-		silent execute a:editcmd escape(s:r, ' "%')
+		silent execute a:editcmd fnameescape(s:r)
 		return
 	endif
 
-	let s:flist = map(s:flist, 'escape(v:val, " \"%")')
+	let s:flist = map(s:flist, 'fnameescape(v:val)')
 	if a:editcmd == 'edit'
 		silent execute 'args' join(s:flist)
     elseif a:editcmd == 'tab drop'
