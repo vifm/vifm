@@ -164,7 +164,7 @@ system_and_wait_for_errors(char *cmd)
 		while((nread = read(error_pipe[0], linebuf, sizeof(linebuf) - 1)) > 0)
 		{
 			result = -1;
-			linebuf[nread + 1] = '\0';
+			linebuf[nread] = '\0';
 			if(nread == 1 && linebuf[0] == '\n')
 				continue;
 			strncat(buf, linebuf, sizeof(buf));
