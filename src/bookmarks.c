@@ -95,10 +95,15 @@ is_spec_bookmark(const int x)
 
 /*
  * low-level function without safety checks
+ *
+ * Returns 1 if bookmark existed
  */
-static void
+static int
 silent_remove_bookmark(const int x)
 {
+	if(bookmarks[x].directory == NULL && bookmarks[x].file == NULL)
+		return 0;
+
 	curr_stats.setting_change = 1;
 	free(bookmarks[x].directory);
 	free(bookmarks[x].file);
@@ -106,14 +111,13 @@ silent_remove_bookmark(const int x)
 	bookmarks[x].file = NULL;
 	/* decrease number of active bookmarks */
 	cfg.num_bookmarks--;
+	return 1;
 }
 
 void
 remove_bookmark(const int x)
 {
-	if(is_bookmark(x))
-		silent_remove_bookmark(x);
-	else
+	if(silent_remove_bookmark(x) == 0)
 		status_bar_message("Could not find mark");
 }
 
@@ -124,9 +128,8 @@ add_mark(const char mark, const char *directory, const char *file)
 
 	x = mark2index(mark);
 
-	/* The mark is already being used.	Free pointers first! */
-	if(is_bookmark(x))
-		silent_remove_bookmark(x);
+	/* In case the mark is already being used.  Free pointers first! */
+	silent_remove_bookmark(x);
 
 	bookmarks[x].directory = strdup(directory);
 	bookmarks[x].file = strdup(file);

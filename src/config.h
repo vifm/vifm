@@ -31,7 +31,7 @@ typedef struct _Config {
 	char escaped_trash_dir[PATH_MAX];
 	char log_file[PATH_MAX];
 	char *vi_command;
-	int num_bookmarks;
+	int num_bookmarks; /* Number of active bookmarks (set at the moment) */
 	int use_trash;
 	int vim_filter;
 	int use_screen;

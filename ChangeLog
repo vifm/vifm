@@ -55,6 +55,8 @@
 
 	Fixed vifm freezing.
 
+	Fixed bug with bookmarks.
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).

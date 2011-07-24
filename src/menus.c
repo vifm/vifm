@@ -655,9 +655,9 @@ init_active_bookmarks(void)
 	int i, x;
 
 	i = 0;
-	for (x = 0; x < NUM_BOOKMARKS; ++x)
+	for(x = 0; x < NUM_BOOKMARKS; ++x)
 	{
-		if (is_bookmark(x))
+		if(is_bookmark(x))
 			active_bookmarks[i++] = x;
 	}
 }
@@ -946,7 +946,7 @@ show_bookmarks_menu(FileView *view)
 	for(i = 1; x < m.len; i++)
 	{
 		j = active_bookmarks[x];
-		if (!strcmp(bookmarks[j].directory, "/"))
+		if(!strcmp(bookmarks[j].directory, "/"))
 			snprintf(buf, sizeof(buf), "  %c   /%s", index2mark(j), bookmarks[j].file);
 		else if (!strcmp(bookmarks[j].file, "../"))
 			snprintf(buf, sizeof(buf), "  %c   %s", index2mark(j),
