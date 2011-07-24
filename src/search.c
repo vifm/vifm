@@ -104,9 +104,14 @@ find_pattern(FileView *view, char *pattern, int backward)
 	{
 		for(x = 0; x < view->list_rows; x++)
 		{
+			char buf[NAME_MAX];
+
 			if(strcmp(view->dir_entry[x].name, "../") == 0)
 				continue;
-			if(regexec(&re, view->dir_entry[x].name, 0, NULL, 0) != 0)
+
+			strncpy(buf, view->dir_entry[x].name, sizeof(buf));
+			chosp(buf);
+			if(regexec(&re, buf, 0, NULL, 0) != 0)
 				continue;
 
 			if(!first_match)

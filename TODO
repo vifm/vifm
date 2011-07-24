@@ -131,6 +131,7 @@ Other (questionable) things.
     :edit, etc. in menus.
     :alias
     Like gv but to select just pasted files.
+    Ctrl-W like in vim?
 
 Code improvements.
     Move completion code from cmdline to a separate file.
