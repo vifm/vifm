@@ -1432,6 +1432,7 @@ int
 line_completion(struct line_stats *stat)
 {
 	static char *line_mb = (char *)NULL;
+	static char *line_mb_cmd = (char *)NULL;
 
 	size_t words_count;
 	int id;
@@ -1467,13 +1468,14 @@ line_completion(struct line_stats *stat)
 
 		line_mb = (char *) p;
 		wcstombs(line_mb, stat->line, i);
+		line_mb_cmd = find_last_command(line_mb);
 
 		stat->line[stat->index] = t;
 	}
 
-	words_count = get_words_count(line_mb);
-	last_word = get_last_word(line_mb);
-	id = get_buildin_id(line_mb);
+	words_count = get_words_count(line_mb_cmd);
+	last_word = get_last_word(line_mb_cmd);
+	id = get_buildin_id(line_mb_cmd);
 
 	usercmd_completion = (id == COM_DELCOMMAND || id == COM_COMMAND)
 			&& words_count <= 2;
@@ -1621,7 +1623,7 @@ colorschemes_completion(char *line_mb, char *last_word, struct line_stats *stat)
 		complete_colorschemes(last_word);
 
 	completed = next_completion();
-	result = line_part_complete(stat, line_mb, strchr(line_mb, ' ') + 1,
+	result = line_part_complete(stat, line_mb, strrchr(line_mb, ' ') + 1,
 			completed);
 	free(completed);
 	return result;

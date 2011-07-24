@@ -2327,6 +2327,50 @@ exec_commands(char *cmd, FileView *view, int type, int save_hist)
 	return save_msg;
 }
 
+char *
+find_last_command(char *cmd)
+{
+	char *p, *q;
+
+	p = cmd;
+	q = cmd;
+	while(*cmd != '\0')
+	{
+		if(*p == '\\')
+		{
+			if(*(p + 1) == '|')
+				q++;
+			else
+				q += 2;
+			p += 2;
+		}
+		else if((*p == '|' && line_pos(cmd, q, ' ') == 0) || *p == '\0')
+		{
+			if(*p != '\0')
+				p++;
+
+			while(*cmd == ' ' || *cmd == ':')
+				cmd++;
+			if(*cmd == '!' || strncmp(cmd, "com", 3) == 0)
+				break;
+
+			q = p;
+
+			if(*q == '\0')
+				break;
+
+			cmd = q;
+		}
+		else
+		{
+			q++;
+			p++;
+		}
+	}
+
+	return cmd;
+}
+
 static int
 exec_command(char *cmd, FileView *view, int type)
 {
