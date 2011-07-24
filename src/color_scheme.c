@@ -224,16 +224,12 @@ static void
 add_color(char s1[], char s2[], char s3[])
 {
 	int fg, bg;
-	int scheme;
 	const int x = cfg.color_scheme_num - 1;
 	int y;
 
 	fg = colname2int(s2);
 	bg = colname2int(s3);
 
-	scheme = x * MAXNUM_COLOR;
-
-	y = -1;
 	if(!strcmp(s1, "MENU"))
 		y = MENU_COLOR;
 	else if(!strcmp(s1, "BORDER"))
@@ -325,7 +321,7 @@ read_color_scheme_file(void)
 			{
 				cfg.color_scheme_num++;
 
-				if(cfg.color_scheme_num > 8)
+				if(cfg.color_scheme_num > 5)
 					break;
 
 				init_color_scheme(cfg.color_scheme_num - 1,
@@ -386,9 +382,9 @@ check_directory_for_color_scheme(const char *dir)
 	}
 
 	if(max_index == -1)
-		return cfg.color_scheme_cur*MAXNUM_COLOR;
+		return 1 + cfg.color_scheme_cur*MAXNUM_COLOR;
 
-	return max_index*MAXNUM_COLOR;
+	return 1 + max_index*MAXNUM_COLOR;
 }
 
 void

@@ -67,7 +67,7 @@ init_config(void)
 	cfg.wrap_quick_view = 1;
 	cfg.color_scheme_num = 0;
 	cfg.color_scheme_cur = 0;
-	cfg.color_scheme = 0;
+	cfg.color_scheme = 1;
 	cfg.use_iec_prefixes = 0;
 	cfg.undo_levels = 100;
 	cfg.sort_numbers = 0;
@@ -436,7 +436,7 @@ read_config_file(void)
 		cfg.color_scheme_cur = find_color_scheme(col_scheme);
 		if(cfg.color_scheme_cur < 0)
 			cfg.color_scheme_cur = 0;
-		cfg.color_scheme = MAXNUM_COLOR*cfg.color_scheme_cur;
+		cfg.color_scheme = 1 + MAXNUM_COLOR*cfg.color_scheme_cur;
 		free(col_scheme);
 	}
 

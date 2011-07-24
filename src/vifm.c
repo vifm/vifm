@@ -98,7 +98,7 @@ init_window(FileView *win)
 	win->history_num = 0;
 	win->history_pos = 0;
 	win->invert = 0;
-	win->color_scheme = 0;
+	win->color_scheme = 1;
 }
 
 static void

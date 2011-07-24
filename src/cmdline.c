@@ -720,13 +720,13 @@ draw_wild_menu(int op)
 			pos = -pos;
 		}
 	}
+	wattroff(stat_win, A_BOLD);
 	if(pos > 0 && pos != count)
 	{
 		last_pos = pos;
 		draw_wild_menu(op);
 		return;
 	}
-	wattroff(stat_win, A_BOLD);
 	if(op == 0 && len < 2 && i - 1 == pos)
 		last_pos = i;
 	wrefresh(stat_win);

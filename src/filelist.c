@@ -1507,13 +1507,9 @@ load_dir_list(FileView *view, int reload)
 			switch(s.st_mode & S_IFMT)
 			{
 				case S_IFLNK:
-					{
-						if(check_link_is_dir(view->dir_entry[view->list_rows].name))
-						{
-							strcat(dir_entry->name, "/");
-						}
-						dir_entry->type = LINK;
-					}
+					if(check_link_is_dir(view->dir_entry[view->list_rows].name))
+						strcat(dir_entry->name, "/");
+					dir_entry->type = LINK;
 					break;
 				case S_IFDIR:
 					strcat(dir_entry->name, "/");
@@ -1528,15 +1524,13 @@ load_dir_list(FileView *view, int reload)
 					break;
 				case S_IFREG:
 					if(S_ISEXE(s.st_mode))
-					{
 						dir_entry->type = EXECUTABLE;
-						break;
-					}
-					dir_entry->type = REGULAR;
+					else
+						dir_entry->type = REGULAR;
 					break;
 				default:
 					dir_entry->type = UNKNOWN;
-				break;
+					break;
 			}
 		}
 	}

@@ -242,16 +242,16 @@ setup_ncurses_interface(void)
 		int x;
 		for(x = 0; x < MAXNUM_COLOR; x++)
 		{
-			if(x == CURRENT_COLOR)
-				init_pair(i*MAXNUM_COLOR + x, col_schemes[i].color[x].bg,
+			if(x == MENU_COLOR)
+				init_pair(1 + i*MAXNUM_COLOR + x, col_schemes[i].color[x].bg,
 						col_schemes[i].color[x].fg);
 			else
-				init_pair(i*MAXNUM_COLOR + x, col_schemes[i].color[x].fg,
+				init_pair(1 + i*MAXNUM_COLOR + x, col_schemes[i].color[x].fg,
 						col_schemes[i].color[x].bg);
 		}
 	}
 
-	color_scheme = cfg.color_scheme_cur*MAXNUM_COLOR;
+	color_scheme = 1 + cfg.color_scheme_cur*MAXNUM_COLOR;
 	lwin.color_scheme = color_scheme;
 	rwin.color_scheme = color_scheme;
 
@@ -768,8 +768,8 @@ load_color_scheme(const char *name)
 	}
 
 	cfg.color_scheme_cur = i;
-	cfg.color_scheme = MAXNUM_COLOR*cfg.color_scheme_cur;
-	color_scheme = i*MAXNUM_COLOR;
+	cfg.color_scheme = 1 + MAXNUM_COLOR*cfg.color_scheme_cur;
+	color_scheme = 1 + i*MAXNUM_COLOR;
 
 	wbkgdset(lborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
 	werase(lborder);
