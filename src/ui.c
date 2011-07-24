@@ -786,7 +786,10 @@ load_color_scheme(const char *name)
 
 	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
-	draw_dir_list(other_view, other_view->top_line);
+	if(curr_stats.view)
+		quick_view_file(curr_view);
+	else
+		draw_dir_list(other_view, other_view->top_line);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
