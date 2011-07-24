@@ -21,6 +21,7 @@ static void followlinks_handler(enum opt_op op, union optval_t val);
 static void fusehome_handler(enum opt_op op, union optval_t val);
 static void history_handler(enum opt_op op, union optval_t val);
 static void iec_handler(enum opt_op op, union optval_t val);
+static void ignorecase_handler(enum opt_op op, union optval_t val);
 static void reversecol_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
 static void savelocation_handler(enum opt_op op, union optval_t val);
@@ -74,6 +75,7 @@ add_options(void)
 	add_option("fusehome", OPT_STR, 0, NULL, &fusehome_handler);
 	add_option("history", OPT_INT, 0, NULL, &history_handler);
 	add_option("iec", OPT_BOOL, 0, NULL, &iec_handler);
+	add_option("ignorecase", OPT_BOOL, 0, NULL, &ignorecase_handler);
 	add_option("reversecol", OPT_BOOL, 0, NULL, &reversecol_handler);
 	add_option("runexec", OPT_BOOL, 0, NULL, &runexec_handler);
 	add_option("savelocation", OPT_BOOL, 0, NULL, &savelocation_handler);
@@ -113,6 +115,9 @@ load_options(void)
 
 	val.bool_val = cfg.use_iec_prefixes;
 	set_option("iec", val);
+
+	val.bool_val = cfg.ignore_case;
+	set_option("ignorecase", val);
 
 	val.bool_val = cfg.invert_cur_line;
 	set_option("reversecol", val);
@@ -292,6 +297,12 @@ iec_handler(enum opt_op op, union optval_t val)
 	cfg.use_iec_prefixes = val.bool_val;
 
 	redraw_lists();
+}
+
+static void
+ignorecase_handler(enum opt_op op, union optval_t val)
+{
+	cfg.ignore_case = val.bool_val;
 }
 
 static void

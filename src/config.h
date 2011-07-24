@@ -77,6 +77,8 @@ typedef struct _Config {
 	int invert_cur_line;
 
 	int wild_menu;
+
+	int ignore_case;
 } Config;
 
 extern Config cfg;

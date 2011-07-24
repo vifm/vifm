@@ -25,6 +25,8 @@ Basic things that need to be done.
 	gf <=> l with 'followlink'
 	Check selection on :edit for broken links.
     Modify X in permissions dialog.
+    Be more verbose about regexp compiling errors.
+    Show search matches in the menus.
 
 Documentation.
 	Better documentation.

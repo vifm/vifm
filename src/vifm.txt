@@ -459,6 +459,12 @@ type: boolean
 default: false
 Use KiB, MiB, ... instead of KB, MB, ...
 
+ignorecase
+type: boolean
+default: false
+Ignore case in search patterns (/ and ? commands).  It doesn't affect file
+filtering.
+
 reverscol
 type: boolean
 default: false

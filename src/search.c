@@ -20,7 +20,9 @@
 
 #include <curses.h>
 #include <regex.h>
+#include <string.h>
 
+#include "config.h"
 #include "filelist.h"
 #include "ui.h"
 
@@ -89,31 +91,31 @@ find_pattern(FileView *view, char *pattern, int backward)
 	int x;
 	int first_match = 0;
 	int first_match_pos = 0;
+	int cflags;
 
-	view->selected_files = 0;
+	clean_selected_files(view);
 
-	for(x = 0; x < view->list_rows; x++)
+	cflags = REG_EXTENDED;
+	if(cfg.ignore_case)
+		cflags |= REG_ICASE;
+	if(regcomp(&re, pattern, cflags) == 0)
 	{
-		if(strcmp(view->dir_entry[x].name, "../") == 0)
-			continue;
-		if(regcomp(&re, pattern, REG_EXTENDED) == 0)
+		for(x = 0; x < view->list_rows; x++)
 		{
-			if(regexec(&re, view->dir_entry[x].name, 0, NULL, 0) == 0)
+			if(regexec(&re, view->dir_entry[x].name, 0, NULL, 0) != 0)
+				continue;
+
+			if(!first_match)
 			{
-				if(!first_match)
-				{
-					first_match++;
-					first_match_pos = x;
-				}
-				view->dir_entry[x].selected = 1;
-				view->selected_files++;
-				found++;
+				first_match++;
+				first_match_pos = x;
 			}
-			else
-				view->dir_entry[x].selected = 0;
+			view->dir_entry[x].selected = 1;
+			view->selected_files++;
+			found++;
 		}
-		regfree(&re);
 	}
+	regfree(&re);
 
 	/* Need to redraw the list so that the matching files are highlighted */
 	draw_dir_list(view, view->top_line);

@@ -366,40 +366,44 @@ redraw_menu(menu_info *m)
 static int
 search_menu_forwards(menu_info *m, int start_pos)
 {
+	int cflags;
 	int match_up = -1;
 	int match_down = -1;
-	int x;
 	regex_t re;
 	m->matching_entries = 0;
 
-	for(x = 0; x < m->len; x++)
+	cflags = REG_EXTENDED;
+	if(cfg.ignore_case)
+		cflags |= REG_ICASE;
+	if(regcomp(&re, m->regexp, cflags) == 0)
 	{
-		if(regcomp(&re, m->regexp, REG_EXTENDED) == 0)
+		int x;
+		for(x = 0; x < m->len; x++)
 		{
-			if(regexec(&re, m->data[x], 0, NULL, 0) == 0)
+			if(regexec(&re, m->data[x], 0, NULL, 0) != 0)
+				continue;
+
+			if(match_up < 0)
 			{
-				if(match_up < 0)
-				{
-					if (x < start_pos)
-						match_up = x;
-				}
-				if(match_down < 0)
-				{
-					if (x >= start_pos)
-						match_down = x;
-				}
-				m->matching_entries++;
+				if (x < start_pos)
+					match_up = x;
 			}
+			if(match_down < 0)
+			{
+				if (x >= start_pos)
+					match_down = x;
+			}
+			m->matching_entries++;
 		}
-		regfree(&re);
 	}
+	regfree(&re);
 
 	if((match_up > -1) || (match_down > -1))
 	{
 		char buf[64];
 		int pos;
 
-		if (match_down > -1)
+		if(match_down > -1)
 			pos = match_down;
 		else
 			pos = match_up;
@@ -425,35 +429,39 @@ search_menu_forwards(menu_info *m, int start_pos)
 static int
 search_menu_backwards(menu_info *m, int start_pos)
 {
+	int cflags;
 	int match_up = -1;
 	int match_down = -1;
-	int x;
 	regex_t re;
 	m->matching_entries = 0;
 
-	for(x = m->len - 1; x > -1; x--)
+	cflags = REG_EXTENDED;
+	if(cfg.ignore_case)
+		cflags |= REG_ICASE;
+	if(regcomp(&re, m->regexp, cflags) == 0)
 	{
-		if(regcomp(&re, m->regexp, REG_EXTENDED) == 0)
+		int x;
+		for(x = m->len - 1; x > -1; x--)
 		{
-			if(regexec(&re, m->data[x], 0, NULL, 0) == 0)
-			{
-				if(match_up < 0)
-				{
-					if (x <= start_pos)
-						match_up = x;
-				}
-				if(match_down < 0)
-				{
-					if (x > start_pos)
-						match_down = x;
-				}
-				m->matching_entries++;
-			}
-		}
-		regfree(&re);
-	}
+			if(regexec(&re, m->data[x], 0, NULL, 0) != 0)
+				continue;
 
-	if ((match_up  > -1) || (match_down > -1))
+			if(match_up < 0)
+			{
+				if (x <= start_pos)
+					match_up = x;
+			}
+			if(match_down < 0)
+			{
+				if (x > start_pos)
+					match_down = x;
+			}
+			m->matching_entries++;
+		}
+	}
+	regfree(&re);
+
+	if((match_up  > -1) || (match_down > -1))
 	{
 		char buf[64];
 		int pos;

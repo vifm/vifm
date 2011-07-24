@@ -625,6 +625,12 @@ Command macros
               default: false
               Use KiB, MiB, ... instead of KB, MB, ...
 
+       ignorecase
+              type: boolean
+              default: false
+              Ignore case in search patterns (/ and ? commands).   It  doesn't
+              affect file filtering.
+
        reverscol
               type: boolean
               default: false
@@ -686,7 +692,7 @@ Command macros
        wildmenu
               type: boolean
               default: false
-              Controls whether possible matches of completion  will  be  shown
+              Controls  whether  possible  matches of completion will be shown
               above the command line.
 
        wrap   type: boolean
@@ -694,7 +700,7 @@ Command macros
               Controls whether to wrap text in quick view.
 
 Mappings
-       Since  it's not easy to enter special characters there are several spe‐
+       Since it's not easy to enter special characters there are several  spe‐
        cial sequences that can be used in place of them. They are:
 
        <cr>   Enter key
@@ -705,13 +711,13 @@ Mappings
        <f0> - <f63>
               Functional keys
 
-       vifm removes whitespace characters at the beginning  and  end  of  com‐
-       mands.   That's  why  you  may want to use <space> at the end of rhs in
+       vifm  removes  whitespace  characters  at the beginning and end of com‐
+       mands.  That's why you may want to use <space> at the  end  of  rhs  in
        mappings.  For example:
 
         cmap <f1> man<space>
 
-       will put "man " in line when you hit the <f1> key in the  command  line
+       will  put  "man " in line when you hit the <f1> key in the command line
        mode.
 
 Compatibility mode
@@ -722,26 +728,26 @@ Compatibility mode
 
        Vim like mode:
            - <c-i> (<tab>) to go forward on history.
-           -  dd  deletes file under the cursor and ds works as dd in compati‐
+           - dd deletes file under the cursor and ds works as dd  in  compati‐
        bility mode.
-           - yy yanks file under the cursor and ys works as dd in  compatibil‐
+           -  yy yanks file under the cursor and ys works as dd in compatibil‐
        ity mode.
 
 Menus and dialogs
        General
 
-       j,  k - move.  <Escape>, Ctrl-c - clear.  <Return>, l - select and exit
+       j, k - move.  <Escape>, Ctrl-c - clear.  <Return>, l - select and  exit
        the menu.
 
        In all menus
 
-       Ctrl-b/Ctrl-f Ctrl-d/Ctrl-u Ctrl-e/Ctrl-y / and ?,  n/N  [num]G/[num]gg
+       Ctrl-b/Ctrl-f  Ctrl-d/Ctrl-u  Ctrl-e/Ctrl-y / and ?, n/N [num]G/[num]gg
        H/M/L zb/zt/zz
 
-       All  these  keys  have the same meaning as in normal mode (but not L in
+       All these keys have the same meaning as in normal mode (but  not  L  in
        filetype menu).
 
-       : - enter command line mode for menus (currently only :q[uit],  :x  and
+       :  -  enter command line mode for menus (currently only :q[uit], :x and
        :num are supported).
 
        Commands menu
@@ -755,11 +761,11 @@ Menus and dialogs
 
        Filetype menu
 
-       Commands from vifmrc are displayed above empty line. When all  commands
-       below  empty  line  were found in .desktop files.  Note: you can't save
+       Commands  from vifmrc are displayed above empty line. When all commands
+       below empty line were found in .desktop files.  Note:  you  can't  save
        programs for files without extension.
 
-       J and K - to move menu items L - save all commands above empty line  as
+       J  and K - to move menu items L - save all commands above empty line as
        program list
 
        Sort dialog
@@ -772,13 +778,13 @@ Menus and dialogs
 
 
 Configure
-       The  ~/.vifm/vifmrc file contains all the configurable settings.  It is
+       The ~/.vifm/vifmrc file contains all the configurable settings.  It  is
        commented and you may edit it by hand to change the settings.
 
-       The ~/.vifm/vifminfo file contains session settings.  It  is  commented
+       The  ~/.vifm/vifminfo  file contains session settings.  It is commented
        and you may edit it by hand to change the settings.
 
-       The  ~/.vifm/startup  file  contains  commands that will be executed on
+       The ~/.vifm/startup file contains commands that  will  be  executed  on
        vifm startup. You can set your mappings there.
 
 Plugin
@@ -789,15 +795,15 @@ Plugin
          :EditVifm  select a file to open in the current buffer.
          :SplitVifm split buffer and select a file to open.
          :VsplitVifm vertically split buffer and select a file to open.
-         :DiffVifm select a file to compare to the  current  file  with  :vert
+         :DiffVifm  select  a  file  to compare to the current file with :vert
        diffsplit.
 
        The plugin does not have any settings.
 
-       To  use  the  plugin  copy  the vifm.vim file to either the system wide
+       To use the plugin copy the vifm.vim file  to  either  the  system  wide
        vim/plugin directory or into ~/.vim/plugin.
 
-       If you would prefer not to use the plugin and it is in the system  wide
+       If  you would prefer not to use the plugin and it is in the system wide
        plugin directory add
 
        let loaded_vifm=1
