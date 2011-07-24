@@ -42,46 +42,13 @@ set_view_to_sort(FileView *view_to_sort)
 	view = view_to_sort;
 }
 
-#ifndef TEST
-static
-#endif
-int
+static int
 compare_file_names(const char *s, const char *t)
 {
 	if(!cfg.sort_numbers)
 		return strcmp(s, t);
 	else
 		return strverscmp(s, t);
-
-	while(*s != '\0' && *t != '\0')
-	{
-		if(isdigit(*s) && isdigit(*t))
-		{
-			int num_a, num_b;
-			const char *os = s, *ot = t;
-			char *p;
-
-			num_a = strtol(s, &p, 10);
-			s = p;
-
-			num_b = strtol(t, &p, 10);
-			t = p;
-
-			if(num_a != num_b)
-				return num_a - num_b;
-			else if(*os != *ot)
-				return *os - *ot;
-		}
-		else if(*s == *t)
-		{
-			s++;
-			t++;
-		}
-		else
-			break;
-	}
-
-	return *s - *t;
 }
 
 int
