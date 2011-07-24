@@ -66,13 +66,14 @@ Vi(m) specific features that need to be added.
     :registers "a ...
     :highlight command.
     Better registers support.
-    :$ in the menus (check other command like this one).
+    :$ in the menus (check other commands like this one).
     'hlsearch' option.
     :delete reg count
     ! completion like in vi.
     :comc[lear] command.
     v /, v ?, d /, d ?
     :map without arguments to show maps for all modes.
+    :com existing_command
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?

@@ -770,15 +770,18 @@ use_vim_plugin(FileView *view, int argc, char **argv)
 	fp = fopen(filepath, "w");
 	if(argc == 0)
 	{
-		int i;
-		if(view->selected_files == 0)
+		if(!view->dir_entry[view->list_pos].selected)
 		{
-			view->dir_entry[view->list_pos].selected = 1;
-			view->selected_files = 1;
+			fprintf(fp, "%s/%s\n", view->curr_dir,
+					view->dir_entry[view->list_pos].name);
 		}
-		for(i = 0; i < view->list_rows; i++)
-			if(view->dir_entry[i].selected)
-				fprintf(fp, "%s/%s\n", view->curr_dir, view->dir_entry[i].name);
+		else
+		{
+			int i;
+			for(i = 0; i < view->list_rows; i++)
+				if(view->dir_entry[i].selected)
+					fprintf(fp, "%s/%s\n", view->curr_dir, view->dir_entry[i].name);
+		}
 	}
 	else
 	{

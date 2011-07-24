@@ -69,7 +69,7 @@ function! s:StartVifm(editcmd)
 	let s:flist = split(s:r, "\n")
 
 	if len(s:flist) == 1
-		silent execute a:editcmd fnameescape(s:r)
+		silent execute a:editcmd fnameescape(s:flist[0])
 		return
 	endif
 
