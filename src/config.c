@@ -84,6 +84,7 @@ init_config(void)
 	cfg.invert_cur_line = 0;
 	cfg.wild_menu = 0;
 	cfg.ignore_case = 0;
+	cfg.smart_case = 0;
 
 	/* Maximum argument length to pass to the shell */
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)

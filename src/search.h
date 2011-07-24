@@ -24,6 +24,7 @@
 int find_pattern(FileView *view, char *pattern, int backward);
 void find_next_pattern(FileView *view);
 void find_previous_pattern(FileView *view);
+int get_regexp_cflags(const char *pattern);
 
 #endif
 

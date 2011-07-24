@@ -21,10 +21,14 @@
 #include <curses.h>
 #include <regex.h>
 #include <string.h>
+#include <wctype.h>
 
 #include "config.h"
 #include "filelist.h"
 #include "ui.h"
+#include "utils.h"
+
+#include "search.h"
 
 enum
 {
@@ -86,22 +90,22 @@ find_next_pattern(FileView *view)
 int
 find_pattern(FileView *view, char *pattern, int backward)
 {
+	int cflags;
 	int found = 0;
 	regex_t re;
 	int x;
 	int first_match = 0;
 	int first_match_pos = 0;
-	int cflags;
 
 	clean_selected_files(view);
 
-	cflags = REG_EXTENDED;
-	if(cfg.ignore_case)
-		cflags |= REG_ICASE;
+	cflags = get_regexp_cflags(pattern);
 	if(regcomp(&re, pattern, cflags) == 0)
 	{
 		for(x = 0; x < view->list_rows; x++)
 		{
+			if(strcmp(view->dir_entry[x].name, "../") == 0)
+				continue;
 			if(regexec(&re, view->dir_entry[x].name, 0, NULL, 0) != 0)
 				continue;
 
@@ -143,6 +147,31 @@ find_pattern(FileView *view, char *pattern, int backward)
 		status_bar_message(buf);
 		return 1;
 	}
+}
+
+int
+get_regexp_cflags(const char *pattern)
+{
+	int result;
+
+	result = REG_EXTENDED;
+	if(cfg.ignore_case)
+		result |= REG_ICASE;
+
+	if(cfg.ignore_case && cfg.smart_case)
+	{
+		wchar_t *wstring, *p;
+		wstring = to_wide(pattern);
+		p = wstring - 1;
+		while(*++p != L'\0')
+			if(iswupper(*p))
+			{
+				result &= ~REG_ICASE;
+				break;
+			}
+		free(wstring);
+	}
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

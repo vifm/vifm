@@ -40,6 +40,7 @@
 #include "filetype.h"
 #include "menu.h"
 #include "registers.h"
+#include "search.h"
 #include "status.h"
 #include "ui.h"
 #include "undo.h"
@@ -372,9 +373,7 @@ search_menu_forwards(menu_info *m, int start_pos)
 	regex_t re;
 	m->matching_entries = 0;
 
-	cflags = REG_EXTENDED;
-	if(cfg.ignore_case)
-		cflags |= REG_ICASE;
+	cflags = get_regexp_cflags(m->regexp);
 	if(regcomp(&re, m->regexp, cflags) == 0)
 	{
 		int x;
@@ -435,9 +434,7 @@ search_menu_backwards(menu_info *m, int start_pos)
 	regex_t re;
 	m->matching_entries = 0;
 
-	cflags = REG_EXTENDED;
-	if(cfg.ignore_case)
-		cflags |= REG_ICASE;
+	cflags = get_regexp_cflags(m->regexp);
 	if(regcomp(&re, m->regexp, cflags) == 0)
 	{
 		int x;

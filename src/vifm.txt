@@ -480,6 +480,13 @@ type: boolean
 default: false
 Start vifm in the last visited directory.
 
+smartcase
+type: boolean
+default: false
+Overrides the ignorecase option if the search pattern contains at least one
+upper case character.  Only used when ignorecase option is enabled.  It doesn't
+affect file filtering.
+
 sort
 type: enumeration
 default: name

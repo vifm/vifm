@@ -768,6 +768,15 @@ default: false
 .br
 Start vifm in the last visited directory.
 .TP
+.BI smartcase
+type: boolean
+.br
+default: false
+.br
+Overrides the ignorecase option if the search pattern contains at least one
+upper case character.  Only used when ignorecase option is enabled.  It doesn't
+affect file filtering.
+.TP
 .BI sort
 type: enumeration
 .br
