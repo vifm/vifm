@@ -636,7 +636,15 @@ The ~/.vifm/vifminfo file contains session settings.  It is
 commented and you may edit it by hand to change the settings.
 
 The ~/.vifm/startup file contains commands that will be executed on vifm
-startup. You can set your mappings there.
+startup.  You can set your mappings there.  To use multi line commands precede
+each next line with a slash (whitespace before slash is ignored, but all spaces
+at the end of lines are saved).  For example:
+set
+    \smartcase
+equals "setsmartcase".  When
+set<space here>
+    \ smartcase<space here>
+equals "set  smartcase ".
 
 --------------------------------------------------------------------------------
 *Plugin*

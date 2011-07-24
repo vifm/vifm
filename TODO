@@ -68,8 +68,6 @@ Vi(m) specific features that need to be added.
     Better registers support.
     :$ in the menus (check other command like this one).
     'hlsearch' option.
-    'letter as a selector.
-    \ at the start of line.
     :delete reg count
     ! completion like in vi.
     :comc[lear] command.

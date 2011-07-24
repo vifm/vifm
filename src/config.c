@@ -721,21 +721,40 @@ exec_startup(void)
 {
 	FILE *fp;
 	char startup_file[PATH_MAX];
-	char line[MAX_LEN];
+	char line[MAX_LEN*2];
+	char next_line[MAX_LEN];
 
 	snprintf(startup_file, sizeof(startup_file), "%s/startup", cfg.config_dir);
 
 	if((fp = fopen(startup_file, "r")) == NULL)
 		return;
 
-	while(fgets(line, MAX_LEN, fp) != NULL)
+	if(fgets(line, MAX_LEN, fp) != NULL)
 	{
-		size_t len;
+		for(;;)
+		{
+			char *p;
 
-		len = strlen(line);
-		if(len != 0 && line[len - 1] == '\n')
-			line[len - 1] = '\0';
-		exec_commands(line, curr_view, GET_COMMAND, 0);
+			if((p = fgets(next_line, sizeof(next_line), fp)) != NULL)
+			{
+				do
+				{
+					while(isspace(*p))
+						p++;
+					chomp(p);
+					if(*p == '\\')
+						strncat(line, p + 1, sizeof(line));
+					else
+						break;
+				}
+				while((p = fgets(next_line, sizeof(next_line), fp)) != NULL);
+			}
+			chomp(line);
+			exec_commands(line, curr_view, GET_COMMAND, 0);
+			if(p == NULL)
+				break;
+			strcpy(line, p);
+		}
 	}
 
 	fclose(fp);
