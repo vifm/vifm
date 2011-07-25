@@ -7,8 +7,15 @@ extern const char *value;
 static void
 test_no_quotes(void)
 {
+	value = NULL;
 	set_options("fusehome=a\\ b");
 	assert_string_equal("a b", value);
+
+	value = NULL;
+	set_options("fh=a\\ b\\ c");
+	assert_string_equal("a b c", value);
+
+	set_options("so=name");
 }
 
 static void

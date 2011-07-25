@@ -321,12 +321,8 @@ static void
 update_cmdline_size(void)
 {
 	int d;
-	int cursor_at_the_end;
 
-	cursor_at_the_end = ((input_stat.prompt_wid + input_stat.len) ==
-			input_stat.curs_pos);
-	d = (input_stat.prompt_wid + input_stat.len + cursor_at_the_end + line_width -
-			1)/line_width;
+	d = (input_stat.prompt_wid + input_stat.len + 1 + line_width - 1)/line_width;
 	if(d >= getmaxy(status_bar))
 	{
 		int y = getmaxy(stdscr);

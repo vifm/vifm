@@ -20,13 +20,16 @@ setup(void)
 static void
 test_dirs(void)
 {
-	assert_int_equal(0, check_directory_for_color_scheme("/"));
-	assert_int_equal(0, check_directory_for_color_scheme("/home_"));
-	assert_int_equal(MAXNUM_COLOR, check_directory_for_color_scheme("/home"));
-	assert_int_equal(MAXNUM_COLOR, check_directory_for_color_scheme("/home/"));
-	assert_int_equal(MAXNUM_COLOR, check_directory_for_color_scheme("/home/a/"));
-	assert_int_equal(0, check_directory_for_color_scheme("/roo"));
-	assert_int_equal(MAXNUM_COLOR*2, check_directory_for_color_scheme("/root"));
+	assert_int_equal(1, check_directory_for_color_scheme("/"));
+	assert_int_equal(1, check_directory_for_color_scheme("/home_"));
+	assert_int_equal(1 + MAXNUM_COLOR, check_directory_for_color_scheme("/home"));
+	assert_int_equal(1 + MAXNUM_COLOR,
+			check_directory_for_color_scheme("/home/"));
+	assert_int_equal(1 + MAXNUM_COLOR,
+			check_directory_for_color_scheme("/home/a/"));
+	assert_int_equal(1, check_directory_for_color_scheme("/roo"));
+	assert_int_equal(1 + MAXNUM_COLOR*2,
+			check_directory_for_color_scheme("/root"));
 }
 
 void

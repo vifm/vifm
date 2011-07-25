@@ -49,7 +49,6 @@ Vi(m) specific features that need to be added.
         accidentally.
     Add one more color to color scheme for error messages in status bar.
     Add one more color to color scheme for broken links.
-    Add aliases for options (like 'go' for 'guioptions' in Vim).
     Add :unmap commands.
     Add :noremap commands.
     Some kind of selection mode (multible blocks, mixing).

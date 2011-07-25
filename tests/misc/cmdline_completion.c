@@ -33,7 +33,7 @@ setup(void)
 	add_command("foo", "");
 
 	init_options(&option_changed, NULL);
-	add_option("fusehome", OPT_STR, 0, NULL, fusehome_handler);
+	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler);
 }
 
 static void

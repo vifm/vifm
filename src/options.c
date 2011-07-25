@@ -38,13 +38,17 @@ struct opt_t {
 	/* for OPT_ENUM and OPT_SET */
 	int val_count;
 	const char **vals;
+
+	const char *full;
 };
 
+static struct opt_t * add_option_inner(const char *name, enum opt_type type,
+		int val_count, const char **vals, opt_handler handler);
 static const char * extract_option(const char *cmd, char *buf, int replace);
 static void process_option(const char *cmd);
 static const char * skip_alphas(const char *cmd);
-static int get_option(const char *option);
-static int find_option(const char *option);
+static struct opt_t * get_option(const char *option);
+static struct opt_t * find_option(const char *option);
 static int set_on(struct opt_t *opt);
 static int set_off(struct opt_t *opt);
 static int set_inv(struct opt_t *opt);
@@ -92,14 +96,30 @@ clear_options(void)
 }
 
 void
-add_option(const char *name, enum opt_type type, int val_count,
+add_option(const char *name, const char *abbr, enum opt_type type,
+		int val_count, const char **vals, opt_handler handler)
+{
+	struct opt_t *full;
+	full = add_option_inner(name, type, val_count, vals, handler);
+	if(full != NULL && abbr[0] != '\0')
+	{
+		char *full_name = full->name;
+		struct opt_t *abbreviated;
+		abbreviated = add_option_inner(abbr, type, val_count, vals, handler);
+		if(abbreviated != NULL)
+			abbreviated->full = full_name;
+	}
+}
+
+static struct opt_t *
+add_option_inner(const char *name, enum opt_type type, int val_count,
 		const char **vals, opt_handler handler)
 {
 	struct opt_t *p;
 
 	p = realloc(options, sizeof(*options)*(options_count + 1));
 	if(p == NULL)
-		return;
+		return NULL;
 	options = p;
 	options_count++;
 
@@ -117,23 +137,25 @@ add_option(const char *name, enum opt_type type, int val_count,
 	p->val_count = val_count;
 	p->vals = vals;
 	p->val.str_val = NULL;
+	p->full = NULL;
+	return p;
 }
 
 void
 set_option(const char *name, union optval_t val)
 {
-	int id = find_option(name);
-	if(id == -1)
+	struct opt_t *opt = find_option(name);
+	if(opt == NULL)
 		return;
 
-	if(options[id].type == OPT_STR || options[id].type == OPT_STRLIST)
+	if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
 	{
-		free(options[id].val.str_val);
-		options[id].val.str_val = strdup(val.str_val);
+		free(opt->val.str_val);
+		opt->val.str_val = strdup(val.str_val);
 	}
 	else
 	{
-		options[id].val = val;
+		opt->val = val;
 	}
 }
 
@@ -227,15 +249,15 @@ static void
 process_option(const char *cmd)
 {
 	char option[OPTION_NAME_MAX + 1];
-	int id;
 	int err;
 	const char *p;
+	struct opt_t *opt;
 
 	p = skip_alphas(cmd);
 
 	snprintf(option, p - cmd + 1, "%s", cmd);
-	id = get_option(option);
-	if(id == -1)
+	opt = get_option(option);
+	if(opt == NULL)
 	{
 		print_msg("Unknown option", cmd);
 		return;
@@ -244,12 +266,12 @@ process_option(const char *cmd)
 	err = 0;
 	if(*p == '\0')
 	{
-		if(find_option(option) != -1)
-			err = set_on(&options[id]);
+		if(find_option(option) != NULL)
+			err = set_on(opt);
 		else if(strncmp(option, "no", 2) == 0)
-			err = set_off(&options[id]);
+			err = set_off(opt);
 		else if(strncmp(option, "inv", 3) == 0)
-			err = set_inv(&options[id]);
+			err = set_inv(opt);
 	}
 	else if(*p == '!' || *p == '?')
 	{
@@ -259,21 +281,21 @@ process_option(const char *cmd)
 			return;
 		}
 		if(*p == '!')
-			err = set_inv(&options[id]);
+			err = set_inv(opt);
 		else
-			err = set_print(&options[id]);
+			err = set_print(opt);
 	}
 	else if(strncmp(p, "+=", 2) == 0)
 	{
-		err = set_add(&options[id], p + 2);
+		err = set_add(opt, p + 2);
 	}
 	else if(strncmp(p, "-=", 2) == 0)
 	{
-		err = set_remove(&options[id], p + 2);
+		err = set_remove(opt, p + 2);
 	}
 	else if(*p == '=')
 	{
-		err = set_set(&options[id], p + 1);
+		err = set_set(opt, p + 1);
 	}
 	else
 	{
@@ -292,39 +314,48 @@ skip_alphas(const char *cmd)
 	return cmd;
 }
 
-static int
+static struct opt_t *
 get_option(const char *option)
 {
-	int id;
+	struct opt_t *opt;
 
-	id = find_option(option);
-	if(id != -1)
-		return id;
+	opt = find_option(option);
+	if(opt != NULL)
+		return opt;
 
 	if(strncmp(option, "no", 2) == 0)
 		return find_option(option + 2);
 	else if(strncmp(option, "inv", 3) == 0)
 		return find_option(option + 3);
 	else
-		return -1;
+		return NULL;
 }
 
-static int
+static struct opt_t *
 find_option(const char *option)
 {
 	int l = 0, u = options_count - 1;
-	while (l <= u)
+	while(l <= u)
 	{
 		int i = (l + u)/2;
 		int comp = strcmp(option, options[i].name);
 		if(comp == 0)
-			return i;
+		{
+			if(options[i].full == NULL)
+				return &options[i];
+			else
+				return find_option(options[i].full);
+		}
 		else if(comp < 0)
+		{
 			u = i - 1;
+		}
 		else
+		{
 			l = i + 1;
+		}
 	}
-	return -1;
+	return NULL;
 }
 
 static int
@@ -620,11 +651,11 @@ print_msg(const char *msg, const char *description)
 void
 complete_options(const char *cmd, const char **start)
 {
-	static char buf[1024];
-	static int bool_only;
-	static int value;
-	static int id;
-	static char * p;
+	char buf[1024];
+	int bool_only;
+	int value;
+	struct opt_t *opt = NULL;
+	char * p;
 
 	*start = cmd;
 	buf[0] = '\0';
@@ -649,7 +680,7 @@ complete_options(const char *cmd, const char **start)
 	if(value)
 	{
 		*p = '\0';
-		id = get_option(buf);
+		opt = get_option(buf);
 		*p++ = '=';
 		*start += p - buf;
 	}
@@ -672,8 +703,8 @@ complete_options(const char *cmd, const char **start)
 
 	if(!value)
 		complete_option(buf, bool_only);
-	else if(id != -1)
-		complete_value(p, &options[id]);
+	else if(opt != NULL)
+		complete_value(p, opt);
 
 	completion_group_end();
 	add_completion(buf);
@@ -682,12 +713,22 @@ complete_options(const char *cmd, const char **start)
 static void
 complete_option(const char *buf, int bool_only)
 {
+	struct opt_t *opt;
 	size_t len;
 	int i;
+
+	opt = find_option(buf);
+	if(opt != NULL)
+	{
+		add_completion(strdup(opt->name));
+		return;
+	}
 
 	len = strlen(buf);
 	for(i = 0; i < options_count; i++)
 	{
+		if(options[i].full != NULL)
+			continue;
 		if(bool_only && options[i].type != OPT_BOOL)
 			continue;
 		if(strncmp(buf, options[i].name, len) == 0)

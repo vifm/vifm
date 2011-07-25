@@ -55,9 +55,10 @@ setup(void)
 
 	init_options(&option_changed, NULL);
 
-	add_option("fastrun", OPT_BOOL, 0, NULL, fastrun_handler);
-	add_option("fusehome", OPT_STR, 0, NULL, fusehome_handler);
-	add_option("sort", OPT_ENUM, ARRAY_LEN(sort_enum), sort_enum, &sort_handler);
+	add_option("fastrun", "fr", OPT_BOOL, 0, NULL, fastrun_handler);
+	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler);
+	add_option("sort", "so", OPT_ENUM, ARRAY_LEN(sort_enum), sort_enum,
+			&sort_handler);
 }
 
 int main(int argc, char **argv)

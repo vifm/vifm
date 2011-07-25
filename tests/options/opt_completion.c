@@ -83,6 +83,50 @@ test_invalid_input(void)
 	free(completed);
 }
 
+static void
+test_skip_abbreviations(void)
+{
+	const char *start;
+	char *completed;
+
+	reset_completion();
+	complete_options("", &start);
+
+	completed = next_completion();
+	assert_string_equal("fastrun", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("fusehome", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("sort", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("", completed);
+	free(completed);
+}
+
+static void
+test_expand_abbreviations(void)
+{
+	const char *start;
+	char *completed;
+
+	reset_completion();
+	complete_options("fr", &start);
+
+	completed = next_completion();
+	assert_string_equal("fastrun", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("fastrun", completed);
+	free(completed);
+}
+
 void
 opt_completion(void)
 {
@@ -92,6 +136,8 @@ opt_completion(void)
 	run_test(test_one_choice_opt);
 	run_test(test_one_choice_val);
 	run_test(test_invalid_input);
+	run_test(test_skip_abbreviations);
+	run_test(test_expand_abbreviations);
 
 	test_fixture_end();
 }

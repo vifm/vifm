@@ -428,7 +428,7 @@ background.
 --------------------------------------------------------------------------------
 *set-options*
 
-confirm
+confirm cf
 type: boolean
 default: true
 Ask about permanent deletion of files (on D command or on undo/redo operation).
@@ -451,12 +451,12 @@ Directory to be used as a root dir for FUSE mounts.
 If you change this option, vifm won't remount anything.  It affects future
 mounts only.
 
-history
+history hi
 type: integer
 default: 15
 Maximum number of directories in the view history.
 
-hlsearch
+hlsearch hls
 type: bool
 default: true
 Highlight all matches of search pattern.
@@ -466,7 +466,7 @@ type: boolean
 default: false
 Use KiB, MiB, ... instead of KB, MB, ...
 
-ignorecase
+ignorecase ic
 type: boolean
 default: false
 Ignore case in search patterns (/ and ? commands).  It doesn't affect file
@@ -487,7 +487,7 @@ type: boolean
 default: false
 Start vifm in the last visited directory.
 
-smartcase
+smartcase scs
 type: boolean
 default: false
 Overrides the ignorecase option if the search pattern contains at least one
@@ -525,7 +525,7 @@ type: boolean
 default: true
 Use trash directory.
 
-undolevels
+undolevels ul
 type: integer
 default: 100
 Maximum number of changes that can be undone.
@@ -540,7 +540,7 @@ type: boolean
 default: false
 Use vim help format.
 
-wildmenu
+wildmenu wmnu
 type: boolean
 default: false
 Controls whether possible matches of completion will be shown above the

@@ -71,30 +71,32 @@ init_option_handlers(void)
 static void
 add_options(void)
 {
-	add_option("confirm", OPT_BOOL, 0, NULL, &confirm_handler);
-	add_option("fastrun", OPT_BOOL, 0, NULL, &fastrun_handler);
-	add_option("followlinks", OPT_BOOL, 0, NULL, &followlinks_handler);
-	add_option("fusehome", OPT_STR, 0, NULL, &fusehome_handler);
-	add_option("history", OPT_INT, 0, NULL, &history_handler);
-	add_option("hlsearch", OPT_BOOL, 0, NULL, &hlsearch_handler);
-	add_option("iec", OPT_BOOL, 0, NULL, &iec_handler);
-	add_option("ignorecase", OPT_BOOL, 0, NULL, &ignorecase_handler);
-	add_option("reversecol", OPT_BOOL, 0, NULL, &reversecol_handler);
-	add_option("runexec", OPT_BOOL, 0, NULL, &runexec_handler);
-	add_option("savelocation", OPT_BOOL, 0, NULL, &savelocation_handler);
-	add_option("smartcase", OPT_BOOL, 0, NULL, &smartcase_handler);
-	add_option("sortnumbers", OPT_BOOL, 0, NULL, &sortnumbers_handler);
-	add_option("timefmt", OPT_STR, 0, NULL, &timefmt_handler);
-	add_option("trash", OPT_BOOL, 0, NULL, &trash_handler);
-	add_option("undolevels", OPT_INT, 0, NULL, &undolevels_handler);
-	add_option("vicmd", OPT_STR, 0, NULL, &vicmd_handler);
-	add_option("vimhelp", OPT_BOOL, 0, NULL, &vimhelp_handler);
-	add_option("wildmenu", OPT_BOOL, 0, NULL, &wildmenu_handler);
-	add_option("wrap", OPT_BOOL, 0, NULL, &wrap_handler);
+	add_option("confirm", "cf", OPT_BOOL, 0, NULL, &confirm_handler);
+	add_option("fastrun", "", OPT_BOOL, 0, NULL, &fastrun_handler);
+	add_option("followlinks", "", OPT_BOOL, 0, NULL, &followlinks_handler);
+	add_option("fusehome", "", OPT_STR, 0, NULL, &fusehome_handler);
+	add_option("history", "hi", OPT_INT, 0, NULL, &history_handler);
+	add_option("hlsearch", "hls", OPT_BOOL, 0, NULL, &hlsearch_handler);
+	add_option("iec", "", OPT_BOOL, 0, NULL, &iec_handler);
+	add_option("ignorecase", "ic", OPT_BOOL, 0, NULL, &ignorecase_handler);
+	add_option("reversecol", "", OPT_BOOL, 0, NULL, &reversecol_handler);
+	add_option("runexec", "", OPT_BOOL, 0, NULL, &runexec_handler);
+	add_option("savelocation", "", OPT_BOOL, 0, NULL, &savelocation_handler);
+	add_option("smartcase", "scs", OPT_BOOL, 0, NULL, &smartcase_handler);
+	add_option("sortnumbers", "", OPT_BOOL, 0, NULL, &sortnumbers_handler);
+	add_option("timefmt", "", OPT_STR, 0, NULL, &timefmt_handler);
+	add_option("trash", "", OPT_BOOL, 0, NULL, &trash_handler);
+	add_option("undolevels", "ul", OPT_INT, 0, NULL, &undolevels_handler);
+	add_option("vicmd", "", OPT_STR, 0, NULL, &vicmd_handler);
+	add_option("vimhelp", "", OPT_BOOL, 0, NULL, &vimhelp_handler);
+	add_option("wildmenu", "wmnu", OPT_BOOL, 0, NULL, &wildmenu_handler);
+	add_option("wrap", "", OPT_BOOL, 0, NULL, &wrap_handler);
 
 	/* local options */
-	add_option("sort", OPT_ENUM, ARRAY_LEN(sort_enum), sort_enum, &sort_handler);
-	add_option("sortorder", OPT_ENUM, 2, sort_order_enum, &sort_order_handler);
+	add_option("sort", "", OPT_ENUM, ARRAY_LEN(sort_enum), sort_enum,
+			&sort_handler);
+	add_option("sortorder", "", OPT_ENUM, 2, sort_order_enum,
+			&sort_order_handler);
 }
 
 static void

@@ -695,7 +695,7 @@ Appending & to the end of a command will cause it to be executed in the backgrou
 .SH :set options
 .\" ---------------------------------------------------------------------------
 .TP
-.BI confirm
+.BI "confirm cf"
 type: boolean
 .br
 default: true
@@ -726,14 +726,14 @@ Directory to be used as a root dir for FUSE mounts.
 If you change this option, vifm won't remount anything.  It affects future
 mounts only.
 .TP
-.BI history
+.BI "history hi"
 type: integer
 .br
 default: 15
 .br
 Maximum number of directories in the view history.
 .TP
-.BI hlsearch
+.BI "hlsearch hls"
 type: bool
 .br
 default: true
@@ -747,7 +747,7 @@ default: false
 .br
 Use KiB, MiB, ... instead of KB, MB, ...
 .TP
-.BI ignorecase
+.BI "ignorecase ic"
 type: boolean
 .br
 default: false
@@ -776,7 +776,7 @@ default: false
 .br
 Start vifm in the last visited directory.
 .TP
-.BI smartcase
+.BI "smartcase scs"
 type: boolean
 .br
 default: false
@@ -824,7 +824,7 @@ default: true
 .br
 Use trash directory.
 .TP
-.BI undolevels
+.BI "undolevels ul"
 type: integer
 .br
 default: 100
@@ -845,7 +845,7 @@ default: false
 .br
 Use vim help format.
 .TP
-.BI wildmenu
+.BI "wildmenu wmnu"
 type: boolean
 .br
 default: false
