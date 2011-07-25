@@ -75,7 +75,7 @@ escape_filename(const char *string, size_t len, int quote_percent)
 
 	dup = ret = (char *)malloc (len * 2 + 2 + 1);
 
-	if (*string == '-')
+	if(*string == '-')
 	{
 		*dup++ = '.';
 		*dup++ = '/';

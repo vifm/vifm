@@ -140,7 +140,7 @@ static int colorschemes_completion(char *line_mb, char *last_word,
 		struct line_stats *stat);
 static int option_completion(char *line_mb, struct line_stats *stat);
 static int file_completion(const char *filename, const char *line_mb,
-		struct line_stats *stat);
+		struct line_stats *stat, int exec);
 static void update_line_stat(struct line_stats *stat, int new_len);
 static size_t get_words_count(const char * string);
 static char * get_last_word(const char * string);
@@ -1506,12 +1506,14 @@ line_completion(struct line_stats *stat)
 
 		if(raw_name)
 			filename = escape_filename(raw_name, 0, 1);
+		else
+			filename = strdup(comp_arg);
 
 		if(filename != NULL)
 		{
 			int ret = 0;
 			
-			ret = file_completion(filename, line_mb, stat);
+			ret = file_completion(filename, line_mb, stat, id == COM_EXECUTE);
 			free(raw_name);
 			free(filename);
 			if(ret != 0)
@@ -1630,7 +1632,7 @@ option_completion(char* line_mb, struct line_stats *stat)
 
 static int
 file_completion(const char *filename, const char *line_mb,
-		struct line_stats *stat)
+		struct line_stats *stat, int exec)
 {
 	char *cur_file_pos = strrchr(line_mb, ' ');
 	char *temp = (char *) NULL;
@@ -1640,17 +1642,7 @@ file_completion(const char *filename, const char *line_mb,
 	char x;
 	wchar_t *temp2;
 
-	temp = strrchr(line_mb, '!');
-	if(cur_file_pos != NULL && (temp == NULL || temp < cur_file_pos))
-	{
-		if((temp = strrchr(cur_file_pos, '/')) != NULL)
-			/* :command /some/directory/partial_filename anything_else... */
-			temp++;
-		else
-			/* :command partial_filename anything_else... */
-			temp = cur_file_pos + 1;
-	}
-	else if((temp = strrchr(line_mb, '!')) != NULL)
+	if(exec && (temp = strrchr(line_mb, '!')) != NULL && cur_file_pos < temp)
 	{
 		/* :!partial_filename anything_else...		 or
 		 * :!!partial_filename anything_else... */
@@ -1659,6 +1651,15 @@ file_completion(const char *filename, const char *line_mb,
 		t = strrchr(temp, '/');
 		if(t != NULL)
 			temp = t + 1;
+	}
+	else if(cur_file_pos != NULL)
+	{
+		if((temp = strrchr(cur_file_pos, '/')) != NULL)
+			/* :command /some/directory/partial_filename anything_else... */
+			temp++;
+		else
+			/* :command partial_filename anything_else... */
+			temp = cur_file_pos + 1;
 	}
 	else
 		return 0;
@@ -2000,8 +2001,14 @@ filename_completion(const char *str, int type)
 	if(type == FNC_EXECONLY)
 		return NULL;
 
+	if(get_completion_count() == 1)
+	{
+		stop_completion();
+		return NULL;
+	}
+
 	temp = next_completion();
-	if(get_completion_count() <= 2)
+	if(get_completion_count() == 2)
 		stop_completion();
 	return temp;
 }
