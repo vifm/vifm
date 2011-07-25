@@ -1534,7 +1534,7 @@ line_completion(struct line_stats *stat)
 		char *complete_command;
 		char *comp_arg;
 
-		q = line_mb;
+		q = line_mb_cmd;
 		while(*q == ' ' || *q == ':')
 			q++;
 
