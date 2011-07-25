@@ -444,13 +444,13 @@ redraw_cmdline(void)
 			redraw_permissions_dialog();
 	}
 
-	if(cfg.wild_menu)
-		draw_wild_menu(-1);
-
 	line_width = getmaxx(stdscr);
 	curs_set(TRUE);
 	update_cmdline_size();
 	update_cmdline_text();
+
+	if(cfg.wild_menu)
+		draw_wild_menu(-1);
 }
 
 static void
@@ -618,7 +618,6 @@ cmd_shift_tab(struct key_info key_info, struct keys_info *keys_info)
 static void
 do_completion(void)
 {
-	int len;
 	if(sub_mode != CMD_SUBMODE)
 		return;
 
@@ -630,16 +629,9 @@ do_completion(void)
 	}
 
 	line_completion(&input_stat);
-	len = (1 + input_stat.len + line_width - 1 + 1)/line_width;
-	if(len > getmaxy(status_bar))
-	{
-		int delta = len - getmaxy(status_bar);
-		mvwin(status_bar, getbegy(status_bar) - delta, 0);
-		wresize(status_bar, getmaxy(status_bar) + delta, line_width);
-		werase(status_bar);
-		mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-		mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
-	}
+
+	update_cmdline_size();
+	update_cmdline_text();
 }
 
 /*
@@ -1221,7 +1213,7 @@ update_cmdline(void)
 	input_stat.index = input_stat.len;
 
 	d = (input_stat.prompt_wid + input_stat.len + 1 + line_width - 1)/line_width;
-	if(d > getmaxy(status_bar))
+	if(d >= getmaxy(status_bar))
 		update_cmdline_size();
 
 	update_cmdline_text();
