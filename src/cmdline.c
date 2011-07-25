@@ -1633,7 +1633,7 @@ option_completion(char* line_mb, struct line_stats *stat)
 }
 
 static int
-file_completion(const char* filename, const char* line_mb,
+file_completion(const char *filename, const char *line_mb,
 		struct line_stats *stat)
 {
 	char *cur_file_pos = strrchr(line_mb, ' ');
@@ -1644,7 +1644,8 @@ file_completion(const char* filename, const char* line_mb,
 	char x;
 	wchar_t *temp2;
 
-	if(cur_file_pos != NULL)
+	temp = strrchr(line_mb, '!');
+	if(cur_file_pos != NULL && (temp == NULL || temp < cur_file_pos))
 	{
 		if((temp = strrchr(cur_file_pos, '/')) != NULL)
 			/* :command /some/directory/partial_filename anything_else... */

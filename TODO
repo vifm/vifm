@@ -129,6 +129,7 @@ Other (questionable) things.
     :alias
     Like gv but to select just pasted files.
     Ctrl-W like in vim?
+    Move file name to the title of other pane in view mode.
 
 Code improvements.
     Move completion code from cmdline to a separate file.
