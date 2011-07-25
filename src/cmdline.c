@@ -655,7 +655,7 @@ draw_wild_menu(int op)
 		return;
 	}
 
-	if(pos == 0)
+	if(pos == 0 || pos == count)
 		last_pos = 0;
 	if(last_pos == 0 && pos == count - 1)
 		last_pos = count;
