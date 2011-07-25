@@ -760,25 +760,14 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
-	if(!input_stat.line || !input_stat.line[0])
+	if((!input_stat.line || !input_stat.line[0]) && (sub_mode == CMD_SUBMODE ||
+			sub_mode == MENU_CMD_SUBMODE))
 	{
-		if(sub_mode == PROMPT_SUBMODE)
-		{
-			char *p;
-			prompt_cb cb;
-
-			p = input_stat.line ? to_multibyte(input_stat.line) : NULL;
-			leave_cmdline_mode();
-			cb = (prompt_cb)sub_mode_ptr;
-			cb(p);
-			free(p);
-		}
-		else
-			leave_cmdline_mode();
+		leave_cmdline_mode();
 		return;
 	}
 
-	p = to_multibyte(input_stat.line);
+	p = input_stat.line ? to_multibyte(input_stat.line) : NULL;
 
 	leave_cmdline_mode();
 
@@ -791,13 +780,11 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 	}
 	else if(sub_mode == SEARCH_FORWARD_SUBMODE)
 	{
-		curr_stats.save_msg = exec_commands(p, curr_view, GET_FSEARCH_PATTERN,
-				save_hist);
+		curr_stats.save_msg = exec_command(p, curr_view, GET_FSEARCH_PATTERN);
 	}
 	else if(sub_mode == SEARCH_BACKWARD_SUBMODE)
 	{
-		curr_stats.save_msg = exec_commands(p, curr_view, GET_BSEARCH_PATTERN,
-				save_hist);
+		curr_stats.save_msg = exec_command(p, curr_view, GET_BSEARCH_PATTERN);
 	}
 	else if(sub_mode == MENU_CMD_SUBMODE)
 	{

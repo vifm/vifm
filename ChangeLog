@@ -10,6 +10,8 @@
 
 	Added support for multi line commands in startup file.
 
+	Added 'hlsearch' option.
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,

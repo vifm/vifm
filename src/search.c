@@ -46,7 +46,7 @@ find_next_pattern_match(FileView *view, int start, int direction)
 	{
 		for(x = start -1; x > 0; x--)
 		{
-			if(view->dir_entry[x].selected)
+			if(view->dir_entry[x].search_match)
 			{
 				found = 1;
 				view->list_pos = x;
@@ -58,7 +58,7 @@ find_next_pattern_match(FileView *view, int start, int direction)
 	{
 		for(x = start +1; x < view->list_rows; x++)
 		{
-			if(view->dir_entry[x].selected)
+			if(view->dir_entry[x].search_match)
 			{
 				found = 1;
 				view->list_pos = x;
@@ -94,10 +94,10 @@ find_pattern(FileView *view, char *pattern, int backward)
 	int found = 0;
 	regex_t re;
 	int x;
-	int first_match = 0;
-	int first_match_pos = 0;
 
 	clean_selected_files(view);
+	for(x = 0; x < view->list_rows; x++)
+		view->dir_entry[x].search_match = 0;
 
 	cflags = get_regexp_cflags(pattern);
 	if(regcomp(&re, pattern, cflags) == 0)
@@ -114,13 +114,12 @@ find_pattern(FileView *view, char *pattern, int backward)
 			if(regexec(&re, buf, 0, NULL, 0) != 0)
 				continue;
 
-			if(!first_match)
+			view->dir_entry[x].search_match = 1;
+			if(cfg.hl_search)
 			{
-				first_match++;
-				first_match_pos = x;
+				view->dir_entry[x].selected = 1;
+				view->selected_files++;
 			}
-			view->dir_entry[x].selected = 1;
-			view->selected_files++;
 			found++;
 		}
 	}
@@ -131,16 +130,17 @@ find_pattern(FileView *view, char *pattern, int backward)
 
 	if(found)
 	{
-		draw_dir_list(view, view->top_line);
 		if(backward)
-		{
-			view->list_pos++;
 			find_previous_pattern(view);
-		}
 		else
-		{
-			view->list_pos--;
 			find_next_pattern(view);
+		if(!cfg.hl_search)
+		{
+			char buf[80];
+			snprintf(buf, sizeof(buf), "%d matching files for %s", found,
+					view->regexp);
+			status_bar_message(buf);
+			return 1;
 		}
 		return 0;
 	}

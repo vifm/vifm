@@ -623,6 +623,11 @@ Command macros
               default: 15
               Maximum number of directories in the view history.
 
+       hlsearch
+              type: bool
+              default: true
+              Highlight all matches of search pattern.
+
        iec    type: boolean
               default: false
               Use KiB, MiB, ... instead of KB, MB, ...
@@ -833,4 +838,4 @@ AUTHOR
 
 
 
-                                 Jule 24, 2011                         vifm(1)
+                                 Jule 25, 2011                         vifm(1)

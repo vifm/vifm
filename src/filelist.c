@@ -1471,8 +1471,9 @@ load_dir_list(FileView *view, int reload)
 
 		strcpy(dir_entry->name, d->d_name);
 
-		/* All files start as unselected */
+		/* All files start as unselected and unmatched */
 		dir_entry->selected = 0;
+		dir_entry->search_match = 0;
 
 		/* Load the inode info */
 		if(lstat(dir_entry->name, &s) != 0)

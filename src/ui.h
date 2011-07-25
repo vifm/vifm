@@ -67,6 +67,7 @@ typedef struct
 	char date[16];
 	char type;
 	int selected;
+	int search_match;
 	char executable;
 	int list_num;
 	char ext[24];

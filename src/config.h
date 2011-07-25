@@ -80,6 +80,8 @@ typedef struct _Config {
 
 	int ignore_case;
 	int smart_case;
+
+	int hl_search;
 } Config;
 
 extern Config cfg;

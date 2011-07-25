@@ -20,6 +20,7 @@ static void fastrun_handler(enum opt_op op, union optval_t val);
 static void followlinks_handler(enum opt_op op, union optval_t val);
 static void fusehome_handler(enum opt_op op, union optval_t val);
 static void history_handler(enum opt_op op, union optval_t val);
+static void hlsearch_handler(enum opt_op op, union optval_t val);
 static void iec_handler(enum opt_op op, union optval_t val);
 static void ignorecase_handler(enum opt_op op, union optval_t val);
 static void reversecol_handler(enum opt_op op, union optval_t val);
@@ -75,6 +76,7 @@ add_options(void)
 	add_option("followlinks", OPT_BOOL, 0, NULL, &followlinks_handler);
 	add_option("fusehome", OPT_STR, 0, NULL, &fusehome_handler);
 	add_option("history", OPT_INT, 0, NULL, &history_handler);
+	add_option("hlsearch", OPT_BOOL, 0, NULL, &hlsearch_handler);
 	add_option("iec", OPT_BOOL, 0, NULL, &iec_handler);
 	add_option("ignorecase", OPT_BOOL, 0, NULL, &ignorecase_handler);
 	add_option("reversecol", OPT_BOOL, 0, NULL, &reversecol_handler);
@@ -114,6 +116,9 @@ load_options(void)
 
 	val.int_val = cfg.history_len;
 	set_option("history", val);
+
+	val.int_val = cfg.hl_search;
+	set_option("hlsearch", val);
 
 	val.bool_val = cfg.use_iec_prefixes;
 	set_option("iec", val);
@@ -294,6 +299,12 @@ history_handler(enum opt_op op, union optval_t val)
 	{
 		cfg.history_len = val.int_val;
 	}
+}
+
+static void
+hlsearch_handler(enum opt_op op, union optval_t val)
+{
+	cfg.hl_search = val.bool_val;
 }
 
 static void

@@ -173,7 +173,6 @@ typedef struct current_command
 static wchar_t * substitute_specs(const char *cmd);
 static const char *skip_spaces(const char *cmd);
 static const char *skip_word(const char *cmd);
-static int exec_command(char *cmd, FileView *view, int type);
 #ifndef TEST
 static
 #endif
@@ -2371,7 +2370,7 @@ find_last_command(char *cmd)
 	return cmd;
 }
 
-static int
+int
 exec_command(char *cmd, FileView *view, int type)
 {
 	if(cmd == NULL)

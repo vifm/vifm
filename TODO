@@ -67,9 +67,7 @@ Vi(m) specific features that need to be added.
     :highlight command.
     Better registers support.
     :$ in the menus (check other commands like this one).
-    'hlsearch' option.
     :delete reg count
-    ! completion like in vi.
     :comc[lear] command.
     v /, v ?, d /, d ?
     :map without arguments to show maps for all modes.

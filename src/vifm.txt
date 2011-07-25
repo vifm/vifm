@@ -456,6 +456,11 @@ type: integer
 default: 15
 Maximum number of directories in the view history.
 
+hlsearch
+type: bool
+default: true
+Highlight all matches of search pattern.
+
 iec
 type: boolean
 default: false
