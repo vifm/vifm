@@ -2182,7 +2182,7 @@ execute_command(FileView *view, char *command)
 static
 #endif
 int
-line_pos(const char *begin, const char *end, char sep)
+line_pos(const char *begin, const char *end, char sep, int rquoting)
 {
 	int state;
 	int count;
@@ -2199,7 +2199,7 @@ line_pos(const char *begin, const char *end, char sep)
 					state = S_QUOTING;
 				else if(sep == ' ' && *begin == '"')
 					state = D_QUOTING;
-				else if(sep == ' ' && *begin == '/')
+				else if(sep == ' ' && *begin == '/' && rquoting)
 					state = R_QUOTING;
 				else if(*begin != sep)
 					state = NO_QUOTING;
@@ -2299,7 +2299,8 @@ exec_commands(char *cmd, FileView *view, int type, int save_hist)
 				*q++ = *p++;
 			}
 		}
-		else if((*p == '|' && line_pos(cmd, q, ' ') == 0) || *p == '\0')
+		else if((*p == '|' &&
+				line_pos(cmd, q, ' ', strncmp(cmd, "fil", 3) == 0) == 0) || *p == '\0')
 		{
 			if(*p != '\0')
 				p++;
@@ -2343,7 +2344,8 @@ find_last_command(char *cmd)
 				q += 2;
 			p += 2;
 		}
-		else if((*p == '|' && line_pos(cmd, q, ' ') == 0) || *p == '\0')
+		else if((*p == '|' &&
+				line_pos(cmd, q, ' ', strncmp(cmd, "fil", 3) == 0) == 0) || *p == '\0')
 		{
 			if(*p != '\0')
 				p++;
