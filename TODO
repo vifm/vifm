@@ -7,7 +7,8 @@ Basic things that need to be done.
 	Think about good key for creating links (like pl in ranger, al, rl).
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
         :chown commands.
-    Better C command. Handle situation when destination already exists.
+    Better C command. Handle selection and situation when destination already
+        exists.
     Add :filetype command (separate programs and viewer).
     Make ~user_name/ work.
     Implement :find command.
@@ -15,7 +16,7 @@ Basic things that need to be done.
     Make l key handle selection.
     :filter? to display it's current value. :invert? and :screen? too.
     %something for absolute filenames.
-    Skip all directories in history that doesn't exist.
+    Skip all directories in history that don't exist.
     Expand macros for builtin commands.
     More states for permissions dialog (maybe 'f', 'd').
     Backgrounding of vicmd (& at the end).
@@ -34,7 +35,7 @@ Documentation.
     Document using P to move files on fs different from where /home is.
     Document command line keys.
     !cmd& and !cmd<space>& should be more documented.
-    Add TabVifm in the plugin section.
+    Add TabVifm to the plugin section.
 
 Vi(m) specific features that need to be added.
 	Finish implementing range and count for user commands.

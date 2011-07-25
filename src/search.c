@@ -44,7 +44,7 @@ find_next_pattern_match(FileView *view, int start, int direction)
 
 	if(direction == PREVIOUS)
 	{
-		for(x = start -1; x > 0; x--)
+		for(x = start - 1; x > 0; x--)
 		{
 			if(view->dir_entry[x].search_match)
 			{
@@ -56,7 +56,7 @@ find_next_pattern_match(FileView *view, int start, int direction)
 	}
 	else if(direction == NEXT)
 	{
-		for(x = start +1; x < view->list_rows; x++)
+		for(x = start + 1; x < view->list_rows; x++)
 		{
 			if(view->dir_entry[x].search_match)
 			{

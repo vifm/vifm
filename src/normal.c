@@ -684,9 +684,19 @@ cmd_M(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_N(struct key_info key_info, struct keys_info *keys_info)
 {
+	int m, i;
+
 	if(cfg.search_history_num < 0)
 		return;
-	if(curr_view->selected_files == 0)
+
+	m = 0;
+	for(i = 0; i < curr_view->list_rows; i++)
+		if(curr_view->dir_entry[i].search_match)
+		{
+			m = 1;
+			break;
+		}
+	if(!m)
 		find_pattern(curr_view, cfg.search_history[0], last_search_backward);
 
 	if(last_search_backward)
@@ -996,9 +1006,18 @@ cmd_m(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_n(struct key_info key_info, struct keys_info *keys_info)
 {
+	int i, m;
 	if(cfg.search_history_num < 0)
 		return;
-	if(curr_view->selected_files == 0)
+
+	m = 0;
+	for(i = 0; i < curr_view->list_rows; i++)
+		if(curr_view->dir_entry[i].search_match)
+		{
+			m = 1;
+			break;
+		}
+	if(!m)
 		find_pattern(curr_view, cfg.search_history[0], last_search_backward);
 
 	if(last_search_backward)
