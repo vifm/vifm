@@ -137,7 +137,7 @@ const struct rescmd_info reserved_cmds[] = {
 	{ .name = "w",           .alias = 1, .id = COM_WRITE       },
 	{ .name = "wq",          .alias = 0, .id = COM_WQ          },
 	{ .name = "write",       .alias = 0, .id = COM_WRITE       },
-	{ .name = "x",           .alias = 0, .id = COM_XIT         },
+	{ .name = "x",           .alias = 1, .id = COM_XIT         },
 	{ .name = "xit",         .alias = 0, .id = COM_XIT         },
 	{ .name = "y",           .alias = 1, .id = COM_YANK        },
 	{ .name = "yank",        .alias = 0, .id = COM_YANK        },

@@ -1505,7 +1505,7 @@ line_completion(struct line_stats *stat)
 		}
 
 		if(raw_name)
-			filename = escape_filename(raw_name, 0, 1);
+			filename = escape_filename(raw_name, 0, id == COM_EXECUTE);
 		else
 			filename = strdup(comp_arg);
 
@@ -1647,6 +1647,8 @@ file_completion(const char *filename, const char *line_mb,
 		/* :!partial_filename anything_else...		 or
 		 * :!!partial_filename anything_else... */
 		char *t;
+		while(temp > line_mb && (*temp == '!' || *temp == '\\'))
+			temp--;
 		temp++;
 		t = strrchr(temp, '/');
 		if(t != NULL)
