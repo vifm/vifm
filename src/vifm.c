@@ -37,6 +37,7 @@
 #include "config.h"
 #include "crc32.h"
 #include "filelist.h"
+#include "fileops.h"
 #include "filetype.h"
 #include "log.h"
 #include "main_loop.h"
@@ -67,7 +68,6 @@ show_version_msg(void)
 	}
 
 	free(list);
-//	printf("vifm %s\n", VERSION);
 }
 
 static void
@@ -78,6 +78,7 @@ show_help_msg(void)
 	puts("    vifm /path/to/start/dir/one");
 	puts("    or");
 	puts("    vifm /path/to/start/dir/one  /path/to/start/dir/two\n");
+	puts("  To open file using associated program pass to vifm it's path.\n");
 	puts("  If no path is given vifm will start in the current working directory.\n");
 	puts("  vifm --logging");
 	puts("    log some errors to ~/.vifm/log.\n");
@@ -168,7 +169,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		{
 			init_logger(1);
 		}
-		else if(is_dir(argv[x]))
+		else if(access(argv[x], F_OK) == 0)
 		{
 			if(lwin_path[0] != '\0')
 			{
@@ -180,6 +181,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 					snprintf(buf, sizeof(buf), "%s/%s", dir, argv[x]);
 					canonicalize_path(buf, rwin_path, PATH_MAX);
 				}
+				chosp(lwin_path);
 			}
 			else
 			{
@@ -191,6 +193,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 					snprintf(buf, sizeof(buf), "%s/%s", dir, argv[x]);
 					canonicalize_path(buf, lwin_path, PATH_MAX);
 				}
+				chosp(rwin_path);
 			}
 		}
 		else
@@ -286,9 +289,17 @@ main(int argc, char *argv[])
 
 	parse_args(argc, argv, dir, lwin_path, rwin_path);
 	if(lwin_path[0] != '\0')
+	{
 		strcpy(lwin.curr_dir, lwin_path);
+		if(!is_dir(lwin_path))
+			*strrchr(lwin.curr_dir, '/') = '\0';
+	}
 	if(rwin_path[0] != '\0')
+	{
 		strcpy(rwin.curr_dir, rwin_path);
+		if(!is_dir(rwin_path))
+			*strrchr(rwin.curr_dir, '/') = '\0';
+	}
 
 	load_initial_directory(&lwin, dir);
 	load_initial_directory(&rwin, dir);
@@ -322,8 +333,29 @@ main(int argc, char *argv[])
 		curr_stats.number_of_windows = 1;
 
 	curr_stats.vifm_started = 2;
-	redraw_window();
 
+	load_dir_list(&lwin, 0);
+	if(!is_dir(lwin_path) && lwin_path[0] != '\0')
+	{
+		int pos = find_file_pos_in_list(&lwin, strrchr(lwin_path, '/') + 1);
+		if(pos >= 0)
+		{
+			lwin.list_pos = pos;
+			handle_file(&lwin, 0);
+		}
+	}
+	load_dir_list(&rwin, 0);
+	if(!is_dir(rwin_path) && rwin_path[0] != '\0')
+	{
+		int pos = find_file_pos_in_list(&rwin, strrchr(rwin_path, '/') + 1);
+		if(pos >= 0)
+		{
+			rwin.list_pos = pos;
+			handle_file(&rwin, 0);
+		}
+	}
+
+	redraw_window();
 	main_loop();
 
 	return 0;

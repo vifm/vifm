@@ -29,6 +29,8 @@
 
 	Shift-Tab key to perform completion in reversed order.
 
+	Now vifm also accepts paths to files as the startup arguments.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

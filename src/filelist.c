@@ -1181,6 +1181,9 @@ change_directory(FileView *view, const char *directory)
 		canonicalize_path(newdir, dir_dup, sizeof(dir_dup));
 	}
 
+	if(strcmp(dir_dup, "/") != 0)
+		chosp(dir_dup);
+
 	snprintf(view->last_dir, sizeof(view->last_dir), "%s", view->curr_dir);
 
 	/* check if we're exiting from a FUSE mounted top level dir.
@@ -1207,6 +1210,7 @@ change_directory(FileView *view, const char *directory)
 
 		snprintf(buf, sizeof(buf), "Cannot open %s", dir_dup);
 		show_error_msg("Directory Access Error", buf);
+
 		leave_invalid_dir(view, dir_dup);
 		change_directory(view, dir_dup);
 		clean_selected_files(view);
@@ -1225,6 +1229,7 @@ change_directory(FileView *view, const char *directory)
 		show_error_msg("Directory Access Error", buf);
 
 		clean_selected_files(view);
+		leave_invalid_dir(view, view->curr_dir);
 		return -1;
 	}
 
@@ -1239,6 +1244,7 @@ change_directory(FileView *view, const char *directory)
 		show_error_msg("Directory Access Error", buf);
 
 		clean_selected_files(view);
+		leave_invalid_dir(view, view->curr_dir);
 		return -1;
 	}
 
@@ -1253,7 +1259,9 @@ change_directory(FileView *view, const char *directory)
 
 		snprintf(buf, sizeof(buf), "Could not open %s", dir_dup);
 		show_error_msg("Dir is null", buf);
+
 		clean_selected_files(view);
+		leave_invalid_dir(view, view->curr_dir);
 		return -1;
 	}
 
