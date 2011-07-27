@@ -1101,6 +1101,7 @@ check_rename_file(FileView *view, int *indexes, int count, FILE *f)
 		chomp(name);
 
 		if(name[0] != '\0')
+		{
 			for(j = 0; j < len; j++)
 				if(strcmp(name, list[j]) == 0)
 				{
@@ -1109,6 +1110,7 @@ check_rename_file(FileView *view, int *indexes, int count, FILE *f)
 					free_string_array(list, len);
 					return NULL;
 				}
+		}
 
 		list = realloc(list, sizeof(char*)*(len + 1));
 		list[len] = strdup(name);
