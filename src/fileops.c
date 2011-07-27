@@ -1116,15 +1116,25 @@ check_rename_file(FileView *view, int *indexes, int count, FILE *f)
 		if(name[0] == '\0')
 			continue;
 
-		if(strcmp(name, view->dir_entry[indexes[i]].name) == 0)
+		if(strcmp(name, view->dir_entry[abs(indexes[i])].name) == 0)
 			continue;
 
 		for(j = 0; j < count; j++)
-			if(j != i && strcmp(name, view->dir_entry[abs(indexes[j])].name) == 0)
+			if(strcmp(name, view->dir_entry[abs(indexes[j])].name) == 0 &&
+					indexes[j] >= 0)
 			{
-				indexes[i] = -indexes[i];
+				indexes[j] = -indexes[j];
 				break;
 			}
+		if(j >= count && access(name, F_OK) == 0)
+		{
+			char buf[32 + NAME_MAX];
+			snprintf(buf, sizeof(buf), "File %s already exists", name);
+			status_bar_message(buf);
+			curr_stats.save_msg = 1;
+			free_string_array(list, len);
+			return NULL;
+		}
 	}
 
 	if(fgetc(f) != EOF)

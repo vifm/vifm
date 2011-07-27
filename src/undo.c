@@ -219,6 +219,8 @@ remove_cmd(struct cmd_t *cmd)
 	{
 		free(cmd->group->msg);
 		free(cmd->group);
+		if(last_group == cmd->group)
+			last_group = NULL;
 	}
 	else
 	{

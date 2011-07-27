@@ -69,6 +69,10 @@
 
 	Fixed bug with bookmarks.
 
+	Fixed bug with undolist.
+
+	Fixed :rename.
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).

@@ -218,6 +218,42 @@ test_skipping(void)
 	assert_int_equal(-4, redo_group());
 }
 
+static void
+test_to_many_commands_and_continue(void)
+{
+	static int undo_levels = 3;
+	init_undo_list(&exec_skip, &undo_levels);
+
+	cmd_group_begin("msg0");
+	cmd_group_end();
+
+	cmd_group_continue();
+	free(replace_group_msg("HI"));
+	assert_int_equal(0, add_operation("do_msg0", NULL, NULL, "undo_msg0", NULL,
+				NULL));
+	cmd_group_end();
+	cmd_group_continue();
+	free(replace_group_msg("HI"));
+	assert_int_equal(0, add_operation("do_msg0", NULL, NULL, "undo_msg0", NULL,
+				NULL));
+	cmd_group_end();
+	cmd_group_continue();
+	free(replace_group_msg("HI"));
+	assert_int_equal(0, add_operation("do_msg0", NULL, NULL, "undo_msg0", NULL,
+				NULL));
+	cmd_group_end();
+	cmd_group_continue();
+	free(replace_group_msg("HI"));
+	assert_int_equal(0, add_operation("do_msg0", NULL, NULL, "undo_msg0", NULL,
+				NULL));
+	cmd_group_end();
+	cmd_group_continue();
+	free(replace_group_msg("HI"));
+	assert_int_equal(0, add_operation("do_msg0", NULL, NULL, "undo_msg0", NULL,
+				NULL));
+	cmd_group_end();
+}
+
 void
 undo_test(void)
 {
@@ -234,6 +270,7 @@ undo_test(void)
 	run_test(test_cannot_be_undone);
 	run_test(test_removing_of_incomplete_groups);
 	run_test(test_skipping);
+	run_test(test_to_many_commands_and_continue);
 
 	test_fixture_end();
 }
