@@ -1451,10 +1451,10 @@ fast_run_complete(char *cmd)
 	else
 		*p = '\0';
 
+	reset_completion();
 	completed1 = exec_completion(cmd);
-	completed2 = exec_completion(NULL);
 
-	if(strcmp(cmd, completed2) != 0)
+	if(get_completion_count() > 2)
 	{
 		status_bar_message("Command beginning is ambiguous");
 	}
