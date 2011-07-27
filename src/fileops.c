@@ -1100,14 +1100,15 @@ check_rename_file(FileView *view, int *indexes, int count, FILE *f)
 		}
 		chomp(name);
 
-		for(j = 0; j < len; j++)
-			if(strcmp(name, list[j]) == 0)
-			{
-				status_bar_message("There are duplicates");
-				curr_stats.save_msg = 1;
-				free_string_array(list, len);
-				return NULL;
-			}
+		if(name[0] != '\0')
+			for(j = 0; j < len; j++)
+				if(strcmp(name, list[j]) == 0)
+				{
+					status_bar_message("There are duplicates");
+					curr_stats.save_msg = 1;
+					free_string_array(list, len);
+					return NULL;
+				}
 
 		list = realloc(list, sizeof(char*)*(len + 1));
 		list[len] = strdup(name);
