@@ -1145,6 +1145,8 @@ check_for_range(FileView *view, char *command, cmd_params *cmd)
 		}
 		num_buf[z] = '\0';
 		cmd->start_range = atoi(num_buf) - 1;
+		if(cmd->start_range < 0)
+			cmd->start_range = 0;
 	}
 	while(isspace(command[cmd->pos]) && (size_t)cmd->pos < strlen(command))
 		cmd->pos++;
@@ -1192,6 +1194,8 @@ check_for_range(FileView *view, char *command, cmd_params *cmd)
 			}
 			num_buf[z] = '\0';
 			cmd->end_range = atoi(num_buf) - 1;
+			if(cmd->end_range < 0)
+				cmd->end_range = 0;
 		}
 		else
 			cmd->end_range = view->list_pos;
