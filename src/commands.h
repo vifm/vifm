@@ -113,6 +113,7 @@ typedef struct
 
 command_t *command_list;
 
+void init_commands(void);
 int exec_commands(char *cmd, FileView *view, int type, int save_hist);
 int exec_command(char *cmd, FileView *view, int type);
 char * find_last_command(char *cmd);

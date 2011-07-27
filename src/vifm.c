@@ -322,6 +322,7 @@ main(int argc, char *argv[])
 	load_initial_directory(&rwin, dir);
 
 	init_modes();
+	init_commands();
 	init_option_handlers();
 	init_undo_list(&undo_exec, &cfg.undo_levels);
 	load_local_options(curr_view);

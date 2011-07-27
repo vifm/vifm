@@ -33,6 +33,7 @@
 #include "background.h"
 #include "bookmarks.h"
 #include "cmdline.h"
+#include "cmds.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "completion.h"
@@ -57,6 +58,153 @@
 #include "ui.h"
 #include "undo.h"
 #include "utils.h"
+
+static int goto_cmd(const struct cmd_info *cmd_info);
+static int emark_cmd(const struct cmd_info *cmd_info);
+static int apropos_cmd(const struct cmd_info *cmd_info);
+static int cd_cmd(const struct cmd_info *cmd_info);
+static int change_cmd(const struct cmd_info *cmd_info);
+static int cmap_cmd(const struct cmd_info *cmd_info);
+static int cmdhistory_cmd(const struct cmd_info *cmd_info);
+static int colorscheme_cmd(const struct cmd_info *cmd_info);
+static int delete_cmd(const struct cmd_info *cmd_info);
+static int dirs_cmd(const struct cmd_info *cmd_info);
+static int edit_cmd(const struct cmd_info *cmd_info);
+static int empty_cmd(const struct cmd_info *cmd_info);
+static int file_cmd(const struct cmd_info *cmd_info);
+static int filter_cmd(const struct cmd_info *cmd_info);
+static int help_cmd(const struct cmd_info *cmd_info);
+static int history_cmd(const struct cmd_info *cmd_info);
+static int invert_cmd(const struct cmd_info *cmd_info);
+static int jobs_cmd(const struct cmd_info *cmd_info);
+static int locate_cmd(const struct cmd_info *cmd_info);
+static int ls_cmd(const struct cmd_info *cmd_info);
+static int map_cmd(const struct cmd_info *cmd_info);
+static int marks_cmd(const struct cmd_info *cmd_info);
+static int nmap_cmd(const struct cmd_info *cmd_info);
+static int nohlsearch_cmd(const struct cmd_info *cmd_info);
+static int only_cmd(const struct cmd_info *cmd_info);
+static int popd_cmd(const struct cmd_info *cmd_info);
+static int pushd_cmd(const struct cmd_info *cmd_info);
+static int pwd_cmd(const struct cmd_info *cmd_info);
+static int registers_cmd(const struct cmd_info *cmd_info);
+static int rename_cmd(const struct cmd_info *cmd_info);
+static int screen_cmd(const struct cmd_info *cmd_info);
+static int set_cmd(const struct cmd_info *cmd_info);
+static int shell_cmd(const struct cmd_info *cmd_info);
+static int sort_cmd(const struct cmd_info *cmd_info);
+static int split_cmd(const struct cmd_info *cmd_info);
+static int sync_cmd(const struct cmd_info *cmd_info);
+static int undolist_cmd(const struct cmd_info *cmd_info);
+static int unmap_cmd(const struct cmd_info *cmd_info);
+static int view_cmd(const struct cmd_info *cmd_info);
+static int vifm_cmd(const struct cmd_info *cmd_info);
+static int vmap_cmd(const struct cmd_info *cmd_info);
+static int write_cmd(const struct cmd_info *cmd_info);
+static int wq_cmd(const struct cmd_info *cmd_info);
+static int quit_cmd(const struct cmd_info *cmd_info);
+static int yank_cmd(const struct cmd_info *cmd_info);
+static int usercmd_cmd(const struct cmd_info* cmd_info);
+
+static const struct cmd_add commands[] = {
+	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0,             .regexp = 0,
+		.handler = goto_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "!",                .abbr = NULL,    .emark = 0,  .id = COM_EXECUTE,     .range = 0,    .bg = 1,             .regexp = 0,
+		.handler = emark_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 1, },
+	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "cd",               .abbr = NULL,    .emark = 0,  .id = COM_CD,          .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = cd_cmd,          .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
+	{ .name = "change",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = change_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "cmap",             .abbr = "cm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = cmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "cmdhistory",       .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = cmdhistory_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "colorscheme",      .abbr = "colo",  .emark = 0,  .id = COM_COLORSCHEME, .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = colorscheme_cmd, .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
+	{ .name = "delete",           .abbr = "d",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0,             .regexp = 0,
+		.handler = delete_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "display",          .abbr = "di",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "dirs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = dirs_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "edit",             .abbr = "e",     .emark = 0,  .id = COM_EDIT,        .range = 1,    .bg = 0,             .regexp = 0,
+		.handler = edit_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
+	{ .name = "empty",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0,             .regexp = 0,
+		.handler = empty_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "file",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 1,             .regexp = 0,
+		.handler = file_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 1,
+		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
+	{ .name = "help",             .abbr = "h",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = help_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
+	{ .name = "history",          .abbr = "his",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = history_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "invert",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = invert_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "jobs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = jobs_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "locate",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = locate_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
+	{ .name = "ls",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = ls_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "map",              .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = map_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = 2,       .select = 0, },
+	{ .name = "marks",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = marks_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "nmap",             .abbr = "nm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = nmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
+	{ .name = "nohlsearch",       .abbr = "noh",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = nohlsearch_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "only",             .abbr = "on",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = only_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "popd",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = popd_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "pushd",            .abbr = NULL,    .emark = 0,  .id = COM_PUSHD,       .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = pushd_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
+	{ .name = "pwd",              .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = pwd_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "quit",             .abbr = "q",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "registers",        .abbr = "reg",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "rename",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = rename_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "screen",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = screen_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "set",              .abbr = "se",    .emark = 0,  .id = COM_SET,         .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = set_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "shell",            .abbr = "sh",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = shell_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "sort",             .abbr = "sor",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = sort_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "split",            .abbr = "sp",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = split_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "sync",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = sync_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "undolist",         .abbr = "undol", .emark = 1,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = undolist_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "unmap",            .abbr = "unm",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = unmap_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
+	{ .name = "view",             .abbr = "vie",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = view_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "vifm",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = vifm_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "vmap",             .abbr = "vm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = vmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
+	{ .name = "write",            .abbr = "w",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = write_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "wq",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = wq_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "xit",              .abbr = "x",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "yank",             .abbr = "y",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+		.handler = yank_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+
+	{ .name = "<USERCMD>",        .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0,             .regexp = 0,
+		.handler = usercmd_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 1, },
+};
 
 /* The order of the commands is important as :e will match the first
  * command starting with e.
@@ -179,6 +327,55 @@ static
 char ** dispatch_line(const char *args, int *count);
 
 /* TODO generalize command handling */
+
+static void
+complete_args(int id, const char *arg, struct complete_t *info)
+{
+}
+
+static int
+swap_range(void)
+{
+}
+
+static int
+resolve_mark(char mark)
+{
+}
+
+static char *
+cmds_expand_macros(const char *str)
+{
+}
+
+static void
+post(void)
+{
+}
+
+static void
+select_range(const struct cmd_info *cmd_info)
+{
+}
+
+void
+init_commands(void)
+{
+	cmds_conf.begin = 10;
+	cmds_conf.current = 50;
+	cmds_conf.end = 100;
+
+	cmds_conf.complete_args = complete_args;
+	cmds_conf.swap_range = swap_range;
+	cmds_conf.resolve_mark = resolve_mark;
+	cmds_conf.expand_macros = cmds_expand_macros;
+	cmds_conf.post = post;
+	cmds_conf.select_range = select_range;
+
+	init_cmds();
+
+	add_buildin_commands(&commands, ARRAY_LEN(commands));
+}
 
 int
 sort_this(const void *one, const void *two)
@@ -2144,6 +2341,9 @@ execute_command(FileView *view, char *command)
 	cmd_params cmd;
 	int result;
 
+	execute_cmd(command);
+	return 0;
+
 	cmd.cmd_name = NULL;
 	cmd.args = NULL;
 
@@ -2677,6 +2877,236 @@ dispatch_line(const char *args, int *count)
 
 	free(cmdstr);
 	return params;
+}
+
+static int
+goto_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+emark_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+apropos_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+cd_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+change_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+cmap_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+cmdhistory_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+colorscheme_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+delete_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+dirs_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+edit_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+empty_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+file_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+filter_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+help_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+history_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+invert_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+jobs_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+locate_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+ls_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+map_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+marks_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+nmap_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+nohlsearch_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+only_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+popd_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+pushd_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+pwd_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+registers_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+rename_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+screen_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+set_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+shell_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+sort_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+split_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+sync_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+undolist_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+unmap_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+view_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+vifm_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+vmap_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+write_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+wq_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+quit_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+yank_cmd(const struct cmd_info *cmd_info)
+{
+}
+
+static int
+usercmd_cmd(const struct cmd_info* cmd_info)
+{
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
