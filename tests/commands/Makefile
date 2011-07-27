@@ -1,3 +1,3 @@
-SOURCES := $(filter-out ../../src/vifm.c, $(wildcard ../../src/*.c))
+SOURCES := ../../src/cmds.c
 
 include ../Makefile.inc

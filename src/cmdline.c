@@ -456,6 +456,8 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 	prev_mode = *mode;
 	*mode = CMDLINE_MODE;
 
+	reset_completion();
+
 	input_stat.line = NULL;
 	input_stat.index = wcslen(cmd);
 	input_stat.curs_pos = 0;
