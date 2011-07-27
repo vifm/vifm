@@ -352,7 +352,7 @@ Add ' &' in the end of command if you want to start program in background.
 :sp[lit] - switch to a two window view.
 :sync - change the other panel to the current panels directory.
 :undol[ist] - show list of latest changes.  Add ! to see commands.
-:view - toggle on and off the quick file view.
+:vie[w] - toggle on and off the quick file view.
 :w[rite] - will write config (add ! to force write even if settings weren't
 	changed).
 :wq - will exit vifm after writing config.
@@ -744,7 +744,9 @@ The following command names are reserved and cannot be used for user commands.
   sync - change the other panel to the current panel directory.
   undol - show list of latest changes.  Add ! to see commands.
   undolist - show list of latest changes.  Add ! to see commands.
+  unm - not used, will be used with key mapping.
   unmap - not used, will be used with key mapping.
+  vie - toggle on and off the quick file view.
   view - toggle on and off the quick file view.
   vifm - menu with version information.
   vm - user key mapping for visual mode.

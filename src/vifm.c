@@ -142,6 +142,8 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 {
 	int x;
 
+	chdir(dir);
+
 	/* Get Command Line Arguments */
 	for(x = 1; x < argc; x++)
 	{
