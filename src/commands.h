@@ -165,7 +165,7 @@ void initialize_command_struct(cmd_params *cmd);
 int select_files_in_range(FileView *view, cmd_params *cmd);
 char ** dispatch_line(const char *args, int *count);
 int command_is_reserved(const char *name);
-int line_pos(const char *begin, const char *end, char sep);
+int line_pos(const char *begin, const char *end, char sep, int regexp);
 int parse_command(FileView *view, char *command, cmd_params *cmd);
 #endif
 

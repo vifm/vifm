@@ -174,9 +174,9 @@ execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info)
 
 	keys = get_reg(keys, &key_info.reg);
 	if(keys == NULL)
-	{
 		return KEYS_WAIT;
-	}
+	if(key_info.reg == L'\x1b' || key_info.reg == L'\x03')
+		return 0;
 	keys = get_count(keys, &key_info.count);
 	root = keys_info->selector ?
 		&selectors_root[*mode] : &user_cmds_root[*mode];

@@ -45,6 +45,14 @@ increase_counter_right(void)
 	assert_int_equal(counter + 1, get_key_counter());
 }
 
+static void
+test_cancel_reg_with_esc_or_ctrl_c(void)
+{
+	assert_int_equal(KEYS_WAIT, execute_keys(L"\""));
+	assert_int_equal(0, execute_keys(L"\""L"\x03"));
+	assert_int_equal(0, execute_keys(L"\""L"\x1b"));
+}
+
 void
 buildin_and_custom(void)
 {
@@ -54,6 +62,7 @@ buildin_and_custom(void)
 
 	run_test(builtin_key_at_sequence_begin);
 	run_test(increase_counter_right);
+	run_test(test_cancel_reg_with_esc_or_ctrl_c);
 
 	test_fixture_end();
 }
