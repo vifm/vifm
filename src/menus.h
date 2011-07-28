@@ -65,7 +65,7 @@ void show_map_menu(FileView *view, const char *mode_str, wchar_t **list);
 void show_apropos_menu(FileView *view, char *args);
 void show_user_menu(FileView *view, char *command);
 int show_register_menu(FileView *view);
-void show_undolist_menu(FileView *view, int with_details);
+int show_undolist_menu(FileView *view, int with_details);
 void reset_popup_menu(menu_info *m);
 void setup_menu(void);
 void redraw_error_msg(char *title_arg, const char *message_arg);

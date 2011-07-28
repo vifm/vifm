@@ -3468,6 +3468,7 @@ sync_cmd(const struct cmd_info *cmd_info)
 static int
 undolist_cmd(const struct cmd_info *cmd_info)
 {
+	return show_undolist_menu(curr_view, cmd_info->emark) != 0;
 }
 
 static int

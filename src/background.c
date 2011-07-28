@@ -37,7 +37,7 @@ struct Jobs_List *jobs = NULL;
 struct Finished_Jobs *fjobs = NULL;
 
 static void
-add_background_job(pid_t pid, char *cmd, int fd)
+add_background_job(pid_t pid, const char *cmd, int fd)
 {
 	Jobs_List *new;
 

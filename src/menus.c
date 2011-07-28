@@ -1678,7 +1678,7 @@ show_register_menu(FileView *view)
 	return 0;
 }
 
-void
+int
 show_undolist_menu(FileView *view, int with_details)
 {
 	int x;
@@ -1728,6 +1728,7 @@ show_undolist_menu(FileView *view, int with_details)
 	draw_menu(&m);
 	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
+	return 0;
 }
 
 void
