@@ -1399,7 +1399,7 @@ show_cmdhistory_menu(FileView *view)
 	enter_menu_mode(&m, view);
 }
 
-void
+int
 show_locate_menu(FileView *view, char *args)
 {
 	int x = 0;
@@ -1429,7 +1429,7 @@ show_locate_menu(FileView *view, char *args)
 	if(!file)
 	{
 		show_error_msg("Trouble opening a file", "Unable to open file");
-		return ;
+		return 0;
 	}
 	x = 0;
 
@@ -1456,13 +1456,14 @@ show_locate_menu(FileView *view, char *args)
 		snprintf(buf, sizeof(buf), "No files found matching \"%s\"", args);
 		status_bar_message(buf);
 		wrefresh(status_bar);
-		return;
+		return 0;
 	}
 
 	setup_menu();
 	draw_menu(&m);
 	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
+	return 0;
 }
 
 void
@@ -1544,7 +1545,7 @@ show_user_menu(FileView *view, char *command)
 	enter_menu_mode(&m, view);
 }
 
-void
+int
 show_jobs_menu(FileView *view)
 {
 	Jobs_List *p = jobs;
@@ -1629,6 +1630,7 @@ show_jobs_menu(FileView *view)
 	draw_menu(&m);
 	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
+	return 0;
 }
 
 void

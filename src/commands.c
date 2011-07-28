@@ -146,7 +146,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "jobs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = jobs_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "locate",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
-		.handler = locate_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
+		.handler = locate_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "ls",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = ls_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "map",              .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
@@ -3294,16 +3294,25 @@ invert_cmd(const struct cmd_info *cmd_info)
 static int
 jobs_cmd(const struct cmd_info *cmd_info)
 {
+	return show_jobs_menu(curr_view) != 0;
 }
 
 static int
 locate_cmd(const struct cmd_info *cmd_info)
 {
+	return show_locate_menu(curr_view, cmd_info->args) != 0;
 }
 
 static int
 ls_cmd(const struct cmd_info *cmd_info)
 {
+	if(!cfg.use_screen)
+	{
+		status_bar_message("screen program isn't used");
+		return 1;
+	}
+	my_system("screen -X eval 'windowlist'");
+	return 0;
 }
 
 static int
