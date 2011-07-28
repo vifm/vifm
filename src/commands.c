@@ -3278,6 +3278,7 @@ help_cmd(const struct cmd_info *cmd_info)
 static int
 history_cmd(const struct cmd_info *cmd_info)
 {
+	return show_history_menu(curr_view) != 0;
 }
 
 static int
