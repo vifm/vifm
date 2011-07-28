@@ -3105,6 +3105,7 @@ cmap_cmd(const struct cmd_info *cmd_info)
 static int
 cmdhistory_cmd(const struct cmd_info *cmd_info)
 {
+	show_cmdhistory_menu(curr_view);
 }
 
 static int
