@@ -3175,6 +3175,7 @@ delete_cmd(const struct cmd_info *cmd_info)
 static int
 dirs_cmd(const struct cmd_info *cmd_info)
 {
+	show_dirstack_menu(curr_view);
 }
 
 static int
