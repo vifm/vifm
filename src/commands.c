@@ -1442,7 +1442,7 @@ char *
 fast_run_complete(char *cmd)
 {
 	char *buf = NULL;
-	char *completed1, *completed2;
+	char *completed1;
 	char *p;
 
 	p = strchr(cmd, ' ');
@@ -1463,7 +1463,6 @@ fast_run_complete(char *cmd)
 		buf = malloc(strlen(completed1) + 1 + strlen(p) + 1);
 		sprintf(buf, "%s %s", completed1, p);
 	}
-	free(completed2);
 	free(completed1);
 
 	return buf;
