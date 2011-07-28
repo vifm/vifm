@@ -3050,6 +3050,7 @@ cd_cmd(const struct cmd_info *cmd_info)
 static int
 change_cmd(const struct cmd_info *cmd_info)
 {
+	enter_permissions_mode(curr_view);
 }
 
 static int
