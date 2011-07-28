@@ -179,7 +179,10 @@ status_bar_message(const char *message)
 	werase(status_bar);
 	mvwin(stat_win, getmaxy(stdscr) - status_bar_lines - 1, 0);
 	mvwin(status_bar, getmaxy(stdscr) - status_bar_lines, 0);
-	wresize(status_bar, status_bar_lines, getmaxx(stdscr));
+	if(status_bar_lines == 1)
+		wresize(status_bar, status_bar_lines, getmaxx(stdscr) - 18);
+	else
+		wresize(status_bar, status_bar_lines, getmaxx(stdscr));
 	wmove(status_bar, 0, 0);
 	wprintw(status_bar, "%s", msg);
 	wnoutrefresh(status_bar);
