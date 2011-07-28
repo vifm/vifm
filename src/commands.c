@@ -114,7 +114,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cd",               .abbr = NULL,    .emark = 0,  .id = COM_CD,          .range = 0,    .bg = 0,             .regexp = 0,
-		.handler = cd_cmd,          .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
+		.handler = cd_cmd,          .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "change",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = change_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "cmap",             .abbr = "cm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
@@ -3007,6 +3007,44 @@ apropos_cmd(const struct cmd_info *cmd_info)
 static int
 cd_cmd(const struct cmd_info *cmd_info)
 {
+	char dir[PATH_MAX];
+
+	if(cmd_info->argc == 1)
+	{
+		const char *arg = cmd_info->argv[0];
+		if(*arg == '/')
+			snprintf(dir, sizeof(dir), "%s", arg);
+		else if(*arg == '~')
+			snprintf(dir, sizeof(dir), "%s%s", cfg.home_dir, arg + 1);
+		else if(strcmp(arg, "%D") == 0)
+			snprintf(dir, sizeof(dir), "%s", other_view->curr_dir);
+		else if(strcmp(arg, "-") == 0)
+			snprintf(dir, sizeof(dir), "%s", curr_view->last_dir);
+		else
+			snprintf(dir, sizeof(dir), "%s/%s", curr_view->curr_dir, arg);
+	}
+	else
+	{
+		snprintf(dir, sizeof(dir), "%s", cfg.home_dir);
+	}
+
+	if(access(dir, F_OK) != 0)
+	{
+		char buf[1 + PATH_MAX + 1 + 1];
+
+		LOG_SERROR_MSG(errno, "Can't access(,F_OK) \"%s\"", dir);
+
+		snprintf(buf, sizeof(buf), "\"%s\"", dir);
+		show_error_msg("Can't access destination", buf);
+		return 0;
+	}
+
+	if(change_directory(curr_view, dir) < 0)
+		return 0;
+
+	load_dir_list(curr_view, 0);
+	moveto_list_pos(curr_view, curr_view->list_pos);
+	return 0;
 }
 
 static int
