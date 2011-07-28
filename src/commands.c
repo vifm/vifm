@@ -3361,6 +3361,7 @@ only_cmd(const struct cmd_info *cmd_info)
 {
 	curr_stats.number_of_windows = 1;
 	redraw_window();
+	return 0;
 }
 
 static int
@@ -3377,6 +3378,13 @@ popd_cmd(const struct cmd_info *cmd_info)
 static int
 pushd_cmd(const struct cmd_info *cmd_info)
 {
+	if(pushd() != 0)
+	{
+		status_bar_message("Not enough memory");
+		return 1;
+	}
+	cd_cmd(cmd_info);
+	return 0;
 }
 
 static int
