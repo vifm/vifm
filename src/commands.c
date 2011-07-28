@@ -169,8 +169,8 @@ static const struct cmd_add commands[] = {
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "registers",        .abbr = "reg",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "rename",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
-		.handler = rename_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "rename",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0,             .regexp = 0,
+		.handler = rename_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 1, },
 	{ .name = "screen",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = screen_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "set",              .abbr = "se",    .emark = 0,  .id = COM_SET,         .range = 0,    .bg = 0,             .regexp = 0,
@@ -331,16 +331,24 @@ char ** dispatch_line(const char *args, int *count);
 static void
 complete_args(int id, const char *arg, struct complete_t *info)
 {
+	/* TODO write code */
 }
 
 static int
 swap_range(void)
 {
+	/* TODO write code */
 }
 
 static int
 resolve_mark(char mark)
 {
+	int result;
+	/* TODO write code */
+	result = check_mark_directory(curr_view, mark);
+	if(result < 0)
+		show_error_msg("Invalid mark in range", "Trying to use an invalid mark.");
+	return result;
 }
 
 static char *
@@ -438,7 +446,7 @@ init_commands(void)
 
 	init_cmds();
 
-	add_buildin_commands(&commands, ARRAY_LEN(commands));
+	add_buildin_commands((const struct cmd_add *)&commands, ARRAY_LEN(commands));
 }
 
 int
@@ -1136,7 +1144,7 @@ split_screen(FileView *view, char *command)
  *  < 0 - pause on error
  */
 int
-shellout(char *command, int pause)
+shellout(const char *command, int pause)
 {
 	size_t len = (command != NULL) ? strlen(command) : 0;
 	char buf[cfg.max_args];
@@ -1164,7 +1172,7 @@ shellout(char *command, int pause)
 			{
 				if(pause > 0)
 					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c '%s; vifm-pause'",
-							title + strlen(cfg.vi_command) +1, command);
+							title + strlen(cfg.vi_command) + 1, command);
 				else
 				{
 					escaped = escape_filename(command, 0, 0);
@@ -3008,10 +3016,8 @@ static int
 emark_cmd(const struct cmd_info *cmd_info)
 {
 	int i = 0;
-	char *com = cmd_info->args;
+	char *com = (char *)cmd_info->args;
 	char buf[COMMAND_GROUP_INFO_LEN];
-	int use_menu = 0;
-	int split = 0;
 
 	while(isspace(com[i]) && (size_t)i < strlen(com))
 		i++;
@@ -3098,11 +3104,12 @@ static int
 change_cmd(const struct cmd_info *cmd_info)
 {
 	enter_permissions_mode(curr_view);
+	return 0;
 }
 
 static int
-n_do_map(struct cmd_info *cmd_info, const char *map_type, const char *map_cmd,
-		int mode)
+n_do_map(const struct cmd_info *cmd_info, const char *map_type,
+		const char *map_cmd, int mode)
 {
 	wchar_t *keys, *mapping;
 	char *raw_rhs, *rhs;
@@ -3152,7 +3159,7 @@ cmap_cmd(const struct cmd_info *cmd_info)
 static int
 cmdhistory_cmd(const struct cmd_info *cmd_info)
 {
-	show_cmdhistory_menu(curr_view);
+	return show_cmdhistory_menu(curr_view) != 0;
 }
 
 static int
@@ -3162,6 +3169,7 @@ colorscheme_cmd(const struct cmd_info *cmd_info)
 		show_colorschemes_menu(curr_view);
 	else
 		load_color_scheme(cmd_info->argv[0]);
+	return 0;
 }
 
 static int
@@ -3221,12 +3229,13 @@ empty_cmd(const struct cmd_info *cmd_info)
 	clean_regs_with_trash();
 	start_background_job(buf);
 	clean_cmds_with_trash();
+	return 0;
 }
 
 static int
 file_cmd(const struct cmd_info *cmd_info)
 {
-	show_filetypes_menu(curr_view, cmd_info->bg);
+	return show_filetypes_menu(curr_view, cmd_info->bg) != 0;
 }
 
 static int
@@ -3250,6 +3259,7 @@ filter_cmd(const struct cmd_info *cmd_info)
 	{
 		set_view_filter(curr_view, cmd_info->argv[0], !cmd_info->emark);
 	}
+	return 0;
 }
 
 static int
@@ -3273,6 +3283,7 @@ help_cmd(const struct cmd_info *cmd_info)
 	}
 
 	shellout(help_cmd, -1);
+	return 0;
 }
 
 static int
@@ -3403,6 +3414,8 @@ registers_cmd(const struct cmd_info *cmd_info)
 static int
 rename_cmd(const struct cmd_info *cmd_info)
 {
+	rename_files(curr_view);
+	return 1; /* there are always some message */
 }
 
 static int

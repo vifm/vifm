@@ -27,6 +27,7 @@
 #include "cmds.h"
 
 #define MAX_CMD_RECURSION 16
+#define INVALID_MARK -4096
 
 enum CMD_TYPE
 {
@@ -141,7 +142,12 @@ execute_cmd(const char *cmd)
 	init_cmd_info(&cmd_info);
 	cmd = parse_range(cmd, &cmd_info);
 	if(cmd == NULL)
-		return CMDS_ERR_INVALID_CMD;
+	{
+		if(cmd_info.end == INVALID_MARK)
+			return 0;
+		else
+			return CMDS_ERR_INVALID_CMD;
+	}
 
 	if(*cmd != '\0' && cmd_info.end < cmd_info.begin)
 	{
@@ -317,6 +323,11 @@ parse_limit(const char *cmd, struct cmd_info *cmd_info)
 		cmd++;
 		mark = *cmd++;
 		cmd_info->end = cmds_conf.resolve_mark(mark);
+		if(cmd_info->end < 0)
+		{
+			cmd_info->end = INVALID_MARK;
+			return NULL;
+		}
 	}
 	else
 	{

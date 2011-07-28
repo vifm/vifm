@@ -279,7 +279,7 @@ background_and_wait_for_errors(char *cmd)
 }
 
 int
-start_background_job(char *cmd)
+start_background_job(const char *cmd)
 {
 	pid_t pid;
 	char *args[4];
@@ -318,7 +318,7 @@ start_background_job(char *cmd)
 
 		args[0] = "sh";
 		args[1] = "-c";
-		args[2] = cmd;
+		args[2] = (char *)cmd;
 		args[3] = NULL;
 
 		setpgid(0, 0);

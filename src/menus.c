@@ -1200,7 +1200,7 @@ filetypes_khandler(struct menu_info *m, wchar_t *keys)
 	return -1;
 }
 
-void
+int
 show_filetypes_menu(FileView *view, int background)
 {
 	char *filename = get_current_file_name(view);
@@ -1212,7 +1212,7 @@ show_filetypes_menu(FileView *view, int background)
 	if(ft_str == NULL && mime_str == NULL) {
 		show_error_msg("Filetype is not set.",
 				"No programs set for this filetype.");
-		return;
+		return 0;
 	}
 
 	if(ft_str == NULL)
@@ -1222,7 +1222,7 @@ show_filetypes_menu(FileView *view, int background)
 
 	prog_str = malloc(strlen(ft_str) + 3 + strlen(mime_str) + 1);
 	if(prog_str == NULL)
-		return;
+		return 0;
 
 	strcpy(prog_str, ft_str);
 	strcat(prog_str, ",*,");
@@ -1309,6 +1309,7 @@ show_filetypes_menu(FileView *view, int background)
 	}
 
 	free(prog_str);
+	return 0;
 }
 
 /* Returns new value for save_msg flag */
@@ -1368,7 +1369,7 @@ show_history_menu(FileView *view)
 	return 0;
 }
 
-void
+int
 show_cmdhistory_menu(FileView *view)
 {
 	int x;
@@ -1401,6 +1402,7 @@ show_cmdhistory_menu(FileView *view)
 	draw_menu(&m);
 	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
+	return 0;
 }
 
 int

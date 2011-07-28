@@ -42,7 +42,7 @@ typedef struct Finished_Jobs {
 extern struct Jobs_List *jobs;
 extern struct Finished_Jobs *fjobs;
 
-int start_background_job(char *cmd);
+int start_background_job(const char *cmd);
 int background_and_wait_for_errors(char *cmd);
 int background_and_wait_for_status(char *cmd);
 void add_finished_job(pid_t pid, int status);

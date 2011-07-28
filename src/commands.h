@@ -121,7 +121,7 @@ void init_commands(void);
 int exec_commands(char *cmd, FileView *view, int type, int save_hist);
 int exec_command(char *cmd, FileView *view, int type);
 char * find_last_command(char *cmd);
-int shellout(char *command, int pause);
+int shellout(const char *command, int pause);
 void add_command(char *name, char *action);
 int execute_command(FileView *view, char *action);
 char * fast_run_complete(char *cmd);
