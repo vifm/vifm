@@ -542,11 +542,13 @@ cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 	input_stat.history_search = 0;
 	stop_completion();
 
-	if(input_stat.index == 0)
+	if(input_stat.index == 0 && input_stat.len == 0)
 	{
 		cmd_ctrl_c(key_info, keys_info);
 		return;
 	}
+	if(input_stat.index == 0)
+		return;
 
 	if(input_stat.index == input_stat.len)
 	{ /* If the cursor is at the end of the line, maybe filling
