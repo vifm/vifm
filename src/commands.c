@@ -3232,6 +3232,24 @@ file_cmd(const struct cmd_info *cmd_info)
 static int
 filter_cmd(const struct cmd_info *cmd_info)
 {
+	if(cmd_info->argc == 0)
+	{
+		if(cmd_info->emark)
+		{
+			curr_view->invert = !curr_view->invert;
+			load_dir_list(curr_view, 1);
+			moveto_list_pos(curr_view, 0);
+			curr_stats.setting_change = 1;
+		}
+		else
+		{
+		set_view_filter(curr_view, "", !cmd_info->emark);
+		}
+	}
+	else
+	{
+		set_view_filter(curr_view, cmd_info->argv[0], !cmd_info->emark);
+	}
 }
 
 static int
