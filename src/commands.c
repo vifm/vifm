@@ -3474,11 +3474,35 @@ undolist_cmd(const struct cmd_info *cmd_info)
 static int
 unmap_cmd(const struct cmd_info *cmd_info)
 {
+	status_bar_message(":unmap is not implemented yet");
+	return 1;
 }
 
 static int
 view_cmd(const struct cmd_info *cmd_info)
 {
+	if(curr_stats.number_of_windows == 1)
+	{
+		show_error_msg("Cannot view files", "Cannot view files in one window mode");
+		return 0;
+	}
+	if(curr_stats.view)
+	{
+		curr_stats.view = 0;
+
+		wbkgdset(other_view->title,
+				COLOR_PAIR(BORDER_COLOR + other_view->color_scheme));
+		wbkgdset(other_view->win,
+				COLOR_PAIR(WIN_COLOR + other_view->color_scheme));
+		change_directory(other_view, other_view->curr_dir);
+		load_dir_list(other_view, 1);
+	}
+	else
+	{
+		curr_stats.view = 1;
+		quick_view_file(curr_view);
+	}
+	return 0;
 }
 
 static int
