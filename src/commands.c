@@ -3366,6 +3366,12 @@ only_cmd(const struct cmd_info *cmd_info)
 static int
 popd_cmd(const struct cmd_info *cmd_info)
 {
+	if(popd() != 0)
+	{
+		status_bar_message("Directory stack empty");
+		return 1;
+	}
+	return 0;
 }
 
 static int
