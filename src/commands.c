@@ -118,7 +118,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "change",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = change_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "cmap",             .abbr = "cm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
-		.handler = cmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+		.handler = cmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "cmdhistory",       .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = cmdhistory_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "colorscheme",      .abbr = "colo",  .emark = 0,  .id = COM_COLORSCHEME, .range = 0,    .bg = 0,             .regexp = 0,
@@ -3054,8 +3054,52 @@ change_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
+n_do_map(struct cmd_info *cmd_info, const char *map_type, const char *map_cmd,
+		int mode)
+{
+	wchar_t *keys, *mapping;
+	char *raw_rhs, *rhs;
+	char t;
+	int result;
+
+	if(cmd_info->argc == 1)
+	{
+		char err_msg[128];
+		sprintf(err_msg, "The :%s command requires two arguments - :%s lhs rhs",
+				map_cmd, map_cmd);
+		show_error_msg("Command Error", err_msg);
+		return -1;
+	}
+
+	if(cmd_info->argc == 0)
+	{
+		show_map_menu(curr_view, map_type, list_cmds(mode));
+		return 0;
+	}
+
+	raw_rhs = (char *)skip_word(cmd_info->args);
+	t = *raw_rhs;
+	*raw_rhs = '\0';
+
+	rhs = (char*)skip_spaces(raw_rhs + 1);
+	keys = substitute_specs(cmd_info->args);
+	mapping = substitute_specs(rhs);
+	result = add_user_keys(keys, mapping, mode);
+	free(mapping);
+	free(keys);
+
+	*raw_rhs = t;
+
+	if(result == -1)
+		show_error_msg("Mapping Error", "Not enough memory");
+
+	return 0;
+}
+
+static int
 cmap_cmd(const struct cmd_info *cmd_info)
 {
+	n_do_map(cmd_info, "Command Line", "cmap", CMDLINE_MODE);
 }
 
 static int
