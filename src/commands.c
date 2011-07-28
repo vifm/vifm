@@ -3347,6 +3347,13 @@ nmap_cmd(const struct cmd_info *cmd_info)
 static int
 nohlsearch_cmd(const struct cmd_info *cmd_info)
 {
+	if(curr_view->selected_files == 0)
+		return 0;
+
+	clean_selected_files(curr_view);
+	draw_dir_list(curr_view, curr_view->top_line);
+	moveto_list_pos(curr_view, curr_view->list_pos);
+	return 0;
 }
 
 static int
