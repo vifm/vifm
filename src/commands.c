@@ -3390,6 +3390,8 @@ pushd_cmd(const struct cmd_info *cmd_info)
 static int
 pwd_cmd(const struct cmd_info *cmd_info)
 {
+	status_bar_message(curr_view->curr_dir);
+	return 1;
 }
 
 static int
