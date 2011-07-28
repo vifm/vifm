@@ -814,15 +814,22 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 		buf_len = 0;
 		for(i = 0; i < str_len; i++)
 			buf_len += strlen(uchar2str(list[x][i]));
-		buf_len += 1 + wcslen(list[x] + str_len + 1) + 1;
+
+		if(str_len > 0)
+			buf_len += 1 + wcslen(list[x] + str_len + 1) + 1;
+		else
+			buf_len += 1 + 0 + 1;
 
 		m.data[x] = (char *)malloc(buf_len);
 		m.data[x][0] = '\0';
 		for(i = 0; i < str_len; i++)
 			strcat(m.data[x], uchar2str(list[x][i]));
 
-		strcat(m.data[x], " ");
-		sprintf(m.data[x] + strlen(m.data[x]), "%ls", list[x] + str_len + 1);
+		if(str_len > 0)
+		{
+			strcat(m.data[x], " ");
+			sprintf(m.data[x] + strlen(m.data[x]), "%ls", list[x] + str_len + 1);
+		}
 
 		free(list[x]);
 
