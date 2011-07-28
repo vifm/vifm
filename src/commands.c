@@ -3442,6 +3442,8 @@ shell_cmd(const struct cmd_info *cmd_info)
 static int
 sort_cmd(const struct cmd_info *cmd_info)
 {
+	enter_sort_mode(curr_view);
+	return 0;
 }
 
 static int
