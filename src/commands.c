@@ -3547,6 +3547,7 @@ quit_cmd(const struct cmd_info *cmd_info)
 static int
 yank_cmd(const struct cmd_info *cmd_info)
 {
+	return yank_files(curr_view, DEFAULT_REG_NAME, 0, NULL) != 0;
 }
 
 static int
