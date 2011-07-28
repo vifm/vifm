@@ -3532,6 +3532,8 @@ write_cmd(const struct cmd_info *cmd_info)
 static int
 wq_cmd(const struct cmd_info *cmd_info)
 {
+	curr_stats.setting_change = 1;
+	return quit_cmd(cmd_info);
 }
 
 static int
