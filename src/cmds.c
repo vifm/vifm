@@ -67,7 +67,7 @@ static const char * parse_tail(struct cmd_t *cur,
 		const char *cmd, struct cmd_info *cmd_info);
 static char ** dispatch_line(const char *args, int *count, char sep,
 		int regexp);
-static int get_args_count(const char *cmdstr, char sep);
+static int get_args_count(const char *cmdstr, char sep, int regexp);
 static void unescape(char *s, int regexp);
 static void replace_esc(char *s);
 static int get_cmd_info(const char *cmd, struct cmd_info *info);
@@ -178,7 +178,7 @@ execute_cmd(const char *cmd)
 		cmd_info.args = cmds_conf.expand_macros(cmd_info.raw_args);
 	else
 		cmd_info.args = strdup(cmd_info.raw_args);
-	cmd_info.argv = dispatch_line(cmd_info.raw_args, &cmd_info.argc, cmd_info.sep,
+	cmd_info.argv = dispatch_line(cmd_info.args, &cmd_info.argc, cmd_info.sep,
 			cur->regexp);
 
 	if((cmd_info.begin != NOT_DEF || cmd_info.end != NOT_DEF) &&
@@ -362,7 +362,7 @@ dispatch_line(const char *args, int *count, char sep, int regexp)
 
 	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING, ARG };
 
-	*count = get_args_count(args, sep);
+	*count = get_args_count(args, sep, regexp);
 	if(*count == 0)
 		return NULL;
 
@@ -455,7 +455,7 @@ dispatch_line(const char *args, int *count, char sep, int regexp)
 }
 
 static int
-get_args_count(const char *cmdstr, char sep)
+get_args_count(const char *cmdstr, char sep, int regexp)
 {
 	int i, state;
 	int result = 0;
@@ -470,7 +470,7 @@ get_args_count(const char *cmdstr, char sep)
 					state = S_QUOTING;
 				else if(sep == ' ' && cmdstr[i] == '"')
 					state = D_QUOTING;
-				else if(sep == ' ' && cmdstr[i] == '/')
+				else if(sep == ' ' && cmdstr[i] == '/' && regexp)
 					state = R_QUOTING;
 				else if(cmdstr[i] != sep)
 					state = NO_QUOTING;
@@ -844,6 +844,7 @@ command_cmd(const struct cmd_info *cmd_info)
 	else if(!is_correct_name(cmd_name))
 		return CMDS_ERR_INCORRECT_NAME;
 
+	cmp = -1;
 	cur = &head;
 	while(cur->next != NULL && (cmp = strcmp(cur->next->name, cmd_name)) < 0)
 		cur = cur->next;

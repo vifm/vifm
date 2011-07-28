@@ -3065,8 +3065,6 @@ cd_cmd(const struct cmd_info *cmd_info)
 			snprintf(dir, sizeof(dir), "%s", arg);
 		else if(*arg == '~')
 			snprintf(dir, sizeof(dir), "%s%s", cfg.home_dir, arg + 1);
-		else if(strcmp(arg, "%D") == 0)
-			snprintf(dir, sizeof(dir), "%s", other_view->curr_dir);
 		else if(strcmp(arg, "-") == 0)
 			snprintf(dir, sizeof(dir), "%s", curr_view->last_dir);
 		else
@@ -3181,6 +3179,36 @@ dirs_cmd(const struct cmd_info *cmd_info)
 static int
 edit_cmd(const struct cmd_info *cmd_info)
 {
+	if(cfg.vim_filter)
+		use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
+	if(cmd_info->argc != 0)
+	{
+		char buf[PATH_MAX];
+		size_t len;
+		int i;
+		len = snprintf(buf, sizeof(buf), "%s ", cfg.vi_command);
+		for(i = 0; i < cmd_info->argc && len < sizeof(buf) - 1; i++)
+			len += snprintf(buf + len, sizeof(buf) - len, "%s ", cmd_info->argv[i]);
+		shellout(buf, -1);
+		return 0;
+	}
+	if(!curr_view->selected_files ||
+			!curr_view->dir_entry[curr_view->list_pos].selected)
+	{
+		view_file(get_current_file_name(curr_view));
+	}
+	else
+	{
+		char *cmd = edit_cmd_selection(curr_view);
+		if(cmd == NULL)
+		{
+			show_error_msg("Unable to allocate enough memory", "Cannot load file");
+			return 0;
+		}
+		shellout(cmd, -1);
+		free(cmd);
+	}
+	return 0;
 }
 
 static int
