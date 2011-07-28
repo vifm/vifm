@@ -57,7 +57,7 @@ void show_colorschemes_menu(FileView *view);
 void show_commands_menu(FileView *view);
 int show_history_menu(FileView *view);
 int show_cmdhistory_menu(FileView *view);
-void show_vifm_menu(FileView *view);
+int show_vifm_menu(FileView *view);
 int show_filetypes_menu(FileView *view, int background);
 int show_jobs_menu(FileView *view);
 int show_locate_menu(FileView *view, char *args);

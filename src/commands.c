@@ -3508,11 +3508,13 @@ view_cmd(const struct cmd_info *cmd_info)
 static int
 vifm_cmd(const struct cmd_info *cmd_info)
 {
+	return show_vifm_menu(curr_view) != 0;
 }
 
 static int
 vmap_cmd(const struct cmd_info *cmd_info)
 {
+	return do_map(cmd_info, "Visual", "vmap", VISUAL_MODE) != 0;
 }
 
 static int
@@ -3540,5 +3542,5 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 {
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
