@@ -3359,6 +3359,8 @@ nohlsearch_cmd(const struct cmd_info *cmd_info)
 static int
 only_cmd(const struct cmd_info *cmd_info)
 {
+	curr_stats.number_of_windows = 1;
+	redraw_window();
 }
 
 static int
