@@ -344,7 +344,7 @@ static int
 resolve_mark(char mark)
 {
 	int result;
-	/* TODO write code */
+
 	result = check_mark_directory(curr_view, mark);
 	if(result < 0)
 		show_error_msg("Invalid mark in range", "Trying to use an invalid mark.");
@@ -3421,6 +3421,9 @@ rename_cmd(const struct cmd_info *cmd_info)
 static int
 screen_cmd(const struct cmd_info *cmd_info)
 {
+	cfg.use_screen = !cfg.use_screen;
+	curr_stats.setting_change = 1;
+	return 0;
 }
 
 static int
