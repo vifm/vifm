@@ -3429,6 +3429,7 @@ screen_cmd(const struct cmd_info *cmd_info)
 static int
 set_cmd(const struct cmd_info *cmd_info)
 {
+	return process_set_args(cmd_info->args) != 0;
 }
 
 static int
