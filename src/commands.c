@@ -149,7 +149,7 @@ static const struct cmd_add commands[] = {
 		.handler = locate_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "ls",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = ls_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "map",              .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
+	{ .name = "map",              .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = map_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = 2,       .select = 0, },
 	{ .name = "marks",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = marks_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
@@ -3318,6 +3318,15 @@ ls_cmd(const struct cmd_info *cmd_info)
 static int
 map_cmd(const struct cmd_info *cmd_info)
 {
+	if(cmd_info->emark)
+	{
+		n_do_map(cmd_info, "", "map", CMDLINE_MODE);
+	}
+	else
+	{
+		if(n_do_map(cmd_info, "", "map", NORMAL_MODE) == 0)
+			n_do_map(cmd_info, "", "map", VISUAL_MODE);
+	}
 }
 
 static int
