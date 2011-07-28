@@ -3226,6 +3226,7 @@ empty_cmd(const struct cmd_info *cmd_info)
 static int
 file_cmd(const struct cmd_info *cmd_info)
 {
+	show_filetypes_menu(curr_view, cmd_info->bg);
 }
 
 static int
