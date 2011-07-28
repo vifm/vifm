@@ -3449,6 +3449,12 @@ sort_cmd(const struct cmd_info *cmd_info)
 static int
 split_cmd(const struct cmd_info *cmd_info)
 {
+	if(curr_stats.number_of_windows == 2)
+		return 0;
+
+	curr_stats.number_of_windows = 2;
+	redraw_window();
+	return 0;
 }
 
 static int
