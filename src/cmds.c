@@ -135,7 +135,6 @@ execute_cmd(const char *cmd)
 	struct cmd_t *cur;
 	size_t len;
 	const char *args;
-	char *tmp_args;
 	int result;
 	int i;
 
@@ -167,21 +166,20 @@ execute_cmd(const char *cmd)
 
 	args = parse_tail(cur, cmd, &cmd_info);
 
-	tmp_args = strdup(args);
-	len = strlen(tmp_args);
-	if(cur->bg && len >= 2 && tmp_args[len - 1] == '&' &&
-			tmp_args[len - 2] == ' ')
+	cmd_info.raw_args = strdup(args);
+	len = strlen(cmd_info.raw_args);
+	if(cur->bg && len >= 2 && cmd_info.raw_args[len - 1] == '&' &&
+			cmd_info.raw_args[len - 2] == ' ')
 	{
 		cmd_info.bg = 1;
-		tmp_args[len - 2] = '\0';
+		cmd_info.raw_args[len - 2] = '\0';
 	}
 	if(cur->expand)
-		cmd_info.args = cmds_conf.expand_macros(tmp_args);
+		cmd_info.args = cmds_conf.expand_macros(cmd_info.raw_args);
 	else
-		cmd_info.args = strdup(tmp_args);
-	cmd_info.argv = dispatch_line(tmp_args, &cmd_info.argc, cmd_info.sep,
+		cmd_info.args = strdup(cmd_info.raw_args);
+	cmd_info.argv = dispatch_line(cmd_info.raw_args, &cmd_info.argc, cmd_info.sep,
 			cur->regexp);
-	free(tmp_args);
 
 	if((cmd_info.begin != NOT_DEF || cmd_info.end != NOT_DEF) &&
 			!cur->range)
@@ -232,6 +230,7 @@ execute_cmd(const char *cmd)
 		cur->passed--;
 	}
 
+	free(cmd_info.raw_args);
 	free(cmd_info.args);
 	for(i = 0; i < cmd_info.argc; i++)
 		free(cmd_info.argv[i]);
@@ -610,6 +609,7 @@ init_cmd_info(struct cmd_info *cmd_info)
 	cmd_info->end = NOT_DEF;
 	cmd_info->emark = 0;
 	cmd_info->qmark = 0;
+	cmd_info->raw_args = NULL;
 	cmd_info->args = NULL;
 	cmd_info->argc = 0;
 	cmd_info->argv = NULL;

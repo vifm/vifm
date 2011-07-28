@@ -24,7 +24,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "",           .abbr = NULL,  .handler = goto_cmd,       .id = -1,    .range = 1,    .cust_sep = 0,
 		.emark = 0,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 0,       .bg = 1,     },
 	{ .name = "!",          .abbr = NULL,  .handler = exec_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,
-		.emark = 0,           .qmark = 1,    .expand = 0,               .regexp = 0, .min_args = 1, .max_args = 1,       .bg = 1,     },
+		.emark = 1,           .qmark = 1,    .expand = 0,               .regexp = 0, .min_args = 1, .max_args = 1,       .bg = 1,     },
 	{ .name = "call",       .abbr = "cal", .handler = call_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,
 		.emark = 0,           .qmark = 1,    .expand = 0,               .regexp = 0, .min_args = 1, .max_args = 1,       .bg = 0,     },
 	{ .name = "delete",     .abbr = "d",   .handler = delete_cmd,     .id =  1,    .range = 1,    .cust_sep = 0,
@@ -251,6 +251,12 @@ test_bang(void)
 	assert_false(cmdi.emark);
 
 	assert_int_equal(0, execute_cmd("q!"));
+	assert_true(cmdi.emark);
+
+	assert_int_equal(0, execute_cmd("!vim"));
+	assert_false(cmdi.emark);
+
+	assert_int_equal(0, execute_cmd("!!vim"));
 	assert_true(cmdi.emark);
 
 	assert_int_equal(CMDS_ERR_TRAILING_CHARS, execute_cmd("q !"));

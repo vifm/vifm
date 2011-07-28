@@ -109,7 +109,7 @@ static int usercmd_cmd(const struct cmd_info* cmd_info);
 static const struct cmd_add commands[] = {
 	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = COM_GOTO,        .range = 1,    .bg = 0,             .regexp = 0,
 		.handler = goto_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "!",                .abbr = NULL,    .emark = 0,  .id = COM_EXECUTE,     .range = 0,    .bg = 1,             .regexp = 0,
+	{ .name = "!",                .abbr = NULL,    .emark = 1,  .id = COM_EXECUTE,     .range = 0,    .bg = 1,             .regexp = 0,
 		.handler = emark_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
@@ -346,6 +346,15 @@ resolve_mark(char mark)
 static char *
 cmds_expand_macros(const char *str)
 {
+	int use_menu = 0;
+	int split = 0;
+	char *result;
+
+	if(strchr(str, '%') != NULL)
+		result = expand_macros(curr_view, str, NULL, &use_menu, &split);
+	else
+		result = strdup(str);
+	return result;
 }
 
 static void
@@ -2354,8 +2363,7 @@ execute_command(FileView *view, char *command)
 	while(*command == ' ' || *command == ':')
 		command++;
 
-	execute_cmd(command);
-	return 0;
+	return execute_cmd(command) > 0;
 
 	cmd.cmd_name = NULL;
 	cmd.args = NULL;
@@ -2905,6 +2913,43 @@ goto_cmd(const struct cmd_info *cmd_info)
 static int
 emark_cmd(const struct cmd_info *cmd_info)
 {
+	int i = 0;
+	char *com = cmd_info->args;
+	char buf[COMMAND_GROUP_INFO_LEN];
+	int use_menu = 0;
+	int split = 0;
+
+	while(isspace(com[i]) && (size_t)i < strlen(com))
+		i++;
+
+	if(strlen(com + i) == 0)
+		return 0;
+
+	if(cmd_info->bg)
+	{
+		start_background_job(com + i);
+	}
+	else
+	{
+		if(shellout(com + i, cmd_info->emark ? 1 : (cfg.fast_run ? 0 : -1)) == 127
+				&& cfg.fast_run)
+		{
+			char *buf = fast_run_complete(com + i);
+			if(buf == NULL)
+				return 1;
+
+			shellout(buf, cmd_info->emark ? 1 : -1);
+			free(buf);
+		}
+	}
+
+	snprintf(buf, sizeof(buf), "in %s: !%s",
+			replace_home_part(curr_view->curr_dir), cmd_info->raw_args);
+	cmd_group_begin(buf);
+	add_operation(com + i, NULL, NULL, "", NULL, NULL);
+	cmd_group_end();
+
+	return 0;
 }
 
 static int
