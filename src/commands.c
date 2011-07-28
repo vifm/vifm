@@ -2363,7 +2363,52 @@ execute_command(FileView *view, char *command)
 	while(*command == ' ' || *command == ':')
 		command++;
 
-	return execute_cmd(command) > 0;
+	result = execute_cmd(command);
+	if(result >= 0)
+		return result;
+	switch(result)
+	{
+		case CMDS_ERR_LOOP:
+			show_error_msg("Command error", "Loop in commands");
+			break;
+		case CMDS_ERR_NO_MEM:
+			show_error_msg("Command error", "Not enough memory");
+			break;
+		case CMDS_ERR_TOO_FEW_ARGS:
+			show_error_msg("Command error", "Too few arguments");
+			break;
+		case CMDS_ERR_TRAILING_CHARS:
+			show_error_msg("Command error", "Trailing characters");
+			break;
+		case CMDS_ERR_INCORRECT_NAME:
+			show_error_msg("Command error", "Incorrect command name");
+			break;
+		case CMDS_ERR_NEED_BANG:
+			show_error_msg("Command error", "Add bang to force");
+			break;
+		case CMDS_ERR_NO_BUILDIN_REDEFINE:
+			show_error_msg("Command error", "Can't redefine builtin command");
+			break;
+		case CMDS_ERR_INVALID_CMD:
+			show_error_msg("Command error", "Invalid name");
+			break;
+		case CMDS_ERR_NO_BANG_ALLOWED:
+			show_error_msg("Command error", "No ! is allowed");
+			break;
+		case CMDS_ERR_NO_RANGE_ALLOWED:
+			show_error_msg("Command error", "No range is allowed");
+			break;
+		case CMDS_ERR_NO_QMARK_ALLOWED:
+			show_error_msg("Command error", "No ? is allowed");
+			break;
+		case CMDS_ERR_INVALID_RANGE:
+			show_error_msg("Command error", "Invalid range");
+			break;
+		default:
+			show_error_msg("Command error", "Unknown error");
+			break;
+	}
+	return 0;
 
 	cmd.cmd_name = NULL;
 	cmd.args = NULL;
@@ -2955,6 +3000,8 @@ emark_cmd(const struct cmd_info *cmd_info)
 static int
 apropos_cmd(const struct cmd_info *cmd_info)
 {
+	show_apropos_menu(curr_view, cmd_info->args);
+	return 0;
 }
 
 static int
