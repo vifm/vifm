@@ -3520,6 +3520,13 @@ vmap_cmd(const struct cmd_info *cmd_info)
 static int
 write_cmd(const struct cmd_info *cmd_info)
 {
+	int tmp;
+
+	tmp = curr_stats.setting_change;
+	curr_stats.setting_change = cmd_info->emark;
+	write_config_file();
+	curr_stats.setting_change = tmp;
+	return 0;
 }
 
 static int
