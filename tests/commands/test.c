@@ -62,7 +62,7 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 }
 
 static void
-post(void)
+post(int id)
 {
 }
 

@@ -105,6 +105,10 @@ enum
 	RESERVED
 };
 
+enum {
+	COM_GOTO = RESERVED,
+};
+
 typedef struct
 {
 	char *action;

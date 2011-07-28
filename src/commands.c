@@ -107,7 +107,7 @@ static int yank_cmd(const struct cmd_info *cmd_info);
 static int usercmd_cmd(const struct cmd_info* cmd_info);
 
 static const struct cmd_add commands[] = {
-	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0,             .regexp = 0,
+	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = COM_GOTO,        .range = 1,    .bg = 0,             .regexp = 0,
 		.handler = goto_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "!",                .abbr = NULL,    .emark = 0,  .id = COM_EXECUTE,     .range = 0,    .bg = 1,             .regexp = 0,
 		.handler = emark_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 1, },
@@ -349,8 +349,18 @@ cmds_expand_macros(const char *str)
 }
 
 static void
-post(void)
+post(int id)
 {
+	if(id == COM_GOTO)
+		return;
+	if(!curr_view->selected_files)
+		return;
+
+	free_selected_file_array(curr_view);
+	curr_view->selected_files = 0;
+	load_dir_list(curr_view, 1);
+	if(curr_view == curr_view)
+		moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
 static void
@@ -361,10 +371,6 @@ select_range(const struct cmd_info *cmd_info)
 void
 init_commands(void)
 {
-	cmds_conf.begin = 10;
-	cmds_conf.current = 50;
-	cmds_conf.end = 100;
-
 	cmds_conf.complete_args = complete_args;
 	cmds_conf.swap_range = swap_range;
 	cmds_conf.resolve_mark = resolve_mark;
@@ -2341,6 +2347,13 @@ execute_command(FileView *view, char *command)
 	cmd_params cmd;
 	int result;
 
+	cmds_conf.begin = 0;
+	cmds_conf.current = view->list_pos;
+	cmds_conf.end = view->list_rows;
+
+	while(*command == ' ' || *command == ':')
+		command++;
+
 	execute_cmd(command);
 	return 0;
 
@@ -2508,12 +2521,15 @@ exec_commands(char *cmd, FileView *view, int type, int save_hist)
 			if(*p != '\0')
 				p++;
 
-			while(*cmd == ' ' || *cmd == ':')
-				cmd++;
-			if(*cmd == '!' || strncmp(cmd, "com", 3) == 0)
+			if(type == GET_COMMAND || type == GET_VISUAL_COMMAND)
 			{
-				save_msg += exec_command(cmd, view, type);
-				break;
+				while(*cmd == ' ' || *cmd == ':')
+					cmd++;
+				if(*cmd == '!' || strncmp(cmd, "com", 3) == 0)
+				{
+					save_msg += exec_command(cmd, view, type);
+					break;
+				}
 			}
 
 			*q = '\0';
@@ -2882,6 +2898,8 @@ dispatch_line(const char *args, int *count)
 static int
 goto_cmd(const struct cmd_info *cmd_info)
 {
+	moveto_list_pos(curr_view, cmd_info->end - 1);
+	return 0;
 }
 
 static int

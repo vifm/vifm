@@ -144,7 +144,7 @@ execute_cmd(const char *cmd)
 	if(cmd == NULL)
 		return CMDS_ERR_INVALID_CMD;
 
-	if(cmd_name[0] != '\0' && cmd_info.end < cmd_info.begin)
+	if(*cmd != '\0' && cmd_info.end < cmd_info.begin)
 	{
 		int t;
 
@@ -228,7 +228,7 @@ execute_cmd(const char *cmd)
 			result = cur->handler(&cmd_info);
 		}
 
-		cmds_conf.post();
+		cmds_conf.post(cur->id);
 		cur->passed--;
 	}
 

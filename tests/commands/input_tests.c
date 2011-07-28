@@ -4,12 +4,12 @@
 #include "seatest.h"
 
 #include "../../src/cmds.h"
-
-#define ARRAY_LEN(x) (sizeof(x)/sizeof((x)[0]))
+#include "../../src/macros.h"
 
 static struct cmd_info cmdi;
 static char *arg;
 
+static int goto_cmd(const struct cmd_info* cmd_info);
 static int exec_cmd(const struct cmd_info* cmd_info);
 static int call_cmd(const struct cmd_info* cmd_info);
 static int delete_cmd(const struct cmd_info* cmd_info);
@@ -21,6 +21,8 @@ static int substitute_cmd(const struct cmd_info* cmd_info);
 static int quit_cmd(const struct cmd_info* cmd_info);
 
 static const struct cmd_add commands[] = {
+	{ .name = "",           .abbr = NULL,  .handler = goto_cmd,       .id = -1,    .range = 1,    .cust_sep = 0,
+		.emark = 0,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 0,       .bg = 1,     },
 	{ .name = "!",          .abbr = NULL,  .handler = exec_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,
 		.emark = 0,           .qmark = 1,    .expand = 0,               .regexp = 0, .min_args = 1, .max_args = 1,       .bg = 1,     },
 	{ .name = "call",       .abbr = "cal", .handler = call_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,
@@ -40,6 +42,13 @@ static const struct cmd_add commands[] = {
 	{ .name = "quit",       .abbr = "q",   .handler = quit_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,
 		.emark = 1,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 0,       .bg = 0,     },
 };
+
+static int
+goto_cmd(const struct cmd_info* cmd_info)
+{
+	cmdi = *cmd_info;
+	return 0;
+}
 
 static int
 exec_cmd(const struct cmd_info* cmd_info)
@@ -200,6 +209,14 @@ test_range(void)
 	assert_int_equal(6, cmdi.begin);
 	assert_int_equal(7, cmdi.end);
 	assert_true(cmdi.emark);
+
+	assert_int_equal(0, execute_cmd("1,3,7"));
+	assert_int_equal(3, cmdi.begin);
+	assert_int_equal(7, cmdi.end);
+
+	assert_int_equal(0, execute_cmd("7,3,1"));
+	assert_int_equal(3, cmdi.begin);
+	assert_int_equal(1, cmdi.end);
 }
 
 static void

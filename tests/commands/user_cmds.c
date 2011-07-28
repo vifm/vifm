@@ -3,8 +3,7 @@
 #include "seatest.h"
 
 #include "../../src/cmds.h"
-
-#define ARRAY_LEN(x) (sizeof(x)/sizeof((x)[0]))
+#include "../../src/macros.h"
 
 struct cmd_info user_cmd_info;
 

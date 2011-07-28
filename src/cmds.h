@@ -22,17 +22,17 @@
 enum
 {
 	CMDS_ERR_LOOP = 1,
-	CMDS_ERR_NO_MEM,
-	CMDS_ERR_TOO_FEW_ARGS,
-	CMDS_ERR_TRAILING_CHARS,
-	CMDS_ERR_INCORRECT_NAME,
-	CMDS_ERR_NEED_BANG,
-	CMDS_ERR_NO_BUILDIN_REDEFINE,
-	CMDS_ERR_INVALID_CMD,
-	CMDS_ERR_NO_BANG_ALLOWED,
-	CMDS_ERR_NO_RANGE_ALLOWED,
-	CMDS_ERR_NO_QMARK_ALLOWED,
-	CMDS_ERR_INVALID_RANGE,
+	CMDS_ERR_NO_MEM = 2,
+	CMDS_ERR_TOO_FEW_ARGS = 3,
+	CMDS_ERR_TRAILING_CHARS = 4,
+	CMDS_ERR_INCORRECT_NAME = 5,
+	CMDS_ERR_NEED_BANG = 6,
+	CMDS_ERR_NO_BUILDIN_REDEFINE = 7,
+	CMDS_ERR_INVALID_CMD = 8,
+	CMDS_ERR_NO_BANG_ALLOWED = 9,
+	CMDS_ERR_NO_RANGE_ALLOWED = 10,
+	CMDS_ERR_NO_QMARK_ALLOWED = 11,
+	CMDS_ERR_INVALID_RANGE = 12,
 };
 
 enum
@@ -88,7 +88,7 @@ struct {
 	int (*swap_range)(void);
 	int (*resolve_mark)(char mark); /* should return value < 0 on error */
 	char *(*expand_macros)(const char *str); /* should allocate memory */
-	void (*post)(void); /* called after successful processing command */
+	void (*post)(int id); /* called after successful processing command */
 	void (*select_range)(const struct cmd_info *cmd_info);
 } cmds_conf;
 
