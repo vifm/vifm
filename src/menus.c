@@ -920,7 +920,7 @@ bookmark_khandler(struct menu_info *m, wchar_t *keys)
 	return -1;
 }
 
-void
+int
 show_bookmarks_menu(FileView *view)
 {
 	int i, j, x;
@@ -974,9 +974,10 @@ show_bookmarks_menu(FileView *view)
 	draw_menu(&m);
 	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
+	return 0;
 }
 
-void
+int
 show_dirstack_menu(FileView *view)
 {
 	int len, i;
@@ -1004,7 +1005,9 @@ show_dirstack_menu(FileView *view)
 	i = -1;
 	while(m.data[++i] != NULL);
 	if(i != 0)
+	{
 		m.len = i;
+	}
 	else
 	{
 		m.data[0] = strdup("Directory stack is empty");
@@ -1015,6 +1018,7 @@ show_dirstack_menu(FileView *view)
 	draw_menu(&m);
 	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
+	return 0;
 }
 
 void

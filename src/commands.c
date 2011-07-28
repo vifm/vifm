@@ -3173,7 +3173,7 @@ delete_cmd(const struct cmd_info *cmd_info)
 static int
 dirs_cmd(const struct cmd_info *cmd_info)
 {
-	show_dirstack_menu(curr_view);
+	return show_dirstack_menu(curr_view) != 0;
 }
 
 static int
@@ -3332,6 +3332,7 @@ map_cmd(const struct cmd_info *cmd_info)
 static int
 marks_cmd(const struct cmd_info *cmd_info)
 {
+	return show_bookmarks_menu(curr_view) != 0;
 }
 
 static int
