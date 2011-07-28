@@ -3243,7 +3243,7 @@ filter_cmd(const struct cmd_info *cmd_info)
 		}
 		else
 		{
-		set_view_filter(curr_view, "", !cmd_info->emark);
+			set_view_filter(curr_view, "", !cmd_info->emark);
 		}
 	}
 	else
@@ -3255,6 +3255,24 @@ filter_cmd(const struct cmd_info *cmd_info)
 static int
 help_cmd(const struct cmd_info *cmd_info)
 {
+	char help_cmd[PATH_MAX];
+
+	if(cfg.use_vim_help)
+	{
+		if(cmd_info->args)
+			snprintf(help_cmd, sizeof(help_cmd), "%s -c \'help %s\' -c only",
+					cfg.vi_command, cmd_info->args);
+		else
+			snprintf(help_cmd, sizeof(help_cmd), "%s -c \'help vifm\' -c only",
+					cfg.vi_command);
+	}
+	else
+	{
+		snprintf(help_cmd, sizeof(help_cmd), "%s %s/vifm-help.txt",
+				cfg.vi_command, cfg.config_dir);
+	}
+
+	shellout(help_cmd, -1);
 }
 
 static int
