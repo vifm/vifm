@@ -40,7 +40,7 @@ enum
 	USER_CMD_ID = -128,
 	COMMAND_CMD_ID = -129,
 	DELCOMMAND_CMD_ID = -130,
-	NOT_DEF = -1,
+	NOT_DEF = -8192,
 };
 
 struct cmd_info

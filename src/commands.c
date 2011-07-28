@@ -124,7 +124,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "colorscheme",      .abbr = "colo",  .emark = 0,  .id = COM_COLORSCHEME, .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = colorscheme_cmd, .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "delete",           .abbr = "d",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0,             .regexp = 0,
-		.handler = delete_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+		.handler = delete_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 1, },
 	{ .name = "display",          .abbr = "di",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "dirs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
@@ -375,6 +375,55 @@ post(int id)
 static void
 select_range(const struct cmd_info *cmd_info)
 {
+	int x;
+	int y = 0;
+
+	/* Both a starting range and an ending range are given. */
+	if(cmd_info->begin > -1)
+	{
+		clean_selected_files(curr_view);
+
+		for(x = cmd_info->begin; x <= cmd_info->end; x++)
+		{
+			curr_view->dir_entry[x].selected = 1;
+			y++;
+		}
+		curr_view->selected_files = y;
+	}
+	else if(curr_view->selected_files == 0)
+	{
+		if(cmd_info->end > -1)
+		{
+			clean_selected_files(curr_view);
+
+			y = 0;
+			for(x = cmd_info->end; x < curr_view->list_rows; x++)
+			{
+				if(y == 1)
+					break;
+				curr_view->dir_entry[x].selected = 1;
+				y++;
+			}
+			curr_view->selected_files = y;
+		}
+		else
+		{
+			clean_selected_files(curr_view);
+
+			y = 0;
+			for(x = curr_view->list_pos; x < curr_view->list_rows; x++)
+			{
+				if(y == 1)
+					break;
+
+				curr_view->dir_entry[x].selected = 1;
+				y++;
+			}
+			curr_view->selected_files = y;
+		}
+	}
+
+	return 0;
 }
 
 void
@@ -2358,7 +2407,7 @@ execute_command(FileView *view, char *command)
 
 	cmds_conf.begin = 0;
 	cmds_conf.current = view->list_pos;
-	cmds_conf.end = view->list_rows;
+	cmds_conf.end = view->list_rows - 1;
 
 	while(*command == ' ' || *command == ':')
 		command++;
@@ -2951,7 +3000,7 @@ dispatch_line(const char *args, int *count)
 static int
 goto_cmd(const struct cmd_info *cmd_info)
 {
-	moveto_list_pos(curr_view, cmd_info->end - 1);
+	moveto_list_pos(curr_view, cmd_info->end);
 	return 0;
 }
 
@@ -3120,6 +3169,7 @@ colorscheme_cmd(const struct cmd_info *cmd_info)
 static int
 delete_cmd(const struct cmd_info *cmd_info)
 {
+	return delete_file(curr_view, DEFAULT_REG_NAME, 0, NULL, 1) != 0;
 }
 
 static int

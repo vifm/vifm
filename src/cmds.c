@@ -306,7 +306,9 @@ parse_limit(const char *cmd, struct cmd_info *cmd_info)
 	else if(isdigit(*cmd))
 	{
 		char *p;
-		cmd_info->end = strtol(cmd, &p, 10);
+		cmd_info->end = strtol(cmd, &p, 10) - 1;
+		if(cmd_info->end < cmds_conf.begin)
+			cmd_info->end = cmds_conf.begin;
 		cmd = p;
 	}
 	else if(*cmd == '\'')

@@ -166,12 +166,12 @@ test_range_acceptance(void)
 static void
 test_range(void)
 {
-	cmds_conf.begin = 10;
+	cmds_conf.begin = 0;
 	cmds_conf.current = 50;
 	cmds_conf.end = 100;
 
 	assert_int_equal(0, execute_cmd("%delete!"));
-	assert_int_equal(10, cmdi.begin);
+	assert_int_equal(0, cmdi.begin);
 	assert_int_equal(100, cmdi.end);
 	assert_true(cmdi.emark);
 
@@ -206,17 +206,17 @@ test_range(void)
 	assert_true(cmdi.emark);
 
 	assert_int_equal(0, execute_cmd("5,6,7delete!"));
-	assert_int_equal(6, cmdi.begin);
-	assert_int_equal(7, cmdi.end);
+	assert_int_equal(5, cmdi.begin);
+	assert_int_equal(6, cmdi.end);
 	assert_true(cmdi.emark);
 
 	assert_int_equal(0, execute_cmd("1,3,7"));
-	assert_int_equal(3, cmdi.begin);
-	assert_int_equal(7, cmdi.end);
+	assert_int_equal(2, cmdi.begin);
+	assert_int_equal(6, cmdi.end);
 
 	assert_int_equal(0, execute_cmd("7,3,1"));
-	assert_int_equal(3, cmdi.begin);
-	assert_int_equal(1, cmdi.end);
+	assert_int_equal(2, cmdi.begin);
+	assert_int_equal(0, cmdi.end);
 }
 
 static void
