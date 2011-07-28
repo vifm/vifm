@@ -54,7 +54,7 @@ typedef struct menu_info
 int show_bookmarks_menu(FileView *view);
 int show_dirstack_menu(FileView *view);
 void show_colorschemes_menu(FileView *view);
-void show_commands_menu(FileView *view);
+int show_commands_menu(FileView *view);
 int show_history_menu(FileView *view);
 int show_cmdhistory_menu(FileView *view);
 int show_vifm_menu(FileView *view);

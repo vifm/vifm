@@ -61,6 +61,7 @@ struct cmd_t
 
 static struct cmd_t head;
 static struct cmd_add user_cmd_handler;
+static cmd_handler command_handler;
 
 static const char * parse_range(const char *cmd, struct cmd_info *cmd_info);
 static const char * parse_limit(const char *cmd, struct cmd_info *cmd_info);
@@ -93,7 +94,7 @@ init_cmds(void)
 		{
 			.name = "command",    .abbr = "com",  .handler = command_cmd,    .id = COMMAND_CMD_ID,
 			.range = 0,           .emark = 1,     .qmark = 0,                .regexp = 0,             .select = 0,
-			.expand = 0,          .bg = 0,        .min_args = 1,             .max_args = NOT_DEF,
+			.expand = 0,          .bg = 0,        .min_args = 0,             .max_args = NOT_DEF,
 		}, {
 			.name = "delcommand", .abbr = "delc", .handler = delcommand_cmd, .id = DELCOMMAND_CMD_ID,
 			.range = 0,           .emark = 1,     .qmark = 0,                .regexp = 0,             .select = 0,
@@ -818,7 +819,14 @@ add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf)
 
 	/* command with the same name already exists */
 	if(cmp == 0)
+	{
+		if(strcmp(name, "command") == 0 || strcmp(name, "com") == 0)
+		{
+			command_handler = conf->handler;
+			return 0;
+		}
 		return -1;
+	}
 
 	if((new = insert_cmd(cur)) == NULL)
 		return -1;
@@ -848,6 +856,14 @@ command_cmd(const struct cmd_info *cmd_info)
 	char cmd_name[256];
 	const char *args;
 	struct cmd_t *new, *cur;
+
+	if(cmd_info->argc < 2)
+	{
+		if(command_handler != NULL)
+			return command_handler(cmd_info);
+		else
+			return CMDS_ERR_TOO_FEW_ARGS;
+	}
 
 	args = get_user_cmd_name(cmd_info->args, cmd_name, sizeof(cmd_name));
 	if(args[0] == '\0')

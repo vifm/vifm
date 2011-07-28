@@ -61,6 +61,8 @@ test_builtin(void)
 static void
 test_user_add(void)
 {
+	assert_int_equal(0, execute_cmd("command comix a"));
+
 	assert_int_equal(0, execute_cmd("command udf a"));
 
 	assert_int_equal(CMDS_ERR_INCORRECT_NAME, execute_cmd("command ! a"));

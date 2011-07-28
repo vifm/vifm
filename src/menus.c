@@ -1079,7 +1079,7 @@ command_khandler(struct menu_info *m, wchar_t *keys)
 	return -1;
 }
 
-void
+int
 show_commands_menu(FileView *view)
 {
 	int len, i, x;
@@ -1102,7 +1102,7 @@ show_commands_menu(FileView *view)
 	if(cfg.command_num < 1)
 	{
 		show_error_msg("No commands set", "No commands are set.");
-		return;
+		return 0;
 	}
 
 	getmaxyx(menu_win, m.win_rows, len);
@@ -1130,6 +1130,7 @@ show_commands_menu(FileView *view)
 	draw_menu(&m);
 	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
+	return 0;
 }
 
 static int
