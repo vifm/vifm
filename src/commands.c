@@ -199,8 +199,8 @@ static const struct cmd_add commands[] = {
 		.handler = wq_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "xit",              .abbr = "x",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "yank",             .abbr = "y",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
-		.handler = yank_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "yank",             .abbr = "y",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0,             .regexp = 0,
+		.handler = yank_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 1, },
 
 	{ .name = "<USERCMD>",        .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0,             .regexp = 0,
 		.handler = usercmd_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 1, },
@@ -3539,6 +3539,9 @@ wq_cmd(const struct cmd_info *cmd_info)
 static int
 quit_cmd(const struct cmd_info *cmd_info)
 {
+	if(cmd_info->emark)
+		curr_stats.setting_change = 0;
+	comm_quit();
 }
 
 static int
