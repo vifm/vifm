@@ -3146,7 +3146,7 @@ n_do_map(struct cmd_info *cmd_info, const char *map_type, const char *map_cmd,
 static int
 cmap_cmd(const struct cmd_info *cmd_info)
 {
-	n_do_map(cmd_info, "Command Line", "cmap", CMDLINE_MODE);
+	return n_do_map(cmd_info, "Command Line", "cmap", CMDLINE_MODE) != 0;
 }
 
 static int
@@ -3318,15 +3318,18 @@ ls_cmd(const struct cmd_info *cmd_info)
 static int
 map_cmd(const struct cmd_info *cmd_info)
 {
+	int result;
 	if(cmd_info->emark)
 	{
-		n_do_map(cmd_info, "", "map", CMDLINE_MODE);
+		result = n_do_map(cmd_info, "", "map", CMDLINE_MODE);
 	}
 	else
 	{
-		if(n_do_map(cmd_info, "", "map", NORMAL_MODE) == 0)
-			n_do_map(cmd_info, "", "map", VISUAL_MODE);
+		result = n_do_map(cmd_info, "", "map", NORMAL_MODE);
+		if(result == 0)
+			result = n_do_map(cmd_info, "", "map", VISUAL_MODE);
 	}
+	return result != 0;
 }
 
 static int
@@ -3338,6 +3341,7 @@ marks_cmd(const struct cmd_info *cmd_info)
 static int
 nmap_cmd(const struct cmd_info *cmd_info)
 {
+	return n_do_map(cmd_info, "Normal", "nmap", NORMAL_MODE) != 0;
 }
 
 static int
