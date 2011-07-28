@@ -3284,6 +3284,11 @@ history_cmd(const struct cmd_info *cmd_info)
 static int
 invert_cmd(const struct cmd_info *cmd_info)
 {
+	curr_view->invert = !curr_view->invert;
+	load_dir_list(curr_view, 1);
+	moveto_list_pos(curr_view, 0);
+	curr_stats.setting_change = 1;
+	return 0;
 }
 
 static int
