@@ -3397,6 +3397,7 @@ pwd_cmd(const struct cmd_info *cmd_info)
 static int
 registers_cmd(const struct cmd_info *cmd_info)
 {
+	return show_register_menu(curr_view) != 0;
 }
 
 static int

@@ -1637,7 +1637,7 @@ show_jobs_menu(FileView *view)
 	return 0;
 }
 
-void
+int
 show_register_menu(FileView *view)
 {
 	int x;
@@ -1673,6 +1673,7 @@ show_register_menu(FileView *view)
 	draw_menu(&m);
 	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
+	return 0;
 }
 
 void
