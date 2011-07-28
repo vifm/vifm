@@ -544,8 +544,7 @@ cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 
 	if(input_stat.index == 0)
 	{
-		if(input_stat.len == 0 && sub_mode != PROMPT_SUBMODE)
-			leave_cmdline_mode();
+		cmd_ctrl_c(key_info, keys_info);
 		return;
 	}
 
