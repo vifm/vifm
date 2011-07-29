@@ -1116,6 +1116,14 @@ check_rename_file(FileView *view, int *indexes, int count, FILE *f)
 		}
 		chomp(name);
 
+		if(strchr(name, '/') != NULL)
+		{
+			status_bar_message("File name can not contain slash");
+			curr_stats.save_msg = 1;
+			free_string_array(list, len);
+			return NULL;
+		}
+
 		if(name[0] != '\0')
 		{
 			for(j = 0; j < len; j++)
