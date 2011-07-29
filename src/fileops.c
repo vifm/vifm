@@ -823,6 +823,15 @@ gen_trash_name(const char *name)
 	return strdup(buf);
 }
 
+int
+is_dir_writable(const char *path)
+{
+	if(access(path, W_OK) == 0)
+		return 1;
+	show_error_msg("Operation error", "Current directory is not writable");
+	return 0;
+}
+
 /* returns new value for save_msg */
 int
 delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
@@ -831,6 +840,9 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	char undo_buf[8 + PATH_MAX*2];
 	int x, y;
 	size_t len;
+
+	if(!is_dir_writable(view->curr_dir))
+		return 0;
 
 	if(cfg.use_trash && use_trash &&
 			path_starts_with(view->curr_dir, cfg.trash_dir))
@@ -1658,6 +1670,9 @@ put_files_from_register(FileView *view, int name, int force_move)
 {
 	registers_t *reg;
 
+	if(!is_dir_writable(view->curr_dir))
+		return 0;
+
 	reg = find_register(name);
 
 	if(reg == NULL || reg->num_files < 1)
@@ -1685,6 +1700,9 @@ clone_file(FileView* view)
 	char *escaped;
 	const char *filename;
 	
+	if(!is_dir_writable(view->curr_dir))
+		return;
+
 	filename = get_current_file_name(view);
 	if(strcmp(filename, "./") == 0)
 		return;
