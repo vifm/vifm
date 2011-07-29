@@ -79,7 +79,8 @@ struct {
 	int current;
 	int end;
 
-	int (*complete_args)(int id, const char *args);
+	int (*complete_args)(int id, const char *args, int argc, char **argv,
+			int arg_pos);
 	int (*swap_range)(void);
 	int (*resolve_mark)(char mark); /* should return value < 0 on error */
 	char *(*expand_macros)(const char *str); /* should allocate memory */

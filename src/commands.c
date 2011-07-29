@@ -332,10 +332,8 @@ static
 #endif
 char ** dispatch_line(const char *args, int *count);
 
-/* TODO generalize command handling */
-
 static int
-complete_args(int id, const char *args)
+complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 {
 	const char *arg;
 	const char *start;
@@ -348,24 +346,24 @@ complete_args(int id, const char *args)
 
 	start = arg;
 
-	/* TODO write code */
 	if(id == COM_COLORSCHEME)
-		complete_colorschemes(arg);
+		complete_colorschemes(argv[argc - 1]);
 	else if(id == COM_SET)
 		complete_options(arg, &start);
 	else
 	{
-		start = strrchr(arg, '/');
+		start = strrchr(args + arg_pos, '/');
 		if(start == NULL)
-			start = arg;
+			start = args + arg_pos;
 		else
 			start++;
 
+		arg = argv[argc - 1];
 		if(id == COM_CD || id == COM_PUSHD)
 			filename_completion(arg, FNC_DIRONLY);
 		else if(id == COM_EXECUTE)
 		{
-			if(arg == args)
+			if(argc == 0)
 			{
 				if(*arg == '.')
 					filename_completion(arg, FNC_DIREXEC);

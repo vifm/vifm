@@ -2044,9 +2044,14 @@ filename_completion(const char *str, int type)
 	completion_group_end();
 	if(type != FNC_EXECONLY)
 	{
-		temp = escape_filename(filename, 0, 0);
-		add_completion(temp);
-		free(temp);
+		if(get_completion_count() == 0)
+			add_completion(filename);
+		else
+		{
+			temp = escape_filename(filename, 0, 0);
+			add_completion(temp);
+			free(temp);
+		}
 	}
 
 	free(filename);

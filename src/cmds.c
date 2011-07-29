@@ -24,6 +24,7 @@
 #include "completion.h"
 #include "log.h"
 #include "macros.h"
+#include "utils.h"
 
 #include "cmds.h"
 
@@ -69,7 +70,7 @@ static const char * parse_limit(const char *cmd, struct cmd_info *cmd_info);
 static const char * parse_tail(struct cmd_t *cur,
 		const char *cmd, struct cmd_info *cmd_info);
 static char ** dispatch_line(const char *args, int *count, char sep,
-		int regexp);
+		int regexp, int *last_arg);
 static int get_args_count(const char *cmdstr, char sep, int regexp);
 static void unescape(char *s, int regexp);
 static void replace_esc(char *s);
@@ -187,7 +188,7 @@ execute_cmd(const char *cmd)
 	else
 		cmd_info.args = strdup(cmd_info.raw_args);
 	cmd_info.argv = dispatch_line(cmd_info.args, &cmd_info.argc, cmd_info.sep,
-			cur->regexp);
+			cur->regexp, NULL);
 
 	if((cmd_info.begin != NOT_DEF || cmd_info.end != NOT_DEF) &&
 			!cur->range)
@@ -365,7 +366,7 @@ parse_tail(struct cmd_t *cur, const char *cmd, struct cmd_info *cmd_info)
 }
 
 static char **
-dispatch_line(const char *args, int *count, char sep, int regexp)
+dispatch_line(const char *args, int *count, char sep, int regexp, int *last_pos)
 {
 	char *cmdstr;
 	int len;
@@ -462,6 +463,9 @@ dispatch_line(const char *args, int *count, char sep, int regexp)
 	}
 
 	params[*count] = NULL;
+
+	if(last_pos != NULL)
+		*last_pos = st;
 
 	free(cmdstr);
 	return params;
@@ -704,7 +708,13 @@ complete_cmd(const char *cmd)
 		}
 		else
 		{
-			prefix_len += cmds_conf.complete_args(id, args);
+			int argc;
+			char **argv;
+			int last_arg;
+
+			argv = dispatch_line(args, &argc, ' ', 0, &last_arg);
+			prefix_len += cmds_conf.complete_args(id, args, argc, argv, last_arg);
+			free_string_array(argv, argc);
 		}
 	}
 
