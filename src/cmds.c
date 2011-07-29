@@ -68,6 +68,7 @@ static int udf_count;
 
 static const char * parse_range(const char *cmd, struct cmd_info *cmd_info);
 static const char * parse_limit(const char *cmd, struct cmd_info *cmd_info);
+static int udf_is_ambiguous(const char *name);
 static const char * parse_tail(struct cmd_t *cur,
 		const char *cmd, struct cmd_info *cmd_info);
 static char ** dispatch_line(const char *args, int *count, char sep,
@@ -76,7 +77,7 @@ static int get_args_count(const char *cmdstr, char sep, int regexp);
 static void unescape(char *s, int regexp);
 static void replace_esc(char *s);
 static int get_cmd_info(const char *cmd, struct cmd_info *info);
-static int name_is_ambiguous(const char *name);
+static int udf_is_ambiguous(const char *name);
 static const char *get_cmd_name(const char *cmd, char *buf, size_t buf_len);
 static void init_cmd_info(struct cmd_info *cmd_info);
 static void complete_cmd_name(const char *cmd_name, int user_only);
@@ -166,6 +167,9 @@ execute_cmd(const char *cmd)
 	}
 
 	cmd = get_cmd_name(cmd, cmd_name, sizeof(cmd_name));
+	if(udf_is_ambiguous(cmd_name))
+		return CMDS_ERR_UDF_IS_AMBIGUOUS;
+
 	cur = head.next;
 	while(cur != NULL && strcmp(cur->name, cmd_name) < 0)
 		cur = cur->next;
@@ -339,6 +343,38 @@ parse_limit(const char *cmd, struct cmd_info *cmd_info)
 	}
 
 	return cmd;
+}
+
+static int
+udf_is_ambiguous(const char *name)
+{
+	size_t len;
+	int count;
+	struct cmd_t *cur;
+
+	len = strlen(name);
+	count = 0;
+	cur = head.next;
+	while(cur != NULL)
+	{
+		int cmp;
+
+		cmp = strncmp(cur->name, name, len);
+		if(cmp == 0)
+		{
+			if(cur->name[len] == '\0')
+				return 0;
+			if(cur->type == USER_CMD)
+				count++;
+		}
+		else if(cmp > 0)
+		{
+			break;
+		}
+
+		cur = cur->next;
+	}
+	return (count > 1);
 }
 
 static const char *
@@ -679,7 +715,7 @@ complete_cmd(const char *cmd)
 	cmd_name_pos = parse_range(cmd, &cmd_info);
 	args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
 
-	if(*args == '\0' && name_is_ambiguous(cmd_name))
+	if(*args == '\0' && strcmp(cmd_name, "!") != 0)
 	{
 		complete_cmd_name(cmd_name, 0);
 		prefix_len = cmd_name_pos - cmd;
@@ -723,34 +759,6 @@ complete_cmd(const char *cmd)
 	}
 
 	return prefix_len;
-}
-
-static int
-name_is_ambiguous(const char *name)
-{
-	size_t len;
-	int count;
-	struct cmd_t *cur;
-
-	len = strlen(name);
-	count = 0;
-	cur = head.next;
-	while(cur != NULL)
-	{
-		int cmp;
-
-		cmp = strncmp(cur->name, name, len);
-		if(cmp == 0)
-		{
-			if(++count == 2)
-				return 1;
-		}
-		else if(cmp > 0)
-			return (count == 1) ? 0 : 1;
-
-		cur = cur->next;
-	}
-	return 0;
 }
 
 static const char *

@@ -109,14 +109,6 @@ enum {
 	COM_GOTO = RESERVED,
 };
 
-typedef struct
-{
-	char *action;
-	char *name;
-}command_t;
-
-command_t *command_list;
-
 void init_commands(void);
 int exec_commands(char *cmd, FileView *view, int type, int save_hist);
 int exec_command(char *cmd, FileView *view, int type);
@@ -124,7 +116,6 @@ char * find_last_command(char *cmd);
 int shellout(const char *command, int pause);
 int execute_command(FileView *view, char *action);
 char * fast_run_complete(char *cmd);
-int sort_this(const void *one, const void *two);
 char * expand_macros(FileView *view, const char *command, const char *args,
 		int *menu, int *split);
 void _gnuc_noreturn comm_quit(void);
@@ -132,41 +123,10 @@ void comm_only(void);
 void comm_split(void);
 
 #ifdef TEST
-typedef struct current_command
-{
-	int start_range;
-	int end_range;
-	int count;
-	char *cmd_name;
-	char *args;
-	char **argv;
-	int argc;
-	char *curr_files; /* holds %f macro files */
-	char *other_files; /* holds %F macro files */
-	char *user_args; /* holds %a macro string */
-	char *order; /* holds the order of macros command %a %f or command %f %a */
-	int background;
-	int split;
-	int builtin;
-	int is_user;
-	int pos;
-	int pause;
-}cmd_params;
-
-struct rescmd_info {
-	const char *name;
-	int alias;
-	int id;
-};
-extern const struct rescmd_info reserved_cmds[];
-
 char * append_selected_files(FileView *view, char *expanded, int under_cursor);
 char * edit_cmd_selection(FileView *view);
-void initialize_command_struct(cmd_params *cmd);
-int select_files_in_range(FileView *view, cmd_params *cmd);
 char ** dispatch_line(const char *args, int *count);
 int line_pos(const char *begin, const char *end, char sep, int regexp);
-int parse_command(FileView *view, char *command, cmd_params *cmd);
 #endif
 
 #endif

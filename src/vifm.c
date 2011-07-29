@@ -241,7 +241,6 @@ main(int argc, char *argv[])
 	init_window(&rwin);
 	init_window(&lwin);
 
-	command_list = NULL;
 	filetypes = NULL;
 
 	col_schemes = malloc(sizeof(Col_scheme) * 8);

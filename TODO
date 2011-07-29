@@ -99,7 +99,6 @@ Possible things to add.
     cl key to modify links.
     filetypes for X and for console
     What about yD to copy selected file(s) into other directory, and YD to move
-    Warn about ambiguous user defined command name.
 
 Vim plugin
     Choose between one and two pane view on startup somehow.

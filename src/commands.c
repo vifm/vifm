@@ -262,7 +262,7 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 			filename_completion(arg, FNC_DIRONLY);
 		else if(id == COM_EXECUTE)
 		{
-			if(argc == 0)
+			if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
 			{
 				if(*arg == '.')
 					filename_completion(arg, FNC_DIREXEC);
@@ -392,15 +392,6 @@ init_commands(void)
 	init_cmds();
 
 	add_buildin_commands((const struct cmd_add *)&commands, ARRAY_LEN(commands));
-}
-
-int
-sort_this(const void *one, const void *two)
-{
-	const command_t *first = (const command_t *)one;
-	const command_t *second = (const command_t *)two;
-
-	return strcmp(first->name, second->name);
 }
 
 static void
@@ -1034,6 +1025,9 @@ execute_command(FileView *view, char *command)
 			break;
 		case CMDS_ERR_NO_SUCH_UDF:
 			show_error_msg("Command error", "No such user defined command");
+			break;
+		case CMDS_ERR_UDF_IS_AMBIGUOUS:
+			show_error_msg("Command error", "Ambiguous use of user-defined command");
 			break;
 		default:
 			show_error_msg("Command error", "Unknown error");

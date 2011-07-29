@@ -1559,24 +1559,16 @@ filename_completion(const char *str, int type)
 	}
 
 	dir = opendir(dirname);
+
+	if(dir == NULL || chdir(dirname) != 0)
+	{
+		add_completion(filename);
+		free(filename);
+		free(dirname);
+		return NULL;
+	}
+
 	filename_len = strlen(filename);
-
-	if(dir == NULL)
-	{
-		add_completion(filename);
-		free(filename);
-		free(dirname);
-		return NULL;
-	}
-
-	if(chdir(dirname) != 0)
-	{
-		add_completion(filename);
-		free(filename);
-		free(dirname);
-		return NULL;
-	}
-
 	while((d = readdir(dir)) != NULL)
 	{
 		char *escaped;

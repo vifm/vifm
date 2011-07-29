@@ -972,7 +972,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	moveto_list_pos(view, view->list_pos);
 
-	snprintf(buf, sizeof(buf), "%d %s Deleted", y, y == 1 ? "File" : "Files");
+	snprintf(buf, sizeof(buf), "%d %s deleted", y, y == 1 ? "file" : "files");
 	status_bar_message(buf);
 	return 1;
 }
