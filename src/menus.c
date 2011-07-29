@@ -128,7 +128,6 @@ redraw_error_msg(char *title_arg, const char *message_arg)
 		message = message_arg;
 	}
 
-	curr_stats.freeze = 1;
 	curs_set(0);
 	werase(error_win);
 
@@ -211,7 +210,6 @@ show_error_msg(char *title, const char *message)
 		skip_until_started = key == 3;
 
 	curr_stats.errmsg_shown = 0;
-	curr_stats.freeze = 0;
 
 	werase(error_win);
 	wrefresh(error_win);
@@ -335,8 +333,6 @@ redraw_menu(menu_info *m)
 	int screen_x, screen_y;
 	struct winsize ws;
 
-	curr_stats.freeze = 1;
-
 	ioctl(0, TIOCGWINSZ, &ws);
 	/* changed for pdcurses */
 	resizeterm(ws.ws_row, ws.ws_col);
@@ -356,7 +352,6 @@ redraw_menu(menu_info *m)
 	wrefresh(status_bar);
 	wrefresh(pos_win);
 	wrefresh(input_win);
-	curr_stats.freeze = 0;
 	m->win_rows = screen_y - 1;
 
 	draw_menu(m);
@@ -1775,7 +1770,6 @@ query_user_menu(char *title, char *message)
 
 	free(dup);
 
-	curr_stats.freeze = 0;
 	curr_stats.errmsg_shown = 0;
 
 	werase(error_win);

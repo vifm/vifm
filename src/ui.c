@@ -63,8 +63,6 @@ update_pos_window(FileView *view)
 {
 	char buf[13];
 
-	if(curr_stats.freeze)
-		return;
 	werase(pos_win);
 	snprintf(buf, sizeof(buf), "%d-%d ", view->list_pos + 1, view->list_rows);
 	mvwaddstr(pos_win, 0, 13 - strlen(buf), buf);
@@ -180,7 +178,7 @@ status_bar_message(const char *message)
 	mvwin(stat_win, getmaxy(stdscr) - status_bar_lines - 1, 0);
 	mvwin(status_bar, getmaxy(stdscr) - status_bar_lines, 0);
 	if(status_bar_lines == 1)
-		wresize(status_bar, status_bar_lines, getmaxx(stdscr) - 18);
+		wresize(status_bar, status_bar_lines, getmaxx(stdscr) - 19);
 	else
 		wresize(status_bar, status_bar_lines, getmaxx(stdscr));
 	wmove(status_bar, 0, 0);
@@ -204,10 +202,7 @@ clean_status_bar(void)
 	wnoutrefresh(status_bar);
 
 	if(status_bar_lines > 1)
-	{
-		status_bar_lines = 1;
 		update_all_windows();
-	}
 	status_bar_lines = 1;
 }
 
@@ -405,8 +400,6 @@ resize_window(void)
 	int x, y;
 	struct winsize ws;
 
-	curr_stats.freeze = 1;
-
 	ioctl(0, TIOCGWINSZ, &ws);
 
 	/* changed for pdcurses */
@@ -513,7 +506,6 @@ redraw_window(void)
 	if(curr_stats.show_full)
 	{
 		redraw_full_file_properties(curr_view);
-		curr_stats.freeze = 0;
 		curr_stats.need_redraw = 0;
 		return;
 	}
@@ -554,7 +546,6 @@ redraw_window(void)
 
 	moveto_list_pos(curr_view, curr_view->list_pos);
 	wrefresh(curr_view->win);
-	curr_stats.freeze = 0;
 	curr_stats.need_redraw = 0;
 
 	if(curr_stats.errmsg_shown)
