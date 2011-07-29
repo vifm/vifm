@@ -358,14 +358,14 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		else
 			start++;
 
-		if(argc > 0)
+		if(argc > 0 && args[strlen(args) - 1] != ' ')
 			arg = argv[argc - 1];
 
 		if(id == COM_CD || id == COM_PUSHD)
 			filename_completion(arg, FNC_DIRONLY);
 		else if(id == COM_EXECUTE)
 		{
-			if(argc == 0)
+			if(argc == 0 || args[strlen(args) - 1] != ' ')
 			{
 				if(*arg == '.')
 					filename_completion(arg, FNC_DIREXEC);

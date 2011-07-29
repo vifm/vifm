@@ -678,9 +678,6 @@ complete_cmd(const char *cmd)
 	cmd_name_pos = parse_range(cmd, &cmd_info);
 	args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
 
-	while(isspace(*args))
-		args++;
-
 	if(*args == '\0' && name_is_ambiguous(cmd_name))
 	{
 		complete_cmd_name(cmd_name, 0);
@@ -693,6 +690,9 @@ complete_cmd(const char *cmd)
 		id = get_cmd_id(cmd_name);
 		if(id == -1)
 			return 0;
+
+		while(isspace(*args))
+			args++;
 
 		prefix_len = args - cmd;
 
