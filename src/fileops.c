@@ -441,8 +441,14 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		endwin();
 	}
 
-	if(background_and_wait_for_errors(buf) != 0)
+	strcat(buf, " 2> /tmp/vifm.fuseerrors");
+	int status = background_and_wait_for_status(buf);
+	/* check child status */
+	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
 	{
+		FILE *ef = fopen("/tmp/vifm.fuseerrors", "r");
+		print_errors(ef);
+
 		werase(status_bar);
 		/* remove the DIR we created for the mount */
 		if(!access(mount_point, F_OK))

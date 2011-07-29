@@ -37,9 +37,10 @@
 #include "macros.h"
 #include "menus.h"
 #include "modes.h"
-#include "signals.h"
 #include "status.h"
 #include "ui.h"
+
+#include "signals.h"
 
 /* Handle term resizing in X */
 static void

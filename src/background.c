@@ -248,7 +248,6 @@ background_and_wait_for_errors(char *cmd)
 	pid_t pid;
 	int error_pipe[2];
 	int error = 0;
-	int status;
 
 	if(pipe(error_pipe) != 0)
 	{
@@ -265,46 +264,13 @@ background_and_wait_for_errors(char *cmd)
 	}
 	else
 	{
-		char linebuf[160];
-		char buf[sizeof(linebuf)*5];
 		FILE *ef;
 
 		close(error_pipe[1]); /* Close write end of pipe. */
 
 		ef = fdopen(error_pipe[0], "r");
-		buf[0] = '\0';
-		while(fgets(linebuf, sizeof(linebuf), ef) == linebuf)
-		{
-			error = 1;
-			if(linebuf[0] == '\n')
-				continue;
-			if(strlen(buf) + strlen(linebuf) + 1 >= sizeof(buf))
-			{
-				int skip = (show_error_msg("Background Process Error", buf) != 0);
-				buf[0] = '\0';
-				if(skip)
-					break;
-			}
-			strcat(buf, linebuf);
-		}
-
-		if(buf[0] != '\0')
-			show_error_msg("Background Process Error", buf);
-
-		fclose(ef);
+		error = print_errors(ef);
 	}
-
-	do
-	{
-		if(waitpid(pid, &status, 0) != -1)
-			break;
-
-		if(errno != EINTR)
-			return -1;
-	}while(1);
-
-	if(WEXITSTATUS(status) != 0)
-		return -1;
 
 	if(error)
 		return -1;

@@ -19,6 +19,8 @@
 #ifndef __MENUS_H__
 #define __MENUS_H__
 
+#include <stdio.h>
+
 #include "ui.h"
 
 enum {
@@ -78,6 +80,7 @@ void draw_menu(menu_info *m);
 void execute_menu_cb(FileView *view, menu_info *m);
 void reload_command_menu_list(menu_info *m);
 void reload_bookmarks_menu_list(menu_info *m);
+int print_errors(FILE *ef);
 
 #endif
 
