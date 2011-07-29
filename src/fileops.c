@@ -1139,12 +1139,15 @@ check_rename_file(FileView *view, int *indexes, int count, FILE *f)
 			continue;
 
 		for(j = 0; j < count; j++)
+		{
+			chosp(view->dir_entry[abs(indexes[j])].name);
 			if(strcmp(name, view->dir_entry[abs(indexes[j])].name) == 0 &&
 					indexes[j] >= 0)
 			{
 				indexes[j] = -indexes[j];
 				break;
 			}
+		}
 		if(j >= count && access(name, F_OK) == 0)
 		{
 			char buf[32 + NAME_MAX];
