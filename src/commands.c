@@ -2449,7 +2449,7 @@ unescape(char *s, int regexp)
 	p = s;
 	while(s[0] != '\0')
 	{
-		if(s[0] == '\\' && (!regexp || s[1] == '/'))
+		if(s[0] == '\\' && s[1] != '\0' && (!regexp || s[1] == '/'))
 			s++;
 		*p++ = *s++;
 	}
