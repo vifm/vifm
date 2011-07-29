@@ -678,6 +678,9 @@ complete_cmd(const char *cmd)
 	cmd_name_pos = parse_range(cmd, &cmd_info);
 	args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
 
+	while(isspace(*args))
+		args++;
+
 	if(*args == '\0' && name_is_ambiguous(cmd_name))
 	{
 		complete_cmd_name(cmd_name, 0);
@@ -710,7 +713,7 @@ complete_cmd(const char *cmd)
 		{
 			int argc;
 			char **argv;
-			int last_arg;
+			int last_arg = 0;
 
 			argv = dispatch_line(args, &argc, ' ', 0, &last_arg);
 			prefix_len += cmds_conf.complete_args(id, args, argc, argv, last_arg);
@@ -784,8 +787,6 @@ get_cmd_name(const char *cmd, char *buf, size_t buf_len)
 	}
 	buf[len] = '\0';
 
-	while(isspace(*t))
-		t++;
 	return t;
 }
 
@@ -812,6 +813,8 @@ complete_cmd_name(const char *cmd_name, int user_only)
 			add_completion(cur->name);
 		cur = cur->next;
 	}
+
+	add_completion(cmd_name);
 }
 
 void

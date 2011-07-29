@@ -80,6 +80,7 @@ only_user(void)
 static void
 test_set_completion(void)
 {
+	init_commands();
 	reset_completion();
 	assert_int_equal(0, line_completion(&stats));
 	assert_true(wcscmp(stats.line, L"set fusehome") == 0);

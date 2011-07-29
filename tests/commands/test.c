@@ -6,6 +6,7 @@
 #include "seatest.h"
 
 #include "../../src/cmds.h"
+#include "../../src/completion.h"
 
 struct cmd_info user_cmd_info;
 
@@ -25,13 +26,23 @@ all_tests(void)
 	ids_tests();
 }
 
-static void
-complete_args(int id, const char *arg, struct complete_t *info)
+static int
+complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 {
-	info->count = 2;
-	info->buf = malloc(sizeof(char*)*2);
-	info->buf[0] = strdup("fastrun");
-	info->buf[1] = strdup("followlinks");
+	const char *arg;
+
+	reset_completion();
+	add_completion("followlinks");
+	add_completion("fastrun");
+	completion_group_end();
+	add_completion("f");
+
+	arg = strrchr(args, ' ');
+	if(arg == NULL)
+		arg = args;
+	else
+		arg++;
+	return arg - args;
 }
 
 static int

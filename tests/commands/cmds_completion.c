@@ -1,10 +1,11 @@
+#include <stdlib.h>
 #include <string.h>
 
 #include "seatest.h"
 
 #include "../../src/cmds.h"
-
-#define ARRAY_LEN(x) (sizeof(x)/sizeof((x)[0]))
+#include "../../src/completion.h"
+#include "../../src/macros.h"
 
 static struct cmd_info cmdi;
 
@@ -45,100 +46,134 @@ teardown(void)
 static void
 test_skip_goto(void)
 {
-	struct complete_t info;
+	char *completion;
 
-	assert_int_equal(0, complete_cmd("", &info));
-	assert_int_equal(3, info.count);
-	if(info.count == 0)
+	reset_completion();
+	assert_int_equal(0, complete_cmd(""));
+	assert_int_equal(4, get_completion_count());
+	if(get_completion_count() == 0)
 		return;
-	assert_string_equal("command", info.buf[0]);
-	assert_string_equal("delcommand", info.buf[1]);
-	assert_string_equal("delete", info.buf[2]);
+	completion = next_completion();
+	assert_string_equal("command", completion);
+	free(completion);
+	completion = next_completion();
+	assert_string_equal("delcommand", completion);
+	free(completion);
+	completion = next_completion();
+	assert_string_equal("delete", completion);
+	free(completion);
 }
 
 static void
 test_skip_abbreviations(void)
 {
-	struct complete_t info;
+	char *completion;
 
-	assert_int_equal(0, complete_cmd("d", &info));
-	assert_int_equal(2, info.count);
-	if(info.count == 0)
+	reset_completion();
+	assert_int_equal(0, complete_cmd("d"));
+	assert_int_equal(3, get_completion_count());
+	if(get_completion_count() == 0)
 		return;
-	assert_string_equal("delcommand", info.buf[0]);
-	assert_string_equal("delete", info.buf[1]);
+	completion = next_completion();
+	assert_string_equal("delcommand", completion);
+	free(completion);
+	completion = next_completion();
+	assert_string_equal("delete", completion);
+	free(completion);
 }
 
 static void
 test_dont_remove_range(void)
 {
-	struct complete_t info;
+	char *completion;
 
-	assert_int_equal(2, complete_cmd("% dele", &info));
-	assert_int_equal(1, info.count);
-	if(info.count == 0)
+	reset_completion();
+	assert_int_equal(2, complete_cmd("% del"));
+	assert_int_equal(3, get_completion_count());
+	if(get_completion_count() == 0)
 		return;
-	assert_string_equal("delete", info.buf[0]);
+	completion = next_completion();
+	assert_string_equal("delcommand", completion);
+	free(completion);
 
-	assert_int_equal(1, complete_cmd("3dele", &info));
-	assert_int_equal(1, info.count);
-	if(info.count == 0)
+	reset_completion();
+	assert_int_equal(1, complete_cmd("3del"));
+	assert_int_equal(3, get_completion_count());
+	if(get_completion_count() == 0)
 		return;
-	assert_string_equal("delete", info.buf[0]);
+	completion = next_completion();
+	assert_string_equal("delcommand", completion);
+	free(completion);
 }
 
 static void
 test_dont_remove_cmd(void)
 {
-	struct complete_t info;
+	char *completion;
 
-	assert_int_equal(7, complete_cmd("% dele ", &info));
-	assert_int_equal(2, info.count);
-	if(info.count == 0)
+	reset_completion();
+	assert_int_equal(7, complete_cmd("% dele "));
+	assert_int_equal(3, get_completion_count());
+	if(get_completion_count() == 0)
 		return;
-	assert_string_equal("fastrun", info.buf[0]);
-	assert_string_equal("followlinks", info.buf[1]);
+	completion = next_completion();
+	assert_string_equal("fastrun", completion);
+	free(completion);
+	completion = next_completion();
+	assert_string_equal("followlinks", completion);
+	free(completion);
 }
 
 static void
 test_skip_complete_args(void)
 {
-	struct complete_t info;
+	char *completion;
 
-	assert_int_equal(17, complete_cmd("% dele fast slow ", &info));
-	assert_int_equal(2, info.count);
-	if(info.count == 0)
+	reset_completion();
+	assert_int_equal(17, complete_cmd("% dele fast slow "));
+	assert_int_equal(3, get_completion_count());
+	if(get_completion_count() == 0)
 		return;
-	assert_string_equal("fastrun", info.buf[0]);
-	assert_string_equal("followlinks", info.buf[1]);
+	completion = next_completion();
+	assert_string_equal("fastrun", completion);
+	free(completion);
+	completion = next_completion();
+	assert_string_equal("followlinks", completion);
+	free(completion);
 }
 
 static void
 test_com_completion(void)
 {
-	struct complete_t info;
+	char *completion;
 
 	assert_int_equal(0, execute_cmd("command udf a"));
 
-	assert_int_equal(4, complete_cmd("com u", &info));
-	assert_int_equal(1, info.count);
-	if(info.count == 0)
+	reset_completion();
+	assert_int_equal(4, complete_cmd("com u"));
+	assert_int_equal(2, get_completion_count());
+	if(get_completion_count() == 0)
 		return;
-	assert_string_equal("udf", info.buf[0]);
+	completion = next_completion();
+	assert_string_equal("udf", completion);
+	free(completion);
 }
 
 static void
 test_delc_completion(void)
 {
-	struct complete_t info;
+	char *completion;
 
 	assert_int_equal(0, execute_cmd("command udf a"));
 
-	assert_int_equal(5, complete_cmd("delc u", &info));
-	assert_int_equal(1, info.count);
-	if(info.count == 0)
+	reset_completion();
+	assert_int_equal(5, complete_cmd("delc u"));
+	assert_int_equal(2, get_completion_count());
+	if(get_completion_count() == 0)
 		return;
-	assert_string_equal("udf", info.buf[0]);
+	completion = next_completion();
+	assert_string_equal("udf", completion);
+	free(completion);
 }
 
 void

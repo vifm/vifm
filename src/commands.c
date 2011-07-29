@@ -347,9 +347,9 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 	start = arg;
 
 	if(id == COM_COLORSCHEME)
-		complete_colorschemes(argv[argc - 1]);
+		complete_colorschemes((argc > 0) ? argv[argc - 1] : arg);
 	else if(id == COM_SET)
-		complete_options(arg, &start);
+		complete_options(args, &start);
 	else
 	{
 		start = strrchr(args + arg_pos, '/');
@@ -358,7 +358,9 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		else
 			start++;
 
-		arg = argv[argc - 1];
+		if(argc > 0)
+			arg = argv[argc - 1];
+
 		if(id == COM_CD || id == COM_PUSHD)
 			filename_completion(arg, FNC_DIRONLY);
 		else if(id == COM_EXECUTE)
