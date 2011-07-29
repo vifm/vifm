@@ -129,17 +129,9 @@ static void complete_search_prev(void);
 static
 #endif
 int line_completion(struct line_stats *stat);
-static int colorschemes_completion(char *line_mb, char *last_word,
-		struct line_stats *stat);
-static int option_completion(char *line_mb, struct line_stats *stat);
-static int file_completion(const char *filename, const char *line_mb,
-		struct line_stats *stat, int exec);
 static void update_line_stat(struct line_stats *stat, int new_len);
-static size_t get_words_count(const char * string);
-static char * get_last_word(const char * string);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 char * filename_completion(const char *str, int type);
-static char * check_for_executable(const char *string);
 static void stop_completion(void);
 
 static struct keys_add_info builtin_cmds[] = {
@@ -1321,80 +1313,6 @@ complete_search_next(void)
 		input_stat.cmd_pos = cfg.search_history_len - 1;
 }
 
-static int
-insert_completed_command(struct line_stats *stat, const char *complete_command)
-{
-	wchar_t *q;
-	if(stat->line == NULL)
-		return 0;
-
-	if(stat->index < stat->len && (q = wcsrchr(stat->line, L' ')) != NULL)
-	{	/* If the cursor is not at the end of the string... */
-		int i, prefix_len;
-		wchar_t *p;
-		wchar_t *t;
-		wchar_t *buf;
-
-		if((buf = to_wide(complete_command)) == NULL)
-			return -1;
-
-		i = wcslen(stat->line) + wcslen(buf) + 1;
-
-		p = q - 1;
-		while(p > stat->line && *p != L' ')
-			p--;
-		if(*p == L' ')
-			p++;
-		wcsdel(p, 1, q - p);
-		prefix_len = p - stat->line;
-
-		if((t = realloc(stat->line, i*sizeof(wchar_t))) == NULL)
-			return -1;
-		stat->line = t;
-
-		wcsins(stat->line, buf, prefix_len + 1);
-
-		stat->index = prefix_len + wcslen(buf);
-		stat->curs_pos = stat->prompt_wid + wcswidth(stat->line, stat->index);
-		stat->len = wcslen(stat->line);
-
-		free(buf);
-	}
-	else
-	{
-		int i;
-		wchar_t *p;
-
-		i = wcslen(stat->line) + strlen(complete_command) + 1;
-		if((p = realloc(stat->line, i*sizeof(wchar_t))) == NULL)
-			return -1;
-		stat->line = p;
-
-		q = wcsrchr(stat->line, L' ');
-		if(q == NULL)
-		{
-			q = stat->line;
-			while(*q == ' ' || *q == ':')
-				q++;
-		}
-		else
-			q++;
-
-		mbstowcs(q, complete_command, i - (q - stat->line));
-		stat->index = wcslen(stat->line);
-		stat->len = wcslen(stat->line);
-		stat->curs_pos = wcswidth(stat->line, stat->len) + stat->prompt_wid;
-	}
-
-	werase(status_bar);
-	mvwaddwstr(status_bar, 0, 0, stat->prompt);
-	mvwaddwstr(status_bar, 0, stat->prompt_wid, stat->line);
-	wmove(status_bar, input_stat.curs_pos/line_width,
-			input_stat.curs_pos%line_width);
-
-	return 0;
-}
-
 /*
  * p - begin of part that being completed
  * completed - new part of command line
@@ -1484,322 +1402,12 @@ line_completion(struct line_stats *stat)
 	return result;
 }
 
-/* Returns non-zero on error */
-#ifndef TEST
-static
-#endif
-int
-line_completion2(struct line_stats *stat)
-{
-	static char *line_mb = (char *)NULL;
-	static char *line_mb_cmd = (char *)NULL;
-
-	size_t words_count;
-	int id;
-	int usercmd_completion;
-	int builtin_arg_completion;
-	char *last_word = (char *)NULL;
-
-	if(stat->line[stat->index] != L' ' && stat->index != stat->len)
-	{
-		stop_completion();
-		return -1;
-	}
-
-	if(!stat->complete_continue)
-	{
-		int i;
-		void *p;
-		wchar_t t;
-
-		/* only complete the part before the cursor
-		 * so just copy that part to line_mb */
-		t = stat->line[stat->index];
-		stat->line[stat->index] = L'\0';
-
-		i = wcstombs(NULL, stat->line, 0) + 1;
-
-		if((p = realloc(line_mb, i * sizeof(char))) == NULL)
-		{
-			free(line_mb);
-			line_mb = NULL;
-			return -1;
-		}
-
-		line_mb = (char *) p;
-		wcstombs(line_mb, stat->line, i);
-		line_mb_cmd = find_last_command(line_mb);
-
-		stat->line[stat->index] = t;
-	}
-
-	words_count = get_words_count(line_mb_cmd);
-	last_word = get_last_word(line_mb_cmd);
-	id = get_buildin_id(line_mb_cmd);
-
-	usercmd_completion = (id == COM_DELCOMMAND || id == COM_COMMAND)
-			&& words_count <= 2;
-	builtin_arg_completion = (id == COM_EXECUTE)
-			|| (id == COM_SET && words_count > 1)
-			|| (id == COM_COLORSCHEME && words_count == 2);
-	if(!usercmd_completion && (last_word != NULL || builtin_arg_completion))
-	{
-		char *filename = (char *)NULL;
-		char *raw_name = (char *)NULL;
-		char *comp_arg;
-
-		if(last_word == NULL)
-			last_word = strdup("");
-		if(last_word == NULL)
-			return -1;
-
-		if(id == COM_SET)
-		{
-			int ret;
-			ret = option_completion(line_mb, stat);
-			free(last_word);
-			return ret;
-		}
-
-		comp_arg = stat->complete_continue ? NULL : last_word;
-		stat->complete_continue = 1;
-
-		if(id == COM_COLORSCHEME)
-		{
-			int ret = colorschemes_completion(line_mb, comp_arg, stat);
-			free(last_word);
-			return ret;
-		}
-		else if(id == COM_EXECUTE && words_count == 1 && last_word[0] != '.')
-		{
-			exec_completion(comp_arg);
-		}
-		else
-		{
-			int type;
-			if(id == COM_CD || id == COM_PUSHD)
-				type = FNC_DIRONLY;
-			else if(id != COM_EXECUTE)
-				type = FNC_ALL;
-			else if(last_word[0] == '.')
-				type = FNC_DIREXEC;
-			else
-				type = FNC_ALL;
-
-			raw_name = filename_completion(comp_arg, type);
-		}
-
-		if(raw_name)
-			filename = escape_filename(raw_name, 0, id == COM_EXECUTE);
-		else
-			filename = strdup(comp_arg);
-
-		if(filename != NULL)
-		{
-			int ret = 0;
-			
-			ret = file_completion(filename, line_mb, stat, id == COM_EXECUTE);
-			free(raw_name);
-			free(filename);
-			if(ret != 0)
-			{
-				free(last_word);
-				return ret;
-			}
-		}
-	}
-	/* :partial_command */
-	else
-	{
-		int users_only = ((id == COM_DELCOMMAND || id == COM_COMMAND)
-				&& last_word != NULL);
-		char *q;
-		char *complete_command;
-		char *comp_arg;
-
-		q = line_mb_cmd;
-		while(*q == ' ' || *q == ':')
-			q++;
-
-		comp_arg = stat->complete_continue ? NULL : (users_only ? last_word : q);
-		stat->complete_continue = 1;
-
-		complete_command = command_completion(comp_arg, users_only);
-		if(complete_command != NULL)
-		{
-			int ret = insert_completed_command(stat, complete_command);
-			free(complete_command);
-      if(ret != 0)
-			{
-				free(last_word);
-				return ret;
-			}
-		}
-	}
-
-	free(last_word);
-	return 0;
-}
-
-static int
-colorschemes_completion(char *line_mb, char *last_word, struct line_stats *stat)
-{
-	char *completed;
-	int result;
-
-	if(last_word != NULL)
-		complete_colorschemes(last_word);
-
-	completed = next_completion();
-	result = line_part_complete(stat, line_mb, strrchr(line_mb, ' ') + 1,
-			completed);
-	free(completed);
-	return result;
-}
-
-static int
-option_completion(char* line_mb, struct line_stats *stat)
-{
-	static const char *p;
-	char *completed;
-	int result;
-
-	if(!stat->complete_continue)
-	{
-		completed = strchr(line_mb, ' ');
-		if(completed == NULL)
-			completed = "";
-		else
-			while(isspace(*completed))
-				completed++;
-		complete_options(stat->complete_continue ? NULL : completed, &p);
-	}
-	completed = next_completion();
-
-	result = line_part_complete(stat, line_mb, p, completed);
-	free(completed);
-	return result;
-}
-
-static int
-file_completion(const char *filename, const char *line_mb,
-		struct line_stats *stat, int exec)
-{
-	char *cur_file_pos = strrchr(line_mb, ' ');
-	char *temp = (char *) NULL;
-
-	void *p;
-	int i;
-	char x;
-	wchar_t *temp2;
-
-	if(exec && (temp = strrchr(line_mb, '!')) != NULL && cur_file_pos < temp)
-	{
-		/* :!partial_filename anything_else...		 or
-		 * :!!partial_filename anything_else... */
-		char *t;
-		while(temp > line_mb && (*temp == '!' || *temp == '\\'))
-			temp--;
-		temp++;
-		t = strrchr(temp, '/');
-		if(t != NULL)
-			temp = t + 1;
-	}
-	else if(cur_file_pos != NULL)
-	{
-		if((temp = strrchr(cur_file_pos, '/')) != NULL)
-			/* :command /some/directory/partial_filename anything_else... */
-			temp++;
-		else
-			/* :command partial_filename anything_else... */
-			temp = cur_file_pos + 1;
-	}
-	else
-		return 0;
-
-	x = *temp;
-	*temp = '\0';
-
-	temp2 = my_wcsdup(stat->line + stat->index);
-	if(temp2 == NULL)
-		return -1;
-
-	i = mbstowcs(NULL, line_mb, 0) + mbstowcs(NULL, filename, 0)
-			+ (stat->len - stat->index) + 1;
-
-	if((p = realloc(stat->line, i * sizeof(wchar_t))) == NULL)
-	{
-		*temp = x;
-		free(temp2);
-		return -1;
-	}
-	stat->line = (wchar_t *) p;
-
-	swprintf(stat->line, i, L"%s%s%ls", line_mb, filename, temp2);
-
-	update_line_stat(stat, i);
-
-	*temp = x;
-	free(temp2);
-
-	update_cmdline_size();
-	update_cmdline_text();
-	return 0;
-}
-
-static void update_line_stat(struct line_stats *stat, int new_len)
+static void
+update_line_stat(struct line_stats *stat, int new_len)
 {
 	stat->index += (new_len - 1) - stat->len;
 	stat->curs_pos = stat->prompt_wid + wcswidth(stat->line, stat->index);
 	stat->len = new_len - 1;
-}
-
-static size_t
-get_words_count(const char * string)
-{
-	size_t result;
-
-	while(*string == ' ' || *string == ':')
-		string++;
-
-	result = 1;
-	string--;
-	while((string = strchr(string + 1, ' ')) != NULL)
-	{
-		while(*string == ' ')
-			string++;
-		string--;
-		result++;
-	}
-	return result;
-}
-
-/* String returned by this function should be freed by caller */
-static char *
-get_last_word(const char * string)
-{
-	char * temp = (char *)NULL;
-
-	if(string == NULL)
-		return NULL;
-
-	while(*string == ' ' || *string == ':')
-		string++;
-
-	/*:command filename */
-	temp = strrchr(string, ' ');
-
-	if(temp != NULL)
-	{
-		temp++;
-		return strdup(temp);
-	}
- /* :!filename or :!!filename */
-	temp = check_for_executable(string);
-	if(temp != NULL)
-		return temp;
-
-	return NULL;
 }
 
 /* Delete a character in a string
@@ -2033,7 +1641,7 @@ filename_completion(const char *str, int type)
 
 			free(tempfile);
 		}
-		escaped = escape_filename(temp, 0, 0);
+		escaped = escape_filename(temp, 0, 1);
 		add_completion(escaped);
 		free(escaped);
 		free(temp);
@@ -2048,7 +1656,7 @@ filename_completion(const char *str, int type)
 			add_completion(filename);
 		else
 		{
-			temp = escape_filename(filename, 0, 0);
+			temp = escape_filename(filename, 0, 1);
 			add_completion(temp);
 			free(temp);
 		}
@@ -2059,30 +1667,6 @@ filename_completion(const char *str, int type)
 	closedir(dir);
 
 	return NULL;
-}
-
-/* String returned by this function should be freed by caller */
-static char *
-check_for_executable(const char *string)
-{
-	char *temp = (char *)NULL;
-
-	if(string == NULL)
-		return NULL;
-
-	if(string[0] == '!')
-	{
-		if(strlen(string) > 2)
-		{
-			if(string[1] == '!')
-				temp = strdup(string + 2);
-			else
-				temp = strdup(string + 1);
-		}
-		else if(strlen(string) > 1)
-			temp = strdup(string + 1);
-	}
-	return temp;
 }
 
 static void

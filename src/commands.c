@@ -333,6 +333,18 @@ static
 char ** dispatch_line(const char *args, int *count);
 
 static int
+cmd_ends_with_space(const char *cmd)
+{
+	while(cmd[0] != '\0' && cmd[1] != '\0')
+	{
+		if(cmd[0] == '\\')
+			cmd++;
+		cmd++;
+	}
+	return cmd[0] == ' ';
+}
+
+static int
 complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 {
 	const char *arg;
@@ -358,14 +370,14 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		else
 			start++;
 
-		if(argc > 0 && args[strlen(args) - 1] != ' ')
+		if(argc > 0 && !cmd_ends_with_space(args))
 			arg = argv[argc - 1];
 
 		if(id == COM_CD || id == COM_PUSHD)
 			filename_completion(arg, FNC_DIRONLY);
 		else if(id == COM_EXECUTE)
 		{
-			if(argc == 0 || args[strlen(args) - 1] != ' ')
+			if(argc == 0)
 			{
 				if(*arg == '.')
 					filename_completion(arg, FNC_DIREXEC);
@@ -3310,7 +3322,11 @@ edit_cmd(const struct cmd_info *cmd_info)
 		int i;
 		len = snprintf(buf, sizeof(buf), "%s ", cfg.vi_command);
 		for(i = 0; i < cmd_info->argc && len < sizeof(buf) - 1; i++)
-			len += snprintf(buf + len, sizeof(buf) - len, "%s ", cmd_info->argv[i]);
+		{
+			char *escaped = escape_filename(cmd_info->argv[i], 0, 0);
+			len += snprintf(buf + len, sizeof(buf) - len, "%s ", escaped);
+			free(escaped);
+		}
 		shellout(buf, -1);
 		return 0;
 	}
