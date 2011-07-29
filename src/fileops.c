@@ -1530,15 +1530,28 @@ put_next_file(const char *dest_name, int override)
 			prompt_what_to_do(p);
 			return 1;
 		}
-		else if(override)
-		{
-			put_confirm.view->dir_mtime = 0;
-		}
 
 		if(dest_name[0] == '\0')
 		{
 			name_buf = escape_filename(p, 0, 0);
 			dest_name = name_buf;
+		}
+
+		if(override)
+		{
+			if(access(p, F_OK) == 0)
+			{
+				snprintf(do_buf, sizeof(do_buf), "rm -rf %s/%s", dst_buf, dest_name);
+				if(background_and_wait_for_errors(do_buf) != 0)
+				{
+					free(src_buf);
+					free(dst_buf);
+					free(name_buf);
+					return 0;
+				}
+			}
+
+			put_confirm.view->dir_mtime = 0;
 		}
 
 		if(move)

@@ -1794,7 +1794,7 @@ print_errors(FILE *ef)
 {
 	char linebuf[160];
 	char buf[sizeof(linebuf)*5];
-	int error;
+	int error = 0;
 
 	buf[0] = '\0';
 	while(fgets(linebuf, sizeof(linebuf), ef) == linebuf)
