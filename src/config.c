@@ -267,7 +267,6 @@ read_config_file(void)
 		{
 			char buf[PATH_MAX];
 			s1 = (char *)conv_udf_name(s1);
-			add_command(s1, s2);
 			snprintf(buf, sizeof(buf), "command %s %s", s1, s2);
 			execute_cmd(buf);
 		}
@@ -674,10 +673,19 @@ write_config_file(void)
 	fprintf(fp, "# %%d the current directory name.\n");
 	fprintf(fp, "# %%D the other window directory name.\n");
 	fprintf(fp, "# %%m run the command in a menu window\n\n");
-	for(x = 0; x < cfg.command_num; x++)
 	{
-		fprintf(fp, "COMMAND=%s=%s\n", command_list[x].name,
-				command_list[x].action);
+		char **list, **p;
+		list = list_udf();
+		p = list;
+		while(*p != NULL)
+		{
+			fprintf(fp, "COMMAND=%s=%s\n", p[0], p[1]);
+			free(p[0]);
+			free(p[1]);
+			p += 2;
+		}
+
+		free(list);
 	}
 
 	fprintf(fp, "\n# The file type is for the default programs to be used with\n");

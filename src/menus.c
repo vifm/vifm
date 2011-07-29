@@ -30,6 +30,7 @@
 #include "background.h"
 #include "bookmarks.h"
 #include "cmdline.h"
+#include "cmds.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "config.h"
@@ -702,33 +703,6 @@ reload_bookmarks_menu_list(menu_info *m)
 }
 
 void
-reload_command_menu_list(menu_info *m)
-{
-	int x, i, z, len;
-
-	getmaxyx(menu_win, z, len);
-
-	for(z = 0; z < m->len; z++)
-		free(m->data[z]);
-
-	m->len = cfg.command_num;
-
-	qsort(command_list, cfg.command_num, sizeof(command_t), sort_this);
-
-	x = 0;
-
-	for(i = 1; x < m->len; i++)
-	{
-		m->data = (char **)realloc(m->data, sizeof(char *) * (x + 1));
-		m->data[x] = (char *)malloc(len + 2);
-		snprintf(m->data[x], len, " %-*s  %s ", 10, command_list[x].name,
-				command_list[x].action);
-
-		x++;
-	}
-}
-
-void
 draw_menu(menu_info *m)
 {
 	int i;
@@ -1067,10 +1041,15 @@ command_khandler(struct menu_info *m, wchar_t *keys)
 {
 	if(wcscmp(keys, L"dd") == 0) /* remove element */
 	{
-		clean_menu_position(m);
-		remove_command(command_list[m->pos].name);
+		char cmd_buf[512];
 
-		reload_command_menu_list(m);
+		*strchr(m->data[m->pos] + 1, ' ') = '\0';
+		snprintf(cmd_buf, sizeof(cmd_buf), "delcommand %s", m->data[m->pos] + 1);
+		execute_cmd(cmd_buf);
+
+		memmove(m->data + m->pos, m->data + m->pos + 1,
+				sizeof(char *)*(m->len - 1 - m->pos));
+		m->len--;
 		draw_menu(m);
 
 		moveto_menu_pos(m->pos, m);
@@ -1082,12 +1061,13 @@ command_khandler(struct menu_info *m, wchar_t *keys)
 int
 show_commands_menu(FileView *view)
 {
-	int len, i, x;
+	char **list;
+	int len, i;
 
 	static menu_info m;
 	m.top = 0;
 	m.current = 1;
-	m.len = cfg.command_num;
+	m.len = -1;
 	m.pos = 0;
 	m.win_rows = 0;
 	m.type = COMMAND;
@@ -1099,32 +1079,33 @@ show_commands_menu(FileView *view)
 	m.data = NULL;
 	m.key_handler = command_khandler;
 
-	if(cfg.command_num < 1)
+	getmaxyx(menu_win, m.win_rows, len);
+
+	m.title = (char *)malloc((23 + 1)*sizeof(char));
+	snprintf(m.title, 23 + 1, " Command ------ Action  ");
+
+	list = list_udf();
+
+	if(list[0] == NULL)
 	{
+		free(list);
 		show_error_msg("No commands set", "No commands are set.");
 		return 0;
 	}
 
-	getmaxyx(menu_win, m.win_rows, len);
-	qsort(command_list, cfg.command_num, sizeof(command_t),
-			sort_this);
+	while(list[++m.len] != NULL);
+	m.len /= 2;
 
-	m.title = (char *)malloc((strlen(" Command ------ Action ") + 1)
-			* sizeof(char));
-	snprintf(m.title, strlen(" Command ------ Action ") + 1,
-			" Command ------ Action  ");
-
-	x = 0;
-
-	for(i = 1; x < m.len; i++)
+	m.data = malloc(sizeof(char *)*m.len);
+	for(i = 0; i < m.len; i++)
 	{
-		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
-		m.data[x] = (char *)malloc(len + 2);
-		snprintf(m.data[x], len, " %-*s  %s ", 10, command_list[x].name,
-				command_list[x].action);
+		char *buf;
 
-		x++;
+		buf = malloc(strlen(list[i*2]) + 20 + 1 + strlen(list[i*2 + 1]) + 1);
+		sprintf(buf, " %-*s %s", 10, list[i*2], list[i*2 + 1]);
+		m.data[i] = buf;
 	}
+	free_string_array(list, m.len*2);
 
 	setup_menu();
 	draw_menu(&m);

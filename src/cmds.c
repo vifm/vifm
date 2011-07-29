@@ -64,6 +64,7 @@ struct cmd_t
 static struct cmd_t head;
 static struct cmd_add user_cmd_handler;
 static cmd_handler command_handler;
+static int udf_count;
 
 static const char * parse_range(const char *cmd, struct cmd_info *cmd_info);
 static const char * parse_limit(const char *cmd, struct cmd_info *cmd_info);
@@ -954,6 +955,7 @@ command_cmd(const struct cmd_info *cmd_info)
 	new->select = user_cmd_handler.select;
 	new->bg = user_cmd_handler.bg;
 
+	udf_count++;
 	return 0;
 }
 
@@ -1030,8 +1032,36 @@ delcommand_cmd(const struct cmd_info *cmd_info)
 	free(cmd->cmd);
 	free(cmd);
 
-	/* TODO write function body */
+	udf_count--;
 	return 0;
+}
+
+char **
+list_udf(void)
+{
+	char **list;
+	char **p;
+	struct cmd_t *cur;
+
+	if((list = malloc(sizeof(*list)*(udf_count*2 + 1))) == NULL)
+		return NULL;
+
+	p = list;
+
+	cur = head.next;
+	while(cur != NULL)
+	{
+		if(cur->type == USER_CMD)
+		{
+			*p++ = strdup(cur->name);
+			*p++ = strdup(cur->cmd);
+		}
+		cur = cur->next;
+	}
+
+	*p = NULL;
+
+	return list;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
