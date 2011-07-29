@@ -342,7 +342,7 @@ complete_args(int id, const char *arg, struct complete_t *info)
 static int
 swap_range(void)
 {
-	/* TODO write code */
+	return query_user_menu("Command Error", "Backwards range given, OK to swap?");
 }
 
 static int
@@ -437,8 +437,6 @@ select_range(const struct cmd_info *cmd_info)
 			curr_view->selected_files = y;
 		}
 	}
-
-	return 0;
 }
 
 void
@@ -2449,7 +2447,7 @@ execute_command(FileView *view, char *command)
 	need_clean_selection = 1;
 	result = execute_cmd(command);
 
-	if(result == 0 && id == COMMAND_CMD_ID)
+	if(result == 0 && (id == COMMAND_CMD_ID || id == DELCOMMAND_CMD_ID))
 	{
 		cmd_params cmd;
 		cmd.cmd_name = NULL;
@@ -2457,17 +2455,26 @@ execute_command(FileView *view, char *command)
 
 		parse_command(view, command, &cmd);
 
-		if(cmd.args)
+		if(cmd.args != NULL)
 		{
-			if(cmd.args[0] == '!')
+			if(id == COMMAND_CMD_ID)
 			{
-				int x = 1;
-				while(isspace(cmd.args[x]) && (size_t)x < strlen(cmd.args))
-					x++;
-				set_user_command(cmd.args + x, 1, cmd.background);
+				if(cmd.args[0] == '!')
+				{
+					int x = 1;
+					while(isspace(cmd.args[x]) && (size_t)x < strlen(cmd.args))
+						x++;
+					set_user_command(cmd.args + x, 1, cmd.background);
+				}
+				else
+				{
+					set_user_command(cmd.args, 0, cmd.background);
+				}
 			}
 			else
-				set_user_command(cmd.args, 0, cmd.background);
+			{
+				remove_command(cmd.args);
+			}
 		}
 	}
 
@@ -2509,8 +2516,11 @@ execute_command(FileView *view, char *command)
 		case CMDS_ERR_NO_QMARK_ALLOWED:
 			show_error_msg("Command error", "No ? is allowed");
 			break;
-			show_error_msg("Command error", "Invalid range");
 		case CMDS_ERR_INVALID_RANGE:
+			/* message dialog is enough */
+			break;
+		case CMDS_ERR_NO_SUCH_UDF:
+			show_error_msg("Command error", "No such user defined command");
 			break;
 		default:
 			show_error_msg("Command error", "Unknown error");

@@ -967,6 +967,26 @@ insert_cmd(struct cmd_t *after)
 static int
 delcommand_cmd(const struct cmd_info *cmd_info)
 {
+	int cmp;
+	struct cmd_t *cur;
+	struct cmd_t *cmd;
+
+	cmp = -1;
+	cur = &head;
+	while(cur->next != NULL &&
+			(cmp = strcmp(cur->next->name, cmd_info->argv[0])) < 0)
+		cur = cur->next;
+
+	/* command with the same name already exists */
+	if(cur->next == NULL || cmp != 0)
+		return CMDS_ERR_NO_SUCH_UDF;
+
+	cmd = cur->next;
+	cur->next = cmd->next;
+	free(cmd->name);
+	free(cmd->cmd);
+	free(cmd);
+
 	/* TODO write function body */
 	return 0;
 }
