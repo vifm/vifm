@@ -32,6 +32,7 @@
 #include "bookmarks.h"
 #include "color_scheme.h"
 #include "commands.h"
+#include "cmds.h"
 #include "config.h"
 #include "crc32.h"
 #include "fileops.h"
@@ -186,6 +187,32 @@ load_view_defaults(FileView *view)
 	view->sort_type = SORT_BY_NAME;
 }
 
+const char *
+conv_udf_name(const char *cmd)
+{
+	static const char *nums[] = {
+		"ZERO", "ONE", "TWO", "THREE", "FOUR",
+		"FIVE", "SIX", "SEVEN", "EIGHT", "NINE"
+	};
+	static char buf[256];
+	char *p = buf;
+	while(*cmd != '\0')
+		if(isdigit(*cmd))
+		{
+			if(p + strlen(nums[*cmd - '0']) + 1 >= buf + sizeof(buf))
+				break;
+			strcpy(p, nums[*cmd - '0']);
+			p += strlen(p);
+			cmd++;
+		}
+		else
+		{
+			*p++ = *cmd++;
+		}
+	*p = '\0';
+	return buf;
+}
+
 /* Returns zero when default configuration is used */
 int
 read_config_file(void)
@@ -237,7 +264,13 @@ read_config_file(void)
 		}
 		/* COMMAND is handled here so that the command can have an '=' */
 		if(!strcmp(line, "COMMAND"))
+		{
+			char buf[PATH_MAX];
+			s1 = (char *)conv_udf_name(s1);
 			add_command(s1, s2);
+			snprintf(buf, sizeof(buf), "command %s %s", s1, s2);
+			execute_cmd(buf);
+		}
 		else
 		{
 			if(args == 2 && (sx = s3 = strchr(s2, '=')) != NULL)

@@ -866,6 +866,8 @@ command_cmd(const struct cmd_info *cmd_info)
 	}
 
 	args = get_user_cmd_name(cmd_info->args, cmd_name, sizeof(cmd_name));
+	while(isspace(args[0]))
+		args++;
 	if(args[0] == '\0')
 		return CMDS_ERR_TOO_FEW_ARGS;
 	else if(!is_correct_name(cmd_name))
@@ -969,4 +971,5 @@ delcommand_cmd(const struct cmd_info *cmd_info)
 	return 0;
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

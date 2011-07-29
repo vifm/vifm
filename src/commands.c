@@ -206,7 +206,7 @@ static const struct cmd_add commands[] = {
 		.handler = yank_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 1, },
 
 	{ .name = "<USERCMD>",        .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0,             .regexp = 0,
-		.handler = usercmd_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
+		.handler = usercmd_cmd,     .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 };
 
 /* The order of the commands is important as :e will match the first
@@ -321,6 +321,8 @@ typedef struct current_command
 }cmd_params;
 #endif
 
+static int need_clean_selection;
+
 static wchar_t * substitute_specs(const char *cmd);
 static const char *skip_spaces(const char *cmd);
 static const char *skip_word(const char *cmd);
@@ -373,7 +375,9 @@ post(int id)
 {
 	if(id == COM_GOTO)
 		return;
-	if(!curr_view->selected_files)
+	if(id == USER_CMD_ID)
+		return;
+	if((curr_view != NULL && !curr_view->selected_files) || !need_clean_selection)
 		return;
 
 	free_selected_file_array(curr_view);
@@ -2414,7 +2418,14 @@ int
 execute_command(FileView *view, char *command)
 {
 	cmd_params cmd;
+	int id;
 	int result;
+
+	while(isspace(*command) && *command == ':')
+		++command;
+
+	if(command[0] == '"')
+		return 0;
 
 	cmds_conf.begin = 0;
 	cmds_conf.current = view->list_pos;
@@ -2423,9 +2434,46 @@ execute_command(FileView *view, char *command)
 	while(*command == ' ' || *command == ':')
 		command++;
 
+	id = get_cmd_id(command);
+	if(id == USER_CMD_ID)
+	{
+		char buf[COMMAND_GROUP_INFO_LEN];
+
+		snprintf(buf, sizeof(buf), "in %s: %s",
+				replace_home_part(curr_view->curr_dir), command);
+
+		cmd_group_begin(buf);
+		cmd_group_end();
+	}
+
+	need_clean_selection = 1;
 	result = execute_cmd(command);
+
+	if(result == 0 && id == COMMAND_CMD_ID)
+	{
+		cmd_params cmd;
+		cmd.cmd_name = NULL;
+		cmd.args = NULL;
+
+		parse_command(view, command, &cmd);
+
+		if(cmd.args)
+		{
+			if(cmd.args[0] == '!')
+			{
+				int x = 1;
+				while(isspace(cmd.args[x]) && (size_t)x < strlen(cmd.args))
+					x++;
+				set_user_command(cmd.args + x, 1, cmd.background);
+			}
+			else
+				set_user_command(cmd.args, 0, cmd.background);
+		}
+	}
+
 	if(result >= 0)
 		return result;
+
 	switch(result)
 	{
 		case CMDS_ERR_LOOP:
@@ -2461,8 +2509,8 @@ execute_command(FileView *view, char *command)
 		case CMDS_ERR_NO_QMARK_ALLOWED:
 			show_error_msg("Command error", "No ? is allowed");
 			break;
-		case CMDS_ERR_INVALID_RANGE:
 			show_error_msg("Command error", "Invalid range");
+		case CMDS_ERR_INVALID_RANGE:
 			break;
 		default:
 			show_error_msg("Command error", "Unknown error");
@@ -3525,7 +3573,7 @@ vifm_cmd(const struct cmd_info *cmd_info)
 static int
 vmap_cmd(const struct cmd_info *cmd_info)
 {
-	return do_map(cmd_info, "Visual", "vmap", VISUAL_MODE) != 0;
+	return n_do_map(cmd_info, "Visual", "vmap", VISUAL_MODE) != 0;
 }
 
 static int
@@ -3564,6 +3612,95 @@ yank_cmd(const struct cmd_info *cmd_info)
 static int
 usercmd_cmd(const struct cmd_info* cmd_info)
 {
+	char *expanded_com = NULL;
+	int use_menu = 0;
+	int split = 0;
+	size_t len;
+	int result = 0;
+	int external = 1;
+
+	if(strchr(cmd_info->cmd, '%') != NULL)
+		expanded_com = expand_macros(curr_view, cmd_info->cmd, cmd_info->args,
+				&use_menu, &split);
+	else
+		expanded_com = strdup(cmd_info->cmd);
+
+	len = strlen(expanded_com);
+	while(len > 1 && isspace(expanded_com[len - 1]))
+		expanded_com[--len] = '\0';
+
+	if(use_menu)
+	{
+		show_user_menu(curr_view, expanded_com);
+	}
+	else if(split)
+	{
+		if(!cfg.use_screen)
+		{
+			free(expanded_com);
+			return 0;
+		}
+
+		split_screen(curr_view, expanded_com);
+	}
+	else if(strncmp(expanded_com, "filter ", 7) == 0)
+	{
+		curr_view->invert = 1;
+		curr_view->filename_filter = (char *)realloc(curr_view->filename_filter,
+				strlen(strchr(expanded_com, ' ')) + 1);
+		snprintf(curr_view->filename_filter, strlen(strchr(expanded_com, ' ')) + 1,
+				"%s", strchr(expanded_com, ' ') + 1);
+
+		load_saving_pos(curr_view, 1);
+		external = 0;
+	}
+	else if(!strncmp(expanded_com, "!", 1))
+	{
+		char buf[strlen(expanded_com) + 1];
+		char *tmp = strcpy(buf, expanded_com);
+		int pause = 0;
+		tmp++;
+		if(*tmp == '!')
+		{
+			pause = 1;
+			tmp++;
+		}
+		while(isspace(*tmp))
+			tmp++;
+
+		if(strlen(tmp) > 0 && cmd_info->bg)
+			start_background_job(tmp);
+		else if(strlen(tmp) > 0)
+			shellout(tmp, pause ? 1 : -1);
+		external = 1;
+	}
+	else if(!strncmp(expanded_com, "/", 1))
+	{
+		result = exec_command(expanded_com + 1, curr_view, GET_FSEARCH_PATTERN);
+		external = 0;
+		need_clean_selection = 0;
+	}
+	else if(cmd_info->bg)
+	{
+		char buf[strlen(expanded_com) + 1];
+		strcpy(buf, expanded_com);
+		start_background_job(buf);
+	}
+	else
+	{
+		shellout(expanded_com, -1);
+	}
+
+	if(external)
+	{
+		cmd_group_continue();
+		add_operation(expanded_com, NULL, NULL, "", NULL, NULL);
+		cmd_group_end();
+	}
+
+	free(expanded_com);
+
+	return 0;
 }
 
 /* vim: set cinoptions+=t0 : */
