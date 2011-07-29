@@ -37,6 +37,7 @@
 #include "../config.h"
 
 #include "bookmarks.h"
+#include "cmds.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "completion.h"
@@ -74,14 +75,6 @@ struct line_stats
 };
 
 #endif
-
-/* values of type argument for filename_completion() function */
-enum {
-	FNC_ALL,      /* all files and directories */
-	FNC_DIRONLY,  /* only directories */
-	FNC_EXECONLY, /* only executable files */
-	FNC_DIREXEC   /* directories and executable files */
-};
 
 static int *mode;
 static int prev_mode;
@@ -145,7 +138,7 @@ static void update_line_stat(struct line_stats *stat, int new_len);
 static size_t get_words_count(const char * string);
 static char * get_last_word(const char * string);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
-static char * filename_completion(const char *str, int type);
+char * filename_completion(const char *str, int type);
 static char * check_for_executable(const char *string);
 static void stop_completion(void);
 
@@ -455,8 +448,6 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 	line_width = getmaxx(stdscr);
 	prev_mode = *mode;
 	*mode = CMDLINE_MODE;
-
-	reset_completion();
 
 	input_stat.line = NULL;
 	input_stat.index = wcslen(cmd);
@@ -1404,12 +1395,101 @@ insert_completed_command(struct line_stats *stat, const char *complete_command)
 	return 0;
 }
 
+/*
+ * p - begin of part that being completed
+ * completed - new part of command line
+ */
+static int
+line_part_complete(struct line_stats *stat, const char *line_mb, const char *p,
+		const char *completed)
+{
+	void *t;
+	wchar_t *line_ending;
+	int new_len;
+
+	new_len = (p - line_mb) + mbstowcs(NULL, completed, 0)
+			+ (stat->len - stat->index) + 1;
+
+	line_ending = my_wcsdup(stat->line + stat->index);
+	if(line_ending == NULL)
+		return -1;
+
+	if((t = realloc(stat->line, new_len * sizeof(wchar_t))) == NULL)
+		return -1;
+	stat->line = (wchar_t *) t;
+
+	swprintf(stat->line + (p - line_mb), new_len, L"%s%ls", completed,
+			line_ending);
+	free(line_ending);
+
+	update_line_stat(stat, new_len);
+	update_cmdline_size();
+	update_cmdline_text();
+	return 0;
+}
+
 /* Returns non-zero on error */
 #ifndef TEST
 static
 #endif
 int
 line_completion(struct line_stats *stat)
+{
+	static int offset;
+	static char *line_mb, *line_mb_cmd;
+
+	char *completion;
+	int result;
+
+	if(!stat->complete_continue)
+	{
+		int i;
+		void *p;
+		wchar_t t;
+
+		/* only complete the part before the cursor
+		 * so just copy that part to line_mb */
+		t = stat->line[stat->index];
+		stat->line[stat->index] = L'\0';
+
+		i = wcstombs(NULL, stat->line, 0) + 1;
+
+		if((p = realloc(line_mb, i * sizeof(char))) == NULL)
+		{
+			free(line_mb);
+			line_mb = NULL;
+			return -1;
+		}
+
+		line_mb = (char *) p;
+		wcstombs(line_mb, stat->line, i);
+		line_mb_cmd = find_last_command(line_mb);
+
+		stat->line[stat->index] = t;
+
+		reset_completion();
+		offset = complete_cmd(line_mb_cmd);
+	}
+
+	if(get_completion_count() == 0)
+		return 0;
+
+	completion = next_completion();
+	result = line_part_complete(stat, line_mb, line_mb_cmd + offset, completion);
+	free(completion);
+
+	if(get_completion_count() > 2)
+		stat->complete_continue = 1;
+
+	return result;
+}
+
+/* Returns non-zero on error */
+#ifndef TEST
+static
+#endif
+int
+line_completion2(struct line_stats *stat)
 {
 	static char *line_mb = (char *)NULL;
 	static char *line_mb_cmd = (char *)NULL;
@@ -1492,7 +1572,7 @@ line_completion(struct line_stats *stat)
 		}
 		else if(id == COM_EXECUTE && words_count == 1 && last_word[0] != '.')
 		{
-			raw_name = exec_completion(comp_arg);
+			exec_completion(comp_arg);
 		}
 		else
 		{
@@ -1558,40 +1638,6 @@ line_completion(struct line_stats *stat)
 	}
 
 	free(last_word);
-	return 0;
-}
-
-/*
- * p - begin of part that being completed
- * completed - new part of command line
- */
-static int
-line_part_complete(struct line_stats *stat, const char *line_mb, const char *p,
-		const char *completed)
-{
-	void *t;
-	wchar_t *line_ending;
-	int new_len;
-
-	new_len = (p - line_mb) + mbstowcs(NULL, completed, 0)
-			+ (stat->len - stat->index) + 1;
-
-	line_ending = my_wcsdup(stat->line + stat->index);
-	if(line_ending == NULL)
-		return -1;
-
-	if((t = realloc(stat->line, new_len * sizeof(wchar_t))) == NULL)
-		return -1;
-	stat->line = (wchar_t *) t;
-
-	swprintf(stat->line + (p - line_mb), new_len, L"%s%ls", completed,
-			line_ending);
-	free(line_ending);
-
-	stat->complete_continue = 1;
-	update_line_stat(stat, new_len);
-	update_cmdline_size();
-	update_cmdline_text();
 	return 0;
 }
 
@@ -1785,13 +1831,10 @@ wcsdel(wchar_t *src, int pos, int len)
  * the string to be parsed should be specified in str.
  * In each subsequent call that should parse the same string, str should be NULL
  */
-char *
-exec_completion(char *str)
+void
+exec_completion(const char *str)
 {
 	int i;
-
-	if(str == NULL)
-		return next_completion();
 
 	for(i = 0; i < paths_count; i++)
 	{
@@ -1800,10 +1843,7 @@ exec_completion(char *str)
 		filename_completion(str, FNC_EXECONLY);
 	}
 	add_completion(str);
-	if(chdir(curr_view->curr_dir) != 0)
-		return NULL;
-
-	return next_completion();
+	chdir(curr_view->curr_dir);
 }
 
 static int
@@ -1842,7 +1882,7 @@ is_entry_exec(const struct dirent *d)
  *
  * type: FNC_*
  */
-static char *
+char *
 filename_completion(const char *str, int type)
 {
 	/* TODO refactor filename_completion(...) function */
@@ -1931,6 +1971,8 @@ filename_completion(const char *str, int type)
 
 	while((d = readdir(dir)) != NULL)
 	{
+		char *escaped;
+
 		if(filename[0] == '\0' && d->d_name[0] == '.')
 			continue;
 		if(strncmp(d->d_name, filename, filename_len) != 0)
@@ -1991,7 +2033,9 @@ filename_completion(const char *str, int type)
 
 			free(tempfile);
 		}
-		add_completion(temp);
+		escaped = escape_filename(temp, 0, 0);
+		add_completion(escaped);
+		free(escaped);
 		free(temp);
 	}
 
@@ -1999,25 +2043,17 @@ filename_completion(const char *str, int type)
 
 	completion_group_end();
 	if(type != FNC_EXECONLY)
-		add_completion(filename);
+	{
+		temp = escape_filename(filename, 0, 0);
+		add_completion(temp);
+		free(temp);
+	}
 
 	free(filename);
 	free(dirname);
 	closedir(dir);
 
-	if(type == FNC_EXECONLY)
-		return NULL;
-
-	if(get_completion_count() == 1)
-	{
-		stop_completion();
-		return NULL;
-	}
-
-	temp = next_completion();
-	if(get_completion_count() == 2)
-		stop_completion();
-	return temp;
+	return NULL;
 }
 
 /* String returned by this function should be freed by caller */

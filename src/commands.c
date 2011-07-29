@@ -48,6 +48,7 @@
 #include "menus.h"
 #include "modes.h"
 #include "opt_handlers.h"
+#include "options.h"
 #include "permissions_dialog.h"
 #include "registers.h"
 #include "search.h"
@@ -333,10 +334,52 @@ char ** dispatch_line(const char *args, int *count);
 
 /* TODO generalize command handling */
 
-static void
-complete_args(int id, const char *arg, struct complete_t *info)
+static int
+complete_args(int id, const char *args)
 {
+	const char *arg;
+	const char *start;
+
+	arg = strrchr(args, ' ');
+	if(arg == NULL)
+		arg = args;
+	else
+		arg++;
+
+	start = arg;
+
 	/* TODO write code */
+	if(id == COM_COLORSCHEME)
+		complete_colorschemes(arg);
+	else if(id == COM_SET)
+		complete_options(arg, &start);
+	else
+	{
+		start = strrchr(arg, '/');
+		if(start == NULL)
+			start = arg;
+		else
+			start++;
+
+		if(id == COM_CD || id == COM_PUSHD)
+			filename_completion(arg, FNC_DIRONLY);
+		else if(id == COM_EXECUTE)
+		{
+			if(arg == args)
+			{
+				if(*arg == '.')
+					filename_completion(arg, FNC_DIREXEC);
+				else
+					exec_completion(arg);
+			}
+			else
+				filename_completion(arg, FNC_ALL);
+		}
+		else
+			filename_completion(arg, FNC_ALL);
+	}
+
+	return start - args;
 }
 
 static int
@@ -1716,7 +1759,6 @@ char *
 fast_run_complete(char *cmd)
 {
 	char *buf = NULL;
-	char *completed1;
 	char *p;
 
 	p = strchr(cmd, ' ');
@@ -1726,7 +1768,7 @@ fast_run_complete(char *cmd)
 		*p = '\0';
 
 	reset_completion();
-	completed1 = exec_completion(cmd);
+	exec_completion(cmd);
 
 	if(get_completion_count() > 2)
 	{
@@ -1734,10 +1776,13 @@ fast_run_complete(char *cmd)
 	}
 	else
 	{
-		buf = malloc(strlen(completed1) + 1 + strlen(p) + 1);
-		sprintf(buf, "%s %s", completed1, p);
+		char *completed;
+
+		completed = next_completion();
+		buf = malloc(strlen(completed) + 1 + strlen(p) + 1);
+		sprintf(buf, "%s %s", completed, p);
+		free(completed);
 	}
-	free(completed1);
 
 	return buf;
 }
@@ -2419,7 +2464,7 @@ execute_command(FileView *view, char *command)
 	int id;
 	int result;
 
-	while(isspace(*command) && *command == ':')
+	while(isspace(*command) || *command == ':')
 		++command;
 
 	if(command[0] == '"')

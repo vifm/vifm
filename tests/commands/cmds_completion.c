@@ -47,7 +47,7 @@ test_skip_goto(void)
 {
 	struct complete_t info;
 
-	complete_cmd("", &info);
+	assert_int_equal(0, complete_cmd("", &info));
 	assert_int_equal(3, info.count);
 	if(info.count == 0)
 		return;
@@ -61,7 +61,7 @@ test_skip_abbreviations(void)
 {
 	struct complete_t info;
 
-	complete_cmd("d", &info);
+	assert_int_equal(0, complete_cmd("d", &info));
 	assert_int_equal(2, info.count);
 	if(info.count == 0)
 		return;
@@ -74,17 +74,17 @@ test_dont_remove_range(void)
 {
 	struct complete_t info;
 
-	complete_cmd("% dele", &info);
+	assert_int_equal(2, complete_cmd("% dele", &info));
 	assert_int_equal(1, info.count);
 	if(info.count == 0)
 		return;
-	assert_string_equal("% delete", info.buf[0]);
+	assert_string_equal("delete", info.buf[0]);
 
-	complete_cmd("3dele", &info);
+	assert_int_equal(1, complete_cmd("3dele", &info));
 	assert_int_equal(1, info.count);
 	if(info.count == 0)
 		return;
-	assert_string_equal("3delete", info.buf[0]);
+	assert_string_equal("delete", info.buf[0]);
 }
 
 static void
@@ -92,12 +92,12 @@ test_dont_remove_cmd(void)
 {
 	struct complete_t info;
 
-	complete_cmd("% dele ", &info);
+	assert_int_equal(7, complete_cmd("% dele ", &info));
 	assert_int_equal(2, info.count);
 	if(info.count == 0)
 		return;
-	assert_string_equal("% dele fastrun", info.buf[0]);
-	assert_string_equal("% dele followlinks", info.buf[1]);
+	assert_string_equal("fastrun", info.buf[0]);
+	assert_string_equal("followlinks", info.buf[1]);
 }
 
 static void
@@ -105,12 +105,12 @@ test_skip_complete_args(void)
 {
 	struct complete_t info;
 
-	complete_cmd("% dele fast slow ", &info);
+	assert_int_equal(17, complete_cmd("% dele fast slow ", &info));
 	assert_int_equal(2, info.count);
 	if(info.count == 0)
 		return;
-	assert_string_equal("% dele fast slow fastrun", info.buf[0]);
-	assert_string_equal("% dele fast slow followlinks", info.buf[1]);
+	assert_string_equal("fastrun", info.buf[0]);
+	assert_string_equal("followlinks", info.buf[1]);
 }
 
 static void
@@ -120,11 +120,11 @@ test_com_completion(void)
 
 	assert_int_equal(0, execute_cmd("command udf a"));
 
-	complete_cmd("com u", &info);
+	assert_int_equal(4, complete_cmd("com u", &info));
 	assert_int_equal(1, info.count);
 	if(info.count == 0)
 		return;
-	assert_string_equal("com udf", info.buf[0]);
+	assert_string_equal("udf", info.buf[0]);
 }
 
 static void
@@ -134,11 +134,11 @@ test_delc_completion(void)
 
 	assert_int_equal(0, execute_cmd("command udf a"));
 
-	complete_cmd("delc u", &info);
+	assert_int_equal(5, complete_cmd("delc u", &info));
 	assert_int_equal(1, info.count);
 	if(info.count == 0)
 		return;
-	assert_string_equal("delc udf", info.buf[0]);
+	assert_string_equal("udf", info.buf[0]);
 }
 
 void

@@ -31,6 +31,14 @@ enum CmdLineSubModes {
 	PROMPT_SUBMODE,
 };
 
+/* values of type argument for filename_completion() function */
+enum {
+	FNC_ALL,      /* all files and directories */
+	FNC_DIRONLY,  /* only directories */
+	FNC_EXECONLY, /* only executable files */
+	FNC_DIREXEC   /* directories and executable files */
+};
+
 typedef void (*prompt_cb)(const char *renponse);
 
 void init_cmdline_mode(int *key_mode);
@@ -38,7 +46,8 @@ void enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
 		void *ptr);
 void enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb);
 void redraw_cmdline(void);
-char * exec_completion(char *str);
+void exec_completion(const char *str);
+char * filename_completion(const char *str, int type);
 
 #ifdef TEST
 

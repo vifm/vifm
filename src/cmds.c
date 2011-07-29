@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "completion.h"
 #include "log.h"
 #include "macros.h"
 
@@ -73,10 +74,10 @@ static int get_args_count(const char *cmdstr, char sep, int regexp);
 static void unescape(char *s, int regexp);
 static void replace_esc(char *s);
 static int get_cmd_info(const char *cmd, struct cmd_info *info);
+static int name_is_ambiguous(const char *name);
 static const char *get_cmd_name(const char *cmd, char *buf, size_t buf_len);
 static void init_cmd_info(struct cmd_info *cmd_info);
-static void complete_cmd_name(const char *cmd_name, struct complete_t *info,
-		int user_only);
+static void complete_cmd_name(const char *cmd_name, int user_only);
 #ifndef TEST
 static
 #endif
@@ -661,24 +662,21 @@ get_cmd_info(const char *cmd, struct cmd_info *info)
 	return cur->id;
 }
 
-void
-complete_cmd(const char *cmd, struct complete_t *info)
+int
+complete_cmd(const char *cmd)
 {
 	struct cmd_info cmd_info;
 	char cmd_name[256];
 	const char *args;
 	const char *cmd_name_pos;
-	int i;
 	size_t prefix_len;
 
 	cmd_name_pos = parse_range(cmd, &cmd_info);
 	args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
 
-	info->count = 0;
-	info->buf = NULL;
-	if(*args == '\0')
+	if(*args == '\0' && name_is_ambiguous(cmd_name))
 	{
-		complete_cmd_name(cmd_name, info, 0);
+		complete_cmd_name(cmd_name, 0);
 		prefix_len = cmd_name_pos - cmd;
 	}
 	else
@@ -687,24 +685,58 @@ complete_cmd(const char *cmd, struct complete_t *info)
 
 		id = get_cmd_id(cmd_name);
 		if(id == -1)
-			return;
-		args = strrchr(cmd, ' ') + 1;
-
-		if(id == COMMAND_CMD_ID || id == DELCOMMAND_CMD_ID)
-			complete_cmd_name(args, info, 1);
-		else
-			cmds_conf.complete_args(id, args, info);
+			return 0;
 
 		prefix_len = args - cmd;
+
+		if(id == COMMAND_CMD_ID || id == DELCOMMAND_CMD_ID)
+		{
+			const char *arg;
+
+			arg = strrchr(args, ' ');
+			if(arg == NULL)
+				arg = args;
+			else
+				arg++;
+
+			complete_cmd_name(arg, 1);
+			prefix_len += arg - args;
+		}
+		else
+		{
+			prefix_len += cmds_conf.complete_args(id, args);
+		}
 	}
 
-	for(i = 0; i < info->count; i++)
+	return prefix_len;
+}
+
+static int
+name_is_ambiguous(const char *name)
+{
+	size_t len;
+	int count;
+	struct cmd_t *cur;
+
+	len = strlen(name);
+	count = 0;
+	cur = head.next;
+	while(cur != NULL)
 	{
-		size_t len = strlen(info->buf[i]) + 1;
-		info->buf[i] = realloc(info->buf[i], prefix_len + len);
-		memmove(info->buf[i] + prefix_len, info->buf[i], len);
-		memcpy(info->buf[i], cmd, prefix_len);
+		int cmp;
+
+		cmp = strncmp(cur->name, name, len);
+		if(cmp == 0)
+		{
+			if(++count == 2)
+				return 1;
+		}
+		else if(cmp > 0)
+			return (count == 1) ? 0 : 1;
+
+		cur = cur->next;
 	}
+	return 0;
 }
 
 static const char *
@@ -741,11 +773,14 @@ get_cmd_name(const char *cmd, char *buf, size_t buf_len)
 			return t + 1;
 	}
 	buf[len] = '\0';
+
+	while(isspace(*t))
+		t++;
 	return t;
 }
 
 static void
-complete_cmd_name(const char *cmd_name, struct complete_t *info, int user_only)
+complete_cmd_name(const char *cmd_name, int user_only)
 {
 	struct cmd_t *cur;
 	size_t len;
@@ -764,11 +799,7 @@ complete_cmd_name(const char *cmd_name, struct complete_t *info, int user_only)
 		else if(cur->name[0] == '\0')
 			;
 		else
-		{
-			info->count++;
-			info->buf = realloc(info->buf, info->count*sizeof(char*));
-			info->buf[info->count - 1] = strdup(cur->name);
-		}
+			add_completion(cur->name);
 		cur = cur->next;
 	}
 }
@@ -977,7 +1008,6 @@ delcommand_cmd(const struct cmd_info *cmd_info)
 			(cmp = strcmp(cur->next->name, cmd_info->argv[0])) < 0)
 		cur = cur->next;
 
-	/* command with the same name already exists */
 	if(cur->next == NULL || cmp != 0)
 		return CMDS_ERR_NO_SUCH_UDF;
 
