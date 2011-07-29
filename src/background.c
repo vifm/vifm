@@ -236,7 +236,6 @@ background_and_wait_for_status(char *cmd)
 		}
 		else
 			return status;
-
 	}while(1);
 }
 
@@ -249,6 +248,7 @@ background_and_wait_for_errors(char *cmd)
 	pid_t pid;
 	int error_pipe[2];
 	int error = 0;
+	int status;
 
 	if(pipe(error_pipe) != 0)
 	{
@@ -293,6 +293,18 @@ background_and_wait_for_errors(char *cmd)
 
 		fclose(ef);
 	}
+
+	do
+	{
+		if(waitpid(pid, &status, 0) != -1)
+			break;
+
+		if(errno != EINTR)
+			return -1;
+	}while(1);
+
+	if(WEXITSTATUS(status) != 0)
+		return -1;
 
 	if(error)
 		return -1;
