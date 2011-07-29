@@ -518,6 +518,8 @@ leave_cmdline_mode(void)
 
 	if(*mode == CMDLINE_MODE)
 		*mode = prev_mode;
+
+	update_pos_window(curr_view);
 }
 
 static void
