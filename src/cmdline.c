@@ -23,7 +23,6 @@
 
 #include <curses.h>
 
-#include <dirent.h> /* DIR */
 #include <limits.h>
 
 #include <wchar.h>
@@ -82,10 +81,7 @@ static enum CmdLineSubModes sub_mode;
 static struct line_stats input_stat;
 static int line_width = 1;
 static void *sub_mode_ptr;
-static char **paths;
-static int paths_count;
 
-static void split_path(void);
 static int def_handler(wchar_t key);
 static void update_cmdline_size(void);
 static void update_cmdline_text(void);
@@ -131,7 +127,6 @@ static
 int line_completion(struct line_stats *stat);
 static void update_line_stat(struct line_stats *stat, int new_len);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
-void filename_completion(const char *str, int type);
 static void stop_completion(void);
 
 static struct keys_add_info builtin_cmds[] = {
@@ -187,97 +182,6 @@ init_cmdline_mode(int *key_mode)
 	set_def_handler(CMDLINE_MODE, def_handler);
 
 	assert(add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), CMDLINE_MODE) == 0);
-
-	split_path();
-}
-
-static char *
-expand_tilda(const char *path)
-{
-	char *result;
-
-	result = malloc((strlen(cfg.home_dir) + strlen(path) + 1));
-	if(result == NULL)
-		return NULL;
-
-	sprintf(result, "%s/%s", cfg.home_dir, path + 2);
-
-	return result;
-}
-
-static void
-split_path(void)
-{
-	char *path, *p, *q;
-	int i;
-
-	path = getenv("PATH");
-
-	paths_count = 1;
-	p = path;
-	while((p = strchr(p, ':')) != NULL)
-	{
-		paths_count++;
-		p++;
-	}
-
-	paths = malloc(paths_count*sizeof(paths[0]));
-	if(paths == NULL)
-		return;
-
-	i = 0;
-	p = path - 1;
-	do
-	{
-		int j;
-		char *s;
-
-		p++;
-		q = strchr(p, ':');
-		if(q == NULL)
-		{
-			q = p + strlen(p);
-		}
-
-		s = malloc((q - p + 1)*sizeof(s[0]));
-		if(s == NULL)
-		{
-			for(j = 0; j < i - 1; j++)
-				free(paths[j]);
-			paths_count = 0;
-			return;
-		}
-		snprintf(s, q - p + 1, "%s", p);
-
-		p = q;
-
-		if(strncmp(s, "~/", 2) == 0)
-		{
-			char *t;
-			t = expand_tilda(s);
-			free(s);
-			s = t;
-		}
-
-		if(access(s, F_OK) != 0)
-		{
-			free(s);
-			continue;
-		}
-
-		paths[i++] = s;
-
-		for(j = 0; j < i - 1; j++)
-		{
-			if(strcmp(paths[j], s) == 0)
-			{
-				free(s);
-				i--;
-				break;
-			}
-		}
-	} while (q[0] != '\0');
-	paths_count = i;
 }
 
 static int
@@ -1455,217 +1359,6 @@ wcsdel(wchar_t *src, int pos, int len)
 	src[pos-len] = src[pos];
 
 	return src;
-}
-
-/* On the first call to this function,
- * the string to be parsed should be specified in str.
- * In each subsequent call that should parse the same string, str should be NULL
- */
-void
-exec_completion(const char *str)
-{
-	int i;
-
-	for(i = 0; i < paths_count; i++)
-	{
-		if(chdir(paths[i]) != 0)
-			continue;
-		filename_completion(str, FNC_EXECONLY);
-	}
-	add_completion(str);
-	chdir(curr_view->curr_dir);
-}
-
-static int
-is_entry_dir(const struct dirent *d)
-{
-	if(d->d_type == DT_UNKNOWN)
-	{
-		struct stat st;
-		if(stat(d->d_name, &st) != 0)
-			return 0;
-		return S_ISDIR(st.st_mode);
-	}
-
-	if(d->d_type != DT_DIR && d->d_type != DT_LNK)
-		return 0;
-	if(d->d_type == DT_LNK && !check_link_is_dir(d->d_name))
-		return 0;
-	return 1;
-}
-
-static int
-is_entry_exec(const struct dirent *d)
-{
-	if(d->d_type == DT_DIR)
-		return 0;
-	if(d->d_type == DT_LNK && check_link_is_dir(d->d_name))
-		return 0;
-	if(access(d->d_name, X_OK) != 0)
-		return 0;
-	return 1;
-}
-
-/* On the first call to this function,
- * the string to be parsed should be specified in str.
- * In each subsequent call that should parse the same string, str should be NULL
- *
- * type: FNC_*
- */
-void
-filename_completion(const char *str, int type)
-{
-	/* TODO refactor filename_completion(...) function */
-	const char *string;
-
-	DIR *dir;
-	struct dirent *d;
-	char * dirname;
-	char * filename;
-	char * temp;
-	int filename_len;
-	int isdir;
-
-	if(strcmp(str, "~") == 0)
-	{
-		add_completion(cfg.home_dir);
-		return;
-	}
-
-	string = str;
-
-	temp = strrchr(str, '/');
-
-	if(strncmp(string, "~/", 2) == 0)
-	{
-		dirname = expand_tilda(string);
-		filename = strdup(dirname);
-	}
-	else
-	{
-		if(strlen(string) > 0)
-		{
-			dirname = strdup(string);
-		}
-		else
-		{
-			dirname = malloc(strlen(string) + 2);
-			strcpy(dirname, string);
-		}
-		filename = strdup(string);
-	}
-
-	temp = strrchr(dirname, '/');
-	if(temp)
-	{
-		strcpy(filename, ++temp);
-		*temp = '\0';
-	}
-	else
-	{
-		dirname[0] = '.';
-		dirname[1] = '\0';
-	}
-
-	dir = opendir(dirname);
-
-	if(dir == NULL || chdir(dirname) != 0)
-	{
-		add_completion(filename);
-		free(filename);
-		free(dirname);
-		return;
-	}
-
-	filename_len = strlen(filename);
-	while((d = readdir(dir)) != NULL)
-	{
-		char *escaped;
-
-		if(filename[0] == '\0' && d->d_name[0] == '.')
-			continue;
-		if(strncmp(d->d_name, filename, filename_len) != 0)
-			continue;
-
-		if(type == FNC_DIRONLY && !is_entry_dir(d))
-			continue;
-		else if(type == FNC_EXECONLY && !is_entry_exec(d))
-			continue;
-		else if(type == FNC_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
-			continue;
-
-		isdir = 0;
-		if(is_dir(d->d_name))
-		{
-			isdir = 1;
-		}
-		else if(strcmp(dirname, "."))
-		{
-			char * tempfile = (char *)NULL;
-			int len = strlen(dirname) + strlen(d->d_name) + 1;
-			tempfile = (char *)malloc((len) * sizeof(char));
-			if(!tempfile)
-			{
-				closedir(dir);
-				chdir(curr_view->curr_dir);
-				add_completion(filename);
-				free(filename);
-				free(dirname);
-				return;
-			}
-			snprintf(tempfile, len, "%s%s", dirname, d->d_name);
-			if(is_dir(tempfile))
-				isdir = 1;
-			else
-				temp = strdup(d->d_name);
-
-			free(tempfile);
-		}
-		else
-			temp = strdup(d->d_name);
-
-		if(isdir)
-		{
-			char * tempfile = (char *)NULL;
-			tempfile = (char *) malloc((strlen(d->d_name) + 2) * sizeof(char));
-			if(!tempfile)
-			{
-				closedir(dir);
-				chdir(curr_view->curr_dir);
-				add_completion(filename);
-				free(filename);
-				free(dirname);
-				return;
-			}
-			snprintf(tempfile, strlen(d->d_name) + 2, "%s/", d->d_name);
-			temp = strdup(tempfile);
-
-			free(tempfile);
-		}
-		escaped = escape_filename(temp, 0, 1);
-		add_completion(escaped);
-		free(escaped);
-		free(temp);
-	}
-
-	chdir(curr_view->curr_dir);
-
-	completion_group_end();
-	if(type != FNC_EXECONLY)
-	{
-		if(get_completion_count() == 0)
-			add_completion(filename);
-		else
-		{
-			temp = escape_filename(filename, 0, 1);
-			add_completion(temp);
-			free(temp);
-		}
-	}
-
-	free(filename);
-	free(dirname);
-	closedir(dir);
 }
 
 static void

@@ -19,6 +19,7 @@
 #include <curses.h>
 
 #include <sys/wait.h>
+#include <dirent.h> /* DIR */
 #include <unistd.h> /* chdir() */
 
 #include <assert.h>
@@ -60,6 +61,24 @@
 #include "utils.h"
 
 #include "commands.h"
+
+/* values of type argument for filename_completion() function */
+enum {
+	FNC_ALL,      /* all files and directories */
+	FNC_DIRONLY,  /* only directories */
+	FNC_EXECONLY, /* only executable files */
+	FNC_DIREXEC   /* directories and executable files */
+};
+
+static void exec_completion(const char *str);
+static void filename_completion(const char *str, int type);
+static int is_entry_dir(const struct dirent *d);
+static int is_entry_exec(const struct dirent *d);
+static void split_path(void);
+static char * expand_tilda(const char *path);
+static wchar_t * substitute_specs(const char *cmd);
+static const char *skip_spaces(const char *cmd);
+static const char *skip_word(const char *cmd);
 
 static int goto_cmd(const struct cmd_info *cmd_info);
 static int emark_cmd(const struct cmd_info *cmd_info);
@@ -213,9 +232,8 @@ static const struct cmd_add commands[] = {
 
 static int need_clean_selection;
 
-static wchar_t * substitute_specs(const char *cmd);
-static const char *skip_spaces(const char *cmd);
-static const char *skip_word(const char *cmd);
+static char **paths;
+static int paths_count;
 
 static int
 cmd_ends_with_space(const char *cmd)
@@ -277,6 +295,210 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 	}
 
 	return start - args;
+}
+
+static void
+exec_completion(const char *str)
+{
+	int i;
+
+	for(i = 0; i < paths_count; i++)
+	{
+		if(chdir(paths[i]) != 0)
+			continue;
+		filename_completion(str, FNC_EXECONLY);
+	}
+	add_completion(str);
+	chdir(curr_view->curr_dir);
+}
+
+/*
+ * type: FNC_*
+ */
+static void
+filename_completion(const char *str, int type)
+{
+	/* TODO refactor filename_completion(...) function */
+	const char *string;
+
+	DIR *dir;
+	struct dirent *d;
+	char * dirname;
+	char * filename;
+	char * temp;
+	int filename_len;
+	int isdir;
+
+	if(strcmp(str, "~") == 0)
+	{
+		add_completion(cfg.home_dir);
+		return;
+	}
+
+	string = str;
+
+	temp = strrchr(str, '/');
+
+	if(strncmp(string, "~/", 2) == 0)
+	{
+		dirname = expand_tilda(string);
+		filename = strdup(dirname);
+	}
+	else
+	{
+		if(strlen(string) > 0)
+		{
+			dirname = strdup(string);
+		}
+		else
+		{
+			dirname = malloc(strlen(string) + 2);
+			strcpy(dirname, string);
+		}
+		filename = strdup(string);
+	}
+
+	temp = strrchr(dirname, '/');
+	if(temp)
+	{
+		strcpy(filename, ++temp);
+		*temp = '\0';
+	}
+	else
+	{
+		dirname[0] = '.';
+		dirname[1] = '\0';
+	}
+
+	dir = opendir(dirname);
+
+	if(dir == NULL || chdir(dirname) != 0)
+	{
+		add_completion(filename);
+		free(filename);
+		free(dirname);
+		return;
+	}
+
+	filename_len = strlen(filename);
+	while((d = readdir(dir)) != NULL)
+	{
+		char *escaped;
+
+		if(filename[0] == '\0' && d->d_name[0] == '.')
+			continue;
+		if(strncmp(d->d_name, filename, filename_len) != 0)
+			continue;
+
+		if(type == FNC_DIRONLY && !is_entry_dir(d))
+			continue;
+		else if(type == FNC_EXECONLY && !is_entry_exec(d))
+			continue;
+		else if(type == FNC_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
+			continue;
+
+		isdir = 0;
+		if(is_dir(d->d_name))
+		{
+			isdir = 1;
+		}
+		else if(strcmp(dirname, "."))
+		{
+			char * tempfile = (char *)NULL;
+			int len = strlen(dirname) + strlen(d->d_name) + 1;
+			tempfile = (char *)malloc((len) * sizeof(char));
+			if(!tempfile)
+			{
+				closedir(dir);
+				chdir(curr_view->curr_dir);
+				add_completion(filename);
+				free(filename);
+				free(dirname);
+				return;
+			}
+			snprintf(tempfile, len, "%s%s", dirname, d->d_name);
+			if(is_dir(tempfile))
+				isdir = 1;
+			else
+				temp = strdup(d->d_name);
+
+			free(tempfile);
+		}
+		else
+			temp = strdup(d->d_name);
+
+		if(isdir)
+		{
+			char * tempfile = (char *)NULL;
+			tempfile = (char *) malloc((strlen(d->d_name) + 2) * sizeof(char));
+			if(!tempfile)
+			{
+				closedir(dir);
+				chdir(curr_view->curr_dir);
+				add_completion(filename);
+				free(filename);
+				free(dirname);
+				return;
+			}
+			snprintf(tempfile, strlen(d->d_name) + 2, "%s/", d->d_name);
+			temp = strdup(tempfile);
+
+			free(tempfile);
+		}
+		escaped = escape_filename(temp, 0, 1);
+		add_completion(escaped);
+		free(escaped);
+		free(temp);
+	}
+
+	chdir(curr_view->curr_dir);
+
+	completion_group_end();
+	if(type != FNC_EXECONLY)
+	{
+		if(get_completion_count() == 0)
+			add_completion(filename);
+		else
+		{
+			temp = escape_filename(filename, 0, 1);
+			add_completion(temp);
+			free(temp);
+		}
+	}
+
+	free(filename);
+	free(dirname);
+	closedir(dir);
+}
+
+static int
+is_entry_dir(const struct dirent *d)
+{
+	if(d->d_type == DT_UNKNOWN)
+	{
+		struct stat st;
+		if(stat(d->d_name, &st) != 0)
+			return 0;
+		return S_ISDIR(st.st_mode);
+	}
+
+	if(d->d_type != DT_DIR && d->d_type != DT_LNK)
+		return 0;
+	if(d->d_type == DT_LNK && !check_link_is_dir(d->d_name))
+		return 0;
+	return 1;
+}
+
+static int
+is_entry_exec(const struct dirent *d)
+{
+	if(d->d_type == DT_DIR)
+		return 0;
+	if(d->d_type == DT_LNK && check_link_is_dir(d->d_name))
+		return 0;
+	if(access(d->d_name, X_OK) != 0)
+		return 0;
+	return 1;
 }
 
 static int
@@ -393,8 +615,98 @@ init_commands(void)
 	cmds_conf.select_range = select_range;
 
 	init_cmds();
-
 	add_buildin_commands((const struct cmd_add *)&commands, ARRAY_LEN(commands));
+
+	split_path();
+}
+
+static void
+split_path(void)
+{
+	char *path, *p, *q;
+	int i;
+
+	path = getenv("PATH");
+
+	paths_count = 1;
+	p = path;
+	while((p = strchr(p, ':')) != NULL)
+	{
+		paths_count++;
+		p++;
+	}
+
+	paths = malloc(paths_count*sizeof(paths[0]));
+	if(paths == NULL)
+		return;
+
+	i = 0;
+	p = path - 1;
+	do
+	{
+		int j;
+		char *s;
+
+		p++;
+		q = strchr(p, ':');
+		if(q == NULL)
+		{
+			q = p + strlen(p);
+		}
+
+		s = malloc((q - p + 1)*sizeof(s[0]));
+		if(s == NULL)
+		{
+			for(j = 0; j < i - 1; j++)
+				free(paths[j]);
+			paths_count = 0;
+			return;
+		}
+		snprintf(s, q - p + 1, "%s", p);
+
+		p = q;
+
+		if(strncmp(s, "~/", 2) == 0)
+		{
+			char *t;
+			t = expand_tilda(s);
+			free(s);
+			s = t;
+		}
+
+		if(access(s, F_OK) != 0)
+		{
+			free(s);
+			continue;
+		}
+
+		paths[i++] = s;
+
+		for(j = 0; j < i - 1; j++)
+		{
+			if(strcmp(paths[j], s) == 0)
+			{
+				free(s);
+				i--;
+				break;
+			}
+		}
+	} while (q[0] != '\0');
+	paths_count = i;
+}
+
+static char *
+expand_tilda(const char *path)
+{
+	char *result;
+
+	result = malloc((strlen(cfg.home_dir) + strlen(path) + 1));
+	if(result == NULL)
+		return NULL;
+
+	sprintf(result, "%s/%s", cfg.home_dir, path + 2);
+
+	return result;
 }
 
 static void
@@ -457,7 +769,7 @@ save_command_history(const char *command)
 }
 
 static int
-is_entry_dir(FileView *view, int pos)
+is_dir_element(FileView *view, int pos)
 {
 	char full[PATH_MAX];
 
@@ -502,7 +814,7 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 				continue;
 
 			/* Directory has / appended to the name this removes it. */
-			dir = is_entry_dir(view, y);
+			dir = is_dir_element(view, y);
 
 			temp = escape_filename(view->dir_entry[y].name,
 					strlen(view->dir_entry[y].name) - dir, 0);
@@ -525,7 +837,7 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 		char *temp;
 
 		/* Directory has / appended to the name this removes it. */
-		dir = is_entry_dir(view, view->list_pos);
+		dir = is_dir_element(view, view->list_pos);
 
 		temp = escape_filename(view->dir_entry[view->list_pos].name,
 				strlen(view->dir_entry[view->list_pos].name) - dir, 0);
