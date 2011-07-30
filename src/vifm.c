@@ -214,8 +214,8 @@ update_path(void)
 	char *new_path;
 
 	old_path = getenv("PATH");
-	new_path = malloc(15 + 1 + strlen(old_path) + 1);
-	sprintf(new_path, "~/.vifm/scripts:%s", old_path);
+	new_path = malloc(strlen(cfg.home_dir) + 13 + 1 + strlen(old_path) + 1);
+	sprintf(new_path, "%s.vifm/scripts:%s", cfg.home_dir, old_path);
 	setenv("PATH", new_path, 1);
 	free(new_path);
 }
@@ -236,8 +236,6 @@ main(int argc, char *argv[])
 		return -1;
 	}
 
-	update_path();
-
 	init_window(&rwin);
 	init_window(&lwin);
 
@@ -248,6 +246,8 @@ main(int argc, char *argv[])
   init_registers();
 	init_config();
 	set_config_dir();
+
+	update_path();
 
 	init_commands();
 	read_config_file();
