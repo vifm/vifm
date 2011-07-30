@@ -38,7 +38,7 @@ typedef struct
 yank_t *yanked_file;
 
 void cd_updir(FileView *view);
-void handle_file(FileView *view, int dont_execute);
+void handle_file(FileView *view, int dont_execute, int force_follow);
 void _gnuc_noreturn use_vim_plugin(FileView *view, int argc, char **argv);
 int delete_file(FileView *view, int reg, int count, int *indexes,
 		int use_trash);

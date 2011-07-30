@@ -162,6 +162,9 @@ Ctrl-g - creates a window showing detailed information about the current
 ga - calculate size of directory.
 gA - like ga, but force update.
 
+gf - find link destination (like l with 'followlinks' off, but also finds
+directories).
+
 gv go to visual mode restoring last selection.
 
 i - handle file (even through it's executable and RUN_EXECUTABLE is set).

@@ -630,7 +630,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 }
 
 static void
-follow_link(FileView *view)
+follow_link(FileView *view, int follow_dirs)
 {
 	struct stat s;
 	int is_dir = 0, is_file = 0;
@@ -674,7 +674,7 @@ follow_link(FileView *view)
 	else
 	{
 		int x;
-		for(x = strlen(linkto); x > 0; x--)
+		for(x = strlen(linkto) - 1; x > 0; x--)
 		{
 			if(linkto[x] == '/')
 			{
@@ -694,7 +694,7 @@ follow_link(FileView *view)
 			is_file = 1;
 		}
 	}
-	if(is_dir)
+	if(is_dir && !follow_dirs)
 	{
 		change_directory(view, dir);
 		load_dir_list(view, 0);
@@ -709,7 +709,23 @@ follow_link(FileView *view)
 	}
 	else
 	{
-		int pos = find_file_pos_in_list(view, link_dup);
+		int pos;
+		if(is_dir)
+		{
+			size_t len;
+
+			chosp(link_dup);
+			len = strlen(link_dup);
+			link_dup = realloc(link_dup, len + 1 + 1);
+			if((file = strrchr(link_dup, '/')) == NULL)
+				file = link_dup;
+			else
+				file++;
+			strcat(file, "/");
+		}
+		else
+			file = link_dup;
+		pos = find_file_pos_in_list(view, file);
 		if(pos >= 0)
 			moveto_list_pos(view, pos);
 	}
@@ -718,7 +734,7 @@ follow_link(FileView *view)
 }
 
 void
-handle_file(FileView *view, int dont_execute)
+handle_file(FileView *view, int dont_execute, int force_follow)
 {
 	int type;
 	int runnable;
@@ -746,6 +762,9 @@ handle_file(FileView *view, int dont_execute)
 		use_vim_plugin(view, 0, NULL); /* no return */
 
 	run_link = !cfg.follow_links && type == LINK && !check_link_is_dir(filename);
+	if(run_link && force_follow)
+		run_link = 0;
+
 	runnable = type == EXECUTABLE || (run_link && access(filename, X_OK) == 0);
 
 	if(runnable && !dont_execute && cfg.auto_execute)
@@ -760,7 +779,7 @@ handle_file(FileView *view, int dont_execute)
 	}
 	else if(type == LINK)
 	{
-		follow_link(view);
+		follow_link(view, force_follow);
 	}
 }
 

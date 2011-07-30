@@ -18,6 +18,8 @@
 
 	Added check for broken links of selection on :edit.
 
+	Added gf command (find link destination).
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,

@@ -62,7 +62,6 @@ static void cmd_ctrl_g(struct key_info, struct keys_info *);
 static void cmd_space(struct key_info, struct keys_info *);
 static void cmd_ctrl_i(struct key_info, struct keys_info *);
 static void cmd_ctrl_l(struct key_info, struct keys_info *);
-static void cmd_return(struct key_info, struct keys_info *);
 static void cmd_ctrl_o(struct key_info, struct keys_info *);
 static void cmd_ctrl_r(struct key_info, struct keys_info *);
 static void cmd_ctrl_u(struct key_info, struct keys_info *);
@@ -108,6 +107,7 @@ static void delete_with_selector(struct key_info, struct keys_info *,
 static void cmd_f(struct key_info, struct keys_info *);
 static void cmd_gA(struct key_info, struct keys_info *);
 static void cmd_ga(struct key_info, struct keys_info *);
+static void cmd_gf(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
 static void cmd_gv(struct key_info, struct keys_info *);
 static void cmd_h(struct key_info, struct keys_info *);
@@ -143,7 +143,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x07", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_g}}},
 	{L"\x09", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_i}}},
 	{L"\x0c", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
-	{L"\x0d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_return}}},
+	{L"\x0d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_l}}},
 	{L"\x0f", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_o}}},
 	{L"\x12", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_r}}},
 	{L"\x15", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
@@ -197,6 +197,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"f", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_f}}},
 	{L"gA", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gA}}},
 	{L"ga", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ga}}},
+	{L"gf", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gf}}},
 	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
 	{L"gv", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gv}}},
 	{L"h", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
@@ -346,12 +347,6 @@ cmd_ctrl_l(struct key_info key_info, struct keys_info *keys_info)
 {
 	redraw_window();
 	curs_set(0);
-}
-
-static void
-cmd_return(struct key_info key_info, struct keys_info *keys_info)
-{
-	handle_file(curr_view, 0);
 }
 
 static void
@@ -623,6 +618,15 @@ cmd_ga(struct key_info key_info, struct keys_info *keys_info)
 	calc_dirsize(curr_view->dir_entry[curr_view->list_pos].name, 0);
 
 	redraw_lists();
+}
+
+static void
+cmd_gf(struct key_info key_info, struct keys_info *keys_info)
+{
+	handle_file(curr_view, 0, 1);
+	clean_selected_files(curr_view);
+	draw_dir_list(curr_view, curr_view->top_line);
+	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
 /* Jump to top of the list or to specified line. */
@@ -963,7 +967,7 @@ cmd_h(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_i(struct key_info key_info, struct keys_info *keys_info)
 {
-	handle_file(curr_view, 1);
+	handle_file(curr_view, 1, 0);
 }
 
 /* Move down one line. */
@@ -995,7 +999,7 @@ cmd_k(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_l(struct key_info key_info, struct keys_info *keys_info)
 {
-	handle_file(curr_view, 0);
+	handle_file(curr_view, 0, 0);
 	clean_selected_files(curr_view);
 	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);

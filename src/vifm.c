@@ -358,7 +358,7 @@ main(int argc, char *argv[])
 		if(pos >= 0)
 		{
 			lwin.list_pos = pos;
-			handle_file(&lwin, 0);
+			handle_file(&lwin, 0, 0);
 		}
 	}
 	load_dir_list(&rwin, 0);
@@ -368,7 +368,7 @@ main(int argc, char *argv[])
 		if(pos >= 0)
 		{
 			rwin.list_pos = pos;
-			handle_file(&rwin, 0);
+			handle_file(&rwin, 0, 0);
 		}
 	}
 

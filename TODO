@@ -21,7 +21,6 @@ Basic things that need to be done.
     Perform operations using system calls, not programs.  This is much faster
         and will ease porting on Windows (less dependencies on Cygwin).
 	:restore command to restore files from Trash
-	gf <=> l with 'followlink'
     Modify X in permissions dialog.
     Be more verbose about regexp compiling errors.
     Show search matches in the menus.
