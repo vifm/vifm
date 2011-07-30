@@ -32,12 +32,13 @@
 
 static registers_t registers[NUM_REGISTERS];
 
-static char valid_registers[] = {
+const char valid_registers[] = {
 	'"',
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+	'\0',
 };
 
 void
@@ -131,30 +132,33 @@ pack_register(int key)
 }
 
 char **
-list_registers_content(void)
+list_registers_content(const char *registers)
 {
-	int x;
 	char **list = NULL;
 	size_t len = 0;
 
-	for(x = 0; x < NUM_REGISTERS; x++)
+	while(*registers != '\0')
 	{
+		registers_t *reg;
 		char buf[56];
 		int y;
 			
-		if(registers[x].num_files <= 0)
+		if((reg = find_register(*registers++)) == NULL)
 			continue;
 
-		snprintf(buf, sizeof(buf), "\"%c", registers[x].name);
+		if(reg->num_files <= 0)
+			continue;
+
+		snprintf(buf, sizeof(buf), "\"%c", reg->name);
 		list = (char **)realloc(list, sizeof(char *)*(len + 1));
 		list[len] = strdup(buf);
 		len++;
 
-		y = registers[x].num_files;
+		y = reg->num_files;
 		while(y-- > 0)
 		{
 			list = (char **)realloc(list, sizeof(char *)*(len + 1));
-			list[len] = strdup(registers[x].files[y]);
+			list[len] = strdup(reg->files[y]);
 
 			len++;
 		}

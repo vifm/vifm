@@ -1623,7 +1623,7 @@ show_jobs_menu(FileView *view)
 }
 
 int
-show_register_menu(FileView *view)
+show_register_menu(FileView *view, const char *registers)
 {
 	int x;
 
@@ -1643,7 +1643,7 @@ show_register_menu(FileView *view)
 
 	getmaxyx(menu_win, m.win_rows, x);
 
-	m.data = list_registers_content();
+	m.data = list_registers_content(registers);
 	while(m.data[m.len] != NULL)
 		m.len++;
 

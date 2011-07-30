@@ -47,6 +47,8 @@
 
 	:filter?, :invert? and :screen? to display state.
 
+	Made :display and :registers accept argument (like in Vim).
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

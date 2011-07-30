@@ -488,6 +488,10 @@ will remove the command_name user command.
 .BI :di[splay]
 popup menu with registers content.
 .TP
+.BI :di[splay] list
+display the contents of the numbered and named registers that are mentioned in
+list (for example "az to display "", "a and "z content).
+.TP
 .BI :dirs
 display directory stack.
 .TP
@@ -582,7 +586,11 @@ rename files using vi to edit names.
 .BI :screen
 toggles whether or not to use the screen program.
 .br
-The default configuration has the screen option turned off.  The screen program uses pseudo terminals to allow multiple windows to be used in the console or in a single xterm.  Starting vifm from screen with the screen option turned on will cause vifm to open a new screen window for each new file edited or program launched from vifm.
+The default configuration has the screen option turned off.  The screen program
+uses pseudo terminals to allow multiple windows to be used in the console or in
+a single xterm.  Starting vifm from screen with the screen option turned on will
+cause vifm to open a new screen window for each new file edited or program
+launched from vifm.
 .br
 This requires screen version 3.9.9 or newer for the screen -X argument.
 .TP
@@ -599,6 +607,10 @@ will start a shell.
 .TP
 .BI :reg[isters]
 popup menu with registers content.
+.TP
+.BI :reg[isters] list
+display the contents of the numbered and named registers that are mentioned in
+list (for example "az to display "", "a and "z content).
 .TP
 .BI :sor[t]
 creates a popup menu of different sorting methods.
