@@ -1156,7 +1156,7 @@ try_unmount_fuse(FileView *view)
  * Symlink directories require an absolute path
  *
  * Return value:
- *   -1 if there were errors.
+ *  -1  if there were errors.
  *   0  if directory successfully changed and we didn't leave FUSE mount
  *      directory.
  *   1  if directory successfully changed and we left FUSE mount directory.
@@ -1227,10 +1227,6 @@ change_directory(FileView *view, const char *directory)
 
 		snprintf(buf, sizeof(buf), "You do not have read access on %s", dir_dup);
 		show_error_msg("Directory Access Error", buf);
-
-		clean_selected_files(view);
-		leave_invalid_dir(view, view->curr_dir);
-		return -1;
 	}
 
 	if(access(dir_dup, X_OK) != 0)
@@ -1252,17 +1248,8 @@ change_directory(FileView *view, const char *directory)
 
 	if(dir == NULL)
 	{
-		char buf[15 + PATH_MAX + 1];
-
 		LOG_SERROR_MSG(errno, "Can't opendir() \"%s\"", dir_dup);
 		log_cwd();
-
-		snprintf(buf, sizeof(buf), "Could not open %s", dir_dup);
-		show_error_msg("Dir is null", buf);
-
-		clean_selected_files(view);
-		leave_invalid_dir(view, view->curr_dir);
-		return -1;
 	}
 
 	if(chdir(dir_dup) == -1)
@@ -1290,7 +1277,8 @@ change_directory(FileView *view, const char *directory)
 	snprintf(view->curr_dir, PATH_MAX, "%s", dir_dup);
 	draw_dir_list(view, view->top_line);
 
-	closedir(dir);
+	if(dir != NULL)
+		closedir(dir);
 
 	/* Save the directory modified time to check for file changes */
 	stat(view->curr_dir, &s);
@@ -1371,6 +1359,64 @@ type_from_dir_entry(const struct dirent *d)
 	}
 }
 
+static void
+load_parent_dir_only(FileView *view)
+{
+	dir_entry_t *dir_entry;
+	struct stat s;
+
+	view->list_rows = 1;
+	view->dir_entry = (dir_entry_t *)realloc(view->dir_entry,
+			sizeof(dir_entry_t));
+	if(view->dir_entry == NULL)
+	{
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return;
+	}
+
+	dir_entry = view->dir_entry;
+
+	/* Allocate extra for adding / to directories. */
+	dir_entry->name = strdup("../");
+	if(dir_entry->name == NULL)
+	{
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return;
+	}
+
+	/* All files start as unselected and unmatched */
+	dir_entry->selected = 0;
+	dir_entry->search_match = 0;
+
+	dir_entry->type = DIRECTORY;
+
+	/* Load the inode info */
+	if(lstat(dir_entry->name, &s) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
+				dir_entry->name);
+		log_cwd();
+
+		dir_entry->size = 0;
+		dir_entry->mode = 0;
+		dir_entry->uid = -1;
+		dir_entry->gid = -1;
+		dir_entry->mtime = 0;
+		dir_entry->atime = 0;
+		dir_entry->ctime = 0;
+	}
+	else
+	{
+		dir_entry->size = (uintmax_t)s.st_size;
+		dir_entry->mode = s.st_mode;
+		dir_entry->uid = s.st_uid;
+		dir_entry->gid = s.st_gid;
+		dir_entry->mtime = s.st_mtime;
+		dir_entry->atime = s.st_atime;
+		dir_entry->ctime = s.st_ctime;
+	}
+}
+
 void
 load_dir_list(FileView *view, int reload)
 {
@@ -1380,11 +1426,6 @@ load_dir_list(FileView *view, int reload)
 	int x;
 	int namelen = 0;
 	int old_list = view->list_rows;
-
-	dir = opendir(view->curr_dir);
-
-	if(dir == NULL)
-		return;
 
 	view->filtered = 0;
 
@@ -1404,7 +1445,6 @@ load_dir_list(FileView *view, int reload)
 	if(chdir(view->curr_dir) != 0)
 	{
 		LOG_SERROR_MSG(errno, "Can't chdir() into \"%s\"", view->curr_dir);
-		closedir(dir);
 		return;
 	}
 
@@ -1426,125 +1466,135 @@ load_dir_list(FileView *view, int reload)
 		return;
 	}
 
-	for(view->list_rows = 0; (d = readdir(dir)); view->list_rows++)
-	{
-		dir_entry_t *dir_entry;
+	dir = opendir(view->curr_dir);
 
-		/* Ignore the "." directory. */
-		if(strcmp(d->d_name, ".") == 0)
+	if(dir != NULL)
+	{
+		for(view->list_rows = 0; (d = readdir(dir)); view->list_rows++)
 		{
-			view->list_rows--;
-			continue;
-		}
-		/* Always include the ../ directory unless it is the root directory. */
-		if(strcmp(d->d_name, "..") == 0)
-		{
-			if(!strcmp("/", view->curr_dir))
+			dir_entry_t *dir_entry;
+
+			/* Ignore the "." directory. */
+			if(strcmp(d->d_name, ".") == 0)
 			{
 				view->list_rows--;
 				continue;
 			}
-		}
-		else if(regexp_filter_match(view, d->d_name) == 0)
-		{
-			view->filtered++;
-			view->list_rows--;
-			continue;
-		}
-		else if(view->hide_dot && d->d_name[0] == '.')
-		{
-			view->filtered++;
-			view->list_rows--;
-			continue;
-		}
-
-		view->dir_entry = (dir_entry_t *)realloc(view->dir_entry,
-				(view->list_rows + 1) * sizeof(dir_entry_t));
-		if(view->dir_entry == NULL)
-		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			return;
-		}
-
-		dir_entry = view->dir_entry + view->list_rows;
-
-		namelen = strlen(d->d_name);
-		/* Allocate extra for adding / to directories. */
-		dir_entry->name = malloc(namelen + 1 + 1);
-		if(dir_entry->name == NULL)
-		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			return;
-		}
-
-		strcpy(dir_entry->name, d->d_name);
-
-		/* All files start as unselected and unmatched */
-		dir_entry->selected = 0;
-		dir_entry->search_match = 0;
-
-		/* Load the inode info */
-		if(lstat(dir_entry->name, &s) != 0)
-		{
-			LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
-					dir_entry->name);
-			log_cwd();
-
-			dir_entry->type = type_from_dir_entry(d);
-			if(dir_entry->type == DIRECTORY)
-				strcat(dir_entry->name, "/");
-			dir_entry->size = 0;
-			dir_entry->mode = 0;
-			dir_entry->uid = -1;
-			dir_entry->gid = -1;
-			dir_entry->mtime = 0;
-			dir_entry->atime = 0;
-			dir_entry->ctime = 0;
-			continue;
-		}
-
-		dir_entry->size = (uintmax_t)s.st_size;
-		dir_entry->mode = s.st_mode;
-		dir_entry->uid = s.st_uid;
-		dir_entry->gid = s.st_gid;
-		dir_entry->mtime = s.st_mtime;
-		dir_entry->atime = s.st_atime;
-		dir_entry->ctime = s.st_ctime;
-
-		if(s.st_ino)
-		{
-			switch(s.st_mode & S_IFMT)
+			/* Always include the ../ directory unless it is the root directory. */
+			if(strcmp(d->d_name, "..") == 0)
 			{
-				case S_IFLNK:
-					if(check_link_is_dir(view->dir_entry[view->list_rows].name))
-						strcat(dir_entry->name, "/");
-					dir_entry->type = LINK;
-					break;
-				case S_IFDIR:
+				if(!strcmp("/", view->curr_dir))
+				{
+					view->list_rows--;
+					continue;
+				}
+			}
+			else if(regexp_filter_match(view, d->d_name) == 0)
+			{
+				view->filtered++;
+				view->list_rows--;
+				continue;
+			}
+			else if(view->hide_dot && d->d_name[0] == '.')
+			{
+				view->filtered++;
+				view->list_rows--;
+				continue;
+			}
+
+			view->dir_entry = (dir_entry_t *)realloc(view->dir_entry,
+					(view->list_rows + 1) * sizeof(dir_entry_t));
+			if(view->dir_entry == NULL)
+			{
+				show_error_msg("Memory Error", "Unable to allocate enough memory");
+				return;
+			}
+
+			dir_entry = view->dir_entry + view->list_rows;
+
+			namelen = strlen(d->d_name);
+			/* Allocate extra for adding / to directories. */
+			dir_entry->name = malloc(namelen + 1 + 1);
+			if(dir_entry->name == NULL)
+			{
+				show_error_msg("Memory Error", "Unable to allocate enough memory");
+				return;
+			}
+
+			strcpy(dir_entry->name, d->d_name);
+
+			/* All files start as unselected and unmatched */
+			dir_entry->selected = 0;
+			dir_entry->search_match = 0;
+
+			/* Load the inode info */
+			if(lstat(dir_entry->name, &s) != 0)
+			{
+				LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
+						dir_entry->name);
+				log_cwd();
+
+				dir_entry->type = type_from_dir_entry(d);
+				if(dir_entry->type == DIRECTORY)
 					strcat(dir_entry->name, "/");
-					dir_entry->type = DIRECTORY;
-					break;
-				case S_IFCHR:
-				case S_IFBLK:
-					dir_entry->type = DEVICE;
-					break;
-				case S_IFSOCK:
-					dir_entry->type = SOCKET;
-					break;
-				case S_IFREG:
-					if(S_ISEXE(s.st_mode))
-						dir_entry->type = EXECUTABLE;
-					else
-						dir_entry->type = REGULAR;
-					break;
-				default:
-					dir_entry->type = UNKNOWN;
-					break;
+				dir_entry->size = 0;
+				dir_entry->mode = 0;
+				dir_entry->uid = -1;
+				dir_entry->gid = -1;
+				dir_entry->mtime = 0;
+				dir_entry->atime = 0;
+				dir_entry->ctime = 0;
+				continue;
+			}
+
+			dir_entry->size = (uintmax_t)s.st_size;
+			dir_entry->mode = s.st_mode;
+			dir_entry->uid = s.st_uid;
+			dir_entry->gid = s.st_gid;
+			dir_entry->mtime = s.st_mtime;
+			dir_entry->atime = s.st_atime;
+			dir_entry->ctime = s.st_ctime;
+
+			if(s.st_ino)
+			{
+				switch(s.st_mode & S_IFMT)
+				{
+					case S_IFLNK:
+						if(check_link_is_dir(view->dir_entry[view->list_rows].name))
+							strcat(dir_entry->name, "/");
+						dir_entry->type = LINK;
+						break;
+					case S_IFDIR:
+						strcat(dir_entry->name, "/");
+						dir_entry->type = DIRECTORY;
+						break;
+					case S_IFCHR:
+					case S_IFBLK:
+						dir_entry->type = DEVICE;
+						break;
+					case S_IFSOCK:
+						dir_entry->type = SOCKET;
+						break;
+					case S_IFREG:
+						if(S_ISEXE(s.st_mode))
+							dir_entry->type = EXECUTABLE;
+						else
+							dir_entry->type = REGULAR;
+						break;
+					default:
+						dir_entry->type = UNKNOWN;
+						break;
+				}
 			}
 		}
-	}
 
-	closedir(dir);
+		closedir(dir);
+	}
+	else
+	{
+		/* we don't have read access, only execute */
+		load_parent_dir_only(view);
+	}
 
 	if(!reload && s.st_size > 2048)
 	{
