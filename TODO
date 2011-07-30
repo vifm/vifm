@@ -69,7 +69,7 @@ Vi(m) specific features that need to be added.
     :delete reg count
     :comc[lear] command.
     v /, v ?, d /, d ?
-    :map without arguments to show maps for all modes.
+    :map without arguments
     :com existing_command
 
 Possible things to add.
@@ -126,7 +126,7 @@ Other (questionable) things.
     :edit, etc. in menus.
     :alias
     Like gv but to select just pasted files.
-    Ctrl-W like in vim?
+    Ctrl-W in command line mode like in vim?
     Move file name to the title of other pane in view mode.
 
 Code improvements.

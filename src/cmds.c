@@ -57,6 +57,7 @@ struct cmd_t
 	int regexp;
 	int select;
 	int bg;
+	int quote;
 
 	struct cmd_t *next;
 };
@@ -75,8 +76,8 @@ static const char * parse_tail(struct cmd_t *cur,
 static
 #endif
 char ** dispatch_line(const char *args, int *count, char sep, int regexp,
-		int *last_arg);
-static int get_args_count(const char *cmdstr, char sep, int regexp);
+		int quotes, int *last_arg);
+static int get_args_count(const char *cmdstr, char sep, int regexp, int quotes);
 static void unescape(char *s, int regexp);
 static void replace_esc(char *s);
 static int get_cmd_info(const char *cmd, struct cmd_info *info);
@@ -99,11 +100,11 @@ init_cmds(void)
 {
 	struct cmd_add commands[] = {
 		{
-			.name = "command",    .abbr = "com",  .handler = command_cmd,    .id = COMMAND_CMD_ID,
+			.name = "command",    .abbr = "com",  .handler = command_cmd,    .id = COMMAND_CMD_ID,    .quote = 0,
 			.range = 0,           .emark = 1,     .qmark = 0,                .regexp = 0,             .select = 0,
 			.expand = 0,          .bg = 0,        .min_args = 0,             .max_args = NOT_DEF,
 		}, {
-			.name = "delcommand", .abbr = "delc", .handler = delcommand_cmd, .id = DELCOMMAND_CMD_ID,
+			.name = "delcommand", .abbr = "delc", .handler = delcommand_cmd, .id = DELCOMMAND_CMD_ID, .quote = 0,
 			.range = 0,           .emark = 1,     .qmark = 0,                .regexp = 0,             .select = 0,
 			.expand = 0,          .bg = 0,        .min_args = 1,             .max_args = 1,
 		}
@@ -197,7 +198,7 @@ execute_cmd(const char *cmd)
 	else
 		cmd_info.args = strdup(cmd_info.raw_args);
 	cmd_info.argv = dispatch_line(cmd_info.args, &cmd_info.argc, cmd_info.sep,
-			cur->regexp, NULL);
+			cur->regexp, cur->quote, NULL);
 
 	if((cmd_info.begin != NOT_DEF || cmd_info.end != NOT_DEF) &&
 			!cur->range)
@@ -410,7 +411,8 @@ parse_tail(struct cmd_t *cur, const char *cmd, struct cmd_info *cmd_info)
 static
 #endif
 char **
-dispatch_line(const char *args, int *count, char sep, int regexp, int *last_pos)
+dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
+		int *last_pos)
 {
 	char *cmdstr;
 	int len;
@@ -420,7 +422,7 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int *last_pos)
 
 	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING, ARG };
 
-	*count = get_args_count(args, sep, regexp);
+	*count = get_args_count(args, sep, regexp, quotes);
 	if(*count == 0)
 		return NULL;
 
@@ -438,12 +440,12 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int *last_pos)
 		switch(state)
 		{
 			case BEGIN:
-				if(sep == ' ' && cmdstr[i] == '\'')
+				if(sep == ' ' && cmdstr[i] == '\'' && quotes)
 				{
 					st = i + 1;
 					state = S_QUOTING;
 				}
-				else if(sep == ' ' && cmdstr[i] == '"')
+				else if(sep == ' ' && cmdstr[i] == '"' && quotes)
 				{
 					st = i + 1;
 					state = D_QUOTING;
@@ -516,7 +518,7 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int *last_pos)
 }
 
 static int
-get_args_count(const char *cmdstr, char sep, int regexp)
+get_args_count(const char *cmdstr, char sep, int regexp, int quotes)
 {
 	int i, state;
 	int result = 0;
@@ -527,9 +529,9 @@ get_args_count(const char *cmdstr, char sep, int regexp)
 		switch(state)
 		{
 			case BEGIN:
-				if(sep == ' ' && cmdstr[i] == '\'')
+				if(sep == ' ' && cmdstr[i] == '\'' && quotes)
 					state = S_QUOTING;
-				else if(sep == ' ' && cmdstr[i] == '"')
+				else if(sep == ' ' && cmdstr[i] == '"' && quotes)
 					state = D_QUOTING;
 				else if(sep == ' ' && cmdstr[i] == '/' && regexp)
 					state = R_QUOTING;
@@ -761,7 +763,7 @@ complete_cmd(const char *cmd)
 			char **argv;
 			int last_arg = 0;
 
-			argv = dispatch_line(args, &argc, ' ', 0, &last_arg);
+			argv = dispatch_line(args, &argc, ' ', 0, 1, &last_arg);
 			prefix_len += cmds_conf.complete_args(id, args, argc, argv, last_arg);
 			free_string_array(argv, argc);
 		}
@@ -907,6 +909,7 @@ add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf)
 	new->regexp = conf->regexp;
 	new->select = conf->select;
 	new->bg = conf->bg;
+	new->quote = conf->quote;
 	new->cmd = NULL;
 
 	return 0;
@@ -972,6 +975,7 @@ command_cmd(const struct cmd_info *cmd_info)
 	new->regexp = user_cmd_handler.regexp;
 	new->select = user_cmd_handler.select;
 	new->bg = user_cmd_handler.bg;
+	new->quote = user_cmd_handler.quote;
 
 	udf_count++;
 	return 0;

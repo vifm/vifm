@@ -35,6 +35,7 @@ enum
 	CMDS_ERR_INVALID_RANGE = -12,
 	CMDS_ERR_NO_SUCH_UDF = -13,
 	CMDS_ERR_UDF_IS_AMBIGUOUS = -14,
+	CMDS_ERR_ZERO_COUNT = -15,
 };
 
 enum
@@ -73,6 +74,7 @@ struct cmd_add
 	int regexp;
 	int select; /* select files in range */
 	int bg; /* background */
+	int quote; /* whether need to take care of single and double quotes in args */
 };
 
 struct {
@@ -106,7 +108,7 @@ char ** list_udf(void);
 #ifdef TEST
 int add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf);
 char ** dispatch_line(const char *args, int *count, char sep, int regexp,
-		int *last_arg);
+		int quotes, int *last_arg);
 #endif
 
 #endif
