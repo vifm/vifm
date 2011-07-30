@@ -1849,8 +1849,27 @@ edit_cmd(const struct cmd_info *cmd_info)
 	}
 	else
 	{
-		char *cmd = edit_cmd_selection(curr_view);
-		if(cmd == NULL)
+		int i;
+		char *cmd;
+
+		for(i = 0; i < curr_view->list_rows; i++)
+		{
+			struct stat st;
+			if(curr_view->dir_entry[i].selected == 0)
+				continue;
+			if(lstat(curr_view->dir_entry[i].name, &st) == 0 &&
+					access(curr_view->dir_entry[i].name, F_OK) != 0)
+			{
+				char buf[NAME_MAX];
+				snprintf(buf, sizeof(buf),
+						"Can't access destination of link \"%s\". It might be broken.",
+						curr_view->dir_entry[i].name);
+				show_error_msg("Access error", buf);
+				return 0;
+			}
+		}
+
+		if((cmd = edit_cmd_selection(curr_view)) == NULL)
 		{
 			show_error_msg("Unable to allocate enough memory", "Cannot load file");
 			return 0;
