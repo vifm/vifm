@@ -107,6 +107,7 @@ clean_menu_position(menu_info *m)
 	{
 		mvwaddnstr(menu_win, m->current, 1, buf, x - 4 + 1);
 	}
+	waddstr(menu_win, " ");
 
 	wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
 
@@ -320,6 +321,7 @@ moveto_menu_pos(int pos, menu_info *m)
 	{
 		mvwaddnstr(menu_win, m->current, 1, buf, x - 4 + 1);
 	}
+	waddstr(menu_win, " ");
 
 	wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
 
@@ -743,6 +745,7 @@ draw_menu(menu_info *m)
 		{
 			mvwaddnstr(menu_win, i, 2, m->data[x], len - 4);
 		}
+		waddstr(menu_win, " ");
 		x++;
 
 		if(i + 3 > y)
@@ -1105,7 +1108,7 @@ show_commands_menu(FileView *view)
 		char *buf;
 
 		buf = malloc(strlen(list[i*2]) + 20 + 1 + strlen(list[i*2 + 1]) + 1);
-		sprintf(buf, " %-*s %s", 10, list[i*2], list[i*2 + 1]);
+		sprintf(buf, "%-*s %s", 10, list[i*2], list[i*2 + 1]);
 		m.data[i] = buf;
 	}
 	free_string_array(list, m.len*2);
