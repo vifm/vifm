@@ -2,15 +2,24 @@
 
 #include "seatest.h"
 
+#include "../../src/cmds.h"
 #include "../../src/commands.h"
 #include "../../src/completion.h"
 
 static void
 setup(void)
 {
-	add_command("bar", "");
-	add_command("baz", "");
-	add_command("foo", "");
+	init_commands();
+
+	execute_cmd("command bar a");
+	execute_cmd("command baz b");
+	execute_cmd("command foo c");
+}
+
+static void
+teardown(void)
+{
+	reset_cmds();
 }
 
 static void
@@ -19,30 +28,33 @@ comm_completion(void)
 	char *buf;
 
 	reset_completion();
-	buf = command_completion("b", 1);
+	assert_int_equal(5, complete_cmd("comm b"));
+	buf = next_completion();
 	assert_string_equal("bar", buf);
 	free(buf);
-	buf = command_completion(NULL, 1);
+	buf = next_completion();
 	assert_string_equal("baz", buf);
 	free(buf);
-	buf = command_completion(NULL, 1);
+	buf = next_completion();
 	assert_string_equal("b", buf);
 	free(buf);
 
 	reset_completion();
-	buf = command_completion("f", 1);
+	assert_int_equal(5, complete_cmd("comm f"));
+	buf = next_completion();
 	assert_string_equal("foo", buf);
 	free(buf);
-	buf = command_completion(NULL, 1);
+	buf = next_completion();
 	assert_string_equal("foo", buf);
 	free(buf);
 
 	reset_completion();
-	buf = command_completion("comm b", 1);
-	assert_string_equal("comm bar", buf);
+	assert_int_equal(5, complete_cmd("comm b"));
+	buf = next_completion();
+	assert_string_equal("bar", buf);
 	free(buf);
-	buf = command_completion(NULL, 1);
-	assert_string_equal("comm baz", buf);
+	buf = next_completion();
+	assert_string_equal("baz", buf);
 	free(buf);
 }
 
@@ -52,6 +64,7 @@ test_user_commands(void)
 	test_fixture_start();
 
 	fixture_setup(setup);
+	fixture_teardown(teardown);
 
 	run_test(comm_completion);
 

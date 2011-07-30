@@ -125,7 +125,6 @@ void comm_split(void);
 #ifdef TEST
 char * append_selected_files(FileView *view, char *expanded, int under_cursor);
 char * edit_cmd_selection(FileView *view);
-char ** dispatch_line(const char *args, int *count);
 int line_pos(const char *begin, const char *end, char sep, int regexp);
 #endif
 

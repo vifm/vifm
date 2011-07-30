@@ -1,8 +1,10 @@
+#include <stdlib.h>
 #include <string.h>
 
 #include "seatest.h"
 
 #include "../../src/cmdline.h"
+#include "../../src/cmds.h"
 #include "../../src/commands.h"
 #include "../../src/completion.h"
 #include "../../src/options.h"
@@ -28,9 +30,11 @@ setup(void)
 	stats.history_search = 0;
 	stats.line_buf = NULL;
 
-	add_command("bar", "");
-	add_command("baz", "");
-	add_command("foo", "");
+	init_commands();
+
+	execute_cmd("command bar a");
+	execute_cmd("command baz b");
+	execute_cmd("command foo c");
 
 	init_options(&option_changed, NULL);
 	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler);
@@ -40,6 +44,7 @@ static void
 teardown(void)
 {
 	free(stats.line);
+	reset_cmds();
 }
 
 static void
@@ -48,11 +53,12 @@ leave_spaces_at_begin(void)
 	char *buf;
 
 	reset_completion();
-	buf = command_completion(" q", 0);
-	assert_string_equal(" quit", buf);
+	assert_int_equal(1, complete_cmd(" q"));
+	buf = next_completion();
+	assert_string_equal("quit", buf);
 	free(buf);
-	buf = command_completion(NULL, 0);
-	assert_string_equal(" quit", buf);
+	buf = next_completion();
+	assert_string_equal("quit", buf);
 	free(buf);
 }
 
@@ -62,25 +68,27 @@ only_user(void)
 	char *buf;
 
 	reset_completion();
-	buf = command_completion("command ", 1);
-	assert_string_equal("command bar", buf);
+	assert_int_equal(8, complete_cmd("command "));
+	buf = next_completion();
+	assert_string_equal("bar", buf);
 	free(buf);
 
 	reset_completion();
-	buf = command_completion(" command ", 1);
-	assert_string_equal(" command bar", buf);
+	assert_int_equal(9, complete_cmd(" command "));
+	buf = next_completion();
+	assert_string_equal("bar", buf);
 	free(buf);
 
 	reset_completion();
-	buf = command_completion("  command ", 1);
-	assert_string_equal("  command bar", buf);
+	assert_int_equal(10, complete_cmd("  command "));
+	buf = next_completion();
+	assert_string_equal("bar", buf);
 	free(buf);
 }
 
 static void
 test_set_completion(void)
 {
-	init_commands();
 	reset_completion();
 	assert_int_equal(0, line_completion(&stats));
 	assert_true(wcscmp(stats.line, L"set fusehome") == 0);

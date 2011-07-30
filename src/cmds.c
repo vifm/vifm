@@ -71,8 +71,11 @@ static const char * parse_limit(const char *cmd, struct cmd_info *cmd_info);
 static int udf_is_ambiguous(const char *name);
 static const char * parse_tail(struct cmd_t *cur,
 		const char *cmd, struct cmd_info *cmd_info);
-static char ** dispatch_line(const char *args, int *count, char sep,
-		int regexp, int *last_arg);
+#ifndef TEST
+static
+#endif
+char ** dispatch_line(const char *args, int *count, char sep, int regexp,
+		int *last_arg);
 static int get_args_count(const char *cmdstr, char sep, int regexp);
 static void unescape(char *s, int regexp);
 static void replace_esc(char *s);
@@ -124,6 +127,7 @@ reset_cmds(void)
 	while(cur != NULL)
 	{
 		struct cmd_t *next = cur->next;
+		free(cur->cmd);
 		free(cur->name);
 		free(cur);
 		cur = next;
@@ -402,7 +406,10 @@ parse_tail(struct cmd_t *cur, const char *cmd, struct cmd_info *cmd_info)
 	return cmd;
 }
 
-static char **
+#ifndef TEST
+static
+#endif
+char **
 dispatch_line(const char *args, int *count, char sep, int regexp, int *last_pos)
 {
 	char *cmdstr;
@@ -425,7 +432,7 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int *last_pos)
 		args++;
 	cmdstr = strdup(args);
 	len = strlen(cmdstr);
-	for(i = 0, st, j = 0, state = BEGIN; i <= len; ++i)
+	for(i = 0, st = 0, j = 0, state = BEGIN; i <= len; ++i)
 	{
 		int prev_state = state;
 		switch(state)
@@ -898,6 +905,7 @@ add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf)
 	new->regexp = conf->regexp;
 	new->select = conf->select;
 	new->bg = conf->bg;
+	new->cmd = NULL;
 
 	return 0;
 }

@@ -105,6 +105,8 @@ char ** list_udf(void);
 
 #ifdef TEST
 int add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf);
+char ** dispatch_line(const char *args, int *count, char sep, int regexp,
+		int *last_arg);
 #endif
 
 #endif
