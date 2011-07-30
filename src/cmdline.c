@@ -191,6 +191,20 @@ init_cmdline_mode(int *key_mode)
 	split_path();
 }
 
+static char *
+expand_tilda(const char *path)
+{
+	char *result;
+
+	result = malloc((strlen(cfg.home_dir) + strlen(path) + 1));
+	if(result == NULL)
+		return NULL;
+
+	sprintf(result, "%s/%s", cfg.home_dir, path + 2);
+
+	return result;
+}
+
 static void
 split_path(void)
 {
@@ -236,6 +250,14 @@ split_path(void)
 		snprintf(s, q - p + 1, "%s", p);
 
 		p = q;
+
+		if(strncmp(s, "~/", 2) == 0)
+		{
+			char *t;
+			t = expand_tilda(s);
+			free(s);
+			s = t;
+		}
 
 		if(access(s, F_OK) != 0)
 		{
@@ -1516,17 +1538,7 @@ filename_completion(const char *str, int type)
 
 	if(strncmp(string, "~/", 2) == 0)
 	{
-		dirname = (char *)malloc((strlen(cfg.home_dir) + strlen(string) + 1));
-
-		if(dirname == NULL)
-		{
-			add_completion((temp != NULL) ? (temp + 1) : str);
-			return;
-		}
-
-		snprintf(dirname, strlen(cfg.home_dir) + strlen(string) + 1, "%s/%s",
-				cfg.home_dir, string + 2);
-
+		dirname = expand_tilda(string);
 		filename = strdup(dirname);
 	}
 	else
