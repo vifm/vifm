@@ -98,14 +98,14 @@ clean_menu_position(menu_info *m)
 
 	wattron(menu_win, COLOR_PAIR(cfg.color_scheme + WIN_COLOR));
 
-	if(strlen(m->data[m->pos]) > x - 2)
+	if(strlen(m->data[m->pos]) > x - 4)
 	{
-		mvwaddnstr(menu_win, m->current, 1, buf, x - 2 - 3);
+		mvwaddnstr(menu_win, m->current, 1, buf, x - 3 - 4 + 1);
 		waddstr(menu_win, "...");
 	}
 	else
 	{
-		mvwaddnstr(menu_win, m->current, 1, buf, x - 2);
+		mvwaddnstr(menu_win, m->current, 1, buf, x - 4 + 1);
 	}
 
 	wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
@@ -311,14 +311,14 @@ moveto_menu_pos(int pos, menu_info *m)
 
 	wattron(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
 
-	if(strlen(m->data[pos]) > x - 2)
+	if(strlen(m->data[pos]) > x - 4)
 	{
-		mvwaddnstr(menu_win, m->current, 1, buf, x - 2 - 3);
+		mvwaddnstr(menu_win, m->current, 1, buf, x - 3 - 4 + 1);
 		waddstr(menu_win, "...");
 	}
 	else
 	{
-		mvwaddnstr(menu_win, m->current, 1, buf, x - 2);
+		mvwaddnstr(menu_win, m->current, 1, buf, x - 4 + 1);
 	}
 
 	wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
@@ -707,11 +707,12 @@ void
 draw_menu(menu_info *m)
 {
 	int i;
+	int win_len;
 	int x, y;
 	int len;
 
 	getmaxyx(menu_win, y, x);
-	len = x;
+	win_len = x;
 	werase(menu_win);
 
 	box(menu_win, 0, 0);
@@ -732,6 +733,7 @@ draw_menu(menu_info *m)
 		chomp(m->data[x]);
 		if((ptr = strchr(m->data[x], '\n')) || (ptr = strchr(m->data[x], '\r')))
 			*ptr = '\0';
+		len = win_len + get_utf8_overhead(m->data[x]);
 		if(strlen(m->data[x]) > len - 4)
 		{
 			mvwaddnstr(menu_win, i, 2, m->data[x], len - 3 - 4);
