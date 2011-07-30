@@ -1225,8 +1225,11 @@ change_directory(FileView *view, const char *directory)
 		LOG_SERROR_MSG(errno, "Can't access(, R_OK) \"%s\"", dir_dup);
 		log_cwd();
 
-		snprintf(buf, sizeof(buf), "You do not have read access on %s", dir_dup);
-		show_error_msg("Directory Access Error", buf);
+		if(strcmp(view->curr_dir, dir_dup) != 0)
+		{
+			snprintf(buf, sizeof(buf), "You do not have read access on %s", dir_dup);
+			show_error_msg("Directory Access Error", buf);
+		}
 	}
 
 	if(access(dir_dup, X_OK) != 0)
