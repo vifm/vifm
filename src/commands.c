@@ -327,7 +327,10 @@ post(int id)
 		moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
-static void
+#ifndef TEST
+static
+#endif
+void
 select_range(const struct cmd_info *cmd_info)
 {
 	int x;

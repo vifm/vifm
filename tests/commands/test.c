@@ -15,6 +15,8 @@ void command_name_tests(void);
 void completion_tests(void);
 void user_cmds_tests(void);
 void ids_tests(void);
+void builtin_tests(void);
+void one_number_range(void);
 
 void
 all_tests(void)
@@ -24,6 +26,8 @@ all_tests(void)
 	completion_tests();
 	user_cmds_tests();
 	ids_tests();
+	builtin_tests();
+	one_number_range();
 }
 
 static int

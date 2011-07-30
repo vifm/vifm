@@ -147,6 +147,7 @@ setup(void)
 static void
 teardown(void)
 {
+	reset_cmds();
 }
 
 static void

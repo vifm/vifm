@@ -126,6 +126,7 @@ void comm_split(void);
 char * append_selected_files(FileView *view, char *expanded, int under_cursor);
 char * edit_cmd_selection(FileView *view);
 int line_pos(const char *begin, const char *end, char sep, int regexp);
+void select_range(const struct cmd_info *cmd_info);
 #endif
 
 #endif

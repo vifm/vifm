@@ -2,6 +2,7 @@
 
 #include "seatest.h"
 
+#include "../../src/cmds.h"
 #include "../../src/commands.h"
 #include "../../src/ui.h"
 
@@ -68,14 +69,16 @@ teardown(void)
 static void
 one_number_range_test(void)
 {
-	cmd_params cmd;
-	initialize_command_struct(&cmd);
-	cmd.start_range = -1;
+	struct cmd_info cmd_info = {
+		.begin = -1, .end = -1
+	};
 
-	select_files_in_range(&lwin, &cmd);
+	curr_view = &lwin;
+	select_range(&cmd_info);
 	assert_int_equal(2, lwin.selected_files);
 
-	select_files_in_range(&rwin, &cmd);
+	curr_view = &rwin;
+	select_range(&cmd_info);
 	assert_int_equal(3, rwin.selected_files);
 }
 
