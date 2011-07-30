@@ -51,6 +51,7 @@ is_dir(const char *file)
 	{
 		LOG_SERROR_MSG(errno, "Can't stat \"%s\"", file);
 		log_cwd();
+		return 0;
 	}
 
 	return S_ISDIR(statbuf.st_mode);

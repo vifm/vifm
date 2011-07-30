@@ -690,6 +690,8 @@ get_cmd_info(const char *cmd, struct cmd_info *info)
 	struct cmd_t *cur;
 	size_t len;
 
+	init_cmd_info(&cmd_info);
+
 	cmd = parse_range(cmd, &cmd_info);
 	if(cmd == NULL)
 		return CMDS_ERR_INVALID_CMD;

@@ -390,9 +390,10 @@ init_keys_info(struct keys_info *keys_info, int mapped)
 	keys_info->mapped = mapped;
 }
 
-static const wchar_t*
+static const wchar_t *
 get_reg(const wchar_t *keys, int *reg)
 {
+	*reg = NO_REG_GIVEN;
 	if((mode_flags[*mode] & MF_USES_REGS) == 0)
 	{
 		return keys;
@@ -406,15 +407,11 @@ get_reg(const wchar_t *keys, int *reg)
 		*reg = keys[1];
 		keys += 2;
 	}
-	else
-	{
-		*reg = NO_REG_GIVEN;
-	}
 
 	return keys;
 }
 
-static const wchar_t*
+static const wchar_t *
 get_count(const wchar_t *keys, int *count)
 {
 	if((mode_flags[*mode] & MF_USES_COUNT) == 0)
