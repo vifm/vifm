@@ -179,9 +179,9 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 					snprintf(rwin_path, PATH_MAX, "%s", argv[x]);
 				else
 				{
-					char buf[PATH_MAX];
-					snprintf(buf, sizeof(buf), "%s/%s", dir, argv[x]);
-					canonicalize_path(buf, rwin_path, PATH_MAX);
+					char new_path[PATH_MAX];
+					snprintf(new_path, sizeof(new_path), "%s/%s", dir, argv[x]);
+					canonicalize_path(new_path, rwin_path, PATH_MAX);
 				}
 				chosp(rwin_path);
 			}
@@ -191,9 +191,9 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 					snprintf(lwin_path, PATH_MAX, "%s", argv[x]);
 				else
 				{
-					char buf[PATH_MAX];
-					snprintf(buf, sizeof(buf), "%s/%s", dir, argv[x]);
-					canonicalize_path(buf, lwin_path, PATH_MAX);
+					char new_path[PATH_MAX];
+					snprintf(new_path, sizeof(new_path), "%s/%s", dir, argv[x]);
+					canonicalize_path(new_path, lwin_path, PATH_MAX);
 				}
 				chosp(lwin_path);
 			}
@@ -205,6 +205,19 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 			exit(0);
 		}
 	}
+}
+
+static void
+update_path(void)
+{
+	char *old_path;
+	char *new_path;
+
+	old_path = getenv("PATH");
+	new_path = malloc(15 + 1 + strlen(old_path) + 1);
+	sprintf(new_path, "~/.vifm/scripts:%s", old_path);
+	setenv("PATH", new_path, 1);
+	free(new_path);
 }
 
 int
@@ -222,6 +235,8 @@ main(int argc, char *argv[])
 		perror("getcwd");
 		return -1;
 	}
+
+	update_path();
 
 	init_window(&rwin);
 	init_window(&lwin);

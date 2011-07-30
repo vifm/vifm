@@ -31,6 +31,12 @@
 
 	Now vifm also accepts paths to files as the startup arguments.
 
+	Let user go through directories with execute access, but no read access.
+
+	Now users can place scripts for vifm to ~/.vifm/scripts, vifm modifies
+	it's PATH environment variable to let user run scripts without specifying
+	full path.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.
