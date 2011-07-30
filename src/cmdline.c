@@ -131,7 +131,7 @@ static
 int line_completion(struct line_stats *stat);
 static void update_line_stat(struct line_stats *stat, int new_len);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
-char * filename_completion(const char *str, int type);
+void filename_completion(const char *str, int type);
 static void stop_completion(void);
 
 static struct keys_add_info builtin_cmds[] = {
@@ -1490,7 +1490,7 @@ is_entry_exec(const struct dirent *d)
  *
  * type: FNC_*
  */
-char *
+void
 filename_completion(const char *str, int type)
 {
 	/* TODO refactor filename_completion(...) function */
@@ -1504,13 +1504,10 @@ filename_completion(const char *str, int type)
 	int filename_len;
 	int isdir;
 
-	if(str == NULL)
-		return next_completion();
-
 	if(strcmp(str, "~") == 0)
 	{
-		stop_completion();
-		return strdup(cfg.home_dir);
+		add_completion(cfg.home_dir);
+		return;
 	}
 
 	string = str;
@@ -1524,7 +1521,7 @@ filename_completion(const char *str, int type)
 		if(dirname == NULL)
 		{
 			add_completion((temp != NULL) ? (temp + 1) : str);
-			return NULL;
+			return;
 		}
 
 		snprintf(dirname, strlen(cfg.home_dir) + strlen(string) + 1, "%s/%s",
@@ -1565,7 +1562,7 @@ filename_completion(const char *str, int type)
 		add_completion(filename);
 		free(filename);
 		free(dirname);
-		return NULL;
+		return;
 	}
 
 	filename_len = strlen(filename);
@@ -1602,7 +1599,7 @@ filename_completion(const char *str, int type)
 				add_completion(filename);
 				free(filename);
 				free(dirname);
-				return NULL;
+				return;
 			}
 			snprintf(tempfile, len, "%s%s", dirname, d->d_name);
 			if(is_dir(tempfile))
@@ -1626,7 +1623,7 @@ filename_completion(const char *str, int type)
 				add_completion(filename);
 				free(filename);
 				free(dirname);
-				return NULL;
+				return;
 			}
 			snprintf(tempfile, strlen(d->d_name) + 2, "%s/", d->d_name);
 			temp = strdup(tempfile);
@@ -1657,8 +1654,6 @@ filename_completion(const char *str, int type)
 	free(filename);
 	free(dirname);
 	closedir(dir);
-
-	return NULL;
 }
 
 static void
