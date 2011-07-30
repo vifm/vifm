@@ -1938,7 +1938,7 @@ help_cmd(const struct cmd_info *cmd_info)
 
 	if(cfg.use_vim_help)
 	{
-		if(cmd_info->args)
+		if(cmd_info->argc > 0)
 			snprintf(help_cmd, sizeof(help_cmd), "%s -c \'help %s\' -c only",
 					cfg.vi_command, cmd_info->args);
 		else
