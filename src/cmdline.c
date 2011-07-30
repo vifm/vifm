@@ -544,7 +544,7 @@ cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 	input_stat.history_search = 0;
 	stop_completion();
 
-	if(input_stat.index == 0 && input_stat.len == 0)
+	if(input_stat.index == 0 && input_stat.len == 0 && sub_mode != PROMPT_SUBMODE)
 	{
 		cmd_ctrl_c(key_info, keys_info);
 		return;
