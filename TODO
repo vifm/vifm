@@ -66,7 +66,6 @@ Vi(m) specific features that need to be added.
     :highlight command.
     Better registers support.
     :$ in the menus (check other commands like this one).
-    :delete reg count
     :comc[lear] command.
     v /, v ?, d /, d ?
     :map without arguments

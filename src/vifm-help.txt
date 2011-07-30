@@ -390,6 +390,9 @@ Commands
        :[range]d[elete]
               delete selected file or files.
 
+       :d[elete] [reg] [count]
+              will delete files to the reg register.
+
        :delc[ommand] command_name
               will remove the command_name user command.
 
@@ -465,6 +468,9 @@ Commands
 
        :q[uit]
               will exit Vifm (add ! if you don't want to save changes).
+
+       :y[ank] [reg] [count]
+              will yank files to the reg register.
 
        :rename
               rename files using vi to edit names.

@@ -475,6 +475,9 @@ will set file name filter.
 .BI :[range]d[elete]
 delete selected file or files.
 .TP
+.BI ":d[elete] [reg] [count]"
+will delete files to the reg register.
+.TP
 .BI ":delc[ommand] command_name"
 will remove the command_name user command.
 .TP
@@ -559,6 +562,9 @@ show the present working directory.
 .TP
 .BI :q[uit]
 will exit Vifm (add ! if you don't want to save changes).
+.TP
+.BI ":y[ank] [reg] [count]"
+will yank files to the reg register.
 .TP
 .BI :rename
 rename files using vi to edit names.

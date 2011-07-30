@@ -125,36 +125,37 @@ static int write_cmd(const struct cmd_info *cmd_info);
 static int wq_cmd(const struct cmd_info *cmd_info);
 static int quit_cmd(const struct cmd_info *cmd_info);
 static int yank_cmd(const struct cmd_info *cmd_info);
+static int get_reg_and_count(const struct cmd_info *cmd_info, int *reg);
 static int usercmd_cmd(const struct cmd_info* cmd_info);
 
 static const struct cmd_add commands[] = {
-	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = COM_GOTO,        .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = COM_GOTO,        .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = goto_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "!",                .abbr = NULL,    .emark = 1,  .id = COM_EXECUTE,     .range = 0,    .bg = 1, .quote = 1, .regexp = 0,
+	{ .name = "!",                .abbr = NULL,    .emark = 1,  .id = COM_EXECUTE,     .range = 0,    .bg = 1, .quote = 0, .regexp = 0,
 		.handler = emark_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 1, },
-	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cd",               .abbr = NULL,    .emark = 0,  .id = COM_CD,          .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = cd_cmd,          .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
-	{ .name = "change",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "change",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = change_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "cmap",             .abbr = "cm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "cmap",             .abbr = "cm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "colorscheme",      .abbr = "colo",  .emark = 0,  .id = COM_COLORSCHEME, .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "colorscheme",      .abbr = "colo",  .emark = 0,  .id = COM_COLORSCHEME, .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = colorscheme_cmd, .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
-  { .name = "command",          .abbr = "com",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+  { .name = "command",          .abbr = "com",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
     .handler = command_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "delete",           .abbr = "d",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "delete",           .abbr = "d",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = delete_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 1, },
-	{ .name = "display",          .abbr = "di",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "display",          .abbr = "di",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "dirs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "dirs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = dirs_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "edit",             .abbr = "e",     .emark = 0,  .id = COM_EDIT,        .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = edit_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
-	{ .name = "empty",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "empty",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = empty_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "file",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 1, .quote = 1, .regexp = 0,
+	{ .name = "file",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 1, .quote = 0, .regexp = 0,
 		.handler = file_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 1,
 		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
@@ -162,66 +163,66 @@ static const struct cmd_add commands[] = {
 		.handler = help_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "history",          .abbr = "his",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = history_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
-	{ .name = "invert",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "invert",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = invert_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "jobs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "jobs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = jobs_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "locate",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = locate_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "ls",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "ls",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = ls_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "map",              .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "map",              .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = map_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "marks",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "marks",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = marks_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "nmap",             .abbr = "nm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "nmap",             .abbr = "nm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "nohlsearch",       .abbr = "noh",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "nohlsearch",       .abbr = "noh",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nohlsearch_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "only",             .abbr = "on",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "only",             .abbr = "on",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = only_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "popd",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "popd",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = popd_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "pushd",            .abbr = NULL,    .emark = 0,  .id = COM_PUSHD,       .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = pushd_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
-	{ .name = "pwd",              .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "pwd",              .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = pwd_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "quit",             .abbr = "q",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "quit",             .abbr = "q",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "registers",        .abbr = "reg",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "registers",        .abbr = "reg",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "rename",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "rename",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = rename_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 1, },
-	{ .name = "screen",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "screen",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = screen_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "set",              .abbr = "se",    .emark = 0,  .id = COM_SET,         .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "set",              .abbr = "se",    .emark = 0,  .id = COM_SET,         .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = set_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "shell",            .abbr = "sh",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "shell",            .abbr = "sh",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = shell_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "sort",             .abbr = "sor",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "sort",             .abbr = "sor",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = sort_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "split",            .abbr = "sp",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "split",            .abbr = "sp",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = split_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "sync",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "sync",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = sync_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "undolist",         .abbr = "undol", .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "undolist",         .abbr = "undol", .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = undolist_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "unmap",            .abbr = "unm",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "unmap",            .abbr = "unm",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = unmap_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
-	{ .name = "view",             .abbr = "vie",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "view",             .abbr = "vie",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = view_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "vifm",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "vifm",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vifm_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "vmap",             .abbr = "vm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "vmap",             .abbr = "vm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "write",            .abbr = "w",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "write",            .abbr = "w",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = write_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "wq",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "wq",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = wq_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "xit",              .abbr = "x",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "xit",              .abbr = "x",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "yank",             .abbr = "y",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
-		.handler = yank_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 1, },
+	{ .name = "yank",             .abbr = "y",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = yank_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 1, },
 
 	{ .name = "<USERCMD>",        .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = usercmd_cmd,     .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
@@ -598,6 +599,25 @@ select_range(const struct cmd_info *cmd_info)
 			}
 			curr_view->selected_files = y;
 		}
+	}
+}
+
+static void
+select_count(const struct cmd_info *cmd_info, int count)
+{
+	int pos;
+
+	/* Both a starting range and an ending range are given. */
+	pos = cmd_info->end;
+	if(pos < 0)
+		pos = curr_view->list_pos;
+
+	clean_selected_files(curr_view);
+
+	while(count-- > 0 && pos < curr_view->list_rows)
+	{
+		curr_view->dir_entry[pos++].selected = 1;
+		curr_view->selected_files++;
 	}
 }
 
@@ -1341,6 +1361,9 @@ execute_command(FileView *view, char *command)
 		case CMDS_ERR_UDF_IS_AMBIGUOUS:
 			show_error_msg("Command error", "Ambiguous use of user-defined command");
 			break;
+		case CMDS_ERR_ZERO_COUNT:
+			show_error_msg("Command error", "Zero count");
+			break;
 		default:
 			show_error_msg("Command error", "Unknown error");
 			break;
@@ -1784,7 +1807,13 @@ command_cmd(const struct cmd_info *cmd_info)
 static int
 delete_cmd(const struct cmd_info *cmd_info)
 {
-	return delete_file(curr_view, DEFAULT_REG_NAME, 0, NULL, 1) != 0;
+	int reg = DEFAULT_REG_NAME;
+	int result;
+
+	result = get_reg_and_count(cmd_info, &reg);
+	if(result == 0)
+		result = delete_file(curr_view, reg, 0, NULL, 1) != 0;
+	return result;
 }
 
 static int
@@ -2173,7 +2202,56 @@ quit_cmd(const struct cmd_info *cmd_info)
 static int
 yank_cmd(const struct cmd_info *cmd_info)
 {
-	return yank_files(curr_view, DEFAULT_REG_NAME, 0, NULL) != 0;
+	int reg;
+	int result;
+
+	result = get_reg_and_count(cmd_info, &reg);
+	if(result == 0)
+		result = yank_files(curr_view, DEFAULT_REG_NAME, 0, NULL) != 0;
+	return result;
+}
+
+/* Returns zero on success */
+static int
+get_reg_and_count(const struct cmd_info *cmd_info, int *reg)
+{
+	if(cmd_info->argc == 2)
+	{
+		int count;
+
+		if(cmd_info->argv[0][1] != '\0')
+			return CMDS_ERR_TRAILING_CHARS;
+		if(find_register(cmd_info->argv[0][0]) == NULL)
+			return CMDS_ERR_TRAILING_CHARS;
+		*reg = cmd_info->argv[0][0];
+
+		if(!isdigit(cmd_info->argv[1][0]))
+			return CMDS_ERR_TRAILING_CHARS;
+
+		count = atoi(cmd_info->argv[1]);
+		if(count == 0)
+			return CMDS_ERR_ZERO_COUNT;
+		select_count(cmd_info, count);
+	}
+	else if(cmd_info->argc == 1)
+	{
+		if(isdigit(cmd_info->argv[0][0]))
+		{
+			int count = atoi(cmd_info->argv[0]);
+			if(count == 0)
+				return CMDS_ERR_ZERO_COUNT;
+			select_count(cmd_info, count);
+		}
+		else
+		{
+			if(cmd_info->argv[0][1] != '\0')
+				return CMDS_ERR_TRAILING_CHARS;
+			if(find_register(cmd_info->argv[0][0]) == NULL)
+				return CMDS_ERR_TRAILING_CHARS;
+			*reg = cmd_info->argv[0][0];
+		}
+	}
+	return 0;
 }
 
 static int
@@ -2272,4 +2350,3 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 
 /* vim: set cinoptions+=t0 : */
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
-

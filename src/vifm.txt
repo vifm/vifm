@@ -307,6 +307,7 @@ The builtin commands are:
 :[range]d[elete][count] - delete selected file or files.
     See |Vifm_Ranges| for the ranges implemented.
 :delc[ommand] user_command - remove user_command.
+:d[elete] [reg] [count] - will delete files to the reg register.
 :di[splay] - popup menu with registers content.
 :dirs - display directory stack.
 :e[dit] [file...] - will load the selected or passed file or files into vi.
@@ -363,6 +364,7 @@ Add ' &' in the end of command if you want to start program in background.
 	changed).
 :wq - will exit vifm after writing config.
 :x[it] - exit vifm (add ! if you don't want to save changes).
+:y[ank] [reg] [count] - will yank files to the reg register.
 
 :map lhs rhs - map lhs key sequence to rhs in normal and visual modes.
 :map! lhs rhs - map lhs key sequence to rhs in command line mode.
