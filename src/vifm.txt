@@ -288,7 +288,6 @@ The builtin commands are:
 :cd - change to your home directory.
 :cd ~/dir - change directory to ~/dir.
 :change - create a menu window to alter a files properties.
-:cmdhistory - show command line history menu.  Note: will be removed.
 :colo[rscheme] - gives a menu with a list of available color schemes.  You
     can choose default color scheme here.  It will be used for view if no
     DIRECTORY in colorscheme file fits current path.  It's also used to
@@ -325,7 +324,11 @@ Add ' &' in the end of command if you want to start program in background.
 :filter! - same as :invert.
 :h[elp] - show the help file.
 :h[elp] argument - is the same as using ':h argument' in vim.
-:history - show directory history.
+:his[tory] - show directory history.
+:his[tory] x
+    x can be:
+    d[ir] or .   show directory history.
+    c[md] or :   show command line history.
 :invert - invert file name filter.
 :jobs - shows menu of current backgrounded processes.
 :locate filename - uses the locate command to create a menu of filenames
@@ -698,7 +701,6 @@ The following command names are reserved and cannot be used for user commands.
   change - alter a files properties.
   cm - user mapping for command line mode.
   cmap - user mapping for command line mode.
-  cmdhistory - show command line history menu.
   colo - will be used to set a colorscheme for a directory.
   colorscheme - will be used to set a colorscheme for a directory.
   com - show user commands.
@@ -718,8 +720,8 @@ The following command names are reserved and cannot be used for user commands.
   find - not yet implemented.
   h - show help file.
   help - show help file.
-  his - show directory history.
-  history - show directory history.
+  his - show directory or command line history.
+  history - show directory or command line history.
   invert - invert file filter.
   jobs - shows menu of current backgrounded processes.
   locate - run the locate command in a menu window.

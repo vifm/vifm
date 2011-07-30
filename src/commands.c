@@ -86,7 +86,6 @@ static int apropos_cmd(const struct cmd_info *cmd_info);
 static int cd_cmd(const struct cmd_info *cmd_info);
 static int change_cmd(const struct cmd_info *cmd_info);
 static int cmap_cmd(const struct cmd_info *cmd_info);
-static int cmdhistory_cmd(const struct cmd_info *cmd_info);
 static int colorscheme_cmd(const struct cmd_info *cmd_info);
 static int command_cmd(const struct cmd_info *cmd_info);
 static int delete_cmd(const struct cmd_info *cmd_info);
@@ -141,8 +140,6 @@ static const struct cmd_add commands[] = {
 		.handler = change_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "cmap",             .abbr = "cm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = cmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "cmdhistory",       .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
-		.handler = cmdhistory_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "colorscheme",      .abbr = "colo",  .emark = 0,  .id = COM_COLORSCHEME, .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = colorscheme_cmd, .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
   { .name = "command",          .abbr = "com",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
@@ -164,7 +161,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "help",             .abbr = "h",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = help_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "history",          .abbr = "his",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
-		.handler = history_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+		.handler = history_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "invert",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
 		.handler = invert_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "jobs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0,             .regexp = 0,
@@ -1767,12 +1764,6 @@ cmap_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-cmdhistory_cmd(const struct cmd_info *cmd_info)
-{
-	return show_cmdhistory_menu(curr_view) != 0;
-}
-
-static int
 colorscheme_cmd(const struct cmd_info *cmd_info)
 {
 	if(cmd_info->argc == 0) /* Show menu with colorschemes listed */
@@ -1911,7 +1902,20 @@ help_cmd(const struct cmd_info *cmd_info)
 static int
 history_cmd(const struct cmd_info *cmd_info)
 {
-	return show_history_menu(curr_view) != 0;
+	const char *type;
+	size_t len;
+
+	if(cmd_info->argc == 0)
+		return show_history_menu(curr_view) != 0;
+
+	type = cmd_info->argv[0];
+	len = strlen(type);
+	if(strcmp(type, ":") == 0 || strncmp("cmd", type, len) == 0)
+		return show_cmdhistory_menu(curr_view) != 0;
+	if(strcmp(type, ".") == 0 || strncmp("dir", type, len) == 0)
+		return show_history_menu(curr_view) != 0;
+	else
+		return CMDS_ERR_TRAILING_CHARS;
 }
 
 static int

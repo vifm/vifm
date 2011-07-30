@@ -442,9 +442,6 @@ change directory to ~/dir.
 .BI :change
 create a menu window to alter a files properties.
 .TP
-.BI :cmdhistory
-show command line history menu.  Note: will be removed.
-.TP
 .BI :colo[rscheme]
 gives a menu with a list of available color schemes.  You can choose default
 color scheme here.  It will be used for view if no DIRECTORY in colorscheme
@@ -523,6 +520,13 @@ is the same as using ':h argument' in vim.
 .TP
 .BI :his[tory]
 creates a popup menu of directories visited.
+.TP
+.BI ":his[tory] x"
+x can be:
+.br
+d[ir] or .   show directory history.
+.br
+c[md] or :   show command line history.
 .TP
 .BI :invert
 invert file name filter.

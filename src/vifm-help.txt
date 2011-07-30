@@ -357,9 +357,6 @@ Commands
        :change
               create a menu window to alter a files properties.
 
-       :cmdhistory
-              show command line history menu.  Note: will be removed.
-
        :colo[rscheme]
               gives a menu with a list of available color  schemes.   You  can
               choose  default  color scheme here.  It will be used for view if
@@ -435,6 +432,11 @@ Commands
 
        :his[tory]
               creates a popup menu of directories visited.
+
+       :his[tory] x
+              x can be:
+              d[ir] or .   show directory history.
+              c[md] or :   show command line history.
 
        :invert
               invert file name filter.

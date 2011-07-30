@@ -62,7 +62,6 @@ Vi(m) specific features that need to be added.
     Make search history persistent (session and vifminfo).
     Make dirstack persistent (session and vifminfo).
     Save registers (session and vifminfo).
-    Remove :cmdhistory and change :history to work like in Vim.
     :registers "a ...
     :highlight command.
     Better registers support.
@@ -121,7 +120,7 @@ Other (questionable) things.
     :sellocal command.
     :split directory
     Highlight for view window (see ranger).
-    Remove items from :cmdhistory ?
+    Remove items from :history cmd?
     Option with format of statwin.
     Filetype support for directories.
     :edit, etc. in menus.
