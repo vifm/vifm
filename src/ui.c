@@ -318,9 +318,9 @@ setup_ncurses_interface(void)
 	werase(rwin.title);
 
 	if(curr_stats.number_of_windows == 1)
-		rwin.win = newwin(screen_y - 3, screen_x -2 , 1, 1);
+		rwin.win = newwin(screen_y - 3, screen_x - 2, 1, 1);
 	else
-		rwin.win = newwin(screen_y - 3, screen_x/2 -2 , 1, screen_x/2 +1);
+		rwin.win = newwin(screen_y - 3, screen_x/2 - 2, 1, screen_x/2 + 1);
 
 	wattrset(rwin.win, A_BOLD);
 	wattron(rwin.win, A_BOLD);
@@ -328,12 +328,9 @@ setup_ncurses_interface(void)
 	werase(rwin.win);
 	getmaxyx(rwin.win, y, x);
 	rwin.window_rows = y - 1;
-	rwin.window_width = x -1;
+	rwin.window_width = x - 1;
 
-	if(screen_x % 2)
-		rborder = newwin(screen_y - 2, 2, 0, screen_x -2);
-	else
-		rborder = newwin(screen_y - 2, 1, 0, screen_x -1);
+	rborder = newwin(screen_y - 2, 1, 0, screen_x -1);
 
 	wbkgdset(rborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
 
@@ -449,35 +446,27 @@ resize_window(void)
 	}
 	else
 	{
-		wresize(lwin.title, 1, screen_x/2 -2);
-		wresize(lwin.win, screen_y -3, screen_x/2 -2);
+		wresize(lwin.title, 1, screen_x/2 - 2);
+		wresize(lwin.win, screen_y - 3, screen_x/2 - 2);
 		getmaxyx(lwin.win, y, x);
-		lwin.window_width = x -1;
-		lwin.window_rows = y -1;
+		lwin.window_width = x - 1;
+		lwin.window_rows = y - 1;
 
-		mvwin(mborder, 0, screen_x/2 -1);
+		mvwin(mborder, 0, screen_x/2 - 1);
 		wresize(mborder, screen_y, 2);
 
-		wresize(rwin.title, 1, screen_x/2 -2);
+		wresize(rwin.title, 1, screen_x/2 - 2);
 		mvwin(rwin.title, 0, screen_x/2 +1);
 
-		wresize(rwin.win, screen_y -3, screen_x/2 -2);
-		mvwin(rwin.win, 1, screen_x/2 +1);
+		wresize(rwin.win, screen_y - 3, (screen_x + 1)/2 - 2);
+		mvwin(rwin.win, 1, screen_x/2 + 1);
 		getmaxyx(rwin.win, y, x);
-		rwin.window_width = x -1;
-		rwin.window_rows = y -1;
+		rwin.window_width = x - 1;
+		rwin.window_rows = y - 1;
 	}
 
-	if(screen_x % 2)
-	{
-		wresize(rborder, screen_y - 2, 2);
-		mvwin(rborder, 0, screen_x - 2);
-	}
-	else
-	{
-		wresize(rborder, screen_y - 2, 1);
-		mvwin(rborder, 0, screen_x - 1);
-	}
+	wresize(rborder, screen_y - 2, 1);
+	mvwin(rborder, 0, screen_x - 1);
 
 	wresize(stat_win, 1, screen_x);
 	mvwin(stat_win, screen_y - 2, 0);

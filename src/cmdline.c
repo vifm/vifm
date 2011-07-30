@@ -17,9 +17,9 @@
  */
 
 #define _GNU_SOURCE /* I don't know how portable this is but it is
-					   needed in Linux for the ncurses wide char
-					   functions
-					   */
+                     * needed in Linux for the ncurses wide char
+                     * functions
+                     */
 
 #include <curses.h>
 
