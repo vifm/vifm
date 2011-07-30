@@ -257,6 +257,9 @@ Commands are executed with :command_name<Return>
 '|' can be used to separate commands, so you can give multiple commands in one
 line.  If you want to use '|' in an argument, precede it with '\'.
 
+Commented out lines should start with the double quote symbol, which may be
+preceded by whitespace characters.
+
 :number - move to the file number.
 :12 would move to the 12th file in the list.
 :0 move to the top of the list.
@@ -644,6 +647,10 @@ commented and you may edit it by hand to change the settings.
 
 The ~/.vifm/vifminfo file contains session settings.  It is
 commented and you may edit it by hand to change the settings.
+
+The ~/.vifm/scripts directory can contain shell scripts.  vifm modifies
+it's PATH environment variable to let user run those scripts without specifying
+full path.
 
 The ~/.vifm/startup file contains commands that will be executed on vifm
 startup.  You can set your mappings there.  To use multi line commands precede
