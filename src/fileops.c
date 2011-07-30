@@ -636,7 +636,7 @@ static void
 follow_link(FileView *view, int follow_dirs)
 {
 	struct stat s;
-	int is_dir = 0, is_file = 0;
+	int is_dir = 0;
 	char *dir = NULL, *file = NULL, *link_dup;
 	char linkto[PATH_MAX + NAME_MAX];
 	ssize_t len;
@@ -665,11 +665,12 @@ follow_link(FileView *view, int follow_dirs)
 		return;
 	}
 
+	chosp(linkto);
 	link_dup = strdup(linkto);
 
 	lstat(linkto, &s);
 
-	if((s.st_mode & S_IFMT) == S_IFDIR)
+	if((s.st_mode & S_IFMT) == S_IFDIR && !follow_dirs)
 	{
 		is_dir = 1;
 		dir = strdup(view->dir_entry[view->list_pos].name);
@@ -681,6 +682,7 @@ follow_link(FileView *view, int follow_dirs)
 		{
 			if(linkto[x] == '/')
 			{
+				struct stat s;
 				linkto[x] = '\0';
 				lstat(linkto, &s);
 				if((s.st_mode & S_IFMT) == S_IFDIR)
@@ -692,28 +694,20 @@ follow_link(FileView *view, int follow_dirs)
 			}
 		}
 		if((file = strrchr(link_dup, '/')) != NULL)
-		{
 			file++;
-			is_file = 1;
-		}
+		else if(is_dir == 0)
+			file = link_dup;
 	}
-	if(is_dir && !follow_dirs)
+	if(is_dir)
 	{
 		change_directory(view, dir);
 		load_dir_list(view, 0);
 		moveto_list_pos(view, view->curr_line);
-
-		if(is_file)
-		{
-			int pos = find_file_pos_in_list(view, file);
-			if(pos >= 0)
-				moveto_list_pos(view, pos);
-		}
 	}
-	else
+	if(file != NULL)
 	{
 		int pos;
-		if(is_dir)
+		if((s.st_mode & S_IFMT) == S_IFDIR)
 		{
 			size_t len;
 
@@ -726,8 +720,6 @@ follow_link(FileView *view, int follow_dirs)
 				file++;
 			strcat(file, "/");
 		}
-		else
-			file = link_dup;
 		pos = find_file_pos_in_list(view, file);
 		if(pos >= 0)
 			moveto_list_pos(view, pos);
