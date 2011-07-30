@@ -39,7 +39,9 @@
 	it's PATH environment variable to let user run scripts without specifying
 	full path.
 
-    Changed format of :delete and :yank (:cmd reg count).
+	Changed format of :delete and :yank (:cmd reg count).
+
+    :filter?, :invert? and :screen? to display state.
 
 	Fixed bug with name conflict of files and directories in the Trash.
 

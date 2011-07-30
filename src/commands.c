@@ -1883,6 +1883,14 @@ file_cmd(const struct cmd_info *cmd_info)
 static int
 filter_cmd(const struct cmd_info *cmd_info)
 {
+	if(cmd_info->qmark)
+	{
+		if(curr_view->filename_filter[0] == '\0')
+			status_bar_message("Filter is empty");
+		else
+			status_bar_message(curr_view->filename_filter);
+		return 1;
+	}
 	if(cmd_info->argc == 0)
 	{
 		if(cmd_info->emark)
@@ -1920,8 +1928,8 @@ help_cmd(const struct cmd_info *cmd_info)
 	}
 	else
 	{
-		snprintf(help_cmd, sizeof(help_cmd), "%s %s/vifm-help.txt",
-				cfg.vi_command, cfg.config_dir);
+		snprintf(help_cmd, sizeof(help_cmd), "%s %s/vifm-help.txt", cfg.vi_command,
+				cfg.config_dir);
 	}
 
 	shellout(help_cmd, -1);
@@ -1950,6 +1958,15 @@ history_cmd(const struct cmd_info *cmd_info)
 static int
 invert_cmd(const struct cmd_info *cmd_info)
 {
+	if(cmd_info->qmark)
+	{
+		if(curr_view->invert)
+			status_bar_message("Filter is not inverted");
+		else
+			status_bar_message("Filter is inverted");
+		return 1;
+	}
+
 	curr_view->invert = !curr_view->invert;
 	load_dir_list(curr_view, 1);
 	moveto_list_pos(curr_view, 0);
@@ -2076,6 +2093,14 @@ rename_cmd(const struct cmd_info *cmd_info)
 static int
 screen_cmd(const struct cmd_info *cmd_info)
 {
+	if(cmd_info->qmark)
+	{
+		if(cfg.use_screen)
+			status_bar_message("Screen support is enabled");
+		else
+			status_bar_message("Screen support is disabled");
+		return 1;
+	}
 	cfg.use_screen = !cfg.use_screen;
 	curr_stats.setting_change = 1;
 	return 0;

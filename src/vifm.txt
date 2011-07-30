@@ -323,6 +323,7 @@ Add ' &' in the end of command if you want to start program in background.
     you can use | symbol without escaping.  Add '!' to invert filter.
     See |Filters|
 :filter! - same as :invert.
+:filter? - show current filter value.
 :h[elp] - show the help file.
 :h[elp] argument - is the same as using ':h argument' in vim.
 :his[tory] - show directory history.
@@ -331,6 +332,7 @@ Add ' &' in the end of command if you want to start program in background.
     d[ir] or .   show directory history.
     c[md] or :   show command line history.
 :invert - invert file name filter.
+:invert? - show current filter state.
 :jobs - shows menu of current backgrounded processes.
 :locate filename - uses the locate command to create a menu of filenames
     Selecting a file from the menu will reload the current file list in vifm
@@ -350,6 +352,7 @@ Add ' &' in the end of command if you want to start program in background.
     screen option turned on will cause vifm to open a new screen window for
     each new file edited or program launched from vifm.
     This requires screen version 3.9.9 or newer for the screen -X argument.
+:screen? - shows whether screen program is used.
 :se[t] opt1=val1 opt2='val2' opt3="val3" ... - sets given options.
     You can use following syntax: option, nooption, invoption, option!,
     option?, option=x, option+=x, option-=x.

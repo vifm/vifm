@@ -515,6 +515,9 @@ would filter no files from the filelist.
 .BI ":filter!"
 same as :invert.
 .TP
+.BI :filter?
+show current filter value.
+.TP
 .BI :h[elp]
 show the help file.
 .TP
@@ -533,6 +536,9 @@ c[md] or :   show command line history.
 .TP
 .BI :invert
 invert file name filter.
+.TP
+.BI :invert?
+show current filter state.
 .TP
 .BI :jobs
 shows menu of current backgrounded processes.
@@ -575,6 +581,9 @@ toggles whether or not to use the screen program.
 The default configuration has the screen option turned off.  The screen program uses pseudo terminals to allow multiple windows to be used in the console or in a single xterm.  Starting vifm from screen with the screen option turned on will cause vifm to open a new screen window for each new file edited or program launched from vifm.
 .br
 This requires screen version 3.9.9 or newer for the screen -X argument.
+.TP
+.BI :screen?
+shows whether screen program is used.
 .TP
 .BI ":se[t] opt1=val1 opt2=val2 ..."
 will set options to given values.
