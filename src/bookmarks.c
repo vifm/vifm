@@ -49,16 +49,18 @@ mark2index(const char mark)
 	int im;
 
 	im = (int)mark;
-	if(im > 96)
-		return im - 59;
-	else if(im == 60)
+	if(im >= '0' && im <= '9')
+		return im - 12;
+	else if(im == '<')
 		return 10;
-	else if(im == 62)
+	else if(im == '>')
 		return 11;
-	else if(im < 65)
-		return im - 48;
-	else
+	else if(im >= 'A' && im <= 'Z')
 		return im - 53;
+	else if(im >= 'a' && im <= 'z')
+		return im - 59;
+	else
+		return im - 48;
 }
 
 /*
@@ -68,16 +70,17 @@ char
 index2mark(const int x)
 {
 	char c;
-	if(x > 35)
-		c = x + 59;
-	else if(x == 11)
-		c = '>';
+
+	if(x < 10)
+		c = '0' + x;
 	else if(x == 10)
 		c = '<';
-	else if(x < 10)
-		c = x + 48;
+	else if(x == 11)
+		c = '>';
+	else if(x < 38)
+		c = 'A' + (x - 12);
 	else
-		c = x + 53;
+		c = 'a' + (x - 38);
 	return c;
 }
 

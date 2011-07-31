@@ -904,7 +904,7 @@ bookmark_khandler(struct menu_info *m, wchar_t *keys)
 int
 show_bookmarks_menu(FileView *view)
 {
-	int i, j, x;
+	int j, x;
 	char buf[PATH_MAX];
 
 	static menu_info m;
@@ -931,7 +931,7 @@ show_bookmarks_menu(FileView *view)
 
 	x = 0;
 
-	for(i = 1; x < m.len; i++)
+	while(x < m.len)
 	{
 		j = active_bookmarks[x];
 		if(!strcmp(bookmarks[j].directory, "/"))
