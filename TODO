@@ -30,7 +30,6 @@ Documentation.
     Document using P to move files on fs different from where /home is.
     Document command line keys.
     !cmd& and !cmd<space>& should be more documented.
-    Add TabVifm to the plugin section.
 
 Vi(m) specific features that need to be added.
 	Finish implementing range and count for user commands.
