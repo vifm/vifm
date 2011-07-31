@@ -1930,13 +1930,15 @@ dirs_cmd(const struct cmd_info *cmd_info)
 static int
 edit_cmd(const struct cmd_info *cmd_info)
 {
-	if(cfg.vim_filter)
-		use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
 	if(cmd_info->argc != 0)
 	{
 		char buf[PATH_MAX];
 		size_t len;
 		int i;
+
+		if(cfg.vim_filter)
+			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
+
 		len = snprintf(buf, sizeof(buf), "%s ", cfg.vi_command);
 		for(i = 0; i < cmd_info->argc && len < sizeof(buf) - 1; i++)
 		{
@@ -1950,6 +1952,9 @@ edit_cmd(const struct cmd_info *cmd_info)
 	if(!curr_view->selected_files ||
 			!curr_view->dir_entry[curr_view->list_pos].selected)
 	{
+		if(cfg.vim_filter)
+			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
+
 		view_file(get_current_file_name(curr_view));
 	}
 	else
@@ -1973,6 +1978,9 @@ edit_cmd(const struct cmd_info *cmd_info)
 				return 0;
 			}
 		}
+
+		if(cfg.vim_filter)
+			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
 
 		if((cmd = edit_cmd_selection(curr_view)) == NULL)
 		{

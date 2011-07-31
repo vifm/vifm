@@ -796,6 +796,7 @@ use_vim_plugin(FileView *view, int argc, char **argv)
 		else
 		{
 			int i;
+
 			for(i = 0; i < view->list_rows; i++)
 				if(view->dir_entry[i].selected)
 					fprintf(fp, "%s/%s\n", view->curr_dir, view->dir_entry[i].name);
