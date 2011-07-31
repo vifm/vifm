@@ -792,7 +792,7 @@ exec_startup(void)
 				while((p = fgets(next_line, sizeof(next_line), fp)) != NULL);
 			}
 			chomp(line);
-			exec_commands(line, curr_view, GET_COMMAND, 0);
+			exec_commands(line, curr_view, 0);
 			if(p == NULL)
 				break;
 			strcpy(line, p);

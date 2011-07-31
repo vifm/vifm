@@ -118,7 +118,7 @@ Other (questionable) things.
     Filetype support for directories.
     :edit, etc. in menus.
     :alias
-    Like gv but to select just pasted files.
+    Like gv but to select just pasted files (gs).
     Ctrl-W in command line mode like in vim?
     Move file name to the title of other pane in view mode.
 
