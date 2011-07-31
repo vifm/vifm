@@ -1741,15 +1741,14 @@ cd_cmd(const struct cmd_info *cmd_info)
 
 	if(cmd_info->argc == 1)
 	{
-		const char *arg = cmd_info->argv[0];
+		char *arg = expand_tilde(strdup(cmd_info->argv[0]));
 		if(*arg == '/')
 			snprintf(dir, sizeof(dir), "%s", arg);
-		else if(*arg == '~')
-			snprintf(dir, sizeof(dir), "%s%s", cfg.home_dir, arg + 1);
 		else if(strcmp(arg, "-") == 0)
 			snprintf(dir, sizeof(dir), "%s", curr_view->last_dir);
 		else
 			snprintf(dir, sizeof(dir), "%s/%s", curr_view->curr_dir, arg);
+		free(arg);
 	}
 	else
 	{
