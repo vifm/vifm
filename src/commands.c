@@ -1762,7 +1762,17 @@ cd_cmd(const struct cmd_info *cmd_info)
 		LOG_SERROR_MSG(errno, "Can't access(,F_OK) \"%s\"", dir);
 
 		snprintf(buf, sizeof(buf), "\"%s\"", dir);
-		show_error_msg("Can't access destination", buf);
+		show_error_msg("Destination doesn't exist", buf);
+		return 0;
+	}
+	if(access(dir, X_OK) != 0)
+	{
+		char buf[1 + PATH_MAX + 1 + 1];
+
+		LOG_SERROR_MSG(errno, "Can't access(,X_OK) \"%s\"", dir);
+
+		snprintf(buf, sizeof(buf), "\"%s\"", dir);
+		show_error_msg("Permission denied", buf);
 		return 0;
 	}
 
