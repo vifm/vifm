@@ -207,6 +207,9 @@ Other Normal Mode Keys
 
        gA     like ga, but force update.
 
+       gf     find  link  destination (like l with 'followlinks' off, but also
+              finds directories).
+
        gv     go to visual mode restoring last selection.
 
        i      opens file with associated program even if it's an executable.
@@ -226,7 +229,7 @@ Other Normal Mode Keys
        [count]dd or d[count]selector if compatibility mode is off
 
        [count]dd if compatibility mode is on
-              moves  the  selected  files  to  the  trash directory (if option
+              moves the selected files  to  the  trash  directory  (if  option
               'trash' is set otherwise delete)
 
        [count]DD or D[count]selector
@@ -239,8 +242,8 @@ Other Normal Mode Keys
 
        Y      same as yy.
 
-       p      will copy the yanked files to the current directory or move  the
-              files  to  the current directory if they were deleted with dd or
+       p      will  copy the yanked files to the current directory or move the
+              files to the current directory if they were deleted with  dd  or
               :d[elete] or if the files were yanked from the Trash directory.
 
        P      moves the last yanked files.
@@ -270,13 +273,13 @@ Using Count with y, d and D
        Or you can use count with motions passed to y, d or D.
 
        d[count]j
-              delete (count + 1) files starting from current  cursor  position
+              delete  (count  + 1) files starting from current cursor position
               upward.
 
 Selectors
        y and d commands accept selectors.  You can combine them with every of
               selectors below to quickly remove or yank several files.
-              Most  of selectors are like vi motions: j, k, gg, G, H, L, M, %,
+              Most of selectors are like vi motions: j, k, gg, G, H, L, M,  %,
               f, F, ;, comma and '.  But there are some additional ones.
 
        a      all files in current view.
@@ -297,7 +300,7 @@ Visual Mode
 
        V      leave visual mode.
 
-       :      enter  command  line  mode.  When you leave it selection will be
+       :      enter command line mode.  When you leave it  selection  will  be
               cleared.
 
        o      switch active selection bound.
@@ -308,10 +311,10 @@ Commands
        Commands are executed with :command_name<Return>
 
        ´|' can be used to separate commands, so you can give multiple commands
-       in  one  line.   If you want to use '|' in an argument, precede it with
+       in one line.  If you want to use '|' in an argument,  precede  it  with
        '\'.
 
-       Commented out lines should start with the double  quote  symbol,  which
+       Commented  out  lines  should start with the double quote symbol, which
        may be preceded by whitespace characters.
 
        :[count]
@@ -323,10 +326,10 @@ Commands
               :$ move to the bottom of the list.
 
        :[count]command
-              The   only  builtin  :[count]command  are  :[count]d[elete]  and
+              The  only  builtin  :[count]command  are  :[count]d[elete]   and
               :[count]y[ank].
 
-       :d3    would delete three files starting at the current  file  position
+       :d3    would  delete  three files starting at the current file position
               moving down (not implemented yet).
 
        :3d    would delete one file at the third line in the list.
@@ -334,19 +337,19 @@ Commands
        :command [args]
 
        :!     program will execute the program in a shell
-              :!command  &  will  run the process in the background.  Programs
-              that write to stdout like ls will create an error message  show‐
+              :!command & will run the process in  the  background.   Programs
+              that  write to stdout like ls will create an error message show‐
               ing partial output of the command.
 
        :!! <program>
-              is  the same as :! but will pause the screen before returning to
+              is the same as :! but will pause the screen before returning  to
               Vifm.
 
        :!!    will execute the last command.
 
        :apropos manpage
-              will create a menu of items returned  by  the  apropos  command.
-              Selecting  an  item in the menu will open the corresponding man‐
+              will  create  a  menu  of items returned by the apropos command.
+              Selecting an item in the menu will open the  corresponding  man‐
               page.
 
        :cd    change to your home directory.
@@ -358,14 +361,14 @@ Commands
               create a menu window to alter a files properties.
 
        :colo[rscheme]
-              gives a menu with a list of available color  schemes.   You  can
-              choose  default  color scheme here.  It will be used for view if
-              no DIRECTORY in colorscheme file fits current path.   It's  also
-              used  to set border color (except view titles) and colors in the
+              gives  a  menu  with a list of available color schemes.  You can
+              choose default color scheme here.  It will be used for  view  if
+              no  DIRECTORY  in colorscheme file fits current path.  It's also
+              used to set border color (except view titles) and colors in  the
               menus and dialogs.
 
        :colo[rscheme] color_scheme_name
-              changes  default  color  scheme   to   color_scheme_name.    See
+              changes   default   color   scheme  to  color_scheme_name.   See
               :colo[rscheme].
 
        :com[mand]
@@ -373,12 +376,12 @@ Commands
 
        :com[mand] name action
               sets a new user command.
-              Trying  to  use  a reserved command name will result in an error
+              Trying to use a reserved command name will result  in  an  error
               message.
               Use :com[mand]! to overwrite a previously set command.
-              Unlike vim user commands do not have to  start  with  a  capital
-              letter.   User commands are run in a shell by default.  To run a
-              command in the background you must set it as a  background  com‐
+              Unlike  vim  user  commands  do not have to start with a capital
+              letter.  User commands are run in a shell by default.  To run  a
+              command  in  the background you must set it as a background com‐
               mand with & at the end of the commands action (:com rm rm %f &).
 
        :com[mand] backup /pattern
@@ -396,8 +399,20 @@ Commands
        :delc[ommand] command_name
               will remove the command_name user command.
 
+       :delm[arks]!
+              will delete all marks.
+
+       :delm[arks] marks ...
+              will delete specified marks, each argument is treated as  a  set
+              of marks.
+
        :di[splay]
               popup menu with registers content.
+
+       :di[splay]list
+              display  the  contents  of the numbered and named registers that
+              are mentioned in list (for example "az to display "", "a and  "z
+              content).
 
        :dirs  display directory stack.
 
@@ -427,6 +442,9 @@ Commands
        :filter!
               same as :invert.
 
+       :filter?
+              show current filter value.
+
        :h[elp]
               show the help file.
 
@@ -444,12 +462,20 @@ Commands
        :invert
               invert file name filter.
 
+       :invert?
+              show current filter state.
+
        :jobs  shows menu of current backgrounded processes.
 
        :locate filename
               uses  the locate command to create a menu of filenames Selecting
               a file from the menu will reload the current file list  in  vifm
               to show the selected file.
+
+       :[range]ma[rk]x/full/path[filename]
+              Set mark x at /full/path and filename.  If no filename was given
+              and /full/path is current directory then last file in [range] is
+              used.  Using macros is allowed.
 
        :marks create a popup menu of bookmarks.
 
@@ -486,6 +512,9 @@ Commands
               This requires screen version 3.9.9 or newer for  the  screen  -X
               argument.
 
+       :screen?
+              shows whether screen program is used.
+
        :se[t] opt1=val1 opt2=val2 ...
               will set options to given values.
               You  can  use  following  syntax:  option,  nooption, invoption,
@@ -494,6 +523,11 @@ Commands
 
        :reg[isters]
               popup menu with registers content.
+
+       :reg[isters]list
+              display  the  contents  of the numbered and named registers that
+              are mentioned in list (for example "az to display "", "a and  "z
+              content).
 
        :sor[t]
               creates a popup menu of different sorting methods.
@@ -857,4 +891,4 @@ AUTHOR
 
 
 
-                                 Jule 30, 2011                         vifm(1)
+                                 Jule 31, 2011                         vifm(1)

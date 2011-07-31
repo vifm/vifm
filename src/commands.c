@@ -161,8 +161,8 @@ static const struct cmd_add commands[] = {
     .handler = command_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "delete",           .abbr = "d",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = delete_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 1, },
-	{ .name = "delmarks",         .abbr = "delm",  .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = delmarks_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "delmarks",         .abbr = "delm",  .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = delmarks_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "display",          .abbr = "di",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "dirs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1867,6 +1867,20 @@ delmarks_cmd(const struct cmd_info *cmd_info)
 	int i;
 	int save_msg = 0;
 
+	if(cmd_info->emark)
+	{
+		const char *p = valid_bookmarks;
+		while(*p != '\0')
+		{
+			int index = mark2index(*p++);
+			remove_bookmark(index);
+		}
+		return 0;
+	}
+
+	if(cmd_info->argc == 0)
+		return CMDS_ERR_TOO_FEW_ARGS;
+
 	for(i = 0; i < cmd_info->argc; i++)
 	{
 		int j;
@@ -1883,8 +1897,6 @@ delmarks_cmd(const struct cmd_info *cmd_info)
 		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
 		{
 			int index = mark2index(cmd_info->argv[i][j]);
-			if(index < 0)
-				continue;
 			save_msg += remove_bookmark(index);
 		}
 	}

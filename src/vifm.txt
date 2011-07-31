@@ -310,8 +310,9 @@ The builtin commands are:
 :[range]d[elete][count] - delete selected file or files.
     See |Vifm_Ranges| for the ranges implemented.
 :delc[ommand] user_command - remove user_command.
+:delm[arks]! - will delete all marks.
 :delm[arks] marks ... - will delete specified marks, each argument is
-    treated as a set of marks name.
+    treated as a set of marks.
 :d[elete] [reg] [count] - will delete files to the reg register.
 :di[splay] - popup menu with registers content.
 :di[splay] list - display the contents of the numbered and named registers
