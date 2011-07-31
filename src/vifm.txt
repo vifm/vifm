@@ -297,6 +297,7 @@ The builtin commands are:
     set border color (except view titles) and colors in the menus and
     dialogs.
 :colo[rscheme] color_scheme_name - changes default color scheme.
+:comc[lear] - removes all user defined commands.
 :com[mand] - gives a menu of user commands.
 :com[mand] beginning - shows user defined commands that start with the
     beginning.
@@ -726,6 +727,8 @@ The following command names are reserved and cannot be used for user commands.
   cmap - user mapping for command line mode.
   colo - will be used to set a colorscheme for a directory.
   colorscheme - will be used to set a colorscheme for a directory.
+  comc - remove all user defined commands.
+  comclear - remove all user defined commands.
   com - show user commands.
   command - show user commands.
   d - delete file.

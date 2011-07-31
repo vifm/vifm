@@ -90,6 +90,7 @@ static void complete_cmd_name(const char *cmd_name, int user_only);
 static
 #endif
 int add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf);
+static int comclear_cmd(const struct cmd_info *cmd_info);
 static int command_cmd(const struct cmd_info *cmd_info);
 static const char * get_user_cmd_name(const char *cmd, char *buf, size_t buf_len);
 static int is_correct_name(const char *name);
@@ -101,6 +102,10 @@ init_cmds(void)
 {
 	struct cmd_add commands[] = {
 		{
+			.name = "comclear",   .abbr = "comc", .handler = comclear_cmd,   .id = COMCLEAR_CMD_ID,   .quote = 0,
+			.range = 0,           .emark = 0,     .qmark = 0,                .regexp = 0,             .select = 0,
+			.expand = 0,          .bg = 0,        .min_args = 0,             .max_args = 0,
+		}, {
 			.name = "command",    .abbr = "com",  .handler = command_cmd,    .id = COMMAND_CMD_ID,    .quote = 0,
 			.range = 0,           .emark = 1,     .qmark = 0,                .regexp = 0,             .select = 0,
 			.expand = 0,          .bg = 0,        .min_args = 0,             .max_args = NOT_DEF,
@@ -118,7 +123,7 @@ init_cmds(void)
 	assert(cmds_conf.post != NULL);
 	assert(cmds_conf.select_range != NULL);
 
-	add_buildin_commands(commands, 2);
+	add_buildin_commands(commands, ARRAY_LEN(commands));
 }
 
 void
@@ -913,6 +918,31 @@ add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf)
 	new->quote = conf->quote;
 	new->cmd = NULL;
 
+	return 0;
+}
+
+static int
+comclear_cmd(const struct cmd_info *cmd_info)
+{
+	struct cmd_t *cur = &head;
+
+	while(cur->next != NULL)
+	{
+		if(cur->next->type == USER_CMD)
+		{
+			struct cmd_t *this = cur->next;
+			cur->next = this->next;
+
+			free(this->cmd);
+			free(this->name);
+			free(this);
+		}
+		else
+		{
+			cur = cur->next;
+		}
+	}
+	udf_count = 0;
 	return 0;
 }
 
