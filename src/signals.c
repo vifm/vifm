@@ -53,13 +53,6 @@ received_sigwinch(void)
 }
 
 static void
-received_sigcont(void)
-{
-	reset_prog_mode();
-	modes_redraw();
-}
-
-static void
 received_sigchld(void)
 {
 	int status;
@@ -92,9 +85,6 @@ handle_signal(int sig)
 		case SIGWINCH:
 			received_sigwinch();
 			break;
-		case SIGCONT:
-			received_sigcont();
-			break;
 		/* Shutdown nicely */
 		case SIGHUP:
 		case SIGQUIT:
@@ -118,7 +108,6 @@ setup_signals(void)
 	sigaction(SIGCHLD, &handle_signal_action, NULL);
 	sigaction(SIGHUP, &handle_signal_action, NULL);
 	sigaction(SIGQUIT, &handle_signal_action, NULL);
-	sigaction(SIGCONT, &handle_signal_action, NULL);
 	sigaction(SIGTERM, &handle_signal_action, NULL);
 	sigaction(SIGWINCH, &handle_signal_action, NULL);
 

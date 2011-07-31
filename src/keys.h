@@ -153,9 +153,14 @@ int add_cmds(struct keys_add_info *cmds, size_t len, int mode);
 int add_selectors(struct keys_add_info *cmds, size_t len, int mode);
 
 /*
- * Returns not zero on error
+ * Returns not zero when can't find user keys
  */
 int add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode);
+
+/*
+ * Returns not zero on error
+ */
+int remove_user_keys(const wchar_t *keys, int mode);
 
 /*
  * Lists all commands of the given mode with description.

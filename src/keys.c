@@ -33,7 +33,7 @@ struct key_chunk_t
 	struct key_t conf;
 	struct key_chunk_t *child;
 	struct key_chunk_t *parent;
-	struct key_chunk_t *next;
+	struct key_chunk_t *prev, *next;
 };
 
 static struct key_chunk_t *builtin_cmds_root;
@@ -446,11 +446,54 @@ add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode)
 
 	curr = add_keys_inner(&user_cmds_root[mode], keys);
 	if(curr->type == USER_CMD)
-	{
 		free((void*)curr->data.cmd);
-	}
 	curr->type = USER_CMD;
 	curr->data.cmd = my_wcsdup(cmd);
+	return 0;
+}
+
+int
+remove_user_keys(const wchar_t *keys, int mode)
+{
+	struct key_chunk_t *curr = &user_cmds_root[mode], *p;
+	while(*keys != L'\0')
+	{
+		p = curr->child;
+		while(p != NULL && p->key < *keys)
+			p = p->next;
+		if(p == NULL || p->key != *keys)
+			return -1;
+		curr = p;
+		keys++;
+	}
+
+	if(curr->conf.type != USER_CMD)
+		return -2;
+
+	free(curr->conf.data.cmd);
+	curr->conf.type = BUILDIN_WAIT_POINT;
+	curr->conf.data.handler = NULL;
+
+	while(p->parent != NULL)
+	{
+		p->parent->children_count--;
+		p = p->parent;
+	}
+
+	if(curr->children_count > 0)
+		return 0;
+
+	while(curr->parent != NULL && curr->parent->conf.data.handler == NULL &&
+			curr->parent->conf.type == BUILDIN_WAIT_POINT &&
+			curr->parent->children_count == 0)
+	{
+		struct key_chunk_t *parent = curr->parent;
+		if(curr->prev != NULL)
+			curr->prev->next = curr->next;
+		free(curr);
+		curr = parent;
+	}
+
 	return 0;
 }
 
@@ -528,19 +571,16 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 			c->conf.type = (keys[1] == L'\0') ? BUILDIN_KEYS : BUILDIN_WAIT_POINT;
 			c->conf.data.handler = NULL;
 			c->conf.followed = FOLLOWED_BY_NONE;
+			c->prev = prev;
 			c->next = p;
 			c->child = NULL;
 			c->parent = curr;
 			c->children_count = 0;
 			c->enters = 0;
 			if(prev == NULL)
-			{
 				curr->child = c;
-			}
 			else
-			{
 				prev->next = c;
-			}
 
 			if(keys[1] == L'\0')
 			{

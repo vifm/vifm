@@ -50,17 +50,17 @@ test_skip_goto(void)
 
 	reset_completion();
 	assert_int_equal(0, complete_cmd(""));
-	assert_int_equal(4, get_completion_count());
+	assert_int_equal(5, get_completion_count());
 	if(get_completion_count() == 0)
 		return;
+	completion = next_completion();
+	assert_string_equal("comclear", completion);
+	free(completion);
 	completion = next_completion();
 	assert_string_equal("command", completion);
 	free(completion);
 	completion = next_completion();
 	assert_string_equal("delcommand", completion);
-	free(completion);
-	completion = next_completion();
-	assert_string_equal("delete", completion);
 	free(completion);
 }
 

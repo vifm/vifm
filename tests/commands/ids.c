@@ -44,7 +44,7 @@ test_invalid(void)
 static void
 test_end_characters(void)
 {
-	assert_int_equal(-129, get_cmd_id("com#"));
+	assert_int_equal(COMMAND_CMD_ID, get_cmd_id("com#"));
 }
 
 void

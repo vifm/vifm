@@ -95,6 +95,8 @@ main_loop(void)
 				def_prog_mode();
 				endwin();
 				kill(0, SIGTSTP);
+				reset_prog_mode();
+				modes_redraw();
 				continue;
 			}
 

@@ -1123,7 +1123,7 @@ list_udf_content(const char *beginning)
 	size_t len;
 	struct cmd_t *cur;
 	char *result;
-	size_t result_len;
+	size_t result_len = 0;
 
 	cur = head.next;
 	len = strlen(beginning);
