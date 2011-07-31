@@ -72,6 +72,16 @@ enum {
 	FNC_DIREXEC   /* directories and executable files */
 };
 
+enum {
+	COM_GOTO,
+	COM_EXECUTE,
+	COM_CD,
+	COM_COLORSCHEME,
+	COM_EDIT,
+	COM_PUSHD,
+	COM_SET,
+};
+
 static void exec_completion(const char *str);
 static void filename_completion(const char *str, int type);
 static int is_entry_dir(const struct dirent *d);
