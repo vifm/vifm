@@ -934,17 +934,17 @@ show_bookmarks_menu(FileView *view)
 	while(x < m.len)
 	{
 		j = active_bookmarks[x];
-		if(!strcmp(bookmarks[j].directory, "/"))
-		{
-			snprintf(buf, sizeof(buf), "  %c   /%s", index2mark(j), bookmarks[j].file);
-			chosp(buf);
-		}
-		else if(!strcmp(bookmarks[j].file, "../"))
+		if(!strcmp(bookmarks[j].file, "..") || !strcmp(bookmarks[j].file, "../"))
 		{
 			snprintf(buf, sizeof(buf), "  %c   %s", index2mark(j),
 					bookmarks[j].directory);
 			chosp(buf);
 			strcat(buf, "/");
+		}
+		else if(!strcmp(bookmarks[j].directory, "/"))
+		{
+			snprintf(buf, sizeof(buf), "  %c   /%s", index2mark(j), bookmarks[j].file);
+			chosp(buf);
 		}
 		else
 		{
