@@ -280,7 +280,7 @@ setup_ncurses_interface(void)
 	if(curr_stats.number_of_windows == 1)
 		lwin.title = newwin(0, screen_x - 2, 0, 1);
 	else
-		lwin.title = newwin(1, screen_x/2 - 2, 0, 1);
+		lwin.title = newwin(1, screen_x/2 - 2 + screen_x%2, 0, 1);
 
 	wattrset(lwin.title, A_BOLD);
 	wbkgdset(lwin.title, COLOR_PAIR(color_scheme + BORDER_COLOR));
@@ -290,7 +290,7 @@ setup_ncurses_interface(void)
 	if(curr_stats.number_of_windows == 1)
 		lwin.win = newwin(screen_y - 3, screen_x - 2, 1, 1);
 	else
-		lwin.win = newwin(screen_y - 3, screen_x/2 - 2, 1, 1);
+		lwin.win = newwin(screen_y - 3, screen_x/2 - 2 + screen_x%2, 1, 1);
 
 	wbkgdset(lwin.win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	wattrset(lwin.win, A_BOLD);
@@ -300,7 +300,7 @@ setup_ncurses_interface(void)
 	lwin.window_rows = y -1;
 	lwin.window_width = x -1;
 
-	mborder = newwin(screen_y, 2, 0, screen_x/2 - 1);
+	mborder = newwin(screen_y, 2 - screen_x%2, 0, screen_x/2 - 1 + screen_x%2);
 
 	wbkgdset(mborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
 
@@ -309,7 +309,7 @@ setup_ncurses_interface(void)
 	if(curr_stats.number_of_windows == 1)
 		rwin.title = newwin(0, screen_x - 2, 0, 1);
 	else
-		rwin.title = newwin(1, screen_x/2 - 1, 0, screen_x/2 + 1);
+		rwin.title = newwin(1, screen_x/2 - 1 + screen_x%2, 0, screen_x/2 + 1);
 
 	wbkgdset(rwin.title, COLOR_PAIR(color_scheme + BORDER_COLOR));
 	wattrset(rwin.title, A_BOLD);
@@ -320,7 +320,8 @@ setup_ncurses_interface(void)
 	if(curr_stats.number_of_windows == 1)
 		rwin.win = newwin(screen_y - 3, screen_x - 2, 1, 1);
 	else
-		rwin.win = newwin(screen_y - 3, screen_x/2 - 2, 1, screen_x/2 + 1);
+		rwin.win = newwin(screen_y - 3, screen_x/2 - 2 + screen_x%2, 1,
+				screen_x/2 + 1);
 
 	wattrset(rwin.win, A_BOLD);
 	wattron(rwin.win, A_BOLD);
@@ -424,41 +425,41 @@ resize_window(void)
 
 	wresize(stdscr, screen_y, screen_x);
 	wresize(menu_win, screen_y - 1, screen_x);
-	wresize(error_win, (screen_y -10)/2, screen_x -2);
-	mvwin(error_win, (screen_y -10)/2, 1);
-	wresize(lborder, screen_y -2, 1);
+	wresize(error_win, (screen_y - 10)/2, screen_x - 2);
+	mvwin(error_win, (screen_y - 10)/2, 1);
+	wresize(lborder, screen_y - 2, 1);
 
 	if(curr_stats.number_of_windows == 1)
 	{
-		wresize(lwin.title, 1, screen_x -1);
-		wresize(lwin.win, screen_y -3, screen_x -2);
-		getmaxyx(lwin.win, y, x);
-		lwin.window_width = x -1;
-		lwin.window_rows = y -1;
-
-		wresize(rwin.title, 1, screen_x -1);
-		mvwin(rwin.title, 0, 1);
-		wresize(rwin.win, screen_y -3, screen_x -2);
-		mvwin(rwin.win, 1, 1);
-		getmaxyx(rwin.win, y, x);
-		rwin.window_width = x -1;
-		rwin.window_rows = y -1;
-	}
-	else
-	{
-		wresize(lwin.title, 1, screen_x/2 - 2);
-		wresize(lwin.win, screen_y - 3, screen_x/2 - 2);
+		wresize(lwin.title, 1, screen_x - 1);
+		wresize(lwin.win, screen_y - 3, screen_x - 2);
 		getmaxyx(lwin.win, y, x);
 		lwin.window_width = x - 1;
 		lwin.window_rows = y - 1;
 
-		mvwin(mborder, 0, screen_x/2 - 1);
-		wresize(mborder, screen_y, 2);
+		wresize(rwin.title, 1, screen_x - 1);
+		mvwin(rwin.title, 0, 1);
+		wresize(rwin.win, screen_y - 3, screen_x - 2);
+		mvwin(rwin.win, 1, 1);
+		getmaxyx(rwin.win, y, x);
+		rwin.window_width = x - 1;
+		rwin.window_rows = y - 1;
+	}
+	else
+	{
+		wresize(lwin.title, 1, screen_x/2 - 2 + screen_x%2);
+		wresize(lwin.win, screen_y - 3, screen_x/2 - 2 + screen_x%2);
+		getmaxyx(lwin.win, y, x);
+		lwin.window_width = x - 1;
+		lwin.window_rows = y - 1;
 
-		wresize(rwin.title, 1, screen_x/2 - 2);
-		mvwin(rwin.title, 0, screen_x/2 +1);
+		mvwin(mborder, 0, screen_x/2 - 1 + screen_x%2);
+		wresize(mborder, screen_y, 2 - screen_x%2);
 
-		wresize(rwin.win, screen_y - 3, (screen_x + 1)/2 - 2);
+		wresize(rwin.title, 1, screen_x/2 - 2 + screen_x%2);
+		mvwin(rwin.title, 0, screen_x/2 + 1);
+
+		wresize(rwin.win, screen_y - 3, screen_x/2 - 2 + screen_x%2);
 		mvwin(rwin.win, 1, screen_x/2 + 1);
 		getmaxyx(rwin.win, y, x);
 		rwin.window_width = x - 1;

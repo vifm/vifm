@@ -10,7 +10,6 @@ Basic things that need to be done.
     Better C command. Handle selection and situation when destination already
         exists.
     Add :filetype command (separate programs and viewer).
-    Make ~user_name/ work.
     Implement :find command.
     An option to choose shell.
     Make l key handle selection.
