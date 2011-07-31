@@ -6,13 +6,13 @@
 static void
 setup(void)
 {
-	add_user_keys(L"a", L"z", NORMAL_MODE);
-	add_user_keys(L"ab", L"x", NORMAL_MODE);
-	add_user_keys(L"abc", L"k", NORMAL_MODE);
+	add_user_keys(L"a", L"z", NORMAL_MODE, 0);
+	add_user_keys(L"ab", L"x", NORMAL_MODE, 0);
+	add_user_keys(L"abc", L"k", NORMAL_MODE, 0);
 
-	add_user_keys(L"q", L"k", NORMAL_MODE);
-	add_user_keys(L"qb", L"k", NORMAL_MODE);
-	add_user_keys(L"qbc", L"k", NORMAL_MODE);
+	add_user_keys(L"q", L"k", NORMAL_MODE, 0);
+	add_user_keys(L"qb", L"k", NORMAL_MODE, 0);
+	add_user_keys(L"qbc", L"k", NORMAL_MODE, 0);
 }
 
 static void

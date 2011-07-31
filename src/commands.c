@@ -98,6 +98,7 @@ static int apropos_cmd(const struct cmd_info *cmd_info);
 static int cd_cmd(const struct cmd_info *cmd_info);
 static int change_cmd(const struct cmd_info *cmd_info);
 static int cmap_cmd(const struct cmd_info *cmd_info);
+static int cnoremap_cmd(const struct cmd_info *cmd_info);
 static int colorscheme_cmd(const struct cmd_info *cmd_info);
 static int command_cmd(const struct cmd_info *cmd_info);
 static int cunmap_cmd(const struct cmd_info *cmd_info);
@@ -118,7 +119,10 @@ static int map_cmd(const struct cmd_info *cmd_info);
 static int mark_cmd(const struct cmd_info *cmd_info);
 static int marks_cmd(const struct cmd_info *cmd_info);
 static int nmap_cmd(const struct cmd_info *cmd_info);
+static int nnoremap_cmd(const struct cmd_info *cmd_info);
 static int nohlsearch_cmd(const struct cmd_info *cmd_info);
+static int noremap_cmd(const struct cmd_info *cmd_info);
+static int map_or_remap(const struct cmd_info *cmd_info, int no_remap);
 static int nunmap_cmd(const struct cmd_info *cmd_info);
 static int only_cmd(const struct cmd_info *cmd_info);
 static int popd_cmd(const struct cmd_info *cmd_info);
@@ -137,6 +141,9 @@ static int unmap_cmd(const struct cmd_info *cmd_info);
 static int view_cmd(const struct cmd_info *cmd_info);
 static int vifm_cmd(const struct cmd_info *cmd_info);
 static int vmap_cmd(const struct cmd_info *cmd_info);
+static int vnoremap_cmd(const struct cmd_info *cmd_info);
+static int do_map(const struct cmd_info *cmd_info, const char *map_type,
+		const char *map_cmd, int mode, int no_remap);
 static int vunmap_cmd(const struct cmd_info *cmd_info);
 static int do_unmap(const char *keys, int mode);
 static int write_cmd(const struct cmd_info *cmd_info);
@@ -159,6 +166,8 @@ static const struct cmd_add commands[] = {
 		.handler = change_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "cmap",             .abbr = "cm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "cnoremap",         .abbr = "cno",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = cnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "colorscheme",      .abbr = "colo",  .emark = 0,  .id = COM_COLORSCHEME, .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = colorscheme_cmd, .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
   { .name = "command",          .abbr = "com",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -201,8 +210,12 @@ static const struct cmd_add commands[] = {
 		.handler = marks_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "nmap",             .abbr = "nm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "nnoremap",         .abbr = "nn",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = nnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "nohlsearch",       .abbr = "noh",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nohlsearch_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "noremap",          .abbr = "no",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = noremap_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "nunmap",           .abbr = "nun",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "only",             .abbr = "on",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -241,6 +254,8 @@ static const struct cmd_add commands[] = {
 		.handler = vifm_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "vmap",             .abbr = "vm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "vnoremap",         .abbr = "vn",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = vnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "vunmap",           .abbr = "vu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "write",            .abbr = "w",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1810,53 +1825,15 @@ trim_trailing_spaces(wchar_t *str)
 }
 
 static int
-do_map(const struct cmd_info *cmd_info, const char *map_type,
-		const char *map_cmd, int mode)
+cmap_cmd(const struct cmd_info *cmd_info)
 {
-	wchar_t *keys, *mapping;
-	char *raw_rhs, *rhs;
-	char t;
-	int result;
-
-	if(cmd_info->argc == 1)
-	{
-		char err_msg[128];
-		sprintf(err_msg, "The :%s command requires two arguments - :%s lhs rhs",
-				map_cmd, map_cmd);
-		show_error_msg("Command Error", err_msg);
-		return -1;
-	}
-
-	if(cmd_info->argc == 0)
-	{
-		show_map_menu(curr_view, map_type, list_cmds(mode));
-		return 0;
-	}
-
-	raw_rhs = (char *)skip_word(cmd_info->args);
-	t = *raw_rhs;
-	*raw_rhs = '\0';
-
-	rhs = (char*)skip_spaces(raw_rhs + 1);
-	keys = substitute_specs(cmd_info->args);
-	mapping = substitute_specs(rhs);
-	trim_trailing_spaces(mapping);
-	result = add_user_keys(keys, mapping, mode);
-	free(mapping);
-	free(keys);
-
-	*raw_rhs = t;
-
-	if(result == -1)
-		show_error_msg("Mapping Error", "Not enough memory");
-
-	return 0;
+	return do_map(cmd_info, "Command Line", "cmap", CMDLINE_MODE, 0) != 0;
 }
 
 static int
-cmap_cmd(const struct cmd_info *cmd_info)
+cnoremap_cmd(const struct cmd_info *cmd_info)
 {
-	return do_map(cmd_info, "Command Line", "cmap", CMDLINE_MODE) != 0;
+	return do_map(cmd_info, "Command Line", "cmap", CMDLINE_MODE, 1) != 0;
 }
 
 static int
@@ -2148,18 +2125,7 @@ ls_cmd(const struct cmd_info *cmd_info)
 static int
 map_cmd(const struct cmd_info *cmd_info)
 {
-	int result;
-	if(cmd_info->emark)
-	{
-		result = do_map(cmd_info, "", "map", CMDLINE_MODE);
-	}
-	else
-	{
-		result = do_map(cmd_info, "", "map", NORMAL_MODE);
-		if(result == 0)
-			result = do_map(cmd_info, "", "map", VISUAL_MODE);
-	}
-	return result != 0;
+	return map_or_remap(cmd_info, 0);
 }
 
 static int
@@ -2220,7 +2186,13 @@ marks_cmd(const struct cmd_info *cmd_info)
 static int
 nmap_cmd(const struct cmd_info *cmd_info)
 {
-	return do_map(cmd_info, "Normal", "nmap", NORMAL_MODE) != 0;
+	return do_map(cmd_info, "Normal", "nmap", NORMAL_MODE, 0) != 0;
+}
+
+static int
+nnoremap_cmd(const struct cmd_info *cmd_info)
+{
+	return do_map(cmd_info, "Normal", "nmap", NORMAL_MODE, 1) != 0;
 }
 
 static int
@@ -2233,6 +2205,29 @@ nohlsearch_cmd(const struct cmd_info *cmd_info)
 	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
 	return 0;
+}
+
+static int
+noremap_cmd(const struct cmd_info *cmd_info)
+{
+	return map_or_remap(cmd_info, 1);
+}
+
+static int
+map_or_remap(const struct cmd_info *cmd_info, int no_remap)
+{
+	int result;
+	if(cmd_info->emark)
+	{
+		result = do_map(cmd_info, "", "map", CMDLINE_MODE, no_remap);
+	}
+	else
+	{
+		result = do_map(cmd_info, "", "map", NORMAL_MODE, no_remap);
+		if(result == 0)
+			result = do_map(cmd_info, "", "map", VISUAL_MODE, no_remap);
+	}
+	return result != 0;
 }
 
 static int
@@ -2426,7 +2421,57 @@ vifm_cmd(const struct cmd_info *cmd_info)
 static int
 vmap_cmd(const struct cmd_info *cmd_info)
 {
-	return do_map(cmd_info, "Visual", "vmap", VISUAL_MODE) != 0;
+	return do_map(cmd_info, "Visual", "vmap", VISUAL_MODE, 0) != 0;
+}
+
+static int
+vnoremap_cmd(const struct cmd_info *cmd_info)
+{
+	return do_map(cmd_info, "Visual", "vmap", VISUAL_MODE, 1) != 0;
+}
+
+static int
+do_map(const struct cmd_info *cmd_info, const char *map_type,
+		const char *map_cmd, int mode, int no_remap)
+{
+	wchar_t *keys, *mapping;
+	char *raw_rhs, *rhs;
+	char t;
+	int result;
+
+	if(cmd_info->argc == 1)
+	{
+		char err_msg[128];
+		sprintf(err_msg, "The :%s command requires two arguments - :%s lhs rhs",
+				map_cmd, map_cmd);
+		show_error_msg("Command Error", err_msg);
+		return -1;
+	}
+
+	if(cmd_info->argc == 0)
+	{
+		show_map_menu(curr_view, map_type, list_cmds(mode));
+		return 0;
+	}
+
+	raw_rhs = (char *)skip_word(cmd_info->args);
+	t = *raw_rhs;
+	*raw_rhs = '\0';
+
+	rhs = (char*)skip_spaces(raw_rhs + 1);
+	keys = substitute_specs(cmd_info->args);
+	mapping = substitute_specs(rhs);
+	trim_trailing_spaces(mapping);
+	result = add_user_keys(keys, mapping, mode, no_remap);
+	free(mapping);
+	free(keys);
+
+	*raw_rhs = t;
+
+	if(result == -1)
+		show_error_msg("Mapping Error", "Not enough memory");
+
+	return 0;
 }
 
 static int

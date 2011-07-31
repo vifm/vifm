@@ -22,7 +22,7 @@ setup(void)
 	clear_keys();
 	init_keys(MODES_COUNT, &mode, mode_flags);
 	set_def_handler(CMDLINE_MODE, def_handler);
-	add_user_keys(L"asdf", L"ddd", CMDLINE_MODE);
+	add_user_keys(L"asdf", L"ddd", CMDLINE_MODE, 0);
 }
 
 static void

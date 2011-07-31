@@ -6,11 +6,11 @@
 static void
 add_custom_keys(void)
 {
-	add_user_keys(L"jo", L"k", NORMAL_MODE);
-	add_user_keys(L"jl", L"k", NORMAL_MODE);
+	add_user_keys(L"jo", L"k", NORMAL_MODE, 0);
+	add_user_keys(L"jl", L"k", NORMAL_MODE, 0);
 
-	add_user_keys(L"S", L"dd", NORMAL_MODE);
-	add_user_keys(L"Sj", L"k", NORMAL_MODE);
+	add_user_keys(L"S", L"dd", NORMAL_MODE, 0);
+	add_user_keys(L"Sj", L"k", NORMAL_MODE, 0);
 }
 
 static void

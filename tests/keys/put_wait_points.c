@@ -6,7 +6,7 @@
 static void
 add_custom_keys(void)
 {
-	add_user_keys(L"abcdef", L"k", NORMAL_MODE);
+	add_user_keys(L"abcdef", L"k", NORMAL_MODE, 0);
 }
 
 static void

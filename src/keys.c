@@ -28,6 +28,7 @@
 struct key_chunk_t
 {
 	wchar_t key;
+	int no_remap;
 	size_t children_count;
 	int enters; /* to prevent stack overflow */
 	struct key_t conf;
@@ -46,21 +47,24 @@ static default_handler *def_handlers;
 static size_t counter;
 
 static void free_tree(struct key_chunk_t *root);
-static int execute_keys_general(const wchar_t *keys, int timed_out, int mapped);
-static int execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info);
+static int execute_keys_general(const wchar_t *keys, int timed_out, int mapped,
+		int no_remap);
+static int execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info,
+		int no_remap);
 static int execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
-		struct key_chunk_t *root, struct key_info key_info);
+		struct key_chunk_t *root, struct key_info key_info, int no_remap);
 static int contains_chain(struct key_chunk_t *root, const wchar_t *begin,
 		const wchar_t *end);
 static int execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
-		struct key_info *key_info, struct keys_info *keys_info, int has_duplicate);
+		struct key_info *key_info, struct keys_info *keys_info, int has_duplicate,
+		int no_remap);
 static int run_cmd(struct key_info key_info, struct keys_info *keys_info,
 		struct key_chunk_t *curr);
 static void init_keys_info(struct keys_info *keys_info, int mapped);
 static const wchar_t* get_reg(const wchar_t *keys, int *reg);
 static const wchar_t* get_count(const wchar_t *keys, int *count);
 static struct key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
-static struct key_t* add_keys_inner(struct key_chunk_t *root,
+static struct key_chunk_t* add_keys_inner(struct key_chunk_t *root,
 		const wchar_t *keys);
 static int fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list);
 
@@ -138,16 +142,17 @@ set_def_handler(int mode, default_handler handler)
 int
 execute_keys(const wchar_t *keys)
 {
-	return execute_keys_general(keys, 0, 0);
+	return execute_keys_general(keys, 0, 0, 0);
 }
 
 int execute_keys_timed_out(const wchar_t *keys)
 {
-	return execute_keys_general(keys, 1, 0);
+	return execute_keys_general(keys, 1, 0, 0);
 }
 
 static int
-execute_keys_general(const wchar_t *keys, int timed_out, int mapped)
+execute_keys_general(const wchar_t *keys, int timed_out, int mapped,
+		int no_remap)
 {
 	int result;
 	struct keys_info keys_info;
@@ -157,17 +162,18 @@ execute_keys_general(const wchar_t *keys, int timed_out, int mapped)
 
 	init_keys_info(&keys_info, mapped);
 	keys_info.after_wait = timed_out;
-	result = execute_keys_inner(keys, &keys_info);
+	result = execute_keys_inner(keys, &keys_info, no_remap);
 	if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
 	{
 		result = def_handlers[*mode](keys[0]);
-		execute_keys_general(keys + 1, 0, mapped);
+		execute_keys_general(keys + 1, 0, mapped, no_remap);
 	}
 	return result;
 }
 
 static int
-execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info)
+execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info,
+		int no_remap)
 {
 	struct key_info key_info;
 	struct key_chunk_t *root;
@@ -182,17 +188,20 @@ execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info)
 	root = keys_info->selector ?
 		&selectors_root[*mode] : &user_cmds_root[*mode];
 
-	result = execute_keys_loop(keys, keys_info, root, key_info);
+	if(!no_remap)
+		result = execute_keys_loop(keys, keys_info, root, key_info, no_remap);
+	else
+		result = KEYS_UNKNOWN;
 	if(result == KEYS_UNKNOWN && !keys_info->selector)
 		result = execute_keys_loop(keys, keys_info, &builtin_cmds_root[*mode],
-				key_info);
+				key_info, no_remap);
 
 	return result;
 }
 
 static int
 execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
-		struct key_chunk_t *root, struct key_info key_info)
+		struct key_chunk_t *root, struct key_info key_info, int no_remap)
 {
 	struct key_chunk_t *curr;
 	const wchar_t *keys_start = keys;
@@ -225,7 +234,7 @@ execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
 			has_duplicate = root == &user_cmds_root[*mode] &&
 					contains_chain(&builtin_cmds_root[*mode], keys_start, keys);
 			result = execute_next_keys(curr, L"", &key_info, keys_info,
-					has_duplicate);
+					has_duplicate, no_remap);
 			if(IS_KEYS_RET_CODE(result))
 			{
 				if(result == KEYS_WAIT_SHORT)
@@ -235,7 +244,7 @@ execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
 				return result;
 			}
 			counter += keys_info->mapped ? 0 : (keys - keys_start);
-			return execute_keys_general(keys, 0, keys_info->mapped);
+			return execute_keys_general(keys, 0, keys_info->mapped, no_remap);
 		}
 		keys++;
 		curr = p;
@@ -250,7 +259,8 @@ execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
 
 	has_duplicate = root == &user_cmds_root[*mode] &&
 			contains_chain(&builtin_cmds_root[*mode], keys_start, keys);
-	result = execute_next_keys(curr, keys, &key_info, keys_info, has_duplicate);
+	result = execute_next_keys(curr, keys, &key_info, keys_info, has_duplicate,
+			no_remap);
 	if(!IS_KEYS_RET_CODE(result))
 	{
 		counter += keys_info->mapped ? 0 : (keys - keys_start);
@@ -294,7 +304,8 @@ contains_chain(struct key_chunk_t *root, const wchar_t *begin,
 
 static int
 execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
-		struct key_info *key_info, struct keys_info *keys_info, int has_duplicate)
+		struct key_info *key_info, struct keys_info *keys_info, int has_duplicate,
+		int no_remap)
 {
 	if(*keys == L'\0')
 	{
@@ -322,7 +333,7 @@ execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
 			return run_cmd(*key_info, keys_info, curr);
 		}
 		keys_info->selector = 1;
-		result = execute_keys_inner(keys, keys_info);
+		result = execute_keys_inner(keys, keys_info, no_remap);
 		keys_info->selector = 0;
 		if(IS_KEYS_RET_CODE(result))
 		{
@@ -354,7 +365,7 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 		if(curr->enters == 0)
 		{
 			curr->enters = 1;
-			result = execute_keys_inner(key_t->data.cmd, &keys_info);
+			result = execute_keys_inner(key_t->data.cmd, &keys_info, curr->no_remap);
 			curr->enters = 0;
 		}
 		else if(def_handlers[*mode] != NULL)
@@ -367,7 +378,7 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 			{
 				result = def_handlers[*mode](key_t->data.cmd[0]);
 				curr->enters = 1;
-				execute_keys_general(key_t->data.cmd + 1, 0, 1);
+				execute_keys_general(key_t->data.cmd + 1, 0, 1, curr->no_remap);
 				curr->enters = 0;
 			}
 			else
@@ -437,19 +448,21 @@ static
 struct key_t*
 add_cmd(const wchar_t *keys, int mode)
 {
-	return add_keys_inner(&builtin_cmds_root[mode], keys);
+	struct key_chunk_t *curr = add_keys_inner(&builtin_cmds_root[mode], keys);
+	return &curr->conf;
 }
 
 int
-add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode)
+add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode, int no_r)
 {
-	struct key_t *curr;
+	struct key_chunk_t *curr;
 
 	curr = add_keys_inner(&user_cmds_root[mode], keys);
-	if(curr->type == USER_CMD)
-		free((void*)curr->data.cmd);
-	curr->type = USER_CMD;
-	curr->data.cmd = my_wcsdup(cmd);
+	if(curr->conf.type == USER_CMD)
+		free((void*)curr->conf.data.cmd);
+	curr->conf.type = USER_CMD;
+	curr->conf.data.cmd = my_wcsdup(cmd);
+	curr->no_remap = no_r;
 	return 0;
 }
 
@@ -520,10 +533,11 @@ find_user_keys(const wchar_t *keys, int mode)
 #ifndef TEST
 static
 #endif
-struct key_t*
+struct key_t *
 add_selector(const wchar_t *keys, int mode)
 {
-	return add_keys_inner(&selectors_root[mode], keys);
+	struct key_chunk_t *curr = add_keys_inner(&selectors_root[mode], keys);
+	return &curr->conf;
 }
 
 int
@@ -566,7 +580,7 @@ add_selectors(struct keys_add_info *cmds, size_t len, int mode)
 	return result;
 }
 
-static struct key_t*
+static struct key_chunk_t*
 add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 {
 	struct key_chunk_t *curr = root;
@@ -616,7 +630,7 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 		keys++;
 		curr = p;
 	}
-	return &curr->conf;
+	return curr;
 }
 
 wchar_t **

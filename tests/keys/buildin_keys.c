@@ -12,6 +12,8 @@
 #define printf(...)
 #endif
 
+int last; /* 1 = k, 2 = j */
+
 static int* mode;
 
 static void keys_colon(struct key_info key_info, struct keys_info *keys_info);
@@ -175,6 +177,7 @@ keys_H(struct key_info key_info, struct keys_info *keys_info)
 static void
 keys_j(struct key_info key_info, struct keys_info *keys_info)
 {
+	last = 2;
 	if(keys_info->selector)
 	{
 		printf("as a selector: ");
@@ -185,6 +188,7 @@ keys_j(struct key_info key_info, struct keys_info *keys_info)
 static void
 keys_k(struct key_info key_info, struct keys_info *keys_info)
 {
+	last = 1;
 	if(keys_info->selector)
 	{
 		printf("as a selector: ");

@@ -6,7 +6,8 @@
 static void
 remap_builtin_cmds(void)
 {
-	assert_int_equal(0, add_user_keys(L"ZZ", L":strange movement", NORMAL_MODE));
+	assert_int_equal(0,
+			add_user_keys(L"ZZ", L":strange movement", NORMAL_MODE, 0));
 }
 
 void

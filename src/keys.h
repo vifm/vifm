@@ -155,7 +155,7 @@ int add_selectors(struct keys_add_info *cmds, size_t len, int mode);
 /*
  * Returns not zero when can't find user keys
  */
-int add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode);
+int add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode, int no_r);
 
 /*
  * Returns not zero if such mapping exists

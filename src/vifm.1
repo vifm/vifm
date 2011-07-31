@@ -671,6 +671,26 @@ map lhs to rhs in normal mode.
 map lhs to rhs in visual mode.
 
 .TP
+.BI ":no[remap] lhs rhs"
+map the key sequence lhs to {rhs} for normal and visual modes, but disallow
+mapping of rhs.
+.TP
+.BI ":no[remap]! lhs rhs"
+map the key sequence lhs to {rhs} for command line mode, but disallow mapping of
+rhs.
+
+.TP
+.BI ":cno[remap] lhs rhs"
+map the key sequence lhs to {rhs} for command line mode, but disallow mapping of
+rhs.
+.TP
+.BI ":nn[oremap] lhs rhs"
+map the key sequence lhs to {rhs} for normal mode, but disallow mapping of rhs.
+.TP
+.BI ":vn[oremap] lhs rhs"
+map the key sequence lhs to {rhs} for visual mode, but disallow mapping of rhs.
+
+.TP
 .BI ":unm[ap] lhs"
 remove the mapping of lhs from normal and visual modes.
 .TP

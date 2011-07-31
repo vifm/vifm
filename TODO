@@ -46,7 +46,6 @@ Vi(m) specific features that need to be added.
         and the startup file)
     Add one more color to color scheme for error messages in status bar.
     Add one more color to color scheme for broken links.
-    Add :noremap commands.
     Some kind of selection mode (multible blocks, mixing).
     gs to work with t selection just like gv with visual mode selection.
     Add :mksession command and 'sessionoptions' option.

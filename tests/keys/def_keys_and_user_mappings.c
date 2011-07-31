@@ -23,8 +23,8 @@ static void
 add_custom_keys(void)
 {
 	set_def_handler(CMDLINE_MODE, &handler);
-	add_user_keys(L"s", L":shell", NORMAL_MODE);
-	add_user_keys(L"q", L"toto", CMDLINE_MODE);
+	add_user_keys(L"s", L":shell", NORMAL_MODE, 0);
+	add_user_keys(L"q", L"toto", CMDLINE_MODE, 0);
 }
 
 static void
