@@ -395,6 +395,13 @@ Add ' &' in the end of command if you want to start program in background.
 :nm[ap] lhs rhs - map lhs to rhs in normal mode.
 :vm[ap] lhs rhs - map lhs to rhs in visual mode.
 
+:unm[ap] lhs - remove the mapping of lhs from normal and visual modes.
+:unm[ap]! lhs - remove the mapping of lhs from command line mode.
+
+:cu[nmap] lhs - remove the mapping of lhs from command line mode.
+:nun[map] lhs - remove the mapping of lhs from normal mode.
+:vu[nmap] lhs - remove the mapping of lhs from visual mode.
+
 Ranges~
                                                                *Vifm_Ranges*
 The ranges implemented include:
@@ -731,6 +738,8 @@ The following command names are reserved and cannot be used for user commands.
   comclear - remove all user defined commands.
   com - show user commands.
   command - show user commands.
+  cu - remove the mapping of lhs from command line mode.
+  cunmap - remove the mapping of lhs from command line mode.
   d - delete file.
   delc - delete command.
   delcommand - delete command.
@@ -762,6 +771,8 @@ The following command names are reserved and cannot be used for user commands.
   nmap - user mapping for normal mode.
   noh - clear selection in current pane.
   nohlsearch - clear selection in current pane.
+  nun - remove the mapping of lhs from normal mode.
+  nunmap - remove the mapping of lhs from normal mode.
   on - switch to a one window view.
   only - switch to a one window view.
   popd - remove pane directories from stack.
@@ -790,6 +801,8 @@ The following command names are reserved and cannot be used for user commands.
   vifm - menu with version information.
   vm - user key mapping for visual mode.
   vmap - user key mapping for visual mode.
+  vu - remove the mapping of lhs from visual mode.
+  vunmap - remove the mapping of lhs from visual mode.
   w - same as :write.
   wq - will exit vifm after writing config.
   write - write config (add ! to force write even if settings weren't changed).

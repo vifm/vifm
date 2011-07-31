@@ -77,7 +77,7 @@ received_sigchld(void)
 	pid_t pid;
 
 	/* This needs to be a loop in case of multiple blocked signals. */
-	while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
+	while((pid = waitpid(-1, &status, WNOHANG)) > 0)
 		add_finished_job(pid, status);
 }
 

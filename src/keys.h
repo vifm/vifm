@@ -158,6 +158,11 @@ int add_selectors(struct keys_add_info *cmds, size_t len, int mode);
 int add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode);
 
 /*
+ * Returns not zero if such mapping exists
+ */
+int has_user_keys(const wchar_t *keys, int mode);
+
+/*
  * Returns not zero on error
  */
 int remove_user_keys(const wchar_t *keys, int mode);

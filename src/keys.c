@@ -59,6 +59,7 @@ static int run_cmd(struct key_info key_info, struct keys_info *keys_info,
 static void init_keys_info(struct keys_info *keys_info, int mapped);
 static const wchar_t* get_reg(const wchar_t *keys, int *reg);
 static const wchar_t* get_count(const wchar_t *keys, int *count);
+static struct key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
 static struct key_t* add_keys_inner(struct key_chunk_t *root,
 		const wchar_t *keys);
 static int fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list);
@@ -453,27 +454,24 @@ add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode)
 }
 
 int
+has_user_keys(const wchar_t *keys, int mode)
+{
+	return find_user_keys(keys, mode) != NULL;
+}
+
+int
 remove_user_keys(const wchar_t *keys, int mode)
 {
-	struct key_chunk_t *curr = &user_cmds_root[mode], *p;
-	while(*keys != L'\0')
-	{
-		p = curr->child;
-		while(p != NULL && p->key < *keys)
-			p = p->next;
-		if(p == NULL || p->key != *keys)
-			return -1;
-		curr = p;
-		keys++;
-	}
+	struct key_chunk_t *curr, *p;
 
-	if(curr->conf.type != USER_CMD)
-		return -2;
+	if((curr = find_user_keys(keys, mode)) == NULL)
+		return -1;
 
 	free(curr->conf.data.cmd);
 	curr->conf.type = BUILDIN_WAIT_POINT;
 	curr->conf.data.handler = NULL;
 
+	p = curr;
 	while(p->parent != NULL)
 	{
 		p->parent->children_count--;
@@ -497,6 +495,26 @@ remove_user_keys(const wchar_t *keys, int mode)
 			curr->parent->children_count == 0);
 
 	return 0;
+}
+
+static struct key_chunk_t *
+find_user_keys(const wchar_t *keys, int mode)
+{
+	struct key_chunk_t *curr = &user_cmds_root[mode], *p;
+	while(*keys != L'\0')
+	{
+		p = curr->child;
+		while(p != NULL && p->key < *keys)
+			p = p->next;
+		if(p == NULL || p->key != *keys)
+			return NULL;
+		curr = p;
+		keys++;
+	}
+
+	if(curr->conf.type != USER_CMD)
+		return NULL;
+	return curr;
 }
 
 #ifndef TEST

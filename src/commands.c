@@ -100,6 +100,7 @@ static int change_cmd(const struct cmd_info *cmd_info);
 static int cmap_cmd(const struct cmd_info *cmd_info);
 static int colorscheme_cmd(const struct cmd_info *cmd_info);
 static int command_cmd(const struct cmd_info *cmd_info);
+static int cunmap_cmd(const struct cmd_info *cmd_info);
 static int delete_cmd(const struct cmd_info *cmd_info);
 static int delmarks_cmd(const struct cmd_info *cmd_info);
 static int dirs_cmd(const struct cmd_info *cmd_info);
@@ -118,6 +119,7 @@ static int mark_cmd(const struct cmd_info *cmd_info);
 static int marks_cmd(const struct cmd_info *cmd_info);
 static int nmap_cmd(const struct cmd_info *cmd_info);
 static int nohlsearch_cmd(const struct cmd_info *cmd_info);
+static int nunmap_cmd(const struct cmd_info *cmd_info);
 static int only_cmd(const struct cmd_info *cmd_info);
 static int popd_cmd(const struct cmd_info *cmd_info);
 static int pushd_cmd(const struct cmd_info *cmd_info);
@@ -135,6 +137,8 @@ static int unmap_cmd(const struct cmd_info *cmd_info);
 static int view_cmd(const struct cmd_info *cmd_info);
 static int vifm_cmd(const struct cmd_info *cmd_info);
 static int vmap_cmd(const struct cmd_info *cmd_info);
+static int vunmap_cmd(const struct cmd_info *cmd_info);
+static int do_unmap(const char *keys, int mode);
 static int write_cmd(const struct cmd_info *cmd_info);
 static int wq_cmd(const struct cmd_info *cmd_info);
 static int quit_cmd(const struct cmd_info *cmd_info);
@@ -159,6 +163,8 @@ static const struct cmd_add commands[] = {
 		.handler = colorscheme_cmd, .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
   { .name = "command",          .abbr = "com",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
     .handler = command_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "cunmap",           .abbr = "cu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = cunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "delete",           .abbr = "d",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = delete_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 1, },
 	{ .name = "delmarks",         .abbr = "delm",  .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -197,6 +203,8 @@ static const struct cmd_add commands[] = {
 		.handler = nmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "nohlsearch",       .abbr = "noh",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nohlsearch_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "nunmap",           .abbr = "nun",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = nunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "only",             .abbr = "on",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = only_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "popd",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -225,7 +233,7 @@ static const struct cmd_add commands[] = {
 		.handler = sync_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "undolist",         .abbr = "undol", .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = undolist_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "unmap",            .abbr = "unm",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "unmap",            .abbr = "unm",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = unmap_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "view",             .abbr = "vie",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = view_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
@@ -233,6 +241,8 @@ static const struct cmd_add commands[] = {
 		.handler = vifm_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "vmap",             .abbr = "vm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "vunmap",           .abbr = "vu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = vunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "write",            .abbr = "w",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = write_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "wq",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1875,6 +1885,12 @@ command_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
+cunmap_cmd(const struct cmd_info *cmd_info)
+{
+	return do_unmap(cmd_info->argv[0], CMDLINE_MODE);
+}
+
+static int
 delete_cmd(const struct cmd_info *cmd_info)
 {
 	int reg = DEFAULT_REG_NAME;
@@ -2220,6 +2236,12 @@ nohlsearch_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
+nunmap_cmd(const struct cmd_info *cmd_info)
+{
+	return do_unmap(cmd_info->argv[0], NORMAL_MODE);
+}
+
+static int
 only_cmd(const struct cmd_info *cmd_info)
 {
 	curr_stats.number_of_windows = 1;
@@ -2341,11 +2363,26 @@ unmap_cmd(const struct cmd_info *cmd_info)
 	wchar_t *subst;
 	
 	subst = substitute_specs(cmd_info->argv[0]);
-	result = remove_user_keys(subst, NORMAL_MODE);
-	result += remove_user_keys(subst, VISUAL_MODE);
+	if(cmd_info->emark)
+	{
+		result = remove_user_keys(subst, CMDLINE_MODE) != 0;
+	}
+	else if(!has_user_keys(subst, NORMAL_MODE))
+	{
+		result = 1;
+	}
+	else if(!has_user_keys(subst, VISUAL_MODE))
+	{
+		result = 1;
+	}
+	else
+	{
+		result = remove_user_keys(subst, NORMAL_MODE) != 0;
+		result += remove_user_keys(subst, VISUAL_MODE) != 0;
+	}
 	free(subst);
 
-	if(result > 0)
+	if(result != 0)
 	{
 		status_bar_message("No such mapping");
 		return 1;
@@ -2390,6 +2427,30 @@ static int
 vmap_cmd(const struct cmd_info *cmd_info)
 {
 	return do_map(cmd_info, "Visual", "vmap", VISUAL_MODE) != 0;
+}
+
+static int
+vunmap_cmd(const struct cmd_info *cmd_info)
+{
+	return do_unmap(cmd_info->argv[0], VISUAL_MODE);
+}
+
+static int
+do_unmap(const char *keys, int mode)
+{
+	int result;
+	wchar_t *subst;
+	
+	subst = substitute_specs(keys);
+	result = remove_user_keys(subst, mode);
+	free(subst);
+
+	if(result != 0)
+	{
+		status_bar_message("No such mapping");
+		return 1;
+	}
+	return 0;
 }
 
 static int
