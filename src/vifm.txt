@@ -280,9 +280,11 @@ See |Reserved| for a list of reserved command names.
 The builtin commands are:
 
 :!program - shellout and execute program.
-    :!command & will run the process in the background.
+    :!command & will run the process in the background using vifm's means.
     Programs that write to stdout like ls will create an error message
     showing partial output of the command.
+    Take note of the space before ampersand symbol, if you omit it, command
+    will be run in the background using job control of shell.
 :!!program - same as :! but will pause before returning.
 :!! - repeat the last command.
 :apropos manpage - will create a menu of items returned by the apropos
