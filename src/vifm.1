@@ -565,10 +565,10 @@ uses the locate command to create a menu of filenames
 Selecting a file from the menu will reload the current file list in vifm
 to show the selected file.
 .TP
-.BI :[range]ma[rk] x /full/path [filename]
-Set mark x at /full/path and filename.  If no filename was given and /full/path
-is current directory then last file in [range] is used.  Using macros is
-allowed.
+.BI :[range]ma[rk] x [/full/path] [filename]
+Set mark x at /full/path and filename.  By default current directory is being
+used.  If no filename was given and /full/path is current directory then last
+file in [range] is used.  Using macros is allowed.
 .TP
 .BI :marks
 create a popup menu of bookmarks.

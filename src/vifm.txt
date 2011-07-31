@@ -349,8 +349,9 @@ Add ' &' in the end of command if you want to start program in background.
     Selecting a file from the menu will reload the current file list in vifm
     to show the selected file.
 :[range]ma[rk] x /full/path [filename] - set mark x at /full/path and
-    filename.  If no filename was given and /full/path is current directory
-    then last file in [range] is used.  Using macros is allowed.
+    filename.  By default current directory is used.  If no filename was
+    given and /full/path is current directory then last file in [range] is
+    being used.  Using macros is allowed.
 :marks - menu of bookmarks.
 :noh[lsearch] - clear selection in current pane.
 :on[ly] - switch to a one window view.
