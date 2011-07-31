@@ -94,6 +94,9 @@ init_sort_dialog_mode(int *key_mode)
 void
 enter_sort_mode(FileView *active_view)
 {
+	if(curr_stats.vifm_started != 2)
+		return;
+
 	view = active_view;
 	descending = view->sort_descending;
 	*mode = SORT_MODE;

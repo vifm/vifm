@@ -372,7 +372,7 @@ main(int argc, char *argv[])
 		}
 	}
 
-	redraw_window();
+	modes_redraw();
 	main_loop();
 
 	return 0;

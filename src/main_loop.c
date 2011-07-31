@@ -55,21 +55,7 @@ main_loop(void)
 	int last_result = 0;
 	int wait_enter = 0;
 
-	wattroff(curr_view->win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR));
-
 	wtimeout(status_bar, KEYPRESS_TIMEOUT);
-
-	update_stat_window(curr_view);
-	update_pos_window(curr_view);
-
-	if(curr_view->selected_files)
-	{
-		char status_buf[64] = "";
-		snprintf(status_buf, sizeof(status_buf), "%d %s Selected",
-				curr_view->selected_files, curr_view->selected_files == 1 ? "File" :
-				"Files");
-		status_bar_message(status_buf);
-	}
 
 	buf[0] = L'\0';
 	while(1)

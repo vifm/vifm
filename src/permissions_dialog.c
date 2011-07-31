@@ -101,6 +101,9 @@ enter_permissions_mode(FileView *active_view)
 	mode_t fmode;
 	mode_t diff;
 
+	if(curr_stats.vifm_started != 2)
+		return;
+
 	view = active_view;
 	*mode = PERMISSIONS_MODE;
 	clear_input_bar();
