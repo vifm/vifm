@@ -741,9 +741,9 @@ expand_tilde(char *path)
 		result = malloc((strlen(cfg.home_dir) + strlen(path) + 1));
 		if(result == NULL)
 			return NULL;
-		free(path);
 
-		sprintf(result, "%s%s", cfg.home_dir, path + 2);
+		sprintf(result, "%s%s", cfg.home_dir, (path[1] == '/') ? (path + 2) : "");
+		free(path);
 		return result;
 	}
 
@@ -2124,32 +2124,39 @@ map_cmd(const struct cmd_info *cmd_info)
 static int
 mark_cmd(const struct cmd_info *cmd_info)
 {
+	int result;
+	char *tmp;
+
 	if(strlen(cmd_info->argv[0]) != 1)
 		return CMDS_ERR_TRAILING_CHARS;
-	if(cmd_info->argv[1][0] != '/')
+	tmp = expand_tilde(strdup(cmd_info->argv[1]));
+	if(tmp[0] != '/')
 	{
+		free(tmp);
 		status_bar_message("Expected full path to the directory");
 		return 1;
 	}
 
 	if(cmd_info->argc == 2)
 	{
-		if(cmd_info->end == NOT_DEF || !pane_in_dir(curr_view, cmd_info->argv[1]))
+		if(cmd_info->end == NOT_DEF || !pane_in_dir(curr_view, tmp))
 		{
-			if(pane_in_dir(curr_view, cmd_info->argv[1]))
-				return add_bookmark(cmd_info->argv[0][0], cmd_info->argv[1],
+			if(pane_in_dir(curr_view, tmp))
+				result = add_bookmark(cmd_info->argv[0][0], tmp,
 						curr_view->dir_entry[curr_view->list_pos].name);
 			else
-				return add_bookmark(cmd_info->argv[0][0], cmd_info->argv[1], "../");
+				result = add_bookmark(cmd_info->argv[0][0], tmp, "../");
 		}
 		else
-			return add_bookmark(cmd_info->argv[0][0], cmd_info->argv[1],
+			result = add_bookmark(cmd_info->argv[0][0], tmp,
 					curr_view->dir_entry[cmd_info->end].name);
 	}
 	else
 	{
-		return add_bookmark(cmd_info->argv[0][0], cmd_info->argv[1], cmd_info->argv[2]);
+		result = add_bookmark(cmd_info->argv[0][0], tmp, cmd_info->argv[2]);
 	}
+	free(tmp);
+	return result;
 }
 
 static int
