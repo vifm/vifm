@@ -129,6 +129,7 @@ int setup_ncurses_interface(void);
 void update_stat_window(FileView *view);
 void redraw_window(void);
 void update_pos_window(FileView *view);
+void status_bar_messagef(const char *format, ...);
 void status_bar_message(const char *message);
 int is_status_bar_multiline(void);
 void clean_status_bar(void);

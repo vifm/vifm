@@ -17,25 +17,27 @@
  */
 
 #define _GNU_SOURCE /* I don't know how portable this is but it is
-					   needed in Linux for the ncurses wide char
-					   functions
-					   */
+                     * needed in Linux for the ncurses wide char
+                     * functions
+                     */
 
-#include <grp.h> /* getgrgid() */
-#include <signal.h> /* signal() */
-#include <stdlib.h> /* malloc */
+#include <sys/ioctl.h>
 #include <sys/stat.h> /* stat */
 #include <dirent.h> /* DIR */
+#include <grp.h> /* getgrgid() */
 #include <pwd.h> /* getpwent() */
+#include <stdlib.h> /* malloc */
+#include <termios.h> /* struct winsize */
+
+#include <signal.h> /* signal() */
+#include <stdarg.h>
 #include <string.h>
 #include <time.h>
-#include <termios.h> /* struct winsize */
-#include <sys/ioctl.h>
 
 #include "../config.h"
 
 #include "color_scheme.h"
-#include "config.h" /* for menu colors */
+#include "config.h"
 #include "file_info.h"
 #include "filelist.h"
 #include "macros.h"
@@ -43,8 +45,9 @@
 #include "opt_handlers.h"
 #include "signals.h"
 #include "status.h"
-#include "ui.h"
 #include "utils.h"
+
+#include "ui.h"
 
 static int status_bar_lines;
 
@@ -147,6 +150,20 @@ update_stat_window(FileView *view)
 	mvwaddstr(stat_win, 0, cur_x, id_buf);
 
 	wnoutrefresh(stat_win);
+}
+
+void
+status_bar_messagef(const char *format, ...)
+{
+	va_list ap;
+	char buf[512];
+
+	va_start(ap, format);
+
+	vsnprintf(buf, sizeof(buf), format, ap);
+	status_bar_message(buf);
+
+	va_end(ap);
 }
 
 /*

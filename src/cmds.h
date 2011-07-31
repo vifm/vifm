@@ -105,6 +105,7 @@ int complete_cmd(const char *cmd);
 void add_buildin_commands(const struct cmd_add *cmds, int count);
 /* Last element is followed by a NULL */
 char ** list_udf(void);
+char * list_udf_content(const char *beginning);
 
 #ifdef TEST
 int add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf);

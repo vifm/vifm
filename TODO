@@ -42,13 +42,14 @@ Vi(m) specific features that need to be added.
 	Add :s/pattern/replace/ command.
     Add 'vifminfo' option.  This removes 'savelocation' option and moves FILTER.
     Add something ('freezmarks' option ?) to prevent user loose his bookmarks 
-        accidentally.
+        accidentally. (maybe we don't need this now, because of :mark command
+        and the startup file)
     Add one more color to color scheme for error messages in status bar.
     Add one more color to color scheme for broken links.
     Add :unmap commands.
     Add :noremap commands.
     Some kind of selection mode (multible blocks, mixing).
-    Generalize gv to work with t selection.
+    gs to work with t selection just like gv with visual mode selection.
     Add :mksession command and 'sessionoptions' option.
     Add 'vifminfo' option.
     Save active pane (with positions) on exit (session and vifminfo).
@@ -63,7 +64,6 @@ Vi(m) specific features that need to be added.
     :comc[lear] command.
     v /, v ?, d /, d ?
     :map without arguments
-    :com existing_command
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -93,7 +93,6 @@ Possible things to add.
 
 Vim plugin
     Choose between one and two pane view on startup somehow.
-    Open FUSE using fuse mounter, not Vim.
 
 Other (questionable) things.
     %i macro to prompt user for input.
@@ -118,7 +117,7 @@ Other (questionable) things.
     Filetype support for directories.
     :edit, etc. in menus.
     :alias
-    Like gv but to select just pasted files (gs).
+    Like gv but to select just pasted files (gp?).
     Ctrl-W in command line mode like in vim?
     Move file name to the title of other pane in view mode.
 

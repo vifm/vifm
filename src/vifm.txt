@@ -298,6 +298,8 @@ The builtin commands are:
     dialogs.
 :colo[rscheme] color_scheme_name - changes default color scheme.
 :com[mand] - gives a menu of user commands.
+:com[mand] beginning - shows user defined commands that start with the
+    beginning.
 :com[mand] name action - sets a new user command.
     Trying to use a reserved command name will result in an error message
     Use :com[mand]! to overwrite a previously set command.

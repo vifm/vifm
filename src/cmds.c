@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -1084,6 +1085,40 @@ list_udf(void)
 	*p = NULL;
 
 	return list;
+}
+
+char *
+list_udf_content(const char *beginning)
+{
+	size_t len;
+	struct cmd_t *cur;
+	char *result;
+	size_t result_len;
+
+	cur = head.next;
+	len = strlen(beginning);
+	result = NULL;
+	while(cur != NULL)
+	{
+		if(strncmp(cur->name, beginning, len) != 0 || cur->type != USER_CMD)
+		{
+			cur = cur->next;
+			continue;
+		}
+
+		if(result == NULL)
+		{
+			result = strdup("Command -- Action");
+			result_len = strlen(result);
+		}
+		result = realloc(result,
+				result_len + 1 + strlen(cur->name) + 10 + strlen(cur->cmd) + 1);
+		result_len += sprintf(result + result_len, "\n%-*s %s", 10, cur->name,
+				cur->cmd);
+		cur = cur->next;
+	}
+
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

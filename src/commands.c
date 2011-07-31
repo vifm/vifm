@@ -1844,9 +1844,16 @@ colorscheme_cmd(const struct cmd_info *cmd_info)
 static int
 command_cmd(const struct cmd_info *cmd_info)
 {
+	char *desc;
+
 	if(cmd_info->argc == 0)
 		return show_commands_menu(curr_view) != 0;
-	return CMDS_ERR_TOO_FEW_ARGS;
+
+	if((desc = list_udf_content(cmd_info->argv[0])) == NULL)
+		return CMDS_ERR_NO_SUCH_UDF;
+	status_bar_message(desc);
+	free(desc);
+	return 1;
 }
 
 static int

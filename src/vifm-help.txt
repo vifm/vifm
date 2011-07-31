@@ -374,6 +374,9 @@ Commands
        :com[mand]
               gives a menu of user commands.
 
+       :com[mand] beginning
+              shows user defined commands that start with the beginning.
+
        :com[mand] name action
               sets a new user command.
               Trying to use a reserved command name will result  in  an  error
@@ -891,4 +894,4 @@ AUTHOR
 
 
 
-                                 Jule 31, 2011                         vifm(1)
+                                 July 31, 2011                         vifm(1)
