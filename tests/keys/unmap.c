@@ -4,24 +4,40 @@
 #include "../../src/modes.h"
 
 static void
-add_custom_keys(void)
+test_unmap_users(void)
 {
-	assert_int_equal(0, add_user_keys(L",h", L"k", NORMAL_MODE));
+	assert_int_equal(KEYS_UNKNOWN, execute_keys(L","));
+	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"q"));
+	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"s"));
+
+	assert_int_equal(0, add_user_keys(L",q", L"k", NORMAL_MODE));
 	assert_int_equal(0, add_user_keys(L",s", L"j", NORMAL_MODE));
+
+	assert_int_equal(KEYS_WAIT, execute_keys(L","));
+
+	assert_int_equal(0, execute_keys(L",q"));
+	assert_int_equal(0, remove_user_keys(L",q", NORMAL_MODE));
+	assert_int_equal(KEYS_UNKNOWN, execute_keys(L",q"));
+
+	assert_int_equal(0, execute_keys(L",s"));
+	assert_int_equal(0, remove_user_keys(L",s", NORMAL_MODE));
+	assert_int_equal(KEYS_UNKNOWN, execute_keys(L",s"));
+
+	assert_int_equal(KEYS_UNKNOWN, execute_keys(L","));
 }
 
 static void
-test_unmap(void)
+test_unmap_remapped(void)
 {
-	assert_true(IS_KEYS_RET_CODE(execute_keys(L",")));
+	assert_int_equal(0, execute_keys(L"j"));
 
-	assert_false(IS_KEYS_RET_CODE(execute_keys(L",h")));
-	assert_int_equal(0, remove_user_keys(L",h", NORMAL_MODE));
-	assert_true(IS_KEYS_RET_CODE(execute_keys(L",h")));
+	assert_int_equal(0, add_user_keys(L"j", L"k", NORMAL_MODE));
 
-	assert_false(IS_KEYS_RET_CODE(execute_keys(L",s")));
-	assert_int_equal(0, remove_user_keys(L",s", NORMAL_MODE));
-	assert_true(IS_KEYS_RET_CODE(execute_keys(L",s")));
+	assert_int_equal(0, execute_keys(L"j"));
+
+	assert_int_equal(0, execute_keys(L"j"));
+	assert_int_equal(0, remove_user_keys(L"j", NORMAL_MODE));
+	assert_int_equal(0, execute_keys(L"j"));
 }
 
 void
@@ -29,9 +45,8 @@ unmap_tests(void)
 {
 	test_fixture_start();
 
-	fixture_setup(add_custom_keys);
-
-	run_test(test_unmap);
+	run_test(test_unmap_users);
+	run_test(test_unmap_remapped);
 
 	test_fixture_end();
 }

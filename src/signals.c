@@ -53,6 +53,24 @@ received_sigwinch(void)
 }
 
 static void
+received_sigcont(void)
+{
+	reset_prog_mode();
+	modes_redraw();
+}
+
+static void
+received_sigtstp(void)
+{
+	/* End program so key strokes are not registered while stopped. */
+	def_prog_mode();
+	endwin();
+	pause();
+	refresh();
+	curs_set(0);
+}
+
+static void
 received_sigchld(void)
 {
 	int status;
@@ -85,6 +103,12 @@ handle_signal(int sig)
 		case SIGWINCH:
 			received_sigwinch();
 			break;
+		case SIGCONT:
+			received_sigcont();
+			break;
+		case SIGTSTP:
+			received_sigtstp();
+			break;
 		/* Shutdown nicely */
 		case SIGHUP:
 		case SIGQUIT:
@@ -108,6 +132,8 @@ setup_signals(void)
 	sigaction(SIGCHLD, &handle_signal_action, NULL);
 	sigaction(SIGHUP, &handle_signal_action, NULL);
 	sigaction(SIGQUIT, &handle_signal_action, NULL);
+	sigaction(SIGTSTP, &handle_signal_action, NULL);
+	sigaction(SIGCONT, &handle_signal_action, NULL);
 	sigaction(SIGTERM, &handle_signal_action, NULL);
 	sigaction(SIGWINCH, &handle_signal_action, NULL);
 

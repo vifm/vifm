@@ -1791,6 +1791,14 @@ change_cmd(const struct cmd_info *cmd_info)
 	return 0;
 }
 
+static void
+trim_trailing_spaces(wchar_t *str)
+{
+	size_t len = wcslen(str);
+	while(len > 1 && (str[len - 1] == L' ' || str[len - 1] == L'\t'))
+		str[--len] = L'\0';
+}
+
 static int
 do_map(const struct cmd_info *cmd_info, const char *map_type,
 		const char *map_cmd, int mode)
@@ -1822,6 +1830,7 @@ do_map(const struct cmd_info *cmd_info, const char *map_type,
 	rhs = (char*)skip_spaces(raw_rhs + 1);
 	keys = substitute_specs(cmd_info->args);
 	mapping = substitute_specs(rhs);
+	trim_trailing_spaces(mapping);
 	result = add_user_keys(keys, mapping, mode);
 	free(mapping);
 	free(keys);
@@ -2328,8 +2337,20 @@ undolist_cmd(const struct cmd_info *cmd_info)
 static int
 unmap_cmd(const struct cmd_info *cmd_info)
 {
-	status_bar_message(":unmap is not implemented yet");
-	return 1;
+	int result;
+	wchar_t *subst;
+	
+	subst = substitute_specs(cmd_info->argv[0]);
+	result = remove_user_keys(subst, NORMAL_MODE);
+	result += remove_user_keys(subst, VISUAL_MODE);
+	free(subst);
+
+	if(result > 0)
+	{
+		status_bar_message("No such mapping");
+		return 1;
+	}
+	return 0;
 }
 
 static int

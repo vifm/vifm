@@ -483,16 +483,18 @@ remove_user_keys(const wchar_t *keys, int mode)
 	if(curr->children_count > 0)
 		return 0;
 
-	while(curr->parent != NULL && curr->parent->conf.data.handler == NULL &&
-			curr->parent->conf.type == BUILDIN_WAIT_POINT &&
-			curr->parent->children_count == 0)
+	do
 	{
 		struct key_chunk_t *parent = curr->parent;
 		if(curr->prev != NULL)
 			curr->prev->next = curr->next;
+		else
+			parent->child = curr->next;
 		free(curr);
 		curr = parent;
-	}
+	} while(curr->parent != NULL && curr->parent->conf.data.handler == NULL &&
+			curr->parent->conf.type == BUILDIN_WAIT_POINT &&
+			curr->parent->children_count == 0);
 
 	return 0;
 }
