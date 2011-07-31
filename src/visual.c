@@ -75,6 +75,7 @@ static void goto_pos(int pos);
 static void cmd_gv(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
+static void cmd_m(struct key_info, struct keys_info *);
 static void cmd_y(struct key_info, struct keys_info *);
 static void cmd_zf(struct key_info, struct keys_info *);
 static void find_goto(int ch, int backward);
@@ -116,6 +117,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"gv", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gv}}},
 	{L"j", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"m", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_m}}},
 	{L"o", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
 	{L"v", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"y", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_y}}},
@@ -486,6 +488,13 @@ cmd_k(struct key_info key_info, struct keys_info *keys_info)
 	while(key_info.count-- > 0)
 		select_up_one(view, start_pos);
 	update();
+}
+
+static void
+cmd_m(struct key_info key_info, struct keys_info *keys_info)
+{
+	add_bookmark(key_info.multi, curr_view->curr_dir,
+			get_current_file_name(curr_view));
 }
 
 static void
