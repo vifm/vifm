@@ -49,6 +49,8 @@
 
 	Made :display and :registers accept argument (like in Vim).
 
+	Now vifm understands user name after tilde in paths.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

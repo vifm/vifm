@@ -18,8 +18,10 @@
 
 #include <curses.h>
 
+#include <sys/types.h> /* passwd */
 #include <sys/wait.h>
 #include <dirent.h> /* DIR */
+#include <pwd.h> /* getpwnam() */
 #include <unistd.h> /* chdir() */
 
 #include <assert.h>
@@ -75,7 +77,7 @@ static void filename_completion(const char *str, int type);
 static int is_entry_dir(const struct dirent *d);
 static int is_entry_exec(const struct dirent *d);
 static void split_path(void);
-static char * expand_tilda(const char *path);
+static char * expand_tilde(char *path);
 static wchar_t * substitute_specs(const char *cmd);
 static const char *skip_spaces(const char *cmd);
 static const char *skip_word(const char *cmd);
@@ -327,9 +329,11 @@ filename_completion(const char *str, int type)
 	int filename_len;
 	int isdir;
 
-	if(strcmp(str, "~") == 0)
+	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
-		add_completion(cfg.home_dir);
+		char *s = expand_tilde(strdup(str));
+		add_completion(s);
+		free(s);
 		return;
 	}
 
@@ -337,9 +341,9 @@ filename_completion(const char *str, int type)
 
 	temp = strrchr(str, '/');
 
-	if(strncmp(string, "~/", 2) == 0)
+	if(string[0] == '~')
 	{
-		dirname = expand_tilda(string);
+		dirname = expand_tilde(strdup(string));
 		filename = strdup(dirname);
 	}
 	else
@@ -683,13 +687,7 @@ split_path(void)
 
 		p = q;
 
-		if(strncmp(s, "~/", 2) == 0)
-		{
-			char *t;
-			t = expand_tilda(s);
-			free(s);
-			s = t;
-		}
+		s = expand_tilde(s);
 
 		if(access(s, F_OK) != 0)
 		{
@@ -713,15 +711,48 @@ split_path(void)
 }
 
 static char *
-expand_tilda(const char *path)
+expand_tilde(char *path)
 {
-	char *result;
+	char name[NAME_MAX];
+	char *p, *result;
+	struct passwd *pw;
 
-	result = malloc((strlen(cfg.home_dir) + strlen(path) + 1));
+	if(path[0] != '~')
+		return strdup(path);
+
+	if(path[1] == '\0' || path[1] == '/')
+	{
+		char *result;
+
+		result = malloc((strlen(cfg.home_dir) + strlen(path) + 1));
+		if(result == NULL)
+			return NULL;
+		free(path);
+
+		sprintf(result, "%s%s", cfg.home_dir, path + 2);
+		return result;
+	}
+
+	if((p = strchr(path, '/')) == NULL)
+	{
+		p = path + strlen(path);
+		strcpy(name, path + 1);
+	}
+	else
+	{
+		snprintf(name, p - (path + 1) + 1, "%s", path + 1);
+		p++;
+	}
+
+	if((pw = getpwnam(name)) == NULL)
+		return path;
+
+	chosp(pw->pw_dir);
+	result = malloc(strlen(pw->pw_dir) + strlen(path) + 1);
 	if(result == NULL)
 		return NULL;
-
-	sprintf(result, "%s/%s", cfg.home_dir, path + 2);
+	sprintf(result, "%s/%s", pw->pw_dir, p);
+	free(path);
 
 	return result;
 }
