@@ -94,7 +94,7 @@ main_loop(void)
 			{
 				def_prog_mode();
 				endwin();
-				kill(0, SIGSTOP);
+				kill(0, SIGTSTP);
 				continue;
 			}
 
