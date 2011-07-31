@@ -31,8 +31,6 @@ Documentation.
     Document command line keys.
 
 Vi(m) specific features that need to be added.
-	Finish implementing range and count for user commands.
-        Add support of count for command line commands (:y4, :d2).
 	Fix '' to go back to all jumps G gg links (in one directory?).
 	Change file list filters to use fold levels instead of just
 		the dot filter and regular expression filter (what does this mean?).
@@ -117,7 +115,6 @@ Other (questionable) things.
     Move file name to the title of other pane in view mode.
 
 Code improvements.
-    Move completion code from cmdline to a separate file.
     Write more tests.
     Add function like status_bar_message() but with format and varargs.
     Think about escape_filename and it's len argument.

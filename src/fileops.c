@@ -1047,6 +1047,13 @@ rename_file_cb(const char *new_name)
 	if(new_name == NULL || new_name[0] == '\0')
 		return;
 
+	if(strchr(new_name, '/') != 0)
+	{
+		status_bar_message("Name can not contain slash");
+		curr_stats.save_msg = 1;
+		return;
+	}
+
 	len = strlen(filename);
 	snprintf(new, sizeof(new), "%s%s%s", new_name,
 			filename[len - 1] == '/' ? "/" : "", rename_file_ext);
