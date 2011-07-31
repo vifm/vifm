@@ -74,7 +74,6 @@ Possible things to add.
 	Add mouse support.
 	View of directories.
     Swap names of two files (selected or given as arguments).
-    Add :mark command.
     Invert selection?
     :g = grep :g! = grep -v
     :history without duplicates.
@@ -94,6 +93,7 @@ Possible things to add.
 
 Vim plugin
     Choose between one and two pane view on startup somehow.
+    Open FUSE using fuse mounter, not Vim.
 
 Other (questionable) things.
     %i macro to prompt user for input.

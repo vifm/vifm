@@ -485,6 +485,9 @@ will delete files to the reg register.
 .BI ":delc[ommand] command_name"
 will remove the command_name user command.
 .TP
+.BI ":delm[arks] marks ..."
+will delete specified marks, each argument is treated as a set of marks name.
+.TP
 .BI :di[splay]
 popup menu with registers content.
 .TP
@@ -555,6 +558,11 @@ shows menu of current backgrounded processes.
 uses the locate command to create a menu of filenames
 Selecting a file from the menu will reload the current file list in vifm
 to show the selected file.
+.TP
+.BI :[range]ma[rk] x /full/path [filename]
+Set mark x at /full/path and filename.  If no filename was given and /full/path
+is current directory then last file in [range] is used.  Using macros is
+allowed.
 .TP
 .BI :marks
 create a popup menu of bookmarks.

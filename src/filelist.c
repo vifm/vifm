@@ -1828,19 +1828,18 @@ change_sort_type(FileView *view, char type, char descending)
 	set_option("sortorder", val);
 }
 
-/* TODO maybe remove this
 int
-are_panes_in_one_dir(void)
+pane_in_dir(FileView *view, const char *path)
 {
-	char ldir[PATH_MAX];
-	char rdir[PATH_MAX];
-	if(realpath(lwin.curr_dir, ldir) != ldir)
+	char pane_dir[PATH_MAX];
+	char dir[PATH_MAX];
+
+	if(realpath(view->curr_dir, pane_dir) != pane_dir)
 		return 0;
-	if(realpath(rwin.curr_dir, rdir) != rdir)
+	if(realpath(path, dir) != dir)
 		return 0;
-	return strcmp(ldir, rdir) == 0;
+	return strcmp(pane_dir, dir) == 0;
 }
-*/
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

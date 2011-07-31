@@ -653,7 +653,8 @@ execute_menu_cb(FileView *view, menu_info *m)
 	}
 }
 
-static void
+/* Returns number of active bookmarks */
+static int
 init_active_bookmarks(void)
 {
 	int i, x;
@@ -664,6 +665,7 @@ init_active_bookmarks(void)
 		if(is_bookmark(x))
 			active_bookmarks[i++] = x;
 	}
+	return i;
 }
 
 void
@@ -680,8 +682,7 @@ reload_bookmarks_menu_list(menu_info *m)
 		m->data[z] = NULL;
 	}
 
-	init_active_bookmarks();
-	m->len = cfg.num_bookmarks;
+	m->len = init_active_bookmarks();
 	x = 0;
 
 	for(i = 1; x < m->len; i++)
@@ -923,7 +924,7 @@ show_bookmarks_menu(FileView *view)
 
 	getmaxyx(menu_win, m.win_rows, x);
 
-	init_active_bookmarks();
+	m.len = init_active_bookmarks();
 
 	m.title = (char *)malloc((strlen(" Mark -- File ") + 1) * sizeof(char));
 	snprintf(m.title, strlen(" Mark -- File "),  " Mark -- File ");
@@ -934,13 +935,23 @@ show_bookmarks_menu(FileView *view)
 	{
 		j = active_bookmarks[x];
 		if(!strcmp(bookmarks[j].directory, "/"))
+		{
 			snprintf(buf, sizeof(buf), "  %c   /%s", index2mark(j), bookmarks[j].file);
-		else if (!strcmp(bookmarks[j].file, "../"))
+			chosp(buf);
+		}
+		else if(!strcmp(bookmarks[j].file, "../"))
+		{
 			snprintf(buf, sizeof(buf), "  %c   %s", index2mark(j),
 					bookmarks[j].directory);
+			chosp(buf);
+			strcat(buf, "/");
+		}
 		else
+		{
 			snprintf(buf, sizeof(buf), "  %c   %s/%s", index2mark(j),
-					bookmarks[j].directory,	bookmarks[j].file);
+					bookmarks[j].directory, bookmarks[j].file);
+			chosp(buf);
+		}
 
 		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
 		m.data[x] = (char *)malloc(sizeof(buf) + 2);

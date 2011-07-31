@@ -16,23 +16,34 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <string.h>
-#include <ctype.h> /* isalnum() */
 #include <sys/types.h>
 
-#include "bookmarks.h"
+#include <ctype.h> /* isalnum() */
+#include <string.h>
+
 #include "config.h"
 #include "filelist.h"
 #include "status.h"
 #include "ui.h"
 #include "utils.h"
 
+#include "bookmarks.h"
+
+const char valid_bookmarks[] = {
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '<', '>',
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+	'\0'
+};
+
 /*
  * transform a mark to an index
  * (0=48->0, 9=57->9, <=60->10, >=60->11, A=65->12,...,Z=90->37, a=97 -> 38,
  * ..., z=122 -> 63)
  */
-static int
+int
 mark2index(const char mark)
 {
 	int im;
@@ -114,17 +125,21 @@ silent_remove_bookmark(const int x)
 	return 1;
 }
 
-void
+int
 remove_bookmark(const int x)
 {
 	if(silent_remove_bookmark(x) == 0)
+	{
 		status_bar_message("Could not find mark");
+		return 1;
+	}
+	return 0;
 }
 
 static void
 add_mark(const char mark, const char *directory, const char *file)
 {
-	int x ;
+	int x;
 
 	x = mark2index(mark);
 
@@ -138,16 +153,17 @@ add_mark(const char mark, const char *directory, const char *file)
 	curr_stats.setting_change = 1;
 }
 
-void
+int
 add_bookmark(const char mark, const char *directory, const char *file)
 {
 	if(!isalnum(mark))
 	{
 		status_bar_message("Invalid mark");
-		return;
+		return 1;
 	}
 
 	add_mark(mark, directory, file);
+	return 0;
 }
 
 void

@@ -310,6 +310,8 @@ The builtin commands are:
 :[range]d[elete][count] - delete selected file or files.
     See |Vifm_Ranges| for the ranges implemented.
 :delc[ommand] user_command - remove user_command.
+:delm[arks] marks ... - will delete specified marks, each argument is
+    treated as a set of marks name.
 :d[elete] [reg] [count] - will delete files to the reg register.
 :di[splay] - popup menu with registers content.
 :di[splay] list - display the contents of the numbered and named registers
@@ -343,6 +345,9 @@ Add ' &' in the end of command if you want to start program in background.
 :locate filename - uses the locate command to create a menu of filenames
     Selecting a file from the menu will reload the current file list in vifm
     to show the selected file.
+:[range]ma[rk] x /full/path [filename] - set mark x at /full/path and
+    filename.  If no filename was given and /full/path is current directory
+    then last file in [range] is used.  Using macros is allowed.
 :marks - menu of bookmarks.
 :noh[lsearch] - clear selection in current pane.
 :on[ly] - switch to a one window view.
@@ -722,6 +727,8 @@ The following command names are reserved and cannot be used for user commands.
   d - delete file.
   delc - delete command.
   delcommand - delete command.
+  delm - delete marks.
+  delmarks - delete marks.
   delete - delete file.
   di - popup menu with registers content.
   dirs - display directory stack.
@@ -741,6 +748,8 @@ The following command names are reserved and cannot be used for user commands.
   locate - run the locate command in a menu window.
   ls - not implemented.
   map - user mapping for normal and visual modes.
+  ma - add mark.
+  mark - add mark.
   marks - show marks.
   nm - user mapping for normal mode.
   nmap - user mapping for normal mode.

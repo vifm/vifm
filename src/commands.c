@@ -101,6 +101,7 @@ static int cmap_cmd(const struct cmd_info *cmd_info);
 static int colorscheme_cmd(const struct cmd_info *cmd_info);
 static int command_cmd(const struct cmd_info *cmd_info);
 static int delete_cmd(const struct cmd_info *cmd_info);
+static int delmarks_cmd(const struct cmd_info *cmd_info);
 static int dirs_cmd(const struct cmd_info *cmd_info);
 static int edit_cmd(const struct cmd_info *cmd_info);
 static int empty_cmd(const struct cmd_info *cmd_info);
@@ -113,6 +114,7 @@ static int jobs_cmd(const struct cmd_info *cmd_info);
 static int locate_cmd(const struct cmd_info *cmd_info);
 static int ls_cmd(const struct cmd_info *cmd_info);
 static int map_cmd(const struct cmd_info *cmd_info);
+static int mark_cmd(const struct cmd_info *cmd_info);
 static int marks_cmd(const struct cmd_info *cmd_info);
 static int nmap_cmd(const struct cmd_info *cmd_info);
 static int nohlsearch_cmd(const struct cmd_info *cmd_info);
@@ -159,6 +161,8 @@ static const struct cmd_add commands[] = {
     .handler = command_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "delete",           .abbr = "d",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = delete_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 1, },
+	{ .name = "delmarks",         .abbr = "delm",  .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = delmarks_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "display",          .abbr = "di",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "dirs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -185,6 +189,8 @@ static const struct cmd_add commands[] = {
 		.handler = ls_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "map",              .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = map_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "mark",             .abbr = "ma",    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
+		.handler = mark_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 2, .max_args = 3,       .select = 0, },
 	{ .name = "marks",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = marks_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "nmap",             .abbr = "nm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1403,6 +1409,9 @@ execute_command(FileView *view, char *command)
 		case CMDS_ERR_ZERO_COUNT:
 			show_error_msg("Command error", "Zero count");
 			break;
+		case CMDS_ERR_INVALID_ARG:
+			show_error_msg("Command error", "Invalid argument");
+			break;
 		default:
 			show_error_msg("Command error", "Unknown error");
 			break;
@@ -1853,6 +1862,36 @@ delete_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
+delmarks_cmd(const struct cmd_info *cmd_info)
+{
+	int i;
+	int save_msg = 0;
+
+	for(i = 0; i < cmd_info->argc; i++)
+	{
+		int j;
+		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
+		{
+			if(strchr(valid_bookmarks, cmd_info->argv[i][j]) == NULL)
+				return CMDS_ERR_INVALID_ARG;
+		}
+	}
+
+	for(i = 0; i < cmd_info->argc; i++)
+	{
+		int j;
+		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
+		{
+			int index = mark2index(cmd_info->argv[i][j]);
+			if(index < 0)
+				continue;
+			save_msg += remove_bookmark(index);
+		}
+	}
+	return save_msg;
+}
+
+static int
 dirs_cmd(const struct cmd_info *cmd_info)
 {
 	return show_dirstack_menu(curr_view) != 0;
@@ -2068,6 +2107,37 @@ map_cmd(const struct cmd_info *cmd_info)
 			result = do_map(cmd_info, "", "map", VISUAL_MODE);
 	}
 	return result != 0;
+}
+
+static int
+mark_cmd(const struct cmd_info *cmd_info)
+{
+	if(strlen(cmd_info->argv[0]) != 1)
+		return CMDS_ERR_TRAILING_CHARS;
+	if(cmd_info->argv[1][0] != '/')
+	{
+		status_bar_message("Expected full path to the directory");
+		return 1;
+	}
+
+	if(cmd_info->argc == 2)
+	{
+		if(cmd_info->end == NOT_DEF || !pane_in_dir(curr_view, cmd_info->argv[1]))
+		{
+			if(pane_in_dir(curr_view, cmd_info->argv[1]))
+				return add_bookmark(cmd_info->argv[0][0], cmd_info->argv[1],
+						curr_view->dir_entry[curr_view->list_pos].name);
+			else
+				return add_bookmark(cmd_info->argv[0][0], cmd_info->argv[1], "../");
+		}
+		else
+			return add_bookmark(cmd_info->argv[0][0], cmd_info->argv[1],
+					curr_view->dir_entry[cmd_info->end].name);
+	}
+	else
+	{
+		return add_bookmark(cmd_info->argv[0][0], cmd_info->argv[1], cmd_info->argv[2]);
+	}
 }
 
 static int
