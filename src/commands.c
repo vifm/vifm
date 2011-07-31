@@ -549,8 +549,6 @@ post(int id)
 {
 	if(id == COM_GOTO)
 		return;
-	if(id == USER_CMD_ID)
-		return;
 	if((curr_view != NULL && !curr_view->selected_files) || !need_clean_selection)
 		return;
 
