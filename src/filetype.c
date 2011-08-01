@@ -17,63 +17,124 @@
  */
 
 #include <curses.h>
-#include <string.h>
+#include <regex.h>
+
 #include <stdlib.h>
+#include <string.h>
 
 #include "config.h"
+
 #include "filetype.h"
 
-static int
-get_filetype_number(char *file)
+static char *
+to_regex(const char *global)
 {
-	char *strptr;
-	char *ptr;
-	char ext[24];
-	int x;
-
-	strptr = file;
-	while((ptr = strchr(strptr, '.')) != NULL)
+	char *result = strdup("^");
+	size_t result_len = 1;
+	while(*global != '\0')
 	{
-		ptr++;
-		snprintf(ext, sizeof(ext), "%s", ptr);
-
-		for(x = 0; x < cfg.filetypes_num; x++)
+		if(strchr("^.[$()|+?{\\", *global) != NULL)
 		{
-			char *exptr = NULL;
-
-			/* Only one extension */
-			if((exptr = strchr(filetypes[x].ext, ',')) == NULL)
+			result = realloc(result, result_len + 2 + 1 + 1);
+			result[result_len++] = '\\';
+		}
+		else if(*global == '*')
+		{
+			if(result_len == 1)
 			{
-				if(!strcasecmp(filetypes[x].ext, ext))
-					return x;
+				result = realloc(result, result_len + 9 + 1 + 1);
+				result[result_len++] = '(';
+				result[result_len++] = '[';
+				result[result_len++] = '^';
+				result[result_len++] = '.';
+				result[result_len++] = ']';
+				result[result_len++] = '.';
+				result[result_len++] = '*';
+				result[result_len++] = ')';
+				result[result_len++] = '?';
 			}
 			else
 			{
-				char *ex_copy = strdup(filetypes[x].ext);
-				char *free_this = ex_copy;
-				char *exptr2 = NULL;
-				while((exptr = exptr2= strchr(ex_copy, ',')) != NULL)
-				{
-					*exptr = '\0';
-					exptr2++;
+				result = realloc(result, result_len + 2 + 1 + 1);
+				result[result_len++] = '.';
+				result[result_len++] = '*';
+			}
+			global++;
+			continue;
+		}
+		else
+		{
+			result = realloc(result, result_len + 1 + 1 + 1);
+		}
+		result[result_len++] = *global++;
+	}
+	result[result_len++] = '$';
+	result[result_len] = '\0';
+	return result;
+}
 
-					if(!strcasecmp(ext, ex_copy))
-					{
-						free(free_this);
-						return x;
-					}
+static int
+global_matches(const char *global, const char *file)
+{
+	char *regex;
+	regex_t re;
 
-					ex_copy = exptr2;
-				}
-				if(!strcasecmp(ext, ex_copy))
+	regex = to_regex(global);
+
+	if(regcomp(&re, regex, REG_EXTENDED | REG_ICASE) == 0)
+	{
+		if(regexec(&re, file, 0, NULL, 0) == 0)
+		{
+			regfree(&re);
+			free(regex);
+			return 1;
+		}
+	}
+	regfree(&re);
+	free(regex);
+	return 0;
+}
+
+static int
+get_filetype_number(const char *file)
+{
+	int x;
+
+	for(x = 0; x < cfg.filetypes_num; x++)
+	{
+		char *exptr = NULL;
+
+		/* Only one extension */
+		if((exptr = strchr(filetypes[x].ext, ',')) == NULL)
+		{
+			if(global_matches(filetypes[x].ext, file))
+				return x;
+		}
+		else
+		{
+			char *ex_copy = strdup(filetypes[x].ext);
+			char *free_this = ex_copy;
+			char *exptr2 = NULL;
+			while((exptr = exptr2 = strchr(ex_copy, ',')) != NULL)
+			{
+				*exptr = '\0';
+				exptr2++;
+
+				if(global_matches(ex_copy, file))
 				{
 					free(free_this);
 					return x;
 				}
-				free(free_this);
+
+				ex_copy = exptr2;
 			}
+			if(global_matches(ex_copy, file))
+			{
+				free(free_this);
+				return x;
+			}
+			free(free_this);
 		}
-		strptr = ptr;
 	}
 	return -1;
 }
@@ -128,7 +189,8 @@ get_all_programs_for_file(char *file)
 }
 
 void
-add_filetype(char *description, char *extension, char *programs)
+add_filetype(const char *description, const char *extension,
+		const char *programs)
 {
 	filetypes = realloc(filetypes, (cfg.filetypes_num + 1) * sizeof(filetype_t));
 
@@ -165,6 +227,39 @@ set_programs(char *extension, char *programs)
 
 	free(filetypes[x].programs);
 	filetypes[x].programs = strdup(programs);
+}
+
+void
+reset_filetypes(void)
+{
+	int i;
+
+	for(i = 0; i < cfg.filetypes_num; i++)
+	{
+		free(filetypes[i].type);
+		free(filetypes[i].ext);
+		free(filetypes[i].programs);
+	}
+
+	free(filetypes);
+	filetypes = NULL;
+	cfg.filetypes_num = 0;
+}
+
+void
+reset_fileviewers(void)
+{
+	int i;
+
+	for(i = 0; i < cfg.fileviewers_num; i++)
+	{
+		free(fileviewers[i].ext);
+		free(fileviewers[i].viewer);
+	}
+
+	free(fileviewers);
+	fileviewers = NULL;
+	cfg.fileviewers_num = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

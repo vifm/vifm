@@ -120,6 +120,5 @@ Code improvements.
     Add function like status_bar_message() but with format and varargs.
     Think about escape_filename and it's len argument.
     Rename exec_* to something.
-    Use regexps for filetypes.
     Add log.
     Stay at the same file in some cases.
