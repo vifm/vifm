@@ -629,7 +629,7 @@ set_print(struct opt_t *opt)
 		int i, first = 1;
 		snprintf(buf, sizeof(buf), "%s=", opt->name);
 		for(i = 0; i < opt->val_count; i++)
-			if(opt->val.set_items & (2 << i))
+			if(opt->val.set_items & (1 << i))
 			{
 				char *p = buf + strlen(buf);
 				snprintf(p, sizeof(buf) - (p - buf), "%s%s",

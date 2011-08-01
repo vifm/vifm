@@ -34,6 +34,7 @@ static void timefmt_handler(enum opt_op op, union optval_t val);
 static void trash_handler(enum opt_op op, union optval_t val);
 static void undolevels_handler(enum opt_op op, union optval_t val);
 static void vicmd_handler(enum opt_op op, union optval_t val);
+static void vifminfo_handler(enum opt_op op, union optval_t val);
 static void vimhelp_handler(enum opt_op op, union optval_t val);
 static void wildmenu_handler(enum opt_op op, union optval_t val);
 static void wrap_handler(enum opt_op op, union optval_t val);
@@ -58,6 +59,18 @@ static const char * sort_enum[] = {
 static const char * sort_order_enum[] = {
 	"ascending",
 	"descending",
+};
+
+static const char * vifminfo_set[] = {
+	"options",
+	"filetypes",
+	"commands",
+	"bookmarks",
+	"tui",
+	"dhistory",
+	"state",
+	"cs",
+	"warn",
 };
 
 void
@@ -88,6 +101,8 @@ add_options(void)
 	add_option("trash", "", OPT_BOOL, 0, NULL, &trash_handler);
 	add_option("undolevels", "ul", OPT_INT, 0, NULL, &undolevels_handler);
 	add_option("vicmd", "", OPT_STR, 0, NULL, &vicmd_handler);
+	add_option("vifminfo", "", OPT_SET, ARRAY_LEN(vifminfo_set), vifminfo_set,
+			&vifminfo_handler);
 	add_option("vimhelp", "", OPT_BOOL, 0, NULL, &vimhelp_handler);
 	add_option("wildmenu", "wmnu", OPT_BOOL, 0, NULL, &wildmenu_handler);
 	add_option("wrap", "", OPT_BOOL, 0, NULL, &wrap_handler);
@@ -154,6 +169,9 @@ load_options(void)
 
 	val.str_val = cfg.vi_command;
 	set_option("vicmd", val);
+
+	val.set_items = cfg.vifm_info;
+	set_option("vifminfo", val);
 
 	val.bool_val = cfg.use_vim_help;
 	set_option("vimhelp", val);
@@ -261,7 +279,8 @@ reduce_view_history(FileView *view, int size)
 	view->history_pos -= delta;
 }
 
-static void free_view_history(FileView *view)
+static void
+free_view_history(FileView *view)
 {
 	free(view->history);
 	view->history = NULL;
@@ -396,6 +415,12 @@ vicmd_handler(enum opt_op op, union optval_t val)
 {
 	free(cfg.vi_command);
 	cfg.vi_command = strdup(val.str_val);
+}
+
+static void
+vifminfo_handler(enum opt_op op, union optval_t val)
+{
+	cfg.vifm_info = val.set_items;
 }
 
 static void

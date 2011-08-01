@@ -87,6 +87,7 @@ init_config(void)
 	cfg.ignore_case = 0;
 	cfg.smart_case = 0;
 	cfg.hl_search = 1;
+	cfg.vifm_info = VIFMINFO_BOOKMARKS;
 
 	/* Maximum argument length to pass to the shell */
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)
@@ -419,15 +420,15 @@ write_info_file(void)
 		fputs("\n# Filetypes:\n", fp);
 		for(i = 0; i < cfg.filetypes_num; i++)
 		{
-			if(filetypes[i].cmd[0] != '\0')
-				fprintf(fp, ".%s\n\t%s\n", filetypes[i].ext, filetypes[i].cmd);
+			if(filetypes[i].com[0] != '\0')
+				fprintf(fp, ".%s\n\t%s\n", filetypes[i].ext, filetypes[i].com);
 		}
 
 		fputs("\n# Fileviewers:\n", fp);
 		for(i = 0; i < cfg.fileviewers_num; i++)
 		{
-			if(fileviewers[i].cmd[0] != '\0')
-				fprintf(fp, ",%s\n\t%s\n", fileviewers[i].ext, fileviewers[i].cmd);
+			if(fileviewers[i].com[0] != '\0')
+				fprintf(fp, ",%s\n\t%s\n", fileviewers[i].ext, fileviewers[i].com);
 		}
 	}
 
@@ -474,10 +475,10 @@ write_info_file(void)
 	if(cfg.vifm_info & VIFMINFO_STATE)
 	{
 		fputs("\n# State:\n", fp);
-		fprintf(fp, "f%s\n", lwin.filter);
-		fprintf(fp, "i%d\n", lwin.inverted);
-		fprintf(fp, "F%s\n", rwin.filter);
-		fprintf(fp, "I%d\n", rwin.inverted);
+		fprintf(fp, "f%s\n", lwin.filename_filter);
+		fprintf(fp, "i%d\n", lwin.invert);
+		fprintf(fp, "F%s\n", rwin.filename_filter);
+		fprintf(fp, "I%d\n", rwin.invert);
 		fprintf(fp, "s%d\n", cfg.use_screen);
 	}
 
