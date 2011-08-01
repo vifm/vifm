@@ -336,10 +336,18 @@ Commands
 
        :command [args]
 
-       :!     program will execute the program in a shell
-              :!command & will run the process in  the  background.   Programs
-              that  write to stdout like ls will create an error message show‐
-              ing partial output of the command.
+       :!program
+              will execute the program in a shell
+
+       :!command &
+
+       will run the process in the background using vifm's means.
+
+       Programs that write to stdout like ls  will  create  an  error  message
+       showing partial output of the command.
+
+       Take note of the space before ampersand symbol, if you omit it, command
+       will be run in the background using job control of your shell.
 
        :!! <program>
               is the same as :! but will pause the screen before returning  to
@@ -370,6 +378,9 @@ Commands
        :colo[rscheme] color_scheme_name
               changes   default   color   scheme  to  color_scheme_name.   See
               :colo[rscheme].
+
+       :comc[lear]
+              removes all user defined commands.
 
        :com[mand]
               gives a menu of user commands.
@@ -412,7 +423,7 @@ Commands
        :di[splay]
               popup menu with registers content.
 
-       :di[splay]list
+       :di[splay] list ...
               display  the  contents  of the numbered and named registers that
               are mentioned in list (for example "az to display "", "a and  "z
               content).
@@ -475,9 +486,10 @@ Commands
               a file from the menu will reload the current file list  in  vifm
               to show the selected file.
 
-       :[range]ma[rk]x/full/path[filename]
-              Set mark x at /full/path and filename.  If no filename was given
-              and /full/path is current directory then last file in [range] is
+       :[range]ma[rk]x[/full/path][filename]
+              Set  mark  x  at  /full/path  and  filename.  By default current
+              directory  is  being  used.   If  no  filename  was  given   and
+              /full/path  is  current  directory  then last file in [range] is
               used.  Using macros is allowed.
 
        :marks create a popup menu of bookmarks.
@@ -507,12 +519,12 @@ Commands
        :screen
               toggles whether or not to use the screen program.
               The default configuration has the screen option turned off.  The
-              screen program uses pseudo terminals to allow  multiple  windows
-              to  be  used in the console or in a single xterm.  Starting vifm
-              from screen with the screen option turned on will cause vifm  to
-              open  a  new  screen  window for each new file edited or program
+              screen  program  uses pseudo terminals to allow multiple windows
+              to be used in the console or in a single xterm.   Starting  vifm
+              from  screen with the screen option turned on will cause vifm to
+              open a new screen window for each new  file  edited  or  program
               launched from vifm.
-              This requires screen version 3.9.9 or newer for  the  screen  -X
+              This  requires  screen  version 3.9.9 or newer for the screen -X
               argument.
 
        :screen?
@@ -520,16 +532,16 @@ Commands
 
        :se[t] opt1=val1 opt2=val2 ...
               will set options to given values.
-              You  can  use  following  syntax:  option,  nooption, invoption,
+              You can  use  following  syntax:  option,  nooption,  invoption,
               option!, option?, option=x, option+=x, option-=x.  :sh[ell] will
               start a shell.
 
        :reg[isters]
               popup menu with registers content.
 
-       :reg[isters]list
-              display  the  contents  of the numbered and named registers that
-              are mentioned in list (for example "az to display "", "a and  "z
+       :reg[isters] list ...
+              display the contents of the numbered and  named  registers  that
+              are  mentioned in list (for example "az to display "", "a and "z
               content).
 
        :sor[t]
@@ -570,6 +582,45 @@ Commands
 
        :vm[ap] lhs rhs
               map lhs to rhs in visual mode.
+
+
+       :no[remap] lhs rhs
+              map  the  key sequence lhs to {rhs} for normal and visual modes,
+              but disallow mapping of rhs.
+
+       :no[remap]! lhs rhs
+              map the key sequence lhs to {rhs} for  command  line  mode,  but
+              disallow mapping of rhs.
+
+
+       :cno[remap] lhs rhs
+              map  the  key  sequence  lhs to {rhs} for command line mode, but
+              disallow mapping of rhs.
+
+       :nn[oremap] lhs rhs
+              map the key sequence lhs to {rhs} for normal mode, but  disallow
+              mapping of rhs.
+
+       :vn[oremap] lhs rhs
+              map  the key sequence lhs to {rhs} for visual mode, but disallow
+              mapping of rhs.
+
+
+       :unm[ap] lhs
+              remove the mapping of lhs from normal and visual modes.
+
+       :unm[ap]! lhs
+              remove the mapping of lhs from command line mode.
+
+
+       :cu[nmap] lhs
+              remove the mapping of lhs from command line mode.
+
+       :nun[map] lhs
+              remove the mapping of lhs from normal mode.
+
+       :vu[nmap] lhs
+              remove the mapping of lhs from visual mode.
 
 Ranges
        The ranges implemented include:
@@ -867,18 +918,21 @@ Plugin
 
        Commands:
 
-         :EditVifm  select a file to open in the current buffer.
-         :SplitVifm split buffer and select a file to open.
-         :VsplitVifm vertically split buffer and select a file to open.
-         :DiffVifm select a file to compare to the  current  file  with  :vert
-       diffsplit.
+         :EditVifm   select a file or files to open in the current buffer.
+         :SplitVifm  split buffer and select a file or files to open.
+         :VsplitVifm vertically split buffer and select a  file  or  files  to
+       open.
+         :DiffVifm    select  a  file  or files to compare to the current file
+       with
+                     :vert diffsplit.
+         :TabVifm    select a file or files to open in tabs.
 
        The plugin does not have any settings.
 
-       To  use  the  plugin  copy  the vifm.vim file to either the system wide
+       To use the plugin copy the vifm.vim file  to  either  the  system  wide
        vim/plugin directory or into ~/.vim/plugin.
 
-       If you would prefer not to use the plugin and it is in the system  wide
+       If  you would prefer not to use the plugin and it is in the system wide
        plugin directory add
 
        let loaded_vifm=1
