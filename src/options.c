@@ -524,9 +524,9 @@ set_op(struct opt_t *opt, const char *value, int add)
 		if(i != -1)
 		{
 			if(add)
-				opt->val.set_items |= 2 << i;
+				opt->val.set_items |= 1 << i;
 			else
-				opt->val.set_items &= ~(2 << i);
+				opt->val.set_items &= ~(1 << i);
 		}
 
 		if(*p == '\0')

@@ -25,7 +25,6 @@ static void iec_handler(enum opt_op op, union optval_t val);
 static void ignorecase_handler(enum opt_op op, union optval_t val);
 static void reversecol_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
-static void savelocation_handler(enum opt_op op, union optval_t val);
 static void smartcase_handler(enum opt_op op, union optval_t val);
 static void sortnumbers_handler(enum opt_op op, union optval_t val);
 static void sort_handler(enum opt_op op, union optval_t val);
@@ -94,7 +93,6 @@ add_options(void)
 	add_option("ignorecase", "ic", OPT_BOOL, 0, NULL, &ignorecase_handler);
 	add_option("reversecol", "", OPT_BOOL, 0, NULL, &reversecol_handler);
 	add_option("runexec", "", OPT_BOOL, 0, NULL, &runexec_handler);
-	add_option("savelocation", "", OPT_BOOL, 0, NULL, &savelocation_handler);
 	add_option("smartcase", "scs", OPT_BOOL, 0, NULL, &smartcase_handler);
 	add_option("sortnumbers", "", OPT_BOOL, 0, NULL, &sortnumbers_handler);
 	add_option("timefmt", "", OPT_STR, 0, NULL, &timefmt_handler);
@@ -148,9 +146,6 @@ load_options(void)
 
 	val.bool_val = cfg.auto_execute;
 	set_option("runexec", val);
-
-	val.bool_val = cfg.save_location;
-	set_option("savelocation", val);
 
 	val.bool_val = cfg.smart_case;
 	set_option("smartcase", val);
@@ -353,12 +348,6 @@ static void
 runexec_handler(enum opt_op op, union optval_t val)
 {
 	cfg.auto_execute = val.bool_val;
-}
-
-static void
-savelocation_handler(enum opt_op op, union optval_t val)
-{
-	cfg.save_location = val.bool_val;
 }
 
 static void

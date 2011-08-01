@@ -2,6 +2,8 @@
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.
 
+	Removed 'savelocation' option.  Use set vifminfo+=dhistory.
+
 	Added 'reversecol' option (affects the look of current line in the views).
 
 	Added 'wildmenu' option.

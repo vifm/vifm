@@ -72,7 +72,6 @@ init_config(void)
 	cfg.use_iec_prefixes = 0;
 	cfg.undo_levels = 100;
 	cfg.sort_numbers = 0;
-	cfg.save_location = 0;
 	cfg.follow_links = 1;
 	cfg.fast_run = 0;
 	cfg.confirm = 1;
@@ -403,7 +402,6 @@ write_info_file(void)
 		fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
 		fprintf(fp, "=%sreversecol\n", cfg.invert_cur_line ? "" : "no");
 		fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
-		fprintf(fp, "=%ssavelocation\n", cfg.save_location ? "" : "no");
 		fprintf(fp, "=%ssmartcase\n", cfg.smart_case ? "" : "no");
 		fprintf(fp, "=%ssortnumbers\n", cfg.sort_numbers ? "" : "no");
 		fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format + 1));

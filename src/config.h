@@ -65,8 +65,6 @@ typedef struct _Config {
 
 	int sort_numbers; /* Natural sort of (version) numbers within text. */
 
-	int save_location; /* Start vifm in the last visited directory. */
-
 	int follow_links; /* Follow links on l or Enter. */
 
 	int confirm; /* Ask user about permanent deletion of files. */
