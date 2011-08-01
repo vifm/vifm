@@ -111,7 +111,7 @@ char * list_udf_content(const char *beginning);
 #ifdef TEST
 int add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf);
 char ** dispatch_line(const char *args, int *count, char sep, int regexp,
-		int quotes, int *last_arg);
+		int quotes, int *last_arg, int *last_end);
 #endif
 
 #endif

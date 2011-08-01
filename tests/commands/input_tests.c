@@ -66,6 +66,11 @@ static int
 call_cmd(const struct cmd_info* cmd_info)
 {
 	cmdi = *cmd_info;
+	if(cmdi.argc > 0)
+	{
+		free(arg);
+		arg = strdup(cmdi.args);
+	}
 	return 0;
 }
 
@@ -416,6 +421,23 @@ test_only_one_mark(void)
 	assert_false(cmdi.qmark);
 }
 
+static void
+test_args_trimming(void)
+{
+	assert_int_equal(0, execute_cmd("call hi"));
+	assert_int_equal(1, cmdi.argc);
+	assert_string_equal("hi", arg);
+
+	assert_int_equal(0, execute_cmd("call hi "));
+	assert_int_equal(1, cmdi.argc);
+	assert_string_equal("hi", arg);
+
+	assert_int_equal(0, execute_cmd("call hi\\  "));
+	assert_int_equal(1, cmdi.argc);
+	assert_string_equal("hi\\ ", arg);
+
+}
+
 void
 input_tests(void)
 {
@@ -442,6 +464,7 @@ input_tests(void)
 	run_test(test_no_args_after_qmark);
 	run_test(test_no_space_before_e_and_q_marks);
 	run_test(test_only_one_mark);
+	run_test(test_args_trimming);
 
 	test_fixture_end();
 }

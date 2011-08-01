@@ -33,10 +33,22 @@ to_regex(const char *global)
 	size_t result_len = 1;
 	while(*global != '\0')
 	{
-		if(strchr("^.[$()|+?{\\", *global) != NULL)
+		if(strchr("^.[$()|+{", *global) != NULL)
 		{
 			result = realloc(result, result_len + 2 + 1 + 1);
 			result[result_len++] = '\\';
+		}
+		else if(*global == '\\')
+		{
+			result = realloc(result, result_len + 2 + 1 + 1);
+			result[result_len++] = *global++;
+		}
+		else if(*global == '?')
+		{
+			result = realloc(result, result_len + 1 + 1 + 1);
+			result[result_len++] = '.';
+			global++;
+			continue;
 		}
 		else if(*global == '*')
 		{
@@ -189,6 +201,17 @@ get_all_programs_for_file(char *file)
 }
 
 void
+add_fileviewer(const char *extension, const char *viewer)
+{
+	fileviewers = realloc(fileviewers,
+			(cfg.fileviewers_num + 1) * sizeof(fileviewer_t));
+
+	fileviewers[cfg.fileviewers_num].ext = strdup(extension);
+	fileviewers[cfg.fileviewers_num].viewer = strdup(viewer);
+	cfg.fileviewers_num++;
+}
+
+static void
 add_filetype(const char *description, const char *extension,
 		const char *programs)
 {
@@ -201,32 +224,54 @@ add_filetype(const char *description, const char *extension,
 	cfg.filetypes_num++;
 }
 
-void
-add_fileviewer(char *extension, char *viewer)
-{
-	fileviewers = realloc(fileviewers,
-			(cfg.fileviewers_num + 1) * sizeof(fileviewer_t));
-
-	fileviewers[cfg.fileviewers_num].ext = strdup(extension);
-	fileviewers[cfg.fileviewers_num].viewer = strdup(viewer);
-	cfg.fileviewers_num++;
-}
-
-void
-set_programs(char *extension, char *programs)
+static void
+set_ext_programs(const char *extension, const char *programs)
 {
 	int x;
 
-	x = get_filetype_number(extension);
-	if(x < 0)
-	{
-		add_filetype("", extension + 1, programs);
-		add_fileviewer(extension + 1, programs);
+	if(extension[0] == '\0')
 		return;
-	}
 
-	free(filetypes[x].programs);
-	filetypes[x].programs = strdup(programs);
+	for(x = 0; x < cfg.filetypes_num; x++)
+		if(strcasecmp(filetypes[x].ext, extension) == 0)
+			break;
+	if(x == cfg.filetypes_num)
+	{
+		add_filetype("", extension, programs);
+		add_fileviewer(extension, programs);
+	}
+	else
+	{
+		free(filetypes[x].programs);
+		filetypes[x].programs = strdup(programs);
+	}
+}
+
+void
+set_programs(const char *extensions, const char *programs)
+{
+	char *exptr;
+	if((exptr = strchr(extensions, ',')) == NULL)
+	{
+		set_ext_programs(extensions, programs);
+	}
+	else
+	{
+		char *ex_copy = strdup(extensions);
+		char *free_this = ex_copy;
+		char *exptr2 = NULL;
+		while((exptr = exptr2 = strchr(ex_copy, ',')) != NULL)
+		{
+			*exptr = '\0';
+			exptr2++;
+
+			set_ext_programs(ex_copy, programs);
+
+			ex_copy = exptr2;
+		}
+		set_ext_programs(ex_copy, programs);
+		free(free_this);
+	}
 }
 
 void

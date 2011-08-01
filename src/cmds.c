@@ -77,7 +77,7 @@ static const char * parse_tail(struct cmd_t *cur,
 static
 #endif
 char ** dispatch_line(const char *args, int *count, char sep, int regexp,
-		int quotes, int *last_arg);
+		int quotes, int *last_arg, int *last_end);
 static int get_args_count(const char *cmdstr, char sep, int regexp, int quotes);
 static void unescape(char *s, int regexp);
 static void replace_esc(char *s);
@@ -154,6 +154,7 @@ execute_cmd(const char *cmd)
 	const char *args;
 	int result;
 	int i;
+	int last_end;
 
 	init_cmd_info(&cmd_info);
 	cmd = parse_range(cmd, &cmd_info);
@@ -204,7 +205,8 @@ execute_cmd(const char *cmd)
 	else
 		cmd_info.args = strdup(cmd_info.raw_args);
 	cmd_info.argv = dispatch_line(cmd_info.args, &cmd_info.argc, cmd_info.sep,
-			cur->regexp, cur->quote, NULL);
+			cur->regexp, cur->quote, NULL, &last_end);
+	cmd_info.args[last_end] = '\0';
 
 	if((cmd_info.begin != NOT_DEF || cmd_info.end != NOT_DEF) &&
 			!cur->range)
@@ -418,7 +420,7 @@ static
 #endif
 char **
 dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
-		int *last_pos)
+		int *last_pos, int *last_end)
 {
 	char *cmdstr;
 	int len;
@@ -502,6 +504,9 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 		{
 			/* found another argument */
 			cmdstr[i] = '\0';
+			if(last_end != NULL)
+				*last_end = i;
+
 			params[j] = strdup(&cmdstr[st]);
 			if(prev_state == NO_QUOTING)
 				unescape(params[j], 0);
@@ -769,7 +774,7 @@ complete_cmd(const char *cmd)
 			char **argv;
 			int last_arg = 0;
 
-			argv = dispatch_line(args, &argc, ' ', 0, 1, &last_arg);
+			argv = dispatch_line(args, &argc, ' ', 0, 1, &last_arg, NULL);
 			prefix_len += cmds_conf.complete_args(id, args, argc, argv, last_arg);
 			free_string_array(argv, argc);
 		}

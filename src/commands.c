@@ -43,6 +43,7 @@
 #include "dir_stack.h"
 #include "filelist.h"
 #include "fileops.h"
+#include "filetype.h"
 #include "keys.h"
 #include "log.h"
 #include "macros.h"
@@ -108,6 +109,7 @@ static int dirs_cmd(const struct cmd_info *cmd_info);
 static int edit_cmd(const struct cmd_info *cmd_info);
 static int empty_cmd(const struct cmd_info *cmd_info);
 static int file_cmd(const struct cmd_info *cmd_info);
+static int filetype_cmd(const struct cmd_info *cmd_info);
 static int filter_cmd(const struct cmd_info *cmd_info);
 static int help_cmd(const struct cmd_info *cmd_info);
 static int history_cmd(const struct cmd_info *cmd_info);
@@ -188,6 +190,8 @@ static const struct cmd_add commands[] = {
 		.handler = empty_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "file",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 1, .quote = 0, .regexp = 0,
 		.handler = file_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "filetype",         .abbr = "filet", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = filetype_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 1,
 		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "help",             .abbr = "h",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
@@ -1816,14 +1820,6 @@ change_cmd(const struct cmd_info *cmd_info)
 	return 0;
 }
 
-static void
-trim_trailing_spaces(wchar_t *str)
-{
-	size_t len = wcslen(str);
-	while(len > 1 && (str[len - 1] == L' ' || str[len - 1] == L'\t'))
-		str[--len] = L'\0';
-}
-
 static int
 cmap_cmd(const struct cmd_info *cmd_info)
 {
@@ -2010,6 +2006,19 @@ static int
 file_cmd(const struct cmd_info *cmd_info)
 {
 	return show_filetypes_menu(curr_view, cmd_info->bg) != 0;
+}
+
+static int
+filetype_cmd(const struct cmd_info *cmd_info)
+{
+	const char *progs;
+
+	progs = skip_word(cmd_info->args);
+	progs = skip_spaces(progs + 1);
+
+	set_programs(cmd_info->argv[0], progs);
+
+	return 0;
 }
 
 static int
@@ -2508,7 +2517,6 @@ do_map(const struct cmd_info *cmd_info, const char *map_type,
 	rhs = (char*)skip_spaces(raw_rhs + 1);
 	keys = substitute_specs(cmd_info->args);
 	mapping = substitute_specs(rhs);
-	trim_trailing_spaces(mapping);
 	result = add_user_keys(keys, mapping, mode, no_remap);
 	free(mapping);
 	free(keys);

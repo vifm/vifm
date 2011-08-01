@@ -9,7 +9,7 @@ Basic things that need to be done.
         :chown commands.
     Better C command. Handle selection and situation when destination already
         exists.
-    Add :filetype command (separate programs and viewer).
+    Add :fileview command.
     Implement :find command.
     An option to choose shell.
     Make l key handle selection.

@@ -442,6 +442,11 @@ Commands
               file.  Add  '  &'  at the end of command to run program in back‐
               ground.
 
+       :filet[ype] pat1,pat2,... def_program,program2,...
+              will associate given program list to each of the patterns.  Cur‐
+              rently  only  * and ? are treated as special symbols in the pat‐
+              tern.
+
        :filter regular_expression_pattern
               :filter /regular_expression_pattern/ will filter all  the  files
               out  of the directory listing that match the regular expression.
@@ -948,4 +953,4 @@ AUTHOR
 
 
 
-                                 July 31, 2011                         vifm(1)
+                                August 1, 2011                         vifm(1)

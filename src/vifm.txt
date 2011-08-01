@@ -331,6 +331,9 @@ The builtin commands are:
     registers.
 :file - popup menu of programs set for the file type of the current file.
 Add ' &' in the end of command if you want to start program in background. 
+:filet[ype] pat1,pat2,... def_program,program2,... - will associate given
+    program list to each of the patterns.  Currently only * and ? are
+    treated as special symbols in the pattern.
 :filter regular_expression
 :filter /regular_expression/ - will filter files matching the pattern out of
     the directory.  Use :filter to show all files.  Using second variant
@@ -770,6 +773,8 @@ The following command names are reserved and cannot be used for user commands.
   edit - edit file.
   empty - empty trash directory.
   file - show filetypes menu.
+  filet pat1,pat2,... def_program,program2,... - associate extension.
+  filetype pat1,pat2,... def_program,program2,... - associate extension.
   filter - set file name filter.
   find - not yet implemented.
   h - show help file.

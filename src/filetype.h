@@ -36,10 +36,8 @@ filetype_t *filetypes;
 fileviewer_t *fileviewers;
 char * get_default_program_for_file(char *file);
 char * get_viewer_for_file(char *file);
-void add_filetype(const char *description, const char *extension,
-		const char *programs);
-void add_fileviewer(char *extension, char *viewer);
-void set_programs(char *extension, char *programs);
+void add_fileviewer(const char *extension, const char *viewer);
+void set_programs(const char *extensions, const char *programs);
 char * get_all_programs_for_file(char *file);
 void reset_filetypes(void);
 void reset_fileviewers(void);
