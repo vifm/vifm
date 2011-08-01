@@ -179,11 +179,20 @@ status_bar_message(const char *message)
 
 	if(message != NULL)
 	{
+		int len;
+		const char *p;
+
 		snprintf(msg, sizeof(msg), "%s", message);
-		status_bar_lines = 1;
+		p = message;
 		message--;
+		status_bar_lines = 0;
+		len = getmaxx(stdscr);
 		while((message = strchr(message + 1, '\n')) != NULL)
-			status_bar_lines++;
+		{
+			status_bar_lines += (message - p + len - 1)/len;
+			p = message + 1;
+		}
+		status_bar_lines += (strlen(p) + len - 1)/len;
 		if(status_bar_lines > 1)
 		{
 			strncat(msg, "\nPress ENTER or type command to continue", sizeof(msg));

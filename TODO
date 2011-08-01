@@ -57,6 +57,7 @@ Vi(m) specific features that need to be added.
     :$ in the menus (check other commands like this one).
     v /, v ?, d /, d ?
     :map without arguments
+    :registers a b c
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
