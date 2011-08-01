@@ -193,7 +193,7 @@ status_bar_message(const char *message)
 			p = message + 1;
 		}
 		status_bar_lines += (strlen(p) + len - 1)/len;
-		if(status_bar_lines > 1)
+		if(status_bar_lines > 1 || strlen(p) > getmaxx(status_bar))
 		{
 			strncat(msg, "\nPress ENTER or type command to continue", sizeof(msg));
 			status_bar_lines++;
