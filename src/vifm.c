@@ -41,6 +41,7 @@
 #include "filetype.h"
 #include "log.h"
 #include "main_loop.h"
+#include "menus.h"
 #include "modes.h"
 #include "normal.h"
 #include "opt_handlers.h"
@@ -228,6 +229,7 @@ main(int argc, char *argv[])
 	char *console = NULL;
 	char lwin_path[PATH_MAX] = "";
 	char rwin_path[PATH_MAX] = "";
+	int old_config;
 
 	setlocale(LC_ALL, "");
 	if(getcwd(dir, sizeof(dir)) == NULL)
@@ -302,7 +304,9 @@ main(int argc, char *argv[])
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	read_info_file();
+	old_config = is_old_config();
+	if(!old_config)
+		read_info_file();
 
 	parse_args(argc, argv, dir, lwin_path, rwin_path);
 	if(lwin_path[0] != '\0')
@@ -328,17 +332,10 @@ main(int argc, char *argv[])
 
 	curr_stats.vifm_started = 1;
 
-	exec_startup();
+	if(!old_config)
+		exec_config();
 
-	moveto_list_pos(&lwin, 0);
-	update_all_windows();
 	setup_signals();
-
-	mvwaddstr(rwin.win, rwin.curr_line, 0, "*");
-	wrefresh(rwin.win);
-
-	werase(status_bar);
-	wnoutrefresh(status_bar);
 
 	/* Need to wait until both lists are loaded before changing one of the
 	 * lists to show the file stats.  This is only used for starting vifm
@@ -349,7 +346,47 @@ main(int argc, char *argv[])
 	if(cfg.vim_filter)
 		curr_stats.number_of_windows = 1;
 
-	curr_stats.vifm_started = 2;
+	if(old_config)
+	{
+		int vi_like;
+		char buf[256];
+		vi_like = query_user_menu("Configuration update", "Your vifmrc will be "
+				"upgraded to new format.  New configuration is enough flexible to save "
+				"behaviour of older versions of vifm, but it's recommended that you "
+				"will use it in more vi-like mode.  Do you prefer more vi-like "
+				"configuration (when commands and options are not saved automatically "
+				"and you have to write it manually in vifmrc?");
+		snprintf(buf, sizeof(buf), "vifmrc-convertor %d", vi_like);
+		shellout(buf, -1);
+		show_error_msg("Configuration update", "Your vifmrc has been upgraded to "
+				"new format, you can find its old version in ~/.vifm/vifmrc.bak.  vifm "
+				"will not write anything to vifmrc, and all variables that are saved "
+				"between runs of vifm are stored in ~/.vifm/vifminfo now (you can edit "
+				"it by hand, but do it carefully).  You can control what vifm stores "
+				"in vifminfo with 'vifminfo' option.");
+
+		curr_stats.vifm_started = 1;
+		read_info_file();
+
+		if(lwin_path[0] != '\0')
+		{
+			strcpy(lwin.curr_dir, lwin_path);
+			if(!is_dir(lwin_path))
+				*strrchr(lwin.curr_dir, '/') = '\0';
+		}
+		if(rwin_path[0] != '\0')
+		{
+			strcpy(rwin.curr_dir, rwin_path);
+			if(!is_dir(rwin_path))
+				*strrchr(rwin.curr_dir, '/') = '\0';
+		}
+
+		load_initial_directory(&lwin, dir);
+		load_initial_directory(&rwin, dir);
+
+		exec_config();
+		curr_stats.vifm_started = 2;
+	}
 
 	load_dir_list(&lwin, 0);
 	if(lwin_path[0] != '\0' && !is_dir(lwin_path))

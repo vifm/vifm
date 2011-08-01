@@ -552,7 +552,7 @@ write_info_file(void)
 }
 
 void
-exec_startup(void)
+exec_config(void)
 {
 	FILE *fp;
 	char startup_file[PATH_MAX];
@@ -593,6 +593,32 @@ exec_startup(void)
 	}
 
 	fclose(fp);
+}
+
+int
+is_old_config(void)
+{
+	char config_file[PATH_MAX];
+	FILE *fp;
+	char line[MAX_LEN];
+
+	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
+
+	if((fp = fopen(config_file, "r")) == NULL)
+		return 0;
+
+	while(fgets(line, sizeof(line), fp))
+	{
+		int i = 0;
+		while(isspace(line[i]))
+			i++;
+		if(line[i] == '#')
+			return 1;
+	}
+
+	fclose(fp);
+
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
