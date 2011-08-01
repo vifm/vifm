@@ -949,13 +949,16 @@ show_bookmarks_menu(FileView *view)
 	x = 0;
 	while(x < m.len)
 	{
+		const char *with_tilde;
 		int overhead;
+
 		j = active_bookmarks[x];
-		overhead = get_utf8_overhead(bookmarks[j].directory);
+		with_tilde = replace_home_part(bookmarks[j].directory);
+		overhead = get_utf8_overhead(with_tilde);
 		if(!strcmp(bookmarks[j].file, "..") || !strcmp(bookmarks[j].file, "../"))
 		{
 			snprintf(buf, sizeof(buf), "%c   %-*s%s", index2mark(j),
-					max_len + overhead, bookmarks[j].directory, "[none]");
+					max_len + overhead, with_tilde, "[none]");
 		}
 		else if(!strcmp(bookmarks[j].directory, "/"))
 		{
@@ -965,7 +968,7 @@ show_bookmarks_menu(FileView *view)
 		else
 		{
 			snprintf(buf, sizeof(buf), "%c   %-*s%s", index2mark(j),
-					max_len + overhead, bookmarks[j].directory, bookmarks[j].file);
+					max_len + overhead, with_tilde, bookmarks[j].file);
 		}
 
 		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
