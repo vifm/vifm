@@ -228,7 +228,7 @@ clean_status_bar(void)
 	wnoutrefresh(status_bar);
 
 	if(status_bar_lines > 1)
-		update_all_windows();
+		redraw_window();
 	status_bar_lines = 1;
 }
 
