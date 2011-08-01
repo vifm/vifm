@@ -1,177 +1,287 @@
-# You can edit this file by hand.
-# The # character at the beginning of a line comments out the line.
-# Blank lines are ignored.
-# The basic format for each item is shown with an example.
-# The '=' character is used to separate fields within a single line.
-# Most settings are true = 1 or false = 0.
+" You can edit this file by hand.
+" The " character at the beginning of a line comments out the line.
+" Blank lines are ignored.
+" The basic format for each item is shown with an example.
 
-# This is the actual command used to start vi.  The default is vi.
-# If you would like to use another vi clone such as Vim, Elvis, or Vile
-# you will need to change this setting.
+" This is the actual command used to start vi.  The default is vim.
+" If you would like to use another vi clone such Elvis or Vile
+" you will need to change this setting.
 
-VI_COMMAND=vim
-# VI_COMMAND=vi
-# VI_COMMAND=elvis -G termcap
-# VI_COMMAND=vile
+" set vicmd=vim
+" set vicmd=elvis\ -G\ termcap
+" set vicmd=vile
 
-# Trash Directory
-# The default is to move files that are deleted with dd or :d to
-# the trash directory.  1 means use the trash directory 0 means
-# just use rm.  If you change this you will not be able to move
-# files by deleting them and then using p to put the file in the new location.
-# I recommend not changing this until you are familiar with vifm.
-# This probably shouldn't be an option.
+" Trash Directory
+" The default is to move files that are deleted with dd or :d to
+" the trash directory.  If you change this you will not be able to move
+" files by deleting them and then using p to put the file in the new location.
+" I recommend not changing this until you are familiar with vifm.
+" This probably shouldn't be an option.
 
-USE_TRASH=1
+" set trash
 
-# Show only one Window
-# If you would like to start vifm with only one window set this to 1
+" This is how many files to show in the directory history menu.
 
-USE_ONE_WINDOW=0
+" set history=15
 
-# Screen configuration.	If you would like to use vifm with
-# the screen program set this to 1.
+" Follow links on l or Enter.
 
-USE_SCREEN=0
+" set followlinks
 
-# 1 means use color if the terminal supports it.
-# 0 means don't use color even if supported.
+" With this option turned on you can run partially entered commands with
+" unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).
 
-# This is how many files to show in the directory history menu.
+" set fastrun
 
-HISTORY_LENGTH=15
+" Natural sort of (version) numbers within text.
 
-# To always save pane location on exit and start vifm in the
-# last visited directory set this to 1.
+" set sortnumbers
 
-SAVE_LOCATION=0
+" Maximum number of changes that can be undone.
 
-# The sort type is how the files will be sorted in the file listing.
-# Sort by File Extension = 1
-# Sort by File Name = 2
-# Sort by Group ID = 3
-# Sort by Group Name = 4
-# Sort by Mode = 5
-# Sort by Owner ID = 6
-# Sort by Owner Name = 7
-# Sort by Size = 8
-# Sort by Time Accessed = 9
-# Sort by Time Changed = 10
-# Sort by Time Modified = 11
-# For descending sort use negative numbers.
-# This can be set with the :sort command in vifm.
+" set undolevels=100
 
-LEFT_WINDOW_SORT_TYPE=2
+" If you installed the vim.txt help file set vimhelp.
+" If would rather use a plain text help file set novimhelp.
 
-RIGHT_WINDOW_SORT_TYPE=2
+" set novimhelp
 
-# The regular expression used to filter files out of
-# the directory listings.
-# LWIN_FILTER=\.o$ and LWIN_INVERT=1 would filter out all
-# of the .o files from the directory listing. LWIN_INVERT=0
-# would show only the .o files
+" If you would like to run an executable file when you
+" press return on the file name set this.
 
-LWIN_FILTER=\.o$
-LWIN_INVERT=1
-RWIN_FILTER=\.o$
-RWIN_INVERT=1
+" set norunexec
 
-# If you installed the vim.txt help file change this to 1.
-# If would rather use a plain text help file set this to 0.
+" Use KiB, MiB, ... instead of KB, MB, ...
 
-USE_VIM_HELP=0
+" set iec
 
-# If you would like to run an executable file when you
-# press return on the file name set this to 1.
+" Selected color scheme
 
-RUN_EXECUTABLE=0
+" colorscheme Default
 
-# Use KiB, MiB, ... instead of KB, MB, ...
+" The FUSE_HOME directory will be used as a root dir for all FUSE mounts.
+" Unless it exists with write/exec permissions set, vifm will attempt to
+" create it.
 
-USE_IEC_PREFIXES=1
+" set fusehome=/tmp/vifm_FUSE
 
-# Selected color scheme
+" Format for displaying time in file list. For example:
+" TIME_STAMP_FORMAT=%m/%d-%H:%M
+" See man date or man strftime for details.
 
-COLOR_SCHEME=Default
+" set timefmt=%m/%d\ %H:%M
 
-# BOOKMARKS=mark=/full/directory/path=filename
+" :mark mark /full/directory/path [filename]
 
-BOOKMARKS=R=/=
-BOOKMARKS=U=/usr=../
-BOOKMARKS=L=/usr/local=../
-BOOKMARKS=S=/usr/local/share=../
+" mark D /mnt/data/docs/ ../
+" mark M /mnt/video/ ../
+" mark S /home/xaizek/src/ ../
+" mark T /home/xaizek/projects/vifm/tests/ ../
+" mark V /home/xaizek/repos/vifm/src/ ../
+" mark c /home/xaizek/.vifm/ ../
+" mark d /home/xaizek/Downloads/ ../
+" mark e /mnt/data/X-files/Сайты/ebooks/ ../
+" mark h /home/xaizek/ ../
+" mark m /mnt/music/ ../
+" mark o /mnt/data/X-files/Сайты/Assembler/OS/ ../
+" mark t /home/xaizek/tmp/ ../
+" mark v /home/xaizek/.vim/bundle/ ../
 
-# COMMAND=command_name=action
-# The following macros can be used in a command
-# %a is replaced with the user arguments.
-# %c the current file under the cursor.
-# %C the current file under the cursor in the other directory.
-# %f the current selected file, or files.
-# %F the current selected file, or files in the other directory.
-# %b same as %f %F.
-# %d the current directory name.
-# %D the other window directory name.
-# %m run the command in a menu window.
+" :com[mand] command_name action
+" The following macros can be used in a command
+" %a is replaced with the user arguments.
+" %c the current file under the cursor.
+" %C the current file under the cursor in the other directory.
+" %f the current selected file, or files.
+" %F the current selected file, or files in the other directory.
+" %b same as %f %F.
+" %d the current directory name.
+" %D the other window directory name.
+" %m run the command in a menu window
 
-COMMAND=mv=mv %f %D &
-COMMAND=cp=cp %f %D &
-COMMAND=floppy=mount /dev/fd0
-COMMAND=run=!! ./%f
-COMMAND=make=!!make
-COMMAND=grep=vim \"+grep %a\"
-COMMAND=df=df -h %m
-COMMAND=diff=vim -d %f %F
-COMMAND=et=7z x -so %f | tar -C ~/tmp -xf -
-COMMAND=find=find . -name '%a' %m
-COMMAND=zip=zip -r %f.zip %f
+" command A asdkj
+" command A! echo hi there; sleep 3
+" command A? echo hi3; sleep 3
+" command AA aj
+" command B cat ~/notes | sed 's/С++/cpp/' | cat %m
+" command ZAZAS ad
+" command adf wer
+" command asd! echo hi; sleep 2
+" command asdaeeq hello
+" command asdf! fi
+" command asdfkl wrwer as  sd
+" command comix dont do
+" command df df -h %m 2> /dev/null
+" command diff vim -d %f %F
+" command echo echo %f; sleep 3
+" command et 7z x -so %f | tar -C ~/tmp -xf -
+" command filo ff
+" command find find . -name '%a' %m
+" command ofi filter .o$
+" command ofiles filter .o$
+" command qwerty asd
+" command tst for i in %f; do tar -czf "$i.tgz" "$i"; done
+" command zazas sfd
+" command zip zip -r %f.zip %f
+" command zipTHREE zip -r %f.zip %f
+" command zipTWO zip -r %f.zip %f
+" command zzz zip -r zf.zip zf ZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZ
 
-# The file type is for the default programs to be used with
-# a file extension.
-# FILETYPE=description=extension1,extension2=consoleviewer=defaultprogram, program2
-# FILETYPE=Web=html,htm,shtml==links,mozilla,elvis
-# would set links as the default program for .html .htm .shtml files
-# The other programs for the file type can be accessed with the :file command
-# The command macros %f, %F, %d, %F may be used in the commands.
-# The %a macro is ignored.  To use a % you must put %%.
+" The file type is for the default programs to be used with
+" a file extension.
+" :filetype extension1,extension2=defaultprogram,program2
+" :fileviewer extension1,extension2=consoleviewer
+" The other programs for the file type can be accessed with the :file command
+" The command macros %f, %F, %d, %F may be used in the commands.
+" The %a macro is ignored.  To use a % you must put %%.
 
-FILETYPE=Pdf=pdf==zathura %f,apvlv %f
-FILETYPE=Mp3=mp3=ffprobe -show_format -pretty %f 2> /dev/null=ffplay %f
-FILETYPE=Video=avi,mp4,wmv,dat,3gp,ogv=ffprobe -show_format -pretty %f 2> /dev/null=ffplay %f
-FILETYPE=Web=html,htm==links,mozilla
-FILETYPE=Object=o==nm %f | less
-FILETYPE=Image=jpg,jpeg,png,gif==eog,xv,gimp
-FILETYPE=Md5=md5==md5sum -c %f
-FILETYPE=FuseZipMount=zip,jar,war,ear==FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
-FILETYPE=ArchiveMount=bz2,tgz,tar.gz=tar -tzf %c=FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR
-FILETYPE=Rar2FsMount=rar==FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR
-FILETYPE=IsoMount=iso==FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR
-FILETYPE=SshMount=ssh==SSH_MOUNT|sshfs %PARAM %DESTINATION_DIR
+" Pdf
+" filetype *.pdf zathura %f,apvlv %f,xpdf %f
 
-# For automated FUSE mounts, you must register an extension with FILETYPE=..
-# in one of following formats:
-#
-# FILETYPE=description=extensions=consoleviewer=FUSE_MOUNT|some_mount_command using %SOURCE_FILE and %DESTINATION_DIR variables
-# %SOURCE_FILE and %DESTINATION_DIR are filled in by vifm at runtime.
-# A sample line might look like this:
-# FILETYPE=FuseZipMount=zip,jar,war,ear==FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
-#
-# FILETYPE=description=extensions=consoleviewer=FUSE_MOUNT2|some_mount_command using %PARAM and %DESTINATION_DIR variables
-# %PARAM and %DESTINATION_DIR are filled in by vifm at runtime.
-# A sample line might look like this:
-# FILETYPE=SshMount=ssh==FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
-# %PARAM value is filled from the first line of file (whole line).
-# Example first line for SshMount filetype: root@127.0.0.1:/
-#
-# You can also add %CLEAR if you want to clear screen before running FUSE
-# program.
-#
-# The FUSE_HOME directory will be used as a root dir for all FUSE mounts.
-# Unless it exists with write/exec permissions set, vifm will attempt to create it.
+" Mp3
+" filetype *.mp3 ffplay %f
+" fileviewer *.mp3 ffprobe -show_format -pretty %f 2> /dev/null
 
-FUSE_HOME=/tmp/vifm_FUSE
+" Video
+" filetype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv dragon %f
+" fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv ffprobe -show_format -pretty %f 2> /dev/null
 
-# Format for displaying time in file list. For example:
-# TIME_STAMP_FORMAT=%m/%d-%H:%M
-# See man date or man strftime for details.
+" Web
+" filetype *.html,*.htm links,mozilla
 
-TIME_STAMP_FORMAT=%m.%d %H:%M
+" Object
+" filetype *.o nm %f | less
+
+" Image
+" filetype *.jpg,*.jpeg,*.png,*.gif gpicview %c
+
+" Md5
+" filetype *.md5 md5sum -c %f
+
+" FuseZipMount
+" filetype *.zip,*.jar,*.war,*.ear FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+" fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c
+
+" ArchiveMount
+" filetype *.bz2,*.tgz,*.tar.gz FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR
+" fileviewer *.bz2,*.tgz,*.tar.gz tar -tzf %c
+
+" Rar2FsMount
+" filetype *.rar FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR
+
+" IsoMount
+" filetype *.iso FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR
+
+" SshMount
+" filetype *.ssh FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
+
+" 
+" filetype *.doc libreoffice -writer %f
+
+" 
+" filetype *.1.docx libreoffice -writer %f
+
+" For automated FUSE mounts, you must register an extension with FILETYPE=..
+" in one of following formats:
+"
+" FILETYPE=description=extensions=consoleviewer=FUSE_MOUNT|some_mount_command using %SOURCE_FILE and %DESTINATION_DIR variables
+" %SOURCE_FILE and %DESTINATION_DIR are filled in by vifm at runtime.
+" A sample line might look like this:
+" FILETYPE=FuseZipMount=zip,jar,war,ear==FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+"
+" FILETYPE=description=extensions=consoleviewer=FUSE_MOUNT2|some_mount_command using %PARAM and %DESTINATION_DIR variables
+" %PARAM and %DESTINATION_DIR are filled in by vifm at runtime.
+" A sample line might look like this:
+" FILETYPE=SshMount=ssh==FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
+" %PARAM value is filled from the first line of file (whole line).
+" Example first line for SshMount filetype: root@127.0.0.1:/
+"
+" You can also add %CLEAR if you want to clear screen before running FUSE
+" program.
+
+" What should be saved automatically between vifm runs
+" Like in previous versions of vifm
+set vifminfo=options,filetypes,commands,bookmarks,dhistory,state,cs,warn
+" Like in vi
+" set vifminfo=bookmarks
+
+" Here is content of your startup file
+
+set fastrun
+set savelocation
+set sortnumbers
+set wildmenu
+
+set ignorecase
+set smartcase
+
+set vifminfo+=dhistory
+
+delmarks!
+mark D /mnt/data/docs/
+mark M /mnt/video/
+mark S /home/xaizek/src/
+mark T ~/projects/vifm/tests/
+mark V /home/xaizek/repos/vifm/src/
+mark c /home/xaizek/.vifm/
+mark d /home/xaizek/Downloads/
+mark e /mnt/data/X-files/Сайты/ebooks/
+mark h /home/xaizek/
+mark m /mnt/music/
+mark o /mnt/data/X-files/Сайты/Assembler/OS/
+mark t ~/tmp/
+mark v ~/.vim/bundle/
+
+com! A asdkj
+com! A! echo hi there; sleep 3
+com! A? echo hi3; sleep 3
+com! AA aj
+com! B cat ~/notes | sed 's/С++/cpp/' | cat %m
+com! ZAZAS ad
+com! adf wer
+com! asd! echo hi; sleep 2
+com! asdaeeq hello
+com! asdf! fi
+com! asdfkl wrwer as  sd
+com! comix dont do
+com! df df -h %m 2> /dev/null
+com! diff vim -d %f %F
+com! echo echo %f; sleep 3
+com! et 7z x -so %f | tar -C ~/tmp -xf -
+com! filo ff
+com! find find . -name '%a' %m
+com! ofi filter .o$
+com! ofiles filter .o$
+com! qwerty asd
+com! tst for i in %f; do tar -czf "$i.tgz" "$i"; done
+com! zazas sfd
+com! zip zip -r %f.zip %f
+com! zzz zip -r zf.zip zf ZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZ
+
+" com! ln 
+" \!set -- %f;
+" \ if [ ! -w %D ]; then echo %D "is not writable"; exit -1; fi;
+" \ if [ ! "%a" ]; then
+" \ for f; do if [ -e %D/"$f" ]; then echo "$f exists"; exit -1; fi; done;
+" \ for f; do ln -s %d/"$f" %D; done;
+" \ else
+" \ for l in %a; do if [ -e %D/"$l" ]; then echo "$l exists"; exit -1; fi; done;
+" \ n=0; for f in %a; do n=$((n+1)); done;
+" \ if [ $n -ne $# ]; then echo "Wrong number of arguments"; exit -1; fi;
+" \ for l in %a; do ln -s %d/"$1" %D/"$l"; shift; done;
+" \ fi
+
+nmap s :shell<cr>
+nmap S :sort<cr>
+nmap w :view<cr>
+nmap o :!gvim --remote-tab-silent %f<cr>
+nmap O :!gvim %f<cr>
+nmap gb :file &<cr>l
+
+nmap <f3> :!less %f<cr>
+nmap <f4> :edit<cr>
+nmap <f5> :!cp %f %D<cr>
+nmap <f6> :!mv %f %D<cr>
+nmap <f7> :!mkdir<space>
+nmap <f8> :delete<cr>
+sort

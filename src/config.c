@@ -20,7 +20,6 @@
 
 #define CP_HELP "cp " PACKAGE_DATA_DIR "/vifm-help.txt ~/.vifm"
 #define CP_RC "cp " PACKAGE_DATA_DIR "/vifmrc ~/.vifm"
-#define CP_STARTUP "cp " PACKAGE_DATA_DIR "/startup ~/.vifm"
 
 #include <ctype.h> /* isalnum */
 #include <stdio.h> /* FILE */
@@ -114,15 +113,6 @@ create_rc_file(void)
 	add_bookmark('z', cfg.config_dir, "../");
 }
 
-static void
-create_startup_file(void)
-{
-	char command[PATH_MAX];
-
-	snprintf(command, sizeof(command), CP_STARTUP);
-	file_exec(command);
-}
-
 void
 set_config_dir(void)
 {
@@ -130,7 +120,6 @@ set_config_dir(void)
 	FILE *f;
 	char help_file[PATH_MAX];
 	char rc_file[PATH_MAX];
-	char startup_file[PATH_MAX];
 	char *escaped;
 
 	home_dir = getenv("HOME");
@@ -139,7 +128,6 @@ set_config_dir(void)
 
 	snprintf(rc_file, sizeof(rc_file), "%s/.vifm/vifmrc", home_dir);
 	snprintf(help_file, sizeof(help_file), "%s/.vifm/vifm-help_txt", home_dir);
-	snprintf(startup_file, sizeof(startup_file), "%s/.vifm/startup", home_dir);
 	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", home_dir);
 	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s/.vifm", home_dir);
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/.vifm/Trash", home_dir);
@@ -159,8 +147,6 @@ set_config_dir(void)
 			create_help_file();
 		if((f = fopen(rc_file, "r")) == NULL)
 			create_rc_file();
-		if((f = fopen(startup_file, "r")) == NULL)
-			create_startup_file();
 	}
 }
 
@@ -262,13 +248,13 @@ read_info_file(void)
 				set_fileviewer(line + 1, line2);
 			}
 		}
-		else if(line[0] == '!') /* fileviewer */
+		else if(line[0] == '!') /* command */
 		{
 			if(fgets(line2, sizeof(line2), fp) == line2)
 			{
 				char buf[MAX_LEN*2];
 				prepare_line(line2);
-				snprintf(buf, sizeof(buf), "command %s %s", line, line2);
+				snprintf(buf, sizeof(buf), "command %s %s", line + 1, line2);
 				exec_commands(buf, curr_view, 0);
 			}
 		}
@@ -294,13 +280,13 @@ read_info_file(void)
 		{
 			int i = atoi(line + 1);
 			lwin.sort_descending = (i < 0);
-			lwin.sort_type = abs(i);
+			lwin.sort_type = abs(i) - 1;
 		}
 		else if(line[0] == 'r') /* right pane sort */
 		{
 			int i = atoi(line + 1);
 			rwin.sort_descending = (i < 0);
-			rwin.sort_type = abs(i);
+			rwin.sort_type = abs(i) - 1;
 		}
 		else if(line[0] == 'd') /* left pane history */
 		{
@@ -457,8 +443,8 @@ write_info_file(void)
 	{
 		fputs("\n# TUI:\n", fp);
 		fprintf(fp, "v%d\n", curr_stats.number_of_windows);
-		fprintf(fp, "l%s%d\n", lwin.sort_descending ? "-" : "", lwin.sort_type);
-		fprintf(fp, "r%s%d\n", rwin.sort_descending ? "-" : "", rwin.sort_type);
+		fprintf(fp, "l%s%d\n", lwin.sort_descending ? "-" : "", lwin.sort_type + 1);
+		fprintf(fp, "r%s%d\n", rwin.sort_descending ? "-" : "", rwin.sort_type + 1);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_DHISTORY)
@@ -493,13 +479,13 @@ void
 exec_config(void)
 {
 	FILE *fp;
-	char startup_file[PATH_MAX];
+	char config_file[PATH_MAX];
 	char line[MAX_LEN*2];
 	char next_line[MAX_LEN];
 
-	snprintf(startup_file, sizeof(startup_file), "%s/startup", cfg.config_dir);
+	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
 
-	if((fp = fopen(startup_file, "r")) == NULL)
+	if((fp = fopen(config_file, "r")) == NULL)
 		return;
 
 	if(fgets(line, MAX_LEN, fp) != NULL)

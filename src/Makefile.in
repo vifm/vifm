@@ -36,7 +36,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = vifm$(EXEEXT)
+bin_PROGRAMS = vifm$(EXEEXT) vifmrc-converter$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -65,6 +65,9 @@ am_vifm_OBJECTS = background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	vifm.$(OBJEXT) visual.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
+am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
+vifmrc_converter_OBJECTS = $(am_vifmrc_converter_OBJECTS)
+vifmrc_converter_LDADD = $(LDADD)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -100,8 +103,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(vifm_SOURCES)
-DIST_SOURCES = $(vifm_SOURCES)
+SOURCES = $(vifm_SOURCES) $(vifmrc_converter_SOURCES)
+DIST_SOURCES = $(vifm_SOURCES) $(vifmrc_converter_SOURCES)
 man1dir = $(mandir)/man1
 NROFF = nroff
 MANS = $(man_MANS)
@@ -270,6 +273,9 @@ vifm_SOURCES = \
 	vifm.c \
 	visual.c visual.h
 
+vifmrc_converter_SOURCES = \
+	vifmrc-converter.c
+
 all: all-am
 
 .SUFFIXES:
@@ -350,6 +356,9 @@ clean-binPROGRAMS:
 vifm$(EXEEXT): $(vifm_OBJECTS) $(vifm_DEPENDENCIES) 
 	@rm -f vifm$(EXEEXT)
 	$(LINK) $(vifm_OBJECTS) $(vifm_LDADD) $(LIBS)
+vifmrc-converter$(EXEEXT): $(vifmrc_converter_OBJECTS) $(vifmrc_converter_DEPENDENCIES) 
+	@rm -f vifmrc-converter$(EXEEXT)
+	$(LINK) $(vifmrc_converter_OBJECTS) $(vifmrc_converter_LDADD) $(LIBS)
 install-binSCRIPTS: $(bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
@@ -427,6 +436,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/undo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifmrc-converter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/visual.Po@am__quote@
 
 .c.o:

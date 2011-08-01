@@ -6,7 +6,7 @@ pkgdata_DATA = startup \
 							 vifm.txt \
 							 vifm.vim
 
-bin_PROGRAMS = vifm
+bin_PROGRAMS = vifm vifmrc-converter
 
 bin_SCRIPTS = vifm-pause
 
@@ -50,5 +50,8 @@ vifm_SOURCES = \
 	utils.c utils.h \
 	vifm.c \
 	visual.c visual.h
+
+vifmrc_converter_SOURCES = \
+	vifmrc-converter.c
 
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :

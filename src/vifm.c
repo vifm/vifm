@@ -245,7 +245,7 @@ main(int argc, char *argv[])
 
 	col_schemes = malloc(sizeof(Col_scheme) * 8);
 
-  init_registers();
+	init_registers();
 	init_config();
 	set_config_dir();
 
@@ -348,15 +348,15 @@ main(int argc, char *argv[])
 
 	if(old_config)
 	{
-		int vi_like;
+		int vifm_like;
 		char buf[256];
-		vi_like = query_user_menu("Configuration update", "Your vifmrc will be "
+		vifm_like = !query_user_menu("Configuration update", "Your vifmrc will be "
 				"upgraded to new format.  New configuration is enough flexible to save "
 				"behaviour of older versions of vifm, but it's recommended that you "
 				"will use it in more vi-like mode.  Do you prefer more vi-like "
 				"configuration (when commands and options are not saved automatically "
 				"and you have to write it manually in vifmrc?");
-		snprintf(buf, sizeof(buf), "vifmrc-convertor %d", vi_like);
+		snprintf(buf, sizeof(buf), "vifmrc-converter %d", vifm_like);
 		shellout(buf, -1);
 		show_error_msg("Configuration update", "Your vifmrc has been upgraded to "
 				"new format, you can find its old version in ~/.vifm/vifmrc.bak.  vifm "
@@ -365,8 +365,9 @@ main(int argc, char *argv[])
 				"it by hand, but do it carefully).  You can control what vifm stores "
 				"in vifminfo with 'vifminfo' option.");
 
-		curr_stats.vifm_started = 1;
+		curr_stats.vifm_started = 0;
 		read_info_file();
+		curr_stats.vifm_started = 1;
 
 		if(lwin_path[0] != '\0')
 		{
@@ -385,8 +386,8 @@ main(int argc, char *argv[])
 		load_initial_directory(&rwin, dir);
 
 		exec_config();
-		curr_stats.vifm_started = 2;
 	}
+	curr_stats.vifm_started = 2;
 
 	load_dir_list(&lwin, 0);
 	if(lwin_path[0] != '\0' && !is_dir(lwin_path))
