@@ -55,7 +55,6 @@ static void _gnuc_noreturn
 finish(const char *message)
 {
 	endwin();
-	write_config_file();
 	write_info_file();
 	printf("%s", message);
 	exit(0);

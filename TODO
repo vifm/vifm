@@ -10,7 +10,7 @@ Basic things that need to be done.
     Better C command. Handle selection and situation when destination already
         exists.
     Implement :find command.
-    An option to choose shell.
+    An option to choose shell ('shell').
     Make l key handle selection.
     %something for absolute filenames.
     Skip all directories in history that don't exist.

@@ -242,5 +242,20 @@ get_bookmark(FileView *view, char key)
 	}
 }
 
+/* Returns number of active bookmarks */
+int
+init_active_bookmarks(void)
+{
+	int i, x;
+
+	i = 0;
+	for(x = 0; x < NUM_BOOKMARKS; ++x)
+	{
+		if(is_bookmark(x))
+			active_bookmarks[i++] = x;
+	}
+	return i;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

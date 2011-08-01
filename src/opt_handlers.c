@@ -119,7 +119,7 @@ load_options(void)
 	val.int_val = cfg.history_len;
 	set_option("history", val);
 
-	val.int_val = cfg.hl_search;
+	val.bool_val = cfg.hl_search;
 	set_option("hlsearch", val);
 
 	val.bool_val = cfg.use_iec_prefixes;

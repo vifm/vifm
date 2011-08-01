@@ -48,7 +48,6 @@ typedef struct _Config {
 	int auto_execute;
 	int show_one_window;
 	long max_args;
-	int using_default_config;
 	int use_iec_prefixes;
 	int wrap_quick_view;
 	char *time_format;
@@ -82,11 +81,13 @@ typedef struct _Config {
 	int smart_case;
 
 	int hl_search;
+
+	int vifm_info;
 } Config;
 
 extern Config cfg;
 
-int read_config_file(void);
+void load_default_configuration(void);
 void read_info_file(void);
 void write_config_file(void);
 void write_info_file(void);

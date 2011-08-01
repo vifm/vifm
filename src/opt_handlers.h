@@ -21,6 +21,18 @@
 
 #include "ui.h"
 
+enum {
+	VIFMINFO_OPTIONS   = 1 << 0,
+	VIFMINFO_FILETYPES = 1 << 1,
+	VIFMINFO_COMMANDS  = 1 << 2,
+	VIFMINFO_BOOKMARKS = 1 << 3,
+	VIFMINFO_TUI       = 1 << 4,
+	VIFMINFO_DHISTORY  = 1 << 5,
+	VIFMINFO_STATE     = 1 << 6,
+	VIFMINFO_CS        = 1 << 7,
+	VIFMINFO_WARN      = 1 << 8,
+};
+
 void init_option_handlers(void);
 void load_local_options(FileView *view);
 int process_set_args(const char *args);

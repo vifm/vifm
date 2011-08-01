@@ -52,7 +52,6 @@ extern const char valid_bookmarks[];
 
 bookmarks_t bookmarks[NUM_BOOKMARKS];
 
-/* array of active bookmarks, populated in menu.c: init_active_bookmarks() */
 int active_bookmarks[NUM_BOOKMARKS];
 
 int mark2index(const char mark);
@@ -65,6 +64,7 @@ int get_bookmark(FileView *view, char key);
 int move_to_bookmark(FileView *view, const char mark);
 int remove_bookmark(const int x);
 int check_mark_directory(FileView *view, char mark);
+int init_active_bookmarks(void);
 
 #endif
 

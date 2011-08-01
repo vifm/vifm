@@ -1695,8 +1695,6 @@ comm_quit(void)
 		exit(0);
 	}
 
-	write_config_file();
-
 	endwin();
 	exit(0);
 }
@@ -2575,7 +2573,6 @@ write_cmd(const struct cmd_info *cmd_info)
 
 	tmp = curr_stats.setting_change;
 	curr_stats.setting_change = cmd_info->emark;
-	write_config_file();
 	curr_stats.setting_change = tmp;
 	return 0;
 }

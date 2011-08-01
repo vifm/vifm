@@ -38,6 +38,7 @@
 #include "fileops.h"
 #include "filetype.h"
 #include "menus.h"
+#include "opt_handlers.h"
 #include "registers.h"
 #include "status.h"
 #include "utils.h"
@@ -50,7 +51,6 @@ void
 init_config(void)
 {
 	cfg.num_bookmarks = 0;
-	cfg.using_default_config = 0;
 	cfg.command_num = 0;
 	cfg.filetypes_num = 0;
 	cfg.nmapped_num = 0;
@@ -123,17 +123,6 @@ create_startup_file(void)
 	file_exec(command);
 }
 
-/* This is just a safety check so that vifm will still load and run if
- * the configuration file is not present.
- */
-static void
-load_default_configuration(void)
-{
-	cfg.using_default_config = 1;
-
-	read_color_scheme_file();
-}
-
 void
 set_config_dir(void)
 {
@@ -187,6 +176,15 @@ load_view_defaults(FileView *view)
 	view->sort_type = SORT_BY_NAME;
 }
 
+void
+load_default_configuration(void)
+{
+	read_color_scheme_file();
+
+	load_view_defaults(&lwin);
+	load_view_defaults(&rwin);
+}
+
 const char *
 conv_udf_name(const char *cmd)
 {
@@ -213,269 +211,17 @@ conv_udf_name(const char *cmd)
 	return buf;
 }
 
-/* Returns zero when default configuration is used */
-int
-read_config_file(void)
+static void
+prepare_line(char *line)
 {
-	FILE *fp;
-	char config_file[PATH_MAX];
-//	char line[MAX_LEN];
-	char *col_scheme = NULL;
-//	char *s1 = NULL;
-//	char *s2 = NULL;
-//	char *s3 = NULL;
-//	char *s4 = NULL;
-//	char *sx = NULL;
-//	int args;
+	int i;
 
-	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
-
-	load_view_defaults(&lwin);
-	load_view_defaults(&rwin);
-
-	if((fp = fopen(config_file, "r")) == NULL)
-	{
-		fprintf(stdout, "Unable to find configuration file.\n Using defaults.");
-		load_default_configuration();
-		return 0;
-	}
-
-//	while(fgets(line, sizeof(line), fp))
-//	{
-//		args = 0;
-//		if(line[0] == '#')
-//			continue;
-//
-//		if((sx = s1 = strchr(line, '=')) != NULL)
-//		{
-//			s1++;
-//			chomp(s1);
-//			*sx = '\0';
-//			args = 1;
-//		}
-//		else
-//			continue;
-//		if((sx = s2 = strchr(s1, '=')) != NULL)
-//		{
-//			s2++;
-//			chomp(s2);
-//			*sx = '\0';
-//			args = 2;
-//		}
-//		/* COMMAND is handled here so that the command can have an '=' */
-//		if(!strcmp(line, "COMMAND"))
-//		{
-//			char buf[PATH_MAX];
-//			s1 = (char *)conv_udf_name(s1);
-//			snprintf(buf, sizeof(buf), "command %s %s", s1, s2);
-//			execute_cmd(buf);
-//		}
-//		else
-//		{
-//			if(args == 2 && (sx = s3 = strchr(s2, '=')) != NULL)
-//			{
-//				s3++;
-//				chomp(s3);
-//				*sx = '\0';
-//				args = 3;
-//			}
-//			if(args == 3 && (sx = s4 = strchr(s3, '=')) != NULL)
-//			{
-//				s4++;
-//				chomp(s4);
-//				*sx = '\0';
-//				args = 4;
-//			}
-//		}
-//		if(args == 1)
-//		{
-//			if(!strcmp(line, "VI_COMMAND"))
-//			{
-//				free(cfg.vi_command);
-//				cfg.vi_command = strdup(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "USE_TRASH"))
-//			{
-//				cfg.use_trash = atoi(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "UNDO_LEVELS"))
-//			{
-//				cfg.undo_levels = atoi(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "USE_ONE_WINDOW"))
-//			{
-//				cfg.show_one_window = atoi(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "USE_SCREEN"))
-//			{
-//				cfg.use_screen = atoi(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "HISTORY_LENGTH"))
-//			{
-//				cfg.history_len = atoi(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "FAST_RUN"))
-//			{
-//				cfg.fast_run = atoi(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "SORT_NUMBERS"))
-//			{
-//				cfg.sort_numbers = atoi(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "LEFT_WINDOW_SORT_TYPE"))
-//			{
-//				lwin.sort_type = atoi(s1);
-//				if(lwin.sort_type < 0)
-//				{
-//					lwin.sort_type = -lwin.sort_type;
-//					lwin.sort_descending = 1;
-//				}
-//				lwin.sort_type--;
-//				continue;
-//			}
-//			if(!strcmp(line, "RIGHT_WINDOW_SORT_TYPE"))
-//			{
-//				rwin.sort_type = atoi(s1);
-//				if(rwin.sort_type < 0)
-//				{
-//					rwin.sort_type = -rwin.sort_type;
-//					rwin.sort_descending = 1;
-//				}
-//				rwin.sort_type--;
-//				continue;
-//			}
-//			if(!strcmp(line, "LWIN_FILTER"))
-//			{
-//				lwin.filename_filter = (char *)realloc(lwin.filename_filter,
-//						strlen(s1) + 1);
-//				strcpy(lwin.filename_filter, s1);
-//				lwin.prev_filter = (char *)realloc(lwin.prev_filter, strlen(s1) + 1);
-//				strcpy(lwin.prev_filter, s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "LWIN_INVERT"))
-//			{
-//				lwin.invert = atoi(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "RWIN_FILTER"))
-//			{
-//				rwin.filename_filter = (char *)realloc(rwin.filename_filter,
-//						strlen(s1) + 1);
-//				strcpy(rwin.filename_filter, s1);
-//				rwin.prev_filter = (char *)realloc(rwin.prev_filter, strlen(s1) + 1);
-//				strcpy(rwin.prev_filter, s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "RWIN_INVERT"))
-//			{
-//				rwin.invert = atoi(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "USE_VIM_HELP"))
-//			{
-//				cfg.use_vim_help = atoi(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "SAVE_LOCATION"))
-//			{
-//				cfg.save_location = atoi(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "FOLLOW_LINKS"))
-//			{
-//				cfg.follow_links = atoi(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "RUN_EXECUTABLE"))
-//			{
-//				cfg.auto_execute = atoi(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "USE_IEC_PREFIXES"))
-//			{
-//				cfg.use_iec_prefixes = atoi(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "COLOR_SCHEME"))
-//			{
-//				col_scheme = strdup(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "TIME_STAMP_FORMAT"))
-//			{
-//				free(cfg.time_format);
-//				cfg.time_format = malloc(1 + strlen(s1) + 1);
-//				strcpy(cfg.time_format, " ");
-//				strcat(cfg.time_format, s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "FUSE_HOME"))
-//			{
-//				free(cfg.fuse_home);
-//				cfg.fuse_home = strdup(s1);
-//				continue;
-//			}
-//			if(!strcmp(line, "LWIN_PATH"))
-//			{
-//				strcpy(lwin.curr_dir, s1);
-//				cfg.save_location = 1;
-//				continue;
-//			}
-//			if(!strcmp(line, "RWIN_PATH"))
-//			{
-//				strcpy(rwin.curr_dir, s1);
-//				cfg.save_location = 1;
-//				continue;
-//			}
-//		}
-//		if(args == 3)
-//		{
-//			if(!strcmp(line, "BOOKMARKS"))
-//			{
-//				if(isalnum(*s1))
-//					add_bookmark(*s1, s2, s3);
-//				continue;
-//			}
-//			if(!strcmp(line, "FILETYPE")) /* backward compatibility */
-//			{
-//				add_filetype(s1, s2, s3);
-//				add_fileviewer(s2, "");
-//				continue;
-//			}
-//		}
-//		if(args == 4)
-//		{
-//			if(!strcmp(line, "FILETYPE"))
-//			{
-//				add_filetype(s1, s2, s4);
-//				add_fileviewer(s2, s3);
-//				continue;
-//			}
-//		}
-//	}
-//
-//	fclose(fp);
-
-	read_color_scheme_file();
-	if(col_scheme != NULL)
-	{
-		cfg.color_scheme_cur = find_color_scheme(col_scheme);
-		if(cfg.color_scheme_cur < 0)
-			cfg.color_scheme_cur = 0;
-		cfg.color_scheme = 1 + MAXNUM_COLOR*cfg.color_scheme_cur;
-		free(col_scheme);
-	}
-
-	return 1;
+	chomp(line);
+	i = 0;
+	while(isspace(line[i]))
+		i++;
+	if(i > 0)
+		memmove(line, line + i, strlen(line + i) + 1);
 }
 
 void
@@ -483,50 +229,150 @@ read_info_file(void)
 {
 	FILE *fp;
 	char info_file[PATH_MAX];
-	char line[MAX_LEN];
-	char *s1 = NULL;
-	char *sx = NULL;
-	int args;
+	char line[MAX_LEN], line2[MAX_LEN], line3[MAX_LEN];
 
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
 
 	if((fp = fopen(info_file, "r")) == NULL)
 		return;
 
-	while(fgets(line, sizeof(line), fp))
+	while(fgets(line, sizeof(line), fp) == line)
 	{
-		args = 0;
-		if(line[0] == '#')
+		prepare_line(line);
+		if(line[0] == '#' || line[0] == '\0')
 			continue;
 
-		if((sx = s1 = strchr(line, '=')) != NULL)
+		if(line[0] == '=') /* option */
 		{
-			s1++;
-			chomp(s1);
-			*sx = '\0';
-			args = 1;
+			process_set_args(line + 1);
 		}
-		else
-			continue;
-
-		if(!strcmp(line, "LWIN_PATH"))
+		else if(line[0] == '.') /* filetype */
 		{
-			strcpy(lwin.curr_dir, s1);
-			continue;
+			if(fgets(line2, sizeof(line2), fp) == line2)
+			{
+				prepare_line(line2);
+				set_programs(line + 1, line2);
+			}
 		}
-		if(!strcmp(line, "RWIN_PATH"))
+		else if(line[0] == ',') /* fileviewer */
 		{
-			strcpy(rwin.curr_dir, s1);
-			continue;
+			if(fgets(line2, sizeof(line2), fp) == line2)
+			{
+				prepare_line(line2);
+				set_fileviewer(line + 1, line2);
+			}
+		}
+		else if(line[0] == '!') /* fileviewer */
+		{
+			if(fgets(line2, sizeof(line2), fp) == line2)
+			{
+				char buf[MAX_LEN*2];
+				prepare_line(line2);
+				snprintf(buf, sizeof(buf), "command %s %s", line, line2);
+				exec_commands(buf, curr_view, 0);
+			}
+		}
+		else if(line[0] == '\'') /* bookmark */
+		{
+			if(fgets(line2, sizeof(line2), fp) == line2)
+			{
+				prepare_line(line2);
+				if(fgets(line3, sizeof(line3), fp) == line3)
+				{
+					prepare_line(line3);
+					add_bookmark(line[1], line2, line3);
+				}
+			}
+		}
+		else if(line[0] == 'v') /* number of windows */
+		{
+			int i = atoi(line + 1);
+			cfg.show_one_window = (i == 1);
+			curr_stats.number_of_windows = (i == 1) ? 1 : 2;
+		}
+		else if(line[0] == 'l') /* left pane sort */
+		{
+			int i = atoi(line + 1);
+			lwin.sort_descending = (i < 0);
+			lwin.sort_type = abs(i);
+		}
+		else if(line[0] == 'r') /* right pane sort */
+		{
+			int i = atoi(line + 1);
+			rwin.sort_descending = (i < 0);
+			rwin.sort_type = abs(i);
+		}
+		else if(line[0] == 'd') /* left pane history */
+		{
+			strcpy(lwin.curr_dir, line + 1);
+		}
+		else if(line[0] == 'D') /* right pane history */
+		{
+			strcpy(rwin.curr_dir, line + 1);
+		}
+		else if(line[0] == 'f') /* left pane filter */
+		{
+			lwin.filename_filter = (char *)realloc(lwin.filename_filter,
+					strlen(line + 1) + 1);
+			strcpy(lwin.filename_filter, line + 1);
+			lwin.prev_filter = (char *)realloc(lwin.prev_filter,
+					strlen(line + 1) + 1);
+			strcpy(lwin.prev_filter, line + 1);
+		}
+		else if(line[0] == 'F') /* right pane filter */
+		{
+			rwin.filename_filter = (char *)realloc(rwin.filename_filter,
+					strlen(line + 1) + 1);
+			strcpy(rwin.filename_filter, line + 1);
+			rwin.prev_filter = (char *)realloc(rwin.prev_filter,
+					strlen(line + 1) + 1);
+			strcpy(rwin.prev_filter, line + 1);
+		}
+		else if(line[0] == 'i') /* left pane filter inverted */
+		{
+			int i = atoi(line + 1);
+			lwin.invert = (i != 0);
+		}
+		else if(line[0] == 'I') /* right pane filter inverted */
+		{
+			int i = atoi(line + 1);
+			rwin.invert = (i != 0);
+		}
+		else if(line[0] == 's') /* use screen program */
+		{
+			int i = atoi(line + 1);
+			cfg.use_screen = (i != 0);
+		}
+		else if(line[0] == 'c') /* default color scheme */
+		{
+			cfg.color_scheme_cur = find_color_scheme(line + 1);
+			if(cfg.color_scheme_cur < 0)
+				cfg.color_scheme_cur = 0;
+			cfg.color_scheme = 1 + MAXNUM_COLOR*cfg.color_scheme_cur;
 		}
 	}
 
 	fclose(fp);
 }
 
-void
-write_config_file(void)
+/* Returns pointer to a statically allocated buffer */
+static const char *
+escape_spaces(const char *str)
 {
+	static char buf[4096];
+	char *p;
+
+	p = buf;
+	while(*str != '\0')
+	{
+		if(*str == '\\' || *str == ' ')
+			*p++ = '\\';
+		*p++ = *str;
+
+		str++;
+	}
+	*p = '\0';
+	return buf;
 }
 
 void
@@ -534,19 +380,112 @@ write_info_file(void)
 {
 	FILE *fp;
 	char info_file[PATH_MAX];
-
-	if(!cfg.save_location)
-		return;
+	int i;
 
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
 
 	if((fp = fopen(info_file, "w")) == NULL)
 		return;
 
-	fprintf(fp, "# The startup location of panes after :wq.\n");
-	fprintf(fp, "# Used only if SAVE_LOCATION in vifmrc is set to 1.\n");
-	fprintf(fp, "\nLWIN_PATH=%s\n", lwin.curr_dir);
-	fprintf(fp, "\nRWIN_PATH=%s\n", rwin.curr_dir);
+	fprintf(fp, "# You can edit this file by hand, but it's recommended not to do that.\n");
+
+	if(cfg.vifm_info & VIFMINFO_OPTIONS)
+	{
+		fputs("\n# Options:\n", fp);
+		fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
+		fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
+		fprintf(fp, "=%sfollowlinks\n", cfg.follow_links ? "" : "no");
+		fprintf(fp, "=fusehome=%s\n", escape_spaces(cfg.fuse_home));
+		fprintf(fp, "=history=%d\n", cfg.history_len);
+		fprintf(fp, "=%shlsearch\n", cfg.hl_search ? "" : "no");
+		fprintf(fp, "=%siec\n", cfg.use_iec_prefixes ? "" : "no");
+		fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
+		fprintf(fp, "=%sreversecol\n", cfg.invert_cur_line ? "" : "no");
+		fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
+		fprintf(fp, "=%ssavelocation\n", cfg.save_location ? "" : "no");
+		fprintf(fp, "=%ssmartcase\n", cfg.smart_case ? "" : "no");
+		fprintf(fp, "=%ssortnumbers\n", cfg.sort_numbers ? "" : "no");
+		fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format + 1));
+		fprintf(fp, "=%strash\n", cfg.use_trash ? "" : "no");
+		fprintf(fp, "=undolevels=%d\n", cfg.undo_levels);
+		fprintf(fp, "=vicmd=%s\n", escape_spaces(cfg.vi_command));
+		fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");
+		fprintf(fp, "=%swildmenu\n", cfg.wild_menu ? "" : "no");
+		fprintf(fp, "=%swrap\n", cfg.wrap_quick_view ? "" : "no");
+	}
+
+	if(cfg.vifm_info & VIFMINFO_FILETYPES)
+	{
+		fputs("\n# Filetypes:\n", fp);
+		for(i = 0; i < cfg.filetypes_num; i++)
+		{
+			if(filetypes[i].cmd[0] != '\0')
+				fprintf(fp, ".%s\n\t%s\n", filetypes[i].ext, filetypes[i].cmd);
+		}
+
+		fputs("\n# Fileviewers:\n", fp);
+		for(i = 0; i < cfg.fileviewers_num; i++)
+		{
+			if(fileviewers[i].cmd[0] != '\0')
+				fprintf(fp, ",%s\n\t%s\n", fileviewers[i].ext, fileviewers[i].cmd);
+		}
+	}
+
+	if(cfg.vifm_info & VIFMINFO_COMMANDS)
+	{
+		char ** list = list_udf();
+		fputs("\n# Commands:\n", fp);
+		for(i = 0; list[i] != NULL; i += 2)
+			fprintf(fp, "!%s\n\t%s\n", list[i], list[i + 1]);
+		free_string_array(list, i);
+	}
+
+	if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
+	{
+		int len = init_active_bookmarks();
+
+		fputs("\n# Bookmarks:\n", fp);
+		for(i = 0; i < len; i++)
+		{
+			int j = active_bookmarks[i];
+			fprintf(fp, "'%c\n\t%s\n\t", index2mark(j),
+					escape_spaces(bookmarks[j].directory));
+			fprintf(fp, "%s\n", escape_spaces(bookmarks[j].file));
+		}
+	}
+
+	if(cfg.vifm_info & VIFMINFO_TUI)
+	{
+		fputs("\n# TUI:\n", fp);
+		fprintf(fp, "v%d\n", curr_stats.number_of_windows);
+		fprintf(fp, "l%s%d\n", lwin.sort_descending ? "-" : "", lwin.sort_type);
+		fprintf(fp, "r%s%d\n", rwin.sort_descending ? "-" : "", rwin.sort_type);
+	}
+
+	if(cfg.vifm_info & VIFMINFO_DHISTORY)
+	{
+		fputs("\n# Left window history (oldest to newest):\n", fp);
+		fprintf(fp, "d%s\n", lwin.curr_dir);
+
+		fputs("\n# Right window history (oldest to newest):\n", fp);
+		fprintf(fp, "D%s\n", rwin.curr_dir);
+	}
+
+	if(cfg.vifm_info & VIFMINFO_STATE)
+	{
+		fputs("\n# State:\n", fp);
+		fprintf(fp, "f%s\n", lwin.filter);
+		fprintf(fp, "i%d\n", lwin.inverted);
+		fprintf(fp, "F%s\n", rwin.filter);
+		fprintf(fp, "I%d\n", rwin.inverted);
+		fprintf(fp, "s%d\n", cfg.use_screen);
+	}
+
+	if(cfg.vifm_info & VIFMINFO_CS)
+	{
+		fputs("\n# Color scheme:\n", fp);
+		fprintf(fp, "c%s\n", col_schemes[cfg.color_scheme_cur].name);
+	}
 
 	fclose(fp);
 }

@@ -252,7 +252,7 @@ main(int argc, char *argv[])
 	update_path();
 
 	init_commands();
-	read_config_file();
+	load_default_configuration();
 
 	/* Safety check for existing vifmrc file without FUSE_HOME */
 	if(cfg.fuse_home == NULL)
