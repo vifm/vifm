@@ -100,7 +100,9 @@ clean_menu_position(menu_info *m)
 
 	if(strlen(m->data[m->pos]) > x - 4)
 	{
-		mvwaddnstr(menu_win, m->current, 1, buf, x - 3 - 4 + 1);
+		size_t len = get_normal_utf8_string_widthn(buf,
+				getmaxx(menu_win) - 3 - 4 + 1);
+		mvwaddnstr(menu_win, m->current, 1, buf, len);
 		waddstr(menu_win, "...");
 	}
 	else
@@ -314,7 +316,9 @@ moveto_menu_pos(int pos, menu_info *m)
 
 	if(strlen(m->data[pos]) > x - 4)
 	{
-		mvwaddnstr(menu_win, m->current, 1, buf, x - 3 - 4 + 1);
+		size_t len = get_normal_utf8_string_widthn(buf,
+				getmaxx(menu_win) - 3 - 4 + 1);
+		mvwaddnstr(menu_win, m->current, 1, buf, len);
 		waddstr(menu_win, "...");
 	}
 	else
@@ -739,7 +743,8 @@ draw_menu(menu_info *m)
 		len = win_len + get_utf8_overhead(m->data[x]);
 		if(strlen(m->data[x]) > len - 4)
 		{
-			mvwaddnstr(menu_win, i, 2, m->data[x], len - 3 - 4);
+			size_t len = get_normal_utf8_string_widthn(m->data[x], win_len - 3 - 4);
+			mvwaddnstr(menu_win, i, 2, m->data[x], len);
 			waddstr(menu_win, "...");
 		}
 		else
@@ -927,10 +932,14 @@ show_bookmarks_menu(FileView *view)
 	m.len = init_active_bookmarks();
 
 	m.title = (char *)malloc((strlen(" Mark -- File ") + 1) * sizeof(char));
-	snprintf(m.title, strlen(" Mark -- File "),  " Mark -- File ");
+	snprintf(m.title, strlen(" Mark -- File ") + 1,  " Mark -- File ");
+
+//	x = 0;
+//	while(x < m.len)
+//	{
+//	}
 
 	x = 0;
-
 	while(x < m.len)
 	{
 		j = active_bookmarks[x];

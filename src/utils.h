@@ -42,6 +42,7 @@ char * escape_filename(const char *string, size_t len, int quote_percent);
 size_t get_char_width(const char* string);
 size_t get_normal_utf8_string_length(const char *string);
 size_t get_real_string_width(char *string, size_t max_len);
+size_t get_normal_utf8_string_widthn(const char *string, size_t max);
 size_t get_normal_utf8_string_width(const char *string);
 size_t get_utf8_string_length(const char *string);
 size_t get_utf8_overhead(const char *string);
