@@ -110,6 +110,7 @@ static int edit_cmd(const struct cmd_info *cmd_info);
 static int empty_cmd(const struct cmd_info *cmd_info);
 static int file_cmd(const struct cmd_info *cmd_info);
 static int filetype_cmd(const struct cmd_info *cmd_info);
+static int fileviewer_cmd(const struct cmd_info *cmd_info);
 static int filter_cmd(const struct cmd_info *cmd_info);
 static int help_cmd(const struct cmd_info *cmd_info);
 static int history_cmd(const struct cmd_info *cmd_info);
@@ -192,6 +193,8 @@ static const struct cmd_add commands[] = {
 		.handler = file_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "filetype",         .abbr = "filet", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = filetype_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "fileviewer",       .abbr = "filev", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = fileviewer_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 1,
 		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "help",             .abbr = "h",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
@@ -1583,7 +1586,8 @@ exec_commands(char *cmd, FileView *view, int save_hist)
 
 			while(*cmd == ' ' || *cmd == ':')
 				cmd++;
-			if(*cmd == '!' || strncmp(cmd, "com", 3) == 0)
+			if(*cmd == '!' || strncmp(cmd, "com", 3) == 0 ||
+					strncmp(cmd, "filet", 5) == 0 || strncmp(cmd, "filev", 5) == 0)
 			{
 				save_msg += exec_command(cmd, view, GET_COMMAND);
 				break;
@@ -2017,7 +2021,18 @@ filetype_cmd(const struct cmd_info *cmd_info)
 	progs = skip_spaces(progs + 1);
 
 	set_programs(cmd_info->argv[0], progs);
+	return 0;
+}
 
+static int
+fileviewer_cmd(const struct cmd_info *cmd_info)
+{
+	const char *progs;
+
+	progs = skip_word(cmd_info->args);
+	progs = skip_spaces(progs + 1);
+
+	set_fileviewer(cmd_info->argv[0], progs);
 	return 0;
 }
 

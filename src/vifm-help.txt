@@ -447,6 +447,11 @@ Commands
               rently  only  * and ? are treated as special symbols in the pat‐
               tern.
 
+       :filev[iewer] pat1,pat2,... command
+              will associate given command as a viewer to  each  of  the  pat‐
+              terns.  Currently only * and ? are treated as special symbols in
+              the pattern.
+
        :filter regular_expression_pattern
               :filter /regular_expression_pattern/ will filter all  the  files
               out  of the directory listing that match the regular expression.

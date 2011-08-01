@@ -30,7 +30,7 @@
 
 	Added :noremap, :cnoremap, :nnoremap and :vnoremap commands.
 
-	Added :filetype command.
+	Added :filetype and :fileviewer commands.
 
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 

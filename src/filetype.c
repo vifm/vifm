@@ -108,23 +108,23 @@ global_matches(const char *global, const char *file)
 }
 
 static int
-get_filetype_number(const char *file)
+get_filetype_number(const char *file, int count, assoc_t *array)
 {
 	int x;
 
-	for(x = 0; x < cfg.filetypes_num; x++)
+	for(x = 0; x < count; x++)
 	{
 		char *exptr = NULL;
 
 		/* Only one extension */
-		if((exptr = strchr(filetypes[x].ext, ',')) == NULL)
+		if((exptr = strchr(array[x].ext, ',')) == NULL)
 		{
-			if(global_matches(filetypes[x].ext, file))
+			if(global_matches(array[x].ext, file))
 				return x;
 		}
 		else
 		{
-			char *ex_copy = strdup(filetypes[x].ext);
+			char *ex_copy = strdup(array[x].ext);
 			char *free_this = ex_copy;
 			char *exptr2 = NULL;
 			while((exptr = exptr2 = strchr(ex_copy, ',')) != NULL)
@@ -154,7 +154,7 @@ get_filetype_number(const char *file)
 char *
 get_default_program_for_file(char *file)
 {
-	int x = get_filetype_number(file);
+	int x = get_filetype_number(file, cfg.filetypes_num, filetypes);
 	char *strptr = NULL;
 	char *ptr = NULL;
 	char *program_name = NULL;
@@ -162,7 +162,7 @@ get_default_program_for_file(char *file)
 	if(x < 0)
 		return NULL;
 
-	strptr = strdup(filetypes[x].programs);
+	strptr = strdup(filetypes[x].com);
 
 	/* Only one program */
 	if((ptr = strchr(strptr, ',')) == NULL)
@@ -181,46 +181,32 @@ get_default_program_for_file(char *file)
 char *
 get_viewer_for_file(char *file)
 {
-	int x = get_filetype_number(file);
+	int x = get_filetype_number(file, cfg.fileviewers_num, fileviewers);
 
 	if(x < 0)
 		return NULL;
 
-	return fileviewers[x].viewer;
+	return fileviewers[x].com;
 }
 
 char *
 get_all_programs_for_file(char *file)
 {
-	int x = get_filetype_number(file);
+	int x = get_filetype_number(file, cfg.filetypes_num, filetypes);
 
 	if(x > -1)
-		return filetypes[x].programs;
+		return filetypes[x].com;
 
 	return NULL;
 }
 
-void
-add_fileviewer(const char *extension, const char *viewer)
-{
-	fileviewers = realloc(fileviewers,
-			(cfg.fileviewers_num + 1) * sizeof(fileviewer_t));
-
-	fileviewers[cfg.fileviewers_num].ext = strdup(extension);
-	fileviewers[cfg.fileviewers_num].viewer = strdup(viewer);
-	cfg.fileviewers_num++;
-}
-
 static void
-add_filetype(const char *description, const char *extension,
-		const char *programs)
+add_filetype(const char *extension, const char *programs)
 {
-	filetypes = realloc(filetypes, (cfg.filetypes_num + 1) * sizeof(filetype_t));
-
-	filetypes[cfg.filetypes_num].type = strdup(description);
+	filetypes = realloc(filetypes, (cfg.filetypes_num + 1) * sizeof(assoc_t));
 
 	filetypes[cfg.filetypes_num].ext = strdup(extension);
-	filetypes[cfg.filetypes_num].programs = strdup(programs);
+	filetypes[cfg.filetypes_num].com = strdup(programs);
 	cfg.filetypes_num++;
 }
 
@@ -237,13 +223,12 @@ set_ext_programs(const char *extension, const char *programs)
 			break;
 	if(x == cfg.filetypes_num)
 	{
-		add_filetype("", extension, programs);
-		add_fileviewer(extension, programs);
+		add_filetype(extension, programs);
 	}
 	else
 	{
-		free(filetypes[x].programs);
-		filetypes[x].programs = strdup(programs);
+		free(filetypes[x].com);
+		filetypes[x].com = strdup(programs);
 	}
 }
 
@@ -274,6 +259,66 @@ set_programs(const char *extensions, const char *programs)
 	}
 }
 
+static void
+add_fileviewer(const char *extension, const char *viewer)
+{
+	fileviewers = realloc(fileviewers,
+			(cfg.fileviewers_num + 1) * sizeof(assoc_t));
+
+	fileviewers[cfg.fileviewers_num].ext = strdup(extension);
+	fileviewers[cfg.fileviewers_num].com = strdup(viewer);
+	cfg.fileviewers_num++;
+}
+
+static void
+set_ext_viewer(const char *extension, const char *viewer)
+{
+	int x;
+
+	if(extension[0] == '\0')
+		return;
+
+	for(x = 0; x < cfg.fileviewers_num; x++)
+		if(strcasecmp(fileviewers[x].ext, extension) == 0)
+			break;
+	if(x == cfg.fileviewers_num)
+	{
+		add_fileviewer(extension, viewer);
+	}
+	else
+	{
+		free(fileviewers[x].com);
+		fileviewers[x].com = strdup(viewer);
+	}
+}
+
+void
+set_fileviewer(const char *extensions, const char *viewer)
+{
+	char *exptr;
+	if((exptr = strchr(extensions, ',')) == NULL)
+	{
+		set_ext_viewer(extensions, viewer);
+	}
+	else
+	{
+		char *ex_copy = strdup(extensions);
+		char *free_this = ex_copy;
+		char *exptr2 = NULL;
+		while((exptr = exptr2 = strchr(ex_copy, ',')) != NULL)
+		{
+			*exptr = '\0';
+			exptr2++;
+
+			set_ext_viewer(ex_copy, viewer);
+
+			ex_copy = exptr2;
+		}
+		set_ext_programs(ex_copy, viewer);
+		free(free_this);
+	}
+}
+
 void
 reset_filetypes(void)
 {
@@ -281,9 +326,8 @@ reset_filetypes(void)
 
 	for(i = 0; i < cfg.filetypes_num; i++)
 	{
-		free(filetypes[i].type);
 		free(filetypes[i].ext);
-		free(filetypes[i].programs);
+		free(filetypes[i].com);
 	}
 
 	free(filetypes);
@@ -299,7 +343,7 @@ reset_fileviewers(void)
 	for(i = 0; i < cfg.fileviewers_num; i++)
 	{
 		free(fileviewers[i].ext);
-		free(fileviewers[i].viewer);
+		free(fileviewers[i].com);
 	}
 
 	free(fileviewers);
