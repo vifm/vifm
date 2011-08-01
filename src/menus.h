@@ -78,7 +78,6 @@ void moveto_menu_pos(int pos, menu_info *m);
 void redraw_menu(menu_info *m);
 void draw_menu(menu_info *m);
 void execute_menu_cb(FileView *view, menu_info *m);
-void reload_bookmarks_menu_list(menu_info *m);
 int print_errors(FILE *ef);
 
 #endif

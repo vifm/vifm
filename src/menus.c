@@ -673,44 +673,6 @@ init_active_bookmarks(void)
 }
 
 void
-reload_bookmarks_menu_list(menu_info *m)
-{
-	int x, i, z, len, j;
-	char buf[PATH_MAX];
-
-	getmaxyx(menu_win, z, len);
-
-	for (z = 0; z < m->len; z++)
-	{
-		free(m->data[z]);
-		m->data[z] = NULL;
-	}
-
-	m->len = init_active_bookmarks();
-	x = 0;
-
-	for(i = 1; x < m->len; i++)
-	{
-		j = active_bookmarks[x];
-		if (!strcmp(bookmarks[j].directory, "/"))
-			snprintf(buf, sizeof(buf), "  %c   /%s", index2mark(j), bookmarks[j].file);
-		else if (!strcmp(bookmarks[j].file, "../"))
-			snprintf(buf, sizeof(buf), "  %c   %s", index2mark(j),
-					bookmarks[j].directory);
-		else
-			snprintf(buf, sizeof(buf), "  %c   %s/%s", index2mark(j),
-					bookmarks[j].directory,	bookmarks[j].file);
-
-		m->data = (char **)realloc(m->data, sizeof(char *) * (x + 1));
-		m->data[x] = (char *)malloc(sizeof(buf) + 2);
-		snprintf(m->data[x], sizeof(buf), "%s", buf);
-
-		x++;
-	}
-	m->len = x;
-}
-
-void
 draw_menu(menu_info *m)
 {
 	int i;
@@ -896,8 +858,12 @@ bookmark_khandler(struct menu_info *m, wchar_t *keys)
 	{
 		clean_menu_position(m);
 		remove_bookmark(active_bookmarks[m->pos]);
+		memmove(active_bookmarks + m->pos, active_bookmarks + m->pos + 1,
+				sizeof(char *)*(m->len - 1 - m->pos));
 
-		reload_bookmarks_menu_list(m);
+		memmove(m->data + m->pos, m->data + m->pos + 1,
+				sizeof(char *)*(m->len - 1 - m->pos));
+		m->len--;
 		draw_menu(m);
 
 		moveto_menu_pos(m->pos, m);
@@ -931,6 +897,11 @@ show_bookmarks_menu(FileView *view)
 	getmaxyx(menu_win, m.win_rows, x);
 
 	m.len = init_active_bookmarks();
+	if(m.len == 0)
+	{
+		show_error_msg("No bookmarks set", "No bookmarks are set.");
+		return 0;
+	}
 
 	m.title = strdup(" Mark -- Directory -- File ");
 
