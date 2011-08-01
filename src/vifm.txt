@@ -356,6 +356,7 @@ Add ' &' in the end of command if you want to start program in background.
     given and /full/path is current directory then last file in [range] is
     being used.  Using macros is allowed.
 :marks - menu of bookmarks.
+:marks list ... - display the contents of the marks that are mentioned in list.
 :noh[lsearch] - clear selection in current pane.
 :on[ly] - switch to a one window view.
 :popd - remove pane directories from stack.

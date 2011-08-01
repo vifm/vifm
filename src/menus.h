@@ -51,7 +51,7 @@ typedef struct menu_info
 	char *get_info_script; /* program + args to fill in menu. */
 }menu_info;
 
-int show_bookmarks_menu(FileView *view);
+int show_bookmarks_menu(FileView *view, const char *marks);
 int show_dirstack_menu(FileView *view);
 void show_colorschemes_menu(FileView *view);
 int show_commands_menu(FileView *view);

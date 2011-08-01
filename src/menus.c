@@ -657,21 +657,6 @@ execute_menu_cb(FileView *view, menu_info *m)
 	}
 }
 
-/* Returns number of active bookmarks */
-static int
-init_active_bookmarks(void)
-{
-	int i, x;
-
-	i = 0;
-	for(x = 0; x < NUM_BOOKMARKS; ++x)
-	{
-		if(is_bookmark(x))
-			active_bookmarks[i++] = x;
-	}
-	return i;
-}
-
 void
 draw_menu(menu_info *m)
 {
@@ -872,8 +857,26 @@ bookmark_khandler(struct menu_info *m, wchar_t *keys)
 	return -1;
 }
 
+/* Returns number of active bookmarks */
+static int
+init_active_bookmarks(const char *marks)
+{
+	int i, x;
+
+	i = 0;
+	for(x = 0; x < NUM_BOOKMARKS; ++x)
+	{
+		if(!is_bookmark(x))
+			continue;
+		if(strchr(marks, index2mark(x)) == NULL)
+			continue;
+		active_bookmarks[i++] = x;
+	}
+	return i;
+}
+
 int
-show_bookmarks_menu(FileView *view)
+show_bookmarks_menu(FileView *view, const char *marks)
 {
 	int j, x;
 	int max_len;
@@ -896,7 +899,7 @@ show_bookmarks_menu(FileView *view)
 
 	getmaxyx(menu_win, m.win_rows, x);
 
-	m.len = init_active_bookmarks();
+	m.len = init_active_bookmarks(marks);
 	if(m.len == 0)
 	{
 		show_error_msg("No bookmarks set", "No bookmarks are set.");
@@ -909,8 +912,9 @@ show_bookmarks_menu(FileView *view)
 	x = 0;
 	while(x < m.len)
 	{
-		size_t len = get_utf8_string_length(
-				bookmarks[active_bookmarks[x]].directory);
+		size_t len;
+
+		len = get_utf8_string_length(bookmarks[active_bookmarks[x]].directory);
 		if(len > max_len)
 			max_len = len;
 		x++;

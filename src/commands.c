@@ -207,7 +207,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "mark",             .abbr = "ma",    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = mark_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = 3,       .select = 0, },
 	{ .name = "marks",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = marks_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+		.handler = marks_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "nmap",             .abbr = "nm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "nnoremap",         .abbr = "nn",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2188,7 +2188,28 @@ mark_cmd(const struct cmd_info *cmd_info)
 static int
 marks_cmd(const struct cmd_info *cmd_info)
 {
-	return show_bookmarks_menu(curr_view) != 0;
+	char buf[256];
+	int i, j;
+
+	if(cmd_info->argc == 0)
+		return show_bookmarks_menu(curr_view, valid_bookmarks) != 0;
+
+	j = 0;
+	buf[0] = '\0';
+	for(i = 0; i < cmd_info->argc; i++)
+	{
+		const char *p = cmd_info->argv[i];
+		while(*p != '\0')
+		{
+			if(strchr(buf, *p) == NULL)
+			{
+				buf[j++] = *p;
+				buf[j] = '\0';
+			}
+			p++;
+		}
+	}
+	return show_bookmarks_menu(curr_view, buf);
 }
 
 static int
@@ -2285,28 +2306,28 @@ pwd_cmd(const struct cmd_info *cmd_info)
 static int
 registers_cmd(const struct cmd_info *cmd_info)
 {
+	char buf[256];
+	int i, j;
+
 	if(cmd_info->argc == 0)
 		return show_register_menu(curr_view, valid_registers) != 0;
-	else
+
+	j = 0;
+	buf[0] = '\0';
+	for(i = 0; i < cmd_info->argc; i++)
 	{
-		char buf[256];
-		int i, j = 0;
-		buf[0] = '\0';
-		for(i = 0; i < cmd_info->argc; i++)
+		const char *p = cmd_info->argv[i];
+		while(*p != '\0')
 		{
-			const char *p = cmd_info->argv[i];
-			while(*p != '\0')
+			if(strchr(buf, *p) == NULL)
 			{
-				if(strchr(buf, *p) == NULL)
-				{
-					buf[j++] = *p;
-					buf[j] = '\0';
-				}
-				p++;
+				buf[j++] = *p;
+				buf[j] = '\0';
 			}
+			p++;
 		}
-		return show_register_menu(curr_view, buf) != 0;
 	}
+	return show_register_menu(curr_view, buf) != 0;
 }
 
 static int
