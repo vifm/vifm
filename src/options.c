@@ -693,12 +693,17 @@ complete_options(const char *cmd, const char **start)
 	}
 
 	p = (char *)skip_alphas(buf);
-	value = (*p == '=');
+	value = (p[0] == '=');
+	value = value || (p[0] == '-' && p[1] == '=');
+	value = value || (p[0] == '+' && p[1] == '=');
 	if(value)
 	{
+		char t = *p;
 		*p = '\0';
 		opt = get_option(buf);
-		*p++ = '=';
+		*p++ = t;
+		if(t != '=')
+			p++;
 		*start += p - buf;
 	}
 	else if(strncmp(buf, "no", 2) == 0)

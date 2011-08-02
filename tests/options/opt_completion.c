@@ -105,6 +105,10 @@ test_skip_abbreviations(void)
 	free(completed);
 
 	completed = next_completion();
+	assert_string_equal("vifminfo", completed);
+	free(completed);
+
+	completed = next_completion();
 	assert_string_equal("", completed);
 	free(completed);
 }
@@ -127,6 +131,66 @@ test_expand_abbreviations(void)
 	free(completed);
 }
 
+static void
+test_after_eq_value_completion(void)
+{
+	char buf[] = "vifminfo=op";
+	const char *start;
+	char *completed;
+
+	reset_completion();
+	complete_options(buf, &start);
+	assert_true(start == buf + 9);
+
+	completed = next_completion();
+	assert_string_equal("options", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("options", completed);
+	free(completed);
+}
+
+static void
+test_after_meq_value_completion(void)
+{
+	char buf[] = "vifminfo-=op";
+	const char *start;
+	char *completed;
+
+	reset_completion();
+	complete_options(buf, &start);
+	assert_true(start == buf + 10);
+
+	completed = next_completion();
+	assert_string_equal("options", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("options", completed);
+	free(completed);
+}
+
+static void
+test_after_peq_value_completion(void)
+{
+	char buf[] = "vifminfo+=op";
+	const char *start;
+	char *completed;
+
+	reset_completion();
+	complete_options(buf, &start);
+	assert_true(start == buf + 10);
+
+	completed = next_completion();
+	assert_string_equal("options", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("options", completed);
+	free(completed);
+}
+
 void
 opt_completion(void)
 {
@@ -138,6 +202,9 @@ opt_completion(void)
 	run_test(test_invalid_input);
 	run_test(test_skip_abbreviations);
 	run_test(test_expand_abbreviations);
+	run_test(test_after_eq_value_completion);
+	run_test(test_after_meq_value_completion);
+	run_test(test_after_peq_value_completion);
 
 	test_fixture_end();
 }

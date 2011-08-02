@@ -20,6 +20,17 @@ static const char * sort_enum[] = {
 	"mtime",
 };
 
+static const char * vifminfo_set[] = {
+	"options",
+	"filetypes",
+	"commands",
+	"bookmarks",
+	"tui",
+	"dhistory",
+	"state",
+	"cs",
+};
+
 void test_quotes(void);
 void opt_completion(void);
 void with_spaces_tests(void);
@@ -49,6 +60,11 @@ sort_handler(enum opt_op op, union optval_t val)
 }
 
 static void
+vifminfo_handler(enum opt_op op, union optval_t val)
+{
+}
+
+static void
 setup(void)
 {
 	static int option_changed;
@@ -59,6 +75,8 @@ setup(void)
 	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler);
 	add_option("sort", "so", OPT_ENUM, ARRAY_LEN(sort_enum), sort_enum,
 			&sort_handler);
+	add_option("vifminfo", "", OPT_SET, ARRAY_LEN(vifminfo_set), vifminfo_set,
+			&vifminfo_handler);
 }
 
 int main(int argc, char **argv)
