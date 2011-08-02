@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@gmail.com>
-" Last Change: 2011 July 17
+" Last Change: 2011 August 2
 
 " vifm and vifm.vim can be found at http://vifm.sf.net
 
@@ -17,10 +17,11 @@ let loaded_vifm = 1
 
 " Setup commands to run vifm.
 
-" :EditVifm - open file in current buffer.
-" :SplitVifm - split buffer and open file.
-" :VsplitVifm - vertically split buffer and open file.
+" :EditVifm - open file or files in current buffer.
+" :SplitVifm - split buffer and open file or files.
+" :VsplitVifm - vertically split buffer and open file or files.
 " :DiffVifm - load file for :vert diffsplit.
+" :TabVifm - load file or files in tabs.
 
 " If the commands clash with your other user commands you can change the
 " command name.
@@ -42,7 +43,7 @@ if !exists(':DiffVifm')
 	command DiffVifm :call s:StartVifm('vert diffsplit')
 endif
 if !exists(":TabVifm")
-  command TabVifm :call s:StartVifm('tab drop')
+	command TabVifm :call s:StartVifm('tab drop')
 endif
 
 function! s:StartVifm(editcmd)
@@ -58,25 +59,32 @@ function! s:StartVifm(editcmd)
 	" The selected files are written and read from a file instead of using
 	" vim's clientserver so that it will work in the console without a X server
 	" running.
-	let s:flist = readfile(fnamemodify('~/.vifm/vimfiles', ':p'))
+	let flist = readfile(fnamemodify('~/.vifm/vimfiles', ":p"))
+
+	" filenames are relative to current directory
+	call map( flist, 'fnamemodify( v:val, ":." )' )
+
+	call map( flist, 'fnameescape( v:val )')
 
 	" User exits vifm without selecting a file.
-	if len(s:flist) == 0 || s:flist[0] =~ 'NULL'
+	if len(flist) == 0 || flist[0] =~ 'NULL'
 		echohl WarningMsg | echo 'No file selected' | echohl None
 		return
 	endif
 
-	if len(s:flist) == 1
-		silent execute a:editcmd fnameescape(s:flist[0])
+	if len(flist) == 1
+		execute a:editcmd flist[0]
 		return
 	endif
 
-	let s:flist = map(s:flist, 'fnameescape(v:val)')
 	if a:editcmd == 'edit'
-		silent execute 'args' join(s:flist)
+		execute 'args' join(flist)
 	else
-		for s:file in s:flist
-			silent execute a:editcmd s:file
+		for file in flist
+			execute a:editcmd file
 		endfor
 	endif
+
+	" go to first file
+	execute "drop" flist[0]
 endfunction
