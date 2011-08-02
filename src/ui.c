@@ -174,41 +174,42 @@ status_bar_message(const char *message)
 {
 	static char msg[512];
 
+	int len;
+	const char *p, *q;
+	int lines;
+
 	if(!curr_stats.vifm_started)
 		return;
 
 	if(message != NULL)
-	{
-		int len;
-		const char *p;
-
 		snprintf(msg, sizeof(msg), "%s", message);
-		p = message;
-		message--;
-		status_bar_lines = 0;
-		len = getmaxx(stdscr);
-		while((message = strchr(message + 1, '\n')) != NULL)
-		{
-			status_bar_lines += (message - p + len - 1)/len;
-			p = message + 1;
-		}
-		status_bar_lines += (strlen(p) + len - 1)/len;
-		if(status_bar_lines > 1 || strlen(p) > getmaxx(status_bar))
-		{
-			strncat(msg, "\nPress ENTER or type command to continue", sizeof(msg));
-			status_bar_lines++;
-		}
+
+	p = msg;
+	q = msg - 1;
+	status_bar_lines = 0;
+	len = getmaxx(stdscr);
+	while((q = strchr(q + 1, '\n')) != NULL)
+	{
+		status_bar_lines += (q - p + len - 1)/len;
+		p = q + 1;
 	}
+	status_bar_lines += (strlen(p) + len - 1)/len;
+
+	lines = status_bar_lines;
+	if(status_bar_lines > 1 || strlen(p) > getmaxx(status_bar))
+		lines++;
 
 	werase(status_bar);
-	mvwin(stat_win, getmaxy(stdscr) - status_bar_lines - 1, 0);
-	mvwin(status_bar, getmaxy(stdscr) - status_bar_lines, 0);
-	if(status_bar_lines == 1)
-		wresize(status_bar, status_bar_lines, getmaxx(stdscr) - 19);
+	mvwin(stat_win, getmaxy(stdscr) - lines - 1, 0);
+	mvwin(status_bar, getmaxy(stdscr) - lines, 0);
+	if(lines == 1)
+		wresize(status_bar, lines, getmaxx(stdscr) - 19);
 	else
-		wresize(status_bar, status_bar_lines, getmaxx(stdscr));
+		wresize(status_bar, lines, getmaxx(stdscr));
 	wmove(status_bar, 0, 0);
 	wprintw(status_bar, "%s", msg);
+	if(lines > 1)
+		wprintw(status_bar, "%s", "\nPress ENTER or type command to continue");
 	wnoutrefresh(status_bar);
 }
 
@@ -228,7 +229,10 @@ clean_status_bar(void)
 	wnoutrefresh(status_bar);
 
 	if(status_bar_lines > 1)
+	{
+		status_bar_lines = 1;
 		redraw_window();
+	}
 	status_bar_lines = 1;
 }
 
