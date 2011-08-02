@@ -394,6 +394,26 @@ write_info_file(void)
 		fprintf(fp, "=%strash\n", cfg.use_trash ? "" : "no");
 		fprintf(fp, "=undolevels=%d\n", cfg.undo_levels);
 		fprintf(fp, "=vicmd=%s\n", escape_spaces(cfg.vi_command));
+
+		fprintf(fp, "=vifminfo=options");
+		if(cfg.vifm_info & VIFMINFO_FILETYPES)
+			fprintf(fp, ",filetypes");
+		if(cfg.vifm_info & VIFMINFO_COMMANDS)
+			fprintf(fp, ",commands");
+		if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
+			fprintf(fp, ",bookmarks");
+		if(cfg.vifm_info & VIFMINFO_TUI)
+			fprintf(fp, ",tui");
+		if(cfg.vifm_info & VIFMINFO_DHISTORY)
+			fprintf(fp, ",dhistory");
+		if(cfg.vifm_info & VIFMINFO_STATE)
+			fprintf(fp, ",state");
+		if(cfg.vifm_info & VIFMINFO_CS)
+			fprintf(fp, ",cs");
+		if(cfg.vifm_info & VIFMINFO_WARN)
+			fprintf(fp, ",warn");
+		fprintf(fp, "\n");
+
 		fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");
 		fprintf(fp, "=%swildmenu\n", cfg.wild_menu ? "" : "no");
 		fprintf(fp, "=%swrap\n", cfg.wrap_quick_view ? "" : "no");
