@@ -704,6 +704,12 @@ complete_options(const char *cmd, const char **start)
 		*p++ = t;
 		if(t != '=')
 			p++;
+		if(opt->type == OPT_SET)
+		{
+			char *t = strrchr(buf, ',');
+			if(t != NULL)
+				p = t + 1;
+		}
 		*start += p - buf;
 	}
 	else if(strncmp(buf, "no", 2) == 0)
@@ -729,7 +735,10 @@ complete_options(const char *cmd, const char **start)
 		complete_value(p, opt);
 
 	completion_group_end();
-	add_completion(buf);
+	if(!value)
+		add_completion(buf);
+	else
+		add_completion(p);
 }
 
 static void

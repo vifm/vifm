@@ -34,7 +34,6 @@ Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).
 	Change file list filters to use fold levels instead of just
 		the dot filter and regular expression filter (what does this mean?).
-	Add set values completion for :set command (there are no such options yet).
 	Add :s/pattern/replace/ command.
     Add something ('freezmarks' option ?) to prevent user loose his bookmarks 
         accidentally. (maybe we don't need this now, because of :mark command

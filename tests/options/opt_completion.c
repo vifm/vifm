@@ -14,7 +14,7 @@ test_space_at_the_end(void)
 	reset_completion();
 	complete_options("fusehome=a\\ b\\ ", &start);
 	completed = next_completion();
-	assert_string_equal("fusehome=a\\ b\\ ", completed);
+	assert_string_equal("a\\ b\\ ", completed);
 	free(completed);
 
 	reset_completion();
@@ -191,6 +191,30 @@ test_after_peq_value_completion(void)
 	free(completed);
 }
 
+static void
+test_set_values_completion(void)
+{
+	char buf[] = "vifminfo=tui,c";
+	const char *start;
+	char *completed;
+
+	reset_completion();
+	complete_options(buf, &start);
+	assert_true(start == buf + 13);
+
+	completed = next_completion();
+	assert_string_equal("commands", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("cs", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("c", completed);
+	free(completed);
+}
+
 void
 opt_completion(void)
 {
@@ -205,6 +229,7 @@ opt_completion(void)
 	run_test(test_after_eq_value_completion);
 	run_test(test_after_meq_value_completion);
 	run_test(test_after_peq_value_completion);
+	run_test(test_set_values_completion);
 
 	test_fixture_end();
 }
