@@ -430,6 +430,11 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 
 	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING, ARG };
 
+	if(last_pos != NULL)
+		*last_pos = 0;
+	if(last_end != NULL)
+		*last_end = 0;
+
 	*count = get_args_count(args, sep, regexp, quotes);
 	if(*count == 0)
 		return NULL;

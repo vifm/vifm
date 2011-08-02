@@ -90,6 +90,7 @@ static void cmd_M(struct key_info, struct keys_info *);
 static void cmd_N(struct key_info, struct keys_info *);
 static void cmd_P(struct key_info, struct keys_info *);
 static void cmd_V(struct key_info, struct keys_info *);
+static void cmd_ZQ(struct key_info, struct keys_info *);
 static void cmd_ZZ(struct key_info, struct keys_info *);
 static void cmd_cW(struct key_info, struct keys_info *);
 static void cmd_cg(struct key_info, struct keys_info *);
@@ -182,7 +183,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"P", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_P}}},
 	{L"V", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_V}}},
 	{L"Y", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_yy}}},
-	{L"ZQ", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ZZ}}},
+	{L"ZQ", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ZQ}}},
 	{L"ZZ", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ZZ}}},
 	{L"cW", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cW}}},
 	{L"cg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cg}}},
@@ -725,9 +726,15 @@ cmd_V(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+cmd_ZQ(struct key_info key_info, struct keys_info *keys_info)
+{
+	comm_quit(0);
+}
+
+static void
 cmd_ZZ(struct key_info key_info, struct keys_info *keys_info)
 {
-	comm_quit();
+	comm_quit(1);
 }
 
 /* Mark. */

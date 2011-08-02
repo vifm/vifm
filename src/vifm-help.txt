@@ -258,9 +258,9 @@ Other Normal Mode Keys
 
        V      enter visual mode.
 
-       ZQ     same as :quit
+       ZQ     same as :quit!
 
-       ZZ     same as :wq
+       ZZ     same as :quit
 
        .      repeat last command line command (not normal mode command).
 
@@ -575,7 +575,7 @@ Commands
               write vifminfo file (add !  to  force  write  even  if  settings
               weren't changed).
 
-       :wq    exit vifm after writing config.
+       :wq    same as :quit.
 
        :x[it] will exit Vifm (add ! if you don't want to save changes).
 

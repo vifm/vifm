@@ -151,6 +151,7 @@ static int vunmap_cmd(const struct cmd_info *cmd_info);
 static int do_unmap(const char *keys, int mode);
 static int write_cmd(const struct cmd_info *cmd_info);
 static int quit_cmd(const struct cmd_info *cmd_info);
+static int wq_cmd(const struct cmd_info *cmd_info);
 static int yank_cmd(const struct cmd_info *cmd_info);
 static int get_reg_and_count(const struct cmd_info *cmd_info, int *reg);
 static int usercmd_cmd(const struct cmd_info* cmd_info);
@@ -232,7 +233,7 @@ static const struct cmd_add commands[] = {
 		.handler = pushd_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "pwd",              .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = pwd_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "quit",             .abbr = "q",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "quit",             .abbr = "q",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "registers",        .abbr = "reg",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
@@ -267,7 +268,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "write",            .abbr = "w",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = write_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "wq",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+		.handler = wq_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "xit",              .abbr = "x",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "yank",             .abbr = "y",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1674,11 +1675,12 @@ exec_command(char *cmd, FileView *view, int type)
 }
 
 void _gnuc_noreturn
-comm_quit(void)
+comm_quit(int write_info)
 {
 	unmount_fuse();
 
-	write_info_file();
+	if(write_info)
+		write_info_file();
 
 	if(cfg.vim_filter)
 	{
@@ -2571,7 +2573,13 @@ write_cmd(const struct cmd_info *cmd_info)
 static int
 quit_cmd(const struct cmd_info *cmd_info)
 {
-	comm_quit();
+	comm_quit(!cmd_info->emark);
+}
+
+static int
+wq_cmd(const struct cmd_info *cmd_info)
+{
+	comm_quit(1);
 }
 
 static int

@@ -37,7 +37,7 @@ int execute_command(FileView *view, char *action);
 char * fast_run_complete(char *cmd);
 char * expand_macros(FileView *view, const char *command, const char *args,
 		int *menu, int *split);
-void _gnuc_noreturn comm_quit(void);
+void _gnuc_noreturn comm_quit(int write_info);
 void comm_only(void);
 void comm_split(void);
 
