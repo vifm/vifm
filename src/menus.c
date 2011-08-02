@@ -160,13 +160,11 @@ redraw_error_msg(char *title_arg, const char *message_arg)
 
 			for(j = 0; buf[j] != '\0'; j++)
 				if(buf[j] == '\n')
-				{
 					break;
-				}
 
 			if(buf[j] != '\0')
 				buf[j] = '\0';
-			i += j + 1;
+			i += j;
 
 			if(buf[0] == '\0')
 				continue;
