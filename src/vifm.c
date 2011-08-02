@@ -352,7 +352,7 @@ main(int argc, char *argv[])
 	curr_stats.vifm_started = 2;
 
 	load_dir_list(&lwin, 0);
-	if(!is_dir(lwin_path) && lwin_path[0] != '\0')
+	if(lwin_path[0] != '\0' && !is_dir(lwin_path))
 	{
 		int pos = find_file_pos_in_list(&lwin, strrchr(lwin_path, '/') + 1);
 		if(pos >= 0)
@@ -362,7 +362,7 @@ main(int argc, char *argv[])
 		}
 	}
 	load_dir_list(&rwin, 0);
-	if(!is_dir(rwin_path) && rwin_path[0] != '\0')
+	if(rwin_path[0] != '\0' && !is_dir(rwin_path))
 	{
 		int pos = find_file_pos_in_list(&rwin, strrchr(rwin_path, '/') + 1);
 		if(pos >= 0)
