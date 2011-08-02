@@ -757,7 +757,7 @@ expand_tilde(char *path)
 	struct passwd *pw;
 
 	if(path[0] != '~')
-		return strdup(path);
+		return path;
 
 	if(path[1] == '\0' || path[1] == '/')
 	{
