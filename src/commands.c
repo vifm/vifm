@@ -150,7 +150,6 @@ static int do_map(const struct cmd_info *cmd_info, const char *map_type,
 static int vunmap_cmd(const struct cmd_info *cmd_info);
 static int do_unmap(const char *keys, int mode);
 static int write_cmd(const struct cmd_info *cmd_info);
-static int wq_cmd(const struct cmd_info *cmd_info);
 static int quit_cmd(const struct cmd_info *cmd_info);
 static int yank_cmd(const struct cmd_info *cmd_info);
 static int get_reg_and_count(const struct cmd_info *cmd_info, int *reg);
@@ -233,7 +232,7 @@ static const struct cmd_add commands[] = {
 		.handler = pushd_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "pwd",              .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = pwd_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "quit",             .abbr = "q",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "quit",             .abbr = "q",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "registers",        .abbr = "reg",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
@@ -265,10 +264,10 @@ static const struct cmd_add commands[] = {
 		.handler = vnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "vunmap",           .abbr = "vu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
-	{ .name = "write",            .abbr = "w",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "write",            .abbr = "w",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = write_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "wq",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = wq_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "xit",              .abbr = "x",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "yank",             .abbr = "y",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1289,7 +1288,6 @@ set_view_filter(FileView *view, const char *filter, int invert)
 	view->filename_filter = realloc(view->filename_filter, strlen(filter) + 1);
 	strcpy(view->filename_filter, filter);
 	load_saving_pos(view, 1);
-	curr_stats.setting_change = 1;
 }
 
 static wchar_t  *
@@ -2052,7 +2050,6 @@ filter_cmd(const struct cmd_info *cmd_info)
 			curr_view->invert = !curr_view->invert;
 			load_dir_list(curr_view, 1);
 			moveto_list_pos(curr_view, 0);
-			curr_stats.setting_change = 1;
 		}
 		else
 		{
@@ -2124,7 +2121,6 @@ invert_cmd(const struct cmd_info *cmd_info)
 	curr_view->invert = !curr_view->invert;
 	load_dir_list(curr_view, 1);
 	moveto_list_pos(curr_view, 0);
-	curr_stats.setting_change = 1;
 	return 0;
 }
 
@@ -2371,7 +2367,6 @@ screen_cmd(const struct cmd_info *cmd_info)
 		return 1;
 	}
 	cfg.use_screen = !cfg.use_screen;
-	curr_stats.setting_change = 1;
 	return 0;
 }
 
@@ -2569,27 +2564,13 @@ do_unmap(const char *keys, int mode)
 static int
 write_cmd(const struct cmd_info *cmd_info)
 {
-	int tmp;
-
-	tmp = curr_stats.setting_change;
-	curr_stats.setting_change = cmd_info->emark;
-	curr_stats.setting_change = tmp;
 	write_info_file();
 	return 0;
 }
 
 static int
-wq_cmd(const struct cmd_info *cmd_info)
-{
-	curr_stats.setting_change = 1;
-	return quit_cmd(cmd_info);
-}
-
-static int
 quit_cmd(const struct cmd_info *cmd_info)
 {
-	if(cmd_info->emark)
-		curr_stats.setting_change = 0;
 	comm_quit();
 }
 

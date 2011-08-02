@@ -1694,7 +1694,6 @@ filter_selected_files(FileView *view)
 	clean_status_bar();
 	load_dir_list(view, 1);
 	moveto_list_pos(view, view->list_pos);
-	curr_stats.setting_change = 1;
 	view->selected_files = 0;
 }
 
@@ -1819,7 +1818,6 @@ change_sort_type(FileView *view, char type, char descending)
 
 	view->sort_type = type;
 	view->sort_descending = descending;
-	curr_stats.setting_change = 1;
 
 	load_saving_pos(view, 1);
 

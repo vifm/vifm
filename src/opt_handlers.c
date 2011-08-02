@@ -69,13 +69,13 @@ static const char * vifminfo_set[] = {
 	"dhistory",
 	"state",
 	"cs",
-	"warn",
 };
 
 void
 init_option_handlers(void)
 {
-	init_options(&curr_stats.setting_change, &print_func);
+	static int opt_changed;
+	init_options(&opt_changed, &print_func);
 	add_options();
 	load_options();
 }

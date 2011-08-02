@@ -33,7 +33,6 @@
 #include "commands.h"
 #include "cmds.h"
 #include "config.h"
-#include "crc32.h"
 #include "fileops.h"
 #include "filetype.h"
 #include "menus.h"
@@ -222,9 +221,6 @@ read_info_file(void)
 	if((fp = fopen(info_file, "r")) == NULL)
 		return;
 
-	if(calculate_crc32(info_file, &curr_stats.vifminfo_crc32) != 0)
-		curr_stats.vifminfo_crc32 = 0;
-
 	while(fgets(line, sizeof(line), fp) == line)
 	{
 		prepare_line(line);
@@ -369,24 +365,105 @@ write_info_file(void)
 {
 	FILE *fp;
 	char info_file[PATH_MAX];
-	uint32_t vifminfo_crc32;
+	char ** list;
+	int nlist = -1;
+	char **ft = NULL, **fv = NULL, **cmds = NULL, **marks = NULL;
+	int nft = 0, nfv = 0, ncmds = 0, nmarks = 0;
 	int i;
 
-	if(!curr_stats.setting_change)
+	if(cfg.vifm_info == 0)
 		return;
 
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
 
-	if(calculate_crc32(info_file, &vifminfo_crc32) != 0)
-		vifminfo_crc32 = 0;
-	if(vifminfo_crc32 != curr_stats.vifminfo_crc32 &&
-			(cfg.vifm_info & VIFMINFO_WARN))
+	list = list_udf();
+	while(list[++nlist] != NULL);
+
+	if((fp = fopen(info_file, "r")) != NULL)
 	{
-		if(!query_user_menu("~/.vifm/vifminfo was changed",
-				"Do you want to overwrite it?"))
-			return;
+		char line[MAX_LEN], line2[MAX_LEN], line3[MAX_LEN];
+
+		while(fgets(line, sizeof(line), fp) == line)
+		{
+			prepare_line(line);
+			if(line[0] == '#' || line[0] == '\0')
+				continue;
+
+			if(line[0] == '.') /* filetype */
+			{
+				if(fgets(line2, sizeof(line2), fp) == line2)
+				{
+					char *p;
+					if((p = get_default_program_for_file(line + 1)) != NULL)
+					{
+						free(p);
+						continue;
+					}
+					prepare_line(line2);
+					ft = realloc(ft, sizeof(char *)*(nft + 2));
+					ft[nft + 0] = strdup(line + 1);
+					ft[nft + 1] = strdup(line2);
+					nft += 2;
+				}
+			}
+			else if(line[0] == ',') /* fileviewer */
+			{
+				if(fgets(line2, sizeof(line2), fp) == line2)
+				{
+					if(get_viewer_for_file(line + 1) != NULL)
+						continue;
+					prepare_line(line2);
+					fv = realloc(fv, sizeof(char *)*(nfv + 2));
+					fv[nfv + 0] = strdup(line + 1);
+					fv[nfv + 1] = strdup(line2);
+					nfv += 2;
+				}
+			}
+			else if(line[0] == '!') /* command */
+			{
+				if(fgets(line2, sizeof(line2), fp) == line2)
+				{
+					char *p = line + 1;
+					for(i = 0; i < nlist; i += 2)
+					{
+						int cmp = strcmp(list[i], p);
+						if(cmp < 0)
+							continue;
+						if(cmp == 0)
+							p = NULL;
+						break;
+					}
+					if(p == NULL)
+						continue;
+					prepare_line(line2);
+					cmds = realloc(cmds, sizeof(char *)*(ncmds + 2));
+					cmds[ncmds + 0] = strdup(line + 1);
+					cmds[ncmds + 1] = strdup(line2);
+					ncmds += 2;
+				}
+			}
+			else if(line[0] == '\'') /* bookmark */
+			{
+				line[2] = '\0';
+				if(fgets(line2, sizeof(line2), fp) == line2)
+				{
+					prepare_line(line2);
+					if(fgets(line3, sizeof(line3), fp) == line3)
+					{
+						if(is_bookmark(mark2index(line[1])))
+							continue;
+						prepare_line(line3);
+						marks = realloc(marks, sizeof(char *)*(nmarks + 3));
+						marks[nmarks + 0] = strdup(line + 1);
+						marks[nmarks + 1] = strdup(line2);
+						marks[nmarks + 2] = strdup(line3);
+						nmarks += 3;
+					}
+				}
+			}
+		}
+		fclose(fp);
 	}
-	curr_stats.vifminfo_crc32 = vifminfo_crc32;
 
 	if((fp = fopen(info_file, "w")) == NULL)
 		return;
@@ -428,8 +505,6 @@ write_info_file(void)
 			fprintf(fp, ",state");
 		if(cfg.vifm_info & VIFMINFO_CS)
 			fprintf(fp, ",cs");
-		if(cfg.vifm_info & VIFMINFO_WARN)
-			fprintf(fp, ",warn");
 		fprintf(fp, "\n");
 
 		fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");
@@ -445,6 +520,8 @@ write_info_file(void)
 			if(filetypes[i].com[0] != '\0')
 				fprintf(fp, ".%s\n\t%s\n", filetypes[i].ext, filetypes[i].com);
 		}
+		for(i = 0; i < nft; i += 2)
+			fprintf(fp, ".%s\n\t%s\n", ft[i], ft[i + 1]);
 
 		fputs("\n# Fileviewers:\n", fp);
 		for(i = 0; i < cfg.fileviewers_num; i++)
@@ -452,15 +529,17 @@ write_info_file(void)
 			if(fileviewers[i].com[0] != '\0')
 				fprintf(fp, ",%s\n\t%s\n", fileviewers[i].ext, fileviewers[i].com);
 		}
+		for(i = 0; i < nfv; i += 2)
+			fprintf(fp, ",%s\n\t%s\n", fv[i], fv[i + 1]);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_COMMANDS)
 	{
-		char ** list = list_udf();
 		fputs("\n# Commands:\n", fp);
 		for(i = 0; list[i] != NULL; i += 2)
 			fprintf(fp, "!%s\n\t%s\n", list[i], list[i + 1]);
-		free_string_array(list, i);
+		for(i = 0; i < ncmds; i += 2)
+			fprintf(fp, "!%s\n\t%s\n", cmds[i], cmds[i + 1]);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
@@ -475,6 +554,8 @@ write_info_file(void)
 					escape_spaces(bookmarks[j].directory));
 			fprintf(fp, "%s\n", escape_spaces(bookmarks[j].file));
 		}
+		for(i = 0; i < nmarks; i += 3)
+			fprintf(fp, "'%c\n\t%s\n\t%s\n", marks[i][0], marks[i + 1], marks[i + 2]);
 	}
 
 	if(cfg.vifm_info & VIFMINFO_TUI)
@@ -511,6 +592,12 @@ write_info_file(void)
 	}
 
 	fclose(fp);
+
+	free_string_array(ft, nft);
+	free_string_array(fv, nfv);
+	free_string_array(cmds, ncmds);
+	free_string_array(marks, nmarks);
+	free_string_array(list, nlist);
 }
 
 void

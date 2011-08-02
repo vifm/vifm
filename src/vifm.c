@@ -35,7 +35,6 @@
 #include "color_scheme.h"
 #include "commands.h"
 #include "config.h"
-#include "crc32.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"

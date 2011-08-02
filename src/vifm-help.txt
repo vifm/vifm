@@ -504,6 +504,9 @@ Commands
 
        :marks create a popup menu of bookmarks.
 
+       :marks list ...
+              display the contents of the marks that are mentioned in list.
+
        :noh[lsearch]
               clear selection in current pane.
 
@@ -569,8 +572,8 @@ Commands
               toggle on and off the quick file view.
 
        :w[rite]
-              write config file (add ! to force write even if settings weren't
-              changed).
+              write vifminfo file (add !  to  force  write  even  if  settings
+              weren't changed).
 
        :wq    exit vifm after writing config.
 
@@ -761,11 +764,6 @@ Command macros
               default: false
               Run executable file on Enter or l.
 
-       savelocation
-              type: boolean
-              default: false
-              Start vifm in the last visited directory.
-
        smartcase scs
               type: boolean
               default: false
@@ -810,6 +808,20 @@ Command macros
        vicmd  type: string
               default: "vim"
               The actual command used to start vi.
+
+       vifminfo
+              type: set
+              default: bookmarks
+
+       Controls what will be saved in the ~/.vifm/vifminfo file.
+          options   - all options that can be set with the :set command
+          filetypes - associated programs and viewers
+          commands  - user defined commands (see :command description)
+          bookmarks - bookmarks, except special ones like '< and '>
+          tui       - state of the user interface
+          dhistory  - directory history
+          state     - filters and screen program using state
+          cs        - default color scheme
 
        vimhelp
               type: boolean
@@ -903,25 +915,26 @@ Menus and dialogs
 
        h - check/uncheck.  Space - check/uncheck.
 
-
 Configure
-       The ~/.vifm/vifmrc file contains all the configurable settings.  It  is
-       commented and you may edit it by hand to change the settings.
+       The ~/.vifm/vifmrc file contains commands that will be executed on vifm
+       startup.   Use it to set settings, mappings or filetypes.  To use multi
+       line commands precede each next line with a  slash  (whitespace  before
+       slash  is  ignored,  but all spaces at the end of the lines are saved).
+       For example: set
+           \smartcase equals "setsmartcase".  When set<space here>
+            smartcase<space here> equals "set  smartcase ".
 
-       The  ~/.vifm/vifminfo  file contains session settings.  It is commented
-       and you may edit it by hand to change the settings.
+       The ~/.vifm/vifminfo file contains session settings.  You may  edit  it
+       by  hand  to  change the settings, but it's not recommended to do that,
+       edit vifmrc instead.  You can control what settings will  be  saved  in
+       vifminfo by setting ´vifminfo' option.  Vifm always writes this file on
+       exit unless 'vifminfo' option is empty.  Bookmarks, commands and  file‐
+       types  in the file are merged with vifm configuration (which has bigger
+       priority).
 
        The ~/.vifm/scripts directory can contain shell scripts.  vifm modifies
        it's  PATH  environment  variable to let user run those scripts without
        specifying full path.
-
-       The ~/.vifm/startup file contains commands that  will  be  executed  on
-       vifm startup.  You can set your mappings there.  To use multi line com‐
-       mands precede each next line with a slash (whitespace before  slash  is
-       ignored,  but  all spaces at the end of lines are saved).  For example:
-       set
-           \smartcase equals "setsmartcase".  When set<space here>
-            smartcase<space here> equals "set  smartcase ".
 
 Plugin
        Plugin for using vifm in vim as a file selector.

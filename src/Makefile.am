@@ -21,7 +21,6 @@ vifm_SOURCES = \
 	commands.c commands.h \
 	completion.c completion.h \
 	config.c config.h \
-	crc32.c crc32.h \
 	dir_stack.c dir_stack.h \
 	file_info.c file_info.h \
 	file_magic.c file_magic.h \

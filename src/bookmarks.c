@@ -118,7 +118,6 @@ silent_remove_bookmark(const int x)
 	if(bookmarks[x].directory == NULL && bookmarks[x].file == NULL)
 		return 0;
 
-	curr_stats.setting_change = 1;
 	free(bookmarks[x].directory);
 	free(bookmarks[x].file);
 	bookmarks[x].directory = NULL;
@@ -153,7 +152,6 @@ add_mark(const char mark, const char *directory, const char *file)
 	bookmarks[x].file = strdup(file);
 	/* increase number of active bookmarks */
 	cfg.num_bookmarks++;
-	curr_stats.setting_change = 1;
 }
 
 int

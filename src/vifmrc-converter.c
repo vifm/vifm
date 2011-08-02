@@ -15,7 +15,6 @@ enum {
 	VIFMINFO_DHISTORY  = 1 << 5,
 	VIFMINFO_STATE     = 1 << 6,
 	VIFMINFO_CS        = 1 << 7,
-	VIFMINFO_WARN      = 1 << 8,
 };
 
 int vifminfo = 0x1ff;
@@ -720,9 +719,9 @@ append_vifminfo_option(const char *config_file, int vifm_like)
 	fputs("\n\" What should be saved automatically between vifm runs\n", fp);
 	fputs("\" Like in previous versions of vifm\n", fp);
 	if(vifminfo & VIFMINFO_DHISTORY)
-		fprintf(fp, "%sset vifminfo=options,filetypes,commands,bookmarks,dhistory,state,cs,warn\n", vifm_like ? "" : "\" ");
+		fprintf(fp, "%sset vifminfo=options,filetypes,commands,bookmarks,dhistory,state,cs\n", vifm_like ? "" : "\" ");
 	else
-		fprintf(fp, "%sset vifminfo=options,filetypes,commands,bookmarks,state,cs,warn\n", vifm_like ? "" : "\" ");
+		fprintf(fp, "%sset vifminfo=options,filetypes,commands,bookmarks,state,cs\n", vifm_like ? "" : "\" ");
 	fputs("\" Like in vi\n", fp);
 	fprintf(fp, "%sset vifminfo=bookmarks\n", !vifm_like ? "" : "\" ");
 

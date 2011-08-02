@@ -34,7 +34,6 @@ typedef struct
 	char updir_file[NAME_MAX];
 	int is_console;
 	int search;
-	uint32_t vifminfo_crc32;
 	int save_msg;
 	int use_register;
 	int use_input_bar;
@@ -43,7 +42,6 @@ typedef struct
 	int number_of_windows;
 	int view;
 	int show_full;
-	int setting_change;
 	int skip_history;
 	int vifm_started; /* 0 - no TUI, 1 - TUI, 2 - all */
 
