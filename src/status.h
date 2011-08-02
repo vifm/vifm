@@ -33,8 +33,8 @@ typedef struct
 	int last_char;
 	char updir_file[NAME_MAX];
 	int is_console;
-	uint32_t config_crc32;
 	int search;
+	uint32_t vifminfo_crc32;
 	int save_msg;
 	int use_register;
 	int use_input_bar;

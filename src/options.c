@@ -409,7 +409,24 @@ set_set(struct opt_t *opt, const char *value)
 	if(opt->type == OPT_BOOL)
 		return -1;
 
-	if(opt->type == OPT_ENUM || opt->type == OPT_SET)
+	if(opt->type == OPT_SET)
+	{
+		opt->val.set_items = 0;
+		while(*value != '\0')
+		{
+			const char *p;
+			char buf[64];
+
+			if((p = strchr(value, ',')) == 0)
+				p = value + strlen(value);
+
+			snprintf(buf, p - value + 1, "%s", value);
+			set_add(opt, buf);
+			
+			value = (*p == '\0') ? p : p + 1;
+		}
+	}
+	else if(opt->type == OPT_ENUM)
 	{
 		int i = find_val(opt, value);
 		if(i == -1)

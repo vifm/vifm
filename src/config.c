@@ -222,6 +222,9 @@ read_info_file(void)
 	if((fp = fopen(info_file, "r")) == NULL)
 		return;
 
+	if(calculate_crc32(info_file, &curr_stats.vifminfo_crc32) != 0)
+		curr_stats.vifminfo_crc32 = 0;
+
 	while(fgets(line, sizeof(line), fp) == line)
 	{
 		prepare_line(line);
@@ -366,9 +369,21 @@ write_info_file(void)
 {
 	FILE *fp;
 	char info_file[PATH_MAX];
+	uint32_t vifminfo_crc32;
 	int i;
 
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
+
+	if(calculate_crc32(info_file, &vifminfo_crc32) != 0)
+		vifminfo_crc32 = 0;
+	if(vifminfo_crc32 != curr_stats.vifminfo_crc32 &&
+			(cfg.vifm_info & VIFMINFO_WARN))
+	{
+		if(!query_user_menu("~/.vifm/vifminfo was changed",
+				"Do you want to overwrite it?"))
+			return;
+	}
+	curr_stats.vifminfo_crc32 = vifminfo_crc32;
 
 	if((fp = fopen(info_file, "w")) == NULL)
 		return;

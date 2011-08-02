@@ -289,9 +289,6 @@ main(int argc, char *argv[])
 
 	snprintf(config_dir, sizeof(config_dir), "%s/vifmrc", cfg.config_dir);
 
-	if(calculate_crc32(config_dir, &curr_stats.config_crc32) != 0)
-		curr_stats.config_crc32 = 0;
-
 	/* Check if running in X */
 	console = getenv("DISPLAY");
 	if(!console || !*console)
