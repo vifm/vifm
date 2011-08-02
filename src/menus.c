@@ -857,24 +857,6 @@ bookmark_khandler(struct menu_info *m, wchar_t *keys)
 	return -1;
 }
 
-/* Returns number of active bookmarks */
-static int
-init_active_bookmarks(const char *marks)
-{
-	int i, x;
-
-	i = 0;
-	for(x = 0; x < NUM_BOOKMARKS; ++x)
-	{
-		if(!is_bookmark(x))
-			continue;
-		if(strchr(marks, index2mark(x)) == NULL)
-			continue;
-		active_bookmarks[i++] = x;
-	}
-	return i;
-}
-
 int
 show_bookmarks_menu(FileView *view, const char *marks)
 {

@@ -427,7 +427,7 @@ write_info_file(void)
 
 	if(cfg.vifm_info & VIFMINFO_BOOKMARKS)
 	{
-		int len = init_active_bookmarks();
+		int len = init_active_bookmarks(valid_bookmarks);
 
 		fputs("\n# Bookmarks:\n", fp);
 		for(i = 0; i < len; i++)

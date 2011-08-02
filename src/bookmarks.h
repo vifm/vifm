@@ -64,7 +64,7 @@ int get_bookmark(FileView *view, char key);
 int move_to_bookmark(FileView *view, const char mark);
 int remove_bookmark(const int x);
 int check_mark_directory(FileView *view, char mark);
-int init_active_bookmarks(void);
+int init_active_bookmarks(const char *marks);
 
 #endif
 
