@@ -58,15 +58,13 @@ function! s:StartVifm(editcmd)
 	" The selected files are written and read from a file instead of using
 	" vim's clientserver so that it will work in the console without a X server
 	" running.
-	let s:r = system('cat ~/.vifm/vimfiles')
+	let s:flist = readfile(fnamemodify('~/.vifm/vimfiles', ':p'))
 
 	" User exits vifm without selecting a file.
-	if s:r =~ 'NULL'
+	if len(s:flist) == 0 || s:flist[0] =~ 'NULL'
 		echohl WarningMsg | echo 'No file selected' | echohl None
 		return
 	endif
-
-	let s:flist = split(s:r, "\n")
 
 	if len(s:flist) == 1
 		silent execute a:editcmd fnameescape(s:flist[0])
