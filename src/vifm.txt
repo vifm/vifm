@@ -391,8 +391,8 @@ Add ' &' in the end of command if you want to start program in background.
 :sync - change the other panel to the current panels directory.
 :undol[ist] - show list of latest changes.  Add ! to see commands.
 :vie[w] - toggle on and off the quick file view.
-:w[rite] - will write config (add ! to force write even if settings weren't
-	changed).
+:w[rite] - will write vifminfo (add ! to force write even if settings
+    weren't changed).
 :wq - will exit vifm after writing config.
 :x[it] - exit vifm (add ! if you don't want to save changes).
 :y[ank] [reg] [count] - will yank files to the reg register.
@@ -543,11 +543,6 @@ type: boolean
 default: false
 Run executable file on Enter or l.
 
-savelocation
-type: boolean
-default: false
-Start vifm in the last visited directory.
-
 smartcase scs
 type: boolean
 default: false
@@ -595,6 +590,20 @@ vicmd
 type: string
 default: "vim"
 The actual command used to start vi.
+
+vifminfo
+type: set
+default: bookmarks
+Controls what will be saved in the ~/.vifm/vifminfo file.
+   options   - all options that can be set with the :set command
+   filetypes - associated programs and viewers
+   commands  - user defined commands (see :command description)
+   bookmarks - bookmarks, except special ones like '< and '>
+   tui       - state of the user interface
+   dhistory  - directory history
+   state     - filters and screen program using state
+   cs        - default color scheme
+   warn      - warn about modified vifminfo
 
 vimhelp
 type: boolean
@@ -697,26 +706,25 @@ Space - check/uncheck.
 --------------------------------------------------------------------------------
 *Configure*
 
-The ~/.vifm/vifmrc file contains all the configurable settings.  It is
-commented and you may edit it by hand to change the settings.
-
-The ~/.vifm/vifminfo file contains session settings.  It is
-commented and you may edit it by hand to change the settings.
-
-The ~/.vifm/scripts directory can contain shell scripts.  vifm modifies
-it's PATH environment variable to let user run those scripts without specifying
-full path.
-
-The ~/.vifm/startup file contains commands that will be executed on vifm
-startup.  You can set your mappings there.  To use multi line commands precede
-each next line with a slash (whitespace before slash is ignored, but all spaces
-at the end of lines are saved).  For example:
+The ~/.vifm/vifmrc file contains commands that will be executed on vifm startup.
+Use it to set settings, mappings or filetypes.  To use multi line commands
+precede each next line with a slash (whitespace before slash is ignored, but all
+spaces at the end of the lines are saved).  For example:
 set
-    \smartcase
+    \\smartcase
 equals "setsmartcase".  When
 set<space here>
     \ smartcase<space here>
 equals "set  smartcase ".
+
+The ~/.vifm/vifminfo file contains session settings.  You may edit it by hand
+to change the settings, but it's not recommended to do that, edit vifmrc
+instead.  You can control what settings will be saved in vifminfo by setting
+'vifminfo' option.
+
+The ~/.vifm/scripts directory can contain shell scripts.  vifm modifies
+it's PATH environment variable to let user run those scripts without specifying
+full path.
 
 --------------------------------------------------------------------------------
 *Plugin*
@@ -831,7 +839,8 @@ The following command names are reserved and cannot be used for user commands.
   vunmap - remove the mapping of lhs from visual mode.
   w - same as :write.
   wq - will exit vifm after writing config.
-  write - write config (add ! to force write even if settings weren't changed).
+  write - write vifmingo (add ! to force write even when settings weren't
+    changed).
   x - exit vifm.
   xit - exit vifm.
   y - yank file.

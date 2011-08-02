@@ -372,6 +372,9 @@ write_info_file(void)
 	uint32_t vifminfo_crc32;
 	int i;
 
+	if(!curr_stats.setting_change)
+		return;
+
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
 
 	if(calculate_crc32(info_file, &vifminfo_crc32) != 0)

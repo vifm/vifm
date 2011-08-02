@@ -36,7 +36,6 @@ Vi(m) specific features that need to be added.
 		the dot filter and regular expression filter (what does this mean?).
 	Add set values completion for :set command (there are no such options yet).
 	Add :s/pattern/replace/ command.
-    Add 'vifminfo' option.  This removes 'savelocation' option and moves FILTER.
     Add something ('freezmarks' option ?) to prevent user loose his bookmarks 
         accidentally. (maybe we don't need this now, because of :mark command
         and the startup file)
@@ -45,7 +44,6 @@ Vi(m) specific features that need to be added.
     Some kind of selection mode (multible blocks, mixing).
     gs to work with t selection just like gv with visual mode selection.
     Add :mksession command and 'sessionoptions' option.
-    Add 'vifminfo' option.
     Save active pane (with positions) on exit (session and vifminfo).
     Make directory history persistent (session and vifminfo).
     Make command line history persistent (session and vifminfo).

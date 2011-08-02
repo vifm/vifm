@@ -2574,6 +2574,7 @@ write_cmd(const struct cmd_info *cmd_info)
 	tmp = curr_stats.setting_change;
 	curr_stats.setting_change = cmd_info->emark;
 	curr_stats.setting_change = tmp;
+	write_info_file();
 	return 0;
 }
 

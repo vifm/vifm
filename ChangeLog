@@ -4,6 +4,8 @@
 
 	Removed 'savelocation' option.  Use set vifminfo+=dhistory.
 
+	Removed support of startup file all commands will be moved to vifmrc.
+
 	Added 'reversecol' option (affects the look of current line in the views).
 
 	Added 'wildmenu' option.
@@ -33,6 +35,8 @@
 	Added :noremap, :cnoremap, :nnoremap and :vnoremap commands.
 
 	Added :filetype and :fileviewer commands.
+
+	Added 'vifminfo' option.
 
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
@@ -66,6 +70,8 @@
 	Now vifm understands user name after tilde in paths.
 
 	Made filetype understand star as in globals.
+
+	Changed format of ~/.vifm/vifmrc and ~/.vifm/vifminfo files.
 
 	Fixed bug with name conflict of files and directories in the Trash.
 
