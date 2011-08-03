@@ -49,9 +49,9 @@ endif
 function! s:StartVifm(editcmd)
 	" Gvim cannot handle ncurses so run vifm in an xterm.
 	if has('gui_running')
-		silent !cd "%:p:h" && xterm -e vifm -f
+		silent !xterm -e vifm -f "%:p:h"
 	else
-		silent !cd "%:p:h" && vifm -f
+		silent !vifm -f "%:p:h"
 	endif
 
 	redraw!

@@ -339,9 +339,6 @@ main(int argc, char *argv[])
 	 * TODO understand why we need to wait
 	 */
 
-	if(cfg.vim_filter)
-		curr_stats.number_of_windows = 1;
-
 	if(old_config)
 	{
 		int vifm_like;
