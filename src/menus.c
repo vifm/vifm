@@ -1203,6 +1203,7 @@ show_filetypes_menu(FileView *view, int background)
 	{
 		int x = 0;
 		int len = 0;
+		char *p;
 		char *ptr = NULL;
 
 		static menu_info m;
@@ -1223,27 +1224,31 @@ show_filetypes_menu(FileView *view, int background)
 
 		getmaxyx(menu_win, m.win_rows, len);
 
-		if ((ptr = strchr(prog_str, ',')) == NULL)
+		p = prog_str;
+		while(isspace(*p) || *p == ',')
+			p++;
+
+		if((ptr = strchr(p, ',')) == NULL)
 		{
 			m.len = 1;
 			m.data = (char **)realloc(m.data, sizeof(char *) * (len + 1));
-			m.data[0] = strdup(prog_str);
+			m.data[0] = strdup(p);
 		}
 		else
 		{
-			char *prog_copy = strdup(prog_str);
+			char *prog_copy = strdup(p);
 			char *free_this = prog_copy;
 			char *ptr1 = NULL;
 			int i;
 
-			while(*prog_copy == ',')
-				prog_copy++;
-
-			while ((ptr = ptr1 = strchr(prog_copy, ',')) != NULL)
+			while((ptr = ptr1 = strchr(prog_copy, ',')) != NULL)
 			{
 				int i;
 				*ptr = '\0';
 				ptr1++;
+
+				while(isspace(*prog_copy) || *prog_copy == ',')
+					prog_copy++;
 
 				for(i = 0; i < m.len; i++)
 					if(strcmp(m.data[i], prog_copy) == 0)
