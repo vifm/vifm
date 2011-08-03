@@ -613,6 +613,8 @@ execute_filetype_cb(FileView *view, menu_info *m)
 
 	background = m->extra_data & 1;
 	run_using_prog(view, prog_str, 0, background);
+
+	clean_selected_files(view);
 }
 
 void
