@@ -71,6 +71,7 @@ void setup_menu(void);
 void redraw_error_msg(char *title_arg, const char *message_arg);
 /* Returns not zero when user asked to skip error messages that left */
 int show_error_msg(char * title, const char *message);
+int show_error_msgf(char *title, const char *format, ...);
 int search_menu_list(char *command, menu_info *ptr);
 int query_user_menu(char *title, char *message);
 void clean_menu_position(menu_info *m);

@@ -692,6 +692,7 @@ replace_home_part(const char *directory)
 		strncat(strcpy(buf, "~"), directory + len, sizeof(buf));
 	else
 		strncpy(buf, directory, sizeof(buf));
+	chosp(buf);
 
 	return buf;
 }

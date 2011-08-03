@@ -21,7 +21,6 @@ Basic things that need to be done.
     Modify X in permissions dialog.
     Be more verbose about regexp compiling errors.
     Show search matches in the menus.
-    Check whether user is the owner on :change.
 
 Documentation.
 	Better documentation.

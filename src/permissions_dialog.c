@@ -105,9 +105,6 @@ enter_permissions_mode(FileView *active_view)
 		return;
 
 	view = active_view;
-	*mode = PERMISSIONS_MODE;
-	clear_input_bar();
-	curr_stats.use_input_bar = 0;
 	memset(perms, 0, sizeof(perms));
 
 	diff = 0;
@@ -122,12 +119,32 @@ enter_permissions_mode(FileView *active_view)
 	else
 		file_is_dir = 0;
 	fmode = view->dir_entry[i].mode;
+	if(view->dir_entry[i].uid != geteuid())
+	{
+		show_error_msgf("Access error", "You are not owner of %s",
+				view->dir_entry[i].name);
+		return;
+	}
 	while(i < view->list_rows)
 	{
 		if(view->dir_entry[i].selected)
+		{
 			diff |= (view->dir_entry[i].mode ^ fmode);
+
+			if(view->dir_entry[i].uid != geteuid())
+			{
+				show_error_msgf("Access error", "You are not owner of %s",
+						view->dir_entry[i].name);
+				return;
+			}
+		}
+
 		i++;
 	}
+
+	*mode = PERMISSIONS_MODE;
+	clear_input_bar();
+	curr_stats.use_input_bar = 0;
 
 	perms[0] = !(diff & S_IRUSR) ? (int)(fmode & S_IRUSR) : -1;
 	perms[1] = !(diff & S_IWUSR) ? (int)(fmode & S_IWUSR) : -1;

@@ -22,6 +22,7 @@
 #include <string.h> /* strchr() */
 #include <unistd.h> /* access() */
 #include <termios.h> /* struct winsize */
+#include <stdarg.h>
 #include <sys/ioctl.h>
 #include <signal.h>
 
@@ -186,6 +187,18 @@ redraw_error_msg(char *title_arg, const char *message_arg)
 				"Press Return to continue or Ctrl-C to skip other error messages");
 	else
 		mvwaddstr(error_win, y - 2, (x - 20)/2, "Enter y[es] or n[o]");
+}
+
+/* Returns not zero when user asked to skip error messages that left */
+int
+show_error_msgf(char *title, const char *format, ...)
+{
+	char buf[2048];
+	va_list pa;
+	va_start(pa, format);
+	vsnprintf(buf, sizeof(buf), format, pa);
+	va_end(pa);
+	return show_error_msg(title, buf);
 }
 
 /* Returns not zero when user asked to skip error messages that left */
