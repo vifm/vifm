@@ -2400,7 +2400,7 @@ set_cmd(const struct cmd_info *cmd_info)
 static int
 shell_cmd(const struct cmd_info *cmd_info)
 {
-	shellout(NULL, 0);
+	shellout(getenv("SHELL"), 0);
 	return 0;
 }
 
