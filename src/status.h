@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 
 #include <inttypes.h>
+#include <limits.h>
 
 #include "../config.h"
 #include "tree.h"

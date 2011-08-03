@@ -334,6 +334,9 @@ Add ' &' in the end of command if you want to start program in background.
 :filet[ype] pat1,pat2,... def_program,program2,... - will associate given
     program list to each of the patterns.  Currently only * and ? are
     treated as special symbols in the pattern.
+:filex[type] pat1,pat2,... def_program,program2,... - same as :filetype, but
+    given programs will be run only if vifm is running in the X.  So this
+    settings overwrite :filetype in X.
 :filev[iewer] pat1,pat2,... command - will associate given command as a
     viewer to each of the patterns.  Currently only * and ? are treated as
     special symbols in the pattern.
@@ -785,8 +788,10 @@ The following command names are reserved and cannot be used for user commands.
   edit - edit file.
   empty - empty trash directory.
   file - show filetypes menu.
-  filet pat1,pat2,... def_program,program2,... - associate extension.
-  filetype pat1,pat2,... def_program,program2,... - associate extension.
+  filet pat1,pat2,... def_prog,prog2,... - associate extension.
+  filetype pat1,pat2,... def_prog,prog2,... - associate extension.
+  filex pat1,pat2,... def_prog,prog2,... - associate extension for X.
+  filextype pat1,pat2,... def_prog,prog2,... - associate extension for X.
   fileviewer pat1,pat2,... command - associate extension to a viewer.
   filter - set file name filter.
   find - not yet implemented.

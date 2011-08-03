@@ -51,6 +51,8 @@ init_config(void)
 	cfg.num_bookmarks = 0;
 	cfg.command_num = 0;
 	cfg.filetypes_num = 0;
+	cfg.xfiletypes_num = 0;
+	cfg.fileviewers_num = 0;
 	cfg.nmapped_num = 0;
 	cfg.vim_filter = 0;
 	cfg.show_one_window = 0;
@@ -236,7 +238,15 @@ read_info_file(void)
 			if(fgets(line2, sizeof(line2), fp) == line2)
 			{
 				prepare_line(line2);
-				set_programs(line + 1, line2);
+				set_programs(line + 1, line2, 0);
+			}
+		}
+		else if(line[0] == 'x') /* xfiletype */
+		{
+			if(fgets(line2, sizeof(line2), fp) == line2)
+			{
+				prepare_line(line2);
+				set_programs(line + 1, line2, 1);
 			}
 		}
 		else if(line[0] == ',') /* fileviewer */
@@ -367,9 +377,10 @@ write_info_file(void)
 	char info_file[PATH_MAX];
 	char ** list;
 	int nlist = -1;
-	char **ft = NULL, **fv = NULL, **cmds = NULL, **marks = NULL;
-	int nft = 0, nfv = 0, ncmds = 0, nmarks = 0;
+	char **ft = NULL, **fx = NULL , **fv = NULL, **cmds = NULL, **marks = NULL;
+	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0;
 	int i;
+	int is_console;
 
 	if(cfg.vifm_info == 0)
 		return;
@@ -383,6 +394,7 @@ write_info_file(void)
 	{
 		char line[MAX_LEN], line2[MAX_LEN], line3[MAX_LEN];
 
+		is_console = curr_stats.is_console;
 		while(fgets(line, sizeof(line), fp) == line)
 		{
 			prepare_line(line);
@@ -394,6 +406,7 @@ write_info_file(void)
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
 					char *p;
+					curr_stats.is_console = 1;
 					if((p = get_default_program_for_file(line + 1)) != NULL)
 					{
 						free(p);
@@ -404,6 +417,33 @@ write_info_file(void)
 					ft[nft + 0] = strdup(line + 1);
 					ft[nft + 1] = strdup(line2);
 					nft += 2;
+				}
+			}
+			else if(line[0] == 'x') /* xfiletype */
+			{
+				if(fgets(line2, sizeof(line2), fp) == line2)
+				{
+					char *p;
+					curr_stats.is_console = 0;
+					if((p = get_default_program_for_file(line + 1)) != NULL)
+					{
+						char *t;
+						curr_stats.is_console = 1;
+						t = get_default_program_for_file(line + 1);
+						if(strcmp(p, t) == 0)
+						{
+							free(t);
+							free(p);
+							continue;
+						}
+						free(t);
+						free(p);
+					}
+					prepare_line(line2);
+					fx = realloc(fx, sizeof(char *)*(nfx + 2));
+					fx[nfx + 0] = strdup(line + 1);
+					fx[nfx + 1] = strdup(line2);
+					nfx += 2;
 				}
 			}
 			else if(line[0] == ',') /* fileviewer */
@@ -461,6 +501,7 @@ write_info_file(void)
 					}
 				}
 			}
+			curr_stats.is_console = is_console;
 		}
 		fclose(fp);
 	}
@@ -522,6 +563,15 @@ write_info_file(void)
 		}
 		for(i = 0; i < nft; i += 2)
 			fprintf(fp, ".%s\n\t%s\n", ft[i], ft[i + 1]);
+
+		fputs("\n# X Filetypes:\n", fp);
+		for(i = 0; i < cfg.xfiletypes_num; i++)
+		{
+			if(xfiletypes[i].com[0] != '\0')
+				fprintf(fp, ".%s\n\t%s\n", xfiletypes[i].ext, xfiletypes[i].com);
+		}
+		for(i = 0; i < nfx; i += 2)
+			fprintf(fp, ".%s\n\t%s\n", fx[i], fx[i + 1]);
 
 		fputs("\n# Fileviewers:\n", fp);
 		for(i = 0; i < cfg.fileviewers_num; i++)
@@ -595,6 +645,7 @@ write_info_file(void)
 
 	free_string_array(ft, nft);
 	free_string_array(fv, nfv);
+	free_string_array(fx, nfx);
 	free_string_array(cmds, ncmds);
 	free_string_array(marks, nmarks);
 	free_string_array(list, nlist);

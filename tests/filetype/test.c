@@ -3,18 +3,21 @@
 #include "seatest.h"
 
 #include "../../src/filetype.h"
+#include "../../src/status.h"
 
 void filetype_tests(void);
 
 static void
 setup(void)
 {
+	curr_stats.is_console = 1;
 }
 
 static void
 teardown(void)
 {
 	reset_filetypes();
+	reset_xfiletypes();
 	reset_fileviewers();
 }
 

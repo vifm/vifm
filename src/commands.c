@@ -110,6 +110,7 @@ static int edit_cmd(const struct cmd_info *cmd_info);
 static int empty_cmd(const struct cmd_info *cmd_info);
 static int file_cmd(const struct cmd_info *cmd_info);
 static int filetype_cmd(const struct cmd_info *cmd_info);
+static int filextype_cmd(const struct cmd_info *cmd_info);
 static int fileviewer_cmd(const struct cmd_info *cmd_info);
 static int filter_cmd(const struct cmd_info *cmd_info);
 static int help_cmd(const struct cmd_info *cmd_info);
@@ -193,6 +194,8 @@ static const struct cmd_add commands[] = {
 		.handler = file_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "filetype",         .abbr = "filet", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = filetype_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "filextype",        .abbr = "filex", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = filextype_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "fileviewer",       .abbr = "filev", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = fileviewer_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 1,
@@ -2018,7 +2021,19 @@ filetype_cmd(const struct cmd_info *cmd_info)
 	progs = skip_word(cmd_info->args);
 	progs = skip_spaces(progs + 1);
 
-	set_programs(cmd_info->argv[0], progs);
+	set_programs(cmd_info->argv[0], progs, 0);
+	return 0;
+}
+
+static int
+filextype_cmd(const struct cmd_info *cmd_info)
+{
+	const char *progs;
+
+	progs = skip_word(cmd_info->args);
+	progs = skip_spaces(progs + 1);
+
+	set_programs(cmd_info->argv[0], progs, 1);
 	return 0;
 }
 

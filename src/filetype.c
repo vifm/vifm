@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "config.h"
+#include "status.h"
 
 #include "filetype.h"
 
@@ -151,10 +152,12 @@ get_filetype_number(const char *file, int count, assoc_t *array)
 	return -1;
 }
 
-char *
-get_default_program_for_file(char *file)
+static char *
+get_default_program_for_file_inner(char *file, int for_x)
 {
-	int x = get_filetype_number(file, cfg.filetypes_num, filetypes);
+	assoc_t *arr = for_x ? xfiletypes : filetypes;
+	int count = for_x ? cfg.xfiletypes_num : cfg.filetypes_num;
+	int x = get_filetype_number(file, count, arr);
 	char *strptr = NULL;
 	char *ptr = NULL;
 	char *program_name = NULL;
@@ -162,7 +165,7 @@ get_default_program_for_file(char *file)
 	if(x < 0)
 		return NULL;
 
-	strptr = strdup(filetypes[x].com);
+	strptr = strdup(arr[x].com);
 
 	/* Only one program */
 	if((ptr = strchr(strptr, ',')) == NULL)
@@ -179,6 +182,18 @@ get_default_program_for_file(char *file)
 }
 
 char *
+get_default_program_for_file(char *file)
+{
+	if(!curr_stats.is_console)
+	{
+		char *result;
+		if((result = get_default_program_for_file_inner(file, 1)) != NULL)
+			return result;
+	}
+	return get_default_program_for_file_inner(file, 0);
+}
+
+char *
 get_viewer_for_file(char *file)
 {
 	int x = get_filetype_number(file, cfg.fileviewers_num, fileviewers);
@@ -189,56 +204,80 @@ get_viewer_for_file(char *file)
 	return fileviewers[x].com;
 }
 
-char *
-get_all_programs_for_file(char *file)
+static char *
+get_all_programs_for_file_inner(char *file, int for_x)
 {
-	int x = get_filetype_number(file, cfg.filetypes_num, filetypes);
+	assoc_t *arr = for_x ? xfiletypes : filetypes;
+	int count = for_x ? cfg.xfiletypes_num : cfg.filetypes_num;
+	int x = get_filetype_number(file, count, arr);
 
 	if(x > -1)
-		return filetypes[x].com;
+		return arr[x].com;
 
 	return NULL;
 }
 
-static void
-add_filetype(const char *extension, const char *programs)
+char *
+get_all_programs_for_file(char *file)
 {
-	filetypes = realloc(filetypes, (cfg.filetypes_num + 1) * sizeof(assoc_t));
+	if(!curr_stats.is_console)
+	{
+		char *result;
+		if((result = get_all_programs_for_file_inner(file, 1)) != NULL)
+			return result;
+	}
+	return get_all_programs_for_file_inner(file, 0);
+}
 
-	filetypes[cfg.filetypes_num].ext = strdup(extension);
-	filetypes[cfg.filetypes_num].com = strdup(programs);
-	cfg.filetypes_num++;
+static int
+add_assoc(assoc_t **arr, int count, const char *extension, const char *programs)
+{
+	*arr = realloc(*arr, (count + 1)*sizeof(assoc_t));
+
+	(*arr)[count].ext = strdup(extension);
+	(*arr)[count].com = strdup(programs);
+	return count + 1;
 }
 
 static void
-set_ext_programs(const char *extension, const char *programs)
+set_ext_programs(const char *extension, const char *programs, int for_x)
 {
 	int x;
+	assoc_t *arr;
+	int count;
 
 	if(extension[0] == '\0')
 		return;
 
-	for(x = 0; x < cfg.filetypes_num; x++)
-		if(strcasecmp(filetypes[x].ext, extension) == 0)
+	arr = for_x ? xfiletypes : filetypes;
+	count = for_x ? cfg.xfiletypes_num : cfg.filetypes_num;
+
+	for(x = 0; x < count; x++)
+		if(strcasecmp(arr[x].ext, extension) == 0)
 			break;
-	if(x == cfg.filetypes_num)
+	if(x == count)
 	{
-		add_filetype(extension, programs);
+		if(for_x)
+			cfg.xfiletypes_num = add_assoc(&xfiletypes, cfg.xfiletypes_num, extension,
+					programs);
+		else
+			cfg.filetypes_num = add_assoc(&filetypes, cfg.filetypes_num, extension,
+					programs);
 	}
 	else
 	{
-		free(filetypes[x].com);
-		filetypes[x].com = strdup(programs);
+		free(arr[x].com);
+		arr[x].com = strdup(programs);
 	}
 }
 
 void
-set_programs(const char *extensions, const char *programs)
+set_programs(const char *extensions, const char *programs, int x)
 {
 	char *exptr;
 	if((exptr = strchr(extensions, ',')) == NULL)
 	{
-		set_ext_programs(extensions, programs);
+		set_ext_programs(extensions, programs, x);
 	}
 	else
 	{
@@ -250,24 +289,13 @@ set_programs(const char *extensions, const char *programs)
 			*exptr = '\0';
 			exptr2++;
 
-			set_ext_programs(ex_copy, programs);
+			set_ext_programs(ex_copy, programs, x);
 
 			ex_copy = exptr2;
 		}
-		set_ext_programs(ex_copy, programs);
+		set_ext_programs(ex_copy, programs, x);
 		free(free_this);
 	}
-}
-
-static void
-add_fileviewer(const char *extension, const char *viewer)
-{
-	fileviewers = realloc(fileviewers,
-			(cfg.fileviewers_num + 1) * sizeof(assoc_t));
-
-	fileviewers[cfg.fileviewers_num].ext = strdup(extension);
-	fileviewers[cfg.fileviewers_num].com = strdup(viewer);
-	cfg.fileviewers_num++;
 }
 
 static void
@@ -283,7 +311,8 @@ set_ext_viewer(const char *extension, const char *viewer)
 			break;
 	if(x == cfg.fileviewers_num)
 	{
-		add_fileviewer(extension, viewer);
+		cfg.fileviewers_num = add_assoc(&fileviewers, cfg.fileviewers_num,
+				extension, viewer);
 	}
 	else
 	{
@@ -314,41 +343,43 @@ set_fileviewer(const char *extensions, const char *viewer)
 
 			ex_copy = exptr2;
 		}
-		set_ext_programs(ex_copy, viewer);
+		set_ext_viewer(ex_copy, viewer);
 		free(free_this);
 	}
+}
+
+static void
+reset_list(assoc_t **arr, int *size)
+{
+	int i;
+
+	for(i = 0; i < *size; i++)
+	{
+		free((*arr)[i].ext);
+		free((*arr)[i].com);
+	}
+
+	free(*arr);
+	*arr = NULL;
+	*size = 0;
 }
 
 void
 reset_filetypes(void)
 {
-	int i;
+	reset_list(&filetypes, &cfg.filetypes_num);
+}
 
-	for(i = 0; i < cfg.filetypes_num; i++)
-	{
-		free(filetypes[i].ext);
-		free(filetypes[i].com);
-	}
-
-	free(filetypes);
-	filetypes = NULL;
-	cfg.filetypes_num = 0;
+void
+reset_xfiletypes(void)
+{
+	reset_list(&xfiletypes, &cfg.xfiletypes_num);
 }
 
 void
 reset_fileviewers(void)
 {
-	int i;
-
-	for(i = 0; i < cfg.fileviewers_num; i++)
-	{
-		free(fileviewers[i].ext);
-		free(fileviewers[i].com);
-	}
-
-	free(fileviewers);
-	fileviewers = NULL;
-	cfg.fileviewers_num = 0;
+	reset_list(&fileviewers, &cfg.fileviewers_num);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

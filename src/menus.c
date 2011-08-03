@@ -1164,7 +1164,7 @@ filetypes_khandler(struct menu_info *m, wchar_t *keys)
 			strcat(strcat(tmp, m->data[i]), ",");
 		tmp[len - 2] = '\0';
 
-		set_programs(extension, tmp);
+		set_programs(extension, tmp, 1);
 		free(tmp);
 		return 0;
 	}

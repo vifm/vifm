@@ -3,13 +3,14 @@
 #include "seatest.h"
 
 #include "../../src/filetype.h"
+#include "../../src/status.h"
 
 static void
 test_one_ext(void)
 {
 	char *buf;
 
-	set_programs("*.tar", "tar prog");
+	set_programs("*.tar", "tar prog", 0);
 
 	buf = get_default_program_for_file("file.version.tar");
 	assert_false(buf == NULL);
@@ -23,8 +24,8 @@ test_many_ext(void)
 {
 	char *buf;
 
-	set_programs("*.tar", "tar prog");
-	set_programs("*.tar.gz", "tar.gz prog");
+	set_programs("*.tar", "tar prog", 0);
+	set_programs("*.tar.gz", "tar.gz prog", 0);
 
 	buf = get_default_program_for_file("file.version.tar.gz");
 	assert_false(buf == NULL);
@@ -38,7 +39,7 @@ test_many_fileext(void)
 {
 	char *buf;
 
-	set_programs("*.tgz,*.tar.gz", "tar.gz prog");
+	set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0);
 
 	buf = get_default_program_for_file("file.version.tar.gz");
 	assert_false(buf == NULL);
@@ -52,7 +53,7 @@ test_dont_match_hidden(void)
 {
 	char *buf;
 
-	set_programs("*.tgz,*.tar.gz", "tar.gz prog");
+	set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0);
 
 	buf = get_default_program_for_file(".file.version.tar.gz");
 	assert_true(buf == NULL);
@@ -63,7 +64,7 @@ test_match_empty(void)
 {
 	char *buf;
 
-	set_programs("a*bc", "empty prog");
+	set_programs("a*bc", "empty prog", 0);
 
 	buf = get_default_program_for_file("abc");
 	assert_false(buf == NULL);
@@ -77,7 +78,7 @@ test_match_full_line(void)
 {
 	char *buf;
 
-	set_programs("abc", "full prog");
+	set_programs("abc", "full prog", 0);
 
 	buf = get_default_program_for_file("abcd");
 	assert_true(buf == NULL);
@@ -100,7 +101,7 @@ test_match_qmark(void)
 {
 	char *buf;
 
-	set_programs("a?c", "full prog");
+	set_programs("a?c", "full prog", 0);
 
 	buf = get_default_program_for_file("ac");
 	assert_true(buf == NULL);
@@ -117,7 +118,7 @@ test_escaping(void)
 {
 	char *buf;
 
-	set_programs("a\\?c", "qmark prog");
+	set_programs("a\\?c", "qmark prog", 0);
 
 	buf = get_default_program_for_file("abc");
 	assert_true(buf == NULL);
@@ -128,7 +129,7 @@ test_escaping(void)
 		assert_string_equal("qmark prog", buf);
 	free(buf);
 
-	set_programs("a\\*c", "star prog");
+	set_programs("a\\*c", "star prog", 0);
 
 	buf = get_default_program_for_file("abc");
 	assert_true(buf == NULL);
@@ -137,6 +138,58 @@ test_escaping(void)
 	assert_false(buf == NULL);
 	if(buf != NULL)
 		assert_string_equal("star prog", buf);
+	free(buf);
+}
+
+static void
+test_xfiletypes(void)
+{
+	char *buf;
+
+	set_programs("*.tar", "x prog", 1);
+	set_programs("*.tar", "console prog", 0);
+
+	set_programs("*.tgz", "2 x prog", 1);
+
+	set_programs("*.tar.bz2", "3 console prog", 0);
+
+	curr_stats.is_console = 1;
+	buf = get_default_program_for_file("file.version.tar");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("console prog", buf);
+	free(buf);
+
+	curr_stats.is_console = 0;
+	buf = get_default_program_for_file("file.version.tar");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("x prog", buf);
+	free(buf);
+
+	curr_stats.is_console = 1;
+	buf = get_default_program_for_file("file.version.tgz");
+	assert_true(buf == NULL);
+
+	curr_stats.is_console = 0;
+	buf = get_default_program_for_file("file.version.tgz");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("2 x prog", buf);
+	free(buf);
+
+	curr_stats.is_console = 0;
+	buf = get_default_program_for_file("file.version.tar.bz2");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("3 console prog", buf);
+	free(buf);
+
+	curr_stats.is_console = 1;
+	buf = get_default_program_for_file("file.version.tar.bz2");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("3 console prog", buf);
 	free(buf);
 }
 
@@ -153,6 +206,7 @@ filetype_tests(void)
 	run_test(test_match_full_line);
 	run_test(test_match_qmark);
 	run_test(test_escaping);
+	run_test(test_xfiletypes);
 
 	test_fixture_end();
 }

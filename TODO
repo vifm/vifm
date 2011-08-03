@@ -78,7 +78,6 @@ Possible things to add.
     :locate without arguments repeats last search.
     :cd [dir1] [dir2]; :cd! dir equivalent to :cd dir dir; or :gcd
     cl key to modify links.
-    filetypes for X and for console
     What about yD to copy selected file(s) into other directory, and YD to move
 
 Vim plugin

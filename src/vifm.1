@@ -529,6 +529,10 @@ the end of command to run program in background.
 will associate given program list to each of the patterns.  Currently only * and
 ? are treated as special symbols in the pattern.
 .TP
+.BI ":filex[type] pat1,pat2,... def_program,program2,..."
+same as :filetype, but given programs will be run only when vifm is running in
+the X.  So this settings overwrite :filetype in X.
+.TP
 .BI ":filev[iewer] pat1,pat2,... command"
 will associate given command as a viewer to each of the patterns.  Currently
 only * and ? are treated as special symbols in the pattern.
