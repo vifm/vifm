@@ -48,10 +48,11 @@ endif
 
 function! s:StartVifm(editcmd)
 	" Gvim cannot handle ncurses so run vifm in an xterm.
+	let dir = fnameescape(expand("%:p:h"))
 	if has('gui_running')
-		silent !xterm -e vifm -f "%:p:h"
+		execute "silent !xterm -e vifm -f" dir
 	else
-		silent !vifm -f "%:p:h"
+		execute "silent !vifm -f" dir
 	endif
 
 	redraw!
