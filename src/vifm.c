@@ -333,12 +333,6 @@ main(int argc, char *argv[])
 
 	setup_signals();
 
-	/* Need to wait until both lists are loaded before changing one of the
-	 * lists to show the file stats.  This is only used for starting vifm
-	 * from the vifm.vim script
-	 * TODO understand why we need to wait
-	 */
-
 	if(old_config)
 	{
 		int vifm_like;

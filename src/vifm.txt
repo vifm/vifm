@@ -546,6 +546,11 @@ type: boolean
 default: false
 Run executable file on Enter or l.
 
+shell sh
+type: string
+default: $SHELL or "sh"
+Name of the shell to use to run external commands.
+
 smartcase scs
 type: boolean
 default: false

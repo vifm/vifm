@@ -84,7 +84,7 @@ my_system(char *command)
 
 		signal(SIGINT, SIG_DFL);
 
-		args[0] = "sh";
+		args[0] = cfg.shell;
 		args[1] = "-c";
 		args[2] = command;
 		args[3] = NULL;
@@ -261,7 +261,7 @@ file_exec(char *command)
 	char *args[4];
 	pid_t pid;
 
-	args[0] = "sh";
+	args[0] = cfg.shell;
 	args[1] = "-c";
 	args[2] = command;
 	args[3] = NULL;
@@ -378,8 +378,6 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		 or
 		 FUSE_MOUNT2|some_mount_command %PARAM %DESTINATION_DIR */
 	strcpy(buf_pos, "");
-	/* TODO what is this?
-		 strcpy(buf_pos, "sh -c \"pauseme PAUSE_ON_ERROR_ONLY "); */
 	buf_pos += strlen(buf_pos);
 	while(*prog_pos != '\0' && *prog_pos != '|')
 		prog_pos++;

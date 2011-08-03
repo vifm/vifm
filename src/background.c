@@ -220,7 +220,7 @@ background_and_wait_for_status(char *cmd)
 	{
 		char *args[4];
 
-		args[0] = "sh";
+		args[0] = cfg.shell;
 		args[1] = "-c";
 		args[2] = cmd;
 		args[3] = NULL;
@@ -316,7 +316,7 @@ start_background_job(const char *cmd)
 			dup2(nullfd, 1);
 		}
 
-		args[0] = "sh";
+		args[0] = cfg.shell;
 		args[1] = "-c";
 		args[2] = (char *)cmd;
 		args[3] = NULL;

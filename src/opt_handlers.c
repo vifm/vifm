@@ -25,6 +25,7 @@ static void iec_handler(enum opt_op op, union optval_t val);
 static void ignorecase_handler(enum opt_op op, union optval_t val);
 static void reversecol_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
+static void shell_handler(enum opt_op op, union optval_t val);
 static void smartcase_handler(enum opt_op op, union optval_t val);
 static void sortnumbers_handler(enum opt_op op, union optval_t val);
 static void sort_handler(enum opt_op op, union optval_t val);
@@ -93,6 +94,7 @@ add_options(void)
 	add_option("ignorecase", "ic", OPT_BOOL, 0, NULL, &ignorecase_handler);
 	add_option("reversecol", "", OPT_BOOL, 0, NULL, &reversecol_handler);
 	add_option("runexec", "", OPT_BOOL, 0, NULL, &runexec_handler);
+	add_option("shell", "sh", OPT_STR, 0, NULL, &shell_handler);
 	add_option("smartcase", "scs", OPT_BOOL, 0, NULL, &smartcase_handler);
 	add_option("sortnumbers", "", OPT_BOOL, 0, NULL, &sortnumbers_handler);
 	add_option("timefmt", "", OPT_STR, 0, NULL, &timefmt_handler);
@@ -146,6 +148,9 @@ load_options(void)
 
 	val.bool_val = cfg.auto_execute;
 	set_option("runexec", val);
+
+	val.str_val = cfg.shell;
+	set_option("shell", val);
 
 	val.bool_val = cfg.smart_case;
 	set_option("smartcase", val);
@@ -348,6 +353,16 @@ static void
 runexec_handler(enum opt_op op, union optval_t val)
 {
 	cfg.auto_execute = val.bool_val;
+}
+
+static void
+shell_handler(enum opt_op op, union optval_t val)
+{
+	char *s;
+	if((s = strdup(val.str_val)) == NULL)
+		return;
+	free(cfg.shell);
+	cfg.shell = s;
 }
 
 static void

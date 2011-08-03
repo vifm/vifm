@@ -1105,11 +1105,10 @@ split_screen(FileView *view, char *command)
 	}
 	else
 	{
-		char *sh = getenv("SHELL");
 		snprintf(buf, sizeof(buf), "screen -X eval \'chdir %s\'", view->curr_dir);
 		my_system(buf);
 
-		snprintf(buf, sizeof(buf), "screen-open-region-with-program %s", sh);
+		snprintf(buf, sizeof(buf), "screen-open-region-with-program %s", cfg.shell);
 		my_system(buf);
 	}
 }
@@ -1137,6 +1136,7 @@ shellout(const char *command, int pause)
 			char *escaped;
 			char *ptr = (char *)NULL;
 			char *title = strstr(command, cfg.vi_command);
+			char *escaped_sh = escape_filename(cfg.shell, 0, 0);
 
 			/* Needed for symlink directories and sshfs mounts */
 			escaped = escape_filename(curr_view->curr_dir, 0, 0);
@@ -1148,13 +1148,13 @@ shellout(const char *command, int pause)
 			if(title != NULL)
 			{
 				if(pause > 0)
-					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c '%s; vifm-pause'",
-							title + strlen(cfg.vi_command) + 1, command);
+					snprintf(buf, sizeof(buf), "screen -t \"%s\" %s -c '%s; vifm-pause'",
+							title + strlen(cfg.vi_command) + 1, escaped_sh, command);
 				else
 				{
 					escaped = escape_filename(command, 0, 0);
-					snprintf(buf, sizeof(buf), "screen -t \"%s\" sh -c %s",
-							title + strlen(cfg.vi_command) + 1, escaped);
+					snprintf(buf, sizeof(buf), "screen -t \"%s\" %s -c %s",
+							title + strlen(cfg.vi_command) + 1, escaped_sh, escaped);
 					free(escaped);
 				}
 			}
@@ -1172,16 +1172,18 @@ shellout(const char *command, int pause)
 
 				if(pause > 0)
 					snprintf(buf, sizeof(buf),
-							"screen -t \"%.10s\" sh -c '%s; vifm-pause'", title, command);
+							"screen -t \"%.10s\" %s -c '%s; vifm-pause'", title, escaped_sh,
+							command);
 				else
 				{
 					escaped = escape_filename(command, 0, 0);
-					snprintf(buf, sizeof(buf), "screen -t \"%.10s\" sh -c %s", title,
-							escaped);
+					snprintf(buf, sizeof(buf), "screen -t \"%.10s\" %s -c %s", title,
+							escaped_sh, escaped);
 					free(escaped);
 				}
 				free(title);
 			}
+			free(escaped_sh);
 		}
 		else
 		{
@@ -1204,8 +1206,7 @@ shellout(const char *command, int pause)
 		}
 		else
 		{
-			char *sh = getenv("SHELL");
-			snprintf(buf, sizeof(buf), "%s", sh);
+			snprintf(buf, sizeof(buf), "%s", cfg.shell);
 		}
 	}
 

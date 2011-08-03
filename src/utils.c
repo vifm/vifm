@@ -325,7 +325,7 @@ run_from_fork(int pipe[2], int err, char *cmd)
 		dup2(nullfd, err ? 1 : 2);
 	}
 
-	args[0] = "sh";
+	args[0] = cfg.shell;
 	args[1] = "-c";
 	args[2] = cmd;
 	args[3] = NULL;

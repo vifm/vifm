@@ -82,6 +82,8 @@ typedef struct _Config {
 	int hl_search;
 
 	int vifm_info;
+
+	char *shell;
 } Config;
 
 extern Config cfg;

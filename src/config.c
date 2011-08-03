@@ -48,6 +48,8 @@ Config cfg;
 void
 init_config(void)
 {
+	char *p;
+
 	cfg.num_bookmarks = 0;
 	cfg.command_num = 0;
 	cfg.filetypes_num = 0;
@@ -87,6 +89,12 @@ init_config(void)
 	cfg.smart_case = 0;
 	cfg.hl_search = 1;
 	cfg.vifm_info = VIFMINFO_BOOKMARKS;
+
+	p = getenv("SHELL");
+	if(p == NULL || *p == '\0')
+		cfg.shell = strdup("sh");
+	else
+		cfg.shell = strdup(p);
 
 	/* Maximum argument length to pass to the shell */
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)
@@ -524,6 +532,7 @@ write_info_file(void)
 		fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
 		fprintf(fp, "=%sreversecol\n", cfg.invert_cur_line ? "" : "no");
 		fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
+		fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
 		fprintf(fp, "=%ssmartcase\n", cfg.smart_case ? "" : "no");
 		fprintf(fp, "=%ssortnumbers\n", cfg.sort_numbers ? "" : "no");
 		fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format + 1));
