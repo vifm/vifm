@@ -346,12 +346,20 @@ main(int argc, char *argv[])
 	{
 		int vifm_like;
 		char buf[256];
-		vifm_like = !query_user_menu("Configuration update", "Your vifmrc will be "
-				"upgraded to new format.  New configuration is enough flexible to save "
-				"behaviour of older versions of vifm, but it's recommended that you "
-				"will use it in more vi-like mode.  Do you prefer more vi-like "
-				"configuration (when commands and options are not saved automatically "
-				"and you have to write it manually in vifmrc?");
+		if(!query_user_menu("Configuration update", "Your vifmrc will be "
+				"upgraded to new format.  Your current configuration will be copied "
+				"before performing any changes, but if you don't want to take the risk "
+				"and would like to make one more copy say No to exit vifm.  Continue?"))
+		{
+			endwin();
+			exit(0);
+		}
+
+		vifm_like = !query_user_menu("Configuration update", "New configuration is "
+				"enough flexible to save behaviour of older versions of vifm, but it's "
+				"recommended that you will use it in more vi-like mode.  Do you prefer "
+				"more vi-like configuration (when commands and options are not saved "
+				"automatically and you have to write it manually in the vifmrc file)?");
 		snprintf(buf, sizeof(buf), "vifmrc-converter %d", vifm_like);
 		shellout(buf, -1);
 		show_error_msg("Configuration update", "Your vifmrc has been upgraded to "

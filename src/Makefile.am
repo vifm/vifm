@@ -1,7 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-pkgdata_DATA = startup \
-							 vifmrc \
+pkgdata_DATA = vifmrc \
 							 vifm-help.txt \
 							 vifm.txt \
 							 vifm.vim

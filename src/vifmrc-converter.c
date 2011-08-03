@@ -82,7 +82,11 @@ struct{
 	int windows;   /* vnumber of windows */
 	int lwin_sort; /* lleft window sort */
 	int rwin_sort; /* rright window sort */
-}tui;
+}tui = {
+	.windows = 2,
+	.lwin_sort = 2, /* by name */
+	.rwin_sort = 2, /* by name */
+};
 
 char *lwin_dir; /* dleft window directory */
 char *rwin_dir; /* Dright window directory */
@@ -93,7 +97,13 @@ struct{
 	char *rwin_filter; /* Fright window filter */
 	int rwin_inverted; /* Iright window filter inverted */
 	int use_screen;    /* suse screen program */
-}state;
+}state = {
+	.lwin_filter = NULL,
+	.lwin_inverted = 1,
+	.rwin_filter = NULL,
+	.rwin_inverted = 1,
+	.use_screen = 0,
+};
 
 static void add_command(const char *name, const char *cmd);
 static const char * conv_udf_name(const char *cmd);
@@ -332,7 +342,8 @@ read_config_file(const char *config_file)
 	return 1;
 }
 
-int main(int argc, char** argv)
+int
+main(int argc, char **argv)
 {
 	char *home_dir;
 	char config_dir[PATH_MAX];
@@ -384,13 +395,16 @@ int main(int argc, char** argv)
 	read_config_file(config_file);
 	read_config_file(vifminfo_file);
 
-	if(argc != 4)
+	if(access(config_file, F_OK) == 0)
 	{
 		if(rename(config_file, config_file_bak) != 0)
 		{
 			fputs("Can't move vifmrc file to make a backup copy\n", stderr);
 			exit(1);
 		}
+	}
+	if(access(vifminfo_file, F_OK) == 0)
+	{
 		if(rename(vifminfo_file, vifminfo_file_bak) != 0)
 		{
 			fputs("Can't move vifminfo file to make a backup copy\n", stderr);
@@ -605,7 +619,7 @@ append_vifmrc(const char *config_file, int comment_out)
 		fputs("Can't open configuration file for appending", stderr);
 		exit(1);
 	}
- 
+
 	fprintf(fp, "\n\" :mark mark /full/directory/path [filename]\n\n");
 	for(i = 0; i < nbookmarks; i++)
 	{
@@ -723,7 +737,10 @@ append_vifminfo_option(const char *config_file, int vifm_like)
 	else
 		fprintf(fp, "%sset vifminfo=options,filetypes,commands,bookmarks,state,cs\n", vifm_like ? "" : "\" ");
 	fputs("\" Like in vi\n", fp);
-	fprintf(fp, "%sset vifminfo=bookmarks\n", !vifm_like ? "" : "\" ");
+	if(vifminfo & VIFMINFO_DHISTORY)
+		fprintf(fp, "%sset vifminfo=bookmarks,dhistory\n", !vifm_like ? "" : "\" ");
+	else
+		fprintf(fp, "%sset vifminfo=bookmarks\n", !vifm_like ? "" : "\" ");
 
 	fclose(fp);
 }

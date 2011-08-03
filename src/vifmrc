@@ -7,7 +7,7 @@
 " If you would like to use another vi clone such Elvis or Vile
 " you will need to change this setting.
 
-" set vicmd=vim
+set vicmd=vim
 " set vicmd=elvis\ -G\ termcap
 " set vicmd=vile
 
@@ -18,74 +18,62 @@
 " I recommend not changing this until you are familiar with vifm.
 " This probably shouldn't be an option.
 
-" set trash
+set trash
 
 " This is how many files to show in the directory history menu.
 
-" set history=15
+set history=15
 
 " Follow links on l or Enter.
 
-" set followlinks
+set followlinks
 
 " With this option turned on you can run partially entered commands with
 " unambiguous beginning using :! (e.g. :!Te instead of :!Terminal or :!Te<tab>).
 
-" set fastrun
+set fastrun
 
 " Natural sort of (version) numbers within text.
 
-" set sortnumbers
+set sortnumbers
 
 " Maximum number of changes that can be undone.
 
-" set undolevels=100
+set undolevels=100
 
 " If you installed the vim.txt help file set vimhelp.
 " If would rather use a plain text help file set novimhelp.
 
-" set novimhelp
+set novimhelp
 
 " If you would like to run an executable file when you
 " press return on the file name set this.
 
-" set norunexec
+set norunexec
 
 " Use KiB, MiB, ... instead of KB, MB, ...
 
-" set iec
+set iec
 
 " Selected color scheme
 
-" colorscheme Default
+colorscheme Default
 
 " The FUSE_HOME directory will be used as a root dir for all FUSE mounts.
 " Unless it exists with write/exec permissions set, vifm will attempt to
 " create it.
 
-" set fusehome=/tmp/vifm_FUSE
+set fusehome=/tmp/vifm_FUSE
 
 " Format for displaying time in file list. For example:
 " TIME_STAMP_FORMAT=%m/%d-%H:%M
 " See man date or man strftime for details.
 
-" set timefmt=%m/%d\ %H:%M
+set timefmt=%m/%d\ %H:%M
 
 " :mark mark /full/directory/path [filename]
 
-" mark D /mnt/data/docs/ ../
-" mark M /mnt/video/ ../
-" mark S /home/xaizek/src/ ../
-" mark T /home/xaizek/projects/vifm/tests/ ../
-" mark V /home/xaizek/repos/vifm/src/ ../
-" mark c /home/xaizek/.vifm/ ../
-" mark d /home/xaizek/Downloads/ ../
-" mark e /mnt/data/X-files/Сайты/ebooks/ ../
-" mark h /home/xaizek/ ../
-" mark m /mnt/music/ ../
-" mark o /mnt/data/X-files/Сайты/Assembler/OS/ ../
-" mark t /home/xaizek/tmp/ ../
-" mark v /home/xaizek/.vim/bundle/ ../
+mark b ~/bin/
 
 " :com[mand] command_name action
 " The following macros can be used in a command
@@ -99,100 +87,76 @@
 " %D the other window directory name.
 " %m run the command in a menu window
 
-" command A asdkj
-" command A! echo hi there; sleep 3
-" command A? echo hi3; sleep 3
-" command AA aj
-" command B cat ~/notes | sed 's/С++/cpp/' | cat %m
-" command ZAZAS ad
-" command adf wer
-" command asd! echo hi; sleep 2
-" command asdaeeq hello
-" command asdf! fi
-" command asdfkl wrwer as  sd
-" command comix dont do
-" command df df -h %m 2> /dev/null
-" command diff vim -d %f %F
-" command echo echo %f; sleep 3
-" command et 7z x -so %f | tar -C ~/tmp -xf -
-" command filo ff
-" command find find . -name '%a' %m
-" command ofi filter .o$
-" command ofiles filter .o$
-" command qwerty asd
-" command tst for i in %f; do tar -czf "$i.tgz" "$i"; done
-" command zazas sfd
-" command zip zip -r %f.zip %f
-" command zipTHREE zip -r %f.zip %f
-" command zipTWO zip -r %f.zip %f
-" command zzz zip -r zf.zip zf ZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZ
+command df df -h %m 2> /dev/null
+command diff vim -d %f %F
+command find find . -name '%a' %m
+command zip zip -r %f.zip %f
+command mv mv %f %D &
+command cp cp %f %D &
+command run !! ./%f
+command make !!make
+command grep vim \"+grep %a\"
 
 " The file type is for the default programs to be used with
 " a file extension.
-" :filetype extension1,extension2=defaultprogram,program2
-" :fileviewer extension1,extension2=consoleviewer
+" :filetype pattern1,pattern2 defaultprogram,program2
+" :fileviewer pattern1,pattern2 consoleviewer
 " The other programs for the file type can be accessed with the :file command
 " The command macros %f, %F, %d, %F may be used in the commands.
 " The %a macro is ignored.  To use a % you must put %%.
 
 " Pdf
-" filetype *.pdf zathura %f,apvlv %f,xpdf %f
+filetype *.pdf zathura %f,apvlv %f,xpdf %f
 
 " Mp3
-" filetype *.mp3 ffplay %f
-" fileviewer *.mp3 ffprobe -show_format -pretty %f 2> /dev/null
+filetype *.mp3 ffplay %f
+fileviewer *.mp3 ffprobe -show_format -pretty %f 2> /dev/null
 
 " Video
-" filetype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv dragon %f
-" fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv ffprobe -show_format -pretty %f 2> /dev/null
+filetype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv dragon %f
+fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv ffprobe -show_format -pretty %f 2> /dev/null
 
 " Web
-" filetype *.html,*.htm links,mozilla
+filetype *.html,*.htm links,mozilla
 
 " Object
-" filetype *.o nm %f | less
+filetype *.o nm %f | less
 
 " Image
-" filetype *.jpg,*.jpeg,*.png,*.gif gpicview %c
+filetype *.jpg,*.jpeg,*.png,*.gif gpicview %c
 
 " Md5
-" filetype *.md5 md5sum -c %f
+filetype *.md5 md5sum -c %f
 
 " FuseZipMount
-" filetype *.zip,*.jar,*.war,*.ear FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
-" fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c
+filetype *.zip,*.jar,*.war,*.ear FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c
 
 " ArchiveMount
-" filetype *.bz2,*.tgz,*.tar.gz FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR
-" fileviewer *.bz2,*.tgz,*.tar.gz tar -tzf %c
+filetype *.bz2,*.tgz,*.tar.gz FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR
+fileviewer *.bz2,*.tgz,*.tar.gz tar -tzf %c
 
 " Rar2FsMount
-" filetype *.rar FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR
+filetype *.rar FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR
 
 " IsoMount
-" filetype *.iso FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR
+filetype *.iso FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR
 
 " SshMount
-" filetype *.ssh FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
-
-" 
-" filetype *.doc libreoffice -writer %f
-
-" 
-" filetype *.1.docx libreoffice -writer %f
+filetype *.ssh FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
 
 " For automated FUSE mounts, you must register an extension with FILETYPE=..
 " in one of following formats:
 "
-" FILETYPE=description=extensions=consoleviewer=FUSE_MOUNT|some_mount_command using %SOURCE_FILE and %DESTINATION_DIR variables
+" :filetype extensions FUSE_MOUNT|some_mount_command using %SOURCE_FILE and %DESTINATION_DIR variables
 " %SOURCE_FILE and %DESTINATION_DIR are filled in by vifm at runtime.
 " A sample line might look like this:
-" FILETYPE=FuseZipMount=zip,jar,war,ear==FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+" :filetype *.zip,*.jar,*.war,*.ear FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
 "
-" FILETYPE=description=extensions=consoleviewer=FUSE_MOUNT2|some_mount_command using %PARAM and %DESTINATION_DIR variables
+" :filetype extensions FUSE_MOUNT2|some_mount_command using %PARAM and %DESTINATION_DIR variables
 " %PARAM and %DESTINATION_DIR are filled in by vifm at runtime.
 " A sample line might look like this:
-" FILETYPE=SshMount=ssh==FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
+" :filetype *.ssh FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
 " %PARAM value is filled from the first line of file (whole line).
 " Example first line for SshMount filetype: root@127.0.0.1:/
 "
@@ -201,75 +165,11 @@
 
 " What should be saved automatically between vifm runs
 " Like in previous versions of vifm
-set vifminfo=options,filetypes,commands,bookmarks,dhistory,state,cs,warn
+" set vifminfo=options,filetypes,commands,bookmarks,dhistory,state,cs
 " Like in vi
-" set vifminfo=bookmarks
+set vifminfo=bookmarks
 
-" Here is content of your startup file
-
-set fastrun
-set savelocation
-set sortnumbers
-set wildmenu
-
-set ignorecase
-set smartcase
-
-set vifminfo+=dhistory
-
-delmarks!
-mark D /mnt/data/docs/
-mark M /mnt/video/
-mark S /home/xaizek/src/
-mark T ~/projects/vifm/tests/
-mark V /home/xaizek/repos/vifm/src/
-mark c /home/xaizek/.vifm/
-mark d /home/xaizek/Downloads/
-mark e /mnt/data/X-files/Сайты/ebooks/
-mark h /home/xaizek/
-mark m /mnt/music/
-mark o /mnt/data/X-files/Сайты/Assembler/OS/
-mark t ~/tmp/
-mark v ~/.vim/bundle/
-
-com! A asdkj
-com! A! echo hi there; sleep 3
-com! A? echo hi3; sleep 3
-com! AA aj
-com! B cat ~/notes | sed 's/С++/cpp/' | cat %m
-com! ZAZAS ad
-com! adf wer
-com! asd! echo hi; sleep 2
-com! asdaeeq hello
-com! asdf! fi
-com! asdfkl wrwer as  sd
-com! comix dont do
-com! df df -h %m 2> /dev/null
-com! diff vim -d %f %F
-com! echo echo %f; sleep 3
-com! et 7z x -so %f | tar -C ~/tmp -xf -
-com! filo ff
-com! find find . -name '%a' %m
-com! ofi filter .o$
-com! ofiles filter .o$
-com! qwerty asd
-com! tst for i in %f; do tar -czf "$i.tgz" "$i"; done
-com! zazas sfd
-com! zip zip -r %f.zip %f
-com! zzz zip -r zf.zip zf ZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZZZZZZZzzzzzzzzzzzzzzzzzZZZZzzzzzzzzzzzzzzzzZZZZZZZZZZZZZZZZZZZZZZZ
-
-" com! ln 
-" \!set -- %f;
-" \ if [ ! -w %D ]; then echo %D "is not writable"; exit -1; fi;
-" \ if [ ! "%a" ]; then
-" \ for f; do if [ -e %D/"$f" ]; then echo "$f exists"; exit -1; fi; done;
-" \ for f; do ln -s %d/"$f" %D; done;
-" \ else
-" \ for l in %a; do if [ -e %D/"$l" ]; then echo "$l exists"; exit -1; fi; done;
-" \ n=0; for f in %a; do n=$((n+1)); done;
-" \ if [ $n -ne $# ]; then echo "Wrong number of arguments"; exit -1; fi;
-" \ for l in %a; do ln -s %d/"$1" %D/"$l"; shift; done;
-" \ fi
+" Sample mappings
 
 nmap s :shell<cr>
 nmap S :sort<cr>
@@ -284,4 +184,3 @@ nmap <f5> :!cp %f %D<cr>
 nmap <f6> :!mv %f %D<cr>
 nmap <f7> :!mkdir<space>
 nmap <f8> :delete<cr>
-sort

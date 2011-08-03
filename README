@@ -12,7 +12,9 @@ src/background.c - runs commands in background
 src/bookmarks.c - stores information about bookmarked directories
 src/cmdline.c - command line mode
 src/color_scheme.c - color schemes
+src/cmds.c - command line parsing core
 src/commands.c - handles command line commands
+src/completion.c - provides means to fill and get completion list
 src/config.c - read and write vifmrc
 src/dir_stack.c - for :pushd and :popd commands
 src/file_info.c - Control+G
@@ -21,6 +23,7 @@ src/filelist.c - display/redraw/fill list
 src/fileops.c - delete/copy/put selected file(s)
 src/filetype.c - stores filetype information from vifmrc
 src/keys.c - analyzes users input
+src/log.c - primitive logging
 src/main_loop.c - the main loop
 src/menu.c - handles commands in menus
 src/menus.c - handles all kinds of menus
@@ -37,6 +40,11 @@ src/sort_dialog.c - dialog to choose sort type
 src/status.c - definition of global status structure
 src/tree.c - cache for ga command results
 src/ui.c - setup_ncurses_interface() and other ui related functions
+src/undo.c - stores and handles the undo list
 src/utils.c - various utilities (e.g. functions to handle utf8 strings)
 src/vifm.c - contains main() which does basic initialization
 src/visual.c - implementation of visual mode commands
+
+
+
+
