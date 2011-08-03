@@ -1395,12 +1395,12 @@ show_locate_menu(FileView *view, char *args)
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
-	m.args = strdup(args);
+	m.args = escape_filename(args, 0, 0);
 	m.data = NULL;
 
 	getmaxyx(menu_win, m.win_rows, x);
 
-	snprintf(buf, sizeof(buf), "locate %s",  args);
+	snprintf(buf, sizeof(buf), "locate %s", m.args);
 	m.title = strdup(buf);
 	file = popen(buf, "r");
 
