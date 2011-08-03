@@ -58,6 +58,7 @@ setup(void)
 
 	cfg.max_args = 8192;
 	cfg.vi_command = strdup("vim -p");
+	cfg.vi_x_command = strdup("");
 }
 
 static void

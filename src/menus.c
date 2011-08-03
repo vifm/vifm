@@ -1214,6 +1214,7 @@ show_filetypes_menu(FileView *view, int background)
 	strcpy(prog_str, ft_str);
 	strcat(prog_str, ",*,");
 	strcat(prog_str, mime_str);
+	free(ft_str);
 
 	{
 		int x = 0;

@@ -142,50 +142,87 @@ test_escaping(void)
 }
 
 static void
-test_xfiletypes(void)
+test_xfiletypes1_c(void)
 {
 	char *buf;
 
+	curr_stats.is_console = 1;
 	set_programs("*.tar", "x prog", 1);
 	set_programs("*.tar", "console prog", 0);
 
-	set_programs("*.tgz", "2 x prog", 1);
-
-	set_programs("*.tar.bz2", "3 console prog", 0);
-
-	curr_stats.is_console = 1;
 	buf = get_default_program_for_file("file.version.tar");
 	assert_false(buf == NULL);
 	if(buf != NULL)
 		assert_string_equal("console prog", buf);
 	free(buf);
+}
+
+static void
+test_xfiletypes1_x(void)
+{
+	char *buf;
 
 	curr_stats.is_console = 0;
+	set_programs("*.tar", "x prog", 1);
+	set_programs("*.tar", "console prog", 0);
+
 	buf = get_default_program_for_file("file.version.tar");
 	assert_false(buf == NULL);
 	if(buf != NULL)
 		assert_string_equal("x prog", buf);
 	free(buf);
+}
+
+static void
+test_xfiletypes2_c(void)
+{
+	char *buf;
 
 	curr_stats.is_console = 1;
+	set_programs("*.tgz", "2 x prog", 1);
+
 	buf = get_default_program_for_file("file.version.tgz");
 	assert_true(buf == NULL);
+}
+
+static void
+test_xfiletypes2_x(void)
+{
+	char *buf;
 
 	curr_stats.is_console = 0;
+	set_programs("*.tgz", "2 x prog", 1);
+
 	buf = get_default_program_for_file("file.version.tgz");
 	assert_false(buf == NULL);
 	if(buf != NULL)
 		assert_string_equal("2 x prog", buf);
 	free(buf);
+}
+
+static void
+test_xfiletypes3_c(void)
+{
+	char *buf;
 
 	curr_stats.is_console = 0;
+	set_programs("*.tar.bz2", "3 console prog", 0);
+
 	buf = get_default_program_for_file("file.version.tar.bz2");
 	assert_false(buf == NULL);
 	if(buf != NULL)
 		assert_string_equal("3 console prog", buf);
 	free(buf);
+}
+
+static void
+test_xfiletypes3_x(void)
+{
+	char *buf;
 
 	curr_stats.is_console = 1;
+	set_programs("*.tar.bz2", "3 console prog", 0);
+
 	buf = get_default_program_for_file("file.version.tar.bz2");
 	assert_false(buf == NULL);
 	if(buf != NULL)
@@ -206,7 +243,13 @@ filetype_tests(void)
 	run_test(test_match_full_line);
 	run_test(test_match_qmark);
 	run_test(test_escaping);
-	run_test(test_xfiletypes);
+
+	run_test(test_xfiletypes1_c);
+	run_test(test_xfiletypes1_x);
+	run_test(test_xfiletypes2_c);
+	run_test(test_xfiletypes2_x);
+	run_test(test_xfiletypes3_c);
+	run_test(test_xfiletypes3_x);
 
 	test_fixture_end();
 }

@@ -33,8 +33,8 @@ static int nfiletypes;
 static char *
 to_regex(const char *global)
 {
-	char *result = strdup("^");
-	size_t result_len = 1;
+	char *result = strdup("^$");
+	int result_len = 1;
 	while(*global != '\0')
 	{
 		if(strchr("^.[$()|+{", *global) != NULL)
@@ -112,45 +112,51 @@ global_matches(const char *global, const char *file)
 }
 
 static int
+matches_assoc(const char *file, const assoc_t *assoc)
+{
+	char *exptr;
+
+	/* Only one extension */
+	if((exptr = strchr(assoc->ext, ',')) == NULL)
+	{
+		if(global_matches(assoc->ext, file))
+			return 1;
+	}
+	else
+	{
+		char *ex_copy = strdup(assoc->ext);
+		char *free_this = ex_copy;
+		while((exptr = strchr(ex_copy, ',')) != NULL)
+		{
+			*exptr++ = '\0';
+
+			if(global_matches(ex_copy, file))
+			{
+				free(free_this);
+				return 1;
+			}
+
+			ex_copy = exptr;
+		}
+		if(global_matches(ex_copy, file))
+		{
+			free(free_this);
+			return 1;
+		}
+		free(free_this);
+	}
+	return 0;
+}
+
+static int
 get_filetype_number(const char *file, int count, assoc_t *array)
 {
 	int x;
 
 	for(x = 0; x < count; x++)
 	{
-		char *exptr = NULL;
-
-		/* Only one extension */
-		if((exptr = strchr(array[x].ext, ',')) == NULL)
-		{
-			if(global_matches(array[x].ext, file))
-				return x;
-		}
-		else
-		{
-			char *ex_copy = strdup(array[x].ext);
-			char *free_this = ex_copy;
-			char *exptr2 = NULL;
-			while((exptr = exptr2 = strchr(ex_copy, ',')) != NULL)
-			{
-				*exptr = '\0';
-				exptr2++;
-
-				if(global_matches(ex_copy, file))
-				{
-					free(free_this);
-					return x;
-				}
-
-				ex_copy = exptr2;
-			}
-			if(global_matches(ex_copy, file))
-			{
-				free(free_this);
-				return x;
-			}
-			free(free_this);
-		}
+		if(matches_assoc(file, array + x))
+			return x;
 	}
 	return -1;
 }
@@ -193,14 +199,23 @@ get_viewer_for_file(char *file)
 }
 
 char *
-get_all_programs_for_file(char *file)
+get_all_programs_for_file(const char *file)
 {
-	int x = get_filetype_number(file, nfiletypes, all_filetypes);
+	int x;
+	char *result = NULL;
+	size_t len = 0;
 
-	if(x > -1)
-		return all_filetypes[x].com;
+	for(x = 0; x < nfiletypes; x++)
+	{
+		if(!matches_assoc(file, all_filetypes + x))
+			continue;
+		result = realloc(result, len + 1 + strlen(all_filetypes[x].com) + 1);
+		result[len++] = ',';
+		strcpy(result + len, all_filetypes[x].com);
+		len += strlen(result + len);
+	}
 
-	return NULL;
+	return result;
 }
 
 static int
