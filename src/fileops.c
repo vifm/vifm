@@ -283,7 +283,7 @@ view_file(const char *filename)
 	}
 
 	escaped = escape_filename(filename, 0, 0);
-	snprintf(command, sizeof(command), "%s %s", cfg.vi_command, escaped);
+	snprintf(command, sizeof(command), "%s %s", get_vicmd(), escaped);
 	free(escaped);
 
 	shellout(command, -1);

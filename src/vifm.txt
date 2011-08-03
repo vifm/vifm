@@ -599,6 +599,11 @@ type: string
 default: "vim"
 The actual command used to start vi.
 
+vixcmd
+type: string
+default: value of vicmd
+The command used to start vi when in X.
+
 vifminfo
 type: set
 default: bookmarks

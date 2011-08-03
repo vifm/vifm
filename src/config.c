@@ -78,6 +78,7 @@ init_config(void)
 	cfg.fast_run = 0;
 	cfg.confirm = 1;
 	cfg.vi_command = strdup("vim");
+	cfg.vi_x_command = strdup("");
 	cfg.use_trash = 1;
 	cfg.fuse_home = strdup("/tmp/vifm_FUSE");
 	cfg.use_screen = 0;
@@ -539,6 +540,7 @@ write_info_file(void)
 		fprintf(fp, "=%strash\n", cfg.use_trash ? "" : "no");
 		fprintf(fp, "=undolevels=%d\n", cfg.undo_levels);
 		fprintf(fp, "=vicmd=%s\n", escape_spaces(cfg.vi_command));
+		fprintf(fp, "=vixcmd=%s\n", escape_spaces(cfg.vi_x_command));
 
 		fprintf(fp, "=vifminfo=options");
 		if(cfg.vifm_info & VIFMINFO_FILETYPES)
@@ -728,6 +730,17 @@ is_old_config(void)
 	fclose(fp);
 
 	return 0;
+}
+
+char *
+get_vicmd(void)
+{
+	if(curr_stats.is_console)
+		return cfg.vi_command;
+	else if(cfg.vi_x_command[0] != '\0')
+		return cfg.vi_x_command;
+	else
+		return cfg.vi_command;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

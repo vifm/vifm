@@ -768,6 +768,11 @@ Command macros
               default: false
               Run executable file on Enter or l.
 
+       shell sh
+              type: string
+              default: $SHELL or "sh"
+              Name of the shell to use to run external commands.
+
        smartcase scs
               type: boolean
               default: false
@@ -812,6 +817,10 @@ Command macros
        vicmd  type: string
               default: "vim"
               The actual command used to start vi.
+
+       vixcmd type: string
+              default: value of vicmd
+              The command used to start vi when in X.
 
        vifminfo
               type: set
@@ -975,4 +984,4 @@ AUTHOR
 
 
 
-                                August 1, 2011                         vifm(1)
+                                August 3, 2011                         vifm(1)

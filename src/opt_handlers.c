@@ -34,6 +34,7 @@ static void timefmt_handler(enum opt_op op, union optval_t val);
 static void trash_handler(enum opt_op op, union optval_t val);
 static void undolevels_handler(enum opt_op op, union optval_t val);
 static void vicmd_handler(enum opt_op op, union optval_t val);
+static void vixcmd_handler(enum opt_op op, union optval_t val);
 static void vifminfo_handler(enum opt_op op, union optval_t val);
 static void vimhelp_handler(enum opt_op op, union optval_t val);
 static void wildmenu_handler(enum opt_op op, union optval_t val);
@@ -101,6 +102,7 @@ add_options(void)
 	add_option("trash", "", OPT_BOOL, 0, NULL, &trash_handler);
 	add_option("undolevels", "ul", OPT_INT, 0, NULL, &undolevels_handler);
 	add_option("vicmd", "", OPT_STR, 0, NULL, &vicmd_handler);
+	add_option("vixcmd", "", OPT_STR, 0, NULL, &vixcmd_handler);
 	add_option("vifminfo", "", OPT_SET, ARRAY_LEN(vifminfo_set), vifminfo_set,
 			&vifminfo_handler);
 	add_option("vimhelp", "", OPT_BOOL, 0, NULL, &vimhelp_handler);
@@ -169,6 +171,9 @@ load_options(void)
 
 	val.str_val = cfg.vi_command;
 	set_option("vicmd", val);
+
+	val.str_val = cfg.vi_x_command;
+	set_option("vixcmd", val);
 
 	val.set_items = cfg.vifm_info;
 	set_option("vifminfo", val);
@@ -419,6 +424,13 @@ vicmd_handler(enum opt_op op, union optval_t val)
 {
 	free(cfg.vi_command);
 	cfg.vi_command = strdup(val.str_val);
+}
+
+static void
+vixcmd_handler(enum opt_op op, union optval_t val)
+{
+	free(cfg.vi_x_command);
+	cfg.vi_x_command = strdup(val.str_val);
 }
 
 static void

@@ -1138,7 +1138,7 @@ shellout(const char *command, int pause)
 		{
 			char *escaped;
 			char *ptr = (char *)NULL;
-			char *title = strstr(command, cfg.vi_command);
+			char *title = strstr(command, get_vicmd());
 			char *escaped_sh = escape_filename(cfg.shell, 0, 0);
 
 			/* Needed for symlink directories and sshfs mounts */
@@ -1152,12 +1152,12 @@ shellout(const char *command, int pause)
 			{
 				if(pause > 0)
 					snprintf(buf, sizeof(buf), "screen -t \"%s\" %s -c '%s; vifm-pause'",
-							title + strlen(cfg.vi_command) + 1, escaped_sh, command);
+							title + strlen(get_vicmd()) + 1, escaped_sh, command);
 				else
 				{
 					escaped = escape_filename(command, 0, 0);
 					snprintf(buf, sizeof(buf), "screen -t \"%s\" %s -c %s",
-							title + strlen(cfg.vi_command) + 1, escaped_sh, escaped);
+							title + strlen(get_vicmd()) + 1, escaped_sh, escaped);
 					free(escaped);
 				}
 			}
@@ -1281,9 +1281,9 @@ edit_cmd_selection(FileView *view)
 	char *buf;
 	char *files = expand_macros(view, "%f", NULL, &use_menu, &split);
 
-	if((buf = (char *)malloc(strlen(cfg.vi_command) + strlen(files) + 2)) != NULL)
-		snprintf(buf, strlen(cfg.vi_command) + 1 + strlen(files) + 1, "%s %s",
-				cfg.vi_command, files);
+	if((buf = (char *)malloc(strlen(get_vicmd()) + strlen(files) + 2)) != NULL)
+		snprintf(buf, strlen(get_vicmd()) + 1 + strlen(files) + 1, "%s %s",
+				get_vicmd(), files);
 
 	free(files);
 	return buf;
@@ -1944,7 +1944,7 @@ edit_cmd(const struct cmd_info *cmd_info)
 		if(cfg.vim_filter)
 			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
 
-		len = snprintf(buf, sizeof(buf), "%s ", cfg.vi_command);
+		len = snprintf(buf, sizeof(buf), "%s ", get_vicmd());
 		for(i = 0; i < cmd_info->argc && len < sizeof(buf) - 1; i++)
 		{
 			char *escaped = escape_filename(cmd_info->argv[i], 0, 0);
@@ -2093,14 +2093,14 @@ help_cmd(const struct cmd_info *cmd_info)
 	{
 		if(cmd_info->argc > 0)
 			snprintf(help_cmd, sizeof(help_cmd), "%s -c \'help %s\' -c only",
-					cfg.vi_command, cmd_info->args);
+					get_vicmd(), cmd_info->args);
 		else
 			snprintf(help_cmd, sizeof(help_cmd), "%s -c \'help vifm\' -c only",
-					cfg.vi_command);
+					get_vicmd());
 	}
 	else
 	{
-		snprintf(help_cmd, sizeof(help_cmd), "%s %s/vifm-help.txt", cfg.vi_command,
+		snprintf(help_cmd, sizeof(help_cmd), "%s %s/vifm-help.txt", get_vicmd(),
 				cfg.config_dir);
 	}
 
