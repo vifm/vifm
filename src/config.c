@@ -732,7 +732,7 @@ is_old_config(void)
 	return 0;
 }
 
-char *
+const char *
 get_vicmd(void)
 {
 	if(curr_stats.is_console)

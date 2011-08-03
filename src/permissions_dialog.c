@@ -100,6 +100,7 @@ enter_permissions_mode(FileView *active_view)
 	int i;
 	mode_t fmode;
 	mode_t diff;
+	uid_t uid = geteuid();
 
 	if(curr_stats.vifm_started != 2)
 		return;
@@ -119,7 +120,7 @@ enter_permissions_mode(FileView *active_view)
 	else
 		file_is_dir = 0;
 	fmode = view->dir_entry[i].mode;
-	if(view->dir_entry[i].uid != geteuid())
+	if(uid != 0 && view->dir_entry[i].uid != uid)
 	{
 		show_error_msgf("Access error", "You are not owner of %s",
 				view->dir_entry[i].name);
@@ -131,7 +132,7 @@ enter_permissions_mode(FileView *active_view)
 		{
 			diff |= (view->dir_entry[i].mode ^ fmode);
 
-			if(view->dir_entry[i].uid != geteuid())
+			if(uid != 0 && view->dir_entry[i].uid != uid)
 			{
 				show_error_msgf("Access error", "You are not owner of %s",
 						view->dir_entry[i].name);

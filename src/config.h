@@ -97,7 +97,7 @@ void set_config_dir(void);
 void init_config(void);
 void exec_config(void);
 int is_old_config(void);
-char * get_vicmd(void);
+const char * get_vicmd(void);
 
 #endif
 
