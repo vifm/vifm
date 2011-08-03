@@ -28,7 +28,7 @@ typedef struct
 assoc_t *filetypes;
 assoc_t *xfiletypes;
 assoc_t *fileviewers;
-char * get_default_program_for_file(char *file);
+char * get_default_program_for_file(const char *file);
 char * get_viewer_for_file(char *file);
 void set_programs(const char *extensions, const char *programs, int x);
 void set_fileviewer(const char *extensions, const char *viewer);

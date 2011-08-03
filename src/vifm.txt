@@ -335,8 +335,8 @@ Add ' &' in the end of command if you want to start program in background.
     program list to each of the patterns.  Currently only * and ? are
     treated as special symbols in the pattern.
 :filex[type] pat1,pat2,... def_program,program2,... - same as :filetype, but
-    given programs will be run only if vifm is running in the X.  So this
-    settings overwrite :filetype in X.
+    vifm will ignore this command if it's not running in X.  In X :filextype
+    is equal to :filetype.
 :filev[iewer] pat1,pat2,... command - will associate given command as a
     viewer to each of the patterns.  Currently only * and ? are treated as
     special symbols in the pattern.

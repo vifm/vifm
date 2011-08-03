@@ -530,8 +530,8 @@ will associate given program list to each of the patterns.  Currently only * and
 ? are treated as special symbols in the pattern.
 .TP
 .BI ":filex[type] pat1,pat2,... def_program,program2,..."
-same as :filetype, but given programs will be run only when vifm is running in
-the X.  So this settings overwrite :filetype in X.
+same as :filetype, but vifm will ignore this command if it's not running in X.
+In X :filextype is equal to :filetype.
 .TP
 .BI ":filev[iewer] pat1,pat2,... command"
 will associate given command as a viewer to each of the patterns.  Currently

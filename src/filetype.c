@@ -27,6 +27,9 @@
 
 #include "filetype.h"
 
+static assoc_t *all_filetypes;
+static int nfiletypes;
+
 static char *
 to_regex(const char *global)
 {
@@ -152,20 +155,17 @@ get_filetype_number(const char *file, int count, assoc_t *array)
 	return -1;
 }
 
-static char *
-get_default_program_for_file_inner(char *file, int for_x)
+char *
+get_default_program_for_file(const char *file)
 {
-	assoc_t *arr = for_x ? xfiletypes : filetypes;
-	int count = for_x ? cfg.xfiletypes_num : cfg.filetypes_num;
-	int x = get_filetype_number(file, count, arr);
-	char *strptr = NULL;
-	char *ptr = NULL;
-	char *program_name = NULL;
+	int x;
+	char *strptr, *ptr, *program_name;
 
+	x = get_filetype_number(file, nfiletypes, all_filetypes);
 	if(x < 0)
 		return NULL;
 
-	strptr = strdup(arr[x].com);
+	strptr = strdup(all_filetypes[x].com);
 
 	/* Only one program */
 	if((ptr = strchr(strptr, ',')) == NULL)
@@ -182,18 +182,6 @@ get_default_program_for_file_inner(char *file, int for_x)
 }
 
 char *
-get_default_program_for_file(char *file)
-{
-	if(!curr_stats.is_console)
-	{
-		char *result;
-		if((result = get_default_program_for_file_inner(file, 1)) != NULL)
-			return result;
-	}
-	return get_default_program_for_file_inner(file, 0);
-}
-
-char *
 get_viewer_for_file(char *file)
 {
 	int x = get_filetype_number(file, cfg.fileviewers_num, fileviewers);
@@ -204,29 +192,15 @@ get_viewer_for_file(char *file)
 	return fileviewers[x].com;
 }
 
-static char *
-get_all_programs_for_file_inner(char *file, int for_x)
-{
-	assoc_t *arr = for_x ? xfiletypes : filetypes;
-	int count = for_x ? cfg.xfiletypes_num : cfg.filetypes_num;
-	int x = get_filetype_number(file, count, arr);
-
-	if(x > -1)
-		return arr[x].com;
-
-	return NULL;
-}
-
 char *
 get_all_programs_for_file(char *file)
 {
-	if(!curr_stats.is_console)
-	{
-		char *result;
-		if((result = get_all_programs_for_file_inner(file, 1)) != NULL)
-			return result;
-	}
-	return get_all_programs_for_file_inner(file, 0);
+	int x = get_filetype_number(file, nfiletypes, all_filetypes);
+
+	if(x > -1)
+		return all_filetypes[x].com;
+
+	return NULL;
 }
 
 static int
@@ -263,6 +237,8 @@ set_ext_programs(const char *extension, const char *programs, int for_x)
 		else
 			cfg.filetypes_num = add_assoc(&filetypes, cfg.filetypes_num, extension,
 					programs);
+		if(!for_x || !curr_stats.is_console)
+			nfiletypes = add_assoc(&all_filetypes, nfiletypes, extension, programs);
 	}
 	else
 	{
@@ -368,6 +344,7 @@ void
 reset_filetypes(void)
 {
 	reset_list(&filetypes, &cfg.filetypes_num);
+	reset_list(&all_filetypes, &nfiletypes);
 }
 
 void
