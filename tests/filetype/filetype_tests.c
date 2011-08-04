@@ -230,6 +230,40 @@ test_xfiletypes3_x(void)
 	free(buf);
 }
 
+
+static void
+test_removing(void)
+{
+	char *buf;
+
+	curr_stats.is_console = 1;
+	set_programs("*.tar.bz2", "3 console prog", 0);
+	set_programs("*.tgz", "3 console prog", 0);
+
+	buf = get_default_program_for_file("file.version.tar.bz2");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("3 console prog", buf);
+	free(buf);
+
+	buf = get_default_program_for_file("file.version.tgz");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("3 console prog", buf);
+	free(buf);
+
+	remove_filetypes("*.tar.bz2");
+
+	buf = get_default_program_for_file("file.version.tar.bz2");
+	assert_true(buf == NULL);
+
+	buf = get_default_program_for_file("file.version.tgz");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("3 console prog", buf);
+	free(buf);
+}
+
 void
 filetype_tests(void)
 {
@@ -250,6 +284,8 @@ filetype_tests(void)
 	run_test(test_xfiletypes2_x);
 	run_test(test_xfiletypes3_c);
 	run_test(test_xfiletypes3_x);
+
+	run_test(test_removing);
 
 	test_fixture_end();
 }

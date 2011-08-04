@@ -231,35 +231,17 @@ add_assoc(assoc_t **arr, int count, const char *extension, const char *programs)
 static void
 set_ext_programs(const char *extension, const char *programs, int for_x)
 {
-	int x;
-	assoc_t *arr;
-	int count;
-
 	if(extension[0] == '\0')
 		return;
 
-	arr = for_x ? xfiletypes : filetypes;
-	count = for_x ? cfg.xfiletypes_num : cfg.filetypes_num;
-
-	for(x = 0; x < count; x++)
-		if(strcasecmp(arr[x].ext, extension) == 0)
-			break;
-	if(x == count)
-	{
-		if(for_x)
-			cfg.xfiletypes_num = add_assoc(&xfiletypes, cfg.xfiletypes_num, extension,
-					programs);
-		else
-			cfg.filetypes_num = add_assoc(&filetypes, cfg.filetypes_num, extension,
-					programs);
-		if(!for_x || !curr_stats.is_console)
-			nfiletypes = add_assoc(&all_filetypes, nfiletypes, extension, programs);
-	}
+	if(for_x)
+		cfg.xfiletypes_num = add_assoc(&xfiletypes, cfg.xfiletypes_num, extension,
+				programs);
 	else
-	{
-		free(arr[x].com);
-		arr[x].com = strdup(programs);
-	}
+		cfg.filetypes_num = add_assoc(&filetypes, cfg.filetypes_num, extension,
+				programs);
+	if(!for_x || !curr_stats.is_console)
+		nfiletypes = add_assoc(&all_filetypes, nfiletypes, extension, programs);
 }
 
 void
@@ -274,15 +256,13 @@ set_programs(const char *extensions, const char *programs, int x)
 	{
 		char *ex_copy = strdup(extensions);
 		char *free_this = ex_copy;
-		char *exptr2 = NULL;
-		while((exptr = exptr2 = strchr(ex_copy, ',')) != NULL)
+		while((exptr = strchr(ex_copy, ',')) != NULL)
 		{
-			*exptr = '\0';
-			exptr2++;
+			*exptr++ = '\0';
 
 			set_ext_programs(ex_copy, programs, x);
 
-			ex_copy = exptr2;
+			ex_copy = exptr;
 		}
 		set_ext_programs(ex_copy, programs, x);
 		free(free_this);
@@ -372,6 +352,25 @@ void
 reset_fileviewers(void)
 {
 	reset_list(&fileviewers, &cfg.fileviewers_num);
+}
+
+void
+remove_filetypes(const char *extension)
+{
+	int x, y;
+
+	y = 0;
+	for(x = 0; x < nfiletypes; x++)
+	{
+		if(strcmp(all_filetypes[x].ext, extension) == 0)
+		{
+			free(all_filetypes[x].ext);
+			free(all_filetypes[x].com);
+			continue;
+		}
+		all_filetypes[y++] = all_filetypes[x];
+	}
+	nfiletypes = y;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

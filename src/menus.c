@@ -1162,6 +1162,7 @@ filetypes_khandler(struct menu_info *m, wchar_t *keys)
 	}
 	else if(wcscmp(keys, L"L") == 0 && m->len != 0) /* store list */
 	{
+		char ext[16];
 		char *tmp, *extension;
 		size_t len = 1;
 		int i;
@@ -1169,6 +1170,7 @@ filetypes_khandler(struct menu_info *m, wchar_t *keys)
 		extension = strchr(get_current_file_name(curr_view), '.');
 		if(extension == NULL)
 			return 0;
+		snprintf(ext, sizeof(ext), "*.%s", extension);
 
 		for(i = 0; i < m->len && m->data[i][0] != '\0'; i++)
 			len += strlen(m->data[i]) + 1;
@@ -1179,7 +1181,8 @@ filetypes_khandler(struct menu_info *m, wchar_t *keys)
 			strcat(strcat(tmp, m->data[i]), ",");
 		tmp[len - 2] = '\0';
 
-		set_programs(extension, tmp, 1);
+		remove_filetypes(ext);
+		set_programs(ext, tmp, 1);
 		free(tmp);
 		return 0;
 	}
