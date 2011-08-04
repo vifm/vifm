@@ -1779,6 +1779,7 @@ clone_file(FileView* view)
 	free(escaped_clone);
 	free(escaped);
 
+	clean_selected_files(view);
 	if(background_and_wait_for_errors(do_cmd) == 0)
 	{
 		char buf[9 + NAME_MAX + 1];
@@ -1789,6 +1790,10 @@ clone_file(FileView* view)
 		cmd_group_end();
 
 		load_saving_pos(view, 1);
+	}
+	else
+	{
+		draw_dir_list(view, view->top_line);
 	}
 }
 
