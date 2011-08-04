@@ -688,7 +688,9 @@ exec_config(void)
 					while(isspace(*p))
 						p++;
 					chomp(p);
-					if(*p == '\\')
+					if(*p == '"')
+						continue;
+					else if(*p == '\\')
 						strncat(line, p + 1, sizeof(line));
 					else
 						break;

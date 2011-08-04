@@ -54,7 +54,6 @@ Vi(m) specific features that need to be added.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
-    Use mimetypes in FILETYPE.
 	Virtual File System - currently vifm can use fuse to mount most
 		file systems.
     Add a command to copy current pane location into X11 clipboard.
@@ -81,6 +80,7 @@ Vim plugin
     Choose between one and two pane view on startup somehow.
 
 Other (questionable) things.
+    Use mimetypes in FILETYPE.
     %i macro to prompt user for input.
     Maybe inotify support on Linux.
     Add ... at the end of a title or always add it in the middle
@@ -88,7 +88,7 @@ Other (questionable) things.
     Maybe we should add a command to view screen ?
     Completion for co and cg commands ?
     Directory create command ?
-    Summarize size of selected files.  Need to decide to display it.
+    Summarize size of selected files.  Need to decide how to display it.
     Add support for comments at the end of line ? Just for fun?
     Make directory stack menu interactive ?
     With undo groups we can not only join commands, but maybe implement
