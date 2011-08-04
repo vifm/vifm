@@ -412,8 +412,7 @@ move to the file number.
 The only builtin :[count]command are :[count]d[elete] and :[count]y[ank].
 .TP
 .BI :d3
-would delete three files starting at the current file position moving down (not
-implemented yet).
+would delete three files starting at the current file position moving down.
 .TP
 .BI :3d
 would delete one file at the third line in the list.
@@ -634,6 +633,9 @@ This requires screen version 3.9.9 or newer for the screen -X argument.
 .TP
 .BI :screen?
 shows whether screen program is used.
+.TP
+.BI :ls
+shows list of screen program windows (only when screen is used).
 .TP
 .BI ":se[t] opt1=val1 opt2=val2 ..."
 will set options to given values.
@@ -1134,6 +1136,24 @@ directory add
 let loaded_vifm=1
 
 to your ~/.vimrc file.
+.\" ---------------------------------------------------------------------------
+.SH Reserved
+.\" ---------------------------------------------------------------------------
+
+The following command names are reserved and shouldn't be used for user
+commands.
+
+  alink
+  chmod
+  chown
+  clone
+  co[py]
+  fin[d]
+  g[lobal]
+  m[ove]
+  rlink
+  s[ubstitute]
+  v[global]
 .\" ---------------------------------------------------------------------------
 .SH SEE ALSO
 .\" ---------------------------------------------------------------------------

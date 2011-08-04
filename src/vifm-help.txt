@@ -330,7 +330,7 @@ Commands
               :[count]y[ank].
 
        :d3    would  delete  three files starting at the current file position
-              moving down (not implemented yet).
+              moving down.
 
        :3d    would delete one file at the third line in the list.
 

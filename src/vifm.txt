@@ -263,6 +263,11 @@ line.  If you want to use '|' in an argument, precede it with '\'.
 Commented out lines should start with the double quote symbol, which may be
 preceded by whitespace characters.
 
+Most of the commands have two forms: complete and the short one.
+Example:
+:noh[lsearch]
+This means the complete command is nohlsearch, and the short one is noh.
+
 :number - move to the file number.
 :12 would move to the 12th file in the list.
 :0 move to the top of the list.
@@ -272,7 +277,7 @@ preceded by whitespace characters.
 The only builtin :[count]command are :[count]d[elete] and :[count]y[ank].
 Examples:
 :d3 - would delete three files starting at the current file position
-    moving down (not implemented yet).
+    moving down.
 :3d - would delete one file at the third line in the list.
 
 See |Reserved| for a list of reserved command names.
@@ -381,6 +386,7 @@ Add ' &' in the end of command if you want to start program in background.
     each new file edited or program launched from vifm.
     This requires screen version 3.9.9 or newer for the screen -X argument.
 :screen? - shows whether screen program is used.
+:ls - shows list of screen program windows (only when screen is used).
 :se[t] opt1=val1 opt2='val2' opt3="val3" ... - sets given options.
     You can use following syntax: option, nooption, invoption, option!,
     option?, option=x, option+=x, option-=x.
@@ -769,97 +775,20 @@ to your ~/.vimrc file.
 --------------------------------------------------------------------------------
 *Reserved*
 
-The following command names are reserved and cannot be used for user commands.
+The following command names are reserved and shouldn't be used for user
+commands.
 
-  ! - shellout and execute command.
-  apropos - run the apropos command in a menu window.
-  cd - change directory.
-  change - alter a files properties.
-  cm - user mapping for command line mode.
-  cmap - user mapping for command line mode.
-  colo - will be used to set a colorscheme for a directory.
-  colorscheme - will be used to set a colorscheme for a directory.
-  comc - remove all user defined commands.
-  comclear - remove all user defined commands.
-  com - show user commands.
-  command - show user commands.
-  cu - remove the mapping of lhs from command line mode.
-  cunmap - remove the mapping of lhs from command line mode.
-  d - delete file.
-  delc - delete command.
-  delcommand - delete command.
-  delm - delete marks.
-  delmarks - delete marks.
-  delete - delete file.
-  di - popup menu with registers content.
-  dirs - display directory stack.
-  display - popup menu with registers content.
-  e - edit file.
-  edit - edit file.
-  empty - empty trash directory.
-  file - show filetypes menu.
-  filet pat1,pat2,... def_prog,prog2,... - associate extension.
-  filetype pat1,pat2,... def_prog,prog2,... - associate extension.
-  filex pat1,pat2,... def_prog,prog2,... - associate extension for X.
-  filextype pat1,pat2,... def_prog,prog2,... - associate extension for X.
-  fileviewer pat1,pat2,... command - associate extension to a viewer.
-  filter - set file name filter.
-  find - not yet implemented.
-  h - show help file.
-  help - show help file.
-  his - show directory or command line history.
-  history - show directory or command line history.
-  invert - invert file filter.
-  jobs - shows menu of current backgrounded processes.
-  locate - run the locate command in a menu window.
-  ls - not implemented.
-  map - user mapping for normal and visual modes.
-  ma - add mark.
-  mark - add mark.
-  marks - show marks.
-  nm - user mapping for normal mode.
-  nmap - user mapping for normal mode.
-  noh - clear selection in current pane.
-  nohlsearch - clear selection in current pane.
-  nun - remove the mapping of lhs from normal mode.
-  nunmap - remove the mapping of lhs from normal mode.
-  on - switch to a one window view.
-  only - switch to a one window view.
-  popd - remove pane directories from stack.
-  pushd - add pane directories to stack.
-  pwd - show present working directory.
-  q - exit vifm.
-  quit - exit vifm.
-  reg - popup menu with registers content.
-  registers - popup menu with registers content.
-  rename - rename files using vi to edit names.
-  screen - toggles use of screen program.
-  se - set option.
-  set - set option.
-  sh - shellout.
-  shell - shellout.
-  sor[t] - show sort menu.
-  sp - switch to a two window view.
-  split - switch to a two window view.
-  sync - change the other panel to the current panel directory.
-  undol - show list of latest changes.  Add ! to see commands.
-  undolist - show list of latest changes.  Add ! to see commands.
-  unm - not used, will be used with key mapping.
-  unmap - not used, will be used with key mapping.
-  vie - toggle on and off the quick file view.
-  view - toggle on and off the quick file view.
-  vifm - menu with version information.
-  vm - user key mapping for visual mode.
-  vmap - user key mapping for visual mode.
-  vu - remove the mapping of lhs from visual mode.
-  vunmap - remove the mapping of lhs from visual mode.
-  w - same as :write.
-  wq - same as :quit.
-  write - write vifminfo.
-  x - exit vifm.
-  xit - exit vifm.
-  y - yank file.
-  yank - yank file.
+  alink
+  chmod
+  chown
+  clone
+  co[py]
+  fin[d]
+  g[lobal]
+  m[ove]
+  rlink
+  s[ubstitute]
+  v[global]
 
 --------------------------------------------------------------------------------
  vim:tw=78:fo=tcq2:isk=!-~,^*,^\|,^\":ts=8:ft=help:norl:
