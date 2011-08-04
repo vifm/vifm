@@ -99,12 +99,11 @@ Other (questionable) things.
     Highlight for view window (see ranger).
     Remove items from :history cmd?
     Option with format of statwin.
-    Filetype support for directories.
     :edit, etc. in menus.
     :alias
     Like gv but to select just pasted files (gp?).
     Ctrl-W in command line mode like in vim?
-    Move file name to the title of other pane in view mode.
+    'expandtab' for tabs in the quick view ?
 
 Code improvements.
     Write more tests.

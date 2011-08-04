@@ -314,24 +314,21 @@ void
 quick_view_file(FileView *view)
 {
 	FILE *fp;
-	char buf[NAME_MAX];
-	int x = 1;
+	int x = 0;
 	int y = 1;
 	size_t print_width;
 
 	print_width = get_real_string_width(view->dir_entry[view->list_pos].name,
 			view->window_width - 6) + 6;
-	snprintf(buf, print_width + 1, "File: %s",
-			view->dir_entry[view->list_pos].name);
 
 	wbkgdset(other_view->title, COLOR_PAIR(BORDER_COLOR + view->color_scheme));
 	wbkgdset(other_view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
 	wclear(other_view->win);
 	wclear(other_view->title);
+	mvwaddstr(other_view->title, 0, 0, "File: ");
+	waddstr(other_view->title, view->dir_entry[view->list_pos].name);
 	wattron(other_view->win,  A_BOLD);
-	mvwaddstr(other_view->win, x, y,  buf);
 	wattroff(other_view->win, A_BOLD);
-	x++;
 
 	switch(view->dir_entry[view->list_pos].type)
 	{

@@ -154,16 +154,17 @@ chosp(char *text)
 		text[len - 1] = '\0';
 }
 
+/* returns width of utf8 character */
 size_t
 get_char_width(const char* string)
 {
 	if((string[0] & 0xe0) == 0xc0 && (string[1] & 0xc0) == 0x80)
 		return 2;
 	else if((string[0] & 0xf0) == 0xe0 && (string[1] & 0xc0) == 0x80 &&
-			 (string[2] & 0xc0) == 0x80)
+			(string[2] & 0xc0) == 0x80)
 		return 3;
-	else if ((string[0] & 0xf8) == 0xf0 && (string[1] & 0xc0) == 0x80 &&
-			 (string[2] & 0xc0) == 0x80 && (string[3] & 0xc0) == 0x80)
+	else if((string[0] & 0xf8) == 0xf0 && (string[1] & 0xc0) == 0x80 &&
+			(string[2] & 0xc0) == 0x80 && (string[3] & 0xc0) == 0x80)
 		return 4;
 	else if(string[0] == '\0')
 		return 0;

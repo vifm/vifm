@@ -81,6 +81,8 @@
 
 	Removed duplicates from command and directory history.
 
+	Moved file name from quick view window to view title.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.
