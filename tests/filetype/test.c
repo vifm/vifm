@@ -6,6 +6,7 @@
 #include "../../src/status.h"
 
 void filetype_tests(void);
+void replace_double_comma_tests(void);
 
 static void
 setup(void)
@@ -25,6 +26,7 @@ static void
 all_tests(void)
 {
 	filetype_tests();
+	replace_double_comma_tests();
 }
 
 int

@@ -1225,8 +1225,12 @@ show_filetypes_menu(FileView *view, int background)
 	prog_str[0] = '\0';
 	if(is_dir)
 		strcat(prog_str, "vifm,");
-	strcat(prog_str, ft_str);
-	strcat(prog_str, ",*,");
+	if(*ft_str != '\0')
+	{
+		strcat(prog_str, ft_str);
+		strcat(prog_str, ",");
+	}
+	strcat(prog_str, "*,");
 	strcat(prog_str, mime_str);
 	free(ft_str);
 
@@ -1274,6 +1278,12 @@ show_filetypes_menu(FileView *view, int background)
 			while((ptr = ptr1 = strchr(prog_copy, ',')) != NULL)
 			{
 				int i;
+
+				while(ptr != NULL && ptr[1] == ',')
+					ptr = ptr1 = strchr(ptr + 2, ',');
+				if(ptr == NULL)
+					break;
+
 				*ptr = '\0';
 				ptr1++;
 
@@ -1290,6 +1300,7 @@ show_filetypes_menu(FileView *view, int background)
 						m.data[x] = strdup("");
 					else
 						m.data[x] = strdup(prog_copy);
+					replace_double_comma(m.data[x], 0);
 					x++;
 					m.len = x;
 				}
@@ -1304,6 +1315,7 @@ show_filetypes_menu(FileView *view, int background)
 				m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
 				m.data[x] = (char *)malloc((len + 1) * sizeof(char));
 				snprintf(m.data[x], len, "%s", prog_copy);
+				replace_double_comma(m.data[x], 0);
 				m.len++;
 			}
 

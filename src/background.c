@@ -128,6 +128,7 @@ check_background_jobs(void)
 				p->error_buf = (char *)realloc(p->error_buf, nread + 1);
 
 				strncpy(p->error_buf, buf, nread);
+				p->error_buf[nread] = '\0';
 			}
 			if(p->error_buf != NULL)
 			{

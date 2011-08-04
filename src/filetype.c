@@ -161,11 +161,35 @@ get_filetype_number(const char *file, int count, assoc_t *array)
 	return -1;
 }
 
+void
+replace_double_comma(char *cmd, int put_null)
+{
+	char *p = cmd;
+	while(*cmd != '\0')
+	{
+		if(cmd[0] == ',')
+		{
+			if(cmd[1] == ',')
+			{
+				*p++ = *cmd++;
+				cmd++;
+				continue;
+			}
+			else if(put_null)
+			{
+				break;
+			}
+		}
+		*p++ = *cmd++;
+	}
+	*p = '\0';
+}
+
 char *
 get_default_program_for_file(const char *file)
 {
 	int x;
-	char *strptr, *ptr, *program_name;
+	char *strptr;
 
 	x = get_filetype_number(file, nfiletypes, all_filetypes);
 	if(x < 0)
@@ -173,18 +197,8 @@ get_default_program_for_file(const char *file)
 
 	strptr = strdup(all_filetypes[x].com);
 
-	/* Only one program */
-	if((ptr = strchr(strptr, ',')) == NULL)
-	{
-		program_name = strdup(strptr);
-	}
-	else
-	{
-		*ptr = '\0';
-		program_name = strdup(strptr);
-	}
-	free(strptr);
-	return program_name;
+	replace_double_comma(strptr, 1);
+	return strptr;
 }
 
 char *
