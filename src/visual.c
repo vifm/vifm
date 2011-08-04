@@ -34,6 +34,7 @@
 #include "modes.h"
 #include "normal.h"
 #include "permissions_dialog.h"
+#include "search.h"
 #include "status.h"
 
 #include "visual.h"
@@ -59,6 +60,8 @@ static void cmd_percent(struct key_info, struct keys_info *);
 static void cmd_comma(struct key_info, struct keys_info *);
 static void cmd_colon(struct key_info, struct keys_info *);
 static void cmd_semicolon(struct key_info, struct keys_info *);
+static void cmd_slash(struct key_info, struct keys_info *);
+static void cmd_question(struct key_info, struct keys_info *);
 static void cmd_C(struct key_info, struct keys_info *);
 static void cmd_D(struct key_info, struct keys_info *);
 static void cmd_F(struct key_info, struct keys_info *);
@@ -66,6 +69,7 @@ static void cmd_G(struct key_info, struct keys_info *);
 static void cmd_H(struct key_info, struct keys_info *);
 static void cmd_L(struct key_info, struct keys_info *);
 static void cmd_M(struct key_info, struct keys_info *);
+static void cmd_N(struct key_info, struct keys_info *);
 static void cmd_O(struct key_info, struct keys_info *);
 static void cmd_d(struct key_info, struct keys_info *);
 static void delete(struct key_info key_info, int use_trash);
@@ -77,6 +81,7 @@ static void cmd_gv(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
 static void cmd_m(struct key_info, struct keys_info *);
+static void cmd_n(struct key_info, struct keys_info *);
 static void cmd_y(struct key_info, struct keys_info *);
 static void cmd_zf(struct key_info, struct keys_info *);
 static void find_goto(int ch, int backward);
@@ -84,6 +89,7 @@ static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
 static void update_marks(FileView *view);
 static void update(void);
+static void find_update(FileView *view, int backward);
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x02", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
@@ -102,6 +108,8 @@ static struct keys_add_info builtin_cmds[] = {
 	{L",", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
 	{L":", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
 	{L";", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_semicolon}}},
+	{L"/", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_slash}}},
+	{L"?", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_question}}},
 	{L"C", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_C}}},
 	{L"D", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_D}}},
 	{L"F", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_F}}},
@@ -109,6 +117,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"H", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_H}}},
 	{L"L", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_L}}},
 	{L"M", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_M}}},
+	{L"N", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
 	{L"O", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
 	{L"V", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_d}}},
@@ -120,6 +129,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"j", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{L"m", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_m}}},
+	{L"n", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
 	{L"o", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
 	{L"v", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"y", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_y}}},
@@ -181,6 +191,10 @@ enter_visual_mode(int restore_selection)
 void
 leave_visual_mode(int save_msg)
 {
+	int i;
+	for(i = 0; i < view->list_rows; i++)
+		view->dir_entry[i].search_match = 0;
+
 	clean_selected_files(view);
 	draw_dir_list(view, view->top_line);
 	moveto_list_pos(view, view->list_pos);
@@ -331,6 +345,27 @@ cmd_M(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+cmd_N(struct key_info key_info, struct keys_info *keys_info)
+{
+	int m, i;
+
+	if(cfg.search_history_num < 0)
+		return;
+
+	m = 0;
+	for(i = 0; i < view->list_rows; i++)
+		if(view->dir_entry[i].search_match)
+		{
+			m = 1;
+			break;
+		}
+	if(m == 0)
+		find_vpattern(view, cfg.search_history[0], curr_stats.last_search_backward);
+
+	find_update(view, !curr_stats.last_search_backward);
+}
+
+static void
 cmd_O(struct key_info key_info, struct keys_info *keys_info)
 {
 	int t = start_pos;
@@ -343,7 +378,7 @@ static void
 cmd_quote(struct key_info key_info, struct keys_info *keys_info)
 {
 	int pos;
-	pos = check_mark_directory(curr_view, key_info.multi);
+	pos = check_mark_directory(view, key_info.multi);
 	if(pos < 0)
 		return;
 	goto_pos(pos);
@@ -382,6 +417,22 @@ cmd_semicolon(struct key_info key_info, struct keys_info *keys_info)
 	if(last_fast_search_backward == -1)
 		return;
 	find_goto(last_fast_search_char, last_fast_search_backward);
+}
+
+/* Search forward. */
+static void
+cmd_slash(struct key_info key_info, struct keys_info *keys_info)
+{
+	curr_stats.last_search_backward = 0;
+	enter_cmdline_mode(VSEARCH_FORWARD_SUBMODE, L"", NULL);
+}
+
+/* Search backward. */
+static void
+cmd_question(struct key_info key_info, struct keys_info *keys_info)
+{
+	curr_stats.last_search_backward = 1;
+	enter_cmdline_mode(VSEARCH_BACKWARD_SUBMODE, L"", NULL);
 }
 
 static void
@@ -507,6 +558,27 @@ cmd_m(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+cmd_n(struct key_info key_info, struct keys_info *keys_info)
+{
+	int m, i;
+
+	if(cfg.search_history_num < 0)
+		return;
+
+	m = 0;
+	for(i = 0; i < view->list_rows; i++)
+		if(view->dir_entry[i].search_match)
+		{
+			m = 1;
+			break;
+		}
+	if(m == 0)
+		find_vpattern(view, cfg.search_history[0], curr_stats.last_search_backward);
+
+	find_update(view, curr_stats.last_search_backward);
+}
+
+static void
 cmd_y(struct key_info key_info, struct keys_info *keys_info)
 {
 	char status_buf[64] = "";
@@ -624,6 +696,31 @@ update(void)
 	draw_dir_list(view, view->top_line);
 	moveto_list_pos(view, view->list_pos);
 	update_pos_window(view);
+}
+
+int
+find_vpattern(FileView *view, const char *pattern, int backward)
+{
+	int hls = cfg.hl_search;
+	cfg.hl_search = 0;
+	find_pattern(view, pattern, backward, 0);
+	cfg.hl_search = hls;
+	find_update(view, backward);
+	return 0;
+}
+
+static void
+find_update(FileView *view, int backward)
+{
+	int old_pos, new_pos;
+	old_pos = view->list_pos;
+	if(backward)
+		find_previous_pattern(view, 1);
+	else
+		find_next_pattern(view, 1);
+	new_pos = view->list_pos;
+	view->list_pos = old_pos;
+	goto_pos(new_pos);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

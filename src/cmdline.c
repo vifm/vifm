@@ -308,9 +308,11 @@ enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
 	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 		prompt = L":";
 	else if(sub_mode == SEARCH_FORWARD_SUBMODE
+			|| sub_mode == VSEARCH_FORWARD_SUBMODE
 			|| sub_mode == MENU_SEARCH_FORWARD_SUBMODE)
 		prompt = L"/";
 	else if(sub_mode == SEARCH_BACKWARD_SUBMODE
+			|| sub_mode == VSEARCH_BACKWARD_SUBMODE
 			|| sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
 		prompt = L"?";
 	else
@@ -698,6 +700,14 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 		curr_stats.need_redraw = 1;
 		search_menu_list(p, sub_mode_ptr);
 	}
+	else if(sub_mode == VSEARCH_FORWARD_SUBMODE)
+	{
+		curr_stats.save_msg = exec_command(p, curr_view, GET_VFSEARCH_PATTERN);
+	}
+	else if(sub_mode == VSEARCH_BACKWARD_SUBMODE)
+	{
+		curr_stats.save_msg = exec_command(p, curr_view, GET_VBSEARCH_PATTERN);
+	}
 	else if(sub_mode == PROMPT_SUBMODE)
 	{
 		prompt_cb cb;
@@ -706,7 +716,8 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 		cb(p);
 	}
 
-	if(prev_mode == VISUAL_MODE)
+	if(prev_mode == VISUAL_MODE && sub_mode != VSEARCH_FORWARD_SUBMODE &&
+			sub_mode != VSEARCH_BACKWARD_SUBMODE)
 		leave_visual_mode(curr_stats.save_msg);
 
 	free(p);

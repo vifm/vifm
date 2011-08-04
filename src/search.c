@@ -70,32 +70,33 @@ find_next_pattern_match(FileView *view, int start, int direction)
 }
 
 void
-find_previous_pattern(FileView *view)
+find_previous_pattern(FileView *view, int wrap)
 {
 	if(find_next_pattern_match(view, view->list_pos, PREVIOUS))
 		moveto_list_pos(view, view->list_pos);
-	else if(find_next_pattern_match(view, view->list_rows, PREVIOUS))
+	else if(wrap && find_next_pattern_match(view, view->list_rows, PREVIOUS))
 		moveto_list_pos(view, view->list_pos);
 }
 
 void
-find_next_pattern(FileView *view)
+find_next_pattern(FileView *view, int wrap)
 {
 	if(find_next_pattern_match(view, view->list_pos, NEXT))
 		moveto_list_pos(view, view->list_pos);
-	else if(find_next_pattern_match(view, 0, NEXT))
+	else if(wrap && find_next_pattern_match(view, 0, NEXT))
 		moveto_list_pos(view, view->list_pos);
 }
 
 int
-find_pattern(FileView *view, char *pattern, int backward)
+find_pattern(FileView *view, const char *pattern, int backward, int move)
 {
 	int cflags;
 	int found = 0;
 	regex_t re;
 	int x;
 
-	clean_selected_files(view);
+	if(move)
+		clean_selected_files(view);
 	for(x = 0; x < view->list_rows; x++)
 		view->dir_entry[x].search_match = 0;
 
@@ -128,12 +129,15 @@ find_pattern(FileView *view, char *pattern, int backward)
 	/* Need to redraw the list so that the matching files are highlighted */
 	draw_dir_list(view, view->top_line);
 
-	if(found)
+	if(found > 0)
 	{
-		if(backward)
-			find_previous_pattern(view);
-		else
-			find_next_pattern(view);
+		if(move)
+		{
+			if(backward)
+				find_previous_pattern(view, 1);
+			else
+				find_next_pattern(view, 1);
+		}
 		if(!cfg.hl_search)
 		{
 			char buf[80];

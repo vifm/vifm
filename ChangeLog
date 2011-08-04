@@ -81,6 +81,10 @@
 
 	Removed duplicates from command and directory history.
 
+	Made C handle selection and work in visual mode.
+
+	Made /, ?, n and N work in visual mode.
+
 	Moved file name from quick view window to view title.
 
 	Fixed bug with name conflict of files and directories in the Trash.

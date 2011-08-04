@@ -62,6 +62,7 @@
 #include "ui.h"
 #include "undo.h"
 #include "utils.h"
+#include "visual.h"
 
 #include "commands.h"
 
@@ -1677,7 +1678,9 @@ exec_command(char *cmd, FileView *view, int type)
 	if(cmd == NULL)
 	{
 		if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN)
-			return find_pattern(view, view->regexp, type == GET_BSEARCH_PATTERN);
+			return find_pattern(view, view->regexp, type == GET_BSEARCH_PATTERN, 1);
+		if(type == GET_VFSEARCH_PATTERN || type == GET_VBSEARCH_PATTERN)
+			return find_vpattern(view, view->regexp, type == GET_VBSEARCH_PATTERN);
 		return 0;
 	}
 
@@ -1689,7 +1692,13 @@ exec_command(char *cmd, FileView *view, int type)
 	{
 		strncpy(view->regexp, cmd, sizeof(view->regexp));
 		save_search_history(cmd);
-		return find_pattern(view, cmd, type == GET_BSEARCH_PATTERN);
+		return find_pattern(view, cmd, type == GET_BSEARCH_PATTERN, 1);
+	}
+	else if(type == GET_VFSEARCH_PATTERN || type == GET_VBSEARCH_PATTERN)
+	{
+		strncpy(view->regexp, cmd, sizeof(view->regexp));
+		save_search_history(cmd);
+		return find_vpattern(view, cmd, type == GET_VBSEARCH_PATTERN);
 	}
 	return 0;
 }

@@ -49,6 +49,8 @@ typedef struct
 	int errmsg_shown; /* 0 - none, 1 - error, 2 - query */
 
 	tree_t dirsize_cache;
+	
+	int last_search_backward;
 
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */

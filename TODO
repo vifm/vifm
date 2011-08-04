@@ -47,7 +47,7 @@ Vi(m) specific features that need to be added.
     :highlight command.
     Better registers support.
     :$ in the menus (check other commands like this one).
-    v /, v ?, d /, d ?
+    d /, d ?
     :map without arguments
 
 Possible things to add.

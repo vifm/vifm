@@ -48,7 +48,6 @@
 #include "normal.h"
 
 static int *mode;
-static int last_search_backward;
 static int last_fast_search_char;
 static int last_fast_search_backward = -1;
 static int rm_rf_confirmed;
@@ -700,13 +699,14 @@ cmd_N(struct key_info key_info, struct keys_info *keys_info)
 			m = 1;
 			break;
 		}
-	if(!m)
-		find_pattern(curr_view, cfg.search_history[0], last_search_backward);
+	if(m == 0)
+		find_pattern(curr_view, cfg.search_history[0],
+				curr_stats.last_search_backward, 1);
 
-	if(last_search_backward)
-		find_next_pattern(curr_view);
+	if(curr_stats.last_search_backward)
+		find_next_pattern(curr_view, 1);
 	else
-		find_previous_pattern(curr_view);
+		find_previous_pattern(curr_view, 1);
 }
 
 /* Move files. */
@@ -808,7 +808,7 @@ cmd_semicolon(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_slash(struct key_info key_info, struct keys_info *keys_info)
 {
-	last_search_backward = 0;
+	curr_stats.last_search_backward = 0;
 	enter_cmdline_mode(SEARCH_FORWARD_SUBMODE, L"", NULL);
 }
 
@@ -816,7 +816,7 @@ cmd_slash(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_question(struct key_info key_info, struct keys_info *keys_info)
 {
-	last_search_backward = 1;
+	curr_stats.last_search_backward = 1;
 	enter_cmdline_mode(SEARCH_BACKWARD_SUBMODE, L"", NULL);
 }
 
@@ -1025,13 +1025,14 @@ cmd_n(struct key_info key_info, struct keys_info *keys_info)
 			m = 1;
 			break;
 		}
-	if(!m)
-		find_pattern(curr_view, cfg.search_history[0], last_search_backward);
+	if(m == 0)
+		find_pattern(curr_view, cfg.search_history[0],
+				curr_stats.last_search_backward, 1);
 
-	if(last_search_backward)
-		find_previous_pattern(curr_view);
+	if(curr_stats.last_search_backward)
+		find_previous_pattern(curr_view, 1);
 	else
-		find_next_pattern(curr_view);
+		find_next_pattern(curr_view, 1);
 }
 
 /* Put files. */
