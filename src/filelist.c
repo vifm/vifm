@@ -901,8 +901,8 @@ save_view_history(FileView *view)
 			&& strcmp(view->history[view->history_pos].dir, view->curr_dir) == 0)
 	{
 		x = view->history_pos;
-		snprintf(view->history[x].file, sizeof(view->history[x].file),
-				"%s", view->dir_entry[view->list_pos].name);
+		snprintf(view->history[x].file, sizeof(view->history[x].file), "%s",
+				view->dir_entry[view->list_pos].name);
 		return;
 	}
 

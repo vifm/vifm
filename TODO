@@ -62,7 +62,6 @@ Possible things to add.
     Swap names of two files (selected or given as arguments).
     Invert selection?
     :g/arg = grep arg; :v/arg = grep -v arg
-    :history without duplicates.
     Make :undolist more interactive.
     A :restart function to reload everything.
     Maybe something like :g/.../ and :v/.../ in Vim.

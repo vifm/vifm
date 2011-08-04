@@ -79,6 +79,8 @@
 
 	Changed format of ~/.vifm/vifmrc and ~/.vifm/vifminfo files.
 
+	Removed duplicates from command and directory history.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.
