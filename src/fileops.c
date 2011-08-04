@@ -1741,19 +1741,14 @@ put_files_from_register(FileView *view, int name, int force_move)
 	return put_files_from_register_i(view, 1);
 }
 
-void
-clone_file(FileView* view)
+static void
+clone_file(FileView* view, const char *filename)
 {
 	char do_cmd[PATH_MAX + NAME_MAX*2 + 4];
 	char undo_cmd[3 + PATH_MAX + 6 + 1];
 	char clone_name[PATH_MAX];
 	char *escaped, *escaped_clone;
-	const char *filename;
 	
-	if(!is_dir_writable(view->curr_dir))
-		return;
-
-	filename = get_current_file_name(view);
 	if(strcmp(filename, "./") == 0)
 		return;
 	if(strcmp(filename, "../") == 0)
@@ -1779,22 +1774,50 @@ clone_file(FileView* view)
 	free(escaped_clone);
 	free(escaped);
 
-	clean_selected_files(view);
 	if(background_and_wait_for_errors(do_cmd) == 0)
-	{
-		char buf[9 + NAME_MAX + 1];
-		snprintf(buf, sizeof(buf), "clone in %s: %s",
-				replace_home_part(view->curr_dir), clone_name);
-		cmd_group_begin(buf);
 		add_operation(do_cmd, filename, clone_name, undo_cmd, clone_name, NULL);
-		cmd_group_end();
+}
 
-		load_saving_pos(view, 1);
-	}
-	else
+/* returns new value for save_msg */
+int
+clone_files(FileView *view)
+{
+	size_t len;
+	int i;
+	char buf[COMMAND_GROUP_INFO_LEN + 1];
+
+	if(!is_dir_writable(view->curr_dir))
+		return 0;
+
+	if(view->selected_files == 0)
 	{
-		draw_dir_list(view, view->top_line);
+		view->dir_entry[view->list_pos].selected = 1;
+		view->selected_files = 1;
 	}
+	get_all_selected_files(view);
+
+	len = snprintf(buf, sizeof(buf), "clone in %s: ", view->curr_dir);
+	for(i = 0; i < view->selected_files && len < COMMAND_GROUP_INFO_LEN; i++)
+	{
+		if(buf[len - 2] != ':')
+		{
+			strncat(buf, ", ", sizeof(buf));
+			buf[sizeof(buf) - 1] = '\0';
+		}
+		strncat(buf, view->selected_filelist[i], sizeof(buf));
+		buf[sizeof(buf) - 1] = '\0';
+		len = strlen(buf);
+	}
+
+	cmd_group_begin(buf);
+	for(i = 0; i < view->selected_files; i++)
+		clone_file(view, view->selected_filelist[i]);
+	cmd_group_end();
+	free_selected_file_array(view);
+
+	clean_selected_files(view);
+	load_saving_pos(view, 1);
+	return 0;
 }
 
 unsigned long long

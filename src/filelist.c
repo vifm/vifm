@@ -459,7 +459,7 @@ get_all_selected_files(FileView *view)
  * will clean up the allocated memory
  */
 void
-get_selected_files(FileView *view, int count, int *indexes)
+get_selected_files(FileView *view, int count, const int *indexes)
 {
 	int x;
 	int y = 0;

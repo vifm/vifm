@@ -59,6 +59,7 @@ static void cmd_percent(struct key_info, struct keys_info *);
 static void cmd_comma(struct key_info, struct keys_info *);
 static void cmd_colon(struct key_info, struct keys_info *);
 static void cmd_semicolon(struct key_info, struct keys_info *);
+static void cmd_C(struct key_info, struct keys_info *);
 static void cmd_D(struct key_info, struct keys_info *);
 static void cmd_F(struct key_info, struct keys_info *);
 static void cmd_G(struct key_info, struct keys_info *);
@@ -101,6 +102,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L",", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
 	{L":", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
 	{L";", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_semicolon}}},
+	{L"C", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_C}}},
 	{L"D", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_D}}},
 	{L"F", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_F}}},
 	{L"G", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
@@ -275,6 +277,13 @@ cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 		goto_pos(curr_view->list_pos - 1);
 	curr_view->top_line--;
 	scroll_view(curr_view);
+}
+
+static void
+cmd_C(struct key_info key_info, struct keys_info *keys_info)
+{
+	curr_stats.save_msg = clone_files(curr_view);
+	leave_visual_mode(curr_stats.save_msg);
 }
 
 static void
