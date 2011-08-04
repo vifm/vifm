@@ -200,6 +200,11 @@ execute_cmd(const char *cmd)
 		cmd_info.bg = 1;
 		cmd_info.raw_args[len - 2] = '\0';
 	}
+	else if(cur->bg && len == 1 && cmd_info.raw_args[0] == '&')
+	{
+		cmd_info.bg = 1;
+		cmd_info.raw_args[0] = '\0';
+	}
 	if(cur->expand)
 		cmd_info.args = cmds_conf.expand_macros(cmd_info.raw_args);
 	else
