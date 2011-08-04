@@ -838,15 +838,27 @@ save_search_history(char *pattern)
 static void
 save_command_history(const char *command)
 {
-	int x = 0;
+	int x;
 
 	/* Don't add :!! or :! to history list */
 	if(!strcmp(command, "!!") || !strcmp(command, "!"))
 		return;
 
 	/* Don't add duplicates */
-	if(cfg.cmd_history_num >= 0 && !strcmp(command, cfg.cmd_history[0]))
-		return;
+	for(x = 0; x <= cfg.cmd_history_num; x++)
+	{
+		if(strcmp(cfg.cmd_history[x], command) == 0)
+		{
+			/* move line to the last position */
+			char *t;
+			if(x == 0)
+				return;
+			t = cfg.cmd_history[x];
+			memmove(cfg.cmd_history + 1, cfg.cmd_history, sizeof(char *)*x);
+			cfg.cmd_history[0] = t;
+			return;
+		}
+	}
 
 	if(cfg.cmd_history_num + 1 >= cfg.cmd_history_len)
 		cfg.cmd_history_num = x = cfg.cmd_history_len - 1;
