@@ -170,7 +170,18 @@ use_info_prog(char *cmd)
 	int error_pipe[2];
 	int use_menu = 0, split = 0;
 
-	cmd = expand_macros(curr_view, cmd, NULL, &use_menu, &split);
+	if(strchr(cmd, '%') == NULL)
+	{
+		char *escaped = escape_filename(
+				curr_view->dir_entry[curr_view->list_pos].name, 0, 0);
+		char *t = malloc(strlen(cmd) + 1 + strlen(escaped) + 1);
+		sprintf(t, "%s %s", cmd, escaped);
+		cmd = t;
+	}
+	else
+	{
+		cmd = expand_macros(curr_view, cmd, NULL, &use_menu, &split);
+	}
 
 	if(pipe(error_pipe) != 0)
 	{
@@ -339,6 +350,7 @@ quick_view_file(FileView *view)
 				mvwaddstr(other_view->win, ++x, y, "File is a Named Pipe");
 				break;
 			}
+			/* break omitted */
 		default:
 			{
 				char *viewer;
