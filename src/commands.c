@@ -1252,6 +1252,7 @@ fast_run_complete(char *cmd)
 
 	reset_completion();
 	exec_completion(cmd);
+	free(next_completion());
 
 	if(get_completion_count() > 2)
 	{

@@ -771,7 +771,7 @@ Command macros
        shell sh
               type: string
               default: $SHELL or "sh"
-              Name of the shell to use to run external commands.
+              Full path to the shell to use to run external commands.
 
        smartcase scs
               type: boolean

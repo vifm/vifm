@@ -109,6 +109,23 @@ next_completion(void)
 	assert(state != NOT_STARTED);
 	state = COMPLETING;
 
+	if(curr == -1)
+	{
+		int i, j;
+		/* remove consecutive duplicates */
+		j = 1;
+		for(i = 1; i < count; i++)
+		{
+			if(strcmp(lines[i], lines[j - 1]) == 0)
+			{
+				free(lines[i]);
+				continue;
+			}
+			lines[j++] = lines[i];
+		}
+		count = j;
+	}
+
 	if(count == 2)
 		return strdup(lines[0]);
 
