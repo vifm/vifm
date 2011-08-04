@@ -620,6 +620,12 @@ execute_filetype_cb(FileView *view, menu_info *m)
 	char *prog_str;
 	int background;
 
+	if(view->dir_entry[view->list_pos].type == DIRECTORY && m->pos == 0)
+	{
+		handle_file(view, 0, 0);
+		return;
+	}
+
 	prog_str = m->data[m->pos];
 	if(prog_str[0] == '\0')
 		return;
@@ -1195,26 +1201,31 @@ show_filetypes_menu(FileView *view, int background)
 {
 	char *filename = get_current_file_name(view);
 	char *ft_str, *prog_str, *mime_str;
+	int is_dir;
 
 	ft_str = get_all_programs_for_file(filename);
 	mime_str = get_magic_handlers(filename);
 
-	if(ft_str == NULL && mime_str == NULL) {
+	is_dir = view->dir_entry[view->list_pos].type == DIRECTORY;
+	if(ft_str == NULL && mime_str == NULL && !is_dir) {
 		show_error_msg("Filetype is not set.",
 				"No programs set for this filetype.");
 		return 0;
 	}
 
 	if(ft_str == NULL)
-		ft_str = "";
-	else if(mime_str == NULL)
+		ft_str = strdup("");
+	if(mime_str == NULL)
 		mime_str = "";
 
-	prog_str = malloc(strlen(ft_str) + 3 + strlen(mime_str) + 1);
+	prog_str = malloc(5 + strlen(ft_str) + 3 + strlen(mime_str) + 1);
 	if(prog_str == NULL)
 		return 0;
 
-	strcpy(prog_str, ft_str);
+	prog_str[0] = '\0';
+	if(is_dir)
+		strcat(prog_str, "vifm,");
+	strcat(prog_str, ft_str);
 	strcat(prog_str, ",*,");
 	strcat(prog_str, mime_str);
 	free(ft_str);
@@ -1272,7 +1283,7 @@ show_filetypes_menu(FileView *view, int background)
 				for(i = 0; i < m.len; i++)
 					if(strcmp(m.data[i], prog_copy) == 0)
 						break;
-				if(i == m.len)
+				if(i == m.len && prog_copy[0] != '\0')
 				{
 					m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
 					if(strcmp(prog_copy, "*") == 0)
