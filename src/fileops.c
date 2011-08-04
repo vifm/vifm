@@ -1747,7 +1747,7 @@ clone_file(FileView* view)
 	char do_cmd[PATH_MAX + NAME_MAX*2 + 4];
 	char undo_cmd[3 + PATH_MAX + 6 + 1];
 	char clone_name[PATH_MAX];
-	char *escaped;
+	char *escaped, *escaped_clone;
 	const char *filename;
 	
 	if(!is_dir_writable(view->curr_dir))
@@ -1763,14 +1763,20 @@ clone_file(FileView* view)
 	chosp(clone_name);
 	strncat(clone_name, "_clone", sizeof(clone_name));
 	snprintf(do_cmd, sizeof(do_cmd), "%s/%s", view->curr_dir, filename);
+	if(access(clone_name, F_OK) == 0)
+	{
+		int i = 0, len = strlen(clone_name);
+		do
+			snprintf(clone_name + len, sizeof(clone_name) - len, "(%d)", ++i);
+		while(access(clone_name, F_OK) == 0);
+	}
 
-	if(view->dir_entry[view->list_pos].type == DIRECTORY)
-		escaped = escape_filename(do_cmd, strlen(do_cmd) - 1, 0);
-	else
-		escaped = escape_filename(do_cmd, 0, 0);
+	escaped = escape_filename(do_cmd, 0, 0);
 	chosp(escaped);
-	snprintf(do_cmd, sizeof(do_cmd), "cp -npR %s %s_clone", escaped, escaped);
-	snprintf(undo_cmd, sizeof(undo_cmd), "rm -rf %s_clone", escaped);
+	escaped_clone = escape_filename(clone_name, 0, 0);
+	snprintf(do_cmd, sizeof(do_cmd), "cp -npR %s %s", escaped, escaped_clone);
+	snprintf(undo_cmd, sizeof(undo_cmd), "rm -rf %s", escaped_clone);
+	free(escaped_clone);
 	free(escaped);
 
 	if(background_and_wait_for_errors(do_cmd) == 0)
