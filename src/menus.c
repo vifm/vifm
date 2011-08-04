@@ -1460,7 +1460,7 @@ show_locate_menu(FileView *view, char *args)
 	m.title = strdup(buf);
 	file = popen(buf, "r");
 
-	if(!file)
+	if(file == NULL)
 	{
 		show_error_msg("Trouble opening a file", "Unable to open file");
 		return 0;
@@ -1484,13 +1484,9 @@ show_locate_menu(FileView *view, char *args)
 
 	if(m.len < 1)
 	{
-		char buf[256];
-
 		reset_popup_menu(&m);
-		snprintf(buf, sizeof(buf), "No files found matching \"%s\"", args);
-		status_bar_message(buf);
-		wrefresh(status_bar);
-		return 0;
+		status_bar_messagef("No files found matching \"%s\"", args);
+		return 1;
 	}
 
 	setup_menu();
