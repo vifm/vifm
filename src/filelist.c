@@ -955,14 +955,11 @@ check_view_dir_history(FileView *view)
 	int found = 0;
 	int pos = 0;
 
-	if(cfg.history_len <= 0)
-		return;
-
 	if(curr_stats.is_updir)
 	{
 		pos = find_file_pos_in_list(view, curr_stats.updir_file);
 	}
-	else
+	else if(cfg.history_len > 0)
 	{
 		for(x = view->history_pos; x >= 0; x--)
 		{

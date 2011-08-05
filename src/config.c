@@ -656,7 +656,7 @@ write_info_file(void)
 		fprintf(fp, "r%s%d\n", rwin.sort_descending ? "-" : "", rwin.sort_type + 1);
 	}
 
-	if(cfg.vifm_info & VIFMINFO_DHISTORY)
+	if((cfg.vifm_info & VIFMINFO_DHISTORY) && cfg.history_len > 0)
 	{
 		save_view_history(&lwin, NULL, NULL);
 		fputs("\n# Left window history (oldest to newest):\n", fp);

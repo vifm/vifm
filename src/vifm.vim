@@ -10,7 +10,7 @@
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-if exists("loaded_vifm")
+if exists('loaded_vifm')
 	finish
 endif
 let loaded_vifm = 1
@@ -48,11 +48,11 @@ endif
 
 function! s:StartVifm(editcmd)
 	" Gvim cannot handle ncurses so run vifm in an xterm.
-	let dir = fnameescape(expand("%:p:h"))
+	let dir = fnameescape(expand('%:p:h'))
 	if has('gui_running')
-		execute "silent !xterm -e vifm -f" dir
+		execute 'silent !xterm -e vifm -f' dir
 	else
-		execute "silent !vifm -f" dir
+		execute 'silent !vifm -f' dir
 	endif
 
 	redraw!
@@ -60,9 +60,9 @@ function! s:StartVifm(editcmd)
 	" The selected files are written and read from a file instead of using
 	" vim's clientserver so that it will work in the console without a X server
 	" running.
-	let flist = readfile(fnamemodify('~/.vifm/vimfiles', ":p"))
+	let flist = readfile(fnamemodify('~/.vifm/vimfiles', ':p'))
 
-	call map(flist, 'fnameescape( v:val )')
+	call map(flist, 'fnameescape(v:val)')
 
 	" User exits vifm without selecting a file.
 	if empty(flist)
