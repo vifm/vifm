@@ -81,7 +81,7 @@
 
 	Removed duplicates from command and directory history.
 
-	Made C handle selection and work in visual mode.
+	Made C handle selection, check read permission and work in visual mode.
 
 	Made /, ?, n and N work in visual mode.
 

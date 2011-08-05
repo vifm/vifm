@@ -1794,6 +1794,20 @@ clone_files(FileView *view)
 		view->dir_entry[view->list_pos].selected = 1;
 		view->selected_files = 1;
 	}
+	for(i = 0; i < view->list_rows; i++)
+	{
+		if(!view->dir_entry[i].selected)
+			continue;
+		if(access(view->dir_entry[i].name, R_OK) != 0)
+		{
+			show_error_msgf("Access denied",
+					"You don't have read permissions on \"%s\"", view->dir_entry[i].name);
+			clean_selected_files(view);
+			draw_dir_list(view, view->top_line);
+			moveto_list_pos(view, view->list_pos);
+			return 0;
+		}
+	}
 	get_all_selected_files(view);
 
 	len = snprintf(buf, sizeof(buf), "clone in %s: ", view->curr_dir);
