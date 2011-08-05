@@ -1497,7 +1497,7 @@ show_locate_menu(FileView *view, const char *args)
 }
 
 int
-show_find_menu(FileView *view, const char *pattern, const char *args)
+show_find_menu(FileView *view, const char *args)
 {
 	int x = 0;
 	char buf[256];
@@ -1514,17 +1514,22 @@ show_find_menu(FileView *view, const char *pattern, const char *args)
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
-	m.args = escape_filename(pattern, 0, 0);
+	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0, 0);
 	m.data = NULL;
 
 	getmaxyx(menu_win, m.win_rows, x);
 
-	snprintf(buf, sizeof(buf), "find %s", pattern);
+	snprintf(buf, sizeof(buf), "find %s", args);
 	m.title = strdup(buf);
 
-	snprintf(buf, sizeof(buf),
-			"find . -type d \\( ! -readable -o ! -executable \\) -prune -o "
-			"-name %s %s -print", m.args, args);
+	if(args[0] == '-')
+		snprintf(buf, sizeof(buf),
+				"find . -type d \\( ! -readable -o ! -executable \\) -prune -o "
+				"%s -print", m.args);
+	else
+		snprintf(buf, sizeof(buf),
+				"find . -type d \\( ! -readable -o ! -executable \\) -prune -o "
+				"-name %s -print", m.args);
 	file = popen(buf, "r");
 
 	if(file == NULL)
@@ -1552,7 +1557,7 @@ show_find_menu(FileView *view, const char *pattern, const char *args)
 	if(m.len < 1)
 	{
 		reset_popup_menu(&m);
-		status_bar_messagef("No files found matching \"%s\"", pattern);
+		status_bar_message("No files found");
 		return 1;
 	}
 

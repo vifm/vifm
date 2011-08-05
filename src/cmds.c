@@ -433,7 +433,7 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 	int state, st;
 	char** params;
 
-	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING, ARG };
+	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING, ARG, QARG };
 
 	if(last_pos != NULL)
 		*last_pos = 0;
@@ -489,11 +489,16 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 				}
 				break;
 			case S_QUOTING:
-				if(!cmdstr[i] || cmdstr[i] == '\'')
+				if(!cmdstr[i])
 					state = ARG;
+				else if(cmdstr[i] == '\'')
+					state = QARG;
+				break;
 			case D_QUOTING:
-				if(!cmdstr[i] || cmdstr[i] == '"')
+				if(!cmdstr[i])
 					state = ARG;
+				else if(cmdstr[i] == '"')
+					state = QARG;
 				else if(cmdstr[i] == '\\')
 				{
 					if(cmdstr[i + 1] != '\0')
@@ -501,8 +506,10 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 				}
 				break;
 			case R_QUOTING:
-				if(!cmdstr[i] || cmdstr[i] == '/')
+				if(!cmdstr[i])
 					state = ARG;
+				else if(cmdstr[i] == '/')
+					state = QARG;
 				else if(cmdstr[i] == '\\')
 				{
 					if(cmdstr[i + 1] == '/')
@@ -510,12 +517,12 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 				}
 				break;
 		}
-		if(state == ARG)
+		if(state == ARG || state == QARG)
 		{
 			/* found another argument */
 			cmdstr[i] = '\0';
 			if(last_end != NULL)
-				*last_end = i;
+				*last_end = (state == ARG) ? i : i + i;
 
 			params[j] = strdup(&cmdstr[st]);
 			if(prev_state == NO_QUOTING)
