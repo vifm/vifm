@@ -1751,7 +1751,6 @@ comm_quit(int write_info)
 
 		snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
 		fp = fopen(buf, "w");
-		fprintf(fp, "NULL");
 		fclose(fp);
 		endwin();
 		exit(0);
