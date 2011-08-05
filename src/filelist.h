@@ -54,7 +54,7 @@ void scroll_view(FileView *view);
 void check_if_filelists_have_changed(FileView *view);
 void change_sort_type(FileView *view, char type, char descending);
 void load_saving_pos(FileView *view, int reload);
-void save_view_history(FileView *view);
+void save_view_history(FileView *view, const char *path, const char *file);
 int pane_in_dir(FileView *view, const char *path);
 
 #endif

@@ -893,7 +893,7 @@ goto_history_pos(FileView *view, int pos)
 }
 
 void
-save_view_history(FileView *view)
+save_view_history(FileView *view, const char *path, const char *file)
 {
 	int x;
 
@@ -903,17 +903,24 @@ save_view_history(FileView *view)
 
 	if(cfg.history_len <= 0)
 		return;
-	if(curr_stats.skip_history)
-		return;
+
+	if(path == NULL)
+		path = view->curr_dir;
+	if(file == NULL)
+		file = view->dir_entry[view->list_pos].name;
 
 	if(view->history_num > 0
-			&& strcmp(view->history[view->history_pos].dir, view->curr_dir) == 0)
+			&& strcmp(view->history[view->history_pos].dir, path) == 0)
 	{
+		if(curr_stats.vifm_started < 2)
+			return;
 		x = view->history_pos;
-		snprintf(view->history[x].file, sizeof(view->history[x].file), "%s",
-				view->dir_entry[view->list_pos].name);
+		snprintf(view->history[x].file, sizeof(view->history[x].file), "%s", file);
 		return;
 	}
+
+	if(curr_stats.skip_history)
+		return;
 
 	if(view->history_num > 0 && view->history_pos != view->history_num - 1)
 	{
@@ -935,10 +942,8 @@ save_view_history(FileView *view)
 		x--;
 		view->history_num = x;
 	}
-	snprintf(view->history[x].dir, sizeof(view->history[x].dir), "%s",
-			view->curr_dir);
-	snprintf(view->history[x].file, sizeof(view->history[x].file), "%s",
-			view->dir_entry[view->list_pos].name);
+	snprintf(view->history[x].dir, sizeof(view->history[x].dir), "%s", path);
+	snprintf(view->history[x].file, sizeof(view->history[x].file), "%s", file);
 	view->history_num++;
 	view->history_pos = view->history_num - 1;
 }
@@ -959,7 +964,7 @@ check_view_dir_history(FileView *view)
 	}
 	else
 	{
-		for(x = view->history_pos - 1; x >= 0; x--)
+		for(x = view->history_pos; x >= 0; x--)
 		{
 			if(strlen(view->history[x].dir) < 1)
 				break;
@@ -1182,7 +1187,7 @@ change_directory(FileView *view, const char *directory)
 
 	curr_stats.is_updir = 0;
 
-	save_view_history(view);
+	save_view_history(view, NULL, NULL);
 
 	if(directory[0] == '/')
 		canonicalize_path(directory, dir_dup, sizeof(dir_dup));
@@ -1298,7 +1303,7 @@ change_directory(FileView *view, const char *directory)
 	stat(view->curr_dir, &s);
 	view->dir_mtime = s.st_mtime;
 
-	save_view_history(view);
+	save_view_history(view, NULL, NULL);
 	return 0;
 }
 

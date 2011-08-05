@@ -318,8 +318,8 @@ history_handler(enum opt_op op, union optval_t val)
 	{
 		cfg.history_len = val.int_val;
 
-		save_view_history(&lwin);
-		save_view_history(&rwin);
+		save_view_history(&lwin, NULL, NULL);
+		save_view_history(&rwin, NULL, NULL);
 	}
 	else
 	{
