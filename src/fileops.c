@@ -1748,6 +1748,8 @@ clone_file(FileView* view, const char *filename)
 	char undo_cmd[3 + PATH_MAX + 6 + 1];
 	char clone_name[PATH_MAX];
 	char *escaped, *escaped_clone;
+	int i;
+	size_t len;
 	
 	if(strcmp(filename, "./") == 0)
 		return;
@@ -1756,16 +1758,13 @@ clone_file(FileView* view, const char *filename)
 
 	snprintf(clone_name, sizeof(clone_name), "%s", filename);
 	chosp(clone_name);
-	strncat(clone_name, "_clone", sizeof(clone_name));
-	snprintf(do_cmd, sizeof(do_cmd), "%s/%s", view->curr_dir, filename);
-	if(access(clone_name, F_OK) == 0)
-	{
-		int i = 0, len = strlen(clone_name);
-		do
-			snprintf(clone_name + len, sizeof(clone_name) - len, "(%d)", ++i);
-		while(access(clone_name, F_OK) == 0);
-	}
+	i = 1;
+	len = strlen(clone_name);
+	do
+		snprintf(clone_name + len, sizeof(clone_name) - len, "(%d)", i++);
+	while(access(clone_name, F_OK) == 0);
 
+	snprintf(do_cmd, sizeof(do_cmd), "%s/%s", view->curr_dir, filename);
 	escaped = escape_filename(do_cmd, 0, 0);
 	chosp(escaped);
 	escaped_clone = escape_filename(clone_name, 0, 0);
