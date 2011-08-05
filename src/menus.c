@@ -1502,6 +1502,8 @@ show_find_menu(FileView *view, const char *args)
 	int x = 0;
 	char buf[256];
 	FILE *file;
+	char *files;
+	int menu, split;
 
 	static menu_info m;
 	m.top = 0;
@@ -1522,14 +1524,19 @@ show_find_menu(FileView *view, const char *args)
 	snprintf(buf, sizeof(buf), "find %s", args);
 	m.title = strdup(buf);
 
+	if(view->selected_files > 0)
+		files = expand_macros(view, "%f", NULL, &menu, &split);
+	else
+		files = strdup(".");
+
 	if(args[0] == '-')
-		snprintf(buf, sizeof(buf),
-				"find . -type d \\( ! -readable -o ! -executable \\) -prune -o "
-				"%s -print", m.args);
+		snprintf(buf, sizeof(buf), "find %s %s", files, m.args);
 	else
 		snprintf(buf, sizeof(buf),
-				"find . -type d \\( ! -readable -o ! -executable \\) -prune -o "
-				"-name %s -print", m.args);
+				"find %s -type d \\( ! -readable -o ! -executable \\) -prune -o "
+				"-name %s -print", files, m.args);
+	free(files);
+
 	file = popen(buf, "r");
 
 	if(file == NULL)
