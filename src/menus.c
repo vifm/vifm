@@ -1519,8 +1519,12 @@ show_find_menu(FileView *view, const char *pattern, const char *args)
 
 	getmaxyx(menu_win, m.win_rows, x);
 
-	snprintf(buf, sizeof(buf), "find . -name %s %s", m.args, args);
+	snprintf(buf, sizeof(buf), "find %s", pattern);
 	m.title = strdup(buf);
+
+	snprintf(buf, sizeof(buf),
+			"find . -type d \\( ! -readable -o ! -executable \\) -prune -o "
+			"-name %s %s -print", m.args, args);
 	file = popen(buf, "r");
 
 	if(file == NULL)

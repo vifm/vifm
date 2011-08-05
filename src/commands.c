@@ -1575,6 +1575,37 @@ line_pos(const char *begin, const char *end, char sep, int rquoting)
 	return 0;
 }
 
+static int
+is_whole_line_command(const char *cmd)
+{
+	if(*cmd == '!')
+		return 1;
+	else if(strncmp(cmd, "cm", 2) == 0)
+		return 1;
+	else if(strncmp(cmd, "nm", 2) == 0)
+		return 1;
+	else if(strncmp(cmd, "vm", 2) == 0)
+		return 1;
+	else if(strncmp(cmd, "vn", 2) == 0)
+		return 1;
+	else if(strncmp(cmd, "nn", 2) == 0)
+		return 1;
+	else if(strncmp(cmd, "no", 2) == 0)
+		return 1;
+	else if(strncmp(cmd, "cno", 3) == 0)
+		return 1;
+	else if(strncmp(cmd, "map", 3) == 0)
+		return 1;
+	else if(strncmp(cmd, "com", 3) == 0)
+		return 1;
+	else if(strncmp(cmd, "filet", 5) == 0)
+		return 1;
+	else if(strncmp(cmd, "filev", 5) == 0)
+		return 1;
+	else
+		return 0;
+}
+
 int
 exec_commands(char *cmd, FileView *view, int save_hist)
 {
@@ -1609,8 +1640,7 @@ exec_commands(char *cmd, FileView *view, int save_hist)
 
 			while(*cmd == ' ' || *cmd == ':')
 				cmd++;
-			if(*cmd == '!' || strncmp(cmd, "com", 3) == 0 ||
-					strncmp(cmd, "filet", 5) == 0 || strncmp(cmd, "filev", 5) == 0)
+			if(is_whole_line_command(cmd))
 			{
 				save_msg += exec_command(cmd, view, GET_COMMAND);
 				break;

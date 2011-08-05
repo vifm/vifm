@@ -43,7 +43,7 @@ if !exists(':DiffVifm')
 	command DiffVifm :call s:StartVifm('vert diffsplit')
 endif
 if !exists(":TabVifm")
-	command TabVifm :call s:StartVifm('tab drop')
+	command TabVifm :call s:StartVifm('tablast | tab drop')
 endif
 
 function! s:StartVifm(editcmd)
@@ -62,9 +62,6 @@ function! s:StartVifm(editcmd)
 	" running.
 	let flist = readfile(fnamemodify('~/.vifm/vimfiles', ":p"))
 
-	" filenames are relative to current directory
-	call map( flist, 'fnamemodify( v:val, ":." )' )
-
 	call map( flist, 'fnameescape( v:val )')
 
 	" User exits vifm without selecting a file.
@@ -73,19 +70,15 @@ function! s:StartVifm(editcmd)
 		return
 	endif
 
-	if len(flist) == 1
-		execute a:editcmd flist[0]
-		return
-	endif
-
 	if a:editcmd == 'edit'
+		call map( flist, 'fnamemodify( v:val, ':.' )' )
 		execute 'args' join(flist)
 	else
 		for file in flist
+			let file = fnamemodify( file, ':.' )
 			execute a:editcmd file
 		endfor
+		" go to first file
+		execute 'drop' flist[0]
 	endif
-
-	" go to first file
-	execute "drop" flist[0]
 endfunction
