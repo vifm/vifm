@@ -7,7 +7,6 @@ Basic things that need to be done.
 	Think about good key for creating links (like pl in ranger, al, rl).
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
         :chown commands.
-    Implement :find command.
     Make l key handle selection.
     %something for absolute filenames.
     Skip all directories in history that don't exist.

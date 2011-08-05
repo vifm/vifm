@@ -353,6 +353,8 @@ Add ' &' in the end of command if you want to start program in background.
     See |Filters|
 :filter! - same as :invert.
 :filter? - show current filter value.
+:fin[d] pattern [find_arg...] - will shod results of find command in the
+    menu.
 :h[elp] - show the help file.
 :h[elp] argument - is the same as using ':h argument' in vim.
 :his[tory] - show directory history.
@@ -784,7 +786,6 @@ commands.
   chown
   clone
   co[py]
-  fin[d]
   g[lobal]
   m[ove]
   rlink

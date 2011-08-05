@@ -56,6 +56,7 @@ enum {
 	COMMAND,
 	DIRSTACK,
 	FILETYPE,
+	FIND,
 	HISTORY,
 	JOBS,
 	LOCATE,
@@ -560,14 +561,12 @@ execute_apropos_cb(menu_info *m)
 				man_page);
 
 		shellout(command, 0);
-		free(free_this);
 	}
-	else
-		free(free_this);
+	free(free_this);
 }
 
 static void
-execute_locate_cb(FileView *view, menu_info *m)
+goto_selected_file(FileView *view, menu_info *m)
 {
 	char *dir = NULL;
 	char *file = NULL;
@@ -666,8 +665,9 @@ execute_menu_cb(FileView *view, menu_info *m)
 		case JOBS:
 			execute_jobs_cb(view, m);
 			break;
+		case FIND:
 		case LOCATE:
-			execute_locate_cb(view, m);
+			goto_selected_file(view, m);
 			break;
 		case VIFM:
 			break;
@@ -823,7 +823,7 @@ show_apropos_menu(FileView *view, char *args)
 	if(!file)
 	{
 		show_error_msg("Trouble opening a file", "Unable to open file");
-		return ;
+		return;
 	}
 	x = 0;
 
@@ -1434,7 +1434,7 @@ show_cmdhistory_menu(FileView *view)
 }
 
 int
-show_locate_menu(FileView *view, char *args)
+show_locate_menu(FileView *view, const char *args)
 {
 	int x = 0;
 	char buf[256];
@@ -1446,12 +1446,12 @@ show_locate_menu(FileView *view, char *args)
 	m.len = 0;
 	m.pos = 0;
 	m.win_rows = 0;
-	m.type = LOCATE;
+	m.type = FIND;
 	m.matching_entries = 0;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
-	m.args = escape_filename(args, 0, 0);
+	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0, 0);
 	m.data = NULL;
 
 	getmaxyx(menu_win, m.win_rows, x);
@@ -1486,6 +1486,69 @@ show_locate_menu(FileView *view, char *args)
 	{
 		reset_popup_menu(&m);
 		status_bar_messagef("No files found matching \"%s\"", args);
+		return 1;
+	}
+
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(m.pos, &m);
+	enter_menu_mode(&m, view);
+	return 0;
+}
+
+int
+show_find_menu(FileView *view, const char *pattern, const char *args)
+{
+	int x = 0;
+	char buf[256];
+	FILE *file;
+
+	static menu_info m;
+	m.top = 0;
+	m.current = 1;
+	m.len = 0;
+	m.pos = 0;
+	m.win_rows = 0;
+	m.type = LOCATE;
+	m.matching_entries = 0;
+	m.match_dir = NONE;
+	m.regexp = NULL;
+	m.title = NULL;
+	m.args = escape_filename(pattern, 0, 0);
+	m.data = NULL;
+
+	getmaxyx(menu_win, m.win_rows, x);
+
+	snprintf(buf, sizeof(buf), "find . -name %s %s", m.args, args);
+	m.title = strdup(buf);
+	file = popen(buf, "r");
+
+	if(file == NULL)
+	{
+		show_error_msg("Trouble opening a file", "Unable to open file");
+		return 0;
+	}
+	x = 0;
+
+	curr_stats.search = 1;
+
+	while(fgets(buf, sizeof(buf), file))
+	{
+		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
+		m.data[x] = (char *)malloc(sizeof(buf) + 2);
+		snprintf(m.data[x], sizeof(buf), "%s", buf);
+
+		x++;
+	}
+
+	pclose(file);
+	m.len = x;
+	curr_stats.search = 0;
+
+	if(m.len < 1)
+	{
+		reset_popup_menu(&m);
+		status_bar_messagef("No files found matching \"%s\"", pattern);
 		return 1;
 	}
 
