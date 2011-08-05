@@ -41,7 +41,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "invert",     .abbr = NULL,  .handler = invert_cmd,     .id = -1,    .range = 0,    .cust_sep = 0,
 		.emark = 0,           .qmark = 1,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 0,       .bg = 0,     },
 	{ .name = "substitute", .abbr = "s",   .handler = substitute_cmd, .id = -1,    .range = 0,    .cust_sep = 1,
-		.emark = 0,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 3,       .bg = 0,     },
+		.emark = 1,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 3,       .bg = 0,     },
 	{ .name = "quit",       .abbr = "q",   .handler = quit_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,
 		.emark = 1,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 0,       .bg = 0,     },
 };
@@ -359,6 +359,28 @@ test_custom_separator_and_arg_format(void)
 }
 
 static void
+test_custom_separator_and_emark(void)
+{
+	assert_int_equal(0, execute_cmd("s!"));
+	assert_int_equal(0, cmdi.argc);
+	assert_true(cmdi.emark);
+
+	assert_int_equal(0, execute_cmd("s!/some"));
+	assert_int_equal(1, cmdi.argc);
+	assert_true(cmdi.emark);
+
+	assert_int_equal(0, execute_cmd("s!/some/thing"));
+	assert_int_equal(2, cmdi.argc);
+	assert_true(cmdi.emark);
+
+	assert_int_equal(0, execute_cmd("s!/some/thing/g"));
+	assert_int_equal(3, cmdi.argc);
+	assert_true(cmdi.emark);
+
+	assert_int_equal(CMDS_ERR_TRAILING_CHARS, execute_cmd("s!/some/thing/g/j"));
+}
+
+static void
 test_regexp_flag(void)
 {
 	assert_int_equal(0, execute_cmd("e /te|xt/"));
@@ -478,6 +500,7 @@ input_tests(void)
 	run_test(test_end_characters);
 	run_test(test_custom_separator);
 	run_test(test_custom_separator_and_arg_format);
+	run_test(test_custom_separator_and_emark);
 	run_test(test_regexp_flag);
 	run_test(test_backgrounding);
 	run_test(test_no_args_after_qmark);

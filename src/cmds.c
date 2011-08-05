@@ -408,7 +408,7 @@ parse_tail(struct cmd_t *cur, const char *cmd, struct cmd_info *cmd_info)
 		cmd_info->qmark = 1;
 		cmd++;
 	}
-	else if(*cmd != '\0' && !isspace(*cmd))
+	if(*cmd != '\0' && !isspace(*cmd))
 	{
 		if(cur->cust_sep)
 			cmd_info->sep = *cmd;
