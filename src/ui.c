@@ -300,19 +300,19 @@ setup_ncurses_interface(void)
 	wbkgdset(error_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	werase(error_win);
 
-	lborder = newwin(screen_y - 2, 1, 0, 0);
+	lborder = newwin(screen_y - 3, 1, 1, 0);
 
 	wbkgdset(lborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
 
 	werase(lborder);
 
 	if(curr_stats.number_of_windows == 1)
-		lwin.title = newwin(0, screen_x - 2, 0, 1);
+		lwin.title = newwin(1, screen_x - 2 + 3, 0, 0);
 	else
-		lwin.title = newwin(1, screen_x/2 - 2 + screen_x%2, 0, 1);
+		lwin.title = newwin(1, screen_x/2 - 2 + screen_x%2 + 3, 0, 0);
 
 	wattrset(lwin.title, A_BOLD);
-	wbkgdset(lwin.title, COLOR_PAIR(color_scheme + BORDER_COLOR));
+	wbkgdset(lwin.title, COLOR_PAIR(color_scheme + TOP_LINE_COLOR));
 
 	werase(lwin.title);
 
@@ -329,18 +329,19 @@ setup_ncurses_interface(void)
 	lwin.window_rows = y -1;
 	lwin.window_width = x -1;
 
-	mborder = newwin(screen_y, 2 - screen_x%2, 0, screen_x/2 - 1 + screen_x%2);
+	mborder = newwin(screen_y - 3, 2 - screen_x%2, 1,
+			screen_x/2 - 1 + screen_x%2);
 
 	wbkgdset(mborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
 
 	werase(mborder);
 
 	if(curr_stats.number_of_windows == 1)
-		rwin.title = newwin(0, screen_x - 2, 0, 1);
+		rwin.title = newwin(1, screen_x - 2, 0, 0);
 	else
 		rwin.title = newwin(1, screen_x/2 - 1 + screen_x%2, 0, screen_x/2 + 1);
 
-	wbkgdset(rwin.title, COLOR_PAIR(color_scheme + BORDER_COLOR));
+	wbkgdset(rwin.title, COLOR_PAIR(color_scheme + TOP_LINE_COLOR));
 	wattrset(rwin.title, A_BOLD);
 	wattroff(rwin.title, A_BOLD);
 
@@ -360,7 +361,7 @@ setup_ncurses_interface(void)
 	rwin.window_rows = y - 1;
 	rwin.window_width = x - 1;
 
-	rborder = newwin(screen_y - 2, 1, 0, screen_x -1);
+	rborder = newwin(screen_y - 3, 1, 1, screen_x - 1);
 
 	wbkgdset(rborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
 
@@ -393,6 +394,7 @@ setup_ncurses_interface(void)
 	wbkgdset(input_win, COLOR_PAIR(color_scheme + STATUS_BAR_COLOR));
 	werase(input_win);
 
+	wnoutrefresh(mborder);
 	wnoutrefresh(lwin.title);
 	wnoutrefresh(lwin.win);
 	wnoutrefresh(rwin.win);
@@ -401,7 +403,6 @@ setup_ncurses_interface(void)
 	wnoutrefresh(pos_win);
 	wnoutrefresh(input_win);
 	wnoutrefresh(lborder);
-	wnoutrefresh(mborder);
 	wnoutrefresh(rborder);
 	wnoutrefresh(status_bar);
 
@@ -440,6 +441,7 @@ resize_window(void)
 		finish("Terminal is too small to run vifm\n");
 
 	wclear(stdscr);
+	wclear(mborder);
 	wclear(lwin.title);
 	wclear(lwin.win);
 	wclear(rwin.title);
@@ -448,7 +450,6 @@ resize_window(void)
 	wclear(pos_win);
 	wclear(input_win);
 	wclear(rborder);
-	wclear(mborder);
 	wclear(lborder);
 	wclear(status_bar);
 
@@ -456,7 +457,7 @@ resize_window(void)
 	wresize(menu_win, screen_y - 1, screen_x);
 	wresize(error_win, (screen_y - 10)/2, screen_x - 2);
 	mvwin(error_win, (screen_y - 10)/2, 1);
-	wresize(lborder, screen_y - 2, 1);
+	wresize(lborder, screen_y - 3, 1);
 
 	if(curr_stats.number_of_windows == 1)
 	{
@@ -476,7 +477,7 @@ resize_window(void)
 	}
 	else
 	{
-		wresize(lwin.title, 1, screen_x/2 - 2 + screen_x%2);
+		wresize(lwin.title, 1, screen_x/2 - 2 + screen_x%2 + 3);
 		wresize(lwin.win, screen_y - 3, screen_x/2 - 2 + screen_x%2);
 		getmaxyx(lwin.win, y, x);
 		lwin.window_width = x - 1;
@@ -485,7 +486,7 @@ resize_window(void)
 		mvwin(mborder, 0, screen_x/2 - 1 + screen_x%2);
 		wresize(mborder, screen_y, 2 - screen_x%2);
 
-		wresize(rwin.title, 1, screen_x/2 - 2 + screen_x%2);
+		wresize(rwin.title, 1, screen_x/2 - 2 + screen_x%2 + 1);
 		mvwin(rwin.title, 0, screen_x/2 + 1);
 
 		wresize(rwin.win, screen_y - 3, screen_x/2 - 2 + screen_x%2);
@@ -495,8 +496,8 @@ resize_window(void)
 		rwin.window_rows = y - 1;
 	}
 
-	wresize(rborder, screen_y - 2, 1);
-	mvwin(rborder, 0, screen_x - 1);
+	wresize(rborder, screen_y - 3, 1);
+	mvwin(rborder, 1, screen_x - 1);
 
 	wresize(stat_win, 1, screen_x);
 	mvwin(stat_win, screen_y - 2, 0);
@@ -593,20 +594,34 @@ change_window(void)
 
 	if(curr_stats.number_of_windows != 1)
 	{
+		const char *path;
+
 		wattroff(other_view->title, A_BOLD);
 		wattroff(other_view->win,
 				COLOR_PAIR(other_view->color_scheme + CURR_LINE_COLOR) | A_BOLD);
 		mvwaddstr(other_view->win, other_view->curr_line, 0, "*");
 		erase_current_line_bar(other_view);
 		werase(other_view->title);
-		wprintw(other_view->title, "%s", replace_home_part(other_view->curr_dir));
+		path = replace_home_part(other_view->curr_dir);
+		if(other_view->window_width < strlen(path))
+		{
+			mvwaddstr(other_view->title, 0, 0, (other_view == &lwin) ? " " : "");
+			waddnstr(other_view->title, path, other_view->window_width - 3 + 1);
+			waddstr(other_view->title, "...");
+		}
+		else
+		{
+			wprintw(other_view->title, "%s%s", (other_view == &lwin) ? " " : "",
+					path);
+		}
+
 		wnoutrefresh(other_view->title);
 	}
 
 	if(curr_stats.view)
 	{
 		wbkgdset(curr_view->title,
-				COLOR_PAIR(BORDER_COLOR + curr_view->color_scheme));
+				COLOR_PAIR(TOP_LINE_COLOR + curr_view->color_scheme));
 		wbkgdset(curr_view->win,
 				COLOR_PAIR(WIN_COLOR + curr_view->color_scheme));
 		change_directory(other_view, other_view->curr_dir);
@@ -617,7 +632,8 @@ change_window(void)
 
 	wattron(curr_view->title, A_BOLD);
 	werase(curr_view->title);
-	wprintw(curr_view->title, "%s", replace_home_part(curr_view->curr_dir));
+	wprintw(curr_view->title, "%s%s", (curr_view == &lwin) ? " " : "",
+			replace_home_part(curr_view->curr_dir));
 	wnoutrefresh(curr_view->title);
 
 	wnoutrefresh(other_view->win);
@@ -790,7 +806,7 @@ load_color_scheme(const char *name)
 	werase(mborder);
 	wbkgdset(rborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
 	werase(rborder);
-	wbkgdset(stat_win, COLOR_PAIR(color_scheme + BORDER_COLOR));
+	wbkgdset(stat_win, COLOR_PAIR(color_scheme + STATUS_LINE_COLOR));
 
 	wbkgdset(menu_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	wbkgdset(sort_win, COLOR_PAIR(color_scheme + WIN_COLOR));

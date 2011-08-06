@@ -69,7 +69,6 @@ Other (questionable) things.
     Use mimetypes in FILETYPE.
     %i macro to prompt user for input.
     Maybe inotify support on Linux.
-    Add ... at the end of a title or always add it in the middle
     Command like ' but that executes bookmark ?
     Maybe we should add a command to view screen ?
     Completion for co and cg commands ?

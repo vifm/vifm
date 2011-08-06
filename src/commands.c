@@ -2554,7 +2554,7 @@ view_cmd(const struct cmd_info *cmd_info)
 		curr_stats.view = 0;
 
 		wbkgdset(other_view->title,
-				COLOR_PAIR(BORDER_COLOR + other_view->color_scheme));
+				COLOR_PAIR(TOP_LINE_COLOR + other_view->color_scheme));
 		wbkgdset(other_view->win,
 				COLOR_PAIR(WIN_COLOR + other_view->color_scheme));
 		change_directory(other_view, other_view->curr_dir);

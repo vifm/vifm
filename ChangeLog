@@ -48,6 +48,8 @@
 
 	Added broken link color to color schemes.
 
+	Added top line and status line colors to color schemes.
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,

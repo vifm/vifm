@@ -405,10 +405,7 @@ read_info_file(void)
 		}
 		else if(line[0] == 'c') /* default color scheme */
 		{
-			cfg.color_scheme_cur = find_color_scheme(line + 1);
-			if(cfg.color_scheme_cur < 0)
-				cfg.color_scheme_cur = 0;
-			cfg.color_scheme = 1 + MAXNUM_COLOR*cfg.color_scheme_cur;
+			load_color_scheme(line + 1);
 		}
 	}
 

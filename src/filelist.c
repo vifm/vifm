@@ -321,11 +321,12 @@ quick_view_file(FileView *view)
 	print_width = get_real_string_width(view->dir_entry[view->list_pos].name,
 			view->window_width - 6) + 6;
 
-	wbkgdset(other_view->title, COLOR_PAIR(BORDER_COLOR + view->color_scheme));
+	wbkgdset(other_view->title, COLOR_PAIR(TOP_LINE_COLOR + view->color_scheme));
 	wbkgdset(other_view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
 	wclear(other_view->win);
 	wclear(other_view->title);
-	mvwaddstr(other_view->title, 0, 0, "File: ");
+	mvwaddstr(other_view->title, 0, 0, (other_view == &lwin) ? " " : "");
+	waddstr(other_view->title, "File: ");
 	waddstr(other_view->title, view->dir_entry[view->list_pos].name);
 	wattron(other_view->win,  A_BOLD);
 	wattroff(other_view->win, A_BOLD);
@@ -530,10 +531,16 @@ update_view_title(FileView *view)
 			ptr += get_char_width(ptr);
 		}
 
-		wprintw(view->title, "...%s", ptr);
+		wprintw(view->title, "%s...%s", (view == &lwin) ? " " : "", ptr);
+	}
+	else if(curr_view != view)
+	{
+		mvwaddstr(view->title, 0, 0, (view == &lwin) ? " " : "");
+		waddnstr(view->title, buf, view->window_width - 3 + 1);
+		waddstr(view->title, "...");
 	}
 	else
-		wprintw(view->title, "%s", buf);
+		wprintw(view->title, "%s%s", (view == &lwin) ? " " : "", buf);
 
 	wnoutrefresh(view->title);
 }
@@ -553,14 +560,10 @@ draw_dir_list(FileView *view, int top)
 
 	color_scheme = check_directory_for_color_scheme(view->curr_dir);
 
-	/* TODO do we need this code?
-	wattrset(view->title, COLOR_PAIR(BORDER_COLOR + color_scheme));
-	wattron(view->title, COLOR_PAIR(BORDER_COLOR + color_scheme));
-	*/
 	if(view->color_scheme != color_scheme)
 	{
 		view->color_scheme = color_scheme;
-		wbkgdset(view->title, COLOR_PAIR(BORDER_COLOR + color_scheme));
+		wbkgdset(view->title, COLOR_PAIR(TOP_LINE_COLOR + color_scheme));
 		wbkgdset(view->win, COLOR_PAIR(WIN_COLOR + color_scheme));
 	}
 
@@ -1471,7 +1474,7 @@ load_dir_list(FileView *view, int reload)
 	view->dir_mtime = s.st_mtime;
 
 	if(!reload && s.st_size > 2048)
-		status_bar_message("Reading Directory...");
+		status_bar_message("Reading directory...");
 
 	update_all_windows();
 
@@ -1632,7 +1635,7 @@ load_dir_list(FileView *view, int reload)
 
 	if(!reload && s.st_size > 2048)
 	{
-		status_bar_message("Sorting Directory...");
+		status_bar_message("Sorting directory...");
 	}
 	set_view_to_sort(view);
 	qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
