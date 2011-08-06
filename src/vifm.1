@@ -557,10 +557,15 @@ same as :invert.
 show current filter value.
 .TP
 .BI ":fin[d] pattern"
-will show results of find command in the menu.
+will show results of find command in the menu.  Searches among selected files if
+any.
 .TP
 .BI ":fin[d] -opt..."
-same as :find above, but user defines all find arguments.
+same as :find above, but user defines all find arguments.  Searches among
+selected files if any.
+.TP
+.BI ":fin[d] path -opt..."
+same as :find above, but user defines all find arguments.  Ignores selection.
 .TP
 .BI :h[elp]
 show the help file.

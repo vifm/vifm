@@ -522,7 +522,7 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 			/* found another argument */
 			cmdstr[i] = '\0';
 			if(last_end != NULL)
-				*last_end = (state == ARG) ? i : i + 1;
+				*last_end = (state == ARG) ? i : (i + 1);
 
 			params[j] = strdup(&cmdstr[st]);
 			if(prev_state == NO_QUOTING)

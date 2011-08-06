@@ -1498,7 +1498,7 @@ show_locate_menu(FileView *view, const char *args)
 }
 
 int
-show_find_menu(FileView *view, const char *args)
+show_find_menu(FileView *view, int with_path, const char *args)
 {
 	int x = 0;
 	char buf[256];
@@ -1518,7 +1518,7 @@ show_find_menu(FileView *view, const char *args)
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
-	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0, 0);
+	m.args = NULL;
 	m.data = NULL;
 
 	getmaxyx(menu_win, m.win_rows, x);
@@ -1532,11 +1532,14 @@ show_find_menu(FileView *view, const char *args)
 		files = strdup(".");
 
 	if(args[0] == '-')
-		snprintf(buf, sizeof(buf), "find %s %s 2> /tmp/vifm.errors", files, m.args);
+		snprintf(buf, sizeof(buf), "find %s %s 2> /tmp/vifm.errors", files, args);
+	else if(with_path)
+		snprintf(buf, sizeof(buf), "find %s 2> /tmp/vifm.errors", args);
 	else
 		snprintf(buf, sizeof(buf),
 				"find %s -type d \\( ! -readable -o ! -executable \\) -prune -o "
-				"-name %s -print 2> /tmp/vifm.errors", files, m.args);
+				"-name %s -print 2> /tmp/vifm.errors", files,
+				escape_filename(args, 0, 0));
 	free(files);
 
 	file = popen(buf, "r");
