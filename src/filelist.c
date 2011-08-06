@@ -533,7 +533,7 @@ update_view_title(FileView *view)
 
 		wprintw(view->title, "%s...%s", (view == &lwin) ? " " : "", ptr);
 	}
-	else if(curr_view != view)
+	else if(len + 1 > view->window_width && curr_view != view)
 	{
 		mvwaddstr(view->title, 0, 0, (view == &lwin) ? " " : "");
 		waddnstr(view->title, buf, view->window_width - 3 + 1);

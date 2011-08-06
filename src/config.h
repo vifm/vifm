@@ -44,9 +44,7 @@ typedef struct _Config {
 	int history_len;
 	int nmapped_num;
 	int screen_num;
-	char **search_history;
-	int search_history_len;
-	int search_history_num;
+
 	int auto_execute;
 	int show_one_window;
 	long max_args;
@@ -54,6 +52,10 @@ typedef struct _Config {
 	int wrap_quick_view;
 	char *time_format;
 	char *fuse_home;
+
+	char **search_history;
+	int search_history_len;
+	int search_history_num;
 
 	char **cmd_history;
 	int cmd_history_len;

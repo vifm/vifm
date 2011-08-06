@@ -660,6 +660,8 @@ execute_menu_cb(FileView *view, menu_info *m)
 			break;
 		case HISTORY:
 			change_directory(view, m->data[m->pos]);
+			load_dir_list(view, 0);
+			moveto_list_pos(view, view->list_pos);
 			break;
 		case JOBS:
 			execute_jobs_cb(view, m);
