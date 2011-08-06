@@ -442,12 +442,13 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		endwin();
 	}
 
-	strcat(buf, " 2> /tmp/vifm.fuseerrors");
+	unlink("/tmp/vifm.errors");
+	strcat(buf, " 2> /tmp/vifm.errors");
 	int status = background_and_wait_for_status(buf);
 	/* check child status */
 	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
 	{
-		FILE *ef = fopen("/tmp/vifm.fuseerrors", "r");
+		FILE *ef = fopen("/tmp/vifm.errors", "r");
 		print_errors(ef);
 
 		werase(status_bar);

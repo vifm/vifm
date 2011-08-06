@@ -574,11 +574,12 @@ goto_selected_file(FileView *view, menu_info *m)
 	char *free_this = NULL;
 	int isdir = 0;
 
-	free_this = file = dir = strdup(m->data[m->pos]);
+	free_this = file = dir = malloc(strlen(m->data[m->pos]) + 1 + 1);
+	strcpy(dir, m->data[m->pos]);
 	chomp(file);
 
 	/* :locate -h will show help message */
-	if(!access(file, R_OK))
+	if(access(file, R_OK) == 0)
 	{
 		if(is_dir(file))
 			isdir = 1;
@@ -604,11 +605,8 @@ goto_selected_file(FileView *view, menu_info *m)
 
 			if(find_file_pos_in_list(view, file) < 0)
 				remove_filename_filter(view);
-
-			moveto_list_pos(view, find_file_pos_in_list(view, file));
 		}
-		else
-			moveto_list_pos(view, find_file_pos_in_list(view, file));
+		moveto_list_pos(view, find_file_pos_in_list(view, file));
 	}
 
 	free(free_this);
@@ -1531,15 +1529,19 @@ show_find_menu(FileView *view, int with_path, const char *args)
 	else
 		files = strdup(".");
 
+	unlink("/tmp/vifm.errors");
 	if(args[0] == '-')
 		snprintf(buf, sizeof(buf), "find %s %s 2> /tmp/vifm.errors", files, args);
 	else if(with_path)
 		snprintf(buf, sizeof(buf), "find %s 2> /tmp/vifm.errors", args);
 	else
+	{
+		char *escaped_args = escape_filename(args, 0, 0);
 		snprintf(buf, sizeof(buf),
 				"find %s -type d \\( ! -readable -o ! -executable \\) -prune -o "
-				"-name %s -print 2> /tmp/vifm.errors", files,
-				escape_filename(args, 0, 0));
+				"-name %s -print 2> /tmp/vifm.errors", files, escaped_args);
+		free(escaped_args);
+	}
 	free(files);
 
 	file = popen(buf, "r");
