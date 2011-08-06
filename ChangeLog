@@ -91,6 +91,8 @@
 
 	Made directory history persistent (when 'vifminfo' contains dhistory).
 
+	Made command line history persistent (when 'vifminfo' contains chistory).
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

@@ -35,7 +35,6 @@ Vi(m) specific features that need to be added.
     gs to work with t selection just like gv with visual mode selection.
     Add :mksession command and 'sessionoptions' option.
     Save active pane on exit (session and vifminfo).
-    Make command line history persistent (session and vifminfo).
     Make search history persistent (session and vifminfo).
     Make dirstack persistent (session and vifminfo).
     Save registers (session and vifminfo).

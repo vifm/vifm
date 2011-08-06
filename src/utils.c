@@ -640,6 +640,16 @@ add_to_string_array(char ***array, int len, int count, ...)
 	return len;
 }
 
+int
+is_in_string_array(char **array, size_t len, const char *key)
+{
+	int i;
+	for(i = 0; i < len; i++)
+		if(strcmp(array[i], key) == 0)
+			return 1;
+	return 0;
+}
+
 void
 free_string_array(char **array, size_t len)
 {

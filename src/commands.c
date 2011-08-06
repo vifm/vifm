@@ -845,7 +845,7 @@ save_search_history(char *pattern)
 		cfg.search_history_num = cfg.search_history_len - 1;
 }
 
-static void
+void
 save_command_history(const char *command)
 {
 	int x;

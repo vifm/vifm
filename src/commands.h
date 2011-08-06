@@ -42,6 +42,7 @@ char * expand_macros(FileView *view, const char *command, const char *args,
 void _gnuc_noreturn comm_quit(int write_info);
 void comm_only(void);
 void comm_split(void);
+void save_command_history(const char *command);
 
 #ifdef TEST
 char * append_selected_files(FileView *view, char *expanded, int under_cursor);
