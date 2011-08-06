@@ -55,4 +55,5 @@ from fork of wsdookadr (Petrea Stefan Corneliu):
 
 seatest is written by Keith Nicholas
 
-Patches for Vim plugin by Colin Cartade.
+Patches for Vim plugin and handling of errors from external applications
+without temporary files by Colin Cartade.

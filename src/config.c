@@ -311,14 +311,15 @@ read_info_file(void)
 		{
 			if(line[1] == '\0')
 			{
-				strcpy(lwin.curr_dir, lwin.history[lwin.history_pos].dir);
+				if(lwin.history_num > 0)
+					strcpy(lwin.curr_dir, lwin.history[lwin.history_pos].dir);
 				continue;
 			}
 			if(fgets(line2, sizeof(line2), fp) != line2)
 				continue;
 			prepare_line(line2);
 
-			if(lwin.history_num == cfg.history_len - 1)
+			if(lwin.history_num == cfg.history_len)
 			{
 				cfg.history_len++;
 				lwin.history = realloc(lwin.history, sizeof(history_t)*cfg.history_len);
@@ -333,14 +334,15 @@ read_info_file(void)
 		{
 			if(line[1] == '\0')
 			{
-				strcpy(rwin.curr_dir, rwin.history[rwin.history_pos].dir);
+				if(rwin.history_num > 0)
+					strcpy(rwin.curr_dir, rwin.history[rwin.history_pos].dir);
 				continue;
 			}
 			if(fgets(line2, sizeof(line2), fp) != line2)
 				continue;
 			prepare_line(line2);
 
-			if(lwin.history_num == cfg.history_len - 1)
+			if(rwin.history_num == cfg.history_len)
 			{
 				cfg.history_len++;
 				lwin.history = realloc(lwin.history, sizeof(history_t)*cfg.history_len);
@@ -502,7 +504,7 @@ write_info_file(void)
 					nfv = add_to_string_array(&fv, nfv, 2, line + 1, line2);
 				}
 			}
-			else if(line[0] == '!') /* command */
+			else if(line[0] == '!') /* user defined command */
 			{
 				if(line[1] == '\0')
 					continue;
@@ -540,6 +542,8 @@ write_info_file(void)
 			}
 			else if(line[0] == 'D') /* right view directory history */
 			{
+				if(line[1] == '\0')
+					continue;
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
 					if(rwin.history_pos + nrh/2 == cfg.history_len - 1)
