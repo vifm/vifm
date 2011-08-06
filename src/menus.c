@@ -1504,6 +1504,7 @@ show_find_menu(FileView *view, const char *args)
 	FILE *file;
 	char *files;
 	int menu, split;
+	int were_errors;
 
 	static menu_info m;
 	m.top = 0;
@@ -1530,11 +1531,11 @@ show_find_menu(FileView *view, const char *args)
 		files = strdup(".");
 
 	if(args[0] == '-')
-		snprintf(buf, sizeof(buf), "find %s %s", files, m.args);
+		snprintf(buf, sizeof(buf), "find %s %s 2> /tmp/vifm.errors", files, m.args);
 	else
 		snprintf(buf, sizeof(buf),
 				"find %s -type d \\( ! -readable -o ! -executable \\) -prune -o "
-				"-name %s -print", files, m.args);
+				"-name %s -print 2> /tmp/vifm.errors", files, m.args);
 	free(files);
 
 	file = popen(buf, "r");
@@ -1561,11 +1562,14 @@ show_find_menu(FileView *view, const char *args)
 	m.len = x;
 	curr_stats.search = 0;
 
+	were_errors = print_errors(fopen("/tmp/vifm.errors", "r"));
+
 	if(m.len < 1)
 	{
 		reset_popup_menu(&m);
-		status_bar_message("No files found");
-		return 1;
+		if(!were_errors)
+			status_bar_message("No files found");
+		return !were_errors;
 	}
 
 	setup_menu();
