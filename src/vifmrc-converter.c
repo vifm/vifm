@@ -15,6 +15,7 @@ enum {
 	VIFMINFO_DHISTORY  = 1 << 5,
 	VIFMINFO_STATE     = 1 << 6,
 	VIFMINFO_CS        = 1 << 7,
+	VIFMINFO_SAVEDIRS  = 1 << 8,
 };
 
 int vifminfo = 0x1ff;
@@ -267,9 +268,15 @@ read_config_file(const char *config_file)
 			if(!strcmp(line, "SAVE_LOCATION"))
 			{
 				if(!atoi(s1))
+				{
 					vifminfo &= ~VIFMINFO_DHISTORY;
+					vifminfo &= ~VIFMINFO_SAVEDIRS;
+				}
 				else
+				{
 					vifminfo |= VIFMINFO_DHISTORY;
+					vifminfo |= VIFMINFO_SAVEDIRS;
+				}
 				continue;
 			}
 			if(!strcmp(line, "LWIN_PATH"))
@@ -733,12 +740,12 @@ append_vifminfo_option(const char *config_file, int vifm_like)
 	fputs("\n\" What should be saved automatically between vifm runs\n", fp);
 	fputs("\" Like in previous versions of vifm\n", fp);
 	if(vifminfo & VIFMINFO_DHISTORY)
-		fprintf(fp, "%sset vifminfo=options,filetypes,commands,bookmarks,dhistory,state,cs\n", vifm_like ? "" : "\" ");
+		fprintf(fp, "%sset vifminfo=options,filetypes,commands,bookmarks,dhistory,savedirs,state,cs\n", vifm_like ? "" : "\" ");
 	else
 		fprintf(fp, "%sset vifminfo=options,filetypes,commands,bookmarks,state,cs\n", vifm_like ? "" : "\" ");
 	fputs("\" Like in vi\n", fp);
 	if(vifminfo & VIFMINFO_DHISTORY)
-		fprintf(fp, "%sset vifminfo=bookmarks,dhistory\n", !vifm_like ? "" : "\" ");
+		fprintf(fp, "%sset vifminfo=bookmarks,dhistory,savedirs\n", !vifm_like ? "" : "\" ");
 	else
 		fprintf(fp, "%sset vifminfo=bookmarks\n", !vifm_like ? "" : "\" ");
 
@@ -825,9 +832,13 @@ write_vifminfo(const char *config_file, int vifm_like)
 	{
 		fputs("\n# Left window history (oldest to newest):\n", fp);
 		fprintf(fp, "d%s\n", (lwin_dir == NULL) ? "" : lwin_dir);
+		if(vifminfo & VIFMINFO_SAVEDIRS)
+			fprintf(fp, "d\n");
 
 		fputs("\n# Right window history (oldest to newest):\n", fp);
 		fprintf(fp, "D%s\n", (rwin_dir == NULL) ? "" : rwin_dir);
+		if(vifminfo & VIFMINFO_SAVEDIRS)
+			fprintf(fp, "D\n");
 	}
 
 	if(vifminfo & VIFMINFO_STATE)

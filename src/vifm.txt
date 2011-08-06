@@ -629,6 +629,7 @@ Controls what will be saved in the ~/.vifm/vifminfo file.
    dhistory  - directory history
    state     - filters and screen program using state
    cs        - default color scheme
+   savedirs  - save last visited directory (needs dhistory)
 
 vimhelp
 type: boolean

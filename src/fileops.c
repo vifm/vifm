@@ -442,7 +442,6 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		endwin();
 	}
 
-	unlink("/tmp/vifm.errors");
 	strcat(buf, " 2> /tmp/vifm.errors");
 	int status = background_and_wait_for_status(buf);
 	/* check child status */

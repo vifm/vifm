@@ -1529,7 +1529,6 @@ show_find_menu(FileView *view, int with_path, const char *args)
 	else
 		files = strdup(".");
 
-	unlink("/tmp/vifm.errors");
 	if(args[0] == '-')
 		snprintf(buf, sizeof(buf), "find %s %s 2> /tmp/vifm.errors", files, args);
 	else if(with_path)

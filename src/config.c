@@ -309,6 +309,11 @@ read_info_file(void)
 		}
 		else if(line[0] == 'd') /* left pane history */
 		{
+			if(line[1] == '\0')
+			{
+				strcpy(lwin.curr_dir, lwin.history[lwin.history_pos].dir);
+				continue;
+			}
 			if(fgets(line2, sizeof(line2), fp) != line2)
 				continue;
 			prepare_line(line2);
@@ -323,10 +328,14 @@ read_info_file(void)
 			lwin.list_rows = 1;
 			save_view_history(&lwin, line + 1, line2);
 			lwin.list_rows = 0;
-			strcpy(lwin.curr_dir, line + 1);
 		}
 		else if(line[0] == 'D') /* right pane history */
 		{
+			if(line[1] == '\0')
+			{
+				strcpy(rwin.curr_dir, rwin.history[rwin.history_pos].dir);
+				continue;
+			}
 			if(fgets(line2, sizeof(line2), fp) != line2)
 				continue;
 			prepare_line(line2);
@@ -341,7 +350,6 @@ read_info_file(void)
 			rwin.list_rows = 1;
 			save_view_history(&rwin, line + 1, line2);
 			rwin.list_rows = 0;
-			strcpy(rwin.curr_dir, line + 1);
 		}
 		else if(line[0] == 'f') /* left pane filter */
 		{
@@ -491,6 +499,8 @@ write_info_file(void)
 			}
 			else if(line[0] == '!') /* command */
 			{
+				if(line[1] == '\0')
+					continue;
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
 					char *p = line + 1;
@@ -511,6 +521,8 @@ write_info_file(void)
 			}
 			else if(line[0] == 'd') /* left view directory history */
 			{
+				if(line[1] == '\0')
+					continue;
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
 					if(lwin.history_pos + nlh/2 == cfg.history_len - 1)
@@ -674,6 +686,8 @@ write_info_file(void)
 			fprintf(fp, "d%s\n\t%s\n", lh[i], lh[i + 1]);
 		for(i = 0; i <= lwin.history_pos; i++)
 			fprintf(fp, "d%s\n\t%s\n", lwin.history[i].dir, lwin.history[i].file);
+		if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
+			fprintf(fp, "d\n");
 
 		save_view_history(&rwin, NULL, NULL);
 		fputs("\n# Right window history (oldest to newest):\n", fp);
@@ -681,6 +695,8 @@ write_info_file(void)
 			fprintf(fp, "D%s\n\t%s\n", rh[i], rh[i + 1]);
 		for(i = 0; i <= rwin.history_pos; i++)
 			fprintf(fp, "D%s\n\t%s\n", rwin.history[i].dir, rwin.history[i].file);
+		if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
+			fprintf(fp, "D\n");
 	}
 
 	if(cfg.vifm_info & VIFMINFO_STATE)
