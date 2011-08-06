@@ -289,6 +289,19 @@ read_info_file(void)
 				}
 			}
 		}
+		else if(line[0] == 'a') /* active view */
+		{
+			if(line[1] == 'r')
+			{
+				curr_view = &rwin;
+				other_view = &lwin;
+			}
+		}
+		else if(line[0] == 'q') /* state of quick view */
+		{
+			int i = atoi(line + 1);
+			curr_stats.view = (i == 1);
+		}
 		else if(line[0] == 'v') /* number of windows */
 		{
 			int i = atoi(line + 1);
@@ -624,6 +637,8 @@ write_info_file(void)
 			fprintf(fp, ",state");
 		if(cfg.vifm_info & VIFMINFO_CS)
 			fprintf(fp, ",cs");
+		if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
+			fprintf(fp, ",savedirs");
 		fprintf(fp, "\n");
 
 		fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");
@@ -689,6 +704,8 @@ write_info_file(void)
 	if(cfg.vifm_info & VIFMINFO_TUI)
 	{
 		fputs("\n# TUI:\n", fp);
+		fprintf(fp, "a%c\n", (curr_view == &rwin) ? 'r' : 'l');
+		fprintf(fp, "q%d\n", curr_stats.view);
 		fprintf(fp, "v%d\n", curr_stats.number_of_windows);
 		fprintf(fp, "l%s%d\n", lwin.sort_descending ? "-" : "", lwin.sort_type + 1);
 		fprintf(fp, "r%s%d\n", rwin.sort_descending ? "-" : "", rwin.sort_type + 1);
