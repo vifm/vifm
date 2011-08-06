@@ -48,6 +48,7 @@ static const int default_colors[][2] = {
 	{2, 0}, /* EXECUTABLE_COLOR */
 	{5, 0}, /* SELECTED_COLOR */
 	{4, 0}, /* CURRENT_COLOR */
+	{1, 0}, /* BROKEN_LINK_COLOR */
 };
 
 static int _gnuc_unused default_colors_size_guard[
@@ -131,6 +132,7 @@ write_color_scheme_file(void)
 				"EXECUTABLE",
 				"SELECTED",
 				"CURRENT",
+				"BROKEN_LINK",
 			};
 			static const char *COLOR_STR[] = {
 				"default",
@@ -254,6 +256,8 @@ add_color(char s1[], char s2[], char s3[])
 		y = SELECTED_COLOR;
 	else if(!strcmp(s1, "CURRENT"))
 		y = CURRENT_COLOR;
+	else if(!strcmp(s1, "BROKEN_LINK"))
+		y = BROKEN_LINK_COLOR;
 	else
 		return;
 

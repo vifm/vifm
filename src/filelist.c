@@ -610,7 +610,10 @@ draw_dir_list(FileView *view, int top)
 					LINE_COLOR = DIRECTORY_COLOR + color_scheme;
 					break;
 				case LINK:
-					LINE_COLOR = LINK_COLOR + color_scheme;
+					if(access(view->dir_entry[x].name, F_OK) == 0)
+						LINE_COLOR = LINK_COLOR + color_scheme;
+					else
+						LINE_COLOR = BROKEN_LINK_COLOR + color_scheme;
 					break;
 				case SOCKET:
 					LINE_COLOR = SOCKET_COLOR + color_scheme;
@@ -699,7 +702,10 @@ erase_current_line_bar(FileView *view)
 				LINE_COLOR = DIRECTORY_COLOR + view->color_scheme;
 				break;
 			case LINK:
-				LINE_COLOR = LINK_COLOR + view->color_scheme;
+				if(access(view->dir_entry[old_pos].name, F_OK) == 0)
+					LINE_COLOR = LINK_COLOR + view->color_scheme;
+				else
+					LINE_COLOR = BROKEN_LINK_COLOR + view->color_scheme;
 				break;
 			case SOCKET:
 				LINE_COLOR = SOCKET_COLOR + view->color_scheme;
@@ -812,13 +818,17 @@ moveto_list_pos(FileView *view, int pos)
 
 	if(cfg.invert_cur_line)
 	{
+		/* TODO: move tree switches like this one to a function */
 		switch(view->dir_entry[pos].type)
 		{
 			case DIRECTORY:
 				LINE_COLOR = DIRECTORY_COLOR + view->color_scheme;
 				break;
 			case LINK:
-				LINE_COLOR = LINK_COLOR + view->color_scheme;
+				if(access(view->dir_entry[pos].name, F_OK) == 0)
+					LINE_COLOR = LINK_COLOR + view->color_scheme;
+				else
+					LINE_COLOR = BROKEN_LINK_COLOR + view->color_scheme;
 				break;
 			case SOCKET:
 				LINE_COLOR = SOCKET_COLOR + view->color_scheme;

@@ -30,11 +30,9 @@ Vi(m) specific features that need to be added.
 		the dot filter and regular expression filter (what does this mean?).
 	Add :s/pattern/replace/ command.
     Add one more color to color scheme for error messages in status bar.
-    Add one more color to color scheme for broken links.
     Some kind of selection mode (multible blocks, mixing).
     gs to work with t selection just like gv with visual mode selection.
     Add :mksession command and 'sessionoptions' option.
-    Save active pane on exit (session and vifminfo).
     Make search history persistent (session and vifminfo).
     Make dirstack persistent (session and vifminfo).
     Save registers (session and vifminfo).
