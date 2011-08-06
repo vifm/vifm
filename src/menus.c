@@ -1432,12 +1432,57 @@ show_cmdhistory_menu(FileView *view)
 	return 0;
 }
 
+static int
+capture_output_to_menu(FileView *view, char *cmd, menu_info *m)
+{
+	FILE *file, *err;
+	char buf[256];
+	int x;
+	int were_errors;
+
+	if(background_and_capture(cmd, &file, &err) != 0)
+	{
+		show_error_msg("Trouble running command", "Unable to run command");
+		return 0;
+	}
+
+	curr_stats.search = 1;
+
+	x = 0;
+	while(fgets(buf, sizeof(buf), file) == buf)
+	{
+		m->data = (char **)realloc(m->data, sizeof(char *) * (x + 1));
+		m->data[x] = (char *)malloc(sizeof(buf) + 2);
+		snprintf(m->data[x], sizeof(buf) + 2, "%s", buf);
+
+		x++;
+	}
+
+	pclose(file);
+	m->len = x;
+	curr_stats.search = 0;
+
+	were_errors = print_errors(err);
+
+	if(m->len < 1)
+	{
+		reset_popup_menu(m);
+		return were_errors;
+	}
+
+	setup_menu();
+	draw_menu(m);
+	moveto_menu_pos(m->pos, m);
+	enter_menu_mode(m, view);
+	return 0;
+}
+
 int
 show_locate_menu(FileView *view, const char *args)
 {
 	int x = 0;
 	char buf[256];
-	FILE *file;
+	int were_errors;
 
 	static menu_info m;
 	m.top = 0;
@@ -1457,41 +1502,13 @@ show_locate_menu(FileView *view, const char *args)
 
 	snprintf(buf, sizeof(buf), "locate %s", m.args);
 	m.title = strdup(buf);
-	file = popen(buf, "r");
 
-	if(file == NULL)
+	were_errors = capture_output_to_menu(view, buf, &m);
+	if(!were_errors && m.len < 1)
 	{
-		show_error_msg("Trouble opening a file", "Unable to open file");
-		return 0;
-	}
-	x = 0;
-
-	curr_stats.search = 1;
-
-	while(fgets(buf, sizeof(buf), file))
-	{
-		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
-		m.data[x] = (char *)malloc(sizeof(buf) + 2);
-		snprintf(m.data[x], sizeof(buf), "%s", buf);
-
-		x++;
-	}
-
-	pclose(file);
-	m.len = x;
-	curr_stats.search = 0;
-
-	if(m.len < 1)
-	{
-		reset_popup_menu(&m);
-		status_bar_messagef("No files found matching \"%s\"", args);
+		status_bar_message("No files found");
 		return 1;
 	}
-
-	setup_menu();
-	draw_menu(&m);
-	moveto_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
 	return 0;
 }
 
@@ -1500,7 +1517,6 @@ show_find_menu(FileView *view, int with_path, const char *args)
 {
 	int x = 0;
 	char buf[256];
-	FILE *file;
 	char *files;
 	int menu, split;
 	int were_errors;
@@ -1530,57 +1546,25 @@ show_find_menu(FileView *view, int with_path, const char *args)
 		files = strdup(".");
 
 	if(args[0] == '-')
-		snprintf(buf, sizeof(buf), "find %s %s 2> /tmp/vifm.errors", files, args);
+		snprintf(buf, sizeof(buf), "find %s %s", files, args);
 	else if(with_path)
-		snprintf(buf, sizeof(buf), "find %s 2> /tmp/vifm.errors", args);
+		snprintf(buf, sizeof(buf), "find %s", args);
 	else
 	{
 		char *escaped_args = escape_filename(args, 0, 0);
 		snprintf(buf, sizeof(buf),
 				"find %s -type d \\( ! -readable -o ! -executable \\) -prune -o "
-				"-name %s -print 2> /tmp/vifm.errors", files, escaped_args);
+				"-name %s -print", files, escaped_args);
 		free(escaped_args);
 	}
 	free(files);
 
-	file = popen(buf, "r");
-
-	if(file == NULL)
+	were_errors = capture_output_to_menu(view, buf, &m);
+	if(!were_errors && m.len < 1)
 	{
-		show_error_msg("Trouble opening a file", "Unable to open file");
-		return 0;
+		status_bar_message("No files found");
+		return 1;
 	}
-	x = 0;
-
-	curr_stats.search = 1;
-
-	while(fgets(buf, sizeof(buf), file) == buf)
-	{
-		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
-		m.data[x] = (char *)malloc(sizeof(buf) + 2);
-		snprintf(m.data[x], sizeof(buf), "%s", buf);
-
-		x++;
-	}
-
-	pclose(file);
-	m.len = x;
-	curr_stats.search = 0;
-
-	were_errors = print_errors(fopen("/tmp/vifm.errors", "r"));
-
-	if(m.len < 1)
-	{
-		reset_popup_menu(&m);
-		if(!were_errors)
-			status_bar_message("No files found");
-		return !were_errors;
-	}
-
-	setup_menu();
-	draw_menu(&m);
-	moveto_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
 	return 0;
 }
 

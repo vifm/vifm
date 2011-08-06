@@ -280,6 +280,64 @@ background_and_wait_for_errors(char *cmd)
 }
 
 int
+background_and_capture(char *cmd, FILE **out, FILE **err)
+{
+	pid_t pid;
+	int out_pipe[2];
+	int error_pipe[2];
+
+	if(pipe(out_pipe) != 0)
+	{
+		show_error_msg("File pipe error", "Error creating pipe");
+		return -1;
+	}
+
+	if(pipe(error_pipe) != 0)
+	{
+		show_error_msg("File pipe error", "Error creating pipe");
+		close(out_pipe[0]);
+		close(out_pipe[1]);
+		return -1;
+	}
+
+	if((pid = fork()) == -1)
+	{
+		close(out_pipe[0]);
+		close(out_pipe[1]);
+		close(error_pipe[0]);
+		close(error_pipe[1]);
+		return -1;
+	}
+
+	if(pid == 0)
+	{
+		char *args[4];
+
+		close(out_pipe[0]);
+		close(error_pipe[0]);
+		close(STDOUT_FILENO);
+		dup(out_pipe[1]);
+		close(STDERR_FILENO);
+		dup(error_pipe[1]);
+
+		args[0] = "/bin/sh";
+		args[1] = "-c";
+		args[2] = cmd;
+		args[3] = NULL;
+
+		execvp(args[0], args);
+		exit(-1);
+	}
+
+	close(out_pipe[1]);
+	close(error_pipe[1]);
+	*out = fdopen(out_pipe[0], "r");
+	*err = fdopen(error_pipe[0], "r");
+
+	return 0;
+}
+
+int
 start_background_job(const char *cmd)
 {
 	pid_t pid;
