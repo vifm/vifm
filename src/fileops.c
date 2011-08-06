@@ -321,6 +321,23 @@ cd_updir(FileView *view)
 	}
 }
 
+/* Returns pointer to a statically allocated buffer */
+static const char *
+make_name_unique(const char *filename)
+{
+	static char unique[PATH_MAX];
+	size_t len;
+	int i;
+
+	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, getppid(),
+			getpid());
+	i = 0;
+
+	while(access(unique, F_OK) == 0)
+		sprintf(unique + len - 2, "%d", ++i);
+	return unique;
+}
+
 /*
  * mount_point should be an array of at least PATH_MAX characters
  * Returns 0 on success.
@@ -341,6 +358,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	char *escaped_filename;
 	char *escaped_mount_point;
 	int clear_before_mount = 0;
+	const char *tmp_file;
 
 	escaped_filename = escape_filename(get_current_file_name(view), 0, 0);
 
@@ -442,13 +460,16 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		endwin();
 	}
 
-	strcat(buf, " 2> /tmp/vifm.errors");
+	tmp_file = make_name_unique("/tmp/vifm.errors");
+	strcat(buf, " 2> ");
+	strcat(buf, tmp_file);
 	int status = background_and_wait_for_status(buf);
 	/* check child status */
 	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
 	{
-		FILE *ef = fopen("/tmp/vifm.errors", "r");
+		FILE *ef = fopen(tmp_file, "r");
 		print_errors(ef);
+		unlink(tmp_file);
 
 		werase(status_bar);
 		/* remove the DIR we created for the mount */
@@ -458,6 +479,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		(void)chdir(view->curr_dir);
 		return -1;
 	}
+	unlink(tmp_file);
 	status_bar_message("FUSE mount success.");
 
 	fuse_item = (Fuse_List *)malloc(sizeof(Fuse_List));
@@ -1196,23 +1218,6 @@ check_rename_file(FileView *view, int *indexes, int count, FILE *f)
 	}
 
 	return list;
-}
-
-/* Returns pointer to a statically allocated buffer */
-static const char *
-make_name_unique(const char *filename)
-{
-	static char unique[PATH_MAX];
-	size_t len;
-	int i;
-
-	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, getppid(),
-			getpid());
-	i = 0;
-
-	while(access(unique, F_OK) == 0)
-		sprintf(unique + len - 2, "%d", ++i);
-	return unique;
 }
 
 /* Returns count of renamed files */
