@@ -948,11 +948,23 @@ save_view_history(FileView *view, const char *path, const char *file)
 	view->history_pos = view->history_num - 1;
 }
 
+int
+is_in_view_history(FileView *view, const char *path)
+{
+	int i;
+	for(i = view->history_pos; i >= 0; i--)
+	{
+		if(strlen(view->history[i].dir) < 1)
+			break;
+		if(strcmp(view->history[i].dir, path) == 0)
+			return 1;
+	}
+	return 0;
+}
+
 static void
 check_view_dir_history(FileView *view)
 {
-	int x = 0;
-	int found = 0;
 	int pos = 0;
 
 	if(curr_stats.is_updir)
@@ -961,6 +973,8 @@ check_view_dir_history(FileView *view)
 	}
 	else if(cfg.history_len > 0)
 	{
+		int x;
+		int found = 0;
 		for(x = view->history_pos; x >= 0; x--)
 		{
 			if(strlen(view->history[x].dir) < 1)

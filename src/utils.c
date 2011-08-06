@@ -617,6 +617,29 @@ check_link_is_dir(const char *filename)
 	return 0;
 }
 
+int
+add_to_string_array(char ***array, int len, int count, ...)
+{
+	char **p;
+	va_list va;
+
+	p = realloc(*array, sizeof(char *)*(len + count));
+	if(p == NULL)
+		return count;
+	*array = p;
+
+	va_start(va, count);
+	while(count-- > 0)
+	{
+		if((p[len] = strdup(va_arg(va, char *))) == NULL)
+			break;
+		len++;
+	}
+	va_end(va);
+
+	return len;
+}
+
 void
 free_string_array(char **array, size_t len)
 {

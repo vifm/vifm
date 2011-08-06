@@ -416,7 +416,8 @@ write_info_file(void)
 	char ** list;
 	int nlist = -1;
 	char **ft = NULL, **fx = NULL , **fv = NULL, **cmds = NULL, **marks = NULL;
-	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0;
+	char **lh = NULL, **rh = NULL;
+	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0, nlh = 0, nrh = 0;
 	int i;
 	int is_console;
 
@@ -451,10 +452,7 @@ write_info_file(void)
 						continue;
 					}
 					prepare_line(line2);
-					ft = realloc(ft, sizeof(char *)*(nft + 2));
-					ft[nft + 0] = strdup(line + 1);
-					ft[nft + 1] = strdup(line2);
-					nft += 2;
+					nft = add_to_string_array(&ft, nft, 2, line + 1, line2);
 				}
 			}
 			else if(line[0] == 'x') /* xfiletype */
@@ -478,10 +476,7 @@ write_info_file(void)
 						free(p);
 					}
 					prepare_line(line2);
-					fx = realloc(fx, sizeof(char *)*(nfx + 2));
-					fx[nfx + 0] = strdup(line + 1);
-					fx[nfx + 1] = strdup(line2);
-					nfx += 2;
+					nfx = add_to_string_array(&fx, nfx, 2, line + 1, line2);
 				}
 			}
 			else if(line[0] == ',') /* fileviewer */
@@ -491,10 +486,7 @@ write_info_file(void)
 					if(get_viewer_for_file(line + 1) != NULL)
 						continue;
 					prepare_line(line2);
-					fv = realloc(fv, sizeof(char *)*(nfv + 2));
-					fv[nfv + 0] = strdup(line + 1);
-					fv[nfv + 1] = strdup(line2);
-					nfv += 2;
+					nfv = add_to_string_array(&fv, nfv, 2, line + 1, line2);
 				}
 			}
 			else if(line[0] == '!') /* command */
@@ -514,10 +506,31 @@ write_info_file(void)
 					if(p == NULL)
 						continue;
 					prepare_line(line2);
-					cmds = realloc(cmds, sizeof(char *)*(ncmds + 2));
-					cmds[ncmds + 0] = strdup(line + 1);
-					cmds[ncmds + 1] = strdup(line2);
-					ncmds += 2;
+					ncmds = add_to_string_array(&cmds, ncmds, 2, line + 1, line2);
+				}
+			}
+			else if(line[0] == 'd') /* left view directory history */
+			{
+				if(fgets(line2, sizeof(line2), fp) == line2)
+				{
+					if(lwin.history_pos + nlh/2 == cfg.history_len - 1)
+						continue;
+					if(is_in_view_history(&lwin, line + 1))
+						continue;
+					prepare_line(line2);
+					nlh = add_to_string_array(&lh, nlh, 2, line + 1, line2);
+				}
+			}
+			else if(line[0] == 'D') /* right view directory history */
+			{
+				if(fgets(line2, sizeof(line2), fp) == line2)
+				{
+					if(rwin.history_pos + nrh/2 == cfg.history_len - 1)
+						continue;
+					if(is_in_view_history(&rwin, line + 1))
+						continue;
+					prepare_line(line2);
+					nrh = add_to_string_array(&rh, nrh, 2, line + 1, line2);
 				}
 			}
 			else if(line[0] == '\'') /* bookmark */
@@ -531,11 +544,8 @@ write_info_file(void)
 						if(is_bookmark(mark2index(line[1])))
 							continue;
 						prepare_line(line3);
-						marks = realloc(marks, sizeof(char *)*(nmarks + 3));
-						marks[nmarks + 0] = strdup(line + 1);
-						marks[nmarks + 1] = strdup(line2);
-						marks[nmarks + 2] = strdup(line3);
-						nmarks += 3;
+						nmarks = add_to_string_array(&marks, nmarks, 2, line + 1, line2,
+								line3);
 					}
 				}
 			}
@@ -660,11 +670,15 @@ write_info_file(void)
 	{
 		save_view_history(&lwin, NULL, NULL);
 		fputs("\n# Left window history (oldest to newest):\n", fp);
+		for(i = 0; i < nlh; i += 2)
+			fprintf(fp, "d%s\n\t%s\n", lh[i], lh[i + 1]);
 		for(i = 0; i <= lwin.history_pos; i++)
 			fprintf(fp, "d%s\n\t%s\n", lwin.history[i].dir, lwin.history[i].file);
 
 		save_view_history(&rwin, NULL, NULL);
 		fputs("\n# Right window history (oldest to newest):\n", fp);
+		for(i = 0; i < nrh; i += 2)
+			fprintf(fp, "D%s\n\t%s\n", rh[i], rh[i + 1]);
 		for(i = 0; i <= rwin.history_pos; i++)
 			fprintf(fp, "D%s\n\t%s\n", rwin.history[i].dir, rwin.history[i].file);
 	}
@@ -693,6 +707,8 @@ write_info_file(void)
 	free_string_array(cmds, ncmds);
 	free_string_array(marks, nmarks);
 	free_string_array(list, nlist);
+	free_string_array(lh, nlh);
+	free_string_array(rh, nrh);
 }
 
 void

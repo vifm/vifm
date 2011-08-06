@@ -474,6 +474,12 @@ Commands
        :filter?
               show current filter value.
 
+       :fin[d] pattern
+              will show results of find command in the menu.
+
+       :fin[d] -opt...
+              same as :find above, but user defines all find arguments.
+
        :h[elp]
               show the help file.
 
@@ -944,9 +950,9 @@ Configure
        by  hand  to  change the settings, but it's not recommended to do that,
        edit vifmrc instead.  You can control what settings will  be  saved  in
        vifminfo by setting ´vifminfo' option.  Vifm always writes this file on
-       exit unless 'vifminfo' option is empty.  Bookmarks, commands and  file‐
-       types  in the file are merged with vifm configuration (which has bigger
-       priority).
+       exit unless 'vifminfo' option is empty.  Bookmarks, commands, directory
+       history  and  filetypes  in the file are merged with vifm configuration
+       (which has bigger priority).
 
        The ~/.vifm/scripts directory can contain shell scripts.  vifm modifies
        it's  PATH  environment  variable to let user run those scripts without
@@ -987,7 +993,6 @@ Reserved
          chown
          clone
          co[py]
-         fin[d]
          g[lobal]
          m[ove]
          rlink

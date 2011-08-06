@@ -563,7 +563,7 @@ write_vifmrc(const char *config_file, int comment_out)
 	fprintf(fp, "\" This probably shouldn't be an option.\n");
 	fprintf(fp, "\n%sset %strash\n", comment, options.trash ? "" : "no");
 
-	fprintf(fp, "\n\" This is how many files to show in the directory history menu.\n");
+	fprintf(fp, "\n\" This is how many directories to store in the directory history.\n");
 	fprintf(fp, "\n%sset history=%d\n", comment, options.history);
 
 	fprintf(fp, "\n\" Follow links on l or Enter.\n");
