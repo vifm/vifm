@@ -20,7 +20,7 @@ set vicmd=vim
 
 set trash
 
-" This is how many files to show in the directory history menu.
+" This is how many directories to store in the directory history.
 
 set history=15
 

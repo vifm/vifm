@@ -141,7 +141,7 @@ redraw_error_msg(char *title_arg, const char *message_arg)
 	getmaxyx(error_win, y, x);
 
 	z = strlen(message);
-	if(z <= x - 2)
+	if(z <= x - 2 && strchr(message, '\n') == NULL)
 	{
 		y = 6;
 		wresize(error_win, y, x);
@@ -165,7 +165,8 @@ redraw_error_msg(char *title_arg, const char *message_arg)
 					break;
 
 			if(buf[j] != '\0')
-				buf[j] = '\0';
+				i++;
+			buf[j] = '\0';
 			i += j;
 
 			if(buf[0] == '\0')
@@ -1549,7 +1550,7 @@ show_find_menu(FileView *view, const char *args)
 
 	curr_stats.search = 1;
 
-	while(fgets(buf, sizeof(buf), file))
+	while(fgets(buf, sizeof(buf), file) == buf)
 	{
 		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
 		m.data[x] = (char *)malloc(sizeof(buf) + 2);
@@ -1913,6 +1914,9 @@ print_errors(FILE *ef)
 	char linebuf[160];
 	char buf[sizeof(linebuf)*5];
 	int error = 0;
+
+	if(ef == NULL)
+		return 0;
 
 	buf[0] = '\0';
 	while(fgets(linebuf, sizeof(linebuf), ef) == linebuf)

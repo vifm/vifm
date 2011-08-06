@@ -30,9 +30,7 @@
 typedef struct
 {
 	int need_redraw;
-	int is_updir;
 	int last_char;
-	char updir_file[NAME_MAX];
 	int is_console;
 	int search;
 	int save_msg;

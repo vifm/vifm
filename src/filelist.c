@@ -967,11 +967,7 @@ check_view_dir_history(FileView *view)
 {
 	int pos = 0;
 
-	if(curr_stats.is_updir)
-	{
-		pos = find_file_pos_in_list(view, curr_stats.updir_file);
-	}
-	else if(cfg.history_len > 0)
+	if(cfg.history_len > 0)
 	{
 		int x;
 		int found = 0;
@@ -1195,8 +1191,6 @@ change_directory(FileView *view, const char *directory)
 	struct stat s;
 	char newdir[PATH_MAX];
 	char dir_dup[PATH_MAX];
-
-	curr_stats.is_updir = 0;
 
 	save_view_history(view, NULL, NULL);
 
