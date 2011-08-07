@@ -224,7 +224,8 @@ get_all_programs_for_file(const char *file)
 		if(!matches_assoc(file, all_filetypes + x))
 			continue;
 		result = realloc(result, len + 1 + strlen(all_filetypes[x].com) + 1);
-		result[len++] = ',';
+		if(len > 0)
+			result[len++] = ',';
 		strcpy(result + len, all_filetypes[x].com);
 		len += strlen(result + len);
 	}
