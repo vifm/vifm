@@ -1312,7 +1312,6 @@ change_directory(FileView *view, const char *directory)
 	setenv("PWD", dir_dup, 1);
 
 	snprintf(view->curr_dir, PATH_MAX, "%s", dir_dup);
-	draw_dir_list(view, view->top_line);
 
 	if(dir != NULL)
 		closedir(dir);
