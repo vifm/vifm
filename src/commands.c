@@ -205,7 +205,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 1,
 		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "find",             .abbr = "fin",   .emark = 0,  .id = COM_FIND,        .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
-		.handler = find_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
+		.handler = find_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "help",             .abbr = "h",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = help_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "history",          .abbr = "his",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
@@ -215,7 +215,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "jobs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = jobs_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "locate",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = locate_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
+		.handler = locate_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "ls",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = ls_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "map",              .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2147,12 +2147,27 @@ filter_cmd(const struct cmd_info *cmd_info)
 static int
 find_cmd(const struct cmd_info *cmd_info)
 {
-	if(cmd_info->argc == 1)
-		return show_find_menu(curr_view, 0, cmd_info->args) != 0;
-	else if(is_dir(cmd_info->argv[0]))
-		return show_find_menu(curr_view, 1, cmd_info->args) != 0;
-	else
-		return show_find_menu(curr_view, 0, cmd_info->args) != 0;
+	static char *last_args;
+	static int last_dir;
+
+	if(cmd_info->argc > 0)
+	{
+		free(last_args);
+		if(cmd_info->argc == 1)
+			last_dir = 0;
+		else if(is_dir(cmd_info->argv[0]))
+			last_dir = 1;
+		else
+			last_dir = 0;
+		last_args = strdup(cmd_info->args);
+	}
+	else if(last_args == NULL)
+	{
+		status_bar_message("Nothing to repeat");
+		return 1;
+	}
+
+	return show_find_menu(curr_view, last_dir, last_args) != 0;
 }
 
 static int
@@ -2225,7 +2240,18 @@ jobs_cmd(const struct cmd_info *cmd_info)
 static int
 locate_cmd(const struct cmd_info *cmd_info)
 {
-	return show_locate_menu(curr_view, cmd_info->args) != 0;
+	static char *last_args;
+	if(cmd_info->argc > 0)
+	{
+		free(last_args);
+		last_args = strdup(cmd_info->args);
+	}
+	else if(last_args == NULL)
+	{
+		status_bar_message("Nothing to repeat");
+		return 1;
+	}
+	return show_locate_menu(curr_view, last_args) != 0;
 }
 
 static int

@@ -359,6 +359,7 @@ Add ' &' in the end of command if you want to start program in background.
     Searches among selected files if any.
 :fin[d] path -opt... - same as :find above, but user defines all find
     arguments.  Ignores selection.
+:fin[d] - repeats last :find command.
 :h[elp] - show the help file.
 :h[elp] argument - is the same as using ':h argument' in vim.
 :his[tory] - show directory history.
@@ -372,6 +373,7 @@ Add ' &' in the end of command if you want to start program in background.
 :locate filename - uses the locate command to create a menu of filenames
     Selecting a file from the menu will reload the current file list in vifm
     to show the selected file.
+:locate - repeats last :locate command.
 :[range]ma[rk] x /full/path [filename] - set mark x at /full/path and
     filename.  By default current directory is used.  If no filename was
     given and /full/path is current directory then last file in [range] is

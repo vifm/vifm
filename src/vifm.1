@@ -567,6 +567,9 @@ selected files if any.
 .BI ":fin[d] path -opt..."
 same as :find above, but user defines all find arguments.  Ignores selection.
 .TP
+.BI :fin[d]
+repeats last :find command.
+.TP
 .BI :h[elp]
 show the help file.
 .TP
@@ -596,6 +599,9 @@ shows menu of current backgrounded processes.
 uses the locate command to create a menu of filenames
 Selecting a file from the menu will reload the current file list in vifm
 to show the selected file.
+.TP
+.BI :locate
+repeats last :locate command.
 .TP
 .BI :[range]ma[rk] x [/full/path] [filename]
 Set mark x at /full/path and filename.  By default current directory is being

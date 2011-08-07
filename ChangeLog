@@ -99,6 +99,8 @@
 
 	Made search history persistent (when 'vifminfo' contains shistory).
 
+	Made :locate and :find without arguments repeat last search.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.
