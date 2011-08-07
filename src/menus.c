@@ -574,8 +574,12 @@ goto_selected_file(FileView *view, menu_info *m)
 	char *free_this = NULL;
 	int isdir = 0;
 
-	free_this = file = dir = malloc(strlen(m->data[m->pos]) + 1 + 1);
-	strcpy(dir, m->data[m->pos]);
+	free_this = file = dir = malloc(2 + strlen(m->data[m->pos]) + 1 + 1);
+	if(m->data[m->pos][0] != '/')
+		strcpy(dir, "./");
+	else
+		dir[0] = '\0';
+	strcat(dir, m->data[m->pos]);
 	chomp(file);
 
 	/* :locate -h will show help message */
@@ -584,10 +588,8 @@ goto_selected_file(FileView *view, menu_info *m)
 		if(is_dir(file))
 			isdir = 1;
 
-		if((file = strrchr(dir, '/')) == NULL)
-			file = dir;
-		else
-			*file++ = '\0';
+		file = strrchr(dir, '/');
+		*file++ = '\0';
 
 		change_directory(view, dir);
 
