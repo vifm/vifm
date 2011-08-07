@@ -384,7 +384,7 @@ main(int argc, char *argv[])
 	}
 	curr_stats.vifm_started = 2;
 
-	load_dir_list(&lwin, 0);
+	load_dir_list(&lwin, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
 	if(lwin_path[0] != '\0' && !is_dir(lwin_path))
 	{
 		int pos = find_file_pos_in_list(&lwin, strrchr(lwin_path, '/') + 1);
@@ -394,7 +394,7 @@ main(int argc, char *argv[])
 			handle_file(&lwin, 0, 0);
 		}
 	}
-	load_dir_list(&rwin, 0);
+	load_dir_list(&rwin, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
 	if(rwin_path[0] != '\0' && !is_dir(rwin_path))
 	{
 		int pos = find_file_pos_in_list(&rwin, strrchr(rwin_path, '/') + 1);
