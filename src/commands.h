@@ -44,10 +44,10 @@ void comm_only(void);
 void comm_split(void);
 void save_command_history(const char *command);
 void save_search_history(const char *pattern);
+char * edit_selection(FileView *view);
 
 #ifdef TEST
 char * append_selected_files(FileView *view, char *expanded, int under_cursor);
-char * edit_cmd_selection(FileView *view);
 int line_pos(const char *begin, const char *end, char sep, int regexp);
 void select_range(const struct cmd_info *cmd_info);
 #endif

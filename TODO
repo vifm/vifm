@@ -7,7 +7,6 @@ Basic things that need to be done.
 	Think about good key for creating links (like pl in ranger, al, rl).
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
         :chown commands.
-    Make l key handle selection.
     %something for absolute filenames.
     More states for permissions dialog (maybe 'f', 'd').
     Backgrounding of vicmd (& at the end).

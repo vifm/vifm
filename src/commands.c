@@ -1293,11 +1293,8 @@ fast_run_complete(char *cmd)
 	return buf;
 }
 
-#ifndef TEST
-static
-#endif
 char *
-edit_cmd_selection(FileView *view)
+edit_selection(FileView *view)
 {
 	int use_menu = 0;
 	int split = 0;
@@ -2047,7 +2044,7 @@ edit_cmd(const struct cmd_info *cmd_info)
 		if(cfg.vim_filter)
 			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
 
-		if((cmd = edit_cmd_selection(curr_view)) == NULL)
+		if((cmd = edit_selection(curr_view)) == NULL)
 		{
 			show_error_msg("Unable to allocate enough memory", "Cannot load file");
 			return 0;

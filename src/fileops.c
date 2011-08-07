@@ -576,20 +576,72 @@ fuse_try_mount(FileView *view, const char *program)
 static void
 execute_file(FileView *view, int dont_execute)
 {
-	char *program;
+	char *program = NULL;
+	int undef;
+	int same;
+	int i;
 
-	if(access(view->dir_entry[view->list_pos].name, F_OK) != 0)
+	if(!view->dir_entry[view->list_pos].selected)
+		clean_selected_files(view);
+
+	program = get_default_program_for_file(view->dir_entry[view->list_pos].name);
+	undef = 0;
+	same = 1;
+	for(i = 0; i < view->list_rows; i++)
 	{
-		show_error_msg("Broken Link", "Link destination doesn't exist");
+		char *prog;
+
+		if(!view->dir_entry[i].selected)
+			continue;
+
+		if(access(view->dir_entry[i].name, F_OK) != 0)
+		{
+			show_error_msgf("Broken Link", "Destination of \"%s\" link doesn't exist",
+					view->dir_entry[i].name);
+			free(program);
+			return;
+		}
+
+		prog = get_default_program_for_file(view->dir_entry[i].name);
+		if(prog != NULL)
+		{
+			if(program == NULL)
+				program = prog;
+			else
+			{
+				if(strcmp(prog, program) != 0)
+					same = 0;
+				free(prog);
+			}
+		}
+		else
+			undef++;
+	}
+
+	if(!same && undef == 0)
+	{
+		free(program);
+		show_error_msg("Selection error", "Files have different programs");
 		return;
+	}
+	if(undef > 0)
+	{
+		free(program);
+		program = NULL;
 	}
 
 	/* Check for a filetype */
 	/* vi is set as the default for any extension without a program */
-	if((program = get_default_program_for_file(
-			view->dir_entry[view->list_pos].name)) == NULL)
+	if(program == NULL)
 	{
-		view_file(get_current_file_name(view));
+		if(view->selected_files <= 1)
+			view_file(get_current_file_name(view));
+		else
+		{
+			program = edit_selection(view);
+			shellout(program, -1);
+			free(program);
+		}
 		return;
 	}
 
@@ -756,7 +808,29 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	filename = get_current_file_name(view);
 	type = view->dir_entry[view->list_pos].type;
 
-	if(type == DIRECTORY)
+	if(view->selected_files > 1)
+	{
+		int files = 0, dirs = 0;
+		int i;
+		for(i = 0; i < view->list_rows; i++)
+		{
+			int type = view->dir_entry[i].type;
+			if(!view->dir_entry[i].selected)
+				continue;
+			if(type == DIRECTORY || (type == LINK && is_dir(view->dir_entry[i].name)))
+				dirs++;
+			else
+				files++;
+		}
+		if(dirs > 0 && files > 0)
+		{
+			show_error_msg("Selection error",
+					"Selection cannot contain files and directories at the same time");
+			return;
+		}
+	}
+
+	if(type == DIRECTORY && view->selected_files == 0)
 	{
 		if(strcmp(filename, "../") == 0)
 		{
@@ -776,6 +850,8 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	run_link = !cfg.follow_links && type == LINK && !check_link_is_dir(filename);
 	if(run_link && force_follow)
 		run_link = 0;
+	if(view->selected_files > 0)
+		run_link = 1;
 
 	runnable = type == EXECUTABLE || (run_link && access(filename, X_OK) == 0);
 
@@ -785,7 +861,8 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 		snprintf(buf, sizeof(buf), "./%s", filename);
 		shellout(buf, 1);
 	}
-	else if(type == REGULAR || type == EXECUTABLE || run_link)
+	else if(type == REGULAR || type == EXECUTABLE || run_link ||
+			type == DIRECTORY)
 	{
 		execute_file(view, dont_execute);
 	}

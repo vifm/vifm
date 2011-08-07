@@ -101,6 +101,8 @@
 
 	Made :locate and :find without arguments repeat last search.
 
+	Changed the way l key handles selection.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.
