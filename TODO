@@ -33,7 +33,6 @@ Vi(m) specific features that need to be added.
     Some kind of selection mode (multible blocks, mixing).
     gs to work with t selection just like gv with visual mode selection.
     Add :mksession command and 'sessionoptions' option.
-    Make search history persistent (session and vifminfo).
     Make dirstack persistent (session and vifminfo).
     Save registers (session and vifminfo).
     :highlight command.
@@ -41,6 +40,8 @@ Vi(m) specific features that need to be added.
     :$ in the menus (check other commands like this one).
     d /, d ?
     :map without arguments
+    Should 'history' control search and cmdline history or there should be
+        other options?
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?

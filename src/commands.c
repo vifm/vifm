@@ -819,8 +819,8 @@ expand_tilde(char *path)
 	return result;
 }
 
-static void
-save_search_history(char *pattern)
+void
+save_search_history(const char *pattern)
 {
 	int x = 0;
 

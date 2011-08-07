@@ -854,6 +854,7 @@ Command macros
           cs        - default color scheme
           savedirs  - save last visited directory (needs dhistory)
           chistory  - command line history
+          shistory  - search history (/ and ? commands)
 
        vimhelp
               type: boolean
@@ -1018,4 +1019,4 @@ AUTHOR
 
 
 
-                                August 3, 2011                         vifm(1)
+                                August 7, 2011                         vifm(1)

@@ -370,6 +370,10 @@ read_info_file(void)
 		{
 			save_command_history(line + 1);
 		}
+		else if(line[0] == '/') /* search line history */
+		{
+			save_search_history(line + 1);
+		}
 		else if(line[0] == 'f') /* left pane filter */
 		{
 			lwin.filename_filter = (char *)realloc(lwin.filename_filter,
@@ -440,9 +444,9 @@ write_info_file(void)
 	char ** list;
 	int nlist = -1;
 	char **ft = NULL, **fx = NULL , **fv = NULL, **cmds = NULL, **marks = NULL;
-	char **lh = NULL, **rh = NULL, **cmdh = NULL;
+	char **lh = NULL, **rh = NULL, **cmdh = NULL, **srch = NULL;
 	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0, nlh = 0, nrh = 0;
-	int ncmdh = 0;
+	int ncmdh = 0, nsrch = 0;
 	int i;
 	int is_console;
 
@@ -586,6 +590,13 @@ write_info_file(void)
 						cfg.cmd_history_num + 1, line + 1))
 					continue;
 				ncmdh = add_to_string_array(&cmdh, ncmdh, 1, line + 1);
+			}
+			else if(line[0] == '/') /* search history */
+			{
+				if(cfg.search_history_num >= 0 && is_in_string_array(cfg.search_history,
+						cfg.search_history_num + 1, line + 1))
+					continue;
+				nsrch = add_to_string_array(&srch, nsrch, 1, line + 1);
 			}
 		}
 		curr_stats.is_console = is_console;
@@ -738,6 +749,15 @@ write_info_file(void)
 			fprintf(fp, ":%s\n", cfg.cmd_history[i]);
 	}
 
+	if(cfg.vifm_info & VIFMINFO_SHISTORY)
+	{
+		fputs("\n# Search history (oldest to newest):\n", fp);
+		for(i = 0; i < nsrch; i++)
+			fprintf(fp, "/%s\n", srch[i]);
+		for(i = cfg.search_history_num; i >= 0; i--)
+			fprintf(fp, "/%s\n", cfg.search_history[i]);
+	}
+
 	if(cfg.vifm_info & VIFMINFO_STATE)
 	{
 		fputs("\n# State:\n", fp);
@@ -765,6 +785,7 @@ write_info_file(void)
 	free_string_array(lh, nlh);
 	free_string_array(rh, nrh);
 	free_string_array(cmdh, ncmdh);
+	free_string_array(srch, nsrch);
 }
 
 void

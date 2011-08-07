@@ -632,6 +632,7 @@ Controls what will be saved in the ~/.vifm/vifminfo file.
    cs        - default color scheme
    savedirs  - save last visited directory (needs dhistory)
    chistory  - command line history
+   shistory  - search history (/ and ? commands)
 
 vimhelp
 type: boolean

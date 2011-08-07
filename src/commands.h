@@ -43,6 +43,7 @@ void _gnuc_noreturn comm_quit(int write_info);
 void comm_only(void);
 void comm_split(void);
 void save_command_history(const char *command);
+void save_search_history(const char *pattern);
 
 #ifdef TEST
 char * append_selected_files(FileView *view, char *expanded, int under_cursor);
