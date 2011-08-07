@@ -591,7 +591,7 @@ goto_selected_file(FileView *view, menu_info *m)
 
 		change_directory(view, dir);
 
-		status_bar_message("Finding the correct directory.");
+		status_bar_message("Finding the correct directory...");
 
 		wrefresh(status_bar);
 		load_dir_list(view, 1);
