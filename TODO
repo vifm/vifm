@@ -47,7 +47,6 @@ Possible things to add.
 	Virtual File System - currently vifm can use fuse to mount most
 		file systems.
 	Add mouse support.
-	View of directories.
     Swap names of two files (selected or given as arguments).
     Invert selection?
     :g/arg = grep arg; :v/arg = grep -v arg

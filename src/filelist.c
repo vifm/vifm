@@ -334,9 +334,6 @@ quick_view_file(FileView *view)
 
 	switch(view->dir_entry[view->list_pos].type)
 	{
-		case DIRECTORY:
-			mvwaddstr(other_view->win, ++x, y, "File is a Directory");
-			break;
 		case DEVICE:
 			mvwaddstr(other_view->win, ++x, y, "File is a Device");
 			break;
@@ -355,6 +352,11 @@ quick_view_file(FileView *view)
 				char *viewer;
 
 				viewer = get_viewer_for_file(view->dir_entry[view->list_pos].name);
+				if(viewer == NULL && view->dir_entry[view->list_pos].type == DIRECTORY)
+				{
+					mvwaddstr(other_view->win, ++x, y, "File is a Directory");
+					break;
+				}
 				if(viewer != NULL && viewer[0] != '\0')
 					fp = use_info_prog(viewer);
 				else

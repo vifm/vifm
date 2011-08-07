@@ -813,6 +813,9 @@ load_color_scheme(const char *name)
 	wbkgdset(change_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	wbkgdset(error_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 
+	if(curr_stats.vifm_started < 2)
+		return;
+
 	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
 	if(curr_stats.view)
