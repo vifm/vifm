@@ -753,8 +753,6 @@ show_progress(const char *msg, int period)
 	static int count = 0;
 	static int pause = 1;
 
-	char buf[strlen(msg) + 2 + 1];
-
 	if(period == 0)
 	{
 		pause = 1;
@@ -768,8 +766,7 @@ show_progress(const char *msg, int period)
 
 	pause = 1;
 
-	sprintf(buf, "%s %c", msg, marks[count]);
-	status_bar_message(buf);
+	status_bar_messagef("%s %c", msg, marks[count]);
 	wrefresh(status_bar);
 
 	count = (count + 1) % sizeof(marks);

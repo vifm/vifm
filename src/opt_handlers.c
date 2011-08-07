@@ -209,7 +209,7 @@ process_set_args(const char *args)
 	save_msg = 0;
 	print_buf[0] = '\0';
 	if(set_options(args) != 0)
-		print_func("", "Invalid argument for :set command");
+		print_func("", "Invalid argument for :set command"); /* changes print_buf */
 	status_bar_message(print_buf);
 	return save_msg;
 }

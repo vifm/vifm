@@ -1300,15 +1300,12 @@ change_directory(FileView *view, const char *directory)
 
 	if(chdir(dir_dup) == -1)
 	{
-		char buf[14 + PATH_MAX + 1];
-
 		LOG_SERROR_MSG(errno, "Can't chdir() \"%s\"", dir_dup);
 		log_cwd();
 
 		closedir(dir);
 
-		snprintf(buf, sizeof(buf), "Couldn't open %s", dir_dup);
-		status_bar_message(buf);
+		status_bar_messagef("Couldn't open %s", dir_dup);
 		return -1;
 	}
 

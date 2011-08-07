@@ -203,7 +203,6 @@ execute(char **args)
 int
 yank_files(FileView *view, int reg, int count, int *indexes)
 {
-	char buf[32];
 	int yanked;
 	if(count > 0)
 		get_selected_files(view, count, indexes);
@@ -222,9 +221,7 @@ yank_files(FileView *view, int reg, int count, int *indexes)
 		count = yanked;
 	}
 
-	snprintf(buf, sizeof(buf), " %d %s yanked.", yanked,
-			yanked == 1 ? "file" : "files");
-	status_bar_message(buf);
+	status_bar_messagef(" %d %s yanked.", yanked, yanked == 1 ? "file" : "files");
 
 	return yanked;
 }
@@ -1007,8 +1004,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	moveto_list_pos(view, view->list_pos);
 
-	snprintf(buf, sizeof(buf), "%d %s deleted", y, y == 1 ? "file" : "files");
-	status_bar_message(buf);
+	status_bar_messagef("%d %s deleted", y, y == 1 ? "file" : "files");
 	return 1;
 }
 
@@ -1200,9 +1196,7 @@ check_rename_file(FileView *view, int *indexes, int count, FILE *f)
 		}
 		if(j >= count && access(name, F_OK) == 0)
 		{
-			char buf[32 + NAME_MAX];
-			snprintf(buf, sizeof(buf), "File %s already exists", name);
-			status_bar_message(buf);
+			status_bar_messagef("File %s already exists", name);
 			curr_stats.save_msg = 1;
 			free_string_array(list, len);
 			return NULL;
@@ -1358,11 +1352,8 @@ rename_files_ind(FileView *view, int *indexes, int count)
 
 	if(list != NULL)
 	{
-		char msg_buf[128];
-
-		snprintf(msg_buf, sizeof(msg_buf), "%d file%s renamed.", renamed,
+		status_bar_messagef("%d file%s renamed.", renamed,
 				(renamed == 1) ? "" : "s");
-		status_bar_message(msg_buf);
 
 		free_string_array(list, count);
 	}
@@ -1685,10 +1676,9 @@ put_decide_cb(const char *choice)
 static int
 put_files_from_register_i(FileView *view, int start)
 {
-	char buf[PATH_MAX + NAME_MAX*2 + 4];
-
 	if(start)
 	{
+		char buf[PATH_MAX + NAME_MAX*2 + 4];
 		int from_trash = strncmp(put_confirm.reg->files[0], cfg.trash_dir,
 				strlen(cfg.trash_dir)) == 0;
 		snprintf(buf, sizeof(buf), "%s in %s: ",
@@ -1712,9 +1702,8 @@ put_files_from_register_i(FileView *view, int start)
 
 	pack_register(put_confirm.reg->name);
 
-	snprintf(buf, sizeof(buf), " %d file%s inserted", put_confirm.y,
+	status_bar_messagef(" %d file%s inserted", put_confirm.y,
 			(put_confirm.y == 1) ? "" : "s");
-	status_bar_message(buf);
 
 	return 1;
 }

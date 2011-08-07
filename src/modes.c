@@ -103,8 +103,6 @@ modes_pre(void)
 void
 modes_post(void)
 {
-	char status_buf[64] = "";
-
 	if(mode == CMDLINE_MODE)
 		return;
 	else if(mode == SORT_MODE)
@@ -141,10 +139,9 @@ modes_post(void)
 		;
 	else if(curr_view->selected_files || mode == VISUAL_MODE)
 	{
-		snprintf(status_buf, sizeof(status_buf), "%s%d %s selected",
+		status_bar_messagef("%s%d %s selected",
 				(mode == VISUAL_MODE) ? "-- VISUAL -- " : "", curr_view->selected_files,
 				curr_view->selected_files == 1 ? "file" : "files");
-		status_bar_message(status_buf);
 		curr_stats.save_msg = 1;
 	}
 	else

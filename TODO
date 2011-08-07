@@ -90,7 +90,6 @@ Other (questionable) things.
 
 Code improvements.
     Write more tests.
-    Use status_bar_messagef() instead of status_bar_message().
     Think about escape_filename and it's len argument.
     Rename exec_* to something.
     Improve logging.

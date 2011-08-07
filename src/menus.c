@@ -414,7 +414,6 @@ search_menu_forwards(menu_info *m, int start_pos)
 
 	if((match_up > -1) || (match_down > -1))
 	{
-		char buf[64];
 		int pos;
 
 		if(match_down > -1)
@@ -424,16 +423,13 @@ search_menu_forwards(menu_info *m, int start_pos)
 
 		clean_menu_position(m);
 		moveto_menu_pos(pos, m);
-		snprintf(buf, sizeof(buf), "%d %s", m->matching_entries,
-				m->matching_entries == 1 ? "match" : "matches");
-		status_bar_message(buf);
+		status_bar_messagef("%d %s", m->matching_entries,
+				(m->matching_entries == 1) ? "match" : "matches");
 		wrefresh(status_bar);
 	}
 	else
 	{
-		char buf[48];
-		snprintf(buf, sizeof(buf), "No matches for %s", m->regexp);
-		status_bar_message(buf);
+		status_bar_messagef("No matches for %s", m->regexp);
 		wrefresh(status_bar);
 		return 1;
 	}
@@ -475,7 +471,6 @@ search_menu_backwards(menu_info *m, int start_pos)
 
 	if((match_up  > -1) || (match_down > -1))
 	{
-		char buf[64];
 		int pos;
 
 		if (match_up > - 1)
@@ -485,16 +480,13 @@ search_menu_backwards(menu_info *m, int start_pos)
 
 		clean_menu_position(m);
 		moveto_menu_pos(pos, m);
-		snprintf(buf, sizeof(buf), "%d %s", m->matching_entries,
-				m->matching_entries == 1 ? "match" : "matches");
-		status_bar_message(buf);
+		status_bar_messagef("%d %s", m->matching_entries,
+				(m->matching_entries == 1) ? "match" : "matches");
 		wrefresh(status_bar);
 	}
 	else
 	{
-		char buf[48];
-		snprintf(buf, sizeof(buf), "No matches for %s", m->regexp);
-		status_bar_message(buf);
+		status_bar_messagef("No matches for %s", m->regexp);
 		wrefresh(status_bar);
 		return 1;
 	}
@@ -1639,11 +1631,8 @@ show_user_menu(FileView *view, char *command)
 
 	if(m.len < 1)
 	{
-		char buf[256];
-
 		reset_popup_menu(&m);
-		snprintf(buf, sizeof(buf), "No results found");
-		status_bar_message(buf);
+		status_bar_message("No results found");
 		wrefresh(status_bar);
 		return;
 	}

@@ -140,20 +140,15 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 		}
 		if(!cfg.hl_search)
 		{
-			char buf[80];
-			snprintf(buf, sizeof(buf), "%d matching files for %s", found,
-					view->regexp);
-			status_bar_message(buf);
+			status_bar_messagef("%d matching files for %s", found, view->regexp);
 			return 1;
 		}
 		return 0;
 	}
 	else
 	{
-		char buf[48];
 		moveto_list_pos(view, view->list_pos);
-		snprintf(buf, sizeof(buf), "No matching files for %s", view->regexp);
-		status_bar_message(buf);
+		status_bar_messagef("No matching files for %s", view->regexp);
 		return 1;
 	}
 }
