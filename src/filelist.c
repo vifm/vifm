@@ -59,7 +59,7 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 	struct passwd *pwd_buf;
 	struct group *grp_buf;
 	struct tm *tm_ptr;
-	int attr;
+	int attr = 0;
 
 	switch(view->sort_type)
 	{
@@ -160,8 +160,14 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 	mvwaddstr(view->win, y, view->window_width - strlen(buf), buf);
 
 	if(is_current_line)
-		wattroff(view->win,
-				COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) | attr);
+	{
+		if(cfg.invert_cur_line)
+			wattroff(view->win,
+					COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | attr);
+		else
+			wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
+					A_BOLD);
+	}
 }
 
 static FILE *
@@ -797,7 +803,7 @@ moveto_list_pos(FileView *view, int pos)
 	size_t print_width;
 	int LINE_COLOR;
 	short f, b;
-	int attr;
+	int attr = 0;
 
 	if(pos < 1)
 		pos = 0;
