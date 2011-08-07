@@ -95,7 +95,7 @@ command mv mv %f %D &
 command cp cp %f %D &
 command run !! ./%f
 command make !!make
-command grep vim \"+grep %a\"
+command grep vim "+grep %a"
 
 " The file type is for the default programs to be used with
 " a file extension.
@@ -176,6 +176,7 @@ nmap S :sort<cr>
 nmap w :view<cr>
 nmap o :!gvim --remote-tab-silent %f<cr>
 nmap O :!gvim %f<cr>
+" open file in the background using its default program
 nmap gb :file &<cr>l
 
 nmap <f3> :!less %f<cr>

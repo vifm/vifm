@@ -224,7 +224,7 @@ view_not_wraped(FILE *fp, int x)
 	int y = 1;
 
 	while(fgets(line, other_view->window_width - 2, fp) == line &&
-			x < other_view->window_rows - 2)
+			x <= other_view->window_rows - 2)
 	{
 		int i;
 		size_t n_len = get_normal_utf8_string_length(line);
@@ -278,7 +278,7 @@ view_wraped(FILE *fp, int x)
 	int y = 1;
 	int offset = 0;
 	while(fgets(line + offset, other_view->window_width, fp)
-				&& x < other_view->window_rows - 2)
+				&& x <= other_view->window_rows - 2)
 	{
 		int i, k;
 		size_t width;
@@ -515,7 +515,7 @@ find_file_pos_in_list(FileView *view, const char *file)
 	return -1;
 }
 
-static void
+void
 update_view_title(FileView *view)
 {
 	const char *buf;
@@ -544,8 +544,9 @@ update_view_title(FileView *view)
 	}
 	else if(len + 1 > view->window_width && curr_view != view)
 	{
+		size_t len = get_normal_utf8_string_widthn(buf, view->window_width - 3 + 1);
 		mvwaddstr(view->title, 0, 0, (view == &lwin) ? " " : "");
-		waddnstr(view->title, buf, view->window_width - 3 + 1);
+		waddnstr(view->title, buf, len);
 		waddstr(view->title, "...");
 	}
 	else

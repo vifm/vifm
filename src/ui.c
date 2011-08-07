@@ -594,28 +594,12 @@ change_window(void)
 
 	if(curr_stats.number_of_windows != 1)
 	{
-		const char *path;
-
 		wattroff(other_view->title, A_BOLD);
 		wattroff(other_view->win,
 				COLOR_PAIR(other_view->color_scheme + CURR_LINE_COLOR) | A_BOLD);
 		mvwaddstr(other_view->win, other_view->curr_line, 0, "*");
 		erase_current_line_bar(other_view);
-		werase(other_view->title);
-		path = replace_home_part(other_view->curr_dir);
-		if(other_view->window_width < strlen(path))
-		{
-			mvwaddstr(other_view->title, 0, 0, (other_view == &lwin) ? " " : "");
-			waddnstr(other_view->title, path, other_view->window_width - 3 + 1);
-			waddstr(other_view->title, "...");
-		}
-		else
-		{
-			wprintw(other_view->title, "%s%s", (other_view == &lwin) ? " " : "",
-					path);
-		}
-
-		wnoutrefresh(other_view->title);
+		update_view_title(other_view);
 	}
 
 	if(curr_stats.view)
@@ -631,10 +615,7 @@ change_window(void)
 	}
 
 	wattron(curr_view->title, A_BOLD);
-	werase(curr_view->title);
-	wprintw(curr_view->title, "%s%s", (curr_view == &lwin) ? " " : "",
-			replace_home_part(curr_view->curr_dir));
-	wnoutrefresh(curr_view->title);
+	update_view_title(curr_view);
 
 	wnoutrefresh(other_view->win);
 	wnoutrefresh(curr_view->win);

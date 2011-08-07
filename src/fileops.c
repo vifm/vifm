@@ -580,6 +580,8 @@ execute_file(FileView *view, int dont_execute)
 	int undef;
 	int same;
 	int i;
+	int background;
+	size_t len;
 
 	if(!view->dir_entry[view->list_pos].selected)
 		clean_selected_files(view);
@@ -645,7 +647,26 @@ execute_file(FileView *view, int dont_execute)
 		return;
 	}
 
-	run_using_prog(view, program, dont_execute, 0);
+	/* looks awful */
+	len = strlen(program);
+	background = len > 0 && program[len - 1] == '&';
+	if(strstr(program, "%f") == NULL && strstr(program, "%F") == NULL &&
+			(strstr(program, "%c") != NULL || strstr(program, "%C") != NULL) &&
+			view->selected_files > 1 && background)
+	{
+		int pos = view->list_pos;
+		for(i = 0; i < view->list_rows; i++)
+		{
+			if(!view->dir_entry[i].selected)
+				continue;
+			view->list_pos = i;
+			run_using_prog(view, program, dont_execute, 0);
+		}
+		view->list_pos = pos;
+	}
+	else
+		run_using_prog(view, program, dont_execute, 0);
+
 	free(program);
 }
 

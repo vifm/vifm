@@ -57,6 +57,7 @@ void load_saving_pos(FileView *view, int reload);
 void save_view_history(FileView *view, const char *path, const char *file);
 int is_in_view_history(FileView *view, const char *path);
 int pane_in_dir(FileView *view, const char *path);
+void update_view_title(FileView *view);
 
 #endif
 

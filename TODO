@@ -16,6 +16,7 @@ Basic things that need to be done.
     Modify X in permissions dialog.
     Be more verbose about regexp compiling errors.
     Show search matches in the menus.
+    Better cW command (maybe accept count of extensions to skip).
 
 Documentation.
 	Better documentation.
