@@ -143,8 +143,16 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 	if(is_current_line)
 	{
 		if(cfg.invert_cur_line)
-			wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme)
-					| A_BOLD | A_REVERSE);
+		{
+			short f, b;
+			pair_content(CURRENT_COLOR + view->color_scheme, &f, &b);
+			if(f == 7)
+				wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme)
+						| A_REVERSE);
+			else
+				wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme)
+						| A_BOLD | A_REVERSE);
+		}
 		else
 			wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
 					| A_BOLD);
@@ -155,8 +163,16 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 	if(is_current_line)
 	{
 		if(cfg.invert_cur_line)
-			wattroff(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme)
-					| A_BOLD | A_REVERSE);
+		{
+			short f, b;
+			pair_content(CURRENT_COLOR + view->color_scheme, &f, &b);
+			if(f == 7)
+				wattroff(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme)
+						| A_REVERSE);
+			else
+				wattroff(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme)
+						| A_BOLD | A_REVERSE);
+		}
 		else
 			wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
 					| A_BOLD);
@@ -859,8 +875,16 @@ moveto_list_pos(FileView *view, int pos)
 	mvwaddstr(view->win, old_cursor, 0, " ");
 
 	if(cfg.invert_cur_line)
-		wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | A_BOLD |
-				A_REVERSE);
+	{
+		short f, b;
+		pair_content(CURRENT_COLOR + view->color_scheme, &f, &b);
+		if(f == 7)
+			wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) |
+					A_REVERSE);
+		else
+			wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) |
+					A_BOLD | A_REVERSE);
+	}
 	else
 		wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
 				A_BOLD);
@@ -887,8 +911,14 @@ moveto_list_pos(FileView *view, int pos)
 
 	if(cfg.invert_cur_line)
 	{
-		wattroff(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) |
-				A_BOLD | A_REVERSE);
+		short f, b;
+		pair_content(CURRENT_COLOR + view->color_scheme, &f, &b);
+		if(f == 7)
+			wattroff(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) |
+					A_REVERSE);
+		else
+			wattroff(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) |
+					A_BOLD | A_REVERSE);
 	}
 }
 
@@ -1658,7 +1688,7 @@ load_dir_list(FileView *view, int reload)
 		char msg[64];
 		snprintf(msg, sizeof(msg),
 				"The %s pattern %s did not match any files. It was reset.",
-				view->filename_filter, view->invert==1 ? "inverted" : "");
+				view->filename_filter, (view->invert == 1) ? "inverted" : "");
 		show_error_msg("Filter error", msg);
 		view->filename_filter = (char *)realloc(view->filename_filter, 1);
 		if(view->filename_filter == NULL)
