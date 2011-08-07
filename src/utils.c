@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <pwd.h> /* getpwnam() */
 #include <unistd.h>
 
 #include <errno.h>
@@ -730,6 +731,53 @@ replace_home_part(const char *directory)
 		chosp(buf);
 
 	return buf;
+}
+
+char *
+expand_tilde(char *path)
+{
+	char name[NAME_MAX];
+	char *p, *result;
+	struct passwd *pw;
+
+	if(path[0] != '~')
+		return path;
+
+	if(path[1] == '\0' || path[1] == '/')
+	{
+		char *result;
+
+		result = malloc((strlen(cfg.home_dir) + strlen(path) + 1));
+		if(result == NULL)
+			return NULL;
+
+		sprintf(result, "%s%s", cfg.home_dir, (path[1] == '/') ? (path + 2) : "");
+		free(path);
+		return result;
+	}
+
+	if((p = strchr(path, '/')) == NULL)
+	{
+		p = path + strlen(path);
+		strcpy(name, path + 1);
+	}
+	else
+	{
+		snprintf(name, p - (path + 1) + 1, "%s", path + 1);
+		p++;
+	}
+
+	if((pw = getpwnam(name)) == NULL)
+		return path;
+
+	chosp(pw->pw_dir);
+	result = malloc(strlen(pw->pw_dir) + strlen(path) + 1);
+	if(result == NULL)
+		return NULL;
+	sprintf(result, "%s/%s", pw->pw_dir, p);
+	free(path);
+
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

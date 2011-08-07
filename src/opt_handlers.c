@@ -9,6 +9,7 @@
 #include "options.h"
 #include "status.h"
 #include "ui.h"
+#include "utils.h"
 
 #include "opt_handlers.h"
 
@@ -261,7 +262,7 @@ static void
 fusehome_handler(enum opt_op op, union optval_t val)
 {
 	free(cfg.fuse_home);
-	cfg.fuse_home = strdup(val.str_val);
+	cfg.fuse_home = expand_tilde(strdup(val.str_val));
 }
 
 static void
