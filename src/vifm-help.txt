@@ -486,6 +486,9 @@ Commands
               same  as  :find  above,  but  user  defines  all find arguments.
               Ignores selection.
 
+       :fin[d]
+              repeats last :find command.
+
        :h[elp]
               show the help file.
 
@@ -512,6 +515,9 @@ Commands
               uses the locate command to create a menu of filenames  Selecting
               a  file  from the menu will reload the current file list in vifm
               to show the selected file.
+
+       :locate
+              repeats last :locate command.
 
        :[range]ma[rk]x[/full/path][filename]
               Set mark x at  /full/path  and  filename.   By  default  current

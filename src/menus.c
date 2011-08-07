@@ -584,9 +584,10 @@ goto_selected_file(FileView *view, menu_info *m)
 		if(is_dir(file))
 			isdir = 1;
 
-		file = strrchr(dir, '/');
-		*file = '\0';
-		file++;
+		if((file = strrchr(dir, '/')) == NULL)
+			file = dir;
+		else
+			*file++ = '\0';
 
 		change_directory(view, dir);
 
