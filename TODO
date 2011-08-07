@@ -9,7 +9,6 @@ Basic things that need to be done.
         :chown commands.
     Make l key handle selection.
     %something for absolute filenames.
-    Skip all directories in history that don't exist.
     More states for permissions dialog (maybe 'f', 'd').
     Backgrounding of vicmd (& at the end).
     Perform operations using system calls, not programs.  This is much faster
