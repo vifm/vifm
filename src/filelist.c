@@ -59,6 +59,7 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 	struct passwd *pwd_buf;
 	struct group *grp_buf;
 	struct tm *tm_ptr;
+	int attr;
 
 	switch(view->sort_type)
 	{
@@ -145,38 +146,22 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 		if(cfg.invert_cur_line)
 		{
 			short f, b;
+			attr = A_REVERSE;
 			pair_content(CURRENT_COLOR + view->color_scheme, &f, &b);
-			if(f == 7)
-				wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme)
-						| A_REVERSE);
-			else
-				wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme)
-						| A_BOLD | A_REVERSE);
+			if(f != 7)
+				attr |= A_BOLD;
+			wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | attr);
 		}
 		else
-			wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
-					| A_BOLD);
+			wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
+					A_BOLD);
 	}
 
 	mvwaddstr(view->win, y, view->window_width - strlen(buf), buf);
 
 	if(is_current_line)
-	{
-		if(cfg.invert_cur_line)
-		{
-			short f, b;
-			pair_content(CURRENT_COLOR + view->color_scheme, &f, &b);
-			if(f == 7)
-				wattroff(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme)
-						| A_REVERSE);
-			else
-				wattroff(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme)
-						| A_BOLD | A_REVERSE);
-		}
-		else
-			wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme)
-					| A_BOLD);
-	}
+		wattroff(view->win,
+				COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) | attr);
 }
 
 static FILE *
@@ -810,6 +795,7 @@ moveto_list_pos(FileView *view, int pos)
 	size_t print_width;
 	int LINE_COLOR;
 	short f, b;
+	int attr;
 
 	if(pos < 1)
 		pos = 0;
@@ -877,17 +863,17 @@ moveto_list_pos(FileView *view, int pos)
 	if(cfg.invert_cur_line)
 	{
 		short f, b;
+		attr = A_REVERSE;
 		pair_content(CURRENT_COLOR + view->color_scheme, &f, &b);
-		if(f == 7)
-			wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) |
-					A_REVERSE);
-		else
-			wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) |
-					A_BOLD | A_REVERSE);
+		if(f != 7)
+			attr |= A_BOLD;
+		wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | attr);
 	}
 	else
+	{
 		wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
 				A_BOLD);
+	}
 
 	/* Blank the current line and
 	 * print out the current line bar
@@ -910,16 +896,7 @@ moveto_list_pos(FileView *view, int pos)
 		quick_view_file(view);
 
 	if(cfg.invert_cur_line)
-	{
-		short f, b;
-		pair_content(CURRENT_COLOR + view->color_scheme, &f, &b);
-		if(f == 7)
-			wattroff(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) |
-					A_REVERSE);
-		else
-			wattroff(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) |
-					A_BOLD | A_REVERSE);
-	}
+		wattroff(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | attr);
 }
 
 void
