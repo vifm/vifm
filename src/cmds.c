@@ -71,8 +71,8 @@ static int udf_count;
 static const char * parse_range(const char *cmd, struct cmd_info *cmd_info);
 static const char * parse_limit(const char *cmd, struct cmd_info *cmd_info);
 static int udf_is_ambiguous(const char *name);
-static const char * parse_tail(struct cmd_t *cur,
-		const char *cmd, struct cmd_info *cmd_info);
+static const char * parse_tail(struct cmd_t *cur, const char *cmd,
+		struct cmd_info *cmd_info);
 #ifndef TEST
 static
 #endif

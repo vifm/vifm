@@ -95,17 +95,25 @@ struct {
 
 /* cmds_conf should be filled before calling this function */
 void init_cmds(void);
+
 void reset_cmds(void);
+
 /* Returns one of CMDS_ERR_* codes. */
 int execute_cmd(const char *cmd);
+
 /* Returns -1 on error and USER_CMD_ID for user defined commands. */
 int get_cmd_id(const char *cmd);
+
 char get_cmd_sep(const char *cmd);
+
 /* Returns offset in cmd, where completion elements should be pasted */
 int complete_cmd(const char *cmd);
+
 void add_buildin_commands(const struct cmd_add *cmds, int count);
+
 /* Last element is followed by a NULL */
 char ** list_udf(void);
+
 char * list_udf_content(const char *beginning);
 
 #ifdef TEST

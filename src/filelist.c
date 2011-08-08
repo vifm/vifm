@@ -1268,20 +1268,6 @@ change_directory(FileView *view, const char *directory)
 		return -1;
 	}
 
-	if(access(dir_dup, R_OK) != 0)
-	{
-		char buf[31 + PATH_MAX + 1];
-
-		LOG_SERROR_MSG(errno, "Can't access(, R_OK) \"%s\"", dir_dup);
-		log_cwd();
-
-		if(strcmp(view->curr_dir, dir_dup) != 0)
-		{
-			snprintf(buf, sizeof(buf), "You do not have read access on %s", dir_dup);
-			show_error_msg("Directory Access Error", buf);
-		}
-	}
-
 	if(access(dir_dup, X_OK) != 0)
 	{
 		char buf[32 + PATH_MAX + 1];
@@ -1295,6 +1281,20 @@ change_directory(FileView *view, const char *directory)
 		clean_selected_files(view);
 		leave_invalid_dir(view, view->curr_dir);
 		return -1;
+	}
+
+	if(access(dir_dup, R_OK) != 0)
+	{
+		char buf[31 + PATH_MAX + 1];
+
+		LOG_SERROR_MSG(errno, "Can't access(, R_OK) \"%s\"", dir_dup);
+		log_cwd();
+
+		if(strcmp(view->curr_dir, dir_dup) != 0)
+		{
+			snprintf(buf, sizeof(buf), "You do not have read access on %s", dir_dup);
+			show_error_msg("Directory Access Error", buf);
+		}
 	}
 
 	dir = opendir(dir_dup);
