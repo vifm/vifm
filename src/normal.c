@@ -91,6 +91,7 @@ static void cmd_P(struct key_info, struct keys_info *);
 static void cmd_V(struct key_info, struct keys_info *);
 static void cmd_ZQ(struct key_info, struct keys_info *);
 static void cmd_ZZ(struct key_info, struct keys_info *);
+static void cmd_al(struct key_info, struct keys_info *);
 static void cmd_cW(struct key_info, struct keys_info *);
 static void cmd_cg(struct key_info, struct keys_info *);
 static void cmd_co(struct key_info, struct keys_info *);
@@ -184,6 +185,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"Y", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_yy}}},
 	{L"ZQ", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ZQ}}},
 	{L"ZZ", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ZZ}}},
+	{L"al", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_al}}},
 	{L"cW", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cW}}},
 	{L"cg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cg}}},
 	{L"co", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_co}}},
@@ -818,6 +820,16 @@ cmd_question(struct key_info key_info, struct keys_info *keys_info)
 {
 	curr_stats.last_search_backward = 1;
 	enter_cmdline_mode(SEARCH_BACKWARD_SUBMODE, L"", NULL);
+}
+
+/* Create link with absolute path */
+static void
+cmd_al(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(key_info.reg == NO_REG_GIVEN)
+		key_info.reg = DEFAULT_REG_NAME;
+	curr_stats.save_msg = put_links(curr_view, key_info.reg, 0);
+	load_saving_pos(curr_view, 1);
 }
 
 /* Change word (rename file without extension). */

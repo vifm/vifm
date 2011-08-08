@@ -53,7 +53,7 @@ Possible things to add.
     A :restart command to reload everything.
     Maybe something like :g/.../ and :v/.../ in Vim.
     Add g/ and g? commands (search, but don't select files).
-    Reverse searching  (/ for search, g/ for selecting, g!/ for selecting
+    Reverse searching (/ for search, g/ for selecting, g!/ for selecting
         reverse)
     Improve sorting ('sort' and 'gsort'; ignore case).
     Reset options to it's default value (from docs) with set option&.

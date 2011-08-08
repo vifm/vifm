@@ -50,6 +50,8 @@
 
 	Added top line and status line colors to color schemes.
 
+	Added al command for symbolic links with absolute paths.
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,

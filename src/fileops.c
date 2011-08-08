@@ -59,6 +59,7 @@ static struct {
 	int x, y;
 	char *name;
 	int overwrite_all;
+	int link; /* 0 - no, 1 - absolute, 2 - relative */
 } put_confirm;
 
 static void put_confirm_cb(const char *dest_name);
@@ -1624,7 +1625,7 @@ prompt_what_to_do(const char *src_name)
 
 /* Returns 0 on success */
 static int
-put_next_file(const char *dest_name, int override)
+put_next(const char *dest_name, int override)
 {
 	char *filename;
 	char *src_buf, *dst_buf, *name_buf = NULL;
@@ -1671,7 +1672,8 @@ put_next_file(const char *dest_name, int override)
 
 		if(override)
 		{
-			if(access(p, F_OK) == 0)
+			struct stat st;
+			if(lstat(p, &st) == 0)
 			{
 				snprintf(do_buf, sizeof(do_buf), "rm -rf %s/%s", dst_buf, dest_name);
 				if(background_and_wait_for_errors(do_buf) != 0)
@@ -1686,18 +1688,26 @@ put_next_file(const char *dest_name, int override)
 			put_confirm.view->dir_mtime = 0;
 		}
 
-		if(move)
+		dst_buf = realloc(dst_buf, strlen(dst_buf) + 1 + strlen(dest_name) + 1);
+		strcat(dst_buf, "/");
+		strcat(dst_buf, dest_name);
+
+		if(put_confirm.link == 1)
 		{
-			snprintf(do_buf, sizeof(do_buf), "mv %s %s %s/%s", override ? "" : "-n",
-					src_buf, dst_buf, dest_name);
-			snprintf(undo_buf, sizeof(undo_buf), "mv -n %s/%s %s", dst_buf, dest_name,
-					src_buf);
+			snprintf(do_buf, sizeof(do_buf), "ln -s %s %s", src_buf, dst_buf);
+			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s", dst_buf);
+		}
+		else if(move)
+		{
+			snprintf(do_buf, sizeof(do_buf), "mv %s %s %s", override ? "" : "-n",
+					src_buf, dst_buf);
+			snprintf(undo_buf, sizeof(undo_buf), "mv -n %s %s", dst_buf, src_buf);
 		}
 		else
 		{
-			snprintf(do_buf, sizeof(do_buf), "cp %s -pR %s %s/%s",
-					override ? "" : "-n", src_buf, dst_buf, dest_name);
-			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s/%s", dst_buf, dest_name);
+			snprintf(do_buf, sizeof(do_buf), "cp %s -pR %s %s",
+					override ? "" : "-n", src_buf, dst_buf);
+			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s", dst_buf);
 		}
 
 		progress_msg("Putting files", put_confirm.x + 1,
@@ -1746,7 +1756,7 @@ put_confirm_cb(const char *dest_name)
 	if(dest_name == NULL || dest_name[0] == '\0')
 		return;
 
-	if(put_next_file(dest_name, 0) == 0)
+	if(put_next(dest_name, 0) == 0)
 	{
 		put_confirm.x++;
 		curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
@@ -1767,7 +1777,7 @@ put_decide_cb(const char *choice)
 	}
 	else if(strcmp(choice, "o") == 0)
 	{
-		if(put_next_file("", 1) == 0)
+		if(put_next("", 1) == 0)
 		{
 			put_confirm.x++;
 			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
@@ -1776,7 +1786,7 @@ put_decide_cb(const char *choice)
 	else if(strcmp(choice, "a") == 0)
 	{
 		put_confirm.overwrite_all = 1;
-		if(put_next_file("", 1) == 0)
+		if(put_next("", 1) == 0)
 		{
 			put_confirm.x++;
 			curr_stats.save_msg = put_files_from_register_i(put_confirm.view, 0);
@@ -1811,7 +1821,7 @@ put_files_from_register_i(FileView *view, int start)
 	}
 	while(put_confirm.x < put_confirm.reg->num_files)
 	{
-		if(put_next_file("", 0) != 0)
+		if(put_next("", 0) != 0)
 			return 0;
 		put_confirm.x++;
 	}
@@ -1838,7 +1848,6 @@ put_files_from_register(FileView *view, int name, int force_move)
 	if(reg == NULL || reg->num_files < 1)
 	{
 		status_bar_message("Register is empty");
-		wrefresh(status_bar);
 		return 1;
 	}
 
@@ -1848,6 +1857,7 @@ put_files_from_register(FileView *view, int name, int force_move)
 	put_confirm.y = 0;
 	put_confirm.view = view;
 	put_confirm.overwrite_all = 0;
+	put_confirm.link = 0;
 	return put_files_from_register_i(view, 1);
 }
 
@@ -1989,6 +1999,33 @@ calc_dirsize(const char *path, int force_update)
 
 	tree_set_data(curr_stats.dirsize_cache, path, size);
 	return size;
+}
+
+/* Returns new value for save_msg flag. */
+int
+put_links(FileView *view, int reg_name, int relative)
+{
+	registers_t *reg;
+
+	if(!is_dir_writable(view->curr_dir))
+		return 0;
+
+	reg = find_register(reg_name);
+
+	if(reg == NULL || reg->num_files < 1)
+	{
+		status_bar_message("Register is empty");
+		return 1;
+	}
+
+	put_confirm.reg = reg;
+	put_confirm.force_move = 0;
+	put_confirm.x = 0;
+	put_confirm.y = 0;
+	put_confirm.view = view;
+	put_confirm.overwrite_all = 0;
+	put_confirm.link = relative ? 2 : 1;
+	return put_files_from_register_i(view, 1);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
