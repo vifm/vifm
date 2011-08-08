@@ -432,7 +432,8 @@ leave_cmdline_mode(void)
 	if(*mode == CMDLINE_MODE)
 		*mode = prev_mode;
 
-	update_pos_window(curr_view);
+	if(*mode != MENU_MODE)
+		update_pos_window(curr_view);
 }
 
 static void
@@ -530,7 +531,7 @@ cmd_shift_tab(struct key_info key_info, struct keys_info *keys_info)
 static void
 do_completion(void)
 {
-	if(sub_mode != CMD_SUBMODE)
+	if(sub_mode != CMD_SUBMODE && sub_mode != MENU_CMD_SUBMODE)
 		return;
 
 	if(input_stat.line == NULL)
@@ -562,6 +563,9 @@ draw_wild_menu(int op)
 	int i;
 	int len = getmaxx(stdscr);
 	
+	if(sub_mode != CMD_SUBMODE)
+		return;
+
 	if(count < 2)
 		return;
 
@@ -1380,7 +1384,7 @@ stop_completion(void)
 
 	input_stat.complete_continue = 0;
 	reset_completion();
-	if(cfg.wild_menu)
+	if(cfg.wild_menu && sub_mode == CMD_SUBMODE)
 		update_stat_window(curr_view);
 }
 
