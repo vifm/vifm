@@ -7,6 +7,8 @@
 #include "../../src/completion.h"
 #include "../../src/macros.h"
 
+extern struct cmds_conf cmds_conf;
+
 static struct cmd_info cmdi;
 
 static int goto_cmd(const struct cmd_info* cmd_info);

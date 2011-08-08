@@ -5,6 +5,8 @@
 #include "../../src/cmds.h"
 #include "../../src/macros.h"
 
+extern struct cmds_conf cmds_conf;
+
 struct cmd_info user_cmd_info;
 
 static void

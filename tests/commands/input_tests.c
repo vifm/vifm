@@ -6,6 +6,8 @@
 #include "../../src/cmds.h"
 #include "../../src/macros.h"
 
+extern struct cmds_conf cmds_conf;
+
 static struct cmd_info cmdi;
 static char *arg;
 
@@ -162,7 +164,6 @@ setup(void)
 static void
 teardown(void)
 {
-	reset_cmds();
 }
 
 static void

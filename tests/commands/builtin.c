@@ -8,6 +8,8 @@
 #include "../../src/completion.h"
 #include "../../src/macros.h"
 
+extern struct cmds_conf cmds_conf;
+
 static void
 setup(void)
 {

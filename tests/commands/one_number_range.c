@@ -6,6 +6,8 @@
 #include "../../src/commands.h"
 #include "../../src/ui.h"
 
+extern struct cmds_conf cmds_conf;
+
 static void
 setup_lwin(void)
 {
