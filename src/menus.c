@@ -1199,13 +1199,13 @@ show_filetypes_menu(FileView *view, int background)
 {
 	char *filename = get_current_file_name(view);
 	char *ft_str, *prog_str, *mime_str;
-	int is_dir;
+	int isdir;
 
 	ft_str = get_all_programs_for_file(filename);
 	mime_str = get_magic_handlers(filename);
 
-	is_dir = view->dir_entry[view->list_pos].type == DIRECTORY;
-	if(ft_str == NULL && mime_str == NULL && !is_dir) {
+	isdir = is_dir(view->dir_entry[view->list_pos].name);
+	if(ft_str == NULL && mime_str == NULL && !isdir) {
 		show_error_msg("Filetype is not set.",
 				"No programs set for this filetype.");
 		return 0;
@@ -1221,7 +1221,7 @@ show_filetypes_menu(FileView *view, int background)
 		return 0;
 
 	prog_str[0] = '\0';
-	if(is_dir)
+	if(isdir)
 		strcat(prog_str, "vifm,");
 	if(*ft_str != '\0')
 	{
