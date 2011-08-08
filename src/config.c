@@ -274,7 +274,7 @@ read_info_file(void)
 				char buf[MAX_LEN*2];
 				prepare_line(line2);
 				snprintf(buf, sizeof(buf), "command %s %s", line + 1, line2);
-				exec_commands(buf, curr_view, 0);
+				exec_commands(buf, curr_view, 0, GET_COMMAND);
 			}
 		}
 		else if(line[0] == '\'') /* bookmark */
@@ -824,7 +824,7 @@ exec_config(void)
 				while((p = fgets(next_line, sizeof(next_line), fp)) != NULL);
 			}
 			chomp(line);
-			exec_commands(line, curr_view, 0);
+			exec_commands(line, curr_view, 0, GET_COMMAND);
 			if(p == NULL)
 				break;
 			strcpy(line, p);

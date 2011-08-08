@@ -641,7 +641,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 			move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
 			break;
 		case CMDHISTORY:
-			exec_commands(m->data[m->pos], view, 1);
+			exec_commands(m->data[m->pos], view, 1, GET_COMMAND);
 			break;
 		case COLORSCHEME:
 			load_color_scheme(m->data[m->pos]);

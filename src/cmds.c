@@ -121,7 +121,10 @@ init_cmds(int udf, struct cmds_conf *conf)
 		}
 	};
 
-	if(conf->inner == NULL)
+	cmds_conf = conf;
+	inner = conf->inner;
+
+	if(inner == NULL)
 	{
 		assert(conf->complete_args != NULL);
 		assert(conf->swap_range != NULL);
@@ -131,13 +134,11 @@ init_cmds(int udf, struct cmds_conf *conf)
 		assert(conf->select_range != NULL);
 		conf->inner = calloc(1, sizeof(struct inner));
 		assert(conf->inner != NULL);
+		inner = conf->inner;
+
+		if(udf)
+			add_buildin_commands(commands, ARRAY_LEN(commands));
 	}
-
-	cmds_conf = conf;
-	inner = conf->inner;
-
-	if(udf)
-		add_buildin_commands(commands, ARRAY_LEN(commands));
 }
 
 void

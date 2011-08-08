@@ -1573,12 +1573,12 @@ is_whole_line_command(const char *cmd)
 }
 
 int
-exec_commands(char *cmd, FileView *view, int save_hist)
+exec_commands(char *cmd, FileView *view, int save_hist, int type)
 {
 	int save_msg = 0;
 	char *p, *q;
 
-	if(save_hist)
+	if(save_hist && type == GET_COMMAND)
 		save_command_history(cmd);
 
 	p = cmd;
@@ -1608,14 +1608,14 @@ exec_commands(char *cmd, FileView *view, int save_hist)
 				cmd++;
 			if(is_whole_line_command(cmd))
 			{
-				save_msg += exec_command(cmd, view, GET_COMMAND);
+				save_msg += exec_command(cmd, view, type);
 				break;
 			}
 
 			*q = '\0';
 			q = p;
 
-			save_msg += exec_command(cmd, view, GET_COMMAND);
+			save_msg += exec_command(cmd, view, type);
 
 			cmd = q;
 		}
@@ -1684,6 +1684,11 @@ exec_command(char *cmd, FileView *view, int type)
 	}
 
 	if(type == GET_COMMAND)
+	{
+		init_cmds(1, &cmds_conf);
+		return execute_command(view, cmd);
+	}
+	if(type == GET_MENU_COMMAND)
 	{
 		return execute_command(view, cmd);
 	}

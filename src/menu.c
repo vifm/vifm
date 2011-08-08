@@ -26,6 +26,7 @@
 
 #include "bookmarks.h"
 #include "cmdline.h"
+#include "cmds.h"
 #include "commands.h"
 #include "config.h"
 #include "filelist.h"
@@ -43,6 +44,14 @@ static FileView *view;
 static menu_info *menu;
 static int last_search_backward;
 static int was_redraw;
+
+static int complete_args(int id, const char *args, int argc, char **argv,
+		int arg_pos);
+static int swap_range(void);
+static int resolve_mark(char mark);
+static char * menu_expand_macros(const char *str);
+static void post(int id);
+static void select_range(const struct cmd_info *cmd_info);
 
 static int key_handler(wchar_t key);
 static void leave_menu_mode(void);
@@ -70,6 +79,9 @@ static void cmd_n(struct key_info, struct keys_info *);
 static void cmd_zb(struct key_info, struct keys_info *);
 static void cmd_zt(struct key_info, struct keys_info *);
 static void cmd_zz(struct key_info, struct keys_info *);
+
+static int goto_cmd(const struct cmd_info *cmd_info);
+static int quit_cmd(const struct cmd_info *cmd_info);
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x02", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
@@ -111,6 +123,56 @@ static struct keys_add_info builtin_cmds[] = {
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
+static const struct cmd_add commands[] = {
+	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = goto_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "quit",             .abbr = "q",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+};
+
+static struct cmds_conf cmds_conf = {
+	.complete_args = complete_args,
+	.swap_range = swap_range,
+	.resolve_mark = resolve_mark,
+	.expand_macros = menu_expand_macros,
+	.post = post,
+	.select_range = select_range,
+};
+
+static int
+complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
+{
+	return 0;
+}
+
+static int
+swap_range(void)
+{
+	return 0;
+}
+
+static int
+resolve_mark(char mark)
+{
+	return -1;
+}
+
+static char *
+menu_expand_macros(const char *str)
+{
+	return strdup(str);
+}
+
+static void
+post(int id)
+{
+}
+
+static void
+select_range(const struct cmd_info *cmd_info)
+{
+}
+
 void
 init_menu_mode(int *key_mode)
 {
@@ -121,6 +183,9 @@ init_menu_mode(int *key_mode)
 	assert(add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), MENU_MODE) == 0);
 
 	set_def_handler(MENU_MODE, key_handler);
+
+	init_cmds(0, &cmds_conf);
+	add_buildin_commands((const struct cmd_add *)&commands, ARRAY_LEN(commands));
 }
 
 static int
@@ -156,6 +221,8 @@ enter_menu_mode(menu_info *m, FileView *active_view)
 	*mode = MENU_MODE;
 	curr_stats.need_redraw = 1;
 	was_redraw = 0;
+
+	init_cmds(0, &cmds_conf);
 }
 
 void
@@ -188,21 +255,6 @@ menu_redraw(void)
 		redrawwin(error_win);
 		wnoutrefresh(error_win);
 		doupdate();
-	}
-}
-
-void
-execute_menu_command(char *command, menu_info *m)
-{
-	if(strncmp("quit", command, strlen(command)) == 0)
-		leave_menu_mode();
-	else if(strcmp("x", command) == 0)
-		leave_menu_mode();
-	else if(isdigit(*command))
-	{
-		clean_menu_position(m);
-		moveto_menu_pos(atoi(command) - 1, m);
-		wrefresh(menu_win);
 	}
 }
 
@@ -319,6 +371,9 @@ cmd_slash(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_colon(struct key_info key_info, struct keys_info *keys_info)
 {
+	cmds_conf.begin = 1;
+	cmds_conf.current = menu->pos;
+	cmds_conf.end = menu->len;
 	enter_cmdline_mode(MENU_CMD_SUBMODE, L"", menu);
 }
 
@@ -517,6 +572,22 @@ update_menu(void)
 	draw_menu(menu);
 	moveto_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
+}
+
+static int
+goto_cmd(const struct cmd_info *cmd_info)
+{
+	clean_menu_position(menu);
+	moveto_menu_pos(cmd_info->end, menu);
+	wrefresh(menu_win);
+	return 0;
+}
+
+static int
+quit_cmd(const struct cmd_info *cmd_info)
+{
+	leave_menu_mode();
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

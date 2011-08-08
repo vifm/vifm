@@ -675,12 +675,16 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	leave_cmdline_mode();
 
-	if(sub_mode == CMD_SUBMODE)
+	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 	{
 		char* s = p;
 		while(*s == ' ' || *s == ':')
 			s++;
-		curr_stats.save_msg = exec_commands(s, curr_view, save_hist);
+		if(sub_mode == CMD_SUBMODE)
+			curr_stats.save_msg = exec_commands(s, curr_view, save_hist, GET_COMMAND);
+		else
+			curr_stats.save_msg = exec_commands(s, curr_view, save_hist,
+					GET_MENU_COMMAND);
 	}
 	else if(sub_mode == SEARCH_FORWARD_SUBMODE)
 	{
@@ -689,10 +693,6 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 	else if(sub_mode == SEARCH_BACKWARD_SUBMODE)
 	{
 		curr_stats.save_msg = exec_command(p, curr_view, GET_BSEARCH_PATTERN);
-	}
-	else if(sub_mode == MENU_CMD_SUBMODE)
-	{
-		execute_menu_command(p, sub_mode_ptr);
 	}
 	else if(sub_mode == MENU_SEARCH_FORWARD_SUBMODE
 			|| sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
