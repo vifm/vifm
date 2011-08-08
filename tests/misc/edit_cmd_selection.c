@@ -82,7 +82,7 @@ test_edit_cmd_selection(void)
 {
 	char *cmd;
 
-	cmd = edit_cmd_selection(&lwin);
+	cmd = edit_selection(&lwin);
 	assert_string_equal("vim -p lfile0 lfile2", cmd);
 	free(cmd);
 }

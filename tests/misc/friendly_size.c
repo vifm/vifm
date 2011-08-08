@@ -1,5 +1,6 @@
 #include "seatest.h"
 
+#include "../../src/config.h"
 #include "../../src/utils.h"
 
 static void
@@ -27,6 +28,8 @@ void
 friendly_size(void)
 {
 	test_fixture_start();
+
+	cfg.use_iec_prefixes = 0;
 
 	run_test(test_removing_useless_trailing_zero);
 	run_test(test_problem_1024);

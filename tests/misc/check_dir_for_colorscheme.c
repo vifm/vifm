@@ -7,7 +7,7 @@
 static void
 setup(void)
 {
-	Col_scheme my_schemes[] = {
+	static Col_scheme my_schemes[] = {
 		{.dir = "/"},
 		{.dir = "/home"},
 		{.dir = "/root"},
