@@ -87,10 +87,13 @@ function! s:StartVifm(editcmd)
 			return
 		endif
 	endif
+    let cwd = getcwd()
 	for file in flist
+        execute 'cd' cwd
 		let file = fnamemodify(file, ':.')
 		execute a:editcmd file
 	endfor
 	" Go to first file
+    execute 'cd' cwd
 	execute 'drop' firstfile
 endfunction
