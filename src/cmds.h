@@ -79,7 +79,9 @@ struct cmd_add
 	int quote; /* whether need to take care of single and double quotes in args */
 };
 
-struct {
+struct cmds_conf {
+	void *inner; /* should be NULL on first call of init_cmds() */
+
 	int begin;
 	int current;
 	int end;
@@ -91,10 +93,10 @@ struct {
 	char *(*expand_macros)(const char *str); /* should allocate memory */
 	void (*post)(int id); /* called after successful processing command */
 	void (*select_range)(const struct cmd_info *cmd_info);
-} cmds_conf;
+};
 
 /* cmds_conf should be filled before calling this function */
-void init_cmds(void);
+void init_cmds(int udf, struct cmds_conf *cmds_conf);
 
 void reset_cmds(void);
 

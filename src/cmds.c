@@ -63,10 +63,15 @@ struct cmd_t
 	struct cmd_t *next;
 };
 
-static struct cmd_t head;
-static struct cmd_add user_cmd_handler;
-static cmd_handler command_handler;
-static int udf_count;
+struct inner {
+	struct cmd_t head;
+	struct cmd_add user_cmd_handler;
+	cmd_handler command_handler;
+	int udf_count;
+};
+
+static struct inner *inner;
+static struct cmds_conf *cmds_conf;
 
 static const char * parse_range(const char *cmd, struct cmd_info *cmd_info);
 static const char * parse_limit(const char *cmd, struct cmd_info *cmd_info);
@@ -98,9 +103,9 @@ static struct cmd_t * insert_cmd(struct cmd_t *after);
 static int delcommand_cmd(const struct cmd_info *cmd_info);
 
 void
-init_cmds(void)
+init_cmds(int udf, struct cmds_conf *conf)
 {
-	struct cmd_add commands[] = {
+	static struct cmd_add commands[] = {
 		{
 			.name = "comclear",   .abbr = "comc", .handler = comclear_cmd,   .id = COMCLEAR_CMD_ID,   .quote = 0,
 			.range = 0,           .emark = 0,     .qmark = 0,                .regexp = 0,             .select = 0,
@@ -116,20 +121,29 @@ init_cmds(void)
 		}
 	};
 
-	assert(cmds_conf.complete_args != NULL);
-	assert(cmds_conf.swap_range != NULL);
-	assert(cmds_conf.resolve_mark != NULL);
-	assert(cmds_conf.expand_macros != NULL);
-	assert(cmds_conf.post != NULL);
-	assert(cmds_conf.select_range != NULL);
+	if(conf->inner == NULL)
+	{
+		assert(conf->complete_args != NULL);
+		assert(conf->swap_range != NULL);
+		assert(conf->resolve_mark != NULL);
+		assert(conf->expand_macros != NULL);
+		assert(conf->post != NULL);
+		assert(conf->select_range != NULL);
+		conf->inner = calloc(1, sizeof(struct inner));
+		assert(conf->inner != NULL);
+	}
 
-	add_buildin_commands(commands, ARRAY_LEN(commands));
+	cmds_conf = conf;
+	inner = conf->inner;
+
+	if(udf)
+		add_buildin_commands(commands, ARRAY_LEN(commands));
 }
 
 void
 reset_cmds(void)
 {
-	struct cmd_t *cur = head.next;
+	struct cmd_t *cur = inner->head.next;
 
 	while(cur != NULL)
 	{
@@ -140,8 +154,11 @@ reset_cmds(void)
 		cur = next;
 	}
 
-	head.next = NULL;
-	user_cmd_handler.handler = NULL;
+	inner->head.next = NULL;
+	inner->user_cmd_handler.handler = NULL;
+
+	free(inner);
+	cmds_conf->inner = NULL;
 }
 
 int
@@ -170,7 +187,7 @@ execute_cmd(const char *cmd)
 	{
 		int t;
 
-		if(!cmds_conf.swap_range())
+		if(!cmds_conf->swap_range())
 			return CMDS_ERR_INVALID_RANGE;
 
 		t = cmd_info.end;
@@ -182,7 +199,7 @@ execute_cmd(const char *cmd)
 	if(udf_is_ambiguous(cmd_name))
 		return CMDS_ERR_UDF_IS_AMBIGUOUS;
 
-	cur = head.next;
+	cur = inner->head.next;
 	while(cur != NULL && strcmp(cur->name, cmd_name) < 0)
 		cur = cur->next;
 
@@ -206,7 +223,7 @@ execute_cmd(const char *cmd)
 		cmd_info.raw_args[0] = '\0';
 	}
 	if(cur->expand)
-		cmd_info.args = cmds_conf.expand_macros(cmd_info.raw_args);
+		cmd_info.args = cmds_conf->expand_macros(cmd_info.raw_args);
 	else
 		cmd_info.args = strdup(cmd_info.raw_args);
 	cmd_info.argv = dispatch_line(cmd_info.args, &cmd_info.argc, cmd_info.sep,
@@ -246,19 +263,19 @@ execute_cmd(const char *cmd)
 	{
 		cur->passed++;
 		if(cur->select)
-			cmds_conf.select_range(&cmd_info);
+			cmds_conf->select_range(&cmd_info);
 
 		if(cur->type != BUILDIN_CMD && cur->type != BUILDIN_ABBR)
 		{
 			cmd_info.cmd = cur->cmd;
-			result = user_cmd_handler.handler(&cmd_info);
+			result = inner->user_cmd_handler.handler(&cmd_info);
 		}
 		else
 		{
 			result = cur->handler(&cmd_info);
 		}
 
-		cmds_conf.post(cur->id);
+		cmds_conf->post(cur->id);
 		cur->passed--;
 	}
 
@@ -313,34 +330,34 @@ parse_limit(const char *cmd, struct cmd_info *cmd_info)
 {
 	if(cmd[0] == '%')
 	{
-		cmd_info->begin = cmds_conf.begin;
-		cmd_info->end = cmds_conf.end;
+		cmd_info->begin = cmds_conf->begin;
+		cmd_info->end = cmds_conf->end;
 		cmd++;
 	}
 	else if(cmd[0] == '$')
 	{
-		cmd_info->end = cmds_conf.end;
+		cmd_info->end = cmds_conf->end;
 		cmd++;
 	}
 	else if(cmd[0] == '.')
 	{
-		cmd_info->end = cmds_conf.current;
+		cmd_info->end = cmds_conf->current;
 		cmd++;
 	}
 	else if(*cmd == ',')
 	{
-		cmd_info->end = cmds_conf.current;
+		cmd_info->end = cmds_conf->current;
 	}
 	else if(isalpha(*cmd))
 	{
-		cmd_info->end = cmds_conf.current;
+		cmd_info->end = cmds_conf->current;
 	}
 	else if(isdigit(*cmd))
 	{
 		char *p;
 		cmd_info->end = strtol(cmd, &p, 10) - 1;
-		if(cmd_info->end < cmds_conf.begin)
-			cmd_info->end = cmds_conf.begin;
+		if(cmd_info->end < cmds_conf->begin)
+			cmd_info->end = cmds_conf->begin;
 		cmd = p;
 	}
 	else if(*cmd == '\'')
@@ -348,7 +365,7 @@ parse_limit(const char *cmd, struct cmd_info *cmd_info)
 		char mark;
 		cmd++;
 		mark = *cmd++;
-		cmd_info->end = cmds_conf.resolve_mark(mark);
+		cmd_info->end = cmds_conf->resolve_mark(mark);
 		if(cmd_info->end < 0)
 		{
 			cmd_info->end = INVALID_MARK;
@@ -372,7 +389,7 @@ udf_is_ambiguous(const char *name)
 
 	len = strlen(name);
 	count = 0;
-	cur = head.next;
+	cur = inner->head.next;
 	while(cur != NULL)
 	{
 		int cmp;
@@ -727,7 +744,7 @@ get_cmd_info(const char *cmd, struct cmd_info *info)
 		return CMDS_ERR_INVALID_CMD;
 
 	cmd = get_cmd_name(cmd, cmd_name, sizeof(cmd_name));
-	cur = head.next;
+	cur = inner->head.next;
 	while(cur != NULL && strcmp(cur->name, cmd_name) < 0)
 		cur = cur->next;
 
@@ -792,7 +809,7 @@ complete_cmd(const char *cmd)
 			int last_arg = 0;
 
 			argv = dispatch_line(args, &argc, ' ', 0, 1, &last_arg, NULL);
-			prefix_len += cmds_conf.complete_args(id, args, argc, argv, last_arg);
+			prefix_len += cmds_conf->complete_args(id, args, argc, argv, last_arg);
 			free_string_array(argv, argc);
 		}
 	}
@@ -827,7 +844,7 @@ get_cmd_name(const char *cmd, char *buf, size_t buf_len)
 
 		buf[len] = *t;
 		buf[len + 1] = '\0';
-		cur = head.next;
+		cur = inner->head.next;
 		while(cur != NULL && strcmp(cur->name, buf) < 0)
 			cur = cur->next;
 		if(cur != NULL && strncmp(cur->name, buf, len + 1) == 0)
@@ -844,7 +861,7 @@ complete_cmd_name(const char *cmd_name, int user_only)
 	struct cmd_t *cur;
 	size_t len;
 
-	cur = head.next;
+	cur = inner->head.next;
 	while(cur != NULL && strcmp(cur->name, cmd_name) < 0)
 		cur = cur->next;
 
@@ -890,13 +907,13 @@ add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf)
 	int i;
 	int cmp;
 	struct cmd_t *new;
-	struct cmd_t *cur = &head;
+	struct cmd_t *cur = &inner->head;
 
 	if(strcmp(name, "<USERCMD>") == 0)
 	{
-		if(user_cmd_handler.handler != NULL)
+		if(inner->user_cmd_handler.handler != NULL)
 			return -1;
-		user_cmd_handler = *conf;
+		inner->user_cmd_handler = *conf;
 		return 0;
 	}
 
@@ -914,7 +931,7 @@ add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf)
 	{
 		if(strcmp(name, "command") == 0 || strcmp(name, "com") == 0)
 		{
-			command_handler = conf->handler;
+			inner->command_handler = conf->handler;
 			return 0;
 		}
 		return -1;
@@ -946,7 +963,7 @@ add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf)
 static int
 comclear_cmd(const struct cmd_info *cmd_info)
 {
-	struct cmd_t *cur = &head;
+	struct cmd_t *cur = &inner->head;
 
 	while(cur->next != NULL)
 	{
@@ -964,7 +981,7 @@ comclear_cmd(const struct cmd_info *cmd_info)
 			cur = cur->next;
 		}
 	}
-	udf_count = 0;
+	inner->udf_count = 0;
 	return 0;
 }
 
@@ -978,8 +995,8 @@ command_cmd(const struct cmd_info *cmd_info)
 
 	if(cmd_info->argc < 2)
 	{
-		if(command_handler != NULL)
-			return command_handler(cmd_info);
+		if(inner->command_handler != NULL)
+			return inner->command_handler(cmd_info);
 		else
 			return CMDS_ERR_TOO_FEW_ARGS;
 	}
@@ -993,7 +1010,7 @@ command_cmd(const struct cmd_info *cmd_info)
 		return CMDS_ERR_INCORRECT_NAME;
 
 	cmp = -1;
-	cur = &head;
+	cur = &inner->head;
 	while(cur->next != NULL && (cmp = strcmp(cur->next->name, cmd_name)) < 0)
 		cur = cur->next;
 
@@ -1018,19 +1035,19 @@ command_cmd(const struct cmd_info *cmd_info)
 	new->type = USER_CMD;
 	new->passed = 0;
 	new->cmd = strdup(args);
-	new->range = user_cmd_handler.range;
-	new->cust_sep = user_cmd_handler.cust_sep;
-	new->emark = user_cmd_handler.emark;
-	new->qmark = user_cmd_handler.qmark;
-	new->expand = user_cmd_handler.expand;
-	new->min_args = user_cmd_handler.min_args;
-	new->max_args = user_cmd_handler.max_args;
-	new->regexp = user_cmd_handler.regexp;
-	new->select = user_cmd_handler.select;
-	new->bg = user_cmd_handler.bg;
-	new->quote = user_cmd_handler.quote;
+	new->range = inner->user_cmd_handler.range;
+	new->cust_sep = inner->user_cmd_handler.cust_sep;
+	new->emark = inner->user_cmd_handler.emark;
+	new->qmark = inner->user_cmd_handler.qmark;
+	new->expand = inner->user_cmd_handler.expand;
+	new->min_args = inner->user_cmd_handler.min_args;
+	new->max_args = inner->user_cmd_handler.max_args;
+	new->regexp = inner->user_cmd_handler.regexp;
+	new->select = inner->user_cmd_handler.select;
+	new->bg = inner->user_cmd_handler.bg;
+	new->quote = inner->user_cmd_handler.quote;
 
-	udf_count++;
+	inner->udf_count++;
 	return 0;
 }
 
@@ -1093,7 +1110,7 @@ delcommand_cmd(const struct cmd_info *cmd_info)
 	struct cmd_t *cmd;
 
 	cmp = -1;
-	cur = &head;
+	cur = &inner->head;
 	while(cur->next != NULL &&
 			(cmp = strcmp(cur->next->name, cmd_info->argv[0])) < 0)
 		cur = cur->next;
@@ -1107,7 +1124,7 @@ delcommand_cmd(const struct cmd_info *cmd_info)
 	free(cmd->cmd);
 	free(cmd);
 
-	udf_count--;
+	inner->udf_count--;
 	return 0;
 }
 
@@ -1118,12 +1135,12 @@ list_udf(void)
 	char **p;
 	struct cmd_t *cur;
 
-	if((list = malloc(sizeof(*list)*(udf_count*2 + 1))) == NULL)
+	if((list = malloc(sizeof(*list)*(inner->udf_count*2 + 1))) == NULL)
 		return NULL;
 
 	p = list;
 
-	cur = head.next;
+	cur = inner->head.next;
 	while(cur != NULL)
 	{
 		if(cur->type == USER_CMD)
@@ -1147,7 +1164,7 @@ list_udf_content(const char *beginning)
 	char *result;
 	size_t result_len = 0;
 
-	cur = head.next;
+	cur = inner->head.next;
 	len = strlen(beginning);
 	result = NULL;
 	while(cur != NULL)

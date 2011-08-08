@@ -85,6 +85,16 @@ enum {
 	COM_SET,
 };
 
+static int complete_args(int id, const char *args, int argc, char **argv,
+		int arg_pos);
+static int swap_range(void);
+static int resolve_mark(char mark);
+static char * cmds_expand_macros(const char *str);
+static void post(int id);
+#ifndef TEST
+static
+#endif
+void select_range(const struct cmd_info *cmd_info);
 static void exec_completion(const char *str);
 static void filename_completion(const char *str, int type);
 static int is_entry_dir(const struct dirent *d);
@@ -283,6 +293,15 @@ static const struct cmd_add commands[] = {
 
 	{ .name = "<USERCMD>",        .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = usercmd_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
+};
+
+static struct cmds_conf cmds_conf = {
+	.complete_args = complete_args,
+	.swap_range = swap_range,
+	.resolve_mark = resolve_mark,
+	.expand_macros = cmds_expand_macros,
+	.post = post,
+	.select_range = select_range,
 };
 
 static int need_clean_selection;
@@ -688,14 +707,7 @@ select_count(const struct cmd_info *cmd_info, int count)
 void
 init_commands(void)
 {
-	cmds_conf.complete_args = complete_args;
-	cmds_conf.swap_range = swap_range;
-	cmds_conf.resolve_mark = resolve_mark;
-	cmds_conf.expand_macros = cmds_expand_macros;
-	cmds_conf.post = post;
-	cmds_conf.select_range = select_range;
-
-	init_cmds();
+	init_cmds(1, &cmds_conf);
 	add_buildin_commands((const struct cmd_add *)&commands, ARRAY_LEN(commands));
 
 	split_path();
