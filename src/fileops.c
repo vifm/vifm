@@ -1697,6 +1697,12 @@ put_next(const char *dest_name, int override)
 			snprintf(do_buf, sizeof(do_buf), "ln -s %s %s", src_buf, dst_buf);
 			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s", dst_buf);
 		}
+		else if(put_confirm.link == 2)
+		{
+			snprintf(do_buf, sizeof(do_buf), "ln -s %s %s",
+					make_rel_path(src_buf, put_confirm.view->curr_dir), dst_buf);
+			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s", dst_buf);
+		}
 		else if(move)
 		{
 			snprintf(do_buf, sizeof(do_buf), "mv %s %s %s", override ? "" : "-n",

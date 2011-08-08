@@ -13,6 +13,7 @@ void test_cmdline_completion(void);
 void test_dispatch_line(void);
 void test_command_separation(void);
 void friendly_size(void);
+void rel_symlinks_tests(void);
 
 void all_tests(void)
 {
@@ -29,6 +30,7 @@ void all_tests(void)
 	test_dispatch_line();
 	test_command_separation();
 	friendly_size();
+	rel_symlinks_tests();
 }
 
 int main(int argc, char **argv)

@@ -716,6 +716,54 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 }
 
 const char *
+make_rel_path(const char *path, const char *base)
+{
+	static char buf[PATH_MAX];
+
+	const char *p = path, *b = base;
+	int i;
+	int nslashes;
+
+	while(p[0] != '\0' && p[1] != '\0' && b[0] != '\0' && b[1] != '\0')
+	{
+		const char *op = p, *ob = b;
+		if((p = strchr(p + 1, '/')) == NULL)
+			p = path + strlen(path);
+		if((b = strchr(b + 1, '/')) == NULL)
+			b = base + strlen(base);
+		if(p - path != b - base)
+			break;
+		if(strncmp(path, base, p - path) != 0)
+		{
+			p = op;
+			b = ob;
+			break;
+		}
+	}
+
+	canonicalize_path(b, buf, sizeof(buf));
+	chosp(buf);
+
+	nslashes = 0;
+	for(i = 0; buf[i] != '\0'; i++)
+		if(buf[i] == '/')
+			nslashes++;
+
+	buf[0] = '\0';
+	while(nslashes-- > 0)
+		strcat(buf, "../");
+	if(*p == '/')
+		p++;
+	canonicalize_path(p, buf + strlen(buf), sizeof(buf) - strlen(buf));
+	chosp(buf);
+
+	if(buf[0] == '\0')
+		strcpy(buf, ".");
+
+	return buf;
+}
+
+const char *
 replace_home_part(const char *directory)
 {
 	static char buf[PATH_MAX];

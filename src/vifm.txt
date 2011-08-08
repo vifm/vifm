@@ -191,6 +191,7 @@ p - will copy the yanked files to the current directory or move the files
     if the files were yanked from the Trash directory.
 P - moves the last yanked files.
 al - puts symbolic links with absolute paths.
+rl - puts symbolic links with relative paths.
 
 t - select or unselect (tag) a the current file
 

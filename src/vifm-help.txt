@@ -250,6 +250,8 @@ Other Normal Mode Keys
 
        al     puts symbolic links with absolute paths.
 
+       rl     puts symbolic links with relative paths.
+
        t      tag the current file.
 
        u      undo last change.

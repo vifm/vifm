@@ -4,7 +4,6 @@ Basic things that need to be done.
 	Fix window resizing (I think it's almost done).
 	Handle commands that are too long to be passed directly to the shell.
 	Make ga work in background.
-	Think about good key for creating links (like pl in ranger, al, rl).
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
         :chown commands.
     %something for absolute filenames.

@@ -52,6 +52,8 @@
 
 	Added al command for symbolic links with absolute paths.
 
+	Added rl command for symbolic links with relative paths.
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,

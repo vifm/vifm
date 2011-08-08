@@ -118,6 +118,7 @@ static void cmd_n(struct key_info, struct keys_info *);
 static void cmd_l(struct key_info, struct keys_info *);
 static void cmd_p(struct key_info, struct keys_info *);
 static void cmd_m(struct key_info, struct keys_info *);
+static void cmd_rl(struct key_info, struct keys_info *);
 static void cmd_t(struct key_info, struct keys_info *);
 static void cmd_u(struct key_info, struct keys_info *);
 static void cmd_yy(struct key_info, struct keys_info *);
@@ -209,6 +210,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"m", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_m}}},
 	{L"n", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
 	{L"p", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_p}}},
+	{L"rl", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_rl}}},
 	{L"t", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_t}}},
 	{L"u", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_u}}},
 	{L"yy", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_yy}}},
@@ -829,7 +831,8 @@ cmd_al(struct key_info key_info, struct keys_info *keys_info)
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	curr_stats.save_msg = put_links(curr_view, key_info.reg, 0);
-	load_saving_pos(curr_view, 1);
+	load_saving_pos(&lwin, 1);
+	load_saving_pos(&rwin, 1);
 }
 
 /* Change word (rename file without extension). */
@@ -1054,6 +1057,17 @@ cmd_p(struct key_info key_info, struct keys_info *keys_info)
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg, 0);
+	load_saving_pos(&lwin, 1);
+	load_saving_pos(&rwin, 1);
+}
+
+/* Create link with absolute path */
+static void
+cmd_rl(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(key_info.reg == NO_REG_GIVEN)
+		key_info.reg = DEFAULT_REG_NAME;
+	curr_stats.save_msg = put_links(curr_view, key_info.reg, 1);
 	load_saving_pos(&lwin, 1);
 	load_saving_pos(&rwin, 1);
 }

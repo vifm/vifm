@@ -51,7 +51,7 @@ static int swap_range(void);
 static int resolve_mark(char mark);
 static char * menu_expand_macros(const char *str);
 static void post(int id);
-static void select_range(const struct cmd_info *cmd_info);
+static void menu_select_range(const struct cmd_info *cmd_info);
 
 static int key_handler(wchar_t key);
 static void leave_menu_mode(void);
@@ -140,7 +140,7 @@ static struct cmds_conf cmds_conf = {
 	.resolve_mark = resolve_mark,
 	.expand_macros = menu_expand_macros,
 	.post = post,
-	.select_range = select_range,
+	.select_range = menu_select_range,
 };
 
 static int
@@ -173,7 +173,7 @@ post(int id)
 }
 
 static void
-select_range(const struct cmd_info *cmd_info)
+menu_select_range(const struct cmd_info *cmd_info)
 {
 }
 
