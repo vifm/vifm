@@ -573,6 +573,23 @@ fuse_try_mount(FileView *view, const char *program)
 	moveto_list_pos(view, view->curr_line);
 }
 
+static int
+multi_run_compat(FileView *view, const char *program)
+{
+	size_t len;
+	if(view->selected_files <= 1)
+		return 0;
+	if((len = strlen(program)) == 0)
+		return 0;
+	if(program[len - 1] != '&')
+		return 0;
+	if(strstr(program, "%f") != NULL || strstr(program, "%F") != NULL)
+		return 0;
+	if(strstr(program, "%c") == NULL && strstr(program, "%C") == NULL)
+		return 0;
+	return 1;
+}
+
 static void
 execute_file(FileView *view, int dont_execute)
 {
@@ -580,13 +597,13 @@ execute_file(FileView *view, int dont_execute)
 	int undef;
 	int same;
 	int i;
-	int background;
-	size_t len;
+	int no_multi_run = 0;
 
 	if(!view->dir_entry[view->list_pos].selected)
 		clean_selected_files(view);
 
 	program = get_default_program_for_file(view->dir_entry[view->list_pos].name);
+	no_multi_run += !multi_run_compat(view, program);
 	undef = 0;
 	same = 1;
 	for(i = 0; i < view->list_rows; i++)
@@ -607,6 +624,7 @@ execute_file(FileView *view, int dont_execute)
 		prog = get_default_program_for_file(view->dir_entry[i].name);
 		if(prog != NULL)
 		{
+			no_multi_run += !multi_run_compat(view, prog);
 			if(program == NULL)
 				program = prog;
 			else
@@ -620,7 +638,7 @@ execute_file(FileView *view, int dont_execute)
 			undef++;
 	}
 
-	if(!same && undef == 0)
+	if(!same && undef == 0 && no_multi_run)
 	{
 		free(program);
 		show_error_msg("Selection error", "Files have different programs");
@@ -647,27 +665,27 @@ execute_file(FileView *view, int dont_execute)
 		return;
 	}
 
-	/* looks awful */
-	len = strlen(program);
-	background = len > 0 && program[len - 1] == '&';
-	if(strstr(program, "%f") == NULL && strstr(program, "%F") == NULL &&
-			(strstr(program, "%c") != NULL || strstr(program, "%C") != NULL) &&
-			view->selected_files > 1 && background)
+	if(!no_multi_run)
 	{
 		int pos = view->list_pos;
+		free(program);
 		for(i = 0; i < view->list_rows; i++)
 		{
 			if(!view->dir_entry[i].selected)
 				continue;
 			view->list_pos = i;
+			program = get_default_program_for_file(
+					view->dir_entry[view->list_pos].name);
 			run_using_prog(view, program, dont_execute, 0);
+			free(program);
 		}
 		view->list_pos = pos;
 	}
 	else
+	{
 		run_using_prog(view, program, dont_execute, 0);
-
-	free(program);
+		free(program);
+	}
 }
 
 void
