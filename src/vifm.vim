@@ -76,24 +76,20 @@ function! s:StartVifm(editcmd)
 		return
 	endif
 
-	" Several files to open
-	let firstfile = fnamemodify(flist[0], ':.')
 	" Don't split if current window is empty
 	if expand('%') == '' && a:editcmd =~ '^v\?split$'
-		execute 'edit' firstfile
+		execute 'edit' fnamemodify(flist[0], ':.')
 		let flist = flist[1:-1]
 		" for file in [] does not seem to work, so we need to return
 		if empty(flist)
 			return
 		endif
 	endif
-    let cwd = getcwd()
+
 	for file in flist
-        execute 'cd' cwd
-		let file = fnamemodify(file, ':.')
+		let g:file = fnamemodify(file, ':.')
 		execute a:editcmd file
 	endfor
 	" Go to first file
-    execute 'cd' cwd
-	execute 'drop' firstfile
+	execute 'drop' flist[0]
 endfunction
