@@ -33,6 +33,7 @@ enum {
 	VIFMINFO_SAVEDIRS  = 1 << 8,
 	VIFMINFO_CHISTORY  = 1 << 9,
 	VIFMINFO_SHISTORY  = 1 << 10,
+	VIFMINFO_DIRSTACK  = 1 << 11,
 };
 
 void init_option_handlers(void);

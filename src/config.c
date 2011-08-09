@@ -33,6 +33,7 @@
 #include "commands.h"
 #include "cmds.h"
 #include "config.h"
+#include "dir_stack.h"
 #include "fileops.h"
 #include "filelist.h"
 #include "filetype.h"
@@ -226,7 +227,7 @@ read_info_file(void)
 {
 	FILE *fp;
 	char info_file[PATH_MAX];
-	char line[MAX_LEN], line2[MAX_LEN], line3[MAX_LEN];
+	char line[MAX_LEN], line2[MAX_LEN], line3[MAX_LEN], line4[MAX_LEN];
 
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
 
@@ -373,6 +374,22 @@ read_info_file(void)
 		else if(line[0] == '/') /* search line history */
 		{
 			save_search_history(line + 1);
+		}
+		else if(line[0] == 'S') /* directory stack */
+		{
+			if(fgets(line2, sizeof(line2), fp) == line2)
+			{
+				prepare_line(line2);
+				if(fgets(line3, sizeof(line3), fp) == line3)
+				{
+					prepare_line(line3);
+					if(fgets(line4, sizeof(line4), fp) == line4)
+					{
+						prepare_line(line4);
+						push_to_dirstack(line + 1, line2, line3 + 1, line4);
+					}
+				}
+			}
 		}
 		else if(line[0] == 'f') /* left pane filter */
 		{
@@ -756,6 +773,16 @@ write_info_file(void)
 			fprintf(fp, "/%s\n", srch[i]);
 		for(i = cfg.search_history_num; i >= 0; i--)
 			fprintf(fp, "/%s\n", cfg.search_history[i]);
+	}
+
+	if(cfg.vifm_info & VIFMINFO_DIRSTACK)
+	{
+		fputs("\n# Directory stack (oldest to newest):\n", fp);
+		for(i = 0; i < stack_top; i++)
+		{
+			fprintf(fp, "S%s\n\t%s\n", stack[i].lpane_dir, stack[i].lpane_file);
+			fprintf(fp, "S%s\n\t%s\n", stack[i].rpane_dir, stack[i].rpane_file);
+		}
 	}
 
 	if(cfg.vifm_info & VIFMINFO_STATE)

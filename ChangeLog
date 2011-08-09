@@ -109,6 +109,8 @@
 
 	Changed the way l key handles selection.
 
+	Made dirstack persistent (when 'vifminfo' contains dirstack).
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

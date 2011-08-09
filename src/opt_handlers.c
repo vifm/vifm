@@ -75,6 +75,7 @@ static const char * vifminfo_set[] = {
 	"savedirs",
 	"chistory",
 	"shistory",
+	"dirstack",
 };
 
 void

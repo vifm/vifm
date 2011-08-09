@@ -6,21 +6,21 @@
 
 #include "dir_stack.h"
 
-struct stack_entry {
-	char* lpane_dir;
-	char* lpane_file;
-	char* rpane_dir;
-	char* rpane_file;
-};
-
-static struct stack_entry * stack;
+struct stack_entry * stack;
+unsigned int stack_top;
 static unsigned int stack_size;
-static unsigned int stack_top;
 
 static void free_entry(const struct stack_entry * entry);
 
 int
 pushd(void)
+{
+	return push_to_dirstack(lwin.curr_dir, lwin.dir_entry[lwin.list_pos].name,
+			rwin.curr_dir, rwin.dir_entry[rwin.list_pos].name);
+}
+
+int
+push_to_dirstack(const char *ld, const char *lf, const char *rd, const char *rf)
 {
 	if(stack_top == stack_size)
 	{
@@ -32,14 +32,14 @@ pushd(void)
 		stack_size++;
 	}
 
-	stack[stack_top].lpane_dir = strdup(lwin.curr_dir);
-	stack[stack_top].lpane_file = strdup(lwin.dir_entry[lwin.list_pos].name);
-	stack[stack_top].rpane_dir = strdup(rwin.curr_dir);
-	stack[stack_top].rpane_file = strdup(rwin.dir_entry[rwin.list_pos].name);
+	stack[stack_top].lpane_dir = strdup(ld);
+	stack[stack_top].lpane_file = strdup(lf);
+	stack[stack_top].rpane_dir = strdup(rd);
+	stack[stack_top].rpane_file = strdup(rf);
 
-	if(stack[stack_top].lpane_dir == NULL || stack[stack_top].lpane_file == NULL
-			|| stack[stack_top].rpane_dir == NULL
-			|| stack[stack_top].rpane_file == NULL)
+	if(stack[stack_top].lpane_dir == NULL ||
+			stack[stack_top].lpane_file == NULL ||
+			stack[stack_top].rpane_dir == NULL || stack[stack_top].rpane_file == NULL)
 	{
 		free_entry(&stack[stack_top]);
 		return -1;
@@ -78,6 +78,21 @@ free_entry(const struct stack_entry * entry)
 	free(entry->lpane_file);
 	free(entry->rpane_dir);
 	free(entry->rpane_file);
+}
+
+int
+is_in_dir_list(const char *ldir, const char *rdir)
+{
+	int i;
+	for(i = 0; i < stack_top; i++)
+	{
+		if(strcmp(stack[i].lpane_dir, ldir) != 0)
+			continue;
+		if(strcmp(stack[i].rpane_dir, rdir) != 0)
+			continue;
+		return 1;
+	}
+	return 0;
 }
 
 char **
