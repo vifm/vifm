@@ -981,6 +981,8 @@ int
 is_in_view_history(FileView *view, const char *path)
 {
 	int i;
+	if(view->history == NULL)
+		return 0;
 	for(i = view->history_pos; i >= 0; i--)
 	{
 		if(strlen(view->history[i].dir) < 1)

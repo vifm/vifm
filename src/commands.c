@@ -709,10 +709,18 @@ select_count(const struct cmd_info *cmd_info, int count)
 void
 init_commands(void)
 {
-	init_cmds(1, &cmds_conf);
-	add_buildin_commands((const struct cmd_add *)&commands, ARRAY_LEN(commands));
+	if(cmds_conf.inner == NULL)
+	{
+		init_cmds(1, &cmds_conf);
+		add_buildin_commands((const struct cmd_add *)&commands,
+				ARRAY_LEN(commands));
 
-	split_path();
+		split_path();
+	}
+	else
+	{
+		init_cmds(1, &cmds_conf);
+	}
 }
 
 static void

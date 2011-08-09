@@ -402,6 +402,9 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 	update_cmdline_text();
 
 	curr_stats.save_msg = 1;
+
+	if(prev_mode == NORMAL_MODE)
+		init_commands();
 }
 
 static void
