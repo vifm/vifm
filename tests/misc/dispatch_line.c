@@ -129,11 +129,11 @@ test_regexp_quotes_escaping(void)
 	int count;
 	char **args;
 
-	args = dispatch_line("/ \\/ /", &count, ' ', 1, 1, NULL, NULL);
+	args = dispatch_line("/ \\( \\/ \\) /", &count, '/', 1, 0, NULL, NULL);
 	assert_int_equal(1, count);
 	if(count != 1)
 		return;
-	assert_string_equal(" / ", args[0]);
+	assert_string_equal(" \\( / \\) ", args[0]);
 	free_string_array(args, count);
 
 	args = dispatch_line("/\\.c$/", &count, ' ', 1, 1, NULL, NULL);
@@ -200,6 +200,29 @@ test_no_quoting(void)
 	free_string_array(args, count);
 }
 
+static void
+test_cust_sep(void)
+{
+	int count;
+	char **args;
+
+	args = dispatch_line("//abc/", &count, '/', 1, 0, NULL, NULL);
+	assert_int_equal(2, count);
+	if(count != 2)
+		return;
+	assert_string_equal("", args[0]);
+	assert_string_equal("abc", args[1]);
+	free_string_array(args, count);
+
+	args = dispatch_line("!!abc!", &count, '!', 1, 0, NULL, NULL);
+	assert_int_equal(2, count);
+	if(count != 2)
+		return;
+	assert_string_equal("", args[0]);
+	assert_string_equal("abc", args[1]);
+	free_string_array(args, count);
+}
+
 void
 test_dispatch_line(void)
 {
@@ -218,6 +241,8 @@ test_dispatch_line(void)
 	run_test(test_start_and_end_spaces);
 
 	run_test(test_no_quoting);
+
+	run_test(test_cust_sep);
 
 	test_fixture_end();
 }

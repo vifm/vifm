@@ -80,21 +80,6 @@ free_entry(const struct stack_entry * entry)
 	free(entry->rpane_file);
 }
 
-int
-is_in_dir_list(const char *ldir, const char *rdir)
-{
-	int i;
-	for(i = 0; i < stack_top; i++)
-	{
-		if(strcmp(stack[i].lpane_dir, ldir) != 0)
-			continue;
-		if(strcmp(stack[i].rpane_dir, rdir) != 0)
-			continue;
-		return 1;
-	}
-	return 0;
-}
-
 char **
 dir_stack_list(void)
 {

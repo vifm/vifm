@@ -1,4 +1,4 @@
-.TH vifm 1 "August 8, 2011" "" "Vifm"
+.TH vifm 1 "August 10, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -685,6 +685,20 @@ creates a popup menu of different sorting methods.
 .BI :sp[lit]
 splits the window to show both file directories.
 .TP
+.BI :[range]s[ubstitite]/pattern/string/[flags]
+for each file in range replace a match of pattern with string.
+.LP
+String can contain \0...\9 to link to capture groups (0 - all match, 1 - first
+group, etc.).
+
+Available flags:
+.IP - 2
+i - ignore case (the 'ignorecase' and 'smartcase' options are not used)
+.IP - 2
+I - don't ignore case (the 'ignorecase' and 'smartcase' options are not used)
+.IP - 2
+g - substitute all matches in each file name
+.TP
 .BI :sync
 change the other panel to the current panel directory.
 .TP
@@ -897,8 +911,8 @@ type: boolean
 .br
 default: false
 .br
-Ignore case in search patterns (/ and ? commands).  It doesn't affect file
-filtering.
+Ignore case in search patterns (:substiute, / and ? commands).  It doesn't
+affect file filtering.
 .TP
 .BI reverscol
 type: boolean
@@ -1185,7 +1199,6 @@ commands.
   g[lobal]
   m[ove]
   rlink
-  s[ubstitute]
   v[global]
 .\" ---------------------------------------------------------------------------
 .SH SEE ALSO

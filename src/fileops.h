@@ -63,6 +63,9 @@ unsigned long long calc_dirsize(const char *path, int force_update);
 int is_dir_writable(const char *path);
 /* Returns new value for save_msg flag. */
 int put_links(FileView *view, int reg_name, int relative);
+/* Returns new value for save_msg flag. */
+int substitute_in_names(FileView *view, const char *pattern, const char *sub,
+		int ic, int glob);
 
 #endif
 

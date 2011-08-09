@@ -151,6 +151,7 @@ static int set_cmd(const struct cmd_info *cmd_info);
 static int shell_cmd(const struct cmd_info *cmd_info);
 static int sort_cmd(const struct cmd_info *cmd_info);
 static int split_cmd(const struct cmd_info *cmd_info);
+static int substitute_cmd(const struct cmd_info *cmd_info);
 static int sync_cmd(const struct cmd_info *cmd_info);
 static int undolist_cmd(const struct cmd_info *cmd_info);
 static int unmap_cmd(const struct cmd_info *cmd_info);
@@ -268,6 +269,8 @@ static const struct cmd_add commands[] = {
 		.handler = sort_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "split",            .abbr = "sp",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = split_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "substitute",       .abbr = "s",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
+		.handler = substitute_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 2, .max_args = 3,       .select = 1, },
 	{ .name = "sync",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = sync_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "undolist",         .abbr = "undol", .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2492,6 +2495,44 @@ split_cmd(const struct cmd_info *cmd_info)
 	curr_stats.number_of_windows = 2;
 	redraw_window();
 	return 0;
+}
+
+static int
+substitute_cmd(const struct cmd_info *cmd_info)
+{
+	static char *last_pattern;
+	int ic = 0;
+	int glob = 0;
+
+	if(cmd_info->argc == 3)
+	{
+		int i;
+		for(i = 0; cmd_info->argv[2][i] != '\0'; i++)
+		{
+			if(cmd_info->argv[2][i] == 'i')
+				ic = 1;
+			else if(cmd_info->argv[2][i] == 'I')
+				ic = -1;
+			else if(cmd_info->argv[2][i] == 'g')
+				glob = 1;
+			else
+				return CMDS_ERR_TRAILING_CHARS;
+		}
+	}
+
+	if(cmd_info->argv[0][0] != '\0')
+	{
+		free(last_pattern);
+		last_pattern = strdup(cmd_info->argv[0]);
+	}
+	else if(last_pattern == NULL)
+	{
+		status_bar_message("No previous pattern");
+		return 1;
+	}
+
+	return substitute_in_names(curr_view, last_pattern, cmd_info->argv[1], ic,
+			glob) != 0;
 }
 
 static int

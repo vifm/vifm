@@ -594,7 +594,7 @@ write_vifmrc(const char *config_file, int comment_out)
 	fprintf(fp, "\" press return on the file name set this.\n");
 	fprintf(fp, "\n%sset %srunexec\n", comment, options.runexec ? "" : "no");
 
-	fprintf(fp, "\n\" Use KiB, MiB, ... instead of KB, MB, ...\n");
+	fprintf(fp, "\n\" Use KiB, MiB, ... instead of K, M, ...\n");
 	fprintf(fp, "\n%sset %siec\n", comment, options.iec ? "" : "no");
 
 	fprintf(fp, "\n\" Selected color scheme\n");

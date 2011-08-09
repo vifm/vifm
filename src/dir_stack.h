@@ -46,11 +46,6 @@ int push_to_dirstack(const char *ld, const char *lf, const char *rd,
 int popd(void);
 
 /*
- * Returns non-zero if directory stack contains given directory pair
- */
-int is_in_dir_list(const char *ldir, const char *rdir);
-
-/*
  * Last element of list returned is NULL.
  * Returns NULL on error.
  */

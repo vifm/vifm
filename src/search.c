@@ -20,8 +20,8 @@
 
 #include <curses.h>
 #include <regex.h>
+
 #include <string.h>
-#include <wctype.h>
 
 #include "config.h"
 #include "filelist.h"
@@ -151,31 +151,6 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 		status_bar_messagef("No matching files for %s", view->regexp);
 		return 1;
 	}
-}
-
-int
-get_regexp_cflags(const char *pattern)
-{
-	int result;
-
-	result = REG_EXTENDED;
-	if(cfg.ignore_case)
-		result |= REG_ICASE;
-
-	if(cfg.ignore_case && cfg.smart_case)
-	{
-		wchar_t *wstring, *p;
-		wstring = to_wide(pattern);
-		p = wstring - 1;
-		while(*++p != L'\0')
-			if(iswupper(*p))
-			{
-				result &= ~REG_ICASE;
-				break;
-			}
-		free(wstring);
-	}
-	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -72,6 +72,7 @@ const char * make_rel_path(const char *path, const char *base);
 const char *replace_home_part(const char *directory);
 const char *find_tail(const char *path);
 char * expand_tilde(char *path);
+int get_regexp_cflags(const char *pattern);
 
 #endif
 

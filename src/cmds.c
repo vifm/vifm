@@ -416,12 +416,12 @@ udf_is_ambiguous(const char *name)
 static const char *
 parse_tail(struct cmd_t *cur, const char *cmd, struct cmd_info *cmd_info)
 {
-	if(*cmd == '!')
+	if(*cmd == '!' && (!cur->cust_sep || cur->emark))
 	{
 		cmd_info->emark = 1;
 		cmd++;
 	}
-	else if(*cmd == '?')
+	else if(*cmd == '?' && (!cur->cust_sep || cur->qmark))
 	{
 		cmd_info->qmark = 1;
 		cmd++;
@@ -430,8 +430,7 @@ parse_tail(struct cmd_t *cur, const char *cmd, struct cmd_info *cmd_info)
 	{
 		if(cur->cust_sep)
 			cmd_info->sep = *cmd;
-		else
-			return cmd;
+		return cmd;
 	}
 	while(*cmd == cmd_info->sep)
 		cmd++;
@@ -466,8 +465,9 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 	if(params == NULL)
 		return NULL;
 
-	while(args[0] == sep)
-		args++;
+	if(sep == ' ')
+		while(args[0] == sep)
+			args++;
 	cmdstr = strdup(args);
 	len = strlen(cmdstr);
 	for(i = 0, st = 0, j = 0, state = BEGIN; i <= len; ++i)
@@ -494,6 +494,11 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 				else if(cmdstr[i] != sep)
 				{
 					st = i;
+					state = NO_QUOTING;
+				}
+				else if(sep != ' ' && i > 0 && cmdstr[i - 1] == sep)
+				{
+					st = i--;
 					state = NO_QUOTING;
 				}
 				break;
@@ -544,7 +549,7 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 
 			params[j] = strdup(&cmdstr[st]);
 			if(prev_state == NO_QUOTING)
-				unescape(params[j], 0);
+				unescape(params[j], (sep == ' ') ? 0 : 1);
 			else if(prev_state == D_QUOTING)
 				replace_esc(params[j]);
 			else if(prev_state == R_QUOTING)
@@ -583,6 +588,11 @@ get_args_count(const char *cmdstr, char sep, int regexp, int quotes)
 					state = R_QUOTING;
 				else if(cmdstr[i] != sep)
 					state = NO_QUOTING;
+				else if(sep != ' ' && i > 0 && cmdstr[i - 1] == sep)
+				{
+					state = NO_QUOTING;
+					i--;
+				}
 				break;
 			case NO_QUOTING:
 				if(cmdstr[i] == sep)

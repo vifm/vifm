@@ -26,7 +26,6 @@ Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).
 	Change file list filters to use fold levels instead of just
 		the dot filter and regular expression filter (what does this mean?).
-	Add :s/pattern/replace/ command.
     Add one more color to color scheme for error messages in status bar.
     Some kind of selection mode (multible blocks, mixing).
     gs to work with t selection just like gv with visual mode selection.

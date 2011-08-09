@@ -410,6 +410,15 @@ The builtin commands are:
     "a and "z content).
 :sor[t] - menu of different sorting methods.
 :sp[lit] - switch to a two window view.
+:[range]s[ubstitite]/pattern/string/[flags] - for each file in range
+    replace a match of pattern with string.  String can contain \0...\9
+    to link to capture groups (0 - all match, 1 - first group, etc.).
+    Flags can be used
+        i - ignore case (the 'ignorecase' and 'smartcase' options are not
+            used)
+        I - don't ignore case (the 'ignorecase' and 'smartcase' options
+            are not used)
+        g - substitute all matches in each file name
 :sync - change the other panel to the current panels directory.
 :undol[ist] - show list of latest changes.  Add ! to see commands.
 :vie[w] - toggle on and off the quick file view.
@@ -552,8 +561,8 @@ Use KiB, MiB, ... instead of KB, MB, ...
 ignorecase ic
 type: boolean
 default: false
-Ignore case in search patterns (/ and ? commands).  It doesn't affect file
-filtering.
+Ignore case in search patterns (:substiute, / and ? commands).  It doesn't
+affect file filtering.
 
 reverscol
 type: boolean
@@ -806,7 +815,6 @@ commands.
   g[lobal]
   m[ove]
   rlink
-  s[ubstitute]
   v[global]
 
 --------------------------------------------------------------------------------

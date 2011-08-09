@@ -18,6 +18,8 @@
 
 #define _GNU_SOURCE
 
+#include <regex.h>
+
 #include <curses.h>
 
 #include <dirent.h>
@@ -1813,10 +1815,16 @@ put_files_from_register_i(FileView *view, int start)
 	if(start)
 	{
 		char buf[PATH_MAX + NAME_MAX*2 + 4];
+		const char *op;
 		int from_trash = strncmp(put_confirm.reg->files[0], cfg.trash_dir,
 				strlen(cfg.trash_dir)) == 0;
-		snprintf(buf, sizeof(buf), "%s in %s: ",
-				(put_confirm.force_move || from_trash) ?  "Put" : "put",
+		if(put_confirm.link == 0)
+			op = (put_confirm.force_move || from_trash) ? "Put" : "put";
+		else if(put_confirm.link == 1)
+			op = "put absolute links";
+		else if(put_confirm.link == 2)
+			op = "put relative links";
+		snprintf(buf, sizeof(buf), "%s in %s: ", op,
 				replace_home_part(view->curr_dir));
 		cmd_group_begin(buf);
 		cmd_group_end();
@@ -2034,6 +2042,187 @@ put_links(FileView *view, int reg_name, int relative)
 	put_confirm.overwrite_all = 0;
 	put_confirm.link = relative ? 2 : 1;
 	return put_files_from_register_i(view, 1);
+}
+
+static const char *
+substitute_regexp(const char *src, const char *sub, const regmatch_t *matches,
+		int *off)
+{
+	static char buf[NAME_MAX];
+	char *dst = buf;
+	int i;
+
+	for(i = 0; i < matches[0].rm_so; i++)
+		*dst++ = src[i];
+
+	while(*sub != '\0')
+	{
+		if(*sub == '\\')
+		{
+			if(sub[1] == '\0')
+				break;
+			else if(isdigit(sub[1]))
+			{
+				int n = sub[1] - '0';
+				for(i = matches[n].rm_so; i < matches[n].rm_eo; i++)
+					*dst++ = src[i];
+				sub += 2;
+				continue;
+			}
+			else
+				sub++;
+		}
+		*dst++ = *sub++;
+	}
+	if(off != NULL)
+		*off = dst - buf;
+
+	for(i = matches[0].rm_eo; src[i] != '\0'; i++)
+		*dst++ = src[i];
+
+	*dst = '\0';
+
+	return buf;
+}
+
+static const char *
+gsubstitute_regexp(regex_t *re, const char *src, const char *sub,
+		regmatch_t *matches)
+{
+	static char buf[NAME_MAX];
+	int off = 0;
+	strcpy(buf, src);
+	do
+	{
+		int i;
+		for(i = 0; i < 10; i++)
+		{
+			matches[i].rm_so += off;
+			matches[i].rm_eo += off;
+		}
+
+		src = substitute_regexp(buf, sub, matches, &off);
+		strcpy(buf, src);
+	}while(regexec(re, buf + off, 10, matches, 0) == 0);
+	return buf;
+}
+
+/* Returns new value for save_msg flag. */
+int
+substitute_in_names(FileView *view, const char *pattern, const char *sub,
+		int ic, int glob)
+{
+	int i, j;
+	regex_t re;
+	char buf[COMMAND_GROUP_INFO_LEN + 1];
+	size_t len;
+	char **dest = NULL;
+	int n = 0;
+	int cflags;
+
+	if(view->selected_files == 0)
+	{
+		view->dir_entry[view->list_pos].selected = 1;
+		view->selected_files = 1;
+	}
+
+	if(ic == 0)
+		cflags = get_regexp_cflags(pattern);
+	else if(ic > 0)
+		cflags = REG_EXTENDED | REG_ICASE;
+	else
+		cflags = REG_EXTENDED;
+	if(regcomp(&re, pattern, cflags) != 0)
+	{
+		regfree(&re);
+		status_bar_message("Invalid regular expression");
+		return 1;
+	}
+
+	for(i = 0; i < view->list_rows; i++)
+	{
+		char buf[NAME_MAX];
+		const char *dst;
+		regmatch_t matches[10];
+		struct stat st;
+
+		if(!view->dir_entry[i].selected)
+			continue;
+		if(strcmp(view->dir_entry[i].name, "../") == 0)
+			continue;
+
+		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
+		chosp(buf);
+		if(regexec(&re, buf, ARRAY_LEN(matches), matches, 0) != 0)
+			continue;
+		if(glob)
+			dst = gsubstitute_regexp(&re, buf, sub, matches);
+		else
+			dst = substitute_regexp(buf, sub, matches, NULL);
+		n = add_to_string_array(&dest, n, 1, dst);
+		if(strcmp(buf, dst) == 0)
+			continue;
+		if(is_in_string_array(dest, n - 1, dst))
+		{
+			regfree(&re);
+			free_string_array(dest, n);
+			status_bar_messagef("Destination name \"%s\" appears more than once",
+					dst);
+			return 1;
+		}
+		if(lstat(dst, &st) == 0)
+		{
+			regfree(&re);
+			free_string_array(dest, n);
+			status_bar_messagef("File \"%s\" already exist", dst);
+			return 1;
+		}
+	}
+	regfree(&re);
+
+	len = snprintf(buf, sizeof(buf), "s/%s/%s/ in %s: ", pattern, sub,
+			replace_home_part(view->curr_dir));
+
+	for(i = 0; i < view->selected_files && len < COMMAND_GROUP_INFO_LEN; i++)
+	{
+		if(!view->dir_entry[i].selected)
+			continue;
+		if(strcmp(view->dir_entry[i].name, "../") == 0)
+			continue;
+
+		if(buf[len - 2] != ':')
+		{
+			strncat(buf, ", ", sizeof(buf));
+			buf[sizeof(buf) - 1] = '\0';
+		}
+		strncat(buf, view->dir_entry[i].name, sizeof(buf));
+		buf[sizeof(buf) - 1] = '\0';
+		len = strlen(buf);
+	}
+	cmd_group_begin(buf);
+	n = 0;
+	j = -1;
+	for(i = 0; i < view->list_rows; i++)
+	{
+		char buf[NAME_MAX];
+
+		if(!view->dir_entry[i].selected)
+			continue;
+		if(strcmp(view->dir_entry[i].name, "../") == 0)
+			continue;
+
+		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
+		chosp(buf);
+		j++;
+		if(strcmp(buf, dest[j]) == 0)
+			continue;
+		mv_file(buf, dest[j], 0);
+		n++;
+	}
+	cmd_group_end();
+	free_string_array(dest, j);
+	status_bar_messagef("%d file%s renamed", n, (n == 1) ? "" : "s");
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

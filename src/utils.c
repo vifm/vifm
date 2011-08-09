@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <regex.h>
+
 #include <curses.h>
 
 #include <fcntl.h>
@@ -31,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
+#include <wctype.h>
 
 #include "../config.h"
 
@@ -823,6 +826,31 @@ expand_tilde(char *path)
 	sprintf(result, "%s/%s", pw->pw_dir, p);
 	free(path);
 
+	return result;
+}
+
+int
+get_regexp_cflags(const char *pattern)
+{
+	int result;
+
+	result = REG_EXTENDED;
+	if(cfg.ignore_case)
+		result |= REG_ICASE;
+
+	if(cfg.ignore_case && cfg.smart_case)
+	{
+		wchar_t *wstring, *p;
+		wstring = to_wide(pattern);
+		p = wstring - 1;
+		while(*++p != L'\0')
+			if(iswupper(*p))
+			{
+				result &= ~REG_ICASE;
+				break;
+			}
+		free(wstring);
+	}
 	return result;
 }
 
