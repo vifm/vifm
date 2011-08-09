@@ -731,9 +731,7 @@ make_rel_path(const char *path, const char *base)
 			p = path + strlen(path);
 		if((b = strchr(b + 1, '/')) == NULL)
 			b = base + strlen(base);
-		if(p - path != b - base)
-			break;
-		if(strncmp(path, base, p - path) != 0)
+		if(p - path != b - base || strncmp(path, base, p - path) != 0)
 		{
 			p = op;
 			b = ob;

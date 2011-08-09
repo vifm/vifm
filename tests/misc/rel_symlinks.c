@@ -75,6 +75,9 @@ test_different_subtree(void)
 
 	buf = make_rel_path("/home/user1///u1dir1", "/home/user2/././/u2dir1/.");
 	assert_string_equal("../../user1/u1dir1", buf);
+
+	buf = make_rel_path("/home/file", "/tmp");
+	assert_string_equal("../home/file", buf);
 }
 
 void
