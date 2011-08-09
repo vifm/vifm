@@ -42,15 +42,19 @@ endif
 if !exists(':DiffVifm')
 	command DiffVifm :call s:StartVifm('vert diffsplit')
 endif
-if !exists(":TabVifm")
+if !exists(':TabVifm')
 	command TabVifm :call s:StartVifm('tablast | tab drop')
+endif
+
+if !exists('g:vifm_term')
+	let g:vifm_term = 'xterm -e'
 endif
 
 function! s:StartVifm(editcmd)
 	" Gvim cannot handle ncurses so run vifm in an xterm.
 	let dir = fnameescape(expand('%:p:h'))
 	if has('gui_running')
-		execute 'silent !xterm -e vifm -f' dir
+		execute 'silent !' g:vifm_term 'vifm -f' dir
 	else
 		execute 'silent !vifm -f' dir
 	endif

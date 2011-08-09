@@ -1156,7 +1156,9 @@ Commands:
               :vert diffsplit.
   :TabVifm    select a file or files to open in tabs.
 
-The plugin does not have any settings.
+The plugin have only one setting.  It's a string variable named g:vifm_term to
+let user specify command to run gui terminal.  By default it's equal to
+\'xterm -e'.
 
 To use the plugin copy the vifm.vim file to either the system wide vim/plugin
 directory or into ~/.vim/plugin.

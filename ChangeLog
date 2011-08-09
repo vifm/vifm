@@ -54,6 +54,8 @@
 
 	Added rl command for symbolic links with relative paths.
 
+	Added g:vifm_term variable for the plugin.
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,
