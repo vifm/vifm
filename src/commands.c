@@ -651,6 +651,8 @@ select_range(const struct cmd_info *cmd_info)
 
 		for(x = cmd_info->begin; x <= cmd_info->end; x++)
 		{
+			if(strcmp(curr_view->dir_entry[x].name, "../") == 0)
+				continue;
 			curr_view->dir_entry[x].selected = 1;
 			y++;
 		}
@@ -665,6 +667,8 @@ select_range(const struct cmd_info *cmd_info)
 			y = 0;
 			for(x = cmd_info->end; x < curr_view->list_rows; x++)
 			{
+				if(strcmp(curr_view->dir_entry[x].name, "../") == 0)
+					continue;
 				if(y == 1)
 					break;
 				curr_view->dir_entry[x].selected = 1;
@@ -679,6 +683,8 @@ select_range(const struct cmd_info *cmd_info)
 			y = 0;
 			for(x = curr_view->list_pos; x < curr_view->list_rows; x++)
 			{
+				if(strcmp(curr_view->dir_entry[x].name, "../") == 0)
+					continue;
 				if(y == 1)
 					break;
 

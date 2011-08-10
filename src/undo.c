@@ -22,9 +22,9 @@ struct group_t {
 };
 
 struct op_t {
-  char *cmd;
-  char *src;
-  char *dst;
+	char *cmd;
+	char *src;
+	char *dst;
 };
 
 struct cmd_t {

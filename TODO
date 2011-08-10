@@ -28,7 +28,6 @@ Vi(m) specific features that need to be added.
     Add one more color to color scheme for error messages in status bar.
     Some kind of selection mode (multible blocks, mixing).
     gs to work with t selection just like gv with visual mode selection.
-    Add :mksession command and 'sessionoptions' option.
     Save registers (session and vifminfo).
     :highlight command.
     Better registers support.
@@ -56,6 +55,7 @@ Possible things to add.
     :cd [dir1] [dir2]; :cd! dir equivalent to :cd dir dir; or :gcd
     cl key to modify links.
     What about yD to copy selected file(s) into other directory, and YD to move
+    Add :mksession command and 'sessionoptions' option.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
@@ -85,7 +85,7 @@ Other (questionable) things.
 
 Code improvements.
     Write more tests.
-    Think about escape_filename and it's len argument.
+    Think about escape_filename and its len argument.
     Rename exec_* to something.
-    Improve logging.
+    Improve logging (print back trace).
     Stay at the same file in some cases.
