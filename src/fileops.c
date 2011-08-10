@@ -2203,6 +2203,13 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 					dst);
 			return 1;
 		}
+		if(strchr(dst, '/') != NULL)
+		{
+			regfree(&re);
+			free_string_array(dest, n);
+			status_bar_messagef("Destination name \"%s\" contains slash", dst);
+			return 1;
+		}
 		if(lstat(dst, &st) == 0)
 		{
 			regfree(&re);
