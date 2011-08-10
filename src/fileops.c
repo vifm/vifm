@@ -1815,7 +1815,7 @@ put_files_from_register_i(FileView *view, int start)
 	if(start)
 	{
 		char buf[PATH_MAX + NAME_MAX*2 + 4];
-		const char *op;
+		const char *op = "UNKNOWN";
 		int from_trash = strncmp(put_confirm.reg->files[0], cfg.trash_dir,
 				strlen(cfg.trash_dir)) == 0;
 		if(put_confirm.link == 0)
@@ -2187,7 +2187,10 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
 		chosp(buf);
 		if(regexec(&re, buf, ARRAY_LEN(matches), matches, 0) != 0)
+		{
+			view->dir_entry[i].selected = 0;
 			continue;
+		}
 		if(glob)
 			dst = gsubstitute_regexp(&re, buf, sub, matches);
 		else
