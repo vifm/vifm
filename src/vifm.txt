@@ -490,6 +490,22 @@ The command macros may be used in user commands.
 
 Use %% if you need to put a percent sign in your command.
 
+You can use filename modifiers after %c, %C, %f, %F, %b, %d and %D macros.
+Supported modifiers are:
+    :p           - full path
+    :~           - relative to the home directory
+    :.           - relative to current directory
+    :h           - head of the filename
+    :t           - tail of the filename
+    :r           - root of the filename (without last extension)
+    :e           - extension of the filename (last one)
+    :s?pat?sub?  - substitute the first occurrence of "pat" with "sub".  You
+                   can use any character for '?', but it must not occur in.
+    :gs?pat?sub? - like :s, but substitutes all occurrences of "pat" with
+                   "sub".
+See ':h filename-modifiers' in Vim's documentation for the detailed
+description.
+
 Position and quantity (if there is any) of %m and %s macros in the
 command is unimportant.  All their occurrences will be removed from the
 resulting command.
@@ -756,7 +772,7 @@ Use it to set settings, mappings or filetypes.  To use multi line commands
 precede each next line with a slash (whitespace before slash is ignored, but all
 spaces at the end of the lines are saved).  For example:
 set
-    \\smartcase
+    \smartcase
 equals "setsmartcase".  When
 set<space here>
     \ smartcase<space here>

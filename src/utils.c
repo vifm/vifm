@@ -85,6 +85,10 @@ escape_filename(const char *string, size_t len, int quote_percent)
 		*dup++ = '.';
 		*dup++ = '/';
 	}
+	else if(*string == '~')
+	{
+		*dup++ = *string++;
+	}
 
 	for(i = 0; i < len; i++, string++, dup++)
 	{

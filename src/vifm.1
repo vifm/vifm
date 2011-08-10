@@ -827,6 +827,30 @@ Execute command in screen split.
 .LP
 Use %% if you need to put a percent sign in your command.
 
+You can use filename modifiers after %c, %C, %f, %F, %b, %d and %D macros.
+Supported modifiers are:
+.IP - 2
+:p           - full path
+.IP - 2
+:~           - relative to the home directory
+.IP - 2
+:.           - relative to current directory
+.IP - 2
+:h           - head of the filename
+.IP - 2
+:t           - tail of the filename
+.IP - 2
+:r           - root of the filename (without last extension)
+.IP - 2
+:e           - extension of the filename (last one)
+.IP - 2
+:s?pat?sub?  - substitute the first occurrence of pat with sub.  You can use any character for '?', but it must not occur in.
+.IP - 2
+:gs?pat?sub? - like :s, but substitutes all occurrences of pat with sub.
+
+See ':h filename-modifiers' in Vim's documentation for the detailed
+description.
+
 Position and quantity (if there is any) of %m and %s macros in the
 command is unimportant.  All their occurrences will be removed from the
 resulting command.

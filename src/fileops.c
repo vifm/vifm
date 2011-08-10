@@ -2107,6 +2107,39 @@ gsubstitute_regexp(regex_t *re, const char *src, const char *sub,
 	return buf;
 }
 
+const char *
+substitute_in_name(const char *name, const char *pattern, const char *sub,
+		int glob)
+{
+	static char buf[PATH_MAX];
+	regex_t re;
+	regmatch_t matches[10];
+	const char *dst;
+
+	strcpy(buf, name);
+
+	if(regcomp(&re, pattern, REG_EXTENDED) != 0)
+	{
+		regfree(&re);
+		return buf;
+	}
+
+	if(regexec(&re, name, ARRAY_LEN(matches), matches, 0) != 0)
+	{
+		regfree(&re);
+		return buf;
+	}
+
+	if(glob)
+		dst = gsubstitute_regexp(&re, name, sub, matches);
+	else
+		dst = substitute_regexp(name, sub, matches, NULL);
+	strcpy(buf, dst);
+
+	regfree(&re);
+	return buf;
+}
+
 /* Returns new value for save_msg flag. */
 int
 substitute_in_names(FileView *view, const char *pattern, const char *sub,

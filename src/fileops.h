@@ -66,6 +66,8 @@ int put_links(FileView *view, int reg_name, int relative);
 /* Returns new value for save_msg flag. */
 int substitute_in_names(FileView *view, const char *pattern, const char *sub,
 		int ic, int glob);
+const char * substitute_in_name(const char *name, const char *pattern,
+		const char *sub, int glob);
 
 #endif
 

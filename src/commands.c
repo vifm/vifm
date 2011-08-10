@@ -888,11 +888,125 @@ is_dir_element(FileView *view, int pos)
 	return 0;
 }
 
+static const char *
+find_nth_chr(const char *str, char c, int n)
+{
+	str--;
+	while(n-- > 0 && (str = strchr(str + 1, c)) != NULL);
+	return str;
+}
+
+static const char *
+apply_mod(const char *path, const char *parent, const char *mod)
+{
+	static char buf[PATH_MAX];
+
+	if(strncmp(mod, ":p", 2) == 0)
+	{
+		if(path[0] == '/')
+			return strcpy(buf, path);
+
+		strcpy(buf, parent);
+		strcat(buf, "/");
+		strcat(buf, path);
+	}
+	else if(strncmp(mod, ":~", 2) == 0)
+	{
+		size_t home_len = strlen(cfg.home_dir);
+		if(strncmp(path, cfg.home_dir, home_len - 1) != 0)
+			return strcpy(buf, path);
+
+		strcpy(buf, "~");
+		strcat(buf, path + home_len - 1);
+	}
+	else if(strncmp(mod, ":.", 2) == 0)
+	{
+		size_t len = strlen(curr_view->curr_dir);
+		if(strncmp(path, curr_view->curr_dir, len) != 0 || path[len] == '\0')
+			return strcpy(buf, path);
+
+		strcpy(buf, path + len + 1);
+	}
+	else if(strncmp(mod, ":h", 2) == 0)
+	{
+		char *p = strrchr(path, '/');
+		if(p == NULL)
+			return strcpy(buf, ".");
+
+		strcpy(buf, path);
+		buf[p - path + 1] = '\0';
+	}
+	else if(strncmp(mod, ":t", 2) == 0)
+	{
+		char *p = strrchr(path, '/');
+		if(p == NULL)
+			return strcpy(buf, path);
+
+		strcpy(buf, p + 1);
+	}
+	else if(strncmp(mod, ":r", 2) == 0)
+	{
+		char *slash = strrchr(path, '/');
+		char *dot = strrchr(path, '.');
+		if(dot == NULL || (slash != NULL && dot < slash) || dot == path ||
+				dot == slash + 1)
+			return strcpy(buf, path);
+
+		strcpy(buf, path);
+		buf[dot - path] = '\0';
+	}
+	else if(strncmp(mod, ":e", 2) == 0)
+	{
+		char *slash = strrchr(path, '/');
+		char *dot = strrchr(path, '.');
+		if(dot == NULL || (slash != NULL && dot < slash) || dot == path ||
+				dot == slash + 1)
+			return strcpy(buf, "");
+
+		strcpy(buf, dot + 1);
+	}
+	else if(strncmp(mod, ":s", 2) == 0 || strncmp(mod, ":gs", 3) == 0)
+	{
+		char pattern[256], sub[256];
+		char c = (mod[1] == 'g') ? mod++[3] : mod[2];
+		const char *t, *p = find_nth_chr(mod, c, 3);
+		if(p == NULL)
+			return strcpy(buf, path);
+		t = find_nth_chr(mod, c, 2);
+		snprintf(pattern, t - (mod + 3) + 1, "%s", mod + 3);
+		snprintf(sub, p - (t + 1) + 1, "%s", t + 1);
+		strcpy(buf, substitute_in_name(path, pattern, sub, (mod[0] == 'g')));
+	}
+	else
+		return NULL;
+
+	return buf;
+}
+
+static const char *
+apply_mods(const char *path, const char *parent, const char *mod)
+{
+	static char buf[PATH_MAX];
+
+	strcpy(buf, path);
+	while(*mod != '\0')
+	{
+		const char *p = apply_mod(buf, parent, mod);
+		if(p == NULL)
+			break;
+		strcpy(buf, p);
+		mod += 2;
+	}
+
+	return buf;
+}
+
 #ifndef TEST
 static
 #endif
 char *
-append_selected_files(FileView *view, char *expanded, int under_cursor)
+append_selected_files(FileView *view, char *expanded, int under_cursor,
+		const char *mod)
 {
 	int dir_name_len = 0;
 
@@ -905,21 +1019,19 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 		size_t len = strlen(expanded);
 		for(y = 0; y < view->list_rows; y++)
 		{
-			int dir;
 			char *temp;
+			char buf[PATH_MAX] = "";
 
 			if(!view->dir_entry[y].selected)
 				continue;
 
-			/* Directory has / appended to the name this removes it. */
-			dir = is_dir_element(view, y);
-
-			temp = escape_filename(view->dir_entry[y].name,
-					strlen(view->dir_entry[y].name) - dir, 0);
-			expanded = (char *)realloc(expanded,
-					len + dir_name_len + 1 + strlen(temp) + 1 + 1);
 			if(dir_name_len != 0)
-				strcat(strcat(expanded, view->curr_dir), "/");
+				strcat(strcpy(buf, view->curr_dir), "/");
+			strcat(buf, view->dir_entry[y].name);
+			if(is_dir_element(view, view->list_pos))
+				chosp(buf);
+			temp = escape_filename(apply_mods(buf, view->curr_dir, mod), 0, 0);
+			expanded = (char *)realloc(expanded, len + strlen(temp) + 1 + 1);
 			strcat(expanded, temp);
 			if(++x != view->selected_files)
 				strcat(expanded, " ");
@@ -931,19 +1043,17 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 	}
 	else
 	{
-		int dir;
 		char *temp;
+		char buf[PATH_MAX] = "";
 
-		/* Directory has / appended to the name this removes it. */
-		dir = is_dir_element(view, view->list_pos);
-
-		temp = escape_filename(view->dir_entry[view->list_pos].name,
-				strlen(view->dir_entry[view->list_pos].name) - dir, 0);
-
-		expanded = (char *)realloc(expanded,
-				strlen(expanded) + dir_name_len + 1 + strlen(temp) + 1 + 1);
 		if(dir_name_len != 0)
-			strcat(strcat(expanded, view->curr_dir), "/");
+			strcat(strcpy(buf, view->curr_dir), "/");
+		strcat(buf, view->dir_entry[view->list_pos].name);
+		if(is_dir_element(view, view->list_pos))
+			chosp(buf);
+		temp = escape_filename(apply_mods(buf, view->curr_dir, mod), 0, 0);
+
+		expanded = (char *)realloc(expanded, strlen(expanded) + strlen(temp) + 1);
 		strcat(expanded, temp);
 
 		free(temp);
@@ -953,12 +1063,13 @@ append_selected_files(FileView *view, char *expanded, int under_cursor)
 }
 
 static char *
-expand_directory_path(FileView *view, char *expanded)
+expand_directory_path(FileView *view, char *expanded, const char *mod)
 {
 	char *t;
 	char *escaped;
 
-	if((escaped = escape_filename(view->curr_dir, 0, 0)) == NULL)
+	if((escaped = escape_filename(apply_mods(view->curr_dir, "/", mod), 0,
+			0)) == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate memory");
 		free(expanded);
@@ -1021,35 +1132,43 @@ expand_macros(FileView *view, const char *command, const char *args,
 				}
 				break;
 			case 'b': /* selected files of both dirs */
-				expanded = append_selected_files(curr_view, expanded, 0);
+				expanded = append_selected_files(curr_view, expanded, 0,
+						command + x + 1);
 				len = strlen(expanded);
 				expanded = realloc(expanded, len + 1 + 1);
 				strcat(expanded, " ");
-				expanded = append_selected_files(other_view, expanded, 0);
+				expanded = append_selected_files(other_view, expanded, 0,
+						command + x + 1);
 				len = strlen(expanded);
 				break;
 			case 'c': /* current dir file under the cursor */
-				expanded = append_selected_files(curr_view, expanded, 1);
+				expanded = append_selected_files(curr_view, expanded, 1,
+						command + x + 1);
 				len = strlen(expanded);
 				break;
 			case 'C': /* other dir file under the cursor */
-				expanded = append_selected_files(other_view, expanded, 1);
+				expanded = append_selected_files(other_view, expanded, 1,
+						command + x + 1);
 				len = strlen(expanded);
 				break;
 			case 'f': /* current dir selected files */
-				expanded = append_selected_files(curr_view, expanded, 0);
+				expanded = append_selected_files(curr_view, expanded, 0,
+						command + x + 1);
 				len = strlen(expanded);
 				break;
 			case 'F': /* other dir selected files */
-				expanded = append_selected_files(other_view, expanded, 0);
+				expanded = append_selected_files(other_view, expanded, 0,
+						command + x + 1);
 				len = strlen(expanded);
 				break;
 			case 'd': /* current directory */
-				expanded = expand_directory_path(curr_view, expanded);
+				expanded = expand_directory_path(curr_view, expanded,
+						command + x + 1);
 				len = strlen(expanded);
 				break;
 			case 'D': /* other directory */
-				expanded = expand_directory_path(other_view, expanded);
+				expanded = expand_directory_path(other_view, expanded,
+						command + x + 1);
 				len = strlen(expanded);
 				break;
 			case 'm': /* use menu */
@@ -1071,6 +1190,37 @@ expand_macros(FileView *view, const char *command, const char *args,
 
 		while(x < cmd_len)
 		{
+			if(strncmp(command + x, ":p", 2) == 0)
+				y += 2;
+			else if(strncmp(command + x, ":~", 2) == 0)
+				y += 2;
+			else if(strncmp(command + x, ":.", 2) == 0)
+				y += 2;
+			else if(strncmp(command + x, ":h", 2) == 0)
+				y += 2;
+			else if(strncmp(command + x, ":t", 2) == 0)
+				y += 2;
+			else if(strncmp(command + x, ":r", 2) == 0)
+				y += 2;
+			else if(strncmp(command + x, ":e", 2) == 0)
+				y += 2;
+			else if(strncmp(command + x, ":s", 2) == 0 ||
+					strncmp(command + x, ":gs", 3) == 0)
+			{
+				const char *p;
+				if(command[x + 1] == 'g')
+					x += 3;
+				else
+					x += 2;
+				y = x;
+				p = find_nth_chr(command + x, command[x], 3);
+				if(p != NULL)
+					y += (p - (command + x)) + 1;
+				else
+					y += strlen(command);
+				x = y;
+				continue;
+			}
 			if(command[x] == '%')
 				break;
 			x++;

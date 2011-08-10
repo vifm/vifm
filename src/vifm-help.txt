@@ -731,26 +731,52 @@ Command macros
 
        Use %% if you need to put a percent sign in your command.
 
-       Position and quantity (if there is any) of %m and %s macros in the com‐
-       mand  is  unimportant.   All their occurrences will be removed from the
-       resulting command.
+       You can use filename modifiers after %c, %C, %f,  %F,  %b,  %d  and  %D
+       macros.  Supported modifiers are:
 
-       %c and %f macros are expanded to file names only, when %C  and  %F  are
-       expanded to full paths.  %f and %F follow this in %b too.
+       - :p           - full path
+
+       - :~           - relative to the home directory
+
+       - :.           - relative to current directory
+
+       - :h           - head of the filename
+
+       - :t           - tail of the filename
+
+       - :r           - root of the filename (without last extension)
+
+       - :e           - extension of the filename (last one)
+
+       - :s?pat?sub?   - substitute the first occurrence of pat with sub.  You
+         can use any character for '?', but it must not occur in.
+
+       - :gs?pat?sub? - like :s, but substitutes all occurrences of  pat  with
+         sub.
+
+         See  ':h  filename-modifiers' in Vim's documentation for the detailed
+         description.
+
+         Position and quantity (if there is any) of %m and %s  macros  in  the
+         command  is  unimportant.  All their occurrences will be removed from
+         the resulting command.
+
+         %c and %f macros are expanded to file names only, when %C and %F  are
+         expanded to full paths.  %f and %F follow this in %b too.
 
        :com move mv %f %D
-              would set the :move command to move all of the files selected in
-              the current directory to the other directory.
+         would  set the :move command to move all of the files selected in the
+         current directory to the other directory.
 
        The %a macro will substitute any arguments given in a command into  the
        command.  All arguments are considered optional.  ":com lsl !!ls -l %a"
        will set the lsl command to execute ls -l with or without an argument.
 
        :lsl<Return>
-              will list the directory contents of the current directory.
+         will list the directory contents of the current directory.
 
        :lsl filename<Return>
-              will list only the given filename.
+         will list only the given filename.
 
        The macros can also be used in directly executing  commands.  ":!mv  %f
        %D" would move the current directory selected files to the other direc‐
@@ -758,7 +784,7 @@ Command macros
 
        Appending & to the end of a command will cause it to be executed in the
        background.
-              :!mv %f %D &
+         :!mv %f %D &
 
 :set options
        confirm cf
@@ -1042,7 +1068,6 @@ Reserved
          g[lobal]
          m[ove]
          rlink
-         s[ubstitute]
          v[global]
 
 SEE ALSO
