@@ -2196,15 +2196,26 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 			dst = gsubstitute_regexp(&re, buf, sub, matches);
 		else
 			dst = substitute_regexp(buf, sub, matches, NULL);
-		n = add_to_string_array(&dest, n, 1, dst);
 		if(strcmp(buf, dst) == 0)
+		{
+			view->dir_entry[i].selected = 0;
+			view->selected_files--;
 			continue;
+		}
+		n = add_to_string_array(&dest, n, 1, dst);
 		if(is_in_string_array(dest, n - 1, dst))
 		{
 			regfree(&re);
 			free_string_array(dest, n);
 			status_bar_messagef("Destination name \"%s\" appears more than once",
 					dst);
+			return 1;
+		}
+		if(dst[0] == '\0')
+		{
+			regfree(&re);
+			free_string_array(dest, n);
+			status_bar_messagef("Destination name of \"%s\" is empty", buf);
 			return 1;
 		}
 		if(strchr(dst, '/') != NULL)

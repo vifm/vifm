@@ -544,12 +544,14 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 		}
 		if(state == ARG || state == QARG)
 		{
+			char c = cmdstr[i];
 			/* found another argument */
 			cmdstr[i] = '\0';
 			if(last_end != NULL)
 				*last_end = (state == ARG) ? i : (i + 1);
 
 			params[j] = strdup(&cmdstr[st]);
+			cmdstr[i] = c;
 			if(prev_state == NO_QUOTING)
 				unescape(params[j], (sep == ' ') ? 0 : 1);
 			else if(prev_state == D_QUOTING)
@@ -561,6 +563,7 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 		}
 	}
 
+	*count = j;
 	params[*count] = NULL;
 
 	if(last_pos != NULL)

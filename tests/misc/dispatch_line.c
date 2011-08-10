@@ -214,6 +214,14 @@ test_cust_sep(void)
 	assert_string_equal("abc", args[1]);
 	free_string_array(args, count);
 
+	args = dispatch_line("/abc//", &count, '/', 1, 0, NULL, NULL);
+	assert_int_equal(2, count);
+	if(count != 2)
+		return;
+	assert_string_equal("abc", args[0]);
+	assert_string_equal("", args[1]);
+	free_string_array(args, count);
+
 	args = dispatch_line("!!abc!", &count, '!', 1, 0, NULL, NULL);
 	assert_int_equal(2, count);
 	if(count != 2)
