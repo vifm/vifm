@@ -115,6 +115,10 @@
 
 	Made dirstack persistent (when 'vifminfo' contains dirstack).
 
+	Made :! accept ranges.
+
+	Documented which commands accept ranges.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

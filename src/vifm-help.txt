@@ -340,10 +340,10 @@ Commands
 
        :command [args]
 
-       :!program
+       :[range]!program
               will execute the program in a shell
 
-       :!command &
+       :[range]!command &
 
        will run the process in the background using vifm's means.
 
@@ -353,7 +353,7 @@ Commands
        Take note of the space before ampersand symbol, if you omit it, command
        will be run in the background using job control of your shell.
 
-       :!! <program>
+       :[range]!! <program>
               is the same as :! but will pause the screen before returning  to
               Vifm.
 
@@ -411,7 +411,7 @@ Commands
        :[range]d[elete]
               delete selected file or files.
 
-       :d[elete] [reg] [count]
+       :[range]d[elete] [reg] [count]
               will delete files to the reg register.
 
        :delc[ommand] command_name
@@ -434,7 +434,7 @@ Commands
 
        :dirs  display directory stack.
 
-       :e[dit] [file...]
+       :[range]e[dit] [file...]
               will load the selected or passed file or files into vi.
 
        :empty will permanently remove 'rm -fr' files from the Trash directory.
@@ -553,10 +553,20 @@ Commands
        :q[uit]
               will exit Vifm (add ! if you don't want to save changes).
 
-       :y[ank] [reg] [count]
+       :[range]y[ank] [reg] [count]
               will yank files to the reg register.
 
-       :rename
+       :ls    shows list of screen program windows (only when screen is used).
+
+       :reg[isters]
+              popup menu with registers content.
+
+       :reg[isters] list ...
+              display  the  contents  of the numbered and named registers that
+              are mentioned in list (for example "az to display "", "a and  "z
+              content).
+
+       :[range]rename
               rename files using vi to edit names.
 
        :screen
@@ -573,21 +583,11 @@ Commands
        :screen?
               shows whether screen program is used.
 
-       :ls    shows list of screen program windows (only when screen is used).
-
        :se[t] opt1=val1 opt2=val2 ...
               will set options to given values.
               You  can  use  following  syntax:  option,  nooption, invoption,
               option!, option?, option=x, option+=x, option-=x.  :sh[ell] will
               start a shell.
-
-       :reg[isters]
-              popup menu with registers content.
-
-       :reg[isters] list ...
-              display  the  contents  of the numbered and named registers that
-              are mentioned in list (for example "az to display "", "a and  "z
-              content).
 
        :sor[t]
               creates a popup menu of different sorting methods.

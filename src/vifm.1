@@ -425,10 +425,10 @@ would delete one file at the third line in the list.
 .TP
 .BI ":command [args]"
 .TP
-.BI :!program
+.BI :[range]!program
 will execute the program in a shell
 .TP
-.BI ":!command &"
+.BI ":[range]!command &"
 .LP
 will run the process in the background using vifm's means.
 
@@ -438,7 +438,7 @@ showing partial output of the command.
 Take note of the space before ampersand symbol, if you omit it, command
 will be run in the background using job control of your shell.
 .TP
-.BI ":!! <program>"
+.BI ":[range]!! <program>"
 is the same as :! but will pause the screen before returning to Vifm.
 .TP
 .BI :!!
@@ -496,7 +496,7 @@ will set file name filter.
 .BI :[range]d[elete]
 delete selected file or files.
 .TP
-.BI ":d[elete] [reg] [count]"
+.BI ":[range]d[elete] [reg] [count]"
 will delete files to the reg register.
 .TP
 .BI ":delc[ommand] command_name"
@@ -518,7 +518,7 @@ list (for example "az to display "", "a and "z content).
 .BI :dirs
 display directory stack.
 .TP
-.BI ":e[dit] [file...]"
+.BI ":[range]e[dit] [file...]"
 will load the selected or passed file or files into vi.
 .TP
 .BI :empty
@@ -641,10 +641,20 @@ show the present working directory.
 .BI :q[uit]
 will exit Vifm (add ! if you don't want to save changes).
 .TP
-.BI ":y[ank] [reg] [count]"
+.BI ":[range]y[ank] [reg] [count]"
 will yank files to the reg register.
 .TP
-.BI :rename
+.BI :ls
+shows list of screen program windows (only when screen is used).
+.TP
+.BI :reg[isters]
+popup menu with registers content.
+.TP
+.BI ":reg[isters] list ..."
+display the contents of the numbered and named registers that are mentioned in
+list (for example "az to display "", "a and "z content).
+.TP
+.BI :[range]rename
 rename files using vi to edit names.
 .TP
 .BI :screen
@@ -661,9 +671,6 @@ This requires screen version 3.9.9 or newer for the screen -X argument.
 .BI :screen?
 shows whether screen program is used.
 .TP
-.BI :ls
-shows list of screen program windows (only when screen is used).
-.TP
 .BI ":se[t] opt1=val1 opt2=val2 ..."
 will set options to given values.
 .br
@@ -671,13 +678,6 @@ You can use following syntax: option, nooption, invoption, option!,
 option?, option=x, option+=x, option-=x.
 .BI :sh[ell]
 will start a shell.
-.TP
-.BI :reg[isters]
-popup menu with registers content.
-.TP
-.BI ":reg[isters] list ..."
-display the contents of the numbered and named registers that are mentioned in
-list (for example "az to display "", "a and "z content).
 .TP
 .BI :sor[t]
 creates a popup menu of different sorting methods.

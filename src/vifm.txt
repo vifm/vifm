@@ -286,13 +286,13 @@ See |Reserved| for a list of reserved command names.
 
 The builtin commands are:
 
-:!program - shellout and execute program.
+:[range]!program - shellout and execute program.
     :!command & will run the process in the background using vifm's means.
     Programs that write to stdout like ls will create an error message
     showing partial output of the command.
     Take note of the space before ampersand symbol, if you omit it, command
     will be run in the background using job control of shell.
-:!!program - same as :! but will pause before returning.
+:[range]!!program - same as :! but will pause before returning.
 :!! - repeat the last command.
 :apropos manpage - will create a menu of items returned by the apropos
     command. Selecting an item in the menu will open the corresponding
@@ -325,13 +325,14 @@ The builtin commands are:
 :delm[arks]! - will delete all marks.
 :delm[arks] marks ... - will delete specified marks, each argument is
     treated as a set of marks.
-:d[elete] [reg] [count] - will delete files to the reg register.
+:[range]d[elete] [reg] [count] - will delete files to the reg register.
 :di[splay] - popup menu with registers content.
 :di[splay] list - display the contents of the numbered and named registers
     that are mentioned in list (for example "az to display "", "a and "z
     content).
 :dirs - display directory stack.
-:e[dit] [file...] - will load the selected or passed file or files into vi.
+:[range]e[dit] [file...] - will load the selected or passed file or files
+    into vi.
 :empty - permanently remove files from the ~/.vifm/Trash directory.  It will
     also remove all operations from undolist that have no sense after :empty
     and remove all records about files in the Trash directory from all
@@ -390,7 +391,12 @@ The builtin commands are:
 :pushd directory - add pane directories to stack. And change to directory.
 :pwd - show the present working directory.
 :q[uit] - will exit vifm (add ! if you don't want to save changes).
-:rename - rename files using vi to edit names.
+:ls - shows list of screen program windows (only when screen is used).
+:reg[isters] - popup menu with registers content.
+:reg[isters] list - display the contents of the numbered and named
+    registers that are mentioned in list (for example "az to display "",
+    "a and "z content).
+:[range]rename - rename files using vi to edit names.
 :screen - toggles whether to use the screen program or not.
     The default configuration has the screen option turned off.  The screen
     program uses pseudo terminals to allow multiple windows to be used in
@@ -399,15 +405,10 @@ The builtin commands are:
     each new file edited or program launched from vifm.
     This requires screen version 3.9.9 or newer for the screen -X argument.
 :screen? - shows whether screen program is used.
-:ls - shows list of screen program windows (only when screen is used).
 :se[t] opt1=val1 opt2='val2' opt3="val3" ... - sets given options.
     You can use following syntax: option, nooption, invoption, option!,
     option?, option=x, option+=x, option-=x.
 :sh[ell] - will start a shell.
-:reg[isters] - popup menu with registers content.
-:reg[isters] list - display the contents of the numbered and named
-    registers that are mentioned in list (for example "az to display "",
-    "a and "z content).
 :sor[t] - menu of different sorting methods.
 :sp[lit] - switch to a two window view.
 :[range]s[ubstitite]/pattern/string/[flags] - for each file in range
@@ -426,7 +427,7 @@ The builtin commands are:
     weren't changed).
 :wq - same as :quit.
 :x[it] - exit vifm (add ! if you don't want to save changes).
-:y[ank] [reg] [count] - will yank files to the reg register.
+:[range]y[ank] [reg] [count] - will yank files to the reg register.
 
 :map lhs rhs - map lhs key sequence to rhs in normal and visual modes.
 :map! lhs rhs - map lhs key sequence to rhs in command line mode.

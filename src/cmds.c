@@ -223,6 +223,10 @@ execute_cmd(const char *cmd)
 		cmd_info.bg = 1;
 		cmd_info.raw_args[0] = '\0';
 	}
+
+	if(cur->select)
+		cmds_conf->select_range(&cmd_info);
+
 	if(cur->expand)
 		cmd_info.args = cmds_conf->expand_macros(cmd_info.raw_args);
 	else
@@ -263,8 +267,6 @@ execute_cmd(const char *cmd)
 	else
 	{
 		cur->passed++;
-		if(cur->select)
-			cmds_conf->select_range(&cmd_info);
 
 		if(cur->type != BUILDIN_CMD && cur->type != BUILDIN_ABBR)
 		{
