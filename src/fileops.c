@@ -2189,6 +2189,7 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 		if(regexec(&re, buf, ARRAY_LEN(matches), matches, 0) != 0)
 		{
 			view->dir_entry[i].selected = 0;
+			view->selected_files--;
 			continue;
 		}
 		if(glob)
@@ -2263,7 +2264,7 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 		n++;
 	}
 	cmd_group_end();
-	free_string_array(dest, j);
+	free_string_array(dest, j + 1);
 	status_bar_messagef("%d file%s renamed", n, (n == 1) ? "" : "s");
 	return 1;
 }
