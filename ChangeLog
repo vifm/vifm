@@ -117,6 +117,8 @@
 
 	Made :! accept ranges.
 
+	Made l key work in visual mode.
+
 	Documented which commands accept ranges.
 
 	Fixed bug with name conflict of files and directories in the Trash.

@@ -80,6 +80,7 @@ static void goto_pos(int pos);
 static void cmd_gv(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
+static void cmd_l(struct key_info, struct keys_info *);
 static void cmd_m(struct key_info, struct keys_info *);
 static void cmd_n(struct key_info, struct keys_info *);
 static void cmd_y(struct key_info, struct keys_info *);
@@ -128,6 +129,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"gv", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gv}}},
 	{L"j", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"l", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_l}}},
 	{L"m", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_m}}},
 	{L"n", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
 	{L"o", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
@@ -142,6 +144,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{{KEY_NPAGE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
 	{{KEY_DOWN}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{{KEY_UP}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{{KEY_RIGHT}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_l}}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -548,6 +551,18 @@ cmd_k(struct key_info key_info, struct keys_info *keys_info)
 	while(key_info.count-- > 0)
 		select_up_one(view, start_pos);
 	update();
+}
+
+static void
+cmd_l(struct key_info key_info, struct keys_info *keys_info)
+{
+	update_marks(view);
+	if(*mode == VISUAL_MODE)
+		*mode = NORMAL_MODE;
+	handle_file(view, 0, 0);
+	clean_selected_files(view);
+	draw_dir_list(view, view->top_line);
+	moveto_list_pos(view, view->list_pos);
 }
 
 static void
