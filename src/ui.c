@@ -530,7 +530,7 @@ redraw_window(void)
 		return;
 	}
 
-	load_dir_list(curr_view, 1);
+	load_saving_pos(curr_view, 1);
 
 	if(curr_stats.view)
 	{
@@ -539,7 +539,7 @@ redraw_window(void)
 	}
 	else
 	{
-		load_dir_list(other_view, 1);
+		load_saving_pos(other_view, 1);
 	}
 
 	update_stat_window(curr_view);

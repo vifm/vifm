@@ -630,7 +630,7 @@ post(int id)
 
 	free_selected_file_array(curr_view);
 	curr_view->selected_files = 0;
-	load_dir_list(curr_view, 1);
+	load_saving_pos(curr_view, 1);
 	if(curr_view == curr_view)
 		moveto_list_pos(curr_view, curr_view->list_pos);
 }
