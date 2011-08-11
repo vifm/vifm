@@ -1,4 +1,4 @@
-.TH vifm 1 "August 10, 2011" "" "Vifm"
+.TH vifm 1 "August 12, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -454,6 +454,15 @@ change to your home directory.
 .BI ":cd ~/dir"
 change directory to ~/dir.
 .TP
+.BI ":cd /l/dir /r/dir"
+change directory of the left pane to /l/dir and directory of the right pane to
+/r/dir.  When using relative paths vifm assumes that both of them are relative
+to current directory of current view.  Command will not fail if one of
+directories is invalid.
+.TP
+.BI ":cd! /dir"
+same as :cd /dir /dir.
+.TP
 .BI :change
 create a menu window to alter a files properties.
 .TP
@@ -632,8 +641,8 @@ changes the window to show only the current file directory.
 .BI :popd
 remove pane directories from stack.
 .TP
-.BI ":pushd directory"
-add pane directories to stack.  And change to directory.
+.BI ":pushd[!] /l/dir [/r/dir]"
+add pane directories to stack and process arguments like :cd command.
 .TP
 .BI :pwd
 show the present working directory.

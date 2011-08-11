@@ -52,7 +52,6 @@ Possible things to add.
         reverse)
     Improve sorting ('sort' and 'gsort'; ignore case).
     Reset options to it's default value (from docs) with set option&.
-    :cd [dir1] [dir2]; :cd! dir equivalent to :cd dir dir; or :gcd
     cl key to modify links.
     What about yD to copy selected file(s) into other directory, and YD to move
     Add :mksession command and 'sessionoptions' option.

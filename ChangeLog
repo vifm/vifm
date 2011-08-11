@@ -121,6 +121,8 @@
 
 	Documented which commands accept ranges.
 
+	Made :cd and :pushd accept two arguments or an exclamation mark.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

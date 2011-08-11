@@ -177,8 +177,8 @@ static const struct cmd_add commands[] = {
 		.handler = emark_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "cd",               .abbr = NULL,    .emark = 0,  .id = COM_CD,          .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
-		.handler = cd_cmd,          .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
+	{ .name = "cd",               .abbr = NULL,    .emark = 1,  .id = COM_CD,          .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+		.handler = cd_cmd,          .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "change",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = change_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "cmap",             .abbr = "cm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -249,8 +249,8 @@ static const struct cmd_add commands[] = {
 		.handler = only_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "popd",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = popd_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "pushd",            .abbr = NULL,    .emark = 0,  .id = COM_PUSHD,       .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
-		.handler = pushd_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
+	{ .name = "pushd",            .abbr = NULL,    .emark = 1,  .id = COM_PUSHD,       .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+		.handler = pushd_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 2,       .select = 0, },
 	{ .name = "pwd",              .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = pwd_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "quit",             .abbr = "q",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1947,19 +1947,19 @@ apropos_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-cd_cmd(const struct cmd_info *cmd_info)
+cd(FileView *view, const char *path)
 {
 	char dir[PATH_MAX];
 
-	if(cmd_info->argc == 1)
+	if(path != NULL)
 	{
-		char *arg = expand_tilde(strdup(cmd_info->argv[0]));
+		char *arg = expand_tilde(strdup(path));
 		if(*arg == '/')
 			snprintf(dir, sizeof(dir), "%s", arg);
 		else if(strcmp(arg, "-") == 0)
-			snprintf(dir, sizeof(dir), "%s", curr_view->last_dir);
+			snprintf(dir, sizeof(dir), "%s", view->last_dir);
 		else
-			snprintf(dir, sizeof(dir), "%s/%s", curr_view->curr_dir, arg);
+			snprintf(dir, sizeof(dir), "%s/%s", view->curr_dir, arg);
 		free(arg);
 	}
 	else
@@ -1988,12 +1988,48 @@ cd_cmd(const struct cmd_info *cmd_info)
 		return 0;
 	}
 
-	if(change_directory(curr_view, dir) < 0)
+	if(change_directory(view, dir) < 0)
 		return 0;
 
-	load_dir_list(curr_view, 0);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	load_dir_list(view, 0);
+	if(view == curr_view)
+		moveto_list_pos(view, view->list_pos);
 	return 0;
+}
+
+static int
+cd_cmd(const struct cmd_info *cmd_info)
+{
+	char dir[PATH_MAX];
+	int result;
+	if(cmd_info->argc == 0)
+	{
+		result = cd(curr_view, cfg.home_dir);
+		if(cmd_info->emark)
+			result += cd(other_view, cfg.home_dir);
+	}
+	else if(cmd_info->argc == 1)
+	{
+		snprintf(dir, sizeof(dir), "%s/%s", curr_view->curr_dir, cmd_info->argv[0]);
+		result = cd(curr_view, cmd_info->argv[0]);
+		if(cmd_info->emark)
+		{
+			if(cmd_info->argv[0][0] != '/')
+				result += cd(other_view, dir);
+			else
+				result += cd(other_view, cmd_info->argv[0]);
+		}
+	}
+	else
+	{
+		snprintf(dir, sizeof(dir), "%s/%s", curr_view->curr_dir, cmd_info->argv[1]);
+		result = cd(curr_view, cmd_info->argv[0]);
+		if(cmd_info->argv[1][0] != '/')
+			result += cd(other_view, dir);
+		else
+			result += cd(other_view, cmd_info->argv[1]);
+	}
+	return result;
 }
 
 static int
