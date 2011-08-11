@@ -580,6 +580,8 @@ static int
 multi_run_compat(FileView *view, const char *program)
 {
 	size_t len;
+	if(program == NULL)
+		return 0;
 	if(view->selected_files <= 1)
 		return 0;
 	if((len = strlen(program)) == 0)
