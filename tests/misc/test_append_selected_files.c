@@ -27,7 +27,7 @@ setup(void)
 	/* rwin */
 	strcpy(rwin.curr_dir, "/rwin");
 
-	rwin.list_rows = 6;
+	rwin.list_rows = 7;
 	rwin.list_pos = 5;
 	rwin.dir_entry = calloc(rwin.list_rows, sizeof(*rwin.dir_entry));
 	rwin.dir_entry[0].name = strdup("rfile0");
@@ -36,11 +36,13 @@ setup(void)
 	rwin.dir_entry[3].name = strdup("rfile3");
 	rwin.dir_entry[4].name = strdup("rfile4");
 	rwin.dir_entry[5].name = strdup("rfile5");
+	rwin.dir_entry[6].name = strdup("rdir6/");
 
 	rwin.dir_entry[1].selected = 1;
 	rwin.dir_entry[3].selected = 1;
 	rwin.dir_entry[5].selected = 1;
-	rwin.selected_files = 3;
+	rwin.dir_entry[6].selected = 1;
+	rwin.selected_files = 4;
 
 	curr_view = &lwin;
 	other_view = &rwin;
@@ -78,12 +80,14 @@ test_f(void)
 
 	expanded = strdup("");
 	expanded = append_selected_files(&rwin, expanded, 0, "");
-	assert_string_equal("/rwin/rfile1 /rwin/rfile3 /rwin/rfile5", expanded);
+	assert_string_equal("/rwin/rfile1 /rwin/rfile3 /rwin/rfile5 /rwin/rdir6",
+			expanded);
 	free(expanded);
 
 	expanded = strdup("/");
 	expanded = append_selected_files(&rwin, expanded, 0, "");
-	assert_string_equal("//rwin/rfile1 /rwin/rfile3 /rwin/rfile5", expanded);
+	assert_string_equal("//rwin/rfile1 /rwin/rfile3 /rwin/rfile5 /rwin/rdir6",
+			expanded);
 	free(expanded);
 }
 

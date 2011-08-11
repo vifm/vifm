@@ -710,8 +710,12 @@ select_count(const struct cmd_info *cmd_info, int count)
 
 	while(count-- > 0 && pos < curr_view->list_rows)
 	{
-		curr_view->dir_entry[pos++].selected = 1;
-		curr_view->selected_files++;
+		if(strcmp(curr_view->dir_entry[pos].name, "../") != 0)
+		{
+			curr_view->dir_entry[pos].selected = 1;
+			curr_view->selected_files++;
+		}
+		pos++;
 	}
 }
 
@@ -872,28 +876,6 @@ save_command_history(const char *command)
 		cfg.cmd_history_num = cfg.cmd_history_len -1;
 }
 
-static int
-is_dir_element(FileView *view, int pos)
-{
-	char full[PATH_MAX];
-
-	snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
-			view->dir_entry[pos].name);
-	if(view->dir_entry[pos].type == UNKNOWN)
-	{
-		struct stat st;
-		if(stat(full, &st) != 0)
-			return 0;
-		return S_ISDIR(st.st_mode);
-	}
-
-	if(view->dir_entry[pos].type == DIRECTORY)
-		return 1;
-	if(view->dir_entry[pos].type == LINK && check_link_is_dir(full))
-		return 1;
-	return 0;
-}
-
 static const char *
 find_nth_chr(const char *str, char c, int n)
 {
@@ -1034,8 +1016,7 @@ append_selected_files(FileView *view, char *expanded, int under_cursor,
 			if(dir_name_len != 0)
 				strcat(strcpy(buf, view->curr_dir), "/");
 			strcat(buf, view->dir_entry[y].name);
-			if(is_dir_element(view, view->list_pos))
-				chosp(buf);
+			chosp(buf);
 			temp = escape_filename(apply_mods(buf, view->curr_dir, mod), 0, 0);
 			expanded = (char *)realloc(expanded, len + strlen(temp) + 1 + 1);
 			strcat(expanded, temp);
@@ -1055,8 +1036,7 @@ append_selected_files(FileView *view, char *expanded, int under_cursor,
 		if(dir_name_len != 0)
 			strcat(strcpy(buf, view->curr_dir), "/");
 		strcat(buf, view->dir_entry[view->list_pos].name);
-		if(is_dir_element(view, view->list_pos))
-			chosp(buf);
+		chosp(buf);
 		temp = escape_filename(apply_mods(buf, view->curr_dir, mod), 0, 0);
 
 		expanded = (char *)realloc(expanded, strlen(expanded) + strlen(temp) + 1);
