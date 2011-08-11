@@ -391,6 +391,10 @@ read_info_file(void)
 				}
 			}
 		}
+		else if(line[0] == '"') /* registers */
+		{
+			append_to_register(line[1], line + 2);
+		}
 		else if(line[0] == 'f') /* left pane filter */
 		{
 			lwin.filename_filter = (char *)realloc(lwin.filename_filter,
@@ -461,9 +465,9 @@ write_info_file(void)
 	char ** list;
 	int nlist = -1;
 	char **ft = NULL, **fx = NULL , **fv = NULL, **cmds = NULL, **marks = NULL;
-	char **lh = NULL, **rh = NULL, **cmdh = NULL, **srch = NULL;
+	char **lh = NULL, **rh = NULL, **cmdh = NULL, **srch = NULL, **regs = NULL;
 	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0, nlh = 0, nrh = 0;
-	int ncmdh = 0, nsrch = 0;
+	int ncmdh = 0, nsrch = 0, nregs = 0;
 	int i;
 	int is_console;
 
@@ -614,6 +618,13 @@ write_info_file(void)
 						cfg.search_history_num + 1, line + 1))
 					continue;
 				nsrch = add_to_string_array(&srch, nsrch, 1, line + 1);
+			}
+			else if(line[0] == '"') /* registers */
+			{
+				registers_t *reg = find_register(line[1]);
+				if(reg == NULL)
+					continue;
+				nregs = add_to_string_array(&regs, nregs, 1, line);
 			}
 		}
 		curr_stats.is_console = is_console;
@@ -775,6 +786,22 @@ write_info_file(void)
 			fprintf(fp, "/%s\n", cfg.search_history[i]);
 	}
 
+	if(cfg.vifm_info & VIFMINFO_REGISTERS)
+	{
+		fputs("\n# Registers:\n", fp);
+		for(i = 0; i < nregs; i++)
+			fprintf(fp, "%s\n", regs[i]);
+		for(i = 0; valid_registers[i] != '\0'; i++)
+		{
+			int j;
+			registers_t *reg = find_register(valid_registers[i]);
+			if(reg == NULL)
+				continue;
+			for(j = 0; j < reg->num_files; j++)
+				fprintf(fp, "\"%c%s\n", reg->name, reg->files[j]);
+		}
+	}
+
 	if(cfg.vifm_info & VIFMINFO_DIRSTACK)
 	{
 		fputs("\n# Directory stack (oldest to newest):\n", fp);
@@ -813,6 +840,7 @@ write_info_file(void)
 	free_string_array(rh, nrh);
 	free_string_array(cmdh, ncmdh);
 	free_string_array(srch, nsrch);
+	free_string_array(regs, nregs);
 }
 
 void

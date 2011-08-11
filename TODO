@@ -7,11 +7,11 @@ Basic things that need to be done.
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
         :chown commands.
     More states for permissions dialog (maybe 'f', 'd').
+    Modify X in permissions dialog.
     Backgrounding of vicmd (& at the end).
     Perform operations using system calls, not programs.  This is much faster
         and will ease porting on Windows (less dependencies on Cygwin).
 	:restore command to restore files from Trash
-    Modify X in permissions dialog.
     Be more verbose about regexp compiling errors.
     Show search matches in the menus.
     Better cW command (maybe accept count of extensions to skip).
@@ -28,7 +28,6 @@ Vi(m) specific features that need to be added.
     Add one more color to color scheme for error messages in status bar.
     Some kind of selection mode (multible blocks, mixing).
     gs to work with t selection just like gv with visual mode selection.
-    Save registers (session and vifminfo).
     :highlight command.
     Better registers support.
     d /, d ?
@@ -46,7 +45,7 @@ Possible things to add.
     :g/arg = grep arg; :v/arg = grep -v arg
     Make :undolist more interactive.
     A :restart command to reload everything.
-    Maybe something like :g/.../ and :v/.../ in Vim.
+    Maybe something like :g/.../com and :v/.../com in Vim.
     Add g/ and g? commands (search, but don't select files).
     Reverse searching (/ for search, g/ for selecting, g!/ for selecting
         reverse)
@@ -69,14 +68,14 @@ Other (questionable) things.
     Make directory stack menu interactive ?
     With undo groups we can not only join commands, but maybe implement
         something like transaction rollback.  Or maybe better to leave this
-        for user, he could always press u himself.
+        on user, he could always press u himself.
     Maybe add + and - commands to undo by commands, not command groups.
     :sellocal command.
     :split directory
     Highlight for view window (see ranger).
     Remove items from :history cmd?
     Option with format of statwin.
-    :edit, etc. in menus.
+    :edit, etc. in the menus.
     :alias
     Like gv but to select just pasted files (gp?).
     Ctrl-W in command line mode like in vim?

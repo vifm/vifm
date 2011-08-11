@@ -44,7 +44,3 @@ src/undo.c - stores and handles the undo list
 src/utils.c - various utilities (e.g. functions to handle utf8 strings)
 src/vifm.c - contains main() which does basic initialization
 src/visual.c - implementation of visual mode commands
-
-
-
-

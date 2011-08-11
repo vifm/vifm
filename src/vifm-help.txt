@@ -369,18 +369,27 @@ Commands
        :cd ~/dir
               change directory to ~/dir.
 
+       :cd /l/dir /r/dir
+              change directory of the left pane to /l/dir and directory of the
+              right pane to /r/dir.  When using relative  paths  vifm  assumes
+              that  both  of them are relative to current directory of current
+              view.  Command will not fail if one of directories is invalid.
+
+       :cd! /dir
+              same as :cd /dir /dir.
+
        :change
               create a menu window to alter a files properties.
 
        :colo[rscheme]
-              gives  a  menu  with a list of available color schemes.  You can
-              choose default color scheme here.  It will be used for  view  if
-              no  DIRECTORY  in colorscheme file fits current path.  It's also
-              used to set border color (except view titles) and colors in  the
+              gives a menu with a list of available color  schemes.   You  can
+              choose  default  color scheme here.  It will be used for view if
+              no DIRECTORY in colorscheme file fits current path.   It's  also
+              used  to set border color (except view titles) and colors in the
               menus and dialogs.
 
        :colo[rscheme] color_scheme_name
-              changes   default   color   scheme  to  color_scheme_name.   See
+              changes  default  color  scheme   to   color_scheme_name.    See
               :colo[rscheme].
 
        :comc[lear]
@@ -394,12 +403,12 @@ Commands
 
        :com[mand] name action
               sets a new user command.
-              Trying to use a reserved command name will result  in  an  error
+              Trying  to  use  a reserved command name will result in an error
               message.
               Use :com[mand]! to overwrite a previously set command.
-              Unlike  vim  user  commands  do not have to start with a capital
-              letter.  User commands are run in a shell by default.  To run  a
-              command  in  the background you must set it as a background com‐
+              Unlike vim user commands do not have to  start  with  a  capital
+              letter.   User commands are run in a shell by default.  To run a
+              command in the background you must set it as a  background  com‐
               mand with & at the end of the commands action (:com rm rm %f &).
 
        :com[mand] backup /pattern
@@ -421,15 +430,15 @@ Commands
               will delete all marks.
 
        :delm[arks] marks ...
-              will delete specified marks, each argument is treated as  a  set
+              will  delete  specified marks, each argument is treated as a set
               of marks.
 
        :di[splay]
               popup menu with registers content.
 
        :di[splay] list ...
-              display  the  contents  of the numbered and named registers that
-              are mentioned in list (for example "az to display "", "a and  "z
+              display the contents of the numbered and  named  registers  that
+              are  mentioned in list (for example "az to display "", "a and "z
               content).
 
        :dirs  display directory stack.
@@ -438,21 +447,21 @@ Commands
               will load the selected or passed file or files into vi.
 
        :empty will permanently remove 'rm -fr' files from the Trash directory.
-              It will also remove all operations from undolist  that  have  no
-              sense  after  :empty  and  remove all records about files in the
+              It  will  also  remove all operations from undolist that have no
+              sense after :empty and remove all records  about  files  in  the
               Trash directory from all registers.
 
        :exi[t]
               same as :quit.
 
-       :file  popup menu of programs set for the  file  type  of  the  current
-              file.  Add  '  &'  at the end of command to run program in back‐
+       :file  popup  menu  of  programs  set  for the file type of the current
+              file. Add ' &' at the end of command to  run  program  in  back‐
               ground.
 
        :filet[ype] pat1,pat2,... def_program,program2,...
               will associate given program list to each of the patterns.  Cur‐
-              rently  only  * and ? are treated as special symbols in the pat‐
-              tern.  If you need to insert comma into command just  double  it
+              rently only * and ? are treated as special symbols in  the  pat‐
+              tern.   If  you need to insert comma into command just double it
               (",,").
 
        :filex[type] pat1,pat2,... def_program,program2,...
@@ -460,15 +469,15 @@ Commands
               running in X.  In X :filextype is equal to :filetype.
 
        :filev[iewer] pat1,pat2,... command
-              will associate given command as a viewer to  each  of  the  pat‐
+              will  associate  given  command  as a viewer to each of the pat‐
               terns.  Currently only * and ? are treated as special symbols in
               the pattern.
 
        :filter regular_expression_pattern
-              :filter /regular_expression_pattern/ will filter all  the  files
-              out  of the directory listing that match the regular expression.
+              :filter  /regular_expression_pattern/  will filter all the files
+              out of the directory listing that match the regular  expression.
               Using second variant you can use | symbol without escaping.  Add
-              :filter /.o$ would filter  all  files  ending  in  .o  from  the
+              :filter  /.o$  would  filter  all  files  ending  in .o from the
               filelist.
               Note: vifm uses extended regular expressions.
 
@@ -482,15 +491,15 @@ Commands
               show current filter value.
 
        :fin[d] pattern
-              will  show  results of find command in the menu.  Searches among
+              will show results of find command in the menu.   Searches  among
               selected files if any.
 
        :fin[d] -opt...
-              same as :find  above,  but  user  defines  all  find  arguments.
+              same  as  :find  above,  but  user  defines  all find arguments.
               Searches among selected files if any.
 
        :fin[d] path -opt...
-              same  as  :find  above,  but  user  defines  all find arguments.
+              same as :find  above,  but  user  defines  all  find  arguments.
               Ignores selection.
 
        :fin[d]
@@ -519,17 +528,17 @@ Commands
        :jobs  shows menu of current backgrounded processes.
 
        :locate filename
-              uses the locate command to create a menu of filenames  Selecting
-              a  file  from the menu will reload the current file list in vifm
+              uses  the locate command to create a menu of filenames Selecting
+              a file from the menu will reload the current file list  in  vifm
               to show the selected file.
 
        :locate
               repeats last :locate command.
 
        :[range]ma[rk]x[/full/path][filename]
-              Set mark x at  /full/path  and  filename.   By  default  current
-              directory   is  being  used.   If  no  filename  was  given  and
-              /full/path is current directory then last  file  in  [range]  is
+              Set  mark  x  at  /full/path  and  filename.  By default current
+              directory  is  being  used.   If  no  filename  was  given   and
+              /full/path  is  current  directory  then last file in [range] is
               used.  Using macros is allowed.
 
        :marks create a popup menu of bookmarks.
@@ -545,8 +554,9 @@ Commands
 
        :popd  remove pane directories from stack.
 
-       :pushd directory
-              add pane directories to stack.  And change to directory.
+       :pushd[!] /l/dir [/r/dir]
+              add pane directories to stack and  process  arguments  like  :cd
+              command.
 
        :pwd   show the present working directory.
 
@@ -914,6 +924,7 @@ Command macros
           chistory  - command line history
           shistory  - search history (/ and ? commands)
           dirstack  - directory stack
+          registers - registers content
 
        vimhelp
               type: boolean
@@ -1021,8 +1032,8 @@ Configure
        edit  vifmrc  instead.   You can control what settings will be saved in
        vifminfo by setting ´vifminfo' option.  Vifm always writes this file on
        exit unless 'vifminfo' option is empty.  Bookmarks, commands, directory
-       history and filetypes in the file are merged  with  vifm  configuration
-       (which has bigger priority).
+       history, filetypes, fileviewers and registers in the  file  are  merged
+       with vifm configuration (which has bigger priority).
 
        The ~/.vifm/scripts directory can contain shell scripts.  vifm modifies
        it's PATH environment variable to let user run  those  scripts  without
@@ -1079,4 +1090,4 @@ AUTHOR
 
 
 
-                                August 10, 2011                        vifm(1)
+                                August 12, 2011                        vifm(1)

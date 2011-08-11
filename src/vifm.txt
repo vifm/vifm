@@ -672,6 +672,7 @@ Controls what will be saved in the ~/.vifm/vifminfo file.
    chistory  - command line history
    shistory  - search history (/ and ? commands)
    dirstack  - directory stack
+   registers - registers content
 
 vimhelp
 type: boolean
@@ -789,8 +790,9 @@ The ~/.vifm/vifminfo file contains session settings.  You may edit it by hand
 to change the settings, but it's not recommended to do that, edit vifmrc
 instead.  You can control what settings will be saved in vifminfo by setting
 'vifminfo' option.  Vifm always writes this file on exit unless 'vifminfo'
-option is empty.  Bookmarks, commands, directory history and filetypes in the
-file are merged with vifm configuration (which has bigger priority).
+option is empty.  Bookmarks, commands, directory history, filetypes, fileviewers
+and registers in the file are merged with vifm configuration (which has bigger
+priority).
 
 The ~/.vifm/scripts directory can contain shell scripts.  vifm modifies
 it's PATH environment variable to let user run those scripts without specifying

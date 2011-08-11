@@ -50,7 +50,6 @@ init_registers(void)
 		registers[i].name = valid_registers[i];
 		registers[i].num_files = 0;
 		registers[i].files = NULL;
-		registers[i].deleted = 0;
 	}
 }
 

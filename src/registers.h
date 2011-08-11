@@ -24,7 +24,6 @@ typedef struct
 	int name;
 	int num_files;
 	char ** files;
-	int deleted;
 }registers_t;
 
 extern const char valid_registers[];

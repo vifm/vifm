@@ -119,6 +119,8 @@
 
 	Made l key work in visual mode.
 
+	Made registers persistent (when 'vifminfo' contains registers).
+
 	Documented which commands accept ranges.
 
 	Made :cd and :pushd accept two arguments or an exclamation mark.

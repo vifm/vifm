@@ -76,6 +76,7 @@ static const char * vifminfo_set[] = {
 	"chistory",
 	"shistory",
 	"dirstack",
+	"registers",
 };
 
 void
