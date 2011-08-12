@@ -113,16 +113,17 @@ add_option(const char *name, const char *abbr, enum opt_type type,
 		abbreviated = add_option_inner(abbr, type, val_count, vals, handler);
 		if(abbreviated != NULL)
 			abbreviated->full = full_name;
+		full = find_option(full_name);
 	}
-	if(type == OPT_STR)
+	if(type == OPT_STR || type == OPT_STRLIST)
 	{
 		full->def.str_val = strdup(def.str_val);
 		full->val.str_val = strdup(def.str_val);
 	}
 	else
 	{
-		full->def = def;
-		full->val = def;
+		full->def.int_val = def.int_val;
+		full->val.int_val = def.int_val;
 	}
 }
 
@@ -484,7 +485,7 @@ set_set(struct opt_t *opt, const char *value)
 static int
 set_reset(struct opt_t *opt)
 {
-	if(opt->type == OPT_STR)
+	if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
 	{
 		char *p;
 
@@ -497,9 +498,9 @@ set_reset(struct opt_t *opt)
 		free(opt->val.str_val);
 		opt->val.str_val = p;
 	}
-	else if(opt->val.str_val != opt->def.str_val)
+	else if(opt->val.int_val != opt->def.int_val)
 	{
-		opt->val = opt->def;
+		opt->val.int_val = opt->def.int_val;
 		*opts_changed = 1;
 		opt->handler(OP_MODIFIED, opt->val);
 	}
