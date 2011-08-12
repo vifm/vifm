@@ -32,7 +32,7 @@ enum opt_op {
 	OP_ON,
 	OP_OFF,
 	OP_SET,
-	OP_MODIFIED, /* for OPT_SET and OPT_STR */
+	OP_MODIFIED, /* for OPT_INT, OPT_SET and OPT_STR */
 };
 
 union optval_t {
@@ -50,7 +50,7 @@ typedef void (*opt_print)(const char *msg, const char *description);
 void init_options(int *opts_changed_flag, opt_print handler);
 void clear_options(void);
 void add_option(const char *name, const char *abbr, enum opt_type type,
-		int val_count, const char **vals, opt_handler handler);
+		int val_count, const char **vals, opt_handler handler, union optval_t def);
 void set_option(const char *name, union optval_t val);
 /* Returns non-zero on error */
 int set_options(const char *cmd);

@@ -49,7 +49,6 @@ Possible things to add.
     Reverse searching (/ for search, g/ for selecting, g!/ for selecting
         reverse)
     Improve sorting ('sort' and 'gsort'; ignore case).
-    Reset options to it's default value (from docs) with set option&.
     cl key to modify links.
     What about yD to copy selected file(s) into other directory, and YD to move
     Add :mksession command and 'sessionoptions' option.

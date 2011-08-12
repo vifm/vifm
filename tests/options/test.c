@@ -68,15 +68,20 @@ static void
 setup(void)
 {
 	static int option_changed;
+	union optval_t val;
 
 	init_options(&option_changed, NULL);
 
-	add_option("fastrun", "fr", OPT_BOOL, 0, NULL, fastrun_handler);
-	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler);
+	val.bool_val = 0;
+	add_option("fastrun", "fr", OPT_BOOL, 0, NULL, fastrun_handler, val);
+	val.str_val = "";
+	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler, val);
+	val.enum_item = 1;
 	add_option("sort", "so", OPT_ENUM, ARRAY_LEN(sort_enum), sort_enum,
-			&sort_handler);
+			&sort_handler, val);
+	val.set_items = 0;
 	add_option("vifminfo", "", OPT_SET, ARRAY_LEN(vifminfo_set), vifminfo_set,
-			&vifminfo_handler);
+			&vifminfo_handler, val);
 }
 
 int main(int argc, char **argv)

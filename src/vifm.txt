@@ -417,8 +417,25 @@ The builtin commands are:
     This requires screen version 3.9.9 or newer for the screen -X argument.
 :screen? - shows whether screen program is used.
 :se[t] opt1=val1 opt2='val2' opt3="val3" ... - sets given options.
-    You can use following syntax: option, nooption, invoption, option!,
-    option?, option=x, option+=x, option-=x.
+    You can use following syntax:
+     - for all options - option? and option&
+     - for boolean options - option, nooption, invoption and option!
+     - for integer options - option=x, option+=x and option-=x
+     - for string options - option=x
+     - for string list options - option=x, option+=x and option-=x
+     - for enumeration options - option=x, option+=x and option-=x
+     - for enumeration options - option=x
+     - for set options - option=x, option+=x and option-=x
+    the meaning:
+     - option - turn option on
+     - nooption - turn option off
+     - invoption - invert option state
+     - option! - invert option state
+     - option? - print option value
+     - option& - reset option to its default value
+     - option=x - set option to x
+     - option+=x - add x to option
+     - option-=x - remove (or subtract) x from option
 :sh[ell] - will start a shell.
 :sor[t] - menu of different sorting methods.
 :sp[lit] - switch to a two window view.

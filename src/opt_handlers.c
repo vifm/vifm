@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,8 +14,8 @@
 
 #include "opt_handlers.h"
 
+static void load_options_defaults(void);
 static void add_options(void);
-static void load_options(void);
 static void print_func(const char *msg, const char *description);
 static void confirm_handler(enum opt_op op, union optval_t val);
 static void fastrun_handler(enum opt_op op, union optval_t val);
@@ -79,119 +80,96 @@ static const char * vifminfo_set[] = {
 	"registers",
 };
 
+static struct {
+	const char *name;
+	const char *abbr;
+	enum opt_type type;
+	int val_count;
+	const char **vals;
+	opt_handler handler;
+	union optval_t val;
+} options[] = {
+	/* global options */
+	{ "confirm",     "cf",   OPT_BOOL, 0,                       NULL,            &confirm_handler,     },
+	{ "fastrun",     "",     OPT_BOOL, 0,                       NULL,            &fastrun_handler,     },
+	{ "followlinks", "",     OPT_BOOL, 0,                       NULL,            &followlinks_handler, },
+	{ "fusehome",    "",     OPT_STR,  0,                       NULL,            &fusehome_handler,    },
+	{ "history",     "hi",   OPT_INT,  0,                       NULL,            &history_handler,     },
+	{ "hlsearch",    "hls",  OPT_BOOL, 0,                       NULL,            &hlsearch_handler,    },
+	{ "iec",         "",     OPT_BOOL, 0,                       NULL,            &iec_handler,         },
+	{ "ignorecase",  "ic",   OPT_BOOL, 0,                       NULL,            &ignorecase_handler,  },
+	{ "reversecol",  "",     OPT_BOOL, 0,                       NULL,            &reversecol_handler,  },
+	{ "runexec",     "",     OPT_BOOL, 0,                       NULL,            &runexec_handler,     },
+	{ "shell",       "sh",   OPT_STR,  0,                       NULL,            &shell_handler,       },
+	{ "smartcase",   "scs",  OPT_BOOL, 0,                       NULL,            &smartcase_handler,   },
+	{ "sortnumbers", "",     OPT_BOOL, 0,                       NULL,            &sortnumbers_handler, },
+	{ "timefmt",     "",     OPT_STR,  0,                       NULL,            &timefmt_handler,     },
+	{ "trash",       "",     OPT_BOOL, 0,                       NULL,            &trash_handler,       },
+	{ "undolevels",  "ul",   OPT_INT,  0,                       NULL,            &undolevels_handler,  },
+	{ "vicmd",       "",     OPT_STR,  0,                       NULL,            &vicmd_handler,       },
+	{ "vixcmd",      "",     OPT_STR,  0,                       NULL,            &vixcmd_handler,      },
+	{ "vifminfo",    "",     OPT_SET,  ARRAY_LEN(vifminfo_set), vifminfo_set,    &vifminfo_handler,    },
+	{ "vimhelp",     "",     OPT_BOOL, 0,                       NULL,            &vimhelp_handler,     },
+	{ "wildmenu",    "wmnu", OPT_BOOL, 0,                       NULL,            &wildmenu_handler,    },
+	{ "wrap",        "",     OPT_BOOL, 0,                       NULL,            &wrap_handler,        },
+	/* local options */
+	{ "sort",        "",     OPT_ENUM, ARRAY_LEN(sort_enum),    sort_enum,       &sort_handler,        },
+	{ "sortorder",   "",     OPT_ENUM, 2,                       sort_order_enum, &sort_order_handler,  },
+};
+
 void
 init_option_handlers(void)
 {
 	static int opt_changed;
 	init_options(&opt_changed, &print_func);
+	load_options_defaults();
 	add_options();
-	load_options();
+}
+
+static void
+load_options_defaults(void)
+{
+	/* global options */
+	options[0].val.bool_val = cfg.confirm;
+	options[1].val.bool_val = cfg.fast_run;
+	options[2].val.bool_val = cfg.follow_links;
+	options[3].val.str_val = cfg.fuse_home;
+	options[4].val.int_val = cfg.history_len;
+	options[5].val.bool_val = cfg.hl_search;
+	options[6].val.bool_val = cfg.use_iec_prefixes;
+	options[7].val.bool_val = cfg.ignore_case;
+	options[8].val.bool_val = cfg.invert_cur_line;
+	options[9].val.bool_val = cfg.auto_execute;
+	options[10].val.str_val = cfg.shell;
+	options[11].val.bool_val = cfg.smart_case;
+	options[12].val.bool_val = cfg.sort_numbers;
+	options[13].val.str_val = cfg.time_format + 1;
+	options[14].val.bool_val = cfg.use_trash;
+	options[15].val.int_val = cfg.undo_levels;
+	options[16].val.str_val = cfg.vi_command;
+	options[17].val.str_val = cfg.vi_x_command;
+	options[18].val.set_items = cfg.vifm_info;
+	options[19].val.bool_val = cfg.use_vim_help;
+	options[20].val.bool_val = cfg.wild_menu;
+	options[21].val.bool_val = cfg.wrap_quick_view;
+
+	/* local options */
+	options[22].val.enum_item = SORT_BY_NAME;
+	options[23].val.enum_item = 0;
+
+	assert(ARRAY_LEN(options) == 24);
 }
 
 static void
 add_options(void)
 {
-	add_option("confirm", "cf", OPT_BOOL, 0, NULL, &confirm_handler);
-	add_option("fastrun", "", OPT_BOOL, 0, NULL, &fastrun_handler);
-	add_option("followlinks", "", OPT_BOOL, 0, NULL, &followlinks_handler);
-	add_option("fusehome", "", OPT_STR, 0, NULL, &fusehome_handler);
-	add_option("history", "hi", OPT_INT, 0, NULL, &history_handler);
-	add_option("hlsearch", "hls", OPT_BOOL, 0, NULL, &hlsearch_handler);
-	add_option("iec", "", OPT_BOOL, 0, NULL, &iec_handler);
-	add_option("ignorecase", "ic", OPT_BOOL, 0, NULL, &ignorecase_handler);
-	add_option("reversecol", "", OPT_BOOL, 0, NULL, &reversecol_handler);
-	add_option("runexec", "", OPT_BOOL, 0, NULL, &runexec_handler);
-	add_option("shell", "sh", OPT_STR, 0, NULL, &shell_handler);
-	add_option("smartcase", "scs", OPT_BOOL, 0, NULL, &smartcase_handler);
-	add_option("sortnumbers", "", OPT_BOOL, 0, NULL, &sortnumbers_handler);
-	add_option("timefmt", "", OPT_STR, 0, NULL, &timefmt_handler);
-	add_option("trash", "", OPT_BOOL, 0, NULL, &trash_handler);
-	add_option("undolevels", "ul", OPT_INT, 0, NULL, &undolevels_handler);
-	add_option("vicmd", "", OPT_STR, 0, NULL, &vicmd_handler);
-	add_option("vixcmd", "", OPT_STR, 0, NULL, &vixcmd_handler);
-	add_option("vifminfo", "", OPT_SET, ARRAY_LEN(vifminfo_set), vifminfo_set,
-			&vifminfo_handler);
-	add_option("vimhelp", "", OPT_BOOL, 0, NULL, &vimhelp_handler);
-	add_option("wildmenu", "wmnu", OPT_BOOL, 0, NULL, &wildmenu_handler);
-	add_option("wrap", "", OPT_BOOL, 0, NULL, &wrap_handler);
-
-	/* local options */
-	add_option("sort", "", OPT_ENUM, ARRAY_LEN(sort_enum), sort_enum,
-			&sort_handler);
-	add_option("sortorder", "", OPT_ENUM, 2, sort_order_enum,
-			&sort_order_handler);
-}
-
-static void
-load_options(void)
-{
-	union optval_t val;
-
-	val.bool_val = cfg.confirm;
-	set_option("confirm", val);
-
-	val.bool_val = cfg.fast_run;
-	set_option("fastrun", val);
-
-	val.bool_val = cfg.follow_links;
-	set_option("followlinks", val);
-
-	val.str_val = cfg.fuse_home;
-	set_option("fusehome", val);
-
-	val.int_val = cfg.history_len;
-	set_option("history", val);
-
-	val.bool_val = cfg.hl_search;
-	set_option("hlsearch", val);
-
-	val.bool_val = cfg.use_iec_prefixes;
-	set_option("iec", val);
-
-	val.bool_val = cfg.ignore_case;
-	set_option("ignorecase", val);
-
-	val.bool_val = cfg.invert_cur_line;
-	set_option("reversecol", val);
-
-	val.bool_val = cfg.auto_execute;
-	set_option("runexec", val);
-
-	val.str_val = cfg.shell;
-	set_option("shell", val);
-
-	val.bool_val = cfg.smart_case;
-	set_option("smartcase", val);
-
-	val.bool_val = cfg.sort_numbers;
-	set_option("sortnumbers", val);
-
-	val.str_val = cfg.time_format + 1;
-	set_option("timefmt", val);
-
-	val.bool_val = cfg.use_trash;
-	set_option("trash", val);
-
-	val.int_val = cfg.undo_levels;
-	set_option("undolevels", val);
-
-	val.str_val = cfg.vi_command;
-	set_option("vicmd", val);
-
-	val.str_val = cfg.vi_x_command;
-	set_option("vixcmd", val);
-
-	val.set_items = cfg.vifm_info;
-	set_option("vifminfo", val);
-
-	val.bool_val = cfg.use_vim_help;
-	set_option("vimhelp", val);
-
-	val.bool_val = cfg.wild_menu;
-	set_option("wildmenu", val);
-
-	val.bool_val = cfg.wrap_quick_view;
-	set_option("wrap", val);
+	int i;
+	for(i = 0; i < ARRAY_LEN(options); i++)
+	{
+		add_option(options[i].name, options[i].abbr, options[i].type,
+				options[i].val_count, options[i].vals, options[i].handler,
+				options[i].val);
+	}
 }
 
 void

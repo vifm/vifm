@@ -34,6 +34,7 @@ struct opt_t {
 	char *name;
 	enum opt_type type;
 	union optval_t val;
+	union optval_t def;
 	opt_handler handler;
 	/* for OPT_ENUM and OPT_SET */
 	int val_count;
@@ -53,6 +54,7 @@ static int set_on(struct opt_t *opt);
 static int set_off(struct opt_t *opt);
 static int set_inv(struct opt_t *opt);
 static int set_set(struct opt_t *opt, const char *value);
+static int set_reset(struct opt_t *opt);
 static int set_add(struct opt_t *opt, const char *value);
 static int set_remove(struct opt_t *opt, const char *value);
 static int set_op(struct opt_t *opt, const char *value, int add);
@@ -97,17 +99,30 @@ clear_options(void)
 
 void
 add_option(const char *name, const char *abbr, enum opt_type type,
-		int val_count, const char **vals, opt_handler handler)
+		int val_count, const char **vals, opt_handler handler, union optval_t def)
 {
 	struct opt_t *full;
 	full = add_option_inner(name, type, val_count, vals, handler);
-	if(full != NULL && abbr[0] != '\0')
+	if(full == NULL)
+		return;
+	if(abbr[0] != '\0')
 	{
 		char *full_name = full->name;
 		struct opt_t *abbreviated;
+
 		abbreviated = add_option_inner(abbr, type, val_count, vals, handler);
 		if(abbreviated != NULL)
 			abbreviated->full = full_name;
+	}
+	if(type == OPT_STR)
+	{
+		full->def.str_val = strdup(def.str_val);
+		full->val.str_val = strdup(def.str_val);
+	}
+	else
+	{
+		full->def = def;
+		full->val = def;
 	}
 }
 
@@ -200,7 +215,7 @@ extract_option(const char *cmd, char *buf, int replace)
 			const char *p = cmd;
 			while(isspace(*cmd))
 				++cmd;
-			if(*cmd == '?' || *cmd == '!')
+			if(*cmd == '?' || *cmd == '!' || *cmd == '&')
 			{
 				*buf++ = *cmd++;
 				if(*cmd != '\0' && !isspace(*cmd))
@@ -273,7 +288,7 @@ process_option(const char *cmd)
 		else if(strncmp(option, "inv", 3) == 0)
 			err = set_inv(opt);
 	}
-	else if(*p == '!' || *p == '?')
+	else if(*p == '!' || *p == '?' || *p == '&')
 	{
 		if(*(p + 1) != '\0')
 		{
@@ -282,8 +297,10 @@ process_option(const char *cmd)
 		}
 		if(*p == '!')
 			err = set_inv(opt);
-		else
+		else if(*p == '?')
 			err = set_print(opt);
+		else
+			err = set_reset(opt);
 	}
 	else if(strncmp(p, "+=", 2) == 0)
 	{
@@ -465,12 +482,52 @@ set_set(struct opt_t *opt, const char *value)
 }
 
 static int
+set_reset(struct opt_t *opt)
+{
+	if(opt->type == OPT_STR)
+	{
+		char *p;
+
+		if(strcmp(opt->val.str_val, opt->def.str_val) == 0)
+			return 0;
+
+		p = strdup(opt->def.str_val);
+		if(p == NULL)
+			return -1;
+		free(opt->val.str_val);
+		opt->val.str_val = p;
+	}
+	else if(opt->val.str_val != opt->def.str_val)
+	{
+		opt->val = opt->def;
+		*opts_changed = 1;
+		opt->handler(OP_MODIFIED, opt->val);
+	}
+	return 0;
+}
+
+static int
 set_add(struct opt_t *opt, const char *value)
 {
-	if(opt->type != OPT_SET && opt->type != OPT_STRLIST)
+	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST)
 		return -1;
 
-	if(opt->type == OPT_SET)
+	if(opt->type == OPT_INT)
+	{
+		char *p;
+		int i;
+
+		i = strtol(value, &p, 10);
+		if(*p != '\0')
+			return -1;
+		if(i == 0)
+			return 0;
+
+		*opts_changed = 1;
+		opt->val.int_val += i;
+		opt->handler(OP_MODIFIED, opt->val);
+	}
+	else if(opt->type == OPT_SET)
 	{
 		if(set_op(opt, value, 1))
 		{
@@ -491,10 +548,25 @@ set_add(struct opt_t *opt, const char *value)
 static int
 set_remove(struct opt_t *opt, const char *value)
 {
-	if(opt->type != OPT_SET && opt->type != OPT_STRLIST)
+	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST)
 		return -1;
 
-	if(opt->type == OPT_SET)
+	if(opt->type == OPT_INT)
+	{
+		char *p;
+		int i;
+
+		i = strtol(value, &p, 10);
+		if(*p != '\0')
+			return -1;
+		if(i == 0)
+			return 0;
+
+		*opts_changed = 1;
+		opt->val.int_val -= i;
+		opt->handler(OP_MODIFIED, opt->val);
+	}
+	else if(opt->type == OPT_SET)
 	{
 		if(set_op(opt, value, 0))
 		{
