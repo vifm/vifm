@@ -18,7 +18,6 @@ Basic things that need to be done.
 
 Documentation.
 	Better documentation.
-    Document using P to move files on fs different from where /home is.
     Document command line keys.
 
 Vi(m) specific features that need to be added.

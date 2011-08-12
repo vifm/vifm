@@ -304,7 +304,11 @@ to the current directory if they were deleted with dd or :d[elete] or if the
 files were yanked from the Trash directory.
 .TP
 .BI P
-moves the last yanked files.
+moves the last yanked files.  The advantage of using P instead of d followed by
+p is that P moves files only once.  This isn't important in case you're moving
+files in the same file system where your home directory is, but using P to
+move files on some other file system (or file systems, in case you want to move
+files from fs1 to fs2 and your home is on fs3) can save your time.
 .TP
 .BI al
 puts symbolic links with absolute paths.
