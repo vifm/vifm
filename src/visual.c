@@ -161,7 +161,6 @@ init_visual_mode(int *key_mode)
 void
 enter_visual_mode(int restore_selection)
 {
-	int x;
 	int ub = check_mark_directory(view, '<');
 	int lb = check_mark_directory(view, '>');
 
@@ -172,8 +171,7 @@ enter_visual_mode(int restore_selection)
 	start_pos = view->list_pos;
 	*mode = VISUAL_MODE;
 
-	for(x = 0; x < view->list_rows; x++)
-		view->dir_entry[x].selected = 0;
+	clean_selected_files(view);
 
 	if(restore_selection)
 	{
@@ -504,15 +502,13 @@ goto_pos(int pos)
 static void
 cmd_gv(struct key_info key_info, struct keys_info *keys_info)
 {
-	int x;
 	int ub = check_mark_directory(view, '<');
 	int lb = check_mark_directory(view, '>');
 
 	if(ub < 0 || lb < 0)
 		return;
 
-	for(x = 0; x < view->list_rows; x++)
-		view->dir_entry[x].selected = 0;
+	clean_selected_files(view);
 
 	start_pos = ub;
 	view->list_pos = ub;
