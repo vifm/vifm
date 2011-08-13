@@ -1014,7 +1014,8 @@ check_view_dir_history(FileView *view)
 	{
 		int x;
 		int found = 0;
-		for(x = view->history_pos; x >= 0; x--)
+		/* -1 is to skip current position, that should equals view->curr_dir */
+		for(x = view->history_pos - 1; x >= 0; x--)
 		{
 			if(strlen(view->history[x].dir) < 1)
 				break;
@@ -1901,3 +1902,4 @@ pane_in_dir(FileView *view, const char *path)
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
+
