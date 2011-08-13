@@ -12,7 +12,6 @@ Basic things that need to be done.
     Perform operations using system calls, not programs.  This is much faster
         and will ease porting on Windows (less dependencies on Cygwin).
 	:restore command to restore files from Trash
-    Be more verbose about regexp compiling errors.
     Better cW command (maybe accept count of extensions to skip).
 
 Documentation.

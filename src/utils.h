@@ -19,6 +19,8 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#include <regex.h>
+
 #include <limits.h> /* PATH_MAX */
 #include <sys/types.h> /* mode_t */
 #include <wchar.h> /* wchar_t ... */
@@ -73,6 +75,7 @@ const char *replace_home_part(const char *directory);
 const char *find_tail(const char *path);
 char * expand_tilde(char *path);
 int get_regexp_cflags(const char *pattern);
+const char * get_regexp_error(int err, regex_t *re);
 
 #endif
 

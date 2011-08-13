@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <regex.h>
+
 #include <curses.h>
 
 #include <sys/types.h> /* passwd */
@@ -1420,13 +1422,25 @@ edit_selection(FileView *view)
 	return buf;
 }
 
-static void
+static int
 set_view_filter(FileView *view, const char *filter, int invert)
 {
+	regex_t re;
+	int err;
+
+	if((err = regcomp(&re, filter, REG_EXTENDED)) != 0)
+	{
+		status_bar_messagef("Filter not set: %s", get_regexp_error(err, &re));
+		regfree(&re);
+		return 1;
+	}
+	regfree(&re);
+
 	view->invert = invert;
 	view->filename_filter = realloc(view->filename_filter, strlen(filter) + 1);
 	strcpy(view->filename_filter, filter);
 	load_saving_pos(view, 1);
+	return 0;
 }
 
 static wchar_t  *
@@ -2297,7 +2311,7 @@ filter_cmd(const struct cmd_info *cmd_info)
 	}
 	else
 	{
-		set_view_filter(curr_view, cmd_info->argv[0], !cmd_info->emark);
+		return set_view_filter(curr_view, cmd_info->argv[0], !cmd_info->emark) != 0;
 	}
 	return 0;
 }

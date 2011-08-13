@@ -858,5 +858,14 @@ get_regexp_cflags(const char *pattern)
 	return result;
 }
 
+const char *
+get_regexp_error(int err, regex_t *re)
+{
+	static char buf[360];
+
+	regerror(err, re, buf, sizeof(buf));
+	return buf;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

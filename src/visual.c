@@ -718,12 +718,13 @@ update(void)
 int
 find_vpattern(FileView *view, const char *pattern, int backward)
 {
+	int result;
 	int hls = cfg.hl_search;
 	cfg.hl_search = 0;
-	find_pattern(view, pattern, backward, 0);
+	result = find_pattern(view, pattern, backward, 0);
 	cfg.hl_search = hls;
 	find_update(view, backward);
-	return 0;
+	return result;
 }
 
 static void

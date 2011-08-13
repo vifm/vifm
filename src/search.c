@@ -94,6 +94,7 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 	int found = 0;
 	regex_t re;
 	int x;
+	int err;
 
 	if(move)
 		clean_selected_files(view);
@@ -101,7 +102,7 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 		view->dir_entry[x].search_match = 0;
 
 	cflags = get_regexp_cflags(pattern);
-	if(regcomp(&re, pattern, cflags) == 0)
+	if((err = regcomp(&re, pattern, cflags)) == 0)
 	{
 		for(x = 0; x < view->list_rows; x++)
 		{
@@ -123,8 +124,14 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 			}
 			found++;
 		}
+		regfree(&re);
 	}
-	regfree(&re);
+	else
+	{
+		status_bar_messagef("Regexp error: %s", get_regexp_error(err, &re));
+		regfree(&re);
+		return 1;
+	}
 
 	/* Need to redraw the list so that the matching files are highlighted */
 	draw_dir_list(view, view->top_line);

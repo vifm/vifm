@@ -2156,6 +2156,7 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 	char **dest = NULL;
 	int n = 0;
 	int cflags;
+	int err;
 
 	if(view->selected_files == 0)
 	{
@@ -2169,10 +2170,10 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 		cflags = REG_EXTENDED | REG_ICASE;
 	else
 		cflags = REG_EXTENDED;
-	if(regcomp(&re, pattern, cflags) != 0)
+	if((err = regcomp(&re, pattern, cflags)) != 0)
 	{
+		status_bar_messagef("Regexp error: %s", get_regexp_error(err, &re));
 		regfree(&re);
-		status_bar_message("Invalid regular expression");
 		return 1;
 	}
 

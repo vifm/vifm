@@ -402,33 +402,41 @@ redraw_menu(menu_info *m)
 	wrefresh(menu_win);
 }
 
-static void
+/* Returns non-zero on error */
+static int
 search_menu(menu_info *m, int start_pos)
 {
 	int cflags;
 	regex_t re;
+	int err;
 
 	if(m->matches == NULL)
 		m->matches = malloc(sizeof(int)*m->len);
 
+	memset(m->matches, 0, sizeof(int)*m->len);
+
 	cflags = get_regexp_cflags(m->regexp);
-	if(regcomp(&re, m->regexp, cflags) == 0)
+	if((err = regcomp(&re, m->regexp, cflags)) == 0)
 	{
 		int x;
 		m->matching_entries = 0;
 		for(x = 0; x < m->len; x++)
 		{
 			if(regexec(&re, m->data[x], 0, NULL, 0) != 0)
-			{
-				m->matches[x] = 0;
 				continue;
-			}
 			m->matches[x] = 1;
 
 			m->matching_entries++;
 		}
+		regfree(&re);
+		return 0;
 	}
-	regfree(&re);
+	else
+	{
+		status_bar_messagef("Regexp error: %s", get_regexp_error(err, &re));
+		regfree(&re);
+		return -1;
+	}
 }
 
 static int
@@ -533,7 +541,12 @@ search_menu_list(const char *pattern, menu_info *m)
 	if(pattern)
 	{
 		m->regexp = strdup(pattern);
-		search_menu(m, m->pos);
+		if(search_menu(m, m->pos) != 0)
+		{
+			draw_menu(m);
+			moveto_menu_pos(m->pos, m);
+			return 1;
+		}
 		draw_menu(m);
 	}
 
