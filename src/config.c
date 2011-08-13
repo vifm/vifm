@@ -597,6 +597,8 @@ write_info_file(void)
 					prepare_line(line2);
 					if(fgets(line3, sizeof(line3), fp) == line3)
 					{
+						if(strchr(valid_bookmarks, line[1]) == NULL)
+							continue;
 						if(is_bookmark(mark2index(line[1])))
 							continue;
 						prepare_line(line3);
