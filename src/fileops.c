@@ -874,7 +874,9 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 		}
 	}
 
-	if(is_dir(view->dir_entry[view->list_pos].name) && view->selected_files == 0)
+	if(is_dir(view->dir_entry[view->list_pos].name) &&
+			view->selected_files == 0 &&
+			(view->dir_entry[view->list_pos].type != LINK || !force_follow))
 	{
 		if(strcmp(filename, "../") == 0)
 		{
@@ -2284,3 +2286,4 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
+
