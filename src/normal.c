@@ -1092,19 +1092,7 @@ cmd_t(struct key_info key_info, struct keys_info *keys_info)
 	}
 
 	draw_dir_list(curr_view, curr_view->top_line);
-	if(cfg.invert_cur_line)
-	{
-		moveto_list_pos(curr_view, curr_view->list_pos);
-	}
-	else
-	{
-		wattron(curr_view->win,
-				COLOR_PAIR(curr_view->color_scheme + CURR_LINE_COLOR) | A_BOLD);
-		mvwaddstr(curr_view->win, curr_view->curr_line, 0, " ");
-		wattroff(curr_view->win,
-				COLOR_PAIR(curr_view->color_scheme + CURR_LINE_COLOR) | A_BOLD);
-		wmove(curr_view->win, curr_view->curr_line, 0);
-	}
+	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
 /* Undo last command group. */

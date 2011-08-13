@@ -39,6 +39,7 @@ typedef struct menu_info
 	int type;
 	int match_dir;
 	int matching_entries;
+	int *matches;
 	char *regexp;
 	char *title;
 	char *args;
@@ -73,7 +74,7 @@ void redraw_error_msg(char *title_arg, const char *message_arg);
 /* Returns not zero when user asked to skip error messages that left */
 int show_error_msg(char * title, const char *message);
 int show_error_msgf(char *title, const char *format, ...);
-int search_menu_list(char *command, menu_info *ptr);
+int search_menu_list(const char *pattern, menu_info *m);
 int query_user_menu(char *title, char *message);
 void clean_menu_position(menu_info *m);
 void moveto_menu_pos(int pos, menu_info *m);

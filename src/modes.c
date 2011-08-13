@@ -162,7 +162,15 @@ modes_redraw(void)
 		return;
 	}
 
-	redraw_window();
+	if(curr_stats.errmsg_shown)
+	{
+		touchwin(stdscr);
+		update_all_windows();
+	}
+	else
+	{
+		redraw_window();
+	}
 
 	if(mode == SORT_MODE)
 		redraw_sort_dialog();

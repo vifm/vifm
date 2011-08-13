@@ -836,7 +836,7 @@ complete_option(const char *buf, int bool_only)
 		if(bool_only && options[i].type != OPT_BOOL)
 			continue;
 		if(strncmp(buf, options[i].name, len) == 0)
-			add_completion(strdup(options[i].name));
+			add_completion(options[i].name);
 	}
 }
 

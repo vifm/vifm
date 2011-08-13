@@ -148,7 +148,7 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 			short f, b;
 			attr = A_REVERSE;
 			pair_content(CURRENT_COLOR + view->color_scheme, &f, &b);
-			if(f != 7)
+			if(f != COLOR_WHITE)
 				attr |= A_BOLD;
 			wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | attr);
 		}
@@ -688,7 +688,8 @@ erase_current_line_bar(FileView *view)
 
 	/* Extra long file names are truncated to fit */
 
-	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) | A_BOLD);
+	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
+			A_BOLD);
 	if((old_pos > -1)  && (old_pos < view->list_rows))
 	{
 		print_width = get_real_string_width(view->dir_entry[old_pos].name,
@@ -804,7 +805,7 @@ moveto_list_pos(FileView *view, int pos)
 	size_t print_width;
 	int LINE_COLOR;
 	short f, b;
-	int attr = 0;
+	int attr;
 
 	if(pos < 1)
 		pos = 0;
@@ -868,19 +869,30 @@ moveto_list_pos(FileView *view, int pos)
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme));
 
 	mvwaddstr(view->win, old_cursor, 0, " ");
+	wrefresh(view->win);
 
+	attr = 0;
 	if(cfg.invert_cur_line)
 	{
 		short f, b;
 		attr = A_REVERSE;
-		pair_content(CURRENT_COLOR + view->color_scheme, &f, &b);
-		if(f != 7)
+		pair_content(view->color_scheme + CURRENT_COLOR, &f, &b);
+		if(f != COLOR_WHITE)
 			attr |= A_BOLD;
-		wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | attr);
+		wattron(view->win, COLOR_PAIR(view->color_scheme + CURRENT_COLOR) | attr);
+	}
+	else if(view->dir_entry[pos].selected)
+	{
+		short f, b, t;
+		pair_content(view->color_scheme + SELECTED_COLOR, &f, &t);
+		pair_content(view->color_scheme + CURR_LINE_COLOR, &t, &b);
+		init_pair(view->color_scheme + CURRENT_COLOR, f, b);
+		attr = A_BOLD;
+		wattron(view->win, COLOR_PAIR(view->color_scheme + CURRENT_COLOR) | attr);
 	}
 	else
 	{
-		wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
+		wattron(view->win, COLOR_PAIR(view->color_scheme + CURR_LINE_COLOR) |
 				A_BOLD);
 	}
 
@@ -904,8 +916,8 @@ moveto_list_pos(FileView *view, int pos)
 	if(curr_stats.view)
 		quick_view_file(view);
 
-	if(cfg.invert_cur_line)
-		wattroff(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | attr);
+	if(cfg.invert_cur_line || view->dir_entry[pos].selected)
+		wattroff(view->win, COLOR_PAIR(view->color_scheme + CURRENT_COLOR) | attr);
 }
 
 void

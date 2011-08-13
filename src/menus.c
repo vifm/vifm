@@ -41,6 +41,7 @@
 #include "fileops.h"
 #include "filetype.h"
 #include "menu.h"
+#include "modes.h"
 #include "registers.h"
 #include "search.h"
 #include "status.h"
@@ -98,7 +99,10 @@ clean_menu_position(menu_info *m)
 	buf[x] = ' ';
 	buf[x + 1] = '\0';
 
-	wattron(menu_win, COLOR_PAIR(cfg.color_scheme + WIN_COLOR));
+	if(m->matches != NULL && m->matches[m->pos])
+		wattron(menu_win, COLOR_PAIR(cfg.color_scheme + SELECTED_COLOR));
+	else
+		wattron(menu_win, COLOR_PAIR(cfg.color_scheme + WIN_COLOR));
 
 	if(strlen(m->data[m->pos]) > x - 4)
 	{
@@ -113,7 +117,10 @@ clean_menu_position(menu_info *m)
 	}
 	waddstr(menu_win, " ");
 
-	wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
+	if(m->matches != NULL && m->matches[m->pos])
+		wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + SELECTED_COLOR));
+	else
+		wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
 
 	free(buf);
 }
@@ -226,17 +233,12 @@ show_error_msg(char *title, const char *message)
 	if(curr_stats.vifm_started != 2)
 		skip_until_started = key == 3;
 
-	curr_stats.errmsg_shown = 0;
-
 	werase(error_win);
 	wrefresh(error_win);
 
-	touchwin(stdscr);
+	curr_stats.errmsg_shown = 0;
 
-	update_all_windows();
-
-	if(curr_stats.need_redraw)
-		redraw_window();
+	modes_redraw();
 
 	return key == 3;
 }
@@ -244,16 +246,10 @@ show_error_msg(char *title, const char *message)
 void
 reset_popup_menu(menu_info *m)
 {
-	int z;
-
 	free(m->args);
-
-	for(z = 0; z < m->len; z++)
-	{
-		free(m->data[z]);
-	}
+	free_string_array(m->data, m->len);
 	free(m->regexp);
-	free(m->data);
+	free(m->matches);
 	free(m->title);
 
 	werase(menu_win);
@@ -277,6 +273,8 @@ moveto_menu_pos(int pos, menu_info *m)
 	int redraw = 0;
 	int x, y, z;
 	char * buf = (char *)NULL;
+	int attr;
+	short f, b, t;
 
 	getmaxyx(menu_win, y, x);
 
@@ -303,9 +301,9 @@ moveto_menu_pos(int pos, menu_info *m)
 		m->current = m->win_rows - 3 + 1;
 		redraw = 1;
 	}
-	else if(pos  < m->top)
+	else if(pos < m->top)
 	{
-		while(pos  < m->top)
+		while(pos < m->top)
 			m->top--;
 		m->current = 1;
 		redraw = 1;
@@ -325,7 +323,32 @@ moveto_menu_pos(int pos, menu_info *m)
 	buf[x] = ' ';
 	buf[x + 1] = '\0';
 
-	wattron(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
+	if(m->matches != NULL && m->matches[pos])
+	{
+		if(cfg.invert_cur_line)
+		{
+			pair_content(cfg.color_scheme + SELECTED_COLOR, &f, &b);
+		}
+		else
+		{
+			pair_content(cfg.color_scheme + CURR_LINE_COLOR, &t, &b);
+			pair_content(cfg.color_scheme + SELECTED_COLOR, &f, &t);
+		}
+	}
+	else
+	{
+		if(cfg.invert_cur_line)
+			pair_content(cfg.color_scheme + WIN_COLOR, &f, &b);
+		else
+			pair_content(cfg.color_scheme + CURR_LINE_COLOR, &f, &b);
+	}
+	init_pair(cfg.color_scheme + MENU_CURRENT_COLOR, f, b);
+	attr = 0;
+	if(cfg.invert_cur_line)
+		attr |= A_REVERSE;
+	if(!cfg.invert_cur_line || f != COLOR_WHITE)
+		attr |= A_BOLD;
+	wattron(menu_win, COLOR_PAIR(cfg.color_scheme + MENU_CURRENT_COLOR) | attr);
 
 	if(strlen(m->data[pos]) > x - 4)
 	{
@@ -340,7 +363,7 @@ moveto_menu_pos(int pos, menu_info *m)
 	}
 	waddstr(menu_win, " ");
 
-	wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
+	wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + MENU_CURRENT_COLOR) | attr);
 
 	m->pos = pos;
 	free(buf);
@@ -379,40 +402,60 @@ redraw_menu(menu_info *m)
 	wrefresh(menu_win);
 }
 
-static int
-search_menu_forwards(menu_info *m, int start_pos)
+static void
+search_menu(menu_info *m, int start_pos)
 {
 	int cflags;
-	int match_up = -1;
-	int match_down = -1;
 	regex_t re;
-	m->matching_entries = 0;
+
+	if(m->matches == NULL)
+		m->matches = malloc(sizeof(int)*m->len);
 
 	cflags = get_regexp_cflags(m->regexp);
 	if(regcomp(&re, m->regexp, cflags) == 0)
 	{
 		int x;
+		m->matching_entries = 0;
 		for(x = 0; x < m->len; x++)
 		{
 			if(regexec(&re, m->data[x], 0, NULL, 0) != 0)
+			{
+				m->matches[x] = 0;
 				continue;
+			}
+			m->matches[x] = 1;
 
-			if(match_up < 0)
-			{
-				if (x < start_pos)
-					match_up = x;
-			}
-			if(match_down < 0)
-			{
-				if (x >= start_pos)
-					match_down = x;
-			}
 			m->matching_entries++;
 		}
 	}
 	regfree(&re);
+}
 
-	if((match_up > -1) || (match_down > -1))
+static int
+search_menu_forwards(menu_info *m, int start_pos)
+{
+	int match_up = -1;
+	int match_down = -1;
+	int x;
+
+	for(x = 0; x < m->len; x++)
+	{
+		if(!m->matches[x])
+			continue;
+
+		if(match_up < 0)
+		{
+			if(x < start_pos)
+				match_up = x;
+		}
+		if(match_down < 0)
+		{
+			if(x >= start_pos)
+				match_down = x;
+		}
+	}
+
+	if(match_up > -1 || match_down > -1)
 	{
 		int pos;
 
@@ -425,12 +468,11 @@ search_menu_forwards(menu_info *m, int start_pos)
 		moveto_menu_pos(pos, m);
 		status_bar_messagef("%d %s", m->matching_entries,
 				(m->matching_entries == 1) ? "match" : "matches");
-		wrefresh(status_bar);
 	}
 	else
 	{
+		moveto_menu_pos(m->pos, m);
 		status_bar_messagef("No matches for %s", m->regexp);
-		wrefresh(status_bar);
 		return 1;
 	}
 	return 0;
@@ -439,37 +481,28 @@ search_menu_forwards(menu_info *m, int start_pos)
 static int
 search_menu_backwards(menu_info *m, int start_pos)
 {
-	int cflags;
 	int match_up = -1;
 	int match_down = -1;
-	regex_t re;
-	m->matching_entries = 0;
+	int x;
 
-	cflags = get_regexp_cflags(m->regexp);
-	if(regcomp(&re, m->regexp, cflags) == 0)
+	for(x = m->len - 1; x > -1; x--)
 	{
-		int x;
-		for(x = m->len - 1; x > -1; x--)
-		{
-			if(regexec(&re, m->data[x], 0, NULL, 0) != 0)
-				continue;
+		if(!m->matches[x])
+			continue;
 
-			if(match_up < 0)
-			{
-				if (x <= start_pos)
-					match_up = x;
-			}
-			if(match_down < 0)
-			{
-				if (x > start_pos)
-					match_down = x;
-			}
-			m->matching_entries++;
+		if(match_up < 0)
+		{
+			if(x <= start_pos)
+				match_up = x;
+		}
+		if(match_down < 0)
+		{
+			if(x > start_pos)
+				match_down = x;
 		}
 	}
-	regfree(&re);
 
-	if((match_up  > -1) || (match_down > -1))
+	if(match_up  > -1 || match_down > -1)
 	{
 		int pos;
 
@@ -482,24 +515,27 @@ search_menu_backwards(menu_info *m, int start_pos)
 		moveto_menu_pos(pos, m);
 		status_bar_messagef("%d %s", m->matching_entries,
 				(m->matching_entries == 1) ? "match" : "matches");
-		wrefresh(status_bar);
 	}
 	else
 	{
+		moveto_menu_pos(m->pos, m);
 		status_bar_messagef("No matches for %s", m->regexp);
-		wrefresh(status_bar);
 		return 1;
 	}
 	return 0;
 }
 
 int
-search_menu_list(char * pattern, menu_info *m)
+search_menu_list(const char *pattern, menu_info *m)
 {
 	int save = 0;
 
 	if(pattern)
+	{
 		m->regexp = strdup(pattern);
+		search_menu(m, m->pos);
+		draw_menu(m);
+	}
 
 	switch(m->match_dir)
 	{
@@ -705,6 +741,10 @@ draw_menu(menu_info *m)
 		if((ptr = strchr(m->data[x], '\n')) || (ptr = strchr(m->data[x], '\r')))
 			*ptr = '\0';
 		len = win_len + get_utf8_overhead(m->data[x]);
+
+		if(m->matches != NULL && m->matches[x])
+			wattron(menu_win, COLOR_PAIR(cfg.color_scheme + SELECTED_COLOR));
+
 		if(strlen(m->data[x]) > len - 4)
 		{
 			size_t len = get_normal_utf8_string_widthn(m->data[x], win_len - 3 - 4);
@@ -716,6 +756,10 @@ draw_menu(menu_info *m)
 			mvwaddnstr(menu_win, i, 2, m->data[x], len - 4);
 		}
 		waddstr(menu_win, " ");
+
+		if(m->matches != NULL && m->matches[x])
+			wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + SELECTED_COLOR));
+
 		x++;
 
 		if(i + 3 > y)
@@ -737,6 +781,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 	m.win_rows = 0;
 	m.type = MAP;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
@@ -805,6 +850,7 @@ show_apropos_menu(FileView *view, char *args)
 	m.win_rows = 0;
 	m.type = APROPOS;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
@@ -863,8 +909,16 @@ bookmark_khandler(struct menu_info *m, wchar_t *keys)
 		memmove(active_bookmarks + m->pos, active_bookmarks + m->pos + 1,
 				sizeof(char *)*(m->len - 1 - m->pos));
 
+		free(m->data[m->pos]);
 		memmove(m->data + m->pos, m->data + m->pos + 1,
 				sizeof(char *)*(m->len - 1 - m->pos));
+		if(m->matches != NULL)
+		{
+			if(m->matches[m->pos])
+				m->matching_entries--;
+			memmove(m->matches + m->pos, m->matches + m->pos + 1,
+					sizeof(int)*(m->len - 1 - m->pos));
+		}
 		m->len--;
 		draw_menu(m);
 
@@ -889,6 +943,7 @@ show_bookmarks_menu(FileView *view, const char *marks)
 	m.win_rows = 0;
 	m.type = BOOKMARK;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
@@ -973,6 +1028,7 @@ show_dirstack_menu(FileView *view)
 	m.win_rows = 0;
 	m.type = DIRSTACK;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
@@ -1017,6 +1073,7 @@ show_colorschemes_menu(FileView *view)
 	m.win_rows = 0;
 	m.type = COLORSCHEME;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
@@ -1056,8 +1113,16 @@ command_khandler(struct menu_info *m, wchar_t *keys)
 		snprintf(cmd_buf, sizeof(cmd_buf), "delcommand %s", m->data[m->pos] + 1);
 		execute_cmd(cmd_buf);
 
+		free(m->data[m->pos]);
 		memmove(m->data + m->pos, m->data + m->pos + 1,
 				sizeof(char *)*(m->len - 1 - m->pos));
+		if(m->matches != NULL)
+		{
+			if(m->matches[m->pos])
+				m->matching_entries--;
+			memmove(m->matches + m->pos, m->matches + m->pos + 1,
+					sizeof(int)*(m->len - 1 - m->pos));
+		}
 		m->len--;
 		draw_menu(m);
 
@@ -1081,6 +1146,7 @@ show_commands_menu(FileView *view)
 	m.win_rows = 0;
 	m.type = COMMAND;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
@@ -1246,6 +1312,7 @@ show_filetypes_menu(FileView *view, int background)
 		m.win_rows = 0;
 		m.type = FILETYPE;
 		m.matching_entries = 0;
+		m.matches = NULL;
 		m.match_dir = NONE;
 		m.regexp = NULL;
 		m.title = NULL;
@@ -1349,6 +1416,7 @@ show_history_menu(FileView *view)
 	m.win_rows = 0;
 	m.type = HISTORY;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = strdup(" Directory History ");
@@ -1410,6 +1478,7 @@ show_cmdhistory_menu(FileView *view)
 	m.win_rows = 0;
 	m.type = CMDHISTORY;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = strdup(" Command Line History ");
@@ -1493,6 +1562,7 @@ show_locate_menu(FileView *view, const char *args)
 	m.win_rows = 0;
 	m.type = FIND;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
@@ -1530,6 +1600,7 @@ show_find_menu(FileView *view, int with_path, const char *args)
 	m.win_rows = 0;
 	m.type = LOCATE;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
@@ -1584,6 +1655,7 @@ show_user_menu(FileView *view, char *command)
 	m.win_rows = 0;
 	m.type = USER;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
@@ -1660,6 +1732,7 @@ show_jobs_menu(FileView *view)
 	m.win_rows = 0;
 	m.type = JOBS;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
@@ -1746,6 +1819,7 @@ show_register_menu(FileView *view, const char *registers)
 	m.win_rows = 0;
 	m.type = REGISTER;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = strdup(" Registers ");
@@ -1786,6 +1860,7 @@ show_undolist_menu(FileView *view, int with_details)
 	m.win_rows = 0;
 	m.type = UNDOLIST;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = strdup(" Undolist ");
@@ -1838,6 +1913,7 @@ show_vifm_menu(FileView *view)
 	m.win_rows = 0;
 	m.type = VIFM;
 	m.matching_entries = 0;
+	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = strdup(" vifm information ");

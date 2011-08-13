@@ -54,7 +54,7 @@ static const int default_colors[][2] = {
 };
 
 static int _gnuc_unused default_colors_size_guard[
-	(ARRAY_LEN(default_colors) == MAXNUM_COLOR) ? 1 : -1
+	(ARRAY_LEN(default_colors) + 1 == MAXNUM_COLOR) ? 1 : -1
 ];
 
 int

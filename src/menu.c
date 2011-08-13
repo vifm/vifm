@@ -449,7 +449,6 @@ cmd_N(struct key_info key_info, struct keys_info *keys_info)
 	if(menu->regexp != NULL)
 	{
 		menu->match_dir = last_search_backward ? DOWN : UP;
-		menu->matching_entries = 0;
 		search_menu_list(NULL, menu);
 		wrefresh(menu_win);
 	}
@@ -517,7 +516,6 @@ cmd_n(struct key_info key_info, struct keys_info *keys_info)
 	if(menu->regexp != NULL)
 	{
 		menu->match_dir = last_search_backward ? UP : DOWN;
-		menu->matching_entries = 0;
 		search_menu_list(NULL, menu);
 		wrefresh(menu_win);
 	}
