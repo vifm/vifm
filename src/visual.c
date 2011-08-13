@@ -196,7 +196,10 @@ leave_visual_mode(int save_msg)
 	for(i = 0; i < view->list_rows; i++)
 		view->dir_entry[i].search_match = 0;
 
-	clean_selected_files(view);
+	for(i = 0; i < view->list_rows; i++)
+		view->dir_entry[i].selected = 0;
+	view->selected_files = 0;
+
 	draw_dir_list(view, view->top_line);
 	moveto_list_pos(view, view->list_pos);
 
@@ -502,13 +505,16 @@ goto_pos(int pos)
 static void
 cmd_gv(struct key_info key_info, struct keys_info *keys_info)
 {
+	int x;
 	int ub = check_mark_directory(view, '<');
 	int lb = check_mark_directory(view, '>');
 
 	if(ub < 0 || lb < 0)
 		return;
 
-	clean_selected_files(view);
+	for(x = 0; x < view->list_rows; x++)
+		view->dir_entry[x].selected = 0;
+	view->selected_files = 0;
 
 	start_pos = ub;
 	view->list_pos = ub;

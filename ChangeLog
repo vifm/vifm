@@ -60,6 +60,9 @@
 
 	Added filename modifiers (:p, :~, :., :h, :t, :r, :e, :s and :gs).
 
+	Added gs command to work with t selection like gv with visual mode
+	selection.
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,

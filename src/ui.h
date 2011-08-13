@@ -95,6 +95,8 @@ typedef struct _FileView
 	int color_scheme; /* current color scheme being used */
 	dir_entry_t *dir_entry;
 	char ** selected_filelist;
+	int nsaved_selection;
+	char ** saved_selection;
 
 	char * prev_filter;
 	char * filename_filter; /* regexp for filtering files in dir list */

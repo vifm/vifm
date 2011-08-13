@@ -109,6 +109,7 @@ static void cmd_gA(struct key_info, struct keys_info *);
 static void cmd_ga(struct key_info, struct keys_info *);
 static void cmd_gf(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
+static void cmd_gs(struct key_info, struct keys_info *);
 static void cmd_gv(struct key_info, struct keys_info *);
 static void cmd_h(struct key_info, struct keys_info *);
 static void cmd_i(struct key_info, struct keys_info *);
@@ -201,6 +202,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"ga", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ga}}},
 	{L"gf", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gf}}},
 	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{L"gs", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gs}}},
 	{L"gv", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gv}}},
 	{L"h", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
 	{L"i", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_i}}},
@@ -626,8 +628,8 @@ cmd_ga(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_gf(struct key_info key_info, struct keys_info *keys_info)
 {
-	handle_file(curr_view, 0, 1);
 	clean_selected_files(curr_view);
+	handle_file(curr_view, 0, 1);
 	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
 }
@@ -643,6 +645,29 @@ cmd_gg(struct key_info key_info, struct keys_info *keys_info)
 		pick_files(curr_view, key_info.count - 1, keys_info);
 	else
 		moveto_list_pos(curr_view, key_info.count - 1);
+}
+
+static void
+cmd_gs(struct key_info key_info, struct keys_info *keys_info)
+{
+	int x;
+	curr_view->selected_files = 0;
+	for(x = 0; x < curr_view->list_rows; x++)
+		curr_view->dir_entry[x].selected = 0;
+	for(x = 0; x < curr_view->nsaved_selection; x++)
+	{
+		if(curr_view->saved_selection[x] != NULL)
+		{
+			int pos = find_file_pos_in_list(curr_view, curr_view->saved_selection[x]);
+			if(pos >= 0 && pos < curr_view->list_rows)
+			{
+				curr_view->dir_entry[pos].selected = 1;
+				curr_view->selected_files++;
+			}
+		}
+	}
+	draw_dir_list(curr_view, curr_view->top_line);
+	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
 static void
@@ -787,10 +812,10 @@ cmd_comma(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_dot(struct key_info key_info, struct keys_info *keys_info)
 {
-	if (0 > cfg.cmd_history_num)
+	if(0 > cfg.cmd_history_num)
 		show_error_msg(" Command Error ", "Command history list is empty.");
 	else
-		execute_command(curr_view, cfg.cmd_history[0]);
+		exec_command(cfg.cmd_history[0], curr_view, GET_COMMAND);
 }
 
 /* Command. */
@@ -916,11 +941,18 @@ delete(struct key_info key_info, int use_trash)
 	curr_stats.save_msg = delete_file(curr_view, key_info.reg, 0, NULL,
 			use_trash);
 #else /* ENABLE_COMPATIBILITY_MODE */
-	int i;
+	int j, k;
+	int *i;
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
-	i = curr_view->list_pos;
-	curr_stats.save_msg = delete_file(curr_view, key_info.reg, 1, &i, use_trash);
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	i = malloc(sizeof(int)*key_info.count);
+	k = 0;
+	for(j = curr_view->list_pos; j < curr_view->list_pos + key_info.count; j++)
+		i[k++] = j;
+	curr_stats.save_msg = delete_file(curr_view, key_info.reg, k, i, use_trash);
+	free(i);
 #endif /* ENABLE_COMPATIBILITY_MODE */
 }
 
@@ -1091,7 +1123,7 @@ cmd_t(struct key_info key_info, struct keys_info *keys_info)
 		curr_view->selected_files--;
 	}
 
-	draw_dir_list(curr_view, curr_view->top_line);
+//	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
@@ -1170,8 +1202,18 @@ cmd_yy(struct key_info key_info, struct keys_info *keys_info)
 	curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
 			keys_info->indexes);
 #else /* ENABLE_COMPATIBILITY_MODE */
-	curr_stats.save_msg = yank_files(curr_view, key_info.reg, 1,
-			&curr_view->list_pos);
+	int j, k;
+	int *i;
+	if(key_info.reg == NO_REG_GIVEN)
+		key_info.reg = DEFAULT_REG_NAME;
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	i = malloc(sizeof(int)*key_info.count);
+	k = 0;
+	for(j = curr_view->list_pos; j < curr_view->list_pos + key_info.count; j++)
+		i[k++] = j;
+	curr_stats.save_msg = yank_files(curr_view, key_info.reg, k, i);
+	free(i);
 #endif /* ENABLE_COMPATIBILITY_MODE */
 
 	if(key_info.count != NO_COUNT_GIVEN)
@@ -1366,7 +1408,11 @@ selector_s(struct key_info key_info, struct keys_info *keys_info)
 {
 	int i, x;
 
-	keys_info->count = curr_view->selected_files;
+	keys_info->count = 0;
+	for(x = 0; x < curr_view->list_rows; x++)
+		if(curr_view->dir_entry[x].selected)
+			keys_info->count++;
+
 	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
 	if(keys_info->indexes == NULL)
 	{

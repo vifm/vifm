@@ -36,7 +36,6 @@ int exec_commands(char *cmd, FileView *view, int save_hist, int type);
 int exec_command(char *cmd, FileView *view, int type);
 char * find_last_command(char *cmd);
 int shellout(const char *command, int pause);
-int execute_command(FileView *view, char *action);
 char * fast_run_complete(char *cmd);
 char * expand_macros(FileView *view, const char *command, const char *args,
 		int *menu, int *split);

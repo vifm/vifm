@@ -25,7 +25,6 @@ Vi(m) specific features that need to be added.
 		the dot filter and regular expression filter (what does this mean?).
     Add one more color to color scheme for error messages in status bar.
     Some kind of selection mode (multible blocks, mixing).
-    gs to work with t selection just like gv with visual mode selection.
     :highlight command.
     Better registers support.
     d /, d ?

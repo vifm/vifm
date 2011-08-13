@@ -686,7 +686,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 			break;
 		case COMMAND:
 			*strchr(m->data[m->pos] + 1, ' ') = '\0';
-			execute_command(view, m->data[m->pos] + 1);
+			exec_command(m->data[m->pos] + 1, view, GET_COMMAND);
 			break;
 		case FILETYPE:
 			execute_filetype_cb(view, m);

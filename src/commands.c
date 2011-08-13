@@ -628,8 +628,7 @@ post(int id)
 	if((curr_view != NULL && !curr_view->selected_files) || !need_clean_selection)
 		return;
 
-	free_selected_file_array(curr_view);
-	curr_view->selected_files = 0;
+	clean_selected_files(curr_view);
 	load_saving_pos(curr_view, 1);
 	if(curr_view == curr_view)
 		moveto_list_pos(curr_view, curr_view->list_pos);
@@ -1495,8 +1494,8 @@ skip_word(const char *cmd)
 	return cmd;
 }
 
-int
-execute_command(FileView *view, char *command)
+static int
+execute_command(FileView *view, char *command, int menu)
 {
 	int id;
 	int result;
@@ -1507,9 +1506,13 @@ execute_command(FileView *view, char *command)
 	if(command[0] == '"')
 		return 0;
 
-	cmds_conf.begin = 0;
-	cmds_conf.current = view->list_pos;
-	cmds_conf.end = view->list_rows - 1;
+	if(!menu)
+	{
+		init_cmds(1, &cmds_conf);
+		cmds_conf.begin = 0;
+		cmds_conf.current = view->list_pos;
+		cmds_conf.end = view->list_rows - 1;
+	}
 
 	while(*command == ' ' || *command == ':')
 		command++;
@@ -1585,6 +1588,12 @@ execute_command(FileView *view, char *command)
 		default:
 			show_error_msg("Command error", "Unknown error");
 			break;
+	}
+	if(!menu)
+	{
+		clean_selected_files(view);
+		draw_dir_list(view, view->top_line);
+		moveto_list_pos(view, view->list_pos);
 	}
 	return 0;
 }
@@ -1834,12 +1843,11 @@ exec_command(char *cmd, FileView *view, int type)
 
 	if(type == GET_COMMAND)
 	{
-		init_cmds(1, &cmds_conf);
-		return execute_command(view, cmd);
+		return execute_command(view, cmd, 0);
 	}
 	if(type == GET_MENU_COMMAND)
 	{
-		return execute_command(view, cmd);
+		return execute_command(view, cmd, 1);
 	}
 	else if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN)
 	{

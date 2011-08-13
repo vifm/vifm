@@ -165,7 +165,8 @@ gA - like ga, but force update.
 gf - find link destination (like l with 'followlinks' off, but also finds
 directories).
 
-gv go to visual mode restoring last selection.
+gv - go to visual mode restoring last selection.
+gs - restore last t selection, like gv for visual mode selection.
 
 i - handle file (even through it's executable and RUN_EXECUTABLE is set).
 

@@ -396,14 +396,10 @@ get_current_file_name(FileView *view)
 void
 free_selected_file_array(FileView *view)
 {
-	if(view->selected_filelist)
+	if(view->selected_filelist != NULL)
 	{
-		int x;
-		for(x = 0; x < view->selected_files; x++)
-			free(view->selected_filelist[x]);
-		free(view->selected_filelist);
+		free_string_array(view->selected_filelist, view->selected_files);
 		view->selected_filelist = NULL;
-		view->selected_files = 0;
 	}
 }
 
@@ -800,6 +796,7 @@ void
 moveto_list_pos(FileView *view, int pos)
 {
 	int redraw = 0;
+	int old_pos = view->list_pos;
 	int old_cursor = view->curr_line;
 	char file_name[view->window_width*2 + 1];
 	size_t print_width;
@@ -819,7 +816,8 @@ moveto_list_pos(FileView *view, int pos)
 	if(view->curr_line > view->list_rows - 1)
 		view->curr_line = view->list_rows - 1;
 
-	erase_current_line_bar(view);
+	if(view->list_pos != pos)
+		erase_current_line_bar(view);
 
 	redraw = move_curr_line(view, pos);
 
@@ -868,7 +866,8 @@ moveto_list_pos(FileView *view, int pos)
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme));
 
-	mvwaddstr(view->win, old_cursor, 0, " ");
+	if(old_pos != pos)
+		mvwaddstr(view->win, old_cursor, 0, " ");
 	wrefresh(view->win);
 
 	attr = 0;
@@ -1060,6 +1059,36 @@ void
 clean_selected_files(FileView *view)
 {
 	int x;
+
+	if(view->selected_files != 0)
+	{
+		char **tmp;
+
+		free_string_array(view->saved_selection, view->nsaved_selection);
+
+		tmp = view->selected_filelist;
+
+		get_all_selected_files(view);
+		view->nsaved_selection = view->selected_files;
+		view->saved_selection = view->selected_filelist;
+
+		view->selected_filelist = tmp;
+	}
+
+	for(x = 0; x < view->list_rows; x++)
+		view->dir_entry[x].selected = 0;
+	view->selected_files = 0;
+}
+
+void
+clean_selection(FileView *view)
+{
+	int x;
+
+	free_string_array(view->saved_selection, view->nsaved_selection);
+	view->nsaved_selection = 0;
+	view->saved_selection = NULL;
+
 	for(x = 0; x < view->list_rows; x++)
 		view->dir_entry[x].selected = 0;
 	view->selected_files = 0;
@@ -1331,10 +1360,13 @@ change_directory(FileView *view, const char *directory)
 		return -1;
 	}
 
-	clean_selected_files(view);
-
 	if(strcmp(dir_dup, "/") != 0)
 		chosp(dir_dup);
+
+	if(strcmp(dir_dup, view->curr_dir) != 0)
+		clean_selection(view);
+	else
+		clean_selected_files(view);
 
 	/* Need to use setenv instead of getcwd for a symlink directory */
 	setenv("PWD", dir_dup, 1);

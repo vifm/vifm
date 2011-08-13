@@ -600,7 +600,7 @@ write_info_file(void)
 						if(is_bookmark(mark2index(line[1])))
 							continue;
 						prepare_line(line3);
-						nmarks = add_to_string_array(&marks, nmarks, 2, line + 1, line2,
+						nmarks = add_to_string_array(&marks, nmarks, 3, line + 1, line2,
 								line3);
 					}
 				}
