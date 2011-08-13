@@ -625,6 +625,7 @@ change_window(void)
 	if(curr_stats.number_of_windows == 1)
 		load_dir_list(curr_view, 1);
 
+	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
 	werase(status_bar);
 	wnoutrefresh(status_bar);
