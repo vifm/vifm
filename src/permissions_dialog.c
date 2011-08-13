@@ -110,7 +110,7 @@ enter_permissions_mode(FileView *active_view)
 
 	diff = 0;
 	i = 0;
-	while(!view->dir_entry[i].selected && i < view->list_rows)
+	while(i < view->list_rows && !view->dir_entry[i].selected)
 		i++;
 	if(i == view->list_rows)
 	{
