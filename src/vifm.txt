@@ -172,6 +172,7 @@ i - handle file (even through it's executable and RUN_EXECUTABLE is set).
 
 cw - change word is used to rename a file.
 cW - change WORD is used to change only name of file (without extension).
+cl - change link target.
 co - change owner of file.
 cg - change group of file.
 cp - change file permissions.

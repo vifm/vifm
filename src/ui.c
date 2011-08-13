@@ -757,9 +757,9 @@ show_progress(const char *msg, int period)
 void
 redraw_lists(void)
 {
-	draw_dir_list(&lwin, lwin.top_line);
-	draw_dir_list(&rwin, rwin.top_line);
+	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
+	draw_dir_list(other_view, other_view->top_line);
 }
 
 void

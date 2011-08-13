@@ -212,11 +212,15 @@ Other Normal Mode Keys
 
        gv     go to visual mode restoring last selection.
 
+       gs     restore last t selection, like gv for visual mode selection.
+
        i      opens file with associated program even if it's an executable.
 
        cw     rename a file.
 
        cW     change only name of file (without extension).
+
+       cl     change link target.
 
        co     change file owner.
 
@@ -1113,4 +1117,4 @@ AUTHOR
 
 
 
-                                August 12, 2011                        vifm(1)
+                                August 13, 2011                        vifm(1)

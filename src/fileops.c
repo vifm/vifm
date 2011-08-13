@@ -1610,6 +1610,85 @@ change_group(void)
 }
 
 static void
+change_link_cb(const char *new_target)
+{
+	char buf[PATH_MAX];
+	char linkto[PATH_MAX];
+	const char *filename;
+	char *esc_file, *esc_target;
+	char do_cmd[PATH_MAX];
+	char undo_cmd[PATH_MAX];
+
+	if(new_target == NULL || new_target[0] == '\0')
+		return;
+
+	filename = curr_view->dir_entry[curr_view->list_pos].name;
+	strcpy(buf, filename);
+	chosp(buf);
+	if(readlink(buf, linkto, sizeof(linkto)) == -1)
+	{
+		status_bar_message("Can't read link");
+		curr_stats.save_msg = 1;
+		return;
+	}
+
+	snprintf(buf, sizeof(buf), "cl in %s: on %s from \"%s\" to \"%s\"",
+			replace_home_part(curr_view->curr_dir), filename, linkto, new_target);
+	cmd_group_begin(buf);
+
+	snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir, filename);
+	esc_file = escape_filename(buf, 0, 0);
+
+	snprintf(do_cmd, sizeof(do_cmd), "rm -rf %s", esc_file);
+	chosp(do_cmd);
+	esc_target = escape_filename(linkto, 0, 0);
+	snprintf(undo_cmd, sizeof(undo_cmd), "ln -s -f %s %s", esc_target, esc_file);
+	chosp(undo_cmd);
+	free(esc_target);
+	if(background_and_wait_for_errors(do_cmd) == 0)
+		add_operation(do_cmd, buf, NULL, undo_cmd, buf, NULL);
+
+	esc_target = escape_filename(new_target, 0, 0);
+	snprintf(do_cmd, sizeof(do_cmd), "ln -s -f %s %s", esc_target, esc_file);
+	chosp(do_cmd);
+	free(esc_target);
+	snprintf(undo_cmd, sizeof(undo_cmd), "rm -rf %s", esc_file);
+	chosp(undo_cmd);
+	if(background_and_wait_for_errors(do_cmd) == 0)
+		add_operation(do_cmd, buf, NULL, undo_cmd, buf, NULL);
+
+	free(esc_file);
+
+	cmd_group_end();
+}
+
+int
+change_link(void)
+{
+	size_t len;
+	char buf[PATH_MAX], linkto[PATH_MAX];
+
+	if(curr_view->dir_entry[curr_view->list_pos].type != LINK)
+	{
+		status_bar_message("File isn't a symbolic link");
+		return 1;
+	}
+
+	strcpy(buf, curr_view->dir_entry[curr_view->list_pos].name);
+	chosp(buf);
+	len = readlink(buf, linkto, sizeof(linkto));
+	if(len == -1)
+	{
+		status_bar_message("Can't read link");
+		return 1;
+	}
+	linkto[len] = '\0';
+
+	enter_prompt_mode(L"Link target: ", linkto, change_link_cb);
+	return 0;
+}
+
+static void
 prompt_dest_name(const char *src_name)
 {
 	wchar_t buf[256];

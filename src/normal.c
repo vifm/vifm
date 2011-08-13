@@ -94,6 +94,7 @@ static void cmd_ZZ(struct key_info, struct keys_info *);
 static void cmd_al(struct key_info, struct keys_info *);
 static void cmd_cW(struct key_info, struct keys_info *);
 static void cmd_cg(struct key_info, struct keys_info *);
+static void cmd_cl(struct key_info, struct keys_info *);
 static void cmd_co(struct key_info, struct keys_info *);
 static void cmd_cp(struct key_info, struct keys_info *);
 static void cmd_cw(struct key_info, struct keys_info *);
@@ -190,6 +191,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"al", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_al}}},
 	{L"cW", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cW}}},
 	{L"cg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cg}}},
+	{L"cl", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cl}}},
 	{L"co", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_co}}},
 	{L"cp", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
 	{L"cw", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cw}}},
@@ -872,6 +874,13 @@ static void
 cmd_cg(struct key_info key_info, struct keys_info *keys_info)
 {
 	change_group();
+}
+
+/* Change symbolic link. */
+static void
+cmd_cl(struct key_info key_info, struct keys_info *keys_info)
+{
+	curr_stats.save_msg = change_link();
 }
 
 /* Change owner. */
