@@ -596,7 +596,7 @@ draw_wild_menu(int op)
 			last_pos++;
 	}
 
-	wclear(stat_win);
+	werase(stat_win);
 	wmove(stat_win, 0, 0);
 
 	wattron(stat_win, A_BOLD);
