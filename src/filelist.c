@@ -946,8 +946,8 @@ save_view_history(FileView *view, const char *path, const char *file)
 	if(file == NULL)
 		file = view->dir_entry[view->list_pos].name;
 
-	if(view->history_num > 0
-			&& strcmp(view->history[view->history_pos].dir, path) == 0)
+	if(view->history_num > 0 &&
+			strcmp(view->history[view->history_pos].dir, path) == 0)
 	{
 		if(curr_stats.vifm_started < 2)
 			return;
@@ -1010,8 +1010,12 @@ check_view_dir_history(FileView *view)
 	{
 		int x;
 		int found = 0;
-		/* -1 is to skip current position, that should equals view->curr_dir */
-		for(x = view->history_pos - 1; x >= 0; x--)
+		/* -1 is to skip current position, that should be equal to view->curr_dir */
+		x = view->history_pos;
+		if(!strcmp(view->history[x].dir, view->curr_dir) &&
+				!strcmp(view->history[x].file, ""))
+			x--;
+		for(; x >= 0; x--)
 		{
 			if(strlen(view->history[x].dir) < 1)
 				break;
@@ -1380,7 +1384,7 @@ change_directory(FileView *view, const char *directory)
 	stat(view->curr_dir, &s);
 	view->dir_mtime = s.st_mtime;
 
-	save_view_history(view, NULL, NULL);
+	save_view_history(view, NULL, "");
 	return 0;
 }
 
@@ -1718,7 +1722,7 @@ load_dir_list(FileView *view, int reload)
 		char msg[64];
 		snprintf(msg, sizeof(msg),
 				"The %s pattern %s did not match any files. It was reset.",
-				view->filename_filter, (view->invert == 1) ? "inverted" : "");
+				view->filename_filter, view->invert ? "inverted" : "");
 		show_error_msg("Filter error", msg);
 		view->filename_filter = (char *)realloc(view->filename_filter, 1);
 		if(view->filename_filter == NULL)

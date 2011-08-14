@@ -772,11 +772,14 @@ Command macros
 
        %m     Show command output in a menu.
 
+       %M     Same as %m, but l (or Enter) key is handled like for :locate and
+              :find commands.
+
        %s     Execute command in screen split.
 
        Use %% if you need to put a percent sign in your command.
 
-       You can use filename modifiers after %c, %C, %f,  %F,  %b,  %d  and  %D
+       You  can  use  filename  modifiers  after %c, %C, %f, %F, %b, %d and %D
        macros.  Supported modifiers are:
 
        - :p           - full path
@@ -793,27 +796,27 @@ Command macros
 
        - :e           - extension of the filename (last one)
 
-       - :s?pat?sub?   - substitute the first occurrence of pat with sub.  You
+       - :s?pat?sub?  - substitute the first occurrence of pat with sub.   You
          can use any character for '?', but it must not occur in.
 
-       - :gs?pat?sub? - like :s, but substitutes all occurrences of  pat  with
+       - :gs?pat?sub?  -  like :s, but substitutes all occurrences of pat with
          sub.
 
-         See  ':h  filename-modifiers' in Vim's documentation for the detailed
+         See ':h filename-modifiers' in Vim's documentation for  the  detailed
          description.
 
-         Position and quantity (if there is any) of %m and %s  macros  in  the
-         command  is  unimportant.  All their occurrences will be removed from
+         Position  and  quantity  (if there is any) of %m and %s macros in the
+         command is unimportant.  All their occurrences will be  removed  from
          the resulting command.
 
-         %c and %f macros are expanded to file names only, when %C and %F  are
+         %c  and %f macros are expanded to file names only, when %C and %F are
          expanded to full paths.  %f and %F follow this in %b too.
 
        :com move mv %f %D
-         would  set the :move command to move all of the files selected in the
+         would set the :move command to move all of the files selected in  the
          current directory to the other directory.
 
-       The %a macro will substitute any arguments given in a command into  the
+       The  %a macro will substitute any arguments given in a command into the
        command.  All arguments are considered optional.  ":com lsl !!ls -l %a"
        will set the lsl command to execute ls -l with or without an argument.
 
@@ -823,7 +826,7 @@ Command macros
        :lsl filename<Return>
          will list only the given filename.
 
-       The macros can also be used in directly executing  commands.  ":!mv  %f
+       The  macros  can  also be used in directly executing commands. ":!mv %f
        %D" would move the current directory selected files to the other direc‐
        tory.
 
@@ -836,12 +839,12 @@ Command macros
               type: boolean
               default: true
 
-       Ask  about  permanent  deletion  of files (on D command or on undo/redo
+       Ask about permanent deletion of files (on D  command  or  on  undo/redo
        operation).
               fastrun type: boolean
               default: false
-              With this option turned on you can run  partially  entered  com‐
-              mands  with unambiguous beginning using :! (e.g. :!Te instead of
+              With  this  option  turned on you can run partially entered com‐
+              mands with unambiguous beginning using :! (e.g. :!Te instead  of
               :!Terminal or :!Te<tab>).
 
        followlinks
@@ -852,8 +855,8 @@ Command macros
        fusehome
               type: string
               default: "/tmp/vifm_FUSE/"
-              Directory to be used as a root dir  for  FUSE  mounts.   If  you
-              change  this  option,  vifm  won't remount anything.  It affects
+              Directory  to  be  used  as  a root dir for FUSE mounts.  If you
+              change this option, vifm won't  remount  anything.   It  affects
               future mounts only.
 
        history hi
@@ -873,7 +876,7 @@ Command macros
        ignorecase ic
               type: boolean
               default: false
-              Ignore case in search patterns (:substiute, / and  ?  commands).
+              Ignore  case  in search patterns (:substiute, / and ? commands).
               It doesn't affect file filtering.
 
        reverscol
@@ -894,8 +897,8 @@ Command macros
        smartcase scs
               type: boolean
               default: false
-              Overrides  the  ignorecase option if the search pattern contains
-              at least one upper case character.  Only  used  when  ignorecase
+              Overrides the ignorecase option if the search  pattern  contains
+              at  least  one  upper case character.  Only used when ignorecase
               option is enabled.  It doesn't affect file filtering.
 
        sort   type: enumeration
@@ -969,7 +972,7 @@ Command macros
        wildmenu wmnu
               type: boolean
               default: false
-              Controls whether possible matches of completion  will  be  shown
+              Controls  whether  possible  matches of completion will be shown
               above the command line.
 
        wrap   type: boolean
@@ -977,7 +980,7 @@ Command macros
               Controls whether to wrap text in quick view.
 
 Mappings
-       Since  it's not easy to enter special characters there are several spe‐
+       Since it's not easy to enter special characters there are several  spe‐
        cial sequences that can be used in place of them. They are:
 
        <cr>   Enter key
@@ -988,13 +991,13 @@ Mappings
        <f0> - <f63>
               Functional keys
 
-       vifm removes whitespace characters at the beginning  and  end  of  com‐
-       mands.   That's  why  you  may want to use <space> at the end of rhs in
+       vifm  removes  whitespace  characters  at the beginning and end of com‐
+       mands.  That's why you may want to use <space> at the  end  of  rhs  in
        mappings.  For example:
 
         cmap <f1> man<space>
 
-       will put "man " in line when you hit the <f1> key in the  command  line
+       will  put  "man " in line when you hit the <f1> key in the command line
        mode.
 
 Compatibility mode
@@ -1005,23 +1008,23 @@ Compatibility mode
 
        Vim like mode:
            - <c-i> (<tab>) to go forward on history.
-           -  dd  deletes file under the cursor and ds works as dd in compati‐
+           - dd deletes file under the cursor and ds works as dd  in  compati‐
        bility mode.
-           - yy yanks file under the cursor and ys works as dd in  compatibil‐
+           -  yy yanks file under the cursor and ys works as dd in compatibil‐
        ity mode.
 
 Menus and dialogs
        General
 
-       j,  k - move.  <Escape>, Ctrl-c - clear.  <Return>, l - select and exit
+       j, k - move.  <Escape>, Ctrl-c - clear.  <Return>, l - select and  exit
        the menu.
 
        In all menus
 
-       Ctrl-b/Ctrl-f Ctrl-d/Ctrl-u Ctrl-e/Ctrl-y / and ?,  n/N  [num]G/[num]gg
+       Ctrl-b/Ctrl-f  Ctrl-d/Ctrl-u  Ctrl-e/Ctrl-y / and ?, n/N [num]G/[num]gg
        H/M/L zb/zt/zz
 
-       All  these  keys  have the same meaning as in normal mode (but not L in
+       All these keys have the same meaning as in normal mode (but  not  L  in
        filetype menu).
 
        : - enter command line mode for menus (currently only :exi[t], :q[uit],
@@ -1038,11 +1041,11 @@ Menus and dialogs
 
        Filetype menu
 
-       Commands from vifmrc are displayed above empty line. When all  commands
-       below  empty  line  were found in .desktop files.  Note: you can't save
+       Commands  from vifmrc are displayed above empty line. When all commands
+       below empty line were found in .desktop files.  Note:  you  can't  save
        programs for files without extension.
 
-       J and K - to move menu items L - save all commands above empty line  as
+       J  and K - to move menu items L - save all commands above empty line as
        program list
 
        Sort dialog
@@ -1055,23 +1058,23 @@ Menus and dialogs
 
 Configure
        The ~/.vifm/vifmrc file contains commands that will be executed on vifm
-       startup.  Use it to set settings, mappings or filetypes.  To use  multi
-       line  commands  precede  each next line with a slash (whitespace before
-       slash is ignored, but all spaces at the end of the  lines  are  saved).
+       startup.   Use it to set settings, mappings or filetypes.  To use multi
+       line commands precede each next line with a  slash  (whitespace  before
+       slash  is  ignored,  but all spaces at the end of the lines are saved).
        For example: set
            \smartcase equals "setsmartcase".  When set<space here>
             smartcase<space here> equals "set  smartcase ".
 
-       The  ~/.vifm/vifminfo  file contains session settings.  You may edit it
-       by hand to change the settings, but it's not recommended  to  do  that,
-       edit  vifmrc  instead.   You can control what settings will be saved in
+       The ~/.vifm/vifminfo file contains session settings.  You may  edit  it
+       by  hand  to  change the settings, but it's not recommended to do that,
+       edit vifmrc instead.  You can control what settings will  be  saved  in
        vifminfo by setting ´vifminfo' option.  Vifm always writes this file on
        exit unless 'vifminfo' option is empty.  Bookmarks, commands, directory
-       history, filetypes, fileviewers and registers in the  file  are  merged
+       history,  filetypes,  fileviewers  and registers in the file are merged
        with vifm configuration (which has bigger priority).
 
        The ~/.vifm/scripts directory can contain shell scripts.  vifm modifies
-       it's PATH environment variable to let user run  those  scripts  without
+       it's  PATH  environment  variable to let user run those scripts without
        specifying full path.
 
 Plugin
@@ -1081,21 +1084,21 @@ Plugin
 
          :EditVifm   select a file or files to open in the current buffer.
          :SplitVifm  split buffer and select a file or files to open.
-         :VsplitVifm  vertically  split  buffer  and select a file or files to
+         :VsplitVifm vertically split buffer and select a  file  or  files  to
        open.
-         :DiffVifm   select a file or files to compare  to  the  current  file
+         :DiffVifm    select  a  file  or files to compare to the current file
        with
                      :vert diffsplit.
          :TabVifm    select a file or files to open in tabs.
 
-       The  plugin  have  only  one  setting.   It's  a  string variable named
-       g:vifm_term to let user  specify  command  to  run  gui  terminal.   By
+       The plugin have  only  one  setting.   It's  a  string  variable  named
+       g:vifm_term  to  let  user  specify  command  to  run gui terminal.  By
        default it's equal to ´xterm -e'.
 
-       To  use  the  plugin  copy  the vifm.vim file to either the system wide
+       To use the plugin copy the vifm.vim file  to  either  the  system  wide
        vim/plugin directory or into ~/.vim/plugin.
 
-       If you would prefer not to use the plugin and it is in the system  wide
+       If  you would prefer not to use the plugin and it is in the system wide
        plugin directory add
 
        let loaded_vifm=1

@@ -48,8 +48,6 @@ typedef struct menu_info
 	 * key */
 	int (*key_handler)(struct menu_info *m, wchar_t *keys);
 	int extra_data; /* for filetype background and mime flags */
-	/* For user menus only */
-	char *get_info_script; /* program + args to fill in menu. */
 }menu_info;
 
 int show_bookmarks_menu(FileView *view, const char *marks);
@@ -65,7 +63,7 @@ int show_locate_menu(FileView *view, const char *args);
 int show_find_menu(FileView *view, int with_path, const char *args);
 void show_map_menu(FileView *view, const char *mode_str, wchar_t **list);
 void show_apropos_menu(FileView *view, char *args);
-void show_user_menu(FileView *view, char *command);
+void show_user_menu(FileView *view, const char *command, int navigate);
 int show_register_menu(FileView *view, const char *registers);
 int show_undolist_menu(FileView *view, int with_details);
 void reset_popup_menu(menu_info *m);

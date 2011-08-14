@@ -1164,6 +1164,9 @@ expand_macros(FileView *view, const char *command, const char *args,
 			case 'm': /* use menu */
 				*use_menu = 1;
 				break;
+			case 'M': /* use menu like with :locate and :find */
+				*use_menu = 2;
+				break;
 			case 's': /* split in new screen region */
 				*split = 1;
 				break;
@@ -3060,7 +3063,7 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 
 	if(use_menu)
 	{
-		show_user_menu(curr_view, expanded_com);
+		show_user_menu(curr_view, expanded_com, use_menu == 2);
 	}
 	else if(split)
 	{
@@ -3101,9 +3104,8 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 			start_background_job(tmp);
 		else if(strlen(tmp) > 0)
 			shellout(tmp, pause ? 1 : -1);
-		external = 1;
 	}
-	else if(!strncmp(expanded_com, "/", 1))
+	else if(expanded_com[0] == '/')
 	{
 		result = exec_command(expanded_com + 1, curr_view, GET_FSEARCH_PATTERN);
 		external = 0;

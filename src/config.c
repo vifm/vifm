@@ -687,6 +687,14 @@ write_info_file(void)
 			fprintf(fp, ",cs");
 		if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
 			fprintf(fp, ",savedirs");
+		if(cfg.vifm_info & VIFMINFO_CHISTORY)
+			fprintf(fp, ",chistory");
+		if(cfg.vifm_info & VIFMINFO_SHISTORY)
+			fprintf(fp, ",shistory");
+		if(cfg.vifm_info & VIFMINFO_DIRSTACK)
+			fprintf(fp, ",dirstack");
+		if(cfg.vifm_info & VIFMINFO_REGISTERS)
+			fprintf(fp, ",registers");
 		fprintf(fp, "\n");
 
 		fprintf(fp, "=%svimhelp\n", cfg.use_vim_help ? "" : "no");

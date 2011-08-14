@@ -521,6 +521,8 @@ The command macros may be used in user commands.
   %d full path to current directory.
   %D full path to other file list directory.
   %m show command output in a menu.
+  %M same as %m, but l (or Enter) key is handled like for :locate and :find
+     commands.
   %s execute command in screen split.
 
 Use %% if you need to put a percent sign in your command.
