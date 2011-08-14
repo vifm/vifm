@@ -5,9 +5,9 @@
 static void
 test_whole_line_comments(void)
 {
-	assert_int_equal(0, execute_command(NULL, "\""));
-	assert_int_equal(0, execute_command(NULL, " \""));
-	assert_int_equal(0, execute_command(NULL, "  \""));
+	assert_int_equal(0, exec_command(NULL, "\"", GET_COMMAND));
+	assert_int_equal(0, exec_command(NULL, " \"", GET_COMMAND));
+	assert_int_equal(0, exec_command(NULL, "  \"", GET_COMMAND));
 }
 
 void

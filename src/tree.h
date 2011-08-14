@@ -22,6 +22,7 @@
 typedef struct node *tree_t;
 
 tree_t tree_create(void);
+void tree_free(tree_t tree);
 int tree_set_data(tree_t tree, const char *path, unsigned long long data);
 
 /* Wont change data content it path absent in tree) */

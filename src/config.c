@@ -167,7 +167,9 @@ load_view_defaults(FileView *view)
 {
 	strncpy(view->regexp, "\\..~$", sizeof(view->regexp) - 1);
 
+	free(view->filename_filter);
 	view->filename_filter = strdup("");
+	free(view->prev_filter);
 	view->prev_filter = strdup("");
 	view->invert = TRUE;
 
@@ -223,7 +225,7 @@ prepare_line(char *line)
 }
 
 void
-read_info_file(void)
+read_info_file(int reread)
 {
 	FILE *fp;
 	char info_file[PATH_MAX];
@@ -325,6 +327,8 @@ read_info_file(void)
 		{
 			if(line[1] == '\0')
 			{
+				if(reread)
+					continue;
 				if(lwin.history_num > 0)
 					strcpy(lwin.curr_dir, lwin.history[lwin.history_pos].dir);
 				continue;
@@ -340,14 +344,18 @@ read_info_file(void)
 				rwin.history = realloc(rwin.history, sizeof(history_t)*cfg.history_len);
 			}
 
-			lwin.list_rows = 1;
+			if(!reread)
+				lwin.list_rows = 1;
 			save_view_history(&lwin, line + 1, line2);
-			lwin.list_rows = 0;
+			if(!reread)
+				lwin.list_rows = 0;
 		}
 		else if(line[0] == 'D') /* right pane history */
 		{
 			if(line[1] == '\0')
 			{
+				if(reread)
+					continue;
 				if(rwin.history_num > 0)
 					strcpy(rwin.curr_dir, rwin.history[rwin.history_pos].dir);
 				continue;
@@ -363,9 +371,11 @@ read_info_file(void)
 				rwin.history = realloc(rwin.history, sizeof(history_t)*cfg.history_len);
 			}
 
-			rwin.list_rows = 1;
+			if(!reread)
+				rwin.list_rows = 1;
 			save_view_history(&rwin, line + 1, line2);
-			rwin.list_rows = 0;
+			if(!reread)
+				rwin.list_rows = 0;
 		}
 		else if(line[0] == ':') /* command line history */
 		{
@@ -731,6 +741,8 @@ write_info_file(void)
 		for(i = 0; i < len; i++)
 		{
 			int j = active_bookmarks[i];
+			if(is_spec_bookmark(i))
+				continue;
 			fprintf(fp, "'%c\n\t%s\n\t", index2mark(j),
 					escape_spaces(bookmarks[j].directory));
 			fprintf(fp, "%s\n", escape_spaces(bookmarks[j].file));

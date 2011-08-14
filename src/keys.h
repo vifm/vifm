@@ -122,6 +122,11 @@ void init_keys(int modes_count, int *key_mode, int *key_mode_flags);
 void clear_keys(void);
 
 /*
+ * Frees allocated memory
+ */
+void clear_user_keys(void);
+
+/*
  * handler could be NULL to remove default handler
  */
 void set_def_handler(int mode, default_handler handler);

@@ -40,7 +40,6 @@ Possible things to add.
     Invert selection?
     :g/arg = grep arg; :v/arg = grep -v arg
     Make :undolist more interactive.
-    A :restart command to reload everything.
     Maybe something like :g/.../com and :v/.../com in Vim.
     Add g/ and g? commands (search, but don't select files).
     Reverse searching (/ for search, g/ for selecting, g!/ for selecting

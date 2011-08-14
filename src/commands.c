@@ -148,6 +148,7 @@ static int pushd_cmd(const struct cmd_info *cmd_info);
 static int pwd_cmd(const struct cmd_info *cmd_info);
 static int registers_cmd(const struct cmd_info *cmd_info);
 static int rename_cmd(const struct cmd_info *cmd_info);
+static int restart_cmd(const struct cmd_info *cmd_info);
 static int screen_cmd(const struct cmd_info *cmd_info);
 static int set_cmd(const struct cmd_info *cmd_info);
 static int shell_cmd(const struct cmd_info *cmd_info);
@@ -261,6 +262,8 @@ static const struct cmd_add commands[] = {
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "rename",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = rename_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 1, },
+	{ .name = "restart",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = restart_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "screen",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = screen_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "set",              .abbr = "se",    .emark = 0,  .id = COM_SET,         .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -873,8 +876,8 @@ save_command_history(const char *command)
 	cfg.cmd_history[0] = (char *)realloc(cfg.cmd_history[0], strlen(command) + 1);
 	strcpy(cfg.cmd_history[0], command);
 	cfg.cmd_history_num++;
-	if (cfg.cmd_history_num >= cfg.cmd_history_len)
-		cfg.cmd_history_num = cfg.cmd_history_len -1;
+	if(cfg.cmd_history_num >= cfg.cmd_history_len)
+		cfg.cmd_history_num = cfg.cmd_history_len - 1;
 }
 
 static const char *
@@ -2643,6 +2646,76 @@ rename_cmd(const struct cmd_info *cmd_info)
 {
 	rename_files(curr_view);
 	return 1; /* there are always some message */
+}
+
+static int
+restart_cmd(const struct cmd_info *cmd_info)
+{
+	const char *p;
+
+	/* all user mappings in all modes */
+	clear_user_keys();
+
+	/* user defined commands */
+	execute_cmd("comclear");
+
+	/* options */
+	reset_options_to_default();
+
+	/* file types */
+	reset_filetypes();
+	reset_xfiletypes();
+
+	/* file viewers */
+	reset_fileviewers();
+
+	/* ga command results */
+	tree_free(curr_stats.dirsize_cache);
+	curr_stats.dirsize_cache = tree_create();
+
+	/* undo list */
+	reset_undo_list();
+
+	/* directory history */
+	lwin.history_num = 0;
+	lwin.history_pos = 0;
+	rwin.history_num = 0;
+	rwin.history_pos = 0;
+
+	/* command line history */
+	cfg.cmd_history_num = 0;
+
+	/* search history */
+	cfg.search_history_num = -1;
+
+	/* directory stack */
+	clean_stack();
+
+	/* registers */
+	p = valid_registers;
+	while(*p != '\0')
+		clear_register(*p++);
+
+	/* color schemes */
+	cfg.color_scheme = 1;
+	cfg.color_scheme_cur = 0;
+	cfg.color_scheme_num = 0;
+
+	/* bookmarks */
+	p = valid_bookmarks;
+	while(*p != '\0')
+	{
+		int index = mark2index(*p++);
+		if(is_bookmark(index))
+			remove_bookmark(index);
+	}
+
+	load_default_configuration();
+	read_info_file(1);
+	save_view_history(&lwin, NULL, NULL);
+	save_view_history(&rwin, NULL, NULL);
+	exec_config();
+	return 0;
 }
 
 static int

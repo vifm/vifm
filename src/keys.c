@@ -112,6 +112,19 @@ clear_keys(void)
 	free(def_handlers);
 }
 
+void
+clear_user_keys(void)
+{
+	int i;
+
+	for(i = 0; i < max_modes; i++)
+		free_tree(&user_cmds_root[i]);
+	free(user_cmds_root);
+
+	user_cmds_root = calloc(max_modes, sizeof(*user_cmds_root));
+	assert(user_cmds_root != NULL);
+}
+
 static void
 free_tree(struct key_chunk_t *root)
 {

@@ -48,6 +48,7 @@ typedef void (*opt_print)(const char *msg, const char *description);
 
 /* handler can be NULL */
 void init_options(int *opts_changed_flag, opt_print handler);
+void reset_options_to_default(void);
 void clear_options(void);
 void add_option(const char *name, const char *abbr, enum opt_type type,
 		int val_count, const char **vals, opt_handler handler, union optval_t def);

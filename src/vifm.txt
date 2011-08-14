@@ -410,6 +410,8 @@ The builtin commands are:
     registers that are mentioned in list (for example "az to display "",
     "a and "z content).
 :[range]rename - rename files using vi to edit names.
+:restart - will free a lot of things (histories, commands, etc.) and reread
+    vifminfo and vifmrc files.
 :screen - toggles whether to use the screen program or not.
     The default configuration has the screen option turned off.  The screen
     program uses pseudo terminals to allow multiple windows to be used in

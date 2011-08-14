@@ -71,6 +71,13 @@ popd(void)
 	return 0;
 }
 
+void
+clean_stack(void)
+{
+	while(stack_top > 0)
+		free_entry(&stack[--stack_top]);
+}
+
 static void
 free_entry(const struct stack_entry * entry)
 {

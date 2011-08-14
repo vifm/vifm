@@ -41,8 +41,23 @@ tree_create(void)
 
 	tree = malloc(sizeof(*tree));
 	tree->child = NULL;
+	tree->next = NULL;
+	tree->name = NULL;
 	tree->valid = 0;
 	return tree;
+}
+
+void
+tree_free(tree_t tree)
+{
+	if(tree->child != NULL)
+		tree_free(tree->child);
+
+	if(tree->next != NULL)
+		tree_free(tree->next);
+
+	free(tree->name);
+	free(tree);
 }
 
 int

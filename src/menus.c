@@ -1438,17 +1438,17 @@ show_history_menu(FileView *view)
 
 	getmaxyx(menu_win, m.win_rows, x);
 
-	for(x = 0; x < view->history_num + 1 && x < cfg.history_len; x++)
+	for(x = 0; x < view->history_num && x < cfg.history_len; x++)
 	{
 		int y;
 		if(strlen(view->history[x].dir) < 1)
 			break;
 		if(!is_dir(view->history[x].dir))
 			continue;
-		for(y = x + 1; y < view->history_num + 1 && y < cfg.history_len; y++)
+		for(y = x + 1; y < view->history_num && y < cfg.history_len; y++)
 			if(strcmp(view->history[x].dir, view->history[y].dir) == 0)
 				break;
-		if(y < view->history_num + 1 && y < cfg.history_len)
+		if(y < view->history_num && y < cfg.history_len)
 			continue;
 
 		/* Change the current dir to reflect the current file. */

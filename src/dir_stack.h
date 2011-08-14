@@ -46,6 +46,11 @@ int push_to_dirstack(const char *ld, const char *lf, const char *rd,
 int popd(void);
 
 /*
+ * Always successful
+ */
+void clean_stack(void);
+
+/*
  * Last element of list returned is NULL.
  * Returns NULL on error.
  */

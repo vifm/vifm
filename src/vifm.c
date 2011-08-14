@@ -302,7 +302,7 @@ main(int argc, char *argv[])
 
 	old_config = is_old_config();
 	if(!old_config)
-		read_info_file();
+		read_info_file(0);
 
 	parse_args(argc, argv, dir, lwin_path, rwin_path);
 	if(lwin_path[0] != '\0')
@@ -361,7 +361,7 @@ main(int argc, char *argv[])
 				"in vifminfo with 'vifminfo' option.");
 
 		curr_stats.vifm_started = 0;
-		read_info_file();
+		read_info_file(0);
 		curr_stats.vifm_started = 1;
 
 		if(lwin_path[0] != '\0')

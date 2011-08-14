@@ -82,6 +82,18 @@ init_options(int *opts_changed_flag, opt_print handler)
 }
 
 void
+reset_options_to_default(void)
+{
+	int i;
+	for(i = 0; i < options_count; i++)
+	{
+		if(options[i].full != NULL)
+			continue;
+		set_reset(&options[i]);
+	}
+}
+
+void
 clear_options(void)
 {
 	int i;
