@@ -180,7 +180,7 @@ use_info_prog(char *cmd)
 	if(strchr(cmd, '%') == NULL)
 	{
 		char *escaped = escape_filename(
-				curr_view->dir_entry[curr_view->list_pos].name, 0, 0);
+				curr_view->dir_entry[curr_view->list_pos].name, 0);
 		char *t = malloc(strlen(cmd) + 1 + strlen(escaped) + 1);
 		sprintf(t, "%s %s", cmd, escaped);
 		cmd = t;
@@ -1207,7 +1207,7 @@ try_unmount_fuse(FileView *view)
 
 	/* we are exiting a top level dir */
 	status_bar_message("FUSE unmounting selected file, please stand by..");
-	escaped_mount_point = escape_filename(runner->mount_point, 0, 0);
+	escaped_mount_point = escape_filename(runner->mount_point, 0);
 	snprintf(buf, sizeof(buf), "fusermount -u %s 2> /dev/null",
 			escaped_mount_point);
 	free(escaped_mount_point);

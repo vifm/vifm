@@ -536,7 +536,7 @@ filename_completion(const char *str, int type)
 
 			free(tempfile);
 		}
-		escaped = escape_filename(temp, 0, 1);
+		escaped = escape_filename(temp, 1);
 		add_completion(escaped);
 		free(escaped);
 		free(temp);
@@ -551,7 +551,7 @@ filename_completion(const char *str, int type)
 			add_completion(filename);
 		else
 		{
-			temp = escape_filename(filename, 0, 1);
+			temp = escape_filename(filename, 1);
 			add_completion(temp);
 			free(temp);
 		}
@@ -1021,7 +1021,7 @@ append_selected_files(FileView *view, char *expanded, int under_cursor,
 				strcat(strcpy(buf, view->curr_dir), "/");
 			strcat(buf, view->dir_entry[y].name);
 			chosp(buf);
-			temp = escape_filename(apply_mods(buf, view->curr_dir, mod), 0, 0);
+			temp = escape_filename(apply_mods(buf, view->curr_dir, mod), 0);
 			expanded = (char *)realloc(expanded, len + strlen(temp) + 1 + 1);
 			strcat(expanded, temp);
 			if(++x != view->selected_files)
@@ -1041,7 +1041,7 @@ append_selected_files(FileView *view, char *expanded, int under_cursor,
 			strcat(strcpy(buf, view->curr_dir), "/");
 		strcat(buf, view->dir_entry[view->list_pos].name);
 		chosp(buf);
-		temp = escape_filename(apply_mods(buf, view->curr_dir, mod), 0, 0);
+		temp = escape_filename(apply_mods(buf, view->curr_dir, mod), 0);
 
 		expanded = (char *)realloc(expanded, strlen(expanded) + strlen(temp) + 1);
 		strcat(expanded, temp);
@@ -1058,7 +1058,7 @@ expand_directory_path(FileView *view, char *expanded, const char *mod)
 	char *t;
 	char *escaped;
 
-	if((escaped = escape_filename(apply_mods(view->curr_dir, "/", mod), 0,
+	if((escaped = escape_filename(apply_mods(view->curr_dir, "/", mod),
 			0)) == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate memory");
@@ -1280,10 +1280,10 @@ shellout(const char *command, int pause)
 			char *escaped;
 			char *ptr = (char *)NULL;
 			char *title = strstr(command, get_vicmd());
-			char *escaped_sh = escape_filename(cfg.shell, 0, 0);
+			char *escaped_sh = escape_filename(cfg.shell, 0);
 
 			/* Needed for symlink directories and sshfs mounts */
-			escaped = escape_filename(curr_view->curr_dir, 0, 0);
+			escaped = escape_filename(curr_view->curr_dir, 0);
 			snprintf(buf, sizeof(buf), "screen -X setenv PWD %s", escaped);
 			free(escaped);
 
@@ -1296,7 +1296,7 @@ shellout(const char *command, int pause)
 							title + strlen(get_vicmd()) + 1, escaped_sh, command);
 				else
 				{
-					escaped = escape_filename(command, 0, 0);
+					escaped = escape_filename(command, 0);
 					snprintf(buf, sizeof(buf), "screen -t \"%s\" %s -c %s",
 							title + strlen(get_vicmd()) + 1, escaped_sh, escaped);
 					free(escaped);
@@ -1320,7 +1320,7 @@ shellout(const char *command, int pause)
 							command);
 				else
 				{
-					escaped = escape_filename(command, 0, 0);
+					escaped = escape_filename(command, 0);
 					snprintf(buf, sizeof(buf), "screen -t \"%.10s\" %s -c %s", title,
 							escaped_sh, escaped);
 					free(escaped);
@@ -2189,7 +2189,7 @@ edit_cmd(const struct cmd_info *cmd_info)
 		len = snprintf(buf, sizeof(buf), "%s ", get_vicmd());
 		for(i = 0; i < cmd_info->argc && len < sizeof(buf) - 1; i++)
 		{
-			char *escaped = escape_filename(cmd_info->argv[i], 0, 0);
+			char *escaped = escape_filename(cmd_info->argv[i], 0);
 			len += snprintf(buf + len, sizeof(buf) - len, "%s ", escaped);
 			free(escaped);
 		}

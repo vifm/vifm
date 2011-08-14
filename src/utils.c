@@ -70,13 +70,13 @@ is_dir(const char *file)
  * Returns new string, caller should free it.
  */
 char *
-escape_filename(const char *string, size_t len, int quote_percent)
+escape_filename(const char *string, int quote_percent)
 {
+	size_t len;
 	size_t i;
 	char *ret, *dup;
 
-	if(len == 0)
-		len = strlen(string);
+	len = strlen(string);
 
 	dup = ret = (char *)malloc (len * 2 + 2 + 1);
 

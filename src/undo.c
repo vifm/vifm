@@ -433,7 +433,7 @@ change_filename_in_trash(struct cmd_t *cmd, const char *filename)
 		snprintf(buf, sizeof(buf), "%s/%03i_%s", cfg.trash_dir, ++i, p);
 	while(access(buf, F_OK) == 0);
 	rename_in_registers(filename, buf);
-	escaped = escape_filename(buf, 0, 0);
+	escaped = escape_filename(buf, 0);
 
 	p = strstr(cmd->do_op.cmd, cfg.escaped_trash_dir);
 	if(p != NULL)

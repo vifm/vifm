@@ -399,7 +399,7 @@ chmod_file_in_list(FileView *view, int pos, const char *mode,
 
 	filename = view->dir_entry[pos].name;
 	snprintf(path_buf, sizeof(path_buf), "%s/%s", view->curr_dir, filename);
-	escaped = escape_filename(path_buf, 0, 0);
+	escaped = escape_filename(path_buf, 0);
 	if(escaped == NULL)
 		return;
 	file_chmod(path_buf, escaped, mode, inv_mode, recurse_dirs);

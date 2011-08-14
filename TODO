@@ -75,7 +75,6 @@ Other (questionable) things.
 
 Code improvements.
     Write more tests.
-    Think about escape_filename and its len argument.
     Rename exec_* to something.
     Improve logging (print back trace).
     Stay at the same file in some cases.

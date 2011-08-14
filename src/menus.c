@@ -1590,7 +1590,7 @@ show_locate_menu(FileView *view, const char *args)
 	m.match_dir = NONE;
 	m.regexp = NULL;
 	m.title = NULL;
-	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0, 0);
+	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0);
 	m.data = NULL;
 
 	getmaxyx(menu_win, m.win_rows, x);
@@ -1647,7 +1647,7 @@ show_find_menu(FileView *view, int with_path, const char *args)
 		snprintf(buf, sizeof(buf), "find %s", args);
 	else
 	{
-		char *escaped_args = escape_filename(args, 0, 0);
+		char *escaped_args = escape_filename(args, 0);
 		snprintf(buf, sizeof(buf),
 				"find %s -type d \\( ! -readable -o ! -executable \\) -prune -o "
 				"-name %s -print", files, escaped_args);

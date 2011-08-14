@@ -145,7 +145,7 @@ set_config_dir(void)
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/.vifm/Trash", home_dir);
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/.vifm/log", home_dir);
 
-	escaped = escape_filename(cfg.trash_dir, 0, 0);
+	escaped = escape_filename(cfg.trash_dir, 0);
 	strcpy(cfg.escaped_trash_dir, escaped);
 	free(escaped);
 
