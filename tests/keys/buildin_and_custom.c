@@ -11,6 +11,8 @@ add_custom_keys(void)
 
 	add_user_keys(L"S", L"dd", NORMAL_MODE, 0);
 	add_user_keys(L"Sj", L"k", NORMAL_MODE, 0);
+
+	add_user_keys(L"dp", L"k", NORMAL_MODE, 0);
 }
 
 static void
@@ -53,6 +55,12 @@ test_cancel_reg_with_esc_or_ctrl_c(void)
 	assert_int_equal(0, execute_keys(L"\""L"\x1b"));
 }
 
+static void
+test_udm_and_builtin_selector(void)
+{
+	assert_int_equal(KEYS_WAIT, execute_keys(L"d"));
+}
+
 void
 buildin_and_custom(void)
 {
@@ -63,6 +71,7 @@ buildin_and_custom(void)
 	run_test(builtin_key_at_sequence_begin);
 	run_test(increase_counter_right);
 	run_test(test_cancel_reg_with_esc_or_ctrl_c);
+	run_test(test_udm_and_builtin_selector);
 
 	test_fixture_end();
 }

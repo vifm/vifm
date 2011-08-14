@@ -1358,10 +1358,17 @@ pick_files(FileView *view, int end, struct keys_info *keys_info)
 	delta = (view->list_pos > end) ? -1 : +1;
 	i = 0;
 	x = view->list_pos - delta;
-	do {
+	do
+	{
 		x += delta;
 		keys_info->indexes[i++] = x;
 	} while(x != end);
+
+	if(end < view->list_pos)
+	{
+		view->dir_mtime = 0;
+		view->list_pos = end;
+	}
 }
 
 static void

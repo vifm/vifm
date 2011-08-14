@@ -634,7 +634,7 @@ write_info_file(void)
 			else if(line[0] == '"') /* registers */
 			{
 				registers_t *reg = find_register(line[1]);
-				if(reg == NULL)
+				if(reg != NULL)
 					continue;
 				nregs = add_to_string_array(&regs, nregs, 1, line);
 			}

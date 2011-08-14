@@ -312,7 +312,7 @@ contains_chain(struct key_chunk_t *root, const wchar_t *begin,
 		begin++;
 		curr = p;
 	}
-	return 1;
+	return (curr->conf.followed == FOLLOWED_BY_NONE);
 }
 
 static int
