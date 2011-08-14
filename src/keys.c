@@ -720,9 +720,7 @@ fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
 
 		list[i] = t;
 		if(len > 0)
-		{
 			t[len - 1] = curr->key;
-		}
 		t[len] = L'\0';
 	}
 
@@ -732,11 +730,9 @@ fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
 		wchar_t *t;
 
 		s = (curr->conf.type == USER_CMD) ? curr->conf.data.cmd : L"<built in>";
-		t = realloc(list[0], sizeof(wchar_t)*(len + 1 + 1 + wcslen(s)));
+		t = realloc(list[0], sizeof(wchar_t)*(len + 1 + wcslen(s) + 1));
 		if(t == NULL)
-		{
 			return -1;
-		}
 
 		list[0] = t;
 		t[wcslen(t) + 1] = '\0';
