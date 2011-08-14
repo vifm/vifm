@@ -273,7 +273,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "sort",             .abbr = "sor",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = sort_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "split",            .abbr = "sp",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = split_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+		.handler = split_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "substitute",       .abbr = "s",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
 		.handler = substitute_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 2, .max_args = 3,       .select = 1, },
 	{ .name = "sync",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1914,7 +1914,11 @@ comm_only(void)
 void
 comm_split(void)
 {
-	split_cmd(NULL);
+	if(curr_stats.number_of_windows == 2)
+		return;
+
+	curr_stats.number_of_windows = 2;
+	redraw_window();
 }
 
 static int
@@ -2756,11 +2760,9 @@ sort_cmd(const struct cmd_info *cmd_info)
 static int
 split_cmd(const struct cmd_info *cmd_info)
 {
-	if(curr_stats.number_of_windows == 2)
-		return 0;
-
-	curr_stats.number_of_windows = 2;
-	redraw_window();
+	if(cmd_info->argc == 1)
+		cd(other_view, cmd_info->argv[0]);
+	comm_split();
 	return 0;
 }
 

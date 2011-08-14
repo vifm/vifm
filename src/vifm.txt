@@ -443,6 +443,8 @@ The builtin commands are:
 :sh[ell] - will start a shell.
 :sor[t] - menu of different sorting methods.
 :sp[lit] - switch to a two window view.
+:sp[lit] path - splits the window to show both file directories.  And
+    changes other pane to path.
 :[range]s[ubstitite]/pattern/string/[flags] - for each file in range
     replace a match of pattern with string.  String can contain \0...\9
     to link to capture groups (0 - all match, 1 - first group, etc.).

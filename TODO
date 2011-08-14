@@ -64,7 +64,6 @@ Other (questionable) things.
         on user, he could always press u himself.
     Maybe add + and - commands to undo by commands, not command groups.
     :sellocal command.
-    :split directory
     Highlight for view window (see ranger).
     Remove items from :history cmd?
     Option with format of statwin.
