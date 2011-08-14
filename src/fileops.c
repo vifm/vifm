@@ -1124,9 +1124,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	free_selected_file_array(view);
 
 	/* some files may still exist if there was an error */
-	view->selected_files = 0;
-	for(x = 0; x < view->list_rows; x++)
-		view->selected_files += view->dir_entry[x].selected;
+	count_selected(view);
 
 	moveto_list_pos(view, view->list_pos);
 

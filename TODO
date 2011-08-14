@@ -45,7 +45,6 @@ Possible things to add.
     Reverse searching (/ for search, g/ for selecting, g!/ for selecting
         reverse)
     Improve sorting ('sort' and 'gsort'; ignore case).
-    What about yD to copy selected file(s) into other directory, and YD to move
     Add :mksession command and 'sessionoptions' option.
 
 Other (questionable) things.
@@ -64,7 +63,6 @@ Other (questionable) things.
         on user, he could always press u himself.
     Maybe add + and - commands to undo by commands, not command groups.
     :sellocal command.
-    Highlight for view window (see ranger).
     Remove items from :history cmd?
     Option with format of statwin.
     :edit, etc. in the menus.
