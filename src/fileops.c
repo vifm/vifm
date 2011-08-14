@@ -1119,7 +1119,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	cmd_group_end();
 
 	get_all_selected_files(view);
-	load_dir_list(view, 1);
+	load_saving_pos(view, 1);
 	free_selected_file_array(view);
 
 	/* some files may still exist if there was an error */

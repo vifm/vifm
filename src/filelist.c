@@ -1154,6 +1154,9 @@ leave_invalid_dir(FileView *view, char *path)
 			break;
 		p[1] = '\0';
 	}
+
+	if(strchr(path, '/') == NULL)
+		strcpy(path, "/");
 }
 
 static int
