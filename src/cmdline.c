@@ -450,7 +450,7 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 
 	if(prev_mode == VISUAL_MODE)
 	{
-		leave_visual_mode(curr_stats.save_msg);
+		leave_visual_mode(curr_stats.save_msg, 1);
 		moveto_list_pos(curr_view, check_mark_directory(curr_view, '<'));
 	}
 }
@@ -725,7 +725,7 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	if(prev_mode == VISUAL_MODE && sub_mode != VSEARCH_FORWARD_SUBMODE &&
 			sub_mode != VSEARCH_BACKWARD_SUBMODE)
-		leave_visual_mode(curr_stats.save_msg);
+		leave_visual_mode(curr_stats.save_msg, 1);
 
 	free(p);
 }

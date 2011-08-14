@@ -23,7 +23,7 @@
 
 void init_visual_mode(int *key_mode);
 void enter_visual_mode(int restore_selection);
-void leave_visual_mode(int save_msg);
+void leave_visual_mode(int save_msg, int goto_top);
 int find_vpattern(FileView *view, const char *pattern, int backward);
 
 #endif

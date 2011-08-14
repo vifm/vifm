@@ -190,15 +190,24 @@ enter_visual_mode(int restore_selection)
 }
 
 void
-leave_visual_mode(int save_msg)
+leave_visual_mode(int save_msg, int goto_top)
 {
+	int m = -1;
 	int i;
 	for(i = 0; i < view->list_rows; i++)
 		view->dir_entry[i].search_match = 0;
 
 	for(i = 0; i < view->list_rows; i++)
+	{
+		if(view->dir_entry[i].selected && m == -1)
+			m = i;
 		view->dir_entry[i].selected = 0;
+	}
 	view->selected_files = 0;
+
+	if(goto_top)
+		view->list_pos = m;
+
 
 	draw_dir_list(view, view->top_line);
 	moveto_list_pos(view, view->list_pos);
@@ -236,7 +245,7 @@ static void
 cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
 	update_marks(view);
-	leave_visual_mode(0);
+	leave_visual_mode(0, 0);
 }
 
 static void
@@ -301,7 +310,7 @@ static void
 cmd_C(struct key_info key_info, struct keys_info *keys_info)
 {
 	curr_stats.save_msg = clone_files(curr_view);
-	leave_visual_mode(curr_stats.save_msg);
+	leave_visual_mode(curr_stats.save_msg, 1);
 }
 
 static void
@@ -460,7 +469,7 @@ delete(struct key_info key_info, int use_trash)
 	}
 
 	save_msg = delete_file(view, key_info.reg, 0, NULL, use_trash);
-	leave_visual_mode(save_msg);
+	leave_visual_mode(save_msg, 1);
 }
 
 static void
@@ -605,21 +614,21 @@ cmd_y(struct key_info key_info, struct keys_info *keys_info)
 	get_all_selected_files(view);
 	yank_selected_files(view, key_info.reg);
 
-	snprintf(status_buf, sizeof(status_buf), "%d %s Yanked", view->selected_files,
-			view->selected_files == 1 ? "File" : "Files");
+	snprintf(status_buf, sizeof(status_buf), "%d %s yanked", view->selected_files,
+			view->selected_files == 1 ? "file" : "files");
 	status_bar_message(status_buf);
 	curr_stats.save_msg = 1;
 
 	free_selected_file_array(view);
 
-	leave_visual_mode(1);
+	leave_visual_mode(1, 1);
 }
 
 static void
 cmd_zf(struct key_info key_info, struct keys_info *keys_info)
 {
 	filter_selected_files(curr_view);
-	leave_visual_mode(0);
+	leave_visual_mode(0, 1);
 }
 
 static void
