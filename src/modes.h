@@ -35,6 +35,7 @@ void init_modes(void);
 void modes_pre(void);
 void modes_post(void);
 void modes_redraw(void);
+void modes_update(void);
 void add_to_input_bar(wchar_t c);
 void clear_input_bar(void);
 

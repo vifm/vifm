@@ -556,7 +556,7 @@ draw_dir_list(FileView *view, int top)
 {
 	int x;
 	int y = 0;
-	char file_name[view->window_width*2 -2];
+	char file_name[view->window_width*2 - 2];
 	int LINE_COLOR;
 	int bold = 1;
 	int color_scheme;
@@ -796,7 +796,6 @@ void
 moveto_list_pos(FileView *view, int pos)
 {
 	int redraw = 0;
-	int old_pos = view->list_pos;
 	int old_cursor = view->curr_line;
 	char file_name[view->window_width*2 + 1];
 	size_t print_width;
@@ -816,8 +815,7 @@ moveto_list_pos(FileView *view, int pos)
 	if(view->curr_line > view->list_rows - 1)
 		view->curr_line = view->list_rows - 1;
 
-	if(view->list_pos != pos)
-		erase_current_line_bar(view);
+	erase_current_line_bar(view);
 
 	redraw = move_curr_line(view, pos);
 
@@ -866,8 +864,7 @@ moveto_list_pos(FileView *view, int pos)
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme));
 
-	if(old_pos != pos)
-		mvwaddstr(view->win, old_cursor, 0, " ");
+	mvwaddstr(view->win, old_cursor, 0, " ");
 	wrefresh(view->win);
 
 	attr = 0;
@@ -1734,7 +1731,8 @@ load_dir_list(FileView *view, int reload)
 
 		load_dir_list(view, 1);
 
-		draw_dir_list(view, view->top_line);
+		if(curr_stats.vifm_started >= 2)
+			draw_dir_list(view, view->top_line);
 		return;
 	}
 	if(reload && view->selected_files)
@@ -1742,7 +1740,8 @@ load_dir_list(FileView *view, int reload)
 	else if(view->selected_files)
 		view->selected_files = 0;
 
-	draw_dir_list(view, view->top_line);
+	if(curr_stats.vifm_started >= 2)
+		draw_dir_list(view, view->top_line);
 }
 
 void
@@ -1937,4 +1936,3 @@ pane_in_dir(FileView *view, const char *path)
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
-

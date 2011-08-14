@@ -162,7 +162,7 @@ modes_redraw(void)
 		return;
 	}
 
-	if(curr_stats.errmsg_shown)
+	if(curr_stats.need_redraw)
 	{
 		touchwin(stdscr);
 		update_all_windows();
@@ -171,6 +171,29 @@ modes_redraw(void)
 	{
 		redraw_window();
 	}
+
+	if(mode == SORT_MODE)
+		redraw_sort_dialog();
+	else if(mode == PERMISSIONS_MODE)
+		redraw_permissions_dialog();
+}
+
+void
+modes_update(void)
+{
+	if(mode == CMDLINE_MODE)
+	{
+		redraw_cmdline();
+		return;
+	}
+	else if(mode == MENU_MODE)
+	{
+		menu_redraw();
+		return;
+	}
+
+	touchwin(stdscr);
+	update_all_windows();
 
 	if(mode == SORT_MODE)
 		redraw_sort_dialog();

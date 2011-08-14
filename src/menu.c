@@ -290,7 +290,9 @@ static void
 cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
-	menu->pos += (menu->win_rows - 3)/2;
+	menu->top += (menu->win_rows - 3 + 1)/2;
+	menu->pos += (menu->win_rows - 3 + 1)/2;
+	draw_menu(menu);
 	moveto_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
@@ -345,7 +347,11 @@ static void
 cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
-	menu->pos -= (menu->win_rows - 3)/2;
+	menu->top -= (menu->win_rows - 3 + 1)/2;
+	if(menu->top < 0)
+		menu->top = 0;
+	menu->pos -= (menu->win_rows - 3 + 1)/2;
+	draw_menu(menu);
 	moveto_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }

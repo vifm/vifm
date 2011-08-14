@@ -251,7 +251,8 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
 {
-	goto_pos(curr_view->list_pos + curr_view->window_rows/2);
+	curr_view->top_line += (curr_view->window_rows + 1)/2;
+	goto_pos(curr_view->list_pos + (curr_view->window_rows + 1)/2);
 }
 
 static void
@@ -291,25 +292,28 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 {
-	goto_pos(curr_view->list_pos - curr_view->window_rows/2);
+	view->top_line -= (view->window_rows + 1)/2;
+	if(view->top_line < 0)
+		view->top_line = 0;
+	goto_pos(view->list_pos - (view->window_rows + 1)/2);
 }
 
 static void
 cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(curr_view->list_rows <= curr_view->window_rows + 1
-			|| curr_view->top_line == 0)
+	if(view->list_rows <= view->window_rows + 1
+			|| view->top_line == 0)
 		return;
-	if(curr_view->list_pos == curr_view->top_line + curr_view->window_rows)
-		goto_pos(curr_view->list_pos - 1);
-	curr_view->top_line--;
-	scroll_view(curr_view);
+	if(view->list_pos == view->top_line + view->window_rows)
+		goto_pos(view->list_pos - 1);
+	view->top_line--;
+	scroll_view(view);
 }
 
 static void
 cmd_C(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_stats.save_msg = clone_files(curr_view);
+	curr_stats.save_msg = clone_files(view);
 	leave_visual_mode(curr_stats.save_msg, 1);
 }
 

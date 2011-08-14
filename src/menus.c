@@ -238,7 +238,9 @@ show_error_msg(char *title, const char *message)
 
 	curr_stats.errmsg_shown = 0;
 
-	modes_redraw();
+	modes_update();
+	if(curr_stats.need_redraw)
+		modes_redraw();
 
 	return key == 3;
 }

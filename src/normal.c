@@ -297,7 +297,9 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_view->list_pos += curr_view->window_rows/2;
+	curr_view->top_line += (curr_view->window_rows + 1)/2;
+	curr_view->list_pos += (curr_view->window_rows + 1)/2;
+	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
@@ -425,7 +427,9 @@ cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_view->list_pos -= curr_view->window_rows/2;
+	curr_view->top_line -= (curr_view->window_rows + 1)/2;
+	curr_view->list_pos -= (curr_view->window_rows + 1)/2;
+	draw_dir_list(curr_view, MAX(curr_view->top_line, 0));
 	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
