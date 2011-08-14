@@ -43,6 +43,7 @@ void moveto_list_pos(FileView *view, int pos);
 int find_file_pos_in_list(FileView *view, const char *file);
 void get_all_selected_files(FileView *view);
 void get_selected_files(FileView *view, int count, const int *indexes);
+void count_selected(FileView *view);
 void free_selected_file_array(FileView *view);
 void erase_current_line_bar(FileView *view);
 void filter_selected_files(FileView *view);

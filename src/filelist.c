@@ -497,6 +497,15 @@ get_selected_files(FileView *view, int count, const int *indexes)
 	view->selected_files = y;
 }
 
+void
+count_selected(FileView *view)
+{
+	int i;
+	view->selected_files = 0;
+	for(i = 0; i < view->list_rows; i++)
+		view->selected_files += (view->dir_entry[i].selected != 0);
+}
+
 int
 find_file_pos_in_list(FileView *view, const char *file)
 {

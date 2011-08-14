@@ -210,17 +210,18 @@ yank_files(FileView *view, int reg, int count, int *indexes)
 	if(count > 0)
 		get_selected_files(view, count, indexes);
 	else
-		get_all_selected_files(curr_view);
+		get_all_selected_files(view);
 
-	yank_selected_files(curr_view, reg);
-	yanked = curr_view->selected_files;
-	free_selected_file_array(curr_view);
+	yank_selected_files(view, reg);
+	yanked = view->selected_files;
+	free_selected_file_array(view);
+	count_selected(view);
 
 	if(count == 0)
 	{
-		clean_selected_files(curr_view);
-		draw_dir_list(curr_view, curr_view->top_line);
-		moveto_list_pos(curr_view, curr_view->list_pos);
+		clean_selected_files(view);
+		draw_dir_list(view, view->top_line);
+		moveto_list_pos(view, view->list_pos);
 		count = yanked;
 	}
 
