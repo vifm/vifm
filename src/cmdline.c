@@ -819,7 +819,31 @@ cmd_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
 	stop_completion();
 
 	old = input_stat.index;
-	find_prev_word();
+
+	while(input_stat.index > 0 && isspace(input_stat.line[input_stat.index - 1]))
+	{
+		input_stat.index--;
+		input_stat.curs_pos--;
+	}
+	if(isalnum(input_stat.line[input_stat.index - 1]))
+	{
+		while(input_stat.index > 0 &&
+				isalnum(input_stat.line[input_stat.index - 1]))
+		{
+			input_stat.index--;
+			input_stat.curs_pos--;
+		}
+	}
+	else
+	{
+		while(input_stat.index > 0 &&
+				!isalnum(input_stat.line[input_stat.index - 1]) &&
+				!isspace(input_stat.line[input_stat.index - 1]))
+		{
+			input_stat.index--;
+			input_stat.curs_pos--;
+		}
+	}
 
 	if(input_stat.index != old)
 	{

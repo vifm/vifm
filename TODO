@@ -70,7 +70,6 @@ Other (questionable) things.
     :edit, etc. in the menus.
     :alias
     Like gv but to select just pasted files (gp?).
-    Ctrl-W in command line mode like in vim?
     'expandtab' for tabs in the quick view ?
 
 Code improvements.
