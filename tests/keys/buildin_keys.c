@@ -122,6 +122,9 @@ init_buildin_keys(int *key_mode)
 	curr = add_cmd(L"v", VISUAL_MODE);
 	curr->data.handler = keys_v;
 
+	curr = add_cmd(L"ZQ", NORMAL_MODE);
+	curr->data.handler = keys_quit;
+
 	curr = add_cmd(L"ZZ", NORMAL_MODE);
 	curr->data.handler = keys_quit;
 

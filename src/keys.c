@@ -312,7 +312,8 @@ contains_chain(struct key_chunk_t *root, const wchar_t *begin,
 		begin++;
 		curr = p;
 	}
-	return (curr->conf.followed == FOLLOWED_BY_NONE);
+	return (curr->conf.followed == FOLLOWED_BY_NONE &&
+			curr->conf.type != BUILDIN_WAIT_POINT);
 }
 
 static int
