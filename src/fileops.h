@@ -56,7 +56,7 @@ void rename_file(FileView *view, int name_only);
 void rename_files(FileView *view);
 void change_owner(void);
 void change_group(void);
-int change_link(void);
+int change_link(FileView *view);
 /* Returns new value for save_msg flag. */
 int put_files_from_register(FileView *view, int name, int force_move);
 int clone_files(FileView *view);

@@ -1229,6 +1229,9 @@ rename_file(FileView *view, int name_only)
 	char* p;
 	char buf[NAME_MAX + 1];
 
+	if(!is_dir_writable(view->curr_dir))
+		return;
+
 	clean_selected_files(curr_view);
 	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
@@ -1662,18 +1665,21 @@ change_link_cb(const char *new_target)
 }
 
 int
-change_link(void)
+change_link(FileView *view)
 {
 	size_t len;
 	char buf[PATH_MAX], linkto[PATH_MAX];
 
-	if(curr_view->dir_entry[curr_view->list_pos].type != LINK)
+	if(!is_dir_writable(view->curr_dir))
+		return 0;
+
+	if(view->dir_entry[view->list_pos].type != LINK)
 	{
 		status_bar_message("File isn't a symbolic link");
 		return 1;
 	}
 
-	strcpy(buf, curr_view->dir_entry[curr_view->list_pos].name);
+	strcpy(buf, view->dir_entry[view->list_pos].name);
 	chosp(buf);
 	len = readlink(buf, linkto, sizeof(linkto));
 	if(len == -1)
@@ -2235,6 +2241,9 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 	int n = 0;
 	int cflags;
 	int err;
+
+	if(!is_dir_writable(view->curr_dir))
+		return 0;
 
 	if(view->selected_files == 0)
 	{

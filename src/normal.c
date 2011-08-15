@@ -884,7 +884,7 @@ cmd_cg(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_cl(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_stats.save_msg = change_link();
+	curr_stats.save_msg = change_link(curr_view);
 }
 
 /* Change owner. */
