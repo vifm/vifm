@@ -678,12 +678,14 @@ Maximum number of changes that can be undone.
 vicmd
 type: string
 default: "vim"
-The actual command used to start vi.
+The actual command used to start vi.  Ampersand sign at the end (regardless
+whether it's preceded by space or not) means backgrounding of command.
 
 vixcmd
 type: string
 default: value of vicmd
-The command used to start vi when in X.
+The command used to start vi when in X.  Ampersand sign at the end (regardless
+whether it's preceded by space or not) means backgrounding of command.
 
 vifminfo
 type: set

@@ -406,15 +406,27 @@ undolevels_handler(enum opt_op op, union optval_t val)
 static void
 vicmd_handler(enum opt_op op, union optval_t val)
 {
+	size_t len;
+
 	free(cfg.vi_command);
 	cfg.vi_command = strdup(val.str_val);
+	len = strlen(cfg.vi_command);
+	cfg.vi_cmd_bg = (len > 1 && cfg.vi_command[len - 1] == '&');
+	if(cfg.vi_cmd_bg)
+		cfg.vi_command[len - 1] = '\0';
 }
 
 static void
 vixcmd_handler(enum opt_op op, union optval_t val)
 {
+	size_t len;
+
 	free(cfg.vi_x_command);
 	cfg.vi_x_command = strdup(val.str_val);
+	len = strlen(cfg.vi_x_command);
+	cfg.vi_x_cmd_bg = (len > 1 && cfg.vi_x_command[len - 1] == '&');
+	if(cfg.vi_x_cmd_bg)
+		cfg.vi_x_command[len - 1] = '\0';
 }
 
 static void

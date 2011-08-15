@@ -276,6 +276,7 @@ view_file(const char *filename)
 {
 	char command[PATH_MAX + 5] = "";
 	char *escaped;
+	int bg;
 
 	if(access(filename, F_OK) != 0)
 	{
@@ -284,10 +285,13 @@ view_file(const char *filename)
 	}
 
 	escaped = escape_filename(filename, 0);
-	snprintf(command, sizeof(command), "%s %s", get_vicmd(), escaped);
+	snprintf(command, sizeof(command), "%s %s", get_vicmd(&bg), escaped);
 	free(escaped);
 
-	shellout(command, -1);
+	if(bg)
+		start_background_job(command);
+	else
+		shellout(command, -1);
 	curs_set(0);
 }
 
@@ -664,8 +668,12 @@ execute_file(FileView *view, int dont_execute)
 			view_file(get_current_file_name(view));
 		else
 		{
-			program = edit_selection(view);
-			shellout(program, -1);
+			int bg;
+			program = edit_selection(view, &bg);
+			if(bg)
+				start_background_job(program);
+			else
+				shellout(program, -1);
 			free(program);
 		}
 		return;

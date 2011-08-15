@@ -937,11 +937,15 @@ Command macros
 
        vicmd  type: string
               default: "vim"
-              The actual command used to start vi.
+              The actual command used to start vi.  Ampersand sign at the  end
+              (regardless  whether  it's preceded by space or not) means back‐
+              grounding of command.
 
        vixcmd type: string
               default: value of vicmd
-              The command used to start vi when in X.
+              The command used to start vi when in X.  Ampersand sign  at  the
+              end  (regardless  whether  it's  preceded by space or not) means
+              backgrounding of command.
 
        vifminfo
               type: set
@@ -1128,4 +1132,4 @@ AUTHOR
 
 
 
-                                August 14, 2011                        vifm(1)
+                                August 15, 2011                        vifm(1)

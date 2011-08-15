@@ -1277,9 +1277,10 @@ shellout(const char *command, int pause)
 	{
 		if(cfg.use_screen)
 		{
+			int bg;
 			char *escaped;
 			char *ptr = (char *)NULL;
-			char *title = strstr(command, get_vicmd());
+			char *title = strstr(command, get_vicmd(&bg));
 			char *escaped_sh = escape_filename(cfg.shell, 0);
 
 			/* Needed for symlink directories and sshfs mounts */
@@ -1293,12 +1294,12 @@ shellout(const char *command, int pause)
 			{
 				if(pause > 0)
 					snprintf(buf, sizeof(buf), "screen -t \"%s\" %s -c '%s; vifm-pause'",
-							title + strlen(get_vicmd()) + 1, escaped_sh, command);
+							title + strlen(get_vicmd(&bg)) + 1, escaped_sh, command);
 				else
 				{
 					escaped = escape_filename(command, 0);
 					snprintf(buf, sizeof(buf), "screen -t \"%s\" %s -c %s",
-							title + strlen(get_vicmd()) + 1, escaped_sh, escaped);
+							title + strlen(get_vicmd(&bg)) + 1, escaped_sh, escaped);
 					free(escaped);
 				}
 			}
@@ -1413,16 +1414,16 @@ fast_run_complete(char *cmd)
 }
 
 char *
-edit_selection(FileView *view)
+edit_selection(FileView *view, int *bg)
 {
 	int use_menu = 0;
 	int split = 0;
 	char *buf;
 	char *files = expand_macros(view, "%f", NULL, &use_menu, &split);
 
-	if((buf = (char *)malloc(strlen(get_vicmd()) + strlen(files) + 2)) != NULL)
-		snprintf(buf, strlen(get_vicmd()) + 1 + strlen(files) + 1, "%s %s",
-				get_vicmd(), files);
+	if((buf = (char *)malloc(strlen(get_vicmd(bg)) + strlen(files) + 2)) != NULL)
+		snprintf(buf, strlen(get_vicmd(bg)) + 1 + strlen(files) + 1, "%s %s",
+				get_vicmd(bg), files);
 
 	free(files);
 	return buf;
@@ -2182,18 +2183,22 @@ edit_cmd(const struct cmd_info *cmd_info)
 		char buf[PATH_MAX];
 		size_t len;
 		int i;
+		int bg;
 
 		if(cfg.vim_filter)
 			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
 
-		len = snprintf(buf, sizeof(buf), "%s ", get_vicmd());
+		len = snprintf(buf, sizeof(buf), "%s ", get_vicmd(&bg));
 		for(i = 0; i < cmd_info->argc && len < sizeof(buf) - 1; i++)
 		{
 			char *escaped = escape_filename(cmd_info->argv[i], 0);
 			len += snprintf(buf + len, sizeof(buf) - len, "%s ", escaped);
 			free(escaped);
 		}
-		shellout(buf, -1);
+		if(bg)
+			start_background_job(buf);
+		else
+			shellout(buf, -1);
 		return 0;
 	}
 	if(!curr_view->selected_files ||
@@ -2208,6 +2213,7 @@ edit_cmd(const struct cmd_info *cmd_info)
 	{
 		int i;
 		char *cmd;
+		int bg;
 
 		for(i = 0; i < curr_view->list_rows; i++)
 		{
@@ -2229,12 +2235,15 @@ edit_cmd(const struct cmd_info *cmd_info)
 		if(cfg.vim_filter)
 			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
 
-		if((cmd = edit_selection(curr_view)) == NULL)
+		if((cmd = edit_selection(curr_view, &bg)) == NULL)
 		{
 			show_error_msg("Unable to allocate enough memory", "Cannot load file");
 			return 0;
 		}
-		shellout(cmd, -1);
+		if(bg)
+			start_background_job(cmd);
+		else
+			shellout(cmd, -1);
 		free(cmd);
 	}
 	return 0;
@@ -2356,23 +2365,27 @@ static int
 help_cmd(const struct cmd_info *cmd_info)
 {
 	char help_cmd[PATH_MAX];
+	int bg;
 
 	if(cfg.use_vim_help)
 	{
 		if(cmd_info->argc > 0)
 			snprintf(help_cmd, sizeof(help_cmd), "%s -c \'help %s\' -c only",
-					get_vicmd(), cmd_info->args);
+					get_vicmd(&bg), cmd_info->args);
 		else
 			snprintf(help_cmd, sizeof(help_cmd), "%s -c \'help vifm\' -c only",
-					get_vicmd());
+					get_vicmd(&bg));
 	}
 	else
 	{
-		snprintf(help_cmd, sizeof(help_cmd), "%s %s/vifm-help.txt", get_vicmd(),
+		snprintf(help_cmd, sizeof(help_cmd), "%s %s/vifm-help.txt", get_vicmd(&bg),
 				cfg.config_dir);
 	}
 
-	shellout(help_cmd, -1);
+	if(bg)
+		start_background_job(help_cmd);
+	else
+		shellout(help_cmd, -1);
 	return 0;
 }
 

@@ -8,7 +8,6 @@ Basic things that need to be done.
         :chown commands.
     More states for permissions dialog (maybe 'f', 'd').
     Modify X in permissions dialog.
-    Backgrounding of vicmd (& at the end).
     Perform operations using system calls, not programs.  This is much faster
         and will ease porting on Windows (less dependencies on Cygwin).
 	:restore command to restore files from Trash

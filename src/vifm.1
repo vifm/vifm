@@ -1,4 +1,4 @@
-.TH vifm 1 "August 14, 2011" "" "Vifm"
+.TH vifm 1 "August 15, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1066,14 +1066,16 @@ type: string
 .br
 default: "vim"
 .br
-The actual command used to start vi.
+The actual command used to start vi.  Ampersand sign at the end (regardless
+whether it's preceded by space or not) means backgrounding of command.
 .TP
 .BI vixcmd
 type: string
 .br
 default: value of vicmd
 .br
-The command used to start vi when in X.
+The command used to start vi when in X.  Ampersand sign at the end (regardless
+whether it's preceded by space or not) means backgrounding of command.
 .TP
 .BI vifminfo
 type: set

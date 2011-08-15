@@ -80,7 +80,9 @@ init_config(void)
 	cfg.fast_run = 0;
 	cfg.confirm = 1;
 	cfg.vi_command = strdup("vim");
+	cfg.vi_cmd_bg = 0;
 	cfg.vi_x_command = strdup("");
+	cfg.vi_x_cmd_bg = 0;
 	cfg.use_trash = 1;
 	cfg.fuse_home = strdup("/tmp/vifm_FUSE");
 	cfg.use_screen = 0;
@@ -641,8 +643,10 @@ write_info_file(void)
 		fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format + 1));
 		fprintf(fp, "=%strash\n", cfg.use_trash ? "" : "no");
 		fprintf(fp, "=undolevels=%d\n", cfg.undo_levels);
-		fprintf(fp, "=vicmd=%s\n", escape_spaces(cfg.vi_command));
-		fprintf(fp, "=vixcmd=%s\n", escape_spaces(cfg.vi_x_command));
+		fprintf(fp, "=vicmd=%s%s\n", escape_spaces(cfg.vi_command),
+				cfg.vi_cmd_bg ? " &" : "");
+		fprintf(fp, "=vixcmd=%s%s\n", escape_spaces(cfg.vi_x_command),
+				cfg.vi_cmd_bg ? " &" : "");
 
 		fprintf(fp, "=vifminfo=options");
 		if(cfg.vifm_info & VIFMINFO_FILETYPES)
@@ -912,14 +916,23 @@ is_old_config(void)
 }
 
 const char *
-get_vicmd(void)
+get_vicmd(int *bg)
 {
 	if(curr_stats.is_console)
+	{
+		*bg = cfg.vi_cmd_bg;
 		return cfg.vi_command;
+	}
 	else if(cfg.vi_x_command[0] != '\0')
+	{
+		*bg = cfg.vi_x_cmd_bg;
 		return cfg.vi_x_command;
+	}
 	else
+	{
+		*bg = cfg.vi_cmd_bg;
 		return cfg.vi_command;
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

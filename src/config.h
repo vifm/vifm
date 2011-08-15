@@ -31,7 +31,9 @@ typedef struct _Config {
 	char escaped_trash_dir[PATH_MAX];
 	char log_file[PATH_MAX];
 	char *vi_command;
+	int vi_cmd_bg;
 	char *vi_x_command;
+	int vi_x_cmd_bg;
 	int num_bookmarks; /* Number of active bookmarks (set at the moment) */
 	int use_trash;
 	int vim_filter;
@@ -99,7 +101,7 @@ void set_config_dir(void);
 void init_config(void);
 void exec_config(void);
 int is_old_config(void);
-const char * get_vicmd(void);
+const char * get_vicmd(int *bg);
 
 #endif
 
