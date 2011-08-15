@@ -500,19 +500,19 @@ Commands
        :filter?
               show current filter value.
 
-       :fin[d] pattern
+       :[range]fin[d] pattern
               will show results of find command in the menu.   Searches  among
               selected files if any.
 
-       :fin[d] -opt...
+       :[range]fin[d] -opt...
               same  as  :find  above,  but  user  defines  all find arguments.
               Searches among selected files if any.
 
-       :fin[d] path -opt...
+       :[range]fin[d] path -opt...
               same as :find  above,  but  user  defines  all  find  arguments.
-              Ignores selection.
+              Ignores selection and range.
 
-       :fin[d]
+       :[range]fin[d]
               repeats last :find command.
 
        :h[elp]

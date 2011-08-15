@@ -4,9 +4,10 @@
 
 	Removed 'savelocation' option.  Use set vifminfo+=dhistory.
 
-	Removed support of startup file all commands will be moved to vifmrc.
+	Removed support of startup file, all commands will be moved to vifmrc.
 
-	Added 'reversecol' option (affects the look of current line in the views).
+	Added 'reversecol' option (affects the look of current line in views and
+	menus).
 
 	Added 'wildmenu' option.
 

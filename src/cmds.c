@@ -173,6 +173,7 @@ execute_cmd(const char *cmd)
 	int result;
 	int i;
 	int last_end;
+	struct cmds_conf *cc = cmds_conf;
 
 	init_cmd_info(&cmd_info);
 	cmd = parse_range(cmd, &cmd_info);
@@ -188,7 +189,7 @@ execute_cmd(const char *cmd)
 	{
 		int t;
 
-		if(!cmds_conf->swap_range())
+		if(!cc->swap_range())
 			return CMDS_ERR_INVALID_RANGE;
 
 		t = cmd_info.end;
@@ -225,10 +226,10 @@ execute_cmd(const char *cmd)
 	}
 
 	if(cur->select)
-		cmds_conf->select_range(&cmd_info);
+		cc->select_range(&cmd_info);
 
 	if(cur->expand)
-		cmd_info.args = cmds_conf->expand_macros(cmd_info.raw_args);
+		cmd_info.args = cc->expand_macros(cmd_info.raw_args);
 	else
 		cmd_info.args = strdup(cmd_info.raw_args);
 	cmd_info.argv = dispatch_line(cmd_info.args, &cmd_info.argc, cmd_info.sep,
@@ -278,7 +279,7 @@ execute_cmd(const char *cmd)
 			result = cur->handler(&cmd_info);
 		}
 
-		cmds_conf->post(cur->id);
+		cc->post(cur->id);
 		cur->passed--;
 	}
 

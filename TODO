@@ -29,6 +29,7 @@ Vi(m) specific features that need to be added.
     :map without arguments
     Should 'history' control search and cmdline history or there should be
         other options?
+    Let user map <c-?> keys.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -36,7 +37,7 @@ Possible things to add.
 		file systems.
 	Add mouse support.
     Swap names of two files (selected or given as arguments).
-    Invert selection?
+    Invert selection? (what :command or key?)
     :g/arg = grep arg; :v/arg = grep -v arg
     Make :undolist more interactive.
     Maybe something like :g/.../com and :v/.../com in Vim.

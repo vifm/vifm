@@ -370,13 +370,13 @@ The builtin commands are:
     See |Filters|
 :filter! - same as :invert.
 :filter? - show current filter value.
-:fin[d] pattern - will show results of find command in the menu.  Searches
-    among selected files if any.
-:fin[d] -opt... - same as :find above, but user defines all find arguments.
+:[range]fin[d] pattern - will show results of find command in the menu.
     Searches among selected files if any.
-:fin[d] path -opt... - same as :find above, but user defines all find
-    arguments.  Ignores selection.
-:fin[d] - repeats last :find command.
+:[range]fin[d] -opt... - same as :find above, but user defines all find
+    arguments.  Searches among selected files if any.
+:[range]fin[d] path -opt... - same as :find above, but user defines all
+    find arguments.  Ignores selection and range.
+:[range]fin[d] - repeats last :find command.
 :h[elp] - show the help file.
 :h[elp] argument - is the same as using ':h argument' in vim.
 :his[tory] - show directory history.
