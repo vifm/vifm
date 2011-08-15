@@ -1240,10 +1240,6 @@ rename_file(FileView *view, int name_only)
 	if(!is_dir_writable(view->curr_dir))
 		return;
 
-	clean_selected_files(curr_view);
-	draw_dir_list(curr_view, curr_view->top_line);
-	moveto_list_pos(curr_view, curr_view->list_pos);
-
 	strncpy(buf, get_current_file_name(view), sizeof(buf));
 	buf[sizeof(buf) - 1] = '\0';
 	if(strcmp(buf, "../") == 0)

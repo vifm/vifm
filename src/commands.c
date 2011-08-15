@@ -810,74 +810,68 @@ split_path(void)
 }
 
 void
-save_search_history(const char *pattern)
-{
-	int x = 0;
-
-	if((cfg.search_history_num + 1) >= cfg.search_history_len)
-		cfg.search_history_num = x = cfg.search_history_len - 1;
-	else
-		x = cfg.search_history_num + 1;
-
-	while(x > 0)
-	{
-		cfg.search_history[x] = (char *)realloc(cfg.search_history[x],
-				strlen(cfg.search_history[x - 1]) + 1);
-		strcpy(cfg.search_history[x], cfg.search_history[x - 1]);
-		x--;
-	}
-
-	cfg.search_history[0] = (char *)realloc(cfg.search_history[0],
-			strlen(pattern) + 1);
-	strcpy(cfg.search_history[0], pattern);
-	cfg.search_history_num++;
-	if(cfg.search_history_num >= cfg.search_history_len)
-		cfg.search_history_num = cfg.search_history_len - 1;
-}
-
-void
-save_command_history(const char *command)
+save_history(const char *line, char **hist, int *num, int *len)
 {
 	int x;
 
 	/* Don't add :!! or :! to history list */
-	if(!strcmp(command, "!!") || !strcmp(command, "!"))
+	if(!strcmp(line, "!!") || !strcmp(line, "!"))
 		return;
 
 	/* Don't add duplicates */
-	for(x = 0; x <= cfg.cmd_history_num; x++)
+	for(x = 0; x <= *num; x++)
 	{
-		if(strcmp(cfg.cmd_history[x], command) == 0)
+		if(strcmp(hist[x], line) == 0)
 		{
 			/* move line to the last position */
 			char *t;
 			if(x == 0)
 				return;
-			t = cfg.cmd_history[x];
-			memmove(cfg.cmd_history + 1, cfg.cmd_history, sizeof(char *)*x);
-			cfg.cmd_history[0] = t;
+			t = hist[x];
+			memmove(hist + 1, hist, sizeof(char *)*x);
+			hist[0] = t;
 			return;
 		}
 	}
 
-	if(cfg.cmd_history_num + 1 >= cfg.cmd_history_len)
-		cfg.cmd_history_num = x = cfg.cmd_history_len - 1;
+	if(*num + 1 >= *len)
+		*num = x = *len - 1;
 	else
-		x = cfg.cmd_history_num + 1;
+		x = *num + 1;
 
 	while(x > 0)
 	{
-		cfg.cmd_history[x] = (char *)realloc(cfg.cmd_history[x],
-				strlen(cfg.cmd_history[x - 1]) + 1);
-		strcpy(cfg.cmd_history[x], cfg.cmd_history[x - 1]);
+		hist[x] = (char *)realloc(hist[x], strlen(hist[x - 1]) + 1);
+		strcpy(hist[x], hist[x - 1]);
 		x--;
 	}
 
-	cfg.cmd_history[0] = (char *)realloc(cfg.cmd_history[0], strlen(command) + 1);
-	strcpy(cfg.cmd_history[0], command);
-	cfg.cmd_history_num++;
-	if(cfg.cmd_history_num >= cfg.cmd_history_len)
-		cfg.cmd_history_num = cfg.cmd_history_len - 1;
+	hist[0] = (char *)realloc(hist[0], strlen(line) + 1);
+	strcpy(hist[0], line);
+	(*num)++;
+	if(*num >= *len)
+		*num = *len - 1;
+}
+
+void
+save_search_history(const char *pattern)
+{
+	save_history(pattern, cfg.search_history, &cfg.search_history_num,
+			&cfg.search_history_len);
+}
+
+void
+save_command_history(const char *command)
+{
+	save_history(command, cfg.cmd_history, &cfg.cmd_history_num,
+			&cfg.cmd_history_len);
+}
+
+void
+save_prompt_history(const char *line)
+{
+	save_history(line, cfg.prompt_history, &cfg.prompt_history_num,
+			&cfg.prompt_history_len);
 }
 
 static const char *

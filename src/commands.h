@@ -44,7 +44,9 @@ void comm_only(void);
 void comm_split(void);
 void save_command_history(const char *command);
 void save_search_history(const char *pattern);
+void save_prompt_history(const char *line);
 char * edit_selection(FileView *view, int *bg);
+void save_history(const char *line, char **hist, int *num, int *len);
 
 #ifdef TEST
 char * append_selected_files(FileView *view, char *expanded, int under_cursor,

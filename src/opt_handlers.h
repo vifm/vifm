@@ -35,6 +35,7 @@ enum {
 	VIFMINFO_SHISTORY  = 1 << 10,
 	VIFMINFO_DIRSTACK  = 1 << 11,
 	VIFMINFO_REGISTERS = 1 << 12,
+	VIFMINFO_PHISTORY  = 1 << 13,
 };
 
 void init_option_handlers(void);

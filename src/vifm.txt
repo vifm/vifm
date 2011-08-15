@@ -705,6 +705,7 @@ Controls what will be saved in the ~/.vifm/vifminfo file.
    shistory  - search history (/ and ? commands)
    dirstack  - directory stack
    registers - registers content
+   phistory  - prompt history
 
 vimhelp
 type: boolean

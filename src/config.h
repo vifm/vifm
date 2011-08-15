@@ -63,6 +63,10 @@ typedef struct _Config {
 	int cmd_history_len;
 	int cmd_history_num;
 
+	char **prompt_history;
+	int prompt_history_len;
+	int prompt_history_num;
+
 	int color_scheme_num;
 	int color_scheme_cur;
 	int color_scheme;

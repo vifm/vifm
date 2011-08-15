@@ -78,6 +78,7 @@ static const char * vifminfo_set[] = {
 	"shistory",
 	"dirstack",
 	"registers",
+	"phistory",
 };
 
 static struct {
