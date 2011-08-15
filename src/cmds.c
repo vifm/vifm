@@ -718,16 +718,6 @@ get_cmd_id(const char *cmd)
 	return get_cmd_info(cmd, &info);
 }
 
-char
-get_cmd_sep(const char *cmd)
-{
-	struct cmd_info info;
-	init_cmd_info(&info);
-	if(get_cmd_info(cmd, &info) == -1)
-		return ' ';
-	return info.sep;
-}
-
 static void
 init_cmd_info(struct cmd_info *cmd_info)
 {

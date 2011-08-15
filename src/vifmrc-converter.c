@@ -131,7 +131,7 @@ chomp(char *text)
 }
 
 /* Returns zero on error */
-int
+static int
 read_config_file(const char *config_file)
 {
 	FILE *fp;

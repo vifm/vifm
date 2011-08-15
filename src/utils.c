@@ -299,20 +299,6 @@ to_wide(const char *s)
 	return result;
 }
 
-char *
-to_multibyte(const wchar_t *s)
-{
-	size_t len;
-	char *result;
-
-	len = wcstombs(NULL, s, 0) + 1;
-	if((result = malloc(len*sizeof(char))) == NULL)
-		return NULL;
-
-	wcstombs(result, s, len);
-	return result;
-}
-
 /* if err == 1 then use stderr and close stdin and stdout */
 void _gnuc_noreturn
 run_from_fork(int pipe[2], int err, char *cmd)
@@ -354,26 +340,6 @@ my_wcsdup(const wchar_t *ws)
 		return NULL;
 	wcscpy(result, ws);
 	return result;
-}
-
-char *
-strchar2str(const char *str)
-{
-	static char buf[8];
-
-	size_t len = get_char_width(str);
-	if(len != 1 || str[0] >= ' ' || str[0] == '\n')
-	{
-		memcpy(buf, str, len);
-		buf[len] = '\0';
-	}
-	else
-	{
-		buf[0] = '^';
-		buf[1] = ('A' - 1) + str[0];
-		buf[2] = '\0';
-	}
-	return buf;
 }
 
 char *

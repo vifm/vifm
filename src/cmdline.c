@@ -128,6 +128,7 @@ int line_completion(struct line_stats *stat);
 static void update_line_stat(struct line_stats *stat, int new_len);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static void stop_completion(void);
+static char * to_multibyte(const wchar_t *s);
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x03",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
@@ -1413,6 +1414,20 @@ stop_completion(void)
 	reset_completion();
 	if(cfg.wild_menu && sub_mode == CMD_SUBMODE)
 		update_stat_window(curr_view);
+}
+
+static char *
+to_multibyte(const wchar_t *s)
+{
+	size_t len;
+	char *result;
+
+	len = wcstombs(NULL, s, 0) + 1;
+	if((result = malloc(len*sizeof(char))) == NULL)
+		return NULL;
+
+	wcstombs(result, s, len);
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

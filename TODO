@@ -58,9 +58,6 @@ Other (questionable) things.
     Summarize size of selected files.  Need to decide how to display it.
     Add support for comments at the end of line ? Just for fun?
     Make directory stack menu interactive ?
-    With undo groups we can not only join commands, but maybe implement
-        something like transaction rollback.  Or maybe better to leave this
-        on user, he could always press u himself.
     Maybe add + and - commands to undo by commands, not command groups.
     :sellocal command.
     Remove items from :history cmd?

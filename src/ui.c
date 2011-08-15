@@ -28,6 +28,7 @@
 #include <pwd.h> /* getpwent() */
 #include <stdlib.h> /* malloc */
 #include <termios.h> /* struct winsize */
+#include <unistd.h>
 
 #include <signal.h> /* signal() */
 #include <stdarg.h>
@@ -72,14 +73,18 @@ update_pos_window(FileView *view)
 }
 
 static void
-get_id_string(FileView *view, size_t len, char *buf)
+get_id_string(FileView *view, size_t len, char *out_buf)
 {
+	char buf[MAX(sysconf(_SC_GETPW_R_SIZE_MAX), sysconf(_SC_GETGR_R_SIZE_MAX))];
 	char uid_buf[26];
 	char gid_buf[26];
+	struct passwd pwd_b;
+	struct group group_b;
 	struct passwd *pwd_buf;
 	struct group *group_buf;
 
-	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
+	if(getpwuid_r(view->dir_entry[view->list_pos].uid, &pwd_b, buf, sizeof(buf),
+			&pwd_buf) != 0)
 	{
 		snprintf(uid_buf, sizeof(uid_buf), "%d",
 				(int) view->dir_entry[view->list_pos].uid);
@@ -89,7 +94,8 @@ get_id_string(FileView *view, size_t len, char *buf)
 		snprintf(uid_buf, sizeof(uid_buf), "%s", pwd_buf->pw_name);
 	}
 
-	if((group_buf = getgrgid(view->dir_entry[view->list_pos].gid)) == NULL)
+	if(getgrgid_r(view->dir_entry[view->list_pos].gid, &group_b, buf, sizeof(buf),
+			&group_buf) != 0)
 	{
 		snprintf(gid_buf, sizeof(gid_buf), "%d",
 				(int) view->dir_entry[view->list_pos].gid);
@@ -99,7 +105,7 @@ get_id_string(FileView *view, size_t len, char *buf)
 		snprintf(gid_buf, sizeof(gid_buf), "%s", group_buf->gr_name);
 	}
 
-	snprintf(buf, len, "  %s:%s", uid_buf, gid_buf);
+	snprintf(out_buf, len, "  %s:%s", uid_buf, gid_buf);
 }
 
 void

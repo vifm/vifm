@@ -185,32 +185,6 @@ load_default_configuration(void)
 	load_view_defaults(&rwin);
 }
 
-const char *
-conv_udf_name(const char *cmd)
-{
-	static const char *nums[] = {
-		"ZERO", "ONE", "TWO", "THREE", "FOUR",
-		"FIVE", "SIX", "SEVEN", "EIGHT", "NINE"
-	};
-	static char buf[256];
-	char *p = buf;
-	while(*cmd != '\0')
-		if(isdigit(*cmd))
-		{
-			if(p + strlen(nums[*cmd - '0']) + 1 >= buf + sizeof(buf))
-				break;
-			strcpy(p, nums[*cmd - '0']);
-			p += strlen(p);
-			cmd++;
-		}
-		else
-		{
-			*p++ = *cmd++;
-		}
-	*p = '\0';
-	return buf;
-}
-
 static void
 prepare_line(char *line)
 {
