@@ -81,13 +81,10 @@ function! s:StartVifm(editcmd)
 	endif
 
 	" Don't split if current window is empty
+    let firstfile = flist[0]
 	if expand('%') == '' && a:editcmd =~ '^v\?split$'
 		execute 'edit' fnamemodify(flist[0], ':.')
 		let flist = flist[1:-1]
-		" for file in [] does not seem to work, so we need to return
-		if empty(flist)
-			return
-		endif
 	endif
 
 	for file in flist
@@ -95,5 +92,5 @@ function! s:StartVifm(editcmd)
 		execute a:editcmd file
 	endfor
 	" Go to first file
-	execute 'drop' flist[0]
+	execute 'drop' firstfile
 endfunction

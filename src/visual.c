@@ -549,6 +549,8 @@ cmd_gv(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_j(struct key_info key_info, struct keys_info *keys_info)
 {
+	if(curr_view->list_pos == curr_view->list_rows - 1)
+		return;
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	while(key_info.count-- > 0)
@@ -559,6 +561,8 @@ cmd_j(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_k(struct key_info key_info, struct keys_info *keys_info)
 {
+	if(curr_view->list_pos == 0)
+		return;
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	while(key_info.count-- > 0)

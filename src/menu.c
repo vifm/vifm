@@ -495,6 +495,8 @@ cmd_gg(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_j(struct key_info key_info, struct keys_info *keys_info)
 {
+	if(menu->pos == menu->len - 1)
+		return;
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 
@@ -507,6 +509,8 @@ cmd_j(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_k(struct key_info key_info, struct keys_info *keys_info)
 {
+	if(menu->pos == 0)
+		return;
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 

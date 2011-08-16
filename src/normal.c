@@ -1036,9 +1036,15 @@ cmd_j(struct key_info key_info, struct keys_info *keys_info)
 		key_info.count = 1;
 
 	if(keys_info->selector)
+	{
 		pick_files(curr_view, curr_view->list_pos + key_info.count, keys_info);
+	}
 	else
+	{
+		if(curr_view->list_pos == curr_view->list_rows - 1)
+			return;
 		moveto_list_pos(curr_view, curr_view->list_pos + key_info.count);
+	}
 }
 
 /* Move up one line. */
@@ -1049,9 +1055,15 @@ cmd_k(struct key_info key_info, struct keys_info *keys_info)
 		key_info.count = 1;
 
 	if(keys_info->selector)
+	{
 		pick_files(curr_view, curr_view->list_pos - key_info.count, keys_info);
+	}
 	else
+	{
+		if(curr_view->list_pos == 0)
+			return;
 		moveto_list_pos(curr_view, curr_view->list_pos - key_info.count);
+	}
 }
 
 static void
