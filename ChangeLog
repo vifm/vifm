@@ -6,6 +6,9 @@
 
 	Removed support of startup file, all commands will be moved to vifmrc.
 
+	Removed '<,'> range from command line in visual mode (all work without this
+	range, because files are selected).
+
 	Added 'reversecol' option (affects the look of current line in views and
 	menus).
 

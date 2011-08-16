@@ -48,7 +48,6 @@ Possible things to add.
         reverse)
     Improve sorting ('sort' and 'gsort'; ignore case).
     Add :mksession command and 'sessionoptions' option.
-    Maybe ignore ranges in the command line history.
     y/source/dest like in sed (or like tr program).
     Modify marks on rename operations.
 
