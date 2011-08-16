@@ -192,22 +192,20 @@ enter_visual_mode(int restore_selection)
 void
 leave_visual_mode(int save_msg, int goto_top)
 {
-	int m = -1;
 	int i;
 	for(i = 0; i < view->list_rows; i++)
 		view->dir_entry[i].search_match = 0;
 
 	for(i = 0; i < view->list_rows; i++)
-	{
-		if(view->dir_entry[i].selected && m == -1)
-			m = i;
 		view->dir_entry[i].selected = 0;
-	}
 	view->selected_files = 0;
 
 	if(goto_top)
-		view->list_pos = m;
-
+	{
+		int ub = check_mark_directory(view, '<');
+		if(ub != -1)
+			view->list_pos = ub;
+	}
 
 	draw_dir_list(view, view->top_line);
 	moveto_list_pos(view, view->list_pos);

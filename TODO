@@ -12,6 +12,7 @@ Basic things that need to be done.
         and will ease porting on Windows (less dependencies on Cygwin).
 	:restore command to restore files from Trash
     Better cW command (maybe accept count of extensions to skip).
+    Don't quit when terminal is too small (print message and ignore input).
 
 Documentation.
 	Better documentation.
@@ -48,6 +49,7 @@ Possible things to add.
     Improve sorting ('sort' and 'gsort'; ignore case).
     Add :mksession command and 'sessionoptions' option.
     Maybe ignore ranges in the command line history.
+    y/source/dest like in sed (or like tr program).
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
