@@ -1740,14 +1740,15 @@ show_grep_menu(FileView *view, const char *args, int invert)
 
 	if(args[0] == '-')
 	{
-		snprintf(buf, sizeof(buf), "grep -n -H -R %s %s %s", inv_str, args, files);
+		snprintf(buf, sizeof(buf), "grep -n -H -I -R %s %s %s", inv_str, args,
+				files);
 	}
 	else
 	{
 		char *escaped_args;
 		escaped_args = escape_filename(args, 0);
-		snprintf(buf, sizeof(buf), "grep -n -H -R %s %s %s", inv_str, escaped_args,
-				files);
+		snprintf(buf, sizeof(buf), "grep -n -H -I -R %s %s %s", inv_str,
+				escaped_args, files);
 		free(escaped_args);
 	}
 	free(files);

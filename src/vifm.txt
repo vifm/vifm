@@ -379,7 +379,7 @@ The builtin commands are:
 :[range]fin[d] - repeats last :find command.
 :[range]gr[ep][!] pattern - will show results of grep command in the menu.
     Add "!" to search lines that do not match pattern.  Searches among
-    selected files if any and no range given.
+    selected files if any and no range given.  Ignores binary files.
 :[range]gr[ep][!] -opt... - same as :grep above, but user defines all find
     arguments, which are not escaped.  Searches among selected files if
     any.
