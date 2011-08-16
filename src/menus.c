@@ -95,6 +95,10 @@ clean_menu_position(menu_info *m)
 	if(m->data != NULL && m->data[m->pos] != NULL)
 		snprintf(buf, x, " %s", m->data[m->pos]);
 
+	for(z = 0; buf[z] != '\0'; z++)
+		if(buf[z] == '\t')
+			buf[z] = ' ';
+
 	for(z = strlen(buf); z < x; z++)
 		buf[z] = ' ';
 
@@ -320,6 +324,10 @@ moveto_menu_pos(int pos, menu_info *m)
 		return;
 	if(m->data != NULL && m->data[pos] != NULL)
 		snprintf(buf, x, " %s", m->data[pos]);
+
+	for(z = 0; buf[z] != '\0'; z++)
+		if(buf[z] == '\t')
+			buf[z] = ' ';
 
 	for(z = strlen(buf); z < x; z++)
 		buf[z] = ' ';
@@ -775,6 +783,8 @@ draw_menu(menu_info *m)
 
 	for(i = 1; x < m->len; i++)
 	{
+		int z;
+		char *buf;
 		char *ptr = NULL;
 		chomp(m->data[x]);
 		if((ptr = strchr(m->data[x], '\n')) || (ptr = strchr(m->data[x], '\r')))
@@ -784,17 +794,24 @@ draw_menu(menu_info *m)
 		if(m->matches != NULL && m->matches[x])
 			wattron(menu_win, COLOR_PAIR(cfg.color_scheme + SELECTED_COLOR));
 
+		buf = strdup(m->data[x]);
+		for(z = 0; buf[z] != '\0'; z++)
+			if(buf[z] == '\t')
+				buf[z] = ' ';
+
 		if(strlen(m->data[x]) > len - 4)
 		{
-			size_t len = get_normal_utf8_string_widthn(m->data[x], win_len - 3 - 4);
-			mvwaddnstr(menu_win, i, 2, m->data[x], len);
+			size_t len = get_normal_utf8_string_widthn(buf, win_len - 3 - 4);
+			mvwaddnstr(menu_win, i, 2, buf, len);
 			waddstr(menu_win, "...");
 		}
 		else
 		{
-			mvwaddnstr(menu_win, i, 2, m->data[x], len - 4);
+			mvwaddnstr(menu_win, i, 2, buf, len - 4);
 		}
 		waddstr(menu_win, " ");
+
+		free(buf);
 
 		if(m->matches != NULL && m->matches[x])
 			wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + SELECTED_COLOR));

@@ -40,7 +40,6 @@ Possible things to add.
 	Add mouse support.
     Swap names of two files (selected or given as arguments).
     Invert selection? (what :command or key?)
-    :g/arg = grep arg; :v/arg = grep -v arg
     Make :undolist more interactive.
     Maybe something like :g/.../com and :v/.../com in Vim.
     Add g/ and g? commands (search, but don't select files).
