@@ -456,6 +456,11 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 		leave_visual_mode(curr_stats.save_msg, 1);
 		moveto_list_pos(curr_view, check_mark_directory(curr_view, '<'));
 	}
+	if(sub_mode == CMD_SUBMODE)
+	{
+		int save_hist = !keys_info->mapped;
+		curr_stats.save_msg = exec_commands("", curr_view, save_hist, GET_COMMAND);
+	}
 }
 
 static void
@@ -672,8 +677,7 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
-	if((!input_stat.line || !input_stat.line[0]) && (sub_mode == CMD_SUBMODE ||
-			sub_mode == MENU_CMD_SUBMODE))
+	if((!input_stat.line || !input_stat.line[0]) && sub_mode == MENU_CMD_SUBMODE)
 	{
 		leave_cmdline_mode();
 		return;
@@ -685,7 +689,7 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 	{
-		char* s = p;
+		char* s = (p != NULL) ? p : "";
 		while(*s == ' ' || *s == ':')
 			s++;
 		if(sub_mode == CMD_SUBMODE)

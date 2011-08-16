@@ -585,6 +585,8 @@ update_menu(void)
 static int
 goto_cmd(const struct cmd_info *cmd_info)
 {
+	if(cmd_info->end == NOT_DEF)
+		return 0;
 	clean_menu_position(menu);
 	moveto_menu_pos(cmd_info->end, menu);
 	wrefresh(menu_win);

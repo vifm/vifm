@@ -1506,17 +1506,37 @@ skip_word(const char *cmd)
 	return cmd;
 }
 
+static void
+remove_selection(FileView *view)
+{
+	clean_selected_files(view);
+	draw_dir_list(view, view->top_line);
+	moveto_list_pos(view, view->list_pos);
+}
+
 static int
 execute_command(FileView *view, char *command, int menu)
 {
 	int id;
 	int result;
 
+	if(command == NULL && !menu)
+	{
+		remove_selection(view);
+		return 0;
+	}
+
 	while(isspace(*command) || *command == ':')
 		++command;
 
 	if(command[0] == '"')
 		return 0;
+
+	if((command[0] == '\0') && !menu)
+	{
+		remove_selection(view);
+		return 0;
+	}
 
 	if(!menu)
 	{
@@ -1525,9 +1545,6 @@ execute_command(FileView *view, char *command, int menu)
 		cmds_conf.current = view->list_pos;
 		cmds_conf.end = view->list_rows - 1;
 	}
-
-	while(*command == ' ' || *command == ':')
-		command++;
 
 	id = get_cmd_id(command);
 	if(id == USER_CMD_ID)
@@ -1602,11 +1619,7 @@ execute_command(FileView *view, char *command, int menu)
 			break;
 	}
 	if(!menu)
-	{
-		clean_selected_files(view);
-		draw_dir_list(view, view->top_line);
-		moveto_list_pos(view, view->list_pos);
-	}
+		remove_selection(view);
 	return 0;
 }
 
@@ -1751,6 +1764,9 @@ exec_commands(char *cmd, FileView *view, int save_hist, int type)
 	if(save_hist && type == GET_COMMAND)
 		save_command_history(cmd);
 
+	if(*cmd == '\0')
+		return exec_command(cmd, view, type);
+
 	p = cmd;
 	q = cmd;
 	while(*cmd != '\0')
@@ -1850,6 +1866,8 @@ exec_command(char *cmd, FileView *view, int type)
 			return find_pattern(view, view->regexp, type == GET_BSEARCH_PATTERN, 1);
 		if(type == GET_VFSEARCH_PATTERN || type == GET_VBSEARCH_PATTERN)
 			return find_vpattern(view, view->regexp, type == GET_VBSEARCH_PATTERN);
+		if(type == GET_COMMAND)
+			return execute_command(view, cmd, 0);
 		return 0;
 	}
 
