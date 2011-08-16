@@ -50,6 +50,7 @@ Possible things to add.
     Add :mksession command and 'sessionoptions' option.
     Maybe ignore ranges in the command line history.
     y/source/dest like in sed (or like tr program).
+    Modify marks on rename operations.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
