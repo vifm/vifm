@@ -84,7 +84,7 @@ get_id_string(FileView *view, size_t len, char *out_buf)
 	struct group *group_buf;
 
 	if(getpwuid_r(view->dir_entry[view->list_pos].uid, &pwd_b, buf, sizeof(buf),
-			&pwd_buf) != 0)
+			&pwd_buf) != 0 || pwd_buf == NULL)
 	{
 		snprintf(uid_buf, sizeof(uid_buf), "%d",
 				(int) view->dir_entry[view->list_pos].uid);
@@ -95,7 +95,7 @@ get_id_string(FileView *view, size_t len, char *out_buf)
 	}
 
 	if(getgrgid_r(view->dir_entry[view->list_pos].gid, &group_b, buf, sizeof(buf),
-			&group_buf) != 0)
+			&group_buf) != 0 || group_buf == NULL)
 	{
 		snprintf(gid_buf, sizeof(gid_buf), "%d",
 				(int) view->dir_entry[view->list_pos].gid);
