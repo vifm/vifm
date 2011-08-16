@@ -811,6 +811,10 @@ save_history(const char *line, char **hist, int *num, int *len)
 {
 	int x;
 
+	/* Don't add empty lines */
+	if(line[0] == '\0')
+		return;
+
 	/* Don't add :!! or :! to history list */
 	if(!strcmp(line, "!!") || !strcmp(line, "!"))
 		return;

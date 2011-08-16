@@ -49,7 +49,6 @@ Possible things to add.
     Improve sorting ('sort' and 'gsort'; ignore case).
     Add :mksession command and 'sessionoptions' option.
     y/source/dest like in sed (or like tr program).
-    Modify marks on rename operations.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
@@ -70,6 +69,7 @@ Other (questionable) things.
     :alias
     Like gv but to select just pasted files (gp?).
     'expandtab' for tabs in the quick view ?
+    Modify marks on rename operations.
 
 Code improvements.
     Write more tests.
