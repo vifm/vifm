@@ -88,8 +88,7 @@ function! s:StartVifm(editcmd)
 	endif
 
 	for file in flist
-		let g:file = fnamemodify(file, ':.')
-		execute a:editcmd file
+		execute a:editcmd fnamemodify(file, ':.')
 	endfor
 	" Go to first file
 	execute 'drop' firstfile
