@@ -47,6 +47,7 @@ Possible things to add.
         reverse)
     Improve sorting ('sort' and 'gsort'; ignore case).
     Add :mksession command and 'sessionoptions' option.
+    Maybe ignore ranges in the command line history.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
