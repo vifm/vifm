@@ -177,7 +177,7 @@ status_bar_messagef(const char *format, ...)
 void
 status_bar_message(const char *message)
 {
-	static char msg[512];
+	static char *msg;
 
 	int len;
 	const char *p, *q;
@@ -187,7 +187,10 @@ status_bar_message(const char *message)
 		return;
 
 	if(message != NULL)
-		snprintf(msg, sizeof(msg), "%s", message);
+	{
+		free(msg);
+		msg = strdup(message);
+	}
 
 	p = msg;
 	q = msg - 1;
