@@ -67,6 +67,7 @@ enum {
 	USER,
 	USER_NAVIGATE,
 	VIFM,
+	GREP,
 };
 
 static void
@@ -617,16 +618,29 @@ goto_selected_file(FileView *view, menu_info *m)
 	char *file = NULL;
 	char *free_this = NULL;
 	int isdir = 0;
+	char *num;
 
 	free_this = file = dir = malloc(2 + strlen(m->data[m->pos]) + 1 + 1);
 	if(m->data[m->pos][0] != '/')
 		strcpy(dir, "./");
 	else
 		dir[0] = '\0';
+	if(m->type == GREP)
+	{
+		char *p = strchr(m->data[m->pos], ':');
+		if(p != NULL)
+		{
+			*p = '\0';
+			num = p + 1;
+		}
+		else
+		{
+			num = NULL;
+		}
+	}
 	strcat(dir, m->data[m->pos]);
 	chomp(file);
 
-	/* :locate -h will show help message */
 	if(access(file, R_OK) == 0)
 	{
 		if(is_dir(file))
@@ -654,6 +668,13 @@ goto_selected_file(FileView *view, menu_info *m)
 				remove_filename_filter(view);
 		}
 		moveto_list_pos(view, find_file_pos_in_list(view, file));
+		if(m->type == GREP)
+		{
+			int n = 1;
+			if(num != NULL)
+				n = atoi(num);
+			view_file(file, n);
+		}
 	}
 
 	free(free_this);
@@ -718,6 +739,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 		case FIND:
 		case LOCATE:
 		case USER_NAVIGATE:
+		case GREP:
 			goto_selected_file(view, m);
 			break;
 		case VIFM:
@@ -1622,7 +1644,7 @@ show_find_menu(FileView *view, int with_path, const char *args)
 	m.len = 0;
 	m.pos = 0;
 	m.win_rows = 0;
-	m.type = LOCATE;
+	m.type = FIND;
 	m.matching_entries = 0;
 	m.matches = NULL;
 	m.match_dir = NONE;
@@ -1659,6 +1681,64 @@ show_find_menu(FileView *view, int with_path, const char *args)
 	if(!were_errors && m.len < 1)
 	{
 		status_bar_message("No files found");
+		return 1;
+	}
+	return 0;
+}
+
+int
+show_grep_menu(FileView *view, const char *args, int invert)
+{
+	int x = 0;
+	char buf[256];
+	char *files;
+	int menu, split;
+	int were_errors;
+	const char *inv_str = invert ? "-v" : "";
+
+	static menu_info m;
+	m.top = 0;
+	m.current = 1;
+	m.len = 0;
+	m.pos = 0;
+	m.win_rows = 0;
+	m.type = GREP;
+	m.matching_entries = 0;
+	m.matches = NULL;
+	m.match_dir = NONE;
+	m.regexp = NULL;
+	m.title = NULL;
+	m.args = NULL;
+	m.data = NULL;
+
+	getmaxyx(menu_win, m.win_rows, x);
+
+	snprintf(buf, sizeof(buf), "grep %s", args);
+	m.title = strdup(buf);
+
+	if(view->selected_files > 0)
+		files = expand_macros(view, "%f", NULL, &menu, &split);
+	else
+		files = strdup(".");
+
+	if(args[0] == '-')
+	{
+		snprintf(buf, sizeof(buf), "grep -n -H -R %s %s %s", inv_str, args, files);
+	}
+	else
+	{
+		char *escaped_args;
+		escaped_args = escape_filename(args, 0);
+		snprintf(buf, sizeof(buf), "grep -n -H -R %s %s %s", inv_str, escaped_args,
+				files);
+		free(escaped_args);
+	}
+	free(files);
+
+	were_errors = capture_output_to_menu(view, buf, &m);
+	if(!were_errors && m.len < 1)
+	{
+		status_bar_message("No matches found");
 		return 1;
 	}
 	return 0;

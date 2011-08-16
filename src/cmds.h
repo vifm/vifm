@@ -92,7 +92,7 @@ struct cmds_conf {
 	int (*resolve_mark)(char mark); /* should return value < 0 on error */
 	char *(*expand_macros)(const char *str); /* should allocate memory */
 	void (*post)(int id); /* called after successful processing command */
-	void (*select_range)(const struct cmd_info *cmd_info);
+	void (*select_range)(int id, const struct cmd_info *cmd_info);
 };
 
 /* cmds_conf should be filled before calling this function */

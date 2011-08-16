@@ -50,7 +50,7 @@ void run_using_prog(FileView *view, const char *program, int dont_execute,
 int yank_files(FileView *view, int reg, int count, int *indexes);
 void yank_selected_files(FileView *view, int reg);
 int file_exec(char *command);
-void view_file(const char *filename);
+void view_file(const char *filename, int line);
 void show_change_window(FileView *view, int type);
 void rename_file(FileView *view, int name_only);
 void rename_files(FileView *view);

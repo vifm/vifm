@@ -80,6 +80,7 @@ enum {
 	COM_EXECUTE,
 	COM_FILE,
 	COM_FIND,
+	COM_GREP,
 	COM_CD,
 	COM_COLORSCHEME,
 	COM_EDIT,
@@ -96,7 +97,7 @@ static void post(int id);
 #ifndef TEST
 static
 #endif
-void select_range(const struct cmd_info *cmd_info);
+void select_range(int id, const struct cmd_info *cmd_info);
 static void exec_completion(const char *str);
 static void filename_completion(const char *str, int type);
 static int is_entry_dir(const struct dirent *d);
@@ -127,6 +128,7 @@ static int filextype_cmd(const struct cmd_info *cmd_info);
 static int fileviewer_cmd(const struct cmd_info *cmd_info);
 static int filter_cmd(const struct cmd_info *cmd_info);
 static int find_cmd(const struct cmd_info *cmd_info);
+static int grep_cmd(const struct cmd_info *cmd_info);
 static int help_cmd(const struct cmd_info *cmd_info);
 static int history_cmd(const struct cmd_info *cmd_info);
 static int invert_cmd(const struct cmd_info *cmd_info);
@@ -220,6 +222,8 @@ static const struct cmd_add commands[] = {
 		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "find",             .abbr = "fin",   .emark = 0,  .id = COM_FIND,        .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = find_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
+	{ .name = "grep",             .abbr = "gr",    .emark = 1,  .id = COM_GREP,        .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = grep_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "help",             .abbr = "h",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = help_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "history",          .abbr = "his",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
@@ -643,7 +647,7 @@ post(int id)
 static
 #endif
 void
-select_range(const struct cmd_info *cmd_info)
+select_range(int id, const struct cmd_info *cmd_info)
 {
 	int x;
 	int y = 0;
@@ -679,7 +683,7 @@ select_range(const struct cmd_info *cmd_info)
 			}
 			curr_view->selected_files = y;
 		}
-		else
+		else if(id != COM_FIND && id != COM_GREP)
 		{
 			clean_selected_files(curr_view);
 
@@ -2220,7 +2224,7 @@ edit_cmd(const struct cmd_info *cmd_info)
 		if(cfg.vim_filter)
 			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
 
-		view_file(get_current_file_name(curr_view));
+		view_file(get_current_file_name(curr_view), -1);
 	}
 	else
 	{
@@ -2372,6 +2376,32 @@ find_cmd(const struct cmd_info *cmd_info)
 	}
 
 	return show_find_menu(curr_view, last_dir, last_args) != 0;
+}
+
+static int
+grep_cmd(const struct cmd_info *cmd_info)
+{
+	static char *last_args;
+	static int last_invert;
+	int inv;
+
+	if(cmd_info->argc > 0)
+	{
+		free(last_args);
+		last_args = strdup(cmd_info->args);
+		last_invert = cmd_info->emark;
+	}
+	else if(last_args == NULL)
+	{
+		status_bar_message("Nothing to repeat");
+		return 1;
+	}
+
+	inv = last_invert;
+	if(cmd_info->argc == 0 && cmd_info->emark)
+		inv = !inv;
+
+	return show_grep_menu(curr_view, last_args, inv) != 0;
 }
 
 static int

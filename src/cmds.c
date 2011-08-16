@@ -226,7 +226,7 @@ execute_cmd(const char *cmd)
 	}
 
 	if(cur->select)
-		cc->select_range(&cmd_info);
+		cc->select_range(cur->id, &cmd_info);
 
 	if(cur->expand)
 		cmd_info.args = cc->expand_macros(cmd_info.raw_args);
@@ -1024,10 +1024,10 @@ command_cmd(const struct cmd_info *cmd_info)
 	if(cmp == 0)
 	{
 		cur = cur->next;
-		if(!cmd_info->emark)
-			return CMDS_ERR_NEED_BANG;
 		if(cur->type == BUILDIN_CMD)
 			return CMDS_ERR_NO_BUILDIN_REDEFINE;
+		if(!cmd_info->emark)
+			return CMDS_ERR_NEED_BANG;
 		free(cur->name);
 		free(cur->cmd);
     new = cur;

@@ -271,8 +271,9 @@ file_exec(char *command)
 	return pid;
 }
 
+/* negative line means ignore it */
 void
-view_file(const char *filename)
+view_file(const char *filename, int line)
 {
 	char command[PATH_MAX + 5] = "";
 	char *escaped;
@@ -285,7 +286,11 @@ view_file(const char *filename)
 	}
 
 	escaped = escape_filename(filename, 0);
-	snprintf(command, sizeof(command), "%s %s", get_vicmd(&bg), escaped);
+	if(line < 0)
+		snprintf(command, sizeof(command), "%s %s", get_vicmd(&bg), escaped);
+	else
+		snprintf(command, sizeof(command), "%s +%d %s", get_vicmd(&bg), line,
+				escaped);
 	free(escaped);
 
 	if(bg)
@@ -665,7 +670,9 @@ execute_file(FileView *view, int dont_execute)
 	if(program == NULL)
 	{
 		if(view->selected_files <= 1)
-			view_file(get_current_file_name(view));
+		{
+			view_file(get_current_file_name(view), -1);
+		}
 		else
 		{
 			int bg;
@@ -720,7 +727,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 			|| strncmp(program, "FUSE_MOUNT2", 11) == 0)
 	{
 		if(dont_execute)
-			view_file(get_current_file_name(view));
+			view_file(get_current_file_name(view), -1);
 		else
 			fuse_try_mount(view, program);
 	}
@@ -1455,7 +1462,7 @@ rename_files_ind(FileView *view, int *indexes, int count)
 
 	stat(temp_file, &st_before);
 
-	view_file(temp_file);
+	view_file(temp_file, -1);
 
 	stat(temp_file, &st_after);
 

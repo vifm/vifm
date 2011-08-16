@@ -515,6 +515,19 @@ Commands
        :[range]fin[d]
               repeats last :find command.
 
+       :[range]gr[ep][!] pattern
+              will  show  results  of  grep  command  in the menu.  Add "!" to
+              search lines that do not match pattern.  Searches among selected
+              files if any and no range given.
+
+       :[range]gr[ep][!] -opt...
+              same  as :grep above, but user defines all find arguments, which
+              are not escaped.  Searches among selected files if any.
+
+       :[range]gr[ep][!]
+              repeats last :grep command.  "!" of this command inverts "!"  in
+              repeated command.
+
        :h[elp]
               show the help file.
 
@@ -1133,4 +1146,4 @@ AUTHOR
 
 
 
-                                August 15, 2011                        vifm(1)
+                                August 16, 2011                        vifm(1)
