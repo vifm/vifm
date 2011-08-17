@@ -145,7 +145,7 @@ get_handlers(const char* mime_type)
 }
 
 static void
-enum_files(const char* path, const char* mime_type)
+enum_files(const char *path, const char *mime_type)
 {
 	DIR* dir;
 	struct dirent* dentry;
@@ -153,10 +153,7 @@ enum_files(const char* path, const char* mime_type)
 
 	dir = opendir(path);
 	if(dir == NULL)
-	{
-		perror("opendir");
 		return;
-	}
 
 	if(path[strlen(path) - 1] != '/')
 		slash = "/";
@@ -176,12 +173,11 @@ enum_files(const char* path, const char* mime_type)
 			process_file(buf, mime_type);
 	}
 
-	if(closedir(dir) != 0)
-		perror("closedir");
+	closedir(dir);
 }
 
 static void
-process_file(const char* path, const char* mime_type)
+process_file(const char* path, const char *mime_type)
 {
 	FILE* f;
 	char *p;
@@ -194,10 +190,7 @@ process_file(const char* path, const char* mime_type)
 
 	f = fopen(path, "r");
 	if(f == NULL)
-	{
-		perror("fopen");
 		return;
-	}
 
 	while(fgets(buf, sizeof (buf), f) != NULL)
 	{
