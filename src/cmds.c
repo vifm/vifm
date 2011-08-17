@@ -75,6 +75,7 @@ static struct cmds_conf *cmds_conf;
 
 static const char * parse_range(const char *cmd, struct cmd_info *cmd_info);
 static const char * parse_limit(const char *cmd, struct cmd_info *cmd_info);
+static const char * correct_limit(const char *cmd, struct cmd_info *cmd_info);
 static int udf_is_ambiguous(const char *name);
 static const char * parse_tail(struct cmd_t *cur, const char *cmd,
 		struct cmd_info *cmd_info);
@@ -311,6 +312,8 @@ parse_range(const char *cmd, struct cmd_info *cmd_info)
 		if(cmd == NULL)
 			return NULL;
 
+		cmd = correct_limit(cmd, cmd_info);
+
 		if(cmd_info->begin == NOT_DEF)
 			cmd_info->begin = cmd_info->end;
 
@@ -376,9 +379,36 @@ parse_limit(const char *cmd, struct cmd_info *cmd_info)
 			return NULL;
 		}
 	}
+	else if(*cmd == '+' || *cmd == '-')
+	{
+		cmd_info->end = cmds_conf->current;
+	}
 	else
 	{
 		return NULL;
+	}
+
+	return cmd;
+}
+
+static const char *
+correct_limit(const char *cmd, struct cmd_info *cmd_info)
+{
+	while(*cmd == '+' || *cmd == '-')
+	{
+		int n = 1;
+		int plus = *cmd == '+';
+		cmd++;
+		if(isdigit(*cmd))
+		{
+			char *p;
+			n = strtol(cmd, &p, 10);
+			cmd = p;
+		}
+		if(plus)
+			cmd_info->end += n;
+		else
+			cmd_info->end -= n;
 	}
 
 	return cmd;

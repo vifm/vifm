@@ -12,6 +12,7 @@ Basic things that need to be done.
         and will ease porting on Windows (less dependencies on Cygwin).
 	:restore command to restore files from Trash
     Better cW command (maybe accept count of extensions to skip).
+    Better globals support.
 
 Documentation.
 	Better documentation.
@@ -31,6 +32,7 @@ Vi(m) specific features that need to be added.
     Should 'history' control search and cmdline history or there should be
         other options?
     Let user map <c-?> keys.
+    Better ranges.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -68,6 +70,7 @@ Other (questionable) things.
     Like gv but to select just pasted files (gp?).
     'expandtab' for tabs in the quick view ?
     Modify marks on rename operations.
+    Remove ncursesw dependency (remove unicode functions, we use utf-8).
 
 Code improvements.
     Write more tests.

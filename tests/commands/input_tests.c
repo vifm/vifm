@@ -237,6 +237,38 @@ test_range(void)
 }
 
 static void
+test_range_plus_minus(void)
+{
+	cmds_conf.begin = 0;
+	cmds_conf.current = 50;
+	cmds_conf.end = 100;
+
+	assert_int_equal(0, execute_cmd(".+"));
+	assert_int_equal(51, cmdi.begin);
+	assert_int_equal(51, cmdi.end);
+
+ 	assert_int_equal(0, execute_cmd("+2"));
+	assert_int_equal(52, cmdi.begin);
+	assert_int_equal(52, cmdi.end);
+ 
+	assert_int_equal(0, execute_cmd(".++"));
+	assert_int_equal(52, cmdi.begin);
+	assert_int_equal(52, cmdi.end);
+
+	assert_int_equal(0, execute_cmd(".+0-0"));
+	assert_int_equal(50, cmdi.begin);
+	assert_int_equal(50, cmdi.end);
+
+	assert_int_equal(0, execute_cmd(".+-"));
+	assert_int_equal(50, cmdi.begin);
+	assert_int_equal(50, cmdi.end);
+
+	assert_int_equal(0, execute_cmd(".+5-2"));
+	assert_int_equal(53, cmdi.begin);
+	assert_int_equal(53, cmdi.end);
+}
+
+static void
 test_range_and_spaces(void)
 {
 	cmds_conf.begin = 10;
@@ -499,6 +531,7 @@ input_tests(void)
 	run_test(test_trimming);
 	run_test(test_range_acceptance);
 	run_test(test_range);
+	run_test(test_range_plus_minus);
 	run_test(test_range_and_spaces);
 	run_test(test_bang_acceptance);
 	run_test(test_bang);
