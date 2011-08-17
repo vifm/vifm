@@ -66,6 +66,30 @@ main_loop(void)
 
 		is_term_working();
 
+		if(curr_stats.too_small_term > 0)
+		{
+			touchwin(stdscr);
+			wrefresh(stdscr);
+
+			mvwin(status_bar, 0, 0);
+			wresize(status_bar, getmaxy(stdscr), getmaxx(stdscr));
+			wclear(status_bar);
+			waddstr(status_bar, "Terminal is too small for vifm");
+			touchwin(status_bar);
+			wrefresh(status_bar);
+
+			pause();
+			continue;
+		}
+		else if(curr_stats.too_small_term < 0)
+		{
+			wtimeout(status_bar, 0);
+			while(wget_wch(status_bar, (wint_t*)&c) != ERR);
+			curr_stats.too_small_term = 0;
+			modes_redraw();
+			wtimeout(status_bar, KEYPRESS_TIMEOUT);
+		}
+
 		modes_pre();
 
 		/* just in case... */

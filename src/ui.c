@@ -421,12 +421,12 @@ setup_ncurses_interface(void)
 void
 is_term_working(void)
 {
-	struct winsize ws;
+	struct winsize ws = { .ws_col = -1, .ws_row = -1 };
 	if(ioctl(0, TIOCGWINSZ, &ws) == -1)
 		finish("Terminal error");
-	if(ws.ws_row < 10)
+	if(ws.ws_row < 0)
 		finish("Terminal is too small to run vifm\n");
-	if(ws.ws_col < 30)
+	if(ws.ws_col < 0)
 		finish("Terminal is too small to run vifm\n");
 }
 
@@ -444,10 +444,16 @@ resize_window(void)
 
 	getmaxyx(stdscr, screen_y, screen_x);
 
-	if(screen_y < 10)
-		finish("Terminal is too small to run vifm\n");
-	if(screen_x < 30)
-		finish("Terminal is too small to run vifm\n");
+	if(screen_y < 10 || screen_x < 30)
+	{
+		curr_stats.too_small_term = 1;
+		return;
+	}
+	else if(curr_stats.too_small_term)
+	{
+		curr_stats.too_small_term = -1;
+		return;
+	}
 
 	wclear(stdscr);
 	wclear(mborder);
@@ -466,6 +472,7 @@ resize_window(void)
 	wresize(menu_win, screen_y - 1, screen_x);
 	wresize(error_win, (screen_y - 10)/2, screen_x - 2);
 	mvwin(error_win, (screen_y - 10)/2, 1);
+	mvwin(lborder, 1, 0);
 	wresize(lborder, screen_y - 3, 1);
 
 	if(curr_stats.number_of_windows == 1)
@@ -473,6 +480,7 @@ resize_window(void)
 		wresize(lwin.title, 1, screen_x - 1);
 		wresize(lwin.win, screen_y - 3, screen_x - 2);
 		getmaxyx(lwin.win, y, x);
+		mvwin(lwin.win, 1, 1);
 		lwin.window_width = x - 1;
 		lwin.window_rows = y - 1;
 
@@ -488,6 +496,7 @@ resize_window(void)
 	{
 		wresize(lwin.title, 1, screen_x/2 - 2 + screen_x%2 + 3);
 		wresize(lwin.win, screen_y - 3, screen_x/2 - 2 + screen_x%2);
+		mvwin(lwin.win, 1, 1);
 		getmaxyx(lwin.win, y, x);
 		lwin.window_width = x - 1;
 		lwin.window_rows = y - 1;
@@ -531,6 +540,8 @@ void
 redraw_window(void)
 {
 	resize_window();
+	if(curr_stats.too_small_term)
+		return;
 
 	if(curr_stats.show_full)
 	{

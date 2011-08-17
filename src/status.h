@@ -46,6 +46,8 @@ typedef struct
 
 	int errmsg_shown; /* 0 - none, 1 - error, 2 - query */
 
+	int too_small_term;
+
 	tree_t dirsize_cache;
 	
 	int last_search_backward;

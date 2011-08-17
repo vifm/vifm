@@ -36,9 +36,10 @@ init_status(void)
 	curr_stats.show_full = 0;
 	curr_stats.view = 0;
 	curr_stats.use_input_bar = 1;
-	curr_stats.dirsize_cache = 0;
 	curr_stats.errmsg_shown = 0;
 	curr_stats.vifm_started = 0;
+	curr_stats.too_small_term = 0;
+	curr_stats.dirsize_cache = 0;
 
 #ifdef HAVE_LIBGTK
 	curr_stats.gtk_available = 0;

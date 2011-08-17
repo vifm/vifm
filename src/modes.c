@@ -151,6 +151,12 @@ modes_post(void)
 void
 modes_redraw(void)
 {
+	if(curr_stats.too_small_term)
+	{
+		redraw_window();
+		return;
+	}
+
 	if(mode == CMDLINE_MODE)
 	{
 		redraw_cmdline();
