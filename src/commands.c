@@ -1484,8 +1484,8 @@ substitute_specs(const char *cmd)
 			*p++ = KEY_F0 + (cmd[2] - '0');
 			cmd += 4;
 		}
-		else if(cmd[0] == '<' && cmd[1] == 'f' && isdigit(cmd[2]) && isdigit(cmd[3])
-				&& cmd[4] == '>')
+		else if(cmd[0] == '<' && cmd[1] == 'f' && isdigit(cmd[2]) &&
+				isdigit(cmd[3]) && cmd[4] == '>')
 		{
 			int num = (cmd[2] - '0')*10 + (cmd[3] - '0');
 			if(num < 64)
@@ -1493,6 +1493,13 @@ substitute_specs(const char *cmd)
 				*p++ = KEY_F0 + num;
 				cmd += 5;
 			}
+		}
+		else if(cmd[0] == '<' && cmd[1] == 'c' && cmd[2] == '-' &&
+				strchr("ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_", toupper(cmd[3])) != NULL &&
+				cmd[4] == '>')
+		{
+			*p++ = toupper(cmd[3]) - 'A' + 1;
+			cmd += 5;
 		}
 		else
 		{

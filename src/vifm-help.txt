@@ -1008,6 +1008,9 @@ Mappings
        <space>
               Space key
 
+       <c-a>,<c-b>,...,<c-z>,<c-[>,<c->,<c-]>,<c-^>,<c-_>
+              Control + some key.
+
        <f0> - <f63>
               Functional keys
 

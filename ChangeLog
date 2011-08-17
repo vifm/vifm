@@ -162,6 +162,8 @@
 
 	Made :dirs menu interactive.
 
+	Now <c-?> keys can be used in mappings.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

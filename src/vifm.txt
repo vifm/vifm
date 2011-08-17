@@ -739,6 +739,7 @@ Since it's not easy to enter special characters there are several special
 sequences that can be used in place of them.  They are:
 
 <cr> - Enter key
+<c-a>,<c-b>,...,<c-z>,<c-[>,<c-\>,<c-]>,<c-^>,<c-_> - Control + some key.
 <space> - Space key
 <f0> - <f63> - functional keys
 
