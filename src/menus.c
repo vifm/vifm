@@ -105,7 +105,7 @@ clean_menu_position(menu_info *m)
 	buf[x] = ' ';
 	buf[x + 1] = '\0';
 
-	if(m->matches != NULL && m->matches[m->pos])
+	if(cfg.hl_search && m->matches != NULL && m->matches[m->pos])
 		wattron(menu_win, COLOR_PAIR(cfg.color_scheme + SELECTED_COLOR));
 	else
 		wattron(menu_win, COLOR_PAIR(cfg.color_scheme + WIN_COLOR));
@@ -123,7 +123,7 @@ clean_menu_position(menu_info *m)
 	}
 	waddstr(menu_win, " ");
 
-	if(m->matches != NULL && m->matches[m->pos])
+	if(cfg.hl_search && m->matches != NULL && m->matches[m->pos])
 		wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + SELECTED_COLOR));
 	else
 		wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
@@ -335,7 +335,7 @@ moveto_menu_pos(int pos, menu_info *m)
 	buf[x] = ' ';
 	buf[x + 1] = '\0';
 
-	if(m->matches != NULL && m->matches[pos])
+	if(cfg.hl_search && m->matches != NULL && m->matches[pos])
 	{
 		if(cfg.invert_cur_line)
 		{
@@ -795,7 +795,7 @@ draw_menu(menu_info *m)
 			*ptr = '\0';
 		len = win_len + get_utf8_overhead(m->data[x]);
 
-		if(m->matches != NULL && m->matches[x])
+		if(cfg.hl_search && m->matches != NULL && m->matches[x])
 			wattron(menu_win, COLOR_PAIR(cfg.color_scheme + SELECTED_COLOR));
 
 		buf = strdup(m->data[x]);
@@ -817,7 +817,7 @@ draw_menu(menu_info *m)
 
 		free(buf);
 
-		if(m->matches != NULL && m->matches[x])
+		if(cfg.hl_search && m->matches != NULL && m->matches[x])
 			wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + SELECTED_COLOR));
 
 		x++;
