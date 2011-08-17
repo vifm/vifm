@@ -1185,36 +1185,39 @@ expand_macros(FileView *view, const char *command, const char *args,
 
 		while(x < cmd_len)
 		{
-			if(strncmp(command + x, ":p", 2) == 0)
-				y += 2;
-			else if(strncmp(command + x, ":~", 2) == 0)
-				y += 2;
-			else if(strncmp(command + x, ":.", 2) == 0)
-				y += 2;
-			else if(strncmp(command + x, ":h", 2) == 0)
-				y += 2;
-			else if(strncmp(command + x, ":t", 2) == 0)
-				y += 2;
-			else if(strncmp(command + x, ":r", 2) == 0)
-				y += 2;
-			else if(strncmp(command + x, ":e", 2) == 0)
-				y += 2;
-			else if(strncmp(command + x, ":s", 2) == 0 ||
-					strncmp(command + x, ":gs", 3) == 0)
+			if(x == y)
 			{
-				const char *p;
-				if(command[x + 1] == 'g')
-					x += 3;
-				else
-					x += 2;
-				y = x;
-				p = find_nth_chr(command + x, command[x], 3);
-				if(p != NULL)
-					y += (p - (command + x)) + 1;
-				else
-					y += strlen(command);
-				x = y;
-				continue;
+				if(strncmp(command + x, ":p", 2) == 0)
+					y += 2;
+				else if(strncmp(command + x, ":~", 2) == 0)
+					y += 2;
+				else if(strncmp(command + x, ":.", 2) == 0)
+					y += 2;
+				else if(strncmp(command + x, ":h", 2) == 0)
+					y += 2;
+				else if(strncmp(command + x, ":t", 2) == 0)
+					y += 2;
+				else if(strncmp(command + x, ":r", 2) == 0)
+					y += 2;
+				else if(strncmp(command + x, ":e", 2) == 0)
+					y += 2;
+				else if(strncmp(command + x, ":s", 2) == 0 ||
+						strncmp(command + x, ":gs", 3) == 0)
+				{
+					const char *p;
+					if(command[x + 1] == 'g')
+						x += 3;
+					else
+						x += 2;
+					y = x;
+					p = find_nth_chr(command + x, command[x], 3);
+					if(p != NULL)
+						y += (p - (command + x)) + 1;
+					else
+						y += strlen(command);
+					x = y;
+					continue;
+				}
 			}
 			if(command[x] == '%')
 				break;

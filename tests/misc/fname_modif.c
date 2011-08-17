@@ -462,6 +462,17 @@ test_colon_gs(void)
 	free(expanded);
 }
 
+static void
+test_modif_without_macros(void)
+{
+	int menu, split;
+	char *expanded;
+
+	expanded = expand_macros(&lwin, " cp %f:t :p :~ :. :h :t :r :e :s :gs ", "", &menu, &split);
+	assert_string_equal(" cp lfile0 lfile2 :p :~ :. :h :t :r :e :s :gs ", expanded);
+	free(expanded);
+}
+
 void
 fname_modif_tests(void)
 {
@@ -479,6 +490,8 @@ fname_modif_tests(void)
 	run_test(test_colon_e);
 	run_test(test_colon_s);
 	run_test(test_colon_gs);
+
+	run_test(test_modif_without_macros);
 
 	test_fixture_end();
 }
