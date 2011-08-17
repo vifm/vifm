@@ -156,6 +156,8 @@
 
 	Better ranges (added support for '+' and '-').
 
+	Handle %m, %M and %s in the :! command.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

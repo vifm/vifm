@@ -92,7 +92,7 @@ static int complete_args(int id, const char *args, int argc, char **argv,
 		int arg_pos);
 static int swap_range(void);
 static int resolve_mark(char mark);
-static char * cmds_expand_macros(const char *str);
+static char * cmds_expand_macros(const char *str, int *use_menu, int *split);
 static void post(int id);
 #ifndef TEST
 static
@@ -614,14 +614,14 @@ resolve_mark(char mark)
 }
 
 static char *
-cmds_expand_macros(const char *str)
+cmds_expand_macros(const char *str, int *use_menu, int *split)
 {
-	int use_menu = 0;
-	int split = 0;
 	char *result;
 
+	*use_menu = 0;
+	*split = 0;
 	if(strchr(str, '%') != NULL)
-		result = expand_macros(curr_view, str, NULL, &use_menu, &split);
+		result = expand_macros(curr_view, str, NULL, use_menu, split);
 	else
 		result = strdup(str);
 	return result;
@@ -1968,7 +1968,21 @@ emark_cmd(const struct cmd_info *cmd_info)
 	if(strlen(com + i) == 0)
 		return 0;
 
-	if(cmd_info->bg)
+	if(cmd_info->usr1)
+	{
+		show_user_menu(curr_view, com, cmd_info->usr1 == 2);
+	}
+	else if(cmd_info->usr2)
+	{
+		if(!cfg.use_screen)
+		{
+			status_bar_message("The screen program support isn't enabled");
+			return 1;
+		}
+
+		split_screen(curr_view, com);
+	}
+	else if(cmd_info->bg)
 	{
 		start_background_job(com + i);
 	}
@@ -3132,7 +3146,8 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 		if(!cfg.use_screen)
 		{
 			free(expanded_com);
-			return 0;
+			status_bar_message("The screen program support isn't enabled");
+			return 1;
 		}
 
 		split_screen(curr_view, expanded_com);

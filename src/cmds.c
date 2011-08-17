@@ -230,7 +230,8 @@ execute_cmd(const char *cmd)
 		cc->select_range(cur->id, &cmd_info);
 
 	if(cur->expand)
-		cmd_info.args = cc->expand_macros(cmd_info.raw_args);
+		cmd_info.args = cc->expand_macros(cmd_info.raw_args, &cmd_info.usr1,
+				&cmd_info.usr2);
 	else
 		cmd_info.args = strdup(cmd_info.raw_args);
 	cmd_info.argv = dispatch_line(cmd_info.args, &cmd_info.argc, cmd_info.sep,

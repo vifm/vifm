@@ -53,6 +53,7 @@ struct cmd_info
 	int begin, end; /* range */
 	int emark, qmark, bg;
 	char sep;
+	int usr1, usr2;
 
 	char *raw_args, *args;
 	int argc;
@@ -90,7 +91,8 @@ struct cmds_conf {
 			int arg_pos);
 	int (*swap_range)(void);
 	int (*resolve_mark)(char mark); /* should return value < 0 on error */
-	char *(*expand_macros)(const char *str); /* should allocate memory */
+	/* should allocate memory */
+	char *(*expand_macros)(const char *str, int *usr1, int *usr2);
 	void (*post)(int id); /* called after successful processing command */
 	void (*select_range)(int id, const struct cmd_info *cmd_info);
 };
