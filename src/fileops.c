@@ -1019,6 +1019,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	char undo_buf[8 + PATH_MAX*2];
 	int x, y;
 	size_t len;
+	int i;
 
 	if(!is_dir_writable(view->curr_dir))
 		return 0;
@@ -1032,7 +1033,17 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	}
 
 	if(count > 0)
+	{
+		int j;
 		get_selected_files(view, count, indexes);
+		i = view->list_pos;
+		for(j = 0; j < count; j++)
+			if(indexes[j] == i && i < view->list_rows - 1)
+			{
+				i++;
+				j = -1;
+			}
+	}
 	else
 	{
 		if(view->selected_files == 0)
@@ -1041,6 +1052,9 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 			view->selected_files = 1;
 		}
 		get_all_selected_files(view);
+		i = view->list_pos;
+		while(i < view->list_rows - 1 && view->dir_entry[i].selected)
+			i++;
 	}
 
 	if(cfg.use_trash && use_trash)
@@ -1134,14 +1148,14 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	cmd_group_end();
 
-	get_all_selected_files(view);
+	strcpy(buf, view->dir_entry[i].name);
+
 	load_saving_pos(view, 1);
-	free_selected_file_array(view);
 
 	/* some files may still exist if there was an error */
 	count_selected(view);
 
-	moveto_list_pos(view, view->list_pos);
+	moveto_list_pos(view, find_file_pos_in_list(view, buf));
 
 	status_bar_messagef("%d %s deleted", y, y == 1 ? "file" : "files");
 	return 1;
