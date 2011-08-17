@@ -482,6 +482,7 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 	int len;
 	int i, j;
 	int state, st;
+	const char *args_beg;
 	char** params;
 
 	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING, ARG, QARG };
@@ -499,6 +500,7 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 	if(params == NULL)
 		return NULL;
 
+	args_beg = args;
 	if(sep == ' ')
 		while(args[0] == sep)
 			args++;
@@ -580,7 +582,7 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 			/* found another argument */
 			cmdstr[i] = '\0';
 			if(last_end != NULL)
-				*last_end = (state == ARG) ? i : (i + 1);
+				*last_end = (args - args_beg) + ((state == ARG) ? i : (i + 1));
 
 			params[j] = strdup(&cmdstr[st]);
 			cmdstr[i] = c;
@@ -599,7 +601,7 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 	params[*count] = NULL;
 
 	if(last_pos != NULL)
-		*last_pos = st;
+		*last_pos = (args - args_beg) - st;
 
 	free(cmdstr);
 	return params;

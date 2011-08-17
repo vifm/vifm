@@ -178,6 +178,20 @@ test_no_slash_after_dirname(void)
 	free(expanded);
 }
 
+static void
+test_m(void)
+{
+	int menu, split;
+	char *expanded;
+
+	rwin.list_pos = 6;
+	curr_view = &rwin;
+	other_view = &lwin;
+	expanded = expand_macros(&rwin, "%M echo log", "", &menu, &split);
+	assert_string_equal(" echo log", expanded);
+	free(expanded);
+}
+
 void
 test_expand_macros(void)
 {
@@ -192,6 +206,7 @@ test_expand_macros(void)
 	run_test(test_b_only_rwin_has_selection);
 	run_test(test_b_noone_has_selection);
 	run_test(test_no_slash_after_dirname);
+	run_test(test_m);
 
 	test_fixture_end();
 }
