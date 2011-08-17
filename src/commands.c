@@ -1469,22 +1469,23 @@ substitute_specs(const char *cmd)
 	p = buf;
 	while(*cmd != '\0')
 	{
-		if(strncmp(cmd, "<cr>", 4) == 0)
+		if(strncasecmp(cmd, "<cr>", 4) == 0)
 		{
 			*p++ = L'\r';
 			cmd += 4;
 		}
-		else if(strncmp(cmd, "<space>", 7) == 0)
+		else if(strncasecmp(cmd, "<space>", 7) == 0)
 		{
 			*p++ = L' ';
 			cmd += 7;
 		}
-		else if(cmd[0] == '<' && cmd[1] == 'f' && isdigit(cmd[2]) && cmd[3] == '>')
+		else if(cmd[0] == '<' && toupper(cmd[1]) == 'F' && isdigit(cmd[2]) &&
+				cmd[3] == '>')
 		{
 			*p++ = KEY_F0 + (cmd[2] - '0');
 			cmd += 4;
 		}
-		else if(cmd[0] == '<' && cmd[1] == 'f' && isdigit(cmd[2]) &&
+		else if(cmd[0] == '<' && toupper(cmd[1]) == 'F' && isdigit(cmd[2]) &&
 				isdigit(cmd[3]) && cmd[4] == '>')
 		{
 			int num = (cmd[2] - '0')*10 + (cmd[3] - '0');
@@ -1494,7 +1495,7 @@ substitute_specs(const char *cmd)
 				cmd += 5;
 			}
 		}
-		else if(cmd[0] == '<' && cmd[1] == 'c' && cmd[2] == '-' &&
+		else if(cmd[0] == '<' && toupper(cmd[1]) == 'C' && cmd[2] == '-' &&
 				strchr("ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_", toupper(cmd[3])) != NULL &&
 				cmd[4] == '>')
 		{

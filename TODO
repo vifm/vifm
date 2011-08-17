@@ -33,7 +33,6 @@ Vi(m) specific features that need to be added.
         other options?
     Better ranges.
     Add search and prompt history to :history command.
-    Ignore case in special symbols in mappings.
     Ignore case in color names in the colorscheme file.
 
 Possible things to add.
