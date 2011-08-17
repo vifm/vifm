@@ -94,16 +94,26 @@ dir_stack_list(void)
 	int len;
 	char **list, **p;
 
-	if(stack_size == 0)
-		len = 1;
+	if(stack_top == 0)
+		len = 2 + 1 + 1;
 	else
-		len = stack_size*2 + stack_size - 1 + 1;
+		len = 2 + 1 + stack_top*2 + stack_top - 1 + 1;
 	list = malloc(sizeof(char *)*len);
 
 	if(list == NULL)
 		return NULL;
 
 	p = list;
+	if((*p++ = strdup(lwin.curr_dir)) == NULL)
+		return list;
+	if((*p++ = strdup(rwin.curr_dir)) == NULL)
+		return list;
+	if(stack_top != 0)
+	{
+		if((*p++ = strdup("-----")) == NULL)
+			return list;
+	}
+
 	for(i = 0; i < stack_top; i++)
 	{
 		if((*p++ = strdup(stack[stack_top - 1 - i].lpane_dir)) == NULL)
