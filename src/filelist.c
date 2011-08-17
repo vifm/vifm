@@ -1888,7 +1888,6 @@ reload_window(FileView *view)
 {
 	curr_stats.skip_history = 1;
 
-	change_directory(view, view->curr_dir);
 	load_saving_pos(view, 1);
 
 	if(view != curr_view)

@@ -1541,7 +1541,7 @@ execute_command(FileView *view, char *command, int menu)
 	}
 
 	while(isspace(*command) || *command == ':')
-		++command;
+		command++;
 
 	if(command[0] == '"')
 		return 0;
