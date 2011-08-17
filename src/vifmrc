@@ -95,7 +95,7 @@ command mv mv %f %D &
 command cp cp %f %D &
 command run !! ./%f
 command make !!make
-command grep vim "+grep %a"
+command vgrep vim "+grep %a"
 
 " The file type is for the default programs to be used with
 " a file extension.
