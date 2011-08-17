@@ -1037,7 +1037,7 @@ Menus and dialogs
        General
 
        j, k - move.  <Escape>, Ctrl-c - clear.  <Return>, l - select and  exit
-       the menu.
+       the menu.  Ctrl-l - redraw the menu.
 
        In all menus
 

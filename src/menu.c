@@ -60,6 +60,7 @@ static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_d(struct key_info, struct keys_info *);
 static void cmd_ctrl_e(struct key_info, struct keys_info *);
 static void cmd_ctrl_f(struct key_info, struct keys_info *);
+static void cmd_ctrl_l(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
 static void cmd_ctrl_u(struct key_info, struct keys_info *);
 static void cmd_ctrl_y(struct key_info, struct keys_info *);
@@ -89,6 +90,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x04", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_d}}},
 	{L"\x05", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_e}}},
 	{L"\x06", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
+	{L"\x0c", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
 	/* return */
 	{L"\x0d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{L"\x15", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
@@ -316,6 +318,14 @@ cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
 	menu->pos += menu->win_rows - 3;
+	moveto_menu_pos(menu->pos, menu);
+	wrefresh(menu_win);
+}
+
+static void
+cmd_ctrl_l(struct key_info key_info, struct keys_info *keys_info)
+{
+	draw_menu(menu);
 	moveto_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
