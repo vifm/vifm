@@ -1155,7 +1155,8 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	/* some files may still exist if there was an error */
 	count_selected(view);
 
-	moveto_list_pos(view, find_file_pos_in_list(view, buf));
+	i = find_file_pos_in_list(view, buf);
+	moveto_list_pos(view, (i < 0) ? view->list_pos : i);
 
 	status_bar_messagef("%d %s deleted", y, y == 1 ? "file" : "files");
 	return 1;
