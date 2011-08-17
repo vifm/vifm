@@ -2094,7 +2094,7 @@ cd_cmd(const struct cmd_info *cmd_info)
 	{
 		snprintf(dir, sizeof(dir), "%s/%s", curr_view->curr_dir, cmd_info->argv[1]);
 		result = cd(curr_view, cmd_info->argv[0]);
-		if(cmd_info->argv[1][0] != '/')
+		if(cmd_info->argv[1][0] != '/' && cmd_info->argv[1][0] != '~')
 			result += cd(other_view, dir);
 		else
 			result += cd(other_view, cmd_info->argv[1]);
