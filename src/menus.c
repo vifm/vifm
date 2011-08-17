@@ -1627,7 +1627,7 @@ show_locate_menu(FileView *view, const char *args)
 	m.len = 0;
 	m.pos = 0;
 	m.win_rows = 0;
-	m.type = FIND;
+	m.type = LOCATE;
 	m.matching_entries = 0;
 	m.matches = NULL;
 	m.match_dir = NONE;
