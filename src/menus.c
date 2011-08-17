@@ -716,6 +716,21 @@ execute_filetype_cb(FileView *view, menu_info *m)
 	moveto_list_pos(view, view->list_pos);
 }
 
+static void
+execute_dirstack_cb(FileView *view, menu_info *m)
+{
+	int pos = 0;
+	int i;
+
+	if(m->data[m->pos][0] == '-')
+		return;
+
+	for(i = 0; i < m->pos; i++)
+		if(m->data[i][0] == '-')
+			pos++;
+	rotate_stack(pos);
+}
+
 void
 execute_menu_cb(FileView *view, menu_info *m)
 {
@@ -744,6 +759,9 @@ execute_menu_cb(FileView *view, menu_info *m)
 			change_directory(view, m->data[m->pos]);
 			load_dir_list(view, 0);
 			moveto_list_pos(view, view->list_pos);
+			break;
+		case DIRSTACK:
+			execute_dirstack_cb(view, m);
 			break;
 		case JOBS:
 			execute_jobs_cb(view, m);

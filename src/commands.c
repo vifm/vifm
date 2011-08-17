@@ -257,7 +257,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "popd",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = popd_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "pushd",            .abbr = NULL,    .emark = 1,  .id = COM_PUSHD,       .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
-		.handler = pushd_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 2,       .select = 0, },
+		.handler = pushd_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "pwd",              .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = pwd_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "quit",             .abbr = "q",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2681,6 +2681,15 @@ popd_cmd(const struct cmd_info *cmd_info)
 static int
 pushd_cmd(const struct cmd_info *cmd_info)
 {
+	if(cmd_info->argc == 0)
+	{
+		if(swap_dirs() != 0)
+		{
+			status_bar_message("No other directories");
+			return 1;
+		}
+		return 0;
+	}
 	if(pushd() != 0)
 	{
 		status_bar_message("Not enough memory");

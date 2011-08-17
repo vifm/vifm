@@ -71,6 +71,58 @@ popd(void)
 	return 0;
 }
 
+int
+swap_dirs(void)
+{
+	struct stack_entry item;
+
+	if(stack_top == 0)
+		return -1;
+
+	item = stack[--stack_top];
+
+	if(pushd() != 0)
+	{
+		free_entry(&item);
+		return -1;
+	}
+
+	change_directory(&lwin, item.lpane_dir);
+	load_dir_list(&lwin, 0);
+
+	change_directory(&rwin, item.rpane_dir);
+	load_dir_list(&rwin, 0);
+
+	moveto_list_pos(curr_view, curr_view->list_pos);
+
+	free_entry(&item);
+	return 0;
+}
+
+int
+rotate_stack(int n)
+{
+	struct stack_entry *new_stack;
+	int i;
+
+	if(n == 0)
+		return 0;
+
+	if(pushd() != 0)
+		return -1;
+
+	new_stack = malloc(stack_size*sizeof(*stack));
+	if(new_stack == NULL)
+		return -1;
+
+	for(i = 0; i < stack_top; i++)
+		new_stack[(i + n)%stack_top] = stack[i];
+
+	free(stack);
+	stack = new_stack;
+	return popd();
+}
+
 void
 clean_stack(void)
 {

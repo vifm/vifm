@@ -158,6 +158,10 @@
 
 	Handle %m, %M and %s in the :! command.
 
+	Modified pushd to accept empty argument list.
+
+	Made :dirs menu interactive.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

@@ -33,6 +33,7 @@ Vi(m) specific features that need to be added.
         other options?
     Let user map <c-?> keys.
     Better ranges.
+    Add search and prompt history to :history command.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?

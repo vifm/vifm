@@ -46,6 +46,16 @@ int push_to_dirstack(const char *ld, const char *lf, const char *rd,
 int popd(void);
 
 /*
+ * Returns 0 on success and -1 on error
+ */
+int swap_dirs(void);
+
+/*
+ * Returns 0 on success and -1 on error
+ */
+int rotate_stack(int n);
+
+/*
  * Always successful
  */
 void clean_stack(void);

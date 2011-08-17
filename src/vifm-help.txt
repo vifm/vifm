@@ -581,6 +581,8 @@ Commands
               add pane directories to stack and  process  arguments  like  :cd
               command.
 
+       :pushd exchanges the top two items of the directory stack.
+
        :pwd   show the present working directory.
 
        :q[uit]
@@ -1057,13 +1059,18 @@ Menus and dialogs
        Escape or Ctrl-c to abort j and k to move through.  dd on a bookmark to
        remove.
 
+       Directory stack menu
+
+       Pressing  l  or  Enter  on  directory  name  will rotate stack to place
+       selected directory pair at the top of the stack.
+
        Filetype menu
 
-       Commands  from vifmrc are displayed above empty line. When all commands
-       below empty line were found in .desktop files.  Note:  you  can't  save
+       Commands from vifmrc are displayed above empty line. When all  commands
+       below  empty  line  were found in .desktop files.  Note: you can't save
        programs for files without extension.
 
-       J  and K - to move menu items L - save all commands above empty line as
+       J and K - to move menu items L - save all commands above empty line  as
        program list
 
        Sort dialog
@@ -1076,23 +1083,23 @@ Menus and dialogs
 
 Configure
        The ~/.vifm/vifmrc file contains commands that will be executed on vifm
-       startup.   Use it to set settings, mappings or filetypes.  To use multi
-       line commands precede each next line with a  slash  (whitespace  before
-       slash  is  ignored,  but all spaces at the end of the lines are saved).
+       startup.  Use it to set settings, mappings or filetypes.  To use  multi
+       line  commands  precede  each next line with a slash (whitespace before
+       slash is ignored, but all spaces at the end of the  lines  are  saved).
        For example: set
            \smartcase equals "setsmartcase".  When set<space here>
             smartcase<space here> equals "set  smartcase ".
 
-       The ~/.vifm/vifminfo file contains session settings.  You may  edit  it
-       by  hand  to  change the settings, but it's not recommended to do that,
-       edit vifmrc instead.  You can control what settings will  be  saved  in
+       The  ~/.vifm/vifminfo  file contains session settings.  You may edit it
+       by hand to change the settings, but it's not recommended  to  do  that,
+       edit  vifmrc  instead.   You can control what settings will be saved in
        vifminfo by setting ´vifminfo' option.  Vifm always writes this file on
        exit unless 'vifminfo' option is empty.  Bookmarks, commands, directory
-       history,  filetypes,  fileviewers  and registers in the file are merged
+       history, filetypes, fileviewers and registers in the  file  are  merged
        with vifm configuration (which has bigger priority).
 
        The ~/.vifm/scripts directory can contain shell scripts.  vifm modifies
-       it's  PATH  environment  variable to let user run those scripts without
+       it's PATH environment variable to let user run  those  scripts  without
        specifying full path.
 
 Plugin
@@ -1102,21 +1109,21 @@ Plugin
 
          :EditVifm   select a file or files to open in the current buffer.
          :SplitVifm  split buffer and select a file or files to open.
-         :VsplitVifm vertically split buffer and select a  file  or  files  to
+         :VsplitVifm  vertically  split  buffer  and select a file or files to
        open.
-         :DiffVifm    select  a  file  or files to compare to the current file
+         :DiffVifm   select a file or files to compare  to  the  current  file
        with
                      :vert diffsplit.
          :TabVifm    select a file or files to open in tabs.
 
-       The plugin have  only  one  setting.   It's  a  string  variable  named
-       g:vifm_term  to  let  user  specify  command  to  run gui terminal.  By
+       The  plugin  have  only  one  setting.   It's  a  string variable named
+       g:vifm_term to let user  specify  command  to  run  gui  terminal.   By
        default it's equal to ´xterm -e'.
 
-       To use the plugin copy the vifm.vim file  to  either  the  system  wide
+       To  use  the  plugin  copy  the vifm.vim file to either the system wide
        vim/plugin directory or into ~/.vim/plugin.
 
-       If  you would prefer not to use the plugin and it is in the system wide
+       If you would prefer not to use the plugin and it is in the system  wide
        plugin directory add
 
        let loaded_vifm=1
@@ -1146,4 +1153,4 @@ AUTHOR
 
 
 
-                                August 16, 2011                        vifm(1)
+                                August 17, 2011                        vifm(1)

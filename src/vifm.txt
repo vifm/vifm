@@ -410,6 +410,7 @@ The builtin commands are:
 :popd - remove pane directories from stack.
 :pushd[!] /l/dir [/r/dir] - add pane directories to stack and process
     arguments like :cd command.
+:pushd - exchanges the top two items of the directory stack.
 :pwd - show the present working directory.
 :q[uit] - will exit vifm (add ! if you don't want to save changes).
 :ls - shows list of screen program windows (only when screen is used).
@@ -793,6 +794,11 @@ Bookmarks menu~
 
 Escape or Ctrl-c to abort j and k to move through.
 dd on a bookmark to remove.
+
+Directory stack menu~
+
+Pressing l or Enter on directory name will rotate stack to place selected
+directory pair at the top of the stack.
 
 Filetype menu~
 
