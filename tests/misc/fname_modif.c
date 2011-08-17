@@ -227,43 +227,39 @@ test_colon_h(void)
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %f:p:h ", "", &menu, &split);
-	assert_string_equal(" cp /lwin/ /lwin/ ", expanded);
+	assert_string_equal(" cp /lwin /lwin ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %F:~:h ", "", &menu, &split);
-	assert_string_equal(" cp ~/ ~/ ~/ ", expanded);
+	assert_string_equal(" cp ~ ~ ~ ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %F:h ", "", &menu, &split);
-	assert_string_equal(" cp /rwin/ /rwin/ /rwin/ ", expanded);
+	assert_string_equal(" cp /rwin /rwin /rwin ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %b:h ", "", &menu, &split);
-	assert_string_equal(" cp . . /rwin/ /rwin/ /rwin/ ", expanded);
+	assert_string_equal(" cp . . /rwin /rwin /rwin ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %b:p:h ", "", &menu, &split);
-	assert_string_equal(" cp /lwin/ /lwin/ /rwin/ /rwin/ /rwin/ ", expanded);
+	assert_string_equal(" cp /lwin /lwin /rwin /rwin /rwin ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, " cp %c:t ", "", &menu, &split);
-	assert_string_equal(" cp lfile2 ", expanded);
+	expanded = expand_macros(&lwin, " cp %c:p:h ", "", &menu, &split);
+	assert_string_equal(" cp /lwin ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, " cp %c:p:t ", "", &menu, &split);
-	assert_string_equal(" cp lfile2 ", expanded);
+	expanded = expand_macros(&lwin, " cp %C:h ", "", &menu, &split);
+	assert_string_equal(" cp /rwin ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, " cp %C:t ", "", &menu, &split);
-	assert_string_equal(" cp rfile5 ", expanded);
+	expanded = expand_macros(&lwin, " cp %d:h ", "", &menu, &split);
+	assert_string_equal(" cp / ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, " cp %d:t ", "", &menu, &split);
-	assert_string_equal(" cp lwin ", expanded);
-	free(expanded);
-
-	expanded = expand_macros(&lwin, " cp %D:t:t ", "", &menu, &split);
-	assert_string_equal(" cp rwin ", expanded);
+	expanded = expand_macros(&lwin, " cp %D:h:h ", "", &menu, &split);
+	assert_string_equal(" cp / ", expanded);
 	free(expanded);
 }
 
@@ -297,20 +293,20 @@ test_colon_t(void)
 	assert_string_equal(" cp lfile2 ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, " cp %c:p:h ", "", &menu, &split);
-	assert_string_equal(" cp /lwin/ ", expanded);
+	expanded = expand_macros(&lwin, " cp %c:p:t ", "", &menu, &split);
+	assert_string_equal(" cp lfile2 ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, " cp %C:h ", "", &menu, &split);
-	assert_string_equal(" cp /rwin/ ", expanded);
+	expanded = expand_macros(&lwin, " cp %C:t ", "", &menu, &split);
+	assert_string_equal(" cp rfile5 ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, " cp %d:h ", "", &menu, &split);
-	assert_string_equal(" cp / ", expanded);
+	expanded = expand_macros(&lwin, " cp %d:t ", "", &menu, &split);
+	assert_string_equal(" cp lwin ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, " cp %D:h:h ", "", &menu, &split);
-	assert_string_equal(" cp / ", expanded);
+	expanded = expand_macros(&lwin, " cp %D:t:t ", "", &menu, &split);
+	assert_string_equal(" cp rwin ", expanded);
 	free(expanded);
 }
 

@@ -925,7 +925,10 @@ apply_mod(const char *path, const char *parent, const char *mod)
 			return strcpy(buf, ".");
 
 		strcpy(buf, path);
-		buf[p - path + 1] = '\0';
+		if(p == path)
+			buf[1] = '\0';
+		else
+			buf[p - path] = '\0';
 	}
 	else if(strncmp(mod, ":t", 2) == 0)
 	{
