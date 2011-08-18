@@ -49,13 +49,13 @@ syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map nm[ap]
 " Expressions
 syntax region vifmStatement start='^\s*[^"]' skip='\n\s*\\' end='$' keepend
       \ contains=vifmCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt,vifmMap,vifmMapSt,vifmExecute,vifmCommands
-syntax region vifmCmdCommandSt start='^\s*com' skip='\n\s*\\' end='$' keepend contains=vifmCmdCommand
-syntax region vifmMarkCommandSt start='^\s*ma' end='$' keepend oneline contains=vifmMarkCommand
+syntax region vifmCmdCommandSt start='^\s*com\%[mand]' skip='\n\s*\\' end='$' keepend contains=vifmCmdCommand
+syntax region vifmMarkCommandSt start='^\s*ma\%[rk]\>' end='$' keepend oneline contains=vifmMarkCommand
 syntax region vifmFtCommandSt start='^\s*file[tvx]' end='$' keepend oneline contains=vifmFtCommand
 syntax region vifmExecute start='!' end='$' keepend oneline contains=vifmNotation
 syntax region vifmCommands start=':' end='$' keepend oneline contains=vifmCommand,vifmNotation,vifmExecute
 syntax match vifmMapLhs /\S\+/ contained contains=vifmNotation
-syntax region vifmSet matchgroup=vifmCommand start='\<set\>' skip='\n\s*\\' end='$' keepend contains=vifmOption,vifmSetString
+syntax region vifmSet matchgroup=vifmCommand start='\<se\%[t]\>' skip='\n\s*\\' end='$' keepend contains=vifmOption,vifmSetString
 syntax region vifmSetString contained start=+="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
 syntax region vifmSetString contained start=+='+hs=s+1 skip=+\\\\\|\\'+  end=+'+
 

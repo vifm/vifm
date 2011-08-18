@@ -45,4 +45,4 @@ Vim Specific Options:
     and add to your .vimrc file command like:
         autocmd BufNewFile,BufRead vifmrc :set filetype=vifmrc
     or if you use mode line add as the first or the last line to ~/.vifm/vifmrc:
-        " vim: set filetype=vifmrc
+        " vim: set filetype=vifmrc :
