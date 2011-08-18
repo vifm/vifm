@@ -14,7 +14,7 @@ Basic Installation:
 
 	You can install vifm in your ~/ directory if you prefer.  
 		Copy the vifm and pauseme executables to where you want to run them.
-		You will also need to copy vifm help files and vifmrc file to ~/.vifm.
+		You will also need to copy vifm help files and vifmrc file to ~/.vifm/.
 
 	After you start vifm for the first time, you should edit the configuration 
 	file.  It will be at ~/.vifm/vifmrc.
@@ -32,7 +32,7 @@ Vim Specific Options:
 	:helptags path/to/system/vim/doc 
 	depending on where you installed the vifm.txt file.
 
-	You will also need to change the USE_VIM_HELP
+	You will also need to change set 'vimhelp' option
 	in ~/.vifm/vifmrc as the default setting is to use the plain text file.
 
 	If you want to use the vifm.vim plugin, copy the vifm.vim plugin script to 
@@ -40,4 +40,9 @@ Vim Specific Options:
 	allows you to use vifm from vim to select files.  The vifm.vim script is not
 	installed by default and must be manually copied to the plugin directory.
 	
-
+	If you want to use syntax highlighting for ~/.vifm/vifmrc file, copy the
+    vifmrc.vim file to either the system wide vim/syntax/ or to ~/.vim/syntax/
+    and add to your .vimrc file command like:
+        autocmd BufNewFile,BufRead vifmrc :set filetype=vifmrc
+    or if you use mode line add as the first or the last line to ~/.vifm/vifmrc:
+        " vim: set filetype=vifmrc

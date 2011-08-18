@@ -739,15 +739,22 @@ append_vifminfo_option(const char *config_file, int vifm_like)
 
 	fputs("\n\" What should be saved automatically between vifm runs\n", fp);
 	fputs("\" Like in previous versions of vifm\n", fp);
+
 	if(vifminfo & VIFMINFO_DHISTORY)
-		fprintf(fp, "%sset vifminfo=options,filetypes,commands,bookmarks,dhistory,savedirs,state,cs\n", vifm_like ? "" : "\" ");
+		fprintf(fp, "%sset vifminfo=options,filetypes,commands,bookmarks,tui,"
+				"dhistory,state,cs,savedirs,chistory,shistory,dirstack,registers,"
+				"phistory\n", vifm_like ? "" : "\" ");
 	else
-		fprintf(fp, "%sset vifminfo=options,filetypes,commands,bookmarks,state,cs\n", vifm_like ? "" : "\" ");
+		fprintf(fp, "%sset vifminfo=options,filetypes,commands,bookmarks,tui,"
+				"state,cs,chistory,shistory,dirstack,registers,phistory\n",
+				vifm_like ? "" : "\" ");
 	fputs("\" Like in vi\n", fp);
 	if(vifminfo & VIFMINFO_DHISTORY)
-		fprintf(fp, "%sset vifminfo=bookmarks,dhistory,savedirs\n", !vifm_like ? "" : "\" ");
+		fprintf(fp, "%sset vifminfo=bookmarks,dhistory,chistory,shistory,phistory,"
+				"savedirs\n", !vifm_like ? "" : "\" ");
 	else
-		fprintf(fp, "%sset vifminfo=bookmarks\n", !vifm_like ? "" : "\" ");
+		fprintf(fp, "%sset vifminfo=bookmarks,chistory,shistory,phistory\n",
+				!vifm_like ? "" : "\" ");
 
 	fclose(fp);
 }
