@@ -1,4 +1,4 @@
-.TH vifm 1 "August 17, 2011" "" "Vifm"
+.TH vifm 1 "August 18, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1234,6 +1234,18 @@ Permissions dialog
 
 h - check/uncheck.
 Space - check/uncheck.
+
+Item states:
+.IP - 2
+* - checked flag.
+.IP - 2
+X - means restricted flag, it's restricted because different files in \
+selection don't have same value for it.
+.IP - 2
+d - (only for execute flags) means u-x+X, g-x+X or o-x+X argument for the \
+chmod program.  If you want to remove execute right from all files, but \
+preserve it for directories, set all execute flags to 'd' and check \
+\'Set Recursively' flag.
 .\" ---------------------------------------------------------------------------
 .SH Configure
 .\" ---------------------------------------------------------------------------

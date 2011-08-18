@@ -4,6 +4,4 @@ vifm doesn't always resize to fit terminal window.
 
 Strange piece of escape sequence 37m
 
-:3dele tab delete should be 3delete
-
 Selection isn't cleared on keys in normal mode.

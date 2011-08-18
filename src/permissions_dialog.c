@@ -46,6 +46,7 @@ static int changed;
 static int file_is_dir;
 static int perms[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
 static int origin_perms[13];
+static int adv_perms[3];
 
 static void leave_permissions_mode(void);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
@@ -159,6 +160,9 @@ enter_permissions_mode(FileView *active_view)
 	perms[9] = !(diff & S_IWOTH) ? (int)(fmode & S_IWOTH) : -1;
 	perms[10] = !(diff & S_IXOTH) ? (int)(fmode & S_IXOTH) : -1;
 	perms[11] = !(diff & S_ISVTX) ? (int)(fmode & S_ISVTX) : -1;
+	adv_perms[0] = 0;
+	adv_perms[1] = 0;
+	adv_perms[2] = 0;
 	memcpy(origin_perms, perms, sizeof(perms));
 
 	top = 3;
@@ -307,17 +311,37 @@ set_perm_string(FileView *view, const int *perms, const int *origin_perms)
 											"o+r", "o+w", "o+x", "o+t"};
 	char *sub_perm[] = {"u-r", "u-w", "u-x", "u-s", "g-r", "g-w", "g-x", "g-s",
 											"o-r", "o-w", "o-x", "o-t"};
+	char *add_adv_perm[] = {"u-x+X", "g-x+X", "o-x+X"};
 	char perm_string[64] = " ";
 	char inv_perm_string[64] = " ";
 
+	if(adv_perms[0] && adv_perms[1] && adv_perms[2])
+	{
+		adv_perms[0] = -1;
+		adv_perms[1] = -1;
+		adv_perms[2] = -1;
+	}
+
+	strcat(perm_string, "a-x+X,");
+	strcat(inv_perm_string, "a+x,");
+
 	for(i = 0; i < 12; i++)
 	{
-		if(perms[i] == origin_perms[i])
+		if(perms[i] == origin_perms[i] && !perms[12])
+		{
+			if((i != 2 && i != 6 && i != 10) || !adv_perms[i/4])
+				continue;
+		}
+
+		if((i == 2 || i == 6 || i == 10) && adv_perms[i/4] < 0)
 			continue;
 
 		if(perms[i])
 		{
-			strcat(perm_string, add_perm[i]);
+			if((i == 2 || i == 6 || i == 10) && adv_perms[i/4])
+				strcat(perm_string, add_adv_perm[i/4]);
+			else
+				strcat(perm_string, add_perm[i]);
 			strcat(inv_perm_string, sub_perm[i]);
 		}
 		else
@@ -342,7 +366,7 @@ files_chmod(FileView *view, const char *mode, const char *inv_mode,
 	int i;
 
 	i = 0;
-	while(!view->dir_entry[i].selected && i < view->list_rows)
+	while(i < view->list_rows && !view->dir_entry[i].selected)
 		i++;
 
 	if(i == view->list_rows)
@@ -433,11 +457,41 @@ file_chmod(char *path, char *esc_path, const char *mode, const char *inv_mode,
 static void
 cmd_space(struct key_info key_info, struct keys_info *keys_info)
 {
+	char c;
 	changed = 1;
 
-	mvwaddch(change_win, curr, col, perms[permnum] < 0 ? 'X' :
-			(perms[permnum] ? ' ' : '*'));
-	perms[permnum] = !perms[permnum];
+	if(perms[permnum] < 0)
+	{
+		c = 'X';
+	}
+	else if(curr == 5 || curr == 10 || curr == 15)
+	{
+		int i = curr/5 - 1;
+		if(!perms[permnum])
+		{
+			c = '*';
+			perms[permnum] = 1;
+		}
+		else
+		{
+			if(!adv_perms[i])
+			{
+				c = 'd';
+			}
+			else
+			{
+				c = ' ';
+				perms[permnum] = 0;
+			}
+			adv_perms[i] = !adv_perms[i];
+		}
+	}
+	else
+	{
+		c = perms[permnum] ? ' ' : '*';
+		perms[permnum] = !perms[permnum];
+	}
+	mvwaddch(change_win, curr, col, c);
 
 	wmove(change_win, curr, col);
 	wrefresh(change_win);

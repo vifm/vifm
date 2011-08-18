@@ -79,6 +79,8 @@
 
 	Added vifmrc syntax file for Vim.
 
+	Added 'd' state for execute flags in permission dialog.
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,

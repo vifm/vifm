@@ -6,7 +6,6 @@ Basic things that need to be done.
 	Make ga work in background.
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
         :chown commands.
-    More states for permissions dialog (maybe 'f', 'd').
     Modify X in permissions dialog.
     Perform operations using system calls, not programs.  This is much faster
         and will ease porting on Windows (less dependencies on Cygwin).

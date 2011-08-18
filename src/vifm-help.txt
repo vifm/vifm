@@ -1084,6 +1084,18 @@ Menus and dialogs
 
        h - check/uncheck.  Space - check/uncheck.
 
+       Item states:
+
+       - * - checked flag.
+
+       - X - means restricted flag, it's restricted because different files in
+         selection don't have same value for it.
+
+       - d - (only for execute flags) means u-x+X, g-x+X or o-x+X argument for
+         the  chmod  program.   If  you  want to remove execute right from all
+         files, but preserve it for directories, set all execute flags to  'd'
+         and check ´Set Recursively' flag.
+
 Configure
        The ~/.vifm/vifmrc file contains commands that will be executed on vifm
        startup.  Use it to set settings, mappings or filetypes.  To use  multi
@@ -1156,4 +1168,4 @@ AUTHOR
 
 
 
-                                August 17, 2011                        vifm(1)
+                                August 18, 2011                        vifm(1)

@@ -827,7 +827,11 @@ write_info_file(void)
 			if(reg == NULL)
 				continue;
 			for(j = 0; j < reg->num_files; j++)
+			{
+				if(reg->files[j] == NULL)
+					continue;
 				fprintf(fp, "\"%c%s\n", reg->name, reg->files[j]);
+			}
 		}
 	}
 
