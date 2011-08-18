@@ -684,7 +684,7 @@ goto_selected_file(FileView *view, menu_info *m)
 			view_file(file, n);
 		}
 	}
-	else if(m->type == LOCATE)
+	else if(m->type == LOCATE || m->type == USER_NAVIGATE)
 	{
 		show_error_msgf("Missing file", "File \"%s\" doesn't exist", file);
 	}
