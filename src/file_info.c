@@ -259,11 +259,10 @@ show_full_file_properties(FileView *view)
 
 	redraw_full_file_properties(view);
 
+	keypad(menu_win, TRUE);
   /* wait for Return or Ctrl-c or Esc or error */
 	do
-	{
 		key = wgetch(menu_win);
-	}
 	while(key != 13 && key != 3 && key != 27 && key != ERR);
 
 	werase(menu_win);
