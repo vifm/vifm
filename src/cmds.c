@@ -601,7 +601,7 @@ dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
 	params[*count] = NULL;
 
 	if(last_pos != NULL)
-		*last_pos = (args - args_beg) - st;
+		*last_pos = (args - args_beg) + st;
 
 	free(cmdstr);
 	return params;
