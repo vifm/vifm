@@ -78,12 +78,13 @@ enum {
 enum {
 	COM_GOTO,
 	COM_EXECUTE,
-	COM_FILE,
-	COM_FIND,
-	COM_GREP,
 	COM_CD,
 	COM_COLORSCHEME,
 	COM_EDIT,
+	COM_FILE,
+	COM_FIND,
+	COM_GREP,
+	COM_HISTORY,
 	COM_PUSHD,
 	COM_SET,
 };
@@ -100,6 +101,7 @@ static
 void select_range(int id, const struct cmd_info *cmd_info);
 static void exec_completion(const char *str);
 static void filename_completion(const char *str, int type);
+static void complete_history(const char *str);
 static int is_entry_dir(const struct dirent *d);
 static int is_entry_exec(const struct dirent *d);
 static void split_path(void);
@@ -226,7 +228,7 @@ static const struct cmd_add commands[] = {
 		.handler = grep_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "help",             .abbr = "h",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = help_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
-	{ .name = "history",          .abbr = "his",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "history",          .abbr = "his",   .emark = 0,  .id = COM_HISTORY,     .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = history_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "invert",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = invert_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
@@ -353,6 +355,8 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		complete_colorschemes((argc > 0) ? argv[argc - 1] : arg);
 	else if(id == COM_SET)
 		complete_options(args, &start);
+	else if(id == COM_HISTORY)
+		complete_history(args);
 	else
 	{
 		start = strrchr(args + arg_pos, '/');
@@ -564,6 +568,33 @@ filename_completion(const char *str, int type)
 	free(filename);
 	free(dirname);
 	closedir(dir);
+}
+
+static void
+complete_history(const char *str)
+{
+	static const char *lines[] = {
+		".",
+		"dir",
+		"@",
+		"input",
+		"/",
+		"search",
+		"fsearch",
+		"?",
+		"bsearch",
+		":",
+		"cmd",
+	};
+	int i;
+	size_t len = strlen(str);
+	for(i = 0; i < ARRAY_LEN(lines); i++)
+	{
+		if(strncmp(str, lines[i], len) == 0)
+			add_completion(lines[i]);
+	}
+	completion_group_end();
+	add_completion(str);
 }
 
 static int
@@ -2932,7 +2963,7 @@ unmap_cmd(const struct cmd_info *cmd_info)
 {
 	int result;
 	wchar_t *subst;
-	
+
 	subst = substitute_specs(cmd_info->argv[0]);
 	if(cmd_info->emark)
 	{
@@ -3060,7 +3091,7 @@ do_unmap(const char *keys, int mode)
 {
 	int result;
 	wchar_t *subst;
-	
+
 	subst = substitute_specs(keys);
 	result = remove_user_keys(subst, mode);
 	free(subst);
