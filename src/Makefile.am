@@ -2,8 +2,10 @@
 
 pkgdata_DATA = vifmrc \
 							 vifm-help.txt \
-							 vifm.txt \
-							 vifm.vim
+							 vim/doc/vifm.txt \
+							 vim/ftplugin/vifmrc.vim \
+							 vim/plugin/vifm.vim \
+							 vim/syntax/vifmrc.vim
 
 bin_PROGRAMS = vifm vifmrc-converter
 
