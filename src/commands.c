@@ -2962,17 +2962,32 @@ sync_cmd(const struct cmd_info *cmd_info)
 static int
 tr_cmd(const struct cmd_info *cmd_info)
 {
-	if(cmd_info->argv[0][0] == '\0' && cmd_info->argv[1][0] == '\0')
+	char buf[strlen(cmd_info->argv[0]) + 1];
+	size_t pl, sl;
+
+	if(cmd_info->argv[0][0] == '\0' || cmd_info->argv[1][0] == '\0')
 	{
-		status_bar_message("Empty pattern");
+		status_bar_message("Empty argument");
 		return 1;
 	}
-	if(strlen(cmd_info->argv[0]) != strlen(cmd_info->argv[1]))
+
+	pl = strlen(cmd_info->argv[0]);
+	sl = strlen(cmd_info->argv[1]);
+	strcpy(buf, cmd_info->argv[1]);
+	if(pl < sl)
 	{
-		status_bar_message("Arguments have different lengths");
+		status_bar_message("Second argument cannot be longer");
 		return 1;
 	}
-	return tr_in_names(curr_view, cmd_info->argv[0], cmd_info->argv[1]) != 0;
+	else if(pl > sl)
+	{
+		while(sl < pl)
+		{
+			buf[sl] = buf[sl - 1];
+			sl++;
+		}
+	}
+	return tr_in_names(curr_view, cmd_info->argv[0], buf) != 0;
 }
 
 static int

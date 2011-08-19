@@ -776,7 +776,8 @@ change the other panel to the current panel directory.
 .TP
 .BI :[range]tr/pattern/string/
 for each file in range transliterate the characters which appear in pattern to
-the corresponding character in string.
+the corresponding character in string.  When string is shorter than pattern,
+it's padded with its last character.
 .LP
 String can contain \0...\9 to link to capture groups (0 - all match, 1 - first
 group, etc.).

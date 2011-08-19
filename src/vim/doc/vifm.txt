@@ -300,6 +300,7 @@ The builtin commands are:
     showing partial output of the command.
     Take note of the space before ampersand symbol, if you omit it, command
     will be run in the background using job control of shell.
+    Accepts macros.
 :[range]!!program - same as :! but will pause before returning.
 :!! - repeat the last command.
 :apropos manpage - will create a menu of items returned by the apropos
@@ -470,7 +471,8 @@ The builtin commands are:
         g - substitute all matches in each file name
 :[range]tr/pattern/string/ - for each file in range transliterate the
     characters which appear in pattern to the corresponding character in
-    string.
+    string.  When string is shorter than pattern, it's padded with its
+    last character.
 :sync - change the other panel to the current panels directory.
 :undol[ist] - show list of latest changes.  Add ! to see commands.
 :vie[w] - toggle on and off the quick file view.
