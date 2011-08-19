@@ -6,7 +6,6 @@ Basic things that need to be done.
 	Make ga work in background.
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
         :chown commands.
-    Modify X in permissions dialog.
     Perform operations using system calls, not programs.  This is much faster
         and will ease porting on Windows (less dependencies on Cygwin).
 	:restore command to restore files from Trash

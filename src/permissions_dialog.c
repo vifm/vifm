@@ -327,6 +327,9 @@ set_perm_string(FileView *view, const int *perms, const int *origin_perms)
 
 	for(i = 0; i < 12; i++)
 	{
+		if(perms[i] == -1)
+			continue;
+
 		if(perms[i] == origin_perms[i] && !perms[12])
 		{
 			if((i != 2 && i != 6 && i != 10) || !adv_perms[i/4])
@@ -462,7 +465,8 @@ cmd_space(struct key_info key_info, struct keys_info *keys_info)
 
 	if(perms[permnum] < 0)
 	{
-		c = 'X';
+		c = ' ';
+		perms[permnum] = 0;
 	}
 	else if(curr == 5 || curr == 10 || curr == 15)
 	{
@@ -480,10 +484,36 @@ cmd_space(struct key_info key_info, struct keys_info *keys_info)
 			}
 			else
 			{
-				c = ' ';
-				perms[permnum] = 0;
+				if(origin_perms[permnum] < 0)
+				{
+					c = 'X';
+					perms[permnum] = -1;
+				}
+				else
+				{
+					c = ' ';
+					perms[permnum] = 0;
+				}
 			}
 			adv_perms[i] = !adv_perms[i];
+		}
+	}
+	else if(origin_perms[permnum] < 0)
+	{
+		if(perms[permnum] > 0)
+		{
+			c = 'X';
+			perms[permnum] = -1;
+		}
+		else if(perms[permnum] == 0)
+		{
+			c = '*';
+			perms[permnum] = 1;
+		}
+		else
+		{
+			c = ' ';
+			perms[permnum] = 0;
 		}
 	}
 	else
@@ -500,19 +530,13 @@ cmd_space(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_j(struct key_info key_info, struct keys_info *keys_info)
 {
-	do
-	{
-		inc_curr();
-		permnum++;
-	} while (curr <= bottom && perms[permnum] < 0);
+	inc_curr();
+	permnum++;
 
 	if(curr > bottom)
 	{
-		do
-		{
-			dec_curr();
-			permnum--;
-		} while (perms[permnum] < 0);
+		dec_curr();
+		permnum--;
 	}
 
 	wmove(change_win, curr, col);
@@ -522,19 +546,13 @@ cmd_j(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_k(struct key_info key_info, struct keys_info *keys_info)
 {
-	do
-	{
-		dec_curr();
-		permnum--;
-	} while (curr >= top && perms[permnum] < 0);
+	dec_curr();
+	permnum--;
 
 	if(curr < top)
 	{
-		do
-		{
-			inc_curr();
-			permnum++;
-		} while (perms[permnum] < 0);
+		inc_curr();
+		permnum++;
 	}
 
 	wmove(change_win, curr, col);
