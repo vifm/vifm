@@ -21,12 +21,13 @@
 #define CP_HELP "cp " PACKAGE_DATA_DIR "/vifm-help.txt ~/.vifm"
 #define CP_RC "cp " PACKAGE_DATA_DIR "/vifmrc ~/.vifm"
 
+#include <sys/stat.h> /* mkdir */
+#include <unistd.h> /* chdir */
+
 #include <ctype.h> /* isalnum */
 #include <stdio.h> /* FILE */
 #include <stdlib.h> /* getenv */
 #include <string.h>
-#include <sys/stat.h> /* mkdir */
-#include <unistd.h> /* chdir */
 
 #include "bookmarks.h"
 #include "color_scheme.h"
@@ -100,6 +101,7 @@ init_config(void)
 	cfg.smart_case = 0;
 	cfg.hl_search = 1;
 	cfg.vifm_info = VIFMINFO_BOOKMARKS;
+	cfg.auto_ch_pos = 1;
 
 	p = getenv("SHELL");
 	if(p == NULL || *p == '\0')

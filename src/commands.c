@@ -2111,6 +2111,8 @@ cd_cmd(const struct cmd_info *cmd_info)
 {
 	char dir[PATH_MAX];
 	int result;
+	if(!cfg.auto_ch_pos)
+		curr_stats.ch_pos = 0;
 	if(cmd_info->argc == 0)
 	{
 		result = cd(curr_view, cfg.home_dir);
@@ -2138,6 +2140,8 @@ cd_cmd(const struct cmd_info *cmd_info)
 		else
 			result += cd(other_view, cmd_info->argv[1]);
 	}
+	if(!cfg.auto_ch_pos)
+		curr_stats.ch_pos = 1;
 	return result;
 }
 

@@ -33,22 +33,22 @@ syntax keyword vifmMarkCommand contained ma[rk]
 syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
 
 " Options
-syntax keyword vifmOption contained confirm cf fastrun followlinks fusehome
-		\ history hi hlsearch hls iec ignorecase ic reversecol runexec shell sh
-		\ smartcase scs sortnumbers timefmt trash undolevels ul vicmd vixcmd
-		\ vifminfo vimhelp wildmenu wmnu wrap sort sortorder
+syntax keyword vifmOption contained autochpos confirm cf fastrun followlinks
+		\ fusehome history hi hlsearch hls iec ignorecase ic reversecol runexec
+		\ shell sh smartcase scs sortnumbers timefmt trash undolevels ul vicmd
+		\ vixcmd vifminfo vimhelp wildmenu wmnu wrap sort sortorder
 
 " Disabled boolean options
-syntax keyword vifmOption contained noconfirm nocf nofastrun nofollowlinks
-		\ nohlsearch nohls noiec noignorecase noic noreversecol norunexec
-		\ nosmartcase noscs nosortnumbers notrash novimhelp nowildmenu nowmnu
-		\ nowrap
+syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun
+		\ nofollowlinks hlsearch nohls noiec noignorecase noic noreversecol
+		\ nonorunexec smartcase noscs nosortnumbers notrash novimhelp nowildmenu
+		\ nonowmnu wrap
 
 " Inverted boolean options
-syntax keyword vifmOption contained invconfirm invcf invfastrun invfollowlinks
-		\ invhlsearch invhls inviec invignorecase invic invreversecol invrunexec
-		\ invsmartcase invscs invsortnumbers invtrash invvimhelp invwildmenu
-		\ invwmnu invwrap
+syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
+		\ invfollowlinks hlsearch invhls inviec invignorecase invic invreversecol
+		\ invinvrunexec smartcase invscs invsortnumbers invtrash invvimhelp
+		\ invinvwildmenu wmnu invwrap
 
 " Expressions
 syntax region vifmStatement start='^\s*[^"]' skip='\n\s*\\' end='$' keepend

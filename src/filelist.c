@@ -1050,7 +1050,7 @@ check_view_dir_history(FileView *view)
 {
 	int pos = 0;
 
-	if(cfg.history_len > 0)
+	if(cfg.history_len > 0 && curr_stats.ch_pos)
 	{
 		int x;
 		int found = 0;
@@ -1097,7 +1097,6 @@ check_view_dir_history(FileView *view)
 
 		view->curr_line = view->window_rows;
 	}
-	return;
 }
 
 void

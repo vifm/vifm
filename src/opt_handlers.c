@@ -17,6 +17,7 @@
 static void load_options_defaults(void);
 static void add_options(void);
 static void print_func(const char *msg, const char *description);
+static void autochpos_handler(enum opt_op op, union optval_t val);
 static void confirm_handler(enum opt_op op, union optval_t val);
 static void fastrun_handler(enum opt_op op, union optval_t val);
 static void followlinks_handler(enum opt_op op, union optval_t val);
@@ -91,6 +92,7 @@ static struct {
 	union optval_t val;
 } options[] = {
 	/* global options */
+	{ "autochpos",   "",     OPT_BOOL, 0,                       NULL,            &autochpos_handler,   },
 	{ "confirm",     "cf",   OPT_BOOL, 0,                       NULL,            &confirm_handler,     },
 	{ "fastrun",     "",     OPT_BOOL, 0,                       NULL,            &fastrun_handler,     },
 	{ "followlinks", "",     OPT_BOOL, 0,                       NULL,            &followlinks_handler, },
@@ -131,34 +133,35 @@ static void
 load_options_defaults(void)
 {
 	/* global options */
-	options[0].val.bool_val = cfg.confirm;
-	options[1].val.bool_val = cfg.fast_run;
-	options[2].val.bool_val = cfg.follow_links;
-	options[3].val.str_val = cfg.fuse_home;
-	options[4].val.int_val = cfg.history_len;
-	options[5].val.bool_val = cfg.hl_search;
-	options[6].val.bool_val = cfg.use_iec_prefixes;
-	options[7].val.bool_val = cfg.ignore_case;
-	options[8].val.bool_val = cfg.invert_cur_line;
-	options[9].val.bool_val = cfg.auto_execute;
-	options[10].val.str_val = cfg.shell;
-	options[11].val.bool_val = cfg.smart_case;
-	options[12].val.bool_val = cfg.sort_numbers;
-	options[13].val.str_val = cfg.time_format + 1;
-	options[14].val.bool_val = cfg.use_trash;
-	options[15].val.int_val = cfg.undo_levels;
-	options[16].val.str_val = cfg.vi_command;
-	options[17].val.str_val = cfg.vi_x_command;
-	options[18].val.set_items = cfg.vifm_info;
-	options[19].val.bool_val = cfg.use_vim_help;
-	options[20].val.bool_val = cfg.wild_menu;
-	options[21].val.bool_val = cfg.wrap_quick_view;
+	options[0].val.bool_val = cfg.auto_ch_pos;
+	options[1].val.bool_val = cfg.confirm;
+	options[2].val.bool_val = cfg.fast_run;
+	options[3].val.bool_val = cfg.follow_links;
+	options[4].val.str_val = cfg.fuse_home;
+	options[5].val.int_val = cfg.history_len;
+	options[6].val.bool_val = cfg.hl_search;
+	options[7].val.bool_val = cfg.use_iec_prefixes;
+	options[8].val.bool_val = cfg.ignore_case;
+	options[9].val.bool_val = cfg.invert_cur_line;
+	options[10].val.bool_val = cfg.auto_execute;
+	options[11].val.str_val = cfg.shell;
+	options[12].val.bool_val = cfg.smart_case;
+	options[13].val.bool_val = cfg.sort_numbers;
+	options[14].val.str_val = cfg.time_format + 1;
+	options[15].val.bool_val = cfg.use_trash;
+	options[16].val.int_val = cfg.undo_levels;
+	options[17].val.str_val = cfg.vi_command;
+	options[18].val.str_val = cfg.vi_x_command;
+	options[19].val.set_items = cfg.vifm_info;
+	options[20].val.bool_val = cfg.use_vim_help;
+	options[21].val.bool_val = cfg.wild_menu;
+	options[22].val.bool_val = cfg.wrap_quick_view;
 
 	/* local options */
-	options[22].val.enum_item = SORT_BY_NAME;
-	options[23].val.enum_item = 0;
+	options[23].val.enum_item = SORT_BY_NAME;
+	options[24].val.enum_item = 0;
 
-	assert(ARRAY_LEN(options) == 24);
+	assert(ARRAY_LEN(options) == 25);
 }
 
 static void
@@ -219,6 +222,12 @@ print_func(const char *msg, const char *description)
 		print_buf[sizeof(print_buf) - 1] = '\0';
 	}
 	save_msg = 1;
+}
+
+static void
+autochpos_handler(enum opt_op op, union optval_t val)
+{
+	cfg.auto_ch_pos = val.bool_val;
 }
 
 static void

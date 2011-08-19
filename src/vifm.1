@@ -464,11 +464,11 @@ change to your home directory.
 .BI ":cd ~/dir"
 change directory to ~/dir.
 .TP
-.BI ":cd /l/dir /r/dir"
-change directory of the left pane to /l/dir and directory of the right pane to
-/r/dir.  When using relative paths vifm assumes that both of them are relative
-to current directory of current view.  Command will not fail if one of
-directories is invalid.
+.BI ":cd /curr/dir /other/dir"
+change directory of the current pane to /curr/dir and directory of the other
+pane to /other/dir.  When using relative paths vifm assumes that both of them
+are relative to current directory of current view.  Command will not fail if one
+of directories is invalid.
 .TP
 .BI ":cd! /dir"
 same as :cd /dir /dir.
@@ -673,7 +673,7 @@ changes the window to show only the current file directory.
 .BI :popd
 remove pane directories from stack.
 .TP
-.BI ":pushd[!] /l/dir [/r/dir]"
+.BI ":pushd[!] /curr/dir [/other/dir]"
 add pane directories to stack and process arguments like :cd command.
 .TP
 .BI :pushd
@@ -950,13 +950,21 @@ Appending & to the end of a command will cause it to be executed in the backgrou
 .SH :set options
 .\" ---------------------------------------------------------------------------
 .TP
+.BI autochpos
+type: boolean
+.br
+default: true
+.br
+When disabled vifm will set cursor to the first line in the view after :cd and
+:pushd commands instead of saved cursor position.
+.TP
 .BI "confirm cf"
 type: boolean
 .br
 default: true
 .br
-.TP
 Ask about permanent deletion of files (on D command or on undo/redo operation).
+.TP
 .BI fastrun
 type: boolean
 .br

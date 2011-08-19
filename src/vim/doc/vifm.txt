@@ -306,9 +306,9 @@ The builtin commands are:
     manpage.
 :cd - change to your home directory.
 :cd ~/dir - change directory to ~/dir.
-:cd /l/dir /r/dir - change directory of the left pane to /l/dir and
-    directory of the right pane to /r/dir.  When using relative paths vifm
-    assumes that both of them are relative to current directory of current
+:cd /curr/dir /other/dir - change directory of the current pane to /curr/dir
+    and directory of the other pane to /other/dir.  When using relative paths
+    vifm assumes that both of them are relative to current directory of current
     view.  Command will not fail if one of directories is invalid.
 :cd! /dir - same as :cd /dir /dir.
 :change - create a menu window to alter a files properties.
@@ -412,7 +412,7 @@ The builtin commands are:
 :noh[lsearch] - clear selection in current pane.
 :on[ly] - switch to a one window view.
 :popd - remove pane directories from stack.
-:pushd[!] /l/dir [/r/dir] - add pane directories to stack and process
+:pushd[!] /curr/dir [/other/dir] - add pane directories to stack and process
     arguments like :cd command.
 :pushd - exchanges the top two items of the directory stack.
 :pwd - show the present working directory.
@@ -585,6 +585,12 @@ background.
 
 --------------------------------------------------------------------------------
 *set-options*
+
+autochpos
+type: boolean
+default: true
+When disabled vifm will set cursor to the first line in the view after :cd and
+:pushd commands instead of saved cursor position.
 
 confirm cf
 type: boolean

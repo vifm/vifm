@@ -92,6 +92,8 @@ typedef struct _Config {
 
 	int vifm_info;
 
+	int auto_ch_pos;
+
 	char *shell;
 } Config;
 

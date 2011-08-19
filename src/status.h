@@ -52,6 +52,8 @@ typedef struct
 	
 	int last_search_backward;
 
+	int ch_pos; /* for :cd, :pushd and 'letter */
+
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
 #endif
