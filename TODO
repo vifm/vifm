@@ -12,6 +12,7 @@ Basic things that need to be done.
 	:restore command to restore files from Trash
     Better cW command (maybe accept count of extensions to skip).
     Better globals support.
+	Add 'autochpos' option.
 
 Documentation.
 	Better documentation.

@@ -2435,28 +2435,34 @@ grep_cmd(const struct cmd_info *cmd_info)
 static int
 help_cmd(const struct cmd_info *cmd_info)
 {
-	char help_cmd[PATH_MAX];
+	char buf[PATH_MAX];
 	int bg;
 
 	if(cfg.use_vim_help)
 	{
 		if(cmd_info->argc > 0)
-			snprintf(help_cmd, sizeof(help_cmd), "%s -c \'help %s\' -c only",
-					get_vicmd(&bg), cmd_info->args);
+			snprintf(buf, sizeof(buf), "%s -c \'help %s\' -c only", get_vicmd(&bg),
+					cmd_info->args);
 		else
-			snprintf(help_cmd, sizeof(help_cmd), "%s -c \'help vifm\' -c only",
-					get_vicmd(&bg));
+			snprintf(buf, sizeof(buf), "%s -c \'help vifm\' -c only", get_vicmd(&bg));
 	}
 	else
 	{
-		snprintf(help_cmd, sizeof(help_cmd), "%s %s/vifm-help.txt", get_vicmd(&bg),
+		snprintf(buf, sizeof(buf), "%s/vifm-help.txt", cfg.config_dir);
+		if(access(buf, F_OK) != 0)
+		{
+			show_error_msgf("No help file", "Can't find \"%s\" file", buf);
+			return 0;
+		}
+
+		snprintf(buf, sizeof(buf), "%s %s/vifm-help.txt", get_vicmd(&bg),
 				cfg.config_dir);
 	}
 
 	if(bg)
-		start_background_job(help_cmd);
+		start_background_job(buf);
 	else
-		shellout(help_cmd, -1);
+		shellout(buf, -1);
 	return 0;
 }
 
