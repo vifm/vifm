@@ -180,6 +180,8 @@
 
 	Now case of color names in the colorscheme file is ignored.
 
+	Documented command line keys.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

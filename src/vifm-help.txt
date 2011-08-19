@@ -324,6 +324,69 @@ Visual Mode
 
        O      switch active selection bound.
 
+Command line Mode
+       This  keys  apply  to  all  submodes of the command line mode: command,
+       prompt and search.
+
+       Down, Up, Left, Right, Home, End and Delete are extended keys and  they
+       are  not  available  if  vifm  is compiled with --disable-extended-keys
+       option
+
+       Esc, Ctrl-C
+              leave command line mode, cancels input.
+
+       Ctrl-M, Enter
+              execute command and leave command line mode.
+
+       Ctrl-I, Tab
+              complete command or its argument.
+
+       Shift-Tab
+              complete in reverse order.
+
+       Ctrl-K remove characters from cursor position till the end of line.
+
+       Ctrl-U remove characters from cursor position  till  the  beginning  of
+              line.
+
+       Ctrl-H, Backspace
+              remove character before the cursor.
+
+       Ctrl-D, Delete
+              remove character under the cursor.
+
+       Ctrl-B, Left
+              move cursor to the left.
+
+       Ctrl-F, Right
+              move cursor to the right.
+
+       Ctrl-A, Home
+              go to line beginning.
+
+       Ctrl-E, End
+              go to line end
+
+       Alt-B  go to the beginning of previous word.
+
+       Alt-F  go to the end of next word.
+
+       Ctrl-W remove  characters  from  cursor  position till the beginning of
+              previous word.
+
+       Alt-D  remove characters from cursor position  till  the  beginning  of
+              next word.
+
+       Ctrl-N recall more recent command-line from history.
+
+       Ctrl-P recall older command-line from history.
+
+       Up     recall more recent command-line from history, that begins as the
+              current command-line.
+
+       Down   recall older command-line from history, that begins as the  cur‐
+              rent command-line.
+
 Commands
        Commands are executed with :command_name<Return>
 
