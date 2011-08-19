@@ -206,21 +206,21 @@ colname2int(char col[])
 		return atoi(col);
 
 	/* otherwise convert */
-	if(!strcmp(col, "black"))
+	if(!strcasecmp(col, "black"))
 		return 0;
-	if(!strcmp(col, "red"))
+	if(!strcasecmp(col, "red"))
 		return 1;
-	if(!strcmp(col, "green"))
+	if(!strcasecmp(col, "green"))
 		return 2;
-	if(!strcmp(col, "yellow"))
+	if(!strcasecmp(col, "yellow"))
 		return 3;
-	if(!strcmp(col, "blue"))
+	if(!strcasecmp(col, "blue"))
 		return 4;
-	if(!strcmp(col, "magenta"))
+	if(!strcasecmp(col, "magenta"))
 		return 5;
-	if(!strcmp(col, "cyan"))
+	if(!strcasecmp(col, "cyan"))
 		return 6;
-	if(!strcmp(col, "white"))
+	if(!strcasecmp(col, "white"))
 		return 7;
 	/* return default color */
 	return -1;

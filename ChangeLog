@@ -172,6 +172,8 @@
 
 	Now <c-?> keys can be used in mappings.
 
+	Now case of color names in the colorscheme file is ignored.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.
