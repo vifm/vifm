@@ -366,6 +366,8 @@ Commands
        Take note of the space before ampersand symbol, if you omit it, command
        will be run in the background using job control of your shell.
 
+       Accepts macros.
+
        :[range]!! <program>
               is the same as :! but will pause the screen before returning  to
               Vifm.
@@ -379,6 +381,8 @@ Commands
 
        :cd    change to your home directory.
 
+       :cd -  go to previous directory.
+
        :cd ~/dir
               change directory to ~/dir.
 
@@ -387,7 +391,7 @@ Commands
               of the other pane to /other/dir.  When using relative paths vifm
               assumes  that  both of them are relative to current directory of
               current view.  Command will not fail if one  of  directories  is
-              invalid.
+              invalid.  Accepts macros.
 
        :cd! /dir
               same as :cd /dir /dir.
@@ -458,24 +462,25 @@ Commands
        :dirs  display directory stack.
 
        :[range]e[dit] [file...]
-              will load the selected or passed file or files into vi.
+              will load the selected or passed file or files into vi.  Accepts
+              macros.
 
        :empty will permanently remove 'rm -fr' files from the Trash directory.
-              It will also remove all operations from undolist  that  have  no
-              sense  after  :empty  and  remove all records about files in the
+              It  will  also  remove all operations from undolist that have no
+              sense after :empty and remove all records  about  files  in  the
               Trash directory from all registers.
 
        :exi[t]
               same as :quit.
 
-       :file  popup menu of programs set for the  file  type  of  the  current
-              file.  Add  '  &'  at the end of command to run program in back‐
+       :file  popup  menu  of  programs  set  for the file type of the current
+              file. Add ' &' at the end of command to  run  program  in  back‐
               ground.
 
        :filet[ype] pat1,pat2,... def_program,program2,...
               will associate given program list to each of the patterns.  Cur‐
-              rently  only  * and ? are treated as special symbols in the pat‐
-              tern.  If you need to insert comma into command just  double  it
+              rently only * and ? are treated as special symbols in  the  pat‐
+              tern.   If  you need to insert comma into command just double it
               (",,").
 
        :filex[type] pat1,pat2,... def_program,program2,...
@@ -483,15 +488,15 @@ Commands
               running in X.  In X :filextype is equal to :filetype.
 
        :filev[iewer] pat1,pat2,... command
-              will associate given command as a viewer to  each  of  the  pat‐
+              will  associate  given  command  as a viewer to each of the pat‐
               terns.  Currently only * and ? are treated as special symbols in
               the pattern.
 
        :filter regular_expression_pattern
-              :filter /regular_expression_pattern/ will filter all  the  files
-              out  of the directory listing that match the regular expression.
+              :filter  /regular_expression_pattern/  will filter all the files
+              out of the directory listing that match the regular  expression.
               Using second variant you can use | symbol without escaping.  Add
-              :filter /.o$ would filter  all  files  ending  in  .o  from  the
+              :filter  /.o$  would  filter  all  files  ending  in .o from the
               filelist.
               Note: vifm uses extended regular expressions.
 
@@ -505,31 +510,31 @@ Commands
               show current filter value.
 
        :[range]fin[d] pattern
-              will  show  results of find command in the menu.  Searches among
-              selected files if any.
+              will show results of find command in the menu.   Searches  among
+              selected files if any.  Accepts macros.
 
        :[range]fin[d] -opt...
-              same as :find  above,  but  user  defines  all  find  arguments.
+              same  as  :find  above,  but  user  defines  all find arguments.
               Searches among selected files if any.
 
        :[range]fin[d] path -opt...
-              same  as  :find  above,  but  user  defines  all find arguments.
+              same as :find  above,  but  user  defines  all  find  arguments.
               Ignores selection and range.
 
        :[range]fin[d]
               repeats last :find command.
 
        :[range]gr[ep][!] pattern
-              will show results of grep command  in  the  menu.   Add  "!"  to
+              will  show  results  of  grep  command  in the menu.  Add "!" to
               search lines that do not match pattern.  Searches among selected
               files if any and no range given.  Ignores binary files.
 
        :[range]gr[ep][!] -opt...
-              same as :grep above, but user defines all find arguments,  which
+              same  as :grep above, but user defines all find arguments, which
               are not escaped.  Searches among selected files if any.
 
        :[range]gr[ep][!]
-              repeats  last :grep command.  "!" of this command inverts "!" in
+              repeats last :grep command.  "!" of this command inverts "!"  in
               repeated command.
 
        :h[elp]
@@ -547,7 +552,7 @@ Commands
               i[nput]   or @  show prompt history (e.g. on one file renaming).
               s[earch]  or /  show search history and search forward on l key.
               f[search] or /  show search history and search forward on l key.
-              b[search] or ?  show search history and  search  backward  on  l
+              b[search]  or  ?   show  search history and search backward on l
               key.
               c[md]     or :  show command line history.
 
@@ -560,17 +565,17 @@ Commands
        :jobs  shows menu of current backgrounded processes.
 
        :locate filename
-              uses  the locate command to create a menu of filenames Selecting
-              a file from the menu will reload the current file list  in  vifm
+              uses the locate command to create a menu of filenames  Selecting
+              a  file  from the menu will reload the current file list in vifm
               to show the selected file.
 
        :locate
               repeats last :locate command.
 
        :[range]ma[rk]x[/full/path][filename]
-              Set  mark  x  at  /full/path  and  filename.  By default current
-              directory  is  being  used.   If  no  filename  was  given   and
-              /full/path  is  current  directory  then last file in [range] is
+              Set mark x at  /full/path  and  filename.   By  default  current
+              directory   is  being  used.   If  no  filename  was  given  and
+              /full/path is current directory then last  file  in  [range]  is
               used.  Using macros is allowed.
 
        :marks create a popup menu of bookmarks.
@@ -587,7 +592,7 @@ Commands
        :popd  remove pane directories from stack.
 
        :pushd[!] /curr/dir [/other/dir]
-              add pane directories to stack and  process  arguments  like  :cd
+              add  pane  directories  to  stack and process arguments like :cd
               command.
 
        :pushd exchanges the top two items of the directory stack.
@@ -606,8 +611,8 @@ Commands
               popup menu with registers content.
 
        :reg[isters] list ...
-              display  the  contents  of the numbered and named registers that
-              are mentioned in list (for example "az to display "", "a and  "z
+              display the contents of the numbered and  named  registers  that
+              are  mentioned in list (for example "az to display "", "a and "z
               content).
 
        :[range]rename
@@ -620,12 +625,12 @@ Commands
        :screen
               toggles whether or not to use the screen program.
               The default configuration has the screen option turned off.  The
-              screen  program  uses pseudo terminals to allow multiple windows
-              to be used in the console or in a single xterm.   Starting  vifm
-              from  screen with the screen option turned on will cause vifm to
-              open a new screen window for each new  file  edited  or  program
+              screen program uses pseudo terminals to allow  multiple  windows
+              to  be  used in the console or in a single xterm.  Starting vifm
+              from screen with the screen option turned on will cause vifm  to
+              open  a  new  screen  window for each new file edited or program
               launched from vifm.
-              This  requires  screen  version 3.9.9 or newer for the screen -X
+              This requires screen version 3.9.9 or newer for  the  screen  -X
               argument.
 
        :screen?
@@ -651,7 +656,7 @@ Commands
                - option& - reset option to its default value
                - option=x - set option to x
                - option+=x - add x to option
-               -  option-=x - remove (or subtract) x from option :sh[ell] will
+               - option-=x - remove (or subtract) x from option :sh[ell]  will
               start a shell.
 
        :sor[t]
@@ -661,21 +666,21 @@ Commands
               splits the window to show both file directories.
 
        :sp[lit] path
-              splits the window to show both file  directories.   And  changes
+              splits  the  window  to show both file directories.  And changes
               other pane to path.
 
        :[range]s[ubstitite]/pattern/string/[flags]
               for each file in range replace a match of pattern with string.
 
-       String  can contain  ...9 to link to capture groups (0 - all match, 1 -
+       String can contain  ...9 to link to capture groups (0 - all match, 1  -
        first group, etc.).
 
        Available flags:
 
-       - i - ignore case (the 'ignorecase' and  'smartcase'  options  are  not
+       - i  -  ignore  case  (the 'ignorecase' and 'smartcase' options are not
          used)
 
-       - I  -  don't ignore case (the 'ignorecase' and 'smartcase' options are
+       - I - don't ignore case (the 'ignorecase' and 'smartcase'  options  are
          not used)
 
        - g - substitute all matches in each file name
@@ -684,8 +689,9 @@ Commands
          change the other panel to the current panel directory.
 
        :[range]tr/pattern/string/
-         for each file in range transliterate the characters which  appear  in
-         pattern to the corresponding character in string.
+         for  each  file in range transliterate the characters which appear in
+         pattern to the corresponding character in  string.   When  string  is
+         shorter than pattern, it's padded with its last character.
 
        String  can contain  ...9 to link to capture groups (0 - all match, 1 -
        first group, etc.).

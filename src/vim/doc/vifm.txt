@@ -307,11 +307,13 @@ The builtin commands are:
     command. Selecting an item in the menu will open the corresponding
     manpage.
 :cd - change to your home directory.
+:cd - - go to previous directory.
 :cd ~/dir - change directory to ~/dir.
 :cd /curr/dir /other/dir - change directory of the current pane to /curr/dir
     and directory of the other pane to /other/dir.  When using relative paths
     vifm assumes that both of them are relative to current directory of current
     view.  Command will not fail if one of directories is invalid.
+    Accepts macros.
 :cd! /dir - same as :cd /dir /dir.
 :change - create a menu window to alter a files properties.
 :colo[rscheme] - gives a menu with a list of available color schemes.  You
@@ -346,7 +348,7 @@ The builtin commands are:
     content).
 :dirs - display directory stack.
 :[range]e[dit] [file...] - will load the selected or passed file or files
-    into vi.
+    into vi.  Accepts macros.
 :empty - permanently remove files from the ~/.vifm/Trash directory.  It will
     also remove all operations from undolist that have no sense after :empty
     and remove all records about files in the Trash directory from all
@@ -374,6 +376,7 @@ The builtin commands are:
 :filter? - show current filter value.
 :[range]fin[d] pattern - will show results of find command in the menu.
     Searches among selected files if any and no range given.
+    Accepts macros.
 :[range]fin[d] -opt... - same as :find above, but user defines all find
     arguments.  Searches among selected files if any and no range given.
 :[range]fin[d] path -opt... - same as :find above, but user defines all

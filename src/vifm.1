@@ -450,6 +450,8 @@ showing partial output of the command.
 
 Take note of the space before ampersand symbol, if you omit it, command
 will be run in the background using job control of your shell.
+
+Accepts macros.
 .TP
 .BI ":[range]!! <program>"
 is the same as :! but will pause the screen before returning to Vifm.
@@ -464,6 +466,9 @@ in the menu will open the corresponding manpage.
 .BI :cd
 change to your home directory.
 .TP
+.BI ":cd -"
+go to previous directory.
+.TP
 .BI ":cd ~/dir"
 change directory to ~/dir.
 .TP
@@ -472,6 +477,7 @@ change directory of the current pane to /curr/dir and directory of the other
 pane to /other/dir.  When using relative paths vifm assumes that both of them
 are relative to current directory of current view.  Command will not fail if one
 of directories is invalid.
+Accepts macros.
 .TP
 .BI ":cd! /dir"
 same as :cd /dir /dir.
@@ -541,7 +547,7 @@ list (for example "az to display "", "a and "z content).
 display directory stack.
 .TP
 .BI ":[range]e[dit] [file...]"
-will load the selected or passed file or files into vi.
+will load the selected or passed file or files into vi.  Accepts macros.
 .TP
 .BI :empty
 will permanently remove 'rm -fr' files from the Trash directory.  It will also
@@ -589,7 +595,7 @@ show current filter value.
 .TP
 .BI ":[range]fin[d] pattern"
 will show results of find command in the menu.  Searches among selected files if
-any.
+any.  Accepts macros.
 .TP
 .BI ":[range]fin[d] -opt..."
 same as :find above, but user defines all find arguments.  Searches among
