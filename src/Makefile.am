@@ -1,11 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 pkgdata_DATA = vifmrc \
-							 vifm-help.txt \
-							 vim/doc/vifm.txt \
-							 vim/ftplugin/vifmrc.vim \
-							 vim/plugin/vifm.vim \
-							 vim/syntax/vifmrc.vim
+							 vifm-help.txt
 
 bin_PROGRAMS = vifm vifmrc-converter
 
