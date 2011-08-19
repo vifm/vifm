@@ -40,28 +40,37 @@ syntax keyword vifmOption contained autochpos confirm cf fastrun followlinks
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun
-		\ nofollowlinks hlsearch nohls noiec noignorecase noic noreversecol
-		\ nonorunexec smartcase noscs nosortnumbers notrash novimhelp nowildmenu
-		\ nonowmnu wrap
+		\ nofollowlinks nohlsearch nohls noiec noignorecase noic noreversecol
+		\ norunexec nosmartcase noscs nosortnumbers notrash novimhelp nowildmenu
+		\ nowmnu nowrap
 
 " Inverted boolean options
 syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
-		\ invfollowlinks hlsearch invhls inviec invignorecase invic invreversecol
-		\ invinvrunexec smartcase invscs invsortnumbers invtrash invvimhelp
-		\ invinvwildmenu wmnu invwrap
+		\ invfollowlinks invhlsearch invhls inviec invignorecase invic invreversecol
+		\ invrunexec invsmartcase invscs invsortnumbers invtrash invvimhelp
+		\ invwildmenu invwmnu invwrap
 
 " Expressions
 syntax region vifmStatement start='^\s*[^"]' skip='\n\s*\\' end='$' keepend
-		\ contains=vifmCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt,vifmMap,vifmMapSt,vifmExecute,vifmCommands
-syntax region vifmCmdCommandSt start='^\s*com\%[mand]' skip='\n\s*\\' end='$' keepend contains=vifmCmdCommand
-syntax region vifmMarkCommandSt start='^\s*ma\%[rk]\>' end='$' keepend oneline contains=vifmMarkCommand
-syntax region vifmFtCommandSt start='^\s*file[tvx]' skip='\n\s*\\' end='$' keepend contains=vifmFtCommand
-syntax region vifmExecute start='!' end='$' keepend oneline contains=vifmNotation
-syntax region vifmCommands start=':' end='$' keepend oneline contains=vifmCommand,vifmNotation,vifmExecute
+		\ contains=vifmCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
+		\,vifmMap,vifmMapSt,vifmExecute,vifmCommands
+syntax region vifmCmdCommandSt start='^\s*com\%[mand]' skip='\n\s*\\' end='$'
+		\ keepend contains=vifmCmdCommand
+syntax region vifmMarkCommandSt start='^\s*ma\%[rk]\>' end='$' keepend oneline
+		\ contains=vifmMarkCommand
+syntax region vifmFtCommandSt start='^\s*file[tvx]' skip='\n\s*\\' end='$'
+		\ keepend contains=vifmFtCommand
+syntax region vifmExecute start='!' end='$' keepend oneline
+		\ contains=vifmNotation
+syntax region vifmCommands start=':' end='$' keepend oneline
+		\ contains=vifmCommand,vifmNotation,vifmExecute
 syntax match vifmMapLhs /\S\+/ contained contains=vifmNotation
-syntax region vifmSet matchgroup=vifmCommand start='\<se\%[t]\>' skip='\n\s*\\' end='$' keepend contains=vifmOption,vifmSetString
+syntax region vifmSet matchgroup=vifmCommand
+		\ start='\<se\%[t]\>' skip='\n\s*\\' end='$' keepend
+		\ contains=vifmOption,vifmSetString,vifmNumber
 syntax region vifmSetString contained start=+="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
 syntax region vifmSetString contained start=+='+hs=s+1 skip=+\\\\\|\\'+  end=+'+
+syntax match vifmNumber contained /\d\+/
 
 " Ange-bracket notation
 syntax case ignore
@@ -78,6 +87,7 @@ highlight link vifmMap Statement
 highlight link vifmOption PreProc
 highlight link vifmNotation Special
 highlight link vifmSetString String
+highlight link vifmNumber Number
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
