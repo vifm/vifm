@@ -47,7 +47,6 @@ Possible things to add.
     Improve sorting ('sort' and 'gsort'; ignore case).
     Add :mksession command and 'sessionoptions' option.
     y/source/dest like in sed (or like tr program).
-    Option to skip reading configuration files.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.

@@ -86,6 +86,8 @@ show_help_msg(void)
 	puts("    show version number and quit.\n");
 	puts("  vifm --help | -h");
 	puts("    show this help message and quit.");
+	puts("  vifm --no-configs");
+	puts("    don't read vifmrc and vifminfo.");
 }
 
 static void
@@ -154,6 +156,10 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		else if(!strcmp(argv[x], "-f"))
 		{
 			cfg.vim_filter = 1;
+		}
+		else if(!strcmp(argv[x], "--no-configs"))
+		{
+			continue;
 		}
 		else if(!strcmp(argv[x], "--version") || !strcmp(argv[x], "-v"))
 		{
@@ -229,6 +235,8 @@ main(int argc, char *argv[])
 	char lwin_path[PATH_MAX] = "";
 	char rwin_path[PATH_MAX] = "";
 	int old_config;
+	int i;
+	int no_configs;
 
 	setlocale(LC_ALL, "");
 	if(getcwd(dir, sizeof(dir)) == NULL)
@@ -300,8 +308,13 @@ main(int argc, char *argv[])
 	curr_view = &lwin;
 	other_view = &rwin;
 
+	no_configs = 0;
+	for(i = 1; i < argc; i++)
+		if(strcmp("--no-configs", argv[i]) == 0)
+			no_configs = 1;
+
 	old_config = is_old_config();
-	if(!old_config)
+	if(!old_config && !no_configs)
 		read_info_file(0);
 
 	parse_args(argc, argv, dir, lwin_path, rwin_path);
@@ -328,12 +341,12 @@ main(int argc, char *argv[])
 
 	curr_stats.vifm_started = 1;
 
-	if(!old_config)
+	if(!old_config && !no_configs)
 		exec_config();
 
 	setup_signals();
 
-	if(old_config)
+	if(old_config && !no_configs)
 	{
 		int vifm_like;
 		char buf[256];
