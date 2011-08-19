@@ -216,6 +216,8 @@
 
 	Fixed :rename.
 
+	Fixed cursor position after leaving directory mounted with FUSE_MOUNT2.
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).

@@ -352,7 +352,7 @@ make_name_unique(const char *filename)
  * mount_point should be an array of at least PATH_MAX characters
  * Returns 0 on success.
  */
-static int
+static Fuse_List *
 fuse_mount(FileView *view, char *filename, const char *program,
 		char *mount_point)
 {
@@ -390,7 +390,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	{
 		free(escaped_filename);
 		show_error_msg("Unable to create FUSE mount directory", mount_point);
-		return -1;
+		return NULL;
 	}
 	free(escaped_filename);
 
@@ -461,7 +461,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	if(chdir(cfg.fuse_home) != 0)
 	{
 		show_error_msg("FUSE MOUNT ERROR", "Can't chdir() to FUSE home");
-		return -1;
+		return NULL;
 	}
 
 	if(clear_before_mount)
@@ -487,7 +487,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 			rmdir(mount_point);
 		show_error_msg("FUSE MOUNT ERROR", filename);
 		(void)chdir(view->curr_dir);
-		return -1;
+		return NULL;
 	}
 	unlink(tmp_file);
 	status_bar_message("FUSE mount success.");
@@ -503,7 +503,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	else
 		runner->next = fuse_item;
 
-	return 0;
+	return fuse_item;
 }
 
 /* wont mount same file twice */
@@ -544,6 +544,7 @@ fuse_try_mount(FileView *view, const char *program)
 
 	if(!mount_found)
 	{
+		Fuse_List *item;
 		/* new file to be mounted */
 		if(strncmp(program, "FUSE_MOUNT2", 11) == 0)
 		{
@@ -577,7 +578,10 @@ fuse_try_mount(FileView *view, const char *program)
 
 			fclose(f);
 		}
-		if(fuse_mount(view, filename, program, mount_point) != 0)
+		if((item = fuse_mount(view, filename, program, mount_point)) != NULL)
+			snprintf(item->source_file_name, PATH_MAX, "%s/%s", view->curr_dir,
+					get_current_file_name(view));
+		else
 			return;
 	}
 

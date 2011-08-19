@@ -1316,7 +1316,9 @@ change_directory(FileView *view, const char *directory)
 	save_view_history(view, NULL, NULL);
 
 	if(directory[0] == '/')
+	{
 		canonicalize_path(directory, dir_dup, sizeof(dir_dup));
+	}
 	else
 	{
 		snprintf(newdir, sizeof(newdir), "%s/%s", view->curr_dir, directory);
