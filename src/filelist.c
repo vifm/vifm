@@ -1704,9 +1704,14 @@ load_dir_list(FileView *view, int reload)
 				switch(s.st_mode & S_IFMT)
 				{
 					case S_IFLNK:
-						if(check_link_is_dir(view->dir_entry[view->list_rows].name))
-							strcat(dir_entry->name, "/");
-						dir_entry->type = LINK;
+						{
+							struct stat st;
+							if(check_link_is_dir(dir_entry->name))
+								strcat(dir_entry->name, "/");
+							if(stat(dir_entry->name, &st) == 0)
+								dir_entry->mode = st.st_mode;
+							dir_entry->type = LINK;
+						}
 						break;
 					case S_IFDIR:
 						strcat(dir_entry->name, "/");
