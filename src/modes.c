@@ -151,20 +151,28 @@ modes_post(void)
 void
 modes_redraw(void)
 {
+	static int in_here;
+
+	if(in_here++ > 0)
+		return;
+
 	if(curr_stats.too_small_term)
 	{
 		redraw_window();
+		in_here--;
 		return;
 	}
 
 	if(mode == CMDLINE_MODE)
 	{
 		redraw_cmdline();
+		in_here--;
 		return;
 	}
 	else if(mode == MENU_MODE)
 	{
 		menu_redraw();
+		in_here--;
 		return;
 	}
 
@@ -182,6 +190,9 @@ modes_redraw(void)
 		redraw_sort_dialog();
 	else if(mode == PERMISSIONS_MODE)
 		redraw_permissions_dialog();
+
+	if(--in_here > 0)
+		modes_redraw();
 }
 
 void
