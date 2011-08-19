@@ -53,6 +53,9 @@ enum {
 	APROPOS,
 	BOOKMARK,
 	CMDHISTORY,
+	PROMPTHISTORY,
+	FSEARCHHISTORY,
+	BSEARCHHISTORY,
 	COLORSCHEME,
 	COMMAND,
 	DIRSTACK,
@@ -744,6 +747,12 @@ execute_menu_cb(FileView *view, menu_info *m)
 			break;
 		case CMDHISTORY:
 			exec_commands(m->data[m->pos], view, 1, GET_COMMAND);
+			break;
+		case FSEARCHHISTORY:
+			exec_commands(m->data[m->pos], view, 1, GET_FSEARCH_PATTERN);
+			break;
+		case BSEARCHHISTORY:
+			exec_commands(m->data[m->pos], view, 1, GET_BSEARCH_PATTERN);
 			break;
 		case COLORSCHEME:
 			load_color_scheme(m->data[m->pos]);
@@ -1548,18 +1557,18 @@ show_history_menu(FileView *view)
 	return 0;
 }
 
-int
-show_cmdhistory_menu(FileView *view)
+static int
+show_history(FileView *view, int type, int len, char **hist)
 {
 	int x;
 	static menu_info m;
 
 	m.top = 0;
 	m.current = 1;
-	m.len = cfg.cmd_history_num + 1;
+	m.len = len;
 	m.pos = 0;
 	m.win_rows = 0;
-	m.type = CMDHISTORY;
+	m.type = type;
 	m.matching_entries = 0;
 	m.matches = NULL;
 	m.match_dir = NONE;
@@ -1570,19 +1579,46 @@ show_cmdhistory_menu(FileView *view)
 
 	getmaxyx(menu_win, m.win_rows, x);
 
-	for(x = 0; x < cfg.cmd_history_num + 1; x++)
+	for(x = 0; x < len; x++)
 	{
 		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
-		m.data[x] = (char *)malloc((strlen(cfg.cmd_history[x]) + 1)*sizeof(char));
-		strcpy(m.data[x], cfg.cmd_history[x]);
+		m.data[x] = (char *)malloc((strlen(hist[x]) + 1)*sizeof(char));
+		strcpy(m.data[x], hist[x]);
 	}
-	m.len = x;
 
 	setup_menu();
 	draw_menu(&m);
 	moveto_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 	return 0;
+}
+
+int
+show_cmdhistory_menu(FileView *view)
+{
+	return show_history(view, CMDHISTORY, cfg.cmd_history_num + 1,
+			cfg.cmd_history);
+}
+
+int
+show_prompthistory_menu(FileView *view)
+{
+	return show_history(view, PROMPTHISTORY, cfg.prompt_history_num + 1,
+			cfg.prompt_history);
+}
+
+int
+show_fsearchhistory_menu(FileView *view)
+{
+	return show_history(view, FSEARCHHISTORY, cfg.search_history_num + 1,
+			cfg.search_history);
+}
+
+int
+show_bsearchhistory_menu(FileView *view)
+{
+	return show_history(view, BSEARCHHISTORY, cfg.search_history_num + 1,
+			cfg.search_history);
 }
 
 static int

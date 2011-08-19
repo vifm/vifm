@@ -390,8 +390,12 @@ The builtin commands are:
 :his[tory] - show directory history.
 :his[tory] x
     x can be:
-    d[ir] or .   show directory history.
-    c[md] or :   show command line history.
+      d[ir]     or .  show directory history.
+      i[nput]   or @  show prompt history (e.g. on one file renaming).
+      s[earch]  or /  show search history and search forward on l key.
+      f[search] or /  show search history and search forward on l key.
+      b[search] or ?  show search history and search backward on l key.
+      c[md]     or :  show command line history.
 :invert - invert file name filter.
 :invert? - show current filter state.
 :jobs - shows menu of current backgrounded processes.

@@ -2479,7 +2479,14 @@ history_cmd(const struct cmd_info *cmd_info)
 	len = strlen(type);
 	if(strcmp(type, ":") == 0 || strncmp("cmd", type, len) == 0)
 		return show_cmdhistory_menu(curr_view) != 0;
-	if(strcmp(type, ".") == 0 || strncmp("dir", type, len) == 0)
+	else if(strcmp(type, "@") == 0 || strncmp("input", type, len) == 0)
+		return show_prompthistory_menu(curr_view) != 0;
+	else if(strcmp(type, "/") == 0 || strncmp("search", type, len) == 0 ||
+			strncmp("fsearch", type, len) == 0)
+		return show_fsearchhistory_menu(curr_view) != 0;
+	else if(strcmp(type, "?") == 0 || strncmp("bsearch", type, len) == 0)
+		return show_bsearchhistory_menu(curr_view) != 0;
+	else if(strcmp(type, ".") == 0 || strncmp("dir", type, len) == 0)
 		return show_history_menu(curr_view) != 0;
 	else
 		return CMDS_ERR_TRAILING_CHARS;

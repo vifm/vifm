@@ -77,9 +77,11 @@
 
 	Added :grep command.
 
-	Added vifmrc syntax file for Vim.
+	Added vifmrc syntax and filetype files for Vim.
 
 	Added 'd' state for execute flags in permission dialog.
+
+	Added search and prompt history to :history command.
 
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
