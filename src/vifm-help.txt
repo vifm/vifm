@@ -35,6 +35,9 @@ OPTIONS
        --version, -v
               Show version information and quit.
 
+       --no-configs
+              Don't read vifmrc and vifminfo.
+
 General keys
        Ctrl-c or Escape
               cancel most operations.
@@ -680,77 +683,82 @@ Commands
        :sync
          change the other panel to the current panel directory.
 
+       :[range]tr/pattern/string/
+         for each file in range transliterate the characters which  appear  in
+         pattern to the corresponding character in string.
+
+       String  can contain  ...9 to link to capture groups (0 - all match, 1 -
+       first group, etc.).
+
        :undol[ist]
-         show list of latest changes.  Add ! to see commands.
+              show list of latest changes.  Add ! to see commands.
 
        :vie[w]
-         toggle on and off the quick file view.
+              toggle on and off the quick file view.
 
        :w[rite]
-         write vifminfo file (add ! to force write even  if  settings  weren't
-         changed).
+              write vifminfo file (add !  to  force  write  even  if  settings
+              weren't changed).
 
-       :wq
-         same as :quit.
+       :wq    same as :quit.
 
-       :x[it]
-         will exit Vifm (add ! if you don't want to save changes).
+       :x[it] will exit Vifm (add ! if you don't want to save changes).
 
 
        :map lhs rhs
-         map lhs key sequence to rhs in normal and visual modes.
+              map lhs key sequence to rhs in normal and visual modes.
 
        :map! lhs rhs
-         map lhs key sequence to rhs in command line mode.
+              map lhs key sequence to rhs in command line mode.
 
 
        :cm[ap] lhs rhs
-         map lhs to rhs in command line mode.
+              map lhs to rhs in command line mode.
 
        :nm[ap] lhs rhs
-         map lhs to rhs in normal mode.
+              map lhs to rhs in normal mode.
 
        :vm[ap] lhs rhs
-         map lhs to rhs in visual mode.
+              map lhs to rhs in visual mode.
 
 
        :no[remap] lhs rhs
-         map  the  key  sequence lhs to {rhs} for normal and visual modes, but
-         disallow mapping of rhs.
+              map  the  key sequence lhs to {rhs} for normal and visual modes,
+              but disallow mapping of rhs.
 
        :no[remap]! lhs rhs
-         map the key sequence lhs to {rhs} for command line mode, but disallow
-         mapping of rhs.
+              map the key sequence lhs to {rhs} for  command  line  mode,  but
+              disallow mapping of rhs.
 
 
        :cno[remap] lhs rhs
-         map the key sequence lhs to {rhs} for command line mode, but disallow
-         mapping of rhs.
+              map  the  key  sequence  lhs to {rhs} for command line mode, but
+              disallow mapping of rhs.
 
        :nn[oremap] lhs rhs
-         map the key sequence lhs to {rhs} for normal mode, but disallow  map‐
-         ping of rhs.
+              map the key sequence lhs to {rhs} for normal mode, but  disallow
+              mapping of rhs.
 
        :vn[oremap] lhs rhs
-         map  the key sequence lhs to {rhs} for visual mode, but disallow map‐
-         ping of rhs.
+              map  the key sequence lhs to {rhs} for visual mode, but disallow
+              mapping of rhs.
 
 
        :unm[ap] lhs
-         remove the mapping of lhs from normal and visual modes.
+              remove the mapping of lhs from normal and visual modes.
 
        :unm[ap]! lhs
-         remove the mapping of lhs from command line mode.
+              remove the mapping of lhs from command line mode.
 
 
        :cu[nmap] lhs
-         remove the mapping of lhs from command line mode.
+              remove the mapping of lhs from command line mode.
 
        :nun[map] lhs
-         remove the mapping of lhs from normal mode.
+              remove the mapping of lhs from normal mode.
 
        :vu[nmap] lhs
-         remove the mapping of lhs from visual mode.
+              remove the mapping of lhs from visual mode.
 
 Ranges
        The ranges implemented include:

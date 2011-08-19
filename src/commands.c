@@ -160,6 +160,7 @@ static int sort_cmd(const struct cmd_info *cmd_info);
 static int split_cmd(const struct cmd_info *cmd_info);
 static int substitute_cmd(const struct cmd_info *cmd_info);
 static int sync_cmd(const struct cmd_info *cmd_info);
+static int tr_cmd(const struct cmd_info *cmd_info);
 static int undolist_cmd(const struct cmd_info *cmd_info);
 static int unmap_cmd(const struct cmd_info *cmd_info);
 static int view_cmd(const struct cmd_info *cmd_info);
@@ -284,6 +285,8 @@ static const struct cmd_add commands[] = {
 		.handler = substitute_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 2, .max_args = 3,       .select = 1, },
 	{ .name = "sync",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = sync_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "tr",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
+		.handler = tr_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 2, .max_args = 2,       .select = 1, },
 	{ .name = "undolist",         .abbr = "undol", .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = undolist_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "unmap",            .abbr = "unm",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2954,6 +2957,22 @@ sync_cmd(const struct cmd_info *cmd_info)
 	change_directory(other_view, curr_view->curr_dir);
 	load_dir_list(other_view, 0);
 	return 0;
+}
+
+static int
+tr_cmd(const struct cmd_info *cmd_info)
+{
+	if(cmd_info->argv[0][0] == '\0' && cmd_info->argv[1][0] == '\0')
+	{
+		status_bar_message("Empty pattern");
+		return 1;
+	}
+	if(strlen(cmd_info->argv[0]) != strlen(cmd_info->argv[1]))
+	{
+		status_bar_message("Arguments have different lengths");
+		return 1;
+	}
+	return tr_in_names(curr_view, cmd_info->argv[0], cmd_info->argv[1]) != 0;
 }
 
 static int

@@ -46,7 +46,6 @@ Possible things to add.
         reverse)
     Improve sorting ('sort' and 'gsort'; ignore case).
     Add :mksession command and 'sessionoptions' option.
-    y/source/dest like in sed (or like tr program).
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.

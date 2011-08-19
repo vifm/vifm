@@ -2258,15 +2258,67 @@ substitute_in_name(const char *name, const char *pattern, const char *sub,
 	return buf;
 }
 
+int
+change_in_names(FileView *view, char c, const char *pattern, const char *sub,
+		char **dest)
+{
+	int i, j;
+	int n;
+	char buf[COMMAND_GROUP_INFO_LEN + 1];
+	size_t len;
+
+	len = snprintf(buf, sizeof(buf), "%c/%s/%s/ in %s: ", c, pattern, sub,
+			replace_home_part(view->curr_dir));
+
+	for(i = 0; i < view->selected_files && len < COMMAND_GROUP_INFO_LEN; i++)
+	{
+		if(!view->dir_entry[i].selected)
+			continue;
+		if(strcmp(view->dir_entry[i].name, "../") == 0)
+			continue;
+
+		if(buf[len - 2] != ':')
+		{
+			strncat(buf, ", ", sizeof(buf));
+			buf[sizeof(buf) - 1] = '\0';
+		}
+		strncat(buf, view->dir_entry[i].name, sizeof(buf));
+		buf[sizeof(buf) - 1] = '\0';
+		len = strlen(buf);
+	}
+	cmd_group_begin(buf);
+	n = 0;
+	j = -1;
+	for(i = 0; i < view->list_rows; i++)
+	{
+		char buf[NAME_MAX];
+
+		if(!view->dir_entry[i].selected)
+			continue;
+		if(strcmp(view->dir_entry[i].name, "../") == 0)
+			continue;
+
+		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
+		chosp(buf);
+		j++;
+		if(strcmp(buf, dest[j]) == 0)
+			continue;
+		mv_file(buf, dest[j], 0);
+		n++;
+	}
+	cmd_group_end();
+	free_string_array(dest, j + 1);
+	status_bar_messagef("%d file%s renamed", n, (n == 1) ? "" : "s");
+	return 1;
+}
+
 /* Returns new value for save_msg flag. */
 int
 substitute_in_names(FileView *view, const char *pattern, const char *sub,
 		int ic, int glob)
 {
-	int i, j;
+	int i;
 	regex_t re;
-	char buf[COMMAND_GROUP_INFO_LEN + 1];
-	size_t len;
 	char **dest = NULL;
 	int n = 0;
 	int cflags;
@@ -2357,31 +2409,48 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 	}
 	regfree(&re);
 
-	len = snprintf(buf, sizeof(buf), "s/%s/%s/ in %s: ", pattern, sub,
-			replace_home_part(view->curr_dir));
+	return change_in_names(view, 's', pattern, sub, dest);
+}
 
-	for(i = 0; i < view->selected_files && len < COMMAND_GROUP_INFO_LEN; i++)
+static const char *
+substitute_tr(const char *name, const char *pattern, const char *sub)
+{
+	static char buf[NAME_MAX];
+	char *p = buf;
+	while(*name != '\0')
 	{
-		if(!view->dir_entry[i].selected)
-			continue;
-		if(strcmp(view->dir_entry[i].name, "../") == 0)
-			continue;
-
-		if(buf[len - 2] != ':')
-		{
-			strncat(buf, ", ", sizeof(buf));
-			buf[sizeof(buf) - 1] = '\0';
-		}
-		strncat(buf, view->dir_entry[i].name, sizeof(buf));
-		buf[sizeof(buf) - 1] = '\0';
-		len = strlen(buf);
+		const char *t = strchr(pattern, *name);
+		if(t != NULL)
+			*p++ = sub[t - pattern];
+		else
+			*p++ = *name;
+		name++;
 	}
-	cmd_group_begin(buf);
-	n = 0;
-	j = -1;
+	*p = '\0';
+	return buf;
+}
+
+int
+tr_in_names(FileView *view, const char *pattern, const char *sub)
+{
+	int i;
+	char **dest = NULL;
+	int n = 0;
+
+	if(!is_dir_writable(view->curr_dir))
+		return 0;
+
+	if(view->selected_files == 0)
+	{
+		view->dir_entry[view->list_pos].selected = 1;
+		view->selected_files = 1;
+	}
+
 	for(i = 0; i < view->list_rows; i++)
 	{
 		char buf[NAME_MAX];
+		const char *dst;
+		struct stat st;
 
 		if(!view->dir_entry[i].selected)
 			continue;
@@ -2390,16 +2459,42 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 
 		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
 		chosp(buf);
-		j++;
-		if(strcmp(buf, dest[j]) == 0)
+		dst = substitute_tr(buf, pattern, sub);
+		if(strcmp(buf, dst) == 0)
+		{
+			view->dir_entry[i].selected = 0;
+			view->selected_files--;
 			continue;
-		mv_file(buf, dest[j], 0);
-		n++;
+		}
+		n = add_to_string_array(&dest, n, 1, dst);
+		if(is_in_string_array(dest, n - 1, dst))
+		{
+			free_string_array(dest, n);
+			status_bar_messagef("Destination name \"%s\" appears more than once",
+					dst);
+			return 1;
+		}
+		if(dst[0] == '\0')
+		{
+			free_string_array(dest, n);
+			status_bar_messagef("Destination name of \"%s\" is empty", buf);
+			return 1;
+		}
+		if(strchr(dst, '/') != NULL)
+		{
+			free_string_array(dest, n);
+			status_bar_messagef("Destination name \"%s\" contains slash", dst);
+			return 1;
+		}
+		if(lstat(dst, &st) == 0)
+		{
+			free_string_array(dest, n);
+			status_bar_messagef("File \"%s\" already exist", dst);
+			return 1;
+		}
 	}
-	cmd_group_end();
-	free_string_array(dest, j + 1);
-	status_bar_messagef("%d file%s renamed", n, (n == 1) ? "" : "s");
-	return 1;
+
+	return change_in_names(view, 't', pattern, sub, dest);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

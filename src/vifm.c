@@ -85,7 +85,7 @@ show_help_msg(void)
 	puts("  vifm --version | -v");
 	puts("    show version number and quit.\n");
 	puts("  vifm --help | -h");
-	puts("    show this help message and quit.");
+	puts("    show this help message and quit.\n");
 	puts("  vifm --no-configs");
 	puts("    don't read vifmrc and vifminfo.");
 }
