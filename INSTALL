@@ -35,14 +35,14 @@ Vim Specific Options:
 	You will also need to change set 'vimhelp' option
 	in ~/.vifm/vifmrc as the default setting is to use the plain text file.
 
+	If you want to use syntax highlighting for ~/.vifm/vifmrc file, copy the
+	vifmrc.vim file to either the system wide vim/syntax/ or to ~/.vim/syntax/
+	and add to your .vimrc file command like:
+		autocmd BufNewFile,BufRead vifmrc :set filetype=vifmrc
+	or if you use mode line add as the first or the last line to ~/.vifm/vifmrc:
+		" vim: set filetype=vifmrc :
+
 	If you want to use the vifm.vim plugin, copy the vifm.vim plugin script to 
 	either the system wide vim/plugin or to ~/.vim/plugin/.  The vifm.vim script 
 	allows you to use vifm from vim to select files.  The vifm.vim script is not
 	installed by default and must be manually copied to the plugin directory.
-	
-	If you want to use syntax highlighting for ~/.vifm/vifmrc file, copy the
-    vifmrc.vim file to either the system wide vim/syntax/ or to ~/.vim/syntax/
-    and add to your .vimrc file command like:
-        autocmd BufNewFile,BufRead vifmrc :set filetype=vifmrc
-    or if you use mode line add as the first or the last line to ~/.vifm/vifmrc:
-        " vim: set filetype=vifmrc :
