@@ -22,8 +22,6 @@
 #include <limits.h>
 #include <curses.h>
 
-#define KEYPRESS_TIMEOUT 1000 /* 1 second */
-
 typedef struct _Config {
 	char home_dir[PATH_MAX]; /* ends with a slash */
 	char config_dir[PATH_MAX];
@@ -95,6 +93,8 @@ typedef struct _Config {
 	int auto_ch_pos;
 
 	char *shell;
+
+	int timeout_len;
 } Config;
 
 extern Config cfg;

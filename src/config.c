@@ -102,6 +102,7 @@ init_config(void)
 	cfg.hl_search = 1;
 	cfg.vifm_info = VIFMINFO_BOOKMARKS;
 	cfg.auto_ch_pos = 1;
+	cfg.timeout_len = 1000;
 
 	p = getenv("SHELL");
 	if(p == NULL || *p == '\0')

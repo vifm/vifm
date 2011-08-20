@@ -34,6 +34,7 @@ static void sortnumbers_handler(enum opt_op op, union optval_t val);
 static void sort_handler(enum opt_op op, union optval_t val);
 static void sort_order_handler(enum opt_op op, union optval_t val);
 static void timefmt_handler(enum opt_op op, union optval_t val);
+static void timeoutlen_handler(enum opt_op op, union optval_t val);
 static void trash_handler(enum opt_op op, union optval_t val);
 static void undolevels_handler(enum opt_op op, union optval_t val);
 static void vicmd_handler(enum opt_op op, union optval_t val);
@@ -107,6 +108,7 @@ static struct {
 	{ "smartcase",   "scs",  OPT_BOOL, 0,                       NULL,            &smartcase_handler,   },
 	{ "sortnumbers", "",     OPT_BOOL, 0,                       NULL,            &sortnumbers_handler, },
 	{ "timefmt",     "",     OPT_STR,  0,                       NULL,            &timefmt_handler,     },
+	{ "timeoutlen",  "tm",   OPT_INT,  0,                       NULL,            &timeoutlen_handler,  },
 	{ "trash",       "",     OPT_BOOL, 0,                       NULL,            &trash_handler,       },
 	{ "undolevels",  "ul",   OPT_INT,  0,                       NULL,            &undolevels_handler,  },
 	{ "vicmd",       "",     OPT_STR,  0,                       NULL,            &vicmd_handler,       },
@@ -148,20 +150,21 @@ load_options_defaults(void)
 	options[12].val.bool_val = cfg.smart_case;
 	options[13].val.bool_val = cfg.sort_numbers;
 	options[14].val.str_val = cfg.time_format + 1;
-	options[15].val.bool_val = cfg.use_trash;
-	options[16].val.int_val = cfg.undo_levels;
-	options[17].val.str_val = cfg.vi_command;
-	options[18].val.str_val = cfg.vi_x_command;
-	options[19].val.set_items = cfg.vifm_info;
-	options[20].val.bool_val = cfg.use_vim_help;
-	options[21].val.bool_val = cfg.wild_menu;
-	options[22].val.bool_val = cfg.wrap_quick_view;
+	options[15].val.int_val = cfg.timeout_len;
+	options[16].val.bool_val = cfg.use_trash;
+	options[17].val.int_val = cfg.undo_levels;
+	options[18].val.str_val = cfg.vi_command;
+	options[19].val.str_val = cfg.vi_x_command;
+	options[20].val.set_items = cfg.vifm_info;
+	options[21].val.bool_val = cfg.use_vim_help;
+	options[22].val.bool_val = cfg.wild_menu;
+	options[23].val.bool_val = cfg.wrap_quick_view;
 
 	/* local options */
-	options[23].val.enum_item = SORT_BY_NAME;
-	options[24].val.enum_item = 0;
+	options[24].val.enum_item = SORT_BY_NAME;
+	options[25].val.enum_item = 0;
 
-	assert(ARRAY_LEN(options) == 25);
+	assert(ARRAY_LEN(options) == 26);
 }
 
 static void
@@ -404,6 +407,12 @@ timefmt_handler(enum opt_op op, union optval_t val)
 	strcat(cfg.time_format, val.str_val);
 
 	redraw_lists();
+}
+
+static void
+timeoutlen_handler(enum opt_op op, union optval_t val)
+{
+	cfg.timeout_len = val.int_val;
 }
 
 static void

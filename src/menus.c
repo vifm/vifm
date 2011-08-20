@@ -1341,8 +1341,9 @@ filetypes_khandler(struct menu_info *m, wchar_t *keys)
 
 		extension = strchr(get_current_file_name(curr_view), '.');
 		if(extension == NULL)
-			return 0;
-		snprintf(ext, sizeof(ext), "*.%s", extension);
+			snprintf(ext, sizeof(ext), "*.%s", extension);
+		else
+			snprintf(ext, sizeof(ext), "%s", get_current_file_name(curr_view));
 
 		for(i = 0; i < m->len && m->data[i][0] != '\0'; i++)
 			len += strlen(m->data[i]) + 1;

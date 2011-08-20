@@ -1179,6 +1179,14 @@ default: " %m/%d %H:%M"
 .br
 Format of time in file list.  See man date or man strftime for details.
 .TP
+.BI "timeoutlen tm"
+type: integer
+.br
+default: 1000
+.br
+The time in milliseconds that is waited for a mapped key in case of already
+typed key sequence is ambiguous.
+.TP
 .BI trash
 type: boolean
 .br

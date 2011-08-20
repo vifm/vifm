@@ -55,7 +55,7 @@ main_loop(void)
 	int last_result = 0;
 	int wait_enter = 0;
 
-	wtimeout(status_bar, KEYPRESS_TIMEOUT);
+	wtimeout(status_bar, cfg.timeout_len);
 
 	buf[0] = L'\0';
 	while(1)
@@ -87,7 +87,7 @@ main_loop(void)
 			while(wget_wch(status_bar, (wint_t*)&c) != ERR);
 			curr_stats.too_small_term = 0;
 			modes_redraw();
-			wtimeout(status_bar, KEYPRESS_TIMEOUT);
+			wtimeout(status_bar, cfg.timeout_len);
 		}
 
 		modes_pre();
@@ -158,7 +158,7 @@ main_loop(void)
 			}
 		}
 
-		wtimeout(status_bar, KEYPRESS_TIMEOUT);
+		wtimeout(status_bar, cfg.timeout_len);
 
 		clear_input_bar();
 		pos = 0;
