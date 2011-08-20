@@ -3025,11 +3025,11 @@ unmap_cmd(const struct cmd_info *cmd_info)
 	}
 	else if(!has_user_keys(subst, NORMAL_MODE))
 	{
-		result = 1;
+		result = -1;
 	}
 	else if(!has_user_keys(subst, VISUAL_MODE))
 	{
-		result = 1;
+		result = -2;
 	}
 	else
 	{
@@ -3038,12 +3038,13 @@ unmap_cmd(const struct cmd_info *cmd_info)
 	}
 	free(subst);
 
-	if(result != 0)
-	{
-		status_bar_message("No such mapping");
-		return 1;
-	}
-	return 0;
+	if(result == -1)
+		status_bar_message("No such mapping in normal mode");
+	else if(result == -2)
+		status_bar_message("No such mapping in visual mode");
+	else
+		status_bar_message("Error");
+	return result != 0;
 }
 
 static int

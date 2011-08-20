@@ -48,7 +48,7 @@ show_file_type(FileView *view, int curr_y)
 	mvwaddstr(menu_win, curr_y, 2, "Type: ");
 	if(S_ISLNK(view->dir_entry[view->list_pos].mode))
 	{
-		char linkto[PATH_MAX +NAME_MAX];
+		char linkto[PATH_MAX + NAME_MAX];
 		int len;
 		char *filename = strdup(view->dir_entry[view->list_pos].name);
 		len = strlen(filename);
@@ -96,6 +96,8 @@ show_file_type(FileView *view, int curr_y)
 		pclose(pipe);
 
 		mvwaddnstr(menu_win, curr_y, 8, buf, x - 9);
+		if(strlen(buf) > x - 9)
+			mvwaddnstr(menu_win, curr_y + 1, 8, buf + x - 9, x - 9);
 #else /* #ifdef HAVE_FILE_PROG */
 		if((S_IXUSR & view->dir_entry[view->list_pos].mode)
 				|| (S_IXGRP & view->dir_entry[view->list_pos].mode)

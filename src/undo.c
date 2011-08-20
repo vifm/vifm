@@ -401,7 +401,7 @@ is_redo_group_possible(void)
  * Return value:
  *   0 - impossible
  * < 0 - possible with renaming file in trash
- * > 0 -possible
+ * > 0 - possible
  */
 static int
 is_op_possible(const struct op_t *op)
