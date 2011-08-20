@@ -1,5 +1,5 @@
 Basic things that need to be done.
-	Termcap or terminfo support for keybindings (do we need this? curses do this).
+	Termcap or terminfo support for keybindings (do we need this? curses does).
 	Backgrounding of commands with job control (pause/resume/kill).
 	Fix window resizing (I think it's almost done).
 	Handle commands that are too long to be passed directly to the shell.
@@ -7,10 +7,12 @@ Basic things that need to be done.
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
         :chown commands.
     Perform operations using system calls, not programs.  This is much faster
-        and will ease porting on Windows (less dependencies on Cygwin).
+        and will ease porting on Windows.
 	:restore command to restore files from Trash
     Better cW command (maybe accept count of extensions to skip).
     Better globals support.
+    Maybe remove 'trash' option, since we have two commands for deletion.
+    G and gg keys in permissions dialog.
 
 Documentation.
 	Better documentation (with normal tags in Vim version).

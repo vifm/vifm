@@ -259,11 +259,13 @@ show_full_file_properties(FileView *view)
 
 	redraw_full_file_properties(view);
 
+#ifdef ENABLE_EXTENDED_KEYS
 	keypad(menu_win, TRUE);
+#endif /* ENABLE_EXTENDED_KEYS */
   /* wait for Return or Ctrl-c or Esc or error */
 	do
 		key = wgetch(menu_win);
-	while(key != 13 && key != 3 && key != 27 && key != ERR);
+	while(key != 13 && key != 3 && key != 27 && key != ERR && key != 'q');
 
 	werase(menu_win);
 
