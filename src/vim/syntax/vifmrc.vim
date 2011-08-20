@@ -54,7 +54,7 @@ syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
 " Expressions
 syntax region vifmStatement start='^\s*[^"]' skip='\n\s*\\' end='$' keepend
 		\ contains=vifmCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
-		\,vifmMap,vifmMapSt,vifmExecute,vifmCommands
+		\,vifmMap,vifmMapSt,vifmExecute,vifmCommands,vifmMapRhs
 syntax region vifmCmdCommandSt start='^\s*com\%[mand]' skip='\n\s*\\' end='$'
 		\ keepend contains=vifmCmdCommand
 syntax region vifmMarkCommandSt start='^\s*ma\%[rk]\>' end='$' keepend oneline
@@ -66,6 +66,9 @@ syntax region vifmExecute start='!' end='$' keepend oneline
 syntax region vifmCommands start=':' end='$' keepend oneline
 		\ contains=vifmCommand,vifmNotation,vifmExecute
 syntax match vifmMapLhs /\S\+/ contained contains=vifmNotation
+		\ nextgroup=vifmMapRhs
+syntax match vifmMapRhs /\s\+\S\+/ contained
+		\ contains=vifmNotation,vifmCommand,vifmExecute
 syntax region vifmSet matchgroup=vifmCommand
 		\ start='\<se\%[t]\>' skip='\n\s*\\' end='$' keepend
 		\ contains=vifmOption,vifmSetString,vifmNumber
