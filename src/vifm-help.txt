@@ -1038,6 +1038,12 @@ Command macros
               default: ascending
               Sets sort order: ascending, descending.
 
+       timefmt
+              type: string
+              default: " %m/%d %H:%M"
+              Format  of  time in file list.  See man date or man strftime for
+              details.
+
        trash  type: boolean
               default: true
               Use trash directory.
@@ -1049,14 +1055,14 @@ Command macros
 
        vicmd  type: string
               default: "vim"
-              The  actual command used to start vi.  Ampersand sign at the end
-              (regardless whether it's preceded by space or not)  means  back‐
+              The actual command used to start vi.  Ampersand sign at the  end
+              (regardless  whether  it's preceded by space or not) means back‐
               grounding of command.
 
        vixcmd type: string
               default: value of vicmd
-              The  command  used to start vi when in X.  Ampersand sign at the
-              end (regardless whether it's preceded by  space  or  not)  means
+              The command used to start vi when in X.  Ampersand sign  at  the
+              end  (regardless  whether  it's  preceded by space or not) means
               backgrounding of command.
 
        vifminfo
@@ -1089,7 +1095,7 @@ Command macros
        wildmenu wmnu
               type: boolean
               default: false
-              Controls whether possible matches of completion  will  be  shown
+              Controls  whether  possible  matches of completion will be shown
               above the command line.
 
        wrap   type: boolean
@@ -1097,7 +1103,7 @@ Command macros
               Controls whether to wrap text in quick view.
 
 Mappings
-       Since  it's not easy to enter special characters there are several spe‐
+       Since it's not easy to enter special characters there are several  spe‐
        cial sequences that can be used in place of them. They are:
 
        <cr>   Enter key
@@ -1111,13 +1117,13 @@ Mappings
        <f0> - <f63>
               Functional keys
 
-       vifm removes whitespace characters at the beginning  and  end  of  com‐
-       mands.   That's  why  you  may want to use <space> at the end of rhs in
+       vifm  removes  whitespace  characters  at the beginning and end of com‐
+       mands.  That's why you may want to use <space> at the  end  of  rhs  in
        mappings.  For example:
 
         cmap <f1> man<space>
 
-       will put "man " in line when you hit the <f1> key in the  command  line
+       will  put  "man " in line when you hit the <f1> key in the command line
        mode.
 
 Compatibility mode
@@ -1128,23 +1134,23 @@ Compatibility mode
 
        Vim like mode:
            - <c-i> (<tab>) to go forward on history.
-           -  dd  deletes file under the cursor and ds works as dd in compati‐
+           - dd deletes file under the cursor and ds works as dd  in  compati‐
        bility mode.
-           - yy yanks file under the cursor and ys works as dd in  compatibil‐
+           -  yy yanks file under the cursor and ys works as dd in compatibil‐
        ity mode.
 
 Menus and dialogs
        General
 
-       j,  k - move.  <Escape>, Ctrl-c - clear.  <Return>, l - select and exit
+       j, k - move.  <Escape>, Ctrl-c - clear.  <Return>, l - select and  exit
        the menu.  Ctrl-l - redraw the menu.
 
        In all menus
 
-       Ctrl-b/Ctrl-f Ctrl-d/Ctrl-u Ctrl-e/Ctrl-y / and ?,  n/N  [num]G/[num]gg
+       Ctrl-b/Ctrl-f  Ctrl-d/Ctrl-u  Ctrl-e/Ctrl-y / and ?, n/N [num]G/[num]gg
        H/M/L zb/zt/zz
 
-       All  these  keys  have the same meaning as in normal mode (but not L in
+       All these keys have the same meaning as in normal mode (but  not  L  in
        filetype menu).
 
        : - enter command line mode for menus (currently only :exi[t], :q[uit],
@@ -1152,7 +1158,7 @@ Menus and dialogs
 
        Apropos menu
 
-       l  key  wont close the menu allowing user to pick another man page, use
+       l key wont close the menu allowing user to pick another man  page,  use
        :q to close the menu.
 
        Commands menu
@@ -1166,14 +1172,13 @@ Menus and dialogs
 
        Directory stack menu
 
-       Pressing  l  or  Enter  on  directory  name  will rotate stack to place
+       Pressing l or Enter on  directory  name  will  rotate  stack  to  place
        selected directory pair at the top of the stack.
 
        Filetype menu
 
-       Commands from vifmrc are displayed above empty line. When all  commands
-       below  empty  line  were found in .desktop files.  Note: you can't save
-       programs for files without extension.
+       Commands  from vifmrc are displayed above empty line. When all commands
+       below empty line were found in .desktop files.
 
        J and K - to move menu items L - save all commands above empty line  as
        program list

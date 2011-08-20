@@ -1172,6 +1172,13 @@ default: ascending
 .br
 Sets sort order: ascending, descending.
 .TP
+.BI timefmt
+type: string
+.br
+default: " %m/%d %H:%M"
+.br
+Format of time in file list.  See man date or man strftime for details.
+.TP
 .BI trash
 type: boolean
 .br
@@ -1333,7 +1340,6 @@ Filetype menu
 
 Commands from vifmrc are displayed above empty line. When all commands below
 empty line were found in .desktop files.
-Note: you can't save programs for files without extension.
 
 J and K - to move menu items
 L - save all commands above empty line as program list
