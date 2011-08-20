@@ -655,7 +655,8 @@ default: true
 When disabled vifm will set cursor to the first line in the view after :cd and
 :pushd commands instead of saved cursor position.  Disabling this will also
 make vifm clear information about cursor position in the view history on :cd
-and :pushd commands (and on startup if autochpos is disabled in the vifmrc)
+and :pushd commands (and on startup if autochpos is disabled in the vifmrc).
+l key in the :history . menu is treated like :cd command.
 
 confirm cf
 type: boolean

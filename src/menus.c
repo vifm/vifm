@@ -765,9 +765,16 @@ execute_menu_cb(FileView *view, menu_info *m)
 			execute_filetype_cb(view, m);
 			break;
 		case HISTORY:
+			if(!cfg.auto_ch_pos)
+			{
+				clean_positions_in_history(curr_view);
+				curr_stats.ch_pos = 0;
+			}
 			change_directory(view, m->data[m->pos]);
 			load_dir_list(view, 0);
 			moveto_list_pos(view, view->list_pos);
+			if(!cfg.auto_ch_pos)
+				curr_stats.ch_pos = 1;
 			break;
 		case DIRSTACK:
 			execute_dirstack_cb(view, m);
