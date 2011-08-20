@@ -13,7 +13,7 @@ Basic things that need to be done.
     Better globals support.
 
 Documentation.
-	Better documentation.
+	Better documentation (with normal tags in Vim version).
 
 Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).
@@ -41,8 +41,9 @@ Possible things to add.
     Add g/ and g? commands (search, but don't select files).
     Reverse searching (/ for search, g/ for selecting, g!/ for selecting
         reverse)
-    Improve sorting ('sort' and 'gsort'; ignore case).
+    Improve sorting ('sort' and 'gsort'; ignore case; ignore dirs).
     Add :mksession command and 'sessionoptions' option.
+    'incsearch' option.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
@@ -68,6 +69,5 @@ Other (questionable) things.
 
 Code improvements.
     Write more tests.
-    Rename exec_* to something.
     Improve logging (print back trace).
     Stay at the same file in some cases.

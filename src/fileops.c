@@ -905,7 +905,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 		else if(change_directory(view, filename) == 0)
 		{
 			load_dir_list(view, 0);
-			moveto_list_pos(view, view->curr_line);
+			moveto_list_pos(view, view->list_pos);
 		}
 		return;
 	}
