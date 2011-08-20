@@ -59,6 +59,8 @@ static void chmod_file_in_list(FileView *view, int pos, const char *mode,
 		const char *inv_mode, int recurse_dirs);
 static void file_chmod(char *path, char *esc_path, const char *mode,
 		const char *inv_mode, int recurse_dirs);
+static void cmd_G(struct key_info, struct keys_info *);
+static void cmd_gg(struct key_info, struct keys_info *);
 static void cmd_space(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
@@ -72,6 +74,8 @@ static struct keys_add_info builtin_cmds[] = {
 	/* escape */
 	{L"\x1b", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L" ", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
+	{L"G", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
+	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
 	{L"h", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
 	{L"j", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
@@ -456,6 +460,32 @@ file_chmod(char *path, char *esc_path, const char *mode, const char *inv_mode,
 	}
 
 	add_operation(cmd, path, NULL, undo_cmd, path, NULL);
+}
+
+static void
+cmd_G(struct key_info key_info, struct keys_info *keys_info)
+{
+	while(curr < bottom)
+	{
+		inc_curr();
+		permnum++;
+	}
+
+	wmove(change_win, curr, col);
+	wrefresh(change_win);
+}
+
+static void
+cmd_gg(struct key_info key_info, struct keys_info *keys_info)
+{
+	while(curr > 3)
+	{
+		dec_curr();
+		permnum--;
+	}
+
+	wmove(change_win, curr, col);
+	wrefresh(change_win);
 }
 
 static void
