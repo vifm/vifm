@@ -974,6 +974,14 @@ goto_history_pos(FileView *view, int pos)
 }
 
 void
+clean_positions_in_history(FileView *view)
+{
+	int i;
+	for(i = 0; i <= view->history_pos; i++)
+		view->history[i].file[0] = '\0';
+}
+
+void
 save_view_history(FileView *view, const char *path, const char *file)
 {
 	int x;

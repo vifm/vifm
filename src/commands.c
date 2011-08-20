@@ -2115,7 +2115,10 @@ cd_cmd(const struct cmd_info *cmd_info)
 	char dir[PATH_MAX];
 	int result;
 	if(!cfg.auto_ch_pos)
+	{
+		clean_positions_in_history(curr_view);
 		curr_stats.ch_pos = 0;
+	}
 	if(cmd_info->argc == 0)
 	{
 		result = cd(curr_view, cfg.home_dir);

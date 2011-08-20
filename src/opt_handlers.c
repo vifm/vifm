@@ -228,6 +228,11 @@ static void
 autochpos_handler(enum opt_op op, union optval_t val)
 {
 	cfg.auto_ch_pos = val.bool_val;
+	if(curr_stats.vifm_started < 2)
+	{
+		clean_positions_in_history(curr_view);
+		clean_positions_in_history(other_view);
+	}
 }
 
 static void

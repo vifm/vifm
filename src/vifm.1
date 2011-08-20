@@ -1042,7 +1042,9 @@ type: boolean
 default: true
 .br
 When disabled vifm will set cursor to the first line in the view after :cd and
-:pushd commands instead of saved cursor position.
+:pushd commands instead of saved cursor position.  Disabling this will also
+make vifm clear information about cursor position in the view history on :cd
+and :pushd commands (and on startup if autochpos is disabled in the vifmrc)
 .TP
 .BI "confirm cf"
 type: boolean
