@@ -337,7 +337,11 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	*mode = NORMAL_MODE;
 	saved_menu = menu;
-	execute_menu_cb(curr_view, menu);
+	if(execute_menu_cb(curr_view, menu) != 0)
+	{
+		*mode = MENU_MODE;
+		return;
+	}
 
 	if(*mode != MENU_MODE)
 	{

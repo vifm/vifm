@@ -864,6 +864,11 @@ menu).
 : - enter command line mode for menus (currently only :exi[t], :q[uit], :x[it]
 and :range are supported).
 
+Apropos menu~
+
+l key wont close the menu allowing user to pick another man page, use :q to
+close the menu.
+
 Commands menu~
 
 dd on a command to remove.

@@ -82,7 +82,8 @@ void clean_menu_position(menu_info *m);
 void moveto_menu_pos(int pos, menu_info *m);
 void redraw_menu(menu_info *m);
 void draw_menu(menu_info *m);
-void execute_menu_cb(FileView *view, menu_info *m);
+/* Returns zero if menu mode should be leaved */
+int execute_menu_cb(FileView *view, menu_info *m);
 int print_errors(FILE *ef);
 
 #endif

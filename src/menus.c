@@ -607,15 +607,17 @@ execute_apropos_cb(menu_info *m)
 		{
 			z++;
 			if(z > 40)
+			{
+				free(free_this);
 				return;
+			}
 		}
 
 		num_str[z] = '\0';
 		line = strchr(line, ' ');
 		line[0] = '\0';
 
-		snprintf(command, sizeof(command), "man %s %s", num_str,
-				man_page);
+		snprintf(command, sizeof(command), "man %s %s", num_str, man_page);
 
 		shellout(command, 0);
 	}
@@ -734,14 +736,14 @@ execute_dirstack_cb(FileView *view, menu_info *m)
 	rotate_stack(pos);
 }
 
-void
+int
 execute_menu_cb(FileView *view, menu_info *m)
 {
 	switch(m->type)
 	{
 		case APROPOS:
 			execute_apropos_cb(m);
-			break;
+			return 1;
 		case BOOKMARK:
 			move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
 			break;
@@ -782,8 +784,8 @@ execute_menu_cb(FileView *view, menu_info *m)
 		case JOBS:
 			execute_jobs_cb(view, m);
 			break;
-		case FIND:
 		case LOCATE:
+		case FIND:
 		case USER_NAVIGATE:
 		case GREP:
 			goto_selected_file(view, m);
@@ -793,6 +795,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 		default:
 			break;
 	}
+	return 0;
 }
 
 void
@@ -983,7 +986,7 @@ show_apropos_menu(FileView *view, char *args)
 	pclose(file);
 	m.len = x;
 	curr_stats.search = 0;
-	if (m.len <= 0)
+	if(m.len <= 0)
 	{
 		snprintf(buf, sizeof(buf), "No matches for \'%s\'", m.title);
 		show_error_msg("Nothing Appropriate", buf);
