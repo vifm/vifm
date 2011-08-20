@@ -184,7 +184,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "!",                .abbr = NULL,    .emark = 1,  .id = COM_EXECUTE,     .range = 1,    .bg = 1, .quote = 0, .regexp = 0,
 		.handler = emark_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
+		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cd",               .abbr = NULL,    .emark = 1,  .id = COM_CD,          .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = cd_cmd,          .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "change",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2054,7 +2054,20 @@ emark_cmd(const struct cmd_info *cmd_info)
 static int
 apropos_cmd(const struct cmd_info *cmd_info)
 {
-	show_apropos_menu(curr_view, cmd_info->args);
+	static char *last_args;
+
+	if(cmd_info->argc > 0)
+	{
+		free(last_args);
+		last_args = strdup(cmd_info->args);
+	}
+	else if(last_args == NULL)
+	{
+		status_bar_message("Nothing to repeat");
+		return 1;
+	}
+
+	show_apropos_menu(curr_view, last_args);
 	return 0;
 }
 

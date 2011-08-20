@@ -442,6 +442,9 @@ Commands
               Selecting an item in the menu will open the  corresponding  man‐
               page.
 
+       :apropos
+              repeats last :apropos command.
+
        :cd    change to your home directory.
 
        :cd -  go to previous directory.

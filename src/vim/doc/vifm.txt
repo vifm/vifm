@@ -360,6 +360,7 @@ The builtin commands are:
 :apropos manpage - will create a menu of items returned by the apropos
     command. Selecting an item in the menu will open the corresponding
     manpage.
+:apropos - repeats last :apropos command.
 :cd - change to your home directory.
 :cd - - go to previous directory.
 :cd ~/dir - change directory to ~/dir.
