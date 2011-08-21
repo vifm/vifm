@@ -648,6 +648,7 @@ write_info_file(void)
 	if(cfg.vifm_info & VIFMINFO_OPTIONS)
 	{
 		fputs("\n# Options:\n", fp);
+		fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
 		fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
 		fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
 		fprintf(fp, "=%sfollowlinks\n", cfg.follow_links ? "" : "no");
@@ -662,6 +663,7 @@ write_info_file(void)
 		fprintf(fp, "=%ssmartcase\n", cfg.smart_case ? "" : "no");
 		fprintf(fp, "=%ssortnumbers\n", cfg.sort_numbers ? "" : "no");
 		fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format + 1));
+		fprintf(fp, "=timeoutlen=%d\n", cfg.timeout_len);
 		fprintf(fp, "=%strash\n", cfg.use_trash ? "" : "no");
 		fprintf(fp, "=undolevels=%d\n", cfg.undo_levels);
 		fprintf(fp, "=vicmd=%s%s\n", escape_spaces(cfg.vi_command),

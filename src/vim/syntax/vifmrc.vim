@@ -36,8 +36,8 @@ syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
 " Options
 syntax keyword vifmOption contained autochpos confirm cf fastrun followlinks
 		\ fusehome history hi hlsearch hls iec ignorecase ic reversecol runexec
-		\ shell sh smartcase scs sortnumbers timefmt trash undolevels ul vicmd
-		\ vixcmd vifminfo vimhelp wildmenu wmnu wrap sort sortorder
+		\ shell sh smartcase scs sortnumbers timefmt timeoutlen trash undolevels ul
+		\ vicmd vixcmd vifminfo vimhelp wildmenu wmnu wrap sort sortorder
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun
