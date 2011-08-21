@@ -170,6 +170,14 @@ directories).
 gv - go to visual mode restoring last selection.
 gs - restore last t selection, like gv for visual mode selection.
 
+gu<selector> - make names of selected files lowercase.
+guu - make name of current file lowercase.
+gugu - make name of current file lowercase.
+
+gU<selector> - make names of selected files uppercase.
+gUU - make name of current file uppercase.
+gUgU - make name of current file uppercase.
+
 i - handle file (even through it's executable and RUN_EXECUTABLE is set).
 
 cw - change word is used to rename a file.
@@ -262,6 +270,10 @@ V - leave visual mode.
 o - switch active selection bound.
 
 O - switch active selection bound.
+
+u - make names of selected files lowercase.
+
+U - make names of selected files uppercase.
 
 --------------------------------------------------------------------------------
 *Command_line*

@@ -71,6 +71,7 @@ int substitute_in_names(FileView *view, const char *pattern, const char *sub,
 int tr_in_names(FileView *view, const char *pattern, const char *sub);
 const char * substitute_in_name(const char *name, const char *pattern,
 		const char *sub, int glob);
+int change_case(FileView *view, int toupper, int count, int *indexes);
 
 #endif
 

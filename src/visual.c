@@ -77,6 +77,8 @@ static void cmd_cp(struct key_info, struct keys_info *);
 static void cmd_f(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
 static void goto_pos(int pos);
+static void cmd_gU(struct key_info, struct keys_info *);
+static void cmd_gu(struct key_info, struct keys_info *);
 static void cmd_gv(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
@@ -120,12 +122,15 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"M", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_M}}},
 	{L"N", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
 	{L"O", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
+	{L"U", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
 	{L"V", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_d}}},
 	{L"f", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_f}}},
 	{L"cp", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
 	{L"cw", {BUILDIN_CMD, FOLLOWED_BY_NONE, {.cmd = L":rename\r"}}},
 	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{L"gU", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
+	{L"gu", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gu}}},
 	{L"gv", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gv}}},
 	{L"j", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
@@ -133,6 +138,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"m", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_m}}},
 	{L"n", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
 	{L"o", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_O}}},
+	{L"u", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gu}}},
 	{L"v", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"y", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_y}}},
 	{L"zb", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zb}}},
@@ -471,6 +477,7 @@ delete(struct key_info key_info, int use_trash)
 	}
 
 	save_msg = delete_file(view, key_info.reg, 0, NULL, use_trash);
+	update_marks(view);
 	leave_visual_mode(save_msg, 1);
 }
 
@@ -511,6 +518,24 @@ goto_pos(int pos)
 		select_up_one(view, start_pos);
 
 	update();
+}
+
+static void
+cmd_gU(struct key_info key_info, struct keys_info *keys_info)
+{
+	int save_msg;
+	save_msg = change_case(view, 1, 0, NULL);
+	update_marks(view);
+	leave_visual_mode(save_msg, 1);
+}
+
+static void
+cmd_gu(struct key_info key_info, struct keys_info *keys_info)
+{
+	int save_msg;
+	save_msg = change_case(view, 0, 0, NULL);
+	update_marks(view);
+	leave_visual_mode(save_msg, 1);
 }
 
 static void
@@ -627,6 +652,7 @@ cmd_y(struct key_info key_info, struct keys_info *keys_info)
 
 	free_selected_file_array(view);
 
+	update_marks(view);
 	leave_visual_mode(1, 1);
 }
 

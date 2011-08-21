@@ -20,6 +20,7 @@ static void keys_colon(struct key_info key_info, struct keys_info *keys_info);
 static void keys_m(struct key_info key_info, struct keys_info *keys_info);
 static void keys_quote(struct key_info key_info, struct keys_info *keys_info);
 static void keys_H(struct key_info key_info, struct keys_info *keys_info);
+static void keys_gu(struct key_info key_info, struct keys_info *keys_info);
 static void keys_j(struct key_info key_info, struct keys_info *keys_info);
 static void keys_k(struct key_info key_info, struct keys_info *keys_info);
 static void keys_s(struct key_info key_info, struct keys_info *keys_info);
@@ -60,6 +61,17 @@ init_buildin_keys(int *key_mode)
 
 	curr = add_cmd(L"H", NORMAL_MODE);
 	curr->data.handler = keys_H;
+
+	curr = add_cmd(L"gu", NORMAL_MODE);
+	curr->data.handler = keys_gu;
+	curr->followed = FOLLOWED_BY_SELECTOR;
+	curr->type = BUILDIN_WAIT_POINT;
+
+	curr = add_cmd(L"guu", NORMAL_MODE);
+	curr->data.handler = keys_gu;
+
+	curr = add_cmd(L"gugu", NORMAL_MODE);
+	curr->data.handler = keys_gu;
 
 	curr = add_cmd(L"j", NORMAL_MODE);
 	curr->data.handler = keys_j;
@@ -175,6 +187,17 @@ keys_H(struct key_info key_info, struct keys_info *keys_info)
 		free(*p++);
 	}
 	free(list);
+}
+
+static void
+keys_gu(struct key_info key_info, struct keys_info *keys_info)
+{
+	last = 2;
+	if(keys_info->selector)
+	{
+		printf("as a selector: ");
+	}
+	printf("(%d)gu in register %c\n", key_info.count, key_info.reg);
 }
 
 static void

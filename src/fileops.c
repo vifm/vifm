@@ -2403,7 +2403,7 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 		{
 			regfree(&re);
 			free_string_array(dest, n);
-			status_bar_messagef("File \"%s\" already exist", dst);
+			status_bar_messagef("File \"%s\" already exists", dst);
 			return 1;
 		}
 	}
@@ -2489,12 +2489,120 @@ tr_in_names(FileView *view, const char *pattern, const char *sub)
 		if(lstat(dst, &st) == 0)
 		{
 			free_string_array(dest, n);
-			status_bar_messagef("File \"%s\" already exist", dst);
+			status_bar_messagef("File \"%s\" already exists", dst);
 			return 1;
 		}
 	}
 
 	return change_in_names(view, 't', pattern, sub, dest);
+}
+
+static void
+str_tolower(char *str)
+{
+	while(*str != '\0')
+	{
+		*str = tolower(*str);
+		str++;
+	}
+}
+
+static void
+str_toupper(char *str)
+{
+	while(*str != '\0')
+	{
+		*str = toupper(*str);
+		str++;
+	}
+}
+
+int
+change_case(FileView *view, int toupper, int count, int *indexes)
+{
+	int i;
+	char **dest = NULL;
+	int n = 0, k;
+	char buf[COMMAND_GROUP_INFO_LEN + 1];
+	size_t len;
+
+	if(!is_dir_writable(view->curr_dir))
+		return 0;
+
+	if(count > 0)
+		get_selected_files(view, count, indexes);
+	else
+		get_all_selected_files(view);
+
+	for(i = 0; i < view->selected_files; i++)
+	{
+		char buf[NAME_MAX];
+		struct stat st;
+
+		chosp(view->selected_filelist[i]);
+		strcpy(buf, view->selected_filelist[i]);
+		if(toupper)
+			str_toupper(buf);
+		else
+			str_tolower(buf);
+
+		n = add_to_string_array(&dest, n, 1, buf);
+
+		if(is_in_string_array(dest, n - 1, buf))
+		{
+			free_string_array(dest, n);
+			free_selected_file_array(view);
+			view->selected_files = 0;
+			status_bar_messagef("Destination name \"%s\" appears more than once",
+					buf);
+			return 1;
+		}
+		if(strcmp(dest[i], buf) == 0)
+			continue;
+		if(lstat(buf, &st) == 0)
+		{
+			free_string_array(dest, n);
+			free_selected_file_array(view);
+			view->selected_files = 0;
+			status_bar_messagef("File \"%s\" already exists", buf);
+			return 1;
+		}
+	}
+
+	len = snprintf(buf, sizeof(buf), "g%c in %s: ", toupper ? 'U' : 'u',
+			replace_home_part(view->curr_dir));
+
+	for(i = 0; i < view->selected_files && len < COMMAND_GROUP_INFO_LEN; i++)
+	{
+		if(strcmp(dest[i], view->selected_filelist[i]) == 0)
+			continue;
+
+		if(buf[len - 2] != ':')
+		{
+			strncat(buf, ", ", sizeof(buf));
+			buf[sizeof(buf) - 1] = '\0';
+		}
+		strncat(buf, view->selected_filelist[i], sizeof(buf));
+		buf[sizeof(buf) - 1] = '\0';
+		len = strlen(buf);
+	}
+
+	cmd_group_begin(buf);
+	k = 0;
+	for(i = 0; i < n; i++)
+	{
+		if(strcmp(dest[i], view->selected_filelist[i]) == 0)
+			continue;
+		mv_file(view->selected_filelist[i], dest[i], 0);
+		k++;
+	}
+	cmd_group_end();
+
+	free_selected_file_array(view);
+	view->selected_files = 0;
+	free_string_array(dest, n);
+	status_bar_messagef("%d file%s renamed", k, (k == 1) ? "" : "s");
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

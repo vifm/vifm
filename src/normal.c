@@ -111,6 +111,8 @@ static void cmd_ga(struct key_info, struct keys_info *);
 static void cmd_gf(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
 static void cmd_gs(struct key_info, struct keys_info *);
+static void cmd_gU(struct key_info, struct keys_info *);
+static void cmd_gu(struct key_info, struct keys_info *);
 static void cmd_gv(struct key_info, struct keys_info *);
 static void cmd_h(struct key_info, struct keys_info *);
 static void cmd_i(struct key_info, struct keys_info *);
@@ -205,6 +207,12 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"gf", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gf}}},
 	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
 	{L"gs", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gs}}},
+	{L"gU", {BUILDIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_gU}}},
+	{L"gUgU", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
+	{L"gUU", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
+	{L"gu", {BUILDIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_gu}}},
+	{L"gugu", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gu}}},
+	{L"guu", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gu}}},
 	{L"gv", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gv}}},
 	{L"h", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
 	{L"i", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_i}}},
@@ -674,6 +682,42 @@ cmd_gs(struct key_info key_info, struct keys_info *keys_info)
 	}
 	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
+}
+
+static void
+cmd_gU(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(keys_info->count == 0)
+	{
+		curr_stats.save_msg = change_case(curr_view, 1, 1, &curr_view->list_pos);
+	}
+	else
+	{
+		curr_stats.save_msg = change_case(curr_view, 1, keys_info->count,
+				keys_info->indexes);
+
+		free(keys_info->indexes);
+		keys_info->indexes = NULL;
+		keys_info->count = 0;
+	}
+}
+
+static void
+cmd_gu(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(keys_info->count == 0)
+	{
+		curr_stats.save_msg = change_case(curr_view, 0, 1, &curr_view->list_pos);
+	}
+	else
+	{
+		curr_stats.save_msg = change_case(curr_view, 0, keys_info->count,
+				keys_info->indexes);
+
+		free(keys_info->indexes);
+		keys_info->indexes = NULL;
+		keys_info->count = 0;
+	}
 }
 
 static void

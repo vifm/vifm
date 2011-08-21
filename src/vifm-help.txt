@@ -217,6 +217,16 @@ Other Normal Mode Keys
 
        gs     restore last t selection, like gv for visual mode selection.
 
+       gu<selector>
+              make names of selected files lowercase.
+
+       guu    gugu make name of current file lowercase.
+
+       gU<selector>
+              make names of selected files uppercase.
+
+       gUU    gUgU make name of current file uppercase.
+
        i      opens file with associated program even if it's an executable.
 
        cw     rename a file.
@@ -1285,4 +1295,4 @@ AUTHOR
 
 
 
-                                August 20, 2011                        vifm(1)
+                                August 21, 2011                        vifm(1)
