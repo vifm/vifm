@@ -114,6 +114,7 @@ static int emark_cmd(const struct cmd_info *cmd_info);
 static int apropos_cmd(const struct cmd_info *cmd_info);
 static int cd_cmd(const struct cmd_info *cmd_info);
 static int change_cmd(const struct cmd_info *cmd_info);
+static int clone_cmd(const struct cmd_info *cmd_info);
 static int cmap_cmd(const struct cmd_info *cmd_info);
 static int cnoremap_cmd(const struct cmd_info *cmd_info);
 static int colorscheme_cmd(const struct cmd_info *cmd_info);
@@ -189,6 +190,8 @@ static const struct cmd_add commands[] = {
 		.handler = cd_cmd,          .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "change",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = change_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "clone",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
+		.handler = clone_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 1, },
 	{ .name = "cmap",             .abbr = "cm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cnoremap",         .abbr = "cno",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -267,7 +270,7 @@ static const struct cmd_add commands[] = {
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "registers",        .abbr = "reg",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "rename",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "rename",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = rename_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "restart",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = restart_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
@@ -2169,6 +2172,12 @@ change_cmd(const struct cmd_info *cmd_info)
 {
 	enter_permissions_mode(curr_view);
 	return 0;
+}
+
+static int
+clone_cmd(const struct cmd_info *cmd_info)
+{
+	return clone_files(curr_view) != 0;
 }
 
 static int

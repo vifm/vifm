@@ -383,6 +383,7 @@ The builtin commands are:
     Accepts macros.
 :cd! /dir - same as :cd /dir /dir.
 :change - create a menu window to alter a files properties.
+:[range]clone - clones files in current directory.
 :colo[rscheme] - gives a menu with a list of available color schemes.  You
     can choose default color scheme here.  It will be used for view if no
     DIRECTORY in colorscheme file fits current path.  It's also used to
@@ -1005,7 +1006,6 @@ commands.
   alink
   chmod
   chown
-  clone
   co[py]
   g[lobal]
   m[ove]

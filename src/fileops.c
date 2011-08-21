@@ -1768,6 +1768,8 @@ put_next(const char *dest_name, int override)
 	char *src_buf, *dst_buf, *name_buf = NULL;
 	struct stat st;
 
+	/* TODO: refactor this function (put_next()) */
+
 	override = override || put_confirm.overwrite_all;
 
 	filename = put_confirm.reg->files[put_confirm.x];
@@ -1848,8 +1850,8 @@ put_next(const char *dest_name, int override)
 		}
 		else
 		{
-			snprintf(do_buf, sizeof(do_buf), "cp %s -pR %s %s",
-					override ? "" : "-n", src_buf, dst_buf);
+			snprintf(do_buf, sizeof(do_buf), "cp %s -pR %s %s", override ? "" : "-n",
+					src_buf, dst_buf);
 			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s", dst_buf);
 		}
 
