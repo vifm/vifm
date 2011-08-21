@@ -2115,13 +2115,16 @@ clone_files(FileView *view, char **list, int nlines)
 	}
 	get_all_selected_files(view);
 
-	if(!is_name_list_ok(view->selected_files, nlines, list) ||
-			!is_clone_list_ok(nlines, list))
+	if(nlines != 0)
 	{
-		clean_selected_files(view);
-		draw_dir_list(view, view->top_line);
-		moveto_list_pos(view, view->list_pos);
-		return 1;
+		if(!is_name_list_ok(view->selected_files, nlines, list) ||
+				!is_clone_list_ok(nlines, list))
+		{
+			clean_selected_files(view);
+			draw_dir_list(view, view->top_line);
+			moveto_list_pos(view, view->list_pos);
+			return 1;
+		}
 	}
 
 	len = snprintf(buf, sizeof(buf), "clone in %s: ", view->curr_dir);
