@@ -33,6 +33,7 @@
 #include "filelist.h"
 #include "file_magic.h"
 #include "menus.h"
+#include "modes.h"
 #include "status.h"
 #include "ui.h"
 #include "utils.h"
@@ -271,8 +272,7 @@ show_full_file_properties(FileView *view)
 
 	curr_stats.show_full = 0;
 
-	curr_stats.too_small_term = 0;
-	redraw_window();
+	modes_redraw();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

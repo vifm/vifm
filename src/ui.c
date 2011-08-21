@@ -431,6 +431,8 @@ is_term_working(void)
 	if(ws.ws_col < 0)
 		finish("Terminal is too small to run vifm\n");
 
+	resize_term(ws.ws_row, ws.ws_col);
+
 	getmaxyx(stdscr, screen_y, screen_x);
 
 	if(screen_y < 10 || screen_x < 30)

@@ -176,15 +176,7 @@ modes_redraw(void)
 		return;
 	}
 
-	if(curr_stats.need_redraw)
-	{
-		touchwin(stdscr);
-		update_all_windows();
-	}
-	else
-	{
-		redraw_window();
-	}
+	redraw_window();
 
 	if(mode == SORT_MODE)
 		redraw_sort_dialog();
