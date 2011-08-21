@@ -1119,6 +1119,7 @@ clean_selected_files(FileView *view)
 		free_string_array(view->saved_selection, view->nsaved_selection);
 
 		tmp = view->selected_filelist;
+		view->selected_filelist = NULL;
 
 		get_all_selected_files(view);
 		view->nsaved_selection = view->selected_files;

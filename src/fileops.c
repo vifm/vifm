@@ -1305,8 +1305,7 @@ read_file_lines(FILE *f, int *nlines)
 }
 
 static int
-is_rename_file_ok(FileView *view, int *indexes, int count, int nlines,
-		char **list)
+is_name_list_ok(int count, int nlines, char **list)
 {
 	int i;
 
@@ -1326,8 +1325,6 @@ is_rename_file_ok(FileView *view, int *indexes, int count, int nlines,
 
 	for(i = 0; i < count; i++)
 	{
-		int j;
-
 		chomp(list[i]);
 
 		if(strchr(list[i], '/') != NULL)
@@ -1337,16 +1334,28 @@ is_rename_file_ok(FileView *view, int *indexes, int count, int nlines,
 			return 0;
 		}
 
-		if(list[i][0] != '\0')
+		if(list[i][0] != '\0' && is_in_string_array(list, i, list[i]))
 		{
-			for(j = 0; j < i; j++)
-				if(strcmp(list[i], list[j]) == 0)
-				{
-					status_bar_messagef("Name \"%s\" duplicates", list[j]);
-					curr_stats.save_msg = 1;
-					return 0;
-				}
+			status_bar_messagef("Name \"%s\" duplicates", list[i]);
+			curr_stats.save_msg = 1;
+			return 0;
 		}
+
+		if(list[i][0] == '\0')
+			continue;
+	}
+
+	return 1;
+}
+
+static int
+is_rename_list_ok(FileView *view, int *indexes, int count, char **list)
+{
+	int i;
+
+	for(i = 0; i < count; i++)
+	{
+		int j;
 
 		if(list[i][0] == '\0')
 			continue;
@@ -1506,7 +1515,8 @@ rename_files_ind(FileView *view, int *indexes, int count)
 
 	if((list = read_file_lines(f, &nlines)) != NULL)
 	{
-		if(is_rename_file_ok(view, indexes, count, nlines, list))
+		if(is_name_list_ok(count, nlines, list) &&
+				is_rename_list_ok(view, indexes, count, list))
 			renamed = perform_renaming(view, indexes, count, list);
 		free_string_array(list, nlines);
 	}
@@ -1560,7 +1570,8 @@ rename_files(FileView *view, char **list, int nlines)
 	{
 		int renamed = -1;
 
-		if(is_rename_file_ok(view, indexes, count, nlines, list))
+		if(is_name_list_ok(count, nlines, list) &&
+				is_rename_list_ok(view, indexes, count, list))
 			renamed = perform_renaming(view, indexes, count, list);
 
 		if(renamed >= 0)
@@ -2013,27 +2024,36 @@ put_files_from_register(FileView *view, int name, int force_move)
 }
 
 static void
-clone_file(FileView* view, const char *filename)
+clone_file(FileView* view, const char *filename, const char *clone)
 {
 	char do_cmd[PATH_MAX + NAME_MAX*2 + 4];
 	char undo_cmd[3 + PATH_MAX + 6 + 1];
 	char clone_name[PATH_MAX];
 	char *escaped, *escaped_clone;
-	int i;
-	size_t len;
 	
 	if(strcmp(filename, "./") == 0)
 		return;
 	if(strcmp(filename, "../") == 0)
 		return;
 
-	snprintf(clone_name, sizeof(clone_name), "%s", filename);
-	chosp(clone_name);
-	i = 1;
-	len = strlen(clone_name);
-	do
-		snprintf(clone_name + len, sizeof(clone_name) - len, "(%d)", i++);
-	while(access(clone_name, F_OK) == 0);
+	if(clone == NULL)
+	{
+		int i;
+		size_t len;
+
+		snprintf(clone_name, sizeof(clone_name), "%s", filename);
+		chosp(clone_name);
+		i = 1;
+		len = strlen(clone_name);
+		do
+			snprintf(clone_name + len, sizeof(clone_name) - len, "(%d)", i++);
+		while(access(clone_name, F_OK) == 0);
+	}
+	else
+	{
+		snprintf(clone_name, sizeof(clone_name), "%s", clone);
+		chosp(clone_name);
+	}
 
 	snprintf(do_cmd, sizeof(do_cmd), "%s/%s", view->curr_dir, filename);
 	escaped = escape_filename(do_cmd, 0);
@@ -2048,9 +2068,24 @@ clone_file(FileView* view, const char *filename)
 		add_operation(do_cmd, filename, clone_name, undo_cmd, clone_name, NULL);
 }
 
+static int
+is_clone_list_ok(int count, char **list)
+{
+	int i;
+	for(i = 0; i < count; i++)
+	{
+		if(access(list[i], F_OK) == 0)
+		{
+			status_bar_messagef("File \"%s\" already exists", list[i]);
+			return 0;
+		}
+	}
+	return 1;
+}
+
 /* returns new value for save_msg */
 int
-clone_files(FileView *view)
+clone_files(FileView *view, char **list, int nlines)
 {
 	size_t len;
 	int i;
@@ -2080,6 +2115,15 @@ clone_files(FileView *view)
 	}
 	get_all_selected_files(view);
 
+	if(!is_name_list_ok(view->selected_files, nlines, list) ||
+			!is_clone_list_ok(nlines, list))
+	{
+		clean_selected_files(view);
+		draw_dir_list(view, view->top_line);
+		moveto_list_pos(view, view->list_pos);
+		return 1;
+	}
+
 	len = snprintf(buf, sizeof(buf), "clone in %s: ", view->curr_dir);
 	for(i = 0; i < view->selected_files && len < COMMAND_GROUP_INFO_LEN; i++)
 	{
@@ -2089,13 +2133,18 @@ clone_files(FileView *view)
 			buf[sizeof(buf) - 1] = '\0';
 		}
 		strncat(buf, view->selected_filelist[i], sizeof(buf));
+		if(nlines > 0)
+		{
+			strncat(buf, " to ", sizeof(buf));
+			strncat(buf, list[i], sizeof(buf));
+		}
 		buf[sizeof(buf) - 1] = '\0';
 		len = strlen(buf);
 	}
 
 	cmd_group_begin(buf);
 	for(i = 0; i < view->selected_files; i++)
-		clone_file(view, view->selected_filelist[i]);
+		clone_file(view, view->selected_filelist[i], (nlines > 0) ? list[i] : NULL);
 	cmd_group_end();
 	free_selected_file_array(view);
 

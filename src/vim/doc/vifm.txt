@@ -384,6 +384,8 @@ The builtin commands are:
 :cd! /dir - same as :cd /dir /dir.
 :change - create a menu window to alter a files properties.
 :[range]clone - clones files in current directory.
+:[range]clone name1 name2... - clones files in current directory giving each
+    next clone a corresponding name from the argument list.
 :colo[rscheme] - gives a menu with a list of available color schemes.  You
     can choose default color scheme here.  It will be used for view if no
     DIRECTORY in colorscheme file fits current path.  It's also used to

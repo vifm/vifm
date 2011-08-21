@@ -59,7 +59,7 @@ void change_group(void);
 int change_link(FileView *view);
 /* Returns new value for save_msg flag. */
 int put_files_from_register(FileView *view, int name, int force_move);
-int clone_files(FileView *view);
+int clone_files(FileView *view, char **list, int nlines);
 unsigned long long calc_dirsize(const char *path, int force_update);
 int is_dir_writable(const char *path);
 /* Returns new value for save_msg flag. */
