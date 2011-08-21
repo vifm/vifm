@@ -38,6 +38,8 @@ void modes_redraw(void);
 void modes_update(void);
 void add_to_input_bar(wchar_t c);
 void clear_input_bar(void);
+/* returns current mode id */
+int get_mode(void);
 
 #endif
 

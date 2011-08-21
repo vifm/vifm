@@ -673,11 +673,12 @@ post(int id)
 		return;
 	if((curr_view != NULL && !curr_view->selected_files) || !need_clean_selection)
 		return;
+	if(get_mode() != NORMAL_MODE)
+		return;
 
 	clean_selected_files(curr_view);
 	load_saving_pos(curr_view, 1);
-	if(curr_view == curr_view)
-		moveto_list_pos(curr_view, curr_view->list_pos);
+	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
 #ifndef TEST
@@ -1677,7 +1678,7 @@ execute_command(FileView *view, char *command, int menu)
 			show_error_msg("Command error", "Unknown error");
 			break;
 	}
-	if(!menu)
+	if(!menu && get_mode() == NORMAL_MODE)
 		remove_selection(view);
 	return 0;
 }
