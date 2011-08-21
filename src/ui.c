@@ -421,13 +421,22 @@ setup_ncurses_interface(void)
 void
 is_term_working(void)
 {
+	int screen_x, screen_y;
 	struct winsize ws = { .ws_col = -1, .ws_row = -1 };
+
 	if(ioctl(0, TIOCGWINSZ, &ws) == -1)
 		finish("Terminal error");
 	if(ws.ws_row < 0)
 		finish("Terminal is too small to run vifm\n");
 	if(ws.ws_col < 0)
 		finish("Terminal is too small to run vifm\n");
+
+	getmaxyx(stdscr, screen_y, screen_x);
+
+	if(screen_y < 10 || screen_x < 30)
+		curr_stats.too_small_term = 1;
+	else if(curr_stats.too_small_term)
+		curr_stats.too_small_term = -1;
 }
 
 static void
@@ -540,15 +549,16 @@ void
 redraw_window(void)
 {
 	resize_window();
-	if(curr_stats.too_small_term)
-		return;
 
 	if(curr_stats.show_full)
 	{
-		redraw_full_file_properties(curr_view);
-		curr_stats.need_redraw = 0;
+		redraw_full_file_properties(NULL);
+		curr_stats.need_redraw = curr_stats.too_small_term;
 		return;
 	}
+
+	if(curr_stats.too_small_term)
+		return;
 
 	load_saving_pos(curr_view, 1);
 

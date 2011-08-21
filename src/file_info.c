@@ -177,7 +177,7 @@ redraw_full_file_properties(FileView *v)
 	setup_menu();
 
 	getmaxyx(menu_win, y, x);
-	werase(menu_win);
+	wclear(menu_win);
 
 	snprintf(name_buf, sizeof(name_buf), "%s",
 			view->dir_entry[view->list_pos].name);
@@ -243,9 +243,7 @@ redraw_full_file_properties(FileView *v)
 
 	mvwaddstr(menu_win, curr_y, 2, "Group: ");
 	if((grp_buf = getgrgid(view->dir_entry[view->list_pos].gid)) != NULL)
-	{
 		mvwaddstr(menu_win, curr_y, 10, grp_buf->gr_name);
-	}
 	wnoutrefresh(menu_win);
 
 	box(menu_win, 0, 0);
@@ -273,6 +271,7 @@ show_full_file_properties(FileView *view)
 
 	curr_stats.show_full = 0;
 
+	curr_stats.too_small_term = 0;
 	redraw_window();
 }
 
