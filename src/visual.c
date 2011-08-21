@@ -493,7 +493,8 @@ cmd_f(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_cp(struct key_info key_info, struct keys_info *keys_info)
 {
-	enter_permissions_mode(curr_view);
+	update_marks(view);
+	enter_permissions_mode(view);
 }
 
 static void

@@ -1202,8 +1202,11 @@ mv_file(const char *src, const char *dst, int tmpfile_num)
 		if(tmpfile_num == 0)
 			add_operation(do_command, full_src, full_dst, undo_command, full_dst,
 					full_src);
+		else if(tmpfile_num == -1)
+			add_operation(do_command, full_src, NULL, undo_command, full_dst,
+					full_src);
 		else if(tmpfile_num == 1)
-			add_operation(do_command, full_dst, NULL, undo_command, full_dst, NULL);
+			add_operation(do_command, NULL, NULL, undo_command, full_dst, NULL);
 		else if(tmpfile_num == 2)
 			add_operation(do_command, full_src, NULL, undo_command, full_src, NULL);
 	}
@@ -1289,86 +1292,87 @@ rename_file(FileView *view, int name_only)
 	enter_prompt_mode(L"New name: ", buf, rename_file_cb);
 }
 
-/* Returns not NULL if file is OK */
 static char **
-check_rename_file(FileView *view, int *indexes, int count, FILE *f)
+read_file_lines(FILE *f, int *nlines)
+{
+	char **list = NULL;
+	char name[NAME_MAX];
+
+	*nlines = 0;
+	while(fgets(name, sizeof(name), f) != NULL)
+		*nlines = add_to_string_array(&list, *nlines, 1, name);
+	return list;
+}
+
+static int
+is_rename_file_ok(FileView *view, int *indexes, int count, int nlines,
+		char **list)
 {
 	int i;
-	char **list = NULL;
-	size_t len = 0;
+
+	if(nlines < count)
+	{
+		status_bar_messagef("Not enough lines (%d/%d)", nlines, count);
+		curr_stats.save_msg = 1;
+		return 0;
+	}
+
+	if(nlines > count)
+	{
+		status_bar_messagef("Too many lines (%d/%d)", nlines, count);
+		curr_stats.save_msg = 1;
+		return 0;
+	}
 
 	for(i = 0; i < count; i++)
 	{
 		int j;
-		char name[NAME_MAX];
 
-		if(fgets(name, sizeof(name), f) == NULL)
-		{
-			status_bar_message("Not enough lines");
-			curr_stats.save_msg = 1;
-			free_string_array(list, len);
-			return NULL;
-		}
-		chomp(name);
+		chomp(list[i]);
 
-		if(strchr(name, '/') != NULL)
+		if(strchr(list[i], '/') != NULL)
 		{
-			status_bar_message("File name can not contain slash");
+			status_bar_messagef("Name \"%s\" contain slash", list[i]);
 			curr_stats.save_msg = 1;
-			free_string_array(list, len);
-			return NULL;
+			return 0;
 		}
 
-		if(name[0] != '\0')
+		if(list[i][0] != '\0')
 		{
-			for(j = 0; j < len; j++)
-				if(strcmp(name, list[j]) == 0)
+			for(j = 0; j < i; j++)
+				if(strcmp(list[i], list[j]) == 0)
 				{
-					status_bar_message("There are duplicates");
+					status_bar_messagef("Name \"%s\" duplicates", list[j]);
 					curr_stats.save_msg = 1;
-					free_string_array(list, len);
-					return NULL;
+					return 0;
 				}
 		}
 
-		list = realloc(list, sizeof(char*)*(len + 1));
-		list[len] = strdup(name);
-		len++;
-
-		if(name[0] == '\0')
+		if(list[i][0] == '\0')
 			continue;
 
-		if(strcmp(name, view->dir_entry[abs(indexes[i])].name) == 0)
+		if(strcmp(list[i], view->dir_entry[abs(indexes[i])].name) == 0)
 			continue;
 
 		for(j = 0; j < count; j++)
 		{
 			chosp(view->dir_entry[abs(indexes[j])].name);
-			if(strcmp(name, view->dir_entry[abs(indexes[j])].name) == 0 &&
+			if(strcmp(list[i], view->dir_entry[abs(indexes[j])].name) == 0 &&
 					indexes[j] >= 0)
 			{
 				indexes[j] = -indexes[j];
 				break;
 			}
 		}
-		if(j >= count && access(name, F_OK) == 0)
+		if(j >= count && access(list[i], F_OK) == 0)
 		{
-			status_bar_messagef("File %s already exists", name);
+			status_bar_messagef("File \"%s\" already exists", list[i]);
 			curr_stats.save_msg = 1;
-			free_string_array(list, len);
-			return NULL;
+			return 0;
 		}
 	}
 
-	if(fgetc(f) != EOF)
-	{
-		status_bar_message("Too many lines");
-		curr_stats.save_msg = 1;
-		free_string_array(list, len);
-		return NULL;
-	}
-
-	return list;
+	return 1;
 }
 
 /* Returns count of renamed files */
@@ -1432,8 +1436,8 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 		if(strcmp(list[i], view->dir_entry[abs(indexes[i])].name) == 0)
 			continue;
 
-		if(mv_file(view->dir_entry[abs(indexes[i])].name, list[i], indexes[i] < 0)
-				== 0)
+		if(mv_file(view->dir_entry[abs(indexes[i])].name, list[i],
+				(indexes[i] < 0) ? 1 : -1) == 0)
 			renamed++;
 	}
 
@@ -1449,7 +1453,7 @@ rename_files_ind(FileView *view, int *indexes, int count)
 	char **list;
 	struct stat st_before, st_after;
 	FILE *f;
-	int i, renamed = 0;
+	int nlines, i, renamed = -1;
 
 	if(count == 0)
 	{
@@ -1500,8 +1504,11 @@ rename_files_ind(FileView *view, int *indexes, int count)
 		return;
 	}
 
-	if((list = check_rename_file(view, indexes, count, f)) != NULL)
-		renamed = perform_renaming(view, indexes, count, list);
+	if((list = read_file_lines(f, &nlines)) != NULL)
+	{
+		if(is_rename_file_ok(view, indexes, count, nlines, list))
+			renamed = perform_renaming(view, indexes, count, list);
+	}
 
 	fclose(f);
 
@@ -1509,10 +1516,11 @@ rename_files_ind(FileView *view, int *indexes, int count)
 
 	if(list != NULL)
 	{
-		status_bar_messagef("%d file%s renamed.", renamed,
-				(renamed == 1) ? "" : "s");
+		if(renamed >= 0)
+			status_bar_messagef("%d file%s renamed.", renamed,
+					(renamed == 1) ? "" : "s");
 
-		free_string_array(list, count);
+		free_string_array(list, nlines);
 	}
 
 	load_dir_list(view, 1);
