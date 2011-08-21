@@ -36,7 +36,6 @@ Possible things to add.
 	Virtual File System - currently vifm can use fuse to mount most
 		file systems.
 	Add mouse support.
-    Swap names of two files (selected or given as arguments).
     Invert selection? (what :command or key?)
     Make :undolist more interactive.
     Maybe something like :g/.../com and :v/.../com in Vim.

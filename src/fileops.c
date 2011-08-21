@@ -1312,14 +1312,14 @@ is_rename_file_ok(FileView *view, int *indexes, int count, int nlines,
 
 	if(nlines < count)
 	{
-		status_bar_messagef("Not enough lines (%d/%d)", nlines, count);
+		status_bar_messagef("Not enough file names (%d/%d)", nlines, count);
 		curr_stats.save_msg = 1;
 		return 0;
 	}
 
 	if(nlines > count)
 	{
-		status_bar_messagef("Too many lines (%d/%d)", nlines, count);
+		status_bar_messagef("Too many file names (%d/%d)", nlines, count);
 		curr_stats.save_msg = 1;
 		return 0;
 	}
@@ -1332,7 +1332,7 @@ is_rename_file_ok(FileView *view, int *indexes, int count, int nlines,
 
 		if(strchr(list[i], '/') != NULL)
 		{
-			status_bar_messagef("Name \"%s\" contain slash", list[i]);
+			status_bar_messagef("Name \"%s\" contains slash", list[i]);
 			curr_stats.save_msg = 1;
 			return 0;
 		}
@@ -1490,7 +1490,7 @@ rename_files_ind(FileView *view, int *indexes, int count)
 	stat(temp_file, &st_after);
 
 	if(memcmp(&st_after.st_mtim, &st_before.st_mtim,
-			sizeof(st_after.st_mtime)) == 0)
+			sizeof(st_after.st_mtim)) == 0)
 	{
 		unlink(temp_file);
 		status_bar_message("0 files renamed.");
@@ -1508,27 +1508,20 @@ rename_files_ind(FileView *view, int *indexes, int count)
 	{
 		if(is_rename_file_ok(view, indexes, count, nlines, list))
 			renamed = perform_renaming(view, indexes, count, list);
+		free_string_array(list, nlines);
 	}
 
 	fclose(f);
 
 	unlink(temp_file);
 
-	if(list != NULL)
-	{
-		if(renamed >= 0)
-			status_bar_messagef("%d file%s renamed.", renamed,
-					(renamed == 1) ? "" : "s");
-
-		free_string_array(list, nlines);
-	}
-
-	load_dir_list(view, 1);
-	moveto_list_pos(view, view->list_pos);
+	if(renamed >= 0)
+		status_bar_messagef("%d file%s renamed.", renamed,
+				(renamed == 1) ? "" : "s");
 }
 
 void
-rename_files(FileView *view)
+rename_files(FileView *view, char **list, int nlines)
 {
 	int *indexes;
 	int count;
@@ -1559,13 +1552,27 @@ rename_files(FileView *view)
 			indexes[j++] = i;
 	}
 
-	rename_files_ind(view, indexes, count);
+	if(nlines == 0)
+	{
+		rename_files_ind(view, indexes, count);
+	}
+	else
+	{
+		int renamed = -1;
+
+		if(is_rename_file_ok(view, indexes, count, nlines, list))
+			renamed = perform_renaming(view, indexes, count, list);
+
+		if(renamed >= 0)
+			status_bar_messagef("%d file%s renamed.", renamed,
+					(renamed == 1) ? "" : "s");
+	}
 
 	free(indexes);
 
-	clean_selected_files(curr_view);
-	draw_dir_list(curr_view, curr_view->top_line);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	clean_selected_files(view);
+	draw_dir_list(view, view->top_line);
+	moveto_list_pos(view, view->list_pos);
 	curr_stats.save_msg = 1;
 }
 

@@ -495,6 +495,8 @@ The builtin commands are:
     registers that are mentioned in list (for example "az to display "",
     "a and "z content).
 :[range]rename - rename files using vi to edit names.
+:[range]rename name1 name2... - rename each of selected files to a
+    corresponding name.
 :restart - will free a lot of things (histories, commands, etc.) and reread
     vifminfo and vifmrc files.
 :screen - toggles whether to use the screen program or not.

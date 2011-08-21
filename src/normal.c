@@ -950,7 +950,7 @@ static void
 cmd_cw(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_view->selected_files > 1)
-		rename_files(curr_view);
+		rename_files(curr_view, NULL, 0);
 	else
 		rename_file(curr_view, 0);
 }
