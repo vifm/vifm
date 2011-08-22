@@ -391,7 +391,8 @@ The builtin commands are:
     Accepts macros.
 :cd! /dir - same as :cd /dir /dir.
 :change - create a menu window to alter a files properties.
-:[range]clone - clones files in current directory.
+:[range]clone[!] - clones files in current directory.  With "!" vifm will
+    open vi to edit filenames.
 :[range]clone path - clones files to directory specified with the path
     (absolute or relative to current directory).
 :[range]clone name1 name2... - clones files in current directory giving each
