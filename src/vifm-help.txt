@@ -586,7 +586,8 @@ Commands
        :exi[t]
               same as :quit.
 
-       :file  popup  menu  of  programs  set  for the file type of the current
+       :f[ile]
+              popup  menu  of  programs  set  for the file type of the current
               file. Add ' &' at the end of command to  run  program  in  back‐
               ground.
 
@@ -722,7 +723,7 @@ Commands
 
        :pushd exchanges the top two items of the directory stack.
 
-       :pwd   show the present working directory.
+       :pw[d] show the present working directory.
 
        :q[uit]
               will exit Vifm (add ! if you don't want to save changes).

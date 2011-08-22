@@ -2909,6 +2909,12 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 	char path[PATH_MAX];
 	int from_file;
 
+	if(move && access(view->curr_dir, W_OK) != 0)
+	{
+		show_error_msg("Operation error", "Current directory is not writable");
+		return 0;
+	}
+
 	if(view->selected_files == 0)
 	{
 		view->dir_entry[view->list_pos].selected = 1;
