@@ -491,6 +491,11 @@ The builtin commands are:
     being used.  Using macros is allowed.
 :marks - menu of bookmarks.
 :marks list ... - display the contents of the marks that are mentioned in list.
+:[range]m[ove] - moves files to directory of other view.
+:[range]m[ove] path - moves files to directory specified with the path
+    (absolute or relative to directory of other view).
+:[range]m[ove] name1 name2... - moves files to directory of other view
+    giving each next file a corresponding name from the argument list.
 :noh[lsearch] - clear selection in current pane.
 :on[ly] - switch to a one window view.
 :popd - remove pane directories from stack.
@@ -1017,7 +1022,6 @@ commands.
   chown
   g[lobal]
   mkdir
-  m[ove]
   rlink
   touch
   v[global]

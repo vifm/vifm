@@ -781,6 +781,17 @@ create a popup menu of bookmarks.
 .BI ":marks list ..."
 display the contents of the marks that are mentioned in list.
 .TP
+.BI :[range]m[ove]
+moves files to directory of other view.
+.TP
+.BI ":[range]m[ove] path"
+moves files to directory specified with the path (absolute or relative to
+directory of other view).
+.TP
+.BI ":[range]m[ove] name1 name2..."
+moves files to directory of other view giving each next file a corresponding
+name from the argument list.
+.TP
 .BI :noh[lsearch]
 clear selection in current pane.
 .TP
@@ -1482,7 +1493,6 @@ commands.
   chown
   g[lobal]
   mkdir
-  m[ove]
   rlink
   touch
   v[global]

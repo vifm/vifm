@@ -1167,7 +1167,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 }
 
 static int
-mv_file(const char *src, const char *dst, int tmpfile_num)
+mv_file(const char *src, const char *dst, const char *path, int tmpfile_num)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 	char do_command[6 + PATH_MAX*2 + 1];
@@ -1178,7 +1178,7 @@ mv_file(const char *src, const char *dst, int tmpfile_num)
 	snprintf(full_src, sizeof(full_src), "%s/%s", curr_view->curr_dir, src);
 	chosp(full_src);
 	escaped_src = escape_filename(full_src, 0);
-	snprintf(full_dst, sizeof(full_dst), "%s/%s", curr_view->curr_dir, dst);
+	snprintf(full_dst, sizeof(full_dst), "%s/%s", path, dst);
 	chosp(full_dst);
 	escaped_dst = escape_filename(full_dst, 0);
 
@@ -1250,7 +1250,7 @@ rename_file_cb(const char *new_name)
 	snprintf(buf, sizeof(buf), "rename in %s: %s to %s",
 			replace_home_part(curr_view->curr_dir), filename, new);
 	cmd_group_begin(buf);
-	tmp = mv_file(filename, new, 0);
+	tmp = mv_file(filename, new, curr_view->curr_dir, 0);
 	cmd_group_end();
 	if(tmp != 0)
 		return;
@@ -1426,7 +1426,7 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 		ind = -indexes[i];
 
 		tmp = make_name_unique(view->dir_entry[ind].name);
-		if(mv_file(view->dir_entry[ind].name, tmp, 2) != 0)
+		if(mv_file(view->dir_entry[ind].name, tmp, view->curr_dir, 2) != 0)
 		{
 			cmd_group_end();
 			undo_group();
@@ -1445,7 +1445,7 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 		if(strcmp(list[i], view->dir_entry[abs(indexes[i])].name) == 0)
 			continue;
 
-		if(mv_file(view->dir_entry[abs(indexes[i])].name, list[i],
+		if(mv_file(view->dir_entry[abs(indexes[i])].name, list[i], view->curr_dir,
 				(indexes[i] < 0) ? 1 : -1) == 0)
 			renamed++;
 	}
@@ -2425,7 +2425,7 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 		j++;
 		if(strcmp(buf, dest[j]) == 0)
 			continue;
-		mv_file(buf, dest[j], 0);
+		mv_file(buf, dest[j], view->curr_dir, 0);
 		n++;
 	}
 	cmd_group_end();
@@ -2715,7 +2715,7 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 	{
 		if(strcmp(dest[i], view->selected_filelist[i]) == 0)
 			continue;
-		mv_file(view->selected_filelist[i], dest[i], 0);
+		mv_file(view->selected_filelist[i], dest[i], view->curr_dir, 0);
 		k++;
 	}
 	cmd_group_end();
@@ -2781,7 +2781,7 @@ cp_file(const char *src_dir, const char *dst_dir, const char *src,
 }
 
 int
-copy_files(FileView *view, char **list, int nlines)
+cpmv_files(FileView *view, char **list, int nlines, int move)
 {
 	int i;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
@@ -2824,8 +2824,13 @@ copy_files(FileView *view, char **list, int nlines)
 
 	cmd_group_begin(buf);
 	for(i = 0; i < view->selected_files; i++)
-		cp_file(view->curr_dir, path, view->selected_filelist[i],
-				(nlines > 0) ? list[i] : view->selected_filelist[i]);
+	{
+		const char *dst = (nlines > 0) ? list[i] : view->selected_filelist[i];
+		if(move)
+			mv_file(view->selected_filelist[i], dst, path, 0);
+		else
+			cp_file(view->curr_dir, path, view->selected_filelist[i], dst);
+	}
 	cmd_group_end();
 	free_selected_file_array(view);
 
