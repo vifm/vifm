@@ -1397,6 +1397,13 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 			replace_home_part(view->curr_dir));
 	len = strlen(buf);
 
+	for(i = 0; i < view->list_pos; i++)
+		if(view->dir_entry[i].selected)
+		{
+			view->list_pos = i;
+			break;
+		}
+
 	for(i = 0; i < count && len < COMMAND_GROUP_INFO_LEN; i++)
 	{
 		if(buf[len - 2] != ':')
@@ -2458,6 +2465,13 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 	len = snprintf(buf, sizeof(buf), "%c/%s/%s/ in %s: ", c, pattern, sub,
 			replace_home_part(view->curr_dir));
 
+	for(i = 0; i < view->list_pos; i++)
+		if(view->dir_entry[i].selected)
+		{
+			view->list_pos = i;
+			break;
+		}
+
 	for(i = 0; i < view->selected_files && len < COMMAND_GROUP_INFO_LEN; i++)
 	{
 		if(!view->dir_entry[i].selected)
@@ -2727,7 +2741,15 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 	if(count > 0)
 		get_selected_files(view, count, indexes);
 	else
+	{
+		for(i = 0; i < view->list_pos; i++)
+			if(view->dir_entry[i].selected)
+			{
+				view->list_pos = i;
+				break;
+			}
 		get_all_selected_files(view);
+	}
 
 	for(i = 0; i < view->selected_files; i++)
 	{

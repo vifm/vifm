@@ -1502,6 +1502,12 @@ selector_s(struct key_info key_info, struct keys_info *keys_info)
 		if(curr_view->dir_entry[x].selected)
 			keys_info->indexes[i++] = x;
 	}
+	for(i = 0; i < curr_view->list_pos; i++)
+		if(curr_view->dir_entry[i].selected)
+		{
+			curr_view->list_pos = i;
+			break;
+		}
 }
 
 int
