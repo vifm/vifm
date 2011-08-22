@@ -1456,11 +1456,10 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 }
 
 static char **
-read_list_from_file(int count, char **names, int *nlines)
+read_list_from_file(int count, char **names, int *nlines, int require_change)
 {
 	char temp_file[PATH_MAX];
 	char **list;
-	struct stat st_before, st_after;
 	FILE *f;
 	int i;
 
@@ -1469,6 +1468,7 @@ read_list_from_file(int count, char **names, int *nlines)
 	if((f = fopen(temp_file, "w")) == NULL)
 	{
 		status_bar_message("Can't create temp file.");
+		curr_stats.save_msg = 1;
 		return NULL;
 	}
 
@@ -1486,23 +1486,34 @@ read_list_from_file(int count, char **names, int *nlines)
 
 	fclose(f);
 
-	stat(temp_file, &st_before);
-
-	view_file(temp_file, -1);
-
-	stat(temp_file, &st_after);
-
-	if(memcmp(&st_after.st_mtim, &st_before.st_mtim,
-			sizeof(st_after.st_mtim)) == 0)
+	if(require_change)
 	{
-		unlink(temp_file);
-		return NULL;
+		struct stat st_before, st_after;
+
+		stat(temp_file, &st_before);
+
+		view_file(temp_file, -1);
+
+		stat(temp_file, &st_after);
+
+		if(memcmp(&st_after.st_mtim, &st_before.st_mtim,
+					sizeof(st_after.st_mtim)) == 0)
+		{
+			unlink(temp_file);
+			curr_stats.save_msg = 0;
+			return NULL;
+		}
+	}
+	else
+	{
+		view_file(temp_file, -1);
 	}
 
 	if((f = fopen(temp_file, "r")) == NULL)
 	{
 		unlink(temp_file);
 		status_bar_message("Can't open temporary file.");
+		curr_stats.save_msg = 1;
 		return NULL;
 	}
 
@@ -1510,6 +1521,7 @@ read_list_from_file(int count, char **names, int *nlines)
 	fclose(f);
 	unlink(temp_file);
 
+	curr_stats.save_msg = 0;
 	return list;
 }
 
@@ -1535,7 +1547,7 @@ rename_files_ind(FileView *view, int *indexes, int count)
 		n = add_to_string_array(&names, n, 1, name);
 	}
 
-	if((list = read_list_from_file(count, names, &nlines)) == NULL)
+	if((list = read_list_from_file(count, names, &nlines, 1)) == NULL)
 	{
 		free_string_array(names, count);
 		status_bar_message("0 files renamed.");
@@ -2210,9 +2222,9 @@ clone_files(FileView *view, char **list, int nlines)
 	if(from_file)
 	{
 		list = read_list_from_file(view->selected_files, view->selected_filelist,
-				&nlines);
+				&nlines, 1);
 		if(list == NULL)
-			return 1;
+			return curr_stats.save_msg;
 	}
 
 	if(nlines > 0 && (!is_name_list_ok(view->selected_files, nlines, list) ||
@@ -2870,9 +2882,9 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 	if(from_file)
 	{
 		list = read_list_from_file(view->selected_files, view->selected_filelist,
-				&nlines);
+				&nlines, 0);
 		if(list == NULL)
-			return 1;
+			return curr_stats.save_msg;
 	}
 
 	if((nlines > 0 && (!is_name_list_ok(view->selected_files, nlines, list) ||
