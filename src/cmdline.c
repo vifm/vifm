@@ -726,6 +726,8 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 		if(p != NULL && p[0] != '\0')
 			save_prompt_history(p);
+		modes_post();
+		modes_pre();
 		cb = (prompt_cb)sub_mode_ptr;
 		cb(p);
 	}
