@@ -2024,7 +2024,8 @@ put_files_from_register(FileView *view, int name, int force_move)
 }
 
 static void
-clone_file(FileView* view, const char *filename, const char *clone)
+clone_file(FileView* view, const char *filename, const char *path,
+		const char *clone)
 {
 	char do_cmd[PATH_MAX + NAME_MAX*2 + 4];
 	char undo_cmd[3 + PATH_MAX + 6 + 1];
@@ -2041,17 +2042,16 @@ clone_file(FileView* view, const char *filename, const char *clone)
 		int i;
 		size_t len;
 
-		snprintf(clone_name, sizeof(clone_name), "%s", filename);
+		snprintf(clone_name, sizeof(clone_name), "%s/%s", path, filename);
 		chosp(clone_name);
 		i = 1;
 		len = strlen(clone_name);
-		do
+		while(access(clone_name, F_OK) == 0)
 			snprintf(clone_name + len, sizeof(clone_name) - len, "(%d)", i++);
-		while(access(clone_name, F_OK) == 0);
 	}
 	else
 	{
-		snprintf(clone_name, sizeof(clone_name), "%s", clone);
+		snprintf(clone_name, sizeof(clone_name), "%s/%s", path, clone);
 		chosp(clone_name);
 	}
 
@@ -2090,9 +2090,7 @@ clone_files(FileView *view, char **list, int nlines)
 	size_t len;
 	int i;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
-
-	if(!is_dir_writable(view->curr_dir))
-		return 0;
+	char path[PATH_MAX];
 
 	if(view->selected_files == 0)
 	{
@@ -2113,18 +2111,38 @@ clone_files(FileView *view, char **list, int nlines)
 			return 0;
 		}
 	}
+
+	strcpy(path, view->curr_dir);
+	if(nlines == 1)
+	{
+		if(list[0][0] == '/' || list[0][0] == '~')
+		{
+			char *tmp = expand_tilde(strdup(list[0]));
+			strcpy(path, tmp);
+			free(tmp);
+		}
+		else
+		{
+			strcat(path, "/");
+			strcat(path, list[0]);
+		}
+		if(is_dir(path))
+			nlines = 0;
+		else
+			strcpy(path, view->curr_dir);
+	}
+	if(!is_dir_writable(path))
+		return 0;
+
 	get_all_selected_files(view);
 
-	if(nlines != 0)
+	if(nlines > 0 && (!is_name_list_ok(view->selected_files, nlines, list) ||
+			!is_clone_list_ok(nlines, list)))
 	{
-		if(!is_name_list_ok(view->selected_files, nlines, list) ||
-				!is_clone_list_ok(nlines, list))
-		{
-			clean_selected_files(view);
-			draw_dir_list(view, view->top_line);
-			moveto_list_pos(view, view->list_pos);
-			return 1;
-		}
+		clean_selected_files(view);
+		draw_dir_list(view, view->top_line);
+		moveto_list_pos(view, view->list_pos);
+		return 1;
 	}
 
 	len = snprintf(buf, sizeof(buf), "clone in %s: ", view->curr_dir);
@@ -2147,7 +2165,8 @@ clone_files(FileView *view, char **list, int nlines)
 
 	cmd_group_begin(buf);
 	for(i = 0; i < view->selected_files; i++)
-		clone_file(view, view->selected_filelist[i], (nlines > 0) ? list[i] : NULL);
+		clone_file(view, view->selected_filelist[i], path,
+				(nlines > 0) ? list[i] : NULL);
 	cmd_group_end();
 	free_selected_file_array(view);
 
