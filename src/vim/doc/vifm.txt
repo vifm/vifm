@@ -369,8 +369,8 @@ The builtin commands are:
     Accepts macros.
 :[range]!!program - same as :! but will pause before returning.
 :!! - repeat the last command.
-:[range]alink - creates absolute symbolic links of files in directory of
-    other view.
+:[range]alink[!] - creates absolute symbolic links of files in directory of
+    other view.  With "!" vifm will open vi to edit filenames.
 :[range]alink path - creates absolute symbolic links of files in directory
     specified with the path (absolute or relative to directory of other
     view).
@@ -416,7 +416,8 @@ The builtin commands are:
     of the commands action (:com rm rm %f &).
 :com[mand] backup /pattern - will set search pattern.
 :com[mand] name filter pattern - will set file name filter.
-:[range]co[py] - copies files to directory of other view.
+:[range]co[py][!] - copies files to directory of other view.  With "!" vifm
+    will open vi to edit filenames.
 :[range]co[py] path - copies files to directory specified with the path
     (absolute or relative to directory of other view).
 :[range]co[py] name1 name2... - copies files to directory of other view
@@ -500,7 +501,8 @@ The builtin commands are:
     being used.  Using macros is allowed.
 :marks - menu of bookmarks.
 :marks list ... - display the contents of the marks that are mentioned in list.
-:[range]m[ove] - moves files to directory of other view.
+:[range]m[ove][!] - moves files to directory of other view.  With "!" vifm
+    will open vi to edit filenames.
 :[range]m[ove] path - moves files to directory specified with the path
     (absolute or relative to directory of other view).
 :[range]m[ove] name1 name2... - moves files to directory of other view
@@ -523,8 +525,8 @@ The builtin commands are:
     corresponding name.
 :restart - will free a lot of things (histories, commands, etc.) and reread
     vifminfo and vifmrc files.
-:[range]rlink - creates relative symbolic links of files in directory of
-    other view.
+:[range]rlink[!] - creates relative symbolic links of files in directory of
+    other view.  With "!" vifm will open vi to edit filenames.
 :[range]rlink path - creates relative symbolic links of files in directory
     specified with the path (absolute or relative to directory of other
     view).

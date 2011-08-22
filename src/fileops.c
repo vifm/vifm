@@ -2842,6 +2842,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 	int i;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	char path[PATH_MAX];
+	int from_file;
 
 	if(view->selected_files == 0)
 	{
@@ -2865,6 +2866,15 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 
 	get_all_selected_files(view);
 
+	from_file = nlines < 0;
+	if(from_file)
+	{
+		list = read_list_from_file(view->selected_files, view->selected_filelist,
+				&nlines);
+		if(list == NULL)
+			return 1;
+	}
+
 	if((nlines > 0 && (!is_name_list_ok(view->selected_files, nlines, list) ||
 			!is_copy_list_ok(path, nlines, list))) || (nlines == 0 &&
 			!is_copy_list_ok(path, view->selected_files, view->selected_filelist)))
@@ -2872,6 +2882,8 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 		clean_selected_files(view);
 		draw_dir_list(view, view->top_line);
 		moveto_list_pos(view, view->list_pos);
+		if(from_file)
+			free_string_array(list, nlines);
 		return 1;
 	}
 
@@ -2892,6 +2904,8 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 
 	clean_selected_files(view);
 	load_saving_pos(view, 1);
+	if(from_file)
+		free_string_array(list, nlines);
 	return 0;
 }
 

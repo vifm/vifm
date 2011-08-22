@@ -188,7 +188,7 @@ static const struct cmd_add commands[] = {
 		.handler = goto_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "!",                .abbr = NULL,    .emark = 1,  .id = COM_EXECUTE,     .range = 1,    .bg = 1, .quote = 0, .regexp = 0,
 		.handler = emark_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 1, },
-	{ .name = "alink",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "alink",            .abbr = NULL,    .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = alink_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
@@ -256,7 +256,7 @@ static const struct cmd_add commands[] = {
 		.handler = mark_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = 3,       .select = 0, },
 	{ .name = "marks",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = marks_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "move",             .abbr = "m",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "move",             .abbr = "m",     .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = move_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "nmap",             .abbr = "nm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
@@ -284,7 +284,7 @@ static const struct cmd_add commands[] = {
 		.handler = rename_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "restart",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = restart_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "rlink",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "rlink",            .abbr = NULL,    .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = rlink_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "screen",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = screen_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
@@ -2070,7 +2070,19 @@ emark_cmd(const struct cmd_info *cmd_info)
 static int
 alink_cmd(const struct cmd_info *cmd_info)
 {
-	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, 1) != 0;
+	if(cmd_info->emark)
+	{
+		if(cmd_info->argc > 0)
+		{
+			status_bar_message("No arguments are allowed if you use \"!\"");
+			return 1;
+		}
+		return cpmv_files(curr_view, NULL, -1, 0, 1) != 0;
+	}
+	else
+	{
+		return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, 1) != 0;
+	}
 }
 
 static int
@@ -2734,7 +2746,19 @@ marks_cmd(const struct cmd_info *cmd_info)
 static int
 move_cmd(const struct cmd_info *cmd_info)
 {
-	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 1, 0) != 0;
+	if(cmd_info->emark)
+	{
+		if(cmd_info->argc > 0)
+		{
+			status_bar_message("No arguments are allowed if you use \"!\"");
+			return 1;
+		}
+		return cpmv_files(curr_view, NULL, -1, 1, 0) != 0;
+	}
+	else
+	{
+		return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 1, 0) != 0;
+	}
 }
 
 static int
@@ -2947,7 +2971,19 @@ restart_cmd(const struct cmd_info *cmd_info)
 static int
 rlink_cmd(const struct cmd_info *cmd_info)
 {
-	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, 2) != 0;
+	if(cmd_info->emark)
+	{
+		if(cmd_info->argc > 0)
+		{
+			status_bar_message("No arguments are allowed if you use \"!\"");
+			return 1;
+		}
+		return cpmv_files(curr_view, NULL, -1, 0, 2) != 0;
+	}
+	else
+	{
+		return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, 2) != 0;
+	}
 }
 
 static int

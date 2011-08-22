@@ -542,8 +542,9 @@ is the same as :! but will pause the screen before returning to Vifm.
 .BI :!!
 will execute the last command.
 .TP
-.BI :[range]alink
-creates absolute symbolic links of files in directory of other view.
+.BI :[range]alink[!]
+creates absolute symbolic links of files in directory of other view.  With "!"
+vifm will open vi to edit filenames.
 .TP
 .BI ":[range]alink path"
 creates absolute symbolic links of files in directory specified with the path
@@ -630,8 +631,9 @@ will set search pattern.
 .BI ":com[mand] name filter pattern"
 will set file name filter.
 .TP
-.BI :[range]co[py]
-copies files to directory of other view.
+.BI :[range]co[py][!]
+copies files to directory of other view.  With "!" vifm will open vi to edit
+filenames.
 .TP
 .BI ":[range]co[py] path"
 copies files to directory specified with the path (absolute or relative to
@@ -793,8 +795,9 @@ create a popup menu of bookmarks.
 .BI ":marks list ..."
 display the contents of the marks that are mentioned in list.
 .TP
-.BI :[range]m[ove]
-moves files to directory of other view.
+.BI :[range]m[ove][!]
+moves files to directory of other view.  With "!" vifm will open vi to edit
+filenames.
 .TP
 .BI ":[range]m[ove] path"
 moves files to directory specified with the path (absolute or relative to
@@ -848,8 +851,9 @@ rename each of selected files to a corresponding name.
 will free a lot of things (histories, commands, etc.) and reread vifminfo and
 vifmrc files.
 .TP
-.BI :[range]rlink
-creates relative symbolic links of files in directory of other view.
+.BI :[range]rlink[!]
+creates relative symbolic links of files in directory of other view.  With "!"
+vifm will open vi to edit filenames.
 .TP
 .BI ":[range]rlink path"
 creates relative symbolic links of files in directory specified with the path
