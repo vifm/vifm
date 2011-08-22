@@ -1583,7 +1583,7 @@ rename_files_ind(FileView *view, int *indexes, int count)
 				(renamed == 1) ? "" : "s");
 }
 
-void
+int
 rename_files(FileView *view, char **list, int nlines)
 {
 	int *indexes;
@@ -1592,8 +1592,7 @@ rename_files(FileView *view, char **list, int nlines)
 
 	if(!is_dir_writable(view->curr_dir))
 	{
-		status_bar_message("");
-		return;
+		return 0;
 	}
 
 	if(view->selected_files == 0)
@@ -1607,7 +1606,7 @@ rename_files(FileView *view, char **list, int nlines)
 	if(indexes == NULL)
 	{
 		status_bar_message("Not enough memory.");
-		return;
+		return 1;
 	}
 
 	j = 0;
@@ -1644,6 +1643,7 @@ rename_files(FileView *view, char **list, int nlines)
 	draw_dir_list(view, view->top_line);
 	moveto_list_pos(view, view->list_pos);
 	curr_stats.save_msg = 1;
+	return 1;
 }
 
 static void

@@ -53,7 +53,7 @@ int file_exec(char *command);
 void view_file(const char *filename, int line);
 void show_change_window(FileView *view, int type);
 void rename_file(FileView *view, int name_only);
-void rename_files(FileView *view, char **list, int nlines);
+int rename_files(FileView *view, char **list, int nlines);
 void change_owner(void);
 void change_group(void);
 int change_link(FileView *view);

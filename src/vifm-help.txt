@@ -485,7 +485,7 @@ Commands
        :cd! /dir
               same as :cd /dir /dir.
 
-       :change
+       :c[hange]
               create a menu window to alter a files properties.
 
        :[range]clone[!]

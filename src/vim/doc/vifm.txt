@@ -390,7 +390,7 @@ The builtin commands are:
     view.  Command will not fail if one of directories is invalid.
     Accepts macros.
 :cd! /dir - same as :cd /dir /dir.
-:change - create a menu window to alter a files properties.
+:c[hange] - create a menu window to alter a files properties.
 :[range]clone[!] - clones files in current directory.  With "!" vifm will
     open vi to edit filenames.
 :[range]clone path - clones files to directory specified with the path

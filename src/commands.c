@@ -194,7 +194,7 @@ static const struct cmd_add commands[] = {
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cd",               .abbr = NULL,    .emark = 1,  .id = COM_CD,          .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = cd_cmd,          .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
-	{ .name = "change",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "change",           .abbr = "c",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = change_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "clone",            .abbr = NULL,    .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = clone_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
@@ -228,10 +228,10 @@ static const struct cmd_add commands[] = {
 		.handler = file_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "filetype",         .abbr = "filet", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = filetype_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "filextype",        .abbr = "filex", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = filextype_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "fileviewer",       .abbr = "filev", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = fileviewer_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "filextype",        .abbr = "filex", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = filextype_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 1,
 		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "find",             .abbr = "fin",   .emark = 0,  .id = COM_FIND,        .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
@@ -2904,10 +2904,9 @@ static int
 rename_cmd(const struct cmd_info *cmd_info)
 {
 	if(cmd_info->argc == 0)
-		rename_files(curr_view, NULL, 0);
+		return rename_files(curr_view, NULL, 0) != 0;
 	else
-		rename_files(curr_view, cmd_info->argv, cmd_info->argc);
-	return 1; /* there are always some message */
+		return rename_files(curr_view, cmd_info->argv, cmd_info->argc) != 0;
 }
 
 static int
