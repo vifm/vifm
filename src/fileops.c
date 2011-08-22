@@ -1455,32 +1455,26 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 	return renamed;
 }
 
-static void
-rename_files_ind(FileView *view, int *indexes, int count)
+static char **
+read_list_from_file(int count, char **names, int *nlines)
 {
 	char temp_file[PATH_MAX];
 	char **list;
 	struct stat st_before, st_after;
 	FILE *f;
-	int nlines, i, renamed = -1;
-
-	if(count == 0)
-	{
-		status_bar_message("0 files renamed.");
-		return;
-	}
+	int i;
 
 	strncpy(temp_file, make_name_unique("vifm-rename"), sizeof(temp_file));
 
 	if((f = fopen(temp_file, "w")) == NULL)
 	{
 		status_bar_message("Can't create temp file.");
-		return;
+		return NULL;
 	}
 
 	for(i = 0; i < count; i++)
 	{
-		char *name = view->dir_entry[indexes[i]].name;
+		char *name = names[i];
 		size_t len = strlen(name);
 		int slash = name[len - 1] == '/';
 		if(slash)
@@ -1502,28 +1496,57 @@ rename_files_ind(FileView *view, int *indexes, int count)
 			sizeof(st_after.st_mtim)) == 0)
 	{
 		unlink(temp_file);
-		status_bar_message("0 files renamed.");
-		return;
+		return NULL;
 	}
 
 	if((f = fopen(temp_file, "r")) == NULL)
 	{
 		unlink(temp_file);
 		status_bar_message("Can't open temporary file.");
+		return NULL;
+	}
+
+	list = read_file_lines(f, nlines);
+	fclose(f);
+	unlink(temp_file);
+
+	return list;
+}
+
+static void
+rename_files_ind(FileView *view, int *indexes, int count)
+{
+	char **list;
+	char **names;
+	int n;
+	int nlines, i, renamed = -1;
+
+	if(count == 0)
+	{
+		status_bar_message("0 files renamed.");
 		return;
 	}
 
-	if((list = read_file_lines(f, &nlines)) != NULL)
+	names = NULL;
+	n = 0;
+	for(i = 0; i < count; i++)
 	{
-		if(is_name_list_ok(count, nlines, list) &&
-				is_rename_list_ok(view, indexes, count, list))
-			renamed = perform_renaming(view, indexes, count, list);
-		free_string_array(list, nlines);
+		char *name = view->dir_entry[indexes[i]].name;
+		n = add_to_string_array(&names, n, 1, name);
 	}
 
-	fclose(f);
+	if((list = read_list_from_file(count, names, &nlines)) == NULL)
+	{
+		free_string_array(names, count);
+		status_bar_message("0 files renamed.");
+		return;
+	}
+	free_string_array(names, count);
 
-	unlink(temp_file);
+	if(is_name_list_ok(count, nlines, list) &&
+			is_rename_list_ok(view, indexes, count, list))
+		renamed = perform_renaming(view, indexes, count, list);
+	free_string_array(list, nlines);
 
 	if(renamed >= 0)
 		status_bar_messagef("%d file%s renamed.", renamed,
@@ -2811,7 +2834,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 		view->dir_entry[view->list_pos].selected = 1;
 		view->selected_files = 1;
 	}
-	if(!have_read_access(view))
+	if(move == 0 && type == 0 && !have_read_access(view))
 		return 0;
 
 	if(nlines == 1)
