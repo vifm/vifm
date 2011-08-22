@@ -369,6 +369,14 @@ The builtin commands are:
     Accepts macros.
 :[range]!!program - same as :! but will pause before returning.
 :!! - repeat the last command.
+:[range]alink - creates absolute symbolic links of files in directory of
+    other view.
+:[range]alink path - creates absolute symbolic links of files in directory
+    specified with the path (absolute or relative to directory of other
+    view).
+:[range]alink name1 name2... - creates absolute symbolic links of files in
+    directory of other view giving each next link a corresponding name from
+    the argument list.
 :apropos manpage - will create a menu of items returned by the apropos
     command. Selecting an item in the menu will open the corresponding
     manpage.
@@ -514,6 +522,14 @@ The builtin commands are:
     corresponding name.
 :restart - will free a lot of things (histories, commands, etc.) and reread
     vifminfo and vifmrc files.
+:[range]rlink - creates relative symbolic links of files in directory of
+    other view.
+:[range]rlink path - creates relative symbolic links of files in directory
+    specified with the path (absolute or relative to directory of other
+    view).
+:[range]rlink name1 name2... - creates relative symbolic links of files in
+    directory of other view giving each next link a corresponding name from
+    the argument list.
 :screen - toggles whether to use the screen program or not.
     The default configuration has the screen option turned off.  The screen
     program uses pseudo terminals to allow multiple windows to be used in
@@ -1017,12 +1033,10 @@ to your ~/.vimrc file.
 The following command names are reserved and shouldn't be used for user
 commands.
 
-  alink
   chmod
   chown
   g[lobal]
   mkdir
-  rlink
   touch
   v[global]
 

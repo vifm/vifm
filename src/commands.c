@@ -111,6 +111,7 @@ static const char *skip_word(const char *cmd);
 
 static int goto_cmd(const struct cmd_info *cmd_info);
 static int emark_cmd(const struct cmd_info *cmd_info);
+static int alink_cmd(const struct cmd_info *cmd_info);
 static int apropos_cmd(const struct cmd_info *cmd_info);
 static int cd_cmd(const struct cmd_info *cmd_info);
 static int change_cmd(const struct cmd_info *cmd_info);
@@ -156,6 +157,7 @@ static int pwd_cmd(const struct cmd_info *cmd_info);
 static int registers_cmd(const struct cmd_info *cmd_info);
 static int rename_cmd(const struct cmd_info *cmd_info);
 static int restart_cmd(const struct cmd_info *cmd_info);
+static int rlink_cmd(const struct cmd_info *cmd_info);
 static int screen_cmd(const struct cmd_info *cmd_info);
 static int set_cmd(const struct cmd_info *cmd_info);
 static int shell_cmd(const struct cmd_info *cmd_info);
@@ -186,6 +188,8 @@ static const struct cmd_add commands[] = {
 		.handler = goto_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "!",                .abbr = NULL,    .emark = 1,  .id = COM_EXECUTE,     .range = 1,    .bg = 1, .quote = 0, .regexp = 0,
 		.handler = emark_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 1, },
+	{ .name = "alink",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
+		.handler = alink_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cd",               .abbr = NULL,    .emark = 1,  .id = COM_CD,          .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
@@ -280,6 +284,8 @@ static const struct cmd_add commands[] = {
 		.handler = rename_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "restart",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = restart_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "rlink",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
+		.handler = rlink_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "screen",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = screen_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "set",              .abbr = "se",    .emark = 0,  .id = COM_SET,         .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2062,6 +2068,12 @@ emark_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
+alink_cmd(const struct cmd_info *cmd_info)
+{
+	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, 1) != 0;
+}
+
+static int
 apropos_cmd(const struct cmd_info *cmd_info)
 {
 	static char *last_args;
@@ -2231,7 +2243,7 @@ command_cmd(const struct cmd_info *cmd_info)
 static int
 copy_cmd(const struct cmd_info *cmd_info)
 {
-	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0) != 0;
+	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, 0) != 0;
 }
 
 static int
@@ -2710,7 +2722,7 @@ marks_cmd(const struct cmd_info *cmd_info)
 static int
 move_cmd(const struct cmd_info *cmd_info)
 {
-	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 1) != 0;
+	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 1, 0) != 0;
 }
 
 static int
@@ -2918,6 +2930,12 @@ restart_cmd(const struct cmd_info *cmd_info)
 	save_view_history(&rwin, NULL, NULL);
 	exec_config();
 	return 0;
+}
+
+static int
+rlink_cmd(const struct cmd_info *cmd_info)
+{
+	return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 0, 2) != 0;
 }
 
 static int

@@ -1170,8 +1170,8 @@ static int
 mv_file(const char *src, const char *dst, const char *path, int tmpfile_num)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
-	char do_command[6 + PATH_MAX*2 + 1];
-	char undo_command[6 + PATH_MAX*2 + 1];
+	char do_buf[6 + PATH_MAX*2 + 1];
+	char undo_buf[6 + PATH_MAX*2 + 1];
 	char *escaped_src, *escaped_dst;
 	int result;
 
@@ -1189,26 +1189,26 @@ mv_file(const char *src, const char *dst, const char *path, int tmpfile_num)
 		return -1;
 	}
 
-	snprintf(do_command, sizeof(do_command), "mv -n %s %s", escaped_src,
+	snprintf(do_buf, sizeof(do_buf), "mv -n %s %s", escaped_src,
 			escaped_dst);
-	snprintf(undo_command, sizeof(do_command), "mv -n %s %s", escaped_dst,
+	snprintf(undo_buf, sizeof(do_buf), "mv -n %s %s", escaped_dst,
 			escaped_src);
 	free(escaped_src);
 	free(escaped_dst);
 
-	result = system_and_wait_for_errors(do_command);
+	result = system_and_wait_for_errors(do_buf);
 	if(result == 0)
 	{
 		if(tmpfile_num == 0)
-			add_operation(do_command, full_src, full_dst, undo_command, full_dst,
+			add_operation(do_buf, full_src, full_dst, undo_buf, full_dst,
 					full_src);
 		else if(tmpfile_num == -1)
-			add_operation(do_command, full_src, NULL, undo_command, full_dst,
+			add_operation(do_buf, full_src, NULL, undo_buf, full_dst,
 					full_src);
 		else if(tmpfile_num == 1)
-			add_operation(do_command, NULL, NULL, undo_command, full_dst, NULL);
+			add_operation(do_buf, NULL, NULL, undo_buf, full_dst, NULL);
 		else if(tmpfile_num == 2)
-			add_operation(do_command, full_src, NULL, undo_command, full_src, NULL);
+			add_operation(do_buf, full_src, NULL, undo_buf, full_src, NULL);
 	}
 	return result;
 }
@@ -1594,7 +1594,7 @@ change_owner_cb(const char *new_owner)
 	char buf[8 + NAME_MAX + 1];
 	char full[PATH_MAX];
 	char command[10 + 32 + PATH_MAX];
-	char undo_command[10 + 32 + PATH_MAX];
+	char undo_buf[10 + 32 + PATH_MAX];
 	char *escaped;
 
 	if(new_owner == NULL || new_owner[0] == '\0')
@@ -1604,7 +1604,7 @@ change_owner_cb(const char *new_owner)
 	snprintf(full, sizeof(full), "%s/%s", curr_view->curr_dir, filename);
 	escaped = escape_filename(full, 0);
 	snprintf(command, sizeof(command), "chown -fR %s %s", new_owner, escaped);
-	snprintf(undo_command, sizeof(undo_command), "chown -fR %d %s",
+	snprintf(undo_buf, sizeof(undo_buf), "chown -fR %d %s",
 			curr_view->dir_entry[curr_view->list_pos].gid, escaped);
 	free(escaped);
 
@@ -1614,7 +1614,7 @@ change_owner_cb(const char *new_owner)
 	snprintf(buf, sizeof(buf), "chown in %s: %s",
 			replace_home_part(curr_view->curr_dir), filename);
 	cmd_group_begin(buf);
-	add_operation(command, full, NULL, undo_command, full, NULL);
+	add_operation(command, full, NULL, undo_buf, full, NULL);
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
@@ -1634,7 +1634,7 @@ change_group_cb(const char *new_group)
 	char buf[8 + NAME_MAX + 1];
 	char full[PATH_MAX];
 	char command[10 + 32 + PATH_MAX];
-	char undo_command[10 + 32 + PATH_MAX];
+	char undo_buf[10 + 32 + PATH_MAX];
 	char *escaped;
 
 	if(new_group == NULL || new_group[0] == '\0')
@@ -1644,7 +1644,7 @@ change_group_cb(const char *new_group)
 	snprintf(full, sizeof(full), "%s/%s", curr_view->curr_dir, filename);
 	escaped = escape_filename(full, 0);
 	snprintf(command, sizeof(command), "chown -fR :%s %s", new_group, escaped);
-	snprintf(undo_command, sizeof(undo_command), "chown -fR :%d %s",
+	snprintf(undo_buf, sizeof(undo_buf), "chown -fR :%d %s",
 			curr_view->dir_entry[curr_view->list_pos].uid, escaped);
 	free(escaped);
 
@@ -1654,7 +1654,7 @@ change_group_cb(const char *new_group)
 	snprintf(buf, sizeof(buf), "chgrp in %s: %s",
 			replace_home_part(curr_view->curr_dir), filename);
 	cmd_group_begin(buf);
-	add_operation(command, full, NULL, undo_command, full, NULL);
+	add_operation(command, full, NULL, undo_buf, full, NULL);
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
@@ -1842,15 +1842,15 @@ put_next(const char *dest_name, int override)
 		strcat(dst_buf, "/");
 		strcat(dst_buf, dest_name);
 
-		if(put_confirm.link == 1)
+		if(put_confirm.link)
 		{
+			if(put_confirm.link == 2)
+			{
+				free(src_buf);
+				src_buf = escape_filename(make_rel_path(filename,
+							put_confirm.view->curr_dir), 0);
+			}
 			snprintf(do_buf, sizeof(do_buf), "ln -s %s %s", src_buf, dst_buf);
-			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s", dst_buf);
-		}
-		else if(put_confirm.link == 2)
-		{
-			snprintf(do_buf, sizeof(do_buf), "ln -s %s %s",
-					make_rel_path(src_buf, put_confirm.view->curr_dir), dst_buf);
 			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s", dst_buf);
 		}
 		else if(move)
@@ -2744,13 +2744,18 @@ is_copy_list_ok(const char *dst, int count, char **list)
 	return 1;
 }
 
+/* type:
+ *  0 - copy
+ *  1 - absolute symbolic links
+ *  2 - relative symbolic links
+ */
 static int
 cp_file(const char *src_dir, const char *dst_dir, const char *src,
-		const char *dst)
+		const char *dst, int type)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
-	char do_command[6 + PATH_MAX*2 + 1];
-	char undo_command[6 + PATH_MAX*2 + 1];
+	char do_buf[6 + PATH_MAX*2 + 1];
+	char undo_buf[6 + PATH_MAX*2 + 1];
 	char *escaped_src, *escaped_dst;
 	int result;
 
@@ -2768,20 +2773,34 @@ cp_file(const char *src_dir, const char *dst_dir, const char *src,
 		return -1;
 	}
 
-	snprintf(do_command, sizeof(do_command), "cp -n %s %s", escaped_src,
-			escaped_dst);
-	snprintf(undo_command, sizeof(do_command), "rm -rf %s", escaped_dst);
+	if(type == 0)
+	{
+		snprintf(do_buf, sizeof(do_buf), "cp -n %s %s", escaped_src,
+				escaped_dst);
+		snprintf(undo_buf, sizeof(do_buf), "rm -rf %s", escaped_dst);
+	}
+	else
+	{
+		if(type == 2)
+		{
+			free(escaped_src);
+			escaped_src = escape_filename(make_rel_path(full_src, dst_dir), 0);
+		}
+		snprintf(do_buf, sizeof(do_buf), "ln -s %s %s", escaped_src, escaped_dst);
+		snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s", escaped_dst);
+	}
+
 	free(escaped_src);
 	free(escaped_dst);
 
-	result = system_and_wait_for_errors(do_command);
+	result = system_and_wait_for_errors(do_buf);
 	if(result == 0)
-		add_operation(do_command, full_src, full_dst, undo_command, full_dst, NULL);
+		add_operation(do_buf, full_src, full_dst, undo_buf, full_dst, NULL);
 	return result;
 }
 
 int
-cpmv_files(FileView *view, char **list, int nlines, int move)
+cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 {
 	int i;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
@@ -2829,7 +2848,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move)
 		if(move)
 			mv_file(view->selected_filelist[i], dst, path, 0);
 		else
-			cp_file(view->curr_dir, path, view->selected_filelist[i], dst);
+			cp_file(view->curr_dir, path, view->selected_filelist[i], dst, type);
 	}
 	cmd_group_end();
 	free_selected_file_array(view);

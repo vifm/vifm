@@ -542,6 +542,17 @@ is the same as :! but will pause the screen before returning to Vifm.
 .BI :!!
 will execute the last command.
 .TP
+.BI :[range]alink
+creates absolute symbolic links of files in directory of other view.
+.TP
+.BI ":[range]alink path"
+creates absolute symbolic links of files in directory specified with the path
+(absolute or relative to directory of other view).
+.TP
+.BI ":[range]alink name1 name2..."
+creates absolute symbolic links of files in directory of other view giving each
+next link a corresponding name from the argument list.
+.TP
 .BI ":apropos manpage"
 will create a menu of items returned by the apropos command. Selecting an item
 in the menu will open the corresponding manpage.
@@ -835,6 +846,17 @@ rename each of selected files to a corresponding name.
 .BI :restart
 will free a lot of things (histories, commands, etc.) and reread vifminfo and
 vifmrc files.
+.TP
+.BI :[range]rlink
+creates relative symbolic links of files in directory of other view.
+.TP
+.BI ":[range]rlink path"
+creates relative symbolic links of files in directory specified with the path
+(absolute or relative to directory of other view).
+.TP
+.BI ":[range]rlink name1 name2..."
+creates relative symbolic links of files in directory of other view giving each
+next link a corresponding name from the argument list.
 .TP
 .BI :screen
 toggles whether or not to use the screen program.
@@ -1488,12 +1510,10 @@ to your ~/.vimrc file.
 The following command names are reserved and shouldn't be used for user
 commands.
 
-  alink
   chmod
   chown
   g[lobal]
   mkdir
-  rlink
   touch
   v[global]
 .\" ---------------------------------------------------------------------------
