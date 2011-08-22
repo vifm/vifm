@@ -1011,7 +1011,7 @@ is_dir_writable(const char *path)
 {
 	if(access(path, W_OK) == 0)
 		return 1;
-	show_error_msg("Operation error", "Current directory is not writable");
+	show_error_msg("Operation error", "Destination directory is not writable");
 	return 0;
 }
 
@@ -2083,20 +2083,34 @@ is_clone_list_ok(int count, char **list)
 	return 1;
 }
 
-/* returns new value for save_msg */
-int
-clone_files(FileView *view, char **list, int nlines)
+static int
+is_dir_path(FileView *view, const char *path, char *buf)
 {
-	size_t len;
-	int i;
-	char buf[COMMAND_GROUP_INFO_LEN + 1];
-	char path[PATH_MAX];
+	strcpy(buf, view->curr_dir);
 
-	if(view->selected_files == 0)
+	if(path[0] == '/' || path[0] == '~')
 	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->selected_files = 1;
+		char *tmp = expand_tilde(strdup(path));
+		strcpy(buf, tmp);
+		free(tmp);
 	}
+	else
+	{
+		strcat(buf, "/");
+		strcat(buf, path);
+	}
+
+	if(is_dir(buf))
+		return 1;
+
+	strcpy(buf, view->curr_dir);
+	return 0;
+}
+
+static int
+have_read_access(FileView *view)
+{
+	int i;
 	for(i = 0; i < view->list_rows; i++)
 	{
 		if(!view->dir_entry[i].selected)
@@ -2111,41 +2125,14 @@ clone_files(FileView *view, char **list, int nlines)
 			return 0;
 		}
 	}
+	return 1;
+}
 
-	strcpy(path, view->curr_dir);
-	if(nlines == 1)
-	{
-		if(list[0][0] == '/' || list[0][0] == '~')
-		{
-			char *tmp = expand_tilde(strdup(list[0]));
-			strcpy(path, tmp);
-			free(tmp);
-		}
-		else
-		{
-			strcat(path, "/");
-			strcat(path, list[0]);
-		}
-		if(is_dir(path))
-			nlines = 0;
-		else
-			strcpy(path, view->curr_dir);
-	}
-	if(!is_dir_writable(path))
-		return 0;
-
-	get_all_selected_files(view);
-
-	if(nlines > 0 && (!is_name_list_ok(view->selected_files, nlines, list) ||
-			!is_clone_list_ok(nlines, list)))
-	{
-		clean_selected_files(view);
-		draw_dir_list(view, view->top_line);
-		moveto_list_pos(view, view->list_pos);
-		return 1;
-	}
-
-	len = snprintf(buf, sizeof(buf), "clone in %s: ", view->curr_dir);
+static void
+make_undo_string(FileView *view, char *buf, int nlines, char **list)
+{
+	int i;
+	size_t len = strlen(buf);
 	for(i = 0; i < view->selected_files && len < COMMAND_GROUP_INFO_LEN; i++)
 	{
 		if(buf[len - 2] != ':')
@@ -2162,6 +2149,53 @@ clone_files(FileView *view, char **list, int nlines)
 		buf[sizeof(buf) - 1] = '\0';
 		len = strlen(buf);
 	}
+}
+
+/* returns new value for save_msg */
+int
+clone_files(FileView *view, char **list, int nlines)
+{
+	int i;
+	char buf[COMMAND_GROUP_INFO_LEN + 1];
+	char path[PATH_MAX];
+	int with_dir = 0;
+
+	if(view->selected_files == 0)
+	{
+		view->dir_entry[view->list_pos].selected = 1;
+		view->selected_files = 1;
+	}
+	if(!have_read_access(view))
+		return 0;
+
+	if(nlines == 1)
+	{
+		if((with_dir = is_dir_path(view, list[0], path)))
+			nlines = 0;
+	}
+	else
+	{
+		strcpy(path, view->curr_dir);
+	}
+	if(!is_dir_writable(path))
+		return 0;
+
+	get_all_selected_files(view);
+
+	if(nlines > 0 && (!is_name_list_ok(view->selected_files, nlines, list) ||
+			!is_clone_list_ok(nlines, list)))
+	{
+		clean_selected_files(view);
+		draw_dir_list(view, view->top_line);
+		moveto_list_pos(view, view->list_pos);
+		return 1;
+	}
+
+	if(with_dir)
+		snprintf(buf, sizeof(buf), "clone in %s to %s: ", view->curr_dir, list[0]);
+	else
+		snprintf(buf, sizeof(buf), "clone in %s: ", view->curr_dir);
+	make_undo_string(view, buf, nlines, list);
 
 	cmd_group_begin(buf);
 	for(i = 0; i < view->selected_files; i++)
@@ -2691,6 +2725,113 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 	free_string_array(dest, n);
 	status_bar_messagef("%d file%s renamed", k, (k == 1) ? "" : "s");
 	return 1;
+}
+
+static int
+is_copy_list_ok(const char *dst, int count, char **list)
+{
+	int i;
+	for(i = 0; i < count; i++)
+	{
+		char buf[PATH_MAX];
+		snprintf(buf, sizeof(buf), "%s/%s", dst, list[i]);
+		if(access(buf, F_OK) == 0)
+		{
+			status_bar_messagef("File \"%s\" already exists", list[i]);
+			return 0;
+		}
+	}
+	return 1;
+}
+
+static int
+cp_file(const char *src_dir, const char *dst_dir, const char *src,
+		const char *dst)
+{
+	char full_src[PATH_MAX], full_dst[PATH_MAX];
+	char do_command[6 + PATH_MAX*2 + 1];
+	char undo_command[6 + PATH_MAX*2 + 1];
+	char *escaped_src, *escaped_dst;
+	int result;
+
+	snprintf(full_src, sizeof(full_src), "%s/%s", src_dir, src);
+	chosp(full_src);
+	escaped_src = escape_filename(full_src, 0);
+	snprintf(full_dst, sizeof(full_dst), "%s/%s", dst_dir, dst);
+	chosp(full_dst);
+	escaped_dst = escape_filename(full_dst, 0);
+
+	if(escaped_src == NULL || escaped_dst == NULL)
+	{
+		free(escaped_src);
+		free(escaped_dst);
+		return -1;
+	}
+
+	snprintf(do_command, sizeof(do_command), "cp -n %s %s", escaped_src,
+			escaped_dst);
+	snprintf(undo_command, sizeof(do_command), "rm -rf %s", escaped_dst);
+	free(escaped_src);
+	free(escaped_dst);
+
+	result = system_and_wait_for_errors(do_command);
+	if(result == 0)
+		add_operation(do_command, full_src, full_dst, undo_command, full_dst, NULL);
+	return result;
+}
+
+int
+copy_files(FileView *view, char **list, int nlines)
+{
+	int i;
+	char buf[COMMAND_GROUP_INFO_LEN + 1];
+	char path[PATH_MAX];
+
+	if(view->selected_files == 0)
+	{
+		view->dir_entry[view->list_pos].selected = 1;
+		view->selected_files = 1;
+	}
+	if(!have_read_access(view))
+		return 0;
+
+	if(nlines == 1)
+	{
+		if(is_dir_path(other_view, list[0], path))
+			nlines = 0;
+	}
+	else
+	{
+		strcpy(path, other_view->curr_dir);
+	}
+	if(!is_dir_writable(path))
+		return 0;
+
+	get_all_selected_files(view);
+
+	if((nlines > 0 && (!is_name_list_ok(view->selected_files, nlines, list) ||
+			!is_copy_list_ok(path, nlines, list))) || (nlines == 0 &&
+			!is_copy_list_ok(path, view->selected_files, view->selected_filelist)))
+	{
+		clean_selected_files(view);
+		draw_dir_list(view, view->top_line);
+		moveto_list_pos(view, view->list_pos);
+		return 1;
+	}
+
+	snprintf(buf, sizeof(buf), "copy from %s to %s: ", view->curr_dir, path);
+	make_undo_string(view, buf, nlines, list);
+
+	cmd_group_begin(buf);
+	for(i = 0; i < view->selected_files; i++)
+		cp_file(view->curr_dir, path, view->selected_filelist[i],
+				(nlines > 0) ? list[i] : view->selected_filelist[i]);
+	cmd_group_end();
+	free_selected_file_array(view);
+
+	clean_selected_files(view);
+	load_saving_pos(view, 1);
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

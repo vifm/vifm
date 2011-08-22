@@ -407,6 +407,11 @@ The builtin commands are:
     of the commands action (:com rm rm %f &).
 :com[mand] backup /pattern - will set search pattern.
 :com[mand] name filter pattern - will set file name filter.
+:[range]co[py] - copies files to directory of other view.
+:[range]co[py] path - copies files to directory specified with the path
+    (absolute or relative to directory of other view).
+:[range]co[py] name1 name2... - copies files to directory of other view
+    giving each next file a corresponding name from the argument list.
 :[range]d[elete][count] - delete selected file or files.
     See |Vifm_Ranges| for the ranges implemented.
 :delc[ommand] user_command - remove user_command.
@@ -1010,10 +1015,11 @@ commands.
   alink
   chmod
   chown
-  co[py]
   g[lobal]
+  mkdir
   m[ove]
   rlink
+  touch
   v[global]
 
 --------------------------------------------------------------------------------
