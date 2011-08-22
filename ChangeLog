@@ -190,6 +190,8 @@
 
 	Documented command line keys.
 
+	Handle color schemes with too many colors for terminal right.
+
 	Made :apropos command accept empty argument list.
 
 	Made :rename accept a list of new file names.

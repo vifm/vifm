@@ -2197,10 +2197,14 @@ static int
 colorscheme_cmd(const struct cmd_info *cmd_info)
 {
 	if(cmd_info->argc == 0) /* Show menu with colorschemes listed */
+	{
 		show_colorschemes_menu(curr_view);
+		return 0;
+	}
 	else
-		load_color_scheme(cmd_info->argv[0]);
-	return 0;
+	{
+		return load_color_scheme(cmd_info->argv[0]);
+	}
 }
 
 static int

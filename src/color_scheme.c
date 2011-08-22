@@ -57,6 +57,53 @@ static int _gnuc_unused default_colors_size_guard[
 	(ARRAY_LEN(default_colors) + 1 == MAXNUM_COLOR) ? 1 : -1
 ];
 
+static void
+init_color_scheme(Col_scheme *cs)
+{
+	int i;
+	strcpy(cs->dir, "");
+	cs->defaulted = 0;
+
+	for(i = 0; i < MAXNUM_COLOR; i++)
+	{
+		cs->color[i].fg = default_colors[i][0];
+		cs->color[i].bg = default_colors[i][1];
+	}
+}
+
+static void
+check_color_scheme(Col_scheme *cs)
+{
+	int need_correction = 0;
+	int i;
+	for(i = 0; i < ARRAY_LEN(cs->color) - 1; i++)
+	{
+		if(cs->color[i].bg > COLORS || cs->color[i].fg > COLORS)
+		{
+			need_correction = 1;
+			break;
+		}
+	}
+
+	if(!need_correction)
+		return;
+
+	cs->defaulted = 1;
+	for(i = 0; i < ARRAY_LEN(cs->color); i++)
+	{
+		cs->color[i].fg = default_colors[i][0];
+		cs->color[i].bg = default_colors[i][1];
+	}
+}
+
+void
+check_color_schemes(void)
+{
+	int i;
+	for(i = 0; i < cfg.color_scheme_num; i++)
+		check_color_scheme(col_schemes + i);
+}
+
 int
 find_color_scheme(const char *name)
 {
@@ -174,22 +221,9 @@ write_color_scheme_file(void)
 }
 
 static void
-init_color_scheme(int num, Col_scheme *cs)
-{
-	int i;
-	strcpy(cs->dir, "");
-
-	for(i = 0; i < MAXNUM_COLOR; i++)
-	{
-		cs->color[i].fg = default_colors[i][0];
-		cs->color[i].bg = default_colors[i][1];
-	}
-}
-
-static void
 load_default_colors()
 {
-	init_color_scheme(0, &col_schemes[0]);
+	init_color_scheme(&col_schemes[0]);
 
 	snprintf(col_schemes[0].name, NAME_MAX, "Default");
 	snprintf(col_schemes[0].dir, PATH_MAX, "/");
@@ -290,8 +324,8 @@ read_color_scheme_file(void)
 	if((fp = fopen(config_file, "r")) == NULL)
 	{
 		load_default_colors();
+		cfg.color_scheme_num = 1;
 
-		cfg.color_scheme_num++;
 		write_color_scheme_file();
 		return;
 	}
@@ -336,8 +370,7 @@ read_color_scheme_file(void)
 				if(cfg.color_scheme_num > 5)
 					break;
 
-				init_color_scheme(cfg.color_scheme_num - 1,
-						&col_schemes[cfg.color_scheme_num - 1]);
+				init_color_scheme(&col_schemes[cfg.color_scheme_num - 1]);
 
 				snprintf(col_schemes[cfg.color_scheme_num - 1].name, NAME_MAX, "%s",
 						s1);

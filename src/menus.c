@@ -1192,7 +1192,11 @@ show_colorschemes_menu(FileView *view)
 	{
 		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
 		m.data[x] = (char *)malloc(len + 2);
-		snprintf(m.data[x], len, "%s", col_schemes[x].name);
+		if(col_schemes[x].defaulted)
+			snprintf(m.data[x], len, "%s (not supported by the terminal)",
+					col_schemes[x].name);
+		else
+			snprintf(m.data[x], len, "%s", col_schemes[x].name);
 
 		x++;
 		i++;

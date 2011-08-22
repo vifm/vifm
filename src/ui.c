@@ -273,6 +273,7 @@ setup_ncurses_interface(void)
 	/* Changed for pdcurses */
 	use_default_colors();
 
+	check_color_schemes();
 	for(i = 0; i < cfg.color_scheme_num; i++)
 	{
 		int x;
@@ -794,7 +795,7 @@ redraw_lists(void)
 	draw_dir_list(other_view, other_view->top_line);
 }
 
-void
+int
 load_color_scheme(const char *name)
 {
 	int i;
@@ -804,7 +805,7 @@ load_color_scheme(const char *name)
 	if(i < 0)
 	{
 		show_error_msg("Color Scheme", "Invalid color scheme name");
-		return;
+		return 0;
 	}
 
 	cfg.color_scheme_cur = i;
@@ -825,7 +826,7 @@ load_color_scheme(const char *name)
 	wbkgdset(error_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 
 	if(curr_stats.vifm_started < 2)
-		return;
+		return 0;
 
 	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
@@ -833,6 +834,13 @@ load_color_scheme(const char *name)
 		quick_view_file(curr_view);
 	else
 		draw_dir_list(other_view, other_view->top_line);
+
+	if(col_schemes[i].defaulted)
+	{
+		status_bar_message("Not supported by the terminal");
+		return 1;
+	}
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

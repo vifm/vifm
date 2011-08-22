@@ -49,11 +49,13 @@ typedef struct _Col_attr {
 typedef struct _Col_Scheme {
 	char name[NAME_MAX];
 	char dir[PATH_MAX];
+	int defaulted;
 	Col_attr color[MAXNUM_COLOR];
 } Col_scheme;
 
 extern Col_scheme *col_schemes;
 
+void check_color_schemes(void);
 void read_color_scheme_file(void);
 int check_directory_for_color_scheme(const char *);
 int find_color_scheme(const char *name);
