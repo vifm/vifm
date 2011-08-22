@@ -2768,8 +2768,15 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 	k = 0;
 	for(i = 0; i < n; i++)
 	{
+		int pos;
 		if(strcmp(dest[i], view->selected_filelist[i]) == 0)
 			continue;
+		pos = find_file_pos_in_list(view, view->selected_filelist[i]);
+		if(pos == view->list_pos)
+		{
+			free(view->dir_entry[pos].name);
+			view->dir_entry[pos].name = strdup(dest[i]);
+		}
 		mv_file(view->selected_filelist[i], dest[i], view->curr_dir, 0);
 		k++;
 	}
@@ -2778,6 +2785,7 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 	free_selected_file_array(view);
 	view->selected_files = 0;
 	free_string_array(dest, n);
+	load_saving_pos(view, 1);
 	status_bar_messagef("%d file%s renamed", k, (k == 1) ? "" : "s");
 	return 1;
 }
