@@ -2900,8 +2900,16 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 			cp_file(view->curr_dir, path, view->selected_filelist[i], dst, type);
 	}
 	cmd_group_end();
-	free_selected_file_array(view);
 
+	if(move)
+	{
+		i = view->list_pos;
+		while(i < view->list_rows - 1 && view->dir_entry[i].selected)
+			i++;
+		view->list_pos = i;
+	}
+
+	free_selected_file_array(view);
 	clean_selected_files(view);
 	load_saving_pos(view, 1);
 	if(from_file)
