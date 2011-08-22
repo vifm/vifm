@@ -12,9 +12,6 @@ let b:current_syntax = 'vifmrc'
 let s:cpo_save = &cpo
 set cpo-=C
 
-" Whole line comments
-syntax region vifmComment start="^\s*\"" end="$"
-
 " General commands
 syntax keyword vifmCommand contained apropos cd change colo[rscheme] d[elete]
 		\ delm[arks] di[splay] dirs e[dit] empty exi[t] file filter fin[d] gr[ep]
@@ -52,15 +49,18 @@ syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
 		\ invwildmenu invwmnu invwrap
 
 " Expressions
-syntax region vifmStatement start='^\s*[^"]' skip='\n\s*\\' end='$' keepend
+syntax region vifmStatement start='^\s*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
+		\ end='$' keepend
 		\ contains=vifmCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
-		\,vifmMap,vifmMapSt,vifmExecute,vifmCommands,vifmMapRhs
-syntax region vifmCmdCommandSt start='^\s*com\%[mand]' skip='\n\s*\\' end='$'
-		\ keepend contains=vifmCmdCommand
+		\,vifmMap,vifmMapSt,vifmExecute,vifmCommands,vifmMapRhs,vifmComment
+syntax region vifmCmdCommandSt start='^\s*com\%[mand]'
+		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
+		\ keepend contains=vifmCmdCommand,vifmComment
 syntax region vifmMarkCommandSt start='^\s*ma\%[rk]\>' end='$' keepend oneline
 		\ contains=vifmMarkCommand
-syntax region vifmFtCommandSt start='^\s*file[tvx]' skip='\n\s*\\' end='$'
-		\ keepend contains=vifmFtCommand
+syntax region vifmFtCommandSt start='^\s*file[tvx]'
+		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
+		\ contains=vifmFtCommand,vifmComment
 syntax region vifmExecute start='!' end='$' keepend oneline
 		\ contains=vifmNotation
 syntax region vifmCommands start=':' end='$' keepend oneline
@@ -70,8 +70,8 @@ syntax match vifmMapLhs /\S\+/ contained contains=vifmNotation
 syntax match vifmMapRhs /\s\+\S\+/ contained
 		\ contains=vifmNotation,vifmCommand,vifmExecute
 syntax region vifmSet matchgroup=vifmCommand
-		\ start='\<se\%[t]\>' skip='\n\s*\\' end='$' keepend
-		\ contains=vifmOption,vifmSetString,vifmNumber
+		\ start='\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
+		\ contains=vifmOption,vifmSetString,vifmNumber,vifmComment
 syntax region vifmSetString contained start=+="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
 syntax region vifmSetString contained start=+='+hs=s+1 skip=+\\\\\|\\'+  end=+'+
 syntax match vifmNumber contained /\d\+/
@@ -80,6 +80,12 @@ syntax match vifmNumber contained /\d\+/
 syntax case ignore
 syntax match vifmNotation '<\(cr\|space\|f\d\{1,2\}\|c-[a-z[\]^_]\)>'
 syntax case match
+
+" Whole line comments
+syntax region vifmComment contained start="^\s*\"" end="$"
+
+" Empty line
+syntax match vifmEmpty /^\s*$/
 
 " Highlight
 highlight link vifmComment Comment
