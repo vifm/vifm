@@ -933,7 +933,18 @@ add_buildin_commands(const struct cmd_add *cmds, int count)
 				cmds[i].min_args <= cmds[i].max_args);
 		assert(add_buildin_cmd(cmds[i].name, 0, &cmds[i]) == 0);
 		if(cmds[i].abbr != NULL)
-			assert(add_buildin_cmd(cmds[i].abbr, 1, &cmds[i]) == 0);
+		{
+			size_t full_len, short_len;
+			char buf[strlen(cmds[i].name) + 1];
+			strcpy(buf, cmds[i].name);
+			full_len = strlen(buf);
+			short_len = strlen(cmds[i].abbr);
+			while(full_len > short_len)
+			{
+				buf[--full_len] = '\0';
+				assert(add_buildin_cmd(buf, 1, &cmds[i]) == 0);
+			}
+		}
 	}
 }
 
@@ -969,7 +980,7 @@ add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf)
 	/* command with the same name already exists */
 	if(cmp == 0)
 	{
-		if(strcmp(name, "command") == 0 || strcmp(name, "com") == 0)
+		if(strncmp(name, "command", strlen(name)) == 0)
 		{
 			inner->command_handler = conf->handler;
 			return 0;

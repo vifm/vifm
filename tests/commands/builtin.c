@@ -35,7 +35,7 @@ test_empty_line_completion(void)
 	free(buf);
 
 	buf = next_completion();
-	assert_string_equal("apropos", buf);
+	assert_string_equal("alink", buf);
 	free(buf);
 }
 

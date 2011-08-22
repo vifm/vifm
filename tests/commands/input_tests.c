@@ -15,6 +15,7 @@ static int goto_cmd(const struct cmd_info* cmd_info);
 static int exec_cmd(const struct cmd_info* cmd_info);
 static int call_cmd(const struct cmd_info* cmd_info);
 static int delete_cmd(const struct cmd_info* cmd_info);
+static int edia_cmd(const struct cmd_info* cmd_info);
 static int edit_cmd(const struct cmd_info* cmd_info);
 static int file_cmd(const struct cmd_info* cmd_info);
 static int filter_cmd(const struct cmd_info* cmd_info);
@@ -32,6 +33,8 @@ static const struct cmd_add commands[] = {
 		.emark = 0,           .qmark = 1,    .expand = 1,               .regexp = 0, .min_args = 1, .max_args = 1,       .bg = 0,     },
 	{ .name = "delete",     .abbr = "d",   .handler = delete_cmd,     .id =  1,    .range = 1,    .cust_sep = 0,
 		.emark = 1,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 1,       .bg = 0,     },
+	{ .name = "edia",       .abbr = NULL,  .handler = edia_cmd,       .id = -1,    .range = 1,    .cust_sep = 0,
+		.emark = 0,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = NOT_DEF, .bg = 0,     },
 	{ .name = "edit",       .abbr = "e",   .handler = edit_cmd,       .id = -1,    .range = 1,    .cust_sep = 0,
 		.emark = 0,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = NOT_DEF, .bg = 0,     },
 	{ .name = "file",       .abbr = NULL,  .handler = file_cmd,       .id = -1,    .range = 1,    .cust_sep = 0,
@@ -92,9 +95,17 @@ delete_cmd(const struct cmd_info* cmd_info)
 }
 
 static int
+edia_cmd(const struct cmd_info* cmd_info)
+{
+	cmdi.usr1 = 1;
+	return 0;
+}
+
+static int
 edit_cmd(const struct cmd_info* cmd_info)
 {
 	cmdi = *cmd_info;
+	cmdi.usr1 = 2;
 	if(cmdi.argc > 0)
 	{
 		free(arg);
@@ -520,6 +531,25 @@ test_bg_and_no_args(void)
 	assert_true(cmdi.bg);
 }
 
+static void
+test_short_forms(void)
+{
+	assert_int_equal(0, execute_cmd("e"));
+	assert_int_equal(2, cmdi.usr1);
+
+	assert_int_equal(0, execute_cmd("ed"));
+	assert_int_equal(2, cmdi.usr1);
+
+	assert_int_equal(0, execute_cmd("edi"));
+	assert_int_equal(2, cmdi.usr1);
+
+	assert_int_equal(0, execute_cmd("edit"));
+	assert_int_equal(2, cmdi.usr1);
+
+	assert_int_equal(0, execute_cmd("edia"));
+	assert_int_equal(1, cmdi.usr1);
+}
+
 void
 input_tests(void)
 {
@@ -550,6 +580,7 @@ input_tests(void)
 	run_test(test_only_one_mark);
 	run_test(test_args_trimming);
 	run_test(test_bg_and_no_args);
+	run_test(test_short_forms);
 
 	test_fixture_end();
 }
