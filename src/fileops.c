@@ -1447,7 +1447,18 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 
 		if(mv_file(view->dir_entry[abs(indexes[i])].name, list[i], view->curr_dir,
 				(indexes[i] < 0) ? 1 : -1) == 0)
+		{
+			int pos;
+
 			renamed++;
+
+			pos = find_file_pos_in_list(view, view->dir_entry[abs(indexes[i])].name);
+			if(pos == view->list_pos)
+			{
+				free(view->dir_entry[pos].name);
+				view->dir_entry[pos].name = strdup(list[i]);
+			}
+		}
 	}
 
 	cmd_group_end();
@@ -2480,6 +2491,13 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 		j++;
 		if(strcmp(buf, dest[j]) == 0)
 			continue;
+
+		if(i == view->list_pos)
+		{
+			free(view->dir_entry[i].name);
+			view->dir_entry[i].name = strdup(dest[j]);
+		}
+
 		mv_file(buf, dest[j], view->curr_dir, 0);
 		n++;
 	}
@@ -2785,7 +2803,6 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 	free_selected_file_array(view);
 	view->selected_files = 0;
 	free_string_array(dest, n);
-	load_saving_pos(view, 1);
 	status_bar_messagef("%d file%s renamed", k, (k == 1) ? "" : "s");
 	return 1;
 }
