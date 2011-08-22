@@ -1463,7 +1463,7 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 	FILE *f;
 	int i;
 
-	strncpy(temp_file, make_name_unique("vifm-rename"), sizeof(temp_file));
+	strncpy(temp_file, make_name_unique("/tmp/vifm.rename"), sizeof(temp_file));
 
 	if((f = fopen(temp_file, "w")) == NULL)
 	{
@@ -1571,6 +1571,12 @@ rename_files(FileView *view, char **list, int nlines)
 	int *indexes;
 	int count;
 	int i, j;
+
+	if(!is_dir_writable(view->curr_dir))
+	{
+		status_bar_message("");
+		return;
+	}
 
 	if(view->selected_files == 0)
 	{
