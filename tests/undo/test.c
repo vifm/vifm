@@ -18,22 +18,27 @@ static void
 setup(void)
 {
 	static int undo_levels = 10;
+	int ret_code;
 
 	init_undo_list(exec_func, &undo_levels);
 
 	cmd_group_begin("msg1");
-	assert(add_operation("do_msg1", NULL, NULL, "undo_msg1", NULL, NULL) == 0);
+	ret_code = add_operation("do_msg1", NULL, NULL, "undo_msg1", NULL, NULL);
+	assert(ret_code == 0);
 	cmd_group_end();
 
 	cmd_group_begin("msg2");
-	assert(add_operation("do_msg2_cmd1", NULL, NULL, "undo_msg2_cmd1", NULL,
-			NULL) == 0);
-	assert(add_operation("do_msg2_cmd2", NULL, NULL, "undo_msg2_cmd2", NULL,
-			NULL) == 0);
+	ret_code = add_operation("do_msg2_cmd1", NULL, NULL, "undo_msg2_cmd1", NULL,
+			NULL);
+	assert(ret_code == 0);
+	ret_code = add_operation("do_msg2_cmd2", NULL, NULL, "undo_msg2_cmd2", NULL,
+			NULL);
+	assert(ret_code == 0);
 	cmd_group_end();
 
 	cmd_group_begin("msg3");
-	assert(add_operation("do_msg3", NULL, NULL, "undo_msg3", NULL, NULL) == 0);
+	ret_code = add_operation("do_msg3", NULL, NULL, "undo_msg3", NULL, NULL);
+	assert(ret_code == 0);
 	cmd_group_end();
 }
 

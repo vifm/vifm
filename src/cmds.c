@@ -928,10 +928,12 @@ add_buildin_commands(const struct cmd_add *cmds, int count)
 	int i;
 	for(i = 0; i < count; i++)
 	{
+		int ret_code;
 		assert(cmds[i].min_args >= 0);
 		assert(cmds[i].max_args == NOT_DEF ||
 				cmds[i].min_args <= cmds[i].max_args);
-		assert(add_buildin_cmd(cmds[i].name, 0, &cmds[i]) == 0);
+		ret_code = add_buildin_cmd(cmds[i].name, 0, &cmds[i]);
+		assert(ret_code == 0);
 		if(cmds[i].abbr != NULL)
 		{
 			size_t full_len, short_len;
@@ -942,7 +944,8 @@ add_buildin_commands(const struct cmd_add *cmds, int count)
 			while(full_len > short_len)
 			{
 				buf[--full_len] = '\0';
-				assert(add_buildin_cmd(buf, 1, &cmds[i]) == 0);
+				ret_code = add_buildin_cmd(buf, 1, &cmds[i]);
+				assert(ret_code == 0);
 			}
 		}
 	}

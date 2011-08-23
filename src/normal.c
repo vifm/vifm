@@ -278,12 +278,16 @@ static struct keys_add_info selectors[] = {
 void
 init_normal_mode(int *key_mode)
 {
+	int ret_code;
+
 	assert(key_mode != NULL);
 
 	mode = key_mode;
 
-	assert(add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), NORMAL_MODE) == 0);
-	assert(add_selectors(selectors, ARRAY_LEN(selectors), NORMAL_MODE) == 0);
+	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), NORMAL_MODE);
+	assert(ret_code == 0);
+	ret_code = add_selectors(selectors, ARRAY_LEN(selectors), NORMAL_MODE);
+	assert(ret_code == 0);
 }
 
 static void

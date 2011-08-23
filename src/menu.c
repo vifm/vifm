@@ -182,11 +182,14 @@ menu_select_range(int id, const struct cmd_info *cmd_info)
 void
 init_menu_mode(int *key_mode)
 {
+	int ret_code;
+
 	assert(key_mode != NULL);
 
 	mode = key_mode;
 
-	assert(add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), MENU_MODE) == 0);
+	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), MENU_MODE);
+	assert(ret_code == 0);
 
 	set_def_handler(MENU_MODE, key_handler);
 

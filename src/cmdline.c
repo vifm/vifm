@@ -179,12 +179,15 @@ static struct keys_add_info builtin_cmds[] = {
 void
 init_cmdline_mode(int *key_mode)
 {
+	int ret_code;
+
 	assert(key_mode != NULL);
 
 	mode = key_mode;
 	set_def_handler(CMDLINE_MODE, def_handler);
 
-	assert(add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), CMDLINE_MODE) == 0);
+	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), CMDLINE_MODE);
+	assert(ret_code == 0);
 }
 
 static int

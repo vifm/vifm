@@ -157,11 +157,14 @@ static struct keys_add_info builtin_cmds[] = {
 void
 init_visual_mode(int *key_mode)
 {
+	int ret_code;
+
 	assert(key_mode != NULL);
 
 	mode = key_mode;
 
-	assert(add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), VISUAL_MODE) == 0);
+	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), VISUAL_MODE);
+	assert(ret_code == 0);
 }
 
 void
