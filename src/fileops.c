@@ -1546,7 +1546,7 @@ rename_files_ind(FileView *view, int *indexes, int count)
 
 	if(count == 0)
 	{
-		status_bar_message("0 files renamed.");
+		status_bar_message("0 files renamed");
 		return;
 	}
 
@@ -1561,7 +1561,7 @@ rename_files_ind(FileView *view, int *indexes, int count)
 	if((list = read_list_from_file(count, names, &nlines, 1)) == NULL)
 	{
 		free_string_array(names, count);
-		status_bar_message("0 files renamed.");
+		status_bar_message("0 files renamed");
 		return;
 	}
 	free_string_array(names, count);
@@ -1572,7 +1572,7 @@ rename_files_ind(FileView *view, int *indexes, int count)
 	free_string_array(list, nlines);
 
 	if(renamed >= 0)
-		status_bar_messagef("%d file%s renamed.", renamed,
+		status_bar_messagef("%d file%s renamed", renamed,
 				(renamed == 1) ? "" : "s");
 }
 
@@ -1626,7 +1626,7 @@ rename_files(FileView *view, char **list, int nlines)
 			renamed = perform_renaming(view, indexes, count, list);
 
 		if(renamed >= 0)
-			status_bar_messagef("%d file%s renamed.", renamed,
+			status_bar_messagef("%d file%s renamed", renamed,
 					(renamed == 1) ? "" : "s");
 	}
 
@@ -2855,7 +2855,7 @@ cp_file(const char *src_dir, const char *dst_dir, const char *src,
 
 	if(type == 0)
 	{
-		snprintf(do_buf, sizeof(do_buf), "cp -n %s %s", escaped_src,
+		snprintf(do_buf, sizeof(do_buf), "cp -pR -n %s %s", escaped_src,
 				escaped_dst);
 		snprintf(undo_buf, sizeof(do_buf), "rm -rf %s", escaped_dst);
 	}
