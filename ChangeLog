@@ -202,6 +202,8 @@
 
 	Made :rename accept a list of new file names.
 
+	Ownership is not preserved on copy operations anymore.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

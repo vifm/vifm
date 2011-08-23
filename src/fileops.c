@@ -1913,7 +1913,8 @@ put_next(const char *dest_name, int override)
 		}
 		else
 		{
-			snprintf(do_buf, sizeof(do_buf), "cp %s -pR %s %s", override ? "" : "-n",
+			snprintf(do_buf, sizeof(do_buf),
+					"cp %s -R --preserve=mode,timestamps %s %s", override ? "" : "-n",
 					src_buf, dst_buf);
 			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s", dst_buf);
 		}
@@ -2111,7 +2112,8 @@ clone_file(FileView* view, const char *filename, const char *path,
 	escaped = escape_filename(do_cmd, 0);
 	chosp(escaped);
 	escaped_clone = escape_filename(clone_name, 0);
-	snprintf(do_cmd, sizeof(do_cmd), "cp -npR %s %s", escaped, escaped_clone);
+	snprintf(do_cmd, sizeof(do_cmd), "cp -nR --preserve=mode,timestamps %s %s",
+			escaped, escaped_clone);
 	snprintf(undo_cmd, sizeof(undo_cmd), "rm -rf %s", escaped_clone);
 	free(escaped_clone);
 	free(escaped);
@@ -2855,8 +2857,8 @@ cp_file(const char *src_dir, const char *dst_dir, const char *src,
 
 	if(type == 0)
 	{
-		snprintf(do_buf, sizeof(do_buf), "cp -pR -n %s %s", escaped_src,
-				escaped_dst);
+		snprintf(do_buf, sizeof(do_buf),
+				"cp -R --preserve=mode,timestamps -n %s %s", escaped_src, escaped_dst);
 		snprintf(undo_buf, sizeof(do_buf), "rm -rf %s", escaped_dst);
 	}
 	else
