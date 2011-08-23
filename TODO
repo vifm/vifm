@@ -47,6 +47,7 @@ Possible things to add.
     Improve sorting ('sort' and 'gsort'; ignore case; ignore dirs).
     Add :mksession command and 'sessionoptions' option.
     'incsearch' option.
+    'wrapscan' option.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.

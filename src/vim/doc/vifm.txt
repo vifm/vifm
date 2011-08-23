@@ -116,10 +116,10 @@ Searching~
     search.
 ?regular expression - select files matching regular expression. Backward
     search.
-n - previous file matching last search pattern.  Considers last search
-    direction.
-N - previous file matching last search pattern.  Considers last search
-    direction.
+[count]n - previous file matching last search pattern.  Considers last
+    search direction.
+[count]N - previous file matching last search pattern.  Considers last
+    search direction.
 Note: vifm uses extended regular expressions for / and ?.
 
 [count]f[character] - search forward for file with [character] as first
@@ -273,9 +273,9 @@ o - switch active selection bound.
 
 O - switch active selection bound.
 
-u - make names of selected files lowercase.
+gu, u - make names of selected files lowercase.
 
-U - make names of selected files uppercase.
+gU, U - make names of selected files uppercase.
 
 --------------------------------------------------------------------------------
 *vifm-command-line*

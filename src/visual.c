@@ -388,7 +388,10 @@ cmd_N(struct key_info key_info, struct keys_info *keys_info)
 	if(m == 0)
 		find_vpattern(view, cfg.search_history[0], curr_stats.last_search_backward);
 
-	find_update(view, !curr_stats.last_search_backward);
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	while(key_info.count-- > 0)
+		find_update(view, !curr_stats.last_search_backward);
 }
 
 static void
@@ -647,7 +650,10 @@ cmd_n(struct key_info key_info, struct keys_info *keys_info)
 	if(m == 0)
 		find_vpattern(view, cfg.search_history[0], curr_stats.last_search_backward);
 
-	find_update(view, curr_stats.last_search_backward);
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	while(key_info.count-- > 0)
+		find_update(view, curr_stats.last_search_backward);
 }
 
 static void

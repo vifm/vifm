@@ -156,9 +156,11 @@ Searching
               will highlight all files matching the pattern and go to the pre‐
               vious match.
 
-       n      find the next match of / or ?.
+       [count]n
+              find the next match of / or ?.
 
-       N      find the previous match of / or ?.
+       [count]N
+              find the previous match of / or ?.
 
        [count]f[character]
               search  forward  for file with [character] as first character in
@@ -338,6 +340,10 @@ Visual Mode
        o      switch active selection bound.
 
        O      switch active selection bound.
+
+       gu, u  make names of selected files lowercase.
+
+       gU, U  make names of selected files uppercase.
 
 Command line Mode
        This keys apply to all submodes of  the  command  line  mode:  command,

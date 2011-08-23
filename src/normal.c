@@ -792,6 +792,9 @@ cmd_N(struct key_info key_info, struct keys_info *keys_info)
 	if(cfg.search_history_num < 0)
 		return;
 
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+
 	m = 0;
 	for(i = 0; i < curr_view->list_rows; i++)
 		if(curr_view->dir_entry[i].search_match)
@@ -800,13 +803,19 @@ cmd_N(struct key_info key_info, struct keys_info *keys_info)
 			break;
 		}
 	if(m == 0)
+	{
 		find_pattern(curr_view, cfg.search_history[0],
-				curr_stats.last_search_backward, 1);
+				!curr_stats.last_search_backward, 1);
+		key_info.count--;
+	}
 
-	if(curr_stats.last_search_backward)
-		find_next_pattern(curr_view, 1);
-	else
-		find_previous_pattern(curr_view, 1);
+	while(key_info.count-- > 0)
+	{
+		if(curr_stats.last_search_backward)
+			find_next_pattern(curr_view, 1);
+		else
+			find_previous_pattern(curr_view, 1);
+	}
 }
 
 /* Move files. */
@@ -1162,9 +1171,13 @@ cmd_m(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_n(struct key_info key_info, struct keys_info *keys_info)
 {
-	int i, m;
+	int m, i;
+
 	if(cfg.search_history_num < 0)
 		return;
+
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
 
 	m = 0;
 	for(i = 0; i < curr_view->list_rows; i++)
@@ -1174,13 +1187,19 @@ cmd_n(struct key_info key_info, struct keys_info *keys_info)
 			break;
 		}
 	if(m == 0)
+	{
 		find_pattern(curr_view, cfg.search_history[0],
 				curr_stats.last_search_backward, 1);
+		key_info.count--;
+	}
 
-	if(curr_stats.last_search_backward)
-		find_previous_pattern(curr_view, 1);
-	else
-		find_next_pattern(curr_view, 1);
+	while(key_info.count-- > 0)
+	{
+		if(curr_stats.last_search_backward)
+			find_previous_pattern(curr_view, 1);
+		else
+			find_next_pattern(curr_view, 1);
+	}
 }
 
 /* Put files. */

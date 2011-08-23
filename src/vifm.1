@@ -184,10 +184,10 @@ will highlight all files matching the pattern and go to the next match.
 .BI "?regular expression pattern[Return]"
 will highlight all files matching the pattern and go to the previous match.
 .TP
-.BI n
+.BI [count]n
 find the next match of / or ?.
 .TP
-.BI N
+.BI [count]N
 find the previous match of / or ?.
 .TP
 .BI [count]f[character]
@@ -422,6 +422,12 @@ switch active selection bound.
 .TP
 .BI O
 switch active selection bound.
+.TP
+.BI "gu, u"
+make names of selected files lowercase.
+.TP
+.BI "gU, U"
+make names of selected files uppercase.
 .\" ---------------------------------------------------------------------------
 .SH Command line Mode
 .\" ---------------------------------------------------------------------------

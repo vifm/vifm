@@ -204,7 +204,7 @@
 
 	Ownership is not preserved on copy operations anymore.
 
-	Made F, f, ; and comma commands accept count.
+	Made F, f, ;, comma, n and N commands accept count.
 
 	Fixed bug with name conflict of files and directories in the Trash.
 
