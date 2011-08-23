@@ -1,4 +1,4 @@
-.TH vifm 1 "August 22, 2011" "" "Vifm"
+.TH vifm 1 "August 23, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -190,19 +190,22 @@ find the next match of / or ?.
 .BI N
 find the previous match of / or ?.
 .TP
-.BI f[character]
+.BI [count]f[character]
 search forward for file with [character] as first character in name.  Search
 wraps around the end of the list.
 .TP
-.BI F[character]
+.BI [count]F[character]
 search backward for file with [character] as first character in name.  Search
 wraps around the end of the list.
 .TP
-.BI ;
+.BI [count];
 find the next match of f or F.
 .TP
-.BI ,
+.BI [count],
 find the previous match of f or F.
+.LP
+Note: f, F, ; and , wrap around list beginning and end when they are used
+alone and they don't wrap when they are used as selectors.
 .\" ---------------------------------------------------------------------------
 .SH File Filters
 .\" ---------------------------------------------------------------------------

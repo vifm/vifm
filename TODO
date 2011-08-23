@@ -31,7 +31,6 @@ Vi(m) specific features that need to be added.
         other options?
     Better ranges.
     Ctrl-A and Ctrl-X commands.
-    Accept count on f, F, ;, comma commands.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?

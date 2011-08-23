@@ -122,12 +122,14 @@ N - previous file matching last search pattern.  Considers last search
     direction.
 Note: vifm uses extended regular expressions for / and ?.
 
-f[character] - search forward for file with [character] as first
+[count]f[character] - search forward for file with [character] as first
     character in name.  Search wraps around the end of the list.
-F[character] - search backward for file with [character] as first
+[count]F[character] - search backward for file with [character] as first
     character in name.  Search wraps around the end of the list.
-; - find the next match of f or F.
-, - find the previous match of f or F.
+[count]; - find the next match of f or F.
+[count], - find the previous match of f or F.
+Note: f, F, ; and , wrap around list beginning and end when they are used
+alone and they don't wrap when they are used as selectors.
 
 Filters~
                                                                *Filters*

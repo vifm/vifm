@@ -81,7 +81,8 @@ static void cmd_slash(struct key_info, struct keys_info *);
 static void cmd_question(struct key_info, struct keys_info *);
 static void cmd_C(struct key_info, struct keys_info *);
 static void cmd_F(struct key_info, struct keys_info *);
-static void find_goto(int ch, int backward, struct keys_info * keys_info);
+static void find_goto(int ch, int count, int backward,
+		struct keys_info * keys_info);
 static void cmd_G(struct key_info, struct keys_info *);
 static void cmd_H(struct key_info, struct keys_info *);
 static void cmd_L(struct key_info, struct keys_info *);
@@ -531,7 +532,10 @@ cmd_F(struct key_info key_info, struct keys_info *keys_info)
 {
 	last_fast_search_char = key_info.multi;
 	last_fast_search_backward = 1;
-	find_goto(key_info.multi, 1, keys_info);
+
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	find_goto(key_info.multi, key_info.count, 1, keys_info);
 }
 
 /* Returns negative number if nothing was found */
@@ -589,17 +593,30 @@ ffind(int ch, int backward, int wrap)
 }
 
 static void
-find_goto(int ch, int backward, struct keys_info *keys_info)
+find_goto(int ch, int count, int backward, struct keys_info *keys_info)
 {
 	int pos;
+	int old_pos = curr_view->list_pos;
+
 	pos = ffind(ch, backward, !keys_info->selector);
 	if(pos < 0 || pos == curr_view->list_pos)
 		return;
+	while(--count > 0)
+	{
+		curr_view->list_pos = pos;
+		pos = ffind(ch, backward, !keys_info->selector);
+	}
 
 	if(keys_info->selector)
-		pick_files(curr_view, pos, keys_info);
+	{
+		curr_view->list_pos = old_pos;
+		if(pos >= 0)
+			pick_files(curr_view, pos, keys_info);
+	}
 	else
+	{
 		moveto_list_pos(curr_view, pos);
+	}
 }
 
 /* Jump to bottom of the list or to specified line. */
@@ -859,7 +876,11 @@ cmd_comma(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(last_fast_search_backward == -1)
 		return;
-	find_goto(last_fast_search_char, !last_fast_search_backward, keys_info);
+
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	find_goto(last_fast_search_char, key_info.count, !last_fast_search_backward,
+			keys_info);
 }
 
 /* Repeat last change. */
@@ -884,7 +905,11 @@ cmd_semicolon(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(last_fast_search_backward == -1)
 		return;
-	find_goto(last_fast_search_char, last_fast_search_backward, keys_info);
+
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	find_goto(last_fast_search_char, key_info.count, last_fast_search_backward,
+			keys_info);
 }
 
 /* Search forward. */
@@ -1060,7 +1085,10 @@ cmd_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	last_fast_search_char = key_info.multi;
 	last_fast_search_backward = 0;
-	find_goto(key_info.multi, 0, keys_info);
+
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	find_goto(key_info.multi, key_info.count, 0, keys_info);
 }
 
 /* Updir. */
