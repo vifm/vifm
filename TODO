@@ -12,6 +12,7 @@ Basic things that need to be done.
     Better cW command (maybe accept count of extensions to skip).
     Better globals support.
     Maybe remove 'trash' option, since we have two commands for deletion.
+    Directory create command, mkdir
 
 Documentation.
 	Better documentation (with normal tags in Vim version).
@@ -54,7 +55,6 @@ Other (questionable) things.
     Command like ' but that executes bookmark ?
     Maybe we should add a command to view screen ?
     Completion for co and cg commands ?
-    Directory create command ?
     Summarize size of selected files.  Need to decide how to display it.
     Add support for comments at the end of line ? Just for fun?
     Make directory stack menu interactive ?
