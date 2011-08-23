@@ -60,6 +60,7 @@
 #include "sort.h"
 #include "sort_dialog.h"
 #include "status.h"
+#include "tags.h"
 #include "ui.h"
 #include "undo.h"
 #include "utils.h"
@@ -84,6 +85,7 @@ enum {
 	COM_FILE,
 	COM_FIND,
 	COM_GREP,
+	COM_HELP,
 	COM_HISTORY,
 	COM_PUSHD,
 	COM_SET,
@@ -101,6 +103,7 @@ static
 void select_range(int id, const struct cmd_info *cmd_info);
 static void exec_completion(const char *str);
 static void filename_completion(const char *str, int type);
+static void complete_help(const char *str);
 static void complete_history(const char *str);
 static int is_entry_dir(const struct dirent *d);
 static int is_entry_exec(const struct dirent *d);
@@ -238,7 +241,7 @@ static const struct cmd_add commands[] = {
 		.handler = find_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "grep",             .abbr = "gr",    .emark = 1,  .id = COM_GREP,        .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = grep_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
-	{ .name = "help",             .abbr = "h",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "help",             .abbr = "h",     .emark = 0,  .id = COM_HELP,        .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = help_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "history",          .abbr = "his",   .emark = 0,  .id = COM_HISTORY,     .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = history_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
@@ -373,6 +376,8 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		complete_colorschemes((argc > 0) ? argv[argc - 1] : arg);
 	else if(id == COM_SET)
 		complete_options(args, &start);
+	else if(id == COM_HELP)
+		complete_help(args);
 	else if(id == COM_HISTORY)
 		complete_history(args);
 	else
@@ -586,6 +591,25 @@ filename_completion(const char *str, int type)
 	free(filename);
 	free(dirname);
 	closedir(dir);
+}
+
+static void
+complete_help(const char *str)
+{
+	int i;
+	size_t len;
+
+	if(!cfg.use_vim_help)
+		return;
+
+	len = strlen(str);
+	for(i = 0; tags[i] != NULL; i++)
+	{
+		if(strncmp(str, tags[i], len) == 0)
+			add_completion(tags[i]);
+	}
+	completion_group_end();
+	add_completion(str);
 }
 
 static void

@@ -1,22 +1,22 @@
 *vifm.txt*
 
 
-|Options|            Command line arguments.
-|General_keys|       General keys, that work in the most of modes.
-|Normal|             Normal mode keys.
-|Visual|             Visual mode keys.
-|Command_line|       Command line mode keys.
-|Commands|           How to use and set :commands.
-|set-options|        Available options.
-|Mappings|           Special sequences.
-|Configure|          Configuration of vifm.
-|Plugin|             Using the vifm.vim plugin.
-|Compatibility_mode| Its description.
-|Menus_and_dialogs|  Keys for menus and dialogs.
-|Reserved|           List of reserved commands.
+|vifm-options|            Command line arguments.
+|vifm-general-keys|       General keys, that work in the most of modes.
+|vifm-normal|             vifm-normal mode keys.
+|vifm-visual|             vifm-visual mode keys.
+|vifm-command-line|       Command line mode keys.
+|vifm-commands|           How to use and set :commands.
+|vifm-set-options|        Available options.
+|vifm-mappings|           Special sequences.
+|vifm-configure|          Configuration of vifm.
+|vifm-plugin|             Using the vifm.vim plugin.
+|vifm-compatibility-mode| Its description.
+|vifm-menus-and-dialogs|  Keys for menus and dialogs.
+|vifm-reserved|           List of reserved commands.
 
 --------------------------------------------------------------------------------
-*Options*
+*vifm-options*
 
 The vifm executable will start vifm in the current directory unless it is
 given a different directory on the command line.
@@ -38,14 +38,14 @@ The only other command line arguments are:
 --no-configs - don't read vifmrc and vifminfo.
 
 -------------------------------------------------------------------------------
-*General_keys*
+*vifm-general-keys*
 
 Ctrl-c or Escape - cancel most operations.
 Ctrl-c or Escape - clear all selected files.
 Ctrl-l - clear and redraw the screen.
 
 --------------------------------------------------------------------------------
-*Normal*
+*vifm-normal*
 
 Basic Movement~
 
@@ -132,7 +132,7 @@ Note: f, F, ; and , wrap around list beginning and end when they are used
 alone and they don't wrap when they are used as selectors.
 
 Filters~
-                                                               *Filters*
+                                                               *vifm-filters*
 There are two basic file filters.  One for dot files and one for file names.
 
 The basic vim folding key-bindings are used for filters.
@@ -153,7 +153,7 @@ Filtered files are not checked in / search or :commands.
 
 Note: vifm uses extended regular expressions.
 
-Other Normal Mode Keys~
+Other vifm-normal Mode Keys~
 
 : - enter command line mode.
 
@@ -254,7 +254,7 @@ d2j - delete file under cursor and two below.
 y6gg - yank all files from cursor position to 6th file in the list.
 
 --------------------------------------------------------------------------------
-*Visual*
+*vifm-visual*
 
 In visual mode work almost all normal mode keys, but they do not accept
 selectors.
@@ -278,7 +278,7 @@ u - make names of selected files lowercase.
 U - make names of selected files uppercase.
 
 --------------------------------------------------------------------------------
-*Command_line*
+*vifm-command-line*
 
 This keys apply to all submodes of the command line mode: command, prompt and
 search.
@@ -331,9 +331,9 @@ Down - recall older command-line from history, that begins as the current
     command-line.
 
 --------------------------------------------------------------------------------
-*Commands*
+*vifm-commands*
 
-Commands are executed with :command_name<Return>
+vifm-commands are executed with :command_name<Return>
 
 '|' can be used to separate commands, so you can give multiple commands in one
 line.  If you want to use '|' in an argument, precede it with '\'.
@@ -346,10 +346,12 @@ Example:
 :noh[lsearch]
 This means the complete command is nohlsearch, and the short one is noh.
 
+                                               *vifm-:range*
 :number - move to the file number.
 :12 would move to the 12th file in the list.
 :0 move to the top of the list.
 :$ move to the bottom of the list.
+See |vifm-ranges| for the ranges implemented.
 
 :[count]command
 The only builtin :[count]command are :[count]d[elete] and :[count]y[ank].
@@ -358,10 +360,10 @@ Examples:
     moving down.
 :3d - would delete one file at the third line in the list.
 
-See |Reserved| for a list of reserved command names.
+See |vifm-reserved| for a list of reserved command names.
 
 The builtin commands are:
-
+                                               *vifm-:!*
 :[range]!program - shellout and execute program.
     :!command & will run the process in the background using vifm's means.
     Programs that write to stdout like ls will create an error message
@@ -369,8 +371,11 @@ The builtin commands are:
     Take note of the space before ampersand symbol, if you omit it, command
     will be run in the background using job control of shell.
     Accepts macros.
+                                               *vifm-:!!*
 :[range]!!program - same as :! but will pause before returning.
 :!! - repeat the last command.
+
+                                               *vifm-:alink*
 :[range]alink[!] - creates absolute symbolic links of files in directory of
     other view.  With "!" vifm will open vi to edit filenames.
 :[range]alink path - creates absolute symbolic links of files in directory
@@ -379,10 +384,14 @@ The builtin commands are:
 :[range]alink name1 name2... - creates absolute symbolic links of files in
     directory of other view giving each next link a corresponding name from
     the argument list.
+
+                                               *vifm-:apropos*
 :apropos manpage - will create a menu of items returned by the apropos
     command. Selecting an item in the menu will open the corresponding
     manpage.
 :apropos - repeats last :apropos command.
+
+                                               *vifm-:cd*
 :cd - change to your home directory.
 :cd - - go to previous directory.
 :cd ~/dir - change directory to ~/dir.
@@ -392,20 +401,30 @@ The builtin commands are:
     view.  Command will not fail if one of directories is invalid.
     Accepts macros.
 :cd! /dir - same as :cd /dir /dir.
+
+                                               *vifm-:change* *vifm-:c*
 :c[hange] - create a menu window to alter a files properties.
+
+                                               *vifm-:clone*
 :[range]clone[!] - clones files in current directory.  With "!" vifm will
     open vi to edit filenames.
 :[range]clone path - clones files to directory specified with the path
     (absolute or relative to current directory).
 :[range]clone name1 name2... - clones files in current directory giving each
     next clone a corresponding name from the argument list.
+
+                                               *vifm-:colorscheme* *vifm-:colo*
 :colo[rscheme] - gives a menu with a list of available color schemes.  You
     can choose default color scheme here.  It will be used for view if no
     DIRECTORY in colorscheme file fits current path.  It's also used to
     set border color (except view titles) and colors in the menus and
     dialogs.
 :colo[rscheme] color_scheme_name - changes default color scheme.
+
+                                               *vifm-:comclear* *vifm-:comc*
 :comc[lear] - removes all user defined commands.
+
+                                               *vifm-:command* *vifm-:com*
 :com[mand] - gives a menu of user commands.
 :com[mand] beginning - shows user defined commands that start with the
     beginning.
@@ -418,51 +437,80 @@ The builtin commands are:
     of the commands action (:com rm rm %f &).
 :com[mand] backup /pattern - will set search pattern.
 :com[mand] name filter pattern - will set file name filter.
+
+                                               *vifm-:copy* *vifm-:co*
 :[range]co[py][!] - copies files to directory of other view.  With "!" vifm
     will open vi to edit filenames.
 :[range]co[py] path - copies files to directory specified with the path
     (absolute or relative to directory of other view).
 :[range]co[py] name1 name2... - copies files to directory of other view
     giving each next file a corresponding name from the argument list.
+
+                                               *vifm-:delete* *vifm-:d*
 :[range]d[elete][count] - delete selected file or files.
-    See |Vifm_Ranges| for the ranges implemented.
+:[range]d[elete] [reg] [count] - will delete files to the reg register.
+
+                                               *vifm-:delcommand* *vifm-:delc*
 :delc[ommand] user_command - remove user_command.
+
+                                               *vifm-:delmarks* *vifm-:delm*
 :delm[arks]! - will delete all marks.
 :delm[arks] marks ... - will delete specified marks, each argument is
     treated as a set of marks.
-:[range]d[elete] [reg] [count] - will delete files to the reg register.
+
+                                               *vifm-:display* *vifm-:di*
 :di[splay] - popup menu with registers content.
 :di[splay] list - display the contents of the numbered and named registers
     that are mentioned in list (for example "az to display "", "a and "z
     content).
+
+                                               *vifm-:dirs*
 :dirs - display directory stack.
+
+                                               *vifm-:edit* *vifm-:e*
 :[range]e[dit] [file...] - will load the selected or passed file or files
     into vi.  Accepts macros.
+
+                                               *vifm-:empty*
 :empty - permanently remove files from the ~/.vifm/Trash directory.  It will
     also remove all operations from undolist that have no sense after :empty
     and remove all records about files in the Trash directory from all
     registers.
+
+                                               *vifm-:exit* *vifm-:exi*
 :exi[t] - same as :quit.
+
+                                               *vifm-:file* *vifm-:f*
 :f[ile] - popup menu of programs set for the file type of the current file.
     Add ' &' in the end of command if you want to start program in
     background.
+
+                                               *vifm-:filetype* *vifm-:filet*
 :filet[ype] pat1,pat2,... def_program,program2,... - will associate given
     program list to each of the patterns.  Currently only * and ? are
     treated as special symbols in the pattern.
     If you need to insert comma into command just double it (",,").
+
+                                               *vifm-:filextype* *vifm-:filex*
 :filex[type] pat1,pat2,... def_program,program2,... - same as :filetype, but
     vifm will ignore this command if it's not running in X.  In X :filextype
     is equal to :filetype.
+
+                                               *vifm-:filevtype* *vifm-:filev*
 :filev[iewer] pat1,pat2,... command - will associate given command as a
     viewer to each of the patterns.  Currently only * and ? are treated as
     special symbols in the pattern.
+
+                                               *vifm-:filter*
 :filter regular_expression
 :filter /regular_expression/ - will filter files matching the pattern out of
     the directory.  Use :filter to show all files.  Using second variant
     you can use | symbol without escaping.  Add '!' to invert filter.
-    See |Filters|
+    See |vifm-filters|
 :filter! - same as :invert.
 :filter? - show current filter value.
+
+                                               *vifm-:find* *vifm-:fin*
 :[range]fin[d] pattern - will show results of find command in the menu.
     Searches among selected files if any and no range given.
     Accepts macros.
@@ -471,6 +519,8 @@ The builtin commands are:
 :[range]fin[d] path -opt... - same as :find above, but user defines all
     find arguments.  Ignores selection and range.
 :[range]fin[d] - repeats last :find command.
+
+                                               *vifm-:grep* *vifm-:gr*
 :[range]gr[ep][!] pattern - will show results of grep command in the menu.
     Add "!" to search lines that do not match pattern.  Searches among
     selected files if any and no range given.  Ignores binary files.
@@ -479,8 +529,13 @@ The builtin commands are:
     any.
 :[range]gr[ep][!] - repeats last :grep command.  "!" of this command
     inverts "!" in repeated command.
+
+                                               *vifm-:help* *vifm-:h*
 :h[elp] - show the help file.
-:h[elp] argument - is the same as using ':h argument' in vim.
+:h[elp] argument - is the same as using ':h argument' in vim.  Use
+    vifm-<something> to get help on vifm (tab completion works).
+
+                                               *vifm-:history* *vifm-:his*
 :his[tory] - show directory history.
 :his[tory] x
     x can be:
@@ -490,43 +545,78 @@ The builtin commands are:
       f[search] or /  show search history and search forward on l key.
       b[search] or ?  show search history and search backward on l key.
       c[md]     or :  show command line history.
+
+                                               *vifm-:invert*
 :invert - invert file name filter.
 :invert? - show current filter state.
+
+                                               *vifm-:jobs*
 :jobs - shows menu of current backgrounded processes.
+
+                                               *vifm-:locate*
 :locate filename - uses the locate command to create a menu of filenames
     Selecting a file from the menu will reload the current file list in vifm
     to show the selected file.
 :locate - repeats last :locate command.
+
+                                               *vifm-:mark* *vifm-:ma*
 :[range]ma[rk] x /full/path [filename] - set mark x at /full/path and
     filename.  By default current directory is used.  If no filename was
     given and /full/path is current directory then last file in [range] is
     being used.  Using macros is allowed.
+
+                                               *vifm-:marks*
 :marks - menu of bookmarks.
 :marks list ... - display the contents of the marks that are mentioned in list.
+
+                                               *vifm-:move* *vifm-:m*
 :[range]m[ove][!] - moves files to directory of other view.  With "!" vifm
     will open vi to edit filenames.
 :[range]m[ove] path - moves files to directory specified with the path
     (absolute or relative to directory of other view).
 :[range]m[ove] name1 name2... - moves files to directory of other view
     giving each next file a corresponding name from the argument list.
+
+                                               *vifm-:nohlsearch* *vifm-:noh*
 :noh[lsearch] - clear selection in current pane.
+
+                                               *vifm-:only* *vifm-:on*
 :on[ly] - switch to a one window view.
+
+                                               *vifm-:popd*
 :popd - remove pane directories from stack.
+
+                                               *vifm-:pushd*
 :pushd[!] /curr/dir [/other/dir] - add pane directories to stack and process
     arguments like :cd command.
 :pushd - exchanges the top two items of the directory stack.
+
+                                               *vifm-:pwd* *vifm-:pw*
 :pw[d] - show the present working directory.
+
+                                               *vifm-:quit* *vifm-:q*
 :q[uit] - will exit vifm (add ! if you don't want to save changes).
+
+                                               *vifm-:ls*
 :ls - shows list of screen program windows (only when screen is used).
+
+                                               *vifm-:registers* *vifm-:reg*
 :reg[isters] - popup menu with registers content.
 :reg[isters] list - display the contents of the numbered and named
     registers that are mentioned in list (for example "az to display "",
     "a and "z content).
+
+                                               *vifm-:rename*
 :[range]rename - rename files using vi to edit names.
 :[range]rename name1 name2... - rename each of selected files to a
     corresponding name.
+:[range]rename - rename files using vi to edit names.
+
+                                               *vifm-:restart*
 :restart - will free a lot of things (histories, commands, etc.) and reread
     vifminfo and vifmrc files.
+
+                                               *vifm-:rlink*
 :[range]rlink[!] - creates relative symbolic links of files in directory of
     other view.  With "!" vifm will open vi to edit filenames.
 :[range]rlink path - creates relative symbolic links of files in directory
@@ -535,6 +625,8 @@ The builtin commands are:
 :[range]rlink name1 name2... - creates relative symbolic links of files in
     directory of other view giving each next link a corresponding name from
     the argument list.
+
+                                               *vifm-:screen*
 :screen - toggles whether to use the screen program or not.
     The default configuration has the screen option turned off.  The screen
     program uses pseudo terminals to allow multiple windows to be used in
@@ -543,6 +635,8 @@ The builtin commands are:
     each new file edited or program launched from vifm.
     This requires screen version 3.9.9 or newer for the screen -X argument.
 :screen? - shows whether screen program is used.
+
+                                               *vifm-:set* *vifm-:se*
 :se[t] opt1=val1 opt2='val2' opt3="val3" ... - sets given options.
     You can use following syntax:
      - for all options - option? and option&
@@ -563,12 +657,20 @@ The builtin commands are:
      - option=x - set option to x
      - option+=x - add x to option
      - option-=x - remove (or subtract) x from option
+
+                                               *vifm-:shell* *vifm-:sh*
 :sh[ell] - will start a shell.
+
+                                               *vifm-:sort* *vifm-:sor*
 :sor[t] - menu of different sorting methods.
+
+                                               *vifm-:split* *vifm-:sp*
 :sp[lit] - switch to a two window view.
 :sp[lit] path - splits the window to show both file directories.  And
     changes other pane to path.
-:[range]s[ubstitite]/pattern/string/[flags] - for each file in range
+
+                                               *vifm-:substitute* *vifm-:s*
+:[range]s[ubstitute]/pattern/string/[flags] - for each file in range
     replace a match of pattern with string.  String can contain \0...\9
     to link to capture groups (0 - all match, 1 - first group, etc.).
     Flags can be used
@@ -577,31 +679,56 @@ The builtin commands are:
         I - don't ignore case (the 'ignorecase' and 'smartcase' options
             are not used)
         g - substitute all matches in each file name
+
+                                               *vifm-:tr*
 :[range]tr/pattern/string/ - for each file in range transliterate the
     characters which appear in pattern to the corresponding character in
     string.  When string is shorter than pattern, it's padded with its
     last character.
+
+                                               *vifm-:sync*
 :sync - change the other panel to the current panels directory.
+
+                                               *vifm-:undolist* *vifm-:undol*
 :undol[ist] - show list of latest changes.  Add ! to see commands.
+
+                                               *vifm-:view* *vifm-:vie*
 :vie[w] - toggle on and off the quick file view.
+
+                                               *vifm-:write* *vifm-:w*
 :w[rite] - will write vifminfo (add ! to force write even if settings
     weren't changed).
+
+                                               *vifm-:wq*
 :wq - same as :quit.
+
+                                               *vifm-:xit* *vifm-:x*
 :x[it] - exit vifm (add ! if you don't want to save changes).
+
+                                               *vifm-:yank* *vifm-:y*
 :[range]y[ank] [reg] [count] - will yank files to the reg register.
 
+
+                                               *vifm-:map*
 :map lhs rhs - map lhs key sequence to rhs in normal and visual modes.
 :map! lhs rhs - map lhs key sequence to rhs in command line mode.
 
+                                               *vifm-:cmap* *vifm-:cm*
+                                               *vifm-:nmap* *vifm-:nm*
+                                               *vifm-:vmap* *vifm-:vm*
 :cm[ap] lhs rhs - map lhs to rhs in command line mode.
 :nm[ap] lhs rhs - map lhs to rhs in normal mode.
 :vm[ap] lhs rhs - map lhs to rhs in visual mode.
 
+                                               *vifm-:noremap* *vifm-:no*
 :no[remap] lhs rhs - map the key sequence lhs to {rhs} for normal and
     visual modes, but disallow mapping of rhs.
 :no[remap]! lhs rhs - map the key sequence lhs to {rhs} for command line
     mode, but disallow mapping of rhs.
 
+                                               *vifm-:cnoremap* *vifm-:cno*
+                                               *vifm-:nnoremap* *vifm-:nn*
+                                               *vifm-:vnoremap* *vifm-:vn*
 :cno[remap] lhs rhs - map the key sequence lhs to {rhs} for command line
     mode, but disallow mapping of rhs.
 :nn[oremap] lhs rhs - map the key sequence lhs to {rhs} for normal mode,
@@ -609,15 +736,19 @@ The builtin commands are:
 :vn[oremap] lhs rhs - map the key sequence lhs to {rhs} for visual mode,
     but disallow mapping of rhs.
 
+                                               *vifm-:unmap* *vifm-:unm*
 :unm[ap] lhs - remove the mapping of lhs from normal and visual modes.
 :unm[ap]! lhs - remove the mapping of lhs from command line mode.
 
+                                               *vifm-:cunmap* *vifm-:cu*
+                                               *vifm-:nunmap* *vifm-:nun*
+                                               *vifm-:vunmap* *vifm-:vu*
 :cu[nmap] lhs - remove the mapping of lhs from command line mode.
 :nun[map] lhs - remove the mapping of lhs from normal mode.
 :vu[nmap] lhs - remove the mapping of lhs from visual mode.
 
 Ranges~
-                                                               *Vifm_Ranges*
+                                                               *vifm-ranges*
 The ranges implemented include:
   Numbers :2,3
   % - the entire directory.
@@ -698,7 +829,7 @@ background.
 :!mv %f %D &
 
 --------------------------------------------------------------------------------
-*set-options*
+*vifm-set-options*
 
 autochpos
 type: boolean
@@ -871,7 +1002,7 @@ default: true
 Controls whether to wrap text in quick view.
 
 --------------------------------------------------------------------------------
-*Mappings*
+*vifm-mappings*
 
 Since it's not easy to enter special characters there are several special
 sequences that can be used in place of them.  They are:
@@ -888,7 +1019,7 @@ example: >
 will put "man " in line when you hit the <f1> key in the command line mode.
 
 --------------------------------------------------------------------------------
-*Compatibility_mode*
+*vifm-compatibility-mode*
 
 Compatibility mode:
     - <tab> to switch between panes.
@@ -901,7 +1032,7 @@ Vim like mode:
     - yy yanks file under the cursor and ys works as dd in compatibility mode.
 
 --------------------------------------------------------------------------------
-*Menus_and_dialogs*
+*vifm-menus-and-dialogs*
 
 General~
 
@@ -931,7 +1062,7 @@ Apropos menu~
 l key wont close the menu allowing user to pick another man page, use :q to
 close the menu.
 
-Commands menu~
+vifm-commands menu~
 
 dd on a command to remove.
 
@@ -947,7 +1078,7 @@ directory pair at the top of the stack.
 
 Filetype menu~
 
-Commands from vifmrc are displayed above empty line. When all commands below
+vifm-commands from vifmrc are displayed above empty line. When all commands below
 empty line were found in .desktop files.
 
 J and K - to move menu items
@@ -979,7 +1110,7 @@ d - (only for execute flags) means u-x+X, g-x+X or o-x+X argument for the
     'Set Recursively' flag.
 
 --------------------------------------------------------------------------------
-*Configure*
+*vifm-configure*
 
 The ~/.vifm/vifmrc file contains commands that will be executed on vifm startup.
 Use it to set settings, mappings or filetypes.  To use multi line commands
@@ -1005,9 +1136,9 @@ it's PATH environment variable to let user run those scripts without specifying
 full path.
 
 --------------------------------------------------------------------------------
-*Plugin*
+*vifm-plugin*
 
-Plugin for using vifm in vim as a file selector.
+vifm-plugin for using vifm in vim as a file selector.
 
 Commands:
 
@@ -1033,7 +1164,7 @@ let loaded_vifm=1
 to your ~/.vimrc file.
 
 --------------------------------------------------------------------------------
-*Reserved*
+*vifm-reserved*
 
 The following command names are reserved and shouldn't be used for user
 commands.

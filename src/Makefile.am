@@ -40,6 +40,7 @@ vifm_SOURCES = \
 	sort.c sort.h \
 	sort_dialog.c sort_dialog.h \
 	status.c status.h \
+	tags.c tags.h \
 	tree.c tree.h \
 	ui.c ui.h \
 	undo.c undo.h \
