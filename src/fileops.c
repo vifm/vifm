@@ -1154,13 +1154,11 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		free(dest);
 	}
 	free_selected_file_array(view);
+	clean_selected_files(view);
 
 	cmd_group_end();
 
 	load_saving_pos(view, 1);
-
-	/* some files may still exist if there was an error */
-	count_selected(view);
 
 	moveto_list_pos(view, view->list_pos);
 
@@ -2274,6 +2272,7 @@ clone_files(FileView *view, char **list, int nlines)
 
 	clean_selected_files(view);
 	load_saving_pos(view, 1);
+	load_saving_pos(other_view, 1);
 	if(from_file)
 		free_string_array(list, nlines);
 	return 0;
@@ -2971,6 +2970,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 	free_selected_file_array(view);
 	clean_selected_files(view);
 	load_saving_pos(view, 1);
+  /* load_saving_pos(other_view, 1); */
 	if(from_file)
 		free_string_array(list, nlines);
 	return 0;
