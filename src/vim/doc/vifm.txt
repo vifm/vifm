@@ -894,6 +894,11 @@ type: boolean
 default: false
 Run executable file on Enter or l.
 
+scrolloff so
+type: int
+default: 0
+Minimal number of screen lines to keep above and below the cursor.
+
 shell sh
 type: string
 default: $SHELL or "sh"

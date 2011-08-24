@@ -95,6 +95,8 @@ typedef struct _Config {
 	char *shell;
 
 	int timeout_len;
+
+	int scroll_off;
 } Config;
 
 extern Config cfg;

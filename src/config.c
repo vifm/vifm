@@ -103,6 +103,7 @@ init_config(void)
 	cfg.vifm_info = VIFMINFO_BOOKMARKS;
 	cfg.auto_ch_pos = 1;
 	cfg.timeout_len = 1000;
+	cfg.scroll_off = 0;
 
 	p = getenv("SHELL");
 	if(p == NULL || *p == '\0')
@@ -674,6 +675,7 @@ write_info_file(void)
 		fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
 		fprintf(fp, "=%sreversecol\n", cfg.invert_cur_line ? "" : "no");
 		fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
+		fprintf(fp, "=scrolloff=%d\n", cfg.scroll_off);
 		fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
 		fprintf(fp, "=%ssmartcase\n", cfg.smart_case ? "" : "no");
 		fprintf(fp, "=%ssortnumbers\n", cfg.sort_numbers ? "" : "no");

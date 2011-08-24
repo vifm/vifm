@@ -294,15 +294,21 @@ init_normal_mode(int *key_mode)
 static void
 cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 {
+	int s;
 	int l = curr_view->window_rows - 1;
 
 	if(curr_view->top_line == 0)
 		return;
 
+	curr_view->list_pos = curr_view->top_line + 1;
 	curr_view->top_line -= l;
 	if(curr_view->top_line < 0)
 		curr_view->top_line = 0;
-	curr_view->list_pos -= l;
+	s = MIN((curr_view->window_rows + 1)/2 - 1, cfg.scroll_off);
+	if(cfg.scroll_off > 0 &&
+			curr_view->top_line + curr_view->window_rows - curr_view->list_pos < s)
+		curr_view->list_pos -= s - (curr_view->top_line + curr_view->window_rows -
+				curr_view->list_pos);
 	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
 }
@@ -319,8 +325,12 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
 {
+	int s;
 	curr_view->top_line += (curr_view->window_rows + 1)/2;
 	curr_view->list_pos += (curr_view->window_rows + 1)/2;
+	s = MIN((curr_view->window_rows + 1)/2 - 1, cfg.scroll_off);
+	if(cfg.scroll_off > 0 && curr_view->list_pos - curr_view->top_line < s)
+		curr_view->list_pos += s - (curr_view->list_pos - curr_view->top_line);
 	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
 }
@@ -342,6 +352,7 @@ cmd_ctrl_e(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
+	int s;
 	int l = curr_view->window_rows - 1;
 
 	if(curr_view->top_line + 1 == curr_view->list_rows - (l + 1))
@@ -351,6 +362,9 @@ cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 	if(curr_view->top_line > curr_view->list_rows)
 		curr_view->top_line = curr_view->list_rows - l;
 	curr_view->list_pos += l;
+	s = MIN((curr_view->window_rows + 1)/2 - 1, cfg.scroll_off);
+	if(cfg.scroll_off > 0 && curr_view->list_pos - curr_view->top_line < s)
+		curr_view->list_pos += s - (curr_view->list_pos - curr_view->top_line);
 	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
 }
@@ -458,6 +472,11 @@ cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 {
+	int s = MIN((curr_view->window_rows + 1)/2 - 1, cfg.scroll_off);
+	if(cfg.scroll_off > 0 &&
+			curr_view->top_line + curr_view->window_rows - curr_view->list_pos < s)
+		curr_view->list_pos -= s - (curr_view->top_line + curr_view->window_rows -
+				curr_view->list_pos);
 	curr_view->top_line -= (curr_view->window_rows + 1)/2;
 	curr_view->list_pos -= (curr_view->window_rows + 1)/2;
 	draw_dir_list(curr_view, MAX(curr_view->top_line, 0));
@@ -1410,9 +1429,18 @@ normal_cmd_zb(struct key_info key_info, struct keys_info *keys_info)
 		return;
 
 	if(curr_view->list_pos < curr_view->window_rows)
+	{
 		curr_view->top_line = 0;
+	}
 	else
+	{
 		curr_view->top_line = curr_view->list_pos - curr_view->window_rows;
+		if(cfg.scroll_off > 0)
+		{
+			int s = MIN((curr_view->window_rows + 1)/2 - 1, cfg.scroll_off);
+			curr_view->top_line += s;
+		}
+	}
 	scroll_view(curr_view);
 }
 
@@ -1445,9 +1473,20 @@ normal_cmd_zt(struct key_info key_info, struct keys_info *keys_info)
 		return;
 
 	if(curr_view->list_rows - curr_view->list_pos >= curr_view->window_rows)
+	{
 		curr_view->top_line = curr_view->list_pos;
+		if(cfg.scroll_off > 0)
+		{
+			int s = MIN((curr_view->window_rows + 1)/2 - 1, cfg.scroll_off);
+			curr_view->top_line -= s;
+		}
+		if(curr_view->top_line < 0)
+			curr_view->top_line = 0;
+	}
 	else
+	{
 		curr_view->top_line = curr_view->list_rows - curr_view->window_rows;
+	}
 	scroll_view(curr_view);
 }
 

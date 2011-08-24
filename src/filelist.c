@@ -828,6 +828,26 @@ move_curr_line(FileView *view, int pos)
 		return 1;
 	}
 
+	if(cfg.scroll_off > 0)
+	{
+		int s = MIN((view->window_rows + 1)/2 - 1, cfg.scroll_off);
+		if(pos - view->top_line < s && view->top_line > 0)
+		{
+			view->top_line -= s - (pos - view->top_line);
+			if(view->top_line < 0)
+				view->top_line = 0;
+			view->curr_line = s;
+			return 1;
+		}
+		if((view->top_line + view->window_rows) - pos < s &&
+				pos + s <= view->list_rows)
+		{
+			view->top_line += s - ((view->top_line + view->window_rows) - pos);
+			view->curr_line = view->window_rows - s;
+			return 1;
+		}
+	}
+
 	return 0;
 }
 

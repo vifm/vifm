@@ -267,8 +267,12 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
 {
+	int pos = view->list_pos;
+	int s = MIN((view->window_rows + 1)/2 - 1, cfg.scroll_off);
+	if(cfg.scroll_off > 0 && view->list_pos - view->top_line < s)
+		pos += s - (view->list_pos - view->top_line);
 	view->top_line += (view->window_rows + 1)/2;
-	goto_pos(view->list_pos + (view->window_rows + 1)/2);
+	goto_pos(pos + (view->window_rows + 1)/2);
 }
 
 static void
@@ -317,10 +321,16 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 {
+	int pos = view->list_pos;
+	int s = MIN((view->window_rows + 1)/2 - 1, cfg.scroll_off);
+	if(cfg.scroll_off > 0 &&
+			view->top_line + view->window_rows - view->list_pos < s)
+		pos -= s - (view->top_line + view->window_rows - view->list_pos);
+
 	view->top_line -= (view->window_rows + 1)/2;
 	if(view->top_line < 0)
 		view->top_line = 0;
-	goto_pos(view->list_pos - (view->window_rows + 1)/2);
+	goto_pos(pos - (view->window_rows + 1)/2);
 }
 
 static void

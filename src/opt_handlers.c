@@ -28,6 +28,7 @@ static void iec_handler(enum opt_op op, union optval_t val);
 static void ignorecase_handler(enum opt_op op, union optval_t val);
 static void reversecol_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
+static void scrolloff_handler(enum opt_op op, union optval_t val);
 static void shell_handler(enum opt_op op, union optval_t val);
 static void smartcase_handler(enum opt_op op, union optval_t val);
 static void sortnumbers_handler(enum opt_op op, union optval_t val);
@@ -118,6 +119,7 @@ static struct {
 	{ "ignorecase",  "ic",   OPT_BOOL,    0,                       NULL,            &ignorecase_handler,  },
 	{ "reversecol",  "",     OPT_BOOL,    0,                       NULL,            &reversecol_handler,  },
 	{ "runexec",     "",     OPT_BOOL,    0,                       NULL,            &runexec_handler,     },
+	{ "scrolloff",   "so",   OPT_INT,     0,                       NULL,            &scrolloff_handler,   },
 	{ "shell",       "sh",   OPT_STR,     0,                       NULL,            &shell_handler,       },
 	{ "smartcase",   "scs",  OPT_BOOL,    0,                       NULL,            &smartcase_handler,   },
 	{ "sortnumbers", "",     OPT_BOOL,    0,                       NULL,            &sortnumbers_handler, },
@@ -160,25 +162,26 @@ load_options_defaults(void)
 	options[8].val.bool_val = cfg.ignore_case;
 	options[9].val.bool_val = cfg.invert_cur_line;
 	options[10].val.bool_val = cfg.auto_execute;
-	options[11].val.str_val = cfg.shell;
-	options[12].val.bool_val = cfg.smart_case;
-	options[13].val.bool_val = cfg.sort_numbers;
-	options[14].val.str_val = cfg.time_format + 1;
-	options[15].val.int_val = cfg.timeout_len;
-	options[16].val.bool_val = cfg.use_trash;
-	options[17].val.int_val = cfg.undo_levels;
-	options[18].val.str_val = cfg.vi_command;
-	options[19].val.str_val = cfg.vi_x_command;
-	options[20].val.set_items = cfg.vifm_info;
-	options[21].val.bool_val = cfg.use_vim_help;
-	options[22].val.bool_val = cfg.wild_menu;
-	options[23].val.bool_val = cfg.wrap_quick_view;
+	options[11].val.int_val = cfg.scroll_off;
+	options[12].val.str_val = cfg.shell;
+	options[13].val.bool_val = cfg.smart_case;
+	options[14].val.bool_val = cfg.sort_numbers;
+	options[15].val.str_val = cfg.time_format + 1;
+	options[16].val.int_val = cfg.timeout_len;
+	options[17].val.bool_val = cfg.use_trash;
+	options[18].val.int_val = cfg.undo_levels;
+	options[19].val.str_val = cfg.vi_command;
+	options[20].val.str_val = cfg.vi_x_command;
+	options[21].val.set_items = cfg.vifm_info;
+	options[22].val.bool_val = cfg.use_vim_help;
+	options[23].val.bool_val = cfg.wild_menu;
+	options[24].val.bool_val = cfg.wrap_quick_view;
 
 	/* local options */
-	options[24].val.str_val = "+name";
-	options[25].val.enum_item = 0;
+	options[25].val.str_val = "+name";
+	options[26].val.enum_item = 0;
 
-	assert(ARRAY_LEN(options) == 26);
+	assert(ARRAY_LEN(options) == 27);
 }
 
 static void
@@ -394,6 +397,14 @@ reversecol_handler(enum opt_op op, union optval_t val)
 {
 	cfg.invert_cur_line = val.bool_val;
 	redraw_lists();
+}
+
+static void
+scrolloff_handler(enum opt_op op, union optval_t val)
+{
+	cfg.scroll_off = val.int_val;
+	if(cfg.scroll_off > 0)
+		moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
 static void
