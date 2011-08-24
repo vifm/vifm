@@ -102,7 +102,7 @@ enter_sort_mode(FileView *active_view)
 		return;
 
 	view = active_view;
-	descending = view->sort_descending;
+	descending = (view->sort[0] < 0);
 	*mode = SORT_MODE;
 
 	wattroff(view->win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
@@ -111,7 +111,7 @@ enter_sort_mode(FileView *active_view)
 
 	top = 2;
 	bottom = top + NUM_SORT_OPTIONS - 1;
-	curr = view->sort_type + 2;
+	curr = abs(view->sort[0]) + 1;
 	col = 6;
 
 	redraw_sort_dialog();

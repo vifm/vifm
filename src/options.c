@@ -789,7 +789,7 @@ complete_options(const char *cmd, const char **start)
 		*p++ = t;
 		if(t != '=')
 			p++;
-		if(opt->type == OPT_SET)
+		if(opt->type == OPT_SET || opt->type == OPT_STRLIST)
 		{
 			char *t = strrchr(buf, ',');
 			if(t != NULL)

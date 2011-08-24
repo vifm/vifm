@@ -13,6 +13,7 @@ Basic things that need to be done.
     Better globals support.
     Maybe remove 'trash' option, since we have two commands for deletion.
     Directory create command, mkdir
+    Maybe remove 'sortorder' and change 'sort' to '+name,-uid,...'
 
 Documentation.
 	Better documentation (with normal tags in Vim version).
@@ -26,12 +27,14 @@ Vi(m) specific features that need to be added.
     Some kind of selection mode (multible blocks, mixing).
     :highlight command.
     Better registers support.
-    d /, d ?
+    /, ?, n, N as selectors.
+    Make / and ? accept count.
     :map without arguments
     Should 'history' control search and cmdline history or there should be
         other options?
     Better ranges.
     Ctrl-A and Ctrl-X commands.
+    'scrolloff' option.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -44,7 +47,7 @@ Possible things to add.
     Add g/ and g? commands (search, but don't select files).
     Reverse searching (/ for search, g/ for selecting, g!/ for selecting
         reverse)
-    Improve sorting ('sort' and 'gsort'; ignore case; ignore dirs).
+    Improve sorting (ignore case (iname, maybe iext); ignore dirs).
     Add :mksession command and 'sessionoptions' option.
     'incsearch' option.
     'wrapscan' option.
@@ -69,6 +72,7 @@ Other (questionable) things.
     'expandtab' for tabs in the quick view ?
     Modify marks on rename operations.
     Remove ncursesw dependency (remove unicode functions, we use utf-8).
+    :toupper and :tolower
 
 Code improvements.
     Write more tests.

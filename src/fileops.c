@@ -1060,6 +1060,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		while(i < view->list_rows - 1 && view->dir_entry[i].selected)
 			i++;
 	}
+	view->list_pos = i;
 
 	if(cfg.use_trash && use_trash)
 	{
@@ -1146,21 +1147,22 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 			}
 			y++;
 		}
+		else if(!view->dir_entry[view->list_pos].selected)
+		{
+			view->list_pos = find_file_pos_in_list(view, view->selected_filelist[x]);
+		}
 		free(dest);
 	}
 	free_selected_file_array(view);
 
 	cmd_group_end();
 
-	strcpy(buf, view->dir_entry[i].name);
-
 	load_saving_pos(view, 1);
 
 	/* some files may still exist if there was an error */
 	count_selected(view);
 
-	i = find_file_pos_in_list(view, buf);
-	moveto_list_pos(view, (i < 0) ? view->list_pos : i);
+	moveto_list_pos(view, view->list_pos);
 
 	status_bar_messagef("%d %s deleted", y, y == 1 ? "file" : "files");
 	return 1;
@@ -2941,17 +2943,6 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 	snprintf(buf, sizeof(buf), "copy from %s to %s: ", view->curr_dir, path);
 	make_undo_string(view, buf, nlines, list);
 
-	cmd_group_begin(buf);
-	for(i = 0; i < view->selected_files; i++)
-	{
-		const char *dst = (nlines > 0) ? list[i] : view->selected_filelist[i];
-		if(move)
-			mv_file(view->selected_filelist[i], dst, path, 0);
-		else
-			cp_file(view->curr_dir, path, view->selected_filelist[i], dst, type);
-	}
-	cmd_group_end();
-
 	if(move)
 	{
 		i = view->list_pos;
@@ -2959,6 +2950,23 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 			i++;
 		view->list_pos = i;
 	}
+
+	cmd_group_begin(buf);
+	for(i = 0; i < view->selected_files; i++)
+	{
+		const char *dst = (nlines > 0) ? list[i] : view->selected_filelist[i];
+		if(move)
+		{
+			if(mv_file(view->selected_filelist[i], dst, path, 0) != 0)
+				view->list_pos = find_file_pos_in_list(view,
+						view->selected_filelist[i]);
+		}
+		else
+		{
+			cp_file(view->curr_dir, path, view->selected_filelist[i], dst, type);
+		}
+	}
+	cmd_group_end();
 
 	free_selected_file_array(view);
 	clean_selected_files(view);

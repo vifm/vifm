@@ -34,12 +34,36 @@
 #include "ui.h"
 #include "utils.h"
 
+#include "sort.h"
+
 static FileView* view;
+static int sort_descending;
+static int sort_type;
+
+static int sort_dir_list(const void *one, const void *two);
 
 void
-set_view_to_sort(FileView *view_to_sort)
+sort_view(FileView *v)
 {
-	view = view_to_sort;
+	int i;
+
+	view = v;
+	i = NUM_SORT_OPTIONS;
+	while(--i >= 0)
+	{
+		int j;
+
+		if(view->sort[i] > NUM_SORT_OPTIONS)
+			continue;
+
+		sort_descending = (view->sort[i] < 0);
+		sort_type = abs(view->sort[i]);
+
+		for(j = 0; j < view->list_rows; j++)
+			view->dir_entry[j].list_num = j;
+
+		qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
+	}
 }
 
 static int
@@ -51,7 +75,7 @@ compare_file_names(const char *s, const char *t)
 		return strverscmp(s, t);
 }
 
-int
+static int
 sort_dir_list(const void *one, const void *two)
 {
 	int retval;
@@ -80,7 +104,7 @@ sort_dir_list(const void *one, const void *two)
 		return 1;
 
 	retval = 0;
-	switch(view->sort_type)
+	switch(sort_type)
 	{
 		case SORT_BY_NAME:
 			if(first->name[0] == '.' && second->name[0] != '.')
@@ -150,8 +174,8 @@ sort_dir_list(const void *one, const void *two)
 	}
 
 	if(retval == 0)
-		retval = compare_file_names(first->name, second->name);
-	else if(view->sort_descending)
+		retval = first->list_num - second->list_num;
+	else if(sort_descending)
 		retval = -retval;
 
 	return retval;

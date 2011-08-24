@@ -176,6 +176,8 @@ set_config_dir(void)
 static void
 load_view_defaults(FileView *view)
 {
+	int i;
+
 	strncpy(view->regexp, "\\..~$", sizeof(view->regexp) - 1);
 
 	free(view->filename_filter);
@@ -184,7 +186,9 @@ load_view_defaults(FileView *view)
 	view->prev_filter = strdup("");
 	view->invert = TRUE;
 
-	view->sort_type = SORT_BY_NAME;
+	for(i = 0; i < NUM_SORT_OPTIONS; i++)
+		view->sort[i] = NUM_SORT_OPTIONS + 1;
+	view->sort[0] = SORT_BY_NAME;
 }
 
 void
@@ -207,6 +211,43 @@ prepare_line(char *line)
 		i++;
 	if(i > 0)
 		memmove(line, line + i, strlen(line + i) + 1);
+}
+
+static void
+get_sort(FileView *view, const char *line)
+{
+	int j;
+
+	j = 0;
+	do
+	{
+		char *t;
+		int n = strtol(line, &t, 10);
+		line = t;
+		if(*line == ',')
+			line++;
+		view->sort[j++] = n;
+	}
+	while(*line != '\0');
+	while(j < NUM_SORT_OPTIONS)
+		view->sort[j++] = NUM_SORT_OPTIONS + 1;
+}
+
+static void
+get_history(FileView *view, int reread, const char *dir, const char *file)
+{
+	if(view->history_num == cfg.history_len)
+	{
+		cfg.history_len++;
+		lwin.history = realloc(lwin.history, sizeof(history_t)*cfg.history_len);
+		rwin.history = realloc(rwin.history, sizeof(history_t)*cfg.history_len);
+	}
+
+	if(!reread)
+		view->list_rows = 1;
+	save_view_history(view, dir, file);
+	if(!reread)
+		view->list_rows = 0;
 }
 
 void
@@ -298,15 +339,11 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'l') /* left pane sort */
 		{
-			int i = atoi(line + 1);
-			lwin.sort_descending = (i < 0);
-			lwin.sort_type = abs(i) - 1;
+			get_sort(&lwin, line + 1);
 		}
 		else if(line[0] == 'r') /* right pane sort */
 		{
-			int i = atoi(line + 1);
-			rwin.sort_descending = (i < 0);
-			rwin.sort_type = abs(i) - 1;
+			get_sort(&rwin, line + 1);
 		}
 		else if(line[0] == 'd') /* left pane history */
 		{
@@ -318,22 +355,11 @@ read_info_file(int reread)
 					strcpy(lwin.curr_dir, lwin.history[lwin.history_pos].dir);
 				continue;
 			}
+
 			if(fgets(line2, sizeof(line2), fp) != line2)
 				continue;
 			prepare_line(line2);
-
-			if(lwin.history_num == cfg.history_len)
-			{
-				cfg.history_len++;
-				lwin.history = realloc(lwin.history, sizeof(history_t)*cfg.history_len);
-				rwin.history = realloc(rwin.history, sizeof(history_t)*cfg.history_len);
-			}
-
-			if(!reread)
-				lwin.list_rows = 1;
-			save_view_history(&lwin, line + 1, line2);
-			if(!reread)
-				lwin.list_rows = 0;
+			get_history(&lwin, reread, line + 1, line2);
 		}
 		else if(line[0] == 'D') /* right pane history */
 		{
@@ -345,22 +371,11 @@ read_info_file(int reread)
 					strcpy(rwin.curr_dir, rwin.history[rwin.history_pos].dir);
 				continue;
 			}
+
 			if(fgets(line2, sizeof(line2), fp) != line2)
 				continue;
 			prepare_line(line2);
-
-			if(rwin.history_num == cfg.history_len)
-			{
-				cfg.history_len++;
-				lwin.history = realloc(lwin.history, sizeof(history_t)*cfg.history_len);
-				rwin.history = realloc(rwin.history, sizeof(history_t)*cfg.history_len);
-			}
-
-			if(!reread)
-				rwin.list_rows = 1;
-			save_view_history(&rwin, line + 1, line2);
-			if(!reread)
-				rwin.list_rows = 0;
+			get_history(&rwin, reread, line + 1, line2);
 		}
 		else if(line[0] == ':') /* command line history */
 		{
@@ -764,12 +779,29 @@ write_info_file(void)
 
 	if(cfg.vifm_info & VIFMINFO_TUI)
 	{
+		int i;
 		fputs("\n# TUI:\n", fp);
 		fprintf(fp, "a%c\n", (curr_view == &rwin) ? 'r' : 'l');
 		fprintf(fp, "q%d\n", curr_stats.view);
 		fprintf(fp, "v%d\n", curr_stats.number_of_windows);
-		fprintf(fp, "l%s%d\n", lwin.sort_descending ? "-" : "", lwin.sort_type + 1);
-		fprintf(fp, "r%s%d\n", rwin.sort_descending ? "-" : "", rwin.sort_type + 1);
+
+		fprintf(fp, "l");
+		i = -1;
+		while(++i < NUM_SORT_OPTIONS && lwin.sort[i] <= NUM_SORT_OPTIONS)
+			if(i < NUM_SORT_OPTIONS - 1 && lwin.sort[i + 1] <= NUM_SORT_OPTIONS)
+				fprintf(fp, "%d,", lwin.sort[i]);
+			else
+				fprintf(fp, "%d", lwin.sort[i]);
+		fprintf(fp, "\n");
+
+		fprintf(fp, "r");
+		i = -1;
+		while(++i < NUM_SORT_OPTIONS && rwin.sort[i] <= NUM_SORT_OPTIONS)
+			if(i < NUM_SORT_OPTIONS - 1 && rwin.sort[i + 1] <= NUM_SORT_OPTIONS)
+				fprintf(fp, "%d,", rwin.sort[i]);
+			else
+				fprintf(fp, "%d", rwin.sort[i]);
+		fprintf(fp, "\n");
 	}
 
 	if((cfg.vifm_info & VIFMINFO_DHISTORY) && cfg.history_len > 0)

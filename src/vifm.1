@@ -1,4 +1,4 @@
-.TH vifm 1 "August 23, 2011" "" "Vifm"
+.TH vifm 1 "August 24, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1228,22 +1228,27 @@ upper case character.  Only used when ignorecase option is enabled.  It doesn't
 affect file filtering.
 .TP
 .BI sort
-type: enumeration
+type: string list
 .br
-default: name
+default: +name
 .br
-Sets one of these sort types:
-   ext   - sort by extension
-   name  - sort by name
-   gid   - sort by group id
-   gname - sort by group name
-   mode  - sort by mode
-   uid   - sort by owner id
-   uname - sort by owner name
-   size  - sort by size
-   atime - sort by time accessed
-   ctime - sort by time changed
-   mtime - sort by time modified
+Sets list of sorting keys (first item is primary key, second is secondary key,
+etc.):
+   [+-]ext   - sort by extension
+   [+-]name  - sort by name (including extension)
+   [+-]gid   - sort by group id
+   [+-]gname - sort by group name
+   [+-]mode  - sort by mode
+   [+-]uid   - sort by owner id
+   [+-]uname - sort by owner name
+   [+-]size  - sort by size
+   [+-]atime - sort by time accessed
+   [+-]ctime - sort by time changed
+   [+-]mtime - sort by time modified
+.LP
+\'+' means ascending sort for this key, and '-' means descending sort.
+
+In case name is skipped, it will be added at the end automatically.
 .TP
 .BI sortnumbers
 type: boolean
@@ -1257,7 +1262,7 @@ type: enumeration
 .br
 default: ascending
 .br
-Sets sort order: ascending, descending.
+Sets sort order for primary key: ascending, descending.
 .TP
 .BI timefmt
 type: string

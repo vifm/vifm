@@ -32,7 +32,7 @@
 #endif
 
 enum {
-	SORT_BY_EXTENSION,
+	SORT_BY_EXTENSION = 1,
 	SORT_BY_NAME,
 	SORT_BY_GROUP_ID,
 	SORT_BY_GROUP_NAME,
@@ -43,7 +43,7 @@ enum {
 	SORT_BY_TIME_ACCESSED,
 	SORT_BY_TIME_CHANGED,
 	SORT_BY_TIME_MODIFIED,
-	NUM_SORT_OPTIONS
+	NUM_SORT_OPTIONS = SORT_BY_TIME_MODIFIED
 };
 
 typedef struct
@@ -101,8 +101,7 @@ typedef struct _FileView
 	char * prev_filter;
 	char * filename_filter; /* regexp for filtering files in dir list */
 
-	char sort_type;
-	char sort_descending;
+	char sort[NUM_SORT_OPTIONS];
 
 	int history_num;
 	int history_pos;

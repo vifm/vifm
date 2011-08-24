@@ -624,6 +624,16 @@ is_in_string_array(char **array, size_t len, const char *key)
 	return 0;
 }
 
+int
+string_array_pos(char **array, size_t len, const char *key)
+{
+	int i;
+	for(i = 0; i < len; i++)
+		if(strcmp(array[i], key) == 0)
+			return i;
+	return -1;
+}
+
 void
 free_string_array(char **array, size_t len)
 {

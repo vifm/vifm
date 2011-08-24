@@ -45,7 +45,7 @@
 #include "filetype.h"
 #include "log.h"
 #include "menus.h"
-#include "options.h"
+#include "opt_handlers.h"
 #include "sort.h"
 #include "status.h"
 #include "tree.h"
@@ -61,7 +61,7 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 	struct tm *tm_ptr;
 	int attr = 0;
 
-	switch(view->sort_type)
+	switch(abs(view->sort[0]))
 	{
 		case SORT_BY_OWNER_NAME:
 			if((pwd_buf = getpwuid(view->dir_entry[x].uid)) != NULL)
@@ -1756,14 +1756,8 @@ load_dir_list(FileView *view, int reload)
 	}
 
 	if(!reload && s.st_size > 2048)
-	{
 		status_bar_message("Sorting directory...");
-	}
-	set_view_to_sort(view);
-	qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
-
-	for(x = 0; x < view->list_rows; x++)
-		view->dir_entry[x].list_num = x;
+	sort_view(view);
 
 	/* If reloading the same directory don't jump to
 	 * history position.  Stay at the current line
@@ -1969,18 +1963,16 @@ load_saving_pos(FileView *view, int reload)
 void
 change_sort_type(FileView *view, char type, char descending)
 {
-	union optval_t val;
+	int i;
 
-	view->sort_type = type;
-	view->sort_descending = descending;
+	type++;
+	view->sort[0] = descending ? -type : type;
+	for(i = 1; i < NUM_SORT_OPTIONS; i++)
+		view->sort[i] = NUM_SORT_OPTIONS + 1;
+
+	load_sort(view);
 
 	load_saving_pos(view, 1);
-
-	val.enum_item = type;
-	set_option("sort", val);
-
-	val.enum_item = descending;
-	set_option("sortorder", val);
 }
 
 int

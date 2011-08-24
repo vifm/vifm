@@ -909,18 +909,22 @@ affect file filtering.
 sort
 type: enumeration
 default: name
-Sets one of these sort types:
-   ext   - sort by extension
-   name  - sort by name
-   gid   - sort by group id
-   gname - sort by group name
-   mode  - sort by mode
-   uid   - sort by owner id
-   uname - sort by owner name
-   size  - sort by size
-   atime - sort by time accessed
-   ctime - sort by time changed
-   mtime - sort by time modified
+Sets list of sorting keys (first item is primary key, second is secondary
+key, etc.):
+   [+-]ext   - sort by extension
+   [+-]name  - sort by name (including extension)
+   [+-]gid   - sort by group id
+   [+-]gname - sort by group name
+   [+-]mode  - sort by mode
+   [+-]uid   - sort by owner id
+   [+-]uname - sort by owner name
+   [+-]size  - sort by size
+   [+-]atime - sort by time accessed
+   [+-]ctime - sort by time changed
+   [+-]mtime - sort by time modified
+
+\'+' means ascending sort for this key, and '-' means descending sort.
+In case name is skipped, it will be added at the end automatically.
 
 sortnumbers
 type: boolean
@@ -930,7 +934,7 @@ Natural sort of (version) numbers within text.
 sortorder
 type: enumeration
 default: ascending
-Sets sort order: ascending, descending.
+Sets sort order for primary key: ascending, descending.
 
 timefmt
 type: string

@@ -21,8 +21,7 @@
 
 #include "ui.h"
 
-void set_view_to_sort(FileView *view_to_sort);
-int sort_dir_list(const void *one, const void *two);
+void sort_view(FileView *view);
 
 #endif
 
