@@ -51,6 +51,7 @@ Possible things to add.
     Add :mksession command and 'sessionoptions' option.
     'incsearch' option.
     'wrapscan' option.
+    'scrollbind' option.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.

@@ -245,7 +245,16 @@ update_marks(FileView *view)
 static void
 cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 {
-	goto_pos(view->top_line - view->window_rows - 1);
+	int l = view->window_rows - 1;
+
+	if(view->top_line == 0)
+		return;
+
+	view->top_line -= l;
+	if(view->top_line < 0)
+		view->top_line = 0;
+
+	goto_pos(view->list_pos - l);
 }
 
 static void
@@ -258,27 +267,36 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_view->top_line += (curr_view->window_rows + 1)/2;
-	goto_pos(curr_view->list_pos + (curr_view->window_rows + 1)/2);
+	view->top_line += (view->window_rows + 1)/2;
+	goto_pos(view->list_pos + (view->window_rows + 1)/2);
 }
 
 static void
 cmd_ctrl_e(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(curr_view->list_rows <= curr_view->window_rows + 1)
+	if(view->list_rows <= view->window_rows + 1)
 		return;
-	if(curr_view->top_line == curr_view->list_rows - curr_view->window_rows - 1)
+	if(view->top_line == view->list_rows - view->window_rows - 1)
 		return;
-	if(curr_view->list_pos == curr_view->top_line)
-		goto_pos(curr_view->list_pos + 1);
-	curr_view->top_line++;
-	scroll_view(curr_view);
+	if(view->list_pos == view->top_line)
+		goto_pos(view->list_pos + 1);
+	view->top_line++;
+	scroll_view(view);
 }
 
 static void
 cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
-	goto_pos(view->top_line + 2*view->window_rows + 1);
+	int l = view->window_rows - 1;
+
+	if(view->top_line + 1 == view->list_rows - (l + 1))
+		return;
+
+	view->top_line += l;
+	if(view->top_line > view->list_rows)
+		view->top_line = view->list_rows - l;
+
+	goto_pos(view->list_pos + l);
 }
 
 static void
@@ -344,7 +362,7 @@ static void
 cmd_G(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = curr_view->list_rows;
+		key_info.count = view->list_rows;
 	goto_pos(key_info.count - 1);
 }
 
@@ -421,7 +439,7 @@ cmd_percent(struct key_info key_info, struct keys_info *keys_info)
 		return;
 	if(key_info.count > 100)
 		return;
-	line = (key_info.count * curr_view->list_rows)/100;
+	line = (key_info.count * view->list_rows)/100;
 	goto_pos(line - 1);
 }
 
@@ -527,8 +545,8 @@ goto_pos(int pos)
 {
 	if(pos < 0)
 		pos = 0;
-	if(pos > curr_view->list_rows - 1)
-		pos = curr_view->list_rows - 1;
+	if(pos > view->list_rows - 1)
+		pos = view->list_rows - 1;
 
 	while(view->list_pos < pos)
 		select_down_one(view, start_pos);
@@ -592,7 +610,7 @@ cmd_gv(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_j(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(curr_view->list_pos == curr_view->list_rows - 1)
+	if(view->list_pos == view->list_rows - 1)
 		return;
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
@@ -604,7 +622,7 @@ cmd_j(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_k(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(curr_view->list_pos == 0)
+	if(view->list_pos == 0)
 		return;
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
@@ -628,8 +646,8 @@ cmd_l(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_m(struct key_info key_info, struct keys_info *keys_info)
 {
-	add_bookmark(key_info.multi, curr_view->curr_dir,
-			get_current_file_name(curr_view));
+	add_bookmark(key_info.multi, view->curr_dir,
+			get_current_file_name(view));
 }
 
 static void

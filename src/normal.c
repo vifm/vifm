@@ -294,7 +294,16 @@ init_normal_mode(int *key_mode)
 static void
 cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_view->list_pos -= curr_view->window_rows;
+	int l = curr_view->window_rows - 1;
+
+	if(curr_view->top_line == 0)
+		return;
+
+	curr_view->top_line -= l;
+	if(curr_view->top_line < 0)
+		curr_view->top_line = 0;
+	curr_view->list_pos -= l;
+	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
@@ -333,7 +342,16 @@ cmd_ctrl_e(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_view->list_pos += curr_view->window_rows;
+	int l = curr_view->window_rows - 1;
+
+	if(curr_view->top_line + 1 == curr_view->list_rows - (l + 1))
+		return;
+
+	curr_view->top_line += l;
+	if(curr_view->top_line > curr_view->list_rows)
+		curr_view->top_line = curr_view->list_rows - l;
+	curr_view->list_pos += l;
+	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 
@@ -1243,7 +1261,6 @@ cmd_t(struct key_info key_info, struct keys_info *keys_info)
 		curr_view->selected_files--;
 	}
 
-//	draw_dir_list(curr_view, curr_view->top_line);
 	moveto_list_pos(curr_view, curr_view->list_pos);
 }
 

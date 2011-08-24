@@ -252,6 +252,8 @@
 
 	Fixed cursor position after leaving directory mounted with FUSE_MOUNT2.
 
+	Fixed Ctrl-D, Ctrl-U, Ctrl-F and Ctrl-B (made work like in vim).
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).
