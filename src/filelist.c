@@ -1799,6 +1799,13 @@ load_dir_list(FileView *view, int reload)
 
 	if(curr_stats.vifm_started >= 2)
 		draw_dir_list(view, view->top_line);
+
+	if(view == curr_view)
+	{
+		if(strncmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)) == 0 &&
+				strcmp(other_view->curr_dir, view->curr_dir) == 0)
+			load_dir_list(other_view, 1);
+	}
 }
 
 void
