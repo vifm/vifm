@@ -212,7 +212,7 @@ load_sort(FileView *view)
 	for(j = 0; j < NUM_SORT_OPTIONS && view->sort[j] <= NUM_SORT_OPTIONS; j++)
 		if(abs(view->sort[j]) == SORT_BY_NAME)
 			break;
-	if(view->sort[j] > NUM_SORT_OPTIONS)
+	if(j < NUM_SORT_OPTIONS && view->sort[j] > NUM_SORT_OPTIONS)
 		view->sort[j++] = SORT_BY_NAME;
 
 	i = -1;
