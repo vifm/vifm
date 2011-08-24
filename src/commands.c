@@ -597,15 +597,13 @@ static void
 complete_help(const char *str)
 {
 	int i;
-	size_t len;
 
 	if(!cfg.use_vim_help)
 		return;
 
-	len = strlen(str);
 	for(i = 0; tags[i] != NULL; i++)
 	{
-		if(strncmp(str, tags[i], len) == 0)
+		if(strstr(tags[i], str) != NULL)
 			add_completion(tags[i]);
 	}
 	completion_group_end();
@@ -2592,11 +2590,14 @@ help_cmd(const struct cmd_info *cmd_info)
 
 	if(cfg.use_vim_help)
 	{
+		char *escaped = escape_filename(cmd_info->args, 0);
 		if(cmd_info->argc > 0)
-			snprintf(buf, sizeof(buf), "%s -c \'help %s\' -c only", get_vicmd(&bg),
-					cmd_info->args);
+			snprintf(buf, sizeof(buf), "%s -c help\\ %s -c only", get_vicmd(&bg),
+					escaped);
 		else
-			snprintf(buf, sizeof(buf), "%s -c \'help vifm\' -c only", get_vicmd(&bg));
+			snprintf(buf, sizeof(buf), "%s -c 'help vifm' -c only",
+					get_vicmd(&bg));
+		free(escaped);
 	}
 	else
 	{
