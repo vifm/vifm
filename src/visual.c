@@ -246,15 +246,17 @@ static void
 cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 {
 	int l = view->window_rows - 1;
+	int pos;
 
 	if(view->top_line == 0)
 		return;
 
+	pos = curr_view->top_line + 1;
 	view->top_line -= l;
 	if(view->top_line < 0)
 		view->top_line = 0;
 
-	goto_pos(view->list_pos - l);
+	goto_pos(pos);
 }
 
 static void
@@ -292,15 +294,17 @@ static void
 cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	int l = view->window_rows - 1;
+	int pos;
 
 	if(view->top_line + 1 == view->list_rows - (l + 1))
 		return;
 
+	pos = curr_view->top_line + l;
 	view->top_line += l;
 	if(view->top_line > view->list_rows)
 		view->top_line = view->list_rows - l;
 
-	goto_pos(view->list_pos + l);
+	goto_pos(pos);
 }
 
 static void

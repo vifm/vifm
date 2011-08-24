@@ -358,10 +358,10 @@ cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 	if(curr_view->top_line + 1 == curr_view->list_rows - (l + 1))
 		return;
 
+	curr_view->list_pos = curr_view->top_line + l;
 	curr_view->top_line += l;
 	if(curr_view->top_line > curr_view->list_rows)
 		curr_view->top_line = curr_view->list_rows - l;
-	curr_view->list_pos += l;
 	s = MIN((curr_view->window_rows + 1)/2 - 1, cfg.scroll_off);
 	if(cfg.scroll_off > 0 && curr_view->list_pos - curr_view->top_line < s)
 		curr_view->list_pos += s - (curr_view->list_pos - curr_view->top_line);
