@@ -40,9 +40,9 @@ The only other command line arguments are:
 -------------------------------------------------------------------------------
 *vifm-general-keys*
 
-Ctrl-c or Escape - cancel most operations.
-Ctrl-c or Escape - clear all selected files.
-Ctrl-l - clear and redraw the screen.
+Ctrl-C or Escape - cancel most operations.
+Ctrl-C or Escape - clear all selected files.
+Ctrl-L - clear and redraw the screen.
 
 --------------------------------------------------------------------------------
 *vifm-normal*
@@ -166,8 +166,8 @@ Ctrl-g - creates a window showing detailed information about the current
 ga - calculate size of directory.
 gA - like ga, but force update.
 
-gf - find link destination (like l with 'followlinks' off, but also finds
-directories).
+gf - find link destination (like l with |vifm-'followlinks'| off, but also
+    finds directories).
 
 gv - go to visual mode restoring last selection.
 gs - restore last t selection, like gv for visual mode selection.
@@ -190,12 +190,12 @@ cg - change group of file.
 cp - change file permissions.
 C - clone file.
 
-dd - move selected file or files to ~/.vifm/Trash (if option 'trash' is set
-     otherwise delete)
+dd - move selected file or files to ~/.vifm/Trash (if option |vifm-'trash'|
+    is set otherwise delete)
 d<selector> - like dd.
 
 DD and D<selector> - like dd and d<selector>, but omitting trash directory
-     (even when option USE_TRASH is set).
+     (even when option |vifm-'trash'| is set).
 
 yy, Y - yank selected files.
 y<selector> - yank files.
@@ -628,11 +628,11 @@ The builtin commands are:
 
                                                *vifm-:screen*
 :screen - toggles whether to use the screen program or not.
-    The default configuration has the screen option turned off.  The screen
-    program uses pseudo terminals to allow multiple windows to be used in
-    the console or in a single xterm.  Starting vifm from screen with the
-    screen option turned on will cause vifm to open a new screen window for
-    each new file edited or program launched from vifm.
+    The default configuration has the |vifm-'screen'| option turned off.
+    The screen program uses pseudo terminals to allow multiple windows to
+    be used in the console or in a single xterm.  Starting vifm from screen
+    with the screen option turned on will cause vifm to open a new screen
+    window for each new file edited or program launched from vifm.
     This requires screen version 3.9.9 or newer for the screen -X argument.
 :screen? - shows whether screen program is used.
 
@@ -674,10 +674,10 @@ The builtin commands are:
     replace a match of pattern with string.  String can contain \0...\9
     to link to capture groups (0 - all match, 1 - first group, etc.).
     Flags can be used
-        i - ignore case (the 'ignorecase' and 'smartcase' options are not
-            used)
-        I - don't ignore case (the 'ignorecase' and 'smartcase' options
-            are not used)
+        i - ignore case (the |vifm-'ignorecase'| and |vifm-'smartcase'|
+            options are not used)
+        I - don't ignore case (the |vifm-'ignorecase'| and
+            |vifm-'smartcase'| options are not used)
         g - substitute all matches in each file name
 
                                                *vifm-:tr*
@@ -921,9 +921,9 @@ Full path to the shell to use to run external commands.
 smartcase scs
 type: boolean
 default: false
-Overrides the ignorecase option if the search pattern contains at least one
-upper case character.  Only used when ignorecase option is enabled.  It doesn't
-affect file filtering.
+Overrides the |vifm-'ignorecase'| option if the search pattern contains at
+least one upper case character.  Only used when ignorecase option is enabled.
+It doesn't affect file filtering.
 
                                                *vifm-'sort'*
 sort
@@ -943,7 +943,7 @@ key, etc.):
    [+-]ctime - sort by time changed
    [+-]mtime - sort by time modified
 
-\'+' means ascending sort for this key, and '-' means descending sort.
+'+' means ascending sort for this key, and '-' means descending sort.
 In case name is skipped, it will be added at the end automatically.
 
                                                *vifm-'sortnumbers'*
@@ -1162,10 +1162,10 @@ equals "set  smartcase ".
 The ~/.vifm/vifminfo file contains session settings.  You may edit it by hand
 to change the settings, but it's not recommended to do that, edit vifmrc
 instead.  You can control what settings will be saved in vifminfo by setting
-'vifminfo' option.  Vifm always writes this file on exit unless 'vifminfo'
-option is empty.  Bookmarks, commands, directory history, filetypes, fileviewers
-and registers in the file are merged with vifm configuration (which has bigger
-priority).
+|vifm-'vifminfo'| option.  Vifm always writes this file on exit unless
+|vifm-'vifminfo'| option is empty.  Bookmarks, commands, directory history,
+filetypes, fileviewers and registers in the file are merged with vifm
+configuration (which has bigger priority).
 
 The ~/.vifm/scripts directory can contain shell scripts.  vifm modifies
 it's PATH environment variable to let user run those scripts without specifying
