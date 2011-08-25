@@ -169,5 +169,16 @@ get_completion_pos(void)
 	return curr;
 }
 
+void
+rewind_completion(void)
+{
+	assert(state == COMPLETING);
+
+	if(count <= 2)
+		return;
+
+	curr = count - 2;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

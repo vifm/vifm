@@ -294,6 +294,8 @@ Ctrl-I, Tab - complete command or its argument.
 
 Shift-Tab - complete in reverse order.
 
+Ctrl-Y - stop completion and return original input.
+
 Ctrl-K - remove characters from cursor position till the end of line.
 
 Ctrl-U - remove characters from cursor position till the beginning of line.

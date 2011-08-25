@@ -16,7 +16,7 @@ static int swap_range(void);
 static int resolve_mark(char mark);
 static char * expand_macros(const char *str, int *usr1, int *usr2);
 static void post(int id);
-static void select_range(const struct cmd_info *cmd_info);
+static void select_range(int id, const struct cmd_info *cmd_info);
 
 void input_tests(void);
 void command_name_tests(void);
@@ -99,7 +99,7 @@ post(int id)
 }
 
 static void
-select_range(const struct cmd_info *cmd_info)
+select_range(int id, const struct cmd_info *cmd_info)
 {
 }
 

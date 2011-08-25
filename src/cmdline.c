@@ -104,6 +104,7 @@ static void cmd_down(struct key_info, struct keys_info *);
 #endif /* ENABLE_EXTENDED_KEYS */
 static void cmd_ctrl_u(struct key_info, struct keys_info *);
 static void cmd_ctrl_w(struct key_info, struct keys_info *);
+static void cmd_ctrl_y(struct key_info, struct keys_info *);
 static void cmd_meta_b(struct key_info, struct keys_info *);
 static void find_prev_word(void);
 static void cmd_meta_d(struct key_info, struct keys_info *);
@@ -160,20 +161,21 @@ static struct keys_add_info builtin_cmds[] = {
 #endif /* ENABLE_EXTENDED_KEYS */
 	{L"\x1b"L"[Z",    {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
 	/* ctrl b */
-	{L"\x02", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left}}},
+	{L"\x02",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left}}},
 	/* ctrl f */
-	{L"\x06", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right}}},
+	{L"\x06",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right}}},
 	/* ctrl a */
-	{L"\x01", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_home}}},
+	{L"\x01",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_home}}},
 	/* ctrl e */
-	{L"\x05", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_end}}},
+	{L"\x05",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_end}}},
 	/* ctrl d */
-	{L"\x04", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
-	{L"\x15", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
-	{L"\x17", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_w}}},
-	{L"\x1b"L"b", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
-	{L"\x1b"L"d", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
-	{L"\x1b"L"f", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_f}}},
+	{L"\x04",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
+	{L"\x15",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
+	{L"\x17",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_w}}},
+	{L"\x19",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
+	{L"\x1b"L"b",     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
+	{L"\x1b"L"d",     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
+	{L"\x1b"L"f",     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_f}}},
 };
 
 void
@@ -965,6 +967,17 @@ cmd_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
 	waddwstr(status_bar, input_stat.line);
 	wmove(status_bar, input_stat.curs_pos/line_width,
 			input_stat.curs_pos%line_width);
+}
+
+static void
+cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(!input_stat.complete_continue)
+		return;
+	rewind_completion();
+
+	cmd_ctrl_i(key_info, keys_info);
+	stop_completion();
 }
 
 static void

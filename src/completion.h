@@ -41,6 +41,11 @@ const char ** get_completion_list(void);
 
 int get_completion_pos(void);
 
+/*
+ * Go to the last item (probably to user input)
+ */
+void rewind_completion(void);
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

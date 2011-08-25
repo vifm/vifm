@@ -98,6 +98,80 @@ test_one_unambiguous_completion(void)
 	free(buf);
 }
 
+static void
+test_rewind_one_unambiguous_completion(void)
+{
+	char *buf;
+
+	assert_int_equal(0, add_completion("abcd"));
+	completion_group_end();
+
+	assert_int_equal(0, add_completion("a"));
+
+	buf = next_completion();
+	assert_string_equal("abcd", buf);
+	free(buf);
+	buf = next_completion();
+	assert_string_equal("abcd", buf);
+	free(buf);
+
+	rewind_completion();
+	free(next_completion());
+
+	buf = next_completion();
+	assert_string_equal("abcd", buf);
+	free(buf);
+	buf = next_completion();
+	assert_string_equal("abcd", buf);
+	free(buf);
+}
+
+static void
+test_rewind(void)
+{
+	char *buf;
+
+	assert_int_equal(0, add_completion("acd"));
+	assert_int_equal(0, add_completion("abc"));
+	completion_group_end();
+
+	assert_int_equal(0, add_completion("a"));
+
+	buf = next_completion();
+	assert_string_equal("abc", buf);
+	free(buf);
+
+	rewind_completion();
+	free(next_completion());
+
+	buf = next_completion();
+	assert_string_equal("abc", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("acd", buf);
+	free(buf);
+
+	rewind_completion();
+	free(next_completion());
+
+	buf = next_completion();
+	assert_string_equal("abc", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("acd", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("a", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("abc", buf);
+	free(buf);
+}
+
 void
 completion_tests(void)
 {
@@ -107,6 +181,8 @@ completion_tests(void)
 	run_test(test_sorting);
 	run_test(test_one_element_completion);
 	run_test(test_one_unambiguous_completion);
+	run_test(test_rewind_one_unambiguous_completion);
+	run_test(test_rewind);
 
 	test_fixture_end();
 }

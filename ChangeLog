@@ -107,6 +107,10 @@
 
 	Added 'scrolloff' option.
 
+	Added support for using ':' instead of '=' in :set command.
+
+	Added Ctrl-Y command-line key to reject completion.
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,
@@ -214,8 +218,6 @@
 
 	Made ':set option' equivalent to ':set option?' for all types of options
 	except boolean.
-
-	Added support for using ':' instead of '=' in :set command.
 
 	Fixed bug with name conflict of files and directories in the Trash.
 
