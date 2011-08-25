@@ -412,6 +412,9 @@ check_directory_for_color_scheme(const char *dir)
 	int max_len = 0;
 	int max_index = -1;
 
+	if(path_starts_with(dir, col_schemes[cfg.color_scheme_cur].dir))
+		return cfg.color_scheme;
+
 	for(i = 0; i < cfg.color_scheme_num; i++)
 	{
 		size_t len = strlen(col_schemes[i].dir);
