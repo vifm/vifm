@@ -1992,7 +1992,6 @@ change_sort_type(FileView *view, char type, char descending)
 {
 	int i;
 
-	type++;
 	view->sort[0] = descending ? -type : type;
 	for(i = 1; i < NUM_SORT_OPTIONS; i++)
 		view->sort[i] = NUM_SORT_OPTIONS + 1;

@@ -46,6 +46,26 @@ static int descending;
 
 static const char * caps[] = { "a-z", "z-a" };
 
+static int indexes[] = {
+	-1,
+	0,  /* SORT_BY_EXTENSION */
+	1,  /* SORT_BY_NAME */
+	3,  /* SORT_BY_GROUP_ID */
+	4,  /* SORT_BY_GROUP_NAME */
+	5,  /* SORT_BY_MODE */
+	6,  /* SORT_BY_OWNER_ID */
+	7,  /* SORT_BY_OWNER_NAME */
+	8,  /* SORT_BY_SIZE */
+	9,  /* SORT_BY_TIME_ACCESSED */
+	10, /* SORT_BY_TIME_CHANGED */
+	11, /* SORT_BY_TIME_MODIFIED */
+	2,  /* SORT_BY_INAME */
+};
+
+static int _gnuc_unused indexes_size_guard[
+	(ARRAY_LEN(indexes) == NUM_SORT_OPTIONS + 1) ? 1 : -1
+];
+
 static void leave_sort_mode(void);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
@@ -111,7 +131,7 @@ enter_sort_mode(FileView *active_view)
 
 	top = 2;
 	bottom = top + NUM_SORT_OPTIONS - 1;
-	curr = abs(view->sort[0]) + 1;
+	curr = indexes[abs(view->sort[0])] + 2;
 	col = 6;
 
 	redraw_sort_dialog();
@@ -129,16 +149,17 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, 0, (x - 6)/2, " Sort ");
 	mvwaddstr(sort_win, 1, 2, " Sort files by:");
 	mvwaddstr(sort_win, 2, 4, " [   ] File Extenstion");
-	mvwaddstr(sort_win, 3, 4, " [   ] File Name");
-	mvwaddstr(sort_win, 4, 4, " [   ] Group ID");
-	mvwaddstr(sort_win, 5, 4, " [   ] Group Name");
-	mvwaddstr(sort_win, 6, 4, " [   ] Mode");
-	mvwaddstr(sort_win, 7, 4, " [   ] Owner ID");
-	mvwaddstr(sort_win, 8, 4, " [   ] Owner Name");
-	mvwaddstr(sort_win, 9, 4, " [   ] Size");
-	mvwaddstr(sort_win, 10, 4, " [   ] Time Accessed");
-	mvwaddstr(sort_win, 11, 4, " [   ] Time Changed");
-	mvwaddstr(sort_win, 12, 4, " [   ] Time Modified");
+	mvwaddstr(sort_win, 3, 4, " [   ] Name");
+	mvwaddstr(sort_win, 4, 4, " [   ] Name (ignore case)");
+	mvwaddstr(sort_win, 5, 4, " [   ] Group ID");
+	mvwaddstr(sort_win, 6, 4, " [   ] Group Name");
+	mvwaddstr(sort_win, 7, 4, " [   ] Mode");
+	mvwaddstr(sort_win, 8, 4, " [   ] Owner ID");
+	mvwaddstr(sort_win, 9, 4, " [   ] Owner Name");
+	mvwaddstr(sort_win, 10, 4, " [   ] Size");
+	mvwaddstr(sort_win, 11, 4, " [   ] Time Accessed");
+	mvwaddstr(sort_win, 12, 4, " [   ] Time Changed");
+	mvwaddstr(sort_win, 13, 4, " [   ] Time Modified");
 	mvwaddstr(sort_win, curr, 6, caps[descending]);
 
 	getmaxyx(stdscr, y, x);
@@ -165,9 +186,14 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 {
+	int i;
+
 	leave_sort_mode();
 
-	change_sort_type(view, curr - 2, descending);
+	for(i = 0; i < sizeof(indexes); i++)
+		if(indexes[i] == curr - 2)
+			break;
+	change_sort_type(view, i, descending);
 }
 
 static void

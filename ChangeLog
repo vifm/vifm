@@ -208,7 +208,7 @@
 
 	Made F, f, ;, comma, n and N commands accept count.
 
-	Better 'sort' option (support of multiple sort keys).
+	Better 'sort' option (support of multiple sort keys, added iname key).
 
 	Fixed bug with name conflict of files and directories in the Trash.
 

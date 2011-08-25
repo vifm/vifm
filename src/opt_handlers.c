@@ -60,6 +60,7 @@ static const char * sort_enum[] = {
 	"atime",
 	"ctime",
 	"mtime",
+	"iname",
 };
 
 static const char * sort_types[] = {
@@ -74,6 +75,7 @@ static const char * sort_types[] = {
 	"atime", "+atime", "-atime",
 	"ctime", "+ctime", "-ctime",
 	"mtime", "+mtime", "-mtime",
+	"iname", "+iname", "-iname",
 };
 
 static const char * sort_order_enum[] = {
@@ -210,7 +212,8 @@ load_sort(FileView *view)
 	int j, i;
 
 	for(j = 0; j < NUM_SORT_OPTIONS && view->sort[j] <= NUM_SORT_OPTIONS; j++)
-		if(abs(view->sort[j]) == SORT_BY_NAME)
+		if(abs(view->sort[j]) == SORT_BY_NAME ||
+				abs(view->sort[j]) == SORT_BY_INAME)
 			break;
 	if(j < NUM_SORT_OPTIONS && view->sort[j] > NUM_SORT_OPTIONS)
 		view->sort[j++] = SORT_BY_NAME;
@@ -480,7 +483,8 @@ sort_handler(enum opt_op op, union optval_t val)
 	} while(*p != '\0');
 
 	for(j = 0; j < i; j++)
-		if(abs(curr_view->sort[j]) == SORT_BY_NAME)
+		if(abs(curr_view->sort[j]) == SORT_BY_NAME ||
+				abs(curr_view->sort[j]) == SORT_BY_INAME)
 			break;
 	if(j == i)
 		curr_view->sort[i++] = SORT_BY_NAME;

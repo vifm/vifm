@@ -933,6 +933,7 @@ Sets list of sorting keys (first item is primary key, second is secondary
 key, etc.):
    [+-]ext   - sort by extension
    [+-]name  - sort by name (including extension)
+   [+-]iname - sort by name (including extension, ignores case)
    [+-]gid   - sort by group id
    [+-]gname - sort by group name
    [+-]mode  - sort by mode

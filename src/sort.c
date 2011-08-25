@@ -66,9 +66,31 @@ sort_view(FileView *v)
 	}
 }
 
-static int
-compare_file_names(const char *s, const char *t)
+static void
+strtoupper(char *s)
 {
+	while(*s != '\0')
+	{
+		*s = toupper(*s);
+		s++;
+	}
+}
+
+static int
+compare_file_names(const char *s, const char *t, int ignore_case)
+{
+	char s_buf[NAME_MAX];
+	char t_buf[NAME_MAX];
+	if(ignore_case)
+	{
+		snprintf(s_buf, sizeof(s_buf), "%s", s);
+		strtoupper(s_buf);
+		s = s_buf;
+
+		snprintf(t_buf, sizeof(t_buf), "%s", t);
+		t = t_buf;
+		strtoupper(t_buf);
+	}
 	if(!cfg.sort_numbers)
 		return strcmp(s, t);
 	else
@@ -107,12 +129,14 @@ sort_dir_list(const void *one, const void *two)
 	switch(sort_type)
 	{
 		case SORT_BY_NAME:
+		case SORT_BY_INAME:
 			if(first->name[0] == '.' && second->name[0] != '.')
 				retval = -1;
 			else if(first->name[0] != '.' && second->name[0] == '.')
 				retval = 1;
 			else
-				retval = compare_file_names(first->name, second->name);
+				retval = compare_file_names(first->name, second->name,
+						sort_type == SORT_BY_INAME);
 			break;
 
 		case SORT_BY_EXTENSION:
@@ -120,11 +144,11 @@ sort_dir_list(const void *one, const void *two)
 			psecond = strrchr(second->name, '.');
 
 			if(pfirst && psecond)
-				retval = compare_file_names(++pfirst, ++psecond);
+				retval = compare_file_names(++pfirst, ++psecond, 0);
 			else if(pfirst || psecond)
 				retval = pfirst ? -1 : 1;
 			else
-				retval = compare_file_names(first->name, second->name);
+				retval = compare_file_names(first->name, second->name, 0);
 			break;
 
 		case SORT_BY_SIZE:

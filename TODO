@@ -46,7 +46,7 @@ Possible things to add.
     Add g/ and g? commands (search, but don't select files).
     Reverse searching (/ for search, g/ for selecting, g!/ for selecting
         reverse)
-    Improve sorting (ignore case (iname, maybe iext); ignore dirs).
+    Improve sorting (maybe iext; maybe ignore dirs).
     Add :mksession command and 'sessionoptions' option.
     'incsearch' option.
     'wrapscan' option.
