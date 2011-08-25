@@ -63,7 +63,7 @@ Other (questionable) things.
     Add support for comments at the end of line ? Just for fun?
     Make directory stack menu interactive ?
     Maybe add + and - commands to undo by commands, not command groups.
-    :sellocal command.
+    :setlocal command.
     Remove items from :history cmd?
     Option with format of statwin.
     :edit, etc. in the menus.

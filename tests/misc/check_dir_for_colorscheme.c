@@ -11,9 +11,12 @@ setup(void)
 		{.dir = "/"},
 		{.dir = "/home"},
 		{.dir = "/root"},
+		{.dir = "/"},
 	};
 	col_schemes = (Col_scheme*)&my_schemes;
 	
+	cfg.color_scheme = 1;
+	cfg.color_scheme_cur = 0;
 	cfg.color_scheme_num = ARRAY_LEN(my_schemes);
 }
 
@@ -32,6 +35,17 @@ test_dirs(void)
 			check_directory_for_color_scheme("/root"));
 }
 
+static void
+test_cur_priority(void)
+{
+	assert_int_equal(1, check_directory_for_color_scheme("/"));
+
+	cfg.color_scheme_cur = 3;
+	cfg.color_scheme = 1 + MAXNUM_COLOR*cfg.color_scheme_cur;
+
+	assert_int_equal(cfg.color_scheme, check_directory_for_color_scheme("/"));
+}
+
 void
 check_dir_for_colorscheme_tests(void)
 {
@@ -40,6 +54,7 @@ check_dir_for_colorscheme_tests(void)
 	fixture_setup(setup);
 
 	run_test(test_dirs);
+	run_test(test_cur_priority);
 
 	test_fixture_end();
 }

@@ -61,7 +61,7 @@ static void
 init_color_scheme(Col_scheme *cs)
 {
 	int i;
-	strcpy(cs->dir, "");
+	strcpy(cs->dir, "/");
 	cs->defaulted = 0;
 
 	for(i = 0; i < MAXNUM_COLOR; i++)
@@ -412,9 +412,6 @@ check_directory_for_color_scheme(const char *dir)
 	int max_len = 0;
 	int max_index = -1;
 
-	if(path_starts_with(dir, col_schemes[cfg.color_scheme_cur].dir))
-		return cfg.color_scheme;
-
 	for(i = 0; i < cfg.color_scheme_num; i++)
 	{
 		size_t len = strlen(col_schemes[i].dir);
@@ -428,6 +425,10 @@ check_directory_for_color_scheme(const char *dir)
 			}
 		}
 	}
+
+	if(path_starts_with(dir, col_schemes[cfg.color_scheme_cur].dir) &&
+			(max_len == strlen(col_schemes[cfg.color_scheme_cur].dir)))
+		return cfg.color_scheme;
 
 	if(max_index == -1)
 		return 1 + cfg.color_scheme_cur*MAXNUM_COLOR;

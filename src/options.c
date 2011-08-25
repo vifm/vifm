@@ -294,12 +294,22 @@ process_option(const char *cmd)
 	err = 0;
 	if(*p == '\0')
 	{
-		if(find_option(option) != NULL)
-			err = set_on(opt);
+		struct opt_t *o = find_option(option);
+		if(o != NULL)
+		{
+			if(o->type == OPT_BOOL)
+				err = set_on(opt);
+			else
+				err = set_print(o);
+		}
 		else if(strncmp(option, "no", 2) == 0)
+		{
 			err = set_off(opt);
+		}
 		else if(strncmp(option, "inv", 3) == 0)
+		{
 			err = set_inv(opt);
+		}
 	}
 	else if(*p == '!' || *p == '?' || *p == '&')
 	{
