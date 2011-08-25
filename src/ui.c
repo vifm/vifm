@@ -799,7 +799,6 @@ int
 load_color_scheme(const char *name)
 {
 	int i;
-	int color_scheme;
 
 	i = find_color_scheme(name);
 	if(i < 0)
@@ -807,6 +806,14 @@ load_color_scheme(const char *name)
 		show_error_msg("Color Scheme", "Invalid color scheme name");
 		return 0;
 	}
+
+	return load_color_scheme_i(i);
+}
+
+int
+load_color_scheme_i(int i)
+{
+	int color_scheme;
 
 	cfg.color_scheme_cur = i;
 	cfg.color_scheme = 1 + MAXNUM_COLOR*cfg.color_scheme_cur;

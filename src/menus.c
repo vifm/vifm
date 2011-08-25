@@ -757,7 +757,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 			exec_commands(m->data[m->pos], view, 1, GET_BSEARCH_PATTERN);
 			break;
 		case COLORSCHEME:
-			load_color_scheme(m->data[m->pos]);
+			load_color_scheme_i(m->pos);
 			break;
 		case COMMAND:
 			*strchr(m->data[m->pos] + 1, ' ') = '\0';

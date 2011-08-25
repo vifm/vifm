@@ -141,6 +141,7 @@ void clear_num_window(void);
 void show_progress(const char *msg, int period);
 void redraw_lists(void);
 int load_color_scheme(const char *name);
+int load_color_scheme_i(int i);
 
 #endif
 
