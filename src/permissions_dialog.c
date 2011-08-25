@@ -120,13 +120,12 @@ enter_permissions_mode(FileView *active_view)
 	i = 0;
 	while(i < view->list_rows && !view->dir_entry[i].selected)
 		i++;
+	file_is_dir = 0;
 	if(i == view->list_rows)
 	{
 		i = view->list_pos;
 		file_is_dir = is_dir(view->dir_entry[i].name);
 	}
-	else
-		file_is_dir = 0;
 	fmode = view->dir_entry[i].mode;
 	if(uid != 0 && view->dir_entry[i].uid != uid)
 	{
@@ -139,6 +138,7 @@ enter_permissions_mode(FileView *active_view)
 		if(view->dir_entry[i].selected)
 		{
 			diff |= (view->dir_entry[i].mode ^ fmode);
+			file_is_dir = file_is_dir || is_dir(view->dir_entry[i].name);
 
 			if(uid != 0 && view->dir_entry[i].uid != uid)
 			{
