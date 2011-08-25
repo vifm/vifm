@@ -2595,7 +2595,7 @@ help_cmd(const struct cmd_info *cmd_info)
 			snprintf(buf, sizeof(buf), "%s -c help\\ %s -c only", get_vicmd(&bg),
 					escaped);
 		else
-			snprintf(buf, sizeof(buf), "%s -c 'help vifm' -c only",
+			snprintf(buf, sizeof(buf), "%s -c 'help vifm.txt' -c only",
 					get_vicmd(&bg));
 		free(escaped);
 	}
