@@ -655,7 +655,7 @@ The builtin commands are:
      - option! - invert option state
      - option? - print option value
      - option& - reset option to its default value
-     - option=x - set option to x
+     - option=x or option:x - set option to x
      - option+=x - add x to option
      - option-=x - remove (or subtract) x from option
 

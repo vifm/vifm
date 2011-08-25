@@ -333,7 +333,7 @@ process_option(const char *cmd)
 	{
 		err = set_remove(opt, p + 2);
 	}
-	else if(*p == '=')
+	else if(*p == '=' || *p == ':')
 	{
 		err = set_set(opt, p + 1);
 	}
@@ -788,7 +788,7 @@ complete_options(const char *cmd, const char **start)
 	}
 
 	p = (char *)skip_alphas(buf);
-	value = (p[0] == '=');
+	value = (p[0] == '=' || p[0] == ':');
 	value = value || (p[0] == '-' && p[1] == '=');
 	value = value || (p[0] == '+' && p[1] == '=');
 	if(value)
@@ -797,7 +797,7 @@ complete_options(const char *cmd, const char **start)
 		*p = '\0';
 		opt = get_option(buf);
 		*p++ = t;
-		if(t != '=')
+		if(t != '=' && t != ':')
 			p++;
 		if(opt->type == OPT_SET || opt->type == OPT_STRLIST)
 		{

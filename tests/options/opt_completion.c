@@ -215,6 +215,25 @@ test_set_values_completion(void)
 	free(completed);
 }
 
+static void
+test_colon(void)
+{
+	const char *start;
+	char *completed;
+
+	reset_completion();
+	complete_options("fusehome:a\\ b\\ ", &start);
+	completed = next_completion();
+	assert_string_equal("a\\ b\\ ", completed);
+	free(completed);
+
+	reset_completion();
+	complete_options("fusehome:a\\ b ", &start);
+	completed = next_completion();
+	assert_string_equal("fastrun", completed);
+	free(completed);
+}
+
 void
 opt_completion(void)
 {
@@ -230,6 +249,7 @@ opt_completion(void)
 	run_test(test_after_meq_value_completion);
 	run_test(test_after_peq_value_completion);
 	run_test(test_set_values_completion);
+	run_test(test_colon);
 
 	test_fixture_end();
 }

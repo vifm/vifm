@@ -34,12 +34,14 @@ static const char * vifminfo_set[] = {
 void test_quotes(void);
 void opt_completion(void);
 void with_spaces_tests(void);
+void input_tests(void);
 
 void all_tests(void)
 {
 	test_quotes();
 	opt_completion();
 	with_spaces_tests();
+	input_tests();
 }
 
 static void
