@@ -109,7 +109,7 @@
 
 	Added support for using ':' instead of '=' in :set command.
 
-	Added Ctrl-Y command-line key to reject completion.
+	Added Ctrl-_ command-line key to reject completion.
 
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 

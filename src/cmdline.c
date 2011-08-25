@@ -104,7 +104,7 @@ static void cmd_down(struct key_info, struct keys_info *);
 #endif /* ENABLE_EXTENDED_KEYS */
 static void cmd_ctrl_u(struct key_info, struct keys_info *);
 static void cmd_ctrl_w(struct key_info, struct keys_info *);
-static void cmd_ctrl_y(struct key_info, struct keys_info *);
+static void cmd_ctrl_underscore(struct key_info, struct keys_info *);
 static void cmd_meta_b(struct key_info, struct keys_info *);
 static void find_prev_word(void);
 static void cmd_meta_d(struct key_info, struct keys_info *);
@@ -172,10 +172,10 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x04",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
 	{L"\x15",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
 	{L"\x17",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_w}}},
-	{L"\x19",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
 	{L"\x1b"L"b",     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
 	{L"\x1b"L"d",     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
 	{L"\x1b"L"f",     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_f}}},
+	{L"\x1f",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_underscore}}},
 };
 
 void
@@ -970,7 +970,7 @@ cmd_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_underscore(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(!input_stat.complete_continue)
 		return;
