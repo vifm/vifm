@@ -88,7 +88,6 @@ static int get_args_count(const char *cmdstr, char sep, int regexp, int quotes);
 static void unescape(char *s, int regexp);
 static void replace_esc(char *s);
 static int get_cmd_info(const char *cmd, struct cmd_info *info);
-static int udf_is_ambiguous(const char *name);
 static const char *get_cmd_name(const char *cmd, char *buf, size_t buf_len);
 static void init_cmd_info(struct cmd_info *cmd_info);
 static void complete_cmd_name(const char *cmd_name, int user_only);
@@ -435,7 +434,11 @@ udf_is_ambiguous(const char *name)
 			if(cur->name[len] == '\0')
 				return 0;
 			if(cur->type == USER_CMD)
-				count++;
+			{
+				char c = cur->name[strlen(cur->name) - 1];
+				if(c != '!' && c != '?')
+					count++;
+			}
 		}
 		else if(cmp > 0)
 		{
@@ -878,19 +881,26 @@ get_cmd_name(const char *cmd, char *buf, size_t buf_len)
 
 	len = MIN(t - cmd, buf_len);
 	strncpy(buf, cmd, len);
+	buf[len] = '\0';
 	if(*t == '?' || *t == '!')
 	{
+		int cmp;
 		struct cmd_t *cur;
 
-		buf[len] = *t;
-		buf[len + 1] = '\0';
 		cur = inner->head.next;
-		while(cur != NULL && strcmp(cur->name, buf) < 0)
+		while(cur != NULL && (cmp = strncmp(cur->name, buf, len)) <= 0)
+		{
+			if(cmp == 0 && cur->type == USER_CMD &&
+					cur->name[strlen(cur->name) - 1] == *t)
+			{
+				strncpy(buf, cur->name, buf_len);
+				break;
+			}
 			cur = cur->next;
-		if(cur != NULL && strncmp(cur->name, buf, len + 1) == 0)
+		}
+		if(cur != NULL && strncmp(cur->name, buf, len) == 0)
 			return t + 1;
 	}
-	buf[len] = '\0';
 
 	return t;
 }

@@ -103,6 +103,21 @@ test_abbreviations(void)
 	assert_true(cmdi.emark);
 }
 
+static void
+test_udf_bang_abbr(void)
+{
+	assert_int_equal(0, execute_cmd("command udf! a"));
+	assert_int_equal(0, execute_cmd("command UDF? a"));
+
+	assert_int_equal(0, execute_cmd("udf!"));
+	assert_int_equal(0, execute_cmd("ud!"));
+	assert_int_equal(0, execute_cmd("u!"));
+
+	assert_int_equal(0, execute_cmd("UDF?"));
+	assert_int_equal(0, execute_cmd("UD?"));
+	assert_int_equal(0, execute_cmd("U?"));
+}
+
 void
 command_name_tests(void)
 {
@@ -115,6 +130,7 @@ command_name_tests(void)
 	run_test(test_user_add);
 	run_test(test_user_exec);
 	run_test(test_abbreviations);
+	run_test(test_udf_bang_abbr);
 
 	test_fixture_end();
 }

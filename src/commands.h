@@ -49,6 +49,8 @@ char * edit_selection(FileView *view, int *bg);
 void save_history(const char *line, char **hist, int *num, int *len);
 
 #ifdef TEST
+#include "cmds.h"
+
 char * append_selected_files(FileView *view, char *expanded, int under_cursor,
 		const char *mod);
 int line_pos(const char *begin, const char *end, char sep, int regexp);

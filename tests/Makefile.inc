@@ -7,7 +7,7 @@ LOCAL_SOURCES += $(wildcard *.c)
 OBJECTS := $(SOURCES:.c=.o)
 LOCAL_OBJECTS := $(LOCAL_SOURCES:.c=.o)
 
-CFLAGS := -MD -g -I../seatest `pkg-config --cflags gtk+-2.0` -DTEST
+CFLAGS := -MD -g -Werror -I../seatest `pkg-config --cflags gtk+-2.0` -DTEST
 LDFLAGS := `pkg-config --libs gtk+-2.0` -lncursesw -lmagic
 
 $(BIN): $(addprefix ../bin/, $(notdir $(OBJECTS))) \

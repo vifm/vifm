@@ -210,6 +210,8 @@
 
 	Better 'sort' option (support of multiple sort keys, added iname key).
 
+	Let user use short forms of user-defined commands with "!".
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.
