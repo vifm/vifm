@@ -64,7 +64,7 @@ init_config(void)
 
 	cfg.search_history_len = 15;
 	cfg.search_history_num = -1;
-	cfg.search_history = calloc(cfg.search_history_len, sizeof(char*));
+	cfg.search_history = calloc(cfg.search_history_len, sizeof(char *));
 
 	cfg.cmd_history_len = 15;
 	cfg.cmd_history_num = -1;

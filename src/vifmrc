@@ -89,10 +89,7 @@ mark b ~/bin/
 
 command df df -h %m 2> /dev/null
 command diff vim -d %f %F
-command find find . -name '%a' %m
 command zip zip -r %f.zip %f
-command mv mv %f %D &
-command cp cp %f %D &
 command run !! ./%f
 command make !!make
 command vgrep vim "+grep %a"

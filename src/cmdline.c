@@ -779,7 +779,7 @@ replace_input_line(const char *new)
 }
 
 static void
-complete_next(char **hist, size_t num, size_t len)
+complete_next(char **hist, int num, size_t len)
 {
 	if(num < 0)
 		return;
@@ -1110,7 +1110,7 @@ cmd_delete(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-complete_prev(char **hist, size_t num, size_t len)
+complete_prev(char **hist, int num, size_t len)
 {
 	if(num < 0)
 		return;
