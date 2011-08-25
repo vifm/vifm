@@ -891,8 +891,8 @@ shows whether screen program is used.
 will set options to given values.
 .br
 You can use following syntax:
- - for all options - option? and option&
- - for boolean options - option, nooption, invoption and option!
+ - for all options - option, option? and option&
+ - for boolean options - nooption, invoption and option!
  - for integer options - option=x, option+=x and option-=x
  - for string options - option=x
  - for string list options - option=x, option+=x and option-=x
@@ -900,7 +900,7 @@ You can use following syntax:
  - for enumeration options - option=x
  - for set options - option=x, option+=x and option-=x
 the meaning:
- - option - turn option on
+ - option - turn option on (for boolean) or print its value (for all others)
  - nooption - turn option off
  - invoption - invert option state
  - option! - invert option state

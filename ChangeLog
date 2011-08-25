@@ -212,6 +212,9 @@
 
 	Let user use short forms of user-defined commands with "!".
 
+	Made ':set option' equivalent to ':set option?' for all types of options
+	except boolean.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.
