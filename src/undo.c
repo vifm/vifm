@@ -229,6 +229,7 @@ add_operation(enum OPS op, void *do_data, void *undo_data, const char *buf1,
 
 	cmd->buf1 = strdup(buf1);
 	cmd->buf2 = strdup(buf2);
+	cmd->prev = current;
 	init_cmd(cmd, op, do_data, undo_data);
 	if(last_group != NULL)
 	{
@@ -253,7 +254,6 @@ add_operation(enum OPS op, void *do_data, void *undo_data, const char *buf1,
 	if(undo_op[op] == OP_NONE)
 		cmd->group->can_undone = 0;
 
-	cmd->prev = current;
 	current->next = cmd;
 	current = cmd;
 	cmds.prev = cmd;
@@ -376,7 +376,6 @@ undo_group(void)
 	current->group->balance--;
 
 	skip = 0;
-	do_func(OP_NONE, NULL, NULL, NULL);
 	do
 	{
 		if(!skip)
@@ -450,7 +449,6 @@ redo_group(void)
 	current->next->group->balance++;
 
 	skip = 0;
-	do_func(OP_NONE, NULL, NULL, NULL);
 	do
 	{
 		current = current->next;

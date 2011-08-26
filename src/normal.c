@@ -416,6 +416,8 @@ cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
 {
 	int ret;
 
+	curr_stats.confirmed = 0;
+
 	ret = redo_group();
 	if(ret == 0)
 	{
@@ -1044,6 +1046,7 @@ cmd_dd(struct key_info key_info, struct keys_info *keys_info)
 static void
 delete(struct key_info key_info, int use_trash)
 {
+	curr_stats.confirmed = 0;
 	if(!use_trash && cfg.confirm)
 	{
 		if(!is_dir_writable(0, curr_view->curr_dir))
@@ -1052,6 +1055,7 @@ delete(struct key_info key_info, int use_trash)
 		if(!query_user_menu("Permanent deletion",
 				"Are you sure you want to delete files permanently?"))
 			return;
+		curr_stats.confirmed = 1;
 	}
 
 #ifdef ENABLE_COMPATIBILITY_MODE
@@ -1285,6 +1289,8 @@ static void
 cmd_u(struct key_info key_info, struct keys_info *keys_info)
 {
 	int ret;
+
+	curr_stats.confirmed = 0;
 
 	ret = undo_group();
 	if(ret == 0)

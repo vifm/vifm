@@ -20,11 +20,13 @@
 #include "fileops.h"
 #include "macros.h"
 #include "menus.h"
+#include "status.h"
 #include "undo.h"
 #include "utils.h"
 
 #include "ops.h"
 
+static int op_none(void *data, const char *src, const char *dst);
 static int op_remove(void *data, const char *src, const char *dst);
 static int op_delete(void *data, const char *src, const char *dst);
 static int op_copy(void *data, const char *src, const char *dst);
@@ -38,7 +40,7 @@ static int op_rsymlink(void *data, const char *src, const char *dst);
 typedef int (*op_func)(void *data, const char *src, const char *dst);
 
 static op_func op_funcs[] = {
-	NULL,        /* OP_NONE */
+	op_none,     /* OP_NONE */
 	op_remove,   /* OP_REMOVE */
 	op_delete,   /* OP_DELETE */
 	op_copy,     /* OP_COPY */
@@ -57,31 +59,43 @@ static int _gnuc_unused op_funcs_size_guard[
 	(ARRAY_LEN(op_funcs) == OP_COUNT) ? 1 : -1
 ];
 
-static int rm_rf_confirmed;
-
 int
 perform_operation(enum OPS op, void *data, const char *src, const char *dst)
 {
-	if(op == OP_NONE)
-	{
-		rm_rf_confirmed = 0;
-		return 0;
-	}
 	return op_funcs[op](data, src, dst);
+}
+
+static int
+op_none(void *data, const char *src, const char *dst)
+{
+	return 0;
 }
 
 static int
 op_remove(void *data, const char *src, const char *dst)
 {
-	if(cfg.confirm && !rm_rf_confirmed)
+	char *escaped;
+	char cmd[16 + PATH_MAX];
+	int result;
+
+	if(cfg.confirm && !curr_stats.confirmed)
 	{
-		rm_rf_confirmed = query_user_menu("Permanent deletion",
+		curr_stats.confirmed = query_user_menu("Permanent deletion",
 				"Are you sure? If you want to see file names use :undolist! command");
-		if(!rm_rf_confirmed)
+		if(!curr_stats.confirmed)
 			return SKIP_UNDO_REDO_OPERATION;
 	}
 	/* TODO: write code */
-	return 0;
+
+	escaped = escape_filename(src, 0);
+	if(escaped == NULL)
+		return -1;
+
+	snprintf(cmd, sizeof(cmd), "rm -rf %s", escaped);
+	result = system_and_wait_for_errors(cmd);
+
+	free(escaped);
+	return result;
 }
 
 static int
@@ -105,7 +119,6 @@ op_move(void *data, const char *src, const char *dst)
 	char cmd[6 + PATH_MAX*2 + 1];
 	int result;
 
-	/* TODO: write code */
 	escaped_src = escape_filename(src, 0);
 	escaped_dst = escape_filename(dst, 0);
 	if(escaped_src == NULL || escaped_dst == NULL)

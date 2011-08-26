@@ -1024,7 +1024,6 @@ int
 delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 {
 	char buf[8 + PATH_MAX*2];
-	char undo_buf[8 + PATH_MAX*2];
 	int x, y;
 	size_t len;
 	int i;
@@ -1104,8 +1103,8 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	}
 	for(x = 0; x < view->selected_files; x++)
 	{
-		char *esc_file, *esc_full, *esc_dest, *dest;
 		char full_buf[PATH_MAX];
+		int result;
 
 		if(strcmp("../", view->selected_filelist[x]) == 0)
 		{
@@ -1114,48 +1113,34 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 			continue;
 		}
 
-		if(check_link_is_dir(view->selected_filelist[x]))
-			chosp(view->selected_filelist[x]);
+		chosp(view->selected_filelist[x]);
 
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir,
 				view->selected_filelist[x]);
-		esc_full = escape_filename(full_buf, 0);
-		esc_file = escape_filename(view->selected_filelist[x], 0);
-		dest = gen_trash_name(view->selected_filelist[x]);
-		esc_dest = escape_filename(dest, 0);
+		progress_msg("Deleting files", x + 1, view->selected_files);
 		if(cfg.use_trash && use_trash)
 		{
-			snprintf(buf, sizeof(buf), "mv -n %s %s", esc_full, esc_dest);
-			snprintf(undo_buf, sizeof(undo_buf), "mv -n %s %s", esc_dest, esc_full);
+			char *dest;
+			dest = gen_trash_name(view->selected_filelist[x]);
+			result = perform_operation(OP_MOVE, NULL, full_buf, dest);
+			if(result == 0)
+			{
+				add_operation(OP_MOVE, NULL, NULL, full_buf, dest);
+				append_to_register(reg, dest);
+			}
+			free(dest);
 		}
 		else
 		{
-			snprintf(buf, sizeof(buf), "rm -rf %s", esc_full);
-			undo_buf[0] = '\0';
+			result = perform_operation(OP_REMOVE, NULL, full_buf, NULL);
+			if(result == 0)
+				add_operation(OP_REMOVE, NULL, NULL, full_buf, NULL);
 		}
-		free(esc_dest);
-		free(esc_file);
-		free(esc_full);
 
-		progress_msg("Deleting files", x + 1, view->selected_files);
-		if(background_and_wait_for_errors(buf) == 0)
-		{
-			if(cfg.use_trash && use_trash)
-			{
-				/* add_operation(buf, full_buf, dest, undo_buf, dest, full_buf); */
-				append_to_register(reg, dest);
-			}
-			else
-			{
-				/* add_operation(buf, full_buf, NULL, undo_buf, NULL, NULL); */
-			}
+		if(result == 0)
 			y++;
-		}
 		else if(!view->dir_entry[view->list_pos].selected)
-		{
 			view->list_pos = find_file_pos_in_list(view, view->selected_filelist[x]);
-		}
-		free(dest);
 	}
 	free_selected_file_array(view);
 	clean_selected_files(view);
@@ -1859,13 +1844,16 @@ put_next(const char *dest_name, int override)
 			dest_name = name_buf;
 		}
 
+		dst_buf = realloc(dst_buf, strlen(dst_buf) + 1 + strlen(dest_name) + 1);
+		strcat(dst_buf, "/");
+		strcat(dst_buf, dest_name);
+
 		if(override)
 		{
 			struct stat st;
 			if(lstat(p, &st) == 0)
 			{
-				snprintf(do_buf, sizeof(do_buf), "rm -rf %s/%s", dst_buf, dest_name);
-				if(background_and_wait_for_errors(do_buf) != 0)
+				if(perform_operation(OP_REMOVE, NULL, dst_buf, "") != 0)
 				{
 					free(src_buf);
 					free(dst_buf);
@@ -1876,10 +1864,6 @@ put_next(const char *dest_name, int override)
 
 			put_confirm.view->dir_mtime = 0;
 		}
-
-		dst_buf = realloc(dst_buf, strlen(dst_buf) + 1 + strlen(dest_name) + 1);
-		strcat(dst_buf, "/");
-		strcat(dst_buf, dest_name);
 
 		if(put_confirm.link)
 		{
@@ -2095,8 +2079,7 @@ clone_file(FileView* view, const char *filename, const char *path,
 		chosp(clone_name);
 		if(access(clone_name, F_OK) == 0)
 		{
-			snprintf(do_cmd, sizeof(do_cmd), "rm -rf %s", clone_name);
-			if(background_and_wait_for_errors(do_cmd) != 0)
+			if(perform_operation(OP_REMOVE, NULL, clone_name, "") != 0)
 				return;
 		}
 	}
@@ -2966,8 +2949,8 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 			if(access(dst, F_OK) == 0)
 			{
 				char buf[PATH_MAX];
-				snprintf(buf, sizeof(buf), "rm -rf %s/%s", path, dst);
-				background_and_wait_for_errors(buf);
+				snprintf(buf, sizeof(buf), "%s/%s", path, dst);
+				perform_operation(OP_REMOVE, NULL, buf, "");
 			}
 
 			if(mv_file(view->selected_filelist[i], dst, path, 0) != 0)

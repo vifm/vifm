@@ -41,6 +41,7 @@ init_status(void)
 	curr_stats.too_small_term = 0;
 	curr_stats.dirsize_cache = 0;
 	curr_stats.ch_pos = 1;
+	curr_stats.confirmed = 0;
 
 #ifdef HAVE_LIBGTK
 	curr_stats.gtk_available = 0;

@@ -54,6 +54,8 @@ typedef struct
 
 	int ch_pos; /* for :cd, :pushd and 'letter */
 
+	int confirmed;
+
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
 #endif
