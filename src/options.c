@@ -519,6 +519,7 @@ set_reset(struct opt_t *opt)
 			return -1;
 		free(opt->val.str_val);
 		opt->val.str_val = p;
+		opt->handler(OP_MODIFIED, opt->val);
 	}
 	else if(opt->val.int_val != opt->def.int_val)
 	{
