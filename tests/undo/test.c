@@ -9,7 +9,7 @@ void undo_test(void);
 void undolevels_test(void);
 
 static int
-exec_func(const char *cmd)
+exec_func(enum OPS op, void *data, const char *src, const char *dst)
 {
 	return 0;
 }
@@ -23,21 +23,21 @@ setup(void)
 	init_undo_list(exec_func, &undo_levels);
 
 	cmd_group_begin("msg1");
-	ret_code = add_operation("do_msg1", NULL, NULL, "undo_msg1", NULL, NULL);
+	ret_code = add_operation(OP_MOVE, NULL, NULL, "do_msg1", "undo_msg1");
 	assert(ret_code == 0);
 	cmd_group_end();
 
 	cmd_group_begin("msg2");
-	ret_code = add_operation("do_msg2_cmd1", NULL, NULL, "undo_msg2_cmd1", NULL,
-			NULL);
+	ret_code = add_operation(OP_MOVE, NULL, NULL, "do_msg2_cmd1",
+			"undo_msg2_cmd1");
 	assert(ret_code == 0);
-	ret_code = add_operation("do_msg2_cmd2", NULL, NULL, "undo_msg2_cmd2", NULL,
-			NULL);
+	ret_code = add_operation(OP_MOVE, NULL, NULL, "do_msg2_cmd2",
+			"undo_msg2_cmd2");
 	assert(ret_code == 0);
 	cmd_group_end();
 
 	cmd_group_begin("msg3");
-	ret_code = add_operation("do_msg3", NULL, NULL, "undo_msg3", NULL, NULL);
+	ret_code = add_operation(OP_MOVE, NULL, NULL, "do_msg3", "undo_msg3");
 	assert(ret_code == 0);
 	cmd_group_end();
 }
@@ -65,4 +65,5 @@ main(int argc, char **argv)
 	return run_tests(all_tests) == 0;
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

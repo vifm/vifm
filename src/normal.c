@@ -50,7 +50,6 @@
 static int *mode;
 static int last_fast_search_char;
 static int last_fast_search_backward = -1;
-static int rm_rf_confirmed;
 
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
@@ -416,8 +415,6 @@ static void
 cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
 {
 	int ret;
-
-	rm_rf_confirmed = 0;
 
 	ret = redo_group();
 	if(ret == 0)
@@ -1289,8 +1286,6 @@ cmd_u(struct key_info key_info, struct keys_info *keys_info)
 {
 	int ret;
 
-	rm_rf_confirmed = 0;
-
 	ret = undo_group();
 	if(ret == 0)
 	{
@@ -1609,19 +1604,6 @@ selector_s(struct key_info key_info, struct keys_info *keys_info)
 		if(curr_view->dir_entry[x].selected)
 			keys_info->indexes[i++] = x;
 	}
-}
-
-int
-undo_exec(const char *cmd)
-{
-	if(strncmp(cmd, "rm ", 3) == 0 && cfg.confirm && !rm_rf_confirmed)
-	{
-		rm_rf_confirmed = query_user_menu("Permanent deletion",
-				"Are you sure? If you want to see file names use :undolist! command");
-		if(!rm_rf_confirmed)
-			return SKIP_UNDO_REDO_OPERATION;
-	}
-	return background_and_wait_for_errors((char *)cmd);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

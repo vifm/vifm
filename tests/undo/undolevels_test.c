@@ -5,7 +5,7 @@
 #include "../../src/undo.h"
 
 static int
-execute_dummy(const char *cmd)
+execute_dummy(enum OPS op, void *data, const char *src, const char *dst)
 {
 	return 0;
 }
@@ -18,8 +18,8 @@ test_undolevel_change_to_smaller(void)
 	init_undo_list(&execute_dummy, &undo_levels);
 
 	cmd_group_begin("msg4");
-	assert_int_equal(0, add_operation("do_msg4", NULL, NULL, "undo_msg4", NULL,
-			NULL));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg4",
+			"undo_msg4"));
 	cmd_group_end();
 
 	assert_int_equal(0, undo_group());
@@ -36,8 +36,8 @@ test_zero_undolevel(void)
 	init_undo_list(&execute_dummy, &undo_levels);
 
 	cmd_group_begin("msg4");
-	assert_int_equal(0, add_operation("do_msg4", NULL, NULL, "undo_msg4", NULL,
-			NULL));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg4",
+			"undo_msg4"));
 	cmd_group_end();
 
 	assert_int_equal(-1, undo_group());
@@ -51,8 +51,8 @@ test_negative_undolevel(void)
 	init_undo_list(&execute_dummy, &undo_levels);
 
 	cmd_group_begin("msg4");
-	assert_int_equal(0, add_operation("do_msg4", NULL, NULL, "undo_msg4", NULL,
-			NULL));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg4",
+			"undo_msg4"));
 	cmd_group_end();
 
 	assert_int_equal(-1, undo_group());
@@ -62,30 +62,30 @@ static void
 test_too_many_commands(void)
 {
 	cmd_group_begin("msg4");
-	assert_int_equal(0, add_operation("do_msg40", NULL, NULL, "undo_msg40", NULL,
-			NULL));
-	assert_int_equal(0, add_operation("do_msg41", NULL, NULL, "undo_msg41", NULL,
-			NULL));
-	assert_int_equal(0, add_operation("do_msg42", NULL, NULL, "undo_msg42", NULL,
-			NULL));
-	assert_int_equal(0, add_operation("do_msg43", NULL, NULL, "undo_msg43", NULL,
-			NULL));
-	assert_int_equal(0, add_operation("do_msg44", NULL, NULL, "undo_msg44", NULL,
-			NULL));
-	assert_int_equal(0, add_operation("do_msg45", NULL, NULL, "undo_msg45", NULL,
-			NULL));
-	assert_int_equal(0, add_operation("do_msg46", NULL, NULL, "undo_msg46", NULL,
-			NULL));
-	assert_int_equal(0, add_operation("do_msg47", NULL, NULL, "undo_msg47", NULL,
-			NULL));
-	assert_int_equal(0, add_operation("do_msg48", NULL, NULL, "undo_msg48", NULL,
-			NULL));
-	assert_int_equal(0, add_operation("do_msg49", NULL, NULL, "undo_msg49", NULL,
-			NULL));
-	assert_int_equal(0, add_operation("do_msg4a", NULL, NULL, "undo_msg4a", NULL,
-			NULL));
-	assert_int_equal(0, add_operation("do_msg4b", NULL, NULL, "undo_msg4b", NULL,
-			NULL));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg40",
+			"undo_msg40"));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg41",
+			"undo_msg41"));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg42",
+				"undo_msg42"));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg43",
+				"undo_msg43"));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg44",
+				"undo_msg44"));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg45",
+				"undo_msg45"));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg46",
+				"undo_msg46"));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg47",
+				"undo_msg47"));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg48",
+				"undo_msg48"));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg49",
+				"undo_msg49"));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg4a",
+				"undo_msg4a"));
+	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg4b",
+				"undo_msg4b"));
 	cmd_group_end();
 }
 
@@ -102,4 +102,5 @@ undolevels_test(void)
 	test_fixture_end();
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

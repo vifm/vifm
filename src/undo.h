@@ -19,6 +19,8 @@
 #ifndef __UNDO_H__
 #define __UNDO_H__
 
+#include "ops.h"
+
 enum
 {
 	COMMAND_GROUP_INFO_LEN = 320,
@@ -26,12 +28,15 @@ enum
 	SKIP_UNDO_REDO_OPERATION = -8192,
 };
 
+typedef int (*perform_func)(enum OPS op, void *data, const char *src,
+		const char *dst);
+
 /*
  * Won't call reset_undo_list, so this function could be called multiple
  * times.
  * exec_func can't be NULL and should return non-zero on error.
  */
-void init_undo_list(int (*exec_func)(const char *), const int* max_levels);
+void init_undo_list(perform_func exec_func, const int* max_levels);
 
 /*
  * Frees all allocated memory
@@ -58,8 +63,8 @@ char * replace_group_msg(const char *msg);
 /*
  * Returns 0 on success
  */
-int add_operation(const char *do_cmd, const char *do_src, const char *do_dst,
-		const char *undo_cmd, const char *undo_src, const char *undo_dst);
+int add_operation(enum OPS op, void *do_data, void *undo_data, const char *buf1,
+		const char *buf2);
 
 /*
  * Closes current group of commands

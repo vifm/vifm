@@ -2085,7 +2085,7 @@ emark_cmd(const struct cmd_info *cmd_info)
 	snprintf(buf, sizeof(buf), "in %s: !%s",
 			replace_home_part(curr_view->curr_dir), cmd_info->raw_args);
 	cmd_group_begin(buf);
-	add_operation(com + i, NULL, NULL, "", NULL, NULL);
+	/* add_operation(com + i, NULL, NULL, "", NULL, NULL); */
 	cmd_group_end();
 
 	return 0;
@@ -3462,7 +3462,7 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 	if(external)
 	{
 		cmd_group_continue();
-		add_operation(expanded_com, NULL, NULL, "", NULL, NULL);
+		/* add_operation(expanded_com, NULL, NULL, "", NULL, NULL); */
 		cmd_group_end();
 	}
 

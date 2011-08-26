@@ -1,5 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
+ * Copyright (C) 2011 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,28 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef __NORMAL_H__
-#define __NORMAL_H__
+#ifndef __OPS_H__
+#define __OPS_H__
 
-#include "keys.h"
+enum OPS {
+	OP_NONE,
+	OP_REMOVE,   /* rm -rf */
+	OP_DELETE,   /* to trash, not OP_MOVE because of (registers and) names */
+	OP_COPY,     /* copy and clone */
+	OP_MOVE,     /* move, rename and substitute */
+	OP_MOVETMP0, /* multiple files rename */
+	OP_MOVETMP1, /* multiple files rename */
+	OP_MOVETMP2, /* multiple files rename */
+	OP_CHOWN,
+	OP_CHGRP,
+	OP_CHMOD,
+	OP_ASYMLINK,
+	OP_RSYMLINK,
+	OP_COUNT
+};
 
-void init_normal_mode(int *key_mode);
-void normal_cmd_zb(struct key_info, struct keys_info *);
-void normal_cmd_zt(struct key_info, struct keys_info *);
-void normal_cmd_zz(struct key_info, struct keys_info *);
-int ffind(int ch, int backward, int wrap);
+int perform_operation(enum OPS op, void *data, const char *src,
+		const char *dst);
 
 #endif
 

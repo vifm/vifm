@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "config.h"
+#include "ops.h"
 #include "registers.h"
 #include "utils.h"
 
@@ -40,21 +41,75 @@ struct group_t {
 };
 
 struct op_t {
-	char *cmd;
-	char *src;
-	char *dst;
+	enum OPS op;
+	const char *src;        /* NULL, buf1 or buf2 */
+	const char *dst;        /* NULL, buf1 or buf2 */
+	void *data;             /* for uid_t, gid_t and mode_t */
+	const char *exists;     /* NULL, buf1 or buf2 */
+	const char *dont_exist; /* NULL, buf1 or buf2 */
 };
 
 struct cmd_t {
+	char *buf1;
+	char *buf2;
 	struct op_t do_op;
 	struct op_t undo_op;
-	struct group_t *group;
 
+	struct group_t *group;
 	struct cmd_t *prev;
 	struct cmd_t *next;
 };
 
-static int (*do_func)(const char*);
+static enum OPS undo_op[OP_COUNT] = {
+	OP_NONE,     /* OP_NONE */
+	OP_NONE,     /* OP_REMOVE */
+	OP_MOVE,     /* OP_DELETE */
+	OP_REMOVE,   /* OP_COPY   */
+	OP_MOVE,     /* OP_MOVE */
+	OP_MOVETMP0, /* OP_MOVETMP0 */
+	OP_MOVETMP1, /* OP_MOVETMP1 */
+	OP_MOVETMP2, /* OP_MOVETMP2 */
+	OP_CHOWN,    /* OP_CHOWN */
+	OP_CHGRP,    /* OP_CHGRP */
+	OP_CHMOD,    /* OP_CHMOD */
+	OP_REMOVE,   /* OP_ASYMLINK */
+	OP_REMOVE,   /* OP_RSYMLINK */
+};
+
+static enum {
+	OPER_1ST,
+	OPER_2ND,
+	OPER_NON,
+} opers[OP_COUNT][8] = {
+	{ OPER_NON, OPER_NON, OPER_NON, OPER_NON,    /* do   OP_NONE */
+		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_NON,    /* do   OP_REMOVE */
+		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE   */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_DELETE */
+		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVE   */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_COPY   */
+		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_MOVE */
+		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVE */
+	{ OPER_1ST, OPER_NON, OPER_2ND, OPER_NON,    /* do   OP_MOVETMP0 */
+		OPER_2ND, OPER_1ST, OPER_2ND, OPER_NON, }, /* undo OP_MOVETMP0 */
+	{ OPER_1ST, OPER_2ND, OPER_2ND, OPER_NON,    /* do   OP_MOVETMP1 */
+		OPER_2ND, OPER_1ST, OPER_2ND, OPER_NON, }, /* undo OP_MOVETMP1 */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_NON,    /* do   OP_MOVETMP2 */
+		OPER_2ND, OPER_1ST, OPER_1ST, OPER_NON, }, /* undo OP_MOVETMP2 */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHOWN */
+		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHOWN */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHGRP */
+		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHGRP */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHMOD */
+		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHMOD */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_ASYMLINK */
+		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE   */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_RSYMLINK */
+		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE   */
+};
+
+static perform_func do_func;
 static const int *undo_levels;
 
 static struct cmd_t cmds = {
@@ -71,16 +126,22 @@ static char *group_msg;
 
 static int command_count;
 
+static void init_cmd(struct cmd_t *cmd, enum OPS op, void *do_data,
+		void *undo_data);
+static void init_entry(struct cmd_t *cmd, const char **e, int type);
 static void remove_cmd(struct cmd_t *cmd);
 static int is_undo_group_possible(void);
 static int is_redo_group_possible(void);
 static int is_op_possible(const struct op_t *op);
 static void change_filename_in_trash(struct cmd_t *cmd, const char *filename);
-static char **fill_undolist_detail(char **list);
+static void update_entry(struct cmd_t *cmd, const char **e, const char *old,
+		const char *new);
+static char ** fill_undolist_detail(char **list);
+static const char * get_op_desc(struct op_t op);
 static char **fill_undolist_nondetail(char **list);
 
 void
-init_undo_list(int (*exec_func)(const char *), const int* max_levels)
+init_undo_list(perform_func exec_func, const int* max_levels)
 {
 	assert(exec_func != NULL);
 
@@ -141,8 +202,8 @@ replace_group_msg(const char *msg)
 }
 
 int
-add_operation(const char *do_cmd, const char *do_src, const char *do_dst,
-		const char *undo_cmd, const char *undo_src, const char *undo_dst)
+add_operation(enum OPS op, void *do_data, void *undo_data, const char *buf1,
+		const char *buf2)
 {
 	int mem_error;
 	struct cmd_t *cmd;
@@ -166,8 +227,9 @@ add_operation(const char *do_cmd, const char *do_src, const char *do_dst,
 	if(cmd == NULL)
 		return -1;
 
-	cmd->do_op.cmd = strdup(do_cmd);
-	cmd->undo_op.cmd = strdup(undo_cmd);
+	cmd->buf1 = strdup(buf1);
+	cmd->buf2 = strdup(buf2);
+	init_cmd(cmd, op, do_data, undo_data);
 	if(last_group != NULL)
 	{
 		cmd->group = last_group;
@@ -180,16 +242,7 @@ add_operation(const char *do_cmd, const char *do_src, const char *do_dst,
 		cmd->group->can_undone = 1;
 		cmd->group->incomplete = 0;
 	}
-	mem_error = cmd->do_op.cmd == NULL || cmd->undo_op.cmd == NULL ||
-			cmd->group == NULL || cmd->group->msg == NULL;
-	if(do_src != NULL && (cmd->do_op.src = strdup(do_src)) == NULL)
-		mem_error = 1;
-	if(do_dst != NULL && (cmd->do_op.dst = strdup(do_dst)) == NULL)
-		mem_error = 1;
-	if(undo_src != NULL && (cmd->undo_op.src = strdup(undo_src)) == NULL)
-		mem_error = 1;
-	if(undo_dst != NULL && (cmd->undo_op.dst = strdup(undo_dst)) == NULL)
-		mem_error = 1;
+	mem_error = cmd->buf1 == NULL || cmd->buf2 == NULL;
 	if(mem_error)
 	{
 		remove_cmd(cmd);
@@ -197,7 +250,7 @@ add_operation(const char *do_cmd, const char *do_src, const char *do_dst,
 	}
 	last_group = cmd->group;
 
-	if(undo_cmd[0] == '\0')
+	if(undo_op[op] == OP_NONE)
 		cmd->group->can_undone = 0;
 
 	cmd->prev = current;
@@ -206,6 +259,34 @@ add_operation(const char *do_cmd, const char *do_src, const char *do_dst,
 	cmds.prev = cmd;
 
 	return 0;
+}
+
+static void
+init_cmd(struct cmd_t *cmd, enum OPS op, void *do_data, void *undo_data)
+{
+	cmd->do_op.op = op;
+	cmd->do_op.data = do_data;
+	cmd->undo_op.op = undo_op[op];
+	cmd->undo_op.data = undo_data;
+	init_entry(cmd, &cmd->do_op.src, opers[op][0]);
+	init_entry(cmd, &cmd->do_op.dst, opers[op][1]);
+	init_entry(cmd, &cmd->do_op.exists, opers[op][2]);
+	init_entry(cmd, &cmd->do_op.dont_exist, opers[op][3]);
+	init_entry(cmd, &cmd->undo_op.src, opers[op][4]);
+	init_entry(cmd, &cmd->undo_op.dst, opers[op][5]);
+	init_entry(cmd, &cmd->undo_op.exists, opers[op][6]);
+	init_entry(cmd, &cmd->undo_op.dont_exist, opers[op][7]);
+}
+
+static void
+init_entry(struct cmd_t *cmd, const char **e, int type)
+{
+	if(type == OPER_NON)
+		*e = NULL;
+	else if(type == OPER_1ST)
+		*e = cmd->buf1;
+	else
+		*e = cmd->buf2;
 }
 
 static void
@@ -244,12 +325,8 @@ remove_cmd(struct cmd_t *cmd)
 	{
 		cmd->group->incomplete = 1;
 	}
-	free(cmd->do_op.cmd);
-	free(cmd->do_op.src);
-	free(cmd->do_op.dst);
-	free(cmd->undo_op.cmd);
-	free(cmd->undo_op.src);
-	free(cmd->undo_op.dst);
+	free(cmd->buf1);
+	free(cmd->buf2);
 
 	free(cmd);
 
@@ -299,11 +376,13 @@ undo_group(void)
 	current->group->balance--;
 
 	skip = 0;
+	do_func(OP_NONE, NULL, NULL, NULL);
 	do
 	{
 		if(!skip)
 		{
-			int err = do_func(current->undo_op.cmd);
+			int err = do_func(current->undo_op.op, current->undo_op.data,
+					current->undo_op.src, current->undo_op.dst);
 			if(err == SKIP_UNDO_REDO_OPERATION)
 			{
 				skip = 1;
@@ -371,12 +450,14 @@ redo_group(void)
 	current->next->group->balance++;
 
 	skip = 0;
+	do_func(OP_NONE, NULL, NULL, NULL);
 	do
 	{
 		current = current->next;
 		if(!skip)
 		{
-			int err = do_func(current->do_op.cmd);
+			int err = do_func(current->do_op.op, current->do_op.data,
+					current->do_op.src, current->do_op.dst);
 			if(err == SKIP_UNDO_REDO_OPERATION)
 			{
 				current->next->group->balance--;
@@ -426,9 +507,13 @@ is_op_possible(const struct op_t *op)
 {
 	struct stat st;
 
-	if(op->src != NULL && lstat(op->src, &st) != 0)
+#ifdef TEST
+	if(op->op == OP_MOVE)
+		return 1;
+#endif
+	if(op->exists != NULL && lstat(op->exists, &st) != 0)
 		return 0;
-	if(op->dst != NULL && lstat(op->dst, &st) == 0)
+	if(op->dont_exist != NULL && lstat(op->dont_exist, &st) == 0)
 	{
 		if(strncmp(op->dst, cfg.trash_dir, trash_dir_len) == 0)
 			return -1;
@@ -440,52 +525,37 @@ is_op_possible(const struct op_t *op)
 static void
 change_filename_in_trash(struct cmd_t *cmd, const char *filename)
 {
-	char *escaped;
 	char *p;
+	int i;
 	char buf[PATH_MAX];
-	int i = -1;
+	char *old;
 
 	p = strchr(filename + trash_dir_len, '_') + 1;
 
+	i = -1;
 	do
 		snprintf(buf, sizeof(buf), "%s/%03i_%s", cfg.trash_dir, ++i, p);
 	while(access(buf, F_OK) == 0);
 	rename_in_registers(filename, buf);
-	escaped = escape_filename(buf, 0);
 
-	p = strstr(cmd->do_op.cmd, cfg.escaped_trash_dir);
-	if(p != NULL)
-	{
-		*p = '\0';
-		snprintf(buf, sizeof(buf), "%s%s%s", cmd->do_op.cmd, escaped,
-				p + strlen(filename));
-		free(cmd->do_op.cmd);
-		cmd->do_op.cmd = strdup(buf);
-	}
+	old = cmd->buf2;
+	free(cmd->buf2);
+	cmd->buf2 = strdup(buf);
 
-	p = strstr(cmd->undo_op.cmd, cfg.escaped_trash_dir);
-	if(p != NULL)
-	{
-		*p = '\0';
-		snprintf(buf, sizeof(buf), "%s%s%s", cmd->undo_op.cmd, escaped,
-				p + strlen(filename));
-		free(cmd->undo_op.cmd);
-		cmd->undo_op.cmd = strdup(buf);
-	}
+	update_entry(cmd, &cmd->do_op.src, old, cmd->buf2);
+	update_entry(cmd, &cmd->do_op.dst, old, cmd->buf2);
+	update_entry(cmd, &cmd->do_op.exists, old, cmd->buf2);
+	update_entry(cmd, &cmd->do_op.dont_exist, old, cmd->buf2);
+	update_entry(cmd, &cmd->undo_op.src, old, cmd->buf2);
+	update_entry(cmd, &cmd->undo_op.dst, old, cmd->buf2);
+	update_entry(cmd, &cmd->undo_op.exists, old, cmd->buf2);
+	update_entry(cmd, &cmd->undo_op.dont_exist, old, cmd->buf2);
+}
 
-	snprintf(buf, sizeof(buf), "%s/%03i%s", cfg.trash_dir, ++i, filename);
-	if(strncmp(cmd->do_op.dst, cfg.trash_dir, trash_dir_len) == 0)
-	{
-		free(cmd->do_op.dst);
-		cmd->do_op.dst = strdup(buf);
-	}
-	if(strncmp(cmd->undo_op.dst, cfg.trash_dir, trash_dir_len) == 0)
-	{
-		free(cmd->undo_op.dst);
-		cmd->undo_op.dst = strdup(buf);
-	}
-
-	free(escaped);
+static void
+update_entry(struct cmd_t *cmd, const char **e, const char *old,
+		const char *new)
+{
 }
 
 char **
@@ -539,14 +609,18 @@ fill_undolist_detail(char **list)
 		list++;
 		do
 		{
-			if((*list = malloc(4 + strlen(cmd->do_op.cmd) + 1)) == NULL)
+			const char *p;
+
+			p = get_op_desc(cmd->do_op);
+			if((*list = malloc(4 + strlen(p) + 1)) == NULL)
 				return list;
-			sprintf(*list, "do: %s", cmd->do_op.cmd);
+			sprintf(*list, "do: %s", p);
 			list++;
 
-			if((*list = malloc(6 + strlen(cmd->undo_op.cmd) + 1)) == NULL)
+			p = get_op_desc(cmd->undo_op);
+			if((*list = malloc(6 + strlen(p) + 1)) == NULL)
 				return list;
-			sprintf(*list, "undo: %s", cmd->undo_op.cmd);
+			sprintf(*list, "undo: %s", p);
 			list++;
 
 			cmd = cmd->prev;
@@ -556,6 +630,54 @@ fill_undolist_detail(char **list)
 	}
 
 	return list;
+}
+
+static const char *
+get_op_desc(struct op_t op)
+{
+	static char buf[64 + 2*PATH_MAX] = "";
+	/* TODO: write code */
+	switch(op.op)
+	{
+		case OP_NONE:
+			strcpy(buf, "<no operation>");
+			break;
+		case OP_REMOVE:
+			snprintf(buf, sizeof(buf), "del %s", op.src);
+			break;
+		case OP_DELETE:
+			snprintf(buf, sizeof(buf), "rm %s", op.src);
+			break;
+		case OP_COPY:
+			snprintf(buf, sizeof(buf), "cp %s to %s", op.src, op.dst);
+			break;
+		case OP_MOVE:
+		case OP_MOVETMP0:
+		case OP_MOVETMP1:
+		case OP_MOVETMP2:
+			snprintf(buf, sizeof(buf), "mv %s to %s", op.src, op.dst);
+			break;
+		case OP_CHOWN:
+			snprintf(buf, sizeof(buf), "chown %ld %s", (long)op.data, op.src);
+			break;
+		case OP_CHGRP:
+			snprintf(buf, sizeof(buf), "chown :%ld %s", (long)op.data, op.src);
+			break;
+		case OP_CHMOD:
+			snprintf(buf, sizeof(buf), "chmod 0%lo %s", (long)op.data, op.src);
+			break;
+		case OP_ASYMLINK:
+			snprintf(buf, sizeof(buf), "al %s to %s", op.src, op.dst);
+			break;
+		case OP_RSYMLINK:
+			snprintf(buf, sizeof(buf), "rl %s to %s", op.src, op.dst);
+			break;
+		default:
+			strcpy(buf, "ERROR, update get_op_desc() function");
+			break;
+	}
+
+	return buf;
 }
 
 static char **
@@ -614,14 +736,14 @@ clean_cmds_with_trash(void)
 
 		if(cur->group->balance < 0)
 		{
-			if(cur->do_op.src != NULL &&
-					strncmp(cur->do_op.src, cfg.trash_dir, trash_dir_len) == 0)
+			if(cur->do_op.exists != NULL &&
+					strncmp(cur->do_op.exists, cfg.trash_dir, trash_dir_len) == 0)
 				remove_cmd(cur);
 		}
 		else
 		{
-			if(cur->undo_op.src != NULL &&
-					strncmp(cur->undo_op.src, cfg.trash_dir, trash_dir_len) == 0)
+			if(cur->undo_op.exists != NULL &&
+					strncmp(cur->undo_op.exists, cfg.trash_dir, trash_dir_len) == 0)
 				remove_cmd(cur);
 		}
 		cur = prev;

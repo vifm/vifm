@@ -43,6 +43,7 @@
 #include "menus.h"
 #include "modes.h"
 #include "normal.h"
+#include "ops.h"
 #include "opt_handlers.h"
 #include "registers.h"
 #include "signals.h"
@@ -336,7 +337,7 @@ main(int argc, char *argv[])
 
 	init_modes();
 	init_option_handlers();
-	init_undo_list(&undo_exec, &cfg.undo_levels);
+	init_undo_list(&perform_operation, &cfg.undo_levels);
 	load_local_options(curr_view);
 
 	curr_stats.vifm_started = 1;

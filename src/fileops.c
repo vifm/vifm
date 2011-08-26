@@ -1141,12 +1141,12 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		{
 			if(cfg.use_trash && use_trash)
 			{
-				add_operation(buf, full_buf, dest, undo_buf, dest, full_buf);
+				/* add_operation(buf, full_buf, dest, undo_buf, dest, full_buf); */
 				append_to_register(reg, dest);
 			}
 			else
 			{
-				add_operation(buf, full_buf, NULL, undo_buf, NULL, NULL);
+				/* add_operation(buf, full_buf, NULL, undo_buf, NULL, NULL); */
 			}
 			y++;
 		}
@@ -1207,15 +1207,15 @@ mv_file(const char *src, const char *dst, const char *path, int tmpfile_num)
 	if(result == 0)
 	{
 		if(tmpfile_num == 0)
-			add_operation(do_buf, full_src, full_dst, undo_buf, full_dst,
-					full_src);
+			;/* add_operation(do_buf, full_src, full_dst, undo_buf, full_dst, */
+			/* 		full_src); */
 		else if(tmpfile_num == -1)
-			add_operation(do_buf, full_src, NULL, undo_buf, full_dst,
-					full_src);
+			;/* add_operation(do_buf, full_src, NULL, undo_buf, full_dst, */
+			/* 		full_src); */
 		else if(tmpfile_num == 1)
-			add_operation(do_buf, NULL, NULL, undo_buf, full_dst, NULL);
+			;/* add_operation(do_buf, NULL, NULL, undo_buf, full_dst, NULL); */
 		else if(tmpfile_num == 2)
-			add_operation(do_buf, full_src, NULL, undo_buf, full_src, NULL);
+			;/* add_operation(do_buf, full_src, NULL, undo_buf, full_src, NULL); */
 	}
 	return result;
 }
@@ -1671,7 +1671,7 @@ change_owner_cb(const char *new_owner)
 	snprintf(buf, sizeof(buf), "chown in %s: %s",
 			replace_home_part(curr_view->curr_dir), filename);
 	cmd_group_begin(buf);
-	add_operation(command, full, NULL, undo_buf, full, NULL);
+	/* add_operation(command, full, NULL, undo_buf, full, NULL); */
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
@@ -1711,7 +1711,7 @@ change_group_cb(const char *new_group)
 	snprintf(buf, sizeof(buf), "chgrp in %s: %s",
 			replace_home_part(curr_view->curr_dir), filename);
 	cmd_group_begin(buf);
-	add_operation(command, full, NULL, undo_buf, full, NULL);
+	/* add_operation(command, full, NULL, undo_buf, full, NULL); */
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
@@ -1761,7 +1761,7 @@ change_link_cb(const char *new_target)
 	chosp(undo_cmd);
 	free(esc_target);
 	if(background_and_wait_for_errors(do_cmd) == 0)
-		add_operation(do_cmd, buf, NULL, undo_cmd, buf, NULL);
+		;/* add_operation(do_cmd, buf, NULL, undo_cmd, buf, NULL); */
 
 	esc_target = escape_filename(new_target, 0);
 	snprintf(do_cmd, sizeof(do_cmd), "ln -s -f %s %s", esc_target, esc_file);
@@ -1770,7 +1770,7 @@ change_link_cb(const char *new_target)
 	snprintf(undo_cmd, sizeof(undo_cmd), "rm -rf %s", esc_file);
 	chosp(undo_cmd);
 	if(background_and_wait_for_errors(do_cmd) == 0)
-		add_operation(do_cmd, buf, NULL, undo_cmd, buf, NULL);
+		;/* add_operation(do_cmd, buf, NULL, undo_cmd, buf, NULL); */
 
 	free(esc_file);
 
@@ -1945,9 +1945,9 @@ put_next(const char *dest_name, int override)
 			replace_group_msg(msg);
 
 			if(move)
-				add_operation(do_buf, filename, dst_full, undo_buf, dst_full, filename);
+				;/* add_operation(do_buf, filename, dst_full, undo_buf, dst_full, filename); */
 			else
-				add_operation(do_buf, filename, dst_full, undo_buf, dst_full, NULL);
+				;/* add_operation(do_buf, filename, dst_full, undo_buf, dst_full, NULL); */
 
 			cmd_group_end();
 			put_confirm.y++;
@@ -2130,7 +2130,7 @@ clone_file(FileView* view, const char *filename, const char *path,
 	free(escaped);
 
 	if(background_and_wait_for_errors(do_cmd) == 0)
-		add_operation(do_cmd, filename, clone_name, undo_cmd, clone_name, NULL);
+		;/* add_operation(do_cmd, filename, clone_name, undo_cmd, clone_name, NULL); */
 }
 
 static int
@@ -2893,7 +2893,7 @@ cp_file(const char *src_dir, const char *dst_dir, const char *src,
 
 	result = system_and_wait_for_errors(do_buf);
 	if(result == 0)
-		add_operation(do_buf, full_src, full_dst, undo_buf, full_dst, NULL);
+		;/* add_operation(do_buf, full_src, full_dst, undo_buf, full_dst, NULL); */
 	return result;
 }
 
