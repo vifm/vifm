@@ -2051,10 +2051,8 @@ static void
 clone_file(FileView* view, const char *filename, const char *path,
 		const char *clone)
 {
-	char do_cmd[PATH_MAX + NAME_MAX*2 + 4];
-	char undo_cmd[3 + PATH_MAX + 6 + 1];
+	char full[PATH_MAX];
 	char clone_name[PATH_MAX];
-	char *escaped, *escaped_clone;
 	
 	if(strcmp(filename, "./") == 0)
 		return;
@@ -2084,18 +2082,11 @@ clone_file(FileView* view, const char *filename, const char *path,
 		}
 	}
 
-	snprintf(do_cmd, sizeof(do_cmd), "%s/%s", view->curr_dir, filename);
-	escaped = escape_filename(do_cmd, 0);
-	chosp(escaped);
-	escaped_clone = escape_filename(clone_name, 0);
-	snprintf(do_cmd, sizeof(do_cmd), "cp -nR --preserve=mode,timestamps %s %s",
-			escaped, escaped_clone);
-	snprintf(undo_cmd, sizeof(undo_cmd), "rm -rf %s", escaped_clone);
-	free(escaped_clone);
-	free(escaped);
+	snprintf(full, sizeof(full), "%s/%s", view->curr_dir, filename);
+	chosp(full);
 
-	if(background_and_wait_for_errors(do_cmd) == 0)
-		;/* add_operation(do_cmd, filename, clone_name, undo_cmd, clone_name, NULL); */
+	if(perform_operation(OP_COPY, NULL, full, clone_name) == 0)
+		add_operation(OP_COPY, NULL, NULL, full, clone_name);
 }
 
 static int

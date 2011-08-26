@@ -641,10 +641,10 @@ get_op_desc(struct op_t op)
 			strcpy(buf, "<no operation>");
 			break;
 		case OP_REMOVE:
-			snprintf(buf, sizeof(buf), "del %s", op.src);
+			snprintf(buf, sizeof(buf), "rm %s", op.src);
 			break;
 		case OP_DELETE:
-			snprintf(buf, sizeof(buf), "rm %s", op.src);
+			snprintf(buf, sizeof(buf), "del %s", op.src);
 			break;
 		case OP_COPY:
 			snprintf(buf, sizeof(buf), "cp %s to %s", op.src, op.dst);
