@@ -163,14 +163,29 @@ op_move(void *data, const char *src, const char *dst)
 static int
 op_chown(void *data, const char *src, const char *dst)
 {
-	/* TODO: write code */
-	return 0;
+	char cmd[10 + 32 + PATH_MAX];
+	char *escaped;
+	uid_t uid = (uid_t)(long)data;
+
+	escaped = escape_filename(src, 0);
+	snprintf(cmd, sizeof(cmd), "chown -fR %u %s", uid, escaped);
+	free(escaped);
+
+	return system_and_wait_for_errors(cmd);
 }
 
 static int
 op_chgrp(void *data, const char *src, const char *dst)
 {
-	/* TODO: write code */
+	char cmd[10 + 32 + PATH_MAX];
+	char *escaped;
+	gid_t gid = (gid_t)(long)data;
+
+	escaped = escape_filename(src, 0);
+	snprintf(cmd, sizeof(cmd), "chown -fR :%u %s", gid, escaped);
+	free(escaped);
+
+	return system_and_wait_for_errors(cmd);
 	return 0;
 }
 
@@ -203,7 +218,6 @@ op_symlink(void *data, const char *src, const char *dst)
 	free(escaped_dst);
 	free(escaped_src);
 	return result;
-	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

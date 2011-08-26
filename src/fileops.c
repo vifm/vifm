@@ -24,6 +24,8 @@
 
 #include <dirent.h>
 #include <fcntl.h>
+#include <grp.h>
+#include <pwd.h>
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* waitpid() */
 #include <sys/wait.h> /* waitpid() */
@@ -1616,29 +1618,36 @@ change_owner_cb(const char *new_owner)
 {
 	char *filename;
 	char buf[8 + NAME_MAX + 1];
-	char full[PATH_MAX];
-	char command[10 + 32 + PATH_MAX];
-	char undo_buf[10 + 32 + PATH_MAX];
-	char *escaped;
+	uid_t uid;
 
 	if(new_owner == NULL || new_owner[0] == '\0')
 		return;
 
-	filename = get_current_file_name(curr_view);
-	snprintf(full, sizeof(full), "%s/%s", curr_view->curr_dir, filename);
-	escaped = escape_filename(full, 0);
-	snprintf(command, sizeof(command), "chown -fR %s %s", new_owner, escaped);
-	snprintf(undo_buf, sizeof(undo_buf), "chown -fR %d %s",
-			curr_view->dir_entry[curr_view->list_pos].gid, escaped);
-	free(escaped);
+	if(isdigit(new_owner[0]))
+	{
+		uid = atoi(new_owner);
+	}
+	else
+	{
+		struct passwd *p = getpwnam(new_owner);
+		if(p == NULL)
+		{
+			status_bar_messagef("Invalid user name: \"%s\"", new_owner);
+			curr_stats.save_msg = 1;
+			return;
+		}
+		uid = p->pw_uid;
+	}
 
-	if(system_and_wait_for_errors(command) != 0)
-		return;
+	filename = get_current_file_name(curr_view);
 
 	snprintf(buf, sizeof(buf), "chown in %s: %s",
 			replace_home_part(curr_view->curr_dir), filename);
 	cmd_group_begin(buf);
-	/* add_operation(command, full, NULL, undo_buf, full, NULL); */
+	if(perform_operation(OP_CHOWN, (void *)(long)uid, filename, NULL) == 0)
+		add_operation(OP_CHOWN, (void *)(long)uid,
+				(void *)(long)curr_view->dir_entry[curr_view->list_pos].uid, filename,
+				"");
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
@@ -1656,29 +1665,36 @@ change_group_cb(const char *new_group)
 {
 	char *filename;
 	char buf[8 + NAME_MAX + 1];
-	char full[PATH_MAX];
-	char command[10 + 32 + PATH_MAX];
-	char undo_buf[10 + 32 + PATH_MAX];
-	char *escaped;
+	uid_t gid;
 
 	if(new_group == NULL || new_group[0] == '\0')
 		return;
 
-	filename = get_current_file_name(curr_view);
-	snprintf(full, sizeof(full), "%s/%s", curr_view->curr_dir, filename);
-	escaped = escape_filename(full, 0);
-	snprintf(command, sizeof(command), "chown -fR :%s %s", new_group, escaped);
-	snprintf(undo_buf, sizeof(undo_buf), "chown -fR :%d %s",
-			curr_view->dir_entry[curr_view->list_pos].uid, escaped);
-	free(escaped);
+	if(isdigit(new_group[0]))
+	{
+		gid = atoi(new_group);
+	}
+	else
+	{
+		struct group *g = getgrnam(new_group);
+		if(g == NULL)
+		{
+			status_bar_messagef("Invalid group name: \"%s\"", new_group);
+			curr_stats.save_msg = 1;
+			return;
+		}
+		gid = g->gr_gid;
+	}
 
-	if(system_and_wait_for_errors(command) != 0)
-		return;
+	filename = get_current_file_name(curr_view);
 
 	snprintf(buf, sizeof(buf), "chgrp in %s: %s",
 			replace_home_part(curr_view->curr_dir), filename);
 	cmd_group_begin(buf);
-	/* add_operation(command, full, NULL, undo_buf, full, NULL); */
+	if(perform_operation(OP_CHGRP, (void *)(long)gid, filename, NULL) == 0)
+		add_operation(OP_CHGRP, (void *)(long)gid,
+				(void *)(long)curr_view->dir_entry[curr_view->list_pos].gid, filename,
+				"");
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
