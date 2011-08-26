@@ -46,6 +46,7 @@
 #include "fileops.h"
 #include "filetype.h"
 #include "menus.h"
+#include "ops.h"
 #include "registers.h"
 #include "status.h"
 #include "ui.h"
@@ -1173,9 +1174,7 @@ static int
 mv_file(const char *src, const char *dst, const char *path, int tmpfile_num)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
-	char do_buf[6 + PATH_MAX*2 + 1];
-	char undo_buf[6 + PATH_MAX*2 + 1];
-	char *escaped_src, *escaped_dst;
+	int op;
 	int result;
 
 	snprintf(full_src, sizeof(full_src), "%s/%s", curr_view->curr_dir, src);
@@ -1186,37 +1185,20 @@ mv_file(const char *src, const char *dst, const char *path, int tmpfile_num)
 	if(strcmp(full_src, full_dst) == 0)
 		return 0;
 
-	escaped_src = escape_filename(full_src, 0);
-	escaped_dst = escape_filename(full_dst, 0);
+	if(tmpfile_num == 0)
+		op = OP_MOVE;
+	else if(tmpfile_num == -1)
+		op = OP_MOVETMP0;
+	else if(tmpfile_num == 1)
+		op = OP_MOVETMP1;
+	else if(tmpfile_num == 2)
+		op = OP_MOVETMP2;
+	else
+		op = OP_NONE;
 
-	if(escaped_src == NULL || escaped_dst == NULL)
-	{
-		free(escaped_src);
-		free(escaped_dst);
-		return -1;
-	}
-
-	snprintf(do_buf, sizeof(do_buf), "mv -n %s %s", escaped_src,
-			escaped_dst);
-	snprintf(undo_buf, sizeof(do_buf), "mv -n %s %s", escaped_dst,
-			escaped_src);
-	free(escaped_src);
-	free(escaped_dst);
-
-	result = system_and_wait_for_errors(do_buf);
+	result = perform_operation(op, NULL, full_src, full_dst);
 	if(result == 0)
-	{
-		if(tmpfile_num == 0)
-			;/* add_operation(do_buf, full_src, full_dst, undo_buf, full_dst, */
-			/* 		full_src); */
-		else if(tmpfile_num == -1)
-			;/* add_operation(do_buf, full_src, NULL, undo_buf, full_dst, */
-			/* 		full_src); */
-		else if(tmpfile_num == 1)
-			;/* add_operation(do_buf, NULL, NULL, undo_buf, full_dst, NULL); */
-		else if(tmpfile_num == 2)
-			;/* add_operation(do_buf, full_src, NULL, undo_buf, full_src, NULL); */
-	}
+		add_operation(op, NULL, NULL, full_src, full_dst);
 	return result;
 }
 

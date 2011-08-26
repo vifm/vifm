@@ -17,9 +17,11 @@
  */
 
 #include "config.h"
+#include "fileops.h"
 #include "macros.h"
 #include "menus.h"
 #include "undo.h"
+#include "utils.h"
 
 #include "ops.h"
 
@@ -99,8 +101,26 @@ op_copy(void *data, const char *src, const char *dst)
 static int
 op_move(void *data, const char *src, const char *dst)
 {
+	char *escaped_src, *escaped_dst;
+	char cmd[6 + PATH_MAX*2 + 1];
+	int result;
+
 	/* TODO: write code */
-	return 0;
+	escaped_src = escape_filename(src, 0);
+	escaped_dst = escape_filename(dst, 0);
+	if(escaped_src == NULL || escaped_dst == NULL)
+	{
+		free(escaped_dst);
+		free(escaped_src);
+		return -1;
+	}
+
+	snprintf(cmd, sizeof(cmd), "mv -n %s %s", escaped_src, escaped_dst);
+	result = system_and_wait_for_errors(cmd);
+
+	free(escaped_dst);
+	free(escaped_src);
+	return result;
 }
 
 static int
