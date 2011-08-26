@@ -1177,9 +1177,13 @@ mv_file(const char *src, const char *dst, const char *path, int tmpfile_num)
 
 	snprintf(full_src, sizeof(full_src), "%s/%s", curr_view->curr_dir, src);
 	chosp(full_src);
-	escaped_src = escape_filename(full_src, 0);
 	snprintf(full_dst, sizeof(full_dst), "%s/%s", path, dst);
 	chosp(full_dst);
+
+	if(strcmp(full_src, full_dst) == 0)
+		return 0;
+
+	escaped_src = escape_filename(full_src, 0);
 	escaped_dst = escape_filename(full_dst, 0);
 
 	if(escaped_src == NULL || escaped_dst == NULL)
@@ -2106,6 +2110,12 @@ clone_file(FileView* view, const char *filename, const char *path,
 	{
 		snprintf(clone_name, sizeof(clone_name), "%s/%s", path, clone);
 		chosp(clone_name);
+		if(access(clone_name, F_OK) == 0)
+		{
+			snprintf(do_cmd, sizeof(do_cmd), "rm -rf %s", clone_name);
+			if(background_and_wait_for_errors(do_cmd) != 0)
+				return;
+		}
 	}
 
 	snprintf(do_cmd, sizeof(do_cmd), "%s/%s", view->curr_dir, filename);
@@ -2207,7 +2217,7 @@ make_undo_string(FileView *view, char *buf, int nlines, char **list)
 
 /* returns new value for save_msg */
 int
-clone_files(FileView *view, char **list, int nlines)
+clone_files(FileView *view, char **list, int nlines, int force)
 {
 	int i;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
@@ -2247,7 +2257,7 @@ clone_files(FileView *view, char **list, int nlines)
 	}
 
 	if(nlines > 0 && (!is_name_list_ok(view->selected_files, nlines, list) ||
-			!is_clone_list_ok(nlines, list)))
+			(!force && !is_clone_list_ok(nlines, list))))
 	{
 		clean_selected_files(view);
 		draw_dir_list(view, view->top_line);
@@ -2844,9 +2854,13 @@ cp_file(const char *src_dir, const char *dst_dir, const char *src,
 
 	snprintf(full_src, sizeof(full_src), "%s/%s", src_dir, src);
 	chosp(full_src);
-	escaped_src = escape_filename(full_src, 0);
 	snprintf(full_dst, sizeof(full_dst), "%s/%s", dst_dir, dst);
 	chosp(full_dst);
+
+	if(strcmp(full_src, full_dst) == 0)
+		return 0;
+
+	escaped_src = escape_filename(full_src, 0);
 	escaped_dst = escape_filename(full_dst, 0);
 
 	if(escaped_src == NULL || escaped_dst == NULL)
@@ -2883,7 +2897,8 @@ cp_file(const char *src_dir, const char *dst_dir, const char *src,
 }
 
 int
-cpmv_files(FileView *view, char **list, int nlines, int move, int type)
+cpmv_files(FileView *view, char **list, int nlines, int move, int type,
+		int force)
 {
 	int i;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
@@ -2927,9 +2942,18 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 			return curr_stats.save_msg;
 	}
 
-	if((nlines > 0 && (!is_name_list_ok(view->selected_files, nlines, list) ||
-			!is_copy_list_ok(path, nlines, list))) || (nlines == 0 &&
-			!is_copy_list_ok(path, view->selected_files, view->selected_filelist)))
+	if(nlines > 0 && (!is_name_list_ok(view->selected_files, nlines, list) ||
+			(!is_copy_list_ok(path, nlines, list) && !force)))
+	{
+		clean_selected_files(view);
+		draw_dir_list(view, view->top_line);
+		moveto_list_pos(view, view->list_pos);
+		if(from_file)
+			free_string_array(list, nlines);
+		return 1;
+	}
+	else if(nlines == 0 && !force &&
+			!is_copy_list_ok(path, view->selected_files, view->selected_filelist))
 	{
 		clean_selected_files(view);
 		draw_dir_list(view, view->top_line);
@@ -2956,6 +2980,13 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 		const char *dst = (nlines > 0) ? list[i] : view->selected_filelist[i];
 		if(move)
 		{
+			if(access(dst, F_OK) == 0)
+			{
+				char buf[PATH_MAX];
+				snprintf(buf, sizeof(buf), "rm -rf %s/%s", path, dst);
+				background_and_wait_for_errors(buf);
+			}
+
 			if(mv_file(view->selected_filelist[i], dst, path, 0) != 0)
 				view->list_pos = find_file_pos_in_list(view,
 						view->selected_filelist[i]);
@@ -2970,7 +3001,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type)
 	free_selected_file_array(view);
 	clean_selected_files(view);
 	load_saving_pos(view, 1);
-  /* load_saving_pos(other_view, 1); */
+  load_saving_pos(other_view, 1);
 	if(from_file)
 		free_string_array(list, nlines);
 	return 0;

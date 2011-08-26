@@ -561,7 +561,7 @@ cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_C(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_stats.save_msg = clone_files(curr_view, NULL, 0);
+	curr_stats.save_msg = clone_files(curr_view, NULL, 0, 0);
 }
 
 static void

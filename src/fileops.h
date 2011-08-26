@@ -59,7 +59,7 @@ void change_group(void);
 int change_link(FileView *view);
 /* Returns new value for save_msg flag. */
 int put_files_from_register(FileView *view, int name, int force_move);
-int clone_files(FileView *view, char **list, int nlines);
+int clone_files(FileView *view, char **list, int nlines, int force);
 unsigned long long calc_dirsize(const char *path, int force_update);
 int is_dir_writable(const char *path);
 /* Returns new value for save_msg flag. */
@@ -72,7 +72,8 @@ int tr_in_names(FileView *view, const char *pattern, const char *sub);
 const char * substitute_in_name(const char *name, const char *pattern,
 		const char *sub, int glob);
 int change_case(FileView *view, int toupper, int count, int *indexes);
-int cpmv_files(FileView *view, char **list, int nlines, int move, int type);
+int cpmv_files(FileView *view, char **list, int nlines, int move, int type,
+		int force);
 
 #endif
 

@@ -1,4 +1,4 @@
-.TH vifm 1 "August 25, 2011" "" "Vifm"
+.TH vifm 1 "August 26, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -554,17 +554,17 @@ is the same as :! but will pause the screen before returning to Vifm.
 .BI :!!
 will execute the last command.
 .TP
-.BI :[range]alink[!]
-creates absolute symbolic links of files in directory of other view.  With "!"
-vifm will open vi to edit filenames.
+.BI :[range]alink[!?]
+creates absolute symbolic links of files in directory of other view.  With "?"
+vifm will open vi to edit filenames.  "!" forces overwrite.
 .TP
-.BI ":[range]alink path"
+.BI ":[range]alink[!] path"
 creates absolute symbolic links of files in directory specified with the path
-(absolute or relative to directory of other view).
+(absolute or relative to directory of other view).  "!" forces overwrite.
 .TP
-.BI ":[range]alink name1 name2..."
+.BI ":[range]alink[!] name1 name2..."
 creates absolute symbolic links of files in directory of other view giving each
-next link a corresponding name from the argument list.
+next link a corresponding name from the argument list.  "!" forces overwrite.
 .TP
 .BI ":apropos manpage"
 will create a menu of items returned by the apropos command. Selecting an item
@@ -595,17 +595,17 @@ same as :cd /dir /dir.
 .BI :c[hange]
 create a menu window to alter a files properties.
 .TP
-.BI :[range]clone[!]
-clones files in current directory.  With "!" vifm will open vi to edit
-filenames.
+.BI :[range]clone[!?]
+clones files in current directory.  With "?" vifm will open vi to edit
+filenames.  "!" forces overwrite.
 .TP
-.BI ":[range]clone path"
+.BI ":[range]clone[!] path"
 clones files to directory specified with the path (absolute or relative to
-current directory).
+current directory).  "!" forces overwrite.
 .TP
-.BI ":[range]clone name1 name2..."
+.BI ":[range]clone[!] name1 name2..."
 clones files in current directory giving each next clone a corresponding name
-from the argument list.
+from the argument list.  "!" forces overwrite.
 .TP
 .BI :colo[rscheme]
 gives a menu with a list of available color schemes.  You can choose default
@@ -643,17 +643,17 @@ will set search pattern.
 .BI ":com[mand] name filter pattern"
 will set file name filter.
 .TP
-.BI :[range]co[py][!]
-copies files to directory of other view.  With "!" vifm will open vi to edit
-filenames.
+.BI :[range]co[py][!?]
+copies files to directory of other view.  With "?" vifm will open vi to edit
+filenames.  "!" forces overwrite.
 .TP
-.BI ":[range]co[py] path"
+.BI ":[range]co[py][!] path"
 copies files to directory specified with the path (absolute or relative to
-directory of other view).
+directory of other view).  "!" forces overwrite.
 .TP
-.BI ":[range]co[py] name1 name2..."
+.BI ":[range]co[py][!] name1 name2..."
 copies files to directory of other view giving each next file a corresponding
-name from the argument list.
+name from the argument list.  "!" forces overwrite.
 .TP
 .BI :[range]d[elete]
 delete selected file or files.
@@ -808,17 +808,17 @@ create a popup menu of bookmarks.
 .BI ":marks list ..."
 display the contents of the marks that are mentioned in list.
 .TP
-.BI :[range]m[ove][!]
-moves files to directory of other view.  With "!" vifm will open vi to edit
-filenames.
+.BI :[range]m[ove][!?]
+moves files to directory of other view.  With "?" vifm will open vi to edit
+filenames.  "!" forces overwrite.
 .TP
-.BI ":[range]m[ove] path"
+.BI ":[range]m[ove][!] path"
 moves files to directory specified with the path (absolute or relative to
-directory of other view).
+directory of other view).  "!" forces overwrite.
 .TP
-.BI ":[range]m[ove] name1 name2..."
+.BI ":[range]m[ove][!] name1 name2..."
 moves files to directory of other view giving each next file a corresponding
-name from the argument list.
+name from the argument list.  "!" forces overwrite.
 .TP
 .BI :noh[lsearch]
 clear selection in current pane.
@@ -864,17 +864,17 @@ rename each of selected files to a corresponding name.
 will free a lot of things (histories, commands, etc.) and reread vifminfo and
 vifmrc files.
 .TP
-.BI :[range]rlink[!]
-creates relative symbolic links of files in directory of other view.  With "!"
-vifm will open vi to edit filenames.
+.BI :[range]rlink[!?]
+creates relative symbolic links of files in directory of other view.  With "?"
+vifm will open vi to edit filenames.  "!" forces overwrite.
 .TP
-.BI ":[range]rlink path"
+.BI ":[range]rlink[!] path"
 creates relative symbolic links of files in directory specified with the path
-(absolute or relative to directory of other view).
+(absolute or relative to directory of other view).  "!" forces overwrite.
 .TP
-.BI ":[range]rlink name1 name2..."
+.BI ":[range]rlink[!] name1 name2..."
 creates relative symbolic links of files in directory of other view giving each
-next link a corresponding name from the argument list.
+next link a corresponding name from the argument list.  "!" forces overwrite.
 .TP
 .BI :screen
 toggles whether or not to use the screen program.

@@ -152,10 +152,10 @@ write_color_scheme_file(void)
 	fprintf(fp, "# White = 7\n\n");
 
 	fprintf(fp, "# Vifm supports 256 colors you can use color numbers 0-255\n");
-	fprintf(fp, "# (requires properly set up terminal: set your TERM environment variable to\n");
-	fprintf(fp, "# some color terminal name (e.g. xterm-256color) from /usr/lib/terminfo/;\n");
-	fprintf(fp, "# you can check current number of colors in your terminal with tput colors\n");
-	fprintf(fp, "# command)\n\n");
+	fprintf(fp, "# (requires properly set up terminal: set your TERM environment variable\n");
+	fprintf(fp, "# (directly or using resources) to some color terminal name (e.g.\n");
+	fprintf(fp, "# xterm-256color) from /usr/lib/terminfo/; you can check current number\n");
+	fprintf(fp, "# of colors in your terminal with tput colors command)\n\n");
 
 	fprintf(fp, "# COLORSCHEME=OneWordDescription\n");
 	fprintf(fp, "# DIRECTORY=/Full/Path/To/Base/Directory\n");

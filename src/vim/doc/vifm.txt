@@ -195,7 +195,7 @@ dd - move selected file or files to ~/.vifm/Trash (if option |vifm-'trash'|
 d<selector> - like dd.
 
 DD and D<selector> - like dd and d<selector>, but omitting trash directory
-     (even when option |vifm-'trash'| is set).
+    (even when option |vifm-'trash'| is set).
 
 yy, Y - yank selected files.
 y<selector> - yank files.
@@ -284,7 +284,7 @@ This keys apply to all submodes of the command line mode: command, prompt and
 search.
 
 Down, Up, Left, Right, Home, End and Delete are extended keys and they are not
-available if vifm is compiled with --disable-extended-keys option
+available if vifm is compiled with --disable-extended-keys option.
 
 Esc, Ctrl-C - leave command line mode, cancels input.
 
@@ -378,12 +378,13 @@ The builtin commands are:
 :!! - repeat the last command.
 
                                                *vifm-:alink*
-:[range]alink[!] - creates absolute symbolic links of files in directory of
-    other view.  With "!" vifm will open vi to edit filenames.
-:[range]alink path - creates absolute symbolic links of files in directory
+:[range]alink[!?] - creates absolute symbolic links of files in directory of
+    other view.  With "?" vifm will open vi to edit filenames.  "!" forces
+    overwrite.
+:[range]alink[!] path - creates absolute symbolic links of files in directory
     specified with the path (absolute or relative to directory of other
     view).
-:[range]alink name1 name2... - creates absolute symbolic links of files in
+:[range]alink[!] name1 name2... - creates absolute symbolic links of files in
     directory of other view giving each next link a corresponding name from
     the argument list.
 
@@ -408,12 +409,12 @@ The builtin commands are:
 :c[hange] - create a menu window to alter a files properties.
 
                                                *vifm-:clone*
-:[range]clone[!] - clones files in current directory.  With "!" vifm will
-    open vi to edit filenames.
-:[range]clone path - clones files to directory specified with the path
+:[range]clone[!?] - clones files in current directory.  With "?" vifm will
+    open vi to edit filenames.  "!" forces overwrite.
+:[range]clone[!] path - clones files to directory specified with the path
     (absolute or relative to current directory).
-:[range]clone name1 name2... - clones files in current directory giving each
-    next clone a corresponding name from the argument list.
+:[range]clone[!] name1 name2... - clones files in current directory giving
+    each next clone a corresponding name from the argument list.
 
                                                *vifm-:colorscheme* *vifm-:colo*
 :colo[rscheme] - gives a menu with a list of available color schemes.  You
@@ -441,12 +442,14 @@ The builtin commands are:
 :com[mand] name filter pattern - will set file name filter.
 
                                                *vifm-:copy* *vifm-:co*
-:[range]co[py][!] - copies files to directory of other view.  With "!" vifm
-    will open vi to edit filenames.
-:[range]co[py] path - copies files to directory specified with the path
-    (absolute or relative to directory of other view).
-:[range]co[py] name1 name2... - copies files to directory of other view
+:[range]co[py][!?] - copies files to directory of other view.  With "?"
+    vifm will open vi to edit filenames.  "!" forces overwrite.
+:[range]co[py][!] path - copies files to directory specified with the path
+    (absolute or relative to directory of other view).  "!" forces
+    overwrite.
+:[range]co[py][!] name1 name2... - copies files to directory of other view
     giving each next file a corresponding name from the argument list.
+    "!" forces overwrite.
 
                                                *vifm-:delete* *vifm-:d*
 :[range]d[elete][count] - delete selected file or files.
@@ -572,12 +575,13 @@ The builtin commands are:
 :marks list ... - display the contents of the marks that are mentioned in list.
 
                                                *vifm-:move* *vifm-:m*
-:[range]m[ove][!] - moves files to directory of other view.  With "!" vifm
-    will open vi to edit filenames.
-:[range]m[ove] path - moves files to directory specified with the path
-    (absolute or relative to directory of other view).
-:[range]m[ove] name1 name2... - moves files to directory of other view
-    giving each next file a corresponding name from the argument list.
+:[range]m[ove][!?] - moves files to directory of other view.  With "?" vifm
+    will open vi to edit filenames.  "!" forces overwrite.
+:[range]m[ove][!] path - moves files to directory specified with the path
+    (absolute or relative to directory of other view).  "!" forces overwrite.
+:[range]m[ove][!] name1 name2... - moves files to directory of other view
+    giving each next file a corresponding name from the argument list.  "!"
+    forces overwrite.
 
                                                *vifm-:nohlsearch* *vifm-:noh*
 :noh[lsearch] - clear selection in current pane.
@@ -619,14 +623,15 @@ The builtin commands are:
     vifminfo and vifmrc files.
 
                                                *vifm-:rlink*
-:[range]rlink[!] - creates relative symbolic links of files in directory of
-    other view.  With "!" vifm will open vi to edit filenames.
-:[range]rlink path - creates relative symbolic links of files in directory
+:[range]rlink[!?] - creates relative symbolic links of files in directory of
+    other view.  With "?" vifm will open vi to edit filenames.  "!" forces
+    overwrite.
+:[range]rlink[!] path - creates relative symbolic links of files in directory
     specified with the path (absolute or relative to directory of other
-    view).
-:[range]rlink name1 name2... - creates relative symbolic links of files in
+    view).  "!" forces overwrite.
+:[range]rlink[!] name1 name2... - creates relative symbolic links of files in
     directory of other view giving each next link a corresponding name from
-    the argument list.
+    the argument list.  "!" forces overwrite.
 
                                                *vifm-:screen*
 :screen - toggles whether to use the screen program or not.
