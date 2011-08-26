@@ -579,7 +579,9 @@ filename_completion(const char *str, int type)
 	if(type != FNC_EXECONLY)
 	{
 		if(get_completion_count() == 0)
+		{
 			add_completion(filename);
+		}
 		else
 		{
 			temp = escape_filename(filename, 1);

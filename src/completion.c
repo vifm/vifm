@@ -127,7 +127,11 @@ next_completion(void)
 	}
 
 	if(count == 2)
-		return strdup(lines[0]);
+	{
+		int t = (curr == -1) ? 0 : curr;
+		curr = 0;
+		return strdup(lines[t]);
+	}
 
 	if(!order) /* straight order */
 	{
@@ -174,10 +178,10 @@ rewind_completion(void)
 {
 	assert(state == COMPLETING);
 
-	if(count <= 2)
-		return;
-
-	curr = count - 2;
+	if(count == 2)
+		curr = 1;
+	else if(count > 2)
+		curr = count - 2;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

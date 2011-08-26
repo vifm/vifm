@@ -116,10 +116,9 @@ test_rewind_one_unambiguous_completion(void)
 	free(buf);
 
 	rewind_completion();
-	free(next_completion());
 
 	buf = next_completion();
-	assert_string_equal("abcd", buf);
+	assert_string_equal("a", buf);
 	free(buf);
 	buf = next_completion();
 	assert_string_equal("abcd", buf);
