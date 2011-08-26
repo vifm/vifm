@@ -22,6 +22,7 @@
 enum OPS {
 	OP_NONE,
 	OP_REMOVE,   /* rm -rf */
+	OP_REMOVESL, /* cl */
 	OP_DELETE,   /* to trash, not OP_MOVE because of (registers and) names */
 	OP_COPY,     /* copy and clone */
 	OP_MOVE,     /* move, rename and substitute */
@@ -31,8 +32,8 @@ enum OPS {
 	OP_CHOWN,
 	OP_CHGRP,
 	OP_CHMOD,
-	OP_ASYMLINK,
-	OP_RSYMLINK,
+	OP_SYMLINK,
+	OP_SYMLINK2,
 	OP_COUNT
 };
 

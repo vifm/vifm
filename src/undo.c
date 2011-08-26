@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "config.h"
+#include "macros.h"
 #include "ops.h"
 #include "registers.h"
 #include "utils.h"
@@ -60,9 +61,10 @@ struct cmd_t {
 	struct cmd_t *next;
 };
 
-static enum OPS undo_op[OP_COUNT] = {
+static enum OPS undo_op[] = {
 	OP_NONE,     /* OP_NONE */
 	OP_NONE,     /* OP_REMOVE */
+	OP_SYMLINK,  /* OP_REMOVESL */
 	OP_MOVE,     /* OP_DELETE */
 	OP_REMOVE,   /* OP_COPY   */
 	OP_MOVE,     /* OP_MOVE */
@@ -72,19 +74,25 @@ static enum OPS undo_op[OP_COUNT] = {
 	OP_CHOWN,    /* OP_CHOWN */
 	OP_CHGRP,    /* OP_CHGRP */
 	OP_CHMOD,    /* OP_CHMOD */
-	OP_REMOVE,   /* OP_ASYMLINK */
-	OP_REMOVE,   /* OP_RSYMLINK */
+	OP_REMOVE,   /* OP_SYMLINK */
+	OP_REMOVESL, /* OP_SYMLINK2 */
 };
+
+static int _gnuc_unused undo_op_size_guard[
+	(ARRAY_LEN(undo_op) == OP_COUNT) ? 1 : -1
+];
 
 static enum {
 	OPER_1ST,
 	OPER_2ND,
 	OPER_NON,
-} opers[OP_COUNT][8] = {
+} opers[][8] = {
 	{ OPER_NON, OPER_NON, OPER_NON, OPER_NON,    /* do   OP_NONE */
 		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE */
-	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_NON,    /* do   OP_REMOVE */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_REMOVE */
 		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE   */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_REMOVESL */
+	  OPER_2ND, OPER_1ST, OPER_NON, OPER_NON, }, /* undo OP_SYMLINK2 */
 	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_DELETE */
 		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVE   */
 	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_COPY   */
@@ -103,11 +111,15 @@ static enum {
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHGRP */
 	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHMOD */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHMOD */
-	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_ASYMLINK */
-		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE   */
-	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_RSYMLINK */
+	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_2ND,    /* do   OP_SYMLINK */
+		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE  */
+	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_NON,    /* do   OP_SYMLINK2 */
 		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE   */
 };
+
+static int _gnuc_unused opers_size_guard[
+	(ARRAY_LEN(opers) == OP_COUNT) ? 1 : -1
+];
 
 static perform_func do_func;
 static const int *undo_levels;
@@ -641,6 +653,7 @@ get_op_desc(struct op_t op)
 			strcpy(buf, "<no operation>");
 			break;
 		case OP_REMOVE:
+		case OP_REMOVESL:
 			snprintf(buf, sizeof(buf), "rm %s", op.src);
 			break;
 		case OP_DELETE:
@@ -664,11 +677,9 @@ get_op_desc(struct op_t op)
 		case OP_CHMOD:
 			snprintf(buf, sizeof(buf), "chmod 0%lo %s", (long)op.data, op.src);
 			break;
-		case OP_ASYMLINK:
-			snprintf(buf, sizeof(buf), "al %s to %s", op.src, op.dst);
-			break;
-		case OP_RSYMLINK:
-			snprintf(buf, sizeof(buf), "rl %s to %s", op.src, op.dst);
+		case OP_SYMLINK:
+		case OP_SYMLINK2:
+			snprintf(buf, sizeof(buf), "ln -s %s to %s", op.src, op.dst);
 			break;
 		default:
 			strcpy(buf, "ERROR, update get_op_desc() function");

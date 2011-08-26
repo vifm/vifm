@@ -28,31 +28,32 @@
 
 static int op_none(void *data, const char *src, const char *dst);
 static int op_remove(void *data, const char *src, const char *dst);
+static int op_removesl(void *data, const char *src, const char *dst);
 static int op_delete(void *data, const char *src, const char *dst);
 static int op_copy(void *data, const char *src, const char *dst);
 static int op_move(void *data, const char *src, const char *dst);
 static int op_chown(void *data, const char *src, const char *dst);
 static int op_chgrp(void *data, const char *src, const char *dst);
 static int op_chmod(void *data, const char *src, const char *dst);
-static int op_asymlink(void *data, const char *src, const char *dst);
-static int op_rsymlink(void *data, const char *src, const char *dst);
+static int op_symlink(void *data, const char *src, const char *dst);
 
 typedef int (*op_func)(void *data, const char *src, const char *dst);
 
 static op_func op_funcs[] = {
-	op_none,     /* OP_NONE */
-	op_remove,   /* OP_REMOVE */
-	op_delete,   /* OP_DELETE */
-	op_copy,     /* OP_COPY */
-	op_move,     /* OP_MOVE */
-	op_move,     /* OP_MOVETMP0 */
-	op_move,     /* OP_MOVETMP1 */
-	op_move,     /* OP_MOVETMP2 */
-	op_chown,    /* OP_CHOWN */
-	op_chgrp,    /* OP_CHGRP */
-	op_chmod,    /* OP_CHMOD */
-	op_asymlink, /* OP_ASYMLINK */
-	op_rsymlink, /* OP_RSYMLINK */
+	op_none,    /* OP_NONE */
+	op_remove,  /* OP_REMOVE */
+	op_removesl,  /* OP_REMOVESL */
+	op_delete,  /* OP_DELETE */
+	op_copy,    /* OP_COPY */
+	op_move,    /* OP_MOVE */
+	op_move,    /* OP_MOVETMP0 */
+	op_move,    /* OP_MOVETMP1 */
+	op_move,    /* OP_MOVETMP2 */
+	op_chown,   /* OP_CHOWN */
+	op_chgrp,   /* OP_CHGRP */
+	op_chmod,   /* OP_CHMOD */
+	op_symlink, /* OP_SYMLINK */
+	op_symlink, /* OP_SYMLINK2 */
 };
 
 static int _gnuc_unused op_funcs_size_guard[
@@ -74,10 +75,6 @@ op_none(void *data, const char *src, const char *dst)
 static int
 op_remove(void *data, const char *src, const char *dst)
 {
-	char *escaped;
-	char cmd[16 + PATH_MAX];
-	int result;
-
 	if(cfg.confirm && !curr_stats.confirmed)
 	{
 		curr_stats.confirmed = query_user_menu("Permanent deletion",
@@ -85,6 +82,16 @@ op_remove(void *data, const char *src, const char *dst)
 		if(!curr_stats.confirmed)
 			return SKIP_UNDO_REDO_OPERATION;
 	}
+
+	return op_removesl(data, src, dst);
+}
+
+static int
+op_removesl(void *data, const char *src, const char *dst)
+{
+	char *escaped;
+	char cmd[16 + PATH_MAX];
+	int result;
 
 	escaped = escape_filename(src, 0);
 	if(escaped == NULL)
@@ -175,16 +182,27 @@ op_chmod(void *data, const char *src, const char *dst)
 }
 
 static int
-op_asymlink(void *data, const char *src, const char *dst)
+op_symlink(void *data, const char *src, const char *dst)
 {
-	/* TODO: write code */
-	return 0;
-}
+	char *escaped_src, *escaped_dst;
+	char cmd[6 + PATH_MAX*2 + 1];
+	int result;
 
-static int
-op_rsymlink(void *data, const char *src, const char *dst)
-{
-	/* TODO: write code */
+	escaped_src = escape_filename(src, 0);
+	escaped_dst = escape_filename(dst, 0);
+	if(escaped_src == NULL || escaped_dst == NULL)
+	{
+		free(escaped_dst);
+		free(escaped_src);
+		return -1;
+	}
+
+	snprintf(cmd, sizeof(cmd), "ln -s %s %s", escaped_src, escaped_dst);
+	result = system_and_wait_for_errors(cmd);
+
+	free(escaped_dst);
+	free(escaped_src);
+	return result;
 	return 0;
 }
 

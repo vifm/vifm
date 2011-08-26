@@ -1134,7 +1134,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		{
 			result = perform_operation(OP_REMOVE, NULL, full_buf, NULL);
 			if(result == 0)
-				add_operation(OP_REMOVE, NULL, NULL, full_buf, NULL);
+				add_operation(OP_REMOVE, NULL, NULL, full_buf, "");
 		}
 
 		if(result == 0)
@@ -1697,49 +1697,35 @@ change_link_cb(const char *new_target)
 	char buf[PATH_MAX];
 	char linkto[PATH_MAX];
 	const char *filename;
-	char *esc_file, *esc_target;
-	char do_cmd[PATH_MAX];
-	char undo_cmd[PATH_MAX];
+	ssize_t len;
 
 	if(new_target == NULL || new_target[0] == '\0')
 		return;
 
+	curr_stats.confirmed = 1;
+
 	filename = curr_view->dir_entry[curr_view->list_pos].name;
 	strcpy(buf, filename);
 	chosp(buf);
-	if(readlink(buf, linkto, sizeof(linkto)) == -1)
+	if((len = readlink(buf, linkto, sizeof(linkto))) == -1)
 	{
 		status_bar_message("Can't read link");
 		curr_stats.save_msg = 1;
 		return;
 	}
+	linkto[len] = '\0';
 
 	snprintf(buf, sizeof(buf), "cl in %s: on %s from \"%s\" to \"%s\"",
 			replace_home_part(curr_view->curr_dir), filename, linkto, new_target);
 	cmd_group_begin(buf);
 
 	snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir, filename);
-	esc_file = escape_filename(buf, 0);
+	chosp(buf);
 
-	snprintf(do_cmd, sizeof(do_cmd), "rm -rf %s", esc_file);
-	chosp(do_cmd);
-	esc_target = escape_filename(linkto, 0);
-	snprintf(undo_cmd, sizeof(undo_cmd), "ln -s -f %s %s", esc_target, esc_file);
-	chosp(undo_cmd);
-	free(esc_target);
-	if(background_and_wait_for_errors(do_cmd) == 0)
-		;/* add_operation(do_cmd, buf, NULL, undo_cmd, buf, NULL); */
-
-	esc_target = escape_filename(new_target, 0);
-	snprintf(do_cmd, sizeof(do_cmd), "ln -s -f %s %s", esc_target, esc_file);
-	chosp(do_cmd);
-	free(esc_target);
-	snprintf(undo_cmd, sizeof(undo_cmd), "rm -rf %s", esc_file);
-	chosp(undo_cmd);
-	if(background_and_wait_for_errors(do_cmd) == 0)
-		;/* add_operation(do_cmd, buf, NULL, undo_cmd, buf, NULL); */
-
-	free(esc_file);
+	if(perform_operation(OP_REMOVESL, NULL, buf, NULL) == 0)
+		add_operation(OP_REMOVESL, NULL, NULL, buf, linkto);
+	if(perform_operation(OP_SYMLINK2, NULL, new_target, buf) == 0)
+		add_operation(OP_SYMLINK2, NULL, NULL, new_target, buf);
 
 	cmd_group_end();
 }
@@ -1800,8 +1786,11 @@ static int
 put_next(const char *dest_name, int override)
 {
 	char *filename;
-	char *src_buf, *dst_buf, *name_buf = NULL;
 	struct stat st;
+	char src_buf[PATH_MAX], dst_buf[PATH_MAX];
+	int from_trash;
+	int op;
+	int move;
 
 	/* TODO: refactor this function (put_next()) */
 
@@ -1809,124 +1798,88 @@ put_next(const char *dest_name, int override)
 
 	filename = put_confirm.reg->files[put_confirm.x];
 	chosp(filename);
-	src_buf = escape_filename(filename, 0);
-	dst_buf = escape_filename(put_confirm.view->curr_dir, 0);
-	if(lstat(filename, &st) == 0 && src_buf != NULL && dst_buf != NULL)
+	if(lstat(filename, &st) != 0)
+		return 0;
+
+	from_trash = strncmp(filename, cfg.trash_dir, strlen(cfg.trash_dir)) == 0;
+	move = from_trash || put_confirm.force_move;
+
+	if(dest_name[0] == '\0')
+		dest_name = strrchr(filename, '/') + 1;
+
+	strcpy(src_buf, filename);
+
+	if(from_trash)
 	{
-		char do_buf[PATH_MAX + NAME_MAX*2 + 4];
-		char undo_buf[PATH_MAX + NAME_MAX*2 + 4];
-		const char *p = dest_name;
-		int from_trash = strncmp(filename, cfg.trash_dir,
-				strlen(cfg.trash_dir)) == 0;
-		int move = from_trash || put_confirm.force_move;
+		while(isdigit(*dest_name))
+			dest_name++;
+		dest_name++;
+	}
 
-		if(p[0] == '\0')
-			p = strrchr(filename, '/') + 1;
+	if(access(dest_name, F_OK) == 0 && !override)
+	{
+		prompt_what_to_do(dest_name);
+		return 1;
+	}
 
-		if(from_trash)
+	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", put_confirm.view->curr_dir,
+			dest_name);
+	chosp(dst_buf);
+
+	if(override)
+	{
+		struct stat st;
+		if(lstat(dest_name, &st) == 0)
 		{
-			while(isdigit(*p))
-				p++;
-			p++;
+			if(perform_operation(OP_REMOVE, NULL, dst_buf, NULL) != 0)
+				return 0;
 		}
 
-		if(access(p, F_OK) == 0 && !override)
+		put_confirm.view->dir_mtime = 0;
+	}
+
+	if(put_confirm.link)
+	{
+		op = OP_SYMLINK;
+		if(put_confirm.link == 2)
+			strcpy(src_buf, make_rel_path(filename, put_confirm.view->curr_dir));
+	}
+	else if(move)
+	{
+		op = OP_MOVE;
+	}
+	else
+	{
+		op = OP_COPY;
+	}
+
+	progress_msg("Putting files", put_confirm.x + 1, put_confirm.reg->num_files);
+	if(perform_operation(op, NULL, src_buf, dst_buf) == 0)
+	{
+		char *msg;
+		size_t len;
+
+		cmd_group_continue();
+
+		msg = replace_group_msg(NULL);
+		len = strlen(msg);
+		msg = realloc(msg, COMMAND_GROUP_INFO_LEN);
+
+		snprintf(msg + len, COMMAND_GROUP_INFO_LEN - len, "%s%s",
+				(msg[len - 2] != ':') ? ", " : "", dest_name);
+		replace_group_msg(msg);
+
+		add_operation(op, NULL, NULL, src_buf, dst_buf);
+
+		cmd_group_end();
+		put_confirm.y++;
+		if(move)
 		{
-			free(src_buf);
-			free(dst_buf);
-			prompt_what_to_do(p);
-			return 1;
-		}
-
-		if(dest_name[0] == '\0')
-		{
-			name_buf = escape_filename(p, 0);
-			dest_name = name_buf;
-		}
-
-		dst_buf = realloc(dst_buf, strlen(dst_buf) + 1 + strlen(dest_name) + 1);
-		strcat(dst_buf, "/");
-		strcat(dst_buf, dest_name);
-
-		if(override)
-		{
-			struct stat st;
-			if(lstat(p, &st) == 0)
-			{
-				if(perform_operation(OP_REMOVE, NULL, dst_buf, "") != 0)
-				{
-					free(src_buf);
-					free(dst_buf);
-					free(name_buf);
-					return 0;
-				}
-			}
-
-			put_confirm.view->dir_mtime = 0;
-		}
-
-		if(put_confirm.link)
-		{
-			if(put_confirm.link == 2)
-			{
-				free(src_buf);
-				src_buf = escape_filename(make_rel_path(filename,
-							put_confirm.view->curr_dir), 0);
-			}
-			snprintf(do_buf, sizeof(do_buf), "ln -s %s %s", src_buf, dst_buf);
-			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s", dst_buf);
-		}
-		else if(move)
-		{
-			snprintf(do_buf, sizeof(do_buf), "mv %s %s %s", override ? "" : "-n",
-					src_buf, dst_buf);
-			snprintf(undo_buf, sizeof(undo_buf), "mv -n %s %s", dst_buf, src_buf);
-		}
-		else
-		{
-			snprintf(do_buf, sizeof(do_buf),
-					"cp %s -R --preserve=mode,timestamps %s %s", override ? "" : "-n",
-					src_buf, dst_buf);
-			snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s", dst_buf);
-		}
-
-		progress_msg("Putting files", put_confirm.x + 1,
-				put_confirm.reg->num_files);
-		if(background_and_wait_for_errors(do_buf) == 0)
-		{
-			char *msg;
-			size_t len;
-			char dst_full[PATH_MAX];
-
-			snprintf(dst_full, sizeof(dst_full), "%s/%s", put_confirm.view->curr_dir,
-					p);
-			cmd_group_continue();
-
-			msg = replace_group_msg(NULL);
-			len = strlen(msg);
-			msg = realloc(msg, COMMAND_GROUP_INFO_LEN);
-			
-			snprintf(msg + len, COMMAND_GROUP_INFO_LEN - len, "%s%s",
-					(msg[len - 2] != ':') ? ", " : "", p);
-			replace_group_msg(msg);
-
-			if(move)
-				;/* add_operation(do_buf, filename, dst_full, undo_buf, dst_full, filename); */
-			else
-				;/* add_operation(do_buf, filename, dst_full, undo_buf, dst_full, NULL); */
-
-			cmd_group_end();
-			put_confirm.y++;
-			if(move)
-			{
-				free(put_confirm.reg->files[put_confirm.x]);
-				put_confirm.reg->files[put_confirm.x] = NULL;
-			}
+			free(put_confirm.reg->files[put_confirm.x]);
+			put_confirm.reg->files[put_confirm.x] = NULL;
 		}
 	}
-	free(src_buf);
-	free(dst_buf);
-	free(name_buf);
+
 	return 0;
 }
 
@@ -2077,7 +2030,7 @@ clone_file(FileView* view, const char *filename, const char *path,
 		chosp(clone_name);
 		if(access(clone_name, F_OK) == 0)
 		{
-			if(perform_operation(OP_REMOVE, NULL, clone_name, "") != 0)
+			if(perform_operation(OP_REMOVE, NULL, clone_name, NULL) != 0)
 				return;
 		}
 	}
@@ -2804,9 +2757,7 @@ cp_file(const char *src_dir, const char *dst_dir, const char *src,
 		const char *dst, int type)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
-	char do_buf[6 + PATH_MAX*2 + 1];
-	char undo_buf[6 + PATH_MAX*2 + 1];
-	char *escaped_src, *escaped_dst;
+	int op;
 	int result;
 
 	snprintf(full_src, sizeof(full_src), "%s/%s", src_dir, src);
@@ -2817,39 +2768,23 @@ cp_file(const char *src_dir, const char *dst_dir, const char *src,
 	if(strcmp(full_src, full_dst) == 0)
 		return 0;
 
-	escaped_src = escape_filename(full_src, 0);
-	escaped_dst = escape_filename(full_dst, 0);
-
-	if(escaped_src == NULL || escaped_dst == NULL)
-	{
-		free(escaped_src);
-		free(escaped_dst);
-		return -1;
-	}
-
 	if(type == 0)
 	{
-		snprintf(do_buf, sizeof(do_buf),
-				"cp -R --preserve=mode,timestamps -n %s %s", escaped_src, escaped_dst);
-		snprintf(undo_buf, sizeof(do_buf), "rm -rf %s", escaped_dst);
+		op = OP_COPY;
 	}
 	else
 	{
+		op = OP_SYMLINK;
 		if(type == 2)
 		{
-			free(escaped_src);
-			escaped_src = escape_filename(make_rel_path(full_src, dst_dir), 0);
+			snprintf(full_src, sizeof(full_src), "%s", make_rel_path(full_src,
+					dst_dir));
 		}
-		snprintf(do_buf, sizeof(do_buf), "ln -s %s %s", escaped_src, escaped_dst);
-		snprintf(undo_buf, sizeof(undo_buf), "rm -rf %s", escaped_dst);
 	}
 
-	free(escaped_src);
-	free(escaped_dst);
-
-	result = system_and_wait_for_errors(do_buf);
+	result = perform_operation(op, NULL, full_src, full_dst);
 	if(result == 0)
-		;/* add_operation(do_buf, full_src, full_dst, undo_buf, full_dst, NULL); */
+		add_operation(op, NULL, NULL, full_src, full_dst);
 	return result;
 }
 
@@ -2941,7 +2876,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 			{
 				char buf[PATH_MAX];
 				snprintf(buf, sizeof(buf), "%s/%s", path, dst);
-				perform_operation(OP_REMOVE, NULL, buf, "");
+				perform_operation(OP_REMOVE, NULL, buf, NULL);
 			}
 
 			if(mv_file(view->selected_filelist[i], dst, path, 0) != 0)
