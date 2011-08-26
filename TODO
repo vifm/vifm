@@ -50,6 +50,7 @@ Possible things to add.
     'incsearch' option.
     'wrapscan' option.
     'scrollbind' option.
+    'gdefault' option.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
@@ -70,7 +71,6 @@ Other (questionable) things.
     Like gv but to select just pasted files (gp?).
     'expandtab' for tabs in the quick view ?
     Modify marks on rename operations.
-    Remove ncursesw dependency (remove unicode functions, we use utf-8).
     :toupper and :tolower
 
 Code improvements.

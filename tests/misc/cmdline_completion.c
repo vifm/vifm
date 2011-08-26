@@ -20,6 +20,7 @@ static void
 setup(void)
 {
 	static int option_changed;
+	union optval_t def = { .str_val = "/tmp" };
 
 	stats.line = wcsdup(L"set ");
 	stats.index = wcslen(stats.line);
@@ -37,7 +38,7 @@ setup(void)
 	execute_cmd("command foo c");
 
 	init_options(&option_changed, NULL);
-	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler);
+	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler, def);
 }
 
 static void
