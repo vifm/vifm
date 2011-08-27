@@ -41,20 +41,21 @@ static int op_symlink(void *data, const char *src, const char *dst);
 typedef int (*op_func)(void *data, const char *src, const char *dst);
 
 static op_func op_funcs[] = {
-	op_none,    /* OP_NONE */
-	op_remove,  /* OP_REMOVE */
-	op_removesl,  /* OP_REMOVESL */
-	op_copy,    /* OP_COPY */
-	op_move,    /* OP_MOVE */
-	op_move,    /* OP_MOVETMP0 */
-	op_move,    /* OP_MOVETMP1 */
-	op_move,    /* OP_MOVETMP2 */
-	op_chown,   /* OP_CHOWN */
-	op_chgrp,   /* OP_CHGRP */
-	op_chmod,   /* OP_CHMOD */
-	op_chmodr,  /* OP_CHMODR */
-	op_symlink, /* OP_SYMLINK */
-	op_symlink, /* OP_SYMLINK2 */
+	op_none,     /* OP_NONE */
+	op_none,     /* OP_USR */
+	op_remove,   /* OP_REMOVE */
+	op_removesl, /* OP_REMOVESL */
+	op_copy,     /* OP_COPY */
+	op_move,     /* OP_MOVE */
+	op_move,     /* OP_MOVETMP0 */
+	op_move,     /* OP_MOVETMP1 */
+	op_move,     /* OP_MOVETMP2 */
+	op_chown,    /* OP_CHOWN */
+	op_chgrp,    /* OP_CHGRP */
+	op_chmod,    /* OP_CHMOD */
+	op_chmodr,   /* OP_CHMODR */
+	op_symlink,  /* OP_SYMLINK */
+	op_symlink,  /* OP_SYMLINK2 */
 };
 
 static int _gnuc_unused op_funcs_size_guard[

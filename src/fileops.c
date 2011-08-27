@@ -2888,12 +2888,10 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		const char *dst = (nlines > 0) ? list[i] : view->selected_filelist[i];
 		if(move)
 		{
-			if(access(dst, F_OK) == 0)
-			{
-				char buf[PATH_MAX];
-				snprintf(buf, sizeof(buf), "%s/%s", path, dst);
-				perform_operation(OP_REMOVE, NULL, buf, NULL);
-			}
+			char dst_full[PATH_MAX];
+			snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
+			if(access(dst_full, F_OK) == 0)
+				perform_operation(OP_REMOVE, NULL, dst_full, NULL);
 
 			if(mv_file(view->selected_filelist[i], dst, path, 0) != 0)
 				view->list_pos = find_file_pos_in_list(view,

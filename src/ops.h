@@ -21,6 +21,7 @@
 
 enum OPS {
 	OP_NONE,
+	OP_USR,
 	OP_REMOVE,   /* rm -rf */
 	OP_REMOVESL, /* cl */
 	OP_COPY,     /* copy and clone */

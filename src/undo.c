@@ -63,6 +63,7 @@ struct cmd_t {
 
 static enum OPS undo_op[] = {
 	OP_NONE,     /* OP_NONE */
+	OP_NONE,     /* OP_USR */
 	OP_NONE,     /* OP_REMOVE */
 	OP_SYMLINK,  /* OP_REMOVESL */
 	OP_REMOVE,   /* OP_COPY   */
@@ -88,6 +89,8 @@ static enum {
 	OPER_NON,
 } opers[][8] = {
 	{ OPER_NON, OPER_NON, OPER_NON, OPER_NON,    /* do   OP_NONE */
+		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE */
+	{ OPER_NON, OPER_NON, OPER_NON, OPER_NON,    /* do   OP_USR  */
 		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE */
 	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_REMOVE */
 		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE   */
@@ -123,6 +126,7 @@ static int _gnuc_unused opers_size_guard[
 
 static int data_is_ptr[] = {
 	0, /* OP_NONE */
+	1, /* OP_USR */
 	0, /* OP_REMOVE */
 	0, /* OP_REMOVESL */
 	0, /* OP_COPY   */
@@ -675,6 +679,9 @@ get_op_desc(struct op_t op)
 	{
 		case OP_NONE:
 			strcpy(buf, "<no operation>");
+			break;
+		case OP_USR:
+			strcpy(buf, (char *)op.data);
 			break;
 		case OP_REMOVE:
 		case OP_REMOVESL:
