@@ -235,7 +235,8 @@ get_sort(FileView *view, const char *line)
 }
 
 static void
-get_history(FileView *view, int reread, const char *dir, const char *file)
+get_history(FileView *view, int reread, const char *dir, const char *file,
+		int pos)
 {
 	if(view->history_num == cfg.history_len)
 	{
@@ -246,7 +247,7 @@ get_history(FileView *view, int reread, const char *dir, const char *file)
 
 	if(!reread)
 		view->list_rows = 1;
-	save_view_history(view, dir, file);
+	save_view_history(view, dir, file, pos);
 	if(!reread)
 		view->list_rows = 0;
 }
@@ -348,6 +349,9 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'd') /* left pane history */
 		{
+			int pos = -1;
+			char c;
+
 			if(line[1] == '\0')
 			{
 				if(reread)
@@ -360,10 +364,18 @@ read_info_file(int reread)
 			if(fgets(line2, sizeof(line2), fp) != line2)
 				continue;
 			prepare_line(line2);
-			get_history(&lwin, reread, line + 1, line2);
+			
+			c = getc(fp);
+			ungetc(c, fp);
+			if(isdigit(c))
+				fscanf(fp, "%d\n", &pos);
+			get_history(&lwin, reread, line + 1, line2, pos);
 		}
 		else if(line[0] == 'D') /* right pane history */
 		{
+			char c;
+			int pos = -1;
+
 			if(line[1] == '\0')
 			{
 				if(reread)
@@ -376,7 +388,12 @@ read_info_file(int reread)
 			if(fgets(line2, sizeof(line2), fp) != line2)
 				continue;
 			prepare_line(line2);
-			get_history(&rwin, reread, line + 1, line2);
+
+			c = getc(fp);
+			ungetc(c, fp);
+			if(isdigit(c))
+				fscanf(fp, "%d\n", &pos);
+			get_history(&rwin, reread, line + 1, line2, pos);
 		}
 		else if(line[0] == ':') /* command line history */
 		{
@@ -583,11 +600,20 @@ write_info_file(void)
 					continue;
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
+					char c;
+					int pos;
+
 					if(lwin.history_pos + nlh/2 == cfg.history_len - 1)
 						continue;
 					if(is_in_view_history(&lwin, line + 1))
 						continue;
 					prepare_line(line2);
+
+					c = getc(fp);
+					ungetc(c, fp);
+					if(isdigit(c))
+						fscanf(fp, "%d\n", &pos);
+
 					nlh = add_to_string_array(&lh, nlh, 2, line + 1, line2);
 				}
 			}
@@ -597,11 +623,20 @@ write_info_file(void)
 					continue;
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
+					char c;
+					int pos;
+
 					if(rwin.history_pos + nrh/2 == cfg.history_len - 1)
 						continue;
 					if(is_in_view_history(&rwin, line + 1))
 						continue;
 					prepare_line(line2);
+
+					c = getc(fp);
+					ungetc(c, fp);
+					if(isdigit(c))
+						fscanf(fp, "%d\n", &pos);
+
 					nrh = add_to_string_array(&rh, nrh, 2, line + 1, line2);
 				}
 			}
@@ -808,21 +843,23 @@ write_info_file(void)
 
 	if((cfg.vifm_info & VIFMINFO_DHISTORY) && cfg.history_len > 0)
 	{
-		save_view_history(&lwin, NULL, NULL);
+		save_view_history(&lwin, NULL, NULL, -1);
 		fputs("\n# Left window history (oldest to newest):\n", fp);
 		for(i = 0; i < nlh; i += 2)
 			fprintf(fp, "d%s\n\t%s\n", lh[i], lh[i + 1]);
 		for(i = 0; i <= lwin.history_pos; i++)
-			fprintf(fp, "d%s\n\t%s\n", lwin.history[i].dir, lwin.history[i].file);
+			fprintf(fp, "d%s\n\t%s\n%d\n", lwin.history[i].dir, lwin.history[i].file,
+					lwin.history[i].rel_pos);
 		if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
 			fprintf(fp, "d\n");
 
-		save_view_history(&rwin, NULL, NULL);
+		save_view_history(&rwin, NULL, NULL, -1);
 		fputs("\n# Right window history (oldest to newest):\n", fp);
 		for(i = 0; i < nrh; i += 2)
 			fprintf(fp, "D%s\n\t%s\n", rh[i], rh[i + 1]);
 		for(i = 0; i <= rwin.history_pos; i++)
-			fprintf(fp, "D%s\n\t%s\n", rwin.history[i].dir, rwin.history[i].file);
+			fprintf(fp, "D%s\n\t%s\n%d\n", rwin.history[i].dir, rwin.history[i].file,
+					rwin.history[i].rel_pos);
 		if(cfg.vifm_info & VIFMINFO_SAVEDIRS)
 			fprintf(fp, "D\n");
 	}
@@ -830,7 +867,7 @@ write_info_file(void)
 	if(cfg.vifm_info & VIFMINFO_CHISTORY)
 	{
 		fputs("\n# Command line history (oldest to newest):\n", fp);
-		for(i = 0; i < ncmdh; i++)
+		for(i = 0; i < MIN(ncmdh, cfg.cmd_history_len - cfg.cmd_history_num); i++)
 			fprintf(fp, ":%s\n", cmdh[i]);
 		for(i = cfg.cmd_history_num; i >= 0; i--)
 			fprintf(fp, ":%s\n", cfg.cmd_history[i]);

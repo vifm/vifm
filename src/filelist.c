@@ -533,9 +533,7 @@ find_file_pos_in_list(FileView *view, const char *file)
 	for(x = 0; x < view->list_rows; x++)
 	{
 		if(strcmp(view->dir_entry[x].name, file) == 0)
-		{
 			return x;
-		}
 	}
 	return -1;
 }
@@ -1002,7 +1000,7 @@ clean_positions_in_history(FileView *view)
 }
 
 void
-save_view_history(FileView *view, const char *path, const char *file)
+save_view_history(FileView *view, const char *path, const char *file, int pos)
 {
 	int x;
 
@@ -1017,6 +1015,8 @@ save_view_history(FileView *view, const char *path, const char *file)
 		path = view->curr_dir;
 	if(file == NULL)
 		file = view->dir_entry[view->list_pos].name;
+	if(pos < 0)
+		pos = view->list_pos;
 
 	if(view->history_num > 0 &&
 			strcmp(view->history[view->history_pos].dir, path) == 0)
@@ -1025,6 +1025,7 @@ save_view_history(FileView *view, const char *path, const char *file)
 			return;
 		x = view->history_pos;
 		snprintf(view->history[x].file, sizeof(view->history[x].file), "%s", file);
+		view->history[x].rel_pos = pos - view->top_line;
 		return;
 	}
 
@@ -1047,12 +1048,14 @@ save_view_history(FileView *view, const char *path, const char *file)
 		{
 			strcpy(view->history[y].file, view->history[y + 1].file);
 			strcpy(view->history[y].dir, view->history[y + 1].dir);
+			view->history[y].rel_pos = view->history[y + 1].rel_pos;
 		}
 		x--;
 		view->history_num = x;
 	}
 	snprintf(view->history[x].dir, sizeof(view->history[x].dir), "%s", path);
 	snprintf(view->history[x].file, sizeof(view->history[x].file), "%s", file);
+	view->history[x].rel_pos = pos - view->top_line;
 	view->history_num++;
 	view->history_pos = view->history_num - 1;
 }
@@ -1077,6 +1080,7 @@ static void
 check_view_dir_history(FileView *view)
 {
 	int pos = 0;
+	int rel_pos = -1;
 
 	if(cfg.history_len > 0 && curr_stats.ch_pos)
 	{
@@ -1100,6 +1104,7 @@ check_view_dir_history(FileView *view)
 		if(found)
 		{
 			pos = find_file_pos_in_list(view, view->history[x].file);
+			rel_pos = view->history[x].rel_pos;
 		}
 		else
 		{
@@ -1113,17 +1118,27 @@ check_view_dir_history(FileView *view)
 	if(pos < 0)
 		pos = 0;
 	view->list_pos = pos;
-	if(view->list_pos <= view->window_rows)
+	if(rel_pos >= 0)
 	{
-		view->top_line = 0;
-		view->curr_line = view->list_pos;
+		view->top_line = pos - rel_pos;
+		if(view->top_line < 0)
+			view->top_line = 0;
+		view->curr_line = pos - view->top_line;
 	}
-	else if(view->list_pos > (view->top_line + view->window_rows))
+	else
 	{
-		while(view->list_pos > (view->top_line + view->window_rows))
-			view->top_line++;
+		if(view->list_pos <= view->window_rows)
+		{
+			view->top_line = 0;
+			view->curr_line = view->list_pos;
+		}
+		else if(view->list_pos > (view->top_line + view->window_rows))
+		{
+			while(view->list_pos > (view->top_line + view->window_rows))
+				view->top_line++;
 
-		view->curr_line = view->window_rows;
+			view->curr_line = view->window_rows;
+		}
 	}
 }
 
@@ -1341,7 +1356,7 @@ change_directory(FileView *view, const char *directory)
 	char newdir[PATH_MAX];
 	char dir_dup[PATH_MAX];
 
-	save_view_history(view, NULL, NULL);
+	save_view_history(view, NULL, NULL, -1);
 
 	if(directory[0] == '/')
 	{
@@ -1458,7 +1473,7 @@ change_directory(FileView *view, const char *directory)
 	stat(view->curr_dir, &s);
 	view->dir_mtime = s.st_mtime;
 
-	save_view_history(view, NULL, "");
+	save_view_history(view, NULL, "", -1);
 	return 0;
 }
 

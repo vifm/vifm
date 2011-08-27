@@ -3004,8 +3004,8 @@ restart_cmd(const struct cmd_info *cmd_info)
 
 	load_default_configuration();
 	read_info_file(1);
-	save_view_history(&lwin, NULL, NULL);
-	save_view_history(&rwin, NULL, NULL);
+	save_view_history(&lwin, NULL, NULL, -1);
+	save_view_history(&rwin, NULL, NULL, -1);
 	exec_config();
 	return 0;
 }
