@@ -61,8 +61,8 @@ am_vifm_OBJECTS = background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	options.$(OBJEXT) permissions_dialog.$(OBJEXT) \
 	registers.$(OBJEXT) search.$(OBJEXT) signals.$(OBJEXT) \
 	sort.$(OBJEXT) sort_dialog.$(OBJEXT) status.$(OBJEXT) \
-	tags.$(OBJEXT) tree.$(OBJEXT) ui.$(OBJEXT) undo.$(OBJEXT) \
-	utils.$(OBJEXT) vifm.$(OBJEXT) visual.$(OBJEXT)
+	tags.$(OBJEXT) trash.$(OBJEXT) tree.$(OBJEXT) ui.$(OBJEXT) \
+	undo.$(OBJEXT) utils.$(OBJEXT) vifm.$(OBJEXT) visual.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
@@ -264,6 +264,7 @@ vifm_SOURCES = \
 	sort_dialog.c sort_dialog.h \
 	status.c status.h \
 	tags.c tags.h \
+	trash.c trash.h \
 	tree.c tree.h \
 	ui.c ui.h \
 	undo.c undo.h \
@@ -430,6 +431,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/status.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tags.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/trash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/undo.Po@am__quote@

@@ -16,12 +16,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <string.h>
+
 #include "background.h"
 #include "config.h"
 #include "fileops.h"
 #include "macros.h"
 #include "menus.h"
 #include "status.h"
+#include "trash.h"
 #include "undo.h"
 #include "utils.h"
 
@@ -148,10 +151,14 @@ op_move(void *data, const char *src, const char *dst)
 	}
 
 	snprintf(cmd, sizeof(cmd), "mv -n %s %s", escaped_src, escaped_dst);
-	result = system_and_wait_for_errors(cmd);
-
 	free(escaped_dst);
 	free(escaped_src);
+
+	result = system_and_wait_for_errors(cmd);
+	if(path_starts_with(dst, cfg.trash_dir))
+		add_to_trash(src, strrchr(dst, '/') + 1);
+	else if(path_starts_with(src, cfg.trash_dir))
+		remove_from_trash(strrchr(src, '/') + 1);
 	return result;
 }
 

@@ -19,14 +19,14 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include <limits.h>
 #include <curses.h>
+
+#include <limits.h>
 
 typedef struct _Config {
 	char home_dir[PATH_MAX]; /* ends with a slash */
 	char config_dir[PATH_MAX];
 	char trash_dir[PATH_MAX];
-	char escaped_trash_dir[PATH_MAX];
 	char log_file[PATH_MAX];
 	char *vi_command;
 	int vi_cmd_bg;

@@ -2814,6 +2814,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	char path[PATH_MAX];
 	int from_file;
+	int from_trash;
 
 	if(move && access(view->curr_dir, W_OK) != 0)
 	{
@@ -2895,10 +2896,17 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		view->list_pos = i;
 	}
 
+	from_trash = path_starts_with(view->curr_dir, cfg.trash_dir);
 	cmd_group_begin(buf);
 	for(i = 0; i < view->selected_files; i++)
 	{
 		const char *dst = (nlines > 0) ? list[i] : view->selected_filelist[i];
+		if(from_trash)
+		{
+			while(isdigit(*dst))
+				dst++;
+			dst++;
+		}
 		if(move)
 		{
 			char dst_full[PATH_MAX];

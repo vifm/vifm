@@ -122,6 +122,7 @@ const char *tags[] = {
 	"vifm-:registers",
 	"vifm-:rename",
 	"vifm-:restart",
+	"vifm-:restore",
 	"vifm-:rlink",
 	"vifm-:s",
 	"vifm-:screen",

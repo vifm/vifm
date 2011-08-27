@@ -42,6 +42,7 @@
 #include "opt_handlers.h"
 #include "registers.h"
 #include "status.h"
+#include "trash.h"
 #include "utils.h"
 
 #define MAX_LEN 1024
@@ -144,7 +145,6 @@ set_config_dir(void)
 	FILE *f;
 	char help_file[PATH_MAX];
 	char rc_file[PATH_MAX];
-	char *escaped;
 
 	home_dir = getenv("HOME");
 	if(home_dir == NULL)
@@ -156,10 +156,6 @@ set_config_dir(void)
 	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s/.vifm", home_dir);
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/.vifm/Trash", home_dir);
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/.vifm/log", home_dir);
-
-	escaped = escape_filename(cfg.trash_dir, 0);
-	strcpy(cfg.escaped_trash_dir, escaped);
-	free(escaped);
 
 	if(chdir(cfg.config_dir))
 	{
@@ -423,6 +419,18 @@ read_info_file(int reread)
 				}
 			}
 		}
+		else if(line[0] == 't') /* trash */
+		{
+			if(fgets(line2, sizeof(line2), fp) == line2)
+			{
+				char buf[PATH_MAX];
+				snprintf(buf, sizeof(buf), "%s/%s", cfg.trash_dir, line + 1);
+				if(access(buf, F_OK) != 0)
+					continue;
+				prepare_line(line2);
+				add_to_trash(line2, line + 1);
+			}
+		}
 		else if(line[0] == '"') /* registers */
 		{
 			append_to_register(line[1], line + 2);
@@ -498,9 +506,9 @@ write_info_file(void)
 	int nlist = -1;
 	char **ft = NULL, **fx = NULL , **fv = NULL, **cmds = NULL, **marks = NULL;
 	char **lh = NULL, **rh = NULL, **cmdh = NULL, **srch = NULL, **regs = NULL;
-	char **prompt = NULL;
+	char **prompt = NULL, **trash = NULL;
 	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0, nlh = 0, nrh = 0;
-	int ncmdh = 0, nsrch = 0, nregs = 0, nprompt = 0;
+	int ncmdh = 0, nsrch = 0, nregs = 0, nprompt = 0, ntrash = 0;
 	int i;
 	int is_console;
 
@@ -656,6 +664,20 @@ write_info_file(void)
 						nmarks = add_to_string_array(&marks, nmarks, 3, line + 1, line2,
 								line3);
 					}
+				}
+			}
+			else if(line[0] == 't') /* trash */
+			{
+				if(fgets(line2, sizeof(line2), fp) == line2)
+				{
+					char buf[PATH_MAX];
+					snprintf(buf, sizeof(buf), "%s/%s", cfg.trash_dir, line + 1);
+					prepare_line(line2);
+					if(access(buf, F_OK) != 0)
+						continue;
+					if(is_in_trash(line + 1))
+						continue;
+					ntrash = add_to_string_array(&trash, ntrash, 2, line + 1, line2);
 				}
 			}
 			else if(line[0] == ':') /* command line history */
@@ -921,6 +943,12 @@ write_info_file(void)
 		}
 	}
 
+	fputs("\n# Trash content:\n", fp);
+	for(i = 0; i < nentries; i++)
+		fprintf(fp, "t%s\n\t%s\n", trash_list[i].trash_name, trash_list[i].path);
+	for(i = 0; i < ntrash; i += 2)
+		fprintf(fp, "t%s\n\t%s\n", trash[i], trash[i + 1]);
+
 	if(cfg.vifm_info & VIFMINFO_STATE)
 	{
 		fputs("\n# State:\n", fp);
@@ -951,6 +979,7 @@ write_info_file(void)
 	free_string_array(srch, nsrch);
 	free_string_array(regs, nregs);
 	free_string_array(prompt, nprompt);
+	free_string_array(trash, ntrash);
 }
 
 void

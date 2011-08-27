@@ -622,6 +622,10 @@ The builtin commands are:
 :restart - will free a lot of things (histories, commands, etc.) and reread
     vifminfo and vifmrc files.
 
+                                               *vifm-:restore*
+:[range]restore - will restore file from Trash.  Works in trash directory
+    only.
+
                                                *vifm-:rlink*
 :[range]rlink[!?] - creates relative symbolic links of files in directory of
     other view.  With "?" vifm will open vi to edit filenames.  "!" forces

@@ -309,6 +309,8 @@
 
 	Added gv command for visual mode.
 
+	Added :restore command.
+
 	Enter key in visual mode will leave it saving selection.
 
 	Visual mode now remembers direction of the last selection.

@@ -8,7 +8,6 @@ Basic things that need to be done.
         :chown commands.
     Perform operations using system calls, not programs.  This is much faster
         and will ease porting on Windows.
-	:restore command to restore files from Trash
     Better cW command (maybe accept count of extensions to skip).
     Better globals support.
     Maybe remove 'trash' option, since we have two commands for deletion.

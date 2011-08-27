@@ -61,6 +61,7 @@
 #include "sort_dialog.h"
 #include "status.h"
 #include "tags.h"
+#include "trash.h"
 #include "ui.h"
 #include "undo.h"
 #include "utils.h"
@@ -160,6 +161,7 @@ static int pwd_cmd(const struct cmd_info *cmd_info);
 static int registers_cmd(const struct cmd_info *cmd_info);
 static int rename_cmd(const struct cmd_info *cmd_info);
 static int restart_cmd(const struct cmd_info *cmd_info);
+static int restore_cmd(const struct cmd_info *cmd_info);
 static int rlink_cmd(const struct cmd_info *cmd_info);
 static int screen_cmd(const struct cmd_info *cmd_info);
 static int set_cmd(const struct cmd_info *cmd_info);
@@ -287,6 +289,8 @@ static const struct cmd_add commands[] = {
 		.handler = rename_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "restart",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = restart_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "restore",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = restore_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 1, },
 	{ .name = "rlink",            .abbr = NULL,    .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = rlink_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "screen",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2452,13 +2456,7 @@ edit_cmd(const struct cmd_info *cmd_info)
 static int
 empty_cmd(const struct cmd_info *cmd_info)
 {
-	char buf[24 + (strlen(cfg.escaped_trash_dir) + 1)*2 + 1];
-
-	snprintf(buf, sizeof(buf), "sh -c 'rm -rf %s/* %s/.[!.]*'",
-			cfg.escaped_trash_dir, cfg.escaped_trash_dir);
-	clean_regs_with_trash();
-	start_background_job(buf);
-	clean_cmds_with_trash();
+	empty_trash();
 	return 0;
 }
 
@@ -3008,6 +3006,28 @@ restart_cmd(const struct cmd_info *cmd_info)
 	save_view_history(&rwin, NULL, NULL, -1);
 	exec_config();
 	return 0;
+}
+
+static int
+restore_cmd(const struct cmd_info *cmd_info)
+{
+	int i;
+	int m = 0;
+	int n = curr_view->selected_files;
+
+	cmd_group_begin("restore: ");
+	cmd_group_end();
+	for(i = 0; i < curr_view->list_rows; i++)
+	{
+		if(!curr_view->dir_entry[i].selected)
+			continue;
+		if(restore_from_trash(curr_view->dir_entry[i].name) == 0)
+			m++;
+	}
+
+	load_saving_pos(curr_view, 1);
+	status_bar_messagef("Restored %d of %d", m, n);
+	return 1;
 }
 
 static int
