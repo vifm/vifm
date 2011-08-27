@@ -380,6 +380,8 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 		{
 			curr->enters = 1;
 			result = execute_keys_inner(key_t->data.cmd, &keys_info, curr->no_remap);
+			if(result == KEYS_WAIT)
+				result = KEYS_UNKNOWN;
 			curr->enters = 0;
 		}
 		else if(def_handlers[*mode] != NULL)

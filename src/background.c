@@ -85,7 +85,7 @@ check_background_jobs(void)
 	while(p)
 	{
 		int rerun = 0;
-		char *completed;
+		char *completed = NULL;
 
 		/* Mark any finished jobs */
 		while(fj)
