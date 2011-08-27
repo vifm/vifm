@@ -921,7 +921,8 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	runnable = type == REGULAR || type == EXECUTABLE || runnable ||
 			type == DIRECTORY;
 
-	execable = type == EXECUTABLE || (runnable && access(filename, X_OK) == 0);
+	execable = type == EXECUTABLE || (runnable && access(filename, X_OK) == 0 &&
+			S_ISEXE(view->dir_entry[view->list_pos].mode));
 	execable = execable && !dont_execute && cfg.auto_execute;
 
 	if(cfg.vim_filter && (execable || runnable))
@@ -2127,16 +2128,16 @@ make_undo_string(FileView *view, char *buf, int nlines, char **list)
 	{
 		if(buf[len - 2] != ':')
 		{
-			strncat(buf, ", ", sizeof(buf));
-			buf[sizeof(buf) - 1] = '\0';
+			strncat(buf, ", ", COMMAND_GROUP_INFO_LEN);
+			buf[COMMAND_GROUP_INFO_LEN - 1] = '\0';
 		}
-		strncat(buf, view->selected_filelist[i], sizeof(buf));
+		strncat(buf, view->selected_filelist[i], COMMAND_GROUP_INFO_LEN);
 		if(nlines > 0)
 		{
-			strncat(buf, " to ", sizeof(buf));
-			strncat(buf, list[i], sizeof(buf));
+			strncat(buf, " to ", COMMAND_GROUP_INFO_LEN);
+			strncat(buf, list[i], COMMAND_GROUP_INFO_LEN);
 		}
-		buf[sizeof(buf) - 1] = '\0';
+		buf[COMMAND_GROUP_INFO_LEN - 1] = '\0';
 		len = strlen(buf);
 	}
 }
@@ -2871,7 +2872,18 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		return 1;
 	}
 
-	snprintf(buf, sizeof(buf), "copy from %s to %s: ", view->curr_dir, path);
+	if(move)
+		strcpy(buf, "move");
+	else if(type == 0)
+		strcpy(buf, "copy");
+	else if(type == 1)
+		strcpy(buf, "alink");
+	else
+		strcpy(buf, "rlink");
+	snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), " from %s to ",
+			replace_home_part(view->curr_dir));
+	snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%s: ",
+			replace_home_part(path));
 	make_undo_string(view, buf, nlines, list);
 
 	if(move)

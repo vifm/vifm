@@ -607,7 +607,7 @@ write_vifmrc(const char *config_file, int comment_out)
 	fprintf(fp, "\n%sset fusehome=%s\n", comment, escape_spaces(options.fusehome));
 
 	fprintf(fp, "\n\" Format for displaying time in file list. For example:\n");
-	fprintf(fp, "\" TIME_STAMP_FORMAT=%%m/%%d-%%H:%%M\n");
+	fprintf(fp, "\" set timefmt=%%m/%%d-%%H:%%M\n");
 	fprintf(fp, "\" See man date or man strftime for details.\n");
 	fprintf(fp, "\n%sset timefmt=%s\n", comment, escape_spaces(options.timefmt));
 

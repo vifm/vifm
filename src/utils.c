@@ -48,6 +48,12 @@
 struct Fuse_List *fuse_mounts = NULL;
 
 int
+S_ISEXE(mode_t mode)
+{
+	return ((S_IXUSR & mode) || (S_IXGRP & mode) || (S_IXOTH & mode));
+}
+
+int
 is_dir(const char *file)
 {
 	struct stat statbuf;

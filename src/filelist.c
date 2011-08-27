@@ -1497,12 +1497,6 @@ reset_selected_files(FileView *view)
 }
 
 static int
-S_ISEXE(mode_t mode)
-{
-	return ((S_IXUSR & mode) || (S_IXGRP & mode) || (S_IXOTH & mode));
-}
-
-static int
 regexp_filter_match(FileView *view, char *filename)
 {
 	regex_t re;
