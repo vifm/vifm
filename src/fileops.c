@@ -1007,11 +1007,14 @@ gen_trash_name(const char *name)
 }
 
 int
-is_dir_writable(const char *path)
+is_dir_writable(int dest, const char *path)
 {
 	if(access(path, W_OK) == 0)
 		return 1;
-	show_error_msg("Operation error", "Destination directory is not writable");
+	if(dest)
+		show_error_msg("Operation error", "Destination directory is not writable");
+	else
+		show_error_msg("Operation error", "Current directory is not writable");
 	return 0;
 }
 
@@ -1025,7 +1028,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	size_t len;
 	int i;
 
-	if(!is_dir_writable(view->curr_dir))
+	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
 
 	if(cfg.use_trash && use_trash &&
@@ -1270,7 +1273,7 @@ rename_file(FileView *view, int name_only)
 	char* p;
 	char buf[NAME_MAX + 1];
 
-	if(!is_dir_writable(view->curr_dir))
+	if(!is_dir_writable(0, view->curr_dir))
 		return;
 
 	strncpy(buf, get_current_file_name(view), sizeof(buf));
@@ -1587,10 +1590,8 @@ rename_files(FileView *view, char **list, int nlines)
 	int count;
 	int i, j;
 
-	if(!is_dir_writable(view->curr_dir))
-	{
+	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
-	}
 
 	if(view->selected_files == 0)
 	{
@@ -1782,7 +1783,7 @@ change_link(FileView *view)
 	size_t len;
 	char buf[PATH_MAX], linkto[PATH_MAX];
 
-	if(!is_dir_writable(view->curr_dir))
+	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
 
 	if(view->dir_entry[view->list_pos].type != LINK)
@@ -2059,7 +2060,7 @@ put_files_from_register(FileView *view, int name, int force_move)
 {
 	registers_t *reg;
 
-	if(!is_dir_writable(view->curr_dir))
+	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
 
 	reg = find_register(name);
@@ -2242,7 +2243,7 @@ clone_files(FileView *view, char **list, int nlines, int force)
 	{
 		strcpy(path, view->curr_dir);
 	}
-	if(!is_dir_writable(path))
+	if(!is_dir_writable(1, path))
 		return 0;
 
 	get_all_selected_files(view);
@@ -2342,7 +2343,7 @@ put_links(FileView *view, int reg_name, int relative)
 {
 	registers_t *reg;
 
-	if(!is_dir_writable(view->curr_dir))
+	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
 
 	reg = find_register(reg_name);
@@ -2532,7 +2533,7 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 	int cflags;
 	int err;
 
-	if(!is_dir_writable(view->curr_dir))
+	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
 
 	if(view->selected_files == 0)
@@ -2645,7 +2646,7 @@ tr_in_names(FileView *view, const char *pattern, const char *sub)
 	char **dest = NULL;
 	int n = 0;
 
-	if(!is_dir_writable(view->curr_dir))
+	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
 
 	if(view->selected_files == 0)
@@ -2734,7 +2735,7 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	size_t len;
 
-	if(!is_dir_writable(view->curr_dir))
+	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
 
 	if(count > 0)
@@ -2928,7 +2929,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	{
 		strcpy(path, other_view->curr_dir);
 	}
-	if(!is_dir_writable(path))
+	if(!is_dir_writable(1, path))
 		return 0;
 
 	get_all_selected_files(view);

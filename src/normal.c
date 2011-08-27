@@ -1049,7 +1049,7 @@ delete(struct key_info key_info, int use_trash)
 {
 	if(!use_trash && cfg.confirm)
 	{
-		if(!is_dir_writable(curr_view->curr_dir))
+		if(!is_dir_writable(0, curr_view->curr_dir))
 			return;
 
 		if(!query_user_menu("Permanent deletion",
@@ -1091,7 +1091,7 @@ delete(struct key_info key_info, int use_trash)
 static void
 cmd_D_selector(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(!is_dir_writable(curr_view->curr_dir))
+	if(!is_dir_writable(0, curr_view->curr_dir))
 		return;
 
 	if(cfg.confirm)

@@ -61,7 +61,7 @@ int change_link(FileView *view);
 int put_files_from_register(FileView *view, int name, int force_move);
 int clone_files(FileView *view, char **list, int nlines, int force);
 unsigned long long calc_dirsize(const char *path, int force_update);
-int is_dir_writable(const char *path);
+int is_dir_writable(int dest, const char *path);
 /* Returns new value for save_msg flag. */
 int put_links(FileView *view, int reg_name, int relative);
 /* Returns new value for save_msg flag. */
