@@ -1117,22 +1117,32 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 			continue;
 		}
 
-		chosp(view->selected_filelist[x]);
-
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", view->curr_dir,
 				view->selected_filelist[x]);
+		chosp(full_buf);
+
 		progress_msg("Deleting files", x + 1, view->selected_files);
 		if(cfg.use_trash && use_trash)
 		{
-			char *dest;
-			dest = gen_trash_name(view->selected_filelist[x]);
-			result = perform_operation(OP_MOVE, NULL, full_buf, dest);
-			if(result == 0)
+			if(strcmp(full_buf, cfg.trash_dir) == 0)
 			{
-				add_operation(OP_MOVE, NULL, NULL, full_buf, dest);
-				append_to_register(reg, dest);
+				show_error_msg("Background Process Error",
+						"You cannot delete trash directory to trash");
+				result = -1;
 			}
-			free(dest);
+			else
+			{
+				char *dest;
+
+				dest = gen_trash_name(view->selected_filelist[x]);
+				result = perform_operation(OP_MOVE, NULL, full_buf, dest);
+				if(result == 0)
+				{
+					add_operation(OP_MOVE, NULL, NULL, full_buf, dest);
+					append_to_register(reg, dest);
+				}
+				free(dest);
+			}
 		}
 		else
 		{
@@ -1142,9 +1152,15 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		}
 
 		if(result == 0)
+		{
 			y++;
+		}
 		else if(!view->dir_entry[view->list_pos].selected)
-			view->list_pos = find_file_pos_in_list(view, view->selected_filelist[x]);
+		{
+			int pos = find_file_pos_in_list(view, view->selected_filelist[x]);
+			if(pos >= 0)
+				view->list_pos = pos;
+		}
 	}
 	free_selected_file_array(view);
 	clean_selected_files(view);

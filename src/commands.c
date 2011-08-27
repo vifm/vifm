@@ -3015,6 +3015,11 @@ restore_cmd(const struct cmd_info *cmd_info)
 	int m = 0;
 	int n = curr_view->selected_files;
 
+	i = curr_view->list_pos;
+	while(i < curr_view->list_rows - 1 && curr_view->dir_entry[i].selected)
+		i++;
+	curr_view->list_pos = i;
+
 	cmd_group_begin("restore: ");
 	cmd_group_end();
 	for(i = 0; i < curr_view->list_rows; i++)
