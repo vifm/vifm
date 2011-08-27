@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include "background.h"
 #include "config.h"
 #include "fileops.h"
 #include "macros.h"
@@ -29,12 +30,12 @@
 static int op_none(void *data, const char *src, const char *dst);
 static int op_remove(void *data, const char *src, const char *dst);
 static int op_removesl(void *data, const char *src, const char *dst);
-static int op_delete(void *data, const char *src, const char *dst);
 static int op_copy(void *data, const char *src, const char *dst);
 static int op_move(void *data, const char *src, const char *dst);
 static int op_chown(void *data, const char *src, const char *dst);
 static int op_chgrp(void *data, const char *src, const char *dst);
 static int op_chmod(void *data, const char *src, const char *dst);
+static int op_chmodr(void *data, const char *src, const char *dst);
 static int op_symlink(void *data, const char *src, const char *dst);
 
 typedef int (*op_func)(void *data, const char *src, const char *dst);
@@ -43,7 +44,6 @@ static op_func op_funcs[] = {
 	op_none,    /* OP_NONE */
 	op_remove,  /* OP_REMOVE */
 	op_removesl,  /* OP_REMOVESL */
-	op_delete,  /* OP_DELETE */
 	op_copy,    /* OP_COPY */
 	op_move,    /* OP_MOVE */
 	op_move,    /* OP_MOVETMP0 */
@@ -52,6 +52,7 @@ static op_func op_funcs[] = {
 	op_chown,   /* OP_CHOWN */
 	op_chgrp,   /* OP_CHGRP */
 	op_chmod,   /* OP_CHMOD */
+	op_chmodr,  /* OP_CHMODR */
 	op_symlink, /* OP_SYMLINK */
 	op_symlink, /* OP_SYMLINK2 */
 };
@@ -102,13 +103,6 @@ op_removesl(void *data, const char *src, const char *dst)
 
 	free(escaped);
 	return result;
-}
-
-static int
-op_delete(void *data, const char *src, const char *dst)
-{
-	/* TODO: write code */
-	return 0;
 }
 
 static int
@@ -192,7 +186,26 @@ op_chgrp(void *data, const char *src, const char *dst)
 static int
 op_chmod(void *data, const char *src, const char *dst)
 {
-	/* TODO: write code */
+	char cmd[128 + PATH_MAX];
+	char *escaped;
+
+	escaped = escape_filename(src, 0);
+	snprintf(cmd, sizeof(cmd), "chmod %s %s", (char *)data, escaped);
+	free(escaped);
+
+	return system_and_wait_for_errors(cmd);
+}
+
+static int
+op_chmodr(void *data, const char *src, const char *dst)
+{
+	char cmd[128 + PATH_MAX];
+	char *escaped;
+
+	escaped = escape_filename(src, 0);
+	snprintf(cmd, sizeof(cmd), "chmod -R %s %s", (char *)data, escaped);
+	free(escaped);
+	start_background_job(cmd);
 	return 0;
 }
 

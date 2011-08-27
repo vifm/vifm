@@ -53,12 +53,11 @@ static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
 static void set_perm_string(FileView *view, const int *perms,
 		const int *origin_perms);
-static void files_chmod(FileView *view, const char *mode, const char *inv_mode,
-		int recurse_dirs);
+static void files_chmod(FileView *view, const char *mode, int recurse_dirs);
 static void chmod_file_in_list(FileView *view, int pos, const char *mode,
 		const char *inv_mode, int recurse_dirs);
-static void file_chmod(char *path, char *esc_path, const char *mode,
-		const char *inv_mode, int recurse_dirs);
+static void file_chmod(char *path, const char *mode, const char *inv_mode,
+		int recurse_dirs);
 static void cmd_G(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
 static void cmd_space(struct key_info, struct keys_info *);
@@ -320,7 +319,6 @@ set_perm_string(FileView *view, const int *perms, const int *origin_perms)
 											"o-r", "o-w", "o-x", "o-t"};
 	char *add_adv_perm[] = {"u-x+X", "g-x+X", "o-x+X"};
 	char perm_string[64] = " ";
-	char inv_perm_string[64] = " ";
 
 	if(adv_perms[0] && adv_perms[1] && adv_perms[2])
 	{
@@ -330,7 +328,6 @@ set_perm_string(FileView *view, const int *perms, const int *origin_perms)
 	}
 
 	strcat(perm_string, "a-x+X,");
-	strcat(inv_perm_string, "a+x,");
 
 	for(i = 0; i < 12; i++)
 	{
@@ -352,26 +349,21 @@ set_perm_string(FileView *view, const int *perms, const int *origin_perms)
 				strcat(perm_string, add_adv_perm[i/4]);
 			else
 				strcat(perm_string, add_perm[i]);
-			strcat(inv_perm_string, sub_perm[i]);
 		}
 		else
 		{
 			strcat(perm_string, sub_perm[i]);
-			strcat(inv_perm_string, add_perm[i]);
 		}
 
 		strcat(perm_string, ",");
-		strcat(inv_perm_string, ",");
 	}
 	perm_string[strlen(perm_string) - 1] = '\0'; /* Remove last , */
-	inv_perm_string[strlen(inv_perm_string) - 1] = '\0'; /* Remove last , */
 
-	files_chmod(view, perm_string, inv_perm_string, perms[12]);
+	files_chmod(view, perm_string, perms[12]);
 }
 
 static void
-files_chmod(FileView *view, const char *mode, const char *inv_mode,
-		int recurse_dirs)
+files_chmod(FileView *view, const char *mode, int recurse_dirs)
 {
 	int i;
 
@@ -382,11 +374,14 @@ files_chmod(FileView *view, const char *mode, const char *inv_mode,
 	if(i == view->list_rows)
 	{
 		char buf[COMMAND_GROUP_INFO_LEN];
+		char inv[16];
 		snprintf(buf, sizeof(buf), "chmod in %s: %s",
 				replace_home_part(view->curr_dir),
 				view->dir_entry[view->list_pos].name);
 		cmd_group_begin(buf);
-		chmod_file_in_list(view, view->list_pos, mode, inv_mode, recurse_dirs);
+		snprintf(inv, sizeof(inv), "0%o",
+				view->dir_entry[view->list_pos].mode & 0xff);
+		chmod_file_in_list(view, view->list_pos, mode, inv, recurse_dirs);
 	}
 	else
 	{
@@ -416,7 +411,11 @@ files_chmod(FileView *view, const char *mode, const char *inv_mode,
 		while(j < view->list_rows)
 		{
 			if(view->dir_entry[j].selected)
-				chmod_file_in_list(view, j, mode, inv_mode, recurse_dirs);
+			{
+				char inv[16];
+				snprintf(inv, sizeof(inv), "0%o", view->dir_entry[j].mode & 0xff);
+				chmod_file_in_list(view, j, mode, inv, recurse_dirs);
+			}
 			j++;
 		}
 	}
@@ -429,39 +428,20 @@ chmod_file_in_list(FileView *view, int pos, const char *mode,
 {
 	char *filename;
 	char path_buf[PATH_MAX];
-	char *escaped;
 
 	filename = view->dir_entry[pos].name;
 	snprintf(path_buf, sizeof(path_buf), "%s/%s", view->curr_dir, filename);
-	escaped = escape_filename(path_buf, 0);
-	if(escaped == NULL)
-		return;
-	file_chmod(path_buf, escaped, mode, inv_mode, recurse_dirs);
-	free(escaped);
+	chosp(path_buf);
+	file_chmod(path_buf, mode, inv_mode, recurse_dirs);
 }
 
 static void
-file_chmod(char *path, char *esc_path, const char *mode, const char *inv_mode,
-		int recurse_dirs)
+file_chmod(char *path, const char *mode, const char *inv_mode, int recurse_dirs)
 {
-	char cmd[128 + strlen(esc_path)];
-	char undo_cmd[128 + strlen(esc_path)];
+	int op = recurse_dirs ? OP_CHMODR : OP_CHMOD;
 
-	if(recurse_dirs)
-	{
-		snprintf(cmd, sizeof(cmd), "chmod -R %s %s", mode, esc_path);
-		snprintf(undo_cmd, sizeof(undo_cmd), "chmod -R %s %s", inv_mode, esc_path);
-		start_background_job(cmd);
-	}
-	else
-	{
-		snprintf(cmd, sizeof(cmd), "chmod %s %s", mode, esc_path);
-		snprintf(undo_cmd, sizeof(undo_cmd), "chmod %s %s", inv_mode, esc_path);
-		if(system_and_wait_for_errors(cmd) != 0)
-			return;
-	}
-
-	/* add_operation(cmd, path, NULL, undo_cmd, path, NULL); */
+	if(perform_operation(op, (void *)mode, path, NULL) == 0)
+		add_operation(op, strdup(mode), strdup(inv_mode), path, "");
 }
 
 static void

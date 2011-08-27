@@ -65,7 +65,6 @@ static enum OPS undo_op[] = {
 	OP_NONE,     /* OP_NONE */
 	OP_NONE,     /* OP_REMOVE */
 	OP_SYMLINK,  /* OP_REMOVESL */
-	OP_MOVE,     /* OP_DELETE */
 	OP_REMOVE,   /* OP_COPY   */
 	OP_MOVE,     /* OP_MOVE */
 	OP_MOVETMP0, /* OP_MOVETMP0 */
@@ -74,6 +73,7 @@ static enum OPS undo_op[] = {
 	OP_CHOWN,    /* OP_CHOWN */
 	OP_CHGRP,    /* OP_CHGRP */
 	OP_CHMOD,    /* OP_CHMOD */
+	OP_CHMODR,   /* OP_CHMODR */
 	OP_REMOVE,   /* OP_SYMLINK */
 	OP_REMOVESL, /* OP_SYMLINK2 */
 };
@@ -93,8 +93,6 @@ static enum {
 		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE   */
 	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_REMOVESL */
 	  OPER_2ND, OPER_1ST, OPER_NON, OPER_NON, }, /* undo OP_SYMLINK2 */
-	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_DELETE */
-		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVE   */
 	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_COPY   */
 		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE */
 	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_MOVE */
@@ -111,6 +109,8 @@ static enum {
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHGRP */
 	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHMOD */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHMOD */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHMODR */
+		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHMODR */
 	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_2ND,    /* do   OP_SYMLINK */
 		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE  */
 	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_NON,    /* do   OP_SYMLINK2 */
@@ -119,6 +119,27 @@ static enum {
 
 static int _gnuc_unused opers_size_guard[
 	(ARRAY_LEN(opers) == OP_COUNT) ? 1 : -1
+];
+
+static int data_is_ptr[] = {
+	0, /* OP_NONE */
+	0, /* OP_REMOVE */
+	0, /* OP_REMOVESL */
+	0, /* OP_COPY   */
+	0, /* OP_MOVE */
+	0, /* OP_MOVETMP0 */
+	0, /* OP_MOVETMP1 */
+	0, /* OP_MOVETMP2 */
+	0, /* OP_CHOWN */
+	0, /* OP_CHGRP */
+	1, /* OP_CHMOD */
+	1, /* OP_CHMODR */
+	0, /* OP_SYMLINK */
+	0, /* OP_SYMLINK2 */
+};
+
+static int _gnuc_unused data_is_ptr_size_guard[
+	(ARRAY_LEN(data_is_ptr) == OP_COUNT) ? 1 : -1
 ];
 
 static perform_func do_func;
@@ -339,6 +360,10 @@ remove_cmd(struct cmd_t *cmd)
 	}
 	free(cmd->buf1);
 	free(cmd->buf2);
+	if(data_is_ptr[cmd->do_op.op])
+		free(cmd->do_op.data);
+	if(data_is_ptr[cmd->undo_op.op])
+		free(cmd->undo_op.data);
 
 	free(cmd);
 
@@ -646,7 +671,6 @@ static const char *
 get_op_desc(struct op_t op)
 {
 	static char buf[64 + 2*PATH_MAX] = "";
-	/* TODO: write code */
 	switch(op.op)
 	{
 		case OP_NONE:
@@ -655,9 +679,6 @@ get_op_desc(struct op_t op)
 		case OP_REMOVE:
 		case OP_REMOVESL:
 			snprintf(buf, sizeof(buf), "rm %s", op.src);
-			break;
-		case OP_DELETE:
-			snprintf(buf, sizeof(buf), "del %s", op.src);
 			break;
 		case OP_COPY:
 			snprintf(buf, sizeof(buf), "cp %s to %s", op.src, op.dst);
@@ -675,7 +696,8 @@ get_op_desc(struct op_t op)
 			snprintf(buf, sizeof(buf), "chown :%ld %s", (long)op.data, op.src);
 			break;
 		case OP_CHMOD:
-			snprintf(buf, sizeof(buf), "chmod 0%lo %s", (long)op.data, op.src);
+		case OP_CHMODR:
+			snprintf(buf, sizeof(buf), "chmod %s %s", (char *)op.data, op.src);
 			break;
 		case OP_SYMLINK:
 		case OP_SYMLINK2:
