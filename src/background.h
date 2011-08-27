@@ -27,7 +27,6 @@ typedef struct Jobs_List {
 	int fd;
 	pid_t pid;
 	char *cmd;
-	char *error_buf;
 	int skip_errors;
 	int running;
 	int exit_code;

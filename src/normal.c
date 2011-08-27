@@ -1046,6 +1046,11 @@ cmd_dd(struct key_info key_info, struct keys_info *keys_info)
 static void
 delete(struct key_info key_info, int use_trash)
 {
+#ifndef ENABLE_COMPATIBILITY_MODE
+	int j, k;
+	int *i;
+#endif
+
 	curr_stats.confirmed = 0;
 	if(!use_trash && cfg.confirm)
 	{
@@ -1074,8 +1079,6 @@ delete(struct key_info key_info, int use_trash)
 	curr_stats.save_msg = delete_file(curr_view, key_info.reg, 0, NULL,
 			use_trash);
 #else /* ENABLE_COMPATIBILITY_MODE */
-	int j, k;
-	int *i;
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	if(key_info.count == NO_COUNT_GIVEN)
@@ -1352,6 +1355,11 @@ cmd_u(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_yy(struct key_info key_info, struct keys_info *keys_info)
 {
+#ifndef ENABLE_COMPATIBILITY_MODE
+	int j, k;
+	int *i;
+#endif
+
 	if(key_info.count != NO_COUNT_GIVEN)
 		pick_files(curr_view, curr_view->list_pos + key_info.count - 1, keys_info);
 	if(key_info.reg == NO_REG_GIVEN)
@@ -1361,8 +1369,6 @@ cmd_yy(struct key_info key_info, struct keys_info *keys_info)
 	curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
 			keys_info->indexes);
 #else /* ENABLE_COMPATIBILITY_MODE */
-	int j, k;
-	int *i;
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	if(key_info.count == NO_COUNT_GIVEN)

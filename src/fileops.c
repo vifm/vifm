@@ -247,10 +247,10 @@ yank_selected_files(FileView *view, int reg)
 
 	for(x = 0; x < view->selected_files; x++)
 	{
+		char buf[PATH_MAX];
 		if(!view->selected_filelist[x])
 			break;
 
-		char buf[PATH_MAX];
 		namelen = strlen(view->selected_filelist[x]);
 		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
 				view->selected_filelist[x]);
@@ -372,6 +372,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	char *escaped_mount_point;
 	int clear_before_mount = 0;
 	const char *tmp_file;
+	int status;
 
 	escaped_filename = escape_filename(get_current_file_name(view), 0);
 
@@ -476,7 +477,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	tmp_file = make_name_unique("/tmp/vifm.errors");
 	strcat(buf, " 2> ");
 	strcat(buf, tmp_file);
-	int status = background_and_wait_for_status(buf);
+	status = background_and_wait_for_status(buf);
 	/* check child status */
 	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
 	{
