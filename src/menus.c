@@ -632,6 +632,7 @@ goto_selected_file(FileView *view, menu_info *m)
 	char *free_this = NULL;
 	int isdir = 0;
 	char *num = NULL;
+	char *p = NULL;
 
 	free_this = file = dir = malloc(2 + strlen(m->data[m->pos]) + 1 + 1);
 	if(m->data[m->pos][0] != '/')
@@ -640,7 +641,7 @@ goto_selected_file(FileView *view, menu_info *m)
 		dir[0] = '\0';
 	if(m->type == GREP)
 	{
-		char *p = strchr(m->data[m->pos], ':');
+		p = strchr(m->data[m->pos], ':');
 		if(p != NULL)
 		{
 			*p = '\0';
@@ -653,6 +654,8 @@ goto_selected_file(FileView *view, menu_info *m)
 	}
 	strcat(dir, m->data[m->pos]);
 	chomp(file);
+	if(m->type == GREP && p != NULL)
+		*p = ':';
 
 	if(access(file, R_OK) == 0)
 	{
