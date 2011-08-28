@@ -311,6 +311,8 @@
 
 	Added :restore command.
 
+	Added !! normal mode command.
+
 	Enter key in visual mode will leave it saving selection.
 
 	Visual mode now remembers direction of the last selection.

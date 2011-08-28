@@ -58,6 +58,7 @@ static void cmd_ctrl_e(struct key_info, struct keys_info *);
 static void cmd_ctrl_f(struct key_info, struct keys_info *);
 static void cmd_ctrl_g(struct key_info, struct keys_info *);
 static void cmd_space(struct key_info, struct keys_info *);
+static void cmd_emarkemark(struct key_info, struct keys_info *);
 static void cmd_ctrl_i(struct key_info, struct keys_info *);
 static void cmd_ctrl_l(struct key_info, struct keys_info *);
 static void cmd_ctrl_o(struct key_info, struct keys_info *);
@@ -171,6 +172,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x1b", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"'", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_quote}}},
 	{L" ", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
+	{L"!!", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_emarkemark}}},
 	{L"%", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
 	{L",", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
 	{L".", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dot}}},
@@ -379,6 +381,15 @@ static void
 cmd_space(struct key_info key_info, struct keys_info *keys_info)
 {
 	change_window();
+}
+
+static void
+cmd_emarkemark(struct key_info key_info, struct keys_info *keys_info)
+{
+	wchar_t buf[16] = L".!";
+	if(key_info.count != NO_COUNT_GIVEN)
+		swprintf(buf, ARRAY_LEN(buf), L".,.+%d!", key_info.count - 1);
+	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
 }
 
 static void

@@ -157,6 +157,9 @@ Other vifm-normal Mode Keys~
 
 [count]: - enter command line mode.  Count will add range.
 
+[count]!! - enter command line mode with typed ! command.  Count will
+    modify range.
+
 Ctrl-o - go backward through history.
 Ctrl-i - go forward through history.
 

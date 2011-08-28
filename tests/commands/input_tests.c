@@ -277,6 +277,14 @@ test_range_plus_minus(void)
 	assert_int_equal(0, execute_cmd(".+5-2"));
 	assert_int_equal(53, cmdi.begin);
 	assert_int_equal(53, cmdi.end);
+
+	assert_int_equal(0, execute_cmd(".,.+500"));
+	assert_int_equal(50, cmdi.begin);
+	assert_int_equal(100, cmdi.end);
+
+	assert_int_equal(0, execute_cmd(".,.-500"));
+	assert_int_equal(50, cmdi.begin);
+	assert_int_equal(0, cmdi.end);
 }
 
 static void

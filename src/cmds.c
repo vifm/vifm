@@ -410,6 +410,10 @@ correct_limit(const char *cmd, struct cmd_info *cmd_info)
 		else
 			cmd_info->end -= n;
 	}
+	if(cmd_info->end < 0)
+		cmd_info->end = 0;
+	if(cmd_info->end > cmds_conf->end)
+		cmd_info->end = cmds_conf->end;
 
 	return cmd;
 }
