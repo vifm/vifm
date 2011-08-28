@@ -954,7 +954,11 @@ wcwidth(wchar_t c)
 }
 
 int
+<<<<<<< HEAD
 wcswidth(const wchar_t *str, size_t len)
+=======
+wcswidth(wchar_t *str, size_t len)
+>>>>>>> Make vifm compile on Windows using mingw
 {
 	return MIN(len, wcslen(str));
 }

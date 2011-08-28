@@ -101,6 +101,14 @@ int readlink(const char *path, char *buf, size_t len);
 char * realpath(const char *path, char *buf);
 #endif
 
+#ifdef _WIN32
+int wcwidth(wchar_t c);
+int wcswidth(wchar_t *str, size_t len);
+int S_ISLNK(mode_t mode);
+int readlink(const char *path, char *buf, size_t len);
+char * realpath(const char *path, char *buf);
+#endif
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

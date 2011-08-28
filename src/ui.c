@@ -350,7 +350,7 @@ setup_ncurses_interface(void)
 	lwin.window_rows = y -1;
 	lwin.window_width = x -1;
 
-	mborder = newwin(screen_y - 3, 2 - screen_x%2, 1,
+	mborder = newwin(screen_y - 1, 2 - screen_x%2, 1,
 			screen_x/2 - 1 + screen_x%2);
 
 	wbkgdset(mborder, COLOR_PAIR(color_scheme + BORDER_COLOR));

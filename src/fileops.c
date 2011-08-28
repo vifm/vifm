@@ -1830,7 +1830,11 @@ prompt_what_to_do(const char *src_name)
 			src_name);
 #else
 	swprintf(buf,
+<<<<<<< HEAD
 			L"Name conflict for %S. [r]ename/[s]kip/[o]verwrite/overwrite [a]ll: ",
+=======
+			L"Name conflict for %s. [r]ename/[s]kip/[o]verwrite/overwrite [a]ll: ",
+>>>>>>> Make vifm compile on Windows using mingw
 			src_name);
 #endif
 	enter_prompt_mode(buf, "", put_decide_cb);

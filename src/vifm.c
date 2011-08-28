@@ -339,6 +339,14 @@ main(int argc, char *argv[])
 		perror("getcwd");
 		return -1;
 	}
+#ifdef _WIN32
+	memmove(dir, dir + 2, sizeof(dir) - 2);
+	for(i = 0; dir[i] != '\0'; i++)
+	{
+		if(dir[i] == '\\')
+			dir[i] = '/';
+	}
+#endif
 
 #ifdef _WIN32
 	for(i = 0; dir[i] != '\0'; i++)
