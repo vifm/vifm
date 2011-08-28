@@ -118,15 +118,14 @@ update_stat_window(FileView *view)
 	int x, y;
 	int cur_x;
 	size_t print_width;
-	char *current_file;
+	char *filename;
 
 	getmaxyx(stat_win, y, x);
-	current_file = get_current_file_name(view);
-	print_width = get_real_string_width(current_file, 20 + MAX(0, x - 83));
-	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s",
-			current_file);
-	friendly_size_notation(view->dir_entry[view->list_pos].size,
-			sizeof(size_buf), size_buf);
+	filename = get_current_file_name(view);
+	print_width = get_real_string_width(filename, 20 + MAX(0, x - 83));
+	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s", filename);
+	friendly_size_notation(view->dir_entry[view->list_pos].size, sizeof(size_buf),
+			size_buf);
 
 	get_id_string(view, sizeof(id_buf), id_buf);
 	get_perm_string(perm_buf, sizeof(perm_buf),
@@ -143,10 +142,10 @@ update_stat_window(FileView *view)
 	mvwaddstr(stat_win, 0, cur_x, perm_buf);
 	cur_x += 10;
 
-	snprintf(name_buf, sizeof(name_buf), "%d %s filtered",
-			view->filtered, view->filtered == 1 ? "file" : "files");
+	snprintf(name_buf, sizeof(name_buf), "%d %s filtered", view->filtered,
+			(view->filtered == 1) ? "file" : "files");
 	if(view->filtered > 0)
-		mvwaddstr(stat_win, 0, x - (strlen(name_buf) + 2) , name_buf);
+		mvwaddstr(stat_win, 0, x - (strlen(name_buf) + 2), name_buf);
 
 	if(cur_x + strlen(id_buf) + 1 > x - (strlen(name_buf) + 2))
 		*strchr(id_buf, ':') = '\0';

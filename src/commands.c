@@ -433,7 +433,6 @@ exec_completion(const char *str)
 		filename_completion(str, FNC_EXECONLY);
 	}
 	add_completion(str);
-	chdir(curr_view->curr_dir);
 }
 
 /*
@@ -536,7 +535,7 @@ filename_completion(const char *str, int type)
 			if(!tempfile)
 			{
 				closedir(dir);
-				chdir(curr_view->curr_dir);
+				(void)chdir(curr_view->curr_dir);
 				add_completion(filename);
 				free(filename);
 				free(dirname);
@@ -560,7 +559,7 @@ filename_completion(const char *str, int type)
 			if(!tempfile)
 			{
 				closedir(dir);
-				chdir(curr_view->curr_dir);
+				(void)chdir(curr_view->curr_dir);
 				add_completion(filename);
 				free(filename);
 				free(dirname);
@@ -577,7 +576,7 @@ filename_completion(const char *str, int type)
 		free(temp);
 	}
 
-	chdir(curr_view->curr_dir);
+	(void)chdir(curr_view->curr_dir);
 
 	completion_group_end();
 	if(type != FNC_EXECONLY)

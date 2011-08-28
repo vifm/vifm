@@ -364,7 +364,7 @@ read_info_file(int reread)
 			c = getc(fp);
 			ungetc(c, fp);
 			if(isdigit(c))
-				fscanf(fp, "%d\n", &pos);
+				(void)fscanf(fp, "%d\n", &pos);
 			get_history(&lwin, reread, line + 1, line2, pos);
 		}
 		else if(line[0] == 'D') /* right pane history */
@@ -388,7 +388,7 @@ read_info_file(int reread)
 			c = getc(fp);
 			ungetc(c, fp);
 			if(isdigit(c))
-				fscanf(fp, "%d\n", &pos);
+				(void)fscanf(fp, "%d\n", &pos);
 			get_history(&rwin, reread, line + 1, line2, pos);
 		}
 		else if(line[0] == ':') /* command line history */
@@ -620,7 +620,7 @@ write_info_file(void)
 					c = getc(fp);
 					ungetc(c, fp);
 					if(isdigit(c))
-						fscanf(fp, "%d\n", &pos);
+						(void)fscanf(fp, "%d\n", &pos);
 
 					nlh = add_to_string_array(&lh, nlh, 2, line + 1, line2);
 				}
@@ -643,7 +643,7 @@ write_info_file(void)
 					c = getc(fp);
 					ungetc(c, fp);
 					if(isdigit(c))
-						fscanf(fp, "%d\n", &pos);
+						(void)fscanf(fp, "%d\n", &pos);
 
 					nrh = add_to_string_array(&rh, nrh, 2, line + 1, line2);
 				}

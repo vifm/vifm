@@ -325,9 +325,11 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 		close(out_pipe[0]);
 		close(error_pipe[0]);
 		close(STDOUT_FILENO);
-		dup(out_pipe[1]);
+		if(dup(out_pipe[1]) == -1)
+			exit(-1);
 		close(STDERR_FILENO);
-		dup(error_pipe[1]);
+		if(dup(error_pipe[1]) == -1)
+			exit(-1);
 
 		args[0] = "/bin/sh";
 		args[1] = "-c";
