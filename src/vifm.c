@@ -249,6 +249,7 @@ main(int argc, char *argv[])
 		perror("getcwd");
 		return -1;
 	}
+
 #ifdef _WIN32
 	for(i = 0; dir[i] != '\0'; i++)
 	{
