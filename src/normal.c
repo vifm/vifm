@@ -59,6 +59,7 @@ static void cmd_ctrl_f(struct key_info, struct keys_info *);
 static void cmd_ctrl_g(struct key_info, struct keys_info *);
 static void cmd_space(struct key_info, struct keys_info *);
 static void cmd_emarkemark(struct key_info, struct keys_info *);
+static void cmd_emark_selector(struct key_info, struct keys_info *);
 static void cmd_ctrl_i(struct key_info, struct keys_info *);
 static void cmd_ctrl_l(struct key_info, struct keys_info *);
 static void cmd_ctrl_o(struct key_info, struct keys_info *);
@@ -173,6 +174,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"'", {BUILDIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_quote}}},
 	{L" ", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
 	{L"!!", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_emarkemark}}},
+	{L"!", {BUILDIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_emark_selector}}},
 	{L"%", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
 	{L",", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
 	{L".", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dot}}},
@@ -390,6 +392,44 @@ cmd_emarkemark(struct key_info key_info, struct keys_info *keys_info)
 	if(key_info.count != NO_COUNT_GIVEN)
 		swprintf(buf, ARRAY_LEN(buf), L".,.+%d!", key_info.count - 1);
 	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
+}
+
+static void
+cmd_emark_selector(struct key_info key_info, struct keys_info *keys_info)
+{
+	int i, m;
+	wchar_t buf[16] = L".!";
+
+	if(keys_info->count == 0)
+	{
+		cmd_emarkemark(key_info, keys_info);
+		return;
+	}
+
+	m = keys_info->indexes[0];
+	for(i = 1; i < keys_info->count; i++)
+	{
+		if(keys_info->indexes[i] > m)
+			m = keys_info->indexes[i];
+	}
+
+	free(keys_info->indexes);
+	keys_info->indexes = NULL;
+	keys_info->count = 0;
+
+	if(key_info.count != NO_COUNT_GIVEN)
+		m += curr_view->list_pos + key_info.count + 1;
+
+	if(m >= curr_view->list_rows - 1)
+	{
+		wcscpy(buf, L".,$!");
+		enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
+	}
+	else
+	{
+		key_info.count = m - curr_view->list_pos + 1;
+		cmd_emarkemark(key_info, keys_info);
+	}
 }
 
 static void

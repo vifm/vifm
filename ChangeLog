@@ -311,7 +311,7 @@
 
 	Added :restore command.
 
-	Added !! normal mode command.
+	Added !! and !<selector> normal mode commands.
 
 	Enter key in visual mode will leave it saving selection.
 
