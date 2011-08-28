@@ -811,10 +811,11 @@ complete_cmd(const char *cmd)
 	const char *cmd_name_pos;
 	size_t prefix_len;
 
+	init_cmd_info(&cmd_info);
 	cmd_name_pos = parse_range(cmd, &cmd_info);
 	args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
 
-	if(*args == '\0' && strcmp(cmd_name, "!") != 0)
+	if(*args == '\0' && *args != '!' && strcmp(cmd_name, "!") != 0)
 	{
 		complete_cmd_name(cmd_name, 0);
 		prefix_len = cmd_name_pos - cmd;
@@ -822,10 +823,20 @@ complete_cmd(const char *cmd)
 	else
 	{
 		int id;
+		struct cmd_t *cur;
 
-		id = get_cmd_id(cmd_name);
+		cur = inner->head.next;
+		while(cur != NULL && strcmp(cur->name, cmd_name) < 0)
+			cur = cur->next;
+
+		if(cur == NULL || strncmp(cmd_name, cur->name, strlen(cmd_name)) != 0)
+			return 0;
+
+		id = cur->id;
 		if(id == -1)
 			return 0;
+
+		args = parse_tail(cur, args, &cmd_info);
 
 		while(isspace(*args))
 			args++;
