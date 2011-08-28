@@ -1374,6 +1374,16 @@ try_unmount_fuse(FileView *view)
 	return 1;
 }
 
+static int
+is_path_absolute(const char *path)
+{
+#ifndef _WIN32
+	return (path[0] == '/');
+#else
+	return (path[0] != '\0' && path[1] == ':');
+#endif
+}
+
 /*
  * The directory can either be relative to the current
  * directory - ../
@@ -1397,7 +1407,7 @@ change_directory(FileView *view, const char *directory)
 
 	save_view_history(view, NULL, NULL, -1);
 
-	if(directory[0] == '/')
+	if(is_path_absolute(directory))
 	{
 		canonicalize_path(directory, dir_dup, sizeof(dir_dup));
 	}

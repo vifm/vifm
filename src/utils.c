@@ -338,7 +338,11 @@ run_from_fork(int pipe[2], int err, char *cmd)
 	args[2] = cmd;
 	args[3] = NULL;
 
+#ifndef _WIN32
 	execvp(args[0], args);
+#else
+	execvp(args[0], (const char **)args);
+#endif
 	exit(-1);
 }
 
@@ -893,7 +897,7 @@ wcwidth(wchar_t c)
 }
 
 int
-wcswidth(wchar_t *str, size_t len)
+wcswidth(const wchar_t *str, size_t len)
 {
 	return MIN(len, wcslen(str));
 }

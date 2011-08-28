@@ -1275,7 +1275,7 @@ line_part_complete(struct line_stats *stat, const char *line_mb, const char *p,
 	swprintf(stat->line + (p - line_mb), new_len, L"%s%ls", completed,
 			line_ending);
 #else
-	swprintf(stat->line + (p - line_mb), L"%s%ls", completed, line_ending);
+	swprintf(stat->line + (p - line_mb), L"%S%s", completed, line_ending);
 #endif
 	free(line_ending);
 

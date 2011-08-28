@@ -1,5 +1,9 @@
 TEST_NAME := $(notdir $(abspath .))
-BIN := ../bin/$(TEST_NAME)
+ifneq ($(OS),Windows_NT)
+    BIN := ../bin/$(TEST_NAME).exe
+else
+    BIN := ../bin/$(TEST_NAME).exe
+endif
 
 SOURCES += ../seatest/seatest.c
 LOCAL_SOURCES += $(wildcard *.c)
@@ -8,7 +12,13 @@ OBJECTS := $(SOURCES:.c=.o)
 LOCAL_OBJECTS := $(LOCAL_SOURCES:.c=.o)
 
 CFLAGS := -MD -g -Werror -I../seatest `pkg-config --cflags gtk+-2.0` -DTEST
-LDFLAGS := `pkg-config --libs gtk+-2.0` -lncursesw -lmagic
+LDFLAGS := `pkg-config --libs gtk+-2.0`
+
+ifneq ($(OS),Windows_NT)
+    LDFLAGS += -lncursesw -lmagic
+else
+    LDFLAGS += -lpdcurses -lregex
+endif
 
 $(BIN): $(addprefix ../bin/, $(notdir $(OBJECTS))) \
         $(addprefix bin/, $(notdir $(LOCAL_OBJECTS)))
