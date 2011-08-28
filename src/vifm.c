@@ -250,7 +250,6 @@ main(int argc, char *argv[])
 		return -1;
 	}
 #ifdef _WIN32
-//	memmove(dir, dir + 2, sizeof(dir) - 2);
 	for(i = 0; dir[i] != '\0'; i++)
 	{
 		if(dir[i] == '\\')

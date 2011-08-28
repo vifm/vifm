@@ -199,7 +199,6 @@ op_chgrp(void *data, const char *src, const char *dst)
 	free(escaped);
 
 	return background_and_wait_for_errors(cmd);
-	return 0;
 #else
 	return -1;
 #endif
