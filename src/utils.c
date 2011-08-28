@@ -709,10 +709,15 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 				(strncmp(p, "../", 3) == 0 || strcmp(p, "..") == 0) &&
 				strcmp(buf, "../") != 0)
 		{
-			p++;
-			q--;
-			while(q >= buf && *q != '/')
+#ifdef _WIN32
+			if(*(q - 1) != ':')
+#endif
+			{
+				p++;
 				q--;
+				while(q >= buf && *q != '/')
+					q--;
+			}
 		}
 		else if(*p == '/')
 		{

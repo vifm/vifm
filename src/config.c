@@ -18,8 +18,10 @@
 
 #include "../config.h"
 
+#ifndef _WIN32
 #define CP_HELP "cp " PACKAGE_DATA_DIR "/vifm-help.txt ~/.vifm"
 #define CP_RC "cp " PACKAGE_DATA_DIR "/vifmrc ~/.vifm"
+#endif
 
 #include <sys/stat.h> /* mkdir */
 #include <unistd.h> /* chdir */
@@ -119,6 +121,7 @@ init_config(void)
 		cfg.max_args = 4096; /* POSIX MINIMUM */
 }
 
+#ifndef _WIN32
 static void
 create_help_file(void)
 {
@@ -139,12 +142,12 @@ create_rc_file(void)
 	add_bookmark('H', cfg.home_dir, "../");
 	add_bookmark('z', cfg.config_dir, "../");
 }
+#endif
 
 void
 set_config_dir(void)
 {
 	char *home_dir;
-	FILE *f;
 	char help_file[PATH_MAX];
 	char rc_file[PATH_MAX];
 
@@ -162,20 +165,21 @@ set_config_dir(void)
 	if(chdir(cfg.config_dir))
 	{
 #ifndef _WIN32
+		FILE *f;
 		if(mkdir(cfg.config_dir, 0777))
 			return;
 		if(mkdir(cfg.trash_dir, 0777))
 			return;
+		if((f = fopen(help_file, "r")) == NULL)
+			create_help_file();
+		if((f = fopen(rc_file, "r")) == NULL)
+			create_rc_file();
 #else
 		if(mkdir(cfg.config_dir))
 			return;
 		if(mkdir(cfg.trash_dir))
 			return;
 #endif
-		if((f = fopen(help_file, "r")) == NULL)
-			create_help_file();
-		if((f = fopen(rc_file, "r")) == NULL)
-			create_rc_file();
 	}
 }
 

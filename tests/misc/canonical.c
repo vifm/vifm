@@ -2,6 +2,12 @@
 
 #include "../../src/filelist.h"
 
+#ifndef _WIN32
+#define ABS_PREFIX
+#else
+#define ABS_PREFIX "c:"
+#endif
+
 static void
 treat_many_dots_right(void)
 {
@@ -10,8 +16,8 @@ treat_many_dots_right(void)
 	canonicalize_path("...", buf, sizeof(buf));
 	assert_string_equal(".../", buf);
 
-	canonicalize_path("/a/.../.", buf, sizeof(buf));
-	assert_string_equal("/a/.../", buf);
+	canonicalize_path(ABS_PREFIX "/a/.../.", buf, sizeof(buf));
+	assert_string_equal(ABS_PREFIX "/a/.../", buf);
 }
 
 static void
@@ -19,17 +25,17 @@ root_updir(void)
 {
 	char buf[PATH_MAX];
 
-	canonicalize_path("/..", buf, sizeof(buf));
-	assert_string_equal("/", buf);
+	canonicalize_path(ABS_PREFIX "/..", buf, sizeof(buf));
+	assert_string_equal(ABS_PREFIX "/", buf);
 
-	canonicalize_path("/../", buf, sizeof(buf));
-	assert_string_equal("/", buf);
+	canonicalize_path(ABS_PREFIX "/../", buf, sizeof(buf));
+	assert_string_equal(ABS_PREFIX "/", buf);
 
-	canonicalize_path("/../..", buf, sizeof(buf));
-	assert_string_equal("/", buf);
+	canonicalize_path(ABS_PREFIX "/../..", buf, sizeof(buf));
+	assert_string_equal(ABS_PREFIX "/", buf);
 
-	canonicalize_path("/../../", buf, sizeof(buf));
-	assert_string_equal("/", buf);
+	canonicalize_path(ABS_PREFIX "/../../", buf, sizeof(buf));
+	assert_string_equal(ABS_PREFIX "/", buf);
 }
 
 static void
@@ -52,8 +58,8 @@ remove_dots(void)
 	canonicalize_path("./", buf, sizeof(buf));
 	assert_string_equal("./", buf);
 
-	canonicalize_path("/a/./", buf, sizeof(buf));
-	assert_string_equal("/a/", buf);
+	canonicalize_path(ABS_PREFIX "/a/./", buf, sizeof(buf));
+	assert_string_equal(ABS_PREFIX "/a/", buf);
 
 	canonicalize_path("././././././", buf, sizeof(buf));
 	assert_string_equal("./", buf);
@@ -64,11 +70,11 @@ excess_slashes(void)
 {
 	char buf[PATH_MAX];
 
-	canonicalize_path("//", buf, sizeof(buf));
-	assert_string_equal("/", buf);
+	canonicalize_path(ABS_PREFIX "//", buf, sizeof(buf));
+	assert_string_equal(ABS_PREFIX "/", buf);
 
-	canonicalize_path("/////////////", buf, sizeof(buf));
-	assert_string_equal("/", buf);
+	canonicalize_path(ABS_PREFIX "/////////////", buf, sizeof(buf));
+	assert_string_equal(ABS_PREFIX "/", buf);
 }
 
 static void
@@ -76,14 +82,15 @@ complex_tests(void)
 {
 	char buf[PATH_MAX];
 
-	canonicalize_path("/a/b/../c/../..", buf, sizeof(buf));
-	assert_string_equal("/", buf);
+	canonicalize_path(ABS_PREFIX "/a/b/../c/../..", buf, sizeof(buf));
+	assert_string_equal(ABS_PREFIX "/", buf);
 
-	canonicalize_path("/a/./b/./.././c/../../.", buf, sizeof(buf));
-	assert_string_equal("/", buf);
+	canonicalize_path(ABS_PREFIX "/a/./b/./.././c/../../.", buf, sizeof(buf));
+	assert_string_equal(ABS_PREFIX "/", buf);
 
-	canonicalize_path("//a//./b/./../////./c///.././/", buf, sizeof(buf));
-	assert_string_equal("/a/", buf);
+	canonicalize_path(ABS_PREFIX "//a//./b/./../////./c///.././/", buf,
+			sizeof(buf));
+	assert_string_equal(ABS_PREFIX "/a/", buf);
 }
 
 void
