@@ -20,6 +20,9 @@
 #define __COLOR_SCHEME_H__
 
 #include <limits.h>
+#ifndef NAME_MAX
+#define NAME_MAX FILENAME_MAX
+#endif
 
 enum Ui_colors {
 	MENU_COLOR,

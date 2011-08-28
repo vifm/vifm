@@ -28,6 +28,9 @@
 /* For Solaris */
 #ifndef NAME_MAX
 #include <dirent.h>
+#ifndef MAXNAMELEN
+#define MAXNAMLEN FILENAME_MAX
+#endif
 #define NAME_MAX MAXNAMLEN
 #endif
 
@@ -59,8 +62,10 @@ typedef struct
 	char *name;
 	unsigned long long size;
 	mode_t mode;
+#ifndef _WIN32
 	uid_t uid;
 	gid_t gid;
+#endif
 	time_t mtime;
 	time_t atime;
 	time_t ctime;

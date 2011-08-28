@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifndef _WIN32
+
 #include <curses.h>
 
 #include <sys/stat.h> /* stat */
@@ -125,10 +127,12 @@ handle_signal(int sig)
 			break;
 	}
 }
+#endif
 
 void
 setup_signals(void)
 {
+#ifndef _WIN32
 	struct sigaction handle_signal_action;
 
 	handle_signal_action.sa_handler = handle_signal;
@@ -147,6 +151,7 @@ setup_signals(void)
 	signal(SIGUSR1, SIG_IGN);
 	signal(SIGUSR2, SIG_IGN);
 	signal(SIGALRM, SIG_IGN);
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

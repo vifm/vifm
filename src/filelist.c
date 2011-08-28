@@ -25,13 +25,17 @@
 #include <stdlib.h> /* malloc  qsort */
 #include <sys/stat.h> /* stat */
 #include <sys/time.h> /* localtime */
+#ifndef _WIN32
 #include <sys/wait.h> /* WEXITSTATUS */
+#endif
 #include <time.h>
 #include <regex.h>
 #include <dirent.h> /* DIR */
 #include <string.h> /* strcat() */
+#ifndef _WIN32
 #include <pwd.h>
 #include <grp.h>
+#endif
 #include <errno.h>
 
 #include "background.h"
@@ -56,40 +60,64 @@ static void
 add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 {
 	char buf[24];
+#ifndef _WIN32
 	struct passwd *pwd_buf;
 	struct group *grp_buf;
+#endif
 	struct tm *tm_ptr;
 	int attr = 0;
 
 	switch(abs(view->sort[0]))
 	{
 		case SORT_BY_OWNER_NAME:
+#ifndef _WIN32
 			if((pwd_buf = getpwuid(view->dir_entry[x].uid)) != NULL)
 			{
 				snprintf(buf, sizeof(buf), " %s", pwd_buf->pw_name);
 				break;
 			}
+			/* break skipped */
+#else
+			snprintf(buf, sizeof(buf), " UNKNOWN");
+			break;
+#endif
 		case SORT_BY_OWNER_ID:
+#ifndef _WIN32
 			snprintf(buf, sizeof(buf), " %d", (int) view->dir_entry[x].uid);
+#else
+			snprintf(buf, sizeof(buf), " UNKNOWN");
+#endif
 			break;
 		case SORT_BY_GROUP_NAME:
+#ifndef _WIN32
 			if((grp_buf = getgrgid(view->dir_entry[x].gid)) != NULL)
 			{
 				snprintf(buf, sizeof(buf), " %s", grp_buf->gr_name);
 				break;
 			}
+			/* break skipped */
+#else
+			snprintf(buf, sizeof(buf), " UNKNOWN");
+			break;
+#endif
 		case SORT_BY_GROUP_ID:
+#ifndef _WIN32
 			snprintf(buf, sizeof(buf), " %d", (int) view->dir_entry[x].gid);
+#else
+			snprintf(buf, sizeof(buf), " UNKNOWN");
+#endif
 			break;
 		case SORT_BY_MODE:
 			{
 				if(S_ISREG(view->dir_entry[x].mode))
 				{
+#ifndef _WIN32
 					if((S_IXUSR & view->dir_entry[x].mode)
 							|| (S_IXGRP & view->dir_entry[x].mode)
 							|| (S_IXOTH & view->dir_entry[x].mode))
 						snprintf(buf, sizeof(buf), " exe");
 					else
+#endif
 						snprintf(buf, sizeof(buf), " reg");
 				}
 				else if(S_ISLNK(view->dir_entry[x].mode))
@@ -102,8 +130,10 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 					snprintf(buf, sizeof(buf), " block");
 				else if(S_ISFIFO(view->dir_entry[x].mode))
 					snprintf(buf, sizeof(buf), " fifo");
+#ifndef _WIN32
 				else if(S_ISSOCK(view->dir_entry[x].mode))
 					snprintf(buf, sizeof(buf), " sock");
+#endif
 				else
 					snprintf(buf, sizeof(buf), "  ?  ");
 				break;
@@ -170,6 +200,7 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 	}
 }
 
+#ifndef _WIN32
 static FILE *
 use_info_prog(char *cmd)
 {
@@ -216,6 +247,7 @@ use_info_prog(char *cmd)
 		return f;
 	}
 }
+#endif
 
 static char *
 strchar2str(const char *str)
@@ -383,9 +415,11 @@ quick_view_file(FileView *view)
 					mvwaddstr(other_view->win, ++x, y, "File is a Directory");
 					break;
 				}
+#ifndef _WIN32
 				if(viewer != NULL && viewer[0] != '\0')
 					fp = use_info_prog(viewer);
 				else
+#endif
 					fp = fopen(view->dir_entry[view->list_pos].name, "r");
 
 				if(fp == NULL)
@@ -1466,8 +1500,10 @@ change_directory(FileView *view, const char *directory)
 	else
 		clean_selected_files(view);
 
+#ifndef _WIN32
 	/* Need to use setenv instead of getcwd for a symlink directory */
 	setenv("PWD", dir_dup, 1);
+#endif
 
 	snprintf(view->curr_dir, PATH_MAX, "%s", dir_dup);
 
@@ -1526,6 +1562,7 @@ regexp_filter_match(FileView *view, char *filename)
 static int
 type_from_dir_entry(const struct dirent *d)
 {
+#ifndef _WIN32
 	switch(d->d_type)
 	{
 		case DT_BLK:
@@ -1545,6 +1582,9 @@ type_from_dir_entry(const struct dirent *d)
 		default:
 			return UNKNOWN;
 	}
+#else
+	return UNKNOWN;
+#endif
 }
 
 static void
@@ -1587,8 +1627,10 @@ load_parent_dir_only(FileView *view)
 
 		dir_entry->size = 0;
 		dir_entry->mode = 0;
+#ifndef _WIN32
 		dir_entry->uid = -1;
 		dir_entry->gid = -1;
+#endif
 		dir_entry->mtime = 0;
 		dir_entry->atime = 0;
 		dir_entry->ctime = 0;
@@ -1597,8 +1639,10 @@ load_parent_dir_only(FileView *view)
 	{
 		dir_entry->size = (uintmax_t)s.st_size;
 		dir_entry->mode = s.st_mode;
+#ifndef _WIN32
 		dir_entry->uid = s.st_uid;
 		dir_entry->gid = s.st_gid;
+#endif
 		dir_entry->mtime = s.st_mtime;
 		dir_entry->atime = s.st_atime;
 		dir_entry->ctime = s.st_ctime;
@@ -1729,8 +1773,10 @@ load_dir_list(FileView *view, int reload)
 					strcat(dir_entry->name, "/");
 				dir_entry->size = 0;
 				dir_entry->mode = 0;
+#ifndef _WIN32
 				dir_entry->uid = -1;
 				dir_entry->gid = -1;
+#endif
 				dir_entry->mtime = 0;
 				dir_entry->atime = 0;
 				dir_entry->ctime = 0;
@@ -1739,8 +1785,10 @@ load_dir_list(FileView *view, int reload)
 
 			dir_entry->size = (uintmax_t)s.st_size;
 			dir_entry->mode = s.st_mode;
+#ifndef _WIN32
 			dir_entry->uid = s.st_uid;
 			dir_entry->gid = s.st_gid;
+#endif
 			dir_entry->mtime = s.st_mtime;
 			dir_entry->atime = s.st_atime;
 			dir_entry->ctime = s.st_ctime;
@@ -1749,6 +1797,7 @@ load_dir_list(FileView *view, int reload)
 			{
 				switch(s.st_mode & S_IFMT)
 				{
+#ifndef _WIN32
 					case S_IFLNK:
 						{
 							struct stat st;
@@ -1759,6 +1808,7 @@ load_dir_list(FileView *view, int reload)
 							dir_entry->type = LINK;
 						}
 						break;
+#endif
 					case S_IFDIR:
 						strcat(dir_entry->name, "/");
 						dir_entry->type = DIRECTORY;
@@ -1767,9 +1817,11 @@ load_dir_list(FileView *view, int reload)
 					case S_IFBLK:
 						dir_entry->type = DEVICE;
 						break;
+#ifndef _WIN32
 					case S_IFSOCK:
 						dir_entry->type = SOCKET;
 						break;
+#endif
 					case S_IFREG:
 						if(S_ISEXE(s.st_mode))
 							dir_entry->type = EXECUTABLE;

@@ -1,0 +1,35 @@
+CC := gcc
+
+CFLAGS := -c -g -O0 -Wall $(CFLAGS)
+
+LDFLAGS := -all-static $(LDFLAGS)
+
+LIBS := -lregex -lpdcurses
+#c:/MinGW/lib/libgnurx.dll.a
+
+vifm_SOURCES := background.c bookmarks.c cmdline.c cmds.c color_scheme.c \
+                commands.c completion.c config.c dir_stack.c file_info.c \
+                file_magic.c filelist.c fileops.c filetype.c keys.c log.c \
+                main_loop.c menu.c menus.c modes.c normal.c ops.c \
+                opt_handlers.c options.c permissions_dialog.c registers.c \
+                search.c signals.c sort.c sort_dialog.c status.c tags.c \
+                trash.c tree.c ui.c undo.c utils.c vifm.c visual.c
+vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
+vifm_EXECUTABLE := vifm.exe
+
+converter_SOURCES := vifmrc-converter.c
+converter_OBJECTS := $(converter_SOURCES:.c=.o)
+converter_EXECUTABLE := vifmrc-converter.exe
+
+all: $(vifm_EXECUTABLE) $(converter_EXECUTABLE)
+
+$(vifm_EXECUTABLE): $(vifm_OBJECTS)
+	$(CC) $^ -o $@ $(LDFLAGS) $(LIBS)
+$(converter_EXECUTABLE): $(converter_OBJECTS)
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+.c.o:
+	$(CC) $(CFLAGS) $< -o $@
+
+clean:
+	rm *.o

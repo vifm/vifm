@@ -78,7 +78,9 @@ main_loop(void)
 			touchwin(status_bar);
 			wrefresh(status_bar);
 
+#ifndef _WIN32
 			pause();
+#endif
 			continue;
 		}
 		else if(curr_stats.too_small_term < 0)
@@ -104,7 +106,9 @@ main_loop(void)
 			{
 				def_prog_mode();
 				endwin();
+#ifndef _WIN32
 				kill(0, SIGSTOP);
+#endif
 				continue;
 			}
 

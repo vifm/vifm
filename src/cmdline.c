@@ -1271,8 +1271,12 @@ line_part_complete(struct line_stats *stat, const char *line_mb, const char *p,
 		return -1;
 	stat->line = (wchar_t *) t;
 
+#ifndef _WIN32
 	swprintf(stat->line + (p - line_mb), new_len, L"%s%ls", completed,
 			line_ending);
+#else
+	swprintf(stat->line + (p - line_mb), L"%s%ls", completed, line_ending);
+#endif
 	free(line_ending);
 
 	update_line_stat(stat, new_len);

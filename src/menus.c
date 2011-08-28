@@ -21,9 +21,13 @@
 #include <ctype.h> /* isspace() */
 #include <string.h> /* strchr() */
 #include <unistd.h> /* access() */
+#ifndef _WIN32
 #include <termios.h> /* struct winsize */
+#endif
 #include <stdarg.h>
+#ifndef _WIN32
 #include <sys/ioctl.h>
+#endif
 #include <signal.h>
 
 #include "../config.h"
@@ -389,11 +393,13 @@ void
 redraw_menu(menu_info *m)
 {
 	int screen_x, screen_y;
+#ifndef _WIN32
 	struct winsize ws;
 
 	ioctl(0, TIOCGWINSZ, &ws);
 	/* changed for pdcurses */
 	resizeterm(ws.ws_row, ws.ws_col);
+#endif
 	flushinp(); /* without it we will get strange character on input */
 	getmaxyx(stdscr, screen_y, screen_x);
 
@@ -1852,7 +1858,9 @@ show_jobs_menu(FileView *view)
 {
 	Jobs_List *p = jobs;
 	Finished_Jobs *fj = NULL;
+#ifndef _WIN32
 	sigset_t new_mask;
+#endif
 	int x;
 	static menu_info m;
 	m.top = 0;
@@ -1877,9 +1885,11 @@ show_jobs_menu(FileView *view)
 	 * SIGCHLD needs to be blocked anytime the Finished_Jobs list
 	 * is accessed from anywhere except the received_sigchld().
 	 */
+#ifndef _WIN32
 	sigemptyset(&new_mask);
 	sigaddset(&new_mask, SIGCHLD);
 	sigprocmask(SIG_BLOCK, &new_mask, NULL);
+#endif
 
 	fj = fjobs;
 
@@ -1908,8 +1918,10 @@ show_jobs_menu(FileView *view)
 		p = p->next;
 	}
 
+#ifndef _WIN32
 	/* Unblock SIGCHLD signal */
 	sigprocmask(SIG_UNBLOCK, &new_mask, NULL);
+#endif
 
 	m.len = x;
 

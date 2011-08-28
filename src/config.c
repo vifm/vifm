@@ -112,8 +112,10 @@ init_config(void)
 	else
 		cfg.shell = strdup(p);
 
+#ifndef _WIN32
 	/* Maximum argument length to pass to the shell */
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)
+#endif
 		cfg.max_args = 4096; /* POSIX MINIMUM */
 }
 
@@ -159,10 +161,17 @@ set_config_dir(void)
 
 	if(chdir(cfg.config_dir))
 	{
+#ifndef _WIN32
 		if(mkdir(cfg.config_dir, 0777))
 			return;
 		if(mkdir(cfg.trash_dir, 0777))
 			return;
+#else
+		if(mkdir(cfg.config_dir))
+			return;
+		if(mkdir(cfg.trash_dir))
+			return;
+#endif
 		if((f = fopen(help_file, "r")) == NULL)
 			create_help_file();
 		if((f = fopen(rc_file, "r")) == NULL)

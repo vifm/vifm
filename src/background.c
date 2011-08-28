@@ -23,7 +23,9 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef _WIN32
 #include <sys/wait.h>
+#endif
 #include <fcntl.h>
 
 #include "background.h"
@@ -36,7 +38,9 @@
 struct Jobs_List *jobs;
 struct Finished_Jobs *fjobs;
 
+#ifndef _WIN32
 static int add_background_job(pid_t pid, const char *cmd, int fd);
+#endif
 
 void
 add_finished_job(pid_t pid, int status)
@@ -48,13 +52,18 @@ add_finished_job(pid_t pid, int status)
 	new->pid = pid;
 	new->remove = 0;
 	new->next = fjobs;
+#ifndef _WIN32
 	new->exit_code = WEXITSTATUS(status);
+#else
+	new->exit_code = 0;
+#endif
 	fjobs = new;
 }
 
 void
 check_background_jobs(void)
 {
+#ifndef _WIN32
 	Jobs_List *p = jobs;
 	Jobs_List *prev = NULL;
 	Finished_Jobs *fj = NULL;
@@ -210,12 +219,14 @@ check_background_jobs(void)
 
 	/* Unblock SIGCHLD signal */
 	sigprocmask(SIG_UNBLOCK, &new_mask, NULL);
+#endif
 }
 
 /* Used for fusezip mounting of files */
 int
 background_and_wait_for_status(char *cmd)
 {
+#ifndef _WIN32
 	int pid;
 	int status;
 	extern char **environ;
@@ -247,11 +258,15 @@ background_and_wait_for_status(char *cmd)
 		else
 			return status;
 	}while(1);
+#else
+	return -1;
+#endif
 }
 
 int
 background_and_wait_for_errors(char *cmd)
 {
+#ifndef _WIN32
 	pid_t pid;
 	int error_pipe[2];
 	int result = 0;
@@ -294,11 +309,15 @@ background_and_wait_for_errors(char *cmd)
 	}
 
 	return result;
+#else
+	return -1;
+#endif
 }
 
 int
 background_and_capture(char *cmd, FILE **out, FILE **err)
 {
+#ifndef _WIN32
 	pid_t pid;
 	int out_pipe[2];
 	int error_pipe[2];
@@ -354,11 +373,15 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 	*err = fdopen(error_pipe[0], "r");
 
 	return 0;
+#else
+	return -1;
+#endif
 }
 
 int
 start_background_job(const char *cmd)
 {
+#ifndef _WIN32
 	pid_t pid;
 	char *args[4];
 	int error_pipe[2];
@@ -412,8 +435,12 @@ start_background_job(const char *cmd)
 			return -1;
 	}
 	return 0;
+#else
+	return -1;
+#endif
 }
 
+#ifndef _WIN32
 static int
 add_background_job(pid_t pid, const char *cmd, int fd)
 {
@@ -433,6 +460,7 @@ add_background_job(pid_t pid, const char *cmd, int fd)
 	jobs = new;
 	return 0;
 }
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

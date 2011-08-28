@@ -171,6 +171,7 @@ op_move(void *data, const char *src, const char *dst)
 static int
 op_chown(void *data, const char *src, const char *dst)
 {
+#ifndef _WIN32
 	char cmd[10 + 32 + PATH_MAX];
 	char *escaped;
 	uid_t uid = (uid_t)(long)data;
@@ -180,11 +181,15 @@ op_chown(void *data, const char *src, const char *dst)
 	free(escaped);
 
 	return background_and_wait_for_errors(cmd);
+#else
+	return -1;
+#endif
 }
 
 static int
 op_chgrp(void *data, const char *src, const char *dst)
 {
+#ifndef _WIN32
 	char cmd[10 + 32 + PATH_MAX];
 	char *escaped;
 	gid_t gid = (gid_t)(long)data;
@@ -195,6 +200,9 @@ op_chgrp(void *data, const char *src, const char *dst)
 
 	return background_and_wait_for_errors(cmd);
 	return 0;
+#else
+	return -1;
+#endif
 }
 
 static int

@@ -104,6 +104,7 @@ init_permissions_dialog_mode(int *key_mode)
 void
 enter_permissions_mode(FileView *active_view)
 {
+#ifndef _WIN32
 	int i;
 	mode_t fmode;
 	mode_t diff;
@@ -193,6 +194,7 @@ enter_permissions_mode(FileView *active_view)
 	col = 9;
 	changed = 0;
 	redraw_permissions_dialog();
+#endif
 }
 
 void

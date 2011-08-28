@@ -21,7 +21,9 @@
 #include <curses.h>
 
 #include <sys/types.h> /* passwd */
+#ifndef _WIN32
 #include <sys/wait.h>
+#endif
 #include <dirent.h> /* DIR */
 #include <unistd.h> /* chdir() */
 
@@ -645,6 +647,12 @@ complete_history(const char *str)
 static int
 is_entry_dir(const struct dirent *d)
 {
+#ifdef _WIN32
+	struct stat st;
+	if(stat(d->d_name, &st) != 0)
+		return 0;
+	return S_ISDIR(st.st_mode);
+#else
 	if(d->d_type == DT_UNKNOWN)
 	{
 		struct stat st;
@@ -658,15 +666,18 @@ is_entry_dir(const struct dirent *d)
 	if(d->d_type == DT_LNK && !check_link_is_dir(d->d_name))
 		return 0;
 	return 1;
+#endif
 }
 
 static int
 is_entry_exec(const struct dirent *d)
 {
+#ifndef _WIN32
 	if(d->d_type == DT_DIR)
 		return 0;
 	if(d->d_type == DT_LNK && check_link_is_dir(d->d_name))
 		return 0;
+#endif
 	if(access(d->d_name, X_OK) != 0)
 		return 0;
 	return 1;
@@ -3339,12 +3350,14 @@ static int
 quit_cmd(const struct cmd_info *cmd_info)
 {
 	comm_quit(!cmd_info->emark);
+	return 0;
 }
 
 static int
 wq_cmd(const struct cmd_info *cmd_info)
 {
 	comm_quit(1);
+	return 0;
 }
 
 static int

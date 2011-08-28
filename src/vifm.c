@@ -219,6 +219,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 static void
 update_path(void)
 {
+#ifndef _WIN32
 	char *old_path;
 	char *new_path;
 
@@ -227,6 +228,7 @@ update_path(void)
 	sprintf(new_path, "%s.vifm/scripts:%s", cfg.home_dir, old_path);
 	setenv("PATH", new_path, 1);
 	free(new_path);
+#endif
 }
 
 int
@@ -247,6 +249,14 @@ main(int argc, char *argv[])
 		perror("getcwd");
 		return -1;
 	}
+#ifdef _WIN32
+	memmove(dir, dir + 2, sizeof(dir) - 2);
+	for(i = 0; dir[i] != '\0'; i++)
+	{
+		if(dir[i] == '\\')
+			dir[i] = '/';
+	}
+#endif
 
 	init_window(&rwin);
 	init_window(&lwin);

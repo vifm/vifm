@@ -9,7 +9,10 @@
 #include <magic.h>
 #endif
 
+#ifndef _WIN32
 #include <sys/dir.h>
+#endif
+#include<dirent.h> /* DIR */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,7 +29,9 @@ static int get_gtk_mimetype(const char* filename, char* buf);
 static int get_magic_mimetype(const char* filename, char* buf);
 static int get_file_mimetype(const char* filename, char* buf, size_t buf_sz);
 static char * get_handlers(const char* mime_type);
+#ifndef _WIN32
 static void enum_files(const char* path, const char* mime_type);
+#endif
 static void process_file(const char* path, const char* mime_type);
 static int ends_with(const char* str, const char* suffix);
 static void expand_desktop(const char* str, char* buf);
@@ -138,18 +143,21 @@ get_handlers(const char* mime_type)
 	handlers = NULL;
 	handlers_len = 0;
 
+#ifndef _WIN32
 	enum_files("/usr/share/applications", mime_type);
 	enum_files("/usr/local/share/applications", mime_type);
+#endif
 
 	return handlers;
 }
 
+#ifndef _WIN32
 static void
 enum_files(const char *path, const char *mime_type)
 {
 	DIR* dir;
 	struct dirent* dentry;
-	const char* slash = "";
+	const char *slash = "";
 
 	dir = opendir(path);
 	if(dir == NULL)
@@ -175,6 +183,7 @@ enum_files(const char *path, const char *mime_type)
 
 	closedir(dir);
 }
+#endif
 
 static void
 process_file(const char* path, const char *mime_type)

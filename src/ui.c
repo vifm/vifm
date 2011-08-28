@@ -21,13 +21,19 @@
                      * functions
                      */
 
+#ifndef _WIN32
 #include <sys/ioctl.h>
+#endif
 #include <sys/stat.h> /* stat */
 #include <dirent.h> /* DIR */
+#ifndef _WIN32
 #include <grp.h> /* getgrgid() */
 #include <pwd.h> /* getpwent() */
+#endif
 #include <stdlib.h> /* malloc */
+#ifndef _WIN32
 #include <termios.h> /* struct winsize */
+#endif
 #include <unistd.h>
 
 #include <signal.h> /* signal() */
@@ -75,6 +81,7 @@ update_pos_window(FileView *view)
 static void
 get_id_string(FileView *view, size_t len, char *out_buf)
 {
+#ifndef _WIN32
 	char buf[MAX(sysconf(_SC_GETPW_R_SIZE_MAX), sysconf(_SC_GETGR_R_SIZE_MAX))];
 	char uid_buf[26];
 	char gid_buf[26];
@@ -106,6 +113,9 @@ get_id_string(FileView *view, size_t len, char *out_buf)
 	}
 
 	snprintf(out_buf, len, "  %s:%s", uid_buf, gid_buf);
+#else
+	snprintf(out_buf, len, "  IT'S WINDOWS");
+#endif
 }
 
 void
@@ -338,7 +348,7 @@ setup_ncurses_interface(void)
 	lwin.window_rows = y -1;
 	lwin.window_width = x -1;
 
-	mborder = newwin(screen_y - 3, 2 - screen_x%2, 1,
+	mborder = newwin(screen_y - 1, 2 - screen_x%2, 1,
 			screen_x/2 - 1 + screen_x%2);
 
 	wbkgdset(mborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
@@ -421,6 +431,7 @@ setup_ncurses_interface(void)
 void
 is_term_working(void)
 {
+#ifndef _WIN32
 	int screen_x, screen_y;
 	struct winsize ws = { .ws_col = -1, .ws_row = -1 };
 
@@ -439,19 +450,22 @@ is_term_working(void)
 		curr_stats.too_small_term = 1;
 	else if(curr_stats.too_small_term)
 		curr_stats.too_small_term = -1;
+#endif
 }
 
 static void
-resize_window(void)
+resize_all(void)
 {
 	int screen_x, screen_y;
 	int x, y;
+#ifndef _WIN32
 	struct winsize ws;
 
 	ioctl(0, TIOCGWINSZ, &ws);
 
 	/* changed for pdcurses */
 	resize_term(ws.ws_row, ws.ws_col);
+#endif
 
 	getmaxyx(stdscr, screen_y, screen_x);
 
@@ -550,7 +564,7 @@ resize_window(void)
 void
 redraw_window(void)
 {
-	resize_window();
+	resize_all();
 
 	if(curr_stats.show_full)
 	{

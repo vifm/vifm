@@ -23,7 +23,9 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#ifndef _WIN32
 #include <pwd.h> /* getpwnam() */
+#endif
 #include <unistd.h>
 
 #include <ctype.h>
@@ -51,7 +53,11 @@ struct Fuse_List *fuse_mounts = NULL;
 int
 S_ISEXE(mode_t mode)
 {
+#ifndef _WIN32
 	return ((S_IXUSR & mode) || (S_IXGRP & mode) || (S_IXOTH & mode));
+#else
+	return 0;
+#endif
 }
 
 int
@@ -440,6 +446,7 @@ uchar2str(wchar_t *c, size_t *len)
 void
 get_perm_string(char * buf, int len, mode_t mode)
 {
+#ifndef _WIN32
 	char *perm_sets[] =
 	{ "---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx" };
 	int u, g, o;
@@ -448,27 +455,30 @@ get_perm_string(char * buf, int len, mode_t mode)
 	g = (mode & S_IRWXG) >> 3;
 	o = (mode & S_IRWXO);
 
-	snprintf (buf, len, "-%s%s%s", perm_sets[u], perm_sets[g], perm_sets[o]);
+	snprintf(buf, len, "-%s%s%s", perm_sets[u], perm_sets[g], perm_sets[o]);
 
-	if (S_ISLNK (mode))
+	if(S_ISLNK(mode))
 		buf[0] = 'l';
-	else if (S_ISDIR (mode))
+	else if(S_ISDIR(mode))
 		buf[0] = 'd';
-	else if (S_ISBLK (mode))
+	else if(S_ISBLK(mode))
 		buf[0] = 'b';
-	else if (S_ISCHR (mode))
+	else if(S_ISCHR(mode))
 		buf[0] = 'c';
-	else if (S_ISFIFO (mode))
+	else if(S_ISFIFO(mode))
 		buf[0] = 'f';
-	else if (S_ISSOCK (mode))
+	else if(S_ISSOCK(mode))
 		buf[0] = 's';
 
-	if (mode & S_ISVTX)
+	if(mode & S_ISVTX)
 		buf[9] = (buf[9] == '-') ? 'T' : 't';
-	if (mode & S_ISGID)
+	if(mode & S_ISGID)
 		buf[6] = (buf[6] == '-') ? 'S' : 's';
-	if (mode & S_ISUID)
+	if(mode & S_ISUID)
 		buf[3] = (buf[3] == '-') ? 'S' : 's';
+#else
+	snprintf(buf, len, "--WINDOWS--");
+#endif
 }
 
 /* When list is NULL returns maximum number of lines, otherwise returns number
@@ -786,6 +796,7 @@ replace_home_part(const char *directory)
 char *
 expand_tilde(char *path)
 {
+#ifndef _WIN32
 	char name[NAME_MAX];
 	char *p, *result;
 	struct passwd *pw;
@@ -828,6 +839,9 @@ expand_tilde(char *path)
 	free(path);
 
 	return result;
+#else
+	return path;
+#endif
 }
 
 int
@@ -869,6 +883,40 @@ is_root_dir(const char *path)
 {
 	return (path[0] == '/' && path[1] == '\0');
 }
+
+#ifdef _WIN32
+
+int
+wcwidth(wchar_t c)
+{
+	return 1;
+}
+
+int
+wcswidth(wchar_t *str, size_t len)
+{
+	return MIN(len, wcslen(str));
+}
+
+int
+S_ISLNK(mode_t mode)
+{
+	return 0;
+}
+
+int
+readlink(const char *path, char *buf, size_t len)
+{
+	return -1;
+}
+
+char *
+realpath(const char *path, char *buf)
+{
+	strcpy(buf, path);
+}
+
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

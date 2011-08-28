@@ -16,8 +16,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifndef _WIN32
 #include <grp.h>
 #include <pwd.h>
+#endif
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,7 +60,7 @@ show_file_type(FileView *view, int curr_y)
 
 		mvwaddstr(menu_win, curr_y, 8, "Link");
 		curr_y += 2;
-		len = readlink (filename, linkto, sizeof (linkto));
+		len = readlink(filename, linkto, sizeof (linkto));
 
 		mvwaddstr(menu_win, curr_y, 2, "Link To: ");
 		if(len > 0)
@@ -100,12 +102,14 @@ show_file_type(FileView *view, int curr_y)
 		if(strlen(buf) > x - 9)
 			mvwaddnstr(menu_win, curr_y + 1, 8, buf + x - 9, x - 9);
 #else /* #ifdef HAVE_FILE_PROG */
+#ifndef _WIN32
 		if((S_IXUSR & view->dir_entry[view->list_pos].mode)
 				|| (S_IXGRP & view->dir_entry[view->list_pos].mode)
 				|| (S_IXOTH & view->dir_entry[view->list_pos].mode))
 			mvwaddstr(menu_win, curr_y, 8, "Executable");
 		else
 			mvwaddstr(menu_win, curr_y, 8, "Regular File");
+#endif
 #endif /* #ifdef HAVE_FILE_PROG */
 	}
 	else if(S_ISDIR(view->dir_entry[view->list_pos].mode))
@@ -124,10 +128,12 @@ show_file_type(FileView *view, int curr_y)
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
 	}
+#ifndef _WIN32
 	else if(S_ISSOCK(view->dir_entry[view->list_pos].mode))
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Socket");
 	}
+#endif
 	else
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Unknown");
@@ -165,8 +171,10 @@ redraw_full_file_properties(FileView *v)
 	char size_buf[56];
 	char uid_buf[26];
 	char buf[256];
+#ifndef _WIN32
 	struct passwd *pwd_buf;
 	struct group *grp_buf;
+#endif
 	struct tm *tm_ptr;
 	int x, y;
 	int curr_y;
@@ -193,15 +201,19 @@ redraw_full_file_properties(FileView *v)
 
 	friendly_size_notation(size, sizeof(size_buf), size_buf);
 
+#ifndef _WIN32
 	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
 	{
-		snprintf (uid_buf, sizeof(uid_buf), "%d",
+		snprintf(uid_buf, sizeof(uid_buf), "%d",
 				(int) view->dir_entry[view->list_pos].uid);
 	}
 	else
 	{
 		snprintf(uid_buf, sizeof(uid_buf), "%s", pwd_buf->pw_name);
 	}
+#else
+	snprintf(uid_buf, sizeof(uid_buf), "NOT AVAILABLE ON WINDOWS");
+#endif
 	get_perm_string(perm_buf, sizeof(perm_buf),
 			view->dir_entry[view->list_pos].mode);
 
@@ -243,8 +255,12 @@ redraw_full_file_properties(FileView *v)
 	curr_y += 2;
 
 	mvwaddstr(menu_win, curr_y, 2, "Group: ");
+#ifndef _WIN32
 	if((grp_buf = getgrgid(view->dir_entry[view->list_pos].gid)) != NULL)
 		mvwaddstr(menu_win, curr_y, 10, grp_buf->gr_name);
+#else
+	mvwaddstr(menu_win, curr_y, 10, "NOT AVAILABLE ON WINDOWS");
+#endif
 	wnoutrefresh(menu_win);
 
 	box(menu_win, 0, 0);

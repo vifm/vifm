@@ -24,11 +24,15 @@
 
 #include <dirent.h>
 #include <fcntl.h>
+#ifndef _WIN32
 #include <grp.h>
 #include <pwd.h>
+#endif
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* waitpid() */
+#ifndef _WIN32
 #include <sys/wait.h> /* waitpid() */
+#endif
 #include <unistd.h>
 
 #include <ctype.h> /* isdigit */
@@ -74,6 +78,7 @@ static int put_files_from_register_i(FileView *view, int start);
 int
 my_system(char *command)
 {
+#ifndef _WIN32
 	int pid;
 	int status;
 	extern char **environ;
@@ -107,6 +112,9 @@ my_system(char *command)
 		else
 			return status;
 	}while(1);
+#else
+	return -1;
+#endif
 }
 
 void
@@ -144,6 +152,7 @@ unmount_fuse(void)
 static int
 execute(char **args)
 {
+#ifndef _WIN32
 	int pid;
 
 	if((pid = fork()) == 0)
@@ -156,6 +165,9 @@ execute(char **args)
 	}
 
 	return pid;
+#else
+	return -1;
+#endif
 }
 
 /* returns new value for save_msg */
@@ -296,8 +308,12 @@ make_name_unique(const char *filename)
 	size_t len;
 	int i;
 
+#ifndef _WIN32
 	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, getppid(),
 			getpid());
+#else
+	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, 0, 0);
+#endif
 	i = 0;
 
 	while(access(unique, F_OK) == 0)
@@ -344,7 +360,11 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		snprintf(mount_point, PATH_MAX, "%s/%03d_%s", cfg.fuse_home,
 				++mount_point_id, get_current_file_name(view));
 	} while(access(mount_point, F_OK) == 0);
+#ifndef _WIN32
 	if(mkdir(mount_point, S_IRWXU))
+#else
+	if(mkdir(mount_point))
+#endif
 	{
 		free(escaped_filename);
 		show_error_msg("Unable to create FUSE mount directory", mount_point);
@@ -475,7 +495,11 @@ fuse_try_mount(FileView *view, const char *program)
 
 	if(access(cfg.fuse_home, F_OK|W_OK|X_OK) != 0)
 	{
+#ifndef _WIN32
 		if(mkdir(cfg.fuse_home, S_IRWXU))
+#else
+		if(mkdir(cfg.fuse_home))
+#endif
 		{
 			show_error_msg("Unable to create FUSE mount home directory",
 					cfg.fuse_home);
@@ -1590,6 +1614,7 @@ rename_files(FileView *view, char **list, int nlines)
 static void
 change_owner_cb(const char *new_owner)
 {
+#ifndef _WIN32
 	char *filename;
 	char buf[8 + NAME_MAX + 1];
 	uid_t uid;
@@ -1626,6 +1651,7 @@ change_owner_cb(const char *new_owner)
 
 	load_dir_list(curr_view, 1);
 	moveto_list_pos(curr_view, curr_view->list_pos);
+#endif
 }
 
 void
@@ -1637,6 +1663,7 @@ change_owner(void)
 static void
 change_group_cb(const char *new_group)
 {
+#ifndef _WIN32
 	char *filename;
 	char buf[8 + NAME_MAX + 1];
 	uid_t gid;
@@ -1673,6 +1700,7 @@ change_group_cb(const char *new_group)
 
 	load_dir_list(curr_view, 1);
 	moveto_list_pos(curr_view, curr_view->list_pos);
+#endif
 }
 
 void
@@ -1754,7 +1782,11 @@ prompt_dest_name(const char *src_name)
 {
 	wchar_t buf[256];
 
+#ifndef _WIN32
 	swprintf(buf, ARRAY_LEN(buf), L"New name for %s: ", src_name);
+#else
+	swprintf(buf, L"New name for %s: ", src_name);
+#endif
 	enter_prompt_mode(buf, src_name, put_confirm_cb);
 }
 
@@ -1765,9 +1797,15 @@ prompt_what_to_do(const char *src_name)
 
 	free(put_confirm.name);
 	put_confirm.name = strdup(src_name);
+#ifndef _WIN32
 	swprintf(buf, sizeof(buf)/sizeof(buf[0]),
 			L"Name conflict for %s. [r]ename/[s]kip/[o]verwrite/overwrite [a]ll: ",
 			src_name);
+#else
+	swprintf(buf,
+			L"Name conflict for %s. [r]ename/[s]kip/[o]verwrite/overwrite [a]ll: ",
+			src_name);
+#endif
 	enter_prompt_mode(buf, "", put_decide_cb);
 }
 
@@ -2214,6 +2252,7 @@ calc_dirsize(const char *path, int force_update)
 			continue;
 
 		snprintf(buf, sizeof (buf), "%s%s%s", path, slash, dentry->d_name);
+#ifndef _WIN32
 		if(dentry->d_type == DT_DIR)
 		{
 			unsigned long long dir_size = 0;
@@ -2223,6 +2262,7 @@ calc_dirsize(const char *path, int force_update)
 			size += dir_size;
 		}
 		else
+#endif
 		{
 			struct stat st;
 			if(lstat(buf, &st) == 0)

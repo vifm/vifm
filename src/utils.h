@@ -27,6 +27,18 @@
 
 #include "macros.h"
 
+#ifndef WEXITSTATUS
+#define WEXITSTATUS(a) (a)
+#endif
+
+#ifndef WIFEXITED
+#define WIFEXITED(a) (a)
+#endif
+
+#ifdef _WIN32
+#define lstat stat
+#endif
+
 typedef struct Fuse_List {
 	char source_file_name[PATH_MAX];
 	char source_file_dir[PATH_MAX];
@@ -77,6 +89,14 @@ char * expand_tilde(char *path);
 int get_regexp_cflags(const char *pattern);
 const char * get_regexp_error(int err, regex_t *re);
 int is_root_dir(const char *path);
+
+#ifdef _WIN32
+int wcwidth(wchar_t c);
+int wcswidth(wchar_t *str, size_t len);
+int S_ISLNK(mode_t mode);
+int readlink(const char *path, char *buf, size_t len);
+char * realpath(const char *path, char *buf);
+#endif
 
 #endif
 

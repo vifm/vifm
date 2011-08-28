@@ -94,7 +94,11 @@ compare_file_names(const char *s, const char *t, int ignore_case)
 	if(!cfg.sort_numbers)
 		return strcmp(s, t);
 	else
+#ifndef _WIN32
 		return strverscmp(s, t);
+#else
+		return strcmp(s, t);
+#endif
 }
 
 static int
@@ -180,6 +184,7 @@ sort_dir_list(const void *one, const void *two)
 			retval = first->mode - second->mode;
 			break;
 
+#ifndef _WIN32
 		case SORT_BY_OWNER_ID:
 			retval = first->uid - second->uid;
 			break;
@@ -195,6 +200,7 @@ sort_dir_list(const void *one, const void *two)
 		case SORT_BY_GROUP_NAME:
 			retval = first->gid - second->gid;
 			break;
+#endif
 	}
 
 	if(retval == 0)
