@@ -383,7 +383,7 @@ read_color_scheme_file(void)
 
 				cs = col_schemes + cfg.color_scheme_num - 1;
 				snprintf(cs->dir, PATH_MAX, "%s", s1);
-				if(strcmp(cs->dir, "/") != 0)
+				if(!is_root_dir(cs->dir))
 					chosp(cs->dir);
 				continue;
 			}

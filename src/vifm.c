@@ -190,7 +190,8 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 					snprintf(new_path, sizeof(new_path), "%s/%s", dir, argv[x]);
 					canonicalize_path(new_path, rwin_path, PATH_MAX);
 				}
-				chosp(rwin_path);
+				if(!is_root_dir(rwin_path))
+					chosp(rwin_path);
 			}
 			else
 			{
@@ -202,7 +203,8 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 					snprintf(new_path, sizeof(new_path), "%s/%s", dir, argv[x]);
 					canonicalize_path(new_path, lwin_path, PATH_MAX);
 				}
-				chosp(lwin_path);
+				if(!is_root_dir(lwin_path))
+					chosp(lwin_path);
 			}
 		}
 		else

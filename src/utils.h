@@ -76,6 +76,7 @@ const char *find_tail(const char *path);
 char * expand_tilde(char *path);
 int get_regexp_cflags(const char *pattern);
 const char * get_regexp_error(int err, regex_t *re);
+int is_root_dir(const char *path);
 
 #endif
 

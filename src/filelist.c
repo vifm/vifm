@@ -1368,7 +1368,7 @@ change_directory(FileView *view, const char *directory)
 		canonicalize_path(newdir, dir_dup, sizeof(dir_dup));
 	}
 
-	if(strcmp(dir_dup, "/") != 0)
+	if(!is_root_dir(dir_dup))
 		chosp(dir_dup);
 
 	snprintf(view->last_dir, sizeof(view->last_dir), "%s", view->curr_dir);
@@ -1383,9 +1383,9 @@ change_directory(FileView *view, const char *directory)
 	}
 
 	/* Clean up any excess separators */
-	if(strcmp(view->curr_dir, "/") != 0)
+	if(!is_root_dir(view->curr_dir))
 		chosp(view->curr_dir);
-	if(strcmp(view->last_dir, "/") != 0)
+	if(!is_root_dir(view->last_dir))
 		chosp(view->last_dir);
 
 	if(access(dir_dup, F_OK) != 0)
@@ -1453,7 +1453,7 @@ change_directory(FileView *view, const char *directory)
 		return -1;
 	}
 
-	if(strcmp(dir_dup, "/") != 0)
+	if(!is_root_dir(dir_dup))
 		chosp(dir_dup);
 
 	if(strcmp(dir_dup, view->curr_dir) != 0)
@@ -1666,7 +1666,7 @@ load_dir_list(FileView *view, int reload)
 			/* Always include the ../ directory unless it is the root directory. */
 			if(strcmp(d->d_name, "..") == 0)
 			{
-				if(!strcmp("/", view->curr_dir))
+				if(is_root_dir(view->curr_dir))
 				{
 					view->list_rows--;
 					continue;

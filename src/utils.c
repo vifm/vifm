@@ -762,7 +762,7 @@ replace_home_part(const char *directory)
 		strncat(strcpy(buf, "~"), directory + len, sizeof(buf));
 	else
 		strncpy(buf, directory, sizeof(buf));
-	if(strcmp(buf, "/") != 0)
+	if(!is_root_dir(buf))
 		chosp(buf);
 
 	return buf;
@@ -847,6 +847,12 @@ get_regexp_error(int err, regex_t *re)
 
 	regerror(err, re, buf, sizeof(buf));
 	return buf;
+}
+
+int
+is_root_dir(const char *path)
+{
+	return (path[0] == '/' && path[1] == '\0');
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

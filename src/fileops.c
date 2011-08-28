@@ -1228,7 +1228,7 @@ rename_file_cb(const char *new_name)
 
 	len = strlen(filename);
 	snprintf(new, sizeof(new), "%s%s%s", new_name,
-			filename[len - 1] == '/' ? "/" : "", rename_file_ext);
+			(filename[len - 1] == '/') ? "/" : "", rename_file_ext);
 
 	/* Filename unchanged */
 	if(strcmp(filename, new) == 0)
