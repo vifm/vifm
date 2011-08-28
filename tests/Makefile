@@ -14,7 +14,7 @@ ifneq ($(OS),Windows_NT)
 else
 	for test in bin/*.exe; do\
 		if ! $$test; then\
-			exit -1;\
+			exit 1;\
 		fi;\
 		echo;\
 		echo;\
