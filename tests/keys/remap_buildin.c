@@ -14,8 +14,8 @@ static void
 remap_builtin_waitpoint(void)
 {
 	assert_int_equal(0, add_user_keys(L"q", L"m", NORMAL_MODE, 0));
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"q"));
-	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"qa"));
+	assert_int_equal(KEYS_WAIT, execute_keys(L"q"));
+	assert_int_equal(0, execute_keys(L"qa"));
 }
 
 void
