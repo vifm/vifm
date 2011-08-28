@@ -655,7 +655,19 @@ goto_selected_file(FileView *view, menu_info *m)
 	strcat(dir, m->data[m->pos]);
 	chomp(file);
 	if(m->type == GREP && p != NULL)
+	{
+		int n = 1;
+
 		*p = ':';
+
+		if(num != NULL)
+			n = atoi(num);
+
+		if(access(file, R_OK) == 0)
+			view_file(file, n);
+		free(free_this);
+		return;
+	}
 
 	if(access(file, R_OK) == 0)
 	{
@@ -670,7 +682,7 @@ goto_selected_file(FileView *view, menu_info *m)
 		status_bar_message("Finding the correct directory...");
 
 		wrefresh(status_bar);
-		load_dir_list(view, 1);
+		load_dir_list(view, 0);
 
 		if(find_file_pos_in_list(view, file) < 0)
 		{
@@ -684,13 +696,6 @@ goto_selected_file(FileView *view, menu_info *m)
 				remove_filename_filter(view);
 		}
 		moveto_list_pos(view, find_file_pos_in_list(view, file));
-		if(m->type == GREP)
-		{
-			int n = 1;
-			if(num != NULL)
-				n = atoi(num);
-			view_file(file, n);
-		}
 	}
 	else if(m->type == LOCATE || m->type == USER_NAVIGATE)
 	{
@@ -794,7 +799,6 @@ execute_menu_cb(FileView *view, menu_info *m)
 			break;
 		case GREP:
 			goto_selected_file(view, m);
-			redraw_menu(m);
 			return 1;
 		case VIFM:
 			break;
@@ -942,13 +946,59 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 	enter_menu_mode(&m, view);
 }
 
+static int
+capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
+{
+	FILE *file, *err;
+	char buf[256];
+	int x;
+	int were_errors;
+
+	if(background_and_capture((char *)cmd, &file, &err) != 0)
+	{
+		show_error_msg("Trouble running command", "Unable to run command");
+		return 0;
+	}
+
+	curr_stats.search = 1;
+
+	x = 0;
+	show_progress("", 0);
+	while(fgets(buf, sizeof(buf), file) == buf)
+	{
+		show_progress("Loading menu", 1000);
+		m->data = (char **)realloc(m->data, sizeof(char *) * (x + 1));
+		m->data[x] = (char *)malloc(sizeof(buf) + 2);
+		snprintf(m->data[x], sizeof(buf) + 2, "%s", buf);
+
+		x++;
+	}
+
+	pclose(file);
+	m->len = x;
+	curr_stats.search = 0;
+
+	were_errors = print_errors(err);
+
+	if(m->len < 1)
+	{
+		reset_popup_menu(m);
+		return were_errors;
+	}
+
+	setup_menu();
+	draw_menu(m);
+	moveto_menu_pos(m->pos, m);
+	enter_menu_mode(m, view);
+	return 0;
+}
+
 void
 show_apropos_menu(FileView *view, char *args)
 {
-	int x = 0;
 	char buf[256];
-	FILE *file;
 	int len = 0;
+	int were_errors;
 
 	static menu_info m;
 	m.top = 0;
@@ -970,41 +1020,10 @@ show_apropos_menu(FileView *view, char *args)
 	m.title = (char *)malloc((strlen(args) + 12) * sizeof(char));
 	snprintf(m.title, strlen(args) + 11,  " Apropos %s ",  args);
 	snprintf(buf, sizeof(buf), "apropos %s", args);
-	file = popen(buf, "r");
 
-	if(!file)
-	{
-		show_error_msg("Trouble opening a file", "Unable to open file");
-		return;
-	}
-	x = 0;
-
-	curr_stats.search = 1;
-	while(fgets(buf, sizeof(buf), file))
-	{
-		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
-		m.data[x] = (char *)malloc(len);
-
-		snprintf(m.data[x], len - 2, "%s", buf);
-
-		x++;
-	}
-	pclose(file);
-	m.len = x;
-	curr_stats.search = 0;
-	if(m.len <= 0)
-	{
-		snprintf(buf, sizeof(buf), "No matches for \'%s\'", m.title);
-		show_error_msg("Nothing Appropriate", buf);
-		reset_popup_menu(&m);
-	}
-	else
-	{
-		setup_menu();
-		draw_menu(&m);
-		moveto_menu_pos(m.pos, &m);
-		enter_menu_mode(&m, view);
-	}
+	were_errors = capture_output_to_menu(view, buf, &m);
+	if(!were_errors && m.len < 1)
+		show_error_msgf("Nothing Appropriate", "No matches for \'%s\'", m.title);
 }
 
 static int
@@ -1640,53 +1659,6 @@ show_bsearchhistory_menu(FileView *view)
 {
 	return show_history(view, BSEARCHHISTORY, cfg.search_history_num + 1,
 			cfg.search_history);
-}
-
-static int
-capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
-{
-	FILE *file, *err;
-	char buf[256];
-	int x;
-	int were_errors;
-
-	if(background_and_capture((char *)cmd, &file, &err) != 0)
-	{
-		show_error_msg("Trouble running command", "Unable to run command");
-		return 0;
-	}
-
-	curr_stats.search = 1;
-
-	x = 0;
-	show_progress("", 0);
-	while(fgets(buf, sizeof(buf), file) == buf)
-	{
-		show_progress("Loading menu", 1000);
-		m->data = (char **)realloc(m->data, sizeof(char *) * (x + 1));
-		m->data[x] = (char *)malloc(sizeof(buf) + 2);
-		snprintf(m->data[x], sizeof(buf) + 2, "%s", buf);
-
-		x++;
-	}
-
-	pclose(file);
-	m->len = x;
-	curr_stats.search = 0;
-
-	were_errors = print_errors(err);
-
-	if(m->len < 1)
-	{
-		reset_popup_menu(m);
-		return were_errors;
-	}
-
-	setup_menu();
-	draw_menu(m);
-	moveto_menu_pos(m->pos, m);
-	enter_menu_mode(m, view);
-	return 0;
 }
 
 int
