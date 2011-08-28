@@ -155,7 +155,7 @@ Note: vifm uses extended regular expressions.
 
 Other vifm-normal Mode Keys~
 
-: - enter command line mode.
+[count]: - enter command line mode.  Count will add range.
 
 Ctrl-o - go backward through history.
 Ctrl-i - go forward through history.

@@ -942,7 +942,10 @@ cmd_dot(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_colon(struct key_info key_info, struct keys_info *keys_info)
 {
-	enter_cmdline_mode(CMD_SUBMODE, L"", NULL);
+	wchar_t buf[16] = L"";
+	if(key_info.count != NO_COUNT_GIVEN)
+		swprintf(buf, ARRAY_LEN(buf), L".,.+%d", key_info.count - 1);
+	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
 }
 
 static void

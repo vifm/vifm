@@ -204,7 +204,8 @@ File Filters
        zR     Remove all filters.
 
 Other Normal Mode Keys
-       :      enter command line mode.
+       [count]:
+              enter command line mode.  Count will add range.
 
        Ctrl-O go backward through history.
 
@@ -1394,4 +1395,4 @@ AUTHOR
 
 
 
-                                August 27, 2011                        vifm(1)
+                                August 28, 2011                        vifm(1)

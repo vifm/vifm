@@ -405,6 +405,8 @@
 
 	Handle multiple files in Vim plugin.
 
+	Made : in normal mode accept count.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.
