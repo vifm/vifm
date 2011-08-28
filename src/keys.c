@@ -378,8 +378,18 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 
 		if(curr->enters == 0)
 		{
+			wchar_t buf[16 + wcslen(key_t->data.cmd) + 1];
+
+			buf[0] = '\0';
+			if(key_info.reg != NO_REG_GIVEN)
+				swprintf(buf, ARRAY_LEN(buf), L"\"%c", key_info.reg);
+			if(key_info.count != NO_COUNT_GIVEN)
+				swprintf(buf + wcslen(buf), ARRAY_LEN(buf) - wcslen(buf), L"%d",
+						key_info.count);
+			wcscat(buf, key_t->data.cmd);
+
 			curr->enters = 1;
-			result = execute_keys_inner(key_t->data.cmd, &keys_info, curr->no_remap);
+			result = execute_keys_inner(buf, &keys_info, curr->no_remap);
 			if(result == KEYS_WAIT)
 				result = KEYS_UNKNOWN;
 			curr->enters = 0;
