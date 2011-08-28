@@ -137,9 +137,13 @@ op_copy(void *data, const char *src, const char *dst)
 static int
 op_move(void *data, const char *src, const char *dst)
 {
+	struct stat st;
 	char *escaped_src, *escaped_dst;
 	char cmd[6 + PATH_MAX*2 + 1];
 	int result;
+
+	if(lstat(dst, &st) == 0)
+		return -1;
 
 	escaped_src = escape_filename(src, 0);
 	escaped_dst = escape_filename(dst, 0);
