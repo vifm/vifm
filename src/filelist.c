@@ -395,9 +395,11 @@ quick_view_file(FileView *view)
 		case DEVICE:
 			mvwaddstr(other_view->win, ++x, y, "File is a Device");
 			break;
+#ifndef _WIN32
 		case SOCKET:
 			mvwaddstr(other_view->win, ++x, y, "File is a Socket");
 			break;
+#endif
 		case UNKNOWN:
 			if(S_ISFIFO(view->dir_entry[view->list_pos].mode))
 			{
@@ -691,9 +693,11 @@ draw_dir_list(FileView *view, int top)
 							LINE_COLOR = BROKEN_LINK_COLOR + color_scheme;
 					}
 					break;
+#ifndef _WIN32
 				case SOCKET:
 					LINE_COLOR = SOCKET_COLOR + color_scheme;
 					break;
+#endif
 				case DEVICE:
 					LINE_COLOR = DEVICE_COLOR + color_scheme;
 					break;
@@ -789,9 +793,11 @@ erase_current_line_bar(FileView *view)
 						LINE_COLOR = BROKEN_LINK_COLOR + view->color_scheme;
 				}
 				break;
+#ifndef _WIN32
 			case SOCKET:
 				LINE_COLOR = SOCKET_COLOR + view->color_scheme;
 				break;
+#endif
 			case DEVICE:
 				LINE_COLOR = DEVICE_COLOR + view->color_scheme;
 				break;
@@ -940,9 +946,11 @@ moveto_list_pos(FileView *view, int pos)
 						LINE_COLOR = BROKEN_LINK_COLOR + view->color_scheme;
 				}
 				break;
+#ifndef _WIN32
 			case SOCKET:
 				LINE_COLOR = SOCKET_COLOR + view->color_scheme;
 				break;
+#endif
 			case DEVICE:
 				LINE_COLOR = DEVICE_COLOR + view->color_scheme;
 				break;

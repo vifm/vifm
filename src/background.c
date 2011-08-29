@@ -16,17 +16,22 @@
  * Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <string.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+#include <fcntl.h>
 #include <unistd.h>
+
 #include <errno.h>
-#include <time.h>
 #include <signal.h>
+#include <string.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifndef _WIN32
 #include <sys/wait.h>
 #endif
-#include <fcntl.h>
 
 #include "background.h"
 #include "commands.h"
@@ -40,6 +45,8 @@ struct Finished_Jobs *fjobs;
 
 #ifndef _WIN32
 static int add_background_job(pid_t pid, const char *cmd, int fd);
+#else
+static int add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
 #endif
 
 void
@@ -64,9 +71,9 @@ void
 check_background_jobs(void)
 {
 #ifndef _WIN32
+	Finished_Jobs *fj = NULL;
 	Jobs_List *p = jobs;
 	Jobs_List *prev = NULL;
-	Finished_Jobs *fj = NULL;
 	sigset_t new_mask;
 	fd_set ready;
 	int maxfd;
@@ -219,6 +226,37 @@ check_background_jobs(void)
 
 	/* Unblock SIGCHLD signal */
 	sigprocmask(SIG_UNBLOCK, &new_mask, NULL);
+#else
+	Jobs_List *p = jobs;
+	Jobs_List *prev = NULL;
+
+	while(p != NULL)
+	{
+		DWORD retcode;
+		if(GetExitCodeProcess(p->hprocess, &retcode) != 0)
+			if(retcode != STILL_ACTIVE)
+				p->running = 0;
+
+		/* Remove any finished jobs. */
+		if(!p->running)
+		{
+			Jobs_List *j = p;
+
+			if(prev != NULL)
+				prev->next = p->next;
+			else
+				jobs = p->next;
+
+			p = p->next;
+			free(j->cmd);
+			free(j);
+		}
+		else
+		{
+			prev = p;
+			p = p->next;
+		}
+	}
 #endif
 }
 
@@ -436,13 +474,30 @@ start_background_job(const char *cmd)
 	}
 	return 0;
 #else
-	return -1;
+	BOOL ret;
+
+	STARTUPINFO startup = {};
+	PROCESS_INFORMATION pinfo;
+	ret = CreateProcess(NULL, cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
+			&pinfo);
+	if(ret != 0)
+	{
+		CloseHandle(pinfo.hThread);
+
+		if(add_background_job(pinfo.dwProcessId, cmd, pinfo.hProcess) != 0)
+			return -1;
+	}
+	return (ret == 0);
 #endif
 }
 
 #ifndef _WIN32
 static int
 add_background_job(pid_t pid, const char *cmd, int fd)
+#else
+static int
+add_background_job(pid_t pid, const char *cmd, HANDLE hprocess)
+#endif
 {
 	Jobs_List *new;
 
@@ -454,13 +509,16 @@ add_background_job(pid_t pid, const char *cmd, int fd)
 	new->pid = pid;
 	new->cmd = strdup(cmd);
 	new->next = jobs;
+#ifndef _WIN32
 	new->fd = fd;
+#else
+	new->hprocess = hprocess;
+#endif
 	new->skip_errors = 0;
 	new->running = 1;
 	jobs = new;
 	return 0;
 }
-#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

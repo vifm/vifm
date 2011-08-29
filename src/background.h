@@ -19,17 +19,25 @@
 #ifndef __BACKGROUND_H__
 #define __BACKGROUND_H__
 
+#ifdef _WIN32
+#include <windef.h>
+#endif
+
 #include <sys/types.h>
 
 #include <stdio.h>
 
 typedef struct Jobs_List {
-	int fd;
 	pid_t pid;
 	char *cmd;
 	int skip_errors;
 	int running;
 	int exit_code;
+#ifndef _WIN32
+	int fd;
+#else
+	HANDLE hprocess;
+#endif
 	struct Jobs_List *next;
 } Jobs_List;
 

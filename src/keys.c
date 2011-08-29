@@ -381,10 +381,18 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 
 			buf[0] = '\0';
 			if(key_info.reg != NO_REG_GIVEN)
+#ifndef _WIN32
 				swprintf(buf, ARRAY_LEN(buf), L"\"%c", key_info.reg);
+#else
+				swprintf(buf, L"\"%c", key_info.reg);
+#endif
 			if(key_info.count != NO_COUNT_GIVEN)
+#ifndef _WIN32
 				swprintf(buf + wcslen(buf), ARRAY_LEN(buf) - wcslen(buf), L"%d",
 						key_info.count);
+#else
+				swprintf(buf + wcslen(buf), L"%d", key_info.count);
+#endif
 			wcscat(buf, key_t->data.cmd);
 			wcscat(buf, keys);
 

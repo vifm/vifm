@@ -151,7 +151,7 @@ redraw_error_msg(char *title_arg, const char *message_arg)
 {
 	static char *title;
 	static const char *message;
-	
+
 	int sx, sy;
 	int x, y;
 	int z;
@@ -1880,8 +1880,8 @@ show_user_menu(FileView *view, const char *command, int navigate)
 int
 show_jobs_menu(FileView *view)
 {
-	Jobs_List *p = jobs;
-	Finished_Jobs *fj = NULL;
+	Jobs_List *p;
+	Finished_Jobs *fj;
 #ifndef _WIN32
 	sigset_t new_mask;
 #endif
@@ -1913,16 +1913,19 @@ show_jobs_menu(FileView *view)
 	sigemptyset(&new_mask);
 	sigaddset(&new_mask, SIGCHLD);
 	sigprocmask(SIG_BLOCK, &new_mask, NULL);
+#else
+	check_background_jobs();
 #endif
 
+	p = jobs;
 	fj = fjobs;
 
-	while(p)
+	while(p != NULL)
 	{
 		/* Mark any finished jobs */
-		while(fj)
+		while(fj != NULL)
 		{
-			if (p->pid == fj->pid)
+			if(p->pid == fj->pid)
 			{
 				p->running = 0;
 				fj->remove = 1;
@@ -1963,7 +1966,9 @@ show_jobs_menu(FileView *view)
 		m.title = strdup(" No jobs currently running ");
 	}
 	else
+	{
 		m.title = strdup(" Pid --- Command ");
+	}
 
 	setup_menu();
 	draw_menu(&m);
@@ -2121,8 +2126,8 @@ show_volume_menu(FileView *view)
 			{
 				m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
 				m.data[m.len] = (char *)malloc((MAX_PATH + 5) * sizeof(char));
-					
-				snprintf(m.data[m.len], MAX_PATH, "%s  %s ", Drive, volName); 
+
+				snprintf(m.data[m.len], MAX_PATH, "%s  %s ", Drive, volName);
 				m.len++;
 			}
 		}

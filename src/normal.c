@@ -391,7 +391,11 @@ cmd_emarkemark(struct key_info key_info, struct keys_info *keys_info)
 {
 	wchar_t buf[16] = L".!";
 	if(key_info.count != NO_COUNT_GIVEN)
+#ifndef _WIN32
 		swprintf(buf, ARRAY_LEN(buf), L".,.+%d!", key_info.count - 1);
+#else
+		swprintf(buf, L".,.+%d!", key_info.count - 1);
+#endif
 	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
 }
 
@@ -996,7 +1000,11 @@ cmd_colon(struct key_info key_info, struct keys_info *keys_info)
 {
 	wchar_t buf[16] = L"";
 	if(key_info.count != NO_COUNT_GIVEN)
+#ifndef _WIN32
 		swprintf(buf, ARRAY_LEN(buf), L".,.+%d", key_info.count - 1);
+#else
+		swprintf(buf, L".,.+%d", key_info.count - 1);
+#endif
 	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
 }
 

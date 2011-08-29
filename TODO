@@ -22,9 +22,10 @@ Windows.
     Document :volume command (and add it to the ChangeLog).
     Fix segfault on ./vifm h:
     iname as default sort.
-    Ignore case on completion.
+    Ignore case on filenames completion.
     Make non-latin characters appear right.
     Implement all ops ;) and trash emptying.
+    Determine executables by extension.
 
 Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).

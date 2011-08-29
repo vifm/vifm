@@ -16,6 +16,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include <string.h>
 
 #include "background.h"
@@ -94,6 +98,7 @@ op_remove(void *data, const char *src, const char *dst)
 static int
 op_removesl(void *data, const char *src, const char *dst)
 {
+#ifndef _WIN32
 	char *escaped;
 	char cmd[16 + PATH_MAX];
 	int result;
@@ -107,11 +112,15 @@ op_removesl(void *data, const char *src, const char *dst)
 
 	free(escaped);
 	return result;
+#else
+	return DeleteFile(src) == 0;
+#endif
 }
 
 static int
 op_copy(void *data, const char *src, const char *dst)
 {
+#ifndef _WIN32
 	char *escaped_src, *escaped_dst;
 	char cmd[6 + PATH_MAX*2 + 1];
 	int result;
@@ -132,11 +141,15 @@ op_copy(void *data, const char *src, const char *dst)
 	free(escaped_dst);
 	free(escaped_src);
 	return result;
+#else
+	return CopyFile(src, dst, 1) == 0;
+#endif
 }
 
 static int
 op_move(void *data, const char *src, const char *dst)
 {
+#ifndef _WIN32
 	struct stat st;
 	char *escaped_src, *escaped_dst;
 	char cmd[6 + PATH_MAX*2 + 1];
@@ -166,6 +179,9 @@ op_move(void *data, const char *src, const char *dst)
 	else if(path_starts_with(src, cfg.trash_dir))
 		remove_from_trash(strrchr(src, '/') + 1);
 	return 0;
+#else
+	return MoveFile(src, dst) == 0;
+#endif
 }
 
 static int
