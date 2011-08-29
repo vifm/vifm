@@ -260,7 +260,7 @@ check_background_jobs(void)
 #endif
 }
 
-/* Used for fusezip mounting of files */
+/* Used for FUSE mounting of files only */
 int
 background_and_wait_for_status(char *cmd)
 {
@@ -412,7 +412,51 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 
 	return 0;
 #else
-	return -1;
+	pid_t pid;
+	int out_fd, out_pipe[2];
+	int err_fd, error_pipe[2];
+	char *args[4];
+
+	if(_pipe(out_pipe, 512, O_NOINHERIT) != 0)
+	{
+		show_error_msg("File pipe error", "Error creating pipe");
+		return -1;
+	}
+
+	if(_pipe(error_pipe, 512, O_NOINHERIT) != 0)
+	{
+		show_error_msg("File pipe error", "Error creating pipe");
+		close(out_pipe[0]);
+		close(out_pipe[1]);
+		return -1;
+	}
+
+	out_fd = dup(_fileno(stdout));
+	err_fd = dup(_fileno(stderr));
+
+	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
+		return -1;
+	if(_dup2(error_pipe[1], _fileno(stderr)) != 0)
+		return -1;
+
+	args[0] = "cmd";
+	args[1] = "/C";
+	args[2] = cmd;
+	args[3] = NULL;
+
+	if(_spawnvp(P_NOWAIT, args[0], args) == 0)
+		return -1;
+
+	_close(out_pipe[1]);
+	_close(error_pipe[1]);
+
+	_dup2(out_fd, _fileno(stdout));
+	_dup2(err_fd, _fileno(stderr));
+
+	*out = _fdopen(out_pipe[0], "r");
+	*err = _fdopen(error_pipe[0], "r");
+
+	return 0;
 #endif
 }
 
@@ -478,7 +522,7 @@ start_background_job(const char *cmd)
 
 	STARTUPINFO startup = {};
 	PROCESS_INFORMATION pinfo;
-	ret = CreateProcess(NULL, cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
+	ret = CreateProcess(NULL, (char *)cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
 			&pinfo);
 	if(ret != 0)
 	{
