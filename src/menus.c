@@ -16,8 +16,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <sys/types.h>
 #include <regex.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
+#include <sys/types.h>
 #include <ctype.h> /* isspace() */
 #include <string.h> /* strchr() */
 #include <unistd.h> /* access() */
@@ -75,6 +80,9 @@ enum {
 	USER_NAVIGATE,
 	VIFM,
 	GREP,
+#ifdef _WIN32
+	VOLUME,
+#endif
 };
 
 static void
@@ -750,6 +758,17 @@ execute_dirstack_cb(FileView *view, menu_info *m)
 	rotate_stack(pos);
 }
 
+static void
+execute_volume_cb(FileView *view, menu_info *m)
+{
+	char buf[4];
+	snprintf(buf, 4, "%s", m->data[m->pos]);
+
+	change_directory(view, buf);
+	load_dir_list(view, 0);
+	moveto_list_pos(view, 0);
+}
+
 int
 execute_menu_cb(FileView *view, menu_info *m)
 {
@@ -808,6 +827,11 @@ execute_menu_cb(FileView *view, menu_info *m)
 			return 1;
 		case VIFM:
 			break;
+#ifdef _WIN32
+		case VOLUME:
+			execute_volume_cb(view, m);
+			break;
+#endif
 		default:
 			break;
 	}
@@ -2041,6 +2065,75 @@ show_undolist_menu(FileView *view, int with_details)
 	enter_menu_mode(&m, view);
 	return 0;
 }
+
+#ifdef _WIN32
+void
+show_volume_menu(FileView *view)
+{
+	static menu_info m;
+	int retVal;
+	int x;
+	TCHAR Drive[] = TEXT("c:\\");
+	TCHAR c;
+	TCHAR volName[MAX_PATH];
+	TCHAR fileBuf[MAX_PATH];
+
+	m.top = 0;
+	m.current = 1;
+	m.len = 0;
+	m.pos = 0;
+	m.win_rows = 0;
+	m.type = VOLUME;
+	m.matching_entries = 0;
+	m.matches = NULL;
+	m.match_dir = NONE;
+	m.regexp = NULL;
+	m.title = strdup(" Mounted Volumes ");
+	m.args = NULL;
+	m.data = NULL;
+
+	getmaxyx(menu_win, m.win_rows, x);
+
+	for(c = TEXT('a'); c < TEXT('z'); c++)
+	{
+		Drive[0] = c;
+		retVal = GetDriveType(Drive);
+
+		switch(retVal)
+		{
+			case DRIVE_CDROM:
+			case DRIVE_REMOTE:
+			case DRIVE_RAMDISK:
+			case DRIVE_REMOVABLE:
+			case DRIVE_FIXED:
+				break;
+
+			case DRIVE_UNKNOWN:
+			case DRIVE_NO_ROOT_DIR:
+			default:
+				retVal = 0;
+				break;
+		}
+		if(retVal)
+		{
+			if(GetVolumeInformation(Drive, volName, MAX_PATH, NULL, NULL, NULL,
+					fileBuf, MAX_PATH))
+			{
+				m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
+				m.data[m.len] = (char *)malloc((MAX_PATH + 5) * sizeof(char));
+					
+				snprintf(m.data[m.len], MAX_PATH, "%s  %s ", Drive, volName); 
+				m.len++;
+			}
+		}
+	}
+
+	setup_menu();
+	draw_menu(&m);
+	moveto_menu_pos(0, &m);
+	enter_menu_mode(&m, view);
+}
+#endif
 
 int
 show_vifm_menu(FileView *view)

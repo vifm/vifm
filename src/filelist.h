@@ -25,7 +25,9 @@ enum {
 	LINK,
 	DIRECTORY,
 	DEVICE,
+#ifndef _WIN32
 	SOCKET,
+#endif
 	EXECUTABLE,
 	REGULAR,
 	UNKNOWN

@@ -17,6 +17,7 @@ Documentation.
 	Better documentation (with normal tags in Vim version).
     Add section about registers.
     Maybe divide vifm.txt in several files (if it becomes too big).
+    Document :volume command.
 
 Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).
