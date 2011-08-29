@@ -1798,7 +1798,9 @@ load_dir_list(FileView *view, int reload)
 			dir_entry->atime = s.st_atime;
 			dir_entry->ctime = s.st_ctime;
 
+#ifndef _WIN32
 			if(s.st_ino)
+#endif
 			{
 				switch(s.st_mode & S_IFMT)
 				{

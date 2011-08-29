@@ -846,12 +846,16 @@ follow_link(FileView *view, int follow_dirs)
 void
 handle_file(FileView *view, int dont_execute, int force_follow)
 {
+	char name[NAME_MAX];
 	int type;
 	int execable;
 	int runnable;
 	char *filename;
 	
 	filename = get_current_file_name(view);
+	snprintf(name, sizeof(name), "%s", filename);
+	chosp(name);
+
 	type = view->dir_entry[view->list_pos].type;
 
 	if(view->selected_files > 1)
@@ -876,8 +880,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 		}
 	}
 
-	if(is_dir(view->dir_entry[view->list_pos].name) &&
-			view->selected_files == 0 &&
+	if(is_dir(name) && view->selected_files == 0 &&
 			(view->dir_entry[view->list_pos].type != LINK || !force_follow))
 	{
 		if(strcmp(filename, "../") == 0)
