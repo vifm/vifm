@@ -20,6 +20,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <wchar.h> /* swprintf */
 
 #include "../config.h"
 

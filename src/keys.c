@@ -20,6 +20,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wchar.h> /* swprintf */
 
 #include "utils.h"
 
@@ -368,8 +369,11 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 	else
 	{
 		int result = (def_handlers[*mode] == NULL) ? KEYS_UNKNOWN : 0;
-		struct keys_info keys_info;
-		init_keys_info(&keys_info, 1);
+		struct keys_info ki;
+		if(curr->conf.followed == FOLLOWED_BY_SELECTOR)
+			ki = *keys_info;
+		else
+			init_keys_info(&ki, 1);
 
 		if(curr->enters == 0)
 		{
@@ -387,9 +391,7 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 						key_info.multi);
 
 			curr->enters = 1;
-			result = execute_keys_inner(buf, &keys_info, curr->no_remap);
-			/* if(result == KEYS_WAIT) */
-			/* 	result = KEYS_UNKNOWN; */
+			result = execute_keys_inner(buf, &ki, curr->no_remap);
 			curr->enters = 0;
 		}
 		else if(def_handlers[*mode] != NULL)
