@@ -890,7 +890,21 @@ get_regexp_error(int err, regex_t *re)
 int
 is_root_dir(const char *path)
 {
+#ifndef _WIN32
 	return (path[0] == '/' && path[1] == '\0');
+#else
+	return (isalpha(path[0]) && strcmp(path + 1, ":/") == 0);
+#endif
+}
+
+int
+is_path_absolute(const char *path)
+{
+#ifndef _WIN32
+	return (path[0] == '/');
+#else
+	return (path[0] != '\0' && path[1] == ':');
+#endif
 }
 
 #ifdef _WIN32
@@ -923,6 +937,7 @@ char *
 realpath(const char *path, char *buf)
 {
 	strcpy(buf, path);
+	return buf;
 }
 
 #endif

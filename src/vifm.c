@@ -139,6 +139,30 @@ load_initial_directory(FileView *view, const char *dir)
 	change_directory(view, dir);
 }
 
+/* buf should be at least PATH_MAX characters length */
+static void
+parse_path(const char *dir, const char *path, char *buf)
+{
+	if(is_path_absolute(path))
+	{
+		snprintf(buf, PATH_MAX, "%s", path);
+	}
+#ifdef _WIN32
+	else if(path[0] == '/')
+	{
+		snprintf(buf, PATH_MAX, "%c:%s", dir[0], path);
+	}
+#endif
+	else
+	{
+		char new_path[PATH_MAX];
+		snprintf(new_path, sizeof(new_path), "%s/%s", dir, path);
+		canonicalize_path(new_path, buf, PATH_MAX);
+	}
+	if(!is_root_dir(buf))
+		chosp(buf);
+}
+
 static void
 parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		char *rwin_path)
@@ -181,31 +205,9 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		else if(access(argv[x], F_OK) == 0)
 		{
 			if(lwin_path[0] != '\0')
-			{
-				if(argv[x][0] == '/')
-					snprintf(rwin_path, PATH_MAX, "%s", argv[x]);
-				else
-				{
-					char new_path[PATH_MAX];
-					snprintf(new_path, sizeof(new_path), "%s/%s", dir, argv[x]);
-					canonicalize_path(new_path, rwin_path, PATH_MAX);
-				}
-				if(!is_root_dir(rwin_path))
-					chosp(rwin_path);
-			}
+				parse_path(dir, argv[x], rwin_path);
 			else
-			{
-				if(argv[x][0] == '/')
-					snprintf(lwin_path, PATH_MAX, "%s", argv[x]);
-				else
-				{
-					char new_path[PATH_MAX];
-					snprintf(new_path, sizeof(new_path), "%s/%s", dir, argv[x]);
-					canonicalize_path(new_path, lwin_path, PATH_MAX);
-				}
-				if(!is_root_dir(lwin_path))
-					chosp(lwin_path);
-			}
+				parse_path(dir, argv[x], lwin_path);
 		}
 		else
 		{

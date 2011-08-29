@@ -2152,8 +2152,12 @@ cd(FileView *view, const char *path)
 	if(path != NULL)
 	{
 		char *arg = expand_tilde(strdup(path));
-		if(*arg == '/')
+		if(is_path_absolute(arg))
 			snprintf(dir, sizeof(dir), "%s", arg);
+#ifdef _WIN32
+		else if(*arg == '/')
+			snprintf(dir, sizeof(dir), "%c:%s", view->curr_dir[0], arg);
+#endif
 		else if(strcmp(arg, "-") == 0)
 			snprintf(dir, sizeof(dir), "%s", view->last_dir);
 		else
