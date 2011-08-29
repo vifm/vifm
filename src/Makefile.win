@@ -21,12 +21,17 @@ converter_SOURCES := vifmrc-converter.c
 converter_OBJECTS := $(converter_SOURCES:.c=.o)
 converter_EXECUTABLE := vifmrc-converter.exe
 
-all: $(vifm_EXECUTABLE) $(converter_EXECUTABLE)
+all: config $(vifm_EXECUTABLE) $(converter_EXECUTABLE)
 
 $(vifm_EXECUTABLE): $(vifm_OBJECTS)
 	$(CC) $^ -o $@ $(LDFLAGS) $(LIBS)
 $(converter_EXECUTABLE): $(converter_OBJECTS)
 	$(CC) $^ -o $@ $(LDFLAGS)
+
+config:
+	echo '#define VERSION "0.6.3"' > ../config.h
+#	echo '#define ENABLE_EXTENDED_KEYS' >> ../config.h
+#	echo '#define ENABLE_COMPATIBILITY_MODE' >> ../config.h
 
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
