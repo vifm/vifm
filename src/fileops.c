@@ -256,6 +256,7 @@ yank_selected_files(FileView *view, int reg)
 				view->selected_filelist[x]);
 		append_to_register(reg, buf);
 	}
+	update_unnamed_reg(reg);
 }
 
 /* execute command. */
@@ -1164,6 +1165,8 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	}
 	free_selected_file_array(view);
 	clean_selected_files(view);
+
+	update_unnamed_reg(reg);
 
 	cmd_group_end();
 

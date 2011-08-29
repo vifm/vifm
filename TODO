@@ -15,6 +15,7 @@ Basic things that need to be done.
 
 Documentation.
 	Better documentation (with normal tags in Vim version).
+    Add section about registers.
     Maybe divide vifm.txt in several files (if it becomes too big).
 
 Vi(m) specific features that need to be added.

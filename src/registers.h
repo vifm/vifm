@@ -37,6 +37,7 @@ void pack_register(int reg);
 char ** list_registers_content(const char *registers);
 void rename_in_registers(const char *old, const char *new);
 void clean_regs_with_trash(void);
+void update_unnamed_reg(int reg);
 
 #endif
 

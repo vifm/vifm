@@ -411,6 +411,8 @@
 
 	Made : in normal mode accept count.
 
+	Update " register on each yank/delete operation.
+
 	Fixed %F, accidentally broken in v0.6.2.
 
 	Fixed segmentation fault on %f or %F expanding.

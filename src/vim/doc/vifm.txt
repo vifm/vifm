@@ -723,7 +723,6 @@ The builtin commands are:
                                                *vifm-:yank* *vifm-:y*
 :[range]y[ank] [reg] [count] - will yank files to the reg register.
 
-
                                                *vifm-:map*
 :map lhs rhs - map lhs key sequence to rhs in normal and visual modes.
 :map! lhs rhs - map lhs key sequence to rhs in command line mode.

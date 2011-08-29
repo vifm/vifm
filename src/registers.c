@@ -108,9 +108,7 @@ clear_register(int key)
 
 	y = reg->num_files;
 	while(y--)
-	{
 		free(reg->files[y]);
-	}
 	reg->num_files = 0;
 }
 
@@ -211,6 +209,30 @@ clean_regs_with_trash(void)
 		if(needs_pack)
 			pack_register(registers[x].name);
 	}
+}
+
+void
+update_unnamed_reg(int key)
+{
+	registers_t *unnamed, *reg;
+	int i;
+
+	if(key == '"')
+		return;
+
+	if((reg = find_register(key)) == NULL)
+		return;
+
+	if((unnamed = find_register('"')) == NULL)
+		return;
+
+	clear_register('"');
+
+	unnamed->num_files = reg->num_files;
+	unnamed->files = (char **)realloc(unnamed->files,
+			unnamed->num_files*sizeof(char *));
+	for(i = 0; i < unnamed->num_files; i++)
+		unnamed->files[i] = strdup(reg->files[i]);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
