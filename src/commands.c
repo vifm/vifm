@@ -2040,9 +2040,11 @@ comm_quit(int write_info)
 		snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
 		fp = fopen(buf, "w");
 		fclose(fp);
-		endwin();
-		exit(0);
 	}
+
+#ifdef _WIN32
+	system("cls");
+#endif
 
 	endwin();
 	exit(0);
