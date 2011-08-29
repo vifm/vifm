@@ -407,6 +407,8 @@
 
 	Handle multiple files in Vim plugin.
 
+	Improved user mappings (mapping on k in k<letter> and k<selector>).
+
 	Made : in normal mode accept count.
 
 	Fixed %F, accidentally broken in v0.6.2.
