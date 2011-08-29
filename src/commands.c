@@ -71,6 +71,14 @@
 
 #include "commands.h"
 
+#ifndef _WIN32
+#define PAUSE_CMD "vifm-pause"
+#define PAUSE_STR "; "PAUSE_CMD
+#else
+#define PAUSE_CMD "pause"
+#define PAUSE_STR
+#endif
+
 /* values of type argument for filename_completion() function */
 enum {
 	FNC_ALL,      /* all files and directories */
@@ -1330,12 +1338,12 @@ split_screen(FileView *view, char *command)
 {
 	char buf[1024];
 
-	if (command)
+	if(command)
 	{
 		snprintf(buf, sizeof(buf), "screen -X eval \'chdir %s\'", view->curr_dir);
 		my_system(buf);
 
-		snprintf(buf,sizeof(buf), "screen-open-region-with-program \"%s\' ",
+		snprintf(buf, sizeof(buf), "screen-open-region-with-program \"%s\"",
 				command);
 
 		my_system(buf);
@@ -1386,7 +1394,8 @@ shellout(const char *command, int pause)
 			if(title != NULL)
 			{
 				if(pause > 0)
-					snprintf(buf, sizeof(buf), "screen -t \"%s\" %s -c '%s; vifm-pause'",
+					snprintf(buf, sizeof(buf),
+							"screen -t \"%s\" %s -c '%s" PAUSE_STR "'",
 							title + strlen(get_vicmd(&bg)) + 1, escaped_sh, command);
 				else
 				{
@@ -1410,8 +1419,8 @@ shellout(const char *command, int pause)
 
 				if(pause > 0)
 					snprintf(buf, sizeof(buf),
-							"screen -t \"%.10s\" %s -c '%s; vifm-pause'", title, escaped_sh,
-							command);
+							"screen -t \"%.10s\" %s -c '%s" PAUSE_STR "'", title,
+							escaped_sh, command);
 				else
 				{
 					escaped = escape_filename(command, 0);
@@ -1426,7 +1435,7 @@ shellout(const char *command, int pause)
 		else
 		{
 			if(pause > 0)
-				snprintf(buf, sizeof(buf), "%s; vifm-pause", command);
+				snprintf(buf, sizeof(buf), "%s" PAUSE_STR, command);
 			else
 				snprintf(buf, sizeof(buf), "%s", command);
 		}
@@ -1454,7 +1463,7 @@ shellout(const char *command, int pause)
 	result = WEXITSTATUS(my_system(buf));
 
 	if(result != 0 && pause < 0)
-		my_system("vifm-pause");
+		my_system(PAUSE_CMD);
 
 	/* force views update */
 	lwin.dir_mtime = 0;
@@ -1463,10 +1472,14 @@ shellout(const char *command, int pause)
 	/* There is a problem with using the screen program and
 	 * catching all the SIGWICH signals.  So just redraw the window.
 	 */
+#ifndef _WIN32
 	if(!isendwin() && cfg.use_screen)
 		redraw_window();
 	else
 		reset_prog_mode();
+#else
+	redraw_window();
+#endif
 
 	curs_set(0);
 

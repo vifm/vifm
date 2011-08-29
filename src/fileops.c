@@ -113,7 +113,17 @@ my_system(char *command)
 			return status;
 	}while(1);
 #else
-	return -1;
+	char buf[strlen(cfg.shell) + 5 + strlen(command) + 1 + 1];
+
+	signal(SIGINT, SIG_DFL);
+
+	strcpy(buf, cfg.shell);
+	strcat(buf, " -c \"");
+	strcat(buf, command);
+	strcat(buf, "\"");
+
+	system("cls");
+	return system(buf);
 #endif
 }
 
