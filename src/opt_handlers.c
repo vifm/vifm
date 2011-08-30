@@ -216,7 +216,11 @@ load_sort(FileView *view)
 				abs(view->sort[j]) == SORT_BY_INAME)
 			break;
 	if(j < NUM_SORT_OPTIONS && view->sort[j] > NUM_SORT_OPTIONS)
+#ifndef _WIN32
 		view->sort[j++] = SORT_BY_NAME;
+#else
+		view->sort[j++] = SORT_BY_INAME;
+#endif
 
 	i = -1;
 	while(++i < NUM_SORT_OPTIONS && view->sort[i] <= NUM_SORT_OPTIONS)
@@ -487,7 +491,11 @@ sort_handler(enum opt_op op, union optval_t val)
 				abs(curr_view->sort[j]) == SORT_BY_INAME)
 			break;
 	if(j == i)
+#ifndef _WIN32
 		curr_view->sort[i++] = SORT_BY_NAME;
+#else
+		curr_view->sort[i++] = SORT_BY_INAME;
+#endif
 	while(i < NUM_SORT_OPTIONS)
 		curr_view->sort[i++] = NUM_SORT_OPTIONS + 1;
 	load_saving_pos(curr_view, 1);

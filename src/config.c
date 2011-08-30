@@ -196,9 +196,13 @@ load_view_defaults(FileView *view)
 	view->prev_filter = strdup("");
 	view->invert = TRUE;
 
-	for(i = 0; i < NUM_SORT_OPTIONS; i++)
-		view->sort[i] = NUM_SORT_OPTIONS + 1;
+#ifndef _WIN32
 	view->sort[0] = SORT_BY_NAME;
+#else
+	view->sort[0] = SORT_BY_INAME;
+#endif
+	for(i = 1; i < NUM_SORT_OPTIONS; i++)
+		view->sort[i] = NUM_SORT_OPTIONS + 1;
 }
 
 void
