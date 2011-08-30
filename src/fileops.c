@@ -1821,7 +1821,7 @@ put_next(const char *dest_name, int override)
 		struct stat st;
 		if(lstat(dest_name, &st) == 0)
 		{
-			if(perform_operation(OP_REMOVE, NULL, dst_buf, NULL) != 0)
+			if(perform_operation(OP_REMOVESL, NULL, dst_buf, NULL) != 0)
 				return 0;
 		}
 
