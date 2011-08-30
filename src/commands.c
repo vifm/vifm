@@ -529,8 +529,13 @@ filename_completion(const char *str, int type)
 
 		if(filename[0] == '\0' && d->d_name[0] == '.')
 			continue;
+#ifndef _WIN32
 		if(strncmp(d->d_name, filename, filename_len) != 0)
 			continue;
+#else
+		if(strncasecmp(d->d_name, filename, filename_len) != 0)
+			continue;
+#endif
 
 		if(type == FNC_DIRONLY && !is_entry_dir(d))
 			continue;
