@@ -1653,6 +1653,8 @@ load_dir_list(FileView *view, int reload)
 
 	dir = opendir(view->curr_dir);
 
+	view->matches = 0;
+
 	if(dir != NULL)
 	{
 		for(view->list_rows = 0; (d = readdir(dir)); view->list_rows++)

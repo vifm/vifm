@@ -104,6 +104,9 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 	cflags = get_regexp_cflags(pattern);
 	if((err = regcomp(&re, pattern, cflags)) == 0)
 	{
+		if(pattern != view->regexp)
+			snprintf(view->regexp, sizeof(view->regexp), "%s", pattern);
+
 		for(x = 0; x < view->list_rows; x++)
 		{
 			char buf[NAME_MAX];
@@ -147,6 +150,7 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 		}
 		if(!cfg.hl_search)
 		{
+			view->matches = found;
 			status_bar_messagef("%d matching files for %s", found, view->regexp);
 			return 1;
 		}

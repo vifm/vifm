@@ -405,25 +405,28 @@ cmd_M(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_N(struct key_info key_info, struct keys_info *keys_info)
 {
-	int m, i;
-
 	if(cfg.search_history_num < 0)
 		return;
 
-	m = 0;
-	for(i = 0; i < view->list_rows; i++)
-		if(view->dir_entry[i].search_match)
-		{
-			m = 1;
-			break;
-		}
-	if(m == 0)
-		find_vpattern(view, cfg.search_history[0], curr_stats.last_search_backward);
+	if(view->matches == 0)
+	{
+		const char *pattern = (view->regexp[0] == '\0') ?
+				cfg.search_history[0] : view->regexp;
+		curr_stats.save_msg = find_vpattern(view, pattern,
+				curr_stats.last_search_backward);
+	}
+
+	if(curr_view->matches == 0)
+		return;
 
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	while(key_info.count-- > 0)
 		find_update(view, !curr_stats.last_search_backward);
+
+	status_bar_messagef("%c%s", curr_stats.last_search_backward ? '/' : '?',
+			view->regexp);
+	curr_stats.save_msg = 1;
 }
 
 static void
@@ -667,25 +670,28 @@ cmd_m(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_n(struct key_info key_info, struct keys_info *keys_info)
 {
-	int m, i;
-
 	if(cfg.search_history_num < 0)
 		return;
 
-	m = 0;
-	for(i = 0; i < view->list_rows; i++)
-		if(view->dir_entry[i].search_match)
-		{
-			m = 1;
-			break;
-		}
-	if(m == 0)
-		find_vpattern(view, cfg.search_history[0], curr_stats.last_search_backward);
+	if(view->matches == 0)
+	{
+		const char *pattern = (view->regexp[0] == '\0') ?
+				cfg.search_history[0] : view->regexp;
+		curr_stats.save_msg = find_vpattern(view, pattern,
+				curr_stats.last_search_backward);
+	}
+
+	if(curr_view->matches == 0)
+		return;
 
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	while(key_info.count-- > 0)
 		find_update(view, curr_stats.last_search_backward);
+
+	status_bar_messagef("%c%s", curr_stats.last_search_backward ? '?' : '/',
+			view->regexp);
+	curr_stats.save_msg = 1;
 }
 
 static void

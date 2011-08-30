@@ -273,11 +273,13 @@ main(int argc, char *argv[])
 	lwin.prev_invert = lwin.invert;
 	lwin.hide_dot = 1;
 	strncpy(lwin.regexp, "", sizeof(lwin.regexp));
+	lwin.matches = 0;
 	init_window_history(&lwin);
 
 	rwin.prev_invert = rwin.invert;
 	rwin.hide_dot = 1;
 	strncpy(rwin.regexp, "", sizeof(rwin.regexp));
+	rwin.matches = 0;
 	init_window_history(&rwin);
 
 	init_status();

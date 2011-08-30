@@ -82,7 +82,10 @@ typedef struct _FileView
 	char curr_dir[PATH_MAX];
 	time_t dir_mtime;
 	char last_dir[PATH_MAX];
+
 	char regexp[256]; /* regular expression pattern for / and ? searching */
+	int matches;
+
 	int hide_dot;
 	int prev_invert;
 	bool invert; /* whether to invert the filename pattern */
