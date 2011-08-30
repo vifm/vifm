@@ -103,7 +103,7 @@ op_removesl(void *data, const char *src, const char *dst)
 		return -1;
 
 	snprintf(cmd, sizeof(cmd), "rm -rf %s", escaped);
-	result = system_and_wait_for_errors(cmd);
+	result = background_and_wait_for_errors(cmd);
 
 	free(escaped);
 	return result;
@@ -127,7 +127,7 @@ op_copy(void *data, const char *src, const char *dst)
 
 	snprintf(cmd, sizeof(cmd), "cp -nR --preserve=mode,timestamps %s %s",
 			escaped_src, escaped_dst);
-	result = system_and_wait_for_errors(cmd);
+	result = background_and_wait_for_errors(cmd);
 
 	free(escaped_dst);
 	free(escaped_src);
@@ -158,7 +158,7 @@ op_move(void *data, const char *src, const char *dst)
 	free(escaped_dst);
 	free(escaped_src);
 
-	if((result = system_and_wait_for_errors(cmd)) != 0)
+	if((result = background_and_wait_for_errors(cmd)) != 0)
 		return result;
 
 	if(path_starts_with(dst, cfg.trash_dir))
@@ -179,7 +179,7 @@ op_chown(void *data, const char *src, const char *dst)
 	snprintf(cmd, sizeof(cmd), "chown -fR %u %s", uid, escaped);
 	free(escaped);
 
-	return system_and_wait_for_errors(cmd);
+	return background_and_wait_for_errors(cmd);
 }
 
 static int
@@ -193,7 +193,7 @@ op_chgrp(void *data, const char *src, const char *dst)
 	snprintf(cmd, sizeof(cmd), "chown -fR :%u %s", gid, escaped);
 	free(escaped);
 
-	return system_and_wait_for_errors(cmd);
+	return background_and_wait_for_errors(cmd);
 	return 0;
 }
 
@@ -207,7 +207,7 @@ op_chmod(void *data, const char *src, const char *dst)
 	snprintf(cmd, sizeof(cmd), "chmod %s %s", (char *)data, escaped);
 	free(escaped);
 
-	return system_and_wait_for_errors(cmd);
+	return background_and_wait_for_errors(cmd);
 }
 
 static int
@@ -240,7 +240,7 @@ op_symlink(void *data, const char *src, const char *dst)
 	}
 
 	snprintf(cmd, sizeof(cmd), "ln -s %s %s", escaped_src, escaped_dst);
-	result = system_and_wait_for_errors(cmd);
+	result = background_and_wait_for_errors(cmd);
 
 	free(escaped_dst);
 	free(escaped_src);

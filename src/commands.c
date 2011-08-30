@@ -887,7 +887,7 @@ split_path(void)
 	paths_count = i;
 }
 
-void
+static void
 save_history(const char *line, char **hist, int *num, int *len)
 {
 	int x;

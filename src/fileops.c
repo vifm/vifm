@@ -141,53 +141,6 @@ unmount_fuse(void)
 	leave_invalid_dir(&rwin, rwin.curr_dir);
 }
 
-int
-system_and_wait_for_errors(char *cmd)
-{
-	pid_t pid;
-	int error_pipe[2];
-	int result = 0;
-
-	if(pipe(error_pipe) != 0)
-	{
-		show_error_msg("File pipe error", "Error creating pipe");
-		return -1;
-	}
-
-	if((pid = fork()) == -1)
-		return -1;
-
-	if(pid == 0)
-	{
-		run_from_fork(error_pipe, 1, cmd);
-	}
-	else
-	{
-		char buf[80*10];
-		char linebuf[80];
-		int nread = 0;
-
-		close(error_pipe[1]); /* Close write end of pipe. */
-
-		buf[0] = '\0';
-		while((nread = read(error_pipe[0], linebuf, sizeof(linebuf) - 1)) > 0)
-		{
-			result = -1;
-			linebuf[nread] = '\0';
-			if(nread == 1 && linebuf[0] == '\n')
-				continue;
-			strncat(buf, linebuf, sizeof(buf));
-			buf[sizeof(buf) - 1] = '\0';
-		}
-		close(error_pipe[0]);
-
-		if(result != 0)
-			show_error_msg("Background Process Error", buf);
-	}
-
-	return result;
-}
-
 static int
 execute(char **args)
 {
@@ -2406,7 +2359,7 @@ substitute_in_name(const char *name, const char *pattern, const char *sub,
 	return buf;
 }
 
-int
+static int
 change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 		char **dest)
 {

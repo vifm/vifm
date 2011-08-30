@@ -44,7 +44,6 @@ int delete_file(FileView *view, int reg, int count, int *indexes,
 		int use_trash);
 int my_system(char *command);
 void unmount_fuse(void);
-int system_and_wait_for_errors(char *cmd);
 void run_using_prog(FileView *view, const char *program, int dont_execute,
 		int force_background);
 int yank_files(FileView *view, int reg, int count, int *indexes);

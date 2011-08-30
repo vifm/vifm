@@ -249,15 +249,12 @@ background_and_wait_for_status(char *cmd)
 	}while(1);
 }
 
-/* Only used for deleting and putting of files so that the changes show
- * up immediately in the file lists.
- */
 int
 background_and_wait_for_errors(char *cmd)
 {
 	pid_t pid;
 	int error_pipe[2];
-	int error = 0;
+	int result = 0;
 
 	if(pipe(error_pipe) != 0)
 	{
@@ -274,18 +271,29 @@ background_and_wait_for_errors(char *cmd)
 	}
 	else
 	{
-		FILE *ef;
+		char buf[80*10];
+		char linebuf[80];
+		int nread = 0;
 
 		close(error_pipe[1]); /* Close write end of pipe. */
 
-		ef = fdopen(error_pipe[0], "r");
-		error = print_errors(ef);
+		buf[0] = '\0';
+		while((nread = read(error_pipe[0], linebuf, sizeof(linebuf) - 1)) > 0)
+		{
+			result = -1;
+			linebuf[nread] = '\0';
+			if(nread == 1 && linebuf[0] == '\n')
+				continue;
+			strncat(buf, linebuf, sizeof(buf));
+			buf[sizeof(buf) - 1] = '\0';
+		}
+		close(error_pipe[0]);
+
+		if(result != 0)
+			show_error_msg("Background Process Error", buf);
 	}
 
-	if(error)
-		return -1;
-
-	return 0;
+	return result;
 }
 
 int
