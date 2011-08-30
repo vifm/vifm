@@ -469,8 +469,8 @@ main(int argc, char *argv[])
 		}
 
 		show_error_msg("Configuration update", "Your vifmrc has been upgraded to "
-				"new format, you can find its old version in " CONF_DIR "/vifmrc.bak.  "
-				"vifm will not write anything to vifmrc, and all variables that are "
+				"new format, you can find its old version in " CONF_DIR "/vifmrc.bak. "
+				" vifm will not write anything to vifmrc, and all variables that are "
 				"saved between runs of vifm are stored in " CONF_DIR "/vifminfo now "
 				"(you can edit it by hand, but do it carefully).  You can control what "
 				"vifm stores in vifminfo with 'vifminfo' option.");
