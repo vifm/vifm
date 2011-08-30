@@ -24,7 +24,6 @@ Windows.
     iname as default sort.
     Ignore case on filenames completion.
     Make non-latin characters appear right.
-    Implement all ops ;) and trash emptying.
     Determine executables by extension.
 
 Vi(m) specific features that need to be added.

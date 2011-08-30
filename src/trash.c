@@ -16,6 +16,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifdef _WIN32
+#include <dirent.h> /* DIR */
+#include <unistd.h> /* chdir() */
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,20 +34,51 @@
 
 #include "trash.h"
 
+static void empty_trash_dir(void);
+static void empty_trash_list(void);
+
 void
 empty_trash(void)
 {
-	char buf[24 + (strlen(cfg.trash_dir) + 1)*2 + 1];
+	clean_regs_with_trash();
+	empty_trash_dir();
+	clean_cmds_with_trash();
+	empty_trash_list();
+}
+
+static void
+empty_trash_dir(void)
+{
+#ifndef _WIN32
+	char cmd[24 + strlen(cfg.trash_dir)*2 + 1];
 	char *escaped;
-	int i;
 
 	escaped = escape_filename(cfg.trash_dir, 0);
-	snprintf(buf, sizeof(buf), "sh -c 'rm -rf %s/* %s/.[!.]*'", escaped, escaped);
+	snprintf(cmd, sizeof(cmd), "sh -c 'rm -rf %s/* %s/.[!.]*'", escaped, escaped);
 	free(escaped);
 
-	clean_regs_with_trash();
-	start_background_job(buf);
-	clean_cmds_with_trash();
+	start_background_job(cmd);
+#else
+	DIR *dir;
+	struct dirent *d;
+
+	dir = opendir(cfg.trash_dir);
+	if(dir == NULL)
+		return;
+	while((d = readdir(dir)) != NULL)
+	{
+		char full[PATH_MAX];
+		snprintf(full, sizeof(full), "%s/%s", cfg.trash_dir, d->d_name);
+		perform_operation(OP_REMOVESL, NULL, full, NULL);
+	}
+	closedir(dir);
+#endif
+}
+
+static void
+empty_trash_list(void)
+{
+	int i;
 
 	for(i = 0; i < nentries; i++)
 	{

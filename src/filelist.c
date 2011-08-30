@@ -21,22 +21,23 @@
 #endif
 
 #include <curses.h>
-#include <unistd.h> /* chdir() */
-#include <stdlib.h> /* malloc  qsort */
+
+#include <regex.h>
+
+#include <dirent.h> /* DIR */
 #include <sys/stat.h> /* stat */
 #include <sys/time.h> /* localtime */
 #ifndef _WIN32
 #include <sys/wait.h> /* WEXITSTATUS */
-#endif
-#include <time.h>
-#include <regex.h>
-#include <dirent.h> /* DIR */
-#include <string.h> /* strcat() */
-#ifndef _WIN32
 #include <pwd.h>
 #include <grp.h>
 #endif
+#include <unistd.h> /* chdir() */
+
 #include <errno.h>
+#include <stdlib.h> /* malloc  qsort */
+#include <string.h> /* strcat() */
+#include <time.h>
 
 #include "background.h"
 #include "color_scheme.h"
