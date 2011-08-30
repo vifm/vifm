@@ -20,7 +20,6 @@ Documentation.
 
 Windows.
     Document :volume command (and add it to the ChangeLog).
-    Fix segfault on ./vifm h:
     Make non-latin characters appear right.
     Determine executables by extension.
 

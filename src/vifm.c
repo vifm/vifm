@@ -339,13 +339,21 @@ main(int argc, char *argv[])
 	{
 		strcpy(lwin.curr_dir, lwin_path);
 		if(!is_dir(lwin_path))
-			*strrchr(lwin.curr_dir, '/') = '\0';
+		{
+			char *slash;
+			if((slash = strrchr(lwin.curr_dir, '/')) != NULL)
+				*slash = '\0';
+		}
 	}
 	if(rwin_path[0] != '\0')
 	{
 		strcpy(rwin.curr_dir, rwin_path);
 		if(!is_dir(rwin_path))
-			*strrchr(rwin.curr_dir, '/') = '\0';
+		{
+			char *slash;
+			if((slash = strrchr(rwin.curr_dir, '/')) != NULL)
+				*slash = '\0';
+		}
 	}
 
 	load_initial_directory(&lwin, dir);
@@ -416,8 +424,9 @@ main(int argc, char *argv[])
 	load_dir_list(&lwin, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
 	if(lwin_path[0] != '\0' && !is_dir(lwin_path))
 	{
-		int pos = find_file_pos_in_list(&lwin, strrchr(lwin_path, '/') + 1);
-		if(pos >= 0)
+		char *slash = strrchr(lwin_path, '/');
+		int pos;
+		if(slash != NULL && (pos = find_file_pos_in_list(&lwin,  + 1)) >= 0)
 		{
 			lwin.list_pos = pos;
 			handle_file(&lwin, 0, 0);
@@ -426,8 +435,9 @@ main(int argc, char *argv[])
 	load_dir_list(&rwin, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
 	if(rwin_path[0] != '\0' && !is_dir(rwin_path))
 	{
-		int pos = find_file_pos_in_list(&rwin, strrchr(rwin_path, '/') + 1);
-		if(pos >= 0)
+		char *slash = strrchr(rwin_path, '/');
+		int pos;
+		if(slash != NULL && (pos = find_file_pos_in_list(&rwin,  + 1)) >= 0)
 		{
 			rwin.list_pos = pos;
 			handle_file(&rwin, 0, 0);

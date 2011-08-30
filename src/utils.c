@@ -903,7 +903,7 @@ is_path_absolute(const char *path)
 #ifndef _WIN32
 	return (path[0] == '/');
 #else
-	return (path[0] != '\0' && path[1] == ':');
+	return (isalpha(path[0]) && path[1] == ':');
 #endif
 }
 
