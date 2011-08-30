@@ -758,6 +758,7 @@ execute_dirstack_cb(FileView *view, menu_info *m)
 	rotate_stack(pos);
 }
 
+#ifdef _WIN32
 static void
 execute_volume_cb(FileView *view, menu_info *m)
 {
@@ -768,6 +769,7 @@ execute_volume_cb(FileView *view, menu_info *m)
 	load_dir_list(view, 0);
 	moveto_list_pos(view, 0);
 }
+#endif
 
 int
 execute_menu_cb(FileView *view, menu_info *m)

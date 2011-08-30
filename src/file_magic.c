@@ -19,6 +19,7 @@
 #include <string.h>
 
 #include "status.h"
+#include "undo.h"
 
 #include "file_magic.h"
 

@@ -419,7 +419,7 @@ main(int argc, char *argv[])
 #endif
 		if(result != 0)
 		{
-			fprintf("Problems with running command: %s", buf);
+			fprintf("Problems with running command: %s", (char *)buf);
 			endwin();
 			exit(0);
 		}
