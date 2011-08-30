@@ -57,3 +57,6 @@ seatest is written by Keith Nicholas
 
 Patches for Vim plugin and handling of errors from external applications
 without temporary files by Colin Cartade.
+
+Patch that fixes using of invalid (or at least strange) item names in the
+stat structure by Kaspars Bankovskis.

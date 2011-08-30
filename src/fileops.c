@@ -1504,8 +1504,8 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 
 		stat(temp_file, &st_after);
 
-		if(memcmp(&st_after.st_mtim, &st_before.st_mtim,
-					sizeof(st_after.st_mtim)) == 0)
+		if(memcmp(&st_after.st_mtime, &st_before.st_mtime,
+				sizeof(st_after.st_mtime)) == 0)
 		{
 			unlink(temp_file);
 			curr_stats.save_msg = 0;
