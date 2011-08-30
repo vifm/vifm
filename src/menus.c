@@ -16,23 +16,24 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#include <regex.h>
-
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
+#include <regex.h>
+
+#include <curses.h>
+
 #include <sys/types.h>
-#include <ctype.h> /* isspace() */
-#include <string.h> /* strchr() */
-#include <unistd.h> /* access() */
-#ifndef _WIN32
-#include <termios.h> /* struct winsize */
-#endif
-#include <stdarg.h>
 #ifndef _WIN32
 #include <sys/ioctl.h>
+#include <termios.h> /* struct winsize */
 #endif
+#include <unistd.h> /* access() */
+
+#include <ctype.h> /* isspace() */
+#include <string.h> /* strchr() */
+#include <stdarg.h>
 #include <signal.h>
 
 #include "../config.h"
@@ -81,7 +82,7 @@ enum {
 	VIFM,
 	GREP,
 #ifdef _WIN32
-	VOLUME,
+	VOLUMES,
 #endif
 };
 
@@ -760,7 +761,7 @@ execute_dirstack_cb(FileView *view, menu_info *m)
 
 #ifdef _WIN32
 static void
-execute_volume_cb(FileView *view, menu_info *m)
+execute_volumes_cb(FileView *view, menu_info *m)
 {
 	char buf[4];
 	snprintf(buf, 4, "%s", m->data[m->pos]);
@@ -830,8 +831,8 @@ execute_menu_cb(FileView *view, menu_info *m)
 		case VIFM:
 			break;
 #ifdef _WIN32
-		case VOLUME:
-			execute_volume_cb(view, m);
+		case VOLUMES:
+			execute_volumes_cb(view, m);
 			break;
 #endif
 		default:
@@ -2075,7 +2076,7 @@ show_undolist_menu(FileView *view, int with_details)
 
 #ifdef _WIN32
 void
-show_volume_menu(FileView *view)
+show_volumes_menu(FileView *view)
 {
 	static menu_info m;
 	int retVal;
@@ -2090,7 +2091,7 @@ show_volume_menu(FileView *view)
 	m.len = 0;
 	m.pos = 0;
 	m.win_rows = 0;
-	m.type = VOLUME;
+	m.type = VOLUMES;
 	m.matching_entries = 0;
 	m.matches = NULL;
 	m.match_dir = NONE;

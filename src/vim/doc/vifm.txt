@@ -712,6 +712,11 @@ The builtin commands are:
                                                *vifm-:view* *vifm-:vie*
 :vie[w] - toggle on and off the quick file view.
 
+                                               *vifm-:volume*
+                                                {only for MS-Windows}
+:volumes - will popup menu with volume list.  Hitting l (or Enter) key will
+    open appropriate volume in the current pane.
+
                                                *vifm-:write* *vifm-:w*
 :w[rite] - will write vifminfo (add ! to force write even if settings
     weren't changed).

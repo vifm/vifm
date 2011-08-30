@@ -70,7 +70,7 @@ void show_apropos_menu(FileView *view, char *args);
 void show_user_menu(FileView *view, const char *command, int navigate);
 int show_register_menu(FileView *view, const char *registers);
 int show_undolist_menu(FileView *view, int with_details);
-void show_volume_menu(FileView *view);
+void show_volumes_menu(FileView *view);
 void reset_popup_menu(menu_info *m);
 void setup_menu(void);
 void redraw_error_msg(char *title_arg, const char *message_arg);

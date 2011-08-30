@@ -111,6 +111,8 @@
 
 	Added Ctrl-_ command-line key to reject completion.
 
+	Added :volumes command (only for MS-Windows).
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,

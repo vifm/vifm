@@ -19,9 +19,9 @@ Documentation.
     Maybe divide vifm.txt in several files (if it becomes too big).
 
 Windows.
-    Document :volume command (and add it to the ChangeLog).
     Make non-latin characters appear right.
 	Get executable extensions list from the registry.
+    Remove some *nix specific commands.
 
 Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).

@@ -188,7 +188,7 @@ static int vifm_cmd(const struct cmd_info *cmd_info);
 static int vmap_cmd(const struct cmd_info *cmd_info);
 static int vnoremap_cmd(const struct cmd_info *cmd_info);
 #ifdef _WIN32
-static int volume_cmd(const struct cmd_info *cmd_info);
+static int volumes_cmd(const struct cmd_info *cmd_info);
 #endif
 static int do_map(const struct cmd_info *cmd_info, const char *map_type,
 		const char *map_cmd, int mode, int no_remap);
@@ -335,8 +335,8 @@ static const struct cmd_add commands[] = {
 	{ .name = "vnoremap",         .abbr = "vn",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 #ifdef _WIN32
-	{ .name = "volume",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = volume_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "volumes",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = volumes_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 #endif
 	{ .name = "vunmap",           .abbr = "vu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
@@ -3348,9 +3348,9 @@ do_map(const struct cmd_info *cmd_info, const char *map_type,
 
 #ifdef _WIN32
 static int
-volume_cmd(const struct cmd_info *cmd_info)
+volumes_cmd(const struct cmd_info *cmd_info)
 {
-	show_volume_menu(curr_view);
+	show_volumes_menu(curr_view);
 	return 0;
 }
 #endif
