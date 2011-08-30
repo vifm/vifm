@@ -477,6 +477,9 @@ cmd_N(struct key_info key_info, struct keys_info *keys_info)
 		menu->match_dir = last_search_backward ? DOWN : UP;
 		search_menu_list(NULL, menu);
 		wrefresh(menu_win);
+
+		status_bar_messagef("%c%s", last_search_backward ? '/' : '?', menu->regexp);
+		curr_stats.save_msg = 1;
 	}
 	else
 	{
@@ -548,6 +551,9 @@ cmd_n(struct key_info key_info, struct keys_info *keys_info)
 		menu->match_dir = last_search_backward ? UP : DOWN;
 		search_menu_list(NULL, menu);
 		wrefresh(menu_win);
+
+		status_bar_messagef("%c%s", last_search_backward ? '?' : '/', menu->regexp);
+		curr_stats.save_msg = 1;
 	}
 	else
 	{
