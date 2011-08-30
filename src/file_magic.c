@@ -32,7 +32,6 @@ static char * get_handlers(const char* mime_type);
 #ifndef _WIN32
 static void enum_files(const char* path, const char* mime_type);
 static void process_file(const char* path, const char* mime_type);
-static int ends_with(const char* str, const char* suffix);
 static void expand_desktop(const char* str, char* buf);
 #endif
 
@@ -232,18 +231,6 @@ process_file(const char* path, const char *mime_type)
 		strcat(handlers, ",");
 	handlers_len += 1 + strlen(buf);
 	strcat(handlers, buf);
-}
-
-static int
-ends_with(const char* str, const char* suffix)
-{
-	size_t str_len = strlen(str);
-	size_t suf_len = strlen(suffix);
-
-	if(str_len < suf_len)
-		return 0;
-	else
-		return (strcmp(suffix, str + str_len - suf_len) == 0);
 }
 
 static void

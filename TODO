@@ -21,7 +21,7 @@ Documentation.
 Windows.
     Document :volume command (and add it to the ChangeLog).
     Make non-latin characters appear right.
-    Determine executables by extension.
+	Get executable extensions list from the registry.
 
 Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).

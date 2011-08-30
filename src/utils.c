@@ -907,6 +907,18 @@ is_path_absolute(const char *path)
 #endif
 }
 
+int
+ends_with(const char* str, const char* suffix)
+{
+	size_t str_len = strlen(str);
+	size_t suf_len = strlen(suffix);
+
+	if(str_len < suf_len)
+		return 0;
+	else
+		return (strcmp(suffix, str + str_len - suf_len) == 0);
+}
+
 #ifdef _WIN32
 
 int

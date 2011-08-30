@@ -1663,6 +1663,18 @@ load_parent_dir_only(FileView *view)
 	}
 }
 
+static int
+is_executable(dir_entry_t *d)
+{
+#ifndef _WIN32
+	return S_ISEXE(d->mode);
+#else
+	/* TODO: get extensions list from the registry */
+	return (ends_with(d->name, ".bat") || ends_with(d->name, ".exe") ||
+			ends_with(d->name, ".com"));
+#endif
+}
+
 void
 load_dir_list(FileView *view, int reload)
 {
@@ -1839,10 +1851,7 @@ load_dir_list(FileView *view, int reload)
 						break;
 #endif
 					case S_IFREG:
-						if(S_ISEXE(s.st_mode))
-							dir_entry->type = EXECUTABLE;
-						else
-							dir_entry->type = REGULAR;
+						dir_entry->type = is_executable(dir_entry) ? EXECUTABLE : REGULAR;
 						break;
 					default:
 						dir_entry->type = UNKNOWN;
