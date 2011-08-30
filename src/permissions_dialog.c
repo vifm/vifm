@@ -109,7 +109,7 @@ enter_permissions_mode(FileView *active_view)
 	mode_t diff;
 	uid_t uid = geteuid();
 
-	if(curr_stats.vifm_started != 2)
+	if(curr_stats.vifm_started < 2)
 		return;
 
 	view = active_view;

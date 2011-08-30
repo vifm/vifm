@@ -228,7 +228,7 @@ show_error_msg(char *title, const char *message)
 
 	if(!curr_stats.vifm_started)
 		return 1;
-	if(curr_stats.vifm_started != 2 && skip_until_started)
+	if(curr_stats.vifm_started < 2 && skip_until_started)
 		return 1;
 
 	curr_stats.errmsg_shown = 1;
@@ -239,7 +239,7 @@ show_error_msg(char *title, const char *message)
 		key = wgetch(error_win);
 	while(key != 13 && key != 3); /* ascii Return, ascii Ctrl-c */
 
-	if(curr_stats.vifm_started != 2)
+	if(curr_stats.vifm_started < 2)
 		skip_until_started = key == 3;
 
 	werase(error_win);

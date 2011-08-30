@@ -157,6 +157,9 @@ modes_redraw(void)
 {
 	static int in_here;
 
+	if(curr_stats.vifm_started < 2)
+		return;
+
 	if(in_here++ > 0)
 		return;
 
@@ -186,6 +189,8 @@ modes_redraw(void)
 		redraw_sort_dialog();
 	else if(mode == PERMISSIONS_MODE)
 		redraw_permissions_dialog();
+
+	curr_stats.vifm_started = 3;
 
 	if(--in_here > 0)
 		modes_redraw();

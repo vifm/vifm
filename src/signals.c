@@ -47,9 +47,16 @@ static void
 received_sigwinch(void)
 {
 	if(!isendwin())
-		modes_redraw();
+	{
+		if(curr_stats.vifm_started >= 3)
+			modes_redraw();
+		else
+			curr_stats.startup_redraw_pending = 1;
+	}
 	else
+	{
 		curr_stats.need_redraw = 1;
+	}
 }
 
 static void

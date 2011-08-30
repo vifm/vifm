@@ -422,6 +422,8 @@ main(int argc, char *argv[])
 
 	curr_stats.vifm_started = 2;
 	modes_redraw();
+	if(curr_stats.startup_redraw_pending)
+		redraw_window();
 	main_loop();
 
 	return 0;

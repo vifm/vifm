@@ -544,7 +544,7 @@ update_view_title(FileView *view)
 	const char *buf;
 	size_t len;
 
-	if(curr_stats.vifm_started != 2)
+	if(curr_stats.vifm_started < 2)
 		return;
 
 	werase(view->title);
@@ -588,7 +588,7 @@ draw_dir_list(FileView *view, int top)
 	int bold = 1;
 	int color_scheme;
 
-	if(curr_stats.vifm_started != 2)
+	if(curr_stats.vifm_started < 2)
 		return;
 
 	color_scheme = check_directory_for_color_scheme(view->curr_dir);
@@ -711,7 +711,7 @@ erase_current_line_bar(FileView *view)
 	int LINE_COLOR;
 	size_t print_width;
 
-	if(curr_stats.vifm_started != 2)
+	if(curr_stats.vifm_started < 2)
 		return;
 
 	/* Extra long file names are truncated to fit */
@@ -878,7 +878,7 @@ moveto_list_pos(FileView *view, int pos)
 
 	view->list_pos = pos;
 
-	if(curr_stats.vifm_started != 2)
+	if(curr_stats.vifm_started < 2)
 		return;
 
 	if(redraw)

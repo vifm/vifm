@@ -30,6 +30,7 @@
 typedef struct
 {
 	int need_redraw;
+	int startup_redraw_pending;
 	int last_char;
 	int is_console;
 	int search;

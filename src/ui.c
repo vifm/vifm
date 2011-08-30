@@ -724,7 +724,7 @@ update_all_windows(void)
 	wnoutrefresh(rborder);
 	wnoutrefresh(status_bar);
 
-	if(!curr_stats.errmsg_shown && curr_stats.vifm_started == 2)
+	if(!curr_stats.errmsg_shown && curr_stats.vifm_started >= 2)
 		doupdate();
 }
 
