@@ -54,6 +54,12 @@
 #include "undo.h"
 #include "utils.h"
 
+#ifndef _WIN32
+#define CONF_DIR "~/.vifm"
+#else
+#define CONF_DIR "(%HOME%/.vifm or %APPDATA%/Vifm)"
+#endif
+
 static void
 show_version_msg(void)
 {
@@ -82,7 +88,7 @@ show_help_msg(void)
 	puts("  To open file using associated program pass to vifm it's path.\n");
 	puts("  If no path is given vifm will start in the current working directory.\n");
 	puts("  vifm --logging");
-	puts("    log some errors to ~/.vifm/log.\n");
+	puts("    log some errors to " CONF_DIR "/log.\n");
 	puts("  vifm --version | -v");
 	puts("    show version number and quit.\n");
 	puts("  vifm --help | -h");
@@ -226,11 +232,42 @@ update_path(void)
 	char *new_path;
 
 	old_path = getenv("PATH");
-	new_path = malloc(strlen(cfg.home_dir) + 13 + 1 + strlen(old_path) + 1);
-	sprintf(new_path, "%s.vifm/scripts:%s", cfg.home_dir, old_path);
+	new_path = malloc(strlen(cfg.config_dir) + 8 + 1 + strlen(old_path) + 1);
+	sprintf(new_path, "%s/scripts:%s", cfg.config_dir, old_path);
 	setenv("PATH", new_path, 1);
 	free(new_path);
 #endif
+}
+
+static void
+check_path(FileView *view, const char *path)
+{
+	if(path[0] == '\0')
+		return;
+
+	strcpy(view->curr_dir, path);
+	if(!is_dir(path))
+	{
+		char *slash;
+		if((slash = strrchr(view->curr_dir, '/')) != NULL)
+			*slash = '\0';
+	}
+}
+
+static void
+check_path_for_file(FileView *view, const char *path)
+{
+	load_dir_list(view, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
+	if(path[0] != '\0' && !is_dir(path))
+	{
+		char *slash = strrchr(path, '/');
+		int pos;
+		if(slash != NULL && (pos = find_file_pos_in_list(view, slash + 1)) >= 0)
+		{
+			view->list_pos = pos;
+			handle_file(view, 0, 0);
+		}
+	}
 }
 
 int
@@ -335,26 +372,8 @@ main(int argc, char *argv[])
 		read_info_file(0);
 
 	parse_args(argc, argv, dir, lwin_path, rwin_path);
-	if(lwin_path[0] != '\0')
-	{
-		strcpy(lwin.curr_dir, lwin_path);
-		if(!is_dir(lwin_path))
-		{
-			char *slash;
-			if((slash = strrchr(lwin.curr_dir, '/')) != NULL)
-				*slash = '\0';
-		}
-	}
-	if(rwin_path[0] != '\0')
-	{
-		strcpy(rwin.curr_dir, rwin_path);
-		if(!is_dir(rwin_path))
-		{
-			char *slash;
-			if((slash = strrchr(rwin.curr_dir, '/')) != NULL)
-				*slash = '\0';
-		}
-	}
+	check_path(&lwin, lwin_path);
+	check_path(&rwin, rwin_path);
 
 	load_initial_directory(&lwin, dir);
 	load_initial_directory(&rwin, dir);
@@ -374,12 +393,14 @@ main(int argc, char *argv[])
 	if(old_config && !no_configs)
 	{
 		int vifm_like;
+		int result;
 		char buf[256];
 		if(!query_user_menu("Configuration update", "Your vifmrc will be "
 				"upgraded to new format.  Your current configuration will be copied "
 				"before performing any changes, but if you don't want to take the risk "
 				"and would like to make one more copy say No to exit vifm.  Continue?"))
 		{
+			system("cls");
 			endwin();
 			exit(0);
 		}
@@ -389,31 +410,33 @@ main(int argc, char *argv[])
 				"recommended that you will use it in more vi-like mode.  Do you prefer "
 				"more vi-like configuration (when commands and options are not saved "
 				"automatically and you have to write it manually in the vifmrc file)?");
+
 		snprintf(buf, sizeof(buf), "vifmrc-converter %d", vifm_like);
-		shellout(buf, -1);
+#ifndef _WIN32
+		result = shellout(buf, -1);
+#else
+		result = system(buf);
+#endif
+		if(result != 0)
+		{
+			fprintf("Problems with running command: %s", buf);
+			endwin();
+			exit(0);
+		}
+
 		show_error_msg("Configuration update", "Your vifmrc has been upgraded to "
-				"new format, you can find its old version in ~/.vifm/vifmrc.bak.  vifm "
-				"will not write anything to vifmrc, and all variables that are saved "
-				"between runs of vifm are stored in ~/.vifm/vifminfo now (you can edit "
-				"it by hand, but do it carefully).  You can control what vifm stores "
-				"in vifminfo with 'vifminfo' option.");
+				"new format, you can find its old version in " CONF_DIR "/vifmrc.bak."
+				"  vifm will not write anything to vifmrc, and all variables that are "
+				"saved between runs of vifm are stored in " CONF_DIR "/vifminfo now "
+				"(you can edit it by hand, but do it carefully).  You can control what "
+				"vifm stores in vifminfo with 'vifminfo' option.");
 
 		curr_stats.vifm_started = 0;
 		read_info_file(0);
 		curr_stats.vifm_started = 1;
 
-		if(lwin_path[0] != '\0')
-		{
-			strcpy(lwin.curr_dir, lwin_path);
-			if(!is_dir(lwin_path))
-				*strrchr(lwin.curr_dir, '/') = '\0';
-		}
-		if(rwin_path[0] != '\0')
-		{
-			strcpy(rwin.curr_dir, rwin_path);
-			if(!is_dir(rwin_path))
-				*strrchr(rwin.curr_dir, '/') = '\0';
-		}
+		check_path(&lwin, lwin_path);
+		check_path(&rwin, rwin_path);
 
 		load_initial_directory(&lwin, dir);
 		load_initial_directory(&rwin, dir);
@@ -421,28 +444,8 @@ main(int argc, char *argv[])
 		exec_config();
 	}
 
-	load_dir_list(&lwin, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
-	if(lwin_path[0] != '\0' && !is_dir(lwin_path))
-	{
-		char *slash = strrchr(lwin_path, '/');
-		int pos;
-		if(slash != NULL && (pos = find_file_pos_in_list(&lwin,  + 1)) >= 0)
-		{
-			lwin.list_pos = pos;
-			handle_file(&lwin, 0, 0);
-		}
-	}
-	load_dir_list(&rwin, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
-	if(rwin_path[0] != '\0' && !is_dir(rwin_path))
-	{
-		char *slash = strrchr(rwin_path, '/');
-		int pos;
-		if(slash != NULL && (pos = find_file_pos_in_list(&rwin,  + 1)) >= 0)
-		{
-			rwin.list_pos = pos;
-			handle_file(&rwin, 0, 0);
-		}
-	}
+	check_path_for_file(&lwin, lwin_path);
+	check_path_for_file(&rwin, rwin_path);
 
 	curr_stats.vifm_started = 2;
 	modes_redraw();

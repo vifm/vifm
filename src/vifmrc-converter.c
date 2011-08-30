@@ -349,10 +349,24 @@ read_config_file(const char *config_file)
 	return 1;
 }
 
+#ifdef _WIN32
+static void
+change_slashes(char *str)
+{
+	int i;
+	for(i = 0; str[i] != '\0'; i++)
+	{
+		if(str[i] == '\\')
+			str[i] = '/';
+	}
+}
+#endif
+
 int
 main(int argc, char **argv)
 {
 	char *home_dir;
+	char dir_name[6] = ".vifm";
 	char config_dir[PATH_MAX];
 	char config_file[PATH_MAX], config_file_bak[PATH_MAX];
 	char startup_file[PATH_MAX];
@@ -376,7 +390,20 @@ main(int argc, char **argv)
 	vifm_like = atoi(argv[1]);
 
 	home_dir = getenv("HOME");
-	snprintf(config_dir, sizeof(config_dir), "%s/.vifm", home_dir);
+#ifdef _WIN32
+	if(home_dir == NULL || home_dir[0] == '\0')
+	{
+		home_dir = getenv("APPDATA");
+		strcpy(dir_name, "Vifm");
+	}
+#endif
+	if(home_dir == NULL || home_dir[0] == '\0')
+	{
+		puts("Can't find configuration directory");
+		return 1;
+	}
+
+	snprintf(config_dir, sizeof(config_dir), "%s/%s", home_dir, dir_name);
 	snprintf(config_file, sizeof(config_file), "%s/vifmrc", config_dir);
 	snprintf(config_file_bak, sizeof(config_file_bak), "%s/vifmrc.bak",
 			config_dir);
@@ -384,6 +411,14 @@ main(int argc, char **argv)
 	snprintf(vifminfo_file, sizeof(startup_file), "%s/vifminfo", config_dir);
 	snprintf(vifminfo_file_bak, sizeof(vifminfo_file_bak), "%s/vifminfo.bak",
 			config_dir);
+#ifdef _WIN32
+	change_slashes(config_dir);
+	change_slashes(config_file);
+	change_slashes(config_file_bak);
+	change_slashes(startup_file);
+	change_slashes(vifminfo_file);
+	change_slashes(vifminfo_file_bak);
+#endif
 
 	if(argc == 4)
 	{
@@ -404,17 +439,23 @@ main(int argc, char **argv)
 
 	if(access(config_file, F_OK) == 0)
 	{
+		if(access(config_file_bak, F_OK) == 0)
+			unlink(config_file_bak);
 		if(rename(config_file, config_file_bak) != 0)
 		{
-			fputs("Can't move vifmrc file to make a backup copy\n", stderr);
+			fprintf(stderr, "Can't move vifmrc file to make a backup copy "
+					"(from \"%s\" to \"%s\")\n", config_file, config_file_bak);
 			exit(1);
 		}
 	}
 	if(access(vifminfo_file, F_OK) == 0)
 	{
+		if(access(vifminfo_file_bak, F_OK) == 0)
+			unlink(vifminfo_file_bak);
 		if(rename(vifminfo_file, vifminfo_file_bak) != 0)
 		{
-			fputs("Can't move vifminfo file to make a backup copy\n", stderr);
+			fprintf(stderr, "Can't move vifminfo file to make a backup copy "
+					"(from \"%s\" to \"%s\")\n", vifminfo_file, vifminfo_file_bak);
 			exit(1);
 		}
 	}
@@ -546,7 +587,8 @@ write_vifmrc(const char *config_file, int comment_out)
 
 	if((fp = fopen(config_file, "w")) == NULL)
 	{
-		fputs("Can't open configuration file for writing", stderr);
+		fprintf(stderr, "Can't open configuration file \"%s\" for writing\n",
+				config_file);
 		exit(1);
 	}
 
@@ -623,7 +665,8 @@ append_vifmrc(const char *config_file, int comment_out)
 
 	if((fp = fopen(config_file, "a")) == NULL)
 	{
-		fputs("Can't open configuration file for appending", stderr);
+		fprintf(stderr, "Can't open configuration file \"%s\" for appending\n",
+				config_file);
 		exit(1);
 	}
 
@@ -707,7 +750,8 @@ append_startup(const char *config_file, const char *startup_file)
 
 	if((cfp = fopen(config_file, "a")) == NULL)
 	{
-		fputs("Can't open configuration file for appending", stderr);
+		fprintf(stderr, "Can't open configuration file \"%s\" for appending\n",
+				config_file);
 		exit(1);
 	}
 
@@ -733,7 +777,8 @@ append_vifminfo_option(const char *config_file, int vifm_like)
 
 	if((fp = fopen(config_file, "a")) == NULL)
 	{
-		fputs("Can't open configuration file for appending", stderr);
+		fprintf(stderr, "Can't open configuration file \"%s\" for appending\n",
+				config_file);
 		exit(1);
 	}
 
@@ -767,7 +812,7 @@ write_vifminfo(const char *config_file, int vifm_like)
 
 	if((fp = fopen(config_file, "w")) == NULL)
 	{
-		fputs("Can't open info file for writing", stderr);
+		fprintf(stderr, "Can't open info file \"%s\" for writing\n", config_file);
 		exit(1);
 	}
 
