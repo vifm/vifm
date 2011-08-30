@@ -976,6 +976,8 @@ moveto_list_pos(FileView *view, int pos)
 
 	if(cfg.invert_cur_line || view->dir_entry[pos].selected)
 		wattroff(view->win, COLOR_PAIR(view->color_scheme + CURRENT_COLOR) | attr);
+
+	wrefresh(view->win);
 }
 
 void

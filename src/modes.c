@@ -76,9 +76,13 @@ modes_pre(void)
 		return;
 	}
 	else if(mode == SORT_MODE)
+	{
 		return;
+	}
 	else if(mode == PERMISSIONS_MODE)
+	{
 		return;
+	}
 	else if(mode == MENU_MODE)
 	{
 		menu_pre();
@@ -96,8 +100,6 @@ modes_pre(void)
 		clean_status_bar();
 		wrefresh(status_bar);
 	}
-
-	update_all_windows();
 }
 
 void
@@ -145,7 +147,9 @@ modes_post(void)
 		curr_stats.save_msg = 1;
 	}
 	else
+	{
 		clean_status_bar();
+	}
 }
 
 void

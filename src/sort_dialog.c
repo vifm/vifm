@@ -173,8 +173,8 @@ leave_sort_mode(void)
 	*mode = NORMAL_MODE;
 
 	clean_selected_files(view);
-	draw_dir_list(view, view->top_line);
-	moveto_list_pos(view, view->list_pos);
+
+	update_all_windows();
 }
 
 static void

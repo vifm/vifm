@@ -176,13 +176,13 @@ enter_permissions_mode(FileView *active_view)
 	curr = 3;
 	permnum = 0;
 	step = 1;
-	while (perms[permnum] < 0 && curr <= bottom)
+	while(perms[permnum] < 0 && curr <= bottom)
 	{
 		inc_curr();
 		permnum++;
 	}
 
-	if (curr > bottom)
+	if(curr > bottom)
 	{
 		show_error_msg("Permissions change error",
 				"Selected files have no common access state");
@@ -201,7 +201,7 @@ redraw_permissions_dialog(void)
 	char *filename;
 	int x, y;
 
-	wclear(change_win);
+	werase(change_win);
 
 	mvwaddstr(change_win, 3, 2, "Owner [ ] Read");
 	if(perms[0])
@@ -257,7 +257,9 @@ redraw_permissions_dialog(void)
 		mvwaddstr(change_win, 18, 6, "	[ ] Set Recursively");
 	}
 	else
+	{
 		wresize(change_win, 20, 30);
+	}
 
 	getmaxyx(stdscr, y, x);
 	mvwin(change_win, (y - (20 + (file_is_dir != 0)*2))/2, (x - 30)/2);
@@ -282,8 +284,8 @@ leave_permissions_mode(void)
 	curr_stats.use_input_bar = 1;
 
 	clean_selected_files(curr_view);
-	draw_dir_list(view, view->top_line);
-	moveto_list_pos(view, view->list_pos);
+
+	update_all_windows();
 }
 
 static void

@@ -274,6 +274,8 @@ leave_menu_mode(void)
 	*mode = NORMAL_MODE;
 	if(was_redraw)
 		redraw_window();
+	else
+		update_all_windows();
 }
 
 static void
