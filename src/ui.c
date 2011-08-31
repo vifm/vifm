@@ -318,7 +318,7 @@ setup_ncurses_interface(void)
 	if(curr_stats.number_of_windows == 1)
 		lwin.title = newwin(1, screen_x - 2 + 3, 0, 0);
 	else
-		lwin.title = newwin(1, screen_x/2 - 2 + screen_x%2 + 3, 0, 0);
+		lwin.title = newwin(1, screen_x/2 - 2 - screen_x%2 + 3, 0, 0);
 
 	wattrset(lwin.title, A_BOLD);
 	wbkgdset(lwin.title, COLOR_PAIR(color_scheme + TOP_LINE_COLOR));
@@ -505,7 +505,7 @@ resize_window(void)
 	}
 	else
 	{
-		wresize(lwin.title, 1, screen_x/2 - 2 + screen_x%2 + 3);
+		wresize(lwin.title, 1, screen_x/2 - 2 - screen_x%2 + 3);
 		wresize(lwin.win, screen_y - 3, screen_x/2 - 2 + screen_x%2);
 		mvwin(lwin.win, 1, 1);
 		getmaxyx(lwin.win, y, x);
