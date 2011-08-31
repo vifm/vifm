@@ -611,7 +611,9 @@ update_view_title(FileView *view)
 		waddstr(view->title, "...");
 	}
 	else
+	{
 		wprintw(view->title, "%s%s", (view == &lwin) ? " " : "", buf);
+	}
 
 	wnoutrefresh(view->title);
 }

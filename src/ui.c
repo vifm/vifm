@@ -519,7 +519,7 @@ resize_all(void)
 	}
 	else
 	{
-		wresize(lwin.title, 1, screen_x/2 - 2 - screen_x%2 + 3);
+		wresize(lwin.title, 1, screen_x/2 - 2 + 3 - screen_x%2);
 		wresize(lwin.win, screen_y - 3, screen_x/2 - 2 + screen_x%2);
 		mvwin(lwin.win, 1, 1);
 		getmaxyx(lwin.win, y, x);
