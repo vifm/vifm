@@ -20,6 +20,7 @@
 
 #include "status.h"
 #include "undo.h"
+#include "utils.h"
 
 #include "file_magic.h"
 
