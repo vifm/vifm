@@ -36,21 +36,21 @@
 Col_scheme *col_schemes;
 
 static const int default_colors[][2] = {
-	{7, 0}, /* MENU_COLOR */
-	{0, 7}, /* BORDER_COLOR */
-	{7, 0}, /* WIN_COLOR */
-	{7, 0}, /* STATUS_BAR_COLOR */
-	{7, 4}, /* CURR_LINE_COLOR */
-	{6, 0}, /* DIRECTORY_COLOR */
-	{3, 0}, /* LINK_COLOR */
-	{5, 0}, /* SOCKET_COLOR */
-	{1, 0}, /* DEVICE_COLOR */
-	{2, 0}, /* EXECUTABLE_COLOR */
-	{5, 0}, /* SELECTED_COLOR */
-	{4, 0}, /* CURRENT_COLOR */
-	{1, 0}, /* BROKEN_LINK_COLOR */
-	{0, 7}, /* TOP_LINE_COLOR */
-	{0, 7}, /* STATUS_LINE_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK }, /* MENU_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE }, /* BORDER_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK }, /* WIN_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK }, /* STATUS_BAR_COLOR */
+	{ COLOR_WHITE,   COLOR_BLUE  }, /* CURR_LINE_COLOR */
+	{ COLOR_CYAN,    COLOR_BLACK }, /* DIRECTORY_COLOR */
+	{ COLOR_YELLOW,  COLOR_BLACK }, /* LINK_COLOR */
+	{ COLOR_MAGENTA, COLOR_BLACK }, /* SOCKET_COLOR */
+	{ COLOR_RED,     COLOR_BLACK }, /* DEVICE_COLOR */
+	{ COLOR_GREEN,   COLOR_BLACK }, /* EXECUTABLE_COLOR */
+	{ COLOR_MAGENTA, COLOR_BLACK }, /* SELECTED_COLOR */
+	{ COLOR_BLUE,    COLOR_BLACK }, /* CURRENT_COLOR */
+	{ COLOR_RED,     COLOR_BLACK }, /* BROKEN_LINK_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE }, /* TOP_LINE_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE }, /* STATUS_LINE_COLOR */
 };
 
 static int _gnuc_unused default_colors_size_guard[
