@@ -678,7 +678,7 @@ list_cmds(int mode)
 		return NULL;
 	}
 
-	if(fill_list(&user_cmds_root[mode], 0, result) != 0)
+	if(fill_list(&user_cmds_root[mode], 0, result) < 0)
 	{
 		free_wstring_array(result, count);
 		return NULL;
@@ -700,7 +700,7 @@ list_cmds(int mode)
 
 	result[j++] = my_wcsdup(L"");
 
-	if(fill_list(&builtin_cmds_root[mode], 0, result + j) != 0)
+	if(fill_list(&builtin_cmds_root[mode], 0, result + j) < 0)
 	{
 		free_wstring_array(result, count);
 		return NULL;
@@ -730,9 +730,7 @@ fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
 
 		t = realloc(list[i], sizeof(wchar_t)*(len + 1));
 		if(t == NULL)
-		{
 			return -1;
-		}
 
 		list[i] = t;
 		if(len > 0)
@@ -751,22 +749,25 @@ fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
 			return -1;
 
 		list[0] = t;
-		t[wcslen(t) + 1] = '\0';
+		t[wcslen(t) + 1] = L'\0';
 		wcscpy(t + wcslen(t) + 1, s);
+		return 1;
 	}
 
+	i = 0;
 	child = curr->child;
 	while(child != NULL)
 	{
-		if(fill_list(child, len + 1, list) != 0)
-		{
+		int filled = fill_list(child, len + 1, list);
+		if(filled < 0)
 			return -1;
-		}
 
-		list += child->children_count ? child->children_count : 1;
+		list += filled;
+		i += filled;
+
 		child = child->next;
 	}
-	return 0;
+	return i;
 }
 
 size_t

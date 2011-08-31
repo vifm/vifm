@@ -903,7 +903,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 	x = 0;
 	while(list[x] != NULL)
 	{
-		enum {MAP_WIDTH = 8};
+		enum {MAP_WIDTH = 10};
 		int i, str_len, buf_len;
 
 		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
