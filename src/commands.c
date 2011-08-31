@@ -3233,6 +3233,7 @@ view_cmd(const struct cmd_info *cmd_info)
 				COLOR_PAIR(WIN_COLOR + other_view->color_scheme));
 		change_directory(other_view, other_view->curr_dir);
 		load_dir_list(other_view, 1);
+		wrefresh(other_view->win);
 	}
 	else
 	{

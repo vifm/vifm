@@ -403,6 +403,7 @@ quick_view_file(FileView *view)
 			}
 			break;
 	}
+	wrefresh(other_view->win);
 }
 
 char *
