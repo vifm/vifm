@@ -312,7 +312,7 @@ setup_ncurses_interface(void)
 	wbkgdset(sort_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	werase(sort_win);
 
-	change_win = newwin(20, 30, (screen_y -20)/2, (screen_x -30)/2);
+	change_win = newwin(20, 30, (screen_y - 20)/2, (screen_x -30)/2);
 	wbkgdset(change_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	werase(change_win);
 
