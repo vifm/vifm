@@ -1982,6 +1982,9 @@ load_saving_pos(FileView *view, int reload)
 	char filename[NAME_MAX];
 	int pos;
 
+	if(curr_stats.vifm_started < 2)
+		return;
+
 	snprintf(filename, sizeof(filename), "%s",
 			view->dir_entry[view->list_pos].name);
 	load_dir_list(view, reload);

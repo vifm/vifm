@@ -360,7 +360,7 @@ read_info_file(int reread)
 			if(fgets(line2, sizeof(line2), fp) != line2)
 				continue;
 			prepare_line(line2);
-			
+
 			c = getc(fp);
 			ungetc(c, fp);
 			if(isdigit(c))
