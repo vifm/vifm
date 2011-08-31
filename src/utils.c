@@ -26,6 +26,7 @@
 #include <pwd.h> /* getpwnam() */
 #include <unistd.h>
 
+#include <ctype.h>
 #include <errno.h>
 #include <math.h>
 #include <signal.h>
@@ -349,16 +350,30 @@ my_wcsdup(const wchar_t *ws)
 }
 
 char *
-uchar2str(wchar_t c)
+uchar2str(wchar_t *c, size_t *len)
 {
 	static char buf[8];
 
-	switch(c)
+	*len = 1;
+	switch(*c)
 	{
 		case L' ':
 			strcpy(buf, "<space>");
 			break;
 		case L'\033':
+			if(c[1] == L'[' && c[2] == 'Z')
+			{
+				strcpy(buf, "<s-tab>");
+				*len += 2;
+				break;
+			}
+			if(c[1] != L'\0' && c[1] != L'\033')
+			{
+				strcpy(buf, "<m-a>");
+				buf[3] += c[1] - L'a';
+				++*len;
+				break;
+			}
 			strcpy(buf, "<esc>");
 			break;
 		case L'\177':
@@ -396,26 +411,26 @@ uchar2str(wchar_t c)
 			break;
 
 		default:
-			if(c == L'\n' || (c > L' ' && c < 256))
+			if(*c == L'\n' || (*c > L' ' && *c < 256))
 			{
-				buf[0] = c;
+				buf[0] = *c;
 				buf[1] = '\0';
 			}
-			else if(c >= KEY_F0 && c < KEY_F0 + 10)
+			else if(*c >= KEY_F0 && *c < KEY_F0 + 10)
 			{
 				strcpy(buf, "<f0>");
-				buf[2] += c - KEY_F0;
+				buf[2] += *c - KEY_F0;
 			}
-			else if(c >= KEY_F0 + 10 && c < KEY_F0 + 63)
+			else if(*c >= KEY_F0 + 10 && *c < KEY_F0 + 63)
 			{
 				strcpy(buf, "<f00>");
-				buf[2] += c/10 - KEY_F0;
-				buf[3] += c%10 - KEY_F0;
+				buf[2] += *c/10 - KEY_F0;
+				buf[3] += *c%10 - KEY_F0;
 			}
 			else
 			{
-				strcpy(buf, "^A");
-				buf[1] += c - 1;
+				strcpy(buf, "<c-A>");
+				buf[3] = tolower(buf[3] + *c - 1);
 			}
 			break;
 	}

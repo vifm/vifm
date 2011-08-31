@@ -52,7 +52,7 @@ size_t get_utf8_overhead(const char *string);
 wchar_t * to_wide(const char *s);
 void _gnuc_noreturn run_from_fork(int pipe[2], int err, char *cmd);
 wchar_t * my_wcsdup(const wchar_t *ws);
-char * uchar2str(wchar_t c);
+char * uchar2str(wchar_t *c, size_t *len);
 void get_perm_string(char *buf, int len, mode_t mode);
 int path_starts_with(const char *path, const char *begin);
 

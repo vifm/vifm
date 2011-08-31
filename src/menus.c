@@ -904,14 +904,15 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 	while(list[x] != NULL)
 	{
 		enum {MAP_WIDTH = 10};
+		size_t len;
 		int i, str_len, buf_len;
 
 		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
 
 		str_len = wcslen(list[x]);
 		buf_len = 0;
-		for(i = 0; i < str_len; i++)
-			buf_len += strlen(uchar2str(list[x][i]));
+		for(i = 0; i < str_len; i += len)
+			buf_len += strlen(uchar2str(list[x] + i, &len));
 
 		if(str_len > 0)
 			buf_len += 1 + wcslen(list[x] + str_len + 1) + 1;
@@ -920,8 +921,8 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 
 		m.data[x] = (char *)malloc(buf_len + MAP_WIDTH);
 		m.data[x][0] = '\0';
-		for(i = 0; i < str_len; i++)
-			strcat(m.data[x], uchar2str(list[x][i]));
+		for(i = 0; i < str_len; i += len)
+			strcat(m.data[x], uchar2str(list[x] + i, &len));
 
 		if(str_len > 0)
 		{
