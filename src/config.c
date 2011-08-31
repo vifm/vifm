@@ -1071,7 +1071,10 @@ is_old_config(void)
 		while(isspace(line[i]))
 			i++;
 		if(line[i] == '#')
+		{
+			fclose(fp);
 			return 1;
+		}
 	}
 
 	fclose(fp);

@@ -412,7 +412,6 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 
 	return 0;
 #else
-	pid_t pid;
 	int out_fd, out_pipe[2];
 	int err_fd, error_pipe[2];
 	char *args[4];
@@ -444,7 +443,7 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 	args[2] = cmd;
 	args[3] = NULL;
 
-	if(_spawnvp(P_NOWAIT, args[0], args) == 0)
+	if(_spawnvp(P_NOWAIT, args[0], (const char **)args) == 0)
 		return -1;
 
 	_close(out_pipe[1]);

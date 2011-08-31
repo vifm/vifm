@@ -18,6 +18,11 @@
 
 #include "../config.h"
 
+#ifdef _WIN32
+#include <tchar.h>
+#include <windows.h>
+#endif
+
 #ifdef HAVE_LIBGTK
 #include <glib-2.0/gio/gio.h>
 #include <gtk/gtk.h>
@@ -39,6 +44,7 @@
 #include "fileops.h"
 #include "filetype.h"
 #include "log.h"
+#include "macros.h"
 #include "main_loop.h"
 #include "menus.h"
 #include "modes.h"
@@ -270,6 +276,51 @@ check_path_for_file(FileView *view, const char *path)
 	}
 }
 
+static int
+run_converter(int vifm_like)
+{
+#ifndef _WIN32
+	char buf[PATH_MAX];
+	snprintf(buf, sizeof(buf), "vifmrc-converter %d", vifm_like);
+	return shellout(buf, -1);
+#else
+	BOOL ret;
+	DWORD exitcode;
+	TCHAR buf[PATH_MAX + 2];
+	STARTUPINFO startup = {};
+	PROCESS_INFORMATION pinfo;
+
+	if(GetModuleFileName(NULL, buf, ARRAY_LEN(buf)) == 0)
+		return -1;
+
+	*(_tcsrchr(buf, _T('\\')) + 1) = _T('\0');
+	if(vifm_like)
+		_tcscat(buf, _T("vifmrc-converter 1"));
+	else
+		_tcscat(buf, _T("vifmrc-converter 0"));
+
+	ret = CreateProcess(NULL, buf, NULL, NULL, 0, 0, NULL, NULL, &startup,
+			&pinfo);
+	if(ret == 0)
+		return -1;
+
+	CloseHandle(pinfo.hThread);
+
+	if(WaitForSingleObject(pinfo.hProcess, INFINITE) != WAIT_OBJECT_0)
+	{
+		CloseHandle(pinfo.hProcess);
+		return -1;
+	}
+	if(GetExitCodeProcess(pinfo.hProcess, &exitcode) == 0)
+	{
+		CloseHandle(pinfo.hProcess);
+		return -1;
+	}
+	CloseHandle(pinfo.hProcess);
+	return exitcode;
+#endif
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -394,7 +445,6 @@ main(int argc, char *argv[])
 	{
 		int vifm_like;
 		int result;
-		char buf[256];
 		if(!query_user_menu("Configuration update", "Your vifmrc will be "
 				"upgraded to new format.  Your current configuration will be copied "
 				"before performing any changes, but if you don't want to take the risk "
@@ -411,16 +461,11 @@ main(int argc, char *argv[])
 				"more vi-like configuration (when commands and options are not saved "
 				"automatically and you have to write it manually in the vifmrc file)?");
 
-		snprintf(buf, sizeof(buf), "vifmrc-converter %d", vifm_like);
-#ifndef _WIN32
-		result = shellout(buf, -1);
-#else
-		result = system(buf);
-#endif
+		result = run_converter(vifm_like);
 		if(result != 0)
 		{
-			fprintf("Problems with running command: %s", (char *)buf);
 			endwin();
+			fputs("Problems with running vifmrc-converter", stderr);
 			exit(0);
 		}
 

@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include <ctype.h>
+#include <locale.h> /* setlocale() */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -356,8 +357,8 @@ change_slashes(char *str)
 	int i;
 	for(i = 0; str[i] != '\0'; i++)
 	{
-		if(str[i] == '\\')
-			str[i] = '/';
+		if(str[i] == '/')
+			str[i] = '\\';
 	}
 }
 #endif
@@ -373,6 +374,8 @@ main(int argc, char **argv)
 	char vifminfo_file[PATH_MAX], vifminfo_file_bak[PATH_MAX];
 	int vifm_like;
 	char *vifmrc_arg, *vifminfo_arg;
+
+	setlocale(LC_ALL, "");
 
 	if(argc != 2 && argc != 4)
 	{
