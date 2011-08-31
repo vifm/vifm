@@ -2004,6 +2004,7 @@ load_saving_pos(FileView *view, int reload)
 			draw_dir_list(view, view->top_line);
 		mvwaddstr(view->win, view->curr_line, 0, "*");
 	}
+	wrefresh(view->win);
 }
 
 void
