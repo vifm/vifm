@@ -283,7 +283,7 @@ leave_permissions_mode(void)
 	curs_set(0);
 	curr_stats.use_input_bar = 1;
 
-	clean_selected_files(curr_view);
+	clean_selected_files(view);
 
 	update_all_windows();
 }
@@ -307,6 +307,7 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	set_perm_string(view, perms, origin_perms);
 	load_dir_list(view, 1);
+	moveto_list_pos(view, view->list_pos);
 
 	leave_permissions_mode();
 }
