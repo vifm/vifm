@@ -283,7 +283,7 @@ view_not_wraped(FILE *fp, int x)
 		size_t n_len = get_normal_utf8_string_length(line);
 		size_t len = strlen(line);
 		while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
-					&& !feof(fp))
+				&& !feof(fp))
 		{
 			if(fgets(line + len, other_view->window_width - n_len, fp) == NULL)
 				break;

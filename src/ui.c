@@ -307,7 +307,8 @@ setup_ncurses_interface(void)
 	wbkgdset(menu_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	werase(menu_win);
 
-	sort_win = newwin(NUM_SORT_OPTIONS + 3, 30, (screen_y -12)/2, (screen_x -30)/2);
+	sort_win = newwin(NUM_SORT_OPTIONS + 3, 30, (screen_y - 12)/2,
+			(screen_x - 30)/2);
 	wbkgdset(sort_win, COLOR_PAIR(color_scheme + WIN_COLOR));
 	werase(sort_win);
 
@@ -328,7 +329,8 @@ setup_ncurses_interface(void)
 	if(curr_stats.number_of_windows == 1)
 		lwin.title = newwin(1, screen_x - 2 + 3, 0, 0);
 	else
-		lwin.title = newwin(1, screen_x/2 - 2 - screen_x%2 + 3, 0, 0);
+		lwin.title = newwin(1, screen_x/2 - 1 + screen_x%2 + (2 - screen_x%2), 0,
+				0);
 
 	wattrset(lwin.title, A_BOLD);
 	wbkgdset(lwin.title, COLOR_PAIR(color_scheme + TOP_LINE_COLOR));
@@ -348,7 +350,7 @@ setup_ncurses_interface(void)
 	lwin.window_rows = y -1;
 	lwin.window_width = x -1;
 
-	mborder = newwin(screen_y - 1, 2 - screen_x%2, 1,
+	mborder = newwin(screen_y - 3, 2 - screen_x%2, 1,
 			screen_x/2 - 1 + screen_x%2);
 
 	wbkgdset(mborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
@@ -519,15 +521,15 @@ resize_all(void)
 	}
 	else
 	{
-		wresize(lwin.title, 1, screen_x/2 - 2 + 3 - screen_x%2);
+		wresize(lwin.title, 1, screen_x/2 - 1 + screen_x%2 + (2 - screen_x%2));
 		wresize(lwin.win, screen_y - 3, screen_x/2 - 2 + screen_x%2);
 		mvwin(lwin.win, 1, 1);
 		getmaxyx(lwin.win, y, x);
 		lwin.window_width = x - 1;
 		lwin.window_rows = y - 1;
 
-		mvwin(mborder, 0, screen_x/2 - 1 + screen_x%2);
-		wresize(mborder, screen_y, 2 - screen_x%2);
+		mvwin(mborder, 1, screen_x/2 - 1 + screen_x%2);
+		wresize(mborder, screen_y - 3, 2 - screen_x%2);
 
 		wresize(rwin.title, 1, screen_x/2 - 2 + screen_x%2 + 1);
 		mvwin(rwin.title, 0, screen_x/2 + 1);
@@ -854,6 +856,8 @@ load_color_scheme_i(int i)
 		quick_view_file(curr_view);
 	else
 		draw_dir_list(other_view, other_view->top_line);
+
+	update_all_windows();
 
 	if(col_schemes[i].defaulted)
 	{
