@@ -5,7 +5,7 @@ dirs := commands completion filetype keys misc options undo
 tests: $(dirs)
 	for test in `find bin/ -executable -type f`; do\
 		if ! $$test; then\
-			exit -1;\
+			exit 1;\
 		fi;\
 		echo;\
 		echo;\
