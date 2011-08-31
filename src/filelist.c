@@ -794,6 +794,8 @@ erase_current_line_bar(FileView *view)
 static int
 move_curr_line(FileView *view, int pos)
 {
+	int redraw = 0;
+
 	if(pos < 1)
 		pos = 0;
 
@@ -816,7 +818,7 @@ move_curr_line(FileView *view, int pos)
 			view->top_line++;
 
 		view->curr_line = view->window_rows;
-		return 1;
+		redraw = 1;
 	}
 	else if(pos < view->top_line)
 	{
@@ -824,7 +826,7 @@ move_curr_line(FileView *view, int pos)
 			view->top_line--;
 
 		view->curr_line = 0;
-		return 1;
+		redraw = 1;
 	}
 
 	if(cfg.scroll_off > 0)
@@ -847,7 +849,7 @@ move_curr_line(FileView *view, int pos)
 		}
 	}
 
-	return 0;
+	return redraw;
 }
 
 void
