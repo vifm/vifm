@@ -1,6 +1,6 @@
 TEST_NAME := $(notdir $(abspath .))
 ifneq ($(OS),Windows_NT)
-    BIN := ../bin/$(TEST_NAME).exe
+    BIN := ../bin/$(TEST_NAME)
 else
     BIN := ../bin/$(TEST_NAME).exe
 endif
@@ -16,7 +16,7 @@ ifneq ($(OS),Windows_NT)
     LDFLAGS := `pkg-config --libs gtk+-2.0` -lncursesw -lmagic
 else
     CFLAGS := -MD -g -Werror -I../seatest -DTEST
-    LDFLAGS := -lpdcurses -lregex
+    LDFLAGS := -lpdcurses -lregex -lnetapi32
 endif
 
 $(BIN): $(addprefix ../bin/, $(notdir $(OBJECTS))) \

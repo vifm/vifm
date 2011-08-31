@@ -1480,8 +1480,8 @@ shellout(const char *command, int pause)
 		my_system(PAUSE_CMD);
 
 	/* force views update */
-	lwin.dir_mtime = 0;
-	rwin.dir_mtime = 0;
+	memset(&lwin.dir_mtime, 0, sizeof(lwin.dir_mtime));
+	memset(&rwin.dir_mtime, 0, sizeof(rwin.dir_mtime));
 
 	/* always redraw to handle resizing of terminal */
 	redraw_window();
@@ -2175,6 +2175,11 @@ cd(FileView *view, const char *path)
 		if(is_path_absolute(arg))
 			snprintf(dir, sizeof(dir), "%s", arg);
 #ifdef _WIN32
+		else if(*arg == '/' && is_unc_root(view->curr_dir))
+			snprintf(dir, sizeof(dir), "%s", view->curr_dir);
+		else if(*arg == '/' && is_unc_path(view->curr_dir))
+			snprintf(dir, strchr(view->curr_dir + 2, '/') - view->curr_dir + 1, "%s",
+					view->curr_dir);
 		else if(*arg == '/')
 			snprintf(dir, sizeof(dir), "%c:%s", view->curr_dir[0], arg);
 #endif

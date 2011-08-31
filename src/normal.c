@@ -1605,7 +1605,7 @@ pick_files(FileView *view, int end, struct keys_info *keys_info)
 
 	if(end < view->list_pos)
 	{
-		view->dir_mtime = 0;
+		memset(&view->dir_mtime, 0, sizeof(view->dir_mtime));
 		view->list_pos = end;
 	}
 }

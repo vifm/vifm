@@ -93,6 +93,29 @@ complex_tests(void)
 	assert_string_equal(ABS_PREFIX "/a/", buf);
 }
 
+#ifdef _WIN32
+static void
+allow_unc(void)
+{
+	char buf[PATH_MAX];
+
+	canonicalize_path("//server", buf, sizeof(buf));
+	assert_string_equal("//server/", buf);
+
+	canonicalize_path("//server//resource", buf, sizeof(buf));
+	assert_string_equal("//server/resource/", buf);
+
+	canonicalize_path("//server//..", buf, sizeof(buf));
+	assert_string_equal("//server/", buf);
+
+	canonicalize_path("//server/../", buf, sizeof(buf));
+	assert_string_equal("//server/", buf);
+
+	canonicalize_path("//server/resource/../", buf, sizeof(buf));
+	assert_string_equal("//server/", buf);
+}
+#endif
+
 void
 canonical(void)
 {
@@ -104,6 +127,9 @@ canonical(void)
 	run_test(remove_dots);
 	run_test(excess_slashes);
 	run_test(complex_tests);
+#ifdef _WIN32
+	run_test(allow_unc);
+#endif
 
 	test_fixture_end();
 }

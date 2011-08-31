@@ -13,6 +13,7 @@ Basic things that need to be done.
     Maybe remove 'trash' option, since we have two commands for deletion.
     Directory create command, :mkdir
     More detailed command line errors (needed when vifmrc contains errors).
+    Add FIFO color to color scheme.
 
 Documentation.
 	Better documentation (with normal tags in Vim version).
@@ -23,6 +24,9 @@ Windows.
     Make non-latin characters appear right.
 	Get executable extensions list from the registry.
     Remove some *nix specific commands.
+    Make UNC paths work.
+    Make fnamemodifiers work right.
+    Fix going up from invalid dir.
 
 Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).

@@ -4,7 +4,7 @@ CFLAGS := -c -g -O0 -Wall $(CFLAGS)
 
 LDFLAGS := -all-static $(LDFLAGS)
 
-LIBS := -lregex -lpdcurses
+LIBS := -lregex -lpdcurses -lnetapi32
 #c:/MinGW/lib/libgnurx.dll.a
 
 vifm_SOURCES := background.c bookmarks.c cmdline.c cmds.c color_scheme.c \

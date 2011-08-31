@@ -99,6 +99,8 @@ int wcswidth(const wchar_t *str, size_t len);
 int S_ISLNK(mode_t mode);
 int readlink(const char *path, char *buf, size_t len);
 char * realpath(const char *path, char *buf);
+int is_unc_path(const char *path);
+int is_unc_root(const char *path);
 #endif
 
 #ifdef _WIN32

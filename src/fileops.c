@@ -912,7 +912,8 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 		}
 	}
 
-	if(is_dir(name) && view->selected_files == 0 &&
+	if((is_dir(name) || is_unc_root(view->curr_dir)) &&
+			view->selected_files == 0 &&
 			(view->dir_entry[view->list_pos].type != LINK || !force_follow))
 	{
 		handle_dir(view);
@@ -1894,7 +1895,8 @@ put_next(const char *dest_name, int override)
 				return 0;
 		}
 
-		put_confirm.view->dir_mtime = 0;
+		memset(&put_confirm.view->dir_mtime, 0,
+				sizeof(put_confirm.view->dir_mtime));
 	}
 
 	if(put_confirm.link)

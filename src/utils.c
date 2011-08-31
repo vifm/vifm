@@ -16,6 +16,10 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include <regex.h>
 
 #include <curses.h>
@@ -64,6 +68,7 @@ S_ISEXE(mode_t mode)
 int
 is_dir(const char *file)
 {
+#ifndef _WIN32
 	struct stat statbuf;
 	if(stat(file, &statbuf) != 0)
 	{
@@ -73,6 +78,19 @@ is_dir(const char *file)
 	}
 
 	return S_ISDIR(statbuf.st_mode);
+#else
+	DWORD attr;
+
+	attr = GetFileAttributesA(file);
+	if(attr == INVALID_FILE_ATTRIBUTES)
+	{
+		LOG_SERROR_MSG(errno, "Can't get attributes of \"%s\"", file);
+		log_cwd();
+		return 0;
+	}
+
+	return (attr & FILE_ATTRIBUTE_DIRECTORY);
+#endif
 }
 
 /*
@@ -702,6 +720,19 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 
 	q = buf - 1;
 	p = directory;
+
+#ifdef _WIN32
+	if(p[0] == '/' && p[1] == '/' && p[2] != '/')
+	{
+		strcpy(buf, "//");
+		q = buf + 1;
+		p += 2;
+		while(*p != '\0' && *p != '/')
+			*++q = *p++;
+		buf = q + 1;
+	}
+#endif
+
 	while(*p != '\0' && (size_t)((q + 1) - buf) < buf_size - 1)
 	{
 		int prev_dir_present;
@@ -909,7 +940,11 @@ is_path_absolute(const char *path)
 #ifndef _WIN32
 	return (path[0] == '/');
 #else
-	return (isalpha(path[0]) && path[1] == ':');
+	if(isalpha(path[0]) && path[1] == ':')
+		return 1;
+	if(path[0] == '/' && path[1] == '/')
+		return 1;
+	return 0;
 #endif
 }
 
@@ -976,6 +1011,23 @@ realpath(const char *path, char *buf)
 {
 	strcpy(buf, path);
 	return buf;
+}
+
+int
+is_unc_path(const char *path)
+{
+	return (path[0] == '/' && path[1] == '/' && path[2] != '/');
+}
+
+int
+is_unc_root(const char *path)
+{
+	if(is_unc_path(path))
+	{
+		if(strchr(path + 2, '/') == NULL)
+			return 1;
+	}
+	return 0;
 }
 
 #endif

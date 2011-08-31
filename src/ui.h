@@ -19,6 +19,10 @@
 #ifndef __UI_H__
 #define __UI_H__
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include <limits.h> /* PATH_MAX NAME_MAX */
 #include <curses.h>
 #include <stdlib.h> /* off_t mode_t... */
@@ -85,7 +89,11 @@ typedef struct _FileView
 	WINDOW *win;
 	WINDOW *title;
 	char curr_dir[PATH_MAX];
+#ifndef _WIN32
 	time_t dir_mtime;
+#else
+	FILETIME dir_mtime;
+#endif
 	char last_dir[PATH_MAX];
 
 	char regexp[256]; /* regular expression pattern for / and ? searching */

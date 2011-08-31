@@ -20,6 +20,11 @@
 	#include <sys/types.h> /* required for regex.h on FreeBSD 4.2 */
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+#include <lm.h>
+#endif
+
 #include <curses.h>
 
 #include <regex.h>
@@ -1365,6 +1370,46 @@ try_unmount_fuse(FileView *view)
 	return 1;
 }
 
+#ifdef _WIN32
+static int
+get_dir_mtime(const char *path, FILETIME *ft)
+{
+	char buf[PATH_MAX];
+	HANDLE hfile;
+
+	snprintf(buf, sizeof(buf), "%s/.", path);
+
+	hfile = CreateFileA(buf, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+	if(hfile == INVALID_HANDLE_VALUE)
+		return -1;
+
+	if(!GetFileTime(hfile, NULL, NULL, ft))
+	{
+		CloseHandle(hfile);
+		return -1;
+	}
+	CloseHandle(hfile);
+
+	return 0;
+}
+#endif
+
+static int
+update_dir_mtime(FileView *view)
+{
+#ifndef _WIN32
+	struct stat s;
+
+	if(stat(view->curr_dir, &s) != 0)
+		return -1;
+	view->dir_mtime = s.st_mtime;
+	return 0;
+#else
+	return get_dir_mtime(view->curr_dir, &view->dir_mtime);
+#endif
+}
+
 /*
  * The directory can either be relative to the current
  * directory - ../
@@ -1381,8 +1426,6 @@ try_unmount_fuse(FileView *view)
 int
 change_directory(FileView *view, const char *directory)
 {
-	DIR *dir;
-	struct stat s;
 	char newdir[PATH_MAX];
 	char dir_dup[PATH_MAX];
 
@@ -1423,7 +1466,11 @@ change_directory(FileView *view, const char *directory)
 	if(!is_root_dir(view->last_dir))
 		chosp(view->last_dir);
 
+#ifndef _WIN32
 	if(access(dir_dup, F_OK) != 0)
+#else
+	if(!is_dir(dir_dup) != 0 && !is_unc_root(dir_dup))
+#endif
 	{
 		char buf[12 + PATH_MAX + 1];
 
@@ -1440,7 +1487,11 @@ change_directory(FileView *view, const char *directory)
 		return -1;
 	}
 
+#ifndef _WIN32
 	if(access(dir_dup, X_OK) != 0)
+#else
+	if(access(dir_dup, X_OK) != 0 && !is_unc_root(dir_dup))
+#endif
 	{
 		char buf[32 + PATH_MAX + 1];
 
@@ -1455,7 +1506,11 @@ change_directory(FileView *view, const char *directory)
 		return -1;
 	}
 
+#ifndef _WIN32
 	if(access(dir_dup, R_OK) != 0)
+#else
+	if(access(dir_dup, R_OK) != 0 && !is_unc_root(dir_dup))
+#endif
 	{
 		char buf[31 + PATH_MAX + 1];
 
@@ -1469,20 +1524,10 @@ change_directory(FileView *view, const char *directory)
 		}
 	}
 
-	dir = opendir(dir_dup);
-
-	if(dir == NULL)
-	{
-		LOG_SERROR_MSG(errno, "Can't opendir() \"%s\"", dir_dup);
-		log_cwd();
-	}
-
-	if(chdir(dir_dup) == -1)
+	if(chdir(dir_dup) == -1 && !is_unc_root(dir_dup))
 	{
 		LOG_SERROR_MSG(errno, "Can't chdir() \"%s\"", dir_dup);
 		log_cwd();
-
-		closedir(dir);
 
 		status_bar_messagef("Couldn't open %s", dir_dup);
 		return -1;
@@ -1503,12 +1548,8 @@ change_directory(FileView *view, const char *directory)
 
 	snprintf(view->curr_dir, PATH_MAX, "%s", dir_dup);
 
-	if(dir != NULL)
-		closedir(dir);
-
 	/* Save the directory modified time to check for file changes */
-	stat(view->curr_dir, &s);
-	view->dir_mtime = s.st_mtime;
+	update_dir_mtime(view);
 
 	save_view_history(view, NULL, "", -1);
 	return 0;
@@ -1657,32 +1698,331 @@ is_executable(dir_entry_t *d)
 #endif
 }
 
+#ifdef _WIN32
+static void
+fill_with_shared(FileView *view)
+{
+	NET_API_STATUS res;
+
+	view->list_rows = 0;
+	do
+	{
+		PSHARE_INFO_502 buf_ptr;
+		DWORD er = 0, tr = 0, resume = 0;
+
+		res = NetShareEnum(NULL, 502, (LPBYTE *)&buf_ptr, -1, &er, &tr, &resume);
+		if(res == ERROR_SUCCESS || res == ERROR_MORE_DATA)
+		{
+			PSHARE_INFO_502 p;
+			DWORD i;
+
+			p = buf_ptr;
+			for(i = 1; i <= er; i++)
+			{
+				char buf[512];
+				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi502_netname, -1, buf,
+						sizeof(buf), NULL, NULL);
+				if(!ends_with(buf, "$"))
+				{
+					dir_entry_t *dir_entry;
+
+					view->dir_entry = (dir_entry_t *)realloc(view->dir_entry,
+							(view->list_rows + 1)*sizeof(dir_entry_t));
+					if(view->dir_entry == NULL)
+					{
+						show_error_msg("Memory Error", "Unable to allocate enough memory");
+						p++;
+						continue;
+					}
+
+					dir_entry = view->dir_entry + view->list_rows;
+
+					/* Allocate extra for adding / to directories. */
+					dir_entry->name = malloc(strlen(buf) + 1 + 1);
+					if(dir_entry->name == NULL)
+					{
+						show_error_msg("Memory Error", "Unable to allocate enough memory");
+						p++;
+						continue;
+					}
+
+					strcpy(dir_entry->name, buf);
+
+					/* All files start as unselected and unmatched */
+					dir_entry->selected = 0;
+					dir_entry->search_match = 0;
+
+					dir_entry->size = 0;
+					dir_entry->mode = 0777;
+					dir_entry->mtime = 0;
+					dir_entry->atime = 0;
+					dir_entry->ctime = 0;
+
+					strcat(dir_entry->name, "/");
+					dir_entry->type = DIRECTORY;
+					view->list_rows++;
+				}
+				p++;
+			}
+			NetApiBufferFree(buf_ptr);
+		}
+	}
+	while(res == ERROR_MORE_DATA);
+}
+#endif
+
+static int
+fill_dir_list(FileView *view)
+{
+#ifndef _WIN32
+	DIR *dir;
+	struct dirent *d;
+
+	if((dir = opendir(view->curr_dir)) == NULL)
+		return -1;
+
+	for(view->list_rows = 0; (d = readdir(dir)); view->list_rows++)
+	{
+		dir_entry_t *dir_entry;
+		size_t name_len;
+		struct stat s;
+
+		/* Ignore the "." directory. */
+		if(strcmp(d->d_name, ".") == 0)
+		{
+			view->list_rows--;
+			continue;
+		}
+		/* Always include the ../ directory unless it is the root directory. */
+		if(strcmp(d->d_name, "..") == 0)
+		{
+			if(is_root_dir(view->curr_dir))
+			{
+				view->list_rows--;
+				continue;
+			}
+		}
+		else if(regexp_filter_match(view, d->d_name) == 0)
+		{
+			view->filtered++;
+			view->list_rows--;
+			continue;
+		}
+		else if(view->hide_dot && d->d_name[0] == '.')
+		{
+			view->filtered++;
+			view->list_rows--;
+			continue;
+		}
+
+		view->dir_entry = (dir_entry_t *)realloc(view->dir_entry,
+				(view->list_rows + 1) * sizeof(dir_entry_t));
+		if(view->dir_entry == NULL)
+		{
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			return -1;
+		}
+
+		dir_entry = view->dir_entry + view->list_rows;
+
+		name_len = strlen(d->d_name);
+		/* Allocate extra for adding / to directories. */
+		dir_entry->name = malloc(name_len + 1 + 1);
+		if(dir_entry->name == NULL)
+		{
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			return -1;
+		}
+
+		strcpy(dir_entry->name, d->d_name);
+
+		/* All files start as unselected and unmatched */
+		dir_entry->selected = 0;
+		dir_entry->search_match = 0;
+
+		/* Load the inode info */
+		if(lstat(dir_entry->name, &s) != 0)
+		{
+			LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
+					dir_entry->name);
+			log_cwd();
+
+			dir_entry->type = type_from_dir_entry(d);
+			if(dir_entry->type == DIRECTORY)
+				strcat(dir_entry->name, "/");
+			dir_entry->size = 0;
+			dir_entry->mode = 0;
+			dir_entry->uid = -1;
+			dir_entry->gid = -1;
+			dir_entry->mtime = 0;
+			dir_entry->atime = 0;
+			dir_entry->ctime = 0;
+			continue;
+		}
+
+		dir_entry->size = (uintmax_t)s.st_size;
+		dir_entry->mode = s.st_mode;
+		dir_entry->uid = s.st_uid;
+		dir_entry->gid = s.st_gid;
+		dir_entry->mtime = s.st_mtime;
+		dir_entry->atime = s.st_atime;
+		dir_entry->ctime = s.st_ctime;
+
+		if(s.st_ino)
+		{
+			switch(s.st_mode & S_IFMT)
+			{
+				case S_IFLNK:
+					{
+						struct stat st;
+						if(check_link_is_dir(dir_entry->name))
+							strcat(dir_entry->name, "/");
+						if(stat(dir_entry->name, &st) == 0)
+							dir_entry->mode = st.st_mode;
+						dir_entry->type = LINK;
+					}
+					break;
+				case S_IFDIR:
+					strcat(dir_entry->name, "/");
+					dir_entry->type = DIRECTORY;
+					break;
+				case S_IFCHR:
+				case S_IFBLK:
+					dir_entry->type = DEVICE;
+					break;
+				case S_IFSOCK:
+					dir_entry->type = SOCKET;
+					break;
+				case S_IFREG:
+					dir_entry->type = is_executable(dir_entry) ? EXECUTABLE : REGULAR;
+					break;
+				default:
+					dir_entry->type = UNKNOWN;
+					break;
+			}
+		}
+	}
+
+	closedir(dir);
+	return 0;
+#else
+	char buf[PATH_MAX];
+	HANDLE hfind;
+	WIN32_FIND_DATAA ffd;
+
+	if(is_unc_root(view->curr_dir))
+	{
+		fill_with_shared(view);
+		return 0;
+	}
+
+	snprintf(buf, sizeof(buf), "%s/*", view->curr_dir);
+
+	hfind = FindFirstFileA(buf, &ffd);
+	if(hfind == INVALID_HANDLE_VALUE)
+		return -1;
+
+	view->list_rows = 0;
+	do
+	{
+		dir_entry_t *dir_entry;
+		size_t name_len;
+
+		/* Ignore the "." directory. */
+		if(strcmp(ffd.cFileName, ".") == 0)
+			continue;
+		/* Always include the ../ directory unless it is the root directory. */
+		if(strcmp(ffd.cFileName, "..") == 0)
+		{
+			if(is_root_dir(view->curr_dir))
+				continue;
+		}
+		else if(regexp_filter_match(view, ffd.cFileName) == 0)
+		{
+			view->filtered++;
+			continue;
+		}
+		else if(view->hide_dot && ffd.cFileName[0] == '.')
+		{
+			view->filtered++;
+			continue;
+		}
+
+		view->dir_entry = (dir_entry_t *)realloc(view->dir_entry,
+				(view->list_rows + 1) * sizeof(dir_entry_t));
+		if(view->dir_entry == NULL)
+		{
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			FindClose(hfind);
+			return -1;
+		}
+
+		dir_entry = view->dir_entry + view->list_rows;
+
+		name_len = strlen(ffd.cFileName);
+		/* Allocate extra for adding / to directories. */
+		dir_entry->name = malloc(name_len + 1 + 1);
+		if(dir_entry->name == NULL)
+		{
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			FindClose(hfind);
+			return -1;
+		}
+
+		strcpy(dir_entry->name, ffd.cFileName);
+
+		/* All files start as unselected and unmatched */
+		dir_entry->selected = 0;
+		dir_entry->search_match = 0;
+
+		dir_entry->size = ((uintmax_t)ffd.nFileSizeHigh << 32) + ffd.nFileSizeLow;
+		dir_entry->mode = 0777;
+		dir_entry->mtime = 0;
+		dir_entry->atime = 0;
+		dir_entry->ctime = 0;
+
+		if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		{
+			strcat(dir_entry->name, "/");
+			dir_entry->type = DIRECTORY;
+		}
+		else
+		{
+			dir_entry->type = is_executable(dir_entry) ? EXECUTABLE : REGULAR;
+		}
+		view->list_rows++;
+	} while(FindNextFileA(hfind, &ffd));
+
+	FindClose(hfind);
+	return 0;
+#endif
+}
+
 void
 load_dir_list(FileView *view, int reload)
 {
-	DIR *dir;
-	struct dirent *d;
-	struct stat s;
 	int x;
-	int namelen = 0;
 	int old_list = view->list_rows;
 
 	view->filtered = 0;
 
-	if(stat(view->curr_dir, &s) != 0)
+	if(update_dir_mtime(view) != 0 && !is_unc_root(view->curr_dir))
 	{
 		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
 		return;
 	}
-	view->dir_mtime = s.st_mtime;
 
+#ifndef _WIN32
 	if(!reload && s.st_size > 2048)
+#else
+	if(!reload)
+#endif
 		status_bar_message("Reading directory...");
 
 	update_all_windows();
 
 	/* this is needed for lstat() below */
-	if(chdir(view->curr_dir) != 0)
+	if(chdir(view->curr_dir) != 0 && !is_unc_root(view->curr_dir))
 	{
 		LOG_SERROR_MSG(errno, "Can't chdir() into \"%s\"", view->curr_dir);
 		return;
@@ -1706,151 +2046,17 @@ load_dir_list(FileView *view, int reload)
 		return;
 	}
 
-	dir = opendir(view->curr_dir);
-
-	view->matches = 0;
-
-	if(dir != NULL)
-	{
-		for(view->list_rows = 0; (d = readdir(dir)); view->list_rows++)
-		{
-			dir_entry_t *dir_entry;
-
-			/* Ignore the "." directory. */
-			if(strcmp(d->d_name, ".") == 0)
-			{
-				view->list_rows--;
-				continue;
-			}
-			/* Always include the ../ directory unless it is the root directory. */
-			if(strcmp(d->d_name, "..") == 0)
-			{
-				if(is_root_dir(view->curr_dir))
-				{
-					view->list_rows--;
-					continue;
-				}
-			}
-			else if(regexp_filter_match(view, d->d_name) == 0)
-			{
-				view->filtered++;
-				view->list_rows--;
-				continue;
-			}
-			else if(view->hide_dot && d->d_name[0] == '.')
-			{
-				view->filtered++;
-				view->list_rows--;
-				continue;
-			}
-
-			view->dir_entry = (dir_entry_t *)realloc(view->dir_entry,
-					(view->list_rows + 1) * sizeof(dir_entry_t));
-			if(view->dir_entry == NULL)
-			{
-				show_error_msg("Memory Error", "Unable to allocate enough memory");
-				return;
-			}
-
-			dir_entry = view->dir_entry + view->list_rows;
-
-			namelen = strlen(d->d_name);
-			/* Allocate extra for adding / to directories. */
-			dir_entry->name = malloc(namelen + 1 + 1);
-			if(dir_entry->name == NULL)
-			{
-				show_error_msg("Memory Error", "Unable to allocate enough memory");
-				return;
-			}
-
-			strcpy(dir_entry->name, d->d_name);
-
-			/* All files start as unselected and unmatched */
-			dir_entry->selected = 0;
-			dir_entry->search_match = 0;
-
-			/* Load the inode info */
-			if(lstat(dir_entry->name, &s) != 0)
-			{
-				LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
-						dir_entry->name);
-				log_cwd();
-
-				dir_entry->type = type_from_dir_entry(d);
-				if(dir_entry->type == DIRECTORY)
-					strcat(dir_entry->name, "/");
-				dir_entry->size = 0;
-				dir_entry->mode = 0;
-#ifndef _WIN32
-				dir_entry->uid = -1;
-				dir_entry->gid = -1;
-#endif
-				dir_entry->mtime = 0;
-				dir_entry->atime = 0;
-				dir_entry->ctime = 0;
-				continue;
-			}
-
-			dir_entry->size = (uintmax_t)s.st_size;
-			dir_entry->mode = s.st_mode;
-#ifndef _WIN32
-			dir_entry->uid = s.st_uid;
-			dir_entry->gid = s.st_gid;
-#endif
-			dir_entry->mtime = s.st_mtime;
-			dir_entry->atime = s.st_atime;
-			dir_entry->ctime = s.st_ctime;
-
-#ifndef _WIN32
-			if(s.st_ino)
-#endif
-			{
-				switch(s.st_mode & S_IFMT)
-				{
-#ifndef _WIN32
-					case S_IFLNK:
-						{
-							struct stat st;
-							if(check_link_is_dir(dir_entry->name))
-								strcat(dir_entry->name, "/");
-							if(stat(dir_entry->name, &st) == 0)
-								dir_entry->mode = st.st_mode;
-							dir_entry->type = LINK;
-						}
-						break;
-#endif
-					case S_IFDIR:
-						strcat(dir_entry->name, "/");
-						dir_entry->type = DIRECTORY;
-						break;
-					case S_IFCHR:
-					case S_IFBLK:
-						dir_entry->type = DEVICE;
-						break;
-#ifndef _WIN32
-					case S_IFSOCK:
-						dir_entry->type = SOCKET;
-						break;
-#endif
-					case S_IFREG:
-						dir_entry->type = is_executable(dir_entry) ? EXECUTABLE : REGULAR;
-						break;
-					default:
-						dir_entry->type = UNKNOWN;
-						break;
-				}
-			}
-		}
-
-		closedir(dir);
-	}
-	else
+	if(fill_dir_list(view) != 0)
 	{
 		/* we don't have read access, only execute */
 		load_parent_dir_only(view);
 	}
 
+#ifndef _WIN32
 	if(!reload && s.st_size > 2048)
+#else
+	if(!reload)
+#endif
 		status_bar_message("Sorting directory...");
 	sort_view(view);
 
@@ -2016,9 +2222,13 @@ reload_window(FileView *view)
 void
 check_if_filelists_have_changed(FileView *view)
 {
+#ifndef _WIN32
 	struct stat s;
-
 	if(stat(view->curr_dir, &s) != 0)
+#else
+	FILETIME ft;
+	if(get_dir_mtime(view->curr_dir, &ft) != 0 && !is_unc_root(view->curr_dir))
+#endif
 	{
 		char buf[12 + PATH_MAX + 1];
 
@@ -2026,14 +2236,20 @@ check_if_filelists_have_changed(FileView *view)
 		log_cwd();
 
 		snprintf(buf, sizeof(buf), "Cannot open %s", view->curr_dir);
-		show_error_msg("Directory Access Error", buf);
+		show_error_msg("Directory Change Check", buf);
 
 		leave_invalid_dir(view, view->curr_dir);
 		change_directory(view, view->curr_dir);
 		clean_selected_files(view);
-		s.st_mtime = 0; /* force window reload */
+		reload_window(view);
+		return;
 	}
+
+#ifndef _WIN32
 	if(s.st_mtime != view->dir_mtime)
+#else
+	if(CompareFileTime(&ft, &view->dir_mtime) != 0)
+#endif
 		reload_window(view);
 }
 
