@@ -113,6 +113,8 @@
 
 	Added :volumes command (only for MS-Windows).
 
+	Added :version command as another name for :vifm.
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,

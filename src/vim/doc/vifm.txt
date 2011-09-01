@@ -709,6 +709,12 @@ The builtin commands are:
                                                *vifm-:undolist* *vifm-:undol*
 :undol[ist] - show list of latest changes.  Add ! to see commands.
 
+                                               *vifm-:version* *vifm-:ve*
+:ve[rsion] - show menu with version information.
+
+                                               *vifm-:vifm*
+:vifm - same as :version.
+
                                                *vifm-:view* *vifm-:vie*
 :vie[w] - toggle on and off the quick file view.
 
