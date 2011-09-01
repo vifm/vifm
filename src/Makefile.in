@@ -62,7 +62,8 @@ am_vifm_OBJECTS = background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	registers.$(OBJEXT) search.$(OBJEXT) signals.$(OBJEXT) \
 	sort.$(OBJEXT) sort_dialog.$(OBJEXT) status.$(OBJEXT) \
 	tags.$(OBJEXT) trash.$(OBJEXT) tree.$(OBJEXT) ui.$(OBJEXT) \
-	undo.$(OBJEXT) utils.$(OBJEXT) vifm.$(OBJEXT) visual.$(OBJEXT)
+	undo.$(OBJEXT) utils.$(OBJEXT) version.$(OBJEXT) \
+	vifm.$(OBJEXT) visual.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
@@ -269,6 +270,7 @@ vifm_SOURCES = \
 	ui.c ui.h \
 	undo.c undo.h \
 	utils.c utils.h \
+	version.c version.h \
 	vifm.c \
 	visual.c visual.h
 
@@ -436,6 +438,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/undo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifmrc-converter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/visual.Po@am__quote@
@@ -743,6 +746,15 @@ uninstall-man: uninstall-man1
 	uninstall-binPROGRAMS uninstall-binSCRIPTS uninstall-man \
 	uninstall-man1 uninstall-pkgdataDATA
 
+
+version.c:
+	if [ "x$$(whereis git)" != "x" ] ; then \
+		echo -n 'const char GIT_HASH[] = "' > version.c; \
+		echo -n `git rev-parse HEAD` >> version.c; \
+		echo '";' >> version.c; \
+	else \
+		echo -n 'const char GIT_HASH[] = "";' > version.c; \
+	fi
 
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
 

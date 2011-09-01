@@ -44,6 +44,7 @@
 #include "log.h"
 #include "macros.h"
 #include "status.h"
+#include "version.h"
 #include "ui.h"
 
 #include "utils.h"
@@ -496,6 +497,8 @@ fill_version_info(char **list)
 		return 8;
 
 	list[x++] = strdup("Version: " VERSION);
+	list[x] = malloc(strlen("Git commit hash: ") + strlen(GIT_HASH) + 1);
+	sprintf(list[x++], "Git commit hash: %s", GIT_HASH);
 	list[x++] = strdup("Compiled at: " __DATE__ " " __TIME__);
 	list[x++] = strdup("");
 
