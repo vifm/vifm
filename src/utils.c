@@ -474,7 +474,7 @@ get_perm_string(char * buf, int len, mode_t mode)
 	else if(S_ISCHR(mode))
 		buf[0] = 'c';
 	else if(S_ISFIFO(mode))
-		buf[0] = 'f';
+		buf[0] = 'p';
 	else if(S_ISSOCK(mode))
 		buf[0] = 's';
 
