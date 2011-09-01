@@ -948,7 +948,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 			buf_len += strlen(uchar2str(list[x] + i, &len));
 
 		if(str_len > 0)
-			buf_len += 1 + wcslen(list[x] + str_len + 1) + 1;
+			buf_len += 1 + wcslen(list[x] + str_len + 1)*4 + 1;
 		else
 			buf_len += 1 + 0 + 1;
 
@@ -959,12 +959,16 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 
 		if(str_len > 0)
 		{
+			char buf[wcslen(list[x] + str_len + 1)*4 + 1];
 			int i;
 			for(i = strlen(m.data[x]); i < MAP_WIDTH; i++)
 				strcat(m.data[x], " ");
 
 			strcat(m.data[x], " ");
-			sprintf(m.data[x] + strlen(m.data[x]), "%ls", list[x] + str_len + 1);
+			sprintf(buf, "%ls", list[x] + str_len + 1);
+
+			for(i = 0; buf[i] != '\0'; i++)
+				strcat(m.data[x], strchar2str(buf + i));
 		}
 
 		free(list[x]);

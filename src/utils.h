@@ -91,6 +91,7 @@ const char * get_regexp_error(int err, regex_t *re);
 int is_root_dir(const char *path);
 int is_path_absolute(const char *path);
 int ends_with(const char* str, const char* suffix);
+char * strchar2str(const char *str);
 
 #ifdef _WIN32
 int wcwidth(wchar_t c);

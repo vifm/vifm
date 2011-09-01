@@ -156,8 +156,8 @@ static struct keys_add_info builtin_cmds[] = {
 	{{KEY_RIGHT},     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right}}},
 	{{KEY_HOME},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_home}}},
 	{{KEY_END},       {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_end}}},
-	{{KEY_DC},        {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
-	{{KEY_BTAB},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
+  {{KEY_DC},        {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
+  {{KEY_BTAB},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
 #endif /* ENABLE_EXTENDED_KEYS */
 	{L"\x1b"L"[Z",    {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
 	/* ctrl b */

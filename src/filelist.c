@@ -250,26 +250,6 @@ use_info_prog(char *cmd)
 }
 #endif
 
-static char *
-strchar2str(const char *str)
-{
-	static char buf[8];
-
-	size_t len = get_char_width(str);
-	if(len != 1 || str[0] >= ' ' || str[0] == '\n')
-	{
-		memcpy(buf, str, len);
-		buf[len] = '\0';
-	}
-	else
-	{
-		buf[0] = '^';
-		buf[1] = ('A' - 1) + str[0];
-		buf[2] = '\0';
-	}
-	return buf;
-}
-
 static void
 view_not_wraped(FILE *fp, int x)
 {

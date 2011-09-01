@@ -409,7 +409,10 @@ uchar2str(wchar_t *c, size_t *len)
 			strcpy(buf, "<down>");
 			break;
 		case KEY_BACKSPACE:
-			strcpy(buf, "<backspace>");
+			strcpy(buf, "<bs>");
+			break;
+		case KEY_BTAB:
+			strcpy(buf, "<s-tab>");
 			break;
 		case KEY_DC:
 			strcpy(buf, "<delete>");
@@ -920,6 +923,26 @@ ends_with(const char* str, const char* suffix)
 		return 0;
 	else
 		return (strcmp(suffix, str + str_len - suf_len) == 0);
+}
+
+char *
+strchar2str(const char *str)
+{
+	static char buf[8];
+
+	size_t len = get_char_width(str);
+	if(len != 1 || str[0] >= ' ' || str[0] == '\n')
+	{
+		memcpy(buf, str, len);
+		buf[len] = '\0';
+	}
+	else
+	{
+		buf[0] = '^';
+		buf[1] = ('A' - 1) + str[0];
+		buf[2] = '\0';
+	}
+	return buf;
 }
 
 #ifdef _WIN32
