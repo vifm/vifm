@@ -602,6 +602,24 @@ multi_run_compat(FileView *view, const char *program)
 }
 
 static void
+handle_dir(FileView *view)
+{
+	char *filename;
+	
+	filename = get_current_file_name(view);
+
+	if(strcmp(filename, "../") == 0)
+	{
+		cd_updir(view);
+	}
+	else if(change_directory(view, filename) == 0)
+	{
+		load_dir_list(view, 0);
+		moveto_list_pos(view, view->list_pos);
+	}
+}
+
+static void
 execute_file(FileView *view, int dont_execute)
 {
 	char *program = NULL;
@@ -665,7 +683,11 @@ execute_file(FileView *view, int dont_execute)
 	/* vi is set as the default for any extension without a program */
 	if(program == NULL)
 	{
-		if(view->selected_files <= 1)
+		if(view->dir_entry[view->list_pos].type == DIRECTORY)
+		{
+			handle_dir(view);
+		}
+		else if(view->selected_files <= 1)
 		{
 			view_file(get_current_file_name(view), -1);
 		}
@@ -893,15 +915,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	if(is_dir(name) && view->selected_files == 0 &&
 			(view->dir_entry[view->list_pos].type != LINK || !force_follow))
 	{
-		if(strcmp(filename, "../") == 0)
-		{
-			cd_updir(view);
-		}
-		else if(change_directory(view, filename) == 0)
-		{
-			load_dir_list(view, 0);
-			moveto_list_pos(view, view->list_pos);
-		}
+		handle_dir(view);
 		return;
 	}
 
