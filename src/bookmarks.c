@@ -198,7 +198,7 @@ move_to_bookmark(FileView *view, char mark)
 		if(!isalnum(mark))
 			status_bar_message("Invalid mark");
 		else
-			status_bar_message("Mark is not set.");
+			status_bar_message("Mark is not set");
 
 		moveto_list_pos(view, view->list_pos);
 		return 1;

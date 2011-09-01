@@ -596,11 +596,8 @@ redraw_window(void)
 	{
 		if(curr_view->selected_files)
 		{
-			char status_buf[24];
-			snprintf(status_buf, sizeof(status_buf), "%d %s Selected",
-					curr_view->selected_files,
-					curr_view->selected_files == 1 ? "File" : "Files");
-			status_bar_message(status_buf);
+			status_bar_messagef("%d file%s selected", curr_view->selected_files,
+					curr_view->selected_files == 1 ? "" : "s");
 		}
 		else
 		{

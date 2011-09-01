@@ -483,7 +483,7 @@ cmd_N(struct key_info key_info, struct keys_info *keys_info)
 	}
 	else
 	{
-		status_bar_message("No search pattern set.");
+		status_bar_message("No search pattern set");
 		wrefresh(status_bar);
 	}
 }
@@ -557,7 +557,7 @@ cmd_n(struct key_info key_info, struct keys_info *keys_info)
 	}
 	else
 	{
-		status_bar_message("No search pattern set.");
+		status_bar_message("No search pattern set");
 		wrefresh(status_bar);
 	}
 }

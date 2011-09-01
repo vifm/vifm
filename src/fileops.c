@@ -798,7 +798,7 @@ follow_link(FileView *view, int follow_dirs)
 
 	if(len == -1)
 	{
-		status_bar_message("Couldn't Resolve Link");
+		status_bar_message("Couldn't resolve link");
 		curr_stats.save_msg = 1;
 		return;
 	}
@@ -1274,7 +1274,7 @@ rename_file(FileView *view, int name_only)
 	buf[sizeof(buf) - 1] = '\0';
 	if(strcmp(buf, "../") == 0)
 	{
-		status_bar_message("You can't rename parent directory this way.");
+		status_bar_message("You can't rename parent directory this way");
 		return;
 	}
 
@@ -1479,7 +1479,7 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 
 	if((f = fopen(temp_file, "w")) == NULL)
 	{
-		status_bar_message("Can't create temp file.");
+		status_bar_message("Can't create temp file");
 		curr_stats.save_msg = 1;
 		return NULL;
 	}
@@ -1524,7 +1524,7 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 	if((f = fopen(temp_file, "r")) == NULL)
 	{
 		unlink(temp_file);
-		status_bar_message("Can't open temporary file.");
+		status_bar_message("Can't open temporary file");
 		curr_stats.save_msg = 1;
 		return NULL;
 	}
@@ -1597,7 +1597,7 @@ rename_files(FileView *view, char **list, int nlines)
 	indexes = malloc(sizeof(*indexes)*count);
 	if(indexes == NULL)
 	{
-		status_bar_message("Not enough memory.");
+		status_bar_message("Not enough memory");
 		return 1;
 	}
 

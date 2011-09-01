@@ -12,6 +12,7 @@ Basic things that need to be done.
     Better globals support.
     Maybe remove 'trash' option, since we have two commands for deletion.
     Directory create command, :mkdir
+    More detailed command line errors (needed when vifmrc contains errors).
 
 Documentation.
 	Better documentation (with normal tags in Vim version).
@@ -28,8 +29,9 @@ Vi(m) specific features that need to be added.
 	Change file list filters to use fold levels instead of just
 		the dot filter and regular expression filter (what does this mean?).
     Add one more color to color scheme for error messages in status bar.
-    Some kind of selection mode (multible blocks, mixing).
+    Some kind of selection mode (multiple blocks, mixing).
     :highlight command.
+    Attributes for color scheme elements.
     Better registers support.
     /, ?, n, N as selectors.
     Make / and ? accept count.

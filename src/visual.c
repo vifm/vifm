@@ -704,8 +704,8 @@ cmd_y(struct key_info key_info, struct keys_info *keys_info)
 	get_all_selected_files(view);
 	yank_selected_files(view, key_info.reg);
 
-	snprintf(status_buf, sizeof(status_buf), "%d %s yanked", view->selected_files,
-			view->selected_files == 1 ? "file" : "files");
+	snprintf(status_buf, sizeof(status_buf), "%d file%s yanked",
+			view->selected_files, (view->selected_files == 1) ? "" : "s");
 	status_bar_message(status_buf);
 	curr_stats.save_msg = 1;
 
