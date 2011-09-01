@@ -1483,17 +1483,8 @@ shellout(const char *command, int pause)
 	lwin.dir_mtime = 0;
 	rwin.dir_mtime = 0;
 
-	/* There is a problem with using the screen program and
-	 * catching all the SIGWICH signals.  So just redraw the window.
-	 */
-#ifndef _WIN32
-	if(!isendwin() && cfg.use_screen)
-		redraw_window();
-	else
-		reset_prog_mode();
-#else
+	/* always redraw to handle resizing of terminal */
 	redraw_window();
-#endif
 
 	curs_set(0);
 
