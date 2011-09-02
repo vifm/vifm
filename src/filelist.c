@@ -22,6 +22,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <winioctl.h>
 #include <lm.h>
 #endif
 
@@ -1410,6 +1411,62 @@ update_dir_mtime(FileView *view)
 #endif
 }
 
+#ifdef _WIN32
+static const char *
+handle_mount_points(const char *path)
+{
+	static char buf[PATH_MAX];
+
+	DWORD attr;
+	HANDLE hfind;
+	WIN32_FIND_DATAA ffd;
+	HANDLE hfile;
+	char rdb[2048];
+	char *t;
+
+	attr = GetFileAttributes(path);
+	if(attr == INVALID_FILE_ATTRIBUTES)
+		return path;
+
+	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
+		return path;
+
+	snprintf(buf, sizeof(buf), "%s", path);
+	chosp(buf);
+	hfind = FindFirstFileA(buf, &ffd);
+	if(hfind == INVALID_HANDLE_VALUE)
+		return path;
+
+	FindClose(hfind);
+
+	if(ffd.dwReserved0 != IO_REPARSE_TAG_MOUNT_POINT)
+		return path;
+
+	hfile = CreateFileA(buf, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+			NULL);
+	if(hfile == INVALID_HANDLE_VALUE)
+		return path;
+
+	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb,
+				sizeof(rdb), &attr, NULL))
+	{
+		CloseHandle(hfile);
+		return path;
+	}
+	CloseHandle(hfile);
+	
+	t = to_multibyte(
+			((REPARSE_DATA_BUFFER *)rdb)->MountPointReparseBuffer.PathBuffer);
+	if(strncmp(t, "\\??\\", 4) == 0)
+		strcpy(buf, t + 4);
+	else
+		strcpy(buf, t);
+	free(t);
+	return buf;
+}
+#endif
+
 /*
  * The directory can either be relative to the current
  * directory - ../
@@ -1428,8 +1485,13 @@ change_directory(FileView *view, const char *directory)
 {
 	char newdir[PATH_MAX];
 	char dir_dup[PATH_MAX];
+	int i;
 
 	save_view_history(view, NULL, NULL, -1);
+
+#ifdef _WIN32
+	directory = handle_mount_points(directory);
+#endif
 
 	if(is_path_absolute(directory))
 	{
@@ -1445,6 +1507,14 @@ change_directory(FileView *view, const char *directory)
 			snprintf(newdir, sizeof(newdir), "%s/%s", view->curr_dir, directory);
 		canonicalize_path(newdir, dir_dup, sizeof(dir_dup));
 	}
+
+#ifdef _WIN32
+	for(i = 0; dir_dup[i] != '\0'; i++)
+	{
+		if(dir_dup[i] == '\\')
+			dir_dup[i] = '/';
+	}
+#endif
 
 	if(!is_root_dir(dir_dup))
 		chosp(dir_dup);

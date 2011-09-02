@@ -993,6 +993,20 @@ strchar2str(const char *str)
 	return buf;
 }
 
+char *
+to_multibyte(const wchar_t *s)
+{
+	size_t len;
+	char *result;
+
+	len = wcstombs(NULL, s, 0) + 1;
+	if((result = malloc(len*sizeof(char))) == NULL)
+		return NULL;
+
+	wcstombs(result, s, len);
+	return result;
+}
+
 #ifdef _WIN32
 
 int
