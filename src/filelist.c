@@ -1709,8 +1709,16 @@ fill_with_shared(FileView *view)
 	{
 		PSHARE_INFO_502 buf_ptr;
 		DWORD er = 0, tr = 0, resume = 0;
+		wchar_t *wserver = to_wide(view->curr_dir + 2);
 
-		res = NetShareEnum(NULL, 502, (LPBYTE *)&buf_ptr, -1, &er, &tr, &resume);
+		if(wserver == NULL)
+		{
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			return;
+		}
+
+		res = NetShareEnum(wserver, 502, (LPBYTE *)&buf_ptr, -1, &er, &tr, &resume);
+		free(wserver);
 		if(res == ERROR_SUCCESS || res == ERROR_MORE_DATA)
 		{
 			PSHARE_INFO_502 p;
@@ -2227,7 +2235,9 @@ check_if_filelists_have_changed(FileView *view)
 	if(stat(view->curr_dir, &s) != 0)
 #else
 	FILETIME ft;
-	if(get_dir_mtime(view->curr_dir, &ft) != 0 && !is_unc_root(view->curr_dir))
+	if(is_unc_root(view->curr_dir))
+		return;
+	if(get_dir_mtime(view->curr_dir, &ft) != 0)
 #endif
 	{
 		char buf[12 + PATH_MAX + 1];

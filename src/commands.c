@@ -16,6 +16,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#ifdef _WIN32
+#include <windows.h>
+#include <lm.h>
+#endif
+
 #include <regex.h>
 
 #include <curses.h>
@@ -454,6 +459,48 @@ exec_completion(const char *str)
 	add_completion(str);
 }
 
+#ifdef _WIN32
+static void
+complete_with_shared(const char *server)
+{
+	NET_API_STATUS res;
+
+	do
+	{
+		PSHARE_INFO_502 buf_ptr;
+		DWORD er = 0, tr = 0, resume = 0;
+		wchar_t *wserver = to_wide(server + 2);
+
+		if(wserver == NULL)
+		{
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			return;
+		}
+
+		res = NetShareEnum(wserver, 502, (LPBYTE *)&buf_ptr, -1, &er, &tr, &resume);
+		free(wserver);
+		if(res == ERROR_SUCCESS || res == ERROR_MORE_DATA)
+		{
+			PSHARE_INFO_502 p;
+			DWORD i;
+
+			p = buf_ptr;
+			for(i = 1; i <= er; i++)
+			{
+				char buf[512];
+				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi502_netname, -1, buf,
+						sizeof(buf), NULL, NULL);
+				if(!ends_with(buf, "$"))
+					add_completion(buf);
+				p++;
+			}
+			NetApiBufferFree(buf_ptr);
+		}
+	}
+	while(res == ERROR_MORE_DATA);
+}
+#endif
+
 /*
  * type: FNC_*
  */
@@ -513,6 +560,17 @@ filename_completion(const char *str, int type)
 		dirname[0] = '.';
 		dirname[1] = '\0';
 	}
+
+#ifdef _WIN32
+	if(is_unc_root(dirname) ||
+			(strcmp(dirname, ".") == 0 && is_unc_root(curr_view->curr_dir)))
+	{
+		complete_with_shared(dirname);
+		free(filename);
+		free(dirname);
+		return;
+	}
+#endif
 
 	dir = opendir(dirname);
 
@@ -700,6 +758,10 @@ is_entry_exec(const struct dirent *d)
 	if(d->d_type == DT_LNK && check_link_is_dir(d->d_name))
 		return 0;
 #endif
+	/* TODO: get extensions list from the registry */
+	if(ends_with(d->d_name, ".bat") || ends_with(d->d_name, ".exe") ||
+			ends_with(d->d_name, ".com"))
+		return 1;
 	if(access(d->d_name, X_OK) != 0)
 		return 0;
 	return 1;
@@ -2196,7 +2258,7 @@ cd(FileView *view, const char *path)
 		snprintf(dir, sizeof(dir), "%s", cfg.home_dir);
 	}
 
-	if(access(dir, F_OK) != 0)
+	if(access(dir, F_OK) != 0 && !is_unc_root(dir))
 	{
 		char buf[1 + PATH_MAX + 1 + 1];
 
@@ -2206,7 +2268,7 @@ cd(FileView *view, const char *path)
 		show_error_msg("Destination doesn't exist", buf);
 		return 0;
 	}
-	if(access(dir, X_OK) != 0)
+	if(access(dir, X_OK) != 0 && !is_unc_root(dir))
 	{
 		char buf[1 + PATH_MAX + 1 + 1];
 
