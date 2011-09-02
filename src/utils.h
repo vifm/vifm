@@ -105,7 +105,7 @@ int readlink(const char *path, char *buf, size_t len);
 char * realpath(const char *path, char *buf);
 int is_unc_path(const char *path);
 int is_unc_root(const char *path);
-int exec_program(const TCHAR *cmd);
+int exec_program(TCHAR *cmd);
 #endif
 
 #endif

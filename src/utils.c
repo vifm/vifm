@@ -515,7 +515,7 @@ fill_version_info(char **list)
 	int x = 0;
 
 	if(list == NULL)
-		return 8;
+		return 9;
 
 	list[x++] = strdup("Version: " VERSION);
 	list[x] = malloc(sizeof("Git commit hash: ") + strlen(GIT_HASH) + 1);
@@ -1045,7 +1045,7 @@ is_unc_root(const char *path)
 }
 
 int
-exec_program(const TCHAR *cmd)
+exec_program(TCHAR *cmd)
 {
 	BOOL ret;
 	DWORD exitcode;
@@ -1055,10 +1055,7 @@ exec_program(const TCHAR *cmd)
 	ret = CreateProcess(NULL, cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
 			&pinfo);
 	if(ret == 0)
-	{
-		int r = GetLastError();
 		return -1;
-	}
 
 	CloseHandle(pinfo.hThread);
 
