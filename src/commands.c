@@ -1004,10 +1004,11 @@ apply_mod(const char *path, const char *parent, const char *mod)
 
 	if(strncmp(mod, ":p", 2) == 0)
 	{
-		if(path[0] == '/')
+		if(is_path_absolute(path))
 			return strcpy(buf, path);
 
 		strcpy(buf, parent);
+		chosp(buf);
 		strcat(buf, "/");
 		strcat(buf, path);
 	}
@@ -1033,11 +1034,12 @@ apply_mod(const char *path, const char *parent, const char *mod)
 		char *p = strrchr(path, '/');
 		if(p == NULL)
 			return strcpy(buf, ".");
+		if(is_root_dir(path))
+			return strcpy(buf, path);
 
 		strcpy(buf, path);
-		if(p == path)
-			buf[1] = '\0';
-		else
+		buf[p - path + 1] = '\0';
+		if(!is_root_dir(buf))
 			buf[p - path] = '\0';
 	}
 	else if(strncmp(mod, ":t", 2) == 0)

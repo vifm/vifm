@@ -927,25 +927,30 @@ get_regexp_error(int err, regex_t *re)
 int
 is_root_dir(const char *path)
 {
-#ifndef _WIN32
-	return (path[0] == '/' && path[1] == '\0');
-#else
-	return (isalpha(path[0]) && strcmp(path + 1, ":/") == 0);
+#ifdef _WIN32
+	if(isalpha(path[0]) && strcmp(path + 1, ":/") == 0)
+		return 1;
+
+	if(path[0] == '/' && path[1] == '/' && path[2] != '\0')
+	{
+		char *p = strchr(path + 2, '/');
+		if(p == NULL || p[1] == '\0')
+			return 1;
+	}
 #endif
+	return (path[0] == '/' && path[1] == '\0');
 }
 
 int
 is_path_absolute(const char *path)
 {
-#ifndef _WIN32
-	return (path[0] == '/');
-#else
+#ifdef _WIN32
 	if(isalpha(path[0]) && path[1] == ':')
 		return 1;
 	if(path[0] == '/' && path[1] == '/')
 		return 1;
-	return 0;
 #endif
+	return (path[0] == '/');
 }
 
 int

@@ -462,14 +462,45 @@ test_colon_gs(void)
 	free(expanded);
 }
 
+#ifdef _WIN32
+static void
+test_windows_specific(void)
+{
+	int menu, split;
+	char *expanded;
+
+	strcpy(lwin.curr_dir, "h:/rwin");
+
+	expanded = expand_macros(&lwin, " %d:h ", "", &menu, &split);
+	assert_string_equal(" h:/ ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, " %d:h:h ", "", &menu, &split);
+	assert_string_equal(" h:/ ", expanded);
+	free(expanded);
+
+	strcpy(lwin.curr_dir, "//ZX-Spectrum");
+
+	expanded = expand_macros(&lwin, " %d:h ", "", &menu, &split);
+	assert_string_equal(" //ZX-Spectrum ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, " %d:h:h ", "", &menu, &split);
+	assert_string_equal(" //ZX-Spectrum ", expanded);
+	free(expanded);
+}
+#endif
+
 static void
 test_modif_without_macros(void)
 {
 	int menu, split;
 	char *expanded;
 
-	expanded = expand_macros(&lwin, " cp %f:t :p :~ :. :h :t :r :e :s :gs ", "", &menu, &split);
-	assert_string_equal(" cp lfile0 lfile2 :p :~ :. :h :t :r :e :s :gs ", expanded);
+	expanded = expand_macros(&lwin, " cp %f:t :p :~ :. :h :t :r :e :s :gs ", "",
+			&menu, &split);
+	assert_string_equal(" cp lfile0 lfile2 :p :~ :. :h :t :r :e :s :gs ",
+			expanded);
 	free(expanded);
 }
 
@@ -490,6 +521,10 @@ fname_modif_tests(void)
 	run_test(test_colon_e);
 	run_test(test_colon_s);
 	run_test(test_colon_gs);
+
+#ifdef _WIN32
+	run_test(test_windows_specific);
+#endif
 
 	run_test(test_modif_without_macros);
 

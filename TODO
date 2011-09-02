@@ -25,7 +25,6 @@ Windows.
 	Get executable extensions list from the registry.
     Remove some *nix specific commands.
     Make UNC paths work.
-    Make fnamemodifiers work right.
     Fix going up from invalid dir.
 
 Vi(m) specific features that need to be added.
