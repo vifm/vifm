@@ -1779,6 +1779,17 @@ fill_with_shared(FileView *view)
 }
 #endif
 
+#ifdef _WIN32
+static int
+is_win_symlink(DWORD attr, DWORD tag)
+{
+	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
+		return 0;
+
+	return (tag == IO_REPARSE_TAG_SYMLINK);
+}
+#endif
+
 static int
 fill_dir_list(FileView *view)
 {
@@ -1989,14 +2000,24 @@ fill_dir_list(FileView *view)
 		dir_entry->atime = 0;
 		dir_entry->ctime = 0;
 
-		if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		if(is_win_symlink(ffd.dwFileAttributes, ffd.dwReserved0))
+		{
+			if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+				strcat(dir_entry->name, "/");
+			dir_entry->type = LINK;
+		}
+		else if(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
 		{
 			strcat(dir_entry->name, "/");
 			dir_entry->type = DIRECTORY;
 		}
+		else if(is_executable(dir_entry))
+		{
+			dir_entry->type = EXECUTABLE;
+		}
 		else
 		{
-			dir_entry->type = is_executable(dir_entry) ? EXECUTABLE : REGULAR;
+			dir_entry->type = REGULAR;
 		}
 		view->list_rows++;
 	} while(FindNextFileA(hfind, &ffd));
