@@ -178,12 +178,6 @@ set_config_dir(void)
 			return;
 		if(mkdir(cfg.trash_dir, 0777))
 			return;
-#else
-		if(mkdir(cfg.config_dir))
-			return;
-		if(mkdir(cfg.trash_dir))
-			return;
-#endif
 		if((f = fopen(help_file, "r")) == NULL)
 			create_help_file();
 		if((f = fopen(rc_file, "r")) == NULL)

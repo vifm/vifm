@@ -5,7 +5,6 @@ CFLAGS := -c -g -O0 -Wall $(CFLAGS)
 LDFLAGS := -all-static $(LDFLAGS)
 
 LIBS := -lregex -lpdcurses -lnetapi32
-#c:/MinGW/lib/libgnurx.dll.a
 
 vifm_SOURCES := background.c bookmarks.c cmdline.c cmds.c color_scheme.c \
                 commands.c completion.c config.c dir_stack.c file_info.c \
@@ -13,7 +12,8 @@ vifm_SOURCES := background.c bookmarks.c cmdline.c cmds.c color_scheme.c \
                 main_loop.c menu.c menus.c modes.c normal.c ops.c \
                 opt_handlers.c options.c permissions_dialog.c registers.c \
                 search.c signals.c sort.c sort_dialog.c status.c tags.c \
-                trash.c tree.c ui.c undo.c utils.c vifm.c visual.c
+                trash.c tree.c ui.c undo.c utils.c version.c vifm.c visual.c
+
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe
 
@@ -21,7 +21,9 @@ converter_SOURCES := vifmrc-converter.c
 converter_OBJECTS := $(converter_SOURCES:.c=.o)
 converter_EXECUTABLE := vifmrc-converter.exe
 
-all: config $(vifm_EXECUTABLE) $(converter_EXECUTABLE)
+.PHONY: config version
+
+all: config version $(vifm_EXECUTABLE) $(converter_EXECUTABLE)
 
 $(vifm_EXECUTABLE): $(vifm_OBJECTS)
 	$(CC) $^ -o $@ $(LDFLAGS) $(LIBS)
@@ -32,6 +34,15 @@ config:
 	echo '#define VERSION "0.6.3"' > ../config.h
 #	echo '#define ENABLE_EXTENDED_KEYS' >> ../config.h
 #	echo '#define ENABLE_COMPATIBILITY_MODE' >> ../config.h
+
+version:
+	if [ "x$$(whereis git)" != "x" ] ; then \
+		echo -n 'const char GIT_HASH[] = "' > version.c; \
+		echo -n `git rev-parse HEAD` >> version.c; \
+		echo '";' >> version.c; \
+	else \
+		echo -n 'const char GIT_HASH[] = "";' > version.c; \
+	fi
 
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
