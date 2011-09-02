@@ -214,7 +214,8 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		{
 			init_logger(1);
 		}
-		else if(access(argv[x], F_OK) == 0)
+		else if(access(argv[x], F_OK) == 0 || is_path_absolute(argv[x]) ||
+				is_root_dir(argv[x]))
 		{
 			if(lwin_path[0] != '\0')
 				parse_path(dir, argv[x], rwin_path);
@@ -252,7 +253,7 @@ check_path(FileView *view, const char *path)
 		return;
 
 	strcpy(view->curr_dir, path);
-	if(!is_dir(path))
+	if(!is_dir(path) && !is_unc_root(path))
 	{
 		char *slash;
 		if((slash = strrchr(view->curr_dir, '/')) != NULL)
@@ -469,8 +470,8 @@ main(int argc, char *argv[])
 		}
 
 		show_error_msg("Configuration update", "Your vifmrc has been upgraded to "
-				"new format, you can find its old version in " CONF_DIR "/vifmrc.bak. "
-				" vifm will not write anything to vifmrc, and all variables that are "
+				"new format, you can find its old version in " CONF_DIR "/vifmrc.bak.  "
+				"vifm will not write anything to vifmrc, and all variables that are "
 				"saved between runs of vifm are stored in " CONF_DIR "/vifminfo now "
 				"(you can edit it by hand, but do it carefully).  You can control what "
 				"vifm stores in vifminfo with 'vifminfo' option.");

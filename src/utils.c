@@ -1029,7 +1029,8 @@ is_unc_root(const char *path)
 {
 	if(is_unc_path(path))
 	{
-		if(strchr(path + 2, '/') == NULL)
+		char *p = strchr(path + 2, '/');
+		if(p == NULL || p[1] == '\0')
 			return 1;
 	}
 	return 0;
