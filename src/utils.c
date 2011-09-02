@@ -784,6 +784,14 @@ make_rel_path(const char *path, const char *base)
 	int i;
 	int nslashes;
 
+#ifdef _WIN32
+	if(path[1] == ':' && base[1] == ':' && path[0] != base[0])
+	{
+		canonicalize_path(path, buf, sizeof(buf));
+		return buf;
+	}
+#endif
+
 	while(p[0] != '\0' && p[1] != '\0' && b[0] != '\0' && b[1] != '\0')
 	{
 		const char *op = p, *ob = b;
@@ -1036,6 +1044,37 @@ is_unc_root(const char *path)
 	return 0;
 }
 
+int
+exec_program(const TCHAR *cmd)
+{
+	BOOL ret;
+	DWORD exitcode;
+	STARTUPINFO startup = {};
+	PROCESS_INFORMATION pinfo;
+
+	ret = CreateProcess(NULL, cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
+			&pinfo);
+	if(ret == 0)
+	{
+		int r = GetLastError();
+		return -1;
+	}
+
+	CloseHandle(pinfo.hThread);
+
+	if(WaitForSingleObject(pinfo.hProcess, INFINITE) != WAIT_OBJECT_0)
+	{
+		CloseHandle(pinfo.hProcess);
+		return -1;
+	}
+	if(GetExitCodeProcess(pinfo.hProcess, &exitcode) == 0)
+	{
+		CloseHandle(pinfo.hProcess);
+		return -1;
+	}
+	CloseHandle(pinfo.hProcess);
+	return exitcode;
+}
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

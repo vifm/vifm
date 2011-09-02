@@ -285,11 +285,7 @@ run_converter(int vifm_like)
 	snprintf(buf, sizeof(buf), "vifmrc-converter %d", vifm_like);
 	return shellout(buf, -1);
 #else
-	BOOL ret;
-	DWORD exitcode;
 	TCHAR buf[PATH_MAX + 2];
-	STARTUPINFO startup = {};
-	PROCESS_INFORMATION pinfo;
 
 	if(GetModuleFileName(NULL, buf, ARRAY_LEN(buf)) == 0)
 		return -1;
@@ -300,25 +296,7 @@ run_converter(int vifm_like)
 	else
 		_tcscat(buf, _T("vifmrc-converter 0"));
 
-	ret = CreateProcess(NULL, buf, NULL, NULL, 0, 0, NULL, NULL, &startup,
-			&pinfo);
-	if(ret == 0)
-		return -1;
-
-	CloseHandle(pinfo.hThread);
-
-	if(WaitForSingleObject(pinfo.hProcess, INFINITE) != WAIT_OBJECT_0)
-	{
-		CloseHandle(pinfo.hProcess);
-		return -1;
-	}
-	if(GetExitCodeProcess(pinfo.hProcess, &exitcode) == 0)
-	{
-		CloseHandle(pinfo.hProcess);
-		return -1;
-	}
-	CloseHandle(pinfo.hProcess);
-	return exitcode;
+	return exec_program(buf);
 #endif
 }
 

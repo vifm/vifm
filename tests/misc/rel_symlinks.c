@@ -80,6 +80,20 @@ test_different_subtree(void)
 	assert_string_equal("../home/file", buf);
 }
 
+#ifdef _WIN32
+static void
+test_windows_specific(void)
+{
+	const char *buf;
+
+	buf = make_rel_path("c:/home/user1/dir1", "c:/home/user1/");
+	assert_string_equal("dir1", buf);
+
+	buf = make_rel_path("c:/home/user1/", "d:/home/user1/dir1");
+	assert_string_equal("c:/home/user1/", buf);
+}
+#endif
+
 void
 rel_symlinks_tests(void)
 {
@@ -90,6 +104,9 @@ rel_symlinks_tests(void)
 	run_test(test_under_dir);
 	run_test(test_parent_dir);
 	run_test(test_different_subtree);
+#ifdef _WIN32
+	run_test(test_windows_specific);
+#endif
 
 	test_fixture_end();
 }

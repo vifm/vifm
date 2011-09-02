@@ -252,6 +252,9 @@ op_symlink(void *data, const char *src, const char *dst)
 	char *escaped_src, *escaped_dst;
 	char cmd[6 + PATH_MAX*2 + 1];
 	int result;
+#ifdef _WIN32
+	char buf[PATH_MAX + 2];
+#endif
 
 	escaped_src = escape_filename(src, 0);
 	escaped_dst = escape_filename(dst, 0);
@@ -262,8 +265,22 @@ op_symlink(void *data, const char *src, const char *dst)
 		return -1;
 	}
 
+#ifndef _WIN32
 	snprintf(cmd, sizeof(cmd), "ln -s %s %s", escaped_src, escaped_dst);
 	result = background_and_wait_for_errors(cmd);
+#else
+	if(GetModuleFileNameA(NULL, buf, ARRAY_LEN(buf)) == 0)
+	{
+		free(escaped_dst);
+		free(escaped_src);
+		return -1;
+	}
+
+	*strrchr(buf, '\\') = '\0';
+	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s > NUL", buf, escaped_src,
+			escaped_dst);
+	result = system(cmd);
+#endif
 
 	free(escaped_dst);
 	free(escaped_src);

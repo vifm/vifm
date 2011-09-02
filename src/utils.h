@@ -19,6 +19,10 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
 
+#ifdef _WIN32
+#include <windef.h>
+#endif
+
 #include <regex.h>
 
 #include <limits.h> /* PATH_MAX */
@@ -101,6 +105,7 @@ int readlink(const char *path, char *buf, size_t len);
 char * realpath(const char *path, char *buf);
 int is_unc_path(const char *path);
 int is_unc_root(const char *path);
+int exec_program(const TCHAR *cmd);
 #endif
 
 #endif
