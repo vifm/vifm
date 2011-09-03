@@ -361,6 +361,8 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	if(was_redraw)
 		redraw_window();
+	else
+		update_all_windows();
 }
 
 static void
