@@ -2156,7 +2156,7 @@ emark_cmd(const struct cmd_info *cmd_info)
 	{
 		if(!cfg.use_screen)
 		{
-			status_bar_message("The screen program support isn't enabled");
+			status_bar_error("The screen program support isn't enabled");
 			return 1;
 		}
 
@@ -2168,6 +2168,7 @@ emark_cmd(const struct cmd_info *cmd_info)
 	}
 	else
 	{
+		clean_selected_files(curr_view);
 		if(shellout(com + i, cmd_info->emark ? 1 : (cfg.fast_run ? 0 : -1)) == 127
 				&& cfg.fast_run)
 		{
