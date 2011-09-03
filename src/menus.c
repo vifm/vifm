@@ -692,25 +692,30 @@ goto_selected_file(FileView *view, menu_info *m)
 		file = strrchr(dir, '/');
 		*file++ = '\0';
 
-		change_directory(view, dir);
-
-		status_bar_message("Finding the correct directory...");
-
-		wrefresh(status_bar);
-		load_dir_list(view, 0);
-
-		if(find_file_pos_in_list(view, file) < 0)
+		if(change_directory(view, dir) >= 0)
 		{
-			if(isdir)
-				strcat(file, "/");
+			status_bar_message("Finding the correct directory...");
 
-			if(file[0] == '.')
-				set_dot_files_visible(view, 1);
+			wrefresh(status_bar);
+			load_dir_list(view, 0);
 
 			if(find_file_pos_in_list(view, file) < 0)
-				remove_filename_filter(view);
+			{
+				if(isdir)
+					strcat(file, "/");
+
+				if(file[0] == '.')
+					set_dot_files_visible(view, 1);
+
+				if(find_file_pos_in_list(view, file) < 0)
+					remove_filename_filter(view);
+			}
+			moveto_list_pos(view, find_file_pos_in_list(view, file));
 		}
-		moveto_list_pos(view, find_file_pos_in_list(view, file));
+		else
+		{
+			show_error_msgf("Invalid path", "Cannot change dir to \"%s\"", dir);
+		}
 	}
 	else if(m->type == LOCATE || m->type == USER_NAVIGATE)
 	{
@@ -766,7 +771,9 @@ execute_volumes_cb(FileView *view, menu_info *m)
 	char buf[4];
 	snprintf(buf, 4, "%s", m->data[m->pos]);
 
-	change_directory(view, buf);
+	if(change_directory(view, buf) < 0)
+		return;
+
 	load_dir_list(view, 0);
 	moveto_list_pos(view, 0);
 }
@@ -808,9 +815,11 @@ execute_menu_cb(FileView *view, menu_info *m)
 				clean_positions_in_history(curr_view);
 				curr_stats.ch_pos = 0;
 			}
-			change_directory(view, m->data[m->pos]);
-			load_dir_list(view, 0);
-			moveto_list_pos(view, view->list_pos);
+			if(change_directory(view, m->data[m->pos]) >= 0)
+			{
+				load_dir_list(view, 0);
+				moveto_list_pos(view, view->list_pos);
+			}
 			if(!cfg.auto_ch_pos)
 				curr_stats.ch_pos = 1;
 			break;
@@ -1121,7 +1130,7 @@ show_bookmarks_menu(FileView *view, const char *marks)
 	m.len = init_active_bookmarks(marks);
 	if(m.len == 0)
 	{
-		show_error_msg("No bookmarks set", "No bookmarks are set.");
+		(void)show_error_msg("No bookmarks set", "No bookmarks are set.");
 		return 0;
 	}
 
@@ -1333,7 +1342,7 @@ show_commands_menu(FileView *view)
 	if(list[0] == NULL)
 	{
 		free(list);
-		show_error_msg("No commands set", "No commands are set.");
+		(void)show_error_msg("No commands set", "No commands are set.");
 		return 0;
 	}
 
@@ -1442,7 +1451,7 @@ show_filetypes_menu(FileView *view, int background)
 
 	isdir = is_dir(view->dir_entry[view->list_pos].name);
 	if(ft_str == NULL && mime_str == NULL && !isdir) {
-		show_error_msg("Filetype is not set.",
+		(void)show_error_msg("Filetype is not set.",
 				"No programs set for this filetype.");
 		return 0;
 	}
@@ -2244,7 +2253,7 @@ print_errors(FILE *ef)
 	}
 
 	if(buf[0] != '\0')
-		show_error_msg("Background Process Error", buf);
+		(void)show_error_msg("Background Process Error", buf);
 
 	fclose(ef);
 	return error;

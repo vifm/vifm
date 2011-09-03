@@ -148,7 +148,7 @@ load_initial_directory(FileView *view, const char *dir)
 
 	view->list_rows = 1;
 	chosp(view->curr_dir);
-	change_directory(view, dir);
+	(void)change_directory(view, dir);
 }
 
 /* buf should be at least PATH_MAX characters length */
@@ -316,7 +316,7 @@ main(int argc, char *argv[])
 	int i;
 	int no_configs;
 
-	setlocale(LC_ALL, "");
+	(void)setlocale(LC_ALL, "");
 	if(getcwd(dir, sizeof(dir)) == NULL)
 	{
 		perror("getcwd");
@@ -451,7 +451,8 @@ main(int argc, char *argv[])
 			exit(0);
 		}
 
-		show_error_msg("Configuration update", "Your vifmrc has been upgraded to "
+		(void)show_error_msg("Configuration update", "Your vifmrc has been "
+				"upgraded to "
 				"new format, you can find its old version in " CONF_DIR "/vifmrc.bak.  "
 				"vifm will not write anything to vifmrc, and all variables that are "
 				"saved between runs of vifm are stored in " CONF_DIR "/vifminfo now "

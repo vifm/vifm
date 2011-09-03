@@ -230,7 +230,7 @@ use_info_prog(char *cmd)
 
 	if(pipe(error_pipe) != 0)
 	{
-		show_error_msg("File pipe error", "Error creating pipe");
+		(void)show_error_msg("File pipe error", "Error creating pipe");
 		return NULL;
 	}
 
@@ -479,7 +479,7 @@ get_all_selected_files(FileView *view)
 		(char **)calloc(view->selected_files, sizeof(char *));
 	if(view->selected_filelist == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -497,7 +497,7 @@ get_all_selected_files(FileView *view)
 		view->selected_filelist[y] = strdup(view->dir_entry[x].name);
 		if(view->selected_filelist[y] == NULL)
 		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 			break;
 		}
 		y++;
@@ -519,7 +519,7 @@ get_selected_files(FileView *view, int count, const int *indexes)
 	view->selected_filelist = (char **)calloc(count, sizeof(char *));
 	if(view->selected_filelist == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -532,7 +532,7 @@ get_selected_files(FileView *view, int count, const int *indexes)
 		view->selected_filelist[y] = strdup(view->dir_entry[indexes[x]].name);
 		if(view->selected_filelist[y] == NULL)
 		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 			break;
 		}
 		y++;
@@ -1027,7 +1027,11 @@ void
 goto_history_pos(FileView *view, int pos)
 {
 	curr_stats.skip_history = 1;
-	change_directory(view, view->history[pos].dir);
+	if(change_directory(view, view->history[pos].dir) < 0)
+	{
+		curr_stats.skip_history = 0;
+		return;
+	}
 	curr_stats.skip_history = 0;
 
 	load_dir_list(view, 1);
@@ -1233,7 +1237,8 @@ updir_from_mount(FileView *view, Fuse_List *runner)
 	char *file;
 	int pos;
 
-	change_directory(view, runner->source_file_dir);
+	if(change_directory(view, runner->source_file_dir) < 0)
+		return;
 
 	load_dir_list(view, 0);
 
@@ -1347,7 +1352,7 @@ try_unmount_fuse(FileView *view)
 	/* have to chdir to parent temporarily, so that this DIR can be unmounted */
 	if(chdir(cfg.fuse_home) != 0)
 	{
-		show_error_msg("FUSE UMOUNT ERROR", "Can't chdir to FUSE home");
+		(void)show_error_msg("FUSE UMOUNT ERROR", "Can't chdir to FUSE home");
 		return -1;
 	}
 
@@ -1356,8 +1361,8 @@ try_unmount_fuse(FileView *view)
 	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
 	{
 		werase(status_bar);
-		show_error_msgf("FUSE UMOUNT ERROR", "Can't unmount %s.  It may be busy.",
-				runner->source_file_name);
+		(void)show_error_msgf("FUSE UMOUNT ERROR",
+				"Can't unmount %s.  It may be busy.", runner->source_file_name);
 		(void)chdir(view->curr_dir);
 		return -1;
 	}
@@ -1554,12 +1559,9 @@ change_directory(FileView *view, const char *directory)
 		LOG_SERROR_MSG(errno, "Can't access(, F_OK) \"%s\"", dir_dup);
 		log_cwd();
 
-		show_error_msgf("Directory Access Error", "Cannot open %s", dir_dup);
+		(void)show_error_msgf("Directory Access Error", "Cannot open %s", dir_dup);
 
-		leave_invalid_dir(view, dir_dup);
-		change_directory(view, dir_dup);
 		clean_selected_files(view);
-		moveto_list_pos(view, view->list_pos);
 		return -1;
 	}
 
@@ -1572,11 +1574,10 @@ change_directory(FileView *view, const char *directory)
 		LOG_SERROR_MSG(errno, "Can't access(, X_OK) \"%s\"", dir_dup);
 		log_cwd();
 
-		show_error_msgf("Directory Access Error",
+		(void)show_error_msgf("Directory Access Error",
 				"You do not have execute access on %s", dir_dup);
 
 		clean_selected_files(view);
-		leave_invalid_dir(view, view->curr_dir);
 		return -1;
 	}
 
@@ -1591,7 +1592,7 @@ change_directory(FileView *view, const char *directory)
 
 		if(strcmp(view->curr_dir, dir_dup) != 0)
 		{
-			show_error_msgf("Directory Access Error",
+			(void)show_error_msgf("Directory Access Error",
 					"You do not have read access on %s", dir_dup);
 		}
 	}
@@ -1605,7 +1606,8 @@ change_directory(FileView *view, const char *directory)
 		LOG_SERROR_MSG(errno, "Can't chdir() \"%s\"", dir_dup);
 		log_cwd();
 
-		show_error_msgf("Change Directory Error", "Couldn't open %s", dir_dup);
+		(void)show_error_msgf("Change Directory Error", "Couldn't open %s",
+				dir_dup);
 		return -1;
 	}
 
@@ -1712,7 +1714,7 @@ load_parent_dir_only(FileView *view)
 			sizeof(dir_entry_t));
 	if(view->dir_entry == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -1722,7 +1724,7 @@ load_parent_dir_only(FileView *view)
 	dir_entry->name = strdup("../");
 	if(dir_entry->name == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -1790,7 +1792,7 @@ fill_with_shared(FileView *view)
 
 		if(wserver == NULL)
 		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return;
 		}
 
@@ -1815,7 +1817,8 @@ fill_with_shared(FileView *view)
 							(view->list_rows + 1)*sizeof(dir_entry_t));
 					if(view->dir_entry == NULL)
 					{
-						show_error_msg("Memory Error", "Unable to allocate enough memory");
+						(void)show_error_msg("Memory Error",
+								"Unable to allocate enough memory");
 						p++;
 						continue;
 					}
@@ -1826,7 +1829,8 @@ fill_with_shared(FileView *view)
 					dir_entry->name = malloc(strlen(buf) + 1 + 1);
 					if(dir_entry->name == NULL)
 					{
-						show_error_msg("Memory Error", "Unable to allocate enough memory");
+						(void)show_error_msg("Memory Error",
+								"Unable to allocate enough memory");
 						p++;
 						continue;
 					}
@@ -1915,7 +1919,7 @@ fill_dir_list(FileView *view)
 				(view->list_rows + 1) * sizeof(dir_entry_t));
 		if(view->dir_entry == NULL)
 		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return -1;
 		}
 
@@ -1926,7 +1930,7 @@ fill_dir_list(FileView *view)
 		dir_entry->name = malloc(name_len + 1 + 1);
 		if(dir_entry->name == NULL)
 		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return -1;
 		}
 
@@ -2051,7 +2055,7 @@ fill_dir_list(FileView *view)
 				(view->list_rows + 1) * sizeof(dir_entry_t));
 		if(view->dir_entry == NULL)
 		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 			FindClose(hfind);
 			return -1;
 		}
@@ -2063,7 +2067,7 @@ fill_dir_list(FileView *view)
 		dir_entry->name = malloc(name_len + 1 + 1);
 		if(dir_entry->name == NULL)
 		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 			FindClose(hfind);
 			return -1;
 		}
@@ -2165,7 +2169,7 @@ load_dir_list(FileView *view, int reload)
 	view->dir_entry = (dir_entry_t *)malloc(sizeof(dir_entry_t));
 	if(view->dir_entry == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory.");
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory.");
 		return;
 	}
 
@@ -2196,13 +2200,13 @@ load_dir_list(FileView *view, int reload)
 	 */
 	if(view->list_rows < 1)
 	{
-		show_error_msgf("Filter error",
+		(void)show_error_msgf("Filter error",
 				"The %s pattern %s did not match any files. It was reset.",
 				view->filename_filter, view->invert ? "inverted" : "");
 		view->filename_filter = (char *)realloc(view->filename_filter, 1);
 		if(view->filename_filter == NULL)
 		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return;
 		}
 		strcpy(view->filename_filter, "");
@@ -2356,10 +2360,11 @@ check_if_filelists_have_changed(FileView *view)
 		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
 		log_cwd();
 
-		show_error_msgf("Directory Change Check", "Cannot open %s", view->curr_dir);
+		(void)show_error_msgf("Directory Change Check", "Cannot open %s",
+				view->curr_dir);
 
 		leave_invalid_dir(view, view->curr_dir);
-		change_directory(view, view->curr_dir);
+		(void)change_directory(view, view->curr_dir);
 		clean_selected_files(view);
 		reload_window(view);
 		return;

@@ -58,11 +58,11 @@ popd(void)
 
 	stack_top -= 1;
 
-	change_directory(&lwin, stack[stack_top].lpane_dir);
-	load_dir_list(&lwin, 0);
+	if(change_directory(&lwin, stack[stack_top].lpane_dir) >= 0)
+		load_dir_list(&lwin, 0);
 
-	change_directory(&rwin, stack[stack_top].rpane_dir);
-	load_dir_list(&rwin, 0);
+	if(change_directory(&rwin, stack[stack_top].rpane_dir) >= 0)
+		load_dir_list(&rwin, 0);
 
 	moveto_list_pos(curr_view, curr_view->list_pos);
 	wrefresh(other_view->win);
@@ -88,11 +88,11 @@ swap_dirs(void)
 		return -1;
 	}
 
-	change_directory(&lwin, item.lpane_dir);
-	load_dir_list(&lwin, 0);
+	if(change_directory(&lwin, item.lpane_dir) >= 0)
+		load_dir_list(&lwin, 0);
 
-	change_directory(&rwin, item.rpane_dir);
-	load_dir_list(&rwin, 0);
+	if(change_directory(&rwin, item.rpane_dir) >= 0)
+		load_dir_list(&rwin, 0);
 
 	moveto_list_pos(curr_view, curr_view->list_pos);
 

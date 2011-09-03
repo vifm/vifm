@@ -692,10 +692,10 @@ change_window(void)
 				COLOR_PAIR(TOP_LINE_COLOR + curr_view->color_scheme));
 		wbkgdset(curr_view->win,
 				COLOR_PAIR(WIN_COLOR + curr_view->color_scheme));
-		change_directory(other_view, other_view->curr_dir);
-		load_dir_list(other_view, 1);
-		change_directory(curr_view, curr_view->curr_dir);
-		load_dir_list(curr_view, 1);
+		if(change_directory(other_view, other_view->curr_dir) >= 0)
+			load_dir_list(other_view, 1);
+		if(change_directory(curr_view, curr_view->curr_dir) >= 0)
+			load_dir_list(curr_view, 1);
 	}
 
 	wattron(curr_view->title, A_BOLD);
@@ -704,7 +704,7 @@ change_window(void)
 	wnoutrefresh(other_view->win);
 	wnoutrefresh(curr_view->win);
 
-	change_directory(curr_view, curr_view->curr_dir);
+	(void)change_directory(curr_view, curr_view->curr_dir);
 
 	if(curr_stats.number_of_windows == 1)
 		load_dir_list(curr_view, 1);

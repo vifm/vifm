@@ -473,7 +473,7 @@ complete_with_shared(const char *server)
 
 		if(wserver == NULL)
 		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return;
 		}
 
@@ -1237,7 +1237,7 @@ expand_directory_path(FileView *view, char *expanded, const char *mod)
 	if((escaped = escape_filename(apply_mods(view->curr_dir, "/", mod),
 			0)) == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		free(expanded);
 		return NULL;
 	}
@@ -1245,7 +1245,7 @@ expand_directory_path(FileView *view, char *expanded, const char *mod)
 	t = realloc(expanded, strlen(expanded) + strlen(escaped) + 1);
 	if(t == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		free(expanded);
 		return NULL;
 	}
@@ -1406,7 +1406,7 @@ expand_macros(FileView *view, const char *command, const char *args,
 	len++;
 	expanded[len] = '\0';
 	if(len > cfg.max_args/2)
-		show_error_msg("Argument is too long", " FIXME ");
+		(void)show_error_msg("Argument is too long", " FIXME ");
 
 	return expanded;
 }
@@ -2266,7 +2266,7 @@ cd(FileView *view, const char *path)
 	{
 		LOG_SERROR_MSG(errno, "Can't access(,F_OK) \"%s\"", dir);
 
-		show_error_msgf("Destination doesn't exist", "\"%s\"", dir);
+		(void)show_error_msgf("Destination doesn't exist", "\"%s\"", dir);
 		return 0;
 	}
 #ifndef _WIN32
@@ -2277,7 +2277,7 @@ cd(FileView *view, const char *path)
 	{
 		LOG_SERROR_MSG(errno, "Can't access(,X_OK) \"%s\"", dir);
 
-		show_error_msgf("Permission denied", "\"%s\"", dir);
+		(void)show_error_msgf("Permission denied", "\"%s\"", dir);
 		return 0;
 	}
 
@@ -2537,7 +2537,7 @@ edit_cmd(const struct cmd_info *cmd_info)
 			if(lstat(curr_view->dir_entry[i].name, &st) == 0 &&
 					access(curr_view->dir_entry[i].name, F_OK) != 0)
 			{
-				show_error_msgf("Access error",
+				(void)show_error_msgf("Access error",
 						"Can't access destination of link \"%s\". It might be broken.",
 						curr_view->dir_entry[i].name);
 				return 0;
@@ -2549,7 +2549,7 @@ edit_cmd(const struct cmd_info *cmd_info)
 
 		if((cmd = edit_selection(curr_view, &bg)) == NULL)
 		{
-			show_error_msg("Memory error", "Unable to allocate enough memory");
+			(void)show_error_msg("Memory error", "Unable to allocate enough memory");
 			return 0;
 		}
 		if(bg)
@@ -2715,7 +2715,7 @@ help_cmd(const struct cmd_info *cmd_info)
 		snprintf(buf, sizeof(buf), "%s/vifm-help.txt", cfg.config_dir);
 		if(access(buf, F_OK) != 0)
 		{
-			show_error_msgf("No help file", "Can't find \"%s\" file", buf);
+			(void)show_error_msgf("No help file", "Can't find \"%s\" file", buf);
 			return 0;
 		}
 
@@ -2996,7 +2996,7 @@ pushd_cmd(const struct cmd_info *cmd_info)
 	}
 	if(pushd() != 0)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return 0;
 	}
 	cd_cmd(cmd_info);
@@ -3247,9 +3247,11 @@ substitute_cmd(const struct cmd_info *cmd_info)
 static int
 sync_cmd(const struct cmd_info *cmd_info)
 {
-	change_directory(other_view, curr_view->curr_dir);
-	load_dir_list(other_view, 0);
-	wrefresh(other_view->win);
+	if(change_directory(other_view, curr_view->curr_dir) >= 0)
+	{
+		load_dir_list(other_view, 0);
+		wrefresh(other_view->win);
+	}
 	return 0;
 }
 
@@ -3341,8 +3343,8 @@ view_cmd(const struct cmd_info *cmd_info)
 				COLOR_PAIR(TOP_LINE_COLOR + other_view->color_scheme));
 		wbkgdset(other_view->win,
 				COLOR_PAIR(WIN_COLOR + other_view->color_scheme));
-		change_directory(other_view, other_view->curr_dir);
-		load_dir_list(other_view, 1);
+		if(change_directory(other_view, other_view->curr_dir) >= 0)
+			load_dir_list(other_view, 1);
 		wrefresh(other_view->win);
 	}
 	else
@@ -3408,7 +3410,7 @@ do_map(const struct cmd_info *cmd_info, const char *map_type,
 	*raw_rhs = t;
 
 	if(result == -1)
-		show_error_msg("Mapping Error", "Unable to allocate enough memory");
+		(void)show_error_msg("Mapping Error", "Unable to allocate enough memory");
 
 	return 0;
 }

@@ -338,18 +338,20 @@ run_from_fork(int pipe[2], int err, char *cmd)
 	char *args[4];
 	int nullfd;
 
-	close(err ? 2 : 1); /* Close stderr or stdout */
+	close(err ? STDERR_FILENO : STDOUT_FILENO);
 	if(dup(pipe[1]) == -1) /* Redirect stderr or stdout to write end of pipe. */
-		exit(-1);
-	close(pipe[0]);     /* Close read end of pipe. */
-	close(0);           /* Close stdin */
-	close(err ? 1 : 2); /* Close stdout or stderr */
+		exit(1);
+	close(pipe[0]);        /* Close read end of pipe. */
+	close(STDIN_FILENO);
+	close(err ? STDOUT_FILENO : STDERR_FILENO);
 
 	/* Send stdout, stdin to /dev/null */
 	if((nullfd = open("/dev/null", O_RDONLY)) != -1)
 	{
-		dup2(nullfd, 0);
-		dup2(nullfd, err ? 1 : 2);
+		if(dup2(nullfd, STDIN_FILENO) == -1)
+			exit(1);
+		if(dup2(nullfd, err ? STDOUT_FILENO : STDERR_FILENO) == -1)
+			exit(1);
 	}
 
 	args[0] = cfg.shell;
@@ -362,7 +364,7 @@ run_from_fork(int pipe[2], int err, char *cmd)
 #else
 	execvp(args[0], (const char **)args);
 #endif
-	exit(-1);
+	exit(1);
 }
 
 /* I'm really worry about the portability... */

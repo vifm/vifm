@@ -284,7 +284,7 @@ background_and_wait_for_status(char *cmd)
 		args[1] = "-c";
 		args[2] = cmd;
 		args[3] = NULL;
-		execve(cfg.shell, args, environ);
+		(void)execve(cfg.shell, args, environ);
 		exit(127);
 	}
 	do
@@ -312,7 +312,7 @@ background_and_wait_for_errors(char *cmd)
 
 	if(pipe(error_pipe) != 0)
 	{
-		show_error_msg("File pipe error", "Error creating pipe");
+		(void)show_error_msg("File pipe error", "Error creating pipe");
 		return -1;
 	}
 
@@ -344,7 +344,7 @@ background_and_wait_for_errors(char *cmd)
 		close(error_pipe[0]);
 
 		if(result != 0)
-			show_error_msg("Background Process Error", buf);
+			(void)show_error_msg("Background Process Error", buf);
 	}
 
 	return result;
@@ -363,13 +363,13 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 
 	if(pipe(out_pipe) != 0)
 	{
-		show_error_msg("File pipe error", "Error creating pipe");
+		(void)show_error_msg("File pipe error", "Error creating pipe");
 		return -1;
 	}
 
 	if(pipe(error_pipe) != 0)
 	{
-		show_error_msg("File pipe error", "Error creating pipe");
+		(void)show_error_msg("File pipe error", "Error creating pipe");
 		close(out_pipe[0]);
 		close(out_pipe[1]);
 		return -1;
@@ -419,13 +419,13 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 
 	if(_pipe(out_pipe, 512, O_NOINHERIT) != 0)
 	{
-		show_error_msg("File pipe error", "Error creating pipe");
+		(void)show_error_msg("File pipe error", "Error creating pipe");
 		return -1;
 	}
 
 	if(_pipe(error_pipe, 512, O_NOINHERIT) != 0)
 	{
-		show_error_msg("File pipe error", "Error creating pipe");
+		(void)show_error_msg("File pipe error", "Error creating pipe");
 		close(out_pipe[0]);
 		close(out_pipe[1]);
 		return -1;
@@ -470,7 +470,7 @@ start_background_job(const char *cmd)
 
 	if(pipe(error_pipe) != 0)
 	{
-		show_error_msg("File pipe error", "Error creating pipe");
+		(void)show_error_msg("File pipe error", "Error creating pipe");
 		return -1;
 	}
 
@@ -547,7 +547,7 @@ add_background_job(pid_t pid, const char *cmd, HANDLE hprocess)
 
 	if((new = malloc(sizeof(Jobs_List))) == 0)
 	{
-		show_error_msg("Memory error", "Unable to allocate enough memory");
+		(void)show_error_msg("Memory error", "Unable to allocate enough memory");
 		return -1;
 	}
 	new->pid = pid;

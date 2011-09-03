@@ -375,7 +375,7 @@ main(int argc, char **argv)
 	int vifm_like;
 	char *vifmrc_arg, *vifminfo_arg;
 
-	setlocale(LC_ALL, "");
+	(void)setlocale(LC_ALL, "");
 
 	if(argc != 2 && argc != 4)
 	{

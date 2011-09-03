@@ -146,7 +146,7 @@ add_mark(const char mark, const char *directory, const char *file)
 	x = mark2index(mark);
 
 	/* In case the mark is already being used.  Free pointers first! */
-	silent_remove_bookmark(x);
+	(void)silent_remove_bookmark(x);
 
 	bookmarks[x].directory = strdup(directory);
 	bookmarks[x].file = strdup(file);
@@ -184,14 +184,15 @@ move_to_bookmark(FileView *view, char mark)
 
 	if(x != -1 && is_bookmark(x))
 	{
-		change_directory(view, bookmarks[x].directory);
-
-		load_dir_list(view, 1);
-		file_pos = find_file_pos_in_list(view, bookmarks[x].file);
-		if(file_pos != -1)
-			moveto_list_pos(view, file_pos);
-		else
-			moveto_list_pos(view, 0);
+		if(change_directory(view, bookmarks[x].directory) >= 0)
+		{
+			load_dir_list(view, 1);
+			file_pos = find_file_pos_in_list(view, bookmarks[x].file);
+			if(file_pos != -1)
+				moveto_list_pos(view, file_pos);
+			else
+				moveto_list_pos(view, 0);
+		}
 	}
 	else
 	{
@@ -226,9 +227,11 @@ get_bookmark(FileView *view, char key)
 	switch(key)
 	{
 		case '\'':
-			change_directory(view, view->last_dir);
-			load_dir_list(view, 0);
-			moveto_list_pos(view, view->list_pos);
+			if(change_directory(view, view->last_dir) >= 0)
+			{
+				load_dir_list(view, 0);
+				moveto_list_pos(view, view->list_pos);
+			}
 			return 0;
 		case 27: /* ascii Escape */
 		case 3: /* ascii ctrl c */

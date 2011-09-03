@@ -210,7 +210,7 @@ key_handler(wchar_t key)
 
 	if(menu->len == 0)
 	{
-		show_error_msg("No more items in the menu", "Menu will be closed");
+		(void)show_error_msg("No more items in the menu", "Menu will be closed");
 		leave_menu_mode();
 	}
 
@@ -499,7 +499,7 @@ cmd_dd(struct key_info key_info, struct keys_info *keys_info)
 
 	if(menu->len == 0)
 	{
-		show_error_msg("No more items in the menu", "Menu will be closed");
+		(void)show_error_msg("No more items in the menu", "Menu will be closed");
 		leave_menu_mode();
 	}
 }

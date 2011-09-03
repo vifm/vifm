@@ -32,7 +32,7 @@
 /* For Solaris */
 #ifndef NAME_MAX
 #include <dirent.h>
-#ifndef MAXNAMELEN
+#ifndef MAXNAMLEN
 #define MAXNAMLEN FILENAME_MAX
 #endif
 #define NAME_MAX MAXNAMLEN
@@ -101,7 +101,7 @@ typedef struct _FileView
 
 	int hide_dot;
 	int prev_invert;
-	bool invert; /* whether to invert the filename pattern */
+	int invert; /* whether to invert the filename pattern */
 	int curr_line; /* current line # of the window  */
 	int top_line; /* # of the list position that is the top line in window */
 	int list_pos; /* actual position in the file list */

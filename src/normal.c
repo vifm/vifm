@@ -989,7 +989,7 @@ static void
 cmd_dot(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(0 > cfg.cmd_history_num)
-		show_error_msg("Command Error", "Command history list is empty.");
+		(void)show_error_msg("Command Error", "Command history list is empty.");
 	else
 		exec_command(cfg.cmd_history[0], curr_view, GET_COMMAND);
 }
@@ -1590,7 +1590,7 @@ pick_files(FileView *view, int end, struct keys_info *keys_info)
 	keys_info->indexes = calloc(keys_info->count, sizeof(int));
 	if(keys_info->indexes == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -1619,7 +1619,7 @@ selector_S(struct key_info key_info, struct keys_info *keys_info)
 	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
 	if(keys_info->indexes == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -1644,7 +1644,7 @@ selector_a(struct key_info key_info, struct keys_info *keys_info)
 	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
 	if(keys_info->indexes == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -1671,7 +1671,7 @@ selector_s(struct key_info key_info, struct keys_info *keys_info)
 	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
 	if(keys_info->indexes == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 

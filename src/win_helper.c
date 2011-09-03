@@ -18,7 +18,9 @@
 
 #define WINVER 0x0600
 
+#ifdef _WIN32
 #include <windows.h>
+#endif
 
 #include <stdio.h>
 #include <string.h>

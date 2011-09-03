@@ -185,7 +185,7 @@ enter_permissions_mode(FileView *active_view)
 
 	if(curr > bottom)
 	{
-		show_error_msg("Permissions change error",
+		(void)show_error_msg("Permissions change error",
 				"Selected files have no common access state");
 		leave_permissions_mode();
 		return;

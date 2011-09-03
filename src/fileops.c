@@ -260,7 +260,7 @@ view_file(const char *filename, int line)
 
 	if(access(filename, F_OK) != 0)
 	{
-		show_error_msg("Broken Link", "Link destination doesn't exist");
+		(void)show_error_msg("Broken Link", "Link destination doesn't exist");
 		return;
 	}
 
@@ -377,7 +377,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 #endif
 	{
 		free(escaped_filename);
-		show_error_msg("Unable to create FUSE mount directory", mount_point);
+		(void)show_error_msg("Unable to create FUSE mount directory", mount_point);
 		return NULL;
 	}
 	free(escaped_filename);
@@ -448,7 +448,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		 (this happens when mounting JARs from mounted JARs) */
 	if(chdir(cfg.fuse_home) != 0)
 	{
-		show_error_msg("FUSE MOUNT ERROR", "Can't chdir() to FUSE home");
+		(void)show_error_msg("FUSE MOUNT ERROR", "Can't chdir() to FUSE home");
 		return NULL;
 	}
 
@@ -473,7 +473,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		/* remove the DIR we created for the mount */
 		if(!access(mount_point, F_OK))
 			rmdir(mount_point);
-		show_error_msg("FUSE MOUNT ERROR", filename);
+		(void)show_error_msg("FUSE MOUNT ERROR", filename);
 		(void)chdir(view->curr_dir);
 		return NULL;
 	}
@@ -511,7 +511,7 @@ fuse_try_mount(FileView *view, const char *program)
 		if(mkdir(cfg.fuse_home))
 #endif
 		{
-			show_error_msg("Unable to create FUSE mount home directory",
+			(void)show_error_msg("Unable to create FUSE mount home directory",
 					cfg.fuse_home);
 			return;
 		}
@@ -544,14 +544,14 @@ fuse_try_mount(FileView *view, const char *program)
 			size_t len;
 			if((f = fopen(filename, "r")) == NULL)
 			{
-				show_error_msg("SSH mount failed", "Can't open file for reading");
+				(void)show_error_msg("SSH mount failed", "Can't open file for reading");
 				curr_stats.save_msg = 1;
 				return;
 			}
 
 			if(fgets(filename, sizeof(filename), f) == NULL)
 			{
-				show_error_msg("SSH mount failed", "Can't read file content");
+				(void)show_error_msg("SSH mount failed", "Can't read file content");
 				curr_stats.save_msg = 1;
 				fclose(f);
 				return;
@@ -560,7 +560,7 @@ fuse_try_mount(FileView *view, const char *program)
 
 			if(len == 0 || (len == 1 && filename[0] == '\n'))
 			{
-				show_error_msg("SSH mount failed", "File is empty");
+				(void)show_error_msg("SSH mount failed", "File is empty");
 				curr_stats.save_msg = 1;
 				return;
 			}
@@ -577,9 +577,11 @@ fuse_try_mount(FileView *view, const char *program)
 			return;
 	}
 
-	change_directory(view, mount_point);
-	load_dir_list(view, 0);
-	moveto_list_pos(view, view->curr_line);
+	if(change_directory(view, mount_point) >= 0)
+	{
+		load_dir_list(view, 0);
+		moveto_list_pos(view, view->curr_line);
+	}
 }
 
 static int
@@ -612,7 +614,7 @@ handle_dir(FileView *view)
 	{
 		cd_updir(view);
 	}
-	else if(change_directory(view, filename) == 0)
+	else if(change_directory(view, filename) >= 0)
 	{
 		load_dir_list(view, 0);
 		moveto_list_pos(view, view->list_pos);
@@ -670,7 +672,7 @@ execute_file(FileView *view, int dont_execute)
 	if(!same && undef == 0 && no_multi_run)
 	{
 		free(program);
-		show_error_msg("Selection error", "Files have different programs");
+		(void)show_error_msg("Selection error", "Files have different programs");
 		return;
 	}
 	if(undef > 0)
@@ -737,7 +739,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 
 	if(access(view->dir_entry[view->list_pos].name, F_OK) != 0)
 	{
-		show_error_msg("Broken Link", "Link destination doesn't exist");
+		(void)show_error_msg("Broken Link", "Link destination doesn't exist");
 		return;
 	}
 
@@ -798,7 +800,7 @@ follow_link(FileView *view, int follow_dirs)
 
 	if(len == -1)
 	{
-		show_error_msg("Error", "Can't read link");
+		(void)show_error_msg("Error", "Can't read link");
 		return;
 	}
 
@@ -806,7 +808,7 @@ follow_link(FileView *view, int follow_dirs)
 
 	if(access(linkto, F_OK) != 0)
 	{
-		show_error_msg("Broken Link",
+		(void)show_error_msg("Broken Link",
 				"Can't access link destination. It might be broken");
 		curr_stats.save_msg = 1;
 		return;
@@ -847,9 +849,11 @@ follow_link(FileView *view, int follow_dirs)
 	}
 	if(is_dir)
 	{
-		change_directory(view, dir);
-		load_dir_list(view, 0);
-		moveto_list_pos(view, view->curr_line);
+		if(change_directory(view, dir) >= 0)
+		{
+			load_dir_list(view, 0);
+			moveto_list_pos(view, view->curr_line);
+		}
 	}
 	if(file != NULL)
 	{
@@ -906,7 +910,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 		}
 		if(dirs > 0 && files > 0)
 		{
-			show_error_msg("Selection error",
+			(void)show_error_msg("Selection error",
 					"Selection cannot contain files and directories at the same time");
 			return;
 		}
@@ -1029,9 +1033,11 @@ is_dir_writable(int dest, const char *path)
 	if(access(path, W_OK) == 0)
 		return 1;
 	if(dest)
-		show_error_msg("Operation error", "Destination directory is not writable");
+		(void)show_error_msg("Operation error",
+				"Destination directory is not writable");
 	else
-		show_error_msg("Operation error", "Current directory is not writable");
+		(void)show_error_msg("Operation error",
+				"Current directory is not writable");
 	return 0;
 }
 
@@ -1050,7 +1056,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	if(cfg.use_trash && use_trash &&
 			path_starts_with(view->curr_dir, cfg.trash_dir))
 	{
-		show_error_msg("Can't perform deletion",
+		(void)show_error_msg("Can't perform deletion",
 				"Current directory is under Trash directory");
 		return 1;
 	}
@@ -1114,7 +1120,8 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	y = 0;
 	if(chdir(curr_view->curr_dir) != 0)
 	{
-		show_error_msg("Directory return", "Can't chdir() to current directory");
+		(void)show_error_msg("Directory return",
+				"Can't chdir() to current directory");
 		return 1;
 	}
 	for(x = 0; x < view->selected_files; x++)
@@ -1124,7 +1131,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 		if(strcmp("../", view->selected_filelist[x]) == 0)
 		{
-			show_error_msg("Background Process Error",
+			(void)show_error_msg("Background Process Error",
 					"You cannot delete the ../ directory");
 			continue;
 		}
@@ -1138,7 +1145,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		{
 			if(strcmp(full_buf, cfg.trash_dir) == 0)
 			{
-				show_error_msg("Background Process Error",
+				(void)show_error_msg("Background Process Error",
 						"You cannot delete trash directory to trash");
 				result = -1;
 			}
@@ -1250,7 +1257,7 @@ rename_file_cb(const char *new_name)
 
 	if(access(new, F_OK) == 0 && strncmp(filename, new, strlen(filename)) != 0)
 	{
-		show_error_msg("File exists",
+		(void)show_error_msg("File exists",
 				"That file already exists. Will not overwrite.");
 		return;
 	}
@@ -1281,7 +1288,7 @@ rename_file(FileView *view, int name_only)
 	buf[sizeof(buf) - 1] = '\0';
 	if(strcmp(buf, "../") == 0)
 	{
-		show_error_msg("Rename error",
+		(void)show_error_msg("Rename error",
 				"You can't rename parent directory this way");
 		return;
 	}
@@ -1605,7 +1612,7 @@ rename_files(FileView *view, char **list, int nlines)
 	indexes = malloc(sizeof(*indexes)*count);
 	if(indexes == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return 0;
 	}
 
@@ -1762,7 +1769,7 @@ change_link_cb(const char *new_target)
 	chosp(buf);
 	if((len = readlink(buf, linkto, sizeof(linkto))) == -1)
 	{
-		show_error_msg("Error", "Can't read link");
+		(void)show_error_msg("Error", "Can't read link");
 		return;
 	}
 	linkto[len] = '\0';
@@ -1802,7 +1809,7 @@ change_link(FileView *view)
 	len = readlink(buf, linkto, sizeof(linkto));
 	if(len == -1)
 	{
-		show_error_msg("Error", "Can't read link");
+		(void)show_error_msg("Error", "Can't read link");
 		return 0;
 	}
 	linkto[len] = '\0';
@@ -2018,7 +2025,8 @@ put_files_from_register_i(FileView *view, int start)
 
 	if(chdir(view->curr_dir) != 0)
 	{
-		show_error_msg("Directory Return", "Can't chdir() to current directory");
+		(void)show_error_msg("Directory Return",
+				"Can't chdir() to current directory");
 		return 1;
 	}
 	while(put_confirm.x < put_confirm.reg->num_files)
@@ -2865,7 +2873,8 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 
 	if(move && access(view->curr_dir, W_OK) != 0)
 	{
-		show_error_msg("Operation error", "Current directory is not writable");
+		(void)show_error_msg("Operation error",
+				"Current directory is not writable");
 		return 0;
 	}
 
