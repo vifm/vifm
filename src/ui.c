@@ -227,7 +227,7 @@ vstatus_bar_messagef(int error, const char *format, va_list ap)
 	char buf[1024];
 
 	vsnprintf(buf, sizeof(buf), format, ap);
-	status_bar_message_i(buf, 1);
+	status_bar_message_i(buf, error);
 }
 
 void
