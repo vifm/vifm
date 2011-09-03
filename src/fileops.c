@@ -2030,7 +2030,7 @@ put_files_from_register_i(FileView *view, int start)
 
 	pack_register(put_confirm.reg->name);
 
-	status_bar_messagef(" %d file%s inserted", put_confirm.y,
+	status_bar_messagef("%d file%s inserted", put_confirm.y,
 			(put_confirm.y == 1) ? "" : "s");
 
 	return 1;

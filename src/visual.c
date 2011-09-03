@@ -697,16 +697,13 @@ cmd_n(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_y(struct key_info key_info, struct keys_info *keys_info)
 {
-	char status_buf[64] = "";
-
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 	get_all_selected_files(view);
 	yank_selected_files(view, key_info.reg);
 
-	snprintf(status_buf, sizeof(status_buf), "%d file%s yanked",
-			view->selected_files, (view->selected_files == 1) ? "" : "s");
-	status_bar_message(status_buf);
+	status_bar_messagef("%d file%s yanked", view->selected_files,
+			(view->selected_files == 1) ? "" : "s");
 	curr_stats.save_msg = 1;
 
 	free_selected_file_array(view);

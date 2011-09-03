@@ -2264,12 +2264,9 @@ cd(FileView *view, const char *path)
 	if(access(dir, F_OK) != 0 && !is_unc_root(dir))
 #endif
 	{
-		char buf[1 + PATH_MAX + 1 + 1];
-
 		LOG_SERROR_MSG(errno, "Can't access(,F_OK) \"%s\"", dir);
 
-		snprintf(buf, sizeof(buf), "\"%s\"", dir);
-		show_error_msg("Destination doesn't exist", buf);
+		show_error_msgf("Destination doesn't exist", "\"%s\"", dir);
 		return 0;
 	}
 #ifndef _WIN32
@@ -2278,12 +2275,9 @@ cd(FileView *view, const char *path)
 	if(access(dir, X_OK) != 0 && !is_unc_root(dir))
 #endif
 	{
-		char buf[1 + PATH_MAX + 1 + 1];
-
 		LOG_SERROR_MSG(errno, "Can't access(,X_OK) \"%s\"", dir);
 
-		snprintf(buf, sizeof(buf), "\"%s\"", dir);
-		show_error_msg("Permission denied", buf);
+		show_error_msgf("Permission denied", "\"%s\"", dir);
 		return 0;
 	}
 
@@ -2543,11 +2537,9 @@ edit_cmd(const struct cmd_info *cmd_info)
 			if(lstat(curr_view->dir_entry[i].name, &st) == 0 &&
 					access(curr_view->dir_entry[i].name, F_OK) != 0)
 			{
-				char buf[NAME_MAX];
-				snprintf(buf, sizeof(buf),
+				show_error_msgf("Access error",
 						"Can't access destination of link \"%s\". It might be broken.",
 						curr_view->dir_entry[i].name);
-				show_error_msg("Access error", buf);
 				return 0;
 			}
 		}

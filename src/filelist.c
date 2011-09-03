@@ -1355,11 +1355,9 @@ try_unmount_fuse(FileView *view)
 	/* check child status */
 	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
 	{
-		char buf[PATH_MAX*2];
 		werase(status_bar);
-		snprintf(buf, sizeof(buf), "Can't unmount %s.  It may be busy.",
+		show_error_msgf("FUSE UMOUNT ERROR", "Can't unmount %s.  It may be busy.",
 				runner->source_file_name);
-		show_error_msg("FUSE UMOUNT ERROR", buf);
 		(void)chdir(view->curr_dir);
 		return -1;
 	}
@@ -1553,13 +1551,10 @@ change_directory(FileView *view, const char *directory)
 	if(!is_dir(dir_dup) != 0 && !is_unc_root(dir_dup))
 #endif
 	{
-		char buf[12 + PATH_MAX + 1];
-
 		LOG_SERROR_MSG(errno, "Can't access(, F_OK) \"%s\"", dir_dup);
 		log_cwd();
 
-		snprintf(buf, sizeof(buf), "Cannot open %s", dir_dup);
-		show_error_msg("Directory Access Error", buf);
+		show_error_msgf("Directory Access Error", "Cannot open %s", dir_dup);
 
 		leave_invalid_dir(view, dir_dup);
 		change_directory(view, dir_dup);
@@ -1574,13 +1569,11 @@ change_directory(FileView *view, const char *directory)
 	if(access(dir_dup, X_OK) != 0 && !is_unc_root(dir_dup))
 #endif
 	{
-		char buf[32 + PATH_MAX + 1];
-
 		LOG_SERROR_MSG(errno, "Can't access(, X_OK) \"%s\"", dir_dup);
 		log_cwd();
 
-		snprintf(buf, sizeof(buf), "You do not have execute access on %s", dir_dup);
-		show_error_msg("Directory Access Error", buf);
+		show_error_msgf("Directory Access Error",
+				"You do not have execute access on %s", dir_dup);
 
 		clean_selected_files(view);
 		leave_invalid_dir(view, view->curr_dir);
@@ -1593,15 +1586,13 @@ change_directory(FileView *view, const char *directory)
 	if(access(dir_dup, R_OK) != 0 && !is_unc_root(dir_dup))
 #endif
 	{
-		char buf[31 + PATH_MAX + 1];
-
 		LOG_SERROR_MSG(errno, "Can't access(, R_OK) \"%s\"", dir_dup);
 		log_cwd();
 
 		if(strcmp(view->curr_dir, dir_dup) != 0)
 		{
-			snprintf(buf, sizeof(buf), "You do not have read access on %s", dir_dup);
-			show_error_msg("Directory Access Error", buf);
+			show_error_msgf("Directory Access Error",
+					"You do not have read access on %s", dir_dup);
 		}
 	}
 
@@ -2205,11 +2196,9 @@ load_dir_list(FileView *view, int reload)
 	 */
 	if(view->list_rows < 1)
 	{
-		char msg[64];
-		snprintf(msg, sizeof(msg),
+		show_error_msgf("Filter error",
 				"The %s pattern %s did not match any files. It was reset.",
 				view->filename_filter, view->invert ? "inverted" : "");
-		show_error_msg("Filter error", msg);
 		view->filename_filter = (char *)realloc(view->filename_filter, 1);
 		if(view->filename_filter == NULL)
 		{
@@ -2364,13 +2353,10 @@ check_if_filelists_have_changed(FileView *view)
 	if(get_dir_mtime(view->curr_dir, &ft) != 0)
 #endif
 	{
-		char buf[12 + PATH_MAX + 1];
-
 		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
 		log_cwd();
 
-		snprintf(buf, sizeof(buf), "Cannot open %s", view->curr_dir);
-		show_error_msg("Directory Change Check", buf);
+		show_error_msgf("Directory Change Check", "Cannot open %s", view->curr_dir);
 
 		leave_invalid_dir(view, view->curr_dir);
 		change_directory(view, view->curr_dir);
