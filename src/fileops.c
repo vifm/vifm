@@ -913,15 +913,17 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	}
 
 #ifndef _WIN32
-	if(is_dir(name) &&
+	if(is_dir(name))
 #else
-	if((is_dir(name) || is_unc_root(view->curr_dir)) &&
+	if((is_dir(name) || is_unc_root(view->curr_dir)))
 #endif
-			view->selected_files == 0 &&
-			(view->dir_entry[view->list_pos].type != LINK || !force_follow))
 	{
-		handle_dir(view);
-		return;
+		if(view->selected_files == 0 &&
+				(view->dir_entry[view->list_pos].type != LINK || !force_follow))
+		{
+			handle_dir(view);
+			return;
+		}
 	}
 
 	runnable = !cfg.follow_links && type == LINK && !check_link_is_dir(filename);
@@ -2246,8 +2248,11 @@ clone_files(FileView *view, char **list, int nlines, int force)
 
 	cmd_group_begin(buf);
 	for(i = 0; i < view->selected_files; i++)
+	{
+		progress_msg("Cloning files", i + 1, view->selected_files);
 		clone_file(view, view->selected_filelist[i], path,
 				(nlines > 0) ? list[i] : NULL);
+	}
 	cmd_group_end();
 	free_selected_file_array(view);
 
@@ -2955,6 +2960,9 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		if(move)
 		{
 			char dst_full[PATH_MAX];
+
+			progress_msg("Moving files", i + 1, view->selected_files);
+
 			snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
 			if(access(dst_full, F_OK) == 0)
 				perform_operation(OP_REMOVE, NULL, dst_full, NULL);
@@ -2965,6 +2973,8 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		}
 		else
 		{
+			if(type == 0)
+				progress_msg("Copying files", i + 1, view->selected_files);
 			cp_file(view->curr_dir, path, view->selected_filelist[i], dst, type);
 		}
 	}
