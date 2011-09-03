@@ -6,8 +6,7 @@ Basic things that need to be done.
 	Make ga work in background.
     Make :ch +x work like :!chmod +x %f. Create Change dialog and add :chmod,
         :chown commands.
-    Perform operations using system calls, not programs.  This is much faster
-        and will ease porting on Windows.
+    Perform operations using system calls, not programs.  This is much faster.
     Better cW command (maybe accept count of extensions to skip).
     Better globals support.
     Maybe remove 'trash' option, since we have two commands for deletion.

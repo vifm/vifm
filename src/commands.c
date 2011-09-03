@@ -3565,6 +3565,8 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 	while(len > 1 && isspace(expanded_com[len - 1]))
 		expanded_com[--len] = '\0';
 
+	clean_selected_files(curr_view);
+
 	if(use_menu)
 	{
 		show_user_menu(curr_view, expanded_com, use_menu == 2);
