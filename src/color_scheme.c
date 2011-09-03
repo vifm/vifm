@@ -51,6 +51,7 @@ static const int default_colors[][2] = {
 	{ COLOR_RED,     COLOR_BLACK }, /* BROKEN_LINK_COLOR */
 	{ COLOR_BLACK,   COLOR_WHITE }, /* TOP_LINE_COLOR */
 	{ COLOR_BLACK,   COLOR_WHITE }, /* STATUS_LINE_COLOR */
+	{ COLOR_CYAN,    COLOR_BLACK }, /* FIFO_COLOR */
 };
 
 static int _gnuc_unused default_colors_size_guard[

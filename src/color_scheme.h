@@ -40,6 +40,7 @@ enum Ui_colors {
 	BROKEN_LINK_COLOR,
 	TOP_LINE_COLOR,
 	STATUS_LINE_COLOR,
+	FIFO_COLOR,
 	MENU_CURRENT_COLOR, /* for internal use only */
 	MAXNUM_COLOR
 };

@@ -671,6 +671,9 @@ draw_dir_list(FileView *view, int top)
 				case DIRECTORY:
 					LINE_COLOR = DIRECTORY_COLOR + color_scheme;
 					break;
+				case FIFO:
+					LINE_COLOR = FIFO_COLOR + color_scheme;
+					break;
 				case LINK:
 					{
 						char full[PATH_MAX];
@@ -770,6 +773,9 @@ erase_current_line_bar(FileView *view)
 		{
 			case DIRECTORY:
 				LINE_COLOR = DIRECTORY_COLOR + view->color_scheme;
+				break;
+			case FIFO:
+				LINE_COLOR = FIFO_COLOR + view->color_scheme;
 				break;
 			case LINK:
 				{
@@ -923,6 +929,9 @@ moveto_list_pos(FileView *view, int pos)
 		{
 			case DIRECTORY:
 				LINE_COLOR = DIRECTORY_COLOR + view->color_scheme;
+				break;
+			case FIFO:
+				LINE_COLOR = FIFO_COLOR + view->color_scheme;
 				break;
 			case LINK:
 				{
@@ -1689,8 +1698,9 @@ type_from_dir_entry(const struct dirent *d)
 			return REGULAR;
 		case DT_SOCK:
 			return SOCKET;
-
 		case DT_FIFO:
+			return FIFO;
+
 		case DT_UNKNOWN:
 		default:
 			return UNKNOWN;
@@ -1990,6 +2000,9 @@ fill_dir_list(FileView *view)
 					break;
 				case S_IFREG:
 					dir_entry->type = is_executable(dir_entry) ? EXECUTABLE : REGULAR;
+					break;
+				case S_IFIFO:
+					dir_entry->type = FIFO;
 					break;
 				default:
 					dir_entry->type = UNKNOWN;

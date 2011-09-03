@@ -115,6 +115,8 @@
 
 	Added :version command as another name for :vifm.
 
+    Added FIFO color to color scheme.
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,

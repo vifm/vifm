@@ -13,7 +13,6 @@ Basic things that need to be done.
     Maybe remove 'trash' option, since we have two commands for deletion.
     Directory create command, :mkdir
     More detailed command line errors (needed when vifmrc contains errors).
-    Add FIFO color to color scheme.
 
 Documentation.
 	Better documentation (with normal tags in Vim version).

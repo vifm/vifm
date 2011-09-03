@@ -30,6 +30,7 @@ enum {
 #endif
 	EXECUTABLE,
 	REGULAR,
+	FIFO,
 	UNKNOWN
 };
 
