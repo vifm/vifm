@@ -77,6 +77,8 @@ static enum OPS undo_op[] = {
 	OP_CHMODR,   /* OP_CHMODR */
 	OP_REMOVE,   /* OP_SYMLINK */
 	OP_REMOVESL, /* OP_SYMLINK2 */
+	OP_RMDIR,    /* OP_MKDIR */
+	OP_NONE,     /* OP_RMDIR */
 };
 
 static int _gnuc_unused undo_op_size_guard[
@@ -88,6 +90,7 @@ static enum {
 	OPER_2ND,
 	OPER_NON,
 } opers[][8] = {
+	/* 1st arg   2nd arg   exists    absent   */
 	{ OPER_NON, OPER_NON, OPER_NON, OPER_NON,    /* do   OP_NONE */
 		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE */
 	{ OPER_NON, OPER_NON, OPER_NON, OPER_NON,    /* do   OP_USR  */
@@ -117,7 +120,11 @@ static enum {
 	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_2ND,    /* do   OP_SYMLINK */
 		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE  */
 	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_NON,    /* do   OP_SYMLINK2 */
-		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE   */
+		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVESL */
+	{ OPER_1ST, OPER_NON, OPER_NON, OPER_1ST,    /* do   OP_MKDIR */
+		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_RMDIR */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_RMDIR */
+		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE  */
 };
 
 static int _gnuc_unused opers_size_guard[
@@ -140,6 +147,8 @@ static int data_is_ptr[] = {
 	1, /* OP_CHMODR */
 	0, /* OP_SYMLINK */
 	0, /* OP_SYMLINK2 */
+	0, /* OP_MKDIR */
+	0, /* OP_RMDIR */
 };
 
 static int _gnuc_unused data_is_ptr_size_guard[
@@ -246,6 +255,8 @@ add_operation(enum OPS op, void *do_data, void *undo_data, const char *buf1,
 	struct cmd_t *cmd;
 
 	assert(group_opened);
+	assert(buf1 != NULL);
+	assert(buf2 != NULL);
 
 	/* free list tail */
 	while(current->next != NULL)

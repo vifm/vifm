@@ -73,6 +73,7 @@ const char * substitute_in_name(const char *name, const char *pattern,
 int change_case(FileView *view, int toupper, int count, int *indexes);
 int cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		int force);
+void make_dirs(FileView *view, char **names, int count, int create_parent);
 
 #endif
 

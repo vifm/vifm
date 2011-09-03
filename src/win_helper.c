@@ -16,9 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#define WINVER 0x0600
-
 #ifdef _WIN32
+#define WINVER 0x0600
 #include <windows.h>
 #endif
 

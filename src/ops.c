@@ -44,6 +44,8 @@ static int op_chgrp(void *data, const char *src, const char *dst);
 static int op_chmod(void *data, const char *src, const char *dst);
 static int op_chmodr(void *data, const char *src, const char *dst);
 static int op_symlink(void *data, const char *src, const char *dst);
+static int op_mkdir(void *data, const char *src, const char *dst);
+static int op_rmdir(void *data, const char *src, const char *dst);
 
 typedef int (*op_func)(void *data, const char *src, const char *dst);
 
@@ -63,6 +65,8 @@ static op_func op_funcs[] = {
 	op_chmodr,   /* OP_CHMODR */
 	op_symlink,  /* OP_SYMLINK */
 	op_symlink,  /* OP_SYMLINK2 */
+	op_mkdir,    /* OP_MKDIR */
+	op_rmdir,    /* OP_RMDIR */
 };
 
 static int _gnuc_unused op_funcs_size_guard[
@@ -285,6 +289,32 @@ op_symlink(void *data, const char *src, const char *dst)
 	free(escaped_dst);
 	free(escaped_src);
 	return result;
+}
+
+static int
+op_mkdir(void *data, const char *src, const char *dst)
+{
+	char cmd[128 + PATH_MAX];
+	char *escaped;
+
+	escaped = escape_filename(src, 0);
+	snprintf(cmd, sizeof(cmd), "mkdir %s %s", (data == NULL) ? "" : "-p",
+			escaped);
+	free(escaped);
+	return background_and_wait_for_errors(cmd);
+	/* TODO: implement Windows version */
+}
+
+static int
+op_rmdir(void *data, const char *src, const char *dst)
+{
+	char cmd[128 + PATH_MAX];
+	char *escaped;
+
+	escaped = escape_filename(src, 0);
+	snprintf(cmd, sizeof(cmd), "rmdir %s", escaped);
+	free(escaped);
+	return background_and_wait_for_errors(cmd);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

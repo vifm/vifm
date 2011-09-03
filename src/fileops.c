@@ -2995,5 +2995,37 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	return 0;
 }
 
+void
+make_dirs(FileView *view, char **names, int count, int create_parent)
+{
+	char buf[COMMAND_GROUP_INFO_LEN + 1];
+	size_t len;
+	int i;
+	void *cp = (void *)(long)create_parent;
+
+	len = snprintf(buf, sizeof(buf), "mkdir in %s: ",
+			replace_home_part(view->curr_dir));
+
+	for(i = 0; i < count && len < COMMAND_GROUP_INFO_LEN; i++)
+	{
+		if(buf[len - 2] != ':')
+		{
+			strncat(buf, ", ", sizeof(buf));
+			buf[sizeof(buf) - 1] = '\0';
+		}
+		strncat(buf, names[i], sizeof(buf));
+		buf[sizeof(buf) - 1] = '\0';
+		len = strlen(buf);
+	}
+
+	cmd_group_begin(buf);
+	for(i = 0; i < count; i++)
+	{
+		if(perform_operation(OP_MKDIR, cp, names[i], NULL) == 0)
+			add_operation(OP_MKDIR, cp, NULL, names[i], "");
+	}
+	cmd_group_end();
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

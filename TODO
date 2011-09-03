@@ -11,7 +11,6 @@ Basic things that need to be done.
     Better cW command (maybe accept count of extensions to skip).
     Better globals support.
     Maybe remove 'trash' option, since we have two commands for deletion.
-    Directory create command, :mkdir
     More detailed command line errors (needed when vifmrc contains errors).
 
 Documentation.
