@@ -138,7 +138,8 @@ check_background_jobs(void)
 				error_buf = malloc( (size_t)nread + 1);
 				if(error_buf == NULL)
 				{
-					(void)show_error_msg("Memory error", "Not enough memory");
+					(void)show_error_msg("Memory Error",
+							"Unable to allocate enough memory");
 				}
 				else
 				{
@@ -546,7 +547,7 @@ add_background_job(pid_t pid, const char *cmd, HANDLE hprocess)
 
 	if((new = malloc(sizeof(Jobs_List))) == 0)
 	{
-		show_error_msg("Memory error", "Not enough memory");
+		show_error_msg("Memory error", "Unable to allocate enough memory");
 		return -1;
 	}
 	new->pid = pid;

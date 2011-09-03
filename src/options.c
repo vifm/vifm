@@ -46,7 +46,7 @@ struct opt_t {
 static struct opt_t * add_option_inner(const char *name, enum opt_type type,
 		int val_count, const char **vals, opt_handler handler);
 static const char * extract_option(const char *cmd, char *buf, int replace);
-static void process_option(const char *cmd);
+static int process_option(const char *cmd);
 static const char * skip_alphas(const char *cmd);
 static struct opt_t * get_option(const char *option);
 static struct opt_t * find_option(const char *option);
@@ -190,6 +190,7 @@ set_option(const char *name, union optval_t val)
 int
 set_options(const char *cmd)
 {
+	int err = 0;
 	while(*cmd != '\0')
 	{
 		char buf[1024];
@@ -197,9 +198,9 @@ set_options(const char *cmd)
 		cmd = extract_option(cmd, buf, 1);
 		if(cmd == NULL)
 			return -1;
-		process_option(buf);
+		err += process_option(buf);
 	}
-	return 0;
+	return err;
 }
 
 static const char *
@@ -273,7 +274,7 @@ extract_option(const char *cmd, char *buf, int replace)
 	return cmd;
 }
 
-static void
+static int
 process_option(const char *cmd)
 {
 	char option[OPTION_NAME_MAX + 1];
@@ -288,7 +289,7 @@ process_option(const char *cmd)
 	if(opt == NULL)
 	{
 		print_msg("Unknown option", cmd);
-		return;
+		return 1;
 	}
 
 	err = 0;
@@ -316,7 +317,7 @@ process_option(const char *cmd)
 		if(*(p + 1) != '\0')
 		{
 			print_msg("Trailing characters", cmd);
-			return;
+			return 1;
 		}
 		if(*p == '!')
 			err = set_inv(opt);
@@ -344,6 +345,7 @@ process_option(const char *cmd)
 
 	if(err)
 		print_msg("Invalid argument", cmd);
+	return err;
 }
 
 static const char *

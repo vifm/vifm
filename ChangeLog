@@ -115,7 +115,9 @@
 
 	Added :version command as another name for :vifm.
 
-    Added FIFO color to color scheme.
+	Added FIFO color to color scheme.
+
+	Added color scheme color for error messages in status bar.
 
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 

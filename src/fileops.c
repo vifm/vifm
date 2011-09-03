@@ -478,7 +478,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		return NULL;
 	}
 	unlink(tmp_file);
-	status_bar_message("FUSE mount success.");
+	status_bar_message("FUSE mount success");
 
 	fuse_item = (Fuse_List *)malloc(sizeof(Fuse_List));
 	strcpy(fuse_item->source_file_name, filename);
@@ -544,14 +544,14 @@ fuse_try_mount(FileView *view, const char *program)
 			size_t len;
 			if((f = fopen(filename, "r")) == NULL)
 			{
-				status_bar_message("SSH mount failed: can't open file for reading");
+				show_error_msg("SSH mount failed", "Can't open file for reading");
 				curr_stats.save_msg = 1;
 				return;
 			}
 
 			if(fgets(filename, sizeof(filename), f) == NULL)
 			{
-				status_bar_message("Can't read file content");
+				show_error_msg("SSH mount failed", "Can't read file content");
 				curr_stats.save_msg = 1;
 				fclose(f);
 				return;
@@ -560,7 +560,7 @@ fuse_try_mount(FileView *view, const char *program)
 
 			if(len == 0 || (len == 1 && filename[0] == '\n'))
 			{
-				status_bar_message("SSH mount failed: file is empty");
+				show_error_msg("SSH mount failed", "File is empty");
 				curr_stats.save_msg = 1;
 				return;
 			}
@@ -798,8 +798,7 @@ follow_link(FileView *view, int follow_dirs)
 
 	if(len == -1)
 	{
-		status_bar_message("Couldn't resolve link");
-		curr_stats.save_msg = 1;
+		show_error_msg("Error", "Can't read link");
 		return;
 	}
 
@@ -807,7 +806,8 @@ follow_link(FileView *view, int follow_dirs)
 
 	if(access(linkto, F_OK) != 0)
 	{
-		status_bar_message("Can't access link destination. It might be broken");
+		show_error_msg("Broken Link",
+				"Can't access link destination. It might be broken");
 		curr_stats.save_msg = 1;
 		return;
 	}
@@ -1050,7 +1050,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	if(cfg.use_trash && use_trash &&
 			path_starts_with(view->curr_dir, cfg.trash_dir))
 	{
-		status_bar_message("Can't perform deletion. "
+		show_error_msg("Can't perform deletion",
 				"Current directory is under Trash directory");
 		return 1;
 	}
@@ -1114,7 +1114,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	y = 0;
 	if(chdir(curr_view->curr_dir) != 0)
 	{
-		status_bar_message("Can't chdir() to current directory");
+		show_error_msg("Directory return", "Can't chdir() to current directory");
 		return 1;
 	}
 	for(x = 0; x < view->selected_files; x++)
@@ -1235,7 +1235,7 @@ rename_file_cb(const char *new_name)
 
 	if(strchr(new_name, '/') != 0)
 	{
-		status_bar_message("Name can not contain slash");
+		status_bar_error("Name can not contain slash");
 		curr_stats.save_msg = 1;
 		return;
 	}
@@ -1281,7 +1281,8 @@ rename_file(FileView *view, int name_only)
 	buf[sizeof(buf) - 1] = '\0';
 	if(strcmp(buf, "../") == 0)
 	{
-		status_bar_message("You can't rename parent directory this way");
+		show_error_msg("Rename error",
+				"You can't rename parent directory this way");
 		return;
 	}
 
@@ -1319,14 +1320,14 @@ is_name_list_ok(int count, int nlines, char **list)
 
 	if(nlines < count)
 	{
-		status_bar_messagef("Not enough file names (%d/%d)", nlines, count);
+		status_bar_errorf("Not enough file names (%d/%d)", nlines, count);
 		curr_stats.save_msg = 1;
 		return 0;
 	}
 
 	if(nlines > count)
 	{
-		status_bar_messagef("Too many file names (%d/%d)", nlines, count);
+		status_bar_errorf("Too many file names (%d/%d)", nlines, count);
 		curr_stats.save_msg = 1;
 		return 0;
 	}
@@ -1337,14 +1338,14 @@ is_name_list_ok(int count, int nlines, char **list)
 
 		if(strchr(list[i], '/') != NULL)
 		{
-			status_bar_messagef("Name \"%s\" contains slash", list[i]);
+			status_bar_errorf("Name \"%s\" contains slash", list[i]);
 			curr_stats.save_msg = 1;
 			return 0;
 		}
 
 		if(list[i][0] != '\0' && is_in_string_array(list, i, list[i]))
 		{
-			status_bar_messagef("Name \"%s\" duplicates", list[i]);
+			status_bar_errorf("Name \"%s\" duplicates", list[i]);
 			curr_stats.save_msg = 1;
 			return 0;
 		}
@@ -1383,7 +1384,7 @@ is_rename_list_ok(FileView *view, int *indexes, int count, char **list)
 		}
 		if(j >= count && access(list[i], F_OK) == 0)
 		{
-			status_bar_messagef("File \"%s\" already exists", list[i]);
+			status_bar_errorf("File \"%s\" already exists", list[i]);
 			curr_stats.save_msg = 1;
 			return 0;
 		}
@@ -1438,7 +1439,7 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 		{
 			cmd_group_end();
 			undo_group();
-			status_bar_message("Temporary rename error");
+			status_bar_error("Temporary rename error");
 			curr_stats.save_msg = 1;
 			return 0;
 		}
@@ -1486,7 +1487,7 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 
 	if((f = fopen(temp_file, "w")) == NULL)
 	{
-		status_bar_message("Can't create temp file");
+		status_bar_error("Can't create temp file");
 		curr_stats.save_msg = 1;
 		return NULL;
 	}
@@ -1531,7 +1532,7 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 	if((f = fopen(temp_file, "r")) == NULL)
 	{
 		unlink(temp_file);
-		status_bar_message("Can't open temporary file");
+		status_bar_error("Can't open temporary file");
 		curr_stats.save_msg = 1;
 		return NULL;
 	}
@@ -1604,8 +1605,8 @@ rename_files(FileView *view, char **list, int nlines)
 	indexes = malloc(sizeof(*indexes)*count);
 	if(indexes == NULL)
 	{
-		status_bar_message("Not enough memory");
-		return 1;
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return 0;
 	}
 
 	j = 0;
@@ -1665,7 +1666,7 @@ change_owner_cb(const char *new_owner)
 		struct passwd *p = getpwnam(new_owner);
 		if(p == NULL)
 		{
-			status_bar_messagef("Invalid user name: \"%s\"", new_owner);
+			status_bar_errorf("Invalid user name: \"%s\"", new_owner);
 			curr_stats.save_msg = 1;
 			return;
 		}
@@ -1714,7 +1715,7 @@ change_group_cb(const char *new_group)
 		struct group *g = getgrnam(new_group);
 		if(g == NULL)
 		{
-			status_bar_messagef("Invalid group name: \"%s\"", new_group);
+			status_bar_errorf("Invalid group name: \"%s\"", new_group);
 			curr_stats.save_msg = 1;
 			return;
 		}
@@ -1761,8 +1762,7 @@ change_link_cb(const char *new_target)
 	chosp(buf);
 	if((len = readlink(buf, linkto, sizeof(linkto))) == -1)
 	{
-		status_bar_message("Can't read link");
-		curr_stats.save_msg = 1;
+		show_error_msg("Error", "Can't read link");
 		return;
 	}
 	linkto[len] = '\0';
@@ -1793,7 +1793,7 @@ change_link(FileView *view)
 
 	if(view->dir_entry[view->list_pos].type != LINK)
 	{
-		status_bar_message("File isn't a symbolic link");
+		status_bar_error("File isn't a symbolic link");
 		return 1;
 	}
 
@@ -1802,8 +1802,8 @@ change_link(FileView *view)
 	len = readlink(buf, linkto, sizeof(linkto));
 	if(len == -1)
 	{
-		status_bar_message("Can't read link");
-		return 1;
+		show_error_msg("Error", "Can't read link");
+		return 0;
 	}
 	linkto[len] = '\0';
 
@@ -2018,7 +2018,7 @@ put_files_from_register_i(FileView *view, int start)
 
 	if(chdir(view->curr_dir) != 0)
 	{
-		status_bar_message("Can't chdir() to current directory");
+		show_error_msg("Directory Return", "Can't chdir() to current directory");
 		return 1;
 	}
 	while(put_confirm.x < put_confirm.reg->num_files)
@@ -2049,7 +2049,7 @@ put_files_from_register(FileView *view, int name, int force_move)
 
 	if(reg == NULL || reg->num_files < 1)
 	{
-		status_bar_message("Register is empty");
+		status_bar_error("Register is empty");
 		return 1;
 	}
 
@@ -2113,7 +2113,7 @@ is_clone_list_ok(int count, char **list)
 	{
 		if(access(list[i], F_OK) == 0)
 		{
-			status_bar_messagef("File \"%s\" already exists", list[i]);
+			status_bar_errorf("File \"%s\" already exists", list[i]);
 			return 0;
 		}
 	}
@@ -2327,7 +2327,7 @@ put_links(FileView *view, int reg_name, int relative)
 
 	if(reg == NULL || reg->num_files < 1)
 	{
-		status_bar_message("Register is empty");
+		status_bar_error("Register is empty");
 		return 1;
 	}
 
@@ -2527,7 +2527,7 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 		cflags = REG_EXTENDED;
 	if((err = regcomp(&re, pattern, cflags)) != 0)
 	{
-		status_bar_messagef("Regexp error: %s", get_regexp_error(err, &re));
+		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
 		regfree(&re);
 		return 1;
 	}
@@ -2567,29 +2567,28 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 		{
 			regfree(&re);
 			free_string_array(dest, n);
-			status_bar_messagef("Destination name \"%s\" appears more than once",
-					dst);
+			status_bar_errorf("Name \"%s\" duplicates", dst);
 			return 1;
 		}
 		if(dst[0] == '\0')
 		{
 			regfree(&re);
 			free_string_array(dest, n);
-			status_bar_messagef("Destination name of \"%s\" is empty", buf);
+			status_bar_errorf("Destination name of \"%s\" is empty", buf);
 			return 1;
 		}
 		if(strchr(dst, '/') != NULL)
 		{
 			regfree(&re);
 			free_string_array(dest, n);
-			status_bar_messagef("Destination name \"%s\" contains slash", dst);
+			status_bar_errorf("Destination name \"%s\" contains slash", dst);
 			return 1;
 		}
 		if(lstat(dst, &st) == 0)
 		{
 			regfree(&re);
 			free_string_array(dest, n);
-			status_bar_messagef("File \"%s\" already exists", dst);
+			status_bar_errorf("File \"%s\" already exists", dst);
 			return 1;
 		}
 	}
@@ -2656,26 +2655,25 @@ tr_in_names(FileView *view, const char *pattern, const char *sub)
 		if(is_in_string_array(dest, n - 1, dst))
 		{
 			free_string_array(dest, n);
-			status_bar_messagef("Destination name \"%s\" appears more than once",
-					dst);
+			status_bar_errorf("Name \"%s\" duplicates", dst);
 			return 1;
 		}
 		if(dst[0] == '\0')
 		{
 			free_string_array(dest, n);
-			status_bar_messagef("Destination name of \"%s\" is empty", buf);
+			status_bar_errorf("Destination name of \"%s\" is empty", buf);
 			return 1;
 		}
 		if(strchr(dst, '/') != NULL)
 		{
 			free_string_array(dest, n);
-			status_bar_messagef("Destination name \"%s\" contains slash", dst);
+			status_bar_errorf("Destination name \"%s\" contains slash", dst);
 			return 1;
 		}
 		if(lstat(dst, &st) == 0)
 		{
 			free_string_array(dest, n);
-			status_bar_messagef("File \"%s\" already exists", dst);
+			status_bar_errorf("File \"%s\" already exists", dst);
 			return 1;
 		}
 	}
@@ -2739,8 +2737,7 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 			free_string_array(dest, n);
 			free_selected_file_array(view);
 			view->selected_files = 0;
-			status_bar_messagef("Destination name \"%s\" appears more than once",
-					buf);
+			status_bar_errorf("Name \"%s\" duplicates", buf);
 			return 1;
 		}
 		if(strcmp(dest[i], buf) == 0)
@@ -2750,7 +2747,7 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 			free_string_array(dest, n);
 			free_selected_file_array(view);
 			view->selected_files = 0;
-			status_bar_messagef("File \"%s\" already exists", buf);
+			status_bar_errorf("File \"%s\" already exists", buf);
 			return 1;
 		}
 	}
@@ -2808,7 +2805,7 @@ is_copy_list_ok(const char *dst, int count, char **list)
 		snprintf(buf, sizeof(buf), "%s/%s", dst, list[i]);
 		if(access(buf, F_OK) == 0)
 		{
-			status_bar_messagef("File \"%s\" already exists", list[i]);
+			status_bar_errorf("File \"%s\" already exists", list[i]);
 			return 0;
 		}
 	}

@@ -1605,7 +1605,7 @@ change_directory(FileView *view, const char *directory)
 		LOG_SERROR_MSG(errno, "Can't chdir() \"%s\"", dir_dup);
 		log_cwd();
 
-		status_bar_messagef("Couldn't open %s", dir_dup);
+		show_error_msgf("Change Directory Error", "Couldn't open %s", dir_dup);
 		return -1;
 	}
 

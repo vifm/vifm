@@ -41,6 +41,7 @@ enum Ui_colors {
 	TOP_LINE_COLOR,
 	STATUS_LINE_COLOR,
 	FIFO_COLOR,
+	ERROR_MSG_COLOR,
 	MENU_CURRENT_COLOR, /* for internal use only */
 	MAXNUM_COLOR
 };

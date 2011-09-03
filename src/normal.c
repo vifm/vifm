@@ -499,7 +499,7 @@ cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
 			load_saving_pos(&lwin, 1);
 			load_saving_pos(&rwin, 1);
 		}
-		status_bar_message("Redone one group with errors");
+		status_bar_error("Redone one group with errors");
 	}
 	else if(ret == -1)
 	{
@@ -507,11 +507,11 @@ cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
 	}
 	else if(ret == -3)
 	{
-		status_bar_message("Can't redo group, it was skipped");
+		status_bar_error("Can't redo group, it was skipped");
 	}
 	else if(ret == -4)
 	{
-		status_bar_message("Can't redo what wasn't undone");
+		status_bar_error("Can't redo what wasn't undone");
 	}
 	else if(ret == -6)
 	{
@@ -519,7 +519,7 @@ cmd_ctrl_r(struct key_info key_info, struct keys_info *keys_info)
 	}
 	else if(ret == 1)
 	{
-		status_bar_message("Redo operation was skipped due to previous errors");
+		status_bar_error("Redo operation was skipped due to previous errors");
 	}
 	curr_stats.save_msg = 1;
 }
@@ -1385,7 +1385,7 @@ cmd_u(struct key_info key_info, struct keys_info *keys_info)
 			load_saving_pos(&lwin, 1);
 			load_saving_pos(&rwin, 1);
 		}
-		status_bar_message("Undone one group with errors");
+		status_bar_error("Undone one group with errors");
 	}
 	else if(ret == -1)
 	{
@@ -1393,15 +1393,15 @@ cmd_u(struct key_info key_info, struct keys_info *keys_info)
 	}
 	else if(ret == -3)
 	{
-		status_bar_message("Can't undo group, it was skipped");
+		status_bar_error("Can't undo group, it was skipped");
 	}
 	else if(ret == -4)
 	{
-		status_bar_message("Can't undo what wasn't redone");
+		status_bar_error("Can't undo what wasn't redone");
 	}
 	else if(ret == -5)
 	{
-		status_bar_message("Operation cannot be undone");
+		status_bar_error("Operation cannot be undone");
 	}
 	else if(ret == -6)
 	{
@@ -1409,7 +1409,7 @@ cmd_u(struct key_info key_info, struct keys_info *keys_info)
 	}
 	else if(ret == 1)
 	{
-		status_bar_message("Undo operation was skipped due to previous errors");
+		status_bar_error("Undo operation was skipped due to previous errors");
 	}
 	curr_stats.save_msg = 1;
 }

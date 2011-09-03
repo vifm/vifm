@@ -463,7 +463,7 @@ search_menu(menu_info *m, int start_pos)
 	}
 	else
 	{
-		status_bar_messagef("Regexp error: %s", get_regexp_error(err, &re));
+		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
 		regfree(&re);
 		return -1;
 	}
@@ -510,7 +510,7 @@ search_menu_forwards(menu_info *m, int start_pos)
 	else
 	{
 		moveto_menu_pos(m->pos, m);
-		status_bar_messagef("No matches for %s", m->regexp);
+		status_bar_errorf("No matches for %s", m->regexp);
 		return 1;
 	}
 	return 0;
@@ -540,7 +540,7 @@ search_menu_backwards(menu_info *m, int start_pos)
 		}
 	}
 
-	if(match_up  > -1 || match_down > -1)
+	if(match_up > -1 || match_down > -1)
 	{
 		int pos;
 
@@ -557,7 +557,7 @@ search_menu_backwards(menu_info *m, int start_pos)
 	else
 	{
 		moveto_menu_pos(m->pos, m);
-		status_bar_messagef("No matches for %s", m->regexp);
+		status_bar_errorf("No matches for %s", m->regexp);
 		return 1;
 	}
 	return 0;
@@ -994,7 +994,7 @@ capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
 
 	if(background_and_capture((char *)cmd, &file, &err) != 0)
 	{
-		show_error_msg("Trouble running command", "Unable to run command");
+		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
 		return 0;
 	}
 
@@ -1729,7 +1729,7 @@ show_locate_menu(FileView *view, const char *args)
 	were_errors = capture_output_to_menu(view, buf, &m);
 	if(!were_errors && m.len < 1)
 	{
-		status_bar_message("No files found");
+		status_bar_error("No files found");
 		return 1;
 	}
 	return 0;
@@ -1786,7 +1786,7 @@ show_find_menu(FileView *view, int with_path, const char *args)
 	were_errors = capture_output_to_menu(view, buf, &m);
 	if(!were_errors && m.len < 1)
 	{
-		status_bar_message("No files found");
+		status_bar_error("No files found");
 		return 1;
 	}
 	return 0;
@@ -1845,7 +1845,7 @@ show_grep_menu(FileView *view, const char *args, int invert)
 	were_errors = capture_output_to_menu(view, buf, &m);
 	if(!were_errors && m.len < 1)
 	{
-		status_bar_message("No matches found");
+		status_bar_error("No matches found");
 		return 1;
 	}
 	return 0;
@@ -1879,7 +1879,7 @@ show_user_menu(FileView *view, const char *command, int navigate)
 	were_errors = capture_output_to_menu(view, command, &m);
 	if(!were_errors && m.len < 1)
 	{
-		status_bar_message("No results found");
+		status_bar_error("No results found");
 		curr_stats.save_msg = 1;
 	}
 }

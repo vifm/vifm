@@ -376,6 +376,8 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 	prev_mode = *mode;
 	*mode = CMDLINE_MODE;
 
+	wbkgdset(status_bar, COLOR_PAIR(cfg.color_scheme + STATUS_BAR_COLOR));
+
 	input_stat.line = NULL;
 	input_stat.index = wcslen(cmd);
 	input_stat.curs_pos = 0;

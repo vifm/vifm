@@ -247,8 +247,14 @@ process_set_args(const char *args)
 	save_msg = 0;
 	print_buf[0] = '\0';
 	if(set_options(args) != 0) /* changes print_buf */
+	{
 		print_func("", "Invalid argument for :set command");
-	status_bar_message(print_buf);
+		status_bar_error(print_buf);
+	}
+	else
+	{
+		status_bar_message(print_buf);
+	}
 	return save_msg;
 }
 

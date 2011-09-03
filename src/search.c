@@ -131,7 +131,7 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 	}
 	else
 	{
-		status_bar_messagef("Regexp error: %s", get_regexp_error(err, &re));
+		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
 		regfree(&re);
 		return 1;
 	}
@@ -159,7 +159,7 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 	else
 	{
 		moveto_list_pos(view, view->list_pos);
-		status_bar_messagef("No matching files for %s", view->regexp);
+		status_bar_errorf("No matching files for %s", view->regexp);
 		return 1;
 	}
 }

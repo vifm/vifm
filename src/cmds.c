@@ -180,7 +180,7 @@ execute_cmd(const char *cmd)
 	if(cmd == NULL)
 	{
 		if(cmd_info.end == INVALID_MARK)
-			return 0;
+			return CMDS_ERR_INVALID_RANGE;
 		else
 			return CMDS_ERR_INVALID_CMD;
 	}

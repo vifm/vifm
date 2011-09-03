@@ -780,7 +780,7 @@ resolve_mark(char mark)
 
 	result = check_mark_directory(curr_view, mark);
 	if(result < 0)
-		show_error_msg("Invalid mark in range", "Trying to use an invalid mark.");
+		status_bar_errorf("Trying to use an invalid mark: '%c", mark);
 	return result;
 }
 
@@ -1237,7 +1237,7 @@ expand_directory_path(FileView *view, char *expanded, const char *mod)
 	if((escaped = escape_filename(apply_mods(view->curr_dir, "/", mod),
 			0)) == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		free(expanded);
 		return NULL;
 	}
@@ -1245,7 +1245,7 @@ expand_directory_path(FileView *view, char *expanded, const char *mod)
 	t = realloc(expanded, strlen(expanded) + strlen(escaped) + 1);
 	if(t == NULL)
 	{
-		show_error_msg("Memory Error", "Unable to allocate memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		free(expanded);
 		return NULL;
 	}
@@ -1573,7 +1573,7 @@ fast_run_complete(char *cmd)
 
 	if(get_completion_count() > 2)
 	{
-		status_bar_message("Command beginning is ambiguous");
+		status_bar_error("Command beginning is ambiguous");
 	}
 	else
 	{
@@ -1612,7 +1612,7 @@ set_view_filter(FileView *view, const char *filter, int invert)
 
 	if((err = regcomp(&re, filter, REG_EXTENDED)) != 0)
 	{
-		status_bar_messagef("Filter not set: %s", get_regexp_error(err, &re));
+		status_bar_errorf("Filter not set: %s", get_regexp_error(err, &re));
 		regfree(&re);
 		return 1;
 	}
@@ -1759,60 +1759,60 @@ execute_command(FileView *view, char *command, int menu)
 	switch(result)
 	{
 		case CMDS_ERR_LOOP:
-			show_error_msg("Command error", "Loop in commands");
+			status_bar_error("Loop in commands");
 			break;
 		case CMDS_ERR_NO_MEM:
-			show_error_msg("Command error", "Not enough memory");
+			status_bar_error("Unable to allocate enough memory");
 			break;
 		case CMDS_ERR_TOO_FEW_ARGS:
-			show_error_msg("Command error", "Too few arguments");
+			status_bar_error("Too few arguments");
 			break;
 		case CMDS_ERR_TRAILING_CHARS:
-			show_error_msg("Command error", "Trailing characters");
+			status_bar_error("Trailing characters");
 			break;
 		case CMDS_ERR_INCORRECT_NAME:
-			show_error_msg("Command error", "Incorrect command name");
+			status_bar_error("Incorrect command name");
 			break;
 		case CMDS_ERR_NEED_BANG:
-			show_error_msg("Command error", "Add bang to force");
+			status_bar_error("Add bang to force");
 			break;
 		case CMDS_ERR_NO_BUILDIN_REDEFINE:
-			show_error_msg("Command error", "Can't redefine builtin command");
+			status_bar_error("Can't redefine builtin command");
 			break;
 		case CMDS_ERR_INVALID_CMD:
-			show_error_msg("Command error", "Invalid name");
+			status_bar_error("Invalid command name");
 			break;
 		case CMDS_ERR_NO_BANG_ALLOWED:
-			show_error_msg("Command error", "No ! is allowed");
+			status_bar_error("No ! is allowed");
 			break;
 		case CMDS_ERR_NO_RANGE_ALLOWED:
-			show_error_msg("Command error", "No range is allowed");
+			status_bar_error("No range is allowed");
 			break;
 		case CMDS_ERR_NO_QMARK_ALLOWED:
-			show_error_msg("Command error", "No ? is allowed");
+			status_bar_error("No ? is allowed");
 			break;
 		case CMDS_ERR_INVALID_RANGE:
 			/* message dialog is enough */
 			break;
 		case CMDS_ERR_NO_SUCH_UDF:
-			show_error_msg("Command error", "No such user defined command");
+			status_bar_error("No such user defined command");
 			break;
 		case CMDS_ERR_UDF_IS_AMBIGUOUS:
-			show_error_msg("Command error", "Ambiguous use of user-defined command");
+			status_bar_error("Ambiguous use of user-defined command");
 			break;
 		case CMDS_ERR_ZERO_COUNT:
-			show_error_msg("Command error", "Zero count");
+			status_bar_error("Zero count");
 			break;
 		case CMDS_ERR_INVALID_ARG:
-			show_error_msg("Command error", "Invalid argument");
+			status_bar_error("Invalid argument");
 			break;
 		default:
-			show_error_msg("Command error", "Unknown error");
+			status_bar_error("Unknown error");
 			break;
 	}
 	if(!menu && get_mode() == NORMAL_MODE)
 		remove_selection(view);
-	return 0;
+	return 1;
 }
 
 /*
@@ -2196,7 +2196,7 @@ alink_cmd(const struct cmd_info *cmd_info)
 	{
 		if(cmd_info->argc > 0)
 		{
-			status_bar_message("No arguments are allowed if you use \"!\"");
+			status_bar_error("No arguments are allowed if you use \"!\"");
 			return 1;
 		}
 		return cpmv_files(curr_view, NULL, -1, 0, 1, 0) != 0;
@@ -2220,7 +2220,7 @@ apropos_cmd(const struct cmd_info *cmd_info)
 	}
 	else if(last_args == NULL)
 	{
-		status_bar_message("Nothing to repeat");
+		status_bar_error("Nothing to repeat");
 		return 1;
 	}
 
@@ -2351,7 +2351,7 @@ clone_cmd(const struct cmd_info *cmd_info)
 	{
 		if(cmd_info->argc > 0)
 		{
-			status_bar_message("No arguments are allowed if you use \"!\"");
+			status_bar_error("No arguments are allowed if you use \"!\"");
 			return 1;
 		}
 		return clone_files(curr_view, NULL, -1, 0) != 0;
@@ -2411,7 +2411,7 @@ copy_cmd(const struct cmd_info *cmd_info)
 	{
 		if(cmd_info->argc > 0)
 		{
-			status_bar_message("No arguments are allowed if you use \"!\"");
+			status_bar_error("No arguments are allowed if you use \"!\"");
 			return 1;
 		}
 		return cpmv_files(curr_view, NULL, -1, 0, 0, 0) != 0;
@@ -2549,7 +2549,7 @@ edit_cmd(const struct cmd_info *cmd_info)
 
 		if((cmd = edit_selection(curr_view, &bg)) == NULL)
 		{
-			show_error_msg("Unable to allocate enough memory", "Cannot load file");
+			show_error_msg("Memory error", "Unable to allocate enough memory");
 			return 0;
 		}
 		if(bg)
@@ -2660,7 +2660,7 @@ find_cmd(const struct cmd_info *cmd_info)
 	}
 	else if(last_args == NULL)
 	{
-		status_bar_message("Nothing to repeat");
+		status_bar_error("Nothing to repeat");
 		return 1;
 	}
 
@@ -2682,7 +2682,7 @@ grep_cmd(const struct cmd_info *cmd_info)
 	}
 	else if(last_args == NULL)
 	{
-		status_bar_message("Nothing to repeat");
+		status_bar_error("Nothing to repeat");
 		return 1;
 	}
 
@@ -2791,7 +2791,7 @@ locate_cmd(const struct cmd_info *cmd_info)
 	}
 	else if(last_args == NULL)
 	{
-		status_bar_message("Nothing to repeat");
+		status_bar_error("Nothing to repeat");
 		return 1;
 	}
 	return show_locate_menu(curr_view, last_args) != 0;
@@ -2838,7 +2838,7 @@ mark_cmd(const struct cmd_info *cmd_info)
 	if(tmp[0] != '/')
 	{
 		free(tmp);
-		status_bar_message("Expected full path to the directory");
+		status_bar_error("Expected full path to the directory");
 		return 1;
 	}
 
@@ -2898,7 +2898,7 @@ move_cmd(const struct cmd_info *cmd_info)
 	{
 		if(cmd_info->argc > 0)
 		{
-			status_bar_message("No arguments are allowed if you use \"!\"");
+			status_bar_error("No arguments are allowed if you use \"!\"");
 			return 1;
 		}
 		return cpmv_files(curr_view, NULL, -1, 1, 0, 0) != 0;
@@ -2989,15 +2989,15 @@ pushd_cmd(const struct cmd_info *cmd_info)
 	{
 		if(swap_dirs() != 0)
 		{
-			status_bar_message("No other directories");
+			status_bar_error("No other directories");
 			return 1;
 		}
 		return 0;
 	}
 	if(pushd() != 0)
 	{
-		status_bar_message("Not enough memory");
-		return 1;
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return 0;
 	}
 	cd_cmd(cmd_info);
 	return 0;
@@ -3150,7 +3150,7 @@ rlink_cmd(const struct cmd_info *cmd_info)
 	{
 		if(cmd_info->argc > 0)
 		{
-			status_bar_message("No arguments are allowed if you use \"!\"");
+			status_bar_error("No arguments are allowed if you use \"!\"");
 			return 1;
 		}
 		return cpmv_files(curr_view, NULL, -1, 0, 2, 0) != 0;
@@ -3236,7 +3236,7 @@ substitute_cmd(const struct cmd_info *cmd_info)
 	}
 	else if(last_pattern == NULL)
 	{
-		status_bar_message("No previous pattern");
+		status_bar_error("No previous pattern");
 		return 1;
 	}
 
@@ -3261,7 +3261,7 @@ tr_cmd(const struct cmd_info *cmd_info)
 
 	if(cmd_info->argv[0][0] == '\0' || cmd_info->argv[1][0] == '\0')
 	{
-		status_bar_message("Empty argument");
+		status_bar_error("Empty argument");
 		return 1;
 	}
 
@@ -3270,7 +3270,7 @@ tr_cmd(const struct cmd_info *cmd_info)
 	strcpy(buf, cmd_info->argv[1]);
 	if(pl < sl)
 	{
-		status_bar_message("Second argument cannot be longer");
+		status_bar_error("Second argument cannot be longer");
 		return 1;
 	}
 	else if(pl > sl)
@@ -3317,11 +3317,11 @@ unmap_cmd(const struct cmd_info *cmd_info)
 	free(subst);
 
 	if(result == -1)
-		status_bar_message("No such mapping in normal mode");
+		status_bar_error("No such mapping in normal mode");
 	else if(result == -2)
-		status_bar_message("No such mapping in visual mode");
+		status_bar_error("No such mapping in visual mode");
 	else
-		status_bar_message("Error");
+		status_bar_error("Error");
 	return result != 0;
 }
 
@@ -3330,8 +3330,8 @@ view_cmd(const struct cmd_info *cmd_info)
 {
 	if(curr_stats.number_of_windows == 1)
 	{
-		show_error_msg("Cannot view files", "Cannot view files in one window mode");
-		return 0;
+		status_bar_error("Cannot view files in one window mode");
+		return 1;
 	}
 	if(curr_stats.view)
 	{
@@ -3382,10 +3382,9 @@ do_map(const struct cmd_info *cmd_info, const char *map_type,
 
 	if(cmd_info->argc == 1)
 	{
-		char err_msg[128];
-		sprintf(err_msg, "The :%s command requires two arguments - :%s lhs rhs",
-				map_cmd, map_cmd);
-		show_error_msg("Command Error", err_msg);
+		status_bar_errorf("Command Error",
+				"The :%s command requires two arguments - :%s lhs rhs", map_cmd,
+				map_cmd);
 		return -1;
 	}
 
@@ -3409,7 +3408,7 @@ do_map(const struct cmd_info *cmd_info, const char *map_type,
 	*raw_rhs = t;
 
 	if(result == -1)
-		show_error_msg("Mapping Error", "Not enough memory");
+		show_error_msg("Mapping Error", "Unable to allocate enough memory");
 
 	return 0;
 }
@@ -3441,7 +3440,7 @@ do_unmap(const char *keys, int mode)
 
 	if(result != 0)
 	{
-		status_bar_message("No such mapping");
+		status_bar_error("No such mapping");
 		return 1;
 	}
 	return 0;

@@ -166,27 +166,11 @@ update_stat_window(FileView *view)
 	wnoutrefresh(stat_win);
 }
 
-void
-status_bar_messagef(const char *format, ...)
-{
-	va_list ap;
-	char buf[512];
-
-	va_start(ap, format);
-
-	vsnprintf(buf, sizeof(buf), format, ap);
-	status_bar_message(buf);
-
-	va_end(ap);
-}
-
-/*
- * Repeats last message if message is NULL
- */
-void
-status_bar_message(const char *message)
+static void
+status_bar_message_i(const char *message, int error)
 {
 	static char *msg;
+	static int err;
 
 	int len;
 	const char *p, *q;
@@ -199,7 +183,13 @@ status_bar_message(const char *message)
 	{
 		free(msg);
 		msg = strdup(message);
+		err = error;
 	}
+
+	if(err)
+		wbkgdset(status_bar, COLOR_PAIR(cfg.color_scheme + ERROR_MSG_COLOR));
+	else
+		wbkgdset(status_bar, COLOR_PAIR(cfg.color_scheme + STATUS_BAR_COLOR));
 
 	p = msg;
 	q = msg - 1;
@@ -227,7 +217,56 @@ status_bar_message(const char *message)
 	wprintw(status_bar, "%s", msg);
 	if(lines > 1)
 		wprintw(status_bar, "%s", "\nPress ENTER or type command to continue");
+	wnoutrefresh(stat_win);
 	wnoutrefresh(status_bar);
+}
+
+static void
+vstatus_bar_messagef(int error, const char *format, va_list ap)
+{
+	char buf[1024];
+
+	vsnprintf(buf, sizeof(buf), format, ap);
+	status_bar_message_i(buf, 1);
+}
+
+void
+status_bar_error(const char *message)
+{
+	status_bar_message_i(message, 1);
+}
+
+void
+status_bar_errorf(const char *message, ...)
+{
+	va_list ap;
+
+	va_start(ap, message);
+
+	vstatus_bar_messagef(1, message, ap);
+
+	va_end(ap);
+}
+
+void
+status_bar_messagef(const char *format, ...)
+{
+	va_list ap;
+
+	va_start(ap, format);
+
+	vstatus_bar_messagef(0, format, ap);
+
+	va_end(ap);
+}
+
+/*
+ * Repeats last message if message is NULL
+ */
+void
+status_bar_message(const char *message)
+{
+	status_bar_message_i(message, 0);
 }
 
 int
@@ -815,7 +854,7 @@ load_color_scheme(const char *name)
 	i = find_color_scheme(name);
 	if(i < 0)
 	{
-		show_error_msg("Color Scheme", "Invalid color scheme name");
+		show_error_msgf("Color Scheme", "Invalid color scheme name: \"%s\"", name);
 		return 0;
 	}
 
@@ -858,7 +897,7 @@ load_color_scheme_i(int i)
 
 	if(col_schemes[i].defaulted)
 	{
-		status_bar_message("Not supported by the terminal");
+		status_bar_error("Not supported by the terminal");
 		return 1;
 	}
 	return 0;
