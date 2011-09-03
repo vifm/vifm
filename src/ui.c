@@ -217,8 +217,8 @@ status_bar_message_i(const char *message, int error)
 	wprintw(status_bar, "%s", msg);
 	if(lines > 1)
 		wprintw(status_bar, "%s", "\nPress ENTER or type command to continue");
-	wnoutrefresh(stat_win);
-	wnoutrefresh(status_bar);
+	wrefresh(stat_win);
+	wrefresh(status_bar);
 }
 
 static void
