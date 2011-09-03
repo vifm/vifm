@@ -3252,6 +3252,7 @@ sync_cmd(const struct cmd_info *cmd_info)
 {
 	change_directory(other_view, curr_view->curr_dir);
 	load_dir_list(other_view, 0);
+	wrefresh(other_view->win);
 	return 0;
 }
 
