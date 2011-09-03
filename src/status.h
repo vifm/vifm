@@ -57,6 +57,8 @@ typedef struct
 
 	int confirmed;
 
+	int auto_redraws;
+
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
 #endif

@@ -1551,7 +1551,8 @@ shellout(const char *command, int pause)
 	memset(&rwin.dir_mtime, 0, sizeof(rwin.dir_mtime));
 
 	/* always redraw to handle resizing of terminal */
-	redraw_window();
+	if(!curr_stats.auto_redraws)
+		modes_redraw();
 
 	curs_set(0);
 

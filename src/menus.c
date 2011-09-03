@@ -634,7 +634,9 @@ execute_apropos_cb(menu_info *m)
 
 		snprintf(command, sizeof(command), "man %s %s", num_str, man_page);
 
+		curr_stats.auto_redraws = 1;
 		shellout(command, 0);
+		curr_stats.auto_redraws = 0;
 	}
 	free(free_this);
 }
@@ -679,7 +681,11 @@ goto_selected_file(FileView *view, menu_info *m)
 			n = atoi(num);
 
 		if(access(file, R_OK) == 0)
+		{
+			curr_stats.auto_redraws = 1;
 			view_file(file, n);
+			curr_stats.auto_redraws = 0;
+		}
 		free(free_this);
 		return;
 	}
