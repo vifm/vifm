@@ -37,6 +37,7 @@ enum OPS {
 	OP_SYMLINK2,
 	OP_MKDIR,
 	OP_RMDIR,
+	OP_MKFILE,
 	OP_COUNT
 };
 

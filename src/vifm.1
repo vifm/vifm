@@ -1,4 +1,4 @@
-.TH vifm 1 "September 3, 2011" "" "Vifm"
+.TH vifm 1 "September 4, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -954,6 +954,9 @@ g - substitute all matches in each file name
 .TP
 .BI :sync
 change the other panel to the current panel directory.
+.TP
+.BI ":touch file..."
+will create files.  Aborts on errors and won't update time of existing files.
 .TP
 .BI :[range]tr/pattern/string/
 for each file in range transliterate the characters which appear in pattern to

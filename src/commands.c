@@ -186,6 +186,7 @@ static int sort_cmd(const struct cmd_info *cmd_info);
 static int split_cmd(const struct cmd_info *cmd_info);
 static int substitute_cmd(const struct cmd_info *cmd_info);
 static int sync_cmd(const struct cmd_info *cmd_info);
+static int touch_cmd(const struct cmd_info *cmd_info);
 static int tr_cmd(const struct cmd_info *cmd_info);
 static int undolist_cmd(const struct cmd_info *cmd_info);
 static int unmap_cmd(const struct cmd_info *cmd_info);
@@ -328,6 +329,8 @@ static const struct cmd_add commands[] = {
 		.handler = substitute_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 2, .max_args = 3,       .select = 1, },
 	{ .name = "sync",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = sync_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "touch",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+		.handler = touch_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "tr",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
 		.handler = tr_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 2, .max_args = 2,       .select = 1, },
 	{ .name = "undolist",         .abbr = "undol", .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -3265,6 +3268,12 @@ sync_cmd(const struct cmd_info *cmd_info)
 		wrefresh(other_view->win);
 	}
 	return 0;
+}
+
+static int
+touch_cmd(const struct cmd_info *cmd_info)
+{
+	return make_files(curr_view, cmd_info->argv, cmd_info->argc) != 0;
 }
 
 static int

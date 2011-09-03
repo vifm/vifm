@@ -991,7 +991,8 @@ cmd_dot(struct key_info key_info, struct keys_info *keys_info)
 	if(0 > cfg.cmd_history_num)
 		(void)show_error_msg("Command Error", "Command history list is empty.");
 	else
-		exec_command(cfg.cmd_history[0], curr_view, GET_COMMAND);
+		curr_stats.save_msg = exec_command(cfg.cmd_history[0], curr_view,
+				GET_COMMAND);
 }
 
 /* Command. */

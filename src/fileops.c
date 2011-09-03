@@ -3021,10 +3021,72 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	cmd_group_begin(buf);
 	for(i = 0; i < count; i++)
 	{
-		if(perform_operation(OP_MKDIR, cp, names[i], NULL) == 0)
-			add_operation(OP_MKDIR, cp, NULL, names[i], "");
+		char full[PATH_MAX];
+		snprintf(full, sizeof(full), "%s/%s", view->curr_dir, names[i]);
+		if(perform_operation(OP_MKDIR, cp, full, NULL) == 0)
+			add_operation(OP_MKDIR, cp, NULL, full, "");
 	}
 	cmd_group_end();
+}
+
+int
+make_files(FileView *view, char **names, int count)
+{
+	int i;
+	char buf[COMMAND_GROUP_INFO_LEN + 1];
+	size_t len;
+
+	for(i = 0; i < count; i++)
+	{
+		struct stat st;
+		if(is_in_string_array(names, i, names[i]))
+		{
+			status_bar_errorf("Name \"%s\" duplicates", names[i]);
+			return 1;
+		}
+		if(names[i][0] == '\0')
+		{
+			status_bar_error("One of names is empty");
+			return 1;
+		}
+		if(strchr(names[i], '/') != NULL)
+		{
+			status_bar_errorf("Name \"%s\" contains slash", names[i]);
+			return 1;
+		}
+		if(lstat(names[i], &st) == 0)
+		{
+			status_bar_errorf("File \"%s\" already exists", names[i]);
+			return 1;
+		}
+	}
+
+	len = snprintf(buf, sizeof(buf), "touch in %s: ",
+			replace_home_part(view->curr_dir));
+
+	for(i = 0; i < count && len < COMMAND_GROUP_INFO_LEN; i++)
+	{
+		if(buf[len - 2] != ':')
+		{
+			strncat(buf, ", ", sizeof(buf));
+			buf[sizeof(buf) - 1] = '\0';
+		}
+		strncat(buf, names[i], sizeof(buf));
+		buf[sizeof(buf) - 1] = '\0';
+		len = strlen(buf);
+	}
+
+	cmd_group_begin(buf);
+	for(i = 0; i < count; i++)
+	{
+		char full[PATH_MAX];
+		snprintf(full, sizeof(full), "%s/%s", view->curr_dir, names[i]);
+		if(perform_operation(OP_MKFILE, NULL, full, NULL) == 0)
+			add_operation(OP_MKFILE, NULL, NULL, full, "");
+	}
+	cmd_group_end();
+
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

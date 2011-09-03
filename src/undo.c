@@ -79,6 +79,7 @@ static enum OPS undo_op[] = {
 	OP_REMOVESL, /* OP_SYMLINK2 */
 	OP_RMDIR,    /* OP_MKDIR */
 	OP_NONE,     /* OP_RMDIR */
+	OP_REMOVE,   /* OP_MKFILE */
 };
 
 static int _gnuc_unused undo_op_size_guard[
@@ -125,6 +126,8 @@ static enum {
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_RMDIR */
 	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_RMDIR */
 		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE  */
+	{ OPER_1ST, OPER_NON, OPER_NON, OPER_1ST,    /* do   OP_MKFILE */
+		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_REMOVE  */
 };
 
 static int _gnuc_unused opers_size_guard[
@@ -149,6 +152,7 @@ static int data_is_ptr[] = {
 	0, /* OP_SYMLINK2 */
 	0, /* OP_MKDIR */
 	0, /* OP_RMDIR */
+	0, /* OP_MKFILE */
 };
 
 static int _gnuc_unused data_is_ptr_size_guard[
