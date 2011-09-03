@@ -17,8 +17,8 @@ syntax keyword vifmCommand contained apropos cd change colo[rscheme] d[elete]
 		\ delm[arks] di[splay] dirs e[dit] empty exi[t] file filter fin[d] gr[ep]
 		\ h[elp] his[tory] invert jobs locate ls marks noh[lsearch] on[ly] popd
 		\ pushd pwd q[uit] reg[isters] rename restart restore screen se[t] sh[ell]
-		\ sor[t] sp[lit] s[ubstitute] tr sync undol[ist] vie[w] vifm w[rite] wq
-		\ x[it] y[ank]
+		\ sor[t] sp[lit] s[ubstitute] tr sync undol[ist] ve[rsion] vie[w] vifm
+		\ w[rite] wq x[it] y[ank]
 
 " Map commands
 syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map nm[ap]
