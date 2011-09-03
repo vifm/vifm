@@ -65,6 +65,7 @@ popd(void)
 	load_dir_list(&rwin, 0);
 
 	moveto_list_pos(curr_view, curr_view->list_pos);
+	wrefresh(other_view->win);
 
 	free_entry(&stack[stack_top]);
 
