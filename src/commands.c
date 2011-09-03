@@ -2318,8 +2318,11 @@ cd_cmd(const struct cmd_info *cmd_info)
 		result = cd(curr_view, cmd_info->argv[0]);
 		if(cmd_info->emark)
 		{
-			if(cmd_info->argv[0][0] != '/' && cmd_info->argv[0][0] != '~')
+			if(cmd_info->argv[0][0] != '/' && cmd_info->argv[0][0] != '~' &&
+					strcmp(cmd_info->argv[0], "-") != 0)
 				result += cd(other_view, dir);
+			else if(strcmp(cmd_info->argv[0], "-") == 0)
+				result += cd(other_view, curr_view->curr_dir);
 			else
 				result += cd(other_view, cmd_info->argv[0]);
 			wrefresh(other_view->win);
