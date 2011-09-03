@@ -2258,7 +2258,11 @@ cd(FileView *view, const char *path)
 		snprintf(dir, sizeof(dir), "%s", cfg.home_dir);
 	}
 
+#ifndef _WIN32
+	if(access(dir, F_OK) != 0)
+#else
 	if(access(dir, F_OK) != 0 && !is_unc_root(dir))
+#endif
 	{
 		char buf[1 + PATH_MAX + 1 + 1];
 
@@ -2268,7 +2272,11 @@ cd(FileView *view, const char *path)
 		show_error_msg("Destination doesn't exist", buf);
 		return 0;
 	}
+#ifndef _WIN32
+	if(access(dir, X_OK) != 0)
+#else
 	if(access(dir, X_OK) != 0 && !is_unc_root(dir))
+#endif
 	{
 		char buf[1 + PATH_MAX + 1 + 1];
 

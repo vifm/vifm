@@ -33,3 +33,5 @@ bin/%.o: %.c
 	gcc -c -o $@ $< $(CFLAGS)
 
 include $(wildcard ../bin/*.d) $(wildcard bin/*.d)
+
+# vim: filetype=make :
