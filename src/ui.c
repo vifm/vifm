@@ -429,7 +429,7 @@ setup_ncurses_interface(void)
 
 	stat_win = newwin(1, screen_x, screen_y -2, 0);
 
-	wbkgdset(stat_win, COLOR_PAIR(color_scheme + BORDER_COLOR));
+	wbkgdset(stat_win, COLOR_PAIR(color_scheme + STATUS_LINE_COLOR));
 
 	werase(stat_win);
 

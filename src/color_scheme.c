@@ -186,7 +186,14 @@ write_color_scheme_file(void)
 				"BROKEN_LINK",
 				"TOP_LINE",
 				"STATUS_LINE",
+				"FIFO",
+				"ERROR_MSG",
 			};
+
+			static int _gnuc_unused ELEM_NAMES_size_guard[
+				(ARRAY_LEN(ELEM_NAMES) + 1 == MAXNUM_COLOR) ? 1 : -1
+			];
+
 			static const char *COLOR_STR[] = {
 				"default",
 				"black",
@@ -302,6 +309,10 @@ add_color(char s1[], char s2[], char s3[])
 		y = TOP_LINE_COLOR;
 	else if(!strcmp(s1, "STATUS_LINE"))
 		y = STATUS_LINE_COLOR;
+	else if(!strcmp(s1, "FIFO"))
+		y = FIFO_COLOR;
+	else if(!strcmp(s1, "ERROR_MSG"))
+		y = ERROR_MSG_COLOR;
 	else
 		return;
 
