@@ -1,11 +1,12 @@
 Installation
 ~~~~~~~~~~~~
-You need:
+
+On *nix you need:
 
 	A working version of ncursesw and an ascii compliant terminal.
 	Vifm will currently not work with Solaris curses or with PDcurses.
 
-Basic Installation:
+*nix Installation:
 
 	./configure
 	make
@@ -13,14 +14,30 @@ Basic Installation:
 	make install
 
 	You can install vifm in your ~/ directory if you prefer.  
-		Copy the vifm and pauseme executables to where you want to run them.
-		You will also need to copy vifm help files and vifmrc file to ~/.vifm/.
+    Copy the vifm, vifmrc-converter and pauseme executables to where you
+    want to run them.  You will also need to copy vifm help files and
+    vifmrc file to ~/.vifm/.
 
 	After you start vifm for the first time, you should edit the configuration 
 	file.  It will be at ~/.vifm/vifmrc.
 	If you edit the vifmrc file with vifm running any changes you make
 	will be overwritten when you close vifm.
 
+On Windows you need:
+
+	Mingw
+	Pdcurses for Mingw
+	Regex for Mingw
+
+Windows Installation:
+
+    cd src
+    (uncomment some lines in Makefile.win below 'config:' if you want)
+    make -f Makefile.win
+
+    Copy vifm.exe, vifmrc-converter.exe and win_helper.exe to where you
+    want to run them.  You will also need to copy vifm help files and
+    vifmrc file to %HOME%/.vifm/ of %APPDATA%/Vifm/.
 
 Vim Specific Options:
 
