@@ -2318,10 +2318,11 @@ cd_cmd(const struct cmd_info *cmd_info)
 		result = cd(curr_view, cmd_info->argv[0]);
 		if(cmd_info->emark)
 		{
-			if(cmd_info->argv[0][0] != '/')
+			if(cmd_info->argv[0][0] != '/' && cmd_info->argv[0][0] != '~')
 				result += cd(other_view, dir);
 			else
 				result += cd(other_view, cmd_info->argv[0]);
+			wrefresh(other_view->win);
 		}
 	}
 	else
@@ -2332,6 +2333,7 @@ cd_cmd(const struct cmd_info *cmd_info)
 			result += cd(other_view, dir);
 		else
 			result += cd(other_view, cmd_info->argv[1]);
+		wrefresh(other_view->win);
 	}
 	if(!cfg.auto_ch_pos)
 		curr_stats.ch_pos = 1;
