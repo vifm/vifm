@@ -208,7 +208,15 @@ op_move(void *data, const char *src, const char *dst)
 		remove_from_trash(strrchr(src, '/') + 1);
 	return 0;
 #else
-	return MoveFile(src, dst) == 0;
+	BOOL ret = MoveFile(src, dst);
+	if(!ret && GetLastError() == 5)
+	{
+		int r = op_copy(data, src, dst);
+		if(r != 0)
+			return r;
+		return op_removesl(data, src, NULL);
+	}
+	return ret == 0;
 #endif
 }
 
