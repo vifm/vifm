@@ -18,6 +18,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <winioctl.h>
 #endif
 
 #include <regex.h>
@@ -1007,6 +1008,85 @@ to_multibyte(const wchar_t *s)
 
 	wcstombs(result, s, len);
 	return result;
+}
+
+int
+get_link_target(const char *link, char *buf, size_t buf_len)
+{
+#ifndef _WIN32
+	char *filename;
+	ssize_t len;
+
+	filename = strdup(link);
+	chosp(filename);
+
+	len = readlink(filename, buf, buf_len);
+
+	free(filename);
+
+	if(len == -1)
+		return -1;
+
+	linkto[len] = '\0';
+	return 0;
+#else
+	static char filename[PATH_MAX];
+
+	DWORD attr;
+	HANDLE hfind;
+	WIN32_FIND_DATAA ffd;
+	HANDLE hfile;
+	char rdb[2048];
+	char *t;
+	REPARSE_DATA_BUFFER *sbuf;
+	WCHAR *path;
+
+	attr = GetFileAttributes(link);
+	if(attr == INVALID_FILE_ATTRIBUTES)
+		return -1;
+
+	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
+		return -1;
+
+	snprintf(filename, sizeof(filename), "%s", link);
+	chosp(filename);
+	hfind = FindFirstFileA(filename, &ffd);
+	if(hfind == INVALID_HANDLE_VALUE)
+		return -1;
+
+	FindClose(hfind);
+
+	if(ffd.dwReserved0 != IO_REPARSE_TAG_SYMLINK)
+		return -1;
+
+	hfile = CreateFileA(filename, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+			NULL);
+	if(hfile == INVALID_HANDLE_VALUE)
+		return -1;
+
+	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb,
+				sizeof(rdb), &attr, NULL))
+	{
+		CloseHandle(hfile);
+		return -1;
+	}
+	CloseHandle(hfile);
+	
+	sbuf = (REPARSE_DATA_BUFFER *)rdb;
+	path = sbuf->SymbolicLinkReparseBuffer.PathBuffer;
+	path[sbuf->SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(WCHAR) +
+			sbuf->SymbolicLinkReparseBuffer.PrintNameLength/sizeof(WCHAR)] = L'\0';
+	t = to_multibyte(path +
+			sbuf->SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(WCHAR));
+	if(strncmp(t, "\\??\\", 4) == 0)
+		strncpy(buf, t + 4, buf_len);
+	else
+		strncpy(buf, t, buf_len);
+	buf[buf_len - 1] = '\0';
+	free(t);
+	return 0;
+#endif
 }
 
 #ifdef _WIN32

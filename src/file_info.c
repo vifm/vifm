@@ -51,32 +51,26 @@ show_file_type(FileView *view, int curr_y)
 	getmaxyx(menu_win, y, x);
 
 	mvwaddstr(menu_win, curr_y, 2, "Type: ");
-	if(S_ISLNK(view->dir_entry[view->list_pos].mode))
+	if(view->dir_entry[view->list_pos].type == LINK)
 	{
 		char linkto[PATH_MAX + NAME_MAX];
-		int len;
-		char *filename = strdup(view->dir_entry[view->list_pos].name);
-		len = strlen(filename);
-		if (filename[len - 1] == '/')
-			filename[len - 1] = '\0';
+		char *filename = view->dir_entry[view->list_pos].name;
 
 		mvwaddstr(menu_win, curr_y, 8, "Link");
 		curr_y += 2;
-		len = readlink(filename, linkto, sizeof (linkto));
-
 		mvwaddstr(menu_win, curr_y, 2, "Link To: ");
-		if(len > 0)
+
+		if(get_link_target(filename, linkto, sizeof(linkto)) == 0)
 		{
-			linkto[len] = '\0';
 			mvwaddnstr(menu_win, curr_y, 11, linkto, x - 11);
 
 			if(access(linkto, F_OK) != 0)
-			{
 				mvwaddstr(menu_win, curr_y - 2, 12, " (BROKEN)");
-			}
 		}
 		else
+		{
 			mvwaddstr(menu_win, curr_y, 11, "Couldn't Resolve Link");
+		}
 	}
 	else if(S_ISREG(view->dir_entry[view->list_pos].mode))
 	{

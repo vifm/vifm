@@ -120,15 +120,22 @@ op_removesl(void *data, const char *src, const char *dst)
 	free(escaped);
 	return result;
 #else
-	SHFILEOPSTRUCTA fo = {
-		.hwnd = NULL,
-		.wFunc = FO_DELETE,
-		.pFrom = src,
-		.pTo = NULL,
-		.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI |
+	if(is_dir(src))
+	{
+		SHFILEOPSTRUCTA fo = {
+			.hwnd = NULL,
+			.wFunc = FO_DELETE,
+			.pFrom = src,
+			.pTo = NULL,
+			.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI |
 				FOF_NOCONFIRMMKDIR,
-	};
-	return SHFileOperation(&fo);
+		};
+		return SHFileOperation(&fo);
+	}
+	else
+	{
+		return (DeleteFile(src) == 0);
+	}
 #endif
 }
 
@@ -313,7 +320,7 @@ op_symlink(void *data, const char *src, const char *dst)
 	}
 
 	*strrchr(buf, '\\') = '\0';
-	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s > NUL", buf, escaped_src,
+	snprintf(cmd, sizeof(cmd), "%s\\win_helper -s %s %s", buf, escaped_src,
 			escaped_dst);
 	result = system(cmd);
 #endif

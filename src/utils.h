@@ -97,6 +97,7 @@ int is_path_absolute(const char *path);
 int ends_with(const char* str, const char* suffix);
 char * strchar2str(const char *str);
 char * to_multibyte(const wchar_t *s);
+int get_link_target(const char *link, char *buf, size_t buf_len);
 
 #ifdef _WIN32
 int wcwidth(wchar_t c);
