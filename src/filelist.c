@@ -1670,10 +1670,10 @@ regexp_filter_match(FileView *view, char *filename)
 	return 1;
 }
 
+#ifndef _WIN32
 static int
 type_from_dir_entry(const struct dirent *d)
 {
-#ifndef _WIN32
 	switch(d->d_type)
 	{
 		case DT_BLK:
@@ -1694,10 +1694,8 @@ type_from_dir_entry(const struct dirent *d)
 		default:
 			return UNKNOWN;
 	}
-#else
-	return UNKNOWN;
-#endif
 }
+#endif
 
 static void
 load_parent_dir_only(FileView *view)

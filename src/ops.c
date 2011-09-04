@@ -18,6 +18,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <shellapi.h>
 #endif
 
 #include <string.h>
@@ -119,7 +120,15 @@ op_removesl(void *data, const char *src, const char *dst)
 	free(escaped);
 	return result;
 #else
-	return DeleteFile(src) == 0;
+	SHFILEOPSTRUCTA fo = {
+		.hwnd = NULL,
+		.wFunc = FO_DELETE,
+		.pFrom = src,
+		.pTo = NULL,
+		.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI |
+				FOF_NOCONFIRMMKDIR,
+	};
+	return SHFileOperation(&fo);
 #endif
 }
 
