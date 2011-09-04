@@ -637,12 +637,7 @@ check_link_is_dir(const char *filename)
 
 	if(p == linkto)
 	{
-		struct stat s;
-		if(lstat(linkto, &s) != 0)
-			return 0;
-
-		if((s.st_mode & S_IFMT) == S_IFDIR)
-			return 1;
+		return is_dir(linkto);
 	}
 	else
 	{
@@ -1118,7 +1113,8 @@ readlink(const char *path, char *buf, size_t len)
 char *
 realpath(const char *path, char *buf)
 {
-	strcpy(buf, path);
+	if(get_link_target(path, buf, PATH_MAX) != 0)
+		strcpy(buf, path);
 	return buf;
 }
 

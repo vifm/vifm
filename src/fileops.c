@@ -786,23 +786,15 @@ follow_link(FileView *view, int follow_dirs)
 	int is_dir = 0;
 	char *dir = NULL, *file = NULL, *link_dup;
 	char linkto[PATH_MAX + NAME_MAX];
-	ssize_t len;
 	char *filename;
 
-	filename = strdup(view->dir_entry[view->list_pos].name);
-	chosp(filename);
+	filename = view->dir_entry[view->list_pos].name;
 
-	len = readlink(filename, linkto, sizeof(linkto));
-
-	free(filename);
-
-	if(len == -1)
+	if(get_link_target(filename, linkto, sizeof(linkto)) != 0)
 	{
 		(void)show_error_msg("Error", "Can't read link");
 		return;
 	}
-
-	linkto[len] = '\0';
 
 	if(access(linkto, F_OK) != 0)
 	{
@@ -1755,7 +1747,6 @@ change_link_cb(const char *new_target)
 	char buf[PATH_MAX];
 	char linkto[PATH_MAX];
 	const char *filename;
-	ssize_t len;
 
 	if(new_target == NULL || new_target[0] == '\0')
 		return;
@@ -1763,14 +1754,11 @@ change_link_cb(const char *new_target)
 	curr_stats.confirmed = 1;
 
 	filename = curr_view->dir_entry[curr_view->list_pos].name;
-	strcpy(buf, filename);
-	chosp(buf);
-	if((len = readlink(buf, linkto, sizeof(linkto))) == -1)
+	if(get_link_target(filename, linkto, sizeof(linkto)) != 0)
 	{
 		(void)show_error_msg("Error", "Can't read link");
 		return;
 	}
-	linkto[len] = '\0';
 
 	snprintf(buf, sizeof(buf), "cl in %s: on %s from \"%s\" to \"%s\"",
 			replace_home_part(curr_view->curr_dir), filename, linkto, new_target);
@@ -1790,8 +1778,7 @@ change_link_cb(const char *new_target)
 int
 change_link(FileView *view)
 {
-	size_t len;
-	char buf[PATH_MAX], linkto[PATH_MAX];
+	char linkto[PATH_MAX];
 
 	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
@@ -1802,15 +1789,12 @@ change_link(FileView *view)
 		return 1;
 	}
 
-	strcpy(buf, view->dir_entry[view->list_pos].name);
-	chosp(buf);
-	len = readlink(buf, linkto, sizeof(linkto));
-	if(len == -1)
+	if(get_link_target(view->dir_entry[view->list_pos].name, linkto,
+			sizeof(linkto)) != 0)
 	{
 		(void)show_error_msg("Error", "Can't read link");
 		return 0;
 	}
-	linkto[len] = '\0';
 
 	enter_prompt_mode(L"Link target: ", linkto, change_link_cb);
 	return 0;

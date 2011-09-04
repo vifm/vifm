@@ -362,6 +362,7 @@ quick_view_file(FileView *view)
 	FILE *fp;
 	int x = 0;
 	int y = 1;
+	char buf[PATH_MAX];
 
 	wbkgdset(other_view->title, COLOR_PAIR(TOP_LINE_COLOR + view->color_scheme));
 	wbkgdset(other_view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
@@ -373,6 +374,7 @@ quick_view_file(FileView *view)
 	wattron(other_view->win,  A_BOLD);
 	wattroff(other_view->win, A_BOLD);
 
+	strcpy(buf, view->dir_entry[view->list_pos].name);
 	switch(view->dir_entry[view->list_pos].type)
 	{
 		case DEVICE:
@@ -383,19 +385,24 @@ quick_view_file(FileView *view)
 			mvwaddstr(other_view->win, ++x, y, "File is a Socket");
 			break;
 #endif
-		case UNKNOWN:
-			if(S_ISFIFO(view->dir_entry[view->list_pos].mode))
+		case FIFO:
+			mvwaddstr(other_view->win, ++x, y, "File is a Named Pipe");
+			break;
+		case LINK:
+			if(get_link_target(view->dir_entry[view->list_pos].name, buf,
+					sizeof(buf)) != 0)
 			{
-				mvwaddstr(other_view->win, ++x, y, "File is a Named Pipe");
+				mvwaddstr(other_view->win, ++x, y, "Cannot resolve Link");
 				break;
 			}
-			/* break omitted */
+			/* break intensionally omitted */
+		case UNKNOWN:
 		default:
 			{
 				char *viewer;
 
-				viewer = get_viewer_for_file(view->dir_entry[view->list_pos].name);
-				if(viewer == NULL && view->dir_entry[view->list_pos].type == DIRECTORY)
+				viewer = get_viewer_for_file(buf);
+				if(viewer == NULL && is_dir(buf))
 				{
 					mvwaddstr(other_view->win, ++x, y, "File is a Directory");
 					break;
@@ -405,7 +412,7 @@ quick_view_file(FileView *view)
 					fp = use_info_prog(viewer);
 				else
 #endif
-					fp = fopen(view->dir_entry[view->list_pos].name, "r");
+					fp = fopen(buf, "r");
 
 				if(fp == NULL)
 				{
@@ -423,6 +430,7 @@ quick_view_file(FileView *view)
 			break;
 	}
 	wrefresh(other_view->win);
+	wrefresh(other_view->title);
 }
 
 char *
@@ -672,10 +680,14 @@ draw_dir_list(FileView *view, int top)
 					break;
 				case LINK:
 					{
-						char full[PATH_MAX];
-						snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
-								view->dir_entry[x].name);
-						if(access(full, F_OK) == 0)
+						char linkto[PATH_MAX];
+						if(get_link_target(view->dir_entry[x].name, linkto,
+								sizeof(linkto)) != 0)
+						{
+							LINE_COLOR = BROKEN_LINK_COLOR + color_scheme;
+							break;
+						}
+						if(access(linkto, F_OK) == 0)
 							LINE_COLOR = LINK_COLOR + color_scheme;
 						else
 							LINE_COLOR = BROKEN_LINK_COLOR + color_scheme;
@@ -775,10 +787,14 @@ erase_current_line_bar(FileView *view)
 				break;
 			case LINK:
 				{
-					char full[PATH_MAX];
-					snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
-							view->dir_entry[old_pos].name);
-					if(access(full, F_OK) == 0)
+					char linkto[PATH_MAX];
+					if(get_link_target(view->dir_entry[old_pos].name, linkto,
+								sizeof(linkto)) != 0)
+					{
+						LINE_COLOR = BROKEN_LINK_COLOR + view->color_scheme;
+						break;
+					}
+					if(access(linkto, F_OK) == 0)
 						LINE_COLOR = LINK_COLOR + view->color_scheme;
 					else
 						LINE_COLOR = BROKEN_LINK_COLOR + view->color_scheme;
@@ -930,10 +946,14 @@ moveto_list_pos(FileView *view, int pos)
 				break;
 			case LINK:
 				{
-					char full[PATH_MAX];
-					snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
-							view->dir_entry[pos].name);
-					if(access(full, F_OK) == 0)
+					char linkto[PATH_MAX];
+					if(get_link_target(view->dir_entry[pos].name, linkto,
+								sizeof(linkto)) != 0)
+					{
+						LINE_COLOR = BROKEN_LINK_COLOR + view->color_scheme;
+						break;
+					}
+					if(access(linkto, F_OK) == 0)
 						LINE_COLOR = LINK_COLOR + view->color_scheme;
 					else
 						LINE_COLOR = BROKEN_LINK_COLOR + view->color_scheme;
