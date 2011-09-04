@@ -226,6 +226,7 @@ yank_selected_files(FileView *view, int reg)
 
 		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
 				view->selected_filelist[x]);
+		chosp(buf);
 		append_to_register(reg, buf);
 	}
 	update_unnamed_reg(reg);
