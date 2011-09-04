@@ -534,8 +534,6 @@ filename_completion(const char *str, int type)
 
 	string = str;
 
-	temp = strrchr(str, '/');
-
 	if(string[0] == '~')
 	{
 		dirname = expand_tilde(strdup(string));
@@ -1719,7 +1717,7 @@ execute_command(FileView *view, char *command, int menu)
 	int id;
 	int result;
 
-	if(command == NULL && !menu)
+	if(command == NULL)
 	{
 		remove_selection(view);
 		return 0;
@@ -3552,7 +3550,6 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 	int use_menu = 0;
 	int split = 0;
 	size_t len;
-	int result = 0;
 	int external = 1;
 
 	if(strchr(cmd_info->cmd, '%') != NULL)
@@ -3614,7 +3611,7 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 	}
 	else if(expanded_com[0] == '/')
 	{
-		result = exec_command(expanded_com + 1, curr_view, GET_FSEARCH_PATTERN);
+		exec_command(expanded_com + 1, curr_view, GET_FSEARCH_PATTERN);
 		external = 0;
 		need_clean_selection = 0;
 	}

@@ -1115,12 +1115,12 @@ delete(struct key_info key_info, int use_trash)
 	int *i;
 #endif
 
+	if(!is_dir_writable(0, curr_view->curr_dir))
+		return;
+
 	curr_stats.confirmed = 0;
 	if(!use_trash && cfg.confirm)
 	{
-		if(!is_dir_writable(0, curr_view->curr_dir))
-			return;
-
 		if(!query_user_menu("Permanent deletion",
 				"Are you sure you want to delete files permanently?"))
 			return;
@@ -1668,6 +1668,9 @@ selector_s(struct key_info key_info, struct keys_info *keys_info)
 	for(x = 0; x < curr_view->list_rows; x++)
 		if(curr_view->dir_entry[x].selected)
 			keys_info->count++;
+
+	if(keys_info->count == 0)
+		return;
 
 	keys_info->indexes = malloc(keys_info->count*sizeof(keys_info->indexes[0]));
 	if(keys_info->indexes == NULL)

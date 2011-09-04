@@ -330,7 +330,6 @@ read_color_scheme_file(void)
 	char *s2 = NULL;
 	char *s3 = NULL;
 	char *sx = NULL;
-	int args;
 
 	snprintf(config_file, sizeof(config_file), "%s/colorschemes", cfg.config_dir);
 
@@ -345,7 +344,7 @@ read_color_scheme_file(void)
 
 	while(fgets(line, MAX_LEN, fp))
 	{
-		args = 0;
+		int args;
 
 		if(line[0] == '#')
 			continue;

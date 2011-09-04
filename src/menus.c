@@ -31,6 +31,7 @@
 #endif
 #include <unistd.h> /* access() */
 
+#include <assert.h>
 #include <ctype.h> /* isspace() */
 #include <string.h> /* strchr() */
 #include <stdarg.h>
@@ -162,6 +163,8 @@ redraw_error_msg(char *title_arg, const char *message_arg)
 		title = title_arg;
 		message = message_arg;
 	}
+
+	assert(message != NULL);
 
 	curs_set(0);
 	werase(error_win);
@@ -338,7 +341,7 @@ moveto_menu_pos(int pos, menu_info *m)
 	buf = (char *)malloc(x + 2);
 	if(buf == NULL)
 		return;
-	if(m->data != NULL && m->data[pos] != NULL)
+	if(m->data[pos] != NULL)
 		snprintf(buf, x, " %s", m->data[pos]);
 
 	for(z = 0; buf[z] != '\0'; z++)
@@ -1485,7 +1488,7 @@ show_filetypes_menu(FileView *view, int background)
 
 	{
 		int x = 0;
-		int len = 0;
+		int win_width;
 		char *p;
 		char *ptr = NULL;
 
@@ -1506,7 +1509,7 @@ show_filetypes_menu(FileView *view, int background)
 		m.extra_data = (background ? 1 : 0);
 		m.key_handler = filetypes_khandler;
 
-		getmaxyx(menu_win, m.win_rows, len);
+		getmaxyx(menu_win, m.win_rows, win_width);
 
 		p = prog_str;
 		while(isspace(*p) || *p == ',')
@@ -1515,7 +1518,7 @@ show_filetypes_menu(FileView *view, int background)
 		if((ptr = strchr(p, ',')) == NULL)
 		{
 			m.len = 1;
-			m.data = (char **)realloc(m.data, sizeof(char *) * (len + 1));
+			m.data = (char **)realloc(m.data, sizeof(char *)*(win_width + 1));
 			m.data[0] = strdup(p);
 		}
 		else
@@ -1545,7 +1548,7 @@ show_filetypes_menu(FileView *view, int background)
 						break;
 				if(i == m.len && prog_copy[0] != '\0')
 				{
-					m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
+					m.data = (char **)realloc(m.data, sizeof(char *)*(m.len + 1));
 					if(strcmp(prog_copy, "*") == 0)
 						m.data[x] = strdup("");
 					else
@@ -1562,9 +1565,9 @@ show_filetypes_menu(FileView *view, int background)
 					break;
 			if(i == m.len)
 			{
-				m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
-				m.data[x] = (char *)malloc((len + 1) * sizeof(char));
-				snprintf(m.data[x], len, "%s", prog_copy);
+				m.data = (char **)realloc(m.data, sizeof(char *)*(m.len + 1));
+				m.data[x] = (char *)malloc((win_width + 1)*sizeof(char));
+				snprintf(m.data[x], win_width, "%s", prog_copy);
 				replace_double_comma(m.data[x], 0);
 				m.len++;
 			}

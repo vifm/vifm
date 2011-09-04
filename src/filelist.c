@@ -362,10 +362,6 @@ quick_view_file(FileView *view)
 	FILE *fp;
 	int x = 0;
 	int y = 1;
-	size_t print_width;
-
-	print_width = get_real_string_width(view->dir_entry[view->list_pos].name,
-			view->window_width - 6) + 6;
 
 	wbkgdset(other_view->title, COLOR_PAIR(TOP_LINE_COLOR + view->color_scheme));
 	wbkgdset(other_view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
@@ -820,7 +816,6 @@ erase_current_line_bar(FileView *view)
 		wattron(view->win, COLOR_PAIR(LINE_COLOR));
 		mvwaddnstr(view->win, old_cursor, 1, file_name, print_width);
 		wattroff(view->win, COLOR_PAIR(LINE_COLOR) | A_BOLD);
-		bold = 1;
 		add_sort_type_info(view, old_cursor, old_pos, 0);
 	}
 }
@@ -1021,6 +1016,7 @@ moveto_list_pos(FileView *view, int pos)
 		wattroff(view->win, COLOR_PAIR(view->color_scheme + CURRENT_COLOR) | attr);
 
 	wrefresh(view->win);
+	update_stat_window(view);
 }
 
 void

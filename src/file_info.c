@@ -20,14 +20,16 @@
 #include <grp.h>
 #include <pwd.h>
 #endif
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <unistd.h>
+
+#include <assert.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <sys/time.h>
 #include <time.h>
-#include <unistd.h>
 
 #include "../config.h"
 
@@ -182,6 +184,8 @@ redraw_full_file_properties(FileView *v)
 
 	if(v != NULL)
 		view = v;
+
+	assert(view != NULL);
 
 	setup_menu();
 

@@ -518,11 +518,13 @@ delete(struct key_info key_info, int use_trash)
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 
+	curr_stats.confirmed = 0;
 	if(!use_trash && cfg.confirm)
 	{
 		if(!query_user_menu("Permanent deletion",
 				"Are you sure you want to delete files permanently?"))
 			return;
+		curr_stats.confirmed = 1;
 	}
 
 	save_msg = delete_file(view, key_info.reg, 0, NULL, use_trash);

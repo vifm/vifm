@@ -142,14 +142,14 @@ read_config_file(const char *config_file)
 	char *s3 = NULL;
 	char *s4 = NULL;
 	char *sx = NULL;
-	int args;
 
 	if((fp = fopen(config_file, "r")) == NULL)
 		return 0;
 
 	while(fgets(line, sizeof(line), fp))
 	{
-		args = 0;
+		int args;
+
 		if(line[0] == '#')
 			continue;
 

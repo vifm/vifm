@@ -200,7 +200,6 @@ yank_files(FileView *view, int reg, int count, int *indexes)
 		clean_selected_files(view);
 		draw_dir_list(view, view->top_line);
 		moveto_list_pos(view, view->list_pos);
-		count = yanked;
 	}
 
 	status_bar_messagef("%d %s yanked", yanked, yanked == 1 ? "file" : "files");
@@ -212,7 +211,6 @@ void
 yank_selected_files(FileView *view, int reg)
 {
 	int x;
-	size_t namelen;
 
 	/* A - Z  append to register otherwise replace */
 	if(reg >= 'A' && reg <= 'Z')
@@ -226,7 +224,6 @@ yank_selected_files(FileView *view, int reg)
 		if(!view->selected_filelist[x])
 			break;
 
-		namelen = strlen(view->selected_filelist[x]);
 		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
 				view->selected_filelist[x]);
 		append_to_register(reg, buf);
@@ -2725,6 +2722,12 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 		get_selected_files(view, count, indexes);
 	else
 		get_all_selected_files(view);
+
+	if(view->selected_files == 0)
+	{
+		status_bar_message("0 files renamed");
+		return 1;
+	}
 
 	for(i = 0; i < view->selected_files; i++)
 	{

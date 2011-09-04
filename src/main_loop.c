@@ -133,7 +133,6 @@ main_loop(void)
 			assert(counter <= pos);
 			if(counter > 0)
 			{
-				pos -= counter;
 				memmove(buf, buf + counter,
 						(wcslen(buf) - counter + 1)*sizeof(wchar_t));
 			}

@@ -295,7 +295,7 @@ add_operation(enum OPS op, void *do_data, void *undo_data, const char *buf1,
 		cmd->group->can_undone = 1;
 		cmd->group->incomplete = 0;
 	}
-	mem_error = cmd->buf1 == NULL || cmd->buf2 == NULL;
+	mem_error = cmd->group == NULL || cmd->buf1 == NULL || cmd->buf2 == NULL;
 	if(mem_error)
 	{
 		remove_cmd(cmd);

@@ -36,6 +36,7 @@
 #endif
 #include <unistd.h>
 
+#include <assert.h>
 #include <signal.h> /* signal() */
 #include <stdarg.h>
 #include <string.h>
@@ -181,10 +182,17 @@ status_bar_message_i(const char *message, int error)
 
 	if(message != NULL)
 	{
+		char *p;
+
+		if((p = strdup(message)) == NULL)
+			return;
+
 		free(msg);
-		msg = strdup(message);
+		msg = p;
 		err = error;
 	}
+
+	assert(msg != NULL);
 
 	if(err)
 		wbkgdset(status_bar, COLOR_PAIR(cfg.color_scheme + ERROR_MSG_COLOR));
