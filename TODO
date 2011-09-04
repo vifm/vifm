@@ -19,7 +19,6 @@ Documentation.
 
 Windows.
     Make non-latin characters appear right.
-	Get executable extensions list from the registry.
     Remove some *nix specific commands.
 
 Vi(m) specific features that need to be added.

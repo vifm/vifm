@@ -1084,6 +1084,16 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 #endif
 }
 
+void
+strtoupper(char *s)
+{
+	while(*s != '\0')
+	{
+		*s = toupper(*s);
+		s++;
+	}
+}
+
 #ifdef _WIN32
 
 int
@@ -1164,6 +1174,40 @@ exec_program(TCHAR *cmd)
 	CloseHandle(pinfo.hProcess);
 	return exitcode;
 }
+
+int
+is_win_executable(const char *name)
+{
+	char *path, *p, *q;
+	char name_buf[NAME_MAX];
+
+	path = getenv("PATHEXT");
+	if(path == NULL || path[0] == '\0')
+		path = ".bat;.exe;.com";
+
+	snprintf(name_buf, sizeof(name_buf), "%s", name);
+	strtoupper(name_buf);
+
+	p = path - 1;
+	do
+	{
+		char ext_buf[16];
+
+		p++;
+		q = strchr(p, ';');
+		if(q == NULL)
+			q = p + strlen(p);
+
+		snprintf(ext_buf, q - p + 1, "%s", p);
+		strtoupper(ext_buf);
+		p = q;
+
+		if(ends_with(name_buf, ext_buf))
+			return 1;
+	} while(q[0] != '\0');
+	return 0;
+}
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1785,9 +1785,7 @@ is_executable(dir_entry_t *d)
 #ifndef _WIN32
 	return S_ISEXE(d->mode);
 #else
-	/* TODO: get extensions list from the registry */
-	return (ends_with(d->name, ".bat") || ends_with(d->name, ".exe") ||
-			ends_with(d->name, ".com"));
+	return is_win_executable(d->name);
 #endif
 }
 

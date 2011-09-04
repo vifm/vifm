@@ -98,6 +98,7 @@ int ends_with(const char* str, const char* suffix);
 char * strchar2str(const char *str);
 char * to_multibyte(const wchar_t *s);
 int get_link_target(const char *link, char *buf, size_t buf_len);
+void strtoupper(char *s);
 
 #ifdef _WIN32
 int wcwidth(wchar_t c);
@@ -108,6 +109,7 @@ char * realpath(const char *path, char *buf);
 int is_unc_path(const char *path);
 int is_unc_root(const char *path);
 int exec_program(TCHAR *cmd);
+int is_win_executable(const char *name);
 #endif
 
 #endif

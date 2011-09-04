@@ -66,16 +66,6 @@ sort_view(FileView *v)
 	}
 }
 
-static void
-strtoupper(char *s)
-{
-	while(*s != '\0')
-	{
-		*s = toupper(*s);
-		s++;
-	}
-}
-
 static int
 compare_file_names(const char *s, const char *t, int ignore_case)
 {
