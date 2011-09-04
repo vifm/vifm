@@ -157,7 +157,20 @@ op_copy(void *data, const char *src, const char *dst)
 	free(escaped_src);
 	return result;
 #else
-	return CopyFile(src, dst, 1) == 0;
+	int ret;
+
+	if(is_dir(src))
+	{
+		char cmd[6 + PATH_MAX*2 + 1];
+		snprintf(cmd, sizeof(cmd), "xcopy \"%s\" \"%s\" /B /E /I > NUL", src, dst);
+		ret = system(cmd);
+	}
+	else
+	{
+		ret = (CopyFileA(src, dst, 0) == 0);
+	}
+
+	return ret;
 #endif
 }
 

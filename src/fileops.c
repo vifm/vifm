@@ -1875,6 +1875,7 @@ put_next(const char *dest_name, int override)
 		dest_name = strrchr(filename, '/') + 1;
 
 	strcpy(src_buf, filename);
+	chosp(src_buf);
 
 	if(from_trash)
 	{
