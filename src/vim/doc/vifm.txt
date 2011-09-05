@@ -428,8 +428,9 @@ The builtin commands are:
     DIRECTORY in colorscheme file fits current path.  It's also used to
     set border color (except view titles) and colors in the menus and
     dialogs.
-:colo[rscheme][!] color_scheme_name - changes default color scheme.  With "!"
-    color scheme will be created if it doesn't exist.
+:colo[rscheme][!] color_scheme_name [directory] - changes default color
+    scheme.  With "!" color scheme will be created if it doesn't exist.
+    Second argument makes sense only with "!".
 
                                                *vifm-:comclear* *vifm-:comc*
 :comc[lear] - removes all user defined commands.

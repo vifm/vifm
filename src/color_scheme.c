@@ -159,7 +159,7 @@ check_color_schemes(void)
 }
 
 int
-add_color_scheme(const char *name)
+add_color_scheme(const char *name, const char *directory)
 {
 	if(cfg.color_scheme_num + 1 > MAX_COLOR_SCHEMES_CURSES)
 	{
@@ -170,6 +170,9 @@ add_color_scheme(const char *name)
 	cfg.color_scheme_num++;
 	init_color_scheme(&col_schemes[cfg.color_scheme_num - 1]);
 	snprintf(col_schemes[cfg.color_scheme_num - 1].name, NAME_MAX, "%s", name);
+	if(directory != NULL)
+		snprintf(col_schemes[cfg.color_scheme_num - 1].dir, PATH_MAX, "%s",
+				directory);
 	load_color_schemes();
 	return 0;
 }
