@@ -50,7 +50,7 @@ static void
 empty_trash_dir(void)
 {
 #ifndef _WIN32
-	char cmd[24 + strlen(cfg.trash_dir)*2 + 1];
+	char cmd[25 + strlen(cfg.trash_dir)*2 + 1];
 	char *escaped;
 
 	escaped = escape_filename(cfg.trash_dir, 0);
