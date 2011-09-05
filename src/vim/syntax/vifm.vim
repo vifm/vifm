@@ -1,4 +1,4 @@
-" vifmrc syntax file
+" vifm syntax file
 " Maintainer:  xaizek <xaizek@gmail.com>
 " Last Change: September 3, 2011
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
@@ -7,7 +7,7 @@ if exists('b:current_syntax')
 	finish
 endif
 
-let b:current_syntax = 'vifmrc'
+let b:current_syntax = 'vifm'
 
 let s:cpo_save = &cpo
 set cpo-=C
@@ -15,10 +15,10 @@ set cpo-=C
 " General commands
 syntax keyword vifmCommand contained apropos cd change colo[rscheme] d[elete]
 		\ delm[arks] di[splay] dirs e[dit] empty exi[t] file filter fin[d] gr[ep]
-		\ h[elp] his[tory] invert jobs locate ls marks mkdir noh[lsearch] on[ly]
-		\ popd pushd pwd q[uit] reg[isters] rename restart restore screen se[t]
-		\ sh[ell] sor[t] sp[lit] s[ubstitute] touch tr sync undol[ist] ve[rsion]
-		\ vie[w] vifm w[rite] wq x[it] y[ank]
+		\ h[elp] hi[ghlight] his[tory] invert jobs locate ls marks mkdir
+		\ noh[lsearch] on[ly] popd pushd pwd q[uit] reg[isters] rename restart
+		\ restore screen se[t] sh[ell] sor[t] sp[lit] s[ubstitute] touch tr sync
+		\ undol[ist] ve[rsion] vie[w] vifm w[rite] wq x[it] y[ank]
 
 " Map commands
 syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map nm[ap]
@@ -29,6 +29,16 @@ syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map nm[ap]
 syntax keyword vifmCmdCommand contained com[mand]
 syntax keyword vifmMarkCommand contained ma[rk]
 syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
+
+" Highlight groups
+syntax keyword vifmHiArgs contained ctermfg ctermbg
+syntax case ignore
+syntax keyword vifmHiGroups contained Menu Border Win StatusBar CurrLine
+		\ Directory Link Socket Device Executable Selected Current BrokenLink
+		\ TopLine StatusLine
+syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
+		\ white
+syntax case match
 
 " Options
 syntax keyword vifmOption contained autochpos confirm cf fastrun followlinks
@@ -70,6 +80,9 @@ syntax match vifmMapLhs /\S\+/ contained contains=vifmNotation
 		\ nextgroup=vifmMapRhs
 syntax match vifmMapRhs /\s\+\S\+/ contained
 		\ contains=vifmNotation,vifmCommand,vifmExecute
+syntax region vifmHi matchgroup=vifmCommand
+		\ start='\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
+		\ keepend contains=vifmHiArgs,vifmHiGroups,vifmHiColors,vifmNumber
 syntax region vifmSet matchgroup=vifmCommand
 		\ start='\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmOption,vifmSetString,vifmNumber,vifmComment
@@ -95,6 +108,9 @@ highlight link vifmCmdCommand Statement
 highlight link vifmMarkCommand Statement
 highlight link vifmFtCommand Statement
 highlight link vifmMap Statement
+highlight link vifmHiArgs Type
+highlight link vifmHiGroups PreProc
+highlight link vifmHiColors Special
 highlight link vifmOption PreProc
 highlight link vifmNotation Special
 highlight link vifmSetString String

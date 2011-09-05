@@ -595,6 +595,7 @@ write_vifmrc(const char *config_file, int comment_out)
 		exit(1);
 	}
 
+	fprintf(fp, "\" vim: set filetype=vifm :\n");
 	fprintf(fp, "\" You can edit this file by hand.\n");
 	fprintf(fp, "\" The \" character at the beginning of a line comments out the line.\n");
 	fprintf(fp, "\" Blank lines are ignored.\n");
