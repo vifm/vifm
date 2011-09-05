@@ -523,6 +523,9 @@ Commands
               clones  files in current directory giving each next clone a cor‐
               responding name from the argument list.  "!" forces overwrite.
 
+       :colo[rscheme]?
+              prints current color scheme name in the status bar.
+
        :colo[rscheme]
               gives a menu with a list of available color  schemes.   You  can
               choose  default  color scheme here.  It will be used for view if
@@ -1413,8 +1416,6 @@ Reserved
          chmod
          chown
          g[lobal]
-         mkdir
-         touch
          v[global]
 
 SEE ALSO
@@ -1426,4 +1427,4 @@ AUTHOR
 
 
 
-                               September 4, 2011                       vifm(1)
+                               September 5, 2011                       vifm(1)

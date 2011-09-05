@@ -422,6 +422,7 @@ The builtin commands are:
     each next clone a corresponding name from the argument list.
 
                                                *vifm-:colorscheme* *vifm-:colo*
+:colo[rscheme]? - prints current color scheme name in the status bar.
 :colo[rscheme] - gives a menu with a list of available color schemes.  You
     can choose default color scheme here.  It will be used for view if no
     DIRECTORY in colorscheme file fits current path.  It's also used to

@@ -228,7 +228,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "cnoremap",         .abbr = "cno",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "colorscheme",      .abbr = "colo",  .emark = 0,  .id = COM_COLORSCHEME, .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = colorscheme_cmd, .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
+		.handler = colorscheme_cmd, .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
   { .name = "command",          .abbr = "com",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
     .handler = command_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "copy",             .abbr = "co",    .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
@@ -2382,8 +2382,14 @@ cnoremap_cmd(const struct cmd_info *cmd_info)
 static int
 colorscheme_cmd(const struct cmd_info *cmd_info)
 {
-	if(cmd_info->argc == 0) /* Show menu with colorschemes listed */
+	if(cmd_info->qmark)
 	{
+		status_bar_message(col_schemes[cfg.color_scheme_cur].name);
+		return 1;
+	}
+	else if(cmd_info->argc == 0)
+	{
+		/* show menu with colorschemes listed */
 		show_colorschemes_menu(curr_view);
 		return 0;
 	}
