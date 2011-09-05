@@ -419,7 +419,14 @@ main(int argc, char *argv[])
 	curr_stats.vifm_started = 1;
 
 	if(!old_config && !no_configs)
+	{
+		read_color_schemes();
+		check_color_schemes();
+		load_color_schemes();
+		if(find_color_scheme(curr_stats.color_scheme) >= 0)
+			load_color_scheme(curr_stats.color_scheme);
 		exec_config();
+	}
 
 	setup_signals();
 
@@ -432,7 +439,9 @@ main(int argc, char *argv[])
 				"before performing any changes, but if you don't want to take the risk "
 				"and would like to make one more copy say No to exit vifm.  Continue?"))
 		{
+#ifdef _WIN32
 			system("cls");
+#endif
 			endwin();
 			exit(0);
 		}

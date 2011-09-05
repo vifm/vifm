@@ -2829,12 +2829,16 @@ highlight_cmd(const struct cmd_info *cmd_info)
 		int fg = col_schemes[cfg.color_scheme_cur].color[pos].fg;
 		int bg = col_schemes[cfg.color_scheme_cur].color[pos].bg;
 
-		if(fg < ARRAY_LEN(COLOR_NAMES))
+		if(fg == -1)
+			strcpy(fg_buf, "default");
+		else if(fg < ARRAY_LEN(COLOR_NAMES))
 			strcpy(fg_buf, COLOR_NAMES[fg]);
 		else
 			snprintf(fg_buf, sizeof(fg_buf), "%d", fg);
 
-		if(bg < ARRAY_LEN(COLOR_NAMES))
+		if(bg == -1)
+			strcpy(bg_buf, "default");
+		else if(bg < ARRAY_LEN(COLOR_NAMES))
 			strcpy(bg_buf, COLOR_NAMES[bg]);
 		else
 			snprintf(bg_buf, sizeof(bg_buf), "%d", bg);
@@ -2899,7 +2903,7 @@ get_color(const char *text)
 	int col_pos = string_array_pos_case(COLOR_NAMES, ARRAY_LEN(COLOR_NAMES),
 			text);
 	int col_num = isdigit(*text) ? atoi(text) : -1;
-	if(strcmp(text, "-1") == 0)
+	if(strcmp(text, "-1") == 0 || strcasecmp(text, "default") == 0)
 		return -1;
 	if(col_pos < 0 && (col_num < 0 || col_num > COLORS))
 		return -2;

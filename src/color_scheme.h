@@ -69,7 +69,7 @@ extern int COLOR_VALS[8];
 /* directory should be NULL if you want to set default directory */
 int add_color_scheme(const char *name, const char *directory);
 void check_color_schemes(void);
-void read_color_scheme_file(void);
+void read_color_schemes(void);
 void load_color_schemes(void);
 int check_directory_for_color_scheme(const char *);
 /* Returns value lower than zero when nothing is found */

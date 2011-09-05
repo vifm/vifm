@@ -59,6 +59,8 @@ typedef struct
 
 	int auto_redraws;
 
+	char color_scheme[NAME_MAX];
+
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
 #endif

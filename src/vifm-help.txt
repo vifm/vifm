@@ -1390,6 +1390,8 @@ Configure
        it's PATH environment variable to let user run  those  scripts  without
        specifying full path.
 
+       The CONFDIR/colors directory contains color schemes.
+
 Plugin
        Plugin for using vifm in vim as a file selector.
 

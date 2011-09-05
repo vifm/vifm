@@ -1223,6 +1223,8 @@ The CONFDIR/scripts directory can contain shell scripts.  vifm modifies
 it's PATH environment variable to let user run those scripts without specifying
 full path.
 
+The CONFDIR/colors directory contains color schemes.
+
 --------------------------------------------------------------------------------
 *vifm-plugin*
 

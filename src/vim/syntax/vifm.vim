@@ -35,7 +35,7 @@ syntax keyword vifmHiArgs contained ctermfg ctermbg
 syntax case ignore
 syntax keyword vifmHiGroups contained Menu Border Win StatusBar CurrLine
 		\ Directory Link Socket Device Executable Selected Current BrokenLink
-		\ TopLine StatusLine
+		\ TopLine StatusLine Fifo ErrorMsg
 syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
 		\ white
 syntax case match

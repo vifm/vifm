@@ -216,8 +216,6 @@ load_view_defaults(FileView *view)
 void
 load_default_configuration(void)
 {
-	read_color_scheme_file();
-
 	load_view_defaults(&lwin);
 	load_view_defaults(&rwin);
 }
@@ -495,7 +493,7 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'c') /* default color scheme */
 		{
-			load_color_scheme(line + 1);
+			strcpy(curr_stats.color_scheme, line + 1);
 		}
 	}
 

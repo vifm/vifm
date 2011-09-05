@@ -17,6 +17,7 @@
  */
 
 #include <limits.h>
+#include <string.h>
 
 #include "status.h"
 
@@ -44,6 +45,7 @@ init_status(void)
 	curr_stats.ch_pos = 1;
 	curr_stats.confirmed = 0;
 	curr_stats.auto_redraws = 0;
+	strcpy(curr_stats.color_scheme, "Default");
 
 #ifdef HAVE_LIBGTK
 	curr_stats.gtk_available = 0;

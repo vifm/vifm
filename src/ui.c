@@ -330,9 +330,6 @@ setup_ncurses_interface(void)
 	/* Changed for pdcurses */
 	use_default_colors();
 
-	check_color_schemes();
-	load_color_schemes();
-
 	color_scheme = 1 + cfg.color_scheme_cur*MAXNUM_COLOR;
 	lwin.color_scheme = color_scheme;
 	rwin.color_scheme = color_scheme;
