@@ -2084,7 +2084,7 @@ clone_file(FileView* view, const char *filename, const char *path,
 		chosp(clone_name);
 		if(access(clone_name, F_OK) == 0)
 		{
-			if(perform_operation(OP_REMOVE, NULL, clone_name, NULL) != 0)
+			if(perform_operation(OP_REMOVESL, NULL, clone_name, NULL) != 0)
 				return;
 		}
 	}
@@ -2945,6 +2945,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	cmd_group_begin(buf);
 	for(i = 0; i < view->selected_files; i++)
 	{
+		char dst_full[PATH_MAX];
 		const char *dst = (nlines > 0) ? list[i] : view->selected_filelist[i];
 		if(from_trash)
 		{
@@ -2952,15 +2953,14 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 				dst++;
 			dst++;
 		}
+
+		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
+		if(access(dst_full, F_OK) == 0)
+			perform_operation(OP_REMOVESL, NULL, dst_full, NULL);
+
 		if(move)
 		{
-			char dst_full[PATH_MAX];
-
 			progress_msg("Moving files", i + 1, view->selected_files);
-
-			snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
-			if(access(dst_full, F_OK) == 0)
-				perform_operation(OP_REMOVE, NULL, dst_full, NULL);
 
 			if(mv_file(view->selected_filelist[i], dst, path, 0) != 0)
 				view->list_pos = find_file_pos_in_list(view,
