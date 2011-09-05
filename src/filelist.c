@@ -680,9 +680,11 @@ draw_dir_list(FileView *view, int top)
 					break;
 				case LINK:
 					{
+						char full[PATH_MAX];
 						char linkto[PATH_MAX];
-						if(get_link_target(view->dir_entry[x].name, linkto,
-								sizeof(linkto)) != 0)
+						snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
+								view->dir_entry[x].name);
+						if(get_link_target(full, linkto, sizeof(linkto)) != 0)
 						{
 							LINE_COLOR = BROKEN_LINK_COLOR + color_scheme;
 							break;
@@ -787,9 +789,11 @@ erase_current_line_bar(FileView *view)
 				break;
 			case LINK:
 				{
+					char full[PATH_MAX];
 					char linkto[PATH_MAX];
-					if(get_link_target(view->dir_entry[old_pos].name, linkto,
-								sizeof(linkto)) != 0)
+					snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
+							view->dir_entry[old_pos].name);
+					if(get_link_target(full, linkto, sizeof(linkto)) != 0)
 					{
 						LINE_COLOR = BROKEN_LINK_COLOR + view->color_scheme;
 						break;
@@ -946,9 +950,11 @@ moveto_list_pos(FileView *view, int pos)
 				break;
 			case LINK:
 				{
+					char full[PATH_MAX];
 					char linkto[PATH_MAX];
-					if(get_link_target(view->dir_entry[pos].name, linkto,
-								sizeof(linkto)) != 0)
+					snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
+							view->dir_entry[pos].name);
+					if(get_link_target(full, linkto, sizeof(linkto)) != 0)
 					{
 						LINE_COLOR = BROKEN_LINK_COLOR + view->color_scheme;
 						break;
