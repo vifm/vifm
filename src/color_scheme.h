@@ -24,6 +24,8 @@
 #define NAME_MAX FILENAME_MAX
 #endif
 
+#define MAX_COLOR_SCHEMES 8
+
 enum Ui_colors {
 	MENU_COLOR,
 	BORDER_COLOR,
@@ -60,9 +62,12 @@ typedef struct _Col_Scheme {
 
 extern Col_scheme *col_schemes;
 
+int add_color_scheme(const char *name);
 void check_color_schemes(void);
 void read_color_scheme_file(void);
+void load_color_schemes(void);
 int check_directory_for_color_scheme(const char *);
+/* Returns value lower than zero when nothing is found */
 int find_color_scheme(const char *name);
 void complete_colorschemes(const char *name);
 

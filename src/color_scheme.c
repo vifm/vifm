@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <curses.h>
+
 #include <sys/stat.h>
 
 #include <ctype.h>
@@ -32,6 +34,7 @@
 #include "utils.h"
 
 #define MAX_LEN 1024
+#define MAX_COLOR_SCHEMES_CURSES (COLOR_PAIRS/MAXNUM_COLOR)
 
 Col_scheme *col_schemes;
 
@@ -102,8 +105,27 @@ void
 check_color_schemes(void)
 {
 	int i;
+
+	/* cfg.color_scheme_num = MIN(cfg.color_scheme_num, MAX_COLOR_SCHEMES_CURSES); */
+
 	for(i = 0; i < cfg.color_scheme_num; i++)
 		check_color_scheme(col_schemes + i);
+}
+
+int
+add_color_scheme(const char *name)
+{
+	if(cfg.color_scheme_num + 1 > MAX_COLOR_SCHEMES_CURSES)
+	{
+		(void)show_error_msg("Create Color Scheme", "Too many color schemes");
+		return 1;
+	}
+
+	cfg.color_scheme_num++;
+	init_color_scheme(&col_schemes[cfg.color_scheme_num - 1]);
+	snprintf(col_schemes[cfg.color_scheme_num - 1].name, NAME_MAX, "%s", name);
+	load_color_schemes();
+	return 0;
 }
 
 int
@@ -379,7 +401,7 @@ read_color_scheme_file(void)
 			{
 				cfg.color_scheme_num++;
 
-				if(cfg.color_scheme_num > 5)
+				if(cfg.color_scheme_num > MAX_COLOR_SCHEMES)
 					break;
 
 				init_color_scheme(&col_schemes[cfg.color_scheme_num - 1]);
@@ -405,6 +427,26 @@ read_color_scheme_file(void)
 	}
 
 	fclose(fp);
+}
+
+void
+load_color_schemes(void)
+{
+	int i;
+
+	for(i = 0; i < cfg.color_scheme_num; i++)
+	{
+		int x;
+		for(x = 0; x < MAXNUM_COLOR; x++)
+		{
+			if(x == MENU_COLOR)
+				init_pair(1 + i*MAXNUM_COLOR + x, col_schemes[i].color[x].bg,
+						col_schemes[i].color[x].fg);
+			else
+				init_pair(1 + i*MAXNUM_COLOR + x, col_schemes[i].color[x].fg,
+						col_schemes[i].color[x].bg);
+		}
+	}
 }
 
 /* The return value is the color scheme base number for the colorpairs.

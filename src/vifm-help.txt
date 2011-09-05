@@ -534,8 +534,8 @@ Commands
               menus and dialogs.
 
        :colo[rscheme] color_scheme_name
-              changes  default  color  scheme   to   color_scheme_name.    See
-              :colo[rscheme].
+              changes default color scheme  to  color_scheme_name.   With  "!"
+              color scheme will be created if it doesn't exist.
 
        :comc[lear]
               removes all user defined commands.

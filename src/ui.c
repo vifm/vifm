@@ -305,7 +305,6 @@ setup_ncurses_interface(void)
 {
 	int screen_x, screen_y;
 	int x, y;
-	int i;
 	int color_scheme;
 
 	initscr();
@@ -330,19 +329,7 @@ setup_ncurses_interface(void)
 	use_default_colors();
 
 	check_color_schemes();
-	for(i = 0; i < cfg.color_scheme_num; i++)
-	{
-		int x;
-		for(x = 0; x < MAXNUM_COLOR; x++)
-		{
-			if(x == MENU_COLOR)
-				init_pair(1 + i*MAXNUM_COLOR + x, col_schemes[i].color[x].bg,
-						col_schemes[i].color[x].fg);
-			else
-				init_pair(1 + i*MAXNUM_COLOR + x, col_schemes[i].color[x].fg,
-						col_schemes[i].color[x].bg);
-		}
-	}
+	load_color_schemes();
 
 	color_scheme = 1 + cfg.color_scheme_cur*MAXNUM_COLOR;
 	lwin.color_scheme = color_scheme;

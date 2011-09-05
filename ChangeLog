@@ -123,7 +123,7 @@
 
 	Added :touch command.
 
-	Added support of question mark for :colorscheme command.
+	Added support of question and exclamation marks for :colorscheme command.
 
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 

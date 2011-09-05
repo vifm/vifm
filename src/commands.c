@@ -227,7 +227,7 @@ static const struct cmd_add commands[] = {
 		.handler = cmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cnoremap",         .abbr = "cno",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "colorscheme",      .abbr = "colo",  .emark = 0,  .id = COM_COLORSCHEME, .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "colorscheme",      .abbr = "colo",  .emark = 1,  .id = COM_COLORSCHEME, .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = colorscheme_cmd, .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
   { .name = "command",          .abbr = "com",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
     .handler = command_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
@@ -2392,6 +2392,12 @@ colorscheme_cmd(const struct cmd_info *cmd_info)
 		/* show menu with colorschemes listed */
 		show_colorschemes_menu(curr_view);
 		return 0;
+	}
+	else if(find_color_scheme(cmd_info->argv[0]) < 0 && cmd_info->emark)
+	{
+		if(add_color_scheme(cmd_info->argv[0]) != 0)
+			return 0;
+		return load_color_scheme(cmd_info->argv[0]);
 	}
 	else
 	{
