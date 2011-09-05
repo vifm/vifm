@@ -2860,7 +2860,7 @@ highlight_cmd(const struct cmd_info *cmd_info)
 		if(strcmp(arg_name, "ctermbg") == 0)
 		{
 			int col;
-			if((col = get_color(equal + 1)) < 0)
+			if((col = get_color(equal + 1)) < -1)
 			{
 				status_bar_errorf("Color name or number not recognized: %s", equal + 1);
 				return 1;
@@ -2870,7 +2870,7 @@ highlight_cmd(const struct cmd_info *cmd_info)
 		else if(strcmp(arg_name, "ctermfg") == 0)
 		{
 			int col;
-			if((col = get_color(equal + 1)) < 0)
+			if((col = get_color(equal + 1)) < -1)
 			{
 				status_bar_errorf("Color name or number not recognized: %s", equal + 1);
 				return 1;
@@ -2896,8 +2896,10 @@ get_color(const char *text)
 	int col_pos = string_array_pos_case(COLOR_NAMES, ARRAY_LEN(COLOR_NAMES),
 			text);
 	int col_num = isdigit(*text) ? atoi(text) : -1;
-	if(col_pos < 0 && (col_num < 0 || col_num > COLORS))
+	if(strcmp(text, "-1") == 0)
 		return -1;
+	if(col_pos < 0 && (col_num < 0 || col_num > COLORS))
+		return -2;
 	if(col_pos > 0)
 		col_pos = COLOR_VALS[col_pos];
 	return MAX(col_pos, col_num);
