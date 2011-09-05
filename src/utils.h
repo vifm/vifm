@@ -81,7 +81,9 @@ int check_link_is_dir(const char *filename);
 /* Returns new size */
 int add_to_string_array(char ***array, int len, int count, ...);
 int is_in_string_array(char **array, size_t len, const char *key);
+int is_in_string_array_case(char **array, size_t len, const char *key);
 int string_array_pos(char **array, size_t len, const char *key);
+int string_array_pos_case(char **array, size_t len, const char *key);
 void free_string_array(char **array, size_t len);
 void free_wstring_array(wchar_t **array, size_t len);
 void canonicalize_path(const char *directory, char *buf, size_t buf_size);

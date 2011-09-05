@@ -38,6 +38,52 @@
 
 Col_scheme *col_schemes;
 
+char *HI_GROUPS[] = {
+	"Menu",
+	"Border",
+	"Win",
+	"Status_bar",
+	"CurrLine",
+	"Directory",
+	"Link",
+	"Socket",
+	"Device",
+	"Executable",
+	"Selected",
+	"Current",
+	"BrokenLink",
+	"TopLine",
+	"StatusLine",
+	"Fifo",
+	"ErrorMsg",
+};
+
+static int _gnuc_unused HI_GROUPS_size_guard[
+	(ARRAY_LEN(HI_GROUPS) + 1 == MAXNUM_COLOR) ? 1 : -1
+];
+
+char *COLOR_NAMES[8] = {
+	"black",
+	"red",
+	"green",
+	"yellow",
+	"blue",
+	"magenta",
+	"cyan",
+	"white",
+};
+
+int COLOR_VALS[8] = {
+	COLOR_BLACK,
+	COLOR_RED,
+	COLOR_GREEN,
+	COLOR_YELLOW,
+	COLOR_BLUE,
+	COLOR_MAGENTA,
+	COLOR_CYAN,
+	COLOR_WHITE,
+};
+
 static const int default_colors[][2] = {
 	{ COLOR_WHITE,   COLOR_BLACK }, /* MENU_COLOR */
 	{ COLOR_BLACK,   COLOR_WHITE }, /* BORDER_COLOR */
@@ -106,7 +152,7 @@ check_color_schemes(void)
 {
 	int i;
 
-	/* cfg.color_scheme_num = MIN(cfg.color_scheme_num, MAX_COLOR_SCHEMES_CURSES); */
+	cfg.color_scheme_num = MIN(cfg.color_scheme_num, MAX_COLOR_SCHEMES_CURSES);
 
 	for(i = 0; i < cfg.color_scheme_num; i++)
 		check_color_scheme(col_schemes + i);

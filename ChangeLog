@@ -125,6 +125,8 @@
 
 	Added support of question and exclamation marks for :colorscheme command.
 
+	Added :highlight command.
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,

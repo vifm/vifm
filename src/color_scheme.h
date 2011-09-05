@@ -62,6 +62,10 @@ typedef struct _Col_Scheme {
 
 extern Col_scheme *col_schemes;
 
+extern char *HI_GROUPS[];
+extern char *COLOR_NAMES[8];
+extern int COLOR_VALS[8];
+
 int add_color_scheme(const char *name);
 void check_color_schemes(void);
 void read_color_scheme_file(void);

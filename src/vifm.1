@@ -772,6 +772,13 @@ show the help file.
 is the same as using ':h argument' in vim.  Use vifm-<something> to get help
 on vifm (tab completion works).
 .TP
+.BI ":hi[ghlight] group-name"
+will show information on given highlight group of the default color scheme.
+.TP
+.BI ":hi[ghlight] group-name ctermfg=color|ctermbg=color"
+sets foreground (ctermfg) or/and background (ctermbg) parameters of highlight
+group of the default color scheme.
+.TP
 .BI :his[tory]
 creates a popup menu of directories visited.
 .TP

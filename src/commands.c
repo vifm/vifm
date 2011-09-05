@@ -102,6 +102,7 @@ enum {
 	COM_FIND,
 	COM_GREP,
 	COM_HELP,
+	COM_HIGHLIGHT,
 	COM_HISTORY,
 	COM_PUSHD,
 	COM_SET,
@@ -121,6 +122,8 @@ static void exec_completion(const char *str);
 static void filename_completion(const char *str, int type);
 static void complete_help(const char *str);
 static void complete_history(const char *str);
+static void complete_highlight_groups(const char *str);
+static int complete_highlight_arg(const char *str);
 static int is_entry_dir(const struct dirent *d);
 static int is_entry_exec(const struct dirent *d);
 static void split_path(void);
@@ -154,6 +157,8 @@ static int filter_cmd(const struct cmd_info *cmd_info);
 static int find_cmd(const struct cmd_info *cmd_info);
 static int grep_cmd(const struct cmd_info *cmd_info);
 static int help_cmd(const struct cmd_info *cmd_info);
+static int highlight_cmd(const struct cmd_info *cmd_info);
+static int get_color(const char *text);
 static int history_cmd(const struct cmd_info *cmd_info);
 static int invert_cmd(const struct cmd_info *cmd_info);
 static int jobs_cmd(const struct cmd_info *cmd_info);
@@ -265,6 +270,8 @@ static const struct cmd_add commands[] = {
 		.handler = grep_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "help",             .abbr = "h",     .emark = 0,  .id = COM_HELP,        .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = help_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
+	{ .name = "highlight",        .abbr = "hi",    .emark = 0,  .id = COM_HIGHLIGHT,   .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = highlight_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 3,       .select = 0, },
 	{ .name = "history",          .abbr = "his",   .emark = 0,  .id = COM_HISTORY,     .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = history_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "invert",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -414,6 +421,13 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		complete_help(args);
 	else if(id == COM_HISTORY)
 		complete_history(args);
+	else if(id == COM_HIGHLIGHT)
+	{
+		if(argc == 0)
+			complete_highlight_groups(args);
+		else
+			start += complete_highlight_arg(arg);
+	}
 	else
 	{
 		start = strrchr(args + arg_pos, '/');
@@ -726,6 +740,52 @@ complete_history(const char *str)
 	}
 	completion_group_end();
 	add_completion(str);
+}
+
+static void
+complete_highlight_groups(const char *str)
+{
+	int i;
+	size_t len = strlen(str);
+	for(i = 0; i < MAXNUM_COLOR - 1; i++)
+	{
+		if(strncasecmp(str, HI_GROUPS[i], len) == 0)
+			add_completion(HI_GROUPS[i]);
+	}
+	completion_group_end();
+	add_completion(str);
+}
+
+static int
+complete_highlight_arg(const char *str)
+{
+	int i;
+	char *equal = strchr(str, '=');
+	int result = (equal == NULL) ? 0 : (equal - str + 1);
+	size_t len = strlen((equal == NULL) ? str : ++equal);
+	if(equal == NULL)
+	{
+		static const char *args[] = {
+			"ctermfg",
+			"ctermbg",
+		};
+		for(i = 0; i < ARRAY_LEN(args); i++)
+		{
+			if(strncmp(str, args[i], len) == 0)
+				add_completion(args[i]);
+		}
+	}
+	else
+	{
+		for(i = 0; i < ARRAY_LEN(COLOR_NAMES); i++)
+		{
+			if(strncasecmp(equal, COLOR_NAMES[i], len) == 0)
+				add_completion(COLOR_NAMES[i]);
+		}
+	}
+	completion_group_end();
+	add_completion(str);
+	return result;
 }
 
 static int
@@ -2744,6 +2804,102 @@ help_cmd(const struct cmd_info *cmd_info)
 	else
 		shellout(buf, -1);
 	return 0;
+}
+
+static int
+highlight_cmd(const struct cmd_info *cmd_info)
+{
+	int i;
+	int pos;
+
+	if(!is_in_string_array_case(HI_GROUPS, MAXNUM_COLOR - 1, cmd_info->argv[0]))
+	{
+		status_bar_errorf("Highlight group not found: %s", cmd_info->argv[0]);
+		return 1;
+	}
+
+	pos = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR - 1, cmd_info->argv[0]);
+	if(cmd_info->argc == 1)
+	{
+		char fg_buf[16], bg_buf[16];
+		int fg = col_schemes[cfg.color_scheme_cur].color[pos].fg;
+		int bg = col_schemes[cfg.color_scheme_cur].color[pos].bg;
+
+		if(fg < ARRAY_LEN(COLOR_NAMES))
+			strcpy(fg_buf, COLOR_NAMES[fg]);
+		else
+			snprintf(fg_buf, sizeof(fg_buf), "%d", fg);
+
+		if(bg < ARRAY_LEN(COLOR_NAMES))
+			strcpy(bg_buf, COLOR_NAMES[bg]);
+		else
+			snprintf(bg_buf, sizeof(bg_buf), "%d", bg);
+
+		status_bar_errorf("%-10s ctermfg=%-8s ctermbg=%s", HI_GROUPS[pos], fg_buf,
+				bg_buf);
+		return 1;
+	}
+
+	for(i = 1; i < cmd_info->argc; i++)
+	{
+		char *equal;
+		char arg_name[16];
+		if((equal = strchr(cmd_info->argv[i], '=')) == NULL)
+		{
+			status_bar_errorf("Missing equal sign in \"%s\"", cmd_info->argv[i]);
+			return 1;
+		}
+		else if(equal[1] == '\0')
+		{
+			status_bar_errorf("Missing argument: %s", cmd_info->argv[i]);
+			return 1;
+		}
+		snprintf(arg_name, MIN(sizeof(arg_name), equal - cmd_info->argv[i] + 1),
+				"%s", cmd_info->argv[i]);
+		if(strcmp(arg_name, "ctermbg") == 0)
+		{
+			int col;
+			if((col = get_color(equal + 1)) < 0)
+			{
+				status_bar_errorf("Color name or number not recognized: %s", equal + 1);
+				return 1;
+			}
+			col_schemes[cfg.color_scheme_cur].color[pos].bg = col;
+		}
+		else if(strcmp(arg_name, "ctermfg") == 0)
+		{
+			int col;
+			if((col = get_color(equal + 1)) < 0)
+			{
+				status_bar_errorf("Color name or number not recognized: %s", equal + 1);
+				return 1;
+			}
+			col_schemes[cfg.color_scheme_cur].color[pos].fg = col;
+		}
+		else
+		{
+			status_bar_errorf("Illegal argument: %s", cmd_info->argv[i]);
+			return 1;
+		}
+	}
+	if(curr_stats.vifm_started >= 2)
+		init_pair(cfg.color_scheme + pos,
+				col_schemes[cfg.color_scheme_cur].color[pos].fg,
+				col_schemes[cfg.color_scheme_cur].color[pos].bg);
+	return 0;
+}
+
+static int
+get_color(const char *text)
+{
+	int col_pos = string_array_pos_case(COLOR_NAMES, ARRAY_LEN(COLOR_NAMES),
+			text);
+	int col_num = isdigit(*text) ? atoi(text) : -1;
+	if(col_pos < 0 && (col_num < 0 || col_num > COLORS))
+		return -1;
+	if(col_pos > 0)
+		col_pos = COLOR_VALS[col_pos];
+	return MAX(col_pos, col_num);
 }
 
 static int
