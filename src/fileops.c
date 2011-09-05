@@ -2984,6 +2984,26 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	return 0;
 }
 
+static void
+go_to_first_file(FileView *view, char **names, int count)
+{
+	int i;
+	load_saving_pos(view, 1);
+	for(i = 0; i < view->list_rows; i++)
+	{
+		char name[PATH_MAX];
+		snprintf(name, sizeof(name), "%s", view->dir_entry[i].name);
+		chosp(name);
+		if(is_in_string_array(names, count, name))
+		{
+			view->list_pos = i;
+			break;
+		}
+	}
+	draw_dir_list(view, view->top_line);
+	moveto_list_pos(view, view->list_pos);
+}
+
 void
 make_dirs(FileView *view, char **names, int count, int create_parent)
 {
@@ -3016,6 +3036,8 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 			add_operation(OP_MKDIR, cp, NULL, full, "");
 	}
 	cmd_group_end();
+
+	go_to_first_file(view, names, count);
 }
 
 int
@@ -3074,6 +3096,8 @@ make_files(FileView *view, char **names, int count)
 			add_operation(OP_MKFILE, NULL, NULL, full, "");
 	}
 	cmd_group_end();
+
+	go_to_first_file(view, names, count);
 
 	return 0;
 }
