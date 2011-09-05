@@ -209,6 +209,8 @@ status_bar_message_i(const char *message, int error)
 		p = q + 1;
 	}
 	status_bar_lines += (strlen(p) + len - 1)/len;
+	if(status_bar_lines == 0)
+		status_bar_lines = 1;
 
 	lines = status_bar_lines;
 	if(status_bar_lines > 1 || strlen(p) > getmaxx(status_bar))

@@ -108,6 +108,7 @@ void write_info_file(void);
 void set_config_dir(void);
 void init_config(void);
 void exec_config(void);
+void source_file(const char *file);
 int is_old_config(void);
 const char * get_vicmd(int *bg);
 

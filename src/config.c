@@ -1010,14 +1010,19 @@ write_info_file(void)
 void
 exec_config(void)
 {
-	FILE *fp;
 	char config_file[PATH_MAX];
+	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
+	source_file(config_file);
+}
+
+void
+source_file(const char *file)
+{
+	FILE *fp;
 	char line[MAX_LEN*2];
 	char next_line[MAX_LEN];
 
-	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
-
-	if((fp = fopen(config_file, "r")) == NULL)
+	if((fp = fopen(file, "r")) == NULL)
 		return;
 
 	if(fgets(line, MAX_LEN, fp) != NULL)

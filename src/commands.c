@@ -2442,6 +2442,7 @@ cnoremap_cmd(const struct cmd_info *cmd_info)
 static int
 colorscheme_cmd(const struct cmd_info *cmd_info)
 {
+	int pos = find_color_scheme(cmd_info->argv[0]);
 	if(cmd_info->qmark)
 	{
 		status_bar_message(col_schemes[cfg.color_scheme_cur].name);
@@ -2453,7 +2454,7 @@ colorscheme_cmd(const struct cmd_info *cmd_info)
 		show_colorschemes_menu(curr_view);
 		return 0;
 	}
-	else if(find_color_scheme(cmd_info->argv[0]) < 0 && cmd_info->emark)
+	else if(pos < 0 && cmd_info->emark)
 	{
 		if(add_color_scheme(cmd_info->argv[0],
 				(cmd_info->argc == 1) ? NULL : cmd_info->argv[1]) != 0)
@@ -2462,6 +2463,8 @@ colorscheme_cmd(const struct cmd_info *cmd_info)
 	}
 	else
 	{
+		if(cmd_info->emark && cmd_info->argc == 2)
+			strcpy(col_schemes[pos].dir, cmd_info->argv[1]);
 		return load_color_scheme(cmd_info->argv[0]);
 	}
 }

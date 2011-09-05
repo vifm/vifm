@@ -251,7 +251,7 @@ process_set_args(const char *args)
 		print_func("", "Invalid argument for :set command");
 		status_bar_error(print_buf);
 	}
-	else
+	else if(print_buf[0] != '\0')
 	{
 		status_bar_message(print_buf);
 	}
