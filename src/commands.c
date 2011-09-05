@@ -761,6 +761,9 @@ is_entry_exec(const struct dirent *d)
 		return 0;
 	if(d->d_type == DT_LNK && check_link_is_dir(d->d_name))
 		return 0;
+	if(access(d->d_name, X_OK) != 0)
+		return 0;
+	return 1;
 #else
 	return is_win_executable(d->d_name);
 #endif

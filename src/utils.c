@@ -1022,7 +1022,7 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 	if(len == -1)
 		return -1;
 
-	linkto[len] = '\0';
+	buf[len] = '\0';
 	return 0;
 #else
 	static char filename[PATH_MAX];
