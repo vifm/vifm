@@ -35,7 +35,6 @@
 #include "status.h"
 #include "utils.h"
 
-#define MAX_LEN 1024
 #define MAX_COLOR_SCHEMES_CURSES (COLOR_PAIRS/MAXNUM_COLOR)
 
 Col_scheme *col_schemes;

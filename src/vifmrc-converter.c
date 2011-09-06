@@ -1,4 +1,8 @@
+#include <curses.h>
+
 #include <limits.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include <ctype.h>
@@ -6,6 +10,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "color_scheme.h"
+#include "macros.h"
+
+#define MAX_LEN 1024
 
 enum {
 	VIFMINFO_OPTIONS   = 1 << 0,
@@ -107,6 +116,72 @@ struct{
 	.use_screen = 0,
 };
 
+static const int default_colors[][2] = {
+	{ COLOR_WHITE,   COLOR_BLACK }, /* MENU_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE }, /* BORDER_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK }, /* WIN_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK }, /* STATUS_BAR_COLOR */
+	{ COLOR_WHITE,   COLOR_BLUE  }, /* CURR_LINE_COLOR */
+	{ COLOR_CYAN,    COLOR_BLACK }, /* DIRECTORY_COLOR */
+	{ COLOR_YELLOW,  COLOR_BLACK }, /* LINK_COLOR */
+	{ COLOR_MAGENTA, COLOR_BLACK }, /* SOCKET_COLOR */
+	{ COLOR_RED,     COLOR_BLACK }, /* DEVICE_COLOR */
+	{ COLOR_GREEN,   COLOR_BLACK }, /* EXECUTABLE_COLOR */
+	{ COLOR_MAGENTA, COLOR_BLACK }, /* SELECTED_COLOR */
+	{ COLOR_BLUE,    COLOR_BLACK }, /* CURRENT_COLOR */
+	{ COLOR_RED,     COLOR_BLACK }, /* BROKEN_LINK_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE }, /* TOP_LINE_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE }, /* STATUS_LINE_COLOR */
+	{ COLOR_CYAN,    COLOR_BLACK }, /* FIFO_COLOR */
+	{ COLOR_RED,     COLOR_BLACK }, /* ERROR_MSG_COLOR */
+};
+
+static int _gnuc_unused default_colors_size_guard[
+	(ARRAY_LEN(default_colors) + 1 == MAXNUM_COLOR) ? 1 : -1
+];
+
+char *HI_GROUPS[] = {
+	"Menu",
+	"Border",
+	"Win",
+	"StatusBar",
+	"CurrLine",
+	"Directory",
+	"Link",
+	"Socket",
+	"Device",
+	"Executable",
+	"Selected",
+	"Current",
+	"BrokenLink",
+	"TopLine",
+	"StatusLine",
+	"Fifo",
+	"ErrorMsg",
+};
+
+static int _gnuc_unused HI_GROUPS_size_guard[
+	(ARRAY_LEN(HI_GROUPS) + 1 == MAXNUM_COLOR) ? 1 : -1
+];
+
+char *COLOR_NAMES[8] = {
+	"black",
+	"red",
+	"green",
+	"yellow",
+	"blue",
+	"magenta",
+	"cyan",
+	"white",
+};
+
+struct{
+	int count;
+	Col_scheme array[MAX_COLOR_SCHEMES];
+}cs = {
+	.count = 0,
+};
+
 static void add_command(const char *name, const char *cmd);
 static const char * conv_udf_name(const char *cmd);
 static void add_bookmark(char name, const char *dir, const char *file);
@@ -117,6 +192,14 @@ static void append_vifmrc(const char *config_file, int comment_out);
 static void append_startup(const char *config_file, const char *startup_file);
 static void append_vifminfo_option(const char *config_file, int vifm_like);
 static void write_vifminfo(const char *config_file, int vifm_like);
+static void convert_color_schemes(const char *colorschemes_file,
+		const char *colors_dir);
+static void read_color_scheme_file(const char *config_file);
+static void load_default_colors(void);
+static void init_color_scheme(Col_scheme *cs);
+static void add_color(char s1[], char s2[], char s3[]);
+static int colname2int(char col[]);
+static void write_color_schemes(const char *colors_dir);
 
 static void
 chomp(char *text)
@@ -372,6 +455,7 @@ main(int argc, char **argv)
 	char config_file[PATH_MAX], config_file_bak[PATH_MAX];
 	char startup_file[PATH_MAX];
 	char vifminfo_file[PATH_MAX], vifminfo_file_bak[PATH_MAX];
+	char colorschemes_file[PATH_MAX], colors_dir[PATH_MAX];
 	int vifm_like;
 	char *vifmrc_arg, *vifminfo_arg;
 
@@ -379,14 +463,17 @@ main(int argc, char **argv)
 
 	if(argc != 2 && argc != 4)
 	{
-		puts("Usage: vifmrc-converter 0|1 [vifmrc_file vifminfo_file]\n\n"
-				"1 means comment commands in vifmrc and put more things to vifminfo");
+		puts("Usage: vifmrc-converter 0|1|2 [vifmrc_file vifminfo_file]\n\n"
+				"1 means comment commands in vifmrc and put more things to vifminfo\n"
+				"2 means convert colorscheme file only");
 		return 1;
 	}
-	if(argv[1][1] != '\0' || (argv[1][0] != '0' && argv[1][0] != '1'))
+	if(argv[1][1] != '\0' || (argv[1][0] != '0' && argv[1][0] != '1' &&
+			argv[1][0] != '2'))
 	{
-		puts("Usage: vifmrc-converter 0|1 [vifmrc_file vifminfo_file]\n\n"
-				"1 means comment commands in vifmrc and put more things to vifminfo");
+		puts("Usage: vifmrc-converter 0|1|2 [vifmrc_file vifminfo_file]\n\n"
+				"1 means comment commands in vifmrc and put more things to vifminfo\n"
+				"2 means convert colorscheme file only");
 		return 1;
 	}
 
@@ -414,6 +501,9 @@ main(int argc, char **argv)
 	snprintf(vifminfo_file, sizeof(startup_file), "%s/vifminfo", config_dir);
 	snprintf(vifminfo_file_bak, sizeof(vifminfo_file_bak), "%s/vifminfo.bak",
 			config_dir);
+	snprintf(colorschemes_file, sizeof(colorschemes_file), "%s/colorschemes",
+			config_dir);
+	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", config_dir);
 #ifdef _WIN32
 	change_slashes(config_dir);
 	change_slashes(config_file);
@@ -421,7 +511,15 @@ main(int argc, char **argv)
 	change_slashes(startup_file);
 	change_slashes(vifminfo_file);
 	change_slashes(vifminfo_file_bak);
+	change_slashes(colorschemes_file);
+	change_slashes(colors_dir);
 #endif
+
+	if(vifm_like == 2)
+	{
+		convert_color_schemes(colorschemes_file, colors_dir);
+		return 0;
+	}
 
 	if(argc == 4)
 	{
@@ -469,6 +567,8 @@ main(int argc, char **argv)
 	append_startup(vifmrc_arg, startup_file);
 
 	write_vifminfo(vifminfo_arg, vifm_like);
+
+	convert_color_schemes(colorschemes_file, colors_dir);
 
 	return 0;
 }
@@ -595,7 +695,7 @@ write_vifmrc(const char *config_file, int comment_out)
 		exit(1);
 	}
 
-	fprintf(fp, "\" vim: set filetype=vifm :\n");
+	fprintf(fp, "\" vim: filetype=vifm :\n");
 	fprintf(fp, "\" You can edit this file by hand.\n");
 	fprintf(fp, "\" The \" character at the beginning of a line comments out the line.\n");
 	fprintf(fp, "\" Blank lines are ignored.\n");
@@ -914,6 +1014,286 @@ write_vifminfo(const char *config_file, int vifm_like)
 	}
 
 	fclose(fp);
+}
+
+static void
+convert_color_schemes(const char *colorschemes_file, const char *colors_dir)
+{
+	read_color_scheme_file(colorschemes_file);
+	write_color_schemes(colors_dir);
+}
+
+static void
+read_color_scheme_file(const char *config_file)
+{
+	FILE *fp;
+	char line[MAX_LEN];
+	char *s1 = NULL;
+	char *s2 = NULL;
+	char *s3 = NULL;
+	char *sx = NULL;
+
+	if((fp = fopen(config_file, "r")) == NULL)
+	{
+		load_default_colors();
+		cs.count = 1;
+		return;
+	}
+
+	while(fgets(line, MAX_LEN, fp))
+	{
+		int args;
+
+		if(line[0] == '#')
+			continue;
+
+		if((sx = s1 = strchr(line, '=')) != NULL)
+		{
+			s1++;
+			chomp(s1);
+			*sx = '\0';
+			args = 1;
+		}
+		else
+			continue;
+		if((sx = s2 = strchr(s1, '=')) != NULL)
+		{
+			s2++;
+			chomp(s2);
+			*sx = '\0';
+			args = 2;
+		}
+		if((args == 2) && ((sx = s3 = strchr(s2, '=')) != NULL))
+		{
+			s3++;
+			chomp(s3);
+			*sx = '\0';
+			args = 3;
+		}
+
+		if(args == 1)
+		{
+			if(!strcmp(line, "COLORSCHEME"))
+			{
+				cs.count++;
+
+				if(cs.count > MAX_COLOR_SCHEMES)
+					break;
+
+				init_color_scheme(&cs.array[cs.count - 1]);
+
+				snprintf(cs.array[cs.count - 1].name, NAME_MAX, "%s", s1);
+				continue;
+			}
+			if(!strcmp(line, "DIRECTORY"))
+			{
+				Col_scheme* c;
+
+				c = &cs.array[cs.count - 1];
+				snprintf(c->dir, PATH_MAX, "%s", s1);
+				continue;
+			}
+		}
+		if(!strcmp(line, "COLOR") && args == 3)
+			add_color(s1, s2, s3);
+	}
+
+	fclose(fp);
+}
+
+static void
+load_default_colors(void)
+{
+	init_color_scheme(&cs.array[0]);
+
+	snprintf(cs.array[0].name, NAME_MAX, "Default");
+	snprintf(cs.array[0].dir, PATH_MAX, "/");
+}
+
+static void
+init_color_scheme(Col_scheme *cs)
+{
+	int i;
+	strcpy(cs->dir, "/");
+	cs->defaulted = 0;
+
+	for(i = 0; i < MAXNUM_COLOR; i++)
+	{
+		cs->color[i].fg = default_colors[i][0];
+		cs->color[i].bg = default_colors[i][1];
+	}
+}
+
+static void
+add_color(char s1[], char s2[], char s3[])
+{
+	int fg, bg;
+	const int x = cs.count - 1;
+	int y;
+
+	fg = colname2int(s2);
+	bg = colname2int(s3);
+
+	if(!strcmp(s1, "MENU"))
+		y = MENU_COLOR;
+	else if(!strcmp(s1, "BORDER"))
+		y = BORDER_COLOR;
+	else if(!strcmp(s1, "WIN"))
+		y = WIN_COLOR;
+	else if(!strcmp(s1, "STATUS_BAR"))
+		y = STATUS_BAR_COLOR;
+	else if(!strcmp(s1, "CURR_LINE"))
+		y = CURR_LINE_COLOR;
+	else if(!strcmp(s1, "DIRECTORY"))
+		y = DIRECTORY_COLOR;
+	else if(!strcmp(s1, "LINK"))
+		y = LINK_COLOR;
+	else if(!strcmp(s1, "SOCKET"))
+		y = SOCKET_COLOR;
+	else if(!strcmp(s1, "DEVICE"))
+		y = DEVICE_COLOR;
+	else if(!strcmp(s1, "EXECUTABLE"))
+		y = EXECUTABLE_COLOR;
+	else if(!strcmp(s1, "SELECTED"))
+		y = SELECTED_COLOR;
+	else if(!strcmp(s1, "CURRENT"))
+		y = CURRENT_COLOR;
+	else if(!strcmp(s1, "BROKEN_LINK"))
+		y = BROKEN_LINK_COLOR;
+	else if(!strcmp(s1, "TOP_LINE"))
+		y = TOP_LINE_COLOR;
+	else if(!strcmp(s1, "STATUS_LINE"))
+		y = STATUS_LINE_COLOR;
+	else if(!strcmp(s1, "FIFO"))
+		y = FIFO_COLOR;
+	else if(!strcmp(s1, "ERROR_MSG"))
+		y = ERROR_MSG_COLOR;
+	else
+		return;
+
+	cs.array[x].color[y].fg = fg;
+	cs.array[x].color[y].bg = bg;
+}
+
+/*
+ * convert possible <color_name> to <int>
+ */
+static int
+colname2int(char col[])
+{
+	/* test if col[] is a number... */
+	if(isdigit(col[0]))
+		return atoi(col);
+
+	/* otherwise convert */
+	if(!strcasecmp(col, "black"))
+		return 0;
+	if(!strcasecmp(col, "red"))
+		return 1;
+	if(!strcasecmp(col, "green"))
+		return 2;
+	if(!strcasecmp(col, "yellow"))
+		return 3;
+	if(!strcasecmp(col, "blue"))
+		return 4;
+	if(!strcasecmp(col, "magenta"))
+		return 5;
+	if(!strcasecmp(col, "cyan"))
+		return 6;
+	if(!strcasecmp(col, "white"))
+		return 7;
+	/* return default color */
+	return -1;
+}
+
+static void
+write_color_schemes(const char *colors_dir)
+{
+	int x;
+
+	if(access(colors_dir, F_OK) != 0)
+	{
+#ifndef _WIN32
+		if(mkdir(colors_dir, 0777) != 0)
+#else
+		if(mkdir(colors_dir) != 0)
+#endif
+		{
+			fprintf(stderr, "Can't create colors directory at \"%s\"\n", colors_dir);
+			exit(1);
+		}
+	}
+
+	for(x = 0; x < cs.count; x++)
+	{
+		FILE *fp;
+		char buf[PATH_MAX];
+		int y;
+
+		snprintf(buf, sizeof(buf), "%s/%s", colors_dir, cs.array[x].name);
+		if((fp = fopen(buf, "w")) == NULL)
+		{
+			fprintf(stderr, "Can't create color scheme file at \"%s\"\n", buf);
+			continue;
+		}
+
+		fprintf(fp, "\" vim: filetype=vifm :\n");
+		fprintf(fp, "\" You can edit this file by hand.\n");
+		fprintf(fp, "\" The \" character at the beginning of a line comments out the line.\n");
+		fprintf(fp, "\" Blank lines are ignored.\n\n");
+
+		fprintf(fp, "\" The Default color scheme is used for any directory that does not have\n");
+		fprintf(fp, "\" a specified scheme and for parts of user interface like menus. A\n");
+		fprintf(fp, "\" color scheme set for a base directory will also\n");
+		fprintf(fp, "\" be used for the sub directories.\n\n");
+
+		fprintf(fp, "\" The standard ncurses colors are: \n");
+		fprintf(fp, "\" Default = -1 can be used for transparency\n");
+		fprintf(fp, "\" Black = 0\n");
+		fprintf(fp, "\" Red = 1\n");
+		fprintf(fp, "\" Green = 2\n");
+		fprintf(fp, "\" Yellow = 3\n");
+		fprintf(fp, "\" Blue = 4\n");
+		fprintf(fp, "\" Magenta = 5\n");
+		fprintf(fp, "\" Cyan = 6\n");
+		fprintf(fp, "\" White = 7\n\n");
+
+		fprintf(fp, "\" Vifm supports 256 colors you can use color numbers 0-255\n");
+		fprintf(fp, "\" (requires properly set up terminal: set your TERM environment variable\n");
+		fprintf(fp, "\" (directly or using resources) to some color terminal name (e.g.\n");
+		fprintf(fp, "\" xterm-256color) from /usr/lib/terminfo/; you can check current number\n");
+		fprintf(fp, "\" of colors in your terminal with tput colors command)\n\n");
+
+		fprintf(fp, "\" colorscheme! OneWordDescription /Full/Path/To/Base/Directory\n");
+		fprintf(fp, "\" highlight group ctermfg=foreground_color_ ctermbg=background_color\n\n");
+
+		fprintf(fp, "\ncolorscheme! '%s' '%s'\n", cs.array[x].name, cs.array[x].dir);
+
+		for(y = 0; y < MAXNUM_COLOR - 1; y++)
+		{
+			char fg_buf[16], bg_buf[16];
+			int fg = cs.array[x].color[y].fg;
+			int bg = cs.array[x].color[y].bg;
+			if(fg == -1)
+				strcpy(fg_buf, "default");
+			else if(fg < ARRAY_LEN(COLOR_NAMES))
+				strcpy(fg_buf, COLOR_NAMES[fg]);
+			else
+				snprintf(fg_buf, sizeof(fg_buf), "%d", fg);
+
+			if(bg == -1)
+				strcpy(bg_buf, "default");
+			else if(bg < ARRAY_LEN(COLOR_NAMES))
+				strcpy(bg_buf, COLOR_NAMES[bg]);
+			else
+				snprintf(bg_buf, sizeof(bg_buf), "%d", bg);
+
+			fprintf(fp, "highlight %s ctermfg=%s ctermbg=%s\n", HI_GROUPS[y], fg_buf,
+					bg_buf);
+		}
+
+		fclose(fp);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

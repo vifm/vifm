@@ -275,6 +275,7 @@ vifm_SOURCES = \
 	visual.c visual.h
 
 vifmrc_converter_SOURCES = \
+	color_scheme.h \
 	vifmrc-converter.c
 
 all: all-am

@@ -2905,7 +2905,8 @@ get_color(const char *text)
 	int col_num = isdigit(*text) ? atoi(text) : -1;
 	if(strcmp(text, "-1") == 0 || strcasecmp(text, "default") == 0)
 		return -1;
-	if(col_pos < 0 && (col_num < 0 || col_num > COLORS))
+	if(col_pos < 0 && (col_num < 0 ||
+			(curr_stats.vifm_started >= 2 && col_num > COLORS)))
 		return -2;
 	if(col_pos > 0)
 		col_pos = COLOR_VALS[col_pos];

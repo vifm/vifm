@@ -1056,16 +1056,13 @@ source_file(const char *file)
 	fclose(fp);
 }
 
-int
-is_old_config(void)
+static int
+is_conf_file(const char *file)
 {
-	char config_file[PATH_MAX];
 	FILE *fp;
 	char line[MAX_LEN];
 
-	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
-
-	if((fp = fopen(config_file, "r")) == NULL)
+	if((fp = fopen(file, "r")) == NULL)
 		return 0;
 
 	while(fgets(line, sizeof(line), fp))
@@ -1083,6 +1080,22 @@ is_old_config(void)
 	fclose(fp);
 
 	return 0;
+}
+
+int
+is_old_config(void)
+{
+	char config_file[PATH_MAX];
+	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
+	return is_conf_file(config_file);
+}
+
+int
+are_old_color_schemes(void)
+{
+	char colors_dir[PATH_MAX];
+	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
+	return !is_dir(colors_dir);
 }
 
 const char *

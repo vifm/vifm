@@ -420,6 +420,15 @@ main(int argc, char *argv[])
 
 	if(!old_config && !no_configs)
 	{
+		if(are_old_color_schemes())
+		{
+			if(run_converter(2) != 0)
+			{
+				endwin();
+				fputs("Problems with running vifmrc-converter", stderr);
+				exit(0);
+			}
+		}
 		read_color_schemes();
 		check_color_schemes();
 		load_color_schemes();

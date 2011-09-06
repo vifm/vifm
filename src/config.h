@@ -110,6 +110,7 @@ void init_config(void);
 void exec_config(void);
 void source_file(const char *file);
 int is_old_config(void);
+int are_old_color_schemes(void);
 const char * get_vicmd(int *bg);
 
 #endif
