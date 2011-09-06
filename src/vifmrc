@@ -1,3 +1,4 @@
+" vim: filetype=vifm :
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -178,7 +179,10 @@ nmap gb :file &<cr>l
 
 nmap <f3> :!less %f<cr>
 nmap <f4> :edit<cr>
-nmap <f5> :!cp %f %D<cr>
-nmap <f6> :!mv %f %D<cr>
-nmap <f7> :!mkdir<space>
+nmap <f5> :alink<cr>
+nmap <f5> :rlink<cr>
+nmap <f5> :clone<cr>
+nmap <f5> :copy<cr>
+nmap <f6> :move<cr>
+nmap <f7> :mkdir<space>
 nmap <f8> :delete<cr>
