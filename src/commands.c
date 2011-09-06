@@ -777,6 +777,8 @@ complete_highlight_arg(const char *str)
 	}
 	else
 	{
+		if(strncasecmp(equal, "default", len) == 0)
+			add_completion("default");
 		for(i = 0; i < ARRAY_LEN(COLOR_NAMES); i++)
 		{
 			if(strncasecmp(equal, COLOR_NAMES[i], len) == 0)
@@ -784,7 +786,7 @@ complete_highlight_arg(const char *str)
 		}
 	}
 	completion_group_end();
-	add_completion(str);
+	add_completion((equal == NULL) ? str : equal);
 	return result;
 }
 
