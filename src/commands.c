@@ -2845,7 +2845,7 @@ highlight_cmd(const struct cmd_info *cmd_info)
 		else
 			snprintf(bg_buf, sizeof(bg_buf), "%d", bg);
 
-		status_bar_errorf("%-10s ctermfg=%-8s ctermbg=%s", HI_GROUPS[pos], fg_buf,
+		status_bar_messagef("%-10s ctermfg=%-8s ctermbg=%s", HI_GROUPS[pos], fg_buf,
 				bg_buf);
 		return 1;
 	}
