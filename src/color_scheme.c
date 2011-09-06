@@ -112,7 +112,7 @@ init_color_scheme(Col_scheme *cs)
 	strcpy(cs->dir, "/");
 	cs->defaulted = 0;
 
-	for(i = 0; i < MAXNUM_COLOR; i++)
+	for(i = 0; i < ARRAY_LEN(default_colors); i++)
 	{
 		cs->color[i].fg = default_colors[i][0];
 		cs->color[i].bg = default_colors[i][1];
@@ -305,6 +305,12 @@ read_color_schemes(void)
 		source_file(full);
 	}
 	closedir(dir);
+
+	if(cfg.color_scheme_num == 0)
+	{
+		load_default_colors();
+		cfg.color_scheme_num = 1;
+	}
 }
 
 static void
