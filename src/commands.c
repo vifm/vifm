@@ -747,7 +747,7 @@ complete_highlight_groups(const char *str)
 {
 	int i;
 	size_t len = strlen(str);
-	for(i = 0; i < MAXNUM_COLOR - 1; i++)
+	for(i = 0; i < MAXNUM_COLOR - 2; i++)
 	{
 		if(strncasecmp(str, HI_GROUPS[i], len) == 0)
 			add_completion(HI_GROUPS[i]);
@@ -2818,13 +2818,13 @@ highlight_cmd(const struct cmd_info *cmd_info)
 	int i;
 	int pos;
 
-	if(!is_in_string_array_case(HI_GROUPS, MAXNUM_COLOR - 1, cmd_info->argv[0]))
+	if(!is_in_string_array_case(HI_GROUPS, MAXNUM_COLOR - 2, cmd_info->argv[0]))
 	{
 		status_bar_errorf("Highlight group not found: %s", cmd_info->argv[0]);
 		return 1;
 	}
 
-	pos = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR - 1, cmd_info->argv[0]);
+	pos = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR - 2, cmd_info->argv[0]);
 	if(cmd_info->argc == 1)
 	{
 		char fg_buf[16], bg_buf[16];

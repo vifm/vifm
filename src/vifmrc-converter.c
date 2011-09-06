@@ -128,7 +128,6 @@ static const int default_colors[][2] = {
 	{ COLOR_RED,     COLOR_BLACK }, /* DEVICE_COLOR */
 	{ COLOR_GREEN,   COLOR_BLACK }, /* EXECUTABLE_COLOR */
 	{ COLOR_MAGENTA, COLOR_BLACK }, /* SELECTED_COLOR */
-	{ COLOR_BLUE,    COLOR_BLACK }, /* CURRENT_COLOR */
 	{ COLOR_RED,     COLOR_BLACK }, /* BROKEN_LINK_COLOR */
 	{ COLOR_BLACK,   COLOR_WHITE }, /* TOP_LINE_COLOR */
 	{ COLOR_BLACK,   COLOR_WHITE }, /* STATUS_LINE_COLOR */
@@ -137,7 +136,7 @@ static const int default_colors[][2] = {
 };
 
 static int _gnuc_unused default_colors_size_guard[
-	(ARRAY_LEN(default_colors) + 1 == MAXNUM_COLOR) ? 1 : -1
+	(ARRAY_LEN(default_colors) + 2 == MAXNUM_COLOR) ? 1 : -1
 ];
 
 char *HI_GROUPS[] = {
@@ -152,7 +151,6 @@ char *HI_GROUPS[] = {
 	"Device",
 	"Executable",
 	"Selected",
-	"Current",
 	"BrokenLink",
 	"TopLine",
 	"StatusLine",
@@ -161,7 +159,7 @@ char *HI_GROUPS[] = {
 };
 
 static int _gnuc_unused HI_GROUPS_size_guard[
-	(ARRAY_LEN(HI_GROUPS) + 1 == MAXNUM_COLOR) ? 1 : -1
+	(ARRAY_LEN(HI_GROUPS) + 2 == MAXNUM_COLOR) ? 1 : -1
 ];
 
 char *COLOR_NAMES[8] = {
@@ -1156,8 +1154,6 @@ add_color(char s1[], char s2[], char s3[])
 		y = EXECUTABLE_COLOR;
 	else if(!strcmp(s1, "SELECTED"))
 		y = SELECTED_COLOR;
-	else if(!strcmp(s1, "CURRENT"))
-		y = CURRENT_COLOR;
 	else if(!strcmp(s1, "BROKEN_LINK"))
 		y = BROKEN_LINK_COLOR;
 	else if(!strcmp(s1, "TOP_LINE"))
@@ -1269,7 +1265,7 @@ write_color_schemes(const char *colors_dir)
 
 		fprintf(fp, "\ncolorscheme! '%s' '%s'\n", cs.array[x].name, cs.array[x].dir);
 
-		for(y = 0; y < MAXNUM_COLOR - 1; y++)
+		for(y = 0; y < MAXNUM_COLOR - 2; y++)
 		{
 			char fg_buf[16], bg_buf[16];
 			int fg = cs.array[x].color[y].fg;
