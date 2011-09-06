@@ -1,4 +1,4 @@
-.TH vifm 1 "September 5, 2011" "" "Vifm"
+.TH vifm 1 "September 6, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -778,6 +778,24 @@ will show information on given highlight group of the default color scheme.
 .BI ":hi[ghlight] group-name ctermfg=color|ctermbg=color"
 sets foreground (ctermfg) or/and background (ctermbg) parameters of highlight
 group of the default color scheme.
+.LP
+Available group-name values:
+ - Win - color of all windows (views, dialogs, menus)
+ - Border - color of vertical parts of the border
+ - TopLine - top line color
+ - StatusBar - the status bar color
+ - ErrorMsg - color of error messages in the status bar
+ - StatusLine - color of the line above the status bar
+ - Menu - color of the wild menu items
+ - CurrLine - line at cursor position in the view
+ - Selected - color of selected files
+ - Directory - color of directories
+ - Link - color of symbolic links in the views
+ - BrokenLink - color of broken symbolic links
+ - Socket - color of sockets
+ - Device - color of block and character devices
+ - Executable - color of executable files
+ - Fifo - color of fifo pipes
 .TP
 .BI :his[tory]
 creates a popup menu of directories visited.
