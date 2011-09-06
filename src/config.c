@@ -1018,21 +1018,24 @@ source_file(const char *file)
 {
 	FILE *fp;
 	char line[MAX_LEN*2];
-	char next_line[MAX_LEN];
 
 	if((fp = fopen(file, "r")) == NULL)
 		return;
 
 	if(fgets(line, MAX_LEN, fp) != NULL)
 	{
+		int line_num = 1;
 		for(;;)
 		{
+			char next_line[MAX_LEN];
 			char *p;
+			int line_num_delta = 0;
 
 			if((p = fgets(next_line, sizeof(next_line), fp)) != NULL)
 			{
 				do
 				{
+					line_num_delta++;
 					while(isspace(*p))
 						p++;
 					chomp(p);
@@ -1046,10 +1049,15 @@ source_file(const char *file)
 				while((p = fgets(next_line, sizeof(next_line), fp)) != NULL);
 			}
 			chomp(line);
-			exec_commands(line, curr_view, 0, GET_COMMAND);
+			if(exec_commands(line, curr_view, 0, GET_COMMAND) < 0)
+			{
+				show_error_msgf("File Sourcing Error", "Error in %s at %d line", file,
+						line_num);
+			}
 			if(p == NULL)
 				break;
 			strcpy(line, p);
+			line_num += line_num_delta;
 		}
 	}
 

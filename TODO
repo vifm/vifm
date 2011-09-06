@@ -10,8 +10,7 @@ Basic things that need to be done.
     Better cW command (maybe accept count of extensions to skip).
     Better globals support.
     Maybe remove 'trash' option, since we have two commands for deletion.
-    More detailed command line errors (needed when vifmrc contains errors).
-    Templates for touch.
+    Templates for :touch.
 
 Documentation.
 	Better documentation (with normal tags in Vim version).

@@ -1771,6 +1771,7 @@ remove_selection(FileView *view)
 	move_to_list_pos(view, view->list_pos);
 }
 
+/* Returns negative value in case of error */
 static int
 execute_command(FileView *view, char *command, int menu)
 {
@@ -1877,7 +1878,7 @@ execute_command(FileView *view, char *command, int menu)
 	}
 	if(!menu && get_mode() == NORMAL_MODE)
 		remove_selection(view);
-	return 1;
+	return -1;
 }
 
 /*
