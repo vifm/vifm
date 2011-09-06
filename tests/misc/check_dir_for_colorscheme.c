@@ -21,29 +21,10 @@ setup(void)
 }
 
 static void
-test_dirs(void)
+test_left_right(void)
 {
-	assert_int_equal(1, check_directory_for_color_scheme("/"));
-	assert_int_equal(1, check_directory_for_color_scheme("/home_"));
-	assert_int_equal(1 + MAXNUM_COLOR, check_directory_for_color_scheme("/home"));
-	assert_int_equal(1 + MAXNUM_COLOR,
-			check_directory_for_color_scheme("/home/"));
-	assert_int_equal(1 + MAXNUM_COLOR,
-			check_directory_for_color_scheme("/home/a/"));
-	assert_int_equal(1, check_directory_for_color_scheme("/roo"));
-	assert_int_equal(1 + MAXNUM_COLOR*2,
-			check_directory_for_color_scheme("/root"));
-}
-
-static void
-test_cur_priority(void)
-{
-	assert_int_equal(1, check_directory_for_color_scheme("/"));
-
-	cfg.color_scheme_cur = 3;
-	cfg.color_scheme = 1 + MAXNUM_COLOR*cfg.color_scheme_cur;
-
-	assert_int_equal(cfg.color_scheme, check_directory_for_color_scheme("/"));
+	assert_int_equal(LCOLOR_BASE, check_directory_for_color_scheme(1, "/root"));
+	assert_int_equal(RCOLOR_BASE, check_directory_for_color_scheme(0, "/root"));
 }
 
 void
@@ -53,8 +34,7 @@ check_dir_for_colorscheme_tests(void)
 
 	fixture_setup(setup);
 
-	run_test(test_dirs);
-	run_test(test_cur_priority);
+	run_test(test_left_right);
 
 	test_fixture_end();
 }

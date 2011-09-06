@@ -35,8 +35,6 @@
 #include "status.h"
 #include "utils.h"
 
-#define MAX_COLOR_SCHEMES_CURSES (COLOR_PAIRS/MAXNUM_COLOR)
-
 Col_scheme *col_schemes;
 
 char *HI_GROUPS[] = {
@@ -126,9 +124,9 @@ check_color_scheme(Col_scheme *cs)
 {
 	int need_correction = 0;
 	int i;
-	for(i = 0; i < ARRAY_LEN(cs->color) - 1; i++)
+	for(i = 0; i < ARRAY_LEN(cs->color) - 2; i++)
 	{
-		if(cs->color[i].bg > COLORS || cs->color[i].fg > COLORS)
+		if(cs->color[i].bg >= COLORS || cs->color[i].fg >= COLORS)
 		{
 			need_correction = 1;
 			break;
@@ -151,7 +149,7 @@ check_color_schemes(void)
 {
 	int i;
 
-	cfg.color_scheme_num = MIN(cfg.color_scheme_num, MAX_COLOR_SCHEMES_CURSES);
+	cfg.color_scheme_num = cfg.color_scheme_num;
 
 	for(i = 0; i < cfg.color_scheme_num; i++)
 		check_color_scheme(col_schemes + i);
@@ -160,9 +158,10 @@ check_color_schemes(void)
 int
 add_color_scheme(const char *name, const char *directory)
 {
-	if(cfg.color_scheme_num + 1 > MAX_COLOR_SCHEMES_CURSES)
+	void *p = realloc(col_schemes, sizeof(Col_scheme)*(cfg.color_scheme_num + 1));
+	if(p == NULL)
 	{
-		(void)show_error_msg("Create Color Scheme", "Too many color schemes");
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return 1;
 	}
 
@@ -301,24 +300,23 @@ read_color_schemes(void)
 	closedir(dir);
 }
 
+static void
+load_color_pairs(int base, const Col_scheme *cs)
+{
+	int i;
+	for(i = 0; i < MAXNUM_COLOR; i++)
+	{
+		if(i == MENU_COLOR)
+			init_pair(base + i, cs->color[i].bg, cs->color[i].fg);
+		else
+			init_pair(base + i, cs->color[i].fg, cs->color[i].bg);
+	}
+}
+
 void
 load_color_schemes(void)
 {
-	int i;
-
-	for(i = 0; i < cfg.color_scheme_num; i++)
-	{
-		int x;
-		for(x = 0; x < MAXNUM_COLOR; x++)
-		{
-			if(x == MENU_COLOR)
-				init_pair(1 + i*MAXNUM_COLOR + x, col_schemes[i].color[x].bg,
-						col_schemes[i].color[x].fg);
-			else
-				init_pair(1 + i*MAXNUM_COLOR + x, col_schemes[i].color[x].fg,
-						col_schemes[i].color[x].bg);
-		}
-	}
+	load_color_pairs(DCOLOR_BASE, col_schemes + cfg.color_scheme_cur);
 }
 
 /* The return value is the color scheme base number for the colorpairs.
@@ -332,11 +330,12 @@ load_color_schemes(void)
  * should be returned.
  */
 int
-check_directory_for_color_scheme(const char *dir)
+check_directory_for_color_scheme(int left, const char *dir)
 {
 	int i;
 	int max_len = 0;
 	int max_index = -1;
+	int base = left ? LCOLOR_BASE : RCOLOR_BASE;
 
 	for(i = 0; i < cfg.color_scheme_num; i++)
 	{
@@ -353,13 +352,14 @@ check_directory_for_color_scheme(const char *dir)
 	}
 
 	if(path_starts_with(dir, col_schemes[cfg.color_scheme_cur].dir) &&
-			(max_len == strlen(col_schemes[cfg.color_scheme_cur].dir)))
-		return cfg.color_scheme;
+			max_len == strlen(col_schemes[cfg.color_scheme_cur].dir))
+		max_index = cfg.color_scheme_cur;
 
 	if(max_index == -1)
-		return 1 + cfg.color_scheme_cur*MAXNUM_COLOR;
+		max_index = cfg.color_scheme_cur;
 
-	return 1 + max_index*MAXNUM_COLOR;
+	load_color_pairs(base, col_schemes + max_index);
+	return base;
 }
 
 void

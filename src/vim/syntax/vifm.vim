@@ -37,7 +37,7 @@ syntax keyword vifmHiGroups contained Menu Border Win StatusBar CurrLine
 		\ Directory Link Socket Device Executable Selected Current BrokenLink
 		\ TopLine StatusLine Fifo ErrorMsg
 syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
-		\ white
+		\ white default
 syntax case match
 
 " Options

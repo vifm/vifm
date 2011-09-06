@@ -48,6 +48,12 @@ enum Ui_colors {
 	MAXNUM_COLOR
 };
 
+enum {
+	DCOLOR_BASE = 1,
+	LCOLOR_BASE = DCOLOR_BASE + MAXNUM_COLOR,
+	RCOLOR_BASE = LCOLOR_BASE + MAXNUM_COLOR,
+};
+
 typedef struct _Col_attr {
 	int fg;
 	int bg;
@@ -71,7 +77,7 @@ int add_color_scheme(const char *name, const char *directory);
 void check_color_schemes(void);
 void read_color_schemes(void);
 void load_color_schemes(void);
-int check_directory_for_color_scheme(const char *);
+int check_directory_for_color_scheme(int left, const char *dir);
 /* Returns value lower than zero when nothing is found */
 int find_color_scheme(const char *name);
 void complete_colorschemes(const char *name);

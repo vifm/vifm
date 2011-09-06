@@ -330,9 +330,9 @@ setup_ncurses_interface(void)
 	/* Changed for pdcurses */
 	use_default_colors();
 
-	color_scheme = 1 + cfg.color_scheme_cur*MAXNUM_COLOR;
-	lwin.color_scheme = color_scheme;
-	rwin.color_scheme = color_scheme;
+	color_scheme = DCOLOR_BASE;
+	lwin.color_scheme = LCOLOR_BASE;
+	rwin.color_scheme = RCOLOR_BASE;
 
 	werase(stdscr);
 
@@ -861,8 +861,10 @@ load_color_scheme_i(int i)
 	int color_scheme;
 
 	cfg.color_scheme_cur = i;
-	cfg.color_scheme = 1 + MAXNUM_COLOR*cfg.color_scheme_cur;
-	color_scheme = 1 + i*MAXNUM_COLOR;
+	cfg.color_scheme = DCOLOR_BASE;
+	color_scheme = DCOLOR_BASE;
+
+	load_color_schemes();
 
 	wbkgdset(lborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
 	werase(lborder);

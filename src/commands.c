@@ -2444,7 +2444,9 @@ cnoremap_cmd(const struct cmd_info *cmd_info)
 static int
 colorscheme_cmd(const struct cmd_info *cmd_info)
 {
-	int pos = find_color_scheme(cmd_info->argv[0]);
+	int pos = -1;
+	if(cmd_info->argc > 0)
+		pos = find_color_scheme(cmd_info->argv[0]);
 	if(cmd_info->qmark)
 	{
 		status_bar_message(col_schemes[cfg.color_scheme_cur].name);
@@ -2463,11 +2465,16 @@ colorscheme_cmd(const struct cmd_info *cmd_info)
 			return 0;
 		return load_color_scheme(cmd_info->argv[0]);
 	}
-	else
+	else if(pos >= 0)
 	{
 		if(cmd_info->emark && cmd_info->argc == 2)
 			strcpy(col_schemes[pos].dir, cmd_info->argv[1]);
 		return load_color_scheme(cmd_info->argv[0]);
+	}
+	else
+	{
+		status_bar_errorf("Cannot find colorscheme %s" , cmd_info->argv[0]);
+		return 1;
 	}
 }
 

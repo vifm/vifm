@@ -598,6 +598,7 @@ cmd_ctrl_wx(struct key_info key_info, struct keys_info *keys_info)
 		quick_view_file(curr_view);
 	else
 		load_dir_list(other_view, 1);
+	wrefresh(other_view->win);
 }
 
 static void

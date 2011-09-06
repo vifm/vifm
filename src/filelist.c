@@ -621,7 +621,8 @@ draw_dir_list(FileView *view, int top)
 	if(curr_stats.vifm_started < 2)
 		return;
 
-	color_scheme = check_directory_for_color_scheme(view->curr_dir);
+	color_scheme = check_directory_for_color_scheme(view == &lwin,
+			view->curr_dir);
 
 	if(view->color_scheme != color_scheme)
 	{
