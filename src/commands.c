@@ -423,7 +423,7 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		complete_history(args);
 	else if(id == COM_HIGHLIGHT)
 	{
-		if(argc == 0)
+		if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
 			complete_highlight_groups(args);
 		else
 			start += complete_highlight_arg(arg);
