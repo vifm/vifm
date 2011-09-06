@@ -1261,7 +1261,7 @@ write_color_schemes(const char *colors_dir)
 		fprintf(fp, "\" of colors in your terminal with tput colors command)\n\n");
 
 		fprintf(fp, "\" colorscheme! OneWordDescription /Full/Path/To/Base/Directory\n");
-		fprintf(fp, "\" highlight group ctermfg=foreground_color_ ctermbg=background_color\n\n");
+		fprintf(fp, "\" highlight group ctermfg=foreground_color ctermbg=background_color\n\n");
 
 		fprintf(fp, "\ncolorscheme! '%s' '%s'\n", cs.array[x].name, cs.array[x].dir);
 

@@ -9,6 +9,8 @@
 	Removed '<,'> range from command line in visual mode (all work without this
 	range, because files are selected).
 
+	Removed CURR color from color schemes (was unused).
+
 	Added 'reversecol' option (affects the look of current line in views and
 	menus).
 
