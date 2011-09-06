@@ -82,7 +82,8 @@ syntax match vifmMapRhs /\s\+\S\+/ contained
 		\ contains=vifmNotation,vifmCommand,vifmExecute
 syntax region vifmHi matchgroup=vifmCommand
 		\ start='\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
-		\ keepend contains=vifmHiArgs,vifmHiGroups,vifmHiColors,vifmNumber
+		\ keepend
+		\ contains=vifmHiArgs,vifmHiGroups,vifmHiColors,vifmNumber,vifmComment
 syntax region vifmSet matchgroup=vifmCommand
 		\ start='\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmOption,vifmSetString,vifmNumber,vifmComment

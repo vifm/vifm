@@ -179,9 +179,6 @@ nmap gb :file &<cr>l
 
 nmap <f3> :!less %f<cr>
 nmap <f4> :edit<cr>
-nmap <f5> :alink<cr>
-nmap <f5> :rlink<cr>
-nmap <f5> :clone<cr>
 nmap <f5> :copy<cr>
 nmap <f6> :move<cr>
 nmap <f7> :mkdir<space>
