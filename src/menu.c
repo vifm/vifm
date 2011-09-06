@@ -283,7 +283,7 @@ cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
 	menu->pos -= menu->win_rows - 3;
-	moveto_menu_pos(menu->pos, menu);
+	move_to_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -300,7 +300,7 @@ cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
 	menu->top += (menu->win_rows - 3 + 1)/2;
 	menu->pos += (menu->win_rows - 3 + 1)/2;
 	draw_menu(menu);
-	moveto_menu_pos(menu->pos, menu);
+	move_to_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -323,7 +323,7 @@ cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
 	menu->pos += menu->win_rows - 3;
-	moveto_menu_pos(menu->pos, menu);
+	move_to_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -331,7 +331,7 @@ static void
 cmd_ctrl_l(struct key_info key_info, struct keys_info *keys_info)
 {
 	draw_menu(menu);
-	moveto_menu_pos(menu->pos, menu);
+	move_to_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -374,7 +374,7 @@ cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 		menu->top = 0;
 	menu->pos -= (menu->win_rows - 3 + 1)/2;
 	draw_menu(menu);
-	moveto_menu_pos(menu->pos, menu);
+	move_to_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -425,7 +425,7 @@ cmd_G(struct key_info key_info, struct keys_info *keys_info)
 		key_info.count = menu->len;
 
 	clean_menu_position(menu);
-	moveto_menu_pos(key_info.count - 1, menu);
+	move_to_menu_pos(key_info.count - 1, menu);
 	wrefresh(menu_win);
 }
 
@@ -433,7 +433,7 @@ static void
 cmd_H(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_menu_position(menu);
-	moveto_menu_pos(menu->top, menu);
+	move_to_menu_pos(menu->top, menu);
 	wrefresh(menu_win);
 }
 
@@ -453,7 +453,7 @@ cmd_L(struct key_info key_info, struct keys_info *keys_info)
 	}
 
 	clean_menu_position(menu);
-	moveto_menu_pos(menu->top + menu->win_rows - 3, menu);
+	move_to_menu_pos(menu->top + menu->win_rows - 3, menu);
 	wrefresh(menu_win);
 }
 
@@ -467,7 +467,7 @@ cmd_M(struct key_info key_info, struct keys_info *keys_info)
 		new_pos = menu->top + (menu->win_rows - 3)/2;
 
 	clean_menu_position(menu);
-	moveto_menu_pos(new_pos, menu);
+	move_to_menu_pos(new_pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -513,7 +513,7 @@ cmd_gg(struct key_info key_info, struct keys_info *keys_info)
 		key_info.count = 1;
 
 	clean_menu_position(menu);
-	moveto_menu_pos(key_info.count - 1, menu);
+	move_to_menu_pos(key_info.count - 1, menu);
 	wrefresh(menu_win);
 }
 
@@ -527,7 +527,7 @@ cmd_j(struct key_info key_info, struct keys_info *keys_info)
 
 	clean_menu_position(menu);
 	menu->pos += key_info.count;
-	moveto_menu_pos(menu->pos, menu);
+	move_to_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -541,7 +541,7 @@ cmd_k(struct key_info key_info, struct keys_info *keys_info)
 
 	clean_menu_position(menu);
 	menu->pos -= key_info.count;
-	moveto_menu_pos(menu->pos, menu);
+	move_to_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -610,7 +610,7 @@ void
 update_menu(void)
 {
 	draw_menu(menu);
-	moveto_menu_pos(menu->pos, menu);
+	move_to_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
 
@@ -620,7 +620,7 @@ goto_cmd(const struct cmd_info *cmd_info)
 	if(cmd_info->end == NOT_DEF)
 		return 0;
 	clean_menu_position(menu);
-	moveto_menu_pos(cmd_info->end, menu);
+	move_to_menu_pos(cmd_info->end, menu);
 	wrefresh(menu_win);
 	return 0;
 }

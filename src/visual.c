@@ -195,7 +195,7 @@ enter_visual_mode(int restore_selection)
 	}
 
 	draw_dir_list(view, view->top_line);
-	moveto_list_pos(view, view->list_pos);
+	move_to_list_pos(view, view->list_pos);
 }
 
 void
@@ -217,7 +217,7 @@ leave_visual_mode(int save_msg, int goto_top)
 	}
 
 	draw_dir_list(view, view->top_line);
-	moveto_list_pos(view, view->list_pos);
+	move_to_list_pos(view, view->list_pos);
 
 	curr_stats.save_msg = save_msg;
 	if(*mode == VISUAL_MODE)
@@ -659,7 +659,7 @@ cmd_l(struct key_info key_info, struct keys_info *keys_info)
 	handle_file(view, 0, 0);
 	clean_selected_files(view);
 	draw_dir_list(view, view->top_line);
-	moveto_list_pos(view, view->list_pos);
+	move_to_list_pos(view, view->list_pos);
 }
 
 static void
@@ -813,7 +813,7 @@ static void
 update(void)
 {
 	draw_dir_list(view, view->top_line);
-	moveto_list_pos(view, view->list_pos);
+	move_to_list_pos(view, view->list_pos);
 	update_pos_window(view);
 }
 

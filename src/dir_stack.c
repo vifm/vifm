@@ -64,7 +64,7 @@ popd(void)
 	if(change_directory(&rwin, stack[stack_top].rpane_dir) >= 0)
 		load_dir_list(&rwin, 0);
 
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 	wrefresh(other_view->win);
 
 	free_entry(&stack[stack_top]);
@@ -94,7 +94,7 @@ swap_dirs(void)
 	if(change_directory(&rwin, item.rpane_dir) >= 0)
 		load_dir_list(&rwin, 0);
 
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 
 	free_entry(&item);
 	return 0;

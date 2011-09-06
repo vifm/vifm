@@ -642,7 +642,7 @@ redraw_window(void)
 
 	update_all_windows();
 
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 	wrefresh(curr_view->win);
 	curr_stats.need_redraw = 0;
 
@@ -704,7 +704,7 @@ change_window(void)
 		load_dir_list(curr_view, 1);
 
 	draw_dir_list(curr_view, curr_view->top_line);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
@@ -836,7 +836,7 @@ void
 redraw_lists(void)
 {
 	draw_dir_list(curr_view, curr_view->top_line);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 	draw_dir_list(other_view, other_view->top_line);
 }
 
@@ -883,7 +883,7 @@ load_color_scheme_i(int i)
 		return 0;
 
 	draw_dir_list(curr_view, curr_view->top_line);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 	if(curr_stats.view)
 		quick_view_file(curr_view);
 	else

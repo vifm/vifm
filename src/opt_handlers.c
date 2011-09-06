@@ -417,7 +417,7 @@ scrolloff_handler(enum opt_op op, union optval_t val)
 {
 	cfg.scroll_off = val.int_val;
 	if(cfg.scroll_off > 0)
-		moveto_list_pos(curr_view, curr_view->list_pos);
+		move_to_list_pos(curr_view, curr_view->list_pos);
 }
 
 static void

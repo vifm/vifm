@@ -189,9 +189,9 @@ move_to_bookmark(FileView *view, char mark)
 			load_dir_list(view, 1);
 			file_pos = find_file_pos_in_list(view, bookmarks[x].file);
 			if(file_pos != -1)
-				moveto_list_pos(view, file_pos);
+				move_to_list_pos(view, file_pos);
 			else
-				moveto_list_pos(view, 0);
+				move_to_list_pos(view, 0);
 		}
 	}
 	else
@@ -201,7 +201,7 @@ move_to_bookmark(FileView *view, char mark)
 		else
 			status_bar_message("Mark is not set");
 
-		moveto_list_pos(view, view->list_pos);
+		move_to_list_pos(view, view->list_pos);
 		return 1;
 	}
 	return 0;
@@ -230,12 +230,12 @@ get_bookmark(FileView *view, char key)
 			if(change_directory(view, view->last_dir) >= 0)
 			{
 				load_dir_list(view, 0);
-				moveto_list_pos(view, view->list_pos);
+				move_to_list_pos(view, view->list_pos);
 			}
 			return 0;
 		case 27: /* ascii Escape */
 		case 3: /* ascii ctrl c */
-			moveto_list_pos(view, view->list_pos);
+			move_to_list_pos(view, view->list_pos);
 			return 0;
 
 		default:

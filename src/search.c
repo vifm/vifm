@@ -73,18 +73,18 @@ void
 find_previous_pattern(FileView *view, int wrap)
 {
 	if(find_next_pattern_match(view, view->list_pos, PREVIOUS))
-		moveto_list_pos(view, view->list_pos);
+		move_to_list_pos(view, view->list_pos);
 	else if(wrap && find_next_pattern_match(view, view->list_rows, PREVIOUS))
-		moveto_list_pos(view, view->list_pos);
+		move_to_list_pos(view, view->list_pos);
 }
 
 void
 find_next_pattern(FileView *view, int wrap)
 {
 	if(find_next_pattern_match(view, view->list_pos, NEXT))
-		moveto_list_pos(view, view->list_pos);
+		move_to_list_pos(view, view->list_pos);
 	else if(wrap && find_next_pattern_match(view, 0, NEXT))
-		moveto_list_pos(view, view->list_pos);
+		move_to_list_pos(view, view->list_pos);
 }
 
 int
@@ -158,7 +158,7 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 	}
 	else
 	{
-		moveto_list_pos(view, view->list_pos);
+		move_to_list_pos(view, view->list_pos);
 		status_bar_errorf("No matching files for %s", view->regexp);
 		return 1;
 	}

@@ -460,7 +460,7 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 	if(prev_mode == VISUAL_MODE)
 	{
 		leave_visual_mode(curr_stats.save_msg, 1);
-		moveto_list_pos(curr_view, check_mark_directory(curr_view, '<'));
+		move_to_list_pos(curr_view, check_mark_directory(curr_view, '<'));
 	}
 	if(sub_mode == CMD_SUBMODE)
 	{

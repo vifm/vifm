@@ -314,7 +314,7 @@ cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 		curr_view->list_pos -= s - (curr_view->top_line + curr_view->window_rows -
 				curr_view->list_pos);
 	draw_dir_list(curr_view, curr_view->top_line);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 }
 
 static void
@@ -322,7 +322,7 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
 	clean_selected_files(curr_view);
 	draw_dir_list(curr_view, curr_view->top_line);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 	curs_set(0);
 }
 
@@ -336,7 +336,7 @@ cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
 	if(cfg.scroll_off > 0 && curr_view->list_pos - curr_view->top_line < s)
 		curr_view->list_pos += s - (curr_view->list_pos - curr_view->top_line);
 	draw_dir_list(curr_view, curr_view->top_line);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 }
 
 /* Scroll pane one line down. */
@@ -370,7 +370,7 @@ cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 	if(cfg.scroll_off > 0 && curr_view->list_pos - curr_view->top_line < s)
 		curr_view->list_pos += s - (curr_view->list_pos - curr_view->top_line);
 	draw_dir_list(curr_view, curr_view->top_line);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 }
 
 static void
@@ -535,7 +535,7 @@ cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 	curr_view->top_line -= (curr_view->window_rows + 1)/2;
 	curr_view->list_pos -= (curr_view->window_rows + 1)/2;
 	draw_dir_list(curr_view, MAX(curr_view->top_line, 0));
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 }
 
 static void
@@ -592,7 +592,7 @@ cmd_ctrl_wx(struct key_info key_info, struct keys_info *keys_info)
 	rwin = tmp_view;
 
 	load_dir_list(curr_view, 1);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 
 	if(curr_stats.view)
 		quick_view_file(curr_view);
@@ -708,7 +708,7 @@ find_goto(int ch, int count, int backward, struct keys_info *keys_info)
 	}
 	else
 	{
-		moveto_list_pos(curr_view, pos);
+		move_to_list_pos(curr_view, pos);
 	}
 }
 
@@ -722,7 +722,7 @@ cmd_G(struct key_info key_info, struct keys_info *keys_info)
 	if(keys_info->selector)
 		pick_files(curr_view, key_info.count - 1, keys_info);
 	else
-		moveto_list_pos(curr_view, key_info.count - 1);
+		move_to_list_pos(curr_view, key_info.count - 1);
 }
 
 static void
@@ -759,7 +759,7 @@ cmd_gf(struct key_info key_info, struct keys_info *keys_info)
 	clean_selected_files(curr_view);
 	handle_file(curr_view, 0, 1);
 	draw_dir_list(curr_view, curr_view->top_line);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 }
 
 /* Jump to top of the list or to specified line. */
@@ -772,7 +772,7 @@ cmd_gg(struct key_info key_info, struct keys_info *keys_info)
 	if(keys_info->selector)
 		pick_files(curr_view, key_info.count - 1, keys_info);
 	else
-		moveto_list_pos(curr_view, key_info.count - 1);
+		move_to_list_pos(curr_view, key_info.count - 1);
 }
 
 static void
@@ -795,7 +795,7 @@ cmd_gs(struct key_info key_info, struct keys_info *keys_info)
 		}
 	}
 	draw_dir_list(curr_view, curr_view->top_line);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 }
 
 static void
@@ -847,7 +847,7 @@ cmd_H(struct key_info key_info, struct keys_info *keys_info)
 	if(keys_info->selector)
 		pick_files(curr_view, curr_view->top_line, keys_info);
 	else
-		moveto_list_pos(curr_view, curr_view->top_line);
+		move_to_list_pos(curr_view, curr_view->top_line);
 }
 
 /* Go to last file in window. */
@@ -858,7 +858,7 @@ cmd_L(struct key_info key_info, struct keys_info *keys_info)
 		pick_files(curr_view, curr_view->top_line + curr_view->window_rows,
 				keys_info);
 	else
-		moveto_list_pos(curr_view, curr_view->top_line + curr_view->window_rows);
+		move_to_list_pos(curr_view, curr_view->top_line + curr_view->window_rows);
 }
 
 /* Go to middle of window. */
@@ -874,7 +874,7 @@ cmd_M(struct key_info key_info, struct keys_info *keys_info)
 	if(keys_info->selector)
 		pick_files(curr_view, new_pos, keys_info);
 	else
-		moveto_list_pos(curr_view, new_pos);
+		move_to_list_pos(curr_view, new_pos);
 }
 
 static void
@@ -970,7 +970,7 @@ cmd_percent(struct key_info key_info, struct keys_info *keys_info)
 	if(keys_info->selector)
 		pick_files(curr_view, line - 1, keys_info);
 	else
-		moveto_list_pos(curr_view, line - 1);
+		move_to_list_pos(curr_view, line - 1);
 }
 
 static void
@@ -1236,7 +1236,7 @@ cmd_j(struct key_info key_info, struct keys_info *keys_info)
 	{
 		if(curr_view->list_pos == curr_view->list_rows - 1)
 			return;
-		moveto_list_pos(curr_view, curr_view->list_pos + key_info.count);
+		move_to_list_pos(curr_view, curr_view->list_pos + key_info.count);
 	}
 }
 
@@ -1255,7 +1255,7 @@ cmd_k(struct key_info key_info, struct keys_info *keys_info)
 	{
 		if(curr_view->list_pos == 0)
 			return;
-		moveto_list_pos(curr_view, curr_view->list_pos - key_info.count);
+		move_to_list_pos(curr_view, curr_view->list_pos - key_info.count);
 	}
 }
 
@@ -1265,7 +1265,7 @@ cmd_l(struct key_info key_info, struct keys_info *keys_info)
 	handle_file(curr_view, 0, 0);
 	clean_selected_files(curr_view);
 	draw_dir_list(curr_view, curr_view->top_line);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 }
 
 /* Set mark. */
@@ -1351,7 +1351,7 @@ cmd_t(struct key_info key_info, struct keys_info *keys_info)
 		curr_view->selected_files--;
 	}
 
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 }
 
 /* Undo last command group. */

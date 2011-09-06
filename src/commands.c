@@ -876,7 +876,7 @@ post(int id)
 
 	clean_selected_files(curr_view);
 	load_saving_pos(curr_view, 1);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 }
 
 #ifndef TEST
@@ -1768,7 +1768,7 @@ remove_selection(FileView *view)
 {
 	clean_selected_files(view);
 	draw_dir_list(view, view->top_line);
-	moveto_list_pos(view, view->list_pos);
+	move_to_list_pos(view, view->list_pos);
 }
 
 static int
@@ -2196,7 +2196,7 @@ comm_split(void)
 static int
 goto_cmd(const struct cmd_info *cmd_info)
 {
-	moveto_list_pos(curr_view, cmd_info->end);
+	move_to_list_pos(curr_view, cmd_info->end);
 	return 0;
 }
 
@@ -2352,7 +2352,7 @@ cd(FileView *view, const char *path)
 
 	load_dir_list(view, 0);
 	if(view == curr_view)
-		moveto_list_pos(view, view->list_pos);
+		move_to_list_pos(view, view->list_pos);
 	return 0;
 }
 
@@ -2716,7 +2716,7 @@ filter_cmd(const struct cmd_info *cmd_info)
 		{
 			curr_view->invert = !curr_view->invert;
 			load_dir_list(curr_view, 1);
-			moveto_list_pos(curr_view, 0);
+			move_to_list_pos(curr_view, 0);
 		}
 		else
 		{
@@ -2962,7 +2962,7 @@ invert_cmd(const struct cmd_info *cmd_info)
 
 	curr_view->invert = !curr_view->invert;
 	load_dir_list(curr_view, 1);
-	moveto_list_pos(curr_view, 0);
+	move_to_list_pos(curr_view, 0);
 	return 0;
 }
 
@@ -3129,7 +3129,7 @@ nohlsearch_cmd(const struct cmd_info *cmd_info)
 
 	clean_selected_files(curr_view);
 	draw_dir_list(curr_view, curr_view->top_line);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 	return 0;
 }
 

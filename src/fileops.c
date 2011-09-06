@@ -199,7 +199,7 @@ yank_files(FileView *view, int reg, int count, int *indexes)
 	{
 		clean_selected_files(view);
 		draw_dir_list(view, view->top_line);
-		moveto_list_pos(view, view->list_pos);
+		move_to_list_pos(view, view->list_pos);
 	}
 
 	status_bar_messagef("%d %s yanked", yanked, yanked == 1 ? "file" : "files");
@@ -304,7 +304,7 @@ cd_updir(FileView *view)
 	if(change_directory(view, "../") != 1)
 	{
 		load_dir_list(view, 0);
-		moveto_list_pos(view, find_file_pos_in_list(view, dir_name));
+		move_to_list_pos(view, find_file_pos_in_list(view, dir_name));
 	}
 }
 
@@ -578,7 +578,7 @@ fuse_try_mount(FileView *view, const char *program)
 	if(change_directory(view, mount_point) >= 0)
 	{
 		load_dir_list(view, 0);
-		moveto_list_pos(view, view->curr_line);
+		move_to_list_pos(view, view->curr_line);
 	}
 }
 
@@ -615,7 +615,7 @@ handle_dir(FileView *view)
 	else if(change_directory(view, filename) >= 0)
 	{
 		load_dir_list(view, 0);
-		moveto_list_pos(view, view->list_pos);
+		move_to_list_pos(view, view->list_pos);
 	}
 }
 
@@ -842,7 +842,7 @@ follow_link(FileView *view, int follow_dirs)
 		if(change_directory(view, dir) >= 0)
 		{
 			load_dir_list(view, 0);
-			moveto_list_pos(view, view->curr_line);
+			move_to_list_pos(view, view->curr_line);
 		}
 	}
 	if(file != NULL)
@@ -863,7 +863,7 @@ follow_link(FileView *view, int follow_dirs)
 		}
 		pos = find_file_pos_in_list(view, file);
 		if(pos >= 0)
-			moveto_list_pos(view, pos);
+			move_to_list_pos(view, pos);
 	}
 	free(link_dup);
 	free(dir);
@@ -1180,7 +1180,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	load_saving_pos(view, 1);
 
-	moveto_list_pos(view, view->list_pos);
+	move_to_list_pos(view, view->list_pos);
 
 	status_bar_messagef("%d %s deleted", y, y == 1 ? "file" : "files");
 	return 1;
@@ -1638,7 +1638,7 @@ rename_files(FileView *view, char **list, int nlines)
 
 	clean_selected_files(view);
 	draw_dir_list(view, view->top_line);
-	moveto_list_pos(view, view->list_pos);
+	move_to_list_pos(view, view->list_pos);
 	curr_stats.save_msg = 1;
 	return 1;
 }
@@ -1682,7 +1682,7 @@ change_owner_cb(const char *new_owner)
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 #endif
 }
 
@@ -1731,7 +1731,7 @@ change_group_cb(const char *new_group)
 	cmd_group_end();
 
 	load_dir_list(curr_view, 1);
-	moveto_list_pos(curr_view, curr_view->list_pos);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 #endif
 }
 
@@ -2149,7 +2149,7 @@ have_read_access(FileView *view)
 					"You don't have read permissions on \"%s\"", view->dir_entry[i].name);
 			clean_selected_files(view);
 			draw_dir_list(view, view->top_line);
-			moveto_list_pos(view, view->list_pos);
+			move_to_list_pos(view, view->list_pos);
 			return 0;
 		}
 	}
@@ -2225,7 +2225,7 @@ clone_files(FileView *view, char **list, int nlines, int force)
 	{
 		clean_selected_files(view);
 		draw_dir_list(view, view->top_line);
-		moveto_list_pos(view, view->list_pos);
+		move_to_list_pos(view, view->list_pos);
 		if(from_file)
 			free_string_array(list, nlines);
 		return 1;
@@ -2903,7 +2903,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	{
 		clean_selected_files(view);
 		draw_dir_list(view, view->top_line);
-		moveto_list_pos(view, view->list_pos);
+		move_to_list_pos(view, view->list_pos);
 		if(from_file)
 			free_string_array(list, nlines);
 		return 1;
@@ -2913,7 +2913,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	{
 		clean_selected_files(view);
 		draw_dir_list(view, view->top_line);
-		moveto_list_pos(view, view->list_pos);
+		move_to_list_pos(view, view->list_pos);
 		if(from_file)
 			free_string_array(list, nlines);
 		return 1;
@@ -3001,7 +3001,7 @@ go_to_first_file(FileView *view, char **names, int count)
 		}
 	}
 	draw_dir_list(view, view->top_line);
-	moveto_list_pos(view, view->list_pos);
+	move_to_list_pos(view, view->list_pos);
 }
 
 void

@@ -295,7 +295,7 @@ setup_menu(void)
 }
 
 void
-moveto_menu_pos(int pos, menu_info *m)
+move_to_menu_pos(int pos, menu_info *m)
 {
 	int redraw = 0;
 	int x, y, z;
@@ -431,7 +431,7 @@ redraw_menu(menu_info *m)
 	m->win_rows = screen_y - 1;
 
 	draw_menu(m);
-	moveto_menu_pos(m->pos, m);
+	move_to_menu_pos(m->pos, m);
 	wrefresh(menu_win);
 }
 
@@ -506,13 +506,13 @@ search_menu_forwards(menu_info *m, int start_pos)
 			pos = match_up;
 
 		clean_menu_position(m);
-		moveto_menu_pos(pos, m);
+		move_to_menu_pos(pos, m);
 		status_bar_messagef("%d %s", m->matching_entries,
 				(m->matching_entries == 1) ? "match" : "matches");
 	}
 	else
 	{
-		moveto_menu_pos(m->pos, m);
+		move_to_menu_pos(m->pos, m);
 		status_bar_errorf("No matches for %s", m->regexp);
 		return 1;
 	}
@@ -553,13 +553,13 @@ search_menu_backwards(menu_info *m, int start_pos)
 			pos = match_down;
 
 		clean_menu_position(m);
-		moveto_menu_pos(pos, m);
+		move_to_menu_pos(pos, m);
 		status_bar_messagef("%d %s", m->matching_entries,
 				(m->matching_entries == 1) ? "match" : "matches");
 	}
 	else
 	{
-		moveto_menu_pos(m->pos, m);
+		move_to_menu_pos(m->pos, m);
 		status_bar_errorf("No matches for %s", m->regexp);
 		return 1;
 	}
@@ -577,7 +577,7 @@ search_menu_list(const char *pattern, menu_info *m)
 		if(search_menu(m, m->pos) != 0)
 		{
 			draw_menu(m);
-			moveto_menu_pos(m->pos, m);
+			move_to_menu_pos(m->pos, m);
 			return 1;
 		}
 		draw_menu(m);
@@ -719,7 +719,7 @@ goto_selected_file(FileView *view, menu_info *m)
 				if(find_file_pos_in_list(view, file) < 0)
 					remove_filename_filter(view);
 			}
-			moveto_list_pos(view, find_file_pos_in_list(view, file));
+			move_to_list_pos(view, find_file_pos_in_list(view, file));
 		}
 		else
 		{
@@ -755,7 +755,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 
 	clean_selected_files(view);
 	draw_dir_list(view, view->top_line);
-	moveto_list_pos(view, view->list_pos);
+	move_to_list_pos(view, view->list_pos);
 }
 
 static void
@@ -784,7 +784,7 @@ execute_volumes_cb(FileView *view, menu_info *m)
 		return;
 
 	load_dir_list(view, 0);
-	moveto_list_pos(view, 0);
+	move_to_list_pos(view, 0);
 }
 #endif
 
@@ -827,7 +827,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 			if(change_directory(view, m->data[m->pos]) >= 0)
 			{
 				load_dir_list(view, 0);
-				moveto_list_pos(view, view->list_pos);
+				move_to_list_pos(view, view->list_pos);
 			}
 			if(!cfg.auto_ch_pos)
 				curr_stats.ch_pos = 1;
@@ -998,7 +998,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(m.pos, &m);
+	move_to_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1044,7 +1044,7 @@ capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
 
 	setup_menu();
 	draw_menu(m);
-	moveto_menu_pos(m->pos, m);
+	move_to_menu_pos(m->pos, m);
 	enter_menu_mode(m, view);
 	return 0;
 }
@@ -1105,7 +1105,7 @@ bookmark_khandler(struct menu_info *m, wchar_t *keys)
 		m->len--;
 		draw_menu(m);
 
-		moveto_menu_pos(m->pos, m);
+		move_to_menu_pos(m->pos, m);
 		return 1;
 	}
 	return -1;
@@ -1193,7 +1193,7 @@ show_bookmarks_menu(FileView *view, const char *marks)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(m.pos, &m);
+	move_to_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 	return 0;
 }
@@ -1238,7 +1238,7 @@ show_dirstack_menu(FileView *view)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(m.pos, &m);
+	move_to_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 	return 0;
 }
@@ -1285,7 +1285,7 @@ show_colorschemes_menu(FileView *view)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(m.pos, &m);
+	move_to_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 }
 
@@ -1313,7 +1313,7 @@ command_khandler(struct menu_info *m, wchar_t *keys)
 		m->len--;
 		draw_menu(m);
 
-		moveto_menu_pos(m->pos, m);
+		move_to_menu_pos(m->pos, m);
 		return 1;
 	}
 	return -1;
@@ -1371,7 +1371,7 @@ show_commands_menu(FileView *view)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(m.pos, &m);
+	move_to_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 	return 0;
 }
@@ -1394,7 +1394,7 @@ filetypes_khandler(struct menu_info *m, wchar_t *keys)
 		m->current--;
 
 		draw_menu(m);
-		moveto_menu_pos(m->pos, m);
+		move_to_menu_pos(m->pos, m);
 
 		return 1;
 	}
@@ -1413,7 +1413,7 @@ filetypes_khandler(struct menu_info *m, wchar_t *keys)
 		m->current++;
 
 		draw_menu(m);
-		moveto_menu_pos(m->pos, m);
+		move_to_menu_pos(m->pos, m);
 
 		return 1;
 	}
@@ -1576,7 +1576,7 @@ show_filetypes_menu(FileView *view, int background)
 		}
 		setup_menu();
 		draw_menu(&m);
-		moveto_menu_pos(m.pos, &m);
+		move_to_menu_pos(m.pos, &m);
 		enter_menu_mode(&m, view);
 	}
 
@@ -1647,7 +1647,7 @@ show_history_menu(FileView *view)
 	m.pos = m.len - 1 - m.pos;
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(m.pos, &m);
+	move_to_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 
 	return 0;
@@ -1684,7 +1684,7 @@ show_history(FileView *view, int type, int len, char **hist)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(m.pos, &m);
+	move_to_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 	return 0;
 }
@@ -1997,7 +1997,7 @@ show_jobs_menu(FileView *view)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(m.pos, &m);
+	move_to_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 	return 0;
 }
@@ -2037,7 +2037,7 @@ show_register_menu(FileView *view, const char *registers)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(m.pos, &m);
+	move_to_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 	return 0;
 }
@@ -2091,7 +2091,7 @@ show_undolist_menu(FileView *view, int with_details)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(m.pos, &m);
+	move_to_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 	return 0;
 }
@@ -2160,7 +2160,7 @@ show_volumes_menu(FileView *view)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(0, &m);
+	move_to_menu_pos(0, &m);
 	enter_menu_mode(&m, view);
 }
 #endif
@@ -2191,7 +2191,7 @@ show_vifm_menu(FileView *view)
 
 	setup_menu();
 	draw_menu(&m);
-	moveto_menu_pos(m.pos, &m);
+	move_to_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 	return 0;
 }

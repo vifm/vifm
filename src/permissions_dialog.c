@@ -309,7 +309,7 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	set_perm_string(view, perms, origin_perms);
 	load_dir_list(view, 1);
-	moveto_list_pos(view, view->list_pos);
+	move_to_list_pos(view, view->list_pos);
 
 	leave_permissions_mode();
 }

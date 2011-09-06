@@ -904,7 +904,7 @@ move_curr_line(FileView *view, int pos)
 }
 
 void
-moveto_list_pos(FileView *view, int pos)
+move_to_list_pos(FileView *view, int pos)
 {
 	int redraw = 0;
 	int old_cursor = view->curr_line;
@@ -1058,7 +1058,7 @@ goto_history_pos(FileView *view, int pos)
 	curr_stats.skip_history = 0;
 
 	load_dir_list(view, 1);
-	moveto_list_pos(view, find_file_pos_in_list(view, view->history[pos].file));
+	move_to_list_pos(view, find_file_pos_in_list(view, view->history[pos].file));
 
 	view->history_pos = pos;
 }
@@ -1268,7 +1268,7 @@ updir_from_mount(FileView *view, Fuse_List *runner)
 	file = runner->source_file_name;
 	file += strlen(runner->source_file_dir) + 1;
 	pos = find_file_pos_in_list(view, file);
-	moveto_list_pos(view, pos);
+	move_to_list_pos(view, pos);
 }
 
 static Fuse_List *
@@ -2295,7 +2295,7 @@ filter_selected_files(FileView *view)
 	view->invert = 1;
 	clean_status_bar();
 	load_dir_list(view, 1);
-	moveto_list_pos(view, view->list_pos);
+	move_to_list_pos(view, view->list_pos);
 	view->selected_files = 0;
 }
 
@@ -2341,7 +2341,7 @@ void
 scroll_view(FileView *view)
 {
 	draw_dir_list(view, view->top_line);
-	moveto_list_pos(view, view->list_pos);
+	move_to_list_pos(view, view->list_pos);
 }
 
 static void
@@ -2413,7 +2413,7 @@ load_saving_pos(FileView *view, int reload)
 	pos = (pos >= 0) ? pos : view->list_pos;
 	if(view == curr_view)
 	{
-		moveto_list_pos(view, pos);
+		move_to_list_pos(view, pos);
 	}
 	else
 	{

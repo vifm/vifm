@@ -80,7 +80,7 @@ int show_error_msgf(char *title, const char *format, ...);
 int search_menu_list(const char *pattern, menu_info *m);
 int query_user_menu(char *title, char *message);
 void clean_menu_position(menu_info *m);
-void moveto_menu_pos(int pos, menu_info *m);
+void move_to_menu_pos(int pos, menu_info *m);
 void redraw_menu(menu_info *m);
 void draw_menu(menu_info *m);
 /* Returns zero if menu mode should be leaved */
