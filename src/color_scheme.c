@@ -294,6 +294,13 @@ read_color_schemes(void)
 	while((d = readdir(dir)) != NULL)
 	{
 		char full[PATH_MAX];
+
+		if(d->d_type != DT_REG && d->d_type != DT_LNK)
+			continue;
+
+		if(d->d_name[0] == '.')
+			continue;
+
 		snprintf(full, sizeof(full), "%s/%s", colors_dir, d->d_name);
 		source_file(full);
 	}
