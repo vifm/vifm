@@ -431,10 +431,10 @@ main(int argc, char *argv[])
 		}
 		read_color_schemes();
 		check_color_schemes();
-		load_color_schemes();
 		if(find_color_scheme(curr_stats.color_scheme) >= 0)
 			load_color_scheme(curr_stats.color_scheme);
 		exec_config();
+		load_color_schemes();
 	}
 
 	setup_signals();
