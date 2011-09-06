@@ -3312,6 +3312,9 @@ restart_cmd(const struct cmd_info *cmd_info)
 	read_info_file(1);
 	save_view_history(&lwin, NULL, NULL, -1);
 	save_view_history(&rwin, NULL, NULL, -1);
+	read_color_schemes();
+	check_color_schemes();
+	load_color_schemes();
 	exec_config();
 	return 0;
 }
