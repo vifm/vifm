@@ -320,12 +320,7 @@ load_color_pairs(int base, const Col_scheme *cs)
 {
 	int i;
 	for(i = 0; i < MAXNUM_COLOR; i++)
-	{
-		if(i == MENU_COLOR)
-			init_pair(base + i, cs->color[i].bg, cs->color[i].fg);
-		else
-			init_pair(base + i, cs->color[i].fg, cs->color[i].bg);
-	}
+		init_pair(base + i, cs->color[i].fg, cs->color[i].bg);
 }
 
 void
