@@ -107,6 +107,7 @@ init_config(void)
 	cfg.auto_ch_pos = 1;
 	cfg.timeout_len = 1000;
 	cfg.scroll_off = 0;
+	cfg.gdefault = 0;
 
 	p = getenv("SHELL");
 	if(p == NULL || *p == '\0')
@@ -749,6 +750,7 @@ write_info_file(void)
 		fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
 		fprintf(fp, "=%sfollowlinks\n", cfg.follow_links ? "" : "no");
 		fprintf(fp, "=fusehome=%s\n", escape_spaces(cfg.fuse_home));
+		fprintf(fp, "=%sgdefault\n", cfg.gdefault ? "" : "no");
 		fprintf(fp, "=history=%d\n", cfg.history_len);
 		fprintf(fp, "=%shlsearch\n", cfg.hl_search ? "" : "no");
 		fprintf(fp, "=%siec\n", cfg.use_iec_prefixes ? "" : "no");

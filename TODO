@@ -50,7 +50,6 @@ Possible things to add.
     'incsearch' option.
     'wrapscan' option.
     'scrollbind' option.
-    'gdefault' option.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.

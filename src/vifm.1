@@ -1029,7 +1029,7 @@ i - ignore case (the 'ignorecase' and 'smartcase' options are not used)
 .IP - 2
 I - don't ignore case (the 'ignorecase' and 'smartcase' options are not used)
 .IP - 2
-g - substitute all matches in each file name
+g - substitute all matches in each file name (each g toggles this)
 .TP
 .BI :sync
 change the other panel to the current panel directory.
@@ -1277,6 +1277,10 @@ default: "/tmp/vifm_FUSE/"
 Directory to be used as a root dir for FUSE mounts.
 If you change this option, vifm won't remount anything.  It affects future
 mounts only.
+.TP
+.BI gdefault
+type: boolean
+When on, 'g' flag is on for :substitute by default.
 .TP
 .BI "history hi"
 type: integer

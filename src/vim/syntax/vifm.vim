@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@gmail.com>
-" Last Change: September 3, 2011
+" Last Change: September 7, 2011
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -44,9 +44,9 @@ syntax case match
 
 " Options
 syntax keyword vifmOption contained autochpos confirm cf fastrun followlinks
-		\ fusehome history hi hlsearch hls iec ignorecase ic reversecol runexec
-		\ scrolloff so shell sh smartcase scs sortnumbers timefmt timeoutlen trash
-		\ undolevels ul vicmd vixcmd vifminfo vimhelp wildmenu wmnu wrap sort
+		\ fusehome gdefault history hi hlsearch hls iec ignorecase ic reversecol
+		\ runexec scrolloff so shell sh smartcase scs sortnumbers timefmt timeoutlen
+		\ trash undolevels ul vicmd vixcmd vifminfo vimhelp wildmenu wmnu wrap sort
 		\ sortorder
 
 " Disabled boolean options

@@ -70,33 +70,21 @@ typedef struct _Config {
 	int color_scheme;
 
 	int undo_levels; /* Maximum number of changes that can be undone. */
-
 	int sort_numbers; /* Natural sort of (version) numbers within text. */
-
 	int follow_links; /* Follow links on l or Enter. */
-
 	int confirm; /* Ask user about permanent deletion of files. */
-
 	int fast_run;
-
 	int invert_cur_line;
-
 	int wild_menu;
-
 	int ignore_case;
 	int smart_case;
-
 	int hl_search;
-
 	int vifm_info;
-
 	int auto_ch_pos;
-
 	char *shell;
-
 	int timeout_len;
-
 	int scroll_off;
+	int gdefault;
 } Config;
 
 extern Config cfg;

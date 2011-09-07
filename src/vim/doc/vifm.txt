@@ -775,7 +775,7 @@ Note: Border attributes are used for inactive view title.
             options are not used)
         I - don't ignore case (the |vifm-'ignorecase'| and
             |vifm-'smartcase'| options are not used)
-        g - substitute all matches in each file name
+        g - substitute all matches in each file name (each g toggles this)
 
                                                *vifm-:touch*
 :touch file... - will create files.  Aborts on errors and won't update
@@ -978,6 +978,11 @@ default: "/tmp/vifm_FUSE/"
 Directory to be used as a root dir for FUSE mounts.
 If you change this option, vifm won't remount anything.  It affects future
 mounts only.
+
+                                               *vifm-'gdefault'*
+gdefault
+type: boolean
+When on, 'g' flag is on for |vifm-:substitute| by default.
 
                                                *vifm-'history'* *vifm-'hi'*
 history hi

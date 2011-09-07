@@ -3490,7 +3490,7 @@ substitute_cmd(const struct cmd_info *cmd_info)
 {
 	static char *last_pattern;
 	int ic = 0;
-	int glob = 0;
+	int glob = cfg.gdefault;
 
 	if(cmd_info->argc == 3)
 	{

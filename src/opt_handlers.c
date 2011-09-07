@@ -22,6 +22,7 @@ static void confirm_handler(enum opt_op op, union optval_t val);
 static void fastrun_handler(enum opt_op op, union optval_t val);
 static void followlinks_handler(enum opt_op op, union optval_t val);
 static void fusehome_handler(enum opt_op op, union optval_t val);
+static void gdefault_handler(enum opt_op op, union optval_t val);
 static void history_handler(enum opt_op op, union optval_t val);
 static void hlsearch_handler(enum opt_op op, union optval_t val);
 static void iec_handler(enum opt_op op, union optval_t val);
@@ -115,6 +116,7 @@ static struct {
 	{ "fastrun",     "",     OPT_BOOL,    0,                       NULL,            &fastrun_handler,     },
 	{ "followlinks", "",     OPT_BOOL,    0,                       NULL,            &followlinks_handler, },
 	{ "fusehome",    "",     OPT_STR,     0,                       NULL,            &fusehome_handler,    },
+	{ "gdefault",    "gd",   OPT_BOOL,    0,                       NULL,            &gdefault_handler,    },
 	{ "history",     "hi",   OPT_INT,     0,                       NULL,            &history_handler,     },
 	{ "hlsearch",    "hls",  OPT_BOOL,    0,                       NULL,            &hlsearch_handler,    },
 	{ "iec",         "",     OPT_BOOL,    0,                       NULL,            &iec_handler,         },
@@ -158,32 +160,33 @@ load_options_defaults(void)
 	options[2].val.bool_val = cfg.fast_run;
 	options[3].val.bool_val = cfg.follow_links;
 	options[4].val.str_val = cfg.fuse_home;
-	options[5].val.int_val = cfg.history_len;
-	options[6].val.bool_val = cfg.hl_search;
-	options[7].val.bool_val = cfg.use_iec_prefixes;
-	options[8].val.bool_val = cfg.ignore_case;
-	options[9].val.bool_val = cfg.invert_cur_line;
-	options[10].val.bool_val = cfg.auto_execute;
-	options[11].val.int_val = cfg.scroll_off;
-	options[12].val.str_val = cfg.shell;
-	options[13].val.bool_val = cfg.smart_case;
-	options[14].val.bool_val = cfg.sort_numbers;
-	options[15].val.str_val = cfg.time_format + 1;
-	options[16].val.int_val = cfg.timeout_len;
-	options[17].val.bool_val = cfg.use_trash;
-	options[18].val.int_val = cfg.undo_levels;
-	options[19].val.str_val = cfg.vi_command;
-	options[20].val.str_val = cfg.vi_x_command;
-	options[21].val.set_items = cfg.vifm_info;
-	options[22].val.bool_val = cfg.use_vim_help;
-	options[23].val.bool_val = cfg.wild_menu;
-	options[24].val.bool_val = cfg.wrap_quick_view;
+	options[5].val.bool_val = cfg.gdefault;
+	options[6].val.int_val = cfg.history_len;
+	options[7].val.bool_val = cfg.hl_search;
+	options[8].val.bool_val = cfg.use_iec_prefixes;
+	options[9].val.bool_val = cfg.ignore_case;
+	options[10].val.bool_val = cfg.invert_cur_line;
+	options[11].val.bool_val = cfg.auto_execute;
+	options[12].val.int_val = cfg.scroll_off;
+	options[13].val.str_val = cfg.shell;
+	options[14].val.bool_val = cfg.smart_case;
+	options[15].val.bool_val = cfg.sort_numbers;
+	options[16].val.str_val = cfg.time_format + 1;
+	options[17].val.int_val = cfg.timeout_len;
+	options[18].val.bool_val = cfg.use_trash;
+	options[19].val.int_val = cfg.undo_levels;
+	options[20].val.str_val = cfg.vi_command;
+	options[21].val.str_val = cfg.vi_x_command;
+	options[22].val.set_items = cfg.vifm_info;
+	options[23].val.bool_val = cfg.use_vim_help;
+	options[24].val.bool_val = cfg.wild_menu;
+	options[25].val.bool_val = cfg.wrap_quick_view;
 
 	/* local options */
-	options[25].val.str_val = "+name";
-	options[26].val.enum_item = 0;
+	options[26].val.str_val = "+name";
+	options[27].val.enum_item = 0;
 
-	assert(ARRAY_LEN(options) == 27);
+	assert(ARRAY_LEN(options) == 28);
 }
 
 static void
@@ -317,6 +320,12 @@ fusehome_handler(enum opt_op op, union optval_t val)
 {
 	free(cfg.fuse_home);
 	cfg.fuse_home = expand_tilde(strdup(val.str_val));
+}
+
+static void
+gdefault_handler(enum opt_op op, union optval_t val)
+{
+	cfg.gdefault = val.bool_val;
 }
 
 static void
