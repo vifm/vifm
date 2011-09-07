@@ -600,7 +600,8 @@ update_view_title(FileView *view)
 	else if(len + 1 > view->window_width && curr_view != view)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf, view->window_width - 3 + 1);
-		mvwaddstr(view->title, 0, 0, (view == &lwin) ? " " : "");
+		if(view == &lwin)
+			wmove(view->title, 0, 1);
 		waddnstr(view->title, buf, len);
 		waddstr(view->title, "...");
 	}
@@ -663,7 +664,6 @@ draw_dir_list(FileView *view, int top)
 {
 	int x;
 	int y = 0;
-	char file_name[view->window_width*2 - 2];
 	int color_scheme;
 
 	if(curr_stats.vifm_started < 2)
@@ -704,6 +704,7 @@ draw_dir_list(FileView *view, int top)
 		int attr;
 		size_t print_width;
 		int LINE_COLOR;
+		char file_name[view->window_width*2 - 2];
 		/* Extra long file names are truncated to fit */
 
 		print_width = get_real_string_width(view->dir_entry[x].name,
@@ -876,8 +877,10 @@ move_to_list_pos(FileView *view, int pos)
 
 	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme));
 
+	wattrset(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
 	mvwaddstr(view->win, old_cursor, 0, " ");
 	wrefresh(view->win);
+	wattroff(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
 
 	attr = 0;
 	if(cfg.invert_cur_line)

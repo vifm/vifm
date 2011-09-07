@@ -5,6 +5,7 @@ const char *tags[] = {
 	"vifm-'fastrun'",
 	"vifm-'followlinks'",
 	"vifm-'fusehome'",
+	"vifm-'gdefault'",
 	"vifm-'hi'",
 	"vifm-'history'",
 	"vifm-'hls'",

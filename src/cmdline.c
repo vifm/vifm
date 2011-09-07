@@ -372,13 +372,14 @@ redraw_cmdline(void)
 static void
 prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 {
+	int attr;
+
 	line_width = getmaxx(stdscr);
 	prev_mode = *mode;
 	*mode = CMDLINE_MODE;
 
-	wattrset(status_bar,
-			col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr);
-	wbkgdset(status_bar, COLOR_PAIR(cfg.color_scheme + STATUS_BAR_COLOR));
+	attr = col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr;
+	wattron(status_bar, COLOR_PAIR(cfg.color_scheme + STATUS_BAR_COLOR) | attr);
 
 	input_stat.line = NULL;
 	input_stat.index = wcslen(cmd);
@@ -421,6 +422,8 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 static void
 leave_cmdline_mode(void)
 {
+	int attr;
+
 	if(getmaxy(status_bar) > 1)
 	{
 		curr_stats.need_redraw = 2;
@@ -448,6 +451,9 @@ leave_cmdline_mode(void)
 
 	if(*mode != MENU_MODE)
 		update_pos_window(curr_view);
+
+	attr = col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr;
+	wattroff(status_bar, COLOR_PAIR(cfg.color_scheme + STATUS_BAR_COLOR) | attr);
 }
 
 static void
