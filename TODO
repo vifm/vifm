@@ -25,7 +25,6 @@ Vi(m) specific features that need to be added.
 	Change file list filters to use fold levels instead of just
 		the dot filter and regular expression filter (what does this mean?).
     Some kind of selection mode (multiple blocks, mixing).
-    Attributes for color scheme elements.
     Better registers support.
     /, ?, n, N as selectors.
     Make / and ? accept count.

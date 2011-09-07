@@ -3502,7 +3502,7 @@ substitute_cmd(const struct cmd_info *cmd_info)
 			else if(cmd_info->argv[2][i] == 'I')
 				ic = -1;
 			else if(cmd_info->argv[2][i] == 'g')
-				glob = 1;
+				glob = !glob;
 			else
 				return CMDS_ERR_TRAILING_CHARS;
 		}
