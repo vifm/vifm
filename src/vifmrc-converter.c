@@ -117,22 +117,22 @@ struct{
 };
 
 static const int default_colors[][3] = {
-	{ COLOR_WHITE,   COLOR_BLACK , A_UNDERLINE | A_REVERSE | A_BOLD }, /* MENU_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE , 0                                }, /* BORDER_COLOR */
-	{ COLOR_WHITE,   COLOR_BLACK , 0                                }, /* WIN_COLOR */
-	{ COLOR_WHITE,   COLOR_BLACK , A_BOLD                           }, /* STATUS_BAR_COLOR */
-	{ COLOR_WHITE,   COLOR_BLUE  , A_BOLD                           }, /* CURR_LINE_COLOR */
-	{ COLOR_CYAN,    COLOR_BLACK , A_BOLD                           }, /* DIRECTORY_COLOR */
-	{ COLOR_YELLOW,  COLOR_BLACK , A_BOLD                           }, /* LINK_COLOR */
-	{ COLOR_MAGENTA, COLOR_BLACK , A_BOLD                           }, /* SOCKET_COLOR */
-	{ COLOR_RED,     COLOR_BLACK , A_BOLD                           }, /* DEVICE_COLOR */
-	{ COLOR_GREEN,   COLOR_BLACK , A_BOLD                           }, /* EXECUTABLE_COLOR */
-	{ COLOR_MAGENTA, COLOR_BLACK , A_BOLD                           }, /* SELECTED_COLOR */
-	{ COLOR_RED,     COLOR_BLACK , A_BOLD                           }, /* BROKEN_LINK_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE , A_BOLD                           }, /* TOP_LINE_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE , 0                                }, /* STATUS_LINE_COLOR */
-	{ COLOR_CYAN,    COLOR_BLACK , A_BOLD                           }, /* FIFO_COLOR */
-	{ COLOR_RED,     COLOR_BLACK , A_BOLD                           }, /* ERROR_MSG_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK, A_UNDERLINE | A_REVERSE | A_BOLD }, /* MENU_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE, 0                                }, /* BORDER_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK, 0                                }, /* WIN_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK, 0                                }, /* STATUS_BAR_COLOR */
+	{ COLOR_WHITE,   COLOR_BLUE,  A_BOLD                           }, /* CURR_LINE_COLOR */
+	{ COLOR_CYAN,    COLOR_BLACK, A_BOLD                           }, /* DIRECTORY_COLOR */
+	{ COLOR_YELLOW,  COLOR_BLACK, A_BOLD                           }, /* LINK_COLOR */
+	{ COLOR_MAGENTA, COLOR_BLACK, A_BOLD                           }, /* SOCKET_COLOR */
+	{ COLOR_RED,     COLOR_BLACK, A_BOLD                           }, /* DEVICE_COLOR */
+	{ COLOR_GREEN,   COLOR_BLACK, A_BOLD                           }, /* EXECUTABLE_COLOR */
+	{ COLOR_MAGENTA, COLOR_BLACK, A_BOLD                           }, /* SELECTED_COLOR */
+	{ COLOR_RED,     COLOR_BLACK, A_BOLD                           }, /* BROKEN_LINK_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE, A_BOLD                           }, /* TOP_LINE_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE, 0                                }, /* STATUS_LINE_COLOR */
+	{ COLOR_CYAN,    COLOR_BLACK, A_BOLD                           }, /* FIFO_COLOR */
+	{ COLOR_RED,     COLOR_BLACK, 0                                }, /* ERROR_MSG_COLOR */
 };
 
 static int _gnuc_unused default_colors_size_guard[
