@@ -875,8 +875,6 @@ move_to_list_pos(FileView *view, int pos)
 		init_pair(CURRENT_COLOR + view->color_scheme, f, b);
 	}
 
-	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme));
-
 	wattrset(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
 	mvwaddstr(view->win, old_cursor, 0, " ");
 	wrefresh(view->win);
@@ -927,9 +925,6 @@ move_to_list_pos(FileView *view, int pos)
 
 	if(curr_stats.view)
 		quick_view_file(view);
-
-	attr = col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr;
-	wattrset(view->win, COLOR_PAIR(view->color_scheme + WIN_COLOR) | attr);
 
 	wrefresh(view->win);
 	update_stat_window(view);
