@@ -223,7 +223,7 @@ status_bar_message_i(const char *message, int error)
 	if(err)
 	{
 		attr = col_schemes[cfg.color_scheme_cur].color[ERROR_MSG_COLOR].attr;
-		wbkgdset(status_bar, COLOR_PAIR(cfg.color_scheme + ERROR_MSG_COLOR) | attr);
+		wattron(status_bar, COLOR_PAIR(cfg.color_scheme + ERROR_MSG_COLOR) | attr);
 	}
 	else
 	{
