@@ -398,11 +398,14 @@ unnamed register, which has double quote as its name.
 Though all commands accept registers, most of commands ignores them (for example
 H or Ctrl-U).  Other commands can fill register or append new files to it.
 
-Presently vifm supports ", a-z and A-Z characters as register names.
+Presently vifm supports ", _, a-z and A-Z characters as register names.
 
 As mentioned above " is unnamed register and has special meaning of the default
 register.  Every time when you use named registers (a-z and A-Z) unnamed
 register is updated to contain same list of files as the last used register.
+
+_ is black hole register.  It can be used for writing, but its list is always
+empty.
 
 Registers with names from a to z  and from A to Z are named ones.  Lowercase
 registers are cleared before adding new files, while uppercase aren't and should

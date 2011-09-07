@@ -254,7 +254,10 @@ Though all commands accept registers, most of commands ignores them (for
 example H or Ctrl-U).  Other commands can fill register or append new
 files to it.
 
-Presently vifm supports ", a-z and A-Z characters as register names.
+Presently vifm supports ", _, a-z and A-Z characters as register names.
+
+_ is black hole register.  It can be used for writing, but its list is always
+empty.
 
 As mentioned above " is unnamed register and has special meaning of the
 default register.  Every time when you use named registers (a-z and A-Z)

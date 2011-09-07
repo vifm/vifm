@@ -33,7 +33,7 @@
 static registers_t registers[NUM_REGISTERS];
 
 const char valid_registers[] = {
-	'"',
+	'_', '"',
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
@@ -82,6 +82,9 @@ append_to_register(int key, char *file)
 {
 	registers_t *reg;
 	struct stat st;
+
+	if(key == '_')
+		return;
 
 	if((reg = find_register(key)) == NULL)
 		return;
