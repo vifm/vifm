@@ -57,6 +57,7 @@ enum {
 typedef struct _Col_attr {
 	int fg;
 	int bg;
+	int attr;
 } Col_attr;
 
 typedef struct _Col_Scheme {

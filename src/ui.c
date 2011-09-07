@@ -195,9 +195,17 @@ status_bar_message_i(const char *message, int error)
 	assert(msg != NULL);
 
 	if(err)
+	{
+		wattrset(status_bar,
+				col_schemes[cfg.color_scheme_cur].color[ERROR_MSG_COLOR].attr);
 		wbkgdset(status_bar, COLOR_PAIR(cfg.color_scheme + ERROR_MSG_COLOR));
+	}
 	else
+	{
+		wattrset(status_bar,
+				col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr);
 		wbkgdset(status_bar, COLOR_PAIR(cfg.color_scheme + STATUS_BAR_COLOR));
+	}
 
 	p = msg;
 	q = msg - 1;
@@ -338,19 +346,23 @@ setup_ncurses_interface(void)
 
 	menu_win = newwin(screen_y - 1, screen_x, 0, 0);
 	wbkgdset(menu_win, COLOR_PAIR(color_scheme + WIN_COLOR));
+	wattrset(menu_win, col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr);
 	werase(menu_win);
 
 	sort_win = newwin(NUM_SORT_OPTIONS + 3, 30, (screen_y - 12)/2,
 			(screen_x - 30)/2);
 	wbkgdset(sort_win, COLOR_PAIR(color_scheme + WIN_COLOR));
+	wattrset(sort_win, col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr);
 	werase(sort_win);
 
 	change_win = newwin(20, 30, (screen_y - 20)/2, (screen_x -30)/2);
 	wbkgdset(change_win, COLOR_PAIR(color_scheme + WIN_COLOR));
+	wattrset(change_win, col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr);
 	werase(change_win);
 
 	error_win = newwin(10, screen_x -2, (screen_y -10)/2, 1);
 	wbkgdset(error_win, COLOR_PAIR(color_scheme + WIN_COLOR));
+	wattrset(error_win, col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr);
 	werase(error_win);
 
 	lborder = newwin(screen_y - 3, 1, 1, 0);
@@ -365,9 +377,9 @@ setup_ncurses_interface(void)
 		lwin.title = newwin(1, screen_x/2 - 1 + screen_x%2 + (2 - screen_x%2), 0,
 				0);
 
-	wattrset(lwin.title, A_BOLD);
 	wbkgdset(lwin.title, COLOR_PAIR(color_scheme + TOP_LINE_COLOR));
-
+	wattrset(lwin.title,
+			col_schemes[cfg.color_scheme_cur].color[TOP_LINE_COLOR].attr);
 	werase(lwin.title);
 
 	if(curr_stats.number_of_windows == 1)
@@ -376,8 +388,7 @@ setup_ncurses_interface(void)
 		lwin.win = newwin(screen_y - 3, screen_x/2 - 2 + screen_x%2, 1, 1);
 
 	wbkgdset(lwin.win, COLOR_PAIR(color_scheme + WIN_COLOR));
-	wattrset(lwin.win, A_BOLD);
-	wattron(lwin.win, A_BOLD);
+	wattrset(lwin.win, col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr);
 	werase(lwin.win);
 	getmaxyx(lwin.win, y, x);
 	lwin.window_rows = y -1;
@@ -396,9 +407,8 @@ setup_ncurses_interface(void)
 		rwin.title = newwin(1, screen_x/2 - 1 + screen_x%2, 0, screen_x/2 + 1);
 
 	wbkgdset(rwin.title, COLOR_PAIR(color_scheme + TOP_LINE_COLOR));
-	wattrset(rwin.title, A_BOLD);
-	wattroff(rwin.title, A_BOLD);
-
+	wattrset(rwin.title,
+			col_schemes[cfg.color_scheme_cur].color[BORDER_COLOR].attr);
 	werase(rwin.title);
 
 	if(curr_stats.number_of_windows == 1)
@@ -407,44 +417,41 @@ setup_ncurses_interface(void)
 		rwin.win = newwin(screen_y - 3, screen_x/2 - 2 + screen_x%2, 1,
 				screen_x/2 + 1);
 
-	wattrset(rwin.win, A_BOLD);
-	wattron(rwin.win, A_BOLD);
 	wbkgdset(rwin.win, COLOR_PAIR(color_scheme + WIN_COLOR));
+	wattrset(rwin.win, col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr);
 	werase(rwin.win);
 	getmaxyx(rwin.win, y, x);
 	rwin.window_rows = y - 1;
 	rwin.window_width = x - 1;
 
 	rborder = newwin(screen_y - 3, 1, 1, screen_x - 1);
-
 	wbkgdset(rborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
-
 	werase(rborder);
 
 	stat_win = newwin(1, screen_x, screen_y -2, 0);
-
 	wbkgdset(stat_win, COLOR_PAIR(color_scheme + STATUS_LINE_COLOR));
-
+	wattrset(rwin.win,
+			col_schemes[cfg.color_scheme_cur].color[STATUS_LINE_COLOR].attr);
 	werase(stat_win);
 
 	status_bar = newwin(1, screen_x - 19, screen_y -1, 0);
 #ifdef ENABLE_EXTENDED_KEYS
 	keypad(status_bar, TRUE);
 #endif /* ENABLE_EXTENDED_KEYS */
-	wattrset(status_bar, A_BOLD);
-	wattron(status_bar, A_BOLD);
+	wattrset(status_bar,
+			col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr);
 	wbkgdset(status_bar, COLOR_PAIR(color_scheme + STATUS_BAR_COLOR));
 	werase(status_bar);
 
 	pos_win = newwin(1, 13, screen_y - 1, screen_x - 13);
-	wattrset(pos_win, A_BOLD);
-	wattron(pos_win, A_BOLD);
+	wattrset(pos_win,
+			col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr);
 	wbkgdset(pos_win, COLOR_PAIR(color_scheme + STATUS_BAR_COLOR));
 	werase(pos_win);
 
 	input_win = newwin(1, 6, screen_y - 1, screen_x -19);
-	wattrset(input_win, A_BOLD);
-	wattron(input_win, A_BOLD);
+	wattrset(input_win,
+			col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr);
 	wbkgdset(input_win, COLOR_PAIR(color_scheme + STATUS_BAR_COLOR));
 	werase(input_win);
 
@@ -672,9 +679,6 @@ change_window(void)
 
 	if(curr_stats.number_of_windows != 1)
 	{
-		wattroff(other_view->title, A_BOLD);
-		wattroff(other_view->win,
-				COLOR_PAIR(other_view->color_scheme + CURR_LINE_COLOR) | A_BOLD);
 		mvwaddstr(other_view->win, other_view->curr_line, 0, "*");
 		erase_current_line_bar(other_view);
 		update_view_title(other_view);
@@ -682,17 +686,12 @@ change_window(void)
 
 	if(curr_stats.view)
 	{
-		wbkgdset(curr_view->title,
-				COLOR_PAIR(TOP_LINE_COLOR + curr_view->color_scheme));
-		wbkgdset(curr_view->win,
-				COLOR_PAIR(WIN_COLOR + curr_view->color_scheme));
 		if(change_directory(other_view, other_view->curr_dir) >= 0)
 			load_dir_list(other_view, 1);
 		if(change_directory(curr_view, curr_view->curr_dir) >= 0)
 			load_dir_list(curr_view, 1);
 	}
 
-	wattron(curr_view->title, A_BOLD);
 	update_view_title(curr_view);
 
 	wnoutrefresh(other_view->win);
@@ -859,6 +858,7 @@ int
 load_color_scheme_i(int i)
 {
 	int color_scheme;
+	int attr;
 
 	cfg.color_scheme_cur = i;
 	cfg.color_scheme = DCOLOR_BASE;
@@ -872,12 +872,20 @@ load_color_scheme_i(int i)
 	werase(mborder);
 	wbkgdset(rborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
 	werase(rborder);
-	wbkgdset(stat_win, COLOR_PAIR(color_scheme + STATUS_LINE_COLOR));
 
+	attr = col_schemes[cfg.color_scheme_cur].color[STATUS_LINE_COLOR].attr;
+	wbkgdset(stat_win, COLOR_PAIR(color_scheme + STATUS_LINE_COLOR));
+	wattrset(stat_win, attr);
+
+	attr = col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr;
 	wbkgdset(menu_win, COLOR_PAIR(color_scheme + WIN_COLOR));
+	wattrset(menu_win, attr);
 	wbkgdset(sort_win, COLOR_PAIR(color_scheme + WIN_COLOR));
+	wattrset(sort_win, attr);
 	wbkgdset(change_win, COLOR_PAIR(color_scheme + WIN_COLOR));
+	wattrset(change_win, attr);
 	wbkgdset(error_win, COLOR_PAIR(color_scheme + WIN_COLOR));
+	wattrset(error_win, attr);
 
 	if(curr_stats.vifm_started < 2)
 		return 0;

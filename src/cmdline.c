@@ -613,7 +613,6 @@ draw_wild_menu(int op)
 	werase(stat_win);
 	wmove(stat_win, 0, 0);
 
-	wattron(stat_win, A_BOLD);
 	for(i = last_pos; i < count && len > 0; i++)
 	{
 		len -= strlen(list[i]);
@@ -636,16 +635,15 @@ draw_wild_menu(int op)
 
 		if(i == pos)
 			wattron(stat_win, COLOR_PAIR(MENU_COLOR + cfg.color_scheme) |
-					A_UNDERLINE | A_REVERSE);
+					col_schemes[cfg.color_scheme_cur].color[MENU_COLOR].attr);
 		wprintw(stat_win, "%s", list[i]);
 		if(i == pos)
 		{
 			wattroff(stat_win, COLOR_PAIR(MENU_COLOR + cfg.color_scheme) |
-					A_UNDERLINE | A_REVERSE);
+					col_schemes[cfg.color_scheme_cur].color[MENU_COLOR].attr);
 			pos = -pos;
 		}
 	}
-	wattroff(stat_win, A_BOLD);
 	if(pos > 0 && pos != count)
 	{
 		last_pos = pos;

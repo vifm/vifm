@@ -388,12 +388,12 @@ main(int argc, char *argv[])
 	if(!console || !*console)
 		curr_stats.is_console = 1;
 
+	curr_view = &lwin;
+	other_view = &rwin;
+
 	/* Setup the ncurses interface. */
 	if(!setup_ncurses_interface())
 		return -1;
-
-	curr_view = &lwin;
-	other_view = &rwin;
 
 	no_configs = 0;
 	for(i = 1; i < argc; i++)

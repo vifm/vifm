@@ -3548,10 +3548,6 @@ view_cmd(const struct cmd_info *cmd_info)
 	{
 		curr_stats.view = 0;
 
-		wbkgdset(other_view->title,
-				COLOR_PAIR(TOP_LINE_COLOR + other_view->color_scheme));
-		wbkgdset(other_view->win,
-				COLOR_PAIR(WIN_COLOR + other_view->color_scheme));
 		if(change_directory(other_view, other_view->curr_dir) >= 0)
 			load_dir_list(other_view, 1);
 		wrefresh(other_view->win);

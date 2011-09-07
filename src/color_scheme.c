@@ -82,23 +82,23 @@ int COLOR_VALS[8] = {
 	COLOR_WHITE,
 };
 
-static const int default_colors[][2] = {
-	{ COLOR_WHITE,   COLOR_BLACK }, /* MENU_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE }, /* BORDER_COLOR */
-	{ COLOR_WHITE,   COLOR_BLACK }, /* WIN_COLOR */
-	{ COLOR_WHITE,   COLOR_BLACK }, /* STATUS_BAR_COLOR */
-	{ COLOR_WHITE,   COLOR_BLUE  }, /* CURR_LINE_COLOR */
-	{ COLOR_CYAN,    COLOR_BLACK }, /* DIRECTORY_COLOR */
-	{ COLOR_YELLOW,  COLOR_BLACK }, /* LINK_COLOR */
-	{ COLOR_MAGENTA, COLOR_BLACK }, /* SOCKET_COLOR */
-	{ COLOR_RED,     COLOR_BLACK }, /* DEVICE_COLOR */
-	{ COLOR_GREEN,   COLOR_BLACK }, /* EXECUTABLE_COLOR */
-	{ COLOR_MAGENTA, COLOR_BLACK }, /* SELECTED_COLOR */
-	{ COLOR_RED,     COLOR_BLACK }, /* BROKEN_LINK_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE }, /* TOP_LINE_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE }, /* STATUS_LINE_COLOR */
-	{ COLOR_CYAN,    COLOR_BLACK }, /* FIFO_COLOR */
-	{ COLOR_RED,     COLOR_BLACK }, /* ERROR_MSG_COLOR */
+static const int default_colors[][3] = {
+	{ COLOR_WHITE,   COLOR_BLACK , A_UNDERLINE | A_REVERSE | A_BOLD }, /* MENU_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE , 0                                }, /* BORDER_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK , 0                                }, /* WIN_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK , A_BOLD                           }, /* STATUS_BAR_COLOR */
+	{ COLOR_WHITE,   COLOR_BLUE  , A_BOLD                           }, /* CURR_LINE_COLOR */
+	{ COLOR_CYAN,    COLOR_BLACK , A_BOLD                           }, /* DIRECTORY_COLOR */
+	{ COLOR_YELLOW,  COLOR_BLACK , A_BOLD                           }, /* LINK_COLOR */
+	{ COLOR_MAGENTA, COLOR_BLACK , A_BOLD                           }, /* SOCKET_COLOR */
+	{ COLOR_RED,     COLOR_BLACK , A_BOLD                           }, /* DEVICE_COLOR */
+	{ COLOR_GREEN,   COLOR_BLACK , A_BOLD                           }, /* EXECUTABLE_COLOR */
+	{ COLOR_MAGENTA, COLOR_BLACK , A_BOLD                           }, /* SELECTED_COLOR */
+	{ COLOR_RED,     COLOR_BLACK , A_BOLD                           }, /* BROKEN_LINK_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE , A_BOLD                           }, /* TOP_LINE_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE , 0                                }, /* STATUS_LINE_COLOR */
+	{ COLOR_CYAN,    COLOR_BLACK , A_BOLD                           }, /* FIFO_COLOR */
+	{ COLOR_RED,     COLOR_BLACK , A_BOLD                           }, /* ERROR_MSG_COLOR */
 };
 
 static int _gnuc_unused default_colors_size_guard[
@@ -116,6 +116,7 @@ init_color_scheme(Col_scheme *cs)
 	{
 		cs->color[i].fg = default_colors[i][0];
 		cs->color[i].bg = default_colors[i][1];
+		cs->color[i].attr = default_colors[i][2];
 	}
 }
 
@@ -141,6 +142,7 @@ check_color_scheme(Col_scheme *cs)
 	{
 		cs->color[i].fg = default_colors[i][0];
 		cs->color[i].bg = default_colors[i][1];
+		cs->color[i].attr = default_colors[i][2];
 	}
 }
 

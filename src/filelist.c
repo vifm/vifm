@@ -364,15 +364,11 @@ quick_view_file(FileView *view)
 	int y = 1;
 	char buf[PATH_MAX];
 
-	wbkgdset(other_view->title, COLOR_PAIR(TOP_LINE_COLOR + view->color_scheme));
-	wbkgdset(other_view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
 	wclear(other_view->win);
 	wclear(other_view->title);
 	mvwaddstr(other_view->title, 0, 0, (other_view == &lwin) ? " " : "");
 	waddstr(other_view->title, "File: ");
 	waddstr(other_view->title, view->dir_entry[view->list_pos].name);
-	wattron(other_view->win,  A_BOLD);
-	wattroff(other_view->win, A_BOLD);
 
 	strcpy(buf, view->dir_entry[view->list_pos].name);
 	switch(view->dir_entry[view->list_pos].type)
@@ -575,6 +571,12 @@ update_view_title(FileView *view)
 	if(curr_stats.vifm_started < 2)
 		return;
 
+	if(curr_view == view)
+		wattrset(view->title, COLOR_PAIR(cfg.color_scheme + TOP_LINE_COLOR) |
+				col_schemes[cfg.color_scheme_cur].color[TOP_LINE_COLOR].attr);
+	else
+		wattrset(view->title, COLOR_PAIR(cfg.color_scheme + BORDER_COLOR) |
+				col_schemes[cfg.color_scheme_cur].color[BORDER_COLOR].attr);
 	werase(view->title);
 
 	buf = replace_home_part(view->curr_dir);
@@ -615,7 +617,6 @@ draw_dir_list(FileView *view, int top)
 	int y = 0;
 	char file_name[view->window_width*2 - 2];
 	int LINE_COLOR;
-	int bold = 1;
 	int color_scheme;
 
 	if(curr_stats.vifm_started < 2)
@@ -625,11 +626,7 @@ draw_dir_list(FileView *view, int top)
 			view->curr_dir);
 
 	if(view->color_scheme != color_scheme)
-	{
 		view->color_scheme = color_scheme;
-		wbkgdset(view->title, COLOR_PAIR(TOP_LINE_COLOR + color_scheme));
-		wbkgdset(view->win, COLOR_PAIR(WIN_COLOR + color_scheme));
-	}
 
 	werase(view->win);
 
@@ -657,6 +654,7 @@ draw_dir_list(FileView *view, int top)
 
 	for(x = top; x < view->list_rows; x++)
 	{
+		int attr;
 		size_t print_width;
 		/* Extra long file names are truncated to fit */
 
@@ -667,17 +665,17 @@ draw_dir_list(FileView *view, int top)
 		wmove(view->win, y, 1);
 		if(view->dir_entry[x].selected)
 		{
-			LINE_COLOR = SELECTED_COLOR + color_scheme;
+			LINE_COLOR = SELECTED_COLOR;
 		}
 		else
 		{
 			switch(view->dir_entry[x].type)
 			{
 				case DIRECTORY:
-					LINE_COLOR = DIRECTORY_COLOR + color_scheme;
+					LINE_COLOR = DIRECTORY_COLOR;
 					break;
 				case FIFO:
-					LINE_COLOR = FIFO_COLOR + color_scheme;
+					LINE_COLOR = FIFO_COLOR;
 					break;
 				case LINK:
 					{
@@ -687,51 +685,39 @@ draw_dir_list(FileView *view, int top)
 								view->dir_entry[x].name);
 						if(get_link_target(full, linkto, sizeof(linkto)) != 0)
 						{
-							LINE_COLOR = BROKEN_LINK_COLOR + color_scheme;
+							LINE_COLOR = BROKEN_LINK_COLOR;
 							break;
 						}
 						if(access(linkto, F_OK) == 0)
-							LINE_COLOR = LINK_COLOR + color_scheme;
+							LINE_COLOR = LINK_COLOR;
 						else
-							LINE_COLOR = BROKEN_LINK_COLOR + color_scheme;
+							LINE_COLOR = BROKEN_LINK_COLOR;
 					}
 					break;
 #ifndef _WIN32
 				case SOCKET:
-					LINE_COLOR = SOCKET_COLOR + color_scheme;
+					LINE_COLOR = SOCKET_COLOR;
 					break;
 #endif
 				case DEVICE:
-					LINE_COLOR = DEVICE_COLOR + color_scheme;
+					LINE_COLOR = DEVICE_COLOR;
 					break;
 				case EXECUTABLE:
-					LINE_COLOR = EXECUTABLE_COLOR + color_scheme;
+					LINE_COLOR = EXECUTABLE_COLOR;
 					break;
 				default:
-					LINE_COLOR = WIN_COLOR + color_scheme;
-					bold = 0;
+					LINE_COLOR = WIN_COLOR;
 					break;
 			}
 		}
-		if(bold)
-		{
-			wattrset(view->win, COLOR_PAIR(LINE_COLOR) | A_BOLD);
-			wattron(view->win, COLOR_PAIR(LINE_COLOR) | A_BOLD);
-			wprintw(view->win, "%s", file_name);
-			wattroff(view->win, COLOR_PAIR(LINE_COLOR) | A_BOLD);
 
-			add_sort_type_info(view, y, x, 0);
-		}
-		else
-		{
-			wattrset(view->win, COLOR_PAIR(LINE_COLOR));
-			wattron(view->win, COLOR_PAIR(LINE_COLOR));
-			wprintw(view->win, "%s", file_name);
-			wattroff(view->win, COLOR_PAIR(LINE_COLOR) | A_BOLD);
+		attr = col_schemes[cfg.color_scheme_cur].color[LINE_COLOR].attr;
+		wattron(view->win, COLOR_PAIR(LINE_COLOR + color_scheme) | attr);
+		wprintw(view->win, "%s", file_name);
+		wattroff(view->win, COLOR_PAIR(LINE_COLOR + color_scheme) | attr);
 
-			add_sort_type_info(view, y, x, 0);
-			bold = 1;
-		}
+		add_sort_type_info(view, y, x, 0);
+
 		y++;
 		if(y > view->window_rows)
 			break;
@@ -749,17 +735,15 @@ erase_current_line_bar(FileView *view)
 	int old_cursor = view->curr_line;
 	int old_pos = view->top_line + old_cursor;
 	char file_name[view->window_width*2 -2];
-	int bold = 1;
 	int LINE_COLOR;
 	size_t print_width;
+	int attr;
 
 	if(curr_stats.vifm_started < 2)
 		return;
 
 	/* Extra long file names are truncated to fit */
 
-	wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
-			A_BOLD);
 	if((old_pos > -1)  && (old_pos < view->list_rows))
 	{
 		print_width = get_real_string_width(view->dir_entry[old_pos].name,
@@ -776,17 +760,17 @@ erase_current_line_bar(FileView *view)
 
 	if(view->dir_entry[old_pos].selected)
 	{
-		LINE_COLOR = SELECTED_COLOR + view->color_scheme;
+		LINE_COLOR = SELECTED_COLOR;
 	}
 	else
 	{
 		switch(view->dir_entry[old_pos].type)
 		{
 			case DIRECTORY:
-				LINE_COLOR = DIRECTORY_COLOR + view->color_scheme;
+				LINE_COLOR = DIRECTORY_COLOR;
 				break;
 			case FIFO:
-				LINE_COLOR = FIFO_COLOR + view->color_scheme;
+				LINE_COLOR = FIFO_COLOR;
 				break;
 			case LINK:
 				{
@@ -796,49 +780,38 @@ erase_current_line_bar(FileView *view)
 							view->dir_entry[old_pos].name);
 					if(get_link_target(full, linkto, sizeof(linkto)) != 0)
 					{
-						LINE_COLOR = BROKEN_LINK_COLOR + view->color_scheme;
+						LINE_COLOR = BROKEN_LINK_COLOR;
 						break;
 					}
 					if(access(linkto, F_OK) == 0)
-						LINE_COLOR = LINK_COLOR + view->color_scheme;
+						LINE_COLOR = LINK_COLOR;
 					else
-						LINE_COLOR = BROKEN_LINK_COLOR + view->color_scheme;
+						LINE_COLOR = BROKEN_LINK_COLOR;
 				}
 				break;
 #ifndef _WIN32
 			case SOCKET:
-				LINE_COLOR = SOCKET_COLOR + view->color_scheme;
+				LINE_COLOR = SOCKET_COLOR;
 				break;
 #endif
 			case DEVICE:
-				LINE_COLOR = DEVICE_COLOR + view->color_scheme;
+				LINE_COLOR = DEVICE_COLOR;
 				break;
 			case EXECUTABLE:
-				LINE_COLOR = EXECUTABLE_COLOR + view->color_scheme;
+				LINE_COLOR = EXECUTABLE_COLOR;
 				break;
 			default:
-				LINE_COLOR = WIN_COLOR + view->color_scheme;
-				bold = 0;
+				LINE_COLOR = WIN_COLOR;
 				break;
 		}
 	}
-	if(bold)
-	{
-		wattrset(view->win, COLOR_PAIR(LINE_COLOR) | A_BOLD);
-		wattron(view->win, COLOR_PAIR(LINE_COLOR) | A_BOLD);
-		mvwaddnstr(view->win, old_cursor, 1, file_name, print_width);
-		wattroff(view->win, COLOR_PAIR(LINE_COLOR) | A_BOLD);
 
-		add_sort_type_info(view, old_cursor, old_pos, 0);
-	}
-	else
-	{
-		wattrset(view->win, COLOR_PAIR(LINE_COLOR));
-		wattron(view->win, COLOR_PAIR(LINE_COLOR));
-		mvwaddnstr(view->win, old_cursor, 1, file_name, print_width);
-		wattroff(view->win, COLOR_PAIR(LINE_COLOR) | A_BOLD);
-		add_sort_type_info(view, old_cursor, old_pos, 0);
-	}
+	attr = col_schemes[cfg.color_scheme_cur].color[LINE_COLOR].attr;
+	wattron(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
+	mvwaddnstr(view->win, old_cursor, 1, file_name, print_width);
+	wattroff(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
+
+	add_sort_type_info(view, old_cursor, old_pos, 0);
 }
 
 /* Returns non-zero if redraw is needed */
@@ -1010,11 +983,12 @@ move_to_list_pos(FileView *view, int pos)
 		pair_content(view->color_scheme + SELECTED_COLOR, &f, &t);
 		pair_content(view->color_scheme + CURR_LINE_COLOR, &t, &b);
 		init_pair(view->color_scheme + CURRENT_COLOR, f, b);
-		attr = A_BOLD;
+		attr = col_schemes[cfg.color_scheme_cur].color[SELECTED_COLOR].attr;
 		wattron(view->win, COLOR_PAIR(view->color_scheme + CURRENT_COLOR) | attr);
 	}
 	else
 	{
+		attr = col_schemes[cfg.color_scheme_cur].color[CURR_LINE_COLOR].attr;
 		wattron(view->win, COLOR_PAIR(view->color_scheme + CURR_LINE_COLOR) |
 				A_BOLD);
 	}
@@ -1039,8 +1013,8 @@ move_to_list_pos(FileView *view, int pos)
 	if(curr_stats.view)
 		quick_view_file(view);
 
-	if(cfg.invert_cur_line || view->dir_entry[pos].selected)
-		wattroff(view->win, COLOR_PAIR(view->color_scheme + CURRENT_COLOR) | attr);
+	attr = col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr;
+	wattrset(view->win, COLOR_PAIR(view->color_scheme + WIN_COLOR) | attr);
 
 	wrefresh(view->win);
 	update_stat_window(view);
