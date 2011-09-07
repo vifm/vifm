@@ -372,7 +372,7 @@ same as :quit
 .BI .
 repeat last command line command (not normal mode command).
 .\" ---------------------------------------------------------------------------
-.SH Using Count with y, d and D
+.SH Using Count
 .\" ---------------------------------------------------------------------------
 .TP
 You can use count with commands like yy.
@@ -384,6 +384,47 @@ Or you can use count with motions passed to y, d or D.
 .TP
 .BI d[count]j
 delete (count + 1) files starting from current cursor position upward.
+.\" ---------------------------------------------------------------------------
+.SH Registers
+.\" ---------------------------------------------------------------------------
+.LP
+vifm supports multiple registers for temporary storing list of yanked or
+deleted files.
+
+Registers should be specified with hitting double quite key followed by a
+register name.  Count is specified after register name.  By default commands use
+unnamed register, which has double quote as its name.
+
+Though all commands accept registers, most of commands ignores them (for example
+H or Ctrl-U).  Other commands can fill register or append new files to it.
+
+Presently vifm supports ", a-z and A-Z characters as register names.
+
+As mentioned above " is unnamed register and has special meaning of the default
+register.  Every time when you use named registers (a-z and A-Z) unnamed
+register is updated to contain same list of files as the last used register.
+
+Registers with names from a to z  and from A to Z are named ones.  Lowercase
+registers are cleared before adding new files, while uppercase aren't and should
+be used to append new files to the existing file list of appropriate lowercase
+register (A for a, B for b, ...).
+
+Registers can be changed on :empty command if they contain files under Trash
+directory.
+
+Registers do not contain one file more than once.
+
+Example:
+  "a2yy
+.br
+will put names of two files to register a (and to the unnamed register).
+  "Ad
+.br
+will remove one file and append its name to register a (and to the unnamed
+register).
+  p or "ap or "Ap
+.br
+will insert previously yanked and deleted files into current directory.
 .\" ---------------------------------------------------------------------------
 .SH Selectors
 .\" ---------------------------------------------------------------------------
