@@ -176,6 +176,7 @@ status_bar_message_i(const char *message, int error)
 	int len;
 	const char *p, *q;
 	int lines;
+	int attr;
 
 	if(!curr_stats.vifm_started)
 		return;
@@ -194,19 +195,6 @@ status_bar_message_i(const char *message, int error)
 
 	assert(msg != NULL);
 
-	if(err)
-	{
-		wattrset(status_bar,
-				col_schemes[cfg.color_scheme_cur].color[ERROR_MSG_COLOR].attr);
-		wbkgdset(status_bar, COLOR_PAIR(cfg.color_scheme + ERROR_MSG_COLOR));
-	}
-	else
-	{
-		wattrset(status_bar,
-				col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr);
-		wbkgdset(status_bar, COLOR_PAIR(cfg.color_scheme + STATUS_BAR_COLOR));
-	}
-
 	p = msg;
 	q = msg - 1;
 	status_bar_lines = 0;
@@ -224,7 +212,6 @@ status_bar_message_i(const char *message, int error)
 	if(status_bar_lines > 1 || strlen(p) > getmaxx(status_bar))
 		lines++;
 
-	werase(status_bar);
 	mvwin(stat_win, getmaxy(stdscr) - lines - 1, 0);
 	mvwin(status_bar, getmaxy(stdscr) - lines, 0);
 	if(lines == 1)
@@ -232,9 +219,24 @@ status_bar_message_i(const char *message, int error)
 	else
 		wresize(status_bar, lines, getmaxx(stdscr));
 	wmove(status_bar, 0, 0);
+
+	if(err)
+	{
+		attr = col_schemes[cfg.color_scheme_cur].color[ERROR_MSG_COLOR].attr;
+		wbkgdset(status_bar, COLOR_PAIR(cfg.color_scheme + ERROR_MSG_COLOR) | attr);
+	}
+	else
+	{
+		attr = col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr;
+		wattron(status_bar, COLOR_PAIR(cfg.color_scheme + STATUS_BAR_COLOR) | attr);
+	}
+	werase(status_bar);
+
 	wprintw(status_bar, "%s", msg);
 	if(lines > 1)
 		wprintw(status_bar, "%s", "\nPress ENTER or type command to continue");
+
+	wattrset(status_bar, 0);
 	wrefresh(stat_win);
 	wrefresh(status_bar);
 }
