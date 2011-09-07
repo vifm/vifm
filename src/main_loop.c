@@ -146,7 +146,6 @@ main_loop(void)
 			assert(counter <= pos);
 			if(counter > 0)
 			{
-				clear_input_bar();
 				pos -= counter;
 				memmove(buf, buf + counter,
 						(wcslen(buf) - counter + 1)*sizeof(wchar_t));
@@ -157,19 +156,24 @@ main_loop(void)
 					add_to_input_bar(c);
 				if(last_result == KEYS_WAIT_SHORT && wcscmp(buf, L"\033") == 0)
 					wtimeout(status_bar, 0);
+				if(counter > 0)
+					clear_input_bar();
 				continue;
 			}
 		}
 
 		wtimeout(status_bar, cfg.timeout_len);
 
-		clear_input_bar();
 		pos = 0;
 		buf[0] = L'\0';
+		clear_input_bar();
 
 		if(is_status_bar_multiline())
+		{
 			wait_enter = 1;
-
+			update_all_windows();
+			continue;
+		}
 		modes_post();
 	}
 }

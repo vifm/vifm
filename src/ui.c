@@ -208,9 +208,9 @@ status_bar_message_i(const char *message, int error)
 	if(status_bar_lines == 0)
 		status_bar_lines = 1;
 
-	lines = status_bar_lines;
 	if(status_bar_lines > 1 || strlen(p) > getmaxx(status_bar))
-		lines++;
+		status_bar_lines++;
+	lines = status_bar_lines;
 
 	mvwin(stat_win, getmaxy(stdscr) - lines - 1, 0);
 	mvwin(status_bar, getmaxy(stdscr) - lines, 0);
@@ -237,8 +237,8 @@ status_bar_message_i(const char *message, int error)
 		wprintw(status_bar, "%s", "\nPress ENTER or type command to continue");
 
 	wattrset(status_bar, 0);
-	wrefresh(stat_win);
 	wrefresh(status_bar);
+	wrefresh(stat_win);
 }
 
 static void
@@ -765,10 +765,10 @@ update_all_windows(void)
 	}
 
 	wnoutrefresh(lborder);
+	wnoutrefresh(rborder);
 	wnoutrefresh(stat_win);
 	wnoutrefresh(pos_win);
 	wnoutrefresh(input_win);
-	wnoutrefresh(rborder);
 	wnoutrefresh(status_bar);
 
 	if(!curr_stats.errmsg_shown && curr_stats.vifm_started >= 2)
