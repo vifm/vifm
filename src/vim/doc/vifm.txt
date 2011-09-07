@@ -979,8 +979,8 @@ Directory to be used as a root dir for FUSE mounts.
 If you change this option, vifm won't remount anything.  It affects future
 mounts only.
 
-                                               *vifm-'gdefault'*
-gdefault
+                                               *vifm-'gdefault'* |vifm-'gd'|
+gdefault gd
 type: boolean
 When on, 'g' flag is on for |vifm-:substitute| by default.
 

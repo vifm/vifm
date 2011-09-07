@@ -940,7 +940,7 @@ Commands
        - I - don't ignore case (the 'ignorecase' and 'smartcase'  options  are
          not used)
 
-       - g - substitute all matches in each file name
+       - g - substitute all matches in each file name (each g toggles this)
 
        :sync
          change the other panel to the current panel directory.
@@ -1175,6 +1175,11 @@ Command macros
               Directory to be used as a root dir  for  FUSE  mounts.   If  you
               change  this  option,  vifm  won't remount anything.  It affects
               future mounts only.
+
+       gdefault gd
+              type: boolean
+              default: false
+              When on, 'g' flag is on for :substitute by default.
 
        history hi
               type: integer
