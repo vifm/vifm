@@ -2036,7 +2036,7 @@ put_files_from_register(FileView *view, int name, int force_move)
 	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
 
-	reg = find_register(name);
+	reg = find_register(tolower(name));
 
 	if(reg == NULL || reg->num_files < 1)
 	{
