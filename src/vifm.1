@@ -1,4 +1,4 @@
-.TH vifm 1 "September 6, 2011" "" "Vifm"
+.TH vifm 1 "September 7, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -775,10 +775,17 @@ on vifm (tab completion works).
 .BI ":hi[ghlight] group-name"
 will show information on given highlight group of the default color scheme.
 .TP
-.BI ":hi[ghlight] group-name ctermfg=color|ctermbg=color"
-sets foreground (ctermfg) or/and background (ctermbg) parameters of highlight
-group of the default color scheme.
+.BI ":hi[ghlight] group-name cterm=style | ctermfg=color | ctermbg=color"
+sets style (cterm), foreground (ctermfg) or/and background (ctermbg) parameters
+of highlight group of the current default color scheme.
 .LP
+Available style values (some of them can be combined):
+ - bold
+ - underline
+ - reverse or inverse
+ - standout
+ - none
+
 Available group-name values:
  - Win - color of all windows (views, dialogs, menus)
  - Border - color of vertical parts of the border
@@ -796,6 +803,8 @@ Available group-name values:
  - Device - color of block and character devices
  - Executable - color of executable files
  - Fifo - color of fifo pipes
+
+Note: Border attributes are used for inactive view title.
 .TP
 .BI :his[tory]
 creates a popup menu of directories visited.

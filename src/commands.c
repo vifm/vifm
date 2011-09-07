@@ -159,6 +159,7 @@ static int grep_cmd(const struct cmd_info *cmd_info);
 static int help_cmd(const struct cmd_info *cmd_info);
 static int highlight_cmd(const struct cmd_info *cmd_info);
 static int get_color(const char *text);
+static int get_attrs(const char *text);
 static int history_cmd(const struct cmd_info *cmd_info);
 static int invert_cmd(const struct cmd_info *cmd_info);
 static int jobs_cmd(const struct cmd_info *cmd_info);
@@ -271,7 +272,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "help",             .abbr = "h",     .emark = 0,  .id = COM_HELP,        .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = help_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "highlight",        .abbr = "hi",    .emark = 0,  .id = COM_HIGHLIGHT,   .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = highlight_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 3,       .select = 0, },
+		.handler = highlight_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 4,       .select = 0, },
 	{ .name = "history",          .abbr = "his",   .emark = 0,  .id = COM_HISTORY,     .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = history_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "invert",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -766,6 +767,7 @@ complete_highlight_arg(const char *str)
 	if(equal == NULL)
 	{
 		static const char *args[] = {
+			"cterm",
 			"ctermfg",
 			"ctermbg",
 		};
@@ -777,12 +779,39 @@ complete_highlight_arg(const char *str)
 	}
 	else
 	{
-		if(strncasecmp(equal, "default", len) == 0)
-			add_completion("default");
-		for(i = 0; i < ARRAY_LEN(COLOR_NAMES); i++)
+		if(strncmp(str, "cterm", equal - str - 1) == 0)
 		{
-			if(strncasecmp(equal, COLOR_NAMES[i], len) == 0)
-				add_completion(COLOR_NAMES[i]);
+			static const char *STYLES[] = {
+				"bold",
+				"underline",
+				"reverse",
+				"inverse",
+				"standout",
+				"none",
+			};
+			char *comma = strrchr(equal, ',');
+			if(comma != NULL)
+			{
+				result += comma - equal + 1;
+				equal = comma + 1;
+				len = strlen(equal);
+			}
+
+			for(i = 0; i < ARRAY_LEN(STYLES); i++)
+			{
+				if(strncasecmp(equal, STYLES[i], len) == 0)
+					add_completion(STYLES[i]);
+			}
+		}
+		else
+		{
+			if(strncasecmp(equal, "default", len) == 0)
+				add_completion("default");
+			for(i = 0; i < ARRAY_LEN(COLOR_NAMES); i++)
+			{
+				if(strncasecmp(equal, COLOR_NAMES[i], len) == 0)
+					add_completion(COLOR_NAMES[i]);
+			}
 		}
 	}
 	completion_group_end();
@@ -2838,6 +2867,7 @@ highlight_cmd(const struct cmd_info *cmd_info)
 		char fg_buf[16], bg_buf[16];
 		int fg = col_schemes[cfg.color_scheme_cur].color[pos].fg;
 		int bg = col_schemes[cfg.color_scheme_cur].color[pos].bg;
+		int attrs = col_schemes[cfg.color_scheme_cur].color[pos].attr;
 
 		if(fg == -1)
 			strcpy(fg_buf, "default");
@@ -2853,8 +2883,8 @@ highlight_cmd(const struct cmd_info *cmd_info)
 		else
 			snprintf(bg_buf, sizeof(bg_buf), "%d", bg);
 
-		status_bar_messagef("%-10s ctermfg=%-8s ctermbg=%s", HI_GROUPS[pos], fg_buf,
-				bg_buf);
+		status_bar_messagef("%-10s cterm=%-10s ctermfg=%-6s ctermbg=%s",
+				HI_GROUPS[pos], attrs_to_str(attrs), fg_buf, bg_buf);
 		return 1;
 	}
 
@@ -2894,6 +2924,16 @@ highlight_cmd(const struct cmd_info *cmd_info)
 			}
 			col_schemes[cfg.color_scheme_cur].color[pos].fg = col;
 		}
+		else if(strcmp(arg_name, "cterm") == 0)
+		{
+			int attrs;
+			if((attrs = get_attrs(equal + 1)) == -1)
+			{
+				status_bar_errorf("Illegal argument: %s", equal + 1);
+				return 1;
+			}
+			col_schemes[cfg.color_scheme_cur].color[pos].attr = attrs;
+		}
 		else
 		{
 			status_bar_errorf("Illegal argument: %s", cmd_info->argv[i]);
@@ -2901,9 +2941,12 @@ highlight_cmd(const struct cmd_info *cmd_info)
 		}
 	}
 	if(curr_stats.vifm_started >= 2)
+	{
 		init_pair(cfg.color_scheme + pos,
 				col_schemes[cfg.color_scheme_cur].color[pos].fg,
 				col_schemes[cfg.color_scheme_cur].color[pos].bg);
+		redraw_window();
+	}
 	return 0;
 }
 
@@ -2921,6 +2964,39 @@ get_color(const char *text)
 	if(col_pos > 0)
 		col_pos = COLOR_VALS[col_pos];
 	return MAX(col_pos, col_num);
+}
+
+static int
+get_attrs(const char *text)
+{
+	int result = 0;
+	while(*text != '\0')
+	{
+		const char *p;
+		char buf[64];
+
+		if((p = strchr(text, ',')) == 0)
+			p = text + strlen(text);
+
+		snprintf(buf, p - text + 1, "%s", text);
+		if(strcasecmp(buf, "bold") == 0)
+			result |= A_BOLD;
+		else if(strcasecmp(buf, "underline") == 0)
+			result |= A_UNDERLINE;
+		else if(strcasecmp(buf, "reverse") == 0)
+			result |= A_REVERSE;
+		else if(strcasecmp(buf, "inverse") == 0)
+			result |= A_REVERSE;
+		else if(strcasecmp(buf, "standout") == 0)
+			result |= A_STANDOUT;
+		else if(strcasecmp(buf, "none") == 0)
+			result = 0;
+		else
+			return -1;
+
+		text = (*p == '\0') ? p : p + 1;
+	}
+	return result;
 }
 
 static int

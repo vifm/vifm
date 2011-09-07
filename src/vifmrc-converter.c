@@ -116,23 +116,23 @@ struct{
 	.use_screen = 0,
 };
 
-static const int default_colors[][2] = {
-	{ COLOR_WHITE,   COLOR_BLACK }, /* MENU_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE }, /* BORDER_COLOR */
-	{ COLOR_WHITE,   COLOR_BLACK }, /* WIN_COLOR */
-	{ COLOR_WHITE,   COLOR_BLACK }, /* STATUS_BAR_COLOR */
-	{ COLOR_WHITE,   COLOR_BLUE  }, /* CURR_LINE_COLOR */
-	{ COLOR_CYAN,    COLOR_BLACK }, /* DIRECTORY_COLOR */
-	{ COLOR_YELLOW,  COLOR_BLACK }, /* LINK_COLOR */
-	{ COLOR_MAGENTA, COLOR_BLACK }, /* SOCKET_COLOR */
-	{ COLOR_RED,     COLOR_BLACK }, /* DEVICE_COLOR */
-	{ COLOR_GREEN,   COLOR_BLACK }, /* EXECUTABLE_COLOR */
-	{ COLOR_MAGENTA, COLOR_BLACK }, /* SELECTED_COLOR */
-	{ COLOR_RED,     COLOR_BLACK }, /* BROKEN_LINK_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE }, /* TOP_LINE_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE }, /* STATUS_LINE_COLOR */
-	{ COLOR_CYAN,    COLOR_BLACK }, /* FIFO_COLOR */
-	{ COLOR_RED,     COLOR_BLACK }, /* ERROR_MSG_COLOR */
+static const int default_colors[][3] = {
+	{ COLOR_WHITE,   COLOR_BLACK , A_UNDERLINE | A_REVERSE | A_BOLD }, /* MENU_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE , 0                                }, /* BORDER_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK , 0                                }, /* WIN_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK , A_BOLD                           }, /* STATUS_BAR_COLOR */
+	{ COLOR_WHITE,   COLOR_BLUE  , A_BOLD                           }, /* CURR_LINE_COLOR */
+	{ COLOR_CYAN,    COLOR_BLACK , A_BOLD                           }, /* DIRECTORY_COLOR */
+	{ COLOR_YELLOW,  COLOR_BLACK , A_BOLD                           }, /* LINK_COLOR */
+	{ COLOR_MAGENTA, COLOR_BLACK , A_BOLD                           }, /* SOCKET_COLOR */
+	{ COLOR_RED,     COLOR_BLACK , A_BOLD                           }, /* DEVICE_COLOR */
+	{ COLOR_GREEN,   COLOR_BLACK , A_BOLD                           }, /* EXECUTABLE_COLOR */
+	{ COLOR_MAGENTA, COLOR_BLACK , A_BOLD                           }, /* SELECTED_COLOR */
+	{ COLOR_RED,     COLOR_BLACK , A_BOLD                           }, /* BROKEN_LINK_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE , A_BOLD                           }, /* TOP_LINE_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE , 0                                }, /* STATUS_LINE_COLOR */
+	{ COLOR_CYAN,    COLOR_BLACK , A_BOLD                           }, /* FIFO_COLOR */
+	{ COLOR_RED,     COLOR_BLACK , A_BOLD                           }, /* ERROR_MSG_COLOR */
 };
 
 static int _gnuc_unused default_colors_size_guard[
@@ -198,6 +198,7 @@ static void init_color_scheme(Col_scheme *cs);
 static void add_color(char s1[], char s2[], char s3[]);
 static int colname2int(char col[]);
 static void write_color_schemes(const char *colors_dir);
+static const char * conv_attrs_to_str(int attrs);
 
 static void
 chomp(char *text)
@@ -1115,10 +1116,11 @@ init_color_scheme(Col_scheme *cs)
 	strcpy(cs->dir, "/");
 	cs->defaulted = 0;
 
-	for(i = 0; i < MAXNUM_COLOR; i++)
+	for(i = 0; i < ARRAY_LEN(default_colors); i++)
 	{
 		cs->color[i].fg = default_colors[i][0];
 		cs->color[i].bg = default_colors[i][1];
+		cs->color[i].attr = default_colors[i][2];
 	}
 }
 
@@ -1284,12 +1286,30 @@ write_color_schemes(const char *colors_dir)
 			else
 				snprintf(bg_buf, sizeof(bg_buf), "%d", bg);
 
-			fprintf(fp, "highlight %s ctermfg=%s ctermbg=%s\n", HI_GROUPS[y], fg_buf,
-					bg_buf);
+			fprintf(fp, "highlight %s cterm=%s ctermfg=%s ctermbg=%s\n", HI_GROUPS[y],
+					conv_attrs_to_str(cs.array[x].color[y].attr), fg_buf, bg_buf);
 		}
 
 		fclose(fp);
 	}
 }
 
+static const char *
+conv_attrs_to_str(int attrs)
+{
+	static char result[64];
+	result[0] = '\0';
+	if(attrs == 0)
+		strcpy(result, "none,");
+	if(attrs & A_BOLD)
+		strcat(result, "bold,");
+	if(attrs & A_UNDERLINE)
+		strcat(result, "underline,");
+	if(attrs & A_REVERSE)
+		strcat(result, "reverse,");
+	if(attrs & A_STANDOUT)
+		strcat(result, "standout,");
+	result[strlen(result) - 1] = '\0';
+	return result;
+}
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

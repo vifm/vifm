@@ -82,6 +82,7 @@ int check_directory_for_color_scheme(int left, const char *dir);
 /* Returns value lower than zero when nothing is found */
 int find_color_scheme(const char *name);
 void complete_colorschemes(const char *name);
+const char * attrs_to_str(int attrs);
 
 #endif
 

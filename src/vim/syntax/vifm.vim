@@ -31,11 +31,13 @@ syntax keyword vifmMarkCommand contained ma[rk]
 syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
 
 " Highlight groups
-syntax keyword vifmHiArgs contained ctermfg ctermbg
+syntax keyword vifmHiArgs contained cterm ctermfg ctermbg
 syntax case ignore
 syntax keyword vifmHiGroups contained Menu Border Win StatusBar CurrLine
 		\ Directory Link Socket Device Executable Selected Current BrokenLink
 		\ TopLine StatusLine Fifo ErrorMsg
+syntax keyword vifmHiStyles contained bold underline reverse inverse standout
+		\ none
 syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
 		\ white default
 syntax case match
@@ -83,7 +85,8 @@ syntax match vifmMapRhs /\s\+\S\+/ contained
 syntax region vifmHi matchgroup=vifmCommand
 		\ start='\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
-		\ contains=vifmHiArgs,vifmHiGroups,vifmHiColors,vifmNumber,vifmComment
+		\ contains=vifmHiArgs,vifmHiGroups,vifmHiStyles,vifmHiColors,vifmNumber
+		\,vifmComment
 syntax region vifmSet matchgroup=vifmCommand
 		\ start='\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmOption,vifmSetString,vifmNumber,vifmComment
@@ -110,7 +113,8 @@ highlight link vifmMarkCommand Statement
 highlight link vifmFtCommand Statement
 highlight link vifmMap Statement
 highlight link vifmHiArgs Type
-highlight link vifmHiGroups PreProc
+highlight link vifmHiGroups Identifier
+highlight link vifmHiStyles PreProc
 highlight link vifmHiColors Special
 highlight link vifmOption PreProc
 highlight link vifmNotation Special

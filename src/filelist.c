@@ -575,7 +575,7 @@ update_view_title(FileView *view)
 		wattrset(view->title, COLOR_PAIR(cfg.color_scheme + TOP_LINE_COLOR) |
 				col_schemes[cfg.color_scheme_cur].color[TOP_LINE_COLOR].attr);
 	else
-		wattrset(view->title, COLOR_PAIR(cfg.color_scheme + BORDER_COLOR) |
+		wattrset(view->title, COLOR_PAIR(cfg.color_scheme + TOP_LINE_COLOR) |
 				col_schemes[cfg.color_scheme_cur].color[BORDER_COLOR].attr);
 	werase(view->title);
 
@@ -610,13 +610,56 @@ update_view_title(FileView *view)
 	wnoutrefresh(view->title);
 }
 
+static int
+get_line_color(FileView* view, int pos)
+{
+	if(view->dir_entry[pos].selected)
+		return SELECTED_COLOR;
+
+	switch(view->dir_entry[pos].type)
+	{
+		case DIRECTORY:
+			return DIRECTORY_COLOR;
+		case FIFO:
+			return FIFO_COLOR;
+		case LINK:
+			{
+				char full[PATH_MAX];
+				char linkto[PATH_MAX];
+				snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
+						view->dir_entry[pos].name);
+				if(get_link_target(full, linkto, sizeof(linkto)) != 0)
+					return BROKEN_LINK_COLOR;
+
+				if(is_path_absolute(linkto))
+					strcpy(full, linkto);
+				else
+					snprintf(full, sizeof(full), "%s/%s", view->curr_dir, linkto);
+
+				if(access(full, F_OK) == 0)
+					return LINK_COLOR;
+				else
+					return BROKEN_LINK_COLOR;
+			}
+#ifndef _WIN32
+		case SOCKET:
+			return SOCKET_COLOR;
+#endif
+		case DEVICE:
+			return DEVICE_COLOR;
+		case EXECUTABLE:
+			return EXECUTABLE_COLOR;
+		default:
+			return WIN_COLOR;
+	}
+}
+
 void
 draw_dir_list(FileView *view, int top)
 {
 	int x;
 	int y = 0;
 	char file_name[view->window_width*2 - 2];
-	int LINE_COLOR;
 	int color_scheme;
 
 	if(curr_stats.vifm_started < 2)
@@ -656,6 +699,7 @@ draw_dir_list(FileView *view, int top)
 	{
 		int attr;
 		size_t print_width;
+		int LINE_COLOR;
 		/* Extra long file names are truncated to fit */
 
 		print_width = get_real_string_width(view->dir_entry[x].name,
@@ -663,53 +707,7 @@ draw_dir_list(FileView *view, int top)
 		snprintf(file_name, print_width, "%s", view->dir_entry[x].name);
 
 		wmove(view->win, y, 1);
-		if(view->dir_entry[x].selected)
-		{
-			LINE_COLOR = SELECTED_COLOR;
-		}
-		else
-		{
-			switch(view->dir_entry[x].type)
-			{
-				case DIRECTORY:
-					LINE_COLOR = DIRECTORY_COLOR;
-					break;
-				case FIFO:
-					LINE_COLOR = FIFO_COLOR;
-					break;
-				case LINK:
-					{
-						char full[PATH_MAX];
-						char linkto[PATH_MAX];
-						snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
-								view->dir_entry[x].name);
-						if(get_link_target(full, linkto, sizeof(linkto)) != 0)
-						{
-							LINE_COLOR = BROKEN_LINK_COLOR;
-							break;
-						}
-						if(access(linkto, F_OK) == 0)
-							LINE_COLOR = LINK_COLOR;
-						else
-							LINE_COLOR = BROKEN_LINK_COLOR;
-					}
-					break;
-#ifndef _WIN32
-				case SOCKET:
-					LINE_COLOR = SOCKET_COLOR;
-					break;
-#endif
-				case DEVICE:
-					LINE_COLOR = DEVICE_COLOR;
-					break;
-				case EXECUTABLE:
-					LINE_COLOR = EXECUTABLE_COLOR;
-					break;
-				default:
-					LINE_COLOR = WIN_COLOR;
-					break;
-			}
-		}
+		LINE_COLOR = get_line_color(view, x);
 
 		attr = col_schemes[cfg.color_scheme_cur].color[LINE_COLOR].attr;
 		wattron(view->win, COLOR_PAIR(LINE_COLOR + color_scheme) | attr);
@@ -758,53 +756,7 @@ erase_current_line_bar(FileView *view)
 
 	wclrtoeol(view->win);
 
-	if(view->dir_entry[old_pos].selected)
-	{
-		LINE_COLOR = SELECTED_COLOR;
-	}
-	else
-	{
-		switch(view->dir_entry[old_pos].type)
-		{
-			case DIRECTORY:
-				LINE_COLOR = DIRECTORY_COLOR;
-				break;
-			case FIFO:
-				LINE_COLOR = FIFO_COLOR;
-				break;
-			case LINK:
-				{
-					char full[PATH_MAX];
-					char linkto[PATH_MAX];
-					snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
-							view->dir_entry[old_pos].name);
-					if(get_link_target(full, linkto, sizeof(linkto)) != 0)
-					{
-						LINE_COLOR = BROKEN_LINK_COLOR;
-						break;
-					}
-					if(access(linkto, F_OK) == 0)
-						LINE_COLOR = LINK_COLOR;
-					else
-						LINE_COLOR = BROKEN_LINK_COLOR;
-				}
-				break;
-#ifndef _WIN32
-			case SOCKET:
-				LINE_COLOR = SOCKET_COLOR;
-				break;
-#endif
-			case DEVICE:
-				LINE_COLOR = DEVICE_COLOR;
-				break;
-			case EXECUTABLE:
-				LINE_COLOR = EXECUTABLE_COLOR;
-				break;
-			default:
-				LINE_COLOR = WIN_COLOR;
-				break;
-		}
-	}
+	LINE_COLOR = get_line_color(view, old_pos);
 
 	attr = col_schemes[cfg.color_scheme_cur].color[LINE_COLOR].attr;
 	wattron(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
@@ -883,7 +835,6 @@ move_to_list_pos(FileView *view, int pos)
 	int old_cursor = view->curr_line;
 	char file_name[view->window_width*2 + 1];
 	size_t print_width;
-	int LINE_COLOR;
 	short f, b;
 	int attr;
 
@@ -913,52 +864,9 @@ move_to_list_pos(FileView *view, int pos)
 
 	if(cfg.invert_cur_line)
 	{
-		/* TODO: move tree switches like this one to a function */
-		switch(view->dir_entry[pos].type)
-		{
-			case DIRECTORY:
-				LINE_COLOR = DIRECTORY_COLOR + view->color_scheme;
-				break;
-			case FIFO:
-				LINE_COLOR = FIFO_COLOR + view->color_scheme;
-				break;
-			case LINK:
-				{
-					char full[PATH_MAX];
-					char linkto[PATH_MAX];
-					snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
-							view->dir_entry[pos].name);
-					if(get_link_target(full, linkto, sizeof(linkto)) != 0)
-					{
-						LINE_COLOR = BROKEN_LINK_COLOR + view->color_scheme;
-						break;
-					}
-					if(access(linkto, F_OK) == 0)
-						LINE_COLOR = LINK_COLOR + view->color_scheme;
-					else
-						LINE_COLOR = BROKEN_LINK_COLOR + view->color_scheme;
-				}
-				break;
-#ifndef _WIN32
-			case SOCKET:
-				LINE_COLOR = SOCKET_COLOR + view->color_scheme;
-				break;
-#endif
-			case DEVICE:
-				LINE_COLOR = DEVICE_COLOR + view->color_scheme;
-				break;
-			case EXECUTABLE:
-				LINE_COLOR = EXECUTABLE_COLOR + view->color_scheme;
-				break;
-			default:
-				LINE_COLOR = WIN_COLOR + view->color_scheme;
-				break;
-		}
+		int LINE_COLOR = get_line_color(view, pos);
 
-		if(view->dir_entry[pos].selected)
-			LINE_COLOR = SELECTED_COLOR + view->color_scheme;
-
-		pair_content(LINE_COLOR, &f, &b);
+		pair_content(LINE_COLOR + view->color_scheme, &f, &b);
 		init_pair(CURRENT_COLOR + view->color_scheme, f, b);
 	}
 

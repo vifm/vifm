@@ -551,9 +551,16 @@ The builtin commands are:
                                                *vifm-:highlight* *vifm-:hi*
 :hi[ghlight] group-name - will show information on given highlight
     group of the default color scheme.
-:hi[ghlight] group-name ctermfg=color|ctermbg=color - sets foreground
-    (ctermfg) or/and background (ctermbg) parameters of highlight group
-    of the default color scheme.
+:hi[ghlight] group-name cterm=style | ctermfg=color | ctermbg=color - sets
+    style (cterm), foreground (ctermfg) or/and background (ctermbg)
+    parameters of highlight group of the current default color scheme.
+
+Available style values (some of them can be combined):
+ - bold
+ - underline
+ - reverse or inverse
+ - standout
+ - none
 
 Available group-name values:
  - Win - color of all windows (views, dialogs, menus)
@@ -572,6 +579,8 @@ Available group-name values:
  - Device - color of block and character devices
  - Executable - color of executable files
  - Fifo - color of fifo pipes
+
+Note: Border attributes are used for inactive view title.
 
                                                *vifm-:history* *vifm-:his*
 :his[tory] - show directory history.

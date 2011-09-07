@@ -258,8 +258,8 @@ write_color_scheme_file(void)
 		else
 			snprintf(bg_buf, sizeof(bg_buf), "%d", bg);
 
-		fprintf(fp, "highlight %s ctermfg=%s ctermbg=%s\n", HI_GROUPS[y], fg_buf,
-				bg_buf);
+		fprintf(fp, "highlight %s cterm=%s ctermfg=%s ctermbg=%s\n", HI_GROUPS[y],
+				attrs_to_str(col_schemes[x].color[y].attr), fg_buf, bg_buf);
 	}
 
 	fclose(fp);
@@ -392,6 +392,25 @@ complete_colorschemes(const char *name)
 	}
 	completion_group_end();
 	add_completion(name);
+}
+
+const char *
+attrs_to_str(int attrs)
+{
+	static char result[64];
+	result[0] = '\0';
+	if(attrs == 0)
+		strcpy(result, "none,");
+	if(attrs & A_BOLD)
+		strcat(result, "bold,");
+	if(attrs & A_UNDERLINE)
+		strcat(result, "underline,");
+	if(attrs & A_REVERSE)
+		strcat(result, "reverse,");
+	if(attrs & A_STANDOUT)
+		strcat(result, "standout,");
+	result[strlen(result) - 1] = '\0';
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
