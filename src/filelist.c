@@ -593,7 +593,9 @@ update_view_title(FileView *view)
 			ptr += get_char_width(ptr);
 		}
 
-		wprintw(view->title, "%s...%s", (view == &lwin) ? " " : "", ptr);
+		if(view == &lwin)
+			wmove(view->title, 0, 1);
+		wprintw(view->title, "...%s", ptr);
 	}
 	else if(len + 1 > view->window_width && curr_view != view)
 	{
@@ -604,7 +606,9 @@ update_view_title(FileView *view)
 	}
 	else
 	{
-		wprintw(view->title, "%s%s", (view == &lwin) ? " " : "", buf);
+		if(view == &lwin)
+			wmove(view->title, 0, 1);
+		wprintw(view->title, "%s", buf);
 	}
 
 	wnoutrefresh(view->title);
