@@ -622,6 +622,17 @@ Available group-name values:
 
 Note: Border attributes are used for inactive view title.
 
+Available colors:
+ - -1 or default or none - transparent
+ - black
+ - red
+ - green
+ - yellow
+ - blue
+ - magenta
+ - cyan
+ - white
+
                                                *vifm-:history* *vifm-:his*
 :his[tory] - show directory history.
 :his[tory] x

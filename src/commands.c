@@ -808,6 +808,8 @@ complete_highlight_arg(const char *str)
 		{
 			if(strncasecmp(equal, "default", len) == 0)
 				add_completion("default");
+			if(strncasecmp(equal, "none", len) == 0)
+				add_completion("none");
 			for(i = 0; i < ARRAY_LEN(COLOR_NAMES); i++)
 			{
 				if(strncasecmp(equal, COLOR_NAMES[i], len) == 0)
@@ -2953,14 +2955,14 @@ get_group_str(int group, Col_attr col)
 	char fg_buf[16], bg_buf[16];
 
 	if(col.fg == -1)
-		strcpy(fg_buf, "default");
+		strcpy(fg_buf, "none");
 	else if(col.fg < ARRAY_LEN(COLOR_NAMES))
 		strcpy(fg_buf, COLOR_NAMES[col.fg]);
 	else
 		snprintf(fg_buf, sizeof(fg_buf), "%d", col.fg);
 
 	if(col.bg == -1)
-		strcpy(bg_buf, "default");
+		strcpy(bg_buf, "none");
 	else if(col.bg < ARRAY_LEN(COLOR_NAMES))
 		strcpy(bg_buf, COLOR_NAMES[col.bg]);
 	else
@@ -2977,7 +2979,8 @@ get_color(const char *text)
 	int col_pos = string_array_pos_case(COLOR_NAMES, ARRAY_LEN(COLOR_NAMES),
 			text);
 	int col_num = isdigit(*text) ? atoi(text) : -1;
-	if(strcmp(text, "-1") == 0 || strcasecmp(text, "default") == 0)
+	if(strcmp(text, "-1") == 0 || strcasecmp(text, "default") == 0 ||
+			strcasecmp(text, "none") == 0)
 		return -1;
 	if(col_pos < 0 && (col_num < 0 ||
 			(curr_stats.vifm_started >= 2 && col_num > COLORS)))

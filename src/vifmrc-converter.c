@@ -1273,14 +1273,14 @@ write_color_schemes(const char *colors_dir)
 			int fg = cs.array[x].color[y].fg;
 			int bg = cs.array[x].color[y].bg;
 			if(fg == -1)
-				strcpy(fg_buf, "default");
+				strcpy(fg_buf, "none");
 			else if(fg < ARRAY_LEN(COLOR_NAMES))
 				strcpy(fg_buf, COLOR_NAMES[fg]);
 			else
 				snprintf(fg_buf, sizeof(fg_buf), "%d", fg);
 
 			if(bg == -1)
-				strcpy(bg_buf, "default");
+				strcpy(bg_buf, "none");
 			else if(bg < ARRAY_LEN(COLOR_NAMES))
 				strcpy(bg_buf, COLOR_NAMES[bg]);
 			else
