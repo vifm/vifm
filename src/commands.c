@@ -158,6 +158,7 @@ static int find_cmd(const struct cmd_info *cmd_info);
 static int grep_cmd(const struct cmd_info *cmd_info);
 static int help_cmd(const struct cmd_info *cmd_info);
 static int highlight_cmd(const struct cmd_info *cmd_info);
+static const char *get_group_str(int group, Col_attr col);
 static int get_color(const char *text);
 static int get_attrs(const char *text);
 static int history_cmd(const struct cmd_info *cmd_info);
@@ -272,7 +273,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "help",             .abbr = "h",     .emark = 0,  .id = COM_HELP,        .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = help_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "highlight",        .abbr = "hi",    .emark = 0,  .id = COM_HIGHLIGHT,   .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = highlight_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 4,       .select = 0, },
+		.handler = highlight_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 4,       .select = 0, },
 	{ .name = "history",          .abbr = "his",   .emark = 0,  .id = COM_HISTORY,     .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = history_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "invert",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2855,6 +2856,19 @@ highlight_cmd(const struct cmd_info *cmd_info)
 	int i;
 	int pos;
 
+	if(cmd_info->argc == 0)
+	{
+		char buf[256*(MAXNUM_COLOR - 2)] = "";
+		for(i = 0; i < MAXNUM_COLOR - 2; i++)
+		{
+			strcat(buf, get_group_str(i, col_schemes[cfg.color_scheme_cur].color[i]));
+			if(i < MAXNUM_COLOR - 2 - 1)
+				strcat(buf, "\n");
+		}
+		status_bar_message(buf);
+		return 1;
+	}
+
 	if(!is_in_string_array_case(HI_GROUPS, MAXNUM_COLOR - 2, cmd_info->argv[0]))
 	{
 		status_bar_errorf("Highlight group not found: %s", cmd_info->argv[0]);
@@ -2864,27 +2878,8 @@ highlight_cmd(const struct cmd_info *cmd_info)
 	pos = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR - 2, cmd_info->argv[0]);
 	if(cmd_info->argc == 1)
 	{
-		char fg_buf[16], bg_buf[16];
-		int fg = col_schemes[cfg.color_scheme_cur].color[pos].fg;
-		int bg = col_schemes[cfg.color_scheme_cur].color[pos].bg;
-		int attrs = col_schemes[cfg.color_scheme_cur].color[pos].attr;
-
-		if(fg == -1)
-			strcpy(fg_buf, "default");
-		else if(fg < ARRAY_LEN(COLOR_NAMES))
-			strcpy(fg_buf, COLOR_NAMES[fg]);
-		else
-			snprintf(fg_buf, sizeof(fg_buf), "%d", fg);
-
-		if(bg == -1)
-			strcpy(bg_buf, "default");
-		else if(bg < ARRAY_LEN(COLOR_NAMES))
-			strcpy(bg_buf, COLOR_NAMES[bg]);
-		else
-			snprintf(bg_buf, sizeof(bg_buf), "%d", bg);
-
-		status_bar_messagef("%-10s cterm=%-10s ctermfg=%-6s ctermbg=%s",
-				HI_GROUPS[pos], attrs_to_str(attrs), fg_buf, bg_buf);
+		status_bar_message(get_group_str(pos,
+				col_schemes[cfg.color_scheme_cur].color[pos]));
 		return 1;
 	}
 
@@ -2948,6 +2943,32 @@ highlight_cmd(const struct cmd_info *cmd_info)
 		redraw_window();
 	}
 	return 0;
+}
+
+static const char *
+get_group_str(int group, Col_attr col)
+{
+	static char buf[256];
+
+	char fg_buf[16], bg_buf[16];
+
+	if(col.fg == -1)
+		strcpy(fg_buf, "default");
+	else if(col.fg < ARRAY_LEN(COLOR_NAMES))
+		strcpy(fg_buf, COLOR_NAMES[col.fg]);
+	else
+		snprintf(fg_buf, sizeof(fg_buf), "%d", col.fg);
+
+	if(col.bg == -1)
+		strcpy(bg_buf, "default");
+	else if(col.bg < ARRAY_LEN(COLOR_NAMES))
+		strcpy(bg_buf, COLOR_NAMES[col.bg]);
+	else
+		snprintf(bg_buf, sizeof(bg_buf), "%d", col.bg);
+
+	snprintf(buf, sizeof(buf), "%-10s ctermfg=%-7s ctermbg=%-7s cterm=%s",
+			HI_GROUPS[group], fg_buf, bg_buf, attrs_to_str(col.attr));
+	return buf;
 }
 
 static int
