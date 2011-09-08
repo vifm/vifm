@@ -1201,7 +1201,11 @@ leave_invalid_dir(FileView *view, char *path)
 	}
 
 	if(strchr(path, '/') == NULL)
+#ifndef _WIN32
 		strcpy(path, "/");
+#else
+		strcpy(path, "c:/");
+#endif
 }
 
 static int

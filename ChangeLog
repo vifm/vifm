@@ -133,6 +133,8 @@
 
 	Added black hole register ("_).
 
+	Added UNC names support (MS-Windows).
+
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 
 	Handle multi line output of :set command (for example,
@@ -146,7 +148,7 @@
 
 	Sort completion items.
 
-	Shift-Tab key to perform completion in reversed order.
+	Shift-Tab command line key to perform completion in reversed order.
 
 	Now vifm also accepts paths to files as the startup arguments.
 
