@@ -3129,7 +3129,7 @@ mark_cmd(const struct cmd_info *cmd_info)
 	}
 
 	tmp = expand_tilde(strdup(cmd_info->argv[1]));
-	if(tmp[0] != '/')
+	if(!is_path_absolute(tmp))
 	{
 		free(tmp);
 		status_bar_error("Expected full path to the directory");
