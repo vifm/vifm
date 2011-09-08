@@ -764,7 +764,7 @@ erase_current_line_bar(FileView *view)
 	LINE_COLOR = get_line_color(view, old_pos);
 
 	attr = col_schemes[cfg.color_scheme_cur].color[LINE_COLOR].attr;
-	wattron(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
+	wattrset(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
 	mvwaddnstr(view->win, old_cursor, 1, file_name, print_width);
 	wattroff(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
 
