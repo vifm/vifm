@@ -1475,6 +1475,19 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 	return renamed;
 }
 
+#ifdef _WIN32
+static void
+change_slashes(char *str)
+{
+	int i;
+	for(i = 0; str[i] != '\0'; i++)
+	{
+		if(str[i] == '\\')
+			str[i] = '/';
+	}
+}
+#endif
+
 static char **
 read_list_from_file(int count, char **names, int *nlines, int require_change)
 {
@@ -1483,7 +1496,13 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 	FILE *f;
 	int i;
 
-	strncpy(temp_file, make_name_unique("/tmp/vifm.rename"), sizeof(temp_file));
+#ifndef _WIN32
+	snprintf(temp_file, sizeof(temp_file), "/tmp/vifm.rename");
+#else
+	snprintf(temp_file, sizeof(temp_file), "%s\\vifm.rename", getenv("TMP"));
+	change_slashes(temp_file);
+#endif
+	strncpy(temp_file, make_name_unique(temp_file), sizeof(temp_file));
 
 	if((f = fopen(temp_file, "w")) == NULL)
 	{

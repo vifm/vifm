@@ -105,13 +105,14 @@ is_dir(const char *file)
 char *
 escape_filename(const char *string, int quote_percent)
 {
+#ifndef _WIN32
 	size_t len;
 	size_t i;
 	char *ret, *dup;
 
 	len = strlen(string);
 
-	dup = ret = (char *)malloc (len * 2 + 2 + 1);
+	dup = ret = malloc(len*2 + 2 + 1);
 
 	if(*string == '-')
 	{
@@ -158,14 +159,17 @@ escape_filename(const char *string, int quote_percent)
 				break;
 			case '~':
 			case '#':
-				if (dup == ret)
+				if(dup == ret)
 					*dup++ = '\\';
 				break;
 		}
 		*dup = *string;
-  }
-  *dup = '\0';
-  return ret;
+	}
+	*dup = '\0';
+	return ret;
+#else
+	return strdup(string);
+#endif
 }
 
 void
