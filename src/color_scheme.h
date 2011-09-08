@@ -20,7 +20,9 @@
 #define __COLOR_SCHEME_H__
 
 #include <limits.h>
-#ifndef NAME_MAX
+
+#if !defined(NAME_MAX) && defined(_WIN32)
+#include <io.h>
 #define NAME_MAX FILENAME_MAX
 #endif
 
@@ -71,7 +73,6 @@ extern Col_scheme *col_schemes;
 
 extern char *HI_GROUPS[];
 extern char *COLOR_NAMES[8];
-extern int COLOR_VALS[8];
 
 /* directory should be NULL if you want to set default directory */
 int add_color_scheme(const char *name, const char *directory);

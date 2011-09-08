@@ -61,25 +61,14 @@ static int _gnuc_unused HI_GROUPS_size_guard[
 ];
 
 char *COLOR_NAMES[8] = {
-	"black",
-	"red",
-	"green",
-	"yellow",
-	"blue",
-	"magenta",
-	"cyan",
-	"white",
-};
-
-int COLOR_VALS[8] = {
-	COLOR_BLACK,
-	COLOR_RED,
-	COLOR_GREEN,
-	COLOR_YELLOW,
-	COLOR_BLUE,
-	COLOR_MAGENTA,
-	COLOR_CYAN,
-	COLOR_WHITE,
+	[COLOR_BLACK]   = "black",
+	[COLOR_RED]     = "red",
+	[COLOR_GREEN]   = "green",
+	[COLOR_YELLOW]  = "yellow",
+	[COLOR_BLUE]    = "blue",
+	[COLOR_MAGENTA] = "magenta",
+	[COLOR_CYAN]    = "cyan",
+	[COLOR_WHITE]   = "white",
 };
 
 static const int default_colors[][3] = {
@@ -198,7 +187,11 @@ write_color_scheme_file(void)
 	int x, y;
 
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
+#ifndef _WIN32
 	if(mkdir(colors_dir, 0777) != 0)
+#else
+	if(mkdir(colors_dir) != 0)
+#endif
 		return;
 
 	strcat(colors_dir, "/Default");
@@ -297,8 +290,10 @@ read_color_schemes(void)
 	{
 		char full[PATH_MAX];
 
+#ifndef _WIN32
 		if(d->d_type != DT_REG && d->d_type != DT_LNK)
 			continue;
+#endif
 
 		if(d->d_name[0] == '.')
 			continue;
@@ -396,13 +391,13 @@ attrs_to_str(int attrs)
 	result[0] = '\0';
 	if(attrs == 0)
 		strcpy(result, "none,");
-	if(attrs & A_BOLD)
+	if((attrs & A_BOLD) == A_BOLD)
 		strcat(result, "bold,");
-	if(attrs & A_UNDERLINE)
+	if((attrs & A_UNDERLINE) == A_UNDERLINE)
 		strcat(result, "underline,");
-	if(attrs & A_REVERSE)
+	if((attrs & A_REVERSE) == A_REVERSE)
 		strcat(result, "reverse,");
-	if(attrs & A_STANDOUT)
+	if((attrs & A_STANDOUT) == A_STANDOUT)
 		strcat(result, "standout,");
 	result[strlen(result) - 1] = '\0';
 	return result;

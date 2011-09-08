@@ -27,6 +27,11 @@
 #include "../config.h"
 #include "tree.h"
 
+#if !defined(NAME_MAX) && defined(_WIN32)
+#include <io.h>
+#define NAME_MAX FILENAME_MAX
+#endif
+
 typedef struct
 {
 	int need_redraw;
