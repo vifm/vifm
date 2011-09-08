@@ -1045,7 +1045,7 @@ Minimal number of screen lines to keep above and below the cursor.
                                                *vifm-'shell'* *vifm-'sh'*
 shell sh
 type: string
-default: $SHELL or "sh"
+default: $SHELL or "sh" or "cmd" (on MS-Windows)
 Full path to the shell to use to run external commands.
 
                                                *vifm-'smartcase'* *vifm-'scs'*

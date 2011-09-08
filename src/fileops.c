@@ -118,7 +118,10 @@ my_system(char *command)
 	signal(SIGINT, SIG_DFL);
 
 	strcpy(buf, cfg.shell);
-	strcat(buf, " -c \"");
+	if(strcmp(cfg.shell, "cmd") == 0)
+		strcat(buf, " /C \"");
+	else
+		strcat(buf, " -c \"");
 	strcat(buf, command);
 	strcat(buf, "\"");
 
@@ -874,7 +877,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 {
 	char name[NAME_MAX];
 	int type;
-	int execable;
+	int executable;
 	int runnable;
 	char *filename;
 	
@@ -928,17 +931,17 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	runnable = type == REGULAR || type == EXECUTABLE || runnable ||
 			type == DIRECTORY;
 
-	execable = type == EXECUTABLE || (runnable && access(filename, X_OK) == 0 &&
+	executable = type == EXECUTABLE || (runnable && access(filename, X_OK) == 0 &&
 			S_ISEXE(view->dir_entry[view->list_pos].mode));
-	execable = execable && !dont_execute && cfg.auto_execute;
+	executable = executable && !dont_execute && cfg.auto_execute;
 
-	if(cfg.vim_filter && (execable || runnable))
+	if(cfg.vim_filter && (executable || runnable))
 		use_vim_plugin(view, 0, NULL); /* no return */
 
-	if(execable)
+	if(executable)
 	{
 		char buf[NAME_MAX];
-		snprintf(buf, sizeof(buf), "./%s", filename);
+		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, filename);
 		shellout(buf, 1);
 	}
 	else if(runnable)

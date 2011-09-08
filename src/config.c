@@ -111,7 +111,11 @@ init_config(void)
 
 	p = getenv("SHELL");
 	if(p == NULL || *p == '\0')
+#ifndef _WIN32
 		cfg.shell = strdup("sh");
+#else
+		cfg.shell = strdup("cmd");
+#endif
 	else
 		cfg.shell = strdup(p);
 
