@@ -335,7 +335,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "split",            .abbr = "sp",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = split_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "substitute",       .abbr = "s",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
-		.handler = substitute_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 2, .max_args = 3,       .select = 1, },
+		.handler = substitute_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 1, .max_args = 3,       .select = 1, },
 	{ .name = "sync",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = sync_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "touch",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
@@ -3544,8 +3544,11 @@ substitute_cmd(const struct cmd_info *cmd_info)
 		return 1;
 	}
 
-	return substitute_in_names(curr_view, last_pattern, cmd_info->argv[1], ic,
-			glob) != 0;
+	if(cmd_info->argc == 2)
+		return substitute_in_names(curr_view, last_pattern, cmd_info->argv[1], ic,
+				glob) != 0;
+	else
+		return substitute_in_names(curr_view, last_pattern, "", ic, glob) != 0;
 }
 
 static int
