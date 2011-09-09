@@ -753,7 +753,7 @@ Commands
         - Border - color of vertical parts of the border
         - TopLineSel - top line color of the current pane
         - TopLine - top line color of the other pane
-        - StatusBar - the status bar color
+        - CmdLine - the command line/status bar color
         - ErrorMsg - color of error messages in the status bar
         - StatusLine - color of the line above the status bar
         - WildMenu - color of the wild menu items

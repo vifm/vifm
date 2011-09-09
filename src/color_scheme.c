@@ -41,7 +41,7 @@ char *HI_GROUPS[] = {
 	"WildMenu",
 	"Border",
 	"Win",
-	"StatusBar",
+	"CmdLine",
 	"CurrLine",
 	"Directory",
 	"Link",
