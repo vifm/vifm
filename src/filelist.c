@@ -190,8 +190,11 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 			wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | attr);
 		}
 		else
+		{
+			attr = cfg.cs.color[CURR_LINE_COLOR].attr;
 			wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
-					A_BOLD);
+					attr);
+		}
 	}
 
 	mvwaddstr(view->win, y, view->window_width - strlen(buf), buf);
@@ -902,8 +905,7 @@ move_to_list_pos(FileView *view, int pos)
 	else
 	{
 		attr = cfg.cs.color[CURR_LINE_COLOR].attr;
-		wattron(view->win, COLOR_PAIR(view->color_scheme + CURR_LINE_COLOR) |
-				A_BOLD);
+		wattron(view->win, COLOR_PAIR(view->color_scheme + CURR_LINE_COLOR) | attr);
 	}
 
 	/* Blank the current line and
