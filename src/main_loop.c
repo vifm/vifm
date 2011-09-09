@@ -125,6 +125,9 @@ main_loop(void)
 			buf[pos] = L'\0';
 		}
 
+		if(wait_enter && ret == ERR)
+			continue;
+
 		counter = get_key_counter();
 		if(ret == ERR && last_result == KEYS_WAIT_SHORT)
 		{
