@@ -54,6 +54,7 @@ char *HI_GROUPS[] = {
 	"StatusLine",
 	"Fifo",
 	"ErrorMsg",
+	"TopLineSel",
 };
 
 static int _gnuc_unused HI_GROUPS_size_guard[
@@ -84,10 +85,11 @@ static const int default_colors[][3] = {
 	{ COLOR_GREEN,   COLOR_BLACK, A_BOLD                           }, /* EXECUTABLE_COLOR */
 	{ COLOR_MAGENTA, COLOR_BLACK, A_BOLD                           }, /* SELECTED_COLOR */
 	{ COLOR_RED,     COLOR_BLACK, A_BOLD                           }, /* BROKEN_LINK_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE, A_BOLD                           }, /* TOP_LINE_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE, 0                                }, /* TOP_LINE_COLOR */
 	{ COLOR_BLACK,   COLOR_WHITE, 0                                }, /* STATUS_LINE_COLOR */
 	{ COLOR_CYAN,    COLOR_BLACK, A_BOLD                           }, /* FIFO_COLOR */
 	{ COLOR_RED,     COLOR_BLACK, 0                                }, /* ERROR_MSG_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE, A_BOLD                           }, /* TOP_LINE_SEL_COLOR */
 };
 
 static int _gnuc_unused default_colors_size_guard[

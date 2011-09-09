@@ -387,9 +387,9 @@ setup_ncurses_interface(void)
 		lwin.title = newwin(1, screen_x/2 - 1 + screen_x%2 + (2 - screen_x%2), 0,
 				0);
 
-	wbkgdset(lwin.title, COLOR_PAIR(color_scheme + TOP_LINE_COLOR));
+	wbkgdset(lwin.title, COLOR_PAIR(color_scheme + TOP_LINE_SEL_COLOR));
 	wattrset(lwin.title,
-			col_schemes[cfg.color_scheme_cur].color[TOP_LINE_COLOR].attr);
+			col_schemes[cfg.color_scheme_cur].color[TOP_LINE_SEL_COLOR].attr);
 	werase(lwin.title);
 
 	if(curr_stats.number_of_windows == 1)
@@ -418,7 +418,7 @@ setup_ncurses_interface(void)
 
 	wbkgdset(rwin.title, COLOR_PAIR(color_scheme + TOP_LINE_COLOR));
 	wattrset(rwin.title,
-			col_schemes[cfg.color_scheme_cur].color[BORDER_COLOR].attr);
+			col_schemes[cfg.color_scheme_cur].color[TOP_LINE_COLOR].attr);
 	werase(rwin.title);
 
 	if(curr_stats.number_of_windows == 1)

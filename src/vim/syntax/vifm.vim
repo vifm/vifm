@@ -35,7 +35,7 @@ syntax keyword vifmHiArgs contained cterm ctermfg ctermbg
 syntax case ignore
 syntax keyword vifmHiGroups contained WildMenu Border Win StatusBar CurrLine
 		\ Directory Link Socket Device Executable Selected Current BrokenLink
-		\ TopLine StatusLine Fifo ErrorMsg
+		\ TopLine TopLineSel StatusLine Fifo ErrorMsg
 syntax keyword vifmHiStyles contained bold underline reverse inverse standout
 		\ none
 syntax keyword vifmHiColors contained black red green yellow blue magenta cyan

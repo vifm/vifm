@@ -572,11 +572,17 @@ update_view_title(FileView *view)
 		return;
 
 	if(curr_view == view)
+	{
+		wbkgdset(view->title, COLOR_PAIR(cfg.color_scheme + TOP_LINE_SEL_COLOR));
+		wattrset(view->title, COLOR_PAIR(cfg.color_scheme + TOP_LINE_SEL_COLOR) |
+				col_schemes[cfg.color_scheme_cur].color[TOP_LINE_SEL_COLOR].attr);
+	}
+	else
+	{
+		wbkgdset(view->title, COLOR_PAIR(cfg.color_scheme + TOP_LINE_COLOR));
 		wattrset(view->title, COLOR_PAIR(cfg.color_scheme + TOP_LINE_COLOR) |
 				col_schemes[cfg.color_scheme_cur].color[TOP_LINE_COLOR].attr);
-	else
-		wattrset(view->title, COLOR_PAIR(cfg.color_scheme + TOP_LINE_COLOR) |
-				col_schemes[cfg.color_scheme_cur].color[BORDER_COLOR].attr);
+	}
 	werase(view->title);
 
 	buf = replace_home_part(view->curr_dir);
