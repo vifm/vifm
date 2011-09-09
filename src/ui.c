@@ -343,7 +343,6 @@ setup_ncurses_interface(void)
 		finish("Vifm requires a console that can support color.\n");
 
 	start_color();
-	/* Changed for pdcurses */
 	use_default_colors();
 
 	load_def_scheme();

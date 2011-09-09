@@ -130,7 +130,7 @@ static const int default_colors[][3] = {
 	{ COLOR_MAGENTA, COLOR_BLACK, A_BOLD                           }, /* SELECTED_COLOR */
 	{ COLOR_RED,     COLOR_BLACK, A_BOLD                           }, /* BROKEN_LINK_COLOR */
 	{ COLOR_BLACK,   COLOR_WHITE, 0                                }, /* TOP_LINE_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE, 0                                }, /* STATUS_LINE_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE, A_BOLD                           }, /* STATUS_LINE_COLOR */
 	{ COLOR_CYAN,    COLOR_BLACK, A_BOLD                           }, /* FIFO_COLOR */
 	{ COLOR_RED,     COLOR_BLACK, 0                                }, /* ERROR_MSG_COLOR */
 	{ COLOR_BLACK,   COLOR_WHITE, A_BOLD                           }, /* TOP_LINE_SEL_COLOR */
