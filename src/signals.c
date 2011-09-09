@@ -37,6 +37,7 @@
 #include "fileops.h"
 #include "filetype.h"
 #include "macros.h"
+#include "main_loop.h"
 #include "menus.h"
 #include "modes.h"
 #include "status.h"
@@ -48,7 +49,12 @@
 static void
 received_sigwinch(void)
 {
-	curr_stats.save_msg = 0;
+	if(curr_stats.save_msg != 2)
+	{
+		status_bar_message("");
+		curr_stats.save_msg = 0;
+	}
+	clean_input_buf();
 	if(!isendwin())
 	{
 		if(curr_stats.vifm_started >= 3)

@@ -42,6 +42,9 @@
 
 #include "main_loop.h"
 
+static wchar_t buf[128];
+static int pos;
+
 /*
  * Main Loop
  * Everything is driven from this function with the exception of
@@ -50,8 +53,6 @@
 void
 main_loop(void)
 {
-	wchar_t buf[128];
-	int pos = 0;
 	int last_result = 0;
 	int wait_enter = 0;
 
@@ -90,6 +91,10 @@ main_loop(void)
 			curr_stats.too_small_term = 0;
 			modes_redraw();
 			wtimeout(status_bar, cfg.timeout_len);
+
+			wait_enter = 0;
+			curr_stats.save_msg = 0;
+			status_bar_message("");
 		}
 
 		modes_pre();
@@ -179,6 +184,13 @@ main_loop(void)
 		}
 		modes_post();
 	}
+}
+
+void
+clean_input_buf(void)
+{
+	pos = 0;
+	buf[0] = L'\0';
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

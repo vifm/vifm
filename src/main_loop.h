@@ -20,6 +20,7 @@
 #define __MAIN_LOOP_H__
 
 void main_loop(void);
+void clean_input_buf(void);
 
 #endif
 

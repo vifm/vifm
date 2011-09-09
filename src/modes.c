@@ -142,16 +142,9 @@ modes_post(void)
 	if(curr_stats.save_msg)
 		;
 	else if(curr_view->selected_files || mode == VISUAL_MODE)
-	{
-		status_bar_messagef("%s%d %s selected",
-				(mode == VISUAL_MODE) ? "-- VISUAL -- " : "", curr_view->selected_files,
-				curr_view->selected_files == 1 ? "file" : "files");
-		curr_stats.save_msg = 1;
-	}
+		print_selected_msg();
 	else
-	{
 		clean_status_bar();
-	}
 }
 
 void
@@ -239,6 +232,15 @@ int
 get_mode(void)
 {
 	return mode;
+}
+
+void
+print_selected_msg(void)
+{
+	status_bar_messagef("%s%d %s selected",
+			(mode == VISUAL_MODE) ? "-- VISUAL -- " : "", curr_view->selected_files,
+			curr_view->selected_files == 1 ? "file" : "files");
+	curr_stats.save_msg = 2;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

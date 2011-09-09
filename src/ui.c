@@ -50,6 +50,7 @@
 #include "filelist.h"
 #include "macros.h"
 #include "menus.h"
+#include "modes.h"
 #include "opt_handlers.h"
 #include "signals.h"
 #include "status.h"
@@ -164,7 +165,7 @@ update_stat_window(FileView *view)
 		id_buf[0] = '\0';
 	mvwaddstr(stat_win, 0, cur_x, id_buf);
 
-	wnoutrefresh(stat_win);
+	wrefresh(stat_win);
 }
 
 static void
@@ -637,14 +638,9 @@ redraw_window(void)
 	if(!is_status_bar_multiline())
 	{
 		if(curr_view->selected_files)
-		{
-			status_bar_messagef("%d file%s selected", curr_view->selected_files,
-					curr_view->selected_files == 1 ? "" : "s");
-		}
+			print_selected_msg();
 		else
-		{
 			clean_status_bar();
-		}
 
 		update_pos_window(curr_view);
 	}

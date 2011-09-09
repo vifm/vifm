@@ -40,6 +40,7 @@ void add_to_input_bar(wchar_t c);
 void clear_input_bar(void);
 /* returns current mode id */
 int get_mode(void);
+void print_selected_msg(void);
 
 #endif
 
