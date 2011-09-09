@@ -573,15 +573,16 @@ update_view_title(FileView *view)
 
 	if(curr_view == view)
 	{
-		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR));
-		wattrset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR) |
+		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR) |
 				cfg.cs.color[TOP_LINE_SEL_COLOR].attr);
 	}
 	else
 	{
-		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR));
-		wattrset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
 				cfg.cs.color[TOP_LINE_COLOR].attr);
+		wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+				cfg.cs.color[TOP_LINE_COLOR].attr);
+		werase(top_line);
 	}
 	werase(view->title);
 

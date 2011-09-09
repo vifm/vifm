@@ -121,10 +121,7 @@ modes_post(void)
 		redraw_window();
 
 	if(curr_stats.save_msg)
-	{
 		status_bar_message(NULL);
-		wrefresh(status_bar);
-	}
 
 	if(curr_stats.show_full)
 	{

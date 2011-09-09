@@ -166,6 +166,9 @@ main_loop(void)
 					wtimeout(status_bar, 0);
 				if(counter > 0)
 					clear_input_bar();
+
+				if(!curr_stats.save_msg && curr_view->selected_files)
+					print_selected_msg();
 				continue;
 			}
 		}
