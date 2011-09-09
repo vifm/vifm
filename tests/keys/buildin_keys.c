@@ -19,6 +19,7 @@ static int* mode;
 static void keys_colon(struct key_info key_info, struct keys_info *keys_info);
 static void keys_m(struct key_info key_info, struct keys_info *keys_info);
 static void keys_quote(struct key_info key_info, struct keys_info *keys_info);
+static void keys_gg(struct key_info key_info, struct keys_info *keys_info);
 static void keys_H(struct key_info key_info, struct keys_info *keys_info);
 static void keys_gu(struct key_info key_info, struct keys_info *keys_info);
 static void keys_j(struct key_info key_info, struct keys_info *keys_info);
@@ -53,6 +54,11 @@ init_buildin_keys(int *key_mode)
 	curr->type = BUILDIN_WAIT_POINT;
 	curr->data.handler = keys_quote;
 	curr->followed = FOLLOWED_BY_MULTIKEY;
+
+	curr = add_selector(L"gg", NORMAL_MODE);
+	curr->type = BUILDIN_WAIT_POINT;
+	curr->data.handler = keys_gg;
+	curr->followed = FOLLOWED_BY_NONE;
 
 	curr = add_selector(L"'", NORMAL_MODE);
 	curr->type = BUILDIN_WAIT_POINT;
@@ -166,6 +172,11 @@ keys_quote(struct key_info key_info, struct keys_info *keys_info)
 	}
 	printf("(%d)' in register '%c' with multikey '%c'\n",
 			key_info.count, key_info.reg, key_info.multi);
+}
+
+static void
+keys_gg(struct key_info key_info, struct keys_info *keys_info)
+{
 }
 
 static void

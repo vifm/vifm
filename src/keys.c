@@ -228,9 +228,7 @@ execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
 		struct key_chunk_t *p;
 		p = curr->child;
 		while(p != NULL && p->key < *keys)
-		{
 			p = p->next;
-		}
 		if(p == NULL || p->key != *keys)
 		{
 			if(curr == root)

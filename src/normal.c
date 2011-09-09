@@ -115,7 +115,9 @@ static void cmd_gf(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
 static void cmd_gs(struct key_info, struct keys_info *);
 static void cmd_gU(struct key_info, struct keys_info *);
+static void cmd_gUgg(struct key_info, struct keys_info *);
 static void cmd_gu(struct key_info, struct keys_info *);
+static void cmd_gugg(struct key_info, struct keys_info *);
 static void cmd_gv(struct key_info, struct keys_info *);
 static void cmd_h(struct key_info, struct keys_info *);
 static void cmd_i(struct key_info, struct keys_info *);
@@ -214,8 +216,10 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"gs", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gs}}},
 	{L"gU", {BUILDIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_gU}}},
 	{L"gUgU", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
+	{L"gUgg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gUgg}}},
 	{L"gUU", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
 	{L"gu", {BUILDIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_gu}}},
+	{L"gugg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gugg}}},
 	{L"gugu", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gu}}},
 	{L"guu", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gu}}},
 	{L"gv", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gv}}},
@@ -817,6 +821,13 @@ cmd_gU(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+cmd_gUgg(struct key_info key_info, struct keys_info *keys_info)
+{
+	pick_files(curr_view, 0, keys_info);
+	cmd_gU(key_info, keys_info);
+}
+
+static void
 cmd_gu(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(keys_info->count == 0)
@@ -832,6 +843,13 @@ cmd_gu(struct key_info key_info, struct keys_info *keys_info)
 		keys_info->indexes = NULL;
 		keys_info->count = 0;
 	}
+}
+
+static void
+cmd_gugg(struct key_info key_info, struct keys_info *keys_info)
+{
+	pick_files(curr_view, 0, keys_info);
+	cmd_gu(key_info, keys_info);
 }
 
 static void
