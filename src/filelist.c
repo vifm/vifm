@@ -205,7 +205,7 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 			wattroff(view->win,
 					COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | attr);
 		else
-			wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
+			wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
 					A_BOLD);
 	}
 }
