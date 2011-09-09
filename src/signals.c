@@ -48,6 +48,7 @@
 static void
 received_sigwinch(void)
 {
+	curr_stats.save_msg = 0;
 	if(!isendwin())
 	{
 		if(curr_stats.vifm_started >= 3)
