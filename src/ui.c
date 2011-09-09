@@ -179,7 +179,7 @@ status_bar_message_i(const char *message, int error)
 	int lines;
 	int attr;
 
-	if(!curr_stats.vifm_started)
+	if(curr_stats.vifm_started == 0)
 		return;
 
 	if(message != NULL)
@@ -221,15 +221,20 @@ status_bar_message_i(const char *message, int error)
 		wresize(status_bar, lines, getmaxx(stdscr));
 	wmove(status_bar, 0, 0);
 
-	if(err)
+	if(cfg.color_scheme_num > 0)
 	{
-		attr = col_schemes[cfg.color_scheme_cur].color[ERROR_MSG_COLOR].attr;
-		wattron(status_bar, COLOR_PAIR(cfg.color_scheme + ERROR_MSG_COLOR) | attr);
-	}
-	else
-	{
-		attr = col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr;
-		wattron(status_bar, COLOR_PAIR(cfg.color_scheme + STATUS_BAR_COLOR) | attr);
+		if(err)
+		{
+			attr = col_schemes[cfg.color_scheme_cur].color[ERROR_MSG_COLOR].attr;
+			wattron(status_bar,
+					COLOR_PAIR(cfg.color_scheme + ERROR_MSG_COLOR) | attr);
+		}
+		else
+		{
+			attr = col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr;
+			wattron(status_bar,
+					COLOR_PAIR(cfg.color_scheme + STATUS_BAR_COLOR) | attr);
+		}
 	}
 	werase(status_bar);
 
@@ -340,6 +345,8 @@ setup_ncurses_interface(void)
 	start_color();
 	/* Changed for pdcurses */
 	use_default_colors();
+
+	load_def_scheme();
 
 	color_scheme = DCOLOR_BASE;
 	lwin.color_scheme = LCOLOR_BASE;

@@ -2874,13 +2874,13 @@ highlight_cmd(const struct cmd_info *cmd_info)
 		return 1;
 	}
 
-	if(!is_in_string_array_case(HI_GROUPS, MAXNUM_COLOR - 2, cmd_info->argv[0]))
+	pos = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR - 2, cmd_info->argv[0]);
+	if(pos < 0)
 	{
 		status_bar_errorf("Highlight group not found: %s", cmd_info->argv[0]);
 		return 1;
 	}
 
-	pos = string_array_pos_case(HI_GROUPS, MAXNUM_COLOR - 2, cmd_info->argv[0]);
 	if(cmd_info->argc == 1)
 	{
 		status_bar_message(get_group_str(pos,

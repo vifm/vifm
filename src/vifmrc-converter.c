@@ -140,7 +140,7 @@ static int _gnuc_unused default_colors_size_guard[
 ];
 
 char *HI_GROUPS[] = {
-	"Menu",
+	"WildMenu",
 	"Border",
 	"Win",
 	"StatusBar",

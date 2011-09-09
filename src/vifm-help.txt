@@ -754,7 +754,7 @@ Commands
         - StatusBar - the status bar color
         - ErrorMsg - color of error messages in the status bar
         - StatusLine - color of the line above the status bar
-        - Menu - color of the wild menu items
+        - WildMenu - color of the wild menu items
         - CurrLine - line at cursor position in the view
         - Selected - color of selected files
         - Directory - color of directories
@@ -1236,7 +1236,7 @@ Command macros
 
        shell sh
               type: string
-              default: $SHELL or "sh"
+              default: $SHELL or "sh" or "cmd" (on MS-Windows)
               Full path to the shell to use to run external commands.
 
        smartcase scs
@@ -1527,4 +1527,4 @@ AUTHOR
 
 
 
-                               September 7, 2011                       vifm(1)
+                               September 9, 2011                       vifm(1)

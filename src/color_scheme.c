@@ -38,7 +38,7 @@
 Col_scheme *col_schemes;
 
 char *HI_GROUPS[] = {
-	"Menu",
+	"WildMenu",
 	"Border",
 	"Win",
 	"StatusBar",
@@ -107,6 +107,13 @@ init_color_scheme(Col_scheme *cs)
 		cs->color[i].bg = default_colors[i][1];
 		cs->color[i].attr = default_colors[i][2];
 	}
+}
+
+void
+init_color_schemes(void)
+{
+	col_schemes = malloc(sizeof(Col_scheme)*MAX_COLOR_SCHEMES);
+	init_color_scheme(&col_schemes[0]);
 }
 
 static void
@@ -322,6 +329,17 @@ void
 load_color_schemes(void)
 {
 	load_color_pairs(DCOLOR_BASE, col_schemes + cfg.color_scheme_cur);
+}
+
+void
+load_def_scheme(void)
+{
+	Col_scheme cs;
+
+	init_color_scheme(&cs);
+	load_color_pairs(DCOLOR_BASE, &cs);
+	load_color_pairs(LCOLOR_BASE, &cs);
+	load_color_pairs(RCOLOR_BASE, &cs);
 }
 
 /* The return value is the color scheme base number for the colorpairs.

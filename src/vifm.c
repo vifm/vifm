@@ -335,8 +335,7 @@ main(int argc, char *argv[])
 
 	filetypes = NULL;
 
-	col_schemes = malloc(sizeof(Col_scheme)*MAX_COLOR_SCHEMES);
-
+	init_color_schemes();
 	init_registers();
 	init_config();
 	set_config_dir();

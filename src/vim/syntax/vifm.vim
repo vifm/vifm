@@ -33,7 +33,7 @@ syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
 " Highlight groups
 syntax keyword vifmHiArgs contained cterm ctermfg ctermbg
 syntax case ignore
-syntax keyword vifmHiGroups contained Menu Border Win StatusBar CurrLine
+syntax keyword vifmHiGroups contained WildMenu Border Win StatusBar CurrLine
 		\ Directory Link Socket Device Executable Selected Current BrokenLink
 		\ TopLine StatusLine Fifo ErrorMsg
 syntax keyword vifmHiStyles contained bold underline reverse inverse standout

@@ -612,7 +612,7 @@ Available group-name values:
  - StatusBar - the status bar color
  - ErrorMsg - color of error messages in the status bar
  - StatusLine - color of the line above the status bar
- - Menu - color of the wild menu items
+ - WildMenu - color of the wild menu items
  - CurrLine - line at cursor position in the view
  - Selected - color of selected files
  - Directory - color of directories

@@ -74,11 +74,13 @@ extern Col_scheme *col_schemes;
 extern char *HI_GROUPS[];
 extern char *COLOR_NAMES[8];
 
+void init_color_schemes(void);
 /* directory should be NULL if you want to set default directory */
 int add_color_scheme(const char *name, const char *directory);
 void check_color_schemes(void);
 void read_color_schemes(void);
 void load_color_schemes(void);
+void load_def_scheme(void);
 int check_directory_for_color_scheme(int left, const char *dir);
 /* Returns value lower than zero when nothing is found */
 int find_color_scheme(const char *name);
