@@ -107,6 +107,12 @@ init_color_scheme(Col_scheme *cs)
 		cs->color[i].bg = default_colors[i][1];
 		cs->color[i].attr = default_colors[i][2];
 	}
+	for(i = ARRAY_LEN(default_colors); i < MAXNUM_COLOR; i++)
+	{
+		cs->color[i].fg = -1;
+		cs->color[i].bg = -1;
+		cs->color[i].attr = 0;
+	}
 }
 
 void
@@ -147,8 +153,6 @@ check_color_schemes(void)
 {
 	int i;
 
-	cfg.color_scheme_num = cfg.color_scheme_num;
-
 	for(i = 0; i < cfg.color_scheme_num; i++)
 		check_color_scheme(col_schemes + i);
 }
@@ -162,6 +166,8 @@ add_color_scheme(const char *name, const char *directory)
 		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return 1;
 	}
+
+	col_schemes = p;
 
 	cfg.color_scheme_num++;
 	init_color_scheme(&col_schemes[cfg.color_scheme_num - 1]);
