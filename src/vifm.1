@@ -666,9 +666,11 @@ color scheme here.  It will be used for view if no DIRECTORY in colorscheme
 file fits current path.  It's also used to set border color (except view titles)
 and colors in the menus and dialogs.
 .TP
-.BI ":colo[rscheme] color_scheme_name [directory]"
-changes default color scheme to color_scheme_name.  With "!" color scheme will
-be created if it doesn't exist.  Second argument makes sense only with "!".
+.BI ":colo[rscheme] color_scheme_name"
+changes default color scheme to color_scheme_name.
+.TP
+.BI ":colo[rscheme] color_scheme_name directory"
+associates directory with the color scheme.
 .TP
 .BI :comc[lear]
 removes all user defined commands.

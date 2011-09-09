@@ -573,15 +573,15 @@ update_view_title(FileView *view)
 
 	if(curr_view == view)
 	{
-		wbkgdset(view->title, COLOR_PAIR(cfg.color_scheme + TOP_LINE_SEL_COLOR));
-		wattrset(view->title, COLOR_PAIR(cfg.color_scheme + TOP_LINE_SEL_COLOR) |
-				col_schemes[cfg.color_scheme_cur].color[TOP_LINE_SEL_COLOR].attr);
+		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR));
+		wattrset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR) |
+				cfg.cs.color[TOP_LINE_SEL_COLOR].attr);
 	}
 	else
 	{
-		wbkgdset(view->title, COLOR_PAIR(cfg.color_scheme + TOP_LINE_COLOR));
-		wattrset(view->title, COLOR_PAIR(cfg.color_scheme + TOP_LINE_COLOR) |
-				col_schemes[cfg.color_scheme_cur].color[TOP_LINE_COLOR].attr);
+		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR));
+		wattrset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+				cfg.cs.color[TOP_LINE_COLOR].attr);
 	}
 	werase(view->title);
 
@@ -670,16 +670,9 @@ draw_dir_list(FileView *view, int top)
 {
 	int x;
 	int y = 0;
-	int color_scheme;
 
 	if(curr_stats.vifm_started < 2)
 		return;
-
-	color_scheme = check_directory_for_color_scheme(view == &lwin,
-			view->curr_dir);
-
-	if(view->color_scheme != color_scheme)
-		view->color_scheme = color_scheme;
 
 	werase(view->win);
 
@@ -720,10 +713,10 @@ draw_dir_list(FileView *view, int top)
 		wmove(view->win, y, 1);
 		LINE_COLOR = get_line_color(view, x);
 
-		attr = col_schemes[cfg.color_scheme_cur].color[LINE_COLOR].attr;
-		wattron(view->win, COLOR_PAIR(LINE_COLOR + color_scheme) | attr);
+		attr = cfg.cs.color[LINE_COLOR].attr;
+		wattron(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
 		wprintw(view->win, "%s", file_name);
-		wattroff(view->win, COLOR_PAIR(LINE_COLOR + color_scheme) | attr);
+		wattroff(view->win, COLOR_PAIR(LINE_COLOR +view->color_scheme) | attr);
 
 		add_sort_type_info(view, y, x, 0);
 
@@ -769,7 +762,7 @@ erase_current_line_bar(FileView *view)
 
 	LINE_COLOR = get_line_color(view, old_pos);
 
-	attr = col_schemes[cfg.color_scheme_cur].color[LINE_COLOR].attr;
+	attr = cfg.cs.color[LINE_COLOR].attr;
 	wattrset(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
 	mvwaddnstr(view->win, old_cursor, 1, file_name, print_width);
 	wattroff(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
@@ -902,12 +895,12 @@ move_to_list_pos(FileView *view, int pos)
 		pair_content(view->color_scheme + SELECTED_COLOR, &f, &t);
 		pair_content(view->color_scheme + CURR_LINE_COLOR, &t, &b);
 		init_pair(view->color_scheme + CURRENT_COLOR, f, b);
-		attr = col_schemes[cfg.color_scheme_cur].color[SELECTED_COLOR].attr;
+		attr = cfg.cs.color[SELECTED_COLOR].attr;
 		wattron(view->win, COLOR_PAIR(view->color_scheme + CURRENT_COLOR) | attr);
 	}
 	else
 	{
-		attr = col_schemes[cfg.color_scheme_cur].color[CURR_LINE_COLOR].attr;
+		attr = cfg.cs.color[CURR_LINE_COLOR].attr;
 		wattron(view->win, COLOR_PAIR(view->color_scheme + CURR_LINE_COLOR) |
 				A_BOLD);
 	}
@@ -2105,6 +2098,9 @@ load_dir_list(FileView *view, int reload)
 	 */
 	if(!reload)
 		check_view_dir_history(view);
+
+	view->color_scheme = check_directory_for_color_scheme(view == &lwin,
+			view->curr_dir);
 
 	/*
 	 * It is possible to set the file name filter so that no files are showing

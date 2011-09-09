@@ -19,13 +19,13 @@
 #ifndef __TREE_H__
 #define __TREE_H__
 
-typedef struct node *tree_t;
+typedef struct root *tree_t;
 
-tree_t tree_create(void);
+tree_t tree_create(int longest, int mem);
 void tree_free(tree_t tree);
 int tree_set_data(tree_t tree, const char *path, unsigned long long data);
 
-/* Wont change data content it path absent in tree) */
+/* Wont change data content it path absent in tree */
 int tree_get_data(tree_t tree, const char *path, unsigned long long *data);
 
 #endif

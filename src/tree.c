@@ -36,32 +36,48 @@ struct node {
 	struct node *child;
 };
 
-static struct node * find_node(struct node *root, const char *name, int create);
+struct root {
+	struct node node;
+	int longest;
+	int mem;
+};
+
+static void nodes_free(struct node *node);
+static struct node * find_node(struct node *root, const char *name, int create,
+		struct node **last);
 
 tree_t
-tree_create(void)
+tree_create(int longest, int mem)
 {
-	struct node *tree;
+	struct root *tree;
 
 	tree = malloc(sizeof(*tree));
-	tree->child = NULL;
-	tree->next = NULL;
-	tree->name = NULL;
-	tree->valid = 0;
+	tree->node.child = NULL;
+	tree->node.next = NULL;
+	tree->node.name = NULL;
+	tree->node.valid = 0;
+	tree->longest = longest;
+	tree->mem = mem;
 	return tree;
 }
 
 void
 tree_free(tree_t tree)
 {
-	if(tree->child != NULL)
-		tree_free(tree->child);
+	nodes_free(&tree->node);
+}
 
-	if(tree->next != NULL)
-		tree_free(tree->next);
+static void
+nodes_free(struct node *node)
+{
+	if(node->child != NULL)
+		nodes_free(node->child);
 
-	free(tree->name);
-	free(tree);
+	if(node->next != NULL)
+		nodes_free(node->next);
+
+	free(node->name);
+	free(node);
 }
 
 int
@@ -73,7 +89,9 @@ tree_set_data(tree_t tree, const char *path, unsigned long long data)
 	if(realpath(path, real_path) != real_path)
 		return -1;
 
-	node = find_node(tree, real_path, 1);
+	node = find_node(&tree->node, real_path, 1, NULL);
+	if(node->valid && tree->mem)
+		free((void *)node->data);
 	node->data = data;
 	node->valid = 1;
 	return 0;
@@ -82,25 +100,29 @@ tree_set_data(tree_t tree, const char *path, unsigned long long data)
 int
 tree_get_data(tree_t tree, const char *path, unsigned long long *data)
 {
+	struct node *last = NULL;
 	struct node *node;
 	char real_path[PATH_MAX];
 
-	if(tree->child == NULL)
+	if(tree->node.child == NULL)
 		return -1;
 
 	if(realpath(path, real_path) != real_path)
 		return -1;
 
-	node = find_node(tree, real_path, 0);
-	if(node == NULL || !node->valid)
+	node = find_node(&tree->node, real_path, 0, tree->longest ? &last : NULL);
+	if((node == NULL || !node->valid) && last == NULL)
 		return -1;
 	
-	*data = node->data;
+	if(node != NULL && node->valid)
+		*data = node->data;
+	else
+		*data = last->data;
 	return 0;
 }
 
 static struct node *
-find_node(struct node *root, const char *name, int create)
+find_node(struct node *root, const char *name, int create, struct node **last)
 {
 	const char *end;
 	size_t name_len;
@@ -123,9 +145,15 @@ find_node(struct node *root, const char *name, int create)
 	{
 		int comp = strncmp(name, curr->name, end - name);
 		if(comp == 0 && curr->name_len == name_len)
-			return find_node(curr, end, create);
+		{
+			if(curr->valid && last != NULL)
+				*last = curr;
+			return find_node(curr, end, create, last);
+		}
 		else if(comp < 0)
+		{
 			break;
+		}
 		prev = curr;
 		curr = curr->next;
 	}
@@ -154,7 +182,7 @@ find_node(struct node *root, const char *name, int create)
 	else
 		prev->next = new_node;
 
-	return find_node(new_node, end, create);
+	return find_node(new_node, end, create, last);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

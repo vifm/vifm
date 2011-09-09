@@ -80,9 +80,6 @@ init_config(void)
 	cfg.auto_execute = 0;
 	cfg.time_format = strdup(" %m/%d %H:%M");
 	cfg.wrap_quick_view = 1;
-	cfg.color_scheme_num = 0;
-	cfg.color_scheme_cur = 0;
-	cfg.color_scheme = 1;
 	cfg.use_iec_prefixes = 0;
 	cfg.undo_levels = 100;
 	cfg.sort_numbers = 0;
@@ -991,7 +988,7 @@ write_info_file(void)
 	if(cfg.vifm_info & VIFMINFO_CS)
 	{
 		fputs("\n# Color scheme:\n", fp);
-		fprintf(fp, "c%s\n", col_schemes[cfg.color_scheme_cur].name);
+		fprintf(fp, "c%s\n", cfg.cs.name);
 	}
 
 	fclose(fp);

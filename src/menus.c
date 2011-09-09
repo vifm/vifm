@@ -24,6 +24,8 @@
 
 #include <curses.h>
 
+#include <dirent.h> /* DIR */
+#include <sys/stat.h>
 #include <sys/types.h>
 #ifndef _WIN32
 #include <sys/ioctl.h>
@@ -123,9 +125,9 @@ clean_menu_position(menu_info *m)
 	buf[x + 1] = '\0';
 
 	if(cfg.hl_search && m->matches != NULL && m->matches[m->pos])
-		wattron(menu_win, COLOR_PAIR(cfg.color_scheme + SELECTED_COLOR));
+		wattron(menu_win, COLOR_PAIR(DCOLOR_BASE + SELECTED_COLOR));
 	else
-		wattron(menu_win, COLOR_PAIR(cfg.color_scheme + WIN_COLOR));
+		wattron(menu_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR));
 
 	if(strlen(m->data[m->pos]) > x - 4)
 	{
@@ -141,9 +143,9 @@ clean_menu_position(menu_info *m)
 	waddstr(menu_win, " ");
 
 	if(cfg.hl_search && m->matches != NULL && m->matches[m->pos])
-		wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + SELECTED_COLOR));
+		wattroff(menu_win, COLOR_PAIR(DCOLOR_BASE + SELECTED_COLOR));
 	else
-		wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
+		wattroff(menu_win, COLOR_PAIR(DCOLOR_BASE + CURR_LINE_COLOR) | A_BOLD);
 
 	free(buf);
 }
@@ -358,28 +360,28 @@ move_to_menu_pos(int pos, menu_info *m)
 	{
 		if(cfg.invert_cur_line)
 		{
-			pair_content(cfg.color_scheme + SELECTED_COLOR, &f, &b);
+			pair_content(DCOLOR_BASE + SELECTED_COLOR, &f, &b);
 		}
 		else
 		{
-			pair_content(cfg.color_scheme + CURR_LINE_COLOR, &t, &b);
-			pair_content(cfg.color_scheme + SELECTED_COLOR, &f, &t);
+			pair_content(DCOLOR_BASE + CURR_LINE_COLOR, &t, &b);
+			pair_content(DCOLOR_BASE + SELECTED_COLOR, &f, &t);
 		}
 	}
 	else
 	{
 		if(cfg.invert_cur_line)
-			pair_content(cfg.color_scheme + WIN_COLOR, &f, &b);
+			pair_content(DCOLOR_BASE + WIN_COLOR, &f, &b);
 		else
-			pair_content(cfg.color_scheme + CURR_LINE_COLOR, &f, &b);
+			pair_content(DCOLOR_BASE + CURR_LINE_COLOR, &f, &b);
 	}
-	init_pair(cfg.color_scheme + MENU_CURRENT_COLOR, f, b);
+	init_pair(DCOLOR_BASE + MENU_CURRENT_COLOR, f, b);
 	attr = 0;
 	if(cfg.invert_cur_line)
 		attr |= A_REVERSE;
 	if(!cfg.invert_cur_line || f != COLOR_WHITE)
 		attr |= A_BOLD;
-	wattron(menu_win, COLOR_PAIR(cfg.color_scheme + MENU_CURRENT_COLOR) | attr);
+	wattron(menu_win, COLOR_PAIR(DCOLOR_BASE + MENU_CURRENT_COLOR) | attr);
 
 	if(strlen(m->data[pos]) > x - 4)
 	{
@@ -394,7 +396,7 @@ move_to_menu_pos(int pos, menu_info *m)
 	}
 	waddstr(menu_win, " ");
 
-	wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + MENU_CURRENT_COLOR) | attr);
+	wattroff(menu_win, COLOR_PAIR(DCOLOR_BASE + MENU_CURRENT_COLOR) | attr);
 
 	m->pos = pos;
 	free(buf);
@@ -809,7 +811,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 			exec_commands(m->data[m->pos], view, 1, GET_BSEARCH_PATTERN);
 			break;
 		case COLORSCHEME:
-			load_color_scheme_i(m->pos);
+			load_color_scheme(m->data[m->pos]);
 			break;
 		case COMMAND:
 			*strchr(m->data[m->pos] + 1, ' ') = '\0';
@@ -894,7 +896,7 @@ draw_menu(menu_info *m)
 		len = win_len + get_utf8_overhead(m->data[x]);
 
 		if(cfg.hl_search && m->matches != NULL && m->matches[x])
-			wattron(menu_win, COLOR_PAIR(cfg.color_scheme + SELECTED_COLOR));
+			wattron(menu_win, COLOR_PAIR(DCOLOR_BASE + SELECTED_COLOR));
 
 		buf = strdup(m->data[x]);
 		for(z = 0; buf[z] != '\0'; z++)
@@ -916,7 +918,7 @@ draw_menu(menu_info *m)
 		free(buf);
 
 		if(cfg.hl_search && m->matches != NULL && m->matches[x])
-			wattroff(menu_win, COLOR_PAIR(cfg.color_scheme + SELECTED_COLOR));
+			wattroff(menu_win, COLOR_PAIR(DCOLOR_BASE + SELECTED_COLOR));
 
 		x++;
 
@@ -1246,13 +1248,16 @@ show_dirstack_menu(FileView *view)
 void
 show_colorschemes_menu(FileView *view)
 {
-	int len, i, x;
+	int len;
+	DIR *dir;
+	struct dirent *d;
+	char colors_dir[PATH_MAX];
 
 	static menu_info m;
 	m.top = 0;
-	m.current = 1 + cfg.color_scheme_cur;
-	m.len = cfg.color_scheme_num;
-	m.pos = cfg.color_scheme_cur;
+	m.current = 0;
+	m.len = 0;
+	m.pos = 0;
 	m.win_rows = 0;
 	m.type = COLORSCHEME;
 	m.matching_entries = 0;
@@ -1267,21 +1272,32 @@ show_colorschemes_menu(FileView *view)
 
 	m.title = strdup(" Choose the default Color Scheme ");
 
-	x = 0;
-	i = 1;
-	while(x < m.len)
-	{
-		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
-		m.data[x] = (char *)malloc(len + 2);
-		if(col_schemes[x].defaulted)
-			snprintf(m.data[x], len, "%s (not supported by the terminal)",
-					col_schemes[x].name);
-		else
-			snprintf(m.data[x], len, "%s", col_schemes[x].name);
+	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
 
-		x++;
-		i++;
+	dir = opendir(colors_dir);
+	if(dir == NULL)
+		return;
+
+	while((d = readdir(dir)) != NULL)
+	{
+#ifndef _WIN32
+		if(d->d_type != DT_REG && d->d_type != DT_LNK)
+			continue;
+#endif
+
+		if(d->d_name[0] == '.')
+			continue;
+
+		m.data = (char **)realloc(m.data, sizeof(char *)*(m.len + 1));
+		m.data[m.len] = (char *)malloc(len + 2);
+		snprintf(m.data[m.len++], len, "%s", d->d_name);
+		if(strcmp(d->d_name, cfg.cs.name) == 0)
+		{
+			m.current = m.len;
+			m.pos = m.len - 1;
+		}
 	}
+	closedir(dir);
 
 	setup_menu();
 	draw_menu(&m);

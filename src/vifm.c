@@ -335,7 +335,6 @@ main(int argc, char *argv[])
 
 	filetypes = NULL;
 
-	init_color_schemes();
 	init_registers();
 	init_config();
 	set_config_dir();
@@ -364,7 +363,7 @@ main(int argc, char *argv[])
 	init_window_history(&rwin);
 
 	init_status();
-	curr_stats.dirsize_cache = tree_create();
+	curr_stats.dirsize_cache = tree_create(0, 0);
 	if(curr_stats.dirsize_cache == NULL)
 	{
 		puts("Not enough memory for initialization");
@@ -428,14 +427,13 @@ main(int argc, char *argv[])
 				exit(0);
 			}
 		}
-		read_color_schemes();
-		check_color_schemes();
-		if(find_color_scheme(curr_stats.color_scheme) >= 0)
+		if(find_color_scheme(curr_stats.color_scheme))
 			load_color_scheme(curr_stats.color_scheme);
 		exec_config();
 		load_color_schemes();
 	}
 
+	write_color_scheme_file();
 	setup_signals();
 
 	if(old_config && !no_configs)

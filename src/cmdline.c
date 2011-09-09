@@ -378,8 +378,8 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 	prev_mode = *mode;
 	*mode = CMDLINE_MODE;
 
-	attr = col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr;
-	wattron(status_bar, COLOR_PAIR(cfg.color_scheme + STATUS_BAR_COLOR) | attr);
+	attr = cfg.cs.color[STATUS_BAR_COLOR].attr;
+	wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + STATUS_BAR_COLOR) | attr);
 
 	input_stat.line = NULL;
 	input_stat.index = wcslen(cmd);
@@ -452,8 +452,8 @@ leave_cmdline_mode(void)
 	if(*mode != MENU_MODE)
 		update_pos_window(curr_view);
 
-	attr = col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr;
-	wattroff(status_bar, COLOR_PAIR(cfg.color_scheme + STATUS_BAR_COLOR) | attr);
+	attr = cfg.cs.color[STATUS_BAR_COLOR].attr;
+	wattroff(status_bar, COLOR_PAIR(DCOLOR_BASE + STATUS_BAR_COLOR) | attr);
 }
 
 static void
@@ -642,13 +642,13 @@ draw_wild_menu(int op)
 		}
 
 		if(i == pos)
-			wattron(stat_win, COLOR_PAIR(MENU_COLOR + cfg.color_scheme) |
-					col_schemes[cfg.color_scheme_cur].color[MENU_COLOR].attr);
+			wattrset(stat_win, COLOR_PAIR(DCOLOR_BASE + MENU_COLOR) |
+					cfg.cs.color[MENU_COLOR].attr);
 		wprintw(stat_win, "%s", list[i]);
 		if(i == pos)
 		{
-			wattroff(stat_win, COLOR_PAIR(MENU_COLOR + cfg.color_scheme) |
-					col_schemes[cfg.color_scheme_cur].color[MENU_COLOR].attr);
+			wattrset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
+					cfg.cs.color[STATUS_LINE_COLOR].attr);
 			pos = -pos;
 		}
 	}

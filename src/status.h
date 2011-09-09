@@ -32,6 +32,8 @@
 #define NAME_MAX FILENAME_MAX
 #endif
 
+#include "color_scheme.h"
+
 typedef struct
 {
 	int need_redraw;
@@ -64,6 +66,8 @@ typedef struct
 
 	int auto_redraws;
 
+	int cs_base;
+	Col_scheme *cs;
 	char color_scheme[NAME_MAX];
 
 #ifdef HAVE_LIBGTK

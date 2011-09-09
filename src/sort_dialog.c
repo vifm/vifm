@@ -125,7 +125,7 @@ enter_sort_mode(FileView *active_view)
 	descending = (view->sort[0] < 0);
 	*mode = SORT_MODE;
 
-	wattroff(view->win, COLOR_PAIR(cfg.color_scheme + CURR_LINE_COLOR) | A_BOLD);
+	wattroff(view->win, COLOR_PAIR(DCOLOR_BASE + CURR_LINE_COLOR) | A_BOLD);
 	curs_set(0);
 	update_all_windows();
 

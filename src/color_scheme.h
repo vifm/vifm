@@ -70,16 +70,10 @@ typedef struct _Col_Scheme {
 	Col_attr color[MAXNUM_COLOR];
 } Col_scheme;
 
-extern Col_scheme *col_schemes;
-
 extern char *HI_GROUPS[];
 extern char *COLOR_NAMES[8];
 
-void init_color_schemes(void);
 /* directory should be NULL if you want to set default directory */
-int add_color_scheme(const char *name, const char *directory);
-void check_color_schemes(void);
-void read_color_schemes(void);
 void load_color_schemes(void);
 void load_def_scheme(void);
 int check_directory_for_color_scheme(int left, const char *dir);
@@ -87,6 +81,9 @@ int check_directory_for_color_scheme(int left, const char *dir);
 int find_color_scheme(const char *name);
 void complete_colorschemes(const char *name);
 const char * attrs_to_str(int attrs);
+void check_color_scheme(Col_scheme *cs);
+void assoc_dir(const char *name, const char *dir);
+void write_color_scheme_file(void);
 
 #endif
 

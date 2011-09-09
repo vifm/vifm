@@ -23,6 +23,8 @@
 
 #include <limits.h>
 
+#include "color_scheme.h"
+
 typedef struct _Config {
 	char home_dir[PATH_MAX]; /* ends with a slash */
 	char config_dir[PATH_MAX];
@@ -65,9 +67,7 @@ typedef struct _Config {
 	int prompt_history_len;
 	int prompt_history_num;
 
-	int color_scheme_num;
-	int color_scheme_cur;
-	int color_scheme;
+	Col_scheme cs;
 
 	int undo_levels; /* Maximum number of changes that can be undone. */
 	int sort_numbers; /* Natural sort of (version) numbers within text. */

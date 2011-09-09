@@ -30,12 +30,12 @@
 #include "color_scheme.h"
 #include "completion.h"
 #include "config.h"
+#include "filelist.h"
 #include "macros.h"
 #include "menus.h"
 #include "status.h"
+#include "tree.h"
 #include "utils.h"
-
-Col_scheme *col_schemes;
 
 char *HI_GROUPS[] = {
 	"WildMenu",
@@ -73,33 +73,36 @@ char *COLOR_NAMES[8] = {
 };
 
 static const int default_colors[][3] = {
-	{ COLOR_WHITE,   COLOR_BLACK, A_UNDERLINE | A_REVERSE | A_BOLD }, /* MENU_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE, 0                                }, /* BORDER_COLOR */
-	{ COLOR_WHITE,   COLOR_BLACK, 0                                }, /* WIN_COLOR */
-	{ COLOR_WHITE,   COLOR_BLACK, 0                                }, /* STATUS_BAR_COLOR */
-	{ COLOR_WHITE,   COLOR_BLUE,  A_BOLD                           }, /* CURR_LINE_COLOR */
-	{ COLOR_CYAN,    COLOR_BLACK, A_BOLD                           }, /* DIRECTORY_COLOR */
-	{ COLOR_YELLOW,  COLOR_BLACK, A_BOLD                           }, /* LINK_COLOR */
-	{ COLOR_MAGENTA, COLOR_BLACK, A_BOLD                           }, /* SOCKET_COLOR */
-	{ COLOR_RED,     COLOR_BLACK, A_BOLD                           }, /* DEVICE_COLOR */
-	{ COLOR_GREEN,   COLOR_BLACK, A_BOLD                           }, /* EXECUTABLE_COLOR */
-	{ COLOR_MAGENTA, COLOR_BLACK, A_BOLD                           }, /* SELECTED_COLOR */
-	{ COLOR_RED,     COLOR_BLACK, A_BOLD                           }, /* BROKEN_LINK_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE, 0                                }, /* TOP_LINE_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE, A_BOLD                           }, /* STATUS_LINE_COLOR */
-	{ COLOR_CYAN,    COLOR_BLACK, A_BOLD                           }, /* FIFO_COLOR */
-	{ COLOR_RED,     COLOR_BLACK, 0                                }, /* ERROR_MSG_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE, A_BOLD                           }, /* TOP_LINE_SEL_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK, A_UNDERLINE | A_REVERSE }, /* MENU_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE, 0                       }, /* BORDER_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK, 0                       }, /* WIN_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK, 0                       }, /* STATUS_BAR_COLOR */
+	{ COLOR_WHITE,   COLOR_BLUE,  A_BOLD                  }, /* CURR_LINE_COLOR */
+	{ COLOR_CYAN,    COLOR_BLACK, A_BOLD                  }, /* DIRECTORY_COLOR */
+	{ COLOR_YELLOW,  COLOR_BLACK, A_BOLD                  }, /* LINK_COLOR */
+	{ COLOR_MAGENTA, COLOR_BLACK, A_BOLD                  }, /* SOCKET_COLOR */
+	{ COLOR_RED,     COLOR_BLACK, A_BOLD                  }, /* DEVICE_COLOR */
+	{ COLOR_GREEN,   COLOR_BLACK, A_BOLD                  }, /* EXECUTABLE_COLOR */
+	{ COLOR_MAGENTA, COLOR_BLACK, A_BOLD                  }, /* SELECTED_COLOR */
+	{ COLOR_RED,     COLOR_BLACK, A_BOLD                  }, /* BROKEN_LINK_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE, 0                       }, /* TOP_LINE_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE, A_BOLD                  }, /* STATUS_LINE_COLOR */
+	{ COLOR_CYAN,    COLOR_BLACK, A_BOLD                  }, /* FIFO_COLOR */
+	{ COLOR_RED,     COLOR_BLACK, 0                       }, /* ERROR_MSG_COLOR */
+	{ COLOR_BLACK,   COLOR_WHITE, A_BOLD                  }, /* TOP_LINE_SEL_COLOR */
 };
 
 static int _gnuc_unused default_colors_size_guard[
 	(ARRAY_LEN(default_colors) + 2 == MAXNUM_COLOR) ? 1 : -1
 ];
 
+static tree_t dirs;
+
 static void
 init_color_scheme(Col_scheme *cs)
 {
 	int i;
+	strcpy(cs->name, "Default");
 	strcpy(cs->dir, "/");
 	cs->defaulted = 0;
 
@@ -118,27 +121,11 @@ init_color_scheme(Col_scheme *cs)
 }
 
 void
-init_color_schemes(void)
-{
-	col_schemes = malloc(sizeof(Col_scheme)*MAX_COLOR_SCHEMES);
-	init_color_scheme(&col_schemes[0]);
-}
-
-static void
 check_color_scheme(Col_scheme *cs)
 {
-	int need_correction = 0;
 	int i;
-	for(i = 0; i < ARRAY_LEN(cs->color) - 2; i++)
-	{
-		if(cs->color[i].bg >= COLORS || cs->color[i].fg >= COLORS)
-		{
-			need_correction = 1;
-			break;
-		}
-	}
 
-	if(!need_correction)
+	if(cs->defaulted >= 0)
 		return;
 
 	cs->defaulted = 1;
@@ -150,56 +137,47 @@ check_color_scheme(Col_scheme *cs)
 	}
 }
 
-void
-check_color_schemes(void)
-{
-	int i;
-
-	for(i = 0; i < cfg.color_scheme_num; i++)
-		check_color_scheme(col_schemes + i);
-}
-
-int
-add_color_scheme(const char *name, const char *directory)
-{
-	void *p = realloc(col_schemes, sizeof(Col_scheme)*(cfg.color_scheme_num + 1));
-	if(p == NULL)
-	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return 1;
-	}
-
-	col_schemes = p;
-
-	cfg.color_scheme_num++;
-	init_color_scheme(&col_schemes[cfg.color_scheme_num - 1]);
-	snprintf(col_schemes[cfg.color_scheme_num - 1].name, NAME_MAX, "%s", name);
-	if(directory != NULL)
-		snprintf(col_schemes[cfg.color_scheme_num - 1].dir, PATH_MAX, "%s",
-				directory);
-	load_color_schemes();
-	return 0;
-}
-
 int
 find_color_scheme(const char *name)
 {
-	int i;
-	for(i = 0; i < cfg.color_scheme_num; i++)
+	char colors_dir[PATH_MAX];
+	DIR *dir;
+	struct dirent *d;
+
+	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
+
+	dir = opendir(colors_dir);
+	if(dir == NULL)
+		return 0;
+
+	while((d = readdir(dir)) != NULL)
 	{
-		if(strcmp(col_schemes[i].name, name) == 0)
-			return i;
+#ifndef _WIN32
+		if(d->d_type != DT_REG && d->d_type != DT_LNK)
+			continue;
+#endif
+
+		if(d->d_name[0] == '.')
+			continue;
+
+		if(strcmp(d->d_name, name) == 0)
+		{
+			closedir(dir);
+			return 1;
+		}
 	}
-	return -1;
+	closedir(dir);
+
+	return 0;
 }
 
 /* This function is called only when colorschemes file doesn't exist */
-static void
+void
 write_color_scheme_file(void)
 {
 	FILE *fp;
 	char colors_dir[PATH_MAX];
-	int x, y;
+	int y;
 
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
 #ifndef _WIN32
@@ -239,18 +217,13 @@ write_color_scheme_file(void)
 	fprintf(fp, "\" xterm-256color) from /usr/lib/terminfo/; you can check current number\n");
 	fprintf(fp, "\" of colors in your terminal with tput colors command)\n\n");
 
-	fprintf(fp, "\" colorscheme! OneWordDescription /Full/Path/To/Base/Directory\n");
 	fprintf(fp, "\" highlight group ctermfg=foreground_color_ ctermbg=background_color\n\n");
-
-	x = 0;
-	fprintf(fp, "\ncolorscheme! '%s' '%s'\n", col_schemes[x].name,
-			col_schemes[x].dir);
 
 	for(y = 0; y < MAXNUM_COLOR - 2; y++)
 	{
 		char fg_buf[16], bg_buf[16];
-		int fg = col_schemes[x].color[y].fg;
-		int bg = col_schemes[x].color[y].bg;
+		int fg = cfg.cs.color[y].fg;
+		int bg = cfg.cs.color[y].bg;
 
 		if(fg == -1)
 			strcpy(fg_buf, "default");
@@ -267,62 +240,10 @@ write_color_scheme_file(void)
 			snprintf(bg_buf, sizeof(bg_buf), "%d", bg);
 
 		fprintf(fp, "highlight %s cterm=%s ctermfg=%s ctermbg=%s\n", HI_GROUPS[y],
-				attrs_to_str(col_schemes[x].color[y].attr), fg_buf, bg_buf);
+				attrs_to_str(cfg.cs.color[y].attr), fg_buf, bg_buf);
 	}
 
 	fclose(fp);
-}
-
-static void
-load_default_colors(void)
-{
-	init_color_scheme(&col_schemes[0]);
-
-	snprintf(col_schemes[0].name, NAME_MAX, "Default");
-	snprintf(col_schemes[0].dir, PATH_MAX, "/");
-}
-
-void
-read_color_schemes(void)
-{
-	char colors_dir[PATH_MAX];
-	DIR *dir;
-	struct dirent *d;
-
-	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
-
-	dir = opendir(colors_dir);
-	if(dir == NULL)
-	{
-		load_default_colors();
-		cfg.color_scheme_num = 1;
-
-		write_color_scheme_file();
-		return;
-	}
-
-	while((d = readdir(dir)) != NULL)
-	{
-		char full[PATH_MAX];
-
-#ifndef _WIN32
-		if(d->d_type != DT_REG && d->d_type != DT_LNK)
-			continue;
-#endif
-
-		if(d->d_name[0] == '.')
-			continue;
-
-		snprintf(full, sizeof(full), "%s/%s", colors_dir, d->d_name);
-		source_file(full);
-	}
-	closedir(dir);
-
-	if(cfg.color_scheme_num == 0)
-	{
-		load_default_colors();
-		cfg.color_scheme_num = 1;
-	}
 }
 
 static void
@@ -336,26 +257,29 @@ load_color_pairs(int base, const Col_scheme *cs)
 void
 load_color_schemes(void)
 {
-	load_color_pairs(DCOLOR_BASE, col_schemes + cfg.color_scheme_cur);
+	if(dirs == NULL)
+		dirs = tree_create(1, 1);
+
+	load_color_pairs(DCOLOR_BASE, &cfg.cs);
+	load_color_pairs(LCOLOR_BASE, &lwin.cs);
+	load_color_pairs(RCOLOR_BASE, &rwin.cs);
 }
 
 void
 load_def_scheme(void)
 {
-	Col_scheme cs;
+	init_color_scheme(&cfg.cs);
+	init_color_scheme(&lwin.cs);
+	lwin.color_scheme = LCOLOR_BASE;
+	init_color_scheme(&rwin.cs);
+	rwin.color_scheme = RCOLOR_BASE;
 
-	init_color_scheme(&cs);
-	load_color_pairs(DCOLOR_BASE, &cs);
-	load_color_pairs(LCOLOR_BASE, &cs);
-	load_color_pairs(RCOLOR_BASE, &cs);
+	load_color_pairs(DCOLOR_BASE, &cfg.cs);
+	load_color_pairs(LCOLOR_BASE, &lwin.cs);
+	load_color_pairs(RCOLOR_BASE, &rwin.cs);
 }
 
 /* The return value is the color scheme base number for the colorpairs.
- * There are 12 color pairs for each color scheme.
- *
- * Default returns 0;
- * Second color scheme returns 12
- * Third color scheme returns 24
  *
  * The color scheme with the longest matching directory path is the one that
  * should be returned.
@@ -363,49 +287,65 @@ load_def_scheme(void)
 int
 check_directory_for_color_scheme(int left, const char *dir)
 {
-	int i;
-	int max_len = 0;
-	int max_index = -1;
-	int base = left ? LCOLOR_BASE : RCOLOR_BASE;
+	char full[PATH_MAX];
 
-	for(i = 0; i < cfg.color_scheme_num; i++)
-	{
-		size_t len = strlen(col_schemes[i].dir);
+	union {
+		char *name;
+		unsigned long long buf;
+	} u;
 
-		if(path_starts_with(dir, col_schemes[i].dir))
-		{
-			if(len > max_len)
-			{
-				max_len = len;
-				max_index = i;
-			}
-		}
-	}
+	if(dirs == NULL)
+		return DCOLOR_BASE;
 
-	if(path_starts_with(dir, col_schemes[cfg.color_scheme_cur].dir) &&
-			max_len == strlen(col_schemes[cfg.color_scheme_cur].dir))
-		max_index = cfg.color_scheme_cur;
+	if(tree_get_data(dirs, dir, &u.buf) != 0)
+		return DCOLOR_BASE;
+	if(!find_color_scheme(u.name))
+		return DCOLOR_BASE;
 
-	if(max_index == -1)
-		max_index = cfg.color_scheme_cur;
+	curr_stats.cs_base = left ? LCOLOR_BASE : RCOLOR_BASE;
+	curr_stats.cs = left ? &lwin.cs : &rwin.cs;
 
-	load_color_pairs(base, col_schemes + max_index);
-	return base;
+	snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, u.name);
+	source_file(full);
+	check_color_scheme(&cfg.cs);
+
+	curr_stats.cs_base = DCOLOR_BASE;
+	curr_stats.cs = &cfg.cs;
+
+	return left ? LCOLOR_BASE : RCOLOR_BASE;
 }
 
 void
 complete_colorschemes(const char *name)
 {
+	char colors_dir[PATH_MAX];
+	DIR *dir;
+	struct dirent *d;
 	size_t len;
-	int i;
+
+	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
+
+	dir = opendir(colors_dir);
+	if(dir == NULL)
+		return;
 
 	len = strlen(name);
 
-	for(i = 0; i < cfg.color_scheme_num; i++)
+	while((d = readdir(dir)) != NULL)
 	{
-		if(strncmp(name, col_schemes[i].name, len) == 0)
-			add_completion(col_schemes[i].name);
+#ifndef _WIN32
+		if(d->d_type != DT_REG && d->d_type != DT_LNK)
+			continue;
+#endif
+
+		if(d->d_name[0] == '.')
+			continue;
+
+		if(strncmp(name, d->d_name, len) == 0)
+			add_completion(d->d_name);
 	}
+	closedir(dir);
+
 	completion_group_end();
 	add_completion(name);
 }
@@ -427,6 +367,14 @@ attrs_to_str(int attrs)
 		strcat(result, "standout,");
 	result[strlen(result) - 1] = '\0';
 	return result;
+}
+
+void
+assoc_dir(const char *name, const char *dir)
+{
+	char *s = strdup(name);
+	if(tree_set_data(dirs, dir, (long long)s) != 0)
+		free(s);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

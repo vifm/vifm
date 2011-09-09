@@ -38,6 +38,8 @@
 #define NAME_MAX MAXNAMLEN
 #endif
 
+#include "color_scheme.h"
+
 enum {
 	SORT_BY_EXTENSION = 1,
 	SORT_BY_NAME,
@@ -124,6 +126,8 @@ typedef struct _FileView
 	int history_num;
 	int history_pos;
 	history_t *history;
+
+	Col_scheme cs;
 }FileView;
 
 FileView lwin;
@@ -161,7 +165,6 @@ void clear_num_window(void);
 void show_progress(const char *msg, int period);
 void redraw_lists(void);
 int load_color_scheme(const char *name);
-int load_color_scheme_i(int i);
 
 #endif
 

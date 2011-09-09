@@ -132,6 +132,9 @@ update_stat_window(FileView *view)
 	size_t print_width;
 	char *filename;
 
+	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR));
+	wattrset(stat_win, cfg.cs.color[STATUS_LINE_COLOR].attr);
+
 	getmaxyx(stat_win, y, x);
 	filename = get_current_file_name(view);
 	print_width = get_real_string_width(filename, 20 + MAX(0, x - 83));
@@ -221,20 +224,15 @@ status_bar_message_i(const char *message, int error)
 		wresize(status_bar, lines, getmaxx(stdscr));
 	wmove(status_bar, 0, 0);
 
-	if(cfg.color_scheme_num > 0)
+	if(err)
 	{
-		if(err)
-		{
-			attr = col_schemes[cfg.color_scheme_cur].color[ERROR_MSG_COLOR].attr;
-			wattron(status_bar,
-					COLOR_PAIR(cfg.color_scheme + ERROR_MSG_COLOR) | attr);
-		}
-		else
-		{
-			attr = col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr;
-			wattron(status_bar,
-					COLOR_PAIR(cfg.color_scheme + STATUS_BAR_COLOR) | attr);
-		}
+		attr = cfg.cs.color[ERROR_MSG_COLOR].attr;
+		wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + ERROR_MSG_COLOR) | attr);
+	}
+	else
+	{
+		attr = cfg.cs.color[STATUS_BAR_COLOR].attr;
+		wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + STATUS_BAR_COLOR) | attr);
 	}
 	werase(status_bar);
 
@@ -348,30 +346,28 @@ setup_ncurses_interface(void)
 	load_def_scheme();
 
 	color_scheme = DCOLOR_BASE;
-	lwin.color_scheme = LCOLOR_BASE;
-	rwin.color_scheme = RCOLOR_BASE;
 
 	werase(stdscr);
 
 	menu_win = newwin(screen_y - 1, screen_x, 0, 0);
 	wbkgdset(menu_win, COLOR_PAIR(color_scheme + WIN_COLOR));
-	wattrset(menu_win, col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr);
+	wattrset(menu_win, cfg.cs.color[WIN_COLOR].attr);
 	werase(menu_win);
 
 	sort_win = newwin(NUM_SORT_OPTIONS + 3, 30, (screen_y - 12)/2,
 			(screen_x - 30)/2);
 	wbkgdset(sort_win, COLOR_PAIR(color_scheme + WIN_COLOR));
-	wattrset(sort_win, col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr);
+	wattrset(sort_win, cfg.cs.color[WIN_COLOR].attr);
 	werase(sort_win);
 
 	change_win = newwin(20, 30, (screen_y - 20)/2, (screen_x -30)/2);
 	wbkgdset(change_win, COLOR_PAIR(color_scheme + WIN_COLOR));
-	wattrset(change_win, col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr);
+	wattrset(change_win, cfg.cs.color[WIN_COLOR].attr);
 	werase(change_win);
 
 	error_win = newwin(10, screen_x -2, (screen_y -10)/2, 1);
 	wbkgdset(error_win, COLOR_PAIR(color_scheme + WIN_COLOR));
-	wattrset(error_win, col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr);
+	wattrset(error_win, cfg.cs.color[WIN_COLOR].attr);
 	werase(error_win);
 
 	lborder = newwin(screen_y - 3, 1, 1, 0);
@@ -387,8 +383,7 @@ setup_ncurses_interface(void)
 				0);
 
 	wbkgdset(lwin.title, COLOR_PAIR(color_scheme + TOP_LINE_SEL_COLOR));
-	wattrset(lwin.title,
-			col_schemes[cfg.color_scheme_cur].color[TOP_LINE_SEL_COLOR].attr);
+	wattrset(lwin.title, cfg.cs.color[TOP_LINE_SEL_COLOR].attr);
 	werase(lwin.title);
 
 	if(curr_stats.number_of_windows == 1)
@@ -397,7 +392,7 @@ setup_ncurses_interface(void)
 		lwin.win = newwin(screen_y - 3, screen_x/2 - 2 + screen_x%2, 1, 1);
 
 	wbkgdset(lwin.win, COLOR_PAIR(color_scheme + WIN_COLOR));
-	wattrset(lwin.win, col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr);
+	wattrset(lwin.win, cfg.cs.color[WIN_COLOR].attr);
 	werase(lwin.win);
 	getmaxyx(lwin.win, y, x);
 	lwin.window_rows = y -1;
@@ -416,8 +411,7 @@ setup_ncurses_interface(void)
 		rwin.title = newwin(1, screen_x/2 - 1 + screen_x%2, 0, screen_x/2 + 1);
 
 	wbkgdset(rwin.title, COLOR_PAIR(color_scheme + TOP_LINE_COLOR));
-	wattrset(rwin.title,
-			col_schemes[cfg.color_scheme_cur].color[TOP_LINE_COLOR].attr);
+	wattrset(rwin.title, cfg.cs.color[TOP_LINE_COLOR].attr);
 	werase(rwin.title);
 
 	if(curr_stats.number_of_windows == 1)
@@ -427,7 +421,7 @@ setup_ncurses_interface(void)
 				screen_x/2 + 1);
 
 	wbkgdset(rwin.win, COLOR_PAIR(color_scheme + WIN_COLOR));
-	wattrset(rwin.win, col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr);
+	wattrset(rwin.win, cfg.cs.color[WIN_COLOR].attr);
 	werase(rwin.win);
 	getmaxyx(rwin.win, y, x);
 	rwin.window_rows = y - 1;
@@ -439,28 +433,24 @@ setup_ncurses_interface(void)
 
 	stat_win = newwin(1, screen_x, screen_y -2, 0);
 	wbkgdset(stat_win, COLOR_PAIR(color_scheme + STATUS_LINE_COLOR));
-	wattrset(rwin.win,
-			col_schemes[cfg.color_scheme_cur].color[STATUS_LINE_COLOR].attr);
+	wattrset(stat_win, cfg.cs.color[STATUS_LINE_COLOR].attr);
 	werase(stat_win);
 
 	status_bar = newwin(1, screen_x - 19, screen_y -1, 0);
 #ifdef ENABLE_EXTENDED_KEYS
 	keypad(status_bar, TRUE);
 #endif /* ENABLE_EXTENDED_KEYS */
-	wattrset(status_bar,
-			col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr);
+	wattrset(status_bar, cfg.cs.color[STATUS_BAR_COLOR].attr);
 	wbkgdset(status_bar, COLOR_PAIR(color_scheme + STATUS_BAR_COLOR));
 	werase(status_bar);
 
 	pos_win = newwin(1, 13, screen_y - 1, screen_x - 13);
-	wattrset(pos_win,
-			col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr);
+	wattrset(pos_win, cfg.cs.color[STATUS_BAR_COLOR].attr);
 	wbkgdset(pos_win, COLOR_PAIR(color_scheme + STATUS_BAR_COLOR));
 	werase(pos_win);
 
 	input_win = newwin(1, 6, screen_y - 1, screen_x -19);
-	wattrset(input_win,
-			col_schemes[cfg.color_scheme_cur].color[STATUS_BAR_COLOR].attr);
+	wattrset(input_win, cfg.cs.color[STATUS_BAR_COLOR].attr);
 	wbkgdset(input_win, COLOR_PAIR(color_scheme + STATUS_BAR_COLOR));
 	werase(input_win);
 
@@ -840,70 +830,55 @@ redraw_lists(void)
 {
 	draw_dir_list(curr_view, curr_view->top_line);
 	move_to_list_pos(curr_view, curr_view->list_pos);
-	draw_dir_list(other_view, other_view->top_line);
+	if(curr_stats.view)
+		quick_view_file(curr_view);
+	else
+		draw_dir_list(other_view, other_view->top_line);
 }
 
 int
 load_color_scheme(const char *name)
 {
-	int i;
+	char full[PATH_MAX];
+	int attr;
 
-	i = find_color_scheme(name);
-	if(i < 0)
+	if(!find_color_scheme(name))
 	{
 		show_error_msgf("Color Scheme", "Invalid color scheme name: \"%s\"", name);
 		return 0;
 	}
 
-	return load_color_scheme_i(i);
-}
+	curr_stats.cs_base = DCOLOR_BASE;
+	curr_stats.cs = &cfg.cs;
 
-int
-load_color_scheme_i(int i)
-{
-	int color_scheme;
-	int attr;
+	snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, name);
+	source_file(full);
+	strcpy(cfg.cs.name, name);
+	check_color_scheme(&cfg.cs);
 
-	cfg.color_scheme_cur = i;
-	cfg.color_scheme = DCOLOR_BASE;
-	color_scheme = DCOLOR_BASE;
-
-	load_color_schemes();
-
-	wbkgdset(lborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
+	wbkgdset(lborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR));
 	werase(lborder);
-	wbkgdset(mborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
+	wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR));
 	werase(mborder);
-	wbkgdset(rborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
+	wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR));
 	werase(rborder);
 
-	attr = col_schemes[cfg.color_scheme_cur].color[STATUS_LINE_COLOR].attr;
-	wbkgdset(stat_win, COLOR_PAIR(color_scheme + STATUS_LINE_COLOR));
-	wattrset(stat_win, attr);
+	attr = cfg.cs.color[STATUS_LINE_COLOR].attr;
+	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) | attr);
 
-	attr = col_schemes[cfg.color_scheme_cur].color[WIN_COLOR].attr;
-	wbkgdset(menu_win, COLOR_PAIR(color_scheme + WIN_COLOR));
-	wattrset(menu_win, attr);
-	wbkgdset(sort_win, COLOR_PAIR(color_scheme + WIN_COLOR));
-	wattrset(sort_win, attr);
-	wbkgdset(change_win, COLOR_PAIR(color_scheme + WIN_COLOR));
-	wattrset(change_win, attr);
-	wbkgdset(error_win, COLOR_PAIR(color_scheme + WIN_COLOR));
-	wattrset(error_win, attr);
+	attr = cfg.cs.color[WIN_COLOR].attr;
+	wbkgdset(menu_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR) | attr);
+	wbkgdset(sort_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR) | attr);
+	wbkgdset(change_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR) | attr);
+	wbkgdset(error_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR) | attr);
 
 	if(curr_stats.vifm_started < 2)
 		return 0;
 
-	draw_dir_list(curr_view, curr_view->top_line);
-	move_to_list_pos(curr_view, curr_view->list_pos);
-	if(curr_stats.view)
-		quick_view_file(curr_view);
-	else
-		draw_dir_list(other_view, other_view->top_line);
-
+	redraw_lists();
 	update_all_windows();
 
-	if(col_schemes[i].defaulted)
+	if(cfg.cs.defaulted)
 	{
 		status_bar_error("Not supported by the terminal");
 		return 1;

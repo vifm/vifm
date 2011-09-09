@@ -234,7 +234,7 @@ static const struct cmd_add commands[] = {
 		.handler = cmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cnoremap",         .abbr = "cno",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "colorscheme",      .abbr = "colo",  .emark = 1,  .id = COM_COLORSCHEME, .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "colorscheme",      .abbr = "colo",  .emark = 0,  .id = COM_COLORSCHEME, .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = colorscheme_cmd, .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
   { .name = "command",          .abbr = "com",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
     .handler = command_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
@@ -1798,6 +1798,9 @@ skip_word(const char *cmd)
 static void
 remove_selection(FileView *view)
 {
+	if(view->selected_files == 0)
+		return;
+
 	clean_selected_files(view);
 	draw_dir_list(view, view->top_line);
 	move_to_list_pos(view, view->list_pos);
@@ -2480,12 +2483,9 @@ cnoremap_cmd(const struct cmd_info *cmd_info)
 static int
 colorscheme_cmd(const struct cmd_info *cmd_info)
 {
-	int pos = -1;
-	if(cmd_info->argc > 0)
-		pos = find_color_scheme(cmd_info->argv[0]);
 	if(cmd_info->qmark)
 	{
-		status_bar_message(col_schemes[cfg.color_scheme_cur].name);
+		status_bar_message(cfg.cs.name);
 		return 1;
 	}
 	else if(cmd_info->argc == 0)
@@ -2494,18 +2494,26 @@ colorscheme_cmd(const struct cmd_info *cmd_info)
 		show_colorschemes_menu(curr_view);
 		return 0;
 	}
-	else if(pos < 0 && cmd_info->emark)
+	else if(find_color_scheme(cmd_info->argv[0]))
 	{
-		if(add_color_scheme(cmd_info->argv[0],
-				(cmd_info->argc == 1) ? NULL : cmd_info->argv[1]) != 0)
+		if(cmd_info->argc == 2)
+		{
+			if(!is_dir(cmd_info->argv[1]))
+			{
+				status_bar_errorf("%s isn't a directory" , cmd_info->argv[1]);
+				return 1;
+			}
+
+			assoc_dir(cmd_info->argv[0], cmd_info->argv[1]);
+			lwin.color_scheme = check_directory_for_color_scheme(1, lwin.curr_dir);
+			rwin.color_scheme = check_directory_for_color_scheme(0, rwin.curr_dir);
+			redraw_lists();
 			return 0;
-		return load_color_scheme(cmd_info->argv[0]);
-	}
-	else if(pos >= 0)
-	{
-		if(cmd_info->emark && cmd_info->argc == 2)
-			strcpy(col_schemes[pos].dir, cmd_info->argv[1]);
-		return load_color_scheme(cmd_info->argv[0]);
+		}
+		else
+		{
+			return load_color_scheme(cmd_info->argv[0]);
+		}
 	}
 	else
 	{
@@ -2866,7 +2874,7 @@ highlight_cmd(const struct cmd_info *cmd_info)
 		char buf[256*(MAXNUM_COLOR - 2)] = "";
 		for(i = 0; i < MAXNUM_COLOR - 2; i++)
 		{
-			strcat(buf, get_group_str(i, col_schemes[cfg.color_scheme_cur].color[i]));
+			strcat(buf, get_group_str(i, curr_stats.cs->color[i]));
 			if(i < MAXNUM_COLOR - 2 - 1)
 				strcat(buf, "\n");
 		}
@@ -2883,8 +2891,7 @@ highlight_cmd(const struct cmd_info *cmd_info)
 
 	if(cmd_info->argc == 1)
 	{
-		status_bar_message(get_group_str(pos,
-				col_schemes[cfg.color_scheme_cur].color[pos]));
+		status_bar_message(get_group_str(pos, curr_stats.cs->color[pos]));
 		return 1;
 	}
 
@@ -2910,9 +2917,10 @@ highlight_cmd(const struct cmd_info *cmd_info)
 			if((col = get_color(equal + 1)) < -1)
 			{
 				status_bar_errorf("Color name or number not recognized: %s", equal + 1);
+				curr_stats.cs->defaulted = -1;
 				return 1;
 			}
-			col_schemes[cfg.color_scheme_cur].color[pos].bg = col;
+			curr_stats.cs->color[pos].bg = col;
 		}
 		else if(strcmp(arg_name, "ctermfg") == 0)
 		{
@@ -2922,7 +2930,7 @@ highlight_cmd(const struct cmd_info *cmd_info)
 				status_bar_errorf("Color name or number not recognized: %s", equal + 1);
 				return 1;
 			}
-			col_schemes[cfg.color_scheme_cur].color[pos].fg = col;
+			curr_stats.cs->color[pos].fg = col;
 		}
 		else if(strcmp(arg_name, "cterm") == 0)
 		{
@@ -2932,7 +2940,8 @@ highlight_cmd(const struct cmd_info *cmd_info)
 				status_bar_errorf("Illegal argument: %s", equal + 1);
 				return 1;
 			}
-			col_schemes[cfg.color_scheme_cur].color[pos].attr = attrs;
+			curr_stats.cs->color[pos].attr = attrs;
+			curr_stats.need_redraw = 1;
 		}
 		else
 		{
@@ -2940,13 +2949,8 @@ highlight_cmd(const struct cmd_info *cmd_info)
 			return 1;
 		}
 	}
-	if(curr_stats.vifm_started >= 2)
-	{
-		init_pair(cfg.color_scheme + pos,
-				col_schemes[cfg.color_scheme_cur].color[pos].fg,
-				col_schemes[cfg.color_scheme_cur].color[pos].bg);
-		redraw_window();
-	}
+	init_pair(curr_stats.cs_base + pos, curr_stats.cs->color[pos].fg,
+			curr_stats.cs->color[pos].bg);
 	return 0;
 }
 
@@ -3370,7 +3374,7 @@ restart_cmd(const struct cmd_info *cmd_info)
 
 	/* ga command results */
 	tree_free(curr_stats.dirsize_cache);
-	curr_stats.dirsize_cache = tree_create();
+	curr_stats.dirsize_cache = tree_create(0, 0);
 
 	/* undo list */
 	reset_undo_list();
@@ -3396,9 +3400,7 @@ restart_cmd(const struct cmd_info *cmd_info)
 		clear_register(*p++);
 
 	/* color schemes */
-	cfg.color_scheme = 1;
-	cfg.color_scheme_cur = 0;
-	cfg.color_scheme_num = 0;
+	load_def_scheme();
 
 	/* bookmarks */
 	p = valid_bookmarks;
@@ -3413,8 +3415,6 @@ restart_cmd(const struct cmd_info *cmd_info)
 	read_info_file(1);
 	save_view_history(&lwin, NULL, NULL, -1);
 	save_view_history(&rwin, NULL, NULL, -1);
-	read_color_schemes();
-	check_color_schemes();
 	load_color_schemes();
 	exec_config();
 	return 0;
