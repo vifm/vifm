@@ -187,10 +187,10 @@ main_loop(void)
 }
 
 void
-clean_input_buf(void)
+update_input_buf(void)
 {
-	pos = 0;
-	buf[0] = L'\0';
+	wprintw(input_win, "%ls", buf);
+	wrefresh(input_win);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

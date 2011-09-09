@@ -54,7 +54,6 @@ received_sigwinch(void)
 		status_bar_message("");
 		curr_stats.save_msg = 0;
 	}
-	clean_input_buf();
 	if(!isendwin())
 	{
 		if(curr_stats.vifm_started >= 3)
@@ -66,6 +65,7 @@ received_sigwinch(void)
 	{
 		curr_stats.need_redraw = 1;
 	}
+	update_input_buf();
 }
 
 static void
