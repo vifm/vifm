@@ -125,7 +125,7 @@
 
 	Added :touch command.
 
-	Added support of question and exclamation marks for :colorscheme command.
+	Added support of question mark for :colorscheme command.
 
 	Added :highlight command.
 

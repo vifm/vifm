@@ -345,6 +345,8 @@ read_info_file(int reread)
 		{
 			if(line[1] == 'r')
 			{
+				update_view_title(&lwin);
+				update_view_title(&rwin);
 				curr_view = &rwin;
 				other_view = &lwin;
 			}

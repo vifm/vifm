@@ -571,9 +571,6 @@ update_view_title(FileView *view)
 	const char *buf;
 	size_t len;
 
-	if(curr_stats.vifm_started < 2)
-		return;
-
 	if(curr_view == view)
 	{
 		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR) |
@@ -588,6 +585,9 @@ update_view_title(FileView *view)
 		werase(top_line);
 	}
 	werase(view->title);
+
+	if(curr_stats.vifm_started < 2)
+		return;
 
 	buf = replace_home_part(view->curr_dir);
 
