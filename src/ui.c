@@ -379,8 +379,7 @@ setup_ncurses_interface(void)
 	if(curr_stats.number_of_windows == 1)
 		lwin.title = newwin(1, screen_x - 2 + 3, 0, 0);
 	else
-		lwin.title = newwin(1, screen_x/2 - 1 + screen_x%2 + (2 - screen_x%2), 0,
-				0);
+		lwin.title = newwin(1, 2 - screen_x%2, 0, 0);
 
 	wbkgdset(lwin.title, COLOR_PAIR(color_scheme + TOP_LINE_SEL_COLOR));
 	wattrset(lwin.title, cfg.cs.color[TOP_LINE_SEL_COLOR].attr);
@@ -400,10 +399,13 @@ setup_ncurses_interface(void)
 
 	mborder = newwin(screen_y - 1, 2 - screen_x%2, 1,
 			screen_x/2 - 1 + screen_x%2);
-
 	wbkgdset(mborder, COLOR_PAIR(color_scheme + BORDER_COLOR));
-
 	werase(mborder);
+
+	top_line = newwin(screen_y - 1, 2 - screen_x%2, 1,
+			screen_x/2 - 1 + screen_x%2);
+	wbkgdset(top_line, COLOR_PAIR(color_scheme + TOP_LINE_COLOR));
+	werase(top_line);
 
 	if(curr_stats.number_of_windows == 1)
 		rwin.title = newwin(1, screen_x - 2, 0, 0);
@@ -455,6 +457,7 @@ setup_ncurses_interface(void)
 	werase(input_win);
 
 	wnoutrefresh(mborder);
+	wnoutrefresh(top_line);
 	wnoutrefresh(lwin.title);
 	wnoutrefresh(lwin.win);
 	wnoutrefresh(rwin.win);
@@ -523,6 +526,7 @@ resize_all(void)
 
 	wclear(stdscr);
 	wclear(mborder);
+	wclear(top_line);
 	wclear(lwin.title);
 	wclear(lwin.win);
 	wclear(rwin.title);
@@ -560,7 +564,7 @@ resize_all(void)
 	}
 	else
 	{
-		wresize(lwin.title, 1, screen_x/2 - 1 + screen_x%2 + (2 - screen_x%2));
+		wresize(lwin.title, 1, screen_x/2 - 1 + screen_x%2);
 		wresize(lwin.win, screen_y - 3, screen_x/2 - 2 + screen_x%2);
 		mvwin(lwin.win, 1, 1);
 		getmaxyx(lwin.win, y, x);
@@ -569,6 +573,9 @@ resize_all(void)
 
 		mvwin(mborder, 1, screen_x/2 - 1 + screen_x%2);
 		wresize(mborder, screen_y - 3, 2 - screen_x%2);
+
+		mvwin(top_line, 0, screen_x/2 - 1 + screen_x%2);
+		wresize(top_line, 1, 2 - screen_x%2);
 
 		wresize(rwin.title, 1, screen_x/2 - 2 + screen_x%2 + 1);
 		mvwin(rwin.title, 0, screen_x/2 + 1);
@@ -752,6 +759,10 @@ update_all_windows(void)
 		redrawwin(mborder);
 		wnoutrefresh(mborder);
 
+		touchwin(top_line);
+		redrawwin(top_line);
+		wnoutrefresh(top_line);
+
 		update_view(&lwin);
 		update_view(&rwin);
 	}
@@ -860,6 +871,8 @@ load_color_scheme(const char *name)
 	werase(lborder);
 	wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR));
 	werase(mborder);
+	wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR));
+	werase(top_line);
 	wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR));
 	werase(rborder);
 
