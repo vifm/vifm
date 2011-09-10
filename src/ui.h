@@ -146,7 +146,9 @@ WINDOW *error_win;
 WINDOW *lborder;
 WINDOW *mborder;
 WINDOW *rborder;
+WINDOW *ltop_line;
 WINDOW *top_line;
+WINDOW *rtop_line;
 
 void is_term_working(void);
 int setup_ncurses_interface(void);

@@ -373,9 +373,9 @@ setup_ncurses_interface(void)
 	werase(lborder);
 
 	if(curr_stats.number_of_windows == 1)
-		lwin.title = newwin(1, screen_x - 2 + 3, 0, 0);
+		lwin.title = newwin(1, screen_x - 2, 0, 1);
 	else
-		lwin.title = newwin(1, 2 - screen_x%2, 0, 0);
+		lwin.title = newwin(1, screen_x/2 - 2, 0, 1);
 
 	wbkgdset(lwin.title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR) |
 			(cfg.cs.color[TOP_LINE_SEL_COLOR].attr & A_REVERSE));
@@ -400,17 +400,28 @@ setup_ncurses_interface(void)
 			cfg.cs.color[BORDER_COLOR].attr);
 	werase(mborder);
 
-	top_line = newwin(screen_y - 1, 2 - screen_x%2, 1,
-			screen_x/2 - 1 + screen_x%2);
+	ltop_line = newwin(1, 1, 0, 0);
+	wbkgdset(ltop_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+	wattrset(ltop_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	werase(ltop_line);
+
+	top_line = newwin(1, 2 - screen_x%2, 0, screen_x/2 - 1 + screen_x%2);
 	wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
 			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
 	wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 	werase(top_line);
 
+	rtop_line = newwin(1, 1, 0, screen_x - 1);
+	wbkgdset(rtop_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+	wattrset(rtop_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	werase(rtop_line);
+
 	if(curr_stats.number_of_windows == 1)
-		rwin.title = newwin(1, screen_x - 2, 0, 0);
+		rwin.title = newwin(1, screen_x - 2, 0, 1);
 	else
-		rwin.title = newwin(1, screen_x/2 - 1 + screen_x%2, 0, screen_x/2 + 1);
+		rwin.title = newwin(1, screen_x/2 - 2 + screen_x%2, 0, screen_x/2 + 1);
 	wbkgdset(rwin.title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
 			(COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) & A_REVERSE));
 	wattrset(rwin.title, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
@@ -458,7 +469,9 @@ setup_ncurses_interface(void)
 	werase(input_win);
 
 	wnoutrefresh(mborder);
+	wnoutrefresh(ltop_line);
 	wnoutrefresh(top_line);
+	wnoutrefresh(rtop_line);
 	wnoutrefresh(lwin.title);
 	wnoutrefresh(lwin.win);
 	wnoutrefresh(rwin.win);
@@ -527,7 +540,9 @@ resize_all(void)
 
 	wclear(stdscr);
 	wclear(mborder);
+	wclear(ltop_line);
 	wclear(top_line);
+	wclear(rtop_line);
 	wclear(lwin.title);
 	wclear(lwin.win);
 	wclear(rwin.title);
@@ -550,14 +565,14 @@ resize_all(void)
 
 	if(curr_stats.number_of_windows == 1)
 	{
-		wresize(lwin.title, 1, screen_x - 1);
+		wresize(lwin.title, 1, screen_x - 2);
 		wresize(lwin.win, screen_y - 3, screen_x - 2);
 		getmaxyx(lwin.win, y, x);
 		mvwin(lwin.win, 1, 1);
 		lwin.window_width = x - 1;
 		lwin.window_rows = y - 1;
 
-		wresize(rwin.title, 1, screen_x - 1);
+		wresize(rwin.title, 1, screen_x - 2);
 		mvwin(rwin.title, 0, 1);
 		wresize(rwin.win, screen_y - 3, screen_x - 2);
 		mvwin(rwin.win, 1, 1);
@@ -567,7 +582,7 @@ resize_all(void)
 	}
 	else
 	{
-		wresize(lwin.title, 1, screen_x/2 - 1 + screen_x%2);
+		wresize(lwin.title, 1, screen_x/2 - 2 + screen_x%2);
 		wresize(lwin.win, screen_y - 3, screen_x/2 - 2 + screen_x%2);
 		mvwin(lwin.win, 1, 1);
 		getmaxyx(lwin.win, y, x);
@@ -582,7 +597,9 @@ resize_all(void)
 		mvwin(top_line, 0, screen_x/2 - 1 + screen_x%2);
 		wresize(top_line, 1, 2 - screen_x%2);
 
-		wresize(rwin.title, 1, screen_x/2 - 2 + screen_x%2 + 1);
+		mvwin(rtop_line, 0, screen_x - 1);
+
+		wresize(rwin.title, 1, screen_x/2 - 2 + screen_x%2);
 		mvwin(rwin.title, 0, screen_x/2 + 1);
 
 		wresize(rwin.win, screen_y - 3, screen_x/2 - 2 + screen_x%2);
@@ -763,9 +780,17 @@ update_all_windows(void)
 		redrawwin(mborder);
 		wnoutrefresh(mborder);
 
+		touchwin(ltop_line);
+		redrawwin(ltop_line);
+		wnoutrefresh(ltop_line);
+
 		touchwin(top_line);
 		redrawwin(top_line);
 		wnoutrefresh(top_line);
+
+		touchwin(rtop_line);
+		redrawwin(rtop_line);
+		wnoutrefresh(rtop_line);
 
 		update_view(&lwin);
 		update_view(&rwin);

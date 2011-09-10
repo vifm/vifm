@@ -423,8 +423,7 @@ quick_view_file(FileView *view)
 
 	wclear(other_view->win);
 	wclear(other_view->title);
-	mvwaddstr(other_view->title, 0, 0, (other_view == &lwin) ? " " : "");
-	waddstr(other_view->title, "File: ");
+	mvwaddstr(other_view->title, 0, 0, "File: ");
 	waddstr(other_view->title, view->dir_entry[view->list_pos].name);
 
 	strcpy(buf, view->dir_entry[view->list_pos].name);
@@ -660,22 +659,16 @@ update_view_title(FileView *view)
 			ptr += get_char_width(ptr);
 		}
 
-		if(view == &lwin)
-			wmove(view->title, 0, 1);
 		wprintw(view->title, "...%s", ptr);
 	}
 	else if(len + 1 > view->window_width && curr_view != view)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf, view->window_width - 3 + 1);
-		if(view == &lwin)
-			wmove(view->title, 0, 1);
 		waddnstr(view->title, buf, len);
 		waddstr(view->title, "...");
 	}
 	else
 	{
-		if(view == &lwin)
-			wmove(view->title, 0, 1);
 		wprintw(view->title, "%s", buf);
 	}
 
