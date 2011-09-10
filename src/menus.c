@@ -168,7 +168,7 @@ redraw_error_msg(char *title_arg, const char *message_arg)
 
 	assert(message != NULL);
 
-	curs_set(0);
+	curs_set(FALSE);
 	werase(error_win);
 
 	getmaxyx(stdscr, sy, sx);
@@ -288,7 +288,7 @@ void
 setup_menu(void)
 {
 	scrollok(menu_win, FALSE);
-	curs_set(0);
+	curs_set(FALSE);
 	werase(menu_win);
 	werase(status_bar);
 	werase(pos_win);

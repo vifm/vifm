@@ -311,7 +311,7 @@ static void
 cmd_ctrl_l(struct key_info key_info, struct keys_info *keys_info)
 {
 	redraw_window();
-	curs_set(0);
+	curs_set(FALSE);
 }
 
 static void

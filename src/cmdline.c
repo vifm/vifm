@@ -410,7 +410,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 		}
 	}
 
-	curs_set(1);
+	curs_set(TRUE);
 
 	update_cmdline_size();
 	update_cmdline_text();
@@ -442,7 +442,7 @@ leave_cmdline_mode(void)
 		wresize(status_bar, 1, getmaxx(stdscr) - 19);
 	}
 
-	curs_set(0);
+	curs_set(FALSE);
 	curr_stats.save_msg = 0;
 	free(input_stat.line);
 	free(input_stat.line_buf);

@@ -100,7 +100,7 @@ enter_change_mode(FileView *active_view)
 	*mode = CHANGE_MODE;
 
 	wattroff(view->win, COLOR_PAIR(DCOLOR_BASE + CURR_LINE_COLOR) | A_BOLD);
-	curs_set(0);
+	curs_set(FALSE);
 	update_all_windows();
 
 	top = 2;

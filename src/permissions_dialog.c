@@ -270,7 +270,7 @@ redraw_permissions_dialog(void)
 	mvwaddnstr(change_win, 0, (getmaxx(change_win) - strlen(filename))/2,
 			filename, x - 2);
 
-	curs_set(1);
+	curs_set(TRUE);
 	wmove(change_win, curr, col);
 	wrefresh(change_win);
 }
@@ -279,7 +279,7 @@ static void
 leave_permissions_mode(void)
 {
 	*mode = NORMAL_MODE;
-	curs_set(0);
+	curs_set(FALSE);
 	curr_stats.use_input_bar = 1;
 
 	clean_selected_files(view);

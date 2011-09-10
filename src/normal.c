@@ -327,7 +327,7 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 	clean_selected_files(curr_view);
 	draw_dir_list(curr_view, curr_view->top_line);
 	move_to_list_pos(curr_view, curr_view->list_pos);
-	curs_set(0);
+	curs_set(FALSE);
 }
 
 static void
@@ -459,7 +459,7 @@ static void
 cmd_ctrl_l(struct key_info key_info, struct keys_info *keys_info)
 {
 	redraw_window();
-	curs_set(0);
+	curs_set(FALSE);
 }
 
 static void

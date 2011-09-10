@@ -1647,7 +1647,7 @@ shellout(const char *command, int pause)
 	if(!curr_stats.auto_redraws)
 		modes_redraw();
 
-	curs_set(0);
+	curs_set(FALSE);
 
 	return result;
 }

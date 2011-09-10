@@ -37,7 +37,6 @@
 #include "fileops.h"
 #include "filetype.h"
 #include "macros.h"
-#include "main_loop.h"
 #include "menus.h"
 #include "modes.h"
 #include "status.h"
@@ -50,10 +49,8 @@ static void
 received_sigwinch(void)
 {
 	if(curr_stats.save_msg != 2)
-	{
-		status_bar_message("");
 		curr_stats.save_msg = 0;
-	}
+
 	if(!isendwin())
 	{
 		if(curr_stats.vifm_started >= 3)
@@ -65,7 +62,6 @@ received_sigwinch(void)
 	{
 		curr_stats.need_redraw = 1;
 	}
-	update_input_buf();
 }
 
 static void
@@ -83,7 +79,7 @@ received_sigtstp(void)
 	endwin();
 	pause();
 	refresh();
-	curs_set(0);
+	curs_set(FALSE);
 }
 
 static void

@@ -49,6 +49,7 @@
 #include "file_info.h"
 #include "filelist.h"
 #include "macros.h"
+#include "main_loop.h"
 #include "menus.h"
 #include "modes.h"
 #include "opt_handlers.h"
@@ -132,10 +133,11 @@ update_stat_window(FileView *view)
 	size_t print_width;
 	char *filename;
 
+	getmaxyx(stdscr, y, x);
+	wresize(stat_win, 1, x);
 	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
 			cfg.cs.color[STATUS_LINE_COLOR].attr);
 
-	getmaxyx(stat_win, y, x);
 	filename = get_current_file_name(view);
 	print_width = get_real_string_width(filename, 20 + MAX(0, x - 83));
 	snprintf(name_buf, MIN(sizeof(name_buf), print_width + 1), "%s", filename);
@@ -327,7 +329,7 @@ setup_ncurses_interface(void)
 	nonl();
 	raw();
 
-	curs_set(0);
+	curs_set(FALSE);
 
 	getmaxyx(stdscr, screen_y, screen_x);
 	/* screen is too small to be useful*/
@@ -630,7 +632,7 @@ resize_all(void)
 	wresize(input_win, 1, 6);
 	mvwin(input_win, screen_y - 1, screen_x - 19);
 
-	curs_set(0);
+	curs_set(FALSE);
 }
 
 void
@@ -670,6 +672,9 @@ redraw_window(void)
 		update_pos_window(curr_view);
 	}
 
+	if(curr_stats.save_msg == 0)
+		status_bar_message("");
+
 	update_all_windows();
 
 	move_to_list_pos(curr_view, curr_view->list_pos);
@@ -682,6 +687,8 @@ redraw_window(void)
 		wnoutrefresh(error_win);
 		doupdate();
 	}
+
+	update_input_buf();
 }
 
 static void

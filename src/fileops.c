@@ -277,7 +277,7 @@ view_file(const char *filename, int line)
 		start_background_job(command);
 	else
 		shellout(command, -1);
-	curs_set(0);
+	curs_set(FALSE);
 }
 
 static void
