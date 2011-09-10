@@ -434,9 +434,9 @@ setup_ncurses_interface(void)
 			cfg.cs.color[BORDER_COLOR].attr);
 	werase(rborder);
 
-	stat_win = newwin(1, screen_x, screen_y -2, 0);
-	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR));
-	wattrset(stat_win, cfg.cs.color[STATUS_LINE_COLOR].attr);
+	stat_win = newwin(1, screen_x, screen_y - 2, 0);
+	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
+			cfg.cs.color[STATUS_LINE_COLOR].attr);
 	werase(stat_win);
 
 	status_bar = newwin(1, screen_x - 19, screen_y -1, 0);
