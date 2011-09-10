@@ -441,7 +441,7 @@ main(int argc, char *argv[])
 		int vifm_like;
 		int result;
 		if(!query_user_menu("Configuration update", "Your vifmrc will be "
-				"upgraded to new format.  Your current configuration will be copied "
+				"upgraded to a new format.  Your current configuration will be copied "
 				"before performing any changes, but if you don't want to take the risk "
 				"and would like to make one more copy say No to exit vifm.  Continue?"))
 		{
@@ -452,11 +452,12 @@ main(int argc, char *argv[])
 			exit(0);
 		}
 
-		vifm_like = !query_user_menu("Configuration update", "New configuration is "
-				"enough flexible to save behaviour of older versions of vifm, but it's "
-				"recommended that you will use it in more vi-like mode.  Do you prefer "
-				"more vi-like configuration (when commands and options are not saved "
-				"automatically and you have to write it manually in the vifmrc file)?");
+		vifm_like = !query_user_menu("Configuration update", "This version of vifm "
+				"is able to save changes in the configuration files automatically when "
+				"quitting, as it was possible in older versions.  It is from now on "
+				"recommended though, to save permanent changes manually in the "
+				"configuration file as it is done in vi/vim.  Do you want vifm to "
+				"behave like vi/vim?");
 
 		result = run_converter(vifm_like);
 		if(result != 0)
