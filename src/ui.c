@@ -905,10 +905,20 @@ load_color_scheme(const char *name)
 	wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) | attr);
 	werase(rborder);
 
+	wbkgdset(ltop_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+	wattrset(ltop_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	werase(ltop_line);
+
 	wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
 			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
 	wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 	werase(top_line);
+
+	wbkgdset(rtop_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+	wattrset(rtop_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	werase(rtop_line);
 
 	attr = cfg.cs.color[STATUS_LINE_COLOR].attr;
 	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) | attr);
