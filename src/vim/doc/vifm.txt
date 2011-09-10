@@ -1044,7 +1044,10 @@ Run executable file on Enter or l.
 scrolloff so
 type: int
 default: 0
-Minimal number of screen lines to keep above and below the cursor.
+Minimal number of screen lines to keep above and below the cursor.  If you
+want cursor line to always be in the middle of the view (except at the
+beginning or end of the file list), set this option to some large value
+(e.g. 999).
 
                                                *vifm-'shell'* *vifm-'sh'*
 shell sh
