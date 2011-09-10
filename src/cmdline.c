@@ -1349,7 +1349,7 @@ line_completion(struct line_stats *stat)
 	result = line_part_complete(stat, line_mb, line_mb_cmd + offset, completion);
 	free(completion);
 
-	if(get_completion_count() >= 2)
+	if(get_completion_count() > 2)
 		stat->complete_continue = 1;
 
 	return result;

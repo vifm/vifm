@@ -1034,13 +1034,33 @@ is_dir_writable(int dest, const char *path)
 	return 0;
 }
 
+/* buf should be at least COMMAND_GROUP_INFO_LEN characters length */
+static void
+get_group_file_list(char **list, int count, char *buf)
+{
+	size_t len;
+	int i;
+
+	len = strlen(buf);
+	for(i = 0; i < count && len < COMMAND_GROUP_INFO_LEN; i++)
+	{
+		if(buf[len - 2] != ':')
+		{
+			strncat(buf, ", ", COMMAND_GROUP_INFO_LEN);
+			buf[COMMAND_GROUP_INFO_LEN - 1] = '\0';
+		}
+		strncat(buf, list[i], COMMAND_GROUP_INFO_LEN);
+		buf[COMMAND_GROUP_INFO_LEN - 1] = '\0';
+		len = strlen(buf);
+	}
+}
+
 /* returns new value for save_msg */
 int
 delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 {
 	char buf[8 + PATH_MAX*2];
 	int x, y;
-	size_t len;
 	int i;
 
 	if(!is_dir_writable(0, view->curr_dir))
@@ -1095,19 +1115,8 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	else
 		snprintf(buf, sizeof(buf), "Delete in %s: ",
 				replace_home_part(view->curr_dir));
-	len = strlen(buf);
 
-	for(x = 0; x < view->selected_files && len < COMMAND_GROUP_INFO_LEN; x++)
-	{
-		if(buf[len - 2] != ':')
-		{
-			strncat(buf, ", ", sizeof(buf));
-			buf[sizeof(buf) - 1] = '\0';
-		}
-		strncat(buf, view->selected_filelist[x], sizeof(buf));
-		buf[sizeof(buf) - 1] = '\0';
-		len = strlen(buf);
-	}
+	get_group_file_list(view->selected_filelist, view->selected_files, buf);
 	cmd_group_begin(buf);
 
 	y = 0;
@@ -1666,12 +1675,42 @@ rename_files(FileView *view, char **list, int nlines)
 	return 1;
 }
 
+#ifndef _WIN32
+static void
+chown_files(int u, int g, uid_t uid, gid_t gid)
+{
+	char buf[COMMAND_GROUP_INFO_LEN + 1];
+	int i;
+
+	snprintf(buf, sizeof(buf), "ch%s in %s: ", ((u && g) || u) ? "own" : "grp",
+			replace_home_part(curr_view->curr_dir));
+
+	get_group_file_list(curr_view->saved_selection, curr_view->nsaved_selection,
+			buf);
+	cmd_group_begin(buf);
+	for(i = 0; i < curr_view->nsaved_selection; i++)
+	{
+		char *filename = curr_view->saved_selection[i];
+		int pos = find_file_pos_in_list(curr_view, filename);
+
+		if(u && perform_operation(OP_CHOWN, (void *)(long)uid, filename, NULL) == 0)
+			add_operation(OP_CHOWN, (void *)(long)uid,
+					(void *)(long)curr_view->dir_entry[pos].uid, filename, "");
+		if(g && perform_operation(OP_CHGRP, (void *)(long)gid, filename, NULL) == 0)
+			add_operation(OP_CHGRP, (void *)(long)gid,
+					(void *)(long)curr_view->dir_entry[pos].gid, filename, "");
+	}
+	cmd_group_end();
+
+	load_dir_list(curr_view, 1);
+	move_to_list_pos(curr_view, curr_view->list_pos);
+}
+#endif
+
 static void
 change_owner_cb(const char *new_owner)
 {
 #ifndef _WIN32
-	char *filename;
-	char buf[8 + NAME_MAX + 1];
 	uid_t uid;
 
 	if(new_owner == NULL || new_owner[0] == '\0')
@@ -1693,25 +1732,18 @@ change_owner_cb(const char *new_owner)
 		uid = p->pw_uid;
 	}
 
-	filename = get_current_file_name(curr_view);
-
-	snprintf(buf, sizeof(buf), "chown in %s: %s",
-			replace_home_part(curr_view->curr_dir), filename);
-	cmd_group_begin(buf);
-	if(perform_operation(OP_CHOWN, (void *)(long)uid, filename, NULL) == 0)
-		add_operation(OP_CHOWN, (void *)(long)uid,
-				(void *)(long)curr_view->dir_entry[curr_view->list_pos].uid, filename,
-				"");
-	cmd_group_end();
-
-	load_dir_list(curr_view, 1);
-	move_to_list_pos(curr_view, curr_view->list_pos);
+	chown_files(1, 0, uid, 0);
 #endif
 }
 
 void
 change_owner(void)
 {
+	if(curr_view->selected_filelist == 0)
+	{
+		curr_view->dir_entry[curr_view->list_pos].selected = 1;
+		curr_view->selected_files = 1;
+	}
 	clean_selected_files(curr_view);
 	enter_prompt_mode(L"New owner: ", "", change_owner_cb);
 }
@@ -1720,8 +1752,6 @@ static void
 change_group_cb(const char *new_group)
 {
 #ifndef _WIN32
-	char *filename;
-	char buf[8 + NAME_MAX + 1];
 	uid_t gid;
 
 	if(new_group == NULL || new_group[0] == '\0')
@@ -1743,25 +1773,18 @@ change_group_cb(const char *new_group)
 		gid = g->gr_gid;
 	}
 
-	filename = get_current_file_name(curr_view);
-
-	snprintf(buf, sizeof(buf), "chgrp in %s: %s",
-			replace_home_part(curr_view->curr_dir), filename);
-	cmd_group_begin(buf);
-	if(perform_operation(OP_CHGRP, (void *)(long)gid, filename, NULL) == 0)
-		add_operation(OP_CHGRP, (void *)(long)gid,
-				(void *)(long)curr_view->dir_entry[curr_view->list_pos].gid, filename,
-				"");
-	cmd_group_end();
-
-	load_dir_list(curr_view, 1);
-	move_to_list_pos(curr_view, curr_view->list_pos);
+	chown_files(0, 1, 0, gid);
 #endif
 }
 
 void
 change_group(void)
 {
+	if(curr_view->selected_filelist == 0)
+	{
+		curr_view->dir_entry[curr_view->list_pos].selected = 1;
+		curr_view->selected_files = 1;
+	}
 	clean_selected_files(curr_view);
 	enter_prompt_mode(L"New group: ", "", change_group_cb);
 }
@@ -2727,7 +2750,6 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 	char **dest = NULL;
 	int n = 0, k;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
-	size_t len;
 
 	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
@@ -2777,24 +2799,10 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 		}
 	}
 
-	len = snprintf(buf, sizeof(buf), "g%c in %s: ", toupper ? 'U' : 'u',
+	snprintf(buf, sizeof(buf), "g%c in %s: ", toupper ? 'U' : 'u',
 			replace_home_part(view->curr_dir));
 
-	for(i = 0; i < view->selected_files && len < COMMAND_GROUP_INFO_LEN; i++)
-	{
-		if(strcmp(dest[i], view->selected_filelist[i]) == 0)
-			continue;
-
-		if(buf[len - 2] != ':')
-		{
-			strncat(buf, ", ", sizeof(buf));
-			buf[sizeof(buf) - 1] = '\0';
-		}
-		strncat(buf, view->selected_filelist[i], sizeof(buf));
-		buf[sizeof(buf) - 1] = '\0';
-		len = strlen(buf);
-	}
-
+	get_group_file_list(view->selected_filelist, view->selected_files, buf);
 	cmd_group_begin(buf);
 	k = 0;
 	for(i = 0; i < n; i++)
@@ -3036,25 +3044,13 @@ void
 make_dirs(FileView *view, char **names, int count, int create_parent)
 {
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
-	size_t len;
 	int i;
 	void *cp = (void *)(long)create_parent;
 
-	len = snprintf(buf, sizeof(buf), "mkdir in %s: ",
+	snprintf(buf, sizeof(buf), "mkdir in %s: ",
 			replace_home_part(view->curr_dir));
 
-	for(i = 0; i < count && len < COMMAND_GROUP_INFO_LEN; i++)
-	{
-		if(buf[len - 2] != ':')
-		{
-			strncat(buf, ", ", sizeof(buf));
-			buf[sizeof(buf) - 1] = '\0';
-		}
-		strncat(buf, names[i], sizeof(buf));
-		buf[sizeof(buf) - 1] = '\0';
-		len = strlen(buf);
-	}
-
+	get_group_file_list(names, count, buf);
 	cmd_group_begin(buf);
 	for(i = 0; i < count; i++)
 	{
@@ -3103,18 +3099,7 @@ make_files(FileView *view, char **names, int count)
 	len = snprintf(buf, sizeof(buf), "touch in %s: ",
 			replace_home_part(view->curr_dir));
 
-	for(i = 0; i < count && len < COMMAND_GROUP_INFO_LEN; i++)
-	{
-		if(buf[len - 2] != ':')
-		{
-			strncat(buf, ", ", sizeof(buf));
-			buf[sizeof(buf) - 1] = '\0';
-		}
-		strncat(buf, names[i], sizeof(buf));
-		buf[sizeof(buf) - 1] = '\0';
-		len = strlen(buf);
-	}
-
+	get_group_file_list(names, count, buf);
 	cmd_group_begin(buf);
 	for(i = 0; i < count; i++)
 	{
