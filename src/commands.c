@@ -2487,7 +2487,7 @@ chmod_cmd(const struct cmd_info *cmd_info)
 		return 0;
 	}
 
-	if((err = regcomp(&re, "^[ugoa]*([-+=]([rwxXst]*|[ugo]))+$",
+	if((err = regcomp(&re, "^([ugoa]*([-+=]([rwxXst]*|[ugo]))+)|([0-7]{3,4})$",
 			REG_EXTENDED)) != 0)
 	{
 		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
