@@ -702,6 +702,7 @@ draw_dir_list(FileView *view, int top)
 
 	/* Colorize the files */
 
+	wattrset(view->win, 0);
 	for(x = top; x < view->list_rows; x++)
 	{
 		int attr;

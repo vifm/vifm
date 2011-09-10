@@ -631,14 +631,9 @@ redraw_window(void)
 	load_saving_pos(curr_view, 1);
 
 	if(curr_stats.view)
-	{
-		wclear(other_view->win);
 		quick_view_file(curr_view);
-	}
 	else
-	{
 		load_saving_pos(other_view, 1);
-	}
 
 	update_stat_window(curr_view);
 
@@ -655,7 +650,6 @@ redraw_window(void)
 	update_all_windows();
 
 	move_to_list_pos(curr_view, curr_view->list_pos);
-	wrefresh(curr_view->win);
 	curr_stats.need_redraw = 0;
 
 	if(curr_stats.errmsg_shown)
