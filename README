@@ -10,8 +10,9 @@ If you are interested in playing with the source code.
 
 src/background.c - runs commands in background
 src/bookmarks.c - stores information about bookmarked directories
-src/cmdline.c - command line mode
+src/change_dialog.c - change dialog
 src/color_scheme.c - color schemes
+src/cmdline.c - command line mode
 src/cmds.c - command line parsing core
 src/commands.c - handles command line commands
 src/completion.c - provides means to fill and get completion list

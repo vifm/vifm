@@ -20,10 +20,12 @@
 #include <stdlib.h>
 
 #include "background.h"
+#include "change_dialog.h"
 #include "cmdline.h"
 #include "file_info.h"
 #include "filelist.h"
 #include "keys.h"
+#include "macros.h"
 #include "menu.h"
 #include "normal.h"
 #include "permissions_dialog.h"
@@ -37,22 +39,32 @@
 static int mode = NORMAL_MODE;
 
 static int mode_flags[] = {
-	MF_USES_COUNT | MF_USES_REGS, // NORMAL_MODE
-	MF_USES_INPUT,                // CMDLINE_MODE
-	MF_USES_COUNT | MF_USES_REGS, // VISUAL_MODE
-	MF_USES_COUNT,                // MENU_MODE
-	MF_USES_COUNT,                // SORT_MODE
-	MF_USES_COUNT                 // PERMISSIONS_MODE
+	MF_USES_COUNT | MF_USES_REGS, /* NORMAL_MODE */
+	MF_USES_INPUT,                /* CMDLINE_MODE */
+	MF_USES_COUNT | MF_USES_REGS, /* VISUAL_MODE */
+	MF_USES_COUNT,                /* MENU_MODE */
+	MF_USES_COUNT,                /* SORT_MODE */
+	MF_USES_COUNT,                /* PERMISSIONS_MODE */
+	MF_USES_COUNT,                /* CHANGE_MODE */
 };
 
+static char _gnuc_unused mode_flags_size_guard[
+	(ARRAY_LEN(mode_flags) == MODES_COUNT) ? 1 : -1
+];
+
 static char uses_input_bar[] = {
-	1, // NORMAL_MODE
-	0, // CMDLINE_MODE
-	1, // VISUAL_MODE
-	1, // MENU_MODE
-	1, // SORT_MODE
-	1  // PERMISSIONS_MODE
+	1, /* NORMAL_MODE */
+	0, /* CMDLINE_MODE */
+	1, /* VISUAL_MODE */
+	1, /* MENU_MODE */
+	1, /* SORT_MODE */
+	1, /* PERMISSIONS_MODE */
+	1, /* CHANGE_MODE */
 };
+
+static char _gnuc_unused uses_input_bar_size_guard[
+	(ARRAY_LEN(uses_input_bar) == MODES_COUNT) ? 1 : -1
+];
 
 void
 init_modes(void)
@@ -64,6 +76,7 @@ init_modes(void)
 	init_permissions_dialog_mode(&mode);
 	init_sort_dialog_mode(&mode);
 	init_visual_mode(&mode);
+	init_change_dialog_mode(&mode);
 }
 
 void
@@ -76,6 +89,10 @@ modes_pre(void)
 		return;
 	}
 	else if(mode == SORT_MODE)
+	{
+		return;
+	}
+	else if(mode == CHANGE_MODE)
 	{
 		return;
 	}
@@ -108,6 +125,8 @@ modes_post(void)
 	if(mode == CMDLINE_MODE)
 		return;
 	else if(mode == SORT_MODE)
+		return;
+	else if(mode == CHANGE_MODE)
 		return;
 	else if(mode == PERMISSIONS_MODE)
 		return;
@@ -181,6 +200,8 @@ modes_redraw(void)
 
 	if(mode == SORT_MODE)
 		redraw_sort_dialog();
+	else if(mode == CHANGE_MODE)
+		redraw_change_dialog();
 	else if(mode == PERMISSIONS_MODE)
 		redraw_permissions_dialog();
 

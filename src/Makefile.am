@@ -12,9 +12,10 @@ man_MANS = vifm.1
 vifm_SOURCES = \
 	background.c background.h \
 	bookmarks.c bookmarks.h \
+	change_dialog.c change_dialog.h \
 	cmdline.c cmdline.h \
-	color_scheme.c colorscheme.h \
 	cmds.c cmds.h \
+	color_scheme.c colorscheme.h \
 	commands.c commands.h \
 	completion.c completion.h \
 	config.c config.h \

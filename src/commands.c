@@ -60,7 +60,7 @@
 #include "modes.h"
 #include "opt_handlers.h"
 #include "options.h"
-#include "permissions_dialog.h"
+#include "change_dialog.h"
 #include "registers.h"
 #include "search.h"
 #include "signals.h"
@@ -2445,7 +2445,7 @@ cd_cmd(const struct cmd_info *cmd_info)
 static int
 change_cmd(const struct cmd_info *cmd_info)
 {
-	enter_permissions_mode(curr_view);
+	enter_change_mode(curr_view);
 	return 0;
 }
 

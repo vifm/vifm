@@ -17,31 +17,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef __MODES_H__
-#define __MODES_H__
+#ifndef __CHANGE_DIALOG_H__
+#define __CHANGE_DIALOG_H__
 
-enum
-{
-	NORMAL_MODE,
-	CMDLINE_MODE,
-	VISUAL_MODE,
-	MENU_MODE,
-	SORT_MODE,
-	PERMISSIONS_MODE,
-	CHANGE_MODE,
-	MODES_COUNT
-};
+#include "ui.h"
 
-void init_modes(void);
-void modes_pre(void);
-void modes_post(void);
-void modes_redraw(void);
-void modes_update(void);
-void add_to_input_bar(wchar_t c);
-void clear_input_bar(void);
-/* returns current mode id */
-int get_mode(void);
-void print_selected_msg(void);
+void init_change_dialog_mode(int *key_mode);
+void enter_change_mode(FileView *active_view);
+void redraw_change_dialog(void);
 
 #endif
 

@@ -11,6 +11,8 @@
 
 	Removed CURR color from color schemes (was unused).
 
+	Returned Change dialog.
+
 	Added 'cursorline' option (affects the look of current line in views and
 	menus).
 

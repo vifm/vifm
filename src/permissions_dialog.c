@@ -204,6 +204,10 @@ redraw_permissions_dialog(void)
 	int x, y;
 
 	werase(change_win);
+	if(file_is_dir)
+		wresize(change_win, 22, 30);
+	else
+		wresize(change_win, 20, 30);
 
 	mvwaddstr(change_win, 3, 2, "Owner [ ] Read");
 	if(perms[0])
@@ -229,11 +233,11 @@ redraw_permissions_dialog(void)
 	if(perms[5])
 		mvwaddch(change_win, 9, 9, (perms[5] < 0) ? 'X' : '*');
 
-	mvwaddstr(change_win, 10, 6, "	[ ] Execute");
+	mvwaddstr(change_win, 10, 6, "  [ ] Execute");
 	if(perms[6])
 		mvwaddch(change_win, 10, 9, (perms[6] < 0) ? 'X' : '*');
 
-	mvwaddstr(change_win, 11, 6, "	[ ] SetGID");
+	mvwaddstr(change_win, 11, 6, "  [ ] SetGID");
 	if(perms[7])
 		mvwaddch(change_win, 11, 9, (perms[7] < 0) ? 'X' : '*');
 
@@ -241,27 +245,20 @@ redraw_permissions_dialog(void)
 	if(perms[8])
 		mvwaddch(change_win, 13, 9, (perms[8] < 0) ? 'X' : '*');
 
-	mvwaddstr(change_win, 14, 6, "	[ ] Write");
+	mvwaddstr(change_win, 14, 6, "  [ ] Write");
 	if(perms[9])
 		mvwaddch(change_win, 14, 9, (perms[9] < 0) ? 'X' : '*');
 
-	mvwaddstr(change_win, 15, 6, "	[ ] Execute");
+	mvwaddstr(change_win, 15, 6, "  [ ] Execute");
 	if(perms[10])
 		mvwaddch(change_win, 15, 9, (perms[10] < 0) ? 'X' : '*');
 
-	mvwaddstr(change_win, 16, 6, "	[ ] Sticky");
+	mvwaddstr(change_win, 16, 6, "  [ ] Sticky");
 	if(perms[11])
 		mvwaddch(change_win, 16, 9, (perms[11] < 0) ? 'X' : '*');
 
 	if(file_is_dir)
-	{
-		wresize(change_win, 22, 30);
-		mvwaddstr(change_win, 18, 6, "	[ ] Set Recursively");
-	}
-	else
-	{
-		wresize(change_win, 20, 30);
-	}
+		mvwaddstr(change_win, 18, 6, "  [ ] Set Recursively");
 
 	getmaxyx(stdscr, y, x);
 	mvwin(change_win, (y - (20 + (file_is_dir != 0)*2))/2, (x - 30)/2);

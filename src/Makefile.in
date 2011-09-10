@@ -51,19 +51,20 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(pkgdatadir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_vifm_OBJECTS = background.$(OBJEXT) bookmarks.$(OBJEXT) \
-	cmdline.$(OBJEXT) color_scheme.$(OBJEXT) cmds.$(OBJEXT) \
-	commands.$(OBJEXT) completion.$(OBJEXT) config.$(OBJEXT) \
-	dir_stack.$(OBJEXT) file_info.$(OBJEXT) file_magic.$(OBJEXT) \
-	filelist.$(OBJEXT) fileops.$(OBJEXT) filetype.$(OBJEXT) \
-	keys.$(OBJEXT) log.$(OBJEXT) main_loop.$(OBJEXT) \
-	menu.$(OBJEXT) menus.$(OBJEXT) modes.$(OBJEXT) \
-	normal.$(OBJEXT) ops.$(OBJEXT) opt_handlers.$(OBJEXT) \
-	options.$(OBJEXT) permissions_dialog.$(OBJEXT) \
-	registers.$(OBJEXT) search.$(OBJEXT) signals.$(OBJEXT) \
-	sort.$(OBJEXT) sort_dialog.$(OBJEXT) status.$(OBJEXT) \
-	tags.$(OBJEXT) trash.$(OBJEXT) tree.$(OBJEXT) ui.$(OBJEXT) \
-	undo.$(OBJEXT) utils.$(OBJEXT) version.$(OBJEXT) \
-	vifm.$(OBJEXT) visual.$(OBJEXT)
+	change_dialog.$(OBJEXT) cmdline.$(OBJEXT) cmds.$(OBJEXT) \
+	color_scheme.$(OBJEXT) commands.$(OBJEXT) completion.$(OBJEXT) \
+	config.$(OBJEXT) dir_stack.$(OBJEXT) file_info.$(OBJEXT) \
+	file_magic.$(OBJEXT) filelist.$(OBJEXT) fileops.$(OBJEXT) \
+	filetype.$(OBJEXT) keys.$(OBJEXT) log.$(OBJEXT) \
+	main_loop.$(OBJEXT) menu.$(OBJEXT) menus.$(OBJEXT) \
+	modes.$(OBJEXT) normal.$(OBJEXT) ops.$(OBJEXT) \
+	opt_handlers.$(OBJEXT) options.$(OBJEXT) \
+	permissions_dialog.$(OBJEXT) registers.$(OBJEXT) \
+	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
+	sort_dialog.$(OBJEXT) status.$(OBJEXT) tags.$(OBJEXT) \
+	trash.$(OBJEXT) tree.$(OBJEXT) ui.$(OBJEXT) undo.$(OBJEXT) \
+	utils.$(OBJEXT) version.$(OBJEXT) vifm.$(OBJEXT) \
+	visual.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
@@ -235,9 +236,10 @@ man_MANS = vifm.1
 vifm_SOURCES = \
 	background.c background.h \
 	bookmarks.c bookmarks.h \
+	change_dialog.c change_dialog.h \
 	cmdline.c cmdline.h \
-	color_scheme.c colorscheme.h \
 	cmds.c cmds.h \
+	color_scheme.c colorscheme.h \
 	commands.c commands.h \
 	completion.c completion.h \
 	config.c config.h \
@@ -404,6 +406,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/background.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bookmarks.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/change_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmdline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmds.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_scheme.Po@am__quote@
