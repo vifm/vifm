@@ -2928,6 +2928,7 @@ highlight_cmd(const struct cmd_info *cmd_info)
 			if((col = get_color(equal + 1)) < -1)
 			{
 				status_bar_errorf("Color name or number not recognized: %s", equal + 1);
+				curr_stats.cs->defaulted = -1;
 				return 1;
 			}
 			curr_stats.cs->color[pos].fg = col;

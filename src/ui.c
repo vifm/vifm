@@ -900,7 +900,7 @@ load_color_scheme(const char *name)
 
 	if(cfg.cs.defaulted)
 	{
-		status_bar_error("Not supported by the terminal");
+		show_error_msg("Color Scheme Error", "Not supported by the terminal");
 		return 1;
 	}
 	return 0;
