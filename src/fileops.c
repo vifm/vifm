@@ -1298,6 +1298,7 @@ rename_file(FileView *view, int name_only)
 		*p = '\0';
 	}
 
+	clean_selected_files(view);
 	enter_prompt_mode(L"New name: ", buf, rename_file_cb);
 }
 
@@ -1711,6 +1712,7 @@ change_owner_cb(const char *new_owner)
 void
 change_owner(void)
 {
+	clean_selected_files(curr_view);
 	enter_prompt_mode(L"New owner: ", "", change_owner_cb);
 }
 
@@ -1760,6 +1762,7 @@ change_group_cb(const char *new_group)
 void
 change_group(void)
 {
+	clean_selected_files(curr_view);
 	enter_prompt_mode(L"New group: ", "", change_group_cb);
 }
 

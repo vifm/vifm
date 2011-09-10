@@ -282,6 +282,8 @@ leave_permissions_mode(void)
 	curr_stats.use_input_bar = 1;
 
 	clean_selected_files(view);
+	load_dir_list(view, 1);
+	move_to_list_pos(view, view->list_pos);
 
 	update_all_windows();
 }
@@ -306,8 +308,6 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 	set_perm_string(view, perms, origin_perms);
 
 	leave_permissions_mode();
-	load_dir_list(view, 1);
-	move_to_list_pos(view, view->list_pos);
 }
 
 static void

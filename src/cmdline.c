@@ -456,6 +456,9 @@ leave_cmdline_mode(void)
 
 	attr = cfg.cs.color[STATUS_BAR_COLOR].attr;
 	wattroff(status_bar, COLOR_PAIR(DCOLOR_BASE + STATUS_BAR_COLOR) | attr);
+
+	draw_dir_list(curr_view, curr_view->top_line);
+	move_to_list_pos(curr_view, curr_view->list_pos);
 }
 
 static void
