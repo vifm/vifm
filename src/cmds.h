@@ -108,6 +108,9 @@ int execute_cmd(const char *cmd);
 /* Returns -1 on error and USER_CMD_ID for user defined commands. */
 int get_cmd_id(const char *cmd);
 
+/* Returns command id */
+int get_cmd_info(const char *cmd, struct cmd_info *info);
+
 /* Returns offset in cmd, where completion elements should be pasted */
 int complete_cmd(const char *cmd);
 

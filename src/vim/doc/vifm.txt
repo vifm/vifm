@@ -455,6 +455,11 @@ The builtin commands are:
                                                *vifm-:change* *vifm-:c*
 :c[hange] - create a menu window to alter a files properties.
 
+                                               *vifm-:chmod*
+:[range]chmod - shows permission change dialog.
+:[range]chmod[!] arg... - changes permissions for files.  See 'man chmod'
+    for arg format.  "!" means set permissions recursively.
+
                                                *vifm-:clone*
 :[range]clone[!?] - clones files in current directory.  With "?" vifm will
     open vi to edit filenames.  "!" forces overwrite.

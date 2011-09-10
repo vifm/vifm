@@ -87,7 +87,6 @@ char ** dispatch_line(const char *args, int *count, char sep, int regexp,
 static int get_args_count(const char *cmdstr, char sep, int regexp, int quotes);
 static void unescape(char *s, int regexp);
 static void replace_esc(char *s);
-static int get_cmd_info(const char *cmd, struct cmd_info *info);
 static const char *get_cmd_name(const char *cmd, char *buf, size_t buf_len);
 static void init_cmd_info(struct cmd_info *cmd_info);
 static void complete_cmd_name(const char *cmd_name, int user_only);
@@ -755,7 +754,6 @@ int
 get_cmd_id(const char *cmd)
 {
 	struct cmd_info info;
-	init_cmd_info(&info);
 	return get_cmd_info(cmd, &info);
 }
 
@@ -776,7 +774,7 @@ init_cmd_info(struct cmd_info *cmd_info)
 }
 
 /* Returns command id */
-static int
+int
 get_cmd_info(const char *cmd, struct cmd_info *info)
 {
 	struct cmd_info cmd_info;

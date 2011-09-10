@@ -43,6 +43,7 @@
 
 #include "background.h"
 #include "bookmarks.h"
+#include "change_dialog.h"
 #include "cmdline.h"
 #include "cmds.h"
 #include "color_scheme.h"
@@ -60,7 +61,7 @@
 #include "modes.h"
 #include "opt_handlers.h"
 #include "options.h"
-#include "change_dialog.h"
+#include "permissions_dialog.h"
 #include "registers.h"
 #include "search.h"
 #include "signals.h"
@@ -93,7 +94,13 @@ enum {
 };
 
 enum {
-	COM_GOTO,
+	/* commands without completion */
+	COM_FILTER = -100,
+	COM_SUBSTITUTE,
+	COM_TR,
+
+	/* commands with completion */
+	COM_GOTO = 0,
 	COM_EXECUTE,
 	COM_CD,
 	COM_COLORSCHEME,
@@ -137,6 +144,7 @@ static int alink_cmd(const struct cmd_info *cmd_info);
 static int apropos_cmd(const struct cmd_info *cmd_info);
 static int cd_cmd(const struct cmd_info *cmd_info);
 static int change_cmd(const struct cmd_info *cmd_info);
+static int chmod_cmd(const struct cmd_info *cmd_info);
 static int clone_cmd(const struct cmd_info *cmd_info);
 static int cmap_cmd(const struct cmd_info *cmd_info);
 static int cnoremap_cmd(const struct cmd_info *cmd_info);
@@ -228,6 +236,8 @@ static const struct cmd_add commands[] = {
 		.handler = cd_cmd,          .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "change",           .abbr = "c",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = change_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "chmod",            .abbr = NULL,    .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = chmod_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "clone",            .abbr = NULL,    .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = clone_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "cmap",             .abbr = "cm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -264,7 +274,7 @@ static const struct cmd_add commands[] = {
 		.handler = fileviewer_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filextype",        .abbr = "filex", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = filextype_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 1,
+	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = COM_FILTER,      .range = 0,    .bg = 0, .quote = 1, .regexp = 1,
 		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "find",             .abbr = "fin",   .emark = 0,  .id = COM_FIND,        .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = find_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
@@ -334,13 +344,13 @@ static const struct cmd_add commands[] = {
 		.handler = sort_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "split",            .abbr = "sp",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = split_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
-	{ .name = "substitute",       .abbr = "s",     .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
+	{ .name = "substitute",       .abbr = "s",     .emark = 0,  .id = COM_SUBSTITUTE,  .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
 		.handler = substitute_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 1, .max_args = 3,       .select = 1, },
 	{ .name = "sync",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = sync_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "touch",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = touch_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "tr",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
+	{ .name = "tr",               .abbr = NULL,    .emark = 0,  .id = COM_TR,          .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
 		.handler = tr_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 2, .max_args = 2,       .select = 1, },
 	{ .name = "undolist",         .abbr = "undol", .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = undolist_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
@@ -2018,6 +2028,22 @@ line_pos(const char *begin, const char *end, char sep, int rquoting)
 }
 
 static int
+is_in_arg(const char *cmd, const char *pos)
+{
+	struct cmd_info info;
+	int id;
+
+	id = get_cmd_info(cmd, &info);
+
+	if(id == COM_FILTER)
+		return (line_pos(cmd, pos, ' ', 1) == 0);
+	else if(id == COM_SUBSTITUTE || id == COM_TR)
+		return (line_pos(cmd, pos, info.sep, 1) == 0);
+	else
+		return (line_pos(cmd, pos, ' ', 0) == 0);
+}
+
+static int
 is_whole_line_command(const char *cmd)
 {
 	if(*cmd == '!')
@@ -2077,8 +2103,7 @@ exec_commands(char *cmd, FileView *view, int save_hist, int type)
 				*q++ = *p++;
 			}
 		}
-		else if((*p == '|' &&
-				line_pos(cmd, q, ' ', strncmp(cmd, "fil", 3) == 0) == 0) || *p == '\0')
+		else if((*p == '|' && is_in_arg(cmd, q)) || *p == '\0')
 		{
 			if(*p != '\0')
 				p++;
@@ -2087,14 +2112,14 @@ exec_commands(char *cmd, FileView *view, int save_hist, int type)
 				cmd++;
 			if(is_whole_line_command(cmd))
 			{
-				save_msg += exec_command(cmd, view, type);
+				save_msg += exec_command(cmd, view, type) != 0;
 				break;
 			}
 
 			*q = '\0';
 			q = p;
 
-			save_msg += exec_command(cmd, view, type);
+			save_msg += exec_command(cmd, view, type) != 0;
 
 			cmd = q;
 		}
@@ -2446,6 +2471,42 @@ static int
 change_cmd(const struct cmd_info *cmd_info)
 {
 	enter_change_mode(curr_view);
+	return 0;
+}
+
+static int
+chmod_cmd(const struct cmd_info *cmd_info)
+{
+	regex_t re;
+	int err;
+	int i;
+
+	if(cmd_info->argc == 0)
+	{
+		enter_permissions_mode(curr_view);
+		return 0;
+	}
+
+	if((err = regcomp(&re, "^[ugoa]*([-+=]([rwxXst]*|[ugo]))+$",
+			REG_EXTENDED)) != 0)
+	{
+		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+		regfree(&re);
+		return 1;
+	}
+
+	for(i = 0; i < cmd_info->argc; i++)
+	{
+		if(regexec(&re, cmd_info->argv[i], 0, NULL, 0) == REG_NOMATCH)
+		{
+			regfree(&re);
+			status_bar_errorf("Invalid argument: %s", cmd_info->argv[i]);
+			return 1;
+		}
+	}
+	regfree(&re);
+
+	files_chmod(curr_view, cmd_info->args, cmd_info->emark);
 	return 0;
 }
 

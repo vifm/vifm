@@ -645,6 +645,13 @@ same as :cd /dir /dir.
 .BI :c[hange]
 create a menu window to alter a files properties.
 .TP
+.BI :[range]chmod
+shows permission change dialog.
+.TP
+.BI ":[range]chmod[!] arg..."
+changes permissions for files.  See 'man chmod' for arg format.  "!" means set
+permissions recursively.
+.TP
 .BI :[range]clone[!?]
 clones files in current directory.  With "?" vifm will open vi to edit
 filenames.  "!" forces overwrite.

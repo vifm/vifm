@@ -13,12 +13,13 @@ let s:cpo_save = &cpo
 set cpo-=C
 
 " General commands
-syntax keyword vifmCommand contained alink apropos cd change clone colo[rscheme]
-		\ co[py] d[elete] delm[arks] di[splay] dirs e[dit] empty exi[t] file filter
-		\ fin[d] gr[ep] h[elp] hi[ghlight] his[tory] invert jobs locate ls marks
-		\ mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd q[uit] reg[isters] rename
-		\ restart restore rlink screen se[t] sh[ell] sor[t] sp[lit] s[ubstitute]
-		\ touch tr sync undol[ist] ve[rsion] vie[w] vifm w[rite] wq x[it] y[ank]
+syntax keyword vifmCommand contained alink apropos cd change chmod clone
+		\ colo[rscheme] co[py] d[elete] delm[arks] di[splay] dirs e[dit] empty
+		\ exi[t] file filter fin[d] gr[ep] h[elp] hi[ghlight] his[tory] invert
+		\ jobs locate ls marks mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd
+		\ q[uit] reg[isters] rename restart restore rlink screen se[t] sh[ell]
+		\ sor[t] sp[lit] s[ubstitute] touch tr sync undol[ist] ve[rsion] vie[w] vifm
+		\ w[rite] wq x[it] y[ank]
 
 " Map commands
 syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map nm[ap]

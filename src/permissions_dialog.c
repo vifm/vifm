@@ -53,7 +53,6 @@ static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
 static void set_perm_string(FileView *view, const int *perms,
 		const int *origin_perms);
-static void files_chmod(FileView *view, const char *mode, int recurse_dirs);
 static void chmod_file_in_list(FileView *view, int pos, const char *mode,
 		const char *inv_mode, int recurse_dirs);
 static void file_chmod(char *path, const char *mode, const char *inv_mode,
@@ -364,7 +363,7 @@ set_perm_string(FileView *view, const int *perms, const int *origin_perms)
 	files_chmod(view, perm_string, perms[12]);
 }
 
-static void
+void
 files_chmod(FileView *view, const char *mode, int recurse_dirs)
 {
 	int i;
