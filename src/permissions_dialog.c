@@ -304,10 +304,10 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 			view->dir_entry[view->list_pos].name);
 
 	set_perm_string(view, perms, origin_perms);
-	load_dir_list(view, 1);
-	move_to_list_pos(view, view->list_pos);
 
 	leave_permissions_mode();
+	load_dir_list(view, 1);
+	move_to_list_pos(view, view->list_pos);
 }
 
 static void

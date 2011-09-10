@@ -1357,7 +1357,6 @@ to your ~/.vimrc file.
 The following command names are reserved and shouldn't be used for user
 commands.
 
-  chmod
   chown
   g[lobal]
   v[global]
