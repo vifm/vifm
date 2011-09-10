@@ -642,12 +642,12 @@ draw_wild_menu(int op)
 		}
 
 		if(i == pos)
-			wattrset(stat_win, COLOR_PAIR(DCOLOR_BASE + MENU_COLOR) |
+			wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + MENU_COLOR) |
 					cfg.cs.color[MENU_COLOR].attr);
 		wprintw(stat_win, "%s", list[i]);
 		if(i == pos)
 		{
-			wattrset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
+			wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
 					cfg.cs.color[STATUS_LINE_COLOR].attr);
 			pos = -pos;
 		}
