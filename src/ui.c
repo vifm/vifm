@@ -132,8 +132,8 @@ update_stat_window(FileView *view)
 	size_t print_width;
 	char *filename;
 
-	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR));
-	wattrset(stat_win, cfg.cs.color[STATUS_LINE_COLOR].attr);
+	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
+			cfg.cs.color[STATUS_LINE_COLOR].attr);
 
 	getmaxyx(stat_win, y, x);
 	filename = get_current_file_name(view);
@@ -377,8 +377,9 @@ setup_ncurses_interface(void)
 	else
 		lwin.title = newwin(1, 2 - screen_x%2, 0, 0);
 
-	wbkgdset(lwin.title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR));
-	wattrset(lwin.title, cfg.cs.color[TOP_LINE_SEL_COLOR].attr);
+	wbkgdset(lwin.title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR) |
+			(cfg.cs.color[TOP_LINE_SEL_COLOR].attr & A_REVERSE));
+	wattrset(lwin.title, cfg.cs.color[TOP_LINE_SEL_COLOR].attr & ~A_REVERSE);
 	werase(lwin.title);
 
 	if(curr_stats.number_of_windows == 1)
@@ -401,16 +402,18 @@ setup_ncurses_interface(void)
 
 	top_line = newwin(screen_y - 1, 2 - screen_x%2, 1,
 			screen_x/2 - 1 + screen_x%2);
-	wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR));
+	wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+	wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 	werase(top_line);
 
 	if(curr_stats.number_of_windows == 1)
 		rwin.title = newwin(1, screen_x - 2, 0, 0);
 	else
 		rwin.title = newwin(1, screen_x/2 - 1 + screen_x%2, 0, screen_x/2 + 1);
-
-	wbkgdset(rwin.title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR));
-	wattrset(rwin.title, cfg.cs.color[TOP_LINE_COLOR].attr);
+	wbkgdset(rwin.title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+			(COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) & A_REVERSE));
+	wattrset(rwin.title, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 	werase(rwin.title);
 
 	if(curr_stats.number_of_windows == 1)
@@ -873,8 +876,9 @@ load_color_scheme(const char *name)
 	wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) | attr);
 	werase(rborder);
 
-	attr = cfg.cs.color[TOP_LINE_COLOR].attr;
-	wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) | attr);
+	wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+	wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 	werase(top_line);
 
 	attr = cfg.cs.color[STATUS_LINE_COLOR].attr;

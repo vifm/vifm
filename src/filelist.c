@@ -574,14 +574,17 @@ update_view_title(FileView *view)
 	if(curr_view == view)
 	{
 		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR) |
-				cfg.cs.color[TOP_LINE_SEL_COLOR].attr);
+				(cfg.cs.color[TOP_LINE_SEL_COLOR].attr & A_REVERSE));
+		wattrset(view->title, cfg.cs.color[TOP_LINE_SEL_COLOR].attr & ~A_REVERSE);
 	}
 	else
 	{
 		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
-				cfg.cs.color[TOP_LINE_COLOR].attr);
+				(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+		wattrset(view->title, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 		wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
-				cfg.cs.color[TOP_LINE_COLOR].attr);
+				(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+		wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 		werase(top_line);
 	}
 	werase(view->title);
