@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #ifndef _WIN32
+#include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
 #endif
 #include <unistd.h>
@@ -1116,6 +1117,46 @@ strtoupper(char *s)
 		*s = toupper(*s);
 		s++;
 	}
+}
+
+int
+get_uid(const char *user, uid_t *uid)
+{
+	if(isdigit(user[0]))
+	{
+		*uid = atoi(user);
+	}
+	else
+	{
+		struct passwd *p;
+
+		p = getpwnam(user);
+		if(p == NULL)
+			return 1;
+
+		*uid = p->pw_uid;
+	}
+	return 0;
+}
+
+int
+get_gid(const char *group, gid_t *gid)
+{
+	if(isdigit(group[0]))
+	{
+		*gid = atoi(group);
+	}
+	else
+	{
+		struct group *g;
+
+		g = getgrnam(group);
+		if(g == NULL)
+			return 1;
+
+		*gid = g->gr_gid;
+	}
+	return 0;
 }
 
 #ifdef _WIN32

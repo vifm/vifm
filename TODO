@@ -4,7 +4,6 @@ Basic things that need to be done.
 	Fix window resizing (I think it's almost done).
 	Handle commands that are too long to be passed directly to the shell.
 	Make ga work in background.
-    Add :chown command.
     Perform operations using system calls, not programs.  This is much faster.
     Better cW command (maybe accept count of extensions to skip).
     Better globals support.

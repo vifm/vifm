@@ -460,6 +460,11 @@ The builtin commands are:
 :[range]chmod[!] arg... - changes permissions for files.  See 'man chmod'
     for arg format.  "!" means set permissions recursively.
 
+                                               *vifm-:chown*
+:[range]chown - same as co key in normal mode.
+:[range]chown [user][:][group] - changes owner and/or group of files.
+    Operates on directories recursively.
+
                                                *vifm-:clone*
 :[range]clone[!?] - clones files in current directory.  With "?" vifm will
     open vi to edit filenames.  "!" forces overwrite.
@@ -1357,7 +1362,6 @@ to your ~/.vimrc file.
 The following command names are reserved and shouldn't be used for user
 commands.
 
-  chown
   g[lobal]
   v[global]
 

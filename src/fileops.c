@@ -24,10 +24,6 @@
 
 #include <dirent.h>
 #include <fcntl.h>
-#ifndef _WIN32
-#include <grp.h>
-#include <pwd.h>
-#endif
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* waitpid() */
 #ifndef _WIN32
@@ -1676,7 +1672,7 @@ rename_files(FileView *view, char **list, int nlines)
 }
 
 #ifndef _WIN32
-static void
+void
 chown_files(int u, int g, uid_t uid, gid_t gid)
 {
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
@@ -1716,20 +1712,11 @@ change_owner_cb(const char *new_owner)
 	if(new_owner == NULL || new_owner[0] == '\0')
 		return;
 
-	if(isdigit(new_owner[0]))
+	if(get_uid(new_owner, &uid) != 0)
 	{
-		uid = atoi(new_owner);
-	}
-	else
-	{
-		struct passwd *p = getpwnam(new_owner);
-		if(p == NULL)
-		{
-			status_bar_errorf("Invalid user name: \"%s\"", new_owner);
-			curr_stats.save_msg = 1;
-			return;
-		}
-		uid = p->pw_uid;
+		status_bar_errorf("Invalid user name: \"%s\"", new_owner);
+		curr_stats.save_msg = 1;
+		return;
 	}
 
 	chown_files(1, 0, uid, 0);
@@ -1752,25 +1739,16 @@ static void
 change_group_cb(const char *new_group)
 {
 #ifndef _WIN32
-	uid_t gid;
+	gid_t gid;
 
 	if(new_group == NULL || new_group[0] == '\0')
 		return;
 
-	if(isdigit(new_group[0]))
+	if(get_gid(new_group, &gid) != 0)
 	{
-		gid = atoi(new_group);
-	}
-	else
-	{
-		struct group *g = getgrnam(new_group);
-		if(g == NULL)
-		{
-			status_bar_errorf("Invalid group name: \"%s\"", new_group);
-			curr_stats.save_msg = 1;
-			return;
-		}
-		gid = g->gr_gid;
+		status_bar_errorf("Invalid group name: \"%s\"", new_group);
+		curr_stats.save_msg = 1;
+		return;
 	}
 
 	chown_files(0, 1, 0, gid);

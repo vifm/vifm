@@ -1,4 +1,4 @@
-.TH vifm 1 "September 10, 2011" "" "Vifm"
+.TH vifm 1 "September 11, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -651,6 +651,12 @@ shows permission change dialog.
 .BI ":[range]chmod[!] arg..."
 changes permissions for files.  See 'man chmod' for arg format.  "!" means set
 permissions recursively.
+.TP
+.BI :[range]chown
+same as co key in normal mode.
+.TP
+.BI ":[range]chown [user][:][group]"
+changes owner and/or group of files.  Operates on directories recursively.
 .TP
 .BI :[range]clone[!?]
 clones files in current directory.  With "?" vifm will open vi to edit
@@ -1699,7 +1705,6 @@ to your ~/.vimrc file.
 The following command names are reserved and shouldn't be used for user
 commands.
 
-  chown
   g[lobal]
   v[global]
 .\" ---------------------------------------------------------------------------

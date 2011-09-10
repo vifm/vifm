@@ -27,6 +27,8 @@
 
 #include <sys/types.h> /* passwd */
 #ifndef _WIN32
+#include <grp.h>
+#include <pwd.h>
 #include <sys/wait.h>
 #endif
 #include <dirent.h> /* DIR */
@@ -100,13 +102,14 @@ enum {
 	COM_TR,
 
 	/* commands with completion */
-	COM_GOTO = 0,
-	COM_EXECUTE,
 	COM_CD,
+	COM_CHOWN,
 	COM_COLORSCHEME,
 	COM_EDIT,
+	COM_EXECUTE,
 	COM_FILE,
 	COM_FIND,
+	COM_GOTO = 0,
 	COM_GREP,
 	COM_HELP,
 	COM_HIGHLIGHT,
@@ -129,6 +132,7 @@ static void exec_completion(const char *str);
 static void filename_completion(const char *str, int type);
 static void complete_help(const char *str);
 static void complete_history(const char *str);
+static int complete_chown(const char *str);
 static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
 static int is_entry_dir(const struct dirent *d);
@@ -145,6 +149,7 @@ static int apropos_cmd(const struct cmd_info *cmd_info);
 static int cd_cmd(const struct cmd_info *cmd_info);
 static int change_cmd(const struct cmd_info *cmd_info);
 static int chmod_cmd(const struct cmd_info *cmd_info);
+static int chown_cmd(const struct cmd_info *cmd_info);
 static int clone_cmd(const struct cmd_info *cmd_info);
 static int cmap_cmd(const struct cmd_info *cmd_info);
 static int cnoremap_cmd(const struct cmd_info *cmd_info);
@@ -238,6 +243,8 @@ static const struct cmd_add commands[] = {
 		.handler = change_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "chmod",            .abbr = NULL,    .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = chmod_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
+	{ .name = "chown",            .abbr = NULL,    .emark = 0,  .id = COM_CHOWN,       .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = chown_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 1, },
 	{ .name = "clone",            .abbr = NULL,    .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = clone_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "cmap",             .abbr = "cm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -433,6 +440,8 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		complete_help(args);
 	else if(id == COM_HISTORY)
 		complete_history(args);
+	else if(id == COM_CHOWN)
+		start += complete_chown(args);
 	else if(id == COM_HIGHLIGHT)
 	{
 		if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
@@ -752,6 +761,39 @@ complete_history(const char *str)
 	}
 	completion_group_end();
 	add_completion(str);
+}
+
+static int
+complete_chown(const char *str)
+{
+	char *colon = strchr(str, ':');
+	size_t len = (colon == NULL) ? strlen(str) : strlen(++colon);
+	if(colon == NULL)
+	{
+		struct passwd* pw;
+		setpwent();
+		while((pw = getpwent()) != NULL)
+		{
+			if(strncmp(pw->pw_name, str, len) == 0)
+				add_completion(pw->pw_name);
+		}
+		completion_group_end();
+		add_completion(str);
+		return 0;
+	}
+	else
+	{
+		struct group* gr;
+		setgrent();
+		while((gr = getgrent()) != NULL)
+		{
+			if(strncmp(gr->gr_name, colon, len) == 0)
+				add_completion(gr->gr_name);
+		}
+		completion_group_end();
+		add_completion(colon);
+		return colon - str;
+	}
 }
 
 static void
@@ -2507,6 +2549,52 @@ chmod_cmd(const struct cmd_info *cmd_info)
 	regfree(&re);
 
 	files_chmod(curr_view, cmd_info->args, cmd_info->emark);
+	return 0;
+}
+
+static int
+chown_cmd(const struct cmd_info *cmd_info)
+{
+	char *colon, *user, *group;
+	int u = 0, g = 0;
+	uid_t uid;
+	gid_t gid;
+
+	if(cmd_info->argc == 0)
+	{
+		change_owner();
+		return 0;
+	}
+
+	colon = strchr(cmd_info->argv[0], ':');
+	if(colon == NULL)
+	{
+		user = cmd_info->argv[0];
+		group = "";
+	}
+	else
+	{
+		*colon = '\0';
+		user = cmd_info->argv[0];
+		group = colon + 1;
+	}
+	u = user[0] != '\0';
+	g = group[0] != '\0';
+
+	if(u && get_uid(user, &uid) != 0)
+	{
+		status_bar_errorf("Invalid user name: \"%s\"", user);
+		return 1;
+	}
+	if(g && get_gid(group, &gid) != 0)
+	{
+		status_bar_errorf("Invalid group name: \"%s\"", group);
+		return 1;
+	}
+
+	clean_selected_files(curr_view);
+	chown_files(u, g, uid, gid);
+
 	return 0;
 }
 

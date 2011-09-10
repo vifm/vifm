@@ -101,6 +101,8 @@ char * strchar2str(const char *str);
 char * to_multibyte(const wchar_t *s);
 int get_link_target(const char *link, char *buf, size_t buf_len);
 void strtoupper(char *s);
+int get_uid(const char *user, uid_t *uid);
+int get_gid(const char *group, gid_t *gid);
 
 #ifdef _WIN32
 int wcwidth(wchar_t c);
