@@ -38,6 +38,8 @@ enum {
 	VIFMINFO_PHISTORY  = 1 << 13,
 };
 
+const char * cursorline_enum[3];
+
 void init_option_handlers(void);
 void load_local_options(FileView *view);
 int process_set_args(const char *args);

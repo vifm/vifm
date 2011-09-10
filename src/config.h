@@ -25,6 +25,12 @@
 
 #include "color_scheme.h"
 
+enum CursorLine {
+	CL_NORMAL,
+	CL_REVERSECOL,
+	CL_UNDERLINED,
+};
+
 typedef struct _Config {
 	char home_dir[PATH_MAX]; /* ends with a slash */
 	char config_dir[PATH_MAX];
@@ -74,7 +80,6 @@ typedef struct _Config {
 	int follow_links; /* Follow links on l or Enter. */
 	int confirm; /* Ask user about permanent deletion of files. */
 	int fast_run;
-	int invert_cur_line;
 	int wild_menu;
 	int ignore_case;
 	int smart_case;
@@ -85,6 +90,7 @@ typedef struct _Config {
 	int timeout_len;
 	int scroll_off;
 	int gdefault;
+	enum CursorLine cursor_line;
 } Config;
 
 extern Config cfg;

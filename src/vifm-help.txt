@@ -1174,94 +1174,103 @@ Command macros
               Ask about permanent deletion  of  files  (on  D  command  or  on
               undo/redo operation).
 
+       cursorline cur
+              type: enum
+              default: normal
+
+       Values:
+
+       - normal - set cursor color from CurrLine highlight group (with correc‐
+         tion for selected files)
+
+       - reverscol - reverse colors of the line under the cursor
+
+       - underline - underline the line under the cursor
+
        fastrun
-              type: boolean
-              default: false
-              With  this  option  turned on you can run partially entered com‐
-              mands with unambiguous beginning using :! (e.g. :!Te instead  of
-              :!Terminal or :!Te<tab>).
+         type: boolean
+         default: false
+         With this option turned on you can  run  partially  entered  commands
+         with  unambiguous beginning using :! (e.g. :!Te instead of :!Terminal
+         or :!Te<tab>).
 
        followlinks
-              type: boolean
-              default: true
-              Follow links on l or Enter.
+         type: boolean
+         default: true
+         Follow links on l or Enter.
 
        fusehome
-              type: string
-              default: "/tmp/vifm_FUSE/"
-              Directory  to  be  used  as  a root dir for FUSE mounts.  If you
-              change this option, vifm won't  remount  anything.   It  affects
-              future mounts only.
+         type: string
+         default: "/tmp/vifm_FUSE/"
+         Directory to be used as a root dir for FUSE mounts.   If  you  change
+         this  option,  vifm won't remount anything.  It affects future mounts
+         only.
 
        gdefault gd
-              type: boolean
-              default: false
-              When on, 'g' flag is on for :substitute by default.
+         type: boolean
+         default: false
+         When on, 'g' flag is on for :substitute by default.
 
        history hi
-              type: integer
-              default: 15
-              Maximum number of directories in the view history.
+         type: integer
+         default: 15
+         Maximum number of directories in the view history.
 
        hlsearch hls
-              type: bool
-              default: true
-              Highlight all matches of search pattern.
+         type: bool
+         default: true
+         Highlight all matches of search pattern.
 
-       iec    type: boolean
-              default: false
-              Use KiB, MiB, ... instead of KB, MB, ...
+       iec
+         type: boolean
+         default: false
+         Use KiB, MiB, ... instead of KB, MB, ...
 
        ignorecase ic
-              type: boolean
-              default: false
-              Ignore  case  in search patterns (:substiute, / and ? commands).
-              It doesn't affect file filtering.
-
-       reverscol
-              type: boolean
-              default: false
-              Reverse colors of the line under the cursor.
+         type: boolean
+         default: false
+         Ignore case in search patterns (:substiute, / and  ?  commands).   It
+         doesn't affect file filtering.
 
        runexec
-              type: boolean
-              default: false
-              Run executable file on Enter or l.
+         type: boolean
+         default: false
+         Run executable file on Enter or l.
 
        scrolloff so
-              type: int
-              default: 0
-              Minimal number of screen lines to keep above and below the  cur‐
-              sor.
+         type: int
+         default: 0
+         Minimal number of screen lines to keep above and below the cursor.
 
        shell sh
-              type: string
-              default: $SHELL or "sh" or "cmd" (on MS-Windows)
-              Full path to the shell to use to run external commands.
+         type: string
+         default: $SHELL or "sh" or "cmd" (on MS-Windows)
+         Full path to the shell to use to run external commands.
 
        smartcase scs
-              type: boolean
-              default: false
-              Overrides  the  ignorecase option if the search pattern contains
-              at least one upper case character.  Only  used  when  ignorecase
-              option is enabled.  It doesn't affect file filtering.
+         type: boolean
+         default: false
+         Overrides  the  ignorecase  option  if the search pattern contains at
+         least one upper case character.  Only used when ignorecase option  is
+         enabled.  It doesn't affect file filtering.
 
-       sort   type: string list
-              default: +name
-              Sets  list of sorting keys (first item is primary key, second is
-              secondary key, etc.):
-                 [+-]ext   - sort by extension
-                 [+-]name  - sort by name (including extension)
-                 [+-]iname - sort by name (including extension, ignores case)
-                 [+-]gid   - sort by group id
-                 [+-]gname - sort by group name
-                 [+-]mode  - sort by mode
-                 [+-]uid   - sort by owner id
-                 [+-]uname - sort by owner name
-                 [+-]size  - sort by size
-                 [+-]atime - sort by time accessed
-                 [+-]ctime - sort by time changed
-                 [+-]mtime - sort by time modified
+       sort
+         type: string list
+         default: +name
+         Sets  list of sorting keys (first item is primary key, second is sec‐
+         ondary key, etc.):
+            [+-]ext   - sort by extension
+            [+-]name  - sort by name (including extension)
+            [+-]iname - sort by name (including extension, ignores case)
+            [+-]gid   - sort by group id
+            [+-]gname - sort by group name
+            [+-]mode  - sort by mode
+            [+-]uid   - sort by owner id
+            [+-]uname - sort by owner name
+            [+-]size  - sort by size
+            [+-]atime - sort by time accessed
+            [+-]ctime - sort by time changed
+            [+-]mtime - sort by time modified
 
        ´+' means ascending sort for this key, and '-' means descending sort.
 
@@ -1527,4 +1536,4 @@ AUTHOR
 
 
 
-                               September 9, 2011                       vifm(1)
+                              September 10, 2011                       vifm(1)

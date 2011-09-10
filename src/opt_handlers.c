@@ -19,6 +19,7 @@ static void add_options(void);
 static void print_func(const char *msg, const char *description);
 static void autochpos_handler(enum opt_op op, union optval_t val);
 static void confirm_handler(enum opt_op op, union optval_t val);
+static void cursorline_handler(enum opt_op op, union optval_t val);
 static void fastrun_handler(enum opt_op op, union optval_t val);
 static void followlinks_handler(enum opt_op op, union optval_t val);
 static void fusehome_handler(enum opt_op op, union optval_t val);
@@ -27,14 +28,13 @@ static void history_handler(enum opt_op op, union optval_t val);
 static void hlsearch_handler(enum opt_op op, union optval_t val);
 static void iec_handler(enum opt_op op, union optval_t val);
 static void ignorecase_handler(enum opt_op op, union optval_t val);
-static void reversecol_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
 static void scrolloff_handler(enum opt_op op, union optval_t val);
 static void shell_handler(enum opt_op op, union optval_t val);
 static void smartcase_handler(enum opt_op op, union optval_t val);
 static void sortnumbers_handler(enum opt_op op, union optval_t val);
 static void sort_handler(enum opt_op op, union optval_t val);
-static void sort_order_handler(enum opt_op op, union optval_t val);
+static void sortorder_handler(enum opt_op op, union optval_t val);
 static void timefmt_handler(enum opt_op op, union optval_t val);
 static void timeoutlen_handler(enum opt_op op, union optval_t val);
 static void trash_handler(enum opt_op op, union optval_t val);
@@ -48,6 +48,12 @@ static void wrap_handler(enum opt_op op, union optval_t val);
 
 static int save_msg;
 static char print_buf[320];
+
+const char * cursorline_enum[] = {
+	"normal",
+	"reversecol",
+	"underline",
+};
 
 static const char * sort_enum[] = {
 	"ext",
@@ -79,7 +85,7 @@ static const char * sort_types[] = {
 	"iname", "+iname", "-iname",
 };
 
-static const char * sort_order_enum[] = {
+static const char * sortorder_enum[] = {
 	"ascending",
 	"descending",
 };
@@ -111,35 +117,35 @@ static struct {
 	union optval_t val;
 } options[] = {
 	/* global options */
-	{ "autochpos",   "",     OPT_BOOL,    0,                       NULL,            &autochpos_handler,   },
-	{ "confirm",     "cf",   OPT_BOOL,    0,                       NULL,            &confirm_handler,     },
-	{ "fastrun",     "",     OPT_BOOL,    0,                       NULL,            &fastrun_handler,     },
-	{ "followlinks", "",     OPT_BOOL,    0,                       NULL,            &followlinks_handler, },
-	{ "fusehome",    "",     OPT_STR,     0,                       NULL,            &fusehome_handler,    },
-	{ "gdefault",    "gd",   OPT_BOOL,    0,                       NULL,            &gdefault_handler,    },
-	{ "history",     "hi",   OPT_INT,     0,                       NULL,            &history_handler,     },
-	{ "hlsearch",    "hls",  OPT_BOOL,    0,                       NULL,            &hlsearch_handler,    },
-	{ "iec",         "",     OPT_BOOL,    0,                       NULL,            &iec_handler,         },
-	{ "ignorecase",  "ic",   OPT_BOOL,    0,                       NULL,            &ignorecase_handler,  },
-	{ "reversecol",  "",     OPT_BOOL,    0,                       NULL,            &reversecol_handler,  },
-	{ "runexec",     "",     OPT_BOOL,    0,                       NULL,            &runexec_handler,     },
-	{ "scrolloff",   "so",   OPT_INT,     0,                       NULL,            &scrolloff_handler,   },
-	{ "shell",       "sh",   OPT_STR,     0,                       NULL,            &shell_handler,       },
-	{ "smartcase",   "scs",  OPT_BOOL,    0,                       NULL,            &smartcase_handler,   },
-	{ "sortnumbers", "",     OPT_BOOL,    0,                       NULL,            &sortnumbers_handler, },
-	{ "timefmt",     "",     OPT_STR,     0,                       NULL,            &timefmt_handler,     },
-	{ "timeoutlen",  "tm",   OPT_INT,     0,                       NULL,            &timeoutlen_handler,  },
-	{ "trash",       "",     OPT_BOOL,    0,                       NULL,            &trash_handler,       },
-	{ "undolevels",  "ul",   OPT_INT,     0,                       NULL,            &undolevels_handler,  },
-	{ "vicmd",       "",     OPT_STR,     0,                       NULL,            &vicmd_handler,       },
-	{ "vixcmd",      "",     OPT_STR,     0,                       NULL,            &vixcmd_handler,      },
-	{ "vifminfo",    "",     OPT_SET,     ARRAY_LEN(vifminfo_set), vifminfo_set,    &vifminfo_handler,    },
-	{ "vimhelp",     "",     OPT_BOOL,    0,                       NULL,            &vimhelp_handler,     },
-	{ "wildmenu",    "wmnu", OPT_BOOL,    0,                       NULL,            &wildmenu_handler,    },
-	{ "wrap",        "",     OPT_BOOL,    0,                       NULL,            &wrap_handler,        },
+	{ "autochpos",   "",     OPT_BOOL,    0,                          NULL,            &autochpos_handler,   },
+	{ "confirm",     "cf",   OPT_BOOL,    0,                          NULL,            &confirm_handler,     },
+	{ "cursorline",  "cul",  OPT_ENUM,    ARRAY_LEN(cursorline_enum), cursorline_enum, &cursorline_handler,  },
+	{ "fastrun",     "",     OPT_BOOL,    0,                          NULL,            &fastrun_handler,     },
+	{ "followlinks", "",     OPT_BOOL,    0,                          NULL,            &followlinks_handler, },
+	{ "fusehome",    "",     OPT_STR,     0,                          NULL,            &fusehome_handler,    },
+	{ "gdefault",    "gd",   OPT_BOOL,    0,                          NULL,            &gdefault_handler,    },
+	{ "history",     "hi",   OPT_INT,     0,                          NULL,            &history_handler,     },
+	{ "hlsearch",    "hls",  OPT_BOOL,    0,                          NULL,            &hlsearch_handler,    },
+	{ "iec",         "",     OPT_BOOL,    0,                          NULL,            &iec_handler,         },
+	{ "ignorecase",  "ic",   OPT_BOOL,    0,                          NULL,            &ignorecase_handler,  },
+	{ "runexec",     "",     OPT_BOOL,    0,                          NULL,            &runexec_handler,     },
+	{ "scrolloff",   "so",   OPT_INT,     0,                          NULL,            &scrolloff_handler,   },
+	{ "shell",       "sh",   OPT_STR,     0,                          NULL,            &shell_handler,       },
+	{ "smartcase",   "scs",  OPT_BOOL,    0,                          NULL,            &smartcase_handler,   },
+	{ "sortnumbers", "",     OPT_BOOL,    0,                          NULL,            &sortnumbers_handler, },
+	{ "timefmt",     "",     OPT_STR,     0,                          NULL,            &timefmt_handler,     },
+	{ "timeoutlen",  "tm",   OPT_INT,     0,                          NULL,            &timeoutlen_handler,  },
+	{ "trash",       "",     OPT_BOOL,    0,                          NULL,            &trash_handler,       },
+	{ "undolevels",  "ul",   OPT_INT,     0,                          NULL,            &undolevels_handler,  },
+	{ "vicmd",       "",     OPT_STR,     0,                          NULL,            &vicmd_handler,       },
+	{ "vixcmd",      "",     OPT_STR,     0,                          NULL,            &vixcmd_handler,      },
+	{ "vifminfo",    "",     OPT_SET,     ARRAY_LEN(vifminfo_set),    vifminfo_set,    &vifminfo_handler,    },
+	{ "vimhelp",     "",     OPT_BOOL,    0,                          NULL,            &vimhelp_handler,     },
+	{ "wildmenu",    "wmnu", OPT_BOOL,    0,                          NULL,            &wildmenu_handler,    },
+	{ "wrap",        "",     OPT_BOOL,    0,                          NULL,            &wrap_handler,        },
 	/* local options */
-	{ "sort",        "",     OPT_STRLIST, ARRAY_LEN(sort_types),   sort_types,      &sort_handler,        },
-	{ "sortorder",   "",     OPT_ENUM,    2,                       sort_order_enum, &sort_order_handler,  },
+	{ "sort",        "",     OPT_STRLIST, ARRAY_LEN(sort_types),      sort_types,      &sort_handler,        },
+	{ "sortorder",   "",     OPT_ENUM,    ARRAY_LEN(sortorder_enum),  sortorder_enum,  &sortorder_handler,   },
 };
 
 void
@@ -157,15 +163,15 @@ load_options_defaults(void)
 	/* global options */
 	options[0].val.bool_val = cfg.auto_ch_pos;
 	options[1].val.bool_val = cfg.confirm;
-	options[2].val.bool_val = cfg.fast_run;
-	options[3].val.bool_val = cfg.follow_links;
-	options[4].val.str_val = cfg.fuse_home;
-	options[5].val.bool_val = cfg.gdefault;
-	options[6].val.int_val = cfg.history_len;
-	options[7].val.bool_val = cfg.hl_search;
-	options[8].val.bool_val = cfg.use_iec_prefixes;
-	options[9].val.bool_val = cfg.ignore_case;
-	options[10].val.bool_val = cfg.invert_cur_line;
+	options[2].val.enum_item = cfg.cursor_line;
+	options[3].val.bool_val = cfg.fast_run;
+	options[4].val.bool_val = cfg.follow_links;
+	options[5].val.str_val = cfg.fuse_home;
+	options[6].val.bool_val = cfg.gdefault;
+	options[7].val.int_val = cfg.history_len;
+	options[8].val.bool_val = cfg.hl_search;
+	options[9].val.bool_val = cfg.use_iec_prefixes;
+	options[10].val.bool_val = cfg.ignore_case;
 	options[11].val.bool_val = cfg.auto_execute;
 	options[12].val.int_val = cfg.scroll_off;
 	options[13].val.str_val = cfg.shell;
@@ -304,6 +310,13 @@ confirm_handler(enum opt_op op, union optval_t val)
 }
 
 static void
+cursorline_handler(enum opt_op op, union optval_t val)
+{
+	cfg.cursor_line = val.enum_item;
+	redraw_lists();
+}
+
+static void
 fastrun_handler(enum opt_op op, union optval_t val)
 {
 	cfg.fast_run = val.bool_val;
@@ -415,13 +428,6 @@ ignorecase_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-reversecol_handler(enum opt_op op, union optval_t val)
-{
-	cfg.invert_cur_line = val.bool_val;
-	redraw_lists();
-}
-
-static void
 scrolloff_handler(enum opt_op op, union optval_t val)
 {
 	cfg.scroll_off = val.int_val;
@@ -519,7 +525,7 @@ sort_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-sort_order_handler(enum opt_op op, union optval_t val)
+sortorder_handler(enum opt_op op, union optval_t val)
 {
 	if((val.enum_item ? -1 : +1)*curr_view->sort[0] < 0)
 	{

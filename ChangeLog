@@ -11,7 +11,7 @@
 
 	Removed CURR color from color schemes (was unused).
 
-	Added 'reversecol' option (affects the look of current line in views and
+	Added 'cursorline' option (affects the look of current line in views and
 	menus).
 
 	Added 'wildmenu' option.

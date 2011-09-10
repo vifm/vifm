@@ -43,8 +43,8 @@ syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
 syntax case match
 
 " Options
-syntax keyword vifmOption contained autochpos confirm cf fastrun followlinks
-		\ fusehome gdefault history hi hlsearch hls iec ignorecase ic reversecol
+syntax keyword vifmOption contained autochpos confirm cf cursorline cur fastrun
+		\ followlinks fusehome gdefault history hi hlsearch hls iec ignorecase ic
 		\ runexec scrolloff so shell sh smartcase scs sortnumbers timefmt timeoutlen
 		\ trash undolevels ul vicmd vixcmd vifminfo vimhelp wildmenu wmnu wrap sort
 		\ sortorder

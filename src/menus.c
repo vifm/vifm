@@ -358,7 +358,11 @@ move_to_menu_pos(int pos, menu_info *m)
 
 	if(cfg.hl_search && m->matches != NULL && m->matches[pos])
 	{
-		if(cfg.invert_cur_line)
+		if(cfg.cursor_line == CL_REVERSECOL)
+		{
+			pair_content(DCOLOR_BASE + SELECTED_COLOR, &f, &b);
+		}
+		else if(cfg.cursor_line == CL_UNDERLINED)
 		{
 			pair_content(DCOLOR_BASE + SELECTED_COLOR, &f, &b);
 		}
@@ -370,17 +374,24 @@ move_to_menu_pos(int pos, menu_info *m)
 	}
 	else
 	{
-		if(cfg.invert_cur_line)
+		if(cfg.cursor_line == CL_REVERSECOL || cfg.cursor_line == CL_UNDERLINED)
 			pair_content(DCOLOR_BASE + WIN_COLOR, &f, &b);
 		else
 			pair_content(DCOLOR_BASE + CURR_LINE_COLOR, &f, &b);
 	}
 	init_pair(DCOLOR_BASE + MENU_CURRENT_COLOR, f, b);
-	attr = 0;
-	if(cfg.invert_cur_line)
-		attr |= A_REVERSE;
-	if(!cfg.invert_cur_line || f != COLOR_WHITE)
-		attr |= A_BOLD;
+	attr = cfg.cs.color[CURR_LINE_COLOR].attr;
+	if(cfg.cursor_line == CL_UNDERLINED)
+	{
+		attr |= A_UNDERLINE;
+	}
+	else
+	{
+		if(cfg.cursor_line == CL_REVERSECOL)
+			attr |= A_REVERSE;
+		if(f != COLOR_WHITE)
+			attr |= A_BOLD;
+	}
 	wattron(menu_win, COLOR_PAIR(DCOLOR_BASE + MENU_CURRENT_COLOR) | attr);
 
 	if(strlen(m->data[pos]) > x - 4)

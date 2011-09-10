@@ -95,7 +95,6 @@ init_config(void)
 	cfg.use_screen = 0;
 	cfg.history_len = 15;
 	cfg.use_vim_help = 0;
-	cfg.invert_cur_line = 0;
 	cfg.wild_menu = 0;
 	cfg.ignore_case = 0;
 	cfg.smart_case = 0;
@@ -105,6 +104,7 @@ init_config(void)
 	cfg.timeout_len = 1000;
 	cfg.scroll_off = 0;
 	cfg.gdefault = 0;
+	cfg.cursor_line = CL_NORMAL;
 
 	p = getenv("SHELL");
 	if(p == NULL || *p == '\0')
@@ -750,6 +750,7 @@ write_info_file(void)
 		fputs("\n# Options:\n", fp);
 		fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
 		fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
+		fprintf(fp, "=cursorline=%s\n", cursorline_enum[cfg.cursor_line]);
 		fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
 		fprintf(fp, "=%sfollowlinks\n", cfg.follow_links ? "" : "no");
 		fprintf(fp, "=fusehome=%s\n", escape_spaces(cfg.fuse_home));
@@ -758,7 +759,6 @@ write_info_file(void)
 		fprintf(fp, "=%shlsearch\n", cfg.hl_search ? "" : "no");
 		fprintf(fp, "=%siec\n", cfg.use_iec_prefixes ? "" : "no");
 		fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
-		fprintf(fp, "=%sreversecol\n", cfg.invert_cur_line ? "" : "no");
 		fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
 		fprintf(fp, "=scrolloff=%d\n", cfg.scroll_off);
 		fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));

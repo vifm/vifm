@@ -1,4 +1,4 @@
-.TH vifm 1 "September 9, 2011" "" "Vifm"
+.TH vifm 1 "September 10, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1272,6 +1272,21 @@ default: true
 .br
 Ask about permanent deletion of files (on D command or on undo/redo operation).
 .TP
+.BI "cursorline cur"
+type: enum
+.br
+default: normal
+.br
+.LP
+Values:
+.IP - 2
+normal - set cursor color from CurrLine highlight group (with correction for
+selected files)
+.IP - 2
+reverscol - reverse colors of the line under the cursor
+.IP - 2
+underline - underline the line under the cursor
+.TP
 .BI fastrun
 type: boolean
 .br
@@ -1331,13 +1346,6 @@ default: false
 .br
 Ignore case in search patterns (:substiute, / and ? commands).  It doesn't
 affect file filtering.
-.TP
-.BI reverscol
-type: boolean
-.br
-default: false
-.br
-Reverse colors of the line under the cursor.
 .TP
 .BI runexec
 type: boolean

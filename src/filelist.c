@@ -63,6 +63,50 @@
 #include "ui.h"
 #include "utils.h"
 
+static int
+get_line_color(FileView* view, int pos)
+{
+	if(view->dir_entry[pos].selected)
+		return SELECTED_COLOR;
+
+	switch(view->dir_entry[pos].type)
+	{
+		case DIRECTORY:
+			return DIRECTORY_COLOR;
+		case FIFO:
+			return FIFO_COLOR;
+		case LINK:
+			{
+				char full[PATH_MAX];
+				char linkto[PATH_MAX];
+				snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
+						view->dir_entry[pos].name);
+				if(get_link_target(full, linkto, sizeof(linkto)) != 0)
+					return BROKEN_LINK_COLOR;
+
+				if(is_path_absolute(linkto))
+					strcpy(full, linkto);
+				else
+					snprintf(full, sizeof(full), "%s/%s", view->curr_dir, linkto);
+
+				if(access(full, F_OK) == 0)
+					return LINK_COLOR;
+				else
+					return BROKEN_LINK_COLOR;
+			}
+#ifndef _WIN32
+		case SOCKET:
+			return SOCKET_COLOR;
+#endif
+		case DEVICE:
+			return DEVICE_COLOR;
+		case EXECUTABLE:
+			return EXECUTABLE_COLOR;
+		default:
+			return WIN_COLOR;
+	}
+}
+
 static void
 add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 {
@@ -73,6 +117,7 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 #endif
 	struct tm *tm_ptr;
 	int attr = 0;
+	int LINE_COLOR;
 
 	switch(abs(view->sort[0]))
 	{
@@ -180,7 +225,7 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 
 	if(is_current_line)
 	{
-		if(cfg.invert_cur_line)
+		if(cfg.cursor_line == CL_REVERSECOL)
 		{
 			short f, b;
 			attr = A_REVERSE;
@@ -188,6 +233,12 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 			if(f != COLOR_WHITE)
 				attr |= A_BOLD;
 			wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | attr);
+		}
+		else if(cfg.cursor_line == CL_UNDERLINED)
+		{
+			LINE_COLOR = get_line_color(view, x);
+			attr = A_UNDERLINE + view->cs.color[LINE_COLOR].attr;
+			wattron(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
 		}
 		else
 		{
@@ -201,12 +252,15 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 
 	if(is_current_line)
 	{
-		if(cfg.invert_cur_line)
+		if(cfg.cursor_line == CL_REVERSECOL)
 			wattroff(view->win,
 					COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | attr);
+		else if(cfg.cursor_line == CL_UNDERLINED)
+			wattroff(view->win,
+					COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
 		else
-			wattroff(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
-					A_BOLD);
+			wattroff(view->win,
+					COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) | attr);
 	}
 }
 
@@ -628,50 +682,6 @@ update_view_title(FileView *view)
 	wnoutrefresh(view->title);
 }
 
-static int
-get_line_color(FileView* view, int pos)
-{
-	if(view->dir_entry[pos].selected)
-		return SELECTED_COLOR;
-
-	switch(view->dir_entry[pos].type)
-	{
-		case DIRECTORY:
-			return DIRECTORY_COLOR;
-		case FIFO:
-			return FIFO_COLOR;
-		case LINK:
-			{
-				char full[PATH_MAX];
-				char linkto[PATH_MAX];
-				snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
-						view->dir_entry[pos].name);
-				if(get_link_target(full, linkto, sizeof(linkto)) != 0)
-					return BROKEN_LINK_COLOR;
-
-				if(is_path_absolute(linkto))
-					strcpy(full, linkto);
-				else
-					snprintf(full, sizeof(full), "%s/%s", view->curr_dir, linkto);
-
-				if(access(full, F_OK) == 0)
-					return LINK_COLOR;
-				else
-					return BROKEN_LINK_COLOR;
-			}
-#ifndef _WIN32
-		case SOCKET:
-			return SOCKET_COLOR;
-#endif
-		case DEVICE:
-			return DEVICE_COLOR;
-		case EXECUTABLE:
-			return EXECUTABLE_COLOR;
-		default:
-			return WIN_COLOR;
-	}
-}
-
 void
 draw_dir_list(FileView *view, int top)
 {
@@ -874,7 +884,7 @@ move_to_list_pos(FileView *view, int pos)
 	if(redraw)
 		draw_dir_list(view, view->top_line);
 
-	if(cfg.invert_cur_line)
+	if(cfg.cursor_line == CL_REVERSECOL || cfg.cursor_line == CL_UNDERLINED)
 	{
 		int LINE_COLOR = get_line_color(view, pos);
 
@@ -888,7 +898,7 @@ move_to_list_pos(FileView *view, int pos)
 	wattroff(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
 
 	attr = 0;
-	if(cfg.invert_cur_line)
+	if(cfg.cursor_line == CL_REVERSECOL)
 	{
 		short f, b;
 		attr = A_REVERSE;
@@ -896,6 +906,12 @@ move_to_list_pos(FileView *view, int pos)
 		if(f != COLOR_WHITE)
 			attr |= A_BOLD;
 		wattron(view->win, COLOR_PAIR(view->color_scheme + CURRENT_COLOR) | attr);
+	}
+	else if(cfg.cursor_line == CL_UNDERLINED)
+	{
+		int LINE_COLOR = get_line_color(view, pos);
+		attr = A_UNDERLINE + view->cs.color[LINE_COLOR].attr;
+		wattron(view->win, COLOR_PAIR(view->color_scheme + LINE_COLOR) | attr);
 	}
 	else if(view->dir_entry[pos].selected)
 	{
