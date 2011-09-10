@@ -171,6 +171,32 @@ test_rewind(void)
 	free(buf);
 }
 
+static void
+test_order(void)
+{
+	char *buf;
+
+	assert_int_equal(0, add_completion("aa"));
+	assert_int_equal(0, add_completion("az"));
+	completion_group_end();
+
+	assert_int_equal(0, add_completion("a"));
+
+	set_completion_order(1);
+
+	buf = next_completion();
+	assert_string_equal("az", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("aa", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("a", buf);
+	free(buf);
+}
+
 void
 completion_tests(void)
 {
@@ -182,6 +208,7 @@ completion_tests(void)
 	run_test(test_one_unambiguous_completion);
 	run_test(test_rewind_one_unambiguous_completion);
 	run_test(test_rewind);
+	run_test(test_order);
 
 	test_fixture_end();
 }

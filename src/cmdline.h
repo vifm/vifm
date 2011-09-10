@@ -58,6 +58,7 @@ struct line_stats
 	enum hist history_search; /* HIST_* */
 	int hist_search_len;      /* length of history search pattern */
 	wchar_t *line_buf;        /* content of line before using history */
+	int reverse_completion;
 };
 
 int line_completion(struct line_stats *stat);

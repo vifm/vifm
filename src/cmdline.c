@@ -73,6 +73,7 @@ struct line_stats
 	enum hist history_search; /* HIST_* */
 	int hist_search_len;      /* length of history search pattern */
 	wchar_t *line_buf;        /* content of line before using history */
+	int reverse_completion;
 };
 
 #endif
@@ -389,6 +390,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 	input_stat.complete_continue = 0;
 	input_stat.history_search = HIST_NONE;
 	input_stat.line_buf = NULL;
+	input_stat.reverse_completion = 0;
 
 	wcsncpy(input_stat.prompt, prompt, ARRAY_LEN(input_stat.prompt));
 	input_stat.prompt_wid = input_stat.curs_pos = wcslen(input_stat.prompt);
@@ -536,7 +538,7 @@ cmd_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(!input_stat.complete_continue)
 		draw_wild_menu(1);
-	set_completion_order(0);
+	input_stat.reverse_completion = 0;
 	do_completion();
 	if(cfg.wild_menu)
 		draw_wild_menu(0);
@@ -547,7 +549,7 @@ cmd_shift_tab(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(!input_stat.complete_continue)
 		draw_wild_menu(1);
-	set_completion_order(1);
+	input_stat.reverse_completion = 1;
 	do_completion();
 	if(cfg.wild_menu)
 		draw_wild_menu(0);
@@ -1334,6 +1336,8 @@ line_completion(struct line_stats *stat)
 		reset_completion();
 		offset = complete_cmd(line_mb_cmd);
 	}
+
+	set_completion_order(input_stat.reverse_completion);
 
 	if(get_completion_count() == 0)
 		return 0;
