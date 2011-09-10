@@ -620,6 +620,9 @@ void
 redraw_window(void)
 {
 	resize_all();
+	werase(lborder);
+	werase(mborder);
+	werase(rborder);
 
 	if(curr_stats.show_full)
 	{
@@ -862,6 +865,7 @@ load_color_scheme(const char *name)
 
 	curr_stats.cs_base = DCOLOR_BASE;
 	curr_stats.cs = &cfg.cs;
+	cfg.cs.defaulted = 0;
 
 	snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, name);
 	source_file(full);
@@ -898,6 +902,7 @@ load_color_scheme(const char *name)
 
 	if(cfg.cs.defaulted)
 	{
+		load_color_schemes();
 		show_error_msg("Color Scheme Error", "Not supported by the terminal");
 		return 1;
 	}

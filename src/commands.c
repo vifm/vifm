@@ -2941,11 +2941,8 @@ highlight_cmd(const struct cmd_info *cmd_info)
 				status_bar_errorf("Illegal argument: %s", equal + 1);
 				return 1;
 			}
-			if(curr_stats.cs->color[pos].attr != attrs)
-			{
-				curr_stats.cs->color[pos].attr = attrs;
-				curr_stats.need_redraw = 1;
-			}
+			curr_stats.cs->color[pos].attr = attrs;
+			curr_stats.need_redraw = 1;
 		}
 		else
 		{
