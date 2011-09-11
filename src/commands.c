@@ -2156,6 +2156,8 @@ exec_commands(char *cmd, FileView *view, int save_hist, int type)
 		}
 		else if((*p == '|' && is_in_arg(cmd, q)) || *p == '\0')
 		{
+			int ret;
+
 			if(*p != '\0')
 				p++;
 
@@ -2170,7 +2172,11 @@ exec_commands(char *cmd, FileView *view, int save_hist, int type)
 			*q = '\0';
 			q = p;
 
-			save_msg += exec_command(cmd, view, type) != 0;
+			ret = exec_command(cmd, view, type);
+			if(ret < 0)
+				save_msg = -1;
+			else if(ret > 0)
+				save_msg = 1;
 
 			cmd = q;
 		}
