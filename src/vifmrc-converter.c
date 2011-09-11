@@ -116,48 +116,24 @@ struct{
 	.use_screen = 0,
 };
 
-static const int default_colors[][3] = {
-	{ COLOR_WHITE,   COLOR_BLACK, A_UNDERLINE | A_REVERSE }, /* MENU_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE, 0                       }, /* BORDER_COLOR */
-	{ COLOR_WHITE,   COLOR_BLACK, 0                       }, /* WIN_COLOR */
-	{ COLOR_WHITE,   COLOR_BLACK, 0                       }, /* CMD_LINE_COLOR */
-	{ COLOR_WHITE,   COLOR_BLUE,  A_BOLD                  }, /* CURR_LINE_COLOR */
-	{ COLOR_CYAN,    COLOR_BLACK, A_BOLD                  }, /* DIRECTORY_COLOR */
-	{ COLOR_YELLOW,  COLOR_BLACK, A_BOLD                  }, /* LINK_COLOR */
-	{ COLOR_MAGENTA, COLOR_BLACK, A_BOLD                  }, /* SOCKET_COLOR */
-	{ COLOR_RED,     COLOR_BLACK, A_BOLD                  }, /* DEVICE_COLOR */
-	{ COLOR_GREEN,   COLOR_BLACK, A_BOLD                  }, /* EXECUTABLE_COLOR */
-	{ COLOR_MAGENTA, COLOR_BLACK, A_BOLD                  }, /* SELECTED_COLOR */
-	{ COLOR_RED,     COLOR_BLACK, A_BOLD                  }, /* BROKEN_LINK_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE, 0                       }, /* TOP_LINE_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE, A_BOLD                  }, /* STATUS_LINE_COLOR */
-	{ COLOR_CYAN,    COLOR_BLACK, A_BOLD                  }, /* FIFO_COLOR */
-	{ COLOR_RED,     COLOR_BLACK, 0                       }, /* ERROR_MSG_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE, A_BOLD                  }, /* TOP_LINE_SEL_COLOR */
-};
-
-static int _gnuc_unused default_colors_size_guard[
-	(ARRAY_LEN(default_colors) + 2 == MAXNUM_COLOR) ? 1 : -1
-];
-
 char *HI_GROUPS[] = {
-	"WildMenu",
-	"Border",
-	"Win",
-	"CmdLine",
-	"CurrLine",
-	"Directory",
-	"Link",
-	"Socket",
-	"Device",
-	"Executable",
-	"Selected",
-	"BrokenLink",
-	"TopLine",
-	"StatusLine",
-	"Fifo",
-	"ErrorMsg",
-	"TopLineSel",
+	[WIN_COLOR]          = "Win",
+	[DIRECTORY_COLOR]    = "Directory",
+	[LINK_COLOR]         = "Link",
+	[BROKEN_LINK_COLOR]  = "BrokenLink",
+	[SOCKET_COLOR]       = "Socket",
+	[DEVICE_COLOR]       = "Device",
+	[FIFO_COLOR]         = "Fifo",
+	[EXECUTABLE_COLOR]   = "Executable",
+	[SELECTED_COLOR]     = "Selected",
+	[CURR_LINE_COLOR]    = "CurrLine",
+	[TOP_LINE_COLOR]     = "TopLine",
+	[TOP_LINE_SEL_COLOR] = "TopLineSel",
+	[STATUS_LINE_COLOR]  = "StatusLine",
+	[MENU_COLOR]         = "WildMenu",
+	[CMD_LINE_COLOR]     = "CmdLine",
+	[ERROR_MSG_COLOR]    = "ErrorMsg",
+	[BORDER_COLOR]       = "Border",
 };
 
 static int _gnuc_unused HI_GROUPS_size_guard[
@@ -174,6 +150,31 @@ char *COLOR_NAMES[8] = {
 	[COLOR_CYAN]    = "cyan",
 	[COLOR_WHITE]   = "white",
 };
+
+static const int default_colors[][3] = {
+	                      /* fg             bg           attr */
+	[WIN_COLOR]          = { COLOR_WHITE,   COLOR_BLACK, 0                       },
+	[DIRECTORY_COLOR]    = { COLOR_CYAN,    -1,          A_BOLD                  },
+	[LINK_COLOR]         = { COLOR_YELLOW,  -1,          A_BOLD                  },
+	[BROKEN_LINK_COLOR]  = { COLOR_RED,     -1,          A_BOLD                  },
+	[SOCKET_COLOR]       = { COLOR_MAGENTA, -1,          A_BOLD                  },
+	[DEVICE_COLOR]       = { COLOR_RED,     -1,          A_BOLD                  },
+	[FIFO_COLOR]         = { COLOR_CYAN,    -1,          A_BOLD                  },
+	[EXECUTABLE_COLOR]   = { COLOR_GREEN,   -1,          A_BOLD                  },
+	[SELECTED_COLOR]     = { COLOR_MAGENTA, -1,          A_BOLD                  },
+	[CURR_LINE_COLOR]    = { -1,            COLOR_BLUE,  A_BOLD                  },
+	[TOP_LINE_COLOR]     = { COLOR_BLACK,   COLOR_WHITE, 0                       },
+	[TOP_LINE_SEL_COLOR] = { COLOR_BLACK,   -1,          A_BOLD                  },
+	[STATUS_LINE_COLOR]  = { COLOR_BLACK,   COLOR_WHITE, A_BOLD                  },
+	[MENU_COLOR]         = { COLOR_WHITE,   COLOR_BLACK, A_UNDERLINE | A_REVERSE },
+	[CMD_LINE_COLOR]     = { COLOR_WHITE,   COLOR_BLACK, 0                       },
+	[ERROR_MSG_COLOR]    = { COLOR_RED,     COLOR_BLACK, 0                       },
+	[BORDER_COLOR]       = { COLOR_BLACK,   COLOR_WHITE, 0                       },
+};
+
+static int _gnuc_unused default_colors_size_guard[
+	(ARRAY_LEN(default_colors) + 2 == MAXNUM_COLOR) ? 1 : -1
+];
 
 struct{
 	int count;

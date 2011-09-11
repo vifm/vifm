@@ -38,23 +38,23 @@
 #include "utils.h"
 
 char *HI_GROUPS[] = {
-	"WildMenu",   /* MENU_COLOR */
-	"Border",     /* BORDER_COLOR */
-	"Win",        /* WIN_COLOR */
-	"CmdLine",    /* CMD_LINE_COLOR */
-	"CurrLine",   /* CURR_LINE_COLOR */
-	"Directory",  /* DIRECTORY_COLOR */
-	"Link",       /* LINK_COLOR */
-	"Socket",     /* SOCKET_COLOR */
-	"Device",     /* DEVICE_COLOR */
-	"Executable", /* EXECUTABLE_COLOR */
-	"Selected",   /* SELECTED_COLOR */
-	"BrokenLink", /* BROKEN_LINK_COLOR */
-	"TopLine",    /* TOP_LINE_COLOR */
-	"StatusLine", /* STATUS_LINE_COLOR */
-	"Fifo",       /* FIFO_COLOR */
-	"ErrorMsg",   /* ERROR_MSG_COLOR */
-	"TopLineSel", /* TOP_LINE_SEL_COLOR */
+	[WIN_COLOR]          = "Win",
+	[DIRECTORY_COLOR]    = "Directory",
+	[LINK_COLOR]         = "Link",
+	[BROKEN_LINK_COLOR]  = "BrokenLink",
+	[SOCKET_COLOR]       = "Socket",
+	[DEVICE_COLOR]       = "Device",
+	[FIFO_COLOR]         = "Fifo",
+	[EXECUTABLE_COLOR]   = "Executable",
+	[SELECTED_COLOR]     = "Selected",
+	[CURR_LINE_COLOR]    = "CurrLine",
+	[TOP_LINE_COLOR]     = "TopLine",
+	[TOP_LINE_SEL_COLOR] = "TopLineSel",
+	[STATUS_LINE_COLOR]  = "StatusLine",
+	[MENU_COLOR]         = "WildMenu",
+	[CMD_LINE_COLOR]     = "CmdLine",
+	[ERROR_MSG_COLOR]    = "ErrorMsg",
+	[BORDER_COLOR]       = "Border",
 };
 
 static int _gnuc_unused HI_GROUPS_size_guard[
@@ -73,23 +73,24 @@ char *COLOR_NAMES[8] = {
 };
 
 static const int default_colors[][3] = {
-	{ COLOR_WHITE,   COLOR_BLACK, A_UNDERLINE | A_REVERSE }, /* MENU_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE, 0                       }, /* BORDER_COLOR */
-	{ COLOR_WHITE,   COLOR_BLACK, 0                       }, /* WIN_COLOR */
-	{ COLOR_WHITE,   COLOR_BLACK, 0                       }, /* CMD_LINE_COLOR */
-	{ COLOR_WHITE,   COLOR_BLUE,  A_BOLD                  }, /* CURR_LINE_COLOR */
-	{ COLOR_CYAN,    COLOR_BLACK, A_BOLD                  }, /* DIRECTORY_COLOR */
-	{ COLOR_YELLOW,  COLOR_BLACK, A_BOLD                  }, /* LINK_COLOR */
-	{ COLOR_MAGENTA, COLOR_BLACK, A_BOLD                  }, /* SOCKET_COLOR */
-	{ COLOR_RED,     COLOR_BLACK, A_BOLD                  }, /* DEVICE_COLOR */
-	{ COLOR_GREEN,   COLOR_BLACK, A_BOLD                  }, /* EXECUTABLE_COLOR */
-	{ COLOR_MAGENTA, COLOR_BLACK, A_BOLD                  }, /* SELECTED_COLOR */
-	{ COLOR_RED,     COLOR_BLACK, A_BOLD                  }, /* BROKEN_LINK_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE, 0                       }, /* TOP_LINE_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE, A_BOLD                  }, /* STATUS_LINE_COLOR */
-	{ COLOR_CYAN,    COLOR_BLACK, A_BOLD                  }, /* FIFO_COLOR */
-	{ COLOR_RED,     COLOR_BLACK, 0                       }, /* ERROR_MSG_COLOR */
-	{ COLOR_BLACK,   COLOR_WHITE, A_BOLD                  }, /* TOP_LINE_SEL_COLOR */
+	                      /* fg             bg           attr */
+	[WIN_COLOR]          = { COLOR_WHITE,   COLOR_BLACK, 0                       },
+	[DIRECTORY_COLOR]    = { COLOR_CYAN,    -1,          A_BOLD                  },
+	[LINK_COLOR]         = { COLOR_YELLOW,  -1,          A_BOLD                  },
+	[BROKEN_LINK_COLOR]  = { COLOR_RED,     -1,          A_BOLD                  },
+	[SOCKET_COLOR]       = { COLOR_MAGENTA, -1,          A_BOLD                  },
+	[DEVICE_COLOR]       = { COLOR_RED,     -1,          A_BOLD                  },
+	[FIFO_COLOR]         = { COLOR_CYAN,    -1,          A_BOLD                  },
+	[EXECUTABLE_COLOR]   = { COLOR_GREEN,   -1,          A_BOLD                  },
+	[SELECTED_COLOR]     = { COLOR_MAGENTA, -1,          A_BOLD                  },
+	[CURR_LINE_COLOR]    = { -1,            COLOR_BLUE,  A_BOLD                  },
+	[TOP_LINE_COLOR]     = { COLOR_BLACK,   COLOR_WHITE, 0                       },
+	[TOP_LINE_SEL_COLOR] = { COLOR_BLACK,   -1,          A_BOLD                  },
+	[STATUS_LINE_COLOR]  = { COLOR_BLACK,   COLOR_WHITE, A_BOLD                  },
+	[MENU_COLOR]         = { COLOR_WHITE,   COLOR_BLACK, A_UNDERLINE | A_REVERSE },
+	[CMD_LINE_COLOR]     = { COLOR_WHITE,   COLOR_BLACK, 0                       },
+	[ERROR_MSG_COLOR]    = { COLOR_RED,     COLOR_BLACK, 0                       },
+	[BORDER_COLOR]       = { COLOR_BLACK,   COLOR_WHITE, 0                       },
 };
 
 static int _gnuc_unused default_colors_size_guard[
@@ -411,7 +412,7 @@ mix_colors(Col_attr *base, const Col_attr *mixup)
 		base->fg = mixup->fg;
 	if(mixup->bg != -1)
 		base->bg = mixup->bg;
-	base->attr |= mixup->attr;
+	base->attr = mixup->attr;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
