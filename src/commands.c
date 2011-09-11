@@ -3096,7 +3096,7 @@ highlight_cmd(const struct cmd_info *cmd_info)
 		char buf[256*(MAXNUM_COLOR - 2)] = "";
 		for(i = 0; i < MAXNUM_COLOR - 2; i++)
 		{
-			strcat(buf, get_group_str(i, curr_stats.cs->color[i]));
+			strcat(buf, get_group_str(i, curr_view->cs.color[i]));
 			if(i < MAXNUM_COLOR - 2 - 1)
 				strcat(buf, "\n");
 		}

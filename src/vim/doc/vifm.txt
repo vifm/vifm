@@ -604,7 +604,8 @@ The builtin commands are:
     vifm-<something> to get help on vifm (tab completion works).
 
                                                *vifm-:highlight* *vifm-:hi*
-:hi[ghlight] - will show information about all highlight groups.
+:hi[ghlight] - will show information about all highlight groups in the
+    current directory.
 :hi[ghlight] group-name - will show information on given highlight
     group of the default color scheme.
 :hi[ghlight] group-name cterm=style | ctermfg=color | ctermbg=color - sets
