@@ -66,9 +66,6 @@
 static int
 get_line_color(FileView* view, int pos)
 {
-	if(view->dir_entry[pos].selected)
-		return SELECTED_COLOR;
-
 	switch(view->dir_entry[pos].type)
 	{
 		case DIRECTORY:
@@ -702,7 +699,6 @@ draw_dir_list(FileView *view, int top)
 	wbkgdset(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme) | attr);
 	werase(view->win);
 
-	wattrset(view->win, 0);
 	for(x = top; x < view->list_rows; x++)
 	{
 		size_t print_width;
@@ -722,13 +718,16 @@ draw_dir_list(FileView *view, int top)
 		mix_colors(&col, &view->cs.color[LINE_COLOR]);
 
 		if(view->dir_entry[x].selected)
+		{
 			mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+			LINE_COLOR = SELECTED_COLOR;
+		}
 
-		init_pair(view->color_scheme + view->color_scheme, col.fg, col.bg);
+		init_pair(view->color_scheme + LINE_COLOR, col.fg, col.bg);
 
-		wattron(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
+		wattrset(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
 		wprintw(view->win, "%s", file_name);
-		wattroff(view->win, COLOR_PAIR(LINE_COLOR +view->color_scheme) | col.attr);
+		wattroff(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
 
 		add_sort_type_info(view, y, x, 0);
 
@@ -896,7 +895,7 @@ move_to_list_pos(FileView *view, int pos)
 		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
 
 	init_pair(view->color_scheme + CURRENT_COLOR, col.fg, col.bg);
-	wattron(view->win,
+	wattrset(view->win,
 			COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
 
 	/* Blank the current line and
@@ -914,6 +913,10 @@ move_to_list_pos(FileView *view, int pos)
 	snprintf(file_name, print_width, " %s", view->dir_entry[pos].name);
 
 	mvwaddstr(view->win, view->curr_line, 0, file_name);
+
+	wattroff(view->win,
+			COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
+
 	add_sort_type_info(view, view->curr_line, pos, 1);
 
 	if(curr_stats.view)
