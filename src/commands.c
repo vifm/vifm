@@ -3034,14 +3034,23 @@ help_cmd(const struct cmd_info *cmd_info)
 
 	if(cfg.use_vim_help)
 	{
-		char *escaped = escape_filename(cmd_info->args, 0);
 		if(cmd_info->argc > 0)
+		{
+#ifndef _WIN32
+			char *escaped = escape_filename(cmd_info->args, 0);
 			snprintf(buf, sizeof(buf), "%s -c help\\ %s -c only", get_vicmd(&bg),
 					escaped);
+			free(escaped);
+#else
+			snprintf(buf, sizeof(buf), "%s -c \"help %s\" -c only", get_vicmd(&bg),
+					cmd_info->args);
+#endif
+		}
 		else
+		{
 			snprintf(buf, sizeof(buf), "%s -c 'help vifm.txt' -c only",
 					get_vicmd(&bg));
-		free(escaped);
+		}
 	}
 	else
 	{
@@ -3059,7 +3068,15 @@ help_cmd(const struct cmd_info *cmd_info)
 	if(bg)
 		start_background_job(buf);
 	else
+#ifndef _WIN32
 		shellout(buf, -1);
+#else
+	def_prog_mode();
+	endwin();
+	system("cls");
+	system(buf);
+	redraw_window();
+#endif
 	return 0;
 }
 
