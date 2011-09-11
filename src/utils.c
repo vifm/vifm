@@ -1119,6 +1119,7 @@ strtoupper(char *s)
 	}
 }
 
+#ifndef _WIN32
 int
 get_uid(const char *user, uid_t *uid)
 {
@@ -1159,7 +1160,7 @@ get_gid(const char *group, gid_t *gid)
 	return 0;
 }
 
-#ifdef _WIN32
+#else
 
 int
 wcwidth(wchar_t c)

@@ -101,10 +101,11 @@ char * strchar2str(const char *str);
 char * to_multibyte(const wchar_t *s);
 int get_link_target(const char *link, char *buf, size_t buf_len);
 void strtoupper(char *s);
+
+#ifndef _WIN32
 int get_uid(const char *user, uid_t *uid);
 int get_gid(const char *group, gid_t *gid);
-
-#ifdef _WIN32
+#else
 int wcwidth(wchar_t c);
 int wcswidth(const wchar_t *str, size_t len);
 int S_ISLNK(mode_t mode);

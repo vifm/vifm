@@ -91,7 +91,16 @@ tree_set_data(tree_t tree, const char *path, unsigned long long data)
 
 	node = find_node(&tree->node, real_path, 1, NULL);
 	if(node->valid && tree->mem)
-		free((void *)node->data);
+	{
+		union {
+			unsigned long long l;
+			void *p;
+		} u = {
+			.l = node->data,
+		};
+
+		free(u.p);
+	}
 	node->data = data;
 	node->valid = 1;
 	return 0;

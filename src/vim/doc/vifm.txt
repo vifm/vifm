@@ -190,9 +190,9 @@ i - handle file (even through it's executable and RUN_EXECUTABLE is set).
 cw - change word is used to rename a file.
 cW - change WORD is used to change only name of file (without extension).
 cl - change link target.
-co - change owner of file.
-cg - change group of file.
-cp - change file permissions.
+co - change owner of file.                     {only for *nix}
+cg - change group of file.                     {only for *nix}
+cp - change file permissions.                  {only for *nix}
 C - clone file.
 
 dd - move selected file or files to CONFDIR/Trash (if option |vifm-'trash'|
@@ -456,11 +456,13 @@ The builtin commands are:
 :c[hange] - create a menu window to alter a files properties.
 
                                                *vifm-:chmod*
+                                               {only for *nix}
 :[range]chmod - shows permission change dialog.
 :[range]chmod[!] arg... - changes permissions for files.  See 'man chmod'
     for arg format.  "!" means set permissions recursively.
 
                                                *vifm-:chown*
+                                               {only for *nix}
 :[range]chown - same as co key in normal mode.
 :[range]chown [user][:][group] - changes owner and/or group of files.
     Operates on directories recursively.
@@ -828,7 +830,7 @@ Available colors:
 :vie[w] - toggle on and off the quick file view.
 
                                                *vifm-:volume*
-                                                {only for MS-Windows}
+                                               {only for MS-Windows}
 :volumes - will popup menu with volume list.  Hitting l (or Enter) key will
     open appropriate volume in the current pane.
 

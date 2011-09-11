@@ -372,9 +372,14 @@ attrs_to_str(int attrs)
 void
 assoc_dir(const char *name, const char *dir)
 {
-	char *s = strdup(name);
-	if(tree_set_data(dirs, dir, (long long)s) != 0)
-		free(s);
+	union {
+		char *s;
+		unsigned long long l;
+	} u = {
+		.s = strdup(name),
+	};
+	if(tree_set_data(dirs, dir, u.l) != 0)
+		free(u.s);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -104,7 +104,11 @@ enter_change_mode(FileView *active_view)
 	update_all_windows();
 
 	top = 2;
+#ifndef _WIN32
 	bottom = 8;
+#else
+	bottom = 2;
+#endif
 	curr = 2;
 	col = 6;
 	step = 2;
@@ -117,7 +121,7 @@ redraw_change_dialog(void)
 {
 	int x, y;
 
-	wresize(change_win, 11, 25);
+	wresize(change_win, bottom + 3, 25);
 
 	getmaxyx(change_win, y, x);
 	werase(change_win);
@@ -125,9 +129,11 @@ redraw_change_dialog(void)
 
 	mvwaddstr(change_win, 0, (x - 20)/2, " Change Current File ");
 	mvwaddstr(change_win, 2, 4, " [ ] Name");
+#ifndef _WIN32
 	mvwaddstr(change_win, 4, 4, " [ ] Owner");
 	mvwaddstr(change_win, 6, 4, " [ ] Group");
 	mvwaddstr(change_win, 8, 4, " [ ] Permissions");
+#endif
 	mvwaddch(change_win, 2, 6, '*');
 
 	getmaxyx(stdscr, y, x);

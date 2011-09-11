@@ -96,10 +96,14 @@ static void cmd_ZQ(struct key_info, struct keys_info *);
 static void cmd_ZZ(struct key_info, struct keys_info *);
 static void cmd_al(struct key_info, struct keys_info *);
 static void cmd_cW(struct key_info, struct keys_info *);
+#ifndef _WIN32
 static void cmd_cg(struct key_info, struct keys_info *);
+#endif
 static void cmd_cl(struct key_info, struct keys_info *);
+#ifndef _WIN32
 static void cmd_co(struct key_info, struct keys_info *);
 static void cmd_cp(struct key_info, struct keys_info *);
+#endif
 static void cmd_cw(struct key_info, struct keys_info *);
 static void cmd_DD(struct key_info, struct keys_info *);
 static void cmd_dd(struct key_info, struct keys_info *);
@@ -199,10 +203,14 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"ZZ", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ZZ}}},
 	{L"al", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_al}}},
 	{L"cW", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cW}}},
+#ifndef _WIN32
 	{L"cg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cg}}},
+#endif
 	{L"cl", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cl}}},
+#ifndef _WIN32
 	{L"co", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_co}}},
 	{L"cp", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
+#endif
 	{L"cw", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cw}}},
 	{L"DD", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_DD}}},
 	{L"dd", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dd}}},
@@ -1074,12 +1082,14 @@ cmd_cW(struct key_info key_info, struct keys_info *keys_info)
 	rename_file(curr_view, 1);
 }
 
+#ifndef _WIN32
 /* Change group. */
 static void
 cmd_cg(struct key_info key_info, struct keys_info *keys_info)
 {
 	change_group();
 }
+#endif
 
 /* Change symbolic link. */
 static void
@@ -1088,6 +1098,7 @@ cmd_cl(struct key_info key_info, struct keys_info *keys_info)
 	curr_stats.save_msg = change_link(curr_view);
 }
 
+#ifndef _WIN32
 /* Change owner. */
 static void
 cmd_co(struct key_info key_info, struct keys_info *keys_info)
@@ -1101,6 +1112,7 @@ cmd_cp(struct key_info key_info, struct keys_info *keys_info)
 {
 	enter_permissions_mode(curr_view);
 }
+#endif
 
 /* Change word (rename file). */
 static void

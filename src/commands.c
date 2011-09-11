@@ -148,8 +148,10 @@ static int alink_cmd(const struct cmd_info *cmd_info);
 static int apropos_cmd(const struct cmd_info *cmd_info);
 static int cd_cmd(const struct cmd_info *cmd_info);
 static int change_cmd(const struct cmd_info *cmd_info);
+#ifndef _WIN32
 static int chmod_cmd(const struct cmd_info *cmd_info);
 static int chown_cmd(const struct cmd_info *cmd_info);
+#endif
 static int clone_cmd(const struct cmd_info *cmd_info);
 static int cmap_cmd(const struct cmd_info *cmd_info);
 static int cnoremap_cmd(const struct cmd_info *cmd_info);
@@ -241,10 +243,12 @@ static const struct cmd_add commands[] = {
 		.handler = cd_cmd,          .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "change",           .abbr = "c",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = change_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+#ifndef _WIN32
 	{ .name = "chmod",            .abbr = NULL,    .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = chmod_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "chown",            .abbr = NULL,    .emark = 0,  .id = COM_CHOWN,       .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = chown_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 1, },
+#endif
 	{ .name = "clone",            .abbr = NULL,    .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = clone_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "cmap",             .abbr = "cm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -766,6 +770,7 @@ complete_history(const char *str)
 static int
 complete_chown(const char *str)
 {
+#ifndef _WIN32
 	char *colon = strchr(str, ':');
 	size_t len = (colon == NULL) ? strlen(str) : strlen(++colon);
 	if(colon == NULL)
@@ -794,6 +799,10 @@ complete_chown(const char *str)
 		add_completion(colon);
 		return colon - str;
 	}
+#else
+	add_completion(str);
+	return 0;
+#endif
 }
 
 static void
@@ -2516,6 +2525,7 @@ change_cmd(const struct cmd_info *cmd_info)
 	return 0;
 }
 
+#ifndef _WIN32
 static int
 chmod_cmd(const struct cmd_info *cmd_info)
 {
@@ -2597,6 +2607,7 @@ chown_cmd(const struct cmd_info *cmd_info)
 
 	return 0;
 }
+#endif
 
 static int
 clone_cmd(const struct cmd_info *cmd_info)

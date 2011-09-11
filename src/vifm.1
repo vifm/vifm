@@ -302,12 +302,18 @@ change only name of file (without extension).
 change link target.
 .TP
 .BI co
+only for *nix
+.br
 change file owner.
 .TP
 .BI cg
+only for *nix
+.br
 change file group.
 .TP
 .BI cp
+only for *nix
+.br
 change file permissions.
 .TP
 .BI C
@@ -646,16 +652,24 @@ same as :cd /dir /dir.
 create a menu window to alter a files properties.
 .TP
 .BI :[range]chmod
+only for *nix
+.br
 shows permission change dialog.
 .TP
 .BI ":[range]chmod[!] arg..."
+only for *nix
+.br
 changes permissions for files.  See 'man chmod' for arg format.  "!" means set
 permissions recursively.
 .TP
 .BI :[range]chown
+only for *nix
+.br
 same as co key in normal mode.
 .TP
 .BI ":[range]chown [user][:][group]"
+only for *nix
+.br
 changes owner and/or group of files.  Operates on directories recursively.
 .TP
 .BI :[range]clone[!?]

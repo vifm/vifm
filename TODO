@@ -16,7 +16,6 @@ Documentation.
 
 Windows.
     Make non-latin characters appear right.
-    Remove some *nix specific commands.
 
 Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).
