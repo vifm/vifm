@@ -307,7 +307,8 @@ check_directory_for_color_scheme(int left, const char *dir)
 
 	snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, u.name);
 	source_file(full);
-	check_color_scheme(&cfg.cs);
+	check_color_scheme(curr_stats.cs);
+	load_color_pairs(curr_stats.cs_base, curr_stats.cs);
 
 	curr_stats.cs_base = DCOLOR_BASE;
 	curr_stats.cs = &cfg.cs;
@@ -378,6 +379,10 @@ assoc_dir(const char *name, const char *dir)
 	} u = {
 		.s = strdup(name),
 	};
+
+	if(dirs == NULL)
+		dirs = tree_create(1, 1);
+
 	if(tree_set_data(dirs, dir, u.l) != 0)
 		free(u.s);
 }

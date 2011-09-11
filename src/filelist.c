@@ -678,13 +678,12 @@ update_view_title(FileView *view)
 void
 draw_dir_list(FileView *view, int top)
 {
+	int attr;
 	int x;
 	int y = 0;
 
 	if(curr_stats.vifm_started < 2)
 		return;
-
-	werase(view->win);
 
 	update_view_title(view);
 
@@ -708,10 +707,16 @@ draw_dir_list(FileView *view, int top)
 
 	/* Colorize the files */
 
+	if(view->color_scheme == DCOLOR_BASE)
+		attr = cfg.cs.color[WIN_COLOR].attr;
+	else
+		attr = view->cs.color[WIN_COLOR].attr;
+	wbkgdset(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme) | attr);
+	werase(view->win);
+
 	wattrset(view->win, 0);
 	for(x = top; x < view->list_rows; x++)
 	{
-		int attr;
 		size_t print_width;
 		int LINE_COLOR;
 		char file_name[view->window_width*2 - 2];
@@ -724,7 +729,10 @@ draw_dir_list(FileView *view, int top)
 		wmove(view->win, y, 1);
 		LINE_COLOR = get_line_color(view, x);
 
-		attr = cfg.cs.color[LINE_COLOR].attr;
+		if(view->color_scheme == DCOLOR_BASE)
+			attr = cfg.cs.color[LINE_COLOR].attr;
+		else
+			attr = view->cs.color[LINE_COLOR].attr;
 		wattron(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
 		wprintw(view->win, "%s", file_name);
 		wattroff(view->win, COLOR_PAIR(LINE_COLOR +view->color_scheme) | attr);

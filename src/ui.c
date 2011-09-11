@@ -939,9 +939,6 @@ load_color_scheme(const char *name)
 	if(curr_stats.vifm_started < 2)
 		return 0;
 
-	redraw_lists();
-	update_all_windows();
-
 	if(cfg.cs.defaulted)
 	{
 		load_color_schemes();
