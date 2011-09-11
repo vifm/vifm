@@ -1247,8 +1247,8 @@ write_color_schemes(const char *colors_dir)
 		fprintf(fp, "\" color scheme set for a base directory will also\n");
 		fprintf(fp, "\" be used for the sub directories.\n\n");
 
-		fprintf(fp, "\" The standard ncurses colors are: \n");
-		fprintf(fp, "\" Default = -1 can be used for transparency\n");
+		fprintf(fp, "\" The standard ncurses colors are:\n");
+		fprintf(fp, "\" Default = -1 = None, can be used for transparency\n");
 		fprintf(fp, "\" Black = 0\n");
 		fprintf(fp, "\" Red = 1\n");
 		fprintf(fp, "\" Green = 2\n");

@@ -200,8 +200,8 @@ write_color_scheme_file(void)
 	fprintf(fp, "\" color scheme set for a base directory will also\n");
 	fprintf(fp, "\" be used for the sub directories.\n\n");
 
-	fprintf(fp, "\" The standard ncurses colors are: \n");
-	fprintf(fp, "\" Default = -1 can be used for transparency\n");
+	fprintf(fp, "\" The standard ncurses colors are:\n");
+	fprintf(fp, "\" Default = -1 = None, can be used for transparency\n");
 	fprintf(fp, "\" Black = 0\n");
 	fprintf(fp, "\" Red = 1\n");
 	fprintf(fp, "\" Green = 2\n");
@@ -217,7 +217,7 @@ write_color_scheme_file(void)
 	fprintf(fp, "\" xterm-256color) from /usr/lib/terminfo/; you can check current number\n");
 	fprintf(fp, "\" of colors in your terminal with tput colors command)\n\n");
 
-	fprintf(fp, "\" highlight group ctermfg=foreground_color_ ctermbg=background_color\n\n");
+	fprintf(fp, "\" highlight group ctermfg=foreground_color ctermbg=background_color\n\n");
 
 	for(y = 0; y < MAXNUM_COLOR - 2; y++)
 	{
