@@ -227,15 +227,15 @@ status_bar_message_i(const char *message, int error)
 
 	if(err)
 	{
-		Col_attr col = cfg.cs.color[STATUS_BAR_COLOR];
+		Col_attr col = cfg.cs.color[CMD_LINE_COLOR];
 		mix_colors(&col, &cfg.cs.color[ERROR_MSG_COLOR]);
 		init_pair(DCOLOR_BASE + ERROR_MSG_COLOR, col.fg, col.bg);
 		wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + ERROR_MSG_COLOR) | col.attr);
 	}
 	else
 	{
-		int attr = cfg.cs.color[STATUS_BAR_COLOR].attr;
-		wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + STATUS_BAR_COLOR) | attr);
+		int attr = cfg.cs.color[CMD_LINE_COLOR].attr;
+		wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR) | attr);
 	}
 	werase(status_bar);
 
@@ -457,18 +457,18 @@ setup_ncurses_interface(void)
 #ifdef ENABLE_EXTENDED_KEYS
 	keypad(status_bar, TRUE);
 #endif /* ENABLE_EXTENDED_KEYS */
-	wattrset(status_bar, cfg.cs.color[STATUS_BAR_COLOR].attr);
-	wbkgdset(status_bar, COLOR_PAIR(DCOLOR_BASE + STATUS_BAR_COLOR));
+	wattrset(status_bar, cfg.cs.color[CMD_LINE_COLOR].attr);
+	wbkgdset(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
 	werase(status_bar);
 
 	pos_win = newwin(1, 13, screen_y - 1, screen_x - 13);
-	wattrset(pos_win, cfg.cs.color[STATUS_BAR_COLOR].attr);
-	wbkgdset(pos_win, COLOR_PAIR(DCOLOR_BASE + STATUS_BAR_COLOR));
+	wattrset(pos_win, cfg.cs.color[CMD_LINE_COLOR].attr);
+	wbkgdset(pos_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
 	werase(pos_win);
 
 	input_win = newwin(1, 6, screen_y - 1, screen_x -19);
-	wattrset(input_win, cfg.cs.color[STATUS_BAR_COLOR].attr);
-	wbkgdset(input_win, COLOR_PAIR(DCOLOR_BASE + STATUS_BAR_COLOR));
+	wattrset(input_win, cfg.cs.color[CMD_LINE_COLOR].attr);
+	wbkgdset(input_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
 	werase(input_win);
 
 	wnoutrefresh(mborder);

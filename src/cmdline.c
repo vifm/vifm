@@ -379,8 +379,8 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 	prev_mode = *mode;
 	*mode = CMDLINE_MODE;
 
-	attr = cfg.cs.color[STATUS_BAR_COLOR].attr;
-	wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + STATUS_BAR_COLOR) | attr);
+	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
+	wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR) | attr);
 
 	input_stat.line = NULL;
 	input_stat.index = wcslen(cmd);
@@ -454,8 +454,8 @@ leave_cmdline_mode(void)
 	if(*mode != MENU_MODE)
 		update_pos_window(curr_view);
 
-	attr = cfg.cs.color[STATUS_BAR_COLOR].attr;
-	wattroff(status_bar, COLOR_PAIR(DCOLOR_BASE + STATUS_BAR_COLOR) | attr);
+	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
+	wattroff(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR) | attr);
 
 	if(prev_mode != MENU_MODE)
 	{

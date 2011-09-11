@@ -116,7 +116,6 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 	struct group *grp_buf;
 #endif
 	struct tm *tm_ptr;
-	int LINE_COLOR;
 	Col_attr col;
 	int type;
 
@@ -224,17 +223,20 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 			break;
 	}
 
-	LINE_COLOR = get_line_color(view, x);
+	type = WIN_COLOR;
 	col = view->cs.color[WIN_COLOR];
-	mix_colors(&col, &view->cs.color[LINE_COLOR]);
 
 	if(view->dir_entry[x].selected)
+	{
 		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+		type = SELECTED_COLOR;
+	}
 
 	if(is_current_line)
+	{
 		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-
-	type = is_current_line ? CURRENT_COLOR : LINE_COLOR;
+		type = CURRENT_COLOR;
+	}
 
 	init_pair(view->color_scheme + type, col.fg, col.bg);
 	wattron(view->win, COLOR_PAIR(type + view->color_scheme) | col.attr);

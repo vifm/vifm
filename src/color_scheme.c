@@ -38,23 +38,23 @@
 #include "utils.h"
 
 char *HI_GROUPS[] = {
-	"WildMenu",
-	"Border",
-	"Win",
-	"CmdLine",
-	"CurrLine",
-	"Directory",
-	"Link",
-	"Socket",
-	"Device",
-	"Executable",
-	"Selected",
-	"BrokenLink",
-	"TopLine",
-	"StatusLine",
-	"Fifo",
-	"ErrorMsg",
-	"TopLineSel",
+	"WildMenu",   /* MENU_COLOR */
+	"Border",     /* BORDER_COLOR */
+	"Win",        /* WIN_COLOR */
+	"CmdLine",    /* CMD_LINE_COLOR */
+	"CurrLine",   /* CURR_LINE_COLOR */
+	"Directory",  /* DIRECTORY_COLOR */
+	"Link",       /* LINK_COLOR */
+	"Socket",     /* SOCKET_COLOR */
+	"Device",     /* DEVICE_COLOR */
+	"Executable", /* EXECUTABLE_COLOR */
+	"Selected",   /* SELECTED_COLOR */
+	"BrokenLink", /* BROKEN_LINK_COLOR */
+	"TopLine",    /* TOP_LINE_COLOR */
+	"StatusLine", /* STATUS_LINE_COLOR */
+	"Fifo",       /* FIFO_COLOR */
+	"ErrorMsg",   /* ERROR_MSG_COLOR */
+	"TopLineSel", /* TOP_LINE_SEL_COLOR */
 };
 
 static int _gnuc_unused HI_GROUPS_size_guard[
@@ -76,7 +76,7 @@ static const int default_colors[][3] = {
 	{ COLOR_WHITE,   COLOR_BLACK, A_UNDERLINE | A_REVERSE }, /* MENU_COLOR */
 	{ COLOR_BLACK,   COLOR_WHITE, 0                       }, /* BORDER_COLOR */
 	{ COLOR_WHITE,   COLOR_BLACK, 0                       }, /* WIN_COLOR */
-	{ COLOR_WHITE,   COLOR_BLACK, 0                       }, /* STATUS_BAR_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK, 0                       }, /* CMD_LINE_COLOR */
 	{ COLOR_WHITE,   COLOR_BLUE,  A_BOLD                  }, /* CURR_LINE_COLOR */
 	{ COLOR_CYAN,    COLOR_BLACK, A_BOLD                  }, /* DIRECTORY_COLOR */
 	{ COLOR_YELLOW,  COLOR_BLACK, A_BOLD                  }, /* LINK_COLOR */

@@ -120,7 +120,7 @@ static const int default_colors[][3] = {
 	{ COLOR_WHITE,   COLOR_BLACK, A_UNDERLINE | A_REVERSE }, /* MENU_COLOR */
 	{ COLOR_BLACK,   COLOR_WHITE, 0                       }, /* BORDER_COLOR */
 	{ COLOR_WHITE,   COLOR_BLACK, 0                       }, /* WIN_COLOR */
-	{ COLOR_WHITE,   COLOR_BLACK, 0                       }, /* STATUS_BAR_COLOR */
+	{ COLOR_WHITE,   COLOR_BLACK, 0                       }, /* CMD_LINE_COLOR */
 	{ COLOR_WHITE,   COLOR_BLUE,  A_BOLD                  }, /* CURR_LINE_COLOR */
 	{ COLOR_CYAN,    COLOR_BLACK, A_BOLD                  }, /* DIRECTORY_COLOR */
 	{ COLOR_YELLOW,  COLOR_BLACK, A_BOLD                  }, /* LINK_COLOR */
@@ -1143,7 +1143,7 @@ add_color(char s1[], char s2[], char s3[])
 	else if(!strcmp(s1, "WIN"))
 		y = WIN_COLOR;
 	else if(!strcmp(s1, "STATUS_BAR"))
-		y = STATUS_BAR_COLOR;
+		y = CMD_LINE_COLOR;
 	else if(!strcmp(s1, "CURR_LINE"))
 		y = CURR_LINE_COLOR;
 	else if(!strcmp(s1, "DIRECTORY"))
