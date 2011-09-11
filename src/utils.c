@@ -1086,7 +1086,7 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 		return -1;
 
 	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb,
-				sizeof(rdb), &attr, NULL))
+			sizeof(rdb), &attr, NULL))
 	{
 		CloseHandle(hfile);
 		return -1;

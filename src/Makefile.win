@@ -40,7 +40,7 @@ $(win_helper_EXECUTABLE): $(win_helper_OBJECTS)
 config:
 	if [ ! -f ../config.h ] ; then \
 		echo '#define VERSION "0.6.3"' > ../config.h; \
-#		echo '#define ENABLE_EXTENDED_KEYS' >> ../config.h; \
+		echo '#define ENABLE_EXTENDED_KEYS' >> ../config.h; \
 #		echo '#define ENABLE_COMPATIBILITY_MODE' >> ../config.h; \
 #		echo '#define HAVE_FILE_PROG' >> ../config.h; \
 	fi

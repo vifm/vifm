@@ -546,6 +546,30 @@ complete_with_shared(const char *server)
 }
 #endif
 
+#ifdef _WIN32
+/* Returns pointer to a statically allocated buffer */
+static const char *
+escape_for_cd(const char *str)
+{
+	static char buf[4096];
+	char *p;
+
+	p = buf;
+	while(*str != '\0')
+	{
+		if(*str == '\\' || *str == ' ')
+			*p++ = '\\';
+		else if(*str == '%')
+			*p++ = '%';
+		*p++ = *str;
+
+		str++;
+	}
+	*p = '\0';
+	return buf;
+}
+#endif
+
 /*
  * type: FNC_*
  */
@@ -628,7 +652,9 @@ filename_completion(const char *str, int type)
 	filename_len = strlen(filename);
 	while((d = readdir(dir)) != NULL)
 	{
+#ifndef _WIN32
 		char *escaped;
+#endif
 
 		if(filename[0] == '\0' && d->d_name[0] == '.')
 			continue;
@@ -695,9 +721,13 @@ filename_completion(const char *str, int type)
 
 			free(tempfile);
 		}
+#ifndef _WIN32
 		escaped = escape_filename(temp, 1);
 		add_completion(escaped);
 		free(escaped);
+#else
+		add_completion(escape_for_cd(temp));
+#endif
 		free(temp);
 	}
 
@@ -712,9 +742,13 @@ filename_completion(const char *str, int type)
 		}
 		else
 		{
+#ifndef _WIN32
 			temp = escape_filename(filename, 1);
 			add_completion(temp);
 			free(temp);
+#else
+			add_completion(escape_for_cd(filename));
+#endif
 		}
 	}
 
