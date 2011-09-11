@@ -882,7 +882,7 @@ Available group-name values:
  - Fifo - color of fifo pipes
 
 Available colors:
- - -1 or default or none - transparent
+ - -1 or default or none - default or transparent
  - black
  - red
  - green
@@ -891,6 +891,29 @@ Available colors:
  - magenta
  - cyan
  - white
+
+Here is the hierarchy of the highlight group, which you need to know for using
+transparency:
+  StatusLine
+    WildMenu
+  Border
+  CmdLine
+    ErrorMsg
+  Win
+    Directory
+    Link
+    BrokenLink
+    Socket
+    Device
+    Fifo
+    Executable
+      Selected
+        CurrLine
+  TopLine
+    TopLineSel
+
+"none" means default terminal color for highlight groups at the first level of
+the hierarchy and transparency for all others.
 .TP
 .BI :his[tory]
 creates a popup menu of directories visited.
@@ -1298,21 +1321,6 @@ type: boolean
 default: true
 .br
 Ask about permanent deletion of files (on D command or on undo/redo operation).
-.TP
-.BI "cursorline cur"
-type: enum
-.br
-default: normal
-.br
-.LP
-Values:
-.IP - 2
-normal - set cursor color from CurrLine highlight group (with correction for
-selected files)
-.IP - 2
-reverscol - reverse colors of the line under the cursor
-.IP - 2
-underline - underline the line under the cursor
 .TP
 .BI fastrun
 type: boolean

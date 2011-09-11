@@ -182,7 +182,6 @@ status_bar_message_i(const char *message, int error)
 	int len;
 	const char *p, *q;
 	int lines;
-	int attr;
 
 	if(curr_stats.vifm_started == 0)
 		return;
@@ -228,12 +227,14 @@ status_bar_message_i(const char *message, int error)
 
 	if(err)
 	{
-		attr = cfg.cs.color[ERROR_MSG_COLOR].attr;
-		wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + ERROR_MSG_COLOR) | attr);
+		Col_attr col = cfg.cs.color[STATUS_BAR_COLOR];
+		mix_colors(&col, &cfg.cs.color[ERROR_MSG_COLOR]);
+		init_pair(DCOLOR_BASE + ERROR_MSG_COLOR, col.fg, col.bg);
+		wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + ERROR_MSG_COLOR) | col.attr);
 	}
 	else
 	{
-		attr = cfg.cs.color[STATUS_BAR_COLOR].attr;
+		int attr = cfg.cs.color[STATUS_BAR_COLOR].attr;
 		wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + STATUS_BAR_COLOR) | attr);
 	}
 	werase(status_bar);

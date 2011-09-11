@@ -116,8 +116,9 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 	struct group *grp_buf;
 #endif
 	struct tm *tm_ptr;
-	int attr = 0;
 	int LINE_COLOR;
+	Col_attr col;
+	int type;
 
 	switch(abs(view->sort[0]))
 	{
@@ -223,45 +224,24 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 			break;
 	}
 
+	LINE_COLOR = get_line_color(view, x);
+	col = view->cs.color[WIN_COLOR];
+	mix_colors(&col, &view->cs.color[LINE_COLOR]);
+
+	if(view->dir_entry[x].selected)
+		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+
 	if(is_current_line)
-	{
-		if(cfg.cursor_line == CL_REVERSECOL)
-		{
-			short f, b;
-			attr = A_REVERSE;
-			pair_content(CURRENT_COLOR + view->color_scheme, &f, &b);
-			if(f != COLOR_WHITE)
-				attr |= A_BOLD;
-			wattron(view->win, COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | attr);
-		}
-		else if(cfg.cursor_line == CL_UNDERLINED)
-		{
-			LINE_COLOR = get_line_color(view, x);
-			attr = A_UNDERLINE + view->cs.color[LINE_COLOR].attr;
-			wattron(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
-		}
-		else
-		{
-			attr = cfg.cs.color[CURR_LINE_COLOR].attr;
-			wattron(view->win, COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) |
-					attr);
-		}
-	}
+		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+
+	type = is_current_line ? CURRENT_COLOR : LINE_COLOR;
+
+	init_pair(view->color_scheme + type, col.fg, col.bg);
+	wattron(view->win, COLOR_PAIR(type + view->color_scheme) | col.attr);
 
 	mvwaddstr(view->win, y, view->window_width - strlen(buf), buf);
 
-	if(is_current_line)
-	{
-		if(cfg.cursor_line == CL_REVERSECOL)
-			wattroff(view->win,
-					COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | attr);
-		else if(cfg.cursor_line == CL_UNDERLINED)
-			wattroff(view->win,
-					COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
-		else
-			wattroff(view->win,
-					COLOR_PAIR(CURR_LINE_COLOR + view->color_scheme) | attr);
-	}
+	wattroff(view->win, COLOR_PAIR(type + view->color_scheme) | col.attr);
 }
 
 #ifndef _WIN32
@@ -626,9 +606,15 @@ update_view_title(FileView *view)
 
 	if(curr_view == view)
 	{
+		Col_attr col;
+
+		col = cfg.cs.color[TOP_LINE_COLOR];
+		mix_colors(&col, &cfg.cs.color[TOP_LINE_SEL_COLOR]);
+		init_pair(DCOLOR_BASE + TOP_LINE_SEL_COLOR, col.fg, col.bg);
+
 		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR) |
-				(cfg.cs.color[TOP_LINE_SEL_COLOR].attr & A_REVERSE));
-		wattrset(view->title, cfg.cs.color[TOP_LINE_SEL_COLOR].attr & ~A_REVERSE);
+				(col.attr & A_REVERSE));
+		wattrset(view->title, col.attr & ~A_REVERSE);
 	}
 	else
 	{
@@ -720,6 +706,7 @@ draw_dir_list(FileView *view, int top)
 		size_t print_width;
 		int LINE_COLOR;
 		char file_name[view->window_width*2 - 2];
+		Col_attr col;
 		/* Extra long file names are truncated to fit */
 
 		print_width = get_real_string_width(view->dir_entry[x].name,
@@ -727,15 +714,19 @@ draw_dir_list(FileView *view, int top)
 		snprintf(file_name, print_width, "%s", view->dir_entry[x].name);
 
 		wmove(view->win, y, 1);
-		LINE_COLOR = get_line_color(view, x);
 
-		if(view->color_scheme == DCOLOR_BASE)
-			attr = cfg.cs.color[LINE_COLOR].attr;
-		else
-			attr = view->cs.color[LINE_COLOR].attr;
-		wattron(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
+		LINE_COLOR = get_line_color(view, x);
+		col = view->cs.color[WIN_COLOR];
+		mix_colors(&col, &view->cs.color[LINE_COLOR]);
+
+		if(view->dir_entry[x].selected)
+			mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+
+		init_pair(view->color_scheme + view->color_scheme, col.fg, col.bg);
+
+		wattron(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
 		wprintw(view->win, "%s", file_name);
-		wattroff(view->win, COLOR_PAIR(LINE_COLOR +view->color_scheme) | attr);
+		wattroff(view->win, COLOR_PAIR(LINE_COLOR +view->color_scheme) | col.attr);
 
 		add_sort_type_info(view, y, x, 0);
 
@@ -758,7 +749,7 @@ erase_current_line_bar(FileView *view)
 	char file_name[view->window_width*2 -2];
 	int LINE_COLOR;
 	size_t print_width;
-	int attr;
+	Col_attr col;
 
 	if(curr_stats.vifm_started < 2)
 		return;
@@ -780,11 +771,13 @@ erase_current_line_bar(FileView *view)
 	wclrtoeol(view->win);
 
 	LINE_COLOR = get_line_color(view, old_pos);
+	col = view->cs.color[WIN_COLOR];
+	mix_colors(&col, &view->cs.color[LINE_COLOR]);
+	init_pair(view->color_scheme + LINE_COLOR, col.fg, col.bg);
 
-	attr = cfg.cs.color[LINE_COLOR].attr;
-	wattrset(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
+	wattrset(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
 	mvwaddnstr(view->win, old_cursor, 1, file_name, print_width);
-	wattroff(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | attr);
+	wattroff(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
 
 	add_sort_type_info(view, old_cursor, old_pos, 0);
 }
@@ -858,8 +851,8 @@ move_to_list_pos(FileView *view, int pos)
 	int old_cursor = view->curr_line;
 	char file_name[view->window_width*2 + 1];
 	size_t print_width;
-	short f, b;
-	int attr;
+	int LINE_COLOR;
+	Col_attr col;
 
 	if(pos < 1)
 		pos = 0;
@@ -885,49 +878,24 @@ move_to_list_pos(FileView *view, int pos)
 	if(redraw)
 		draw_dir_list(view, view->top_line);
 
-	if(cfg.cursor_line == CL_REVERSECOL || cfg.cursor_line == CL_UNDERLINED)
-	{
-		int LINE_COLOR = get_line_color(view, pos);
-
-		pair_content(LINE_COLOR + view->color_scheme, &f, &b);
-		init_pair(CURRENT_COLOR + view->color_scheme, f, b);
-	}
-
 	wattrset(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
 	mvwaddstr(view->win, old_cursor, 0, " ");
 	wrefresh(view->win);
 	wattroff(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
 
-	attr = 0;
-	if(cfg.cursor_line == CL_REVERSECOL)
-	{
-		short f, b;
-		attr = A_REVERSE;
-		pair_content(view->color_scheme + CURRENT_COLOR, &f, &b);
-		if(f != COLOR_WHITE)
-			attr |= A_BOLD;
-		wattron(view->win, COLOR_PAIR(view->color_scheme + CURRENT_COLOR) | attr);
-	}
-	else if(cfg.cursor_line == CL_UNDERLINED)
-	{
-		int LINE_COLOR = get_line_color(view, pos);
-		attr = A_UNDERLINE + view->cs.color[LINE_COLOR].attr;
-		wattron(view->win, COLOR_PAIR(view->color_scheme + LINE_COLOR) | attr);
-	}
-	else if(view->dir_entry[pos].selected)
-	{
-		short f, b, t;
-		pair_content(view->color_scheme + SELECTED_COLOR, &f, &t);
-		pair_content(view->color_scheme + CURR_LINE_COLOR, &t, &b);
-		init_pair(view->color_scheme + CURRENT_COLOR, f, b);
-		attr = cfg.cs.color[SELECTED_COLOR].attr;
-		wattron(view->win, COLOR_PAIR(view->color_scheme + CURRENT_COLOR) | attr);
-	}
-	else
-	{
-		attr = cfg.cs.color[CURR_LINE_COLOR].attr;
-		wattron(view->win, COLOR_PAIR(view->color_scheme + CURR_LINE_COLOR) | attr);
-	}
+	LINE_COLOR = get_line_color(view, pos);
+	col = view->cs.color[WIN_COLOR];
+	mix_colors(&col, &view->cs.color[LINE_COLOR]);
+
+	if(view->dir_entry[pos].selected)
+		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+
+	if(pos == view->list_pos)
+		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+
+	init_pair(view->color_scheme + CURRENT_COLOR, col.fg, col.bg);
+	wattron(view->win,
+			COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
 
 	/* Blank the current line and
 	 * print out the current line bar

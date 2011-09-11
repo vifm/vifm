@@ -457,8 +457,11 @@ leave_cmdline_mode(void)
 	attr = cfg.cs.color[STATUS_BAR_COLOR].attr;
 	wattroff(status_bar, COLOR_PAIR(DCOLOR_BASE + STATUS_BAR_COLOR) | attr);
 
-	draw_dir_list(curr_view, curr_view->top_line);
-	move_to_list_pos(curr_view, curr_view->list_pos);
+	if(prev_mode != MENU_MODE)
+	{
+		draw_dir_list(curr_view, curr_view->top_line);
+		move_to_list_pos(curr_view, curr_view->list_pos);
+	}
 }
 
 static void
@@ -647,8 +650,14 @@ draw_wild_menu(int op)
 		}
 
 		if(i == pos)
-			wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + MENU_COLOR) |
-					cfg.cs.color[MENU_COLOR].attr);
+		{
+			Col_attr col;
+			col = cfg.cs.color[STATUS_LINE_COLOR];
+			mix_colors(&col, &cfg.cs.color[MENU_COLOR]);
+
+			init_pair(DCOLOR_BASE + MENU_COLOR, col.fg, col.bg);
+			wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + MENU_COLOR) | col.attr);
+		}
 		wprintw(stat_win, "%s", list[i]);
 		if(i == pos)
 		{

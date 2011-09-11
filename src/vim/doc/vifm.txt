@@ -649,6 +649,29 @@ Available colors:
  - cyan
  - white
 
+Here is the hierarchy of the highlight group, which you need to know for using
+transparency:
+  StatusLine
+    WildMenu
+  Border
+  CmdLine
+    ErrorMsg
+  Win
+    Directory
+    Link
+    BrokenLink
+    Socket
+    Device
+    Fifo
+    Executable
+      Selected
+        CurrLine
+  TopLine
+    TopLineSel
+
+"none" means default terminal color for highlight groups at the first level
+of the hierarchy and transparency for all others.
+
                                                *vifm-:history* *vifm-:his*
 :his[tory] - show directory history.
 :his[tory] x
@@ -985,16 +1008,6 @@ confirm cf
 type: boolean
 default: true
 Ask about permanent deletion of files (on D command or on undo/redo operation).
-
-                                               *vifm-'cursorline'* *vifm-'cur'*
-cursorline cur
-type: enum
-default: normal
-Values:
- - normal - set cursor color from CurrLine highlight group (with correction
-   for selected files)
- - reverscol - reverse colors of the line under the cursor
- - underline - underline the line under the cursor
 
                                                *vifm-'fastrun'*
 fastrun

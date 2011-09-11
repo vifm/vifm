@@ -201,7 +201,7 @@ write_color_scheme_file(void)
 	fprintf(fp, "\" be used for the sub directories.\n\n");
 
 	fprintf(fp, "\" The standard ncurses colors are:\n");
-	fprintf(fp, "\" Default = -1 = None, can be used for transparency\n");
+	fprintf(fp, "\" Default = -1 = None, can be used for transparency or default color\n");
 	fprintf(fp, "\" Black = 0\n");
 	fprintf(fp, "\" Red = 1\n");
 	fprintf(fp, "\" Green = 2\n");
@@ -402,6 +402,16 @@ assoc_dir(const char *name, const char *dir)
 
 	if(tree_set_data(dirs, dir, u.l) != 0)
 		free(u.s);
+}
+
+void
+mix_colors(Col_attr *base, const Col_attr *mixup)
+{
+	if(mixup->fg != -1)
+		base->fg = mixup->fg;
+	if(mixup->bg != -1)
+		base->bg = mixup->bg;
+	base->attr |= mixup->attr;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

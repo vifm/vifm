@@ -104,7 +104,6 @@ init_config(void)
 	cfg.timeout_len = 1000;
 	cfg.scroll_off = 0;
 	cfg.gdefault = 0;
-	cfg.cursor_line = CL_NORMAL;
 
 	p = getenv("SHELL");
 	if(p == NULL || *p == '\0')
@@ -750,7 +749,6 @@ write_info_file(void)
 		fputs("\n# Options:\n", fp);
 		fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
 		fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
-		fprintf(fp, "=cursorline=%s\n", cursorline_enum[cfg.cursor_line]);
 		fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
 		fprintf(fp, "=%sfollowlinks\n", cfg.follow_links ? "" : "no");
 		fprintf(fp, "=fusehome=%s\n", escape_spaces(cfg.fuse_home));

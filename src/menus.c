@@ -104,6 +104,8 @@ clean_menu_position(menu_info *m)
 {
 	int x, y, z;
 	char * buf = (char *)NULL;
+	Col_attr col;
+	int type = MENU_COLOR;
 
 	getmaxyx(menu_win, y, x);
 
@@ -124,10 +126,16 @@ clean_menu_position(menu_info *m)
 	buf[x] = ' ';
 	buf[x + 1] = '\0';
 
+	col = cfg.cs.color[WIN_COLOR];
+
 	if(cfg.hl_search && m->matches != NULL && m->matches[m->pos])
-		wattron(menu_win, COLOR_PAIR(DCOLOR_BASE + SELECTED_COLOR));
-	else
-		wattron(menu_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR));
+	{
+		mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
+		type = SELECTED_COLOR;
+	}
+
+	init_pair(DCOLOR_BASE + type, col.fg, col.bg);
+	wattrset(menu_win, COLOR_PAIR(type + DCOLOR_BASE) | col.attr);
 
 	if(strlen(m->data[m->pos]) > x - 4)
 	{
@@ -142,10 +150,7 @@ clean_menu_position(menu_info *m)
 	}
 	waddstr(menu_win, " ");
 
-	if(cfg.hl_search && m->matches != NULL && m->matches[m->pos])
-		wattroff(menu_win, COLOR_PAIR(DCOLOR_BASE + SELECTED_COLOR));
-	else
-		wattroff(menu_win, COLOR_PAIR(DCOLOR_BASE + CURR_LINE_COLOR) | A_BOLD);
+	wattroff(menu_win, COLOR_PAIR(type + DCOLOR_BASE) | col.attr);
 
 	free(buf);
 }
@@ -302,8 +307,7 @@ move_to_menu_pos(int pos, menu_info *m)
 	int redraw = 0;
 	int x, y, z;
 	char * buf = (char *)NULL;
-	int attr;
-	short f, b, t;
+	Col_attr col;
 
 	getmaxyx(menu_win, y, x);
 
@@ -356,43 +360,15 @@ move_to_menu_pos(int pos, menu_info *m)
 	buf[x] = ' ';
 	buf[x + 1] = '\0';
 
+	col = cfg.cs.color[WIN_COLOR];
+
 	if(cfg.hl_search && m->matches != NULL && m->matches[pos])
-	{
-		if(cfg.cursor_line == CL_REVERSECOL)
-		{
-			pair_content(DCOLOR_BASE + SELECTED_COLOR, &f, &b);
-		}
-		else if(cfg.cursor_line == CL_UNDERLINED)
-		{
-			pair_content(DCOLOR_BASE + SELECTED_COLOR, &f, &b);
-		}
-		else
-		{
-			pair_content(DCOLOR_BASE + CURR_LINE_COLOR, &t, &b);
-			pair_content(DCOLOR_BASE + SELECTED_COLOR, &f, &t);
-		}
-	}
-	else
-	{
-		if(cfg.cursor_line == CL_REVERSECOL || cfg.cursor_line == CL_UNDERLINED)
-			pair_content(DCOLOR_BASE + WIN_COLOR, &f, &b);
-		else
-			pair_content(DCOLOR_BASE + CURR_LINE_COLOR, &f, &b);
-	}
-	init_pair(DCOLOR_BASE + MENU_CURRENT_COLOR, f, b);
-	attr = cfg.cs.color[CURR_LINE_COLOR].attr;
-	if(cfg.cursor_line == CL_UNDERLINED)
-	{
-		attr |= A_UNDERLINE;
-	}
-	else
-	{
-		if(cfg.cursor_line == CL_REVERSECOL)
-			attr |= A_REVERSE;
-		if(f != COLOR_WHITE)
-			attr |= A_BOLD;
-	}
-	wattron(menu_win, COLOR_PAIR(DCOLOR_BASE + MENU_CURRENT_COLOR) | attr);
+		mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
+
+	mix_colors(&col, &cfg.cs.color[CURR_LINE_COLOR]);
+
+	init_pair(DCOLOR_BASE + MENU_CURRENT_COLOR, col.fg, col.bg);
+	wattrset(menu_win, COLOR_PAIR(DCOLOR_BASE + MENU_CURRENT_COLOR) | col.attr);
 
 	if(strlen(m->data[pos]) > x - 4)
 	{
@@ -407,7 +383,7 @@ move_to_menu_pos(int pos, menu_info *m)
 	}
 	waddstr(menu_win, " ");
 
-	wattroff(menu_win, COLOR_PAIR(DCOLOR_BASE + MENU_CURRENT_COLOR) | attr);
+	wattroff(menu_win, COLOR_PAIR(DCOLOR_BASE + MENU_CURRENT_COLOR) | col.attr);
 
 	m->pos = pos;
 	free(buf);
@@ -901,13 +877,24 @@ draw_menu(menu_info *m)
 		int z;
 		char *buf;
 		char *ptr = NULL;
+		Col_attr col;
+		int type = WIN_COLOR;
+
 		chomp(m->data[x]);
 		if((ptr = strchr(m->data[x], '\n')) || (ptr = strchr(m->data[x], '\r')))
 			*ptr = '\0';
 		len = win_len + get_utf8_overhead(m->data[x]);
 
+		col = cfg.cs.color[WIN_COLOR];
+
 		if(cfg.hl_search && m->matches != NULL && m->matches[x])
-			wattron(menu_win, COLOR_PAIR(DCOLOR_BASE + SELECTED_COLOR));
+		{
+			mix_colors(&col, &cfg.cs.color[SELECTED_COLOR]);
+			type = SELECTED_COLOR;
+		}
+
+		init_pair(DCOLOR_BASE + type, col.fg, col.bg);
+		wattron(menu_win, COLOR_PAIR(DCOLOR_BASE + type) | col.attr);
 
 		buf = strdup(m->data[x]);
 		for(z = 0; buf[z] != '\0'; z++)
@@ -928,8 +915,7 @@ draw_menu(menu_info *m)
 
 		free(buf);
 
-		if(cfg.hl_search && m->matches != NULL && m->matches[x])
-			wattroff(menu_win, COLOR_PAIR(DCOLOR_BASE + SELECTED_COLOR));
+		wattroff(menu_win, COLOR_PAIR(DCOLOR_BASE + type) | col.attr);
 
 		x++;
 

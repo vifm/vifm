@@ -2,8 +2,6 @@ const char *tags[] = {
 	"vifm-'autochpos'",
 	"vifm-'cf'",
 	"vifm-'confirm'",
-	"vifm-'cur'",
-	"vifm-'cursorline'",
 	"vifm-'fastrun'",
 	"vifm-'followlinks'",
 	"vifm-'fusehome'",

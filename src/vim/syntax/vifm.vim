@@ -44,23 +44,22 @@ syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
 syntax case match
 
 " Options
-syntax keyword vifmOption contained autochpos confirm cf cursorline cur fastrun
-		\ followlinks fusehome gdefault history hi hlsearch hls iec ignorecase ic
-		\ runexec scrolloff so shell sh smartcase scs sortnumbers timefmt timeoutlen
-		\ trash undolevels ul vicmd vixcmd vifminfo vimhelp wildmenu wmnu wrap sort
+syntax keyword vifmOption contained autochpos confirm cf fastrun followlinks \
+		\ fusehome gdefault history hi hlsearch hls iec ignorecase ic runexec
+		\ scrolloff so shell sh smartcase scs sortnumbers timefmt timeoutlen trash
+		\ undolevels ul vicmd vixcmd vifminfo vimhelp wildmenu wmnu wrap sort
 		\ sortorder
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun
-		\ nofollowlinks nohlsearch nohls noiec noignorecase noic noreversecol
-		\ norunexec nosmartcase noscs nosortnumbers notrash novimhelp nowildmenu
-		\ nowmnu nowrap
+		\ nofollowlinks nohlsearch nohls noiec noignorecase noic norunexec smartcase
+		\ nonoscs nosortnumbers notrash novimhelp nowildmenu wmnu nowrap
 
 " Inverted boolean options
 syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
-		\ invfollowlinks invhlsearch invhls inviec invignorecase invic invreversecol
-		\ invrunexec invsmartcase invscs invsortnumbers invtrash invvimhelp
-		\ invwildmenu invwmnu invwrap
+		\ invfollowlinks invhlsearch invhls inviec invignorecase invic runexec
+		\ invinvsmartcase invscs invsortnumbers invtrash invvimhelp wildmenu invwmnu
+		\ invinvwrap
 
 " Expressions
 syntax region vifmStatement start='^\s*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'

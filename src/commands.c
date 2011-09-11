@@ -3164,7 +3164,6 @@ highlight_cmd(const struct cmd_info *cmd_info)
 				return 1;
 			}
 			curr_stats.cs->color[pos].attr = attrs;
-			curr_stats.need_redraw = 1;
 		}
 		else
 		{
@@ -3174,6 +3173,7 @@ highlight_cmd(const struct cmd_info *cmd_info)
 	}
 	init_pair(curr_stats.cs_base + pos, curr_stats.cs->color[pos].fg,
 			curr_stats.cs->color[pos].bg);
+	curr_stats.need_redraw = 1;
 	return 0;
 }
 

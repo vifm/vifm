@@ -13,9 +13,6 @@
 
 	Returned Change dialog.
 
-	Added 'cursorline' option (affects the look of current line in views and
-	menus).
-
 	Added 'wildmenu' option.
 
 	Added 'ignorecase' option.

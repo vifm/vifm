@@ -84,6 +84,7 @@ const char * attrs_to_str(int attrs);
 void check_color_scheme(Col_scheme *cs);
 void assoc_dir(const char *name, const char *dir);
 void write_color_scheme_file(void);
+void mix_colors(Col_attr *base, const Col_attr *mixup);
 
 #endif
 
