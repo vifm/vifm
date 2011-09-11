@@ -938,7 +938,11 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	{
 		char buf[NAME_MAX];
 		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, filename);
+#ifndef _WIN32
 		shellout(buf, 1);
+#else
+		system(buf);
+#endif
 	}
 	else if(runnable)
 	{
