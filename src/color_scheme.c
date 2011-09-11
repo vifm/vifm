@@ -287,7 +287,8 @@ load_def_scheme(void)
 int
 check_directory_for_color_scheme(int left, const char *dir)
 {
-	char full[PATH_MAX];
+	char *p;
+	char t;
 
 	union {
 		char *name;
@@ -297,19 +298,35 @@ check_directory_for_color_scheme(int left, const char *dir)
 	if(dirs == NULL)
 		return DCOLOR_BASE;
 
-	if(tree_get_data(dirs, dir, &u.buf) != 0)
-		return DCOLOR_BASE;
-	if(!find_color_scheme(u.name))
-		return DCOLOR_BASE;
-
 	curr_stats.cs_base = left ? LCOLOR_BASE : RCOLOR_BASE;
 	curr_stats.cs = left ? &lwin.cs : &rwin.cs;
+	*curr_stats.cs = cfg.cs;
 
-	snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, u.name);
-	source_file(full);
+	p = (char *)dir;
+	do
+	{
+		char full[PATH_MAX];
+		t = *p;
+		*p = '\0';
+
+		if(tree_get_data(dirs, dir, &u.buf) != 0 || !find_color_scheme(u.name))
+		{
+			*p = t;
+			if((p = strchr(p + 1, '/')) == NULL)
+				p = (char *)dir + strlen(dir);
+			continue;
+		}
+
+		snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, u.name);
+		source_file(full);
+
+		*p = t;
+		if((p = strchr(p + 1, '/')) == NULL)
+			p = (char *)dir + strlen(dir);
+	} while(t != '\0');
+
 	check_color_scheme(curr_stats.cs);
 	load_color_pairs(curr_stats.cs_base, curr_stats.cs);
-
 	curr_stats.cs_base = DCOLOR_BASE;
 	curr_stats.cs = &cfg.cs;
 
