@@ -2712,7 +2712,12 @@ colorscheme_cmd(const struct cmd_info *cmd_info)
 		}
 		else
 		{
-			return load_color_scheme(cmd_info->argv[0]);
+			int ret = load_color_scheme(cmd_info->argv[0]);
+			lwin.cs = cfg.cs;
+			rwin.cs = cfg.cs;
+			redraw_lists();
+			update_all_windows();
+			return ret;
 		}
 	}
 	else
@@ -3654,9 +3659,13 @@ restore_cmd(const struct cmd_info *cmd_info)
 	cmd_group_end();
 	for(i = 0; i < curr_view->list_rows; i++)
 	{
+		char buf[NAME_MAX];
 		if(!curr_view->dir_entry[i].selected)
 			continue;
-		if(restore_from_trash(curr_view->dir_entry[i].name) == 0)
+
+		snprintf(buf, sizeof(buf), "%s", curr_view->dir_entry[i].name);
+		chosp(buf);
+		if(restore_from_trash(buf) == 0)
 			m++;
 	}
 
