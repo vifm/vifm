@@ -1,15 +1,15 @@
 CC := gcc
 
-CFLAGS := -c -g -O0 -Wall $(CFLAGS)
+CFLAGS := -c -g -O0 -Wall -Werror -MD $(CFLAGS)
 
 LDFLAGS := -all-static $(LDFLAGS)
 
 LIBS := -lregex -lpdcurses -lnetapi32
 
-vifm_SOURCES := background.c bookmarks.c cmdline.c cmds.c color_scheme.c \
-                commands.c completion.c config.c dir_stack.c file_info.c \
-                file_magic.c filelist.c fileops.c filetype.c keys.c log.c \
-                main_loop.c menu.c menus.c modes.c normal.c ops.c \
+vifm_SOURCES := background.c bookmarks.c change_dialog.c cmdline.c cmds.c \
+                color_scheme.c commands.c completion.c config.c dir_stack.c \
+                file_info.c file_magic.c filelist.c fileops.c filetype.c \
+                keys.c log.c main_loop.c menu.c menus.c modes.c normal.c ops.c \
                 opt_handlers.c options.c permissions_dialog.c registers.c \
                 search.c signals.c sort.c sort_dialog.c status.c tags.c \
                 trash.c tree.c ui.c undo.c utils.c version.c vifm.c visual.c
@@ -38,9 +38,12 @@ $(win_helper_EXECUTABLE): $(win_helper_OBJECTS)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
 config:
-	echo '#define VERSION "0.6.3"' > ../config.h
-#	echo '#define ENABLE_EXTENDED_KEYS' >> ../config.h
-#	echo '#define ENABLE_COMPATIBILITY_MODE' >> ../config.h
+	if [ ! -f ../config.h ] ; then \
+		echo '#define VERSION "0.6.3"' > ../config.h; \
+#		echo '#define ENABLE_EXTENDED_KEYS' >> ../config.h; \
+#		echo '#define ENABLE_COMPATIBILITY_MODE' >> ../config.h; \
+#		echo '#define HAVE_FILE_PROG' >> ../config.h; \
+	fi
 
 version:
 	if [ "x$$(whereis git)" != "x" ] ; then \
@@ -56,3 +59,5 @@ version:
 
 clean:
 	rm *.o
+
+include $(wildcard *.d)
