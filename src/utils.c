@@ -511,7 +511,7 @@ get_perm_string(char * buf, int len, mode_t mode)
 	if(mode & S_ISUID)
 		buf[3] = (buf[3] == '-') ? 'S' : 's';
 #else
-	snprintf(buf, len, "--WINDOWS--");
+	buf[0] = '\0';
 #endif
 }
 

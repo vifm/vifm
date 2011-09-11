@@ -33,9 +33,9 @@ static int get_file_mimetype(const char* filename, char* buf, size_t buf_sz);
 static char * get_handlers(const char* mime_type);
 #ifndef _WIN32
 static void enum_files(const char* path, const char* mime_type);
-#endif
 static void process_file(const char* path, const char* mime_type);
 static void expand_desktop(const char* str, char* buf);
+#endif
 
 char*
 get_magic_handlers(const char* file)
@@ -184,7 +184,6 @@ enum_files(const char *path, const char *mime_type)
 
 	closedir(dir);
 }
-#endif
 
 static void
 process_file(const char* path, const char *mime_type)
@@ -270,6 +269,7 @@ expand_desktop(const char* str, char* buf)
 		strcpy(buf + 1, "%f");
 	}
 }
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

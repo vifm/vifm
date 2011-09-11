@@ -117,7 +117,7 @@ get_id_string(FileView *view, size_t len, char *out_buf)
 
 	snprintf(out_buf, len, "  %s:%s", uid_buf, gid_buf);
 #else
-	snprintf(out_buf, len, "  IT'S WINDOWS");
+	out_buf[0] = '\0';
 #endif
 }
 

@@ -72,7 +72,8 @@ show_file_type(FileView *view, int curr_y)
 			mvwaddstr(menu_win, curr_y, 11, "Couldn't Resolve Link");
 		}
 	}
-	else if(S_ISREG(view->dir_entry[view->list_pos].mode))
+	else if(view->dir_entry[view->list_pos].type == EXECUTABLE ||
+			view->dir_entry[view->list_pos].type == REGULAR)
 	{
 #ifdef HAVE_FILE_PROG
 		FILE *pipe;
@@ -98,17 +99,13 @@ show_file_type(FileView *view, int curr_y)
 		if(strlen(buf) > x - 9)
 			mvwaddnstr(menu_win, curr_y + 1, 8, buf + x - 9, x - 9);
 #else /* #ifdef HAVE_FILE_PROG */
-#ifndef _WIN32
-		if((S_IXUSR & view->dir_entry[view->list_pos].mode)
-				|| (S_IXGRP & view->dir_entry[view->list_pos].mode)
-				|| (S_IXOTH & view->dir_entry[view->list_pos].mode))
+		if(view->dir_entry[view->list_pos].type == EXECUTABLE)
 			mvwaddstr(menu_win, curr_y, 8, "Executable");
 		else
 			mvwaddstr(menu_win, curr_y, 8, "Regular File");
-#endif
 #endif /* #ifdef HAVE_FILE_PROG */
 	}
-	else if(S_ISDIR(view->dir_entry[view->list_pos].mode))
+	else if(view->dir_entry[view->list_pos].type == DIRECTORY)
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Directory");
 	}
@@ -120,7 +117,7 @@ show_file_type(FileView *view, int curr_y)
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Block Device");
 	}
-	else if(S_ISFIFO(view->dir_entry[view->list_pos].mode))
+	else if(view->dir_entry[view->list_pos].type == FIFO)
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
 	}
@@ -226,9 +223,11 @@ redraw_full_file_properties(FileView *v)
 	curr_y += show_file_type(view, curr_y);
 	curr_y += show_mime_type(view, curr_y);
 
+#ifndef _WIN32
 	mvwaddstr(menu_win, curr_y, 2, "Permissions: ");
 	mvwaddstr(menu_win, curr_y, 15, perm_buf);
 	curr_y += 2;
+#endif
 
 	mvwaddstr(menu_win, curr_y, 2, "Modified: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
@@ -248,17 +247,17 @@ redraw_full_file_properties(FileView *v)
 	mvwaddstr(menu_win, curr_y, 13, buf);
 	curr_y += 2;
 
+#ifndef _WIN32
 	mvwaddstr(menu_win, curr_y, 2, "Owner: ");
 	mvwaddstr(menu_win, curr_y, 10, uid_buf);
 	curr_y += 2;
 
 	mvwaddstr(menu_win, curr_y, 2, "Group: ");
-#ifndef _WIN32
 	if((grp_buf = getgrgid(view->dir_entry[view->list_pos].gid)) != NULL)
 		mvwaddstr(menu_win, curr_y, 10, grp_buf->gr_name);
-#else
 	mvwaddstr(menu_win, curr_y, 10, "NOT AVAILABLE ON WINDOWS");
 #endif
+
 	wnoutrefresh(menu_win);
 
 	box(menu_win, 0, 0);
