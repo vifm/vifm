@@ -14,12 +14,11 @@ set cpo-=C
 
 " General commands
 syntax keyword vifmCommand contained alink apropos cd change chmod chown clone
-		\ colo[rscheme] co[py] d[elete] delm[arks] di[splay] dirs e[dit] empty
-		\ exi[t] file filter fin[d] gr[ep] h[elp] hi[ghlight] his[tory] invert
-		\ jobs locate ls marks mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd
-		\ q[uit] reg[isters] rename restart restore rlink screen se[t] sh[ell]
-		\ sor[t] sp[lit] s[ubstitute] touch tr sync undol[ist] ve[rsion] vie[w] vifm
-		\ w[rite] wq x[it] y[ank]
+		\ co[py] d[elete] delm[arks] di[splay] dirs e[dit] empty exi[t] file filter
+		\ fin[d] gr[ep] h[elp] hi[ghlight] his[tory] invert jobs locate ls marks
+		\ mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd q[uit] reg[isters] rename
+		\ restart restore rlink screen se[t] sh[ell] sor[t] sp[lit] s[ubstitute]
+		\ touch tr sync undol[ist] ve[rsion] vie[w] vifm w[rite] wq x[it] y[ank]
 
 " Map commands
 syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map nm[ap]
@@ -28,6 +27,7 @@ syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map nm[ap]
 
 " Other commands
 syntax keyword vifmCmdCommand contained com[mand]
+syntax keyword vifmColoCommand contained colo[rscheme]
 syntax keyword vifmMarkCommand contained ma[rk]
 syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
 
@@ -70,6 +70,8 @@ syntax region vifmStatement start='^\s*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 syntax region vifmCmdCommandSt start='^\s*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend contains=vifmCmdCommand,vifmComment
+syntax region vifmColoCommandSt start='^\s*colo\%[rscheme]\>' end='$' keepend
+		\ oneline contains=vifmColoCommand
 syntax region vifmMarkCommandSt start='^\s*ma\%[rk]\>' end='$' keepend oneline
 		\ contains=vifmMarkCommand
 syntax region vifmFtCommandSt start='^\s*file[tvx]'
@@ -110,6 +112,7 @@ syntax match vifmEmpty /^\s*$/
 highlight link vifmComment Comment
 highlight link vifmCommand Statement
 highlight link vifmCmdCommand Statement
+highlight link vifmColoCommand Statement
 highlight link vifmMarkCommand Statement
 highlight link vifmFtCommand Statement
 highlight link vifmMap Statement
