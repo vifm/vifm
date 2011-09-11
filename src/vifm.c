@@ -295,7 +295,9 @@ run_converter(int vifm_like)
 		return -1;
 
 	*(_tcsrchr(buf, _T('\\')) + 1) = _T('\0');
-	if(vifm_like)
+	if(vifm_like == 2)
+		_tcscat(buf, _T("vifmrc-converter 2"));
+	else if(vifm_like == 1)
 		_tcscat(buf, _T("vifmrc-converter 1"));
 	else
 		_tcscat(buf, _T("vifmrc-converter 0"));
