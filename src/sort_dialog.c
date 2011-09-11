@@ -190,7 +190,7 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	leave_sort_mode();
 
-	for(i = 0; i < sizeof(indexes); i++)
+	for(i = 0; i < ARRAY_LEN(indexes); i++)
 		if(indexes[i] == curr - 2)
 			break;
 	change_sort_type(view, i, descending);

@@ -129,7 +129,7 @@ check_color_scheme(Col_scheme *cs)
 		return;
 
 	cs->defaulted = 1;
-	for(i = 0; i < ARRAY_LEN(cs->color); i++)
+	for(i = 0; i < ARRAY_LEN(default_colors); i++)
 	{
 		cs->color[i].fg = default_colors[i][0];
 		cs->color[i].bg = default_colors[i][1];

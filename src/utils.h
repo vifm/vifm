@@ -36,7 +36,7 @@
 #endif
 
 #ifndef WIFEXITED
-#define WIFEXITED(a) (a)
+#define WIFEXITED(a) 1
 #endif
 
 #ifdef _WIN32

@@ -81,13 +81,13 @@ compare_file_names(const char *s, const char *t, int ignore_case)
 		t = t_buf;
 		strtoupper(t_buf);
 	}
+#ifndef _WIN32
 	if(!cfg.sort_numbers)
 		return strcmp(s, t);
 	else
-#ifndef _WIN32
 		return strverscmp(s, t);
 #else
-		return strcmp(s, t);
+	return strcmp(s, t);
 #endif
 }
 
