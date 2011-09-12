@@ -868,7 +868,6 @@ show_progress(const char *msg, int period)
 	pause = 1;
 
 	status_bar_messagef("%s %c", msg, marks[count]);
-	wrefresh(status_bar);
 
 	count = (count + 1) % sizeof(marks);
 }

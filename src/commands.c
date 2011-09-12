@@ -998,8 +998,6 @@ post(int id)
 		return;
 	if((curr_view != NULL && !curr_view->selected_files) || !need_clean_selection)
 		return;
-	if(get_mode() != NORMAL_MODE)
-		return;
 
 	clean_selected_files(curr_view);
 	load_saving_pos(curr_view, 1);
@@ -2909,6 +2907,7 @@ empty_cmd(const struct cmd_info *cmd_info)
 static int
 file_cmd(const struct cmd_info *cmd_info)
 {
+	need_clean_selection = 0;
 	return show_filetypes_menu(curr_view, cmd_info->bg) != 0;
 }
 
