@@ -2313,6 +2313,9 @@ calc_dirsize(const char *path, int force_update)
 		snprintf(buf, sizeof (buf), "%s%s%s", path, slash, dentry->d_name);
 #ifndef _WIN32
 		if(dentry->d_type == DT_DIR)
+#else
+		if(is_dir(buf))
+#endif
 		{
 			unsigned long long dir_size = 0;
 			if(tree_get_data(curr_stats.dirsize_cache, buf, &dir_size) != 0
@@ -2321,7 +2324,6 @@ calc_dirsize(const char *path, int force_update)
 			size += dir_size;
 		}
 		else
-#endif
 		{
 			struct stat st;
 			if(lstat(buf, &st) == 0)
