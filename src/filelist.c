@@ -234,8 +234,11 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
 		type = CURRENT_COLOR;
 	}
+	else
+	{
+		init_pair(view->color_scheme + type, col.fg, col.bg);
+	}
 
-	init_pair(view->color_scheme + type, col.fg, col.bg);
 	wattron(view->win, COLOR_PAIR(type + view->color_scheme) | col.attr);
 
 	mvwaddstr(view->win, y, view->window_width - strlen(buf), buf);
@@ -774,6 +777,13 @@ erase_current_line_bar(FileView *view)
 	LINE_COLOR = get_line_color(view, old_pos);
 	col = view->cs.color[WIN_COLOR];
 	mix_colors(&col, &view->cs.color[LINE_COLOR]);
+
+	if(view->dir_entry[view->list_pos].selected)
+	{
+		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+		LINE_COLOR = SELECTED_COLOR;
+	}
+
 	init_pair(view->color_scheme + LINE_COLOR, col.fg, col.bg);
 
 	wattrset(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
@@ -895,7 +905,7 @@ move_to_list_pos(FileView *view, int pos)
 		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
 
 	init_pair(view->color_scheme + CURRENT_COLOR, col.fg, col.bg);
-	wattrset(view->win,
+	wattron(view->win,
 			COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
 
 	/* Blank the current line and
