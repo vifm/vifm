@@ -64,6 +64,8 @@ tree_create(int longest, int mem)
 void
 tree_free(tree_t tree)
 {
+	if(tree == NULL)
+		return;
 	nodes_free(&tree->node);
 }
 

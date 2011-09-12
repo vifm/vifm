@@ -269,6 +269,9 @@ load_color_schemes(void)
 void
 load_def_scheme(void)
 {
+	tree_free(dirs);
+	dirs = NULL;
+
 	init_color_scheme(&cfg.cs);
 	init_color_scheme(&lwin.cs);
 	lwin.color_scheme = LCOLOR_BASE;
