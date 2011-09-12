@@ -750,7 +750,7 @@ erase_current_line_bar(FileView *view)
 {
 	int old_cursor = view->curr_line;
 	int old_pos = view->top_line + old_cursor;
-	char file_name[view->window_width*2 -2];
+	char file_name[view->window_width*2 - 2];
 	int LINE_COLOR;
 	size_t print_width;
 	Col_attr col;
@@ -760,12 +760,11 @@ erase_current_line_bar(FileView *view)
 
 	/* Extra long file names are truncated to fit */
 
-	if((old_pos > -1)  && (old_pos < view->list_rows))
+	if(old_pos >= 0 && old_pos < view->list_rows)
 	{
 		print_width = get_real_string_width(view->dir_entry[old_pos].name,
 				view->window_width - 2) + 2;
-		snprintf(file_name, print_width, "%s",
-				view->dir_entry[old_pos].name);
+		snprintf(file_name, print_width, "%s", view->dir_entry[old_pos].name);
 	}
 	else /* The entire list is going to be redrawn so just return. */
 		return;
@@ -778,7 +777,7 @@ erase_current_line_bar(FileView *view)
 	col = view->cs.color[WIN_COLOR];
 	mix_colors(&col, &view->cs.color[LINE_COLOR]);
 
-	if(view->dir_entry[view->list_pos].selected)
+	if(view->dir_entry[old_cursor].selected)
 	{
 		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
 		LINE_COLOR = SELECTED_COLOR;
@@ -877,11 +876,11 @@ move_to_list_pos(FileView *view, int pos)
 	if(view->curr_line > view->list_rows - 1)
 		view->curr_line = view->list_rows - 1;
 
+	view->list_pos = pos;
+
 	erase_current_line_bar(view);
 
 	redraw = move_curr_line(view, pos);
-
-	view->list_pos = pos;
 
 	if(curr_stats.vifm_started < 2)
 		return;
@@ -901,8 +900,7 @@ move_to_list_pos(FileView *view, int pos)
 	if(view->dir_entry[pos].selected)
 		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
 
-	if(pos == view->list_pos)
-		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+	mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
 
 	init_pair(view->color_scheme + CURRENT_COLOR, col.fg, col.bg);
 	wattron(view->win,

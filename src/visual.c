@@ -784,7 +784,7 @@ select_down_one(FileView *view, int start_pos)
 	}
 	else if(view->list_pos == 0)
 	{
-		if (start_pos == 0)
+		if(start_pos == 0)
 			view->selected_files = 0;
 	}
 	else if (view->list_pos == 1 && start_pos != 0)
@@ -799,12 +799,12 @@ select_down_one(FileView *view, int start_pos)
 	else if(view->list_pos == start_pos)
 	{
 		view->dir_entry[view->list_pos].selected = 1;
-		view->dir_entry[view->list_pos -1].selected = 0;
+		view->dir_entry[view->list_pos - 1].selected = 0;
 		view->selected_files = 1;
 	}
 	else
 	{
-		view->dir_entry[view->list_pos -1].selected = 0;
+		view->dir_entry[view->list_pos - 1].selected = 0;
 		view->selected_files--;
 	}
 }
