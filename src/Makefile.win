@@ -1,6 +1,6 @@
 CC := gcc
 
-CFLAGS := -c -g -O0 -Wall -Werror -MD $(CFLAGS)
+CFLAGS := -c -g -O0 -Wall -MD $(CFLAGS)
 
 LDFLAGS := -all-static $(LDFLAGS)
 

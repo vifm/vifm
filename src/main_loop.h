@@ -21,6 +21,7 @@
 
 void main_loop(void);
 void update_input_buf(void);
+int is_input_buf_empty(void);
 
 #endif
 

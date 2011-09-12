@@ -26,6 +26,7 @@
 #include "filelist.h"
 #include "keys.h"
 #include "macros.h"
+#include "main_loop.h"
 #include "menu.h"
 #include "normal.h"
 #include "permissions_dialog.h"
@@ -233,10 +234,13 @@ modes_update(void)
 }
 
 void
-add_to_input_bar(wchar_t c)
+modupd_input_bar(wchar_t *str)
 {
+	if(mode == VISUAL_MODE)
+		clear_input_bar();
+
 	if(uses_input_bar[mode])
-		update_input_bar(c);
+		update_input_bar(str);
 }
 
 void
@@ -255,9 +259,22 @@ get_mode(void)
 void
 print_selected_msg(void)
 {
-	status_bar_messagef("%s%d %s selected",
-			(mode == VISUAL_MODE) ? "-- VISUAL -- " : "", curr_view->selected_files,
-			curr_view->selected_files == 1 ? "file" : "files");
+	if(mode == VISUAL_MODE)
+	{
+		status_bar_message("-- VISUAL -- ");
+		if(is_input_buf_empty())
+		{
+			werase(input_win);
+			wmove(input_win, 0, 0);
+			wprintw(input_win, "%d", curr_view->selected_files);
+			wrefresh(input_win);
+		}
+	}
+	else
+	{
+		status_bar_messagef("%d %s selected", curr_view->selected_files,
+				curr_view->selected_files == 1 ? "file" : "files");
+	}
 	curr_stats.save_msg = 2;
 }
 

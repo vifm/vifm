@@ -816,20 +816,18 @@ update_all_windows(void)
 }
 
 void
-update_input_bar(wchar_t c)
+update_input_bar(wchar_t *str)
 {
-	wchar_t buf[] = {c, '\0'};
-
 	if(!curr_stats.use_input_bar)
 		return;
 
-	if(getcurx(input_win) == getmaxx(input_win) - 1)
+	if(getcurx(input_win) >= getmaxx(input_win) - wcslen(str))
 	{
 		mvwdelch(input_win, 0, 0);
-		wmove(input_win, 0, getmaxx(input_win) - 2);
+		wmove(input_win, 0, getmaxx(input_win) - wcslen(str) - 1);
 	}
 
-	waddwstr(input_win, buf);
+	waddwstr(input_win, str);
 	wrefresh(input_win);
 }
 

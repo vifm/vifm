@@ -161,7 +161,7 @@ main_loop(void)
 			if(last_result == KEYS_WAIT || last_result == KEYS_WAIT_SHORT)
 			{
 				if(ret != ERR)
-					add_to_input_bar(c);
+					modupd_input_bar(buf);
 				if(last_result == KEYS_WAIT_SHORT && wcscmp(buf, L"\033") == 0)
 					wtimeout(status_bar, 0);
 				if(counter > 0)
@@ -194,6 +194,12 @@ update_input_buf(void)
 {
 	wprintw(input_win, "%ls", buf);
 	wrefresh(input_win);
+}
+
+int
+is_input_buf_empty(void)
+{
+	return pos == 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
