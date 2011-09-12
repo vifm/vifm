@@ -128,7 +128,7 @@ op_removesl(void *data, const char *src, const char *dst)
 			.pFrom = src,
 			.pTo = NULL,
 			.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI |
-				FOF_NOCONFIRMMKDIR,
+					FOF_NOCONFIRMMKDIR,
 		};
 		return SHFileOperation(&fo);
 	}
@@ -343,8 +343,36 @@ op_mkdir(void *data, const char *src, const char *dst)
 	free(escaped);
 	return background_and_wait_for_errors(cmd);
 #else
-	/* TODO: implement Windows version */
-	return -1;
+	if(data == NULL)
+	{
+		return CreateDirectory(src, NULL) == 0;
+	}
+	else
+	{
+		char *p;
+		char t;
+
+		p = strchr(src + 2, '/');
+		do
+		{
+			t = *p;
+			*p = '\0';
+
+			if(!is_dir(src))
+			{
+				if(!CreateDirectory(src, NULL))
+				{
+					*p = t;
+					return -1;
+				}
+			}
+
+			*p = t;
+			if((p = strchr(p + 1, '/')) == NULL)
+				p = (char *)src + strlen(src);
+		} while(t != '\0');
+		return 0;
+	}
 #endif
 }
 
@@ -360,8 +388,7 @@ op_rmdir(void *data, const char *src, const char *dst)
 	free(escaped);
 	return background_and_wait_for_errors(cmd);
 #else
-	/* TODO: implement Windows version */
-	return -1;
+	return RemoveDirectory(src) == 0;
 #endif
 }
 
@@ -377,8 +404,14 @@ op_mkfile(void *data, const char *src, const char *dst)
 	free(escaped);
 	return background_and_wait_for_errors(cmd);
 #else
-	/* TODO: implement Windows version */
-	return -1;
+	HANDLE hfile;
+
+	hfile = CreateFileA(src, 0, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+	if(hfile == INVALID_HANDLE_VALUE)
+		return -1;
+
+	CloseHandle(hfile);
+	return 0;
 #endif
 }
 

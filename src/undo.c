@@ -725,6 +725,17 @@ get_op_desc(struct op_t op)
 		case OP_SYMLINK2:
 			snprintf(buf, sizeof(buf), "ln -s %s to %s", op.src, op.dst);
 			break;
+		case OP_MKDIR:
+			snprintf(buf, sizeof(buf), "mkdir %s%s", op.src,
+					(op.data == NULL) ? "" : "-p ");
+			break;
+		case OP_RMDIR:
+			snprintf(buf, sizeof(buf), "rmdir %s", op.src);
+			break;
+		case OP_MKFILE:
+			snprintf(buf, sizeof(buf), "touch %s", op.src);
+			break;
+
 		default:
 			strcpy(buf, "ERROR, update get_op_desc() function");
 			break;
