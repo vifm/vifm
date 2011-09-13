@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@gmail.com>
-" Last Change: September 11, 2011
+" Last Change: September 13, 2011
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -44,7 +44,7 @@ syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
 syntax case match
 
 " Options
-syntax keyword vifmOption contained autochpos confirm cf fastrun followlinks \
+syntax keyword vifmOption contained autochpos confirm cf fastrun followlinks
 		\ fusehome gdefault history hi hlsearch hls iec ignorecase ic runexec
 		\ scrolloff so shell sh smartcase scs sortnumbers timefmt timeoutlen trash
 		\ undolevels ul vicmd vixcmd vifminfo vimhelp wildmenu wmnu wrap sort
@@ -83,7 +83,7 @@ syntax region vifmCommands start=':' end='$' keepend oneline
 syntax match vifmMapLhs /\S\+/ contained contains=vifmNotation
 		\ nextgroup=vifmMapRhs
 syntax match vifmMapRhs /\s\+\S\+/ contained
-		\ contains=vifmNotation,vifmCommand,vifmExecute
+		\ contains=vifmNotation,vifmCommand,vifmExecute,vifmOption
 syntax region vifmHi matchgroup=vifmCommand
 		\ start='\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
