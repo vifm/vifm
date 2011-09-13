@@ -61,6 +61,8 @@
 
 static int status_bar_lines;
 
+static void update_attributes(void);
+
 static void _gnuc_noreturn
 finish(const char *message)
 {
@@ -640,6 +642,7 @@ void
 redraw_window(void)
 {
 	resize_all();
+	update_attributes();
 	werase(lborder);
 	werase(mborder);
 	werase(rborder);
@@ -885,7 +888,6 @@ int
 load_color_scheme(const char *name)
 {
 	char full[PATH_MAX];
-	int attr;
 
 	if(!find_color_scheme(name))
 	{
@@ -901,6 +903,25 @@ load_color_scheme(const char *name)
 	source_file(full);
 	strcpy(cfg.cs.name, name);
 	check_color_scheme(&cfg.cs);
+
+	update_attributes();
+
+	if(curr_stats.vifm_started < 2)
+		return 0;
+
+	if(cfg.cs.defaulted)
+	{
+		load_color_schemes();
+		show_error_msg("Color Scheme Error", "Not supported by the terminal");
+		return 1;
+	}
+	return 0;
+}
+
+static void
+update_attributes(void)
+{
+	int attr;
 
 	attr = cfg.cs.color[BORDER_COLOR].attr;
 	wbkgdset(lborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) | attr);
@@ -933,17 +954,6 @@ load_color_scheme(const char *name)
 	wbkgdset(sort_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR) | attr);
 	wbkgdset(change_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR) | attr);
 	wbkgdset(error_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR) | attr);
-
-	if(curr_stats.vifm_started < 2)
-		return 0;
-
-	if(cfg.cs.defaulted)
-	{
-		load_color_schemes();
-		show_error_msg("Color Scheme Error", "Not supported by the terminal");
-		return 1;
-	}
-	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
