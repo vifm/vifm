@@ -1838,7 +1838,7 @@ prompt_dest_name(const char *src_name)
 #ifndef _WIN32
 	swprintf(buf, ARRAY_LEN(buf), L"New name for %s: ", src_name);
 #else
-	swprintf(buf, L"New name for %s: ", src_name);
+	swprintf(buf, L"New name for %S: ", src_name);
 #endif
 	enter_prompt_mode(buf, src_name, put_confirm_cb);
 }
