@@ -1130,7 +1130,11 @@ split_path(void)
 		char *s;
 
 		p++;
+#ifndef _WIN32
 		q = strchr(p, ':');
+#else
+		q = strchr(p, ';');
+#endif
 		if(q == NULL)
 		{
 			q = p + strlen(p);
