@@ -1190,7 +1190,24 @@ char *
 realpath(const char *path, char *buf)
 {
 	if(get_link_target(path, buf, PATH_MAX) != 0)
-		strcpy(buf, path);
+	{
+		int i;
+
+		buf[0] = '\0';
+		if(GetCurrentDirectory(PATH_MAX, buf) > 0)
+		{
+			for(i = 0; buf[i] != '\0'; i++)
+			{
+				if(buf[i] == '\\')
+					buf[i] = '/';
+			}
+
+			chosp(buf);
+			strcat(buf, "/");
+		}
+
+		strcat(buf, path);
+	}
 	return buf;
 }
 
