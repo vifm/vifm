@@ -103,7 +103,7 @@ static void
 init_color_scheme(Col_scheme *cs)
 {
 	int i;
-	strcpy(cs->name, "Default");
+	strcpy(cs->name, "built-in default");
 	strcpy(cs->dir, "/");
 	cs->defaulted = 0;
 
