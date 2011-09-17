@@ -50,7 +50,7 @@ init_status(void)
 	curr_stats.auto_redraws = 0;
 	curr_stats.cs_base = DCOLOR_BASE;
 	curr_stats.cs = &cfg.cs;
-	strcpy(curr_stats.color_scheme, "Default");
+	strcpy(curr_stats.color_scheme, "");
 
 #ifdef HAVE_LIBGTK
 	curr_stats.gtk_available = 0;

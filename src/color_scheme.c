@@ -145,6 +145,9 @@ find_color_scheme(const char *name)
 	DIR *dir;
 	struct dirent *d;
 
+	if(name[0] == '\0')
+		return 0;
+
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
 
 	dir = opendir(colors_dir);
