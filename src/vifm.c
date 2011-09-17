@@ -397,7 +397,11 @@ main(int argc, char *argv[])
 	snprintf(config_dir, sizeof(config_dir), "%s/vifmrc", cfg.config_dir);
 
 	/* Check if running in X */
+#ifndef _WIN32
 	console = getenv("DISPLAY");
+#else
+	console = "WIN";
+#endif
 	if(!console || !*console)
 		curr_stats.is_console = 1;
 
