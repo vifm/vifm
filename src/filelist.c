@@ -777,7 +777,7 @@ erase_current_line_bar(FileView *view)
 	col = view->cs.color[WIN_COLOR];
 	mix_colors(&col, &view->cs.color[LINE_COLOR]);
 
-	if(view->dir_entry[old_cursor].selected)
+	if(view->dir_entry[old_pos].selected)
 	{
 		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
 		LINE_COLOR = SELECTED_COLOR;
