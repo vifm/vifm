@@ -151,7 +151,8 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 		if(!cfg.hl_search)
 		{
 			view->matches = found;
-			status_bar_messagef("%d matching files for %s", found, view->regexp);
+			status_bar_messagef("%d matching file%s for %s", found,
+					(found == 1) ? "" : "s", view->regexp);
 			return 1;
 		}
 		return 0;
