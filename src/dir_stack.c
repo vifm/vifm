@@ -95,6 +95,7 @@ swap_dirs(void)
 		load_dir_list(&rwin, 0);
 
 	move_to_list_pos(curr_view, curr_view->list_pos);
+	wrefresh(other_view->win);
 
 	free_entry(&item);
 	return 0;
