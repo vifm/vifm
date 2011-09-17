@@ -1410,7 +1410,8 @@ stop_completion(void)
 
 	input_stat.complete_continue = 0;
 	reset_completion();
-	if(cfg.wild_menu && sub_mode == CMD_SUBMODE)
+	if(cfg.wild_menu &&
+			(sub_mode != MENU_CMD_SUBMODE && input_stat.complete != NULL))
 		update_stat_window(curr_view);
 }
 

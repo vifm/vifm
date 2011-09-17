@@ -31,6 +31,15 @@ enum {
 	GET_VBSEARCH_PATTERN,
 };
 
+/* values of type argument for filename_completion() function */
+enum {
+	FNC_ALL,      /* all files and directories */
+	FNC_ALL_WOE,  /* all files and directories without escaping */
+	FNC_DIRONLY,  /* only directories */
+	FNC_EXECONLY, /* only executable files */
+	FNC_DIREXEC   /* directories and executable files */
+};
+
 void init_commands(void);
 int exec_commands(char *cmd, FileView *view, int save_hist, int type);
 int exec_command(char *cmd, FileView *view, int type);
@@ -48,6 +57,7 @@ void save_prompt_history(const char *line);
 char * edit_selection(FileView *view, int *bg);
 void complete_user_name(const char *str);
 void complete_group_name(const char *str);
+void filename_completion(const char *str, int type);
 
 #ifdef TEST
 #include "cmds.h"

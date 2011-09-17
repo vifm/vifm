@@ -1819,6 +1819,20 @@ change_link_cb(const char *new_target)
 	cmd_group_end();
 }
 
+static int
+complete_filename(const char *str)
+{
+	const char *slash;
+
+	slash = strrchr(str, '/');
+	if(slash == NULL)
+		slash = str;
+	else
+		slash++;
+	filename_completion(str, FNC_ALL_WOE);
+	return slash - str;
+}
+
 int
 change_link(FileView *view)
 {
@@ -1840,7 +1854,8 @@ change_link(FileView *view)
 		return 0;
 	}
 
-	enter_prompt_mode(L"Link target: ", linkto, change_link_cb, NULL);
+	enter_prompt_mode(L"Link target: ", linkto, change_link_cb,
+			&complete_filename);
 	return 0;
 }
 

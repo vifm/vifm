@@ -87,14 +87,6 @@
 #define PAUSE_STR
 #endif
 
-/* values of type argument for filename_completion() function */
-enum {
-	FNC_ALL,      /* all files and directories */
-	FNC_DIRONLY,  /* only directories */
-	FNC_EXECONLY, /* only executable files */
-	FNC_DIREXEC   /* directories and executable files */
-};
-
 enum {
 	/* commands without completion */
 	COM_FILTER = -100,
@@ -129,7 +121,6 @@ static
 #endif
 void select_range(int id, const struct cmd_info *cmd_info);
 static void exec_completion(const char *str);
-static void filename_completion(const char *str, int type);
 static void complete_help(const char *str);
 static void complete_history(const char *str);
 static int complete_chown(const char *str);
@@ -573,7 +564,7 @@ escape_for_cd(const char *str)
 /*
  * type: FNC_*
  */
-static void
+void
 filename_completion(const char *str, int type)
 {
 	/* TODO refactor filename_completion(...) function */
@@ -701,13 +692,15 @@ filename_completion(const char *str, int type)
 			free(tempfile);
 		}
 		else
+		{
 			temp = strdup(d->d_name);
+		}
 
 		if(isdir)
 		{
 			char * tempfile = (char *)NULL;
-			tempfile = (char *) malloc((strlen(d->d_name) + 2) * sizeof(char));
-			if(!tempfile)
+			tempfile = malloc((strlen(d->d_name) + 2) * sizeof(char));
+			if(tempfile == NULL)
 			{
 				closedir(dir);
 				(void)chdir(curr_view->curr_dir);
@@ -722,7 +715,7 @@ filename_completion(const char *str, int type)
 			free(tempfile);
 		}
 #ifndef _WIN32
-		escaped = escape_filename(temp, 1);
+		escaped = (type == FNC_ALL_WOE) ? strdup(temp) : escape_filename(temp, 1);
 		add_completion(escaped);
 		free(escaped);
 #else
@@ -743,7 +736,8 @@ filename_completion(const char *str, int type)
 		else
 		{
 #ifndef _WIN32
-			temp = escape_filename(filename, 1);
+			temp = (type == FNC_ALL_WOE) ? strdup(filename) :
+					escape_filename(filename, 1);
 			add_completion(temp);
 			free(temp);
 #else
