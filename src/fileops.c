@@ -2381,7 +2381,7 @@ calc_dirsize(const char *path, int force_update)
 		{
 			struct stat st;
 			if(lstat(buf, &st) == 0)
-				size += st.st_size;
+				size += (size_t)st.st_size;
 		}
 	}
 
