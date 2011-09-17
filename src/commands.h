@@ -46,6 +46,8 @@ void save_command_history(const char *command);
 void save_search_history(const char *pattern);
 void save_prompt_history(const char *line);
 char * edit_selection(FileView *view, int *bg);
+void complete_user_name(const char *str);
+void complete_group_name(const char *str);
 
 #ifdef TEST
 #include "cmds.h"

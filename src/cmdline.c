@@ -74,6 +74,7 @@ struct line_stats
 	int hist_search_len;      /* length of history search pattern */
 	wchar_t *line_buf;        /* content of line before using history */
 	int reverse_completion;
+	complete_cmd_func complete;
 };
 
 #endif
@@ -89,7 +90,8 @@ static int def_handler(wchar_t key);
 static void update_cmdline_size(void);
 static void update_cmdline_text(void);
 static wchar_t * wcsins(wchar_t *src, wchar_t *ins, int pos);
-static void prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd);
+static void prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
+		complete_cmd_func complete);
 static void leave_cmdline_mode(void);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_h(struct key_info, struct keys_info *);
@@ -326,11 +328,12 @@ enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
 	else
 		prompt = L"E";
 
-	prepare_cmdline_mode(prompt, cmd);
+	prepare_cmdline_mode(prompt, cmd, complete_cmd);
 }
 
 void
-enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb)
+enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb,
+		complete_cmd_func complete)
 {
 	wchar_t *buf;
 
@@ -341,7 +344,7 @@ enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb)
 	if(buf == NULL)
 		return;
 
-	prepare_cmdline_mode(prompt, buf);
+	prepare_cmdline_mode(prompt, buf, complete);
 	free(buf);
 }
 
@@ -371,7 +374,8 @@ redraw_cmdline(void)
 }
 
 static void
-prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
+prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
+		complete_cmd_func complete)
 {
 	int attr;
 
@@ -391,6 +395,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd)
 	input_stat.history_search = HIST_NONE;
 	input_stat.line_buf = NULL;
 	input_stat.reverse_completion = 0;
+	input_stat.complete = complete;
 
 	wcsncpy(input_stat.prompt, prompt, ARRAY_LEN(input_stat.prompt));
 	input_stat.prompt_wid = input_stat.curs_pos = wcslen(input_stat.prompt);
@@ -564,7 +569,7 @@ cmd_shift_tab(struct key_info key_info, struct keys_info *keys_info)
 static void
 do_completion(void)
 {
-	if(sub_mode != CMD_SUBMODE && sub_mode != MENU_CMD_SUBMODE)
+	if(input_stat.complete == NULL)
 		return;
 
 	if(input_stat.line == NULL)
@@ -596,7 +601,7 @@ draw_wild_menu(int op)
 	int i;
 	int len = getmaxx(stdscr);
 	
-	if(sub_mode != CMD_SUBMODE)
+	if(sub_mode == MENU_CMD_SUBMODE || input_stat.complete == NULL)
 		return;
 
 	if(count < 2)
@@ -1346,7 +1351,7 @@ line_completion(struct line_stats *stat)
 		stat->line[stat->index] = t;
 
 		reset_completion();
-		offset = complete_cmd(line_mb_cmd);
+		offset = stat->complete(line_mb_cmd);
 	}
 
 	set_completion_order(input_stat.reverse_completion);

@@ -801,37 +801,53 @@ complete_history(const char *str)
 	add_completion(str);
 }
 
+#ifndef _WIN32
+void complete_user_name(const char *str)
+{
+	struct passwd* pw;
+	size_t len;
+
+	len = strlen(str);
+	setpwent();
+	while((pw = getpwent()) != NULL)
+	{
+		if(strncmp(pw->pw_name, str, len) == 0)
+			add_completion(pw->pw_name);
+	}
+	completion_group_end();
+	add_completion(str);
+}
+
+void complete_group_name(const char *str)
+{
+	struct group* gr;
+	size_t len = strlen(str);
+
+	setgrent();
+	while((gr = getgrent()) != NULL)
+	{
+		if(strncmp(gr->gr_name, str, len) == 0)
+			add_completion(gr->gr_name);
+	}
+	completion_group_end();
+	add_completion(str);
+}
+#endif
+
 static int
 complete_chown(const char *str)
 {
 #ifndef _WIN32
 	char *colon = strchr(str, ':');
-	size_t len = (colon == NULL) ? strlen(str) : strlen(++colon);
 	if(colon == NULL)
 	{
-		struct passwd* pw;
-		setpwent();
-		while((pw = getpwent()) != NULL)
-		{
-			if(strncmp(pw->pw_name, str, len) == 0)
-				add_completion(pw->pw_name);
-		}
-		completion_group_end();
-		add_completion(str);
+		complete_user_name(str);
 		return 0;
 	}
 	else
 	{
-		struct group* gr;
-		setgrent();
-		while((gr = getgrent()) != NULL)
-		{
-			if(strncmp(gr->gr_name, colon, len) == 0)
-				add_completion(gr->gr_name);
-		}
-		completion_group_end();
-		add_completion(colon);
-		return colon - str;
+		complete_user_name(colon + 1);
+		return colon - str + 1;
 	}
 #else
 	add_completion(str);

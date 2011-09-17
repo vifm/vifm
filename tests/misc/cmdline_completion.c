@@ -30,6 +30,7 @@ setup(void)
 	stats.complete_continue = 0;
 	stats.history_search = 0;
 	stats.line_buf = NULL;
+	stats.complete = &complete_cmd;
 
 	init_commands();
 

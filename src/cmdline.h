@@ -34,11 +34,13 @@ enum CmdLineSubModes {
 };
 
 typedef void (*prompt_cb)(const char *renponse);
+typedef int (*complete_cmd_func)(const char *cmd);
 
 void init_cmdline_mode(int *key_mode);
 void enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
 		void *ptr);
-void enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb);
+void enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb,
+		complete_cmd_func complete);
 void redraw_cmdline(void);
 
 #ifdef TEST
@@ -59,6 +61,7 @@ struct line_stats
 	int hist_search_len;      /* length of history search pattern */
 	wchar_t *line_buf;        /* content of line before using history */
 	int reverse_completion;
+	complete_cmd_func complete;
 };
 
 int line_completion(struct line_stats *stat);

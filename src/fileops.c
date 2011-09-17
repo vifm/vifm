@@ -1308,7 +1308,7 @@ rename_file(FileView *view, int name_only)
 	}
 
 	clean_selected_files(view);
-	enter_prompt_mode(L"New name: ", buf, rename_file_cb);
+	enter_prompt_mode(L"New name: ", buf, rename_file_cb, NULL);
 }
 
 static char **
@@ -1727,6 +1727,13 @@ change_owner_cb(const char *new_owner)
 #endif
 }
 
+static int
+complete_owner(const char *str)
+{
+	complete_user_name(str);
+	return 0;
+}
+
 void
 change_owner(void)
 {
@@ -1736,7 +1743,7 @@ change_owner(void)
 		curr_view->selected_files = 1;
 	}
 	clean_selected_files(curr_view);
-	enter_prompt_mode(L"New owner: ", "", change_owner_cb);
+	enter_prompt_mode(L"New owner: ", "", change_owner_cb, &complete_owner);
 }
 
 static void
@@ -1759,6 +1766,13 @@ change_group_cb(const char *new_group)
 #endif
 }
 
+static int
+complete_group(const char *str)
+{
+	complete_group_name(str);
+	return 0;
+}
+
 void
 change_group(void)
 {
@@ -1768,7 +1782,7 @@ change_group(void)
 		curr_view->selected_files = 1;
 	}
 	clean_selected_files(curr_view);
-	enter_prompt_mode(L"New group: ", "", change_group_cb);
+	enter_prompt_mode(L"New group: ", "", change_group_cb, &complete_group);
 }
 
 static void
@@ -1826,7 +1840,7 @@ change_link(FileView *view)
 		return 0;
 	}
 
-	enter_prompt_mode(L"Link target: ", linkto, change_link_cb);
+	enter_prompt_mode(L"Link target: ", linkto, change_link_cb, NULL);
 	return 0;
 }
 
@@ -1840,7 +1854,7 @@ prompt_dest_name(const char *src_name)
 #else
 	swprintf(buf, L"New name for %S: ", src_name);
 #endif
-	enter_prompt_mode(buf, src_name, put_confirm_cb);
+	enter_prompt_mode(buf, src_name, put_confirm_cb, NULL);
 }
 
 static void
@@ -1859,7 +1873,7 @@ prompt_what_to_do(const char *src_name)
 			L"Name conflict for %S. [r]ename/[s]kip/[o]verwrite/overwrite [a]ll: ",
 			src_name);
 #endif
-	enter_prompt_mode(buf, "", put_decide_cb);
+	enter_prompt_mode(buf, "", put_decide_cb, NULL);
 }
 
 /* Returns 0 on success */

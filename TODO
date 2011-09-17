@@ -52,7 +52,6 @@ Other (questionable) things.
     Maybe inotify support on Linux.
     Command like ' but that executes bookmark ?
     Maybe we should add a command to view screen ?
-    Completion for co and cg commands ?
     Summarize size of selected files.  Need to decide how to display it.
     Add support for comments at the end of line ? Just for fun?
     Make directory stack menu interactive ?
@@ -63,9 +62,10 @@ Other (questionable) things.
     :edit, etc. in the menus.
     :alias
     Like gv but to select just pasted files (gp?).
-    'expandtab' for tabs in the quick view ?
+    'expandtab' for tabs in the quick view and menu items?
     Modify marks on rename operations.
     :toupper and :tolower
+    Maybe :get command (seen in wsdookadr's fork)
 
 Code improvements.
     Write more tests.
