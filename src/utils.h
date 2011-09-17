@@ -102,6 +102,7 @@ char * strchar2str(const char *str);
 char * to_multibyte(const wchar_t *s);
 int get_link_target(const char *link, char *buf, size_t buf_len);
 void strtoupper(char *s);
+const char * enclose_in_dquotes(const char *str);
 
 #ifndef _WIN32
 int get_uid(const char *user, uid_t *uid);

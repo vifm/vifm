@@ -109,7 +109,8 @@ my_system(char *command)
 			return status;
 	}while(1);
 #else
-	char buf[strlen(cfg.shell) + 5 + strlen(command) + 1 + 1];
+	char buf[strlen(cfg.shell) + 5 + strlen(command)*2 + 1 + 1];
+	char *p;
 
 	signal(SIGINT, SIG_DFL);
 
@@ -118,7 +119,16 @@ my_system(char *command)
 		strcat(buf, " /C \"");
 	else
 		strcat(buf, " -c \"");
-	strcat(buf, command);
+
+	p = buf + strlen(buf);
+	while(*command != '\0')
+	{
+		if(*command == '\\' || *command == '"')
+			*p++ = '\\';
+		*p++ = *command++;
+	}
+	*p = '\0';
+
 	strcat(buf, "\"");
 
 	system("cls");
@@ -261,13 +271,19 @@ view_file(const char *filename, int line)
 		return;
 	}
 
+#ifndef _WIN32
 	escaped = escape_filename(filename, 0);
+#else
+	escaped = (char *)enclose_in_dquotes(filename);
+#endif
 	if(line < 0)
 		snprintf(command, sizeof(command), "%s %s", get_vicmd(&bg), escaped);
 	else
 		snprintf(command, sizeof(command), "%s +%d %s", get_vicmd(&bg), line,
 				escaped);
+#ifndef _WIN32
 	free(escaped);
+#endif
 
 	if(bg)
 		start_background_job(command);

@@ -1135,6 +1135,28 @@ strtoupper(char *s)
 	}
 }
 
+/* Returns pointer to a statically allocated buffer */
+const char *
+enclose_in_dquotes(const char *str)
+{
+	static char buf[PATH_MAX];
+	char *p;
+
+	p = buf;
+	*p++ = '"';
+	while(*str != '\0')
+	{
+		if(*str == '\\' || *str == '"')
+			*p++ = '\\';
+		*p++ = *str;
+
+		str++;
+	}
+	*p++ = '"';
+	*p = '\0';
+	return buf;
+}
+
 #ifndef _WIN32
 int
 get_uid(const char *user, uid_t *uid)

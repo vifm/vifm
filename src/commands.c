@@ -1375,28 +1375,6 @@ apply_mods(const char *path, const char *parent, const char *mod)
 	return buf;
 }
 
-/* Returns pointer to a statically allocated buffer */
-static const char *
-enclose_in_dquotes(const char *str)
-{
-	static char buf[PATH_MAX];
-	char *p;
-
-	p = buf;
-	*p++ = '"';
-	while(*str != '\0')
-	{
-		if(*str == '\\' || *str == '"')
-			*p++ = '\\';
-		*p++ = *str;
-
-		str++;
-	}
-	*p++ = '"';
-	*p = '\0';
-	return buf;
-}
-
 static
 char *
 append_selected_file(FileView *view, char *expanded, int dir_name_len, int pos,
