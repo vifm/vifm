@@ -1480,11 +1480,7 @@ change_directory(FileView *view, const char *directory)
 		return -1;
 	}
 
-#ifndef _WIN32
-	if(access(dir_dup, X_OK) != 0)
-#else
 	if(access(dir_dup, X_OK) != 0 && !is_unc_root(dir_dup))
-#endif
 	{
 		LOG_SERROR_MSG(errno, "Can't access(, X_OK) \"%s\"", dir_dup);
 		log_cwd();
@@ -1496,11 +1492,7 @@ change_directory(FileView *view, const char *directory)
 		return -1;
 	}
 
-#ifndef _WIN32
-	if(access(dir_dup, R_OK) != 0)
-#else
 	if(access(dir_dup, R_OK) != 0 && !is_unc_root(dir_dup))
-#endif
 	{
 		LOG_SERROR_MSG(errno, "Can't access(, R_OK) \"%s\"", dir_dup);
 		log_cwd();
@@ -1512,11 +1504,7 @@ change_directory(FileView *view, const char *directory)
 		}
 	}
 
-#ifndef _WIN32
-	if(chdir(dir_dup) == -1)
-#else
 	if(chdir(dir_dup) == -1 && !is_unc_root(dir_dup))
-#endif
 	{
 		LOG_SERROR_MSG(errno, "Can't chdir() \"%s\"", dir_dup);
 		log_cwd();
@@ -2036,11 +2024,9 @@ load_dir_list(FileView *view, int reload)
 #ifndef _WIN32
 	if(stat(view->curr_dir, &s) != 0)
 		return;
-
-	if(update_dir_mtime(view) != 0)
-#else
-	if(update_dir_mtime(view) != 0 && !is_unc_root(view->curr_dir))
 #endif
+
+	if(update_dir_mtime(view) != 0 && !is_unc_root(view->curr_dir))
 	{
 		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
 		return;
@@ -2056,11 +2042,7 @@ load_dir_list(FileView *view, int reload)
 	update_all_windows();
 
 	/* this is needed for lstat() below */
-#ifndef _WIN32
-	if(chdir(view->curr_dir) != 0)
-#else
 	if(chdir(view->curr_dir) != 0 && !is_unc_root(view->curr_dir))
-#endif
 	{
 		LOG_SERROR_MSG(errno, "Can't chdir() into \"%s\"", view->curr_dir);
 		return;

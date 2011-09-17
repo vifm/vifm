@@ -973,6 +973,22 @@ is_root_dir(const char *path)
 }
 
 int
+is_unc_root(const char *path)
+{
+#ifdef _WIN32
+	if(is_unc_path(path))
+	{
+		char *p = strchr(path + 2, '/');
+		if(p == NULL || p[1] == '\0')
+			return 1;
+	}
+	return 0;
+#else
+	return 0;
+#endif
+}
+
+int
 is_path_absolute(const char *path)
 {
 #ifdef _WIN32
@@ -1215,18 +1231,6 @@ int
 is_unc_path(const char *path)
 {
 	return (path[0] == '/' && path[1] == '/' && path[2] != '/');
-}
-
-int
-is_unc_root(const char *path)
-{
-	if(is_unc_path(path))
-	{
-		char *p = strchr(path + 2, '/');
-		if(p == NULL || p[1] == '\0')
-			return 1;
-	}
-	return 0;
 }
 
 int

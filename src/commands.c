@@ -2548,22 +2548,14 @@ cd(FileView *view, const char *path)
 		snprintf(dir, sizeof(dir), "%s", cfg.home_dir);
 	}
 
-#ifndef _WIN32
-	if(access(dir, F_OK) != 0)
-#else
 	if(access(dir, F_OK) != 0 && !is_unc_root(dir))
-#endif
 	{
 		LOG_SERROR_MSG(errno, "Can't access(,F_OK) \"%s\"", dir);
 
 		(void)show_error_msgf("Destination doesn't exist", "\"%s\"", dir);
 		return 0;
 	}
-#ifndef _WIN32
-	if(access(dir, X_OK) != 0)
-#else
 	if(access(dir, X_OK) != 0 && !is_unc_root(dir))
-#endif
 	{
 		LOG_SERROR_MSG(errno, "Can't access(,X_OK) \"%s\"", dir);
 

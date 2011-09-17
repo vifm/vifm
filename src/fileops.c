@@ -905,11 +905,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 		}
 	}
 
-#ifndef _WIN32
-	if(is_dir(name))
-#else
-	if((is_dir(name) || is_unc_root(view->curr_dir)))
-#endif
+	if(is_dir(name) || is_unc_root(view->curr_dir))
 	{
 		if(!view->dir_entry[view->list_pos].selected &&
 				(view->dir_entry[view->list_pos].type != LINK || !force_follow))

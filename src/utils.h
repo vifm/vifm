@@ -95,6 +95,7 @@ char * expand_tilde(char *path);
 int get_regexp_cflags(const char *pattern);
 const char * get_regexp_error(int err, regex_t *re);
 int is_root_dir(const char *path);
+int is_unc_root(const char *path);
 int is_path_absolute(const char *path);
 int ends_with(const char* str, const char* suffix);
 char * strchar2str(const char *str);
@@ -112,7 +113,6 @@ int S_ISLNK(mode_t mode);
 int readlink(const char *path, char *buf, size_t len);
 char * realpath(const char *path, char *buf);
 int is_unc_path(const char *path);
-int is_unc_root(const char *path);
 int exec_program(TCHAR *cmd);
 int is_win_executable(const char *name);
 #endif

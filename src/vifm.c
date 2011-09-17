@@ -253,11 +253,7 @@ check_path(FileView *view, const char *path)
 		return;
 
 	strcpy(view->curr_dir, path);
-#ifndef _WIN32
-	if(!is_dir(path))
-#else
 	if(!is_dir(path) && !is_unc_root(path))
-#endif
 	{
 		char *slash;
 		if((slash = strrchr(view->curr_dir, '/')) != NULL)
