@@ -1723,12 +1723,14 @@ change_owner_cb(const char *new_owner)
 #endif
 }
 
+#ifndef _WIN32
 static int
 complete_owner(const char *str)
 {
 	complete_user_name(str);
 	return 0;
 }
+#endif
 
 void
 change_owner(void)
@@ -1739,7 +1741,11 @@ change_owner(void)
 		curr_view->selected_files = 1;
 	}
 	clean_selected_files(curr_view);
+#ifndef _WIN32
 	enter_prompt_mode(L"New owner: ", "", change_owner_cb, &complete_owner);
+#else
+	enter_prompt_mode(L"New owner: ", "", change_owner_cb, NULL);
+#endif
 }
 
 static void
@@ -1762,12 +1768,14 @@ change_group_cb(const char *new_group)
 #endif
 }
 
+#ifndef _WIN32
 static int
 complete_group(const char *str)
 {
 	complete_group_name(str);
 	return 0;
 }
+#endif
 
 void
 change_group(void)
@@ -1778,7 +1786,11 @@ change_group(void)
 		curr_view->selected_files = 1;
 	}
 	clean_selected_files(curr_view);
+#ifndef _WIN32
 	enter_prompt_mode(L"New group: ", "", change_group_cb, &complete_group);
+#else
+	enter_prompt_mode(L"New group: ", "", change_group_cb, NULL);
+#endif
 }
 
 static void
