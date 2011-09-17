@@ -219,6 +219,9 @@ status_bar_message_i(const char *message, int error)
 		status_bar_lines++;
 	lines = status_bar_lines;
 
+	if(lines > getmaxy(stdscr))
+		lines = getmaxy(stdscr);
+
 	mvwin(stat_win, getmaxy(stdscr) - lines - 1, 0);
 	mvwin(status_bar, getmaxy(stdscr) - lines, 0);
 	if(lines == 1)
@@ -243,7 +246,13 @@ status_bar_message_i(const char *message, int error)
 
 	wprintw(status_bar, "%s", msg);
 	if(lines > 1)
-		wprintw(status_bar, "%s", "\nPress ENTER or type command to continue");
+	{
+		wmove(status_bar, lines - 1, 0);
+		wclrtoeol(status_bar);
+		if(lines < status_bar_lines)
+			wprintw(status_bar, "%d of %d lines.  ", lines, status_bar_lines);
+		wprintw(status_bar, "%s", "Press ENTER or type command to continue");
+	}
 
 	wattrset(status_bar, 0);
 	wrefresh(status_bar);

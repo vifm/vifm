@@ -1602,6 +1602,9 @@ expand_macros(FileView *view, const char *command, const char *args,
 			case 'M': /* use menu like with :locate and :find */
 				*use_menu = 2;
 				break;
+			case 'S': /* show command output in the status bar */
+				*use_menu = 3;
+				break;
 			case 's': /* split in new screen region */
 				*split = 1;
 				break;
@@ -2421,6 +2424,36 @@ goto_cmd(const struct cmd_info *cmd_info)
 	return 0;
 }
 
+static void
+output_to_statusbar(const char *cmd)
+{
+	FILE *file, *err;
+	char buf[2048];
+	char *lines;
+	size_t len;
+
+	if(background_and_capture((char *)cmd, &file, &err) != 0)
+	{
+		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
+		return;
+	}
+
+	lines = NULL;
+	len = 0;
+	while(fgets(buf, sizeof(buf), file) == buf)
+	{
+		chomp(buf);
+		lines = realloc(lines, len + 1 + strlen(buf) + 1);
+		len += sprintf(lines + len, "%s%s", (len == 0) ? "": "\n", buf);
+	}
+
+	fclose(file);
+	fclose(err);
+
+	status_bar_message(lines);
+	free(lines);
+}
+
 static int
 emark_cmd(const struct cmd_info *cmd_info)
 {
@@ -2434,7 +2467,12 @@ emark_cmd(const struct cmd_info *cmd_info)
 	if(strlen(com + i) == 0)
 		return 0;
 
-	if(cmd_info->usr1)
+	if(cmd_info->usr1 == 3)
+	{
+		output_to_statusbar(com);
+		return 1;
+	}
+	else if(cmd_info->usr1)
 	{
 		show_user_menu(curr_view, com, cmd_info->usr1 == 2);
 	}
@@ -4143,7 +4181,12 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 
 	clean_selected_files(curr_view);
 
-	if(use_menu)
+	if(use_menu == 3)
+	{
+		output_to_statusbar(expanded_com);
+		return 1;
+	}
+	else if(use_menu)
 	{
 		show_user_menu(curr_view, expanded_com, use_menu == 2);
 	}

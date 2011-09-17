@@ -66,6 +66,7 @@ Other (questionable) things.
     Modify marks on rename operations.
     :toupper and :tolower
     Maybe :get command (seen in wsdookadr's fork)
+    Maybe accept regular expressions as second argument of :colo command.
 
 Code improvements.
     Write more tests.

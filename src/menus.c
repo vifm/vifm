@@ -1029,7 +1029,7 @@ capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
 		x++;
 	}
 
-	pclose(file);
+	fclose(file);
 	m->len = x;
 	curr_stats.search = 0;
 

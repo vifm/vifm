@@ -1248,6 +1248,9 @@ Show command output in a menu.
 .BI %M
 Same as %m, but l (or Enter) key is handled like for :locate and :find commands.
 .TP
+.BI %S
+Show command output in the status bar.
+.TP
 .BI %s
 Execute command in screen split.
 .LP
@@ -1281,7 +1284,7 @@ Using %x means expand corresponding macro escaping all characters that have
 special meaning.  And %"x means using of double quotes and escape only backslash
 and double quote characters, which is more useful on Windows systems.
 
-Position and quantity (if there is any) of %m, %M or %s macros in the
+Position and quantity (if there is any) of %m, %M, %S or %s macros in the
 command is unimportant.  All their occurrences will be removed from the
 resulting command.
 
