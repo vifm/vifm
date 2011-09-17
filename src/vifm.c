@@ -243,6 +243,23 @@ update_path(void)
 	sprintf(new_path, "%s/scripts:%s", cfg.config_dir, old_path);
 	setenv("PATH", new_path, 1);
 	free(new_path);
+#else
+	char *old_path;
+	char *new_path;
+	int i;
+
+	old_path = getenv("PATH");
+	new_path = malloc(5 + strlen(cfg.config_dir) + 8 + 1 + strlen(old_path) + 1);
+	sprintf(new_path, "PATH=%s/scripts;%s", cfg.config_dir, old_path);
+
+	for(i = 0; new_path[i] != '\0'; i++)
+	{
+		if(new_path[i] == '/')
+			new_path[i] = '\\';
+	}
+
+	putenv(new_path);
+	free(new_path);
 #endif
 }
 
