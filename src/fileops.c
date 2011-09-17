@@ -911,7 +911,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	if((is_dir(name) || is_unc_root(view->curr_dir)))
 #endif
 	{
-		if(view->selected_files == 0 &&
+		if(!view->dir_entry[view->list_pos].selected &&
 				(view->dir_entry[view->list_pos].type != LINK || !force_follow))
 		{
 			handle_dir(view);
