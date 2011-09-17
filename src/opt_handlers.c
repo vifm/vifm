@@ -360,12 +360,21 @@ free_view_history(FileView *view)
 static void
 history_handler(enum opt_op op, union optval_t val)
 {
+	int delta;
+
 	if(val.int_val <= 0)
 	{
 		free_view_history(&lwin);
 		free_view_history(&rwin);
 
 		cfg.history_len = val.int_val;
+		cfg.cmd_history_len = val.int_val;
+		cfg.prompt_history_len = val.int_val;
+		cfg.search_history_len = val.int_val;
+
+		cfg.cmd_history_num = -1;
+		cfg.prompt_history_num = -1;
+		cfg.search_history_num = -1;
 		return;
 	}
 
@@ -389,6 +398,35 @@ history_handler(enum opt_op op, union optval_t val)
 	{
 		cfg.history_len = val.int_val;
 	}
+
+	delta = val.int_val - cfg.cmd_history_len;
+	if(delta < 0 && cfg.cmd_history_len > 0)
+	{
+		int i;
+		for(i = cfg.cmd_history_len; i < val.int_val; i++)
+			free(cfg.cmd_history[i]);
+		for(i = cfg.cmd_history_len; i < val.int_val; i++)
+			free(cfg.prompt_history[i]);
+		for(i = cfg.cmd_history_len; i < val.int_val; i++)
+			free(cfg.search_history[i]);
+	}
+	cfg.cmd_history = realloc(cfg.cmd_history, val.int_val*sizeof(char *));
+	cfg.prompt_history = realloc(cfg.prompt_history, val.int_val*sizeof(char *));
+	cfg.search_history = realloc(cfg.search_history, val.int_val*sizeof(char *));
+	if(delta > 0)
+	{
+		int i;
+		for(i = val.int_val; i < cfg.cmd_history_len; i++)
+			cfg.cmd_history[i] = NULL;
+		for(i = val.int_val; i < cfg.cmd_history_len; i++)
+			cfg.prompt_history[i] = NULL;
+		for(i = val.int_val; i < cfg.cmd_history_len; i++)
+			cfg.search_history[i] = NULL;
+	}
+
+	cfg.cmd_history_len = val.int_val;
+	cfg.prompt_history_len = val.int_val;
+	cfg.search_history_len = val.int_val;
 }
 
 static void

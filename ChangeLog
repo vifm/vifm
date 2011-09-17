@@ -251,6 +251,8 @@
 	Made ':set option' equivalent to ':set option?' for all types of options
 	except boolean.
 
+	Made 'history' option control search, command line and prompt histories.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

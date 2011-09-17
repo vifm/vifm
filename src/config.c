@@ -61,7 +61,6 @@ init_config(void)
 	cfg.filetypes_num = 0;
 	cfg.xfiletypes_num = 0;
 	cfg.fileviewers_num = 0;
-	cfg.nmapped_num = 0;
 	cfg.vim_filter = 0;
 	cfg.show_one_window = 0;
 

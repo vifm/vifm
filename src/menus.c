@@ -1667,10 +1667,16 @@ show_history_menu(FileView *view)
 }
 
 static int
-show_history(FileView *view, int type, int len, char **hist)
+show_history(FileView *view, int type, int len, char **hist, const char *msg)
 {
 	int x;
 	static menu_info m;
+
+	if(len <= 0)
+	{
+		status_bar_message("History is disabled or empty");
+		return 1;
+	}
 
 	m.top = 0;
 	m.current = 1;
@@ -1682,7 +1688,7 @@ show_history(FileView *view, int type, int len, char **hist)
 	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
-	m.title = strdup(" Command Line History ");
+	m.title = strdup(msg);
 	m.args = NULL;
 	m.data = NULL;
 
@@ -1706,28 +1712,28 @@ int
 show_cmdhistory_menu(FileView *view)
 {
 	return show_history(view, CMDHISTORY, cfg.cmd_history_num + 1,
-			cfg.cmd_history);
+			cfg.cmd_history, " Command Line History ");
 }
 
 int
 show_prompthistory_menu(FileView *view)
 {
 	return show_history(view, PROMPTHISTORY, cfg.prompt_history_num + 1,
-			cfg.prompt_history);
+			cfg.prompt_history, " Prompt History ");
 }
 
 int
 show_fsearchhistory_menu(FileView *view)
 {
 	return show_history(view, FSEARCHHISTORY, cfg.search_history_num + 1,
-			cfg.search_history);
+			cfg.search_history, " Search History ");
 }
 
 int
 show_bsearchhistory_menu(FileView *view)
 {
 	return show_history(view, BSEARCHHISTORY, cfg.search_history_num + 1,
-			cfg.search_history);
+			cfg.search_history, " Search History ");
 }
 
 int

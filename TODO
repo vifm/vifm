@@ -26,8 +26,6 @@ Vi(m) specific features that need to be added.
     /, ?, n, N as selectors.
     Make / and ? accept count.
     :map without arguments
-    Should 'history' control search and cmdline history or there should be
-        other options?
     Better ranges.
     Ctrl-A and Ctrl-X commands.
 

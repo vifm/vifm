@@ -1043,7 +1043,8 @@ When on, 'g' flag is on for |vifm-:substitute| by default.
 history hi
 type: integer
 default: 15
-Maximum number of directories in the view history.
+Maximum number of directories in the view history and lines in the prompt,
+command line and search histories.
 
                                                *vifm-'hlsearch'* *vifm-'hls'*
 hlsearch hls

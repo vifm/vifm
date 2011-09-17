@@ -1180,12 +1180,15 @@ save_history(const char *line, char **hist, int *num, int *len)
 {
 	int x;
 
+	if(*len <= 0)
+		return;
+
 	/* Don't add empty lines */
 	if(line[0] == '\0')
 		return;
 
 	/* Don't add :!! or :! to history list */
-	if(!strcmp(line, "!!") || !strcmp(line, "!"))
+	if(strcmp(line, "!!") == 0 || strcmp(line, "!") == 0)
 		return;
 
 	/* Don't add duplicates */
@@ -1211,12 +1214,12 @@ save_history(const char *line, char **hist, int *num, int *len)
 
 	while(x > 0)
 	{
-		hist[x] = (char *)realloc(hist[x], strlen(hist[x - 1]) + 1);
+		hist[x] = realloc(hist[x], strlen(hist[x - 1]) + 1);
 		strcpy(hist[x], hist[x - 1]);
 		x--;
 	}
 
-	hist[0] = (char *)realloc(hist[0], strlen(line) + 1);
+	hist[0] = realloc(hist[0], strlen(line) + 1);
 	strcpy(hist[0], line);
 	(*num)++;
 	if(*num >= *len)

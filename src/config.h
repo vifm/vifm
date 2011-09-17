@@ -44,8 +44,6 @@ typedef struct _Config {
 	int xfiletypes_num;
 	int fileviewers_num;
 	int history_len;
-	int nmapped_num;
-	int screen_num;
 
 	int auto_execute;
 	int show_one_window;
