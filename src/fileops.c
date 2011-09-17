@@ -883,28 +883,6 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 
 	type = view->dir_entry[view->list_pos].type;
 
-	if(view->selected_files > 1)
-	{
-		int files = 0, dirs = 0;
-		int i;
-		for(i = 0; i < view->list_rows; i++)
-		{
-			int type = view->dir_entry[i].type;
-			if(!view->dir_entry[i].selected)
-				continue;
-			if(type == DIRECTORY || (type == LINK && is_dir(view->dir_entry[i].name)))
-				dirs++;
-			else
-				files++;
-		}
-		if(dirs > 0 && files > 0)
-		{
-			(void)show_error_msg("Selection error",
-					"Selection cannot contain files and directories at the same time");
-			return;
-		}
-	}
-
 	if(is_dir(name) || is_unc_root(view->curr_dir))
 	{
 		if(!view->dir_entry[view->list_pos].selected &&
@@ -942,6 +920,29 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	}
 	else if(runnable)
 	{
+		if(view->selected_files > 1)
+		{
+			int files = 0, dirs = 0;
+			int i;
+			for(i = 0; i < view->list_rows; i++)
+			{
+				int type = view->dir_entry[i].type;
+				if(!view->dir_entry[i].selected)
+					continue;
+				if(type == DIRECTORY ||
+						(type == LINK && is_dir(view->dir_entry[i].name)))
+					dirs++;
+				else
+					files++;
+			}
+			if(dirs > 0 && files > 0)
+			{
+				(void)show_error_msg("Selection error",
+						"Selection cannot contain files and directories at the same time");
+				return;
+			}
+		}
+
 		execute_file(view, dont_execute);
 	}
 	else if(type == LINK)
