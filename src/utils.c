@@ -861,7 +861,7 @@ replace_home_part(const char *directory)
 	len = strlen(cfg.home_dir) - 1;
 	if(strncmp(directory, cfg.home_dir, len) == 0 &&
 			(directory[len] == '\0' || directory[len] == '/'))
-		strncat(strcpy(buf, "~"), directory + len, sizeof(buf));
+		strncat(strcpy(buf, "~"), directory + len, sizeof(buf) - strlen(buf) - 1);
 	else
 		strncpy(buf, directory, sizeof(buf));
 	if(!is_root_dir(buf))

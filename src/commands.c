@@ -1522,7 +1522,7 @@ expand_macros(FileView *view, const char *command, const char *args,
 
 	cmd_len = strlen(command);
 
-	expanded = (char *)calloc(cmd_len + 1, sizeof(char *));
+	expanded = calloc(cmd_len + 1, sizeof(char *));
 
 	for(x = 0; x < cmd_len; x++)
 		if(command[x] == '%')
@@ -1660,7 +1660,7 @@ expand_macros(FileView *view, const char *command, const char *args,
 				break;
 			x++;
 		}
-		expanded = (char *)realloc(expanded, len + cmd_len + 1);
+		expanded = realloc(expanded, len + cmd_len + 1);
 		strncat(expanded, command + y, x - y);
 		len = strlen(expanded);
 		x++;

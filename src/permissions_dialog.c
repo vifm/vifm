@@ -389,21 +389,16 @@ files_chmod(FileView *view, const char *mode, int recurse_dirs)
 		char buf[COMMAND_GROUP_INFO_LEN];
 		size_t len;
 		int j = i;
-		snprintf(buf, sizeof(buf), "chmod in %s: ",
+		len = snprintf(buf, sizeof(buf), "chmod in %s: ",
 				replace_home_part(view->curr_dir));
-		len = strlen(buf);
 
 		while(i < view->list_rows && len < COMMAND_GROUP_INFO_LEN)
 		{
 			if(view->dir_entry[i].selected)
 			{
 				if(buf[len - 2] != ':')
-				{
-					strncat(buf, ", ", sizeof(buf));
-					buf[sizeof(buf) - 1] = '\0';
-				}
-				strncat(buf, view->dir_entry[i].name, sizeof(buf));
-				buf[sizeof(buf) - 1] = '\0';
+					strncat(buf, ", ", sizeof(buf) - len - 1);
+				strncat(buf, view->dir_entry[i].name, sizeof(buf) - len - 1);
 				len = strlen(buf);
 			}
 			i++;

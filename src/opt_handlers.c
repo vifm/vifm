@@ -263,22 +263,16 @@ print_func(const char *msg, const char *description)
 {
 	if(print_buf[0] != '\0')
 	{
-		strncat(print_buf, "\n", sizeof(print_buf));
-		print_buf[sizeof(print_buf) - 1] = '\0';
+		strncat(print_buf, "\n", sizeof(print_buf) - strlen(print_buf) - 1);
 	}
 	if(*msg == '\0')
 	{
-		strncat(print_buf, description, sizeof(print_buf));
-		print_buf[sizeof(print_buf) - 1] = '\0';
+		strncat(print_buf, description, sizeof(print_buf) - strlen(print_buf) - 1);
 	}
 	else
 	{
-		strncat(print_buf, msg, sizeof(print_buf));
-		print_buf[sizeof(print_buf) - 1] = '\0';
-		strncat(print_buf, ": ", sizeof(print_buf));
-		print_buf[sizeof(print_buf) - 1] = '\0';
-		strncat(print_buf, description, sizeof(print_buf));
-		print_buf[sizeof(print_buf) - 1] = '\0';
+		snprintf(print_buf, sizeof(print_buf) - strlen(print_buf), "%s: %s", msg,
+				description);
 	}
 	save_msg = 1;
 }

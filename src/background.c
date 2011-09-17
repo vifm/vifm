@@ -338,8 +338,7 @@ background_and_wait_for_errors(char *cmd)
 			linebuf[nread] = '\0';
 			if(nread == 1 && linebuf[0] == '\n')
 				continue;
-			strncat(buf, linebuf, sizeof(buf));
-			buf[sizeof(buf) - 1] = '\0';
+			strncat(buf, linebuf, sizeof(buf) - strlen(buf) - 1);
 		}
 		close(error_pipe[0]);
 

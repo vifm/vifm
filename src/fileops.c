@@ -1042,11 +1042,10 @@ get_group_file_list(char **list, int count, char *buf)
 	{
 		if(buf[len - 2] != ':')
 		{
-			strncat(buf, ", ", COMMAND_GROUP_INFO_LEN);
-			buf[COMMAND_GROUP_INFO_LEN - 1] = '\0';
+			strncat(buf, ", ", COMMAND_GROUP_INFO_LEN - len - 1);
+			len = strlen(buf);
 		}
-		strncat(buf, list[i], COMMAND_GROUP_INFO_LEN);
-		buf[COMMAND_GROUP_INFO_LEN - 1] = '\0';
+		strncat(buf, list[i], COMMAND_GROUP_INFO_LEN - len - 1);
 		len = strlen(buf);
 	}
 }
@@ -1416,8 +1415,8 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 	{
 		if(buf[len - 2] != ':')
 		{
-			strncat(buf, ", ", sizeof(buf));
-			buf[sizeof(buf) - 1] = '\0';
+			strncat(buf, ", ", sizeof(buf) - len - 1);
+			len = strlen(buf);
 		}
 		len = strlen(buf);
 		len += snprintf(buf + len, sizeof(buf) - len, "%s to %s",
@@ -2220,17 +2219,18 @@ make_undo_string(FileView *view, char *buf, int nlines, char **list)
 	{
 		if(buf[len - 2] != ':')
 		{
-			strncat(buf, ", ", COMMAND_GROUP_INFO_LEN);
-			buf[COMMAND_GROUP_INFO_LEN - 1] = '\0';
+			strncat(buf, ", ", COMMAND_GROUP_INFO_LEN - len - 1);
+			len = strlen(buf);
 		}
-		strncat(buf, view->selected_filelist[i], COMMAND_GROUP_INFO_LEN);
+		strncat(buf, view->selected_filelist[i], COMMAND_GROUP_INFO_LEN - len - 1);
+		len = strlen(buf);
 		if(nlines > 0)
 		{
-			strncat(buf, " to ", COMMAND_GROUP_INFO_LEN);
-			strncat(buf, list[i], COMMAND_GROUP_INFO_LEN);
+			strncat(buf, " to ", COMMAND_GROUP_INFO_LEN - len - 1);
+			len = strlen(buf);
+			strncat(buf, list[i], COMMAND_GROUP_INFO_LEN - len - 1);
+			len = strlen(buf);
 		}
-		buf[COMMAND_GROUP_INFO_LEN - 1] = '\0';
-		len = strlen(buf);
 	}
 }
 
@@ -2509,11 +2509,10 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 
 		if(buf[len - 2] != ':')
 		{
-			strncat(buf, ", ", sizeof(buf));
-			buf[sizeof(buf) - 1] = '\0';
+			strncat(buf, ", ", sizeof(buf) - len - 1);
+			len = strlen(buf);
 		}
-		strncat(buf, view->dir_entry[i].name, sizeof(buf));
-		buf[sizeof(buf) - 1] = '\0';
+		strncat(buf, view->dir_entry[i].name, sizeof(buf) - len - 1);
 		len = strlen(buf);
 	}
 	cmd_group_begin(buf);

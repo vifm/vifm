@@ -1044,7 +1044,7 @@ source_file(const char *file)
 					if(*p == '"')
 						continue;
 					else if(*p == '\\')
-						strncat(line, p + 1, sizeof(line));
+						strncat(line, p + 1, sizeof(line) - strlen(line) - 1);
 					else
 						break;
 				}
