@@ -163,7 +163,7 @@ main_loop(void)
 				if(ret != ERR)
 					modupd_input_bar(buf);
 				if(last_result == KEYS_WAIT_SHORT && wcscmp(buf, L"\033") == 0)
-					wtimeout(status_bar, 0);
+					wtimeout(status_bar, 1);
 				if(counter > 0)
 					clear_input_bar();
 
