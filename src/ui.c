@@ -833,12 +833,12 @@ update_input_bar(wchar_t *str)
 	if(!curr_stats.use_input_bar)
 		return;
 
-	if(getcurx(input_win) >= getmaxx(input_win) - wcslen(str))
+	if(wcslen(str) > getmaxx(input_win))
 	{
-		mvwdelch(input_win, 0, 0);
-		wmove(input_win, 0, getmaxx(input_win) - wcslen(str) - 1);
+		str += wcslen(str) - getmaxx(input_win);
 	}
 
+	werase(input_win);
 	waddwstr(input_win, str);
 	wrefresh(input_win);
 }
