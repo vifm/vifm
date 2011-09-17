@@ -504,6 +504,17 @@ test_modif_without_macros(void)
 	free(expanded);
 }
 
+static void
+test_with_quotes(void)
+{
+	int menu, split;
+	char *expanded;
+
+	expanded = expand_macros(&lwin, " cp %\"f:p ", "", &menu, &split);
+	assert_string_equal(" cp \"/lwin/lfile0\" \"/lwin/lfile2\" ", expanded);
+	free(expanded);
+}
+
 void
 fname_modif_tests(void)
 {
@@ -527,6 +538,7 @@ fname_modif_tests(void)
 #endif
 
 	run_test(test_modif_without_macros);
+	run_test(test_with_quotes);
 
 	test_fixture_end();
 }

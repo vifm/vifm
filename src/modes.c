@@ -178,20 +178,23 @@ modes_redraw(void)
 	if(curr_stats.too_small_term)
 	{
 		redraw_window();
-		in_here--;
+		if(--in_here > 0)
+			modes_redraw();
 		return;
 	}
 
 	if(mode == CMDLINE_MODE)
 	{
 		redraw_cmdline();
-		in_here--;
+		if(--in_here > 0)
+			modes_redraw();
 		return;
 	}
 	else if(mode == MENU_MODE)
 	{
 		menu_redraw();
-		in_here--;
+		if(--in_here > 0)
+			modes_redraw();
 		return;
 	}
 

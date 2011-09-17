@@ -790,7 +790,7 @@ Commands
         - Fifo - color of fifo pipes
 
        Available colors:
-        - -1 or default or none - transparent
+        - -1 or default or none - default or transparent
         - black
         - red
         - green
@@ -820,6 +820,9 @@ Commands
          TopLine
            TopLineSel
 
+       "none" means default terminal color for highlight groups at  the  first
+       level of the hierarchy and transparency for all others.
+
        :his[tory]
               creates a popup menu of directories visited.
 
@@ -829,7 +832,7 @@ Commands
               i[nput]   or @  show prompt history (e.g. on one file renaming).
               s[earch]  or /  show search history and search forward on l key.
               f[search] or /  show search history and search forward on l key.
-              b[search] or ?  show search history and  search  backward  on  l
+              b[search]  or  ?   show  search history and search backward on l
               key.
               c[md]     or :  show command line history.
 
@@ -842,17 +845,17 @@ Commands
        :jobs  shows menu of current backgrounded processes.
 
        :locate filename
-              uses  the locate command to create a menu of filenames Selecting
-              a file from the menu will reload the current file list  in  vifm
+              uses the locate command to create a menu of filenames  Selecting
+              a  file  from the menu will reload the current file list in vifm
               to show the selected file.
 
        :locate
               repeats last :locate command.
 
        :[range]ma[rk]x[/full/path][filename]
-              Set  mark  x  at  /full/path  and  filename.  By default current
-              directory  is  being  used.   If  no  filename  was  given   and
-              /full/path  is  current  directory  then last file in [range] is
+              Set mark x at  /full/path  and  filename.   By  default  current
+              directory   is  being  used.   If  no  filename  was  given  and
+              /full/path is current directory then last  file  in  [range]  is
               used.  Using macros is allowed.
 
        :marks create a popup menu of bookmarks.
@@ -861,7 +864,7 @@ Commands
               display the contents of the marks that are mentioned in list.
 
        :mkdir[!] dir ...
-              creates directories with given names.   "!"  means  make  parent
+              creates  directories  with  given  names.  "!" means make parent
               directories as needed.
 
        :[range]m[ove][!?]
@@ -869,12 +872,12 @@ Commands
               vi to edit filenames.  "!" forces overwrite.
 
        :[range]m[ove][!] path
-              moves files to directory specified with the  path  (absolute  or
+              moves  files  to  directory specified with the path (absolute or
               relative to directory of other view).  "!" forces overwrite.
 
        :[range]m[ove][!] name1 name2...
-              moves  files  to directory of other view giving each next file a
-              corresponding name from the argument  list.   "!"  forces  over‐
+              moves files to directory of other view giving each next  file  a
+              corresponding  name  from  the  argument list.  "!" forces over‐
               write.
 
        :noh[lsearch]
@@ -886,7 +889,7 @@ Commands
        :popd  remove pane directories from stack.
 
        :pushd[!] /curr/dir [/other/dir]
-              add  pane  directories  to  stack and process arguments like :cd
+              add pane directories to stack and  process  arguments  like  :cd
               command.
 
        :pushd exchanges the top two items of the directory stack.
@@ -905,8 +908,8 @@ Commands
               popup menu with registers content.
 
        :reg[isters] list ...
-              display the contents of the numbered and  named  registers  that
-              are  mentioned in list (for example "az to display "", "a and "z
+              display  the  contents  of the numbered and named registers that
+              are mentioned in list (for example "az to display "", "a and  "z
               content).
 
        :[range]rename
@@ -923,29 +926,29 @@ Commands
               will restore file from Trash.  Works in trash directory only.
 
        :[range]rlink[!?]
-              creates  relative  symbolic links of files in directory of other
-              view.  With "?"  vifm will  open  vi  to  edit  filenames.   "!"
+              creates relative symbolic links of files in directory  of  other
+              view.   With  "?"   vifm  will  open  vi to edit filenames.  "!"
               forces overwrite.
 
        :[range]rlink[!] path
-              creates  relative symbolic links of files in directory specified
+              creates relative symbolic links of files in directory  specified
               with the path (absolute or relative to directory of other view).
               "!" forces overwrite.
 
        :[range]rlink[!] name1 name2...
-              creates  relative  symbolic links of files in directory of other
-              view giving each next link a corresponding name from  the  argu‐
+              creates relative symbolic links of files in directory  of  other
+              view  giving  each next link a corresponding name from the argu‐
               ment list.  "!" forces overwrite.
 
        :screen
               toggles whether or not to use the screen program.
               The default configuration has the screen option turned off.  The
-              screen program uses pseudo terminals to allow  multiple  windows
-              to  be  used in the console or in a single xterm.  Starting vifm
-              from screen with the screen option turned on will cause vifm  to
-              open  a  new  screen  window for each new file edited or program
+              screen  program  uses pseudo terminals to allow multiple windows
+              to be used in the console or in a single xterm.   Starting  vifm
+              from  screen with the screen option turned on will cause vifm to
+              open a new screen window for each new  file  edited  or  program
               launched from vifm.
-              This requires screen version 3.9.9 or newer for  the  screen  -X
+              This  requires  screen  version 3.9.9 or newer for the screen -X
               argument.
 
        :screen?
@@ -972,7 +975,7 @@ Commands
                - option& - reset option to its default value
                - option=x or option:x - set option to x
                - option+=x - add x to option
-               -  option-=x - remove (or subtract) x from option :sh[ell] will
+               - option-=x - remove (or subtract) x from option :sh[ell]  will
               start a shell.
 
        :sor[t]
@@ -982,21 +985,21 @@ Commands
               splits the window to show both file directories.
 
        :sp[lit] path
-              splits the window to show both file  directories.   And  changes
+              splits  the  window  to show both file directories.  And changes
               other pane to path.
 
        :[range]s[ubstitite]/pattern/string/[flags]
               for each file in range replace a match of pattern with string.
 
-       String  can contain  ...9 to link to capture groups (0 - all match, 1 -
+       String can contain  ...9 to link to capture groups (0 - all match, 1  -
        first group, etc.).
 
        Available flags:
 
-       - i - ignore case (the 'ignorecase' and  'smartcase'  options  are  not
+       - i  -  ignore  case  (the 'ignorecase' and 'smartcase' options are not
          used)
 
-       - I  -  don't ignore case (the 'ignorecase' and 'smartcase' options are
+       - I - don't ignore case (the 'ignorecase' and 'smartcase'  options  are
          not used)
 
        - g - substitute all matches in each file name (each g toggles this)
@@ -1005,15 +1008,15 @@ Commands
          change the other panel to the current panel directory.
 
        :touch file...
-         will create files.  Aborts on errors and won't update time of  exist‐
+         will  create files.  Aborts on errors and won't update time of exist‐
          ing files.
 
        :[range]tr/pattern/string/
-         for  each  file in range transliterate the characters which appear in
-         pattern to the corresponding character in  string.   When  string  is
+         for each file in range transliterate the characters which  appear  in
+         pattern  to  the  corresponding  character in string.  When string is
          shorter than pattern, it's padded with its last character.
 
-       String  can contain  ...9 to link to capture groups (0 - all match, 1 -
+       String can contain  ...9 to link to capture groups (0 - all match, 1  -
        first group, etc.).
 
        :undol[ist]
@@ -1033,7 +1036,7 @@ Commands
               open appropriate volume in the current pane.
 
        :w[rite]
-              write  vifminfo  file  (add  !  to  force write even if settings
+              write vifminfo file (add !  to  force  write  even  if  settings
               weren't changed).
 
        :wq    same as :quit.
@@ -1059,24 +1062,24 @@ Commands
 
 
        :no[remap] lhs rhs
-              map the key sequence lhs to {rhs} for normal and  visual  modes,
+              map  the  key sequence lhs to {rhs} for normal and visual modes,
               but disallow mapping of rhs.
 
        :no[remap]! lhs rhs
-              map  the  key  sequence  lhs to {rhs} for command line mode, but
+              map the key sequence lhs to {rhs} for  command  line  mode,  but
               disallow mapping of rhs.
 
 
        :cno[remap] lhs rhs
-              map the key sequence lhs to {rhs} for  command  line  mode,  but
+              map  the  key  sequence  lhs to {rhs} for command line mode, but
               disallow mapping of rhs.
 
        :nn[oremap] lhs rhs
-              map  the key sequence lhs to {rhs} for normal mode, but disallow
+              map the key sequence lhs to {rhs} for normal mode, but  disallow
               mapping of rhs.
 
        :vn[oremap] lhs rhs
-              map the key sequence lhs to {rhs} for visual mode, but  disallow
+              map  the key sequence lhs to {rhs} for visual mode, but disallow
               mapping of rhs.
 
 
@@ -1106,7 +1109,7 @@ Ranges
 
          :%delete would delete all files in the directory.
          :2,4delete would delete the files in the list positions 2 through 4.
-         :.,$delete  would  delete  the files from the current position to the
+         :.,$delete would delete the files from the current  position  to  the
        end
            of the filelist.
          :3delete4 would delete the files in the list positions 3, 4, 5, 6.
@@ -1121,19 +1124,19 @@ Command macros
 
        %a     User arguments.
 
-       %c     The current file under the cursor.
+       %c %"c The current file under the cursor.
 
-       %C     The current file under the cursor in the other directory.
+       %C %"C The current file under the cursor in the other directory.
 
-       %f     All of the selected files.
+       %f %"f All of the selected files.
 
-       %F     All of the selected files in the other directory list.
+       %F %"F All of the selected files in the other directory list.
 
-       %b     Same as %f %F.
+       %b %"b Same as %f %F.
 
-       %d     Full path to current directory.
+       %d %"d Full path to current directory.
 
-       %D     Full path to other file list directory.
+       %D %"d Full path to other file list directory.
 
        %m     Show command output in a menu.
 
@@ -1144,7 +1147,7 @@ Command macros
 
        Use %% if you need to put a percent sign in your command.
 
-       You can use filename modifiers after %c, %C, %f,  %F,  %b,  %d  and  %D
+       You  can  use  filename  modifiers  after %c, %C, %f, %F, %b, %d and %D
        macros.  Supported modifiers are:
 
        - :p           - full path
@@ -1161,16 +1164,21 @@ Command macros
 
        - :e           - extension of the filename (last one)
 
-       - :s?pat?sub?   - substitute the first occurrence of pat with sub.  You
+       - :s?pat?sub?  - substitute the first occurrence of pat with sub.   You
          can use any character for '?', but it must not occur in.
 
-       - :gs?pat?sub? - like :s, but substitutes all occurrences of  pat  with
+       - :gs?pat?sub?  -  like :s, but substitutes all occurrences of pat with
          sub.
 
-         See  ':h  filename-modifiers' in Vim's documentation for the detailed
+         See ':h filename-modifiers' in Vim's documentation for  the  detailed
          description.
 
-         Position and quantity (if there is any) of %m and %s  macros  in  the
+         Using  %x  means  expand  corresponding macro escaping all characters
+         that have special meaning.  And %"x means using of double quotes  and
+         escape only backslash and double quote characters, which is more use‐
+         ful on Windows systems.
+
+         Position and quantity (if there is any) of %m, %M or %s macros in the
          command  is  unimportant.  All their occurrences will be removed from
          the resulting command.
 
@@ -1564,4 +1572,4 @@ AUTHOR
 
 
 
-                              September 11, 2011                       vifm(1)
+                              September 17, 2011                       vifm(1)

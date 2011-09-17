@@ -16,9 +16,9 @@ setup_lwin(void)
 	lwin.list_rows = 4;
 	lwin.list_pos = 2;
 	lwin.dir_entry = calloc(lwin.list_rows, sizeof(*lwin.dir_entry));
-	lwin.dir_entry[0].name = strdup("lfile0");
+	lwin.dir_entry[0].name = strdup("lfi le0");
 	lwin.dir_entry[1].name = strdup("lfile1");
-	lwin.dir_entry[2].name = strdup("lfile2");
+	lwin.dir_entry[2].name = strdup("lfile\"2");
 	lwin.dir_entry[3].name = strdup("lfile3");
 
 	lwin.dir_entry[0].selected = 1;
@@ -82,13 +82,13 @@ test_b_both_have_selection(void)
 	char *expanded;
 
 	expanded = expand_macros(&lwin, "/%b ", "", &menu, &split);
-	assert_string_equal("/lfile0 lfile2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5 ",
-			expanded);
+	assert_string_equal(
+			"/lfi\\ le0 lfile\\\"2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, "%b", "", &menu, &split);
-	assert_string_equal("lfile0 lfile2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5",
-			expanded);
+	assert_string_equal(
+			"lfi\\ le0 lfile\\\"2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5", expanded);
 	free(expanded);
 }
 
@@ -102,11 +102,11 @@ test_f_both_have_selection(void)
 	lwin.selected_files--;
 
 	expanded = expand_macros(&lwin, "/%f ", "", &menu, &split);
-	assert_string_equal("/lfile0 ", expanded);
+	assert_string_equal("/lfi\\ le0 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, "%f", "", &menu, &split);
-	assert_string_equal("lfile0", expanded);
+	assert_string_equal("lfi\\ le0", expanded);
 	free(expanded);
 }
 
@@ -119,12 +119,12 @@ test_b_only_lwin_has_selection(void)
 	clean_selected_files(&lwin);
 
 	expanded = expand_macros(&lwin, "/%b ", "", &menu, &split);
-	assert_string_equal("/lfile2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5 ",
+	assert_string_equal("/lfile\\\"2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5 ",
 			expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, "%b", "", &menu, &split);
-	assert_string_equal("lfile2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5",
+	assert_string_equal("lfile\\\"2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5",
 			expanded);
 	free(expanded);
 }
@@ -138,11 +138,11 @@ test_b_only_rwin_has_selection(void)
 	clean_selected_files(&rwin);
 
 	expanded = expand_macros(&lwin, "/%b ", "", &menu, &split);
-	assert_string_equal("/lfile0 lfile2 /rwin/rfile5 ", expanded);
+	assert_string_equal("/lfi\\ le0 lfile\\\"2 /rwin/rfile5 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, "%b", "", &menu, &split);
-	assert_string_equal("lfile0 lfile2 /rwin/rfile5", expanded);
+	assert_string_equal("lfi\\ le0 lfile\\\"2 /rwin/rfile5", expanded);
 	free(expanded);
 }
 
@@ -156,11 +156,11 @@ test_b_noone_has_selection(void)
 	clean_selected_files(&rwin);
 
 	expanded = expand_macros(&lwin, "/%b ", "", &menu, &split);
-	assert_string_equal("/lfile2 /rwin/rfile5 ", expanded);
+	assert_string_equal("/lfile\\\"2 /rwin/rfile5 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, "%b", "", &menu, &split);
-	assert_string_equal("lfile2 /rwin/rfile5", expanded);
+	assert_string_equal("lfile\\\"2 /rwin/rfile5", expanded);
 	free(expanded);
 }
 
@@ -189,6 +189,49 @@ test_m(void)
 	other_view = &lwin;
 	expanded = expand_macros(&rwin, "%M echo log", "", &menu, &split);
 	assert_string_equal(" echo log", expanded);
+	assert_int_equal(menu, 2);
+	free(expanded);
+}
+
+static void
+test_with_quotes(void)
+{
+	int menu, split;
+	char *expanded;
+
+	expanded = expand_macros(&lwin, "/%\"b ", "", &menu, &split);
+	assert_string_equal(
+			"/\"lfi le0\" \"lfile\\\"2\" "
+			"\"/rwin/rfile1\" \"/rwin/rfile3\" \"/rwin/rfile5\" ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, "/%\"f ", "", &menu, &split);
+	assert_string_equal("/\"lfi le0\" \"lfile\\\"2\" ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, "/%\"F ", "", &menu, &split);
+	assert_string_equal("/\"/rwin/rfile1\" \"/rwin/rfile3\" \"/rwin/rfile5\" ",
+			expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, "/%\"c ", "", &menu, &split);
+	assert_string_equal("/\"lfile\\\"2\" ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, "/%\"C ", "", &menu, &split);
+	assert_string_equal("/\"/rwin/rfile5\" ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, "/%\"d ", "", &menu, &split);
+	assert_string_equal("/\"/lwin\" ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, "/%\"D ", "", &menu, &split);
+	assert_string_equal("/\"/rwin\" ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, " %\"a %\"m %\"M %\"s ", "", &menu, &split);
+	assert_string_equal(" a m M s ", expanded);
 	free(expanded);
 }
 
@@ -207,6 +250,7 @@ test_expand_macros(void)
 	run_test(test_b_noone_has_selection);
 	run_test(test_no_slash_after_dirname);
 	run_test(test_m);
+	run_test(test_with_quotes);
 
 	test_fixture_end();
 }

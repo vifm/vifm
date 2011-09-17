@@ -2,7 +2,7 @@ dirs := commands completion filetype keys misc options undo
 
 .PHONY: tests $(dirs)
 
-tests: $(dirs)
+tests: bin $(dirs)
 ifneq ($(OS),Windows_NT)
 	for test in `find bin/ -executable -type f`; do\
 		if ! $$test; then\
@@ -21,5 +21,8 @@ else
 	done
 endif
 
-$(dirs):
+$(dirs): bin
 	make --directory=$@
+
+bin:
+	mkdir $@

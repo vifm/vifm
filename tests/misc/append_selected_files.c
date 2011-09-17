@@ -69,23 +69,23 @@ test_f(void)
 	char *expanded;
 
 	expanded = strdup("");
-	expanded = append_selected_files(&lwin, expanded, 0, "");
+	expanded = append_selected_files(&lwin, expanded, 0, 0, "");
 	assert_string_equal("lfile0 lfile2", expanded);
 	free(expanded);
 
 	expanded = strdup("/");
-	expanded = append_selected_files(&lwin, expanded, 0, "");
+	expanded = append_selected_files(&lwin, expanded, 0, 0, "");
 	assert_string_equal("/lfile0 lfile2", expanded);
 	free(expanded);
 
 	expanded = strdup("");
-	expanded = append_selected_files(&rwin, expanded, 0, "");
+	expanded = append_selected_files(&rwin, expanded, 0, 0, "");
 	assert_string_equal("/rwin/rfile1 /rwin/rfile3 /rwin/rfile5 /rwin/rdir6",
 			expanded);
 	free(expanded);
 
 	expanded = strdup("/");
-	expanded = append_selected_files(&rwin, expanded, 0, "");
+	expanded = append_selected_files(&rwin, expanded, 0, 0, "");
 	assert_string_equal("//rwin/rfile1 /rwin/rfile3 /rwin/rfile5 /rwin/rdir6",
 			expanded);
 	free(expanded);
@@ -97,23 +97,23 @@ test_c(void)
 	char *expanded;
 
 	expanded = strdup("");
-	expanded = append_selected_files(&lwin, expanded, 1, "");
+	expanded = append_selected_files(&lwin, expanded, 1, 0, "");
 	assert_string_equal("lfile2", expanded);
 	free(expanded);
 
 
 	expanded = strdup("/");
-	expanded = append_selected_files(&lwin, expanded, 1, "");
+	expanded = append_selected_files(&lwin, expanded, 1, 0, "");
 	assert_string_equal("/lfile2", expanded);
 	free(expanded);
 
 	expanded = strdup("");
-	expanded = append_selected_files(&rwin, expanded, 1, "");
+	expanded = append_selected_files(&rwin, expanded, 1, 0, "");
 	assert_string_equal("/rwin/rfile5", expanded);
 	free(expanded);
 
 	expanded = strdup("/");
-	expanded = append_selected_files(&rwin, expanded, 1, "");
+	expanded = append_selected_files(&rwin, expanded, 1, 0, "");
 	assert_string_equal("//rwin/rfile5", expanded);
 	free(expanded);
 }

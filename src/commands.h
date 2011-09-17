@@ -51,7 +51,7 @@ char * edit_selection(FileView *view, int *bg);
 #include "cmds.h"
 
 char * append_selected_files(FileView *view, char *expanded, int under_cursor,
-		const char *mod);
+		int quotes, const char *mod);
 int line_pos(const char *begin, const char *end, char sep, int regexp);
 void select_range(int id, const struct cmd_info *cmd_info);
 #endif

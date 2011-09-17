@@ -1362,12 +1362,65 @@ apply_mods(const char *path, const char *parent, const char *mod)
 	return buf;
 }
 
+/* Returns pointer to a statically allocated buffer */
+static const char *
+enclose_in_dquotes(const char *str)
+{
+	static char buf[PATH_MAX];
+	char *p;
+
+	p = buf;
+	*p++ = '"';
+	while(*str != '\0')
+	{
+		if(*str == '\\' || *str == '"')
+			*p++ = '\\';
+		*p++ = *str;
+
+		str++;
+	}
+	*p++ = '"';
+	*p = '\0';
+	return buf;
+}
+
+static
+char *
+append_selected_file(FileView *view, char *expanded, int dir_name_len, int pos,
+		int quotes, const char *mod)
+{
+	char buf[PATH_MAX] = "";
+
+	if(dir_name_len != 0)
+		strcat(strcpy(buf, view->curr_dir), "/");
+	strcat(buf, view->dir_entry[pos].name);
+	chosp(buf);
+
+	if(quotes)
+	{
+		const char *s = enclose_in_dquotes(apply_mods(buf, view->curr_dir, mod));
+		expanded = realloc(expanded, strlen(expanded) + strlen(s) + 1 + 1);
+		strcat(expanded, s);
+	}
+	else
+	{
+		char *temp;
+
+		temp = escape_filename(apply_mods(buf, view->curr_dir, mod), 0);
+		expanded = realloc(expanded, strlen(expanded) + strlen(temp) + 1 + 1);
+		strcat(expanded, temp);
+		free(temp);
+	}
+
+	return expanded;
+}
+
 #ifndef TEST
 static
 #endif
 char *
 append_selected_files(FileView *view, char *expanded, int under_cursor,
-		const char *mod)
+		int quotes, const char *mod)
 {
 	int dir_name_len = 0;
 
@@ -1377,73 +1430,69 @@ append_selected_files(FileView *view, char *expanded, int under_cursor,
 	if(view->selected_files && !under_cursor)
 	{
 		int y, x = 0;
-		size_t len = strlen(expanded);
 		for(y = 0; y < view->list_rows; y++)
 		{
-			char *temp;
-			char buf[PATH_MAX] = "";
-
 			if(!view->dir_entry[y].selected)
 				continue;
 
-			if(dir_name_len != 0)
-				strcat(strcpy(buf, view->curr_dir), "/");
-			strcat(buf, view->dir_entry[y].name);
-			chosp(buf);
-			temp = escape_filename(apply_mods(buf, view->curr_dir, mod), 0);
-			expanded = (char *)realloc(expanded, len + strlen(temp) + 1 + 1);
-			strcat(expanded, temp);
+			expanded = append_selected_file(view, expanded, dir_name_len, y, quotes,
+					mod);
+
 			if(++x != view->selected_files)
 				strcat(expanded, " ");
-
-			free(temp);
-
-			len = strlen(expanded);
 		}
 	}
 	else
 	{
-		char *temp;
-		char buf[PATH_MAX] = "";
-
-		if(dir_name_len != 0)
-			strcat(strcpy(buf, view->curr_dir), "/");
-		strcat(buf, view->dir_entry[view->list_pos].name);
-		chosp(buf);
-		temp = escape_filename(apply_mods(buf, view->curr_dir, mod), 0);
-
-		expanded = (char *)realloc(expanded, strlen(expanded) + strlen(temp) + 1);
-		strcat(expanded, temp);
-
-		free(temp);
+		expanded = append_selected_file(view, expanded, dir_name_len,
+				view->list_pos, quotes, mod);
 	}
 
 	return expanded;
 }
 
 static char *
-expand_directory_path(FileView *view, char *expanded, const char *mod)
+append_to_expanded(char *expanded, const char* str)
 {
 	char *t;
-	char *escaped;
 
-	if((escaped = escape_filename(apply_mods(view->curr_dir, "/", mod),
-			0)) == NULL)
-	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
-		free(expanded);
-		return NULL;
-	}
-
-	t = realloc(expanded, strlen(expanded) + strlen(escaped) + 1);
+	t = realloc(expanded, strlen(expanded) + strlen(str) + 1);
 	if(t == NULL)
 	{
 		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		free(expanded);
 		return NULL;
 	}
-	strcat(t, escaped);
+	strcat(t, str);
 	return t;
+}
+
+static char *
+expand_directory_path(FileView *view, char *expanded, int quotes,
+		const char *mod)
+{
+	if(quotes)
+	{
+		const char *s = enclose_in_dquotes(apply_mods(view->curr_dir, "/", mod));
+		return append_to_expanded(expanded, s);
+	}
+	else
+	{
+		char *escaped;
+		char *result;
+
+		escaped = escape_filename(apply_mods(view->curr_dir, "/", mod), 0);
+		if(escaped == NULL)
+		{
+			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+			free(expanded);
+			return NULL;
+		}
+
+		result = append_to_expanded(expanded, escaped);
+		free(escaped);
+		return result;
+	}
 }
 
 /* args could be equal NULL
@@ -1472,13 +1521,17 @@ expand_macros(FileView *view, const char *command, const char *args,
 
 	do
 	{
+		int quotes = 0;
+		if(command[x] == '"' && strchr("cCfFbdD", command[x + 1]) != NULL)
+		{
+			quotes = 1;
+			x++;
+		}
 		switch(command[x])
 		{
 			case 'a': /* user arguments */
 				{
-					if(args == NULL)
-						break;
-					else
+					if(args != NULL)
 					{
 						char arg_buf[strlen(args) + 2];
 
@@ -1491,42 +1544,42 @@ expand_macros(FileView *view, const char *command, const char *args,
 				}
 				break;
 			case 'b': /* selected files of both dirs */
-				expanded = append_selected_files(curr_view, expanded, 0,
+				expanded = append_selected_files(curr_view, expanded, 0, quotes,
 						command + x + 1);
 				len = strlen(expanded);
 				expanded = realloc(expanded, len + 1 + 1);
 				strcat(expanded, " ");
-				expanded = append_selected_files(other_view, expanded, 0,
+				expanded = append_selected_files(other_view, expanded, 0, quotes,
 						command + x + 1);
 				len = strlen(expanded);
 				break;
 			case 'c': /* current dir file under the cursor */
-				expanded = append_selected_files(curr_view, expanded, 1,
+				expanded = append_selected_files(curr_view, expanded, 1, quotes,
 						command + x + 1);
 				len = strlen(expanded);
 				break;
 			case 'C': /* other dir file under the cursor */
-				expanded = append_selected_files(other_view, expanded, 1,
+				expanded = append_selected_files(other_view, expanded, 1, quotes,
 						command + x + 1);
 				len = strlen(expanded);
 				break;
 			case 'f': /* current dir selected files */
-				expanded = append_selected_files(curr_view, expanded, 0,
+				expanded = append_selected_files(curr_view, expanded, 0, quotes,
 						command + x + 1);
 				len = strlen(expanded);
 				break;
 			case 'F': /* other dir selected files */
-				expanded = append_selected_files(other_view, expanded, 0,
+				expanded = append_selected_files(other_view, expanded, 0, quotes,
 						command + x + 1);
 				len = strlen(expanded);
 				break;
 			case 'd': /* current directory */
-				expanded = expand_directory_path(curr_view, expanded,
+				expanded = expand_directory_path(curr_view, expanded, quotes,
 						command + x + 1);
 				len = strlen(expanded);
 				break;
 			case 'D': /* other directory */
-				expanded = expand_directory_path(other_view, expanded,
+				expanded = expand_directory_path(other_view, expanded, quotes,
 						command + x + 1);
 				len = strlen(expanded);
 				break;
@@ -1544,6 +1597,7 @@ expand_macros(FileView *view, const char *command, const char *args,
 				strcat(expanded, "%");
 				len++;
 				break;
+
 			default:
 				break;
 		}

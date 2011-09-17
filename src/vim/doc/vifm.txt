@@ -932,18 +932,18 @@ The builtin commands that accept a range are :d[elete] and :y[ank].
 Command macros~
 
 The command macros may be used in user commands.
-  %a user arguments.
-  %c the current file under the cursor.
-  %C the current file under the cursor in the other directory.
-  %f all of the selected files.
-  %F all of the selected files in the other directory list.
-  %b same as %f %F.
-  %d full path to current directory.
-  %D full path to other file list directory.
-  %m show command output in a menu.
-  %M same as %m, but l (or Enter) key is handled like for :locate and :find
-     commands.
-  %s execute command in screen split.
+  %a      user arguments.
+  %c %"c  the current file under the cursor.
+  %C %"C  the current file under the cursor in the other directory.
+  %f %"f  all of the selected files.
+  %F %"F  all of the selected files in the other directory list.
+  %b %"b  same as %f %F.
+  %d %"d  full path to current directory.
+  %D %"D  full path to other file list directory.
+  %m      show command output in a menu.
+  %M      same as %m, but l (or Enter) key is handled like for :locate
+          and :find commands.
+  %s      execute command in screen split.
 
 Use %% if you need to put a percent sign in your command.
 
@@ -963,7 +963,11 @@ Supported modifiers are:
 See ':h filename-modifiers' in Vim's documentation for the detailed
 description.
 
-Position and quantity (if there is any) of %m and %s macros in the
+Using %x means expand corresponding macro escaping all characters that have
+special meaning.  And %"x means using of double quotes and escape only backslash
+and double quote characters, which is more useful on Windows systems.
+
+Position and quantity (if there is any) of %m, %M or %s macros in the
 command is unimportant.  All their occurrences will be removed from the
 resulting command.
 

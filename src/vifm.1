@@ -1,4 +1,4 @@
-.TH vifm 1 "September 11, 2011" "" "Vifm"
+.TH vifm 1 "September 17, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1221,25 +1221,25 @@ The command macros may be used in user commands.
 .BI %a
 User arguments.
 .TP
-.BI %c
+.BI "%c %""c"
 The current file under the cursor.
 .TP
-.BI %C
+.BI "%C %""C"
 The current file under the cursor in the other directory.
 .TP
-.BI %f
+.BI "%f %""f"
 All of the selected files.
 .TP
-.BI %F
+.BI "%F %""F"
 All of the selected files in the other directory list.
 .TP
-.BI %b
+.BI "%b %""b"
 Same as %f %F.
 .TP
-.BI %d
+.BI "%d %""d"
 Full path to current directory.
 .TP
-.BI %D
+.BI "%D %""d"
 Full path to other file list directory.
 .TP
 .BI %m
@@ -1277,7 +1277,11 @@ Supported modifiers are:
 See ':h filename-modifiers' in Vim's documentation for the detailed
 description.
 
-Position and quantity (if there is any) of %m and %s macros in the
+Using %x means expand corresponding macro escaping all characters that have
+special meaning.  And %"x means using of double quotes and escape only backslash
+and double quote characters, which is more useful on Windows systems.
+
+Position and quantity (if there is any) of %m, %M or %s macros in the
 command is unimportant.  All their occurrences will be removed from the
 resulting command.
 
