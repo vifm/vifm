@@ -355,11 +355,15 @@ cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_e(struct key_info key_info, struct keys_info *keys_info)
 {
+	int off;
+
 	if(curr_view->list_rows <= curr_view->window_rows + 1)
 		return;
 	if(curr_view->top_line == curr_view->list_rows - curr_view->window_rows - 1)
 		return;
-	if(curr_view->list_pos == curr_view->top_line)
+
+	off = MAX(cfg.scroll_off, 0);
+	if(curr_view->list_pos <= curr_view->top_line + off)
 		curr_view->list_pos++;
 	curr_view->top_line++;
 	scroll_view(curr_view);
@@ -619,10 +623,14 @@ cmd_ctrl_wx(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(curr_view->list_rows <= curr_view->window_rows + 1
-			|| curr_view->top_line == 0)
+	int off;
+
+	if(curr_view->list_rows <= curr_view->window_rows + 1 ||
+			curr_view->top_line == 0)
 		return;
-	if(curr_view->list_pos == curr_view->top_line + curr_view->window_rows)
+
+	off = MAX(cfg.scroll_off, 0);
+	if(curr_view->list_pos >= curr_view->top_line + curr_view->window_rows - off)
 		curr_view->list_pos--;
 	curr_view->top_line--;
 	scroll_view(curr_view);
