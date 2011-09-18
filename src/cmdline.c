@@ -957,15 +957,15 @@ cmd_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
 
 	old = input_stat.index;
 
-	while(input_stat.index > 0 && isspace(input_stat.line[input_stat.index - 1]))
+	while(input_stat.index > 0 && iswspace(input_stat.line[input_stat.index - 1]))
 	{
 		input_stat.index--;
 		input_stat.curs_pos--;
 	}
-	if(isalnum(input_stat.line[input_stat.index - 1]))
+	if(iswalnum(input_stat.line[input_stat.index - 1]))
 	{
 		while(input_stat.index > 0 &&
-				isalnum(input_stat.line[input_stat.index - 1]))
+				iswalnum(input_stat.line[input_stat.index - 1]))
 		{
 			input_stat.index--;
 			input_stat.curs_pos--;
@@ -974,8 +974,8 @@ cmd_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
 	else
 	{
 		while(input_stat.index > 0 &&
-				!isalnum(input_stat.line[input_stat.index - 1]) &&
-				!isspace(input_stat.line[input_stat.index - 1]))
+				!iswalnum(input_stat.line[input_stat.index - 1]) &&
+				!iswspace(input_stat.line[input_stat.index - 1]))
 		{
 			input_stat.index--;
 			input_stat.curs_pos--;
@@ -1017,12 +1017,13 @@ cmd_meta_b(struct key_info key_info, struct keys_info *keys_info)
 static void
 find_prev_word(void)
 {
-	while(input_stat.index > 0 && isspace(input_stat.line[input_stat.index - 1]))
+	while(input_stat.index > 0 && iswspace(input_stat.line[input_stat.index - 1]))
 	{
 		input_stat.index--;
 		input_stat.curs_pos--;
 	}
-	while(input_stat.index > 0 && !isspace(input_stat.line[input_stat.index - 1]))
+	while(input_stat.index > 0 &&
+			!iswspace(input_stat.line[input_stat.index - 1]))
 	{
 		input_stat.index--;
 		input_stat.curs_pos--;
@@ -1067,13 +1068,13 @@ static void
 find_next_word(void)
 {
 	while(input_stat.index < input_stat.len
-			&& isspace(input_stat.line[input_stat.index]))
+			&& iswspace(input_stat.line[input_stat.index]))
 	{
 		input_stat.index++;
 		input_stat.curs_pos++;
 	}
 	while(input_stat.index < input_stat.len
-			&& !isspace(input_stat.line[input_stat.index]))
+			&& !iswspace(input_stat.line[input_stat.index]))
 	{
 		input_stat.index++;
 		input_stat.curs_pos++;

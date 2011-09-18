@@ -303,6 +303,8 @@
 
 	Fixed Ctrl-D, Ctrl-U, Ctrl-F and Ctrl-B (made them work like in vim).
 
+	Fixed utf8 characters treating on Ctrl-W and similar.
+
 0.6.2 to 0.6.3
 
 	Added another format for filetype (FUSE_MOUNT2).
