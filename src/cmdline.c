@@ -550,6 +550,10 @@ cmd_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
 	if(!input_stat.complete_continue)
 		draw_wild_menu(1);
 	input_stat.reverse_completion = 0;
+
+	if(input_stat.complete_continue && get_completion_count() == 2)
+		input_stat.complete_continue = 0;
+
 	do_completion();
 	if(cfg.wild_menu)
 		draw_wild_menu(0);
@@ -561,6 +565,10 @@ cmd_shift_tab(struct key_info key_info, struct keys_info *keys_info)
 	if(!input_stat.complete_continue)
 		draw_wild_menu(1);
 	input_stat.reverse_completion = 1;
+
+	if(input_stat.complete_continue && get_completion_count() == 2)
+		input_stat.complete_continue = 0;
+
 	do_completion();
 	if(cfg.wild_menu)
 		draw_wild_menu(0);
@@ -1002,7 +1010,13 @@ cmd_ctrl_underscore(struct key_info key_info, struct keys_info *keys_info)
 		return;
 	rewind_completion();
 
-	cmd_ctrl_i(key_info, keys_info);
+	if(!input_stat.complete_continue)
+		draw_wild_menu(1);
+	input_stat.reverse_completion = 0;
+	do_completion();
+	if(cfg.wild_menu)
+		draw_wild_menu(0);
+
 	stop_completion();
 }
 
@@ -1364,7 +1378,7 @@ line_completion(struct line_stats *stat)
 	result = line_part_complete(stat, line_mb, line_mb_cmd + offset, completion);
 	free(completion);
 
-	if(get_completion_count() > 2)
+	if(get_completion_count() >= 2)
 		stat->complete_continue = 1;
 
 	return result;
