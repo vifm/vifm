@@ -769,6 +769,9 @@ update_view(FileView *win)
 void
 update_all_windows(void)
 {
+	if(curr_stats.vifm_started < 2)
+		return;
+
 	touchwin(lborder);
 	touchwin(stat_win);
 	touchwin(pos_win);
