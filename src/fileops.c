@@ -1289,6 +1289,13 @@ rename_file_cb(const char *new_name)
 	load_saving_pos(curr_view, 1);
 }
 
+static int
+complete_filename_only(const char *str)
+{
+	filename_completion(str, FNC_FILE_WOE);
+	return 0;
+}
+
 void
 rename_file(FileView *view, int name_only)
 {
@@ -1320,7 +1327,7 @@ rename_file(FileView *view, int name_only)
 	}
 
 	clean_selected_files(view);
-	enter_prompt_mode(L"New name: ", buf, rename_file_cb, NULL);
+	enter_prompt_mode(L"New name: ", buf, rename_file_cb, complete_filename_only);
 }
 
 static char **

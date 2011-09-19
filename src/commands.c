@@ -577,6 +577,7 @@ filename_completion(const char *str, int type)
 	char * temp;
 	int filename_len;
 	int isdir;
+	int woe = (type == FNC_ALL_WOE || type == FNC_FILE_WOE);
 
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
@@ -608,7 +609,7 @@ filename_completion(const char *str, int type)
 	}
 
 	temp = strrchr(dirname, '/');
-	if(temp)
+	if(temp && type != FNC_FILE_WOE)
 	{
 		strcpy(filename, ++temp);
 		*temp = '\0';
@@ -715,7 +716,7 @@ filename_completion(const char *str, int type)
 			free(tempfile);
 		}
 #ifndef _WIN32
-		escaped = (type == FNC_ALL_WOE) ? strdup(temp) : escape_filename(temp, 1);
+		escaped = woe ? strdup(temp) : escape_filename(temp, 1);
 		add_completion(escaped);
 		free(escaped);
 #else
@@ -736,8 +737,7 @@ filename_completion(const char *str, int type)
 		else
 		{
 #ifndef _WIN32
-			temp = (type == FNC_ALL_WOE) ? strdup(filename) :
-					escape_filename(filename, 1);
+			temp = woe ? strdup(filename) : escape_filename(filename, 1);
 			add_completion(temp);
 			free(temp);
 #else

@@ -35,6 +35,7 @@ enum {
 enum {
 	FNC_ALL,      /* all files and directories */
 	FNC_ALL_WOE,  /* all files and directories without escaping */
+	FNC_FILE_WOE, /* only files in the current directory without escaping */
 	FNC_DIRONLY,  /* only directories */
 	FNC_EXECONLY, /* only executable files */
 	FNC_DIREXEC   /* directories and executable files */
