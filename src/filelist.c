@@ -343,7 +343,7 @@ view_not_wraped(FILE *fp, int x)
 		i = 0;
 		while(n_len--)
 		{
-			waddstr(other_view->win, strchar2str(line + i));
+			wprint(other_view->win, strchar2str(line + i));
 			i += get_char_width(line + i);
 		}
 	}
@@ -385,7 +385,7 @@ view_wraped(FILE *fp, int x)
 		k = width;
 		while(k--)
 		{
-			waddstr(other_view->win, strchar2str(line + i));
+			wprint(other_view->win, strchar2str(line + i));
 			i += get_char_width(line + i);
 		}
 
@@ -406,7 +406,7 @@ quick_view_file(FileView *view)
 	wclear(other_view->win);
 	wclear(other_view->title);
 	mvwaddstr(other_view->title, 0, 0, "File: ");
-	waddstr(other_view->title, view->dir_entry[view->list_pos].name);
+	wprint(other_view->title, view->dir_entry[view->list_pos].name);
 
 	strcpy(buf, view->dir_entry[view->list_pos].name);
 	switch(view->dir_entry[view->list_pos].type)
@@ -647,7 +647,8 @@ update_view_title(FileView *view)
 			ptr += get_char_width(ptr);
 		}
 
-		wprintw(view->title, "...%s", ptr);
+		wprintw(view->title, "...");
+		wprint(view->title, ptr);
 	}
 	else if(len + 1 > view->window_width && curr_view != view)
 	{
@@ -657,7 +658,7 @@ update_view_title(FileView *view)
 	}
 	else
 	{
-		wprintw(view->title, "%s", buf);
+		wprint(view->title, buf);
 	}
 
 	wnoutrefresh(view->title);
@@ -729,7 +730,7 @@ draw_dir_list(FileView *view, int top)
 		init_pair(view->color_scheme + LINE_COLOR, col.fg, col.bg);
 
 		wattrset(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
-		wprintw(view->win, "%s", file_name);
+		wprint(view->win, file_name);
 		wattroff(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
 
 		add_sort_type_info(view, y, x, 0);
@@ -786,7 +787,8 @@ erase_current_line_bar(FileView *view)
 	init_pair(view->color_scheme + LINE_COLOR, col.fg, col.bg);
 
 	wattrset(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
-	mvwaddnstr(view->win, old_cursor, 1, file_name, print_width);
+	file_name[print_width] = '\0';
+	wprint(view->win, file_name);
 	wattroff(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
 
 	add_sort_type_info(view, old_cursor, old_pos, 0);
@@ -920,7 +922,8 @@ move_to_list_pos(FileView *view, int pos)
 			view->window_width - 2) + 2;
 	snprintf(file_name, print_width, " %s", view->dir_entry[pos].name);
 
-	mvwaddstr(view->win, view->curr_line, 0, file_name);
+	wmove(view->win, view->curr_line, 0);
+	wprint(view->win, file_name);
 
 	wattroff(view->win,
 			COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);

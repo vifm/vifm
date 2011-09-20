@@ -156,7 +156,8 @@ update_stat_window(FileView *view)
 
 	werase(stat_win);
 	cur_x = 2;
-	mvwaddstr(stat_win, 0, cur_x, name_buf);
+	wmove(stat_win, 0, cur_x);
+	wprint(stat_win, name_buf);
 	cur_x += 22;
 	if(x > 83)
 		cur_x += x - 83;
@@ -248,7 +249,7 @@ status_bar_message_i(const char *message, int error)
 	}
 	werase(status_bar);
 
-	wprintw(status_bar, "%s", msg);
+	wprint(status_bar, msg);
 	if(lines > 1)
 	{
 		wmove(status_bar, lines - 1, 0);
@@ -961,6 +962,24 @@ update_attributes(void)
 	wbkgdset(sort_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR) | attr);
 	wbkgdset(change_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR) | attr);
 	wbkgdset(error_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR) | attr);
+}
+
+void
+wprint(WINDOW *win, const char *str)
+{
+#ifndef _WIN32
+	waddstr(win, str);
+#else
+	wchar_t *t = to_wide(str);
+	if(t == NULL)
+	{
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return;
+	}
+
+	waddwstr(win, t);
+	free(t);
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

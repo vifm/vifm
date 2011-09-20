@@ -111,7 +111,7 @@ clean_menu_position(menu_info *m)
 
 	x += get_utf8_overhead(m->data[m->pos]);
 
-	buf = (char *)malloc(x + 2);
+	buf = malloc(x + 2);
 
 	if(m->data != NULL && m->data[m->pos] != NULL)
 		snprintf(buf, x, " %s", m->data[m->pos]);
@@ -137,16 +137,19 @@ clean_menu_position(menu_info *m)
 	init_pair(DCOLOR_BASE + type, col.fg, col.bg);
 	wattrset(menu_win, COLOR_PAIR(type + DCOLOR_BASE) | col.attr);
 
+	wmove(menu_win, m->current, 1);
 	if(strlen(m->data[m->pos]) > x - 4)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf,
 				getmaxx(menu_win) - 3 - 4 + 1);
-		mvwaddnstr(menu_win, m->current, 1, buf, len);
+		buf[len] = '\0';
+		wprint(menu_win, buf);
 		waddstr(menu_win, "...");
 	}
 	else
 	{
-		mvwaddnstr(menu_win, m->current, 1, buf, x - 4 + 1);
+		buf[x - 4 + 1] = '\0';
+		wprint(menu_win, buf);
 	}
 	waddstr(menu_win, " ");
 
@@ -185,7 +188,8 @@ redraw_error_msg(char *title_arg, const char *message_arg)
 		y = 6;
 		wresize(error_win, y, x);
 		mvwin(error_win, (sy - y)/2, (sx - x)/2);
-		mvwaddstr(error_win, 2, (x - z)/2, message);
+		wmove(error_win, 2, (x - z)/2);
+		wprint(error_win, message);
 	}
 	else
 	{
@@ -215,7 +219,8 @@ redraw_error_msg(char *title_arg, const char *message_arg)
 			mvwin(error_win, (sy - y)/2, (sx - x)/2);
 			wresize(error_win, y, x);
 
-			mvwaddstr(error_win, cy++, 1, buf);
+			wmove(error_win, cy++, 1);
+			wprint(error_win, buf);
 		}
 	}
 
@@ -390,16 +395,19 @@ move_to_menu_pos(int pos, menu_info *m)
 	init_pair(DCOLOR_BASE + MENU_CURRENT_COLOR, col.fg, col.bg);
 	wattrset(menu_win, COLOR_PAIR(DCOLOR_BASE + MENU_CURRENT_COLOR) | col.attr);
 
+	wmove(menu_win, m->current, 1);
 	if(strlen(m->data[pos]) > x - 4)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf,
 				getmaxx(menu_win) - 3 - 4 + 1);
-		mvwaddnstr(menu_win, m->current, 1, buf, len);
+		buf[len] = '\0';
+		wprint(menu_win, buf);
 		waddstr(menu_win, "...");
 	}
 	else
 	{
-		mvwaddnstr(menu_win, m->current, 1, buf, x - 4 + 1);
+		buf[x - 4 + 1] = '\0';
+		wprint(menu_win, buf);
 	}
 	waddstr(menu_win, " ");
 
@@ -889,7 +897,8 @@ draw_menu(menu_info *m)
 	x = m->top;
 
 	wattron(menu_win, A_BOLD);
-	mvwaddstr(menu_win, 0, 3, m->title);
+	wmove(menu_win, 0, 3);
+	wprint(menu_win, m->title);
 	wattroff(menu_win, A_BOLD);
 
 	for(i = 1; x < m->len; i++)
@@ -921,15 +930,18 @@ draw_menu(menu_info *m)
 			if(buf[z] == '\t')
 				buf[z] = ' ';
 
+		wmove(menu_win, i, 2);
 		if(strlen(m->data[x]) > len - 4)
 		{
 			size_t len = get_normal_utf8_string_widthn(buf, win_len - 3 - 4);
-			mvwaddnstr(menu_win, i, 2, buf, len);
+			buf[len] = '\0';
+			wprint(menu_win, buf);
 			waddstr(menu_win, "...");
 		}
 		else
 		{
-			mvwaddnstr(menu_win, i, 2, buf, len - 4);
+			buf[len - 4] = '\0';
+			wprint(menu_win, buf);
 		}
 		waddstr(menu_win, " ");
 

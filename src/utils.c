@@ -106,7 +106,6 @@ is_dir(const char *file)
 char *
 escape_filename(const char *string, int quote_percent)
 {
-#ifndef _WIN32
 	size_t len;
 	size_t i;
 	char *ret, *dup;
@@ -168,9 +167,6 @@ escape_filename(const char *string, int quote_percent)
 	}
 	*dup = '\0';
 	return ret;
-#else
-	return strdup(string);
-#endif
 }
 
 void
@@ -1023,11 +1019,16 @@ strchar2str(const char *str)
 		memcpy(buf, str, len);
 		buf[len] = '\0';
 	}
-	else
+	else if((unsigned char)str[0] < (unsigned char)' ')
 	{
 		buf[0] = '^';
 		buf[1] = ('A' - 1) + str[0];
 		buf[2] = '\0';
+	}
+	else
+	{
+		buf[0] = str[0];
+		buf[1] = '\0';
 	}
 	return buf;
 }

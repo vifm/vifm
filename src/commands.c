@@ -577,7 +577,9 @@ filename_completion(const char *str, int type)
 	char * temp;
 	int filename_len;
 	int isdir;
+#ifndef _WIN32
 	int woe = (type == FNC_ALL_WOE || type == FNC_FILE_WOE);
+#endif
 
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{

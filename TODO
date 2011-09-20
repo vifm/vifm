@@ -15,7 +15,7 @@ Documentation.
     Maybe divide vifm.txt in several files (if it becomes too big).
 
 Windows.
-    Make non-latin characters appear right.
+    Permission dialog could change file attributes.
 
 Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).
