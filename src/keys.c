@@ -729,8 +729,15 @@ fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
 {
 	size_t i;
 	struct key_chunk_t *child;
+	size_t count;
 
-	for(i = 0; i < (curr->children_count ? curr->children_count : 1); i++)
+	count = curr->children_count;
+	if(curr->conf.type == USER_CMD)
+		count++;
+	if(count == 0)
+		count = 1;
+
+	for(i = 0; i < count; i++)
 	{
 		wchar_t *t;
 
@@ -744,7 +751,8 @@ fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
 		t[len] = L'\0';
 	}
 
-	if(curr->children_count == 0)
+	i = 0;
+	if(curr->children_count == 0 || curr->conf.type == USER_CMD)
 	{
 		const wchar_t *s;
 		wchar_t *t;
@@ -757,10 +765,13 @@ fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
 		list[0] = t;
 		t[wcslen(t) + 1] = L'\0';
 		wcscpy(t + wcslen(t) + 1, s);
-		return 1;
+		if(curr->children_count == 0)
+			return 1;
+
+		list++;
+		i = 1;
 	}
 
-	i = 0;
 	child = curr->child;
 	while(child != NULL)
 	{
@@ -773,6 +784,13 @@ fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
 
 		child = child->next;
 	}
+
+	while(i < count--)
+	{
+		free(*list);
+		*list++ = NULL;
+	}
+
 	return i;
 }
 
