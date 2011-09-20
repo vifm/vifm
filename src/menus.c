@@ -306,7 +306,7 @@ move_to_menu_pos(int pos, menu_info *m)
 {
 	int redraw = 0;
 	int x, y, z;
-	char * buf = (char *)NULL;
+	char *buf = NULL;
 	Col_attr col;
 
 	getmaxyx(menu_win, y, x);
@@ -322,7 +322,7 @@ move_to_menu_pos(int pos, menu_info *m)
 
 	x += get_utf8_overhead(m->data[pos]);
 
-	if((m->top <=  pos) && (pos <= (m->top + m->win_rows + 1)))
+	if((m->top <= pos) && (pos <= (m->top + m->win_rows + 1)))
 	{
 		m->current = pos - m->top + 1;
 	}
@@ -341,10 +341,30 @@ move_to_menu_pos(int pos, menu_info *m)
 		m->current = 1;
 		redraw = 1;
 	}
+
+	if(cfg.scroll_off > 0)
+	{
+		int s = MIN((m->win_rows - 2 + 1)/2, cfg.scroll_off);
+		if(pos - m->top < s && m->top > 0)
+		{
+			m->top -= s - (pos - m->top);
+			if(m->top < 0)
+				m->top = 0;
+			m->current = 1 + s;
+			redraw = 1;
+		}
+		if((m->top + m->win_rows - 2) - pos - 1 < s && pos + s < m->len)
+		{
+			m->top += s - ((m->top + m->win_rows - 2) - pos - 1);
+			m->current = 1 + pos - m->top;
+			redraw = 1;
+		}
+	}
+
 	if(redraw)
 		draw_menu(m);
 
-	buf = (char *)malloc(x + 2);
+	buf = malloc(x + 2);
 	if(buf == NULL)
 		return;
 	if(m->data[pos] != NULL)
