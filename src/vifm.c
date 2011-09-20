@@ -448,8 +448,8 @@ main(int argc, char *argv[])
 		}
 		if(find_color_scheme(curr_stats.color_scheme))
 			load_color_scheme(curr_stats.color_scheme);
+		load_color_scheme_colors();
 		exec_config();
-		load_color_schemes();
 	}
 
 	write_color_scheme_file();

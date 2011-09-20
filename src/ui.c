@@ -61,6 +61,10 @@
 
 static int status_bar_lines;
 
+static WINDOW *lborder;
+static WINDOW *mborder;
+static WINDOW *rborder;
+
 static void update_attributes(void);
 
 static void _gnuc_noreturn
@@ -482,21 +486,6 @@ setup_ncurses_interface(void)
 	wbkgdset(input_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
 	werase(input_win);
 
-	wnoutrefresh(mborder);
-	wnoutrefresh(ltop_line);
-	wnoutrefresh(top_line);
-	wnoutrefresh(rtop_line);
-	wnoutrefresh(lwin.title);
-	wnoutrefresh(lwin.win);
-	wnoutrefresh(rwin.win);
-	wnoutrefresh(rwin.title);
-	wnoutrefresh(stat_win);
-	wnoutrefresh(pos_win);
-	wnoutrefresh(input_win);
-	wnoutrefresh(lborder);
-	wnoutrefresh(rborder);
-	wnoutrefresh(status_bar);
-
 	return 1;
 }
 
@@ -650,6 +639,9 @@ resize_all(void)
 void
 redraw_window(void)
 {
+	if(curr_stats.vifm_started < 2)
+		return;
+
 	resize_all();
 	update_attributes();
 	werase(lborder);
@@ -923,7 +915,7 @@ load_color_scheme(const char *name)
 
 	if(cfg.cs.defaulted)
 	{
-		load_color_schemes();
+		load_color_scheme_colors();
 		show_error_msg("Color Scheme Error", "Not supported by the terminal");
 		return 1;
 	}
@@ -934,6 +926,9 @@ static void
 update_attributes(void)
 {
 	int attr;
+
+	if(curr_stats.vifm_started < 2)
+		return;
 
 	attr = cfg.cs.color[BORDER_COLOR].attr;
 	wbkgdset(lborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) | attr);

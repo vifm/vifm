@@ -259,7 +259,7 @@ load_color_pairs(int base, const Col_scheme *cs)
 }
 
 void
-load_color_schemes(void)
+load_color_scheme_colors(void)
 {
 	if(dirs == NULL)
 		dirs = tree_create(1, 1);

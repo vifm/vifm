@@ -74,7 +74,7 @@ extern char *HI_GROUPS[];
 extern char *COLOR_NAMES[8];
 
 /* directory should be NULL if you want to set default directory */
-void load_color_schemes(void);
+void load_color_scheme_colors(void);
 void load_def_scheme(void);
 int check_directory_for_color_scheme(int left, const char *dir);
 /* Returns value lower than zero when nothing is found */

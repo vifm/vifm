@@ -3716,7 +3716,7 @@ restart_cmd(const struct cmd_info *cmd_info)
 	read_info_file(1);
 	save_view_history(&lwin, NULL, NULL, -1);
 	save_view_history(&rwin, NULL, NULL, -1);
-	load_color_schemes();
+	load_color_scheme_colors();
 	exec_config();
 	return 0;
 }
