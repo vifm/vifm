@@ -1537,7 +1537,7 @@ change_directory(FileView *view, const char *directory)
 }
 
 static void
-reset_selected_files(FileView *view)
+reset_selected_files(FileView *view, int need_free)
 {
 	int x;
 	for(x = 0; x < view->selected_files; x++)
@@ -1550,9 +1550,12 @@ reset_selected_files(FileView *view)
 		}
 	}
 
-	x = view->selected_files;
-	free_selected_file_array(view);
-	view->selected_files = x;
+	if(need_free)
+	{
+		x = view->selected_files;
+		free_selected_file_array(view);
+		view->selected_files = x;
+	}
 }
 
 static int
@@ -2018,6 +2021,7 @@ load_dir_list(FileView *view, int reload)
 #endif
 	int x;
 	int old_list = view->list_rows;
+	int need_free = (view->selected_filelist == NULL);
 
 	view->filtered = 0;
 
@@ -2048,7 +2052,7 @@ load_dir_list(FileView *view, int reload)
 		return;
 	}
 
-	if(reload && view->selected_files)
+	if(reload && view->selected_files > 0 && view->selected_filelist == NULL)
 		get_all_selected_files(view);
 
 	if(view->dir_entry)
@@ -2115,7 +2119,7 @@ load_dir_list(FileView *view, int reload)
 		return;
 	}
 	if(reload && view->selected_files)
-		reset_selected_files(view);
+		reset_selected_files(view, need_free);
 	else if(view->selected_files)
 		view->selected_files = 0;
 
