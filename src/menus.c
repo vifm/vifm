@@ -142,13 +142,15 @@ clean_menu_position(menu_info *m)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf,
 				getmaxx(menu_win) - 3 - 4 + 1);
-		buf[len] = '\0';
+		if(strlen(buf) > len)
+			buf[len] = '\0';
 		wprint(menu_win, buf);
 		waddstr(menu_win, "...");
 	}
 	else
 	{
-		buf[x - 4 + 1] = '\0';
+		if(strlen(buf) > x - 4 + 1)
+			buf[x - 4 + 1] = '\0';
 		wprint(menu_win, buf);
 	}
 	waddstr(menu_win, " ");
@@ -400,13 +402,15 @@ move_to_menu_pos(int pos, menu_info *m)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf,
 				getmaxx(menu_win) - 3 - 4 + 1);
-		buf[len] = '\0';
+		if(strlen(buf) > len)
+			buf[len] = '\0';
 		wprint(menu_win, buf);
 		waddstr(menu_win, "...");
 	}
 	else
 	{
-		buf[x - 4 + 1] = '\0';
+		if(strlen(buf) > x - 4 + 1)
+			buf[x - 4 + 1] = '\0';
 		wprint(menu_win, buf);
 	}
 	waddstr(menu_win, " ");
@@ -934,13 +938,15 @@ draw_menu(menu_info *m)
 		if(strlen(m->data[x]) > len - 4)
 		{
 			size_t len = get_normal_utf8_string_widthn(buf, win_len - 3 - 4);
-			buf[len] = '\0';
+			if(strlen(buf) > len)
+				buf[len] = '\0';
 			wprint(menu_win, buf);
 			waddstr(menu_win, "...");
 		}
 		else
 		{
-			buf[len - 4] = '\0';
+			if(strlen(buf) > len - 4)
+				buf[len - 4] = '\0';
 			wprint(menu_win, buf);
 		}
 		waddstr(menu_win, " ");
