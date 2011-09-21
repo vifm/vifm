@@ -280,11 +280,15 @@ cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_e(struct key_info key_info, struct keys_info *keys_info)
 {
+	int off;
+
 	if(view->list_rows <= view->window_rows + 1)
 		return;
 	if(view->top_line == view->list_rows - view->window_rows - 1)
 		return;
-	if(view->list_pos == view->top_line)
+
+	off = MAX(cfg.scroll_off, 0);
+	if(view->list_pos <= view->top_line + off)
 		goto_pos(view->list_pos + 1);
 	view->top_line++;
 	scroll_view(view);
@@ -340,9 +344,13 @@ cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 {
+	int off;
+
 	if(view->list_rows <= view->window_rows + 1 || view->top_line == 0)
 		return;
-	if(view->list_pos == view->top_line + view->window_rows)
+
+	off = MAX(cfg.scroll_off, 0);
+	if(view->list_pos >= view->top_line + view->window_rows - off)
 		goto_pos(view->list_pos - 1);
 	view->top_line--;
 	scroll_view(view);

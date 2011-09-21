@@ -307,11 +307,15 @@ cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_e(struct key_info key_info, struct keys_info *keys_info)
 {
+	int off;
+
 	if(menu->len <= menu->win_rows - 3)
 		return;
 	if(menu->top == menu->len - (menu->win_rows - 3) - 1)
 		return;
-	if(menu->pos == menu->top)
+
+	off = MAX(cfg.scroll_off, 0);
+	if(menu->pos <= menu->top + off)
 		menu->pos++;
 
 	menu->top++;
@@ -381,9 +385,13 @@ cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 {
+	int off;
+
 	if(menu->len <= menu->win_rows - 3 || menu->top == 0)
 		return;
-	if(menu->pos == menu->top + menu->win_rows - 3)
+
+	off = MAX(cfg.scroll_off, 0);
+	if(menu->pos >= menu->top + menu->win_rows - 3 - off)
 		menu->pos--;
 
 	menu->top--;
