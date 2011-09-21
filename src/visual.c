@@ -289,7 +289,7 @@ cmd_ctrl_e(struct key_info key_info, struct keys_info *keys_info)
 
 	off = MAX(cfg.scroll_off, 0);
 	if(view->list_pos <= view->top_line + off)
-		goto_pos(view->list_pos + 1);
+		goto_pos(view->top_line + 1 + off);
 	view->top_line++;
 	scroll_view(view);
 }
@@ -351,7 +351,7 @@ cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 
 	off = MAX(cfg.scroll_off, 0);
 	if(view->list_pos >= view->top_line + view->window_rows - off)
-		goto_pos(view->list_pos - 1);
+		goto_pos(view->top_line - 1 + view->window_rows - off);
 	view->top_line--;
 	scroll_view(view);
 }

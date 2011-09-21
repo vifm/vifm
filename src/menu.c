@@ -316,7 +316,7 @@ cmd_ctrl_e(struct key_info key_info, struct keys_info *keys_info)
 
 	off = MAX(cfg.scroll_off, 0);
 	if(menu->pos <= menu->top + off)
-		menu->pos++;
+		menu->pos = menu->top + 1 + off;
 
 	menu->top++;
 	update_menu();
@@ -392,7 +392,7 @@ cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 
 	off = MAX(cfg.scroll_off, 0);
 	if(menu->pos >= menu->top + menu->win_rows - 3 - off)
-		menu->pos--;
+		menu->pos = menu->top - 1 + menu->win_rows - 3 - off;
 
 	menu->top--;
 	update_menu();
