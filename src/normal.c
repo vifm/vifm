@@ -881,21 +881,40 @@ cmd_gv(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_H(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(keys_info->selector)
-		pick_files(curr_view, curr_view->top_line, keys_info);
+	int top;
+	int off = MAX(cfg.scroll_off, 0);
+	if(off > curr_view->window_rows/2)
+		return;
+
+	if(curr_view->top_line == 0)
+		top = 0;
 	else
-		move_to_list_pos(curr_view, curr_view->top_line);
+		top = curr_view->top_line + off;
+
+	if(keys_info->selector)
+		pick_files(curr_view, top, keys_info);
+	else
+		move_to_list_pos(curr_view, top);
 }
 
 /* Go to last file in window. */
 static void
 cmd_L(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(keys_info->selector)
-		pick_files(curr_view, curr_view->top_line + curr_view->window_rows,
-				keys_info);
+	int top;
+	int off = MAX(cfg.scroll_off, 0);
+	if(off > curr_view->window_rows/2)
+		return;
+
+	if(curr_view->top_line + curr_view->window_rows < curr_view->list_rows - 1)
+		top = curr_view->top_line + curr_view->window_rows - off;
 	else
-		move_to_list_pos(curr_view, curr_view->top_line + curr_view->window_rows);
+		top = curr_view->top_line + curr_view->window_rows;
+
+	if(keys_info->selector)
+		pick_files(curr_view, top, keys_info);
+	else
+		move_to_list_pos(curr_view, top);
 }
 
 /* Go to middle of window. */

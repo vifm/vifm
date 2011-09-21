@@ -440,14 +440,26 @@ cmd_G(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_H(struct key_info key_info, struct keys_info *keys_info)
 {
+	int top;
+	int off = MAX(cfg.scroll_off, 0);
+	if(off > menu->win_rows/2)
+		return;
+
+	if(menu->top == 0)
+		top = 0;
+	else
+		top = menu->top + off;
+
 	clean_menu_position(menu);
-	move_to_menu_pos(menu->top, menu);
+	move_to_menu_pos(top, menu);
 	wrefresh(menu_win);
 }
 
 static void
 cmd_L(struct key_info key_info, struct keys_info *keys_info)
 {
+	int top;
+	int off;
 	if(menu->key_handler != NULL)
 	{
 		int ret = menu->key_handler(menu, L"L");
@@ -460,8 +472,17 @@ cmd_L(struct key_info key_info, struct keys_info *keys_info)
 		}
 	}
 
+	off = MAX(cfg.scroll_off, 0);
+	if(off > menu->win_rows/2)
+		return;
+
+	if(menu->top + menu->win_rows < menu->len - 1)
+		top = menu->top + menu->win_rows - off;
+	else
+		top = menu->top + menu->win_rows;
+
 	clean_menu_position(menu);
-	move_to_menu_pos(menu->top + menu->win_rows - 3, menu);
+	move_to_menu_pos(top - 3, menu);
 	wrefresh(menu_win);
 }
 

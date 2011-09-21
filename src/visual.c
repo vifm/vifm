@@ -391,14 +391,26 @@ cmd_G(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_H(struct key_info key_info, struct keys_info *keys_info)
 {
-	goto_pos(view->top_line);
+	int off = MAX(cfg.scroll_off, 0);
+	if(off > view->window_rows/2)
+		return;
+	if(view->top_line == 0)
+		goto_pos(0);
+	else
+		goto_pos(view->top_line + off);
 }
 
 /* move to last line of window, selecting as we go */
 static void
 cmd_L(struct key_info key_info, struct keys_info *keys_info)
 {
-	goto_pos(view->top_line + view->window_rows);
+	int off = MAX(cfg.scroll_off, 0);
+	if(off > view->window_rows/2)
+		return;
+	if(view->top_line + view->window_rows < view->list_rows - 1)
+		goto_pos(view->top_line + view->window_rows - off);
+	else
+		goto_pos(view->top_line + view->window_rows);
 }
 
 /* move to middle of window, selecting from start position to there */
