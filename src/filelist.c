@@ -2040,7 +2040,7 @@ load_dir_list(FileView *view, int reload)
 	}
 
 #ifndef _WIN32
-	if(!reload && s.st_size > 2048)
+	if(!reload && s.st_size > s.st_blksize)
 #else
 	if(!reload)
 #endif
@@ -2080,7 +2080,7 @@ load_dir_list(FileView *view, int reload)
 	}
 
 #ifndef _WIN32
-	if(!reload && s.st_size > 2048)
+	if(!reload && s.st_size > s.st_blksize)
 #else
 	if(!reload)
 #endif
