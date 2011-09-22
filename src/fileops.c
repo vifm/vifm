@@ -1427,14 +1427,13 @@ is_rename_list_ok(FileView *view, int *indexes, int count, char **list)
 static int
 perform_renaming(FileView *view, int *indexes, int count, char **list)
 {
-	char buf[10 + NAME_MAX + 1];
+	char buf[MAX(10 + NAME_MAX, COMMAND_GROUP_INFO_LEN) + 1];
 	size_t len;
 	int i;
 	int renamed = 0;
 
-	snprintf(buf, sizeof(buf), "rename in %s: ",
+	len = snprintf(buf, sizeof(buf), "rename in %s: ",
 			replace_home_part(view->curr_dir));
-	len = strlen(buf);
 
 	for(i = 0; i < count && len < COMMAND_GROUP_INFO_LEN; i++)
 	{
@@ -1443,7 +1442,6 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 			strncat(buf, ", ", sizeof(buf) - len - 1);
 			len = strlen(buf);
 		}
-		len = strlen(buf);
 		len += snprintf(buf + len, sizeof(buf) - len, "%s to %s",
 				view->dir_entry[abs(indexes[i])].name, list[i]);
 	}
