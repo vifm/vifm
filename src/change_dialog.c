@@ -147,6 +147,8 @@ leave_change_mode(void)
 	*mode = NORMAL_MODE;
 
 	clean_selected_files(view);
+	load_saving_pos(view, 1);
+	move_to_list_pos(view, view->list_pos);
 
 	update_all_windows();
 }

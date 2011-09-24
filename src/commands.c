@@ -2645,6 +2645,7 @@ static int
 change_cmd(const struct cmd_info *cmd_info)
 {
 	enter_change_mode(curr_view);
+	need_clean_selection = 0;
 	return 0;
 }
 
@@ -2659,6 +2660,7 @@ chmod_cmd(const struct cmd_info *cmd_info)
 	if(cmd_info->argc == 0)
 	{
 		enter_permissions_mode(curr_view);
+		need_clean_selection = 0;
 		return 0;
 	}
 
@@ -3810,6 +3812,7 @@ static int
 sort_cmd(const struct cmd_info *cmd_info)
 {
 	enter_sort_mode(curr_view);
+	need_clean_selection = 0;
 	return 0;
 }
 
