@@ -615,7 +615,7 @@ update_view_title(FileView *view)
 	const char *buf;
 	size_t len;
 
-	if(curr_view == view)
+	if(view == curr_view)
 	{
 		Col_attr col;
 
@@ -626,6 +626,8 @@ update_view_title(FileView *view)
 		wbkgdset(view->title, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_SEL_COLOR) |
 				(col.attr & A_REVERSE));
 		wattrset(view->title, col.attr & ~A_REVERSE);
+
+		set_term_title(view->curr_dir);
 	}
 	else
 	{
@@ -645,7 +647,7 @@ update_view_title(FileView *view)
 	buf = replace_home_part(view->curr_dir);
 
 	len = get_utf8_string_length(buf);
-	if(len + 1 > view->window_width && curr_view == view)
+	if(len + 1 > view->window_width && view == curr_view)
 	{ /* Truncate long directory names */
 		const char *ptr;
 

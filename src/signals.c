@@ -77,6 +77,7 @@ received_sigtstp(void)
 {
 	/* End program so key strokes are not registered while stopped. */
 	def_prog_mode();
+	set_term_title(NULL);
 	endwin();
 	pause();
 	refresh();
@@ -98,6 +99,7 @@ static void _gnuc_noreturn
 shutdown_nicely(void)
 {
 	endwin();
+	set_term_title(NULL);
 	unmount_fuse();
 	write_info_file();
 	fprintf(stdout, "Vifm killed by signal.\n");

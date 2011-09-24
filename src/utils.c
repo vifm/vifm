@@ -756,6 +756,10 @@ int
 is_in_string_array(char **array, size_t len, const char *key)
 {
 	int i;
+
+	if(key == NULL)
+		return 0;
+
 	for(i = 0; i < len; i++)
 		if(strcmp(array[i], key) == 0)
 			return 1;
@@ -1236,6 +1240,33 @@ enclose_in_dquotes(const char *str)
 	*p++ = '"';
 	*p = '\0';
 	return buf;
+}
+
+void
+set_term_title(const char *full_path)
+{
+	static int was_setup;
+	static int title_supported;
+
+	if(!was_setup)
+	{
+		/* this list was taken from ranger's sources */
+		static char *TERMINALS_WITH_TITLE[] = {
+			"xterm", "xterm-256color", "rxvt", "rxvt-256color", "rxvt-unicode",
+			"aterm", "Eterm", "screen", "screen-256color"
+		};
+		title_supported = is_in_string_array(TERMINALS_WITH_TITLE,
+				ARRAY_LEN(TERMINALS_WITH_TITLE), getenv("TERM"));
+
+		was_setup = 1;
+	}
+	if(!title_supported)
+		return;
+
+	if(full_path == NULL)
+		printf("%s", "\033]2; \007");
+	else
+		printf("\033]2;%s - VIFM\007", full_path);
 }
 
 #ifndef _WIN32

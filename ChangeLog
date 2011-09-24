@@ -261,6 +261,8 @@
 
 	Made 'history' option control search, command line and prompt histories.
 
+	Modify terminal emulator title.
+
 	Fixed bug with name conflict of files and directories in the Trash.
 
 	Fixed bug with broken symbolic links in the Trash.

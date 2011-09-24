@@ -1715,9 +1715,11 @@ shellout(const char *command, int pause)
 			if(title != NULL)
 			{
 				if(pause > 0)
+				{
 					snprintf(buf, sizeof(buf),
 							"screen -t \"%s\" %s -c '%s" PAUSE_STR "'",
 							title + strlen(get_vicmd(&bg)) + 1, escaped_sh, command);
+				}
 				else
 				{
 					escaped = escape_filename(command, 0);
@@ -1736,12 +1738,16 @@ shellout(const char *command, int pause)
 					*ptr = ' ';
 				}
 				else
+				{
 					title = strdup("Shell");
+				}
 
 				if(pause > 0)
+				{
 					snprintf(buf, sizeof(buf),
 							"screen -t \"%.10s\" %s -c '%s" PAUSE_STR "'", title,
 							escaped_sh, command);
+				}
 				else
 				{
 					escaped = escape_filename(command, 0);
@@ -2380,6 +2386,7 @@ comm_quit(int write_info)
 	system("cls");
 #endif
 
+	set_term_title(NULL);
 	endwin();
 	exit(0);
 }
