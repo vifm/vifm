@@ -32,6 +32,7 @@
 #ifndef _WIN32
 #include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
+#include <mntent.h> /* getmntent() */
 #endif
 #include <unistd.h> /* chdir() */
 
@@ -585,6 +586,72 @@ my_chdir(const char *path)
 			return 0;
 	}
 	return chdir(path);
+}
+
+#ifndef _WIN32
+static int
+begins_with_list_item(const char *pattern, const char *list)
+{
+	const char *p = list - 1;
+
+	do
+	{
+		char buf[128];
+		const char *t;
+		size_t len;
+
+		t = p + 1;
+		p = strchr(t, ',');
+		if(p == NULL)
+			p = t + strlen(t);
+
+		len = snprintf(buf, MIN(p - t + 1, sizeof(buf)), "%s", t);
+		if(len != 0 && strncmp(pattern, buf, len) == 0)
+			return 1;
+	}
+	while(*p != '\0');
+	return 0;
+}
+#endif
+
+int
+is_on_slow_fs(const char *full_path)
+{
+#ifdef _WIN32
+	return 0;
+#else
+	FILE *f;
+	struct mntent *ent;
+	size_t len = 0;
+	char max[PATH_MAX] = "";
+
+	f = setmntent("/etc/mtab", "r");
+
+	while((ent = getmntent(f)) != NULL)
+	{
+		if(path_starts_with(full_path, ent->mnt_dir))
+		{
+			size_t new_len = strlen(ent->mnt_dir);
+			if(new_len > len)
+			{
+				len = new_len;
+				snprintf(max, sizeof(max), "%s", ent->mnt_fsname);
+			}
+		}
+	}
+
+	if(max[0] != '\0')
+	{
+		if(begins_with_list_item(max, cfg.slow_fs_list))
+		{
+			endmntent(f);
+			return 1;
+		}
+	}
+
+	endmntent(f);
+	return 0;
+#endif
 }
 
 void

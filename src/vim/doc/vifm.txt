@@ -1087,6 +1087,17 @@ type: string
 default: $SHELL or "sh" or "cmd" (on MS-Windows)
 Full path to the shell to use to run external commands.
 
+                                               *vifm-'slowfs'*
+                                               {only for *nix}
+slowfs
+type: string list
+default: ""
+A list of mounter fs name beginnings (first column in /etc/mtab or
+/proc/mounts) that work too slow for you.  This option can be used to
+stop vifm from making some requests to particular kinds of file systems
+that can slow down file browsing.  Currently this means don't check if
+directory has changed and do not check if target of symbolic links exists.
+
                                                *vifm-'smartcase'* *vifm-'scs'*
 smartcase scs
 type: boolean

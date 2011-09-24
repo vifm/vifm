@@ -1,4 +1,4 @@
-.TH vifm 1 "September 17, 2011" "" "Vifm"
+.TH vifm 1 "September 24, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1413,6 +1413,19 @@ type: string
 default: $SHELL or "sh" or "cmd" (on MS-Windows)
 .br
 Full path to the shell to use to run external commands.
+.TP
+.BI slowfs
+type: string list
+.br
+default: ""
+.br
+only for *nix
+.br
+A list of mounter fs name beginnings (first column in /etc/mtab or /proc/mounts)
+that work too slow for you.  This option can be used to stop vifm from making
+some requests to particular kinds of file systems that can slow down file
+browsing.  Currently this means don't check if directory has changed and do not
+check if target of symbolic links exists.
 .TP
 .BI "smartcase scs"
 type: boolean

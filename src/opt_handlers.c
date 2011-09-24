@@ -30,6 +30,9 @@ static void ignorecase_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
 static void scrolloff_handler(enum opt_op op, union optval_t val);
 static void shell_handler(enum opt_op op, union optval_t val);
+#ifndef _WIN32
+static void slowfs_handler(enum opt_op op, union optval_t val);
+#endif
 static void smartcase_handler(enum opt_op op, union optval_t val);
 static void sortnumbers_handler(enum opt_op op, union optval_t val);
 static void sort_handler(enum opt_op op, union optval_t val);
@@ -123,6 +126,9 @@ static struct {
 	{ "runexec",     "",     OPT_BOOL,    0,                          NULL,            &runexec_handler,     },
 	{ "scrolloff",   "so",   OPT_INT,     0,                          NULL,            &scrolloff_handler,   },
 	{ "shell",       "sh",   OPT_STR,     0,                          NULL,            &shell_handler,       },
+#ifndef _WIN32
+	{ "slowfs",      "",     OPT_STRLIST, 0,                          NULL,            &slowfs_handler,      },
+#endif
 	{ "smartcase",   "scs",  OPT_BOOL,    0,                          NULL,            &smartcase_handler,   },
 	{ "sortnumbers", "",     OPT_BOOL,    0,                          NULL,            &sortnumbers_handler, },
 	{ "timefmt",     "",     OPT_STR,     0,                          NULL,            &timefmt_handler,     },
@@ -152,38 +158,43 @@ init_option_handlers(void)
 static void
 load_options_defaults(void)
 {
+	int i = 0;
+
 	/* global options */
-	options[0].val.bool_val = cfg.auto_ch_pos;
-	options[1].val.bool_val = cfg.confirm;
-	options[2].val.bool_val = cfg.fast_run;
-	options[3].val.bool_val = cfg.follow_links;
-	options[4].val.str_val = cfg.fuse_home;
-	options[5].val.bool_val = cfg.gdefault;
-	options[6].val.int_val = cfg.history_len;
-	options[7].val.bool_val = cfg.hl_search;
-	options[8].val.bool_val = cfg.use_iec_prefixes;
-	options[9].val.bool_val = cfg.ignore_case;
-	options[10].val.bool_val = cfg.auto_execute;
-	options[11].val.int_val = cfg.scroll_off;
-	options[12].val.str_val = cfg.shell;
-	options[13].val.bool_val = cfg.smart_case;
-	options[14].val.bool_val = cfg.sort_numbers;
-	options[15].val.str_val = cfg.time_format + 1;
-	options[16].val.int_val = cfg.timeout_len;
-	options[17].val.bool_val = cfg.use_trash;
-	options[18].val.int_val = cfg.undo_levels;
-	options[19].val.str_val = cfg.vi_command;
-	options[20].val.str_val = cfg.vi_x_command;
-	options[21].val.set_items = cfg.vifm_info;
-	options[22].val.bool_val = cfg.use_vim_help;
-	options[23].val.bool_val = cfg.wild_menu;
-	options[24].val.bool_val = cfg.wrap_quick_view;
+	options[i++].val.bool_val = cfg.auto_ch_pos;
+	options[i++].val.bool_val = cfg.confirm;
+	options[i++].val.bool_val = cfg.fast_run;
+	options[i++].val.bool_val = cfg.follow_links;
+	options[i++].val.str_val = cfg.fuse_home;
+	options[i++].val.bool_val = cfg.gdefault;
+	options[i++].val.int_val = cfg.history_len;
+	options[i++].val.bool_val = cfg.hl_search;
+	options[i++].val.bool_val = cfg.use_iec_prefixes;
+	options[i++].val.bool_val = cfg.ignore_case;
+	options[i++].val.bool_val = cfg.auto_execute;
+	options[i++].val.int_val = cfg.scroll_off;
+	options[i++].val.str_val = cfg.shell;
+#ifndef _WIN32
+	options[i++].val.str_val = cfg.slow_fs_list;
+#endif
+	options[i++].val.bool_val = cfg.smart_case;
+	options[i++].val.bool_val = cfg.sort_numbers;
+	options[i++].val.str_val = cfg.time_format + 1;
+	options[i++].val.int_val = cfg.timeout_len;
+	options[i++].val.bool_val = cfg.use_trash;
+	options[i++].val.int_val = cfg.undo_levels;
+	options[i++].val.str_val = cfg.vi_command;
+	options[i++].val.str_val = cfg.vi_x_command;
+	options[i++].val.set_items = cfg.vifm_info;
+	options[i++].val.bool_val = cfg.use_vim_help;
+	options[i++].val.bool_val = cfg.wild_menu;
+	options[i++].val.bool_val = cfg.wrap_quick_view;
 
 	/* local options */
-	options[25].val.str_val = "+name";
-	options[26].val.enum_item = 0;
+	options[i++].val.str_val = "+name";
+	options[i++].val.enum_item = 0;
 
-	assert(ARRAY_LEN(options) == 27);
+	assert(ARRAY_LEN(options) == i);
 }
 
 static void
@@ -467,6 +478,18 @@ shell_handler(enum opt_op op, union optval_t val)
 	free(cfg.shell);
 	cfg.shell = s;
 }
+
+#ifndef _WIN32
+static void
+slowfs_handler(enum opt_op op, union optval_t val)
+{
+	char *s;
+	if((s = strdup(val.str_val)) == NULL)
+		return;
+	free(cfg.slow_fs_list);
+	cfg.slow_fs_list = s;
+}
+#endif
 
 static void
 smartcase_handler(enum opt_op op, union optval_t val)

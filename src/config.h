@@ -83,6 +83,9 @@ typedef struct _Config {
 	int timeout_len;
 	int scroll_off;
 	int gdefault;
+#ifndef _WIN32
+	char *slow_fs_list;
+#endif
 } Config;
 
 extern Config cfg;

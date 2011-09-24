@@ -73,6 +73,11 @@ get_line_color(FileView* view, int pos)
 		case FIFO:
 			return FIFO_COLOR;
 		case LINK:
+			if(is_on_slow_fs(view->curr_dir))
+			{
+				return LINK_COLOR;
+			}
+			else
 			{
 				char full[PATH_MAX];
 				char linkto[PATH_MAX];
@@ -2254,6 +2259,9 @@ reload_window(FileView *view)
 void
 check_if_filelists_have_changed(FileView *view)
 {
+	if(is_on_slow_fs(view->curr_dir))
+		return;
+
 #ifndef _WIN32
 	struct stat s;
 	if(stat(view->curr_dir, &s) != 0)

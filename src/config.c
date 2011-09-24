@@ -103,6 +103,9 @@ init_config(void)
 	cfg.timeout_len = 1000;
 	cfg.scroll_off = 0;
 	cfg.gdefault = 0;
+#ifndef _WIN32
+	cfg.slow_fs_list = strdup("");
+#endif
 
 	p = getenv("SHELL");
 	if(p == NULL || *p == '\0')
@@ -759,6 +762,9 @@ write_info_file(void)
 		fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
 		fprintf(fp, "=scrolloff=%d\n", cfg.scroll_off);
 		fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
+#ifndef _WIN32
+		fprintf(fp, "=slowfs=%s\n", escape_spaces(cfg.slow_fs_list));
+#endif
 		fprintf(fp, "=%ssmartcase\n", cfg.smart_case ? "" : "no");
 		fprintf(fp, "=%ssortnumbers\n", cfg.sort_numbers ? "" : "no");
 		fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format + 1));
