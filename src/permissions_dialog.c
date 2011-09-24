@@ -131,6 +131,9 @@ enter_permissions_mode(FileView *active_view)
 	{
 		show_error_msgf("Access error", "You are not owner of %s",
 				view->dir_entry[i].name);
+		clean_selected_files(view);
+		load_dir_list(view, 1);
+		move_to_list_pos(view, view->list_pos);
 		return;
 	}
 	while(i < view->list_rows)
