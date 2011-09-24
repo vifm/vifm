@@ -481,7 +481,7 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 
 	if(prev_mode == VISUAL_MODE)
 	{
-		leave_visual_mode(curr_stats.save_msg, 1);
+		leave_visual_mode(curr_stats.save_msg, 1, 1);
 		move_to_list_pos(curr_view, check_mark_directory(curr_view, '<'));
 	}
 	if(sub_mode == CMD_SUBMODE)
@@ -727,6 +727,10 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 
 	leave_cmdline_mode();
 
+	if(prev_mode == VISUAL_MODE && sub_mode != VSEARCH_FORWARD_SUBMODE &&
+			sub_mode != VSEARCH_BACKWARD_SUBMODE)
+		leave_visual_mode(curr_stats.save_msg, 1, 0);
+
 	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 	{
 		char* s = (p != NULL) ? p : "";
@@ -771,10 +775,6 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 		cb = (prompt_cb)sub_mode_ptr;
 		cb(p);
 	}
-
-	if(prev_mode == VISUAL_MODE && sub_mode != VSEARCH_FORWARD_SUBMODE &&
-			sub_mode != VSEARCH_BACKWARD_SUBMODE)
-		leave_visual_mode(curr_stats.save_msg, 1);
 
 	free(p);
 }

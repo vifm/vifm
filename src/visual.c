@@ -200,15 +200,21 @@ enter_visual_mode(int restore_selection)
 }
 
 void
-leave_visual_mode(int save_msg, int goto_top)
+leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 {
-	int i;
-	for(i = 0; i < view->list_rows; i++)
-		view->dir_entry[i].search_match = 0;
+	if(clean_selection)
+	{
+		int i;
+		for(i = 0; i < view->list_rows; i++)
+			view->dir_entry[i].search_match = 0;
 
-	for(i = 0; i < view->list_rows; i++)
-		view->dir_entry[i].selected = 0;
-	view->selected_files = 0;
+		for(i = 0; i < view->list_rows; i++)
+			view->dir_entry[i].selected = 0;
+		view->selected_files = 0;
+
+		draw_dir_list(view, view->top_line);
+		move_to_list_pos(view, view->list_pos);
+	}
 
 	if(goto_top)
 	{
@@ -216,9 +222,6 @@ leave_visual_mode(int save_msg, int goto_top)
 		if(ub != -1)
 			view->list_pos = ub;
 	}
-
-	draw_dir_list(view, view->top_line);
-	move_to_list_pos(view, view->list_pos);
 
 	curr_stats.save_msg = save_msg;
 	if(*mode == VISUAL_MODE)
@@ -264,7 +267,7 @@ static void
 cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
 	update_marks(view);
-	leave_visual_mode(0, 0);
+	leave_visual_mode(0, 0, 1);
 }
 
 static void
@@ -361,7 +364,7 @@ static void
 cmd_C(struct key_info key_info, struct keys_info *keys_info)
 {
 	curr_stats.save_msg = clone_files(view, NULL, 0, 0);
-	leave_visual_mode(curr_stats.save_msg, 1);
+	leave_visual_mode(curr_stats.save_msg, 1, 1);
 }
 
 static void
@@ -550,7 +553,7 @@ delete(struct key_info key_info, int use_trash)
 
 	save_msg = delete_file(view, key_info.reg, 0, NULL, use_trash);
 	update_marks(view);
-	leave_visual_mode(save_msg, 1);
+	leave_visual_mode(save_msg, 1, 1);
 }
 
 static void
@@ -602,7 +605,7 @@ cmd_gU(struct key_info key_info, struct keys_info *keys_info)
 	int save_msg;
 	save_msg = change_case(view, 1, 0, NULL);
 	update_marks(view);
-	leave_visual_mode(save_msg, 1);
+	leave_visual_mode(save_msg, 1, 1);
 }
 
 static void
@@ -611,7 +614,7 @@ cmd_gu(struct key_info key_info, struct keys_info *keys_info)
 	int save_msg;
 	save_msg = change_case(view, 0, 0, NULL);
 	update_marks(view);
-	leave_visual_mode(save_msg, 1);
+	leave_visual_mode(save_msg, 1, 1);
 }
 
 static void
@@ -732,14 +735,14 @@ cmd_y(struct key_info key_info, struct keys_info *keys_info)
 	free_selected_file_array(view);
 
 	update_marks(view);
-	leave_visual_mode(1, 1);
+	leave_visual_mode(1, 1, 1);
 }
 
 static void
 cmd_zf(struct key_info key_info, struct keys_info *keys_info)
 {
 	filter_selected_files(view);
-	leave_visual_mode(0, 1);
+	leave_visual_mode(0, 1, 1);
 }
 
 static void
