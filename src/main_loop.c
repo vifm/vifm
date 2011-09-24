@@ -27,7 +27,7 @@
 #include <sys/time.h> /* select() */
 #include <sys/types.h> /* select() */
 #include <signal.h>
-#include <unistd.h> /* chdir(), select() */
+#include <unistd.h> /* select() */
 
 #include <assert.h>
 #include <string.h> /* strncpy */
@@ -40,6 +40,7 @@
 #include "normal.h"
 #include "status.h"
 #include "ui.h"
+#include "utils.h"
 
 #include "main_loop.h"
 
@@ -100,8 +101,7 @@ main_loop(void)
 
 		modes_pre();
 
-		/* just in case... */
-		(void)chdir(curr_view->curr_dir);
+		(void)my_chdir(curr_view->curr_dir);
 
 		/* This waits for timeout then skips if no keypress. */
 		ret = wget_wch(status_bar, (wint_t*)&c);

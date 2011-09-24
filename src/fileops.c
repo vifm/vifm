@@ -145,7 +145,7 @@ unmount_fuse(void)
 	if(fuse_mounts == NULL)
 		return;
 
-	if(chdir("/") != 0)
+	if(my_chdir("/") != 0)
 		return;
 
 	runner = fuse_mounts;
@@ -460,7 +460,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		 paths, Otherwise the fuse-zip command fails with
 		 "fusermount: failed to open current directory: permission denied"
 		 (this happens when mounting JARs from mounted JARs) */
-	if(chdir(cfg.fuse_home) != 0)
+	if(my_chdir(cfg.fuse_home) != 0)
 	{
 		(void)show_error_msg("FUSE MOUNT ERROR", "Can't chdir() to FUSE home");
 		return NULL;
@@ -488,7 +488,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		if(!access(mount_point, F_OK))
 			rmdir(mount_point);
 		(void)show_error_msg("FUSE MOUNT ERROR", filename);
-		(void)chdir(view->curr_dir);
+		(void)my_chdir(view->curr_dir);
 		return NULL;
 	}
 	unlink(tmp_file);
@@ -1133,7 +1133,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	cmd_group_begin(buf);
 
 	y = 0;
-	if(chdir(curr_view->curr_dir) != 0)
+	if(my_chdir(curr_view->curr_dir) != 0)
 	{
 		(void)show_error_msg("Directory return",
 				"Can't chdir() to current directory");
@@ -2095,7 +2095,7 @@ put_files_from_register_i(FileView *view, int start)
 		cmd_group_end();
 	}
 
-	if(chdir(view->curr_dir) != 0)
+	if(my_chdir(view->curr_dir) != 0)
 	{
 		(void)show_error_msg("Directory Return",
 				"Can't chdir() to current directory");

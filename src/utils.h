@@ -72,6 +72,7 @@ wchar_t * my_wcsdup(const wchar_t *ws);
 char * uchar2str(wchar_t *c, size_t *len);
 void get_perm_string(char *buf, int len, mode_t mode);
 int path_starts_with(const char *path, const char *begin);
+int my_chdir(const char *path);
 
 /* When list is NULL returns maximum number of lines, otherwise returns number
  * of filled lines */

@@ -33,7 +33,7 @@
 #include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
 #endif
-#include <unistd.h>
+#include <unistd.h> /* chdir() */
 
 #include <ctype.h>
 #include <errno.h>
@@ -573,6 +573,18 @@ path_starts_with(const char *path, const char *begin)
 		return 0;
 
 	return (path[len] == '\0' || path[len] == '/');
+}
+
+int
+my_chdir(const char *path)
+{
+	char curr_path[PATH_MAX];
+	if(getcwd(curr_path, sizeof(curr_path)) == curr_path)
+	{
+		if(strcmp(curr_path, path) == 0)
+			return 0;
+	}
+	return chdir(path);
 }
 
 void

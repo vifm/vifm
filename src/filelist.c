@@ -39,7 +39,6 @@
 #include <pwd.h>
 #include <grp.h>
 #endif
-#include <unistd.h> /* chdir() */
 
 #include <errno.h>
 #include <stdlib.h> /* malloc  qsort */
@@ -208,9 +207,13 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 				unsigned long long size = 0;
 				char str[24] = "";
 
-				if(view->dir_entry[x].type == DIRECTORY && chdir(view->curr_dir) == 0)
-					tree_get_data(curr_stats.dirsize_cache, view->dir_entry[x].name,
-							&size);
+				if(view->dir_entry[x].type == DIRECTORY)
+				{
+					char buf[PATH_MAX];
+					snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
+							view->dir_entry[x].name);
+					tree_get_data(curr_stats.dirsize_cache, buf, &size);
+				}
 
 				if(size == 0)
 					size = view->dir_entry[x].size;
@@ -1269,7 +1272,7 @@ try_unmount_fuse(FileView *view)
 	free(escaped_mount_point);
 
 	/* have to chdir to parent temporarily, so that this DIR can be unmounted */
-	if(chdir(cfg.fuse_home) != 0)
+	if(my_chdir(cfg.fuse_home) != 0)
 	{
 		(void)show_error_msg("FUSE UMOUNT ERROR", "Can't chdir to FUSE home");
 		return -1;
@@ -1282,7 +1285,7 @@ try_unmount_fuse(FileView *view)
 		werase(status_bar);
 		(void)show_error_msgf("FUSE UMOUNT ERROR",
 				"Can't unmount %s.  It may be busy.", runner->source_file_name);
-		(void)chdir(view->curr_dir);
+		(void)my_chdir(view->curr_dir);
 		return -1;
 	}
 
@@ -1508,7 +1511,7 @@ change_directory(FileView *view, const char *directory)
 		}
 	}
 
-	if(chdir(dir_dup) == -1 && !is_unc_root(dir_dup))
+	if(my_chdir(dir_dup) == -1 && !is_unc_root(dir_dup))
 	{
 		LOG_SERROR_MSG(errno, "Can't chdir() \"%s\"", dir_dup);
 		log_cwd();
@@ -2050,7 +2053,7 @@ load_dir_list(FileView *view, int reload)
 	update_all_windows();
 
 	/* this is needed for lstat() below */
-	if(chdir(view->curr_dir) != 0 && !is_unc_root(view->curr_dir))
+	if(my_chdir(view->curr_dir) != 0 && !is_unc_root(view->curr_dir))
 	{
 		LOG_SERROR_MSG(errno, "Can't chdir() into \"%s\"", view->curr_dir);
 		return;

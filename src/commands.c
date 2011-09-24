@@ -33,7 +33,6 @@
 #include <sys/wait.h>
 #endif
 #include <dirent.h> /* DIR */
-#include <unistd.h> /* chdir() */
 
 #include <assert.h>
 #include <ctype.h> /* isspace() */
@@ -489,7 +488,7 @@ exec_completion(const char *str)
 
 	for(i = 0; i < paths_count; i++)
 	{
-		if(chdir(paths[i]) != 0)
+		if(my_chdir(paths[i]) != 0)
 			continue;
 		filename_completion(str, FNC_EXECONLY);
 	}
@@ -636,7 +635,7 @@ filename_completion(const char *str, int type)
 
 	dir = opendir(dirname);
 
-	if(dir == NULL || chdir(dirname) != 0)
+	if(dir == NULL || my_chdir(dirname) != 0)
 	{
 		add_completion(filename);
 		free(filename);
@@ -681,7 +680,7 @@ filename_completion(const char *str, int type)
 			if(!tempfile)
 			{
 				closedir(dir);
-				(void)chdir(curr_view->curr_dir);
+				(void)my_chdir(curr_view->curr_dir);
 				add_completion(filename);
 				free(filename);
 				free(dirname);
@@ -707,7 +706,7 @@ filename_completion(const char *str, int type)
 			if(tempfile == NULL)
 			{
 				closedir(dir);
-				(void)chdir(curr_view->curr_dir);
+				(void)my_chdir(curr_view->curr_dir);
 				add_completion(filename);
 				free(filename);
 				free(dirname);
@@ -728,7 +727,7 @@ filename_completion(const char *str, int type)
 		free(temp);
 	}
 
-	(void)chdir(curr_view->curr_dir);
+	(void)my_chdir(curr_view->curr_dir);
 
 	completion_group_end();
 	if(type != FNC_EXECONLY)

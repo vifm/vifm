@@ -18,7 +18,6 @@
 
 #ifdef _WIN32
 #include <dirent.h> /* DIR */
-#include <unistd.h> /* chdir() */
 #endif
 
 #include <stdio.h>

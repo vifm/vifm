@@ -25,7 +25,6 @@
 #endif
 
 #include <sys/stat.h> /* mkdir */
-#include <unistd.h> /* chdir */
 
 #include <ctype.h> /* isalnum */
 #include <stdio.h> /* FILE */
@@ -171,7 +170,7 @@ set_config_dir(void)
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/Trash", cfg.config_dir);
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/log", cfg.config_dir);
 
-	if(chdir(cfg.config_dir) != 0)
+	if(my_chdir(cfg.config_dir) != 0)
 	{
 #ifndef _WIN32
 		FILE *f;
