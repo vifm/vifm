@@ -28,6 +28,7 @@ Vi(m) specific features that need to be added.
     :map without arguments
     Better ranges.
     Ctrl-A and Ctrl-X commands.
+    Add :messages command.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?

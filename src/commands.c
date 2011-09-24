@@ -2055,6 +2055,9 @@ execute_command(FileView *view, char *command, int menu)
 		case CMDS_ERR_INVALID_ARG:
 			status_bar_error("Invalid argument");
 			break;
+		case CMDS_ERR_CUSTOM:
+			/* error message is posted by command handler */
+			break;
 		default:
 			status_bar_error("Unknown error");
 			break;
@@ -3792,7 +3795,8 @@ screen_cmd(const struct cmd_info *cmd_info)
 static int
 set_cmd(const struct cmd_info *cmd_info)
 {
-	return process_set_args(cmd_info->args) != 0;
+	int result = process_set_args(cmd_info->args);
+	return (result < 0) ? CMDS_ERR_CUSTOM : (result != 0);
 }
 
 static int
