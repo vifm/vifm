@@ -45,7 +45,7 @@ static int *mode;
 static FileView *view;
 static int top, bottom, step, curr, col;
 
-static void leave_change_mode(void);
+static void leave_change_mode(int clean_selection);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
 static void cmd_G(struct key_info, struct keys_info *);
@@ -142,13 +142,16 @@ redraw_change_dialog(void)
 }
 
 static void
-leave_change_mode(void)
+leave_change_mode(int clean_selection)
 {
 	*mode = NORMAL_MODE;
 
-	clean_selected_files(view);
-	load_saving_pos(view, 1);
-	move_to_list_pos(view, view->list_pos);
+	if(clean_selection)
+	{
+		clean_selected_files(view);
+		load_saving_pos(view, 1);
+		move_to_list_pos(view, view->list_pos);
+	}
 
 	update_all_windows();
 }
@@ -156,13 +159,13 @@ leave_change_mode(void)
 static void
 cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
-	leave_change_mode();
+	leave_change_mode(1);
 }
 
 static void
 cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 {
-	leave_change_mode();
+	leave_change_mode(0);
 
 	if(curr == 2)
 		rename_file(view, 0);
