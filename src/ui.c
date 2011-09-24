@@ -182,6 +182,22 @@ update_stat_window(FileView *view)
 }
 
 static void
+save_status_bar_msg(const char *msg)
+{
+	if(!curr_stats.save_msg_in_list)
+		return;
+
+	if(curr_stats.msg_tail != curr_stats.msg_head &&
+			strcmp(curr_stats.msgs[curr_stats.msg_tail], msg) == 0)
+		return;
+
+	curr_stats.msg_tail = (curr_stats.msg_tail + 1) % ARRAY_LEN(curr_stats.msgs);
+	if(curr_stats.msg_tail == curr_stats.msg_head)
+		free(curr_stats.msgs[curr_stats.msg_head]);
+	curr_stats.msgs[curr_stats.msg_tail] = strdup(msg);
+}
+
+static void
 status_bar_message_i(const char *message, int error)
 {
 	static char *msg;
@@ -204,9 +220,12 @@ status_bar_message_i(const char *message, int error)
 		free(msg);
 		msg = p;
 		err = error;
+
+		save_status_bar_msg(msg);
 	}
 
-	assert(msg != NULL);
+	if(msg == NULL)
+		return;
 
 	p = msg;
 	q = msg - 1;

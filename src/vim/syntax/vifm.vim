@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@gmail.com>
-" Last Change: September 13, 2011
+" Last Change: September 25, 2011
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -14,11 +14,12 @@ set cpo-=C
 
 " General commands
 syntax keyword vifmCommand contained alink apropos cd change chmod chown clone
-		\ co[py] d[elete] delm[arks] di[splay] dirs e[dit] empty exi[t] file filter
-		\ fin[d] gr[ep] h[elp] hi[ghlight] his[tory] invert jobs locate ls marks
-		\ mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd q[uit] reg[isters] rename
-		\ restart restore rlink screen se[t] sh[ell] sor[t] sp[lit] s[ubstitute]
-		\ touch tr sync undol[ist] ve[rsion] vie[w] vifm w[rite] wq x[it] y[ank]
+		\ co[py] d[elete] delm[arks] di[splay] dirs e[dit] empty exi[t] file
+		\ filter fin[d] gr[ep] h[elp] hi[ghlight] his[tory] invert jobs locate ls
+		\ marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd q[uit]
+		\ reg[isters] rename restart restore rlink screen se[t] sh[ell] sor[t]
+		\ sp[lit] s[ubstitute] touch tr sync undol[ist] ve[rsion] vie[w] vifm
+		\ w[rite] wq x[it] y[ank]
 
 " Map commands
 syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map nm[ap]

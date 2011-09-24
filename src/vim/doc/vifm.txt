@@ -706,6 +706,9 @@ of the hierarchy and transparency for all others.
 :marks - menu of bookmarks.
 :marks list ... - display the contents of the marks that are mentioned in list.
 
+                                               *vifm-:messages* *vifm-:mes*
+:mes[sages] - shows previously given messages (up to 50).
+
                                                *vifm-:mkdir*
 :mkdir[!] dir... - creates directories with given names.  "!" means make
     parent directories as needed.

@@ -42,6 +42,7 @@
 #include "modes.h"
 #include "status.h"
 #include "ui.h"
+#include "utils.h"
 
 #include "signals.h"
 

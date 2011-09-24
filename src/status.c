@@ -56,6 +56,10 @@ init_status(void)
 #ifdef HAVE_LIBGTK
 	curr_stats.gtk_available = 0;
 #endif
+
+	curr_stats.msg_head = 0;
+	curr_stats.msg_tail = 0;
+	curr_stats.save_msg_in_list = 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

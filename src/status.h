@@ -74,6 +74,10 @@ typedef struct
 #ifdef HAVE_LIBGTK
 	int gtk_available; /* for mimetype detection */
 #endif
+
+	int msg_head, msg_tail;
+	char *msgs[51];
+	int save_msg_in_list;
 }Status;
 
 extern Status curr_stats;
