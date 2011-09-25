@@ -118,6 +118,9 @@ static void cmd_gA(struct key_info, struct keys_info *);
 static void cmd_ga(struct key_info, struct keys_info *);
 static void cmd_gf(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
+#ifdef _WIN32
+static void cmd_gl(struct key_info, struct keys_info *);
+#endif
 static void cmd_gs(struct key_info, struct keys_info *);
 static void cmd_gU(struct key_info, struct keys_info *);
 static void cmd_gUgg(struct key_info, struct keys_info *);
@@ -222,6 +225,9 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"ga", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ga}}},
 	{L"gf", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gf}}},
 	{L"gg", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+#ifdef _WIN32
+	{L"gl", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gl}}},
+#endif
 	{L"gs", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gs}}},
 	{L"gU", {BUILDIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_gU}}},
 	{L"gUgU", {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
@@ -800,6 +806,19 @@ cmd_gg(struct key_info key_info, struct keys_info *keys_info)
 		move_to_list_pos(curr_view, key_info.count - 1);
 }
 
+#ifdef _WIN32
+static void
+cmd_gl(struct key_info key_info, struct keys_info *keys_info)
+{
+	curr_stats.as_admin = 1;
+	handle_file(curr_view, 0, 0);
+	curr_stats.as_admin = 0;
+	clean_selected_files(curr_view);
+	draw_dir_list(curr_view, curr_view->top_line);
+	move_to_list_pos(curr_view, curr_view->list_pos);
+}
+#endif
+
 static void
 cmd_gs(struct key_info key_info, struct keys_info *keys_info)
 {
@@ -997,7 +1016,7 @@ cmd_ZZ(struct key_info key_info, struct keys_info *keys_info)
 	comm_quit(1);
 }
 
-/* Mark. */
+/* Goto mark. */
 static void
 cmd_quote(struct key_info key_info, struct keys_info *keys_info)
 {

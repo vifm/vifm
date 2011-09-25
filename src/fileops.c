@@ -29,6 +29,9 @@
 #include <sys/types.h> /* waitpid() */
 #ifndef _WIN32
 #include <sys/wait.h> /* waitpid() */
+#else
+#include <windows.h>
+#include <shellapi.h>
 #endif
 #include <unistd.h>
 
@@ -932,7 +935,24 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 #ifndef _WIN32
 		shellout(buf, 1);
 #else
-		system(buf);
+		if(curr_stats.as_admin)
+		{
+			SHELLEXECUTEINFOA sei;
+			memset(&sei, 0, sizeof(sei));
+			sei.cbSize = sizeof(sei);
+			sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
+			sei.lpVerb = "runas";
+			sei.lpFile = buf;
+			sei.lpParameters = NULL;
+			sei.nShow = SW_SHOWNORMAL;
+
+			if(ShellExecuteEx(&sei))
+				CloseHandle(sei.hProcess);
+		}
+		else
+		{
+			exec_program(buf);
+		}
 #endif
 	}
 	else if(runnable)

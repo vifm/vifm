@@ -78,6 +78,10 @@ typedef struct
 	int msg_head, msg_tail;
 	char *msgs[51];
 	int save_msg_in_list;
+
+#ifdef _WIN32
+	int as_admin;
+#endif
 }Status;
 
 extern Status curr_stats;
