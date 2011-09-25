@@ -155,7 +155,9 @@
 
 	Added gl normal mode key (only for MS-Windows).
 
-	Added support for :set all (shows all options).
+	Added support for :set all.
+
+	Added support for :set command without arguments.
 
 	Now spaces between option name and '?' or '!' are allowed in :set command.
 

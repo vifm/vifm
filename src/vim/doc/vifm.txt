@@ -792,6 +792,7 @@ of the hierarchy and transparency for all others.
 :screen? - shows whether screen program is used.
 
                                                *vifm-:set* *vifm-:se*
+:se[t] - shows all options that differ from their default value.
 :se[t] all - shows all options.
 :se[t] opt1=val1 opt2='val2' opt3="val3" ... - sets given options.
     You can use following syntax:

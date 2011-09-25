@@ -45,6 +45,7 @@ struct opt_t {
 
 static struct opt_t * add_option_inner(const char *name, enum opt_type type,
 		int val_count, const char **vals, opt_handler handler);
+static void print_changed_options(void);
 static const char * extract_option(const char *cmd, char *buf, int replace);
 static int process_option(const char *cmd);
 static const char * skip_alphas(const char *cmd);
@@ -192,6 +193,13 @@ int
 set_options(const char *cmd)
 {
 	int err = 0;
+
+	if(*cmd == '\0')
+	{
+		print_changed_options();
+		return 0;
+	}
+
 	while(*cmd != '\0')
 	{
 		char buf[1024];
@@ -202,6 +210,31 @@ set_options(const char *cmd)
 		err += process_option(buf);
 	}
 	return err;
+}
+
+static void
+print_changed_options(void)
+{
+	int i;
+	for(i = 0; i < options_count; i++)
+	{
+		struct opt_t *opt = &options[i];
+
+		if(opt->full != NULL)
+			continue;
+
+		if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
+		{
+			if(strcmp(opt->val.str_val, opt->def.str_val) == 0)
+				continue;
+		}
+		else if(opt->val.int_val == opt->def.int_val)
+		{
+			continue;
+		}
+
+		set_print(&options[i]);
+	}
 }
 
 static const char *
