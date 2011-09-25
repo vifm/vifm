@@ -48,6 +48,7 @@ static struct opt_t * add_option_inner(const char *name, enum opt_type type,
 static const char * extract_option(const char *cmd, char *buf, int replace);
 static int process_option(const char *cmd);
 static const char * skip_alphas(const char *cmd);
+static void print_options(void);
 static struct opt_t * get_option(const char *option);
 static struct opt_t * find_option(const char *option);
 static int set_on(struct opt_t *opt);
@@ -285,6 +286,13 @@ process_option(const char *cmd)
 	p = skip_alphas(cmd);
 
 	snprintf(option, p - cmd + 1, "%s", cmd);
+
+	if(strcmp(option, "all") == 0)
+	{
+		print_options();
+		return 0;
+	}
+
 	opt = get_option(option);
 	if(opt == NULL)
 	{
@@ -354,6 +362,18 @@ skip_alphas(const char *cmd)
 	while(isalpha(*cmd))
 		cmd++;
 	return cmd;
+}
+
+static void
+print_options(void)
+{
+	int i;
+	for(i = 0; i < options_count; i++)
+	{
+		if(options[i].full != NULL)
+			continue;
+		set_print(&options[i]);
+	}
 }
 
 static struct opt_t *
@@ -724,25 +744,26 @@ set_print(struct opt_t *opt)
 	if(opt->type == OPT_BOOL)
 	{
 		snprintf(buf, sizeof(buf), "%s%s",
-				opt->val.bool_val ? "" : "no", opt->name);
+				opt->val.bool_val ? "  " : "no", opt->name);
 	}
 	else if(opt->type == OPT_INT)
 	{
-		snprintf(buf, sizeof(buf), "%s=%d", opt->name, opt->val.int_val);
+		snprintf(buf, sizeof(buf), "  %s=%d", opt->name, opt->val.int_val);
 	}
 	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
 	{
-		snprintf(buf, sizeof(buf), "%s=%s", opt->name,
+		snprintf(buf, sizeof(buf), "  %s=%s", opt->name,
 				opt->val.str_val ? opt->val.str_val : "");
 	}
 	else if(opt->type == OPT_ENUM)
 	{
-		snprintf(buf, sizeof(buf), "%s=%s", opt->name, opt->vals[opt->val.enum_item]);
+		snprintf(buf, sizeof(buf), "  %s=%s", opt->name,
+				opt->vals[opt->val.enum_item]);
 	}
 	else if(opt->type == OPT_SET)
 	{
 		int i, first = 1;
-		snprintf(buf, sizeof(buf), "%s=", opt->name);
+		snprintf(buf, sizeof(buf), "  %s=", opt->name);
 		for(i = 0; i < opt->val_count; i++)
 			if(opt->val.set_items & (1 << i))
 			{
@@ -854,6 +875,8 @@ complete_option(const char *buf, int bool_only)
 	}
 
 	len = strlen(buf);
+	if(strncmp(buf, "all", len) == 0)
+		add_completion("all");
 	for(i = 0; i < options_count; i++)
 	{
 		if(options[i].full != NULL)

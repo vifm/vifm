@@ -49,7 +49,7 @@ static void wildmenu_handler(enum opt_op op, union optval_t val);
 static void wrap_handler(enum opt_op op, union optval_t val);
 
 static int save_msg;
-static char print_buf[320];
+static char print_buf[320*80];
 
 static const char * sort_enum[] = {
 	"ext",
