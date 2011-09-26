@@ -1429,6 +1429,13 @@ is_win_executable(const char *name)
 	return 0;
 }
 
+int
+is_vista_and_above(void)
+{
+	DWORD v = GetVersion();
+	return ((v & 0xff) >= 6);
+}
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
