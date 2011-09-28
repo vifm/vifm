@@ -759,13 +759,17 @@ cmd_G(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_gA(struct key_info key_info, struct keys_info *keys_info)
 {
+	char full_path[PATH_MAX];
+
 	if(curr_view->dir_entry[curr_view->list_pos].type != DIRECTORY)
 		return;
 
 	status_bar_message("Calculating directory size...");
 	wrefresh(status_bar);
 
-	calc_dirsize(curr_view->dir_entry[curr_view->list_pos].name, 1);
+	snprintf(full_path, sizeof(full_path), "%s/%s", curr_view->curr_dir,
+			curr_view->dir_entry[curr_view->list_pos].name);
+	calc_dirsize(full_path, 1);
 
 	redraw_lists();
 }
@@ -773,13 +777,17 @@ cmd_gA(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ga(struct key_info key_info, struct keys_info *keys_info)
 {
+	char full_path[PATH_MAX];
+
 	if(curr_view->dir_entry[curr_view->list_pos].type != DIRECTORY)
 		return;
 
 	status_bar_message("Calculating directory size...");
 	wrefresh(status_bar);
 
-	calc_dirsize(curr_view->dir_entry[curr_view->list_pos].name, 0);
+	snprintf(full_path, sizeof(full_path), "%s/%s", curr_view->curr_dir,
+			curr_view->dir_entry[curr_view->list_pos].name);
+	calc_dirsize(full_path, 0);
 
 	redraw_lists();
 }
