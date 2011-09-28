@@ -953,10 +953,11 @@ replace_home_part(const char *directory)
 char *
 expand_tilde(char *path)
 {
-#ifndef _WIN32
 	char name[NAME_MAX];
 	char *p, *result;
+#ifndef _WIN32
 	struct passwd *pw;
+#endif
 
 	if(path[0] != '~')
 		return path;
@@ -974,6 +975,7 @@ expand_tilde(char *path)
 		return result;
 	}
 
+#ifndef _WIN32
 	if((p = strchr(path, '/')) == NULL)
 	{
 		p = path + strlen(path);
