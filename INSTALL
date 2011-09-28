@@ -36,8 +36,12 @@ Windows Installation:
     make -f Makefile.win
 
     Copy vifm.exe, vifmrc-converter.exe and win_helper.exe to where you
-    want to run them.  You will also need to copy vifm help files and
-    vifmrc file to %HOME%/.vifm/ of %APPDATA%/Vifm/.
+    want to run them (but they all should be in the same directory).  You will
+    also need to copy vifm help files and vifmrc file to %HOME%/.vifm/ or
+    %APPDATA%/Vifm/.
+
+    In case you want to be able to create symbolic links, you should set a
+    "Run as Administrator" attribute for the win_helper.exe.
 
 Vim Specific Options:
 

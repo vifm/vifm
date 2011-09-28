@@ -2560,6 +2560,8 @@ cd(FileView *view, const char *path)
 #else
 		if(is_path_absolute(arg) && *arg != '/')
 			snprintf(dir, sizeof(dir), "%s", arg);
+		else if(*arg == '/' && is_unc_root(arg))
+			snprintf(dir, sizeof(dir), "%s", arg);
 		else if(*arg == '/' && is_unc_root(view->curr_dir))
 			snprintf(dir, sizeof(dir), "%s", view->curr_dir);
 		else if(*arg == '/' && is_unc_path(view->curr_dir))

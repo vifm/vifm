@@ -2390,7 +2390,7 @@ calc_dirsize(const char *path, int force_update)
 		else if(strcmp(dentry->d_name, "..") == 0)
 			continue;
 
-		snprintf(buf, sizeof (buf), "%s%s%s", path, slash, dentry->d_name);
+		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
 #ifndef _WIN32
 		if(dentry->d_type == DT_DIR)
 #else
