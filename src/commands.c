@@ -1106,7 +1106,7 @@ init_commands(void)
 	if(cmds_conf.inner == NULL)
 	{
 		init_cmds(1, &cmds_conf);
-		add_buildin_commands((const struct cmd_add *)&commands,
+		add_builtin_commands((const struct cmd_add *)&commands,
 				ARRAY_LEN(commands));
 
 		split_path();
@@ -2033,7 +2033,7 @@ execute_command(FileView *view, char *command, int menu)
 		case CMDS_ERR_NEED_BANG:
 			status_bar_error("Add bang to force");
 			break;
-		case CMDS_ERR_NO_BUILDIN_REDEFINE:
+		case CMDS_ERR_NO_BUILTIN_REDEFINE:
 			status_bar_error("Can't redefine builtin command");
 			break;
 		case CMDS_ERR_INVALID_CMD:

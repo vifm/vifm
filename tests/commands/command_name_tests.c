@@ -35,7 +35,7 @@ delete_cmd(const struct cmd_info* cmd_info)
 static void
 setup(void)
 {
-	add_buildin_commands(commands, ARRAY_LEN(commands));
+	add_builtin_commands(commands, ARRAY_LEN(commands));
 }
 
 static void
@@ -51,13 +51,13 @@ test_builtin(void)
 		.emark = 0, .expand = 0,  .qmark = 0,  .regexp = 0,         .min_args = 0, .max_args = 0,
 	};
 
-	assert_true(add_buildin_cmd("!", 0, &command) == 0);
+	assert_true(add_builtin_cmd("!", 0, &command) == 0);
 
-	assert_false(add_buildin_cmd("?", 0, &command) == 0);
+	assert_false(add_builtin_cmd("?", 0, &command) == 0);
 
-	assert_false(add_buildin_cmd("&", 0, &command) == 0);
+	assert_false(add_builtin_cmd("&", 0, &command) == 0);
 
-	assert_false(add_buildin_cmd("2", 0, &command) == 0);
+	assert_false(add_builtin_cmd("2", 0, &command) == 0);
 }
 
 static void

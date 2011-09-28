@@ -34,8 +34,8 @@
 
 enum CMD_TYPE
 {
-	BUILDIN_ABBR,
-	BUILDIN_CMD,
+	BUILTIN_ABBR,
+	BUILTIN_CMD,
 	USER_CMD,
 };
 
@@ -93,7 +93,7 @@ static void complete_cmd_name(const char *cmd_name, int user_only);
 #ifndef TEST
 static
 #endif
-int add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf);
+int add_builtin_cmd(const char *name, int abbr, const struct cmd_add *conf);
 static int comclear_cmd(const struct cmd_info *cmd_info);
 static int command_cmd(const struct cmd_info *cmd_info);
 static const char * get_user_cmd_name(const char *cmd, char *buf, size_t buf_len);
@@ -136,7 +136,7 @@ init_cmds(int udf, struct cmds_conf *conf)
 		inner = conf->inner;
 
 		if(udf)
-			add_buildin_commands(commands, ARRAY_LEN(commands));
+			add_builtin_commands(commands, ARRAY_LEN(commands));
 	}
 }
 
@@ -269,7 +269,7 @@ execute_cmd(const char *cmd)
 	{
 		cur->passed++;
 
-		if(cur->type != BUILDIN_CMD && cur->type != BUILDIN_ABBR)
+		if(cur->type != BUILTIN_CMD && cur->type != BUILTIN_ABBR)
 		{
 			cmd_info.cmd = cur->cmd;
 			result = inner->user_cmd_handler.handler(&cmd_info);
@@ -931,7 +931,7 @@ complete_cmd_name(const char *cmd_name, int user_only)
 	len = strlen(cmd_name);
 	while(cur != NULL && strncmp(cur->name, cmd_name, len) == 0)
 	{
-		if(cur->type == BUILDIN_ABBR)
+		if(cur->type == BUILTIN_ABBR)
 			;
 		else if(cur->type != USER_CMD && user_only)
 			;
@@ -946,7 +946,7 @@ complete_cmd_name(const char *cmd_name, int user_only)
 }
 
 void
-add_buildin_commands(const struct cmd_add *cmds, int count)
+add_builtin_commands(const struct cmd_add *cmds, int count)
 {
 	int i;
 	for(i = 0; i < count; i++)
@@ -955,7 +955,7 @@ add_buildin_commands(const struct cmd_add *cmds, int count)
 		assert(cmds[i].min_args >= 0);
 		assert(cmds[i].max_args == NOT_DEF ||
 				cmds[i].min_args <= cmds[i].max_args);
-		ret_code = add_buildin_cmd(cmds[i].name, 0, &cmds[i]);
+		ret_code = add_builtin_cmd(cmds[i].name, 0, &cmds[i]);
 		assert(ret_code == 0);
 		if(cmds[i].abbr != NULL)
 		{
@@ -967,7 +967,7 @@ add_buildin_commands(const struct cmd_add *cmds, int count)
 			while(full_len > short_len)
 			{
 				buf[--full_len] = '\0';
-				ret_code = add_buildin_cmd(buf, 1, &cmds[i]);
+				ret_code = add_builtin_cmd(buf, 1, &cmds[i]);
 				assert(ret_code == 0);
 			}
 		}
@@ -979,7 +979,7 @@ add_buildin_commands(const struct cmd_add *cmds, int count)
 static
 #endif
 int
-add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf)
+add_builtin_cmd(const char *name, int abbr, const struct cmd_add *conf)
 {
 	int i;
 	int cmp;
@@ -1019,7 +1019,7 @@ add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf)
 	new->name = strdup(name);
 	new->id = conf->id;
 	new->handler = conf->handler;
-	new->type = abbr ? BUILDIN_ABBR : BUILDIN_CMD;
+	new->type = abbr ? BUILTIN_ABBR : BUILTIN_CMD;
 	new->passed = 0;
 	new->range = conf->range;
 	new->cust_sep = conf->cust_sep;
@@ -1094,8 +1094,8 @@ command_cmd(const struct cmd_info *cmd_info)
 	if(cmp == 0)
 	{
 		cur = cur->next;
-		if(cur->type == BUILDIN_CMD)
-			return CMDS_ERR_NO_BUILDIN_REDEFINE;
+		if(cur->type == BUILTIN_CMD)
+			return CMDS_ERR_NO_BUILTIN_REDEFINE;
 		if(!cmd_info->emark)
 			return CMDS_ERR_NEED_BANG;
 		free(cur->name);

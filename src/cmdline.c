@@ -137,48 +137,48 @@ static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static void stop_completion(void);
 
 static struct keys_add_info builtin_cmds[] = {
-	{L"\x03",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x03",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	/* backspace */
-	{L"\x08",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
-	{L"\x09",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_i}}},
-	{L"\x0b",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_k}}},
-	{L"\x0d",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"\x0e",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_n}}},
-	{L"\x10",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_p}}},
+	{L"\x08",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
+	{L"\x09",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_i}}},
+	{L"\x0b",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_k}}},
+	{L"\x0d",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
+	{L"\x0e",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_n}}},
+	{L"\x10",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_p}}},
 	/* escape */
-	{L"\x1b",         {BUILDIN_WAIT_POINT, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x1b",         {BUILTIN_WAIT_POINT, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	/* escape escape */
-	{L"\x1b\x1b",     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x1b\x1b",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	/* ascii Delete */
-	{L"\x7f",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
+	{L"\x7f",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
 #ifdef ENABLE_EXTENDED_KEYS
-	{{KEY_BACKSPACE}, {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
-	{{KEY_DOWN},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_down}}},
-	{{KEY_UP},        {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_up}}},
-	{{KEY_LEFT},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left}}},
-	{{KEY_RIGHT},     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right}}},
-	{{KEY_HOME},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_home}}},
-	{{KEY_END},       {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_end}}},
-  {{KEY_DC},        {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
-  {{KEY_BTAB},      {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
+	{{KEY_BACKSPACE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
+	{{KEY_DOWN},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_down}}},
+	{{KEY_UP},        {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_up}}},
+	{{KEY_LEFT},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left}}},
+	{{KEY_RIGHT},     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right}}},
+	{{KEY_HOME},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_home}}},
+	{{KEY_END},       {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_end}}},
+  {{KEY_DC},        {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
+  {{KEY_BTAB},      {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
 #endif /* ENABLE_EXTENDED_KEYS */
-	{L"\x1b"L"[Z",    {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
+	{L"\x1b"L"[Z",    {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
 	/* ctrl b */
-	{L"\x02",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left}}},
+	{L"\x02",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left}}},
 	/* ctrl f */
-	{L"\x06",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right}}},
+	{L"\x06",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right}}},
 	/* ctrl a */
-	{L"\x01",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_home}}},
+	{L"\x01",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_home}}},
 	/* ctrl e */
-	{L"\x05",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_end}}},
+	{L"\x05",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_end}}},
 	/* ctrl d */
-	{L"\x04",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
-	{L"\x15",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
-	{L"\x17",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_w}}},
-	{L"\x1b"L"b",     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
-	{L"\x1b"L"d",     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
-	{L"\x1b"L"f",     {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_f}}},
-	{L"\x1f",         {BUILDIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_underscore}}},
+	{L"\x04",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
+	{L"\x15",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
+	{L"\x17",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_w}}},
+	{L"\x1b"L"b",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
+	{L"\x1b"L"d",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
+	{L"\x1b"L"f",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_f}}},
+	{L"\x1f",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_underscore}}},
 };
 
 void

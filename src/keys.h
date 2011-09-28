@@ -56,9 +56,9 @@ enum FOLLOWED_BY
 
 enum KEYS_TYPE
 {
-	BUILDIN_WAIT_POINT, /* infinite wait of next key press */
-	BUILDIN_KEYS,
-	BUILDIN_CMD,
+	BUILTIN_WAIT_POINT, /* infinite wait of next key press */
+	BUILTIN_KEYS,
+	BUILTIN_CMD,
 	USER_CMD,
 };
 

@@ -1092,7 +1092,7 @@ get_group_file_list(char **list, int count, char *buf)
 int
 delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 {
-	char buf[8 + PATH_MAX*2];
+	char buf[MAX(COMMAND_GROUP_INFO_LEN, 8 + PATH_MAX*2)];
 	int x, y;
 	int i;
 
@@ -1267,7 +1267,7 @@ static void
 rename_file_cb(const char *new_name)
 {
 	char *filename = get_current_file_name(curr_view);
-	char buf[10 + NAME_MAX + 1];
+	char buf[MAX(COMMAND_GROUP_INFO_LEN, 10 + NAME_MAX + 1)];
 	char new[NAME_MAX + 1];
 	size_t len;
 	int tmp;
@@ -1838,7 +1838,7 @@ change_group(void)
 static void
 change_link_cb(const char *new_target)
 {
-	char buf[PATH_MAX];
+	char buf[MAX(COMMAND_GROUP_INFO_LEN, PATH_MAX)];
 	char linkto[PATH_MAX];
 	const char *filename;
 
@@ -2099,7 +2099,7 @@ put_files_from_register_i(FileView *view, int start)
 {
 	if(start)
 	{
-		char buf[PATH_MAX + NAME_MAX*2 + 4];
+		char buf[MAX(COMMAND_GROUP_INFO_LEN, PATH_MAX + NAME_MAX*2 + 4)];
 		const char *op = "UNKNOWN";
 		int from_trash = strncmp(put_confirm.reg->files[0], cfg.trash_dir,
 				strlen(cfg.trash_dir)) == 0;

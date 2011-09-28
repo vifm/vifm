@@ -27,7 +27,7 @@ enum
 	CMDS_ERR_TRAILING_CHARS = -4,
 	CMDS_ERR_INCORRECT_NAME = -5,
 	CMDS_ERR_NEED_BANG = -6,
-	CMDS_ERR_NO_BUILDIN_REDEFINE = -7,
+	CMDS_ERR_NO_BUILTIN_REDEFINE = -7,
 	CMDS_ERR_INVALID_CMD = -8,
 	CMDS_ERR_NO_BANG_ALLOWED = -9,
 	CMDS_ERR_NO_RANGE_ALLOWED = -10,
@@ -115,7 +115,7 @@ int get_cmd_info(const char *cmd, struct cmd_info *info);
 /* Returns offset in cmd, where completion elements should be pasted */
 int complete_cmd(const char *cmd);
 
-void add_buildin_commands(const struct cmd_add *cmds, int count);
+void add_builtin_commands(const struct cmd_add *cmds, int count);
 
 /* Last element is followed by a NULL */
 char ** list_udf(void);
@@ -123,7 +123,7 @@ char ** list_udf(void);
 char * list_udf_content(const char *beginning);
 
 #ifdef TEST
-int add_buildin_cmd(const char *name, int abbr, const struct cmd_add *conf);
+int add_builtin_cmd(const char *name, int abbr, const struct cmd_add *conf);
 char ** dispatch_line(const char *args, int *count, char sep, int regexp,
 		int quotes, int *last_arg, int *last_end);
 #endif

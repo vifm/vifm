@@ -6,7 +6,7 @@
 #include "../../src/keys.h"
 #include "../../src/modes.h"
 
-#include "buildin_keys.h"
+#include "builtin_keys.h"
 
 #ifdef TEST
 #define printf(...)
@@ -34,7 +34,7 @@ static void keys_v(struct key_info key_info, struct keys_info *keys_info);
 static void keys_quit(struct key_info key_info, struct keys_info *keys_info);
 
 void
-init_buildin_keys(int *key_mode)
+init_builtin_keys(int *key_mode)
 {
 	struct key_t *curr;
 
@@ -46,22 +46,22 @@ init_buildin_keys(int *key_mode)
 	curr->data.handler = keys_colon;
 
 	curr = add_cmd(L"m", NORMAL_MODE);
-	curr->type = BUILDIN_WAIT_POINT;
+	curr->type = BUILTIN_WAIT_POINT;
 	curr->data.handler = keys_m;
 	curr->followed = FOLLOWED_BY_MULTIKEY;
 
 	curr = add_cmd(L"'", NORMAL_MODE);
-	curr->type = BUILDIN_WAIT_POINT;
+	curr->type = BUILTIN_WAIT_POINT;
 	curr->data.handler = keys_quote;
 	curr->followed = FOLLOWED_BY_MULTIKEY;
 
 	curr = add_selector(L"gg", NORMAL_MODE);
-	curr->type = BUILDIN_WAIT_POINT;
+	curr->type = BUILTIN_WAIT_POINT;
 	curr->data.handler = keys_gg;
 	curr->followed = FOLLOWED_BY_NONE;
 
 	curr = add_selector(L"'", NORMAL_MODE);
-	curr->type = BUILDIN_WAIT_POINT;
+	curr->type = BUILTIN_WAIT_POINT;
 	curr->data.handler = keys_quote;
 	curr->followed = FOLLOWED_BY_MULTIKEY;
 
@@ -71,7 +71,7 @@ init_buildin_keys(int *key_mode)
 	curr = add_cmd(L"gu", NORMAL_MODE);
 	curr->data.handler = keys_gu;
 	curr->followed = FOLLOWED_BY_SELECTOR;
-	curr->type = BUILDIN_WAIT_POINT;
+	curr->type = BUILTIN_WAIT_POINT;
 
 	curr = add_cmd(L"guu", NORMAL_MODE);
 	curr->data.handler = keys_gu;
@@ -119,15 +119,15 @@ init_buildin_keys(int *key_mode)
 	curr->data.handler = keys_if;
 
 	curr = add_cmd(L"o", NORMAL_MODE);
-	curr->type = BUILDIN_CMD;
+	curr->type = BUILTIN_CMD;
 	curr->data.cmd = wcsdup(L":only");
 
 	curr = add_cmd(L"v", NORMAL_MODE);
-	curr->type = BUILDIN_CMD;
+	curr->type = BUILTIN_CMD;
 	curr->data.cmd = wcsdup(L":vsplit");
 
 	curr = add_cmd(L"d", NORMAL_MODE);
-	curr->type = BUILDIN_WAIT_POINT;
+	curr->type = BUILTIN_WAIT_POINT;
 	curr->data.handler = keys_delete_selector;
 	curr->followed = FOLLOWED_BY_SELECTOR;
 

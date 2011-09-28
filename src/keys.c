@@ -141,10 +141,8 @@ free_tree(struct key_chunk_t *root)
 		free(root->next);
 	}
 
-	if(root->conf.type == USER_CMD || root->conf.type == BUILDIN_CMD)
-	{
+	if(root->conf.type == USER_CMD || root->conf.type == BUILTIN_CMD)
 		free(root->conf.data.cmd);
-	}
 }
 
 void
@@ -237,7 +235,7 @@ execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
 			if(curr->conf.followed != FOLLOWED_BY_NONE)
 				break;
 
-			if(curr->conf.type == BUILDIN_WAIT_POINT)
+			if(curr->conf.type == BUILTIN_WAIT_POINT)
 				return KEYS_UNKNOWN;
 
 			has_duplicate = root == &user_cmds_root[*mode] &&
@@ -260,7 +258,7 @@ execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
 		curr = p;
 	}
 
-	if(*keys == '\0' && curr->conf.type != BUILDIN_WAIT_POINT &&
+	if(*keys == '\0' && curr->conf.type != BUILTIN_WAIT_POINT &&
 			curr->children_count > 0 && curr->conf.data.handler != NULL &&
 			!keys_info->after_wait)
 	{
@@ -307,7 +305,7 @@ contains_chain(struct key_chunk_t *root, const wchar_t *begin,
 		curr = p;
 	}
 	return (curr->conf.followed == FOLLOWED_BY_NONE &&
-			curr->conf.type != BUILDIN_WAIT_POINT);
+			curr->conf.type != BUILTIN_WAIT_POINT);
 }
 
 static int
@@ -317,7 +315,7 @@ execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
 {
 	if(*keys == L'\0')
 	{
-		int wait_point = (curr->conf.type == BUILDIN_WAIT_POINT);
+		int wait_point = (curr->conf.type == BUILTIN_WAIT_POINT);
 		wait_point = wait_point || (curr->conf.type == USER_CMD &&
 				curr->conf.followed != FOLLOWED_BY_NONE);
 		if(wait_point)
@@ -357,7 +355,7 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 {
 	struct key_t *key_t = &curr->conf;
 
-	if(key_t->type != USER_CMD && key_t->type != BUILDIN_CMD)
+	if(key_t->type != USER_CMD && key_t->type != BUILTIN_CMD)
 	{
 		if(key_t->data.handler == NULL)
 			return KEYS_UNKNOWN;
@@ -516,7 +514,7 @@ remove_user_keys(const wchar_t *keys, int mode)
 		return -1;
 
 	free(curr->conf.data.cmd);
-	curr->conf.type = BUILDIN_WAIT_POINT;
+	curr->conf.type = BUILTIN_WAIT_POINT;
 	curr->conf.data.handler = NULL;
 
 	p = curr;
@@ -539,7 +537,7 @@ remove_user_keys(const wchar_t *keys, int mode)
 		free(curr);
 		curr = parent;
 	} while(curr->parent != NULL && curr->parent->conf.data.handler == NULL &&
-			curr->parent->conf.type == BUILDIN_WAIT_POINT &&
+			curr->parent->conf.type == BUILTIN_WAIT_POINT &&
 			curr->parent->children_count == 0);
 
 	return 0;
@@ -637,7 +635,7 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 				return NULL;
 			}
 			c->key = *keys;
-			c->conf.type = (keys[1] == L'\0') ? BUILDIN_KEYS : BUILDIN_WAIT_POINT;
+			c->conf.type = (keys[1] == L'\0') ? BUILTIN_KEYS : BUILTIN_WAIT_POINT;
 			c->conf.data.handler = NULL;
 			c->conf.followed = FOLLOWED_BY_NONE;
 			c->prev = prev;

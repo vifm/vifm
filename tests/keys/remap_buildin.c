@@ -19,7 +19,7 @@ remap_builtin_waitpoint(void)
 }
 
 void
-remap_buildin(void)
+remap_builtin(void)
 {
 	test_fixture_start();
 

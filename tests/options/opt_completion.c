@@ -19,6 +19,11 @@ test_space_at_the_end(void)
 
 	reset_completion();
 	complete_options("fusehome=a\\ b ", &start);
+
+	completed = next_completion();
+	assert_string_equal("all", completed);
+	free(completed);
+
 	completed = next_completion();
 	assert_string_equal("fastrun", completed);
 	free(completed);
@@ -91,6 +96,10 @@ test_skip_abbreviations(void)
 
 	reset_completion();
 	complete_options("", &start);
+
+	completed = next_completion();
+	assert_string_equal("all", completed);
+	free(completed);
 
 	completed = next_completion();
 	assert_string_equal("fastrun", completed);
@@ -229,6 +238,11 @@ test_colon(void)
 
 	reset_completion();
 	complete_options("fusehome:a\\ b ", &start);
+
+	completed = next_completion();
+	assert_string_equal("all", completed);
+	free(completed);
+
 	completed = next_completion();
 	assert_string_equal("fastrun", completed);
 	free(completed);

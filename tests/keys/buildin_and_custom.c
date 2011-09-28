@@ -70,7 +70,7 @@ test_udm_and_builtin_wait_point(void)
 }
 
 void
-buildin_and_custom(void)
+builtin_and_custom(void)
 {
 	test_fixture_start();
 

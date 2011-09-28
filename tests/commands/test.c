@@ -118,7 +118,7 @@ setup(void)
 
 	init_cmds(1, &cmds_conf);
 
-	add_buildin_commands(&command, 1);
+	add_builtin_commands(&command, 1);
 }
 
 static void

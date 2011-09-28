@@ -1,16 +1,16 @@
 #include "seatest.h"
 
-#include "buildin_keys.h"
+#include "builtin_keys.h"
 #include "../../src/keys.h"
 #include "../../src/modes.h"
 
 int mode = NORMAL_MODE;
 
-void buildin_and_custom(void);
+void builtin_and_custom(void);
 void diff_motions(void);
 void discard_not_full_cmds(void);
 void dont_exec_motions_only(void);
-void remap_buildin(void);
+void remap_builtin(void);
 void long_motions_wait(void);
 void longest(void);
 void motions(void);
@@ -27,11 +27,11 @@ void noremap_tests(void);
 
 void all_tests(void)
 {
-	buildin_and_custom();
+	builtin_and_custom();
 	diff_motions();
 	discard_not_full_cmds();
 	dont_exec_motions_only();
-	remap_buildin();
+	remap_builtin();
 	long_motions_wait();
 	longest();
 	motions();
@@ -57,7 +57,7 @@ void my_suite_setup(void)
 	};
 
 	init_keys(MODES_COUNT, &mode, mode_flags);
-	init_buildin_keys(&mode);
+	init_builtin_keys(&mode);
 }
 
 void my_suite_teardown(void)

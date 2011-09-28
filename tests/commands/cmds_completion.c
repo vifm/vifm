@@ -37,7 +37,7 @@ delete_cmd(const struct cmd_info* cmd_info)
 static void
 setup(void)
 {
-	add_buildin_commands(commands, ARRAY_LEN(commands));
+	add_builtin_commands(commands, ARRAY_LEN(commands));
 }
 
 static void
