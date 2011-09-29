@@ -603,7 +603,11 @@ find_file_pos_in_list(FileView *view, const char *file)
 	int x;
 	for(x = 0; x < view->list_rows; x++)
 	{
+#ifndef _WIN32
 		if(strcmp(view->dir_entry[x].name, file) == 0)
+#else
+		if(strcasecmp(view->dir_entry[x].name, file) == 0)
+#endif
 			return x;
 	}
 	return -1;
@@ -1060,16 +1064,15 @@ check_view_dir_history(FileView *view)
 	{
 		int x;
 		int found = 0;
-		/* -1 is to skip current position, that should be equal to view->curr_dir */
 		x = view->history_pos;
-		if(!strcmp(view->history[x].dir, view->curr_dir) &&
-				!strcmp(view->history[x].file, ""))
+		if(strcmp(view->history[x].dir, view->curr_dir) == 0 &&
+				strcmp(view->history[x].file, "") == 0)
 			x--;
 		for(; x >= 0; x--)
 		{
 			if(strlen(view->history[x].dir) < 1)
 				break;
-			if(!strcmp(view->history[x].dir, view->curr_dir))
+			if(strcmp(view->history[x].dir, view->curr_dir) == 0)
 			{
 				found = 1;
 				break;
@@ -1079,6 +1082,17 @@ check_view_dir_history(FileView *view)
 		{
 			pos = find_file_pos_in_list(view, view->history[x].file);
 			rel_pos = view->history[x].rel_pos;
+		}
+		else if(path_starts_with(view->last_dir, view->curr_dir) &&
+				strcmp(view->last_dir, view->curr_dir) != 0 &&
+				strchr(view->last_dir + strlen(view->curr_dir) + 1, '/') == NULL)
+		{
+			char buf[NAME_MAX];
+			strcpy(buf, view->last_dir + strlen(view->curr_dir));
+			strcat(buf, "/");
+
+			pos = find_file_pos_in_list(view, buf);
+			rel_pos = -1;
 		}
 		else
 		{
@@ -1364,6 +1378,7 @@ handle_mount_points(const char *path)
 	HANDLE hfile;
 	char rdb[2048];
 	char *t;
+	REPARSE_DATA_BUFFER *rdbp;
 
 	attr = GetFileAttributes(path);
 	if(attr == INVALID_FILE_ATTRIBUTES)
@@ -1397,8 +1412,8 @@ handle_mount_points(const char *path)
 	}
 	CloseHandle(hfile);
 	
-	t = to_multibyte(
-			((REPARSE_DATA_BUFFER *)rdb)->MountPointReparseBuffer.PathBuffer);
+	rdbp = (REPARSE_DATA_BUFFER *)rdb;
+	t = to_multibyte(rdbp->MountPointReparseBuffer.PathBuffer);
 	if(strncmp(t, "\\??\\", 4) == 0)
 		strcpy(buf, t + 4);
 	else
@@ -1698,32 +1713,32 @@ static void
 fill_with_shared(FileView *view)
 {
 	NET_API_STATUS res;
+	wchar_t *wserver;
+	
+	wserver = to_wide(view->curr_dir + 2);
+	if(wserver == NULL)
+	{
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return;
+	}
 
 	view->list_rows = 0;
 	do
 	{
-		PSHARE_INFO_502 buf_ptr;
+		PSHARE_INFO_0 buf_ptr;
 		DWORD er = 0, tr = 0, resume = 0;
-		wchar_t *wserver = to_wide(view->curr_dir + 2);
 
-		if(wserver == NULL)
-		{
-			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
-			return;
-		}
-
-		res = NetShareEnum(wserver, 502, (LPBYTE *)&buf_ptr, -1, &er, &tr, &resume);
-		free(wserver);
+		res = NetShareEnum(wserver, 0, (LPBYTE *)&buf_ptr, -1, &er, &tr, &resume);
 		if(res == ERROR_SUCCESS || res == ERROR_MORE_DATA)
 		{
-			PSHARE_INFO_502 p;
+			PSHARE_INFO_0 p;
 			DWORD i;
 
 			p = buf_ptr;
 			for(i = 1; i <= er; i++)
 			{
 				char buf[512];
-				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi502_netname, -1, buf,
+				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi0_netname, -1, buf,
 						sizeof(buf), NULL, NULL);
 				if(!ends_with(buf, "$"))
 				{
@@ -1773,6 +1788,8 @@ fill_with_shared(FileView *view)
 		}
 	}
 	while(res == ERROR_MORE_DATA);
+
+	free(wserver);
 }
 #endif
 
@@ -1790,6 +1807,8 @@ is_win_symlink(DWORD attr, DWORD tag)
 static int
 fill_dir_list(FileView *view)
 {
+	view->matches = 0;
+
 #ifndef _WIN32
 	DIR *dir;
 	struct dirent *d;
@@ -1932,7 +1951,10 @@ fill_dir_list(FileView *view)
 	if(is_unc_root(view->curr_dir))
 	{
 		fill_with_shared(view);
-		return 0;
+		if(view->list_rows > 0)
+			return 0;
+		else
+			return -1;
 	}
 
 	snprintf(buf, sizeof(buf), "%s/*", view->curr_dir);
@@ -2086,7 +2108,7 @@ load_dir_list(FileView *view, int reload)
 
 	if(fill_dir_list(view) != 0)
 	{
-		/* we don't have read access, only execute */
+		/* we don't have read access, only execute, or there are other problems */
 		load_parent_dir_only(view);
 	}
 

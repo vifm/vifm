@@ -570,7 +570,11 @@ path_starts_with(const char *path, const char *begin)
 	if(len > 0 && begin[len - 1] == '/')
 		len--;
 
+#ifndef _WIN32
 	if(strncmp(path, begin, len) != 0)
+#else
+	if(strncasecmp(path, begin, len) != 0)
+#endif
 		return 0;
 
 	return (path[len] == '\0' || path[len] == '/');
@@ -953,9 +957,9 @@ replace_home_part(const char *directory)
 char *
 expand_tilde(char *path)
 {
+#ifndef _WIN32
 	char name[NAME_MAX];
 	char *p, *result;
-#ifndef _WIN32
 	struct passwd *pw;
 #endif
 
@@ -1341,25 +1345,25 @@ readlink(const char *path, char *buf, size_t len)
 char *
 realpath(const char *path, char *buf)
 {
-	if(get_link_target(path, buf, PATH_MAX) != 0)
+	if(get_link_target(path, buf, PATH_MAX) == 0)
+		return buf;
+
+	buf[0] = '\0';
+	if(!is_path_absolute(path) && GetCurrentDirectory(PATH_MAX, buf) > 0)
 	{
 		int i;
 
-		buf[0] = '\0';
-		if(GetCurrentDirectory(PATH_MAX, buf) > 0)
+		for(i = 0; buf[i] != '\0'; i++)
 		{
-			for(i = 0; buf[i] != '\0'; i++)
-			{
-				if(buf[i] == '\\')
-					buf[i] = '/';
-			}
-
-			chosp(buf);
-			strcat(buf, "/");
+			if(buf[i] == '\\')
+				buf[i] = '/';
 		}
 
-		strcat(buf, path);
+		chosp(buf);
+		strcat(buf, "/");
 	}
+
+	strcat(buf, path);
 	return buf;
 }
 
