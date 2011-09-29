@@ -3,12 +3,16 @@ Basic things that need to be done.
 	Backgrounding of commands with job control (pause/resume/kill).
 	Fix window resizing (I think it's almost done).
 	Handle commands that are too long to be passed directly to the shell.
-	Make ga work in background.
+	Make ga and gA work in background.
     Perform operations using system calls, not programs.  This is much faster.
+    Show operation progress.
+    Operation backgrounding.
     Better cW command (maybe accept count of extensions to skip).
     Better globals support.
     Maybe remove 'trash' option, since we have two commands for deletion.
     Templates for :touch.
+	Mouse support.
+    Ctrl-R combinations in the command-line mode.
 
 Documentation.
 	Better documentation (with normal tags in Vim version).
@@ -33,7 +37,6 @@ Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
 	Virtual File System - currently vifm can use fuse to mount most
 		file systems.
-	Add mouse support.
     Invert selection? (what :command or key?)
     Make :undolist more interactive.
     Maybe something like :g/.../com and :v/.../com in Vim.
@@ -45,6 +48,7 @@ Possible things to add.
     'incsearch' option.
     'wrapscan' option.
     'scrollbind' option.
+    Position macros for user defined commands (%1, %2, ..., %9).
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
@@ -65,7 +69,6 @@ Other (questionable) things.
     'expandtab' for tabs in the quick view and menu items?
     Modify marks on rename operations.
     :toupper and :tolower
-    Maybe :get command (seen in wsdookadr's fork)
     Maybe accept regular expressions as second argument of :colo command.
 
 Code improvements.
