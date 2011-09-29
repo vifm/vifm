@@ -84,15 +84,20 @@ syntax region vifmCommands start=':' end='$' keepend oneline
 syntax match vifmMapLhs /\S\+/ contained contains=vifmNotation
 		\ nextgroup=vifmMapRhs
 syntax match vifmMapRhs /\s\+\S\+/ contained
-		\ contains=vifmNotation,vifmCommand,vifmExecute,vifmOption
+		\ contains=vifmNotation,vifmCommand,vifmExecute,vifmSet2
 syntax region vifmHi matchgroup=vifmCommand
 		\ start='\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
 		\ contains=vifmHiArgs,vifmHiGroups,vifmHiStyles,vifmHiColors,vifmNumber
 		\,vifmComment
-syntax region vifmSet matchgroup=vifmCommand
-		\ start='\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
-		\ contains=vifmOption,vifmSetString,vifmNumber,vifmComment
+syntax region vifmSet
+		\ matchgroup=vifmCommand
+		\ start='\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
+		\ keepend contains=vifmOption,vifmSetString,vifmNumber,vifmComment
+syntax region vifmSet2 contained
+		\ matchgroup=vifmCommand
+		\ start=':\<se\%[t]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
+		\ contains=vifmOption,vifmSetString,vifmNumber,vifmComment,vifmNotation
 syntax region vifmSetString contained start=+="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
 syntax region vifmSetString contained start=+='+hs=s+1 skip=+\\\\\|\\'+  end=+'+
 syntax match vifmNumber contained /\d\+/
