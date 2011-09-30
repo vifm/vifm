@@ -281,7 +281,8 @@ status_bar_message_i(const char *message, int error)
 
 	wattrset(status_bar, 0);
 	wrefresh(status_bar);
-	wrefresh(stat_win);
+	if(get_mode() != MENU_MODE)
+		wrefresh(stat_win);
 }
 
 static void
