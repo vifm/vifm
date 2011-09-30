@@ -1082,6 +1082,13 @@ type: boolean
 default: false
 Run executable file on Enter or l.
 
+                                               *vifm-'scrollbind'* *vifm-'scb'*
+scrollbind scb
+type: boolean
+default: false
+When this option is set, vifm will try to keep difference of scrolling
+positions of two windows constant.
+
                                                *vifm-'scrolloff'* *vifm-'so'*
 scrolloff so
 type: int

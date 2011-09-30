@@ -64,6 +64,8 @@ init_status(void)
 #ifdef _WIN32
 	curr_stats.as_admin = 0;
 #endif
+
+	curr_stats.scroll_bind_off = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

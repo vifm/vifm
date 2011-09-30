@@ -14,6 +14,8 @@ const char *tags[] = {
 	"vifm-'iec'",
 	"vifm-'ignorecase'",
 	"vifm-'runexec'",
+	"vifm-'scb'",
+	"vifm-'scrollbind'",
 	"vifm-'scrolloff'",
 	"vifm-'scs'",
 	"vifm-'sh'",

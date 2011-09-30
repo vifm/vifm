@@ -82,6 +82,8 @@ typedef struct
 #ifdef _WIN32
 	int as_admin;
 #endif
+
+	int scroll_bind_off;
 }Status;
 
 extern Status curr_stats;

@@ -28,6 +28,7 @@ static void hlsearch_handler(enum opt_op op, union optval_t val);
 static void iec_handler(enum opt_op op, union optval_t val);
 static void ignorecase_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
+static void scrollbind_handler(enum opt_op op, union optval_t val);
 static void scrolloff_handler(enum opt_op op, union optval_t val);
 static void shell_handler(enum opt_op op, union optval_t val);
 #ifndef _WIN32
@@ -124,6 +125,7 @@ static struct {
 	{ "iec",         "",     OPT_BOOL,    0,                          NULL,            &iec_handler,         },
 	{ "ignorecase",  "ic",   OPT_BOOL,    0,                          NULL,            &ignorecase_handler,  },
 	{ "runexec",     "",     OPT_BOOL,    0,                          NULL,            &runexec_handler,     },
+	{ "scrollbind",  "scb",  OPT_BOOL,    0,                          NULL,            &scrollbind_handler,  },
 	{ "scrolloff",   "so",   OPT_INT,     0,                          NULL,            &scrolloff_handler,   },
 	{ "shell",       "sh",   OPT_STR,     0,                          NULL,            &shell_handler,       },
 #ifndef _WIN32
@@ -172,6 +174,7 @@ load_options_defaults(void)
 	options[i++].val.bool_val = cfg.use_iec_prefixes;
 	options[i++].val.bool_val = cfg.ignore_case;
 	options[i++].val.bool_val = cfg.auto_execute;
+	options[i++].val.bool_val = cfg.scroll_bind;
 	options[i++].val.int_val = cfg.scroll_off;
 	options[i++].val.str_val = cfg.shell;
 #ifndef _WIN32
@@ -453,6 +456,13 @@ static void
 ignorecase_handler(enum opt_op op, union optval_t val)
 {
 	cfg.ignore_case = val.bool_val;
+}
+
+static void
+scrollbind_handler(enum opt_op op, union optval_t val)
+{
+	cfg.scroll_bind = val.bool_val;
+	curr_stats.scroll_bind_off = rwin.top_line - lwin.top_line;
 }
 
 static void

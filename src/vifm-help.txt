@@ -1288,11 +1288,17 @@ Command macros
               default: false
               Run executable file on Enter or l.
 
+       scrollbind scb
+              type: boolean
+              default: false
+              When this option is set, vifm will try  to  keep  difference  of
+              scrolling positions of two windows constant.
+
        scrolloff so
               type: int
               default: 0
-              Minimal number of screen lines to keep above and below the  cur‐
-              sor.   If you want cursor line to always be in the middle of the
+              Minimal  number of screen lines to keep above and below the cur‐
+              sor.  If you want cursor line to always be in the middle of  the
               view (except at the beginning or end of the file list), set this
               option to some large value (e.g. 999).
 
@@ -1304,23 +1310,23 @@ Command macros
        slowfs type: string list
               default: ""
               only for *nix
-              A  list of mounter fs name beginnings (first column in /etc/mtab
+              A list of mounter fs name beginnings (first column in  /etc/mtab
               or /proc/mounts) that work too slow for you.  This option can be
-              used  to stop vifm from making some requests to particular kinds
-              of file systems that can slow  down  file  browsing.   Currently
+              used to stop vifm from making some requests to particular  kinds
+              of  file  systems  that  can slow down file browsing.  Currently
               this means don't check if directory has changed and do not check
               if target of symbolic links exists.
 
        smartcase scs
               type: boolean
               default: false
-              Overrides the ignorecase option if the search  pattern  contains
-              at  least  one  upper case character.  Only used when ignorecase
+              Overrides  the  ignorecase option if the search pattern contains
+              at least one upper case character.  Only  used  when  ignorecase
               option is enabled.  It doesn't affect file filtering.
 
        sort   type: string list
               default: +name
-              Sets list of sorting keys (first item is primary key, second  is
+              Sets  list of sorting keys (first item is primary key, second is
               secondary key, etc.):
                  [+-]ext   - sort by extension
                  [+-]name  - sort by name (including extension)
@@ -1353,7 +1359,7 @@ Command macros
        timefmt
               type: string
               default: " %m/%d %H:%M"
-              Format of time in file list.  See man date or man  strftime  for
+              Format  of  time in file list.  See man date or man strftime for
               details.
 
        timeoutlen tm
@@ -1373,14 +1379,14 @@ Command macros
 
        vicmd  type: string
               default: "vim"
-              The actual command used to start vi.  Ampersand sign at the  end
-              (regardless  whether  it's preceded by space or not) means back‐
+              The  actual command used to start vi.  Ampersand sign at the end
+              (regardless whether it's preceded by space or not)  means  back‐
               grounding of command.
 
        vixcmd type: string
               default: value of vicmd
-              The command used to start vi when in X.  Ampersand sign  at  the
-              end  (regardless  whether  it's  preceded by space or not) means
+              The  command  used to start vi when in X.  Ampersand sign at the
+              end (regardless whether it's preceded by  space  or  not)  means
               backgrounding of command.
 
        vifminfo
@@ -1413,7 +1419,7 @@ Command macros
        wildmenu wmnu
               type: boolean
               default: false
-              Controls  whether  possible  matches of completion will be shown
+              Controls whether possible matches of completion  will  be  shown
               above the command line.
 
        wrap   type: boolean
@@ -1421,7 +1427,7 @@ Command macros
               Controls whether to wrap text in quick view.
 
 Mappings
-       Since it's not easy to enter special characters there are several  spe‐
+       Since  it's not easy to enter special characters there are several spe‐
        cial sequences that can be used in place of them. They are:
 
        <cr>   Enter key
@@ -1435,13 +1441,13 @@ Mappings
        <f0> - <f63>
               Functional keys
 
-       vifm  removes  whitespace  characters  at the beginning and end of com‐
-       mands.  That's why you may want to use <space> at the  end  of  rhs  in
+       vifm removes whitespace characters at the beginning  and  end  of  com‐
+       mands.   That's  why  you  may want to use <space> at the end of rhs in
        mappings.  For example:
 
         cmap <f1> man<space>
 
-       will  put  "man " in line when you hit the <f1> key in the command line
+       will put "man " in line when you hit the <f1> key in the  command  line
        mode.
 
 Compatibility mode
@@ -1452,23 +1458,23 @@ Compatibility mode
 
        Vim like mode:
            - <c-i> (<tab>) to go forward on history.
-           - dd deletes file under the cursor and ds works as dd  in  compati‐
+           -  dd  deletes file under the cursor and ds works as dd in compati‐
        bility mode.
-           -  yy yanks file under the cursor and ys works as dd in compatibil‐
+           - yy yanks file under the cursor and ys works as dd in  compatibil‐
        ity mode.
 
 Menus and dialogs
        General
 
-       j, k - move.  <Escape>, Ctrl-c - clear.  <Return>, l - select and  exit
+       j,  k - move.  <Escape>, Ctrl-c - clear.  <Return>, l - select and exit
        the menu.  Ctrl-l - redraw the menu.
 
        In all menus
 
-       Ctrl-b/Ctrl-f  Ctrl-d/Ctrl-u  Ctrl-e/Ctrl-y / and ?, n/N [num]G/[num]gg
+       Ctrl-b/Ctrl-f Ctrl-d/Ctrl-u Ctrl-e/Ctrl-y / and ?,  n/N  [num]G/[num]gg
        H/M/L zb/zt/zz
 
-       All these keys have the same meaning as in normal mode (but  not  L  in
+       All  these  keys  have the same meaning as in normal mode (but not L in
        filetype menu).
 
        : - enter command line mode for menus (currently only :exi[t], :q[uit],
@@ -1476,7 +1482,7 @@ Menus and dialogs
 
        Apropos menu
 
-       l key wont close the menu allowing user to pick another man  page,  use
+       l  key  wont close the menu allowing user to pick another man page, use
        :q to close the menu.
 
        Commands menu
@@ -1490,15 +1496,15 @@ Menus and dialogs
 
        Directory stack menu
 
-       Pressing l or Enter on  directory  name  will  rotate  stack  to  place
+       Pressing  l  or  Enter  on  directory  name  will rotate stack to place
        selected directory pair at the top of the stack.
 
        Filetype menu
 
-       Commands  from vifmrc are displayed above empty line. When all commands
+       Commands from vifmrc are displayed above empty line. When all  commands
        below empty line were found in .desktop files.
 
-       J and K - to move menu items L - save all commands above empty line  as
+       J  and K - to move menu items L - save all commands above empty line as
        program list
 
        Fileinfo dialog
@@ -1507,7 +1513,7 @@ Menus and dialogs
 
        Sort dialog
 
-       h  - switch ascending/descending.  Space - switch ascending/descending.
+       h - switch ascending/descending.  Space - switch  ascending/descending.
        q - close dialog
 
        Permissions dialog
@@ -1521,34 +1527,34 @@ Menus and dialogs
        - X - means that it has different value for files in selection.
 
        - d - (only for execute flags) means u-x+X, g-x+X or o-x+X argument for
-         the  chmod  program.   If  you  want to remove execute right from all
-         files, but preserve it for directories, set all execute flags to  'd'
+         the chmod program.  If you want to  remove  execute  right  from  all
+         files,  but preserve it for directories, set all execute flags to 'd'
          and check ´Set Recursively' flag.
 
 Configure
-       The  default  place of all vifm's configuration is at ~/.vifm.  On Win‐
-       dows vifm firstly checks ~/.vifm (using HOME environment variable)  and
-       if  it  doesn't  exist,  uses  %APPDATA%/Vifm directory.  Configuration
+       The default place of all vifm's configuration is at ~/.vifm.   On  Win‐
+       dows  vifm firstly checks ~/.vifm (using HOME environment variable) and
+       if it doesn't  exist,  uses  %APPDATA%/Vifm  directory.   Configuration
        directory is mentioned as CONFDIR.
 
        The CONFDIR/vifmrc file contains commands that will be executed on vifm
-       startup.   Use it to set settings, mappings or filetypes.  To use multi
-       line commands precede each next line with a  slash  (whitespace  before
-       slash  is  ignored,  but all spaces at the end of the lines are saved).
+       startup.  Use it to set settings, mappings or filetypes.  To use  multi
+       line  commands  precede  each next line with a slash (whitespace before
+       slash is ignored, but all spaces at the end of the  lines  are  saved).
        For example: set
            \smartcase equals "setsmartcase".  When set<space here>
             smartcase<space here> equals "set  smartcase ".
 
-       The CONFDIR/vifminfo file contains session settings.  You may  edit  it
-       by  hand  to  change the settings, but it's not recommended to do that,
-       edit vifmrc instead.  You can control what settings will  be  saved  in
+       The  CONFDIR/vifminfo  file contains session settings.  You may edit it
+       by hand to change the settings, but it's not recommended  to  do  that,
+       edit  vifmrc  instead.   You can control what settings will be saved in
        vifminfo by setting ´vifminfo' option.  Vifm always writes this file on
        exit unless 'vifminfo' option is empty.  Bookmarks, commands, directory
-       history,  filetypes,  fileviewers  and registers in the file are merged
+       history, filetypes, fileviewers and registers in the  file  are  merged
        with vifm configuration (which has bigger priority).
 
        The CONFDIR/scripts directory can contain shell scripts.  vifm modifies
-       it's  PATH  environment  variable to let user run those scripts without
+       it's PATH environment variable to let user run  those  scripts  without
        specifying full path.
 
        The CONFDIR/colors directory contains color schemes.
@@ -1560,21 +1566,21 @@ Plugin
 
          :EditVifm   select a file or files to open in the current buffer.
          :SplitVifm  split buffer and select a file or files to open.
-         :VsplitVifm vertically split buffer and select a  file  or  files  to
+         :VsplitVifm  vertically  split  buffer  and select a file or files to
        open.
-         :DiffVifm    select  a  file  or files to compare to the current file
+         :DiffVifm   select a file or files to compare  to  the  current  file
        with
                      :vert diffsplit.
          :TabVifm    select a file or files to open in tabs.
 
-       The plugin have  only  one  setting.   It's  a  string  variable  named
-       g:vifm_term  to  let  user  specify  command  to  run gui terminal.  By
+       The  plugin  have  only  one  setting.   It's  a  string variable named
+       g:vifm_term to let user  specify  command  to  run  gui  terminal.   By
        default it's equal to ´xterm -e'.
 
-       To use the plugin copy the vifm.vim file  to  either  the  system  wide
+       To  use  the  plugin  copy  the vifm.vim file to either the system wide
        vim/plugin directory or into ~/.vim/plugin.
 
-       If  you would prefer not to use the plugin and it is in the system wide
+       If you would prefer not to use the plugin and it is in the system  wide
        plugin directory add
 
        let loaded_vifm=1
@@ -1597,4 +1603,4 @@ AUTHOR
 
 
 
-                              September 25, 2011                       vifm(1)
+                              September 30, 2011                       vifm(1)

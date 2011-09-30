@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@gmail.com>
-" Last Change: September 25, 2011
+" Last Change: September 30, 2011
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -47,20 +47,21 @@ syntax case match
 " Options
 syntax keyword vifmOption contained autochpos confirm cf fastrun followlinks
 		\ fusehome gdefault history hi hlsearch hls iec ignorecase ic runexec
-		\ scrolloff so shell sh slowfs smartcase scs sortnumbers timefmt timeoutlen
-		\ trash undolevels ul vicmd vixcmd vifminfo vimhelp wildmenu wmnu wrap sort
-		\ sortorder
+		\ scrollbind scb scrolloff so shell sh slowfs smartcase scs sortnumbers
+		\ timefmt timeoutlen trash undolevels ul vicmd vixcmd vifminfo vimhelp
+		\ wildmenu wmnu wrap sort sortorder
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun
-		\ nofollowlinks nohlsearch nohls noiec noignorecase noic norunexec smartcase
-		\ nonoscs nosortnumbers notrash novimhelp nowildmenu wmnu nowrap
+		\ nofollowlinks nohlsearch nohls noiec noignorecase noic noscrollbind noscb
+		\ nonorunexec nosmartcase scs nosortnumbers notrash novimhelp nowildmenu
+		\ nonowmnu nowrap
 
 " Inverted boolean options
 syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
-		\ invfollowlinks invhlsearch invhls inviec invignorecase invic runexec
-		\ invinvsmartcase invscs invsortnumbers invtrash invvimhelp wildmenu invwmnu
-		\ invinvwrap
+		\ invfollowlinks invhlsearch invhls inviec invignorecase invic invscrollbind
+		\ invinvscb invrunexec smartcase invscs invsortnumbers invtrash invvimhelp
+		\ invinvwildmenu invwmnu wrap
 
 " Expressions
 syntax region vifmStatement start='^\s*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'

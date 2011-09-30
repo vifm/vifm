@@ -86,6 +86,7 @@ typedef struct _Config {
 #ifndef _WIN32
 	char *slow_fs_list;
 #endif
+	int scroll_bind;
 } Config;
 
 extern Config cfg;

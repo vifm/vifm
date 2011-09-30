@@ -689,6 +689,11 @@ draw_dir_list(FileView *view, int top)
 	if(curr_stats.vifm_started < 2)
 		return;
 
+	if(top + view->window_rows > view->list_rows)
+		top = view->list_rows - view->window_rows;
+	if(top < 0)
+		top = 0;
+
 	update_view_title(view);
 
 	/* This is needed for reloading a list that has had files deleted */
@@ -759,6 +764,59 @@ draw_dir_list(FileView *view, int top)
 		mvwaddstr(view->win, view->curr_line, 0, "*");
 
 	view->top_line = top;
+
+	if(view == curr_view && cfg.scroll_bind)
+	{
+		FileView *other = (view == &lwin) ? &rwin : &lwin;
+		if(view == &lwin)
+			other->top_line = view->top_line + curr_stats.scroll_bind_off;
+		else
+			other->top_line = view->top_line - curr_stats.scroll_bind_off;
+
+		if(other->top_line + other->window_rows >= other->list_rows)
+			other->top_line = other->list_rows - other->window_rows;
+		if(other->top_line < 0)
+			other->top_line = 0;
+
+		if(other->top_line > 0)
+			(void)correct_list_pos_on_scroll_down(other, 0);
+		if(other->top_line < other->list_rows - other->window_rows - 1)
+			(void)correct_list_pos_on_scroll_up(other, 0);
+  	other->curr_line = other->list_pos - other->top_line;
+
+		draw_dir_list(other, other->top_line);
+		wrefresh(other->win);
+	}
+}
+
+/* returns non-zero if doing something makes sense */
+int
+correct_list_pos_on_scroll_down(FileView *view, int pos_delta)
+{
+	int off;
+	if(view->list_rows <= view->window_rows + 1)
+		return 0;
+	if(view->top_line == view->list_rows - view->window_rows - 1)
+		return 0;
+
+	off = MAX(cfg.scroll_off, 0);
+	if(view->list_pos <= view->top_line + off)
+		view->list_pos = view->top_line + pos_delta + off;
+	return 1;
+}
+
+/* returns non-zero if doing something makes sense */
+int
+correct_list_pos_on_scroll_up(FileView *view, int pos_delta)
+{
+	int off;
+	if(view->list_rows <= view->window_rows + 1 || view->top_line == 0)
+		return 0;
+
+	off = MAX(cfg.scroll_off, 0);
+	if(view->list_pos >= view->top_line + view->window_rows - off)
+		view->list_pos = view->top_line + pos_delta + view->window_rows - off;
+	return 1;
 }
 
 void
@@ -860,7 +918,7 @@ move_curr_line(FileView *view, int pos)
 			redraw = 1;
 		}
 		if((view->top_line + view->window_rows) - pos < s &&
-				pos + s <= view->list_rows)
+				pos + s < view->list_rows)
 		{
 			view->top_line += s - ((view->top_line + view->window_rows) - pos);
 			view->curr_line = view->window_rows - s;

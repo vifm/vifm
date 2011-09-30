@@ -1,3 +1,7 @@
+0.7.0 to current
+
+	Added 'scrollbind' option.
+
 0.6.3 to 0.7.0
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.

@@ -106,6 +106,7 @@ init_config(void)
 #ifndef _WIN32
 	cfg.slow_fs_list = strdup("");
 #endif
+	cfg.scroll_bind = 0;
 
 	p = getenv("SHELL");
 	if(p == NULL || *p == '\0')
@@ -760,6 +761,7 @@ write_info_file(void)
 		fprintf(fp, "=%siec\n", cfg.use_iec_prefixes ? "" : "no");
 		fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
 		fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
+		fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");
 		fprintf(fp, "=scrolloff=%d\n", cfg.scroll_off);
 		fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
 #ifndef _WIN32
