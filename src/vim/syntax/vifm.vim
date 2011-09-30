@@ -49,19 +49,19 @@ syntax keyword vifmOption contained autochpos confirm cf fastrun followlinks
 		\ fusehome gdefault history hi hlsearch hls iec ignorecase ic runexec
 		\ scrollbind scb scrolloff so shell sh slowfs smartcase scs sortnumbers
 		\ timefmt timeoutlen trash undolevels ul vicmd vixcmd vifminfo vimhelp
-		\ wildmenu wmnu wrap sort sortorder
+		\ wildmenu wmnu wrap wrapscan ws sort sortorder
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun
 		\ nofollowlinks nohlsearch nohls noiec noignorecase noic noscrollbind noscb
-		\ nonorunexec nosmartcase scs nosortnumbers notrash novimhelp nowildmenu
-		\ nonowmnu nowrap
+		\ norunexec nosmartcase noscs nosortnumbers notrash novimhelp nowildmenu
+		\ nowmnu nowrap nowrapscan nows
 
 " Inverted boolean options
 syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
 		\ invfollowlinks invhlsearch invhls inviec invignorecase invic invscrollbind
-		\ invinvscb invrunexec smartcase invscs invsortnumbers invtrash invvimhelp
-		\ invinvwildmenu invwmnu wrap
+		\ invscb invrunexec invsmartcase invscs invsortnumbers invtrash invvimhelp
+		\ invwildmenu invwmnu invwrap invwrapscan invws
 
 " Expressions
 syntax region vifmStatement start='^\s*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'

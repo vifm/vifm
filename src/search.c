@@ -70,22 +70,39 @@ find_next_pattern_match(FileView *view, int start, int direction)
 	return found;
 }
 
-void
+/* returns non-zero if pattern was found */
+int
 find_previous_pattern(FileView *view, int wrap)
 {
 	if(find_next_pattern_match(view, view->list_pos, PREVIOUS))
 		move_to_list_pos(view, view->list_pos);
 	else if(wrap && find_next_pattern_match(view, view->list_rows, PREVIOUS))
 		move_to_list_pos(view, view->list_pos);
+	else
+		return 0;
+	return 1;
 }
 
-void
+/* returns non-zero if pattern was found */
+int
 find_next_pattern(FileView *view, int wrap)
 {
 	if(find_next_pattern_match(view, view->list_pos, NEXT))
 		move_to_list_pos(view, view->list_pos);
 	else if(wrap && find_next_pattern_match(view, 0, NEXT))
 		move_to_list_pos(view, view->list_pos);
+	else
+		return 0;
+	return 1;
+}
+
+static void
+top_bottom_msg(FileView *view, int backward)
+{
+	if(backward)
+		status_bar_errorf("Search hit TOP without match for: %s", view->regexp);
+	else
+		status_bar_errorf("Search hit BOTTOM without match for: %s", view->regexp);
 }
 
 int
@@ -142,17 +159,25 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 
 	if(found > 0)
 	{
+		int found = 1;
 		if(move)
 		{
 			if(backward)
-				find_previous_pattern(view, 1);
+				found = find_previous_pattern(view, cfg.wrap_scan);
 			else
-				find_next_pattern(view, 1);
+				found = find_next_pattern(view, cfg.wrap_scan);
 		}
 		if(!cfg.hl_search)
 		{
 			view->matches = found;
-			status_bar_messagef("%d matching file%s for %s", found,
+
+			if(!found)
+			{
+				top_bottom_msg(view, backward);
+				return 1;
+			}
+
+			status_bar_messagef("%d matching file%s for: %s", found,
 					(found == 1) ? "" : "s", view->regexp);
 			return 1;
 		}
@@ -161,7 +186,10 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 	else
 	{
 		move_to_list_pos(view, view->list_pos);
-		status_bar_errorf("No matching files for %s", view->regexp);
+		if(!cfg.wrap_scan)
+			top_bottom_msg(view, backward);
+		else
+			status_bar_errorf("No matching files for: %s", view->regexp);
 		return 1;
 	}
 }

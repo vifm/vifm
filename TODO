@@ -46,7 +46,6 @@ Possible things to add.
     Improve sorting (maybe iext; maybe ignore dirs).
     Add :mksession command and 'sessionoptions' option.
     'incsearch' option.
-    'wrapscan' option.
     Position macros for user defined commands (%1, %2, ..., %9).
 
 Other (questionable) things.

@@ -78,6 +78,7 @@ static void cmd_gg(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
 static void cmd_n(struct key_info, struct keys_info *);
+static void search(int backward);
 static void cmd_zb(struct key_info, struct keys_info *);
 static void cmd_zt(struct key_info, struct keys_info *);
 static void cmd_zz(struct key_info, struct keys_info *);
@@ -504,20 +505,7 @@ cmd_M(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_N(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(menu->regexp != NULL)
-	{
-		menu->match_dir = last_search_backward ? DOWN : UP;
-		search_menu_list(NULL, menu);
-		wrefresh(menu_win);
-
-		status_bar_messagef("%c%s", last_search_backward ? '/' : '?', menu->regexp);
-		curr_stats.save_msg = 1;
-	}
-	else
-	{
-		status_bar_error("No search pattern set");
-		wrefresh(status_bar);
-	}
+	search(!last_search_backward);
 }
 
 static void
@@ -578,20 +566,27 @@ cmd_k(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_n(struct key_info key_info, struct keys_info *keys_info)
 {
+	search(last_search_backward);
+}
+
+static void
+search(int backward)
+{
 	if(menu->regexp != NULL)
 	{
-		menu->match_dir = last_search_backward ? UP : DOWN;
-		search_menu_list(NULL, menu);
+		int was_msg;
+		menu->match_dir = backward ? UP : DOWN;
+		was_msg = search_menu_list(NULL, menu);
 		wrefresh(menu_win);
 
-		status_bar_messagef("%c%s", last_search_backward ? '?' : '/', menu->regexp);
-		curr_stats.save_msg = 1;
+		if(!was_msg)
+			status_bar_messagef("%c%s", backward ? '?' : '/', menu->regexp);
 	}
 	else
 	{
 		status_bar_error("No search pattern set");
-		wrefresh(status_bar);
 	}
+	curr_stats.save_msg = 1;
 }
 
 static void

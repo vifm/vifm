@@ -39,6 +39,8 @@ const char *tags[] = {
 	"vifm-'wildmenu'",
 	"vifm-'wmnu'",
 	"vifm-'wrap'",
+	"vifm-'wrapscan'",
+	"vifm-'ws'",
 	"vifm-:!",
 	"vifm-:!!",
 	"vifm-:alink",

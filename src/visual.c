@@ -859,9 +859,9 @@ find_update(FileView *view, int backward)
 	int old_pos, new_pos;
 	old_pos = view->list_pos;
 	if(backward)
-		find_previous_pattern(view, 1);
+		find_previous_pattern(view, cfg.wrap_scan);
 	else
-		find_next_pattern(view, 1);
+		find_next_pattern(view, cfg.wrap_scan);
 	new_pos = view->list_pos;
 	view->list_pos = old_pos;
 	goto_pos(new_pos);

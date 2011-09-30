@@ -107,6 +107,7 @@ init_config(void)
 	cfg.slow_fs_list = strdup("");
 #endif
 	cfg.scroll_bind = 0;
+	cfg.wrap_scan = 1;
 
 	p = getenv("SHELL");
 	if(p == NULL || *p == '\0')
@@ -777,6 +778,7 @@ write_info_file(void)
 				cfg.vi_cmd_bg ? " &" : "");
 		fprintf(fp, "=vixcmd=%s%s\n", escape_spaces(cfg.vi_x_command),
 				cfg.vi_cmd_bg ? " &" : "");
+		fprintf(fp, "=%swrapscan\n", cfg.wrap_scan ? "" : "no");
 
 		fprintf(fp, "=vifminfo=options");
 		if(cfg.vifm_info & VIFMINFO_FILETYPES)

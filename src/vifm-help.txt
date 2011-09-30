@@ -1426,6 +1426,11 @@ Command macros
               default: true
               Controls whether to wrap text in quick view.
 
+       wrapscan ws
+              type: boolean
+              default: true
+              Searches wrap around end of the list.
+
 Mappings
        Since  it's not easy to enter special characters there are several spe‐
        cial sequences that can be used in place of them. They are:

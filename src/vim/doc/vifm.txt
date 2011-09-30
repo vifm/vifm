@@ -1237,6 +1237,12 @@ type: boolean
 default: true
 Controls whether to wrap text in quick view.
 
+                                               *vifm-'wrapscan'* *vifm-'ws'*
+wrapscan ws
+type: boolean
+default: true
+Searches wrap around end of the list.
+
 --------------------------------------------------------------------------------
 *vifm-mappings*
 

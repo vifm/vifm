@@ -48,6 +48,7 @@ static void vifminfo_handler(enum opt_op op, union optval_t val);
 static void vimhelp_handler(enum opt_op op, union optval_t val);
 static void wildmenu_handler(enum opt_op op, union optval_t val);
 static void wrap_handler(enum opt_op op, union optval_t val);
+static void wrapscan_handler(enum opt_op op, union optval_t val);
 
 static int save_msg;
 static char print_buf[320*80];
@@ -143,6 +144,7 @@ static struct {
 	{ "vimhelp",     "",     OPT_BOOL,    0,                          NULL,            &vimhelp_handler,     },
 	{ "wildmenu",    "wmnu", OPT_BOOL,    0,                          NULL,            &wildmenu_handler,    },
 	{ "wrap",        "",     OPT_BOOL,    0,                          NULL,            &wrap_handler,        },
+	{ "wrapscan",    "ws",   OPT_BOOL,    0,                          NULL,            &wrapscan_handler,    },
 	/* local options */
 	{ "sort",        "",     OPT_STRLIST, ARRAY_LEN(sort_types),      sort_types,      &sort_handler,        },
 	{ "sortorder",   "",     OPT_ENUM,    ARRAY_LEN(sortorder_enum),  sortorder_enum,  &sortorder_handler,   },
@@ -192,6 +194,7 @@ load_options_defaults(void)
 	options[i++].val.bool_val = cfg.use_vim_help;
 	options[i++].val.bool_val = cfg.wild_menu;
 	options[i++].val.bool_val = cfg.wrap_quick_view;
+	options[i++].val.bool_val = cfg.wrap_scan;
 
 	/* local options */
 	options[i++].val.str_val = "+name";
@@ -664,6 +667,12 @@ wrap_handler(enum opt_op op, union optval_t val)
 	cfg.wrap_quick_view = val.bool_val;
 	if(curr_stats.view)
 		quick_view_file(curr_view);
+}
+
+static void
+wrapscan_handler(enum opt_op op, union optval_t val)
+{
+	cfg.wrap_scan = val.bool_val;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

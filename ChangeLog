@@ -2,6 +2,8 @@
 
 	Added 'scrollbind' option.
 
+	Added 'wrapscan' option.
+
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 
 0.6.3 to 0.7.0

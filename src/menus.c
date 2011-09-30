@@ -522,10 +522,13 @@ search_menu_forwards(menu_info *m, int start_pos)
 	{
 		int pos;
 
-		if(match_down > -1)
-			pos = match_down;
-		else
-			pos = match_up;
+		if(!cfg.wrap_scan && match_down <= -1)
+		{
+			status_bar_errorf("Search hit BOTTOM without match for: %s", m->regexp);
+			return 1;
+		}
+
+		pos = (match_down > -1) ? match_down : match_up;
 
 		clean_menu_position(m);
 		move_to_menu_pos(pos, m);
@@ -535,7 +538,10 @@ search_menu_forwards(menu_info *m, int start_pos)
 	else
 	{
 		move_to_menu_pos(m->pos, m);
-		status_bar_errorf("No matches for %s", m->regexp);
+		if(!cfg.wrap_scan)
+			status_bar_errorf("Search hit BOTTOM without match for: %s", m->regexp);
+		else
+			status_bar_errorf("No matches for: %s", m->regexp);
 		return 1;
 	}
 	return 0;
@@ -569,10 +575,13 @@ search_menu_backwards(menu_info *m, int start_pos)
 	{
 		int pos;
 
-		if (match_up > - 1)
-			pos = match_up;
-		else
-			pos = match_down;
+		if(!cfg.wrap_scan && match_up <= -1)
+		{
+			status_bar_errorf("Search hit TOP without match for: %s", m->regexp);
+			return 1;
+		}
+
+		pos = (match_up > -1) ? match_up : match_down;
 
 		clean_menu_position(m);
 		move_to_menu_pos(pos, m);
@@ -582,7 +591,10 @@ search_menu_backwards(menu_info *m, int start_pos)
 	else
 	{
 		move_to_menu_pos(m->pos, m);
-		status_bar_errorf("No matches for %s", m->regexp);
+		if(!cfg.wrap_scan)
+			status_bar_errorf("Search hit TOP without match for: %s", m->regexp);
+		else
+			status_bar_errorf("No matches for: %s", m->regexp);
 		return 1;
 	}
 	return 0;

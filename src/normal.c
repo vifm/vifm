@@ -132,6 +132,7 @@ static void cmd_i(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
 static void cmd_n(struct key_info, struct keys_info *);
+static void search(struct key_info, int backward);
 static void cmd_l(struct key_info, struct keys_info *);
 static void cmd_p(struct key_info, struct keys_info *);
 static void cmd_m(struct key_info, struct keys_info *);
@@ -951,35 +952,7 @@ cmd_M(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_N(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(cfg.search_history_num < 0)
-		return;
-
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
-	if(curr_view->matches == 0)
-	{
-		const char *pattern = (curr_view->regexp[0] == '\0') ?
-				cfg.search_history[0] : curr_view->regexp;
-		curr_stats.save_msg = find_pattern(curr_view, pattern,
-				!curr_stats.last_search_backward, 1);
-		key_info.count--;
-	}
-
-	if(curr_view->matches == 0)
-		return;
-
-	while(key_info.count-- > 0)
-	{
-		if(curr_stats.last_search_backward)
-			find_next_pattern(curr_view, 1);
-		else
-			find_previous_pattern(curr_view, 1);
-	}
-
-	status_bar_messagef("%c%s", curr_stats.last_search_backward ? '/' : '?',
-			curr_view->regexp);
-	curr_stats.save_msg = 1;
+	search(key_info, !curr_stats.last_search_backward);
 }
 
 /* Move files. */
@@ -1354,6 +1327,14 @@ cmd_m(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_n(struct key_info key_info, struct keys_info *keys_info)
 {
+	search(key_info, curr_stats.last_search_backward);
+}
+
+static void
+search(struct key_info key_info, int backward)
+{
+	int found;
+
 	if(cfg.search_history_num < 0)
 		return;
 
@@ -1364,24 +1345,35 @@ cmd_n(struct key_info key_info, struct keys_info *keys_info)
 	{
 		const char *pattern = (curr_view->regexp[0] == '\0') ?
 				cfg.search_history[0] : curr_view->regexp;
-		curr_stats.save_msg = find_pattern(curr_view, pattern,
-				curr_stats.last_search_backward, 1);
+		curr_stats.save_msg = find_pattern(curr_view, pattern, backward, 1);
 		key_info.count--;
 	}
 
 	if(curr_view->matches == 0)
 		return;
 
+	found = 0;
 	while(key_info.count-- > 0)
 	{
-		if(curr_stats.last_search_backward)
-			find_previous_pattern(curr_view, 1);
+		if(backward)
+			found += find_previous_pattern(curr_view, cfg.wrap_scan) != 0;
 		else
-			find_next_pattern(curr_view, 1);
+			found += find_next_pattern(curr_view, cfg.wrap_scan) != 0;
 	}
 
-	status_bar_messagef("%c%s", curr_stats.last_search_backward ? '?' : '/',
-			curr_view->regexp);
+	if(!found)
+	{
+		if(backward)
+			status_bar_errorf("Search hit TOP without match for: %s",
+					curr_view->regexp);
+		else
+			status_bar_errorf("Search hit BOTTOM without match for: %s",
+					curr_view->regexp);
+		curr_stats.save_msg = 1;
+		return;
+	}
+
+	status_bar_messagef("%c%s", backward ? '?' : '/', curr_view->regexp);
 	curr_stats.save_msg = 1;
 }
 

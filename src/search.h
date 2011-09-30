@@ -23,8 +23,10 @@
 #include "ui.h"
 
 int find_pattern(FileView *view, const char *pattern, int backward, int move);
-void find_next_pattern(FileView *view, int wrap);
-void find_previous_pattern(FileView *view, int wrap);
+/* returns non-zero if pattern was found */
+int find_next_pattern(FileView *view, int wrap);
+/* returns non-zero if pattern was found */
+int find_previous_pattern(FileView *view, int wrap);
 
 #endif
 
