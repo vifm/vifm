@@ -1076,6 +1076,13 @@ default: false
 Ignore case in search patterns (:substiute, / and ? commands).  It doesn't
 affect file filtering.
 
+                                               *vifm-'incsearch'* *vifm-'is'*
+incsearch is
+type: boolean
+default: false
+When this option is set, search will be performed starting from initial
+cursor position each time search pattern is changed.
+
                                                *vifm-'runexec'*
 runexec
 type: boolean

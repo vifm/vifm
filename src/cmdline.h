@@ -63,6 +63,9 @@ struct line_stats
 	wchar_t *line_buf;        /* content of line before using history */
 	int reverse_completion;
 	complete_cmd_func complete;
+	int search_mode;
+	int old_top;              /* for search_mode */
+	int old_pos;              /* for search_mode */
 };
 
 int line_completion(struct line_stats *stat);

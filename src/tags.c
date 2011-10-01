@@ -13,6 +13,8 @@ const char *tags[] = {
 	"vifm-'ic'",
 	"vifm-'iec'",
 	"vifm-'ignorecase'",
+	"vifm-'incsearch'",
+	"vifm-'is'",
 	"vifm-'runexec'",
 	"vifm-'scb'",
 	"vifm-'scrollbind'",

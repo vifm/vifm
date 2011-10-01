@@ -119,6 +119,9 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 	for(x = 0; x < view->list_rows; x++)
 		view->dir_entry[x].search_match = 0;
 
+	if(pattern[0] == '\0')
+		return 0;
+
 	cflags = get_regexp_cflags(pattern);
 	if((err = regcomp(&re, pattern, cflags)) == 0)
 	{

@@ -76,6 +76,9 @@ struct line_stats
 	wchar_t *line_buf;        /* content of line before using history */
 	int reverse_completion;
 	complete_cmd_func complete;
+	int search_mode;
+	int old_top;              /* for search_mode */
+	int old_pos;              /* for search_mode */
 };
 
 #endif
@@ -90,6 +93,7 @@ static void *sub_mode_ptr;
 static int def_handler(wchar_t key);
 static void update_cmdline_size(void);
 static void update_cmdline_text(void);
+static void input_line_changed(void);
 static wchar_t * wcsins(wchar_t *src, wchar_t *ins, int pos);
 static void prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 		complete_cmd_func complete);
@@ -269,6 +273,8 @@ update_cmdline_size(void)
 static void
 update_cmdline_text(void)
 {
+	input_line_changed();
+
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	if(input_stat.line != NULL)
@@ -277,6 +283,60 @@ update_cmdline_text(void)
 	wmove(status_bar, input_stat.curs_pos/line_width,
 			input_stat.curs_pos%line_width);
 	wrefresh(status_bar);
+}
+
+static void
+input_line_changed(void)
+{
+	static wchar_t *previous;
+
+	if(!cfg.inc_search || !input_stat.search_mode)
+		return;
+
+	if(prev_mode != MENU_MODE)
+	{
+		curr_view->top_line = input_stat.old_top;
+		curr_view->list_pos = input_stat.old_pos;
+	}
+	else
+	{
+		load_menu_pos();
+	}
+
+	if(input_stat.line != NULL &&
+			(previous == NULL || wcscmp(previous, input_stat.line) != 0))
+	{
+		char *p;
+
+		free(previous);
+		previous = my_wcsdup(input_stat.line);
+
+		p = to_multibyte(input_stat.line);
+
+		if(sub_mode == SEARCH_FORWARD_SUBMODE)
+			exec_command(p, curr_view, GET_FSEARCH_PATTERN);
+		else if(sub_mode == SEARCH_BACKWARD_SUBMODE)
+			exec_command(p, curr_view, GET_BSEARCH_PATTERN);
+		else if(sub_mode == MENU_SEARCH_FORWARD_SUBMODE ||
+				sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
+			search_menu_list(p, sub_mode_ptr);
+		else if(sub_mode == VSEARCH_FORWARD_SUBMODE)
+			exec_command(p, curr_view, GET_VFSEARCH_PATTERN);
+		else if(sub_mode == VSEARCH_BACKWARD_SUBMODE)
+			exec_command(p, curr_view, GET_VBSEARCH_PATTERN);
+
+		free(p);
+	}
+
+	if(prev_mode != MENU_MODE)
+	{
+		draw_dir_list(curr_view, curr_view->top_line);
+		move_to_list_pos(curr_view, curr_view->list_pos);
+	}
+	else
+	{
+		menu_redraw();
+	}
 }
 
 /* Insert a string into another string
@@ -397,6 +457,25 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 	input_stat.line_buf = NULL;
 	input_stat.reverse_completion = 0;
 	input_stat.complete = complete;
+	input_stat.search_mode = 0;
+
+	if(sub_mode == SEARCH_FORWARD_SUBMODE
+			|| sub_mode == VSEARCH_FORWARD_SUBMODE
+			|| sub_mode == MENU_SEARCH_FORWARD_SUBMODE
+	    || sub_mode == SEARCH_BACKWARD_SUBMODE
+			|| sub_mode == VSEARCH_BACKWARD_SUBMODE
+			|| sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
+	{
+		input_stat.search_mode = 1;
+		if(prev_mode != MENU_MODE)
+		{
+			input_stat.old_top = curr_view->top_line;
+			input_stat.old_pos = curr_view->list_pos;
+		}
+		{
+			save_menu_pos();
+		}
+	}
 
 	wcsncpy(input_stat.prompt, prompt, ARRAY_LEN(input_stat.prompt));
 	input_stat.prompt_wid = input_stat.curs_pos = wcslen(input_stat.prompt);
@@ -506,25 +585,11 @@ cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 		return;
 
 	if(input_stat.index == input_stat.len)
-	{ /* If the cursor is at the end of the line, maybe filling
-		 * spaces by ourselves would goes faster then repaint
-		 * the whole window entirely :-) */
-
-		int w, i;
-
+	{
 		input_stat.index--;
 		input_stat.len--;
 
-		i = input_stat.curs_pos;
-		w = wcwidth(input_stat.line[input_stat.index]);
-		while(i - input_stat.curs_pos < w)
-		{
-			mvwaddch(status_bar, input_stat.curs_pos/line_width,
-					input_stat.curs_pos%line_width, ' ');
-			input_stat.curs_pos--;
-		}
-		mvwaddch(status_bar, input_stat.curs_pos/line_width,
-				input_stat.curs_pos%line_width, ' ');
+		input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index]);
 
 		input_stat.line[input_stat.index] = L'\0';
 	}
@@ -535,14 +600,9 @@ cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 
 		input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index]);
 		wcsdel(input_stat.line, input_stat.index + 1, 1);
-
-		werase(status_bar);
-		mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-		mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
 	}
 
-	wmove(status_bar, input_stat.curs_pos/line_width,
-			input_stat.curs_pos%line_width);
+	update_cmdline_text();
 }
 
 static void
@@ -742,27 +802,30 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 			curr_stats.save_msg = exec_commands(s, curr_view, save_hist,
 					GET_MENU_COMMAND);
 	}
-	else if(sub_mode == SEARCH_FORWARD_SUBMODE)
+	else if(!cfg.inc_search)
 	{
-		curr_stats.save_msg = exec_command(p, curr_view, GET_FSEARCH_PATTERN);
-	}
-	else if(sub_mode == SEARCH_BACKWARD_SUBMODE)
-	{
-		curr_stats.save_msg = exec_command(p, curr_view, GET_BSEARCH_PATTERN);
-	}
-	else if(sub_mode == MENU_SEARCH_FORWARD_SUBMODE ||
-			sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
-	{
-		curr_stats.need_redraw = 1;
-		search_menu_list(p, sub_mode_ptr);
-	}
-	else if(sub_mode == VSEARCH_FORWARD_SUBMODE)
-	{
-		curr_stats.save_msg = exec_command(p, curr_view, GET_VFSEARCH_PATTERN);
-	}
-	else if(sub_mode == VSEARCH_BACKWARD_SUBMODE)
-	{
-		curr_stats.save_msg = exec_command(p, curr_view, GET_VBSEARCH_PATTERN);
+		if(sub_mode == SEARCH_FORWARD_SUBMODE)
+		{
+			curr_stats.save_msg = exec_command(p, curr_view, GET_FSEARCH_PATTERN);
+		}
+		else if(sub_mode == SEARCH_BACKWARD_SUBMODE)
+		{
+			curr_stats.save_msg = exec_command(p, curr_view, GET_BSEARCH_PATTERN);
+		}
+		else if(sub_mode == MENU_SEARCH_FORWARD_SUBMODE ||
+				sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
+		{
+			curr_stats.need_redraw = 1;
+			search_menu_list(p, sub_mode_ptr);
+		}
+		else if(sub_mode == VSEARCH_FORWARD_SUBMODE)
+		{
+			curr_stats.save_msg = exec_command(p, curr_view, GET_VFSEARCH_PATTERN);
+		}
+		else if(sub_mode == VSEARCH_BACKWARD_SUBMODE)
+		{
+			curr_stats.save_msg = exec_command(p, curr_view, GET_VBSEARCH_PATTERN);
+		}
 	}
 	else if(sub_mode == PROMPT_SUBMODE)
 	{

@@ -45,6 +45,7 @@ static FileView *view;
 static menu_info *menu;
 static int last_search_backward;
 static int was_redraw;
+static int saved_top, saved_pos;
 
 static int complete_args(int id, const char *args, int argc, char **argv,
 		int arg_pos);
@@ -655,6 +656,20 @@ quit_cmd(const struct cmd_info *cmd_info)
 {
 	leave_menu_mode();
 	return 0;
+}
+
+void
+save_menu_pos(void)
+{
+	saved_top = menu->top;
+	saved_pos = menu->pos;
+}
+
+void
+load_menu_pos(void)
+{
+	menu->top = saved_top;
+	menu->pos = saved_pos;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

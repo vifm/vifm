@@ -27,6 +27,7 @@ static void history_handler(enum opt_op op, union optval_t val);
 static void hlsearch_handler(enum opt_op op, union optval_t val);
 static void iec_handler(enum opt_op op, union optval_t val);
 static void ignorecase_handler(enum opt_op op, union optval_t val);
+static void incsearch_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
 static void scrollbind_handler(enum opt_op op, union optval_t val);
 static void scrolloff_handler(enum opt_op op, union optval_t val);
@@ -125,6 +126,7 @@ static struct {
 	{ "hlsearch",    "hls",  OPT_BOOL,    0,                          NULL,            &hlsearch_handler,    },
 	{ "iec",         "",     OPT_BOOL,    0,                          NULL,            &iec_handler,         },
 	{ "ignorecase",  "ic",   OPT_BOOL,    0,                          NULL,            &ignorecase_handler,  },
+	{ "incsearch",   "is",   OPT_BOOL,    0,                          NULL,            &incsearch_handler ,  },
 	{ "runexec",     "",     OPT_BOOL,    0,                          NULL,            &runexec_handler,     },
 	{ "scrollbind",  "scb",  OPT_BOOL,    0,                          NULL,            &scrollbind_handler,  },
 	{ "scrolloff",   "so",   OPT_INT,     0,                          NULL,            &scrolloff_handler,   },
@@ -175,6 +177,7 @@ load_options_defaults(void)
 	options[i++].val.bool_val = cfg.hl_search;
 	options[i++].val.bool_val = cfg.use_iec_prefixes;
 	options[i++].val.bool_val = cfg.ignore_case;
+	options[i++].val.bool_val = cfg.inc_search;
 	options[i++].val.bool_val = cfg.auto_execute;
 	options[i++].val.bool_val = cfg.scroll_bind;
 	options[i++].val.int_val = cfg.scroll_off;
@@ -459,6 +462,12 @@ static void
 ignorecase_handler(enum opt_op op, union optval_t val)
 {
 	cfg.ignore_case = val.bool_val;
+}
+
+static void
+incsearch_handler(enum opt_op op, union optval_t val)
+{
+	cfg.inc_search = val.bool_val;
 }
 
 static void

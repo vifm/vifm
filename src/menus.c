@@ -470,6 +470,9 @@ search_menu(menu_info *m, int start_pos)
 
 	memset(m->matches, 0, sizeof(int)*m->len);
 
+	if(m->regexp[0] == '\0')
+		return 0;
+
 	cflags = get_regexp_cflags(m->regexp);
 	if((err = regcomp(&re, m->regexp, cflags)) == 0)
 	{

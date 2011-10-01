@@ -29,6 +29,8 @@
 #define OPTION_NAME_MAX 64
 
 /* TODO possibly add validators */
+/* TODO possibly add default handlers (just set new value) and types
+ * OPT_*_PTR */
 
 struct opt_t {
 	char *name;

@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@gmail.com>
-" Last Change: September 30, 2011
+" Last Change: October 1, 2011
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -46,22 +46,22 @@ syntax case match
 
 " Options
 syntax keyword vifmOption contained autochpos confirm cf fastrun followlinks
-		\ fusehome gdefault history hi hlsearch hls iec ignorecase ic runexec
-		\ scrollbind scb scrolloff so shell sh slowfs smartcase scs sortnumbers
-		\ timefmt timeoutlen trash undolevels ul vicmd vixcmd vifminfo vimhelp
-		\ wildmenu wmnu wrap wrapscan ws sort sortorder
+		\ fusehome gdefault history hi hlsearch hls iec ignorecase ic incsearch
+		\ is runexec scrollbind scb scrolloff so shell sh slowfs smartcase scs
+		\ sortnumbers timefmt timeoutlen trash undolevels ul vicmd vixcmd vifminfo
+		\ vimhelp wildmenu wmnu wrap wrapscan ws sort sortorder
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun
-		\ nofollowlinks nohlsearch nohls noiec noignorecase noic noscrollbind noscb
-		\ norunexec nosmartcase noscs nosortnumbers notrash novimhelp nowildmenu
-		\ nowmnu nowrap nowrapscan nows
+		\ nofollowlinks nohlsearch nohls noiec noignorecase noic noincsearch nois
+		\ noscrollbind noscb norunexec nosmartcase noscs nosortnumbers notrash
+		\ novimhelp nowildmenu nowmnu nowrap nowrapscan nows
 
 " Inverted boolean options
 syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
-		\ invfollowlinks invhlsearch invhls inviec invignorecase invic invscrollbind
-		\ invscb invrunexec invsmartcase invscs invsortnumbers invtrash invvimhelp
-		\ invwildmenu invwmnu invwrap invwrapscan invws
+		\ invfollowlinks invhlsearch invhls inviec invignorecase invic invincsearch
+		\ invis invscrollbind invscb invrunexec invsmartcase invscs invsortnumbers
+		\ invtrash invvimhelp invwildmenu invwmnu invwrap invwrapscan invws
 
 " Expressions
 syntax region vifmStatement start='^\s*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'

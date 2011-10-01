@@ -86,6 +86,7 @@ static void cmd_k(struct key_info, struct keys_info *);
 static void cmd_l(struct key_info, struct keys_info *);
 static void cmd_m(struct key_info, struct keys_info *);
 static void cmd_n(struct key_info, struct keys_info *);
+static void search(struct key_info, int backward);
 static void cmd_y(struct key_info, struct keys_info *);
 static void cmd_zf(struct key_info, struct keys_info *);
 static void find_goto(int ch, int count, int backward);
@@ -93,7 +94,7 @@ static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
 static void update_marks(FileView *view);
 static void update(void);
-static void find_update(FileView *view, int backward);
+static int find_update(FileView *view, int backward);
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
@@ -255,7 +256,7 @@ cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 	if(view->top_line == 0)
 		return;
 
-	pos = curr_view->top_line + 1;
+	pos = view->top_line + 1;
 	view->top_line -= l;
 	if(view->top_line < 0)
 		view->top_line = 0;
@@ -307,7 +308,7 @@ cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 	if(view->top_line + 1 == view->list_rows - (l + 1))
 		return;
 
-	pos = curr_view->top_line + l;
+	pos = view->top_line + l;
 	view->top_line += l;
 	if(view->top_line > view->list_rows)
 		view->top_line = view->list_rows - l;
@@ -429,28 +430,7 @@ cmd_M(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_N(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(cfg.search_history_num < 0)
-		return;
-
-	if(view->matches == 0)
-	{
-		const char *pattern = (view->regexp[0] == '\0') ?
-				cfg.search_history[0] : view->regexp;
-		curr_stats.save_msg = find_vpattern(view, pattern,
-				curr_stats.last_search_backward);
-	}
-
-	if(curr_view->matches == 0)
-		return;
-
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	while(key_info.count-- > 0)
-		find_update(view, !curr_stats.last_search_backward);
-
-	status_bar_messagef("%c%s", curr_stats.last_search_backward ? '/' : '?',
-			view->regexp);
-	curr_stats.save_msg = 1;
+	search(key_info, !curr_stats.last_search_backward);
 }
 
 static void
@@ -696,6 +676,13 @@ cmd_m(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_n(struct key_info key_info, struct keys_info *keys_info)
 {
+	search(key_info, curr_stats.last_search_backward);
+}
+
+static void
+search(struct key_info key_info, int backward)
+{
+	int found;
 	if(cfg.search_history_num < 0)
 		return;
 
@@ -703,20 +690,30 @@ cmd_n(struct key_info key_info, struct keys_info *keys_info)
 	{
 		const char *pattern = (view->regexp[0] == '\0') ?
 				cfg.search_history[0] : view->regexp;
-		curr_stats.save_msg = find_vpattern(view, pattern,
-				curr_stats.last_search_backward);
+		curr_stats.save_msg = find_vpattern(view, pattern, backward);
 	}
 
-	if(curr_view->matches == 0)
+	if(view->matches == 0)
 		return;
 
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
+	found = 0;
 	while(key_info.count-- > 0)
-		find_update(view, curr_stats.last_search_backward);
+		found += find_update(view, backward) != 0;
 
-	status_bar_messagef("%c%s", curr_stats.last_search_backward ? '?' : '/',
-			view->regexp);
+	if(!found)
+	{
+		if(backward)
+			status_bar_errorf("Search hit TOP without match for: %s", view->regexp);
+		else
+			status_bar_errorf("Search hit BOTTOM without match for: %s",
+					view->regexp);
+		curr_stats.save_msg = 1;
+		return;
+	}
+
+	status_bar_messagef("%c%s", backward ? '?' : '/', view->regexp);
 	curr_stats.save_msg = 1;
 }
 
@@ -844,8 +841,13 @@ update(void)
 int
 find_vpattern(FileView *view, const char *pattern, int backward)
 {
+	int i;
 	int result;
 	int hls = cfg.hl_search;
+
+	for(i = 0; i < view->list_rows; i++)
+		view->dir_entry[i].selected = 0;
+
 	cfg.hl_search = 0;
 	result = find_pattern(view, pattern, backward, 0);
 	cfg.hl_search = hls;
@@ -853,18 +855,21 @@ find_vpattern(FileView *view, const char *pattern, int backward)
 	return result;
 }
 
-static void
+/* returns non-zero when it find something */
+static int
 find_update(FileView *view, int backward)
 {
+	int found;
 	int old_pos, new_pos;
 	old_pos = view->list_pos;
 	if(backward)
-		find_previous_pattern(view, cfg.wrap_scan);
+		found = find_previous_pattern(view, cfg.wrap_scan);
 	else
-		find_next_pattern(view, cfg.wrap_scan);
+		found = find_next_pattern(view, cfg.wrap_scan);
 	new_pos = view->list_pos;
 	view->list_pos = old_pos;
 	goto_pos(new_pos);
+	return found;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
