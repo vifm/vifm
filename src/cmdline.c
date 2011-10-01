@@ -472,6 +472,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 			input_stat.old_top = curr_view->top_line;
 			input_stat.old_pos = curr_view->list_pos;
 		}
+		else
 		{
 			save_menu_pos();
 		}
