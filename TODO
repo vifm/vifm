@@ -13,6 +13,7 @@ Basic things that need to be done.
     Templates for :touch.
 	Mouse support.
     Ctrl-R combinations in the command-line mode.
+    :file <line beginning> to quick run one of associated programs.
 
 Documentation.
 	Better documentation (with normal tags in Vim version).

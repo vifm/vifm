@@ -16,6 +16,8 @@
 
 	Fixed leaving visual mode on cp key.
 
+	Fixed clearing selection after :file menu.
+
 0.6.3 to 0.7.0
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.

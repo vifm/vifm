@@ -774,21 +774,19 @@ goto_selected_file(FileView *view, menu_info *m)
 static void
 execute_filetype_cb(FileView *view, menu_info *m)
 {
-	char *prog_str;
-	int background;
-
 	if(view->dir_entry[view->list_pos].type == DIRECTORY && m->pos == 0)
 	{
-		handle_file(view, 0, 0);
-		return;
+		handle_dir(view);
 	}
-
-	prog_str = m->data[m->pos];
-	if(prog_str[0] == '\0')
-		return;
-
-	background = m->extra_data & 1;
-	run_using_prog(view, prog_str, 0, background);
+	else
+	{
+		char *prog_str = m->data[m->pos];
+		if(prog_str[0] != '\0')
+		{
+			int background = m->extra_data & 1;
+			run_using_prog(view, prog_str, 0, background);
+		}
+	}
 
 	clean_selected_files(view);
 	draw_dir_list(view, view->top_line);

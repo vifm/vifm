@@ -274,6 +274,11 @@ static void
 leave_menu_mode(void)
 {
 	reset_popup_menu(menu);
+
+	clean_selected_files(view);
+	draw_dir_list(view, view->top_line);
+	move_to_list_pos(view, view->list_pos);
+
 	*mode = NORMAL_MODE;
 	if(was_redraw)
 		redraw_window();

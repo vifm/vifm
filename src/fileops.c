@@ -620,7 +620,7 @@ multi_run_compat(FileView *view, const char *program)
 	return 1;
 }
 
-static void
+void
 handle_dir(FileView *view)
 {
 	char *filename;
@@ -928,7 +928,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	if(cfg.vim_filter && (executable || runnable))
 		use_vim_plugin(view, 0, NULL); /* no return */
 
-	if(executable)
+	if(executable && type != DIRECTORY)
 	{
 		char buf[NAME_MAX];
 		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, filename);
