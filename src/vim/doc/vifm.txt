@@ -1257,8 +1257,16 @@ Since it's not easy to enter special characters there are several special
 sequences that can be used in place of them.  They are:
 
 <cr> - Enter key
-<c-a>,<c-b>,...,<c-z>,<c-[>,<c-\>,<c-]>,<c-^>,<c-_> - Control + some key.
 <space> - Space key
+<bs> - Backspace key
+<tab> <s-tab> - Tabulation and Shift+Tabulation keys
+<home> <end> - Home/End
+<left> <right> <up> <down> - Arrow keys
+<pageup> <pagedown> - PageUp/PageDown
+<del> <delete> - Delete key.  <del> and <delete> mean different codes, but
+    <delete> is more common.
+<c-a>,<c-b>,...,<c-z>,<c-[>,<c-\>,<c-]>,<c-^>,<c-_> - Control + some key.
+<m-a>,<m-b>,...,<m-z>,<m-[>,<m-\>,<m-]>,<m-^>,<m-_> - Alt + some key.
 <f0> - <f63> - functional keys
 
 vifm removes whitespace characters at the beginning and end of commands.

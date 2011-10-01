@@ -45,6 +45,7 @@
 
 #include "background.h"
 #include "bookmarks.h"
+#include "bracket_notation.h"
 #include "change_dialog.h"
 #include "cmdline.h"
 #include "cmds.h"
@@ -1100,21 +1101,35 @@ select_count(const struct cmd_info *cmd_info, int count)
 	}
 }
 
+static int
+notation_sorter(const void *first, const void *second)
+{
+	const struct key_pair *paira = (const struct key_pair *)first;
+	const struct key_pair *pairb = (const struct key_pair *)second;
+	const char *stra = paira->notation;
+	const char *strb = pairb->notation;
+	return strcasecmp(stra, strb);
+}
+
 void
 init_commands(void)
 {
-	if(cmds_conf.inner == NULL)
-	{
-		init_cmds(1, &cmds_conf);
-		add_builtin_commands((const struct cmd_add *)&commands,
-				ARRAY_LEN(commands));
+	int i;
 
-		split_path();
-	}
-	else
+	if(cmds_conf.inner != NULL)
 	{
 		init_cmds(1, &cmds_conf);
+		return;
 	}
+
+	/* we get here when init_commands() is called first time */
+	init_cmds(1, &cmds_conf);
+	add_builtin_commands((const struct cmd_add *)&commands, ARRAY_LEN(commands));
+
+	split_path();
+	qsort(key_pairs, ARRAY_LEN(key_pairs), sizeof(*key_pairs), notation_sorter);
+	for(i = 0; i < ARRAY_LEN(key_pairs); i++)
+		key_pairs[i].len = strlen(key_pairs[i].notation);
 }
 
 static void
@@ -1878,6 +1893,24 @@ set_view_filter(FileView *view, const char *filter, int invert)
 	return 0;
 }
 
+static struct key_pair *
+find_notation(const char *str)
+{
+	int l = 0, u = ARRAY_LEN(key_pairs) - 1;
+	while(l <= u)
+	{
+		int i = (l + u)/2;
+		int comp = strncasecmp(str, key_pairs[i].notation, key_pairs[i].len);
+		if(comp == 0)
+			return &key_pairs[i];
+		else if(comp < 0)
+			u = i - 1;
+		else
+			l = i + 1;
+	}
+	return NULL;
+}
+
 static wchar_t *
 substitute_specs(const char *cmd)
 {
@@ -1885,49 +1918,22 @@ substitute_specs(const char *cmd)
 
 	buf = malloc((strlen(cmd) + 1)*sizeof(wchar_t));
 	if(buf == NULL)
-	{
 		return NULL;
-	}
 
 	p = buf;
 	while(*cmd != '\0')
 	{
-		if(strncasecmp(cmd, "<cr>", 4) == 0)
+		struct key_pair *pair;
+		pair = find_notation(cmd);
+		if(pair == NULL)
 		{
-			*p++ = L'\r';
-			cmd += 4;
-		}
-		else if(strncasecmp(cmd, "<space>", 7) == 0)
-		{
-			*p++ = L' ';
-			cmd += 7;
-		}
-		else if(cmd[0] == '<' && toupper(cmd[1]) == 'F' && isdigit(cmd[2]) &&
-				cmd[3] == '>')
-		{
-			*p++ = KEY_F0 + (cmd[2] - '0');
-			cmd += 4;
-		}
-		else if(cmd[0] == '<' && toupper(cmd[1]) == 'F' && isdigit(cmd[2]) &&
-				isdigit(cmd[3]) && cmd[4] == '>')
-		{
-			int num = (cmd[2] - '0')*10 + (cmd[3] - '0');
-			if(num < 64)
-			{
-				*p++ = KEY_F0 + num;
-				cmd += 5;
-			}
-		}
-		else if(cmd[0] == '<' && toupper(cmd[1]) == 'C' && cmd[2] == '-' &&
-				strchr("ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_", toupper(cmd[3])) != NULL &&
-				cmd[4] == '>')
-		{
-			*p++ = toupper(cmd[3]) - 'A' + 1;
-			cmd += 5;
+			*p++ = (wchar_t)*cmd++;
 		}
 		else
 		{
-			*p++ = (wchar_t)*cmd++;
+			wcscpy(p, pair->key);
+			p += wcslen(p);
+			cmd += pair->len;
 		}
 	}
 	*p = L'\0';

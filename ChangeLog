@@ -6,6 +6,10 @@
 
 	Added 'incsearch' option.
 
+	Added support for more angle bracket notations in mappings (<bs>, <tab>,
+	<s-tab>, <home>, <end>, <left>, <right>, <up>, <down>, <pageup>,
+	<pagedown>, <del>, <delete>, <m-a>, <m-b>, ..., <m-z>).
+
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 
 	Fixed bug with disappearing of number of selected files in visual mode.
