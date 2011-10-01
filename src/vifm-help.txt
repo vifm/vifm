@@ -996,6 +996,9 @@ Commands
        :sp[lit]
               splits the window to show both file directories.
 
+       :sp[lit]!
+              toggles window splitting.
+
        :sp[lit] path
               splits the window to show both file  directories.   And  changes
               other pane to path.
@@ -1452,13 +1455,13 @@ Mappings
               Keys with obvious names.
 
        <del> <delete>
-              Delete  key.   <del>  and  <delete>  have  different  codes, but
+              Delete  key.   <del>  and  <delete>  mean  different  codes, but
               <delete> is more common.
 
        <c-a>,<c-b>,...,<c-z>,<c-[>,<c->,<c-]>,<c-^>,<c-_>
               Control + some key.
 
-       <m-a>,<m-b>,...,<m-z>,<m-[>,<m->,<m-]>,<m-^>,<m-_>
+       <m-a>,<m-b>,...,<m-z>
               Alt + some key.
 
        <f0> - <f63>
@@ -1626,4 +1629,4 @@ AUTHOR
 
 
 
-                                October 1, 2011                        vifm(1)
+                                October 2, 2011                        vifm(1)

@@ -10,6 +10,8 @@
 	<s-tab>, <home>, <end>, <left>, <right>, <up>, <down>, <pageup>,
 	<pagedown>, <del>, <delete>, <m-a>, <m-b>, ..., <m-z>).
 
+	Added :split! to toggle between only and splitted view.
+
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 
 	Fixed bug with disappearing of number of selected files in visual mode.

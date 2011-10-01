@@ -824,6 +824,7 @@ of the hierarchy and transparency for all others.
 
                                                *vifm-:split* *vifm-:sp*
 :sp[lit] - switch to a two window view.
+:sp[lit]! - toggles windows splitting.
 :sp[lit] path - splits the window to show both file directories.  And
     changes other pane to path.
 

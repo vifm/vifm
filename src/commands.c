@@ -348,7 +348,7 @@ static const struct cmd_add commands[] = {
 		.handler = shell_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "sort",             .abbr = "sor",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = sort_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "split",            .abbr = "sp",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "split",            .abbr = "sp",    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = split_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "substitute",       .abbr = "s",     .emark = 0,  .id = COM_SUBSTITUTE,  .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
 		.handler = substitute_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 1, .max_args = 3,       .select = 1, },
@@ -2403,7 +2403,11 @@ comm_quit(int write_info)
 void
 comm_only(void)
 {
-	only_cmd(NULL);
+	if(curr_stats.number_of_windows == 1)
+		return;
+
+	curr_stats.number_of_windows = 1;
+	redraw_window();
 }
 
 void
@@ -3630,8 +3634,7 @@ nunmap_cmd(const struct cmd_info *cmd_info)
 static int
 only_cmd(const struct cmd_info *cmd_info)
 {
-	curr_stats.number_of_windows = 1;
-	redraw_window();
+	comm_only();
 	return 0;
 }
 
@@ -3869,9 +3872,25 @@ sort_cmd(const struct cmd_info *cmd_info)
 static int
 split_cmd(const struct cmd_info *cmd_info)
 {
-	if(cmd_info->argc == 1)
-		cd(other_view, cmd_info->argv[0]);
-	comm_split();
+	if(cmd_info->emark && cmd_info->argc != 0)
+	{
+		status_bar_error("No arguments are allowed if you use \"!\"");
+		return 1;
+	}
+
+	if(cmd_info->emark)
+	{
+		if(curr_stats.number_of_windows == 1)
+			comm_split();
+		else
+			comm_only();
+	}
+	else
+	{
+		if(cmd_info->argc == 1)
+			cd(other_view, cmd_info->argv[0]);
+		comm_split();
+	}
 	return 0;
 }
 
