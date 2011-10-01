@@ -249,7 +249,7 @@ modupd_input_bar(wchar_t *str)
 void
 clear_input_bar(void)
 {
-	if(uses_input_bar[mode])
+	if(uses_input_bar[mode] && mode != VISUAL_MODE)
 		clear_num_window();
 }
 
