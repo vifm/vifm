@@ -551,7 +551,14 @@ cmd_f(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_cp(struct key_info key_info, struct keys_info *keys_info)
 {
+	int ub;
+
+	*mode = NORMAL_MODE;
 	update_marks(view);
+	ub = check_mark_directory(view, '<');
+	if(ub != -1)
+		view->list_pos = ub;
+
 	enter_permissions_mode(view);
 }
 
