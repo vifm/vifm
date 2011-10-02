@@ -176,19 +176,13 @@ sort_dir_list(const void *one, const void *two)
 			break;
 
 #ifndef _WIN32
+		case SORT_BY_OWNER_NAME: /* FIXME */
 		case SORT_BY_OWNER_ID:
 			retval = first->uid - second->uid;
 			break;
 
+		case SORT_BY_GROUP_NAME: /* FIXME */
 		case SORT_BY_GROUP_ID:
-			retval = first->gid - second->gid;
-			break;
-
-		case SORT_BY_OWNER_NAME:
-			retval = first->uid - second->uid;
-			break;
-
-		case SORT_BY_GROUP_NAME:
 			retval = first->gid - second->gid;
 			break;
 #endif

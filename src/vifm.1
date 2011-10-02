@@ -382,6 +382,14 @@ same as :quit
 .TP
 .BI .
 repeat last command line command (not normal mode command).
+.TP
+.BI (
+goto previous group.  Groups are defined by primary sorting key.  For name and
+iname members of each group have same first letter, for all other sorting keys
+vifm uses size, uid, ...
+.TP
+.BI )
+goto next group.  See ( key description above.
 .\" ---------------------------------------------------------------------------
 .SH Using Count
 .\" ---------------------------------------------------------------------------

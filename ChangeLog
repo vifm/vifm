@@ -12,7 +12,9 @@
 
 	Added :split! to toggle between only and splitted view.
 
-    Added :file <command beginning> to quick run one of associated commands.
+	Added :file <command beginning> to quick run one of associated commands.
+
+	Added '(' and ')' keys for normal and visual modes.
 
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 

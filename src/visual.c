@@ -89,6 +89,8 @@ static void cmd_n(struct key_info, struct keys_info *);
 static void search(struct key_info, int backward);
 static void cmd_y(struct key_info, struct keys_info *);
 static void cmd_zf(struct key_info, struct keys_info *);
+static void cmd_left_paren(struct key_info, struct keys_info *);
+static void cmd_right_paren(struct key_info, struct keys_info *);
 static void find_goto(int ch, int count, int backward);
 static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
@@ -147,6 +149,8 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"zf", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zf}}},
 	{L"zt", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zt}}},
 	{L"zz", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zz}}},
+	{L"(", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_paren}}},
+	{L")", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right_paren}}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_PPAGE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
 	{{KEY_NPAGE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
@@ -578,6 +582,9 @@ goto_pos(int pos)
 	if(pos > view->list_rows - 1)
 		pos = view->list_rows - 1;
 
+	if(view->list_pos == pos)
+		return;
+
 	while(view->list_pos < pos)
 		select_down_one(view, start_pos);
 	while(view->list_pos > pos)
@@ -640,25 +647,17 @@ cmd_gv(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_j(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(view->list_pos == view->list_rows - 1)
-		return;
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
-	while(key_info.count-- > 0)
-		select_down_one(view, start_pos);
-	update();
+	goto_pos(view->list_pos + key_info.count);
 }
 
 static void
 cmd_k(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(view->list_pos == 0)
-		return;
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
-	while(key_info.count-- > 0)
-		select_up_one(view, start_pos);
-	update();
+	goto_pos(view->list_pos - key_info.count);
 }
 
 static void
@@ -747,6 +746,20 @@ cmd_zf(struct key_info key_info, struct keys_info *keys_info)
 {
 	filter_selected_files(view);
 	leave_visual_mode(0, 1, 1);
+}
+
+static void
+cmd_left_paren(struct key_info key_info, struct keys_info *keys_info)
+{
+	int pos = cmd_paren(0, curr_view->list_rows, -1);
+	goto_pos(pos);
+}
+
+static void
+cmd_right_paren(struct key_info key_info, struct keys_info *keys_info)
+{
+	int pos = cmd_paren(-1, curr_view->list_rows - 1, +1);
+	goto_pos(pos);
 }
 
 static void

@@ -162,36 +162,8 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 #endif
 			break;
 		case SORT_BY_MODE:
-			{
-				if(S_ISREG(view->dir_entry[x].mode))
-				{
-#ifndef _WIN32
-					if((S_IXUSR & view->dir_entry[x].mode)
-							|| (S_IXGRP & view->dir_entry[x].mode)
-							|| (S_IXOTH & view->dir_entry[x].mode))
-						snprintf(buf, sizeof(buf), " exe");
-					else
-#endif
-						snprintf(buf, sizeof(buf), " reg");
-				}
-				else if(S_ISLNK(view->dir_entry[x].mode))
-					snprintf(buf, sizeof(buf), " link");
-				else if(S_ISDIR(view->dir_entry[x].mode))
-					snprintf(buf, sizeof(buf), " dir");
-				else if(S_ISCHR(view->dir_entry[x].mode))
-					snprintf(buf, sizeof(buf), " char");
-				else if(S_ISBLK(view->dir_entry[x].mode))
-					snprintf(buf, sizeof(buf), " block");
-				else if(S_ISFIFO(view->dir_entry[x].mode))
-					snprintf(buf, sizeof(buf), " fifo");
-#ifndef _WIN32
-				else if(S_ISSOCK(view->dir_entry[x].mode))
-					snprintf(buf, sizeof(buf), " sock");
-#endif
-				else
-					snprintf(buf, sizeof(buf), "  ?  ");
-				break;
-			}
+			snprintf(buf, sizeof(buf), " %s", get_mode_str(view->dir_entry[x].mode));
+			break;
 		case SORT_BY_TIME_MODIFIED:
 			tm_ptr = localtime(&view->dir_entry[x].mtime);
 			strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);

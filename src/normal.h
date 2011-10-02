@@ -27,6 +27,7 @@ void normal_cmd_zb(struct key_info, struct keys_info *);
 void normal_cmd_zt(struct key_info, struct keys_info *);
 void normal_cmd_zz(struct key_info, struct keys_info *);
 int ffind(int ch, int backward, int wrap);
+int cmd_paren(int lb, int ub, int inc);
 
 #endif
 

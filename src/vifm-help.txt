@@ -313,6 +313,12 @@ Other Normal Mode Keys
 
        .      repeat last command line command (not normal mode command).
 
+       (      goto previous group.  Groups are defined by primary sorting key.
+              For name and iname members of each group have same first letter,
+              for all other sorting keys vifm uses size, uid, ...
+
+       )      goto next group.  See ( key description above.
+
 Using Count
        You can use count with commands like yy.
 

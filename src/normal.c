@@ -21,6 +21,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <wctype.h> /* wtoupper */
 #include <wchar.h> /* swprintf */
 
 #include "../config.h"
@@ -148,6 +149,10 @@ static void cmd_za(struct key_info, struct keys_info *);
 static void cmd_zf(struct key_info, struct keys_info *);
 static void cmd_zm(struct key_info, struct keys_info *);
 static void cmd_zo(struct key_info, struct keys_info *);
+static void cmd_left_paren(struct key_info, struct keys_info *);
+static void cmd_right_paren(struct key_info, struct keys_info *);
+static const char * get_last_ext(const char *name);
+static wchar_t get_first_wchar(const char *str);
 static void pick_files(FileView *view, int end, struct keys_info *keys_info);
 static void selector_S(struct key_info, struct keys_info *);
 static void selector_a(struct key_info, struct keys_info *);
@@ -263,6 +268,8 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"zo", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zo}}},
 	{L"zt", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zt}}},
 	{L"zz", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_zz}}},
+	{L"(", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_paren}}},
+	{L")", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right_paren}}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_PPAGE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
 	{{KEY_NPAGE}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
@@ -292,6 +299,8 @@ static struct keys_add_info selectors[] = {
 	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{L"s", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_s}}},
+	{L"(", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_paren}}},
+	{L")", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right_paren}}},
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_DOWN}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{{KEY_UP}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
@@ -654,7 +663,6 @@ int
 ffind(int ch, int backward, int wrap)
 {
 	int x;
-	wchar_t ch_buf[] = {ch, L'\0'};
 
 	x = curr_view->list_pos;
 	do
@@ -684,14 +692,7 @@ ffind(int ch, int backward, int wrap)
 
 		if(ch > 255)
 		{
-			char tbuf[9];
-			wchar_t wbuf[8];
-
-			strncpy(tbuf, curr_view->dir_entry[x].name, ARRAY_LEN(tbuf) - 1);
-			tbuf[ARRAY_LEN(tbuf) - 1] = '\0';
-			mbstowcs(wbuf, tbuf, ARRAY_LEN(wbuf));
-
-			if(wcsncmp(wbuf, ch_buf, 1) == 0)
+			if(get_first_wchar(curr_view->dir_entry[x].name) == ch)
 				break;
 		}
 		else if(curr_view->dir_entry[x].name[0] == ch)
@@ -1604,6 +1605,181 @@ static void
 cmd_zo(struct key_info key_info, struct keys_info *keys_info)
 {
 	set_dot_files_visible(curr_view, 1);
+}
+
+static void
+cmd_left_paren(struct key_info key_info, struct keys_info *keys_info)
+{
+	int pos = cmd_paren(0, curr_view->list_rows, -1);
+	if(keys_info->selector)
+		pick_files(curr_view, pos, keys_info);
+	else
+		move_to_list_pos(curr_view, pos);
+}
+
+static void
+cmd_right_paren(struct key_info key_info, struct keys_info *keys_info)
+{
+	int pos = cmd_paren(-1, curr_view->list_rows - 1, +1);
+	if(keys_info->selector)
+		pick_files(curr_view, pos, keys_info);
+	else
+		move_to_list_pos(curr_view, pos);
+}
+
+int
+cmd_paren(int lb, int ub, int inc)
+{
+	int pos = curr_view->list_pos;
+	switch(abs(curr_view->sort[0]))
+	{
+		case SORT_BY_EXTENSION:
+			{
+				const char *name = curr_view->dir_entry[pos].name;
+				const char *ext = get_last_ext(name);
+				while(pos > lb && pos < ub)
+				{
+					pos += inc;
+					name = curr_view->dir_entry[pos].name;
+					if(strcmp(get_last_ext(name), ext) != 0)
+						break;
+				}
+			}
+			break;
+		case SORT_BY_NAME:
+			{
+				const char *name = curr_view->dir_entry[pos].name;
+				size_t len = get_char_width(name);
+				while(pos > lb && pos < ub)
+				{
+					const char *tmp;
+					pos += inc;
+					tmp = curr_view->dir_entry[pos].name;
+					if(strncmp(name, tmp, len) != 0)
+						break;
+				}
+			}
+			break;
+		case SORT_BY_INAME:
+			{
+				const char *name = curr_view->dir_entry[pos].name;
+				wchar_t ch = towupper(get_first_wchar(name));
+				while(pos > lb && pos < ub)
+				{
+					const char *tmp;
+					tmp = curr_view->dir_entry[pos].name;
+					if(towupper(get_first_wchar(tmp)) != ch)
+						break;
+				}
+			}
+			break;
+		case SORT_BY_GROUP_NAME:
+		case SORT_BY_GROUP_ID:
+			{
+				gid_t g = curr_view->dir_entry[pos].gid;
+				while(pos > lb && pos < ub)
+				{
+					pos += inc;
+					if(curr_view->dir_entry[pos].gid != g)
+						break;
+				}
+			}
+			break;
+		case SORT_BY_OWNER_NAME:
+		case SORT_BY_OWNER_ID:
+			{
+				uid_t u = curr_view->dir_entry[pos].uid;
+				while(pos > lb && pos < ub)
+				{
+					pos += inc;
+					if(curr_view->dir_entry[pos].uid != u)
+						break;
+				}
+			}
+			break;
+		case SORT_BY_MODE:
+			{
+				mode_t mode = curr_view->dir_entry[pos].mode;
+				const char *mode_str = get_mode_str(mode);
+				while(pos > lb && pos < ub)
+				{
+					pos += inc;
+					mode = curr_view->dir_entry[pos].mode;
+					if(get_mode_str(mode) != mode_str)
+						break;
+				}
+			}
+			break;
+		case SORT_BY_SIZE:
+			{
+				unsigned long long size =
+						curr_view->dir_entry[pos].size;
+				while(pos > lb && pos < ub)
+				{
+					pos += inc;
+					if(curr_view->dir_entry[pos].size != size)
+						break;
+				}
+			}
+			break;
+		case SORT_BY_TIME_ACCESSED:
+			{
+				time_t time = curr_view->dir_entry[pos].atime;
+				while(pos > lb && pos < ub)
+				{
+					pos += inc;
+					if(curr_view->dir_entry[pos].atime != time)
+						break;
+				}
+			}
+			break;
+		case SORT_BY_TIME_CHANGED:
+			{
+				time_t time = curr_view->dir_entry[pos].ctime;
+				while(pos > lb && pos < ub)
+				{
+					pos += inc;
+					if(curr_view->dir_entry[pos].ctime != time)
+						break;
+				}
+			}
+			break;
+		case SORT_BY_TIME_MODIFIED:
+			{
+				time_t time = curr_view->dir_entry[pos].mtime;
+				while(pos > lb && pos < ub)
+				{
+					pos += inc;
+					if(curr_view->dir_entry[pos].mtime != time)
+						break;
+				}
+			}
+			break;
+	}
+	return pos;
+}
+
+static const char *
+get_last_ext(const char *name)
+{
+	const char *ext = strrchr(name, '.');
+	if(ext == NULL)
+		return "";
+	else
+		return ext + 1;
+}
+
+static wchar_t
+get_first_wchar(const char *str)
+{
+	char tbuf[9];
+	wchar_t wbuf[8];
+
+	strncpy(tbuf, str, ARRAY_LEN(tbuf) - 1);
+	tbuf[ARRAY_LEN(tbuf) - 1] = '\0';
+	mbstowcs(wbuf, tbuf, ARRAY_LEN(wbuf));
+
+	return wbuf[0];
 }
 
 /* Redraw with file in top of list. */
