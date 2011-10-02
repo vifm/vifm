@@ -271,7 +271,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "exit",             .abbr = "exi",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "file",             .abbr = "f",     .emark = 0,  .id = COM_FILE,        .range = 0,    .bg = 1, .quote = 0, .regexp = 0,
-		.handler = file_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+		.handler = file_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "filetype",         .abbr = "filet", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = filetype_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "fileviewer",       .abbr = "filev", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -3015,8 +3015,21 @@ empty_cmd(const struct cmd_info *cmd_info)
 static int
 file_cmd(const struct cmd_info *cmd_info)
 {
-	need_clean_selection = 0;
-	return show_filetypes_menu(curr_view, cmd_info->bg) != 0;
+	if(cmd_info->argc == 0)
+	{
+		need_clean_selection = 0;
+		return show_filetypes_menu(curr_view, cmd_info->bg) != 0;
+	}
+	else
+	{
+		if(run_with_filetype(curr_view, cmd_info->argv[0], cmd_info->bg) != 0)
+		{
+			status_bar_error(
+					"Can't find associated program with requested beginning");
+			return 1;
+		}
+		return 0;
+	}
 }
 
 static int

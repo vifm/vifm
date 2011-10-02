@@ -1513,21 +1513,21 @@ filetypes_khandler(struct menu_info *m, wchar_t *keys)
 	return -1;
 }
 
-int
-show_filetypes_menu(FileView *view, int background)
+static char *
+form_program_list(const char *filename)
 {
-	char *filename = get_current_file_name(view);
-	char *ft_str, *prog_str, *mime_str;
+	char *ft_str, *mime_str;
 	int isdir;
+	char *result;
 
 	ft_str = get_all_programs_for_file(filename);
 	mime_str = get_magic_handlers(filename);
 
-	isdir = is_dir(view->dir_entry[view->list_pos].name);
+	isdir = is_dir(filename);
 	if(ft_str == NULL && mime_str == NULL && !isdir) {
 		(void)show_error_msg("Filetype is not set.",
 				"No programs set for this filetype.");
-		return 0;
+		return NULL;
 	}
 
 	if(ft_str == NULL)
@@ -1535,118 +1535,192 @@ show_filetypes_menu(FileView *view, int background)
 	if(mime_str == NULL)
 		mime_str = "";
 
-	prog_str = malloc(5 + strlen(ft_str) + 3 + strlen(mime_str) + 1);
+	result = malloc(5 + strlen(ft_str) + 3 + strlen(mime_str) + 1);
+	if(result == NULL)
+		return NULL;
+
+	result[0] = '\0';
+	if(isdir)
+		strcat(result, "vifm,");
+	if(*ft_str != '\0')
+	{
+		strcat(result, ft_str);
+		strcat(result, ",");
+	}
+	strcat(result, "*,");
+	strcat(result, mime_str);
+	free(ft_str);
+
+	return result;
+}
+
+int
+show_filetypes_menu(FileView *view, int background)
+{
+	static menu_info m;
+
+	char *filename;
+	char *prog_str;
+
+	int x = 0;
+	int win_width;
+	char *p;
+	char *ptr;
+
+	filename = get_current_file_name(view);
+	prog_str = form_program_list(filename);
 	if(prog_str == NULL)
 		return 0;
 
-	prog_str[0] = '\0';
-	if(isdir)
-		strcat(prog_str, "vifm,");
-	if(*ft_str != '\0')
+	m.top = 0;
+	m.current = 1;
+	m.len = 0;
+	m.pos = 0;
+	m.win_rows = 0;
+	m.type = FILETYPE;
+	m.matching_entries = 0;
+	m.matches = NULL;
+	m.match_dir = NONE;
+	m.regexp = NULL;
+	m.title = NULL;
+	m.args = NULL;
+	m.data = NULL;
+	m.extra_data = (background ? 1 : 0);
+	m.key_handler = filetypes_khandler;
+
+	getmaxyx(menu_win, m.win_rows, win_width);
+
+	p = prog_str;
+	while(isspace(*p) || *p == ',')
+		p++;
+
+	if((ptr = strchr(p, ',')) == NULL)
 	{
-		strcat(prog_str, ft_str);
-		strcat(prog_str, ",");
+		m.len = 1;
+		m.data = (char **)realloc(m.data, sizeof(char *)*(win_width + 1));
+		m.data[0] = strdup(p);
 	}
-	strcat(prog_str, "*,");
-	strcat(prog_str, mime_str);
-	free(ft_str);
-
+	else
 	{
-		int x = 0;
-		int win_width;
-		char *p;
-		char *ptr = NULL;
+		char *prog_copy = strdup(p);
+		char *free_this = prog_copy;
+		char *ptr1 = NULL;
+		int i;
 
-		static menu_info m;
-		m.top = 0;
-		m.current = 1;
-		m.len = 0;
-		m.pos = 0;
-		m.win_rows = 0;
-		m.type = FILETYPE;
-		m.matching_entries = 0;
-		m.matches = NULL;
-		m.match_dir = NONE;
-		m.regexp = NULL;
-		m.title = NULL;
-		m.args = NULL;
-		m.data = NULL;
-		m.extra_data = (background ? 1 : 0);
-		m.key_handler = filetypes_khandler;
-
-		getmaxyx(menu_win, m.win_rows, win_width);
-
-		p = prog_str;
-		while(isspace(*p) || *p == ',')
-			p++;
-
-		if((ptr = strchr(p, ',')) == NULL)
+		while((ptr = ptr1 = strchr(prog_copy, ',')) != NULL)
 		{
-			m.len = 1;
-			m.data = (char **)realloc(m.data, sizeof(char *)*(win_width + 1));
-			m.data[0] = strdup(p);
-		}
-		else
-		{
-			char *prog_copy = strdup(p);
-			char *free_this = prog_copy;
-			char *ptr1 = NULL;
 			int i;
 
-			while((ptr = ptr1 = strchr(prog_copy, ',')) != NULL)
-			{
-				int i;
+			while(ptr != NULL && ptr[1] == ',')
+				ptr = ptr1 = strchr(ptr + 2, ',');
+			if(ptr == NULL)
+				break;
 
-				while(ptr != NULL && ptr[1] == ',')
-					ptr = ptr1 = strchr(ptr + 2, ',');
-				if(ptr == NULL)
-					break;
+			*ptr = '\0';
+			ptr1++;
 
-				*ptr = '\0';
-				ptr1++;
-
-				while(isspace(*prog_copy) || *prog_copy == ',')
-					prog_copy++;
-
-				for(i = 0; i < m.len; i++)
-					if(strcmp(m.data[i], prog_copy) == 0)
-						break;
-				if(i == m.len && prog_copy[0] != '\0')
-				{
-					m.data = (char **)realloc(m.data, sizeof(char *)*(m.len + 1));
-					if(strcmp(prog_copy, "*") == 0)
-						m.data[x] = strdup("");
-					else
-						m.data[x] = strdup(prog_copy);
-					replace_double_comma(m.data[x], 0);
-					x++;
-					m.len = x;
-				}
-				prog_copy = ptr1;
-			}
+			while(isspace(*prog_copy) || *prog_copy == ',')
+				prog_copy++;
 
 			for(i = 0; i < m.len; i++)
 				if(strcmp(m.data[i], prog_copy) == 0)
 					break;
-			if(i == m.len)
+			if(i == m.len && prog_copy[0] != '\0')
 			{
 				m.data = (char **)realloc(m.data, sizeof(char *)*(m.len + 1));
-				m.data[x] = (char *)malloc((win_width + 1)*sizeof(char));
-				snprintf(m.data[x], win_width, "%s", prog_copy);
+				if(strcmp(prog_copy, "*") == 0)
+					m.data[x] = strdup("");
+				else
+					m.data[x] = strdup(prog_copy);
 				replace_double_comma(m.data[x], 0);
-				m.len++;
+				x++;
+				m.len = x;
 			}
-
-			free(free_this);
+			prog_copy = ptr1;
 		}
-		setup_menu();
-		draw_menu(&m);
-		move_to_menu_pos(m.pos, &m);
-		enter_menu_mode(&m, view);
+
+		for(i = 0; i < m.len; i++)
+			if(strcmp(m.data[i], prog_copy) == 0)
+				break;
+		if(i == m.len)
+		{
+			m.data = (char **)realloc(m.data, sizeof(char *)*(m.len + 1));
+			m.data[x] = (char *)malloc((win_width + 1)*sizeof(char));
+			snprintf(m.data[x], win_width, "%s", prog_copy);
+			replace_double_comma(m.data[x], 0);
+			m.len++;
+		}
+
+		free(free_this);
 	}
+	setup_menu();
+	draw_menu(&m);
+	move_to_menu_pos(m.pos, &m);
+	enter_menu_mode(&m, view);
 
 	free(prog_str);
 	return 0;
+}
+
+int
+run_with_filetype(FileView *view, const char *beginning, int background)
+{
+	char *filename;
+	char *prog_str;
+	char *p;
+	char *prog_copy;
+	char *free_this;
+	char *ptr;
+	size_t len = strlen(beginning);
+
+	filename = get_current_file_name(view);
+	prog_str = form_program_list(filename);
+	if(prog_str == NULL)
+		return 0;
+
+	p = prog_str;
+	while(isspace(*p) || *p == ',')
+		p++;
+
+	prog_copy = strdup(p);
+	free_this = prog_copy;
+
+	while(prog_copy[0] != '\0')
+	{
+		if((ptr = strchr(prog_copy, ',')) == NULL)
+			ptr = prog_copy + strlen(prog_copy);
+
+		while(ptr != NULL && ptr[1] == ',')
+			ptr = strchr(ptr + 2, ',');
+		if(ptr == NULL)
+			break;
+
+		*ptr++ = '\0';
+
+		while(isspace(*prog_copy) || *prog_copy == ',')
+			prog_copy++;
+
+		if(strcmp(prog_copy, "*") != 0)
+		{
+			if(strncmp(prog_copy, beginning, len) == 0)
+			{
+				replace_double_comma(prog_copy, 0);
+				if(view->dir_entry[view->list_pos].type == DIRECTORY &&
+						prog_copy == free_this)
+					handle_dir(view);
+				else
+					run_using_prog(view, prog_copy, 0, background);
+				free(free_this);
+				free(prog_str);
+				return 0;
+			}
+		}
+		prog_copy = ptr;
+	}
+
+	free(free_this);
+	free(prog_str);
+	return 1;
 }
 
 /* Returns new value for save_msg flag */

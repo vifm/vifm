@@ -13,7 +13,6 @@ Basic things that need to be done.
     Templates for :touch.
 	Mouse support.
     Ctrl-R combinations in the command-line mode.
-    :file <line beginning> to quick run one of associated programs.
 
 Documentation.
 	Better documentation (with normal tags in Vim version).
@@ -47,6 +46,7 @@ Possible things to add.
     Improve sorting (maybe iext; maybe ignore dirs).
     Add :mksession command and 'sessionoptions' option.
     Position macros for user defined commands (%1, %2, ..., %9).
+    Some key to (un)select all files with extension of current file.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.

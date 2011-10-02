@@ -557,6 +557,8 @@ The builtin commands are:
 :f[ile] - popup menu of programs set for the file type of the current file.
     Add ' &' in the end of command if you want to start program in
     background.
+:f[ile] arg - run associated command that begins with the arg without
+    opening menu.
 
                                                *vifm-:filetype* *vifm-:filet*
 :filet[ype] pat1,pat2,... def_program,program2,... - will associate given
