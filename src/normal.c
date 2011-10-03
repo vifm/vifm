@@ -1673,6 +1673,7 @@ cmd_paren(int lb, int ub, int inc)
 				}
 			}
 			break;
+#ifndef _WIN32
 		case SORT_BY_GROUP_NAME:
 		case SORT_BY_GROUP_ID:
 			{
@@ -1697,6 +1698,7 @@ cmd_paren(int lb, int ub, int inc)
 				}
 			}
 			break;
+#endif
 		case SORT_BY_MODE:
 			{
 				mode_t mode = curr_view->dir_entry[pos].mode;
