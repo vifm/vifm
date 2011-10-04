@@ -125,6 +125,7 @@ static void exec_completion(const char *str);
 static void complete_help(const char *str);
 static void complete_history(const char *str);
 static int complete_chown(const char *str);
+static void complete_filetype(const char *str);
 static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
 static int is_entry_dir(const struct dirent *d);
@@ -441,6 +442,8 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		complete_history(args);
 	else if(id == COM_CHOWN)
 		start += complete_chown(args);
+	else if(id == COM_FILE)
+		complete_filetype(args);
 	else if(id == COM_HIGHLIGHT)
 	{
 		if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
@@ -853,6 +856,62 @@ complete_chown(const char *str)
 	add_completion(str);
 	return 0;
 #endif
+}
+
+static void
+complete_filetype(const char *str)
+{
+	char *filename;
+	char *prog_str;
+	char *p;
+	char *prog_copy;
+	char *free_this;
+	size_t len = strlen(str);
+
+	filename = get_current_file_name(curr_view);
+	prog_str = form_program_list(filename);
+	if(prog_str == NULL)
+		return;
+
+	p = prog_str;
+	while(isspace(*p) || *p == ',')
+		p++;
+
+	prog_copy = strdup(p);
+	free_this = prog_copy;
+
+	while(prog_copy[0] != '\0')
+	{
+		char *ptr;
+		if((ptr = strchr(prog_copy, ',')) == NULL)
+			ptr = prog_copy + strlen(prog_copy);
+
+		while(ptr != NULL && ptr[1] == ',')
+			ptr = strchr(ptr + 2, ',');
+		if(ptr == NULL)
+			break;
+
+		*ptr++ = '\0';
+
+		while(isspace(*prog_copy) || *prog_copy == ',')
+			prog_copy++;
+
+		if(strcmp(prog_copy, "*") != 0)
+		{
+			if((p = strchr(prog_copy, ' ')) != NULL)
+				*p = '\0';
+			replace_double_comma(prog_copy, 0);
+			if(strncmp(prog_copy, str, len) == 0)
+				add_completion(prog_copy);
+		}
+		prog_copy = ptr;
+	}
+
+	free(free_this);
+	free(prog_str);
+
+	completion_group_end();
+	add_completion(str);
 }
 
 static void

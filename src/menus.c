@@ -1513,7 +1513,7 @@ filetypes_khandler(struct menu_info *m, wchar_t *keys)
 	return -1;
 }
 
-static char *
+char *
 form_program_list(const char *filename)
 {
 	char *ft_str, *mime_str;
@@ -1670,7 +1670,6 @@ run_with_filetype(FileView *view, const char *beginning, int background)
 	char *p;
 	char *prog_copy;
 	char *free_this;
-	char *ptr;
 	size_t len = strlen(beginning);
 
 	filename = get_current_file_name(view);
@@ -1687,6 +1686,7 @@ run_with_filetype(FileView *view, const char *beginning, int background)
 
 	while(prog_copy[0] != '\0')
 	{
+		char *ptr;
 		if((ptr = strchr(prog_copy, ',')) == NULL)
 			ptr = prog_copy + strlen(prog_copy);
 
@@ -1702,9 +1702,9 @@ run_with_filetype(FileView *view, const char *beginning, int background)
 
 		if(strcmp(prog_copy, "*") != 0)
 		{
+			replace_double_comma(prog_copy, 0);
 			if(strncmp(prog_copy, beginning, len) == 0)
 			{
-				replace_double_comma(prog_copy, 0);
 				if(view->dir_entry[view->list_pos].type == DIRECTORY &&
 						prog_copy == free_this)
 					handle_dir(view);
