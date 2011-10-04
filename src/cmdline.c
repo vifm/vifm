@@ -803,6 +803,17 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 			curr_stats.save_msg = exec_commands(s, curr_view, save_hist,
 					GET_MENU_COMMAND);
 	}
+	else if(sub_mode == PROMPT_SUBMODE)
+	{
+		prompt_cb cb;
+
+		if(p != NULL && p[0] != '\0')
+			save_prompt_history(p);
+		modes_post();
+		modes_pre();
+		cb = (prompt_cb)sub_mode_ptr;
+		cb(p);
+	}
 	else if(!cfg.inc_search)
 	{
 		if(sub_mode == SEARCH_FORWARD_SUBMODE)
@@ -827,17 +838,6 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 		{
 			curr_stats.save_msg = exec_command(p, curr_view, GET_VBSEARCH_PATTERN);
 		}
-	}
-	else if(sub_mode == PROMPT_SUBMODE)
-	{
-		prompt_cb cb;
-
-		if(p != NULL && p[0] != '\0')
-			save_prompt_history(p);
-		modes_post();
-		modes_pre();
-		cb = (prompt_cb)sub_mode_ptr;
-		cb(p);
 	}
 
 	free(p);
