@@ -60,15 +60,12 @@ to_regex(const char *global)
 			if(result_len == 1)
 			{
 				result = realloc(result, result_len + 9 + 1 + 1);
-				result[result_len++] = '(';
 				result[result_len++] = '[';
 				result[result_len++] = '^';
 				result[result_len++] = '.';
 				result[result_len++] = ']';
 				result[result_len++] = '.';
 				result[result_len++] = '*';
-				result[result_len++] = ')';
-				result[result_len++] = '?';
 			}
 			else
 			{

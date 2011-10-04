@@ -264,6 +264,37 @@ test_removing(void)
 	free(buf);
 }
 
+static void
+test_star_and_dot(void)
+{
+	char *buf;
+
+	curr_stats.is_console = 1;
+	set_programs("*.doc", "libreoffice", 0);
+
+	buf = get_default_program_for_file("a.doc");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("libreoffice", buf);
+	free(buf);
+
+	buf = get_default_program_for_file(".a.doc");
+	assert_true(buf == NULL);
+	free(buf);
+
+	buf = get_default_program_for_file(".doc");
+	assert_true(buf == NULL);
+	free(buf);
+
+	set_programs(".*.doc", "hlibreoffice", 0);
+
+	buf = get_default_program_for_file(".a.doc");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("hlibreoffice", buf);
+	free(buf);
+}
+
 void
 filetype_tests(void)
 {
@@ -286,6 +317,8 @@ filetype_tests(void)
 	run_test(test_xfiletypes3_x);
 
 	run_test(test_removing);
+
+	run_test(test_star_and_dot);
 
 	test_fixture_end();
 }
