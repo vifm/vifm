@@ -114,26 +114,31 @@ my_system(char *command)
 	}while(1);
 #else
 	char buf[strlen(cfg.shell) + 5 + strlen(command)*2 + 1 + 1];
-	char *p;
 
 	signal(SIGINT, SIG_DFL);
 
-	strcpy(buf, cfg.shell);
 	if(strcmp(cfg.shell, "cmd") == 0)
-		strcat(buf, " /C \"");
+	{
+		snprintf(buf, sizeof(buf), "%s /C \"%s\"", cfg.shell, command);
+	}
 	else
+	{
+		char *p;
+
+		strcpy(buf, cfg.shell);
 		strcat(buf, " -c \"");
 
-	p = buf + strlen(buf);
-	while(*command != '\0')
-	{
-		if(*command == '\\' || *command == '"')
-			*p++ = '\\';
-		*p++ = *command++;
-	}
-	*p = '\0';
+		p = buf + strlen(buf);
+		while(*command != '\0')
+		{
+			if(*command == '\\' || *command == '"')
+				*p++ = '\\';
+			*p++ = *command++;
+		}
+		*p = '\0';
 
-	strcat(buf, "\"");
+		strcat(buf, "\"");
+	}
 
 	system("cls");
 	return system(buf);

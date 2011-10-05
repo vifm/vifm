@@ -28,6 +28,8 @@
 
 	Fixed running of user defined commands in the background.
 
+	Fixed running external commands on Windows when 'shell' is 'cmd.exe'.
+
 0.6.3 to 0.7.0
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.
