@@ -4295,6 +4295,7 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 	int split = 0;
 	size_t len;
 	int external = 1;
+	int bg = 0;
 
 	if(strchr(cmd_info->cmd, '%') != NULL)
 		expanded_com = expand_macros(curr_view, cmd_info->cmd, cmd_info->args,
@@ -4305,6 +4306,9 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 	len = strlen(expanded_com);
 	while(len > 1 && isspace(expanded_com[len - 1]))
 		expanded_com[--len] = '\0';
+
+	if(len > 1)
+		bg = expanded_com[len - 1] == '&' && expanded_com[len - 2] == ' ';
 
 	clean_selected_files(curr_view);
 
@@ -4339,10 +4343,9 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 		load_saving_pos(curr_view, 1);
 		external = 0;
 	}
-	else if(!strncmp(expanded_com, "!", 1))
+	else if(expanded_com[0] == '!')
 	{
-		char buf[strlen(expanded_com) + 1];
-		char *tmp = strcpy(buf, expanded_com);
+		char *tmp = expanded_com;
 		int pause = 0;
 		tmp++;
 		if(*tmp == '!')
@@ -4353,10 +4356,15 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 		while(isspace(*tmp))
 			tmp++;
 
-		if(strlen(tmp) > 0 && cmd_info->bg)
+		if(*tmp != '\0' && bg)
+		{
+			expanded_com[len - 2] = '\0';
 			start_background_job(tmp);
+		}
 		else if(strlen(tmp) > 0)
+		{
 			shellout(tmp, pause ? 1 : -1);
+		}
 	}
 	else if(expanded_com[0] == '/')
 	{
@@ -4364,11 +4372,10 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 		external = 0;
 		need_clean_selection = 0;
 	}
-	else if(cmd_info->bg)
+	else if(bg)
 	{
-		char buf[strlen(expanded_com) + 1];
-		strcpy(buf, expanded_com);
-		start_background_job(buf);
+		expanded_com[len - 2] = '\0';
+		start_background_job(expanded_com);
 	}
 	else
 	{
