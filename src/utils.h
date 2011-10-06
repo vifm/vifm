@@ -122,6 +122,8 @@ int is_unc_path(const char *path);
 int exec_program(TCHAR *cmd);
 int is_win_executable(const char *name);
 int is_vista_and_above(void);
+void to_forward_slash(char *path);
+void to_back_slash(char *path);
 #endif
 
 #endif

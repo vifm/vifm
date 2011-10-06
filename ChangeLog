@@ -16,6 +16,8 @@
 
 	Added '(' and ')' keys for normal and visual modes.
 
+	Make macros expand to paths with forward slashes on Windows.
+
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 
 	Fixed bug with disappearing of number of selected files in visual mode.

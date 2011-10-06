@@ -178,11 +178,8 @@ op_copy(void *data, const char *src, const char *dst)
 	if(is_dir(src))
 	{
 		char cmd[6 + PATH_MAX*2 + 1];
-		int i;
 		snprintf(cmd, sizeof(cmd), "xcopy \"%s\" \"%s\" ", src, dst);
-		for(i = 0; cmd[i] != '\0'; i++)
-			if(cmd[i] == '/')
-				cmd[i] = '\\';
+		to_back_slash(cmd);
 
 		if(is_vista_and_above())
 			strcat(cmd, "/B ");

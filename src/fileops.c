@@ -113,7 +113,7 @@ my_system(char *command)
 			return status;
 	}while(1);
 #else
-	char buf[strlen(cfg.shell) + 5 + strlen(command)*2 + 1 + 1];
+	char buf[strlen(cfg.shell) + 5 + strlen(command)*4 + 1 + 1];
 
 	signal(SIGINT, SIG_DFL);
 
@@ -126,18 +126,22 @@ my_system(char *command)
 		char *p;
 
 		strcpy(buf, cfg.shell);
-		strcat(buf, " -c \"");
+		strcat(buf, " -c '");
 
 		p = buf + strlen(buf);
 		while(*command != '\0')
 		{
-			if(*command == '\\' || *command == '"')
+			if(*command == '\\')
+			{
 				*p++ = '\\';
+				*p++ = '\\';
+				*p++ = '\\';
+			}
 			*p++ = *command++;
 		}
 		*p = '\0';
 
-		strcat(buf, "\"");
+		strcat(buf, "'");
 	}
 
 	system("cls");

@@ -339,11 +339,7 @@ main(int argc, char *argv[])
 		return -1;
 	}
 #ifdef _WIN32
-	for(i = 0; dir[i] != '\0'; i++)
-	{
-		if(dir[i] == '\\')
-			dir[i] = '/';
-	}
+	to_forward_slash(dir);
 #endif
 
 	init_window(&rwin);

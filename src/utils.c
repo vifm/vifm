@@ -1472,6 +1472,28 @@ is_vista_and_above(void)
 	return ((v & 0xff) >= 6);
 }
 
+void
+to_forward_slash(char *path)
+{
+	int i;
+	for(i = 0; path[i] != '\0'; i++)
+	{
+		if(path[i] == '\\')
+			path[i] = '/';
+	}
+}
+
+void
+to_back_slash(char *path)
+{
+	int i;
+	for(i = 0; path[i] != '\0'; i++)
+	{
+		if(path[i] == '/')
+			path[i] = '\\';
+	}
+}
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

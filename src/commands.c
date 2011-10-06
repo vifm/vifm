@@ -1516,6 +1516,10 @@ append_selected_files(FileView *view, char *expanded, int under_cursor,
 				view->list_pos, quotes, mod);
 	}
 
+#ifdef _WIN32
+	to_back_slash(expanded);
+#endif
+
 	return expanded;
 }
 
@@ -1539,15 +1543,15 @@ static char *
 expand_directory_path(FileView *view, char *expanded, int quotes,
 		const char *mod)
 {
+	char *result;
 	if(quotes)
 	{
 		const char *s = enclose_in_dquotes(apply_mods(view->curr_dir, "/", mod));
-		return append_to_expanded(expanded, s);
+		result = append_to_expanded(expanded, s);
 	}
 	else
 	{
 		char *escaped;
-		char *result;
 
 		escaped = escape_filename(apply_mods(view->curr_dir, "/", mod), 0);
 		if(escaped == NULL)
@@ -1559,8 +1563,11 @@ expand_directory_path(FileView *view, char *expanded, int quotes,
 
 		result = append_to_expanded(expanded, escaped);
 		free(escaped);
-		return result;
 	}
+#ifdef _WIN32
+	to_back_slash(result);
+#endif
+	return result;
 }
 
 /* args could be equal NULL
