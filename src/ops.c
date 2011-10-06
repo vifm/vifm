@@ -26,6 +26,7 @@
 #include "background.h"
 #include "config.h"
 #include "fileops.h"
+#include "log.h"
 #include "macros.h"
 #include "menus.h"
 #include "status.h"
@@ -122,15 +123,19 @@ op_removesl(void *data, const char *src, const char *dst)
 #else
 	if(is_dir(src))
 	{
+		char buf[PATH_MAX];
+		int err;
+		snprintf(buf, sizeof(buf), "c:\\cygwin\\7-zip\0");
 		SHFILEOPSTRUCTA fo = {
 			.hwnd = NULL,
 			.wFunc = FO_DELETE,
-			.pFrom = src,
+			.pFrom = buf,
 			.pTo = NULL,
-			.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI |
-					FOF_NOCONFIRMMKDIR,
+			.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI,
 		};
-		return SHFileOperation(&fo);
+		err = SHFileOperation(&fo);
+		log_msg("Error: %d", GetLastError());
+		return err;
 	}
 	else
 	{
@@ -169,10 +174,15 @@ op_copy(void *data, const char *src, const char *dst)
 	if(is_dir(src))
 	{
 		char cmd[6 + PATH_MAX*2 + 1];
+		int i;
+		snprintf(cmd, sizeof(cmd), "xcopy \"%s\" \"%s\" ", src, dst);
+		for(i = 0; cmd[i] != '\0'; i++)
+			if(cmd[i] == '/')
+				cmd[i] = '\\';
+
 		if(is_vista_and_above())
-			snprintf(cmd, sizeof(cmd), "xcopy \"%s\" \"%s\" /B /E /I > NUL", src, dst);
-		else
-			snprintf(cmd, sizeof(cmd), "xcopy \"%s\" \"%s\" /E /I > NUL", src, dst);
+			strcat(cmd, "/B ");
+		strcat(cmd, "/E /I > NUL");
 		ret = system(cmd);
 	}
 	else
