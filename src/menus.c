@@ -1223,11 +1223,6 @@ show_bookmarks_menu(FileView *view, const char *marks)
 			snprintf(buf, sizeof(buf), "%c   %-*s%s", index2mark(j),
 					max_len + overhead, with_tilde, "[none]");
 		}
-		else if(is_root_dir(bookmarks[j].directory))
-		{
-			snprintf(buf, sizeof(buf), "%c   %-*s%s", index2mark(j), max_len, "/",
-					bookmarks[j].file);
-		}
 		else
 		{
 			snprintf(buf, sizeof(buf), "%c   %-*s%s", index2mark(j),
