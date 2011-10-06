@@ -169,7 +169,10 @@ op_copy(void *data, const char *src, const char *dst)
 	if(is_dir(src))
 	{
 		char cmd[6 + PATH_MAX*2 + 1];
-		snprintf(cmd, sizeof(cmd), "xcopy \"%s\" \"%s\" /B /E /I > NUL", src, dst);
+		if(is_vista_and_above())
+			snprintf(cmd, sizeof(cmd), "xcopy \"%s\" \"%s\" /B /E /I > NUL", src, dst);
+		else
+			snprintf(cmd, sizeof(cmd), "xcopy \"%s\" \"%s\" /E /I > NUL", src, dst);
 		ret = system(cmd);
 	}
 	else

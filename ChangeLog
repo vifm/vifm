@@ -34,6 +34,8 @@
 
 	Fixed bug with saving bookmarks to vifminfo file.
 
+	Fixed directory copying on Windows XP.
+
 0.6.3 to 0.7.0
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.
