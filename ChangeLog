@@ -40,6 +40,8 @@
 
 	Fixed copying files from a network on Windows.
 
+	Fixed removing of directories on Windows (at least on XP).
+
 0.6.3 to 0.7.0
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.

@@ -125,7 +125,11 @@ op_removesl(void *data, const char *src, const char *dst)
 	{
 		char buf[PATH_MAX];
 		int err;
-		snprintf(buf, sizeof(buf), "c:\\cygwin\\7-zip\0");
+		int i;
+		snprintf(buf, sizeof(buf), "%s%c", src, '\0');
+		for(i = 0; buf[i] != '\0'; i++)
+			if(buf[i] == '/')
+				buf[i] = '\\';
 		SHFILEOPSTRUCTA fo = {
 			.hwnd = NULL,
 			.wFunc = FO_DELETE,
@@ -134,7 +138,7 @@ op_removesl(void *data, const char *src, const char *dst)
 			.fFlags = FOF_SILENT | FOF_NOCONFIRMATION | FOF_NOERRORUI,
 		};
 		err = SHFileOperation(&fo);
-		log_msg("Error: %d", GetLastError());
+		log_msg("Error: %d", err);
 		return err;
 	}
 	else
