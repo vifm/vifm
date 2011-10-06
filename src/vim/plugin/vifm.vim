@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@gmail.com>
-" Last Change: 2011 August 2
+" Last Change: 2011 October 6
 
 " vifm and vifm.vim can be found at http://vifm.sf.net
 
@@ -46,17 +46,29 @@ if !exists(':TabVifm')
 	command TabVifm :call s:StartVifm('tablast | tab drop')
 endif
 
+if !exists('g:vifm_exec')
+	let g:vifm_exec = 'vifm'
+endif
+
 if !exists('g:vifm_term')
 	let g:vifm_term = 'xterm -e'
+endif
+
+if exists('$HOME')
+	let s:vifm_home = $HOME."/.vifm"
+elseif exists('$APPDATA')
+	let s:vifm_home = $APPDATA."/Vifm"
+else
+    finish
 endif
 
 function! s:StartVifm(editcmd)
 	" Gvim cannot handle ncurses so run vifm in an xterm.
 	let dir = fnameescape(expand('%:p:h'))
 	if has('gui_running')
-		execute 'silent !' g:vifm_term 'vifm -f' dir
+		execute 'silent !' g:vifm_term g:vifm_exec '-f' dir
 	else
-		execute 'silent !vifm -f' dir
+		execute 'silent !' g:vifm_exec '-f' dir
 	endif
 
 	redraw!
@@ -64,7 +76,14 @@ function! s:StartVifm(editcmd)
 	" The selected files are written and read from a file instead of using
 	" vim's clientserver so that it will work in the console without a X server
 	" running.
-	let flist = readfile(fnamemodify('~/.vifm/vimfiles', ':p'))
+	
+	let vimfiles = fnamemodify(s:vifm_home.'/vimfiles', ':p')
+	if !file_readable(vimfiles)
+		echohl WarningMsg | echo 'vimfiles file not found' | echohl None
+		return
+	endif
+
+	let flist = readfile(vimfiles)
 
 	call map(flist, 'fnameescape(v:val)')
 

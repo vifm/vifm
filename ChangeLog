@@ -16,6 +16,8 @@
 
 	Added '(' and ')' keys for normal and visual modes.
 
+	Added g:vifm_exec variable for the plugin.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
@@ -43,6 +45,8 @@
 	Fixed copying files from a network on Windows.
 
 	Fixed removing of directories on Windows (at least on XP).
+
+	Fixed plugin on Windows.
 
 0.6.3 to 0.7.0
 
