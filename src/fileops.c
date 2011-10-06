@@ -2253,6 +2253,10 @@ static int
 have_read_access(FileView *view)
 {
 	int i;
+
+	if(is_unc_path(view->curr_dir))
+		return 1;
+
 	for(i = 0; i < view->list_rows; i++)
 	{
 		if(!view->dir_entry[i].selected)
