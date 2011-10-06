@@ -147,12 +147,12 @@ add_mark(const char mark, const char *directory, const char *file)
 	x = mark2index(mark);
 
 	/* In case the mark is already being used.  Free pointers first! */
-	(void)silent_remove_bookmark(x);
+	if(silent_remove_bookmark(x) == 0)
+		/* increase number of active bookmarks */
+		cfg.num_bookmarks++;
 
 	bookmarks[x].directory = strdup(directory);
 	bookmarks[x].file = strdup(file);
-	/* increase number of active bookmarks */
-	cfg.num_bookmarks++;
 }
 
 int

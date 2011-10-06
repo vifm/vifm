@@ -32,6 +32,8 @@
 
 	Fixed bug with displaying bookmarks in the :marks menu on Windows.
 
+	Fixed bug with saving bookmarks to vifminfo file.
+
 0.6.3 to 0.7.0
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.

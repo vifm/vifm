@@ -41,10 +41,6 @@ typedef struct
 	 *  z: 63
 	char mark;
 	*/
-	/* use pointers instead of fixed length char arrays -> save space!
-	char file[NAME_MAX];
-	char directory[PATH_MAX];
-	*/
 	char *file;
 	char *directory;
 } bookmarks_t;

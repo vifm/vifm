@@ -863,11 +863,10 @@ write_info_file(void)
 		for(i = 0; i < len; i++)
 		{
 			int j = active_bookmarks[i];
-			if(is_spec_bookmark(i))
+			if(is_spec_bookmark(j))
 				continue;
-			fprintf(fp, "'%c\n\t%s\n\t", index2mark(j),
-					escape_spaces(bookmarks[j].directory));
-			fprintf(fp, "%s\n", escape_spaces(bookmarks[j].file));
+			fprintf(fp, "'%c\n\t%s\n\t", index2mark(j), bookmarks[j].directory);
+			fprintf(fp, "%s\n", bookmarks[j].file);
 		}
 		for(i = 0; i < nmarks; i += 3)
 			fprintf(fp, "'%c\n\t%s\n\t%s\n", marks[i][0], marks[i + 1], marks[i + 2]);
