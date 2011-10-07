@@ -13044,6 +13044,8 @@ fi
 
 CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64"
 
+LDFLAGS="-lpthread $LDFLAGS"
+
 vifm_cv_curses=/usr
 
 # Check whether --with-curses was given.
