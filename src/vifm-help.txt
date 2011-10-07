@@ -630,6 +630,8 @@ Commands
               letter.  User commands are run in a shell by default.  To run  a
               command  in  the background you must set it as a background com‐
               mand with & at the end of the commands action (:com rm rm %f &).
+              Command  name  cannot contain numbers or special symbols (except
+              '?' and '!').
 
        :com[mand] backup /pattern
               will set search pattern.
@@ -1609,9 +1611,11 @@ Plugin
                      :vert diffsplit.
          :TabVifm    select a file or files to open in tabs.
 
-       The plugin have  only  one  setting.   It's  a  string  variable  named
+       The plugin have only  two  settings.   It's  a  string  variable  named
        g:vifm_term  to  let  user  specify  command  to  run gui terminal.  By
-       default it's equal to ´xterm -e'.
+       default it's equal to ´xterm -e'.  And  anoter  string  variable  named
+       g:vifm_exec,  which  equals  'vifm'  by  default  and specifies path to
+       vifm's executable.
 
        To use the plugin copy the vifm.vim file  to  either  the  system  wide
        vim/plugin directory or into ~/.vim/plugin.
@@ -1639,4 +1643,4 @@ AUTHOR
 
 
 
-                                October 2, 2011                        vifm(1)
+                                October 6, 2011                        vifm(1)

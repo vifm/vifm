@@ -731,7 +731,8 @@ Use :com[mand]! to overwrite a previously set command.
 Unlike vim user commands do not have to start with a capital letter.
 User commands are run in a shell by default.  To run a command in
 the background you must set it as a background command with & at the end
-of the commands action (:com rm rm %f &).
+of the commands action (:com rm rm %f &).  Command name cannot contain
+numbers or special symbols (except '?' and '!').
 .TP
 .BI ":com[mand] backup /pattern"
 will set search pattern.
