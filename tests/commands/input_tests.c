@@ -38,7 +38,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "edit",       .abbr = "e",   .handler = edit_cmd,       .id = -1,    .range = 1,    .cust_sep = 0,
 		.emark = 0,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = NOT_DEF, .bg = 0,     },
 	{ .name = "file",       .abbr = NULL,  .handler = file_cmd,       .id = -1,    .range = 1,    .cust_sep = 0,
-		.emark = 0,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 0,       .bg = 1,     },
+		.emark = 0,           .qmark = 1,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 0,       .bg = 1,     },
 	{ .name = "filter",     .abbr = "fil", .handler = filter_cmd,     .id = -1,    .range = 1,    .cust_sep = 0,
 		.emark = 1,           .qmark = 1,    .expand = 0,               .regexp = 1, .min_args = 0, .max_args = NOT_DEF, .bg = 0,     },
 	{ .name = "history",    .abbr = "his", .handler = history_cmd,    .id = -1,    .range = 0,    .cust_sep = 0,
@@ -558,6 +558,20 @@ test_short_forms(void)
 	assert_int_equal(1, cmdi.usr1);
 }
 
+static void
+test_qmark_and_bg(void)
+{
+	assert_int_equal(0, execute_cmd("file &"));
+	assert_true(cmdi.bg);
+
+	assert_int_equal(0, execute_cmd("file?"));
+	assert_true(cmdi.qmark);
+
+	assert_int_equal(0, execute_cmd("file? &"));
+	assert_true(cmdi.bg);
+	assert_true(cmdi.qmark);
+}
+
 void
 input_tests(void)
 {
@@ -589,6 +603,7 @@ input_tests(void)
 	run_test(test_args_trimming);
 	run_test(test_bg_and_no_args);
 	run_test(test_short_forms);
+	run_test(test_qmark_and_bg);
 
 	test_fixture_end();
 }
