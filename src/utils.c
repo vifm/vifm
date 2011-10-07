@@ -1264,13 +1264,15 @@ set_term_title(const char *full_path)
 		title_supported = is_in_string_array(TERMINALS_WITH_TITLE,
 				ARRAY_LEN(TERMINALS_WITH_TITLE), getenv("TERM"));
 
+		/* TODO: use X to determine current title */
+
 		was_setup = 1;
 	}
 	if(!title_supported)
 		return;
 
 	if(full_path == NULL)
-		printf("%s", "\033]2; \007");
+		/* TODO: restore initial title here */;
 	else
 		printf("\033]2;%s - VIFM\007", full_path);
 }
