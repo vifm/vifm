@@ -639,15 +639,15 @@ Commands
        :com[mand] name filter pattern
               will set file name filter.
 
-       :[range]co[py][!?]
+       :[range]co[py][!?][&]
               copies files to directory of other view.   With  "?"  vifm  will
               open vi to edit filenames.  "!" forces overwrite.
 
-       :[range]co[py][!] path
+       :[range]co[py][!] path[ &]
               copies  files  to directory specified with the path (absolute or
               relative to directory of other view).  "!" forces overwrite.
 
-       :[range]co[py][!] name1 name2...
+       :[range]co[py][!] name1 name2...[ &]
               copies files to directory of other view giving each next file  a
               corresponding  name  from  the  argument list.  "!" forces over‐
               write.
@@ -886,15 +886,15 @@ Commands
               creates  directories  with  given  names.  "!" means make parent
               directories as needed.
 
-       :[range]m[ove][!?]
+       :[range]m[ove][!?][&]
               moves files to directory of other view.  With "?" vifm will open
               vi to edit filenames.  "!" forces overwrite.
 
-       :[range]m[ove][!] path
+       :[range]m[ove][!] path[ &]
               moves  files  to  directory specified with the path (absolute or
               relative to directory of other view).  "!" forces overwrite.
 
-       :[range]m[ove][!] name1 name2...
+       :[range]m[ove][!] name1 name2...[ &]
               moves files to directory of other view giving each next  file  a
               corresponding  name  from  the  argument list.  "!" forces over‐
               write.
@@ -1235,6 +1235,19 @@ Command macros
        Appending & to the end of a command will cause it to be executed in the
        background.
          :!mv %f %D &
+
+Command backgrounding
+       Copy  and move operation can take a lot of time to proceed.  That's why
+       vifm supports backgrounding of this two operations.  To  run  :copy  of
+       :move command in the background just add " &" at the end of a command.
+
+       For  each background operation a new thread will be created.  Currently
+       job cannot be stopped or paused.
+
+       You can see if command is still  running  in  the  :jobs  menu.   Back‐
+       grounded commands don't have process id at the line beginning
+
+       Background operations cannot be undone.
 
 :set options
        autochpos
@@ -1643,4 +1656,4 @@ AUTHOR
 
 
 
-                                October 6, 2011                        vifm(1)
+                                October 7, 2011                        vifm(1)

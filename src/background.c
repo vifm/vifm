@@ -21,6 +21,8 @@
 #include <windows.h>
 #endif
 
+#include <pthread.h>
+
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -45,10 +47,13 @@ struct Jobs_List *jobs;
 struct Finished_Jobs *fjobs;
 
 #ifndef _WIN32
-static int add_background_job(pid_t pid, const char *cmd, int fd);
+Jobs_List * add_background_job(pid_t pid, const char *cmd, int fd);
 #else
-static int add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
+Jobs_List * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
 #endif
+
+static pthread_key_t key;
+static pthread_once_t key_once = PTHREAD_ONCE_INIT;
 
 void
 add_finished_job(pid_t pid, int status)
@@ -80,7 +85,7 @@ check_background_jobs(void)
 	int maxfd;
 	struct timeval ts;
 
-	if(!p)
+	if(p == NULL)
 		return;
 
 	/*
@@ -99,13 +104,13 @@ check_background_jobs(void)
 	ts.tv_sec = 0;
 	ts.tv_usec = 1000;
 
-	while(p)
+	while(p != NULL)
 	{
 		int rerun = 0;
 		char *completed = NULL;
 
 		/* Mark any finished jobs */
-		while(fj)
+		while(fj != NULL)
 		{
 			if(p->pid == fj->pid)
 			{
@@ -122,6 +127,14 @@ check_background_jobs(void)
 		maxfd = 0;
 		FD_SET(p->fd, &ready);
 		maxfd = (p->fd > maxfd ? p->fd : maxfd);
+
+		if(p->error != NULL)
+		{
+			if(!p->skip_errors)
+				p->skip_errors = show_error_msg("Background Process Error", p->error);
+			free(p->error);
+			p->error = NULL;
+		}
 
 		while(select(maxfd + 1, &ready, NULL, NULL, &ts) > 0)
 		{
@@ -303,6 +316,21 @@ background_and_wait_for_status(char *cmd)
 #endif
 }
 
+static void
+error_msg(const char *title, const char *text)
+{
+	Jobs_List *job = pthread_getspecific(key);
+	if(job == NULL)
+	{
+		(void)show_error_msg(title, text);
+	}
+	else
+	{
+		free(job->error);
+		job->error = strdup(text);
+	}
+}
+
 int
 background_and_wait_for_errors(char *cmd)
 {
@@ -313,7 +341,7 @@ background_and_wait_for_errors(char *cmd)
 
 	if(pipe(error_pipe) != 0)
 	{
-		(void)show_error_msg("File pipe error", "Error creating pipe");
+		error_msg("File pipe error", "Error creating pipe");
 		return -1;
 	}
 
@@ -344,7 +372,7 @@ background_and_wait_for_errors(char *cmd)
 		close(error_pipe[0]);
 
 		if(result != 0)
-			(void)show_error_msg("Background Process Error", buf);
+			error_msg("Background Process Error", buf);
 	}
 
 	return result;
@@ -513,7 +541,7 @@ start_background_job(const char *cmd)
 	{
 		close(error_pipe[1]); /* Close write end of pipe. */
 
-		if(add_background_job(pid, cmd, error_pipe[0]) != 0)
+		if(add_background_job(pid, cmd, error_pipe[0]) == NULL)
 			return -1;
 	}
 	return 0;
@@ -528,7 +556,7 @@ start_background_job(const char *cmd)
 	{
 		CloseHandle(pinfo.hThread);
 
-		if(add_background_job(pinfo.dwProcessId, cmd, pinfo.hProcess) != 0)
+		if(add_background_job(pinfo.dwProcessId, cmd, pinfo.hProcess) == NULL)
 			return -1;
 	}
 	return (ret == 0);
@@ -536,10 +564,10 @@ start_background_job(const char *cmd)
 }
 
 #ifndef _WIN32
-static int
+Jobs_List *
 add_background_job(pid_t pid, const char *cmd, int fd)
 #else
-static int
+Jobs_List *
 add_background_job(pid_t pid, const char *cmd, HANDLE hprocess)
 #endif
 {
@@ -548,7 +576,7 @@ add_background_job(pid_t pid, const char *cmd, HANDLE hprocess)
 	if((new = malloc(sizeof(Jobs_List))) == 0)
 	{
 		(void)show_error_msg("Memory error", "Unable to allocate enough memory");
-		return -1;
+		return NULL;
 	}
 	new->pid = pid;
 	new->cmd = strdup(cmd);
@@ -560,8 +588,33 @@ add_background_job(pid_t pid, const char *cmd, HANDLE hprocess)
 #endif
 	new->skip_errors = 0;
 	new->running = 1;
+	new->error = NULL;
 	jobs = new;
-	return 0;
+	return new;
+}
+
+static void
+make_key(void)
+{
+	(void)pthread_key_create(&key, NULL);
+}
+
+void
+add_inner_bg_job(Jobs_List *job)
+{
+	pthread_once(&key_once, &make_key);
+	(void)pthread_setspecific(key, job);
+}
+
+void
+remove_inner_bg_job(void)
+{
+	Jobs_List *job = pthread_getspecific(key);
+	if(job == NULL)
+		return;
+
+	job->running = 0;
+	job->exit_code = 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -7,6 +7,7 @@
 |vifm-visual|             vifm-visual mode keys.
 |vifm-command-line|       Command line mode keys.
 |vifm-commands|           How to use and set :commands.
+|vifm-commands-bg|        Backgrounding of commands.
 |vifm-set-options|        Available options.
 |vifm-mappings|           Special sequences.
 |vifm-configure|          Configuration of vifm.
@@ -516,13 +517,13 @@ The builtin commands are:
 :com[mand] name filter pattern - will set file name filter.
 
                                                *vifm-:copy* *vifm-:co*
-:[range]co[py][!?] - copies files to directory of other view.  With "?"
-    vifm will open vi to edit filenames.  "!" forces overwrite.
-:[range]co[py][!] path - copies files to directory specified with the path
-    (absolute or relative to directory of other view).  "!" forces
+:[range]co[py][!?][ &] - copies files to directory of other view.  With
+    "?" vifm will open vi to edit filenames.  "!" forces overwrite.
+:[range]co[py][!] path[ &] - copies files to directory specified with the
+    path (absolute or relative to directory of other view).  "!" forces
     overwrite.
-:[range]co[py][!] name1 name2... - copies files to directory of other view
-    giving each next file a corresponding name from the argument list.
+:[range]co[py][!] name1 name2...[ &] - copies files to directory of other
+    view giving each next file a corresponding name from the argument list.
     "!" forces overwrite.
 
                                                *vifm-:delete* *vifm-:d*
@@ -727,11 +728,11 @@ of the hierarchy and transparency for all others.
     parent directories as needed.
 
                                                *vifm-:move* *vifm-:m*
-:[range]m[ove][!?] - moves files to directory of other view.  With "?" vifm
-    will open vi to edit filenames.  "!" forces overwrite.
-:[range]m[ove][!] path - moves files to directory specified with the path
+:[range]m[ove][!?][ &] - moves files to directory of other view.  With "?"
+    vifm will open vi to edit filenames.  "!" forces overwrite.
+:[range]m[ove][!] path[ &] - moves files to directory specified with the path
     (absolute or relative to directory of other view).  "!" forces overwrite.
-:[range]m[ove][!] name1 name2... - moves files to directory of other view
+:[range]m[ove][!] name1 name2...[ &] - moves files to directory of other view
     giving each next file a corresponding name from the argument list.  "!"
     forces overwrite.
 
@@ -1013,6 +1014,21 @@ Appending & to the end of a command will cause it to be executed in the
 background.
 
 :!mv %f %D &
+
+--------------------------------------------------------------------------------
+*vifm-commands-bg*
+
+Copy and move operation can take a lot of time to proceed.  That's why vifm
+supports backgrounding of this two operations.  To run :copy of :move command
+in the background just add " &" at the end of a command.
+
+For each background operation a new thread will be created.  Currently job
+cannot be stopped or paused.
+
+You can see if command is still running in the :jobs menu.  Backgrounded
+commands don't have process id at the line beginning
+
+Background operations cannot be undone.
 
 --------------------------------------------------------------------------------
 *vifm-set-options*

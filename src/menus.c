@@ -162,9 +162,9 @@ clean_menu_position(menu_info *m)
 }
 
 void
-redraw_error_msg(char *title_arg, const char *message_arg)
+redraw_error_msg(const char *title_arg, const char *message_arg)
 {
-	static char *title;
+	static const char *title;
 	static const char *message;
 
 	int sx, sy;
@@ -252,7 +252,7 @@ show_error_msgf(char *title, const char *format, ...)
 
 /* Returns not zero when user asked to skip error messages that left */
 int
-show_error_msg(char *title, const char *message)
+show_error_msg(const char *title, const char *message)
 {
 	static int skip_until_started;
 	int key;
@@ -2102,7 +2102,10 @@ show_jobs_menu(FileView *view)
 		{
 			m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
 			m.data[x] = (char *)malloc(strlen(p->cmd) + 24);
-			snprintf(m.data[x], strlen(p->cmd) + 22, " %d %s ", p->pid, p->cmd);
+			if(p->pid == -1)
+				snprintf(m.data[x], strlen(p->cmd) + 22, "    %s ", p->cmd);
+			else
+				snprintf(m.data[x], strlen(p->cmd) + 22, " %d %s ", p->pid, p->cmd);
 
 			x++;
 		}

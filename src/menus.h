@@ -76,9 +76,9 @@ int show_undolist_menu(FileView *view, int with_details);
 void show_volumes_menu(FileView *view);
 void reset_popup_menu(menu_info *m);
 void setup_menu(void);
-void redraw_error_msg(char *title_arg, const char *message_arg);
+void redraw_error_msg(const char *title_arg, const char *message_arg);
 /* Returns not zero when user asked to skip error messages that left */
-int show_error_msg(char * title, const char *message);
+int show_error_msg(const char *title, const char *message);
 int show_error_msgf(char *title, const char *format, ...);
 int search_menu_list(const char *pattern, menu_info *m);
 int query_user_menu(char *title, char *message);

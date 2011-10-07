@@ -780,6 +780,16 @@ is_in_string_array_case(char **array, size_t len, const char *key)
 	return 0;
 }
 
+char **
+copy_string_array(char **array, size_t len)
+{
+	char **result = malloc(sizeof(char *)*len);
+	int i;
+	for(i = 0; i < len; i++)
+		result[i] = strdup(array[i]);
+	return result;
+}
+
 int
 string_array_pos(char **array, size_t len, const char *key)
 {

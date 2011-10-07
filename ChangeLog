@@ -18,6 +18,8 @@
 
 	Added g:vifm_exec variable for the plugin.
 
+	Added backgrounding of :copy and :move commands.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

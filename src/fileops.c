@@ -23,6 +23,8 @@
 
 #include <curses.h>
 
+#include <pthread.h>
+
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/stat.h> /* stat */
@@ -70,6 +72,20 @@ static struct {
 	int overwrite_all;
 	int link; /* 0 - no, 1 - absolute, 2 - relative */
 } put_confirm;
+
+struct bg_args {
+	char **list;
+	int nlines;
+	int move;
+	int force;
+	char **sel_list;
+	size_t sel_list_len;
+	char src[PATH_MAX];
+	char path[PATH_MAX];
+	int from_file;
+	int from_trash;
+	Jobs_List *job;
+};
 
 static void put_confirm_cb(const char *dest_name);
 static void put_decide_cb(const char *dest_name);
@@ -1243,13 +1259,14 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 }
 
 static int
-mv_file(const char *src, const char *dst, const char *path, int tmpfile_num)
+mv_file(const char *src, const char *src_path,
+		const char *dst, const char *path, int tmpfile_num)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 	int op;
 	int result;
 
-	snprintf(full_src, sizeof(full_src), "%s/%s", curr_view->curr_dir, src);
+	snprintf(full_src, sizeof(full_src), "%s/%s", src_path, src);
 	chosp(full_src);
 	snprintf(full_dst, sizeof(full_dst), "%s/%s", path, dst);
 	chosp(full_dst);
@@ -1257,7 +1274,7 @@ mv_file(const char *src, const char *dst, const char *path, int tmpfile_num)
 	if(strcmp(full_src, full_dst) == 0)
 		return 0;
 
-	if(tmpfile_num == 0)
+	if(tmpfile_num <= 0)
 		op = OP_MOVE;
 	else if(tmpfile_num == -1)
 		op = OP_MOVETMP0;
@@ -1269,7 +1286,7 @@ mv_file(const char *src, const char *dst, const char *path, int tmpfile_num)
 		op = OP_NONE;
 
 	result = perform_operation(op, NULL, full_src, full_dst);
-	if(result == 0)
+	if(result == 0 && tmpfile_num >= 0)
 		add_operation(op, NULL, NULL, full_src, full_dst);
 	return result;
 }
@@ -1311,7 +1328,7 @@ rename_file_cb(const char *new_name)
 	snprintf(buf, sizeof(buf), "rename in %s: %s to %s",
 			replace_home_part(curr_view->curr_dir), filename, new);
 	cmd_group_begin(buf);
-	tmp = mv_file(filename, new, curr_view->curr_dir, 0);
+	tmp = mv_file(filename, curr_view->curr_dir, new, curr_view->curr_dir, 0);
 	cmd_group_end();
 	if(tmp != 0)
 		return;
@@ -1494,7 +1511,8 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 		ind = -indexes[i];
 
 		tmp = make_name_unique(view->dir_entry[ind].name);
-		if(mv_file(view->dir_entry[ind].name, tmp, view->curr_dir, 2) != 0)
+		if(mv_file(view->dir_entry[ind].name, view->curr_dir, tmp,
+					view->curr_dir, 2) != 0)
 		{
 			cmd_group_end();
 			undo_group();
@@ -1513,8 +1531,8 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 		if(strcmp(list[i], view->dir_entry[abs(indexes[i])].name) == 0)
 			continue;
 
-		if(mv_file(view->dir_entry[abs(indexes[i])].name, list[i], view->curr_dir,
-				(indexes[i] < 0) ? 1 : -1) == 0)
+		if(mv_file(view->dir_entry[abs(indexes[i])].name, view->curr_dir,
+					list[i], view->curr_dir, (indexes[i] < 0) ? 1 : -1) == 0)
 		{
 			int pos;
 
@@ -2611,7 +2629,7 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 			view->dir_entry[i].name = strdup(dest[j]);
 		}
 
-		mv_file(buf, dest[j], view->curr_dir, 0);
+		mv_file(buf, view->curr_dir, dest[j], view->curr_dir, 0);
 		n++;
 	}
 	cmd_group_end();
@@ -2896,7 +2914,8 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 			free(view->dir_entry[pos].name);
 			view->dir_entry[pos].name = strdup(dest[i]);
 		}
-		mv_file(view->selected_filelist[i], dest[i], view->curr_dir, 0);
+		mv_file(view->selected_filelist[i], view->curr_dir, dest[i], view->curr_dir,
+				0);
 		k++;
 	}
 	cmd_group_end();
@@ -2926,7 +2945,7 @@ is_copy_list_ok(const char *dst, int count, char **list)
 }
 
 /* type:
- *  0 - copy
+ *  <= 0 - copy
  *  1 - absolute symbolic links
  *  2 - relative symbolic links
  */
@@ -2946,7 +2965,7 @@ cp_file(const char *src_dir, const char *dst_dir, const char *src,
 	if(strcmp(full_src, full_dst) == 0)
 		return 0;
 
-	if(type == 0)
+	if(type <= 0)
 	{
 		op = OP_COPY;
 	}
@@ -2961,26 +2980,20 @@ cp_file(const char *src_dir, const char *dst_dir, const char *src,
 	}
 
 	result = perform_operation(op, NULL, full_src, full_dst);
-	if(result == 0)
+	if(result == 0 && type >= 0)
 		add_operation(op, NULL, NULL, full_src, full_dst);
 	return result;
 }
 
-int
-cpmv_files(FileView *view, char **list, int nlines, int move, int type,
-		int force)
+static int
+cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
+		int force, char *buf, char *path, int *from_file, int *from_trash)
 {
-	int i;
-	char buf[COMMAND_GROUP_INFO_LEN + 1];
-	char path[PATH_MAX];
-	int from_file;
-	int from_trash;
-
 	if(move && access(view->curr_dir, W_OK) != 0)
 	{
 		(void)show_error_msg("Operation error",
 				"Current directory is not writable");
-		return 0;
+		return -1;
 	}
 
 	if(view->selected_files == 0)
@@ -2989,49 +3002,49 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		view->selected_files = 1;
 	}
 	if(move == 0 && type == 0 && !have_read_access(view))
-		return 0;
+		return -1;
 
-	if(nlines == 1)
+	if(*nlines == 1)
 	{
-		if(is_dir_path(other_view, list[0], path))
-			nlines = 0;
+		if(is_dir_path(other_view, (*list)[0], path))
+			*nlines = 0;
 	}
 	else
 	{
 		strcpy(path, other_view->curr_dir);
 	}
 	if(!is_dir_writable(1, path))
-		return 0;
+		return -1;
 
 	get_all_selected_files(view);
 
-	from_file = nlines < 0;
-	if(from_file)
+	*from_file = *nlines < 0;
+	if(*from_file)
 	{
-		list = read_list_from_file(view->selected_files, view->selected_filelist,
-				&nlines, 0);
-		if(list == NULL)
+		*list = read_list_from_file(view->selected_files, view->selected_filelist,
+				nlines, 0);
+		if(*list == NULL)
 			return curr_stats.save_msg;
 	}
 
-	if(nlines > 0 && (!is_name_list_ok(view->selected_files, nlines, list) ||
-			(!is_copy_list_ok(path, nlines, list) && !force)))
+	if(*nlines > 0 && (!is_name_list_ok(view->selected_files, *nlines, *list) ||
+			(!is_copy_list_ok(path, *nlines, *list) && !force)))
 	{
 		clean_selected_files(view);
 		draw_dir_list(view, view->top_line);
 		move_to_list_pos(view, view->list_pos);
-		if(from_file)
-			free_string_array(list, nlines);
+		if(*from_file)
+			free_string_array(*list, *nlines);
 		return 1;
 	}
-	else if(nlines == 0 && !force &&
+	else if(*nlines == 0 && !force &&
 			!is_copy_list_ok(path, view->selected_files, view->selected_filelist))
 	{
 		clean_selected_files(view);
 		draw_dir_list(view, view->top_line);
 		move_to_list_pos(view, view->list_pos);
-		if(from_file)
-			free_string_array(list, nlines);
+		if(*from_file)
+			free_string_array(*list, *nlines);
 		return 1;
 	}
 
@@ -3047,17 +3060,35 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 			replace_home_part(view->curr_dir));
 	snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%s: ",
 			replace_home_part(path));
-	make_undo_string(view, buf, nlines, list);
+	make_undo_string(view, buf, *nlines, *list);
 
 	if(move)
 	{
-		i = view->list_pos;
+		int i = view->list_pos;
 		while(i < view->list_rows - 1 && view->dir_entry[i].selected)
 			i++;
 		view->list_pos = i;
 	}
 
-	from_trash = path_starts_with(view->curr_dir, cfg.trash_dir);
+	*from_trash = path_starts_with(view->curr_dir, cfg.trash_dir);
+	return 0;
+}
+
+int
+cpmv_files(FileView *view, char **list, int nlines, int move, int type,
+		int force)
+{
+	int i;
+	char buf[COMMAND_GROUP_INFO_LEN + 1];
+	char path[PATH_MAX];
+	int from_file;
+	int from_trash;
+
+	i = cpmv_prepare(view, &list, &nlines, move, type, force, buf, path,
+			&from_file, &from_trash);
+	if(i != 0)
+		return i > 0;
+
 	cmd_group_begin(buf);
 	for(i = 0; i < view->selected_files; i++)
 	{
@@ -3078,7 +3109,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		{
 			progress_msg("Moving files", i + 1, view->selected_files);
 
-			if(mv_file(view->selected_filelist[i], dst, path, 0) != 0)
+			if(mv_file(view->selected_filelist[i], view->curr_dir, dst, path, 0) != 0)
 				view->list_pos = find_file_pos_in_list(view,
 						view->selected_filelist[i]);
 		}
@@ -3097,6 +3128,108 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
   load_saving_pos(other_view, 1);
 	if(from_file)
 		free_string_array(list, nlines);
+	return 0;
+}
+
+static int
+cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
+		int sel_list_len, int from_trash, const char *src, const char *path)
+{
+	int i;
+	for(i = 0; i < sel_list_len; i++)
+	{
+		char dst_full[PATH_MAX];
+		const char *dst = (nlines > 0) ? list[i] : sel_list[i];
+		if(from_trash)
+		{
+			while(isdigit(*dst))
+				dst++;
+			dst++;
+		}
+
+		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
+		if(access(dst_full, F_OK) == 0)
+			perform_operation(OP_REMOVESL, NULL, dst_full, NULL);
+
+		if(move)
+		{
+		  /* TODO: progress_msg("Moving files", i + 1, sel_list_len); */
+			(void)mv_file(sel_list[i], src, dst, path, -1);
+		}
+		else
+		{
+		  /* TODO: progress_msg("Copying files", i + 1, sel_list_len); */
+			(void)cp_file(src, path, sel_list[i], dst, -1);
+		}
+	}
+	return 0;
+}
+
+static void *
+bg_stub(void *arg)
+{
+	struct bg_args *args = (struct bg_args*)arg;
+
+	add_inner_bg_job(args->job);
+
+	cpmv_files_bg_i(args->list, args->nlines, args->move, args->force,
+			args->sel_list, args->sel_list_len, args->from_trash, args->src,
+			args->path);
+
+	remove_inner_bg_job();
+
+	free_string_array(args->list, args->nlines);
+	free_string_array(args->sel_list, args->sel_list_len);
+	free(args);
+	return NULL;
+}
+
+int
+cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
+{
+	pthread_t id;
+	int i;
+	char buf[COMMAND_GROUP_INFO_LEN];
+	struct bg_args *args = malloc(sizeof(*args));
+	
+	args->list = NULL;
+	args->nlines = nlines;
+	args->move = move;
+	args->force = force;
+
+	i = cpmv_prepare(view, &list, &args->nlines, move, 0, force, buf, args->path,
+			&args->from_file, &args->from_trash);
+	if(i != 0)
+	{
+		free(args);
+		return i > 0;
+	}
+
+	if(args->from_file)
+		args->list = list;
+	else
+		args->list = copy_string_array(list, nlines);
+
+	args->sel_list = view->selected_filelist;
+	args->sel_list_len = view->selected_files;
+
+	view->selected_filelist = NULL;
+	free_selected_file_array(view);
+	clean_selected_files(view);
+	load_saving_pos(view, 1);
+
+	strcpy(args->src, view->curr_dir);
+
+	args->job = add_background_job(-1, buf, -1);
+	if(args->job == NULL)
+	{
+		free_string_array(args->list, args->nlines);
+		free_string_array(args->sel_list, args->sel_list_len);
+		free(args);
+		return 0;
+	}
+
+	pthread_create(&id, NULL, bg_stub, args);
 	return 0;
 }
 

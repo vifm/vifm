@@ -34,6 +34,7 @@ typedef struct Jobs_List {
 	int skip_errors;
 	int running;
 	int exit_code;
+	char *error;
 #ifndef _WIN32
 	int fd;
 #else
@@ -59,6 +60,14 @@ int background_and_capture(char *cmd, FILE **out, FILE **err);
 void add_finished_job(pid_t pid, int status);
 void check_background_jobs(void);
 void update_jobs_list(void);
+void add_inner_bg_job(Jobs_List *job);
+void remove_inner_bg_job(void);
+
+#ifndef _WIN32
+Jobs_List * add_background_job(pid_t pid, const char *cmd, int fd);
+#else
+Jobs_List * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
+#endif
 
 #endif
 

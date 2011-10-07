@@ -85,6 +85,7 @@ int check_link_is_dir(const char *filename);
 int add_to_string_array(char ***array, int len, int count, ...);
 int is_in_string_array(char **array, size_t len, const char *key);
 int is_in_string_array_case(char **array, size_t len, const char *key);
+char ** copy_string_array(char **array, size_t len);
 int string_array_pos(char **array, size_t len, const char *key);
 int string_array_pos_case(char **array, size_t len, const char *key);
 void free_string_array(char **array, size_t len);
