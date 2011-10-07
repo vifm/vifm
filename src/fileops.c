@@ -2260,8 +2260,10 @@ have_read_access(FileView *view)
 {
 	int i;
 
+#ifdef _WIN32
 	if(is_unc_path(view->curr_dir))
 		return 1;
+#endif
 
 	for(i = 0; i < view->list_rows; i++)
 	{
