@@ -207,15 +207,15 @@ redraw_full_file_properties(FileView *v)
 	{
 		snprintf(uid_buf, sizeof(uid_buf), "%s", pwd_buf->pw_name);
 	}
-#else
-	snprintf(uid_buf, sizeof(uid_buf), "NOT AVAILABLE ON WINDOWS");
 #endif
 	get_perm_string(perm_buf, sizeof(perm_buf),
 			view->dir_entry[view->list_pos].mode);
 
 	curr_y = 2;
 	mvwaddstr(menu_win, curr_y, 2, "File: ");
-	mvwaddnstr(menu_win, curr_y, 8, name_buf, x - 8);
+	name_buf[x - 8] = '\0';
+	wmove(menu_win, curr_y, 8);
+	wprint(menu_win, name_buf);
 	curr_y += 2;
 	mvwaddstr(menu_win, curr_y, 2, "Size: ");
 	mvwaddstr(menu_win, curr_y, 8, size_buf);
@@ -233,19 +233,22 @@ redraw_full_file_properties(FileView *v)
 	mvwaddstr(menu_win, curr_y, 2, "Modified: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
 	strftime(buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
-	mvwaddstr(menu_win, curr_y, 13, buf);
+	wmove(menu_win, curr_y, 13);
+	wprint(menu_win, buf);
 	curr_y += 2;
 
 	mvwaddstr(menu_win, curr_y, 2, "Accessed: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].atime);
 	strftime (buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
-	mvwaddstr(menu_win, curr_y, 13, buf);
+	wmove(menu_win, curr_y, 13);
+	wprint(menu_win, buf);
 	curr_y += 2;
 
 	mvwaddstr(menu_win, curr_y, 2, "Changed: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].ctime);
 	strftime (buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
-	mvwaddstr(menu_win, curr_y, 13, buf);
+	wmove(menu_win, curr_y, 13);
+	wprint(menu_win, buf);
 	curr_y += 2;
 
 #ifndef _WIN32
@@ -256,7 +259,6 @@ redraw_full_file_properties(FileView *v)
 	mvwaddstr(menu_win, curr_y, 2, "Group: ");
 	if((grp_buf = getgrgid(view->dir_entry[view->list_pos].gid)) != NULL)
 		mvwaddstr(menu_win, curr_y, 10, grp_buf->gr_name);
-	mvwaddstr(menu_win, curr_y, 10, "NOT AVAILABLE ON WINDOWS");
 #endif
 
 	wnoutrefresh(menu_win);
