@@ -28,6 +28,7 @@ On Windows you need:
 	Mingw
 	Pdcurses for Mingw
 	Regex for Mingw
+    pthreads for Windows
 
 Windows Installation:
 

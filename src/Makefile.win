@@ -4,7 +4,7 @@ CFLAGS := -c -g -O0 -Wall -MD $(CFLAGS)
 
 LDFLAGS := -all-static $(LDFLAGS)
 
-LIBS := -lregex -lpdcurses -lnetapi32
+LIBS := -lregex -lpdcurses -lnetapi32 -lpthread
 
 vifm_SOURCES := background.c bookmarks.c change_dialog.c cmdline.c cmds.c \
                 color_scheme.c commands.c completion.c config.c dir_stack.c \
