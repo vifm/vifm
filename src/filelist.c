@@ -1832,6 +1832,19 @@ is_win_symlink(DWORD attr, DWORD tag)
 
 	return (tag == IO_REPARSE_TAG_SYMLINK);
 }
+
+static time_t
+win_to_unix_time(FILETIME ft)
+{
+	const unsigned long long WINDOWS_TICK = 10000000;
+	const unsigned long long SEC_TO_UNIX_EPOCH = 11644473600LL;
+	unsigned long long win_time;
+
+	win_time = ft.dwHighDateTime;
+	win_time = (win_time << 32) | ft.dwLowDateTime;
+
+	return win_time/WINDOWS_TICK - SEC_TO_UNIX_EPOCH;
+}
 #endif
 
 static int
@@ -2048,9 +2061,9 @@ fill_dir_list(FileView *view)
 
 		dir_entry->size = ((uintmax_t)ffd.nFileSizeHigh << 32) + ffd.nFileSizeLow;
 		dir_entry->mode = 0777;
-		dir_entry->mtime = 0;
-		dir_entry->atime = 0;
-		dir_entry->ctime = 0;
+		dir_entry->mtime = win_to_unix_time(ffd.ftLastWriteTime);
+		dir_entry->atime = win_to_unix_time(ffd.ftLastAccessTime);
+		dir_entry->ctime = win_to_unix_time(ffd.ftCreationTime);
 
 		if(is_win_symlink(ffd.dwFileAttributes, ffd.dwReserved0))
 		{
