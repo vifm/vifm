@@ -785,7 +785,7 @@ will permanently remove 'rm -fr' files from the Trash directory.  It will also
 remove all operations from undolist that have no sense after :empty and remove
 all records about files in the Trash directory from all registers.
 .TP
-.BI :exi[t]
+.BI :exi[t][!]
 same as :quit.
 .TP
 .BI :f[ile]
@@ -1015,8 +1015,9 @@ exchanges the top two items of the directory stack.
 .BI :pw[d]
 show the present working directory.
 .TP
-.BI :q[uit]
-will exit Vifm (add ! if you don't want to save changes).
+.BI :q[uit][!]
+will exit vifm (add ! if you don't want to save changes or check if there are
+any of backgrounded commands still running).
 .TP
 .BI ":[range]y[ank] [reg] [count]"
 will yank files to the reg register.
@@ -1163,10 +1164,10 @@ appropriate volume in the current pane.
 .BI :w[rite]
 write vifminfo file (add ! to force write even if settings weren't changed).
 .TP
-.BI :wq
-same as :quit.
+.BI :wq[!]
+same as :quit, but ! only disables check of backgrounded commands.
 .TP
-.BI ":x[it]"
+.BI ":x[it][!]"
 will exit Vifm (add ! if you don't want to save changes).
 
 .TP

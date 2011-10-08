@@ -975,13 +975,13 @@ cmd_V(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ZQ(struct key_info key_info, struct keys_info *keys_info)
 {
-	comm_quit(0);
+	comm_quit(0, 0);
 }
 
 static void
 cmd_ZZ(struct key_info key_info, struct keys_info *keys_info)
 {
-	comm_quit(1);
+	comm_quit(1, 0);
 }
 
 /* Goto mark. */

@@ -687,7 +687,7 @@ Commands
               sense after :empty and remove all records  about  files  in  the
               Trash directory from all registers.
 
-       :exi[t]
+       :exi[t][!]
               same as :quit.
 
        :f[ile]
@@ -915,8 +915,9 @@ Commands
 
        :pw[d] show the present working directory.
 
-       :q[uit]
-              will exit Vifm (add ! if you don't want to save changes).
+       :q[uit][!]
+              will exit vifm (add ! if you don't want to save changes or check
+              if there are any of backgrounded commands still running).
 
        :[range]y[ank] [reg] [count]
               will yank files to the reg register.
@@ -927,8 +928,8 @@ Commands
               popup menu with registers content.
 
        :reg[isters] list ...
-              display  the  contents  of the numbered and named registers that
-              are mentioned in list (for example "az to display "", "a and  "z
+              display the contents of the numbered and  named  registers  that
+              are  mentioned in list (for example "az to display "", "a and "z
               content).
 
        :[range]rename
@@ -945,29 +946,29 @@ Commands
               will restore file from Trash.  Works in trash directory only.
 
        :[range]rlink[!?]
-              creates relative symbolic links of files in directory  of  other
-              view.   With  "?"   vifm  will  open  vi to edit filenames.  "!"
+              creates  relative  symbolic links of files in directory of other
+              view.  With "?"  vifm will  open  vi  to  edit  filenames.   "!"
               forces overwrite.
 
        :[range]rlink[!] path
-              creates relative symbolic links of files in directory  specified
+              creates  relative symbolic links of files in directory specified
               with the path (absolute or relative to directory of other view).
               "!" forces overwrite.
 
        :[range]rlink[!] name1 name2...
-              creates relative symbolic links of files in directory  of  other
-              view  giving  each next link a corresponding name from the argu‐
+              creates  relative  symbolic links of files in directory of other
+              view giving each next link a corresponding name from  the  argu‐
               ment list.  "!" forces overwrite.
 
        :screen
               toggles whether or not to use the screen program.
               The default configuration has the screen option turned off.  The
-              screen  program  uses pseudo terminals to allow multiple windows
-              to be used in the console or in a single xterm.   Starting  vifm
-              from  screen with the screen option turned on will cause vifm to
-              open a new screen window for each new  file  edited  or  program
+              screen program uses pseudo terminals to allow  multiple  windows
+              to  be  used in the console or in a single xterm.  Starting vifm
+              from screen with the screen option turned on will cause vifm  to
+              open  a  new  screen  window for each new file edited or program
               launched from vifm.
-              This  requires  screen  version 3.9.9 or newer for the screen -X
+              This requires screen version 3.9.9 or newer for  the  screen  -X
               argument.
 
        :screen?
@@ -999,7 +1000,7 @@ Commands
                - option& - reset option to its default value
                - option=x or option:x - set option to x
                - option+=x - add x to option
-               - option-=x - remove (or subtract) x from option :sh[ell]  will
+               -  option-=x - remove (or subtract) x from option :sh[ell] will
               start a shell.
 
        :sor[t]
@@ -1012,21 +1013,21 @@ Commands
               toggles windows splitting.
 
        :sp[lit] path
-              splits  the  window  to show both file directories.  And changes
+              splits the window to show both file  directories.   And  changes
               other pane to path.
 
        :[range]s[ubstitite]/pattern/string/[flags]
               for each file in range replace a match of pattern with string.
 
-       String can contain  ...9 to link to capture groups (0 - all match, 1  -
+       String  can contain  ...9 to link to capture groups (0 - all match, 1 -
        first group, etc.).
 
        Available flags:
 
-       - i  -  ignore  case  (the 'ignorecase' and 'smartcase' options are not
+       - i - ignore case (the 'ignorecase' and  'smartcase'  options  are  not
          used)
 
-       - I - don't ignore case (the 'ignorecase' and 'smartcase'  options  are
+       - I  -  don't ignore case (the 'ignorecase' and 'smartcase' options are
          not used)
 
        - g - substitute all matches in each file name (each g toggles this)
@@ -1035,15 +1036,15 @@ Commands
          change the other panel to the current panel directory.
 
        :touch file...
-         will  create files.  Aborts on errors and won't update time of exist‐
+         will create files.  Aborts on errors and won't update time of  exist‐
          ing files.
 
        :[range]tr/pattern/string/
-         for each file in range transliterate the characters which  appear  in
-         pattern  to  the  corresponding  character in string.  When string is
+         for  each  file in range transliterate the characters which appear in
+         pattern to the corresponding character in  string.   When  string  is
          shorter than pattern, it's padded with its last character.
 
-       String can contain  ...9 to link to capture groups (0 - all match, 1  -
+       String  can contain  ...9 to link to capture groups (0 - all match, 1 -
        first group, etc.).
 
        :undol[ist]
@@ -1063,12 +1064,14 @@ Commands
               open appropriate volume in the current pane.
 
        :w[rite]
-              write vifminfo file (add !  to  force  write  even  if  settings
+              write  vifminfo  file  (add  !  to  force write even if settings
               weren't changed).
 
-       :wq    same as :quit.
+       :wq[!] same as :quit, but ! only disables check  of  backgrounded  com‐
+              mands.
 
-       :x[it] will exit Vifm (add ! if you don't want to save changes).
+       :x[it][!]
+              will exit Vifm (add ! if you don't want to save changes).
 
 
        :map lhs rhs

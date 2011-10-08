@@ -50,7 +50,7 @@ int shellout(const char *command, int pause);
 char * fast_run_complete(char *cmd);
 char * expand_macros(FileView *view, const char *command, const char *args,
 		int *menu, int *split);
-void _gnuc_noreturn comm_quit(int write_info);
+void comm_quit(int write_info, int force);
 void comm_only(void);
 void comm_split(void);
 void save_command_history(const char *command);

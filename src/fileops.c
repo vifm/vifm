@@ -3152,15 +3152,9 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 			perform_operation(OP_REMOVESL, NULL, dst_full, NULL);
 
 		if(move)
-		{
-		  /* TODO: progress_msg("Moving files", i + 1, sel_list_len); */
 			(void)mv_file(sel_list[i], src, dst, path, -1);
-		}
 		else
-		{
-		  /* TODO: progress_msg("Copying files", i + 1, sel_list_len); */
 			(void)cp_file(src, path, sel_list[i], dst, -1);
-		}
 
 		inner_bg_next();
 	}

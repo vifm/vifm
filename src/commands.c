@@ -269,7 +269,7 @@ static const struct cmd_add commands[] = {
 		.handler = edit_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "empty",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = empty_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "exit",             .abbr = "exi",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "exit",             .abbr = "exi",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "file",             .abbr = "f",     .emark = 0,  .id = COM_FILE,        .range = 0,    .bg = 1, .quote = 0, .regexp = 0,
 		.handler = file_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
@@ -381,7 +381,7 @@ static const struct cmd_add commands[] = {
 		.handler = vunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "write",            .abbr = "w",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = write_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "wq",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "wq",               .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = wq_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "xit",              .abbr = "x",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
@@ -2437,9 +2437,42 @@ exec_command(char *cmd, FileView *view, int type)
 	return 0;
 }
 
-void _gnuc_noreturn
-comm_quit(int write_info)
+void
+comm_quit(int write_info, int force)
 {
+	if(!force)
+	{
+		Jobs_List *job;
+		int bg_count = 0;
+#ifndef _WIN32
+		sigset_t new_mask;
+
+		sigemptyset(&new_mask);
+		sigaddset(&new_mask, SIGCHLD);
+		sigprocmask(SIG_BLOCK, &new_mask, NULL);
+#endif
+
+		job = jobs;
+		while(job != NULL)
+		{
+			if(job->running && job->pid == -1)
+				bg_count++;
+			job = job->next;
+		}
+
+#ifndef _WIN32
+		/* Unblock SIGCHLD signal */
+		sigprocmask(SIG_UNBLOCK, &new_mask, NULL);
+#endif
+
+		if(bg_count > 0)
+		{
+			if(!query_user_menu("Warning",
+					"Some of backgrounded commands are still working.  Quit?"))
+				return;
+		}
+	}
+
 	unmount_fuse();
 
 	if(write_info)
@@ -4244,14 +4277,14 @@ write_cmd(const struct cmd_info *cmd_info)
 static int
 quit_cmd(const struct cmd_info *cmd_info)
 {
-	comm_quit(!cmd_info->emark);
+	comm_quit(!cmd_info->emark, cmd_info->emark);
 	return 0;
 }
 
 static int
 wq_cmd(const struct cmd_info *cmd_info)
 {
-	comm_quit(1);
+	comm_quit(1, cmd_info->emark);
 	return 0;
 }
 

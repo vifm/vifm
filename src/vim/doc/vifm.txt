@@ -558,7 +558,7 @@ The builtin commands are:
     registers.
 
                                                *vifm-:exit* *vifm-:exi*
-:exi[t] - same as :quit.
+:exi[t][!] - same as :quit.
 
                                                *vifm-:file* *vifm-:f*
 :f[ile] - popup menu of programs set for the file type of the current file.
@@ -754,7 +754,8 @@ of the hierarchy and transparency for all others.
 :pw[d] - show the present working directory.
 
                                                *vifm-:quit* *vifm-:q*
-:q[uit] - will exit vifm (add ! if you don't want to save changes).
+:q[uit][!] - will exit vifm (add ! if you don't want to save changes or
+    check if there are any of backgrounded commands still running).
 
                                                *vifm-:ls*
 :ls - shows list of screen program windows (only when screen is used).
@@ -883,10 +884,10 @@ of the hierarchy and transparency for all others.
     weren't changed).
 
                                                *vifm-:wq*
-:wq - same as :quit.
+:wq[!] - same as :quit, but ! disables only check of backgrounded commands.
 
                                                *vifm-:xit* *vifm-:x*
-:x[it] - exit vifm (add ! if you don't want to save changes).
+:x[it][!] - exit vifm (add ! if you don't want to save changes).
 
                                                *vifm-:yank* *vifm-:y*
 :[range]y[ank] [reg] [count] - will yank files to the reg register.
