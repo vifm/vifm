@@ -1,7 +1,7 @@
 Basic things that need to be done.
 	Termcap or terminfo support for keybindings (do we need this? curses does).
 	Backgrounding of commands with job control (pause/resume/kill).
-    Show background commands presence and progress in the TUI.
+    Show background commands presence in the TUI.
 	Fix window resizing (I think it's almost done).
 	Handle commands that are too long to be passed directly to the shell.
 	Make ga and gA work in background.

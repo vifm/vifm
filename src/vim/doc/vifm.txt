@@ -1026,7 +1026,7 @@ For each background operation a new thread will be created.  Currently job
 cannot be stopped or paused.
 
 You can see if command is still running in the :jobs menu.  Backgrounded
-commands don't have process id at the line beginning
+commands have progress instead of process id at the line beginning.
 
 Background operations cannot be undone.
 

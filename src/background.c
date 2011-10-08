@@ -26,6 +26,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <assert.h>
 #include <errno.h>
 #include <signal.h>
 #include <string.h>
@@ -604,6 +605,17 @@ add_inner_bg_job(Jobs_List *job)
 {
 	pthread_once(&key_once, &make_key);
 	(void)pthread_setspecific(key, job);
+}
+
+void
+inner_bg_next(void)
+{
+	Jobs_List *job = pthread_getspecific(key);
+	if(job == NULL)
+		return;
+
+	job->done++;
+	assert(job->done <= job->total);
 }
 
 void

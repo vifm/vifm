@@ -2100,10 +2100,11 @@ show_jobs_menu(FileView *view)
 
 		if(p->running)
 		{
-			m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
+			m.data = (char **)realloc(m.data, sizeof(char *)*(x + 1));
 			m.data[x] = (char *)malloc(strlen(p->cmd) + 24);
 			if(p->pid == -1)
-				snprintf(m.data[x], strlen(p->cmd) + 22, "    %s ", p->cmd);
+				snprintf(m.data[x], strlen(p->cmd) + 22, " %d/%d %s ", p->done + 1,
+						p->total, p->cmd);
 			else
 				snprintf(m.data[x], strlen(p->cmd) + 22, " %d %s ", p->pid, p->cmd);
 

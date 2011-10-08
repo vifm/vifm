@@ -177,6 +177,7 @@ const char *tags[] = {
 	"vifm-:yank",
 	"vifm-command-line",
 	"vifm-commands",
+	"vifm-commands-bg",
 	"vifm-compatibility-mode",
 	"vifm-configure",
 	"vifm-filters",

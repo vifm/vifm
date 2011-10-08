@@ -3161,6 +3161,8 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 		  /* TODO: progress_msg("Copying files", i + 1, sel_list_len); */
 			(void)cp_file(src, path, sel_list[i], dst, -1);
 		}
+
+		inner_bg_next();
 	}
 	return 0;
 }
@@ -3228,6 +3230,9 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 		free(args);
 		return 0;
 	}
+
+	args->job->total = args->sel_list_len;
+	args->job->done = 0;
 
 	pthread_create(&id, NULL, bg_stub, args);
 	return 0;
