@@ -20,6 +20,8 @@
 
 	Added backgrounding of :copy and :move commands.
 
+	Added Ctrl-n (j) and Ctrl-p (k) keys.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

@@ -1319,7 +1319,8 @@ Vim like mode:
 
 General~
 
-j, k - move.
+j, Ctrl-n - moves down.
+k, Ctrl-p - moves up.
 <Escape>, Ctrl-c - clear.
 <Return>, l - select and exit the menu.
 Ctrl-l - redraw the menu.

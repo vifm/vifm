@@ -54,9 +54,11 @@ Basic Movement
        The basic vi key bindings are used to move through the files and  popup
        windows.
 
-       k      moves up.
+       k or Ctrl-P
+              moves up.
 
-       j      moves down.
+       j or Ctrl-N
+              moves down.
 
        h      moves up one directory.
 
