@@ -20,6 +20,10 @@
 
 	Make macros expand to paths with forward slashes on Windows.
 
+	Clean selection after i key in normal mode.
+
+	Don't clear terminal title on exit.
+
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 
 	Fixed bug with disappearing of number of selected files in visual mode.
@@ -47,6 +51,14 @@
 	Fixed removing of directories on Windows (at least on XP).
 
 	Fixed plugin on Windows.
+
+	Fixed a/c/m file time on Windows.
+
+	Fixed displaying of local chars in C-G dialog on Windows.
+
+	Fixed command-line shortcuts with Alt key and pdcurses library.
+
+	Fixed redrawing in the :only mode.
 
 0.6.3 to 0.7.0
 

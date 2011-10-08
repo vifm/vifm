@@ -163,9 +163,9 @@ redraw_full_file_properties(FileView *v)
 	char name_buf[NAME_MAX];
 	char perm_buf[26];
 	char size_buf[56];
-	char uid_buf[26];
 	char buf[256];
 #ifndef _WIN32
+	char uid_buf[26];
 	struct passwd *pwd_buf;
 	struct group *grp_buf;
 #endif
