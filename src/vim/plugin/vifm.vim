@@ -54,7 +54,7 @@ if !exists('g:vifm_term')
 	let g:vifm_term = 'xterm -e'
 endif
 
-if exists('$HOME')
+if exists('$HOME') && !isdirectory('$APPDATA/Vifm')
 	let s:vifm_home = $HOME."/.vifm"
 elseif exists('$APPDATA')
 	let s:vifm_home = $APPDATA."/Vifm"

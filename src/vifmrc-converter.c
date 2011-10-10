@@ -183,6 +183,7 @@ struct{
 	.count = 0,
 };
 
+static int is_dir(const char *file);
 static void add_command(const char *name, const char *cmd);
 static const char * conv_udf_name(const char *cmd);
 static void add_bookmark(char name, const char *dir, const char *file);
@@ -483,7 +484,8 @@ main(int argc, char **argv)
 
 	home_dir = getenv("HOME");
 #ifdef _WIN32
-	if(home_dir == NULL || home_dir[0] == '\0')
+	snprintf(config_dir, sizeof(config_dir), "%s/Vifm", getenv("APPDATA"));
+	if(home_dir == NULL || home_dir[0] == '\0' || is_dir(config_dir))
 	{
 		home_dir = getenv("APPDATA");
 		strcpy(dir_name, "Vifm");
@@ -573,6 +575,23 @@ main(int argc, char **argv)
 	convert_color_schemes(colorschemes_file, colors_dir);
 
 	return 0;
+}
+
+#ifdef _WIN32
+static int
+is_dir(const char *file)
+{
+	DWORD attr;
+
+	attr = GetFileAttributesA(file);
+	if(attr == INVALID_FILE_ATTRIBUTES)
+	{
+		LOG_SERROR_MSG(errno, "Can't get attributes of \"%s\"", file);
+		log_cwd();
+		return 0;
+	}
+
+	return (attr & FILE_ATTRIBUTE_DIRECTORY);
 }
 
 static void

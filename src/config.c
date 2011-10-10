@@ -161,7 +161,8 @@ set_config_dir(void)
 
 	home_dir = getenv("HOME");
 #ifdef _WIN32
-	if(home_dir == NULL || home_dir[0] == '\0')
+	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/Vifm", getenv("APPDATA"));
+	if(home_dir == NULL || home_dir[0] == '\0' || is_dir(cfg.home_dir))
 	{
 		home_dir = getenv("APPDATA");
 		strcpy(dir_name, "Vifm");

@@ -13,6 +13,7 @@ Basic things that need to be done.
     Templates for :touch.
 	Mouse support.
     Ctrl-R combinations in the command-line mode.
+    Expand environment variables (useful for $HOME or $APPDATA).
 
 Documentation.
 	Better documentation (with normal tags in Vim version).
