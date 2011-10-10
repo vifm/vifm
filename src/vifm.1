@@ -1,4 +1,4 @@
-.TH vifm 1 "October 8, 2011" "" "Vifm"
+.TH vifm 1 "October 10, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -324,18 +324,14 @@ change file permissions.
 .BI C
 clone file.
 .TP
-.BI "[count]dd or d[count]selector if compatibility mode is off"
-.TP
-.BI "[count]dd if compatibility mode is on"
+.BI "[count]dd or d[count]selector"
 moves the selected files to the trash directory (if option 'trash' is set
 otherwise delete)
 .TP
 .BI "[count]DD or D[count]selector"
 removes the selected files.
 .TP
-.BI "Y, [count]yy or y[count]selector if compatibility mode is off"
-.TP
-.BI "[count]yy if compatibility mode is on"
+.BI "Y, [count]yy or y[count]selector"
 yanks the selected files.
 .TP
 .BI Y
@@ -1373,6 +1369,16 @@ default: true
 .br
 Ask about permanent deletion of files (on D command or on undo/redo operation).
 .TP
+.BI "cpoptions cpo"
+type: string
+.br
+default: "s"
+.br
+Contains a sequence of single-character flags.  Each flag enables behaviour of
+older versions of vifm.  Flags:
+s - when included, yy and dd act on the selection, otherwise they operate on
+    current file only.
+.TP
 .BI fastrun
 type: boolean
 .br
@@ -1675,13 +1681,9 @@ will put "man " in line when you hit the <f1> key in the command line mode.
 .\" ---------------------------------------------------------------------------
 Compatibility mode:
     - <tab> to switch between panes.
-    - dd deletes selected (or current if none) files.
-    - yy yanks selected (or current if none) files.
 
 Vim like mode:
     - <c-i> (<tab>) to go forward on history.
-    - dd deletes file under the cursor and ds works as dd in compatibility mode.
-    - yy yanks file under the cursor and ys works as dd in compatibility mode.
 .\" ---------------------------------------------------------------------------
 .SH Menus and dialogs
 .\" ---------------------------------------------------------------------------

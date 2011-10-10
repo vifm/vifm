@@ -109,6 +109,7 @@ init_config(void)
 	cfg.scroll_bind = 0;
 	cfg.wrap_scan = 1;
 	cfg.inc_search = 0;
+	cfg.selection_cp = 1;
 
 	p = getenv("SHELL");
 	if(p == NULL || *p == '\0')
@@ -754,6 +755,7 @@ write_info_file(void)
 		fputs("\n# Options:\n", fp);
 		fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
 		fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
+		fprintf(fp, "=cpoptions=%s\n", cfg.selection_cp ? "s" : "");
 		fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
 		fprintf(fp, "=%sfollowlinks\n", cfg.follow_links ? "" : "no");
 		fprintf(fp, "=fusehome=%s\n", escape_spaces(cfg.fuse_home));

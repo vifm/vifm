@@ -89,6 +89,7 @@ typedef struct _Config {
 	int scroll_bind;
 	int wrap_scan;
 	int inc_search;
+	int selection_cp;
 } Config;
 
 extern Config cfg;

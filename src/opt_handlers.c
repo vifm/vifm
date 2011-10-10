@@ -19,6 +19,7 @@ static void add_options(void);
 static void print_func(const char *msg, const char *description);
 static void autochpos_handler(enum opt_op op, union optval_t val);
 static void confirm_handler(enum opt_op op, union optval_t val);
+static void cpoptions_handler(enum opt_op op, union optval_t val);
 static void fastrun_handler(enum opt_op op, union optval_t val);
 static void followlinks_handler(enum opt_op op, union optval_t val);
 static void fusehome_handler(enum opt_op op, union optval_t val);
@@ -118,6 +119,7 @@ static struct {
 	/* global options */
 	{ "autochpos",   "",     OPT_BOOL,    0,                          NULL,            &autochpos_handler,   },
 	{ "confirm",     "cf",   OPT_BOOL,    0,                          NULL,            &confirm_handler,     },
+	{ "cpoptions",   "cpo",  OPT_STR,     0,                          NULL,            &cpoptions_handler,   },
 	{ "fastrun",     "",     OPT_BOOL,    0,                          NULL,            &fastrun_handler,     },
 	{ "followlinks", "",     OPT_BOOL,    0,                          NULL,            &followlinks_handler, },
 	{ "fusehome",    "",     OPT_STR,     0,                          NULL,            &fusehome_handler,    },
@@ -164,11 +166,15 @@ init_option_handlers(void)
 static void
 load_options_defaults(void)
 {
+	char buf[32];
 	int i = 0;
+
+	snprintf(buf, sizeof(buf), "%s", cfg.selection_cp ? "s" : "");
 
 	/* global options */
 	options[i++].val.bool_val = cfg.auto_ch_pos;
 	options[i++].val.bool_val = cfg.confirm;
+	options[i++].val.str_val = buf;
 	options[i++].val.bool_val = cfg.fast_run;
 	options[i++].val.bool_val = cfg.follow_links;
 	options[i++].val.str_val = cfg.fuse_home;
@@ -313,6 +319,43 @@ static void
 confirm_handler(enum opt_op op, union optval_t val)
 {
 	cfg.confirm = val.bool_val;
+}
+
+static void
+cpoptions_handler(enum opt_op op, union optval_t val)
+{
+	const char VALID[] = "s";
+	char buf[ARRAY_LEN(VALID)];
+	char *p;
+
+	buf[0] = '\0';
+	p = val.str_val;
+	while(*p != '\0')
+	{
+		if(strchr(VALID, *p) != NULL)
+		{
+			buf[strlen(buf) + 1] = '\0';
+			buf[strlen(buf)] = *p;
+		}
+		p++;
+	}
+
+	if(strcmp(val.str_val, buf) != 0)
+	{
+		val.str_val = buf;
+		set_option("cpoptions", val);
+		return;
+	}
+
+	cfg.selection_cp = 0;
+
+	p = buf;
+	while(*p != '\0')
+	{
+		if(*p == 's')
+			cfg.selection_cp = 1;
+		p++;
+	}
 }
 
 static void

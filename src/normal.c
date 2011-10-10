@@ -1164,11 +1164,6 @@ cmd_dd(struct key_info key_info, struct keys_info *keys_info)
 static void
 delete(struct key_info key_info, int use_trash)
 {
-#ifndef ENABLE_COMPATIBILITY_MODE
-	int j, k;
-	int *i;
-#endif
-
 	if(!is_dir_writable(0, curr_view->curr_dir))
 		return;
 
@@ -1176,38 +1171,44 @@ delete(struct key_info key_info, int use_trash)
 	if(!use_trash && cfg.confirm)
 	{
 		if(!query_user_menu("Permanent deletion",
-				"Are you sure you want to delete files permanently?"))
+					"Are you sure you want to delete files permanently?"))
 			return;
 		curr_stats.confirmed = 1;
 	}
 
-#ifdef ENABLE_COMPATIBILITY_MODE
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-	if(!curr_view->selected_files && key_info.count != NO_COUNT_GIVEN)
+	if(cfg.selection_cp)
 	{
-		int x;
-		int y = curr_view->list_pos;
-		for(x = 0; x < key_info.count; x++)
+		if(key_info.reg == NO_REG_GIVEN)
+			key_info.reg = DEFAULT_REG_NAME;
+		if(!curr_view->selected_files && key_info.count != NO_COUNT_GIVEN)
 		{
-			curr_view->dir_entry[y].selected = 1;
-			y++;
+			int x;
+			int y = curr_view->list_pos;
+			for(x = 0; x < key_info.count; x++)
+			{
+				curr_view->dir_entry[y].selected = 1;
+				y++;
+			}
 		}
+		curr_stats.save_msg = delete_file(curr_view, key_info.reg, 0, NULL,
+				use_trash);
 	}
-	curr_stats.save_msg = delete_file(curr_view, key_info.reg, 0, NULL,
-			use_trash);
-#else /* ENABLE_COMPATIBILITY_MODE */
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	i = malloc(sizeof(int)*key_info.count);
-	k = 0;
-	for(j = curr_view->list_pos; j < curr_view->list_pos + key_info.count; j++)
-		i[k++] = j;
-	curr_stats.save_msg = delete_file(curr_view, key_info.reg, k, i, use_trash);
-	free(i);
-#endif /* ENABLE_COMPATIBILITY_MODE */
+	else
+	{
+		int j, k;
+		int *i;
+
+		if(key_info.reg == NO_REG_GIVEN)
+			key_info.reg = DEFAULT_REG_NAME;
+		if(key_info.count == NO_COUNT_GIVEN)
+			key_info.count = 1;
+		i = malloc(sizeof(int)*key_info.count);
+		k = 0;
+		for(j = curr_view->list_pos; j < curr_view->list_pos + key_info.count; j++)
+			i[k++] = j;
+		curr_stats.save_msg = delete_file(curr_view, key_info.reg, k, i, use_trash);
+		free(i);
+	}
 }
 
 static void
@@ -1495,31 +1496,32 @@ cmd_u(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_yy(struct key_info key_info, struct keys_info *keys_info)
 {
-#ifndef ENABLE_COMPATIBILITY_MODE
-	int j, k;
-	int *i;
-#endif
-
 	if(key_info.count != NO_COUNT_GIVEN)
 		pick_files(curr_view, curr_view->list_pos + key_info.count - 1, keys_info);
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 
-#ifdef ENABLE_COMPATIBILITY_MODE
-	curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
-			keys_info->indexes);
-#else /* ENABLE_COMPATIBILITY_MODE */
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	i = malloc(sizeof(int)*key_info.count);
-	k = 0;
-	for(j = curr_view->list_pos; j < curr_view->list_pos + key_info.count; j++)
-		i[k++] = j;
-	curr_stats.save_msg = yank_files(curr_view, key_info.reg, k, i);
-	free(i);
-#endif /* ENABLE_COMPATIBILITY_MODE */
+	if(cfg.selection_cp)
+	{
+		curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
+				keys_info->indexes);
+	}
+	else
+	{
+		int j, k;
+		int *i;
+
+		if(key_info.reg == NO_REG_GIVEN)
+			key_info.reg = DEFAULT_REG_NAME;
+		if(key_info.count == NO_COUNT_GIVEN)
+			key_info.count = 1;
+		i = malloc(sizeof(int)*key_info.count);
+		k = 0;
+		for(j = curr_view->list_pos; j < curr_view->list_pos + key_info.count; j++)
+			i[k++] = j;
+		curr_stats.save_msg = yank_files(curr_view, key_info.reg, k, i);
+		free(i);
+	}
 
 	if(key_info.count != NO_COUNT_GIVEN)
 		free(keys_info->indexes);

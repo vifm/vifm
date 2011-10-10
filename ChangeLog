@@ -22,6 +22,8 @@
 
 	Added Ctrl-n (j) and Ctrl-p (k) keys.
 
+	Added 'cpoptions' option.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.
@@ -36,7 +38,7 @@
 
 	Fixed clearing selection after :file menu.
 
-	Fixed star as first character in a global.
+	Fixed asterisk as first character in a global.
 
 	Fixed running of user defined commands in the background.
 

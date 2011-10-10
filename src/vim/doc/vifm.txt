@@ -1050,6 +1050,15 @@ type: boolean
 default: true
 Ask about permanent deletion of files (on D command or on undo/redo operation).
 
+                                               *vifm-'cpoptions'* *vifm-'cpo'*
+cpoptions cpo
+type: string
+default: "s"
+Contains a sequence of single-character flags.  Each flag enables behaviour of
+older versions of vifm.  Flags:
+s - when included, yy and dd act on the selection, otherwise they operate on
+    current file only.
+
                                                *vifm-'fastrun'*
 fastrun
 type: boolean
@@ -1306,13 +1315,9 @@ will put "man " in line when you hit the <f1> key in the command line mode.
 
 Compatibility mode:
     - <tab> to switch between panes.
-    - dd deletes selected (or current if none) files.
-    - yy yanks selected (or current if none) files.
 
 Vim like mode:
     - <c-i> (<tab>) to go forward on history.
-    - dd deletes file under the cursor and ds works as dd in compatibility mode.
-    - yy yanks file under the cursor and ys works as dd in compatibility mode.
 
 --------------------------------------------------------------------------------
 *vifm-menus-and-dialogs*
