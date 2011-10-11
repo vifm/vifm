@@ -711,10 +711,10 @@ of the hierarchy and transparency for all others.
 :locate - repeats last :locate command.
 
                                                *vifm-:mark* *vifm-:ma*
-:[range]ma[rk] x /full/path [filename] - set mark x at /full/path and
-    filename.  By default current directory is used.  If no filename was
-    given and /full/path is current directory then last file in [range] is
-    being used.  Using macros is allowed.
+:[range]ma[rk] x /full/path [filename] - set mark x (a-zA-Z0-9) at
+    /full/path and filename.  By default current directory is used.  If
+    no filename was given and /full/path is current directory then last
+    file in [range] is being used.  Using macros is allowed.
 
                                                *vifm-:marks*
 :marks - menu of bookmarks.

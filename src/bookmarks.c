@@ -51,7 +51,7 @@ mark2index(const char mark)
 
 	im = (int)mark;
 	if(im >= '0' && im <= '9')
-		return im - 12;
+		return im - '0';
 	else if(im == '<')
 		return 10;
 	else if(im == '>')

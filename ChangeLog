@@ -70,6 +70,8 @@
 
 	Fixed algorithm of finding vifm configuration directory on Windows.
 
+	Fixed setting of numeric bookmarks (0-9).
+
 0.6.3 to 0.7.0
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.
