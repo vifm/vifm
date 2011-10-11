@@ -1328,6 +1328,11 @@ Command backgrounding
               When  this option is set, search will be performed starting from
               initial cursor position each time search pattern is changed.
 
+       laststatus ls
+              type: boolean
+              default: true
+              Controls if status bar is visible.
+
        runexec
               type: boolean
               default: false
@@ -1661,4 +1666,4 @@ AUTHOR
 
 
 
-                               October 10, 2011                        vifm(1)
+                               October 11, 2011                        vifm(1)

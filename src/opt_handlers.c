@@ -29,6 +29,7 @@ static void hlsearch_handler(enum opt_op op, union optval_t val);
 static void iec_handler(enum opt_op op, union optval_t val);
 static void ignorecase_handler(enum opt_op op, union optval_t val);
 static void incsearch_handler(enum opt_op op, union optval_t val);
+static void laststatus_handler(enum opt_op op, union optval_t val);
 static void runexec_handler(enum opt_op op, union optval_t val);
 static void scrollbind_handler(enum opt_op op, union optval_t val);
 static void scrolloff_handler(enum opt_op op, union optval_t val);
@@ -129,6 +130,7 @@ static struct {
 	{ "iec",         "",     OPT_BOOL,    0,                          NULL,            &iec_handler,         },
 	{ "ignorecase",  "ic",   OPT_BOOL,    0,                          NULL,            &ignorecase_handler,  },
 	{ "incsearch",   "is",   OPT_BOOL,    0,                          NULL,            &incsearch_handler ,  },
+	{ "laststatus",  "ls",   OPT_BOOL,    0,                          NULL,            &laststatus_handler,  },
 	{ "runexec",     "",     OPT_BOOL,    0,                          NULL,            &runexec_handler,     },
 	{ "scrollbind",  "scb",  OPT_BOOL,    0,                          NULL,            &scrollbind_handler,  },
 	{ "scrolloff",   "so",   OPT_INT,     0,                          NULL,            &scrolloff_handler,   },
@@ -184,6 +186,7 @@ load_options_defaults(void)
 	options[i++].val.bool_val = cfg.use_iec_prefixes;
 	options[i++].val.bool_val = cfg.ignore_case;
 	options[i++].val.bool_val = cfg.inc_search;
+	options[i++].val.bool_val = cfg.last_status;
 	options[i++].val.bool_val = cfg.auto_execute;
 	options[i++].val.bool_val = cfg.scroll_bind;
 	options[i++].val.int_val = cfg.scroll_off;
@@ -514,6 +517,39 @@ incsearch_handler(enum opt_op op, union optval_t val)
 }
 
 static void
+laststatus_handler(enum opt_op op, union optval_t val)
+{
+	cfg.last_status = val.bool_val;
+	if(cfg.last_status)
+	{
+		lwin.window_rows--;
+		rwin.window_rows--;
+	}
+	else
+	{
+		lwin.window_rows++;
+		rwin.window_rows++;
+	}
+	touchwin(lwin.win);
+	touchwin(rwin.win);
+	touchwin(lborder);
+	touchwin(mborder);
+	touchwin(rborder);
+	wnoutrefresh(lwin.win);
+	wnoutrefresh(rwin.win);
+	wnoutrefresh(lborder);
+	wnoutrefresh(mborder);
+	wnoutrefresh(rborder);
+	doupdate();
+}
+
+static void
+runexec_handler(enum opt_op op, union optval_t val)
+{
+	cfg.auto_execute = val.bool_val;
+}
+
+static void
 scrollbind_handler(enum opt_op op, union optval_t val)
 {
 	cfg.scroll_bind = val.bool_val;
@@ -526,12 +562,6 @@ scrolloff_handler(enum opt_op op, union optval_t val)
 	cfg.scroll_off = val.int_val;
 	if(cfg.scroll_off > 0)
 		move_to_list_pos(curr_view, curr_view->list_pos);
-}
-
-static void
-runexec_handler(enum opt_op op, union optval_t val)
-{
-	cfg.auto_execute = val.bool_val;
 }
 
 static void

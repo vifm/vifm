@@ -187,7 +187,9 @@ struct{
 	.count = 0,
 };
 
+#ifdef _WIN32
 static int is_dir(const char *file);
+#endif
 static void add_command(const char *name, const char *cmd);
 static const char * conv_udf_name(const char *cmd);
 static void add_bookmark(char name, const char *dir, const char *file);

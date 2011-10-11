@@ -1118,6 +1118,12 @@ default: false
 When this option is set, search will be performed starting from initial
 cursor position each time search pattern is changed.
 
+                                               *vifm-'laststatus'* *vifm-'ls'*
+laststatus ls
+type: boolean
+default: true
+Controls if status bar is visible.
+
                                                *vifm-'runexec'*
 runexec
 type: boolean

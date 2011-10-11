@@ -62,10 +62,6 @@
 
 static int status_bar_lines;
 
-static WINDOW *lborder;
-static WINDOW *mborder;
-static WINDOW *rborder;
-
 static void update_attributes(void);
 
 static void _gnuc_noreturn
@@ -139,6 +135,9 @@ update_stat_window(FileView *view)
 	int cur_x;
 	size_t print_width;
 	char *filename;
+
+	if(!cfg.last_status)
+		return;
 
 	getmaxyx(stdscr, y, x);
 	wresize(stat_win, 1, x);
@@ -281,7 +280,7 @@ status_bar_message_i(const char *message, int error)
 
 	wattrset(status_bar, 0);
 	wrefresh(status_bar);
-	if(get_mode() != MENU_MODE)
+	if(get_mode() != MENU_MODE && cfg.last_status)
 		wrefresh(stat_win);
 }
 
@@ -407,7 +406,7 @@ setup_ncurses_interface(void)
 	wattrset(error_win, cfg.cs.color[WIN_COLOR].attr);
 	werase(error_win);
 
-	lborder = newwin(screen_y - 3, 1, 1, 0);
+	lborder = newwin(screen_y - 2, 1, 1, 0);
 	wbkgdset(lborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
 	werase(lborder);
@@ -423,16 +422,16 @@ setup_ncurses_interface(void)
 	werase(lwin.title);
 
 	if(curr_stats.number_of_windows == 1)
-		lwin.win = newwin(screen_y - 3, screen_x - 2, 1, 1);
+		lwin.win = newwin(screen_y - 2, screen_x - 2, 1, 1);
 	else
-		lwin.win = newwin(screen_y - 3, screen_x/2 - 2 + screen_x%2, 1, 1);
+		lwin.win = newwin(screen_y - 2, screen_x/2 - 2 + screen_x%2, 1, 1);
 
 	wbkgdset(lwin.win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR));
 	wattrset(lwin.win, cfg.cs.color[WIN_COLOR].attr);
 	werase(lwin.win);
 	getmaxyx(lwin.win, y, x);
-	lwin.window_rows = y -1;
-	lwin.window_width = x -1;
+	lwin.window_rows = y - 1 - cfg.last_status;
+	lwin.window_width = x - 1;
 
 	mborder = newwin(screen_y - 1, 2 - screen_x%2, 1,
 			screen_x/2 - 1 + screen_x%2);
@@ -468,19 +467,19 @@ setup_ncurses_interface(void)
 	werase(rwin.title);
 
 	if(curr_stats.number_of_windows == 1)
-		rwin.win = newwin(screen_y - 3, screen_x - 2, 1, 1);
+		rwin.win = newwin(screen_y - 2, screen_x - 2, 1, 1);
 	else
-		rwin.win = newwin(screen_y - 3, screen_x/2 - 2 + screen_x%2, 1,
+		rwin.win = newwin(screen_y - 2, screen_x/2 - 2 + screen_x%2, 1,
 				screen_x/2 + 1);
 
 	wbkgdset(rwin.win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR));
 	wattrset(rwin.win, cfg.cs.color[WIN_COLOR].attr);
 	werase(rwin.win);
 	getmaxyx(rwin.win, y, x);
-	rwin.window_rows = y - 1;
+	rwin.window_rows = y - 1 - cfg.last_status;
 	rwin.window_width = x - 1;
 
-	rborder = newwin(screen_y - 3, 1, 1, screen_x - 1);
+	rborder = newwin(screen_y - 2, 1, 1, screen_x - 1);
 	wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
 	werase(rborder);
@@ -586,38 +585,38 @@ resize_all(void)
 	wbkgdset(lborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
 	mvwin(lborder, 1, 0);
-	wresize(lborder, screen_y - 3, 1);
+	wresize(lborder, screen_y - 2, 1);
 
 	if(curr_stats.number_of_windows == 1)
 	{
 		wresize(lwin.title, 1, screen_x - 2);
-		wresize(lwin.win, screen_y - 3, screen_x - 2);
+		wresize(lwin.win, screen_y - 2, screen_x - 2);
 		getmaxyx(lwin.win, y, x);
 		mvwin(lwin.win, 1, 1);
 		lwin.window_width = x - 1;
-		lwin.window_rows = y - 1;
+		lwin.window_rows = y - 1 - cfg.last_status;
 
 		wresize(rwin.title, 1, screen_x - 2);
 		mvwin(rwin.title, 0, 1);
-		wresize(rwin.win, screen_y - 3, screen_x - 2);
+		wresize(rwin.win, screen_y - 2, screen_x - 2);
 		mvwin(rwin.win, 1, 1);
 		getmaxyx(rwin.win, y, x);
 		rwin.window_width = x - 1;
-		rwin.window_rows = y - 1;
+		rwin.window_rows = y - 1 - cfg.last_status;
 	}
 	else
 	{
 		wresize(lwin.title, 1, screen_x/2 - 2 + screen_x%2);
-		wresize(lwin.win, screen_y - 3, screen_x/2 - 2 + screen_x%2);
+		wresize(lwin.win, screen_y - 2, screen_x/2 - 2 + screen_x%2);
 		mvwin(lwin.win, 1, 1);
 		getmaxyx(lwin.win, y, x);
 		lwin.window_width = x - 1;
-		lwin.window_rows = y - 1;
+		lwin.window_rows = y - 1 - cfg.last_status;
 
 		wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 				cfg.cs.color[BORDER_COLOR].attr);
 		mvwin(mborder, 1, screen_x/2 - 1 + screen_x%2);
-		wresize(mborder, screen_y - 3, 2 - screen_x%2);
+		wresize(mborder, screen_y - 2, 2 - screen_x%2);
 
 		mvwin(top_line, 0, screen_x/2 - 1 + screen_x%2);
 		wresize(top_line, 1, 2 - screen_x%2);
@@ -627,16 +626,16 @@ resize_all(void)
 		wresize(rwin.title, 1, screen_x/2 - 2 + screen_x%2);
 		mvwin(rwin.title, 0, screen_x/2 + 1);
 
-		wresize(rwin.win, screen_y - 3, screen_x/2 - 2 + screen_x%2);
+		wresize(rwin.win, screen_y - 2, screen_x/2 - 2 + screen_x%2);
 		mvwin(rwin.win, 1, screen_x/2 + 1);
 		getmaxyx(rwin.win, y, x);
 		rwin.window_width = x - 1;
-		rwin.window_rows = y - 1;
+		rwin.window_rows = y - 1 - cfg.last_status;
 	}
 
 	wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
-	wresize(rborder, screen_y - 3, 1);
+	wresize(rborder, screen_y - 2, 1);
 	mvwin(rborder, 1, screen_x - 1);
 
 	wresize(stat_win, 1, screen_x);
@@ -787,7 +786,8 @@ update_all_windows(void)
 		return;
 
 	touchwin(lborder);
-	touchwin(stat_win);
+	if(cfg.last_status)
+		touchwin(stat_win);
 	touchwin(pos_win);
 	touchwin(input_win);
 	touchwin(rborder);
@@ -799,7 +799,8 @@ update_all_windows(void)
 	 */
 
 	redrawwin(lborder);
-	redrawwin(stat_win);
+	if(cfg.last_status)
+		redrawwin(stat_win);
 	redrawwin(pos_win);
 	redrawwin(input_win);
 	redrawwin(rborder);
@@ -835,7 +836,8 @@ update_all_windows(void)
 
 	wnoutrefresh(lborder);
 	wnoutrefresh(rborder);
-	wnoutrefresh(stat_win);
+	if(cfg.last_status)
+		wnoutrefresh(stat_win);
 	wnoutrefresh(pos_win);
 	wnoutrefresh(input_win);
 	wnoutrefresh(status_bar);

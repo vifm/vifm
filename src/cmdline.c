@@ -264,8 +264,11 @@ update_cmdline_size(void)
 
 		if(prev_mode != MENU_MODE)
 		{
-			mvwin(stat_win, y - d - 1, 0);
-			wrefresh(stat_win);
+			if(cfg.last_status)
+			{
+				mvwin(stat_win, y - d - 1, 0);
+				wrefresh(stat_win);
+			}
 		}
 		else
 		{
@@ -1498,7 +1501,26 @@ stop_completion(void)
 	reset_completion();
 	if(cfg.wild_menu &&
 			(sub_mode != MENU_CMD_SUBMODE && input_stat.complete != NULL))
-		update_stat_window(curr_view);
+	{
+		if(cfg.last_status)
+		{
+			update_stat_window(curr_view);
+		}
+		else
+		{
+			touchwin(lwin.win);
+			touchwin(rwin.win);
+			touchwin(lborder);
+			touchwin(mborder);
+			touchwin(rborder);
+			wnoutrefresh(lwin.win);
+			wnoutrefresh(rwin.win);
+			wnoutrefresh(lborder);
+			wnoutrefresh(mborder);
+			wnoutrefresh(rborder);
+			doupdate();
+		}
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

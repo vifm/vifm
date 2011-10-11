@@ -90,6 +90,7 @@ typedef struct _Config {
 	int wrap_scan;
 	int inc_search;
 	int selection_cp;
+	int last_status;
 } Config;
 
 extern Config cfg;

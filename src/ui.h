@@ -148,6 +148,10 @@ WINDOW *ltop_line;
 WINDOW *top_line;
 WINDOW *rtop_line;
 
+WINDOW *lborder;
+WINDOW *mborder;
+WINDOW *rborder;
+
 void is_term_working(void);
 int setup_ncurses_interface(void);
 void update_stat_window(FileView *view);
