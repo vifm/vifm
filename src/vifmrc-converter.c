@@ -1,3 +1,7 @@
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include <curses.h>
 
 #include <limits.h>
@@ -585,14 +589,11 @@ is_dir(const char *file)
 
 	attr = GetFileAttributesA(file);
 	if(attr == INVALID_FILE_ATTRIBUTES)
-	{
-		LOG_SERROR_MSG(errno, "Can't get attributes of \"%s\"", file);
-		log_cwd();
 		return 0;
-	}
 
 	return (attr & FILE_ATTRIBUTE_DIRECTORY);
 }
+#endif
 
 static void
 add_command(const char *name, const char *cmd)
