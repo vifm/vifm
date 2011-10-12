@@ -37,6 +37,7 @@
 #endif
 #include <unistd.h>
 
+#include <assert.h>
 #include <ctype.h> /* isdigit */
 #include <errno.h> /* errno */
 #include <signal.h>
@@ -1065,6 +1066,7 @@ progress_msg(const char *text, int ready, int total)
 	show_progress(msg, 1);
 }
 
+
 static char *
 gen_trash_name(const char *name)
 {
@@ -1081,11 +1083,32 @@ gen_trash_name(const char *name)
 	return strdup(buf);
 }
 
+/* path should be absolute */
 int
 is_dir_writable(int dest, const char *path)
 {
+	assert(is_path_absolute(path));
+
+	if(!is_unc_root(path))
+	{
+#ifdef _WIN32
+		HANDLE hdir;
+		if(is_on_fat_volume(path))
+			return 1;
+		hdir = CreateFileA(path, GENERIC_WRITE,
+				FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+				FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+		if(hdir != INVALID_HANDLE_VALUE)
+		{
+			CloseHandle(hdir);
+			return 1;
+		}
+#else
 	if(access(path, W_OK) == 0)
 		return 1;
+#endif
+	}
+
 	if(dest)
 		(void)show_error_msg("Operation error",
 				"Destination directory is not writable");
@@ -2989,12 +3012,8 @@ static int
 cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 		int force, char *buf, char *path, int *from_file, int *from_trash)
 {
-	if(move && access(view->curr_dir, W_OK) != 0)
-	{
-		(void)show_error_msg("Operation error",
-				"Current directory is not writable");
+	if(move && !is_dir_writable(0, view->curr_dir))
 		return -1;
-	}
 
 	if(view->selected_files == 0)
 	{
@@ -3216,7 +3235,11 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 
 	strcpy(args->src, view->curr_dir);
 
+#ifndef _WIN32
 	args->job = add_background_job(-1, buf, -1);
+#else
+	args->job = add_background_job(-1, buf, (HANDLE)-1);
+#endif
 	if(args->job == NULL)
 	{
 		free_string_array(args->list, args->nlines);

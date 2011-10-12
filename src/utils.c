@@ -1506,6 +1506,34 @@ to_back_slash(char *path)
 	}
 }
 
+int
+is_on_fat_volume(const char *path)
+{
+	char buf[NAME_MAX];
+	char fs[16];
+	if(is_unc_path(path))
+	{
+		int i = 4, j = 0;
+		snprintf(buf, sizeof(buf), "%s", path);
+		while(i > 0 && buf[j] != '\0')
+			if(buf[j++] == '/')
+				i--;
+		if(i == 0)
+			buf[j - 1] = '\0';
+	}
+	else
+	{
+		strcpy(buf, "x:\\");
+		buf[0] = path[0];
+	}
+	if(GetVolumeInformationA(buf, NULL, 0, NULL, NULL, NULL, fs, sizeof(fs)))
+	{
+		if(strncasecmp(fs, "fat", 3) == 0)
+			return 1;
+	}
+	return 0;
+}
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
