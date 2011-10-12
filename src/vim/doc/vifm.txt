@@ -1111,8 +1111,8 @@ Use KiB, MiB, ... instead of KB, MB, ...
 ignorecase ic
 type: boolean
 default: false
-Ignore case in search patterns (:substiute, / and ? commands).  It doesn't
-affect file filtering.
+Ignore case in search patterns (:substiute, / and ? commands) and
+characters after f and F commands.  It doesn't affect file filtering.
 
                                                *vifm-'incsearch'* *vifm-'is'*
 incsearch is

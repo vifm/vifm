@@ -667,6 +667,10 @@ int
 ffind(int ch, int backward, int wrap)
 {
 	int x;
+	int upcase = cfg.ignore_case && !(cfg.smart_case && iswupper(ch));
+
+	if(upcase)
+		ch = towupper(ch);
 
 	x = curr_view->list_pos;
 	do
@@ -696,14 +700,22 @@ ffind(int ch, int backward, int wrap)
 
 		if(ch > 255)
 		{
-			if(get_first_wchar(curr_view->dir_entry[x].name) == ch)
+			wchar_t wc = get_first_wchar(curr_view->dir_entry[x].name);
+			if(upcase)
+				wc = towupper(wc);
+			if(wc == ch)
 				break;
 		}
-		else if(curr_view->dir_entry[x].name[0] == ch)
+		else
 		{
-			break;
+			int c = curr_view->dir_entry[x].name[0];
+			if(upcase)
+				c = towupper(c);
+			if(c == ch)
+				break;
 		}
-	}while(x != curr_view->list_pos);
+	}
+	while(x != curr_view->list_pos);
 
 	return x;
 }

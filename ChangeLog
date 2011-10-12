@@ -38,6 +38,8 @@
 
 	Warn about symbolic links are not available.
 
+	Make 'ignorecase' and 'smartcase' affect f and F.
+
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 
 	Fixed bug with disappearing of number of selected files in visual mode.
