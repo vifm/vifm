@@ -257,7 +257,7 @@ static const struct cmd_add commands[] = {
 		.handler = copy_cmd,        .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "cunmap",           .abbr = "cu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
-	{ .name = "delete",           .abbr = "d",     .emark = 0,  .id = -1,              .range = 1,    .bg = 1, .quote = 0, .regexp = 0,
+	{ .name = "delete",           .abbr = "d",     .emark = 1,  .id = -1,              .range = 1,    .bg = 1, .quote = 0, .regexp = 0,
 		.handler = delete_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 1, },
 	{ .name = "delmarks",         .abbr = "delm",  .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = delmarks_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
@@ -2996,9 +2996,9 @@ delete_cmd(const struct cmd_info *cmd_info)
 		return result;
 
 	if(cmd_info->bg)
-		result = delete_file_bg(curr_view, 1) != 0;
+		result = delete_file_bg(curr_view, !cmd_info->emark) != 0;
 	else
-		result = delete_file(curr_view, reg, 0, NULL, 1) != 0;
+		result = delete_file(curr_view, reg, 0, NULL, !cmd_info->emark) != 0;
 
 	return result;
 }

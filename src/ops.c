@@ -95,7 +95,8 @@ op_remove(void *data, const char *src, const char *dst)
 	if(cfg.confirm && !curr_stats.confirmed)
 	{
 		curr_stats.confirmed = query_user_menu("Permanent deletion",
-				"Are you sure? If you want to see file names use :undolist! command");
+				"Are you sure? If you undoing a command and want to see file names, "
+				"use :undolist! command");
 		if(!curr_stats.confirmed)
 			return SKIP_UNDO_REDO_OPERATION;
 	}

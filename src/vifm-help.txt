@@ -650,11 +650,13 @@ Commands
               corresponding  name  from  the  argument list.  "!" forces over‐
               write.
 
-       :[range]d[elete][ &]
-              delete selected file or files.
+       :[range]d[elete][!][ &]
+              delete selected file or  files.   "!"  means  completely  remove
+              file.
 
-       :[range]d[elete] [reg] [count][ &]
-              will delete files to the reg register.
+       :[range]d[elete][!] [reg] [count][ &]
+              will  delete  files  to  the reg register.  "!" means completely
+              remove file.
 
        :delc[ommand] command_name
               will remove the command_name user command.
@@ -1266,8 +1268,8 @@ Command backgrounding
        confirm cf
               type: boolean
               default: true
-              Ask about permanent deletion  of  files  (on  D  command  or  on
-              undo/redo operation).
+              Ask about permanent deletion of files (on D or :delete!  command
+              or on undo/redo operation).
 
        cpoptions cpo
               type: string

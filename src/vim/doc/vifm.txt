@@ -527,8 +527,10 @@ The builtin commands are:
     "!" forces overwrite.
 
                                                *vifm-:delete* *vifm-:d*
-:[range]d[elete][count][ &] - delete selected file or files.
-:[range]d[elete] [reg] [count][ &] - will delete files to the reg register.
+:[range]d[elete][!][count][ &] - delete selected file or files.  "!" means
+    completely remove file.
+:[range]d[elete][!][reg] [count][ &] - will delete files to the reg register.
+    "!" means completely remove file.
 
                                                *vifm-:delcommand* *vifm-:delc*
 :delc[ommand] user_command - remove user_command.
@@ -1048,7 +1050,8 @@ l key in the :history . menu is treated like :cd command.
 confirm cf
 type: boolean
 default: true
-Ask about permanent deletion of files (on D command or on undo/redo operation).
+Ask about permanent deletion of files (on D or :delete! command or on
+undo/redo operation).
 
                                                *vifm-'cpoptions'* *vifm-'cpo'*
 cpoptions cpo

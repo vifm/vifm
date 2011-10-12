@@ -748,11 +748,11 @@ directory of other view).  "!" forces overwrite.
 copies files to directory of other view giving each next file a corresponding
 name from the argument list.  "!" forces overwrite.
 .TP
-.BI ":[range]d[elete][ &]"
-delete selected file or files.
+.BI ":[range]d[elete][!][ &]"
+delete selected file or files.  "!" means completely remove file.
 .TP
-.BI ":[range]d[elete] [reg] [count][ &]"
-will delete files to the reg register.
+.BI ":[range]d[elete][!] [reg] [count][ &]"
+will delete files to the reg register.  "!" means completely remove file.
 .TP
 .BI ":delc[ommand] command_name"
 will remove the command_name user command.
@@ -1367,7 +1367,8 @@ type: boolean
 .br
 default: true
 .br
-Ask about permanent deletion of files (on D command or on undo/redo operation).
+Ask about permanent deletion of files (on D or :delete! command or on undo/redo
+operation).
 .TP
 .BI "cpoptions cpo"
 type: string

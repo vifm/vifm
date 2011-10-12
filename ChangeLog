@@ -28,6 +28,8 @@
 
 	Added year in the file info dialog (on Ctrl-G).
 
+	Added :delete!.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.
