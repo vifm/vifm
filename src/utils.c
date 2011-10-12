@@ -1317,6 +1317,16 @@ get_mode_str(mode_t mode)
 		return "?";
 }
 
+int
+symlinks_available(void)
+{
+#ifndef _WIN32
+	return 1;
+#else
+	return is_vista_and_above();
+#endif
+}
+
 #ifndef _WIN32
 int
 get_uid(const char *user, uid_t *uid)

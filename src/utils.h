@@ -109,6 +109,7 @@ void strtoupper(char *s);
 const char * enclose_in_dquotes(const char *str);
 void set_term_title(const char *full_path);
 const char *get_mode_str(mode_t mode);
+int symlinks_available(void);
 
 #ifndef _WIN32
 int get_uid(const char *user, uid_t *uid);

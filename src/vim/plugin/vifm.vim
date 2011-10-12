@@ -59,7 +59,7 @@ if exists('$HOME') && !isdirectory('$APPDATA/Vifm')
 elseif exists('$APPDATA')
 	let s:vifm_home = $APPDATA."/Vifm"
 else
-    finish
+	finish
 endif
 
 function! s:StartVifm(editcmd)

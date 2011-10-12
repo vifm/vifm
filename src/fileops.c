@@ -1940,6 +1940,13 @@ change_link(FileView *view)
 {
 	char linkto[PATH_MAX];
 
+	if(!symlinks_available())
+	{
+		(void)show_error_msg("Symbolic Links Error",
+				"Your OS doesn't support symbolic links");
+		return 0;
+	}
+
 	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
 
@@ -3102,6 +3109,13 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	char path[PATH_MAX];
 	int from_file;
 	int from_trash;
+
+	if(!move && type != 0 && !symlinks_available())
+	{
+		(void)show_error_msg("Symbolic Links Error",
+				"Your OS doesn't support symbolic links");
+		return 0;
+	}
 
 	i = cpmv_prepare(view, &list, &nlines, move, type, force, buf, path,
 			&from_file, &from_trash);
