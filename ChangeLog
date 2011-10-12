@@ -26,6 +26,8 @@
 
 	Added 'laststatus' option.
 
+	Added year in the file info dialog (on Ctrl-G).
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

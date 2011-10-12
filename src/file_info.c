@@ -232,21 +232,21 @@ redraw_full_file_properties(FileView *v)
 
 	mvwaddstr(menu_win, curr_y, 2, "Modified: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
-	strftime(buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
+	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
 	wmove(menu_win, curr_y, 13);
 	wprint(menu_win, buf);
 	curr_y += 2;
 
 	mvwaddstr(menu_win, curr_y, 2, "Accessed: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].atime);
-	strftime (buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
+	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
 	wmove(menu_win, curr_y, 13);
 	wprint(menu_win, buf);
 	curr_y += 2;
 
 	mvwaddstr(menu_win, curr_y, 2, "Changed: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].ctime);
-	strftime (buf, sizeof (buf), "%a %b %d %I:%M %p", tm_ptr);
+	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
 	wmove(menu_win, curr_y, 13);
 	wprint(menu_win, buf);
 	curr_y += 2;
