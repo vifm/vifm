@@ -10,7 +10,7 @@
 	<s-tab>, <home>, <end>, <left>, <right>, <up>, <down>, <pageup>,
 	<pagedown>, <del>, <delete>, <m-a>, <m-b>, ..., <m-z>).
 
-	Added :split! to toggle between only and splitted view.
+	Added :split! to toggle between only and split view.
 
 	Added :file <command beginning> to quick run one of associated commands.
 
@@ -18,7 +18,7 @@
 
 	Added g:vifm_exec variable for the plugin.
 
-	Added backgrounding of :copy and :move commands.
+	Added backgrounding of :copy, :move and :delete commands.
 
 	Added Ctrl-n (j) and Ctrl-p (k) keys.
 

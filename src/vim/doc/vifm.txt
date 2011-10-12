@@ -527,8 +527,8 @@ The builtin commands are:
     "!" forces overwrite.
 
                                                *vifm-:delete* *vifm-:d*
-:[range]d[elete][count] - delete selected file or files.
-:[range]d[elete] [reg] [count] - will delete files to the reg register.
+:[range]d[elete][count][ &] - delete selected file or files.
+:[range]d[elete] [reg] [count][ &] - will delete files to the reg register.
 
                                                *vifm-:delcommand* *vifm-:delc*
 :delc[ommand] user_command - remove user_command.
@@ -1020,8 +1020,8 @@ background.
 *vifm-commands-bg*
 
 Copy and move operation can take a lot of time to proceed.  That's why vifm
-supports backgrounding of this two operations.  To run :copy of :move command
-in the background just add " &" at the end of a command.
+supports backgrounding of this two operations.  To run :copy, :move or :delete
+command in the background just add " &" at the end of a command.
 
 For each background operation a new thread will be created.  Currently job
 cannot be stopped or paused.

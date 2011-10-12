@@ -1066,7 +1066,7 @@ progress_msg(const char *text, int ready, int total)
 	show_progress(msg, 1);
 }
 
-
+/* returns string that needs to be released by caller */
 static char *
 gen_trash_name(const char *name)
 {
@@ -1154,7 +1154,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	{
 		(void)show_error_msg("Can't perform deletion",
 				"Current directory is under Trash directory");
-		return 1;
+		return 0;
 	}
 
 	if(count > 0)
@@ -1279,6 +1279,130 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	status_bar_messagef("%d %s deleted", y, y == 1 ? "file" : "files");
 	return 1;
+}
+
+void
+delete_file_bg_i(const char *curr_dir, char **list, int count, int use_trash)
+{
+	int i;
+	for(i = 0; i < count; i++)
+	{
+		char full_buf[PATH_MAX];
+
+		if(strcmp("../", list[i]) == 0)
+			continue;
+
+		snprintf(full_buf, sizeof(full_buf), "%s/%s", curr_dir, list[i]);
+		chosp(full_buf);
+
+		if(use_trash)
+		{
+			if(strcmp(full_buf, cfg.trash_dir) != 0)
+			{
+				char *dest;
+
+				dest = gen_trash_name(list[i]);
+				(void)perform_operation(OP_MOVE, NULL, full_buf, dest);
+				free(dest);
+			}
+		}
+		else
+		{
+			(void)perform_operation(OP_REMOVE, NULL, full_buf, NULL);
+		}
+		inner_bg_next();
+	}
+}
+
+static void *
+delete_file_stub(void *arg)
+{
+	struct bg_args *args = (struct bg_args*)arg;
+
+	add_inner_bg_job(args->job);
+
+	delete_file_bg_i(args->src, args->sel_list, args->sel_list_len,
+			args->from_trash);
+
+	remove_inner_bg_job();
+
+	free_string_array(args->sel_list, args->sel_list_len);
+	free(args);
+	return NULL;
+}
+
+/* returns new value for save_msg */
+int
+delete_file_bg(FileView *view, int use_trash)
+{
+	pthread_t id;
+	char buf[COMMAND_GROUP_INFO_LEN];
+	int i;
+	struct bg_args *args;
+	
+	if(!is_dir_writable(0, view->curr_dir))
+		return 0;
+
+	args = malloc(sizeof(*args));
+	args->from_trash = cfg.use_trash && use_trash;
+
+	if(args->from_trash && path_starts_with(view->curr_dir, cfg.trash_dir))
+	{
+		(void)show_error_msg("Can't perform deletion",
+				"Current directory is under Trash directory");
+		free(args);
+		return 0;
+	}
+
+	args->list = NULL;
+	args->nlines = 0;
+	args->move = 0;
+	args->force = 0;
+
+	get_all_selected_files(view);
+
+	i = view->list_pos;
+	while(i < view->list_rows - 1 && view->dir_entry[i].selected)
+		i++;
+
+	view->list_pos = i;
+
+	args->sel_list = view->selected_filelist;
+	args->sel_list_len = view->selected_files;
+
+	view->selected_filelist = NULL;
+	free_selected_file_array(view);
+	clean_selected_files(view);
+	load_saving_pos(view, 1);
+
+	strcpy(args->src, view->curr_dir);
+
+	if(args->from_trash)
+		snprintf(buf, sizeof(buf), "delete in %s: ",
+				replace_home_part(view->curr_dir));
+	else
+		snprintf(buf, sizeof(buf), "Delete in %s: ",
+				replace_home_part(view->curr_dir));
+
+	get_group_file_list(view->selected_filelist, view->selected_files, buf);
+
+#ifndef _WIN32
+	args->job = add_background_job(-1, buf, -1);
+#else
+	args->job = add_background_job(-1, buf, (HANDLE)-1);
+#endif
+	if(args->job == NULL)
+	{
+		free_string_array(args->sel_list, args->sel_list_len);
+		free(args);
+		return 0;
+	}
+
+	args->job->total = args->sel_list_len;
+	args->job->done = 0;
+
+	pthread_create(&id, NULL, delete_file_stub, args);
+	return 0;
 }
 
 static int
@@ -3195,7 +3319,7 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 }
 
 static void *
-bg_stub(void *arg)
+cpmv_stub(void *arg)
 {
 	struct bg_args *args = (struct bg_args*)arg;
 
@@ -3265,7 +3389,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	args->job->total = args->sel_list_len;
 	args->job->done = 0;
 
-	pthread_create(&id, NULL, bg_stub, args);
+	pthread_create(&id, NULL, cpmv_stub, args);
 	return 0;
 }
 
