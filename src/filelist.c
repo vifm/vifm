@@ -588,7 +588,7 @@ find_file_pos_in_list(FileView *view, const char *file)
 void
 update_view_title(FileView *view)
 {
-	const char *buf;
+	char *buf;
 	size_t len;
 
 	if(view == curr_view)
@@ -640,8 +640,8 @@ update_view_title(FileView *view)
 	else if(len + 1 > view->window_width && curr_view != view)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf, view->window_width - 3 + 1);
-		waddnstr(view->title, buf, len);
-		waddstr(view->title, "...");
+		buf[len] = '\0';
+		wprint(view->title, buf);
 	}
 	else
 	{

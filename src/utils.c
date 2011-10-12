@@ -946,7 +946,7 @@ make_rel_path(const char *path, const char *base)
 	return buf;
 }
 
-const char *
+char *
 replace_home_part(const char *directory)
 {
 	static char buf[PATH_MAX];
