@@ -422,15 +422,15 @@ setup_ncurses_interface(void)
 	werase(lwin.title);
 
 	if(curr_stats.number_of_windows == 1)
-		lwin.win = newwin(screen_y - 2, screen_x - 2, 1, 1);
+		lwin.win = newwin(screen_y - 3, screen_x - 2, 1, 1);
 	else
-		lwin.win = newwin(screen_y - 2, screen_x/2 - 2 + screen_x%2, 1, 1);
+		lwin.win = newwin(screen_y - 3, screen_x/2 - 2 + screen_x%2, 1, 1);
 
 	wbkgdset(lwin.win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR));
 	wattrset(lwin.win, cfg.cs.color[WIN_COLOR].attr);
 	werase(lwin.win);
 	getmaxyx(lwin.win, y, x);
-	lwin.window_rows = y - 1 - cfg.last_status;
+	lwin.window_rows = y - 1;
 	lwin.window_width = x - 1;
 
 	mborder = newwin(screen_y - 1, 2 - screen_x%2, 1,
@@ -467,16 +467,16 @@ setup_ncurses_interface(void)
 	werase(rwin.title);
 
 	if(curr_stats.number_of_windows == 1)
-		rwin.win = newwin(screen_y - 2, screen_x - 2, 1, 1);
+		rwin.win = newwin(screen_y - 3, screen_x - 2, 1, 1);
 	else
-		rwin.win = newwin(screen_y - 2, screen_x/2 - 2 + screen_x%2, 1,
+		rwin.win = newwin(screen_y - 3, screen_x/2 - 2 + screen_x%2, 1,
 				screen_x/2 + 1);
 
 	wbkgdset(rwin.win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR));
 	wattrset(rwin.win, cfg.cs.color[WIN_COLOR].attr);
 	werase(rwin.win);
 	getmaxyx(rwin.win, y, x);
-	rwin.window_rows = y - 1 - cfg.last_status;
+	rwin.window_rows = y - 1;
 	rwin.window_width = x - 1;
 
 	rborder = newwin(screen_y - 2, 1, 1, screen_x - 1);
@@ -590,28 +590,28 @@ resize_all(void)
 	if(curr_stats.number_of_windows == 1)
 	{
 		wresize(lwin.title, 1, screen_x - 2);
-		wresize(lwin.win, screen_y - 2, screen_x - 2);
+		wresize(lwin.win, screen_y - 3 + !cfg.last_status, screen_x - 2);
 		getmaxyx(lwin.win, y, x);
 		mvwin(lwin.win, 1, 1);
 		lwin.window_width = x - 1;
-		lwin.window_rows = y - 1 - cfg.last_status;
+		lwin.window_rows = y - 1;
 
 		wresize(rwin.title, 1, screen_x - 2);
 		mvwin(rwin.title, 0, 1);
-		wresize(rwin.win, screen_y - 2, screen_x - 2);
+		wresize(rwin.win, screen_y - 3 + !cfg.last_status, screen_x - 2);
 		mvwin(rwin.win, 1, 1);
 		getmaxyx(rwin.win, y, x);
 		rwin.window_width = x - 1;
-		rwin.window_rows = y - 1 - cfg.last_status;
+		rwin.window_rows = y - 1;
 	}
 	else
 	{
 		wresize(lwin.title, 1, screen_x/2 - 2 + screen_x%2);
-		wresize(lwin.win, screen_y - 2, screen_x/2 - 2 + screen_x%2);
+		wresize(lwin.win, screen_y - 3 + !cfg.last_status, screen_x/2 - 2 + screen_x%2);
 		mvwin(lwin.win, 1, 1);
 		getmaxyx(lwin.win, y, x);
 		lwin.window_width = x - 1;
-		lwin.window_rows = y - 1 - cfg.last_status;
+		lwin.window_rows = y - 1;
 
 		wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 				cfg.cs.color[BORDER_COLOR].attr);
@@ -626,11 +626,11 @@ resize_all(void)
 		wresize(rwin.title, 1, screen_x/2 - 2 + screen_x%2);
 		mvwin(rwin.title, 0, screen_x/2 + 1);
 
-		wresize(rwin.win, screen_y - 2, screen_x/2 - 2 + screen_x%2);
+		wresize(rwin.win, screen_y - 3 + !cfg.last_status, screen_x/2 - 2 + screen_x%2);
 		mvwin(rwin.win, 1, screen_x/2 + 1);
 		getmaxyx(rwin.win, y, x);
 		rwin.window_width = x - 1;
-		rwin.window_rows = y - 1 - cfg.last_status;
+		rwin.window_rows = y - 1;
 	}
 
 	wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |

@@ -524,11 +524,15 @@ laststatus_handler(enum opt_op op, union optval_t val)
 	{
 		lwin.window_rows--;
 		rwin.window_rows--;
+		wresize(lwin.win, lwin.window_rows + 1, lwin.window_width + 1);
+		wresize(rwin.win, rwin.window_rows + 1, rwin.window_width + 1);
 	}
 	else
 	{
 		lwin.window_rows++;
 		rwin.window_rows++;
+		wresize(lwin.win, lwin.window_rows + 1, lwin.window_width + 1);
+		wresize(rwin.win, rwin.window_rows + 1, rwin.window_width + 1);
 		draw_dir_list(&lwin, lwin.top_line);
 		draw_dir_list(&rwin, rwin.top_line);
 		move_to_list_pos(curr_view, curr_view->list_pos);
