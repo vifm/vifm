@@ -529,6 +529,9 @@ laststatus_handler(enum opt_op op, union optval_t val)
 	{
 		lwin.window_rows++;
 		rwin.window_rows++;
+		draw_dir_list(&lwin, lwin.top_line);
+		draw_dir_list(&rwin, rwin.top_line);
+		move_to_list_pos(curr_view, curr_view->list_pos);
 	}
 	touchwin(lwin.win);
 	touchwin(rwin.win);
