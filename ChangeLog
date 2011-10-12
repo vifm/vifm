@@ -78,6 +78,8 @@
 
 	Fixed pausing on :!! on Windows.
 
+	Fixed completion after //.
+
 0.6.3 to 0.7.0
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.
