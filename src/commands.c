@@ -84,8 +84,8 @@
 #define PAUSE_CMD "vifm-pause"
 #define PAUSE_STR "; "PAUSE_CMD
 #else
-#define PAUSE_CMD "pause"
-#define PAUSE_STR
+#define PAUSE_CMD "vifm-pause"
+#define PAUSE_STR " && pause"
 #endif
 
 enum {
@@ -1844,9 +1844,16 @@ shellout(const char *command, int pause)
 		else
 		{
 			if(pause > 0)
-				snprintf(buf, sizeof(buf), "%s" PAUSE_STR, command);
+			{
+				if(strcmp(cfg.shell, "cmd") == 0)
+					snprintf(buf, sizeof(buf), "%s" PAUSE_STR, command);
+				else
+					snprintf(buf, sizeof(buf), "%s; " PAUSE_CMD, command);
+			}
 			else
+			{
 				snprintf(buf, sizeof(buf), "%s", command);
+			}
 		}
 	}
 	else

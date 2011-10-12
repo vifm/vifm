@@ -44,6 +44,10 @@ Windows Installation:
     In case you want to be able to create symbolic links, you should set a
     "Run as Administrator" attribute for the win_helper.exe.
 
+    If you use *nix shells copy vifm-pause to some directory that is
+    included to the %PATH%.  The better solution is to put it into
+    %HOME%/.vifm/scripts or %APPDATA%/Vifm/scripts.
+
 Vim Specific Options:
 
 	If you use vim, copy the vifm.txt file in the vifm/src/doc directory to 
