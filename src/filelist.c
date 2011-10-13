@@ -475,11 +475,7 @@ get_all_selected_files(FileView *view)
 	int x;
 	int y = 0;
 
-	for(x = 0; x < view->list_rows; x++)
-	{
-		y += view->dir_entry[x].selected;
-	}
-	view->selected_files = y;
+	count_selected(view);
 
 	/* No selected files so just use the current file */
 	if(view->selected_files == 0)

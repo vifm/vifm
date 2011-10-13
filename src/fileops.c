@@ -1171,11 +1171,6 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	}
 	else
 	{
-		if(view->selected_files == 0)
-		{
-			view->dir_entry[view->list_pos].selected = 1;
-			view->selected_files = 1;
-		}
 		get_all_selected_files(view);
 		i = view->list_pos;
 		while(i < view->list_rows - 1 && view->dir_entry[i].selected)
@@ -2488,11 +2483,6 @@ clone_files(FileView *view, char **list, int nlines, int force)
 	int with_dir = 0;
 	int from_file;
 
-	if(view->selected_files == 0)
-	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->selected_files = 1;
-	}
 	if(!have_read_access(view))
 		return 0;
 
@@ -3143,14 +3133,11 @@ static int
 cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 		int force, char *buf, char *path, int *from_file, int *from_trash)
 {
+	int error = 0;
+
 	if(move && !is_dir_writable(0, view->curr_dir))
 		return -1;
 
-	if(view->selected_files == 0)
-	{
-		view->dir_entry[view->list_pos].selected = 1;
-		view->selected_files = 1;
-	}
 	if(move == 0 && type == 0 && !have_read_access(view))
 		return -1;
 
@@ -3179,16 +3166,11 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 
 	if(*nlines > 0 && (!is_name_list_ok(view->selected_files, *nlines, *list) ||
 			(!is_copy_list_ok(path, *nlines, *list) && !force)))
-	{
-		clean_selected_files(view);
-		draw_dir_list(view, view->top_line);
-		move_to_list_pos(view, view->list_pos);
-		if(*from_file)
-			free_string_array(*list, *nlines);
-		return 1;
-	}
-	else if(*nlines == 0 && !force &&
+		error = 1;
+	if(*nlines == 0 && !force &&
 			!is_copy_list_ok(path, view->selected_files, view->selected_filelist))
+		error = 1;
+	if(error)
 	{
 		clean_selected_files(view);
 		draw_dir_list(view, view->top_line);
