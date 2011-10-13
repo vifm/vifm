@@ -377,7 +377,7 @@ my_wcsdup(const wchar_t *ws)
 {
 	wchar_t *result;
 
-	result = (wchar_t *) malloc((wcslen(ws) + 1) * sizeof(wchar_t));
+	result = malloc((wcslen(ws) + 1)*sizeof(wchar_t));
 	if(result == NULL)
 		return NULL;
 	wcscpy(result, ws);
@@ -462,8 +462,8 @@ uchar2str(wchar_t *c, size_t *len)
 			else if(*c >= KEY_F0 + 10 && *c < KEY_F0 + 63)
 			{
 				strcpy(buf, "<f00>");
-				buf[2] += *c/10 - KEY_F0;
-				buf[3] += *c%10 - KEY_F0;
+				buf[2] += (*c - KEY_F0)/10;
+				buf[3] += (*c - KEY_F0)%10;
 			}
 			else
 			{

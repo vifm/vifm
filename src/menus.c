@@ -999,7 +999,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 
 	getmaxyx(menu_win, m.win_rows, len);
 
-	m.title = (char *)malloc((strlen(mode_str) + 21) * sizeof(char));
+	m.title = malloc((strlen(mode_str) + 21)*sizeof(char));
 	sprintf(m.title, " Mappings for %s mode ", mode_str);
 
 	x = 0;
@@ -1009,7 +1009,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 		size_t len;
 		int i, str_len, buf_len;
 
-		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
+		m.data = realloc(m.data, sizeof(char *)*(x + 1));
 
 		str_len = wcslen(list[x]);
 		buf_len = 0;

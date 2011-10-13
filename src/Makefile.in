@@ -228,11 +228,11 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-pkgdata_DATA = vifmrc \
-							 vifm-help.txt
+pkgdata_DATA = ../data/vifmrc \
+							 ../data/vifm-help.txt
 
 bin_SCRIPTS = vifm-pause
-man_MANS = vifm.1
+man_MANS = ../data/vifm.1
 vifm_SOURCES = \
 	background.c background.h \
 	bookmarks.c bookmarks.h \

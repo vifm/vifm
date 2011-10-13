@@ -34,6 +34,8 @@
 
 	Added kind of portable mode on Windows.
 
+	Added support for :substitute command without arguments.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

@@ -678,9 +678,7 @@ list_cmds(int mode)
 	count += builtin_cmds_root[mode].children_count;
 	result = calloc(count + 1, sizeof(*result));
 	if(result == NULL)
-	{
 		return NULL;
-	}
 
 	if(fill_list(&user_cmds_root[mode], 0, result) < 0)
 	{

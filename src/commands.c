@@ -352,7 +352,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "split",            .abbr = "sp",    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = split_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "substitute",       .abbr = "s",     .emark = 0,  .id = COM_SUBSTITUTE,  .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
-		.handler = substitute_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 1, .max_args = 3,       .select = 1, },
+		.handler = substitute_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 0, .max_args = 3,       .select = 1, },
 	{ .name = "sync",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = sync_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "touch",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
@@ -4037,6 +4037,7 @@ static int
 substitute_cmd(const struct cmd_info *cmd_info)
 {
 	static char *last_pattern;
+	static char *last_sub;
 	int ic = 0;
 	int glob = cfg.gdefault;
 
@@ -4056,22 +4057,30 @@ substitute_cmd(const struct cmd_info *cmd_info)
 		}
 	}
 
-	if(cmd_info->argv[0][0] != '\0')
+	if(cmd_info->argc >= 1 && cmd_info->argv[0][0] != '\0')
 	{
 		free(last_pattern);
 		last_pattern = strdup(cmd_info->argv[0]);
 	}
-	else if(last_pattern == NULL)
+
+	if(cmd_info->argc >= 2)
+	{
+		free(last_sub);
+		last_sub = strdup(cmd_info->argv[1]);
+	}
+	else if(cmd_info->argc == 1)
+	{
+		free(last_sub);
+		last_sub = strdup("");
+	}
+
+	if(last_pattern == NULL)
 	{
 		status_bar_error("No previous pattern");
 		return 1;
 	}
 
-	if(cmd_info->argc == 2)
-		return substitute_in_names(curr_view, last_pattern, cmd_info->argv[1], ic,
-				glob) != 0;
-	else
-		return substitute_in_names(curr_view, last_pattern, "", ic, glob) != 0;
+	return substitute_in_names(curr_view, last_pattern, last_sub, ic, glob) != 0;
 }
 
 static int

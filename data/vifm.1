@@ -1125,6 +1125,12 @@ I - don't ignore case (the 'ignorecase' and 'smartcase' options are not used)
 .IP - 2
 g - substitute all matches in each file name (each g toggles this)
 .TP
+.BI :[range]s[ubstitute]//string/[flags]
+will use previous pattern.
+.TP
+.BI :[range]s[ubstitute]
+will repeat previous substitution command.
+.TP
 .BI :sync
 change the other panel to the current panel directory.
 .TP
