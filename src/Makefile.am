@@ -1,13 +1,13 @@
 ## Process this file with automake to produce Makefile.in
 
-pkgdata_DATA = vifmrc \
-							 vifm-help.txt
+pkgdata_DATA = ../data/vifmrc \
+							 ../data/vifm-help.txt
 
 bin_PROGRAMS = vifm vifmrc-converter
 
 bin_SCRIPTS = vifm-pause
 
-man_MANS = vifm.1
+man_MANS = ../data/vifm.1
 
 vifm_SOURCES = \
 	background.c background.h \
