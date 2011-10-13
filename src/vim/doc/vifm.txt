@@ -1312,6 +1312,10 @@ sequences that can be used in place of them.  They are:
 <c-a>,<c-b>,...,<c-z>,<c-[>,<c-\>,<c-]>,<c-^>,<c-_> - Control + some key.
 <m-a>,<m-b>,...,<m-z>,<m-[>,<m-\>,<m-]>,<m-^>,<m-_> - Alt + some key.
 <f0> - <f63> - functional keys
+<c-f1>,...,<c-f12>                             {only for MS-Windows}
+functional keys with Control key pressed.
+<s-f1>,...,<s-f12>                             {only for MS-Windows}
+functional keys with Shift key pressed.
 
 vifm removes whitespace characters at the beginning and end of commands.
 That's why you may want to use <space> at the end of rhs in mappings.  For

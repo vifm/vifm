@@ -30,6 +30,8 @@
 
 	Added :delete!.
 
+	Added <s-f1>, ..., <s-f12>, <c-f1>, ..., <c-f12>, only for Windows.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.
