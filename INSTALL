@@ -49,6 +49,10 @@ Windows Installation:
     included to the %PATH%.  The better solution is to put it into
     %HOME%/.vifm/scripts or %APPDATA%/Vifm/scripts.
 
+    On Windows you can also use vifm in a portable way (e.g. keep it on a
+    removable device).  To do that just put your vifmrc file where vifm.exe
+    is and all configuration files will be stored there.
+
 Vim Specific Options:
 
 	If you use vim, copy the vifm.txt file in the data/vim/doc directory to 

@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@gmail.com>
-" Last Change: 2011 October 6
+" Last Change: 2011 October 13
 
 " vifm and vifm.vim can be found at http://vifm.sf.net
 
@@ -54,12 +54,27 @@ if !exists('g:vifm_term')
 	let g:vifm_term = 'xterm -e'
 endif
 
-if exists('$HOME') && !isdirectory('$APPDATA/Vifm')
-	let s:vifm_home = $HOME."/.vifm"
-elseif exists('$APPDATA')
-	let s:vifm_home = $APPDATA."/Vifm"
-else
-	finish
+if has('win32')
+	if filereadable(g:vifm_exec)
+		let s:vifm_home = fnamemodify(g:vifm_exec, ':p:h')
+	else
+		let s:vifm_home = $PATH
+		let s:vifm_home = substitute(s:vifm_home, ';', ',', 'g').',.'
+		let s:vifm_home = split(globpath(s:vifm_home, g:vifm_exec, 1), '\n')[0]
+	endif
+	if !filereadable(s:vifm_home.'/vifmrc')
+		unlet s:vifm_home
+	endif
+endif
+
+if !exists('s:vifm_home')
+	if exists('$HOME') && !isdirectory('$APPDATA/Vifm')
+		let s:vifm_home = $HOME."/.vifm"
+	elseif exists('$APPDATA')
+		let s:vifm_home = $APPDATA."/Vifm"
+	else
+		finish
+	endif
 endif
 
 function! s:StartVifm(editcmd)

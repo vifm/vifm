@@ -159,14 +159,29 @@ set_config_dir(void)
 	char dir_name[6] = ".vifm";
 	char help_file[PATH_MAX];
 	char rc_file[PATH_MAX];
+#ifdef _WIN32
+	char exe_dir[PATH_MAX];
+#endif
 
 	home_dir = getenv("HOME");
 #ifdef _WIN32
-	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/Vifm", getenv("APPDATA"));
-	if(home_dir == NULL || home_dir[0] == '\0' || is_dir(cfg.home_dir))
+	GetModuleFileNameA(NULL, exe_dir, sizeof(exe_dir));
+	to_forward_slash(exe_dir);
+	*strrchr(exe_dir, '/') = '\0';
+	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/vifmrc", exe_dir);
+	if(access(cfg.home_dir, F_OK) != 0)
 	{
-		home_dir = getenv("APPDATA");
-		strcpy(dir_name, "Vifm");
+		snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/Vifm", getenv("APPDATA"));
+		if(home_dir == NULL || home_dir[0] == '\0' || is_dir(cfg.home_dir))
+		{
+			home_dir = getenv("APPDATA");
+			strcpy(dir_name, "Vifm");
+		}
+	}
+	else
+	{
+		home_dir = exe_dir;
+		dir_name[0] = '\0';
 	}
 #endif
 	if(home_dir == NULL || home_dir[0] == '\0')

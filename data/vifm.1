@@ -1786,9 +1786,9 @@ preserve it for directories, set all execute flags to 'd' and check \
 .SH Configure
 .\" ---------------------------------------------------------------------------
 The default place of all vifm's configuration is at ~/.vifm.  On Windows vifm
-firstly checks ~/.vifm (using HOME environment variable) and if it doesn't
-exist, uses %APPDATA%/Vifm directory.  Configuration directory is mentioned
-as CONFDIR.
+firstly checks directory where vifm.exe for vifmrc file, then ~/.vifm (using
+HOME environment variable) and if previous checks fail uses %APPDATA%/Vifm
+directory.  Vifm configuration directory is mentioned as CONFDIR.
 
 The CONFDIR/vifmrc file contains commands that will be executed on vifm startup.
 Use it to set settings, mappings or filetypes.  To use multi line commands
