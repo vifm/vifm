@@ -55,12 +55,19 @@ if !exists('g:vifm_term')
 endif
 
 if has('win32')
-	if filereadable(g:vifm_exec)
+	if filereadable(g:vifm_exec) || filereadable(g:vifm_exec.'.exe')
 		let s:vifm_home = fnamemodify(g:vifm_exec, ':p:h')
 	else
 		let s:vifm_home = $PATH
 		let s:vifm_home = substitute(s:vifm_home, ';', ',', 'g').',.'
-		let s:vifm_home = split(globpath(s:vifm_home, g:vifm_exec, 1), '\n')[0]
+		let s:lst = globpath(s:vifm_home, g:vifm_exec, 1)
+		let s:lst = split(s:lst, '\n')
+		if empty(s:lst)
+			let s:lst = globpath(s:vifm_home, g:vifm_exec.'.exe', 1)
+			let s:lst = split(s:lst, '\n')
+		endif
+		let s:vifm_home = s:lst[0]
+		unlet s:lst
 	endif
 	if !filereadable(s:vifm_home.'/vifmrc')
 		unlet s:vifm_home
