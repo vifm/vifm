@@ -170,6 +170,8 @@ const char *tags[] = {
 	"vifm-:vn",
 	"vifm-:vnoremap",
 	"vifm-:volume",
+	"vifm-:vsp",
+	"vifm-:vsplit",
 	"vifm-:vu",
 	"vifm-:vunmap",
 	"vifm-:w",

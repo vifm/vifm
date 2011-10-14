@@ -124,6 +124,12 @@ Pane manipulation
        Ctrl-W H
               switch to the left pane.
 
+       Ctrl-W J
+              switch to the pane below.
+
+       Ctrl-W K
+              switch to the pane above.
+
        Ctrl-W L
               switch to the right pane.
 
@@ -134,7 +140,7 @@ Pane manipulation
               shortcut for :split
 
        Ctrl-W V
-              shortcut for :split
+              shortcut for :vsplit
 
        Ctrl-W W
               switch to other pane.
@@ -1522,6 +1528,10 @@ Mappings
               only for MS-Windows
               Functional keys with Control key pressed.
 
+       <a-f1> - <a-f12>
+              only for MS-Windows
+              Functional keys with Alt key pressed.
+
        <s-f1> - <s-f12>
               only for MS-Windows
               Functional keys with Shift key pressed.
@@ -1685,4 +1695,4 @@ AUTHOR
 
 
 
-                               October 13, 2011                        vifm(1)
+                               October 14, 2011                        vifm(1)

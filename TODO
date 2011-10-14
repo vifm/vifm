@@ -33,8 +33,7 @@ Vi(m) specific features that need to be added.
     :map without arguments
     Better ranges.
     Ctrl-A and Ctrl-X commands.
-    Horizontal splitting of views.
-    Ctrl-W-F, Ctrl-W-</>, Ctrl-W-+/- keys, correct Ctrl-W-v/s.
+    Ctrl-W-F, Ctrl-W-</>, Ctrl-W-+/- keys.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?

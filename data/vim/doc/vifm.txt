@@ -99,11 +99,13 @@ Pane manipulation~
 Second character can be entered with or without Control key.
 
 Ctrl-w h - switch to left pane.
+Ctrl-w j - switch to pane below.
+Ctrl-w k - switch to pane above.
 Ctrl-w l - switch to right pane.
 Ctrl-w w - switch to other pane.
 Ctrl-w o - shortcut for :only
 Ctrl-w s - shortcut for :split
-Ctrl-w v - shortcut for :split
+Ctrl-w v - shortcut for :vsplit
 Ctrl-w x - exchange panes
 
 Marks~
@@ -835,10 +837,10 @@ of the hierarchy and transparency for all others.
 :sor[t] - menu of different sorting methods.
 
                                                *vifm-:split* *vifm-:sp*
-:sp[lit] - switch to a two window view.
-:sp[lit]! - toggles windows splitting.
-:sp[lit] path - splits the window to show both file directories.  And
-    changes other pane to path.
+:sp[lit] - switch to a two window horizontal view.
+:sp[lit]! - toggles window horizontal splitting.
+:sp[lit] path - splits the window horizontally to show both file
+    directories.  And changes other pane to path.
 
                                                *vifm-:substitute* *vifm-:s*
 :[range]s[ubstitute]/pattern/string/[flags] - for each file in range
@@ -882,6 +884,12 @@ of the hierarchy and transparency for all others.
                                                {only for MS-Windows}
 :volumes - will popup menu with volume list.  Hitting l (or Enter) key will
     open appropriate volume in the current pane.
+
+                                               *vifm-:vsplit* *vifm-:vsp*
+:vs[plit] - switch to a two window vertical view.
+:vs[plit]! - toggles window vertical splitting.
+:vs[plit] path - splits the window vertically to show both file
+    directories.  And changes other pane to path.
 
                                                *vifm-:write* *vifm-:w*
 :w[rite] - will write vifminfo (add ! to force write even if settings

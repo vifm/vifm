@@ -30,6 +30,7 @@ static void iec_handler(enum opt_op op, union optval_t val);
 static void ignorecase_handler(enum opt_op op, union optval_t val);
 static void incsearch_handler(enum opt_op op, union optval_t val);
 static void laststatus_handler(enum opt_op op, union optval_t val);
+static void scroll_line_down(FileView *view);
 static void runexec_handler(enum opt_op op, union optval_t val);
 static void scrollbind_handler(enum opt_op op, union optval_t val);
 static void scrolloff_handler(enum opt_op op, union optval_t val);
@@ -522,25 +523,26 @@ laststatus_handler(enum opt_op op, union optval_t val)
 	cfg.last_status = val.bool_val;
 	if(cfg.last_status)
 	{
-		lwin.window_rows--;
-		rwin.window_rows--;
-		wresize(lwin.win, lwin.window_rows + 1, lwin.window_width + 1);
-		wresize(rwin.win, rwin.window_rows + 1, rwin.window_width + 1);
+		if(curr_stats.split == VSPLIT)
+			scroll_line_down(&lwin);
+		scroll_line_down(&rwin);
 	}
 	else
 	{
-		lwin.window_rows++;
+		if(curr_stats.split == VSPLIT)
+			lwin.window_rows++;
 		rwin.window_rows++;
 		wresize(lwin.win, lwin.window_rows + 1, lwin.window_width + 1);
 		wresize(rwin.win, rwin.window_rows + 1, rwin.window_width + 1);
 		draw_dir_list(&lwin, lwin.top_line);
 		draw_dir_list(&rwin, rwin.top_line);
-		move_to_list_pos(curr_view, curr_view->list_pos);
 	}
+	move_to_list_pos(curr_view, curr_view->list_pos);
 	touchwin(lwin.win);
 	touchwin(rwin.win);
 	touchwin(lborder);
-	touchwin(mborder);
+	if(curr_stats.split == VSPLIT)
+		touchwin(mborder);
 	touchwin(rborder);
 	wnoutrefresh(lwin.win);
 	wnoutrefresh(rwin.win);
@@ -548,6 +550,19 @@ laststatus_handler(enum opt_op op, union optval_t val)
 	wnoutrefresh(mborder);
 	wnoutrefresh(rborder);
 	doupdate();
+}
+
+static void
+scroll_line_down(FileView *view)
+{
+	view->window_rows--;
+	if(view->list_pos == view->top_line + view->window_rows + 1)
+	{
+		view->top_line++;
+		view->curr_line--;
+		draw_dir_list(view, view->top_line);
+	}
+	wresize(view->win, view->window_rows + 1, view->window_width + 1);
 }
 
 static void

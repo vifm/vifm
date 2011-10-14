@@ -35,6 +35,12 @@
 
 #include "color_scheme.h"
 
+enum Split
+{
+	HSPLIT,
+	VSPLIT,
+};
+
 typedef struct
 {
 	int need_redraw;
@@ -84,6 +90,7 @@ typedef struct
 #endif
 
 	int scroll_bind_off;
+	enum Split split;
 }Status;
 
 extern Status curr_stats;

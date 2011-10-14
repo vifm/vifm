@@ -68,9 +68,12 @@ static void cmd_ctrl_l(struct key_info, struct keys_info *);
 static void cmd_ctrl_o(struct key_info, struct keys_info *);
 static void cmd_ctrl_r(struct key_info, struct keys_info *);
 static void cmd_ctrl_u(struct key_info, struct keys_info *);
-static void cmd_ctrl_wl(struct key_info, struct keys_info *);
 static void cmd_ctrl_wh(struct key_info, struct keys_info *);
+static void cmd_ctrl_wj(struct key_info, struct keys_info *);
+static void cmd_ctrl_wk(struct key_info, struct keys_info *);
+static void cmd_ctrl_wl(struct key_info, struct keys_info *);
 static void cmd_ctrl_wo(struct key_info, struct keys_info *);
+static void cmd_ctrl_ws(struct key_info, struct keys_info *);
 static void cmd_ctrl_wv(struct key_info, struct keys_info *);
 static void cmd_ctrl_ww(struct key_info, struct keys_info *);
 static void cmd_ctrl_wx(struct key_info, struct keys_info *);
@@ -175,12 +178,16 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x15", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
 	{L"\x17\x08", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wh}}},
 	{L"\x17h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wh}}},
+	{L"\x17\x09", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wj}}},
+	{L"\x17j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wj}}},
 	{L"\x17\x0f", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wo}}},
 	{L"\x17o", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wo}}},
+	{L"\x17\x0b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wk}}},
+	{L"\x17k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wk}}},
 	{L"\x17\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wl}}},
 	{L"\x17l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wl}}},
-	{L"\x17\x13", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wv}}},
-	{L"\x17s", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wv}}},
+	{L"\x17\x13", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ws}}},
+	{L"\x17s", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ws}}},
 	{L"\x17\x16", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wv}}},
 	{L"\x17v", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wv}}},
 	{L"\x17\x17", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
@@ -569,16 +576,30 @@ cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_wl(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_wh(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(curr_view->win == lwin.win)
+	if(curr_stats.split == VSPLIT && curr_view->win == rwin.win)
 		change_window();
 }
 
 static void
-cmd_ctrl_wh(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_wj(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(curr_view->win == rwin.win)
+	if(curr_stats.split == HSPLIT && curr_view->win == lwin.win)
+		change_window();
+}
+
+static void
+cmd_ctrl_wk(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(curr_stats.split == HSPLIT && curr_view->win == rwin.win)
+		change_window();
+}
+
+static void
+cmd_ctrl_wl(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(curr_stats.split == VSPLIT && curr_view->win == lwin.win)
 		change_window();
 }
 
@@ -589,11 +610,18 @@ cmd_ctrl_wo(struct key_info key_info, struct keys_info *keys_info)
 	comm_only();
 }
 
-/* To split pane. */
+/* To split pane horizontally. */
+static void
+cmd_ctrl_ws(struct key_info key_info, struct keys_info *keys_info)
+{
+	comm_split(0);
+}
+
+/* To split pane vertically. */
 static void
 cmd_ctrl_wv(struct key_info key_info, struct keys_info *keys_info)
 {
-	comm_split();
+	comm_split(1);
 }
 
 static void

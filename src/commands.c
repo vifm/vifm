@@ -213,6 +213,8 @@ static int vnoremap_cmd(const struct cmd_info *cmd_info);
 #ifdef _WIN32
 static int volumes_cmd(const struct cmd_info *cmd_info);
 #endif
+static int vsplit_cmd(const struct cmd_info *cmd_info);
+static int do_split(const struct cmd_info *cmd_info, int vertical);
 static int do_map(const struct cmd_info *cmd_info, const char *map_type,
 		const char *map_cmd, int mode, int no_remap);
 static int vunmap_cmd(const struct cmd_info *cmd_info);
@@ -377,6 +379,8 @@ static const struct cmd_add commands[] = {
 	{ .name = "volumes",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = volumes_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 #endif
+	{ .name = "vsplit",           .abbr = "vs",    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = vsplit_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "vunmap",           .abbr = "vu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "write",            .abbr = "w",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1878,8 +1882,10 @@ shellout(const char *command, int pause)
 
 	result = WEXITSTATUS(my_system(buf));
 
+#ifndef _WIN32
 	if(result != 0 && pause < 0)
 		my_system(PAUSE_CMD);
+#endif
 
 	/* force views update */
 	memset(&lwin.dir_mtime, 0, sizeof(lwin.dir_mtime));
@@ -2515,11 +2521,13 @@ comm_only(void)
 }
 
 void
-comm_split(void)
+comm_split(int vertical)
 {
-	if(curr_stats.number_of_windows == 2)
+	enum Split orient = vertical ? VSPLIT : HSPLIT;
+	if(curr_stats.number_of_windows == 2 && curr_stats.split == orient)
 		return;
 
+	curr_stats.split = orient;
 	curr_stats.number_of_windows = 2;
 	redraw_window();
 }
@@ -4011,26 +4019,7 @@ sort_cmd(const struct cmd_info *cmd_info)
 static int
 split_cmd(const struct cmd_info *cmd_info)
 {
-	if(cmd_info->emark && cmd_info->argc != 0)
-	{
-		status_bar_error("No arguments are allowed if you use \"!\"");
-		return 1;
-	}
-
-	if(cmd_info->emark)
-	{
-		if(curr_stats.number_of_windows == 1)
-			comm_split();
-		else
-			comm_only();
-	}
-	else
-	{
-		if(cmd_info->argc == 1)
-			cd(other_view, cmd_info->argv[0]);
-		comm_split();
-	}
-	return 0;
+	return do_split(cmd_info, 0);
 }
 
 static int
@@ -4264,6 +4253,37 @@ volumes_cmd(const struct cmd_info *cmd_info)
 	return 0;
 }
 #endif
+
+static int
+vsplit_cmd(const struct cmd_info *cmd_info)
+{
+	return do_split(cmd_info, 1);
+}
+
+static int
+do_split(const struct cmd_info *cmd_info, int vertical)
+{
+	if(cmd_info->emark && cmd_info->argc != 0)
+	{
+		status_bar_error("No arguments are allowed if you use \"!\"");
+		return 1;
+	}
+
+	if(cmd_info->emark)
+	{
+		if(curr_stats.number_of_windows == 1)
+			comm_split(vertical);
+		else
+			comm_only();
+	}
+	else
+	{
+		if(cmd_info->argc == 1)
+			cd(other_view, cmd_info->argv[0]);
+		comm_split(vertical);
+	}
+	return 0;
+}
 
 static int
 vunmap_cmd(const struct cmd_info *cmd_info)

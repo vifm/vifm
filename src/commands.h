@@ -52,7 +52,7 @@ char * expand_macros(FileView *view, const char *command, const char *args,
 		int *menu, int *split);
 void comm_quit(int write_info, int force);
 void comm_only(void);
-void comm_split(void);
+void comm_split(int vertical);
 void save_command_history(const char *command);
 void save_search_history(const char *pattern);
 void save_prompt_history(const char *line);

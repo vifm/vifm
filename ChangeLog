@@ -37,6 +37,11 @@
 
 	Added support for :substitute command without arguments.
 
+	Added horizontal splitting of views (changed :split command, added :vsplit
+	command, changed Ctrl-w s mapping).
+
+	Added Ctrl-w j and Ctrl-w k keys.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

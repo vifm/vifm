@@ -384,6 +384,10 @@ read_info_file(int reread)
 			cfg.show_one_window = (i == 1);
 			curr_stats.number_of_windows = (i == 1) ? 1 : 2;
 		}
+		else if(line[0] == 'o') /* split orientation */
+		{
+			curr_stats.split = (line[1] == 'v') ? VSPLIT : HSPLIT;
+		}
 		else if(line[0] == 'l') /* left pane sort */
 		{
 			get_sort(&lwin, line + 1);
@@ -899,6 +903,7 @@ write_info_file(void)
 		fprintf(fp, "a%c\n", (curr_view == &rwin) ? 'r' : 'l');
 		fprintf(fp, "q%d\n", curr_stats.view);
 		fprintf(fp, "v%d\n", curr_stats.number_of_windows);
+		fprintf(fp, "o%c\n", (curr_stats.split == VSPLIT) ? 'v' : 'h');
 
 		fprintf(fp, "l");
 		i = -1;
