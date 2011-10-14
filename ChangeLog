@@ -30,7 +30,8 @@
 
 	Added :delete!.
 
-	Added <s-f1>, ..., <s-f12>, <c-f1>, ..., <c-f12>, only for Windows.
+	Added <s-f1>, ..., <s-f12>, <a-f1>, ..., <a-f12>, <c-f1>, ..., <c-f12>,
+	only for Windows.
 
 	Added kind of portable mode on Windows.
 

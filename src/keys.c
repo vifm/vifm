@@ -67,7 +67,8 @@ static const wchar_t* get_count(const wchar_t *keys, int *count);
 static struct key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
 static struct key_chunk_t* add_keys_inner(struct key_chunk_t *root,
 		const wchar_t *keys);
-static int fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list);
+static int fill_list(const struct key_chunk_t *curr, size_t len,
+		wchar_t **list);
 
 void
 init_keys(int modes_count, int *key_mode, int *key_mode_flags)
@@ -721,10 +722,10 @@ list_cmds(int mode)
 }
 
 static int
-fill_list(struct key_chunk_t *curr, size_t len, wchar_t **list)
+fill_list(const struct key_chunk_t *curr, size_t len, wchar_t **list)
 {
 	size_t i;
-	struct key_chunk_t *child;
+	const struct key_chunk_t *child;
 	size_t count;
 
 	count = curr->children_count;

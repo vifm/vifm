@@ -447,9 +447,12 @@ uchar2str(wchar_t *c, size_t *len)
 		case KEY_NPAGE:
 			strcpy(buf, "<pagedown>");
 			break;
+		case '\r':
+			strcpy(buf, "<cr>");
+			break;
 
 		default:
-			if(*c == L'\n' || (*c > L' ' && *c < 256))
+			if(*c == '\n' || (*c > L' ' && *c < 256))
 			{
 				buf[0] = *c;
 				buf[1] = '\0';
@@ -458,6 +461,36 @@ uchar2str(wchar_t *c, size_t *len)
 			{
 				strcpy(buf, "<f0>");
 				buf[2] += *c - KEY_F0;
+			}
+			else if(*c >= KEY_F0 + 13 && *c <= KEY_F0 + 21)
+			{
+				strcpy(buf, "<s-f1>");
+				buf[4] += *c - (KEY_F0 + 13);
+			}
+			else if(*c >= KEY_F0 + 22 && *c <= KEY_F0 + 24)
+			{
+				strcpy(buf, "<s-f10>");
+				buf[5] += *c - (KEY_F0 + 22);
+			}
+			else if(*c >= KEY_F0 + 25 && *c <= KEY_F0 + 33)
+			{
+				strcpy(buf, "<c-f1>");
+				buf[4] += *c - (KEY_F0 + 25);
+			}
+			else if(*c >= KEY_F0 + 34 && *c <= KEY_F0 + 36)
+			{
+				strcpy(buf, "<c-f10>");
+				buf[5] += *c - (KEY_F0 + 34);
+			}
+			else if(*c >= KEY_F0 + 37 && *c <= KEY_F0 + 45)
+			{
+				strcpy(buf, "<a-f1>");
+				buf[4] += *c - (KEY_F0 + 37);
+			}
+			else if(*c >= KEY_F0 + 46 && *c <= KEY_F0 + 48)
+			{
+				strcpy(buf, "<a-f10>");
+				buf[5] += *c - (KEY_F0 + 46);
 			}
 			else if(*c >= KEY_F0 + 10 && *c < KEY_F0 + 63)
 			{
@@ -1118,6 +1151,10 @@ strchar2str(const char *str)
 	{
 		memcpy(buf, str, len);
 		buf[len] = '\0';
+	}
+	else if(str[0] == '\r')
+	{
+		strcpy(buf, "<cr>");
 	}
 	else if((unsigned char)str[0] < (unsigned char)' ')
 	{

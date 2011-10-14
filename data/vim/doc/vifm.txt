@@ -1316,6 +1316,8 @@ sequences that can be used in place of them.  They are:
 <f0> - <f63> - functional keys
 <c-f1>,...,<c-f12>                             {only for MS-Windows}
 functional keys with Control key pressed.
+<a-f1>,...,<a-f12>                             {only for MS-Windows}
+functional keys with Alt key pressed.
 <s-f1>,...,<s-f12>                             {only for MS-Windows}
 functional keys with Shift key pressed.
 
