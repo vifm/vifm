@@ -93,7 +93,9 @@
 
 	Fixed pausing on :!! on Windows.
 
-	Fixed completion after //.
+	Fixed completion after // on Windows.
+
+	Fixed quick view of files (printed "Cannot open file" sometimes).
 
 0.6.3 to 0.7.0
 

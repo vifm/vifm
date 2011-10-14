@@ -383,13 +383,16 @@ quick_view_file(FileView *view)
 	int x = 0;
 	int y = 1;
 	char buf[PATH_MAX];
+	char link[PATH_MAX];
 
 	wclear(other_view->win);
 	wclear(other_view->title);
 	mvwaddstr(other_view->title, 0, 0, "File: ");
 	wprint(other_view->title, view->dir_entry[view->list_pos].name);
 
-	strcpy(buf, view->dir_entry[view->list_pos].name);
+	snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
+			view->dir_entry[view->list_pos].name);
+
 	switch(view->dir_entry[view->list_pos].type)
 	{
 		case DEVICE:
@@ -404,12 +407,16 @@ quick_view_file(FileView *view)
 			mvwaddstr(other_view->win, ++x, y, "File is a Named Pipe");
 			break;
 		case LINK:
-			if(get_link_target(view->dir_entry[view->list_pos].name, buf,
-					sizeof(buf)) != 0)
+			if(get_link_target(view->dir_entry[view->list_pos].name, link,
+					sizeof(link)) != 0)
 			{
 				mvwaddstr(other_view->win, ++x, y, "Cannot resolve Link");
 				break;
 			}
+			if(is_path_absolute(link))
+				strcpy(buf, link);
+			else
+				snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, link);
 			/* break intensionally omitted */
 		case UNKNOWN:
 		default:
