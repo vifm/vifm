@@ -46,6 +46,10 @@ if !exists(':TabVifm')
 	command TabVifm :call s:StartVifm('tablast | tab drop')
 endif
 
+function! s:StartVifm(editcmd)
+	echohl WarningMsg | echo 'vifm executable wasn''t found' | echohl None
+endfunction
+
 if !exists('g:vifm_exec')
 	let g:vifm_exec = 'vifm'
 endif
@@ -60,13 +64,17 @@ if has('win32')
 	else
 		let s:vifm_home = $PATH
 		let s:vifm_home = substitute(s:vifm_home, ';', ',', 'g').',.'
-		let s:lst = globpath(s:vifm_home, g:vifm_exec, 1)
-		let s:lst = split(s:lst, '\n')
+		let s:lst_str = globpath(s:vifm_home, g:vifm_exec, 1)
+		let s:lst = split(s:lst_str, '\n')
 		if empty(s:lst)
-			let s:lst = globpath(s:vifm_home, g:vifm_exec.'.exe', 1)
-			let s:lst = split(s:lst, '\n')
+			let s:lst_str = globpath(s:vifm_home, g:vifm_exec.'.exe', 1)
+			let s:lst = split(s:lst_str, '\n')
+		endif
+		if empty(s:lst)
+			finish
 		endif
 		let s:vifm_home = s:lst[0]
+        unlet s:lst_str
 		unlet s:lst
 	endif
 	if !filereadable(s:vifm_home.'/vifmrc')
