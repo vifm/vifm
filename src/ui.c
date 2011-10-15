@@ -62,6 +62,11 @@
 
 static int status_bar_lines;
 
+static WINDOW *ltop_line1;
+static WINDOW *ltop_line2;
+static WINDOW *rtop_line1;
+static WINDOW *rtop_line2;
+
 static void update_attributes(void);
 
 static void _gnuc_noreturn
@@ -439,11 +444,17 @@ setup_ncurses_interface(void)
 			cfg.cs.color[BORDER_COLOR].attr);
 	werase(mborder);
 
-	ltop_line = newwin(1, 1, 0, 0);
-	wbkgdset(ltop_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+	ltop_line1 = newwin(1, 1, 0, 0);
+	wbkgdset(ltop_line1, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
 			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-	wattrset(ltop_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-	werase(ltop_line);
+	wattrset(ltop_line1, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	werase(ltop_line1);
+
+	ltop_line2 = newwin(1, 1, 0, 0);
+	wbkgdset(ltop_line2, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+	wattrset(ltop_line2, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	werase(ltop_line2);
 
 	top_line = newwin(1, 2 - screen_x%2, 0, screen_x/2 - 1 + screen_x%2);
 	wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
@@ -451,11 +462,17 @@ setup_ncurses_interface(void)
 	wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 	werase(top_line);
 
-	rtop_line = newwin(1, 1, 0, screen_x - 1);
-	wbkgdset(rtop_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+	rtop_line1 = newwin(1, 1, 0, screen_x - 1);
+	wbkgdset(rtop_line1, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
 			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-	wattrset(rtop_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-	werase(rtop_line);
+	wattrset(rtop_line1, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	werase(rtop_line1);
+
+	rtop_line2 = newwin(1, 1, 0, screen_x - 1);
+	wbkgdset(rtop_line2, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+	wattrset(rtop_line2, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	werase(rtop_line2);
 
 	if(curr_stats.number_of_windows == 1)
 		rwin.title = newwin(1, screen_x - 2, 0, 1);
@@ -582,12 +599,14 @@ vertical_layout(int screen_x, int screen_y)
 	wresize(mborder, screen_y - 2, splitter_width);
 	mvwin(mborder, 1, splitter_pos);
 
-	mvwin(ltop_line, 0, 0);
+	mvwin(ltop_line1, 0, 0);
+	mvwin(ltop_line2, 0, 0);
 
 	wresize(top_line, 1, splitter_width);
 	mvwin(top_line, 0, splitter_pos);
 
-	mvwin(rtop_line, 0, screen_x - 1);
+	mvwin(rtop_line1, 0, screen_x - 1);
+	mvwin(rtop_line2, 0, screen_x - 1);
 
 	wresize(rwin.title, 1, screen_x - (splitter_pos + splitter_width + 1));
 	mvwin(rwin.title, 0, splitter_pos + splitter_width);
@@ -631,12 +650,14 @@ horizontal_layout(int screen_x, int screen_y)
 	wresize(mborder, 1, screen_x);
 	mvwin(mborder, splitter_pos, 0);
 
-	mvwin(ltop_line, 0, 1);
+	mvwin(ltop_line1, 0, 0);
+	mvwin(ltop_line2, splitter_pos, 0);
 
 	wresize(top_line, 1, 2 - screen_x%2);
 	mvwin(top_line, 0, screen_x/2 - 1 + screen_x%2);
 
-	mvwin(rtop_line, 0, 1);
+	mvwin(rtop_line1, 0, screen_x - 1);
+	mvwin(rtop_line2, splitter_pos, screen_x - 1);
 
 	wresize(lborder, screen_y - 1, 1);
 	mvwin(lborder, 0, 0);
@@ -673,9 +694,11 @@ resize_all(void)
 
 	wclear(stdscr);
 	wclear(mborder);
-	wclear(ltop_line);
+	wclear(ltop_line1);
+	wclear(ltop_line2);
 	wclear(top_line);
-	wclear(rtop_line);
+	wclear(rtop_line1);
+	wclear(rtop_line2);
 	wclear(lwin.title);
 	wclear(lwin.win);
 	wclear(rwin.title);
@@ -707,8 +730,10 @@ resize_all(void)
 		only_layout(&lwin, screen_x, screen_y);
 		only_layout(&rwin, screen_x, screen_y);
 
-		mvwin(ltop_line, 0, 0);
-		mvwin(rtop_line, 0, screen_x - 1);
+		mvwin(ltop_line1, 0, 0);
+		mvwin(ltop_line2, 0, 0);
+		mvwin(rtop_line1, 0, screen_x - 1);
+		mvwin(rtop_line2, 0, screen_x - 1);
 	}
 	else
 	{
@@ -889,14 +914,6 @@ update_all_windows(void)
 	redrawwin(rborder);
 	redrawwin(status_bar);
 
-	touchwin(ltop_line);
-	redrawwin(ltop_line);
-	wnoutrefresh(ltop_line);
-
-	touchwin(rtop_line);
-	redrawwin(rtop_line);
-	wnoutrefresh(rtop_line);
-
 	/* In One window view */
 	if(curr_stats.number_of_windows == 1)
 	{
@@ -919,6 +936,23 @@ update_all_windows(void)
 
 	wnoutrefresh(lborder);
 	wnoutrefresh(rborder);
+
+	touchwin(ltop_line1);
+	redrawwin(ltop_line1);
+	wnoutrefresh(ltop_line1);
+
+	touchwin(ltop_line2);
+	redrawwin(ltop_line2);
+	wnoutrefresh(ltop_line2);
+
+	touchwin(rtop_line1);
+	redrawwin(rtop_line1);
+	wnoutrefresh(rtop_line1);
+
+	touchwin(rtop_line2);
+	redrawwin(rtop_line2);
+	wnoutrefresh(rtop_line2);
+
 	if(cfg.last_status)
 		wnoutrefresh(stat_win);
 	wnoutrefresh(pos_win);
@@ -1045,20 +1079,30 @@ update_attributes(void)
 	wbkgdset(rborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) | attr);
 	werase(rborder);
 
-	wbkgdset(ltop_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+	wbkgdset(ltop_line1, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
 			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-	wattrset(ltop_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-	werase(ltop_line);
+	wattrset(ltop_line1, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	werase(ltop_line1);
+
+	wbkgdset(ltop_line2, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+	wattrset(ltop_line2, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	werase(ltop_line2);
 
 	wbkgdset(top_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
 			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
 	wattrset(top_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
 	werase(top_line);
 
-	wbkgdset(rtop_line, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+	wbkgdset(rtop_line1, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
 			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
-	wattrset(rtop_line, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
-	werase(rtop_line);
+	wattrset(rtop_line1, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	werase(rtop_line1);
+
+	wbkgdset(rtop_line2, COLOR_PAIR(DCOLOR_BASE + TOP_LINE_COLOR) |
+			(cfg.cs.color[TOP_LINE_COLOR].attr & A_REVERSE));
+	wattrset(rtop_line2, cfg.cs.color[TOP_LINE_COLOR].attr & ~A_REVERSE);
+	werase(rtop_line2);
 
 	attr = cfg.cs.color[STATUS_LINE_COLOR].attr;
 	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) | attr);

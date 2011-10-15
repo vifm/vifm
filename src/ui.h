@@ -144,9 +144,7 @@ WINDOW *menu_win;
 WINDOW *sort_win;
 WINDOW *change_win;
 WINDOW *error_win;
-WINDOW *ltop_line;
 WINDOW *top_line;
-WINDOW *rtop_line;
 
 WINDOW *lborder;
 WINDOW *mborder;
