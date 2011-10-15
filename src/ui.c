@@ -579,15 +579,19 @@ vertical_layout(int screen_x, int screen_y)
 	int splitter_width;
 
 	if(curr_stats.splitter_pos < 0)
-		curr_stats.splitter_pos = ((screen_x/2 - 1 + screen_x%2)*100)/screen_x;
+		curr_stats.splitter_pos = 50.;
 
 	splitter_width = 2 - screen_x%2;
-	splitter_pos = (curr_stats.splitter_pos*screen_x)/100;
+	if(curr_stats.splitter_pos == 50.)
+		splitter_pos = screen_x/2 - 1 + screen_x%2;
+	else
+		splitter_pos = (curr_stats.splitter_pos*screen_x)/100;
 	if(splitter_pos < 4)
 		splitter_pos = 4;
 	if(splitter_pos > screen_x - 4 - splitter_width)
 		splitter_pos = screen_x - 4 - splitter_width;
-	if(splitter_pos != (int)(curr_stats.splitter_pos*screen_x)/100)
+	if(curr_stats.splitter_pos != 50. &&
+			splitter_pos != (int)(curr_stats.splitter_pos*screen_x)/100)
 		curr_stats.splitter_pos = (splitter_pos*100)/screen_x;
 
 	wresize(lwin.title, 1, splitter_pos - 1);
