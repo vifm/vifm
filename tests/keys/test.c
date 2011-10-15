@@ -24,6 +24,7 @@ void users_key_to_key(void);
 void pick_longest(void);
 void unmap_tests(void);
 void noremap_tests(void);
+void num_in_the_middle_tests(void);
 
 void all_tests(void)
 {
@@ -46,6 +47,7 @@ void all_tests(void)
 	pick_longest();
 	unmap_tests();
 	noremap_tests();
+	num_in_the_middle_tests();
 }
 
 void my_suite_setup(void)

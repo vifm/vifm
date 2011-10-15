@@ -91,6 +91,7 @@ typedef struct
 
 	int scroll_bind_off;
 	enum Split split;
+	float splitter_pos;
 }Status;
 
 extern Status curr_stats;

@@ -27,6 +27,7 @@ static void keys_k(struct key_info key_info, struct keys_info *keys_info);
 static void keys_s(struct key_info key_info, struct keys_info *keys_info);
 static void keys_i(struct key_info key_info, struct keys_info *keys_info);
 static void keys_if(struct key_info key_info, struct keys_info *keys_info);
+static void keys_dummy(struct key_info key_info, struct keys_info *keys_info);
 static void keys_delete(struct key_info key_info, struct keys_info *keys_info);
 static void keys_delete_selector(struct key_info key_info,
 		struct keys_info *keys_info);
@@ -125,6 +126,10 @@ init_builtin_keys(int *key_mode)
 	curr = add_cmd(L"v", NORMAL_MODE);
 	curr->type = BUILTIN_CMD;
 	curr->data.cmd = wcsdup(L":vsplit");
+
+	curr = add_cmd(L"<", NORMAL_MODE);
+	curr->type = BUILTIN_NIM_KEYS;
+	curr->data.handler = keys_dummy;
 
 	curr = add_cmd(L"d", NORMAL_MODE);
 	curr->type = BUILTIN_WAIT_POINT;
@@ -261,6 +266,11 @@ keys_if(struct key_info key_info, struct keys_info *keys_info)
 		printf("as a selector: ");
 	}
 	printf("(%d)if in register %c\n", key_info.count, key_info.reg);
+}
+
+static void
+keys_dummy(struct key_info key_info, struct keys_info *keys_info)
+{
 }
 
 static void

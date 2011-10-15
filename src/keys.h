@@ -58,6 +58,7 @@ enum KEYS_TYPE
 {
 	BUILTIN_WAIT_POINT, /* infinite wait of next key press */
 	BUILTIN_KEYS,
+	BUILTIN_NIM_KEYS,   /* NIM - number in the middle */
 	BUILTIN_CMD,
 	USER_CMD,
 };

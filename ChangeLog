@@ -42,6 +42,8 @@
 
 	Added Ctrl-w j and Ctrl-w k keys.
 
+    Added Ctrl-w <, Ctrl-w >, Ctrl-w + and Ctrl-w - keys.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

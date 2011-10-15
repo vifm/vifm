@@ -148,6 +148,18 @@ Pane manipulation
        Ctrl-W X
               exchange panes.
 
+       Ctrl-W +
+              increase height of the view by 1 line.
+
+       Ctrl-W -
+              decrease height of the view by 1 line.
+
+       Ctrl-W <
+              increase width of the view by 1 column.
+
+       Ctrl-W >
+              decrease width of the view by 1 column.
+
 Marks
        Marks are set the same way as they are in vi.
               You can use this characters for marks [a-z][A-Z][0-9].
@@ -1695,4 +1707,4 @@ AUTHOR
 
 
 
-                               October 14, 2011                        vifm(1)
+                               October 16, 2011                        vifm(1)

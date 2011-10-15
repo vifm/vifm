@@ -388,6 +388,10 @@ read_info_file(int reread)
 		{
 			curr_stats.split = (line[1] == 'v') ? VSPLIT : HSPLIT;
 		}
+		else if(line[0] == 'm') /* split position */
+		{
+			curr_stats.splitter_pos = atof(line + 1);
+		}
 		else if(line[0] == 'l') /* left pane sort */
 		{
 			get_sort(&lwin, line + 1);
@@ -904,6 +908,7 @@ write_info_file(void)
 		fprintf(fp, "q%d\n", curr_stats.view);
 		fprintf(fp, "v%d\n", curr_stats.number_of_windows);
 		fprintf(fp, "o%c\n", (curr_stats.split == VSPLIT) ? 'v' : 'h');
+		fprintf(fp, "m%f\n", curr_stats.splitter_pos);
 
 		fprintf(fp, "l");
 		i = -1;

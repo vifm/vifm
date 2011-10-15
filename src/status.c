@@ -67,6 +67,7 @@ init_status(void)
 
 	curr_stats.scroll_bind_off = 0;
 	curr_stats.split = VSPLIT;
+	curr_stats.splitter_pos = -1.0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

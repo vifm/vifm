@@ -77,6 +77,12 @@ static void cmd_ctrl_ws(struct key_info, struct keys_info *);
 static void cmd_ctrl_wv(struct key_info, struct keys_info *);
 static void cmd_ctrl_ww(struct key_info, struct keys_info *);
 static void cmd_ctrl_wx(struct key_info, struct keys_info *);
+static void cmd_ctrl_wequal(struct key_info, struct keys_info *);
+static void cmd_ctrl_wless(struct key_info, struct keys_info *);
+static void cmd_ctrl_wgreater(struct key_info, struct keys_info *);
+static void cmd_ctrl_wplus(struct key_info, struct keys_info *);
+static void cmd_ctrl_wminus(struct key_info, struct keys_info *);
+static void move_splitter(struct key_info key_info, int max, int fact);
 static void cmd_ctrl_y(struct key_info, struct keys_info *);
 static void cmd_quote(struct key_info, struct keys_info *);
 static void cmd_percent(struct key_info, struct keys_info *);
@@ -194,6 +200,11 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x17w", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
 	{L"\x17\x18", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wx}}},
 	{L"\x17x", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wx}}},
+	{L"\x17=", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wequal}}},
+	{L"\x17<", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wless}}},
+	{L"\x17>", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wgreater}}},
+	{L"\x17+", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wplus}}},
+	{L"\x17-", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wminus}}},
 	{L"\x19", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
 	/* escape */
 	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
@@ -628,6 +639,68 @@ static void
 cmd_ctrl_ww(struct key_info key_info, struct keys_info *keys_info)
 {
 	change_window();
+}
+
+static void
+cmd_ctrl_wequal(struct key_info key_info, struct keys_info *keys_info)
+{
+	int screen_x = getmaxx(stdscr);
+	curr_stats.splitter_pos = ((screen_x/2 - 1 + screen_x%2)*100)/screen_x;
+	redraw_window();
+}
+
+static void
+cmd_ctrl_wless(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(curr_stats.split != VSPLIT)
+		return;
+
+	move_splitter(key_info, getmaxx(stdscr), (curr_view == &lwin) ? -1 : +1);
+}
+
+static void
+cmd_ctrl_wgreater(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(curr_stats.split != VSPLIT)
+		return;
+
+	move_splitter(key_info, getmaxx(stdscr), (curr_view == &lwin) ? +1 : -1);
+}
+
+static void
+cmd_ctrl_wplus(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(curr_stats.split != HSPLIT)
+		return;
+
+	move_splitter(key_info, getmaxy(stdscr), (curr_view == &lwin) ? +1 : -1);
+}
+
+static void
+cmd_ctrl_wminus(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(curr_stats.split != HSPLIT)
+		return;
+
+	move_splitter(key_info, getmaxy(stdscr), (curr_view == &lwin) ? -1 : +1);
+}
+
+static void
+move_splitter(struct key_info key_info, int max, int fact)
+{
+	float splitter_pos = (curr_stats.splitter_pos*max)/100;
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+
+	if(lwin.window_width == 2)
+		return;
+
+	splitter_pos += fact*key_info.count;
+	if(splitter_pos < 0.)
+		splitter_pos = 0.;
+	curr_stats.splitter_pos = (splitter_pos*100)/max;
+
+	redraw_window();
 }
 
 /* Switch views. */

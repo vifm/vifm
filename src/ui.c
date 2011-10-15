@@ -558,50 +558,78 @@ only_layout(FileView *view, int screen_x, int screen_y)
 static void
 vertical_layout(int screen_x, int screen_y)
 {
-	wresize(lwin.title, 1, screen_x/2 - 2 + screen_x%2);
-	wresize(lwin.win, screen_y - 3 + !cfg.last_status,
-			screen_x/2 - 2 + screen_x%2);
+	int splitter_pos;
+	int splitter_width;
+
+	if(curr_stats.splitter_pos < 0)
+		curr_stats.splitter_pos = ((screen_x/2 - 1 + screen_x%2)*100)/screen_x;
+
+	splitter_width = 2 - screen_x%2;
+	splitter_pos = (curr_stats.splitter_pos*screen_x)/100;
+	if(splitter_pos < 4)
+		splitter_pos = 4;
+	if(splitter_pos > screen_x - 4 - splitter_width)
+		splitter_pos = screen_x - 4 - splitter_width;
+	if(splitter_pos != (int)(curr_stats.splitter_pos*screen_x)/100)
+		curr_stats.splitter_pos = (splitter_pos*100)/screen_x;
+
+	wresize(lwin.title, 1, splitter_pos - 1);
+	wresize(lwin.win, screen_y - 3 + !cfg.last_status, splitter_pos - 1);
 	mvwin(lwin.win, 1, 1);
 
 	wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
-	wresize(mborder, screen_y - 2, 2 - screen_x%2);
-	mvwin(mborder, 1, screen_x/2 - 1 + screen_x%2);
+	wresize(mborder, screen_y - 2, splitter_width);
+	mvwin(mborder, 1, splitter_pos);
 
 	mvwin(ltop_line, 0, 0);
 
-	wresize(top_line, 1, 2 - screen_x%2);
-	mvwin(top_line, 0, screen_x/2 - 1 + screen_x%2);
+	wresize(top_line, 1, splitter_width);
+	mvwin(top_line, 0, splitter_pos);
 
 	mvwin(rtop_line, 0, screen_x - 1);
 
-	wresize(rwin.title, 1, screen_x/2 - 2 + screen_x%2);
-	mvwin(rwin.title, 0, screen_x/2 + 1);
+	wresize(rwin.title, 1, screen_x - (splitter_pos + splitter_width + 1));
+	mvwin(rwin.title, 0, splitter_pos + splitter_width);
 
 	wresize(rwin.win, screen_y - 3 + !cfg.last_status,
-			screen_x/2 - 2 + screen_x%2);
-	mvwin(rwin.win, 1, screen_x/2 + 1);
+			screen_x - (splitter_pos + splitter_width + 1));
+	mvwin(rwin.win, 1, splitter_pos + splitter_width);
 }
 
 static void
 horizontal_layout(int screen_x, int screen_y)
 {
+	int splitter_pos;
+
+	if(curr_stats.splitter_pos < 0)
+		curr_stats.splitter_pos = ((1 + (screen_y - 4)/2 + 1)*100)/screen_y;
+
+	splitter_pos = (curr_stats.splitter_pos*screen_y)/100;
+	if(splitter_pos < 2)
+		splitter_pos = 2;
+	if(splitter_pos > screen_y - 3 - cfg.last_status - 1)
+		splitter_pos = screen_y - 3 - cfg.last_status;
+	if(splitter_pos != (int)(curr_stats.splitter_pos*screen_y)/100)
+		curr_stats.splitter_pos = (splitter_pos*100)/screen_y;
+
 	wresize(lwin.title, 1, screen_x - 2);
 	mvwin(lwin.title, 0, 1);
 
 	wresize(rwin.title, 1, screen_x - 2);
-	mvwin(rwin.title, 1 + (screen_y - 4)/2 + 1, 1);
+	mvwin(rwin.title, splitter_pos, 1);
 
-	wresize(lwin.win, (screen_y - 4)/2 + 1, screen_x - 2);
+	wresize(lwin.win, splitter_pos - 1, screen_x - 2);
 	mvwin(lwin.win, 1, 1);
 
-	wresize(rwin.win, (screen_y - 5)/2 + 1 - cfg.last_status, screen_x - 2);
-	mvwin(rwin.win, 1 + (screen_y - 4)/2 + 2, 1);
+	wresize(rwin.win, screen_y - splitter_pos - 1 - cfg.last_status - 1,
+			screen_x - 2);
+	mvwin(rwin.win, splitter_pos + 1, 1);
 
 	wbkgdset(mborder, COLOR_PAIR(DCOLOR_BASE + BORDER_COLOR) |
 			cfg.cs.color[BORDER_COLOR].attr);
 	wresize(mborder, 1, screen_x);
-	mvwin(mborder, 1 + (screen_y - 4)/2 + 1, 0);
+	mvwin(mborder, splitter_pos, 0);
 
 	mvwin(ltop_line, 0, 1);
 

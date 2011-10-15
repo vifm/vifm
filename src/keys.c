@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <wchar.h> /* swprintf */
+#include <wctype.h> /* iswdigit */
 
 #include "utils.h"
 
@@ -225,9 +226,14 @@ execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
 	while(*keys != L'\0')
 	{
 		struct key_chunk_t *p;
+		int nim = 0;
 		p = curr->child;
 		while(p != NULL && p->key < *keys)
+		{
+			if(p->conf.type == BUILTIN_NIM_KEYS)
+				nim = 1;
 			p = p->next;
+		}
 		if(p == NULL || p->key != *keys)
 		{
 			if(curr == root)
@@ -235,6 +241,21 @@ execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
 
 			if(curr->conf.followed != FOLLOWED_BY_NONE)
 				break;
+
+			while(p != NULL)
+			{
+				if(p->conf.type == BUILTIN_NIM_KEYS)
+					nim = 1;
+				p = p->next;
+			}
+
+			if(nim && iswdigit(*keys))
+			{
+				wchar_t *ptr;
+				key_info.count = wcstol(keys, &ptr, 10);
+				keys = ptr;
+				continue;
+			}
 
 			if(curr->conf.type == BUILTIN_WAIT_POINT)
 				return KEYS_UNKNOWN;
