@@ -709,10 +709,19 @@ cmd_ctrl_wx(struct key_info key_info, struct keys_info *keys_info)
 {
 	FileView tmp_view;
 	WINDOW* tmp;
+	int t;
 
 	tmp = lwin.win;
 	lwin.win = rwin.win;
 	rwin.win = tmp;
+
+	t = lwin.window_rows;
+	lwin.window_rows = rwin.window_rows;
+	rwin.window_rows = t;
+
+	t = lwin.window_width;
+	lwin.window_width = rwin.window_width;
+	rwin.window_width = t;
 
 	tmp = lwin.title;
 	lwin.title = rwin.title;
