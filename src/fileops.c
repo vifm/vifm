@@ -2482,6 +2482,8 @@ clone_files(FileView *view, char **list, int nlines, int force)
 	char path[PATH_MAX];
 	int with_dir = 0;
 	int from_file;
+	char **sel;
+	int sel_len;
 
 	if(!have_read_access(view))
 		return 0;
@@ -2526,15 +2528,24 @@ clone_files(FileView *view, char **list, int nlines, int force)
 		snprintf(buf, sizeof(buf), "clone in %s: ", view->curr_dir);
 	make_undo_string(view, buf, nlines, list);
 
-	cmd_group_begin(buf);
-	for(i = 0; i < view->selected_files; i++)
+	sel_len = view->selected_files;
+	sel = copy_string_array(view->selected_filelist, sel_len);
+	if(!view->user_selection)
 	{
-		progress_msg("Cloning files", i + 1, view->selected_files);
-		clone_file(view, view->selected_filelist[i], path,
-				(nlines > 0) ? list[i] : NULL);
+		for(i = 0; i < view->list_rows; i++)
+			view->dir_entry[i].selected = 0;
+		view->selected_files = 0;
+	}
+
+	cmd_group_begin(buf);
+	for(i = 0; i < sel_len; i++)
+	{
+		progress_msg("Cloning files", i + 1, sel_len);
+		clone_file(view, sel[i], path, (nlines > 0) ? list[i] : NULL);
 	}
 	cmd_group_end();
 	free_selected_file_array(view);
+	free_string_array(sel, sel_len);
 
 	clean_selected_files(view);
 	load_saving_pos(view, 1);
@@ -3215,6 +3226,8 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	char path[PATH_MAX];
 	int from_file;
 	int from_trash;
+	char **sel;
+	int sel_len;
 
 	if(!move && type != 0 && !symlinks_available())
 	{
@@ -3228,11 +3241,20 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	if(i != 0)
 		return i > 0;
 
+	sel_len = view->selected_files;
+	sel = copy_string_array(view->selected_filelist, sel_len);
+	if(!view->user_selection)
+	{
+		for(i = 0; i < view->list_rows; i++)
+			view->dir_entry[i].selected = 0;
+		view->selected_files = 0;
+	}
+
 	cmd_group_begin(buf);
-	for(i = 0; i < view->selected_files; i++)
+	for(i = 0; i < sel_len; i++)
 	{
 		char dst_full[PATH_MAX];
-		const char *dst = (nlines > 0) ? list[i] : view->selected_filelist[i];
+		const char *dst = (nlines > 0) ? list[i] : sel[i];
 		if(from_trash)
 		{
 			while(isdigit(*dst))
@@ -3246,21 +3268,21 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 
 		if(move)
 		{
-			progress_msg("Moving files", i + 1, view->selected_files);
+			progress_msg("Moving files", i + 1, sel_len);
 
-			if(mv_file(view->selected_filelist[i], view->curr_dir, dst, path, 0) != 0)
-				view->list_pos = find_file_pos_in_list(view,
-						view->selected_filelist[i]);
+			if(mv_file(sel[i], view->curr_dir, dst, path, 0) != 0)
+				view->list_pos = find_file_pos_in_list(view, sel[i]);
 		}
 		else
 		{
 			if(type == 0)
-				progress_msg("Copying files", i + 1, view->selected_files);
-			cp_file(view->curr_dir, path, view->selected_filelist[i], dst, type);
+				progress_msg("Copying files", i + 1, sel_len);
+			cp_file(view->curr_dir, path, sel[i], dst, type);
 		}
 	}
 	cmd_group_end();
 
+	free_string_array(sel, sel_len);
 	free_selected_file_array(view);
 	clean_selected_files(view);
 	load_saving_pos(view, 1);

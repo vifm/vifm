@@ -200,6 +200,9 @@ modes_redraw(void)
 
 	redraw_window();
 
+	if(curr_stats.save_msg)
+		status_bar_message(NULL);
+
 	if(mode == SORT_MODE)
 		redraw_sort_dialog();
 	else if(mode == CHANGE_MODE)

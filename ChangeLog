@@ -54,6 +54,9 @@
 
 	Make 'ignorecase' and 'smartcase' affect f and F.
 
+	Don't show current file as selected after executing a :command and
+	resizing terminal while it works.
+
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 
 	Fixed bug with disappearing of number of selected files in visual mode.

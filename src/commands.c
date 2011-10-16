@@ -1137,6 +1137,13 @@ select_range(int id, const struct cmd_info *cmd_info)
 			curr_view->selected_files = y;
 		}
 	}
+	else
+	{
+		return;
+	}
+
+	if(curr_view->selected_files > 0)
+		curr_view->user_selection = 0;
 }
 
 static void

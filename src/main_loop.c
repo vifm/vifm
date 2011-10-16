@@ -69,6 +69,9 @@ main_loop(void)
 
 		is_term_working();
 
+		lwin.user_selection = 1;
+		rwin.user_selection = 1;
+
 		if(curr_stats.too_small_term > 0)
 		{
 			touchwin(stdscr);

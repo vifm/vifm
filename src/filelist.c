@@ -489,6 +489,7 @@ get_all_selected_files(FileView *view)
 	{
 		view->dir_entry[view->list_pos].selected = 1;
 		view->selected_files = 1;
+		view->user_selection = 0;
 	}
 
 	if(view->selected_filelist != NULL)

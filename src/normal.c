@@ -644,7 +644,6 @@ cmd_ctrl_ww(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_wequal(struct key_info key_info, struct keys_info *keys_info)
 {
-	int screen_x = getmaxx(stdscr);
 	curr_stats.splitter_pos = 50.;
 	redraw_window();
 }

@@ -48,7 +48,7 @@ typedef struct
 	int last_char;
 	int is_console;
 	int search;
-	int save_msg;
+	int save_msg; /* zero - don't save, 2 - save after resize, other - save */
 	int use_register;
 	int use_input_bar;
 	int curr_register;
