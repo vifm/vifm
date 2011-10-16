@@ -1021,7 +1021,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 		else
 			buf_len += 1 + 0 + 1;
 
-		m.data[x] = (char *)malloc(buf_len + MAP_WIDTH);
+		m.data[x] = malloc(buf_len + MAP_WIDTH);
 		m.data[x][0] = '\0';
 		for(i = 0; i < str_len; i += len)
 			strcat(m.data[x], uchar2str(list[x] + i, &len));

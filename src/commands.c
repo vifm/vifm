@@ -2000,8 +2000,9 @@ static wchar_t *
 substitute_specs(const char *cmd)
 {
 	wchar_t *buf, *p;
+	size_t len = strlen(cmd) + 1;
 
-	buf = malloc((strlen(cmd) + 1)*sizeof(wchar_t));
+	buf = malloc(len*sizeof(wchar_t));
 	if(buf == NULL)
 		return NULL;
 
@@ -2022,6 +2023,7 @@ substitute_specs(const char *cmd)
 		}
 	}
 	*p = L'\0';
+	assert(p + 1 - buf <= len);
 
 	return buf;
 }

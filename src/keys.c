@@ -482,9 +482,10 @@ get_count(const wchar_t *keys, int *count)
 {
 	if((mode_flags[*mode] & MF_USES_COUNT) == 0)
 	{
+		*count = NO_COUNT_GIVEN;
 		return keys;
 	}
-	if(keys[0] != L'0' && isdigit(keys[0]))
+	if(keys[0] != L'0' && iswdigit(keys[0]))
 	{
 		*count = wcstof(keys, (wchar_t**)&keys);
 	}
@@ -653,12 +654,11 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 		{
 			struct key_chunk_t *c = malloc(sizeof(*c));
 			if(c == NULL)
-			{
 				return NULL;
-			}
 			c->key = *keys;
 			c->conf.type = (keys[1] == L'\0') ? BUILTIN_KEYS : BUILTIN_WAIT_POINT;
 			c->conf.data.handler = NULL;
+			c->conf.data.cmd = NULL;
 			c->conf.followed = FOLLOWED_BY_NONE;
 			c->prev = prev;
 			c->next = p;
@@ -670,6 +670,8 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 				curr->child = c;
 			else
 				prev->next = c;
+			if(p != NULL)
+				p->prev = c;
 
 			if(keys[1] == L'\0')
 			{
