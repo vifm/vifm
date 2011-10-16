@@ -82,6 +82,7 @@ static void cmd_ctrl_wless(struct key_info, struct keys_info *);
 static void cmd_ctrl_wgreater(struct key_info, struct keys_info *);
 static void cmd_ctrl_wplus(struct key_info, struct keys_info *);
 static void cmd_ctrl_wminus(struct key_info, struct keys_info *);
+static void cmd_ctrl_wpipe(struct key_info, struct keys_info *);
 static void move_splitter(struct key_info key_info, int max, float pos,
 		int fact);
 static void cmd_ctrl_y(struct key_info, struct keys_info *);
@@ -206,6 +207,8 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x17>", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wgreater}}},
 	{L"\x17+", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wplus}}},
 	{L"\x17-", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wminus}}},
+	{L"\x17|", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wpipe}}},
+	{L"\x17_", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wpipe}}},
 	{L"\x19", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
 	/* escape */
 	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
@@ -694,6 +697,17 @@ cmd_ctrl_wminus(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+cmd_ctrl_wpipe(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(curr_stats.split == HSPLIT)
+		move_splitter(key_info, getmaxy(stdscr),
+				(curr_view == &lwin) ? getmaxy(stdscr) : 0, 0);
+	else
+		move_splitter(key_info, getmaxx(stdscr),
+				(curr_view == &lwin) ? getmaxx(stdscr) : 0, 0);
+}
+
+static void
 move_splitter(struct key_info key_info, int max, float pos, int fact)
 {
 	int p;
@@ -707,7 +721,7 @@ move_splitter(struct key_info key_info, int max, float pos, int fact)
 		pos += fact*key_info.count;
 		curr_stats.splitter_pos = (pos*100)/max;
 	}
-	while((int)get_splitter_pos(max) == p);
+	while((int)get_splitter_pos(max) == p && fact != 0);
 
 	redraw_window();
 }

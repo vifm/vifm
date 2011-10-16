@@ -149,16 +149,22 @@ Pane manipulation
               exchange panes.
 
        Ctrl-W +
-              increase height of the view by 1 line.
+              increase size of the view.
 
        Ctrl-W -
-              decrease height of the view by 1 line.
+              decrease size of the view.
 
        Ctrl-W <
-              increase width of the view by 1 column.
+              increase size of the view.
 
        Ctrl-W >
-              decrease width of the view by 1 column.
+              decrease size of the view.
+
+       Ctrl-W |
+              maximize current view.
+
+       Ctrl-W _
+              maximize current view.
 
 Marks
        Marks are set the same way as they are in vi.
