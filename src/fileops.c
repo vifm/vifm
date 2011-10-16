@@ -1064,6 +1064,7 @@ progress_msg(const char *text, int ready, int total)
 
 	sprintf(msg, "%s %d/%d", text, ready, total);
 	show_progress(msg, 1);
+	curr_stats.save_msg = 2;
 }
 
 /* returns string that needs to be released by caller */

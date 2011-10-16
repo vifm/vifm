@@ -57,6 +57,8 @@
 	Don't show current file as selected after executing a :command and
 	resizing terminal while it works.
 
+	Show progress message (e.g. on :copy) after terminal is resized.
+
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 
 	Fixed bug with disappearing of number of selected files in visual mode.
