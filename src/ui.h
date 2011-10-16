@@ -154,6 +154,7 @@ WINDOW *rborder;
 void is_term_working(void);
 int setup_ncurses_interface(void);
 void update_stat_window(FileView *view);
+float get_splitter_pos(int max);
 void redraw_window(void);
 void update_pos_window(FileView *view);
 void status_bar_messagef(const char *format, ...);
