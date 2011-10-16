@@ -42,7 +42,7 @@
 
 	Added Ctrl-w j and Ctrl-w k keys.
 
-    Added Ctrl-w <, Ctrl-w >, Ctrl-w + and Ctrl-w - keys.
+	Added Ctrl-w <, Ctrl-w >, Ctrl-w + and Ctrl-w - keys.
 
 	Make macros expand to paths with forward slashes on Windows.
 
@@ -58,6 +58,8 @@
 	resizing terminal while it works.
 
 	Show progress message (e.g. on :copy) after terminal is resized.
+
+	Don't use position in the view on ' key, when 'autochpos' is off.
 
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 

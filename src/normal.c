@@ -1124,6 +1124,7 @@ cmd_quote(struct key_info key_info, struct keys_info *keys_info)
 	else
 	{
 		curr_stats.save_msg = get_bookmark(curr_view, key_info.multi);
+		move_to_list_pos(curr_view, 0);
 	}
 }
 
