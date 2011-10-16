@@ -978,6 +978,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 		else
 		{
 			exec_program(buf);
+			redraw_window();
 		}
 #endif
 	}
