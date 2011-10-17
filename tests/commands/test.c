@@ -15,6 +15,7 @@ static int complete_args(int id, const char *args, int argc, char **argv,
 static int swap_range(void);
 static int resolve_mark(char mark);
 static char * expand_macros(const char *str, int *usr1, int *usr2);
+static char * expand_envvars(const char *str);
 static void post(int id);
 static void select_range(int id, const struct cmd_info *cmd_info);
 
@@ -31,6 +32,7 @@ struct cmds_conf cmds_conf = {
 	.swap_range = swap_range,
 	.resolve_mark = resolve_mark,
 	.expand_macros = expand_macros,
+	.expand_envvars = expand_envvars,
 	.post = post,
 	.select_range = select_range,
 };
@@ -82,6 +84,12 @@ resolve_mark(char mark)
 
 static char *
 expand_macros(const char *str, int *usr1, int *usr2)
+{
+	return strdup(str);
+}
+
+static char *
+expand_envvars(const char *str)
 {
 	return strdup(str);
 }
