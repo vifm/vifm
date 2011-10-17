@@ -2537,6 +2537,14 @@ comm_split(int vertical)
 	if(curr_stats.number_of_windows == 2 && curr_stats.split == orient)
 		return;
 
+	if(curr_stats.number_of_windows == 2)
+	{
+		if(orient == VSPLIT)
+			curr_stats.splitter_pos *= (float)getmaxx(stdscr)/getmaxy(stdscr);
+		else
+			curr_stats.splitter_pos *= (float)getmaxy(stdscr)/getmaxx(stdscr);
+	}
+
 	curr_stats.split = orient;
 	curr_stats.number_of_windows = 2;
 	redraw_window();

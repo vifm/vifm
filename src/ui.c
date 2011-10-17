@@ -579,20 +579,17 @@ vertical_layout(int screen_x, int screen_y)
 	int splitter_width;
 
 	if(curr_stats.splitter_pos < 0)
-		curr_stats.splitter_pos = 50.;
-
-	splitter_width = 2 - screen_x%2;
-	if(curr_stats.splitter_pos == 50.)
 		splitter_pos = screen_x/2 - 1 + screen_x%2;
 	else
-		splitter_pos = (curr_stats.splitter_pos*screen_x)/100;
+		splitter_pos = curr_stats.splitter_pos;
+
+	splitter_width = 2 - screen_x%2;
 	if(splitter_pos < 4)
 		splitter_pos = 4;
 	if(splitter_pos > screen_x - 4 - splitter_width)
 		splitter_pos = screen_x - 4 - splitter_width;
-	if(curr_stats.splitter_pos != 50. &&
-			splitter_pos != (int)(curr_stats.splitter_pos*screen_x)/100)
-		curr_stats.splitter_pos = (splitter_pos*100)/screen_x;
+	if(curr_stats.splitter_pos >= 0)
+		curr_stats.splitter_pos = splitter_pos;
 
 	wresize(lwin.title, 1, splitter_pos - 1);
 	wresize(lwin.win, screen_y - 3 + !cfg.last_status, splitter_pos - 1);
@@ -642,15 +639,15 @@ horizontal_layout(int screen_x, int screen_y)
 	int splitter_pos;
 
 	if(curr_stats.splitter_pos < 0)
-		curr_stats.splitter_pos = ((1 + (screen_y - 4)/2 + 1)*100)/screen_y;
-
-	splitter_pos = (curr_stats.splitter_pos*screen_y)/100;
+		splitter_pos = screen_y/2 - 1;
+	else
+		splitter_pos = curr_stats.splitter_pos;
 	if(splitter_pos < 2)
 		splitter_pos = 2;
 	if(splitter_pos > screen_y - 3 - cfg.last_status - 1)
 		splitter_pos = screen_y - 3 - cfg.last_status;
-	if(splitter_pos != (int)(curr_stats.splitter_pos*screen_y)/100)
-		curr_stats.splitter_pos = (splitter_pos*100)/screen_y;
+	if(curr_stats.splitter_pos >= 0)
+		curr_stats.splitter_pos = splitter_pos;
 
 	wresize(lwin.title, 1, screen_x - 2);
 	mvwin(lwin.title, 0, 1);
@@ -689,6 +686,7 @@ horizontal_layout(int screen_x, int screen_y)
 static void
 resize_all(void)
 {
+	static float prev_x = -1.f, prev_y = -1.f;
 	int screen_x, screen_y;
 #ifndef _WIN32
 	struct winsize ws;
@@ -711,6 +709,23 @@ resize_all(void)
 		curr_stats.too_small_term = -1;
 		return;
 	}
+
+	if(prev_x < 0)
+	{
+		prev_x = screen_x;
+		prev_y = screen_y;
+	}
+
+	if(curr_stats.splitter_pos >= 0)
+	{
+		if(curr_stats.split == HSPLIT)
+			curr_stats.splitter_pos *= screen_y/prev_y;
+		else
+			curr_stats.splitter_pos *= screen_x/prev_x;
+	}
+
+	prev_x = screen_x;
+	prev_y = screen_y;
 
 	wclear(stdscr);
 	wclear(mborder);

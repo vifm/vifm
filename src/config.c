@@ -908,7 +908,7 @@ write_info_file(void)
 		fprintf(fp, "q%d\n", curr_stats.view);
 		fprintf(fp, "v%d\n", curr_stats.number_of_windows);
 		fprintf(fp, "o%c\n", (curr_stats.split == VSPLIT) ? 'v' : 'h');
-		fprintf(fp, "m%f\n", curr_stats.splitter_pos);
+		fprintf(fp, "m%d\n", curr_stats.splitter_pos);
 
 		fprintf(fp, "l");
 		i = -1;

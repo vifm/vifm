@@ -648,7 +648,7 @@ cmd_ctrl_ww(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_wequal(struct key_info key_info, struct keys_info *keys_info)
 {
-	curr_stats.splitter_pos = 50.;
+	curr_stats.splitter_pos = -1;
 	redraw_window();
 }
 
@@ -710,19 +710,17 @@ cmd_ctrl_wpipe(struct key_info key_info, struct keys_info *keys_info)
 static void
 move_splitter(struct key_info key_info, int max, float pos, int fact)
 {
-	int p;
-
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 
-	p = get_splitter_pos(max);
-	do
+	if(curr_stats.splitter_pos < 0)
 	{
-		pos += fact*key_info.count;
-		curr_stats.splitter_pos = (pos*100)/max;
+		if(curr_stats.split == VSPLIT)
+			curr_stats.splitter_pos = getmaxx(stdscr)/2 - 1 + getmaxx(stdscr)%2;
+		else
+			curr_stats.splitter_pos = getmaxy(stdscr)/2 - 1;
 	}
-	while((int)get_splitter_pos(max) == p && fact != 0);
-
+	curr_stats.splitter_pos += fact*key_info.count;
 	redraw_window();
 }
 
