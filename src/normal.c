@@ -83,8 +83,7 @@ static void cmd_ctrl_wgreater(struct key_info, struct keys_info *);
 static void cmd_ctrl_wplus(struct key_info, struct keys_info *);
 static void cmd_ctrl_wminus(struct key_info, struct keys_info *);
 static void cmd_ctrl_wpipe(struct key_info, struct keys_info *);
-static void move_splitter(struct key_info key_info, int max, float pos,
-		int fact);
+static void move_splitter(struct key_info key_info, int fact);
 static void cmd_ctrl_y(struct key_info, struct keys_info *);
 static void cmd_quote(struct key_info, struct keys_info *);
 static void cmd_percent(struct key_info, struct keys_info *);
@@ -656,59 +655,50 @@ static void
 cmd_ctrl_wless(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_stats.split == VSPLIT)
-		move_splitter(key_info, getmaxx(stdscr), getbegx(mborder),
-				(curr_view == &lwin) ? -1 : +1);
+		move_splitter(key_info, (curr_view == &lwin) ? -1 : +1);
 	else
-		move_splitter(key_info, getmaxy(stdscr), getbegy(mborder),
-				(curr_view == &lwin) ? -1 : +1);
+		move_splitter(key_info, (curr_view == &lwin) ? -1 : +1);
 }
 
 static void
 cmd_ctrl_wgreater(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_stats.split == VSPLIT)
-		move_splitter(key_info, getmaxx(stdscr), getbegx(mborder),
-				(curr_view == &lwin) ? +1 : -1);
+		move_splitter(key_info, (curr_view == &lwin) ? +1 : -1);
 	else
-		move_splitter(key_info, getmaxy(stdscr), getbegy(mborder),
-				(curr_view == &lwin) ? +1 : -1);
+		move_splitter(key_info, (curr_view == &lwin) ? +1 : -1);
 }
 
 static void
 cmd_ctrl_wplus(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_stats.split == HSPLIT)
-		move_splitter(key_info, getmaxy(stdscr), getbegy(mborder),
-				(curr_view == &lwin) ? +1 : -1);
+		move_splitter(key_info, (curr_view == &lwin) ? +1 : -1);
 	else
-		move_splitter(key_info, getmaxx(stdscr), getbegx(mborder),
-				(curr_view == &lwin) ? +1 : -1);
+		move_splitter(key_info, (curr_view == &lwin) ? +1 : -1);
 }
 
 static void
 cmd_ctrl_wminus(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_stats.split == HSPLIT)
-		move_splitter(key_info, getmaxy(stdscr), getbegy(mborder),
-				(curr_view == &lwin) ? -1 : +1);
+		move_splitter(key_info, (curr_view == &lwin) ? -1 : +1);
 	else
-		move_splitter(key_info, getmaxx(stdscr), getbegx(mborder),
-				(curr_view == &lwin) ? -1 : +1);
+		move_splitter(key_info, (curr_view == &lwin) ? -1 : +1);
 }
 
 static void
 cmd_ctrl_wpipe(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_stats.split == HSPLIT)
-		move_splitter(key_info, getmaxy(stdscr),
-				(curr_view == &lwin) ? getmaxy(stdscr) : 0, 0);
+		key_info.count = getmaxy(stdscr);
 	else
-		move_splitter(key_info, getmaxx(stdscr),
-				(curr_view == &lwin) ? getmaxx(stdscr) : 0, 0);
+		key_info.count = getmaxx(stdscr);
+	move_splitter(key_info, (curr_view == &lwin) ? +1 : -1);
 }
 
 static void
-move_splitter(struct key_info key_info, int max, float pos, int fact)
+move_splitter(struct key_info key_info, int fact)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
@@ -721,6 +711,8 @@ move_splitter(struct key_info key_info, int max, float pos, int fact)
 			curr_stats.splitter_pos = getmaxy(stdscr)/2 - 1;
 	}
 	curr_stats.splitter_pos += fact*key_info.count;
+	if(curr_stats.splitter_pos < 0)
+		curr_stats.splitter_pos = 0;
 	redraw_window();
 }
 
