@@ -129,6 +129,7 @@ init_cmds(int udf, struct cmds_conf *conf)
 		assert(conf->swap_range != NULL);
 		assert(conf->resolve_mark != NULL);
 		assert(conf->expand_macros != NULL);
+		assert(conf->expand_envvars != NULL);
 		assert(conf->post != NULL);
 		assert(conf->select_range != NULL);
 		conf->inner = calloc(1, sizeof(struct inner));
@@ -228,10 +229,22 @@ execute_cmd(const char *cmd)
 		cc->select_range(cur->id, &cmd_info);
 
 	if(cur->expand)
-		cmd_info.args = cc->expand_macros(cmd_info.raw_args, &cmd_info.usr1,
-				&cmd_info.usr2);
+	{
+		char *p = NULL;
+		if(cur->expand & 1)
+			cmd_info.args = cc->expand_macros(cmd_info.raw_args, &cmd_info.usr1,
+					&cmd_info.usr2);
+		if(cur->expand & 2)
+		{
+			p = cmd_info.args;
+			cmd_info.args = cc->expand_envvars(p ? p : cmd_info.raw_args);
+		}
+		free(p);
+	}
 	else
+	{
 		cmd_info.args = strdup(cmd_info.raw_args);
+	}
 	cmd_info.argv = dispatch_line(cmd_info.args, &cmd_info.argc, cmd_info.sep,
 			cur->regexp, cur->quote, NULL, &last_end);
 	cmd_info.args[last_end] = '\0';

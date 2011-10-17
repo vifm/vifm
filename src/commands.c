@@ -116,6 +116,7 @@ static int complete_args(int id, const char *args, int argc, char **argv,
 static int swap_range(void);
 static int resolve_mark(char mark);
 static char * cmds_expand_macros(const char *str, int *use_menu, int *split);
+static char * cmds_expand_envvars(const char *str);
 static void post(int id);
 #ifndef TEST
 static
@@ -128,6 +129,7 @@ static int complete_chown(const char *str);
 static void complete_filetype(const char *str);
 static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
+static void complete_envvar(const char *str);
 static int is_entry_dir(const struct dirent *d);
 static int is_entry_exec(const struct dirent *d);
 static void split_path(void);
@@ -236,7 +238,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = apropos_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "cd",               .abbr = NULL,    .emark = 1,  .id = COM_CD,          .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
-		.handler = cd_cmd,          .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
+		.handler = cd_cmd,          .qmark = 0,      .expand = 3, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "change",           .abbr = "c",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = change_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 #ifndef _WIN32
@@ -328,7 +330,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "popd",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = popd_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "pushd",            .abbr = NULL,    .emark = 1,  .id = COM_PUSHD,       .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
-		.handler = pushd_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
+		.handler = pushd_cmd,       .qmark = 0,      .expand = 2, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "pwd",              .abbr = "pw",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = pwd_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "quit",             .abbr = "q",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -401,6 +403,7 @@ static struct cmds_conf cmds_conf = {
 	.swap_range = swap_range,
 	.resolve_mark = resolve_mark,
 	.expand_macros = cmds_expand_macros,
+	.expand_envvars = cmds_expand_envvars,
 	.post = post,
 	.select_range = select_range,
 };
@@ -427,6 +430,8 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 {
 	const char *arg;
 	const char *start;
+	const char *slash;
+	const char *dollar;
 
 	arg = strrchr(args, ' ');
 	if(arg == NULL)
@@ -435,6 +440,8 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		arg++;
 
 	start = arg;
+	dollar = strrchr(arg, '$');
+	slash = strrchr(args + arg_pos, '/');
 
 	if(id == COM_COLORSCHEME)
 		complete_colorschemes((argc > 0) ? argv[argc - 1] : arg);
@@ -455,9 +462,15 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		else
 			start += complete_highlight_arg(arg);
 	}
+	else if((id == COM_CD || id == COM_PUSHD || id == COM_EXECUTE) &&
+			dollar != NULL && dollar > slash)
+	{
+		start = dollar + 1;
+		complete_envvar(start);
+	}
 	else
 	{
-		start = strrchr(args + arg_pos, '/');
+		start = slash;
 		if(start == NULL)
 			start = args + arg_pos;
 		else
@@ -621,6 +634,10 @@ filename_completion(const char *str, int type)
 		filename = strdup(string);
 	}
 
+	temp = cmds_expand_envvars(dirname);
+	free(dirname);
+	dirname = temp;
+
 	temp = strrchr(dirname, '/');
 	if(temp && type != FNC_FILE_WOE)
 	{
@@ -684,10 +701,10 @@ filename_completion(const char *str, int type)
 			isdir = 1;
 		}
 		else if(strcmp(dirname, "."))
-		{
+  	{
 			char * tempfile = (char *)NULL;
 			int len = strlen(dirname) + strlen(d->d_name) + 1;
-			tempfile = (char *)malloc((len) * sizeof(char));
+			tempfile = malloc(len*sizeof(char));
 			if(!tempfile)
 			{
 				closedir(dir);
@@ -996,6 +1013,29 @@ complete_highlight_arg(const char *str)
 	return result;
 }
 
+static void
+complete_envvar(const char *str)
+{
+	extern char **environ;
+	char **p = environ;
+	size_t len = strlen(str);
+
+	while(*p != NULL)
+	{
+		if(strncmp(*p, str, len) == 0)
+		{
+			char *equal = strchr(*p, '=');
+			*equal = '\0';
+			add_completion(*p);
+			*equal = '=';
+		}
+		p++;
+	}
+
+	completion_group_end();
+	add_completion(str);
+}
+
 static int
 is_entry_dir(const struct dirent *d)
 {
@@ -1065,6 +1105,46 @@ cmds_expand_macros(const char *str, int *use_menu, int *split)
 		result = expand_macros(curr_view, str, NULL, use_menu, split);
 	else
 		result = strdup(str);
+	return result;
+}
+
+static char *
+cmds_expand_envvars(const char *str)
+{
+	char *result = NULL;
+	size_t len = 0;
+	while(*str != '\0')
+	{
+		if(*str == '$' && isalpha(str[1]))
+		{
+			char name[NAME_MAX];
+			const char *p = str + 1;
+			char *q = name;
+			while((isalnum(*p) || *p == '_') && q - name < sizeof(name) - 1)
+				*q++ = *p++;
+			*q = '\0';
+
+			q = getenv(name);
+			if(q != NULL)
+			{
+				size_t old_len = len;
+				len += strlen(q);
+				result = realloc(result, len + 1);
+				strcpy(result + old_len, q);
+				str = p;
+			}
+			else
+			{
+				str++;
+			}
+		}
+		else
+		{
+			result = realloc(result, len + 1 + 1);
+			result[len++] = *str++;
+			result[len] = '\0';
+		}
+	}
 	return result;
 }
 
@@ -2536,6 +2616,14 @@ comm_split(int vertical)
 	enum Split orient = vertical ? VSPLIT : HSPLIT;
 	if(curr_stats.number_of_windows == 2 && curr_stats.split == orient)
 		return;
+
+	if(curr_stats.number_of_windows == 2)
+	{
+		if(orient == VSPLIT)
+			curr_stats.splitter_pos *= (float)getmaxx(stdscr)/getmaxy(stdscr);
+		else
+			curr_stats.splitter_pos *= (float)getmaxy(stdscr)/getmaxx(stdscr);
+	}
 
 	curr_stats.split = orient;
 	curr_stats.number_of_windows = 2;

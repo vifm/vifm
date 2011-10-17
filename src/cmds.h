@@ -74,7 +74,7 @@ struct cmd_add
 	int cust_sep; /* custom separator of arguments */
 	int emark, qmark;
 	int min_args, max_args;
-	int expand; /* expand macros */
+	int expand; /* 1 - expand macros, 2 - expand envvars, 3 - expand both */
 	int regexp;
 	int select; /* select files in range */
 	int bg; /* background */
@@ -94,6 +94,8 @@ struct cmds_conf {
 	int (*resolve_mark)(char mark); /* should return value < 0 on error */
 	/* should allocate memory */
 	char *(*expand_macros)(const char *str, int *usr1, int *usr2);
+	/* should allocate memory */
+	char *(*expand_envvars)(const char *str);
 	void (*post)(int id); /* called after successful processing command */
 	void (*select_range)(int id, const struct cmd_info *cmd_info);
 };

@@ -461,7 +461,7 @@ The builtin commands are:
 :apropos - repeats last :apropos command.
 
                                                *vifm-:cd*
-:cd - change to your home directory.
+:cd or :cd ~ or :cd $HOME - change to your home directory.
 :cd - - go to previous directory.
 :cd ~/dir - change directory to ~/dir.
 :cd /curr/dir /other/dir - change directory of the current pane to /curr/dir
@@ -1060,7 +1060,8 @@ When disabled vifm will set cursor to the first line in the view after :cd and
 :pushd commands instead of saved cursor position.  Disabling this will also
 make vifm clear information about cursor position in the view history on :cd
 and :pushd commands (and on startup if autochpos is disabled in the vifmrc).
-l key in the :history . menu is treated like :cd command.
+l key in the :history . menu is treated like :cd command.  This option affects
+bookmarks, file position will not preserved.
 
                                                *vifm-'confirm'* *vifm-'cf'*
 confirm cf

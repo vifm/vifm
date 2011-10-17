@@ -1,4 +1,4 @@
-.TH vifm 1 "October 16, 2011" "" "Vifm"
+.TH vifm 1 "October 17, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -662,7 +662,7 @@ in the menu will open the corresponding manpage.
 .BI :apropos
 repeats last :apropos command.
 .TP
-.BI :cd
+.BI ":cd or :cd ~ or :cd $HOME"
 change to your home directory.
 .TP
 .BI ":cd -"
@@ -1390,7 +1390,8 @@ When disabled vifm will set cursor to the first line in the view after :cd and
 :pushd commands instead of saved cursor position.  Disabling this will also
 make vifm clear information about cursor position in the view history on :cd
 and :pushd commands (and on startup if autochpos is disabled in the vifmrc).
-l key in the :history . menu is treated like :cd command.
+l key in the :history . menu is treated like :cd command.  This option affects
+bookmarks, file position will not preserved.
 .TP
 .BI "confirm cf"
 type: boolean

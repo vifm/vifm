@@ -46,6 +46,10 @@
 
 	Added Ctrl-w | and Ctrl-w _ keys.
 
+	Added completion of environment variables (:cd, :pushd, :! and :!!).
+
+	Added support for using environment variables as :cd or :pushd arguments.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.
