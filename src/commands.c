@@ -1128,9 +1128,11 @@ cmds_expand_envvars(const char *str)
 			if(q != NULL)
 			{
 				size_t old_len = len;
+				q = escape_filename(q, 1);
 				len += strlen(q);
 				result = realloc(result, len + 1);
 				strcpy(result + old_len, q);
+				free(q);
 				str = p;
 			}
 			else
