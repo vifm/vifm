@@ -2619,7 +2619,7 @@ comm_split(int vertical)
 	if(curr_stats.number_of_windows == 2 && curr_stats.split == orient)
 		return;
 
-	if(curr_stats.number_of_windows == 2)
+	if(curr_stats.number_of_windows == 2 && curr_stats.splitter_pos > 0)
 	{
 		if(orient == VSPLIT)
 			curr_stats.splitter_pos *= (float)getmaxx(stdscr)/getmaxy(stdscr);
