@@ -2176,8 +2176,10 @@ put_next(const char *dest_name, int override)
 				return 0;
 		}
 
+#ifndef _WIN32
 		memset(&put_confirm.view->dir_mtime, 0,
 				sizeof(put_confirm.view->dir_mtime));
+#endif
 	}
 
 	if(put_confirm.link)

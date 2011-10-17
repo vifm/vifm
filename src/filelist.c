@@ -1363,26 +1363,49 @@ try_unmount_fuse(FileView *view)
 
 #ifdef _WIN32
 static int
-get_dir_mtime(const char *path, FILETIME *ft)
+check_dir_changed(FileView *view)
 {
 	char buf[PATH_MAX];
 	HANDLE hfile;
+	FILETIME ft;
+	int r;
 
-	snprintf(buf, sizeof(buf), "%s/.", path);
+	if(strcmp(view->watched_dir, view->curr_dir) != 0)
+	{
+		FindCloseChangeNotification(view->dir_watcher);
+		strcpy(view->watched_dir, view->curr_dir);
+		view->dir_watcher = FindFirstChangeNotificationA(view->curr_dir, 1,
+				FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME |
+				FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_SIZE |
+				FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_SECURITY);
+		if(view->dir_watcher == NULL || view->dir_watcher == INVALID_HANDLE_VALUE)
+			log_msg("ha%s", "d");
+	}
+ 
+	if(WaitForSingleObject(view->dir_watcher, 0) == WAIT_OBJECT_0)
+	{
+		FindNextChangeNotification(view->dir_watcher);
+		return 1;
+	}
+
+	snprintf(buf, sizeof(buf), "%s/.", view->curr_dir);
 
 	hfile = CreateFileA(buf, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
 			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
 	if(hfile == INVALID_HANDLE_VALUE)
 		return -1;
 
-	if(!GetFileTime(hfile, NULL, NULL, ft))
+	if(!GetFileTime(hfile, NULL, NULL, &ft))
 	{
 		CloseHandle(hfile);
 		return -1;
 	}
 	CloseHandle(hfile);
 
-	return 0;
+	r = CompareFileTime(&view->dir_mtime, &ft);
+	view->dir_mtime = ft;
+
+	return r != 0;
 }
 #endif
 
@@ -1397,7 +1420,7 @@ update_dir_mtime(FileView *view)
 	view->dir_mtime = s.st_mtime;
 	return 0;
 #else
-	return get_dir_mtime(view->curr_dir, &view->dir_mtime);
+	return check_dir_changed(view);
 #endif
 }
 
@@ -2338,10 +2361,11 @@ check_if_filelists_have_changed(FileView *view)
 	struct stat s;
 	if(stat(view->curr_dir, &s) != 0)
 #else
-	FILETIME ft;
+	int r;
 	if(is_unc_root(view->curr_dir))
 		return;
-	if(get_dir_mtime(view->curr_dir, &ft) != 0)
+	r = check_dir_changed(view);
+	if(r < 0)
 #endif
 	{
 		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
@@ -2360,7 +2384,7 @@ check_if_filelists_have_changed(FileView *view)
 #ifndef _WIN32
 	if(s.st_mtime != view->dir_mtime)
 #else
-	if(CompareFileTime(&ft, &view->dir_mtime) != 0)
+	if(r > 0)
 #endif
 		reload_window(view);
 }

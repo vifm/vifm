@@ -96,6 +96,8 @@ typedef struct _FileView
 	time_t dir_mtime;
 #else
 	FILETIME dir_mtime;
+	HANDLE dir_watcher;
+	char watched_dir[PATH_MAX];
 #endif
 	char last_dir[PATH_MAX];
 

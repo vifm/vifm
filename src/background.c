@@ -317,6 +317,7 @@ background_and_wait_for_status(char *cmd)
 #endif
 }
 
+#ifndef _WIN32
 static void
 error_msg(const char *title, const char *text)
 {
@@ -331,6 +332,7 @@ error_msg(const char *title, const char *text)
 		job->error = strdup(text);
 	}
 }
+#endif
 
 int
 background_and_wait_for_errors(char *cmd)

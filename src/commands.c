@@ -1975,11 +1975,11 @@ shellout(const char *command, int pause)
 #ifndef _WIN32
 	if(result != 0 && pause < 0)
 		my_system(PAUSE_CMD);
-#endif
 
 	/* force views update */
 	memset(&lwin.dir_mtime, 0, sizeof(lwin.dir_mtime));
 	memset(&rwin.dir_mtime, 0, sizeof(rwin.dir_mtime));
+#endif
 
 	/* always redraw to handle resizing of terminal */
 	if(!curr_stats.auto_redraws)

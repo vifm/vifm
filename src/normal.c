@@ -1146,7 +1146,8 @@ cmd_quote(struct key_info key_info, struct keys_info *keys_info)
 	else
 	{
 		curr_stats.save_msg = get_bookmark(curr_view, key_info.multi);
-		move_to_list_pos(curr_view, 0);
+		if(!cfg.auto_ch_pos)
+			move_to_list_pos(curr_view, 0);
 	}
 }
 
@@ -2005,7 +2006,9 @@ pick_files(FileView *view, int end, struct keys_info *keys_info)
 
 	if(end < view->list_pos)
 	{
+#ifndef _WIN32
 		memset(&view->dir_mtime, 0, sizeof(view->dir_mtime));
+#endif
 		view->list_pos = end;
 	}
 }

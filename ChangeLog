@@ -67,6 +67,8 @@
 
 	Don't use position in the view on ' key, when 'autochpos' is off.
 
+	Better check if directory was changed on Windows.
+
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 
 	Fixed bug with disappearing of number of selected files in visual mode.
