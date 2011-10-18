@@ -19,6 +19,8 @@
 
 #include <curses.h>
 
+#include <pthread.h>
+
 #include <assert.h>
 #include <string.h>
 #include <wctype.h> /* wtoupper */
@@ -49,6 +51,11 @@
 #include "visual.h"
 
 #include "normal.h"
+
+struct dir_size {
+	char *path;
+	int force;
+};
 
 static int *mode;
 static int last_fast_search_char;
@@ -127,6 +134,8 @@ static void delete_with_selector(struct key_info, struct keys_info *,
 static void cmd_f(struct key_info, struct keys_info *);
 static void cmd_gA(struct key_info, struct keys_info *);
 static void cmd_ga(struct key_info, struct keys_info *);
+static void start_dir_size_calc(const char *path, int force);
+static void * dir_size_stub(void *arg);
 static void cmd_gf(struct key_info, struct keys_info *);
 static void cmd_gg(struct key_info, struct keys_info *);
 #ifdef _WIN32
@@ -891,14 +900,9 @@ cmd_gA(struct key_info key_info, struct keys_info *keys_info)
 	if(curr_view->dir_entry[curr_view->list_pos].type != DIRECTORY)
 		return;
 
-	status_bar_message("Calculating directory size...");
-	wrefresh(status_bar);
-
 	snprintf(full_path, sizeof(full_path), "%s/%s", curr_view->curr_dir,
 			curr_view->dir_entry[curr_view->list_pos].name);
-	calc_dirsize(full_path, 1);
-
-	redraw_lists();
+	start_dir_size_calc(full_path, 1);
 }
 
 static void
@@ -909,14 +913,40 @@ cmd_ga(struct key_info key_info, struct keys_info *keys_info)
 	if(curr_view->dir_entry[curr_view->list_pos].type != DIRECTORY)
 		return;
 
-	status_bar_message("Calculating directory size...");
-	wrefresh(status_bar);
-
 	snprintf(full_path, sizeof(full_path), "%s/%s", curr_view->curr_dir,
 			curr_view->dir_entry[curr_view->list_pos].name);
-	calc_dirsize(full_path, 0);
+	start_dir_size_calc(full_path, 0);
+}
 
-	redraw_lists();
+static void
+start_dir_size_calc(const char *path, int force)
+{
+	pthread_t id;
+	struct dir_size *dir_size;
+
+	dir_size = malloc(sizeof(*dir_size));
+	dir_size->path = strdup(path);
+	dir_size->force = force;
+
+	pthread_create(&id, NULL, dir_size_stub, dir_size);
+}
+
+static void *
+dir_size_stub(void *arg)
+{
+	struct dir_size * dir_size = (struct dir_size *)arg;
+	calc_dirsize(dir_size->path, dir_size->force);
+
+	chosp(dir_size->path);
+	*strrchr(dir_size->path, '/') = '\0';
+	if(path_starts_with(lwin.curr_dir, dir_size->path))
+		memset(&lwin.dir_mtime, 0, sizeof(lwin.dir_mtime));
+	if(path_starts_with(rwin.curr_dir, dir_size->path))
+		memset(&rwin.dir_mtime, 0, sizeof(rwin.dir_mtime));
+
+	free(dir_size->path);
+	free(dir_size);
+	return NULL;
 }
 
 static void

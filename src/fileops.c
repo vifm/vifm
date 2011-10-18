@@ -2559,6 +2559,16 @@ clone_files(FileView *view, char **list, int nlines, int force)
 	return 0;
 }
 
+static void
+set_dir_size(const char *path, unsigned long long size)
+{
+	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+	pthread_mutex_lock(&mutex);
+	tree_set_data(curr_stats.dirsize_cache, path, size);
+	pthread_mutex_unlock(&mutex);
+}
+
 unsigned long long
 calc_dirsize(const char *path, int force_update)
 {
@@ -2607,7 +2617,7 @@ calc_dirsize(const char *path, int force_update)
 
 	closedir(dir);
 
-	tree_set_data(curr_stats.dirsize_cache, path, size);
+	set_dir_size(path, size);
 	return size;
 }
 

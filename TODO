@@ -4,7 +4,6 @@ Basic things that need to be done.
     Show background commands presence in the TUI.
 	Fix window resizing (I think it's almost done).
 	Handle commands that are too long to be passed directly to the shell.
-	Make ga and gA work in background.
     Perform operations using system calls, not programs.  This is much faster.
     Show operation progress.
     Better cW command (maybe accept count of extensions to skip).
