@@ -385,6 +385,9 @@ quick_view_file(FileView *view)
 	char buf[PATH_MAX];
 	char link[PATH_MAX];
 
+	if(curr_stats.number_of_windows == 1)
+		return;
+
 	wclear(other_view->win);
 	wclear(other_view->title);
 	mvwaddstr(other_view->title, 0, 0, "File: ");
