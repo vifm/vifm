@@ -1147,6 +1147,8 @@ cmds_expand_envvars(const char *str)
 			result[len] = '\0';
 		}
 	}
+	if(result == NULL)
+		result = strdup("");
 	return result;
 }
 
