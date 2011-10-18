@@ -1423,7 +1423,24 @@ update_dir_mtime(FileView *view)
 	view->dir_mtime = s.st_mtime;
 	return 0;
 #else
-	return check_dir_changed(view);
+	char buf[PATH_MAX];
+	HANDLE hfile;
+
+	snprintf(buf, sizeof(buf), "%s/.", view->curr_dir);
+
+	hfile = CreateFileA(buf, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+	if(hfile == INVALID_HANDLE_VALUE)
+		return -1;
+
+	if(!GetFileTime(hfile, NULL, NULL, &view->dir_mtime))
+	{
+		CloseHandle(hfile);
+		return -1;
+	}
+	CloseHandle(hfile);
+
+	return 0;
 #endif
 }
 
