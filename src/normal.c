@@ -155,6 +155,7 @@ static void cmd_n(struct key_info, struct keys_info *);
 static void search(struct key_info, int backward);
 static void cmd_l(struct key_info, struct keys_info *);
 static void cmd_p(struct key_info, struct keys_info *);
+static void put_files(struct key_info key_info, int move);
 static void cmd_m(struct key_info, struct keys_info *);
 static void cmd_rl(struct key_info, struct keys_info *);
 static void cmd_t(struct key_info, struct keys_info *);
@@ -1129,9 +1130,7 @@ cmd_N(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_P(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(key_info.reg == NO_REG_GIVEN)
-		key_info.reg = DEFAULT_REG_NAME;
-	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg, 1);
+	put_files(key_info, 1);
 }
 
 /* Visual selection of files. */
@@ -1557,9 +1556,15 @@ search(struct key_info key_info, int backward)
 static void
 cmd_p(struct key_info key_info, struct keys_info *keys_info)
 {
+	put_files(key_info, 0);
+}
+
+static void
+put_files(struct key_info key_info, int move)
+{
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
-	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg, 0);
+	curr_stats.save_msg = put_files_from_register(curr_view, key_info.reg, move);
 	load_saving_pos(&lwin, 1);
 	load_saving_pos(&rwin, 1);
 }
