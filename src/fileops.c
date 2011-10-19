@@ -1509,14 +1509,21 @@ rename_file(FileView *view, int name_only)
 
 	chosp(buf);
 
-	if(!name_only || (p = strchr(buf, '.')) == NULL)
+	if(!name_only || (p = strrchr(buf, '.')) == NULL)
 	{
 		rename_file_ext[0] = '\0';
 	}
 	else
 	{
-		strcpy(rename_file_ext, p);
+		char *e;
 		*p = '\0';
+		if((e = strrchr(buf, '.')) != NULL && strcmp(e + 1, "tar") == 0)
+		{
+			*p = '.';
+			p = e;
+		}
+		*p = '\0';
+		strcpy(rename_file_ext, p + 1);
 	}
 
 	clean_selected_files(view);
@@ -2361,13 +2368,31 @@ clone_file(FileView* view, const char *filename, const char *path,
 	{
 		int i;
 		size_t len;
+		char *ext;
 
 		snprintf(clone_name, sizeof(clone_name), "%s/%s", path, filename);
 		chosp(clone_name);
+
+		strcpy(full, filename);
+		if((ext = strrchr(full, '.')) != NULL)
+		{
+			char *e;
+			*ext = '\0';
+			if((e = strrchr(full, '.')) != NULL && strcmp(e + 1, "tar") == 0)
+			{
+				*ext = '.';
+				ext = e;
+			}
+			*ext++ = '\0';
+			clone_name[strlen(clone_name) - strlen(ext) - 1] = '\0';
+		}
+
 		i = 1;
 		len = strlen(clone_name);
-		while(access(clone_name, F_OK) == 0)
-			snprintf(clone_name + len, sizeof(clone_name) - len, "(%d)", i++);
+		do
+			snprintf(clone_name + len, sizeof(clone_name) - len, "(%d)%s%s", i++,
+					(ext == NULL) ? "" : ".", (ext == NULL) ? "" : ext);
+		while(access(clone_name, F_OK) == 0);
 	}
 	else
 	{

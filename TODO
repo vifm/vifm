@@ -6,7 +6,6 @@ Basic things that need to be done.
 	Handle commands that are too long to be passed directly to the shell.
     Perform operations using system calls, not programs.  This is much faster.
     Show operation progress.
-    Better cW command (maybe accept count of extensions to skip).
     Better globals support.
     Maybe remove 'trash' option, since we have two commands for deletion.
     Templates for :touch.
