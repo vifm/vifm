@@ -1218,7 +1218,13 @@ show_bookmarks_menu(FileView *view, const char *marks)
 		j = active_bookmarks[x];
 		with_tilde = replace_home_part(bookmarks[j].directory);
 		overhead = get_utf8_overhead(with_tilde);
-		if(!strcmp(bookmarks[j].file, "..") || !strcmp(bookmarks[j].file, "../"))
+		if(!is_bookmark(j))
+		{
+			snprintf(buf, sizeof(buf), "%c   %-*s%s", index2mark(j),
+					max_len + overhead, with_tilde, "[invalid]");
+		}
+		else if(!strcmp(bookmarks[j].file, "..") ||
+				!strcmp(bookmarks[j].file, "../"))
 		{
 			snprintf(buf, sizeof(buf), "%c   %-*s%s", index2mark(j),
 					max_len + overhead, with_tilde, "[none]");
