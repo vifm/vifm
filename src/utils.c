@@ -105,6 +105,27 @@ is_dir(const char *file)
 #endif
 }
 
+int
+file_exists(const char *file)
+{
+#ifndef _WIN32
+	return access(file, F_X);
+#else
+	DWORD attr;
+
+	if(is_path_absolute(file) && !is_unc_path(file))
+	{
+		char buf[] = {file[0], ':', '\\'};
+		UINT type = GetDriveTypeA(buf);
+		if(type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR)
+			return 0;
+	}
+
+	attr = GetFileAttributesA(file);
+	return (attr != INVALID_FILE_ATTRIBUTES);
+#endif
+}
+
 /*
  * Escape the filename for the purpose of inserting it into the shell.
  *
@@ -272,6 +293,7 @@ get_normal_utf8_string_length(const char *string)
 size_t
 get_normal_utf8_string_widthn(const char *string, size_t max)
 {
+#ifndef _WIN32
 	size_t length = 0;
 	while(*string != '\0' && max-- > 0)
 	{
@@ -283,6 +305,9 @@ get_normal_utf8_string_widthn(const char *string, size_t max)
 		string += char_width;
 	}
 	return length;
+#else
+	return MIN(strlen(string), max);
+#endif
 }
 
 /* returns count of bytes excluding incomplete utf8 characters */

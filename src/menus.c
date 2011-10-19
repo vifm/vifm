@@ -1207,16 +1207,18 @@ show_bookmarks_menu(FileView *view, const char *marks)
 			max_len = len;
 		x++;
 	}
-	max_len += 3;
+	max_len = MIN(max_len + 3, getmaxx(menu_win) - 5 - 2 - 10);
 
 	x = 0;
 	while(x < m.len)
 	{
-		const char *with_tilde;
+		char *with_tilde;
 		int overhead;
 
 		j = active_bookmarks[x];
 		with_tilde = replace_home_part(bookmarks[j].directory);
+		if(strlen(with_tilde) > max_len - 3)
+			strcpy(with_tilde + max_len - 6, "...");
 		overhead = get_utf8_overhead(with_tilde);
 		if(!is_bookmark(j))
 		{
@@ -1235,8 +1237,8 @@ show_bookmarks_menu(FileView *view, const char *marks)
 					max_len + overhead, with_tilde, bookmarks[j].file);
 		}
 
-		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
-		m.data[x] = (char *)malloc(sizeof(buf) + 2);
+		m.data = realloc(m.data, sizeof(char *) * (x + 1));
+		m.data[x] = malloc(sizeof(buf) + 2);
 		snprintf(m.data[x], sizeof(buf), "%s", buf);
 
 		x++;
