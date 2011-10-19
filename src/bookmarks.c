@@ -91,14 +91,20 @@ index2mark(const int x)
 int
 is_bookmark(const int x)
 {
-	/* the bookmark is valid if the file and the directory exists.
-	 * (i know, checking both is a bit paranoid, one should be enough.) */
-	if(bookmarks[x].directory == NULL || bookmarks[x].file == NULL)
+	/* the bookmark is valid if the file and the directory exists */
+	if(is_bookmark_empty(x))
 		return 0;
 	else if(is_dir(bookmarks[x].directory))
 		return 1;
 	else
 		return 0;
+}
+
+int
+is_bookmark_empty(const int x)
+{
+	/* (i know, checking both is a bit paranoid, one should be enough.) */
+	return bookmarks[x].directory == NULL || bookmarks[x].file == NULL;
 }
 
 int
@@ -253,7 +259,7 @@ init_active_bookmarks(const char *marks)
 	i = 0;
 	for(x = 0; x < NUM_BOOKMARKS; ++x)
 	{
-		if(!is_bookmark(x))
+		if(is_bookmark_empty(x))
 			continue;
 		if(strchr(marks, index2mark(x)) == NULL)
 			continue;

@@ -54,6 +54,7 @@ int active_bookmarks[NUM_BOOKMARKS];
 int mark2index(const char mark);
 char index2mark(const int x);
 int is_bookmark(const int x);
+int is_bookmark_empty(const int x);
 int is_spec_bookmark(const int x);
 int add_bookmark(const char mark, const char *directory, const char *file);
 void set_specmark(const char mark, const char *directory, const char *file);

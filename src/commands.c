@@ -4018,7 +4018,7 @@ restart_cmd(const struct cmd_info *cmd_info)
 	while(*p != '\0')
 	{
 		int index = mark2index(*p++);
-		if(is_bookmark(index))
+		if(!is_bookmark_empty(index))
 			remove_bookmark(index);
 	}
 

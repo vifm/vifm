@@ -715,7 +715,7 @@ write_info_file(void)
 					{
 						if(strchr(valid_bookmarks, line[1]) == NULL)
 							continue;
-						if(is_bookmark(mark2index(line[1])))
+						if(!is_bookmark_empty(mark2index(line[1])))
 							continue;
 						prepare_line(line3);
 						nmarks = add_to_string_array(&marks, nmarks, 3, line + 1, line2,
