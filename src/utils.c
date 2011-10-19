@@ -85,6 +85,14 @@ is_dir(const char *file)
 #else
 	DWORD attr;
 
+	if(is_path_absolute(file) && !is_unc_path(file))
+	{
+		char buf[] = {file[0], ':', '\\'};
+		UINT type = GetDriveTypeA(buf);
+		if(type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR)
+			return 0;
+	}
+
 	attr = GetFileAttributesA(file);
 	if(attr == INVALID_FILE_ATTRIBUTES)
 	{
