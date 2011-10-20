@@ -329,6 +329,12 @@ Other Normal Mode Keys
 
        V      enter visual mode.
 
+       [count]Ctrl-A
+              increment first number in file name by count (1 by default).
+
+       [count]Ctrl-X
+              decrement first number in file name by count (1 by default).
+
        ZQ     same as :quit!
 
        ZZ     same as :quit
@@ -1715,4 +1721,4 @@ AUTHOR
 
 
 
-                               October 17, 2011                        vifm(1)
+                               October 20, 2011                        vifm(1)

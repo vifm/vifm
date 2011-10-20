@@ -61,6 +61,7 @@ static int *mode;
 static int last_fast_search_char;
 static int last_fast_search_backward = -1;
 
+static void cmd_ctrl_a(struct key_info, struct keys_info *);
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_d(struct key_info, struct keys_info *);
@@ -91,6 +92,7 @@ static void cmd_ctrl_wplus(struct key_info, struct keys_info *);
 static void cmd_ctrl_wminus(struct key_info, struct keys_info *);
 static void cmd_ctrl_wpipe(struct key_info, struct keys_info *);
 static void move_splitter(struct key_info key_info, int fact);
+static void cmd_ctrl_x(struct key_info, struct keys_info *);
 static void cmd_ctrl_y(struct key_info, struct keys_info *);
 static void cmd_quote(struct key_info, struct keys_info *);
 static void cmd_percent(struct key_info, struct keys_info *);
@@ -179,6 +181,7 @@ static void selector_a(struct key_info, struct keys_info *);
 static void selector_s(struct key_info, struct keys_info *);
 
 static struct keys_add_info builtin_cmds[] = {
+	{L"\x01", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_a}}},
 	{L"\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
 	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"\x04", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_d}}},
@@ -218,6 +221,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x17-", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wminus}}},
 	{L"\x17|", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wpipe}}},
 	{L"\x17_", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wpipe}}},
+	{L"\x18", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_x}}},
 	{L"\x19", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
 	/* escape */
 	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
@@ -357,6 +361,14 @@ init_normal_mode(int *key_mode)
 	assert(ret_code == 0);
 	ret_code = add_selectors(selectors, ARRAY_LEN(selectors), NORMAL_MODE);
 	assert(ret_code == 0);
+}
+
+static void
+cmd_ctrl_a(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	curr_stats.save_msg = incdec_names(curr_view, key_info.count);
 }
 
 static void
@@ -765,6 +777,14 @@ cmd_ctrl_wx(struct key_info key_info, struct keys_info *keys_info)
 			load_dir_list(other_view, 1);
 		wrefresh(other_view->win);
 	}
+}
+
+static void
+cmd_ctrl_x(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	curr_stats.save_msg = incdec_names(curr_view, -key_info.count);
 }
 
 static void

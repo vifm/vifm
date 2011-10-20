@@ -58,6 +58,8 @@ int S_ISEXE(mode_t mode);
 void chomp(char *text);
 void chosp(char *text);
 int is_dir(const char *file);
+/* path can be NULL */
+int file_exists(const char *path, const char *file);
 char * escape_filename(const char *string, int quote_percent);
 size_t get_char_width(const char* string);
 size_t get_normal_utf8_string_length(const char *string);
@@ -83,6 +85,7 @@ void friendly_size_notation(unsigned long long num, int str_size, char *str);
 int check_link_is_dir(const char *filename);
 /* Returns new size */
 int add_to_string_array(char ***array, int len, int count, ...);
+void remove_from_string_array(char **array, size_t len, int pos);
 int is_in_string_array(char **array, size_t len, const char *key);
 int is_in_string_array_case(char **array, size_t len, const char *key);
 char ** copy_string_array(char **array, size_t len);

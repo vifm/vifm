@@ -1141,17 +1141,15 @@ bookmark_khandler(struct menu_info *m, wchar_t *keys)
 		clean_menu_position(m);
 		remove_bookmark(active_bookmarks[m->pos]);
 		memmove(active_bookmarks + m->pos, active_bookmarks + m->pos + 1,
-				sizeof(char *)*(m->len - 1 - m->pos));
+				sizeof(int)*(m->len - 1 - m->pos));
 
-		free(m->data[m->pos]);
-		memmove(m->data + m->pos, m->data + m->pos + 1,
-				sizeof(char *)*(m->len - 1 - m->pos));
+		remove_from_string_array(m->data, m->len, m->pos);
 		if(m->matches != NULL)
 		{
 			if(m->matches[m->pos])
 				m->matching_entries--;
 			memmove(m->matches + m->pos, m->matches + m->pos + 1,
-					sizeof(int)*(m->len - 1 - m->pos));
+					sizeof(int)*((m->len - 1) - m->pos));
 		}
 		m->len--;
 		draw_menu(m);
@@ -1368,15 +1366,13 @@ command_khandler(struct menu_info *m, wchar_t *keys)
 		snprintf(cmd_buf, sizeof(cmd_buf), "delcommand %s", m->data[m->pos] + 1);
 		execute_cmd(cmd_buf);
 
-		free(m->data[m->pos]);
-		memmove(m->data + m->pos, m->data + m->pos + 1,
-				sizeof(char *)*(m->len - 1 - m->pos));
+		remove_from_string_array(m->data, m->len, m->pos);
 		if(m->matches != NULL)
 		{
 			if(m->matches[m->pos])
 				m->matching_entries--;
 			memmove(m->matches + m->pos, m->matches + m->pos + 1,
-					sizeof(int)*(m->len - 1 - m->pos));
+					sizeof(int)*((m->len - 1) - m->pos));
 		}
 		m->len--;
 		draw_menu(m);

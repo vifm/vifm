@@ -238,6 +238,9 @@ Ctrl-r - redo last command.
 
 v, V - start visual selection of files.
 
+[count]Ctrl-A - increment first number in file name by count (1 by default).
+[count]Ctrl-X - decrement first number in file name by count (1 by default).
+
 ZQ - same as :quit!
 ZZ - same as :quit
 

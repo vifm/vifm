@@ -1426,6 +1426,10 @@ mv_file(const char *src, const char *src_path,
 		op = OP_MOVETMP1;
 	else if(tmpfile_num == 2)
 		op = OP_MOVETMP2;
+	else if(tmpfile_num == 3)
+		op = OP_MOVETMP3;
+	else if(tmpfile_num == 4)
+		op = OP_MOVETMP4;
 	else
 		op = OP_NONE;
 
@@ -1890,6 +1894,134 @@ rename_files(FileView *view, char **list, int nlines)
 	draw_dir_list(view, view->top_line);
 	move_to_list_pos(view, view->list_pos);
 	curr_stats.save_msg = 1;
+	return 1;
+}
+
+static void
+make_undo_string(FileView *view, char *buf, int nlines, char **list)
+{
+	int i;
+	size_t len = strlen(buf);
+	for(i = 0; i < view->selected_files && len < COMMAND_GROUP_INFO_LEN; i++)
+	{
+		if(buf[len - 2] != ':')
+		{
+			strncat(buf, ", ", COMMAND_GROUP_INFO_LEN - len - 1);
+			len = strlen(buf);
+		}
+		strncat(buf, view->selected_filelist[i], COMMAND_GROUP_INFO_LEN - len - 1);
+		len = strlen(buf);
+		if(nlines > 0)
+		{
+			strncat(buf, " to ", COMMAND_GROUP_INFO_LEN - len - 1);
+			len = strlen(buf);
+			strncat(buf, list[i], COMMAND_GROUP_INFO_LEN - len - 1);
+			len = strlen(buf);
+		}
+	}
+}
+
+/* Returns pointer to a statically allocated buffer */
+static const char *
+add_to_name(const char *filename, int k)
+{
+	static char result[NAME_MAX];
+	char *b = strpbrk(filename, "0123456789");
+	char *e;
+	int i;
+
+	if(b == NULL)
+		return strcpy(result, filename);
+
+	if(b != filename && (b[-1] == '+' || b[-1] == '-'))
+		b--;
+	i = strtol(b, &e, 10);
+	snprintf(result, b - filename + 1, "%s", filename);
+	snprintf(result + (b - filename), sizeof(result) - (b - filename), "%d%s",
+			i + k, e);
+	return result;
+}
+
+int
+incdec_names(FileView *view, int k)
+{
+	size_t names_len;
+	char **names;
+	size_t tmp_len = 0;
+	char **tmp_names = NULL;
+	char buf[MAX(NAME_MAX, COMMAND_GROUP_INFO_LEN)];
+	int i;
+	int err = 0;
+
+	get_all_selected_files(view);
+	names_len = view->selected_files;
+	names = copy_string_array(view->selected_filelist, names_len);
+
+	snprintf(buf, sizeof(buf), "<c-a> in %s: ",
+			replace_home_part(view->curr_dir));
+	make_undo_string(view, buf, 0, NULL);
+
+	if(!view->user_selection)
+		clean_selected_files(view);
+
+	for(i = 0; i < names_len; i++)
+	{
+		if(strpbrk(names[i], "0123456789") == NULL)
+		{
+			remove_from_string_array(names, names_len--, i--);
+			continue;
+		}
+		if(file_exists(view->curr_dir, add_to_name(names[i], k)))
+		{
+			err = -1;
+			break;
+		}
+		tmp_len = add_to_string_array(&tmp_names, tmp_len, 1,
+				make_name_unique(names[i]));
+	}
+
+	cmd_group_begin(buf);
+	for(i = 0; i < names_len && !err; i++)
+	{
+		if(mv_file(names[i], view->curr_dir, tmp_names[i], view->curr_dir, 4) != 0)
+		{
+			err = 1;
+			break;
+		}
+	}
+	for(i = 0; i < names_len && !err; i++)
+	{
+		if(mv_file(tmp_names[i], view->curr_dir, add_to_name(names[i], k),
+				view->curr_dir, 3) != 0)
+		{
+			err = 1;
+			break;
+		}
+	}
+	cmd_group_end();
+
+	free_string_array(names, names_len);
+	free_string_array(tmp_names, tmp_len);
+
+	if(err)
+	{
+		if(err > 0)
+			undo_group();
+		status_bar_error("Rename error");
+	}
+	else
+	{
+		if(view->dir_entry[view->list_pos].selected || !view->user_selection)
+			strcpy(view->dir_entry[view->list_pos].name,
+					add_to_name(view->dir_entry[view->list_pos].name, k));
+
+		status_bar_messagef("%d file%s renamed", names_len,
+				(names_len == 1) ? "" : "s");
+	}
+
+	clean_selected_files(view);
+	load_saving_pos(view, 0);
+
 	return 1;
 }
 
@@ -2476,30 +2608,6 @@ have_read_access(FileView *view)
 		}
 	}
 	return 1;
-}
-
-static void
-make_undo_string(FileView *view, char *buf, int nlines, char **list)
-{
-	int i;
-	size_t len = strlen(buf);
-	for(i = 0; i < view->selected_files && len < COMMAND_GROUP_INFO_LEN; i++)
-	{
-		if(buf[len - 2] != ':')
-		{
-			strncat(buf, ", ", COMMAND_GROUP_INFO_LEN - len - 1);
-			len = strlen(buf);
-		}
-		strncat(buf, view->selected_filelist[i], COMMAND_GROUP_INFO_LEN - len - 1);
-		len = strlen(buf);
-		if(nlines > 0)
-		{
-			strncat(buf, " to ", COMMAND_GROUP_INFO_LEN - len - 1);
-			len = strlen(buf);
-			strncat(buf, list[i], COMMAND_GROUP_INFO_LEN - len - 1);
-			len = strlen(buf);
-		}
-	}
 }
 
 /* returns new value for save_msg */

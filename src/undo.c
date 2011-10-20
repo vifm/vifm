@@ -71,6 +71,8 @@ static enum OPS undo_op[] = {
 	OP_MOVETMP0, /* OP_MOVETMP0 */
 	OP_MOVETMP1, /* OP_MOVETMP1 */
 	OP_MOVETMP2, /* OP_MOVETMP2 */
+	OP_MOVETMP3, /* OP_MOVETMP1 */
+	OP_MOVETMP4, /* OP_MOVETMP2 */
 	OP_CHOWN,    /* OP_CHOWN */
 	OP_CHGRP,    /* OP_CHGRP */
 	OP_CHMOD,    /* OP_CHMOD */
@@ -110,6 +112,10 @@ static enum {
 		OPER_2ND, OPER_1ST, OPER_2ND, OPER_NON, }, /* undo OP_MOVETMP1 */
 	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_NON,    /* do   OP_MOVETMP2 */
 		OPER_2ND, OPER_1ST, OPER_1ST, OPER_NON, }, /* undo OP_MOVETMP2 */
+	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_2ND,    /* do   OP_MOVETMP3 */
+		OPER_2ND, OPER_1ST, OPER_2ND, OPER_1ST, }, /* undo OP_MOVETMP3 */
+	{ OPER_1ST, OPER_2ND, OPER_1ST, OPER_2ND,    /* do   OP_MOVETMP4 */
+		OPER_2ND, OPER_1ST, OPER_NON, OPER_1ST, }, /* undo OP_MOVETMP4 */
 	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHOWN */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHOWN */
 	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHGRP */
@@ -144,6 +150,8 @@ static int data_is_ptr[] = {
 	0, /* OP_MOVETMP0 */
 	0, /* OP_MOVETMP1 */
 	0, /* OP_MOVETMP2 */
+	0, /* OP_MOVETMP3 */
+	0, /* OP_MOVETMP4 */
 	0, /* OP_CHOWN */
 	0, /* OP_CHGRP */
 	1, /* OP_CHMOD */

@@ -29,6 +29,8 @@ enum OPS {
 	OP_MOVETMP0, /* multiple files rename */
 	OP_MOVETMP1, /* multiple files rename */
 	OP_MOVETMP2, /* multiple files rename */
+	OP_MOVETMP3, /* multiple files rename */
+	OP_MOVETMP4, /* multiple files rename */
 	OP_CHOWN,
 	OP_CHGRP,
 	OP_CHMOD,

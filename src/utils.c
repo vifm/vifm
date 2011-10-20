@@ -106,23 +106,25 @@ is_dir(const char *file)
 }
 
 int
-file_exists(const char *file)
+file_exists(const char *path, const char *file)
 {
+	char full[PATH_MAX];
+	if(path == NULL)
+		snprintf(full, sizeof(full), "%s", file);
+	else
+		snprintf(full, sizeof(full), "%s/%s", path, file);
 #ifndef _WIN32
-	return access(file, F_X);
+	return access(full, F_OK) == 0;
 #else
-	DWORD attr;
-
-	if(is_path_absolute(file) && !is_unc_path(file))
+	if(is_path_absolute(full) && !is_unc_path(full))
 	{
-		char buf[] = {file[0], ':', '\\', '\0'};
+		char buf[] = {full[0], ':', '\\', '\0'};
 		UINT type = GetDriveTypeA(buf);
 		if(type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR)
 			return 0;
 	}
 
-	attr = GetFileAttributesA(file);
-	return (attr != INVALID_FILE_ATTRIBUTES);
+	return (GetFileAttributesA(full) != INVALID_FILE_ATTRIBUTES);
 #endif
 }
 
@@ -820,6 +822,13 @@ add_to_string_array(char ***array, int len, int count, ...)
 	va_end(va);
 
 	return len;
+}
+
+void
+remove_from_string_array(char **array, size_t len, int pos)
+{
+	free(array[pos]);
+	memmove(array + pos, array + pos + 1, sizeof(char *)*((len - 1) - pos));
 }
 
 int

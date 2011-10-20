@@ -57,6 +57,7 @@ void view_file(const char *filename, int line);
 void show_change_window(FileView *view, int type);
 void rename_file(FileView *view, int name_only);
 int rename_files(FileView *view, char **list, int nlines);
+int incdec_names(FileView *view, int k);
 #ifndef _WIN32
 void chown_files(int u, int g, uid_t uid, gid_t gid);
 #endif

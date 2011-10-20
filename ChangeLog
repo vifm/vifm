@@ -50,6 +50,8 @@
 
 	Added support for using environment variables as :cd or :pushd arguments.
 
+	Added Ctrl-A and Ctrl-X keys (normal and visual modes).
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

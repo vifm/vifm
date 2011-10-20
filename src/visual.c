@@ -47,6 +47,7 @@ static int last_fast_search_char;
 static int last_fast_search_backward = -1;
 static int upwards_range;
 
+static void cmd_ctrl_a(struct key_info, struct keys_info *);
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_d(struct key_info, struct keys_info *);
@@ -55,6 +56,7 @@ static void cmd_ctrl_f(struct key_info, struct keys_info *);
 static void cmd_ctrl_l(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
 static void cmd_ctrl_u(struct key_info, struct keys_info *);
+static void cmd_ctrl_x(struct key_info, struct keys_info *);
 static void cmd_ctrl_y(struct key_info, struct keys_info *);
 static void cmd_quote(struct key_info, struct keys_info *);
 static void cmd_percent(struct key_info, struct keys_info *);
@@ -99,6 +101,7 @@ static void update(void);
 static int find_update(FileView *view, int backward);
 
 static struct keys_add_info builtin_cmds[] = {
+	{L"\x01", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_a}}},
 	{L"\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
 	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"\x04", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_d}}},
@@ -109,6 +112,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{L"\x15", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
+	{L"\x18", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_x}}},
 	{L"\x19", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
 	/* escape */
 	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
@@ -254,6 +258,15 @@ update_marks(FileView *view)
 }
 
 static void
+cmd_ctrl_a(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	curr_stats.save_msg = incdec_names(view, key_info.count);
+	leave_visual_mode(curr_stats.save_msg, 1, 1);
+}
+
+static void
 cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 {
 	int l = view->window_rows - 1;
@@ -350,6 +363,15 @@ cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 	if(view->top_line < 0)
 		view->top_line = 0;
 	goto_pos(pos - (view->window_rows + 1)/2);
+}
+
+static void
+cmd_ctrl_x(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	curr_stats.save_msg = incdec_names(view, -key_info.count);
+	leave_visual_mode(curr_stats.save_msg, 1, 1);
 }
 
 static void
@@ -753,14 +775,14 @@ cmd_zf(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_left_paren(struct key_info key_info, struct keys_info *keys_info)
 {
-	int pos = cmd_paren(0, curr_view->list_rows, -1);
+	int pos = cmd_paren(0, view->list_rows, -1);
 	goto_pos(pos);
 }
 
 static void
 cmd_right_paren(struct key_info key_info, struct keys_info *keys_info)
 {
-	int pos = cmd_paren(-1, curr_view->list_rows - 1, +1);
+	int pos = cmd_paren(-1, view->list_rows - 1, +1);
 	goto_pos(pos);
 }
 
