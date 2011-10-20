@@ -52,6 +52,8 @@
 
 	Added Ctrl-A and Ctrl-X keys (normal and visual modes).
 
+	Added <a-X> as synonyms for <m-X> (where X is a key).
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

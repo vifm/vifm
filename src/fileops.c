@@ -1980,8 +1980,12 @@ incdec_names(FileView *view, int k)
 		const char *p = add_to_name(names[i], k);
 		if(!file_exists(view->curr_dir, p))
 			continue;
+#ifndef _WIN32
 		if(is_in_string_array(names, names_len, p))
+#else
+		if(is_in_string_array_case(names, names_len, p))
 			continue;
+#endif
 
 		err = -1;
 		break;
