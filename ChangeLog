@@ -133,6 +133,8 @@
 
 	Fixed bug with showing quick view after :only command.
 
+	Fixed <m-X> with pdcurses.
+
 0.6.3 to 0.7.0
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.

@@ -1330,8 +1330,8 @@ sequences that can be used in place of them.  They are:
 <del> <delete> - Delete key.  <del> and <delete> mean different codes, but
     <delete> is more common.
 <c-a>,<c-b>,...,<c-z>,<c-[>,<c-\>,<c-]>,<c-^>,<c-_> - Control + some key.
-<a-a>,<a-b>,...,<a-z>,<a-[>,<a-\>,<a-]>,<a-^>,<a-_> - Alt + some key.
-<m-a>,<m-b>,...,<m-z>,<m-[>,<m-\>,<m-]>,<m-^>,<m-_> - Alt + some key.
+<a-a>,<a-b>,...,<a-z> - Alt + some key.
+<m-a>,<m-b>,...,<m-z> - Alt + some key.
 <f0> - <f63> - functional keys
 <c-f1>,...,<c-f12>                             {only for MS-Windows}
 functional keys with Control key pressed.
