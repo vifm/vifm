@@ -54,6 +54,8 @@
 
 	Added <a-X> as synonyms for <m-X> (where X is a key).
 
+	Added notation to run internal vifm commands from user defined commands.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

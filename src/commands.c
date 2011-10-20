@@ -4545,9 +4545,16 @@ usercmd_cmd(const struct cmd_info* cmd_info)
 
 	clean_selected_files(curr_view);
 
-	if(use_menu == 3)
+	if(expanded_com[0] == ':')
+	{
+		int sm = exec_commands(expanded_com, curr_view, 0, GET_COMMAND);
+		free(expanded_com);
+		return sm;
+	}
+	else if(use_menu == 3)
 	{
 		output_to_statusbar(expanded_com);
+		free(expanded_com);
 		return 1;
 	}
 	else if(use_menu)

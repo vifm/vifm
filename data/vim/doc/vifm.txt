@@ -526,6 +526,8 @@ The builtin commands are:
     numbers or special symbols (except '?' and '!').
 :com[mand] backup /pattern - will set search pattern.
 :com[mand] name filter pattern - will set file name filter.
+:com[mand] cmd :commands - will set kind of alias for internal command (like
+    in a shell).
 
                                                *vifm-:copy* *vifm-:co*
 :[range]co[py][!?][ &] - copies files to directory of other view.  With
