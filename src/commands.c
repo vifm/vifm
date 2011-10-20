@@ -2782,13 +2782,15 @@ cd(FileView *view, const char *path)
 		if(is_path_absolute(arg))
 			snprintf(dir, sizeof(dir), "%s", arg);
 #else
+		strcpy(dir, view->curr_dir);
+		*strchr(dir + 2, '/') = '\0';
 		if(is_path_absolute(arg) && *arg != '/')
 			snprintf(dir, sizeof(dir), "%s", arg);
 		else if(*arg == '/' && is_unc_root(arg))
 			snprintf(dir, sizeof(dir), "%s", arg);
-		else if(*arg == '/' && is_unc_root(view->curr_dir))
-			snprintf(dir, sizeof(dir), "%s", view->curr_dir);
 		else if(*arg == '/' && is_unc_path(view->curr_dir))
+			sprintf(dir + strlen(dir), "/%s", arg + 1);
+		else if(strcmp(arg, "/") == 0 && is_unc_path(view->curr_dir))
 			snprintf(dir, strchr(view->curr_dir + 2, '/') - view->curr_dir + 1, "%s",
 					view->curr_dir);
 		else if(*arg == '/')

@@ -1818,8 +1818,8 @@ fill_with_shared(FileView *view)
 				char buf[512];
 				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi0_netname, -1, buf,
 						sizeof(buf), NULL, NULL);
-				if(!ends_with(buf, "$"))
-				{
+
+
 					dir_entry_t *dir_entry;
 
 					view->dir_entry = (dir_entry_t *)realloc(view->dir_entry,
@@ -1859,7 +1859,7 @@ fill_with_shared(FileView *view)
 					strcat(dir_entry->name, "/");
 					dir_entry->type = DIRECTORY;
 					view->list_rows++;
-				}
+
 				p++;
 			}
 			NetApiBufferFree(buf_ptr);
