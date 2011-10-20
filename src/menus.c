@@ -1772,7 +1772,7 @@ show_history_menu(FileView *view)
 			m.pos = m.len;
 		}
 
-		m.data = (char **)realloc(m.data, sizeof(char *)*(m.len + 1));
+		m.data = realloc(m.data, sizeof(char *)*(m.len + 1));
 		m.data[m.len] = strdup(view->history[x].dir);
 		m.len++;
 	}
