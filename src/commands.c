@@ -521,9 +521,10 @@ exec_completion(const char *str)
 
 #ifdef _WIN32
 static void
-complete_with_shared(const char *server)
+complete_with_shared(const char *server, const char *file)
 {
 	NET_API_STATUS res;
+	size_t len = strlen(file);
 
 	do
 	{
@@ -550,8 +551,13 @@ complete_with_shared(const char *server)
 				char buf[512];
 				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi502_netname, -1, buf,
 						sizeof(buf), NULL, NULL);
-				if(!ends_with(buf, "$"))
-					add_completion(buf);
+				strcat(buf, "/");
+				if(strncmp(buf, file, len) == 0)
+				{
+					char *escaped = escape_filename(buf, 1);
+					add_completion(escaped);
+					free(escaped);
+				}
 				p++;
 			}
 			NetApiBufferFree(buf_ptr);
@@ -652,12 +658,35 @@ filename_completion(const char *str, int type)
 
 #ifdef _WIN32
 	if(is_unc_root(dirname) ||
-			(strcmp(dirname, ".") == 0 && is_unc_root(curr_view->curr_dir)))
+			(strcmp(dirname, ".") == 0 && is_unc_root(curr_view->curr_dir)) ||
+			(strcmp(dirname, "/") == 0 && is_unc_path(curr_view->curr_dir)))
 	{
-		complete_with_shared(dirname);
+		char buf[PATH_MAX];
+		if(!is_unc_root(dirname))
+			snprintf(buf,
+					strchr(curr_view->curr_dir + 2, '/') - curr_view->curr_dir + 1, "%s",
+					curr_view->curr_dir);
+		else
+			strcpy(buf, dirname);
+
+		complete_with_shared(buf, filename);
 		free(filename);
 		free(dirname);
 		return;
+	}
+	if(is_unc_path(curr_view->curr_dir))
+	{
+		char buf[PATH_MAX];
+		if(is_path_absolute(dirname) && !is_unc_root(curr_view->curr_dir))
+			snprintf(buf,
+					strchr(curr_view->curr_dir + 2, '/') - curr_view->curr_dir + 2, "%s",
+					curr_view->curr_dir);
+		else
+				snprintf(buf, sizeof(buf), "%s", curr_view->curr_dir);
+		strcat(buf, dirname);
+		chosp(buf);
+		free(dirname);
+		dirname = strdup(buf);
 	}
 #endif
 
@@ -2033,7 +2062,7 @@ edit_selection(FileView *view, int *bg)
 	char *buf;
 	char *files = expand_macros(view, "%f", NULL, &use_menu, &split);
 
-	if((buf = (char *)malloc(strlen(get_vicmd(bg)) + strlen(files) + 2)) != NULL)
+	if((buf = malloc(strlen(get_vicmd(bg)) + strlen(files) + 2)) != NULL)
 		snprintf(buf, strlen(get_vicmd(bg)) + 1 + strlen(files) + 1, "%s %s",
 				get_vicmd(bg), files);
 
@@ -2787,6 +2816,8 @@ cd(FileView *view, const char *path)
 		if(is_path_absolute(arg) && *arg != '/')
 			snprintf(dir, sizeof(dir), "%s", arg);
 		else if(*arg == '/' && is_unc_root(arg))
+			snprintf(dir, sizeof(dir), "%s", arg);
+		else if(*arg == '/' && is_unc_path(arg))
 			snprintf(dir, sizeof(dir), "%s", arg);
 		else if(*arg == '/' && is_unc_path(view->curr_dir))
 			sprintf(dir + strlen(dir), "/%s", arg + 1);

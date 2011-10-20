@@ -742,7 +742,7 @@ draw_wild_menu(int op)
 			init_pair(DCOLOR_BASE + MENU_COLOR, col.fg, col.bg);
 			wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + MENU_COLOR) | col.attr);
 		}
-		wprintw(stat_win, "%s", list[i]);
+		wprint(stat_win, list[i]);
 		if(i == pos)
 		{
 			wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |

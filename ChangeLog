@@ -139,6 +139,8 @@
 
 	Fixed some bugs with UNC paths on Windows.
 
+	Fixed displaying of local chars in the wild menu on Windows.
+
 0.6.3 to 0.7.0
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.
