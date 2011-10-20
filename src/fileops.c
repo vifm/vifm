@@ -1971,13 +1971,20 @@ incdec_names(FileView *view, int k)
 			remove_from_string_array(names, names_len--, i--);
 			continue;
 		}
-		if(file_exists(view->curr_dir, add_to_name(names[i], k)))
-		{
-			err = -1;
-			break;
-		}
 		tmp_len = add_to_string_array(&tmp_names, tmp_len, 1,
 				make_name_unique(names[i]));
+	}
+
+	for(i = 0; i < names_len; i++)
+	{
+		const char *p = add_to_name(names[i], k);
+		if(!file_exists(view->curr_dir, p))
+			continue;
+		if(is_in_string_array(names, names_len, p))
+			continue;
+
+		err = -1;
+		break;
 	}
 
 	cmd_group_begin(buf);
