@@ -72,16 +72,20 @@ compare_file_names(const char *s, const char *t, int ignore_case)
 {
 	char s_buf[NAME_MAX];
 	char t_buf[NAME_MAX];
+
+	snprintf(s_buf, sizeof(s_buf), "%s", s);
+	chosp(s_buf);
+	s = s_buf;
+	snprintf(t_buf, sizeof(t_buf), "%s", t);
+	chosp(t_buf);
+	t = t_buf;
+
 	if(ignore_case)
 	{
-		snprintf(s_buf, sizeof(s_buf), "%s", s);
 		strtoupper(s_buf);
-		s = s_buf;
-
-		snprintf(t_buf, sizeof(t_buf), "%s", t);
-		t = t_buf;
 		strtoupper(t_buf);
 	}
+
 #ifndef _WIN32
 	if(!cfg.sort_numbers)
 		return strcmp(s, t);

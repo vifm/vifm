@@ -145,6 +145,8 @@
 
 	Fixed parsing path arguments on Windows.
 
+	Fixed small issue with sorting directory names.
+
 0.6.3 to 0.7.0
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.
