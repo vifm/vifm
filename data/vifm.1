@@ -825,8 +825,9 @@ the end of command to run program in background.
 run associated command that begins with the arg without opening menu.
 .TP
 .BI ":filet[ype] pat1,pat2,... def_program,program2,..."
-will associate given program list to each of the patterns.  Currently only * and
-? are treated as special symbols in the pattern.
+will associate given program list to each of the patterns.  Accosiated program
+(command) is used by handlers of l and Enter keys (and also in the :file menu).
+Currently only * and ? are treated as special symbols in the pattern.
 If you need to insert comma into command just double it (",,").
 .TP
 .BI ":filex[type] pat1,pat2,... def_program,program2,..."
@@ -834,8 +835,10 @@ same as :filetype, but vifm will ignore this command if it's not running in X.
 In X :filextype is equal to :filetype.
 .TP
 .BI ":filev[iewer] pat1,pat2,... command"
-will associate given command as a viewer to each of the patterns.  Currently
-only * and ? are treated as special symbols in the pattern.
+will associate given command as a viewer to each of the patterns.  Viewer is a
+command which output is captured and showed in the second pane of vifm after
+running :view command.  Currently only * and ? are treated as special symbols in
+the pattern.
 .TP
 .BI ":filter regular_expression_pattern"
 .BI ":filter /regular_expression_pattern/"

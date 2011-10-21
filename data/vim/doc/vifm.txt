@@ -584,8 +584,9 @@ The builtin commands are:
 
                                                *vifm-:filetype* *vifm-:filet*
 :filet[ype] pat1,pat2,... def_program,program2,... - will associate given
-    program list to each of the patterns.  Currently only * and ? are
-    treated as special symbols in the pattern.
+    program list to each of the patterns.  Accosiated program (command) is
+    used by handlers of l and Enter keys (and also in the :file menu).
+    Currently only * and ? are treated as special symbols in the pattern.
     If you need to insert comma into command just double it (",,").
 
                                                *vifm-:filextype* *vifm-:filex*
@@ -595,8 +596,10 @@ The builtin commands are:
 
                                                *vifm-:filevtype* *vifm-:filev*
 :filev[iewer] pat1,pat2,... command - will associate given command as a
-    viewer to each of the patterns.  Currently only * and ? are treated as
-    special symbols in the pattern.
+    viewer to each of the patterns.  Viewer is a command which output is
+    captured and showed in the second pane of vifm after running :view
+    command.  Currently only * and ? are treated as special symbols in the
+    pattern.
 
                                                *vifm-:filter*
 :filter regular_expression
