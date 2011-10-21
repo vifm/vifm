@@ -83,6 +83,8 @@
 
 	Show all shares on Windows (including private ones).
 
+	Move cursor to clone of current file after file cloning.
+
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 
 	Fixed bug with disappearing of number of selected files in visual mode.

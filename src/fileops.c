@@ -2495,6 +2495,47 @@ put_files_from_register(FileView *view, int name, int force_move)
 	return put_files_from_register_i(view, 1);
 }
 
+#ifndef TEST
+static
+#endif
+const char *
+gen_clone_name(const char *normal_name)
+{
+	static char result[NAME_MAX];
+
+	char tmp[NAME_MAX];
+	int i;
+	size_t len;
+	char *ext;
+
+	snprintf(tmp, sizeof(tmp), "%s", normal_name);
+	chosp(tmp);
+	snprintf(result, sizeof(result), "%s", normal_name);
+	chosp(result);
+
+	if((ext = strrchr(tmp, '.')) != NULL)
+	{
+		char *e;
+		*ext = '\0';
+		if((e = strrchr(tmp, '.')) != NULL && strcmp(e + 1, "tar") == 0)
+		{
+			*ext = '.';
+			ext = e;
+		}
+		*ext++ = '\0';
+		result[strlen(result) - strlen(ext) - 1] = '\0';
+	}
+
+	i = 1;
+	len = strlen(result);
+	do
+		snprintf(result + len, sizeof(result) - len, "(%d)%s%s", i++,
+				(ext == NULL) ? "" : ".", (ext == NULL) ? "" : ext);
+	while(access(result, F_OK) == 0);
+
+	return result;
+}
+
 static void
 clone_file(FileView* view, const char *filename, const char *path,
 		const char *clone)
@@ -2507,45 +2548,12 @@ clone_file(FileView* view, const char *filename, const char *path,
 	if(strcmp(filename, "../") == 0)
 		return;
 
-	if(clone == NULL)
+	snprintf(clone_name, sizeof(clone_name), "%s/%s", path, clone);
+	chosp(clone_name);
+	if(access(clone_name, F_OK) == 0)
 	{
-		int i;
-		size_t len;
-		char *ext;
-
-		snprintf(clone_name, sizeof(clone_name), "%s/%s", path, filename);
-		chosp(clone_name);
-
-		strcpy(full, filename);
-		if((ext = strrchr(full, '.')) != NULL)
-		{
-			char *e;
-			*ext = '\0';
-			if((e = strrchr(full, '.')) != NULL && strcmp(e + 1, "tar") == 0)
-			{
-				*ext = '.';
-				ext = e;
-			}
-			*ext++ = '\0';
-			clone_name[strlen(clone_name) - strlen(ext) - 1] = '\0';
-		}
-
-		i = 1;
-		len = strlen(clone_name);
-		do
-			snprintf(clone_name + len, sizeof(clone_name) - len, "(%d)%s%s", i++,
-					(ext == NULL) ? "" : ".", (ext == NULL) ? "" : ext);
-		while(access(clone_name, F_OK) == 0);
-	}
-	else
-	{
-		snprintf(clone_name, sizeof(clone_name), "%s/%s", path, clone);
-		chosp(clone_name);
-		if(access(clone_name, F_OK) == 0)
-		{
-			if(perform_operation(OP_REMOVESL, NULL, clone_name, NULL) != 0)
-				return;
-		}
+		if(perform_operation(OP_REMOVESL, NULL, clone_name, NULL) != 0)
+			return;
 	}
 
 	snprintf(full, sizeof(full), "%s/%s", view->curr_dir, filename);
@@ -2688,8 +2696,15 @@ clone_files(FileView *view, char **list, int nlines, int force)
 	cmd_group_begin(buf);
 	for(i = 0; i < sel_len; i++)
 	{
+		const char * clone_name = (nlines > 0) ? list[i] : gen_clone_name(sel[i]);
 		progress_msg("Cloning files", i + 1, sel_len);
-		clone_file(view, sel[i], path, (nlines > 0) ? list[i] : NULL);
+		clone_file(view, sel[i], path, clone_name);
+		if(find_file_pos_in_list(view, sel[i]) == view->list_pos)
+		{
+			strcpy(view->dir_entry[view->list_pos].name, clone_name);
+			if(ends_with(sel[i], "/"))
+				strcat(view->dir_entry[view->list_pos].name, "/");
+		}
 	}
 	cmd_group_end();
 	free_selected_file_array(view);

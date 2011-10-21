@@ -85,6 +85,10 @@ int cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force);
 void make_dirs(FileView *view, char **names, int count, int create_parent);
 int make_files(FileView *view, char **names, int count);
 
+#ifdef TEST
+const char * gen_clone_name(const char *normal_name);
+#endif
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
