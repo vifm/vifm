@@ -156,12 +156,16 @@ load_initial_directory(FileView *view, const char *dir)
 static void
 parse_path(const char *dir, const char *path, char *buf)
 {
-	if(is_path_absolute(path))
+	strcpy(buf, path);
+#ifdef _WIN32
+	to_forward_slash(buf);
+#endif
+	if(is_path_absolute(buf))
 	{
 		snprintf(buf, PATH_MAX, "%s", path);
 	}
 #ifdef _WIN32
-	else if(path[0] == '/')
+	else if(buf[0] == '/')
 	{
 		snprintf(buf, PATH_MAX, "%c:%s", dir[0], path);
 	}
@@ -174,6 +178,10 @@ parse_path(const char *dir, const char *path, char *buf)
 	}
 	if(!is_root_dir(buf))
 		chosp(buf);
+
+#ifdef _WIN32
+	to_forward_slash(buf);
+#endif
 }
 
 static void
