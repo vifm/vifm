@@ -128,6 +128,76 @@ file_exists(const char *path, const char *file)
 #endif
 }
 
+int
+my_system(char *command)
+{
+#ifndef _WIN32
+	int pid;
+	int status;
+	extern char **environ;
+
+	if(command == NULL)
+		return 1;
+
+	pid = fork();
+	if(pid == -1)
+		return -1;
+	if(pid == 0)
+	{
+		char *args[4];
+
+		signal(SIGINT, SIG_DFL);
+
+		args[0] = cfg.shell;
+		args[1] = "-c";
+		args[2] = command;
+		args[3] = NULL;
+		execve(cfg.shell, args, environ);
+		exit(127);
+	}
+	do
+	{
+		if(waitpid(pid, &status, 0) == -1)
+		{
+			if(errno != EINTR)
+				return -1;
+		}
+		else
+			return status;
+	}while(1);
+#else
+	char buf[strlen(cfg.shell) + 5 + strlen(command)*4 + 1 + 1];
+
+	signal(SIGINT, SIG_DFL);
+
+	if(strcmp(cfg.shell, "cmd") == 0)
+	{
+		snprintf(buf, sizeof(buf), "%s /C \"%s\"", cfg.shell, command);
+	}
+	else
+	{
+		char *p;
+
+		strcpy(buf, cfg.shell);
+		strcat(buf, " -c '");
+
+		p = buf + strlen(buf);
+		while(*command != '\0')
+		{
+			if(*command == '\\')
+				*p++ = '\\';
+			*p++ = *command++;
+		}
+		*p = '\0';
+
+		strcat(buf, "'");
+	}
+
+	system("cls");
+	return system(buf);
+#endif
+}
+
 /*
  * Escape the filename for the purpose of inserting it into the shell.
  *
