@@ -30,7 +30,6 @@
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* waitpid() */
 #ifndef _WIN32
-#include <sys/wait.h> /* waitpid() */
 #else
 #include <windows.h>
 #include <shellapi.h>

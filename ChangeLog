@@ -56,6 +56,8 @@
 
 	Added notation to run internal vifm commands from user defined commands.
 
+	Added angle bracket notation <c-s-X> and <s-c-X> as synonyms for <c-X>.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

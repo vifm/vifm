@@ -33,6 +33,7 @@
 #include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
 #include <mntent.h> /* getmntent() */
+#include <sys/wait.h> /* waitpid() */
 #endif
 #include <unistd.h> /* chdir() */
 
