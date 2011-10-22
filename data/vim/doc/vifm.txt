@@ -1337,6 +1337,8 @@ sequences that can be used in place of them.  They are:
 <c-a>,<c-b>,...,<c-z>,<c-[>,<c-\>,<c-]>,<c-^>,<c-_> - Control + some key.
 <a-a>,<a-b>,...,<a-z> - Alt + some key.
 <m-a>,<m-b>,...,<m-z> - Alt + some key.
+<a-c-a>,<a-c-b>,...,<a-c-z> - Alt + Ctrl + some key. {only for *nix}
+<m-c-a>,<m-c-b>,...,<m-c-z> - Alt + Ctrl + some key. {only for *nix}
 <f0> - <f63> - functional keys
 <c-f1>,...,<c-f12>                             {only for MS-Windows}
 functional keys with Control key pressed.

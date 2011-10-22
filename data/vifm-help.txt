@@ -1553,6 +1553,10 @@ Mappings
        <a-a>,<a-b>,...,<a-z>
               <m-a>,<m-b>,...,<m-z> Alt + some key.
 
+       <a-c-a>,<a-c-b>,...,<a-c-z>
+              <m-c-a>,<m-c-b>,...,<m-c-z> only for *nix
+              Alt + Ctrl + some key.
+
        <f0> - <f63>
               Functional keys
 

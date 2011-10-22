@@ -58,6 +58,8 @@
 
 	Added angle bracket notation <c-s-X> and <s-c-X> as synonyms for <c-X>.
 
+	Added Ctrl + Alt + letter combinations, only for *nix.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.
