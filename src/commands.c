@@ -572,13 +572,13 @@ complete_with_shared(const char *server, const char *file)
 static const char *
 escape_for_cd(const char *str)
 {
-	static char buf[4096];
+	static char buf[PATH_MAX*2];
 	char *p;
 
 	p = buf;
 	while(*str != '\0')
 	{
-		if(*str == '\\' || *str == ' ')
+		if(strchr("\\ $", *str) != NULL)
 			*p++ = '\\';
 		else if(*str == '%')
 			*p++ = '%';
@@ -1142,9 +1142,10 @@ cmds_expand_envvars(const char *str)
 {
 	char *result = NULL;
 	size_t len = 0;
+	int prev_slash = 0;
 	while(*str != '\0')
 	{
-		if(*str == '$' && isalpha(str[1]))
+		if(!prev_slash && *str == '$' && isalpha(str[1]))
 		{
 			char name[NAME_MAX];
 			const char *p = str + 1;
@@ -1171,6 +1172,11 @@ cmds_expand_envvars(const char *str)
 		}
 		else
 		{
+			if(*str == '\\')
+				prev_slash = !prev_slash;
+			else
+				prev_slash = 0;
+
 			result = realloc(result, len + 1 + 1);
 			result[len++] = *str++;
 			result[len] = '\0';
@@ -1425,13 +1431,13 @@ save_history(const char *line, char **hist, int *num, int *len)
 
 	while(x > 0)
 	{
-		hist[x] = realloc(hist[x], strlen(hist[x - 1]) + 1);
-		strcpy(hist[x], hist[x - 1]);
+		free(hist[x]);
+		hist[x] = strdup(hist[x - 1]);
 		x--;
 	}
 
-	hist[0] = realloc(hist[0], strlen(line) + 1);
-	strcpy(hist[0], line);
+	free(hist[0]);
+	hist[0] = strdup(line);
 	(*num)++;
 	if(*num >= *len)
 		*num = *len - 1;
@@ -1573,6 +1579,11 @@ apply_mods(const char *path, const char *parent, const char *mod)
 		mod += 2;
 	}
 
+#ifdef _WIN32
+	if(strcmp(cfg.shell, "cmd") != 0)
+		to_back_slash(buf);
+#endif
+
 	return buf;
 }
 
@@ -1641,7 +1652,8 @@ append_selected_files(FileView *view, char *expanded, int under_cursor,
 	}
 
 #ifdef _WIN32
-	to_back_slash(expanded);
+	if(strcmp(cfg.shell, "cmd") == 0)
+		to_back_slash(expanded);
 #endif
 
 	return expanded;
@@ -1688,9 +1700,12 @@ expand_directory_path(FileView *view, char *expanded, int quotes,
 		result = append_to_expanded(expanded, escaped);
 		free(escaped);
 	}
+
 #ifdef _WIN32
-	to_back_slash(result);
+	if(strcmp(cfg.shell, "cmd") == 0)
+		to_back_slash(result);
 #endif
+
 	return result;
 }
 
