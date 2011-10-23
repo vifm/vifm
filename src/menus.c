@@ -59,6 +59,7 @@
 #include "registers.h"
 #include "search.h"
 #include "status.h"
+#include "string_array.h"
 #include "ui.h"
 #include "undo.h"
 #include "utf8.h"

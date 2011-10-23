@@ -21,7 +21,7 @@
 #include <string.h>
 
 #include "macros.h"
-#include "utils.h"
+#include "string_array.h"
 
 #include "completion.h"
 

@@ -44,6 +44,7 @@
 #include "opt_handlers.h"
 #include "registers.h"
 #include "status.h"
+#include "string_array.h"
 #include "trash.h"
 #include "utils.h"
 

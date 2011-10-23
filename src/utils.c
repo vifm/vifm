@@ -53,6 +53,7 @@
 #include "log.h"
 #include "macros.h"
 #include "status.h"
+#include "string_array.h"
 #include "version.h"
 #include "utf8.h"
 #include "ui.h"
@@ -743,106 +744,6 @@ check_link_is_dir(const char *filename)
 	}
 
 	return 0;
-}
-
-int
-add_to_string_array(char ***array, int len, int count, ...)
-{
-	char **p;
-	va_list va;
-
-	p = realloc(*array, sizeof(char *)*(len + count));
-	if(p == NULL)
-		return count;
-	*array = p;
-
-	va_start(va, count);
-	while(count-- > 0)
-	{
-		if((p[len] = strdup(va_arg(va, char *))) == NULL)
-			break;
-		len++;
-	}
-	va_end(va);
-
-	return len;
-}
-
-void
-remove_from_string_array(char **array, size_t len, int pos)
-{
-	free(array[pos]);
-	memmove(array + pos, array + pos + 1, sizeof(char *)*((len - 1) - pos));
-}
-
-int
-is_in_string_array(char **array, size_t len, const char *key)
-{
-	int i;
-
-	if(key == NULL)
-		return 0;
-
-	for(i = 0; i < len; i++)
-		if(strcmp(array[i], key) == 0)
-			return 1;
-	return 0;
-}
-
-int
-is_in_string_array_case(char **array, size_t len, const char *key)
-{
-	int i;
-	for(i = 0; i < len; i++)
-		if(strcasecmp(array[i], key) == 0)
-			return 1;
-	return 0;
-}
-
-char **
-copy_string_array(char **array, size_t len)
-{
-	char **result = malloc(sizeof(char *)*len);
-	int i;
-	for(i = 0; i < len; i++)
-		result[i] = strdup(array[i]);
-	return result;
-}
-
-int
-string_array_pos(char **array, size_t len, const char *key)
-{
-	int i;
-	for(i = 0; i < len; i++)
-		if(strcmp(array[i], key) == 0)
-			return i;
-	return -1;
-}
-
-int
-string_array_pos_case(char **array, size_t len, const char *key)
-{
-	int i;
-	for(i = 0; i < len; i++)
-		if(strcasecmp(array[i], key) == 0)
-			return i;
-	return -1;
-}
-
-void
-free_string_array(char **array, size_t len)
-{
-	int i;
-
-	for(i = 0; i < len; i++)
-		free(array[i]);
-	free(array);
-}
-
-void
-free_wstring_array(wchar_t **array, size_t len)
-{
-	free_string_array((char **)array, len);
 }
 
 /* Removes excess slashes, "../" and "./" from the path */

@@ -77,16 +77,6 @@ int fill_version_info(char **list);
 
 void friendly_size_notation(unsigned long long num, int str_size, char *str);
 int check_link_is_dir(const char *filename);
-/* Returns new size */
-int add_to_string_array(char ***array, int len, int count, ...);
-void remove_from_string_array(char **array, size_t len, int pos);
-int is_in_string_array(char **array, size_t len, const char *key);
-int is_in_string_array_case(char **array, size_t len, const char *key);
-char ** copy_string_array(char **array, size_t len);
-int string_array_pos(char **array, size_t len, const char *key);
-int string_array_pos_case(char **array, size_t len, const char *key);
-void free_string_array(char **array, size_t len);
-void free_wstring_array(wchar_t **array, size_t len);
 void canonicalize_path(const char *directory, char *buf, size_t buf_size);
 const char * make_rel_path(const char *path, const char *base);
 /* Returns pointer to a statically allocated buffer */

@@ -40,6 +40,7 @@ src/signals.c - handlers for different signals
 src/sort.c - sort function
 src/sort_dialog.c - dialog to choose sort type
 src/status.c - definition of global status structure
+src/string_array.c - functions to work with arrays of strings
 src/tags.c - tags for :h completion
 src/trash.c - code that handles list of files in trash
 src/tree.c - cache for ga command results

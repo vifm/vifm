@@ -9,6 +9,7 @@
 #include "macros.h"
 #include "options.h"
 #include "status.h"
+#include "string_array.h"
 #include "ui.h"
 #include "utils.h"
 

@@ -71,6 +71,7 @@
 #include "sort.h"
 #include "sort_dialog.h"
 #include "status.h"
+#include "string_array.h"
 #include "tags.h"
 #include "trash.h"
 #include "ui.h"

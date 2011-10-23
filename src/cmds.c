@@ -25,7 +25,7 @@
 #include "completion.h"
 #include "log.h"
 #include "macros.h"
-#include "utils.h"
+#include "string_array.h"
 
 #include "cmds.h"
 

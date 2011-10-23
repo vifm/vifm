@@ -59,6 +59,7 @@
 #include "opt_handlers.h"
 #include "sort.h"
 #include "status.h"
+#include "string_array.h"
 #include "tree.h"
 #include "ui.h"
 #include "utf8.h"

@@ -57,6 +57,7 @@
 #include "ops.h"
 #include "registers.h"
 #include "status.h"
+#include "string_array.h"
 #include "ui.h"
 #include "undo.h"
 #include "utils.h"
