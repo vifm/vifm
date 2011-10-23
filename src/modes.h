@@ -20,6 +20,8 @@
 #ifndef __MODES_H__
 #define __MODES_H__
 
+#include <stddef.h>
+
 enum
 {
 	NORMAL_MODE,
@@ -29,6 +31,7 @@ enum
 	SORT_MODE,
 	PERMISSIONS_MODE,
 	CHANGE_MODE,
+	VIEW_MODE,
 	MODES_COUNT
 };
 

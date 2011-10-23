@@ -16,9 +16,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
+#include <limits.h>
+
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "utils.h"
 
 #include "string_array.h"
 
@@ -120,6 +125,21 @@ void
 free_wstring_array(wchar_t **array, size_t len)
 {
 	free_string_array((char **)array, len);
+}
+
+char **
+read_file_lines(FILE *f, int *nlines)
+{
+	char **list = NULL;
+	char name[NAME_MAX];
+
+	*nlines = 0;
+	while(fgets(name, sizeof(name), f) != NULL)
+	{
+		chomp(name);
+		*nlines = add_to_string_array(&list, *nlines, 1, name);
+	}
+	return list;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

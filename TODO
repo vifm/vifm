@@ -11,7 +11,6 @@ Basic things that need to be done.
     Templates for :touch.
 	Mouse support.
     Ctrl-R combinations in the command-line mode.
-    Go to view pane and scroll it.
 
 Documentation.
 	Better documentation (with normal tags in Vim version).
@@ -19,6 +18,7 @@ Documentation.
 
 Windows.
     Permission dialog could change file attributes.
+    Add a command to create .lnk files.
 
 Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).

@@ -42,13 +42,13 @@ OPTIONS
        See Configure section below for the explanations on CONFDIR.
 
 General keys
-       Ctrl-c or Escape
+       Ctrl-C or Escape
               cancel most operations.
 
-       Ctrl-c or Escape
+       Ctrl-C or Escape
               clear all selected files.
 
-       Ctrl-l clear and redraw the screen.
+       Ctrl-L clear and redraw the screen.
 
 Basic Movement
        The basic vi key bindings are used to move through the files and  popup
@@ -166,6 +166,9 @@ Pane manipulation
        Ctrl-W _
               maximize current view.
 
+       Ctrl-W =
+              make size of two views equal.
+
 Marks
        Marks are set the same way as they are in vi.
               You can use this characters for marks [a-z][A-Z][0-9].
@@ -247,15 +250,19 @@ Other Normal Mode Keys
        Ctrl-G creates a window showing detailed information about the  current
               file.
 
+       Shift-Tab
+              enters  view  mode  (works  only after activating view pane with
+              :view command).
+
        ga     calculate directory size.
 
        gA     like ga, but force update.
 
-       gf     find  link  destination (like l with 'followlinks' off, but also
+       gf     find link destination (like l with 'followlinks' off,  but  also
               finds directories).
 
        gl     only for MS-Windows
-              same as l key, but tries  to  run  program  with  administrative
+              same  as  l  key,  but  tries to run program with administrative
               privileges.
 
        gv     go to visual mode restoring last selection.
@@ -292,7 +299,7 @@ Other Normal Mode Keys
        C      clone file.
 
        [count]dd or d[count]selector
-              moves  the  selected  files  to  the  trash directory (if option
+              moves the selected files  to  the  trash  directory  (if  option
               'trash' is set otherwise delete)
 
        [count]DD or D[count]selector
@@ -303,16 +310,16 @@ Other Normal Mode Keys
 
        Y      same as yy.
 
-       p      will copy the yanked files to the current directory or move  the
-              files  to  the current directory if they were deleted with dd or
+       p      will  copy the yanked files to the current directory or move the
+              files to the current directory if they were deleted with  dd  or
               :d[elete] or if the files were yanked from the Trash directory.
 
-       P      moves the last yanked files.  The advantage of using  P  instead
-              of  d followed by p is that P moves files only once.  This isn't
-              important in case you're moving files in the  same  file  system
-              where  your home directory is, but using P to move files on some
-              other file system (or file systems, in case  you  want  to  move
-              files  from  fs1  to  fs2 and your home is on fs3) can save your
+       P      moves  the  last yanked files.  The advantage of using P instead
+              of d followed by p is that P moves files only once.  This  isn't
+              important  in  case  you're moving files in the same file system
+              where your home directory is, but using P to move files on  some
+              other  file  system  (or  file systems, in case you want to move
+              files from fs1 to fs2 and your home is on  fs3)  can  save  your
               time.
 
        al     puts symbolic links with absolute paths.
@@ -356,47 +363,47 @@ Using Count
        Or you can use count with motions passed to y, d or D.
 
        d[count]j
-              delete (count + 1) files starting from current  cursor  position
+              delete  (count  + 1) files starting from current cursor position
               upward.
 
 Registers
-       vifm  supports  multiple registers for temporary storing list of yanked
+       vifm supports multiple registers for temporary storing list  of  yanked
        or deleted files.
 
        Registers should be specified with hitting double quite key followed by
-       a  register  name.  Count is specified after register name.  By default
+       a register name.  Count is specified after register name.   By  default
        commands use unnamed register, which has double quote as its name.
 
-       Though all commands accept registers, most  of  commands  ignores  them
-       (for  example H or Ctrl-U).  Other commands can fill register or append
+       Though  all  commands  accept  registers, most of commands ignores them
+       (for example H or Ctrl-U).  Other commands can fill register or  append
        new files to it.
 
        Presently vifm supports ", _, a-z and A-Z characters as register names.
 
        As mentioned above " is unnamed register and has special meaning of the
-       default  register.  Every time when you use named registers (a-z and A-
-       Z) unnamed register is updated to contain same list  of  files  as  the
+       default register.  Every time when you use named registers (a-z and  A-
+       Z)  unnamed  register  is  updated to contain same list of files as the
        last used register.
 
-       _  is black hole register.  It can be used for writing, but its list is
+       _ is black hole register.  It can be used for writing, but its list  is
        always empty.
 
        Registers with names from a to z  and from A to Z are named ones.  Low‐
-       ercase  registers  are cleared before adding new files, while uppercase
+       ercase registers are cleared before adding new files,  while  uppercase
        aren't and should be used to append new files to the existing file list
        of appropriate lowercase register (A for a, B for b, ...).
 
-       Registers  can be changed on :empty command if they contain files under
+       Registers can be changed on :empty command if they contain files  under
        Trash directory.
 
        Registers do not contain one file more than once.
 
        Example:
          "a2yy
-       will put names of two files to register a (and to  the  unnamed  regis‐
+       will  put  names  of two files to register a (and to the unnamed regis‐
        ter).
          "Ad
-       will  remove  one  file  and  append its name to register a (and to the
+       will remove one file and append its name to  register  a  (and  to  the
        unnamed register).
          p or "ap or "Ap
        will insert previously yanked and deleted files into current directory.
@@ -404,7 +411,7 @@ Registers
 Selectors
        y and d commands accept selectors.  You can combine them with every of
               selectors below to quickly remove or yank several files.
-              Most of selectors are like vi motions: j, k, gg, G, H, L, M,  %,
+              Most  of selectors are like vi motions: j, k, gg, G, H, L, M, %,
               f, F, ;, comma and '.  But there are some additional ones.
 
        a      all files in current view.
@@ -425,7 +432,7 @@ Visual Mode
 
        V      leave visual mode.
 
-       :      enter command line mode.  When you leave it  selection  will  be
+       :      enter  command  line  mode.  When you leave it selection will be
               cleared.
 
        o      switch active selection bound.
@@ -435,6 +442,81 @@ Visual Mode
        gu, u  make names of selected files lowercase.
 
        gU, U  make names of selected files uppercase.
+
+View Mode
+       This mode tries to monkey less program.  Currentry next keys  are  sup‐
+       ported:
+
+       Shift-Tab, q, Q, ZZ
+              go back to normal mode.
+
+       [count]e, [count]Ctrl-E, [count]j, [count]Ctrl-N, [count]Enter
+              forward one line (or [count] lines).
+
+       [count]y, [count]Ctrl-Y, [count]k, [count]Ctrl-K, [count]Ctrl-P
+              backward one line (or [count] lines).
+
+       [count]f, [count]Ctrl-F, [count]Ctrl-V, [count]Space Bar
+              forward one window (or [count] lines).
+
+       [count]b, [count]Ctrl-B, [count]Alt-V
+              backward one window (or [count] lines).
+
+       [count]z
+              forward one window (and set window to [count]).
+
+       [count]w
+              backward one window (and set window to [count]).
+
+       [count]Alt-Space
+              forward one window, but don't stop at end-of-file.
+
+       [count]d, [count]Ctrl-D
+              forward one half-window (and set half-window to [count]).
+
+       [count]u, [count]Ctrl-U
+              backward one half-window (and set half-window to [count]).
+
+       r, Ctrl-R, Ctrl-L, R
+              repaint screen.
+
+       [count]g, [count]<, [count]Alt-<
+              go to first line in file (or line [count]).
+
+       [count]G, [count]>, [count]Alt->
+              go to last line in file (or line [count]).
+
+       [count]p, [count]%
+              go to beginning of file (or N percent into file).
+
+       v      edit the current file with vim.
+
+       Ctrl-W S
+              split window horizontally.
+
+       Ctrl-W V
+              split window vertically.
+
+       Ctrl-W +
+              increase size of the view.
+
+       Ctrl-W -
+              decrease size of the view.
+
+       Ctrl-W <
+              increase size of the view.
+
+       Ctrl-W >
+              decrease size of the view.
+
+       Ctrl-W |
+              maximize current view.
+
+       Ctrl-W _
+              maximize current view.
+
+       Ctrl-W =
+              make size of two views equal.
 
 Command line Mode
        This  keys  apply  to  all  submodes of the command line mode: command,
@@ -1591,12 +1673,12 @@ Compatibility mode
 Menus and dialogs
        General
 
-       j, k - move.  <Escape>, Ctrl-c - clear.  <Return>, l - select and  exit
-       the menu.  Ctrl-l - redraw the menu.
+       j, k - move.  <Escape>, Ctrl-C - clear.  <Return>, l - select and  exit
+       the menu.  Ctrl-L - redraw the menu.
 
        In all menus
 
-       Ctrl-b/Ctrl-f  Ctrl-d/Ctrl-u  Ctrl-e/Ctrl-y / and ?, n/N [num]G/[num]gg
+       Ctrl-B/Ctrl-F  Ctrl-D/Ctrl-U  Ctrl-E/Ctrl-Y / and ?, n/N [num]G/[num]gg
        H/M/L zb/zt/zz
 
        All these keys have the same meaning as in normal mode (but  not  L  in
@@ -1616,7 +1698,7 @@ Menus and dialogs
 
        Bookmarks menu
 
-       Escape or Ctrl-c to abort j and k to move through.  dd on a bookmark to
+       Escape or Ctrl-C to abort j and k to move through.  dd on a bookmark to
        remove.
 
        Directory stack menu
@@ -1731,4 +1813,4 @@ AUTHOR
 
 
 
-                               October 20, 2011                        vifm(1)
+                               October 23, 2011                        vifm(1)

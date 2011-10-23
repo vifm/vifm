@@ -59,8 +59,10 @@
 
 #define ARRAY_LEN(x) (sizeof(x)/sizeof((x)[0]))
 
-#define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define MIN(a,b) (((a) < (b)) ? (a) : (b))
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
 
 #endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
 /* vim: set cinoptions+=t0 : */

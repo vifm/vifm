@@ -51,6 +51,7 @@ vifm_SOURCES = \
 	utf8.c utf8.h \
 	utils.c utils.h \
 	version.c version.h \
+	view.c view.h \
 	vifm.c \
 	visual.c visual.h
 

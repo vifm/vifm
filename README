@@ -49,6 +49,7 @@ src/undo.c - stores and handles the undo list
 src/utf8.c - functions to handle utf8 strings
 src/utils.c - various utilities
 src/version.c - contains git hash
+src/view.c - view mode commands
 src/vifm.c - contains main() which does basic initialization
 src/vifmrc-converter.c - converter for vifmrc, vifminfo and colorscheme files
 src/visual.c - implementation of visual mode commands

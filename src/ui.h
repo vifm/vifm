@@ -172,7 +172,7 @@ void clear_num_window(void);
 void show_progress(const char *msg, int period);
 void redraw_lists(void);
 int load_color_scheme(const char *name);
-void wprint(WINDOW *win, const char *name);
+void wprint(WINDOW *win, const char *str);
 
 #endif
 

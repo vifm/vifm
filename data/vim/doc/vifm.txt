@@ -3,8 +3,9 @@
 
 |vifm-options|            Command line arguments.
 |vifm-general-keys|       General keys, that work in the most of modes.
-|vifm-normal|             vifm-normal mode keys.
-|vifm-visual|             vifm-visual mode keys.
+|vifm-normal|             normal mode keys.
+|vifm-visual|             visual mode keys.
+|vifm-view|               view mode keys.
 |vifm-command-line|       Command line mode keys.
 |vifm-commands|           How to use and set :commands.
 |vifm-commands-bg|        Backgrounding of commands.
@@ -91,28 +92,29 @@ Scrolling panes~
 zt - redraw pane with file in top of list.
 zz - redraw pane with file in center of list.
 zb - redraw pane with file in bottom of list.
-Ctrl-e - scroll pane one line down.
-Ctrl-y - scroll pane one line up.
+Ctrl-E - scroll pane one line down.
+Ctrl-Y - scroll pane one line up.
 
 Pane manipulation~
 
 Second character can be entered with or without Control key.
 
-Ctrl-w h - switch to left pane.
-Ctrl-w j - switch to pane below.
-Ctrl-w k - switch to pane above.
-Ctrl-w l - switch to right pane.
-Ctrl-w w - switch to other pane.
-Ctrl-w o - shortcut for :only
-Ctrl-w s - shortcut for :split
-Ctrl-w v - shortcut for :vsplit
-Ctrl-w x - exchange panes
+Ctrl-W H - switch to left pane.
+Ctrl-W J - switch to pane below.
+Ctrl-W K - switch to pane above.
+Ctrl-W L - switch to right pane.
+Ctrl-W W - switch to other pane.
+Ctrl-W O - shortcut for :only
+Ctrl-W S - shortcut for :split
+Ctrl-W V - shortcut for :vsplit
+Ctrl-W X - exchange panes
 Ctrl-W + - increase size of the view.
 Ctrl-W - - decrease size of the view.
 Ctrl-W < - increase size of the view.
 Ctrl-W > - decrease size of the view.
 Ctrl-W | - maximize current view.
 Ctrl-W _ - maximize current view.
+Ctrl-W = - make size of two views equal.
 
 Marks~
 
@@ -171,11 +173,14 @@ Other vifm-normal Mode Keys~
 [count]!! and [count]!<selector> - enter command line mode with entered !
     command.  Count will modify range.
 
-Ctrl-o - go backward through history.
-Ctrl-i - go forward through history.
+Ctrl-O - go backward through history.
+Ctrl-I - go forward through history.
 
-Ctrl-g - creates a window showing detailed information about the current
+Ctrl-G - creates a window showing detailed information about the current
     file.
+
+Shift-Tab - enters view mode (|vifm-view|, works only after activating view pane with
+    :view command).
 
 ga - calculate size of directory.
 gA - like ga, but force update.
@@ -234,7 +239,7 @@ rl - puts symbolic links with relative paths.
 t - select or unselect (tag) a the current file
 
 u - undo last command.
-Ctrl-r - redo last command.
+Ctrl-R - redo last command.
 
 v, V - start visual selection of files.
 
@@ -345,6 +350,52 @@ O - switch active selection bound.
 gu, u - make names of selected files lowercase.
 
 gU, U - make names of selected files uppercase.
+
+--------------------------------------------------------------------------------
+*vifm-view*
+
+This mode tries to monkey less program.  Currentry next keys are supported:
+
+Shift-Tab, q, Q, ZZ - go back to normal mode.
+
+[count]e, [count]Ctrl-E, [count]j, [count]Ctrl-N, [count]Enter
+forward one line (or [count] lines).
+
+[count]y, [count]Ctrl-Y, [count]k, [count]Ctrl-K, [count]Ctrl-P
+backward one line (or [count] lines).
+
+[count]f, [count]Ctrl-F, [count]Ctrl-V, [count]Space Bar
+forward one window (or [count] lines).
+
+[count]b, [count]Ctrl-B, [count]Alt-V
+backward one window (or [count] lines).
+
+[count]z - forward one window (and set window to [count]).
+[count]w - backward one window (and set window to [count]).
+[count]Alt-Space - forward one window, but don't stop at end-of-file.
+
+[count]d, [count]Ctrl-D - forward one half-window (and set half-window to
+    [count]).
+[count]u, [count]Ctrl-U - backward one half-window (and set half-window to
+    [count]).
+
+r, Ctrl-R, Ctrl-L, R - repaint screen.
+
+[count]g, [count]<, [count]Alt-< - go to first line in file (or line [count]).
+[count]G, [count]>, [count]Alt-> - go to last line in file (or line [count]).
+[count]p, [count]% - go to beginning of file (or N percent into file).
+
+v - edit the current file with vim.
+
+Ctrl-W S - split window horizontally.
+Ctrl-W V - split window vertically.
+Ctrl-W + - increase size of the view.
+Ctrl-W - - decrease size of the view.
+Ctrl-W < - increase size of the view.
+Ctrl-W > - decrease size of the view.
+Ctrl-W | - maximize current view.
+Ctrl-W _ - maximize current view.
+Ctrl-W = - make size of two views equal.
 
 --------------------------------------------------------------------------------
 *vifm-command-line*
@@ -1337,8 +1388,10 @@ sequences that can be used in place of them.  They are:
 <c-a>,<c-b>,...,<c-z>,<c-[>,<c-\>,<c-]>,<c-^>,<c-_> - Control + some key.
 <a-a>,<a-b>,...,<a-z> - Alt + some key.
 <m-a>,<m-b>,...,<m-z> - Alt + some key.
-<a-c-a>,<a-c-b>,...,<a-c-z> - Alt + Ctrl + some key. {only for *nix}
-<m-c-a>,<m-c-b>,...,<m-c-z> - Alt + Ctrl + some key. {only for *nix}
+<a-c-a>,<a-c-b>,...,<a-c-z>                    {only for *nix}
+Alt + Ctrl + some key.
+<m-c-a>,<m-c-b>,...,<m-c-z>                    {only for *nix}
+Alt + Ctrl + some key.
 <f0> - <f63> - functional keys
 <c-f1>,...,<c-f12>                             {only for MS-Windows}
 functional keys with Control key pressed.
@@ -1367,17 +1420,17 @@ Vim like mode:
 
 General~
 
-j, Ctrl-n - moves down.
-k, Ctrl-p - moves up.
-<Escape>, Ctrl-c - clear.
+j, Ctrl-N - moves down.
+k, Ctrl-P - moves up.
+<Escape>, Ctrl-C - clear.
 <Return>, l - select and exit the menu.
-Ctrl-l - redraw the menu.
+Ctrl-L - redraw the menu.
 
 In all menus~
 
-Ctrl-b/Ctrl-f
-Ctrl-d/Ctrl-u
-Ctrl-e/Ctrl-y
+Ctrl-B/Ctrl-F
+Ctrl-D/Ctrl-U
+Ctrl-E/Ctrl-Y
 / and ?, n/N
 [num]G/[num]gg
 H/M/L
@@ -1400,7 +1453,7 @@ dd on a command to remove.
 
 Bookmarks menu~
 
-Escape or Ctrl-c to abort j and k to move through.
+Escape or Ctrl-C to abort j and k to move through.
 dd on a bookmark to remove.
 
 Directory stack menu~

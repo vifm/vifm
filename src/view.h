@@ -16,22 +16,14 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#ifndef __STRING_ARRAY_H__
-#define __STRING_ARRAY_H__
+#ifndef __VIEW_H__
+#define __VIEW_H__
 
-#include <stdio.h>
-
-/* Returns new size */
-int add_to_string_array(char ***array, int len, int count, ...);
-void remove_from_string_array(char **array, size_t len, int pos);
-int is_in_string_array(char **array, size_t len, const char *key);
-int is_in_string_array_case(char **array, size_t len, const char *key);
-char ** copy_string_array(char **array, size_t len);
-int string_array_pos(char **array, size_t len, const char *key);
-int string_array_pos_case(char **array, size_t len, const char *key);
-void free_string_array(char **array, size_t len);
-void free_wstring_array(wchar_t **array, size_t len);
-char ** read_file_lines(FILE *f, int *nlines);
+void init_view_mode(int *key_mode);
+void enter_view_mode(void);
+void view_pre(void);
+void view_post(void);
+void view_redraw(void);
 
 #endif
 

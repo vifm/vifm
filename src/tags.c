@@ -196,6 +196,7 @@ const char *tags[] = {
 	"vifm-ranges",
 	"vifm-reserved",
 	"vifm-set-options",
+	"vifm-view",
 	"vifm-visual",
 	"vifm.txt",
 	0,

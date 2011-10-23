@@ -49,6 +49,7 @@
 #include "undo.h"
 #include "utf8.h"
 #include "utils.h"
+#include "view.h"
 #include "visual.h"
 
 #include "normal.h"
@@ -57,10 +58,6 @@ struct dir_size {
 	char *path;
 	int force;
 };
-
-static int *mode;
-static int last_fast_search_char;
-static int last_fast_search_backward = -1;
 
 static void cmd_ctrl_a(struct key_info, struct keys_info *);
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
@@ -86,15 +83,10 @@ static void cmd_ctrl_ws(struct key_info, struct keys_info *);
 static void cmd_ctrl_wv(struct key_info, struct keys_info *);
 static void cmd_ctrl_ww(struct key_info, struct keys_info *);
 static void cmd_ctrl_wx(struct key_info, struct keys_info *);
-static void cmd_ctrl_wequal(struct key_info, struct keys_info *);
-static void cmd_ctrl_wless(struct key_info, struct keys_info *);
-static void cmd_ctrl_wgreater(struct key_info, struct keys_info *);
-static void cmd_ctrl_wplus(struct key_info, struct keys_info *);
-static void cmd_ctrl_wminus(struct key_info, struct keys_info *);
-static void cmd_ctrl_wpipe(struct key_info, struct keys_info *);
 static void move_splitter(struct key_info key_info, int fact);
 static void cmd_ctrl_x(struct key_info, struct keys_info *);
 static void cmd_ctrl_y(struct key_info, struct keys_info *);
+static void cmd_shift_tab(struct key_info, struct keys_info *);
 static void cmd_quote(struct key_info, struct keys_info *);
 static void cmd_percent(struct key_info, struct keys_info *);
 static void cmd_comma(struct key_info, struct keys_info *);
@@ -181,6 +173,10 @@ static void selector_S(struct key_info, struct keys_info *);
 static void selector_a(struct key_info, struct keys_info *);
 static void selector_s(struct key_info, struct keys_info *);
 
+static int *mode;
+static int last_fast_search_char;
+static int last_fast_search_backward = -1;
+
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x01", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_a}}},
 	{L"\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
@@ -215,15 +211,20 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\x17w", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ww}}},
 	{L"\x17\x18", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wx}}},
 	{L"\x17x", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wx}}},
-	{L"\x17=", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wequal}}},
-	{L"\x17<", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wless}}},
-	{L"\x17>", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wgreater}}},
-	{L"\x17+", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wplus}}},
-	{L"\x17-", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wminus}}},
-	{L"\x17|", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wpipe}}},
-	{L"\x17_", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wpipe}}},
+	{L"\x17=", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wequal}}},
+	{L"\x17<", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wless}}},
+	{L"\x17>", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wgreater}}},
+	{L"\x17+", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wplus}}},
+	{L"\x17-", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wminus}}},
+	{L"\x17|", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wpipe}}},
+	{L"\x17_", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wpipe}}},
 	{L"\x18", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_x}}},
 	{L"\x19", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
+#ifdef ENABLE_EXTENDED_KEYS
+	{{KEY_BTAB, 0}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
+#else
+	{L"\033"L"[Z", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_shift_tab}}},
+#endif
 	/* escape */
 	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"'", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_quote}}},
@@ -667,57 +668,62 @@ cmd_ctrl_ww(struct key_info key_info, struct keys_info *keys_info)
 	change_window();
 }
 
-static void
-cmd_ctrl_wequal(struct key_info key_info, struct keys_info *keys_info)
+void
+normal_cmd_ctrl_wequal(struct key_info key_info, struct keys_info *keys_info)
 {
 	curr_stats.splitter_pos = -1;
 	redraw_window();
 }
 
-static void
-cmd_ctrl_wless(struct key_info key_info, struct keys_info *keys_info)
+void
+normal_cmd_ctrl_wless(struct key_info key_info, struct keys_info *keys_info)
 {
+	FileView *selected = (get_mode() == VIEW_MODE) ? other_view : curr_view;
 	if(curr_stats.split == VSPLIT)
-		move_splitter(key_info, (curr_view == &lwin) ? -1 : +1);
+		move_splitter(key_info, (selected == &lwin) ? -1 : +1);
 	else
-		move_splitter(key_info, (curr_view == &lwin) ? -1 : +1);
+		move_splitter(key_info, (selected == &lwin) ? -1 : +1);
 }
 
-static void
-cmd_ctrl_wgreater(struct key_info key_info, struct keys_info *keys_info)
+void
+normal_cmd_ctrl_wgreater(struct key_info key_info, struct keys_info *keys_info)
 {
+	FileView *selected = (get_mode() == VIEW_MODE) ? other_view : curr_view;
 	if(curr_stats.split == VSPLIT)
-		move_splitter(key_info, (curr_view == &lwin) ? +1 : -1);
+		move_splitter(key_info, (selected == &lwin) ? +1 : -1);
 	else
-		move_splitter(key_info, (curr_view == &lwin) ? +1 : -1);
+		move_splitter(key_info, (selected == &lwin) ? +1 : -1);
 }
 
-static void
-cmd_ctrl_wplus(struct key_info key_info, struct keys_info *keys_info)
+void
+normal_cmd_ctrl_wplus(struct key_info key_info, struct keys_info *keys_info)
 {
+	FileView *selected = (get_mode() == VIEW_MODE) ? other_view : curr_view;
 	if(curr_stats.split == HSPLIT)
-		move_splitter(key_info, (curr_view == &lwin) ? +1 : -1);
+		move_splitter(key_info, (selected == &lwin) ? +1 : -1);
 	else
-		move_splitter(key_info, (curr_view == &lwin) ? +1 : -1);
+		move_splitter(key_info, (selected == &lwin) ? +1 : -1);
 }
 
-static void
-cmd_ctrl_wminus(struct key_info key_info, struct keys_info *keys_info)
+void
+normal_cmd_ctrl_wminus(struct key_info key_info, struct keys_info *keys_info)
 {
+	FileView *selected = (get_mode() == VIEW_MODE) ? other_view : curr_view;
 	if(curr_stats.split == HSPLIT)
-		move_splitter(key_info, (curr_view == &lwin) ? -1 : +1);
+		move_splitter(key_info, (selected == &lwin) ? -1 : +1);
 	else
-		move_splitter(key_info, (curr_view == &lwin) ? -1 : +1);
+		move_splitter(key_info, (selected == &lwin) ? -1 : +1);
 }
 
-static void
-cmd_ctrl_wpipe(struct key_info key_info, struct keys_info *keys_info)
+void
+normal_cmd_ctrl_wpipe(struct key_info key_info, struct keys_info *keys_info)
 {
+	FileView *selected = (get_mode() == VIEW_MODE) ? other_view : curr_view;
 	if(curr_stats.split == HSPLIT)
 		key_info.count = getmaxy(stdscr);
 	else
 		key_info.count = getmaxx(stdscr);
-	move_splitter(key_info, (curr_view == &lwin) ? +1 : -1);
+	move_splitter(key_info, (selected == &lwin) ? +1 : -1);
 }
 
 static void
@@ -796,6 +802,13 @@ cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 
 	curr_view->top_line--;
 	scroll_view(curr_view);
+}
+
+static void
+cmd_shift_tab(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(curr_stats.view)
+		enter_view_mode();
 }
 
 /* Clone file. */

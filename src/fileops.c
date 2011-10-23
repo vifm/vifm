@@ -1329,8 +1329,8 @@ delete_file_bg(FileView *view, int use_trash)
 }
 
 static int
-mv_file(const char *src, const char *src_path,
-		const char *dst, const char *path, int tmpfile_num)
+mv_file(const char *src, const char *src_path, const char *dst,
+		const char *path, int tmpfile_num)
 {
 	char full_src[PATH_MAX], full_dst[PATH_MAX];
 	int op;
@@ -1458,18 +1458,6 @@ rename_file(FileView *view, int name_only)
 
 	clean_selected_files(view);
 	enter_prompt_mode(L"New name: ", buf, rename_file_cb, complete_filename_only);
-}
-
-static char **
-read_file_lines(FILE *f, int *nlines)
-{
-	char **list = NULL;
-	char name[NAME_MAX];
-
-	*nlines = 0;
-	while(fgets(name, sizeof(name), f) != NULL)
-		*nlines = add_to_string_array(&list, *nlines, 1, name);
-	return list;
 }
 
 static int

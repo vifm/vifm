@@ -60,6 +60,8 @@
 
 	Added Ctrl + Alt + letter combinations, only for *nix.
 
+	Added view mode (see documentation).
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

@@ -1,4 +1,4 @@
-.TH vifm 1 "October 20, 2011" "" "Vifm"
+.TH vifm 1 "October 23, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -47,13 +47,13 @@ See Configure section below for the explanations on CONFDIR.
 .SH General keys
 .\" ---------------------------------------------------------------------------
 .TP
-.BI "Ctrl-c or Escape"
+.BI "Ctrl-C or Escape"
 cancel most operations.
 .TP
-.BI "Ctrl-c or Escape"
+.BI "Ctrl-C or Escape"
 clear all selected files.
 .TP
-.BI Ctrl-l
+.BI Ctrl-L
 clear and redraw the screen.
 .\" ---------------------------------------------------------------------------
 .SH Basic Movement
@@ -188,6 +188,9 @@ maximize current view.
 .TP
 .BI "Ctrl-W _"
 maximize current view.
+.TP
+.BI "Ctrl-W ="
+make size of two views equal.
 .\" ---------------------------------------------------------------------------
 .SH Marks
 .\" ---------------------------------------------------------------------------
@@ -282,6 +285,9 @@ go forward through history.
 .TP
 .BI Ctrl-G
 creates a window showing detailed information about the current file.
+.TP
+.BI "Shift-Tab"
+enters view mode (works only after activating view pane with :view command).
 .TP
 .BI ga
 calculate directory size.
@@ -523,6 +529,82 @@ make names of selected files lowercase.
 .TP
 .BI "gU, U"
 make names of selected files uppercase.
+.\" ---------------------------------------------------------------------------
+.SH View Mode
+.\" ---------------------------------------------------------------------------
+This mode tries to monkey less program.  Currentry next keys are supported:
+.TP
+.BI "Shift-Tab, q, Q, ZZ"
+go back to normal mode.
+.TP
+.BI "[count]e, [count]Ctrl-E, [count]j, [count]Ctrl-N, [count]Enter"
+forward one line (or [count] lines).
+.TP
+.BI "[count]y, [count]Ctrl-Y, [count]k, [count]Ctrl-K, [count]Ctrl-P"
+backward one line (or [count] lines).
+.TP
+.BI "[count]f, [count]Ctrl-F, [count]Ctrl-V, [count]Space Bar"
+forward one window (or [count] lines).
+.TP
+.BI "[count]b, [count]Ctrl-B, [count]Alt-V"
+backward one window (or [count] lines).
+.TP
+.BI [count]z
+forward one window (and set window to [count]).
+.TP
+.BI [count]w
+backward one window (and set window to [count]).
+.TP
+.BI [count]Alt-Space
+forward one window, but don't stop at end-of-file.
+.TP
+.BI "[count]d, [count]Ctrl-D"
+forward one half-window (and set half-window to [count]).
+.TP
+.BI "[count]u, [count]Ctrl-U"
+backward one half-window (and set half-window to [count]).
+.TP
+.BI "r, Ctrl-R, Ctrl-L, R"
+repaint screen.
+.TP
+.BI "[count]g, [count]<, [count]Alt-<"
+go to first line in file (or line [count]).
+.TP
+.BI "[count]G, [count]>, [count]Alt->"
+go to last line in file (or line [count]).
+.TP
+.BI "[count]p, [count]%"
+go to beginning of file (or N percent into file).
+.TP
+.BI v
+edit the current file with vim.
+.TP
+.BI "Ctrl-W S"
+split window horizontally.
+.TP
+.BI "Ctrl-W V"
+split window vertically.
+.TP
+.BI "Ctrl-W +"
+increase size of the view.
+.TP
+.BI "Ctrl-W -"
+decrease size of the view.
+.TP
+.BI "Ctrl-W <"
+increase size of the view.
+.TP
+.BI "Ctrl-W >"
+decrease size of the view.
+.TP
+.BI "Ctrl-W |"
+maximize current view.
+.TP
+.BI "Ctrl-W _"
+maximize current view.
+.TP
+.BI "Ctrl-W ="
+make size of two views equal.
 .\" ---------------------------------------------------------------------------
 .SH Command line Mode
 .\" ---------------------------------------------------------------------------
@@ -1763,15 +1845,15 @@ Vim like mode:
 General
 
 j, k - move.
-<Escape>, Ctrl-c - clear.
+<Escape>, Ctrl-C - clear.
 <Return>, l - select and exit the menu.
-Ctrl-l - redraw the menu.
+Ctrl-L - redraw the menu.
 
 In all menus
 
-Ctrl-b/Ctrl-f
-Ctrl-d/Ctrl-u
-Ctrl-e/Ctrl-y
+Ctrl-B/Ctrl-F
+Ctrl-D/Ctrl-U
+Ctrl-E/Ctrl-Y
 / and ?, n/N
 [num]G/[num]gg
 H/M/L
@@ -1794,7 +1876,7 @@ dd on a command to remove.
 
 Bookmarks menu
 
-Escape or Ctrl-c to abort j and k to move through.
+Escape or Ctrl-C to abort j and k to move through.
 dd on a bookmark to remove.
 
 Directory stack menu

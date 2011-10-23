@@ -26,6 +26,12 @@ void init_normal_mode(int *key_mode);
 void normal_cmd_zb(struct key_info, struct keys_info *);
 void normal_cmd_zt(struct key_info, struct keys_info *);
 void normal_cmd_zz(struct key_info, struct keys_info *);
+void normal_cmd_ctrl_wequal(struct key_info, struct keys_info *);
+void normal_cmd_ctrl_wless(struct key_info, struct keys_info *);
+void normal_cmd_ctrl_wgreater(struct key_info, struct keys_info *);
+void normal_cmd_ctrl_wplus(struct key_info, struct keys_info *);
+void normal_cmd_ctrl_wminus(struct key_info, struct keys_info *);
+void normal_cmd_ctrl_wpipe(struct key_info, struct keys_info *);
 int ffind(int ch, int backward, int wrap);
 int cmd_paren(int lb, int ub, int inc);
 

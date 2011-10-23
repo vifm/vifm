@@ -58,6 +58,7 @@
 #include "status.h"
 #include "utf8.h"
 #include "utils.h"
+#include "view.h"
 
 #include "ui.h"
 
@@ -826,9 +827,14 @@ redraw_window(void)
 	load_saving_pos(curr_view, 1);
 
 	if(curr_stats.view)
+	{
+		update_view_title(other_view);
 		quick_view_file(curr_view);
+	}
 	else
+	{
 		load_saving_pos(other_view, 1);
+	}
 
 	update_stat_window(curr_view);
 
@@ -859,6 +865,9 @@ redraw_window(void)
 	}
 
 	update_input_buf();
+	
+	if(get_mode() == VIEW_MODE)
+		view_redraw();
 }
 
 static void

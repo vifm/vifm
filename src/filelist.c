@@ -41,14 +41,14 @@
 #endif
 
 #include <errno.h>
-#include <stdlib.h> /* malloc  qsort */
+#include <stdlib.h> /* malloc() */
 #include <string.h> /* strcat() */
 #include <time.h>
 
 #include "background.h"
 #include "color_scheme.h"
 #include "commands.h"
-#include "config.h" /* menu colors */
+#include "config.h"
 #include "file_info.h"
 #include "filelist.h"
 #include "fileops.h"
@@ -56,6 +56,7 @@
 #include "filetype.h"
 #include "log.h"
 #include "menus.h"
+#include "modes.h"
 #include "opt_handlers.h"
 #include "sort.h"
 #include "status.h"
@@ -229,55 +230,6 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 	wattroff(view->win, COLOR_PAIR(type + view->color_scheme) | col.attr);
 }
 
-#ifndef _WIN32
-static FILE *
-use_info_prog(char *cmd)
-{
-	pid_t pid;
-	int error_pipe[2];
-	int use_menu = 0, split = 0;
-
-	if(strchr(cmd, '%') == NULL)
-	{
-		char *escaped = escape_filename(
-				curr_view->dir_entry[curr_view->list_pos].name, 0);
-		char *t = malloc(strlen(cmd) + 1 + strlen(escaped) + 1);
-		sprintf(t, "%s %s", cmd, escaped);
-		cmd = t;
-	}
-	else
-	{
-		cmd = expand_macros(curr_view, cmd, NULL, &use_menu, &split);
-	}
-
-	if(pipe(error_pipe) != 0)
-	{
-		(void)show_error_msg("File pipe error", "Error creating pipe");
-		return NULL;
-	}
-
-	if((pid = fork()) == -1)
-		return NULL;
-
-	if(pid == 0)
-	{
-		run_from_fork(error_pipe, 0, cmd);
-		free(cmd);
-		return NULL;
-	}
-	else
-	{
-		FILE * f;
-		close(error_pipe[1]); /* Close write end of pipe. */
-		free(cmd);
-		f = fdopen(error_pipe[0], "r");
-		if(f == NULL)
-			close(error_pipe[0]);
-		return f;
-	}
-}
-#endif
-
 static void
 view_not_wraped(FILE *fp, int x)
 {
@@ -381,11 +333,13 @@ view_wraped(FILE *fp, int x)
 void
 quick_view_file(FileView *view)
 {
-	FILE *fp;
 	int x = 0;
 	int y = 1;
 	char buf[PATH_MAX];
 	char link[PATH_MAX];
+
+	if(get_mode() == VIEW_MODE)
+		return;
 
 	if(curr_stats.number_of_windows == 1)
 		return;
@@ -412,8 +366,7 @@ quick_view_file(FileView *view)
 			mvwaddstr(other_view->win, ++x, y, "File is a Named Pipe");
 			break;
 		case LINK:
-			if(get_link_target(view->dir_entry[view->list_pos].name, link,
-					sizeof(link)) != 0)
+			if(get_link_target(buf, link, sizeof(link)) != 0)
 			{
 				mvwaddstr(other_view->win, ++x, y, "Cannot resolve Link");
 				break;
@@ -426,7 +379,8 @@ quick_view_file(FileView *view)
 		case UNKNOWN:
 		default:
 			{
-				char *viewer;
+				const char *viewer;
+				FILE *fp;
 
 				viewer = get_viewer_for_file(buf);
 				if(viewer == NULL && is_dir(buf))
@@ -459,6 +413,56 @@ quick_view_file(FileView *view)
 	wrefresh(other_view->win);
 	wrefresh(other_view->title);
 }
+
+#ifndef _WIN32
+FILE *
+use_info_prog(const char *viewer)
+{
+	pid_t pid;
+	int error_pipe[2];
+	int use_menu = 0, split = 0;
+	char *cmd;
+
+	if(strchr(viewer, '%') == NULL)
+	{
+		char *escaped = escape_filename(
+				curr_view->dir_entry[curr_view->list_pos].name, 0);
+		char *t = malloc(strlen(viewer) + 1 + strlen(escaped) + 1);
+		sprintf(t, "%s %s", viewer, escaped);
+		cmd = t;
+	}
+	else
+	{
+		cmd = expand_macros(curr_view, viewer, NULL, &use_menu, &split);
+	}
+
+	if(pipe(error_pipe) != 0)
+	{
+		(void)show_error_msg("File pipe error", "Error creating pipe");
+		return NULL;
+	}
+
+	if((pid = fork()) == -1)
+		return NULL;
+
+	if(pid == 0)
+	{
+		run_from_fork(error_pipe, 0, cmd);
+		free(cmd);
+		return NULL;
+	}
+	else
+	{
+		FILE * f;
+		close(error_pipe[1]); /* Close write end of pipe. */
+		free(cmd);
+		f = fdopen(error_pipe[0], "r");
+		if(f == NULL)
+			close(error_pipe[0]);
+		return f;
+	}
+}
+#endif
 
 char *
 get_current_file_name(FileView *view)
@@ -599,8 +603,12 @@ update_view_title(FileView *view)
 {
 	char *buf;
 	size_t len;
+	FileView *selected = (get_mode() == VIEW_MODE) ? other_view : curr_view;
 
-	if(view == curr_view)
+	if(get_mode() == VIEW_MODE && view == other_view)
+		return;
+
+	if(view == selected)
 	{
 		Col_attr col;
 
@@ -632,7 +640,7 @@ update_view_title(FileView *view)
 	buf = replace_home_part(view->curr_dir);
 
 	len = get_utf8_string_length(buf);
-	if(len + 1 > view->window_width && view == curr_view)
+	if(len + 1 > view->window_width && view == selected)
 	{ /* Truncate long directory names */
 		const char *ptr;
 
@@ -646,7 +654,7 @@ update_view_title(FileView *view)
 		wprintw(view->title, "...");
 		wprint(view->title, ptr);
 	}
-	else if(len + 1 > view->window_width && curr_view != view)
+	else if(len + 1 > view->window_width && view != selected)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf, view->window_width - 3 + 1);
 		buf[len] = '\0';

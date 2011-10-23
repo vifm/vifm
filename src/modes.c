@@ -33,6 +33,7 @@
 #include "sort_dialog.h"
 #include "status.h"
 #include "ui.h"
+#include "view.h"
 #include "visual.h"
 
 #include "modes.h"
@@ -47,6 +48,7 @@ static int mode_flags[] = {
 	MF_USES_COUNT,                /* SORT_MODE */
 	MF_USES_COUNT,                /* PERMISSIONS_MODE */
 	MF_USES_COUNT,                /* CHANGE_MODE */
+	MF_USES_COUNT,                /* VIEW_MODE */
 };
 
 static char _gnuc_unused mode_flags_size_guard[
@@ -61,6 +63,7 @@ static char uses_input_bar[] = {
 	1, /* SORT_MODE */
 	1, /* PERMISSIONS_MODE */
 	1, /* CHANGE_MODE */
+	1, /* VIEW_MODE */
 };
 
 static char _gnuc_unused uses_input_bar_size_guard[
@@ -78,6 +81,7 @@ init_modes(void)
 	init_sort_dialog_mode(&mode);
 	init_visual_mode(&mode);
 	init_change_dialog_mode(&mode);
+	init_view_mode(&mode);
 }
 
 void
@@ -99,6 +103,11 @@ modes_pre(void)
 	}
 	else if(mode == PERMISSIONS_MODE)
 	{
+		return;
+	}
+	else if(mode == VIEW_MODE)
+	{
+		view_pre();
 		return;
 	}
 	else if(mode == MENU_MODE)
@@ -131,6 +140,11 @@ modes_post(void)
 		return;
 	else if(mode == PERMISSIONS_MODE)
 		return;
+	else if(mode == VIEW_MODE)
+	{
+		view_post();
+		return;
+	}
 	else if(mode == MENU_MODE)
 	{
 		menu_post();
@@ -209,6 +223,8 @@ modes_redraw(void)
 		redraw_change_dialog();
 	else if(mode == PERMISSIONS_MODE)
 		redraw_permissions_dialog();
+	else if(mode == VIEW_MODE)
+		view_redraw();
 
 	curr_stats.vifm_started = 3;
 
