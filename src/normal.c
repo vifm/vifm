@@ -47,6 +47,7 @@
 #include "tree.h"
 #include "ui.h"
 #include "undo.h"
+#include "utf8.h"
 #include "utils.h"
 #include "visual.h"
 

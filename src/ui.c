@@ -56,6 +56,7 @@
 #include "opt_handlers.h"
 #include "signals.h"
 #include "status.h"
+#include "utf8.h"
 #include "utils.h"
 
 #include "ui.h"

@@ -61,6 +61,7 @@
 #include "status.h"
 #include "tree.h"
 #include "ui.h"
+#include "utf8.h"
 #include "utils.h"
 
 static int

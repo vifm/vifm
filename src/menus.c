@@ -61,6 +61,7 @@
 #include "status.h"
 #include "ui.h"
 #include "undo.h"
+#include "utf8.h"
 #include "utils.h"
 
 enum {

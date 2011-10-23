@@ -47,6 +47,7 @@ vifm_SOURCES = \
 	tree.c tree.h \
 	ui.c ui.h \
 	undo.c undo.h \
+	utf8.c utf8.h \
 	utils.c utils.h \
 	version.c version.h \
 	vifm.c \
