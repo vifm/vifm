@@ -162,19 +162,19 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 
 	if(found > 0)
 	{
-		int found = 1;
+		int was_found = 1;
 		if(move)
 		{
 			if(backward)
-				found = find_previous_pattern(view, cfg.wrap_scan);
+				was_found = find_previous_pattern(view, cfg.wrap_scan);
 			else
-				found = find_next_pattern(view, cfg.wrap_scan);
+				was_found = find_next_pattern(view, cfg.wrap_scan);
 		}
 		if(!cfg.hl_search)
 		{
 			view->matches = found;
 
-			if(!found)
+			if(!was_found)
 			{
 				top_bottom_msg(view, backward);
 				return 1;
