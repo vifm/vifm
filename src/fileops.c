@@ -2182,8 +2182,11 @@ prompt_what_to_do(const char *src_name)
 {
 	wchar_t buf[NAME_MAX];
 
-	free(put_confirm.name);
-	put_confirm.name = strdup(src_name);
+	if(src_name != put_confirm.name)
+	{
+		free(put_confirm.name);
+		put_confirm.name = strdup(src_name);
+	}
 #ifndef _WIN32
 	swprintf(buf, sizeof(buf)/sizeof(buf[0]),
 			L"Name conflict for %s. [r]ename/[s]kip/[o]verwrite/overwrite [a]ll: ",
