@@ -1613,7 +1613,7 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 			continue;
 
 		if(mv_file(view->dir_entry[abs(indexes[i])].name, view->curr_dir,
-					list[i], view->curr_dir, (indexes[i] < 0) ? 1 : -1) == 0)
+					list[i], view->curr_dir, (indexes[i] < 0) ? 1 : 0) == 0)
 		{
 			int pos;
 
