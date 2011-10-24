@@ -1993,7 +1993,7 @@ show_grep_menu(FileView *view, const char *args, int invert)
 
 	if(args[0] == '-')
 	{
-		snprintf(buf, sizeof(buf), "grep -n -H -I -R %s %s %s", inv_str, args,
+		snprintf(buf, sizeof(buf), "grep -n -H -I -r %s %s %s", inv_str, args,
 				files);
 	}
 	else
