@@ -32,6 +32,16 @@ test_tar_as_2nd_ext(void)
 	assert_string_equal("name(1).tar.ext2", gen_clone_name("name.tar.ext2"));
 }
 
+static void
+test_name_inc(void)
+{
+	assert_string_equal("name(0)(1).tar.ext2",
+			gen_clone_name("name(0).tar.ext2"));
+	assert_string_equal("name(-1)(1).tar.ext2",
+			gen_clone_name("name(-1).tar.ext2"));
+	assert_string_equal("name(2).tar.ext2", gen_clone_name("name(1).tar.ext2"));
+}
+
 void
 gen_clone_name_tests(void)
 {
@@ -42,6 +52,7 @@ gen_clone_name_tests(void)
   run_test(test_ext);
 	run_test(test_two_exts);
 	run_test(test_tar_as_2nd_ext);
+	run_test(test_name_inc);
 
 	test_fixture_end();
 }

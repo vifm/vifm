@@ -2436,6 +2436,7 @@ gen_clone_name(const char *normal_name)
 	int i;
 	size_t len;
 	char *ext;
+	char *p;
 
 	snprintf(tmp, sizeof(tmp), "%s", normal_name);
 	chosp(tmp);
@@ -2455,8 +2456,19 @@ gen_clone_name(const char *normal_name)
 		result[strlen(result) - strlen(ext) - 1] = '\0';
 	}
 
-	i = 1;
 	len = strlen(result);
+	i = 1;
+	if(result[len - 1] == ')' && (p = strrchr(result, '(')) != NULL)
+	{
+		char *t;
+		long l;
+		if((l = strtol(p + 1, &t, 10)) > 0 && t[1] == '\0')
+		{
+			len = p - result;
+			i = l + 1;
+		}
+	}
+
 	do
 		snprintf(result + len, sizeof(result) - len, "(%d)%s%s", i++,
 				(ext == NULL) ? "" : ".", (ext == NULL) ? "" : ext);
