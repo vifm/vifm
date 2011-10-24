@@ -3239,10 +3239,13 @@ edit_cmd(const struct cmd_info *cmd_info)
 	if(!curr_view->selected_files ||
 			!curr_view->dir_entry[curr_view->list_pos].selected)
 	{
+		char buf[PATH_MAX];
 		if(cfg.vim_filter)
 			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
 
-		view_file(get_current_file_name(curr_view), -1);
+		snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
+				get_current_file_name(curr_view));
+		view_file(buf, -1);
 	}
 	else
 	{

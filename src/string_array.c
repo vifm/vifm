@@ -27,6 +27,11 @@
 
 #include "string_array.h"
 
+#if !defined(NAME_MAX) && defined(_WIN32)
+#include <io.h>
+#define NAME_MAX FILENAME_MAX
+#endif
+
 int
 add_to_string_array(char ***array, int len, int count, ...)
 {

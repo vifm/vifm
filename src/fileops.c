@@ -660,7 +660,10 @@ execute_file(FileView *view, int dont_execute)
 		}
 		else if(view->selected_files <= 1)
 		{
-			view_file(get_current_file_name(view), -1);
+			char buf[PATH_MAX];
+			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
+					get_current_file_name(view));
+			view_file(buf, -1);
 		}
 		else
 		{
@@ -716,7 +719,12 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 			|| strncmp(program, "FUSE_MOUNT2", 11) == 0)
 	{
 		if(dont_execute)
-			view_file(get_current_file_name(view), -1);
+		{
+			char buf[PATH_MAX];
+			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
+					get_current_file_name(view));
+			view_file(buf, -1);
+		}
 		else
 			fuse_try_mount(view, program);
 	}

@@ -161,6 +161,8 @@
 
 	Fixed bug with showing name conflict message 2nd time.
 
+	Fixed viewing files with UNC paths on Windows.
+
 0.6.3 to 0.7.0
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.

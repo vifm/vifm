@@ -11,8 +11,9 @@ vifm_SOURCES := background.c bookmarks.c change_dialog.c cmdline.c cmds.c \
                 file_info.c file_magic.c filelist.c fileops.c filetype.c \
                 keys.c log.c main_loop.c menu.c menus.c modes.c normal.c ops.c \
                 opt_handlers.c options.c permissions_dialog.c registers.c \
-                search.c signals.c sort.c sort_dialog.c status.c tags.c \
-                trash.c tree.c ui.c undo.c utils.c version.c vifm.c visual.c
+                search.c signals.c sort.c sort_dialog.c status.c \
+                string_array.c tags.c trash.c tree.c ui.c undo.c utf8.c \
+                utils.c version.c view.c vifm.c visual.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe
