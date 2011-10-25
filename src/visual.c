@@ -83,6 +83,7 @@ static void goto_pos(int pos);
 static void cmd_gU(struct key_info, struct keys_info *);
 static void cmd_gu(struct key_info, struct keys_info *);
 static void cmd_gv(struct key_info, struct keys_info *);
+static void cmd_i(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
 static void cmd_l(struct key_info, struct keys_info *);
@@ -142,6 +143,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"gU", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
 	{L"gu", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gu}}},
 	{L"gv", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gv}}},
+	{L"i", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_i}}},
 	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_l}}},
@@ -669,6 +671,13 @@ cmd_gv(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+cmd_i(struct key_info key_info, struct keys_info *keys_info)
+{
+	handle_file(curr_view, 1, 0);
+	leave_visual_mode(curr_stats.save_msg, 1, 1);
+}
+
+static void
 cmd_j(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
@@ -688,8 +697,7 @@ static void
 cmd_l(struct key_info key_info, struct keys_info *keys_info)
 {
 	update_marks(view);
-	if(*mode == VISUAL_MODE)
-		*mode = NORMAL_MODE;
+	leave_visual_mode(curr_stats.save_msg, 1, 0);
 	handle_file(view, 0, 0);
 	clean_selected_files(view);
 	draw_dir_list(view, view->top_line);

@@ -93,6 +93,8 @@
 
 	Smarter file name generation on cloning.
 
+	Made i key work in visual mode.
+
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 
 	Fixed bug with disappearing of number of selected files in visual mode.
