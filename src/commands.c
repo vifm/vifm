@@ -1627,6 +1627,7 @@ append_selected_files(FileView *view, char *expanded, int under_cursor,
 		int quotes, const char *mod)
 {
 	int dir_name_len = 0;
+	size_t old_len = strlen(expanded);
 
 	if(view == other_view)
 		dir_name_len = strlen(other_view->curr_dir) + 1;
@@ -1654,7 +1655,7 @@ append_selected_files(FileView *view, char *expanded, int under_cursor,
 
 #ifdef _WIN32
 	if(strcmp(cfg.shell, "cmd") == 0)
-		to_back_slash(expanded);
+		to_back_slash(expanded + old_len);
 #endif
 
 	return expanded;
