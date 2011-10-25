@@ -1965,6 +1965,7 @@ show_grep_menu(FileView *view, const char *args, int invert)
 	int menu, split;
 	int were_errors;
 	const char *inv_str = invert ? "-v" : "";
+	const char grep_cmd_fmt[] = "grep -n -H -I -r %s %s %s";
 
 	static menu_info m;
 	m.top = 0;
@@ -1993,15 +1994,13 @@ show_grep_menu(FileView *view, const char *args, int invert)
 
 	if(args[0] == '-')
 	{
-		snprintf(buf, sizeof(buf), "grep -n -H -I -r %s %s %s", inv_str, args,
-				files);
+		snprintf(buf, sizeof(buf), grep_cmd_fmt, inv_str, args, files);
 	}
 	else
 	{
 		char *escaped_args;
 		escaped_args = escape_filename(args, 0);
-		snprintf(buf, sizeof(buf), "grep -n -H -I -R %s %s %s", inv_str,
-				escaped_args, files);
+		snprintf(buf, sizeof(buf), grep_cmd_fmt, inv_str, escaped_args, files);
 		free(escaped_args);
 	}
 	free(files);

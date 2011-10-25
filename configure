@@ -13042,6 +13042,8 @@ if test "x$GCC" = "xyes"; then
   esac
 fi
 
+CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE"
+
 CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64"
 
 LDFLAGS="-lpthread $LDFLAGS"
