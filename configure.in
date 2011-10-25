@@ -57,6 +57,9 @@ if test "x$GCC" = "xyes"; then
 fi
 changequote([,])dnl
 
+dnl This is for Mac OS
+CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE"
+
 dnl Use 64-bit off_t type
 CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64"
 

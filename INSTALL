@@ -23,6 +23,10 @@ On *nix you need:
 	If you edit the vifmrc file with vifm running any changes you make
 	will be overwritten when you close vifm.
 
+On Mac OS you need:
+
+    Get and install libscursesw.
+
 On Windows you need:
 
 	Mingw
