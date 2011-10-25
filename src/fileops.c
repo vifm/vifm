@@ -895,6 +895,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 #ifndef _WIN32
 		shellout(buf, 1);
 #else
+		to_back_slash(buf);
 		if(curr_stats.as_admin && is_vista_and_above())
 		{
 			SHELLEXECUTEINFOA sei;

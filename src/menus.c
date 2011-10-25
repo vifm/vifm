@@ -849,8 +849,8 @@ execute_menu_cb(FileView *view, menu_info *m)
 			load_color_scheme(m->data[m->pos]);
 			break;
 		case COMMAND:
-			*strchr(m->data[m->pos] + 1, ' ') = '\0';
-			exec_command(m->data[m->pos] + 1, view, GET_COMMAND);
+			*strchr(m->data[m->pos], ' ') = '\0';
+			exec_command(m->data[m->pos], view, GET_COMMAND);
 			break;
 		case FILETYPE:
 			execute_filetype_cb(view, m);
