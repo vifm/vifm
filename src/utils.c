@@ -172,6 +172,7 @@ my_system(char *command)
 	char buf[strlen(cfg.shell) + 5 + strlen(command)*4 + 1 + 1];
 
 	signal(SIGINT, SIG_DFL);
+	system("cls");
 
 	if(strcmp(cfg.shell, "cmd") == 0)
 	{
@@ -179,6 +180,8 @@ my_system(char *command)
 			snprintf(buf, sizeof(buf), "%s /C %s", cfg.shell, command);
 		else
 			snprintf(buf, sizeof(buf), "%s /C \"%s\"", cfg.shell, command);
+
+		return system(buf);
 	}
 	else
 	{
@@ -197,10 +200,8 @@ my_system(char *command)
 		*p = '\0';
 
 		strcat(buf, "'");
+		return exec_program(buf);
 	}
-
-	system("cls");
-	return system(buf);
 #endif
 }
 
@@ -1360,7 +1361,7 @@ exec_program(TCHAR *cmd)
 	STARTUPINFO startup = {};
 	PROCESS_INFORMATION pinfo;
 
-	ret = CreateProcess(NULL, cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
+	ret = CreateProcessA(NULL, cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
 			&pinfo);
 	if(ret == 0)
 		return -1;
