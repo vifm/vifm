@@ -175,7 +175,10 @@ my_system(char *command)
 
 	if(strcmp(cfg.shell, "cmd") == 0)
 	{
-		snprintf(buf, sizeof(buf), "%s /C \"%s\"", cfg.shell, command);
+		if(strchr(command, '"') != NULL)
+			snprintf(buf, sizeof(buf), "%s /C %s", cfg.shell, command);
+		else
+			snprintf(buf, sizeof(buf), "%s /C \"%s\"", cfg.shell, command);
 	}
 	else
 	{
