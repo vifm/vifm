@@ -171,16 +171,11 @@ my_system(char *command)
 #else
 	char buf[strlen(cfg.shell) + 5 + strlen(command)*4 + 1 + 1];
 
-	signal(SIGINT, SIG_DFL);
 	system("cls");
 
 	if(strcmp(cfg.shell, "cmd") == 0)
 	{
-		if(strchr(command, '"') != NULL)
-			snprintf(buf, sizeof(buf), "%s /C %s", cfg.shell, command);
-		else
-			snprintf(buf, sizeof(buf), "%s /C \"%s\"", cfg.shell, command);
-
+		snprintf(buf, sizeof(buf), "%s /C \"%s\"", cfg.shell, command);
 		return system(buf);
 	}
 	else
