@@ -437,6 +437,10 @@ test_colon_s(void)
 	expanded = expand_macros(&lwin, " cp %f:s?l?r?k? ", "", &menu, &split);
 	assert_string_equal(" cp rfile0 rfile2k? ", expanded);
 	free(expanded);
+
+	expanded = expand_macros(&lwin, " cp %f:s?l?r?:s!r:k:k? ", "", &menu, &split);
+	assert_string_equal(" cp rfile0 kfile2k? ", expanded);
+	free(expanded);
 }
 
 static void

@@ -165,6 +165,8 @@
 
 	Fixed viewing files with UNC paths on Windows.
 
+	Fixed bug with applying :s or :gs filename modifiers several times.
+
 0.6.3 to 0.7.0
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.

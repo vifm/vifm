@@ -1474,10 +1474,11 @@ find_nth_chr(const char *str, char c, int n)
 }
 
 static const char *
-apply_mod(const char *path, const char *parent, const char *mod)
+apply_mod(const char *path, const char *parent, const char *mod, int *mod_len)
 {
 	static char buf[PATH_MAX];
 
+	*mod_len = 2;
 	if(strncmp(mod, ":p", 2) == 0)
 	{
 		if(is_path_absolute(path))
@@ -1550,6 +1551,7 @@ apply_mod(const char *path, const char *parent, const char *mod)
 	else if(strncmp(mod, ":s", 2) == 0 || strncmp(mod, ":gs", 3) == 0)
 	{
 		char pattern[256], sub[256];
+		const char *start = mod;
 		char c = (mod[1] == 'g') ? mod++[3] : mod[2];
 		const char *t, *p = find_nth_chr(mod, c, 3);
 		if(p == NULL)
@@ -1558,9 +1560,12 @@ apply_mod(const char *path, const char *parent, const char *mod)
 		snprintf(pattern, t - (mod + 3) + 1, "%s", mod + 3);
 		snprintf(sub, p - (t + 1) + 1, "%s", t + 1);
 		strcpy(buf, substitute_in_name(path, pattern, sub, (mod[0] == 'g')));
+		*mod_len = (p + 1) - start;
 	}
 	else
+	{
 		return NULL;
+	}
 
 	return buf;
 }
@@ -1573,11 +1578,12 @@ apply_mods(const char *path, const char *parent, const char *mod)
 	strcpy(buf, path);
 	while(*mod != '\0')
 	{
-		const char *p = apply_mod(buf, parent, mod);
+		int mod_len;
+		const char *p = apply_mod(buf, parent, mod, &mod_len);
 		if(p == NULL)
 			break;
 		strcpy(buf, p);
-		mod += 2;
+		mod += mod_len;
 	}
 
 #ifdef _WIN32

@@ -11,6 +11,9 @@ Basic things that need to be done.
     Templates for :touch.
 	Mouse support.
     Ctrl-R combinations in the command-line mode.
+    Add the UNC computer name (after the \\) in the macros (%h).
+    Add search functions to view mode.
+    Exploring files (view mode related thing).
 
 Documentation.
 	Better documentation (with normal tags in Vim version).
@@ -31,6 +34,9 @@ Vi(m) specific features that need to be added.
     :map without arguments
     Better ranges.
     Ctrl-W F key.
+    Keys in the menus to scroll horizontally.
+    add the possibility to run vifm.exe from the shell with commands (:com)
+        as command line parameters
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
