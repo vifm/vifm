@@ -356,7 +356,7 @@ gU, U - make names of selected files uppercase.
 
 This mode tries to monkey less program.  Currentry next keys are supported:
 
-Shift-Tab, q, Q, ZZ - go back to normal mode.
+Shift-Tab, Tab, q, Q, ZZ - go back to normal mode.
 
 [count]e, [count]Ctrl-E, [count]j, [count]Ctrl-N, [count]Enter
 forward one line (or [count] lines).

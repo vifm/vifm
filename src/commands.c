@@ -1633,7 +1633,9 @@ append_selected_files(FileView *view, char *expanded, int under_cursor,
 		int quotes, const char *mod)
 {
 	int dir_name_len = 0;
+#ifdef _WIN32
 	size_t old_len = strlen(expanded);
+#endif
 
 	if(view == other_view)
 		dir_name_len = strlen(other_view->curr_dir) + 1;

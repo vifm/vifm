@@ -447,7 +447,7 @@ View Mode
        This mode tries to monkey less program.  Currentry next keys  are  sup‐
        ported:
 
-       Shift-Tab, q, Q, ZZ
+       Shift-Tab, Tab, q, Q, ZZ
               go back to normal mode.
 
        [count]e, [count]Ctrl-E, [count]j, [count]Ctrl-N, [count]Enter
@@ -1813,4 +1813,4 @@ AUTHOR
 
 
 
-                               October 23, 2011                        vifm(1)
+                               October 26, 2011                        vifm(1)
