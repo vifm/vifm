@@ -326,7 +326,7 @@ check_directory_for_color_scheme(int left, const char *dir)
 		}
 
 		snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, u.name);
-		source_file(full);
+		(void)source_file(full);
 
 		*p = t;
 		if((p = strchr(p + 1, '/')) == NULL)

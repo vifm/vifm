@@ -110,6 +110,7 @@ enum {
 	COM_HISTORY,
 	COM_PUSHD,
 	COM_SET,
+	COM_SOURCE,
 };
 
 static int complete_args(int id, const char *args, int argc, char **argv,
@@ -202,6 +203,7 @@ static int screen_cmd(const struct cmd_info *cmd_info);
 static int set_cmd(const struct cmd_info *cmd_info);
 static int shell_cmd(const struct cmd_info *cmd_info);
 static int sort_cmd(const struct cmd_info *cmd_info);
+static int source_cmd(const struct cmd_info *cmd_info);
 static int split_cmd(const struct cmd_info *cmd_info);
 static int substitute_cmd(const struct cmd_info *cmd_info);
 static int sync_cmd(const struct cmd_info *cmd_info);
@@ -354,6 +356,8 @@ static const struct cmd_add commands[] = {
 		.handler = shell_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "sort",             .abbr = "sor",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = sort_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "source",           .abbr = "so",    .emark = 0,  .id = COM_SOURCE,      .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+		.handler = source_cmd,      .qmark = 0,      .expand = 2, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "split",            .abbr = "sp",    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = split_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "substitute",       .abbr = "s",     .emark = 0,  .id = COM_SUBSTITUTE,  .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
@@ -463,8 +467,8 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		else
 			start += complete_highlight_arg(arg);
 	}
-	else if((id == COM_CD || id == COM_PUSHD || id == COM_EXECUTE) &&
-			dollar != NULL && dollar > slash)
+	else if((id == COM_CD || id == COM_PUSHD || id == COM_EXECUTE ||
+			id == COM_SOURCE) && dollar != NULL && dollar > slash)
 	{
 		start = dollar + 1;
 		complete_envvar(start);
@@ -4179,6 +4183,27 @@ sort_cmd(const struct cmd_info *cmd_info)
 {
 	enter_sort_mode(curr_view);
 	need_clean_selection = 0;
+	return 0;
+}
+
+static int
+source_cmd(const struct cmd_info *cmd_info)
+{
+	if(access(cmd_info->argv[0], F_OK) != 0)
+	{
+		status_bar_errorf("File doesn't exist: %s", cmd_info->argv[0]);
+		return 1;
+	}
+	if(access(cmd_info->argv[0], R_OK) != 0)
+	{
+		status_bar_errorf("File isn't readable: %s", cmd_info->argv[0]);
+		return 1;
+	}
+	if(source_file(cmd_info->argv[0]) != 0)
+	{
+		status_bar_errorf("Can't source file: %s", cmd_info->argv[0]);
+		return 1;
+	}
 	return 0;
 }
 

@@ -1054,17 +1054,17 @@ exec_config(void)
 {
 	char config_file[PATH_MAX];
 	snprintf(config_file, sizeof(config_file), "%s/vifmrc", cfg.config_dir);
-	source_file(config_file);
+	(void)source_file(config_file);
 }
 
-void
+int
 source_file(const char *file)
 {
 	FILE *fp;
 	char line[MAX_LEN*2];
 
 	if((fp = fopen(file, "r")) == NULL)
-		return;
+		return 1;
 
 	if(fgets(line, MAX_LEN, fp) != NULL)
 	{
@@ -1104,8 +1104,14 @@ source_file(const char *file)
 			line_num += line_num_delta;
 		}
 	}
+	else
+	{
+		fclose(fp);
+		return 1;
+	}
 
 	fclose(fp);
+	return 0;
 }
 
 static int

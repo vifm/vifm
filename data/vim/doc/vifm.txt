@@ -908,6 +908,9 @@ of the hierarchy and transparency for all others.
                                                *vifm-:sort* *vifm-:sor*
 :sor[t] - menu of different sorting methods.
 
+                                               *vifm-:source* *vifm-:so*
+:so[urce] file - reads command-line commands from the file.
+
                                                *vifm-:split* *vifm-:sp*
 :sp[lit] - switch to a two window horizontal view.
 :sp[lit]! - toggles window horizontal splitting.

@@ -1093,7 +1093,7 @@ load_color_scheme(const char *name)
 	cfg.cs.defaulted = 0;
 
 	snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, name);
-	source_file(full);
+	(void)source_file(full);
 	strcpy(cfg.cs.name, name);
 	check_color_scheme(&cfg.cs);
 

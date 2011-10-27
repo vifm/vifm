@@ -29,6 +29,9 @@ OPTIONS
        --logging
               Log some errors to CONFDIR/log.
 
+       -c <command> or +<command>
+              Run <command> on startup.
+
        --help, -h
               Show an overview of the commandline options.
 
@@ -1126,6 +1129,9 @@ Commands
 
        :sor[t]
               creates a popup menu of different sorting methods.
+
+       :so[urce] file
+              reads command-line commands from the file.
 
        :sp[lit]
               splits the window to show both file directories.
