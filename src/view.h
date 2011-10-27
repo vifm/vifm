@@ -20,7 +20,8 @@
 #define __VIEW_H__
 
 void init_view_mode(int *key_mode);
-void enter_view_mode(void);
+void enter_view_mode(int explore);
+void activate_view_mode(void);
 void view_pre(void);
 void view_post(void);
 void view_redraw(void);

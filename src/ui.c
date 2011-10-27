@@ -826,15 +826,11 @@ redraw_window(void)
 
 	load_saving_pos(curr_view, 1);
 
+	update_view_title(other_view);
 	if(curr_stats.view)
-	{
-		update_view_title(other_view);
 		quick_view_file(curr_view);
-	}
-	else
-	{
+	else if(!other_view->explore_mode)
 		load_saving_pos(other_view, 1);
-	}
 
 	update_stat_window(curr_view);
 
@@ -853,7 +849,8 @@ redraw_window(void)
 
 	update_all_windows();
 
-	move_to_list_pos(curr_view, curr_view->list_pos);
+	if(!curr_view->explore_mode)
+		move_to_list_pos(curr_view, curr_view->list_pos);
 	curr_stats.need_redraw = 0;
 
 	if(curr_stats.errmsg_shown)
@@ -866,7 +863,7 @@ redraw_window(void)
 
 	update_input_buf();
 	
-	if(get_mode() == VIEW_MODE)
+	if(get_mode() == VIEW_MODE || lwin.explore_mode || rwin.explore_mode)
 		view_redraw();
 }
 
@@ -887,8 +884,11 @@ change_window(void)
 
 	if(curr_stats.number_of_windows != 1)
 	{
-		mvwaddstr(other_view->win, other_view->curr_line, 0, "*");
-		erase_current_line_bar(other_view);
+		if(!other_view->explore_mode)
+		{
+			mvwaddstr(other_view->win, other_view->curr_line, 0, "*");
+			erase_current_line_bar(other_view);
+		}
 		update_view_title(other_view);
 	}
 
@@ -910,8 +910,11 @@ change_window(void)
 	if(curr_stats.number_of_windows == 1)
 		load_dir_list(curr_view, 1);
 
-	draw_dir_list(curr_view, curr_view->top_line);
-	move_to_list_pos(curr_view, curr_view->list_pos);
+	if(!curr_view->explore_mode)
+	{
+		draw_dir_list(curr_view, curr_view->top_line);
+		move_to_list_pos(curr_view, curr_view->list_pos);
+	}
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 

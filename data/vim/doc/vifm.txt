@@ -166,7 +166,7 @@ Filtered files are not checked in / search or :commands.
 
 Note: vifm uses extended regular expressions.
 
-Other vifm-normal Mode Keys~
+Other Normal Mode Keys~
 
 [count]: - enter command line mode.  Count will add range.
 
@@ -188,7 +188,6 @@ gA - like ga, but force update.
 gf - find link destination (like l with |vifm-'followlinks'| off, but also
     finds directories).
 
-
                                                {only for MS-Windows}
 gl - same as l key, but tries to run program with administrative
     privileges.
@@ -204,7 +203,9 @@ gU<selector> - make names of selected files uppercase.
 gUU - make name of current file uppercase.
 gUgU - make name of current file uppercase.
 
-i - handle file (even through it's executable and RUN_EXECUTABLE is set).
+
+e - explore file in the current pane
+i - handle file (even if it's executable and |vifm-'runexec'| is set).
 
 cw - change word is used to rename a file.
 cW - change WORD is used to change only name of file (without extension).
@@ -236,7 +237,7 @@ P - moves the last yanked files.  The advantage of using P instead of d
 al - puts symbolic links with absolute paths.
 rl - puts symbolic links with relative paths.
 
-t - select or unselect (tag) a the current file
+t - select or unselect (tag) the current file
 
 u - undo last command.
 Ctrl-R - redo last command.

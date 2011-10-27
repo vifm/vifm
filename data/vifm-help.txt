@@ -279,6 +279,8 @@ Other Normal Mode Keys
 
        gUU    gUgU make name of current file uppercase.
 
+       e      explore file in the current pane.
+
        i      opens file with associated program even if it's an executable.
 
        cw     rename a file.
@@ -1813,4 +1815,4 @@ AUTHOR
 
 
 
-                               October 26, 2011                        vifm(1)
+                               October 27, 2011                        vifm(1)

@@ -603,9 +603,10 @@ update_view_title(FileView *view)
 {
 	char *buf;
 	size_t len;
-	FileView *selected = (get_mode() == VIEW_MODE) ? other_view : curr_view;
+	int gen_view = get_mode() == VIEW_MODE && !curr_view->explore_mode;
+	FileView *selected = gen_view ? other_view : curr_view;
 
-	if(get_mode() == VIEW_MODE && view == other_view)
+	if(gen_view && view == other_view)
 		return;
 
 	if(view == selected)
@@ -638,6 +639,11 @@ update_view_title(FileView *view)
 		return;
 
 	buf = replace_home_part(view->curr_dir);
+	if(view->explore_mode)
+	{
+		strcat(buf, "/");
+		strcat(buf, get_current_file_name(view));
+	}
 
 	len = get_utf8_string_length(buf);
 	if(len + 1 > view->window_width && view == selected)
@@ -659,6 +665,7 @@ update_view_title(FileView *view)
 		size_t len = get_normal_utf8_string_widthn(buf, view->window_width - 3 + 1);
 		buf[len] = '\0';
 		wprint(view->title, buf);
+		wprintw(view->title, "...");
 	}
 	else
 	{

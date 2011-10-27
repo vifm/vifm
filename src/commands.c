@@ -4332,6 +4332,11 @@ view_cmd(const struct cmd_info *cmd_info)
 		status_bar_error("Cannot view files in one window mode");
 		return 1;
 	}
+	if(other_view->explore_mode)
+	{
+		status_bar_error("Other view already is used for file viewing");
+		return 1;
+	}
 	if(curr_stats.view)
 	{
 		curr_stats.view = 0;

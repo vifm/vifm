@@ -82,7 +82,9 @@ static void cmd_ctrl_wo(struct key_info, struct keys_info *);
 static void cmd_ctrl_ws(struct key_info, struct keys_info *);
 static void cmd_ctrl_wv(struct key_info, struct keys_info *);
 static void cmd_ctrl_ww(struct key_info, struct keys_info *);
+static void go_to_other_window(void);
 static void cmd_ctrl_wx(struct key_info, struct keys_info *);
+static FileView * get_view(void);
 static void move_splitter(struct key_info key_info, int fact);
 static void cmd_ctrl_x(struct key_info, struct keys_info *);
 static void cmd_ctrl_y(struct key_info, struct keys_info *);
@@ -126,6 +128,7 @@ static void cmd_D_selector(struct key_info, struct keys_info *);
 static void cmd_d_selector(struct key_info, struct keys_info *);
 static void delete_with_selector(struct key_info, struct keys_info *,
 		int use_trash);
+static void cmd_e(struct key_info, struct keys_info *);
 static void cmd_f(struct key_info, struct keys_info *);
 static void cmd_gA(struct key_info, struct keys_info *);
 static void cmd_ga(struct key_info, struct keys_info *);
@@ -265,6 +268,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"dd", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dd}}},
 	{L"D", {BUILTIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_D_selector}}},
 	{L"d", {BUILTIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_d_selector}}},
+	{L"e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_e}}},
 	{L"f", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_f}}},
 	{L"gA", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gA}}},
 	{L"ga", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ga}}},
@@ -458,7 +462,7 @@ cmd_ctrl_g(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_space(struct key_info key_info, struct keys_info *keys_info)
 {
-	change_window();
+	go_to_other_window();
 }
 
 static void
@@ -516,7 +520,7 @@ static void
 cmd_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
 {
 #ifdef ENABLE_COMPATIBILITY_MODE
-	change_window();
+	go_to_other_window();
 #else /* ENABLE_COMPATIBILITY_MODE */
 	if(curr_view->history_pos >= curr_view->history_num - 1)
 		return;
@@ -617,28 +621,28 @@ static void
 cmd_ctrl_wh(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_stats.split == VSPLIT && curr_view->win == rwin.win)
-		change_window();
+		go_to_other_window();
 }
 
 static void
 cmd_ctrl_wj(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_stats.split == HSPLIT && curr_view->win == lwin.win)
-		change_window();
+		go_to_other_window();
 }
 
 static void
 cmd_ctrl_wk(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_stats.split == HSPLIT && curr_view->win == rwin.win)
-		change_window();
+		go_to_other_window();
 }
 
 static void
 cmd_ctrl_wl(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_stats.split == VSPLIT && curr_view->win == lwin.win)
-		change_window();
+		go_to_other_window();
 }
 
 /* Leave only one pane. */
@@ -665,7 +669,15 @@ cmd_ctrl_wv(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_ww(struct key_info key_info, struct keys_info *keys_info)
 {
+	go_to_other_window();
+}
+
+static void
+go_to_other_window(void)
+{
 	change_window();
+	if(curr_view->explore_mode)
+		activate_view_mode();
 }
 
 void
@@ -678,52 +690,56 @@ normal_cmd_ctrl_wequal(struct key_info key_info, struct keys_info *keys_info)
 void
 normal_cmd_ctrl_wless(struct key_info key_info, struct keys_info *keys_info)
 {
-	FileView *selected = (get_mode() == VIEW_MODE) ? other_view : curr_view;
 	if(curr_stats.split == VSPLIT)
-		move_splitter(key_info, (selected == &lwin) ? -1 : +1);
+		move_splitter(key_info, (get_view() == &lwin) ? -1 : +1);
 	else
-		move_splitter(key_info, (selected == &lwin) ? -1 : +1);
+		move_splitter(key_info, (get_view() == &lwin) ? -1 : +1);
 }
 
 void
 normal_cmd_ctrl_wgreater(struct key_info key_info, struct keys_info *keys_info)
 {
-	FileView *selected = (get_mode() == VIEW_MODE) ? other_view : curr_view;
 	if(curr_stats.split == VSPLIT)
-		move_splitter(key_info, (selected == &lwin) ? +1 : -1);
+		move_splitter(key_info, (get_view() == &lwin) ? +1 : -1);
 	else
-		move_splitter(key_info, (selected == &lwin) ? +1 : -1);
+		move_splitter(key_info, (get_view() == &lwin) ? +1 : -1);
 }
 
 void
 normal_cmd_ctrl_wplus(struct key_info key_info, struct keys_info *keys_info)
 {
-	FileView *selected = (get_mode() == VIEW_MODE) ? other_view : curr_view;
 	if(curr_stats.split == HSPLIT)
-		move_splitter(key_info, (selected == &lwin) ? +1 : -1);
+		move_splitter(key_info, (get_view() == &lwin) ? +1 : -1);
 	else
-		move_splitter(key_info, (selected == &lwin) ? +1 : -1);
+		move_splitter(key_info, (get_view() == &lwin) ? +1 : -1);
 }
 
 void
 normal_cmd_ctrl_wminus(struct key_info key_info, struct keys_info *keys_info)
 {
-	FileView *selected = (get_mode() == VIEW_MODE) ? other_view : curr_view;
 	if(curr_stats.split == HSPLIT)
-		move_splitter(key_info, (selected == &lwin) ? -1 : +1);
+		move_splitter(key_info, (get_view() == &lwin) ? -1 : +1);
 	else
-		move_splitter(key_info, (selected == &lwin) ? -1 : +1);
+		move_splitter(key_info, (get_view() == &lwin) ? -1 : +1);
 }
 
 void
 normal_cmd_ctrl_wpipe(struct key_info key_info, struct keys_info *keys_info)
 {
-	FileView *selected = (get_mode() == VIEW_MODE) ? other_view : curr_view;
 	if(curr_stats.split == HSPLIT)
 		key_info.count = getmaxy(stdscr);
 	else
 		key_info.count = getmaxx(stdscr);
-	move_splitter(key_info, (selected == &lwin) ? +1 : -1);
+	move_splitter(key_info, (get_view() == &lwin) ? +1 : -1);
+}
+
+static FileView *
+get_view(void)
+{
+	if(get_mode() == VIEW_MODE && curr_view->explore_mode)
+		return other_view;
+	else
+		return curr_view;
 }
 
 static void
@@ -808,7 +824,9 @@ static void
 cmd_shift_tab(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(curr_stats.view)
-		enter_view_mode();
+		enter_view_mode(0);
+	else if(other_view->explore_mode)
+		go_to_other_window();
 }
 
 /* Clone file. */
@@ -1449,6 +1467,18 @@ delete_with_selector(struct key_info key_info, struct keys_info *keys_info,
 	free(keys_info->indexes);
 	keys_info->indexes = NULL;
 	keys_info->count = 0;
+}
+
+static void
+cmd_e(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(curr_stats.view)
+	{
+		status_bar_error("Another type of file viewing is activated");
+		curr_stats.save_msg = 1;
+		return;
+	}
+	enter_view_mode(1);
 }
 
 static void

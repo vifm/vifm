@@ -14,6 +14,7 @@ Basic things that need to be done.
     Add the UNC computer name (after the \\) in the macros (%h).
     Add search functions to view mode.
     Exploring files (view mode related thing).
+    Wrapping of lines in the menus.
 
 Documentation.
 	Better documentation (with normal tags in Vim version).

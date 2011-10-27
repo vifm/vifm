@@ -121,6 +121,7 @@ typedef struct _FileView
 	int nsaved_selection;
 	char ** saved_selection;
 	int user_selection;
+	int explore_mode; /* shows whether this view is used for file exploring */
 
 	char * prev_filter;
 	char * filename_filter; /* regexp for filtering files in dir list */

@@ -30,6 +30,7 @@
 #include "filetype.h"
 #include "keys.h"
 #include "macros.h"
+#include "menus.h"
 #include "modes.h"
 #include "normal.h"
 #include "status.h"
@@ -40,7 +41,23 @@
 
 #include "view.h"
 
+struct view_info{
+	char **lines;
+	int (*widths)[2];
+	int nlines;
+	int nlinesv;
+	int line;
+	int linev;
+	int win;
+	int half_win;
+	int width;
+	FileView *view;
+};
+
+static int can_be_explored(FileView *view, char *buf);
+static void pick_vi(void);
 static void leave_view_mode(void);
+static void init_view_info(struct view_info *vi);
 static void calc_vlines(void);
 static void draw(void);
 static void draw_wraped(FileView *view);
@@ -50,6 +67,7 @@ static void cmd_ctrl_ws(struct key_info, struct keys_info *);
 static void cmd_ctrl_wv(struct key_info, struct keys_info *);
 static void cmd_meta_space(struct key_info, struct keys_info *);
 static void cmd_percent(struct key_info, struct keys_info *);
+static void cmd_tab(struct key_info, struct keys_info *);
 static void cmd_G(struct key_info, struct keys_info *);
 static void cmd_b(struct key_info, struct keys_info *);
 static void cmd_d(struct key_info, struct keys_info *);
@@ -64,22 +82,15 @@ static void cmd_w(struct key_info, struct keys_info *);
 static void cmd_z(struct key_info, struct keys_info *);
 
 static int *mode;
-static char **lines;
-static int (*widths)[2];
-static int nlines;
-static int nlinesv;
-static int line;
-static int linev;
-static int win = -1;
-static int half_win = -1;
-static int width = -1;
+struct view_info view_info[3];
+struct view_info* vi = &view_info[0];
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_b}}},
 	{L"\x04", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_d}}},
 	{L"\x05", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"\x06", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_f}}},
-	{L"\x09", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q}}},
+	{L"\x09", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_tab}}},
 	{L"\x0b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
 	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
@@ -153,37 +164,21 @@ init_view_mode(int *key_mode)
 
 	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), VIEW_MODE);
 	assert(ret_code == 0);
+
+	init_view_info(vi);
 }
 
 void
-enter_view_mode(void)
+enter_view_mode(int explore)
 {
 	char buf[PATH_MAX];
-	char link[PATH_MAX];
 	const char *viewer;
 	FILE *fp;
 
-	snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
-			curr_view->dir_entry[curr_view->list_pos].name);
-	switch(curr_view->dir_entry[curr_view->list_pos].type)
+	if(!can_be_explored(curr_view, buf))
 	{
-		case DEVICE:
-			return;
-#ifndef _WIN32
-		case SOCKET:
-			return;
-#endif
-		case FIFO:
-			return;
-		case LINK:
-			if(get_link_target(buf, link, sizeof(link)) != 0)
-				return;
-			if(is_path_absolute(link))
-				strcpy(buf, link);
-			else
-				snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir, link);
-			if(access(buf, R_OK) != 0)
-				return;
+		(void)show_error_msg("File exploring", "The file cannot be explored");
+		return;
 	}
 
 	viewer = get_viewer_for_file(buf);
@@ -195,20 +190,29 @@ enter_view_mode(void)
 		fp = fopen(buf, "r");
 
 	if(fp == NULL)
+	{
+		(void)show_error_msg("File exploring", "Cannot open file for reading");
 		return;
+	}
 
-	lines = read_file_lines(fp, &nlines);
+	if(!explore)
+		vi = &view_info[0];
+	else if(curr_view == &lwin)
+		vi = &view_info[1];
+	else
+		vi = &view_info[2];
+
+	vi->lines = read_file_lines(fp, &vi->nlines);
 	fclose(fp);
 
-	if(lines == NULL)
+	if(vi->lines == NULL)
 		return;
-	free(widths);
-	widths = malloc(sizeof(*widths)*nlines);
-	if(widths == NULL)
+	vi->widths = malloc(sizeof(*vi->widths)*vi->nlines);
+	if(vi->widths == NULL)
 	{
-		free_string_array(lines, nlines);
-		lines = NULL;
-		nlines = 0;
+		free_string_array(vi->lines, vi->nlines);
+		vi->lines = NULL;
+		vi->nlines = 0;
 		return;
 	}
 
@@ -216,7 +220,68 @@ enter_view_mode(void)
 	update_view_title(&lwin);
 	update_view_title(&rwin);
 
+	if(explore)
+	{
+		vi->view = curr_view;
+		curr_view->explore_mode = 1;
+	}
+	else
+	{
+		vi->view = other_view;
+	}
+
+	update_view_title(vi->view);
 	view_redraw();
+}
+
+/* assumed that buf size is at least PATH_MAX characters */
+static int
+can_be_explored(FileView *view, char *buf)
+{
+	char link[PATH_MAX];
+
+	snprintf(buf, PATH_MAX, "%s/%s", view->curr_dir,
+			view->dir_entry[view->list_pos].name);
+	switch(view->dir_entry[view->list_pos].type)
+	{
+		case DEVICE:
+			return 0;
+#ifndef _WIN32
+		case SOCKET:
+			return 0;
+#endif
+		case FIFO:
+			return 0;
+		case LINK:
+			if(get_link_target(buf, link, sizeof(link)) != 0)
+				return 0;
+			if(is_path_absolute(link))
+				strcpy(buf, link);
+			else
+				snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, link);
+			if(access(buf, R_OK) != 0)
+				return 0;
+			break;
+	}
+	return 1;
+}
+
+void
+activate_view_mode(void)
+{
+	*mode = VIEW_MODE;
+	pick_vi();
+}
+
+static void
+pick_vi(void)
+{
+	if(!curr_view->explore_mode)
+		vi = &view_info[0];
+	else if(curr_view == &lwin)
+		vi = &view_info[1];
+	else
+		vi = &view_info[2];
 }
 
 void
@@ -232,7 +297,7 @@ view_post(void)
 	char buf[13];
 
 	werase(pos_win);
-	snprintf(buf, sizeof(buf), "%d-%d ", line + 1, nlines);
+	snprintf(buf, sizeof(buf), "%d-%d ", vi->line + 1, vi->nlines);
 	mvwaddstr(pos_win, 0, 13 - strlen(buf), buf);
 	wnoutrefresh(pos_win);
 }
@@ -240,55 +305,92 @@ view_post(void)
 void
 view_redraw(void)
 {
-	calc_vlines();
-	draw();
+	struct view_info * tmp = vi;
+
+	if(lwin.explore_mode)
+	{
+		vi = &view_info[1];
+		calc_vlines();
+		draw();
+	}
+	if(rwin.explore_mode)
+	{
+		vi = &view_info[2];
+		calc_vlines();
+		draw();
+	}
+	if(!lwin.explore_mode && !rwin.explore_mode)
+	{
+		calc_vlines();
+		draw();
+	}
+
+	vi = tmp;
 }
 
 static void
 leave_view_mode(void)
 {
 	*mode = NORMAL_MODE;
-	quick_view_file(curr_view);
+
+	if(curr_view->explore_mode)
+	{
+		curr_view->explore_mode = 0;
+		draw_dir_list(curr_view, curr_view->top_line);
+		move_to_list_pos(curr_view, curr_view->list_pos);
+	}
+	else
+	{
+		quick_view_file(curr_view);
+	}
+
 	update_view_title(curr_view);
 
-	free_string_array(lines, nlines);
-	lines = NULL;
-	nlines = 0;
-	nlinesv = 0;
-	line = 0;
-	linev = 0;
-	win = -1;
-	half_win = -1;
-	width = -1;
+	free_string_array(vi->lines, vi->nlines);
+	free(vi->widths);
+	init_view_info(vi);
+}
+
+static void
+init_view_info(struct view_info *vi)
+{
+	vi->lines = NULL;
+	vi->nlines = 0;
+	vi->nlinesv = 0;
+	vi->line = 0;
+	vi->linev = 0;
+	vi->win = -1;
+	vi->half_win = -1;
+	vi->width = -1;
 }
 
 static void
 calc_vlines(void)
 {
-	if(other_view->window_width - 1 == width)
+	if(vi->view->window_width - 1 == vi->width)
 		return;
 
-	width = other_view->window_width - 1;
+	vi->width = vi->view->window_width - 1;
 
 	if(cfg.wrap_quick_view)
 	{
 		int i;
-		nlinesv = 0;
-		for(i = 0; i < nlines; i++)
+		vi->nlinesv = 0;
+		for(i = 0; i < vi->nlines; i++)
 		{
-			widths[i][0] = nlinesv++;
-			widths[i][1] = get_utf8_string_length(lines[i]);
-			nlinesv += widths[i][1]/width;
+			vi->widths[i][0] = vi->nlinesv++;
+			vi->widths[i][1] = get_utf8_string_length(vi->lines[i]);
+			vi->nlinesv += vi->widths[i][1]/vi->width;
 		}
 	}
 	else
 	{
 		int i;
-		nlinesv = nlines;
-		for(i = 0; i < nlines; i++)
+		vi->nlinesv = vi->nlines;
+		for(i = 0; i < vi->nlines; i++)
 		{
-			widths[i][0] = i;
-			widths[i][1] = width;
+			vi->widths[i][0] = i;
+			vi->widths[i][1] = vi->width;
 		}
 	}
 }
@@ -297,18 +399,18 @@ static void
 draw(void)
 {
 	if(cfg.wrap_quick_view)
-		draw_wraped(other_view);
+		draw_wraped(vi->view);
 	else
-		draw_not_wraped(other_view);
+		draw_not_wraped(vi->view);
 }
 
 static void
 draw_wraped(FileView *view)
 {
 	int l, vl;
-	int max = MIN(line + view->window_rows - 1, nlines);
+	int max = MIN(vi->line + view->window_rows - 1, vi->nlines);
 	werase(view->win);
-	for(vl = 0, l = line; l < max && vl < view->window_rows - 1; l++)
+	for(vl = 0, l = vi->line; l < max && vl < view->window_rows - 1; l++)
 	{
 		int offset = 0;
 		int t = 0;
@@ -318,16 +420,16 @@ draw_wraped(FileView *view)
 			int i = 0;
 			size_t len = 0;
 			buf[0] = '\0';
-			while(i < view->window_width - 1 && lines[l][offset] != '\0')
+			while(i < view->window_width - 1 && vi->lines[l][offset] != '\0')
 			{
-				size_t char_width = get_char_width(lines[l] + offset);
-				snprintf(buf + len, char_width + 1, "%s", lines[l] + offset);
+				size_t char_width = get_char_width(vi->lines[l] + offset);
+				snprintf(buf + len, char_width + 1, "%s", vi->lines[l] + offset);
 				len += char_width;
 				offset += char_width;
 				i += 1;
 			}
 
-			if(l != line || vl + t >= linev - widths[line][0])
+			if(l != vi->line || vl + t >= vi->linev - vi->widths[vi->line][0])
 			{
 				wmove(view->win, 1 + vl, 1);
 				wprint(view->win, buf);
@@ -335,7 +437,7 @@ draw_wraped(FileView *view)
 			}
 			t++;
 		}
-		while(lines[l][offset] != '\0' && vl < view->window_rows - 1);
+		while(vi->lines[l][offset] != '\0' && vl < view->window_rows - 1);
 	}
 	wrefresh(view->win);
 }
@@ -344,23 +446,23 @@ static void
 draw_not_wraped(FileView *view)
 {
 	int l;
-	int max = MIN(line + view->window_rows - 1, nlines);
+	int max = MIN(vi->line + view->window_rows - 1, vi->nlines);
 	werase(view->win);
-	for(l = line; l < max; l++)
+	for(l = vi->line; l < max; l++)
 	{
 		char buf[view->window_width*4];
 		int i = 0, offset = 0;
 		size_t len = 0;
 		while(i < view->window_width - 1)
 		{
-			size_t char_width = get_char_width(lines[l] + offset);
-			snprintf(buf + len, char_width + 1, "%s", lines[l] + offset);
+			size_t char_width = get_char_width(vi->lines[l] + offset);
+			snprintf(buf + len, char_width + 1, "%s", vi->lines[l] + offset);
 			len += char_width;
 			offset += char_width;
 			i += 1;
 		}
 
-		wmove(view->win, 1 + l - line, 1);
+		wmove(view->win, 1 + l - vi->line, 1);
 		wprint(view->win, buf);
 	}
 	wrefresh(view->win);
@@ -391,10 +493,10 @@ cmd_meta_space(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 	{
-		if(win > 0)
-			key_info.count = win;
+		if(vi->win > 0)
+			key_info.count = vi->win;
 		else
-			key_info.count = other_view->window_rows - 2;
+			key_info.count = vi->view->window_rows - 2;
 	}
 	key_info.reg = 1;
 	cmd_j(key_info, keys_info);
@@ -408,11 +510,29 @@ cmd_percent(struct key_info key_info, struct keys_info *keys_info)
 	if(key_info.count > 100)
 		key_info.count = 100;
 
-	line = (key_info.count*nlinesv)/100;
-	if(line >= nlines)
-		line = nlines - 1;
-	linev = widths[line][0];
+	vi->line = (key_info.count*vi->nlinesv)/100;
+	if(vi->line >= vi->nlines)
+		vi->line = vi->nlines - 1;
+	vi->linev = vi->widths[vi->line][0];
 	draw();
+}
+
+static void
+cmd_tab(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(!curr_view->explore_mode)
+	{
+		leave_view_mode();
+		return;
+	}
+
+	change_window();
+	if(!curr_view->explore_mode)
+		*mode = NORMAL_MODE;
+	pick_vi();
+
+	update_view_title(&lwin);
+	update_view_title(&rwin);
 }
 
 static void
@@ -424,12 +544,12 @@ cmd_G(struct key_info key_info, struct keys_info *keys_info)
 		return;
 	}
 
-	if(linev + 1 + other_view->window_rows - 1 > nlinesv)
+	if(vi->linev + 1 + vi->view->window_rows - 1 > vi->nlinesv)
 		return;
 
-	linev = nlinesv - (other_view->window_rows - 1);
-	for(line = 0; line < nlines - 1; line++)
-		if(linev < widths[line + 1][0])
+	vi->linev = vi->nlinesv - (vi->view->window_rows - 1);
+	for(vi->line = 0; vi->line < vi->nlines - 1; vi->line++)
+		if(vi->linev < vi->widths[vi->line + 1][0])
 			break;
 
 	draw();
@@ -440,10 +560,10 @@ cmd_b(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 	{
-		if(win > 0)
-			key_info.count = win;
+		if(vi->win > 0)
+			key_info.count = vi->win;
 		else
-			key_info.count = other_view->window_rows - 2;
+			key_info.count = vi->view->window_rows - 2;
 	}
 	cmd_k(key_info, keys_info);
 }
@@ -452,11 +572,11 @@ static void
 cmd_d(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count != NO_COUNT_GIVEN)
-		half_win = key_info.count;
-	else if(half_win > 0)
-		key_info.count = half_win;
+		vi->half_win = key_info.count;
+	else if(vi->half_win > 0)
+		key_info.count = vi->half_win;
 	else
-		key_info.count = (other_view->window_rows - 1)/2;
+		key_info.count = (vi->view->window_rows - 1)/2;
 	cmd_j(key_info, keys_info);
 }
 
@@ -465,10 +585,10 @@ cmd_f(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 	{
-		if(win > 0)
-			key_info.count = win;
+		if(vi->win > 0)
+			key_info.count = vi->win;
 		else
-			key_info.count = other_view->window_rows - 2;
+			key_info.count = vi->view->window_rows - 2;
 	}
 	cmd_j(key_info, keys_info);
 }
@@ -479,13 +599,14 @@ cmd_g(struct key_info key_info, struct keys_info *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 
-	key_info.count = MIN(nlinesv - (other_view->window_rows - 1), key_info.count);
+	key_info.count = MIN(vi->nlinesv - (vi->view->window_rows - 1),
+			key_info.count);
 	key_info.count = MAX(0, key_info.count);
 
-	if(linev == widths[key_info.count - 1][0])
+	if(vi->linev == vi->widths[key_info.count - 1][0])
 		return;
-	line = key_info.count - 1;
-	linev = widths[line][0];
+	vi->line = key_info.count - 1;
+	vi->linev = vi->widths[vi->line][0];
 	draw();
 }
 
@@ -494,12 +615,12 @@ cmd_j(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.reg == NO_REG_GIVEN)
 	{
-		if((linev + 1) + (other_view->window_rows - 1) > nlinesv)
+		if((vi->linev + 1) + (vi->view->window_rows - 1) > vi->nlinesv)
 			return;
 	}
 	else
 	{
-		if(linev + 1 > nlinesv)
+		if(vi->linev + 1 > vi->nlinesv)
 			return;
 	}
 
@@ -507,18 +628,18 @@ cmd_j(struct key_info key_info, struct keys_info *keys_info)
 		key_info.count = 1;
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.count = MIN(key_info.count,
-				nlinesv - (other_view->window_rows - 1) - linev);
+				vi->nlinesv - (vi->view->window_rows - 1) - vi->linev);
 	else
-		key_info.count = MIN(key_info.count, nlinesv - linev - 1);
+		key_info.count = MIN(key_info.count, vi->nlinesv - vi->linev - 1);
 
 	while(key_info.count-- > 0)
 	{
-		size_t height = (widths[line][1] + width - 1)/width;
+		size_t height = (vi->widths[vi->line][1] + vi->width - 1)/vi->width;
 		height = MAX(height, 1);
-		if(linev + 1 >= widths[line][0] + height)
-			line++;
+		if(vi->linev + 1 >= vi->widths[vi->line][0] + height)
+			vi->line++;
 
-		linev++;
+		vi->linev++;
 	}
 
 	draw();
@@ -527,19 +648,19 @@ cmd_j(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_k(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(linev == 0)
+	if(vi->linev == 0)
 		return;
 
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
-	key_info.count = MIN(key_info.count, linev);
+	key_info.count = MIN(key_info.count, vi->linev);
 
 	while(key_info.count-- > 0)
 	{
-		if(linev - 1 < widths[line][0])
-			line--;
+		if(vi->linev - 1 < vi->widths[vi->line][0])
+			vi->line--;
 
-		linev--;
+		vi->linev--;
 	}
 
 	draw();
@@ -555,11 +676,11 @@ static void
 cmd_u(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count != NO_COUNT_GIVEN)
-		half_win = key_info.count;
-	else if(half_win > 0)
-		key_info.count = half_win;
+		vi->half_win = key_info.count;
+	else if(vi->half_win > 0)
+		key_info.count = vi->half_win;
 	else
-		key_info.count = (other_view->window_rows - 1)/2;
+		key_info.count = (vi->view->window_rows - 1)/2;
 	cmd_k(key_info, keys_info);
 }
 
@@ -569,18 +690,18 @@ cmd_v(struct key_info key_info, struct keys_info *keys_info)
 	char buf[PATH_MAX];
 	snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
 			curr_view->dir_entry[curr_view->list_pos].name);
-	view_file(buf, line + (other_view->window_rows - 1)/2);
+	view_file(buf, vi->line + (vi->view->window_rows - 1)/2);
 }
 
 static void
 cmd_w(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count != NO_COUNT_GIVEN)
-		win = key_info.count;
-	else if(win > 0)
-		key_info.count = win;
+		vi->win = key_info.count;
+	else if(vi->win > 0)
+		key_info.count = vi->win;
 	else
-		key_info.count = other_view->window_rows - 2;
+		key_info.count = vi->view->window_rows - 2;
 	cmd_k(key_info, keys_info);
 }
 
@@ -588,11 +709,11 @@ static void
 cmd_z(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count != NO_COUNT_GIVEN)
-		win = key_info.count;
-	else if(win > 0)
-		key_info.count = win;
+		vi->win = key_info.count;
+	else if(vi->win > 0)
+		key_info.count = vi->win;
 	else
-		key_info.count = other_view->window_rows - 2;
+		key_info.count = vi->view->window_rows - 2;
 	cmd_j(key_info, keys_info);
 }
 
