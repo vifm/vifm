@@ -64,6 +64,8 @@
 
 	Added e key for normal mode.
 
+	Added -c <command> and +<command> command line arguments.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

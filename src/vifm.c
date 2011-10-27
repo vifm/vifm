@@ -96,6 +96,8 @@ show_help_msg(void)
 	puts("  If no path is given vifm will start in the current working directory.\n");
 	puts("  vifm --logging");
 	puts("    log some errors to " CONF_DIR "/log.\n");
+	puts("  vifm -c <command> | +<command>");
+	puts("    run <command> on startup.\n");
 	puts("  vifm --version | -v");
 	puts("    show version number and quit.\n");
 	puts("  vifm --help | -h");
@@ -223,6 +225,19 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		{
 			init_logger(1);
 		}
+		else if(!strcmp(argv[x], "-c"))
+		{
+			if(x == argc - 1)
+			{
+				puts("Argument missing after \"-c\"");
+				endwin();
+				exit(0);
+			}
+			x++;
+		}
+		else if(argv[x][0] == '+')
+		{
+		}
 		else if(access(argv[x], F_OK) == 0 || is_path_absolute(argv[x]) ||
 				is_root_dir(argv[x]))
 		{
@@ -326,6 +341,24 @@ run_converter(int vifm_like)
 
 	return exec_program(buf);
 #endif
+}
+
+void
+exec_startup_commands(int argc, char *argv[])
+{
+	int x;
+	for(x = 1; x < argc; x++)
+	{
+		if(strcmp(argv[x], "-c") == 0)
+		{
+			exec_commands(argv[x + 1], curr_view, 0, GET_COMMAND);
+			x++;
+		}
+		else if(argv[x][0] == '+')
+		{
+			exec_commands(argv[x] + 1, curr_view, 0, GET_COMMAND);
+		}
+	}
 }
 
 int
@@ -516,9 +549,13 @@ main(int argc, char *argv[])
 	check_path_for_file(&rwin, rwin_path);
 
 	curr_stats.vifm_started = 2;
+
+	exec_startup_commands(argc, argv);
+
 	modes_redraw();
 	if(curr_stats.startup_redraw_pending)
 		redraw_window();
+
 	main_loop();
 
 	return 0;

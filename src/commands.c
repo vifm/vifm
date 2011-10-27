@@ -4167,7 +4167,10 @@ set_cmd(const struct cmd_info *cmd_info)
 static int
 shell_cmd(const struct cmd_info *cmd_info)
 {
-	shellout(getenv("SHELL"), 0);
+	char *sh = getenv("SHELL");
+	if(sh == NULL || sh[0] == '\0')
+		sh = cfg.shell;
+	shellout(sh, 0);
 	return 0;
 }
 
