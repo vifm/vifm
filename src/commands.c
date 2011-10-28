@@ -2030,6 +2030,17 @@ shellout(const char *command, int pause)
 	def_prog_mode();
 	endwin();
 
+#ifndef _WIN32
+	/* Need to use setenv instead of getcwd for a symlink directory */
+	setenv("PWD", curr_view->curr_dir, 1);
+#else
+	{
+		char buf[PATH_MAX];
+		snprintf(buf, sizeof(buf), "PWD=%s", curr_view->curr_dir);
+		putenv(buf);
+	}
+#endif
+
 	result = WEXITSTATUS(my_system(buf));
 
 #ifndef _WIN32
