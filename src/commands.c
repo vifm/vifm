@@ -4200,22 +4200,25 @@ sort_cmd(const struct cmd_info *cmd_info)
 static int
 source_cmd(const struct cmd_info *cmd_info)
 {
-	if(access(cmd_info->argv[0], F_OK) != 0)
+	int ret = 0;
+	char *path = expand_tilde(strdup(cmd_info->argv[0]));
+	if(access(path, F_OK) != 0)
 	{
 		status_bar_errorf("File doesn't exist: %s", cmd_info->argv[0]);
-		return 1;
+		ret = 1;
 	}
-	if(access(cmd_info->argv[0], R_OK) != 0)
+	if(access(path, R_OK) != 0)
 	{
 		status_bar_errorf("File isn't readable: %s", cmd_info->argv[0]);
-		return 1;
+		ret = 1;
 	}
-	if(source_file(cmd_info->argv[0]) != 0)
+	if(source_file(path) != 0)
 	{
 		status_bar_errorf("Can't source file: %s", cmd_info->argv[0]);
-		return 1;
+		ret = 1;
 	}
-	return 0;
+	free(path);
+	return ret;
 }
 
 static int
