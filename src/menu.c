@@ -82,6 +82,10 @@ static void cmd_k(struct key_info, struct keys_info *);
 static void cmd_n(struct key_info, struct keys_info *);
 static void search(int backward);
 static void cmd_zb(struct key_info, struct keys_info *);
+static void cmd_zH(struct key_info, struct keys_info *);
+static void cmd_zL(struct key_info, struct keys_info *);
+static void cmd_zh(struct key_info, struct keys_info *);
+static void cmd_zl(struct key_info, struct keys_info *);
 static void cmd_zt(struct key_info, struct keys_info *);
 static void cmd_zz(struct key_info, struct keys_info *);
 
@@ -118,6 +122,10 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{L"n", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
 	{L"zb", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zb}}},
+	{L"zH", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zH}}},
+	{L"zL", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zL}}},
+	{L"zh", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zh}}},
+	{L"zl", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zl}}},
 	{L"zt", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zt}}},
 	{L"zz", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zz}}},
 #ifdef ENABLE_EXTENDED_KEYS
@@ -128,6 +136,8 @@ static struct keys_add_info builtin_cmds[] = {
 	{{KEY_RIGHT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{{KEY_HOME}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
 	{{KEY_END}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
+	{{L'z', KEY_LEFT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zh}}},
+	{{L'z', KEY_RIGHT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zl}}},
 #endif /* ENABLE_EXTENDED_KEYS */
 };
 
@@ -615,6 +625,42 @@ cmd_zb(struct key_info key_info, struct keys_info *keys_info)
 		menu->top = 0;
 	else
 		menu->top = menu->pos - (menu->win_rows - 3);
+	update_menu();
+}
+
+static void
+cmd_zH(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(menu->hor_pos == 0)
+		return;
+	menu->hor_pos = MAX(0, menu->hor_pos - (getmaxx(menu_win) - 4));
+	update_menu();
+}
+
+static void
+cmd_zL(struct key_info key_info, struct keys_info *keys_info)
+{
+	menu->hor_pos += getmaxx(menu_win) - 4;
+	update_menu();
+}
+
+static void
+cmd_zh(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(menu->hor_pos == 0)
+		return;
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	menu->hor_pos = MAX(0, menu->hor_pos - key_info.count);
+	update_menu();
+}
+
+static void
+cmd_zl(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	menu->hor_pos += key_info.count;
 	update_menu();
 }
 

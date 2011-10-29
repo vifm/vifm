@@ -466,11 +466,11 @@ history_handler(enum opt_op op, union optval_t val)
 	if(delta < 0 && cfg.cmd_history_len > 0)
 	{
 		int i;
-		for(i = cfg.cmd_history_len; i < val.int_val; i++)
+		for(i = val.int_val; i < cfg.cmd_history_len; i++)
 			free(cfg.cmd_history[i]);
-		for(i = cfg.cmd_history_len; i < val.int_val; i++)
+		for(i = val.int_val; i < cfg.cmd_history_len; i++)
 			free(cfg.prompt_history[i]);
-		for(i = cfg.cmd_history_len; i < val.int_val; i++)
+		for(i = val.int_val; i < cfg.cmd_history_len; i++)
 			free(cfg.search_history[i]);
 	}
 	cfg.cmd_history = realloc(cfg.cmd_history, val.int_val*sizeof(char *));
@@ -479,11 +479,11 @@ history_handler(enum opt_op op, union optval_t val)
 	if(delta > 0)
 	{
 		int i;
-		for(i = val.int_val; i < cfg.cmd_history_len; i++)
+		for(i = cfg.cmd_history_len; i < val.int_val; i++)
 			cfg.cmd_history[i] = NULL;
-		for(i = val.int_val; i < cfg.cmd_history_len; i++)
+		for(i = cfg.cmd_history_len; i < val.int_val; i++)
 			cfg.prompt_history[i] = NULL;
-		for(i = val.int_val; i < cfg.cmd_history_len; i++)
+		for(i = cfg.cmd_history_len; i < val.int_val; i++)
 			cfg.search_history[i] = NULL;
 	}
 

@@ -36,6 +36,7 @@ typedef struct menu_info
 	int current;
 	int len;
 	int pos;
+	int hor_pos;
 	int win_rows;
 	int type;
 	int match_dir;

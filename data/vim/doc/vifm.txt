@@ -1450,6 +1450,10 @@ Ctrl-E/Ctrl-Y
 [num]G/[num]gg
 H/M/L
 zb/zt/zz
+zh - scroll menu items [count] characters to the right.
+zl - scroll menu items [count] characters to the left.
+zH - scroll menu items half of screen width characters to the right.
+zL - scroll menu items half of screen width characters to the left.
 
 All these keys have the same meaning as in normal mode (but not L in filetype
 menu).

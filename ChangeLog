@@ -68,6 +68,8 @@
 
 	Added :source command.
 
+	Added zh, zl, zH and zL keys for the menus (horizontal scrolling).
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

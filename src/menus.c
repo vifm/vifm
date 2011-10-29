@@ -117,7 +117,17 @@ clean_menu_position(menu_info *m)
 	buf = malloc(x + 2);
 
 	if(m->data != NULL && m->data[m->pos] != NULL)
-		snprintf(buf, x, " %s", m->data[m->pos]);
+	{
+		int off = 0;
+		z = m->hor_pos;
+		while(z-- > 0 && m->data[m->pos][off] != '\0')
+		{
+			size_t l = get_char_width(m->data[m->pos] + off);
+			off += l;
+			x -= l - 1;
+		}
+		snprintf(buf, x, " %s", m->data[m->pos] + off);
+	}
 
 	for(z = 0; buf[z] != '\0'; z++)
 		if(buf[z] == '\t')
@@ -378,7 +388,18 @@ move_to_menu_pos(int pos, menu_info *m)
 	if(buf == NULL)
 		return;
 	if(m->data[pos] != NULL)
-		snprintf(buf, x, " %s", m->data[pos]);
+	{
+		int off = 0;
+		z = m->hor_pos;
+		while(z-- > 0 && m->data[pos][off] != '\0')
+		{
+			size_t l = get_char_width(m->data[pos] + off);
+			off += l;
+			x -= l - 1;
+		}
+
+		snprintf(buf, x, " %s", m->data[pos] + off);
+	}
 
 	for(z = 0; buf[z] != '\0'; z++)
 		if(buf[z] == '\t')
@@ -921,9 +942,9 @@ draw_menu(menu_info *m)
 	wprint(menu_win, m->title);
 	wattroff(menu_win, A_BOLD);
 
-	for(i = 1; x < m->len; i++)
+	for(i = 1; x < m->len; i++, x++)
 	{
-		int z;
+		int z, off;
 		char *buf;
 		char *ptr = NULL;
 		Col_attr col;
@@ -945,13 +966,22 @@ draw_menu(menu_info *m)
 		init_pair(DCOLOR_BASE + type, col.fg, col.bg);
 		wattron(menu_win, COLOR_PAIR(DCOLOR_BASE + type) | col.attr);
 
-		buf = strdup(m->data[x]);
+		z = m->hor_pos;
+		off = 0;
+		while(z-- > 0 && m->data[x][off] != '\0')
+		{
+			size_t l = get_char_width(m->data[x] + off);
+			off += l;
+			len -= l - 1;
+		}
+
+		buf = strdup(m->data[x] + off);
 		for(z = 0; buf[z] != '\0'; z++)
 			if(buf[z] == '\t')
 				buf[z] = ' ';
 
 		wmove(menu_win, i, 2);
-		if(strlen(m->data[x]) > len - 4)
+		if(strlen(buf) > len - 4)
 		{
 			size_t len = get_normal_utf8_string_widthn(buf, win_len - 3 - 4);
 			if(strlen(buf) > len)
@@ -971,8 +1001,6 @@ draw_menu(menu_info *m)
 
 		wattroff(menu_win, COLOR_PAIR(DCOLOR_BASE + type) | col.attr);
 
-		x++;
-
 		if(i + 3 > y)
 			break;
 	}
@@ -989,6 +1017,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 	m.current = 1;
 	m.len = 0;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = MAP;
 	m.matching_entries = 0;
@@ -1114,6 +1143,7 @@ show_apropos_menu(FileView *view, char *args)
 	m.current = 1;
 	m.len = 0;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = APROPOS;
 	m.matching_entries = 0;
@@ -1174,6 +1204,7 @@ show_bookmarks_menu(FileView *view, const char *marks)
 	m.current = 1;
 	m.len = cfg.num_bookmarks;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = BOOKMARK;
 	m.matching_entries = 0;
@@ -1262,6 +1293,7 @@ show_dirstack_menu(FileView *view)
 	m.current = 1;
 	m.len = 0;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = DIRSTACK;
 	m.matching_entries = 0;
@@ -1310,6 +1342,7 @@ show_colorschemes_menu(FileView *view)
 	m.current = 0;
 	m.len = 0;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = COLORSCHEME;
 	m.matching_entries = 0;
@@ -1396,6 +1429,7 @@ show_commands_menu(FileView *view)
 	m.current = 1;
 	m.len = -1;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = COMMAND;
 	m.matching_entries = 0;
@@ -1577,6 +1611,7 @@ show_filetypes_menu(FileView *view, int background)
 	m.current = 1;
 	m.len = 0;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = FILETYPE;
 	m.matching_entries = 0;
@@ -1741,6 +1776,7 @@ show_history_menu(FileView *view)
 	m.current = 1;
 	m.len = 0;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = HISTORY;
 	m.matching_entries = 0;
@@ -1809,6 +1845,7 @@ show_history(FileView *view, int type, int len, char **hist, const char *msg)
 	m.current = 1;
 	m.len = len;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = type;
 	m.matching_entries = 0;
@@ -1875,6 +1912,7 @@ show_locate_menu(FileView *view, const char *args)
 	m.current = 1;
 	m.len = 0;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = LOCATE;
 	m.matching_entries = 0;
@@ -1913,6 +1951,7 @@ show_find_menu(FileView *view, int with_path, const char *args)
 	m.current = 1;
 	m.len = 0;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = FIND;
 	m.matching_entries = 0;
@@ -1972,6 +2011,7 @@ show_grep_menu(FileView *view, const char *args, int invert)
 	m.current = 1;
 	m.len = 0;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = GREP;
 	m.matching_entries = 0;
@@ -2025,6 +2065,7 @@ show_user_menu(FileView *view, const char *command, int navigate)
 	m.current = 1;
 	m.len = 0;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = navigate ? USER_NAVIGATE : USER;
 	m.matching_entries = 0;
@@ -2061,6 +2102,7 @@ show_jobs_menu(FileView *view)
 	m.current = 1;
 	m.len = 0;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = JOBS;
 	m.matching_entries = 0;
@@ -2161,6 +2203,7 @@ show_register_menu(FileView *view, const char *registers)
 	m.current = 1;
 	m.len = 0;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = REGISTER;
 	m.matching_entries = 0;
@@ -2202,6 +2245,7 @@ show_undolist_menu(FileView *view, int with_details)
 	m.current = get_undolist_pos(with_details) + 1;
 	m.len = 0;
 	m.pos = m.current - 1;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = UNDOLIST;
 	m.matching_entries = 0;
@@ -2261,6 +2305,7 @@ show_volumes_menu(FileView *view)
 	m.current = 1;
 	m.len = 0;
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = VOLUMES;
 	m.matching_entries = 0;
@@ -2324,6 +2369,7 @@ show_vifm_menu(FileView *view)
 	m.current = 1;
 	m.len = fill_version_info(NULL);
 	m.pos = 0;
+	m.hor_pos = 0;
 	m.win_rows = 0;
 	m.type = VIFM;
 	m.matching_entries = 0;

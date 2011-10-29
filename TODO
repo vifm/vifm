@@ -21,6 +21,7 @@ Documentation.
 Windows.
     Permission dialog could change file attributes.
     Add a command to create .lnk files.
+    Follow targets of .lnk files.
 
 Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).
@@ -33,7 +34,6 @@ Vi(m) specific features that need to be added.
     :map without arguments
     Better ranges.
     Ctrl-W F key.
-    Keys in the menus to scroll horizontally.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
