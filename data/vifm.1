@@ -1,4 +1,4 @@
-.TH vifm 1 "October 27, 2011" "" "Vifm"
+.TH vifm 1 "October 29, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -572,6 +572,18 @@ backward one half-window (and set half-window to [count]).
 .TP
 .BI "r, Ctrl-R, Ctrl-L, R"
 repaint screen.
+.TP
+.BI [count]/pattern
+search forward for ([count]-th) matching line.
+.TP
+.BI [count]?pattern
+search backward for ([count]-th) matching line.
+.TP
+.BI [count]n
+repeat previous search (for [count]-th occurrence).
+.TP
+.BI [count]N
+repeat previous search in reverse direction.
 .TP
 .BI "[count]g, [count]<, [count]Alt-<"
 go to first line in file (or line [count]).

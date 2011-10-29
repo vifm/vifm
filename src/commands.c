@@ -77,6 +77,7 @@
 #include "ui.h"
 #include "undo.h"
 #include "utils.h"
+#include "view.h"
 #include "visual.h"
 
 #include "commands.h"
@@ -2587,6 +2588,8 @@ exec_command(char *cmd, FileView *view, int type)
 			return find_vpattern(view, view->regexp, type == GET_VBSEARCH_PATTERN);
 		if(type == GET_COMMAND)
 			return execute_command(view, cmd, 0);
+		if(type == GET_VWFSEARCH_PATTERN || type == GET_VWBSEARCH_PATTERN)
+			return find_vwpattern(cmd, type == GET_VWBSEARCH_PATTERN);
 		return 0;
 	}
 
@@ -2609,6 +2612,10 @@ exec_command(char *cmd, FileView *view, int type)
 		strncpy(view->regexp, cmd, sizeof(view->regexp));
 		save_search_history(cmd);
 		return find_vpattern(view, cmd, type == GET_VBSEARCH_PATTERN);
+	}
+	else if(type == GET_VWFSEARCH_PATTERN || type == GET_VWBSEARCH_PATTERN)
+	{
+		return find_vwpattern(cmd, type == GET_VWBSEARCH_PATTERN);
 	}
 	return 0;
 }

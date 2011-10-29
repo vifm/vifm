@@ -40,13 +40,6 @@
 
 #include "visual.h"
 
-static int *mode;
-static FileView *view;
-static int start_pos;
-static int last_fast_search_char;
-static int last_fast_search_backward = -1;
-static int upwards_range;
-
 static void cmd_ctrl_a(struct key_info, struct keys_info *);
 static void cmd_ctrl_b(struct key_info, struct keys_info *);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
@@ -100,6 +93,13 @@ static void select_down_one(FileView *view, int start_pos);
 static void update_marks(FileView *view);
 static void update(void);
 static int find_update(FileView *view, int backward);
+
+static int *mode;
+static FileView *view;
+static int start_pos;
+static int last_fast_search_char;
+static int last_fast_search_backward = -1;
+static int upwards_range;
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x01", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_a}}},

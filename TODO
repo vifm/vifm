@@ -12,7 +12,6 @@ Basic things that need to be done.
 	Mouse support.
     Ctrl-R combinations in the command-line mode.
     Add the UNC computer name (after the \\) in the macros (%h).
-    Add search functions to view mode.
     Wrapping of lines in the menus.
 
 Documentation.

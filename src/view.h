@@ -25,6 +25,7 @@ void activate_view_mode(void);
 void view_pre(void);
 void view_post(void);
 void view_redraw(void);
+int find_vwpattern(const char *pattern, int backward);
 
 #endif
 

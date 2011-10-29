@@ -389,11 +389,13 @@ enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
 		prompt = L":";
 	else if(sub_mode == SEARCH_FORWARD_SUBMODE
 			|| sub_mode == VSEARCH_FORWARD_SUBMODE
-			|| sub_mode == MENU_SEARCH_FORWARD_SUBMODE)
+			|| sub_mode == MENU_SEARCH_FORWARD_SUBMODE
+			|| sub_mode == VIEW_SEARCH_FORWARD_SUBMODE)
 		prompt = L"/";
 	else if(sub_mode == SEARCH_BACKWARD_SUBMODE
 			|| sub_mode == VSEARCH_BACKWARD_SUBMODE
-			|| sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
+			|| sub_mode == MENU_SEARCH_BACKWARD_SUBMODE
+			|| sub_mode == VIEW_SEARCH_BACKWARD_SUBMODE)
 		prompt = L"?";
 	else
 		prompt = L"E";
@@ -552,7 +554,7 @@ leave_cmdline_mode(void)
 	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
 	wattroff(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR) | attr);
 
-	if(prev_mode != MENU_MODE)
+	if(prev_mode != MENU_MODE && prev_mode != VIEW_MODE)
 	{
 		draw_dir_list(curr_view, curr_view->top_line);
 		move_to_list_pos(curr_view, curr_view->list_pos);
@@ -823,7 +825,7 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 		cb = (prompt_cb)sub_mode_ptr;
 		cb(p);
 	}
-	else if(!cfg.inc_search)
+	else if(!cfg.inc_search || prev_mode == VIEW_MODE)
 	{
 		if(sub_mode == SEARCH_FORWARD_SUBMODE)
 		{
@@ -846,6 +848,14 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 		else if(sub_mode == VSEARCH_BACKWARD_SUBMODE)
 		{
 			curr_stats.save_msg = exec_command(p, curr_view, GET_VBSEARCH_PATTERN);
+		}
+		else if(sub_mode == VIEW_SEARCH_FORWARD_SUBMODE)
+		{
+			curr_stats.save_msg = exec_command(p, curr_view, GET_VWFSEARCH_PATTERN);
+		}
+		else if(sub_mode == VIEW_SEARCH_BACKWARD_SUBMODE)
+		{
+			curr_stats.save_msg = exec_command(p, curr_view, GET_VWBSEARCH_PATTERN);
 		}
 	}
 

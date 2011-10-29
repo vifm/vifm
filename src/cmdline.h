@@ -32,6 +32,8 @@ enum CmdLineSubModes {
 	VSEARCH_FORWARD_SUBMODE,
 	VSEARCH_BACKWARD_SUBMODE,
 	PROMPT_SUBMODE,
+	VIEW_SEARCH_FORWARD_SUBMODE,
+	VIEW_SEARCH_BACKWARD_SUBMODE,
 };
 
 typedef void (*prompt_cb)(const char *renponse);

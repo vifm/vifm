@@ -30,6 +30,8 @@ enum {
 	GET_BSEARCH_PATTERN,
 	GET_VFSEARCH_PATTERN,
 	GET_VBSEARCH_PATTERN,
+	GET_VWFSEARCH_PATTERN,
+	GET_VWBSEARCH_PATTERN,
 };
 
 /* values of type argument for filename_completion() function */

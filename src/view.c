@@ -18,11 +18,14 @@
 
 #include "../config.h"
 
+#include <regex.h>
+
 #include <curses.h>
 
 #include <assert.h>
 #include <string.h>
 
+#include "cmdline.h"
 #include "commands.h"
 #include "config.h"
 #include "filelist.h"
@@ -52,6 +55,9 @@ struct view_info{
 	int half_win;
 	int width;
 	FileView *view;
+	regex_t re;
+	int last_search_backward;
+	int search_repeat;
 };
 
 static int can_be_explored(FileView *view, char *buf);
@@ -60,21 +66,27 @@ static void leave_view_mode(void);
 static void init_view_info(struct view_info *vi);
 static void calc_vlines(void);
 static void draw(void);
-static void draw_wraped(FileView *view);
-static void draw_not_wraped(FileView *view);
+static int gets_line(const char *line, int offset, int max_len, char *buf);
+static void puts_line(FileView *view, char *line);
 static void cmd_ctrl_l(struct key_info, struct keys_info *);
 static void cmd_ctrl_ws(struct key_info, struct keys_info *);
 static void cmd_ctrl_wv(struct key_info, struct keys_info *);
 static void cmd_meta_space(struct key_info, struct keys_info *);
 static void cmd_percent(struct key_info, struct keys_info *);
 static void cmd_tab(struct key_info, struct keys_info *);
+static void cmd_slash(struct key_info, struct keys_info *);
+static void cmd_qmark(struct key_info, struct keys_info *);
 static void cmd_G(struct key_info, struct keys_info *);
+static void cmd_N(struct key_info, struct keys_info *);
 static void cmd_b(struct key_info, struct keys_info *);
 static void cmd_d(struct key_info, struct keys_info *);
 static void cmd_f(struct key_info, struct keys_info *);
 static void cmd_g(struct key_info, struct keys_info *);
 static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
+static void cmd_n(struct key_info, struct keys_info *);
+static void find_previous(int o);
+static void find_next(int o);
 static void cmd_q(struct key_info, struct keys_info *);
 static void cmd_u(struct key_info, struct keys_info *);
 static void cmd_v(struct key_info, struct keys_info *);
@@ -116,6 +128,8 @@ static struct keys_add_info builtin_cmds[] = {
 #else
 	{L"\033"L"[Z", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q}}},
 #endif
+	{L"/", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_slash}}},
+	{L"?", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_qmark}}},
 	{L"<", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_g}}},
 	{L">", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
 	{L" ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_f}}},
@@ -125,6 +139,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\033"L"v", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_b}}},
 	{L"%", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
 	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
+	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
 	{L"Q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q}}},
 	{L"R", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
 	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q}}},
@@ -135,6 +150,7 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"n", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_n}}},
 	{L"p", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
 	{L"q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_q}}},
 	{L"r", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
@@ -165,7 +181,9 @@ init_view_mode(int *key_mode)
 	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), VIEW_MODE);
 	assert(ret_code == 0);
 
-	init_view_info(vi);
+	init_view_info(&view_info[0]);
+	init_view_info(&view_info[1]);
+	init_view_info(&view_info[2]);
 }
 
 void
@@ -287,6 +305,9 @@ pick_vi(void)
 void
 view_pre(void)
 {
+	if(curr_stats.save_msg != 0)
+		return;
+
 	status_bar_message("-- VIEW -- ");
 	curr_stats.save_msg = 2;
 }
@@ -348,6 +369,8 @@ leave_view_mode(void)
 
 	free_string_array(vi->lines, vi->nlines);
 	free(vi->widths);
+	if(vi->last_search_backward != -1)
+		regfree(&vi->re);
 	init_view_info(vi);
 }
 
@@ -362,6 +385,7 @@ init_view_info(struct view_info *vi)
 	vi->win = -1;
 	vi->half_win = -1;
 	vi->width = -1;
+	vi->last_search_backward = -1;
 }
 
 static void
@@ -398,74 +422,124 @@ calc_vlines(void)
 static void
 draw(void)
 {
-	if(cfg.wrap_quick_view)
-		draw_wraped(vi->view);
-	else
-		draw_not_wraped(vi->view);
-}
-
-static void
-draw_wraped(FileView *view)
-{
 	int l, vl;
-	int max = MIN(vi->line + view->window_rows - 1, vi->nlines);
-	werase(view->win);
-	for(vl = 0, l = vi->line; l < max && vl < view->window_rows - 1; l++)
+	int max = MIN(vi->line + vi->view->window_rows - 1, vi->nlines);
+	werase(vi->view->win);
+	for(vl = 0, l = vi->line; l < max && vl < vi->view->window_rows - 1; l++)
 	{
 		int offset = 0;
 		int t = 0;
 		do
 		{
-			char buf[view->window_width*4];
-			int i = 0;
-			size_t len = 0;
-			buf[0] = '\0';
-			while(i < view->window_width - 1 && vi->lines[l][offset] != '\0')
-			{
-				size_t char_width = get_char_width(vi->lines[l] + offset);
-				snprintf(buf + len, char_width + 1, "%s", vi->lines[l] + offset);
-				len += char_width;
-				offset += char_width;
-				i += 1;
-			}
+			char buf[vi->view->window_width*4];
+			offset = gets_line(vi->lines[l], offset, vi->view->window_width - 1, buf);
 
 			if(l != vi->line || vl + t >= vi->linev - vi->widths[vi->line][0])
 			{
-				wmove(view->win, 1 + vl, 1);
-				wprint(view->win, buf);
+				wmove(vi->view->win, 1 + vl, 1);
+				puts_line(vi->view, buf);
 				vl++;
 			}
 			t++;
 		}
-		while(vi->lines[l][offset] != '\0' && vl < view->window_rows - 1);
+		while(vi->lines[l][offset] != '\0' && vl < vi->view->window_rows - 1 &&
+				cfg.wrap_quick_view);
 	}
-	wrefresh(view->win);
+	wrefresh(vi->view->win);
 }
 
-static void
-draw_not_wraped(FileView *view)
+static int
+gets_line(const char *line, int offset, int max_len, char *buf)
 {
-	int l;
-	int max = MIN(vi->line + view->window_rows - 1, vi->nlines);
-	werase(view->win);
-	for(l = vi->line; l < max; l++)
+	int i = 0;
+	size_t len = 0;
+	buf[0] = '\0';
+	while(i < max_len && line[offset] != '\0')
 	{
-		char buf[view->window_width*4];
-		int i = 0, offset = 0;
-		size_t len = 0;
-		while(i < view->window_width - 1)
+		size_t char_width = get_char_width(line + offset);
+		if(char_width == 1 && line[offset] == '\t')
 		{
-			size_t char_width = get_char_width(vi->lines[l] + offset);
-			snprintf(buf + len, char_width + 1, "%s", vi->lines[l] + offset);
-			len += char_width;
+			strcpy(buf + len, "  ");
+			offset += 1;
+			char_width = 2;
+			i += 2;
+		}
+		else
+		{
+			snprintf(buf + len, char_width + 1, "%s", line + offset);
 			offset += char_width;
 			i += 1;
 		}
-
-		wmove(view->win, 1 + l - vi->line, 1);
-		wprint(view->win, buf);
+		len += char_width;
 	}
-	wrefresh(view->win);
+	return offset;
+}
+
+static void
+puts_line(FileView *view, char *line)
+{
+	regmatch_t match;
+	char c;
+
+	if(vi->last_search_backward == -1)
+	{
+		wprint(view->win, line);
+		return;
+	}
+
+	if(regexec(&vi->re, line, 1, &match, 0) != 0)
+	{
+		wprint(view->win, line);
+		return;
+	}
+
+	c = line[match.rm_so];
+	line[match.rm_so] = '\0';
+	wprint(view->win, line);
+	line[match.rm_so] = c;
+
+	wattron(view->win, A_REVERSE | A_BOLD);
+
+	c = line[match.rm_eo];
+	line[match.rm_eo] = '\0';
+	wprint(view->win, line + match.rm_so);
+	line[match.rm_eo] = c;
+
+	wattroff(view->win, A_REVERSE | A_BOLD);
+
+	wprint(view->win, line + match.rm_eo);
+}
+
+int
+find_vwpattern(const char *pattern, int backward)
+{
+	int err;
+
+	if(pattern == NULL)
+		return 0;
+
+	if(vi->last_search_backward != -1)
+		regfree(&vi->re);
+	vi->last_search_backward = -1;
+	if((err = regcomp(&vi->re, pattern, REG_EXTENDED)) != 0)
+	{
+		status_bar_errorf("Filter not set: %s", get_regexp_error(err, &vi->re));
+		regfree(&vi->re);
+		draw();
+		return 1;
+	}
+
+	vi->last_search_backward = backward;
+
+	while(vi->search_repeat-- > 0)
+	{
+		if(backward)
+			find_previous(0);
+		else
+			find_next(0);
+	}
+
+	return curr_stats.save_msg;
 }
 
 static void
@@ -536,6 +610,26 @@ cmd_tab(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
+cmd_slash(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+		vi->search_repeat = 1;
+	else
+		vi->search_repeat = key_info.count;
+	enter_cmdline_mode(VIEW_SEARCH_FORWARD_SUBMODE, L"", NULL);
+}
+
+static void
+cmd_qmark(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+		vi->search_repeat = 1;
+	else
+		vi->search_repeat = key_info.count;
+	enter_cmdline_mode(VIEW_SEARCH_BACKWARD_SUBMODE, L"", NULL);
+}
+
+static void
 cmd_G(struct key_info key_info, struct keys_info *keys_info)
 {
 	if(key_info.count != NO_COUNT_GIVEN)
@@ -553,6 +647,21 @@ cmd_G(struct key_info key_info, struct keys_info *keys_info)
 			break;
 
 	draw();
+}
+
+static void
+cmd_N(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+
+	while(key_info.count-- > 0 && curr_stats.save_msg == 0)
+	{
+		if(vi->last_search_backward)
+			find_next(1);
+		else
+			find_previous(1);
+	}
 }
 
 static void
@@ -664,6 +773,116 @@ cmd_k(struct key_info key_info, struct keys_info *keys_info)
 	}
 
 	draw();
+}
+
+static void
+cmd_n(struct key_info key_info, struct keys_info *keys_info)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+
+	while(key_info.count-- > 0 && curr_stats.save_msg == 0)
+	{
+		if(vi->last_search_backward)
+			find_previous(1);
+		else
+			find_next(1);
+	}
+}
+
+static void
+find_previous(int o)
+{
+	int i;
+	int offset = 0;
+	char buf[(vi->view->window_width - 1)*4];
+	int vl, l;
+
+	if(vi->last_search_backward == -1)
+		return;
+
+	vl = vi->linev - o;
+	l = vi->line;
+
+	if(l > 0 && vl < vi->widths[l][0])
+		l--;
+
+	for(i = 0; i <= vl - vi->widths[l][0]; i++)
+		offset = gets_line(vi->lines[l], offset, vi->view->window_width - 1, buf);
+
+	while(l > 0)
+	{
+		if(regexec(&vi->re, buf, 0, NULL, 0) == 0)
+		{
+			vi->linev = vl;
+			vi->line = l;
+			break;
+		}
+		if(l > 0 && vl - 1 < vi->widths[l][0])
+		{
+			l--;
+			offset = 0;
+			for(i = 0; i <= vl - 1 - vi->widths[l][0]; i++)
+				offset = gets_line(vi->lines[l], offset, vi->view->window_width - 1,
+						buf);
+		}
+		else
+			offset = gets_line(vi->lines[l], offset, vi->view->window_width - 1, buf);
+		vl--;
+	}
+	draw();
+	if(vi->line != l)
+	{
+		status_bar_error("Pattern not found");
+		curr_stats.save_msg = 1;
+	}
+}
+
+static void
+find_next(int o)
+{
+	int i;
+	int offset = 0;
+	char buf[(vi->view->window_width - 1)*4];
+	int vl, l;
+
+	if(vi->last_search_backward == -1)
+		return;
+
+	vl = vi->linev + 1;
+	l = vi->line;
+
+	if(l < vi->nlines && vl == vi->widths[l + 1][0])
+		l++;
+
+	for(i = 0; i <= vl - vi->widths[l][0]; i++)
+		offset = gets_line(vi->lines[l], offset, vi->view->window_width - 1, buf);
+
+	while(l < vi->nlines)
+	{
+		if(regexec(&vi->re, buf, 0, NULL, 0) == 0)
+		{
+			vi->linev = vl;
+			vi->line = l;
+			break;
+		}
+		if(l < vi->nlines && (l == vi->nlines - 1 ||
+				vl + 1 >= vi->widths[l + 1][0]))
+		{
+			if(l == vi->nlines - 1)
+				break;
+			l++;
+			offset = 0;
+		}
+		offset = gets_line(vi->lines[l], offset, vi->view->window_width - 1, buf);
+		vl++;
+	}
+	draw();
+	if(vi->line != l)
+	{
+		status_bar_error("Pattern not found");
+		curr_stats.save_msg = 1;
+	}
 }
 
 static void
