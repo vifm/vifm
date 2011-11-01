@@ -279,6 +279,22 @@ get_sort(FileView *view, const char *line)
 }
 
 static void
+inc_history(char ***hist, int *num, int *len)
+{
+	void *p;
+
+	if(*num != *len)
+		return;
+
+	p = realloc(*hist, sizeof(char*)*(*len + 1));
+	if(p == NULL)
+		return;
+
+	(*len)++;
+	*hist = p;
+}
+
+static void
 get_history(FileView *view, int reread, const char *dir, const char *file,
 		int pos)
 {
@@ -451,14 +467,19 @@ read_info_file(int reread)
 		}
 		else if(line[0] == ':') /* command line history */
 		{
+			inc_history(&cfg.cmd_history, &cfg.cmd_history_num, &cfg.cmd_history_len);
 			save_command_history(line + 1);
 		}
 		else if(line[0] == '/') /* search history */
 		{
+			inc_history(&cfg.search_history, &cfg.search_history_num,
+					&cfg.search_history_len);
 			save_search_history(line + 1);
 		}
 		else if(line[0] == 'p') /* prompt history */
 		{
+			inc_history(&cfg.prompt_history, &cfg.prompt_history_num,
+					&cfg.prompt_history_len);
 			save_prompt_history(line + 1);
 		}
 		else if(line[0] == 'S') /* directory stack */
