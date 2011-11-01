@@ -73,6 +73,8 @@
 	Added ftdetect plugin for vim (now there is no need for modelines or
 	changing .vimrc).
 
+	Added more tags to the documentation in vim-help format.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

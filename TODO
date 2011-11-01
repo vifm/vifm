@@ -15,7 +15,7 @@ Basic things that need to be done.
     Wrapping of lines in the menus.
 
 Documentation.
-	Better documentation (with normal tags in Vim version).
+	Better documentation.
     Maybe divide vifm.txt in several files (if it becomes too big).
 
 Windows.
