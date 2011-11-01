@@ -73,11 +73,12 @@ Vim Specific Options:
 	If you want to use syntax highlighting and file type plugin for
 	~/.vifm/vifmrc file, copy the data/vim/syntax/vifmrc.vim and
 	data/vim/ftplugin/vifmrc.vim file to either the system wide vim syntax and
-	ftplugin directories appropriately and add to your .vimrc file commands
-    like:
+	ftplugin directories appropriately just copy the
+    data/vim/ftdetect/vifm.vim file to appropriate vim configuration
+    directory.  Or add to your .vimrc file commands like:
 		autocmd BufNewFile,BufRead vifmrc :set filetype=vifm
 		autocmd BufNewFile,BufRead ~/.vifm/colors/* :set filetype=vifm
-	or if you use mode line add as the first or the last line to
+	or if you use mode lines, add as the first or the last line to
     configuration file and color schemes:
 		" vim: set filetype=vifm :
 

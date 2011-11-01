@@ -70,6 +70,9 @@
 
 	Added zh, zl, zH and zL keys for the menus (horizontal scrolling).
 
+	Added ftdetect plugin for vim (now there is no need for modelines or
+	changing .vimrc).
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.
