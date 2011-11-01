@@ -270,7 +270,7 @@ execute_cmd(const char *cmd)
 	{
 		result = CMDS_ERR_NO_QMARK_ALLOWED;
 	}
-	else if(cmd_info.qmark && *cmd_info.args != '\0')
+	else if(cmd_info.qmark && cur->qmark == 1 && *cmd_info.args != '\0')
 	{
 		result = CMDS_ERR_TRAILING_CHARS;
 	}

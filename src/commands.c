@@ -310,7 +310,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "map",              .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = map_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "mark",             .abbr = "ma",    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
-		.handler = mark_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = 3,       .select = 0, },
+		.handler = mark_cmd,        .qmark = 2,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = 3,       .select = 0, },
 	{ .name = "marks",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = marks_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "messages",         .abbr = "mes",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -3772,17 +3772,28 @@ mark_cmd(const struct cmd_info *cmd_info)
 {
 	int result;
 	char *tmp;
+	char mark = cmd_info->argv[0][0];
 
 	if(cmd_info->argv[0][1] != '\0')
 		return CMDS_ERR_TRAILING_CHARS;
 
+	if(cmd_info->qmark)
+	{
+		int index = mark2index(mark);
+		if(!is_bookmark_empty(index))
+		{
+			status_bar_errorf("Mark isn't empty: %c", mark);
+			return 1;
+		}
+	}
+
 	if(cmd_info->argc == 1)
 	{
 		if(cmd_info->end == NOT_DEF)
-			return add_bookmark(cmd_info->argv[0][0], curr_view->curr_dir,
+			return add_bookmark(mark, curr_view->curr_dir,
 					curr_view->dir_entry[curr_view->list_pos].name);
 		else
-			return add_bookmark(cmd_info->argv[0][0], curr_view->curr_dir,
+			return add_bookmark(mark, curr_view->curr_dir,
 					curr_view->dir_entry[cmd_info->end].name);
 	}
 

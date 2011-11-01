@@ -30,7 +30,7 @@ static const struct cmd_add commands[] = {
 	{ .name = "!",          .abbr = NULL,  .handler = exec_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,
 		.emark = 1,           .qmark = 1,    .expand = 0,               .regexp = 0, .min_args = 1, .max_args = 1,       .bg = 1,     },
 	{ .name = "call",       .abbr = "cal", .handler = call_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,       .quote = 1,
-		.emark = 0,           .qmark = 1,    .expand = 1,               .regexp = 0, .min_args = 1, .max_args = 1,       .bg = 0,     },
+		.emark = 0,           .qmark = 2,    .expand = 1,               .regexp = 0, .min_args = 1, .max_args = 1,       .bg = 0,     },
 	{ .name = "delete",     .abbr = "d",   .handler = delete_cmd,     .id =  1,    .range = 1,    .cust_sep = 0,
 		.emark = 1,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 1,       .bg = 0,     },
 	{ .name = "edia",       .abbr = NULL,  .handler = edia_cmd,       .id = -1,    .range = 1,    .cust_sep = 0,
@@ -462,11 +462,18 @@ test_backgrounding(void)
 }
 
 static void
-test_no_args_after_qmark(void)
+test_no_args_after_qmark_1(void)
 {
 	assert_int_equal(0, execute_cmd("filter?"));
 	assert_int_equal(0, execute_cmd("filter?      "));
 	assert_int_equal(CMDS_ERR_TRAILING_CHARS, execute_cmd("filter? some_thing"));
+}
+
+static void
+test_args_after_qmark_2(void)
+{
+	assert_int_equal(0, execute_cmd("call? arg"));
+	assert_int_equal(0, execute_cmd("call? some_thing"));
 }
 
 static void
@@ -597,7 +604,8 @@ input_tests(void)
 	run_test(test_custom_separator_and_emark);
 	run_test(test_regexp_flag);
 	run_test(test_backgrounding);
-	run_test(test_no_args_after_qmark);
+	run_test(test_no_args_after_qmark_1);
+	run_test(test_args_after_qmark_2);
 	run_test(test_no_space_before_e_and_q_marks);
 	run_test(test_only_one_mark);
 	run_test(test_args_trimming);

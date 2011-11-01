@@ -106,6 +106,8 @@
 
 	Made i key work in visual mode.
 
+	Allowed question mark for :mark command (to prevent bookmark overwriting).
+
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 
 	Fixed bug with disappearing of number of selected files in visual mode.

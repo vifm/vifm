@@ -72,7 +72,8 @@ struct cmd_add
 	cmd_handler handler;
 	int range;
 	int cust_sep; /* custom separator of arguments */
-	int emark, qmark;
+	int emark;
+	int qmark; /* 1 - no args after qmark, other value - args are allowed */
 	int min_args, max_args;
 	int expand; /* 1 - expand macros, 2 - expand envvars, 3 - expand both */
 	int regexp;

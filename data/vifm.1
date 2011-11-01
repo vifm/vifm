@@ -1,4 +1,4 @@
-.TH vifm 1 "October 29, 2011" "" "Vifm"
+.TH vifm 1 "November 1, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1099,10 +1099,11 @@ to show the selected file.
 .BI :locate
 repeats last :locate command.
 .TP
-.BI :[range]ma[rk] x [/full/path] [filename]
+.BI :[range]ma[rk][?] x [/full/path] [filename]
 Set mark x (a-zA-Z0-9) at /full/path and filename.  By default current directory
 is being used.  If no filename was given and /full/path is current directory
-then last file in [range] is used.  Using macros is allowed.
+then last file in [range] is used.  Using macros is allowed.  Question mark
+will stop command from overwriting existing marks.
 .TP
 .BI :marks
 create a popup menu of bookmarks.
