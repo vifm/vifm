@@ -343,24 +343,6 @@ run_converter(int vifm_like)
 #endif
 }
 
-void
-exec_startup_commands(int argc, char *argv[])
-{
-	int x;
-	for(x = 1; x < argc; x++)
-	{
-		if(strcmp(argv[x], "-c") == 0)
-		{
-			exec_commands(argv[x + 1], curr_view, 0, GET_COMMAND);
-			x++;
-		}
-		else if(argv[x][0] == '+')
-		{
-			exec_commands(argv[x] + 1, curr_view, 0, GET_COMMAND);
-		}
-	}
-}
-
 int
 main(int argc, char *argv[])
 {

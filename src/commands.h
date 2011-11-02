@@ -62,6 +62,7 @@ char * edit_selection(FileView *view, int *bg);
 void complete_user_name(const char *str);
 void complete_group_name(const char *str);
 void filename_completion(const char *str, int type);
+void exec_startup_commands(int argc, char **argv);
 
 #ifdef TEST
 #include "cmds.h"

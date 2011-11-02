@@ -1071,6 +1071,33 @@ complete_envvar(const char *str)
 	add_completion(str);
 }
 
+void
+exec_startup_commands(int c, char **v)
+{
+	static int argc;
+	static char **argv;
+	int x;
+
+	if(c > 0)
+	{
+		argc = c;
+		argv = v;
+	}
+
+	for(x = 1; x < argc; x++)
+	{
+		if(strcmp(argv[x], "-c") == 0)
+		{
+			exec_commands(argv[x + 1], curr_view, 0, GET_COMMAND);
+			x++;
+		}
+		else if(argv[x][0] == '+')
+		{
+			exec_commands(argv[x] + 1, curr_view, 0, GET_COMMAND);
+		}
+	}
+}
+
 static int
 is_entry_dir(const struct dirent *d)
 {
@@ -4122,6 +4149,7 @@ restart_cmd(const struct cmd_info *cmd_info)
 	save_view_history(&rwin, NULL, NULL, -1);
 	load_color_scheme_colors();
 	exec_config();
+	exec_startup_commands(0, NULL);
 	return 0;
 }
 
