@@ -1145,6 +1145,7 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 		strncpy(buf, t, buf_len);
 	buf[buf_len - 1] = '\0';
 	free(t);
+	to_forward_slash(buf);
 	return 0;
 #endif
 }

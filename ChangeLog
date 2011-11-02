@@ -185,6 +185,8 @@
 	Fixed loading long histories (search, prompt or command) from vifminfo
 	file.
 
+	Fixed gf command on Windows.
+
 0.6.3 to 0.7.0
 
 	Removed :cmdhistory command.  Use :history cmd or :history :.

@@ -764,12 +764,14 @@ follow_link(FileView *view, int follow_dirs)
 	struct stat s;
 	int is_dir = 0;
 	char *dir = NULL, *file = NULL, *link_dup;
+	char buf[PATH_MAX];
 	char linkto[PATH_MAX + NAME_MAX];
 	char *filename;
 
 	filename = view->dir_entry[view->list_pos].name;
+	snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, filename);
 
-	if(get_link_target(filename, linkto, sizeof(linkto)) != 0)
+	if(get_link_target(buf, linkto, sizeof(linkto)) != 0)
 	{
 		(void)show_error_msg("Error", "Can't read link");
 		return;
@@ -802,7 +804,11 @@ follow_link(FileView *view, int follow_dirs)
 			{
 				struct stat s;
 				linkto[x] = '\0';
-				lstat(linkto, &s);
+				if(lstat(linkto, &s) != 0)
+				{
+					strcat(linkto, "/");
+					lstat(linkto, &s);
+				}
 				if((s.st_mode & S_IFMT) == S_IFDIR)
 				{
 					is_dir = 1;
