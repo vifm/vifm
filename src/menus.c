@@ -1090,7 +1090,7 @@ static int
 capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
 {
 	FILE *file, *err;
-	char buf[256];
+	char buf[4096];
 	int x;
 	int were_errors;
 
@@ -1107,8 +1107,8 @@ capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
 	while(fgets(buf, sizeof(buf), file) == buf)
 	{
 		show_progress("Loading menu", 1000);
-		m->data = (char **)realloc(m->data, sizeof(char *) * (x + 1));
-		m->data[x] = (char *)malloc(sizeof(buf) + 2);
+		m->data = realloc(m->data, sizeof(char *) * (x + 1));
+		m->data[x] = malloc(sizeof(buf) + 2);
 		snprintf(m->data[x], sizeof(buf) + 2, "%s", buf);
 
 		x++;
