@@ -29,8 +29,7 @@
 #include <fcntl.h>
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* waitpid() */
-#ifndef _WIN32
-#else
+#ifdef _WIN32
 #include <windows.h>
 #include <shellapi.h>
 #endif

@@ -370,12 +370,14 @@ move_to_menu_pos(int pos, menu_info *m)
 			m->top -= s - (pos - m->top);
 			if(m->top < 0)
 				m->top = 0;
-			m->current = 1 + s;
+			m->current = 1 + m->pos - m->top;
 			redraw = 1;
 		}
-		if((m->top + m->win_rows - 2) - pos - 1 < s && pos + s < m->len)
+		if((m->top + m->win_rows - 2) - pos - 1 < s)
 		{
 			m->top += s - ((m->top + m->win_rows - 2) - pos - 1);
+			if(m->top + m->win_rows - 2 > m->len)
+				m->top = m->len - (m->win_rows - 2);
 			m->current = 1 + pos - m->top;
 			redraw = 1;
 		}
