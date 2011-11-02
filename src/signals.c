@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include <signal.h>
+
 #ifndef _WIN32
 
 #include <curses.h>
@@ -28,7 +30,6 @@
 #include <unistd.h> /* alarm() */
 
 #include <errno.h>
-#include <signal.h>
 #include <time.h>
 
 #include "background.h"
@@ -153,12 +154,12 @@ setup_signals(void)
 	sigaction(SIGCONT, &handle_signal_action, NULL);
 	sigaction(SIGTERM, &handle_signal_action, NULL);
 	sigaction(SIGWINCH, &handle_signal_action, NULL);
-
-	signal(SIGINT, SIG_IGN);
 	signal(SIGUSR1, SIG_IGN);
 	signal(SIGUSR2, SIG_IGN);
 	signal(SIGALRM, SIG_IGN);
 #endif
+
+	signal(SIGINT, SIG_IGN);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
