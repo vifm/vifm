@@ -75,6 +75,8 @@
 
 	Added more tags to the documentation in vim-help format.
 
+	Added ZQ and ZZ keys to close menus.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

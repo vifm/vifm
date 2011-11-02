@@ -14,7 +14,6 @@ Basic things that need to be done.
     Add the UNC computer name (after the \\) (%h, :H or :u).
     Wrapping of lines in the menus.
     Execute command arguments on :restart.
-    Add ZQ and ZZ to close menus.
 
 Documentation.
 	Better documentation.

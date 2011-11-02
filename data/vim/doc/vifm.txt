@@ -1616,9 +1616,12 @@ General~
 
 j, Ctrl-N - moves down.                        *vifm-m_j* *vifm-m_CTRL-N*
 k, Ctrl-P - moves up.                          *vifm-m_k* *vifm-m_CTRL-P*
-Escape, Ctrl-C - clear.                        *vifm-m_Escape* *vifm-m_CTRL-C*
 Enter, l - select and exit the menu.           *vifm-m_Enter* *vifm-m_l*
 Ctrl-L - redraw the menu.                      *vifm-m_CTRL-L*
+
+                                               *vifm-m_Escape* *vifm-m_CTRL-C*
+                                               *vifm-m_ZQ* *vifm-m_ZZ*
+Escape, Ctrl-C, ZZ, ZQ - quit.
 
 In all menus~
 
