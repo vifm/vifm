@@ -521,7 +521,7 @@ find_vwpattern(const char *pattern, int backward)
 	if(vi->last_search_backward != -1)
 		regfree(&vi->re);
 	vi->last_search_backward = -1;
-	if((err = regcomp(&vi->re, pattern, REG_EXTENDED)) != 0)
+	if((err = regcomp(&vi->re, pattern, get_regexp_cflags(pattern))) != 0)
 	{
 		status_bar_errorf("Filter not set: %s", get_regexp_error(err, &vi->re));
 		regfree(&vi->re);
