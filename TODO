@@ -13,6 +13,7 @@ Basic things that need to be done.
     Ctrl-R combinations in the command-line mode.
     Add the UNC computer name (after the \\) (%h, :H or :u).
     Wrapping of lines in the menus.
+    Numeric prefix for C.
 
 Documentation.
 	Better documentation.

@@ -30,6 +30,7 @@
 
 #include <sys/time.h> /* select() */
 #include <sys/types.h> /* select() */
+#include <signal.h>
 #include <unistd.h> /* select() */
 
 #include <assert.h>
