@@ -75,7 +75,7 @@
 
 	Added more tags to the documentation in vim-help format.
 
-	Added ZQ and ZZ keys to close menus.
+	Added ZQ and ZZ keys to close menus and dialogs.
 
 	Added 'tabstop' option.
 
