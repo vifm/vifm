@@ -136,7 +136,11 @@ static struct keys_add_info builtin_cmds[] = {
 	{L"\033"L"<", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_g}}},
 	{L"\033"L">", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
 	{L"\033"L" ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_space}}},
+#ifndef _WIN32
 	{L"\033"L"v", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_b}}},
+#else
+	{{ALT_V}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_b}}},
+#endif
 	{L"%", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
 	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
 	{L"N", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_N}}},
@@ -459,10 +463,15 @@ gets_line(const char *line, int offset, int max_len, char *buf)
 		size_t char_width = get_char_width(line + offset);
 		if(char_width == 1 && line[offset] == '\t')
 		{
-			strcpy(buf + len, "  ");
+			int k;
+			char_width = cfg.tab_stop - i%cfg.tab_stop;
+
+			k = char_width;
+			while(k-- > 0)
+				strcat(buf + len, " ");
+
 			offset += 1;
-			char_width = 2;
-			i += 2;
+			i += char_width;
 		}
 		else
 		{

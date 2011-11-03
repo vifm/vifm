@@ -30,6 +30,7 @@
 #include "string_array.h"
 #include "ui.h"
 #include "utils.h"
+#include "view.h"
 
 #include "opt_handlers.h"
 
@@ -61,6 +62,7 @@ static void smartcase_handler(enum opt_op op, union optval_t val);
 static void sortnumbers_handler(enum opt_op op, union optval_t val);
 static void sort_handler(enum opt_op op, union optval_t val);
 static void sortorder_handler(enum opt_op op, union optval_t val);
+static void tabstop_handler(enum opt_op op, union optval_t val);
 static void timefmt_handler(enum opt_op op, union optval_t val);
 static void timeoutlen_handler(enum opt_op op, union optval_t val);
 static void trash_handler(enum opt_op op, union optval_t val);
@@ -160,6 +162,7 @@ static struct {
 #endif
 	{ "smartcase",   "scs",  OPT_BOOL,    0,                          NULL,            &smartcase_handler,   },
 	{ "sortnumbers", "",     OPT_BOOL,    0,                          NULL,            &sortnumbers_handler, },
+	{ "tabstop",     "ts",   OPT_INT,     0,                          NULL,            &tabstop_handler,     },
 	{ "timefmt",     "",     OPT_STR,     0,                          NULL,            &timefmt_handler,     },
 	{ "timeoutlen",  "tm",   OPT_INT,     0,                          NULL,            &timeoutlen_handler,  },
 	{ "trash",       "",     OPT_BOOL,    0,                          NULL,            &trash_handler,       },
@@ -216,6 +219,7 @@ load_options_defaults(void)
 #endif
 	options[i++].val.bool_val = cfg.smart_case;
 	options[i++].val.bool_val = cfg.sort_numbers;
+	options[i++].val.int_val = cfg.tab_stop;
 	options[i++].val.str_val = cfg.time_format + 1;
 	options[i++].val.int_val = cfg.timeout_len;
 	options[i++].val.bool_val = cfg.use_trash;
@@ -709,6 +713,16 @@ sortorder_handler(enum opt_op op, union optval_t val)
 		load_saving_pos(curr_view, 1);
 		load_sort(curr_view);
 	}
+}
+
+static void
+tabstop_handler(enum opt_op op, union optval_t val)
+{
+	cfg.tab_stop = val.int_val;
+	if(curr_stats.view)
+		quick_view_file(curr_view);
+	else if(other_view->explore_mode)
+		view_redraw();
 }
 
 static void

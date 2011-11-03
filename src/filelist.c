@@ -230,6 +230,42 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 	wattroff(view->win, COLOR_PAIR(type + view->color_scheme) | col.attr);
 }
 
+static char *
+strchar2str(const char *str, int pos)
+{
+	static char buf[16];
+
+	size_t len = get_char_width(str);
+	if(len != 1 || str[0] >= ' ' || str[0] == '\n')
+	{
+		memcpy(buf, str, len);
+		buf[len] = '\0';
+	}
+	else if(str[0] == '\r')
+	{
+		strcpy(buf, "<cr>");
+	}
+	else if(str[0] == '\t')
+	{
+		len = cfg.tab_stop - pos%cfg.tab_stop;
+		buf[0] = '\0';
+		while(len-- > 0)
+			strcat(buf, " ");
+	}
+	else if((unsigned char)str[0] < (unsigned char)' ')
+	{
+		buf[0] = '^';
+		buf[1] = ('A' - 1) + str[0];
+		buf[2] = '\0';
+	}
+	else
+	{
+		buf[0] = str[0];
+		buf[1] = '\0';
+	}
+	return buf;
+}
+
 static void
 view_not_wraped(FILE *fp, int x)
 {
@@ -262,7 +298,7 @@ view_not_wraped(FILE *fp, int x)
 			n_len++;
 
 			if(cl == 1 && (unsigned char)line[i] == '\t')
-				len += 8 - (y + len)%8;
+				len += cfg.tab_stop - len%cfg.tab_stop;
 			else if(cl == 1 && (unsigned char)line[i] < ' ')
 				len += 2;
 			else
@@ -276,9 +312,14 @@ view_not_wraped(FILE *fp, int x)
 		++x;
 		wmove(other_view->win, x, y);
 		i = 0;
+		len = 0;
 		while(n_len--)
 		{
-			wprint(other_view->win, strchar2str(line + i));
+			wprint(other_view->win, strchar2str(line + i, len));
+			if(line[i] == '\t')
+				len += cfg.tab_stop - len%cfg.tab_stop;
+			else
+				len++;
 			i += get_char_width(line + i);
 		}
 	}
@@ -318,9 +359,14 @@ view_wraped(FILE *fp, int x)
 		wmove(other_view->win, x, y);
 		i = 0;
 		k = width;
-		while(k--)
+		len = 0;
+		while(k-- > 0)
 		{
-			wprint(other_view->win, strchar2str(line + i));
+			wprint(other_view->win, strchar2str(line + i, len));
+			if(line[i] == '\t')
+				len += cfg.tab_stop - len%cfg.tab_stop;
+			else
+				len++;
 			i += get_char_width(line + i);
 		}
 

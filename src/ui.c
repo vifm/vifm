@@ -526,6 +526,8 @@ setup_ncurses_interface(void)
 	wbkgdset(input_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
 	werase(input_win);
 
+	cfg.tab_stop = TABSIZE;
+
 	return 1;
 }
 

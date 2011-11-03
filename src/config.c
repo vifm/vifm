@@ -112,6 +112,7 @@ init_config(void)
 	cfg.inc_search = 0;
 	cfg.selection_cp = 1;
 	cfg.last_status = 1;
+	cfg.tab_stop = 8;
 
 	p = getenv("SHELL");
 	if(p == NULL || *p == '\0')
@@ -822,6 +823,7 @@ write_info_file(void)
 #endif
 		fprintf(fp, "=%ssmartcase\n", cfg.smart_case ? "" : "no");
 		fprintf(fp, "=%ssortnumbers\n", cfg.sort_numbers ? "" : "no");
+		fprintf(fp, "=tabstop=%d\n", cfg.tab_stop);
 		fprintf(fp, "=timefmt=%s\n", escape_spaces(cfg.time_format + 1));
 		fprintf(fp, "=timeoutlen=%d\n", cfg.timeout_len);
 		fprintf(fp, "=%strash\n", cfg.use_trash ? "" : "no");

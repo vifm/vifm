@@ -50,7 +50,7 @@ syntax keyword vifmOption contained autochpos confirm cf cpoptions cpo fastrun
 		\ incsearch is laststatus ls runexec scrollbind scb scrolloff so shell sh
 		\ slowfs smartcase scs sortnumbers timefmt timeoutlen trash undolevels ul
 		\ vicmd vixcmd vifminfo vimhelp wildmenu wmnu wrap wrapscan ws sort
-		\ sortorder
+		\ sortorder tabstop ts
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun

@@ -1250,7 +1250,8 @@ Supported modifiers are:
     :r           - root of the filename (without last extension)
     :e           - extension of the filename (last one)
     :s?pat?sub?  - substitute the first occurrence of "pat" with "sub".  You
-                   can use any character for '?', but it must not occur in.
+                   can use any character for '?', but it must not occur in pat
+                   or sub
     :gs?pat?sub? - like :s, but substitutes all occurrences of "pat" with
                    "sub".
 See ':h filename-modifiers' in Vim's documentation for the detailed
@@ -1478,6 +1479,12 @@ sortorder
 type: enumeration
 default: ascending
 Sets sort order for primary key: ascending, descending.
+
+                                               *vifm-'tabstop'* *vifm-'ts'*
+tabstop ts
+type: integer
+default: value from curses library
+Number of spaces that a Tab in the file counts for.
 
                                                *vifm-'timefmt'*
 timefmt

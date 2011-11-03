@@ -77,6 +77,8 @@
 
 	Added ZQ and ZZ keys to close menus.
 
+	Added 'tabstop' option.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

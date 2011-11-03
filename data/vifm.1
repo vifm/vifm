@@ -1445,7 +1445,7 @@ Supported modifiers are:
 .IP - 2
 :e           - extension of the filename (last one)
 .IP - 2
-:s?pat?sub?  - substitute the first occurrence of pat with sub.  You can use any character for '?', but it must not occur in.
+:s?pat?sub?  - substitute the first occurrence of pat with sub.  You can use any character for '?', but it must not occur in pat or sub.
 .IP - 2
 :gs?pat?sub? - like :s, but substitutes all occurrences of pat with sub.
 
@@ -1695,6 +1695,13 @@ type: enumeration
 default: ascending
 .br
 Sets sort order for primary key: ascending, descending.
+.TP
+.BI "tabstop ts"
+type: integer
+.br
+default: value from curses library
+.br
+Number of spaces that a Tab in the file counts for.
 .TP
 .BI timefmt
 type: string

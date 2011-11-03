@@ -1008,6 +1008,130 @@ draw_menu(menu_info *m)
 	}
 }
 
+static char *
+uchar2str(wchar_t *c, size_t *len)
+{
+	static char buf[8];
+
+	*len = 1;
+	switch(*c)
+	{
+		case L' ':
+			strcpy(buf, "<space>");
+			break;
+		case L'\033':
+			if(c[1] == L'[' && c[2] == 'Z')
+			{
+				strcpy(buf, "<s-tab>");
+				*len += 2;
+				break;
+			}
+			if(c[1] != L'\0' && c[1] != L'\033')
+			{
+				strcpy(buf, "<m-a>");
+				buf[3] += c[1] - L'a';
+				++*len;
+				break;
+			}
+			strcpy(buf, "<esc>");
+			break;
+		case L'\177':
+			strcpy(buf, "<del>");
+			break;
+		case KEY_HOME:
+			strcpy(buf, "<home>");
+			break;
+		case KEY_END:
+			strcpy(buf, "<end>");
+			break;
+		case KEY_LEFT:
+			strcpy(buf, "<left>");
+			break;
+		case KEY_RIGHT:
+			strcpy(buf, "<right>");
+			break;
+		case KEY_UP:
+			strcpy(buf, "<up>");
+			break;
+		case KEY_DOWN:
+			strcpy(buf, "<down>");
+			break;
+		case KEY_BACKSPACE:
+			strcpy(buf, "<bs>");
+			break;
+		case KEY_BTAB:
+			strcpy(buf, "<s-tab>");
+			break;
+		case KEY_DC:
+			strcpy(buf, "<delete>");
+			break;
+		case KEY_PPAGE:
+			strcpy(buf, "<pageup>");
+			break;
+		case KEY_NPAGE:
+			strcpy(buf, "<pagedown>");
+			break;
+		case '\r':
+			strcpy(buf, "<cr>");
+			break;
+
+		default:
+			if(*c == '\n' || (*c > L' ' && *c < 256))
+			{
+				buf[0] = *c;
+				buf[1] = '\0';
+			}
+			else if(*c >= KEY_F0 && *c < KEY_F0 + 10)
+			{
+				strcpy(buf, "<f0>");
+				buf[2] += *c - KEY_F0;
+			}
+			else if(*c >= KEY_F0 + 13 && *c <= KEY_F0 + 21)
+			{
+				strcpy(buf, "<s-f1>");
+				buf[4] += *c - (KEY_F0 + 13);
+			}
+			else if(*c >= KEY_F0 + 22 && *c <= KEY_F0 + 24)
+			{
+				strcpy(buf, "<s-f10>");
+				buf[5] += *c - (KEY_F0 + 22);
+			}
+			else if(*c >= KEY_F0 + 25 && *c <= KEY_F0 + 33)
+			{
+				strcpy(buf, "<c-f1>");
+				buf[4] += *c - (KEY_F0 + 25);
+			}
+			else if(*c >= KEY_F0 + 34 && *c <= KEY_F0 + 36)
+			{
+				strcpy(buf, "<c-f10>");
+				buf[5] += *c - (KEY_F0 + 34);
+			}
+			else if(*c >= KEY_F0 + 37 && *c <= KEY_F0 + 45)
+			{
+				strcpy(buf, "<a-f1>");
+				buf[4] += *c - (KEY_F0 + 37);
+			}
+			else if(*c >= KEY_F0 + 46 && *c <= KEY_F0 + 48)
+			{
+				strcpy(buf, "<a-f10>");
+				buf[5] += *c - (KEY_F0 + 46);
+			}
+			else if(*c >= KEY_F0 + 10 && *c < KEY_F0 + 63)
+			{
+				strcpy(buf, "<f00>");
+				buf[2] += (*c - KEY_F0)/10;
+				buf[3] += (*c - KEY_F0)%10;
+			}
+			else
+			{
+				strcpy(buf, "<c-A>");
+				buf[3] = tolower(buf[3] + *c - 1);
+			}
+			break;
+	}
+	return buf;
+}
+
 void
 show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 {
@@ -1061,16 +1185,24 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 
 		if(str_len > 0)
 		{
-			char buf[wcslen(list[x] + str_len + 1)*4 + 1];
 			int i;
 			for(i = strlen(m.data[x]); i < MAP_WIDTH; i++)
 				strcat(m.data[x], " ");
 
 			strcat(m.data[x], " ");
-			sprintf(buf, "%ls", list[x] + str_len + 1);
 
-			for(i = 0; buf[i] != '\0'; i++)
-				strcat(m.data[x], strchar2str(buf + i));
+			for(i = str_len + 1; list[x][i] != L'\0'; i += len)
+			{
+				if(list[x][i] == L' ')
+				{
+					strcat(m.data[x], " ");
+					len = 1;
+				}
+				else
+				{
+					strcat(m.data[x], uchar2str(list[x] + i, &len));
+				}
+			}
 		}
 
 		free(list[x]);
@@ -1106,10 +1238,33 @@ capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
 	show_progress("", 0);
 	while(fgets(buf, sizeof(buf), file) == buf)
 	{
+		int i, j;
+		size_t len;
+
+		j = 0;
+		for(i = 0; buf[i] != '\0'; i++)
+			j++;
+
 		show_progress("Loading menu", 1000);
-		m->data = realloc(m->data, sizeof(char *) * (x + 1));
-		m->data[x] = malloc(sizeof(buf) + 2);
-		snprintf(m->data[x], sizeof(buf) + 2, "%s", buf);
+		m->data = realloc(m->data, sizeof(char *)*(x + 1));
+		len = strlen(buf) + j*(cfg.tab_stop - 1) + 2;
+		m->data[x] = malloc(len);
+
+		j = 0;
+		for(i = 0; buf[i] != '\0'; i++)
+		{
+			if(buf[i] == '\t')
+			{
+				int k = cfg.tab_stop - j%cfg.tab_stop;
+				while(k-- > 0)
+					m->data[x][j++] = ' ';
+			}
+			else
+			{
+				m->data[x][j++] = buf[i];
+			}
+		}
+		m->data[x][j] = '\0';
 
 		x++;
 	}

@@ -91,6 +91,7 @@ typedef struct _Config {
 	int inc_search;
 	int selection_cp;
 	int last_status;
+	int tab_stop;
 } Config;
 
 extern Config cfg;
