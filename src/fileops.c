@@ -2575,7 +2575,7 @@ have_read_access(FileView *view)
 
 /* returns new value for save_msg */
 int
-clone_files(FileView *view, char **list, int nlines, int force)
+clone_files(FileView *view, char **list, int nlines, int force, int copies)
 {
 	int i;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
@@ -2640,9 +2640,16 @@ clone_files(FileView *view, char **list, int nlines, int force)
 	cmd_group_begin(buf);
 	for(i = 0; i < sel_len; i++)
 	{
+		int j;
 		const char * clone_name = (nlines > 0) ? list[i] : gen_clone_name(sel[i]);
 		progress_msg("Cloning files", i + 1, sel_len);
-		clone_file(view, sel[i], path, clone_name);
+
+		for(j = 0; j < copies; j++)
+		{
+			clone_name = gen_clone_name((nlines > 0) ? list[i] : sel[i]);
+			clone_file(view, sel[i], path, clone_name);
+		}
+
 		if(find_file_pos_in_list(view, sel[i]) == view->list_pos)
 		{
 			strcpy(view->dir_entry[view->list_pos].name, clone_name);

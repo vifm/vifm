@@ -301,7 +301,8 @@ Other Normal Mode Keys
        cp     only for *nix
               change file permissions.
 
-       C      clone file.
+       [count]C
+              clone file [count] times.
 
        [count]dd or d[count]selector
               moves the selected files  to  the  trash  directory  (if  option
@@ -1343,7 +1344,7 @@ Command macros
        - :e           - extension of the filename (last one)
 
        - :s?pat?sub?  - substitute the first occurrence of pat with sub.   You
-         can use any character for '?', but it must not occur in.
+         can use any character for '?', but it must not occur in pat or sub.
 
        - :gs?pat?sub?  -  like :s, but substitutes all occurrences of pat with
          sub.
@@ -1557,6 +1558,11 @@ Command backgrounding
               default: ascending
               Sets sort order for primary key: ascending, descending.
 
+       tabstop ts
+              type: integer
+              default: value from curses library
+              Number of spaces that a Tab in the file counts for.
+
        timefmt
               type: string
               default: " %m/%d %H:%M"
@@ -1694,8 +1700,8 @@ Compatibility mode
 Menus and dialogs
        General
 
-       j,  k - move.  <Escape>, Ctrl-C - clear.  <Return>, l - select and exit
-       the menu.  Ctrl-L - redraw the menu.
+       j,  k  -  move.  <Escape>, Ctrl-C, ZZ, ZQ - quit.  <Return>, l - select
+       and exit the menu.  Ctrl-L - redraw the menu.
 
        In all menus
 
@@ -1837,4 +1843,4 @@ AUTHOR
 
 
 
-                               November 1, 2011                        vifm(1)
+                               November 4, 2011                        vifm(1)

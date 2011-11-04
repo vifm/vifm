@@ -3086,12 +3086,12 @@ clone_cmd(const struct cmd_info *cmd_info)
 			status_bar_error("No arguments are allowed if you use \"!\"");
 			return 1;
 		}
-		return clone_files(curr_view, NULL, -1, 0) != 0;
+		return clone_files(curr_view, NULL, -1, 0, 1) != 0;
 	}
 	else
 	{
 		return clone_files(curr_view, cmd_info->argv, cmd_info->argc,
-				cmd_info->emark) != 0;
+				cmd_info->emark, 1) != 0;
 	}
 }
 

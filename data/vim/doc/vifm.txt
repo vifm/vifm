@@ -311,7 +311,7 @@ cp - change file permissions.                  {only for *nix}
 
 
                                                *vifm-C*
-C - clone file.
+[count]C - clone file [count] times.
 
                                                *vifm-d* *vifm-dd*
 dd - move selected file or files to CONFDIR/Trash (if option |vifm-'trash'|
