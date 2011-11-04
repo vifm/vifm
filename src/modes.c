@@ -49,6 +49,7 @@ static int mode_flags[] = {
 	MF_USES_COUNT,                /* PERMISSIONS_MODE */
 	MF_USES_COUNT,                /* CHANGE_MODE */
 	MF_USES_COUNT,                /* VIEW_MODE */
+	0,                            /* FILE_INFO_MODE */
 };
 
 static char _gnuc_unused mode_flags_size_guard[
@@ -64,24 +65,39 @@ static char uses_input_bar[] = {
 	1, /* PERMISSIONS_MODE */
 	1, /* CHANGE_MODE */
 	1, /* VIEW_MODE */
+	1, /* FILE_INFO_MODE */
 };
 
 static char _gnuc_unused uses_input_bar_size_guard[
 	(ARRAY_LEN(uses_input_bar) == MODES_COUNT) ? 1 : -1
 ];
 
+typedef void (*mode_init_func)(int *mode);
+static mode_init_func mode_init_funcs[] = {
+	&init_cmdline_mode,            /* NORMAL_MODE */
+	&init_menu_mode,               /* CMDLINE_MODE */
+	&init_normal_mode,             /* VISUAL_MODE */
+	&init_permissions_dialog_mode, /* MENU_MODE */
+	&init_sort_dialog_mode,        /* SORT_MODE */
+	&init_visual_mode,             /* PERMISSIONS_MODE */
+	&init_change_dialog_mode,      /* CHANGE_MODE */
+	&init_view_mode,               /* VIEW_MODE */
+	&init_file_info_mode,          /* FILE_INFO_MODE */
+};
+
+static char _gnuc_unused mode_init_funcs_guard[
+	(ARRAY_LEN(mode_init_funcs) == MODES_COUNT) ? 1 : -1
+];
+
 void
 init_modes(void)
 {
+	int i;
+
 	init_keys(MODES_COUNT, &mode, (int*)&mode_flags);
-	init_cmdline_mode(&mode);
-	init_menu_mode(&mode);
-	init_normal_mode(&mode);
-	init_permissions_dialog_mode(&mode);
-	init_sort_dialog_mode(&mode);
-	init_visual_mode(&mode);
-	init_change_dialog_mode(&mode);
-	init_view_mode(&mode);
+
+	for(i = 0; i < MODES_COUNT; i++)
+		mode_init_funcs[i](&mode);
 }
 
 void
@@ -150,6 +166,10 @@ modes_post(void)
 		menu_post();
 		return;
 	}
+	else if(mode == FILE_INFO_MODE)
+	{
+		redraw_file_info_dialog();
+	}
 
 	if(curr_stats.need_redraw)
 		redraw_window();
@@ -157,11 +177,7 @@ modes_post(void)
 	if(curr_stats.save_msg)
 		status_bar_message(NULL);
 
-	if(curr_stats.show_full)
-	{
-		show_full_file_properties(curr_view);
-	}
-	else if(curr_view->list_rows > 0)
+	if(mode != FILE_INFO_MODE && curr_view->list_rows > 0)
 	{
 		if(!is_status_bar_multiline())
 		{

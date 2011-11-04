@@ -37,11 +37,172 @@
 #include "config.h"
 #include "filelist.h"
 #include "file_magic.h"
+#include "keys.h"
 #include "menus.h"
 #include "modes.h"
 #include "status.h"
 #include "ui.h"
 #include "utils.h"
+
+#include "file_info.h"
+
+static void leave_file_info_mode(void);
+static int show_file_type(FileView *view, int curr_y);
+static int show_mime_type(FileView *view, int curr_y);
+static void cmd_ctrl_c(struct key_info, struct keys_info *);
+
+static int *mode;
+static FileView *view;
+
+static struct keys_add_info builtin_cmds[] = {
+	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	/* return */
+	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	/* escape */
+	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+};
+
+void
+init_file_info_mode(int *key_mode)
+{
+	int ret_code;
+
+	assert(key_mode != NULL);
+
+	mode = key_mode;
+
+	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), FILE_INFO_MODE);
+	assert(ret_code == 0);
+}
+
+void
+enter_file_info_mode(FileView *v)
+{
+	*mode = FILE_INFO_MODE;
+	view = v;
+	curr_stats.show_full = 1;
+	redraw_file_info_dialog();
+}
+
+static void
+leave_file_info_mode(void)
+{
+	curr_stats.show_full = 0;
+	curr_stats.need_redraw = 1;
+	*mode = NORMAL_MODE;
+}
+
+void
+redraw_file_info_dialog(void)
+{
+	char name_buf[NAME_MAX];
+	char perm_buf[26];
+	char size_buf[56];
+	char buf[256];
+#ifndef _WIN32
+	char uid_buf[26];
+	struct passwd *pwd_buf;
+	struct group *grp_buf;
+#endif
+	struct tm *tm_ptr;
+	int x, y;
+	int curr_y;
+	unsigned long long size;
+
+	assert(view != NULL);
+
+	setup_menu();
+
+	getmaxyx(menu_win, y, x);
+	wclear(menu_win);
+
+	snprintf(name_buf, sizeof(name_buf), "%s",
+			view->dir_entry[view->list_pos].name);
+
+	size = 0;
+	if(view->dir_entry[view->list_pos].type == DIRECTORY)
+		tree_get_data(curr_stats.dirsize_cache,
+				view->dir_entry[view->list_pos].name, &size);
+
+	if(size == 0)
+		size = view->dir_entry[view->list_pos].size;
+
+	friendly_size_notation(size, sizeof(size_buf), size_buf);
+
+#ifndef _WIN32
+	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
+	{
+		snprintf(uid_buf, sizeof(uid_buf), "%d",
+				(int) view->dir_entry[view->list_pos].uid);
+	}
+	else
+	{
+		snprintf(uid_buf, sizeof(uid_buf), "%s", pwd_buf->pw_name);
+	}
+#endif
+	get_perm_string(perm_buf, sizeof(perm_buf),
+			view->dir_entry[view->list_pos].mode);
+
+	curr_y = 2;
+	mvwaddstr(menu_win, curr_y, 2, "File: ");
+	name_buf[x - 8] = '\0';
+	wmove(menu_win, curr_y, 8);
+	wprint(menu_win, name_buf);
+	curr_y += 2;
+	mvwaddstr(menu_win, curr_y, 2, "Size: ");
+	mvwaddstr(menu_win, curr_y, 8, size_buf);
+	curr_y += 2;
+
+	curr_y += show_file_type(view, curr_y);
+	curr_y += show_mime_type(view, curr_y);
+
+#ifndef _WIN32
+	mvwaddstr(menu_win, curr_y, 2, "Permissions: ");
+	mvwaddstr(menu_win, curr_y, 15, perm_buf);
+	curr_y += 2;
+#endif
+
+	mvwaddstr(menu_win, curr_y, 2, "Modified: ");
+	tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
+	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
+	wmove(menu_win, curr_y, 13);
+	wprint(menu_win, buf);
+	curr_y += 2;
+
+	mvwaddstr(menu_win, curr_y, 2, "Accessed: ");
+	tm_ptr = localtime(&view->dir_entry[view->list_pos].atime);
+	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
+	wmove(menu_win, curr_y, 13);
+	wprint(menu_win, buf);
+	curr_y += 2;
+
+	mvwaddstr(menu_win, curr_y, 2, "Changed: ");
+	tm_ptr = localtime(&view->dir_entry[view->list_pos].ctime);
+	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
+	wmove(menu_win, curr_y, 13);
+	wprint(menu_win, buf);
+	curr_y += 2;
+
+#ifndef _WIN32
+	mvwaddstr(menu_win, curr_y, 2, "Owner: ");
+	mvwaddstr(menu_win, curr_y, 10, uid_buf);
+	curr_y += 2;
+
+	mvwaddstr(menu_win, curr_y, 2, "Group: ");
+	if((grp_buf = getgrgid(view->dir_entry[view->list_pos].gid)) != NULL)
+		mvwaddstr(menu_win, curr_y, 10, grp_buf->gr_name);
+#endif
+
+	wnoutrefresh(menu_win);
+
+	box(menu_win, 0, 0);
+	wmove(menu_win, 0, 3);
+	wprint(menu_win, " File Information ");
+	wrefresh(menu_win);
+}
 
 /* Returns increment for curr_y */
 static int
@@ -155,140 +316,10 @@ show_mime_type(FileView *view, int curr_y)
 	return 2;
 }
 
-void
-redraw_full_file_properties(FileView *v)
+static void
+cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 {
-	static FileView *view;
-
-	char name_buf[NAME_MAX];
-	char perm_buf[26];
-	char size_buf[56];
-	char buf[256];
-#ifndef _WIN32
-	char uid_buf[26];
-	struct passwd *pwd_buf;
-	struct group *grp_buf;
-#endif
-	struct tm *tm_ptr;
-	int x, y;
-	int curr_y;
-	unsigned long long size;
-
-	if(v != NULL)
-		view = v;
-
-	assert(view != NULL);
-
-	setup_menu();
-
-	getmaxyx(menu_win, y, x);
-	wclear(menu_win);
-
-	snprintf(name_buf, sizeof(name_buf), "%s",
-			view->dir_entry[view->list_pos].name);
-
-	size = 0;
-	if(view->dir_entry[view->list_pos].type == DIRECTORY)
-		tree_get_data(curr_stats.dirsize_cache,
-				view->dir_entry[view->list_pos].name, &size);
-
-	if(size == 0)
-		size = view->dir_entry[view->list_pos].size;
-
-	friendly_size_notation(size, sizeof(size_buf), size_buf);
-
-#ifndef _WIN32
-	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
-	{
-		snprintf(uid_buf, sizeof(uid_buf), "%d",
-				(int) view->dir_entry[view->list_pos].uid);
-	}
-	else
-	{
-		snprintf(uid_buf, sizeof(uid_buf), "%s", pwd_buf->pw_name);
-	}
-#endif
-	get_perm_string(perm_buf, sizeof(perm_buf),
-			view->dir_entry[view->list_pos].mode);
-
-	curr_y = 2;
-	mvwaddstr(menu_win, curr_y, 2, "File: ");
-	name_buf[x - 8] = '\0';
-	wmove(menu_win, curr_y, 8);
-	wprint(menu_win, name_buf);
-	curr_y += 2;
-	mvwaddstr(menu_win, curr_y, 2, "Size: ");
-	mvwaddstr(menu_win, curr_y, 8, size_buf);
-	curr_y += 2;
-
-	curr_y += show_file_type(view, curr_y);
-	curr_y += show_mime_type(view, curr_y);
-
-#ifndef _WIN32
-	mvwaddstr(menu_win, curr_y, 2, "Permissions: ");
-	mvwaddstr(menu_win, curr_y, 15, perm_buf);
-	curr_y += 2;
-#endif
-
-	mvwaddstr(menu_win, curr_y, 2, "Modified: ");
-	tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
-	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
-	wmove(menu_win, curr_y, 13);
-	wprint(menu_win, buf);
-	curr_y += 2;
-
-	mvwaddstr(menu_win, curr_y, 2, "Accessed: ");
-	tm_ptr = localtime(&view->dir_entry[view->list_pos].atime);
-	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
-	wmove(menu_win, curr_y, 13);
-	wprint(menu_win, buf);
-	curr_y += 2;
-
-	mvwaddstr(menu_win, curr_y, 2, "Changed: ");
-	tm_ptr = localtime(&view->dir_entry[view->list_pos].ctime);
-	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
-	wmove(menu_win, curr_y, 13);
-	wprint(menu_win, buf);
-	curr_y += 2;
-
-#ifndef _WIN32
-	mvwaddstr(menu_win, curr_y, 2, "Owner: ");
-	mvwaddstr(menu_win, curr_y, 10, uid_buf);
-	curr_y += 2;
-
-	mvwaddstr(menu_win, curr_y, 2, "Group: ");
-	if((grp_buf = getgrgid(view->dir_entry[view->list_pos].gid)) != NULL)
-		mvwaddstr(menu_win, curr_y, 10, grp_buf->gr_name);
-#endif
-
-	wnoutrefresh(menu_win);
-
-	box(menu_win, 0, 0);
-	wrefresh(menu_win);
-}
-
-void
-show_full_file_properties(FileView *view)
-{
-	int key;
-
-	curr_stats.show_full = 1;
-
-	redraw_full_file_properties(view);
-
-#ifdef ENABLE_EXTENDED_KEYS
-	keypad(menu_win, TRUE);
-#endif /* ENABLE_EXTENDED_KEYS */
-  /* wait for Return or Ctrl-c or Esc or error */
-	do
-		key = wgetch(menu_win);
-	while(key != 13 && key != 3 && key != 27 && key != ERR && key != 'q');
-
-	werase(menu_win);
-
-	curr_stats.show_full = 0;
-
-	modes_redraw();
+	leave_file_info_mode();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

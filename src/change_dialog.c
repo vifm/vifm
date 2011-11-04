@@ -41,10 +41,6 @@
 
 #include "change_dialog.h"
 
-static int *mode;
-static FileView *view;
-static int top, bottom, step, curr, col;
-
 static void leave_change_mode(int clean_selection);
 static void cmd_ctrl_c(struct key_info, struct keys_info *);
 static void cmd_ctrl_m(struct key_info, struct keys_info *);
@@ -55,6 +51,10 @@ static void cmd_j(struct key_info, struct keys_info *);
 static void cmd_k(struct key_info, struct keys_info *);
 static void print_at_pos(void);
 static void clear_at_pos(void);
+
+static int *mode;
+static FileView *view;
+static int top, bottom, step, curr, col;
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},

@@ -287,7 +287,7 @@ status_bar_message_i(const char *message, int error)
 
 	wattrset(status_bar, 0);
 	wrefresh(status_bar);
-	if(get_mode() != MENU_MODE && cfg.last_status)
+	if(get_mode() != MENU_MODE && get_mode() != FILE_INFO_MODE && cfg.last_status)
 		wrefresh(stat_win);
 }
 
@@ -818,7 +818,7 @@ redraw_window(void)
 
 	if(curr_stats.show_full)
 	{
-		redraw_full_file_properties(NULL);
+		redraw_file_info_dialog();
 		curr_stats.need_redraw = curr_stats.too_small_term;
 		return;
 	}

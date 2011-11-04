@@ -34,6 +34,7 @@
 #include "color_scheme.h"
 #include "commands.h"
 #include "config.h"
+#include "file_info.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "keys.h"
@@ -455,8 +456,7 @@ cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_ctrl_g(struct key_info key_info, struct keys_info *keys_info)
 {
-	if(!curr_stats.show_full)
-		curr_stats.show_full = 1;
+	enter_file_info_mode(curr_view);
 }
 
 static void

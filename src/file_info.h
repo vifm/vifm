@@ -22,8 +22,9 @@
 
 #include "ui.h"
 
-void redraw_full_file_properties(FileView *v);
-void show_full_file_properties(FileView *view);
+void init_file_info_mode(int *key_mode);
+void enter_file_info_mode(FileView *view);
+void redraw_file_info_dialog(void);
 
 #endif
 
