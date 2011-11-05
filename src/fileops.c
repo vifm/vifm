@@ -2611,7 +2611,10 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 		list = read_list_from_file(view->selected_files, view->selected_filelist,
 				&nlines, 1);
 		if(list == NULL)
+		{
+			free_selected_file_array(view);
 			return curr_stats.save_msg;
+		}
 	}
 
 	if(nlines > 0 && (!is_name_list_ok(view->selected_files, nlines, list) ||
@@ -2635,6 +2638,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	sel = copy_string_array(view->selected_filelist, sel_len);
 	if(!view->user_selection)
 	{
+		free_selected_file_array(view);
 		for(i = 0; i < view->list_rows; i++)
 			view->dir_entry[i].selected = 0;
 		view->selected_files = 0;
@@ -2655,7 +2659,8 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 
 		if(find_file_pos_in_list(view, sel[i]) == view->list_pos)
 		{
-			strcpy(view->dir_entry[view->list_pos].name, clone_name);
+			free(view->dir_entry[view->list_pos].name);
+			view->dir_entry[view->list_pos].name = strdup(clone_name);
 			if(ends_with(sel[i], "/"))
 				strcat(view->dir_entry[view->list_pos].name, "/");
 		}
