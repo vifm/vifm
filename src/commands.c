@@ -87,7 +87,7 @@
 #define PAUSE_STR "; "PAUSE_CMD
 #else
 #define PAUSE_CMD "vifm-pause"
-#define PAUSE_STR " && pause"
+#define PAUSE_STR " && pause || pause"
 #endif
 
 enum {
