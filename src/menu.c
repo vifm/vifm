@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include <regex.h>
+
 #include <curses.h>
 
 #include <assert.h>
@@ -37,15 +39,9 @@
 #include "modes.h"
 #include "status.h"
 #include "ui.h"
+#include "utils.h"
 
 #include "menu.h"
-
-static int *mode;
-static FileView *view;
-static menu_info *menu;
-static int last_search_backward;
-static int was_redraw;
-static int saved_top, saved_pos;
 
 static int complete_args(int id, const char *args, int argc, char **argv,
 		int arg_pos);
@@ -91,6 +87,18 @@ static void cmd_zz(struct key_info, struct keys_info *);
 
 static int goto_cmd(const struct cmd_info *cmd_info);
 static int quit_cmd(const struct cmd_info *cmd_info);
+
+static int search_menu(menu_info *m, int start_pos);
+static int search_menu_forwards(menu_info *m, int start_pos);
+static int search_menu_backwards(menu_info *m, int start_pos);
+
+static int *mode;
+static FileView *view;
+static menu_info *menu;
+static int last_search_backward;
+static int was_redraw;
+static int saved_top, saved_pos;
+static int search_repeat;
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
@@ -431,6 +439,7 @@ cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_slash(struct key_info key_info, struct keys_info *keys_info)
 {
+	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
 	last_search_backward = 0;
 	menu->match_dir = NONE;
 	free(menu->regexp);
@@ -450,6 +459,7 @@ cmd_colon(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_question(struct key_info key_info, struct keys_info *keys_info)
 {
+	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
 	last_search_backward = 1;
 	menu->match_dir = NONE;
 	free(menu->regexp);
@@ -533,7 +543,10 @@ cmd_M(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_N(struct key_info key_info, struct keys_info *keys_info)
 {
-	search(!last_search_backward);
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	while(key_info.count-- > 0)
+		search(!last_search_backward);
 }
 
 static void
@@ -594,7 +607,10 @@ cmd_k(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_n(struct key_info key_info, struct keys_info *keys_info)
 {
-	search(last_search_backward);
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+	while(key_info.count-- > 0)
+		search(last_search_backward);
 }
 
 static void
@@ -733,6 +749,188 @@ load_menu_pos(void)
 {
 	menu->top = saved_top;
 	menu->pos = saved_pos;
+}
+
+int
+search_menu_list(const char *pattern, menu_info *m)
+{
+	int save = 0;
+	int i;
+
+	if(pattern != NULL)
+	{
+		m->regexp = strdup(pattern);
+		if(search_menu(m, m->pos) != 0)
+		{
+			draw_menu(m);
+			move_to_menu_pos(m->pos, m);
+			return 1;
+		}
+		draw_menu(m);
+	}
+
+	for(i = 0; i < search_repeat; i++)
+		switch(m->match_dir)
+		{
+			case NONE:
+				save = search_menu_forwards(m, m->pos + 1);
+				break;
+			case UP:
+				save = search_menu_backwards(m, m->pos - 1);
+				break;
+			case DOWN:
+				save = search_menu_forwards(m, m->pos + 1);
+				break;
+			default:
+				break;
+		}
+	return save;
+}
+
+/* Returns non-zero on error */
+static int
+search_menu(menu_info *m, int start_pos)
+{
+	int cflags;
+	regex_t re;
+	int err;
+
+	if(m->matches == NULL)
+		m->matches = malloc(sizeof(int)*m->len);
+
+	memset(m->matches, 0, sizeof(int)*m->len);
+
+	if(m->regexp[0] == '\0')
+		return 0;
+
+	cflags = get_regexp_cflags(m->regexp);
+	if((err = regcomp(&re, m->regexp, cflags)) == 0)
+	{
+		int x;
+		m->matching_entries = 0;
+		for(x = 0; x < m->len; x++)
+		{
+			if(regexec(&re, m->data[x], 0, NULL, 0) != 0)
+				continue;
+			m->matches[x] = 1;
+
+			m->matching_entries++;
+		}
+		regfree(&re);
+		return 0;
+	}
+	else
+	{
+		status_bar_errorf("Regexp error: %s", get_regexp_error(err, &re));
+		regfree(&re);
+		return -1;
+	}
+}
+
+static int
+search_menu_forwards(menu_info *m, int start_pos)
+{
+	int match_up = -1;
+	int match_down = -1;
+	int x;
+
+	for(x = 0; x < m->len; x++)
+	{
+		if(!m->matches[x])
+			continue;
+
+		if(match_up < 0)
+		{
+			if(x < start_pos)
+				match_up = x;
+		}
+		if(match_down < 0)
+		{
+			if(x >= start_pos)
+				match_down = x;
+		}
+	}
+
+	if(match_up > -1 || match_down > -1)
+	{
+		int pos;
+
+		if(!cfg.wrap_scan && match_down <= -1)
+		{
+			status_bar_errorf("Search hit BOTTOM without match for: %s", m->regexp);
+			return 1;
+		}
+
+		pos = (match_down > -1) ? match_down : match_up;
+
+		clean_menu_position(m);
+		move_to_menu_pos(pos, m);
+		status_bar_messagef("%d %s", m->matching_entries,
+				(m->matching_entries == 1) ? "match" : "matches");
+	}
+	else
+	{
+		move_to_menu_pos(m->pos, m);
+		if(!cfg.wrap_scan)
+			status_bar_errorf("Search hit BOTTOM without match for: %s", m->regexp);
+		else
+			status_bar_errorf("No matches for: %s", m->regexp);
+		return 1;
+	}
+	return 0;
+}
+
+static int
+search_menu_backwards(menu_info *m, int start_pos)
+{
+	int match_up = -1;
+	int match_down = -1;
+	int x;
+
+	for(x = m->len - 1; x > -1; x--)
+	{
+		if(!m->matches[x])
+			continue;
+
+		if(match_up < 0)
+		{
+			if(x <= start_pos)
+				match_up = x;
+		}
+		if(match_down < 0)
+		{
+			if(x > start_pos)
+				match_down = x;
+		}
+	}
+
+	if(match_up > -1 || match_down > -1)
+	{
+		int pos;
+
+		if(!cfg.wrap_scan && match_up <= -1)
+		{
+			status_bar_errorf("Search hit TOP without match for: %s", m->regexp);
+			return 1;
+		}
+
+		pos = (match_up > -1) ? match_up : match_down;
+
+		clean_menu_position(m);
+		move_to_menu_pos(pos, m);
+		status_bar_messagef("%d %s", m->matching_entries,
+				(m->matching_entries == 1) ? "match" : "matches");
+	}
+	else
+	{
+		move_to_menu_pos(m->pos, m);
+		if(!cfg.wrap_scan)
+			status_bar_errorf("Search hit TOP without match for: %s", m->regexp);
+		else
+			status_bar_errorf("No matches for: %s", m->regexp);
+		return 1;
+	}
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -100,6 +100,7 @@ static int start_pos;
 static int last_fast_search_char;
 static int last_fast_search_backward = -1;
 static int upwards_range;
+static int search_repeat;
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x01", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_a}}},
@@ -529,6 +530,7 @@ cmd_semicolon(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_slash(struct key_info key_info, struct keys_info *keys_info)
 {
+	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
 	curr_stats.last_search_backward = 0;
 	enter_cmdline_mode(VSEARCH_FORWARD_SUBMODE, L"", NULL);
 }
@@ -537,6 +539,7 @@ cmd_slash(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_question(struct key_info key_info, struct keys_info *keys_info)
 {
+	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
 	curr_stats.last_search_backward = 1;
 	enter_cmdline_mode(VSEARCH_BACKWARD_SUBMODE, L"", NULL);
 }
@@ -905,7 +908,8 @@ find_vpattern(FileView *view, const char *pattern, int backward)
 	cfg.hl_search = 0;
 	result = find_pattern(view, pattern, backward, 0);
 	cfg.hl_search = hls;
-	find_update(view, backward);
+	for(i = 0; i < search_repeat; i++)
+		find_update(view, backward);
 	return result;
 }
 

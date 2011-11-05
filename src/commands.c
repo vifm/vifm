@@ -62,11 +62,11 @@
 #include "menu.h"
 #include "menus.h"
 #include "modes.h"
+#include "normal.h"
 #include "opt_handlers.h"
 #include "options.h"
 #include "permissions_dialog.h"
 #include "registers.h"
-#include "search.h"
 #include "signals.h"
 #include "sort.h"
 #include "sort_dialog.h"
@@ -2610,7 +2610,7 @@ exec_command(char *cmd, FileView *view, int type)
 	if(cmd == NULL)
 	{
 		if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN)
-			return find_pattern(view, view->regexp, type == GET_BSEARCH_PATTERN, 1);
+			return find_npattern(view, view->regexp, type == GET_BSEARCH_PATTERN, 1);
 		if(type == GET_VFSEARCH_PATTERN || type == GET_VBSEARCH_PATTERN)
 			return find_vpattern(view, view->regexp, type == GET_VBSEARCH_PATTERN);
 		if(type == GET_COMMAND)
@@ -2632,7 +2632,7 @@ exec_command(char *cmd, FileView *view, int type)
 	{
 		strncpy(view->regexp, cmd, sizeof(view->regexp));
 		save_search_history(cmd);
-		return find_pattern(view, cmd, type == GET_BSEARCH_PATTERN, 1);
+		return find_npattern(view, cmd, type == GET_BSEARCH_PATTERN, 1);
 	}
 	else if(type == GET_VFSEARCH_PATTERN || type == GET_VBSEARCH_PATTERN)
 	{

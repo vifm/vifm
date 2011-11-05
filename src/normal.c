@@ -180,6 +180,7 @@ static void selector_s(struct key_info, struct keys_info *);
 static int *mode;
 static int last_fast_search_char;
 static int last_fast_search_backward = -1;
+static int search_repeat;
 
 static struct keys_add_info builtin_cmds[] = {
 	{L"\x01", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_a}}},
@@ -1295,6 +1296,7 @@ cmd_semicolon(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_slash(struct key_info key_info, struct keys_info *keys_info)
 {
+	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
 	curr_stats.last_search_backward = 0;
 	enter_cmdline_mode(SEARCH_FORWARD_SUBMODE, L"", NULL);
 }
@@ -1303,6 +1305,7 @@ cmd_slash(struct key_info key_info, struct keys_info *keys_info)
 static void
 cmd_question(struct key_info key_info, struct keys_info *keys_info)
 {
+	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
 	curr_stats.last_search_backward = 1;
 	enter_cmdline_mode(SEARCH_BACKWARD_SUBMODE, L"", NULL);
 }
@@ -2180,6 +2183,21 @@ selector_s(struct key_info key_info, struct keys_info *keys_info)
 		if(curr_view->dir_entry[x].selected)
 			keys_info->indexes[i++] = x;
 	}
+}
+
+int
+find_npattern(FileView *view, const char *pattern, int backward, int move)
+{
+	int i;
+	int found = find_pattern(view, pattern, backward, move);
+	for(i = 0; i < search_repeat - 1; i++)
+	{
+		if(backward)
+			found += find_previous_pattern(view, cfg.wrap_scan) != 0;
+		else
+			found += find_next_pattern(view, cfg.wrap_scan) != 0;
+	}
+	return found;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

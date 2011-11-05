@@ -31,6 +31,7 @@ void menu_redraw(void);
 void update_menu(void);
 void save_menu_pos(void);
 void load_menu_pos(void);
+int search_menu_list(const char *pattern, menu_info *m);
 
 #endif
 

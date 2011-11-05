@@ -79,6 +79,8 @@
 
 	Added 'tabstop' option.
 
+	Added support of [count] for / and ?.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

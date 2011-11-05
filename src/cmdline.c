@@ -580,6 +580,9 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 		int save_hist = !keys_info->mapped;
 		curr_stats.save_msg = exec_commands("", curr_view, save_hist, GET_COMMAND);
 	}
+	
+	input_stat.line[0] = L'\0';
+	input_line_changed();
 }
 
 static void
