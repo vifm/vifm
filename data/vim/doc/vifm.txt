@@ -1138,6 +1138,7 @@ of the hierarchy and transparency for all others.
 
                                                *vifm-:view* *vifm-:vie*
 :vie[w] - toggle on and off the quick file view.
+:vie[w]! - turns on quick file view if it's off.
 
                                                *vifm-:volume*
                                                {only for MS-Windows}

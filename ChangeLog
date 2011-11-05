@@ -118,6 +118,8 @@
 
 	Made some messages about operations more correct.
 
+	Allowed exclamation mark for :view command (to prevent view closing).
+
 	Fixed bug with stat window in the menu mode (for example after n of N keys).
 
 	Fixed bug with disappearing of number of selected files in visual mode.
