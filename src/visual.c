@@ -913,7 +913,7 @@ find_vpattern(FileView *view, const char *pattern, int backward)
 	return result;
 }
 
-/* returns non-zero when it find something */
+/* returns non-zero when it finds something */
 static int
 find_update(FileView *view, int backward)
 {

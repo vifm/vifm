@@ -581,7 +581,8 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 		curr_stats.save_msg = exec_commands("", curr_view, save_hist, GET_COMMAND);
 	}
 	
-	input_stat.line[0] = L'\0';
+	if(input_stat.line != NULL)
+		input_stat.line[0] = L'\0';
 	input_line_changed();
 }
 
