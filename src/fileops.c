@@ -1420,7 +1420,10 @@ rename_file_cb(const char *new_name)
 	tmp = mv_file(filename, curr_view->curr_dir, new, curr_view->curr_dir, 0);
 	cmd_group_end();
 	if(tmp != 0)
+	{
+		(void)show_error_msg("Rename Error", "Rename operation failed");
 		return;
+	}
 
 	free(curr_view->dir_entry[curr_view->list_pos].name);
 	curr_view->dir_entry[curr_view->list_pos].name = strdup(new);
@@ -1595,8 +1598,8 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 		ind = -indexes[i];
 
 		tmp = make_name_unique(view->dir_entry[ind].name);
-		if(mv_file(view->dir_entry[ind].name, view->curr_dir, tmp,
-					view->curr_dir, 2) != 0)
+		if(mv_file(view->dir_entry[ind].name, view->curr_dir, tmp, view->curr_dir,
+				2) != 0)
 		{
 			cmd_group_end();
 			undo_group();
@@ -1615,8 +1618,8 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 		if(strcmp(list[i], view->dir_entry[abs(indexes[i])].name) == 0)
 			continue;
 
-		if(mv_file(view->dir_entry[abs(indexes[i])].name, view->curr_dir,
-					list[i], view->curr_dir, (indexes[i] < 0) ? 1 : 0) == 0)
+		if(mv_file(view->dir_entry[abs(indexes[i])].name, view->curr_dir, list[i],
+				view->curr_dir, (indexes[i] < 0) ? 1 : 0) == 0)
 		{
 			int pos;
 
@@ -2908,8 +2911,8 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 			view->dir_entry[i].name = strdup(dest[j]);
 		}
 
-		mv_file(buf, view->curr_dir, dest[j], view->curr_dir, 0);
-		n++;
+		if(mv_file(buf, view->curr_dir, dest[j], view->curr_dir, 0) == 0)
+			n++;
 	}
 	cmd_group_end();
 	free_string_array(dest, j + 1);
@@ -3193,9 +3196,9 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 			free(view->dir_entry[pos].name);
 			view->dir_entry[pos].name = strdup(dest[i]);
 		}
-		mv_file(view->selected_filelist[i], view->curr_dir, dest[i], view->curr_dir,
-				0);
-		k++;
+		if(mv_file(view->selected_filelist[i], view->curr_dir, dest[i],
+				view->curr_dir, 0) == 0)
+			k++;
 	}
 	cmd_group_end();
 
@@ -3345,7 +3348,7 @@ int
 cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		int force)
 {
-	int i;
+	int i, processed;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	char path[PATH_MAX];
 	int from_file;
@@ -3374,6 +3377,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		view->selected_files = 0;
 	}
 
+	processed = 0;
 	cmd_group_begin(buf);
 	for(i = 0; i < sel_len; i++)
 	{
@@ -3396,12 +3400,15 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 
 			if(mv_file(sel[i], view->curr_dir, dst, path, 0) != 0)
 				view->list_pos = find_file_pos_in_list(view, sel[i]);
+			else
+				processed++;
 		}
 		else
 		{
 			if(type == 0)
 				progress_msg("Copying files", i + 1, sel_len);
-			cp_file(view->curr_dir, path, sel[i], dst, type);
+			if(cp_file(view->curr_dir, path, sel[i], dst, type) == 0)
+				processed++;
 		}
 	}
 	cmd_group_end();
@@ -3413,7 +3420,11 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
   load_saving_pos(other_view, 1);
 	if(from_file)
 		free_string_array(list, nlines);
-	return 0;
+
+	status_bar_messagef("%d file%s successfully processed", processed,
+			(processed == 1) ? "" : "s");
+
+	return 1;
 }
 
 static int
