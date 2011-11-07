@@ -26,7 +26,8 @@ win_helper_SOURCES := win_helper.c
 win_helper_OBJECTS := $(win_helper_SOURCES:.c=.o)
 win_helper_EXECUTABLE := win_helper.exe
 
-.PHONY: config version
+# utils.c is declared as phony because it should be compiled every time
+.PHONY: config version utils.c
 
 all: config version $(vifm_EXECUTABLE) $(converter_EXECUTABLE) \
 	$(win_helper_EXECUTABLE)
