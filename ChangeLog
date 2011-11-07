@@ -120,6 +120,8 @@
 
 	Made some messages about operations more correct.
 
+	Allowed arguments for plugin's commands.
+
 	Allowed exclamation mark for :view command (to prevent view closing).
 
 	Fixed bug with stat window in the menu mode (for example after n of N keys).

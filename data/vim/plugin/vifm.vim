@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@gmail.com>
-" Last Change: 2011 October 13
+" Last Change: 2011 November 7
 
 " vifm and vifm.vim can be found at http://vifm.sf.net
 
@@ -27,26 +27,26 @@ let loaded_vifm = 1
 " command name.
 
 "	if !exists(':Insert_Your_Command_Name_Here')
-"		command Insert_Your_Command_Name_Here :call s:StartVifm('edit')
+"		command -bar -nargs=* -complete=dir Insert_Your_Command_Name_Here :call s:StartVifm('edit', <f-args>)
 "	endif
 
 if !exists(':EditVifm')
-	command EditVifm :call s:StartVifm('edit')
+	command -bar -nargs=* -complete=dir EditVifm :call s:StartVifm('edit', <f-args>)
 endif
 if !exists(':VsplitVifm')
-	command VsplitVifm :call s:StartVifm('vsplit')
+	command -bar -nargs=* -complete=dir VsplitVifm :call s:StartVifm('vsplit', <f-args>)
 endif
 if !exists(':SplitVifm')
-	command SplitVifm :call s:StartVifm('split')
+	command -bar -nargs=* -complete=dir SplitVifm :call s:StartVifm('split', <f-args>)
 endif
 if !exists(':DiffVifm')
-	command DiffVifm :call s:StartVifm('vert diffsplit')
+	command -bar -nargs=* -complete=dir DiffVifm :call s:StartVifm('vert diffsplit', <f-args>)
 endif
 if !exists(':TabVifm')
-	command TabVifm :call s:StartVifm('tablast | tab drop')
+	command -bar -nargs=* -complete=dir TabVifm :call s:StartVifm('tablast | tab drop', <f-args>)
 endif
 
-function! s:StartVifm(editcmd)
+function! s:StartVifm(editcmd, ...)
 	echohl WarningMsg | echo 'vifm executable wasn''t found' | echohl None
 endfunction
 
@@ -92,13 +92,29 @@ if !exists('s:vifm_home')
 	endif
 endif
 
-function! s:StartVifm(editcmd)
-	" Gvim cannot handle ncurses so run vifm in an xterm.
-	let dir = fnameescape(expand('%:p:h'))
-	if has('gui_running')
-		execute 'silent !' g:vifm_term g:vifm_exec '-f' dir
+function! s:StartVifm(editcmd, ...)
+	if a:0 > 2
+		echohl WarningMsg | echo 'Too many arguments' | echohl None
+		return
+	endif
+
+	let ldir = (a:0 > 0) ? a:1 : expand('%:p:h')
+	let rdir = (a:0 > 1) ? a:2 : ''
+	if has('win32')
+		let ldir = '"'.ldir.'"'
+		if len(rdir) != 0
+			let rdir = '"'.rdir.'"'
+		endif
 	else
-		execute 'silent !' g:vifm_exec '-f' dir
+		let ldir = fnameescape(ldir)
+		let rdir = fnameescape(rdir)
+	endif
+
+	" Gvim cannot handle ncurses so run vifm in a terminal.
+	if has('gui_running')
+		execute 'silent !' g:vifm_term g:vifm_exec '-f' ldir rdir
+	else
+		execute 'silent !' g:vifm_exec '-f' ldir rdir
 	endif
 
 	redraw!

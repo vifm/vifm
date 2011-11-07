@@ -1764,6 +1764,9 @@ Commands:
               :vert diffsplit.
   :TabVifm    select a file or files to open in tabs.
 
+Each command accepts up to two arguments: left pane directory and right pane
+directory.
+
 The plugin have only two settings.  It's a string variable named g:vifm_term to
 let user specify command to run gui terminal.  By default it's equal to
 'xterm -e'.  And anoter string variable named g:vifm_exec, which equals 'vifm'
