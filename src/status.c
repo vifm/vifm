@@ -25,7 +25,7 @@
 
 #include "status.h"
 
-Status curr_stats;
+status_t curr_stats;
 
 void
 init_status(void)

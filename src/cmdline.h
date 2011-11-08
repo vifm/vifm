@@ -22,7 +22,8 @@
 
 #include <wchar.h>
 
-enum CmdLineSubModes {
+typedef enum
+{
 	CMD_SUBMODE,
 	MENU_CMD_SUBMODE,
 	SEARCH_FORWARD_SUBMODE,
@@ -34,13 +35,13 @@ enum CmdLineSubModes {
 	PROMPT_SUBMODE,
 	VIEW_SEARCH_FORWARD_SUBMODE,
 	VIEW_SEARCH_BACKWARD_SUBMODE,
-};
+}CMD_LINE_SUBMODES;
 
 typedef void (*prompt_cb)(const char *renponse);
 typedef int (*complete_cmd_func)(const char *cmd);
 
 void init_cmdline_mode(int *key_mode);
-void enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
+void enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd,
 		void *ptr);
 void enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb,
 		complete_cmd_func complete);
@@ -48,9 +49,14 @@ void redraw_cmdline(void);
 
 #ifdef TEST
 
-enum hist { HIST_NONE, HIST_GO, HIST_SEARCH };
+typedef enum
+{
+	HIST_NONE,
+	HIST_GO,
+	HIST_SEARCH
+}HIST;
 
-struct line_stats
+typedef struct
 {
 	wchar_t *line;            /* the line reading */
 	int index;                /* index of the current character */
@@ -60,7 +66,7 @@ struct line_stats
 	wchar_t prompt[320];      /* prompt */
 	int prompt_wid;           /* width of prompt */
 	int complete_continue;    /* if non-zero, continue the previous completion */
-	enum hist history_search; /* HIST_* */
+	HIST history_search;      /* HIST_* */
 	int hist_search_len;      /* length of history search pattern */
 	wchar_t *line_buf;        /* content of line before using history */
 	int reverse_completion;
@@ -68,9 +74,8 @@ struct line_stats
 	int search_mode;
 	int old_top;              /* for search_mode */
 	int old_pos;              /* for search_mode */
-};
+}line_stats_t;
 
-int line_completion(struct line_stats *stat);
 
 #endif
 

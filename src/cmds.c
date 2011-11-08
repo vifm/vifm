@@ -32,18 +32,18 @@
 #define MAX_CMD_RECURSION 16
 #define INVALID_MARK -4096
 
-enum CMD_TYPE
+typedef enum
 {
 	BUILTIN_ABBR,
 	BUILTIN_CMD,
 	USER_CMD,
-};
+}CMD_TYPE;
 
-struct cmd_t
+typedef struct cmd_t
 {
 	char *name;
 	int id;
-	enum CMD_TYPE type;
+	CMD_TYPE type;
 	int passed;
 
 	cmd_handler handler;
@@ -61,24 +61,25 @@ struct cmd_t
 	int quote;
 
 	struct cmd_t *next;
-};
+}cmd_t;
 
-struct inner {
-	struct cmd_t head;
-	struct cmd_add user_cmd_handler;
+typedef struct
+{
+	cmd_t head;
+	cmd_add_t user_cmd_handler;
 	cmd_handler command_handler;
 	int udf_count;
-};
+}inner_t;
 
-static struct inner *inner;
-static struct cmds_conf *cmds_conf;
+static inner_t *inner;
+static cmds_conf_t *cmds_conf;
 
-static const char * parse_range(const char *cmd, struct cmd_info *cmd_info);
-static const char * parse_limit(const char *cmd, struct cmd_info *cmd_info);
-static const char * correct_limit(const char *cmd, struct cmd_info *cmd_info);
+static const char * parse_range(const char *cmd, cmd_info_t *cmd_info);
+static const char * parse_limit(const char *cmd, cmd_info_t *cmd_info);
+static const char * correct_limit(const char *cmd, cmd_info_t *cmd_info);
 static int udf_is_ambiguous(const char *name);
-static const char * parse_tail(struct cmd_t *cur, const char *cmd,
-		struct cmd_info *cmd_info);
+static const char * parse_tail(cmd_t *cur, const char *cmd,
+		cmd_info_t *cmd_info);
 #ifndef TEST
 static
 #endif
@@ -88,23 +89,24 @@ static int get_args_count(const char *cmdstr, char sep, int regexp, int quotes);
 static void unescape(char *s, int regexp);
 static void replace_esc(char *s);
 static const char *get_cmd_name(const char *cmd, char *buf, size_t buf_len);
-static void init_cmd_info(struct cmd_info *cmd_info);
+static void init_cmd_info(cmd_info_t *cmd_info);
 static void complete_cmd_name(const char *cmd_name, int user_only);
 #ifndef TEST
 static
 #endif
-int add_builtin_cmd(const char *name, int abbr, const struct cmd_add *conf);
-static int comclear_cmd(const struct cmd_info *cmd_info);
-static int command_cmd(const struct cmd_info *cmd_info);
-static const char * get_user_cmd_name(const char *cmd, char *buf, size_t buf_len);
+int add_builtin_cmd(const char *name, int abbr, const cmd_add_t *conf);
+static int comclear_cmd(const cmd_info_t *cmd_info);
+static int command_cmd(const cmd_info_t *cmd_info);
+static const char * get_user_cmd_name(const char *cmd, char *buf,
+		size_t buf_len);
 static int is_correct_name(const char *name);
-static struct cmd_t * insert_cmd(struct cmd_t *after);
-static int delcommand_cmd(const struct cmd_info *cmd_info);
+static cmd_t * insert_cmd(cmd_t *after);
+static int delcommand_cmd(const cmd_info_t *cmd_info);
 
 void
-init_cmds(int udf, struct cmds_conf *conf)
+init_cmds(int udf, cmds_conf_t *conf)
 {
-	static struct cmd_add commands[] = {
+	static cmd_add_t commands[] = {
 		{
 			.name = "comclear",   .abbr = "comc", .handler = comclear_cmd,   .id = COMCLEAR_CMD_ID,   .quote = 0,
 			.range = 0,           .emark = 0,     .qmark = 0,                .regexp = 0,             .select = 0,
@@ -132,7 +134,7 @@ init_cmds(int udf, struct cmds_conf *conf)
 		assert(conf->expand_envvars != NULL);
 		assert(conf->post != NULL);
 		assert(conf->select_range != NULL);
-		conf->inner = calloc(1, sizeof(struct inner));
+		conf->inner = calloc(1, sizeof(inner_t));
 		assert(conf->inner != NULL);
 		inner = conf->inner;
 
@@ -144,11 +146,11 @@ init_cmds(int udf, struct cmds_conf *conf)
 void
 reset_cmds(void)
 {
-	struct cmd_t *cur = inner->head.next;
+	cmd_t *cur = inner->head.next;
 
 	while(cur != NULL)
 	{
-		struct cmd_t *next = cur->next;
+		cmd_t *next = cur->next;
 		free(cur->cmd);
 		free(cur->name);
 		free(cur);
@@ -165,15 +167,15 @@ reset_cmds(void)
 int
 execute_cmd(const char *cmd)
 {
-	struct cmd_info cmd_info;
+	cmd_info_t cmd_info;
 	char cmd_name[256];
-	struct cmd_t *cur;
+	cmd_t *cur;
 	size_t len;
 	const char *args;
 	int result;
 	int i;
 	int last_end;
-	struct cmds_conf *cc = cmds_conf;
+	cmds_conf_t *cc = cmds_conf;
 
 	init_cmd_info(&cmd_info);
 	cmd = parse_range(cmd, &cmd_info);
@@ -307,7 +309,7 @@ execute_cmd(const char *cmd)
 
 /* Returns NULL on invalid range */
 static const char *
-parse_range(const char *cmd, struct cmd_info *cmd_info)
+parse_range(const char *cmd, cmd_info_t *cmd_info)
 {
 	while(isspace(*cmd))
 		cmd++;
@@ -345,7 +347,7 @@ parse_range(const char *cmd, struct cmd_info *cmd_info)
 }
 
 static const char *
-parse_limit(const char *cmd, struct cmd_info *cmd_info)
+parse_limit(const char *cmd, cmd_info_t *cmd_info)
 {
 	if(cmd[0] == '%')
 	{
@@ -404,7 +406,7 @@ parse_limit(const char *cmd, struct cmd_info *cmd_info)
 }
 
 static const char *
-correct_limit(const char *cmd, struct cmd_info *cmd_info)
+correct_limit(const char *cmd, cmd_info_t *cmd_info)
 {
 	while(*cmd == '+' || *cmd == '-')
 	{
@@ -435,7 +437,7 @@ udf_is_ambiguous(const char *name)
 {
 	size_t len;
 	int count;
-	struct cmd_t *cur;
+	cmd_t *cur;
 
 	len = strlen(name);
 	count = 0;
@@ -467,7 +469,7 @@ udf_is_ambiguous(const char *name)
 }
 
 static const char *
-parse_tail(struct cmd_t *cur, const char *cmd, struct cmd_info *cmd_info)
+parse_tail(cmd_t *cur, const char *cmd, cmd_info_t *cmd_info)
 {
 	if(*cmd == '!' && (!cur->cust_sep || cur->emark))
 	{
@@ -766,12 +768,12 @@ replace_esc(char *s)
 int
 get_cmd_id(const char *cmd)
 {
-	struct cmd_info info;
+	cmd_info_t info;
 	return get_cmd_info(cmd, &info);
 }
 
 static void
-init_cmd_info(struct cmd_info *cmd_info)
+init_cmd_info(cmd_info_t *cmd_info)
 {
 	cmd_info->begin = NOT_DEF;
 	cmd_info->end = NOT_DEF;
@@ -788,11 +790,11 @@ init_cmd_info(struct cmd_info *cmd_info)
 
 /* Returns command id */
 int
-get_cmd_info(const char *cmd, struct cmd_info *info)
+get_cmd_info(const char *cmd, cmd_info_t *info)
 {
-	struct cmd_info cmd_info;
+	cmd_info_t cmd_info;
 	char cmd_name[256];
-	struct cmd_t *cur;
+	cmd_t *cur;
 	size_t len;
 
 	init_cmd_info(&cmd_info);
@@ -820,7 +822,7 @@ get_cmd_info(const char *cmd, struct cmd_info *info)
 int
 complete_cmd(const char *cmd)
 {
-	struct cmd_info cmd_info;
+	cmd_info_t cmd_info;
 	char cmd_name[256];
 	const char *args;
 	const char *cmd_name_pos;
@@ -838,7 +840,7 @@ complete_cmd(const char *cmd)
 	else
 	{
 		int id;
-		struct cmd_t *cur;
+		cmd_t *cur;
 
 		cur = inner->head.next;
 		while(cur != NULL && strcmp(cur->name, cmd_name) < 0)
@@ -911,7 +913,7 @@ get_cmd_name(const char *cmd, char *buf, size_t buf_len)
 	if(*t == '?' || *t == '!')
 	{
 		int cmp;
-		struct cmd_t *cur;
+		cmd_t *cur;
 
 		cur = inner->head.next;
 		while(cur != NULL && (cmp = strncmp(cur->name, buf, len)) <= 0)
@@ -934,7 +936,7 @@ get_cmd_name(const char *cmd, char *buf, size_t buf_len)
 static void
 complete_cmd_name(const char *cmd_name, int user_only)
 {
-	struct cmd_t *cur;
+	cmd_t *cur;
 	size_t len;
 
 	cur = inner->head.next;
@@ -959,7 +961,7 @@ complete_cmd_name(const char *cmd_name, int user_only)
 }
 
 void
-add_builtin_commands(const struct cmd_add *cmds, int count)
+add_builtin_commands(const cmd_add_t *cmds, int count)
 {
 	int i;
 	for(i = 0; i < count; i++)
@@ -992,12 +994,12 @@ add_builtin_commands(const struct cmd_add *cmds, int count)
 static
 #endif
 int
-add_builtin_cmd(const char *name, int abbr, const struct cmd_add *conf)
+add_builtin_cmd(const char *name, int abbr, const cmd_add_t *conf)
 {
 	int i;
 	int cmp;
-	struct cmd_t *new;
-	struct cmd_t *cur = &inner->head;
+	cmd_t *new;
+	cmd_t *cur = &inner->head;
 
 	if(strcmp(name, "<USERCMD>") == 0)
 	{
@@ -1051,15 +1053,15 @@ add_builtin_cmd(const char *name, int abbr, const struct cmd_add *conf)
 }
 
 static int
-comclear_cmd(const struct cmd_info *cmd_info)
+comclear_cmd(const cmd_info_t *cmd_info)
 {
-	struct cmd_t *cur = &inner->head;
+	cmd_t *cur = &inner->head;
 
 	while(cur->next != NULL)
 	{
 		if(cur->next->type == USER_CMD)
 		{
-			struct cmd_t *this = cur->next;
+			cmd_t *this = cur->next;
 			cur->next = this->next;
 
 			free(this->cmd);
@@ -1076,12 +1078,12 @@ comclear_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-command_cmd(const struct cmd_info *cmd_info)
+command_cmd(const cmd_info_t *cmd_info)
 {
 	int cmp;
 	char cmd_name[256];
 	const char *args;
-	struct cmd_t *new, *cur;
+	cmd_t *new, *cur;
 
 	if(cmd_info->argc < 2)
 	{
@@ -1180,10 +1182,10 @@ is_correct_name(const char *name)
 	return 1;
 }
 
-static struct cmd_t *
-insert_cmd(struct cmd_t *after)
+static cmd_t *
+insert_cmd(cmd_t *after)
 {
-	struct cmd_t *new;
+	cmd_t *new;
   new = malloc(sizeof(*new));
 	if(new == NULL)
 		return NULL;
@@ -1193,11 +1195,11 @@ insert_cmd(struct cmd_t *after)
 }
 
 static int
-delcommand_cmd(const struct cmd_info *cmd_info)
+delcommand_cmd(const cmd_info_t *cmd_info)
 {
 	int cmp;
-	struct cmd_t *cur;
-	struct cmd_t *cmd;
+	cmd_t *cur;
+	cmd_t *cmd;
 
 	cmp = -1;
 	cur = &inner->head;
@@ -1223,7 +1225,7 @@ list_udf(void)
 {
 	char **list;
 	char **p;
-	struct cmd_t *cur;
+	cmd_t *cur;
 
 	if((list = malloc(sizeof(*list)*(inner->udf_count*2 + 1))) == NULL)
 		return NULL;
@@ -1250,7 +1252,7 @@ char *
 list_udf_content(const char *beginning)
 {
 	size_t len;
-	struct cmd_t *cur;
+	cmd_t *cur;
 	char *result;
 	size_t result_len = 0;
 

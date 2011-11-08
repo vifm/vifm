@@ -22,7 +22,8 @@
 
 #include "ui.h"
 
-enum {
+enum
+{
 	LINK,
 	DIRECTORY,
 	DEVICE,

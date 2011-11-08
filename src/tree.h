@@ -19,7 +19,7 @@
 #ifndef __TREE_H__
 #define __TREE_H__
 
-typedef struct root *tree_t;
+typedef struct root_t *tree_t;
 
 tree_t tree_create(int longest, int mem);
 void tree_free(tree_t tree);

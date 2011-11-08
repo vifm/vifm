@@ -19,7 +19,8 @@
 #ifndef __OPS_H__
 #define __OPS_H__
 
-enum OPS {
+typedef enum
+{
 	OP_NONE,
 	OP_USR,
 	OP_REMOVE,   /* rm -rf */
@@ -41,10 +42,9 @@ enum OPS {
 	OP_RMDIR,
 	OP_MKFILE,
 	OP_COUNT
-};
+}OPS;
 
-int perform_operation(enum OPS op, void *data, const char *src,
-		const char *dst);
+int perform_operation(OPS op, void *data, const char *src, const char *dst);
 
 #endif
 

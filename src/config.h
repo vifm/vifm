@@ -26,7 +26,8 @@
 
 #include "color_scheme.h"
 
-typedef struct _Config {
+typedef struct
+{
 	char home_dir[PATH_MAX]; /* ends with a slash */
 	char config_dir[PATH_MAX];
 	char trash_dir[PATH_MAX];
@@ -66,7 +67,7 @@ typedef struct _Config {
 	int prompt_history_len;
 	int prompt_history_num;
 
-	Col_scheme cs;
+	col_scheme_t cs;
 
 	int undo_levels; /* Maximum number of changes that can be undone. */
 	int sort_numbers; /* Natural sort of (version) numbers within text. */
@@ -92,9 +93,9 @@ typedef struct _Config {
 	int selection_cp;
 	int last_status;
 	int tab_stop;
-} Config;
+}config_t;
 
-extern Config cfg;
+extern config_t cfg;
 
 void load_default_configuration(void);
 void read_info_file(int reread);

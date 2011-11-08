@@ -59,9 +59,14 @@
 
 #ifndef TEST
 
-enum hist { HIST_NONE, HIST_GO, HIST_SEARCH };
+typedef enum
+{
+	HIST_NONE,
+	HIST_GO,
+	HIST_SEARCH
+}HIST;
 
-struct line_stats
+typedef struct
 {
 	wchar_t *line;            /* the line reading */
 	int index;                /* index of the current character */
@@ -71,7 +76,7 @@ struct line_stats
 	wchar_t prompt[NAME_MAX]; /* prompt */
 	int prompt_wid;           /* width of prompt */
 	int complete_continue;    /* if non-zero, continue the previous completion */
-	enum hist history_search; /* HIST_* */
+	HIST history_search;      /* HIST_* */
 	int hist_search_len;      /* length of history search pattern */
 	wchar_t *line_buf;        /* content of line before using history */
 	int reverse_completion;
@@ -79,14 +84,14 @@ struct line_stats
 	int search_mode;
 	int old_top;              /* for search_mode */
 	int old_pos;              /* for search_mode */
-};
+}line_stats_t;
 
 #endif
 
 static int *mode;
 static int prev_mode;
-static enum CmdLineSubModes sub_mode;
-static struct line_stats input_stat;
+static CMD_LINE_SUBMODES sub_mode;
+static line_stats_t input_stat;
 static int line_width = 1;
 static void *sub_mode_ptr;
 
@@ -98,49 +103,49 @@ static wchar_t * wcsins(wchar_t *src, wchar_t *ins, int pos);
 static void prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 		complete_cmd_func complete);
 static void leave_cmdline_mode(void);
-static void cmd_ctrl_c(struct key_info, struct keys_info *);
-static void cmd_ctrl_h(struct key_info, struct keys_info *);
-static void cmd_ctrl_i(struct key_info, struct keys_info *);
-static void cmd_shift_tab(struct key_info, struct keys_info *);
+static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
 static void do_completion(void);
 static void draw_wild_menu(int op);
-static void cmd_ctrl_k(struct key_info, struct keys_info *);
-static void cmd_ctrl_m(struct key_info, struct keys_info *);
-static void cmd_ctrl_n(struct key_info, struct keys_info *);
+static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info);
 #ifdef ENABLE_EXTENDED_KEYS
-static void cmd_down(struct key_info, struct keys_info *);
+static void cmd_down(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
-static void cmd_ctrl_u(struct key_info, struct keys_info *);
-static void cmd_ctrl_w(struct key_info, struct keys_info *);
-static void cmd_ctrl_underscore(struct key_info, struct keys_info *);
-static void cmd_meta_b(struct key_info, struct keys_info *);
+static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_underscore(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_meta_b(key_info_t key_info, keys_info_t *keys_info);
 static void find_prev_word(void);
-static void cmd_meta_d(struct key_info, struct keys_info *);
-static void cmd_meta_f(struct key_info, struct keys_info *);
+static void cmd_meta_d(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_meta_f(key_info_t key_info, keys_info_t *keys_info);
 static void find_next_word(void);
-static void cmd_left(struct key_info, struct keys_info *);
-static void cmd_right(struct key_info, struct keys_info *);
-static void cmd_home(struct key_info, struct keys_info *);
-static void cmd_end(struct key_info, struct keys_info *);
-static void cmd_delete(struct key_info, struct keys_info *);
+static void cmd_left(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_right(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_home(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_end(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_delete(key_info_t key_info, keys_info_t *keys_info);
 static void update_cmdline(void);
 static void complete_cmd_next(void);
 static void complete_search_next(void);
-static void cmd_ctrl_p(struct key_info, struct keys_info *);
+static void cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info);
 #ifdef ENABLE_EXTENDED_KEYS
-static void cmd_up(struct key_info, struct keys_info *);
+static void cmd_up(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
 static void complete_cmd_prev(void);
 static void complete_search_prev(void);
 #ifndef TEST
 static
 #endif
-int line_completion(struct line_stats *stat);
-static void update_line_stat(struct line_stats *stat, int new_len);
+int line_completion(line_stats_t *stat);
+static void update_line_stat(line_stats_t *stat, int new_len);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static void stop_completion(void);
 
-static struct keys_add_info builtin_cmds[] = {
+static keys_add_info_t builtin_cmds[] = {
 	{L"\x03",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	/* backspace */
 	{L"\x08",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_h}}},
@@ -377,8 +382,7 @@ wcsins(wchar_t *src, wchar_t *ins, int pos)
 }
 
 void
-enter_cmdline_mode(enum CmdLineSubModes cl_sub_mode, const wchar_t *cmd,
-		void *ptr)
+enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd, void *ptr)
 {
 	const wchar_t *prompt;
 
@@ -562,7 +566,7 @@ leave_cmdline_mode(void)
 }
 
 static void
-cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
 	stop_completion();
 	werase(status_bar);
@@ -587,7 +591,7 @@ cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_h(key_info_t key_info, keys_info_t *keys_info)
 {
 	input_stat.history_search = HIST_NONE;
 	stop_completion();
@@ -622,7 +626,7 @@ cmd_ctrl_h(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!input_stat.complete_continue)
 		draw_wild_menu(1);
@@ -637,7 +641,7 @@ cmd_ctrl_i(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_shift_tab(struct key_info key_info, struct keys_info *keys_info)
+cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!input_stat.complete_continue)
 		draw_wild_menu(1);
@@ -741,7 +745,7 @@ draw_wild_menu(int op)
 
 		if(i == pos)
 		{
-			Col_attr col;
+			col_attr_t col;
 			col = cfg.cs.color[STATUS_LINE_COLOR];
 			mix_colors(&col, &cfg.cs.color[MENU_COLOR]);
 
@@ -768,7 +772,7 @@ draw_wild_menu(int op)
 }
 
 static void
-cmd_ctrl_k(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info)
 {
 	input_stat.history_search = HIST_NONE;
 	stop_completion();
@@ -784,7 +788,7 @@ cmd_ctrl_k(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	char* p;
 	int save_hist = !keys_info->mapped;
@@ -988,7 +992,7 @@ search_next(void)
 }
 
 static void
-cmd_ctrl_n(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info)
 {
 	stop_completion();
 
@@ -1002,7 +1006,7 @@ cmd_ctrl_n(struct key_info key_info, struct keys_info *keys_info)
 
 #ifdef ENABLE_EXTENDED_KEYS
 static void
-cmd_down(struct key_info key_info, struct keys_info *keys_info)
+cmd_down(key_info_t key_info, keys_info_t *keys_info)
 {
 	stop_completion();
 
@@ -1020,7 +1024,7 @@ cmd_down(struct key_info key_info, struct keys_info *keys_info)
 #endif /* ENABLE_EXTENDED_KEYS */
 
 static void
-cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	input_stat.history_search = HIST_NONE;
 	stop_completion();
@@ -1044,7 +1048,7 @@ cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 {
 	int old;
 
@@ -1092,7 +1096,7 @@ cmd_ctrl_w(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_underscore(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_underscore(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(!input_stat.complete_continue)
 		return;
@@ -1109,7 +1113,7 @@ cmd_ctrl_underscore(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_meta_b(struct key_info key_info, struct keys_info *keys_info)
+cmd_meta_b(key_info_t key_info, keys_info_t *keys_info)
 {
 	find_prev_word();
 	wmove(status_bar, input_stat.curs_pos/line_width,
@@ -1133,7 +1137,7 @@ find_prev_word(void)
 }
 
 static void
-cmd_meta_d(struct key_info key_info, struct keys_info *keys_info)
+cmd_meta_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	int old_i, old_c;
 
@@ -1159,7 +1163,7 @@ cmd_meta_d(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_meta_f(struct key_info key_info, struct keys_info *keys_info)
+cmd_meta_f(key_info_t key_info, keys_info_t *keys_info)
 {
 	find_next_word();
 	wmove(status_bar, input_stat.curs_pos/line_width,
@@ -1184,7 +1188,7 @@ find_next_word(void)
 }
 
 static void
-cmd_left(struct key_info key_info, struct keys_info *keys_info)
+cmd_left(key_info_t key_info, keys_info_t *keys_info)
 {
 	input_stat.history_search = HIST_NONE;
 	stop_completion();
@@ -1199,7 +1203,7 @@ cmd_left(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_right(struct key_info key_info, struct keys_info *keys_info)
+cmd_right(key_info_t key_info, keys_info_t *keys_info)
 {
 	input_stat.history_search = HIST_NONE;
 	stop_completion();
@@ -1214,7 +1218,7 @@ cmd_right(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_home(struct key_info key_info, struct keys_info *keys_info)
+cmd_home(key_info_t key_info, keys_info_t *keys_info)
 {
 	input_stat.index = 0;
 	input_stat.curs_pos = wcslen(input_stat.prompt);
@@ -1223,7 +1227,7 @@ cmd_home(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_end(struct key_info key_info, struct keys_info *keys_info)
+cmd_end(key_info_t key_info, keys_info_t *keys_info)
 {
 	input_stat.index = input_stat.len;
 	input_stat.curs_pos = input_stat.prompt_wid + input_stat.len;
@@ -1232,7 +1236,7 @@ cmd_end(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_delete(struct key_info key_info, struct keys_info *keys_info)
+cmd_delete(key_info_t key_info, keys_info_t *keys_info)
 {
 	input_stat.history_search = HIST_NONE;
 	stop_completion();
@@ -1331,7 +1335,7 @@ search_prev(void)
 }
 
 static void
-cmd_ctrl_p(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info)
 {
 	stop_completion();
 
@@ -1345,7 +1349,7 @@ cmd_ctrl_p(struct key_info key_info, struct keys_info *keys_info)
 
 #ifdef ENABLE_EXTENDED_KEYS
 static void
-cmd_up(struct key_info key_info, struct keys_info *keys_info)
+cmd_up(key_info_t key_info, keys_info_t *keys_info)
 {
 	stop_completion();
 
@@ -1382,7 +1386,7 @@ update_cmdline(void)
  * completed - new part of command line
  */
 static int
-line_part_complete(struct line_stats *stat, const char *line_mb, const char *p,
+line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 		const char *completed)
 {
 	void *t;
@@ -1419,7 +1423,7 @@ line_part_complete(struct line_stats *stat, const char *line_mb, const char *p,
 static
 #endif
 int
-line_completion(struct line_stats *stat)
+line_completion(line_stats_t *stat)
 {
 	static int offset;
 	static char *line_mb, *line_mb_cmd;
@@ -1473,7 +1477,7 @@ line_completion(struct line_stats *stat)
 }
 
 static void
-update_line_stat(struct line_stats *stat, int new_len)
+update_line_stat(line_stats_t *stat, int new_len)
 {
 	stat->index += (new_len - 1) - stat->len;
 	stat->curs_pos = stat->prompt_wid + wcswidth(stat->line, stat->index);

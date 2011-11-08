@@ -38,7 +38,8 @@
 
 #define MAX_LEN 1024
 
-enum {
+enum
+{
 	VIFMINFO_OPTIONS   = 1 << 0,
 	VIFMINFO_FILETYPES = 1 << 1,
 	VIFMINFO_COMMANDS  = 1 << 2,
@@ -50,9 +51,10 @@ enum {
 	VIFMINFO_SAVEDIRS  = 1 << 8,
 };
 
-int vifminfo = 0x1ff;
+static int vifminfo = 0x1ff;
 
-struct{
+static struct
+{
 	char *vicmd;     /* VI_COMMAND */
 	int trash;       /* USE_TRASH */
 	int history;     /* HISTORY_LENGTH */
@@ -80,38 +82,40 @@ struct{
 	.timefmt = " %m/%d %H:%M"
 };
 
-char *color_scheme = "Default"; /* COLOR_SCHEME */
+static char *color_scheme = "Default"; /* COLOR_SCHEME */
 
-char config_dir[PATH_MAX];
-
-typedef struct{
+typedef struct
+{
 	char *description;
 	char *extensions;
 	char *programs;
 	char *viewer;
 }filetype;
 
-filetype *filetypes;
-int nfiletypes;
+static filetype *filetypes;
+static int nfiletypes;
 
-typedef struct{
+typedef struct
+{
 	char *name;
 	char *cmd;
 }command;
 
-command *commands;
-int ncommands;
+static command *commands;
+static int ncommands;
 
-typedef struct{
+typedef struct
+{
 	char name;
 	char *dir;
 	char *file;
 }bookmark;
 
-bookmark *bookmarks;
-int nbookmarks;
+static bookmark *bookmarks;
+static int nbookmarks;
 
-struct{
+static struct
+{
 	int windows;   /* vnumber of windows */
 	int lwin_sort; /* lleft window sort */
 	int rwin_sort; /* rright window sort */
@@ -121,10 +125,11 @@ struct{
 	.rwin_sort = 2, /* by name */
 };
 
-char *lwin_dir; /* dleft window directory */
-char *rwin_dir; /* Dright window directory */
+static char *lwin_dir; /* dleft window directory */
+static char *rwin_dir; /* Dright window directory */
 
-struct{
+static struct
+{
 	char *lwin_filter; /* fleft window filter */
 	int lwin_inverted; /* ileft window filter inverted */
 	char *rwin_filter; /* Fright window filter */
@@ -198,9 +203,10 @@ static int _gnuc_unused default_colors_size_guard[
 	(ARRAY_LEN(default_colors) + 2 == MAXNUM_COLOR) ? 1 : -1
 ];
 
-struct{
+static struct
+{
 	int count;
-	Col_scheme array[MAX_COLOR_SCHEMES];
+	col_scheme_t array[MAX_COLOR_SCHEMES];
 }cs = {
 	.count = 0,
 };
@@ -222,7 +228,7 @@ static void convert_color_schemes(const char *colorschemes_file,
 		const char *colors_dir);
 static void read_color_scheme_file(const char *config_file);
 static void load_default_colors(void);
-static void init_color_scheme(Col_scheme *cs);
+static void init_color_scheme(col_scheme_t *cs);
 static void add_color(char s1[], char s2[], char s3[]);
 static int colname2int(char col[]);
 static void write_color_schemes(const char *colors_dir);
@@ -1129,7 +1135,7 @@ read_color_scheme_file(const char *config_file)
 			}
 			if(!strcmp(line, "DIRECTORY"))
 			{
-				Col_scheme* c;
+				col_scheme_t* c;
 
 				c = &cs.array[cs.count - 1];
 				snprintf(c->dir, PATH_MAX, "%s", s1);
@@ -1153,7 +1159,7 @@ load_default_colors(void)
 }
 
 static void
-init_color_scheme(Col_scheme *cs)
+init_color_scheme(col_scheme_t *cs)
 {
 	int i;
 	strcpy(cs->dir, "/");

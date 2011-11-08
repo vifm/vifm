@@ -44,13 +44,13 @@
 #include "status.h"
 #include "utils.h"
 
-struct Jobs_List *jobs;
-struct Finished_Jobs *fjobs;
+job_t *jobs;
+finished_job_t *fjobs;
 
 #ifndef _WIN32
-Jobs_List * add_background_job(pid_t pid, const char *cmd, int fd);
+job_t * add_background_job(pid_t pid, const char *cmd, int fd);
 #else
-Jobs_List * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
+job_t * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
 #endif
 
 static pthread_key_t key;
@@ -59,9 +59,9 @@ static pthread_once_t key_once = PTHREAD_ONCE_INIT;
 void
 add_finished_job(pid_t pid, int status)
 {
-	Finished_Jobs *new;
+	finished_job_t *new;
 
-	if((new = malloc(sizeof(Finished_Jobs))) == NULL)
+	if((new = malloc(sizeof(finished_job_t))) == NULL)
 		return;
 	new->pid = pid;
 	new->remove = 0;
@@ -78,9 +78,9 @@ void
 check_background_jobs(void)
 {
 #ifndef _WIN32
-	Finished_Jobs *fj = NULL;
-	Jobs_List *p = jobs;
-	Jobs_List *prev = NULL;
+	finished_job_t *fj = NULL;
+	job_t *p = jobs;
+	job_t *prev = NULL;
 	sigset_t new_mask;
 	fd_set ready;
 	int maxfd;
@@ -90,7 +90,7 @@ check_background_jobs(void)
 		return;
 
 	/*
-	 * SIGCHLD	needs to be blocked anytime the Finished_Jobs list
+	 * SIGCHLD	needs to be blocked anytime the finished_job_t list
 	 * is accessed from anywhere except the received_sigchld().
 	 */
 	if(sigemptyset(&new_mask) == -1)
@@ -183,7 +183,7 @@ check_background_jobs(void)
 		/* Remove any finished jobs. */
 		if(!p->running)
 		{
-			Jobs_List *j = p;
+			job_t *j = p;
 			if(prev != NULL)
 				prev->next = p->next;
 			else
@@ -217,12 +217,12 @@ check_background_jobs(void)
 	fj = fjobs;
 	if(fj != NULL)
 	{
-		Finished_Jobs *prev = NULL;
+		finished_job_t *prev = NULL;
 		while(fj)
 		{
 			if(fj->remove)
 			{
-				Finished_Jobs *j = fj;
+				finished_job_t *j = fj;
 
 				if(prev)
 					prev->next = fj->next;
@@ -243,8 +243,8 @@ check_background_jobs(void)
 	/* Unblock SIGCHLD signal */
 	sigprocmask(SIG_UNBLOCK, &new_mask, NULL);
 #else
-	Jobs_List *p = jobs;
-	Jobs_List *prev = NULL;
+	job_t *p = jobs;
+	job_t *prev = NULL;
 
 	while(p != NULL)
 	{
@@ -256,7 +256,7 @@ check_background_jobs(void)
 		/* Remove any finished jobs. */
 		if(!p->running)
 		{
-			Jobs_List *j = p;
+			job_t *j = p;
 
 			if(prev != NULL)
 				prev->next = p->next;
@@ -321,7 +321,7 @@ background_and_wait_for_status(char *cmd)
 static void
 error_msg(const char *title, const char *text)
 {
-	Jobs_List *job = pthread_getspecific(key);
+	job_t *job = pthread_getspecific(key);
 	if(job == NULL)
 	{
 		(void)show_error_msg(title, text);
@@ -567,16 +567,16 @@ start_background_job(const char *cmd)
 }
 
 #ifndef _WIN32
-Jobs_List *
+job_t *
 add_background_job(pid_t pid, const char *cmd, int fd)
 #else
-Jobs_List *
+job_t *
 add_background_job(pid_t pid, const char *cmd, HANDLE hprocess)
 #endif
 {
-	Jobs_List *new;
+	job_t *new;
 
-	if((new = malloc(sizeof(Jobs_List))) == 0)
+	if((new = malloc(sizeof(job_t))) == 0)
 	{
 		(void)show_error_msg("Memory error", "Unable to allocate enough memory");
 		return NULL;
@@ -603,7 +603,7 @@ make_key(void)
 }
 
 void
-add_inner_bg_job(Jobs_List *job)
+add_inner_bg_job(job_t *job)
 {
 	pthread_once(&key_once, &make_key);
 	(void)pthread_setspecific(key, job);
@@ -612,7 +612,7 @@ add_inner_bg_job(Jobs_List *job)
 void
 inner_bg_next(void)
 {
-	Jobs_List *job = pthread_getspecific(key);
+	job_t *job = pthread_getspecific(key);
 	if(job == NULL)
 		return;
 
@@ -623,7 +623,7 @@ inner_bg_next(void)
 void
 remove_inner_bg_job(void)
 {
-	Jobs_List *job = pthread_getspecific(key);
+	job_t *job = pthread_getspecific(key);
 	if(job == NULL)
 		return;
 

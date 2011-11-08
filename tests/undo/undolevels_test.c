@@ -5,7 +5,7 @@
 #include "../../src/undo.h"
 
 static int
-execute_dummy(enum OPS op, void *data, const char *src, const char *dst)
+execute_dummy(OPS op, void *data, const char *src, const char *dst)
 {
 	return 0;
 }

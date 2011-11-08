@@ -24,15 +24,15 @@
 #include "ui.h"
 
 void init_normal_mode(int *key_mode);
-void normal_cmd_zb(struct key_info, struct keys_info *);
-void normal_cmd_zt(struct key_info, struct keys_info *);
-void normal_cmd_zz(struct key_info, struct keys_info *);
-void normal_cmd_ctrl_wequal(struct key_info, struct keys_info *);
-void normal_cmd_ctrl_wless(struct key_info, struct keys_info *);
-void normal_cmd_ctrl_wgreater(struct key_info, struct keys_info *);
-void normal_cmd_ctrl_wplus(struct key_info, struct keys_info *);
-void normal_cmd_ctrl_wminus(struct key_info, struct keys_info *);
-void normal_cmd_ctrl_wpipe(struct key_info, struct keys_info *);
+void normal_cmd_zb(key_info_t key_info, keys_info_t *keys_info);
+void normal_cmd_zt(key_info_t key_info, keys_info_t *keys_info);
+void normal_cmd_zz(key_info_t key_info, keys_info_t *keys_info);
+void normal_cmd_ctrl_wequal(key_info_t key_info, keys_info_t *keys_info);
+void normal_cmd_ctrl_wless(key_info_t key_info, keys_info_t *keys_info);
+void normal_cmd_ctrl_wgreater(key_info_t key_info, keys_info_t *keys_info);
+void normal_cmd_ctrl_wplus(key_info_t key_info, keys_info_t *keys_info);
+void normal_cmd_ctrl_wminus(key_info_t key_info, keys_info_t *keys_info);
+void normal_cmd_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info);
 int ffind(int ch, int backward, int wrap);
 int cmd_paren(int lb, int ub, int inc);
 int find_npattern(FileView *view, const char *pattern, int backward, int move);

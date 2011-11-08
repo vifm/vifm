@@ -90,7 +90,8 @@
 #define PAUSE_STR " && pause || pause"
 #endif
 
-enum {
+enum
+{
 	/* commands without completion */
 	COM_FILTER = -100,
 	COM_SUBSTITUTE,
@@ -124,7 +125,7 @@ static void post(int id);
 #ifndef TEST
 static
 #endif
-void select_range(int id, const struct cmd_info *cmd_info);
+void select_range(int id, const cmd_info_t *cmd_info);
 static void exec_completion(const char *str);
 static void complete_help(const char *str);
 static void complete_history(const char *str);
@@ -140,99 +141,99 @@ static wchar_t * substitute_specs(const char *cmd);
 static const char *skip_spaces(const char *cmd);
 static const char *skip_word(const char *cmd);
 
-static int goto_cmd(const struct cmd_info *cmd_info);
-static int emark_cmd(const struct cmd_info *cmd_info);
-static int alink_cmd(const struct cmd_info *cmd_info);
-static int apropos_cmd(const struct cmd_info *cmd_info);
-static int cd_cmd(const struct cmd_info *cmd_info);
-static int change_cmd(const struct cmd_info *cmd_info);
+static int goto_cmd(const cmd_info_t *cmd_info);
+static int emark_cmd(const cmd_info_t *cmd_info);
+static int alink_cmd(const cmd_info_t *cmd_info);
+static int apropos_cmd(const cmd_info_t *cmd_info);
+static int cd_cmd(const cmd_info_t *cmd_info);
+static int change_cmd(const cmd_info_t *cmd_info);
 #ifndef _WIN32
-static int chmod_cmd(const struct cmd_info *cmd_info);
-static int chown_cmd(const struct cmd_info *cmd_info);
+static int chmod_cmd(const cmd_info_t *cmd_info);
+static int chown_cmd(const cmd_info_t *cmd_info);
 #endif
-static int clone_cmd(const struct cmd_info *cmd_info);
-static int cmap_cmd(const struct cmd_info *cmd_info);
-static int cnoremap_cmd(const struct cmd_info *cmd_info);
-static int copy_cmd(const struct cmd_info *cmd_info);
-static int colorscheme_cmd(const struct cmd_info *cmd_info);
-static int command_cmd(const struct cmd_info *cmd_info);
-static int cunmap_cmd(const struct cmd_info *cmd_info);
-static int delete_cmd(const struct cmd_info *cmd_info);
-static int delmarks_cmd(const struct cmd_info *cmd_info);
-static int dirs_cmd(const struct cmd_info *cmd_info);
-static int edit_cmd(const struct cmd_info *cmd_info);
-static int empty_cmd(const struct cmd_info *cmd_info);
-static int file_cmd(const struct cmd_info *cmd_info);
-static int filetype_cmd(const struct cmd_info *cmd_info);
-static int filextype_cmd(const struct cmd_info *cmd_info);
-static int fileviewer_cmd(const struct cmd_info *cmd_info);
-static int filter_cmd(const struct cmd_info *cmd_info);
-static int find_cmd(const struct cmd_info *cmd_info);
-static int grep_cmd(const struct cmd_info *cmd_info);
-static int help_cmd(const struct cmd_info *cmd_info);
-static int highlight_cmd(const struct cmd_info *cmd_info);
-static const char *get_group_str(int group, Col_attr col);
+static int clone_cmd(const cmd_info_t *cmd_info);
+static int cmap_cmd(const cmd_info_t *cmd_info);
+static int cnoremap_cmd(const cmd_info_t *cmd_info);
+static int copy_cmd(const cmd_info_t *cmd_info);
+static int colorscheme_cmd(const cmd_info_t *cmd_info);
+static int command_cmd(const cmd_info_t *cmd_info);
+static int cunmap_cmd(const cmd_info_t *cmd_info);
+static int delete_cmd(const cmd_info_t *cmd_info);
+static int delmarks_cmd(const cmd_info_t *cmd_info);
+static int dirs_cmd(const cmd_info_t *cmd_info);
+static int edit_cmd(const cmd_info_t *cmd_info);
+static int empty_cmd(const cmd_info_t *cmd_info);
+static int file_cmd(const cmd_info_t *cmd_info);
+static int filetype_cmd(const cmd_info_t *cmd_info);
+static int filextype_cmd(const cmd_info_t *cmd_info);
+static int fileviewer_cmd(const cmd_info_t *cmd_info);
+static int filter_cmd(const cmd_info_t *cmd_info);
+static int find_cmd(const cmd_info_t *cmd_info);
+static int grep_cmd(const cmd_info_t *cmd_info);
+static int help_cmd(const cmd_info_t *cmd_info);
+static int highlight_cmd(const cmd_info_t *cmd_info);
+static const char *get_group_str(int group, col_attr_t col);
 static int get_color(const char *text);
 static int get_attrs(const char *text);
-static int history_cmd(const struct cmd_info *cmd_info);
-static int invert_cmd(const struct cmd_info *cmd_info);
-static int jobs_cmd(const struct cmd_info *cmd_info);
-static int locate_cmd(const struct cmd_info *cmd_info);
-static int ls_cmd(const struct cmd_info *cmd_info);
-static int map_cmd(const struct cmd_info *cmd_info);
-static int mark_cmd(const struct cmd_info *cmd_info);
-static int marks_cmd(const struct cmd_info *cmd_info);
-static int messages_cmd(const struct cmd_info *cmd_info);
-static int mkdir_cmd(const struct cmd_info *cmd_info);
-static int move_cmd(const struct cmd_info *cmd_info);
-static int nmap_cmd(const struct cmd_info *cmd_info);
-static int nnoremap_cmd(const struct cmd_info *cmd_info);
-static int nohlsearch_cmd(const struct cmd_info *cmd_info);
-static int noremap_cmd(const struct cmd_info *cmd_info);
-static int map_or_remap(const struct cmd_info *cmd_info, int no_remap);
-static int nunmap_cmd(const struct cmd_info *cmd_info);
-static int only_cmd(const struct cmd_info *cmd_info);
-static int popd_cmd(const struct cmd_info *cmd_info);
-static int pushd_cmd(const struct cmd_info *cmd_info);
-static int pwd_cmd(const struct cmd_info *cmd_info);
-static int registers_cmd(const struct cmd_info *cmd_info);
-static int rename_cmd(const struct cmd_info *cmd_info);
-static int restart_cmd(const struct cmd_info *cmd_info);
-static int restore_cmd(const struct cmd_info *cmd_info);
-static int rlink_cmd(const struct cmd_info *cmd_info);
-static int screen_cmd(const struct cmd_info *cmd_info);
-static int set_cmd(const struct cmd_info *cmd_info);
-static int shell_cmd(const struct cmd_info *cmd_info);
-static int sort_cmd(const struct cmd_info *cmd_info);
-static int source_cmd(const struct cmd_info *cmd_info);
-static int split_cmd(const struct cmd_info *cmd_info);
-static int substitute_cmd(const struct cmd_info *cmd_info);
-static int sync_cmd(const struct cmd_info *cmd_info);
-static int touch_cmd(const struct cmd_info *cmd_info);
-static int tr_cmd(const struct cmd_info *cmd_info);
-static int undolist_cmd(const struct cmd_info *cmd_info);
-static int unmap_cmd(const struct cmd_info *cmd_info);
-static int view_cmd(const struct cmd_info *cmd_info);
-static int vifm_cmd(const struct cmd_info *cmd_info);
-static int vmap_cmd(const struct cmd_info *cmd_info);
-static int vnoremap_cmd(const struct cmd_info *cmd_info);
+static int history_cmd(const cmd_info_t *cmd_info);
+static int invert_cmd(const cmd_info_t *cmd_info);
+static int jobs_cmd(const cmd_info_t *cmd_info);
+static int locate_cmd(const cmd_info_t *cmd_info);
+static int ls_cmd(const cmd_info_t *cmd_info);
+static int map_cmd(const cmd_info_t *cmd_info);
+static int mark_cmd(const cmd_info_t *cmd_info);
+static int marks_cmd(const cmd_info_t *cmd_info);
+static int messages_cmd(const cmd_info_t *cmd_info);
+static int mkdir_cmd(const cmd_info_t *cmd_info);
+static int move_cmd(const cmd_info_t *cmd_info);
+static int nmap_cmd(const cmd_info_t *cmd_info);
+static int nnoremap_cmd(const cmd_info_t *cmd_info);
+static int nohlsearch_cmd(const cmd_info_t *cmd_info);
+static int noremap_cmd(const cmd_info_t *cmd_info);
+static int map_or_remap(const cmd_info_t *cmd_info, int no_remap);
+static int nunmap_cmd(const cmd_info_t *cmd_info);
+static int only_cmd(const cmd_info_t *cmd_info);
+static int popd_cmd(const cmd_info_t *cmd_info);
+static int pushd_cmd(const cmd_info_t *cmd_info);
+static int pwd_cmd(const cmd_info_t *cmd_info);
+static int registers_cmd(const cmd_info_t *cmd_info);
+static int rename_cmd(const cmd_info_t *cmd_info);
+static int restart_cmd(const cmd_info_t *cmd_info);
+static int restore_cmd(const cmd_info_t *cmd_info);
+static int rlink_cmd(const cmd_info_t *cmd_info);
+static int screen_cmd(const cmd_info_t *cmd_info);
+static int set_cmd(const cmd_info_t *cmd_info);
+static int shell_cmd(const cmd_info_t *cmd_info);
+static int sort_cmd(const cmd_info_t *cmd_info);
+static int source_cmd(const cmd_info_t *cmd_info);
+static int split_cmd(const cmd_info_t *cmd_info);
+static int substitute_cmd(const cmd_info_t *cmd_info);
+static int sync_cmd(const cmd_info_t *cmd_info);
+static int touch_cmd(const cmd_info_t *cmd_info);
+static int tr_cmd(const cmd_info_t *cmd_info);
+static int undolist_cmd(const cmd_info_t *cmd_info);
+static int unmap_cmd(const cmd_info_t *cmd_info);
+static int view_cmd(const cmd_info_t *cmd_info);
+static int vifm_cmd(const cmd_info_t *cmd_info);
+static int vmap_cmd(const cmd_info_t *cmd_info);
+static int vnoremap_cmd(const cmd_info_t *cmd_info);
 #ifdef _WIN32
-static int volumes_cmd(const struct cmd_info *cmd_info);
+static int volumes_cmd(const cmd_info_t *cmd_info);
 #endif
-static int vsplit_cmd(const struct cmd_info *cmd_info);
-static int do_split(const struct cmd_info *cmd_info, int vertical);
-static int do_map(const struct cmd_info *cmd_info, const char *map_type,
+static int vsplit_cmd(const cmd_info_t *cmd_info);
+static int do_split(const cmd_info_t *cmd_info, int vertical);
+static int do_map(const cmd_info_t *cmd_info, const char *map_type,
 		const char *map_cmd, int mode, int no_remap);
-static int vunmap_cmd(const struct cmd_info *cmd_info);
+static int vunmap_cmd(const cmd_info_t *cmd_info);
 static int do_unmap(const char *keys, int mode);
-static int write_cmd(const struct cmd_info *cmd_info);
-static int quit_cmd(const struct cmd_info *cmd_info);
-static int wq_cmd(const struct cmd_info *cmd_info);
-static int yank_cmd(const struct cmd_info *cmd_info);
-static int get_reg_and_count(const struct cmd_info *cmd_info, int *reg);
-static int usercmd_cmd(const struct cmd_info* cmd_info);
+static int write_cmd(const cmd_info_t *cmd_info);
+static int quit_cmd(const cmd_info_t *cmd_info);
+static int wq_cmd(const cmd_info_t *cmd_info);
+static int yank_cmd(const cmd_info_t *cmd_info);
+static int get_reg_and_count(const cmd_info_t *cmd_info, int *reg);
+static int usercmd_cmd(const cmd_info_t* cmd_info);
 
-static const struct cmd_add commands[] = {
+static const cmd_add_t commands[] = {
 	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = COM_GOTO,        .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = goto_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "!",                .abbr = NULL,    .emark = 1,  .id = COM_EXECUTE,     .range = 1,    .bg = 1, .quote = 0, .regexp = 0,
@@ -404,7 +405,7 @@ static const struct cmd_add commands[] = {
 		.handler = usercmd_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 };
 
-static struct cmds_conf cmds_conf = {
+static cmds_conf_t cmds_conf = {
 	.complete_args = complete_args,
 	.swap_range = swap_range,
 	.resolve_mark = resolve_mark,
@@ -1237,7 +1238,7 @@ post(int id)
 static
 #endif
 void
-select_range(int id, const struct cmd_info *cmd_info)
+select_range(int id, const cmd_info_t *cmd_info)
 {
 	int x;
 	int y = 0;
@@ -1299,7 +1300,7 @@ select_range(int id, const struct cmd_info *cmd_info)
 }
 
 static void
-select_count(const struct cmd_info *cmd_info, int count)
+select_count(const cmd_info_t *cmd_info, int count)
 {
 	int pos;
 
@@ -1324,8 +1325,8 @@ select_count(const struct cmd_info *cmd_info, int count)
 static int
 notation_sorter(const void *first, const void *second)
 {
-	const struct key_pair *paira = (const struct key_pair *)first;
-	const struct key_pair *pairb = (const struct key_pair *)second;
+	const key_pair_t *paira = (const key_pair_t *)first;
+	const key_pair_t *pairb = (const key_pair_t *)second;
 	const char *stra = paira->notation;
 	const char *strb = pairb->notation;
 	return strcasecmp(stra, strb);
@@ -1344,7 +1345,7 @@ init_commands(void)
 
 	/* we get here when init_commands() is called first time */
 	init_cmds(1, &cmds_conf);
-	add_builtin_commands((const struct cmd_add *)&commands, ARRAY_LEN(commands));
+	add_builtin_commands((const cmd_add_t *)&commands, ARRAY_LEN(commands));
 
 	split_path();
 	qsort(key_pairs, ARRAY_LEN(key_pairs), sizeof(*key_pairs), notation_sorter);
@@ -1421,7 +1422,8 @@ split_path(void)
 				break;
 			}
 		}
-	} while (q[0] != '\0');
+	}
+	while (q[0] != '\0');
 	paths_count = i;
 }
 
@@ -2159,7 +2161,7 @@ set_view_filter(FileView *view, const char *filter, int invert)
 	return 0;
 }
 
-static struct key_pair *
+static key_pair_t *
 find_notation(const char *str)
 {
 	int l = 0, u = ARRAY_LEN(key_pairs) - 1;
@@ -2190,7 +2192,7 @@ substitute_specs(const char *cmd)
 	p = buf;
 	while(*cmd != '\0')
 	{
-		struct key_pair *pair;
+		key_pair_t *pair;
 		pair = find_notation(cmd);
 		if(pair == NULL)
 		{
@@ -2453,7 +2455,7 @@ line_pos(const char *begin, const char *end, char sep, int rquoting)
 static int
 is_in_arg(const char *cmd, const char *pos)
 {
-	struct cmd_info info;
+	cmd_info_t info;
 	int id;
 
 	id = get_cmd_info(cmd, &info);
@@ -2652,7 +2654,7 @@ comm_quit(int write_info, int force)
 {
 	if(!force)
 	{
-		Jobs_List *job;
+		job_t *job;
 		int bg_count = 0;
 #ifndef _WIN32
 		sigset_t new_mask;
@@ -2720,7 +2722,7 @@ comm_only(void)
 void
 comm_split(int vertical)
 {
-	enum Split orient = vertical ? VSPLIT : HSPLIT;
+	SPLIT orient = vertical ? VSPLIT : HSPLIT;
 	if(curr_stats.number_of_windows == 2 && curr_stats.split == orient)
 		return;
 
@@ -2738,7 +2740,7 @@ comm_split(int vertical)
 }
 
 static int
-goto_cmd(const struct cmd_info *cmd_info)
+goto_cmd(const cmd_info_t *cmd_info)
 {
 	move_to_list_pos(curr_view, cmd_info->end);
 	return 0;
@@ -2775,7 +2777,7 @@ output_to_statusbar(const char *cmd)
 }
 
 static int
-emark_cmd(const struct cmd_info *cmd_info)
+emark_cmd(const cmd_info_t *cmd_info)
 {
 	int i = 0;
 	char *com = (char *)cmd_info->args;
@@ -2835,7 +2837,7 @@ emark_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-alink_cmd(const struct cmd_info *cmd_info)
+alink_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
@@ -2854,7 +2856,7 @@ alink_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-apropos_cmd(const struct cmd_info *cmd_info)
+apropos_cmd(const cmd_info_t *cmd_info)
 {
 	static char *last_args;
 
@@ -2937,7 +2939,7 @@ cd(FileView *view, const char *path)
 }
 
 static int
-cd_cmd(const struct cmd_info *cmd_info)
+cd_cmd(const cmd_info_t *cmd_info)
 {
 	char dir[PATH_MAX];
 	int result;
@@ -2984,7 +2986,7 @@ cd_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-change_cmd(const struct cmd_info *cmd_info)
+change_cmd(const cmd_info_t *cmd_info)
 {
 	enter_change_mode(curr_view);
 	need_clean_selection = 0;
@@ -2993,7 +2995,7 @@ change_cmd(const struct cmd_info *cmd_info)
 
 #ifndef _WIN32
 static int
-chmod_cmd(const struct cmd_info *cmd_info)
+chmod_cmd(const cmd_info_t *cmd_info)
 {
 	regex_t re;
 	int err;
@@ -3030,7 +3032,7 @@ chmod_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-chown_cmd(const struct cmd_info *cmd_info)
+chown_cmd(const cmd_info_t *cmd_info)
 {
 	char *colon, *user, *group;
 	int u = 0, g = 0;
@@ -3077,7 +3079,7 @@ chown_cmd(const struct cmd_info *cmd_info)
 #endif
 
 static int
-clone_cmd(const struct cmd_info *cmd_info)
+clone_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
@@ -3096,19 +3098,19 @@ clone_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-cmap_cmd(const struct cmd_info *cmd_info)
+cmap_cmd(const cmd_info_t *cmd_info)
 {
 	return do_map(cmd_info, "Command Line", "cmap", CMDLINE_MODE, 0) != 0;
 }
 
 static int
-cnoremap_cmd(const struct cmd_info *cmd_info)
+cnoremap_cmd(const cmd_info_t *cmd_info)
 {
 	return do_map(cmd_info, "Command Line", "cmap", CMDLINE_MODE, 1) != 0;
 }
 
 static int
-colorscheme_cmd(const struct cmd_info *cmd_info)
+colorscheme_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
@@ -3155,7 +3157,7 @@ colorscheme_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-command_cmd(const struct cmd_info *cmd_info)
+command_cmd(const cmd_info_t *cmd_info)
 {
 	char *desc;
 
@@ -3170,7 +3172,7 @@ command_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-copy_cmd(const struct cmd_info *cmd_info)
+copy_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
@@ -3197,13 +3199,13 @@ copy_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-cunmap_cmd(const struct cmd_info *cmd_info)
+cunmap_cmd(const cmd_info_t *cmd_info)
 {
 	return do_unmap(cmd_info->argv[0], CMDLINE_MODE);
 }
 
 static int
-delete_cmd(const struct cmd_info *cmd_info)
+delete_cmd(const cmd_info_t *cmd_info)
 {
 	int reg = DEFAULT_REG_NAME;
 	int result;
@@ -3221,7 +3223,7 @@ delete_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-delmarks_cmd(const struct cmd_info *cmd_info)
+delmarks_cmd(const cmd_info_t *cmd_info)
 {
 	int i;
 	int save_msg = 0;
@@ -3263,13 +3265,13 @@ delmarks_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-dirs_cmd(const struct cmd_info *cmd_info)
+dirs_cmd(const cmd_info_t *cmd_info)
 {
 	return show_dirstack_menu(curr_view) != 0;
 }
 
 static int
-edit_cmd(const struct cmd_info *cmd_info)
+edit_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc != 0)
 	{
@@ -3344,14 +3346,14 @@ edit_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-empty_cmd(const struct cmd_info *cmd_info)
+empty_cmd(const cmd_info_t *cmd_info)
 {
 	empty_trash();
 	return 0;
 }
 
 static int
-file_cmd(const struct cmd_info *cmd_info)
+file_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc == 0)
 	{
@@ -3371,7 +3373,7 @@ file_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-filetype_cmd(const struct cmd_info *cmd_info)
+filetype_cmd(const cmd_info_t *cmd_info)
 {
 	const char *progs;
 
@@ -3383,7 +3385,7 @@ filetype_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-filextype_cmd(const struct cmd_info *cmd_info)
+filextype_cmd(const cmd_info_t *cmd_info)
 {
 	const char *progs;
 
@@ -3395,7 +3397,7 @@ filextype_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-fileviewer_cmd(const struct cmd_info *cmd_info)
+fileviewer_cmd(const cmd_info_t *cmd_info)
 {
 	const char *progs;
 
@@ -3407,7 +3409,7 @@ fileviewer_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-filter_cmd(const struct cmd_info *cmd_info)
+filter_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
@@ -3438,7 +3440,7 @@ filter_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-find_cmd(const struct cmd_info *cmd_info)
+find_cmd(const cmd_info_t *cmd_info)
 {
 	static char *last_args;
 	static int last_dir;
@@ -3464,7 +3466,7 @@ find_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-grep_cmd(const struct cmd_info *cmd_info)
+grep_cmd(const cmd_info_t *cmd_info)
 {
 	static char *last_args;
 	static int last_invert;
@@ -3490,7 +3492,7 @@ grep_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-help_cmd(const struct cmd_info *cmd_info)
+help_cmd(const cmd_info_t *cmd_info)
 {
 	char buf[PATH_MAX];
 	int bg;
@@ -3544,7 +3546,7 @@ help_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-highlight_cmd(const struct cmd_info *cmd_info)
+highlight_cmd(const cmd_info_t *cmd_info)
 {
 	int i;
 	int pos;
@@ -3636,7 +3638,7 @@ highlight_cmd(const struct cmd_info *cmd_info)
 }
 
 static const char *
-get_group_str(int group, Col_attr col)
+get_group_str(int group, col_attr_t col)
 {
 	static char buf[256];
 
@@ -3710,7 +3712,7 @@ get_attrs(const char *text)
 }
 
 static int
-history_cmd(const struct cmd_info *cmd_info)
+history_cmd(const cmd_info_t *cmd_info)
 {
 	const char *type;
 	size_t len;
@@ -3736,7 +3738,7 @@ history_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-invert_cmd(const struct cmd_info *cmd_info)
+invert_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
@@ -3754,13 +3756,13 @@ invert_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-jobs_cmd(const struct cmd_info *cmd_info)
+jobs_cmd(const cmd_info_t *cmd_info)
 {
 	return show_jobs_menu(curr_view) != 0;
 }
 
 static int
-locate_cmd(const struct cmd_info *cmd_info)
+locate_cmd(const cmd_info_t *cmd_info)
 {
 	static char *last_args;
 	if(cmd_info->argc > 0)
@@ -3777,7 +3779,7 @@ locate_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-ls_cmd(const struct cmd_info *cmd_info)
+ls_cmd(const cmd_info_t *cmd_info)
 {
 	if(!cfg.use_screen)
 	{
@@ -3789,13 +3791,13 @@ ls_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-map_cmd(const struct cmd_info *cmd_info)
+map_cmd(const cmd_info_t *cmd_info)
 {
 	return map_or_remap(cmd_info, 0);
 }
 
 static int
-mark_cmd(const struct cmd_info *cmd_info)
+mark_cmd(const cmd_info_t *cmd_info)
 {
 	int result;
 	char *tmp;
@@ -3855,7 +3857,7 @@ mark_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-marks_cmd(const struct cmd_info *cmd_info)
+marks_cmd(const cmd_info_t *cmd_info)
 {
 	char buf[256];
 	int i, j;
@@ -3882,7 +3884,7 @@ marks_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-messages_cmd(const struct cmd_info *cmd_info)
+messages_cmd(const cmd_info_t *cmd_info)
 {
 	char *lines;
 	size_t len;
@@ -3915,14 +3917,14 @@ messages_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-mkdir_cmd(const struct cmd_info *cmd_info)
+mkdir_cmd(const cmd_info_t *cmd_info)
 {
 	make_dirs(curr_view, cmd_info->argv, cmd_info->argc, cmd_info->emark);
 	return 0;
 }
 
 static int
-move_cmd(const struct cmd_info *cmd_info)
+move_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
@@ -3949,19 +3951,19 @@ move_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-nmap_cmd(const struct cmd_info *cmd_info)
+nmap_cmd(const cmd_info_t *cmd_info)
 {
 	return do_map(cmd_info, "Normal", "nmap", NORMAL_MODE, 0) != 0;
 }
 
 static int
-nnoremap_cmd(const struct cmd_info *cmd_info)
+nnoremap_cmd(const cmd_info_t *cmd_info)
 {
 	return do_map(cmd_info, "Normal", "nmap", NORMAL_MODE, 1) != 0;
 }
 
 static int
-nohlsearch_cmd(const struct cmd_info *cmd_info)
+nohlsearch_cmd(const cmd_info_t *cmd_info)
 {
 	if(curr_view->selected_files == 0)
 		return 0;
@@ -3973,13 +3975,13 @@ nohlsearch_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-noremap_cmd(const struct cmd_info *cmd_info)
+noremap_cmd(const cmd_info_t *cmd_info)
 {
 	return map_or_remap(cmd_info, 1);
 }
 
 static int
-map_or_remap(const struct cmd_info *cmd_info, int no_remap)
+map_or_remap(const cmd_info_t *cmd_info, int no_remap)
 {
 	int result;
 	if(cmd_info->emark)
@@ -3996,20 +3998,20 @@ map_or_remap(const struct cmd_info *cmd_info, int no_remap)
 }
 
 static int
-nunmap_cmd(const struct cmd_info *cmd_info)
+nunmap_cmd(const cmd_info_t *cmd_info)
 {
 	return do_unmap(cmd_info->argv[0], NORMAL_MODE);
 }
 
 static int
-only_cmd(const struct cmd_info *cmd_info)
+only_cmd(const cmd_info_t *cmd_info)
 {
 	comm_only();
 	return 0;
 }
 
 static int
-popd_cmd(const struct cmd_info *cmd_info)
+popd_cmd(const cmd_info_t *cmd_info)
 {
 	if(popd() != 0)
 	{
@@ -4020,7 +4022,7 @@ popd_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-pushd_cmd(const struct cmd_info *cmd_info)
+pushd_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc == 0)
 	{
@@ -4041,14 +4043,14 @@ pushd_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-pwd_cmd(const struct cmd_info *cmd_info)
+pwd_cmd(const cmd_info_t *cmd_info)
 {
 	status_bar_message(curr_view->curr_dir);
 	return 1;
 }
 
 static int
-registers_cmd(const struct cmd_info *cmd_info)
+registers_cmd(const cmd_info_t *cmd_info)
 {
 	char buf[256];
 	int i, j;
@@ -4075,7 +4077,7 @@ registers_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-rename_cmd(const struct cmd_info *cmd_info)
+rename_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->argc == 0)
 		return rename_files(curr_view, NULL, 0) != 0;
@@ -4084,7 +4086,7 @@ rename_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-restart_cmd(const struct cmd_info *cmd_info)
+restart_cmd(const cmd_info_t *cmd_info)
 {
 	const char *p;
 
@@ -4154,7 +4156,7 @@ restart_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-restore_cmd(const struct cmd_info *cmd_info)
+restore_cmd(const cmd_info_t *cmd_info)
 {
 	int i;
 	int m = 0;
@@ -4185,7 +4187,7 @@ restore_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-rlink_cmd(const struct cmd_info *cmd_info)
+rlink_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
@@ -4204,7 +4206,7 @@ rlink_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-screen_cmd(const struct cmd_info *cmd_info)
+screen_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
 	{
@@ -4219,14 +4221,14 @@ screen_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-set_cmd(const struct cmd_info *cmd_info)
+set_cmd(const cmd_info_t *cmd_info)
 {
 	int result = process_set_args(cmd_info->args);
 	return (result < 0) ? CMDS_ERR_CUSTOM : (result != 0);
 }
 
 static int
-shell_cmd(const struct cmd_info *cmd_info)
+shell_cmd(const cmd_info_t *cmd_info)
 {
 	char *sh = getenv("SHELL");
 	if(sh == NULL || sh[0] == '\0')
@@ -4236,7 +4238,7 @@ shell_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-sort_cmd(const struct cmd_info *cmd_info)
+sort_cmd(const cmd_info_t *cmd_info)
 {
 	enter_sort_mode(curr_view);
 	need_clean_selection = 0;
@@ -4244,7 +4246,7 @@ sort_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-source_cmd(const struct cmd_info *cmd_info)
+source_cmd(const cmd_info_t *cmd_info)
 {
 	int ret = 0;
 	char *path = expand_tilde(strdup(cmd_info->argv[0]));
@@ -4268,13 +4270,13 @@ source_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-split_cmd(const struct cmd_info *cmd_info)
+split_cmd(const cmd_info_t *cmd_info)
 {
 	return do_split(cmd_info, 0);
 }
 
 static int
-substitute_cmd(const struct cmd_info *cmd_info)
+substitute_cmd(const cmd_info_t *cmd_info)
 {
 	static char *last_pattern;
 	static char *last_sub;
@@ -4324,7 +4326,7 @@ substitute_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-sync_cmd(const struct cmd_info *cmd_info)
+sync_cmd(const cmd_info_t *cmd_info)
 {
 	if(change_directory(other_view, curr_view->curr_dir) >= 0)
 	{
@@ -4335,13 +4337,13 @@ sync_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-touch_cmd(const struct cmd_info *cmd_info)
+touch_cmd(const cmd_info_t *cmd_info)
 {
 	return make_files(curr_view, cmd_info->argv, cmd_info->argc) != 0;
 }
 
 static int
-tr_cmd(const struct cmd_info *cmd_info)
+tr_cmd(const cmd_info_t *cmd_info)
 {
 	char buf[strlen(cmd_info->argv[0]) + 1];
 	size_t pl, sl;
@@ -4372,13 +4374,13 @@ tr_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-undolist_cmd(const struct cmd_info *cmd_info)
+undolist_cmd(const cmd_info_t *cmd_info)
 {
 	return show_undolist_menu(curr_view, cmd_info->emark) != 0;
 }
 
 static int
-unmap_cmd(const struct cmd_info *cmd_info)
+unmap_cmd(const cmd_info_t *cmd_info)
 {
 	int result;
 	wchar_t *subst;
@@ -4413,7 +4415,7 @@ unmap_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-view_cmd(const struct cmd_info *cmd_info)
+view_cmd(const cmd_info_t *cmd_info)
 {
 	if(curr_stats.number_of_windows == 1)
 	{
@@ -4444,25 +4446,25 @@ view_cmd(const struct cmd_info *cmd_info)
 }
 
 static int
-vifm_cmd(const struct cmd_info *cmd_info)
+vifm_cmd(const cmd_info_t *cmd_info)
 {
 	return show_vifm_menu(curr_view) != 0;
 }
 
 static int
-vmap_cmd(const struct cmd_info *cmd_info)
+vmap_cmd(const cmd_info_t *cmd_info)
 {
 	return do_map(cmd_info, "Visual", "vmap", VISUAL_MODE, 0) != 0;
 }
 
 static int
-vnoremap_cmd(const struct cmd_info *cmd_info)
+vnoremap_cmd(const cmd_info_t *cmd_info)
 {
 	return do_map(cmd_info, "Visual", "vmap", VISUAL_MODE, 1) != 0;
 }
 
 static int
-do_map(const struct cmd_info *cmd_info, const char *map_type,
+do_map(const cmd_info_t *cmd_info, const char *map_type,
 		const char *map_cmd, int mode, int no_remap)
 {
 	wchar_t *keys, *mapping;
@@ -4505,7 +4507,7 @@ do_map(const struct cmd_info *cmd_info, const char *map_type,
 
 #ifdef _WIN32
 static int
-volumes_cmd(const struct cmd_info *cmd_info)
+volumes_cmd(const cmd_info_t *cmd_info)
 {
 	show_volumes_menu(curr_view);
 	return 0;
@@ -4513,13 +4515,13 @@ volumes_cmd(const struct cmd_info *cmd_info)
 #endif
 
 static int
-vsplit_cmd(const struct cmd_info *cmd_info)
+vsplit_cmd(const cmd_info_t *cmd_info)
 {
 	return do_split(cmd_info, 1);
 }
 
 static int
-do_split(const struct cmd_info *cmd_info, int vertical)
+do_split(const cmd_info_t *cmd_info, int vertical)
 {
 	if(cmd_info->emark && cmd_info->argc != 0)
 	{
@@ -4544,7 +4546,7 @@ do_split(const struct cmd_info *cmd_info, int vertical)
 }
 
 static int
-vunmap_cmd(const struct cmd_info *cmd_info)
+vunmap_cmd(const cmd_info_t *cmd_info)
 {
 	return do_unmap(cmd_info->argv[0], VISUAL_MODE);
 }
@@ -4568,28 +4570,28 @@ do_unmap(const char *keys, int mode)
 }
 
 static int
-write_cmd(const struct cmd_info *cmd_info)
+write_cmd(const cmd_info_t *cmd_info)
 {
 	write_info_file();
 	return 0;
 }
 
 static int
-quit_cmd(const struct cmd_info *cmd_info)
+quit_cmd(const cmd_info_t *cmd_info)
 {
 	comm_quit(!cmd_info->emark, cmd_info->emark);
 	return 0;
 }
 
 static int
-wq_cmd(const struct cmd_info *cmd_info)
+wq_cmd(const cmd_info_t *cmd_info)
 {
 	comm_quit(1, cmd_info->emark);
 	return 0;
 }
 
 static int
-yank_cmd(const struct cmd_info *cmd_info)
+yank_cmd(const cmd_info_t *cmd_info)
 {
 	int reg;
 	int result;
@@ -4602,7 +4604,7 @@ yank_cmd(const struct cmd_info *cmd_info)
 
 /* Returns zero on success */
 static int
-get_reg_and_count(const struct cmd_info *cmd_info, int *reg)
+get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 {
 	if(cmd_info->argc == 2)
 	{
@@ -4644,7 +4646,7 @@ get_reg_and_count(const struct cmd_info *cmd_info, int *reg)
 }
 
 static int
-usercmd_cmd(const struct cmd_info* cmd_info)
+usercmd_cmd(const cmd_info_t *cmd_info)
 {
 	char *expanded_com = NULL;
 	int use_menu = 0;

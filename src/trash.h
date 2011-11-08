@@ -19,13 +19,13 @@
 #ifndef __TRASH_H__
 #define __TRASH_H__
 
-struct trash_entry
+typedef struct
 {
 	char *path;
 	char *trash_name;
-};
+}trash_entry_t;
 
-struct trash_entry *trash_list;
+trash_entry_t *trash_list;
 int nentries;
 
 void empty_trash(void);

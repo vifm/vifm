@@ -49,12 +49,12 @@
 static void leave_file_info_mode(void);
 static int show_file_type(FileView *view, int curr_y);
 static int show_mime_type(FileView *view, int curr_y);
-static void cmd_ctrl_c(struct key_info, struct keys_info *);
+static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 
 static int *mode;
 static FileView *view;
 
-static struct keys_add_info builtin_cmds[] = {
+static keys_add_info_t builtin_cmds[] = {
 	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	/* return */
 	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
@@ -317,7 +317,7 @@ show_mime_type(FileView *view, int curr_y)
 }
 
 static void
-cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
 	leave_file_info_mode();
 }

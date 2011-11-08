@@ -44,15 +44,16 @@
 #define lstat stat
 #endif
 
-typedef struct Fuse_List {
+typedef struct fuse_mount_t
+{
 	char source_file_name[PATH_MAX];
 	char source_file_dir[PATH_MAX];
 	char mount_point[PATH_MAX];
 	int mount_point_id;
-	struct Fuse_List *next;
-} Fuse_List;
+	struct fuse_mount_t *next;
+}fuse_mount_t;
 
-extern struct Fuse_List *fuse_mounts;
+extern struct fuse_mount_t *fuse_mounts;
 
 int S_ISEXE(mode_t mode);
 void chomp(char *text);

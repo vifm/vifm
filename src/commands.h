@@ -23,7 +23,8 @@
 #include "macros.h"
 #include "ui.h"
 
-enum {
+enum
+{
 	GET_COMMAND,
 	GET_MENU_COMMAND,
 	GET_FSEARCH_PATTERN,
@@ -35,7 +36,8 @@ enum {
 };
 
 /* values of type argument for filename_completion() function */
-enum {
+enum
+{
 	FNC_ALL,      /* all files and directories */
 	FNC_ALL_WOE,  /* all files and directories without escaping */
 	FNC_FILE_WOE, /* only files in the current directory without escaping */
@@ -70,7 +72,7 @@ void exec_startup_commands(int argc, char **argv);
 char * append_selected_files(FileView *view, char *expanded, int under_cursor,
 		int quotes, const char *mod);
 int line_pos(const char *begin, const char *end, char sep, int regexp);
-void select_range(int id, const struct cmd_info *cmd_info);
+void select_range(int id, const cmd_info_t *cmd_info);
 #endif
 
 #endif

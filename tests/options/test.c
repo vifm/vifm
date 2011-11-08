@@ -45,24 +45,24 @@ void all_tests(void)
 }
 
 static void
-fastrun_handler(enum opt_op op, union optval_t val)
+fastrun_handler(OPT_OP op, optval_t val)
 {
 	fastrun = val.bool_val;
 }
 
 static void
-fusehome_handler(enum opt_op op, union optval_t val)
+fusehome_handler(OPT_OP op, optval_t val)
 {
 	value = val.str_val;
 }
 
 static void
-sort_handler(enum opt_op op, union optval_t val)
+sort_handler(OPT_OP op, optval_t val)
 {
 }
 
 static void
-vifminfo_handler(enum opt_op op, union optval_t val)
+vifminfo_handler(OPT_OP op, optval_t val)
 {
 }
 
@@ -70,7 +70,7 @@ static void
 setup(void)
 {
 	static int option_changed;
-	union optval_t val;
+	optval_t val;
 
 	init_options(&option_changed, NULL);
 

@@ -63,7 +63,8 @@
 
 static char rename_file_ext[NAME_MAX];
 
-static struct {
+static struct
+{
 	registers_t *reg;
 	FileView *view;
 	int force_move;
@@ -71,9 +72,10 @@ static struct {
 	char *name;
 	int overwrite_all;
 	int link; /* 0 - no, 1 - absolute, 2 - relative */
-} put_confirm;
+}put_confirm;
 
-struct bg_args {
+typedef struct
+{
 	char **list;
 	int nlines;
 	int move;
@@ -84,8 +86,8 @@ struct bg_args {
 	char path[PATH_MAX];
 	int from_file;
 	int from_trash;
-	Jobs_List *job;
-};
+	job_t *job;
+}bg_args_t;
 
 static void put_confirm_cb(const char *dest_name);
 static void put_decide_cb(const char *dest_name);
@@ -94,7 +96,7 @@ static int put_files_from_register_i(FileView *view, int start);
 void
 unmount_fuse(void)
 {
-	Fuse_List *runner;
+	fuse_mount_t *runner;
 
 	if(fuse_mounts == NULL)
 		return;
@@ -303,13 +305,13 @@ make_name_unique(const char *filename)
  * mount_point should be an array of at least PATH_MAX characters
  * Returns 0 on success.
  */
-static Fuse_List *
+static fuse_mount_t *
 fuse_mount(FileView *view, char *filename, const char *program,
 		char *mount_point)
 {
-	Fuse_List *runner;
+	fuse_mount_t *runner;
 	int mount_point_id = 0;
-	Fuse_List *fuse_item = NULL;
+	fuse_mount_t *fuse_item = NULL;
 	char buf[2*PATH_MAX];
 	char cmd_buf[96];
 	char *cmd_pos;
@@ -337,7 +339,8 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	{
 		snprintf(mount_point, PATH_MAX, "%s/%03d_%s", cfg.fuse_home,
 				++mount_point_id, get_current_file_name(view));
-	} while(access(mount_point, F_OK) == 0);
+	}
+	while(access(mount_point, F_OK) == 0);
 #ifndef _WIN32
 	if(mkdir(mount_point, S_IRWXU))
 #else
@@ -448,7 +451,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	unlink(tmp_file);
 	status_bar_message("FUSE mount success");
 
-	fuse_item = (Fuse_List *)malloc(sizeof(Fuse_List));
+	fuse_item = (fuse_mount_t *)malloc(sizeof(fuse_mount_t));
 	strcpy(fuse_item->source_file_name, filename);
 	strcpy(fuse_item->source_file_dir, view->curr_dir);
 	strcpy(fuse_item->mount_point, mount_point);
@@ -466,7 +469,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 static void
 fuse_try_mount(FileView *view, const char *program)
 {
-	Fuse_List *runner;
+	fuse_mount_t *runner;
 	char filename[PATH_MAX];
 	char mount_point[PATH_MAX];
 	int mount_found;
@@ -504,7 +507,7 @@ fuse_try_mount(FileView *view, const char *program)
 
 	if(!mount_found)
 	{
-		Fuse_List *item;
+		fuse_mount_t *item;
 		/* new file to be mounted */
 		if(strncmp(program, "FUSE_MOUNT2", 11) == 0)
 		{
@@ -1254,7 +1257,7 @@ delete_file_bg_i(const char *curr_dir, char **list, int count, int use_trash)
 static void *
 delete_file_stub(void *arg)
 {
-	struct bg_args *args = (struct bg_args*)arg;
+	bg_args_t *args = (bg_args_t *)arg;
 
 	add_inner_bg_job(args->job);
 
@@ -1275,7 +1278,7 @@ delete_file_bg(FileView *view, int use_trash)
 	pthread_t id;
 	char buf[COMMAND_GROUP_INFO_LEN];
 	int i;
-	struct bg_args *args;
+	bg_args_t *args;
 	
 	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
@@ -3465,7 +3468,7 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 static void *
 cpmv_stub(void *arg)
 {
-	struct bg_args *args = (struct bg_args*)arg;
+	bg_args_t *args = (bg_args_t *)arg;
 
 	add_inner_bg_job(args->job);
 
@@ -3487,7 +3490,7 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	pthread_t id;
 	int i;
 	char buf[COMMAND_GROUP_INFO_LEN];
-	struct bg_args *args = malloc(sizeof(*args));
+	bg_args_t *args = malloc(sizeof(*args));
 	
 	args->list = NULL;
 	args->nlines = nlines;

@@ -47,63 +47,63 @@ enum
 			tmp == KEYS_UNKNOWN || tmp == KEYS_WAIT || tmp == KEYS_WAIT_SHORT; \
 		})
 
-enum FOLLOWED_BY
+typedef enum
 {
 	FOLLOWED_BY_NONE,
 	FOLLOWED_BY_SELECTOR,
 	FOLLOWED_BY_MULTIKEY,
-};
+}FOLLOWED_BY;
 
-enum KEYS_TYPE
+typedef enum
 {
 	BUILTIN_WAIT_POINT, /* infinite wait of next key press */
 	BUILTIN_KEYS,
 	BUILTIN_NIM_KEYS,   /* NIM - number in the middle */
 	BUILTIN_CMD,
 	USER_CMD,
-};
+}KEYS_TYPE;
 
-enum KEYS_SELECTOR
+typedef enum
 {
 	KS_NOT_A_SELECTOR,
 	KS_SELECTOR_AND_CMD,
 	KS_ONLY_SELECTOR,
-};
+}KEYS_SELECTOR;
 
-struct key_info
+typedef struct
 {
 	int count; /* repeat count, maybe equal NO_COUNT_GIVEN */
 	int reg;   /* number of selected register */
 	int multi; /* multi key */
-};
+}key_info_t;
 
-struct keys_info
+typedef struct
 {
 	int selector;   /* selector passed */
 	int count;      /* count of selected items */
 	int *indexes;   /* item indexes */
 	int after_wait; /* after short timeout */
 	int mapped;     /* not users input */
-};
+}keys_info_t;
 
-typedef void (*keys_handler)(struct key_info key_info,
-		struct keys_info *keys_info);
+typedef void (*keys_handler)(key_info_t key_info, keys_info_t *keys_info);
 
-struct key_t
+typedef struct
 {
-	enum KEYS_TYPE type;
-	enum FOLLOWED_BY followed;   /* what type of key should we wait for */
+	KEYS_TYPE type;
+	FOLLOWED_BY followed; /* what type of key should we wait for */
 	union
 	{
 		keys_handler handler;
 		wchar_t *cmd;
 	}data;
-};
+}key_conf_t;
 
-struct keys_add_info {
+typedef struct
+{
 	const wchar_t keys[5];
-	struct key_t key_t;
-};
+	key_conf_t info;
+}keys_add_info_t;
 
 /*
  * Return value:
@@ -151,12 +151,12 @@ int execute_keys_timed_out(const wchar_t *keys);
 /*
  * Returns not zero on error
  */
-int add_cmds(struct keys_add_info *cmds, size_t len, int mode);
+int add_cmds(keys_add_info_t *cmds, size_t len, int mode);
 
 /*
  * Returns not zero on error
  */
-int add_selectors(struct keys_add_info *cmds, size_t len, int mode);
+int add_selectors(keys_add_info_t *cmds, size_t len, int mode);
 
 /*
  * Returns not zero when can't find user keys
@@ -193,12 +193,12 @@ size_t get_key_counter(void);
 /*
  * Returns NULL on error
  */
-struct key_t * add_cmd(const wchar_t *keys, int mode);
+key_conf_t * add_cmd(const wchar_t *keys, int mode);
 
 /*
  * Returns NULL on error
  */
-struct key_t* add_selector(const wchar_t *keys, int mode);
+key_conf_t* add_selector(const wchar_t *keys, int mode);
 #endif
 
 #endif

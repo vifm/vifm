@@ -63,7 +63,8 @@
 #include "utf8.h"
 #include "utils.h"
 
-enum {
+enum
+{
 	APROPOS,
 	BOOKMARK,
 	CMDHISTORY,
@@ -105,7 +106,7 @@ clean_menu_position(menu_info *m)
 {
 	int x, y, z;
 	char * buf = (char *)NULL;
-	Col_attr col;
+	col_attr_t col;
 	int type = MENU_COLOR;
 
 	getmaxyx(menu_win, y, x);
@@ -325,7 +326,7 @@ move_to_menu_pos(int pos, menu_info *m)
 	int redraw = 0;
 	int x, y, z;
 	char *buf = NULL;
-	Col_attr col;
+	col_attr_t col;
 
 	getmaxyx(menu_win, y, x);
 
@@ -767,7 +768,7 @@ draw_menu(menu_info *m)
 		int z, off;
 		char *buf;
 		char *ptr = NULL;
-		Col_attr col;
+		col_attr_t col;
 		int type = WIN_COLOR;
 
 		chomp(m->data[x]);
@@ -980,7 +981,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 	x = 0;
 	while(list[x] != NULL)
 	{
-		enum {MAP_WIDTH = 10};
+		enum { MAP_WIDTH = 10 };
 		size_t len;
 		int i, str_len, buf_len;
 
@@ -2066,8 +2067,8 @@ show_user_menu(FileView *view, const char *command, int navigate)
 int
 show_jobs_menu(FileView *view)
 {
-	Jobs_List *p;
-	Finished_Jobs *fj;
+	job_t *p;
+	finished_job_t *fj;
 #ifndef _WIN32
 	sigset_t new_mask;
 #endif
@@ -2093,7 +2094,7 @@ show_jobs_menu(FileView *view)
 	x = 0;
 
 	/*
-	 * SIGCHLD needs to be blocked anytime the Finished_Jobs list
+	 * SIGCHLD needs to be blocked anytime the finished_jobs list
 	 * is accessed from anywhere except the received_sigchld().
 	 */
 #ifndef _WIN32

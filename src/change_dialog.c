@@ -42,13 +42,13 @@
 #include "change_dialog.h"
 
 static void leave_change_mode(int clean_selection);
-static void cmd_ctrl_c(struct key_info, struct keys_info *);
-static void cmd_ctrl_m(struct key_info, struct keys_info *);
-static void cmd_G(struct key_info, struct keys_info *);
-static void cmd_gg(struct key_info, struct keys_info *);
+static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void goto_line(int line);
-static void cmd_j(struct key_info, struct keys_info *);
-static void cmd_k(struct key_info, struct keys_info *);
+static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void print_at_pos(void);
 static void clear_at_pos(void);
 
@@ -56,7 +56,7 @@ static int *mode;
 static FileView *view;
 static int top, bottom, step, curr, col;
 
-static struct keys_add_info builtin_cmds[] = {
+static keys_add_info_t builtin_cmds[] = {
 	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	/* return */
 	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
@@ -161,13 +161,13 @@ leave_change_mode(int clean_selection)
 }
 
 static void
-cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
 	leave_change_mode(1);
 }
 
 static void
-cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	leave_change_mode(0);
 
@@ -182,7 +182,7 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_G(struct key_info key_info, struct keys_info *keys_info)
+cmd_G(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		goto_line(bottom);
@@ -191,7 +191,7 @@ cmd_G(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_gg(struct key_info key_info, struct keys_info *keys_info)
+cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		goto_line(1);
@@ -215,7 +215,7 @@ goto_line(int line)
 }
 
 static void
-cmd_j(struct key_info key_info, struct keys_info *keys_info)
+cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
@@ -230,7 +230,7 @@ cmd_j(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_k(struct key_info key_info, struct keys_info *keys_info)
+cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;

@@ -27,29 +27,31 @@
 
 #include "tree.h"
 
-struct node {
+typedef struct node_t
+{
 	char *name;
 	size_t name_len;
 	unsigned long long data;
 	int valid;
-	struct node *next;
-	struct node *child;
-};
+	struct node_t *next;
+	struct node_t *child;
+}node_t;
 
-struct root {
-	struct node node;
+typedef struct root_t
+{
+	node_t node;
 	int longest;
 	int mem;
-};
+}root_t;
 
-static void nodes_free(struct node *node);
-static struct node * find_node(struct node *root, const char *name, int create,
-		struct node **last);
+static void nodes_free(node_t *node);
+static node_t * find_node(node_t *root, const char *name, int create,
+		node_t **last);
 
 tree_t
 tree_create(int longest, int mem)
 {
-	struct root *tree;
+	root_t *tree;
 
 	tree = malloc(sizeof(*tree));
 	tree->node.child = NULL;
@@ -70,7 +72,7 @@ tree_free(tree_t tree)
 }
 
 static void
-nodes_free(struct node *node)
+nodes_free(node_t *node)
 {
 	if(node->child != NULL)
 		nodes_free(node->child);
@@ -85,7 +87,7 @@ nodes_free(struct node *node)
 int
 tree_set_data(tree_t tree, const char *path, unsigned long long data)
 {
-	struct node *node;
+	node_t *node;
 	char real_path[PATH_MAX];
 
 	if(realpath(path, real_path) != real_path)
@@ -94,10 +96,11 @@ tree_set_data(tree_t tree, const char *path, unsigned long long data)
 	node = find_node(&tree->node, real_path, 1, NULL);
 	if(node->valid && tree->mem)
 	{
-		union {
+		union
+		{
 			unsigned long long l;
 			void *p;
-		} u = {
+		}u = {
 			.l = node->data,
 		};
 
@@ -111,8 +114,8 @@ tree_set_data(tree_t tree, const char *path, unsigned long long data)
 int
 tree_get_data(tree_t tree, const char *path, unsigned long long *data)
 {
-	struct node *last = NULL;
-	struct node *node;
+	node_t *last = NULL;
+	node_t *node;
 	char real_path[PATH_MAX];
 
 	if(tree->node.child == NULL)
@@ -132,13 +135,13 @@ tree_get_data(tree_t tree, const char *path, unsigned long long *data)
 	return 0;
 }
 
-static struct node *
-find_node(struct node *root, const char *name, int create, struct node **last)
+static node_t *
+find_node(node_t *root, const char *name, int create, node_t **last)
 {
 	const char *end;
 	size_t name_len;
-	struct node *prev = NULL, *curr;
-	struct node *new_node;
+	node_t *prev = NULL, *curr;
+	node_t *new_node;
 
 	if(*name == '/')
 		name++;

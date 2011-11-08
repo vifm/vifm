@@ -8,7 +8,7 @@
 #include "../../src/cmds.h"
 #include "../../src/completion.h"
 
-struct cmd_info user_cmd_info;
+cmd_info_t user_cmd_info;
 
 static int complete_args(int id, const char *args, int argc, char **argv,
 		int arg_pos);
@@ -17,7 +17,7 @@ static int resolve_mark(char mark);
 static char * expand_macros(const char *str, int *usr1, int *usr2);
 static char * expand_envvars(const char *str);
 static void post(int id);
-static void select_range(int id, const struct cmd_info *cmd_info);
+static void select_range(int id, const cmd_info_t *cmd_info);
 
 void input_tests(void);
 void command_name_tests(void);
@@ -27,7 +27,7 @@ void ids_tests(void);
 void builtin_tests(void);
 void one_number_range(void);
 
-struct cmds_conf cmds_conf = {
+cmds_conf_t cmds_conf = {
 	.complete_args = complete_args,
 	.swap_range = swap_range,
 	.resolve_mark = resolve_mark,
@@ -95,7 +95,7 @@ expand_envvars(const char *str)
 }
 
 static int
-usercmd_cmd(const struct cmd_info* cmd_info)
+usercmd_cmd(const cmd_info_t *cmd_info)
 {
 	user_cmd_info = *cmd_info;
 	return 0;
@@ -107,14 +107,14 @@ post(int id)
 }
 
 static void
-select_range(int id, const struct cmd_info *cmd_info)
+select_range(int id, const cmd_info_t *cmd_info)
 {
 }
 
 static void
 setup(void)
 {
-	struct cmd_add command = {
+	cmd_add_t command = {
 		.name = "<USERCMD>", .abbr = NULL, .handler = usercmd_cmd, .cust_sep = 0,
 		.id = -1,            .range = 1,   .emark = 0,             .qmark = 0,
 		.expand = 0,         .regexp = 0,  .min_args = 0,          .max_args = 0,

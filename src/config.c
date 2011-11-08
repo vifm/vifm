@@ -50,7 +50,7 @@
 
 #define MAX_LEN 1024
 
-Config cfg;
+config_t cfg;
 
 void
 init_config(void)

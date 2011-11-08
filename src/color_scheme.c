@@ -101,7 +101,7 @@ static int _gnuc_unused default_colors_size_guard[
 static tree_t dirs;
 
 static void
-init_color_scheme(Col_scheme *cs)
+init_color_scheme(col_scheme_t *cs)
 {
 	int i;
 	strcpy(cs->name, "built-in default");
@@ -123,7 +123,7 @@ init_color_scheme(Col_scheme *cs)
 }
 
 void
-check_color_scheme(Col_scheme *cs)
+check_color_scheme(col_scheme_t *cs)
 {
 	int i;
 
@@ -252,7 +252,7 @@ write_color_scheme_file(void)
 }
 
 static void
-load_color_pairs(int base, const Col_scheme *cs)
+load_color_pairs(int base, const col_scheme_t *cs)
 {
 	int i;
 	for(i = 0; i < MAXNUM_COLOR; i++)
@@ -298,10 +298,11 @@ check_directory_for_color_scheme(int left, const char *dir)
 	char *p;
 	char t;
 
-	union {
+	union
+	{
 		char *name;
 		unsigned long long buf;
-	} u;
+	}u;
 
 	if(dirs == NULL)
 		return DCOLOR_BASE;
@@ -331,7 +332,8 @@ check_directory_for_color_scheme(int left, const char *dir)
 		*p = t;
 		if((p = strchr(p + 1, '/')) == NULL)
 			p = (char *)dir + strlen(dir);
-	} while(t != '\0');
+	}
+	while(t != '\0');
 
 	check_color_scheme(curr_stats.cs);
 	load_color_pairs(curr_stats.cs_base, curr_stats.cs);
@@ -398,10 +400,11 @@ attrs_to_str(int attrs)
 void
 assoc_dir(const char *name, const char *dir)
 {
-	union {
+	union
+	{
 		char *s;
 		unsigned long long l;
-	} u = {
+	}u = {
 		.s = strdup(name),
 	};
 
@@ -413,7 +416,7 @@ assoc_dir(const char *name, const char *dir)
 }
 
 void
-mix_colors(Col_attr *base, const Col_attr *mixup)
+mix_colors(col_attr_t *base, const col_attr_t *mixup)
 {
 	if(mixup->fg != -1)
 		base->fg = mixup->fg;

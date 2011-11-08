@@ -29,7 +29,8 @@
 
 #define MAX_COLOR_SCHEMES 8
 
-enum Ui_colors {
+enum
+{
 	WIN_COLOR,
 	DIRECTORY_COLOR,
 	LINK_COLOR,
@@ -52,24 +53,27 @@ enum Ui_colors {
 	MAXNUM_COLOR
 };
 
-enum {
+enum
+{
 	DCOLOR_BASE = 1,
 	LCOLOR_BASE = DCOLOR_BASE + MAXNUM_COLOR,
 	RCOLOR_BASE = LCOLOR_BASE + MAXNUM_COLOR,
 };
 
-typedef struct _Col_attr {
+typedef struct
+{
 	int fg;
 	int bg;
 	int attr;
-} Col_attr;
+}col_attr_t;
 
-typedef struct _Col_Scheme {
+typedef struct
+{
 	char name[NAME_MAX];
 	char dir[PATH_MAX];
 	int defaulted;
-	Col_attr color[MAXNUM_COLOR];
-} Col_scheme;
+	col_attr_t color[MAXNUM_COLOR];
+}col_scheme_t;
 
 extern char *HI_GROUPS[];
 extern char *COLOR_NAMES[8];
@@ -82,10 +86,10 @@ int check_directory_for_color_scheme(int left, const char *dir);
 int find_color_scheme(const char *name);
 void complete_colorschemes(const char *name);
 const char * attrs_to_str(int attrs);
-void check_color_scheme(Col_scheme *cs);
+void check_color_scheme(col_scheme_t *cs);
 void assoc_dir(const char *name, const char *dir);
 void write_color_scheme_file(void);
-void mix_colors(Col_attr *base, const Col_attr *mixup);
+void mix_colors(col_attr_t *base, const col_attr_t *mixup);
 
 #endif
 

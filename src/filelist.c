@@ -121,7 +121,7 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 	struct group *grp_buf;
 #endif
 	struct tm *tm_ptr;
-	Col_attr col;
+	col_attr_t col;
 	int type;
 
 	switch(abs(view->sort[0]))
@@ -657,7 +657,7 @@ update_view_title(FileView *view)
 
 	if(view == selected)
 	{
-		Col_attr col;
+		col_attr_t col;
 
 		col = cfg.cs.color[TOP_LINE_COLOR];
 		mix_colors(&col, &cfg.cs.color[TOP_LINE_SEL_COLOR]);
@@ -770,7 +770,7 @@ draw_dir_list(FileView *view, int top)
 		size_t print_width;
 		int LINE_COLOR;
 		char file_name[view->window_width*2 - 2];
-		Col_attr col;
+		col_attr_t col;
 		/* Extra long file names are truncated to fit */
 
 		print_width = get_real_string_width(view->dir_entry[x].name,
@@ -869,7 +869,7 @@ erase_current_line_bar(FileView *view)
 	char file_name[view->window_width*2 - 2];
 	int LINE_COLOR;
 	size_t print_width;
-	Col_attr col;
+	col_attr_t col;
 
 	if(curr_stats.vifm_started < 2)
 		return;
@@ -980,7 +980,7 @@ move_to_list_pos(FileView *view, int pos)
 	char file_name[view->window_width*2 + 1];
 	size_t print_width;
 	int LINE_COLOR;
-	Col_attr col;
+	col_attr_t col;
 
 	if(pos < 1)
 		pos = 0;
@@ -1272,7 +1272,7 @@ clean_selection(FileView *view)
 }
 
 static void
-updir_from_mount(FileView *view, Fuse_List *runner)
+updir_from_mount(FileView *view, fuse_mount_t *runner)
 {
 	char *file;
 	int pos;
@@ -1288,10 +1288,10 @@ updir_from_mount(FileView *view, Fuse_List *runner)
 	move_to_list_pos(view, pos);
 }
 
-static Fuse_List *
+static fuse_mount_t *
 find_fuse_mount(const char *dir)
 {
-	Fuse_List *runner = fuse_mounts;
+	fuse_mount_t *runner = fuse_mounts;
 	while(runner)
 	{
 		if(strcmp(runner->mount_point, dir) == 0)
@@ -1305,7 +1305,7 @@ find_fuse_mount(const char *dir)
 void
 leave_invalid_dir(FileView *view, char *path)
 {
-	Fuse_List *runner;
+	fuse_mount_t *runner;
 	size_t len;
 	char *p;
 
@@ -1344,7 +1344,7 @@ leave_invalid_dir(FileView *view, char *path)
 static int
 in_mounted_dir(const char *path)
 {
-	Fuse_List *runner;
+	fuse_mount_t *runner;
 
 	runner = fuse_mounts;
 	while(runner)
@@ -1367,9 +1367,9 @@ static int
 try_unmount_fuse(FileView *view)
 {
 	char buf[14 + PATH_MAX + 1];
-	Fuse_List *runner, *trailer;
+	fuse_mount_t *runner, *trailer;
 	int status;
-	Fuse_List *sniffer;
+	fuse_mount_t *sniffer;
 	char *escaped_mount_point;
 
 	runner = fuse_mounts;
@@ -1415,7 +1415,7 @@ try_unmount_fuse(FileView *view)
 	if(access(runner->mount_point, F_OK) == 0)
 		rmdir(runner->mount_point);
 
-	/* remove mount point from Fuse_List */
+	/* remove mount point from fuse_mount_t */
 	sniffer = runner->next;
 	if(trailer)
 		trailer->next = sniffer ? sniffer : NULL;
@@ -2202,7 +2202,8 @@ fill_dir_list(FileView *view)
 			dir_entry->type = REGULAR;
 		}
 		view->list_rows++;
-	} while(FindNextFileA(hfind, &ffd));
+	}
+	while(FindNextFileA(hfind, &ffd));
 
 	FindClose(hfind);
 	return 0;

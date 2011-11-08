@@ -24,7 +24,9 @@
 
 #define NUM_BOOKMARKS 64
 
-typedef struct
+extern const char valid_bookmarks[];
+
+struct
 {
 	/*
 	 * 'mark' is unnecessary, we already reserve all possible bookmarks,
@@ -43,11 +45,7 @@ typedef struct
 	*/
 	char *file;
 	char *directory;
-} bookmarks_t;
-
-extern const char valid_bookmarks[];
-
-bookmarks_t bookmarks[NUM_BOOKMARKS];
+}bookmarks[NUM_BOOKMARKS];
 
 int active_bookmarks[NUM_BOOKMARKS];
 

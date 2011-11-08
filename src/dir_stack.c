@@ -24,11 +24,11 @@
 
 #include "dir_stack.h"
 
-struct stack_entry * stack;
+stack_entry_t *stack;
 unsigned int stack_top;
 static unsigned int stack_size;
 
-static void free_entry(const struct stack_entry * entry);
+static void free_entry(const stack_entry_t *entry);
 
 int
 pushd(void)
@@ -42,7 +42,7 @@ push_to_dirstack(const char *ld, const char *lf, const char *rd, const char *rf)
 {
 	if(stack_top == stack_size)
 	{
-		struct stack_entry* s = realloc(stack, (stack_size + 1)*sizeof(*stack));
+		stack_entry_t *s = realloc(stack, (stack_size + 1)*sizeof(*stack));
 		if(s == NULL)
 			return -1;
 
@@ -93,7 +93,7 @@ popd(void)
 int
 swap_dirs(void)
 {
-	struct stack_entry item;
+	stack_entry_t item;
 
 	if(stack_top == 0)
 		return -1;
@@ -122,7 +122,7 @@ swap_dirs(void)
 int
 rotate_stack(int n)
 {
-	struct stack_entry *new_stack;
+	stack_entry_t *new_stack;
 	int i;
 
 	if(n == 0)
@@ -151,7 +151,7 @@ clean_stack(void)
 }
 
 static void
-free_entry(const struct stack_entry * entry)
+free_entry(const stack_entry_t *entry)
 {
 	free(entry->lpane_dir);
 	free(entry->lpane_file);

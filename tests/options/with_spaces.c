@@ -7,7 +7,7 @@ extern int fastrun;
 static void
 test_bang(void)
 {
-	union optval_t val = { .bool_val = 0 };
+	optval_t val = { .bool_val = 0 };
 	fastrun = 0;
 	set_option("fastrun", val);
 
@@ -23,7 +23,7 @@ test_bang(void)
 static void
 test_ampersand(void)
 {
-	union optval_t val = { .bool_val = 1 };
+	optval_t val = { .bool_val = 1 };
 	fastrun = 1;
 	set_option("fastrun", val);
 

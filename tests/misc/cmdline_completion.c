@@ -9,10 +9,10 @@
 #include "../../src/completion.h"
 #include "../../src/options.h"
 
-struct line_stats stats;
+line_stats_t stats;
 
 static void
-fusehome_handler(enum opt_op op, union optval_t val)
+fusehome_handler(OPT_OP op, optval_t val)
 {
 }
 
@@ -20,7 +20,7 @@ static void
 setup(void)
 {
 	static int option_changed;
-	union optval_t def = { .str_val = "/tmp" };
+	optval_t def = { .str_val = "/tmp" };
 
 	stats.line = wcsdup(L"set ");
 	stats.index = wcslen(stats.line);

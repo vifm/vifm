@@ -6,25 +6,25 @@
 #include "../../src/cmds.h"
 #include "../../src/macros.h"
 
-extern struct cmds_conf cmds_conf;
+extern cmds_conf_t cmds_conf;
 
-static struct cmd_info cmdi;
+static cmd_info_t cmdi;
 static char *arg;
 
-static int goto_cmd(const struct cmd_info* cmd_info);
-static int exec_cmd(const struct cmd_info* cmd_info);
-static int call_cmd(const struct cmd_info* cmd_info);
-static int delete_cmd(const struct cmd_info* cmd_info);
-static int edia_cmd(const struct cmd_info* cmd_info);
-static int edit_cmd(const struct cmd_info* cmd_info);
-static int file_cmd(const struct cmd_info* cmd_info);
-static int filter_cmd(const struct cmd_info* cmd_info);
-static int history_cmd(const struct cmd_info* cmd_info);
-static int invert_cmd(const struct cmd_info* cmd_info);
-static int substitute_cmd(const struct cmd_info* cmd_info);
-static int quit_cmd(const struct cmd_info* cmd_info);
+static int goto_cmd(const cmd_info_t* cmd_info);
+static int exec_cmd(const cmd_info_t* cmd_info);
+static int call_cmd(const cmd_info_t* cmd_info);
+static int delete_cmd(const cmd_info_t* cmd_info);
+static int edia_cmd(const cmd_info_t* cmd_info);
+static int edit_cmd(const cmd_info_t* cmd_info);
+static int file_cmd(const cmd_info_t* cmd_info);
+static int filter_cmd(const cmd_info_t* cmd_info);
+static int history_cmd(const cmd_info_t* cmd_info);
+static int invert_cmd(const cmd_info_t* cmd_info);
+static int substitute_cmd(const cmd_info_t* cmd_info);
+static int quit_cmd(const cmd_info_t* cmd_info);
 
-static const struct cmd_add commands[] = {
+static const cmd_add_t commands[] = {
 	{ .name = "",           .abbr = NULL,  .handler = goto_cmd,       .id = -1,    .range = 1,    .cust_sep = 0,
 		.emark = 0,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 0,       .bg = 0,     },
 	{ .name = "!",          .abbr = NULL,  .handler = exec_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,
@@ -52,14 +52,14 @@ static const struct cmd_add commands[] = {
 };
 
 static int
-goto_cmd(const struct cmd_info* cmd_info)
+goto_cmd(const cmd_info_t* cmd_info)
 {
 	cmdi = *cmd_info;
 	return 0;
 }
 
 static int
-exec_cmd(const struct cmd_info* cmd_info)
+exec_cmd(const cmd_info_t* cmd_info)
 {
 	cmdi = *cmd_info;
 	if(cmdi.argc > 0)
@@ -71,7 +71,7 @@ exec_cmd(const struct cmd_info* cmd_info)
 }
 
 static int
-call_cmd(const struct cmd_info* cmd_info)
+call_cmd(const cmd_info_t* cmd_info)
 {
 	cmdi = *cmd_info;
 	if(cmdi.argc > 0)
@@ -83,7 +83,7 @@ call_cmd(const struct cmd_info* cmd_info)
 }
 
 static int
-delete_cmd(const struct cmd_info* cmd_info)
+delete_cmd(const cmd_info_t* cmd_info)
 {
 	cmdi = *cmd_info;
 	if(cmdi.argc > 0)
@@ -95,14 +95,14 @@ delete_cmd(const struct cmd_info* cmd_info)
 }
 
 static int
-edia_cmd(const struct cmd_info* cmd_info)
+edia_cmd(const cmd_info_t* cmd_info)
 {
 	cmdi.usr1 = 1;
 	return 0;
 }
 
 static int
-edit_cmd(const struct cmd_info* cmd_info)
+edit_cmd(const cmd_info_t* cmd_info)
 {
 	cmdi = *cmd_info;
 	cmdi.usr1 = 2;
@@ -115,40 +115,14 @@ edit_cmd(const struct cmd_info* cmd_info)
 }
 
 static int
-file_cmd(const struct cmd_info* cmd_info)
+file_cmd(const cmd_info_t* cmd_info)
 {
 	cmdi = *cmd_info;
 	return 0;
 }
 
 static int
-filter_cmd(const struct cmd_info* cmd_info)
-{
-	cmdi = *cmd_info;
-	if(cmdi.argc > 0)
-	{
-		free(arg);
-		arg = strdup(cmdi.argv[0]);
-	}
-	return 0;
-}
-
-static int
-history_cmd(const struct cmd_info* cmd_info)
-{
-	cmdi = *cmd_info;
-	return 0;
-}
-
-static int
-invert_cmd(const struct cmd_info* cmd_info)
-{
-	cmdi = *cmd_info;
-	return 0;
-}
-
-static int
-substitute_cmd(const struct cmd_info* cmd_info)
+filter_cmd(const cmd_info_t* cmd_info)
 {
 	cmdi = *cmd_info;
 	if(cmdi.argc > 0)
@@ -160,7 +134,33 @@ substitute_cmd(const struct cmd_info* cmd_info)
 }
 
 static int
-quit_cmd(const struct cmd_info* cmd_info)
+history_cmd(const cmd_info_t* cmd_info)
+{
+	cmdi = *cmd_info;
+	return 0;
+}
+
+static int
+invert_cmd(const cmd_info_t* cmd_info)
+{
+	cmdi = *cmd_info;
+	return 0;
+}
+
+static int
+substitute_cmd(const cmd_info_t* cmd_info)
+{
+	cmdi = *cmd_info;
+	if(cmdi.argc > 0)
+	{
+		free(arg);
+		arg = strdup(cmdi.argv[0]);
+	}
+	return 0;
+}
+
+static int
+quit_cmd(const cmd_info_t* cmd_info)
 {
 	cmdi = *cmd_info;
 	return 0;

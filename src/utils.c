@@ -60,7 +60,7 @@
 
 #include "utils.h"
 
-struct Fuse_List *fuse_mounts = NULL;
+fuse_mount_t *fuse_mounts = NULL;
 
 int
 S_ISEXE(mode_t mode)
@@ -1254,7 +1254,8 @@ is_win_executable(const char *name)
 
 		if(ends_with(name_buf, ext_buf))
 			return 1;
-	} while(q[0] != '\0');
+	}
+	while(q[0] != '\0');
 	return 0;
 }
 

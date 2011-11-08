@@ -19,14 +19,15 @@
 #ifndef __DIR_STACK_H__
 #define __DIR_STACK_H__
 
-struct stack_entry {
+typedef struct
+{
 	char *lpane_dir;
 	char *lpane_file;
 	char *rpane_dir;
 	char *rpane_file;
-};
+}stack_entry_t;
 
-extern struct stack_entry * stack;
+extern stack_entry_t * stack;
 extern unsigned int stack_top;
 
 /*

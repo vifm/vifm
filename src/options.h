@@ -19,40 +19,43 @@
 #ifndef __OPTIONS_H__
 #define __OPTIONS_H__
 
-enum opt_type {
+typedef enum
+{
 	OPT_BOOL,
 	OPT_INT,
 	OPT_STR,
 	OPT_STRLIST,
 	OPT_ENUM,
 	OPT_SET,
-};
+}OPT_TYPE;
 
-enum opt_op {
+typedef enum
+{
 	OP_ON,
 	OP_OFF,
 	OP_SET,
 	OP_MODIFIED, /* for OPT_INT, OPT_SET and OPT_STR */
-};
+}OPT_OP;
 
-union optval_t {
+typedef union
+{
 	int bool_val;
 	int int_val;
 	char *str_val;
 	int enum_item;
 	int set_items;
-};
+}optval_t;
 
-typedef void (*opt_handler)(enum opt_op op, union optval_t val);
+typedef void (*opt_handler)(OPT_OP op, optval_t val);
 typedef void (*opt_print)(const char *msg, const char *description);
 
 /* handler can be NULL */
 void init_options(int *opts_changed_flag, opt_print handler);
 void reset_options_to_default(void);
 void clear_options(void);
-void add_option(const char *name, const char *abbr, enum opt_type type,
-		int val_count, const char **vals, opt_handler handler, union optval_t def);
-void set_option(const char *name, union optval_t val);
+void add_option(const char *name, const char *abbr, OPT_TYPE type,
+		int val_count, const char **vals, opt_handler handler, optval_t def);
+void set_option(const char *name, optval_t val);
 /* Returns non-zero on error */
 int set_options(const char *cmd);
 

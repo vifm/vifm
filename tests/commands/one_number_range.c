@@ -6,7 +6,7 @@
 #include "../../src/commands.h"
 #include "../../src/ui.h"
 
-extern struct cmds_conf cmds_conf;
+extern cmds_conf_t cmds_conf;
 
 static void
 setup_lwin(void)
@@ -73,7 +73,7 @@ teardown(void)
 static void
 one_number_range_test(void)
 {
-	struct cmd_info cmd_info = {
+	cmd_info_t cmd_info = {
 		.begin = -1, .end = -1
 	};
 
@@ -95,7 +95,7 @@ one_number_range_test(void)
 static void
 test_one_in_the_range(void)
 {
-	struct cmd_info cmd_info = {
+	cmd_info_t cmd_info = {
 		.begin = 0, .end = 0
 	};
 

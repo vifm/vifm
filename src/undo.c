@@ -33,35 +33,38 @@
 
 #include "undo.h"
 
-struct group_t {
+typedef struct
+{
 	char *msg;
 	int error;
 	int balance;
 	int can_undone;
 	int incomplete;
-};
+}group_t;
 
-struct op_t {
-	enum OPS op;
+typedef struct
+{
+	OPS op;
 	const char *src;        /* NULL, buf1 or buf2 */
 	const char *dst;        /* NULL, buf1 or buf2 */
 	void *data;             /* for uid_t, gid_t and mode_t */
 	const char *exists;     /* NULL, buf1 or buf2 */
 	const char *dont_exist; /* NULL, buf1 or buf2 */
-};
+}op_t;
 
-struct cmd_t {
+typedef struct cmd_t
+{
 	char *buf1;
 	char *buf2;
-	struct op_t do_op;
-	struct op_t undo_op;
+	op_t do_op;
+	op_t undo_op;
 
-	struct group_t *group;
+	group_t *group;
 	struct cmd_t *prev;
 	struct cmd_t *next;
-};
+}cmd_t;
 
-static enum OPS undo_op[] = {
+static OPS undo_op[] = {
 	OP_NONE,     /* OP_NONE */
 	OP_NONE,     /* OP_USR */
 	OP_NONE,     /* OP_REMOVE */
@@ -88,11 +91,12 @@ static int _gnuc_unused undo_op_size_guard[
 	(ARRAY_LEN(undo_op) == OP_COUNT) ? 1 : -1
 ];
 
-static enum {
+static enum
+{
 	OPER_1ST,
 	OPER_2ND,
 	OPER_NON,
-} opers[][8] = {
+}opers[][8] = {
 	/* 1st arg   2nd arg   exists    absent   */
 	{ OPER_NON, OPER_NON, OPER_NON, OPER_NON,    /* do   OP_NONE */
 		OPER_NON, OPER_NON, OPER_NON, OPER_NON, }, /* undo OP_NONE */
@@ -170,32 +174,30 @@ static int _gnuc_unused data_is_ptr_size_guard[
 static perform_func do_func;
 static const int *undo_levels;
 
-static struct cmd_t cmds = {
+static cmd_t cmds = {
 	.prev = &cmds,
 };
-static struct cmd_t *current = &cmds;
+static cmd_t *current = &cmds;
 
 static size_t trash_dir_len;
 
 static int group_opened;
 static long long next_group;
-static struct group_t *last_group;
+static group_t *last_group;
 static char *group_msg;
 
 static int command_count;
 
-static void init_cmd(struct cmd_t *cmd, enum OPS op, void *do_data,
-		void *undo_data);
-static void init_entry(struct cmd_t *cmd, const char **e, int type);
-static void remove_cmd(struct cmd_t *cmd);
+static void init_cmd(cmd_t *cmd, OPS op, void *do_data, void *undo_data);
+static void init_entry(cmd_t *cmd, const char **e, int type);
+static void remove_cmd(cmd_t *cmd);
 static int is_undo_group_possible(void);
 static int is_redo_group_possible(void);
-static int is_op_possible(const struct op_t *op);
-static void change_filename_in_trash(struct cmd_t *cmd, const char *filename);
-static void update_entry(struct cmd_t *cmd, const char **e, const char *old,
-		const char *new);
+static int is_op_possible(const op_t *op);
+static void change_filename_in_trash(cmd_t *cmd, const char *filename);
+static void update_entry(const char **e, const char *old, const char *new);
 static char ** fill_undolist_detail(char **list);
-static const char * get_op_desc(struct op_t op);
+static const char * get_op_desc(op_t op);
 static char **fill_undolist_nondetail(char **list);
 
 void
@@ -260,11 +262,11 @@ replace_group_msg(const char *msg)
 }
 
 int
-add_operation(enum OPS op, void *do_data, void *undo_data, const char *buf1,
+add_operation(OPS op, void *do_data, void *undo_data, const char *buf1,
 		const char *buf2)
 {
 	int mem_error;
-	struct cmd_t *cmd;
+	cmd_t *cmd;
 
 	assert(group_opened);
 	assert(buf1 != NULL);
@@ -295,7 +297,7 @@ add_operation(enum OPS op, void *do_data, void *undo_data, const char *buf1,
 	{
 		cmd->group = last_group;
 	}
-	else if((cmd->group = malloc(sizeof(struct group_t))) != NULL)
+	else if((cmd->group = malloc(sizeof(group_t))) != NULL)
 	{
 		cmd->group->msg = strdup(group_msg);
 		cmd->group->error = 0;
@@ -322,7 +324,7 @@ add_operation(enum OPS op, void *do_data, void *undo_data, const char *buf1,
 }
 
 static void
-init_cmd(struct cmd_t *cmd, enum OPS op, void *do_data, void *undo_data)
+init_cmd(cmd_t *cmd, OPS op, void *do_data, void *undo_data)
 {
 	cmd->do_op.op = op;
 	cmd->do_op.data = do_data;
@@ -339,7 +341,7 @@ init_cmd(struct cmd_t *cmd, enum OPS op, void *do_data, void *undo_data)
 }
 
 static void
-init_entry(struct cmd_t *cmd, const char **e, int type)
+init_entry(cmd_t *cmd, const char **e, int type)
 {
 	if(type == OPER_NON)
 		*e = NULL;
@@ -350,7 +352,7 @@ init_entry(struct cmd_t *cmd, const char **e, int type)
 }
 
 static void
-remove_cmd(struct cmd_t *cmd)
+remove_cmd(cmd_t *cmd)
 {
 	int last_cmd_in_group = 1;
 
@@ -470,7 +472,7 @@ undo_group(void)
 static int
 is_undo_group_possible(void)
 {
-	struct cmd_t *cmd = current;
+	cmd_t *cmd = current;
 	do
 	{
 		int ret;
@@ -543,7 +545,7 @@ redo_group(void)
 static int
 is_redo_group_possible(void)
 {
-	struct cmd_t *cmd = current;
+	cmd_t *cmd = current;
 	do
 	{
 		int ret;
@@ -565,7 +567,7 @@ is_redo_group_possible(void)
  * > 0 - possible
  */
 static int
-is_op_possible(const struct op_t *op)
+is_op_possible(const op_t *op)
 {
 	struct stat st;
 
@@ -585,7 +587,7 @@ is_op_possible(const struct op_t *op)
 }
 
 static void
-change_filename_in_trash(struct cmd_t *cmd, const char *filename)
+change_filename_in_trash(cmd_t *cmd, const char *filename)
 {
 	char *p;
 	int i;
@@ -604,20 +606,21 @@ change_filename_in_trash(struct cmd_t *cmd, const char *filename)
 	free(cmd->buf2);
 	cmd->buf2 = strdup(buf);
 
-	update_entry(cmd, &cmd->do_op.src, old, cmd->buf2);
-	update_entry(cmd, &cmd->do_op.dst, old, cmd->buf2);
-	update_entry(cmd, &cmd->do_op.exists, old, cmd->buf2);
-	update_entry(cmd, &cmd->do_op.dont_exist, old, cmd->buf2);
-	update_entry(cmd, &cmd->undo_op.src, old, cmd->buf2);
-	update_entry(cmd, &cmd->undo_op.dst, old, cmd->buf2);
-	update_entry(cmd, &cmd->undo_op.exists, old, cmd->buf2);
-	update_entry(cmd, &cmd->undo_op.dont_exist, old, cmd->buf2);
+	update_entry(&cmd->do_op.src, old, cmd->buf2);
+	update_entry(&cmd->do_op.dst, old, cmd->buf2);
+	update_entry(&cmd->do_op.exists, old, cmd->buf2);
+	update_entry(&cmd->do_op.dont_exist, old, cmd->buf2);
+	update_entry(&cmd->undo_op.src, old, cmd->buf2);
+	update_entry(&cmd->undo_op.dst, old, cmd->buf2);
+	update_entry(&cmd->undo_op.exists, old, cmd->buf2);
+	update_entry(&cmd->undo_op.dont_exist, old, cmd->buf2);
 }
 
 static void
-update_entry(struct cmd_t *cmd, const char **e, const char *old,
-		const char *new)
+update_entry(const char **e, const char *old, const char *new)
 {
+	if(*e == old)
+		*e = new;
 }
 
 char **
@@ -625,7 +628,7 @@ undolist(int detail)
 {
 	char **list, **p;
 	int group_count;
-	struct cmd_t *cmd;
+	cmd_t *cmd;
 
 	assert(!group_opened);
 
@@ -659,7 +662,7 @@ static char **
 fill_undolist_detail(char **list)
 {
 	int left;
-	struct cmd_t *cmd;
+	cmd_t *cmd;
 
 	left = *undo_levels;
 	cmd = cmds.prev;
@@ -695,7 +698,7 @@ fill_undolist_detail(char **list)
 }
 
 static const char *
-get_op_desc(struct op_t op)
+get_op_desc(op_t op)
 {
 	static char buf[64 + 2*PATH_MAX] = "";
 	switch(op.op)
@@ -756,7 +759,7 @@ static char **
 fill_undolist_nondetail(char **list)
 {
 	int left;
-	struct cmd_t *cmd;
+	cmd_t *cmd;
 
 	left = *undo_levels;
 	cmd = cmds.prev;
@@ -777,7 +780,7 @@ fill_undolist_nondetail(char **list)
 int
 get_undolist_pos(int detail)
 {
-	struct cmd_t *cur = cmds.prev;
+	cmd_t *cur = cmds.prev;
 	int result_group = 0;
 	int result_cmd = 0;
 
@@ -798,13 +801,13 @@ get_undolist_pos(int detail)
 void
 clean_cmds_with_trash(void)
 {
-	struct cmd_t *cur = cmds.prev;
+	cmd_t *cur = cmds.prev;
 
 	assert(!group_opened);
 
 	while(cur != &cmds)
 	{
-		struct cmd_t *prev = cur->prev;
+		cmd_t *prev = cur->prev;
 
 		if(cur->group->balance < 0)
 		{

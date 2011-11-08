@@ -49,7 +49,7 @@ enum
 	NOT_DEF = -8192,
 };
 
-struct cmd_info
+typedef struct
 {
 	int begin, end; /* range */
 	int emark, qmark, bg;
@@ -61,11 +61,11 @@ struct cmd_info
 	char **argv;
 
 	const char *cmd; /* for user defined commands */
-};
+}cmd_info_t;
 
-typedef int (*cmd_handler)(const struct cmd_info *cmd_info);
+typedef int (*cmd_handler)(const cmd_info_t *cmd_info);
 
-struct cmd_add
+typedef struct
 {
 	const char *name, *abbr;
 	int id; /* -1 here means that this command don't require completion of args */
@@ -80,9 +80,10 @@ struct cmd_add
 	int select; /* select files in range */
 	int bg; /* background */
 	int quote; /* whether need to take care of single and double quotes in args */
-};
+}cmd_add_t;
 
-struct cmds_conf {
+typedef struct
+{
 	void *inner; /* should be NULL on first call of init_cmds() */
 
 	int begin;
@@ -98,11 +99,11 @@ struct cmds_conf {
 	/* should allocate memory */
 	char *(*expand_envvars)(const char *str);
 	void (*post)(int id); /* called after successful processing command */
-	void (*select_range)(int id, const struct cmd_info *cmd_info);
-};
+	void (*select_range)(int id, const cmd_info_t *cmd_info);
+}cmds_conf_t;
 
-/* cmds_conf should be filled before calling this function */
-void init_cmds(int udf, struct cmds_conf *cmds_conf);
+/* cmds_conf_t should be filled before calling this function */
+void init_cmds(int udf, cmds_conf_t *cmds_conf);
 
 void reset_cmds(void);
 
@@ -113,12 +114,12 @@ int execute_cmd(const char *cmd);
 int get_cmd_id(const char *cmd);
 
 /* Returns command id */
-int get_cmd_info(const char *cmd, struct cmd_info *info);
+int get_cmd_info(const char *cmd, cmd_info_t *info);
 
 /* Returns offset in cmd, where completion elements should be pasted */
 int complete_cmd(const char *cmd);
 
-void add_builtin_commands(const struct cmd_add *cmds, int count);
+void add_builtin_commands(const cmd_add_t *cmds, int count);
 
 /* Last element is followed by a NULL */
 char ** list_udf(void);
@@ -126,7 +127,7 @@ char ** list_udf(void);
 char * list_udf_content(const char *beginning);
 
 #ifdef TEST
-int add_builtin_cmd(const char *name, int abbr, const struct cmd_add *conf);
+int add_builtin_cmd(const char *name, int abbr, const cmd_add_t *conf);
 char ** dispatch_line(const char *args, int *count, char sep, int regexp,
 		int quotes, int *last_arg, int *last_end);
 #endif

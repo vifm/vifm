@@ -35,11 +35,11 @@
 
 #include "color_scheme.h"
 
-enum Split
+typedef enum
 {
 	HSPLIT,
 	VSPLIT,
-};
+}SPLIT;
 
 typedef struct
 {
@@ -74,7 +74,7 @@ typedef struct
 	int auto_redraws;
 
 	int cs_base;
-	Col_scheme *cs;
+	col_scheme_t *cs;
 	char color_scheme[NAME_MAX];
 
 #ifdef HAVE_LIBGTK
@@ -90,11 +90,11 @@ typedef struct
 #endif
 
 	int scroll_bind_off;
-	enum Split split;
+	SPLIT split;
 	int splitter_pos;
-}Status;
+}status_t;
 
-extern Status curr_stats;
+extern status_t curr_stats;
 
 void init_status(void);
 

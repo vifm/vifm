@@ -50,23 +50,23 @@ static int origin_perms[13];
 static int adv_perms[3];
 
 static void leave_permissions_mode(void);
-static void cmd_ctrl_c(struct key_info, struct keys_info *);
-static void cmd_ctrl_m(struct key_info, struct keys_info *);
+static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void set_perm_string(FileView *view, const int *perms,
 		const int *origin_perms);
 static void chmod_file_in_list(FileView *view, int pos, const char *mode,
 		const char *inv_mode, int recurse_dirs);
 static void file_chmod(char *path, const char *mode, const char *inv_mode,
 		int recurse_dirs);
-static void cmd_G(struct key_info, struct keys_info *);
-static void cmd_gg(struct key_info, struct keys_info *);
-static void cmd_space(struct key_info, struct keys_info *);
-static void cmd_j(struct key_info, struct keys_info *);
-static void cmd_k(struct key_info, struct keys_info *);
+static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_space(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void inc_curr(void);
 static void dec_curr(void);
 
-static struct keys_add_info builtin_cmds[] = {
+static keys_add_info_t builtin_cmds[] = {
 	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	/* return */
 	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
@@ -297,13 +297,13 @@ leave_permissions_mode(void)
 }
 
 static void
-cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
 	leave_permissions_mode();
 }
 
 static void
-cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	char path[PATH_MAX];
 
@@ -449,7 +449,7 @@ file_chmod(char *path, const char *mode, const char *inv_mode, int recurse_dirs)
 }
 
 static void
-cmd_G(struct key_info key_info, struct keys_info *keys_info)
+cmd_G(key_info_t key_info, keys_info_t *keys_info)
 {
 	while(curr < bottom)
 	{
@@ -462,7 +462,7 @@ cmd_G(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_gg(struct key_info key_info, struct keys_info *keys_info)
+cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 {
 	while(curr > 3)
 	{
@@ -475,7 +475,7 @@ cmd_gg(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_space(struct key_info key_info, struct keys_info *keys_info)
+cmd_space(key_info_t key_info, keys_info_t *keys_info)
 {
 	char c;
 	changed = 1;
@@ -545,7 +545,7 @@ cmd_space(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_j(struct key_info key_info, struct keys_info *keys_info)
+cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
 	inc_curr();
 	permnum++;
@@ -561,7 +561,7 @@ cmd_j(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_k(struct key_info key_info, struct keys_info *keys_info)
+cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
 	dec_curr();
 	permnum--;

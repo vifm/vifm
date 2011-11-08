@@ -25,13 +25,12 @@
 
 #include "completion.h"
 
-enum state {
+static enum
+{
 	NOT_STARTED,
 	FILLING_LIST,
 	COMPLETING
-};
-
-static enum state state = NOT_STARTED;
+}state = NOT_STARTED;
 
 static char **lines;
 static int count;

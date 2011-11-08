@@ -41,7 +41,8 @@
 
 #include "color_scheme.h"
 
-enum {
+enum
+{
 	SORT_BY_EXTENSION = 1,
 	SORT_BY_NAME,
 	SORT_BY_GROUP_ID,
@@ -132,7 +133,7 @@ typedef struct _FileView
 	int history_pos;
 	history_t *history;
 
-	Col_scheme cs;
+	col_scheme_t cs;
 }FileView;
 
 FileView lwin;

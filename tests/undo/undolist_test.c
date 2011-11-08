@@ -50,7 +50,7 @@ test_detail_after_reset(void)
 }
 
 static int
-exec_func(enum OPS op, void *data, const char *src, const char *dst)
+exec_func(OPS op, void *data, const char *src, const char *dst)
 {
 	return 0;
 }

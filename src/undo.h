@@ -28,7 +28,7 @@ enum
 	SKIP_UNDO_REDO_OPERATION = -8192,
 };
 
-typedef int (*perform_func)(enum OPS op, void *data, const char *src,
+typedef int (*perform_func)(OPS op, void *data, const char *src,
 		const char *dst);
 
 /*
@@ -63,7 +63,7 @@ char * replace_group_msg(const char *msg);
 /*
  * Returns 0 on success
  */
-int add_operation(enum OPS op, void *do_data, void *undo_data, const char *buf1,
+int add_operation(OPS op, void *do_data, void *undo_data, const char *buf1,
 		const char *buf2);
 
 /*

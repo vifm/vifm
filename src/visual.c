@@ -40,53 +40,53 @@
 
 #include "visual.h"
 
-static void cmd_ctrl_a(struct key_info, struct keys_info *);
-static void cmd_ctrl_b(struct key_info, struct keys_info *);
-static void cmd_ctrl_c(struct key_info, struct keys_info *);
-static void cmd_ctrl_d(struct key_info, struct keys_info *);
-static void cmd_ctrl_e(struct key_info, struct keys_info *);
-static void cmd_ctrl_f(struct key_info, struct keys_info *);
-static void cmd_ctrl_l(struct key_info, struct keys_info *);
-static void cmd_ctrl_m(struct key_info, struct keys_info *);
-static void cmd_ctrl_u(struct key_info, struct keys_info *);
-static void cmd_ctrl_x(struct key_info, struct keys_info *);
-static void cmd_ctrl_y(struct key_info, struct keys_info *);
-static void cmd_quote(struct key_info, struct keys_info *);
-static void cmd_percent(struct key_info, struct keys_info *);
-static void cmd_comma(struct key_info, struct keys_info *);
-static void cmd_colon(struct key_info, struct keys_info *);
-static void cmd_semicolon(struct key_info, struct keys_info *);
-static void cmd_slash(struct key_info, struct keys_info *);
-static void cmd_question(struct key_info, struct keys_info *);
-static void cmd_C(struct key_info, struct keys_info *);
-static void cmd_D(struct key_info, struct keys_info *);
-static void cmd_F(struct key_info, struct keys_info *);
-static void cmd_G(struct key_info, struct keys_info *);
-static void cmd_H(struct key_info, struct keys_info *);
-static void cmd_L(struct key_info, struct keys_info *);
-static void cmd_M(struct key_info, struct keys_info *);
-static void cmd_N(struct key_info, struct keys_info *);
-static void cmd_O(struct key_info, struct keys_info *);
-static void cmd_d(struct key_info, struct keys_info *);
-static void delete(struct key_info key_info, int use_trash);
-static void cmd_cp(struct key_info, struct keys_info *);
-static void cmd_f(struct key_info, struct keys_info *);
-static void cmd_gg(struct key_info, struct keys_info *);
+static void cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_comma(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_colon(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_semicolon(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_question(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_C(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_D(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_F(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_H(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_L(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_M(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_O(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_d(key_info_t key_info, keys_info_t *keys_info);
+static void delete(key_info_t key_info, int use_trash);
+static void cmd_cp(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void goto_pos(int pos);
-static void cmd_gU(struct key_info, struct keys_info *);
-static void cmd_gu(struct key_info, struct keys_info *);
-static void cmd_gv(struct key_info, struct keys_info *);
-static void cmd_i(struct key_info, struct keys_info *);
-static void cmd_j(struct key_info, struct keys_info *);
-static void cmd_k(struct key_info, struct keys_info *);
-static void cmd_l(struct key_info, struct keys_info *);
-static void cmd_m(struct key_info, struct keys_info *);
-static void cmd_n(struct key_info, struct keys_info *);
-static void search(struct key_info, int backward);
-static void cmd_y(struct key_info, struct keys_info *);
-static void cmd_zf(struct key_info, struct keys_info *);
-static void cmd_left_paren(struct key_info, struct keys_info *);
-static void cmd_right_paren(struct key_info, struct keys_info *);
+static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_gu(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_gv(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_l(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_m(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
+static void search(key_info_t key_info, int backward);
+static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_zf(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_left_paren(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_right_paren(key_info_t key_info, keys_info_t *keys_info);
 static void find_goto(int ch, int count, int backward);
 static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
@@ -102,7 +102,7 @@ static int last_fast_search_backward = -1;
 static int upwards_range;
 static int search_repeat;
 
-static struct keys_add_info builtin_cmds[] = {
+static keys_add_info_t builtin_cmds[] = {
 	{L"\x01", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_a}}},
 	{L"\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_b}}},
 	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
@@ -199,7 +199,7 @@ enter_visual_mode(int restore_selection)
 
 	if(restore_selection)
 	{
-		struct key_info ki;
+		key_info_t ki;
 		cmd_gv(ki, NULL);
 	}
 	else if(strcmp(view->dir_entry[view->list_pos].name, "../"))
@@ -261,7 +261,7 @@ update_marks(FileView *view)
 }
 
 static void
-cmd_ctrl_a(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
@@ -270,7 +270,7 @@ cmd_ctrl_a(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
 	int l = view->window_rows - 1;
 	int pos;
@@ -287,14 +287,14 @@ cmd_ctrl_b(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_c(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
 	leave_visual_mode(0, 0, 1);
 }
 
 static void
-cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	int pos = view->list_pos;
 	int s = MIN((view->window_rows + 1)/2 - 1, cfg.scroll_off);
@@ -305,7 +305,7 @@ cmd_ctrl_d(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_e(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
 	int off;
 
@@ -322,7 +322,7 @@ cmd_ctrl_e(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
 	int l = view->window_rows - 1;
 	int pos;
@@ -339,14 +339,14 @@ cmd_ctrl_f(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_l(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {
 	redraw_window();
 	curs_set(FALSE);
 }
 
 static void
-cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
 	if(*mode == VISUAL_MODE)
@@ -354,7 +354,7 @@ cmd_ctrl_m(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
 	int pos = view->list_pos;
 	int s = MIN((view->window_rows + 1)/2 - 1, cfg.scroll_off);
@@ -369,7 +369,7 @@ cmd_ctrl_u(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_x(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
@@ -378,7 +378,7 @@ cmd_ctrl_x(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
+cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 {
 	int off;
 
@@ -393,7 +393,7 @@ cmd_ctrl_y(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_C(struct key_info key_info, struct keys_info *keys_info)
+cmd_C(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
@@ -402,13 +402,13 @@ cmd_C(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_D(struct key_info key_info, struct keys_info *keys_info)
+cmd_D(key_info_t key_info, keys_info_t *keys_info)
 {
 	delete(key_info, 0);
 }
 
 static void
-cmd_F(struct key_info key_info, struct keys_info *keys_info)
+cmd_F(key_info_t key_info, keys_info_t *keys_info)
 {
 	last_fast_search_char = key_info.multi;
 	last_fast_search_backward = 1;
@@ -419,7 +419,7 @@ cmd_F(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_G(struct key_info key_info, struct keys_info *keys_info)
+cmd_G(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = view->list_rows;
@@ -427,7 +427,7 @@ cmd_G(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_H(struct key_info key_info, struct keys_info *keys_info)
+cmd_H(key_info_t key_info, keys_info_t *keys_info)
 {
 	int off = MAX(cfg.scroll_off, 0);
 	if(off > view->window_rows/2)
@@ -440,7 +440,7 @@ cmd_H(struct key_info key_info, struct keys_info *keys_info)
 
 /* move to last line of window, selecting as we go */
 static void
-cmd_L(struct key_info key_info, struct keys_info *keys_info)
+cmd_L(key_info_t key_info, keys_info_t *keys_info)
 {
 	int off = MAX(cfg.scroll_off, 0);
 	if(off > view->window_rows/2)
@@ -453,7 +453,7 @@ cmd_L(struct key_info key_info, struct keys_info *keys_info)
 
 /* move to middle of window, selecting from start position to there */
 static void
-cmd_M(struct key_info key_info, struct keys_info *keys_info)
+cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
 	int pos1 = view->list_rows/2;
 	int pos2 = view->top_line + view->window_rows/2;
@@ -461,13 +461,13 @@ cmd_M(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_N(struct key_info key_info, struct keys_info *keys_info)
+cmd_N(key_info_t key_info, keys_info_t *keys_info)
 {
 	search(key_info, !curr_stats.last_search_backward);
 }
 
 static void
-cmd_O(struct key_info key_info, struct keys_info *keys_info)
+cmd_O(key_info_t key_info, keys_info_t *keys_info)
 {
 	int t = start_pos;
 	start_pos = view->list_pos;
@@ -476,7 +476,7 @@ cmd_O(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_quote(struct key_info key_info, struct keys_info *keys_info)
+cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 {
 	int pos;
 	pos = check_mark_directory(view, key_info.multi);
@@ -486,7 +486,7 @@ cmd_quote(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_percent(struct key_info key_info, struct keys_info *keys_info)
+cmd_percent(key_info_t key_info, keys_info_t *keys_info)
 {
 	int line;
 	if(key_info.count == NO_COUNT_GIVEN)
@@ -498,7 +498,7 @@ cmd_percent(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_comma(struct key_info key_info, struct keys_info *keys_info)
+cmd_comma(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(last_fast_search_backward == -1)
 		return;
@@ -509,14 +509,14 @@ cmd_comma(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_colon(struct key_info key_info, struct keys_info *keys_info)
+cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
 	enter_cmdline_mode(CMD_SUBMODE, L"", NULL);
 }
 
 static void
-cmd_semicolon(struct key_info key_info, struct keys_info *keys_info)
+cmd_semicolon(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(last_fast_search_backward == -1)
 		return;
@@ -528,7 +528,7 @@ cmd_semicolon(struct key_info key_info, struct keys_info *keys_info)
 
 /* Search forward. */
 static void
-cmd_slash(struct key_info key_info, struct keys_info *keys_info)
+cmd_slash(key_info_t key_info, keys_info_t *keys_info)
 {
 	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
 	curr_stats.last_search_backward = 0;
@@ -537,7 +537,7 @@ cmd_slash(struct key_info key_info, struct keys_info *keys_info)
 
 /* Search backward. */
 static void
-cmd_question(struct key_info key_info, struct keys_info *keys_info)
+cmd_question(key_info_t key_info, keys_info_t *keys_info)
 {
 	search_repeat = (key_info.count == NO_COUNT_GIVEN) ? 1 : key_info.count;
 	curr_stats.last_search_backward = 1;
@@ -545,13 +545,13 @@ cmd_question(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_d(struct key_info key_info, struct keys_info *keys_info)
+cmd_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	delete(key_info, 1);
 }
 
 static void
-delete(struct key_info key_info, int use_trash)
+delete(key_info_t key_info, int use_trash)
 {
 	int save_msg;
 	if(key_info.reg == NO_REG_GIVEN)
@@ -572,7 +572,7 @@ delete(struct key_info key_info, int use_trash)
 }
 
 static void
-cmd_f(struct key_info key_info, struct keys_info *keys_info)
+cmd_f(key_info_t key_info, keys_info_t *keys_info)
 {
 	last_fast_search_char = key_info.multi;
 	last_fast_search_backward = 0;
@@ -584,7 +584,7 @@ cmd_f(struct key_info key_info, struct keys_info *keys_info)
 
 /* Change permissions. */
 static void
-cmd_cp(struct key_info key_info, struct keys_info *keys_info)
+cmd_cp(key_info_t key_info, keys_info_t *keys_info)
 {
 	int ub;
 
@@ -598,7 +598,7 @@ cmd_cp(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_gg(struct key_info key_info, struct keys_info *keys_info)
+cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
@@ -625,7 +625,7 @@ goto_pos(int pos)
 }
 
 static void
-cmd_gU(struct key_info key_info, struct keys_info *keys_info)
+cmd_gU(key_info_t key_info, keys_info_t *keys_info)
 {
 	int save_msg;
 	save_msg = change_case(view, 1, 0, NULL);
@@ -634,7 +634,7 @@ cmd_gU(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_gu(struct key_info key_info, struct keys_info *keys_info)
+cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 {
 	int save_msg;
 	save_msg = change_case(view, 0, 0, NULL);
@@ -643,7 +643,7 @@ cmd_gu(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_gv(struct key_info key_info, struct keys_info *keys_info)
+cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 {
 	int x;
 	int ub = check_mark_directory(view, '<');
@@ -676,14 +676,14 @@ cmd_gv(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_i(struct key_info key_info, struct keys_info *keys_info)
+cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
 	handle_file(curr_view, 1, 0);
 	leave_visual_mode(curr_stats.save_msg, 1, 1);
 }
 
 static void
-cmd_j(struct key_info key_info, struct keys_info *keys_info)
+cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
@@ -691,7 +691,7 @@ cmd_j(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_k(struct key_info key_info, struct keys_info *keys_info)
+cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
@@ -699,7 +699,7 @@ cmd_k(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_l(struct key_info key_info, struct keys_info *keys_info)
+cmd_l(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_marks(view);
 	leave_visual_mode(curr_stats.save_msg, 1, 0);
@@ -710,20 +710,20 @@ cmd_l(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_m(struct key_info key_info, struct keys_info *keys_info)
+cmd_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	add_bookmark(key_info.multi, view->curr_dir,
 			get_current_file_name(view));
 }
 
 static void
-cmd_n(struct key_info key_info, struct keys_info *keys_info)
+cmd_n(key_info_t key_info, keys_info_t *keys_info)
 {
 	search(key_info, curr_stats.last_search_backward);
 }
 
 static void
-search(struct key_info key_info, int backward)
+search(key_info_t key_info, int backward)
 {
 	int found;
 	if(cfg.search_history_num < 0)
@@ -761,7 +761,7 @@ search(struct key_info key_info, int backward)
 }
 
 static void
-cmd_y(struct key_info key_info, struct keys_info *keys_info)
+cmd_y(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
@@ -779,21 +779,21 @@ cmd_y(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-cmd_zf(struct key_info key_info, struct keys_info *keys_info)
+cmd_zf(key_info_t key_info, keys_info_t *keys_info)
 {
 	filter_selected_files(view);
 	leave_visual_mode(0, 1, 1);
 }
 
 static void
-cmd_left_paren(struct key_info key_info, struct keys_info *keys_info)
+cmd_left_paren(key_info_t key_info, keys_info_t *keys_info)
 {
 	int pos = cmd_paren(0, view->list_rows, -1);
 	goto_pos(pos);
 }
 
 static void
-cmd_right_paren(struct key_info key_info, struct keys_info *keys_info)
+cmd_right_paren(key_info_t key_info, keys_info_t *keys_info)
 {
 	int pos = cmd_paren(-1, view->list_rows - 1, +1);
 	goto_pos(pos);

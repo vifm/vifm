@@ -8,7 +8,7 @@ extern const char *value;
 static void
 test_colon(void)
 {
-	union optval_t val = { .str_val = "/home/tmp" };
+	optval_t val = { .str_val = "/home/tmp" };
 	fastrun = 0;
 	set_option("fusehome", val);
 

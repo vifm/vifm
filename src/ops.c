@@ -80,7 +80,7 @@ static int _gnuc_unused op_funcs_size_guard[
 ];
 
 int
-perform_operation(enum OPS op, void *data, const char *src, const char *dst)
+perform_operation(OPS op, void *data, const char *src, const char *dst)
 {
 	return op_funcs[op](data, src, dst);
 }
@@ -387,7 +387,8 @@ op_mkdir(void *data, const char *src, const char *dst)
 			*p = t;
 			if((p = strchr(p + 1, '/')) == NULL)
 				p = (char *)src + strlen(src);
-		} while(t != '\0');
+		}
+		while(t != '\0');
 		return 0;
 	}
 #endif

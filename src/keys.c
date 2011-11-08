@@ -28,49 +28,47 @@
 
 #include "keys.h"
 
-struct key_chunk_t
+typedef struct key_chunk_t
 {
 	wchar_t key;
 	int no_remap;
 	size_t children_count;
 	int enters; /* to prevent stack overflow */
-	struct key_t conf;
+	key_conf_t conf;
 	struct key_chunk_t *child;
 	struct key_chunk_t *parent;
 	struct key_chunk_t *prev, *next;
-};
+}key_chunk_t;
 
-static struct key_chunk_t *builtin_cmds_root;
-static struct key_chunk_t *selectors_root;
-static struct key_chunk_t *user_cmds_root;
+static key_chunk_t *builtin_cmds_root;
+static key_chunk_t *selectors_root;
+static key_chunk_t *user_cmds_root;
 static int max_modes;
 static int *mode;
 static int *mode_flags;
 static default_handler *def_handlers;
 static size_t counter;
 
-static void free_tree(struct key_chunk_t *root);
+static void free_tree(key_chunk_t *root);
 static int execute_keys_general(const wchar_t *keys, int timed_out, int mapped,
 		int no_remap);
-static int execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info,
+static int execute_keys_inner(const wchar_t *keys, keys_info_t *keys_info,
 		int no_remap);
-static int execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
-		struct key_chunk_t *root, struct key_info key_info, int no_remap);
-static int contains_chain(struct key_chunk_t *root, const wchar_t *begin,
+static int execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
+		key_chunk_t *root, key_info_t key_info, int no_remap);
+static int contains_chain(key_chunk_t *root, const wchar_t *begin,
 		const wchar_t *end);
-static int execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
-		struct key_info *key_info, struct keys_info *keys_info, int has_duplicate,
+static int execute_next_keys(key_chunk_t *curr, const wchar_t *keys,
+		key_info_t *key_info, keys_info_t *keys_info, int has_duplicate,
 		int no_remap);
-static int run_cmd(struct key_info key_info, struct keys_info *keys_info,
-		struct key_chunk_t *curr, const wchar_t *keys);
-static void init_keys_info(struct keys_info *keys_info, int mapped);
+static int run_cmd(key_info_t key_info, keys_info_t *keys_info,
+		key_chunk_t *curr, const wchar_t *keys);
+static void init_keys_info(keys_info_t *keys_info, int mapped);
 static const wchar_t* get_reg(const wchar_t *keys, int *reg);
 static const wchar_t* get_count(const wchar_t *keys, int *count);
-static struct key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
-static struct key_chunk_t* add_keys_inner(struct key_chunk_t *root,
-		const wchar_t *keys);
-static int fill_list(const struct key_chunk_t *curr, size_t len,
-		wchar_t **list);
+static key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
+static key_chunk_t* add_keys_inner(key_chunk_t *root, const wchar_t *keys);
+static int fill_list(const key_chunk_t *curr, size_t len, wchar_t **list);
 
 void
 init_keys(int modes_count, int *key_mode, int *key_mode_flags)
@@ -130,7 +128,7 @@ clear_user_keys(void)
 }
 
 static void
-free_tree(struct key_chunk_t *root)
+free_tree(key_chunk_t *root)
 {
 	if(root->child != NULL)
 	{
@@ -170,7 +168,7 @@ execute_keys_general(const wchar_t *keys, int timed_out, int mapped,
 		int no_remap)
 {
 	int result;
-	struct keys_info keys_info;
+	keys_info_t keys_info;
 
 	if(keys[0] == L'\0')
 		return KEYS_UNKNOWN;
@@ -187,11 +185,10 @@ execute_keys_general(const wchar_t *keys, int timed_out, int mapped,
 }
 
 static int
-execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info,
-		int no_remap)
+execute_keys_inner(const wchar_t *keys, keys_info_t *keys_info, int no_remap)
 {
-	struct key_info key_info;
-	struct key_chunk_t *root;
+	key_info_t key_info;
+	key_chunk_t *root;
 	int result;
 
 	keys = get_reg(keys, &key_info.reg);
@@ -215,10 +212,10 @@ execute_keys_inner(const wchar_t *keys, struct keys_info *keys_info,
 }
 
 static int
-execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
-		struct key_chunk_t *root, struct key_info key_info, int no_remap)
+execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
+		key_chunk_t *root, key_info_t key_info, int no_remap)
 {
-	struct key_chunk_t *curr;
+	key_chunk_t *curr;
 	const wchar_t *keys_start = keys;
 	int has_duplicate;
 	int result;
@@ -226,7 +223,7 @@ execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
 	curr = root;
 	while(*keys != L'\0')
 	{
-		struct key_chunk_t *p;
+		key_chunk_t *p;
 		int nim = 0;
 		p = curr->child;
 		while(p != NULL && p->key < *keys)
@@ -304,10 +301,9 @@ execute_keys_loop(const wchar_t *keys, struct keys_info *keys_info,
 }
 
 static int
-contains_chain(struct key_chunk_t *root, const wchar_t *begin,
-		const wchar_t *end)
+contains_chain(key_chunk_t *root, const wchar_t *begin, const wchar_t *end)
 {
-	struct key_chunk_t *curr;
+	key_chunk_t *curr;
 
 	if(begin == end)
 		return 0;
@@ -315,7 +311,7 @@ contains_chain(struct key_chunk_t *root, const wchar_t *begin,
 	curr = root;
 	while(begin != end)
 	{
-		struct key_chunk_t *p;
+		key_chunk_t *p;
 
 		p = curr->child;
 		while(p != NULL && p->key < *begin)
@@ -332,9 +328,8 @@ contains_chain(struct key_chunk_t *root, const wchar_t *begin,
 }
 
 static int
-execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
-		struct key_info *key_info, struct keys_info *keys_info, int has_duplicate,
-		int no_remap)
+execute_next_keys(key_chunk_t *curr, const wchar_t *keys, key_info_t *key_info,
+		keys_info_t *keys_info, int has_duplicate, int no_remap)
 {
 	if(*keys == L'\0')
 	{
@@ -373,22 +368,22 @@ execute_next_keys(struct key_chunk_t *curr, const wchar_t *keys,
 }
 
 static int
-run_cmd(struct key_info key_info, struct keys_info *keys_info,
-		struct key_chunk_t *curr, const wchar_t *keys)
+run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
+		const wchar_t *keys)
 {
-	struct key_t *key_t = &curr->conf;
+	key_conf_t *info = &curr->conf;
 
-	if(key_t->type != USER_CMD && key_t->type != BUILTIN_CMD)
+	if(info->type != USER_CMD && info->type != BUILTIN_CMD)
 	{
-		if(key_t->data.handler == NULL)
+		if(info->data.handler == NULL)
 			return KEYS_UNKNOWN;
-		key_t->data.handler(key_info, keys_info);
+		info->data.handler(key_info, keys_info);
 		return 0;
 	}
 	else
 	{
 		int result = (def_handlers[*mode] == NULL) ? KEYS_UNKNOWN : 0;
-		struct keys_info ki;
+		keys_info_t ki;
 		if(curr->conf.followed == FOLLOWED_BY_SELECTOR)
 			ki = *keys_info;
 		else
@@ -396,7 +391,7 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 
 		if(curr->enters == 0)
 		{
-			wchar_t buf[16 + wcslen(key_t->data.cmd) + 1 + wcslen(keys) + 1];
+			wchar_t buf[16 + wcslen(info->data.cmd) + 1 + wcslen(keys) + 1];
 
 			buf[0] = '\0';
 			if(key_info.reg != NO_REG_GIVEN)
@@ -412,7 +407,7 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 #else
 				swprintf(buf + wcslen(buf), L"%d", key_info.count);
 #endif
-			wcscat(buf, key_t->data.cmd);
+			wcscat(buf, info->data.cmd);
 			wcscat(buf, keys);
 
 			curr->enters = 1;
@@ -431,16 +426,16 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 		{
 			if(curr->enters == 0)
 			{
-				result = def_handlers[*mode](key_t->data.cmd[0]);
+				result = def_handlers[*mode](info->data.cmd[0]);
 				curr->enters = 1;
-				execute_keys_general(key_t->data.cmd + 1, 0, 1, curr->no_remap);
+				execute_keys_general(info->data.cmd + 1, 0, 1, curr->no_remap);
 				curr->enters = 0;
 			}
 			else
 			{
 				int i;
-				for(i = 0; key_t->data.cmd[i] != '\0'; i++)
-					result = def_handlers[*mode](key_t->data.cmd[i]);
+				for(i = 0; info->data.cmd[i] != '\0'; i++)
+					result = def_handlers[*mode](info->data.cmd[i]);
 			}
 		}
 		return result;
@@ -448,7 +443,7 @@ run_cmd(struct key_info key_info, struct keys_info *keys_info,
 }
 
 static void
-init_keys_info(struct keys_info *keys_info, int mapped)
+init_keys_info(keys_info_t *keys_info, int mapped)
 {
 	keys_info->selector = 0;
 	keys_info->count = 0;
@@ -501,17 +496,17 @@ get_count(const wchar_t *keys, int *count)
 #ifndef TEST
 static
 #endif
-struct key_t*
+key_conf_t *
 add_cmd(const wchar_t *keys, int mode)
 {
-	struct key_chunk_t *curr = add_keys_inner(&builtin_cmds_root[mode], keys);
+	key_chunk_t *curr = add_keys_inner(&builtin_cmds_root[mode], keys);
 	return &curr->conf;
 }
 
 int
 add_user_keys(const wchar_t *keys, const wchar_t *cmd, int mode, int no_r)
 {
-	struct key_chunk_t *curr;
+	key_chunk_t *curr;
 
 	curr = add_keys_inner(&user_cmds_root[mode], keys);
 	if(curr->conf.type == USER_CMD)
@@ -532,7 +527,7 @@ has_user_keys(const wchar_t *keys, int mode)
 int
 remove_user_keys(const wchar_t *keys, int mode)
 {
-	struct key_chunk_t *curr, *p;
+	key_chunk_t *curr, *p;
 
 	if((curr = find_user_keys(keys, mode)) == NULL)
 		return -1;
@@ -553,24 +548,25 @@ remove_user_keys(const wchar_t *keys, int mode)
 
 	do
 	{
-		struct key_chunk_t *parent = curr->parent;
+		key_chunk_t *parent = curr->parent;
 		if(curr->prev != NULL)
 			curr->prev->next = curr->next;
 		else
 			parent->child = curr->next;
 		free(curr);
 		curr = parent;
-	} while(curr->parent != NULL && curr->parent->conf.data.handler == NULL &&
+	}
+	while(curr->parent != NULL && curr->parent->conf.data.handler == NULL &&
 			curr->parent->conf.type == BUILTIN_WAIT_POINT &&
 			curr->parent->children_count == 0);
 
 	return 0;
 }
 
-static struct key_chunk_t *
+static key_chunk_t *
 find_user_keys(const wchar_t *keys, int mode)
 {
-	struct key_chunk_t *curr = &user_cmds_root[mode], *p;
+	key_chunk_t *curr = &user_cmds_root[mode], *p;
 	while(*keys != L'\0')
 	{
 		p = curr->child;
@@ -590,60 +586,60 @@ find_user_keys(const wchar_t *keys, int mode)
 #ifndef TEST
 static
 #endif
-struct key_t *
+key_conf_t *
 add_selector(const wchar_t *keys, int mode)
 {
-	struct key_chunk_t *curr = add_keys_inner(&selectors_root[mode], keys);
+	key_chunk_t *curr = add_keys_inner(&selectors_root[mode], keys);
 	return &curr->conf;
 }
 
 int
-add_cmds(struct keys_add_info *cmds, size_t len, int mode)
+add_cmds(keys_add_info_t *cmds, size_t len, int mode)
 {
 	int result = 0;
 	size_t i;
 
 	for(i = 0; i < len; i++)
 	{
-		struct key_t *curr;
+		key_conf_t *curr;
 
 		curr = add_cmd(cmds[i].keys, mode);
 		if(curr == NULL)
 			result = -1;
 		else
-			*curr = cmds[i].key_t;
+			*curr = cmds[i].info;
 	}
 
 	return result;
 }
 
 int
-add_selectors(struct keys_add_info *cmds, size_t len, int mode)
+add_selectors(keys_add_info_t *cmds, size_t len, int mode)
 {
 	int result = 0;
 	size_t i;
 
 	for(i = 0; i < len; i++)
 	{
-		struct key_t *curr;
+		key_conf_t *curr;
 
 		curr = add_selector(cmds[i].keys, mode);
 		if(curr == NULL)
 			result = -1;
 		else
-			*curr = cmds[i].key_t;
+			*curr = cmds[i].info;
 	}
 
 	return result;
 }
 
-static struct key_chunk_t*
-add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
+static key_chunk_t *
+add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 {
-	struct key_chunk_t *curr = root;
+	key_chunk_t *curr = root;
 	while(*keys != L'\0')
 	{
-		struct key_chunk_t *prev, *p;
+		key_chunk_t *prev, *p;
 		prev = NULL;
 		p = curr->child;
 		while(p != NULL && p->key < *keys)
@@ -653,7 +649,7 @@ add_keys_inner(struct key_chunk_t *root, const wchar_t *keys)
 		}
 		if(p == NULL || p->key != *keys)
 		{
-			struct key_chunk_t *c = malloc(sizeof(*c));
+			key_chunk_t *c = malloc(sizeof(*c));
 			if(c == NULL)
 				return NULL;
 			c->key = *keys;
@@ -746,10 +742,10 @@ list_cmds(int mode)
 }
 
 static int
-fill_list(const struct key_chunk_t *curr, size_t len, wchar_t **list)
+fill_list(const key_chunk_t *curr, size_t len, wchar_t **list)
 {
 	size_t i;
-	const struct key_chunk_t *child;
+	const key_chunk_t *child;
 	size_t count;
 
 	count = curr->children_count;

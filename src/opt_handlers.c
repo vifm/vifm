@@ -37,43 +37,43 @@
 static void load_options_defaults(void);
 static void add_options(void);
 static void print_func(const char *msg, const char *description);
-static void autochpos_handler(enum opt_op op, union optval_t val);
-static void confirm_handler(enum opt_op op, union optval_t val);
-static void cpoptions_handler(enum opt_op op, union optval_t val);
-static void fastrun_handler(enum opt_op op, union optval_t val);
-static void followlinks_handler(enum opt_op op, union optval_t val);
-static void fusehome_handler(enum opt_op op, union optval_t val);
-static void gdefault_handler(enum opt_op op, union optval_t val);
-static void history_handler(enum opt_op op, union optval_t val);
-static void hlsearch_handler(enum opt_op op, union optval_t val);
-static void iec_handler(enum opt_op op, union optval_t val);
-static void ignorecase_handler(enum opt_op op, union optval_t val);
-static void incsearch_handler(enum opt_op op, union optval_t val);
-static void laststatus_handler(enum opt_op op, union optval_t val);
+static void autochpos_handler(OPT_OP op, optval_t val);
+static void confirm_handler(OPT_OP op, optval_t val);
+static void cpoptions_handler(OPT_OP op, optval_t val);
+static void fastrun_handler(OPT_OP op, optval_t val);
+static void followlinks_handler(OPT_OP op, optval_t val);
+static void fusehome_handler(OPT_OP op, optval_t val);
+static void gdefault_handler(OPT_OP op, optval_t val);
+static void history_handler(OPT_OP op, optval_t val);
+static void hlsearch_handler(OPT_OP op, optval_t val);
+static void iec_handler(OPT_OP op, optval_t val);
+static void ignorecase_handler(OPT_OP op, optval_t val);
+static void incsearch_handler(OPT_OP op, optval_t val);
+static void laststatus_handler(OPT_OP op, optval_t val);
 static void scroll_line_down(FileView *view);
-static void runexec_handler(enum opt_op op, union optval_t val);
-static void scrollbind_handler(enum opt_op op, union optval_t val);
-static void scrolloff_handler(enum opt_op op, union optval_t val);
-static void shell_handler(enum opt_op op, union optval_t val);
+static void runexec_handler(OPT_OP op, optval_t val);
+static void scrollbind_handler(OPT_OP op, optval_t val);
+static void scrolloff_handler(OPT_OP op, optval_t val);
+static void shell_handler(OPT_OP op, optval_t val);
 #ifndef _WIN32
-static void slowfs_handler(enum opt_op op, union optval_t val);
+static void slowfs_handler(OPT_OP op, optval_t val);
 #endif
-static void smartcase_handler(enum opt_op op, union optval_t val);
-static void sortnumbers_handler(enum opt_op op, union optval_t val);
-static void sort_handler(enum opt_op op, union optval_t val);
-static void sortorder_handler(enum opt_op op, union optval_t val);
-static void tabstop_handler(enum opt_op op, union optval_t val);
-static void timefmt_handler(enum opt_op op, union optval_t val);
-static void timeoutlen_handler(enum opt_op op, union optval_t val);
-static void trash_handler(enum opt_op op, union optval_t val);
-static void undolevels_handler(enum opt_op op, union optval_t val);
-static void vicmd_handler(enum opt_op op, union optval_t val);
-static void vixcmd_handler(enum opt_op op, union optval_t val);
-static void vifminfo_handler(enum opt_op op, union optval_t val);
-static void vimhelp_handler(enum opt_op op, union optval_t val);
-static void wildmenu_handler(enum opt_op op, union optval_t val);
-static void wrap_handler(enum opt_op op, union optval_t val);
-static void wrapscan_handler(enum opt_op op, union optval_t val);
+static void smartcase_handler(OPT_OP op, optval_t val);
+static void sortnumbers_handler(OPT_OP op, optval_t val);
+static void sort_handler(OPT_OP op, optval_t val);
+static void sortorder_handler(OPT_OP op, optval_t val);
+static void tabstop_handler(OPT_OP op, optval_t val);
+static void timefmt_handler(OPT_OP op, optval_t val);
+static void timeoutlen_handler(OPT_OP op, optval_t val);
+static void trash_handler(OPT_OP op, optval_t val);
+static void undolevels_handler(OPT_OP op, optval_t val);
+static void vicmd_handler(OPT_OP op, optval_t val);
+static void vixcmd_handler(OPT_OP op, optval_t val);
+static void vifminfo_handler(OPT_OP op, optval_t val);
+static void vimhelp_handler(OPT_OP op, optval_t val);
+static void wildmenu_handler(OPT_OP op, optval_t val);
+static void wrap_handler(OPT_OP op, optval_t val);
+static void wrapscan_handler(OPT_OP op, optval_t val);
 
 static int save_msg;
 static char print_buf[320*80];
@@ -130,15 +130,16 @@ static const char * vifminfo_set[] = {
 	"phistory",
 };
 
-static struct {
+static struct
+{
 	const char *name;
 	const char *abbr;
-	enum opt_type type;
+	OPT_TYPE type;
 	int val_count;
 	const char **vals;
 	opt_handler handler;
-	union optval_t val;
-} options[] = {
+	optval_t val;
+}options[] = {
 	/* global options */
 	{ "autochpos",   "",     OPT_BOOL,    0,                          NULL,            &autochpos_handler,   },
 	{ "confirm",     "cf",   OPT_BOOL,    0,                          NULL,            &confirm_handler,     },
@@ -260,7 +261,7 @@ load_local_options(FileView *view)
 void
 load_sort(FileView *view)
 {
-	union optval_t val;
+	optval_t val;
 	char buf[64] = "";
 	int j, i;
 
@@ -332,7 +333,7 @@ print_func(const char *msg, const char *description)
 }
 
 static void
-autochpos_handler(enum opt_op op, union optval_t val)
+autochpos_handler(OPT_OP op, optval_t val)
 {
 	cfg.auto_ch_pos = val.bool_val;
 	if(curr_stats.vifm_started < 2)
@@ -343,13 +344,13 @@ autochpos_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-confirm_handler(enum opt_op op, union optval_t val)
+confirm_handler(OPT_OP op, optval_t val)
 {
 	cfg.confirm = val.bool_val;
 }
 
 static void
-cpoptions_handler(enum opt_op op, union optval_t val)
+cpoptions_handler(OPT_OP op, optval_t val)
 {
 	const char VALID[] = "s";
 	char buf[ARRAY_LEN(VALID)];
@@ -386,26 +387,26 @@ cpoptions_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-fastrun_handler(enum opt_op op, union optval_t val)
+fastrun_handler(OPT_OP op, optval_t val)
 {
 	cfg.fast_run = val.bool_val;
 }
 
 static void
-followlinks_handler(enum opt_op op, union optval_t val)
+followlinks_handler(OPT_OP op, optval_t val)
 {
 	cfg.follow_links = val.bool_val;
 }
 
 static void
-fusehome_handler(enum opt_op op, union optval_t val)
+fusehome_handler(OPT_OP op, optval_t val)
 {
 	free(cfg.fuse_home);
 	cfg.fuse_home = expand_tilde(strdup(val.str_val));
 }
 
 static void
-gdefault_handler(enum opt_op op, union optval_t val)
+gdefault_handler(OPT_OP op, optval_t val)
 {
 	cfg.gdefault = val.bool_val;
 }
@@ -443,7 +444,7 @@ free_view_history(FileView *view)
 }
 
 static void
-history_handler(enum opt_op op, union optval_t val)
+history_handler(OPT_OP op, optval_t val)
 {
 	int delta;
 
@@ -515,13 +516,13 @@ history_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-hlsearch_handler(enum opt_op op, union optval_t val)
+hlsearch_handler(OPT_OP op, optval_t val)
 {
 	cfg.hl_search = val.bool_val;
 }
 
 static void
-iec_handler(enum opt_op op, union optval_t val)
+iec_handler(OPT_OP op, optval_t val)
 {
 	cfg.use_iec_prefixes = val.bool_val;
 
@@ -529,19 +530,19 @@ iec_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-ignorecase_handler(enum opt_op op, union optval_t val)
+ignorecase_handler(OPT_OP op, optval_t val)
 {
 	cfg.ignore_case = val.bool_val;
 }
 
 static void
-incsearch_handler(enum opt_op op, union optval_t val)
+incsearch_handler(OPT_OP op, optval_t val)
 {
 	cfg.inc_search = val.bool_val;
 }
 
 static void
-laststatus_handler(enum opt_op op, union optval_t val)
+laststatus_handler(OPT_OP op, optval_t val)
 {
 	cfg.last_status = val.bool_val;
 	if(cfg.last_status)
@@ -589,20 +590,20 @@ scroll_line_down(FileView *view)
 }
 
 static void
-runexec_handler(enum opt_op op, union optval_t val)
+runexec_handler(OPT_OP op, optval_t val)
 {
 	cfg.auto_execute = val.bool_val;
 }
 
 static void
-scrollbind_handler(enum opt_op op, union optval_t val)
+scrollbind_handler(OPT_OP op, optval_t val)
 {
 	cfg.scroll_bind = val.bool_val;
 	curr_stats.scroll_bind_off = rwin.top_line - lwin.top_line;
 }
 
 static void
-scrolloff_handler(enum opt_op op, union optval_t val)
+scrolloff_handler(OPT_OP op, optval_t val)
 {
 	cfg.scroll_off = val.int_val;
 	if(cfg.scroll_off > 0)
@@ -610,7 +611,7 @@ scrolloff_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-shell_handler(enum opt_op op, union optval_t val)
+shell_handler(OPT_OP op, optval_t val)
 {
 	char *s;
 	if((s = strdup(val.str_val)) == NULL)
@@ -621,7 +622,7 @@ shell_handler(enum opt_op op, union optval_t val)
 
 #ifndef _WIN32
 static void
-slowfs_handler(enum opt_op op, union optval_t val)
+slowfs_handler(OPT_OP op, optval_t val)
 {
 	char *s;
 	if((s = strdup(val.str_val)) == NULL)
@@ -632,13 +633,13 @@ slowfs_handler(enum opt_op op, union optval_t val)
 #endif
 
 static void
-smartcase_handler(enum opt_op op, union optval_t val)
+smartcase_handler(OPT_OP op, optval_t val)
 {
 	cfg.smart_case = val.bool_val;
 }
 
 static void
-sortnumbers_handler(enum opt_op op, union optval_t val)
+sortnumbers_handler(OPT_OP op, optval_t val)
 {
 	cfg.sort_numbers = val.bool_val;
 	load_saving_pos(curr_view, 1);
@@ -646,7 +647,7 @@ sortnumbers_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-sort_handler(enum opt_op op, union optval_t val)
+sort_handler(OPT_OP op, optval_t val)
 {
 	char *p = val.str_val - 1;
 	int i, j;
@@ -685,7 +686,8 @@ sort_handler(enum opt_op op, union optval_t val)
 			curr_view->sort[j] = pos;
 		if(j == i)
 			i++;
-	} while(*p != '\0');
+	}
+	while(*p != '\0');
 
 	for(j = 0; j < i; j++)
 		if(abs(curr_view->sort[j]) == SORT_BY_NAME ||
@@ -705,7 +707,7 @@ sort_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-sortorder_handler(enum opt_op op, union optval_t val)
+sortorder_handler(OPT_OP op, optval_t val)
 {
 	if((val.enum_item ? -1 : +1)*curr_view->sort[0] < 0)
 	{
@@ -716,7 +718,7 @@ sortorder_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-tabstop_handler(enum opt_op op, union optval_t val)
+tabstop_handler(OPT_OP op, optval_t val)
 {
 	cfg.tab_stop = val.int_val;
 	if(curr_stats.view)
@@ -726,7 +728,7 @@ tabstop_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-timefmt_handler(enum opt_op op, union optval_t val)
+timefmt_handler(OPT_OP op, optval_t val)
 {
 	free(cfg.time_format);
 	cfg.time_format = malloc(1 + strlen(val.str_val) + 1);
@@ -737,25 +739,25 @@ timefmt_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-timeoutlen_handler(enum opt_op op, union optval_t val)
+timeoutlen_handler(OPT_OP op, optval_t val)
 {
 	cfg.timeout_len = val.int_val;
 }
 
 static void
-trash_handler(enum opt_op op, union optval_t val)
+trash_handler(OPT_OP op, optval_t val)
 {
 	cfg.use_trash = val.bool_val;
 }
 
 static void
-undolevels_handler(enum opt_op op, union optval_t val)
+undolevels_handler(OPT_OP op, optval_t val)
 {
 	cfg.undo_levels = val.int_val;
 }
 
 static void
-vicmd_handler(enum opt_op op, union optval_t val)
+vicmd_handler(OPT_OP op, optval_t val)
 {
 	size_t len;
 
@@ -768,7 +770,7 @@ vicmd_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-vixcmd_handler(enum opt_op op, union optval_t val)
+vixcmd_handler(OPT_OP op, optval_t val)
 {
 	size_t len;
 
@@ -781,25 +783,25 @@ vixcmd_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-vifminfo_handler(enum opt_op op, union optval_t val)
+vifminfo_handler(OPT_OP op, optval_t val)
 {
 	cfg.vifm_info = val.set_items;
 }
 
 static void
-vimhelp_handler(enum opt_op op, union optval_t val)
+vimhelp_handler(OPT_OP op, optval_t val)
 {
 	cfg.use_vim_help = val.bool_val;
 }
 
 static void
-wildmenu_handler(enum opt_op op, union optval_t val)
+wildmenu_handler(OPT_OP op, optval_t val)
 {
 	cfg.wild_menu = val.bool_val;
 }
 
 static void
-wrap_handler(enum opt_op op, union optval_t val)
+wrap_handler(OPT_OP op, optval_t val)
 {
 	cfg.wrap_quick_view = val.bool_val;
 	if(curr_stats.view)
@@ -807,7 +809,7 @@ wrap_handler(enum opt_op op, union optval_t val)
 }
 
 static void
-wrapscan_handler(enum opt_op op, union optval_t val)
+wrapscan_handler(OPT_OP op, optval_t val)
 {
 	cfg.wrap_scan = val.bool_val;
 }

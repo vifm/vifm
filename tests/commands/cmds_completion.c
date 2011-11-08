@@ -7,14 +7,14 @@
 #include "../../src/completion.h"
 #include "../../src/macros.h"
 
-extern struct cmds_conf cmds_conf;
+extern cmds_conf_t cmds_conf;
 
-static struct cmd_info cmdi;
+static cmd_info_t cmdi;
 
-static int goto_cmd(const struct cmd_info* cmd_info);
-static int delete_cmd(const struct cmd_info* cmd_info);
+static int goto_cmd(const cmd_info_t *cmd_info);
+static int delete_cmd(const cmd_info_t *cmd_info);
 
-static const struct cmd_add commands[] = {
+static const cmd_add_t commands[] = {
 	{ .name = "",       .abbr = NULL, .handler = goto_cmd,   .id = -1,    .range = 1,    .cust_sep = 0,
 		.emark = 0,       .qmark = 0,   .expand = 0,           .regexp = 0, .min_args = 0, .max_args = 0, },
 	{ .name = "delete", .abbr = "d",  .handler = delete_cmd, .id = 1,     .range = 1,    .cust_sep = 0,
@@ -22,13 +22,13 @@ static const struct cmd_add commands[] = {
 };
 
 static int
-goto_cmd(const struct cmd_info* cmd_info)
+goto_cmd(const cmd_info_t *cmd_info)
 {
 	return 0;
 }
 
 static int
-delete_cmd(const struct cmd_info* cmd_info)
+delete_cmd(const cmd_info_t *cmd_info)
 {
 	cmdi = *cmd_info;
 	return 0;

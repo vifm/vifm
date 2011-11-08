@@ -16,28 +16,27 @@ int last; /* 1 = k, 2 = j */
 
 static int* mode;
 
-static void keys_colon(struct key_info key_info, struct keys_info *keys_info);
-static void keys_m(struct key_info key_info, struct keys_info *keys_info);
-static void keys_quote(struct key_info key_info, struct keys_info *keys_info);
-static void keys_gg(struct key_info key_info, struct keys_info *keys_info);
-static void keys_H(struct key_info key_info, struct keys_info *keys_info);
-static void keys_gu(struct key_info key_info, struct keys_info *keys_info);
-static void keys_j(struct key_info key_info, struct keys_info *keys_info);
-static void keys_k(struct key_info key_info, struct keys_info *keys_info);
-static void keys_s(struct key_info key_info, struct keys_info *keys_info);
-static void keys_i(struct key_info key_info, struct keys_info *keys_info);
-static void keys_if(struct key_info key_info, struct keys_info *keys_info);
-static void keys_dummy(struct key_info key_info, struct keys_info *keys_info);
-static void keys_delete(struct key_info key_info, struct keys_info *keys_info);
-static void keys_delete_selector(struct key_info key_info,
-		struct keys_info *keys_info);
-static void keys_v(struct key_info key_info, struct keys_info *keys_info);
-static void keys_quit(struct key_info key_info, struct keys_info *keys_info);
+static void keys_colon(key_info_t key_info, keys_info_t *keys_info);
+static void keys_m(key_info_t key_info, keys_info_t *keys_info);
+static void keys_quote(key_info_t key_info, keys_info_t *keys_info);
+static void keys_gg(key_info_t key_info, keys_info_t *keys_info);
+static void keys_H(key_info_t key_info, keys_info_t *keys_info);
+static void keys_gu(key_info_t key_info, keys_info_t *keys_info);
+static void keys_j(key_info_t key_info, keys_info_t *keys_info);
+static void keys_k(key_info_t key_info, keys_info_t *keys_info);
+static void keys_s(key_info_t key_info, keys_info_t *keys_info);
+static void keys_i(key_info_t key_info, keys_info_t *keys_info);
+static void keys_if(key_info_t key_info, keys_info_t *keys_info);
+static void keys_dummy(key_info_t key_info, keys_info_t *keys_info);
+static void keys_delete(key_info_t key_info, keys_info_t *keys_info);
+static void keys_delete_selector(key_info_t key_info, keys_info_t *keys_info);
+static void keys_v(key_info_t key_info, keys_info_t *keys_info);
+static void keys_quit(key_info_t key_info, keys_info_t *keys_info);
 
 void
 init_builtin_keys(int *key_mode)
 {
-	struct key_t *curr;
+	key_conf_t *curr;
 
 	assert(key_mode != NULL);
 
@@ -156,36 +155,34 @@ init_builtin_keys(int *key_mode)
 }
 
 static void
-keys_colon(struct key_info key_info, struct keys_info *keys_info)
+keys_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	*mode = CMDLINE_MODE;
 }
 
 static void
-keys_m(struct key_info key_info, struct keys_info *keys_info)
+keys_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	printf("(%d)m in register '%c' with multikey '%c'\n",
 			key_info.count, key_info.reg, key_info.multi);
 }
 
 static void
-keys_quote(struct key_info key_info, struct keys_info *keys_info)
+keys_quote(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(keys_info->selector)
-	{
 		printf("as a selector: ");
-	}
 	printf("(%d)' in register '%c' with multikey '%c'\n",
 			key_info.count, key_info.reg, key_info.multi);
 }
 
 static void
-keys_gg(struct key_info key_info, struct keys_info *keys_info)
+keys_gg(key_info_t key_info, keys_info_t *keys_info)
 {
 }
 
 static void
-keys_H(struct key_info key_info, struct keys_info *keys_info)
+keys_H(key_info_t key_info, keys_info_t *keys_info)
 {
 	wchar_t **list, **p;
 	list = list_cmds(NORMAL_MODE);
@@ -206,96 +203,83 @@ keys_H(struct key_info key_info, struct keys_info *keys_info)
 }
 
 static void
-keys_gu(struct key_info key_info, struct keys_info *keys_info)
+keys_gu(key_info_t key_info, keys_info_t *keys_info)
 {
 	last = 2;
 	if(keys_info->selector)
-	{
 		printf("as a selector: ");
-	}
 	printf("(%d)gu in register %c\n", key_info.count, key_info.reg);
 }
 
 static void
-keys_j(struct key_info key_info, struct keys_info *keys_info)
+keys_j(key_info_t key_info, keys_info_t *keys_info)
 {
 	last = 2;
 	if(keys_info->selector)
-	{
 		printf("as a selector: ");
-	}
 	printf("(%d)j in register %c\n", key_info.count, key_info.reg);
 }
 
 static void
-keys_k(struct key_info key_info, struct keys_info *keys_info)
+keys_k(key_info_t key_info, keys_info_t *keys_info)
 {
 	last = 1;
 	if(keys_info->selector)
-	{
 		printf("as a selector: ");
-	}
 	printf("(%d)k in register %c\n", key_info.count, key_info.reg);
 }
 
 static void
-keys_s(struct key_info key_info, struct keys_info *keys_info)
+keys_s(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(keys_info->selector)
-	{
 		printf("as a selector: ");
-	}
 	printf("(%d)s in register %c\n", key_info.count, key_info.reg);
 }
 
 static void
-keys_i(struct key_info key_info, struct keys_info *keys_info)
+keys_i(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(keys_info->selector)
-	{
 		printf("as a selector: ");
-	}
 	printf("(%d)i in register %c\n", key_info.count, key_info.reg);
 }
 
 static void
-keys_if(struct key_info key_info, struct keys_info *keys_info)
+keys_if(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(keys_info->selector)
-	{
 		printf("as a selector: ");
-	}
 	printf("(%d)if in register %c\n", key_info.count, key_info.reg);
 }
 
 static void
-keys_dummy(struct key_info key_info, struct keys_info *keys_info)
+keys_dummy(key_info_t key_info, keys_info_t *keys_info)
 {
 }
 
 static void
-keys_delete(struct key_info key_info, struct keys_info *keys_info)
+keys_delete(key_info_t key_info, keys_info_t *keys_info)
 {
 	printf("(%d)delete in register %c\n", key_info.count, key_info.reg);
 }
 
 static void
-keys_delete_selector(struct key_info key_info,
-		struct keys_info *keys_info)
+keys_delete_selector(key_info_t key_info, keys_info_t *keys_info)
 {
 	printf("(%d)delete with selector in register %c\n", key_info.count,
 			key_info.reg);
 }
 
 static void
-keys_v(struct key_info key_info, struct keys_info *keys_info)
+keys_v(key_info_t key_info, keys_info_t *keys_info)
 {
 	*mode = (*mode == NORMAL_MODE) ? VISUAL_MODE : NORMAL_MODE;
 	printf("v visual mode toggle\n");
 }
 
 static void
-keys_quit(struct key_info key_info, struct keys_info *keys_info)
+keys_quit(key_info_t key_info, keys_info_t *keys_info)
 {
 	printf("(%d)quit in register %c\n", key_info.count, key_info.reg);
 }

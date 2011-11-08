@@ -8,7 +8,7 @@
 static int i;
 
 static int
-execute(enum OPS op, void *data, const char *src, const char *dst)
+execute(OPS op, void *data, const char *src, const char *dst)
 {
 	static const char *execs[] = {
 		"undo_msg3",
@@ -31,7 +31,7 @@ execute(enum OPS op, void *data, const char *src, const char *dst)
 }
 
 static int
-exec_dummy(enum OPS op, void *data, const char *src, const char *dst)
+exec_dummy(OPS op, void *data, const char *src, const char *dst)
 {
 	return 0;
 }
@@ -110,7 +110,7 @@ test_cmd_1undo_1redo(void)
 }
 
 static int
-execute_fail(enum OPS op, void *data, const char *src, const char *dst)
+execute_fail(OPS op, void *data, const char *src, const char *dst)
 {
 	if(op == OP_NONE)
 		return 0;
@@ -203,7 +203,7 @@ test_removing_of_incomplete_groups(void)
 }
 
 static int
-exec_skip(enum OPS op, void *data, const char *src, const char *dst)
+exec_skip(OPS op, void *data, const char *src, const char *dst)
 {
 	return SKIP_UNDO_REDO_OPERATION;
 }

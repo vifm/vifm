@@ -263,7 +263,7 @@ status_bar_message_i(const char *message, int error)
 
 	if(err)
 	{
-		Col_attr col = cfg.cs.color[CMD_LINE_COLOR];
+		col_attr_t col = cfg.cs.color[CMD_LINE_COLOR];
 		mix_colors(&col, &cfg.cs.color[ERROR_MSG_COLOR]);
 		init_pair(DCOLOR_BASE + ERROR_MSG_COLOR, col.fg, col.bg);
 		wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + ERROR_MSG_COLOR) | col.attr);

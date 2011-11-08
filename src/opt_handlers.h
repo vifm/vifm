@@ -21,7 +21,8 @@
 
 #include "ui.h"
 
-enum {
+enum
+{
 	VIFMINFO_OPTIONS   = 1 << 0,
 	VIFMINFO_FILETYPES = 1 << 1,
 	VIFMINFO_COMMANDS  = 1 << 2,

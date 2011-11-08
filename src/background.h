@@ -28,7 +28,8 @@
 
 #include <stdio.h>
 
-typedef struct Jobs_List {
+typedef struct job_t
+{
 	pid_t pid;
 	char *cmd;
 	int skip_errors;
@@ -45,18 +46,19 @@ typedef struct Jobs_List {
 #else
 	HANDLE hprocess;
 #endif
-	struct Jobs_List *next;
-} Jobs_List;
+	struct job_t *next;
+}job_t;
 
-typedef struct Finished_Jobs {
+typedef struct finished_job_t
+{
 	pid_t pid;
 	int remove;
 	int exit_code;
-	struct Finished_Jobs *next;
-} Finished_Jobs;
+	struct finished_job_t *next;
+}finished_job_t;
 
-extern struct Jobs_List *jobs;
-extern struct Finished_Jobs *fjobs;
+extern struct job_t *jobs;
+extern struct finished_job_t *fjobs;
 
 int start_background_job(const char *cmd);
 int background_and_wait_for_status(char *cmd);
@@ -66,14 +68,14 @@ void add_finished_job(pid_t pid, int status);
 void check_background_jobs(void);
 void update_jobs_list(void);
 
-void add_inner_bg_job(Jobs_List *job);
+void add_inner_bg_job(job_t *job);
 void inner_bg_next(void);
 void remove_inner_bg_job(void);
 
 #ifndef _WIN32
-Jobs_List * add_background_job(pid_t pid, const char *cmd, int fd);
+job_t * add_background_job(pid_t pid, const char *cmd, int fd);
 #else
-Jobs_List * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
+job_t * add_background_job(pid_t pid, const char *cmd, HANDLE hprocess);
 #endif
 
 #endif

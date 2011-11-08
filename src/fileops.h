@@ -23,21 +23,7 @@
 #include "macros.h"
 #include "ui.h"
 
-#define FILE_CHANGE 1
-#define FILE_NAME 2
-#define FILE_OWNER 4
-#define FILE_GROUP 6
-#define FILE_PERMISSIONS 8
-
 #define DEFAULT_REG_NAME '"'
-
-typedef struct
-{
-	char *dir;
-	char *file;
-}yank_t;
-
-yank_t *yanked_file;
 
 void cd_updir(FileView *view);
 void handle_file(FileView *view, int dont_execute, int force_follow);

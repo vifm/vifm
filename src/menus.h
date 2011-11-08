@@ -24,7 +24,8 @@
 
 #include "ui.h"
 
-enum {
+enum
+{
 	NONE,
 	UP,
 	DOWN
