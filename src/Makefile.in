@@ -758,6 +758,8 @@ uninstall-man: uninstall-man1
 	uninstall-man1 uninstall-pkgdataDATA
 
 
+.PHONY: utils.c version.c
+
 version.c:
 	if [ "x$$(whereis git)" != "x" ] ; then \
 		echo -n 'const char GIT_HASH[] = "' > version.c; \

@@ -1,5 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
+.PHONY: utils.c version.c
+
 pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifm-help.txt
 
