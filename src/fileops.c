@@ -3619,10 +3619,11 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	status_bar_messagef("%d directorie%s created", n, (n == 1) ? "" : "s");
 }
 
-int
+void
 make_files(FileView *view, char **names, int count)
 {
 	int i;
+	int n;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	size_t len;
 
@@ -3632,22 +3633,22 @@ make_files(FileView *view, char **names, int count)
 		if(is_in_string_array(names, i, names[i]))
 		{
 			status_bar_errorf("Name \"%s\" duplicates", names[i]);
-			return 1;
+			return;
 		}
 		if(names[i][0] == '\0')
 		{
 			status_bar_errorf("Name #%d is empty", i + 1);
-			return 1;
+			return;
 		}
 		if(strchr(names[i], '/') != NULL)
 		{
 			status_bar_errorf("Name \"%s\" contains slash", names[i]);
-			return 1;
+			return;
 		}
 		if(lstat(names[i], &st) == 0)
 		{
 			status_bar_errorf("File \"%s\" already exists", names[i]);
-			return 1;
+			return;
 		}
 	}
 
@@ -3656,18 +3657,23 @@ make_files(FileView *view, char **names, int count)
 
 	get_group_file_list(names, count, buf);
 	cmd_group_begin(buf);
+	n = 0;
 	for(i = 0; i < count; i++)
 	{
 		char full[PATH_MAX];
 		snprintf(full, sizeof(full), "%s/%s", view->curr_dir, names[i]);
 		if(perform_operation(OP_MKFILE, NULL, full, NULL) == 0)
+		{
 			add_operation(OP_MKFILE, NULL, NULL, full, "");
+			n++;
+		}
 	}
 	cmd_group_end();
 
-	go_to_first_file(view, names, count);
+	if(n > 0)
+		go_to_first_file(view, names, count);
 
-	return 0;
+	status_bar_messagef("%d file%s created", n, (n == 1) ? "" : "s");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
