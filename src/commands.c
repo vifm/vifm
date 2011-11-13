@@ -3920,7 +3920,7 @@ static int
 mkdir_cmd(const cmd_info_t *cmd_info)
 {
 	make_dirs(curr_view, cmd_info->argv, cmd_info->argc, cmd_info->emark);
-	return 0;
+	return 1;
 }
 
 static int

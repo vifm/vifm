@@ -3566,6 +3566,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 {
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	int i;
+	int n;
 	void *cp = (void *)(long)create_parent;
 
 	snprintf(buf, sizeof(buf), "mkdir in %s: ",
@@ -3573,16 +3574,29 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 
 	get_group_file_list(names, count, buf);
 	cmd_group_begin(buf);
+	n = 0;
 	for(i = 0; i < count; i++)
 	{
 		char full[PATH_MAX];
 		snprintf(full, sizeof(full), "%s/%s", view->curr_dir, names[i]);
 		if(perform_operation(OP_MKDIR, cp, full, NULL) == 0)
+		{
 			add_operation(OP_MKDIR, cp, NULL, full, "");
+			n++;
+		}
+		else if(i == 0)
+		{
+			i--;
+			names++;
+			count--;
+		}
 	}
 	cmd_group_end();
 
-	go_to_first_file(view, names, count);
+	if(count > 0)
+		go_to_first_file(view, names, count);
+
+	status_bar_messagef("%d directorie%s created", n, (n == 1) ? "" : "s");
 }
 
 int
