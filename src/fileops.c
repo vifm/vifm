@@ -3377,6 +3377,14 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	if(i != 0)
 		return i > 0;
 
+	if(pane_in_dir(other_view, path) && force)
+	{
+		(void)show_error_msg("Operation Error",
+				"Forcing overwrite when destination and source is same directory will "
+				"lead to losing data");
+		return 0;
+	}
+
 	sel_len = view->selected_files;
 	sel = copy_string_array(view->selected_filelist, sel_len);
 	if(!view->user_selection)
