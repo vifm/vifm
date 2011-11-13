@@ -572,6 +572,10 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	werase(status_bar);
 	wnoutrefresh(status_bar);
 
+	if(input_stat.line != NULL)
+		input_stat.line[0] = L'\0';
+	input_line_changed();
+
 	leave_cmdline_mode();
 
 	if(prev_mode == VISUAL_MODE)
@@ -584,10 +588,6 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 		int save_hist = !keys_info->mapped;
 		curr_stats.save_msg = exec_commands("", curr_view, save_hist, GET_COMMAND);
 	}
-	
-	if(input_stat.line != NULL)
-		input_stat.line[0] = L'\0';
-	input_line_changed();
 }
 
 static void
