@@ -959,13 +959,16 @@ move_curr_line(FileView *view, int pos)
 			view->curr_line = s;
 			redraw = 1;
 		}
-		if((view->top_line + view->window_rows) - pos < s)
+		if(view->top_line + view->window_rows < view->list_rows)
 		{
-			view->top_line += s - ((view->top_line + view->window_rows) - pos);
-			if(pos + s > view->list_rows)
-				view->top_line -= pos + s - view->list_rows;
-			view->curr_line = pos - view->top_line;
-			redraw = 1;
+			if((view->top_line + view->window_rows) - pos < s)
+			{
+				view->top_line += s - ((view->top_line + view->window_rows) - pos);
+				if(pos + s > view->list_rows)
+					view->top_line -= pos + s - view->list_rows;
+				view->curr_line = pos - view->top_line;
+				redraw = 1;
+			}
 		}
 	}
 
