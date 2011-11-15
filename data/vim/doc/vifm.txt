@@ -813,6 +813,10 @@ The builtin commands are:
     and remove all records about files in the Trash directory from all
     registers.
 
+                                               *vifm-:execute* *vifm-:exe*
+:exe[cute] [arg...] - will join all passed arguments by inserting a single
+    space between them and execute resulting string as a command-line command.
+
                                                *vifm-:exit* *vifm-:exi*
 :exi[t][!] - same as :quit.
 

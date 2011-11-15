@@ -5,6 +5,17 @@ FILETYPE).
 
 --------------------------------------------------------------------------------
 
+Q: How can one access FTP with vifm?
+
+A: Since vifm tries to adhere to the Unix philosophy VFS (Virtual File System)
+probably will not be added.  To access FTP on a Unix-like system use FUSE file
+system (see curlftpfs project at http://curlftpfs.sourceforge.net).  FUSE isn't
+implemented for Windows, so Windows users should use one of programs that bind
+FTP connections to file system (for example FTPDrive at
+http://www.killprog.com/fdrve.html).
+
+--------------------------------------------------------------------------------
+
 Q: How can I customize vifm?
 
 A: There are several ways to do that:
@@ -33,6 +44,14 @@ A: List of currently supported operations:
   - permissions change
   - owner change
   - group change
+  - chmod
+
+--------------------------------------------------------------------------------
+
+Q: How can one execute vifm commands after using :! ?
+
+A: The only way to do this is using :execute command.  Example:
+  :execute ":!shell command" | vifm command
 
 --------------------------------------------------------------------------------
 

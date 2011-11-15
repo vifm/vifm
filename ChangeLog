@@ -81,6 +81,8 @@
 
 	Added support of [count] for / and ?.
 
+	Added :execute command.
+
 	Make macros expand to paths with forward slashes on Windows.
 
 	Clean selection after i key in normal mode.

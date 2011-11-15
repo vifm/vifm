@@ -103,6 +103,8 @@ const char *tags[] = {
 	"vifm-:e",
 	"vifm-:edit",
 	"vifm-:empty",
+	"vifm-:exe",
+	"vifm-:execute",
 	"vifm-:exi",
 	"vifm-:exit",
 	"vifm-:f",

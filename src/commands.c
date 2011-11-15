@@ -163,6 +163,7 @@ static int delmarks_cmd(const cmd_info_t *cmd_info);
 static int dirs_cmd(const cmd_info_t *cmd_info);
 static int edit_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
+static int exe_cmd(const cmd_info_t *cmd_info);
 static int file_cmd(const cmd_info_t *cmd_info);
 static int filetype_cmd(const cmd_info_t *cmd_info);
 static int filextype_cmd(const cmd_info_t *cmd_info);
@@ -278,6 +279,8 @@ static const cmd_add_t commands[] = {
 		.handler = edit_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "empty",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = empty_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "execute",          .abbr = "exe",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+		.handler = exe_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "exit",             .abbr = "exi",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "file",             .abbr = "f",     .emark = 0,  .id = COM_FILE,        .range = 0,    .bg = 1, .quote = 0, .regexp = 0,
@@ -3350,6 +3353,39 @@ empty_cmd(const cmd_info_t *cmd_info)
 {
 	empty_trash();
 	return 0;
+}
+
+static int
+exe_cmd(const cmd_info_t *cmd_info)
+{
+	size_t len = 0;
+	char *line = NULL;
+	int i;
+	int result;
+
+	for(i = 0; i < cmd_info->argc; i++)
+	{
+		char *p;
+		if(line != NULL)
+			strcat(line, " ");
+		len += 1 + strlen(cmd_info->argv[i]) + 1;
+		p = realloc(line, len);
+		if(p == NULL)
+		{
+			(void)show_error_msg("Memory error", "Unable to allocate enough memory");
+			break;
+		}
+		if(line == NULL)
+			*p = '\0';
+		line = p;
+		strcat(line, cmd_info->argv[i]);
+	}
+	if(line == NULL)
+		return 0;
+
+	result = exec_commands(line, curr_view, 0, GET_COMMAND);
+	free(line);
+	return result != 0;
 }
 
 static int

@@ -1,4 +1,4 @@
-.TH vifm 1 "November 7, 2011" "" "Vifm"
+.TH vifm 1 "November 15, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -913,6 +913,10 @@ will load the selected or passed file or files into vi.  Accepts macros.
 will permanently remove 'rm -fr' files from the Trash directory.  It will also
 remove all operations from undolist that have no sense after :empty and remove
 all records about files in the Trash directory from all registers.
+.TP
+.BI :exe[cute] [arg...]
+will join all passed arguments by inserting a single space between them and
+execute resulting string as a command-line command.
 .TP
 .BI :exi[t][!]
 same as :quit.
