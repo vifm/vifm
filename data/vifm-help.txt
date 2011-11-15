@@ -821,6 +821,11 @@ Commands
               sense after :empty and remove all records  about  files  in  the
               Trash directory from all registers.
 
+       :exe[cute][arg...]
+              will  join  all  passed  arguments  by  inserting a single space
+              between them and execute resulting string as a command-line com‐
+              mand.
+
        :exi[t][!]
               same as :quit.
 
@@ -1204,6 +1209,9 @@ Commands
 
        :vie[w]
               toggle on and off the quick file view.
+
+       :vie[w]!
+              turns on quick file view if it's off.
 
        :volumes
               only for MS-Windows
@@ -1811,16 +1819,19 @@ Plugin
                      :vert diffsplit.
          :TabVifm    select a file or files to open in tabs.
 
-       The  plugin  have  only  two  settings.   It's  a string variable named
-       g:vifm_term to let user  specify  command  to  run  gui  terminal.   By
-       default  it's  equal  to  ´xterm -e'.  And anoter string variable named
-       g:vifm_exec, which equals 'vifm'  by  default  and  specifies  path  to
+       Each command accepts up to two arguments: left pane directory and right
+       pane directory.
+
+       The plugin have only  two  settings.   It's  a  string  variable  named
+       g:vifm_term  to  let  user  specify  command  to  run gui terminal.  By
+       default it's equal to ´xterm -e'.  And  anoter  string  variable  named
+       g:vifm_exec,  which  equals  'vifm'  by  default  and specifies path to
        vifm's executable.
 
-       To  use  the  plugin  copy  the vifm.vim file to either the system wide
+       To use the plugin copy the vifm.vim file  to  either  the  system  wide
        vim/plugin directory or into ~/.vim/plugin.
 
-       If you would prefer not to use the plugin and it is in the system  wide
+       If  you would prefer not to use the plugin and it is in the system wide
        plugin directory add
 
        let loaded_vifm=1
@@ -1843,4 +1854,4 @@ AUTHOR
 
 
 
-                               November 4, 2011                        vifm(1)
+                               November 15, 2011                       vifm(1)

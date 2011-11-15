@@ -22,6 +22,9 @@ vim_like_completion(void)
 	assert_string_equal("empty", buf);
 	free(buf);
 	buf = next_completion();
+	assert_string_equal("execute", buf);
+	free(buf);
+	buf = next_completion();
 	assert_string_equal("exit", buf);
 	free(buf);
 	buf = next_completion();
