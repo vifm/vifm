@@ -91,6 +91,7 @@ compare_file_names(const char *s, const char *t, int ignore_case)
 		return strcmp(s, t);
 	else
 		return strverscmp(s, t);
+	/* TODO add strverscmp() on Windows */
 #else
 	return strcmp(s, t);
 #endif

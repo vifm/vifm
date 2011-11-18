@@ -476,7 +476,15 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 	args[3] = NULL;
 
 	if(_spawnvp(P_NOWAIT, args[0], (const char **)args) == 0)
+	{
+		_close(out_pipe[1]);
+		_close(error_pipe[1]);
+
+		_dup2(out_fd, _fileno(stdout));
+		_dup2(err_fd, _fileno(stderr));
+
 		return -1;
+	}
 
 	_close(out_pipe[1]);
 	_close(error_pipe[1]);
@@ -484,8 +492,13 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 	_dup2(out_fd, _fileno(stdout));
 	_dup2(err_fd, _fileno(stderr));
 
-	*out = _fdopen(out_pipe[0], "r");
-	*err = _fdopen(error_pipe[0], "r");
+	if((*out = _fdopen(out_pipe[0], "r")) == NULL)
+		return -1;
+	if((*err = _fdopen(error_pipe[0], "r")) == NULL)
+	{
+		fclose(out);
+		return -1;
+	}
 
 	return 0;
 #endif

@@ -2021,6 +2021,8 @@ show_grep_menu(FileView *view, const char *args, int invert)
 	}
 	free(files);
 
+	status_bar_message("grep is working...");
+
 	were_errors = capture_output_to_menu(view, buf, &m);
 	if(!were_errors && m.len < 1)
 	{
