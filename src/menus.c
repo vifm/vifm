@@ -1975,12 +1975,13 @@ int
 show_grep_menu(FileView *view, const char *args, int invert)
 {
 	int x = 0;
-	char buf[256];
+	char title_buf[256];
 	char *files;
 	int menu, split;
 	int were_errors;
 	const char *inv_str = invert ? "-v" : "";
-	const char grep_cmd_fmt[] = "grep -n -H -I -r %s %s %s";
+	const char grep_cmd[] = "grep -n -H -I -r";
+	char *cmd;
 
 	static menu_info m;
 	m.top = 0;
@@ -2000,8 +2001,8 @@ show_grep_menu(FileView *view, const char *args, int invert)
 
 	getmaxyx(menu_win, m.win_rows, x);
 
-	snprintf(buf, sizeof(buf), "grep %s", args);
-	m.title = strdup(buf);
+	snprintf(title_buf, sizeof(title_buf), "grep %s", args);
+	m.title = strdup(title_buf);
 
 	if(view->selected_files > 0)
 		files = expand_macros(view, "%f", NULL, &menu, &split);
@@ -2010,20 +2011,26 @@ show_grep_menu(FileView *view, const char *args, int invert)
 
 	if(args[0] == '-')
 	{
-		snprintf(buf, sizeof(buf), grep_cmd_fmt, inv_str, args, files);
+		size_t var_len = strlen(inv_str) + 1 + strlen(args) + 1 + strlen(files);
+		cmd = malloc(sizeof(grep_cmd) + 1 + var_len);
+		sprintf(cmd, "%s %s %s %s", grep_cmd, inv_str, args, files);
 	}
 	else
 	{
+		size_t var_len;
 		char *escaped_args;
 		escaped_args = escape_filename(args, 0);
-		snprintf(buf, sizeof(buf), grep_cmd_fmt, inv_str, escaped_args, files);
+		var_len = strlen(inv_str) + 1 + strlen(escaped_args) + 1 + strlen(files);
+		cmd = malloc(sizeof(grep_cmd) + 1 + var_len);
+		sprintf(cmd, "%s %s %s %s", grep_cmd, inv_str, escaped_args, files);
 		free(escaped_args);
 	}
 	free(files);
 
 	status_bar_message("grep is working...");
 
-	were_errors = capture_output_to_menu(view, buf, &m);
+	were_errors = capture_output_to_menu(view, cmd, &m);
+	free(cmd);
 	if(!were_errors && m.len < 1)
 	{
 		status_bar_error("No matches found");
