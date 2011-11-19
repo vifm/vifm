@@ -1,3 +1,11 @@
+0.7.1 to current
+	Show status bar message while grep works.
+
+	Restore terminal title on exit when running in X (*nix only).
+
+	Fixed bug with fixed-length buffer for :grep command (when many files are
+	selected).
+
 0.7.0 to 0.7.1
 
 	Added 'scrollbind' option.

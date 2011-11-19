@@ -22,6 +22,11 @@
 #include <winioctl.h>
 #endif
 
+#ifndef _WIN32
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#endif
+
 #include <regex.h>
 
 #include <curses.h>
@@ -1029,14 +1034,62 @@ enclose_in_dquotes(const char *str)
 	return buf;
 }
 
+#ifndef _WIN32
+static int
+get_x11_disp_and_win(Display **disp, Window *win)
+{
+	char *winid;
+
+	if(*win == 0 && (winid = getenv("WINDOWID")) != NULL)
+		*win = (Window)atol(winid);
+
+	if(*win != 0 && *disp == NULL)
+		*disp = XOpenDisplay(NULL);
+	if(*win == 0 || *disp == NULL)
+		return 0;
+
+	return 1;
+}
+
+static int
+x_error_check(Display *dpy, XErrorEvent *error_event)
+{
+	return 0;
+}
+
+static void
+get_x11_window_title(Display *disp, Window win, char *buf, size_t buf_len)
+{
+	int (*old_handler)();
+	XTextProperty text_prop;
+
+	old_handler = XSetErrorHandler(x_error_check);
+	if(!XGetWMName(disp, win, &text_prop))
+	{
+		(void)XSetErrorHandler(old_handler);
+		return;
+	}
+
+	(void)XSetErrorHandler(old_handler);
+	snprintf(buf, buf_len, "%s", text_prop.value);
+	XFree((void *)text_prop.value);
+}
+#endif
+
 void
 set_term_title(const char *full_path)
 {
 	static int was_setup;
 	static int title_supported;
+	static char prev_title[512];
 
 	if(!was_setup)
 	{
+#ifndef _WIN32
+		static Display *x11_display;
+		static Window x11_window;
+#endif
+
 		/* this list was taken from ranger's sources */
 		static char *TERMINALS_WITH_TITLE[] = {
 			"xterm", "xterm-256color", "rxvt", "rxvt-256color", "rxvt-unicode",
@@ -1045,7 +1098,12 @@ set_term_title(const char *full_path)
 		title_supported = is_in_string_array(TERMINALS_WITH_TITLE,
 				ARRAY_LEN(TERMINALS_WITH_TITLE), getenv("TERM"));
 
-		/* TODO: use X to determine current title */
+#ifndef _WIN32
+		/* use X to determine current window title */
+		if(get_x11_disp_and_win(&x11_display, &x11_window))
+			get_x11_window_title(x11_display, x11_window, prev_title,
+					sizeof(prev_title));
+#endif
 
 		was_setup = 1;
 	}
@@ -1053,7 +1111,11 @@ set_term_title(const char *full_path)
 		return;
 
 	if(full_path == NULL)
-		/* TODO: restore initial title here */;
+	{
+		/* restore initial window title if available */;
+		if(prev_title[0] != '\0')
+			printf("\033]2;%s\007", prev_title);
+	}
 	else
 		printf("\033]2;%s - VIFM\007", full_path);
 }
