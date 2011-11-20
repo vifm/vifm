@@ -119,6 +119,10 @@ add_option(const char *name, const char *abbr, OPT_TYPE type, int val_count,
 		const char **vals, opt_handler handler, optval_t def)
 {
 	opt_t *full;
+
+	assert(name != NULL);
+	assert(abbr != NULL);
+
 	full = add_option_inner(name, type, val_count, vals, handler);
 	if(full == NULL)
 		return;
@@ -904,7 +908,7 @@ complete_option(const char *buf, int bool_only)
 	int i;
 
 	opt = find_option(buf);
-	if(opt != NULL)
+	if(opt != NULL && strcmp(opt->name, buf) != 0)
 	{
 		add_completion(strdup(opt->name));
 		return;

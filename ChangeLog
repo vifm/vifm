@@ -6,6 +6,9 @@
 	Fixed bug with fixed-length buffer for :grep command (when many files are
 	selected).
 
+	Fixed completion of ":set sort" (didn't complete 'sortnumbers' and
+	'sortorder').
+
 0.7.0 to 0.7.1
 
 	Added 'scrollbind' option.

@@ -1451,7 +1451,7 @@ line_completion(line_stats_t *stat)
 			return -1;
 		}
 
-		line_mb = (char *) p;
+		line_mb = (char *)p;
 		wcstombs(line_mb, stat->line, i);
 		line_mb_cmd = find_last_command(line_mb);
 

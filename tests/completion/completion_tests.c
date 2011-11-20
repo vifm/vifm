@@ -197,6 +197,40 @@ test_order(void)
 	free(buf);
 }
 
+static void
+test_umbiguous_begin(void)
+{
+	char *buf;
+
+	assert_int_equal(0, add_completion("sort"));
+	assert_int_equal(0, add_completion("sortorder"));
+	assert_int_equal(0, add_completion("sortnumbers"));
+	completion_group_end();
+
+	assert_int_equal(0, add_completion("sort"));
+
+	buf = next_completion();
+	assert_string_equal("sort", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("sortnumbers", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("sortorder", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("sort", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("sort", buf);
+	free(buf);
+}
+
+
 void
 completion_tests(void)
 {
@@ -209,6 +243,7 @@ completion_tests(void)
 	run_test(test_rewind_one_unambiguous_completion);
 	run_test(test_rewind);
 	run_test(test_order);
+	run_test(test_umbiguous_begin);
 
 	test_fixture_end();
 }

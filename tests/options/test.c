@@ -62,6 +62,11 @@ sort_handler(OPT_OP op, optval_t val)
 }
 
 static void
+sortorder_handler(OPT_OP op, optval_t val)
+{
+}
+
+static void
 vifminfo_handler(OPT_OP op, optval_t val)
 {
 }
@@ -81,6 +86,7 @@ setup(void)
 	val.enum_item = 1;
 	add_option("sort", "so", OPT_ENUM, ARRAY_LEN(sort_enum), sort_enum,
 			&sort_handler, val);
+	add_option("sortorder", "", OPT_BOOL, 0, NULL, &sortorder_handler, val);
 	val.set_items = 0;
 	add_option("vifminfo", "", OPT_SET, ARRAY_LEN(vifminfo_set), vifminfo_set,
 			&vifminfo_handler, val);

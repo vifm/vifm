@@ -114,6 +114,10 @@ test_skip_abbreviations(void)
 	free(completed);
 
 	completed = next_completion();
+	assert_string_equal("sortorder", completed);
+	free(completed);
+
+	completed = next_completion();
 	assert_string_equal("vifminfo", completed);
 	free(completed);
 
@@ -248,6 +252,24 @@ test_colon(void)
 	free(completed);
 }
 
+static void
+test_umbiguous_beginning(void)
+{
+	const char *start;
+	char *completed;
+
+	reset_completion();
+	complete_options("sort", &start);
+
+	completed = next_completion();
+	assert_string_equal("sort", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("sortorder", completed);
+	free(completed);
+}
+
 void
 opt_completion(void)
 {
@@ -264,6 +286,7 @@ opt_completion(void)
 	run_test(test_after_peq_value_completion);
 	run_test(test_set_values_completion);
 	run_test(test_colon);
+	run_test(test_umbiguous_beginning);
 
 	test_fixture_end();
 }
