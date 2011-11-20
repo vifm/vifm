@@ -39,8 +39,9 @@ vifm /path/to/directory/one
 or
 vifm /path/to/directory/one /path/to/directory/two
 
+                                               *vifm---select*
 Paths to files are also allowed in case you want vifm to start with some
-archive opened.
+archive opened.  If you want to select file, prepend its path with --select.
 
 The other command line arguments are:
                                                *vifm--f*

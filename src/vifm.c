@@ -93,6 +93,7 @@ show_help_msg(void)
 	puts("    or");
 	puts("    vifm /path/to/start/dir/one  /path/to/start/dir/two\n");
 	puts("  To open file using associated program pass to vifm it's path.\n");
+	puts("  To select file prepend its path with --select.\n");
 	puts("  If no path is given vifm will start in the current working directory.\n");
 	puts("  vifm --logging");
 	puts("    log some errors to " CONF_DIR "/log.\n");
@@ -188,18 +189,19 @@ parse_path(const char *dir, const char *path, char *buf)
 
 static void
 parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
-		char *rwin_path)
+		char *rwin_path, int *lwin_handle, int *rwin_handle)
 {
 	int x;
+	int select = 0;
 
 	(void)my_chdir(dir);
 
 	/* Get Command Line Arguments */
 	for(x = 1; x < argc; x++)
 	{
-		if(argv[x] == NULL)
+		if(!strcmp(argv[x], "--select"))
 		{
-			continue;
+			select = 1;
 		}
 		else if(!strcmp(argv[x], "-f"))
 		{
@@ -207,7 +209,6 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		}
 		else if(!strcmp(argv[x], "--no-configs"))
 		{
-			continue;
 		}
 		else if(!strcmp(argv[x], "--version") || !strcmp(argv[x], "-v"))
 		{
@@ -242,9 +243,16 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 				is_root_dir(argv[x]))
 		{
 			if(lwin_path[0] != '\0')
+			{
 				parse_path(dir, argv[x], rwin_path);
+				*rwin_handle = !select;
+			}
 			else
+			{
 				parse_path(dir, argv[x], lwin_path);
+				*lwin_handle = !select;
+			}
+			select = 0;
 		}
 		else
 		{
@@ -303,7 +311,7 @@ check_path(FileView *view, const char *path)
 }
 
 static void
-check_path_for_file(FileView *view, const char *path)
+check_path_for_file(FileView *view, const char *path, int handle)
 {
 	load_dir_list(view, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
 	if(path[0] != '\0' && !is_dir(path))
@@ -313,7 +321,8 @@ check_path_for_file(FileView *view, const char *path)
 		if(slash != NULL && (pos = find_file_pos_in_list(view, slash + 1)) >= 0)
 		{
 			view->list_pos = pos;
-			handle_file(view, 0, 0);
+			if(handle)
+				handle_file(view, 0, 0);
 		}
 	}
 }
@@ -351,6 +360,7 @@ main(int argc, char *argv[])
 	char *console = NULL;
 	char lwin_path[PATH_MAX] = "";
 	char rwin_path[PATH_MAX] = "";
+	int lwin_handle = 0, rwin_handle = 0;
 	int old_config;
 	int i;
 	int no_configs;
@@ -441,7 +451,7 @@ main(int argc, char *argv[])
 	if(!old_config && !no_configs)
 		read_info_file(0);
 
-	parse_args(argc, argv, dir, lwin_path, rwin_path);
+	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle);
 	check_path(&lwin, lwin_path);
 	check_path(&rwin, rwin_path);
 
@@ -527,8 +537,8 @@ main(int argc, char *argv[])
 		exec_config();
 	}
 
-	check_path_for_file(&lwin, lwin_path);
-	check_path_for_file(&rwin, rwin_path);
+	check_path_for_file(&lwin, lwin_path, lwin_handle);
+	check_path_for_file(&rwin, rwin_path, rwin_handle);
 
 	curr_stats.vifm_started = 2;
 
