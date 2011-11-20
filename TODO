@@ -13,8 +13,6 @@ Basic things that need to be done.
     Ctrl-R combinations in the command-line mode.
     Add the UNC computer name (after the \\) (%h, :H or :u).
     Wrapping of lines in the menus.
-    To be able to keep mark on dot files (ex. .vimrc) and to set the fold mode
-        to see dot files if a mark to a dot file is activated.
     Highlight more angle bracket notation in vifmrc.
 
 Documentation.

@@ -186,19 +186,36 @@ set_specmark(const char mark, const char *directory, const char *file)
 int
 move_to_bookmark(FileView *view, char mark)
 {
-	int x  = mark2index(mark);
+	int x = mark2index(mark);
 	int file_pos = -1;
 
 	if(x != -1 && is_bookmark(x))
 	{
 		if(change_directory(view, bookmarks[x].directory) >= 0)
 		{
+			char full_path[PATH_MAX];
+
+			snprintf(full_path, sizeof(full_path), "%s/%s", bookmarks[x].directory,
+					bookmarks[x].file);
+
 			load_dir_list(view, 1);
 			file_pos = find_file_pos_in_list(view, bookmarks[x].file);
-			if(file_pos != -1)
-				move_to_list_pos(view, file_pos);
-			else
-				move_to_list_pos(view, 0);
+			if(file_pos < 0 && access(full_path, F_OK) == 0)
+			{
+				if(bookmarks[x].file[0] == '.')
+				{
+					set_dot_files_visible(view, 1);
+					file_pos = find_file_pos_in_list(view, bookmarks[x].file);
+				}
+
+				if(file_pos < 0)
+				{
+					remove_filename_filter(view);
+					file_pos = find_file_pos_in_list(view, bookmarks[x].file);
+				}
+			}
+
+			move_to_list_pos(view, (file_pos < 0) ? 0 : file_pos);
 		}
 	}
 	else
