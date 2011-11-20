@@ -22,7 +22,9 @@
 #include <winioctl.h>
 #endif
 
-#ifndef _WIN32
+#include "../config.h"
+
+#if !defined(_WIN32) && defined(HAVE_X11)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #endif
@@ -414,7 +416,7 @@ fill_version_info(char **list)
 	int x = 0;
 
 	if(list == NULL)
-		return 9;
+		return 10;
 
 	list[x++] = strdup("Version: " VERSION);
 	list[x] = malloc(sizeof("Git commit hash: ") + strlen(GIT_HASH) + 1);
@@ -444,6 +446,12 @@ fill_version_info(char **list)
 	list[x++] = strdup("With magic library");
 #else
 	list[x++] = strdup("Without magic library");
+#endif
+
+#ifdef HAVE_X11
+	list[x++] = strdup("With X11 library");
+#else
+	list[x++] = strdup("Without X11 library");
 #endif
 
 #ifdef HAVE_FILE_PROG
@@ -1034,7 +1042,7 @@ enclose_in_dquotes(const char *str)
 	return buf;
 }
 
-#ifndef _WIN32
+#if !defined(_WIN32) && defined(HAVE_X11)
 static int
 get_x11_disp_and_win(Display **disp, Window *win)
 {
@@ -1085,7 +1093,7 @@ set_term_title(const char *full_path)
 
 	if(!was_setup)
 	{
-#ifndef _WIN32
+#if !defined(_WIN32) && defined(HAVE_X11)
 		static Display *x11_display;
 		static Window x11_window;
 #endif
@@ -1098,7 +1106,7 @@ set_term_title(const char *full_path)
 		title_supported = is_in_string_array(TERMINALS_WITH_TITLE,
 				ARRAY_LEN(TERMINALS_WITH_TITLE), getenv("TERM"));
 
-#ifndef _WIN32
+#if !defined(_WIN32) && defined(HAVE_X11)
 		/* use X to determine current window title */
 		if(get_x11_disp_and_win(&x11_display, &x11_window))
 			get_x11_window_title(x11_display, x11_window, prev_title,

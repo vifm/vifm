@@ -13149,6 +13149,74 @@ else
 fi
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for XOpenDisplay in -lX11" >&5
+$as_echo_n "checking for XOpenDisplay in -lX11... " >&6; }
+if ${ac_cv_lib_X11_XOpenDisplay+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lX11  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char XOpenDisplay ();
+int
+main ()
+{
+return XOpenDisplay ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_X11_XOpenDisplay=yes
+else
+  ac_cv_lib_X11_XOpenDisplay=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_X11_XOpenDisplay" >&5
+$as_echo "$ac_cv_lib_X11_XOpenDisplay" >&6; }
+if test "x$ac_cv_lib_X11_XOpenDisplay" = xyes; then :
+  LIBS="$LIBS -lX11"
+	for ac_header in X11/Xlib.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "X11/Xlib.h" "ac_cv_header_X11_Xlib_h" "$ac_includes_default"
+if test "x$ac_cv_header_X11_Xlib_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_X11_XLIB_H 1
+_ACEOF
+
+fi
+
+done
+
+	for ac_header in X11/Xutil.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "X11/Xutil.h" "ac_cv_header_X11_Xutil_h" "$ac_includes_default"
+if test "x$ac_cv_header_X11_Xutil_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_X11_XUTIL_H 1
+_ACEOF
+
+fi
+
+done
+
+
+$as_echo "#define HAVE_X11 1" >>confdefs.h
+
+fi
+
+
 
 if test "$use_gtk" = "yes"; then
 	if pkg-config --exists glib-2.0 gtk+-2.0; then
