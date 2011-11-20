@@ -3377,7 +3377,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	if(i != 0)
 		return i > 0;
 
-	if(pane_in_dir(other_view, path) && force)
+	if(pane_in_dir(curr_view, path) && force)
 	{
 		(void)show_error_msg("Operation Error",
 				"Forcing overwrite when destination and source is same directory will "
