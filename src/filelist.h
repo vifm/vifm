@@ -69,6 +69,7 @@ int is_in_view_history(FileView *view, const char *path);
 int pane_in_dir(FileView *view, const char *path);
 void update_view_title(FileView *view);
 void clean_positions_in_history(FileView *view);
+int ensure_file_is_selected(FileView *view, const char *name);
 
 #endif
 

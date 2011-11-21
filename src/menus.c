@@ -588,19 +588,10 @@ goto_selected_file(FileView *view, menu_info *m)
 
 			wrefresh(status_bar);
 			load_dir_list(view, 0);
+			if(isdir)
+				strcat(file, "/");
 
-			if(find_file_pos_in_list(view, file) < 0)
-			{
-				if(isdir)
-					strcat(file, "/");
-
-				if(file[0] == '.')
-					set_dot_files_visible(view, 1);
-
-				if(find_file_pos_in_list(view, file) < 0)
-					remove_filename_filter(view);
-			}
-			move_to_list_pos(view, find_file_pos_in_list(view, file));
+			(void)ensure_file_is_selected(view, file);
 		}
 		else
 		{

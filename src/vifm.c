@@ -317,10 +317,10 @@ check_path_for_file(FileView *view, const char *path, int handle)
 	if(path[0] != '\0' && !is_dir(path))
 	{
 		char *slash = strrchr(path, '/');
-		int pos;
-		if(slash != NULL && (pos = find_file_pos_in_list(view, slash + 1)) >= 0)
+		if(slash == NULL)
+			slash = path - 1;
+		if(ensure_file_is_selected(view, slash + 1))
 		{
-			view->list_pos = pos;
 			if(handle)
 				handle_file(view, 0, 0);
 		}
@@ -537,10 +537,10 @@ main(int argc, char *argv[])
 		exec_config();
 	}
 
+	curr_stats.vifm_started = 2;
+
 	check_path_for_file(&lwin, lwin_path, lwin_handle);
 	check_path_for_file(&rwin, rwin_path, rwin_handle);
-
-	curr_stats.vifm_started = 2;
 
 	exec_startup_commands(argc, argv);
 

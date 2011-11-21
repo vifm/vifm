@@ -2540,5 +2540,37 @@ pane_in_dir(FileView *view, const char *path)
 	return strcmp(pane_dir, dir) == 0;
 }
 
+/* will remove dot and regexp filters if it's needed to make file visible
+ *
+ * Returns non-zero if file was found.
+ */
+int
+ensure_file_is_selected(FileView *view, const char *name)
+{
+	int file_pos;
+	char full_path[PATH_MAX];
+
+	snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir, name);
+
+	file_pos = find_file_pos_in_list(view, name);
+	if(file_pos < 0 && access(full_path, F_OK) == 0)
+	{
+		if(name[0] == '.')
+		{
+			set_dot_files_visible(view, 1);
+			file_pos = find_file_pos_in_list(view, name);
+		}
+
+		if(file_pos < 0)
+		{
+			remove_filename_filter(view);
+			file_pos = find_file_pos_in_list(view, name);
+		}
+	}
+
+	move_to_list_pos(view, (file_pos < 0) ? 0 : file_pos);
+	return file_pos >= 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

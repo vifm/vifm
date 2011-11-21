@@ -23,6 +23,7 @@ Windows.
     Permission dialog could change file attributes.
     Add a command to create .lnk files.
     Follow targets of .lnk files.
+    Fix renaming when only letter case is changed.
 
 Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).
