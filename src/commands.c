@@ -4375,8 +4375,7 @@ sync_cmd(const cmd_info_t *cmd_info)
 static int
 touch_cmd(const cmd_info_t *cmd_info)
 {
-	make_files(curr_view, cmd_info->argv, cmd_info->argc);
-	return 1;
+	return make_files(curr_view, cmd_info->argv, cmd_info->argc) != 0;
 }
 
 static int

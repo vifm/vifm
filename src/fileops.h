@@ -68,7 +68,7 @@ int cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		int force);
 int cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force);
 void make_dirs(FileView *view, char **names, int count, int create_parent);
-void make_files(FileView *view, char **names, int count);
+int make_files(FileView *view, char **names, int count);
 
 #ifdef TEST
 const char * gen_clone_name(const char *normal_name);

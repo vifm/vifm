@@ -3627,7 +3627,7 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	status_bar_messagef("%d directorie%s created", n, (n == 1) ? "" : "s");
 }
 
-void
+int
 make_files(FileView *view, char **names, int count)
 {
 	int i;
@@ -3635,28 +3635,31 @@ make_files(FileView *view, char **names, int count)
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 	size_t len;
 
+	if(!is_dir_writable(0, view->curr_dir))
+		return 0;
+
 	for(i = 0; i < count; i++)
 	{
 		struct stat st;
 		if(is_in_string_array(names, i, names[i]))
 		{
 			status_bar_errorf("Name \"%s\" duplicates", names[i]);
-			return;
+			return 1;
 		}
 		if(names[i][0] == '\0')
 		{
 			status_bar_errorf("Name #%d is empty", i + 1);
-			return;
+			return 1;
 		}
 		if(strchr(names[i], '/') != NULL)
 		{
 			status_bar_errorf("Name \"%s\" contains slash", names[i]);
-			return;
+			return 1;
 		}
 		if(lstat(names[i], &st) == 0)
 		{
 			status_bar_errorf("File \"%s\" already exists", names[i]);
-			return;
+			return 1;
 		}
 	}
 
@@ -3682,6 +3685,7 @@ make_files(FileView *view, char **names, int count)
 		go_to_first_file(view, names, count);
 
 	status_bar_messagef("%d file%s created", n, (n == 1) ? "" : "s");
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

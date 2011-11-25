@@ -3,6 +3,8 @@
 
 	Added g:vifm_exec_args variable for the plugin.
 
+	Added write permissions to current directory on :touch.
+
 	Show status bar message while grep works.
 
 	Restore terminal title on exit when running in X (*nix only).
