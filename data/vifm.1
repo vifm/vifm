@@ -1,4 +1,4 @@
-.TH vifm 1 "November 20, 2011" "" "Vifm"
+.TH vifm 1 "November 24, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2011,7 +2011,8 @@ directory.
 The plugin have only two settings.  It's a string variable named g:vifm_term to
 let user specify command to run gui terminal.  By default it's equal to
 \'xterm -e'.  And anoter string variable named g:vifm_exec, which equals 'vifm'
-by default and specifies path to vifm's executable.
+by default and specifies path to vifm's executable.  To pass arguments to
+vifm use g:vifm_exec_args, which is empty by default.
 
 To use the plugin copy the vifm.vim file to either the system wide vim/plugin
 directory or into ~/.vim/plugin.

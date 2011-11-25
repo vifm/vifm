@@ -1,6 +1,8 @@
 0.7.1 to current
 	Added --select command line argument.
 
+	Added g:vifm_exec_args variable for the plugin.
+
 	Show status bar message while grep works.
 
 	Restore terminal title on exit when running in X (*nix only).

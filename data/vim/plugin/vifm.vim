@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@gmail.com>
-" Last Change: 2011 November 7
+" Last Change: 2011 November 24
 
 " vifm and vifm.vim can be found at http://vifm.sf.net
 
@@ -54,6 +54,10 @@ if !exists('g:vifm_exec')
 	let g:vifm_exec = 'vifm'
 endif
 
+if !exists('g:vifm_exec_args')
+	let g:vifm_exec_args = ''
+endif
+
 if !exists('g:vifm_term')
 	let g:vifm_term = 'xterm -e'
 endif
@@ -74,7 +78,7 @@ if has('win32')
 			finish
 		endif
 		let s:vifm_home = s:lst[0]
-        unlet s:lst_str
+		unlet s:lst_str
 		unlet s:lst
 	endif
 	if !filereadable(s:vifm_home.'/vifmrc')
@@ -99,7 +103,9 @@ function! s:StartVifm(editcmd, ...)
 	endif
 
 	let ldir = (a:0 > 0) ? a:1 : expand('%:p:h')
+    let ldir = substitute(ldir, '\', '/', 'g')
 	let rdir = (a:0 > 1) ? a:2 : ''
+    let rdir = substitute(rdir, '\', '/', 'g')
 	if has('win32')
 		let ldir = '"'.ldir.'"'
 		if len(rdir) != 0
@@ -112,9 +118,10 @@ function! s:StartVifm(editcmd, ...)
 
 	" Gvim cannot handle ncurses so run vifm in a terminal.
 	if has('gui_running')
-		execute 'silent !' g:vifm_term g:vifm_exec '-f' ldir rdir
+		execute 'silent !' g:vifm_term g:vifm_exec '-f' g:vifm_exec_args ldir
+			\ rdir
 	else
-		execute 'silent !' g:vifm_exec '-f' ldir rdir
+		execute 'silent !' g:vifm_exec '-f' g:vifm_exec_args ldir rdir
 	endif
 
 	redraw!
