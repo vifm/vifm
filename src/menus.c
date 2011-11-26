@@ -821,7 +821,7 @@ draw_menu(menu_info *m)
 static char *
 uchar2str(wchar_t *c, size_t *len)
 {
-	static char buf[8];
+	static char buf[32];
 
 	*len = 1;
 	switch(*c)
