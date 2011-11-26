@@ -2017,6 +2017,7 @@ fill_dir_list(FileView *view)
 				(view->list_rows + 1) * sizeof(dir_entry_t));
 		if(view->dir_entry == NULL)
 		{
+			closedir(dir);
 			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return -1;
 		}
@@ -2028,6 +2029,7 @@ fill_dir_list(FileView *view)
 		dir_entry->name = malloc(name_len + 1 + 1);
 		if(dir_entry->name == NULL)
 		{
+			closedir(dir);
 			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return -1;
 		}
@@ -2219,7 +2221,6 @@ load_dir_list(FileView *view, int reload)
 #ifndef _WIN32
 	struct stat s;
 #endif
-	int x;
 	int old_list = view->list_rows;
 	int need_free = (view->selected_filelist == NULL);
 
@@ -2257,6 +2258,7 @@ load_dir_list(FileView *view, int reload)
 
 	if(view->dir_entry)
 	{
+		int x;
 		for(x = 0; x < old_list; x++)
 			free(view->dir_entry[x].name);
 

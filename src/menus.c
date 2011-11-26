@@ -490,17 +490,23 @@ execute_jobs_cb(FileView *view, menu_info *m)
 static void
 execute_apropos_cb(menu_info *m)
 {
-	char *line = NULL;
-	char *man_page = NULL;
-	char *free_this = NULL;
-	char *num_str = NULL;
+	char *line;
+	char *man_page;
+	char *free_this;
+	char *num_str;
 	char command[256];
-	int z = 0;
 
 	free_this = man_page = line = strdup(m->data[m->pos]);
+	if(free_this == NULL)
+	{
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return;
+	}
 
 	if((num_str = strchr(line, '(')))
 	{
+		int z = 0;
+
 		num_str++;
 		while(num_str[z] != ')')
 		{
@@ -528,14 +534,19 @@ execute_apropos_cb(menu_info *m)
 static void
 goto_selected_file(FileView *view, menu_info *m)
 {
-	char *dir = NULL;
-	char *file = NULL;
-	char *free_this = NULL;
-	int isdir = 0;
+	char *dir;
+	char *file;
+	char *free_this;
 	char *num = NULL;
 	char *p = NULL;
 
 	free_this = file = dir = malloc(2 + strlen(m->data[m->pos]) + 1 + 1);
+	if(free_this == NULL)
+	{
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return;
+	}
+
 	if(m->data[m->pos][0] != '/')
 		strcpy(dir, "./");
 	else
@@ -576,6 +587,8 @@ goto_selected_file(FileView *view, menu_info *m)
 
 	if(access(file, R_OK) == 0)
 	{
+		int isdir = 0;
+
 		if(is_dir(file))
 			isdir = 1;
 
@@ -1328,7 +1341,10 @@ show_colorschemes_menu(FileView *view)
 
 	dir = opendir(colors_dir);
 	if(dir == NULL)
+	{
+		free(m.title);
 		return;
+	}
 
 	while((d = readdir(dir)) != NULL)
 	{
@@ -1539,7 +1555,10 @@ form_program_list(const char *filename)
 
 	result = malloc(5 + strlen(ft_str) + 3 + strlen(mime_str) + 1);
 	if(result == NULL)
+	{
+		free(ft_str);
 		return NULL;
+	}
 
 	result[0] = '\0';
 	if(isdir)

@@ -145,14 +145,18 @@ restore_from_trash(const char *trash_name)
 			trash_list[i].trash_name);
 	if(perform_operation(OP_MOVE, NULL, full, trash_list[i].path) == 0)
 	{
-		char *msg;
+		char *msg, *p;
 		size_t len;
 
 		cmd_group_continue();
 
 		msg = replace_group_msg(NULL);
 		len = strlen(msg);
-		msg = realloc(msg, COMMAND_GROUP_INFO_LEN);
+		p = realloc(msg, COMMAND_GROUP_INFO_LEN);
+		if (p == NULL)
+			len = COMMAND_GROUP_INFO_LEN;
+		else
+			msg = p;
 
 		snprintf(msg + len, COMMAND_GROUP_INFO_LEN - len, "%s%s",
 				(msg[len - 2] != ':') ? ", " : "", strchr(trash_name, '_') + 1);

@@ -200,14 +200,21 @@ set_config_dir(void)
 	{
 #ifndef _WIN32
 		FILE *f;
+
 		if(mkdir(cfg.config_dir, 0777))
 			return;
 		if(mkdir(cfg.trash_dir, 0777))
 			return;
+
 		if((f = fopen(help_file, "r")) == NULL)
 			create_help_file();
+		else
+			fclose(f);
+
 		if((f = fopen(rc_file, "r")) == NULL)
 			create_rc_file();
+		else
+			fclose(f);
 #else
 		if(mkdir(cfg.config_dir))
 			return;

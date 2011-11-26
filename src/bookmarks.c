@@ -187,7 +187,6 @@ int
 move_to_bookmark(FileView *view, char mark)
 {
 	int x = mark2index(mark);
-	int file_pos = -1;
 
 	if(x != -1 && is_bookmark(x))
 	{

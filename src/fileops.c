@@ -533,6 +533,7 @@ fuse_try_mount(FileView *view, const char *program)
 			{
 				(void)show_error_msg("SSH mount failed", "File is empty");
 				curr_stats.save_msg = 1;
+				fclose(f);
 				return;
 			}
 
@@ -2288,14 +2289,18 @@ put_next(const char *dest_name, int override)
 	progress_msg("Putting files", put_confirm.x + 1, put_confirm.reg->num_files);
 	if(perform_operation(op, NULL, src_buf, dst_buf) == 0)
 	{
-		char *msg;
+		char *msg, *p;
 		size_t len;
 
 		cmd_group_continue();
 
 		msg = replace_group_msg(NULL);
 		len = strlen(msg);
-		msg = realloc(msg, COMMAND_GROUP_INFO_LEN);
+		p = realloc(msg, COMMAND_GROUP_INFO_LEN);
+		if(p == NULL)
+			len = COMMAND_GROUP_INFO_LEN;
+		else
+			msg = p;
 
 		snprintf(msg + len, COMMAND_GROUP_INFO_LEN - len, "%s%s",
 				(msg[len - 2] != ':') ? ", " : "", dest_name);
@@ -3633,7 +3638,6 @@ make_files(FileView *view, char **names, int count)
 	int i;
 	int n;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
-	size_t len;
 
 	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
@@ -3663,7 +3667,7 @@ make_files(FileView *view, char **names, int count)
 		}
 	}
 
-	len = snprintf(buf, sizeof(buf), "touch in %s: ",
+	snprintf(buf, sizeof(buf), "touch in %s: ",
 			replace_home_part(view->curr_dir));
 
 	get_group_file_list(names, count, buf);

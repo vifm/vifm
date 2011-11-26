@@ -910,7 +910,7 @@ complete_option(const char *buf, int bool_only)
 	opt = find_option(buf);
 	if(opt != NULL && strcmp(opt->name, buf) != 0)
 	{
-		add_completion(strdup(opt->name));
+		add_completion(opt->name);
 		return;
 	}
 
