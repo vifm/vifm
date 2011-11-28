@@ -163,7 +163,11 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, 9, 4, " [   ] Owner Name");
 	mvwaddstr(sort_win, 10, 4, " [   ] Size");
 	mvwaddstr(sort_win, 11, 4, " [   ] Time Accessed");
+#ifndef _WIN32
 	mvwaddstr(sort_win, 12, 4, " [   ] Time Changed");
+#else
+	mvwaddstr(sort_win, 12, 4, " [   ] Time Created");
+#endif
 	mvwaddstr(sort_win, 13, 4, " [   ] Time Modified");
 	mvwaddstr(sort_win, curr, 6, caps[descending]);
 
