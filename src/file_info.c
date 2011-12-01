@@ -179,7 +179,11 @@ redraw_file_info_dialog(void)
 	wprint(menu_win, buf);
 	curr_y += 2;
 
+#ifndef _WIN32
 	mvwaddstr(menu_win, curr_y, 2, "Changed: ");
+#else
+	mvwaddstr(menu_win, curr_y, 2, "Created: ");
+#endif
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].ctime);
 	strftime(buf, sizeof (buf), "%a %b %d %Y %I:%M %p", tm_ptr);
 	wmove(menu_win, curr_y, 13);
