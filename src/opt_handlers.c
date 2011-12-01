@@ -63,6 +63,7 @@ static void smartcase_handler(OPT_OP op, optval_t val);
 static void sortnumbers_handler(OPT_OP op, optval_t val);
 static void sort_handler(OPT_OP op, optval_t val);
 static void sortorder_handler(OPT_OP op, optval_t val);
+static void statusline_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
 static void timefmt_handler(OPT_OP op, optval_t val);
 static void timeoutlen_handler(OPT_OP op, optval_t val);
@@ -165,6 +166,7 @@ static struct
 #endif
 	{ "smartcase",   "scs",  OPT_BOOL,    0,                          NULL,            &smartcase_handler,   },
 	{ "sortnumbers", "",     OPT_BOOL,    0,                          NULL,            &sortnumbers_handler, },
+	{ "statusline",  "stl",  OPT_STR,     0,                          NULL,            &statusline_handler,  },
 	{ "tabstop",     "ts",   OPT_INT,     0,                          NULL,            &tabstop_handler,     },
 	{ "timefmt",     "",     OPT_STR,     0,                          NULL,            &timefmt_handler,     },
 	{ "timeoutlen",  "tm",   OPT_INT,     0,                          NULL,            &timeoutlen_handler,  },
@@ -223,6 +225,7 @@ load_options_defaults(void)
 #endif
 	options[i++].val.bool_val = cfg.smart_case;
 	options[i++].val.bool_val = cfg.sort_numbers;
+	options[i++].val.str_val = cfg.status_line;
 	options[i++].val.int_val = cfg.tab_stop;
 	options[i++].val.str_val = cfg.time_format + 1;
 	options[i++].val.int_val = cfg.timeout_len;
@@ -728,6 +731,16 @@ sortorder_handler(OPT_OP op, optval_t val)
 		load_saving_pos(curr_view, 1);
 		load_sort(curr_view);
 	}
+}
+
+static void
+statusline_handler(OPT_OP op, optval_t val)
+{
+	char *s;
+	if((s = strdup(val.str_val)) == NULL)
+		return;
+	free(cfg.status_line);
+	cfg.status_line = s;
 }
 
 static void

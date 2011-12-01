@@ -48,9 +48,9 @@ syntax case match
 syntax keyword vifmOption contained autochpos confirm cf cpoptions cpo fastrun
 		\ followlinks fusehome gdefault history hi hlsearch hls iec ignorecase ic
 		\ incsearch is laststatus ls rulerformat ruf runexec scrollbind scb
-		\ scrolloff so shell sh slowfs smartcase scs sortnumbers timefmt timeoutlen
-		\ trash undolevels ul vicmd vixcmd vifminfo vimhelp wildmenu wmnu wrap
-		\ wrapscan ws sort sortorder tabstop ts
+		\ scrolloff so shell sh slowfs smartcase scs sortnumbers statusline stl
+		\ timefmt timeoutlen trash undolevels ul vicmd vixcmd vifminfo vimhelp
+		\ wildmenu wmnu wrap wrapscan ws sort sortorder tabstop ts
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun

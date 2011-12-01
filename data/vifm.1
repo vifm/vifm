@@ -1613,7 +1613,7 @@ Controls if status bar is visible.
 .BI "rulerformat ruf"
 type: string
 .br
-default: "%l-%S "
+default: "%=%l-%S "
 .br
 Determines the content of the ruler.  Its width is 13 characters and it's right
 aligned.  Following macros are supported:
@@ -1625,6 +1625,8 @@ aligned.  Following macros are supported:
 %- - number of filtered files
 .br
 %S - number of showed files
+.br
+%= - separation point between left and right align items
 .TP
 .BI runexec
 type: boolean
@@ -1711,6 +1713,28 @@ type: boolean
 default: false
 .br
 Natural sort of (version) numbers within text.
+.TP
+.BI "statusline stl"
+type: string
+.br
+default: ""
+.br
+Determines the content of the status line (the line right above command-line).
+Following macros are supported:
+.br
+%t - file name
+.br
+%A - file permissions
+.br
+%u - user name or uid (if it cannot be resolved)
+.br
+%g - group name or gid (if it cannot be resolved)
+.br
+%s - file size in human readable format
+.br
+%d - file modification date (uses 'timefmt' option)
+.br
+all 'rulerformat' macros
 .TP
 .BI sortorder
 type: enumeration

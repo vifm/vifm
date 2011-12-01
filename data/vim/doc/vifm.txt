@@ -1409,12 +1409,11 @@ rulerformat ruf
 type: string
 default: "%l-%S "
 Determines the content of the ruler.  Its width is 13 characters and it's
-right aligned.  Following
-macros are supported:
-%l - file number
-%L - total number of files in view (including filtered)
-%- - number of filtered files
-%S - number of showed files
+right aligned.  Following macros are supported:
+    %l - file number
+    %L - total number of files in view (including filtered)
+    %- - number of filtered files
+    %S - number of showed files
 
                                                *vifm-'runexec'*
 runexec
@@ -1497,6 +1496,20 @@ sortorder
 type: enumeration
 default: ascending
 Sets sort order for primary key: ascending, descending.
+
+                                               *vifm-'statusline'* *vifm-'stl'*
+statusline stl
+type: string
+default: ""
+Determines the content of the status line (the line right above command-line).
+Following macros are supported:
+    %t - file name
+    %A - file permissions
+    %u - user name or uid (if it cannot be resolved)
+    %g - group name or gid (if it cannot be resolved)
+    %s - file size in human readable format
+    %d - file modification date (uses |vifm-'timefmt'| option)
+    all |vifm-'rulerformat'| macros
 
                                                *vifm-'tabstop'* *vifm-'ts'*
 tabstop ts

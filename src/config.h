@@ -94,6 +94,7 @@ typedef struct
 	int last_status;
 	int tab_stop;
 	char *ruler_format;
+	char *status_line;
 }config_t;
 
 extern config_t cfg;

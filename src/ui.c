@@ -81,6 +81,44 @@ finish(const char *message)
 }
 
 static char *
+break_in_two(char *str, size_t max)
+{
+	int i;
+	size_t len, size;
+	char *result;
+	char *break_point = strstr(str, "%=");
+	if(break_point == NULL)
+		return str;
+
+	len = get_utf8_string_length(str) - 2;
+	size = strlen(str);
+	size = MAX(size, max);
+	result = malloc(size*4 + 2);
+
+	snprintf(result, break_point - str + 1, "%s", str);
+
+	if(len > max)
+		break_point = str + get_real_string_width(str,
+				get_utf8_string_length(result) - (len - max));
+
+	snprintf(result, break_point - str + 1, "%s", str);
+	i = break_point - str;
+	while(max > len)
+	{
+		result[i++] = ' ';
+		max--;
+	}
+	result[i] = '\0';
+
+	if(len > max)
+		break_point = strstr(str, "%=");
+	strcat(result, break_point + 2);
+
+	free(str);
+	return result;
+}
+
+static char *
 expand_ruler_macros(FileView *view, const char *format)
 {
 	char *result = strdup("");
@@ -91,7 +129,7 @@ expand_ruler_macros(FileView *view, const char *format)
 	{
 		char *p;
 		char buf[32];
-		if(c != '%' || strchr("-lLS", *format) == NULL)
+		if(c != '%' || strchr("-lLS%", *format) == NULL)
 		{
 			p = realloc(result, len + 1 + 1);
 			if(p == NULL)
@@ -116,6 +154,9 @@ expand_ruler_macros(FileView *view, const char *format)
 			case 'S':
 				snprintf(buf, sizeof(buf), "%d", view->list_rows);
 				break;
+			case '%':
+				snprintf(buf, sizeof(buf), "%%");
+				break;
 		}
 		p = realloc(result, len + strlen(buf) + 1);
 		if(p == NULL)
@@ -131,27 +172,28 @@ expand_ruler_macros(FileView *view, const char *format)
 void
 update_pos_window(FileView *view)
 {
-	char *buf = expand_ruler_macros(view, cfg.ruler_format);
-	size_t len = strlen(buf);
+	char *buf;
+	size_t len;
+
+	buf = expand_ruler_macros(view, cfg.ruler_format);
+	buf = break_in_two(buf, 13);
+	len = strlen(buf);
 
 	werase(pos_win);
-	mvwaddstr(pos_win, 0, 13 - MIN(len, 13), buf);
+	mvwaddstr(pos_win, 0, 0, buf);
 	wnoutrefresh(pos_win);
 
 	free(buf);
 }
 
 static void
-get_id_string(FileView *view, size_t len, char *out_buf)
+get_uid_string(FileView *view, size_t len, char *out_buf)
 {
 #ifndef _WIN32
-	char buf[MAX(sysconf(_SC_GETPW_R_SIZE_MAX), sysconf(_SC_GETGR_R_SIZE_MAX))];
+	char buf[sysconf(_SC_GETPW_R_SIZE_MAX) + 1];
 	char uid_buf[26];
-	char gid_buf[26];
 	struct passwd pwd_b;
-	struct group group_b;
 	struct passwd *pwd_buf;
-	struct group *group_buf;
 
 	if(getpwuid_r(view->dir_entry[view->list_pos].uid, &pwd_b, buf, sizeof(buf),
 			&pwd_buf) != 0 || pwd_buf == NULL)
@@ -164,6 +206,21 @@ get_id_string(FileView *view, size_t len, char *out_buf)
 		snprintf(uid_buf, sizeof(uid_buf), "%s", pwd_buf->pw_name);
 	}
 
+	snprintf(out_buf, len, "%s", uid_buf);
+#else
+	out_buf[0] = '\0';
+#endif
+}
+
+static void
+get_gid_string(FileView *view, size_t len, char *out_buf)
+{
+#ifndef _WIN32
+	char buf[sysconf(_SC_GETGR_R_SIZE_MAX) + 1];
+	char gid_buf[26];
+	struct group group_b;
+	struct group *group_buf;
+
 	if(getgrgid_r(view->dir_entry[view->list_pos].gid, &group_b, buf, sizeof(buf),
 			&group_buf) != 0 || group_buf == NULL)
 	{
@@ -175,14 +232,81 @@ get_id_string(FileView *view, size_t len, char *out_buf)
 		snprintf(gid_buf, sizeof(gid_buf), "%s", group_buf->gr_name);
 	}
 
-	snprintf(out_buf, len, "  %s:%s", uid_buf, gid_buf);
+	snprintf(out_buf, len, "%s", gid_buf);
 #else
 	out_buf[0] = '\0';
 #endif
 }
 
-void
-update_stat_window(FileView *view)
+static char *
+expand_status_line_macros(FileView *view, const char *format)
+{
+	char *result = strdup("");
+	size_t len = 0;
+	char c;
+
+	while((c = *format++) != '\0')
+	{
+		char *p;
+		char buf[PATH_MAX];
+		if(c != '%' || strchr("tAugsd%", *format) == NULL)
+		{
+			p = realloc(result, len + 1 + 1);
+			if(p == NULL)
+				break;
+			result = p;
+			result[len++] = c;
+			result[len] = '\0';
+			continue;
+		}
+		c = *format++;
+		switch(c)
+		{
+			case 't':
+				snprintf(buf, sizeof(buf), "%s", get_current_file_name(view));
+				break;
+			case 'A':
+				get_perm_string(buf, sizeof(buf), view->dir_entry[view->list_pos].mode);
+				break;
+			case 'u':
+				get_uid_string(view, sizeof(buf), buf);
+				break;
+			case 'g':
+				get_gid_string(view, sizeof(buf), buf);
+				break;
+			case 's':
+				friendly_size_notation(view->dir_entry[view->list_pos].size,
+						sizeof(buf), buf);
+				if(strlen(buf) < 5)
+				{
+					int i = 5 - strlen(buf);
+					memmove(buf + i, buf, 5 - i + 1);
+					memset(buf, ' ', i);
+				}
+				break;
+			case 'd':
+				{
+					struct tm *tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
+					strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
+				}
+				break;
+			case '%':
+				snprintf(buf, sizeof(buf), "%%");
+				break;
+		}
+		p = realloc(result, len + strlen(buf) + 1);
+		if(p == NULL)
+			break;
+		result = p;
+		strcat(result, buf);
+		len += strlen(buf);
+	}
+
+	return result;
+}
+
+static void
+update_stat_window_old(FileView *view)
 {
 	char name_buf[160*2 + 1];
 	char perm_buf[26];
@@ -207,7 +331,10 @@ update_stat_window(FileView *view)
 	friendly_size_notation(view->dir_entry[view->list_pos].size, sizeof(size_buf),
 			size_buf);
 
-	get_id_string(view, sizeof(id_buf), id_buf);
+	get_uid_string(view, sizeof(id_buf), id_buf);
+	strcat(id_buf, ":");
+	get_gid_string(view, sizeof(id_buf) - strlen(id_buf),
+			id_buf + strlen(id_buf));
 	get_perm_string(perm_buf, sizeof(perm_buf),
 			view->dir_entry[view->list_pos].mode);
 
@@ -235,6 +362,39 @@ update_stat_window(FileView *view)
 	mvwaddstr(stat_win, 0, cur_x, id_buf);
 
 	wrefresh(stat_win);
+}
+
+void
+update_stat_window(FileView *view)
+{
+	int x, y;
+	char *buf1, *buf2;
+
+	if(!cfg.last_status)
+		return;
+
+	if(cfg.status_line[0] == '\0')
+	{
+		update_stat_window_old(view);
+		return;
+	}
+
+	getmaxyx(stdscr, y, x);
+	wresize(stat_win, 1, x);
+	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
+			cfg.cs.color[STATUS_LINE_COLOR].attr);
+
+	buf1 = expand_status_line_macros(view, cfg.status_line);
+	buf2 = expand_ruler_macros(view, buf1);
+	buf2 = break_in_two(buf2, getmaxx(stdscr));
+	free(buf1);
+
+	werase(stat_win);
+	wmove(stat_win, 0, 0);
+	wprint(stat_win, buf2);
+	wrefresh(stat_win);
+
+	free(buf2);
 }
 
 static void

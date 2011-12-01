@@ -37,6 +37,8 @@ const char *tags[] = {
 	"vifm-'sort'",
 	"vifm-'sortnumbers'",
 	"vifm-'sortorder'",
+	"vifm-'statusline'",
+	"vifm-'stl'",
 	"vifm-'tabstop'",
 	"vifm-'timefmt'",
 	"vifm-'timeoutlen'",

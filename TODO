@@ -65,7 +65,6 @@ Other (questionable) things.
     Maybe add + and - commands to undo by commands, not command groups.
     :setlocal command.
     Remove items from :history cmd?
-    Option with format of statwin.
     :edit, etc. in the menus.
     :alias
     Like gv but to select just pasted files (gp?).
