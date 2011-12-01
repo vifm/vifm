@@ -113,8 +113,8 @@ init_config(void)
 	cfg.selection_cp = 1;
 	cfg.last_status = 1;
 	cfg.tab_stop = 8;
-	cfg.ruler_format = strdup("%=%l/%S/%- ");
-	cfg.status_line = strdup("  %t%= %A  %u:%g  %s %d  ");
+	cfg.ruler_format = strdup("%=%l/%S ");
+	cfg.status_line = strdup("");
 
 	p = getenv("SHELL");
 	if(p == NULL || *p == '\0')
