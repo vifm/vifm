@@ -80,15 +80,65 @@ finish(const char *message)
 	exit(0);
 }
 
+static char *
+expand_ruler_macros(FileView *view, const char *format)
+{
+	char *result = strdup("");
+	size_t len = 0;
+	char c;
+
+	while((c = *format++) != '\0')
+	{
+		char *p;
+		char buf[32];
+		if(c != '%' || strchr("-lLS", *format) == NULL)
+		{
+			p = realloc(result, len + 1 + 1);
+			if(p == NULL)
+				break;
+			result = p;
+			result[len++] = c;
+			result[len] = '\0';
+			continue;
+		}
+		c = *format++;
+		switch(c)
+		{
+			case '-':
+				snprintf(buf, sizeof(buf), "%d", view->filtered);
+				break;
+			case 'l':
+				snprintf(buf, sizeof(buf), "%d", view->list_pos + 1);
+				break;
+			case 'L':
+				snprintf(buf, sizeof(buf), "%d", view->list_rows + view->filtered);
+				break;
+			case 'S':
+				snprintf(buf, sizeof(buf), "%d", view->list_rows);
+				break;
+		}
+		p = realloc(result, len + strlen(buf) + 1);
+		if(p == NULL)
+			break;
+		result = p;
+		strcat(result, buf);
+		len += strlen(buf);
+	}
+
+	return result;
+}
+
 void
 update_pos_window(FileView *view)
 {
-	char buf[13];
+	char *buf = expand_ruler_macros(view, cfg.ruler_format);
+	size_t len = strlen(buf);
 
 	werase(pos_win);
-	snprintf(buf, sizeof(buf), "%d-%d ", view->list_pos + 1, view->list_rows);
-	mvwaddstr(pos_win, 0, 13 - strlen(buf), buf);
+	mvwaddstr(pos_win, 0, 13 - MIN(len, 13), buf);
 	wnoutrefresh(pos_win);
+
+	free(buf);
 }
 
 static void

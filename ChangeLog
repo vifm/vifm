@@ -5,6 +5,8 @@
 
 	Added write permissions to current directory on :touch.
 
+	Added 'rulerformat' option.
+
 	Show status bar message while grep works.
 
 	Restore terminal title on exit when running in X (*nix only).

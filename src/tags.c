@@ -22,6 +22,8 @@ const char *tags[] = {
 	"vifm-'is'",
 	"vifm-'laststatus'",
 	"vifm-'ls'",
+	"vifm-'ruf'",
+	"vifm-'rulerformat'",
 	"vifm-'runexec'",
 	"vifm-'scb'",
 	"vifm-'scrollbind'",

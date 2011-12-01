@@ -1404,6 +1404,18 @@ type: boolean
 default: true
 Controls if status bar is visible.
 
+                                               *vifm-'rulerformat'* *vifm-'ruf'*
+rulerformat ruf
+type: string
+default: "%l-%S "
+Determines the content of the ruler.  Its width is 13 characters and it's
+right aligned.  Following
+macros are supported:
+%l - file number
+%L - total number of files in view (including filtered)
+%- - number of filtered files
+%S - number of showed files
+
                                                *vifm-'runexec'*
 runexec
 type: boolean

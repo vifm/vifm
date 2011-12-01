@@ -1791,17 +1791,15 @@ expand_macros(FileView *view, const char *command, const char *args,
 		switch(command[x])
 		{
 			case 'a': /* user arguments */
+				if(args != NULL)
 				{
-					if(args != NULL)
-					{
-						char arg_buf[strlen(args) + 2];
+					char arg_buf[strlen(args) + 2];
 
-						expanded = (char *)realloc(expanded,
-								strlen(expanded) + strlen(args) + 3);
-						snprintf(arg_buf, sizeof(arg_buf), "%s", args);
-						strcat(expanded, arg_buf);
-						len = strlen(expanded);
-					}
+					expanded = (char *)realloc(expanded,
+							strlen(expanded) + strlen(args) + 3);
+					snprintf(arg_buf, sizeof(arg_buf), "%s", args);
+					strcat(expanded, arg_buf);
+					len = strlen(expanded);
 				}
 				break;
 			case 'b': /* selected files of both dirs */

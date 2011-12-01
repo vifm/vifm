@@ -93,6 +93,7 @@ typedef struct
 	int selection_cp;
 	int last_status;
 	int tab_stop;
+	char *ruler_format;
 }config_t;
 
 extern config_t cfg;

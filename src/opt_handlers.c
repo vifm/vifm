@@ -51,6 +51,7 @@ static void ignorecase_handler(OPT_OP op, optval_t val);
 static void incsearch_handler(OPT_OP op, optval_t val);
 static void laststatus_handler(OPT_OP op, optval_t val);
 static void scroll_line_down(FileView *view);
+static void rulerformat_handler(OPT_OP op, optval_t val);
 static void runexec_handler(OPT_OP op, optval_t val);
 static void scrollbind_handler(OPT_OP op, optval_t val);
 static void scrolloff_handler(OPT_OP op, optval_t val);
@@ -154,6 +155,7 @@ static struct
 	{ "ignorecase",  "ic",   OPT_BOOL,    0,                          NULL,            &ignorecase_handler,  },
 	{ "incsearch",   "is",   OPT_BOOL,    0,                          NULL,            &incsearch_handler ,  },
 	{ "laststatus",  "ls",   OPT_BOOL,    0,                          NULL,            &laststatus_handler,  },
+	{ "rulerformat", "ruf",  OPT_STR,     0,                          NULL,            &rulerformat_handler, },
 	{ "runexec",     "",     OPT_BOOL,    0,                          NULL,            &runexec_handler,     },
 	{ "scrollbind",  "scb",  OPT_BOOL,    0,                          NULL,            &scrollbind_handler,  },
 	{ "scrolloff",   "so",   OPT_INT,     0,                          NULL,            &scrolloff_handler,   },
@@ -211,6 +213,7 @@ load_options_defaults(void)
 	options[i++].val.bool_val = cfg.ignore_case;
 	options[i++].val.bool_val = cfg.inc_search;
 	options[i++].val.bool_val = cfg.last_status;
+	options[i++].val.str_val = cfg.ruler_format;
 	options[i++].val.bool_val = cfg.auto_execute;
 	options[i++].val.bool_val = cfg.scroll_bind;
 	options[i++].val.int_val = cfg.scroll_off;
@@ -587,6 +590,16 @@ scroll_line_down(FileView *view)
 		draw_dir_list(view, view->top_line);
 	}
 	wresize(view->win, view->window_rows + 1, view->window_width + 1);
+}
+
+static void
+rulerformat_handler(OPT_OP op, optval_t val)
+{
+	char *s;
+	if((s = strdup(val.str_val)) == NULL)
+		return;
+	free(cfg.ruler_format);
+	cfg.ruler_format = s;
 }
 
 static void
