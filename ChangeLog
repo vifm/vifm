@@ -12,6 +12,8 @@
 
 	Added optional argument for the :sync command.
 
+	Added support for character classes in globals.
+
 	Show status bar message while grep works.
 
 	Restore terminal title on exit when running in X (*nix only).

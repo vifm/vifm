@@ -38,10 +38,19 @@ to_regex(const char *global)
 	int result_len = 1;
 	while(*global != '\0')
 	{
-		if(strchr("^.[$()|+{", *global) != NULL)
+		if(strchr("^.$()|+{", *global) != NULL)
+		{
+		  if(*global != '^' || result[result_len - 1] != '[')
+			{
+				result = realloc(result, result_len + 2 + 1 + 1);
+				result[result_len++] = '\\';
+			}
+		}
+		else if(*global == '!' && result[result_len - 1] == '[')
 		{
 			result = realloc(result, result_len + 2 + 1 + 1);
-			result[result_len++] = '\\';
+			result[result_len++] = '^';
+			continue;
 		}
 		else if(*global == '\\')
 		{

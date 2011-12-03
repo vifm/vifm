@@ -142,6 +142,92 @@ test_escaping(void)
 }
 
 static void
+test_classes(void)
+{
+	char *buf;
+
+	set_programs("*.[ch]", "c file", 0);
+
+	buf = get_default_program_for_file("main.cpp");
+	assert_true(buf == NULL);
+
+	buf = get_default_program_for_file("main.hpp");
+	assert_true(buf == NULL);
+
+	buf = get_default_program_for_file("main.c");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("c file", buf);
+	free(buf);
+
+	buf = get_default_program_for_file("main.h");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("c file", buf);
+	free(buf);
+}
+
+static void
+test_classes_negotiation(void)
+{
+	char *buf;
+
+	set_programs("*.[!ch]", "not c file", 0);
+
+	buf = get_default_program_for_file("main.c");
+	assert_true(buf == NULL);
+
+	buf = get_default_program_for_file("main.h");
+	assert_true(buf == NULL);
+
+	buf = get_default_program_for_file("main.o");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("not c file", buf);
+	free(buf);
+
+	set_programs("*.[^ch]", "c file", 0);
+
+	buf = get_default_program_for_file("main.c");
+	assert_true(buf == NULL);
+
+	buf = get_default_program_for_file("main.h");
+	assert_true(buf == NULL);
+
+	buf = get_default_program_for_file("main.o");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("not c file", buf);
+	free(buf);
+}
+
+static void
+test_classes_ranges(void)
+{
+	char *buf;
+
+	set_programs("*.[0-9]", "part file", 0);
+
+	buf = get_default_program_for_file("main.c");
+	assert_true(buf == NULL);
+
+	buf = get_default_program_for_file("main.A");
+	assert_true(buf == NULL);
+
+	buf = get_default_program_for_file("main.0");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("part file", buf);
+	free(buf);
+
+	buf = get_default_program_for_file("main.8");
+	assert_false(buf == NULL);
+	if(buf != NULL)
+		assert_string_equal("part file", buf);
+	free(buf);
+}
+
+static void
 test_xfiletypes1_c(void)
 {
 	char *buf;
@@ -308,6 +394,9 @@ filetype_tests(void)
 	run_test(test_match_full_line);
 	run_test(test_match_qmark);
 	run_test(test_escaping);
+	run_test(test_classes);
+	run_test(test_classes_negotiation);
+	run_test(test_classes_ranges);
 
 	run_test(test_xfiletypes1_c);
 	run_test(test_xfiletypes1_x);
