@@ -1130,7 +1130,9 @@ of the hierarchy and transparency for all others.
     last character.
 
                                                *vifm-:sync*
-:sync - change the other panel to the current panels directory.
+:sync [relative path] - change the other panel to the current panel
+    directory or to some path relative to the current directory.  Using
+    macros is allowed.
 
                                                *vifm-:undolist* *vifm-:undol*
 :undol[ist] - show list of latest changes.  Add ! to see commands.

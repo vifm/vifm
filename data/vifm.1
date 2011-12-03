@@ -1,4 +1,4 @@
-.TH vifm 1 "December 1, 2011" "" "Vifm"
+.TH vifm 1 "December 3, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1275,8 +1275,9 @@ will use previous pattern.
 .BI :[range]s[ubstitute]
 will repeat previous substitution command.
 .TP
-.BI :sync
-change the other panel to the current panel directory.
+.BI ":sync [relative path]"
+change the other panel to the current panel directory or to some path relative
+to the current directory.  Using macros is allowed.
 .TP
 .BI ":touch file..."
 will create files.  Aborts on errors and won't update time of existing files.

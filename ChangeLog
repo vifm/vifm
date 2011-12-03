@@ -10,6 +10,8 @@
 
 	Added 'statusline' option.
 
+	Added optional argument for the :sync command.
+
 	Show status bar message while grep works.
 
 	Restore terminal title on exit when running in X (*nix only).

@@ -113,6 +113,7 @@ enum
 	COM_PUSHD,
 	COM_SET,
 	COM_SOURCE,
+	COM_SYNC,
 };
 
 static int complete_args(int id, const char *args, int argc, char **argv,
@@ -280,7 +281,7 @@ static const cmd_add_t commands[] = {
 	{ .name = "empty",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = empty_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "execute",          .abbr = "exe",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
-		.handler = exe_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+		.handler = exe_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "exit",             .abbr = "exi",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "file",             .abbr = "f",     .emark = 0,  .id = COM_FILE,        .range = 0,    .bg = 1, .quote = 0, .regexp = 0,
@@ -367,8 +368,8 @@ static const cmd_add_t commands[] = {
 		.handler = split_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "substitute",       .abbr = "s",     .emark = 0,  .id = COM_SUBSTITUTE,  .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
 		.handler = substitute_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 0, .max_args = 3,       .select = 1, },
-	{ .name = "sync",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
-		.handler = sync_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "sync",             .abbr = NULL,    .emark = 0,  .id = COM_SYNC,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = sync_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "touch",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = touch_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "tr",               .abbr = NULL,    .emark = 0,  .id = COM_TR,          .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
@@ -4362,7 +4363,13 @@ substitute_cmd(const cmd_info_t *cmd_info)
 static int
 sync_cmd(const cmd_info_t *cmd_info)
 {
-	if(change_directory(other_view, curr_view->curr_dir) >= 0)
+	char buf[PATH_MAX];
+
+	snprintf(buf, sizeof(buf), "%s/", curr_view->curr_dir);
+	if(cmd_info->argc > 0)
+		strcat(buf, cmd_info->argv[0]);
+
+	if(change_directory(other_view, buf) >= 0)
 	{
 		load_dir_list(other_view, 0);
 		wrefresh(other_view->win);
