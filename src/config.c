@@ -156,13 +156,58 @@ create_rc_file(void)
 }
 #endif
 
+/* ensure existence of trash directory */
+static void
+create_trash_dir(void)
+{
+	if(access(cfg.trash_dir, F_OK) == 0)
+		return;
+
+#ifndef _WIN32
+	(void)mkdir(cfg.trash_dir, 0777);
+#else
+	(void)mkdir(cfg.trash_dir);
+#endif
+}
+
+static void
+create_config_dir(void)
+{
+	/* ensure existence of configuration directory */
+	if(my_chdir(cfg.config_dir) != 0 && mkdir(cfg.config_dir, 0777) == 0)
+	{
+#ifndef _WIN32
+		FILE *f;
+		char help_file[PATH_MAX];
+		char rc_file[PATH_MAX];
+
+		if(mkdir(cfg.config_dir, 0777) != 0)
+			return;
+
+		snprintf(help_file, sizeof(help_file), "%s/vifm-help_txt", cfg.config_dir);
+		if((f = fopen(help_file, "r")) == NULL)
+			create_help_file();
+		else
+			fclose(f);
+
+		snprintf(rc_file, sizeof(rc_file), "%s/vifmrc", cfg.config_dir);
+		if((f = fopen(rc_file, "r")) == NULL)
+			create_rc_file();
+		else
+			fclose(f);
+#else
+		if(mkdir(cfg.config_dir) != 0)
+			return;
+#endif
+	}
+	create_trash_dir();
+}
+
 void
 set_config_dir(void)
 {
 	char *home_dir;
 	char dir_name[6] = ".vifm";
-	char help_file[PATH_MAX];
-	char rc_file[PATH_MAX];
 #ifdef _WIN32
 	char exe_dir[PATH_MAX];
 #endif
@@ -193,37 +238,10 @@ set_config_dir(void)
 
 	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", home_dir);
 	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s/%s", home_dir, dir_name);
-	snprintf(rc_file, sizeof(rc_file), "%s/vifmrc", cfg.config_dir);
-	snprintf(help_file, sizeof(help_file), "%s/vifm-help_txt", cfg.config_dir);
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/Trash", cfg.config_dir);
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/log", cfg.config_dir);
 
-	if(my_chdir(cfg.config_dir) != 0)
-	{
-#ifndef _WIN32
-		FILE *f;
-
-		if(mkdir(cfg.config_dir, 0777))
-			return;
-		if(mkdir(cfg.trash_dir, 0777))
-			return;
-
-		if((f = fopen(help_file, "r")) == NULL)
-			create_help_file();
-		else
-			fclose(f);
-
-		if((f = fopen(rc_file, "r")) == NULL)
-			create_rc_file();
-		else
-			fclose(f);
-#else
-		if(mkdir(cfg.config_dir))
-			return;
-		if(mkdir(cfg.trash_dir))
-			return;
-#endif
-	}
+	create_config_dir();
 }
 
 static void

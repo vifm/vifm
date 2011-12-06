@@ -1507,7 +1507,8 @@ statusline stl
 type: string
 default: ""
 Determines the content of the status line (the line right above command-line).
-Following macros are supported:
+Empty string means use same format like in previous versions.  Following macros
+are supported:
     %t - file name
     %A - file permissions
     %u - user name or uid (if it cannot be resolved)
