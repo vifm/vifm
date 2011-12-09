@@ -1508,6 +1508,8 @@ Command backgrounding
               %- - number of filtered files
               %S - number of showed files
               %= - separation point between left and right align items
+              %% - percent sign
+              Percent sign can be followed by optional minimum field width.
 
        runexec
               type: boolean
@@ -1590,6 +1592,7 @@ Command backgrounding
               %s - file size in human readable format
               %d - file modification date (uses 'timefmt' option)
               all 'rulerformat' macros
+              Percent sign can be followed by optional minimum field width.
 
        sortorder
               type: enumeration
@@ -1885,4 +1888,4 @@ AUTHOR
 
 
 
-                               December 6, 2011                        vifm(1)
+                               December 9, 2011                        vifm(1)

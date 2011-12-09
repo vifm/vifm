@@ -1412,13 +1412,15 @@ Controls if status bar is visible.
                                                *vifm-'rulerformat'* *vifm-'ruf'*
 rulerformat ruf
 type: string
-default: "%l-%S "
+default: "%=%l-%S "
 Determines the content of the ruler.  Its width is 13 characters and it's
 right aligned.  Following macros are supported:
     %l - file number
     %L - total number of files in view (including filtered)
     %- - number of filtered files
     %S - number of showed files
+    %% - percent sign
+Percent sign can be followed by optional minimum field width.
 
                                                *vifm-'runexec'*
 runexec
@@ -1516,6 +1518,7 @@ are supported:
     %s - file size in human readable format
     %d - file modification date (uses |vifm-'timefmt'| option)
     all |vifm-'rulerformat'| macros
+Percent sign can be followed by optional minimum field width.
 
                                                *vifm-'tabstop'* *vifm-'ts'*
 tabstop ts

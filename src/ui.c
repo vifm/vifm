@@ -38,6 +38,7 @@
 #include <unistd.h>
 
 #include <assert.h>
+#include <ctype.h>
 #include <signal.h> /* signal() */
 #include <stdarg.h>
 #include <string.h>
@@ -249,9 +250,11 @@ expand_status_line_macros(FileView *view, const char *format)
 
 	while((c = *format++) != '\0')
 	{
+		size_t width = 0;
 		char *p;
 		char buf[PATH_MAX];
-		if(c != '%' || strchr("tAugsd-lLS%", *format) == NULL)
+		if(c != '%' || (strchr("tAugsd-lLS%", *format) == NULL &&
+				!isdigit(*format)))
 		{
 			p = realloc(result, len + 1 + 1);
 			if(p == NULL)
@@ -261,6 +264,8 @@ expand_status_line_macros(FileView *view, const char *format)
 			result[len] = '\0';
 			continue;
 		}
+		while(isdigit(*format))
+			width = width*10 + *format++ - '0';
 		c = *format++;
 		switch(c)
 		{
@@ -279,12 +284,6 @@ expand_status_line_macros(FileView *view, const char *format)
 			case 's':
 				friendly_size_notation(view->dir_entry[view->list_pos].size,
 						sizeof(buf), buf);
-				if(strlen(buf) < 5)
-				{
-					int i = 5 - strlen(buf);
-					memmove(buf + i, buf, 5 - i + 1);
-					memset(buf, ' ', i);
-				}
 				break;
 			case 'd':
 				{
@@ -307,6 +306,12 @@ expand_status_line_macros(FileView *view, const char *format)
 			case '%':
 				snprintf(buf, sizeof(buf), "%%");
 				break;
+		}
+		if(strlen(buf) < width)
+		{
+			int i = width - strlen(buf);
+			memmove(buf + i, buf, width - i + 1);
+			memset(buf, ' ', i);
 		}
 		p = realloc(result, len + strlen(buf) + 1);
 		if(p == NULL)
@@ -362,7 +367,7 @@ update_stat_window_old(FileView *view)
 	mvwaddstr(stat_win, 0, cur_x, size_buf);
 	cur_x += 12;
 	mvwaddstr(stat_win, 0, cur_x, perm_buf);
-	cur_x += 10;
+	cur_x += 11;
 
 	snprintf(name_buf, sizeof(name_buf), "%d %s filtered", view->filtered,
 			(view->filtered == 1) ? "file" : "files");
