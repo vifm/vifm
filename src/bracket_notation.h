@@ -33,6 +33,7 @@ typedef struct
 }key_pair_t;
 
 key_pair_t key_pairs[] = {
+	{ "<esc>",      L"\x1b"              },
 	{ "<c-a>",      L"\x01"              },
 	{ "<c-b>",      L"\x02"              },
 	{ "<c-c>",      L"\x03"              },

@@ -14,6 +14,8 @@
 
 	Added support for character classes in globals.
 
+	Added <esc>.
+
 	Restore terminal title on exit when running in X (*nix only).
 
 	Reset dot and filename filters if they hide bookmarked file.
