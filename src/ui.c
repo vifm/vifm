@@ -98,8 +98,10 @@ break_in_two(char *str, size_t max)
 	snprintf(result, break_point - str + 1, "%s", str);
 
 	if(len > max)
-		break_point = str + get_real_string_width(str,
-				get_utf8_string_length(result) - (len - max));
+	{
+		int l = get_utf8_string_length(result) - (len - max);
+		break_point = str + get_real_string_width(str, MAX(l, 0));
+	}
 
 	snprintf(result, break_point - str + 1, "%s", str);
 	i = break_point - str;
