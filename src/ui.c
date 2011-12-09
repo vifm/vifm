@@ -251,7 +251,7 @@ expand_status_line_macros(FileView *view, const char *format)
 	{
 		char *p;
 		char buf[PATH_MAX];
-		if(c != '%' || strchr("tAugsd%", *format) == NULL)
+		if(c != '%' || strchr("tAugsd-lLS%", *format) == NULL)
 		{
 			p = realloc(result, len + 1 + 1);
 			if(p == NULL)
@@ -291,6 +291,18 @@ expand_status_line_macros(FileView *view, const char *format)
 					struct tm *tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
 					strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
 				}
+				break;
+			case '-':
+				snprintf(buf, sizeof(buf), "%d", view->filtered);
+				break;
+			case 'l':
+				snprintf(buf, sizeof(buf), "%d", view->list_pos + 1);
+				break;
+			case 'L':
+				snprintf(buf, sizeof(buf), "%d", view->list_rows + view->filtered);
+				break;
+			case 'S':
+				snprintf(buf, sizeof(buf), "%d", view->list_rows);
 				break;
 			case '%':
 				snprintf(buf, sizeof(buf), "%%");
@@ -370,7 +382,7 @@ void
 update_stat_window(FileView *view)
 {
 	int x, y;
-	char *buf1, *buf2;
+	char *buf;
 
 	if(!cfg.last_status)
 		return;
@@ -386,17 +398,15 @@ update_stat_window(FileView *view)
 	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
 			cfg.cs.color[STATUS_LINE_COLOR].attr);
 
-	buf1 = expand_status_line_macros(view, cfg.status_line);
-	buf2 = expand_ruler_macros(view, buf1);
-	buf2 = break_in_two(buf2, getmaxx(stdscr));
-	free(buf1);
+	buf = expand_status_line_macros(view, cfg.status_line);
+	buf = break_in_two(buf, getmaxx(stdscr));
 
 	werase(stat_win);
 	wmove(stat_win, 0, 0);
-	wprint(stat_win, buf2);
+	wprint(stat_win, buf);
 	wrefresh(stat_win);
 
-	free(buf2);
+	free(buf);
 }
 
 static void
