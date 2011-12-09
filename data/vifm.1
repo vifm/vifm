@@ -1,4 +1,4 @@
-.TH vifm 1 "December 6, 2011" "" "Vifm"
+.TH vifm 1 "December 9, 2011" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1630,6 +1630,10 @@ aligned.  Following macros are supported:
 %S - number of showed files
 .br
 %= - separation point between left and right align items
+.br
+%% - percent sign
+.br
+Percent sign can be followed by optional minimum field width.
 .TP
 .BI runexec
 type: boolean
@@ -1739,6 +1743,8 @@ are supported:
 %d - file modification date (uses 'timefmt' option)
 .br
 all 'rulerformat' macros
+.br
+Percent sign can be followed by optional minimum field width.
 .TP
 .BI sortorder
 type: enumeration
