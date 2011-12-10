@@ -131,9 +131,10 @@ expand_ruler_macros(FileView *view, const char *format)
 	while((c = *format++) != '\0')
 	{
 		size_t width = 0;
+		int left_align = 0;
 		char *p;
 		char buf[32];
-		if(c != '%' || (strchr("-lLS%", *format) == NULL && !isdigit(*format)))
+		if(c != '%' || (strchr("-lLS%0123456789", *format) == NULL))
 		{
 			p = realloc(result, len + 1 + 1);
 			if(p == NULL)
@@ -142,6 +143,11 @@ expand_ruler_macros(FileView *view, const char *format)
 			result[len++] = c;
 			result[len] = '\0';
 			continue;
+		}
+		if(*format == '-')
+		{
+			left_align = 1;
+			format++;
 		}
 		while(isdigit(*format))
 			width = width*10 + *format++ - '0';
@@ -166,9 +172,18 @@ expand_ruler_macros(FileView *view, const char *format)
 		}
 		if(strlen(buf) < width)
 		{
-			int i = width - strlen(buf);
-			memmove(buf + i, buf, width - i + 1);
-			memset(buf, ' ', i);
+			if(left_align)
+			{
+				int i = width - strlen(buf);
+				memset(buf + strlen(buf), ' ', i);
+				buf[width] = '\0';
+			}
+			else
+			{
+				int i = width - strlen(buf);
+				memmove(buf + i, buf, width - i + 1);
+				memset(buf, ' ', i);
+			}
 		}
 		p = realloc(result, len + strlen(buf) + 1);
 		if(p == NULL)
@@ -260,10 +275,10 @@ expand_status_line_macros(FileView *view, const char *format)
 	while((c = *format++) != '\0')
 	{
 		size_t width = 0;
+		int left_align = 0;
 		char *p;
 		char buf[PATH_MAX];
-		if(c != '%' || (strchr("tAugsd-lLS%", *format) == NULL &&
-				!isdigit(*format)))
+		if(c != '%' || (strchr("tAugsd-lLS%0123456789", *format) == NULL))
 		{
 			p = realloc(result, len + 1 + 1);
 			if(p == NULL)
@@ -272,6 +287,11 @@ expand_status_line_macros(FileView *view, const char *format)
 			result[len++] = c;
 			result[len] = '\0';
 			continue;
+		}
+		if(*format == '-')
+		{
+			left_align = 1;
+			format++;
 		}
 		while(isdigit(*format))
 			width = width*10 + *format++ - '0';
@@ -318,9 +338,18 @@ expand_status_line_macros(FileView *view, const char *format)
 		}
 		if(strlen(buf) < width)
 		{
-			int i = width - strlen(buf);
-			memmove(buf + i, buf, width - i + 1);
-			memset(buf, ' ', i);
+			if(left_align)
+			{
+				int i = width - strlen(buf);
+				memset(buf + strlen(buf), ' ', i);
+				buf[width] = '\0';
+			}
+			else
+			{
+				int i = width - strlen(buf);
+				memmove(buf + i, buf, width - i + 1);
+				memset(buf, ' ', i);
+			}
 		}
 		p = realloc(result, len + strlen(buf) + 1);
 		if(p == NULL)
