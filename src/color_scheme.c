@@ -185,11 +185,7 @@ write_color_scheme_file(void)
 	int y;
 
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
-#ifndef _WIN32
-	if(mkdir(colors_dir, 0777) != 0)
-#else
-	if(mkdir(colors_dir) != 0)
-#endif
+	if(make_dir(colors_dir, 0777) != 0)
 		return;
 
 	strcat(colors_dir, "/Default");

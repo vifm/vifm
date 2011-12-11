@@ -24,8 +24,6 @@
 #define CP_RC "cp " PACKAGE_DATA_DIR "/vifmrc ~/.vifm"
 #endif
 
-#include <sys/stat.h> /* mkdir */
-
 #include <ctype.h> /* isalnum */
 #include <stdio.h> /* FILE */
 #include <stdlib.h> /* getenv */
@@ -163,29 +161,21 @@ create_trash_dir(void)
 	if(access(cfg.trash_dir, F_OK) == 0)
 		return;
 
-#ifndef _WIN32
-	(void)mkdir(cfg.trash_dir, 0777);
-#else
-	(void)mkdir(cfg.trash_dir);
-#endif
+	(void)make_dir(cfg.trash_dir, 0777);
 }
 
 static void
 create_config_dir(void)
 {
 	/* ensure existence of configuration directory */
-#ifndef _WIN32
-	if(my_chdir(cfg.config_dir) != 0 && mkdir(cfg.config_dir, 0777) == 0)
-#else
-	if(my_chdir(cfg.config_dir) != 0 && mkdir(cfg.config_dir) == 0)
-#endif
+	if(my_chdir(cfg.config_dir) != 0 && make_dir(cfg.config_dir, 0777) == 0)
 	{
 #ifndef _WIN32
 		FILE *f;
 		char help_file[PATH_MAX];
 		char rc_file[PATH_MAX];
 
-		if(mkdir(cfg.config_dir, 0777) != 0)
+		if(make_dir(cfg.config_dir, 0777) != 0)
 			return;
 
 		snprintf(help_file, sizeof(help_file), "%s/vifm-help_txt", cfg.config_dir);
@@ -200,7 +190,7 @@ create_config_dir(void)
 		else
 			fclose(f);
 #else
-		if(mkdir(cfg.config_dir) != 0)
+		if(make_dir(cfg.config_dir, 0777) != 0)
 			return;
 #endif
 	}

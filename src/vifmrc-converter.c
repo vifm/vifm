@@ -1253,6 +1253,15 @@ colname2int(char col[])
 	return -1;
 }
 
+int make_dir(const char *dir_name, mode_t mode)
+{
+#ifndef _WIN32
+	return mkdir(dir_name, mode);
+#else
+	return mkdir(dir_name);
+#endif
+}
+
 static void
 write_color_schemes(const char *colors_dir)
 {
@@ -1260,11 +1269,7 @@ write_color_schemes(const char *colors_dir)
 
 	if(access(colors_dir, F_OK) != 0)
 	{
-#ifndef _WIN32
-		if(mkdir(colors_dir, 0777) != 0)
-#else
-		if(mkdir(colors_dir) != 0)
-#endif
+		if(make_dir(colors_dir, 0777) != 0)
 		{
 			fprintf(stderr, "Can't create colors directory at \"%s\"\n", colors_dir);
 			exit(1);

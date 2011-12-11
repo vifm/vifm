@@ -34,7 +34,7 @@
 #include <curses.h>
 
 #include <fcntl.h>
-#include <sys/stat.h>
+#include <sys/stat.h> /* mkdir */
 #include <sys/time.h>
 #ifndef _WIN32
 #include <grp.h> /* getgrnam() */
@@ -1165,6 +1165,15 @@ symlinks_available(void)
 	return 1;
 #else
 	return is_vista_and_above();
+#endif
+}
+
+int make_dir(const char *dir_name, mode_t mode)
+{
+#ifndef _WIN32
+	return mkdir(dir_name, mode);
+#else
+	return mkdir(dir_name);
 #endif
 }
 

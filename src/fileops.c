@@ -341,11 +341,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 				++mount_point_id, get_current_file_name(view));
 	}
 	while(access(mount_point, F_OK) == 0);
-#ifndef _WIN32
-	if(mkdir(mount_point, S_IRWXU))
-#else
-	if(mkdir(mount_point))
-#endif
+	if(make_dir(mount_point, S_IRWXU) != 0)
 	{
 		free(escaped_filename);
 		(void)show_error_msg("Unable to create FUSE mount directory", mount_point);
@@ -476,11 +472,7 @@ fuse_try_mount(FileView *view, const char *program)
 
 	if(access(cfg.fuse_home, F_OK|W_OK|X_OK) != 0)
 	{
-#ifndef _WIN32
-		if(mkdir(cfg.fuse_home, S_IRWXU))
-#else
-		if(mkdir(cfg.fuse_home))
-#endif
+		if(make_dir(cfg.fuse_home, S_IRWXU) != 0)
 		{
 			(void)show_error_msg("Unable to create FUSE mount home directory",
 					cfg.fuse_home);
