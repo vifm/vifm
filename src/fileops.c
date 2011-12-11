@@ -1946,22 +1946,24 @@ incdec_names(FileView *view, int k)
 	{
 		if(err > 0)
 			undo_group();
-		status_bar_error("Rename error");
 	}
 	else
 	{
 		if(view->dir_entry[view->list_pos].selected || !view->user_selection)
 			strcpy(view->dir_entry[view->list_pos].name,
 					add_to_name(view->dir_entry[view->list_pos].name, k));
-
-		status_bar_messagef("%d file%s renamed", names_len,
-				(names_len == 1) ? "" : "s");
 	}
 
 	clean_selected_files(view);
 	load_saving_pos(view, 0);
 
-	return 1;
+	if(err)
+		status_bar_error("Rename error");
+	else
+		status_bar_messagef("%d file%s renamed", names_len,
+				(names_len == 1) ? "" : "s");
+
+	return err >= 0;
 }
 
 #ifndef _WIN32

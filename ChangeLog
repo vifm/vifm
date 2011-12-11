@@ -20,6 +20,8 @@
 
 	Reset dot and filename filters if they hide bookmarked file.
 
+	Show "Sorting directory..." message only for big directories on Windows.
+
 	Fixed bug with fixed-length buffer for :grep command (when many files are
 	selected).
 
@@ -31,6 +33,8 @@
 	Fixed "Change" time, which is "Creation" time on Windows.
 
 	Fixed creation of Trash dir if it doesn't exist in ~/.vifm/.
+
+	Fixed statusbar message after Ctrl-A/Ctrl-X on Windows.
 
 0.7.0 to 0.7.1
 
