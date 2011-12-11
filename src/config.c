@@ -174,7 +174,11 @@ static void
 create_config_dir(void)
 {
 	/* ensure existence of configuration directory */
+#ifndef _WIN32
 	if(my_chdir(cfg.config_dir) != 0 && mkdir(cfg.config_dir, 0777) == 0)
+#else
+	if(my_chdir(cfg.config_dir) != 0 && mkdir(cfg.config_dir) == 0)
+#endif
 	{
 #ifndef _WIN32
 		FILE *f;

@@ -496,7 +496,7 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 		return -1;
 	if((*err = _fdopen(error_pipe[0], "r")) == NULL)
 	{
-		fclose(out);
+		fclose(*out);
 		return -1;
 	}
 
