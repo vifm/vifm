@@ -871,6 +871,9 @@ erase_current_line_bar(FileView *view)
 	size_t print_width;
 	col_attr_t col;
 
+	if(old_cursor < 0)
+		return;
+
 	if(curr_stats.vifm_started < 2)
 		return;
 
@@ -903,7 +906,8 @@ erase_current_line_bar(FileView *view)
 
 	wattrset(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
 	file_name[print_width] = '\0';
-	wprint(view->win, file_name);
+	wmove(view->win, old_cursor, 1);
+  wprint(view->win, file_name);
 	wattroff(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
 
 	add_sort_type_info(view, old_cursor, old_pos, 0);

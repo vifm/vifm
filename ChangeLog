@@ -36,6 +36,9 @@
 
 	Fixed statusbar message after Ctrl-A/Ctrl-X on Windows.
 
+	Fixed bug with drawing extra character after file list redraw (e.g. on
+	za).
+
 0.7.0 to 0.7.1
 
 	Added 'scrollbind' option.
