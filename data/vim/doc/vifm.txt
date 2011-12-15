@@ -1790,7 +1790,9 @@ configuration (which has bigger priority).
 
 The CONFDIR/scripts directory can contain shell scripts.  vifm modifies
 it's PATH environment variable to let user run those scripts without specifying
-full path.
+full path.  All subdirectories of the CONFDIR/scripts will be added to PATH too.
+Script in a subdirectory overlaps script with the same name in all its parent
+directories.
 
 The CONFDIR/colors directory contains color schemes.
 

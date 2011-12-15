@@ -25,7 +25,7 @@
 
 #include <pthread.h>
 
-#include <dirent.h>
+#include <dirent.h> /* DIR */
 #include <fcntl.h>
 #include <sys/stat.h> /* stat */
 #include <sys/types.h> /* waitpid() */

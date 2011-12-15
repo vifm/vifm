@@ -31,6 +31,7 @@
 
 #include <curses.h>
 
+#include <dirent.h> /* DIR */
 #include <unistd.h> /* getcwd, stat, sysconf */
 
 #include <locale.h> /* setlocale */
@@ -264,35 +265,24 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 }
 
 static void
-update_path(void)
+add_to_path(const char *str)
 {
+	char *old_path;
+	char *new_path;
+
+	old_path = getenv("PATH");
+	new_path = malloc(5 + strlen(str) + strlen(old_path) + 1);
+
 #ifndef _WIN32
-	char *old_path;
-	char *new_path;
-
-	old_path = getenv("PATH");
-	new_path = malloc(strlen(cfg.config_dir) + 8 + 1 + strlen(old_path) + 1);
-	sprintf(new_path, "%s/scripts:%s", cfg.config_dir, old_path);
+	sprintf(new_path, "%s:%s", str, old_path);
 	setenv("PATH", new_path, 1);
-	free(new_path);
 #else
-	char *old_path;
-	char *new_path;
-	int i;
-
-	old_path = getenv("PATH");
-	new_path = malloc(5 + strlen(cfg.config_dir) + 8 + 1 + strlen(old_path) + 1);
-	sprintf(new_path, "PATH=%s/scripts;%s", cfg.config_dir, old_path);
-
-	for(i = 0; new_path[i] != '\0'; i++)
-	{
-		if(new_path[i] == '/')
-			new_path[i] = '\\';
-	}
-
+	sprintf(new_path, "PATH=%s;%s", str, old_path);
+	to_back_slash(new_path);
 	putenv(new_path);
-	free(new_path);
 #endif
+
+	free(new_path);
 }
 
 static void
@@ -352,6 +342,45 @@ run_converter(int vifm_like)
 #endif
 }
 
+void
+add_dirs_to_path(const char *path)
+{
+	DIR* dir;
+	struct dirent* dentry;
+	const char* slash = "";
+
+	dir = opendir(path);
+	if(dir == NULL)
+		return;
+
+	if(path[strlen(path) - 1] != '/')
+		slash = "/";
+
+	add_to_path(path);
+
+	while((dentry = readdir(dir)) != NULL)
+	{
+		char buf[PATH_MAX];
+
+		if(strcmp(dentry->d_name, ".") == 0)
+			continue;
+		else if(strcmp(dentry->d_name, "..") == 0)
+			continue;
+
+		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
+#ifndef _WIN32
+		if(dentry->d_type == DT_DIR)
+#else
+		if(is_dir(buf))
+#endif
+		{
+			add_dirs_to_path(buf);
+		}
+	}
+
+	closedir(dir);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -384,7 +413,8 @@ main(int argc, char *argv[])
 	init_config();
 	set_config_dir();
 
-	update_path();
+	snprintf(config_dir, sizeof(config_dir), "%s/scripts", cfg.config_dir);
+	add_dirs_to_path(config_dir);
 
 	init_commands();
 	load_default_configuration();
