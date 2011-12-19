@@ -36,12 +36,17 @@
 #include <fcntl.h>
 #include <sys/stat.h> /* mkdir */
 #include <sys/time.h>
+
 #ifndef _WIN32
 #include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
-#include <mntent.h> /* getmntent() */
 #include <sys/wait.h> /* waitpid() */
 #endif
+
+#if !defined(_WIN32) && !defined(__APPLE__)
+#include <mntent.h> /* getmntent() */
+#endif
+
 #include <unistd.h> /* chdir() */
 
 #include <ctype.h>
@@ -522,7 +527,7 @@ begins_with_list_item(const char *pattern, const char *list)
 int
 is_on_slow_fs(const char *full_path)
 {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__APPLE__)
 	return 0;
 #else
 	FILE *f;

@@ -60,3 +60,5 @@ without temporary files by Colin Cartade.
 
 Patch that fixes using of invalid (or at least strange) item names in the
 stat structure by Kaspars Bankovskis.
+
+Chris Yuen provided a patch to fix compilation on Mac OS X.
