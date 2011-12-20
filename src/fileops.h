@@ -38,7 +38,7 @@ int yank_files(FileView *view, int reg, int count, int *indexes);
 void yank_selected_files(FileView *view, int reg);
 void handle_dir(FileView *view);
 int file_exec(char *command);
-void view_file(const char *filename, int line);
+void view_file(const char *filename, int line, int do_fork);
 void show_change_window(FileView *view, int type);
 void rename_file(FileView *view, int name_only);
 int rename_files(FileView *view, char **list, int nlines);

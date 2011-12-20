@@ -216,9 +216,10 @@ file_exec(char *command)
 
 /* negative line means ignore it */
 void
-view_file(const char *filename, int line)
+view_file(const char *filename, int line, int do_fork)
 {
 	char command[PATH_MAX + 5] = "";
+	const char *fork_str = do_fork ? "" : "--nofork";
 	char *escaped;
 	int bg;
 
@@ -234,10 +235,11 @@ view_file(const char *filename, int line)
 	escaped = (char *)enclose_in_dquotes(filename);
 #endif
 	if(line < 0)
-		snprintf(command, sizeof(command), "%s %s", get_vicmd(&bg), escaped);
-	else
-		snprintf(command, sizeof(command), "%s +%d %s", get_vicmd(&bg), line,
+		snprintf(command, sizeof(command), "%s %s %s", get_vicmd(&bg), fork_str,
 				escaped);
+	else
+		snprintf(command, sizeof(command), "%s %s +%d %s", get_vicmd(&bg), fork_str,
+				line, escaped);
 #ifndef _WIN32
 	free(escaped);
 #endif
@@ -658,7 +660,7 @@ execute_file(FileView *view, int dont_execute)
 			char buf[PATH_MAX];
 			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
 					get_current_file_name(view));
-			view_file(buf, -1);
+			view_file(buf, -1, 1);
 		}
 		else
 		{
@@ -718,7 +720,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 			char buf[PATH_MAX];
 			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
 					get_current_file_name(view));
-			view_file(buf, -1);
+			view_file(buf, -1, 1);
 		}
 		else
 			fuse_try_mount(view, program);
@@ -1691,7 +1693,7 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 
 		stat(temp_file, &st_before);
 
-		view_file(temp_file, -1);
+		view_file(temp_file, -1, 0);
 
 		stat(temp_file, &st_after);
 
@@ -1705,7 +1707,7 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 	}
 	else
 	{
-		view_file(temp_file, -1);
+		view_file(temp_file, -1, 0);
 	}
 
 	if((f = fopen(temp_file, "r")) == NULL)

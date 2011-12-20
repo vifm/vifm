@@ -578,7 +578,7 @@ goto_selected_file(FileView *view, menu_info *m)
 		if(access(file, R_OK) == 0)
 		{
 			curr_stats.auto_redraws = 1;
-			view_file(file, n);
+			view_file(file, n, 1);
 			curr_stats.auto_redraws = 0;
 		}
 		free(free_this);

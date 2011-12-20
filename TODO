@@ -15,6 +15,7 @@ Basic things that need to be done.
     Highlight more angle bracket notation in vifmrc.
     IPC among all running vifm instances.
     Write script to export aliases and function from sh to ~/.vifm/scripts/
+    Make rename command process directories recursively.
 
 Documentation.
 	Better documentation.

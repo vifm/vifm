@@ -922,7 +922,7 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 	char buf[PATH_MAX];
 	snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
 			curr_view->dir_entry[curr_view->list_pos].name);
-	view_file(buf, vi->line + (vi->view->window_rows - 1)/2);
+	view_file(buf, vi->line + (vi->view->window_rows - 1)/2, 1);
 }
 
 static void

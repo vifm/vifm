@@ -3309,7 +3309,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 
 		snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
 				get_current_file_name(curr_view));
-		view_file(buf, -1);
+		view_file(buf, -1, 1);
 	}
 	else
 	{
