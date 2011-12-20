@@ -1959,6 +1959,7 @@ shellout(const char *command, int pause)
 	size_t len = (command != NULL) ? strlen(command) : 0;
 	char buf[cfg.max_args];
 	int result;
+	int ec;
 
 	if(pause > 0 && len > 1 && command[len - 1] == '&')
 		pause = -1;
@@ -2073,8 +2074,7 @@ shellout(const char *command, int pause)
 	}
 #endif
 
-	result = WEXITSTATUS(my_system(buf));
-	int ec = my_system(buf);
+	ec = my_system(buf);
 	result = WEXITSTATUS(ec);
 
 #ifndef _WIN32
