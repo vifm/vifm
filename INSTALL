@@ -26,6 +26,9 @@ On *nix you need:
 On Mac OS you need:
 
     Get and install libscursesw.
+    Proceed like in *nix Installation section.
+    Also you probably want to pass --with-gtk=no argument to ./configure
+    script to omit unwanted error message when vifm starts.
 
 On Windows you need:
 

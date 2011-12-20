@@ -63,11 +63,11 @@ vifmrc_converter_SOURCES = \
 
 version.c:
 	if [ "x$$(whereis git)" != "x" ] ; then \
-		echo -n 'const char GIT_HASH[] = "' > version.c; \
-		echo -n `git rev-parse HEAD` >> version.c; \
-		echo '";' >> version.c; \
+		/bin/echo -n 'const char GIT_HASH[] = "' > version.c; \
+		/bin/echo -n `git rev-parse HEAD` >> version.c; \
+		/bin/echo '";' >> version.c; \
 	else \
-		echo -n 'const char GIT_HASH[] = "";' > version.c; \
+		/bin/echo -n 'const char GIT_HASH[] = "";' > version.c; \
 	fi
 
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :

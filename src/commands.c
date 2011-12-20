@@ -2074,6 +2074,8 @@ shellout(const char *command, int pause)
 #endif
 
 	result = WEXITSTATUS(my_system(buf));
+	int ec = my_system(buf);
+	result = WEXITSTATUS(ec);
 
 #ifndef _WIN32
 	if(result != 0 && pause < 0)

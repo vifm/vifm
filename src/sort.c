@@ -86,14 +86,14 @@ compare_file_names(const char *s, const char *t, int ignore_case)
 		strtoupper(t_buf);
 	}
 
-#ifndef _WIN32
+#if defined(_WIN32) || defined(__APPLE__)
+	return strcmp(s, t);
+#else
 	if(!cfg.sort_numbers)
 		return strcmp(s, t);
 	else
 		return strverscmp(s, t);
 	/* TODO add strverscmp() on Windows */
-#else
-	return strcmp(s, t);
 #endif
 }
 
