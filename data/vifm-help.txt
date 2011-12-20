@@ -451,8 +451,8 @@ Visual Mode
        gU, U  make names of selected files uppercase.
 
 View Mode
-       This  mode  tries to monkey less program.  Currentry next keys are sup‐
-       ported:
+       This  mode  tries  to imitate the less program. Currently the following
+       keys are supported:
 
        Shift-Tab, Tab, q, Q, ZZ
               go back to normal mode.

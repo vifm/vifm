@@ -473,7 +473,8 @@ gU, U - make names of selected files uppercase.
 --------------------------------------------------------------------------------
 *vifm-view*
 
-This mode tries to monkey less program.  Currentry next keys are supported:
+This mode tries to imitate the less program. Currently the following keys are
+supported:
 
                                                *vifm-V_SHIFT-Tab* *vifm-V_Tab*
                                                *vifm-V_q* *vifm-V_Q* *vifm-V_ZZ*
