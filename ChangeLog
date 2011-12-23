@@ -16,6 +16,8 @@
 
 	Added <esc>.
 
+	Added support for running :cmap, :nmap and :vmap with one argument.
+
 	Restore terminal title on exit when running in X (*nix only).
 
 	Reset dot and filename filters if they hide bookmarked file.

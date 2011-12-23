@@ -956,10 +956,12 @@ uchar2str(wchar_t *c, size_t *len)
 }
 
 void
-show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
+show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
+		const wchar_t *start)
 {
 	int x;
 	int len;
+	size_t start_len = wcslen(start);
 
 	static menu_info m;
 	m.top = 0;
@@ -989,7 +991,13 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 		size_t len;
 		int i, str_len, buf_len;
 
-		m.data = realloc(m.data, sizeof(char *)*(x + 1));
+		if(list[x][0] != L'\0' && wcsncmp(start, list[x], start_len) != 0)
+		{
+			x++;
+			continue;
+		}
+
+		m.data = realloc(m.data, sizeof(char *)*(m.len + 1));
 
 		str_len = wcslen(list[x]);
 		buf_len = 0;
@@ -1001,29 +1009,29 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 		else
 			buf_len += 1 + 0 + 1;
 
-		m.data[x] = malloc(buf_len + MAP_WIDTH);
-		m.data[x][0] = '\0';
+		m.data[m.len] = malloc(buf_len + MAP_WIDTH);
+		m.data[m.len][0] = '\0';
 		for(i = 0; i < str_len; i += len)
-			strcat(m.data[x], uchar2str(list[x] + i, &len));
+			strcat(m.data[m.len], uchar2str(list[x] + i, &len));
 
 		if(str_len > 0)
 		{
 			int i;
-			for(i = strlen(m.data[x]); i < MAP_WIDTH; i++)
-				strcat(m.data[x], " ");
+			for(i = strlen(m.data[m.len]); i < MAP_WIDTH; i++)
+				strcat(m.data[m.len], " ");
 
-			strcat(m.data[x], " ");
+			strcat(m.data[m.len], " ");
 
 			for(i = str_len + 1; list[x][i] != L'\0'; i += len)
 			{
 				if(list[x][i] == L' ')
 				{
-					strcat(m.data[x], " ");
+					strcat(m.data[m.len], " ");
 					len = 1;
 				}
 				else
 				{
-					strcat(m.data[x], uchar2str(list[x] + i, &len));
+					strcat(m.data[m.len], uchar2str(list[x] + i, &len));
 				}
 			}
 		}
@@ -1031,9 +1039,9 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list)
 		free(list[x]);
 
 		x++;
+		m.len++;
 	}
 	free(list);
-	m.len = x;
 
 	setup_menu();
 	draw_menu(&m);

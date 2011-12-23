@@ -4515,17 +4515,11 @@ do_map(const cmd_info_t *cmd_info, const char *map_type,
 	char t;
 	int result;
 
-	if(cmd_info->argc == 1)
+	if(cmd_info->argc <= 1)
 	{
-		status_bar_errorf("Command Error",
-				"The :%s command requires two arguments - :%s lhs rhs", map_cmd,
-				map_cmd);
-		return -1;
-	}
-
-	if(cmd_info->argc == 0)
-	{
-		show_map_menu(curr_view, map_type, list_cmds(mode));
+		keys = substitute_specs(cmd_info->args);
+		show_map_menu(curr_view, map_type, list_cmds(mode), keys);
+		free(keys);
 		return 0;
 	}
 

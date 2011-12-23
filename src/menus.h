@@ -70,7 +70,8 @@ int show_jobs_menu(FileView *view);
 int show_locate_menu(FileView *view, const char *args);
 int show_find_menu(FileView *view, int with_path, const char *args);
 int show_grep_menu(FileView *view, const char *args, int invert);
-void show_map_menu(FileView *view, const char *mode_str, wchar_t **list);
+void show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
+		const wchar_t *start);
 void show_apropos_menu(FileView *view, char *args);
 void show_user_menu(FileView *view, const char *command, int navigate);
 int show_register_menu(FileView *view, const char *registers);

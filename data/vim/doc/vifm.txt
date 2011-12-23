@@ -1186,6 +1186,13 @@ of the hierarchy and transparency for all others.
 :nm[ap] lhs rhs - map lhs to rhs in normal mode.
 :vm[ap] lhs rhs - map lhs to rhs in visual mode.
 
+:cm[ap] beginning - lists all maps in command line mode that start with
+    the beginning.
+:nm[ap] beginning - lists all maps in normal mode that start with the
+    beginning.
+:vm[ap] beginning - lists all maps in visual mode that start with the
+    beginning.
+
                                                *vifm-:noremap* *vifm-:no*
 :no[remap] lhs rhs - map the key sequence lhs to {rhs} for normal and
     visual modes, but disallow mapping of rhs.
