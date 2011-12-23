@@ -1186,6 +1186,10 @@ of the hierarchy and transparency for all others.
 :nm[ap] lhs rhs - map lhs to rhs in normal mode.
 :vm[ap] lhs rhs - map lhs to rhs in visual mode.
 
+:cm[ap] - lists all maps in command line mode.
+:nm[ap] - lists all maps in normal mode.
+:vm[ap] - lists all maps in visual mode.
+
 :cm[ap] beginning - lists all maps in command line mode that start with
     the beginning.
 :nm[ap] beginning - lists all maps in normal mode that start with the
