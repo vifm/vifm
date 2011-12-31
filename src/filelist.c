@@ -651,6 +651,9 @@ update_view_title(FileView *view)
 	if(gen_view && view == other_view)
 		return;
 
+	if(curr_stats.vifm_started < 2)
+		return;
+
 	if(view == selected)
 	{
 		col_attr_t col;
