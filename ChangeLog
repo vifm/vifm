@@ -20,6 +20,8 @@
 
 	Added :u filename modifier for UNC computer name (Windows only).
 
+	Added --remote command line argument.
+
 	Restore terminal title on exit when running in X (*nix only).
 
 	Reset dot and filename filters if they hide bookmarked file.

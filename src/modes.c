@@ -132,12 +132,6 @@ modes_pre(void)
 		return;
 	}
 
-	check_if_filelists_have_changed(curr_view);
-	if(curr_stats.number_of_windows != 1 && !curr_stats.view)
-		check_if_filelists_have_changed(other_view);
-
-	check_background_jobs();
-
 	if(!curr_stats.save_msg)
 	{
 		clean_status_bar();

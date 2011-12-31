@@ -125,10 +125,9 @@ check_background_jobs(void)
 		/* Setup pipe for reading */
 
 		FD_ZERO(&ready);
-		maxfd = 0;
 		if(p->fd >= 0)
 			FD_SET(p->fd, &ready);
-		maxfd = (p->fd > maxfd ? p->fd : maxfd);
+		maxfd = MAX(p->fd, 0);
 
 		if(p->error != NULL)
 		{

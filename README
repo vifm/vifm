@@ -23,6 +23,7 @@ src/file_magic.c - determines programs associated with file using its mime-type
 src/filelist.c - display/redraw/fill list
 src/fileops.c - delete/copy/put selected file(s)
 src/filetype.c - stores filetype information from vifmrc
+src/ipc.c - handles communication across instances of vifm
 src/keys.c - analyzes users input
 src/log.c - primitive logging
 src/main_loop.c - the main loop

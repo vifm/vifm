@@ -27,6 +27,7 @@ vifm_SOURCES = \
 	filelist.c filelist.h \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
+	ipc.c ipc.h \
 	keys.c keys.h \
 	log.c log.h \
 	main_loop.c main_loop.h \

@@ -16,7 +16,7 @@ ifneq ($(OS),Windows_NT)
     LDFLAGS := `pkg-config --libs gtk+-2.0` -lncursesw -lmagic
 else
     CFLAGS := -MD -g -Werror -I../seatest -DTEST
-    LDFLAGS := -lpdcurses -lregex -lnetapi32 -lpthread
+    LDFLAGS := -lpdcurses -lregex -lnetapi32 -lpthread -lws2_32
 endif
 
 $(BIN): $(addprefix ../bin/, $(notdir $(OBJECTS))) \

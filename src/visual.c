@@ -37,6 +37,7 @@
 #include "permissions_dialog.h"
 #include "search.h"
 #include "status.h"
+#include "utils.h"
 
 #include "visual.h"
 

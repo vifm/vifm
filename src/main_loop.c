@@ -36,8 +36,11 @@
 #include <assert.h>
 #include <string.h> /* strncpy */
 
+#include "background.h"
 #include "color_scheme.h"
 #include "config.h"
+#include "filelist.h"
+#include "ipc.h"
 #include "keys.h"
 #include "macros.h"
 #include "modes.h"
@@ -61,6 +64,33 @@ update_win_console(void)
 }
 #endif
 
+static int
+read_char(WINDOW *win, wint_t *c, int timeout)
+{
+	static const int T = 50;
+
+	int i;
+	int result;
+
+	for(i = 0; i <= timeout/T; i++)
+	{
+		ipc_check();
+
+		wtimeout(win, MIN(T, timeout));
+		check_if_filelists_have_changed(curr_view);
+		if(curr_stats.number_of_windows != 1 && !curr_stats.view)
+			check_if_filelists_have_changed(other_view);
+
+		check_background_jobs();
+
+		if((result = wget_wch(status_bar, c)) != ERR)
+			break;
+
+		timeout -= T;
+	}
+	return result;
+}
+
 /*
  * Main Loop
  * Everything is driven from this function with the exception of
@@ -72,14 +102,13 @@ main_loop(void)
 	int last_result = 0;
 	int wait_enter = 0;
 
-	wtimeout(status_bar, cfg.timeout_len);
-
 	buf[0] = L'\0';
 	while(1)
 	{
 		wchar_t c;
 		size_t counter;
 		int ret;
+		int timeout = cfg.timeout_len;
 
 		is_term_working();
 
@@ -125,7 +154,7 @@ main_loop(void)
 		(void)my_chdir(curr_view->curr_dir);
 
 		/* This waits for timeout then skips if no keypress. */
-		ret = wget_wch(status_bar, (wint_t*)&c);
+		ret = read_char(status_bar, (wint_t*)&c, timeout);
 
 		if(ret != ERR && pos != ARRAY_LEN(buf) - 2)
 		{
@@ -185,7 +214,7 @@ main_loop(void)
 				if(ret != ERR)
 					modupd_input_bar(buf);
 				if(last_result == KEYS_WAIT_SHORT && wcscmp(buf, L"\033") == 0)
-					wtimeout(status_bar, 1);
+					timeout = 1;
 				if(counter > 0)
 					clear_input_bar();
 
@@ -195,7 +224,7 @@ main_loop(void)
 			}
 		}
 
-		wtimeout(status_bar, cfg.timeout_len);
+		timeout = cfg.timeout_len;
 
 		pos = 0;
 		buf[0] = L'\0';

@@ -55,7 +55,7 @@ am_vifm_OBJECTS = background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	color_scheme.$(OBJEXT) commands.$(OBJEXT) completion.$(OBJEXT) \
 	config.$(OBJEXT) dir_stack.$(OBJEXT) file_info.$(OBJEXT) \
 	file_magic.$(OBJEXT) filelist.$(OBJEXT) fileops.$(OBJEXT) \
-	filetype.$(OBJEXT) keys.$(OBJEXT) log.$(OBJEXT) \
+	filetype.$(OBJEXT) ipc.$(OBJEXT) keys.$(OBJEXT) log.$(OBJEXT) \
 	main_loop.$(OBJEXT) menu.$(OBJEXT) menus.$(OBJEXT) \
 	modes.$(OBJEXT) normal.$(OBJEXT) ops.$(OBJEXT) \
 	opt_handlers.$(OBJEXT) options.$(OBJEXT) \
@@ -250,6 +250,7 @@ vifm_SOURCES = \
 	filelist.c filelist.h \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
+	ipc.c ipc.h \
 	keys.c keys.h \
 	log.c log.h \
 	main_loop.c main_loop.h \
@@ -423,6 +424,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filelist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filetype.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/log.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main_loop.Po@am__quote@

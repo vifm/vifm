@@ -20,6 +20,7 @@
 #include "../config.h"
 
 #ifdef _WIN32
+#define _WIN32_WINNT 0x0500
 #include <tchar.h>
 #include <windows.h>
 #endif
@@ -45,6 +46,7 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
+#include "ipc.h"
 #include "log.h"
 #include "macros.h"
 #include "main_loop.h"
@@ -67,6 +69,8 @@
 #else
 #define CONF_DIR "(%HOME%/.vifm or %APPDATA%/Vifm)"
 #endif
+
+static void parse_recieved_arguments(char *args[]);
 
 static void
 show_version_msg(void)
@@ -98,6 +102,8 @@ show_help_msg(void)
 	puts("  If no path is given vifm will start in the current working directory.\n");
 	puts("  vifm --logging");
 	puts("    log some errors to " CONF_DIR "/log.\n");
+	puts("  vifm --remote");
+	puts("    passes all arguments that left in command line to active vifm server.\n");
 	puts("  vifm -c <command> | +<command>");
 	puts("    run <command> on startup.\n");
 	puts("  vifm --version | -v");
@@ -204,6 +210,12 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		{
 			select = 1;
 		}
+		else if(!strcmp(argv[x], "--remote"))
+		{
+			ipc_send(argv + x + 1);
+			endwin();
+			exit(0);
+		}
 		else if(!strcmp(argv[x], "-f"))
 		{
 			cfg.vim_filter = 1;
@@ -240,8 +252,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		else if(argv[x][0] == '+')
 		{
 		}
-		else if(access(argv[x], F_OK) == 0 || is_path_absolute(argv[x]) ||
-				is_root_dir(argv[x]))
+		else if(access(argv[x], F_OK) == 0 || is_path_absolute(argv[x]) || is_root_dir(argv[x]))
 		{
 			if(lwin_path[0] != '\0')
 			{
@@ -481,6 +492,8 @@ main(int argc, char *argv[])
 	if(!old_config && !no_configs)
 		read_info_file(0);
 
+	ipc_init(&parse_recieved_arguments);
+
 	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle);
 	check_path(&lwin, lwin_path);
 	check_path(&rwin, rwin_path);
@@ -581,6 +594,42 @@ main(int argc, char *argv[])
 	main_loop();
 
 	return 0;
+}
+
+static void
+parse_recieved_arguments(char *args[])
+{
+	char lwin_path[PATH_MAX] = "";
+	char rwin_path[PATH_MAX] = "";
+	int lwin_handle = 0, rwin_handle = 0;
+	int argc = 0;
+
+	while(args[argc] != NULL)
+		argc++;
+
+	parse_args(argc, args, args[0], lwin_path, rwin_path, &lwin_handle,
+			&rwin_handle);
+
+	check_path(&lwin, lwin_path);
+	check_path(&rwin, rwin_path);
+
+	change_directory(&lwin, lwin_path);
+	change_directory(&rwin, rwin_path);
+
+	check_path_for_file(&lwin, lwin_path, lwin_handle);
+	check_path_for_file(&rwin, rwin_path, rwin_handle);
+
+	move_to_list_pos(curr_view, curr_view->list_pos);
+	draw_dir_list(other_view, other_view->top_line);
+	wrefresh(other_view->win);
+
+	clean_status_bar();
+
+#ifdef _WIN32
+	SwitchToThisWindow(GetConsoleWindow(), TRUE);
+	BringWindowToTop(GetConsoleWindow());
+	SetForegroundWindow(GetConsoleWindow());
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

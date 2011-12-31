@@ -4,11 +4,11 @@ CFLAGS := -c -g -O0 -Wall -MD $(CFLAGS)
 
 LDFLAGS := $(LDFLAGS)
 
-LIBS := -lregex -lpdcurses -lnetapi32 -lpthread
+LIBS := -lregex -lpdcurses -lnetapi32 -lpthread -lws2_32
 
 vifm_SOURCES := background.c bookmarks.c change_dialog.c cmdline.c cmds.c \
                 color_scheme.c commands.c completion.c config.c dir_stack.c \
-                file_info.c file_magic.c filelist.c fileops.c filetype.c \
+                file_info.c file_magic.c filelist.c fileops.c filetype.c ipc.c \
                 keys.c log.c main_loop.c menu.c menus.c modes.c normal.c ops.c \
                 opt_handlers.c options.c permissions_dialog.c registers.c \
                 search.c signals.c sort.c sort_dialog.c status.c \

@@ -46,7 +46,10 @@ add_to_string_array(char ***array, int len, int count, ...)
 	va_start(va, count);
 	while(count-- > 0)
 	{
-		if((p[len] = strdup(va_arg(va, char *))) == NULL)
+		char *arg = va_arg(va, char *);
+		if(arg == NULL)
+			p[len] = NULL;
+		else if((p[len] = strdup(arg)) == NULL)
 			break;
 		len++;
 	}

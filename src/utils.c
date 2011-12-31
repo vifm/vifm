@@ -1181,7 +1181,7 @@ int make_dir(const char *dir_name, mode_t mode)
 int pathcmp(const char *file_name_a, const char *file_name_b)
 {
 #ifndef _WIN32
-	return strcmp(file_name_a, filename_b);
+	return strcmp(file_name_a, file_name_b);
 #else
 	return strcasecmp(file_name_a, file_name_b);
 #endif
@@ -1190,7 +1190,7 @@ int pathcmp(const char *file_name_a, const char *file_name_b)
 int pathncmp(const char *file_name_a, const char *file_name_b, size_t n)
 {
 #ifndef _WIN32
-	return strncmp(file_name_a, filename_b, n);
+	return strncmp(file_name_a, file_name_b, n);
 #else
 	return strncasecmp(file_name_a, file_name_b, n);
 #endif
