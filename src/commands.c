@@ -720,7 +720,7 @@ filename_completion(const char *str, int type)
 
 		if(filename[0] == '\0' && d->d_name[0] == '.')
 			continue;
-		if(fnncmp(d->d_name, filename, filename_len) != 0)
+		if(pathncmp(d->d_name, filename, filename_len) != 0)
 			continue;
 
 		if(type == FNC_DIRONLY && !is_entry_dir(d))

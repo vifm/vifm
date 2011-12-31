@@ -634,7 +634,7 @@ find_file_pos_in_list(FileView *view, const char *file)
 	int x;
 	for(x = 0; x < view->list_rows; x++)
 	{
-		if(fncmp(view->dir_entry[x].name, file) == 0)
+		if(pathcmp(view->dir_entry[x].name, file) == 0)
 			return x;
 	}
 	return -1;

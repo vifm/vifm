@@ -97,8 +97,8 @@ void set_term_title(const char *full_path);
 const char *get_mode_str(mode_t mode);
 int symlinks_available(void);
 int make_dir(const char *dir_name, mode_t mode);
-int fncmp(const char *file_name_a, const char *file_name_b);
-int fnncmp(const char *file_name_a, const char *file_name_b, size_t n);
+int pathcmp(const char *file_name_a, const char *file_name_b);
+int pathncmp(const char *file_name_a, const char *file_name_b, size_t n);
 
 #ifndef _WIN32
 int get_uid(const char *user, uid_t *uid);
