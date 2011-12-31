@@ -107,7 +107,7 @@ syntax match vifmNumber contained /\d\+/
 
 " Ange-bracket notation
 syntax case ignore
-syntax match vifmNotation '<\(cr\|space\|f\d\{1,2\}\|c-[a-z[\]^_]\)>'
+syntax match vifmNotation '<\(esc\|cr\|space\|del\|\(s-\)\?tabhome\|end\|left\|right\|up\|down\|bs\|delete\|pageup\|pagedown\|\([acms]-\)\?f\d\{1,2\}\|c-s-[a-z[\]^_]\|s-c-[a-z[\]^_]\|c-[a-z[\]^_]\|[am]-c-[a-z]\|c-[am]-[a-z]\|[am]-[a-z]\)>'
 syntax case match
 
 " Whole line comments
