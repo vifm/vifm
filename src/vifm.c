@@ -212,9 +212,12 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		}
 		else if(!strcmp(argv[x], "--remote"))
 		{
-			ipc_send(argv + x + 1);
-			endwin();
-			exit(0);
+			if(!ipc_server())
+			{
+				ipc_send(argv + x + 1);
+				endwin();
+				exit(0);
+			}
 		}
 		else if(!strcmp(argv[x], "-f"))
 		{

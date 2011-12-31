@@ -27,6 +27,8 @@ void ipc_init(recieve_callback callback_func);
 void ipc_check(void);
 /* Sends data to server.  The data array should end with NULL. */
 void ipc_send(char *data[]);
+/* Returns non-zero value if current instance is a server. */
+int ipc_server(void);
 
 #endif /* __IPC_H__ */
 
