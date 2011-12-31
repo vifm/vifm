@@ -10,7 +10,6 @@ Basic things that need to be done.
     Templates for :touch.
 	Mouse support.
     Ctrl-R combinations in the command-line mode.
-    Add the UNC computer name (after the \\) (%h, :H or :u).
     Wrapping of lines in the menus.
     Highlight more angle bracket notation in vifmrc.
     IPC among all running vifm instances.
@@ -79,5 +78,5 @@ Other (questionable) things.
 
 Code improvements.
     Write more tests.
-    Improve logging (print back trace).
+    Improve logging (print back trace in some cases, increase verbosity).
     Stay at the same file in some cases.

@@ -8,6 +8,12 @@
 #include "../../src/filelist.h"
 #include "../../src/ui.h"
 
+#ifdef _WIN32
+#define SL "\\\\"
+#else
+#define SL "/"
+#endif
+
 static void
 setup_lwin(void)
 {
@@ -83,12 +89,12 @@ test_b_both_have_selection(void)
 
 	expanded = expand_macros(&lwin, "/%b ", "", &menu, &split);
 	assert_string_equal(
-			"/lfi\\ le0 lfile\\\"2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5 ", expanded);
+			"/lfi\\ le0 lfile\\\"2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, "%b", "", &menu, &split);
 	assert_string_equal(
-			"lfi\\ le0 lfile\\\"2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5", expanded);
+			"lfi\\ le0 lfile\\\"2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5", expanded);
 	free(expanded);
 }
 
@@ -119,12 +125,12 @@ test_b_only_lwin_has_selection(void)
 	clean_selected_files(&lwin);
 
 	expanded = expand_macros(&lwin, "/%b ", "", &menu, &split);
-	assert_string_equal("/lfile\\\"2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5 ",
+	assert_string_equal("/lfile\\\"2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, "%b", "", &menu, &split);
-	assert_string_equal("lfile\\\"2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5",
+	assert_string_equal("lfile\\\"2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5",
 			expanded);
 	free(expanded);
 }
@@ -138,11 +144,12 @@ test_b_only_rwin_has_selection(void)
 	clean_selected_files(&rwin);
 
 	expanded = expand_macros(&lwin, "/%b ", "", &menu, &split);
-	assert_string_equal("/lfi\\ le0 lfile\\\"2 /rwin/rfile5 ", expanded);
+	assert_string_equal("/lfi\\ le0 lfile\\\"2 " SL "rwin" SL "rfile5 ",
+			expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, "%b", "", &menu, &split);
-	assert_string_equal("lfi\\ le0 lfile\\\"2 /rwin/rfile5", expanded);
+	assert_string_equal("lfi\\ le0 lfile\\\"2 " SL "rwin" SL "rfile5", expanded);
 	free(expanded);
 }
 
@@ -156,11 +163,11 @@ test_b_noone_has_selection(void)
 	clean_selected_files(&rwin);
 
 	expanded = expand_macros(&lwin, "/%b ", "", &menu, &split);
-	assert_string_equal("/lfile\\\"2 /rwin/rfile5 ", expanded);
+	assert_string_equal("/lfile\\\"2 " SL "rwin" SL "rfile5 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, "%b", "", &menu, &split);
-	assert_string_equal("lfile\\\"2 /rwin/rfile5", expanded);
+	assert_string_equal("lfile\\\"2 " SL "rwin" SL "rfile5", expanded);
 	free(expanded);
 }
 
@@ -202,7 +209,7 @@ test_with_quotes(void)
 	expanded = expand_macros(&lwin, "/%\"b ", "", &menu, &split);
 	assert_string_equal(
 			"/\"lfi le0\" \"lfile\\\"2\" "
-			"\"/rwin/rfile1\" \"/rwin/rfile3\" \"/rwin/rfile5\" ", expanded);
+			"\"" SL "rwin" SL "rfile1\" \"" SL "rwin" SL "rfile3\" \"" SL "rwin" SL "rfile5\" ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, "/%\"f ", "", &menu, &split);
@@ -210,7 +217,7 @@ test_with_quotes(void)
 	free(expanded);
 
 	expanded = expand_macros(&lwin, "/%\"F ", "", &menu, &split);
-	assert_string_equal("/\"/rwin/rfile1\" \"/rwin/rfile3\" \"/rwin/rfile5\" ",
+	assert_string_equal("/\"" SL "rwin" SL "rfile1\" \"" SL "rwin" SL "rfile3\" \"" SL "rwin" SL "rfile5\" ",
 			expanded);
 	free(expanded);
 
@@ -219,15 +226,15 @@ test_with_quotes(void)
 	free(expanded);
 
 	expanded = expand_macros(&lwin, "/%\"C ", "", &menu, &split);
-	assert_string_equal("/\"/rwin/rfile5\" ", expanded);
+	assert_string_equal("/\"" SL "rwin" SL "rfile5\" ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, "/%\"d ", "", &menu, &split);
-	assert_string_equal("/\"/lwin\" ", expanded);
+	assert_string_equal("/\"" SL "lwin\" ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, "/%\"D ", "", &menu, &split);
-	assert_string_equal("/\"/rwin\" ", expanded);
+	assert_string_equal("/\"" SL "rwin\" ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " %\"a %\"m %\"M %\"s ", "", &menu, &split);

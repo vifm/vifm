@@ -8,6 +8,12 @@
 #include "../../src/filelist.h"
 #include "../../src/ui.h"
 
+#ifdef _WIN32
+#define SL "\\\\"
+#else
+#define SL "/"
+#endif
+
 static void
 setup_lwin(void)
 {
@@ -83,34 +89,35 @@ test_colon_p(void)
 	char *expanded;
 
 	expanded = expand_macros(&lwin, " cp %f:p ", "", &menu, &split);
-	assert_string_equal(" cp /lwin/lfile0 /lwin/lfile2 ", expanded);
+	assert_string_equal(" cp " SL "lwin" SL "lfile0 " SL "lwin" SL "lfile2 ",
+			expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %F:p ", "", &menu, &split);
-	assert_string_equal(" cp /rwin/rfile1 /rwin/rfile3 /rwin/rfile5 ",
-			expanded);
+	assert_string_equal(" cp " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
+											expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %b:p ", "", &menu, &split);
 	assert_string_equal(
-			" cp /lwin/lfile0 /lwin/lfile2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5 ",
+			" cp " SL "lwin" SL "lfile0 " SL "lwin" SL "lfile2 " SL "rwin" SL"rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %c:p ", "", &menu, &split);
-	assert_string_equal(" cp /lwin/lfile2 ", expanded);
+	assert_string_equal(" cp " SL "lwin" SL "lfile2 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %C:p ", "", &menu, &split);
-	assert_string_equal(" cp /rwin/rfile5 ", expanded);
+	assert_string_equal(" cp " SL "rwin" SL "rfile5 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %d:p ", "", &menu, &split);
-	assert_string_equal(" cp /lwin ", expanded);
+	assert_string_equal(" cp " SL "lwin ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %D:p ", "", &menu, &split);
-	assert_string_equal(" cp /rwin ", expanded);
+	assert_string_equal(" cp " SL "rwin ", expanded);
 	free(expanded);
 }
 
@@ -125,20 +132,23 @@ test_colon_tilde(void)
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %f:p:~ ", "", &menu, &split);
-	assert_string_equal(" cp /lwin/lfile0 /lwin/lfile2 ", expanded);
+	assert_string_equal(" cp " SL "lwin" SL "lfile0 " SL "lwin" SL "lfile2 ",
+			expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %F:~ ", "", &menu, &split);
-	assert_string_equal(" cp ~/rfile1 ~/rfile3 ~/rfile5 ", expanded);
+	assert_string_equal(" cp ~" SL "rfile1 ~" SL "rfile3 ~" SL "rfile5 ",
+			expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %b:p:~ ", "", &menu, &split);
 	assert_string_equal(
-			" cp /lwin/lfile0 /lwin/lfile2 ~/rfile1 ~/rfile3 ~/rfile5 ", expanded);
+			" cp " SL "lwin" SL "lfile0 " SL "lwin" SL "lfile2 ~" SL "rfile1 ~" SL "rfile3 ~" SL "rfile5 ",
+			expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %b:~ ", "", &menu, &split);
-	assert_string_equal(" cp lfile0 lfile2 ~/rfile1 ~/rfile3 ~/rfile5 ",
+	assert_string_equal(" cp lfile0 lfile2 ~" SL "rfile1 ~" SL "rfile3 ~" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
@@ -147,15 +157,15 @@ test_colon_tilde(void)
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %c:p:~ ", "", &menu, &split);
-	assert_string_equal(" cp /lwin/lfile2 ", expanded);
+	assert_string_equal(" cp " SL "lwin" SL "lfile2 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %C:~ ", "", &menu, &split);
-	assert_string_equal(" cp ~/rfile5 ", expanded);
+	assert_string_equal(" cp ~" SL "rfile5 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %d:~ ", "", &menu, &split);
-	assert_string_equal(" cp /lwin ", expanded);
+	assert_string_equal(" cp " SL "lwin ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %D:~ ", "", &menu, &split);
@@ -178,21 +188,25 @@ test_colon_dot(void)
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %F:~:. ", "", &menu, &split);
-	assert_string_equal(" cp ~/rfile1 ~/rfile3 ~/rfile5 ", expanded);
+	assert_string_equal(" cp ~" SL "rfile1 ~" SL "rfile3 ~" SL "rfile5 ",
+			expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %F:. ", "", &menu, &split);
-	assert_string_equal(" cp /rwin/rfile1 /rwin/rfile3 /rwin/rfile5 ", expanded);
+	assert_string_equal(" cp " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
+			expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %b:. ", "", &menu, &split);
 	assert_string_equal(
-			" cp lfile0 lfile2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5 ", expanded);
+			" cp lfile0 lfile2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
+			expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %b:p:. ", "", &menu, &split);
 	assert_string_equal(
-			" cp lfile0 lfile2 /rwin/rfile1 /rwin/rfile3 /rwin/rfile5 ", expanded);
+			" cp lfile0 lfile2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
+			expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %c:. ", "", &menu, &split);
@@ -204,15 +218,15 @@ test_colon_dot(void)
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %C:. ", "", &menu, &split);
-	assert_string_equal(" cp /rwin/rfile5 ", expanded);
+	assert_string_equal(" cp " SL "rwin" SL "rfile5 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %d:. ", "", &menu, &split);
-	assert_string_equal(" cp /lwin ", expanded);
+	assert_string_equal(" cp " SL "lwin ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %D:. ", "", &menu, &split);
-	assert_string_equal(" cp /rwin ", expanded);
+	assert_string_equal(" cp " SL "rwin ", expanded);
 	free(expanded);
 }
 
@@ -227,7 +241,7 @@ test_colon_h(void)
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %f:p:h ", "", &menu, &split);
-	assert_string_equal(" cp /lwin /lwin ", expanded);
+	assert_string_equal(" cp " SL "lwin " SL "lwin ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %F:~:h ", "", &menu, &split);
@@ -235,31 +249,32 @@ test_colon_h(void)
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %F:h ", "", &menu, &split);
-	assert_string_equal(" cp /rwin /rwin /rwin ", expanded);
+	assert_string_equal(" cp " SL "rwin " SL "rwin " SL "rwin ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %b:h ", "", &menu, &split);
-	assert_string_equal(" cp . . /rwin /rwin /rwin ", expanded);
+	assert_string_equal(" cp . . " SL "rwin " SL "rwin " SL "rwin ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %b:p:h ", "", &menu, &split);
-	assert_string_equal(" cp /lwin /lwin /rwin /rwin /rwin ", expanded);
+	assert_string_equal(" cp " SL "lwin " SL "lwin " SL "rwin " SL "rwin " SL "rwin ",
+			expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %c:p:h ", "", &menu, &split);
-	assert_string_equal(" cp /lwin ", expanded);
+	assert_string_equal(" cp " SL "lwin ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %C:h ", "", &menu, &split);
-	assert_string_equal(" cp /rwin ", expanded);
+	assert_string_equal(" cp " SL "rwin ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %d:h ", "", &menu, &split);
-	assert_string_equal(" cp / ", expanded);
+	assert_string_equal(" cp " SL " ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %D:h:h ", "", &menu, &split);
-	assert_string_equal(" cp / ", expanded);
+	assert_string_equal(" cp " SL " ", expanded);
 	free(expanded);
 }
 
@@ -328,27 +343,27 @@ test_colon_r(void)
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %c:p:r ", "", &menu, &split);
-	assert_string_equal(" cp /lwin/lfile2 ", expanded);
+	assert_string_equal(" cp " SL "lwin" SL "lfile2 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %C:r ", "", &menu, &split);
-	assert_string_equal(" cp /rw.in/rfile4.tar ", expanded);
+	assert_string_equal(" cp " SL "rw.in" SL "rfile4.tar ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %C:r:r ", "", &menu, &split);
-	assert_string_equal(" cp /rw.in/rfile4 ", expanded);
+	assert_string_equal(" cp " SL "rw.in" SL "rfile4 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %C:r:r:r ", "", &menu, &split);
-	assert_string_equal(" cp /rw.in/rfile4 ", expanded);
+	assert_string_equal(" cp " SL "rw.in" SL "rfile4 ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %d:r ", "", &menu, &split);
-	assert_string_equal(" cp /lwin ", expanded);
+	assert_string_equal(" cp " SL "lwin ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %D:r ", "", &menu, &split);
-	assert_string_equal(" cp /rw ", expanded);
+	assert_string_equal(" cp " SL "rw ", expanded);
 	free(expanded);
 
 	lwin.list_pos = 4;
@@ -358,7 +373,7 @@ test_colon_r(void)
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %c:p:r ", "", &menu, &split);
-	assert_string_equal(" cp /lwin/.lfile4 ", expanded);
+	assert_string_equal(" cp " SL "lwin" SL ".lfile4 ", expanded);
 	free(expanded);
 }
 
@@ -368,7 +383,7 @@ test_colon_e(void)
 	int menu, split;
 	char *expanded;
 
-	strcpy(rwin.curr_dir, "/rw.in");
+	strcpy(rwin.curr_dir, "" SL "rw.in");
 	rwin.list_pos = 4;
 
 	expanded = expand_macros(&lwin, " cp %c:e ", "", &menu, &split);
@@ -468,6 +483,23 @@ test_colon_gs(void)
 
 #ifdef _WIN32
 static void
+test_colon_u(void)
+{
+	int menu, split;
+	char *expanded;
+
+	expanded = expand_macros(&rwin, "%f:p:u", "", &menu, &split);
+	assert_string_starts_with("\\\\", expanded);
+	free(expanded);
+
+	strcpy(lwin.curr_dir, "//server/share/directory");
+
+	expanded = expand_macros(&lwin, " cp %f:p:u ", "", &menu, &split);
+	assert_string_equal(" cp " SL SL "server " SL SL "server ", expanded);
+	free(expanded);
+}
+
+static void
 test_windows_specific(void)
 {
 	int menu, split;
@@ -476,21 +508,21 @@ test_windows_specific(void)
 	strcpy(lwin.curr_dir, "h:/rwin");
 
 	expanded = expand_macros(&lwin, " %d:h ", "", &menu, &split);
-	assert_string_equal(" h:/ ", expanded);
+	assert_string_equal(" h:\\\\ ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " %d:h:h ", "", &menu, &split);
-	assert_string_equal(" h:/ ", expanded);
+	assert_string_equal(" h:\\\\ ", expanded);
 	free(expanded);
 
 	strcpy(lwin.curr_dir, "//ZX-Spectrum");
 
 	expanded = expand_macros(&lwin, " %d:h ", "", &menu, &split);
-	assert_string_equal(" //ZX-Spectrum ", expanded);
+	assert_string_equal(" \\\\\\\\ZX-Spectrum ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " %d:h:h ", "", &menu, &split);
-	assert_string_equal(" //ZX-Spectrum ", expanded);
+	assert_string_equal(" \\\\\\\\ZX-Spectrum ", expanded);
 	free(expanded);
 }
 #endif
@@ -515,7 +547,8 @@ test_with_quotes(void)
 	char *expanded;
 
 	expanded = expand_macros(&lwin, " cp %\"f:p ", "", &menu, &split);
-	assert_string_equal(" cp \"/lwin/lfile0\" \"/lwin/lfile2\" ", expanded);
+	assert_string_equal(" cp \"" SL "lwin" SL "lfile0\" \"" SL "lwin" SL "lfile2\" ",
+			expanded);
 	free(expanded);
 }
 
@@ -538,6 +571,7 @@ fname_modif_tests(void)
 	run_test(test_colon_gs);
 
 #ifdef _WIN32
+	run_test(test_colon_u);
 	run_test(test_windows_specific);
 #endif
 

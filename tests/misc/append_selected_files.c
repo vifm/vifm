@@ -4,11 +4,20 @@
 #include "seatest.h"
 
 #include "../../src/commands.h"
+#include "../../src/config.h"
 #include "../../src/ui.h"
+
+#ifdef _WIN32
+#define SL "\\\\"
+#else
+#define SL "/"
+#endif
 
 static void
 setup(void)
 {
+	cfg.shell = strdup("sh");
+
 	/* lwin */
 	strcpy(lwin.curr_dir, "/lwin");
 
@@ -53,6 +62,8 @@ teardown(void)
 {
 	int i;
 
+	free(cfg.shell);
+
 	for(i = 0; i < lwin.list_rows; i++)
 		free(lwin.dir_entry[i].name);
 	free(lwin.dir_entry);
@@ -80,13 +91,13 @@ test_f(void)
 
 	expanded = strdup("");
 	expanded = append_selected_files(&rwin, expanded, 0, 0, "");
-	assert_string_equal("/rwin/rfile1 /rwin/rfile3 /rwin/rfile5 /rwin/rdir6",
+	assert_string_equal(SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 " SL "rwin" SL "rdir6",
 			expanded);
 	free(expanded);
 
 	expanded = strdup("/");
 	expanded = append_selected_files(&rwin, expanded, 0, 0, "");
-	assert_string_equal("//rwin/rfile1 /rwin/rfile3 /rwin/rfile5 /rwin/rdir6",
+	assert_string_equal("/" SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 " SL "rwin" SL "rdir6",
 			expanded);
 	free(expanded);
 }
@@ -101,7 +112,6 @@ test_c(void)
 	assert_string_equal("lfile2", expanded);
 	free(expanded);
 
-
 	expanded = strdup("/");
 	expanded = append_selected_files(&lwin, expanded, 1, 0, "");
 	assert_string_equal("/lfile2", expanded);
@@ -109,12 +119,12 @@ test_c(void)
 
 	expanded = strdup("");
 	expanded = append_selected_files(&rwin, expanded, 1, 0, "");
-	assert_string_equal("/rwin/rfile5", expanded);
+	assert_string_equal("" SL "rwin" SL "rfile5", expanded);
 	free(expanded);
 
 	expanded = strdup("/");
 	expanded = append_selected_files(&rwin, expanded, 1, 0, "");
-	assert_string_equal("//rwin/rfile5", expanded);
+	assert_string_equal("/" SL "rwin" SL "rfile5", expanded);
 	free(expanded);
 }
 

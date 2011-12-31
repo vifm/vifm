@@ -1557,6 +1557,24 @@ apply_mod(const char *path, const char *parent, const char *mod, int *mod_len)
 		if(!is_root_dir(buf))
 			buf[p - path] = '\0';
 	}
+#ifdef _WIN32
+	else if(strncmp(mod, ":u", 2) == 0)
+	{
+		if(!is_unc_path(path))
+		{
+			DWORD size = sizeof(buf) - 2;
+			strcpy(buf, "//");
+			GetComputerNameA(buf + 2, &size);
+			return buf;
+		}
+		char *p = strchr(path + 2, '/');
+		if(p == NULL)
+			return strcpy(buf, path);
+
+		strcpy(buf, path);
+		buf[p - path] = '\0';
+	}
+#endif
 	else if(strncmp(mod, ":t", 2) == 0)
 	{
 		char *p = strrchr(path, '/');
@@ -1879,6 +1897,10 @@ expand_macros(FileView *view, const char *command, const char *args,
 					y += 2;
 				else if(strncmp(command + x, ":h", 2) == 0)
 					y += 2;
+#ifdef _WIN32
+				else if(strncmp(command + x, ":u", 2) == 0)
+					y += 2;
+#endif
 				else if(strncmp(command + x, ":t", 2) == 0)
 					y += 2;
 				else if(strncmp(command + x, ":r", 2) == 0)

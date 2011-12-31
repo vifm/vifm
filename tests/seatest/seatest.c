@@ -242,7 +242,7 @@ int run_tests(void (*tests)(void))
 	printf("                    in %lu ms\r\n",end - start);
 	printf("==================================================\r\n");
 
-	_getch();
+	/* _getch(); */
 	return sea_tests_failed == 0;
 }
 

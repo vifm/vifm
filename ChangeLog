@@ -18,6 +18,8 @@
 
 	Added support for running :cmap, :nmap and :vmap with one argument.
 
+	Added :u filename modifier for UNC computer name (Windows only).
+
 	Restore terminal title on exit when running in X (*nix only).
 
 	Reset dot and filename filters if they hide bookmarked file.

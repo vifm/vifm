@@ -1266,6 +1266,8 @@ Use %% if you need to put a percent sign in your command.
 You can use filename modifiers after %c, %C, %f, %F, %b, %d and %D macros.
 Supported modifiers are:
     :p           - full path
+    :u           - UNC name of path (e.g. "\\server" in "\\server\share"),
+                   Windows only
     :~           - relative to the home directory
     :.           - relative to current directory
     :h           - head of the filename
