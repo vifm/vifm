@@ -11,7 +11,7 @@ Basic things that need to be done.
 	Mouse support.
     Ctrl-R combinations in the command-line mode.
     Wrapping of lines in the menus.
-    IPC among all running vifm instances.
+    IPC among all running vifm instances (share settings among instances).
     Write script to export aliases and function from sh to ~/.vifm/scripts/
     Make rename command process directories recursively.
 
@@ -34,9 +34,8 @@ Vi(m) specific features that need to be added.
     /, ?, n, N as selectors.
     Make n, N, / and ? with count behave like Vim on nowrapscan and match fail.
     :map without arguments
-    Better ranges.
+    Better ranges (add support for search patterns).
     Ctrl-W F key.
-    Command line argument like --remote-tab in Vim.
     :let command (for start support only environment variables).
 
 Possible things to add.
@@ -66,7 +65,7 @@ Other (questionable) things.
     Make directory stack menu interactive ?
     Maybe add + and - commands to undo by commands, not command groups.
     :setlocal command.
-    Remove items from :history cmd?
+    Remove items from :history command menu?
     :edit, etc. in the menus.
     :alias
     Like gv but to select just pasted files (gp?).

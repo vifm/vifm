@@ -1085,6 +1085,16 @@ get_x11_window_title(Display *disp, Window win, char *buf, size_t buf_len)
 }
 #endif
 
+static void
+set_title(const char *new_title)
+{
+#ifdef _WIN32
+	SetConsoleTitleA(new_title);
+#else
+	printf("\033]2;%s\007", new_title);
+#endif
+}
+
 void
 set_term_title(const char *full_path)
 {
@@ -1099,21 +1109,27 @@ set_term_title(const char *full_path)
 		static Window x11_window;
 #endif
 
+#ifdef _WIN32
+		title_supported = 1;
+		GetConsoleTitleA(prev_title, sizeof(prev_title));
+#else
 		/* this list was taken from ranger's sources */
 		static char *TERMINALS_WITH_TITLE[] = {
 			"xterm", "xterm-256color", "rxvt", "rxvt-256color", "rxvt-unicode",
 			"aterm", "Eterm", "screen", "screen-256color"
 		};
+
 		title_supported = is_in_string_array(TERMINALS_WITH_TITLE,
 				ARRAY_LEN(TERMINALS_WITH_TITLE), getenv("TERM"));
 
-#if !defined(_WIN32) && defined(HAVE_X11)
+#ifdef HAVE_X11
 		/* use X to determine current window title */
 		if(get_x11_disp_and_win(&x11_display, &x11_window))
 			get_x11_window_title(x11_display, x11_window, prev_title,
 					sizeof(prev_title));
 #endif
 
+#endif
 		was_setup = 1;
 	}
 	if(!title_supported)
@@ -1123,10 +1139,14 @@ set_term_title(const char *full_path)
 	{
 		/* restore initial window title if available */;
 		if(prev_title[0] != '\0')
-			printf("\033]2;%s\007", prev_title);
+			set_title(prev_title);
 	}
 	else
-		printf("\033]2;%s - VIFM\007", full_path);
+	{
+		char buf[2048];
+		snprintf(buf, sizeof(buf), "%s - VIFM", full_path);
+		set_title(buf);
+	}
 }
 
 const char *
