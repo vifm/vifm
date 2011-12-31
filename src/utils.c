@@ -476,11 +476,7 @@ path_starts_with(const char *path, const char *begin)
 	if(len > 0 && begin[len - 1] == '/')
 		len--;
 
-#ifndef _WIN32
-	if(strncmp(path, begin, len) != 0)
-#else
-	if(strncasecmp(path, begin, len) != 0)
-#endif
+	if(fnncmp(path, begin, len) != 0)
 		return 0;
 
 	return (path[len] == '\0' || path[len] == '/');
@@ -1179,6 +1175,24 @@ int make_dir(const char *dir_name, mode_t mode)
 	return mkdir(dir_name, mode);
 #else
 	return mkdir(dir_name);
+#endif
+}
+
+int fncmp(const char *file_name_a, const char *file_name_b)
+{
+#ifndef _WIN32
+	return strcmp(file_name_a, filename_b);
+#else
+	return strcasecmp(file_name_a, file_name_b);
+#endif
+}
+
+int fnncmp(const char *file_name_a, const char *file_name_b, size_t n)
+{
+#ifndef _WIN32
+	return strncmp(file_name_a, filename_b, n);
+#else
+	return strncasecmp(file_name_a, file_name_b, n);
 #endif
 }
 

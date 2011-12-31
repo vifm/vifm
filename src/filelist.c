@@ -634,11 +634,7 @@ find_file_pos_in_list(FileView *view, const char *file)
 	int x;
 	for(x = 0; x < view->list_rows; x++)
 	{
-#ifndef _WIN32
-		if(strcmp(view->dir_entry[x].name, file) == 0)
-#else
-		if(strcasecmp(view->dir_entry[x].name, file) == 0)
-#endif
+		if(fncmp(view->dir_entry[x].name, file) == 0)
 			return x;
 	}
 	return -1;
