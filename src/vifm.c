@@ -362,9 +362,9 @@ add_dirs_to_path(const char *path)
 	{
 		char buf[PATH_MAX];
 
-		if(strcmp(dentry->d_name, ".") == 0)
+		if(pathcmp(dentry->d_name, ".") == 0)
 			continue;
-		else if(strcmp(dentry->d_name, "..") == 0)
+		else if(pathcmp(dentry->d_name, "..") == 0)
 			continue;
 
 		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);

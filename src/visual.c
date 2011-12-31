@@ -202,7 +202,7 @@ enter_visual_mode(int restore_selection)
 		key_info_t ki;
 		cmd_gv(ki, NULL);
 	}
-	else if(strcmp(view->dir_entry[view->list_pos].name, "../"))
+	else if(pathcmp(view->dir_entry[view->list_pos].name, "../"))
 	{
 		/* Don't allow the ../ dir to be selected */
 		view->selected_files = 1;

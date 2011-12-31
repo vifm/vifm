@@ -1244,8 +1244,8 @@ show_bookmarks_menu(FileView *view, const char *marks)
 			snprintf(buf, sizeof(buf), "%c   %-*s%s", index2mark(j),
 					max_len + overhead, with_tilde, "[invalid]");
 		}
-		else if(!strcmp(bookmarks[j].file, "..") ||
-				!strcmp(bookmarks[j].file, "../"))
+		else if(!pathcmp(bookmarks[j].file, "..") ||
+				!pathcmp(bookmarks[j].file, "../"))
 		{
 			snprintf(buf, sizeof(buf), "%c   %-*s%s", index2mark(j),
 					max_len + overhead, with_tilde, "[none]");
@@ -1791,13 +1791,13 @@ show_history_menu(FileView *view)
 		if(!is_dir(view->history[x].dir))
 			continue;
 		for(y = x + 1; y < view->history_num && y < cfg.history_len; y++)
-			if(strcmp(view->history[x].dir, view->history[y].dir) == 0)
+			if(pathcmp(view->history[x].dir, view->history[y].dir) == 0)
 				break;
 		if(y < view->history_num && y < cfg.history_len)
 			continue;
 
 		/* Change the current dir to reflect the current file. */
-		if(strcmp(view->history[x].dir, view->curr_dir) == 0)
+		if(pathcmp(view->history[x].dir, view->curr_dir) == 0)
 		{
 			snprintf(view->history[x].file, sizeof(view->history[x].file),
 					"%s", view->dir_entry[view->list_pos].name);

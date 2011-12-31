@@ -579,7 +579,7 @@ is_op_possible(const op_t *op)
 		return 0;
 	if(op->dont_exist != NULL && lstat(op->dont_exist, &st) == 0)
 	{
-		if(strncmp(op->dst, cfg.trash_dir, trash_dir_len) == 0)
+		if(pathncmp(op->dst, cfg.trash_dir, trash_dir_len) == 0)
 			return -1;
 		return 0;
 	}
@@ -812,13 +812,13 @@ clean_cmds_with_trash(void)
 		if(cur->group->balance < 0)
 		{
 			if(cur->do_op.exists != NULL &&
-					strncmp(cur->do_op.exists, cfg.trash_dir, trash_dir_len) == 0)
+					pathncmp(cur->do_op.exists, cfg.trash_dir, trash_dir_len) == 0)
 				remove_cmd(cur);
 		}
 		else
 		{
 			if(cur->undo_op.exists != NULL &&
-					strncmp(cur->undo_op.exists, cfg.trash_dir, trash_dir_len) == 0)
+					pathncmp(cur->undo_op.exists, cfg.trash_dir, trash_dir_len) == 0)
 				remove_cmd(cur);
 		}
 		cur = prev;

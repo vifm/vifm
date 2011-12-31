@@ -185,7 +185,7 @@ my_system(char *command)
 
 	system("cls");
 
-	if(strcmp(cfg.shell, "cmd") == 0)
+	if(pathcmp(cfg.shell, "cmd") == 0)
 	{
 		snprintf(buf, sizeof(buf), "%s /C \"%s\"", cfg.shell, command);
 		return system(buf);
@@ -488,7 +488,7 @@ my_chdir(const char *path)
 	char curr_path[PATH_MAX];
 	if(getcwd(curr_path, sizeof(curr_path)) == curr_path)
 	{
-		if(strcmp(curr_path, path) == 0)
+		if(pathcmp(curr_path, path) == 0)
 			return 0;
 	}
 	return chdir(path);
@@ -664,13 +664,13 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 		int prev_dir_present;
 
 		prev_dir_present = (q != buf - 1 && *q == '/');
-		if(prev_dir_present && strncmp(p, "./", 2) == 0)
+		if(prev_dir_present && pathncmp(p, "./", 2) == 0)
 			p++;
-		else if(prev_dir_present && strcmp(p, ".") == 0)
+		else if(prev_dir_present && pathcmp(p, ".") == 0)
 			;
 		else if(prev_dir_present &&
-				(strncmp(p, "../", 3) == 0 || strcmp(p, "..") == 0) &&
-				strcmp(buf, "../") != 0)
+				(pathncmp(p, "../", 3) == 0 || pathcmp(p, "..") == 0) &&
+				pathcmp(buf, "../") != 0)
 		{
 #ifdef _WIN32
 			if(*(q - 1) != ':')
@@ -725,7 +725,7 @@ make_rel_path(const char *path, const char *base)
 			p = path + strlen(path);
 		if((b = strchr(b + 1, '/')) == NULL)
 			b = base + strlen(base);
-		if(p - path != b - base || strncmp(path, base, p - path) != 0)
+		if(p - path != b - base || pathncmp(path, base, p - path) != 0)
 		{
 			p = op;
 			b = ob;
@@ -762,7 +762,7 @@ replace_home_part(const char *directory)
 	size_t len;
 
 	len = strlen(cfg.home_dir) - 1;
-	if(strncmp(directory, cfg.home_dir, len) == 0 &&
+	if(pathncmp(directory, cfg.home_dir, len) == 0 &&
 			(directory[len] == '\0' || directory[len] == '/'))
 		strncat(strcpy(buf, "~"), directory + len, sizeof(buf) - strlen(buf) - 1);
 	else
@@ -864,7 +864,7 @@ int
 is_root_dir(const char *path)
 {
 #ifdef _WIN32
-	if(isalpha(path[0]) && strcmp(path + 1, ":/") == 0)
+	if(isalpha(path[0]) && pathcmp(path + 1, ":/") == 0)
 		return 1;
 
 	if(path[0] == '/' && path[1] == '/' && path[2] != '\0')

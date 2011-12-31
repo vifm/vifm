@@ -217,7 +217,7 @@ check_mark_directory(FileView *view, char mark)
 	if(bookmarks[x].directory == NULL)
 		return -1;
 
-	if(strcmp(view->curr_dir, bookmarks[x].directory) == 0)
+	if(pathcmp(view->curr_dir, bookmarks[x].directory) == 0)
 		return find_file_pos_in_list(view, bookmarks[x].file);
 
 	return -1;

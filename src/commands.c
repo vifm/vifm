@@ -563,7 +563,7 @@ complete_with_shared(const char *server, const char *file)
 				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi502_netname, -1, buf,
 						sizeof(buf), NULL, NULL);
 				strcat(buf, "/");
-				if(strncmp(buf, file, len) == 0)
+				if(pathncmp(buf, file, len) == 0)
 				{
 					char *escaped = escape_filename(buf, 1);
 					add_completion(escaped);
@@ -669,8 +669,8 @@ filename_completion(const char *str, int type)
 
 #ifdef _WIN32
 	if(is_unc_root(dirname) ||
-			(strcmp(dirname, ".") == 0 && is_unc_root(curr_view->curr_dir)) ||
-			(strcmp(dirname, "/") == 0 && is_unc_path(curr_view->curr_dir)))
+			(pathcmp(dirname, ".") == 0 && is_unc_root(curr_view->curr_dir)) ||
+			(pathcmp(dirname, "/") == 0 && is_unc_path(curr_view->curr_dir)))
 	{
 		char buf[PATH_MAX];
 		if(!is_unc_root(dirname))
@@ -735,7 +735,7 @@ filename_completion(const char *str, int type)
 		{
 			isdir = 1;
 		}
-		else if(strcmp(dirname, "."))
+		else if(pathcmp(dirname, "."))
   	{
 			char * tempfile = (char *)NULL;
 			int len = strlen(dirname) + strlen(d->d_name) + 1;
@@ -1249,7 +1249,7 @@ select_range(int id, const cmd_info_t *cmd_info)
 
 		for(x = cmd_info->begin; x <= cmd_info->end; x++)
 		{
-			if(strcmp(curr_view->dir_entry[x].name, "../") == 0 &&
+			if(pathcmp(curr_view->dir_entry[x].name, "../") == 0 &&
 					cmd_info->begin != cmd_info->end)
 				continue;
 			curr_view->dir_entry[x].selected = 1;
@@ -1312,7 +1312,7 @@ select_count(const cmd_info_t *cmd_info, int count)
 
 	while(count-- > 0 && pos < curr_view->list_rows)
 	{
-		if(strcmp(curr_view->dir_entry[pos].name, "../") != 0)
+		if(pathcmp(curr_view->dir_entry[pos].name, "../") != 0)
 		{
 			curr_view->dir_entry[pos].selected = 1;
 			curr_view->selected_files++;
@@ -1414,7 +1414,7 @@ split_path(void)
 
 		for(j = 0; j < i - 1; j++)
 		{
-			if(strcmp(paths[j], s) == 0)
+			if(pathcmp(paths[j], s) == 0)
 			{
 				free(s);
 				i--;
@@ -1525,7 +1525,7 @@ apply_mod(const char *path, const char *parent, const char *mod, int *mod_len)
 	else if(strncmp(mod, ":~", 2) == 0)
 	{
 		size_t home_len = strlen(cfg.home_dir);
-		if(strncmp(path, cfg.home_dir, home_len - 1) != 0)
+		if(pathncmp(path, cfg.home_dir, home_len - 1) != 0)
 			return strcpy(buf, path);
 
 		strcpy(buf, "~");
@@ -1534,7 +1534,7 @@ apply_mod(const char *path, const char *parent, const char *mod, int *mod_len)
 	else if(strncmp(mod, ":.", 2) == 0)
 	{
 		size_t len = strlen(curr_view->curr_dir);
-		if(strncmp(path, curr_view->curr_dir, len) != 0 || path[len] == '\0')
+		if(pathncmp(path, curr_view->curr_dir, len) != 0 || path[len] == '\0')
 			return strcpy(buf, path);
 
 		strcpy(buf, path + len + 1);
@@ -1638,7 +1638,7 @@ apply_mods(const char *path, const char *parent, const char *mod)
 	}
 
 #ifdef _WIN32
-	if(strcmp(cfg.shell, "cmd") != 0)
+	if(pathcmp(cfg.shell, "cmd") != 0)
 		to_back_slash(buf);
 #endif
 
@@ -1713,7 +1713,7 @@ append_selected_files(FileView *view, char *expanded, int under_cursor,
 	}
 
 #ifdef _WIN32
-	if(strcmp(cfg.shell, "cmd") == 0)
+	if(pathcmp(cfg.shell, "cmd") == 0)
 		to_back_slash(expanded + old_len);
 #endif
 
@@ -1763,7 +1763,7 @@ expand_directory_path(FileView *view, char *expanded, int quotes,
 	}
 
 #ifdef _WIN32
-	if(strcmp(cfg.shell, "cmd") == 0)
+	if(pathcmp(cfg.shell, "cmd") == 0)
 		to_back_slash(result);
 #endif
 
@@ -2049,9 +2049,11 @@ shellout(const char *command, int pause)
 		{
 			if(pause > 0)
 			{
-				if(strcmp(cfg.shell, "cmd") == 0)
+#ifdef _WIN32
+				if(pathcmp(cfg.shell, "cmd") == 0)
 					snprintf(buf, sizeof(buf), "%s" PAUSE_STR, command);
 				else
+#endif
 					snprintf(buf, sizeof(buf), "%s; " PAUSE_CMD, command);
 			}
 			else
@@ -2918,7 +2920,7 @@ cd(FileView *view, const char *path)
 			snprintf(dir, sizeof(dir), "%s", arg);
 		else if(*arg == '/' && is_unc_path(view->curr_dir))
 			sprintf(dir + strlen(dir), "/%s", arg + 1);
-		else if(strcmp(arg, "/") == 0 && is_unc_path(view->curr_dir))
+		else if(pathcmp(arg, "/") == 0 && is_unc_path(view->curr_dir))
 			snprintf(dir, strchr(view->curr_dir + 2, '/') - view->curr_dir + 1, "%s",
 					view->curr_dir);
 		else if(*arg == '/')

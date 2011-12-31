@@ -88,17 +88,19 @@ sorter(const void *first, const void *second)
 	const char *stra = *(const char **)first;
 	const char *strb = *(const char **)second;
 	size_t lena = strlen(stra), lenb = strlen(strb);
-	if(strcmp(stra, "./") == 0)
+	if(pathcmp(stra, "./") == 0)
 		return -1;
-	if(strcmp(strb, "./") == 0)
+	if(pathcmp(strb, "./") == 0)
 		return 1;
 	if(stra[lena - 1] == '/' && strb[lenb - 1] == '/')
 	{
 		size_t len = MIN(lena - 1, lenb - 1);
+		// compare case sensitive strings even on Windows
 		int res = strncmp(stra, strb, len);
 		if(res == 0)
 			return lena - lenb;
 	}
+	// compare case sensitive strings even on Windows
 	return strcmp(stra, strb);
 }
 
@@ -115,6 +117,7 @@ next_completion(void)
 		j = 1;
 		for(i = 1; i < count; i++)
 		{
+			// compare case sensitive strings even on Windows
 			if(strcmp(lines[i], lines[j - 1]) == 0)
 			{
 				free(lines[i]);

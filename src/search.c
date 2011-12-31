@@ -132,7 +132,7 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 		{
 			char buf[NAME_MAX];
 
-			if(strcmp(view->dir_entry[x].name, "../") == 0)
+			if(pathcmp(view->dir_entry[x].name, "../") == 0)
 				continue;
 
 			strncpy(buf, view->dir_entry[x].name, sizeof(buf));

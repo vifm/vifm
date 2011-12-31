@@ -23,7 +23,6 @@ Windows.
     Permission dialog could change file attributes.
     Add a command to create .lnk files.
     Follow targets of .lnk files.
-    Fix renaming when only letter case is changed.
     Fix freezing.
 
 Vi(m) specific features that need to be added.

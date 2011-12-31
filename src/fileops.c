@@ -490,7 +490,7 @@ fuse_try_mount(FileView *view, const char *program)
 	/* check if already mounted */
 	while(runner)
 	{
-		if(!strcmp(filename, runner->source_file_name))
+		if(!pathcmp(filename, runner->source_file_name))
 		{
 			strcpy(mount_point, runner->mount_point);
 			mount_found = 1;
@@ -576,7 +576,7 @@ handle_dir(FileView *view)
 	
 	filename = get_current_file_name(view);
 
-	if(strcmp(filename, "../") == 0)
+	if(pathcmp(filename, "../") == 0)
 	{
 		cd_updir(view);
 	}
@@ -1149,7 +1149,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		char full_buf[PATH_MAX];
 		int result;
 
-		if(strcmp("../", view->selected_filelist[x]) == 0)
+		if(pathcmp(view->selected_filelist[x], "../") == 0)
 		{
 			(void)show_error_msg("Background Process Error",
 					"You cannot delete the ../ directory");
@@ -1163,7 +1163,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		progress_msg("Deleting files", x + 1, view->selected_files);
 		if(cfg.use_trash && use_trash)
 		{
-			if(strcmp(full_buf, cfg.trash_dir) == 0)
+			if(pathcmp(full_buf, cfg.trash_dir) == 0)
 			{
 				(void)show_error_msg("Background Process Error",
 						"You cannot delete trash directory to trash");
@@ -1224,7 +1224,7 @@ delete_file_bg_i(const char *curr_dir, char **list, int count, int use_trash)
 	{
 		char full_buf[PATH_MAX];
 
-		if(strcmp("../", list[i]) == 0)
+		if(pathcmp(list[i], "../") == 0)
 			continue;
 
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", curr_dir, list[i]);
@@ -1353,6 +1353,8 @@ mv_file(const char *src, const char *src_path, const char *dst,
 	snprintf(full_dst, sizeof(full_dst), "%s/%s", path, dst);
 	chosp(full_dst);
 
+	// compare case sensitive strings even on Windows to let user rename file
+	// changing only case of some characters
 	if(strcmp(full_src, full_dst) == 0)
 		return 0;
 
@@ -1405,7 +1407,7 @@ rename_file_cb(const char *new_name)
 	if(strcmp(filename, new) == 0)
 		return;
 
-	if(access(new, F_OK) == 0 && strncmp(filename, new, strlen(filename)) != 0)
+	if(access(new, F_OK) == 0 && pathncmp(filename, new, strlen(filename)) != 0)
 	{
 		(void)show_error_msg("File exists",
 				"That file already exists. Will not overwrite.");
@@ -1446,7 +1448,7 @@ rename_file(FileView *view, int name_only)
 
 	strncpy(buf, get_current_file_name(view), sizeof(buf));
 	buf[sizeof(buf) - 1] = '\0';
-	if(strcmp(buf, "../") == 0)
+	if(pathcmp(buf, "../") == 0)
 	{
 		(void)show_error_msg("Rename error",
 				"You can't rename parent directory this way");
@@ -1463,7 +1465,7 @@ rename_file(FileView *view, int name_only)
 	{
 		char *e;
 		*p = '\0';
-		if((e = strrchr(buf, '.')) != NULL && strcmp(e + 1, "tar") == 0)
+		if((e = strrchr(buf, '.')) != NULL && pathcmp(e + 1, "tar") == 0)
 		{
 			*p = '.';
 			p = e;
@@ -1795,7 +1797,7 @@ rename_files(FileView *view, char **list, int nlines)
 	{
 		if(!view->dir_entry[i].selected)
 			continue;
-		else if(strcmp(view->dir_entry[i].name, "../") == 0)
+		else if(pathcmp(view->dir_entry[i].name, "../") == 0)
 			count--;
 		else
 			indexes[j++] = i;
@@ -2226,7 +2228,7 @@ put_next(const char *dest_name, int override)
 	if(lstat(filename, &st) != 0)
 		return 0;
 
-	from_trash = strncmp(filename, cfg.trash_dir, strlen(cfg.trash_dir)) == 0;
+	from_trash = pathncmp(filename, cfg.trash_dir, strlen(cfg.trash_dir)) == 0;
 	move = from_trash || put_confirm.force_move;
 
 	if(dest_name[0] == '\0')
@@ -2372,7 +2374,7 @@ put_files_from_register_i(FileView *view, int start)
 	{
 		char buf[MAX(COMMAND_GROUP_INFO_LEN, PATH_MAX + NAME_MAX*2 + 4)];
 		const char *op = "UNKNOWN";
-		int from_trash = strncmp(put_confirm.reg->files[0], cfg.trash_dir,
+		int from_trash = pathncmp(put_confirm.reg->files[0], cfg.trash_dir,
 				strlen(cfg.trash_dir)) == 0;
 		if(put_confirm.link == 0)
 			op = (put_confirm.force_move || from_trash) ? "Put" : "put";
@@ -2457,7 +2459,7 @@ gen_clone_name(const char *normal_name)
 	{
 		char *e;
 		*ext = '\0';
-		if((e = strrchr(tmp, '.')) != NULL && strcmp(e + 1, "tar") == 0)
+		if((e = strrchr(tmp, '.')) != NULL && pathcmp(e + 1, "tar") == 0)
 		{
 			*ext = '.';
 			ext = e;
@@ -2494,9 +2496,9 @@ clone_file(FileView* view, const char *filename, const char *path,
 	char full[PATH_MAX];
 	char clone_name[PATH_MAX];
 	
-	if(strcmp(filename, "./") == 0)
+	if(pathcmp(filename, "./") == 0)
 		return;
-	if(strcmp(filename, "../") == 0)
+	if(pathcmp(filename, "../") == 0)
 		return;
 
 	snprintf(clone_name, sizeof(clone_name), "%s/%s", path, clone);
@@ -2712,9 +2714,9 @@ calc_dirsize(const char *path, int force_update)
 	{
 		char buf[PATH_MAX];
 
-		if(strcmp(dentry->d_name, ".") == 0)
+		if(pathcmp(dentry->d_name, ".") == 0)
 			continue;
-		else if(strcmp(dentry->d_name, "..") == 0)
+		else if(pathcmp(dentry->d_name, "..") == 0)
 			continue;
 
 		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
@@ -2886,7 +2888,7 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 	{
 		if(!view->dir_entry[i].selected)
 			continue;
-		if(strcmp(view->dir_entry[i].name, "../") == 0)
+		if(pathcmp(view->dir_entry[i].name, "../") == 0)
 			continue;
 
 		if(buf[len - 2] != ':')
@@ -2906,7 +2908,7 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 
 		if(!view->dir_entry[i].selected)
 			continue;
-		if(strcmp(view->dir_entry[i].name, "../") == 0)
+		if(pathcmp(view->dir_entry[i].name, "../") == 0)
 			continue;
 
 		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
@@ -2973,7 +2975,7 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 
 		if(!view->dir_entry[i].selected)
 			continue;
-		if(strcmp(view->dir_entry[i].name, "../") == 0)
+		if(pathcmp(view->dir_entry[i].name, "../") == 0)
 			continue;
 
 		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
@@ -3071,7 +3073,7 @@ tr_in_names(FileView *view, const char *pattern, const char *sub)
 
 		if(!view->dir_entry[i].selected)
 			continue;
-		if(strcmp(view->dir_entry[i].name, "../") == 0)
+		if(pathcmp(view->dir_entry[i].name, "../") == 0)
 			continue;
 
 		strncpy(buf, view->dir_entry[i].name, sizeof(buf));

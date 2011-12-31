@@ -93,7 +93,7 @@ compare_file_names(const char *s, const char *t, int ignore_case)
 		return strcmp(s, t);
 	else
 		return strverscmp(s, t);
-	/* TODO add strverscmp() on Windows */
+	/* TODO add strverscmp() for Windows and Mac OS */
 #endif
 }
 
@@ -120,9 +120,9 @@ sort_dir_list(const void *one, const void *two)
 	if(first_is_dir != second_is_dir)
 		return first_is_dir ? -1 : 1;
 
-	if(strcmp(first->name, "../") == 0)
+	if(pathcmp(first->name, "../") == 0)
 		return -1;
-	else if(strcmp(second->name, "../") == 0)
+	else if(pathcmp(second->name, "../") == 0)
 		return 1;
 
 	retval = 0;

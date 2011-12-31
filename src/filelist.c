@@ -566,7 +566,7 @@ get_all_selected_files(FileView *view)
 	{
 		if(!view->dir_entry[x].selected)
 			continue;
-		if(strcmp(view->dir_entry[x].name, "../") == 0)
+		if(pathcmp(view->dir_entry[x].name, "../") == 0)
 		{
 			view->dir_entry[x].selected = 0;
 			continue;
@@ -604,7 +604,7 @@ get_selected_files(FileView *view, int count, const int *indexes)
 	y = 0;
 	for(x = 0; x < count; x++)
 	{
-		if(strcmp(view->dir_entry[indexes[x]].name, "../") == 0)
+		if(pathcmp(view->dir_entry[indexes[x]].name, "../") == 0)
 			continue;
 
 		view->selected_filelist[y] = strdup(view->dir_entry[indexes[x]].name);
@@ -1101,7 +1101,7 @@ save_view_history(FileView *view, const char *path, const char *file, int pos)
 		pos = view->list_pos;
 
 	if(view->history_num > 0 &&
-			strcmp(view->history[view->history_pos].dir, path) == 0)
+			pathcmp(view->history[view->history_pos].dir, path) == 0)
 	{
 		if(curr_stats.vifm_started < 2)
 			return;
@@ -1152,7 +1152,7 @@ is_in_view_history(FileView *view, const char *path)
 	{
 		if(strlen(view->history[i].dir) < 1)
 			break;
-		if(strcmp(view->history[i].dir, path) == 0)
+		if(pathcmp(view->history[i].dir, path) == 0)
 			return 1;
 	}
 	return 0;
@@ -1169,14 +1169,14 @@ check_view_dir_history(FileView *view)
 		int x;
 		int found = 0;
 		x = view->history_pos;
-		if(strcmp(view->history[x].dir, view->curr_dir) == 0 &&
-				strcmp(view->history[x].file, "") == 0)
+		if(pathcmp(view->history[x].dir, view->curr_dir) == 0 &&
+				view->history[x].file[0] == '\0')
 			x--;
 		for(; x >= 0; x--)
 		{
 			if(strlen(view->history[x].dir) < 1)
 				break;
-			if(strcmp(view->history[x].dir, view->curr_dir) == 0)
+			if(pathcmp(view->history[x].dir, view->curr_dir) == 0)
 			{
 				found = 1;
 				break;
@@ -1188,7 +1188,7 @@ check_view_dir_history(FileView *view)
 			rel_pos = view->history[x].rel_pos;
 		}
 		else if(path_starts_with(view->last_dir, view->curr_dir) &&
-				strcmp(view->last_dir, view->curr_dir) != 0 &&
+				pathcmp(view->last_dir, view->curr_dir) != 0 &&
 				strchr(view->last_dir + strlen(view->curr_dir) + 1, '/') == NULL)
 		{
 			char buf[NAME_MAX];
@@ -1297,7 +1297,7 @@ find_fuse_mount(const char *dir)
 	fuse_mount_t *runner = fuse_mounts;
 	while(runner)
 	{
-		if(strcmp(runner->mount_point, dir) == 0)
+		if(pathcmp(runner->mount_point, dir) == 0)
 			break;
 		runner = runner->next;
 	}
@@ -1352,7 +1352,7 @@ in_mounted_dir(const char *path)
 	runner = fuse_mounts;
 	while(runner)
 	{
-		if(strcmp(runner->mount_point, path) == 0)
+		if(pathcmp(runner->mount_point, path) == 0)
 			return 1;
 
 		runner = runner->next;
@@ -1379,7 +1379,7 @@ try_unmount_fuse(FileView *view)
 	trailer = NULL;
 	while(runner)
 	{
-		if(!strcmp(runner->mount_point, view->curr_dir))
+		if(!pathcmp(runner->mount_point, view->curr_dir))
 			break;
 
 		trailer = runner;
@@ -1439,7 +1439,7 @@ check_dir_changed(FileView *view)
 	FILETIME ft;
 	int r;
 
-	if(strcmp(view->watched_dir, view->curr_dir) != 0)
+	if(pathcmp(view->watched_dir, view->curr_dir) != 0)
 	{
 		FindCloseChangeNotification(view->dir_watcher);
 		strcpy(view->watched_dir, view->curr_dir);
@@ -1625,7 +1625,7 @@ change_directory(FileView *view, const char *directory)
 
 	/* check if we're exiting from a FUSE mounted top level dir.
 	 * If so, unmount & let FUSE serialize */
-	if(!strcmp(directory, "../") && in_mounted_dir(view->curr_dir))
+	if(!pathcmp(directory, "../") && in_mounted_dir(view->curr_dir))
 	{
 		int r = try_unmount_fuse(view);
 		if(r != 0)
@@ -1670,7 +1670,7 @@ change_directory(FileView *view, const char *directory)
 		LOG_SERROR_MSG(errno, "Can't access(, R_OK) \"%s\"", dir_dup);
 		log_cwd();
 
-		if(strcmp(view->curr_dir, dir_dup) != 0)
+		if(pathcmp(view->curr_dir, dir_dup) != 0)
 		{
 			(void)show_error_msgf("Directory Access Error",
 					"You do not have read access on %s", dir_dup);
@@ -1690,7 +1690,7 @@ change_directory(FileView *view, const char *directory)
 	if(!is_root_dir(dir_dup))
 		chosp(dir_dup);
 
-	if(strcmp(dir_dup, view->curr_dir) != 0)
+	if(pathcmp(dir_dup, view->curr_dir) != 0)
 		clean_selection(view);
 	else
 		clean_selected_files(view);
@@ -1986,13 +1986,13 @@ fill_dir_list(FileView *view)
 		struct stat s;
 
 		/* Ignore the "." directory. */
-		if(strcmp(d->d_name, ".") == 0)
+		if(pathcmp(d->d_name, ".") == 0)
 		{
 			view->list_rows--;
 			continue;
 		}
 		/* Always include the ../ directory unless it is the root directory. */
-		if(strcmp(d->d_name, "..") == 0)
+		if(pathcmp(d->d_name, "..") == 0)
 		{
 			if(is_root_dir(view->curr_dir))
 			{
@@ -2135,10 +2135,10 @@ fill_dir_list(FileView *view)
 		size_t name_len;
 
 		/* Ignore the "." directory. */
-		if(strcmp(ffd.cFileName, ".") == 0)
+		if(pathcmp(ffd.cFileName, ".") == 0)
 			continue;
 		/* Always include the ../ directory unless it is the root directory. */
-		if(strcmp(ffd.cFileName, "..") == 0)
+		if(pathcmp(ffd.cFileName, "..") == 0)
 		{
 			if(is_root_dir(view->curr_dir))
 				continue;
@@ -2326,8 +2326,8 @@ load_dir_list(FileView *view, int reload)
 
 	if(view == curr_view)
 	{
-		if(strncmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)) == 0 &&
-				strcmp(other_view->curr_dir, view->curr_dir) == 0)
+		if(pathncmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)) == 0 &&
+				pathcmp(other_view->curr_dir, view->curr_dir) == 0)
 			load_dir_list(other_view, 1);
 	}
 }
@@ -2345,7 +2345,7 @@ filter_selected_files(FileView *view)
 		if(!view->dir_entry[x].selected)
 			continue;
 
-		if(strcmp(view->dir_entry[x].name, "../") == 0)
+		if(pathcmp(view->dir_entry[x].name, "../") == 0)
 			continue;
 
 		if(view->filename_filter == NULL || view->filename_filter[0] == '\0')
@@ -2535,7 +2535,7 @@ pane_in_dir(FileView *view, const char *path)
 		return 0;
 	if(realpath(path, dir) != dir)
 		return 0;
-	return strcmp(pane_dir, dir) == 0;
+	return pathcmp(pane_dir, dir) == 0;
 }
 
 /* will remove dot and regexp filters if it's needed to make file visible
