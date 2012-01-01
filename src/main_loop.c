@@ -225,7 +225,8 @@ main_loop(void)
 				if(counter > 0)
 					clear_input_bar();
 
-				if(!curr_stats.save_msg && curr_view->selected_files)
+				if(!curr_stats.save_msg && curr_view->selected_files &&
+						get_mode() != CMDLINE_MODE)
 					print_selected_msg();
 				continue;
 			}
