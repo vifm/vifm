@@ -287,9 +287,15 @@ update_cmdline_size(void)
 static void
 update_cmdline_text(void)
 {
+	int attr;
+
 	input_line_changed();
 
 	werase(status_bar);
+
+	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
+	wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR) | attr);
+
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	if(input_stat.line != NULL)
 		mvwaddwstr(status_bar, input_stat.prompt_wid/line_width,
@@ -453,14 +459,9 @@ static void
 prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 		complete_cmd_func complete)
 {
-	int attr;
-
 	line_width = getmaxx(stdscr);
 	prev_mode = *mode;
 	*mode = CMDLINE_MODE;
-
-	attr = cfg.cs.color[CMD_LINE_COLOR].attr;
-	wattron(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR) | attr);
 
 	input_stat.line = NULL;
 	input_stat.index = wcslen(cmd);
