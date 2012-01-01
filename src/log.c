@@ -44,11 +44,11 @@ init_logger(int verbosity_level)
 
 	fprintf(log, "\n");
 	log_time();
-	fprintf(log, "\t\tStarted vifm\n");
+	fprintf(log, " ===== Started vifm =====\n");
 }
 
 void
-log_error(const char *file, const char *func, int line)
+log_prefix(const char *file, const char *func, int line)
 {
 	if(verbosity <= 0)
 		return;
@@ -63,9 +63,8 @@ log_serror(const char *file, const char *func, int line, int no)
 	if(verbosity <= 0)
 		return;
 
-	log_time();
-	fprintf(log, " at %s:%d (%s)\n", file, line, func);
-	fprintf(log, "\t\t%s\n", strerror(no));
+	log_prefix(file, func, line);
+	fprintf(log, "               %s\n", strerror(no));
 }
 
 void
@@ -77,8 +76,7 @@ log_msg(const char *msg, ...)
 	if(verbosity <= 0)
 		return;
 
-	fputc('\t', log);
-	fputc('\t', log);
+	fprintf(log, "               ");
 	vfprintf(log, msg, ap);
 	fputc('\n', log);
 
@@ -89,12 +87,16 @@ static void
 log_time(void)
 {
 	time_t t;
+	struct tm *tm_ptr;
+	char buf[128];
 
 	if(verbosity <= 0)
 		return;
 
 	t = time(NULL);
-	fprintf(log, "%s", ctime(&t));
+	tm_ptr = localtime(&t);
+	strftime(buf, sizeof(buf), "%y.%m.%d %H:%M", tm_ptr);
+	fprintf(log, "%s", buf);
 }
 
 void

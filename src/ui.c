@@ -50,6 +50,7 @@
 #include "config.h"
 #include "file_info.h"
 #include "filelist.h"
+#include "log.h"
 #include "macros.h"
 #include "main_loop.h"
 #include "menus.h"
@@ -961,12 +962,15 @@ resize_all(void)
 	struct winsize ws;
 
 	ioctl(0, TIOCGWINSZ, &ws);
+	LOG_INFO_MSG("ws.ws_row = %d; ws.ws_col = %d", ws.ws_row, ws.ws_col);
 
 	/* changed for pdcurses */
 	resize_term(ws.ws_row, ws.ws_col);
 #endif
 
 	getmaxyx(stdscr, screen_y, screen_x);
+
+	LOG_INFO_MSG("screen_y = %d; screen_x = %d", screen_y, screen_x);
 
 	if(screen_y < 10 || screen_x < 30)
 	{
