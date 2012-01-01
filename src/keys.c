@@ -663,6 +663,7 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 			c->parent = curr;
 			c->children_count = 0;
 			c->enters = 0;
+			c->no_remap = 1;
 			if(prev == NULL)
 				curr->child = c;
 			else
