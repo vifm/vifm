@@ -323,8 +323,18 @@ input_line_changed(void)
 		load_menu_pos();
 	}
 
-	if(input_stat.line != NULL &&
-			(previous == NULL || wcscmp(previous, input_stat.line) != 0))
+	if(input_stat.line == NULL || input_stat.line[0] == L'\0')
+	{
+		if(cfg.hl_search)
+		{
+			clean_selected_files(curr_view);
+			draw_dir_list(curr_view, curr_view->top_line);
+			move_to_list_pos(curr_view, curr_view->list_pos);
+		}
+		free(previous);
+		previous = NULL;
+	}
+	else if(previous == NULL || wcscmp(previous, input_stat.line) != 0)
 	{
 		char *p;
 

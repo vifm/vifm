@@ -63,6 +63,9 @@
 
 	Fixed status bar attributes for searching.
 
+	Fixed view update when 'incsearch' is on and user removes and types again
+	one character.
+
 0.7.0 to 0.7.1
 
 	Added 'scrollbind' option.
