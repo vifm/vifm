@@ -1523,31 +1523,31 @@ is_name_list_ok(int count, int nlines, char **list)
 }
 
 static int
-is_rename_list_ok(FileView *view, int *indexes, int count, char **list)
+is_rename_list_ok(FileView *view, char **files, int *is_dup, int len,
+		char **list)
 {
 	int i;
 
-	for(i = 0; i < count; i++)
+	for(i = 0; i < len; i++)
 	{
 		int j;
 
 		if(list[i][0] == '\0')
 			continue;
 
-		if(strcmp(list[i], view->dir_entry[abs(indexes[i])].name) == 0)
+		if(strcmp(list[i], files[i]) == 0)
 			continue;
 
-		for(j = 0; j < count; j++)
+		for(j = 0; j < len; j++)
 		{
-			chosp(view->dir_entry[abs(indexes[j])].name);
-			if(strcmp(list[i], view->dir_entry[abs(indexes[j])].name) == 0 &&
-					indexes[j] >= 0)
+			chosp(files[i]);
+			if(strcmp(list[i], files[j]) == 0 && is_dup[j] >= 0)
 			{
-				indexes[j] = -indexes[j];
+				is_dup[j] = !is_dup[j];
 				break;
 			}
 		}
-		if(j >= count && access(list[i], F_OK) == 0)
+		if(j >= len && access(list[i], F_OK) == 0)
 		{
 			status_bar_errorf("File \"%s\" already exists", list[i]);
 			curr_stats.save_msg = 1;
@@ -1560,46 +1560,43 @@ is_rename_list_ok(FileView *view, int *indexes, int count, char **list)
 
 /* Returns count of renamed files */
 static int
-perform_renaming(FileView *view, int *indexes, int count, char **list)
+perform_renaming(FileView *view, char **files, int *is_dup, int len,
+		char **list)
 {
 	char buf[MAX(10 + NAME_MAX, COMMAND_GROUP_INFO_LEN) + 1];
-	size_t len;
+	size_t buf_len;
 	int i;
 	int renamed = 0;
 
-	len = snprintf(buf, sizeof(buf), "rename in %s: ",
+	buf_len = snprintf(buf, sizeof(buf), "rename in %s: ",
 			replace_home_part(view->curr_dir));
 
-	for(i = 0; i < count && len < COMMAND_GROUP_INFO_LEN; i++)
+	for(i = 0; i < len && buf_len < COMMAND_GROUP_INFO_LEN; i++)
 	{
-		if(buf[len - 2] != ':')
+		if(buf[buf_len - 2] != ':')
 		{
-			strncat(buf, ", ", sizeof(buf) - len - 1);
-			len = strlen(buf);
+			strncat(buf, ", ", sizeof(buf) - buf_len - 1);
+			buf_len = strlen(buf);
 		}
-		len += snprintf(buf + len, sizeof(buf) - len, "%s to %s",
-				view->dir_entry[abs(indexes[i])].name, list[i]);
+		buf_len += snprintf(buf + buf_len, sizeof(buf) - buf_len, "%s to %s",
+				files[i], list[i]);
 	}
 
 	cmd_group_begin(buf);
 
-	for(i = 0; i < count; i++)
+	for(i = 0; i < len; i++)
 	{
 		const char *tmp;
-		int ind;
 
 		if(list[i][0] == '\0')
 			continue;
-		if(strcmp(list[i], view->dir_entry[abs(indexes[i])].name) == 0)
+		if(strcmp(list[i], files[i]) == 0)
 			continue;
-		if(indexes[i] >= 0)
+		if(is_dup[i])
 			continue;
 
-		ind = -indexes[i];
-
-		tmp = make_name_unique(view->dir_entry[ind].name);
-		if(mv_file(view->dir_entry[ind].name, view->curr_dir, tmp, view->curr_dir,
-				2) != 0)
+		tmp = make_name_unique(files[i]);
+		if(mv_file(files[i], view->curr_dir, tmp, view->curr_dir, 2) != 0)
 		{
 			cmd_group_end();
 			undo_group();
@@ -1607,25 +1604,25 @@ perform_renaming(FileView *view, int *indexes, int count, char **list)
 			curr_stats.save_msg = 1;
 			return 0;
 		}
-		free(view->dir_entry[ind].name);
-		view->dir_entry[ind].name = strdup(tmp);
+		free(files[i]);
+		files[i] = strdup(tmp);
 	}
 
-	for(i = 0; i < count; i++)
+	for(i = 0; i < len; i++)
 	{
 		if(list[i][0] == '\0')
 			continue;
-		if(strcmp(list[i], view->dir_entry[abs(indexes[i])].name) == 0)
+		if(strcmp(list[i], files[i]) == 0)
 			continue;
 
-		if(mv_file(view->dir_entry[abs(indexes[i])].name, view->curr_dir, list[i],
-				view->curr_dir, (indexes[i] < 0) ? 1 : 0) == 0)
+		if(mv_file(files[i], view->curr_dir, list[i], view->curr_dir,
+				!is_dup[i] ? 1 : 0) == 0)
 		{
 			int pos;
 
 			renamed++;
 
-			pos = find_file_pos_in_list(view, view->dir_entry[abs(indexes[i])].name);
+			pos = find_file_pos_in_list(view, files[i]);
 			if(pos == view->list_pos)
 			{
 				free(view->dir_entry[pos].name);
@@ -1729,14 +1726,14 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 }
 
 static void
-rename_files_ind(FileView *view, int *indexes, int count)
+rename_files_ind(FileView *view, char **files, int *is_dup, int len)
 {
 	char **list;
 	char **names;
 	int n;
 	int nlines, i, renamed = -1;
 
-	if(count == 0)
+	if(len == 0)
 	{
 		status_bar_message("0 files renamed");
 		return;
@@ -1744,23 +1741,23 @@ rename_files_ind(FileView *view, int *indexes, int count)
 
 	names = NULL;
 	n = 0;
-	for(i = 0; i < count; i++)
+	for(i = 0; i < len; i++)
 	{
-		char *name = view->dir_entry[indexes[i]].name;
+		char *name = files[i];
 		n = add_to_string_array(&names, n, 1, name);
 	}
 
-	if((list = read_list_from_file(count, names, &nlines, 1)) == NULL)
+	if((list = read_list_from_file(len, names, &nlines, 1)) == NULL)
 	{
-		free_string_array(names, count);
+		free_string_array(names, len);
 		status_bar_message("0 files renamed");
 		return;
 	}
-	free_string_array(names, count);
+	free_string_array(names, len);
 
-	if(is_name_list_ok(count, nlines, list) &&
-			is_rename_list_ok(view, indexes, count, list))
-		renamed = perform_renaming(view, indexes, count, list);
+	if(is_name_list_ok(len, nlines, list) &&
+			is_rename_list_ok(view, files, is_dup, len, list))
+		renamed = perform_renaming(view, files, is_dup, len, list);
 	free_string_array(list, nlines);
 
 	if(renamed >= 0)
@@ -1771,9 +1768,10 @@ rename_files_ind(FileView *view, int *indexes, int count)
 int
 rename_files(FileView *view, char **list, int nlines)
 {
-	int *indexes;
-	int count;
-	int i, j;
+	char **files = NULL;
+	int len;
+	int i;
+	int *is_dup;
 
 	if(!is_dir_writable(0, view->curr_dir))
 		return 0;
@@ -1784,43 +1782,44 @@ rename_files(FileView *view, char **list, int nlines)
 		view->selected_files = 1;
 	}
 
-	count = view->selected_files;
-	indexes = malloc(sizeof(*indexes)*count);
-	if(indexes == NULL)
+	is_dup = malloc(sizeof(*is_dup)*view->selected_files);
+	if(is_dup == NULL)
 	{
 		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return 0;
 	}
 
-	j = 0;
+	len = 0;
 	for(i = 0; i < view->list_rows; i++)
 	{
 		if(!view->dir_entry[i].selected)
 			continue;
-		else if(pathcmp(view->dir_entry[i].name, "../") == 0)
-			count--;
-		else
-			indexes[j++] = i;
+		else if(pathcmp(view->dir_entry[i].name, "../") != 0)
+		{
+			is_dup[len] = 1;
+			len = add_to_string_array(&files, len, 1, view->dir_entry[i].name);
+		}
 	}
 
 	if(nlines == 0)
 	{
-		rename_files_ind(view, indexes, count);
+		rename_files_ind(view, files, is_dup, len);
 	}
 	else
 	{
 		int renamed = -1;
 
-		if(is_name_list_ok(count, nlines, list) &&
-				is_rename_list_ok(view, indexes, count, list))
-			renamed = perform_renaming(view, indexes, count, list);
+		if(is_name_list_ok(len, nlines, list) &&
+				is_rename_list_ok(view, files, is_dup, len, list))
+			renamed = perform_renaming(view, files, is_dup, len, list);
 
 		if(renamed >= 0)
 			status_bar_messagef("%d file%s renamed", renamed,
 					(renamed == 1) ? "" : "s");
 	}
 
-	free(indexes);
+	free_string_array(files, len);
+	free(is_dup);
 
 	clean_selected_files(view);
 	draw_dir_list(view, view->top_line);

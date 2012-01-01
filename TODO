@@ -77,3 +77,4 @@ Code improvements.
     Write more tests.
     Improve logging (print back trace in some cases, increase verbosity).
     Stay at the same file in some cases.
+    Store directories names without slash symbol.
