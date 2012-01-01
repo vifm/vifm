@@ -49,6 +49,7 @@ init_status(void)
 	curr_stats.ch_pos = 1;
 	curr_stats.confirmed = 0;
 	curr_stats.auto_redraws = 0;
+	curr_stats.pending_redraw = 0;
 	curr_stats.cs_base = DCOLOR_BASE;
 	curr_stats.cs = &cfg.cs;
 	strcpy(curr_stats.color_scheme, "");

@@ -73,6 +73,8 @@ typedef struct
 
 	int auto_redraws;
 
+	int pending_redraw;
+
 	int cs_base;
 	col_scheme_t *cs;
 	char color_scheme[NAME_MAX];

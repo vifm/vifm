@@ -77,6 +77,13 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 		ipc_check();
 
 		wtimeout(win, MIN(T, timeout));
+
+		if(curr_stats.pending_redraw)
+		{
+			modes_redraw();
+			curr_stats.pending_redraw = 0;
+		}
+
 		check_if_filelists_have_changed(curr_view);
 		if(curr_stats.number_of_windows != 1 && !curr_stats.view)
 			check_if_filelists_have_changed(other_view);
@@ -151,10 +158,10 @@ main_loop(void)
 
 		modes_pre();
 
-		(void)my_chdir(curr_view->curr_dir);
-
 		/* This waits for timeout then skips if no keypress. */
 		ret = read_char(status_bar, (wint_t*)&c, timeout);
+
+		(void)my_chdir(curr_view->curr_dir);
 
 		if(ret != ERR && pos != ARRAY_LEN(buf) - 2)
 		{
@@ -225,6 +232,12 @@ main_loop(void)
 		}
 
 		timeout = cfg.timeout_len;
+
+		if(curr_stats.pending_redraw)
+		{
+			modes_redraw();
+			curr_stats.pending_redraw = 0;
+		}
 
 		pos = 0;
 		buf[0] = L'\0';

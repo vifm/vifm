@@ -40,7 +40,6 @@
 #include "filetype.h"
 #include "macros.h"
 #include "menus.h"
-#include "modes.h"
 #include "status.h"
 #include "ui.h"
 #include "utils.h"
@@ -57,7 +56,7 @@ received_sigwinch(void)
 	if(!isendwin())
 	{
 		if(curr_stats.vifm_started >= 3)
-			modes_redraw();
+			curr_stats.pending_redraw = 1;
 		else
 			curr_stats.startup_redraw_pending = 1;
 	}
@@ -71,7 +70,7 @@ static void
 received_sigcont(void)
 {
 	reset_prog_mode();
-	modes_redraw();
+	curr_stats.pending_redraw = 1;
 }
 
 static void

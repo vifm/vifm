@@ -2107,7 +2107,7 @@ shellout(const char *command, int pause)
 
 	/* always redraw to handle resizing of terminal */
 	if(!curr_stats.auto_redraws)
-		modes_redraw();
+		curr_stats.need_redraw = 1;
 
 	curs_set(FALSE);
 
