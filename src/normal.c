@@ -1585,18 +1585,19 @@ search(key_info_t key_info, int backward)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 
+	found = 0;
 	if(curr_view->matches == 0)
 	{
 		const char *pattern = (curr_view->regexp[0] == '\0') ?
 				cfg.search_history[0] : curr_view->regexp;
-		curr_stats.save_msg = find_pattern(curr_view, pattern, backward, 1);
+		found = find_pattern(curr_view, pattern, backward, 1);
+		curr_stats.save_msg = found;
 		key_info.count--;
 	}
 
 	if(curr_view->matches == 0)
 		return;
 
-	found = 0;
 	while(key_info.count-- > 0)
 	{
 		if(backward)
