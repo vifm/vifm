@@ -660,6 +660,7 @@ sortnumbers_handler(OPT_OP op, optval_t val)
 	cfg.sort_numbers = val.bool_val;
 	load_saving_pos(curr_view, 1);
 	load_dir_list(other_view, 1);
+	wrefresh(other_view->win);
 }
 
 static void
