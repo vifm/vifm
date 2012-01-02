@@ -51,7 +51,8 @@ The other command line arguments are:
 --logging                                      *vifm---logging*
     log some errors to CONFDIR/log.
 --remote                                       *vifm---remote*
-    passes all arguments that left in command line to active vifm server.
+    passes all arguments that left in command line to active vifm server
+    (already running instance if any).
 -c <command>, +<command>                       *vifm--c* *vifm--+c*
     run <command> on startup.
 --help, -h                                     *vifm---help* *vifm--h*

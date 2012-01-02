@@ -612,6 +612,7 @@ parse_recieved_arguments(char *args[])
 
 	parse_args(argc, args, args[0], lwin_path, rwin_path, &lwin_handle,
 			&rwin_handle);
+	exec_startup_commands(argc, args);
 
 	check_path(&lwin, lwin_path);
 	check_path(&rwin, rwin_path);

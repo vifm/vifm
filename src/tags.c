@@ -63,6 +63,7 @@ const char *tags[] = {
 	"vifm---help",
 	"vifm---logging",
 	"vifm---no-configs",
+	"vifm---remote",
 	"vifm---select",
 	"vifm---version",
 	"vifm--c",
