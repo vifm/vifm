@@ -346,7 +346,7 @@ static const cmd_add_t commands[] = {
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "registers",        .abbr = "reg",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "rename",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "rename",           .abbr = NULL,    .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = rename_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "restart",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = restart_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
@@ -4135,10 +4135,18 @@ registers_cmd(const cmd_info_t *cmd_info)
 static int
 rename_cmd(const cmd_info_t *cmd_info)
 {
-	if(cmd_info->argc == 0)
-		return rename_files(curr_view, NULL, 0) != 0;
+	if(cmd_info->emark && cmd_info->argc != 0)
+	{
+		status_bar_error("No arguments are allowed if you use \"!\"");
+		return 1;
+	}
+
+	if(cmd_info->emark)
+		return rename_files(curr_view, NULL, 0, 1) != 0;
+	else if(cmd_info->argc == 0)
+		return rename_files(curr_view, NULL, 0, 0) != 0;
 	else
-		return rename_files(curr_view, cmd_info->argv, cmd_info->argc) != 0;
+		return rename_files(curr_view, cmd_info->argv, cmd_info->argc, 0) != 0;
 }
 
 static int

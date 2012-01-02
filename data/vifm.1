@@ -1,4 +1,4 @@
-.TH vifm 1 "December 23, 2011" "" "Vifm"
+.TH vifm 1 "January 2, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -337,7 +337,7 @@ explore file in the current pane.
 opens file with associated program even if it's an executable.
 .TP
 .BI cw
-rename a file.
+rename a file or files.
 .TP
 .BI cW
 change only name of file (without extension).
@@ -1175,15 +1175,16 @@ popup menu with registers content.
 display the contents of the numbered and named registers that are mentioned in
 list (for example "az to display "", "a and "z content).
 .TP
-.BI :[range]rename
-rename files using vi to edit names.
+.BI :[range]rename[!]
+rename files using vi to edit names. ! means go recursively through directories.
 .TP
 .BI ":[range]rename name1 name2..."
 rename each of selected files to a corresponding name.
 .TP
 .BI :restart
-will free a lot of things (histories, commands, etc.) and reread vifminfo and
-vifmrc files.
+will free a lot of things (histories, commands, etc.), reread vifminfo and
+vifmrc files and run startup commands passed in the argument list, thus losing
+all unsaved changes (e.g. recent history or keys mapped in current session).
 .TP
 .BI :[range]restore
 will restore file from Trash.  Works in trash directory only.

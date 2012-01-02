@@ -13,7 +13,6 @@ Basic things that need to be done.
     Wrapping of lines in the menus.
     IPC among all running vifm instances (share settings among instances).
     Write script to export aliases and function from sh to ~/.vifm/scripts/
-    Make rename command process directories recursively.
 
 Documentation.
 	Better documentation.
@@ -78,3 +77,4 @@ Code improvements.
     Improve logging (print back trace in some cases, increase verbosity).
     Stay at the same file in some cases.
     Store directories names without slash symbol.
+    Replace a lot of fields in cmd_add_t struct with a set of bit flags.

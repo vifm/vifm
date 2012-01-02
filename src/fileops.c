@@ -282,7 +282,8 @@ cd_updir(FileView *view)
 	}
 }
 
-/* Returns pointer to a statically allocated buffer */
+/* Makes filename unique by adding an unique suffix to it.
+ * Returns pointer to a statically allocated buffer */
 static const char *
 make_name_unique(const char *filename)
 {
@@ -294,6 +295,7 @@ make_name_unique(const char *filename)
 	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, getppid(),
 			getpid());
 #else
+	// TODO: fix name uniqualization on Windows
 	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, 0, 0);
 #endif
 	i = 0;
@@ -1479,7 +1481,7 @@ rename_file(FileView *view, int name_only)
 }
 
 static int
-is_name_list_ok(int count, int nlines, char **list)
+is_name_list_ok(int count, int nlines, char **list, char **files)
 {
 	int i;
 
@@ -1499,13 +1501,24 @@ is_name_list_ok(int count, int nlines, char **list)
 
 	for(i = 0; i < count; i++)
 	{
+		char *file_s = NULL, *list_s;
 		chomp(list[i]);
 
-		if(strchr(list[i], '/') != NULL)
+		list_s = strrchr(list[i], '/');
+		if(files != NULL)
+			file_s = strrchr(files[i], '/');
+		if(list_s != NULL || file_s != NULL)
 		{
-			status_bar_errorf("Name \"%s\" contains slash", list[i]);
-			curr_stats.save_msg = 1;
-			return 0;
+			if(list_s - list[i] != file_s - files[i] ||
+					pathncmp(files[i], list[i], list_s - list[i]) != 0)
+			{
+				if(file_s == NULL)
+					status_bar_errorf("Name \"%s\" contains slash", list[i]);
+				else
+					status_bar_errorf("Wont move \"%s\" file", files[i]);
+				curr_stats.save_msg = 1;
+				return 0;
+			}
 		}
 
 		if(list[i][0] != '\0' && is_in_string_array(list, i, list[i]))
@@ -1541,7 +1554,7 @@ is_rename_list_ok(FileView *view, char **files, int *is_dup, int len,
 		for(j = 0; j < len; j++)
 		{
 			chosp(files[i]);
-			if(strcmp(list[i], files[j]) == 0 && is_dup[j] >= 0)
+			if(strcmp(list[i], files[j]) == 0 && !is_dup[j])
 			{
 				is_dup[j] = !is_dup[j];
 				break;
@@ -1592,7 +1605,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			continue;
 		if(strcmp(list[i], files[i]) == 0)
 			continue;
-		if(is_dup[i])
+		if(!is_dup[i])
 			continue;
 
 		tmp = make_name_unique(files[i]);
@@ -1616,7 +1629,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			continue;
 
 		if(mv_file(files[i], view->curr_dir, list[i], view->curr_dir,
-				!is_dup[i] ? 1 : 0) == 0)
+				is_dup[i] ? 1 : 0) == 0)
 		{
 			int pos;
 
@@ -1755,7 +1768,7 @@ rename_files_ind(FileView *view, char **files, int *is_dup, int len)
 	}
 	free_string_array(names, len);
 
-	if(is_name_list_ok(len, nlines, list) &&
+	if(is_name_list_ok(len, nlines, list, files) &&
 			is_rename_list_ok(view, files, is_dup, len, list))
 		renamed = perform_renaming(view, files, is_dup, len, list);
 	free_string_array(list, nlines);
@@ -1765,8 +1778,45 @@ rename_files_ind(FileView *view, char **files, int *is_dup, int len)
 				(renamed == 1) ? "" : "s");
 }
 
+static char **
+add_files_to_list(const char *path, char **files, int *len)
+{
+	DIR* dir;
+	struct dirent* dentry;
+	const char* slash = "";
+
+	if(!is_dir(path))
+	{
+		*len = add_to_string_array(&files, *len, 1, path);
+		return files;
+	}
+
+	dir = opendir(path);
+	if(dir == NULL)
+		return files;
+
+	if(path[strlen(path) - 1] != '/')
+		slash = "/";
+
+	while((dentry = readdir(dir)) != NULL)
+	{
+		char buf[PATH_MAX];
+
+		if(pathcmp(dentry->d_name, ".") == 0)
+			continue;
+		else if(pathcmp(dentry->d_name, "..") == 0)
+			continue;
+
+		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
+		files = add_files_to_list(buf, files, len);
+	}
+
+	closedir(dir);
+	return files;
+}
+
 int
-rename_files(FileView *view, char **list, int nlines)
+rename_files(FileView *view, char **list, int nlines, int recursive)
 {
 	char **files = NULL;
 	int len;
@@ -1782,23 +1832,25 @@ rename_files(FileView *view, char **list, int nlines)
 		view->selected_files = 1;
 	}
 
-	is_dup = malloc(sizeof(*is_dup)*view->selected_files);
-	if(is_dup == NULL)
-	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return 0;
-	}
-
 	len = 0;
 	for(i = 0; i < view->list_rows; i++)
 	{
 		if(!view->dir_entry[i].selected)
 			continue;
-		else if(pathcmp(view->dir_entry[i].name, "../") != 0)
-		{
-			is_dup[len] = 1;
+		if(pathcmp(view->dir_entry[i].name, "../") == 0)
+			continue;
+		if(recursive)
+			files = add_files_to_list(view->dir_entry[i].name, files, &len);
+		else
 			len = add_to_string_array(&files, len, 1, view->dir_entry[i].name);
-		}
+	}
+
+	is_dup = calloc(len, sizeof(*is_dup));
+	if(is_dup == NULL)
+	{
+		free_string_array(files, len);
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return 0;
 	}
 
 	if(nlines == 0)
@@ -1809,7 +1861,7 @@ rename_files(FileView *view, char **list, int nlines)
 	{
 		int renamed = -1;
 
-		if(is_name_list_ok(len, nlines, list) &&
+		if(is_name_list_ok(len, nlines, list, files) &&
 				is_rename_list_ok(view, files, is_dup, len, list))
 			renamed = perform_renaming(view, files, is_dup, len, list);
 
@@ -2622,7 +2674,8 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 		}
 	}
 
-	if(nlines > 0 && (!is_name_list_ok(view->selected_files, nlines, list) ||
+	if(nlines > 0 &&
+			(!is_name_list_ok(view->selected_files, nlines, list, NULL) ||
 			(!force && !is_clone_list_ok(nlines, list))))
 	{
 		clean_selected_files(view);
@@ -3313,7 +3366,8 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 			return curr_stats.save_msg;
 	}
 
-	if(*nlines > 0 && (!is_name_list_ok(view->selected_files, *nlines, *list) ||
+	if(*nlines > 0 &&
+			(!is_name_list_ok(view->selected_files, *nlines, *list, NULL) ||
 			(!is_copy_list_ok(path, *nlines, *list) && !force)))
 		error = 1;
 	if(*nlines == 0 && !force &&

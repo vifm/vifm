@@ -22,6 +22,8 @@
 
 	Added --remote command line argument.
 
+	Added recursive mode for :rename command.
+
 	Restore terminal title on exit when running in X (*nix only).
 
 	Reset dot and filename filters if they hide bookmarked file.

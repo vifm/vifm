@@ -295,7 +295,7 @@ i - handle file (even if it's executable and |vifm-'runexec'| is set).
 
 
                                                *vifm-cw*
-cw - change word is used to rename a file.
+cw - change word is used to rename a file or files.
 
                                                *vifm-cW*
 cW - change WORD is used to change only name of file (without extension).
@@ -1038,14 +1038,17 @@ of the hierarchy and transparency for all others.
     "a and "z content).
 
                                                *vifm-:rename*
-:[range]rename - rename files using vi to edit names.
+:[range]rename[!] - rename files using vi to edit names. ! means go
+    recursively through directories.
 :[range]rename name1 name2... - rename each of selected files to a
     corresponding name.
 :[range]rename - rename files using vi to edit names.
 
                                                *vifm-:restart*
-:restart - will free a lot of things (histories, commands, etc.) and reread
-    vifminfo and vifmrc files.
+:restart - will free a lot of things (histories, commands, etc.), reread
+    vifminfo and vifmrc files and run startup commands passed in the
+    argument list, thus losing all unsaved changes (e.g. recent history or
+    keys mapped in current session).
 
                                                *vifm-:restore*
 :[range]restore - will restore file from Trash.  Works in trash directory
