@@ -68,6 +68,7 @@ ipc_init(recieve_callback callback_func)
 		initialized = -1;
 		return;
 	}
+#endif
 
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if(sock == -1)
@@ -79,13 +80,6 @@ ipc_init(recieve_callback callback_func)
 		initialized = -1;
 		return;
 	}
-
-	try_become_a_server();
-#else
-	/* TODO: implement initialization on *nix */
-	initialized = -1;
-	return;
-#endif
 
 	try_become_a_server();
 
@@ -127,15 +121,6 @@ ipc_check(void)
 
 	if(select(maxfd + 1, &ready, NULL, NULL, &ts) > 0)
 		recieve_data();
-
-	/* if(ioctlsocket(sock, FIONREAD, &n) != 0) */
-	/* { */
-	/* 	LOG_ERROR_MSG("Can't read socket status"); */
-	/* 	return; */
-	/* } */
-
-	/* if(n == 0) */
-	/* 	return; */
 }
 
 static void
