@@ -967,6 +967,8 @@ resize_all(void)
 #endif
 
 	getmaxyx(stdscr, screen_y, screen_x);
+	cfg.lines = screen_y;
+	cfg.columns = screen_x;
 
 	LOG_INFO_MSG("screen_y = %d; screen_x = %d", screen_y, screen_x);
 

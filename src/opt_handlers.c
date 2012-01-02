@@ -370,9 +370,6 @@ columns_handler(OPT_OP op, optval_t val)
 		return;
 
 	resize_term(getmaxy(stdscr), val.int_val);
-	if(cfg.columns == getmaxx(stdscr))
-		return;
-
 	redraw_window();
 	cfg.columns = getmaxx(stdscr);
 }
@@ -625,9 +622,6 @@ lines_handler(OPT_OP op, optval_t val)
 		return;
 
 	resize_term(val.int_val, getmaxx(stdscr));
-	if(cfg.lines == getmaxy(stdscr))
-		return;
-
 	redraw_window();
 	cfg.lines = getmaxy(stdscr);
 }

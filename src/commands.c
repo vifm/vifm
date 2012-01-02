@@ -18,6 +18,7 @@
  */
 
 #ifdef _WIN32
+#define _WIN32_WINNT 0x0500
 #include <windows.h>
 #include <lm.h>
 #endif
@@ -2105,6 +2106,10 @@ shellout(const char *command, int pause)
 	memset(&rwin.dir_mtime, 0, sizeof(rwin.dir_mtime));
 #endif
 
+#ifdef _WIN32
+	reset_prog_mode();
+	resize_term(cfg.lines, cfg.columns);
+#endif
 	/* always redraw to handle resizing of terminal */
 	if(!curr_stats.auto_redraws)
 		curr_stats.need_redraw = 1;
