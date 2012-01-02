@@ -1089,7 +1089,9 @@ static void
 set_title(const char *new_title)
 {
 #ifdef _WIN32
-	SetConsoleTitleA(new_title);
+	wchar_t *title = to_wide(new_title);
+	SetConsoleTitleW(title);
+	free(title);
 #else
 	printf("\033]2;%s\007", new_title);
 #endif
