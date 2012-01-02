@@ -24,6 +24,8 @@
 
 	Added recursive mode for :rename command.
 
+	Added 'columns' and 'lines' options.
+
 	Restore terminal title on exit when running in X.
 
 	Reset dot and filename filters if they hide bookmarked file.

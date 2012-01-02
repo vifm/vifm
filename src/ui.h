@@ -41,6 +41,9 @@
 
 #include "color_scheme.h"
 
+#define MIN_TERM_HEIGHT 10
+#define MIN_TERM_WIDTH 30
+
 enum
 {
 	SORT_BY_EXTENSION = 1,

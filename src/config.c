@@ -114,6 +114,9 @@ init_config(void)
 	cfg.ruler_format = strdup("%=%l/%S ");
 	cfg.status_line = strdup("");
 
+	cfg.lines = -1;
+	cfg.columns = -1;
+
 	p = getenv("SHELL");
 	if(p == NULL || *p == '\0')
 #ifndef _WIN32
@@ -823,6 +826,7 @@ write_info_file(void)
 	{
 		fputs("\n# Options:\n", fp);
 		fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
+		fprintf(fp, "=columns=%d\n", cfg.columns);
 		fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
 		fprintf(fp, "=cpoptions=%s\n", cfg.selection_cp ? "s" : "");
 		fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
@@ -835,6 +839,7 @@ write_info_file(void)
 		fprintf(fp, "=%signorecase\n", cfg.ignore_case ? "" : "no");
 		fprintf(fp, "=%sincsearch\n", cfg.inc_search ? "" : "no");
 		fprintf(fp, "=%slaststatus\n", cfg.last_status ? "" : "no");
+		fprintf(fp, "=lines=%d\n", cfg.lines);
 		fprintf(fp, "=rulerformat=%s\n", escape_spaces(cfg.ruler_format));
 		fprintf(fp, "=%srunexec\n", cfg.auto_execute ? "" : "no");
 		fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");

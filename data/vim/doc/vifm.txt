@@ -1349,6 +1349,12 @@ and :pushd commands (and on startup if autochpos is disabled in the vifmrc).
 l key in the :history . menu is treated like :cd command.  This option affects
 bookmarks, file position will not preserved.
 
+                                               *vifm-'columns'* *vifm-'co'*
+columns co
+type: int
+default: terminal width on startup
+Terminal width in characters.
+
                                                *vifm-'confirm'* *vifm-'cf'*
 confirm cf
 type: boolean
@@ -1429,6 +1435,12 @@ laststatus ls
 type: boolean
 default: true
 Controls if status bar is visible.
+
+                                               *vifm-'lines'*
+lines
+type: int
+default: terminal height on startup
+Terminal height in lines.
 
                                                *vifm-'rulerformat'* *vifm-'ruf'*
 rulerformat ruf

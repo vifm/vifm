@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@gmail.com>
-" Last Change: December 31, 2011
+" Last Change: January 2, 2012
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -45,12 +45,12 @@ syntax keyword vifmHiColors contained black red green yellow blue magenta cyan
 syntax case match
 
 " Options
-syntax keyword vifmOption contained autochpos confirm cf cpoptions cpo fastrun
-		\ followlinks fusehome gdefault history hi hlsearch hls iec ignorecase ic
-		\ incsearch is laststatus ls rulerformat ruf runexec scrollbind scb
-		\ scrolloff so shell sh slowfs smartcase scs sortnumbers statusline stl
-		\ timefmt timeoutlen trash undolevels ul vicmd vixcmd vifminfo vimhelp
-		\ wildmenu wmnu wrap wrapscan ws sort sortorder tabstop ts
+syntax keyword vifmOption contained autochpos columns co confirm cf cpoptions
+		\ cpo fastrun followlinks fusehome gdefault history hi hlsearch hls iec
+		\ ignorecase ic incsearch is laststatus lines ls rulerformat ruf runexec
+		\ scrollbind scb scrolloff so sort sortorder shell sh slowfs smartcase scs
+		\ sortnumbers statusline stl tabstop timefmt timeoutlen trash ts undolevels
+		\ ul vicmd vixcmd vifminfo vimhelp wildmenu wmnu wrap wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun

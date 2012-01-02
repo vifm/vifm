@@ -38,6 +38,7 @@ static void load_options_defaults(void);
 static void add_options(void);
 static void print_func(const char *msg, const char *description);
 static void autochpos_handler(OPT_OP op, optval_t val);
+static void columns_handler(OPT_OP op, optval_t val);
 static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
 static void fastrun_handler(OPT_OP op, optval_t val);
@@ -50,6 +51,7 @@ static void iec_handler(OPT_OP op, optval_t val);
 static void ignorecase_handler(OPT_OP op, optval_t val);
 static void incsearch_handler(OPT_OP op, optval_t val);
 static void laststatus_handler(OPT_OP op, optval_t val);
+static void lines_handler(OPT_OP op, optval_t val);
 static void scroll_line_down(FileView *view);
 static void rulerformat_handler(OPT_OP op, optval_t val);
 static void runexec_handler(OPT_OP op, optval_t val);
@@ -144,6 +146,7 @@ static struct
 }options[] = {
 	/* global options */
 	{ "autochpos",   "",     OPT_BOOL,    0,                          NULL,            &autochpos_handler,   },
+	{ "columns",     "co",   OPT_INT,     0,                          NULL,            &columns_handler,     },
 	{ "confirm",     "cf",   OPT_BOOL,    0,                          NULL,            &confirm_handler,     },
 	{ "cpoptions",   "cpo",  OPT_STR,     0,                          NULL,            &cpoptions_handler,   },
 	{ "fastrun",     "",     OPT_BOOL,    0,                          NULL,            &fastrun_handler,     },
@@ -156,6 +159,7 @@ static struct
 	{ "ignorecase",  "ic",   OPT_BOOL,    0,                          NULL,            &ignorecase_handler,  },
 	{ "incsearch",   "is",   OPT_BOOL,    0,                          NULL,            &incsearch_handler ,  },
 	{ "laststatus",  "ls",   OPT_BOOL,    0,                          NULL,            &laststatus_handler,  },
+	{ "lines",       "",     OPT_INT,     0,                          NULL,            &lines_handler,       },
 	{ "rulerformat", "ruf",  OPT_STR,     0,                          NULL,            &rulerformat_handler, },
 	{ "runexec",     "",     OPT_BOOL,    0,                          NULL,            &runexec_handler,     },
 	{ "scrollbind",  "scb",  OPT_BOOL,    0,                          NULL,            &scrollbind_handler,  },
@@ -203,6 +207,7 @@ load_options_defaults(void)
 
 	/* global options */
 	options[i++].val.bool_val = cfg.auto_ch_pos;
+	options[i++].val.int_val = (cfg.columns > 0) ? cfg.columns : getmaxx(stdscr);
 	options[i++].val.bool_val = cfg.confirm;
 	options[i++].val.str_val = buf;
 	options[i++].val.bool_val = cfg.fast_run;
@@ -215,6 +220,7 @@ load_options_defaults(void)
 	options[i++].val.bool_val = cfg.ignore_case;
 	options[i++].val.bool_val = cfg.inc_search;
 	options[i++].val.bool_val = cfg.last_status;
+	options[i++].val.int_val = (cfg.lines > 0) ? cfg.lines : getmaxy(stdscr);
 	options[i++].val.str_val = cfg.ruler_format;
 	options[i++].val.bool_val = cfg.auto_execute;
 	options[i++].val.bool_val = cfg.scroll_bind;
@@ -347,6 +353,28 @@ autochpos_handler(OPT_OP op, optval_t val)
 		clean_positions_in_history(curr_view);
 		clean_positions_in_history(other_view);
 	}
+}
+
+static void
+columns_handler(OPT_OP op, optval_t val)
+{
+	if(val.int_val < MIN_TERM_WIDTH)
+	{
+		char buf[128];
+		val.int_val = MIN_TERM_WIDTH;
+		snprintf(buf, sizeof(buf), "At least %d columns needed", MIN_TERM_WIDTH);
+		print_func("", buf);
+	}
+
+	if(cfg.columns == val.int_val)
+		return;
+
+	resize_term(getmaxy(stdscr), val.int_val);
+	if(cfg.columns == getmaxx(stdscr))
+		return;
+
+	redraw_window();
+	cfg.columns = getmaxx(stdscr);
 }
 
 static void
@@ -580,6 +608,28 @@ laststatus_handler(OPT_OP op, optval_t val)
 	wnoutrefresh(mborder);
 	wnoutrefresh(rborder);
 	doupdate();
+}
+
+static void
+lines_handler(OPT_OP op, optval_t val)
+{
+	if(val.int_val < MIN_TERM_HEIGHT)
+	{
+		char buf[128];
+		val.int_val = MIN_TERM_HEIGHT;
+		snprintf(buf, sizeof(buf), "At least %d lines needed", MIN_TERM_HEIGHT);
+		print_func("", buf);
+	}
+
+	if(cfg.lines == val.int_val)
+		return;
+
+	resize_term(val.int_val, getmaxx(stdscr));
+	if(cfg.lines == getmaxy(stdscr))
+		return;
+
+	redraw_window();
+	cfg.lines = getmaxy(stdscr);
 }
 
 static void

@@ -1547,6 +1547,13 @@ and :pushd commands (and on startup if autochpos is disabled in the vifmrc).
 l key in the :history . menu is treated like :cd command.  This option affects
 bookmarks, file position will not preserved.
 .TP
+.BI "columns co"
+type: int
+.br
+default: terminal width on startup
+.br
+Terminal width in characters.
+.TP
 .BI "confirm cf"
 type: boolean
 .br
@@ -1640,6 +1647,13 @@ type: boolean
 default: true
 .br
 Controls if status bar is visible.
+.TP
+.BI lines
+type: int
+.br
+default: terminal height on startup
+.br
+Terminal height in lines.
 .TP
 .BI "rulerformat ruf"
 type: string

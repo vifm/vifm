@@ -95,6 +95,8 @@ typedef struct
 	int tab_stop;
 	char *ruler_format;
 	char *status_line;
+	int lines; /* Terminal height in lines. */
+	int columns; /* Terminal width in characters. */
 }config_t;
 
 extern config_t cfg;

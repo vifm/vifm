@@ -641,9 +641,9 @@ setup_ncurses_interface(void)
 
 	getmaxyx(stdscr, screen_y, screen_x);
 	/* screen is too small to be useful*/
-	if(screen_y < 10)
+	if(screen_y < MIN_TERM_HEIGHT)
 		finish("Terminal is too small to run vifm\n");
-	if(screen_x < 30)
+	if(screen_x < MIN_TERM_WIDTH)
 		finish("Terminal is too small to run vifm\n");
 
 	if(!has_colors())
@@ -813,7 +813,7 @@ is_term_working(void)
 
 	getmaxyx(stdscr, screen_y, screen_x);
 
-	if(screen_y < 10 || screen_x < 30)
+	if(screen_y < MIN_TERM_HEIGHT || screen_x < MIN_TERM_WIDTH)
 		curr_stats.too_small_term = 1;
 	else if(curr_stats.too_small_term)
 		curr_stats.too_small_term = -1;
@@ -970,7 +970,7 @@ resize_all(void)
 
 	LOG_INFO_MSG("screen_y = %d; screen_x = %d", screen_y, screen_x);
 
-	if(screen_y < 10 || screen_x < 30)
+	if(screen_y < MIN_TERM_HEIGHT || screen_x < MIN_TERM_WIDTH)
 	{
 		curr_stats.too_small_term = 1;
 		return;
