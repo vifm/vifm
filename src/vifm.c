@@ -285,7 +285,7 @@ add_to_path(const char *str)
 	char *new_path;
 
 	old_path = getenv("PATH");
-	new_path = malloc(5 + strlen(str) + strlen(old_path) + 1);
+	new_path = malloc(5 + strlen(str) + 1 + strlen(old_path) + 1);
 
 #ifndef _WIN32
 	sprintf(new_path, "%s:%s", str, old_path);

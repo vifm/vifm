@@ -24,7 +24,7 @@
 
 	Added recursive mode for :rename command.
 
-	Restore terminal title on exit when running in X (*nix only).
+	Restore terminal title on exit when running in X.
 
 	Reset dot and filename filters if they hide bookmarked file.
 
