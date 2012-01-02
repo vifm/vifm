@@ -201,11 +201,9 @@ void
 update_pos_window(FileView *view)
 {
 	char *buf;
-	size_t len;
 
 	buf = expand_ruler_macros(view, cfg.ruler_format);
 	buf = break_in_two(buf, 13);
-	len = strlen(buf);
 
 	werase(pos_win);
 	mvwaddstr(pos_win, 0, 0, buf);
@@ -370,7 +368,7 @@ update_stat_window_old(FileView *view)
 	char perm_buf[26];
 	char size_buf[56];
 	char id_buf[52];
-	int x, y;
+	int x;
 	int cur_x;
 	size_t print_width;
 	char *filename;
@@ -378,7 +376,7 @@ update_stat_window_old(FileView *view)
 	if(!cfg.last_status)
 		return;
 
-	getmaxyx(stdscr, y, x);
+	x = getmaxx(stdscr);
 	wresize(stat_win, 1, x);
 	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
 			cfg.cs.color[STATUS_LINE_COLOR].attr);
@@ -425,7 +423,7 @@ update_stat_window_old(FileView *view)
 void
 update_stat_window(FileView *view)
 {
-	int x, y;
+	int x;
 	char *buf;
 
 	if(!cfg.last_status)
@@ -437,7 +435,7 @@ update_stat_window(FileView *view)
 		return;
 	}
 
-	getmaxyx(stdscr, y, x);
+	x = getmaxx(stdscr);
 	wresize(stat_win, 1, x);
 	wbkgdset(stat_win, COLOR_PAIR(DCOLOR_BASE + STATUS_LINE_COLOR) |
 			cfg.cs.color[STATUS_LINE_COLOR].attr);

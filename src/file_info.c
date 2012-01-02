@@ -108,7 +108,7 @@ redraw_file_info_dialog(void)
 	struct group *grp_buf;
 #endif
 	struct tm *tm_ptr;
-	int x, y;
+	int x;
 	int curr_y;
 	unsigned long long size;
 
@@ -116,7 +116,7 @@ redraw_file_info_dialog(void)
 
 	setup_menu();
 
-	getmaxyx(menu_win, y, x);
+	x = getmaxx(menu_win);
 	wclear(menu_win);
 
 	snprintf(name_buf, sizeof(name_buf), "%s",
@@ -212,9 +212,9 @@ redraw_file_info_dialog(void)
 static int
 show_file_type(FileView *view, int curr_y)
 {
-	int x, y;
+	int x;
 	int old_curr_y = curr_y;
-	getmaxyx(menu_win, y, x);
+	x = getmaxx(menu_win);
 
 	mvwaddstr(menu_win, curr_y, 2, "Type: ");
 	if(view->dir_entry[view->list_pos].type == LINK)

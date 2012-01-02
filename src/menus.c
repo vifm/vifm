@@ -104,12 +104,12 @@ show_position_in_menu(menu_info *m)
 void
 clean_menu_position(menu_info *m)
 {
-	int x, y, z;
+	int x, z;
 	char * buf = (char *)NULL;
 	col_attr_t col;
 	int type = MENU_COLOR;
 
-	getmaxyx(menu_win, y, x);
+	x = getmaxx(menu_win);
 
 	x += get_utf8_overhead(m->data[m->pos]);
 
@@ -324,11 +324,11 @@ void
 move_to_menu_pos(int pos, menu_info *m)
 {
 	int redraw = 0;
-	int x, y, z;
+	int x, z;
 	char *buf = NULL;
 	col_attr_t col;
 
-	getmaxyx(menu_win, y, x);
+	x = getmaxx(menu_win);
 
 	if(pos < 1)
 		pos = 0;
@@ -960,7 +960,6 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
 		const wchar_t *start)
 {
 	int x;
-	int len;
 	size_t start_len = wcslen(start);
 
 	static menu_info m;
@@ -969,7 +968,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
 	m.len = 0;
 	m.pos = 0;
 	m.hor_pos = 0;
-	m.win_rows = 0;
+	m.win_rows = getmaxy(menu_win);
 	m.type = MAP;
 	m.matching_entries = 0;
 	m.matches = NULL;
@@ -978,8 +977,6 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
 	m.title = NULL;
 	m.args = NULL;
 	m.data = NULL;
-
-	getmaxyx(menu_win, m.win_rows, len);
 
 	m.title = malloc((strlen(mode_str) + 21)*sizeof(char));
 	sprintf(m.title, " Mappings for %s mode ", mode_str);
@@ -1123,7 +1120,6 @@ void
 show_apropos_menu(FileView *view, char *args)
 {
 	char buf[256];
-	int len = 0;
 	int were_errors;
 
 	static menu_info m;
@@ -1132,7 +1128,7 @@ show_apropos_menu(FileView *view, char *args)
 	m.len = 0;
 	m.pos = 0;
 	m.hor_pos = 0;
-	m.win_rows = 0;
+	m.win_rows = getmaxy(menu_win);
 	m.type = APROPOS;
 	m.matching_entries = 0;
 	m.matches = NULL;
@@ -1141,8 +1137,6 @@ show_apropos_menu(FileView *view, char *args)
 	m.title = NULL;
 	m.args = strdup(args);
 	m.data = NULL;
-
-	getmaxyx(menu_win, m.win_rows, len);
 
 	m.title = (char *)malloc((strlen(args) + 12) * sizeof(char));
 	snprintf(m.title, strlen(args) + 11,  " Apropos %s ",  args);
@@ -1274,7 +1268,7 @@ show_bookmarks_menu(FileView *view, const char *marks)
 int
 show_dirstack_menu(FileView *view)
 {
-	int len, i;
+	int i;
 
 	static menu_info m;
 	m.top = 0;
@@ -1282,7 +1276,7 @@ show_dirstack_menu(FileView *view)
 	m.len = 0;
 	m.pos = 0;
 	m.hor_pos = 0;
-	m.win_rows = 0;
+	m.win_rows = getmaxy(menu_win);
 	m.type = DIRSTACK;
 	m.matching_entries = 0;
 	m.matches = NULL;
@@ -1291,8 +1285,6 @@ show_dirstack_menu(FileView *view)
 	m.title = NULL;
 	m.args = NULL;
 	m.data = NULL;
-
-	getmaxyx(menu_win, m.win_rows, len);
 
 	m.title = strdup(" Directory Stack ");
 
@@ -1413,7 +1405,7 @@ int
 show_commands_menu(FileView *view)
 {
 	char **list;
-	int len, i;
+	int i;
 
 	static menu_info m;
 	m.top = 0;
@@ -1421,7 +1413,7 @@ show_commands_menu(FileView *view)
 	m.len = -1;
 	m.pos = 0;
 	m.hor_pos = 0;
-	m.win_rows = 0;
+	m.win_rows = getmaxy(menu_win);
 	m.type = COMMAND;
 	m.matching_entries = 0;
 	m.matches = NULL;
@@ -1431,8 +1423,6 @@ show_commands_menu(FileView *view)
 	m.args = NULL;
 	m.data = NULL;
 	m.key_handler = command_khandler;
-
-	getmaxyx(menu_win, m.win_rows, len);
 
 	m.title = (char *)malloc((23 + 1)*sizeof(char));
 	snprintf(m.title, 23 + 1, " Command ------ Action  ");
@@ -1897,7 +1887,6 @@ show_bsearchhistory_menu(FileView *view)
 int
 show_locate_menu(FileView *view, const char *args)
 {
-	int x = 0;
 	char buf[256];
 	int were_errors;
 
@@ -1907,7 +1896,7 @@ show_locate_menu(FileView *view, const char *args)
 	m.len = 0;
 	m.pos = 0;
 	m.hor_pos = 0;
-	m.win_rows = 0;
+	m.win_rows = getmaxy(menu_win);
 	m.type = LOCATE;
 	m.matching_entries = 0;
 	m.matches = NULL;
@@ -1916,8 +1905,6 @@ show_locate_menu(FileView *view, const char *args)
 	m.title = NULL;
 	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0);
 	m.data = NULL;
-
-	getmaxyx(menu_win, m.win_rows, x);
 
 	snprintf(buf, sizeof(buf), "locate %s", m.args);
 	m.title = strdup(buf);
@@ -1934,7 +1921,6 @@ show_locate_menu(FileView *view, const char *args)
 int
 show_find_menu(FileView *view, int with_path, const char *args)
 {
-	int x = 0;
 	char buf[256];
 	char *files;
 	int menu, split;
@@ -1946,7 +1932,7 @@ show_find_menu(FileView *view, int with_path, const char *args)
 	m.len = 0;
 	m.pos = 0;
 	m.hor_pos = 0;
-	m.win_rows = 0;
+	m.win_rows = getmaxy(menu_win);
 	m.type = FIND;
 	m.matching_entries = 0;
 	m.matches = NULL;
@@ -1955,8 +1941,6 @@ show_find_menu(FileView *view, int with_path, const char *args)
 	m.title = NULL;
 	m.args = NULL;
 	m.data = NULL;
-
-	getmaxyx(menu_win, m.win_rows, x);
 
 	snprintf(buf, sizeof(buf), "find %s", args);
 	m.title = strdup(buf);
@@ -1992,7 +1976,6 @@ show_find_menu(FileView *view, int with_path, const char *args)
 int
 show_grep_menu(FileView *view, const char *args, int invert)
 {
-	int x = 0;
 	char title_buf[256];
 	char *files;
 	int menu, split;
@@ -2007,7 +1990,7 @@ show_grep_menu(FileView *view, const char *args, int invert)
 	m.len = 0;
 	m.pos = 0;
 	m.hor_pos = 0;
-	m.win_rows = 0;
+	m.win_rows = getmaxy(menu_win);
 	m.type = GREP;
 	m.matching_entries = 0;
 	m.matches = NULL;
@@ -2016,8 +1999,6 @@ show_grep_menu(FileView *view, const char *args, int invert)
 	m.title = NULL;
 	m.args = NULL;
 	m.data = NULL;
-
-	getmaxyx(menu_win, m.win_rows, x);
 
 	snprintf(title_buf, sizeof(title_buf), "grep %s", args);
 	m.title = strdup(title_buf);
@@ -2060,7 +2041,6 @@ show_grep_menu(FileView *view, const char *args, int invert)
 void
 show_user_menu(FileView *view, const char *command, int navigate)
 {
-	size_t x;
 	int were_errors;
 
 	static menu_info m;
@@ -2069,7 +2049,7 @@ show_user_menu(FileView *view, const char *command, int navigate)
 	m.len = 0;
 	m.pos = 0;
 	m.hor_pos = 0;
-	m.win_rows = 0;
+	m.win_rows = getmaxy(menu_win);
 	m.type = navigate ? USER_NAVIGATE : USER;
 	m.matching_entries = 0;
 	m.matches = NULL;
@@ -2078,8 +2058,6 @@ show_user_menu(FileView *view, const char *command, int navigate)
 	m.title = NULL;
 	m.args = NULL;
 	m.data = NULL;
-
-	getmaxyx(menu_win, m.win_rows, x);
 
 	m.title = strdup(command);
 
@@ -2106,7 +2084,7 @@ show_jobs_menu(FileView *view)
 	m.len = 0;
 	m.pos = 0;
 	m.hor_pos = 0;
-	m.win_rows = 0;
+	m.win_rows = getmaxy(menu_win);
 	m.type = JOBS;
 	m.matching_entries = 0;
 	m.matches = NULL;
@@ -2115,10 +2093,6 @@ show_jobs_menu(FileView *view)
 	m.title = NULL;
 	m.args = NULL;
 	m.data = NULL;
-
-	getmaxyx(menu_win, m.win_rows, x);
-
-	x = 0;
 
 	/*
 	 * SIGCHLD needs to be blocked anytime the finished_jobs list
@@ -2135,6 +2109,7 @@ show_jobs_menu(FileView *view)
 	p = jobs;
 	fj = fjobs;
 
+	x = 0;
 	while(p != NULL)
 	{
 		/* Mark any finished jobs */
@@ -2199,15 +2174,13 @@ show_jobs_menu(FileView *view)
 int
 show_register_menu(FileView *view, const char *registers)
 {
-	int x;
-
 	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = 0;
 	m.pos = 0;
 	m.hor_pos = 0;
-	m.win_rows = 0;
+	m.win_rows = getmaxy(menu_win);
 	m.type = REGISTER;
 	m.matching_entries = 0;
 	m.matches = NULL;
@@ -2216,8 +2189,6 @@ show_register_menu(FileView *view, const char *registers)
 	m.title = strdup(" Registers ");
 	m.args = NULL;
 	m.data = NULL;
-
-	getmaxyx(menu_win, m.win_rows, x);
 
 	m.data = list_registers_content(registers);
 	while(m.data[m.len] != NULL)
@@ -2240,7 +2211,6 @@ show_register_menu(FileView *view, const char *registers)
 int
 show_undolist_menu(FileView *view, int with_details)
 {
-	int x;
 	char **p;
 
 	static menu_info m;
@@ -2249,7 +2219,7 @@ show_undolist_menu(FileView *view, int with_details)
 	m.len = 0;
 	m.pos = m.current - 1;
 	m.hor_pos = 0;
-	m.win_rows = 0;
+	m.win_rows = getmaxy(menu_win);
 	m.type = UNDOLIST;
 	m.matching_entries = 0;
 	m.matches = NULL;
@@ -2258,8 +2228,6 @@ show_undolist_menu(FileView *view, int with_details)
 	m.title = strdup(" Undolist ");
 	m.args = NULL;
 	m.data = NULL;
-
-	getmaxyx(menu_win, m.win_rows, x);
 
 	m.data = undolist(with_details);
 	p = m.data;
@@ -2296,20 +2264,19 @@ show_undolist_menu(FileView *view, int with_details)
 void
 show_volumes_menu(FileView *view)
 {
-	static menu_info m;
 	int retVal;
-	int x;
 	TCHAR Drive[] = TEXT("c:\\");
 	TCHAR c;
 	TCHAR volName[MAX_PATH];
 	TCHAR fileBuf[MAX_PATH];
 
+	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = 0;
 	m.pos = 0;
 	m.hor_pos = 0;
-	m.win_rows = 0;
+	m.win_rows = getmaxy(menu_win);
 	m.type = VOLUMES;
 	m.matching_entries = 0;
 	m.matches = NULL;
@@ -2318,8 +2285,6 @@ show_volumes_menu(FileView *view)
 	m.title = strdup(" Mounted Volumes ");
 	m.args = NULL;
 	m.data = NULL;
-
-	getmaxyx(menu_win, m.win_rows, x);
 
 	for(c = TEXT('a'); c < TEXT('z'); c++)
 	{
@@ -2365,15 +2330,13 @@ show_volumes_menu(FileView *view)
 int
 show_vifm_menu(FileView *view)
 {
-	int x;
-
 	static menu_info m;
 	m.top = 0;
 	m.current = 1;
 	m.len = fill_version_info(NULL);
 	m.pos = 0;
 	m.hor_pos = 0;
-	m.win_rows = 0;
+	m.win_rows = getmaxy(menu_win);
 	m.type = VIFM;
 	m.matching_entries = 0;
 	m.matches = NULL;
@@ -2382,8 +2345,6 @@ show_vifm_menu(FileView *view)
 	m.title = strdup(" vifm information ");
 	m.args = NULL;
 	m.data = malloc(sizeof(char*)*m.len);
-
-	getmaxyx(menu_win, m.win_rows, x);
 
 	m.len = fill_version_info(m.data);
 
