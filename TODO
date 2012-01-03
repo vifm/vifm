@@ -37,6 +37,7 @@ Vi(m) specific features that need to be added.
     Ctrl-W F key.
     :let command (for start support only environment variables).
     'wildignore' ('wig') option.
+    Kinda macros like in Vim (qa ... q).
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?

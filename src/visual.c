@@ -217,6 +217,13 @@ enter_visual_mode(int restore_selection)
 void
 leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 {
+	if(goto_top)
+	{
+		int ub = check_mark_directory(view, '<');
+		if(ub != -1)
+			view->list_pos = ub;
+	}
+
 	if(clean_selection)
 	{
 		int i;
@@ -229,13 +236,6 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 
 		draw_dir_list(view, view->top_line);
 		move_to_list_pos(view, view->list_pos);
-	}
-
-	if(goto_top)
-	{
-		int ub = check_mark_directory(view, '<');
-		if(ub != -1)
-			view->list_pos = ub;
 	}
 
 	curr_stats.save_msg = save_msg;
