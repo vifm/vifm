@@ -388,7 +388,8 @@ update_stat_window_old(FileView *view)
 			size_buf);
 
 	get_uid_string(view, sizeof(id_buf), id_buf);
-	strcat(id_buf, ":");
+	if(id_buf[0] != '\0')
+		strcat(id_buf, ":");
 	get_gid_string(view, sizeof(id_buf) - strlen(id_buf),
 			id_buf + strlen(id_buf));
 	get_perm_string(perm_buf, sizeof(perm_buf),
