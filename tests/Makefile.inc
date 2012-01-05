@@ -9,7 +9,9 @@ SOURCES += ../seatest/seatest.c
 LOCAL_SOURCES += $(wildcard *.c)
 
 OBJECTS := $(SOURCES:.c=.o)
+OBJECTS := $(addprefix ../bin/, $(notdir $(OBJECTS)))
 LOCAL_OBJECTS := $(LOCAL_SOURCES:.c=.o)
+LOCAL_OBJECTS := $(addprefix bin/, $(notdir $(LOCAL_OBJECTS)))
 
 ifneq ($(OS),Windows_NT)
     CFLAGS := -MD -g -Werror -I../seatest `pkg-config --cflags gtk+-2.0` -DTEST
@@ -19,12 +21,17 @@ else
     LDFLAGS := -lpdcurses -lregex -lnetapi32 -lpthread -lws2_32
 endif
 
-$(BIN): $(addprefix ../bin/, $(notdir $(OBJECTS))) \
-        $(addprefix bin/, $(notdir $(LOCAL_OBJECTS)))
-	gcc -o $@ $^ $(LDFLAGS)
+$(BIN): ../bin $(OBJECTS) $(LOCAL_OBJECTS)
+	gcc -o $@ $(OBJECTS) $(LOCAL_OBJECTS) $(LDFLAGS)
 
-bin/%.o: %.c
+../bin:
+	mkdir $@
+
+bin/%.o: %.c bin
 	gcc -c -o $@ $< $(CFLAGS)
+
+bin:
+	mkdir $@
 
 ../bin/%.o: ../../src/%.c
 	gcc -c -o $@ $< $(CFLAGS)
