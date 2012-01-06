@@ -247,7 +247,7 @@ view_file(const char *filename, int line, int do_fork)
 	if(bg && do_fork)
 		start_background_job(command);
 	else
-		shellout(command, -1);
+		shellout(command, -1, 0);
 	curs_set(FALSE);
 }
 
@@ -671,7 +671,7 @@ execute_file(FileView *view, int dont_execute)
 			if(bg)
 				start_background_job(program);
 			else
-				shellout(program, -1);
+				shellout(program, -1, 1);
 			free(program);
 		}
 		return;
@@ -742,7 +742,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 		if(!pause && (background || force_background))
 			start_background_job(command);
 		else
-			shellout(command, pause ? 1 : -1);
+			shellout(command, pause ? 1 : -1, 1);
 
 		free(command);
 	}
@@ -752,7 +752,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 		char *temp = escape_filename(view->dir_entry[view->list_pos].name, 0);
 
 		snprintf(buf, sizeof(buf), "%s %s", program, temp);
-		shellout(buf, pause ? 1 : -1);
+		shellout(buf, pause ? 1 : -1, 1);
 		free(temp);
 	}
 }
@@ -898,7 +898,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 		char buf[NAME_MAX];
 		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, filename);
 #ifndef _WIN32
-		shellout(buf, 1);
+		shellout(buf, 1, 1);
 #else
 		to_back_slash(buf);
 		if(curr_stats.as_admin && is_vista_and_above())

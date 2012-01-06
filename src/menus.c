@@ -525,7 +525,7 @@ execute_apropos_cb(menu_info *m)
 		snprintf(command, sizeof(command), "man %s %s", num_str, man_page);
 
 		curr_stats.auto_redraws = 1;
-		shellout(command, 0);
+		shellout(command, 0, 1);
 		curr_stats.auto_redraws = 0;
 	}
 	free(free_this);

@@ -1988,12 +1988,13 @@ split_screen(FileView *view, char *command)
 /*
  * pause:
  *  > 0 - pause always
- *  = 0 - not pause
+ *  = 0 - do not pause
  *  < 0 - pause on error
  */
 int
-shellout(const char *command, int pause)
+shellout(const char *command, int pause, int allow_screen)
 {
+	/* TODO: refactor this big function shellout() */
 	size_t len = (command != NULL) ? strlen(command) : 0;
 	char buf[cfg.max_args];
 	int result;
@@ -2004,11 +2005,11 @@ shellout(const char *command, int pause)
 
 	if(command != NULL)
 	{
-		if(cfg.use_screen)
+		if(allow_screen && cfg.use_screen)
 		{
 			int bg;
 			char *escaped;
-			char *ptr = (char *)NULL;
+			char *ptr = NULL;
 			char *title = strstr(command, get_vicmd(&bg));
 			char *escaped_sh = escape_filename(cfg.shell, 0);
 
@@ -2085,7 +2086,7 @@ shellout(const char *command, int pause)
 	}
 	else
 	{
-		if(cfg.use_screen)
+		if(allow_screen && cfg.use_screen)
 		{
 			snprintf(buf, sizeof(buf), "screen -X setenv PWD \'%s\'",
 					curr_view->curr_dir);
@@ -2873,14 +2874,14 @@ emark_cmd(const cmd_info_t *cmd_info)
 	else
 	{
 		clean_selected_files(curr_view);
-		if(shellout(com + i, cmd_info->emark ? 1 : (cfg.fast_run ? 0 : -1)) == 127
-				&& cfg.fast_run)
+		if(shellout(com + i, cmd_info->emark ? 1 : (cfg.fast_run ? 0 : -1), 1)
+				== 127 && cfg.fast_run)
 		{
 			char *buf = fast_run_complete(com + i);
 			if(buf == NULL)
 				return 1;
 
-			shellout(buf, cmd_info->emark ? 1 : -1);
+			shellout(buf, cmd_info->emark ? 1 : -1, 1);
 			free(buf);
 		}
 	}
@@ -3351,7 +3352,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 		if(bg)
 			start_background_job(buf);
 		else
-			shellout(buf, -1);
+			shellout(buf, -1, 1);
 		return 0;
 	}
 	if(!curr_view->selected_files ||
@@ -3397,7 +3398,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 		if(bg)
 			start_background_job(cmd);
 		else
-			shellout(cmd, -1);
+			shellout(cmd, -1, 1);
 		free(cmd);
 	}
 	return 0;
@@ -3625,13 +3626,15 @@ help_cmd(const cmd_info_t *cmd_info)
 		start_background_job(buf);
 	else
 #ifndef _WIN32
-		shellout(buf, -1);
+		shellout(buf, -1, 1);
 #else
-	def_prog_mode();
-	endwin();
-	system("cls");
-	system(buf);
-	redraw_window();
+	{
+		def_prog_mode();
+		endwin();
+		system("cls");
+		system(buf);
+		redraw_window();
+	}
 #endif
 	return 0;
 }
@@ -4352,7 +4355,7 @@ shell_cmd(const cmd_info_t *cmd_info)
 	const char *sh = env_get("SHELL");
 	if(sh == NULL || sh[0] == '\0')
 		sh = cfg.shell;
-	shellout(sh, 0);
+	shellout(sh, 0, 1);
 	return 0;
 }
 
@@ -4859,7 +4862,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		}
 		else if(strlen(tmp) > 0)
 		{
-			shellout(tmp, pause ? 1 : -1);
+			shellout(tmp, pause ? 1 : -1, 1);
 		}
 	}
 	else if(expanded_com[0] == '/')
@@ -4875,7 +4878,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		shellout(expanded_com, -1);
+		shellout(expanded_com, -1, 1);
 	}
 
 	if(external)

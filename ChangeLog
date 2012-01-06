@@ -84,6 +84,8 @@
 
 	Fixed bug with :rename and 'vicmd' (or 'vixcmd') option with backgrounding.
 
+	Fixed bug with :rename and screen support turned on.
+
 0.7.0 to 0.7.1
 
 	Added 'scrollbind' option.

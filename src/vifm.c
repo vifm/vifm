@@ -337,7 +337,7 @@ run_converter(int vifm_like)
 #ifndef _WIN32
 	char buf[PATH_MAX];
 	snprintf(buf, sizeof(buf), "vifmrc-converter %d", vifm_like);
-	return shellout(buf, -1);
+	return shellout(buf, -1, 1);
 #else
 	TCHAR buf[PATH_MAX + 2];
 
