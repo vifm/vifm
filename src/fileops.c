@@ -1480,7 +1480,10 @@ rename_file(FileView *view, int name_only)
 	enter_prompt_mode(L"New name: ", buf, rename_file_cb, complete_filename_only);
 }
 
-static int
+#ifndef TEST
+static
+#endif
+int
 is_name_list_ok(int count, int nlines, char **list, char **files)
 {
 	int i;
@@ -1686,16 +1689,7 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 	}
 
 	for(i = 0; i < count; i++)
-	{
-		char *name = names[i];
-		size_t len = strlen(name);
-		int slash = name[len - 1] == '/';
-		if(slash)
-			name[len - 1] = '\0';
-		fprintf(f, "%s\n", name);
-		if(slash)
-			name[len - 1] = '/';
-	}
+		fprintf(f, "%s\n", names[i]);
 
 	fclose(f);
 
@@ -1742,9 +1736,7 @@ static void
 rename_files_ind(FileView *view, char **files, int *is_dup, int len)
 {
 	char **list;
-	char **names;
-	int n;
-	int nlines, i, renamed = -1;
+	int nlines, renamed = -1;
 
 	if(len == 0)
 	{
@@ -1752,21 +1744,11 @@ rename_files_ind(FileView *view, char **files, int *is_dup, int len)
 		return;
 	}
 
-	names = NULL;
-	n = 0;
-	for(i = 0; i < len; i++)
+	if((list = read_list_from_file(len, files, &nlines, 1)) == NULL)
 	{
-		char *name = files[i];
-		n = add_to_string_array(&names, n, 1, name);
-	}
-
-	if((list = read_list_from_file(len, names, &nlines, 1)) == NULL)
-	{
-		free_string_array(names, len);
 		status_bar_message("0 files renamed");
 		return;
 	}
-	free_string_array(names, len);
 
 	if(is_name_list_ok(len, nlines, list, files) &&
 			is_rename_list_ok(view, files, is_dup, len, list))
@@ -1840,9 +1822,14 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 		if(pathcmp(view->dir_entry[i].name, "../") == 0)
 			continue;
 		if(recursive)
+		{
 			files = add_files_to_list(view->dir_entry[i].name, files, &len);
+		}
 		else
+		{
 			len = add_to_string_array(&files, len, 1, view->dir_entry[i].name);
+			chosp(files[len - 1]);
+		}
 	}
 
 	is_dup = calloc(len, sizeof(*is_dup));

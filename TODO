@@ -13,6 +13,7 @@ Basic things that need to be done.
     Wrapping of lines in the menus.
     IPC among all running vifm instances (share settings among instances).
     Write script to export aliases and function from sh to ~/.vifm/scripts/
+    Make status bar able to display error and info messages at the same time.
 
 Documentation.
 	Better documentation.
