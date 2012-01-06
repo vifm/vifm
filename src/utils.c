@@ -1047,9 +1047,9 @@ enclose_in_dquotes(const char *str)
 static int
 get_x11_disp_and_win(Display **disp, Window *win)
 {
-	char *winid;
+	const char *winid;
 
-	if(*win == 0 && (winid = getenv("WINDOWID")) != NULL)
+	if(*win == 0 && (winid = env_get("WINDOWID")) != NULL)
 		*win = (Window)atol(winid);
 
 	if(*win != 0 && *disp == NULL)
@@ -1122,7 +1122,7 @@ set_term_title(const char *full_path)
 		};
 
 		title_supported = is_in_string_array(TERMINALS_WITH_TITLE,
-				ARRAY_LEN(TERMINALS_WITH_TITLE), getenv("TERM"));
+				ARRAY_LEN(TERMINALS_WITH_TITLE), env_get("TERM"));
 
 #ifdef HAVE_X11
 		/* use X to determine current window title */
@@ -1382,7 +1382,7 @@ is_win_executable(const char *name)
 	char *path, *p, *q;
 	char name_buf[NAME_MAX];
 
-	path = getenv("PATHEXT");
+	path = env_get("PATHEXT");
 	if(path == NULL || path[0] == '\0')
 		path = ".bat;.exe;.com";
 

@@ -1200,15 +1200,16 @@ cmds_expand_envvars(const char *str)
 			char name[NAME_MAX];
 			const char *p = str + 1;
 			char *q = name;
+			const char *cq;
 			while((isalnum(*p) || *p == '_') && q - name < sizeof(name) - 1)
 				*q++ = *p++;
 			*q = '\0';
 
-			q = getenv(name);
-			if(q != NULL)
+			cq = env_get(name);
+			if(cq != NULL)
 			{
 				size_t old_len = len;
-				q = escape_filename(q, 1);
+				q = escape_filename(cq, 1);
 				len += strlen(q);
 				result = realloc(result, len + 1);
 				strcpy(result + old_len, q);
@@ -1374,10 +1375,10 @@ init_commands(void)
 static void
 split_path(void)
 {
-	char *path, *p, *q;
+	const char *path, *p, *q;
 	int i;
 
-	path = getenv("PATH");
+	path = env_get("PATH");
 
 	paths_count = 1;
 	p = path;
@@ -2102,16 +2103,8 @@ shellout(const char *command, int pause)
 	def_prog_mode();
 	endwin();
 
-#ifndef _WIN32
 	/* Need to use setenv instead of getcwd for a symlink directory */
-	setenv("PWD", curr_view->curr_dir, 1);
-#else
-	{
-		char buf[PATH_MAX];
-		snprintf(buf, sizeof(buf), "PWD=%s", curr_view->curr_dir);
-		putenv(buf);
-	}
-#endif
+	env_set("PWD", curr_view->curr_dir);
 
 	ec = my_system(buf);
 	result = WEXITSTATUS(ec);
@@ -4356,7 +4349,7 @@ set_cmd(const cmd_info_t *cmd_info)
 static int
 shell_cmd(const cmd_info_t *cmd_info)
 {
-	char *sh = getenv("SHELL");
+	const char *sh = env_get("SHELL");
 	if(sh == NULL || sh[0] == '\0')
 		sh = cfg.shell;
 	shellout(sh, 0);

@@ -1698,16 +1698,8 @@ change_directory(FileView *view, const char *directory)
 	else
 		clean_selected_files(view);
 
-#ifndef _WIN32
 	/* Need to use setenv instead of getcwd for a symlink directory */
-	setenv("PWD", dir_dup, 1);
-#else
-	{
-		char buf[PATH_MAX];
-		snprintf(buf, sizeof(buf), "PWD=%s", dir_dup);
-		putenv(buf);
-	}
-#endif
+	env_set("PWD", dir_dup);
 
 	snprintf(view->curr_dir, PATH_MAX, "%s", dir_dup);
 

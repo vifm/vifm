@@ -282,20 +282,19 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 static void
 add_to_path(const char *str)
 {
-	char *old_path;
+	const char *old_path;
 	char *new_path;
 
-	old_path = getenv("PATH");
+	old_path = env_get("PATH");
 	new_path = malloc(5 + strlen(str) + 1 + strlen(old_path) + 1);
 
 #ifndef _WIN32
 	sprintf(new_path, "%s:%s", str, old_path);
-	setenv("PATH", new_path, 1);
 #else
-	sprintf(new_path, "PATH=%s;%s", str, old_path);
+	sprintf(new_path, "%s;%s", str, old_path);
 	to_back_slash(new_path);
-	putenv(new_path);
 #endif
+	env_set("PATH", new_path);
 
 	free(new_path);
 }
@@ -401,7 +400,7 @@ main(int argc, char *argv[])
 {
 	char dir[PATH_MAX];
 	char config_dir[PATH_MAX];
-	char *console = NULL;
+	const char *console;
 	char lwin_path[PATH_MAX] = "";
 	char rwin_path[PATH_MAX] = "";
 	int lwin_handle = 0, rwin_handle = 0;
@@ -473,7 +472,7 @@ main(int argc, char *argv[])
 
 	/* Check if running in X */
 #ifndef _WIN32
-	console = getenv("DISPLAY");
+	console = env_get("DISPLAY");
 #else
 	console = "WIN";
 #endif

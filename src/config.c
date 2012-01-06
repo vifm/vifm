@@ -26,7 +26,7 @@
 
 #include <ctype.h> /* isalnum */
 #include <stdio.h> /* FILE */
-#include <stdlib.h> /* getenv */
+#include <stdlib.h>
 #include <string.h>
 
 #include "bookmarks.h"
@@ -53,7 +53,7 @@ config_t cfg;
 void
 init_config(void)
 {
-	char *p;
+	const char *p;
 
 	cfg.num_bookmarks = 0;
 	cfg.command_num = 0;
@@ -117,7 +117,7 @@ init_config(void)
 	cfg.lines = -1;
 	cfg.columns = -1;
 
-	p = getenv("SHELL");
+	p = env_get("SHELL");
 	if(p == NULL || *p == '\0')
 #ifndef _WIN32
 		cfg.shell = strdup("sh");
@@ -203,13 +203,13 @@ create_config_dir(void)
 void
 set_config_dir(void)
 {
-	char *home_dir;
+	const char *home_dir;
 	char dir_name[6] = ".vifm";
 #ifdef _WIN32
 	char exe_dir[PATH_MAX];
 #endif
 
-	home_dir = getenv("HOME");
+	home_dir = env_get("HOME");
 #ifdef _WIN32
 	GetModuleFileNameA(NULL, exe_dir, sizeof(exe_dir));
 	to_forward_slash(exe_dir);
@@ -217,10 +217,10 @@ set_config_dir(void)
 	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/vifmrc", exe_dir);
 	if(access(cfg.home_dir, F_OK) != 0)
 	{
-		snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/Vifm", getenv("APPDATA"));
+		snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/Vifm", env_get("APPDATA"));
 		if(home_dir == NULL || home_dir[0] == '\0' || is_dir(cfg.home_dir))
 		{
-			home_dir = getenv("APPDATA");
+			home_dir = env_get("APPDATA");
 			strcpy(dir_name, "Vifm");
 		}
 	}

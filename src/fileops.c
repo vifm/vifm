@@ -1673,7 +1673,7 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 #ifndef _WIN32
 	snprintf(temp_file, sizeof(temp_file), "/tmp/vifm.rename");
 #else
-	snprintf(temp_file, sizeof(temp_file), "%s\\vifm.rename", getenv("TMP"));
+	snprintf(temp_file, sizeof(temp_file), "%s\\vifm.rename", env_get("TMP"));
 	change_slashes(temp_file);
 #endif
 	strncpy(temp_file, make_name_unique(temp_file), sizeof(temp_file));
