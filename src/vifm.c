@@ -63,6 +63,7 @@
 #include "ui.h"
 #include "undo.h"
 #include "utils.h"
+#include "variables.h"
 
 #ifndef _WIN32
 #define CONF_DIR "~/.vifm"

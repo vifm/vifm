@@ -1191,7 +1191,8 @@ symlinks_available(void)
 #endif
 }
 
-int make_dir(const char *dir_name, mode_t mode)
+int
+make_dir(const char *dir_name, mode_t mode)
 {
 #ifndef _WIN32
 	return mkdir(dir_name, mode);
@@ -1200,7 +1201,8 @@ int make_dir(const char *dir_name, mode_t mode)
 #endif
 }
 
-int pathcmp(const char *file_name_a, const char *file_name_b)
+int
+pathcmp(const char *file_name_a, const char *file_name_b)
 {
 #ifndef _WIN32
 	return strcmp(file_name_a, file_name_b);
@@ -1209,12 +1211,41 @@ int pathcmp(const char *file_name_a, const char *file_name_b)
 #endif
 }
 
-int pathncmp(const char *file_name_a, const char *file_name_b, size_t n)
+int
+pathncmp(const char *file_name_a, const char *file_name_b, size_t n)
 {
 #ifndef _WIN32
 	return strncmp(file_name_a, file_name_b, n);
 #else
 	return strncasecmp(file_name_a, file_name_b, n);
+#endif
+}
+
+const char *
+env_get(const char *name)
+{
+	return getenv(name);
+}
+
+void
+env_set(const char *name, const char *value)
+{
+#ifndef _WIN32
+	setenv(name, value, 1);
+#else
+	char buf[strlen(name) + 1 + strlen(value) + 1];
+	sprintf(buf, "%s=%s", name, value);
+	putenv(buf);
+#endif
+}
+
+void
+env_remove(const char *name)
+{
+#ifndef _WIN32
+	unsetenv(name);
+#else
+	env_set(name, "");
 #endif
 }
 

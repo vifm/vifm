@@ -1,4 +1,4 @@
-.TH vifm 1 "January 2, 2012" "" "Vifm"
+.TH vifm 1 "January 6, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1102,6 +1102,13 @@ show current filter state.
 .BI :jobs
 shows menu of current backgrounded processes.
 .TP
+.BI ":let $ENV_VAR = 'VALUE'"
+sets environment variable.  Warning: setting environment variable to an empty
+string on Windows removes it.
+.TP
+.BI ":let $ENV_VAR .= 'VALUE'"
+append value to environment variable.
+.TP
 .BI ":locate filename"
 uses the locate command to create a menu of filenames
 Selecting a file from the menu will reload the current file list in vifm
@@ -1300,6 +1307,10 @@ group, etc.).
 .TP
 .BI :undol[ist]
 show list of latest changes.  Add ! to see commands.
+.TP
+.BI ":unl[et][!] $ENV_VAR1 $ENV_VAR2 ..."
+remove environment variables. Add ! to omit displaying of warnings about
+nonexistent variables.
 .TP
 .BI :ve[rsion]
 show menu with version information.

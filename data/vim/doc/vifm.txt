@@ -975,6 +975,11 @@ of the hierarchy and transparency for all others.
                                                *vifm-:jobs*
 :jobs - shows menu of current backgrounded processes.
 
+                                               *vifm-:let*
+:let $ENV_VAR = 'VALUE' - sets environment variable.  Warning: setting
+    environment variable to an empty string on Windows removes it.
+:let $ENV_VAR .= 'VALUE' - append value to environment variable.
+
                                                *vifm-:locate*
 :locate filename - uses the locate command to create a menu of filenames
     Selecting a file from the menu will reload the current file list in vifm
@@ -1146,6 +1151,10 @@ of the hierarchy and transparency for all others.
 
                                                *vifm-:undolist* *vifm-:undol*
 :undol[ist] - show list of latest changes.  Add ! to see commands.
+
+                                               *vifm-:unlet* *vifm-:unl*
+:unl[et][!] $ENV_VAR1 $ENV_VAR2 ... - remove environment variables.  Add
+    ! to omit displaying of warnings about nonexistent variables.
 
                                                *vifm-:version* *vifm-:ve*
 :ve[rsion] - show menu with version information.

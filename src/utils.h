@@ -100,6 +100,15 @@ int make_dir(const char *dir_name, mode_t mode);
 int pathcmp(const char *file_name_a, const char *file_name_b);
 int pathncmp(const char *file_name_a, const char *file_name_b, size_t n);
 
+/* Environment variables related functions */
+
+/* Returns environment variable value or NULL if it doesn't exist */
+const char * env_get(const char *name);
+/* Sets new value of environment variable or creates it if it doesn't exist */
+void env_set(const char *name, const char *value);
+/* Removes environment variable */
+void env_remove(const char *name);
+
 #ifndef _WIN32
 int get_uid(const char *user, uid_t *uid);
 int get_gid(const char *group, gid_t *gid);

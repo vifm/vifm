@@ -1,6 +1,6 @@
 CC := gcc
 
-CFLAGS := -c -g -O0 -Wall -MD $(CFLAGS)
+CFLAGS := -c -g -O0 -Wall -Werror -MD $(CFLAGS)
 
 LDFLAGS := $(LDFLAGS)
 
@@ -13,7 +13,7 @@ vifm_SOURCES := background.c bookmarks.c change_dialog.c cmdline.c cmds.c \
                 opt_handlers.c options.c permissions_dialog.c registers.c \
                 search.c signals.c sort.c sort_dialog.c status.c \
                 string_array.c tags.c trash.c tree.c ui.c undo.c utf8.c \
-                utils.c version.c view.c vifm.c visual.c
+                utils.c variables.c version.c view.c vifm.c visual.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe

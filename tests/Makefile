@@ -1,4 +1,4 @@
-dirs := commands completion filetype keys misc options undo
+dirs := commands completion filetype keys misc options undo variables
 
 .PHONY: tests $(dirs)
 

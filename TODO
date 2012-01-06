@@ -35,9 +35,11 @@ Vi(m) specific features that need to be added.
     :map without arguments
     Better ranges (add support for search patterns).
     Ctrl-W F key.
-    :let command (for start support only environment variables).
     'wildignore' ('wig') option.
     Kinda macros like in Vim (qa ... q).
+    Something like :silent in Vim (don't command blinking in the command-line)
+    $MYVIFMRC variable.
+    Better :let command (allow :let $A=$B and string concatenation).
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -75,6 +77,7 @@ Other (questionable) things.
     Modify marks on rename operations.
     :toupper and :tolower
     Maybe accept regular expressions as second argument of :colo command.
+    Think about setting filters for both views in vifmrc.
 
 Code improvements.
     Write more tests.

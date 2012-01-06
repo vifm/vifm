@@ -1010,18 +1010,25 @@ Commands
 
        :jobs  shows menu of current backgrounded processes.
 
+       :let $ENV_VAR = 'VALUE'
+              sets environment variable.  Warning: setting  environment  vari‐
+              able to an empty string on Windows removes it.
+
+       :let $ENV_VAR .= 'VALUE'
+              append value to environment variable.
+
        :locate filename
-              uses the locate command to create a menu of filenames  Selecting
-              a  file  from the menu will reload the current file list in vifm
+              uses  the locate command to create a menu of filenames Selecting
+              a file from the menu will reload the current file list  in  vifm
               to show the selected file.
 
        :locate
               repeats last :locate command.
 
        :[range]ma[rk][?]x[/full/path][filename]
-              Set mark x (a-zA-Z0-9) at /full/path and filename.   By  default
-              current  directory  is being used.  If no filename was given and
-              /full/path is current directory then last  file  in  [range]  is
+              Set  mark  x (a-zA-Z0-9) at /full/path and filename.  By default
+              current directory is being used.  If no filename was  given  and
+              /full/path  is  current  directory  then last file in [range] is
               used.  Using macros is allowed.  Question mark will stop command
               from overwriting existing marks.
 
@@ -1034,7 +1041,7 @@ Commands
               shows previously given messages (up to 50).
 
        :mkdir[!] dir ...
-              creates directories with given names.   "!"  means  make  parent
+              creates  directories  with  given  names.  "!" means make parent
               directories as needed.
 
        :[range]m[ove][!?][ &]
@@ -1042,12 +1049,12 @@ Commands
               vi to edit filenames.  "!" forces overwrite.
 
        :[range]m[ove][!] path[ &]
-              moves files to directory specified with the  path  (absolute  or
+              moves  files  to  directory specified with the path (absolute or
               relative to directory of other view).  "!" forces overwrite.
 
        :[range]m[ove][!] name1 name2...[ &]
-              moves  files  to directory of other view giving each next file a
-              corresponding name from the argument  list.   "!"  forces  over‐
+              moves files to directory of other view giving each next  file  a
+              corresponding  name  from  the  argument list.  "!" forces over‐
               write.
 
        :noh[lsearch]
@@ -1059,7 +1066,7 @@ Commands
        :popd  remove pane directories from stack.
 
        :pushd[!] /curr/dir [/other/dir]
-              add  pane  directories  to  stack and process arguments like :cd
+              add pane directories to stack and  process  arguments  like  :cd
               command.
 
        :pushd exchanges the top two items of the directory stack.
@@ -1079,19 +1086,19 @@ Commands
               popup menu with registers content.
 
        :reg[isters] list ...
-              display  the  contents  of the numbered and named registers that
-              are mentioned in list (for example "az to display "", "a and  "z
+              display the contents of the numbered and  named  registers  that
+              are  mentioned in list (for example "az to display "", "a and "z
               content).
 
        :[range]rename[!]
-              rename  files  using  vi  to  edit names. ! means go recursively
+              rename files using vi to edit  names.  !  means  go  recursively
               through directories.
 
        :[range]rename name1 name2...
               rename each of selected files to a corresponding name.
 
        :restart
-              will free a lot of things (histories,  commands,  etc.),  reread
+              will  free  a  lot of things (histories, commands, etc.), reread
               vifminfo and vifmrc files and run startup commands passed in the
               argument list, thus losing all unsaved changes (e.g. recent his‐
               tory or keys mapped in current session).
@@ -1100,29 +1107,29 @@ Commands
               will restore file from Trash.  Works in trash directory only.
 
        :[range]rlink[!?]
-              creates  relative  symbolic links of files in directory of other
-              view.  With "?"  vifm will  open  vi  to  edit  filenames.   "!"
+              creates relative symbolic links of files in directory  of  other
+              view.   With  "?"   vifm  will  open  vi to edit filenames.  "!"
               forces overwrite.
 
        :[range]rlink[!] path
-              creates  relative symbolic links of files in directory specified
+              creates relative symbolic links of files in directory  specified
               with the path (absolute or relative to directory of other view).
               "!" forces overwrite.
 
        :[range]rlink[!] name1 name2...
-              creates  relative  symbolic links of files in directory of other
-              view giving each next link a corresponding name from  the  argu‐
+              creates relative symbolic links of files in directory  of  other
+              view  giving  each next link a corresponding name from the argu‐
               ment list.  "!" forces overwrite.
 
        :screen
               toggles whether or not to use the screen program.
               The default configuration has the screen option turned off.  The
-              screen program uses pseudo terminals to allow  multiple  windows
-              to  be  used in the console or in a single xterm.  Starting vifm
-              from screen with the screen option turned on will cause vifm  to
-              open  a  new  screen  window for each new file edited or program
+              screen  program  uses pseudo terminals to allow multiple windows
+              to be used in the console or in a single xterm.   Starting  vifm
+              from  screen with the screen option turned on will cause vifm to
+              open a new screen window for each new  file  edited  or  program
               launched from vifm.
-              This requires screen version 3.9.9 or newer for  the  screen  -X
+              This  requires  screen  version 3.9.9 or newer for the screen -X
               argument.
 
        :screen?
@@ -1154,7 +1161,7 @@ Commands
                - option& - reset option to its default value
                - option=x or option:x - set option to x
                - option+=x - add x to option
-               -  option-=x - remove (or subtract) x from option :sh[ell] will
+               - option-=x - remove (or subtract) x from option :sh[ell]  will
               start a shell.
 
        :sor[t]
@@ -1170,21 +1177,21 @@ Commands
               toggles windows splitting.
 
        :sp[lit] path
-              splits the window to show both file  directories.   And  changes
+              splits  the  window  to show both file directories.  And changes
               other pane to path.
 
        :[range]s[ubstitite]/pattern/string/[flags]
               for each file in range replace a match of pattern with string.
 
-       String  can contain  ...9 to link to capture groups (0 - all match, 1 -
+       String can contain  ...9 to link to capture groups (0 - all match, 1  -
        first group, etc.).
 
        Available flags:
 
-       - i - ignore case (the 'ignorecase' and  'smartcase'  options  are  not
+       - i  -  ignore  case  (the 'ignorecase' and 'smartcase' options are not
          used)
 
-       - I  -  don't ignore case (the 'ignorecase' and 'smartcase' options are
+       - I - don't ignore case (the 'ignorecase' and 'smartcase'  options  are
          not used)
 
        - g - substitute all matches in each file name (each g toggles this)
@@ -1200,19 +1207,23 @@ Commands
          relative to the current directory.  Using macros is allowed.
 
        :touch file...
-         will  create files.  Aborts on errors and won't update time of exist‐
+         will create files.  Aborts on errors and won't update time of  exist‐
          ing files.
 
        :[range]tr/pattern/string/
-         for each file in range transliterate the characters which  appear  in
-         pattern  to  the  corresponding  character in string.  When string is
+         for  each  file in range transliterate the characters which appear in
+         pattern to the corresponding character in  string.   When  string  is
          shorter than pattern, it's padded with its last character.
 
-       String can contain  ...9 to link to capture groups (0 - all match, 1  -
+       String  can contain  ...9 to link to capture groups (0 - all match, 1 -
        first group, etc.).
 
        :undol[ist]
               show list of latest changes.  Add ! to see commands.
+
+       :unl[et][!] $ENV_VAR1 $ENV_VAR2 ...
+              remove environment variables. Add ! to omit displaying of  warn‐
+              ings about nonexistent variables.
 
        :ve[rsion]
               show menu with version information.
@@ -1458,6 +1469,11 @@ Command backgrounding
               the :history . menu is treated like :cd  command.   This  option
               affects bookmarks, file position will not preserved.
 
+       columns co
+              type: int
+              default: terminal width on startup
+              Terminal width in characters.
+
        confirm cf
               type: boolean
               default: true
@@ -1529,6 +1545,10 @@ Command backgrounding
               type: boolean
               default: true
               Controls if status bar is visible.
+
+       lines  type: int
+              default: terminal height on startup
+              Terminal height in lines.
 
        rulerformat ruf
               type: string
@@ -1929,4 +1949,4 @@ AUTHOR
 
 
 
-                                January 2, 2012                        vifm(1)
+                                January 6, 2012                        vifm(1)

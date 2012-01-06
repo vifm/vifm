@@ -53,6 +53,7 @@ vifm_SOURCES = \
 	undo.c undo.h \
 	utf8.c utf8.h \
 	utils.c utils.h \
+	variables.c variables.h \
 	version.c version.h \
 	view.c view.h \
 	vifm.c \

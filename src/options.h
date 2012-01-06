@@ -59,7 +59,6 @@ void set_option(const char *name, optval_t val);
 /* Returns non-zero on error */
 int set_options(const char *cmd);
 
-/* Returns NULL on error */
 void complete_options(const char *cmd, const char **start);
 
 #endif

@@ -78,6 +78,7 @@
 #include "ui.h"
 #include "undo.h"
 #include "utils.h"
+#include "variables.h"
 #include "view.h"
 #include "visual.h"
 
@@ -115,6 +116,8 @@ enum
 	COM_SET,
 	COM_SOURCE,
 	COM_SYNC,
+	COM_LET,
+	COM_UNLET,
 };
 
 static int complete_args(int id, const char *args, int argc, char **argv,
@@ -142,6 +145,7 @@ static void split_path(void);
 static wchar_t * substitute_specs(const char *cmd);
 static const char *skip_spaces(const char *cmd);
 static const char *skip_word(const char *cmd);
+static void print_func(int error, const char *msg, const char *description);
 
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
@@ -181,6 +185,7 @@ static int get_attrs(const char *text);
 static int history_cmd(const cmd_info_t *cmd_info);
 static int invert_cmd(const cmd_info_t *cmd_info);
 static int jobs_cmd(const cmd_info_t *cmd_info);
+static int let_cmd(const cmd_info_t *cmd_info);
 static int locate_cmd(const cmd_info_t *cmd_info);
 static int ls_cmd(const cmd_info_t *cmd_info);
 static int map_cmd(const cmd_info_t *cmd_info);
@@ -216,6 +221,7 @@ static int touch_cmd(const cmd_info_t *cmd_info);
 static int tr_cmd(const cmd_info_t *cmd_info);
 static int undolist_cmd(const cmd_info_t *cmd_info);
 static int unmap_cmd(const cmd_info_t *cmd_info);
+static int unlet_cmd(const cmd_info_t *cmd_info);
 static int view_cmd(const cmd_info_t *cmd_info);
 static int vifm_cmd(const cmd_info_t *cmd_info);
 static int vmap_cmd(const cmd_info_t *cmd_info);
@@ -309,6 +315,8 @@ static const cmd_add_t commands[] = {
 		.handler = invert_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "jobs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = jobs_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "let",              .abbr = NULL,    .emark = 0,  .id = COM_LET,         .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = let_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 3,       .select = 0, },
 	{ .name = "locate",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = locate_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "ls",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -379,6 +387,8 @@ static const cmd_add_t commands[] = {
 		.handler = undolist_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "unmap",            .abbr = "unm",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = unmap_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
+	{ .name = "unlet",            .abbr = "unl",   .emark = 1,  .id = COM_UNLET,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = unlet_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "version",          .abbr = "ve",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vifm_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "view",             .abbr = "vie",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -425,6 +435,8 @@ static int need_clean_selection;
 static char **paths;
 static int paths_count;
 
+static char print_buf[320*80];
+
 static int
 cmd_ends_with_space(const char *cmd)
 {
@@ -459,6 +471,10 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		complete_colorschemes((argc > 0) ? argv[argc - 1] : arg);
 	else if(id == COM_SET)
 		complete_options(args, &start);
+	else if(id == COM_LET)
+		complete_variables(args, &start);
+	else if(id == COM_UNLET)
+		complete_variables(arg, &start);
 	else if(id == COM_HELP)
 		complete_help(args);
 	else if(id == COM_HISTORY)
@@ -1351,6 +1367,8 @@ init_commands(void)
 	qsort(key_pairs, ARRAY_LEN(key_pairs), sizeof(*key_pairs), notation_sorter);
 	for(i = 0; i < ARRAY_LEN(key_pairs); i++)
 		key_pairs[i].len = strlen(key_pairs[i].notation);
+
+	init_variables(&print_func);
 }
 
 static void
@@ -1639,6 +1657,8 @@ apply_mods(const char *path, const char *parent, const char *mod)
 	}
 
 #ifdef _WIN32
+	/* this is needed to run something like explorer.exe, which isn't smart enough
+	 * to understand forward slashes */
 	if(pathcmp(cfg.shell, "cmd") != 0)
 		to_back_slash(buf);
 #endif
@@ -1646,8 +1666,7 @@ apply_mods(const char *path, const char *parent, const char *mod)
 	return buf;
 }
 
-static
-char *
+static char *
 append_selected_file(FileView *view, char *expanded, int dir_name_len, int pos,
 		int quotes, const char *mod)
 {
@@ -2253,6 +2272,24 @@ skip_word(const char *cmd)
 	while(!isspace(*cmd) && *cmd != '\0')
 		cmd++;
 	return cmd;
+}
+
+static void
+print_func(int error, const char *msg, const char *description)
+{
+	if(print_buf[0] != '\0')
+	{
+		strncat(print_buf, "\n", sizeof(print_buf) - strlen(print_buf) - 1);
+	}
+	if(*msg == '\0')
+	{
+		strncat(print_buf, description, sizeof(print_buf) - strlen(print_buf) - 1);
+	}
+	else
+	{
+		snprintf(print_buf, sizeof(print_buf) - strlen(print_buf), "%s: %s", msg,
+				description);
+	}
 }
 
 static void
@@ -3823,6 +3860,22 @@ jobs_cmd(const cmd_info_t *cmd_info)
 }
 
 static int
+let_cmd(const cmd_info_t *cmd_info)
+{
+	print_buf[0] = '\0';
+	if(let_variable(cmd_info->args) != 0)
+	{
+		status_bar_error(print_buf);
+		return 1;
+	}
+	else if(print_buf[0] != '\0')
+	{
+		status_bar_message(print_buf);
+	}
+	return 0;
+}
+
+static int
 locate_cmd(const cmd_info_t *cmd_info)
 {
 	static char *last_args;
@@ -4214,6 +4267,10 @@ restart_cmd(const cmd_info_t *cmd_info)
 			remove_bookmark(index);
 	}
 
+	/* variables */
+	clear_variables();
+
+	init_variables(&print_func);
 	load_default_configuration();
 	read_info_file(1);
 	save_view_history(&lwin, NULL, NULL, -1);
@@ -4487,6 +4544,18 @@ unmap_cmd(const cmd_info_t *cmd_info)
 	else
 		status_bar_error("Error");
 	return result != 0;
+}
+
+static int
+unlet_cmd(const cmd_info_t *cmd_info)
+{
+	print_buf[0] = '\0';
+	if(unlet_variables(cmd_info->args) != 0 && !cmd_info->emark)
+	{
+		status_bar_error(print_buf);
+		return 1;
+	}
+	return 0;
 }
 
 static int

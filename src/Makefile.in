@@ -64,8 +64,8 @@ am_vifm_OBJECTS = background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	sort_dialog.$(OBJEXT) status.$(OBJEXT) string_array.$(OBJEXT) \
 	tags.$(OBJEXT) trash.$(OBJEXT) tree.$(OBJEXT) ui.$(OBJEXT) \
 	undo.$(OBJEXT) utf8.$(OBJEXT) utils.$(OBJEXT) \
-	version.$(OBJEXT) view.$(OBJEXT) vifm.$(OBJEXT) \
-	visual.$(OBJEXT)
+	variables.$(OBJEXT) version.$(OBJEXT) view.$(OBJEXT) \
+	vifm.$(OBJEXT) visual.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
@@ -276,6 +276,7 @@ vifm_SOURCES = \
 	undo.c undo.h \
 	utf8.c utf8.h \
 	utils.c utils.h \
+	variables.c variables.h \
 	version.c version.h \
 	view.c view.h \
 	vifm.c \
@@ -450,6 +451,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/undo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utf8.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/variables.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@
