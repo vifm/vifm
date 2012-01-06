@@ -244,7 +244,7 @@ view_file(const char *filename, int line, int do_fork)
 	free(escaped);
 #endif
 
-	if(bg)
+	if(bg && do_fork)
 		start_background_job(command);
 	else
 		shellout(command, -1);
