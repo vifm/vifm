@@ -108,6 +108,7 @@ main_loop(void)
 {
 	int last_result = 0;
 	int wait_enter = 0;
+	int timeout = cfg.timeout_len;
 
 	buf[0] = L'\0';
 	while(1)
@@ -115,7 +116,6 @@ main_loop(void)
 		wchar_t c;
 		size_t counter;
 		int ret;
-		int timeout = cfg.timeout_len;
 
 		is_term_working();
 
