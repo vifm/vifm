@@ -59,7 +59,7 @@ int S_ISEXE(mode_t mode);
 void chomp(char *text);
 void chosp(char *text);
 int is_dir(const char *file);
-/* path can be NULL */
+/* if path is NULL, file assumed to contain full path */
 int file_exists(const char *path, const char *file);
 int my_system(char *command);
 char * escape_filename(const char *string, int quote_percent);

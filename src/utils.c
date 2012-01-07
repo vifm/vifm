@@ -1379,7 +1379,7 @@ exec_program(TCHAR *cmd)
 int
 is_win_executable(const char *name)
 {
-	char *path, *p, *q;
+	const char *path, *p, *q;
 	char name_buf[NAME_MAX];
 
 	path = env_get("PATHEXT");

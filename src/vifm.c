@@ -425,7 +425,6 @@ main(int argc, char *argv[])
 
 	init_registers();
 	init_config();
-	set_config_dir();
 
 	snprintf(config_dir, sizeof(config_dir), "%s/scripts", cfg.config_dir);
 	add_dirs_to_path(config_dir);

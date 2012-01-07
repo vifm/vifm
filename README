@@ -36,7 +36,7 @@ src/ops.c - most of operations performed on file system
 src/opt_handlers.c - initialization of options and option change handlers
 src/options.c - :set command
 src/permissions_dialog.c - permissions set dialog
-src/registers.c - realization of registers
+src/registers.c - implementation of registers
 src/search.c - code for / and ? commands of normal mode
 src/signals.c - handlers for different signals
 src/sort.c - sort function
@@ -50,6 +50,7 @@ src/ui.c - setup_ncurses_interface() and other ui related functions
 src/undo.c - stores and handles the undo list
 src/utf8.c - functions to handle utf8 strings
 src/utils.c - various utilities
+src/variables.c - handles :let and :unlet commands
 src/version.c - contains git hash
 src/view.c - view mode commands
 src/vifm.c - contains main() which does basic initialization

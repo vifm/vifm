@@ -11,6 +11,7 @@
 |vifm-commands-bg|        Backgrounding of commands.
 |vifm-set-options|        Available options.
 |vifm-mappings|           Special sequences.
+|vifm-startup|            Determining of environment variables on startup.
 |vifm-configure|          Configuration of vifm.
 |vifm-plugin|             Using the vifm.vim plugin.
 |vifm-compatibility-mode| Its description.
@@ -46,10 +47,10 @@ archive opened.  If you want to select file, prepend its path with --select.
 The other command line arguments are:
                                                *vifm--f*
 -f - only used from the vifm.vim script.  The selected files are written
-    to CONFDIR/vimfiles and vifm exits.
+    to $VIFM/vimfiles and vifm exits.
 
 --logging                                      *vifm---logging*
-    log some errors to CONFDIR/log.
+    log some errors to $VIFM/log.
 --remote                                       *vifm---remote*
     passes all arguments that left in command line to active vifm server
     (already running instance if any).
@@ -62,7 +63,7 @@ The other command line arguments are:
 --no-configs                                   *vifm---no-configs*
     don't read vifmrc and vifminfo.
 
-See |vifm-configure| section below for the explanations on CONFDIR.
+See |vifm-startup| section below for the explanations on |vifm-$VIFM|.
 
 -------------------------------------------------------------------------------
 *vifm-general-keys*
@@ -318,7 +319,7 @@ cp - change file permissions.                  {only for *nix}
 [count]C - clone file [count] times.
 
                                                *vifm-d* *vifm-dd*
-dd - move selected file or files to CONFDIR/Trash (if option |vifm-'trash'|
+dd - move selected file or files to $VIFM/Trash (if option |vifm-'trash'|
     is set otherwise delete)
 d<selector> - like dd.
 
@@ -813,7 +814,7 @@ The builtin commands are:
     into vi.  Accepts macros.
 
                                                *vifm-:empty*
-:empty - permanently remove files from the CONFDIR/Trash directory.  It will
+:empty - permanently remove files from the $VIFM/Trash directory.  It will
     also remove all operations from undolist that have no sense after :empty
     and remove all records about files in the Trash directory from all
     registers.
@@ -1615,7 +1616,7 @@ whether it's preceded by space or not) means backgrounding of command.
 vifminfo
 type: set
 default: bookmarks
-Controls what will be saved in the CONFDIR/vifminfo file.
+Controls what will be saved in the $VIFM/vifminfo file.
    options   - all options that can be set with the :set command
    filetypes - associated programs and viewers
    commands  - user defined commands (see :command description)
@@ -1804,25 +1805,53 @@ d - (only for execute flags) means u-x+X, g-x+X or o-x+X argument for the
     'Set Recursively' flag.
 
 --------------------------------------------------------------------------------
+*vifm-startup*
+
+On startup vifm determines several variables that are used during the session.
+They are determined in the order they appear below.
+
+                                               *vifm-$HOME*
+On *nix systems $HOME is normally present and used as is.
+On Windows systems vifm tries to find correct home directory in the following
+order:
+ - $HOME variable;
+ - $USERPROFILE variable;
+ - a combination of $HOMEDRIVE and $HOMEPATH variables.
+
+                                               *vifm-$VIFM*
+vifm tries to find correct configuration directory by checking the following
+places:
+ - $VIFM variable;
+ - parent directory of the executable file (on Windows only);
+ - $HOME/.vifm directory;
+ - $APPDATA/Vifm directory (on Windows only).
+
+                                               *vifm-$MYVIFMRC*
+vifm tries to find correct configuration file by checking the following places:
+ - $MYVIFMRC variable;
+ - $VIFM/vifmrc file.
+
+--------------------------------------------------------------------------------
 *vifm-configure*
 
-The default place of all vifm's configuration is at ~/.vifm.  On Windows vifm
-firstly checks directory where vifm.exe for vifmrc file, then ~/.vifm (using
-HOME environment variable) and if previous checks fail uses %APPDATA%/Vifm
-directory.  Vifm configuration directory is mentioned as CONFDIR.
+See |vifm-startup| section above for the explanations on |vifm-$VIFM| and
+|vifm-$MYVIFMRC|.
 
-The CONFDIR/vifmrc file contains commands that will be executed on vifm startup.
-Use it to set settings, mappings or filetypes.  To use multi line commands
+                                               *vifm-vifmrc*
+The vifmrc file contains commands that will be executed on vifm startup.  See
+|vifm-$MYVIFMRC| variable description for search algorithm used to find vifmrc.
+Use it to set settings, mappings, filetypes etc.  To use multi line commands
 precede each next line with a slash (whitespace before slash is ignored, but all
 spaces at the end of the lines are saved).  For example:
 set
-    \\smartcase
+    \smartcase
 equals "setsmartcase".  When
 set<space here>
-    \ smartcase<space here>
-equals "set  smartcase ".
+    \ smartcase
+equals "set  smartcase".
 
-The CONFDIR/vifminfo file contains session settings.  You may edit it by hand
+                                               *vifm-vifminfo*
+The $VIFM/vifminfo file contains session settings.  You may edit it by hand
 to change the settings, but it's not recommended to do that, edit vifmrc
 instead.  You can control what settings will be saved in vifminfo by setting
 |vifm-'vifminfo'| option.  Vifm always writes this file on exit unless
@@ -1830,13 +1859,15 @@ instead.  You can control what settings will be saved in vifminfo by setting
 filetypes, fileviewers and registers in the file are merged with vifm
 configuration (which has bigger priority).
 
-The CONFDIR/scripts directory can contain shell scripts.  vifm modifies
+                                               *vifm-scripts*
+The $VIFM/scripts directory can contain shell scripts.  vifm modifies
 it's PATH environment variable to let user run those scripts without specifying
-full path.  All subdirectories of the CONFDIR/scripts will be added to PATH too.
+full path.  All subdirectories of the $VIFM/scripts will be added to PATH too.
 Script in a subdirectory overlaps script with the same name in all its parent
 directories.
 
-The CONFDIR/colors directory contains color schemes.
+                                               *vifm-colors*
+The $VIFM/colors directory contains color schemes.
 
 --------------------------------------------------------------------------------
 *vifm-plugin*
@@ -1857,7 +1888,7 @@ directory.
 
 The plugin have only two settings.  It's a string variable named g:vifm_term to
 let user specify command to run gui terminal.  By default it's equal to
-'xterm -e'.  And anoter string variable named g:vifm_exec, which equals 'vifm'
+'xterm -e'.  And anoter string variable named g:vifm_exec, which equals "vifm"
 by default and specifies path to vifm's executable.  To pass arguments to
 vifm use g:vifm_exec_args, which is empty by default.
 

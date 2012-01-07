@@ -105,7 +105,6 @@ void load_default_configuration(void);
 void read_info_file(int reread);
 void write_config_file(void);
 void write_info_file(void);
-void set_config_dir(void);
 void init_config(void);
 void exec_config(void);
 int source_file(const char *file);
