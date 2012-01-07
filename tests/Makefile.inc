@@ -21,17 +21,19 @@ else
     LDFLAGS := -lpdcurses -lregex -lnetapi32 -lpthread -lws2_32
 endif
 
-$(BIN): ../bin $(OBJECTS) $(LOCAL_OBJECTS)
+$(BIN): ../bin/dummy $(OBJECTS) $(LOCAL_OBJECTS)
 	gcc -o $@ $(OBJECTS) $(LOCAL_OBJECTS) $(LDFLAGS)
 
-../bin:
-	mkdir $@
+../bin/dummy:
+	-mkdir ../bin
+	touch ../bin/dummy
 
-bin/%.o: %.c bin
+bin/%.o: %.c bin/dummy
 	gcc -c -o $@ $< $(CFLAGS)
 
-bin:
-	mkdir $@
+bin/dummy:
+	-mkdir bin
+	touch bin/dummy
 
 ../bin/%.o: ../../src/%.c
 	gcc -c -o $@ $< $(CFLAGS)
