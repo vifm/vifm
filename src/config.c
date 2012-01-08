@@ -72,8 +72,10 @@ static int try_myvifmrc_envvar_for_vifmrc(void);
 static int try_vifm_vifmrc_for_vifmrc(void);
 static void store_config_paths(void);
 static void create_config_dir(void);
+#ifndef _WIN32
 static void create_help_file(void);
 static void create_rc_file(void);
+#endif
 static void create_trash_dir(void);
 
 void

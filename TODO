@@ -82,6 +82,7 @@ Other (questionable) things.
     :toupper and :tolower
     Maybe accept regular expressions as second argument of :colo command.
     Think about setting filters for both views in vifmrc.
+    Make :alink, :copy, ... accept globs (e.g. :co *.c).
 
 Code improvements.
     Write more tests.

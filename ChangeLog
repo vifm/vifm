@@ -30,6 +30,8 @@
 
 	Added $VIFM and $MYVIFMRC environment variables.
 
+	Added embedded icon on Windows.
+
 	Restore terminal title on exit.
 
 	Reset dot and filename filters if they hide bookmarked file.
