@@ -24,6 +24,8 @@ Windows.
     Add a command to create .lnk files.
     Follow targets of .lnk files.
     Fix freezing.
+    Allow using of backward slashes in :rename command.
+    Check using of backward slashes in :rename command (to forbid it).
 
 Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).
@@ -41,6 +43,7 @@ Vi(m) specific features that need to be added.
     Something like :silent in Vim (don't command blinking in the command-line)
     Better :let command (allow :let $A=$B and string concatenation).
     :let mapleader and <leader> support.
+    Add :echo command.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?

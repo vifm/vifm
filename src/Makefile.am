@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-.PHONY: utils.c version.c
+.PHONY: version
 
 pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifm-help.txt
@@ -63,8 +63,12 @@ vifmrc_converter_SOURCES = \
 	color_scheme.h \
 	vifmrc-converter.c
 
-version.c:
-	if [ "x$$(whereis git)" != "x" ] ; then \
+utils.o: version.o
+
+version.o: version
+
+version:
+	@if [ "x$$(whereis git)" != "x" ] ; then \
 		/bin/echo -n 'const char GIT_HASH[] = "' > version.c; \
 		/bin/echo -n `git rev-parse HEAD` >> version.c; \
 		/bin/echo '";' >> version.c; \
