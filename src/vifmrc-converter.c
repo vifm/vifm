@@ -1370,4 +1370,6 @@ conv_attrs_to_str(int attrs)
 	result[strlen(result) - 1] = '\0';
 	return result;
 }
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

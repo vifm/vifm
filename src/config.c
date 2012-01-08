@@ -70,6 +70,11 @@ static int try_appdata_for_conf(void);
 static void find_config_file(void);
 static int try_myvifmrc_envvar_for_vifmrc(void);
 static int try_vifm_vifmrc_for_vifmrc(void);
+static void store_config_paths(void);
+static void create_config_dir(void);
+static void create_help_file(void);
+static void create_rc_file(void);
+static void create_trash_dir(void);
 
 void
 init_config(void)
@@ -157,71 +162,8 @@ init_config(void)
 	set_config_paths();
 }
 
-#ifndef _WIN32
-static void
-create_help_file(void)
-{
-	char command[PATH_MAX];
-
-	snprintf(command, sizeof(command), CP_HELP);
-	fprintf(stderr, "%s", command);
-	file_exec(command);
-}
-
-static void
-create_rc_file(void)
-{
-	char command[PATH_MAX];
-
-	snprintf(command, sizeof(command), CP_RC);
-	file_exec(command);
-	add_bookmark('H', cfg.home_dir, "../");
-	add_bookmark('z', cfg.config_dir, "../");
-}
-#endif
-
-/* ensure existence of trash directory */
-static void
-create_trash_dir(void)
-{
-	if(access(cfg.trash_dir, F_OK) == 0)
-		return;
-
-	(void)make_dir(cfg.trash_dir, 0777);
-}
-
-static void
-create_config_dir(void)
-{
-	/* ensure existence of configuration directory */
-	if(!is_dir(cfg.config_dir) && make_dir(cfg.config_dir, 0777) == 0)
-	{
-#ifndef _WIN32
-		FILE *f;
-		char help_file[PATH_MAX];
-		char rc_file[PATH_MAX];
-
-		if(make_dir(cfg.config_dir, 0777) != 0)
-			return;
-
-		snprintf(help_file, sizeof(help_file), "%s/vifm-help_txt", cfg.config_dir);
-		if((f = fopen(help_file, "r")) == NULL)
-			create_help_file();
-		else
-			fclose(f);
-
-		snprintf(rc_file, sizeof(rc_file), "%s/" VIFMRC, cfg.config_dir);
-		if((f = fopen(rc_file, "r")) == NULL)
-			create_rc_file();
-		else
-			fclose(f);
-#else
-		if(make_dir(cfg.config_dir, 0777) != 0)
-			return;
-#endif
-	}
-}
-
+/* searches for configuration file and directories, stores them and ensures
+ * existence of some of them */
 static void
 set_config_paths(void)
 {
@@ -229,10 +171,7 @@ set_config_paths(void)
 	find_config_dir();
 	find_config_file();
 
-	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", env_get(HOME));
-	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s", env_get(VIFM));
-	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/" TRASH, cfg.config_dir);
-	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, cfg.config_dir);
+	store_config_paths();
 
 	create_config_dir();
 	create_trash_dir();
@@ -401,6 +340,82 @@ try_vifm_vifmrc_for_vifmrc(void)
 	snprintf(vifmrc, sizeof(vifmrc), "%s/" VIFMRC, vifm);
 	env_set(MYVIFMRC, vifmrc);
 	return 1;
+}
+
+/* writes path configuration file and directories for further usage */
+static void
+store_config_paths(void)
+{
+	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", env_get(HOME));
+	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s", env_get(VIFM));
+	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/" TRASH, cfg.config_dir);
+	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, cfg.config_dir);
+}
+
+/* ensures existence of configuration directory */
+static void
+create_config_dir(void)
+{
+	/* ensure existence of configuration directory */
+	if(!is_dir(cfg.config_dir) && make_dir(cfg.config_dir, 0777) == 0)
+	{
+#ifndef _WIN32
+		FILE *f;
+		char help_file[PATH_MAX];
+		char rc_file[PATH_MAX];
+
+		if(make_dir(cfg.config_dir, 0777) != 0)
+			return;
+
+		snprintf(help_file, sizeof(help_file), "%s/vifm-help_txt", cfg.config_dir);
+		if((f = fopen(help_file, "r")) == NULL)
+			create_help_file();
+		else
+			fclose(f);
+
+		snprintf(rc_file, sizeof(rc_file), "%s/" VIFMRC, cfg.config_dir);
+		if((f = fopen(rc_file, "r")) == NULL)
+			create_rc_file();
+		else
+			fclose(f);
+#else
+		if(make_dir(cfg.config_dir, 0777) != 0)
+			return;
+#endif
+	}
+}
+
+#ifndef _WIN32
+static void
+create_help_file(void)
+{
+	char command[PATH_MAX];
+
+	snprintf(command, sizeof(command), CP_HELP);
+	fprintf(stderr, "%s", command);
+	file_exec(command);
+}
+
+static void
+create_rc_file(void)
+{
+	char command[PATH_MAX];
+
+	snprintf(command, sizeof(command), CP_RC);
+	file_exec(command);
+	add_bookmark('H', cfg.home_dir, "../");
+	add_bookmark('z', cfg.config_dir, "../");
+}
+#endif
+
+/* ensures existence of trash directory */
+static void
+create_trash_dir(void)
+{
+	if(access(cfg.trash_dir, F_OK) == 0)
+		return;
+
+	(void)make_dir(cfg.trash_dir, 0777);
 }
 
 static void

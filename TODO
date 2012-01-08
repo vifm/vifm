@@ -92,3 +92,5 @@ Code improvements.
     Add a macro for array length guards.
     Fix print buffer code duplication concerning variables.c and options.c.
     Change type of pause argument of shellout() function to an enum.
+    Maybe move startup and initialization code out of config.c and vifm.c
+        to a separate file.
