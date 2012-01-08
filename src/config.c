@@ -1362,7 +1362,7 @@ are_old_color_schemes(void)
 {
 	char colors_dir[PATH_MAX];
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
-	return !is_dir(colors_dir);
+	return !is_dir(colors_dir) && file_exists(cfg.config_dir, "colorschemes");
 }
 
 const char *
