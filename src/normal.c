@@ -691,37 +691,25 @@ normal_cmd_ctrl_wequal(key_info_t key_info, keys_info_t *keys_info)
 void
 normal_cmd_ctrl_wless(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_stats.split == VSPLIT)
-		move_splitter(key_info, (get_view() == &lwin) ? -1 : +1);
-	else
-		move_splitter(key_info, (get_view() == &lwin) ? -1 : +1);
+	move_splitter(key_info, (get_view() == &lwin) ? -1 : +1);
 }
 
 void
 normal_cmd_ctrl_wgreater(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_stats.split == VSPLIT)
-		move_splitter(key_info, (get_view() == &lwin) ? +1 : -1);
-	else
-		move_splitter(key_info, (get_view() == &lwin) ? +1 : -1);
+	move_splitter(key_info, (get_view() == &lwin) ? +1 : -1);
 }
 
 void
 normal_cmd_ctrl_wplus(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_stats.split == HSPLIT)
-		move_splitter(key_info, (get_view() == &lwin) ? +1 : -1);
-	else
-		move_splitter(key_info, (get_view() == &lwin) ? +1 : -1);
+	move_splitter(key_info, (get_view() == &lwin) ? +1 : -1);
 }
 
 void
 normal_cmd_ctrl_wminus(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_stats.split == HSPLIT)
-		move_splitter(key_info, (get_view() == &lwin) ? -1 : +1);
-	else
-		move_splitter(key_info, (get_view() == &lwin) ? -1 : +1);
+	move_splitter(key_info, (get_view() == &lwin) ? -1 : +1);
 }
 
 void
@@ -737,8 +725,8 @@ normal_cmd_ctrl_wpipe(key_info_t key_info, keys_info_t *keys_info)
 static FileView *
 get_view(void)
 {
-	if(get_mode() == VIEW_MODE && curr_view->explore_mode)
-		return other_view;
+	if(get_mode() == VIEW_MODE)
+		return curr_view->explore_mode ? curr_view : other_view;
 	else
 		return curr_view;
 }
