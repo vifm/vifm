@@ -1602,7 +1602,7 @@ show_filetypes_menu(FileView *view, int background)
 	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
-	m.title = NULL;
+	m.title = strdup(" Filetype associated commands ");
 	m.args = NULL;
 	m.data = NULL;
 	m.extra_data = (background ? 1 : 0);
