@@ -1310,13 +1310,20 @@ write_color_schemes(const char *colors_dir)
 		fprintf(fp, "\" Cyan = 6\n");
 		fprintf(fp, "\" White = 7\n\n");
 
+		fprintf(fp, "\" Available style values (some of them can be combined):\n");
+		fprintf(fp, "\" bold\n");
+		fprintf(fp, "\" underline\n");
+		fprintf(fp, "\" reverse or inverse\n");
+		fprintf(fp, "\" standout\n");
+		fprintf(fp, "\" none\n\n");
+
 		fprintf(fp, "\" Vifm supports 256 colors you can use color numbers 0-255\n");
 		fprintf(fp, "\" (requires properly set up terminal: set your TERM environment variable\n");
 		fprintf(fp, "\" (directly or using resources) to some color terminal name (e.g.\n");
 		fprintf(fp, "\" xterm-256color) from /usr/lib/terminfo/; you can check current number\n");
 		fprintf(fp, "\" of colors in your terminal with tput colors command)\n\n");
 
-		fprintf(fp, "\" highlight group ctermfg=foreground_color ctermbg=background_color\n\n");
+		fprintf(fp, "\" highlight group cterm=style ctermfg=foreground_color ctermbg=background_color\n\n");
 
 		for(y = 0; y < MAXNUM_COLOR - 2; y++)
 		{
