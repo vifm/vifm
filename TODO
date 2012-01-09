@@ -45,6 +45,7 @@ Vi(m) specific features that need to be added.
     :set command should understand environment variables and concatenation too.
     :let mapleader and <leader> support.
     Add :echo command.
+    'cdpath' ('cd') option.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -63,6 +64,7 @@ Possible things to add.
     'incfilter' option.
     Maybe we should reread configuration files on :restart when --no-configs
         was passed on startup.
+    'wildmode' option.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
@@ -84,6 +86,7 @@ Other (questionable) things.
     Maybe accept regular expressions as second argument of :colo command.
     Think about setting filters for both views in vifmrc.
     Make :alink, :copy, ... accept globs (e.g. :co *.c).
+    Option to trigger completion on slash in command-line.
 
 Code improvements.
     Write more tests.
@@ -96,3 +99,6 @@ Code improvements.
     Change type of pause argument of shellout() function to an enum.
     Maybe move startup and initialization code out of config.c and vifm.c
         to a separate file.
+    Get rid of repeatable `menu->win_rows - 3` in menu.c and menus.c.
+    Get rid of repeatable `(menu->win_rows - 3 + 1)/2 - 1` in menu.c.
+	Get rid of repeatable `(curr_view->window_rows + 1)/2 - 1` in normal.c.

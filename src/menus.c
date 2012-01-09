@@ -339,6 +339,12 @@ move_to_menu_pos(int pos, menu_info *m)
 	if(pos < 0)
 		return;
 
+	if(m->top + m->win_rows - 3 > m->len)
+		m->top = m->len - (m->win_rows - 3);
+
+	if(m->top < 0)
+		m->top = 0;
+
 	x += get_utf8_overhead(m->data[pos]);
 
 	if((m->top <= pos) && (pos <= (m->top + m->win_rows + 1)))

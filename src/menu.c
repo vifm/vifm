@@ -319,8 +319,12 @@ leave_menu_mode(void)
 static void
 cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	clean_menu_position(menu);
+	int s = MIN((menu->win_rows - 3 + 1)/2 - 1, cfg.scroll_off);
 	menu->pos -= menu->win_rows - 3;
+	if(cfg.scroll_off > 0 &&
+			menu->top + (menu->win_rows - 3) - menu->pos < s)
+		menu->pos -= s - (menu->top + (menu->win_rows - 3) - menu->pos);
+	draw_menu(menu);
 	move_to_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
@@ -334,9 +338,13 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
+	int s;
 	clean_menu_position(menu);
 	menu->top += (menu->win_rows - 3 + 1)/2;
 	menu->pos += (menu->win_rows - 3 + 1)/2;
+	s = MIN((menu->win_rows - 3 + 1)/2 - 1, cfg.scroll_off);
+	if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
+		menu->pos += s - (menu->pos - menu->top);
 	draw_menu(menu);
 	move_to_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
@@ -363,8 +371,14 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
-	clean_menu_position(menu);
-	menu->pos += menu->win_rows - 3;
+	int s;
+	int l = (menu->win_rows - 3) - 1;
+	menu->pos = menu->top + l;
+	menu->top += l;
+	s = MIN((menu->win_rows - 3 + 1)/2 - 1, cfg.scroll_off);
+	if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
+		menu->pos += s - (menu->pos - menu->top);
+	draw_menu(menu);
 	move_to_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
 }
@@ -410,7 +424,12 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
+	int s = MIN((menu->win_rows - 3 + 1)/2 - 1, cfg.scroll_off);
 	clean_menu_position(menu);
+
+	if(cfg.scroll_off > 0 && menu->top + menu->win_rows - menu->pos < s)
+		menu->pos -= s - (menu->top + (menu->win_rows - 3) - menu->pos);
+
 	menu->top -= (menu->win_rows - 3 + 1)/2;
 	if(menu->top < 0)
 		menu->top = 0;

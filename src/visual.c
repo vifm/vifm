@@ -273,6 +273,7 @@ cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
+	int s;
 	int l = view->window_rows - 1;
 	int pos;
 
@@ -283,6 +284,10 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 	view->top_line -= l;
 	if(view->top_line < 0)
 		view->top_line = 0;
+	s = MIN((view->window_rows + 1)/2 - 1, cfg.scroll_off);
+	if(cfg.scroll_off > 0 &&
+			view->top_line + view->window_rows - pos < s)
+		pos -= s - (view->top_line + view->window_rows - pos);
 
 	goto_pos(pos);
 }
@@ -325,6 +330,7 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
+	int s;
 	int l = view->window_rows - 1;
 	int pos;
 
@@ -335,6 +341,9 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 	view->top_line += l;
 	if(view->top_line > view->list_rows)
 		view->top_line = view->list_rows - l;
+	s = MIN((view->window_rows + 1)/2 - 1, cfg.scroll_off);
+	if(cfg.scroll_off > 0 && pos - view->top_line < s)
+		pos += s - (pos - view->top_line);
 
 	goto_pos(pos);
 }

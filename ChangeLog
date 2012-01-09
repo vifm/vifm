@@ -98,6 +98,8 @@
 
 	Fixed picking view on which ctrl_w+* keys operate in view mode.
 
+	Fixed Ctrl-U/D/F/B keys in visual and menu modes one again.
+
 0.7.0 to 0.7.1
 
 	Added 'scrollbind' option.
