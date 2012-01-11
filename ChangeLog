@@ -100,6 +100,8 @@
 
 	Fixed Ctrl-U/D/F/B keys in visual and menu modes one again.
 
+	Fixed a typo in statusbar message after :mkdir.
+
 0.7.0 to 0.7.1
 
 	Added 'scrollbind' option.

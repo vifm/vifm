@@ -3667,7 +3667,10 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	if(count > 0)
 		go_to_first_file(view, names, count);
 
-	status_bar_messagef("%d directorie%s created", n, (n == 1) ? "" : "s");
+	if(n == 1)
+		status_bar_message("1 directory created");
+	else
+		status_bar_messagef("%d directories created", n);
 }
 
 int
