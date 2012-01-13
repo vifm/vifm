@@ -1,4 +1,4 @@
-.TH vifm 1 "January 7, 2012" "" "Vifm"
+.TH vifm 1 "January 13, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -30,6 +30,9 @@ to $VIFM/vimfiles and vifm exits.
 .TP
 .BI "--logging"
 Log some errors to $VIFM/log.
+Also /var/log/vifm-startup-log (on *nix) and startup-log in the directory of
+executable (on Windows) is used to log startup process (when configuration
+directory isn't determined).
 .TP
 .BI "--remote"
 Passes all arguments that left in command line to active vifm server (already
@@ -2091,6 +2094,7 @@ places:
 
 vifm tries to find correct configuration file by checking the following places:
  - $MYVIFMRC variable;
+ - vifmrc in parent directory of the executable file (on Windows only);
  - $VIFM/vifmrc file.
 .\" ---------------------------------------------------------------------------
 .SH Configure

@@ -241,7 +241,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		}
 		else if(!strcmp(argv[x], "--logging"))
 		{
-			init_logger(1);
+			/* do nothing, it's handeled in main() */
 		}
 		else if(!strcmp(argv[x], "-c"))
 		{
@@ -251,12 +251,15 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 				endwin();
 				exit(0);
 			}
+			/* do nothing, it's handeled in exec_startup_commands() */
 			x++;
 		}
 		else if(argv[x][0] == '+')
 		{
+			/* do nothing, it's handeled in exec_startup_commands() */
 		}
-		else if(access(argv[x], F_OK) == 0 || is_path_absolute(argv[x]) || is_root_dir(argv[x]))
+		else if(access(argv[x], F_OK) == 0 || is_path_absolute(argv[x]) ||
+				is_root_dir(argv[x]))
 		{
 			if(lwin_path[0] != '\0')
 			{
@@ -408,6 +411,12 @@ main(int argc, char *argv[])
 	int i;
 	int no_configs;
 
+	init_config();
+
+	for(i = 1; i < argc; i++)
+		if(strcmp(argv[i], "--logging") == 0)
+			init_logger(1);
+
 	(void)setlocale(LC_ALL, "");
 	if(getcwd(dir, sizeof(dir)) == NULL)
 	{
@@ -424,7 +433,8 @@ main(int argc, char *argv[])
 	filetypes = NULL;
 
 	init_registers();
-	init_config();
+	set_config_paths();
+	reinit_logger();
 
 	snprintf(config_dir, sizeof(config_dir), "%s/scripts", cfg.config_dir);
 	add_dirs_to_path(config_dir);

@@ -106,6 +106,7 @@ void read_info_file(int reread);
 void write_config_file(void);
 void write_info_file(void);
 void init_config(void);
+void set_config_paths(void);
 void exec_config(void);
 int source_file(const char *file);
 int is_old_config(void);

@@ -30,6 +30,7 @@
 static FILE *log;
 static int verbosity;
 
+static void init(void);
 static void log_time(void);
 
 void
@@ -39,7 +40,28 @@ init_logger(int verbosity_level)
 	if(verbosity <= 0)
 		return;
 	
+	init();
+}
+
+void
+reinit_logger(void)
+{
+	if(verbosity <= 0)
+		return;
+
+	log_time();
+	fprintf(log, " ===== Logger reinitialization to '%s' =====\n", cfg.log_file);
+	fclose(log);
+
+	init();
+}
+
+static void
+init(void)
+{
 	log = fopen(cfg.log_file, "a");
+	if(log == NULL)
+		return;
 	setvbuf(log, NULL, _IONBF, 0);
 
 	fprintf(log, "\n");

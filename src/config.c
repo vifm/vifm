@@ -45,6 +45,7 @@
 #include "fileops.h"
 #include "filelist.h"
 #include "filetype.h"
+#include "log.h"
 #include "menus.h"
 #include "opt_handlers.h"
 #include "registers.h"
@@ -57,7 +58,6 @@
 
 config_t cfg;
 
-static void set_config_paths(void);
 static void find_home_dir(void);
 static int try_home_envvar_for_home(void);
 static int try_userprofile_envvar_for_home(void);
@@ -69,6 +69,7 @@ static int try_home_envvar_for_conf(void);
 static int try_appdata_for_conf(void);
 static void find_config_file(void);
 static int try_myvifmrc_envvar_for_vifmrc(void);
+static int try_exe_directory_for_vifmrc(void);
 static int try_vifm_vifmrc_for_vifmrc(void);
 static void store_config_paths(void);
 static void create_config_dir(void);
@@ -145,6 +146,15 @@ init_config(void)
 	cfg.lines = -1;
 	cfg.columns = -1;
 
+#ifndef _WIN32
+	snprintf(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
+#else
+	GetModuleFileNameA(NULL, cfg.log_file, sizeof(cfg.log_file));
+	to_forward_slash(cfg.log_file);
+	*strrchr(cfg.log_file, '/') = '\0';
+	strcat(cfg.log_file, "/startup-log");
+#endif
+
 	p = env_get("SHELL");
 	if(p == NULL || *p == '\0')
 #ifndef _WIN32
@@ -160,15 +170,15 @@ init_config(void)
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)
 #endif
 		cfg.max_args = 4096; /* POSIX MINIMUM */
-
-	set_config_paths();
 }
 
 /* searches for configuration file and directories, stores them and ensures
  * existence of some of them */
-static void
+void
 set_config_paths(void)
 {
+	LOG_FUNC_ENTER;
+
 	find_home_dir();
 	find_config_dir();
 	find_config_file();
@@ -183,6 +193,8 @@ set_config_paths(void)
 static void
 find_home_dir(void)
 {
+	LOG_FUNC_ENTER;
+
 	if(try_home_envvar_for_home())
 		return;
 	if(try_userprofile_envvar_for_home())
@@ -195,6 +207,8 @@ find_home_dir(void)
 static int
 try_home_envvar_for_home(void)
 {
+	LOG_FUNC_ENTER;
+
 	const char *home = env_get(HOME);
 	return home != NULL && is_dir(home);
 }
@@ -203,6 +217,8 @@ try_home_envvar_for_home(void)
 static int
 try_userprofile_envvar_for_home(void)
 {
+	LOG_FUNC_ENTER;
+
 #ifndef _WIN32
 	return 0;
 #else
@@ -220,6 +236,8 @@ try_userprofile_envvar_for_home(void)
 static int
 try_homepath_envvar_for_home(void)
 {
+	LOG_FUNC_ENTER;
+
 #ifndef _WIN32
 	return 0;
 #else
@@ -242,6 +260,8 @@ try_homepath_envvar_for_home(void)
 static void
 find_config_dir(void)
 {
+	LOG_FUNC_ENTER;
+
 	if(try_vifm_envvar_for_conf())
 		return;
 	if(try_exe_directory_for_conf())
@@ -256,6 +276,8 @@ find_config_dir(void)
 static int
 try_vifm_envvar_for_conf(void)
 {
+	LOG_FUNC_ENTER;
+
 	const char *vifm = env_get(VIFM);
 	return vifm != NULL && is_dir(vifm);
 }
@@ -264,6 +286,8 @@ try_vifm_envvar_for_conf(void)
 static int
 try_exe_directory_for_conf(void)
 {
+	LOG_FUNC_ENTER;
+
 #ifndef _WIN32
 	return 0;
 #else
@@ -282,6 +306,8 @@ try_exe_directory_for_conf(void)
 static int
 try_home_envvar_for_conf(void)
 {
+	LOG_FUNC_ENTER;
+
 	char vifm[PATH_MAX];
 	const char *home = env_get(HOME);
 	if(home == NULL || !is_dir(home))
@@ -299,6 +325,8 @@ try_home_envvar_for_conf(void)
 static int
 try_appdata_for_conf(void)
 {
+	LOG_FUNC_ENTER;
+
 #ifndef _WIN32
 	return 0;
 #else
@@ -317,7 +345,11 @@ try_appdata_for_conf(void)
 static void
 find_config_file(void)
 {
+	LOG_FUNC_ENTER;
+
 	if(try_myvifmrc_envvar_for_vifmrc())
+		return;
+	if(try_exe_directory_for_vifmrc())
 		return;
 	if(try_vifm_vifmrc_for_vifmrc())
 		return;
@@ -327,19 +359,46 @@ find_config_file(void)
 static int
 try_myvifmrc_envvar_for_vifmrc(void)
 {
+	LOG_FUNC_ENTER;
+
 	const char *myvifmrc = env_get(MYVIFMRC);
 	return myvifmrc != NULL && file_exists(NULL, myvifmrc);
+}
+
+/* tries to use vifmrc in directory of executable file as configuration file */
+static int
+try_exe_directory_for_vifmrc(void)
+{
+	LOG_FUNC_ENTER;
+
+#ifndef _WIN32
+	return 0;
+#else
+	char vifmrc[PATH_MAX];
+	GetModuleFileNameA(NULL, vifmrc, sizeof(vifmrc));
+	to_forward_slash(vifmrc);
+	*strrchr(vifmrc, '/') = '\0';
+	strcat(vifmrc, "/" VIFMRC);
+	if(!file_exists(NULL, vifmrc))
+		return 0;
+	env_set(MYVIFMRC, vifmrc);
+	return 1;
+#endif
 }
 
 /* tries to use $VIFM/vifmrc as configuration file */
 static int
 try_vifm_vifmrc_for_vifmrc(void)
 {
+	LOG_FUNC_ENTER;
+
 	char vifmrc[PATH_MAX];
 	const char *vifm = env_get(VIFM);
 	if(vifm == NULL || !is_dir(vifm))
 		return 0;
 	snprintf(vifmrc, sizeof(vifmrc), "%s/" VIFMRC, vifm);
+	if(!file_exists(NULL, vifmrc))
+		return 0;
 	env_set(MYVIFMRC, vifmrc);
 	return 1;
 }
@@ -348,6 +407,8 @@ try_vifm_vifmrc_for_vifmrc(void)
 static void
 store_config_paths(void)
 {
+	LOG_FUNC_ENTER;
+
 	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", env_get(HOME));
 	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s", env_get(VIFM));
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/" TRASH, cfg.config_dir);
@@ -358,6 +419,8 @@ store_config_paths(void)
 static void
 create_config_dir(void)
 {
+	LOG_FUNC_ENTER;
+
 	/* ensure existence of configuration directory */
 	if(!is_dir(cfg.config_dir) && make_dir(cfg.config_dir, 0777) == 0)
 	{
@@ -391,6 +454,8 @@ create_config_dir(void)
 static void
 create_help_file(void)
 {
+	LOG_FUNC_ENTER;
+
 	char command[PATH_MAX];
 
 	snprintf(command, sizeof(command), CP_HELP);
@@ -401,6 +466,8 @@ create_help_file(void)
 static void
 create_rc_file(void)
 {
+	LOG_FUNC_ENTER;
+
 	char command[PATH_MAX];
 
 	snprintf(command, sizeof(command), CP_RC);
@@ -414,6 +481,8 @@ create_rc_file(void)
 static void
 create_trash_dir(void)
 {
+	LOG_FUNC_ENTER;
+
 	if(access(cfg.trash_dir, F_OK) == 0)
 		return;
 

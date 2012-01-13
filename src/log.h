@@ -19,6 +19,12 @@
 #ifndef __LOG_H__
 #define __LOG_H__
 
+#define LOG_FUNC_ENTER \
+    { \
+        log_prefix(__FILE__, __FUNCTION__, __LINE__); \
+        log_msg("Entered into this function"); \
+    }
+
 #define LOG_INFO_MSG(msg, args...) \
     { \
         log_prefix(__FILE__, __FUNCTION__, __LINE__); \
@@ -38,6 +44,7 @@
     }
 
 void init_logger(int verbosity_level);
+void reinit_logger(void);
 void log_prefix(const char *file, const char *func, int line);
 void log_serror(const char *file, const char *func, int line, int no);
 void log_msg(const char *msg, ...);

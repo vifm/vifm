@@ -51,6 +51,9 @@ The other command line arguments are:
 
 --logging                                      *vifm---logging*
     log some errors to $VIFM/log.
+    Also /var/log/vifm-startup-log (on *nix) and startup-log in the directory
+    of executable (on Windows) is used to log startup process (when
+    configuration directory isn't determined).
 --remote                                       *vifm---remote*
     passes all arguments that left in command line to active vifm server
     (already running instance if any).
@@ -1829,6 +1832,7 @@ places:
                                                *vifm-$MYVIFMRC*
 vifm tries to find correct configuration file by checking the following places:
  - $MYVIFMRC variable;
+ - vifmrc in parent directory of the executable file (on Windows only);
  - $VIFM/vifmrc file.
 
 --------------------------------------------------------------------------------
