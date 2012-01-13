@@ -1034,6 +1034,16 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 }
 
 void
+strtolower(char *s)
+{
+	while(*s != '\0')
+	{
+		*s = tolower(*s);
+		s++;
+	}
+}
+
+static void
 strtoupper(char *s)
 {
 	while(*s != '\0')

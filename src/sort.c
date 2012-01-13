@@ -82,8 +82,8 @@ compare_file_names(const char *s, const char *t, int ignore_case)
 
 	if(ignore_case)
 	{
-		strtoupper(s_buf);
-		strtoupper(t_buf);
+		strtolower(s_buf);
+		strtolower(t_buf);
 	}
 
 #if defined(_WIN32) || defined(__APPLE__)

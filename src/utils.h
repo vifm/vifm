@@ -91,7 +91,7 @@ int is_path_absolute(const char *path);
 int ends_with(const char* str, const char* suffix);
 char * to_multibyte(const wchar_t *s);
 int get_link_target(const char *link, char *buf, size_t buf_len);
-void strtoupper(char *s);
+void strtolower(char *s);
 const char * enclose_in_dquotes(const char *str);
 void set_term_title(const char *full_path);
 const char *get_mode_str(mode_t mode);
