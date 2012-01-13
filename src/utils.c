@@ -74,6 +74,28 @@
 
 fuse_mount_t *fuse_mounts = NULL;
 
+static struct
+{
+	int initialized;
+	int supported;
+#ifndef _WIN32
+	char title[512];
+#else
+	wchar_t title[512];
+#endif
+}title_state;
+
+static void check_title_supported();
+static void save_term_title();
+static void restore_term_title();
+#if !defined(_WIN32) && defined(HAVE_X11)
+static int get_x11_disp_and_win(Display **disp, Window *win);
+static void get_x11_window_title(Display *disp, Window win, char *buf,
+		size_t buf_len);
+static int x_error_check(Display *dpy, XErrorEvent *error_event);
+#endif
+static void set_terminal_title(const char *path);
+
 int
 S_ISEXE(mode_t mode)
 {
@@ -1043,7 +1065,83 @@ enclose_in_dquotes(const char *str)
 	return buf;
 }
 
+/* updates terminal title */
+void
+set_term_title(const char *full_path)
+{
+	if(!title_state.initialized)
+	{
+		check_title_supported();
+		if(title_state.supported)
+			save_term_title();
+		title_state.initialized = 1;
+	}
+	if(!title_state.supported)
+		return;
+
+	if(full_path == NULL)
+	{
+		restore_term_title();
+	}
+	else
+	{
+		set_terminal_title(full_path);
+	}
+}
+
+/* checks if we can alter terminal emulator title and writes result to
+ * title_state.supported */
+static void
+check_title_supported()
+{
+#ifdef _WIN32
+	title_state.supported = 1;
+#else
+	/* this list was taken from ranger's sources */
+	static char *TERMINALS_WITH_TITLE[] = {
+		"xterm", "xterm-256color", "rxvt", "rxvt-256color", "rxvt-unicode",
+		"aterm", "Eterm", "screen", "screen-256color"
+	};
+
+	title_state.initialized = is_in_string_array(TERMINALS_WITH_TITLE,
+			ARRAY_LEN(TERMINALS_WITH_TITLE), env_get("TERM"));
+#endif
+}
+
+/* stores current terminal title into title_state.title */
+static void
+save_term_title()
+{
+#ifdef _WIN32
+	GetConsoleTitleW(title_state.title, ARRAY_LEN(title_state.title));
+#else
+#ifdef HAVE_X11
+	Display *x11_display;
+	Window x11_window;
+
+	/* use X to determine current window title */
+	if(get_x11_disp_and_win(&x11_display, &x11_window))
+		get_x11_window_title(x11_display, x11_window, title_state.title,
+				sizeof(title_state.title));
+#endif
+#endif
+}
+
+/* restores terminal title from title_state.title */
+static void
+restore_term_title()
+{
+#ifdef _WIN32
+	if(title_state.title[0] != L'\0')
+		SetConsoleTitleW(title_state.title);
+#else
+	if(title_state.title[0] != '\0')
+		printf("\033]2;%s\007", title_state.title);
+#endif
+}
+
 #if !defined(_WIN32) && defined(HAVE_X11)
+/* loads X specific variables */
 static int
 get_x11_disp_and_win(Display **disp, Window *win)
 {
@@ -1060,12 +1158,7 @@ get_x11_disp_and_win(Display **disp, Window *win)
 	return 1;
 }
 
-static int
-x_error_check(Display *dpy, XErrorEvent *error_event)
-{
-	return 0;
-}
-
+/* gets terminal title using X */
 static void
 get_x11_window_title(Display *disp, Window win, char *buf, size_t buf_len)
 {
@@ -1083,72 +1176,26 @@ get_x11_window_title(Display *disp, Window win, char *buf, size_t buf_len)
 	snprintf(buf, buf_len, "%s", text_prop.value);
 	XFree((void *)text_prop.value);
 }
-#endif
 
-static void
-set_title(const char *new_title)
+/* callback function for reporting X errors, should return 0 on success */
+static int
+x_error_check(Display *dpy, XErrorEvent *error_event)
 {
-#ifdef _WIN32
-	wchar_t *title = to_wide(new_title);
-	SetConsoleTitleW(title);
-	free(title);
-#else
-	printf("\033]2;%s\007", new_title);
-#endif
+	return 0;
 }
+#endif
 
-void
-set_term_title(const char *full_path)
+/* does real job on setting terminal title */
+static void
+set_terminal_title(const char *path)
 {
-	static int was_setup;
-	static int title_supported;
-	static char prev_title[512];
-
-	if(!was_setup)
-	{
-#if !defined(_WIN32) && defined(HAVE_X11)
-		static Display *x11_display;
-		static Window x11_window;
-#endif
-
 #ifdef _WIN32
-		title_supported = 1;
-		GetConsoleTitleA(prev_title, sizeof(prev_title));
+	wchar_t buf[2048];
+	swprintf(buf, L"%S - VIFM", path);
+	SetConsoleTitleW(buf);
 #else
-		/* this list was taken from ranger's sources */
-		static char *TERMINALS_WITH_TITLE[] = {
-			"xterm", "xterm-256color", "rxvt", "rxvt-256color", "rxvt-unicode",
-			"aterm", "Eterm", "screen", "screen-256color"
-		};
-
-		title_supported = is_in_string_array(TERMINALS_WITH_TITLE,
-				ARRAY_LEN(TERMINALS_WITH_TITLE), env_get("TERM"));
-
-#ifdef HAVE_X11
-		/* use X to determine current window title */
-		if(get_x11_disp_and_win(&x11_display, &x11_window))
-			get_x11_window_title(x11_display, x11_window, prev_title,
-					sizeof(prev_title));
+	printf("\033]2;%s - VIFM\007", path);
 #endif
-
-#endif
-		was_setup = 1;
-	}
-	if(!title_supported)
-		return;
-
-	if(full_path == NULL)
-	{
-		/* restore initial window title if available */;
-		if(prev_title[0] != '\0')
-			set_title(prev_title);
-	}
-	else
-	{
-		char buf[2048];
-		snprintf(buf, sizeof(buf), "%s - VIFM", full_path);
-		set_title(buf);
-	}
 }
 
 const char *
