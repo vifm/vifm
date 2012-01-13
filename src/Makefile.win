@@ -26,9 +26,9 @@ win_helper_SOURCES := win_helper.c
 win_helper_OBJECTS := $(win_helper_SOURCES:.c=.o)
 win_helper_EXECUTABLE := win_helper.exe
 
-.PHONY: version
+.PHONY: version.c
 
-all: ../config.h version $(vifm_EXECUTABLE) $(converter_EXECUTABLE) \
+all: ../config.h $(vifm_EXECUTABLE) $(converter_EXECUTABLE) \
 	$(win_helper_EXECUTABLE)
 
 $(vifm_EXECUTABLE): $(vifm_OBJECTS)
@@ -53,9 +53,7 @@ vifmres.o: vifm.res
 
 utils.c: version.c
 
-version.c: version
-
-version:
+version.c:
 	@if [ "x$$(whereis git)" != "x" ] ; then \
 		/bin/echo -n 'const char GIT_HASH[] = "' > version.c; \
 		/bin/echo -n `git rev-parse HEAD` >> version.c; \

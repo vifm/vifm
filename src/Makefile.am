@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-.PHONY: version
+.PHONY: version.c
 
 pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifm-help.txt
@@ -65,9 +65,7 @@ vifmrc_converter_SOURCES = \
 
 utils.o: version.o
 
-version.o: version
-
-version:
+version.c:
 	@if [ "x$$(whereis git)" != "x" ] ; then \
 		/bin/echo -n 'const char GIT_HASH[] = "' > version.c; \
 		/bin/echo -n `git rev-parse HEAD` >> version.c; \
