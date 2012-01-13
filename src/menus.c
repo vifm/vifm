@@ -246,7 +246,7 @@ redraw_error_msg(const char *title_arg, const char *message_arg)
 		mvwaddstr(error_win, y - 2, (x - 63)/2,
 				"Press Return to continue or Ctrl-C to skip other error messages");
 	else
-		mvwaddstr(error_win, y - 2, (x - 20)/2, "Enter y[es] or n[o]");
+		mvwaddstr(error_win, y - 2, (x - 20)/2, "Enter [y]es or [n]o");
 }
 
 /* Returns not zero when user asked to skip error messages that left */

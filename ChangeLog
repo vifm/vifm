@@ -50,6 +50,8 @@
 
 	Mention cterm :highlight command argument in generated color scheme files.
 
+	Changed square brackets in yes/no of confirmation dialog.
+
 	Fixed bug with fixed-length buffer for :grep command (when many files are
 	selected).
 
