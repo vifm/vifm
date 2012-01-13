@@ -68,7 +68,7 @@ update_win_console(void)
 static int
 read_char(WINDOW *win, wint_t *c, int timeout)
 {
-	static const int T = 50;
+	static const int T = 150;
 
 	int i;
 	int result;

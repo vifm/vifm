@@ -2239,7 +2239,8 @@ load_dir_list(FileView *view, int reload)
 #endif
 		status_bar_message("Reading directory...");
 
-	update_all_windows();
+	if(curr_stats.vifm_started < 2)
+		update_all_windows();
 
 	/* this is needed for lstat() below */
 	if(my_chdir(view->curr_dir) != 0 && !is_unc_root(view->curr_dir))

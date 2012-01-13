@@ -320,12 +320,12 @@ check_path(FileView *view, const char *path)
 static void
 check_path_for_file(FileView *view, const char *path, int handle)
 {
-	load_dir_list(view, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
 	if(path[0] != '\0' && !is_dir(path))
 	{
 		const char *slash = strrchr(path, '/');
 		if(slash == NULL)
 			slash = path - 1;
+		load_dir_list(view, !(cfg.vifm_info&VIFMINFO_SAVEDIRS));
 		if(ensure_file_is_selected(view, slash + 1))
 		{
 			if(handle)
@@ -592,19 +592,14 @@ main(int argc, char *argv[])
 		exec_config();
 	}
 
-	curr_stats.vifm_started = 2;
-
-	if(curr_stats.startup_redraw_pending)
-		redraw_window();
-
 	check_path_for_file(&lwin, lwin_path, lwin_handle);
 	check_path_for_file(&rwin, rwin_path, rwin_handle);
+
+	curr_stats.vifm_started = 2;
 
 	exec_startup_commands(argc, argv);
 
 	modes_redraw();
-	if(curr_stats.startup_redraw_pending)
-		redraw_window();
 
 	main_loop();
 

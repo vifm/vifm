@@ -146,7 +146,10 @@ op_removesl(void *data, const char *src, const char *dst)
 	}
 	else
 	{
-		return (DeleteFile(src) == 0);
+		int ok = DeleteFile(src);
+		if(!ok)
+			LOG_WERROR(GetLastError());
+		return !ok;
 	}
 #endif
 }

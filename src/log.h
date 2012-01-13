@@ -37,12 +37,18 @@
         log_prefix(__FILE__, __FUNCTION__, __LINE__); \
         log_msg((msg), ## args); \
     }
+
 #define LOG_SERROR(no) log_error(__FILE__, __FUNCTION__, __LINE__, (no))
 #define LOG_SERROR_MSG(no, msg, args...) \
     { \
         log_serror(__FILE__, __FUNCTION__, __LINE__, (no)); \
         log_msg((msg), ## args); \
     }
+
+#ifdef _WIN32
+#define LOG_WERROR(no) log_werror(__FILE__, __FUNCTION__, __LINE__, (no))
+void log_werror(const char *file, const char *func, int line, int no);
+#endif
 
 void init_logger(int verbosity_level);
 void reinit_logger(void);

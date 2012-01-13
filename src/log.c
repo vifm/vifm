@@ -99,6 +99,18 @@ log_serror(const char *file, const char *func, int line, int no)
 	fprintf(log, "               %s\n", strerror(no));
 }
 
+#ifdef _WIN32
+void
+log_werror(const char *file, const char *func, int line, int no)
+{
+	if(verbosity <= 0)
+		return;
+
+	log_prefix(file, func, line);
+	fprintf(log, "               Windows error code: %d\n", no);
+}
+#endif
+
 void
 log_msg(const char *msg, ...)
 {

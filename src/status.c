@@ -31,7 +31,6 @@ void
 init_status(void)
 {
 	curr_stats.need_redraw = 0;
-	curr_stats.startup_redraw_pending = 0;
 	curr_stats.last_char = 0;
 	curr_stats.is_console = 0;
 	curr_stats.search = 0;

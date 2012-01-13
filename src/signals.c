@@ -59,8 +59,6 @@ received_sigwinch(void)
 	{
 		if(curr_stats.vifm_started >= 3)
 			curr_stats.pending_redraw = 1;
-		else
-			curr_stats.startup_redraw_pending = 1;
 	}
 	else
 	{
