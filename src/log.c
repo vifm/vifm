@@ -25,6 +25,7 @@
 
 #include "config.h"
 
+#include "status.h"
 #include "log.h"
 
 static FILE *log;
@@ -77,6 +78,15 @@ log_prefix(const char *file, const char *func, int line)
 
 	log_time();
 	fprintf(log, " at %s:%d (%s)\n", file, line, func);
+}
+
+void
+log_vifm_state(void)
+{
+	if(verbosity <= 0)
+		return;
+
+	fprintf(log, "               Load stage: %d\n", curr_stats.vifm_started);
 }
 
 void

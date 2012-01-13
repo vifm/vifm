@@ -19,6 +19,8 @@
 
 #include <signal.h>
 
+#include "log.h"
+
 #ifndef _WIN32
 
 #include <curses.h>
@@ -139,6 +141,8 @@ handle_signal(int sig)
 void
 setup_signals(void)
 {
+  LOG_FUNC_ENTER;
+
 #ifndef _WIN32
 	struct sigaction handle_signal_action;
 

@@ -1078,7 +1078,11 @@ void
 redraw_window(void)
 {
 	if(curr_stats.vifm_started < 2)
+	{
+		curr_stats.startup_redraw_pending = 1;
 		return;
+	}
+	curr_stats.startup_redraw_pending = 0;
 
 	resize_all();
 	update_attributes();

@@ -28,6 +28,7 @@
 #define LOG_INFO_MSG(msg, args...) \
     { \
         log_prefix(__FILE__, __FUNCTION__, __LINE__); \
+        log_vifm_state(); \
         log_msg((msg), ## args); \
     }
 
@@ -46,6 +47,7 @@
 void init_logger(int verbosity_level);
 void reinit_logger(void);
 void log_prefix(const char *file, const char *func, int line);
+void log_vifm_state(void);
 void log_serror(const char *file, const char *func, int line, int no);
 void log_msg(const char *msg, ...);
 void log_cwd(void);

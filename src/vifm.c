@@ -594,6 +594,9 @@ main(int argc, char *argv[])
 
 	curr_stats.vifm_started = 2;
 
+	if(curr_stats.startup_redraw_pending)
+		redraw_window();
+
 	check_path_for_file(&lwin, lwin_path, lwin_handle);
 	check_path_for_file(&rwin, rwin_path, rwin_handle);
 

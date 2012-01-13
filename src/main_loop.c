@@ -42,6 +42,7 @@
 #include "filelist.h"
 #include "ipc.h"
 #include "keys.h"
+#include "log.h"
 #include "macros.h"
 #include "modes.h"
 #include "normal.h"
@@ -109,6 +110,8 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 void
 main_loop(void)
 {
+	LOG_FUNC_ENTER;
+
 	int last_result = 0;
 	int wait_enter = 0;
 	int timeout = cfg.timeout_len;

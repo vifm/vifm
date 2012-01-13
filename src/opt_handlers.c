@@ -24,6 +24,7 @@
 #include "color_scheme.h"
 #include "config.h"
 #include "filelist.h"
+#include "log.h"
 #include "macros.h"
 #include "options.h"
 #include "status.h"
@@ -621,6 +622,7 @@ lines_handler(OPT_OP op, optval_t val)
 	if(cfg.lines == val.int_val)
 		return;
 
+	LOG_INFO_MSG("resize_term(%d, %d)", val.int_val, getmaxx(stdscr));
 	resize_term(val.int_val, getmaxx(stdscr));
 	redraw_window();
 	cfg.lines = getmaxy(stdscr);

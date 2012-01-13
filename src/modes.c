@@ -25,6 +25,7 @@
 #include "file_info.h"
 #include "filelist.h"
 #include "keys.h"
+#include "log.h"
 #include "macros.h"
 #include "main_loop.h"
 #include "menu.h"
@@ -92,6 +93,8 @@ static char _gnuc_unused mode_init_funcs_guard[
 void
 init_modes(void)
 {
+	LOG_FUNC_ENTER;
+
 	int i;
 
 	init_keys(MODES_COUNT, &mode, (int*)&mode_flags);
@@ -191,6 +194,8 @@ modes_post(void)
 void
 modes_redraw(void)
 {
+	LOG_FUNC_ENTER;
+
 	static int in_here;
 
 	if(curr_stats.vifm_started < 2)
