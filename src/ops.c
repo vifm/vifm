@@ -146,7 +146,11 @@ op_removesl(void *data, const char *src, const char *dst)
 	}
 	else
 	{
-		int ok = DeleteFile(src);
+		int ok;
+		DWORD attributes = GetFileAttributesA(src);
+		if(attributes & FILE_ATTRIBUTE_READONLY)
+			SetFileAttributesA(src, attributes & ~FILE_ATTRIBUTE_READONLY);
+		ok = DeleteFile(src);
 		if(!ok)
 			LOG_WERROR(GetLastError());
 		return !ok;

@@ -38,8 +38,8 @@
 #define _gnuc_packed      __attribute__ ((packed))
 #define _gnuc_align(x)    __attribute__ ((aligned(x)))
 #define _gnuc_align_max   __attribute__ ((aligned))
-#define _gnuc_likely      __builtin_expect (!!(x), 1)
-#define _gnuc_unlikely    __builtin_expect (!!(x), 0)
+#define _gnuc_likely(x)   __builtin_expect (!!(x), 1)
+#define _gnuc_unlikely(x) __builtin_expect (!!(x), 0)
 #else
 #define _gnuc_noinline
 #define _gnuc_pure
@@ -53,14 +53,14 @@
 #define _gnuc_packed
 #define _gnuc_align
 #define _gnuc_align_max
-#define _gnuc_likely      (x)
-#define _gnuc_unlikely    (x)
+#define _gnuc_likely(x)   (x)
+#define _gnuc_unlikely(x) (x)
 #endif
 
 #define ARRAY_LEN(x) (sizeof(x)/sizeof((x)[0]))
 
-#define MIN(a,b) (((a) < (b)) ? (a) : (b))
-#define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#define MIN(a,b) ({int _a = (a), _b = (b); (_a < _b) ? _a : _b;})
+#define MAX(a,b) ({int _a = (a), _b = (b); (_a > _b) ? _a : _b;})
 
 #endif
 

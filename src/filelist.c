@@ -2223,12 +2223,15 @@ load_dir_list(FileView *view, int reload)
 
 #ifndef _WIN32
 	if(stat(view->curr_dir, &s) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
 		return;
+	}
 #endif
 
 	if(update_dir_mtime(view) != 0 && !is_unc_root(view->curr_dir))
 	{
-		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
+		LOG_SERROR_MSG(errno, "Can't get directory mtime \"%s\"", view->curr_dir);
 		return;
 	}
 
