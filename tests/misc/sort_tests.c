@@ -46,39 +46,43 @@ test_special_chars_ignore_case_sort(void)
 static void
 test_versort_without_numbers(void)
 {
+#define SIGN(n) ({int _n = (n); _n < 0 ? -1 : ((_n > 0) ? 1 : 0);})
+
 	const char *s, *t;
 
 	s = "abc";
 	t = "abcdef";
-	assert_int_equal(strcmp(s, t), vercmp(s, t));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
 
 	s = "abcdef";
 	t = "abc";
-	assert_int_equal(strcmp(s, t), vercmp(s, t));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
 
 	s = "";
 	t = "abc";
-	assert_int_equal(strcmp(s, t), vercmp(s, t));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
 
 	s = "abc";
 	t = "";
-	assert_int_equal(strcmp(s, t), vercmp(s, t));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
 
 	s = "";
 	t = "";
-	assert_int_equal(strcmp(s, t), vercmp(s, t));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
 
 	s = "abcdef";
 	t = "abcdef";
-	assert_int_equal(strcmp(s, t), vercmp(s, t));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
 
 	s = "abcdef";
 	t = "abcdeg";
-	assert_int_equal(strcmp(s, t), vercmp(s, t));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
 
 	s = "abcdeg";
 	t = "abcdef";
-	assert_int_equal(strcmp(s, t), vercmp(s, t));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
+
+#undef SIGN
 }
 
 static void

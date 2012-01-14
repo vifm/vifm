@@ -253,7 +253,7 @@ key_handler(wchar_t key)
 void
 enter_menu_mode(menu_info *m, FileView *active_view)
 {
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 		return;
 
 	werase(status_bar);

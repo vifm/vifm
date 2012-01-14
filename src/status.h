@@ -56,7 +56,7 @@ typedef struct
 	int view;
 	int show_full;
 	int skip_history;
-	int vifm_started; /* 0 - no TUI, 1 - TUI, 2 - all */
+	int load_stage; /* 0 - no TUI, 1 - part of TUI, 2 - TUI, 3 - all */
 
 	int errmsg_shown; /* 0 - none, 1 - error, 2 - query */
 

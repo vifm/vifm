@@ -651,7 +651,7 @@ update_view_title(FileView *view)
 	if(gen_view && view == other_view)
 		return;
 
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 		return;
 
 	if(view == selected)
@@ -680,7 +680,7 @@ update_view_title(FileView *view)
 	}
 	werase(view->title);
 
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 		return;
 
 	buf = replace_home_part(view->curr_dir);
@@ -727,7 +727,7 @@ draw_dir_list(FileView *view, int top)
 	int x;
 	int y = 0;
 
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 		return;
 
 	if(top + view->window_rows > view->list_rows)
@@ -873,7 +873,7 @@ erase_current_line_bar(FileView *view)
 	if(old_cursor < 0)
 		return;
 
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 		return;
 
 	/* Extra long file names are truncated to fit */
@@ -1006,7 +1006,7 @@ move_to_list_pos(FileView *view, int pos)
 
 	redraw = move_curr_line(view, pos);
 
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 		return;
 
 	if(redraw)
@@ -1106,7 +1106,7 @@ save_view_history(FileView *view, const char *path, const char *file, int pos)
 	if(view->history_num > 0 &&
 			pathcmp(view->history[view->history_pos].dir, path) == 0)
 	{
-		if(curr_stats.vifm_started < 2)
+		if(curr_stats.load_stage < 2)
 			return;
 		x = view->history_pos;
 		snprintf(view->history[x].file, sizeof(view->history[x].file), "%s", file);
@@ -2239,7 +2239,7 @@ load_dir_list(FileView *view, int reload)
 #endif
 		status_bar_message("Reading directory...");
 
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 		update_all_windows();
 
 	/* this is needed for lstat() below */
@@ -2308,7 +2308,7 @@ load_dir_list(FileView *view, int reload)
 
 		load_dir_list(view, 1);
 
-		if(curr_stats.vifm_started >= 2)
+		if(curr_stats.load_stage >= 2)
 			draw_dir_list(view, view->top_line);
 		return;
 	}
@@ -2317,7 +2317,7 @@ load_dir_list(FileView *view, int reload)
 	else if(view->selected_files)
 		view->selected_files = 0;
 
-	if(curr_stats.vifm_started >= 2)
+	if(curr_stats.load_stage >= 2)
 		draw_dir_list(view, view->top_line);
 
 	if(view == curr_view)
@@ -2482,7 +2482,7 @@ load_saving_pos(FileView *view, int reload)
 	char filename[NAME_MAX];
 	int pos;
 
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 		return;
 
 	snprintf(filename, sizeof(filename), "%s",

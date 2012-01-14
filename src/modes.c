@@ -198,7 +198,7 @@ modes_redraw(void)
 
 	static int in_here;
 
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 		return;
 
 	if(in_here++ > 0)
@@ -241,7 +241,7 @@ modes_redraw(void)
 	else if(mode == VIEW_MODE)
 		view_redraw();
 
-	curr_stats.vifm_started = 3;
+	curr_stats.load_stage = 3;
 
 	if(--in_here > 0)
 		modes_redraw();

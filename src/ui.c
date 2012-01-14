@@ -478,7 +478,7 @@ status_bar_message_i(const char *message, int error)
 	const char *p, *q;
 	int lines;
 
-	if(curr_stats.vifm_started == 0)
+	if(curr_stats.load_stage == 0)
 		return;
 
 	if(message != NULL)
@@ -1077,7 +1077,7 @@ resize_all(void)
 void
 redraw_window(void)
 {
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 		return;
 
 	resize_all();
@@ -1210,7 +1210,7 @@ update_view(FileView *win)
 void
 update_all_windows(void)
 {
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 		return;
 
 	touchwin(lborder);
@@ -1279,7 +1279,7 @@ update_all_windows(void)
 	wnoutrefresh(input_win);
 	wnoutrefresh(status_bar);
 
-	if(!curr_stats.errmsg_shown && curr_stats.vifm_started >= 2)
+	if(!curr_stats.errmsg_shown && curr_stats.load_stage >= 2)
 		doupdate();
 }
 
@@ -1371,7 +1371,7 @@ load_color_scheme(const char *name)
 
 	update_attributes();
 
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 		return 0;
 
 	if(cfg.cs.defaulted)
@@ -1388,7 +1388,7 @@ update_attributes(void)
 {
 	int attr;
 
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 		return;
 
 	attr = cfg.cs.color[BORDER_COLOR].attr;

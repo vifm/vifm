@@ -97,7 +97,7 @@ init_change_dialog_mode(int *key_mode)
 void
 enter_change_mode(FileView *active_view)
 {
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 		return;
 
 	view = active_view;

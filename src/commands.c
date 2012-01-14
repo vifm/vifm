@@ -3767,7 +3767,7 @@ get_color(const char *text)
 			strcasecmp(text, "none") == 0)
 		return -1;
 	if(col_pos < 0 && (col_num < 0 ||
-			(curr_stats.vifm_started >= 2 && col_num > COLORS)))
+			(curr_stats.load_stage >= 2 && col_num > COLORS)))
 		return -2;
 	return MAX(col_pos, col_num);
 }

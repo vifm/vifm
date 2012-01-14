@@ -520,7 +520,7 @@ main(int argc, char *argv[])
 	init_undo_list(&perform_operation, &cfg.undo_levels);
 	load_local_options(curr_view);
 
-	curr_stats.vifm_started = 1;
+	curr_stats.load_stage = 1;
 
 	if(!old_config && !no_configs)
 	{
@@ -581,9 +581,9 @@ main(int argc, char *argv[])
 				"(you can edit it by hand, but do it carefully).  You can control what "
 				"vifm stores in vifminfo with 'vifminfo' option.");
 
-		curr_stats.vifm_started = 0;
+		curr_stats.load_stage = 0;
 		read_info_file(0);
-		curr_stats.vifm_started = 1;
+		curr_stats.load_stage = 1;
 
 		check_path(&lwin, lwin_path);
 		check_path(&rwin, rwin_path);
@@ -597,7 +597,7 @@ main(int argc, char *argv[])
 	check_path_for_file(&lwin, lwin_path, lwin_handle);
 	check_path_for_file(&rwin, rwin_path, rwin_handle);
 
-	curr_stats.vifm_started = 2;
+	curr_stats.load_stage = 2;
 
 	exec_startup_commands(argc, argv);
 

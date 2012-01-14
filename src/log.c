@@ -86,7 +86,7 @@ log_vifm_state(void)
 	if(verbosity <= 0)
 		return;
 
-	fprintf(log, "               Load stage: %d\n", curr_stats.vifm_started);
+	fprintf(log, "               Load stage: %d\n", curr_stats.load_stage);
 }
 
 void

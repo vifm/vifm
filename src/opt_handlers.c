@@ -349,7 +349,7 @@ static void
 autochpos_handler(OPT_OP op, optval_t val)
 {
 	cfg.auto_ch_pos = val.bool_val;
-	if(curr_stats.vifm_started < 2)
+	if(curr_stats.load_stage < 2)
 	{
 		clean_positions_in_history(curr_view);
 		clean_positions_in_history(other_view);
