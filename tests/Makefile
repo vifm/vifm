@@ -1,7 +1,7 @@
 dirs := commands completion filetype keys misc options undo variables
 dirs_s := $(addsuffix _t, $(dirs))
 
-.PHONY: tests $(dirs_s)
+.PHONY: tests $(dirs) $(dirs_s)
 
 tests: bin $(dirs_s)
 ifneq ($(OS),Windows_NT)
