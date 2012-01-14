@@ -24,8 +24,6 @@ Windows.
     Add a command to create .lnk files.
     Follow targets of .lnk files.
     Fix freezing.
-    Allow using of backward slashes in :rename command.
-    Check using of backward slashes in :rename command (to forbid it).
 
 Vi(m) specific features that need to be added.
 	Fix '' to go back to all jumps G gg links (in one directory?).

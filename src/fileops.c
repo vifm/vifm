@@ -1355,8 +1355,8 @@ mv_file(const char *src, const char *src_path, const char *dst,
 	snprintf(full_dst, sizeof(full_dst), "%s/%s", path, dst);
 	chosp(full_dst);
 
-	// compare case sensitive strings even on Windows to let user rename file
-	// changing only case of some characters
+	/* compare case sensitive strings even on Windows to let user rename file
+	 * changing only case of some characters */
 	if(strcmp(full_src, full_dst) == 0)
 		return 0;
 
@@ -1480,6 +1480,17 @@ rename_file(FileView *view, int name_only)
 	enter_prompt_mode(L"New name: ", buf, rename_file_cb, complete_filename_only);
 }
 
+static char *
+find_slash(char *path)
+{
+	char *result = strrchr(path, '/');
+#ifdef _WIN32
+	if(result == NULL)
+		result = strrchr(path, '\\');
+#endif
+	return result;
+}
+
 #ifndef TEST
 static
 #endif
@@ -1507,9 +1518,9 @@ is_name_list_ok(int count, int nlines, char **list, char **files)
 		char *file_s = NULL, *list_s;
 		chomp(list[i]);
 
-		list_s = strrchr(list[i], '/');
+		list_s = find_slash(list[i]);
 		if(files != NULL)
-			file_s = strrchr(files[i], '/');
+			file_s = find_slash(files[i]);
 		if(list_s != NULL || file_s != NULL)
 		{
 			if(list_s - list[i] != file_s - files[i] ||

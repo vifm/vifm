@@ -25,6 +25,11 @@ test_move_fail(void)
 	char *src[] = { "a", "b" };
 	char *dst[] = { "../a", "b" };
 	assert_false(is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+
+#ifdef _WIN32
+	dst[0] = "..\\a";
+	assert_false(is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+#endif
 }
 
 static void
@@ -33,6 +38,12 @@ test_rename_inside_subdir_ok(void)
 	char *src[] = { "../a", "b" };
 	char *dst[] = { "../a_a", "b" };
 	assert_true(is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+
+#ifdef _WIN32
+	src[0] = "..\\a";
+	dst[0] = "..\\a_a";
+	assert_true(is_name_list_ok(ARRAY_LEN(src), ARRAY_LEN(dst), src, dst));
+#endif
 }
 
 void
