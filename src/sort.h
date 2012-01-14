@@ -24,6 +24,10 @@
 
 void sort_view(FileView *view);
 
+#if (defined(_WIN32) || defined(__APPLE__)) && defined(TEST)
+int vercmp(const char *s, const char *t);
+#endif
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

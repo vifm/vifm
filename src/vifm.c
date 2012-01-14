@@ -401,6 +401,8 @@ add_dirs_to_path(const char *path)
 int
 main(int argc, char *argv[])
 {
+	/* TODO: refactor main() function */
+
 	char dir[PATH_MAX];
 	char config_dir[PATH_MAX];
 	const char *console;

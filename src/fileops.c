@@ -295,7 +295,7 @@ make_name_unique(const char *filename)
 	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, getppid(),
 			getpid());
 #else
-	// TODO: fix name uniqualization on Windows
+	/* TODO: fix name uniqualization on Windows */
 	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, 0, 0);
 #endif
 	i = 0;

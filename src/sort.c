@@ -42,6 +42,12 @@ static int sort_descending;
 static int sort_type;
 
 static int sort_dir_list(const void *one, const void *two);
+#if defined(_WIN32) || defined(__APPLE__)
+#ifndef TEST
+static
+#endif
+int vercmp(const char *s, const char *t);
+#endif
 
 void
 sort_view(FileView *v)
@@ -86,16 +92,53 @@ compare_file_names(const char *s, const char *t, int ignore_case)
 		strtolower(t_buf);
 	}
 
-#if defined(_WIN32) || defined(__APPLE__)
-	return strcmp(s, t);
-#else
 	if(!cfg.sort_numbers)
 		return strcmp(s, t);
 	else
+#if defined(_WIN32) || defined(__APPLE__)
+		return vercmp(s, t);
+#else
 		return strverscmp(s, t);
-	/* TODO add strverscmp() for Windows and Mac OS */
 #endif
 }
+
+#if defined(_WIN32) || defined(__APPLE__)
+#ifndef TEST
+static
+#endif
+int vercmp(const char *s, const char *t)
+{
+	while(*s != '\0' && *t != '\0')
+	{
+		if(isdigit(*s) && isdigit(*t))
+		{
+			int num_a, num_b;
+			const char *os = s, *ot = t;
+			char *p;
+
+			num_a = strtol(s, &p, 10);
+			s = p;
+
+			num_b = strtol(t, &p, 10);
+			t = p;
+
+			if(num_a != num_b)
+				return num_a - num_b;
+			else if(*os != *ot)
+				return *os - *ot;
+		}
+		else if(*s == *t)
+		{
+			s++;
+			t++;
+		}
+		else
+			break;
+	}
+
+	return *s - *t;
+}
+#endif
 
 static int
 sort_dir_list(const void *one, const void *two)

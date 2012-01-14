@@ -1043,16 +1043,6 @@ strtolower(char *s)
 	}
 }
 
-static void
-strtoupper(char *s)
-{
-	while(*s != '\0')
-	{
-		*s = toupper(*s);
-		s++;
-	}
-}
-
 /* Returns pointer to a statically allocated buffer */
 const char *
 enclose_in_dquotes(const char *str)
@@ -1431,6 +1421,16 @@ exec_program(TCHAR *cmd)
 	}
 	CloseHandle(pinfo.hProcess);
 	return exitcode;
+}
+
+static void
+strtoupper(char *s)
+{
+	while(*s != '\0')
+	{
+		*s = toupper(*s);
+		s++;
+	}
 }
 
 int
