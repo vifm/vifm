@@ -591,10 +591,7 @@ friendly_size_notation(unsigned long long num, int str_size, char *str)
 	static const char* si_units[] = {
 		"B", "K", "M", "G", "T", "P", "E", "Z", "Y"
 	};
-
-	static int _gnuc_unused units_size_guard[
-		(ARRAY_LEN(iec_units) == ARRAY_LEN(si_units)) ? 1 : -1
-	];
+	ARRAY_GUARD(iec_units, ARRAY_LEN(si_units));
 
 	const char** units;
 	size_t u;

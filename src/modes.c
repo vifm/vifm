@@ -52,10 +52,7 @@ static int mode_flags[] = {
 	MF_USES_COUNT,                /* VIEW_MODE */
 	0,                            /* FILE_INFO_MODE */
 };
-
-static char _gnuc_unused mode_flags_size_guard[
-	(ARRAY_LEN(mode_flags) == MODES_COUNT) ? 1 : -1
-];
+ARRAY_GUARD(mode_flags, MODES_COUNT);
 
 static char uses_input_bar[] = {
 	1, /* NORMAL_MODE */
@@ -68,10 +65,7 @@ static char uses_input_bar[] = {
 	1, /* VIEW_MODE */
 	1, /* FILE_INFO_MODE */
 };
-
-static char _gnuc_unused uses_input_bar_size_guard[
-	(ARRAY_LEN(uses_input_bar) == MODES_COUNT) ? 1 : -1
-];
+ARRAY_GUARD(uses_input_bar, MODES_COUNT);
 
 typedef void (*mode_init_func)(int *mode);
 static mode_init_func mode_init_funcs[] = {
@@ -85,10 +79,7 @@ static mode_init_func mode_init_funcs[] = {
 	&init_view_mode,               /* VIEW_MODE */
 	&init_file_info_mode,          /* FILE_INFO_MODE */
 };
-
-static char _gnuc_unused mode_init_funcs_guard[
-	(ARRAY_LEN(mode_init_funcs) == MODES_COUNT) ? 1 : -1
-];
+ARRAY_GUARD(mode_init_funcs, MODES_COUNT);
 
 void
 init_modes(void)

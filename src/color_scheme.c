@@ -57,10 +57,7 @@ char *HI_GROUPS[] = {
 	[ERROR_MSG_COLOR]    = "ErrorMsg",
 	[BORDER_COLOR]       = "Border",
 };
-
-static int _gnuc_unused HI_GROUPS_size_guard[
-	(ARRAY_LEN(HI_GROUPS) + 2 == MAXNUM_COLOR) ? 1 : -1
-];
+ARRAY_GUARD(HI_GROUPS, MAXNUM_COLOR - 2);
 
 char *COLOR_NAMES[8] = {
 	[COLOR_BLACK]   = "black",
@@ -93,10 +90,7 @@ static const int default_colors[][3] = {
 	[ERROR_MSG_COLOR]    = { COLOR_RED,     COLOR_BLACK, 0                       },
 	[BORDER_COLOR]       = { COLOR_BLACK,   COLOR_WHITE, 0                       },
 };
-
-static int _gnuc_unused default_colors_size_guard[
-	(ARRAY_LEN(default_colors) + 2 == MAXNUM_COLOR) ? 1 : -1
-];
+ARRAY_GUARD(default_colors, MAXNUM_COLOR - 2);
 
 static tree_t dirs;
 

@@ -62,10 +62,7 @@ static int indexes[] = {
 	11, /* SORT_BY_TIME_MODIFIED */
 	2,  /* SORT_BY_INAME */
 };
-
-static int _gnuc_unused indexes_size_guard[
-	(ARRAY_LEN(indexes) == NUM_SORT_OPTIONS + 1) ? 1 : -1
-];
+ARRAY_GUARD(indexes, NUM_SORT_OPTIONS + 1);
 
 static void leave_sort_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);

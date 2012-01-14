@@ -58,6 +58,8 @@
 #endif
 
 #define ARRAY_LEN(x) (sizeof(x)/sizeof((x)[0]))
+#define ARRAY_GUARD(x, len) \
+    typedef int x##_array_guard[(ARRAY_LEN(x) == (len)) ? 1 : -1]
 
 #define MIN(a,b) ({int _a = (a), _b = (b); (_a < _b) ? _a : _b;})
 #define MAX(a,b) ({int _a = (a), _b = (b); (_a > _b) ? _a : _b;})

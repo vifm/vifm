@@ -86,10 +86,7 @@ static OPS undo_op[] = {
 	OP_NONE,     /* OP_RMDIR */
 	OP_REMOVE,   /* OP_MKFILE */
 };
-
-static int _gnuc_unused undo_op_size_guard[
-	(ARRAY_LEN(undo_op) == OP_COUNT) ? 1 : -1
-];
+ARRAY_GUARD(undo_op, OP_COUNT);
 
 static enum
 {
@@ -139,10 +136,7 @@ static enum
 	{ OPER_1ST, OPER_NON, OPER_NON, OPER_1ST,    /* do   OP_MKFILE */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_REMOVE  */
 };
-
-static int _gnuc_unused opers_size_guard[
-	(ARRAY_LEN(opers) == OP_COUNT) ? 1 : -1
-];
+ARRAY_GUARD(opers, OP_COUNT);
 
 static int data_is_ptr[] = {
 	0, /* OP_NONE */
@@ -166,10 +160,7 @@ static int data_is_ptr[] = {
 	0, /* OP_RMDIR */
 	0, /* OP_MKFILE */
 };
-
-static int _gnuc_unused data_is_ptr_size_guard[
-	(ARRAY_LEN(data_is_ptr) == OP_COUNT) ? 1 : -1
-];
+ARRAY_GUARD(data_is_ptr, OP_COUNT);
 
 static perform_func do_func;
 static const int *undo_levels;

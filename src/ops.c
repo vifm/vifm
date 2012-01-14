@@ -74,10 +74,7 @@ static op_func op_funcs[] = {
 	op_rmdir,    /* OP_RMDIR */
 	op_mkfile,   /* OP_MKFILE */
 };
-
-static int _gnuc_unused op_funcs_size_guard[
-	(ARRAY_LEN(op_funcs) == OP_COUNT) ? 1 : -1
-];
+ARRAY_GUARD(op_funcs, OP_COUNT);
 
 int
 perform_operation(OPS op, void *data, const char *src, const char *dst)
