@@ -1509,6 +1509,8 @@ update_dir_mtime(FileView *view)
 	}
 	CloseHandle(hfile);
 
+	while(check_dir_changed(view) > 0);
+
 	return 0;
 #endif
 }
