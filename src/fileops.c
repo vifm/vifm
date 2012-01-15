@@ -1481,7 +1481,7 @@ rename_file(FileView *view, int name_only)
 }
 
 static char *
-find_slash(char *path)
+find_slash(const char *path)
 {
 	char *result = strrchr(path, '/');
 #ifdef _WIN32

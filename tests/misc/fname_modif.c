@@ -479,6 +479,18 @@ test_colon_gs(void)
 	expanded = expand_macros(&lwin, " cp %f:gs?l?r?k? ", "", &menu, &split);
 	assert_string_equal(" cp rfire0 rfire2k? ", expanded);
 	free(expanded);
+
+#ifdef _WIN32
+	{
+		char *old = cfg.shell;
+		cfg.shell = strdup("bash");
+		expanded = expand_macros(&lwin, " cp %f:p:gs?\\?/? ", "", &menu, &split);
+		assert_string_equal(" cp /lwin/lfile0 /lwin/lfile2 ", expanded);
+		free(expanded);
+		free(cfg.shell);
+		cfg.shell = old;
+	}
+#endif
 }
 
 #ifdef _WIN32
