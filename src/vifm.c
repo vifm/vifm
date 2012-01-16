@@ -302,11 +302,12 @@ add_to_path(const char *str)
 	free(new_path);
 }
 
-static void
+/* returns non-zero if path was changed */
+static int
 check_path(FileView *view, const char *path)
 {
-	if(path[0] == '\0')
-		return;
+	if(path[0] == '\0' || pathcmp(view->curr_dir, path) == 0)
+		return 0;
 
 	strcpy(view->curr_dir, path);
 	if(!is_dir(path) && !is_unc_root(path))
@@ -315,6 +316,7 @@ check_path(FileView *view, const char *path)
 		if((slash = strrchr(view->curr_dir, '/')) != NULL)
 			*slash = '\0';
 	}
+	return 1;
 }
 
 static void
@@ -509,8 +511,8 @@ main(int argc, char *argv[])
 	ipc_init(&parse_recieved_arguments);
 
 	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle);
-	check_path(&lwin, lwin_path);
-	check_path(&rwin, rwin_path);
+	(int)check_path(&lwin, lwin_path);
+	(int)check_path(&rwin, rwin_path);
 
 	load_initial_directory(&lwin, dir);
 	load_initial_directory(&rwin, dir);
@@ -585,8 +587,8 @@ main(int argc, char *argv[])
 		read_info_file(0);
 		curr_stats.load_stage = 1;
 
-		check_path(&lwin, lwin_path);
-		check_path(&rwin, rwin_path);
+		(int)check_path(&lwin, lwin_path);
+		(int)check_path(&rwin, rwin_path);
 
 		load_initial_directory(&lwin, dir);
 		load_initial_directory(&rwin, dir);
@@ -623,18 +625,29 @@ parse_recieved_arguments(char *args[])
 			&rwin_handle);
 	exec_startup_commands(argc, args);
 
-	check_path(&lwin, lwin_path);
-	check_path(&rwin, rwin_path);
+	if(get_mode() != NORMAL_MODE)
+		return;
 
-	change_directory(&lwin, lwin_path);
-	change_directory(&rwin, rwin_path);
+	if(check_path(&lwin, lwin_path))
+	{
+		change_directory(&lwin, lwin.curr_dir);
+		load_dir_list(&lwin, 0);
+		check_path_for_file(&lwin, lwin_path, lwin_handle);
+	}
 
-	check_path_for_file(&lwin, lwin_path, lwin_handle);
-	check_path_for_file(&rwin, rwin_path, rwin_handle);
+	if(check_path(&rwin, rwin_path))
+	{
+		change_directory(&rwin, rwin.curr_dir);
+		load_dir_list(&rwin, 0);
+		check_path_for_file(&rwin, rwin_path, rwin_handle);
+	}
 
 	move_to_list_pos(curr_view, curr_view->list_pos);
-	draw_dir_list(other_view, other_view->top_line);
-	wrefresh(other_view->win);
+	if(!curr_stats.view)
+	{
+		draw_dir_list(other_view, other_view->top_line);
+		wrefresh(other_view->win);
+	}
 
 	clean_status_bar();
 
