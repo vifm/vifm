@@ -35,6 +35,7 @@ typedef enum
 	OP_OFF,
 	OP_SET,
 	OP_MODIFIED, /* for OPT_INT, OPT_SET and OPT_STR */
+	OP_RESET,
 }OPT_OP;
 
 typedef union
