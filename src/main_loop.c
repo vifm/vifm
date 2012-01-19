@@ -69,15 +69,14 @@ static int
 read_char(WINDOW *win, wint_t *c, int timeout)
 {
 	static const int T = 150;
+	static const int IPC_F = 10;
 
 	int i;
 	int result;
 
 	for(i = 0; i <= timeout/T; i++)
 	{
-		ipc_check();
-
-		wtimeout(win, MIN(T, timeout));
+		int j;
 
 		if(curr_stats.pending_redraw)
 		{
@@ -94,7 +93,15 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 
 		check_background_jobs();
 
-		if((result = wget_wch(status_bar, c)) != ERR)
+		for(j = 0; j < IPC_F; j++)
+		{
+			ipc_check();
+			wtimeout(win, MIN(T, timeout)/IPC_F);
+
+			if((result = wget_wch(status_bar, c)) != ERR)
+				break;
+		}
+		if(result != ERR)
 			break;
 
 		timeout -= T;
