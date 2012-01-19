@@ -71,6 +71,7 @@
 #define CONF_DIR "(%HOME%/.vifm or %APPDATA%/Vifm)"
 #endif
 
+static void quit_on_invalid_arg(void);
 static void parse_recieved_arguments(char *args[]);
 
 static void
@@ -216,8 +217,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 			if(!ipc_server())
 			{
 				ipc_send(argv + x + 1);
-				endwin();
-				exit(0);
+				quit_on_invalid_arg();
 			}
 		}
 		else if(!strcmp(argv[x], "-f"))
@@ -229,15 +229,13 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		}
 		else if(!strcmp(argv[x], "--version") || !strcmp(argv[x], "-v"))
 		{
-			endwin();
 			show_version_msg();
-			exit(0);
+			quit_on_invalid_arg();
 		}
 		else if(!strcmp(argv[x], "--help") || !strcmp(argv[x], "-h"))
 		{
-			endwin();
 			show_help_msg();
-			exit(0);
+			quit_on_invalid_arg();
 		}
 		else if(!strcmp(argv[x], "--logging"))
 		{
@@ -248,8 +246,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 			if(x == argc - 1)
 			{
 				puts("Argument missing after \"-c\"");
-				endwin();
-				exit(0);
+				quit_on_invalid_arg();
 			}
 			/* do nothing, it's handeled in exec_startup_commands() */
 			x++;
@@ -275,11 +272,17 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		}
 		else
 		{
-			endwin();
 			show_help_msg();
-			exit(0);
+			quit_on_invalid_arg();
 		}
 	}
+}
+
+static void
+quit_on_invalid_arg(void)
+{
+	if(curr_stats.load_stage == 0)
+		exit(1);
 }
 
 static void
