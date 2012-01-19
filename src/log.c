@@ -50,9 +50,13 @@ reinit_logger(void)
 	if(verbosity <= 0)
 		return;
 
-	log_time();
-	fprintf(log, " ===== Logger reinitialization to '%s' =====\n", cfg.log_file);
-	fclose(log);
+	if(log != NULL)
+	{
+		log_time();
+		fprintf(log, " ===== Logger reinitialization to '%s' =====\n",
+				cfg.log_file);
+		fclose(log);
+	}
 
 	init();
 }
@@ -73,7 +77,7 @@ init(void)
 void
 log_prefix(const char *file, const char *func, int line)
 {
-	if(verbosity <= 0)
+	if(verbosity <= 0 || log == NULL)
 		return;
 
 	log_time();
@@ -83,7 +87,7 @@ log_prefix(const char *file, const char *func, int line)
 void
 log_vifm_state(void)
 {
-	if(verbosity <= 0)
+	if(verbosity <= 0 || log == NULL)
 		return;
 
 	fprintf(log, "               Load stage: %d\n", curr_stats.load_stage);
@@ -92,7 +96,7 @@ log_vifm_state(void)
 void
 log_serror(const char *file, const char *func, int line, int no)
 {
-	if(verbosity <= 0)
+	if(verbosity <= 0 || log == NULL)
 		return;
 
 	log_prefix(file, func, line);
@@ -103,7 +107,7 @@ log_serror(const char *file, const char *func, int line, int no)
 void
 log_werror(const char *file, const char *func, int line, int no)
 {
-	if(verbosity <= 0)
+	if(verbosity <= 0 || log == NULL)
 		return;
 
 	log_prefix(file, func, line);
@@ -117,7 +121,7 @@ log_msg(const char *msg, ...)
 	va_list ap;
 	va_start(ap, msg);
 
-	if(verbosity <= 0)
+	if(verbosity <= 0 || log == NULL)
 		return;
 
 	fprintf(log, "               ");
@@ -134,9 +138,6 @@ log_time(void)
 	struct tm *tm_ptr;
 	char buf[128];
 
-	if(verbosity <= 0)
-		return;
-
 	t = time(NULL);
 	tm_ptr = localtime(&t);
 	strftime(buf, sizeof(buf), "%y.%m.%d %H:%M", tm_ptr);
@@ -147,6 +148,9 @@ void
 log_cwd(void)
 {
 	char buf[PATH_MAX];
+
+	if(verbosity <= 0 || log == NULL)
+		return;
 
 	if(getcwd(buf, sizeof(buf)) == NULL)
 		log_msg("%s", "getwd() error");

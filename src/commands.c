@@ -147,7 +147,9 @@ static int apply_p_mod(const char *path, const char *parent, char *buf,
 static int apply_tilde_mod(const char *path, char *buf, size_t buf_len);
 static int apply_dot_mod(const char *path, char *buf, size_t buf_len);
 static int apply_h_mod(const char *path, char *buf, size_t buf_len);
+#ifdef _WIN32
 static int apply_u_mod(const char *path, char *buf, size_t buf_len);
+#endif
 static int apply_t_mod(const char *path, char *buf, size_t buf_len);
 static int apply_r_mod(const char *path, char *buf, size_t buf_len);
 static int apply_e_mod(const char *path, char *buf, size_t buf_len);;;
