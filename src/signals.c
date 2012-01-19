@@ -57,8 +57,7 @@ received_sigwinch(void)
 
 	if(!isendwin())
 	{
-		if(curr_stats.load_stage >= 3)
-			curr_stats.pending_redraw = 1;
+		curr_stats.pending_redraw = 1;
 	}
 	else
 	{
