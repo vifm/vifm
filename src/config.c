@@ -655,7 +655,8 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'a') /* active view */
 		{
-			if(line[1] == 'r')
+			/* don't change active view on :restart command */
+			if(line[1] == 'r' && !reread)
 			{
 				update_view_title(&lwin);
 				update_view_title(&rwin);
