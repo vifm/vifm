@@ -498,10 +498,6 @@ main(int argc, char *argv[])
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	/* Setup the ncurses interface. */
-	if(!setup_ncurses_interface())
-		return -1;
-
 	no_configs = 0;
 	for(i = 1; i < argc; i++)
 		if(strcmp("--no-configs", argv[i]) == 0)
@@ -514,11 +510,16 @@ main(int argc, char *argv[])
 	ipc_init(&parse_recieved_arguments);
 
 	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle);
+
 	(int)check_path(&lwin, lwin_path);
 	(int)check_path(&rwin, rwin_path);
 
 	load_initial_directory(&lwin, dir);
 	load_initial_directory(&rwin, dir);
+
+	/* Setup the ncurses interface. */
+	if(!setup_ncurses_interface())
+		return -1;
 
 	init_modes();
 	init_option_handlers();
