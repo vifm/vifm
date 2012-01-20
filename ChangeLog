@@ -122,6 +122,8 @@
 
 	Fixed adding of "(1)" to name passed to :clone.
 
+	Fixed messages about background operations in :jobs menu.
+
 0.7.0 to 0.7.1
 
 	Added 'scrollbind' option.

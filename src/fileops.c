@@ -3332,7 +3332,8 @@ cp_file(const char *src_dir, const char *dst_dir, const char *src,
 
 static int
 cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
-		int force, char *buf, char *path, int *from_file, int *from_trash)
+		int force, char *buf, size_t buf_len, char *path, int *from_file,
+		int *from_trash)
 {
 	int error = 0;
 
@@ -3390,9 +3391,9 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 		strcpy(buf, "alink");
 	else
 		strcpy(buf, "rlink");
-	snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), " from %s to ",
+	snprintf(buf + strlen(buf), buf_len - strlen(buf), " from %s to ",
 			replace_home_part(view->curr_dir));
-	snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%s: ",
+	snprintf(buf + strlen(buf), buf_len - strlen(buf), "%s: ",
 			replace_home_part(path));
 	make_undo_string(view, buf, *nlines, *list);
 
@@ -3427,8 +3428,8 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		return 0;
 	}
 
-	i = cpmv_prepare(view, &list, &nlines, move, type, force, buf, path,
-			&from_file, &from_trash);
+	i = cpmv_prepare(view, &list, &nlines, move, type, force, buf, sizeof(buf),
+			path, &from_file, &from_trash);
 	if(i != 0)
 		return i > 0;
 
@@ -3561,8 +3562,8 @@ cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force)
 	args->move = move;
 	args->force = force;
 
-	i = cpmv_prepare(view, &list, &args->nlines, move, 0, force, buf, args->path,
-			&args->from_file, &args->from_trash);
+	i = cpmv_prepare(view, &list, &args->nlines, move, 0, force, buf, sizeof(buf),
+			args->path, &args->from_file, &args->from_trash);
 	if(i != 0)
 	{
 		free(args);
