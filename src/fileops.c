@@ -2709,7 +2709,8 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 
 		for(j = 0; j < copies; j++)
 		{
-			clone_name = gen_clone_name((nlines > 0) ? list[i] : sel[i]);
+			if(file_exists(NULL, clone_name))
+				clone_name = gen_clone_name((nlines > 0) ? list[i] : sel[i]);
 			clone_file(view, sel[i], path, clone_name);
 		}
 
