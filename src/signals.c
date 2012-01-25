@@ -17,13 +17,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <signal.h>
-
-#include "log.h"
-
-#ifndef _WIN32
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #include <curses.h>
+
+#include <signal.h>
+#include <stdio.h> /* fprintf */
+
+#include "config.h"
+#include "fileops.h"
+#include "log.h"
+#include "utils.h"
+
+static void _gnuc_noreturn shutdown_nicely(void);
+
+#ifndef _WIN32
 
 #include <sys/stat.h> /* stat */
 #include <sys/time.h> /* timeval */
@@ -44,7 +54,6 @@
 #include "menus.h"
 #include "status.h"
 #include "ui.h"
-#include "utils.h"
 
 #include "signals.h"
 
@@ -95,17 +104,6 @@ received_sigchld(void)
 		add_finished_job(pid, status);
 }
 
-static void _gnuc_noreturn
-shutdown_nicely(void)
-{
-	endwin();
-	set_term_title(NULL);
-	unmount_fuse();
-	write_info_file();
-	fprintf(stdout, "Vifm killed by signal.\n");
-	exit(0);
-}
-
 static void
 handle_signal(int sig)
 {
@@ -133,7 +131,40 @@ handle_signal(int sig)
 			break;
 	}
 }
+#else
+BOOL WINAPI
+ctrl_handler(DWORD dwCtrlType)
+{
+  LOG_FUNC_ENTER;
+
+	switch(dwCtrlType)
+	{
+		case CTRL_C_EVENT:
+		case CTRL_BREAK_EVENT:
+			break;
+		case CTRL_CLOSE_EVENT:
+		case CTRL_LOGOFF_EVENT:
+		case CTRL_SHUTDOWN_EVENT:
+			shutdown_nicely();
+			break;
+	}
+
+	return TRUE;
+}
 #endif
+
+static void _gnuc_noreturn
+shutdown_nicely(void)
+{
+  LOG_FUNC_ENTER;
+
+	endwin();
+	set_term_title(NULL);
+	unmount_fuse();
+	write_info_file();
+	fprintf(stdout, "Vifm killed by signal.\n");
+	exit(0);
+}
 
 void
 setup_signals(void)
@@ -157,6 +188,11 @@ setup_signals(void)
 	signal(SIGUSR1, SIG_IGN);
 	signal(SIGUSR2, SIG_IGN);
 	signal(SIGALRM, SIG_IGN);
+#else
+	if(!SetConsoleCtrlHandler(ctrl_handler, TRUE))
+	{
+		LOG_WERROR(GetLastError());
+	}
 #endif
 
 	signal(SIGINT, SIG_IGN);

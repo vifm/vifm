@@ -62,6 +62,8 @@
 
 	Never change active view on :restart command.
 
+	Properly quit vifm on console closing on Windows.
+
 	Fixed bug with fixed-length buffer for :grep command (when many files are
 	selected).
 
