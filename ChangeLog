@@ -126,6 +126,8 @@
 
 	Fixed %S macro and no command output.
 
+	Fixed filtering of selected files with special symbols in their name.
+
 0.7.0 to 0.7.1
 
 	Added 'scrollbind' option.

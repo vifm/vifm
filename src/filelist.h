@@ -71,6 +71,10 @@ void update_view_title(FileView *view);
 void clean_positions_in_history(FileView *view);
 int ensure_file_is_selected(FileView *view, const char *name);
 
+#ifdef TEST
+int regexp_filter_match(FileView *view, char *filename);
+#endif
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

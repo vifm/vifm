@@ -17,6 +17,7 @@ void fname_modif_tests(void);
 void gen_clone_name_tests(void);
 void rename_tests(void);
 void sort_tests(void);
+void filtering_tests(void);
 
 void all_tests(void)
 {
@@ -37,6 +38,7 @@ void all_tests(void)
 	gen_clone_name_tests();
 	rename_tests();
 	sort_tests();
+	filtering_tests();
 }
 
 int main(int argc, char **argv)

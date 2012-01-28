@@ -1734,7 +1734,10 @@ reset_selected_files(FileView *view, int need_free)
 	}
 }
 
-static int
+#ifndef TEST
+static
+#endif
+int
 regexp_filter_match(FileView *view, char *filename)
 {
 	regex_t re;
@@ -2333,6 +2336,49 @@ load_dir_list(FileView *view, int reload)
 	}
 }
 
+/*
+ * Escape the filename for the purpose of using it in filename filter.
+ *
+ * Returns new string, caller should free it.
+ */
+static char *
+escape_name_for_filter(const char *string)
+{
+	size_t len;
+	size_t i;
+	char *ret, *dup;
+
+	len = strlen(string);
+
+	dup = ret = malloc(len*2 + 2 + 1);
+
+	for(i = 0; i < len; i++)
+	{
+		switch(*string)
+		{
+			case '\\':
+			case '[':
+			case ']':
+			case '(':
+			case ')':
+			case '{':
+			case '}':
+			case '+':
+			case '*':
+			case '^':
+			case '$':
+			case '.':
+			case '?':
+			case '|':
+				*dup++ = '\\';
+				break;
+		}
+		*dup++ = *string++;
+	}
+	*dup = '\0';
+	return ret;
+}
+
 void
 filter_selected_files(FileView *view)
 {
@@ -2343,35 +2389,44 @@ filter_selected_files(FileView *view)
 
 	for(x = 0; x < view->list_rows; x++)
 	{
+		size_t buf_size;
+		char *name;
+
 		if(!view->dir_entry[x].selected)
 			continue;
 
 		if(pathcmp(view->dir_entry[x].name, "../") == 0)
 			continue;
 
+		name = escape_name_for_filter(view->dir_entry[x].name);
+
+		/* realloc memory allocated for view->filename_filter */
 		if(view->filename_filter == NULL || view->filename_filter[0] == '\0')
 		{
-			size_t buf_size;
-
-			buf_size = 2 + strlen(view->dir_entry[x].name) + 3 + 1;
-			view->filename_filter = (char *)realloc(view->filename_filter, buf_size);
+			buf_size = 1 + strlen(name) + 1 + 1;
 		}
 		else
 		{
-			size_t buf_size;
+			buf_size = strlen(view->filename_filter) + 1 + 1 + strlen(name) + 1 + 1;
+		}
+		view->filename_filter = realloc(view->filename_filter, buf_size);
 
-			buf_size = 3 + strlen(view->dir_entry[x].name) + 3 + 1;
-			view->filename_filter = (char *)realloc(view->filename_filter,
-					strlen(view->filename_filter) + buf_size);
+		/* add OR if needed */
+		if(view->filename_filter[0] != '\0')
+		{
 			strcat(view->filename_filter, "|");
 		}
 
-		strcat(view->filename_filter, "\\<");
-		strcat(view->filename_filter, view->dir_entry[x].name);
+		/* update filename filter */
+		strcat(view->filename_filter, "^");
+		strcat(view->filename_filter, name);
 		chosp(view->filename_filter);
-		strcat(view->filename_filter, "\\>$");
-		view->filtered++;
+		strcat(view->filename_filter, "$");
+
+		free(name);
 	}
+
+	/* reload view */
 	view->invert = 1;
 	clean_status_bar();
 	load_dir_list(view, 1);

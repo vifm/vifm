@@ -237,7 +237,6 @@ my_system(char *command)
 /*
  * Escape the filename for the purpose of inserting it into the shell.
  *
- * Automatically calculates string length when len == 0.
  * quote_percent means prepend percent sign with a percent sign
  *
  * Returns new string, caller should free it.
