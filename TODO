@@ -64,6 +64,7 @@ Possible things to add.
     Maybe we should reread configuration files on :restart when --no-configs
         was passed on startup.
     'wildmode' option.
+    A macro to redirect command output into view pane.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
@@ -87,6 +88,8 @@ Other (questionable) things.
     Make :alink, :copy, ... accept globs (e.g. :co *.c).
     Option to trigger completion on slash in command-line.
     Maybe expand macros for :touch amd :mkdir commands (for :touch %"d)
+    An option to hide ../ directory.
+    An ability to customize how directories are shown (e.g. dir/, [dir]).
 
 Code improvements.
     Write more tests.

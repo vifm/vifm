@@ -2931,7 +2931,7 @@ output_to_statusbar(const char *cmd)
 	fclose(file);
 	fclose(err);
 
-	status_bar_message(lines);
+	status_bar_message((lines == NULL) ? "" : lines);
 	free(lines);
 }
 
