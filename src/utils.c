@@ -952,6 +952,8 @@ to_multibyte(const wchar_t *s)
 int
 get_link_target(const char *link, char *buf, size_t buf_len)
 {
+	LOG_FUNC_ENTER;
+
 #ifndef _WIN32
 	char *filename;
 	ssize_t len;
@@ -969,8 +971,7 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 	buf[len] = '\0';
 	return 0;
 #else
-	static char filename[PATH_MAX];
-
+	char filename[PATH_MAX];
 	DWORD attr;
 	HANDLE hfind;
 	WIN32_FIND_DATAA ffd;
@@ -982,7 +983,10 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 
 	attr = GetFileAttributes(link);
 	if(attr == INVALID_FILE_ATTRIBUTES)
+	{
+		LOG_WERROR(GetLastError());
 		return -1;
+	}
 
 	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
 		return -1;
@@ -991,9 +995,15 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 	chosp(filename);
 	hfind = FindFirstFileA(filename, &ffd);
 	if(hfind == INVALID_HANDLE_VALUE)
+	{
+		LOG_WERROR(GetLastError());
 		return -1;
+	}
 
-	FindClose(hfind);
+	if(!FindClose(hfind))
+	{
+		LOG_WERROR(GetLastError());
+	}
 
 	if(ffd.dwReserved0 != IO_REPARSE_TAG_SYMLINK)
 		return -1;
@@ -1002,11 +1012,15 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
 			NULL);
 	if(hfile == INVALID_HANDLE_VALUE)
+	{
+		LOG_WERROR(GetLastError());
 		return -1;
+	}
 
 	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb,
 			sizeof(rdb), &attr, NULL))
 	{
+		LOG_WERROR(GetLastError());
 		CloseHandle(hfile);
 		return -1;
 	}
