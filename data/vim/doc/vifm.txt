@@ -1529,11 +1529,11 @@ key, etc.):
    [+-]ext   - sort by extension
    [+-]name  - sort by name (including extension)
    [+-]iname - sort by name (including extension, ignores case)
-   [+-]gid   - sort by group id
-   [+-]gname - sort by group name
-   [+-]mode  - sort by mode
-   [+-]uid   - sort by owner id
-   [+-]uname - sort by owner name
+   [+-]gid   - sort by group id (*nix only)
+   [+-]gname - sort by group name (*nix only)
+   [+-]mode  - sort by mode (*nix only)
+   [+-]uid   - sort by owner id (*nix only)
+   [+-]uname - sort by owner name (*nix only)
    [+-]size  - sort by size
    [+-]atime - sort by time accessed
    [+-]ctime - sort by time changed

@@ -47,20 +47,28 @@ static int descending;
 
 static const char * caps[] = { "a-z", "z-a" };
 
+#ifndef _WIN32
+#define CORRECTION 0
+#else
+#define CORRECTION -5
+#endif
+
 static int indexes[] = {
 	-1,
-	0,  /* SORT_BY_EXTENSION */
-	1,  /* SORT_BY_NAME */
-	3,  /* SORT_BY_GROUP_ID */
-	4,  /* SORT_BY_GROUP_NAME */
-	5,  /* SORT_BY_MODE */
-	6,  /* SORT_BY_OWNER_ID */
-	7,  /* SORT_BY_OWNER_NAME */
-	8,  /* SORT_BY_SIZE */
-	9,  /* SORT_BY_TIME_ACCESSED */
-	10, /* SORT_BY_TIME_CHANGED */
-	11, /* SORT_BY_TIME_MODIFIED */
-	2,  /* SORT_BY_INAME */
+	0,               /* SORT_BY_EXTENSION */
+	1,               /* SORT_BY_NAME */
+#ifndef _WIN32
+	3,               /* SORT_BY_GROUP_ID */
+	4,               /* SORT_BY_GROUP_NAME */
+	5,               /* SORT_BY_MODE */
+	6,               /* SORT_BY_OWNER_ID */
+	7,               /* SORT_BY_OWNER_NAME */
+#endif
+	8 + CORRECTION,  /* SORT_BY_SIZE */
+	9 + CORRECTION,  /* SORT_BY_TIME_ACCESSED */
+	10 + CORRECTION, /* SORT_BY_TIME_CHANGED */
+	11 + CORRECTION, /* SORT_BY_TIME_MODIFIED */
+	2,               /* SORT_BY_INAME */
 };
 ARRAY_GUARD(indexes, NUM_SORT_OPTIONS + 1);
 
@@ -131,9 +139,9 @@ enter_sort_mode(FileView *active_view)
 	curs_set(FALSE);
 	update_all_windows();
 
-	top = 2;
+	top = 3;
 	bottom = top + NUM_SORT_OPTIONS - 1;
-	curr = indexes[abs(view->sort[0])] + 2;
+	curr = top + indexes[abs(view->sort[0])];
 	col = 6;
 
 	redraw_sort_dialog();
@@ -142,34 +150,37 @@ enter_sort_mode(FileView *active_view)
 void
 redraw_sort_dialog(void)
 {
-	int x, y;
+	int x, y, cy;
 
 	werase(sort_win);
 	box(sort_win, ACS_VLINE, ACS_HLINE);
 
 	getmaxyx(sort_win, y, x);
 	mvwaddstr(sort_win, 0, (x - 6)/2, " Sort ");
-	mvwaddstr(sort_win, 1, 2, " Sort files by:");
-	mvwaddstr(sort_win, 2, 4, " [   ] File Extenstion");
-	mvwaddstr(sort_win, 3, 4, " [   ] Name");
-	mvwaddstr(sort_win, 4, 4, " [   ] Name (ignore case)");
-	mvwaddstr(sort_win, 5, 4, " [   ] Group ID");
-	mvwaddstr(sort_win, 6, 4, " [   ] Group Name");
-	mvwaddstr(sort_win, 7, 4, " [   ] Mode");
-	mvwaddstr(sort_win, 8, 4, " [   ] Owner ID");
-	mvwaddstr(sort_win, 9, 4, " [   ] Owner Name");
-	mvwaddstr(sort_win, 10, 4, " [   ] Size");
-	mvwaddstr(sort_win, 11, 4, " [   ] Time Accessed");
+	mvwaddstr(sort_win, top - 1, 2, " Sort files by:");
+	cy = top;
+	mvwaddstr(sort_win, cy++, 4, " [   ] File Extenstion");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Name");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Name (ignore case)");
 #ifndef _WIN32
-	mvwaddstr(sort_win, 12, 4, " [   ] Time Changed");
-#else
-	mvwaddstr(sort_win, 12, 4, " [   ] Time Created");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Group ID");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Group Name");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Mode");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Owner ID");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Owner Name");
 #endif
-	mvwaddstr(sort_win, 13, 4, " [   ] Time Modified");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Size");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Time Accessed");
+#ifndef _WIN32
+	mvwaddstr(sort_win, cy++, 4, " [   ] Time Changed");
+#else
+	mvwaddstr(sort_win, cy++, 4, " [   ] Time Created");
+#endif
+	mvwaddstr(sort_win, cy++, 4, " [   ] Time Modified");
 	mvwaddstr(sort_win, curr, 6, caps[descending]);
 
 	getmaxyx(stdscr, y, x);
-	mvwin(sort_win, (y - (NUM_SORT_OPTIONS + 3))/2, (x - 30)/2);
+	mvwin(sort_win, (y - (cy - 2 + 3))/2, (x - 30)/2);
 	wrefresh(sort_win);
 }
 

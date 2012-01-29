@@ -126,45 +126,27 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 
 	switch(abs(view->sort[0]))
 	{
-		case SORT_BY_OWNER_NAME:
 #ifndef _WIN32
+		case SORT_BY_OWNER_NAME:
 			if((pwd_buf = getpwuid(view->dir_entry[x].uid)) != NULL)
 			{
 				snprintf(buf, sizeof(buf), " %s", pwd_buf->pw_name);
 				break;
 			}
 			/* break skipped */
-#else
-			snprintf(buf, sizeof(buf), " UNKNOWN");
-			break;
-#endif
 		case SORT_BY_OWNER_ID:
-#ifndef _WIN32
 			snprintf(buf, sizeof(buf), " %d", (int) view->dir_entry[x].uid);
-#else
-			snprintf(buf, sizeof(buf), " UNKNOWN");
-#endif
 			break;
 		case SORT_BY_GROUP_NAME:
-#ifndef _WIN32
 			if((grp_buf = getgrgid(view->dir_entry[x].gid)) != NULL)
 			{
 				snprintf(buf, sizeof(buf), " %s", grp_buf->gr_name);
 				break;
 			}
 			/* break skipped */
-#else
-			snprintf(buf, sizeof(buf), " UNKNOWN");
-			break;
-#endif
 		case SORT_BY_GROUP_ID:
-#ifndef _WIN32
 			snprintf(buf, sizeof(buf), " %d", (int) view->dir_entry[x].gid);
-#else
-			snprintf(buf, sizeof(buf), " UNKNOWN");
-#endif
 			break;
-#ifndef _WIN32
 		case SORT_BY_MODE:
 			snprintf(buf, sizeof(buf), " %s", get_mode_str(view->dir_entry[x].mode));
 			break;

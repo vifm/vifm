@@ -86,32 +86,38 @@ static char print_buf[320*80];
 static const char * sort_enum[] = {
 	"ext",
 	"name",
+#ifndef _WIN32
 	"gid",
 	"gname",
 	"mode",
 	"uid",
 	"uname",
+#endif
 	"size",
 	"atime",
 	"ctime",
 	"mtime",
 	"iname",
 };
+ARRAY_GUARD(sort_enum, NUM_SORT_OPTIONS);
 
 static const char * sort_types[] = {
 	"ext",   "+ext",   "-ext",
 	"name",  "+name",  "-name",
+#ifndef _WIN32
 	"gid",   "+gid",   "-gid",
 	"gname", "+gname", "-gname",
 	"mode",  "+mode",  "-mode",
 	"uid",   "+uid",   "-uid",
 	"uname", "+uname", "-uname",
+#endif
 	"size",  "+size",  "-size",
 	"atime", "+atime", "-atime",
 	"ctime", "+ctime", "-ctime",
 	"mtime", "+mtime", "-mtime",
 	"iname", "+iname", "-iname",
 };
+ARRAY_GUARD(sort_types, NUM_SORT_OPTIONS*3);
 
 static const char * sortorder_enum[] = {
 	"ascending",

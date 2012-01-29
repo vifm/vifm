@@ -152,7 +152,7 @@ test_disbalance(void)
 	reset_undo_list();
 
 	cmd_group_begin("msg0");
-	assert_int_equal(0, add_operation(OP_CHMOD, NULL, NULL, "do_msg0",
+	assert_int_equal(0, add_operation(OP_COPY, NULL, NULL, "do_msg0",
 			"undo_msg0"));
 	cmd_group_end();
 

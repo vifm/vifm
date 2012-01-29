@@ -69,7 +69,7 @@ static void clear_curr(void);
 static void draw_curr(void);
 
 /* properties dialog width */
-static const int WIDTH = 25;
+static const int WIDTH = 29;
 
 static int *mode;
 static FileView *view;
@@ -95,7 +95,7 @@ ARRAY_GUARD(attr_list, ATTR_COUNT);
 static const char *attr_strings[ATTR_COUNT] = {
 	[ATTR_ARCHIVE] = "Archive",
 	[ATTR_HIDDEN] = "Hidden",
-	[ATTR_NOT_INDEX] = "Not indexing",
+	[ATTR_NOT_INDEX] = "No content indexing",
 	[ATTR_READONLY] = "Readonly",
 	[ATTR_SYSTEM] = "System",
 };
