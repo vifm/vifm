@@ -22,7 +22,6 @@ Documentation.
 
 Windows.
     Make :chmod accept arguments.
-    Show file attributes in status bar and info view.
     Make properties dialog change file attributes recursively.
     Add a command to create .lnk files.
     Follow targets of .lnk files.

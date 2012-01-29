@@ -336,13 +336,10 @@ files_attrib(FileView *view, DWORD add, DWORD sub, int recurse_dirs)
 	if(i == view->list_rows)
 	{
 		char buf[COMMAND_GROUP_INFO_LEN];
-		char inv[16];
 		snprintf(buf, sizeof(buf), "chmod in %s: %s",
 				replace_home_part(view->curr_dir),
 				view->dir_entry[view->list_pos].name);
 		cmd_group_begin(buf);
-		snprintf(inv, sizeof(inv), "0%o",
-				view->dir_entry[view->list_pos].mode & 0xff);
 		attrib_file_in_list(view, view->list_pos, add, sub, recurse_dirs);
 	}
 	else
@@ -369,8 +366,6 @@ files_attrib(FileView *view, DWORD add, DWORD sub, int recurse_dirs)
 		{
 			if(view->dir_entry[j].selected)
 			{
-				char inv[16];
-				snprintf(inv, sizeof(inv), "0%o", view->dir_entry[j].mode & 0xff);
 				attrib_file_in_list(view, j, add, sub, recurse_dirs);
 			}
 			j++;

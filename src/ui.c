@@ -302,7 +302,12 @@ expand_status_line_macros(FileView *view, const char *format)
 				snprintf(buf, sizeof(buf), "%s", get_current_file_name(view));
 				break;
 			case 'A':
+#ifndef _WIN32
 				get_perm_string(buf, sizeof(buf), view->dir_entry[view->list_pos].mode);
+#else
+				snprintf(buf, sizeof(buf), "%s",
+						attr_str_long(view->dir_entry[view->list_pos].attrs));
+#endif
 				break;
 			case 'u':
 				get_uid_string(view, sizeof(buf), buf);
@@ -393,8 +398,13 @@ update_stat_window_old(FileView *view)
 		strcat(id_buf, ":");
 	get_gid_string(view, sizeof(id_buf) - strlen(id_buf),
 			id_buf + strlen(id_buf));
+#ifndef _WIN32
 	get_perm_string(perm_buf, sizeof(perm_buf),
 			view->dir_entry[view->list_pos].mode);
+#else
+	snprintf(perm_buf, sizeof(perm_buf), "%s",
+			attr_str_long(view->dir_entry[view->list_pos].attrs));
+#endif
 
 	werase(stat_win);
 	cur_x = 2;

@@ -142,9 +142,12 @@ redraw_file_info_dialog(void)
 	{
 		snprintf(uid_buf, sizeof(uid_buf), "%s", pwd_buf->pw_name);
 	}
-#endif
 	get_perm_string(perm_buf, sizeof(perm_buf),
 			view->dir_entry[view->list_pos].mode);
+#else
+	snprintf(perm_buf, sizeof(perm_buf), "%s",
+			attr_str_long(view->dir_entry[view->list_pos].attrs));
+#endif
 
 	curr_y = 2;
 	mvwaddstr(menu_win, curr_y, 2, "File: ");
@@ -161,9 +164,11 @@ redraw_file_info_dialog(void)
 
 #ifndef _WIN32
 	mvwaddstr(menu_win, curr_y, 2, "Permissions: ");
+#else
+	mvwaddstr(menu_win, curr_y, 2, "Attributes: ");
+#endif
 	mvwaddstr(menu_win, curr_y, 15, perm_buf);
 	curr_y += 2;
-#endif
 
 	mvwaddstr(menu_win, curr_y, 2, "Modified: ");
 	tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);
@@ -275,6 +280,7 @@ show_file_type(FileView *view, int curr_y)
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Directory");
 	}
+#ifndef _WIN32
 	else if(S_ISCHR(view->dir_entry[view->list_pos].mode))
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Character Device");
@@ -287,7 +293,6 @@ show_file_type(FileView *view, int curr_y)
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Fifo Pipe");
 	}
-#ifndef _WIN32
 	else if(S_ISSOCK(view->dir_entry[view->list_pos].mode))
 	{
 	  mvwaddstr(menu_win, curr_y, 8, "Socket");

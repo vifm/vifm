@@ -55,7 +55,6 @@ typedef struct fuse_mount_t
 
 extern struct fuse_mount_t *fuse_mounts;
 
-int S_ISEXE(mode_t mode);
 void chomp(char *text);
 void chosp(char *text);
 int is_dir(const char *file);
@@ -112,6 +111,7 @@ void env_remove(const char *name);
 #ifndef _WIN32
 int get_uid(const char *user, uid_t *uid);
 int get_gid(const char *group, gid_t *gid);
+int S_ISEXE(mode_t mode);
 #else
 int wcwidth(wchar_t c);
 int wcswidth(const wchar_t *str, size_t len);
@@ -126,6 +126,7 @@ void to_forward_slash(char *path);
 void to_back_slash(char *path);
 int is_on_fat_volume(const char *path);
 const char *attr_str(DWORD attr);
+const char *attr_str_long(DWORD attr);
 #endif
 
 #endif

@@ -97,16 +97,6 @@ static int x_error_check(Display *dpy, XErrorEvent *error_event);
 static void set_terminal_title(const char *path);
 
 int
-S_ISEXE(mode_t mode)
-{
-#ifndef _WIN32
-	return ((S_IXUSR & mode) || (S_IXGRP & mode) || (S_IXOTH & mode));
-#else
-	return 0;
-#endif
-}
-
-int
 is_dir(const char *file)
 {
 #ifndef _WIN32
@@ -1347,6 +1337,12 @@ get_gid(const char *group, gid_t *gid)
 	return 0;
 }
 
+int
+S_ISEXE(mode_t mode)
+{
+	return ((S_IXUSR & mode) || (S_IXGRP & mode) || (S_IXOTH & mode));
+}
+
 #else
 
 int
@@ -1539,7 +1535,7 @@ is_on_fat_volume(const char *path)
 const char *
 attr_str(DWORD attr)
 {
-	static char buf[16];
+	static char buf[5 + 1];
 	buf[0] = '\0';
 	if(attr & FILE_ATTRIBUTE_ARCHIVE)
 		strcat(buf, "A");
@@ -1551,6 +1547,28 @@ attr_str(DWORD attr)
 		strcat(buf, "R");
 	if(attr & FILE_ATTRIBUTE_SYSTEM)
 		strcat(buf, "S");
+
+	return buf;
+}
+
+/* Converts Windows attributes to a long string containing all attribute values.
+ * Returns pointer to a statically allocated buffer */
+const char *
+attr_str_long(DWORD attr)
+{
+	static char buf[10 + 1];
+	snprintf(buf, sizeof(buf), "ahirscdepz");
+	buf[0] ^= ((attr & FILE_ATTRIBUTE_ARCHIVE) != 0)*0x20;
+	buf[1] ^= ((attr & FILE_ATTRIBUTE_HIDDEN) != 0)*0x20;
+	buf[2] ^= ((attr & FILE_ATTRIBUTE_NOT_CONTENT_INDEXED) != 0)*0x20;
+	buf[3] ^= ((attr & FILE_ATTRIBUTE_READONLY) != 0)*0x20;
+	buf[4] ^= ((attr & FILE_ATTRIBUTE_SYSTEM) != 0)*0x20;
+	buf[5] ^= ((attr & FILE_ATTRIBUTE_COMPRESSED) != 0)*0x20;
+	buf[6] ^= ((attr & FILE_ATTRIBUTE_DIRECTORY) != 0)*0x20;
+	buf[7] ^= ((attr & FILE_ATTRIBUTE_ENCRYPTED) != 0)*0x20;
+	buf[8] ^= ((attr & FILE_ATTRIBUTE_REPARSE_POINT) != 0)*0x20;
+	buf[9] ^= ((attr & FILE_ATTRIBUTE_SPARSE_FILE) != 0)*0x20;
+
 	return buf;
 }
 

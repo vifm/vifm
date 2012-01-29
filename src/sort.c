@@ -218,12 +218,12 @@ sort_dir_list(const void *one, const void *two)
 		case SORT_BY_TIME_CHANGED:
 			retval = first->ctime - second->ctime;
 			break;
+#ifndef _WIN32
 
 		case SORT_BY_MODE:
 			retval = first->mode - second->mode;
 			break;
 
-#ifndef _WIN32
 		case SORT_BY_OWNER_NAME: /* FIXME */
 		case SORT_BY_OWNER_ID:
 			retval = first->uid - second->uid;

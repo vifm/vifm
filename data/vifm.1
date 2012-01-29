@@ -1787,7 +1787,7 @@ are supported:
 .br
 %t - file name
 .br
-%A - file permissions
+%A - file attributes (permissions on *nix or properties on Windows)
 .br
 %u - user name or uid (if it cannot be resolved)
 .br
@@ -1806,6 +1806,28 @@ Example:
 .EX
  set statusline="  %t%= %A %10u:%-7g %15s %20d "
 .EE
+
+On Windows file properties include next flags (upper case means flag is on):
+.br
+A - archive
+.br
+H - hidden
+.br
+I - content isn't indexed
+.br
+R - readonly
+.br
+S - system
+.br
+C - compressed
+.br
+D - directory
+.br
+E - encrypted
+.br
+P - reparse point (e.g. symbolic link)
+.br
+Z - sparse file
 .TP
 .BI sortorder
 type: enumeration

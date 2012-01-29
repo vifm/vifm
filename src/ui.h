@@ -72,10 +72,12 @@ typedef struct
 {
 	char *name;
 	unsigned long long size;
-	mode_t mode;
 #ifndef _WIN32
 	uid_t uid;
 	gid_t gid;
+	mode_t mode;
+#else
+	DWORD attrs;
 #endif
 	time_t mtime;
 	time_t atime;

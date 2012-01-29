@@ -886,8 +886,12 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	runnable = type == REGULAR || type == EXECUTABLE || runnable ||
 			type == DIRECTORY;
 
+#ifndef _WIN32
 	executable = type == EXECUTABLE || (runnable && access(filename, X_OK) == 0 &&
 			S_ISEXE(view->dir_entry[view->list_pos].mode));
+#else
+	executable = type == EXECUTABLE || (runnable && access(filename, X_OK) == 0);
+#endif
 	executable = executable && !dont_execute && cfg.auto_execute;
 
 	if(cfg.vim_filter && (executable || runnable))

@@ -164,9 +164,11 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 			snprintf(buf, sizeof(buf), " UNKNOWN");
 #endif
 			break;
+#ifndef _WIN32
 		case SORT_BY_MODE:
 			snprintf(buf, sizeof(buf), " %s", get_mode_str(view->dir_entry[x].mode));
 			break;
+#endif
 		case SORT_BY_TIME_MODIFIED:
 			tm_ptr = localtime(&view->dir_entry[x].mtime);
 			strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
@@ -1825,8 +1827,8 @@ load_parent_dir_only(FileView *view)
 		log_cwd();
 
 		dir_entry->size = 0;
-		dir_entry->mode = 0;
 #ifndef _WIN32
+		dir_entry->mode = 0;
 		dir_entry->uid = -1;
 		dir_entry->gid = -1;
 #endif
@@ -1837,8 +1839,8 @@ load_parent_dir_only(FileView *view)
 	else
 	{
 		dir_entry->size = (uintmax_t)s.st_size;
-		dir_entry->mode = s.st_mode;
 #ifndef _WIN32
+		dir_entry->mode = s.st_mode;
 		dir_entry->uid = s.st_uid;
 		dir_entry->gid = s.st_gid;
 #endif
@@ -1923,7 +1925,7 @@ fill_with_shared(FileView *view)
 					dir_entry->search_match = 0;
 
 					dir_entry->size = 0;
-					dir_entry->mode = 0777;
+					dir_entry->attrs = 0;
 					dir_entry->mtime = 0;
 					dir_entry->atime = 0;
 					dir_entry->ctime = 0;
@@ -2182,7 +2184,7 @@ fill_dir_list(FileView *view)
 		dir_entry->search_match = 0;
 
 		dir_entry->size = ((uintmax_t)ffd.nFileSizeHigh << 32) + ffd.nFileSizeLow;
-		dir_entry->mode = 0777;
+		dir_entry->attrs = ffd.dwFileAttributes;
 		dir_entry->mtime = win_to_unix_time(ffd.ftLastWriteTime);
 		dir_entry->atime = win_to_unix_time(ffd.ftLastAccessTime);
 		dir_entry->ctime = win_to_unix_time(ffd.ftCreationTime);

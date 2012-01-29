@@ -1937,7 +1937,6 @@ cmd_paren(int lb, int ub, int inc)
 				}
 			}
 			break;
-#endif
 		case SORT_BY_MODE:
 			{
 				mode_t mode = curr_view->dir_entry[pos].mode;
@@ -1951,6 +1950,7 @@ cmd_paren(int lb, int ub, int inc)
 				}
 			}
 			break;
+#endif
 		case SORT_BY_SIZE:
 			{
 				unsigned long long size =

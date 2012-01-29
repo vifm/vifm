@@ -1563,7 +1563,7 @@ Determines the content of the status line (the line right above command-line).
 Empty string means use same format like in previous versions.  Following macros
 are supported:
     %t - file name
-    %A - file permissions
+    %A - file attributes (permissions on *nix or properties on Windows)
     %u - user name or uid (if it cannot be resolved)
     %g - group name or gid (if it cannot be resolved)
     %s - file size in human readable format
@@ -1572,6 +1572,21 @@ are supported:
 Percent sign can be followed by optional minimum field width.  Add '-' before
 minimum field width if you want field to be right aligned.
 
+On Windows file properties include next flags (upper case means flag is on):
+    A - archive
+    H - hidden
+    I - content isn't indexed
+    R - readonly
+    S - system
+    C - compressed
+    D - directory
+    E - encrypted
+    P - reparse point (e.g. symbolic link)
+    Z - sparse file
+
+Example: >
+ set statusline="  %t%= %A %10u:%-7g %15s %20d "
+<
                                                *vifm-'tabstop'* *vifm-'ts'*
 tabstop ts
 type: integer

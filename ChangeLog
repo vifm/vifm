@@ -34,6 +34,8 @@
 
 	Added file properties dialog on Windows.
 
+	Added file attributes in status bar and file info view.
+
 	Restore terminal title on exit.
 
 	Reset dot and filename filters if they hide bookmarked file.
