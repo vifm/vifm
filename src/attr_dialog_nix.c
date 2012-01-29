@@ -271,9 +271,13 @@ redraw_attr_dialog(void)
 	mvwin(change_win, (y - (20 + (file_is_dir != 0)*2))/2, (x - 30)/2);
 	box(change_win, ACS_VLINE, ACS_HLINE);
 
+	x = getmaxx(change_win);
 	filename = get_current_file_name(view);
 	if(strlen(filename) > (size_t)x - 2)
-		filename[x - 4] = '\0';
+	{
+		filename[x - 5] = '\0';
+		strcat(filename, "...");
+	}
 	mvwaddnstr(change_win, 0, (getmaxx(change_win) - strlen(filename))/2,
 			filename, x - 2);
 
