@@ -125,6 +125,7 @@ int is_vista_and_above(void);
 void to_forward_slash(char *path);
 void to_back_slash(char *path);
 int is_on_fat_volume(const char *path);
+const char *attr_str(DWORD attr);
 #endif
 
 #endif

@@ -43,8 +43,13 @@ static int op_copy(void *data, const char *src, const char *dst);
 static int op_move(void *data, const char *src, const char *dst);
 static int op_chown(void *data, const char *src, const char *dst);
 static int op_chgrp(void *data, const char *src, const char *dst);
+#ifndef _WIN32
 static int op_chmod(void *data, const char *src, const char *dst);
 static int op_chmodr(void *data, const char *src, const char *dst);
+#else
+static int op_addattr(void *data, const char *src, const char *dst);
+static int op_subattr(void *data, const char *src, const char *dst);
+#endif
 static int op_symlink(void *data, const char *src, const char *dst);
 static int op_mkdir(void *data, const char *src, const char *dst);
 static int op_rmdir(void *data, const char *src, const char *dst);
@@ -66,8 +71,13 @@ static op_func op_funcs[] = {
 	op_move,     /* OP_MOVETMP4 */
 	op_chown,    /* OP_CHOWN */
 	op_chgrp,    /* OP_CHGRP */
+#ifndef _WIN32
 	op_chmod,    /* OP_CHMOD */
 	op_chmodr,   /* OP_CHMODR */
+#else
+	op_addattr,  /* OP_ADDATTR */
+	op_subattr,  /* OP_SUBATTR */
+#endif
 	op_symlink,  /* OP_SYMLINK */
 	op_symlink,  /* OP_SYMLINK2 */
 	op_mkdir,    /* OP_MKDIR */
@@ -284,6 +294,7 @@ op_chgrp(void *data, const char *src, const char *dst)
 #endif
 }
 
+#ifndef _WIN32
 static int
 op_chmod(void *data, const char *src, const char *dst)
 {
@@ -309,6 +320,43 @@ op_chmodr(void *data, const char *src, const char *dst)
 	start_background_job(cmd);
 	return 0;
 }
+#else
+static int
+op_addattr(void *data, const char *src, const char *dst)
+{
+	DWORD add_mask = (DWORD)data;
+	DWORD attrs = GetFileAttributesA(src);
+	if(attrs == INVALID_FILE_ATTRIBUTES)
+	{
+		LOG_WERROR(GetLastError());
+		return -1;
+	}
+	if(!SetFileAttributesA(src, attrs | add_mask))
+	{
+		LOG_WERROR(GetLastError());
+		return -1;
+	}
+	return 0;
+}
+
+static int
+op_subattr(void *data, const char *src, const char *dst)
+{
+	DWORD sub_mask = (DWORD)data;
+	DWORD attrs = GetFileAttributesA(src);
+	if(attrs == INVALID_FILE_ATTRIBUTES)
+	{
+		LOG_WERROR(GetLastError());
+		return -1;
+	}
+	if(!SetFileAttributesA(src, attrs & ~sub_mask))
+	{
+		LOG_WERROR(GetLastError());
+		return -1;
+	}
+	return 0;
+}
+#endif
 
 static int
 op_symlink(void *data, const char *src, const char *dst)

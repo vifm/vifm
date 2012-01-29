@@ -1520,6 +1520,26 @@ is_on_fat_volume(const char *path)
 	return 0;
 }
 
+/* Converts Windows attributes to a string.
+ * Returns pointer to a statically allocated buffer */
+const char *
+attr_str(DWORD attr)
+{
+	static char buf[16];
+	buf[0] = '\0';
+	if(attr & FILE_ATTRIBUTE_ARCHIVE)
+		strcat(buf, "A");
+	if(attr & FILE_ATTRIBUTE_HIDDEN)
+		strcat(buf, "H");
+	if(attr & FILE_ATTRIBUTE_NOT_CONTENT_INDEXED)
+		strcat(buf, "I");
+	if(attr & FILE_ATTRIBUTE_READONLY)
+		strcat(buf, "R");
+	if(attr & FILE_ATTRIBUTE_SYSTEM)
+		strcat(buf, "S");
+	return buf;
+}
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -24,6 +24,7 @@
 
 #include "../config.h"
 
+#include "attr_dialog.h"
 #include "bookmarks.h"
 #include "cmdline.h"
 #include "commands.h"
@@ -34,7 +35,6 @@
 #include "menus.h"
 #include "modes.h"
 #include "normal.h"
-#include "permissions_dialog.h"
 #include "search.h"
 #include "status.h"
 #include "utils.h"
@@ -592,7 +592,7 @@ cmd_f(key_info_t key_info, keys_info_t *keys_info)
 	find_goto(key_info.multi, key_info.count, 0);
 }
 
-/* Change permissions. */
+/* Change file attributes (permissions or properties). */
 static void
 cmd_cp(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -604,7 +604,7 @@ cmd_cp(key_info_t key_info, keys_info_t *keys_info)
 	if(ub != -1)
 		view->list_pos = ub;
 
-	enter_permissions_mode(view);
+	enter_attr_mode(view);
 }
 
 static void

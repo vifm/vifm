@@ -9,6 +9,8 @@ GitHub: https://github.com/xaizek/vifm (might be removed in the future)
 
 If you are interested in playing with the source code.
 
+src/attr_dialog_nix.c - file permissions dialog for *nix systems
+src/attr_dialog_win.c - file properties dialog for MS Windows systems
 src/background.c - runs commands in background
 src/bookmarks.c - stores information about bookmarked directories
 src/change_dialog.c - change dialog
@@ -35,7 +37,6 @@ src/normal.c - normal mode commands
 src/ops.c - most of operations performed on file system
 src/opt_handlers.c - initialization of options and option change handlers
 src/options.c - :set command
-src/permissions_dialog.c - permissions set dialog
 src/registers.c - implementation of registers
 src/search.c - code for / and ? commands of normal mode
 src/signals.c - handlers for different signals

@@ -315,7 +315,8 @@ co - change owner of file.                     {only for *nix}
 cg - change group of file.                     {only for *nix}
 
                                                *vifm-cp*
-cp - change file permissions.                  {only for *nix}
+cp - change file attributes (permission on *nix and properties on
+    Windows).
 
 
                                                *vifm-C*
@@ -728,8 +729,9 @@ The builtin commands are:
 :c[hange] - create a menu window to alter a files properties.
 
                                                *vifm-:chmod*
+:[range]chmod - shows file attributes (permission on *nix and properties on
+    Windows) change dialog.
                                                {only for *nix}
-:[range]chmod - shows permission change dialog.
 :[range]chmod[!] arg... - changes permissions for files.  See 'man chmod'
     for arg format.  "!" means set permissions recursively.
 
@@ -1793,7 +1795,7 @@ h - switch ascending/descending.
 Space - switch ascending/descending.
 q - close dialog
 
-Permissions dialog~
+Attributes (permissions or properties) dialog~
 
 h - check/uncheck.
 Space - check/uncheck.
@@ -1802,6 +1804,7 @@ q - close dialog
 Item states:
 * - checked flag.
 X - means that it has different value for files in selection.
+                                               {only for *nix}
 d - (only for execute flags) means u-x+X, g-x+X or o-x+X argument for the
     chmod program.  If you want to remove execute right from all files, but
     preserve it for directories, set all execute flags to 'd' and check

@@ -50,22 +50,22 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(pkgdatadir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_vifm_OBJECTS = background.$(OBJEXT) bookmarks.$(OBJEXT) \
-	change_dialog.$(OBJEXT) cmdline.$(OBJEXT) cmds.$(OBJEXT) \
-	color_scheme.$(OBJEXT) commands.$(OBJEXT) completion.$(OBJEXT) \
-	config.$(OBJEXT) dir_stack.$(OBJEXT) file_info.$(OBJEXT) \
-	file_magic.$(OBJEXT) filelist.$(OBJEXT) fileops.$(OBJEXT) \
-	filetype.$(OBJEXT) ipc.$(OBJEXT) keys.$(OBJEXT) log.$(OBJEXT) \
-	main_loop.$(OBJEXT) menu.$(OBJEXT) menus.$(OBJEXT) \
-	modes.$(OBJEXT) normal.$(OBJEXT) ops.$(OBJEXT) \
-	opt_handlers.$(OBJEXT) options.$(OBJEXT) \
-	permissions_dialog.$(OBJEXT) registers.$(OBJEXT) \
-	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
-	sort_dialog.$(OBJEXT) status.$(OBJEXT) string_array.$(OBJEXT) \
-	tags.$(OBJEXT) trash.$(OBJEXT) tree.$(OBJEXT) ui.$(OBJEXT) \
-	undo.$(OBJEXT) utf8.$(OBJEXT) utils.$(OBJEXT) \
-	variables.$(OBJEXT) version.$(OBJEXT) view.$(OBJEXT) \
-	vifm.$(OBJEXT) visual.$(OBJEXT)
+am_vifm_OBJECTS = attr_dialog_nix.$(OBJEXT) background.$(OBJEXT) \
+	bookmarks.$(OBJEXT) change_dialog.$(OBJEXT) cmdline.$(OBJEXT) \
+	cmds.$(OBJEXT) color_scheme.$(OBJEXT) commands.$(OBJEXT) \
+	completion.$(OBJEXT) config.$(OBJEXT) dir_stack.$(OBJEXT) \
+	file_info.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
+	fileops.$(OBJEXT) filetype.$(OBJEXT) ipc.$(OBJEXT) \
+	keys.$(OBJEXT) log.$(OBJEXT) main_loop.$(OBJEXT) \
+	menu.$(OBJEXT) menus.$(OBJEXT) modes.$(OBJEXT) \
+	normal.$(OBJEXT) ops.$(OBJEXT) opt_handlers.$(OBJEXT) \
+	options.$(OBJEXT) registers.$(OBJEXT) search.$(OBJEXT) \
+	signals.$(OBJEXT) sort.$(OBJEXT) sort_dialog.$(OBJEXT) \
+	status.$(OBJEXT) string_array.$(OBJEXT) tags.$(OBJEXT) \
+	trash.$(OBJEXT) tree.$(OBJEXT) ui.$(OBJEXT) undo.$(OBJEXT) \
+	utf8.$(OBJEXT) utils.$(OBJEXT) variables.$(OBJEXT) \
+	version.$(OBJEXT) view.$(OBJEXT) vifm.$(OBJEXT) \
+	visual.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
@@ -235,6 +235,7 @@ pkgdata_DATA = ../data/vifmrc \
 bin_SCRIPTS = vifm-pause
 man_MANS = ../data/vifm.1
 vifm_SOURCES = \
+	attr_dialog_nix.c attr_dialog_nix.h attr_dialog.h \
 	background.c background.h \
 	bookmarks.c bookmarks.h \
 	change_dialog.c change_dialog.h \
@@ -261,7 +262,6 @@ vifm_SOURCES = \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
 	options.c options.h \
-	permissions_dialog.c permissions_dialog.h \
 	registers.c registers.h \
 	search.c search.h \
 	signals.c signals.h \
@@ -410,6 +410,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/attr_dialog_nix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/background.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bookmarks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/change_dialog.Po@am__quote@
@@ -436,7 +437,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opt_handlers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/options.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/permissions_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/registers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signals.Po@am__quote@

@@ -34,22 +34,9 @@
 #include "undo.h"
 #include "utils.h"
 
-#include "permissions_dialog.h"
+#include "attr_dialog_nix.h"
 
-static int *mode;
-static FileView *view;
-static int top, bottom;
-static int curr;
-static int permnum;
-static int step;
-static int col;
-static int changed;
-static int file_is_dir;
-static int perms[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
-static int origin_perms[13];
-static int adv_perms[3];
-
-static void leave_permissions_mode(void);
+static void leave_attr_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void set_perm_string(FileView *view, const int *perms,
@@ -65,6 +52,19 @@ static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void inc_curr(void);
 static void dec_curr(void);
+
+static int *mode;
+static FileView *view;
+static int top, bottom;
+static int curr;
+static int permnum;
+static int step;
+static int col;
+static int changed;
+static int file_is_dir;
+static int perms[13] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
+static int origin_perms[13];
+static int adv_perms[3];
 
 static keys_add_info_t builtin_cmds[] = {
 	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
@@ -86,6 +86,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"q", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
 #ifdef ENABLE_EXTENDED_KEYS
+	{{KEY_HOME}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{{KEY_END}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
 	{{KEY_UP}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{{KEY_DOWN}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{{KEY_RIGHT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
@@ -93,7 +95,7 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_permissions_dialog_mode(int *key_mode)
+init_attr_dialog_mode(int *key_mode)
 {
 	int ret_code;
 
@@ -101,14 +103,13 @@ init_permissions_dialog_mode(int *key_mode)
 
 	mode = key_mode;
 
-	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), PERMISSIONS_MODE);
+	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), ATTR_MODE);
 	assert(ret_code == 0);
 }
 
 void
-enter_permissions_mode(FileView *active_view)
+enter_attr_mode(FileView *active_view)
 {
-#ifndef _WIN32
 	int i;
 	mode_t fmode;
 	mode_t diff;
@@ -158,7 +159,7 @@ enter_permissions_mode(FileView *active_view)
 		i++;
 	}
 
-	*mode = PERMISSIONS_MODE;
+	*mode = ATTR_MODE;
 	clear_input_bar();
 	curr_stats.use_input_bar = 0;
 
@@ -194,18 +195,17 @@ enter_permissions_mode(FileView *active_view)
 	{
 		(void)show_error_msg("Permissions change error",
 				"Selected files have no common access state");
-		leave_permissions_mode();
+		leave_attr_mode();
 		return;
 	}
 
 	col = 9;
 	changed = 0;
-	redraw_permissions_dialog();
-#endif
+	redraw_attr_dialog();
 }
 
 void
-redraw_permissions_dialog(void)
+redraw_attr_dialog(void)
 {
 	char *filename;
 	int x, y;
@@ -283,7 +283,7 @@ redraw_permissions_dialog(void)
 }
 
 static void
-leave_permissions_mode(void)
+leave_attr_mode(void)
 {
 	*mode = NORMAL_MODE;
 	curs_set(FALSE);
@@ -299,7 +299,7 @@ leave_permissions_mode(void)
 static void
 cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
-	leave_permissions_mode();
+	leave_attr_mode();
 }
 
 static void
@@ -315,7 +315,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 
 	set_perm_string(view, perms, origin_perms);
 
-	leave_permissions_mode();
+	leave_attr_mode();
 }
 
 static void

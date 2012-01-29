@@ -98,7 +98,7 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 			ipc_check();
 			wtimeout(win, MIN(T, timeout)/IPC_F);
 
-			if((result = wget_wch(status_bar, c)) != ERR)
+			if((result = wget_wch(win, c)) != ERR)
 				break;
 		}
 		if(result != ERR)

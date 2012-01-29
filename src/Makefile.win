@@ -10,7 +10,7 @@ vifm_SOURCES := background.c bookmarks.c change_dialog.c cmdline.c cmds.c \
                 color_scheme.c commands.c completion.c config.c dir_stack.c \
                 file_info.c file_magic.c filelist.c fileops.c filetype.c ipc.c \
                 keys.c log.c main_loop.c menu.c menus.c modes.c normal.c ops.c \
-                opt_handlers.c options.c permissions_dialog.c registers.c \
+                opt_handlers.c options.c attr_dialog_win.c registers.c \
                 search.c signals.c sort.c sort_dialog.c status.c \
                 string_array.c tags.c trash.c tree.c ui.c undo.c utf8.c \
                 utils.c variables.c version.c view.c vifmres.o vifm.c visual.c

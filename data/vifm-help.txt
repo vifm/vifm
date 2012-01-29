@@ -306,14 +306,14 @@ Other Normal Mode Keys
        cg     only for *nix
               change file group.
 
-       cp     only for *nix
-              change file permissions.
+       cp     change  file  attributes  (permission  on *nix and properties on
+              Windows).
 
        [count]C
               clone file [count] times.
 
        [count]dd or d[count]selector
-              moves  the  selected  files  to  the  trash directory (if option
+              moves the selected files  to  the  trash  directory  (if  option
               'trash' is set otherwise delete)
 
        [count]DD or D[count]selector
@@ -324,16 +324,16 @@ Other Normal Mode Keys
 
        Y      same as yy.
 
-       p      will copy the yanked files to the current directory or move  the
-              files  to  the current directory if they were deleted with dd or
+       p      will  copy the yanked files to the current directory or move the
+              files to the current directory if they were deleted with  dd  or
               :d[elete] or if the files were yanked from the Trash directory.
 
-       P      moves the last yanked files.  The advantage of using  P  instead
-              of  d followed by p is that P moves files only once.  This isn't
-              important in case you're moving files in the  same  file  system
-              where  your home directory is, but using P to move files on some
-              other file system (or file systems, in case  you  want  to  move
-              files  from  fs1  to  fs2 and your home is on fs3) can save your
+       P      moves  the  last yanked files.  The advantage of using P instead
+              of d followed by p is that P moves files only once.  This  isn't
+              important  in  case  you're moving files in the same file system
+              where your home directory is, but using P to move files on  some
+              other  file  system  (or  file systems, in case you want to move
+              files from fs1 to fs2 and your home is on  fs3)  can  save  your
               time.
 
        al     puts symbolic links with absolute paths.
@@ -377,47 +377,47 @@ Using Count
        Or you can use count with motions passed to y, d or D.
 
        d[count]j
-              delete (count + 1) files starting from current  cursor  position
+              delete  (count  + 1) files starting from current cursor position
               upward.
 
 Registers
-       vifm  supports  multiple registers for temporary storing list of yanked
+       vifm supports multiple registers for temporary storing list  of  yanked
        or deleted files.
 
        Registers should be specified with hitting double quite key followed by
-       a  register  name.  Count is specified after register name.  By default
+       a register name.  Count is specified after register name.   By  default
        commands use unnamed register, which has double quote as its name.
 
-       Though all commands accept registers, most  of  commands  ignores  them
-       (for  example H or Ctrl-U).  Other commands can fill register or append
+       Though  all  commands  accept  registers, most of commands ignores them
+       (for example H or Ctrl-U).  Other commands can fill register or  append
        new files to it.
 
        Presently vifm supports ", _, a-z and A-Z characters as register names.
 
        As mentioned above " is unnamed register and has special meaning of the
-       default  register.  Every time when you use named registers (a-z and A-
-       Z) unnamed register is updated to contain same list  of  files  as  the
+       default register.  Every time when you use named registers (a-z and  A-
+       Z)  unnamed  register  is  updated to contain same list of files as the
        last used register.
 
-       _  is black hole register.  It can be used for writing, but its list is
+       _ is black hole register.  It can be used for writing, but its list  is
        always empty.
 
        Registers with names from a to z  and from A to Z are named ones.  Low‐
-       ercase  registers  are cleared before adding new files, while uppercase
+       ercase registers are cleared before adding new files,  while  uppercase
        aren't and should be used to append new files to the existing file list
        of appropriate lowercase register (A for a, B for b, ...).
 
-       Registers  can be changed on :empty command if they contain files under
+       Registers can be changed on :empty command if they contain files  under
        Trash directory.
 
        Registers do not contain one file more than once.
 
        Example:
          "a2yy
-       will put names of two files to register a (and to  the  unnamed  regis‐
+       will  put  names  of two files to register a (and to the unnamed regis‐
        ter).
          "Ad
-       will  remove  one  file  and  append its name to register a (and to the
+       will remove one file and append its name to  register  a  (and  to  the
        unnamed register).
          p or "ap or "Ap
        will insert previously yanked and deleted files into current directory.
@@ -425,7 +425,7 @@ Registers
 Selectors
        y and d commands accept selectors.  You can combine them with every of
               selectors below to quickly remove or yank several files.
-              Most of selectors are like vi motions: j, k, gg, G, H, L, M,  %,
+              Most  of selectors are like vi motions: j, k, gg, G, H, L, M, %,
               f, F, ;, comma and '.  But there are some additional ones.
 
        a      all files in current view.
@@ -446,7 +446,7 @@ Visual Mode
 
        V      leave visual mode.
 
-       :      enter command line mode.  When you leave it  selection  will  be
+       :      enter  command  line  mode.  When you leave it selection will be
               cleared.
 
        o      switch active selection bound.
@@ -458,7 +458,7 @@ Visual Mode
        gU, U  make names of selected files uppercase.
 
 View Mode
-       This  mode  tries  to imitate the less program. Currently the following
+       This mode tries to imitate the less program.  Currently  the  following
        keys are supported:
 
        Shift-Tab, Tab, q, Q, ZZ
@@ -545,11 +545,11 @@ View Mode
               make size of two views equal.
 
 Command line Mode
-       This keys apply to all submodes of  the  command  line  mode:  command,
+       This  keys  apply  to  all  submodes of the command line mode: command,
        prompt and search.
 
-       Down,  Up, Left, Right, Home, End and Delete are extended keys and they
-       are not available if  vifm  is  compiled  with  --disable-extended-keys
+       Down, Up, Left, Right, Home, End and Delete are extended keys and  they
+       are  not  available  if  vifm  is compiled with --disable-extended-keys
        option
 
        Esc, Ctrl-C
@@ -568,7 +568,7 @@ Command line Mode
 
        Ctrl-K remove characters from cursor position till the end of line.
 
-       Ctrl-U remove  characters  from  cursor  position till the beginning of
+       Ctrl-U remove characters from cursor position  till  the  beginning  of
               line.
 
        Ctrl-H, Backspace
@@ -593,10 +593,10 @@ Command line Mode
 
        Alt-F  go to the end of next word.
 
-       Ctrl-W remove characters from cursor position  till  the  beginning  of
+       Ctrl-W remove  characters  from  cursor  position till the beginning of
               previous word.
 
-       Alt-D  remove  characters  from  cursor  position till the beginning of
+       Alt-D  remove characters from cursor position  till  the  beginning  of
               next word.
 
        Ctrl-N recall more recent command-line from history.
@@ -606,17 +606,17 @@ Command line Mode
        Up     recall more recent command-line from history, that begins as the
               current command-line.
 
-       Down   recall  older command-line from history, that begins as the cur‐
+       Down   recall older command-line from history, that begins as the  cur‐
               rent command-line.
 
 Commands
        Commands are executed with :command_name<Return>
 
        ´|' can be used to separate commands, so you can give multiple commands
-       in  one  line.   If you want to use '|' in an argument, precede it with
+       in one line.  If you want to use '|' in an argument,  precede  it  with
        '\'.
 
-       Commented out lines should start with the double  quote  symbol,  which
+       Commented  out  lines  should start with the double quote symbol, which
        may be preceded by whitespace characters.
 
        :[count]
@@ -628,10 +628,10 @@ Commands
               :$ move to the bottom of the list.
 
        :[count]command
-              The   only  builtin  :[count]command  are  :[count]d[elete]  and
+              The  only  builtin  :[count]command  are  :[count]d[elete]   and
               :[count]y[ank].
 
-       :d3    would delete three files starting at the current  file  position
+       :d3    would  delete  three files starting at the current file position
               moving down.
 
        :3d    would delete one file at the third line in the list.
@@ -645,7 +645,7 @@ Commands
 
        will run the process in the background using vifm's means.
 
-       Programs  that  write  to  stdout  like ls will create an error message
+       Programs that write to stdout like ls  will  create  an  error  message
        showing partial output of the command.
 
        Take note of the space before ampersand symbol, if you omit it, command
@@ -654,29 +654,29 @@ Commands
        Accepts macros.
 
        :[range]!! <program>
-              is  the same as :! but will pause the screen before returning to
+              is the same as :! but will pause the screen before returning  to
               Vifm.
 
        :!!    will execute the last command.
 
        :[range]alink[!?]
-              creates absolute symbolic links of files in directory  of  other
-              view.   With  "?"   vifm  will  open  vi to edit filenames.  "!"
+              creates  absolute  symbolic links of files in directory of other
+              view.  With "?"  vifm will  open  vi  to  edit  filenames.   "!"
               forces overwrite.
 
        :[range]alink[!] path
-              creates absolute symbolic links of files in directory  specified
+              creates  absolute symbolic links of files in directory specified
               with the path (absolute or relative to directory of other view).
               "!" forces overwrite.
 
        :[range]alink[!] name1 name2...
-              creates absolute symbolic links of files in directory  of  other
-              view  giving  each next link a corresponding name from the argu‐
+              creates  absolute  symbolic links of files in directory of other
+              view giving each next link a corresponding name from  the  argu‐
               ment list.  "!" forces overwrite.
 
        :apropos manpage
-              will create a menu of items returned  by  the  apropos  command.
-              Selecting  an  item in the menu will open the corresponding man‐
+              will  create  a  menu  of items returned by the apropos command.
+              Selecting an item in the menu will open the  corresponding  man‐
               page.
 
        :apropos
@@ -691,10 +691,10 @@ Commands
               change directory to ~/dir.
 
        :cd /curr/dir /other/dir
-              change directory of the current pane to /curr/dir and  directory
+              change  directory of the current pane to /curr/dir and directory
               of the other pane to /other/dir.  When using relative paths vifm
-              assumes that both of them are relative to current  directory  of
-              current  view.   Command  will not fail if one of directories is
+              assumes  that  both of them are relative to current directory of
+              current view.  Command will not fail if one  of  directories  is
               invalid.  Accepts macros.
 
        :cd! /dir
@@ -704,8 +704,8 @@ Commands
               create a menu window to alter a files properties.
 
        :[range]chmod
-              only for *nix
-              shows permission change dialog.
+              shows file attributes (permission on *nix and properties on Win‐
+              dows) change dialog.
 
        :[range]chmod[!] arg...
               only for *nix
@@ -1856,7 +1856,7 @@ Menus and dialogs
        h - switch ascending/descending.  Space - switch  ascending/descending.
        q - close dialog
 
-       Permissions dialog
+       Attributes (permissions or properties) dialog
 
        h - check/uncheck.  Space - check/uncheck.  q - close dialog
 
@@ -1866,10 +1866,10 @@ Menus and dialogs
 
        - X - means that it has different value for files in selection.
 
-       - d - (only for execute flags) means u-x+X, g-x+X or o-x+X argument for
-         the chmod program.  If you want to  remove  execute  right  from  all
-         files,  but preserve it for directories, set all execute flags to 'd'
-         and check ´Set Recursively' flag.
+       - d  (*nix only) - (only for execute flags) means u-x+X, g-x+X or o-x+X
+         argument for the chmod program.  If you want to remove execute  right
+         from  all  files,  but  preserve  it for directories, set all execute
+         flags to 'd' and check ´Set Recursively' flag.
 
 Startup
        On startup vifm determines several variables that are used  during  the
@@ -1973,4 +1973,4 @@ AUTHOR
 
 
 
-                               January 13, 2012                        vifm(1)
+                               January 29, 2012                        vifm(1)

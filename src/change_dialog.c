@@ -25,6 +25,7 @@
 
 #include "../config.h"
 
+#include "attr_dialog.h"
 #include "bookmarks.h"
 #include "cmdline.h"
 #include "color_scheme.h"
@@ -35,7 +36,6 @@
 #include "keys.h"
 #include "menus.h"
 #include "modes.h"
-#include "permissions_dialog.h"
 #include "status.h"
 #include "ui.h"
 
@@ -111,7 +111,7 @@ enter_change_mode(FileView *active_view)
 #ifndef _WIN32
 	bottom = 8;
 #else
-	bottom = 2;
+	bottom = 4;
 #endif
 	curr = 2;
 	col = 6;
@@ -137,6 +137,8 @@ redraw_change_dialog(void)
 	mvwaddstr(change_win, 4, 4, " [ ] Owner");
 	mvwaddstr(change_win, 6, 4, " [ ] Group");
 	mvwaddstr(change_win, 8, 4, " [ ] Permissions");
+#else
+	mvwaddstr(change_win, 4, 4, " [ ] Properties");
 #endif
 	mvwaddch(change_win, 2, 6, '*');
 
@@ -173,12 +175,17 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 
 	if(curr == 2)
 		rename_file(view, 0);
+#ifndef _WIN32
 	else if(curr == 4)
 		change_owner();
 	else if(curr == 6)
 		change_group();
 	else if(curr == 8)
-		enter_permissions_mode(view);
+		enter_attr_mode(view);
+#else
+	else if(curr == 4)
+		enter_attr_mode(view);
+#endif
 }
 
 static void

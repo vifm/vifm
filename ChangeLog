@@ -32,6 +32,8 @@
 
 	Added embedded icon on Windows.
 
+	Added file properties dialog on Windows.
+
 	Restore terminal title on exit.
 
 	Reset dot and filename filters if they hide bookmarked file.

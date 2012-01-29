@@ -34,8 +34,13 @@ typedef enum
 	OP_MOVETMP4, /* multiple files rename */
 	OP_CHOWN,
 	OP_CHGRP,
+#ifndef _WIN32
 	OP_CHMOD,
 	OP_CHMODR,
+#else
+	OP_ADDATTR,
+	OP_SUBATTR,
+#endif
 	OP_SYMLINK,
 	OP_SYMLINK2,
 	OP_MKDIR,

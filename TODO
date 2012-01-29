@@ -21,7 +21,9 @@ Documentation.
     Maybe divide vifm.txt in several files (if it becomes too big).
 
 Windows.
-    Permission dialog could change file attributes.
+    Make :chmod accept arguments.
+    Show file attributes in status bar and info view.
+    Make properties dialog change file attributes recursively.
     Add a command to create .lnk files.
     Follow targets of .lnk files.
     Fix freezing.

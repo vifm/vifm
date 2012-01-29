@@ -78,8 +78,13 @@ static OPS undo_op[] = {
 	OP_MOVETMP4, /* OP_MOVETMP2 */
 	OP_CHOWN,    /* OP_CHOWN */
 	OP_CHGRP,    /* OP_CHGRP */
+#ifndef _WIN32
 	OP_CHMOD,    /* OP_CHMOD */
 	OP_CHMODR,   /* OP_CHMODR */
+#else
+	OP_SUBATTR,  /* OP_ADDATTR */
+	OP_ADDATTR,  /* OP_SUBATTR */
+#endif
 	OP_REMOVE,   /* OP_SYMLINK */
 	OP_REMOVESL, /* OP_SYMLINK2 */
 	OP_RMDIR,    /* OP_MKDIR */
@@ -121,10 +126,17 @@ static enum
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHOWN */
 	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHGRP */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHGRP */
+#ifndef _WIN32
 	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHMOD */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHMOD */
 	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_CHMODR */
 		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_CHMODR */
+#else
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_ADDATTR */
+		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_SUBATTR */
+	{ OPER_1ST, OPER_NON, OPER_1ST, OPER_NON,    /* do   OP_SUBATTR */
+		OPER_1ST, OPER_NON, OPER_1ST, OPER_NON, }, /* undo OP_ADDATTR */
+#endif
 	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_2ND,    /* do   OP_SYMLINK */
 		OPER_2ND, OPER_NON, OPER_2ND, OPER_NON, }, /* undo OP_REMOVE  */
 	{ OPER_1ST, OPER_2ND, OPER_NON, OPER_NON,    /* do   OP_SYMLINK2 */
@@ -152,8 +164,13 @@ static int data_is_ptr[] = {
 	0, /* OP_MOVETMP4 */
 	0, /* OP_CHOWN */
 	0, /* OP_CHGRP */
+#ifndef _WIN32
 	1, /* OP_CHMOD */
 	1, /* OP_CHMODR */
+#else
+	0, /* OP_ADDATTR */
+	0, /* OP_SUBATTR */
+#endif
 	0, /* OP_SYMLINK */
 	0, /* OP_SYMLINK2 */
 	0, /* OP_MKDIR */
@@ -719,10 +736,19 @@ get_op_desc(op_t op)
 		case OP_CHGRP:
 			snprintf(buf, sizeof(buf), "chown :%ld %s", (long)op.data, op.src);
 			break;
+#ifndef _WIN32
 		case OP_CHMOD:
 		case OP_CHMODR:
 			snprintf(buf, sizeof(buf), "chmod %s %s", (char *)op.data, op.src);
 			break;
+#else
+		case OP_ADDATTR:
+			snprintf(buf, sizeof(buf), "attrib +%s", attr_str((DWORD)op.data));
+			break;
+		case OP_SUBATTR:
+			snprintf(buf, sizeof(buf), "attrib -%s", attr_str((DWORD)op.data));
+			break;
+#endif
 		case OP_SYMLINK:
 		case OP_SYMLINK2:
 			snprintf(buf, sizeof(buf), "ln -s %s to %s", op.src, op.dst);

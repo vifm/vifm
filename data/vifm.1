@@ -1,4 +1,4 @@
-.TH vifm 1 "January 13, 2012" "" "Vifm"
+.TH vifm 1 "January 29, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -360,9 +360,7 @@ only for *nix
 change file group.
 .TP
 .BI cp
-only for *nix
-.br
-change file permissions.
+change file attributes (permission on *nix and properties on Windows).
 .TP
 .BI [count]C
 clone file [count] times.
@@ -799,9 +797,9 @@ same as :cd /dir /dir.
 create a menu window to alter a files properties.
 .TP
 .BI :[range]chmod
-only for *nix
 .br
-shows permission change dialog.
+shows file attributes (permission on *nix and properties on Windows) change
+dialog.
 .TP
 .BI ":[range]chmod[!] arg..."
 only for *nix
@@ -2056,7 +2054,7 @@ h - switch ascending/descending.
 Space - switch ascending/descending.
 q - close dialog
 
-Permissions dialog
+Attributes (permissions or properties) dialog
 
 h - check/uncheck.
 Space - check/uncheck.
@@ -2068,9 +2066,9 @@ Item states:
 .IP - 2
 X - means that it has different value for files in selection.
 .IP - 2
-d - (only for execute flags) means u-x+X, g-x+X or o-x+X argument for the \
-chmod program.  If you want to remove execute right from all files, but \
-preserve it for directories, set all execute flags to 'd' and check \
+d (*nix only) - (only for execute flags) means u-x+X, g-x+X or o-x+X argument \
+for the chmod program.  If you want to remove execute right from all files, \
+but preserve it for directories, set all execute flags to 'd' and check \
 \'Set Recursively' flag.
 .\" ---------------------------------------------------------------------------
 .SH Startup

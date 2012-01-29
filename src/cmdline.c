@@ -36,6 +36,7 @@
 
 #include "../config.h"
 
+#include "attr_dialog.h"
 #include "bookmarks.h"
 #include "cmds.h"
 #include "color_scheme.h"
@@ -48,7 +49,6 @@
 #include "menus.h"
 #include "modes.h"
 #include "options.h"
-#include "permissions_dialog.h"
 #include "sort_dialog.h"
 #include "status.h"
 #include "ui.h"
@@ -452,8 +452,8 @@ redraw_cmdline(void)
 		redraw_window();
 		if(prev_mode == SORT_MODE)
 			redraw_sort_dialog();
-		else if(prev_mode == PERMISSIONS_MODE)
-			redraw_permissions_dialog();
+		else if(prev_mode == ATTR_MODE)
+			redraw_attr_dialog();
 	}
 
 	line_width = getmaxx(stdscr);

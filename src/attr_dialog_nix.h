@@ -17,35 +17,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __MODES_H__
-#define __MODES_H__
+#ifndef __ATTR_DIALOG_NIX_H__
+#define __ATTR_DIALOG_NIX_H__
 
-#include <stddef.h>
+#include "ui.h"
 
-enum
-{
-	NORMAL_MODE,
-	CMDLINE_MODE,
-	VISUAL_MODE,
-	MENU_MODE,
-	SORT_MODE,
-	ATTR_MODE,
-	CHANGE_MODE,
-	VIEW_MODE,
-	FILE_INFO_MODE,
-	MODES_COUNT
-};
-
-void init_modes(void);
-void modes_pre(void);
-void modes_post(void);
-void modes_redraw(void);
-void modes_update(void);
-void modupd_input_bar(wchar_t *str);
-void clear_input_bar(void);
-/* returns current mode id */
-int get_mode(void);
-void print_selected_msg(void);
+void init_attr_dialog_mode(int *key_mode);
+void enter_attr_mode(FileView *active_view);
+void redraw_attr_dialog(void);
+void files_chmod(FileView *view, const char *mode, int recurse_dirs);
 
 #endif
 

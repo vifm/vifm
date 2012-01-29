@@ -44,6 +44,7 @@
 #include <string.h> /* strncmp() */
 #include <time.h>
 
+#include "attr_dialog.h"
 #include "background.h"
 #include "bookmarks.h"
 #include "bracket_notation.h"
@@ -66,7 +67,6 @@
 #include "normal.h"
 #include "opt_handlers.h"
 #include "options.h"
-#include "permissions_dialog.h"
 #include "registers.h"
 #include "signals.h"
 #include "sort.h"
@@ -170,8 +170,8 @@ static int alink_cmd(const cmd_info_t *cmd_info);
 static int apropos_cmd(const cmd_info_t *cmd_info);
 static int cd_cmd(const cmd_info_t *cmd_info);
 static int change_cmd(const cmd_info_t *cmd_info);
-#ifndef _WIN32
 static int chmod_cmd(const cmd_info_t *cmd_info);
+#ifndef _WIN32
 static int chown_cmd(const cmd_info_t *cmd_info);
 #endif
 static int clone_cmd(const cmd_info_t *cmd_info);
@@ -277,6 +277,9 @@ static const cmd_add_t commands[] = {
 		.handler = chmod_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "chown",            .abbr = NULL,    .emark = 0,  .id = COM_CHOWN,       .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = chown_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 1, },
+#else
+	{ .name = "chmod",            .abbr = NULL,    .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = chmod_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 1, },
 #endif
 	{ .name = "clone",            .abbr = NULL,    .emark = 1,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = clone_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
@@ -3152,21 +3155,23 @@ change_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
-#ifndef _WIN32
 static int
 chmod_cmd(const cmd_info_t *cmd_info)
 {
+#ifndef _WIN32
 	regex_t re;
 	int err;
 	int i;
+#endif
 
 	if(cmd_info->argc == 0)
 	{
-		enter_permissions_mode(curr_view);
+		enter_attr_mode(curr_view);
 		need_clean_selection = 0;
 		return 0;
 	}
 
+#ifndef _WIN32
 	if((err = regcomp(&re, "^([ugoa]*([-+=]([rwxXst]*|[ugo]))+)|([0-7]{3,4})$",
 			REG_EXTENDED)) != 0)
 	{
@@ -3187,9 +3192,11 @@ chmod_cmd(const cmd_info_t *cmd_info)
 	regfree(&re);
 
 	files_chmod(curr_view, cmd_info->args, cmd_info->emark);
+#endif
 	return 0;
 }
 
+#ifndef _WIN32
 static int
 chown_cmd(const cmd_info_t *cmd_info)
 {

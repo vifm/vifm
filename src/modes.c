@@ -30,7 +30,7 @@
 #include "main_loop.h"
 #include "menu.h"
 #include "normal.h"
-#include "permissions_dialog.h"
+#include "attr_dialog.h"
 #include "sort_dialog.h"
 #include "status.h"
 #include "ui.h"
@@ -47,7 +47,7 @@ static int mode_flags[] = {
 	MF_USES_COUNT | MF_USES_REGS, /* VISUAL_MODE */
 	MF_USES_COUNT,                /* MENU_MODE */
 	MF_USES_COUNT,                /* SORT_MODE */
-	MF_USES_COUNT,                /* PERMISSIONS_MODE */
+	MF_USES_COUNT,                /* ATTR_MODE */
 	MF_USES_COUNT,                /* CHANGE_MODE */
 	MF_USES_COUNT,                /* VIEW_MODE */
 	0,                            /* FILE_INFO_MODE */
@@ -60,7 +60,7 @@ static char uses_input_bar[] = {
 	1, /* VISUAL_MODE */
 	1, /* MENU_MODE */
 	1, /* SORT_MODE */
-	1, /* PERMISSIONS_MODE */
+	1, /* ATTR_MODE */
 	1, /* CHANGE_MODE */
 	1, /* VIEW_MODE */
 	1, /* FILE_INFO_MODE */
@@ -69,15 +69,15 @@ ARRAY_GUARD(uses_input_bar, MODES_COUNT);
 
 typedef void (*mode_init_func)(int *mode);
 static mode_init_func mode_init_funcs[] = {
-	&init_cmdline_mode,            /* NORMAL_MODE */
-	&init_menu_mode,               /* CMDLINE_MODE */
-	&init_normal_mode,             /* VISUAL_MODE */
-	&init_permissions_dialog_mode, /* MENU_MODE */
-	&init_sort_dialog_mode,        /* SORT_MODE */
-	&init_visual_mode,             /* PERMISSIONS_MODE */
-	&init_change_dialog_mode,      /* CHANGE_MODE */
-	&init_view_mode,               /* VIEW_MODE */
-	&init_file_info_mode,          /* FILE_INFO_MODE */
+	&init_normal_mode,        /* NORMAL_MODE */
+	&init_cmdline_mode,       /* CMDLINE_MODE */
+	&init_visual_mode,        /* VISUAL_MODE */
+	&init_menu_mode,          /* MENU_MODE */
+	&init_sort_dialog_mode,   /* SORT_MODE */
+	&init_attr_dialog_mode,   /* ATTR_MODE */
+	&init_change_dialog_mode, /* CHANGE_MODE */
+	&init_view_mode,          /* VIEW_MODE */
+	&init_file_info_mode,     /* FILE_INFO_MODE */
 };
 ARRAY_GUARD(mode_init_funcs, MODES_COUNT);
 
@@ -111,7 +111,7 @@ modes_pre(void)
 	{
 		return;
 	}
-	else if(mode == PERMISSIONS_MODE)
+	else if(mode == ATTR_MODE)
 	{
 		return;
 	}
@@ -142,7 +142,7 @@ modes_post(void)
 		return;
 	else if(mode == CHANGE_MODE)
 		return;
-	else if(mode == PERMISSIONS_MODE)
+	else if(mode == ATTR_MODE)
 		return;
 	else if(mode == VIEW_MODE)
 	{
@@ -227,8 +227,8 @@ modes_redraw(void)
 		redraw_sort_dialog();
 	else if(mode == CHANGE_MODE)
 		redraw_change_dialog();
-	else if(mode == PERMISSIONS_MODE)
-		redraw_permissions_dialog();
+	else if(mode == ATTR_MODE)
+		redraw_attr_dialog();
 	else if(mode == VIEW_MODE)
 		view_redraw();
 
@@ -257,8 +257,8 @@ modes_update(void)
 
 	if(mode == SORT_MODE)
 		redraw_sort_dialog();
-	else if(mode == PERMISSIONS_MODE)
-		redraw_permissions_dialog();
+	else if(mode == ATTR_MODE)
+		redraw_attr_dialog();
 }
 
 void

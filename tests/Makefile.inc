@@ -6,6 +6,11 @@ else
 endif
 
 SOURCES += ../seatest/seatest.c
+ifeq ($(OS),Windows_NT)
+    SOURCES := $(filter-out ../../src/attr_dialog_nix.c, $(SOURCES))
+else
+    SOURCES := $(filter-out ../../src/attr_dialog_win.c, $(SOURCES))
+endif
 LOCAL_SOURCES += $(wildcard *.c)
 
 OBJECTS := $(SOURCES:.c=.o)

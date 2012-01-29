@@ -12,6 +12,7 @@ bin_SCRIPTS = vifm-pause
 man_MANS = ../data/vifm.1
 
 vifm_SOURCES = \
+	attr_dialog_nix.c attr_dialog_nix.h attr_dialog.h \
 	background.c background.h \
 	bookmarks.c bookmarks.h \
 	change_dialog.c change_dialog.h \
@@ -38,7 +39,6 @@ vifm_SOURCES = \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
 	options.c options.h \
-	permissions_dialog.c permissions_dialog.h \
 	registers.c registers.h \
 	search.c search.h \
 	signals.c signals.h \

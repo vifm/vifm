@@ -28,6 +28,7 @@
 
 #include "../config.h"
 
+#include "attr_dialog.h"
 #include "background.h"
 #include "bookmarks.h"
 #include "cmdline.h"
@@ -41,7 +42,6 @@
 #include "macros.h"
 #include "menus.h"
 #include "modes.h"
-#include "permissions_dialog.h"
 #include "registers.h"
 #include "search.h"
 #include "status.h"
@@ -119,8 +119,8 @@ static void cmd_cg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_cl(key_info_t key_info, keys_info_t *keys_info);
 #ifndef _WIN32
 static void cmd_co(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_cp(key_info_t key_info, keys_info_t *keys_info);
 #endif
+static void cmd_cp(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_cw(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_DD(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dd(key_info_t key_info, keys_info_t *keys_info);
@@ -263,8 +263,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"cl", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cl}}},
 #ifndef _WIN32
 	{L"co", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_co}}},
-	{L"cp", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
 #endif
+	{L"cp", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
 	{L"cw", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cw}}},
 	{L"DD", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_DD}}},
 	{L"dd", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dd}}},
@@ -1339,14 +1339,14 @@ cmd_co(key_info_t key_info, keys_info_t *keys_info)
 {
 	change_owner();
 }
+#endif
 
-/* Change permissions. */
+/* Change file attributes (permissions or properties). */
 static void
 cmd_cp(key_info_t key_info, keys_info_t *keys_info)
 {
-	enter_permissions_mode(curr_view);
+	enter_attr_mode(curr_view);
 }
-#endif
 
 /* Change word (rename file or files). */
 static void
