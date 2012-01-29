@@ -511,8 +511,8 @@ main(int argc, char *argv[])
 
 	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle);
 
-	(int)check_path(&lwin, lwin_path);
-	(int)check_path(&rwin, rwin_path);
+	(void)check_path(&lwin, lwin_path);
+	(void)check_path(&rwin, rwin_path);
 
 	load_initial_directory(&lwin, dir);
 	load_initial_directory(&rwin, dir);
@@ -591,8 +591,8 @@ main(int argc, char *argv[])
 		read_info_file(0);
 		curr_stats.load_stage = 1;
 
-		(int)check_path(&lwin, lwin_path);
-		(int)check_path(&rwin, rwin_path);
+		(void)check_path(&lwin, lwin_path);
+		(void)check_path(&rwin, rwin_path);
 
 		load_initial_directory(&lwin, dir);
 		load_initial_directory(&rwin, dir);

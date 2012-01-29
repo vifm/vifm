@@ -72,6 +72,7 @@ static WINDOW *rtop_line1;
 static WINDOW *rtop_line2;
 
 static void update_attributes(void);
+static void reload_view(FileView *view);
 
 static void _gnuc_noreturn
 finish(const char *message)
@@ -1096,13 +1097,13 @@ redraw_window(void)
 	if(curr_stats.too_small_term)
 		return;
 
-	load_saving_pos(curr_view, 1);
+	reload_view(curr_view);
 
 	update_view_title(other_view);
 	if(curr_stats.view)
 		quick_view_file(curr_view);
 	else if(!other_view->explore_mode)
-		load_saving_pos(other_view, 1);
+		reload_view(other_view);
 
 	update_stat_window(curr_view);
 
@@ -1137,6 +1138,17 @@ redraw_window(void)
 	
 	if(get_mode() == VIEW_MODE || lwin.explore_mode || rwin.explore_mode)
 		view_redraw();
+}
+
+/* reloads view on window_reload() call */
+static void
+reload_view(FileView *view)
+{
+	if(curr_stats.load_stage >= 3)
+		load_saving_pos(view, 1);
+	else
+		load_dir_list(view,
+				!(cfg.vifm_info&VIFMINFO_SAVEDIRS) || view->list_pos != 0);
 }
 
 static void
