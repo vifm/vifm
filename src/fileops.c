@@ -890,7 +890,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	executable = type == EXECUTABLE || (runnable && access(filename, X_OK) == 0 &&
 			S_ISEXE(view->dir_entry[view->list_pos].mode));
 #else
-	executable = type == EXECUTABLE || (runnable && access(filename, X_OK) == 0);
+	executable = type == EXECUTABLE;
 #endif
 	executable = executable && !dont_execute && cfg.auto_execute;
 
