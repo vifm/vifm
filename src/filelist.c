@@ -1323,11 +1323,15 @@ leave_invalid_dir(FileView *view, char *path)
 		p[1] = '\0';
 	}
 
-	if(strchr(path, '/') == NULL)
 #ifndef _WIN32
+	if(strchr(path, '/') == NULL)
 		strcpy(path, "/");
 #else
-		strcpy(path, "c:/");
+	if(!is_unc_root(path) && (strlen(path) < 2 || path[1] != ':'))
+	{
+		strcpy(path, env_get("SYSTEMDRIVE"));
+		strcat(path, "/");
+	}
 #endif
 }
 
@@ -1574,9 +1578,6 @@ change_directory(FileView *view, const char *directory)
 {
 	char newdir[PATH_MAX];
 	char dir_dup[PATH_MAX];
-#ifdef _WIN32
-	int i;
-#endif
 
 	save_view_history(view, NULL, NULL, -1);
 
@@ -1600,15 +1601,17 @@ change_directory(FileView *view, const char *directory)
 	}
 
 #ifdef _WIN32
-	for(i = 0; dir_dup[i] != '\0'; i++)
-	{
-		if(dir_dup[i] == '\\')
-			dir_dup[i] = '/';
-	}
+	to_forward_slash(dir_dup);
 #endif
 
 	if(!is_root_dir(dir_dup))
 		chosp(dir_dup);
+
+	if(!is_dir(dir_dup))
+	{
+		(void)show_error_msgf("Directory Access Error", "Cannot open %s", dir_dup);
+		leave_invalid_dir(view, dir_dup);
+	}
 
 	snprintf(view->last_dir, sizeof(view->last_dir), "%s", view->curr_dir);
 
@@ -1630,7 +1633,7 @@ change_directory(FileView *view, const char *directory)
 #ifndef _WIN32
 	if(access(dir_dup, F_OK) != 0)
 #else
-	if(!is_dir(dir_dup) != 0 && !is_unc_root(dir_dup))
+	if(!is_dir(dir_dup) && !is_unc_root(dir_dup))
 #endif
 	{
 		LOG_SERROR_MSG(errno, "Can't access(, F_OK) \"%s\"", dir_dup);
