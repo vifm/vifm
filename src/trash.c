@@ -67,6 +67,8 @@ empty_trash_dir(void)
 	while((d = readdir(dir)) != NULL)
 	{
 		char full[PATH_MAX];
+		if(strcmp(d->d_name, ".") == 0 || strcmp(d->d_name, "..") == 0)
+			continue;
 		snprintf(full, sizeof(full), "%s/%s", cfg.trash_dir, d->d_name);
 		perform_operation(OP_REMOVESL, NULL, full, NULL);
 	}
