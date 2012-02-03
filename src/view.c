@@ -63,7 +63,6 @@ typedef struct
 
 static int can_be_explored(FileView *view, char *buf);
 static void pick_vi(void);
-static void leave_view_mode(void);
 static void init_view_info(view_info_t *vi);
 static void calc_vlines(void);
 static void draw(void);
@@ -357,7 +356,7 @@ view_redraw(void)
 	vi = tmp;
 }
 
-static void
+void
 leave_view_mode(void)
 {
 	*mode = NORMAL_MODE;

@@ -444,6 +444,24 @@ quick_view_file(FileView *view)
 	wrefresh(other_view->title);
 }
 
+void
+toggle_quick_view(void)
+{
+	if(curr_stats.view)
+	{
+		curr_stats.view = 0;
+
+		if(change_directory(other_view, other_view->curr_dir) >= 0)
+			load_dir_list(other_view, 1);
+		wrefresh(other_view->win);
+	}
+	else
+	{
+		curr_stats.view = 1;
+		quick_view_file(curr_view);
+	}
+}
+
 #ifndef _WIN32
 FILE *
 use_info_prog(const char *viewer)

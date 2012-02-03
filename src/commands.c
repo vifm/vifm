@@ -4676,19 +4676,7 @@ view_cmd(const cmd_info_t *cmd_info)
 	}
 	if(curr_stats.view && cmd_info->emark)
 		return 0;
-	if(curr_stats.view)
-	{
-		curr_stats.view = 0;
-
-		if(change_directory(other_view, other_view->curr_dir) >= 0)
-			load_dir_list(other_view, 1);
-		wrefresh(other_view->win);
-	}
-	else
-	{
-		curr_stats.view = 1;
-		quick_view_file(curr_view);
-	}
+	toggle_quick_view();
 	return 0;
 }
 

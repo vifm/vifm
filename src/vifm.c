@@ -64,6 +64,7 @@
 #include "undo.h"
 #include "utils.h"
 #include "variables.h"
+#include "view.h"
 
 #ifndef _WIN32
 #define CONF_DIR "~/.vifm"
@@ -73,6 +74,7 @@
 
 static void quit_on_invalid_arg(void);
 static void parse_recieved_arguments(char *args[]);
+static void remote_cd(FileView *view, const char *path, int handle);
 
 static void
 show_version_msg(void)
@@ -629,37 +631,50 @@ parse_recieved_arguments(char *args[])
 			&rwin_handle);
 	exec_startup_commands(argc, args);
 
-	if(get_mode() != NORMAL_MODE)
+	if(get_mode() != NORMAL_MODE && get_mode() != VIEW_MODE)
 		return;
 
 	if(check_path(&lwin, lwin_path))
-	{
-		change_directory(&lwin, lwin.curr_dir);
-		load_dir_list(&lwin, 0);
-		check_path_for_file(&lwin, lwin_path, lwin_handle);
-	}
+		remote_cd(&lwin, lwin_path, lwin_handle);
 
 	if(check_path(&rwin, rwin_path))
-	{
-		change_directory(&rwin, rwin.curr_dir);
-		load_dir_list(&rwin, 0);
-		check_path_for_file(&rwin, rwin_path, rwin_handle);
-	}
-
-	move_to_list_pos(curr_view, curr_view->list_pos);
-	if(!curr_stats.view)
-	{
-		draw_dir_list(other_view, other_view->top_line);
-		wrefresh(other_view->win);
-	}
+		remote_cd(&rwin, rwin_path, rwin_handle);
 
 	clean_status_bar();
+	curr_stats.save_msg = 0;
 
 #ifdef _WIN32
 	SwitchToThisWindow(GetConsoleWindow(), TRUE);
 	BringWindowToTop(GetConsoleWindow());
 	SetForegroundWindow(GetConsoleWindow());
 #endif
+}
+
+static void
+remote_cd(FileView *view, const char *path, int handle)
+{
+	if(view->explore_mode)
+		leave_view_mode();
+
+	if(view == other_view && get_mode() == VIEW_MODE)
+		leave_view_mode();
+
+	if(view == other_view && curr_stats.view)
+		toggle_quick_view();
+
+	change_directory(view, view->curr_dir);
+	load_dir_list(view, 0);
+	check_path_for_file(view, path, handle);
+
+	if(view == curr_view)
+	{
+		move_to_list_pos(curr_view, curr_view->list_pos);
+	}
+	else
+	{
+		draw_dir_list(other_view, other_view->top_line);
+		wrefresh(other_view->win);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

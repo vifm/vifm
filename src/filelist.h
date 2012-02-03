@@ -37,6 +37,7 @@ enum
 };
 
 void quick_view_file(FileView * view);
+void toggle_quick_view(void);
 FILE * use_info_prog(const char *viewer);
 void clean_selected_files(FileView *view);
 void goto_history_pos(FileView *view, int pos);
