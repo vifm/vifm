@@ -272,10 +272,14 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 			}
 			select = 0;
 		}
-		else
+		else if(curr_stats.load_stage == 0)
 		{
 			show_help_msg();
 			quit_on_invalid_arg();
+		}
+		else
+		{
+			(void)show_error_msgf("--remote error", "Invalid argument: %s", argv[x]);
 		}
 	}
 }
