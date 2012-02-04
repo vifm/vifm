@@ -32,6 +32,7 @@
 #endif
 
 #include <ctype.h> /* isalnum */
+#include <errno.h>
 #include <stdio.h> /* FILE */
 #include <stdlib.h>
 #include <string.h>
@@ -77,7 +78,6 @@ static void create_config_dir(void);
 static void create_help_file(void);
 static void create_rc_file(void);
 #endif
-static void create_trash_dir(void);
 
 void
 init_config(void)
@@ -186,7 +186,6 @@ set_config_paths(void)
 	store_config_paths();
 
 	create_config_dir();
-	create_trash_dir();
 }
 
 /* tries to find home directory */
@@ -478,7 +477,7 @@ create_rc_file(void)
 #endif
 
 /* ensures existence of trash directory */
-static void
+void
 create_trash_dir(void)
 {
 	LOG_FUNC_ENTER;
@@ -486,7 +485,10 @@ create_trash_dir(void)
 	if(access(cfg.trash_dir, F_OK) == 0)
 		return;
 
-	(void)make_dir(cfg.trash_dir, 0777);
+	if(make_dir(cfg.trash_dir, 0777) != 0)
+		show_error_msgf("Error Setting Trash Directory",
+				"Could not set trash directory to %s: %s",
+				cfg.trash_dir, strerror(errno));
 }
 
 static void
