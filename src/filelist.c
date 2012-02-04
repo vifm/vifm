@@ -2485,9 +2485,24 @@ scroll_view(FileView *view)
 	move_to_list_pos(view, view->list_pos);
 }
 
+static int
+window_shows_dirlist(FileView *view)
+{
+	if(view->explore_mode)
+		return 0;
+	if(view == other_view && get_mode() == VIEW_MODE)
+		return 0;
+	if(view == other_view && curr_stats.view)
+		return 0;
+	return 1;
+}
+
 static void
 reload_window(FileView *view)
 {
+	if(!window_shows_dirlist(view))
+		return;
+
 	curr_stats.skip_history = 1;
 
 	load_saving_pos(view, 1);
