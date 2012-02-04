@@ -218,6 +218,7 @@ file_exec(char *command)
 void
 view_file(const char *filename, int line, int do_fork)
 {
+	char vicmd[PATH_MAX];
 	char command[PATH_MAX + 5] = "";
 	const char *fork_str = do_fork ? "" : "--nofork";
 	char *escaped;
@@ -234,12 +235,22 @@ view_file(const char *filename, int line, int do_fork)
 #else
 	escaped = (char *)enclose_in_dquotes(filename);
 #endif
+
+	snprintf(vicmd, sizeof(vicmd), "%s", get_vicmd(&bg));
+	if(!do_fork)
+	{
+		char *p = strrchr(vicmd, ' ');
+		if(p != NULL && strstr(p, "remote"))
+		{
+			*p = '\0';
+		}
+	}
+
 	if(line < 0)
-		snprintf(command, sizeof(command), "%s %s %s", get_vicmd(&bg), fork_str,
-				escaped);
+		snprintf(command, sizeof(command), "%s %s %s", vicmd, fork_str, escaped);
 	else
-		snprintf(command, sizeof(command), "%s %s +%d %s", get_vicmd(&bg), fork_str,
-				line, escaped);
+		snprintf(command, sizeof(command), "%s %s +%d %s", vicmd, fork_str, line,
+				escaped);
 #ifndef _WIN32
 	free(escaped);
 #endif
