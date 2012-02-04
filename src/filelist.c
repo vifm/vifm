@@ -688,7 +688,8 @@ update_view_title(FileView *view)
 	buf = replace_home_part(view->curr_dir);
 	if(view->explore_mode)
 	{
-		strcat(buf, "/");
+		if(!is_root_dir(buf))
+			strcat(buf, "/");
 		strcat(buf, get_current_file_name(view));
 	}
 
