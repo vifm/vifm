@@ -673,8 +673,8 @@ setup_ncurses_interface(void)
 	wattrset(menu_win, cfg.cs.color[WIN_COLOR].attr);
 	werase(menu_win);
 
-	sort_win = newwin(NUM_SORT_OPTIONS + 5, 32, (screen_y - NUM_SORT_OPTIONS)/2,
-			(screen_x - 32)/2);
+	sort_win = newwin(NUM_SORT_OPTIONS + 5, SORT_WIN_WIDTH,
+			(screen_y - NUM_SORT_OPTIONS)/2, (screen_x - SORT_WIN_WIDTH)/2);
 	wbkgdset(sort_win, COLOR_PAIR(DCOLOR_BASE + WIN_COLOR));
 	wattrset(sort_win, cfg.cs.color[WIN_COLOR].attr);
 	werase(sort_win);

@@ -180,7 +180,7 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, curr, 6, caps[descending]);
 
 	getmaxyx(stdscr, y, x);
-	mvwin(sort_win, (y - (cy - 2 + 3))/2, (x - 30)/2);
+	mvwin(sort_win, (y - (cy - 2 + 3))/2, (x - SORT_WIN_WIDTH)/2);
 	wrefresh(sort_win);
 }
 
