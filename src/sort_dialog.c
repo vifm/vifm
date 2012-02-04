@@ -210,7 +210,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	leave_sort_mode();
 
 	for(i = 0; i < ARRAY_LEN(indexes); i++)
-		if(indexes[i] == curr - 2)
+		if(indexes[i] == curr - top)
 			break;
 	change_sort_type(view, i, descending);
 }
