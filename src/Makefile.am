@@ -74,4 +74,9 @@ version.c:
 		/bin/echo -n 'const char GIT_HASH[] = "";' > version.c; \
 	fi
 
+../data/vifm-help.txt: ../data/vifm.1
+	@if [ "x$$(whereis groff)" != "x" -a "x$$(whereis sed)" != "x" ]; then \
+		groff -Tutf8 -man ../data/vifm.1 | sed 's/.\x08//g' >| ../data/vifm-help.txt; \
+	fi
+
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :

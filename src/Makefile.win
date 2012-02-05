@@ -28,8 +28,8 @@ win_helper_EXECUTABLE := win_helper.exe
 
 .PHONY: version.c
 
-all: ../config.h $(vifm_EXECUTABLE) $(converter_EXECUTABLE) \
-	$(win_helper_EXECUTABLE)
+all: ../config.h ../data/vifm-help.txt $(vifm_EXECUTABLE) \
+	$(converter_EXECUTABLE) $(win_helper_EXECUTABLE)
 
 $(vifm_EXECUTABLE): $(vifm_OBJECTS)
 	$(CC) $^ -o $@ $(LDFLAGS) $(LIBS)
@@ -54,7 +54,7 @@ vifmres.o: vifm.res
 utils.c: version.c
 
 version.c:
-	@if [ "x$$(whereis git)" != "x" ] ; then \
+	@if [ "x$$(whereis git)" != "x" ]; then \
 		/bin/echo -n 'const char GIT_HASH[] = "' > version.c; \
 		/bin/echo -n `git rev-parse HEAD` >> version.c; \
 		/bin/echo '";' >> version.c; \
@@ -64,6 +64,14 @@ version.c:
 
 .c.o:
 	$(CC) $(CFLAGS) $< -o $@
+
+../data/vifm-help.txt: ../data/vifm.1
+	@if [ "x$$(whereis groff)" != "x" -a "x$$(whereis sed)" != "x" ]; then \
+		groff -Tutf8 -man ../data/vifm.1 | sed 's/.\x08//g' | sed 's/\x1b\[[0-9]*m//g' | sed 's/\r//g' > ../data/vifm-help.txt; \
+		if [ "x$$(whereis dos2unix)" != "x" ]; then \
+			dos2unix ../data/vifm-help.txt; \
+		fi; \
+	fi
 
 clean:
 	rm *.o
