@@ -1605,6 +1605,13 @@ type: boolean
 default: true
 Use trash directory.
 
+                                               *vifm-'trashdir'*
+trashdir
+type: string
+default: "$HOME/.vifm/Trash
+Sets the trash directory. Will attempt to create the directory if it does not
+exist.
+
                                                *vifm-'timeoutlen'* *vifm-'tm'*
 timeoutlen tm
 type: integer

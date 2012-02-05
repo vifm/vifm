@@ -112,6 +112,7 @@ int source_file(const char *file);
 int is_old_config(void);
 int are_old_color_schemes(void);
 const char * get_vicmd(int *bg);
+void create_trash_dir(void);
 
 #endif
 

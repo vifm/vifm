@@ -606,6 +606,8 @@ main(int argc, char *argv[])
 		exec_config();
 	}
 
+	create_trash_dir();
+
 	check_path_for_file(&lwin, lwin_path, lwin_handle);
 	check_path_for_file(&rwin, rwin_path, rwin_handle);
 

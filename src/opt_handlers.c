@@ -71,6 +71,7 @@ static void tabstop_handler(OPT_OP op, optval_t val);
 static void timefmt_handler(OPT_OP op, optval_t val);
 static void timeoutlen_handler(OPT_OP op, optval_t val);
 static void trash_handler(OPT_OP op, optval_t val);
+static void trashdir_handler(OPT_OP op, optval_t val);
 static void undolevels_handler(OPT_OP op, optval_t val);
 static void vicmd_handler(OPT_OP op, optval_t val);
 static void vixcmd_handler(OPT_OP op, optval_t val);
@@ -182,6 +183,7 @@ static struct
 	{ "timefmt",     "",     OPT_STR,     0,                          NULL,            &timefmt_handler,     },
 	{ "timeoutlen",  "tm",   OPT_INT,     0,                          NULL,            &timeoutlen_handler,  },
 	{ "trash",       "",     OPT_BOOL,    0,                          NULL,            &trash_handler,       },
+	{ "trashdir",    "",     OPT_STR,     0,                          NULL,            &trashdir_handler,    },
 	{ "undolevels",  "ul",   OPT_INT,     0,                          NULL,            &undolevels_handler,  },
 	{ "vicmd",       "",     OPT_STR,     0,                          NULL,            &vicmd_handler,       },
 	{ "vixcmd",      "",     OPT_STR,     0,                          NULL,            &vixcmd_handler,      },
@@ -243,6 +245,7 @@ load_options_defaults(void)
 	options[i++].val.str_val = cfg.time_format + 1;
 	options[i++].val.int_val = cfg.timeout_len;
 	options[i++].val.bool_val = cfg.use_trash;
+	options[i++].val.str_val = cfg.trash_dir;
 	options[i++].val.int_val = cfg.undo_levels;
 	options[i++].val.str_val = cfg.vi_command;
 	options[i++].val.str_val = cfg.vi_x_command;
@@ -827,6 +830,15 @@ static void
 trash_handler(OPT_OP op, optval_t val)
 {
 	cfg.use_trash = val.bool_val;
+}
+
+static void
+trashdir_handler(OPT_OP op, optval_t val)
+{
+	char * s = expand_tilde(strdup(val.str_val));
+	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s", s);
+	create_trash_dir();
+	free(s);
 }
 
 static void
