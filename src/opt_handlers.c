@@ -35,6 +35,30 @@
 
 #include "opt_handlers.h"
 
+typedef union
+{
+	int *bool_val;
+	int *int_val;
+	char **str_val;
+	int *enum_item;
+	int *set_items;
+}optvalref_t;
+
+typedef void (*optinit_func)(optval_t *val);
+
+typedef struct
+{
+	optvalref_t ref;
+	optinit_func init;
+}optinit_t;
+
+static void init_columns(optval_t *val);
+static void init_cpoptions(optval_t *val);
+static void init_lines(optval_t *val);
+static void init_timefmt(optval_t *val);
+static void init_trash_dir(optval_t *val);
+static void init_sort(optval_t *val);
+static void init_sortorder(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
 static void print_func(const char *msg, const char *description);
@@ -150,51 +174,91 @@ static struct
 	int val_count;
 	const char **vals;
 	opt_handler handler;
+	optinit_t initializer;
 	optval_t val;
 }options[] = {
 	/* global options */
-	{ "autochpos",   "",     OPT_BOOL,    0,                          NULL,            &autochpos_handler,   },
-	{ "columns",     "co",   OPT_INT,     0,                          NULL,            &columns_handler,     },
-	{ "confirm",     "cf",   OPT_BOOL,    0,                          NULL,            &confirm_handler,     },
-	{ "cpoptions",   "cpo",  OPT_STR,     0,                          NULL,            &cpoptions_handler,   },
-	{ "fastrun",     "",     OPT_BOOL,    0,                          NULL,            &fastrun_handler,     },
-	{ "followlinks", "",     OPT_BOOL,    0,                          NULL,            &followlinks_handler, },
-	{ "fusehome",    "",     OPT_STR,     0,                          NULL,            &fusehome_handler,    },
-	{ "gdefault",    "gd",   OPT_BOOL,    0,                          NULL,            &gdefault_handler,    },
-	{ "history",     "hi",   OPT_INT,     0,                          NULL,            &history_handler,     },
-	{ "hlsearch",    "hls",  OPT_BOOL,    0,                          NULL,            &hlsearch_handler,    },
-	{ "iec",         "",     OPT_BOOL,    0,                          NULL,            &iec_handler,         },
-	{ "ignorecase",  "ic",   OPT_BOOL,    0,                          NULL,            &ignorecase_handler,  },
-	{ "incsearch",   "is",   OPT_BOOL,    0,                          NULL,            &incsearch_handler ,  },
-	{ "laststatus",  "ls",   OPT_BOOL,    0,                          NULL,            &laststatus_handler,  },
-	{ "lines",       "",     OPT_INT,     0,                          NULL,            &lines_handler,       },
-	{ "rulerformat", "ruf",  OPT_STR,     0,                          NULL,            &rulerformat_handler, },
-	{ "runexec",     "",     OPT_BOOL,    0,                          NULL,            &runexec_handler,     },
-	{ "scrollbind",  "scb",  OPT_BOOL,    0,                          NULL,            &scrollbind_handler,  },
-	{ "scrolloff",   "so",   OPT_INT,     0,                          NULL,            &scrolloff_handler,   },
-	{ "shell",       "sh",   OPT_STR,     0,                          NULL,            &shell_handler,       },
+	{ "autochpos",   "",     OPT_BOOL,    0,                          NULL,            &autochpos_handler,
+		{ .ref.bool_val = &cfg.auto_ch_pos }                                                                   },
+	{ "columns",     "co",   OPT_INT,     0,                          NULL,            &columns_handler,
+		{ .init = &init_columns }                                                                              },
+	{ "confirm",     "cf",   OPT_BOOL,    0,                          NULL,            &confirm_handler,
+		{ .ref.bool_val = &cfg.confirm }                                                                       },
+	{ "cpoptions",   "cpo",  OPT_STR,     0,                          NULL,            &cpoptions_handler,
+		{ .init = &init_cpoptions }                                                                            },
+	{ "fastrun",     "",     OPT_BOOL,    0,                          NULL,            &fastrun_handler,
+		{ .ref.bool_val = &cfg.fast_run }                                                                      },
+	{ "followlinks", "",     OPT_BOOL,    0,                          NULL,            &followlinks_handler,
+		{ .ref.bool_val = &cfg.follow_links }                                                                  },
+	{ "fusehome",    "",     OPT_STR,     0,                          NULL,            &fusehome_handler,
+		{ .ref.str_val = &cfg.fuse_home }                                                                      },
+	{ "gdefault",    "gd",   OPT_BOOL,    0,                          NULL,            &gdefault_handler,
+		{ .ref.bool_val = &cfg.gdefault }                                                                      },
+	{ "history",     "hi",   OPT_INT,     0,                          NULL,            &history_handler,
+		{ .ref.int_val = &cfg.history_len }                                                                    },
+	{ "hlsearch",    "hls",  OPT_BOOL,    0,                          NULL,            &hlsearch_handler,
+		{ .ref.bool_val = &cfg.hl_search }                                                                     },
+	{ "iec",         "",     OPT_BOOL,    0,                          NULL,            &iec_handler,
+		{ .ref.bool_val = &cfg.use_iec_prefixes }                                                              },
+	{ "ignorecase",  "ic",   OPT_BOOL,    0,                          NULL,            &ignorecase_handler,
+		{ .ref.bool_val = &cfg.ignore_case }                                                                   },
+	{ "incsearch",   "is",   OPT_BOOL,    0,                          NULL,            &incsearch_handler ,
+		{ .ref.bool_val = &cfg.inc_search }                                                                    },
+	{ "laststatus",  "ls",   OPT_BOOL,    0,                          NULL,            &laststatus_handler,
+		{ .ref.bool_val = &cfg.last_status }                                                                   },
+	{ "lines",       "",     OPT_INT,     0,                          NULL,            &lines_handler,
+		{ .init = &init_lines }                                                                                },
+	{ "rulerformat", "ruf",  OPT_STR,     0,                          NULL,            &rulerformat_handler,
+		{ .ref.str_val = &cfg.ruler_format }                                                                    },
+	{ "runexec",     "",     OPT_BOOL,    0,                          NULL,            &runexec_handler,
+		{ .ref.bool_val = &cfg.auto_execute }                                                                  },
+	{ "scrollbind",  "scb",  OPT_BOOL,    0,                          NULL,            &scrollbind_handler,
+		{ .ref.bool_val = &cfg.scroll_bind }                                                                   },
+	{ "scrolloff",   "so",   OPT_INT,     0,                          NULL,            &scrolloff_handler,
+		{ .ref.int_val = &cfg.scroll_off }                                                                     },
+	{ "shell",       "sh",   OPT_STR,     0,                          NULL,            &shell_handler,
+		{ .ref.str_val = &cfg.shell }                                                                          },
 #ifndef _WIN32
-	{ "slowfs",      "",     OPT_STRLIST, 0,                          NULL,            &slowfs_handler,      },
+	{ "slowfs",      "",     OPT_STRLIST, 0,                          NULL,            &slowfs_handler,
+		{ .ref.str_val = &cfg.slow_fs_list }                                                                   },
 #endif
-	{ "smartcase",   "scs",  OPT_BOOL,    0,                          NULL,            &smartcase_handler,   },
-	{ "sortnumbers", "",     OPT_BOOL,    0,                          NULL,            &sortnumbers_handler, },
-	{ "statusline",  "stl",  OPT_STR,     0,                          NULL,            &statusline_handler,  },
-	{ "tabstop",     "ts",   OPT_INT,     0,                          NULL,            &tabstop_handler,     },
-	{ "timefmt",     "",     OPT_STR,     0,                          NULL,            &timefmt_handler,     },
-	{ "timeoutlen",  "tm",   OPT_INT,     0,                          NULL,            &timeoutlen_handler,  },
-	{ "trash",       "",     OPT_BOOL,    0,                          NULL,            &trash_handler,       },
-	{ "trashdir",    "",     OPT_STR,     0,                          NULL,            &trashdir_handler,    },
-	{ "undolevels",  "ul",   OPT_INT,     0,                          NULL,            &undolevels_handler,  },
-	{ "vicmd",       "",     OPT_STR,     0,                          NULL,            &vicmd_handler,       },
-	{ "vixcmd",      "",     OPT_STR,     0,                          NULL,            &vixcmd_handler,      },
-	{ "vifminfo",    "",     OPT_SET,     ARRAY_LEN(vifminfo_set),    vifminfo_set,    &vifminfo_handler,    },
-	{ "vimhelp",     "",     OPT_BOOL,    0,                          NULL,            &vimhelp_handler,     },
-	{ "wildmenu",    "wmnu", OPT_BOOL,    0,                          NULL,            &wildmenu_handler,    },
-	{ "wrap",        "",     OPT_BOOL,    0,                          NULL,            &wrap_handler,        },
-	{ "wrapscan",    "ws",   OPT_BOOL,    0,                          NULL,            &wrapscan_handler,    },
+	{ "smartcase",   "scs",  OPT_BOOL,    0,                          NULL,            &smartcase_handler,
+		{ .ref.bool_val = &cfg.smart_case }                                                                    },
+	{ "sortnumbers", "",     OPT_BOOL,    0,                          NULL,            &sortnumbers_handler,
+		{ .ref.bool_val = &cfg.sort_numbers }                                                                  },
+	{ "statusline",  "stl",  OPT_STR,     0,                          NULL,            &statusline_handler,
+		{ .ref.str_val = &cfg.status_line }                                                                    },
+	{ "tabstop",     "ts",   OPT_INT,     0,                          NULL,            &tabstop_handler,
+		{ .ref.int_val = &cfg.tab_stop }                                                                       },
+	{ "timefmt",     "",     OPT_STR,     0,                          NULL,            &timefmt_handler,
+		{ .init = &init_timefmt }                                                                              },
+	{ "timeoutlen",  "tm",   OPT_INT,     0,                          NULL,            &timeoutlen_handler,
+		{ .ref.int_val = &cfg.timeout_len }                                                                    },
+	{ "trash",       "",     OPT_BOOL,    0,                          NULL,            &trash_handler,
+		{ .ref.bool_val = &cfg.use_trash }                                                                     },
+	{ "trashdir",    "",     OPT_STR,     0,                          NULL,            &trashdir_handler,
+		{ .init = &init_trash_dir }                                                                            },
+	{ "undolevels",  "ul",   OPT_INT,     0,                          NULL,            &undolevels_handler,
+		{ .ref.int_val = &cfg.undo_levels }                                                                    },
+	{ "vicmd",       "",     OPT_STR,     0,                          NULL,            &vicmd_handler,
+		{ .ref.str_val = &cfg.vi_command }                                                                     },
+	{ "vixcmd",      "",     OPT_STR,     0,                          NULL,            &vixcmd_handler,
+		{ .ref.str_val = &cfg.vi_x_command }                                                                   },
+	{ "vifminfo",    "",     OPT_SET,     ARRAY_LEN(vifminfo_set),    vifminfo_set,    &vifminfo_handler,
+		{ .ref.set_items = &cfg.vifm_info }                                                                    },
+	{ "vimhelp",     "",     OPT_BOOL,    0,                          NULL,            &vimhelp_handler,
+		{ .ref.bool_val = &cfg.use_vim_help }                                                                  },
+	{ "wildmenu",    "wmnu", OPT_BOOL,    0,                          NULL,            &wildmenu_handler,
+		{ .ref.bool_val = &cfg.wild_menu }                                                                     },
+	{ "wrap",        "",     OPT_BOOL,    0,                          NULL,            &wrap_handler,
+		{ .ref.bool_val = &cfg.wrap_quick_view }                                                               },
+	{ "wrapscan",    "ws",   OPT_BOOL,    0,                          NULL,            &wrapscan_handler,
+		{ .ref.bool_val = &cfg.wrap_scan }                                                                     },
 	/* local options */
-	{ "sort",        "",     OPT_STRLIST, ARRAY_LEN(sort_types),      sort_types,      &sort_handler,        },
-	{ "sortorder",   "",     OPT_ENUM,    ARRAY_LEN(sortorder_enum),  sortorder_enum,  &sortorder_handler,   },
+	{ "sort",        "",     OPT_STRLIST, ARRAY_LEN(sort_types),      sort_types,      &sort_handler,
+		{ .init = &init_sort }                                                                                 },
+	{ "sortorder",   "",     OPT_ENUM,    ARRAY_LEN(sortorder_enum),  sortorder_enum,  &sortorder_handler,
+		{ .init = &init_sortorder }                                                                            },
 };
 
 void
@@ -207,59 +271,64 @@ init_option_handlers(void)
 }
 
 static void
+init_columns(optval_t *val)
+{
+	val->int_val = (cfg.columns > 0) ? cfg.columns : getmaxx(stdscr);
+}
+
+static void
+init_cpoptions(optval_t *val)
+{
+	static char buf[32];
+	snprintf(buf, sizeof(buf), "%s", cfg.selection_cp ? "s" : "");
+	val->str_val = buf;
+}
+
+static void
+init_lines(optval_t *val)
+{
+	val->int_val = (cfg.lines > 0) ? cfg.lines : getmaxy(stdscr);
+}
+
+static void
+init_timefmt(optval_t *val)
+{
+	val->str_val = cfg.time_format + 1;
+}
+
+static void
+init_trash_dir(optval_t *val)
+{
+	val->str_val = cfg.trash_dir;
+}
+
+static void
+init_sort(optval_t *val)
+{
+	val->str_val = "+name";
+}
+
+static void
+init_sortorder(optval_t *val)
+{
+	val->enum_item = 0;
+}
+
+static void
 load_options_defaults(void)
 {
-	char buf[32];
-	int i = 0;
-
-	snprintf(buf, sizeof(buf), "%s", cfg.selection_cp ? "s" : "");
-
-	/* global options */
-	options[i++].val.bool_val = cfg.auto_ch_pos;
-	options[i++].val.int_val = (cfg.columns > 0) ? cfg.columns : getmaxx(stdscr);
-	options[i++].val.bool_val = cfg.confirm;
-	options[i++].val.str_val = buf;
-	options[i++].val.bool_val = cfg.fast_run;
-	options[i++].val.bool_val = cfg.follow_links;
-	options[i++].val.str_val = cfg.fuse_home;
-	options[i++].val.bool_val = cfg.gdefault;
-	options[i++].val.int_val = cfg.history_len;
-	options[i++].val.bool_val = cfg.hl_search;
-	options[i++].val.bool_val = cfg.use_iec_prefixes;
-	options[i++].val.bool_val = cfg.ignore_case;
-	options[i++].val.bool_val = cfg.inc_search;
-	options[i++].val.bool_val = cfg.last_status;
-	options[i++].val.int_val = (cfg.lines > 0) ? cfg.lines : getmaxy(stdscr);
-	options[i++].val.str_val = cfg.ruler_format;
-	options[i++].val.bool_val = cfg.auto_execute;
-	options[i++].val.bool_val = cfg.scroll_bind;
-	options[i++].val.int_val = cfg.scroll_off;
-	options[i++].val.str_val = cfg.shell;
-#ifndef _WIN32
-	options[i++].val.str_val = cfg.slow_fs_list;
-#endif
-	options[i++].val.bool_val = cfg.smart_case;
-	options[i++].val.bool_val = cfg.sort_numbers;
-	options[i++].val.str_val = cfg.status_line;
-	options[i++].val.int_val = cfg.tab_stop;
-	options[i++].val.str_val = cfg.time_format + 1;
-	options[i++].val.int_val = cfg.timeout_len;
-	options[i++].val.bool_val = cfg.use_trash;
-	options[i++].val.str_val = cfg.trash_dir;
-	options[i++].val.int_val = cfg.undo_levels;
-	options[i++].val.str_val = cfg.vi_command;
-	options[i++].val.str_val = cfg.vi_x_command;
-	options[i++].val.set_items = cfg.vifm_info;
-	options[i++].val.bool_val = cfg.use_vim_help;
-	options[i++].val.bool_val = cfg.wild_menu;
-	options[i++].val.bool_val = cfg.wrap_quick_view;
-	options[i++].val.bool_val = cfg.wrap_scan;
-
-	/* local options */
-	options[i++].val.str_val = "+name";
-	options[i++].val.enum_item = 0;
-
-	assert(ARRAY_LEN(options) == i);
+	int i;
+	for(i = 0; i < ARRAY_LEN(options); i++)
+	{
+		if(options[i].initializer.init != NULL)
+		{
+			options[i].initializer.init(&options[i].val);
+		}
+		else
+		{
+			options[i].val.str_val = *options[i].initializer.ref.str_val;
+		}
+	}
 }
 
 static void
