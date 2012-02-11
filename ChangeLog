@@ -36,6 +36,8 @@
 
 	Added file attributes in status bar and file info view.
 
+	Added ctrl-w p, ctrl-w b and ctrl-w t normal mode keys.
+
 	Restore terminal title on exit.
 
 	Reset dot and filename filters if they hide bookmarked file.
