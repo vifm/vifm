@@ -1103,7 +1103,7 @@ check_title_supported()
 		"aterm", "Eterm", "screen", "screen-256color"
 	};
 
-	title_state.initialized = is_in_string_array(TERMINALS_WITH_TITLE,
+	title_state.supported = is_in_string_array(TERMINALS_WITH_TITLE,
 			ARRAY_LEN(TERMINALS_WITH_TITLE), env_get("TERM"));
 #endif
 }
@@ -1116,8 +1116,8 @@ save_term_title()
 	GetConsoleTitleW(title_state.title, ARRAY_LEN(title_state.title));
 #else
 #ifdef HAVE_X11
-	Display *x11_display;
-	Window x11_window;
+	Display *x11_display = 0;
+	Window x11_window = 0;
 
 	/* use X to determine current window title */
 	if(get_x11_disp_and_win(&x11_display, &x11_window))
