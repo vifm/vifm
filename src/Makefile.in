@@ -780,6 +780,22 @@ version.c:
 		groff -Tutf8 -man ../data/vifm.1 | sed 's/.\x08//g' >| ../data/vifm-help.txt; \
 	fi
 
+tags.c: ../data/vim/doc/vifm.txt
+	@if [ "x$$(whereis vim)" != "x" -a "x$$(whereis cat)" != "x" -a "x$$(whereis awk)" != "x" ]; then \
+		vim -c 'helptags $(dir $<)|q'; \
+		cat $(dir $<)/tags | awk ' \
+			BEGIN { \
+				print "const char *tags[] = {" \
+			} \
+			{ \
+				print "\t\"" $$1 "\"," \
+			} \
+			END { \
+				print "\t0,\n};" \
+			} \
+		' > $@; \
+	fi
+
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

@@ -73,6 +73,22 @@ version.c:
 		fi; \
 	fi
 
+tags.c: ../data/vim/doc/vifm.txt
+	@if [ "x$$(whereis vim)" != "x" -a "x$$(whereis cat)" != "x" -a "x$$(whereis awk)" != "x" ]; then \
+		vim -c 'helptags $(dir $<)|q'; \
+		cat $(dir $<)/tags | awk ' \
+			BEGIN { \
+				print "const char *tags[] = {" \
+			} \
+			{ \
+				print "\t\"" $$1 "\"," \
+			} \
+			END { \
+				print "\t0,\n};" \
+			} \
+		' > $@; \
+	fi
+
 clean:
 	rm *.o
 
