@@ -1341,6 +1341,17 @@ only for MS-Windows
 will popup menu with volume list.  Hitting l (or Enter) key will open
 appropriate volume in the current pane.
 .TP
+.BI :windo [command...]
+Execute command for each pane (same as :winrun % command).
+.TP
+.BI :winrun type [command...]
+Execute command for pane(s), which is determined by type argument:
+ - ^ - top-left pane
+ - $ - bottom-right pane
+ - % - all panes
+ - . - current pane
+ - , - other pane
+.TP
 .BI :w[rite]
 write vifminfo file (add ! to force write even if settings weren't changed).
 .TP

@@ -18,6 +18,7 @@ static char * expand_macros(const char *str, int *usr1, int *usr2);
 static char * expand_envvars(const char *str);
 static void post(int id);
 static void select_range(int id, const cmd_info_t *cmd_info);
+static int skip_at_beginning(int id, const char *args);
 
 void input_tests(void);
 void command_name_tests(void);
@@ -35,6 +36,7 @@ cmds_conf_t cmds_conf = {
 	.expand_envvars = expand_envvars,
 	.post = post,
 	.select_range = select_range,
+	.skip_at_beginning = skip_at_beginning,
 };
 
 void
@@ -109,6 +111,12 @@ post(int id)
 static void
 select_range(int id, const cmd_info_t *cmd_info)
 {
+}
+
+static int
+skip_at_beginning(int id, const char *args)
+{
+	return -1;
 }
 
 static void

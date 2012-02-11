@@ -1186,6 +1186,19 @@ of the hierarchy and transparency for all others.
 :vs[plit] path - splits the window vertically to show both file
     directories.  And changes other pane to path.
 
+                                               *vifm-:windo*
+:windo [command...]
+Execute command for each pane (same as :winrun % command).
+
+                                               *vifm-:winrun*
+:winrun type [command...]
+Execute command for pane(s), which is determined by type argument:
+ - ^ - top-left pane
+ - $ - bottom-right pane
+ - % - all panes
+ - . - current pane
+ - , - other pane
+
                                                *vifm-:write* *vifm-:w*
 :w[rite] - will write vifminfo (add ! to force write even if settings
     weren't changed).

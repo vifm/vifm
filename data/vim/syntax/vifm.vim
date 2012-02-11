@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@gmail.com>
-" Last Change: January 6, 2012
+" Last Change: February 11, 2012
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -19,7 +19,7 @@ syntax keyword vifmCommand contained alink apropos cd change chmod chown clone
 		\ locate ls marks mes[sages] mkdir m[ove] noh[lsearch] on[ly] popd pushd pwd
 		\ q[uit] reg[isters] rename restart restore rlink screen se[t] sh[ell]
 		\ sor[t] so[urce] sp[lit] s[ubstitute] touch tr sync undol[ist] unl[et]
-		\ ve[rsion] vie[w] vifm w[rite] wq x[it] y[ank]
+		\ ve[rsion] vie[w] vifm windo winrun w[rite] wq x[it] y[ank]
 
 " Map commands
 syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map nm[ap]
@@ -49,8 +49,8 @@ syntax keyword vifmOption contained autochpos columns co confirm cf cpoptions
 		\ cpo fastrun followlinks fusehome gdefault history hi hlsearch hls iec
 		\ ignorecase ic incsearch is laststatus lines ls rulerformat ruf runexec
 		\ scrollbind scb scrolloff so sort sortorder shell sh slowfs smartcase scs
-		\ sortnumbers statusline stl tabstop timefmt timeoutlen trash ts undolevels
-		\ ul vicmd vixcmd vifminfo vimhelp wildmenu wmnu wrap wrapscan ws
+		\ sortnumbers statusline stl tabstop timefmt timeoutlen trash trashdir ts
+		\ undolevels ul vicmd vixcmd vifminfo vimhelp wildmenu wmnu wrap wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun

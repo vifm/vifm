@@ -90,6 +90,10 @@ static void unescape(char *s, int regexp);
 static void replace_esc(char *s);
 static const char *get_cmd_name(const char *cmd, char *buf, size_t buf_len);
 static void init_cmd_info(cmd_info_t *cmd_info);
+static const char * skip_prefix_commands(const char *cmd);
+static cmd_t * find_cmd(const char *name);
+static int complete_cmd_args(cmd_t *cur, const char *args,
+		cmd_info_t *cmd_info);
 static void complete_cmd_name(const char *cmd_name, int user_only);
 #ifndef TEST
 static
@@ -99,6 +103,7 @@ static int comclear_cmd(const cmd_info_t *cmd_info);
 static int command_cmd(const cmd_info_t *cmd_info);
 static const char * get_user_cmd_name(const char *cmd, char *buf,
 		size_t buf_len);
+static char * skip_whitespace(const char *s);
 static int is_correct_name(const char *name);
 static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
@@ -134,6 +139,7 @@ init_cmds(int udf, cmds_conf_t *conf)
 		assert(conf->expand_envvars != NULL);
 		assert(conf->post != NULL);
 		assert(conf->select_range != NULL);
+		assert(conf->skip_at_beginning != NULL);
 		conf->inner = calloc(1, sizeof(inner_t));
 		assert(conf->inner != NULL);
 		inner = conf->inner;
@@ -311,8 +317,7 @@ execute_cmd(const char *cmd)
 static const char *
 parse_range(const char *cmd, cmd_info_t *cmd_info)
 {
-	while(isspace(*cmd))
-		cmd++;
+	cmd = skip_whitespace(cmd);
 
 	if(isalpha(*cmd) || *cmd == '!' || *cmd == '\0')
 		return cmd;
@@ -331,16 +336,14 @@ parse_range(const char *cmd, cmd_info_t *cmd_info)
 		if(cmd_info->begin == NOT_DEF)
 			cmd_info->begin = cmd_info->end;
 
-		while(isspace(*cmd))
-			cmd++;
+		cmd = skip_whitespace(cmd);
 
 		if(*cmd != ',')
 			break;
 
 		cmd++;
 
-		while(isspace(*cmd))
-			cmd++;
+		cmd = skip_whitespace(cmd);
 	}
 
 	return cmd;
@@ -824,68 +827,81 @@ complete_cmd(const char *cmd)
 {
 	cmd_info_t cmd_info;
 	char cmd_name[256];
-	const char *args;
-	const char *cmd_name_pos;
+	const char *begin, *args, *cmd_name_pos;
 	size_t prefix_len;
+	cmd_t *cur;
+
+	begin = cmd;
+	cmd = skip_prefix_commands(begin);
+	prefix_len = cmd - begin;
 
 	init_cmd_info(&cmd_info);
+
 	cmd_name_pos = parse_range(cmd, &cmd_info);
 	args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
+	cur = find_cmd(cmd_name);
 
 	if(*args == '\0' && *args != '!' && strcmp(cmd_name, "!") != 0)
 	{
 		complete_cmd_name(cmd_name, 0);
-		prefix_len = cmd_name_pos - cmd;
+		prefix_len += cmd_name_pos - cmd;
 	}
 	else
 	{
-		int id;
-		cmd_t *cur;
-
-		cur = inner->head.next;
-		while(cur != NULL && strcmp(cur->name, cmd_name) < 0)
-			cur = cur->next;
-
-		if(cur == NULL || strncmp(cmd_name, cur->name, strlen(cmd_name)) != 0)
-			return 0;
-
-		id = cur->id;
-		if(id == -1)
-			return 0;
-
-		args = parse_tail(cur, args, &cmd_info);
-
-		while(isspace(*args))
-			args++;
-
-		prefix_len = args - cmd;
-
-		if(id == COMMAND_CMD_ID || id == DELCOMMAND_CMD_ID)
-		{
-			const char *arg;
-
-			arg = strrchr(args, ' ');
-			if(arg == NULL)
-				arg = args;
-			else
-				arg++;
-
-			complete_cmd_name(arg, 1);
-			prefix_len += arg - args;
-		}
-		else
-		{
-			int argc;
-			char **argv;
-			int last_arg = 0;
-
-			argv = dispatch_line(args, &argc, ' ', 0, 1, &last_arg, NULL);
-			prefix_len += cmds_conf->complete_args(id, args, argc, argv, last_arg);
-			free_string_array(argv, argc);
-		}
+		prefix_len += args - cmd;
+		prefix_len += complete_cmd_args(cur, args, &cmd_info);
 	}
 
 	return prefix_len;
+}
+
+static const char *
+skip_prefix_commands(const char *cmd)
+{
+	cmd_info_t cmd_info;
+	char cmd_name[256];
+	const char *args;
+	const char *cmd_name_pos;
+	cmd_t *cur;
+
+	init_cmd_info(&cmd_info);
+
+	cmd_name_pos = parse_range(cmd, &cmd_info);
+	args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
+	cur = find_cmd(cmd_name);
+	while(cur != NULL && *args != '\0')
+	{
+		int offset = cmds_conf->skip_at_beginning(cur->id, args);
+		if(offset >= 0)
+		{
+			int delta = (args - cmd) + offset;
+			cmd += delta;
+			init_cmd_info(&cmd_info);
+			cmd_name_pos = parse_range(cmd, &cmd_info);
+			args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
+		}
+		else
+		{
+			break;
+		}
+		cur = find_cmd(cmd_name);
+	}
+	return cmd;
+}
+
+static cmd_t *
+find_cmd(const char *name)
+{
+	cmd_t *result;
+
+	result = inner->head.next;
+	while(result != NULL && strcmp(result->name, name) < 0)
+		result = result->next;
+
+	if(result != NULL && strncmp(name, result->name, strlen(name)) != 0)
+		result = NULL;
+
+	return result;
 }
 
 static const char *
@@ -897,9 +913,7 @@ get_cmd_name(const char *cmd, char *buf, size_t buf_len)
 	if(cmd[0] == '!')
 	{
 		strcpy(buf, "!");
-		do
-			cmd++;
-		while(isspace(*cmd));
+		cmd = skip_whitespace(cmd + 1);
 		return cmd;
 	}
 
@@ -927,10 +941,46 @@ get_cmd_name(const char *cmd, char *buf, size_t buf_len)
 			cur = cur->next;
 		}
 		if(cur != NULL && strncmp(cur->name, buf, len) == 0)
-			return t + 1;
+			t++;
 	}
 
 	return t;
+}
+
+static int
+complete_cmd_args(cmd_t *cur, const char *args, cmd_info_t *cmd_info)
+{
+	const char *tmp_args = args;
+	int result = 0;
+
+	if(cur == NULL || cur->id == -1)
+		return 0;
+
+	args = parse_tail(cur, tmp_args, cmd_info);
+	args = skip_whitespace(args);
+	result += args - tmp_args;
+
+	if(cur->id == COMMAND_CMD_ID || cur->id == DELCOMMAND_CMD_ID)
+	{
+		const char *arg;
+
+		arg = strrchr(args, ' ');
+		arg = (arg == NULL) ? args : (arg + 1);
+
+		complete_cmd_name(arg, 1);
+		result += arg - args;
+	}
+	else
+	{
+		int argc;
+		char **argv;
+		int last_arg = 0;
+
+		argv = dispatch_line(args, &argc, ' ', 0, 1, &last_arg, NULL);
+		result += cmds_conf->complete_args(cur->id, args, argc, argv, last_arg);
+		free_string_array(argv, argc);
+	}
+	return result;
 }
 
 static void
@@ -1094,8 +1144,7 @@ command_cmd(const cmd_info_t *cmd_info)
 	}
 
 	args = get_user_cmd_name(cmd_info->args, cmd_name, sizeof(cmd_name));
-	while(isspace(args[0]))
-		args++;
+	args = skip_whitespace(args);
 	if(args[0] == '\0')
 		return CMDS_ERR_TOO_FEW_ARGS;
 	else if(!is_correct_name(cmd_name))
@@ -1157,6 +1206,14 @@ get_user_cmd_name(const char *cmd, char *buf, size_t buf_len)
 	strncpy(buf, cmd, len);
 	buf[len] = '\0';
 	return t;
+}
+
+static char *
+skip_whitespace(const char *s)
+{
+	while(isspace(*s))
+		s++;
+	return (char *)s;
 }
 
 static int

@@ -100,6 +100,8 @@ typedef struct
 	char *(*expand_envvars)(const char *str);
 	void (*post)(int id); /* called after successful processing command */
 	void (*select_range)(int id, const cmd_info_t *cmd_info);
+	/* should return < 0 to do nothing, x to skip command name and x chars */
+	int (*skip_at_beginning)(int id, const char *args);
 }cmds_conf_t;
 
 /* cmds_conf_t should be filled before calling this function */

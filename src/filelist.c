@@ -2456,7 +2456,7 @@ toggle_dot_files(FileView *view)
 void
 remove_filename_filter(FileView *view)
 {
-	view->prev_filter = (char *)realloc(view->prev_filter,
+	view->prev_filter = realloc(view->prev_filter,
 			strlen(view->filename_filter) + 1);
 	snprintf(view->prev_filter, sizeof(view->prev_filter), "%s",
 			view->filename_filter);
@@ -2470,7 +2470,7 @@ remove_filename_filter(FileView *view)
 void
 restore_filename_filter(FileView *view)
 {
-	view->filename_filter = (char *)realloc(view->filename_filter,
+	view->filename_filter = realloc(view->filename_filter,
 			strlen(view->prev_filter) + 1);
 	snprintf(view->filename_filter, sizeof(view->filename_filter), "%s",
 			view->prev_filter);

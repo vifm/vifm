@@ -230,7 +230,6 @@ test_umbiguous_begin(void)
 	free(buf);
 }
 
-
 void
 completion_tests(void)
 {

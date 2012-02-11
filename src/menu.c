@@ -51,6 +51,7 @@ static char * menu_expand_macros(const char *str, int *usr1, int *usr2);
 static char * menu_expand_envvars(const char *str);
 static void post(int id);
 static void menu_select_range(int id, const cmd_info_t *cmd_info);
+static int skip_at_beginning(int id, const char *args);
 
 static int key_handler(wchar_t key);
 static void leave_menu_mode(void);
@@ -170,6 +171,7 @@ static cmds_conf_t cmds_conf = {
 	.expand_envvars = menu_expand_envvars,
 	.post = post,
 	.select_range = menu_select_range,
+	.skip_at_beginning = skip_at_beginning,
 };
 
 static int
@@ -210,6 +212,12 @@ post(int id)
 static void
 menu_select_range(int id, const cmd_info_t *cmd_info)
 {
+}
+
+static int
+skip_at_beginning(int id, const char *args)
+{
+	return -1;
 }
 
 void

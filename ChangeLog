@@ -38,6 +38,8 @@
 
 	Added ctrl-w p, ctrl-w b and ctrl-w t normal mode keys.
 
+	Added :windo and :winrun commands.
+
 	Restore terminal title on exit.
 
 	Reset dot and filename filters if they hide bookmarked file.

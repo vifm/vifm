@@ -118,6 +118,8 @@ enum
 	COM_SYNC,
 	COM_LET,
 	COM_UNLET,
+	COM_WINDO,
+	COM_WINRUN,
 };
 
 static int complete_args(int id, const char *args, int argc, char **argv,
@@ -131,6 +133,7 @@ static void post(int id);
 static
 #endif
 void select_range(int id, const cmd_info_t *cmd_info);
+static int skip_at_beginning(int id, const char *args);
 static void exec_completion(const char *str);
 static void complete_help(const char *str);
 static void complete_history(const char *str);
@@ -138,6 +141,7 @@ static int complete_chown(const char *str);
 static void complete_filetype(const char *str);
 static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
+static void complete_winrun(const char *str);
 static void complete_envvar(const char *str);
 static int is_entry_dir(const struct dirent *d);
 static int is_entry_exec(const struct dirent *d);
@@ -252,6 +256,9 @@ static int do_map(const cmd_info_t *cmd_info, const char *map_type,
 		const char *map_cmd, int mode, int no_remap);
 static int vunmap_cmd(const cmd_info_t *cmd_info);
 static int do_unmap(const char *keys, int mode);
+static int windo_cmd(const cmd_info_t *cmd_info);
+static int winrun_cmd(const cmd_info_t *cmd_info);
+static int winrun(FileView *view, char *cmd);
 static int write_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
 static int wq_cmd(const cmd_info_t *cmd_info);
@@ -427,6 +434,10 @@ static const cmd_add_t commands[] = {
 		.handler = vsplit_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "vunmap",           .abbr = "vu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
+	{ .name = "windo",            .abbr = NULL,    .emark = 0,  .id = COM_WINDO,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = windo_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "winrun",           .abbr = NULL,    .emark = 0,  .id = COM_WINRUN,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = winrun_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "write",            .abbr = "w",     .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = write_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "wq",               .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -448,6 +459,7 @@ static cmds_conf_t cmds_conf = {
 	.expand_envvars = cmds_expand_envvars,
 	.post = post,
 	.select_range = select_range,
+	.skip_at_beginning = skip_at_beginning,
 };
 
 static int need_clean_selection;
@@ -515,6 +527,13 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 	{
 		start = dollar + 1;
 		complete_envvar(start);
+	}
+	else if(id == COM_WINDO)
+		;
+	else if(id == COM_WINRUN)
+	{
+		if(argc == 0)
+			complete_winrun(args);
 	}
 	else
 	{
@@ -1086,6 +1105,22 @@ complete_highlight_arg(const char *str)
 }
 
 static void
+complete_winrun(const char *str)
+{
+	static const char *VARIANTS[] = { "^", "$", "%", ".", "," };
+	size_t len = strlen(str);
+	int i;
+
+	for(i = 0; i < ARRAY_LEN(VARIANTS); i++)
+	{
+		if(strncmp(str, VARIANTS[i], len) == 0)
+			add_completion(VARIANTS[i]);
+	}
+	completion_group_end();
+	add_completion(str);
+}
+
+static void
 complete_envvar(const char *str)
 {
 	extern char **environ;
@@ -1357,6 +1392,23 @@ select_count(const cmd_info_t *cmd_info, int count)
 		}
 		pos++;
 	}
+}
+
+static int
+skip_at_beginning(int id, const char *args)
+{
+	if(id == COM_WINDO)
+	{
+		return 0;
+	}
+	else if(id == COM_WINRUN)
+	{
+		while(isspace(*args))
+			args++;
+		if(*args != '\0')
+			return 1;
+	}
+	return -1;
 }
 
 static int
@@ -4796,6 +4848,82 @@ do_unmap(const char *keys, int mode)
 		return 1;
 	}
 	return 0;
+}
+
+static int
+windo_cmd(const cmd_info_t *cmd_info)
+{
+	int result = 0;
+
+	if(cmd_info->argc == 0)
+		return 0;
+
+	result += winrun(&lwin, cmd_info->args) != 0;
+	result += winrun(&rwin, cmd_info->args) != 0;
+
+	redraw_window();
+
+	return result;
+}
+
+static int
+winrun_cmd(const cmd_info_t *cmd_info)
+{
+	int result = 0;
+	char *cmd;
+
+	if(cmd_info->argc == 0)
+		return 0;
+
+	if(cmd_info->argv[0][1] != '\0' ||
+			strchr("^$%.,", cmd_info->argv[0][0]) == NULL)
+		return CMDS_ERR_INVALID_ARG;
+
+	if(cmd_info->argc == 1)
+		return 0;
+
+	cmd = cmd_info->args + 2;
+	switch(cmd_info->argv[0][0])
+	{
+		case '^':
+			result += winrun(&lwin, cmd) != 0;
+			break;
+		case '$':
+			result += winrun(&rwin, cmd) != 0;
+			break;
+		case '%':
+			result += winrun(&lwin, cmd) != 0;
+			result += winrun(&rwin, cmd) != 0;
+			break;
+		case '.':
+			result += winrun(curr_view, cmd) != 0;
+			break;
+		case ',':
+			result += winrun(other_view, cmd) != 0;
+			break;
+	}
+
+	redraw_window();
+
+	return result;
+}
+
+static int
+winrun(FileView *view, char *cmd)
+{
+	int result;
+	FileView *tmp_curr = curr_view;
+	FileView *tmp_other = other_view;
+
+	curr_view = view;
+	other_view = (view == tmp_curr) ? tmp_other : tmp_curr;
+
+	load_local_options(curr_view);
+	result = exec_commands(cmd, curr_view, 0, GET_COMMAND);
+
+	curr_view = tmp_curr;
+	other_view = tmp_other;
+	return result;
 }
 
 static int
