@@ -804,6 +804,10 @@ setup_ncurses_interface(void)
 
 	cfg.tab_stop = TABSIZE;
 
+#ifdef NCURSES_EXT_FUNCS
+	set_escdelay(0);
+#endif /* NCURSES_EXT_FUNCS */
+
 	return 1;
 }
 
