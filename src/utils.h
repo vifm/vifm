@@ -99,6 +99,18 @@ int make_dir(const char *dir_name, mode_t mode);
 int pathcmp(const char *file_name_a, const char *file_name_b);
 int pathncmp(const char *file_name_a, const char *file_name_b, size_t n);
 
+/* File stream reading related functions, that treat all eols (unix, mac, dos)
+ * right. */
+
+/* Reads line from file stream. */
+char * get_line(FILE *fp, char *buf, size_t bufsz);
+/* Returns next character from file stream. */
+int get_char(FILE *fp);
+/* Skips file stream content until and including eol character. */
+void skip_until_eol(FILE *fp);
+/* Removes eol symbols from file stream. */
+void remove_eol(FILE *fp);
+
 /* Environment variables related functions */
 
 /* Returns environment variable value or NULL if it doesn't exist */

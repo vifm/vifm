@@ -256,7 +256,7 @@ view_not_wraped(FILE *fp, int x)
 	char line[1024];
 	int y = 1;
 
-	while(fgets(line, other_view->window_width - 2, fp) == line &&
+	while(get_line(fp, line, other_view->window_width - 2) == line &&
 			x <= other_view->window_rows - 2)
 	{
 		int i;
@@ -265,14 +265,14 @@ view_not_wraped(FILE *fp, int x)
 		while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
 				&& !feof(fp))
 		{
-			if(fgets(line + len, other_view->window_width - n_len, fp) == NULL)
+			if(get_line(fp, line + len, other_view->window_width - n_len) == NULL)
 				break;
 			n_len = get_normal_utf8_string_length(line);
 			len = strlen(line);
 		}
 
 		if(line[len - 1] != '\n')
-			while(fgetc(fp) != '\n' && !feof(fp));
+			skip_until_eol(fp);
 
 		len = 0;
 		n_len = 0;
@@ -315,8 +315,8 @@ view_wraped(FILE *fp, int x)
 	char line[1024];
 	int y = 1;
 	int offset = 0;
-	while(fgets(line + offset, other_view->window_width, fp)
-				&& x <= other_view->window_rows - 2)
+	while(get_line(fp, line + offset, other_view->window_width) != NULL
+			&& x <= other_view->window_rows - 2)
 	{
 		int i, k;
 		size_t width;
@@ -325,18 +325,14 @@ view_wraped(FILE *fp, int x)
 		while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
 				&& !feof(fp))
 		{
-			if(fgets(line + len, other_view->window_width - n_len, fp) == NULL)
+			if(get_line(fp, line + len, other_view->window_width - n_len) == NULL)
 				break;
 			n_len = get_normal_utf8_string_length(line);
 			len = strlen(line);
 		}
 
 		if(line[len - 1] != '\n')
-		{
-			int c = fgetc(fp);
-			if(c != '\n')
-				ungetc(c, fp);
-		}
+			remove_eol(fp);
 
 		width = get_normal_utf8_string_width(line);
 		++x;

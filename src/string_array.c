@@ -142,7 +142,7 @@ read_file_lines(FILE *f, int *nlines)
 	char name[NAME_MAX];
 
 	*nlines = 0;
-	while(fgets(name, sizeof(name), f) != NULL)
+	while(get_line(f, name, sizeof(name)) != NULL)
 	{
 		chomp(name);
 		*nlines = add_to_string_array(&list, *nlines, 1, name);

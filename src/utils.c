@@ -1268,6 +1268,54 @@ pathncmp(const char *file_name_a, const char *file_name_b, size_t n)
 #endif
 }
 
+char *
+get_line(FILE *fp, char *buf, size_t bufsz)
+{
+	int c = '\0';
+	char *start = buf;
+
+	while(bufsz-- > 1 && (c = get_char(fp)) != EOF)
+	{
+		*buf++ = c;
+		if(c == '\n')
+			break;
+		bufsz--;
+	}
+	*buf = '\0';
+
+	return (c == EOF && buf == start) ? NULL : start;
+}
+
+int
+get_char(FILE *fp)
+{
+	int c = fgetc(fp);
+	if(c == '\r')
+	{
+		int c2 = fgetc(fp);
+		if(c2 != '\n')
+			ungetc(c2, fp);
+		c = '\n';
+	}
+	return c;
+}
+
+void
+skip_until_eol(FILE *fp)
+{
+	while(get_char(fp) != '\n' && !feof(fp));
+}
+
+void
+remove_eol(FILE *fp)
+{
+	int c = fgetc(fp);
+	if(c == '\r')
+		c = fgetc(fp);
+	if(c != '\n')
+		ungetc(c, fp);
+}
+
 const char *
 env_get(const char *name)
 {
