@@ -2270,11 +2270,9 @@ show_undolist_menu(FileView *view, int with_details)
 void
 show_volumes_menu(FileView *view)
 {
-	int retVal;
-	TCHAR Drive[] = TEXT("c:\\");
 	TCHAR c;
-	TCHAR volName[MAX_PATH];
-	TCHAR fileBuf[MAX_PATH];
+	TCHAR vol_name[MAX_PATH];
+	TCHAR file_buf[MAX_PATH];
 
 	static menu_info m;
 	m.top = 0;
@@ -2294,33 +2292,17 @@ show_volumes_menu(FileView *view)
 
 	for(c = TEXT('a'); c < TEXT('z'); c++)
 	{
-		Drive[0] = c;
-		retVal = GetDriveType(Drive);
-
-		switch(retVal)
+		if(drive_exists(c))
 		{
-			case DRIVE_CDROM:
-			case DRIVE_REMOTE:
-			case DRIVE_RAMDISK:
-			case DRIVE_REMOVABLE:
-			case DRIVE_FIXED:
-				break;
-
-			case DRIVE_UNKNOWN:
-			case DRIVE_NO_ROOT_DIR:
-			default:
-				retVal = 0;
-				break;
-		}
-		if(retVal)
-		{
-			if(GetVolumeInformation(Drive, volName, MAX_PATH, NULL, NULL, NULL,
-					fileBuf, MAX_PATH))
+			TCHAR drive[] = TEXT("?:\\");
+			drive[0] = c;
+			if(GetVolumeInformation(drive, vol_name, MAX_PATH, NULL, NULL, NULL,
+					file_buf, MAX_PATH))
 			{
 				m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
 				m.data[m.len] = (char *)malloc((MAX_PATH + 5) * sizeof(char));
 
-				snprintf(m.data[m.len], MAX_PATH, "%s  %s ", Drive, volName);
+				snprintf(m.data[m.len], MAX_PATH, "%s  %s ", drive, vol_name);
 				m.len++;
 			}
 		}

@@ -1342,7 +1342,8 @@ leave_invalid_dir(FileView *view, char *path)
 	if(strchr(path, '/') == NULL)
 		strcpy(path, "/");
 #else
-	if(!is_unc_root(path) && (strlen(path) < 2 || path[1] != ':'))
+	if(!is_unc_root(path) && (strlen(path) < 2 || path[1] != ':' ||
+			!drive_exists(path[0])))
 	{
 		strcpy(path, env_get("SYSTEMDRIVE"));
 		strcat(path, "/");

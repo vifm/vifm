@@ -1620,6 +1620,29 @@ attr_str_long(DWORD attr)
 	return buf;
 }
 
+/* Checks specified drive for existence */
+int
+drive_exists(TCHAR letter)
+{
+	TCHAR drive[] = TEXT("?:\\");
+	int type = GetDriveType(drive);
+
+	switch(type)
+	{
+		case DRIVE_CDROM:
+		case DRIVE_REMOTE:
+		case DRIVE_RAMDISK:
+		case DRIVE_REMOVABLE:
+		case DRIVE_FIXED:
+			return 1;
+
+		case DRIVE_UNKNOWN:
+		case DRIVE_NO_ROOT_DIR:
+		default:
+			return 0;
+	}
+}
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

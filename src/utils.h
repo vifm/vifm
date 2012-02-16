@@ -139,6 +139,7 @@ void to_back_slash(char *path);
 int is_on_fat_volume(const char *path);
 const char *attr_str(DWORD attr);
 const char *attr_str_long(DWORD attr);
+int drive_exists(TCHAR letter);
 #endif
 
 #endif
