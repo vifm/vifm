@@ -151,6 +151,8 @@
 
 	Fixed navigation to file (e.g. after :touch) when 'scrolloff' isn't 0.
 
+	Fixed segfault on small window on Windows.
+
 0.7.0 to 0.7.1
 
 	Added 'scrollbind' option.
