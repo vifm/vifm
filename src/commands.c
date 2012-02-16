@@ -2685,6 +2685,8 @@ is_in_arg(const char *cmd, const char *pos)
 static int
 is_whole_line_command(const char *cmd)
 {
+	/* TODO: rewrite this using cmds.c */
+
 	if(*cmd == '!')
 		return 1;
 	else if(strncmp(cmd, "cm", 2) == 0)
@@ -2708,6 +2710,8 @@ is_whole_line_command(const char *cmd)
 	else if(strncmp(cmd, "filet", 5) == 0)
 		return 1;
 	else if(strncmp(cmd, "filev", 5) == 0)
+		return 1;
+	else if(strncmp(cmd, "win", 3) == 0)
 		return 1;
 	else
 		return 0;
