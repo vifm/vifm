@@ -311,21 +311,32 @@ add_to_path(const char *str)
 	free(new_path);
 }
 
-/* returns non-zero if path was changed */
+/* Returns non-zero if path should be changed. */
 static int
 check_path(FileView *view, const char *path)
 {
 	if(path[0] == '\0' || pathcmp(view->curr_dir, path) == 0)
 		return 0;
+	return 1;
+}
+
+/* Removes file name from path. */
+static void
+exclude_file_name(char *path)
+{
+	if(file_exists(NULL, path) && !is_dir(path) && !is_unc_root(path))
+		break_atr(path, '/');
+}
+
+/* Sets view's current directory from path value. */
+static void
+set_path(FileView *view, const char *path)
+{
+	if(!check_path(view, path))
+		return;
 
 	strcpy(view->curr_dir, path);
-	if(!is_dir(path) && !is_unc_root(path))
-	{
-		char *slash;
-		if((slash = strrchr(view->curr_dir, '/')) != NULL)
-			*slash = '\0';
-	}
-	return 1;
+	exclude_file_name(view->curr_dir);
 }
 
 static void
@@ -517,8 +528,8 @@ main(int argc, char *argv[])
 
 	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle);
 
-	(void)check_path(&lwin, lwin_path);
-	(void)check_path(&rwin, rwin_path);
+	set_path(&lwin, lwin_path);
+	set_path(&rwin, rwin_path);
 
 	load_initial_directory(&lwin, dir);
 	load_initial_directory(&rwin, dir);
@@ -597,8 +608,8 @@ main(int argc, char *argv[])
 		read_info_file(0);
 		curr_stats.load_stage = 1;
 
-		(void)check_path(&lwin, lwin_path);
-		(void)check_path(&rwin, rwin_path);
+		set_path(&lwin, lwin_path);
+		set_path(&rwin, rwin_path);
 
 		load_initial_directory(&lwin, dir);
 		load_initial_directory(&rwin, dir);
@@ -640,6 +651,12 @@ parse_recieved_arguments(char *args[])
 	if(get_mode() != NORMAL_MODE && get_mode() != VIEW_MODE)
 		return;
 
+#ifdef _WIN32
+	SwitchToThisWindow(GetConsoleWindow(), TRUE);
+	BringWindowToTop(GetConsoleWindow());
+	SetForegroundWindow(GetConsoleWindow());
+#endif
+
 	if(check_path(&lwin, lwin_path))
 		remote_cd(&lwin, lwin_path, lwin_handle);
 
@@ -648,17 +665,13 @@ parse_recieved_arguments(char *args[])
 
 	clean_status_bar();
 	curr_stats.save_msg = 0;
-
-#ifdef _WIN32
-	SwitchToThisWindow(GetConsoleWindow(), TRUE);
-	BringWindowToTop(GetConsoleWindow());
-	SetForegroundWindow(GetConsoleWindow());
-#endif
 }
 
 static void
 remote_cd(FileView *view, const char *path, int handle)
 {
+	char buf[PATH_MAX];
+
 	if(view->explore_mode)
 		leave_view_mode();
 
@@ -668,19 +681,11 @@ remote_cd(FileView *view, const char *path, int handle)
 	if(curr_stats.view)
 		toggle_quick_view();
 
-	change_directory(view, view->curr_dir);
-	load_dir_list(view, 0);
-	check_path_for_file(view, path, handle);
+	snprintf(buf, sizeof(buf), "%s", path);
+	exclude_file_name(buf);
 
-	if(view == curr_view)
-	{
-		move_to_list_pos(curr_view, curr_view->list_pos);
-	}
-	else
-	{
-		draw_dir_list(other_view, other_view->top_line);
-		wrefresh(other_view->win);
-	}
+	(void)cd(view, buf);
+	check_path_for_file(view, path, handle);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -424,11 +424,7 @@ update_stat_window_old(FileView *view)
 		mvwaddstr(stat_win, 0, x - (strlen(name_buf) + 2), name_buf);
 
 	if(cur_x + strlen(id_buf) + 1 > x - (strlen(name_buf) + 2))
-	{
-		char *colon = strchr(id_buf, ':');
-		if(colon != NULL)
-			*colon = '\0';
-	}
+		break_at(id_buf, ':');
 	if(cur_x + strlen(id_buf) + 1 > x - (strlen(name_buf) + 2))
 		id_buf[0] = '\0';
 	mvwaddstr(stat_win, 0, cur_x, id_buf);

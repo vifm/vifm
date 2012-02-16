@@ -3090,69 +3090,6 @@ apropos_cmd(const cmd_info_t *cmd_info)
 }
 
 static int
-cd(FileView *view, const char *path)
-{
-	char dir[PATH_MAX];
-
-	if(path != NULL)
-	{
-		char *arg = expand_tilde(strdup(path));
-#ifndef _WIN32
-		if(is_path_absolute(arg))
-			snprintf(dir, sizeof(dir), "%s", arg);
-#else
-		strcpy(dir, view->curr_dir);
-		*strchr(dir + 2, '/') = '\0';
-		if(is_path_absolute(arg) && *arg != '/')
-			snprintf(dir, sizeof(dir), "%s", arg);
-		else if(*arg == '/' && is_unc_root(arg))
-			snprintf(dir, sizeof(dir), "%s", arg);
-		else if(*arg == '/' && is_unc_path(arg))
-			snprintf(dir, sizeof(dir), "%s", arg);
-		else if(*arg == '/' && is_unc_path(view->curr_dir))
-			sprintf(dir + strlen(dir), "/%s", arg + 1);
-		else if(pathcmp(arg, "/") == 0 && is_unc_path(view->curr_dir))
-			snprintf(dir, strchr(view->curr_dir + 2, '/') - view->curr_dir + 1, "%s",
-					view->curr_dir);
-		else if(*arg == '/')
-			snprintf(dir, sizeof(dir), "%c:%s", view->curr_dir[0], arg);
-#endif
-		else if(strcmp(arg, "-") == 0)
-			snprintf(dir, sizeof(dir), "%s", view->last_dir);
-		else
-			snprintf(dir, sizeof(dir), "%s/%s", view->curr_dir, arg);
-		free(arg);
-	}
-	else
-	{
-		snprintf(dir, sizeof(dir), "%s", cfg.home_dir);
-	}
-
-	if(access(dir, F_OK) != 0 && !is_unc_root(dir))
-	{
-		LOG_SERROR_MSG(errno, "Can't access(,F_OK) \"%s\"", dir);
-
-		(void)show_error_msgf("Destination doesn't exist", "\"%s\"", dir);
-		return 0;
-	}
-	if(access(dir, X_OK) != 0 && !is_unc_root(dir))
-	{
-		LOG_SERROR_MSG(errno, "Can't access(,X_OK) \"%s\"", dir);
-
-		(void)show_error_msgf("Permission denied", "\"%s\"", dir);
-		return 0;
-	}
-
-	if(change_directory(view, dir) < 0)
-		return 0;
-
-	load_dir_list(view, 0);
-	if(view == curr_view)
-		move_to_list_pos(view, view->list_pos);
-	return 0;
-}
-
-static int
 cd_cmd(const cmd_info_t *cmd_info)
 {
 	char dir[PATH_MAX];

@@ -1311,7 +1311,6 @@ void
 leave_invalid_dir(FileView *view, char *path)
 {
 	fuse_mount_t *runner;
-	size_t len;
 	char *p;
 
 	if((runner = find_fuse_mount(path)) != NULL)
@@ -1328,9 +1327,7 @@ leave_invalid_dir(FileView *view, char *path)
 			break;
 		}
 
-		len = strlen(path);
-		if(path[len - 1] == '/')
-			path[len - 1] = '\0';
+		chosp(path);
 
 		p = strrchr(path, '/');
 		if(p == NULL)
@@ -2645,6 +2642,76 @@ ensure_file_is_selected(FileView *view, const char *name)
 
 	move_to_list_pos(view, (file_pos < 0) ? 0 : file_pos);
 	return file_pos >= 0;
+}
+
+int
+cd(FileView *view, const char *path)
+{
+	char dir[PATH_MAX];
+
+	if(path != NULL)
+	{
+		char *arg = expand_tilde(strdup(path));
+#ifndef _WIN32
+		if(is_path_absolute(arg))
+			snprintf(dir, sizeof(dir), "%s", arg);
+#else
+		strcpy(dir, view->curr_dir);
+		break_at(dir + 2, '/');
+		if(is_path_absolute(arg) && *arg != '/')
+			snprintf(dir, sizeof(dir), "%s", arg);
+		else if(*arg == '/' && is_unc_root(arg))
+			snprintf(dir, sizeof(dir), "%s", arg);
+		else if(*arg == '/' && is_unc_path(arg))
+			snprintf(dir, sizeof(dir), "%s", arg);
+		else if(*arg == '/' && is_unc_path(view->curr_dir))
+			sprintf(dir + strlen(dir), "/%s", arg + 1);
+		else if(pathcmp(arg, "/") == 0 && is_unc_path(view->curr_dir))
+			snprintf(dir, strchr(view->curr_dir + 2, '/') - view->curr_dir + 1, "%s",
+					view->curr_dir);
+		else if(*arg == '/')
+			snprintf(dir, sizeof(dir), "%c:%s", view->curr_dir[0], arg);
+#endif
+		else if(strcmp(arg, "-") == 0)
+			snprintf(dir, sizeof(dir), "%s", view->last_dir);
+		else
+			snprintf(dir, sizeof(dir), "%s/%s", view->curr_dir, arg);
+		free(arg);
+	}
+	else
+	{
+		snprintf(dir, sizeof(dir), "%s", cfg.home_dir);
+	}
+
+	if(access(dir, F_OK) != 0 && !is_unc_root(dir))
+	{
+		LOG_SERROR_MSG(errno, "Can't access(,F_OK) \"%s\"", dir);
+
+		(void)show_error_msgf("Destination doesn't exist", "\"%s\"", dir);
+		return 0;
+	}
+	if(access(dir, X_OK) != 0 && !is_unc_root(dir))
+	{
+		LOG_SERROR_MSG(errno, "Can't access(,X_OK) \"%s\"", dir);
+
+		(void)show_error_msgf("Permission denied", "\"%s\"", dir);
+		return 0;
+	}
+
+	if(change_directory(view, dir) < 0)
+		return 0;
+
+	load_dir_list(view, 0);
+	if(view == curr_view)
+	{
+		move_to_list_pos(view, view->list_pos);
+	}
+	else
+	{
+		draw_dir_list(other_view, other_view->top_line);
+		wrefresh(other_view->win);
+	}
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

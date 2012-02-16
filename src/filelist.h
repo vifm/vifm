@@ -71,6 +71,7 @@ int pane_in_dir(FileView *view, const char *path);
 void update_view_title(FileView *view);
 void clean_positions_in_history(FileView *view);
 int ensure_file_is_selected(FileView *view, const char *name);
+int cd(FileView *view, const char *path);
 
 #ifdef TEST
 int regexp_filter_match(FileView *view, char *filename);

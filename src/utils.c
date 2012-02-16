@@ -132,6 +132,7 @@ is_dir(const char *file)
 #endif
 }
 
+/* Checks whether path/file exists. path can be NULL */
 int
 file_exists(const char *path, const char *file)
 {
@@ -1266,6 +1267,24 @@ pathncmp(const char *file_name_a, const char *file_name_b, size_t n)
 #else
 	return strncasecmp(file_name_a, file_name_b, n);
 #endif
+}
+
+/* Replaces the first found occurrence of c char in str with '\0' */
+void
+break_at(char *str, char c)
+{
+	char *p = strchr(str, c);
+	if(p != NULL)
+		*p = '\0';
+}
+
+/* Replaces the last found occurrence of c char in str with '\0' */
+void
+break_atr(char *str, char c)
+{
+	char *p = strrchr(str, c);
+	if(p != NULL)
+		*p = '\0';
 }
 
 char *

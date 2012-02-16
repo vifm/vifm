@@ -98,6 +98,8 @@ int symlinks_available(void);
 int make_dir(const char *dir_name, mode_t mode);
 int pathcmp(const char *file_name_a, const char *file_name_b);
 int pathncmp(const char *file_name_a, const char *file_name_b, size_t n);
+void break_at(char *str, char c);
+void break_atr(char *str, char c);
 
 /* File stream reading related functions, that treat all eols (unix, mac, dos)
  * right. */
