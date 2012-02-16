@@ -665,7 +665,7 @@ remote_cd(FileView *view, const char *path, int handle)
 	if(view == other_view && get_mode() == VIEW_MODE)
 		leave_view_mode();
 
-	if(view == other_view && curr_stats.view)
+	if(curr_stats.view)
 		toggle_quick_view();
 
 	change_directory(view, view->curr_dir);
