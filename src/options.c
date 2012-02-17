@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "completion.h"
+#include "utils.h"
 
 #include "options.h"
 
@@ -268,8 +269,7 @@ extract_option(const char *cmd, char *buf, int replace)
 		else if(*cmd == ' ' && quote == 0)
 		{
 			const char *p = cmd;
-			while(isspace(*cmd))
-				++cmd;
+			cmd = skip_whitespace(cmd);
 			if(*cmd == '?' || *cmd == '!' || *cmd == '&')
 			{
 				*buf++ = *cmd++;
@@ -281,8 +281,7 @@ extract_option(const char *cmd, char *buf, int replace)
 					*buf = '\0';
 					return NULL;
 				}
-				while(isspace(*cmd))
-					++cmd;
+				cmd = skip_whitespace(cmd);
 			}
 			break;
 		}

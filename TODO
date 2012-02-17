@@ -15,6 +15,8 @@ Basic things that need to be done.
     Write script to export aliases and function from sh to ~/.vifm/scripts/
     Make status bar able to display error and info messages at the same time.
     Set left panel as active with one path passed as an argument.
+    Command to create multiple copies of selected one with ability to rename
+        it (e.g. a -> :hub b c -> a b c, a -> :hub! b c -> b c).
 
 Documentation.
 	Better documentation.

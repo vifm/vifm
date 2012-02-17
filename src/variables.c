@@ -173,9 +173,7 @@ let_variable(const char *cmd)
 	}
 	*p = '\0';
 
-	/* skip spaces */
-	while(isspace(*cmd))
-		cmd++;
+	cmd = skip_whitespace(cmd);
 
 	/* check for dot and skip it */
 	if(*cmd == '.')
@@ -190,9 +188,7 @@ let_variable(const char *cmd)
 		print_msg(1, "Incorrect :let statement", "'=' expected");
 		return -1;
 	}
-	cmd++;
-	while(isspace(*cmd))
-		cmd++;
+	cmd = skip_whitespace(cmd + 1);
 
 	/* ensure value starts with quotes */
 	if(*cmd != '\'' && *cmd != '"')
@@ -390,18 +386,14 @@ unlet_variables(const char *cmd)
 			*p++ = *cmd++;
 		*p = '\0';
 
-		/* skip spaces */
-		while(isspace(*cmd))
-			cmd++;
+		cmd = skip_whitespace(cmd);
 
 		/* currently we support only environment variables */
 		if(!envvar)
 		{
 			print_msg(1, "Unsupported variable type", name);
 
-			/* skip non-spaces */
-			while(*cmd != '\0' && !isspace(*cmd))
-				cmd++;
+			cmd = skip_non_whitespace(cmd);
 			error++;
 			continue;
 		}

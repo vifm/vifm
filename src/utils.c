@@ -1287,6 +1287,24 @@ break_atr(char *str, char c)
 		*p = '\0';
 }
 
+/* Skips consecutive non-whitespace characters. */
+char *
+skip_non_whitespace(const char *str)
+{
+	while(!isspace(*str) && *str != '\0')
+		str++;
+	return (char *)str;
+}
+
+/* Skips consecutive whitespace characters. */
+char *
+skip_whitespace(const char *str)
+{
+	while(isspace(*str))
+		str++;
+	return (char *)str;
+}
+
 char *
 get_line(FILE *fp, char *buf, size_t bufsz)
 {

@@ -526,9 +526,7 @@ prepare_line(char *line)
 	int i;
 
 	chomp(line);
-	i = 0;
-	while(isspace(line[i]))
-		i++;
+	i = skip_whitespace(line) - line;
 	if(i > 0)
 		memmove(line, line + i, strlen(line + i) + 1);
 }
@@ -1380,8 +1378,7 @@ source_file(const char *file)
 				do
 				{
 					line_num_delta++;
-					while(isspace(*p))
-						p++;
+					p = skip_whitespace(p);
 					chomp(p);
 					if(*p == '"')
 						continue;
@@ -1425,10 +1422,7 @@ is_conf_file(const char *file)
 
 	while(fgets(line, sizeof(line), fp))
 	{
-		int i = 0;
-		while(isspace(line[i]))
-			i++;
-		if(line[i] == '#')
+		if(skip_whitespace(line)[0] == '#')
 		{
 			fclose(fp);
 			return 1;

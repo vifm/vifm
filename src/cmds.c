@@ -26,6 +26,7 @@
 #include "log.h"
 #include "macros.h"
 #include "string_array.h"
+#include "utils.h"
 
 #include "cmds.h"
 
@@ -103,7 +104,6 @@ static int comclear_cmd(const cmd_info_t *cmd_info);
 static int command_cmd(const cmd_info_t *cmd_info);
 static const char * get_user_cmd_name(const char *cmd, char *buf,
 		size_t buf_len);
-static char * skip_whitespace(const char *s);
 static int is_correct_name(const char *name);
 static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
@@ -1198,22 +1198,12 @@ get_user_cmd_name(const char *cmd, char *buf, size_t buf_len)
 	const char *t;
 	size_t len;
 
-	t = cmd;
-	while(!isspace(*t) && *t != '\0')
-		t++;
+	t = skip_non_whitespace(cmd);
 
 	len = MIN(t - cmd, buf_len);
 	strncpy(buf, cmd, len);
 	buf[len] = '\0';
 	return t;
-}
-
-static char *
-skip_whitespace(const char *s)
-{
-	while(isspace(*s))
-		s++;
-	return (char *)s;
 }
 
 static int

@@ -164,8 +164,6 @@ static const char * apply_mods(const char *path, const char *parent,
 static const char * apply_mod(const char *path, const char *parent,
 		const char *mod, int *mod_len);
 static wchar_t * substitute_specs(const char *cmd);
-static const char *skip_spaces(const char *cmd);
-static const char *skip_word(const char *cmd);
 static void print_func(int error, const char *msg, const char *description);
 
 static int goto_cmd(const cmd_info_t *cmd_info);
@@ -1403,8 +1401,7 @@ skip_at_beginning(int id, const char *args)
 	}
 	else if(id == COM_WINRUN)
 	{
-		while(isspace(*args))
-			args++;
+		args = skip_whitespace(args);
 		if(*args != '\0')
 			return 1;
 	}
@@ -2407,22 +2404,6 @@ substitute_specs(const char *cmd)
 	return buf;
 }
 
-static const char *
-skip_spaces(const char *cmd)
-{
-	while(isspace(*cmd) && *cmd != '\0')
-		cmd++;
-	return cmd;
-}
-
-static const char *
-skip_word(const char *cmd)
-{
-	while(!isspace(*cmd) && *cmd != '\0')
-		cmd++;
-	return cmd;
-}
-
 static void
 print_func(int error, const char *msg, const char *description)
 {
@@ -2997,14 +2978,13 @@ output_to_statusbar(const char *cmd)
 static int
 emark_cmd(const cmd_info_t *cmd_info)
 {
-	int i = 0;
+	int i;
 	char *com = (char *)cmd_info->args;
 	char buf[COMMAND_GROUP_INFO_LEN];
 
-	while(isspace(com[i]) && (size_t)i < strlen(com))
-		i++;
+	i = skip_whitespace(com) - com;
 
-	if(strlen(com + i) == 0)
+	if(com[i] == '\0')
 		return 0;
 
 	if(cmd_info->usr1 == 3)
@@ -3569,8 +3549,8 @@ filetype_cmd(const cmd_info_t *cmd_info)
 {
 	const char *progs;
 
-	progs = skip_word(cmd_info->args);
-	progs = skip_spaces(progs + 1);
+	progs = skip_non_whitespace(cmd_info->args);
+	progs = skip_whitespace(progs + 1);
 
 	set_programs(cmd_info->argv[0], progs, 0);
 	return 0;
@@ -3581,8 +3561,8 @@ filextype_cmd(const cmd_info_t *cmd_info)
 {
 	const char *progs;
 
-	progs = skip_word(cmd_info->args);
-	progs = skip_spaces(progs + 1);
+	progs = skip_non_whitespace(cmd_info->args);
+	progs = skip_whitespace(progs + 1);
 
 	set_programs(cmd_info->argv[0], progs, 1);
 	return 0;
@@ -3593,8 +3573,8 @@ fileviewer_cmd(const cmd_info_t *cmd_info)
 {
 	const char *progs;
 
-	progs = skip_word(cmd_info->args);
-	progs = skip_spaces(progs + 1);
+	progs = skip_non_whitespace(cmd_info->args);
+	progs = skip_whitespace(progs + 1);
 
 	set_fileviewer(cmd_info->argv[0], progs);
 	return 0;
@@ -4708,11 +4688,11 @@ do_map(const cmd_info_t *cmd_info, const char *map_type,
 		return 0;
 	}
 
-	raw_rhs = (char *)skip_word(cmd_info->args);
+	raw_rhs = skip_non_whitespace(cmd_info->args);
 	t = *raw_rhs;
 	*raw_rhs = '\0';
 
-	rhs = (char*)skip_spaces(raw_rhs + 1);
+	rhs = skip_whitespace(raw_rhs + 1);
 	keys = substitute_specs(cmd_info->args);
 	mapping = substitute_specs(rhs);
 	result = add_user_keys(keys, mapping, mode, no_remap);
@@ -5016,8 +4996,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 			pause = 1;
 			tmp++;
 		}
-		while(isspace(*tmp))
-			tmp++;
+		tmp = skip_whitespace(tmp);
 
 		if(*tmp != '\0' && bg)
 		{
