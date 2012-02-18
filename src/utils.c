@@ -1662,6 +1662,7 @@ int
 drive_exists(TCHAR letter)
 {
 	TCHAR drive[] = TEXT("?:\\");
+	drive[0] = letter;
 	int type = GetDriveType(drive);
 
 	switch(type)
