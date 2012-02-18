@@ -58,7 +58,7 @@ vifmres.o: vifm.res
 utils.c: version.c
 
 version.c:
-	@if [ "x$$(whereis git)" != "x" ]; then \
+	@if [ "x$$(which git)" != "x" ]; then \
 		/bin/echo -n 'const char GIT_HASH[] = "' > version.c; \
 		/bin/echo -n `git rev-parse HEAD` >> version.c; \
 		/bin/echo '";' >> version.c; \
@@ -70,15 +70,15 @@ version.c:
 	$(CC) $(CFLAGS) $< -o $@
 
 ../data/vifm-help.txt: ../data/vifm.1
-	@if [ "x$$(whereis groff)" != "x" -a "x$$(whereis sed)" != "x" ]; then \
+	@if [ "x$$(which groff)" != "x" -a "x$$(which sed)" != "x" ]; then \
 		groff -Tutf8 -man ../data/vifm.1 | sed 's/.\x08//g' | sed 's/\x1b\[[0-9]*m//g' | sed 's/\r//g' > ../data/vifm-help.txt; \
-		if [ "x$$(whereis dos2unix)" != "x" ]; then \
+		if [ "x$$(which dos2unix)" != "x" ]; then \
 			dos2unix ../data/vifm-help.txt; \
 		fi; \
 	fi
 
 tags.c: ../data/vim/doc/vifm.txt
-	@if [ "x$$(whereis vim)" != "x" -a "x$$(whereis cat)" != "x" -a "x$$(whereis awk)" != "x" ]; then \
+	@if [ "x$$(which vim)" != "x" -a "x$$(which cat)" != "x" -a "x$$(which awk)" != "x" ]; then \
 		vim -c 'helptags $(dir $<)|q'; \
 		cat $(dir $<)/tags | awk ' \
 			BEGIN { \
