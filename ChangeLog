@@ -153,6 +153,8 @@
 
 	Fixed segfault on small window on Windows.
 
+	Fixed bug with unfinished :s or :gs filename modifier.
+
 0.7.0 to 0.7.1
 
 	Added 'scrollbind' option.

@@ -2088,15 +2088,18 @@ expand_macros(FileView *view, const char *command, const char *args,
 					if(p != NULL)
 						y += (p - (command + x)) + 1;
 					else
-						y += strlen(command);
+						y += strlen(command + y);
 					x = y;
 					continue;
 				}
 			}
 			if(command[x] == '%')
 				break;
-			x++;
+			if(command[x] != '\0')
+				x++;
 		}
+		assert(x >= y);
+		assert(y <= cmd_len);
 		expanded = realloc(expanded, len + cmd_len + 1);
 		strncat(expanded, command + y, x - y);
 		len = strlen(expanded);
