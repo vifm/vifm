@@ -108,7 +108,11 @@ clear_options(void)
 	{
 		free(options[i].name);
 		if(options[i].type == OPT_STR || options[i].type == OPT_STRLIST)
+		{
+			if(options[i].full == NULL)
+				free(options[i].def.str_val);
 			free(options[i].val.str_val);
+		}
 	}
 	free(options);
 	options = NULL;

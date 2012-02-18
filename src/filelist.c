@@ -533,7 +533,7 @@ void
 get_all_selected_files(FileView *view)
 {
 	int x;
-	int y = 0;
+	int y;
 
 	count_selected(view);
 
@@ -548,11 +548,11 @@ get_all_selected_files(FileView *view)
 	if(view->selected_filelist != NULL)
 	{
 		free_selected_file_array(view);
-		 /* restoring this because free_selected_file_array sets it to zero */
-		view->selected_files = y;
+		/* setting this because free_selected_file_array doesn't do it */
+		view->selected_files = 0;
 	}
-	view->selected_filelist =
-		(char **)calloc(view->selected_files, sizeof(char *));
+	count_selected(view);
+	view->selected_filelist = calloc(view->selected_files, sizeof(char *));
 	if(view->selected_filelist == NULL)
 	{
 		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");

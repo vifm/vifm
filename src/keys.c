@@ -553,6 +553,8 @@ remove_user_keys(const wchar_t *keys, int mode)
 			curr->prev->next = curr->next;
 		else
 			parent->child = curr->next;
+		if(curr->next != NULL)
+			curr->next->prev = curr->prev;
 		free(curr);
 		curr = parent;
 	}

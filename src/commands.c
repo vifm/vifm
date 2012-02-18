@@ -1449,6 +1449,9 @@ split_path(void)
 
 	path = env_get("PATH");
 
+	if(paths != NULL)
+		free_string_array(paths, paths_count);
+
 	paths_count = 1;
 	p = path;
 	while((p = strchr(p, ':')) != NULL)
@@ -2102,15 +2105,13 @@ expand_macros(FileView *view, const char *command, const char *args,
 		}
 		assert(x >= y);
 		assert(y <= cmd_len);
-		expanded = realloc(expanded, len + cmd_len + 1);
+		expanded = realloc(expanded, len + (x - y) + 1);
 		strncat(expanded, command + y, x - y);
 		len = strlen(expanded);
 		x++;
 	}
 	while(x < cmd_len);
 
-	len++;
-	expanded[len] = '\0';
 	if(len > cfg.max_args/2)
 		(void)show_error_msg("Argument is too long", " FIXME ");
 

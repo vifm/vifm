@@ -47,6 +47,7 @@ teardown(void)
 {
 	free(stats.line);
 	reset_cmds();
+	clear_options();
 }
 
 static void
