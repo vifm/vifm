@@ -324,7 +324,7 @@ static fuse_mount_t *
 fuse_mount(FileView *view, char *filename, const char *program,
 		char *mount_point)
 {
-	fuse_mount_t *runner;
+	fuse_mount_t *runner = NULL;
 	int mount_point_id = 0;
 	fuse_mount_t *fuse_item = NULL;
 	char buf[2*PATH_MAX];
@@ -343,7 +343,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 
 	/* get mount_point_id + mount_point and set runner pointing to the list's
 	 * tail */
-	if(fuse_mounts)
+	if(fuse_mounts != NULL)
 	{
 		runner = fuse_mounts;
 		while(runner->next != NULL)
@@ -468,7 +468,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	strcpy(fuse_item->mount_point, mount_point);
 	fuse_item->mount_point_id = mount_point_id;
 	fuse_item->next = NULL;
-	if(!fuse_mounts)
+	if(fuse_mounts == NULL)
 		fuse_mounts = fuse_item;
 	else
 		runner->next = fuse_item;

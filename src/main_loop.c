@@ -72,7 +72,7 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 	static const int IPC_F = 10;
 
 	int i;
-	int result;
+	int result = ERR;
 
 	for(i = 0; i <= timeout/T; i++)
 	{
