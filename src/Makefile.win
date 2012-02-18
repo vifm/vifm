@@ -1,6 +1,10 @@
 CC := gcc
 
-CFLAGS := -c -g -O0 -Wall -Werror -MD $(CFLAGS)
+ifeq ($(RELEASE),1)
+    CFLAGS := -c -O2 -Wall -Werror -MD $(CFLAGS)
+else
+    CFLAGS := -c -g -O0 -Wall -Werror -MD $(CFLAGS)
+endif
 
 LDFLAGS := $(LDFLAGS)
 
