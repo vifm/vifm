@@ -746,11 +746,12 @@ The builtin commands are:
 
                                                *vifm-:clone*
 :[range]clone[!?] - clones files in current directory.  With "?" vifm will
-    open vi to edit filenames.  "!" forces overwrite.
+    open vi to edit filenames.  "!" forces overwrite.  Macros are expanded.
 :[range]clone[!] path - clones files to directory specified with the path
-    (absolute or relative to current directory).
+    (absolute or relative to current directory).  Macros are expanded.
 :[range]clone[!] name1 name2... - clones files in current directory giving
-    each next clone a corresponding name from the argument list.
+    each next clone a corresponding name from the argument list.  Macros
+    are expanded.
 
                                                *vifm-:colorscheme* *vifm-:colo*
 :colo[rscheme]? - prints current color scheme name in the status bar.

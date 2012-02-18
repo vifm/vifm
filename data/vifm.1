@@ -1,4 +1,4 @@
-.TH vifm 1 "February 11, 2012" "" "Vifm"
+.TH vifm 1 "February 18, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -829,15 +829,15 @@ changes owner and/or group of files.  Operates on directories recursively.
 .TP
 .BI :[range]clone[!?]
 clones files in current directory.  With "?" vifm will open vi to edit
-filenames.  "!" forces overwrite.
+filenames.  "!" forces overwrite.  Macros are expanded.
 .TP
 .BI ":[range]clone[!] path"
 clones files to directory specified with the path (absolute or relative to
-current directory).  "!" forces overwrite.
+current directory).  "!" forces overwrite.  Macros are expanded.
 .TP
 .BI ":[range]clone[!] name1 name2..."
 clones files in current directory giving each next clone a corresponding name
-from the argument list.  "!" forces overwrite.
+from the argument list.  "!" forces overwrite.  Macros are expanded.
 .TP
 .BI :colo[rscheme]?
 prints current color scheme name in the status bar.
