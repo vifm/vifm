@@ -2,13 +2,24 @@
 
 if [ "$#" -lt "1" -o "$#" -gt "2" ]; then
     echo "Usage: $0 version [all|update|commit|archive]"
-    exit
+    exit 1
 fi
 
 target="all"
 
 if [ "$#" == "2" ]; then
     target="$2"
+fi
+
+# this check is for me, since I'm always use vifm.exe from the repository
+if [ "$OS" == "Windows_NT" ]; then
+    if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
+        vifm_running="$(ps -W | grep vifm.exe)"
+        if [ "x$vifm_running" != "x" ]; then
+            echo "ERROR: vifm is running"
+            exit 2
+        fi
+    fi
 fi
 
 if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
@@ -69,7 +80,7 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
         make -C src -f Makefile.win
         if [ "$?" != "0" ]; then
             echo "ERROR: Building project failed."
-            exit 1
+            exit 3
         fi
 
         dir="vifm-w32-$1-binary"
