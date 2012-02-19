@@ -1967,6 +1967,7 @@ incdec_names(FileView *view, int k)
 			remove_from_string_array(names, names_len--, i--);
 			continue;
 		}
+		chosp(names[i]);
 		tmp_len = add_to_string_array(&tmp_names, tmp_len, 1,
 				make_name_unique(names[i]));
 	}
