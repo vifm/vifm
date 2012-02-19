@@ -67,6 +67,11 @@ int add_operation(OPS op, void *do_data, void *undo_data, const char *buf1,
 		const char *buf2);
 
 /*
+ * Returns non-zero is the last group isn't empty.
+ */
+int last_cmd_group_empty(void);
+
+/*
  * Closes current group of commands
  */
 void cmd_group_end(void);

@@ -1641,7 +1641,8 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 		if(mv_file(files[i], view->curr_dir, tmp, view->curr_dir, 2) != 0)
 		{
 			cmd_group_end();
-			undo_group();
+			if(!last_cmd_group_empty())
+				undo_group();
 			status_bar_error("Temporary rename error");
 			curr_stats.save_msg = 1;
 			return 0;
@@ -2013,7 +2014,7 @@ incdec_names(FileView *view, int k)
 
 	if(err)
 	{
-		if(err > 0)
+		if(err > 0 && !last_cmd_group_empty())
 			undo_group();
 	}
 	else

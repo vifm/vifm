@@ -230,6 +230,7 @@ reset_undo_list(void)
 
 	current = &cmds;
 	next_group = 0;
+	last_group = NULL;
 }
 
 void
@@ -405,6 +406,12 @@ remove_cmd(cmd_t *cmd)
 	free(cmd);
 
 	command_count--;
+}
+
+int
+last_cmd_group_empty(void)
+{
+	return last_group == NULL;
 }
 
 void

@@ -7,6 +7,7 @@
 void undolist_test(void);
 void undo_test(void);
 void undolevels_test(void);
+void last_cmd_group_empty_tests(void);
 
 static int
 exec_func(OPS op, void *data, const char *src, const char *dst)
@@ -54,6 +55,7 @@ all_tests(void)
 	undolist_test();
 	undo_test();
 	undolevels_test();
+	last_cmd_group_empty_tests();
 }
 
 int

@@ -2,6 +2,8 @@
 
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
+	Fixed undoing of previous operation on error in current one.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.
