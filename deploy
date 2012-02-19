@@ -1,0 +1,86 @@
+#!/bin/bash
+
+if [ "$#" -lt "1" -o "$#" -gt "2" ]; then
+    echo "Usage: $0 version [all|update|commit|archive]"
+    exit
+fi
+
+target="all"
+
+if [ "$#" == "2" ]; then
+    target="$2"
+fi
+
+if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
+    echo "Updating version number..."
+
+    # update version in ChangeLog
+    cp ChangeLog ChangeLog_tmp
+    sed "1s/current/$1/" ChangeLog_tmp > ChangeLog
+    rm ChangeLog_tmp
+
+    # update version in configure script
+    cp configure.in configure.in_tmp
+    sed "4s/, .*)/, $1)/" configure.in_tmp > configure.in
+    rm configure.in_tmp
+
+    if [ "x$OS" != "xWindows_NT" ]; then
+        # regenerate automake/autoconf files
+        autoreconf
+    fi
+
+    # update version in src/Makefile.win
+    makefile=src/Makefile.win
+    cp "$makefile" "${makefile}_tmp"
+    sed "s/VERSION \".*\"/VERSION \"$1\"/" "${makefile}_tmp" > "$makefile"
+    rm "${makefile}_tmp"
+fi
+
+if [ "x$target" == "xall" -o "x$target" == "xcommit" ]; then
+    echo "Making version commit..."
+
+    # commit or ammend new version
+    git tag "v$1"
+    if [ "$?" != "0" ]; then
+        git commit -av --amend -m "Version v$1"
+    else
+        git tag -d "v$1"
+        git commit -av -m "Version v$1"
+
+        # mark commit with tag
+        git tag "v$1"
+    fi
+fi
+
+if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
+    echo "Building archive..."
+
+    # make archive
+    if [ "$OS" != "Windows_NT" ]; then
+        archive_name="vifm-v$1.tar.bz2"
+        git archive "v$1" --format tar | bzip2 > "$archive_name"
+    else
+        # remove config.h
+        if [ -f config.h ]; then
+            rm config.h
+        fi
+
+        # build vifm
+        export RELEASE=1
+        make -C src -f Makefile.win
+        if [ "$?" != "0" ]; then
+            echo "ERROR: Building project failed."
+            exit 1
+        fi
+
+        dir="vifm-w32-$1-binary"
+        mkdir "$dir"
+        cp -R data "$dir"
+        for i in ChangeLog COPYING FAQ INSTALL THANKS TODO; do
+            cp "$i" "$dir/$i.txt"
+        done
+        cp src/vifm-pause src/*.dll src/*.exe "$dir"
+        strip -S $dir/*.dll $dir/*.exe
+        zip -9 -r "$dir.zip" "$dir"
+    fi
+fi
