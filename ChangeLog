@@ -4,6 +4,8 @@
 
 	Fixed undoing of previous operation on error in current one.
 
+	Fixed updating of views when they are in view mode.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

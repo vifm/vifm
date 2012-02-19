@@ -2563,6 +2563,9 @@ load_saving_pos(FileView *view, int reload)
 	if(curr_stats.load_stage < 2)
 		return;
 
+	if(!window_shows_dirlist(view))
+		return;
+
 	snprintf(filename, sizeof(filename), "%s",
 			view->dir_entry[view->list_pos].name);
 	load_dir_list(view, reload);
