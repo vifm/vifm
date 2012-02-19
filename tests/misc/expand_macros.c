@@ -242,6 +242,17 @@ test_with_quotes(void)
 	free(expanded);
 }
 
+static void
+test_single_persent_sign(void)
+{
+	int menu, split;
+	char *expanded;
+
+	expanded = expand_macros(&lwin, "%", "", &menu, &split);
+	assert_string_equal("", expanded);
+	free(expanded);
+}
+
 void
 test_expand_macros(void)
 {
@@ -258,6 +269,7 @@ test_expand_macros(void)
 	run_test(test_no_slash_after_dirname);
 	run_test(test_m);
 	run_test(test_with_quotes);
+	run_test(test_single_persent_sign);
 
 	test_fixture_end();
 }

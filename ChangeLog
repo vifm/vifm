@@ -6,6 +6,8 @@
 
 	Fixed updating of views when they are in view mode.
 
+	Fixed bug with failed assertion on not complete macro.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

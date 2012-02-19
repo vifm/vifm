@@ -2055,7 +2055,8 @@ expand_macros(FileView *view, const char *command, const char *args,
 			default:
 				break;
 		}
-		x++;
+		if(command[x] != '\0')
+			x++;
 		y = x;
 
 		while(x < cmd_len)
