@@ -28,6 +28,7 @@
 #include <unistd.h> /* getcwd() */
 
 #include <assert.h>
+#include <errno.h>
 #include <stdlib.h>
 
 #include "log.h"
@@ -37,7 +38,7 @@
 
 #include "ipc.h"
 
-#define PORT 31231
+#define PORT 31230
 
 static void cleanup_on_exit(void);
 static void try_become_a_server(void);
@@ -135,6 +136,10 @@ try_become_a_server(void)
 	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	addr.sin_port = htons(PORT);
 	server = bind(sock, (struct sockaddr *)&addr, sizeof(addr)) != -1;
+	if(!server)
+	{
+		LOG_SERROR_MSG(errno, "Can't become an IPC sever");
+	}
 }
 
 static void

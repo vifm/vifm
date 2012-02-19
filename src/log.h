@@ -38,7 +38,7 @@
         log_msg((msg), ## args); \
     }
 
-#define LOG_SERROR(no) log_error(__FILE__, __FUNCTION__, __LINE__, (no))
+#define LOG_SERROR(no) log_serror(__FILE__, __FUNCTION__, __LINE__, (no))
 #define LOG_SERROR_MSG(no, msg, args...) \
     { \
         log_serror(__FILE__, __FUNCTION__, __LINE__, (no)); \

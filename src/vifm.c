@@ -328,15 +328,17 @@ exclude_file_name(char *path)
 		break_atr(path, '/');
 }
 
-/* Sets view's current directory from path value. */
-static void
+/* Sets view's current directory from path value.
+ * Returns non-zero if view's directory was changed. */
+static int
 set_path(FileView *view, const char *path)
 {
 	if(!check_path(view, path))
-		return;
+		return 0;
 
 	strcpy(view->curr_dir, path);
 	exclude_file_name(view->curr_dir);
+	return 1;
 }
 
 static void
@@ -434,6 +436,7 @@ main(int argc, char *argv[])
 	int old_config;
 	int i;
 	int no_configs;
+	int lcd, rcd;
 
 	init_config();
 
@@ -528,8 +531,11 @@ main(int argc, char *argv[])
 
 	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle);
 
-	set_path(&lwin, lwin_path);
-	set_path(&rwin, rwin_path);
+	lcd = set_path(&lwin, lwin_path);
+	rcd = set_path(&rwin, rwin_path);
+
+	if(lcd && !rcd && curr_view != &lwin)
+		change_window();
 
 	load_initial_directory(&lwin, dir);
 	load_initial_directory(&rwin, dir);
@@ -640,6 +646,7 @@ parse_recieved_arguments(char *args[])
 	char rwin_path[PATH_MAX] = "";
 	int lwin_handle = 0, rwin_handle = 0;
 	int argc = 0;
+	int lcd, rcd;
 
 	while(args[argc] != NULL)
 		argc++;
@@ -657,11 +664,14 @@ parse_recieved_arguments(char *args[])
 	SetForegroundWindow(GetConsoleWindow());
 #endif
 
-	if(check_path(&lwin, lwin_path))
+	if((lcd = check_path(&lwin, lwin_path)))
 		remote_cd(&lwin, lwin_path, lwin_handle);
 
-	if(check_path(&rwin, rwin_path))
+	if((rcd = check_path(&rwin, rwin_path)))
 		remote_cd(&rwin, rwin_path, rwin_handle);
+
+	if(lcd && !rcd && curr_view != &lwin)
+		change_window();
 
 	clean_status_bar();
 	curr_stats.save_msg = 0;
