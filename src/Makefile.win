@@ -79,7 +79,7 @@ version.c:
 
 tags.c: ../data/vim/doc/vifm.txt
 	@if [ "x$$(which vim)" != "x" -a "x$$(which cat)" != "x" -a "x$$(which awk)" != "x" ]; then \
-		vim -c 'helptags $(dir $<)|q'; \
+		vim -T pcterm -u NONE -c 'helptags $(dir $<)|q'; \
 		cat $(dir $<)/tags | awk ' \
 			BEGIN { \
 				print "const char *tags[] = {" \
