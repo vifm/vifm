@@ -154,10 +154,6 @@ modes_post(void)
 		menu_post();
 		return;
 	}
-	else if(mode == FILE_INFO_MODE)
-	{
-		redraw_file_info_dialog();
-	}
 
 	if(curr_stats.need_redraw)
 		redraw_window();

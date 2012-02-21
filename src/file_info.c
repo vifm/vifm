@@ -53,6 +53,7 @@ static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 
 static int *mode;
 static FileView *view;
+static int was_redraw;
 
 static keys_add_info_t builtin_cmds[] = {
 	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
@@ -85,14 +86,20 @@ enter_file_info_mode(FileView *v)
 	view = v;
 	curr_stats.show_full = 1;
 	redraw_file_info_dialog();
+
+	was_redraw = 0;
 }
 
 static void
 leave_file_info_mode(void)
 {
 	curr_stats.show_full = 0;
-	curr_stats.need_redraw = 1;
 	*mode = NORMAL_MODE;
+
+	if(was_redraw)
+		redraw_window();
+	else
+		update_all_windows();
 }
 
 void
@@ -211,6 +218,8 @@ redraw_file_info_dialog(void)
 	wmove(menu_win, 0, 3);
 	wprint(menu_win, " File Information ");
 	wrefresh(menu_win);
+
+	was_redraw = 1;
 }
 
 /* Returns increment for curr_y */

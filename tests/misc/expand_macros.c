@@ -243,12 +243,23 @@ test_with_quotes(void)
 }
 
 static void
-test_single_persent_sign(void)
+test_single_percent_sign(void)
 {
 	int menu, split;
 	char *expanded;
 
 	expanded = expand_macros(&lwin, "%", "", &menu, &split);
+	assert_string_equal("", expanded);
+	free(expanded);
+}
+
+static void
+test_percent_sign_and_double_quote(void)
+{
+	int menu, split;
+	char *expanded;
+
+	expanded = expand_macros(&lwin, "%\"", "", &menu, &split);
 	assert_string_equal("", expanded);
 	free(expanded);
 }
@@ -269,7 +280,8 @@ test_expand_macros(void)
 	run_test(test_no_slash_after_dirname);
 	run_test(test_m);
 	run_test(test_with_quotes);
-	run_test(test_single_persent_sign);
+	run_test(test_single_percent_sign);
+	run_test(test_percent_sign_and_double_quote);
 
 	test_fixture_end();
 }
