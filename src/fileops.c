@@ -1939,6 +1939,7 @@ add_to_name(const char *filename, int k)
 	return result;
 }
 
+/* Returns new value for save_msg flag. */
 int
 incdec_names(FileView *view, int k)
 {
@@ -2033,7 +2034,7 @@ incdec_names(FileView *view, int k)
 		status_bar_messagef("%d file%s renamed", names_len,
 				(names_len == 1) ? "" : "s");
 
-	return err >= 0;
+	return 1;
 }
 
 #ifndef _WIN32
