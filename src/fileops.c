@@ -1918,24 +1918,51 @@ make_undo_string(FileView *view, char *buf, int nlines, char **list)
 	}
 }
 
+/* Returns number of digets in passed number. */
+static int
+count_digits(int number)
+{
+	int result = 0;
+	while(number != 0)
+	{
+		number /= 10;
+		result++;
+	}
+	return MAX(1, result);
+}
+
 /* Returns pointer to a statically allocated buffer */
-static const char *
+#ifndef TEST
+static
+#endif
+const char *
 add_to_name(const char *filename, int k)
 {
 	static char result[NAME_MAX];
-	char *b = strpbrk(filename, "0123456789");
-	char *e;
-	int i;
+	char format[16];
+	char *b, *e;
+	int i, n;
 
-	if(b == NULL)
+	if((b = strpbrk(filename, "0123456789")) == NULL)
 		return strcpy(result, filename);
 
-	if(b != filename && (b[-1] == '+' || b[-1] == '-'))
+	n = 0;
+	while(b[n] == '0' && isdigit(b[n + 1]))
+		n++;
+
+	if(b != filename && b[-1] == '-')
 		b--;
+
 	i = strtol(b, &e, 10);
+
+	if(i + k < 0)
+		n++;
+
 	snprintf(result, b - filename + 1, "%s", filename);
-	snprintf(result + (b - filename), sizeof(result) - (b - filename), "%d%s",
+	snprintf(format, sizeof(format), "%%0%dd%%s", n + count_digits(i));
+	snprintf(result + (b - filename), sizeof(result) - (b - filename), format,
 			i + k, e);
+
 	return result;
 }
 

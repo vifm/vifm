@@ -74,6 +74,7 @@ int make_files(FileView *view, char **names, int count);
 #ifdef TEST
 const char * gen_clone_name(const char *normal_name);
 int is_name_list_ok(int count, int nlines, char **list, char **files);
+const char * add_to_name(const char *filename, int k);
 #endif
 
 #endif

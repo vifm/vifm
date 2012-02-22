@@ -1,5 +1,7 @@
 0.7.2 to current
 
+	Leave leading zeros on Ctrl-A/X commands.
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.

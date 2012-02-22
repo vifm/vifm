@@ -46,6 +46,24 @@ test_rename_inside_subdir_ok(void)
 #endif
 }
 
+static void
+test_incdec_leaves_zeros(void)
+{
+	assert_string_equal("1", add_to_name("0", 1));
+	assert_string_equal("01", add_to_name("00", 1));
+	assert_string_equal("00", add_to_name("01", -1));
+	assert_string_equal("-01", add_to_name("00", -1));
+	assert_string_equal("002", add_to_name("001", 1));
+	assert_string_equal("012", add_to_name("005", 7));
+	assert_string_equal("008", add_to_name("009", -1));
+	assert_string_equal("010", add_to_name("009", 1));
+	assert_string_equal("100", add_to_name("099", 1));
+	assert_string_equal("-08", add_to_name("-09", 1));
+	assert_string_equal("-10", add_to_name("-09", -1));
+	assert_string_equal("-14", add_to_name("-09", -5));
+	assert_string_equal("a01.", add_to_name("a00.", 1));
+}
+
 void
 rename_tests(void)
 {
@@ -55,6 +73,7 @@ rename_tests(void)
 	run_test(test_names_greater_that_files_fail);
 	run_test(test_move_fail);
 	run_test(test_rename_inside_subdir_ok);
+	run_test(test_incdec_leaves_zeros);
 
 	test_fixture_end();
 }
