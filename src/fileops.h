@@ -42,6 +42,7 @@ void view_file(const char *filename, int line, int do_fork);
 void show_change_window(FileView *view, int type);
 void rename_file(FileView *view, int name_only);
 int rename_files(FileView *view, char **list, int nlines, int recursive);
+/* Returns new value for save_msg flag. */
 int incdec_names(FileView *view, int k);
 #ifndef _WIN32
 void chown_files(int u, int g, uid_t uid, gid_t gid);
@@ -73,6 +74,7 @@ int make_files(FileView *view, char **names, int count);
 #ifdef TEST
 const char * gen_clone_name(const char *normal_name);
 int is_name_list_ok(int count, int nlines, char **list, char **files);
+const char * add_to_name(const char *filename, int k);
 #endif
 
 #endif

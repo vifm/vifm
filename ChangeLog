@@ -1,5 +1,7 @@
 0.7.2 to current
 
+	Leave leading zeros on Ctrl-A/X commands.
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.
@@ -7,6 +9,10 @@
 	Fixed updating of views when they are in view mode.
 
 	Fixed bug with failed assertion on not complete macro.
+
+	Fixed error reporting on Ctrl-A/Ctrl-X commands on selection.
+
+	Fixed work of Ctrl-A and Ctrl-X commands on selection.
 
 0.7.1 to 0.7.2
 
