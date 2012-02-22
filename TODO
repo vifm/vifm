@@ -16,6 +16,8 @@ Basic things that need to be done.
     Make status bar able to display error and info messages at the same time.
     Command to create multiple copies of selected one with ability to rename
         it (e.g. a -> :hub b c -> a b c, a -> :hub! b c -> b c).
+    Leave leading zeros on Ctrl-A/X commands.
+    Add description to :file[x]type command.
 
 Documentation.
 	Better documentation.

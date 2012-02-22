@@ -1983,8 +1983,8 @@ incdec_names(FileView *view, int k)
 		if(is_in_string_array(names, names_len, p))
 #else
 		if(is_in_string_array_case(names, names_len, p))
-			continue;
 #endif
+			continue;
 
 		err = -1;
 		break;
