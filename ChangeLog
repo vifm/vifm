@@ -14,6 +14,8 @@
 
 	Fixed work of Ctrl-A and Ctrl-X commands on selection.
 
+	Fixed small issue with tabs in quick view and 'nowrap'.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

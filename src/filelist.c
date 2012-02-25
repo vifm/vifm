@@ -315,11 +315,10 @@ view_wraped(FILE *fp, int x)
 	char line[1024];
 	int y = 1;
 	int offset = 0;
-	while(get_line(fp, line + offset, other_view->window_width) != NULL
-			&& x <= other_view->window_rows - 2)
+	char *res = get_line(fp, line + offset, other_view->window_width);
+	while(res != NULL && x <= other_view->window_rows - 2)
 	{
 		int i, k;
-		size_t width;
 		size_t n_len = get_normal_utf8_string_length(line);
 		size_t len = strlen(line);
 		while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
@@ -331,28 +330,44 @@ view_wraped(FILE *fp, int x)
 			len = strlen(line);
 		}
 
-		if(line[len - 1] != '\n')
+		if(len > 0 && line[len - 1] != '\n')
 			remove_eol(fp);
 
-		width = get_normal_utf8_string_width(line);
 		++x;
 		wmove(other_view->win, x, y);
 		i = 0;
-		k = width;
+		k = other_view->window_width - 1;
 		len = 0;
-		while(k-- > 0)
+		while(k-- > 0 && line[i] != '\0')
 		{
 			wprint(other_view->win, strchar2str(line + i, len));
 			if(line[i] == '\t')
-				len += cfg.tab_stop - len%cfg.tab_stop;
+			{
+				int tab_width = cfg.tab_stop - len%cfg.tab_stop;
+				len += tab_width;
+				k -= tab_width - 1;
+			}
 			else
+			{
 				len++;
+			}
 			i += get_char_width(line + i);
 		}
 
-		offset = strlen(line) - width;
+		offset = strlen(line) - i;
 		if(offset != 0)
-			memmove(line, line + width, offset);
+		{
+			memmove(line, line + i, offset + 1);
+			if(offset == 1 && line[0] == '\n')
+			{
+				offset = 0;
+				res = get_line(fp, line + offset, other_view->window_width);
+			}
+		}
+		else
+		{
+			res = get_line(fp, line + offset, other_view->window_width);
+		}
 	}
 }
 
