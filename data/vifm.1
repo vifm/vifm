@@ -1550,8 +1550,15 @@ will list only the given filename.
 .TP
 The macros can also be used in directly executing commands. ":!mv %f %D" would move the current directory selected files to the other directory.
 .TP
-Appending & to the end of a command will cause it to be executed in the background.
-.BI ":!mv %f %D &"
+Appending & to the end of a command will cause it to be executed in the background.\
+Typically you want to run two kinds of external commands in the\
+background:
+ - GUI applications that doesn't fork thus block vifm (:!sxiv %f &);
+ - console tools that do not work with terminal (:!mv %f %D &).
+.TP
+You don't want to run terminal commands, which require terminal input or\
+output something because they will mess up vifm's TUI. Anyway, if you did run\
+such a command, you can use Ctrl-L key to update vifm's TUI.
 .\" ---------------------------------------------------------------------------
 .SH Command backgrounding
 .\" ---------------------------------------------------------------------------

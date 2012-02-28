@@ -1349,7 +1349,13 @@ The macros can also be used in directly executing commands.
 directory.
 
 Appending & to the end of a command will cause it to be executed in the
-background.
+background.  Typically you want to run two kinds of external commands in the
+background:
+ - GUI applications that doesn't fork thus block vifm (:!sxiv %f &);
+ - console tools that do not work with terminal (:!mv %f %D &).
+You don't want to run terminal commands, which require terminal input or
+output something because they will mess up vifm's TUI. Anyway, if you did run
+such a command, you can use Ctrl-L key to update vifm's TUI.
 
 :!mv %f %D &
 
