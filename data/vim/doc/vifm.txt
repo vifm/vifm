@@ -439,7 +439,7 @@ will insert previously yanked and deleted files into current directory.
 
 Selectors~
                                                *vifm-selectors*
-y, d and Dcommands accept selectors.  You can combine them with every of
+y, d and D commands accept selectors.  You can combine them with every of
 selectors below to quickly remove or yank several files.
 
 j, k, gg, G, H, L, M, %, f, F, ;, comma and ' can be used as selectors for
@@ -844,7 +844,7 @@ The builtin commands are:
 
                                                *vifm-:filetype* *vifm-:filet*
 :filet[ype] pat1,pat2,... def_program,program2,... - will associate given
-    program list to each of the patterns.  Accosiated program (command) is
+    program list to each of the patterns.  Associated program (command) is
     used by handlers of l and Enter keys (and also in the :file menu).  *,
     ?, [ and ] are treated as special symbols in the pattern.  Inside square
     brackets ^ or ! can be used for symbol class negotiation and the - symbol
@@ -1452,7 +1452,7 @@ Use KiB, MiB, ... instead of KB, MB, ...
 ignorecase ic
 type: boolean
 default: false
-Ignore case in search patterns (:substiute, / and ? commands) and
+Ignore case in search patterns (:substitute, / and ? commands) and
 characters after f and F commands.  It doesn't affect file filtering.
 
                                                *vifm-'incsearch'* *vifm-'is'*
@@ -1534,8 +1534,8 @@ smartcase scs
 type: boolean
 default: false
 Overrides the |vifm-'ignorecase'| option if the search pattern contains at
-least one upper case character.  Only used when ignorecase option is enabled.
-It doesn't affect file filtering.
+least one upper case character.  Only used when |vifm-'ignorecase'| option
+is enabled.  It doesn't affect file filtering.
 
                                                *vifm-'sort'*
 sort
@@ -1934,7 +1934,7 @@ directory.
 
 The plugin have only two settings.  It's a string variable named g:vifm_term to
 let user specify command to run gui terminal.  By default it's equal to
-'xterm -e'.  And anoter string variable named g:vifm_exec, which equals "vifm"
+'xterm -e'.  And another string variable named g:vifm_exec, which equals "vifm"
 by default and specifies path to vifm's executable.  To pass arguments to
 vifm use g:vifm_exec_args, which is empty by default.
 

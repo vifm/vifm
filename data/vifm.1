@@ -1,4 +1,4 @@
-.TH vifm 1 "February 18, 2012" "" "Vifm"
+.TH vifm 1 "February 28, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -504,7 +504,7 @@ will insert previously yanked and deleted files into current directory.
 .SH Selectors
 .\" ---------------------------------------------------------------------------
 .TP
-y and d commands accept selectors.  You can combine them with every of
+y, d and D commands accept selectors.  You can combine them with every of
 selectors below to quickly remove or yank several files.
 .br
 Most of selectors are like vi motions: j, k, gg, G, H, L, M, %, f, F, ;, comma
@@ -945,7 +945,7 @@ the end of command to run program in background.
 run associated command that begins with the arg without opening menu.
 .TP
 .BI ":filet[ype] pat1,pat2,... def_program,program2,..."
-will associate given program list to each of the patterns.  Accosiated program
+will associate given program list to each of the patterns.  Associated program
 (command) is used by handlers of l and Enter keys (and also in the :file menu).
 *, ?, [ and ] are treated as special symbols in the pattern.  Inside square
 brackets ^ or ! can be used for symbol class negotiation and the - symbol to
@@ -1663,7 +1663,7 @@ type: boolean
 .br
 default: false
 .br
-Ignore case in search patterns (:substiute, / and ? commands) and characters
+Ignore case in search patterns (:substitute, / and ? commands) and characters
 after f and F commands.  It doesn't affect file filtering.
 .TP
 .BI "incsearch is"
@@ -2195,7 +2195,7 @@ directory.
 
 The plugin have only two settings.  It's a string variable named g:vifm_term to
 let user specify command to run gui terminal.  By default it's equal to
-\'xterm -e'.  And anoter string variable named g:vifm_exec, which equals "vifm"
+\'xterm -e'.  And another string variable named g:vifm_exec, which equals "vifm"
 by default and specifies path to vifm's executable.  To pass arguments to
 vifm use g:vifm_exec_args, which is empty by default.
 
