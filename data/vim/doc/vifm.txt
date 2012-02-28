@@ -33,6 +33,9 @@ Tag name structure:
 --------------------------------------------------------------------------------
 *vifm-options*
 
+General format:
+vifm [OPTION]... [ LWIN_DIR [ RWIN_DIR ] ]
+
 The vifm executable will start vifm in the current directory unless it is
 given a different directory on the command line.
 
