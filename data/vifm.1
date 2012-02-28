@@ -944,13 +944,15 @@ the end of command to run program in background.
 .BI ":f[ile] arg"
 run associated command that begins with the arg without opening menu.
 .TP
-.BI ":filet[ype] pat1,pat2,... def_program,program2,..."
+.BI ":filet[ype] pat1,pat2,... def_program[ &],program2[ &],..."
 will associate given program list to each of the patterns.  Associated program
 (command) is used by handlers of l and Enter keys (and also in the :file menu).
 *, ?, [ and ] are treated as special symbols in the pattern.  Inside square
 brackets ^ or ! can be used for symbol class negotiation and the - symbol to
-set a range.  Asterisk at the pattern beginning don't accept dot as the first
-character.  If you need to insert comma into command just double it (",,").
+set a range.  Asterisk at the pattern beginning don't match dot in the first
+position.  If you need to insert comma into command just double it (",,").
+Space followed by an ampersand as two last characters of a command means running
+of the command in the background.
 .TP
 .BI ":filex[type] pat1,pat2,... def_program,program2,..."
 same as :filetype, but vifm will ignore this command if it's not running in X.
