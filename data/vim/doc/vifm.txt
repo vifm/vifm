@@ -33,6 +33,9 @@ Tag name structure:
 --------------------------------------------------------------------------------
 *vifm-options*
 
+General format:
+vifm [OPTION]... [ LWIN_DIR [ RWIN_DIR ] ]
+
 The vifm executable will start vifm in the current directory unless it is
 given a different directory on the command line.
 
@@ -439,7 +442,7 @@ will insert previously yanked and deleted files into current directory.
 
 Selectors~
                                                *vifm-selectors*
-y, d and Dcommands accept selectors.  You can combine them with every of
+y, d and D commands accept selectors.  You can combine them with every of
 selectors below to quickly remove or yank several files.
 
 j, k, gg, G, H, L, M, %, f, F, ;, comma and ' can be used as selectors for
@@ -843,14 +846,15 @@ The builtin commands are:
     opening menu.
 
                                                *vifm-:filetype* *vifm-:filet*
-:filet[ype] pat1,pat2,... def_program,program2,... - will associate given
-    program list to each of the patterns.  Accosiated program (command) is
-    used by handlers of l and Enter keys (and also in the :file menu).  *,
+:filet[ype] pat1,pat2,... def_program[ &],program2[ &],... - will associate
+    given program list to each of the patterns.  Associated program (command)
+    is used by handlers of l and Enter keys (and also in the :file menu).  *,
     ?, [ and ] are treated as special symbols in the pattern.  Inside square
     brackets ^ or ! can be used for symbol class negotiation and the - symbol
-    to set a range.  Asterisk at the pattern beginning don't accept dot as
-    the first character.  If you need to insert comma into command just
-    double it (",,").
+    to set a range.  Asterisk at the pattern beginning don't match dot in the
+    first position.  If you need to insert comma into command just double it
+    (",,").  Space followed by an ampersand as two last characters of a
+    command means running of the command in the background.
 
                                                *vifm-:filextype* *vifm-:filex*
 :filex[type] pat1,pat2,... def_program,program2,... - same as :filetype, but
@@ -1348,7 +1352,13 @@ The macros can also be used in directly executing commands.
 directory.
 
 Appending & to the end of a command will cause it to be executed in the
-background.
+background.  Typically you want to run two kinds of external commands in the
+background:
+ - GUI applications that doesn't fork thus block vifm (:!sxiv %f &);
+ - console tools that do not work with terminal (:!mv %f %D &).
+You don't want to run terminal commands, which require terminal input or
+output something because they will mess up vifm's TUI. Anyway, if you did run
+such a command, you can use Ctrl-L key to update vifm's TUI.
 
 :!mv %f %D &
 
@@ -1452,7 +1462,7 @@ Use KiB, MiB, ... instead of KB, MB, ...
 ignorecase ic
 type: boolean
 default: false
-Ignore case in search patterns (:substiute, / and ? commands) and
+Ignore case in search patterns (:substitute, / and ? commands) and
 characters after f and F commands.  It doesn't affect file filtering.
 
                                                *vifm-'incsearch'* *vifm-'is'*
@@ -1534,8 +1544,8 @@ smartcase scs
 type: boolean
 default: false
 Overrides the |vifm-'ignorecase'| option if the search pattern contains at
-least one upper case character.  Only used when ignorecase option is enabled.
-It doesn't affect file filtering.
+least one upper case character.  Only used when |vifm-'ignorecase'| option
+is enabled.  It doesn't affect file filtering.
 
                                                *vifm-'sort'*
 sort
@@ -1934,7 +1944,7 @@ directory.
 
 The plugin have only two settings.  It's a string variable named g:vifm_term to
 let user specify command to run gui terminal.  By default it's equal to
-'xterm -e'.  And anoter string variable named g:vifm_exec, which equals "vifm"
+'xterm -e'.  And another string variable named g:vifm_exec, which equals "vifm"
 by default and specifies path to vifm's executable.  To pass arguments to
 vifm use g:vifm_exec_args, which is empty by default.
 

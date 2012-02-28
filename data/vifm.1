@@ -1,8 +1,16 @@
-.TH vifm 1 "February 18, 2012" "" "Vifm"
+.TH vifm 1 "February 28, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
-vifm [OPTION]
+vifm - vi file manager
+.\" ---------------------------------------------------------------------------
+.SH SYNOPSIS
+.\" ---------------------------------------------------------------------------
+vifm [OPTION]...
+.br
+vifm [OPTION]... LWIN_DIR
+.br
+vifm [OPTION]... LWIN_DIR RWIN_DIR
 .\" ---------------------------------------------------------------------------
 .SH DESCRIPTION
 .\" ---------------------------------------------------------------------------
@@ -407,7 +415,7 @@ puts symbolic links with absolute paths.
 puts symbolic links with relative paths.
 .TP
 .BI t
-tag the current file.
+select or unselect (tag) the current file.
 .TP
 .BI u
 undo last change.
@@ -504,7 +512,7 @@ will insert previously yanked and deleted files into current directory.
 .SH Selectors
 .\" ---------------------------------------------------------------------------
 .TP
-y and d commands accept selectors.  You can combine them with every of
+y, d and D commands accept selectors.  You can combine them with every of
 selectors below to quickly remove or yank several files.
 .br
 Most of selectors are like vi motions: j, k, gg, G, H, L, M, %, f, F, ;, comma
@@ -944,13 +952,15 @@ the end of command to run program in background.
 .BI ":f[ile] arg"
 run associated command that begins with the arg without opening menu.
 .TP
-.BI ":filet[ype] pat1,pat2,... def_program,program2,..."
-will associate given program list to each of the patterns.  Accosiated program
+.BI ":filet[ype] pat1,pat2,... def_program[ &],program2[ &],..."
+will associate given program list to each of the patterns.  Associated program
 (command) is used by handlers of l and Enter keys (and also in the :file menu).
 *, ?, [ and ] are treated as special symbols in the pattern.  Inside square
 brackets ^ or ! can be used for symbol class negotiation and the - symbol to
-set a range.  Asterisk at the pattern beginning don't accept dot as the first
-character.  If you need to insert comma into command just double it (",,").
+set a range.  Asterisk at the pattern beginning don't match dot in the first
+position.  If you need to insert comma into command just double it (",,").
+Space followed by an ampersand as two last characters of a command means running
+of the command in the background.
 .TP
 .BI ":filex[type] pat1,pat2,... def_program,program2,..."
 same as :filetype, but vifm will ignore this command if it's not running in X.
@@ -1548,8 +1558,15 @@ will list only the given filename.
 .TP
 The macros can also be used in directly executing commands. ":!mv %f %D" would move the current directory selected files to the other directory.
 .TP
-Appending & to the end of a command will cause it to be executed in the background.
-.BI ":!mv %f %D &"
+Appending & to the end of a command will cause it to be executed in the background.\
+Typically you want to run two kinds of external commands in the\
+background:
+ - GUI applications that doesn't fork thus block vifm (:!sxiv %f &);
+ - console tools that do not work with terminal (:!mv %f %D &).
+.TP
+You don't want to run terminal commands, which require terminal input or\
+output something because they will mess up vifm's TUI. Anyway, if you did run\
+such a command, you can use Ctrl-L key to update vifm's TUI.
 .\" ---------------------------------------------------------------------------
 .SH Command backgrounding
 .\" ---------------------------------------------------------------------------
@@ -1663,7 +1680,7 @@ type: boolean
 .br
 default: false
 .br
-Ignore case in search patterns (:substiute, / and ? commands) and characters
+Ignore case in search patterns (:substitute, / and ? commands) and characters
 after f and F commands.  It doesn't affect file filtering.
 .TP
 .BI "incsearch is"
@@ -2195,7 +2212,7 @@ directory.
 
 The plugin have only two settings.  It's a string variable named g:vifm_term to
 let user specify command to run gui terminal.  By default it's equal to
-\'xterm -e'.  And anoter string variable named g:vifm_exec, which equals "vifm"
+\'xterm -e'.  And another string variable named g:vifm_exec, which equals "vifm"
 by default and specifies path to vifm's executable.  To pass arguments to
 vifm use g:vifm_exec_args, which is empty by default.
 
@@ -2226,4 +2243,4 @@ Website: http://vifm.sourceforge.net/
 .\" ---------------------------------------------------------------------------
 Vifm was written by ksteen <ksteen@users.sourceforge.net>
 .br
-And currently being developed by xaizek <xaizek@gmail.com>
+And currently is developed by xaizek <xaizek@gmail.com>
