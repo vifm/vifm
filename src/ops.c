@@ -23,6 +23,8 @@
 
 #include <string.h>
 
+#include "../config.h"
+
 #include "background.h"
 #include "config.h"
 #include "fileops.h"
@@ -35,6 +37,12 @@
 #include "utils.h"
 
 #include "ops.h"
+
+#ifdef SUPPORT_NO_CLOBBER
+#define NO_CLOBBER "-n"
+#else /* SUPPORT_NO_CLOBBER */
+#define NO_CLOBBER
+#endif /* SUPPORT_NO_CLOBBER */
 
 static int op_none(void *data, const char *src, const char *dst);
 static int op_remove(void *data, const char *src, const char *dst);
@@ -183,7 +191,8 @@ op_copy(void *data, const char *src, const char *dst)
 		return -1;
 	}
 
-	snprintf(cmd, sizeof(cmd), "cp -nR --preserve=mode,timestamps %s %s",
+	snprintf(cmd, sizeof(cmd),
+			"cp " NO_CLOBBER " -R --preserve=mode,timestamps %s %s",
 			escaped_src, escaped_dst);
 	LOG_INFO_MSG("Running cp command: \"%s\"", cmd);
 	result = background_and_wait_for_errors(cmd);
@@ -235,7 +244,8 @@ op_move(void *data, const char *src, const char *dst)
 		return -1;
 	}
 
-	snprintf(cmd, sizeof(cmd), "mv -n %s %s", escaped_src, escaped_dst);
+	snprintf(cmd, sizeof(cmd), "mv " NO_CLOBBER " %s %s", escaped_src,
+			escaped_dst);
 	free(escaped_dst);
 	free(escaped_src);
 
