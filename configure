@@ -13131,6 +13131,21 @@ fi
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
 
+min_version="7.1"
+version="$(mv --version | sed -ne 's/^.*(GNU coreutils) //p')"
+
+major="${version%.*}"
+minor="${version#*.}"
+min_major="${min_version%.*}"
+min_minor="${min_version#*.}"
+
+if test $major -ge $min_major -a $minor -ge $min_minor ; then
+
+$as_echo "#define SUPPORT_NO_CLOBBER 1" >>confdefs.h
+
+fi
+
+
 
 # Check whether --with-gtk was given.
 if test "${with_gtk+set}" = set; then :
