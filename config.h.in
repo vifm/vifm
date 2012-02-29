@@ -121,6 +121,9 @@
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
+/* -n option is available for cp and mv */
+#undef SUPPORT_NO_CLOBBER
+
 /* Version number of package */
 #undef VERSION
 

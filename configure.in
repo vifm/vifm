@@ -96,6 +96,22 @@ AC_CHECK_LIB(ncursesw, initscr,
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
 dnl ----------------------------------------------------------------------------
+dnl check for gnu coreutils version
+dnl ----------------------------------------------------------------------------
+
+min_version="7.1"
+version="$(mv --version | sed -ne 's/^.*(GNU coreutils) //p')"
+
+major="${version%.*}"
+minor="${version#*.}"
+min_major="${min_version%.*}"
+min_minor="${min_version#*.}"
+
+if test $major -ge $min_major -a $minor -ge $min_minor ; then
+	AC_DEFINE([SUPPORT_NO_CLOBBER], [1], [-n option is available for cp and mv])
+fi
+
+dnl ----------------------------------------------------------------------------
 dnl checks for external libraries
 dnl ----------------------------------------------------------------------------
 

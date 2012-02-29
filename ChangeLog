@@ -2,6 +2,9 @@
 
 	Leave leading zeros on Ctrl-A/X commands.
 
+	Check coreutils version on configuring to omit using of -n option with
+	coreutils of versions prior to 7.1.
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.

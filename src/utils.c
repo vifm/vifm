@@ -433,7 +433,7 @@ fill_version_info(char **list)
 	int x = 0;
 
 	if(list == NULL)
-		return 10;
+		return 16; /* ask for more than needed */
 
 	list[x++] = strdup("Version: " VERSION);
 	list[x] = malloc(sizeof("Git commit hash: ") + strlen(GIT_HASH) + 1);
@@ -475,6 +475,14 @@ fill_version_info(char **list)
 	list[x++] = strdup("With file program");
 #else
 	list[x++] = strdup("Without file program");
+#endif
+
+#ifdef SUPPORT_NO_CLOBBER
+	list[x++] = strdup("With -n option for cp and mv");
+#else
+#ifndef _WIN32
+	list[x++] = strdup("With -n option for cp and mv");
+#endif /* _WIN32 */
 #endif
 
 	return x;

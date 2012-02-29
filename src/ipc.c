@@ -33,6 +33,7 @@
 
 #include "log.h"
 #include "macros.h"
+#include "status.h"
 #include "string_array.h"
 #include "utils.h"
 
@@ -136,7 +137,7 @@ try_become_a_server(void)
 	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	addr.sin_port = htons(PORT);
 	server = bind(sock, (struct sockaddr *)&addr, sizeof(addr)) != -1;
-	if(!server)
+	if(!server && curr_stats.load_stage < 3)
 	{
 		LOG_SERROR_MSG(errno, "Can't become an IPC sever");
 	}
