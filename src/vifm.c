@@ -162,7 +162,8 @@ load_initial_directory(FileView *view, const char *dir)
 	view->dir_entry[0].type = DIRECTORY;
 
 	view->list_rows = 1;
-	chosp(view->curr_dir);
+	if(!is_root_dir(view->curr_dir))
+		chosp(view->curr_dir);
 	(void)change_directory(view, dir);
 }
 

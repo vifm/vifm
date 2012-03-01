@@ -1477,14 +1477,7 @@ realpath(const char *path, char *buf)
 	buf[0] = '\0';
 	if(!is_path_absolute(path) && GetCurrentDirectory(PATH_MAX, buf) > 0)
 	{
-		int i;
-
-		for(i = 0; buf[i] != '\0'; i++)
-		{
-			if(buf[i] == '\\')
-				buf[i] = '/';
-		}
-
+		to_forward_slash(buf);
 		chosp(buf);
 		strcat(buf, "/");
 	}

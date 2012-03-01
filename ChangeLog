@@ -23,6 +23,8 @@
 
 	Fixed small issue with tabs in quick view and 'nowrap'.
 
+	Fixed displaying of wrong drive paths in history menu ("d:" or "c:").
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.
