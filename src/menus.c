@@ -1784,7 +1784,7 @@ show_history_menu(FileView *view)
 		int y;
 		if(strlen(view->history[x].dir) < 1)
 			break;
-		if(!is_dir(view->history[x].dir))
+		if(!is_valid_dir(view->history[x].dir))
 			continue;
 		for(y = x + 1; y < view->history_num && y < cfg.history_len; y++)
 			if(pathcmp(view->history[x].dir, view->history[y].dir) == 0)

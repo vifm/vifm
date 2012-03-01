@@ -7,6 +7,8 @@
 
 	Allow bookmarking of host names on Windows (e.g. //ZX-SPECTRUM).
 
+	Show host's root in history menu (e.g. //ZX_SPECTRUM).
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.
