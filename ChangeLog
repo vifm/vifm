@@ -5,6 +5,8 @@
 	Check coreutils version on configuring to omit using of -n option with
 	coreutils of versions prior to 7.1.
 
+	Allow bookmarking of host names on Windows (e.g. //ZX-SPECTRUM).
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.

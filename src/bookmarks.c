@@ -94,7 +94,7 @@ is_bookmark(const int x)
 	/* the bookmark is valid if the file and the directory exists */
 	if(is_bookmark_empty(x))
 		return 0;
-	else if(is_dir(bookmarks[x].directory))
+	else if(is_valid_dir(bookmarks[x].directory))
 		return 1;
 	else
 		return 0;
@@ -200,7 +200,7 @@ move_to_bookmark(FileView *view, char mark)
 	{
 		if(!isalnum(mark))
 			status_bar_message("Invalid mark name");
-		else if(!is_dir(bookmarks[x].directory))
+		else if(!is_valid_dir(bookmarks[x].directory))
 			status_bar_message("Mark is invalid");
 		else
 			status_bar_message("Mark is not set");
