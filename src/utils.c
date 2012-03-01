@@ -97,13 +97,13 @@ static int x_error_check(Display *dpy, XErrorEvent *error_event);
 static void set_terminal_title(const char *path);
 
 int
-is_dir(const char *file)
+is_dir(const char *path)
 {
 #ifndef _WIN32
 	struct stat statbuf;
-	if(stat(file, &statbuf) != 0)
+	if(stat(path, &statbuf) != 0)
 	{
-		LOG_SERROR_MSG(errno, "Can't stat \"%s\"", file);
+		LOG_SERROR_MSG(errno, "Can't stat \"%s\"", path);
 		log_cwd();
 		return 0;
 	}
@@ -112,24 +112,30 @@ is_dir(const char *file)
 #else
 	DWORD attr;
 
-	if(is_path_absolute(file) && !is_unc_path(file))
+	if(is_path_absolute(path) && !is_unc_path(path))
 	{
-		char buf[] = {file[0], ':', '\\', '\0'};
+		char buf[] = {path[0], ':', '\\', '\0'};
 		UINT type = GetDriveTypeA(buf);
 		if(type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR)
 			return 0;
 	}
 
-	attr = GetFileAttributesA(file);
+	attr = GetFileAttributesA(path);
 	if(attr == INVALID_FILE_ATTRIBUTES)
 	{
-		LOG_SERROR_MSG(errno, "Can't get attributes of \"%s\"", file);
+		LOG_SERROR_MSG(errno, "Can't get attributes of \"%s\"", path);
 		log_cwd();
 		return 0;
 	}
 
 	return (attr & FILE_ATTRIBUTE_DIRECTORY);
 #endif
+}
+
+int
+is_valid_dir(const char *path)
+{
+	return is_dir(path) || is_unc_root(path);
 }
 
 /* Checks whether path/file exists. path can be NULL */

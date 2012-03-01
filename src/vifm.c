@@ -324,7 +324,7 @@ check_path(FileView *view, const char *path)
 static void
 exclude_file_name(char *path)
 {
-	if(file_exists(NULL, path) && !is_dir(path) && !is_unc_root(path))
+	if(file_exists(NULL, path) && !is_valid_dir(path))
 		break_atr(path, '/');
 }
 
