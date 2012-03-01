@@ -55,6 +55,13 @@ A: The only way to do this is using :execute command.  Example:
 
 --------------------------------------------------------------------------------
 
+Q: Is there a way to copy/paste without sending to trash first?
+
+A: Yes, to do that, one should yank (copy) files as usual, but use "P" key (not
+"p") to put (paste) them into current directory.
+
+--------------------------------------------------------------------------------
+
 Q: How can I help vifm?
 
 A: Just use it and report any problems, bugs and suggestions to its developers

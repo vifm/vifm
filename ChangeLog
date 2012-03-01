@@ -5,6 +5,10 @@
 	Check coreutils version on configuring to omit using of -n option with
 	coreutils of versions prior to 7.1.
 
+	Allow bookmarking of host names on Windows (e.g. //ZX-SPECTRUM).
+
+	Show host's root in history menu (e.g. //ZX_SPECTRUM).
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.
@@ -18,6 +22,8 @@
 	Fixed work of Ctrl-A and Ctrl-X commands on selection.
 
 	Fixed small issue with tabs in quick view and 'nowrap'.
+
+	Fixed displaying of wrong drive paths in history menu ("d:" or "c:").
 
 0.7.1 to 0.7.2
 

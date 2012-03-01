@@ -57,7 +57,10 @@ extern struct fuse_mount_t *fuse_mounts;
 
 void chomp(char *text);
 void chosp(char *text);
-int is_dir(const char *file);
+/* Checks if path is an existing directory. */
+int is_dir(const char *path);
+/* Checks if path could be a directory (e.g. it can be UNC root on Windows). */
+int is_valid_dir(const char *path);
 /* if path is NULL, file assumed to contain full path */
 int file_exists(const char *path, const char *file);
 int my_system(char *command);
