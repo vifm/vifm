@@ -1635,7 +1635,7 @@ change_directory(FileView *view, const char *directory)
 	if(!is_root_dir(dir_dup))
 		chosp(dir_dup);
 
-	if(!is_dir(dir_dup))
+	if(!is_dir(dir_dup) && !is_unc_root(dir_dup))
 	{
 		(void)show_error_msgf("Directory Access Error", "Cannot open %s", dir_dup);
 		leave_invalid_dir(view, dir_dup);
