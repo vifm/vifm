@@ -1782,14 +1782,14 @@ show_history_menu(FileView *view)
 	for(x = 0; x < view->history_num && x < cfg.history_len; x++)
 	{
 		int y;
-		if(strlen(view->history[x].dir) < 1)
+		if(view->history[x].dir[0] == '\0')
 			break;
-		if(!is_valid_dir(view->history[x].dir))
-			continue;
 		for(y = x + 1; y < view->history_num && y < cfg.history_len; y++)
 			if(pathcmp(view->history[x].dir, view->history[y].dir) == 0)
 				break;
 		if(y < view->history_num && y < cfg.history_len)
+			continue;
+		if(!is_valid_dir(view->history[x].dir))
 			continue;
 
 		/* Change the current dir to reflect the current file. */
