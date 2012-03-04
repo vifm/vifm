@@ -3552,25 +3552,12 @@ filextype_cmd(const cmd_info_t *cmd_info)
 static int
 add_filetype(const cmd_info_t *cmd_info, int x)
 {
-	const char *description = "";
 	const char *progs;
 
 	progs = skip_non_whitespace(cmd_info->args);
 	progs = skip_whitespace(progs + 1);
-	if(*progs == '{')
-	{
-		char *p = strchr(progs + 1, '}');
-		if(p != NULL)
-		{
-			if(p[1] == '\0')
-				return CMDS_ERR_TOO_FEW_ARGS;
-			*p = '\0';
-			description = progs + 1;
-			progs = skip_whitespace(p + 1);
-		}
-	}
 
-	set_programs(cmd_info->argv[0], progs, description, x);
+	set_programs(cmd_info->argv[0], progs, x);
 	return 0;
 }
 

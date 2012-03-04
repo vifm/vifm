@@ -585,24 +585,6 @@ get_history(FileView *view, int reread, const char *dir, const char *file,
 		view->list_rows = 0;
 }
 
-static void
-get_filetype(const char *patterns, char *progs, int x)
-{
-	const char *description = "";
-	if(*progs == '{')
-	{
-		char *p = strchr(progs + 1, '}');
-		if(p != NULL)
-		{
-			*p = '\0';
-			description = progs + 1;
-			progs = p + 1;
-		}
-	}
-
-	set_programs(patterns, progs, description, 0);
-}
-
 void
 read_info_file(int reread)
 {
@@ -630,7 +612,7 @@ read_info_file(int reread)
 			if(fgets(line2, sizeof(line2), fp) == line2)
 			{
 				prepare_line(line2);
-				get_filetype(line + 1, line2, 0);
+				set_programs(line + 1, line2, 0);
 			}
 		}
 		else if(line[0] == 'x') /* xfiletype */
@@ -638,7 +620,7 @@ read_info_file(int reread)
 			if(fgets(line2, sizeof(line2), fp) == line2)
 			{
 				prepare_line(line2);
-				get_filetype(line + 1, line2, 1);
+				set_programs(line + 1, line2, 1);
 			}
 		}
 		else if(line[0] == ',') /* fileviewer */

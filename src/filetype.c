@@ -25,7 +25,9 @@
 #include <string.h>
 
 #include "config.h"
+#include "menus.h"
 #include "status.h"
+#include "utils.h"
 
 #include "filetype.h"
 
@@ -35,8 +37,7 @@
 static assoc_t *active_filetypes;
 static int nfiletypes;
 
-static void assoc_programs(const char *pattern, const char *programs,
-		const char *description, int for_x);
+static void assoc_programs(const char *pattern, const char *programs, int for_x);
 static void register_assoc(assoc_t assoc, int for_x);
 static int add_assoc(assoc_t **arr, int count, assoc_t assoc);
 static void assoc_viewer(const char *pattern, const char *viewer);
@@ -269,13 +270,12 @@ get_all_programs_for_file(const char *file)
 }
 
 void
-set_programs(const char *patterns, const char *programs,
-		const char *description, int x)
+set_programs(const char *patterns, const char *programs, int x)
 {
 	char *exptr;
 	if((exptr = strchr(patterns, ',')) == NULL)
 	{
-		assoc_programs(patterns, programs, description, x);
+		assoc_programs(patterns, programs, x);
 	}
 	else
 	{
@@ -285,23 +285,21 @@ set_programs(const char *patterns, const char *programs,
 		{
 			*exptr++ = '\0';
 
-			assoc_programs(ex_copy, programs, description, x);
+			assoc_programs(ex_copy, programs, x);
 
 			ex_copy = exptr;
 		}
-		assoc_programs(ex_copy, programs, description, x);
+		assoc_programs(ex_copy, programs, x);
 		free(free_this);
 	}
 }
 
 static void
-assoc_programs(const char *pattern, const char *programs,
-		const char *description, int for_x)
+assoc_programs(const char *pattern, const char *programs, int for_x)
 {
 	assoc_t assoc;
-	char *prog_copy;
+	char *prog;
 	char *free_this;
-	int count = 0;
 
 	if(pattern[0] == '\0')
 	{
@@ -312,46 +310,50 @@ assoc_programs(const char *pattern, const char *programs,
 	assoc.programs.list = NULL;
 	assoc.programs.count = 0;
 
-	prog_copy = strdup(programs);
-	free_this = prog_copy;
+	prog = strdup(programs);
+	free_this = prog;
 
-	while(prog_copy != NULL)
+	while(prog != NULL)
 	{
 		char *ptr;
-		char *ptr1;
+		const char *description = "";
 
-		if((ptr = ptr1 = strchr(prog_copy, ',')) != NULL)
+		if((ptr = strchr(prog, ',')) != NULL)
 		{
 			while(ptr != NULL && ptr[1] == ',')
 			{
-				ptr = ptr1 = strchr(ptr + 2, ',');
+				ptr = strchr(ptr + 2, ',');
 			}
-			if(ptr == NULL)
+			if(ptr != NULL)
 			{
-				break;
+				*ptr = '\0';
+				ptr++;
 			}
-
-			*ptr = '\0';
-			ptr1++;
 		}
 
-		while(isspace(*prog_copy) || *prog_copy == ',')
+		while(isspace(*prog) || *prog == ',')
 		{
-			prog_copy++;
+			prog++;
 		}
 
-		if(prog_copy[0] != '\0')
+		if(*prog == '{')
 		{
-			assoc.programs.list = realloc(assoc.programs.list,
-					sizeof(assoc_prog_t)*(count + 1));
-			replace_double_comma(prog_copy, 0);
-			assoc.programs.list[count].com = strdup(prog_copy);
-			assoc.programs.list[count].description = strdup(description);
-			count++;
+			char *p = strchr(prog + 1, '}');
+			if(p != NULL)
+			{
+				*p = '\0';
+				description = prog + 1;
+				prog = skip_whitespace(p + 1);
+			}
 		}
-		prog_copy = ptr1;
+
+		if(prog[0] != '\0')
+		{
+			replace_double_comma(prog, 0);
+			add_assoc_prog(&assoc.programs, prog, description);
+		}
+		prog = ptr;
 	}
-	assoc.programs.count = count;
 
 	free(free_this);
 

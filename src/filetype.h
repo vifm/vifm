@@ -52,8 +52,7 @@ assoc_t *fileviewers;
 /* Returns non-zero on success. */
 int get_default_program_for_file(const char *file, assoc_prog_t *result);
 char * get_viewer_for_file(char *file);
-void set_programs(const char *patterns, const char *programs,
-		const char *description, int x);
+void set_programs(const char *patterns, const char *programs, int x);
 void set_fileviewer(const char *patterns, const char *viewer);
 /* Caller should free only the array, but not its elements. */
 assoc_progs_t get_all_programs_for_file(const char *file);

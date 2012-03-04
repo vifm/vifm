@@ -846,7 +846,7 @@ The builtin commands are:
     opening menu.
 
                                                *vifm-:filetype* *vifm-:filet*
-:filet[ype] pat1,pat2,... [{ description }] def_program[ &],program2[ &],...
+:filet[ype] pat1,pat2,... [{ descr }]def_program[ &],[{ descr }]prog2[ &],...
     will associate given program list to each of the patterns.  Associated
     program (command) is used by handlers of l and Enter keys (and also in
     the :file menu).  *, ?, [ and ] are treated as special symbols in the
@@ -855,8 +855,8 @@ The builtin commands are:
     beginning don't match dot in the first position.  If you need to insert
     comma into command just double it (",,").  Space followed by an
     ampersand as two last characters of a command means running of the
-    command in the background.  Optional description can be given to ease
-    understanding of what command will do in the :file menu.
+    command in the background.  Optional description can be given to each
+    command to ease understanding of what command will do in the :file menu.
 
                                                *vifm-:filextype* *vifm-:filex*
 :filex[type] pat1,pat2,... [{ description }] def_program,program2,... - same
