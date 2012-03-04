@@ -43,19 +43,19 @@
 
 #include "file_magic.h"
 
-static assoc_progs_t handlers;
+static assoc_records_t handlers;
 
 static int get_gtk_mimetype(const char *filename, char *buf);
 static int get_magic_mimetype(const char *filename, char *buf);
 static int get_file_mimetype(const char *filename, char *buf, size_t buf_sz);
-static assoc_progs_t get_handlers(const char *mime_type);
+static assoc_records_t get_handlers(const char *mime_type);
 #ifndef _WIN32
 static void enum_files(const char *path, const char *mime_type);
 static void process_file(const char *path, const char *mime_type);
 static void expand_desktop(const char *str, char *buf);
 #endif
 
-assoc_progs_t
+assoc_records_t
 get_magic_handlers(const char *file)
 {
 	return get_handlers(get_mimetype(file));
@@ -155,12 +155,12 @@ get_file_mimetype(const char *filename, char *buf, size_t buf_sz)
 #endif /* #ifdef HAVE_FILE_PROG */
 }
 
-static assoc_progs_t
+static assoc_records_t
 get_handlers(const char *mime_type)
 {
 	int i;
 	for(i = 0; i < handlers.count; i++)
-		free_assoc_prog(&handlers.list[i]);
+		free_assoc_record(&handlers.list[i]);
 	handlers.list = NULL;
 	handlers.count = 0;
 
@@ -242,7 +242,7 @@ process_file(const char *path, const char *mime_type)
 
 	expand_desktop(exec_buf + 5, buf);
 
-	add_assoc_prog(&handlers, buf, "");
+	add_assoc_record(&handlers, buf, "");
 }
 
 static void

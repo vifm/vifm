@@ -42,9 +42,6 @@ typedef struct
 	int use_screen;
 	int use_vim_help;
 	int command_num;
-	int filetypes_num;
-	int xfiletypes_num;
-	int fileviewers_num;
 	int history_len;
 
 	int auto_execute;

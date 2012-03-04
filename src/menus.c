@@ -92,9 +92,9 @@ enum
 };
 
 /* Returns pointer to a statically allocated buffer */
-static const char * form_filetype_entry(assoc_prog_t prog, int descr_width);
+static const char * form_filetype_entry(assoc_record_t prog, int descr_width);
 /* Returns non-zero on successful running. */
-static int try_run_with_filetype(FileView *view, const assoc_progs_t assocs,
+static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char *start, int background);
 
 static void
@@ -1478,8 +1478,8 @@ show_filetypes_menu(FileView *view, int background)
 	int max_len;
 
 	char *filename = get_current_file_name(view);
-	assoc_progs_t ft = get_all_programs_for_file(filename);
-	const assoc_progs_t magic = get_magic_handlers(filename);
+	assoc_records_t ft = get_all_programs_for_file(filename);
+	assoc_records_t magic = get_magic_handlers(filename);
 
 	if(ft.count == 0 && magic.count == 0)
 	{
@@ -1534,8 +1534,6 @@ show_filetypes_menu(FileView *view, int background)
 		m.len = add_to_string_array(&m.data, m.len, 1,
 			form_filetype_entry(magic.list[i], max_len));
 
-	free(magic.list);
-
 	setup_menu();
 	draw_menu(&m);
 	move_to_menu_pos(m.pos, &m);
@@ -1545,7 +1543,7 @@ show_filetypes_menu(FileView *view, int background)
 }
 
 static const char *
-form_filetype_entry(assoc_prog_t prog, int descr_width)
+form_filetype_entry(assoc_record_t prog, int descr_width)
 {
 	static char result[PATH_MAX];
 	if(descr_width > 0)
@@ -1559,11 +1557,11 @@ form_filetype_entry(assoc_prog_t prog, int descr_width)
 		{
 			snprintf(format, sizeof(format), "[%%-%ds] %%s", descr_width);
 		}
-		snprintf(result, sizeof(result), format, prog.description, prog.com);
+		snprintf(result, sizeof(result), format, prog.description, prog.command);
 	}
 	else
 	{
-		snprintf(result, sizeof(result), "%s", prog.com);
+		snprintf(result, sizeof(result), "%s", prog.command);
 	}
 	return result;
 }
@@ -1574,8 +1572,8 @@ run_with_filetype(FileView *view, const char *beginning, int background)
 	size_t len = strlen(beginning);
 
 	char *filename = get_current_file_name(view);
-	assoc_progs_t ft = get_all_programs_for_file(filename);
-	const assoc_progs_t magic = get_magic_handlers(filename);
+	assoc_records_t ft = get_all_programs_for_file(filename);
+	assoc_records_t magic = get_magic_handlers(filename);
 
 	if(view->dir_entry[view->list_pos].type == DIRECTORY &&
 			strncmp(VIFM_PREUDO_CMD, beginning, len) == 0)
@@ -1596,16 +1594,16 @@ run_with_filetype(FileView *view, const char *beginning, int background)
 }
 
 static int
-try_run_with_filetype(FileView *view, const assoc_progs_t assocs,
+try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char *start, int background)
 {
 	const size_t len = strlen(start);
 	int i;
 	for(i = 0; i < assocs.count; i++)
 	{
-		if(strncmp(assocs.list[i].com, start, len) == 0)
+		if(strncmp(assocs.list[i].command, start, len) == 0)
 		{
-			run_using_prog(view, assocs.list[i].com, 0, background);
+			run_using_prog(view, assocs.list[i].command, 0, background);
 			return 1;
 		}
 	}

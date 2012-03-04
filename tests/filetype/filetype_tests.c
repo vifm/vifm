@@ -8,47 +8,47 @@
 static void
 test_one_pattern(void)
 {
-	assoc_prog_t program;
+	assoc_record_t program;
 
 	set_programs("*.tar", "tar prog", 0);
 
 	assert_true(get_default_program_for_file("file.version.tar", &program));
-	if(program.com != NULL)
-		assert_string_equal("tar prog", program.com);
-	free_assoc_prog(&program);
+	if(program.command != NULL)
+		assert_string_equal("tar prog", program.command);
+	free_assoc_record(&program);
 }
 
 static void
 test_many_pattern(void)
 {
-	assoc_prog_t program;
+	assoc_record_t program;
 
 	set_programs("*.tar", "tar prog", 0);
 	set_programs("*.tar.gz", "tar.gz prog", 0);
 
 	assert_true(get_default_program_for_file("file.version.tar.gz", &program));
-	if(program.com != NULL)
-		assert_string_equal("tar.gz prog", program.com);
-	free_assoc_prog(&program);
+	if(program.command != NULL)
+		assert_string_equal("tar.gz prog", program.command);
+	free_assoc_record(&program);
 }
 
 static void
 test_many_filepattern(void)
 {
-	assoc_prog_t program;
+	assoc_record_t program;
 
 	set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0);
 
 	assert_true(get_default_program_for_file("file.version.tar.gz", &program));
-	if(program.com != NULL)
-		assert_string_equal("tar.gz prog", program.com);
-	free_assoc_prog(&program);
+	if(program.command != NULL)
+		assert_string_equal("tar.gz prog", program.command);
+	free_assoc_record(&program);
 }
 
 static void
 test_dont_match_hidden(void)
 {
-	assoc_prog_t program;
+	assoc_record_t program;
 
 	set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0);
 
@@ -58,20 +58,20 @@ test_dont_match_hidden(void)
 static void
 test_match_empty(void)
 {
-	assoc_prog_t program;
+	assoc_record_t program;
 
 	set_programs("a*bc", "empty prog", 0);
 
 	assert_true(get_default_program_for_file("abc", &program));
-	if(program.com != NULL)
-		assert_string_equal("empty prog", program.com);
-	free_assoc_prog(&program);
+	if(program.command != NULL)
+		assert_string_equal("empty prog", program.command);
+	free_assoc_record(&program);
 }
 
 static void
 test_match_full_line(void)
 {
-	assoc_prog_t program;
+	assoc_record_t program;
 
 	set_programs("abc", "full prog", 0);
 
@@ -80,68 +80,68 @@ test_match_full_line(void)
 	assert_false(get_default_program_for_file("0abcd", &program));
 
 	assert_true(get_default_program_for_file("abc", &program));
-	if(program.com != NULL)
-		assert_string_equal("full prog", program.com);
-	free_assoc_prog(&program);
+	if(program.command != NULL)
+		assert_string_equal("full prog", program.command);
+	free_assoc_record(&program);
 }
 
 static void
 test_match_qmark(void)
 {
-	assoc_prog_t program;
+	assoc_record_t program;
 
 	set_programs("a?c", "full prog", 0);
 
 	assert_false(get_default_program_for_file("ac", &program));
 
 	assert_true(get_default_program_for_file("abc", &program));
-	if(program.com != NULL)
-		assert_string_equal("full prog", program.com);
-	free_assoc_prog(&program);
+	if(program.command != NULL)
+		assert_string_equal("full prog", program.command);
+	free_assoc_record(&program);
 }
 
 static void
 test_qmark_escaping(void)
 {
-	assoc_prog_t program;
+	assoc_record_t program;
 
 	set_programs("a\\?c", "qmark prog", 0);
 
 	assert_false(get_default_program_for_file("abc", &program));
 
 	assert_true(get_default_program_for_file("a?c", &program));
-	if(program.com != NULL)
-		assert_string_equal("qmark prog", program.com);
-	free_assoc_prog(&program);
+	if(program.command != NULL)
+		assert_string_equal("qmark prog", program.command);
+	free_assoc_record(&program);
 }
 
 static void
 test_star_escaping(void)
 {
-	assoc_prog_t program;
+	assoc_record_t program;
 
 	set_programs("a\\*c", "star prog", 0);
 
 	assert_false(get_default_program_for_file("abc", &program));
 
 	assert_true(get_default_program_for_file("a*c", &program));
-	if(program.com != NULL)
-		assert_string_equal("star prog", program.com);
-	free_assoc_prog(&program);
+	if(program.command != NULL)
+		assert_string_equal("star prog", program.command);
+	free_assoc_record(&program);
 }
 
 static void
 test_star_and_dot(void)
 {
-	assoc_prog_t program;
+	assoc_record_t program;
 
 	curr_stats.is_console = 1;
 	set_programs("*.doc", "libreoffice", 0);
 
 	assert_true(get_default_program_for_file("a.doc", &program));
-	if(program.com != NULL)
-		assert_string_equal("libreoffice", program.com);
-	free_assoc_prog(&program);
+	if(program.command != NULL)
+		assert_string_equal("libreoffice", program.command);
+	free_assoc_record(&program);
 
 	assert_false(get_default_program_for_file(".a.doc", &program));
 	assert_false(get_default_program_for_file(".doc", &program));
@@ -149,9 +149,9 @@ test_star_and_dot(void)
 	set_programs(".*.doc", "hlibreoffice", 0);
 
 	assert_true(get_default_program_for_file(".a.doc", &program));
-	if(program.com != NULL)
-		assert_string_equal("hlibreoffice", program.com);
-	free_assoc_prog(&program);
+	if(program.command != NULL)
+		assert_string_equal("hlibreoffice", program.command);
+	free_assoc_record(&program);
 }
 
 void

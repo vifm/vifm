@@ -140,7 +140,7 @@ static void complete_help(const char *str);
 static void complete_history(const char *str);
 static int complete_chown(const char *str);
 static void complete_filetype(const char *str);
-static void complete_progs(const char *str, assoc_progs_t progs);
+static void complete_progs(const char *str, assoc_records_t records);
 static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
 static void complete_winrun(const char *str);
@@ -976,6 +976,7 @@ complete_filetype(const char *str)
 {
 	const size_t len = strlen(str);
 	const char *filename = get_current_file_name(curr_view);
+	assoc_records_t ft = get_all_programs_for_file(filename);
 
 	if(curr_view->dir_entry[curr_view->list_pos].type == DIRECTORY &&
 			strncmp(VIFM_PREUDO_CMD, str, len) == 0)
@@ -983,29 +984,28 @@ complete_filetype(const char *str)
 		add_completion(VIFM_PREUDO_CMD);
 	}
 
-	complete_progs(str, get_all_programs_for_file(filename));
+	complete_progs(str, ft);
+	free(ft.list);
+
 	complete_progs(str, get_magic_handlers(filename));
 
 	completion_group_end();
 	add_completion(str);
 }
 
-/* This function frees list of programs passed to it. */
 static void
-complete_progs(const char *str, assoc_progs_t progs)
+complete_progs(const char *str, assoc_records_t records)
 {
 	int i;
 	const size_t len = strlen(str);
 
-	for(i = 0; i < progs.count; i++)
+	for(i = 0; i < records.count; i++)
 	{
-		if(strncmp(progs.list[i].com, str, len) == 0)
+		if(strncmp(records.list[i].command, str, len) == 0)
 		{
-			add_completion(progs.list[i].com);
+			add_completion(records.list[i].command);
 		}
 	}
-
-	free(progs.list);
 }
 
 static void
@@ -3550,24 +3550,24 @@ filextype_cmd(const cmd_info_t *cmd_info)
 static int
 add_filetype(const cmd_info_t *cmd_info, int x)
 {
-	const char *progs;
+	const char *records;
 
-	progs = skip_non_whitespace(cmd_info->args);
-	progs = skip_whitespace(progs + 1);
+	records = skip_non_whitespace(cmd_info->args);
+	records = skip_whitespace(records + 1);
 
-	set_programs(cmd_info->argv[0], progs, x);
+	set_programs(cmd_info->argv[0], records, x);
 	return 0;
 }
 
 static int
 fileviewer_cmd(const cmd_info_t *cmd_info)
 {
-	const char *progs;
+	const char *records;
 
-	progs = skip_non_whitespace(cmd_info->args);
-	progs = skip_whitespace(progs + 1);
+	records = skip_non_whitespace(cmd_info->args);
+	records = skip_whitespace(records + 1);
 
-	set_fileviewer(cmd_info->argv[0], progs);
+	set_fileviewer(cmd_info->argv[0], records);
 	return 0;
 }
 

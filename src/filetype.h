@@ -24,48 +24,55 @@
 
 typedef struct
 {
-	char *com;
+	char *command;
 	char *description;
 }
-assoc_prog_t;
+assoc_record_t;
 
 /* It's guarantied that for existent association there is at least on element in
- * the programs list */
+ * the records list */
 typedef struct
 {
-	assoc_prog_t *list;
+	assoc_record_t *list;
 	int count;
 }
-assoc_progs_t;
+assoc_records_t;
 
 typedef struct
 {
 	char *pattern;
-	assoc_progs_t programs;
+	assoc_records_t records;
 }
 assoc_t;
 
-const assoc_prog_t VIFM_PREUDO_PROG;
+typedef struct
+{
+	assoc_t *list;
+	int count;
+}
+assoc_list_t;
 
-assoc_t *filetypes;
-assoc_t *xfiletypes;
-assoc_t *fileviewers;
+const assoc_record_t VIFM_PREUDO_PROG;
+
+assoc_list_t filetypes;
+assoc_list_t xfiletypes;
+assoc_list_t fileviewers;
 
 /* Returns non-zero on success. */
-int get_default_program_for_file(const char *file, assoc_prog_t *result);
+int get_default_program_for_file(const char *file, assoc_record_t *result);
 char * get_viewer_for_file(char *file);
 void set_programs(const char *patterns, const char *programs, int x);
 void set_fileviewer(const char *patterns, const char *viewer);
 /* Caller should free only the array, but not its elements. */
-assoc_progs_t get_all_programs_for_file(const char *file);
+assoc_records_t get_all_programs_for_file(const char *file);
 /* Resets associations set by :filetype, :filextype and :fileviewer commands. */
 void reset_all_file_associations(void);
 /* After this call structure contains NULL values */
-void free_assoc_prog(assoc_prog_t *assoc_prog);
-void add_assoc_prog(assoc_progs_t *assocs, const char *program,
+void free_assoc_record(assoc_record_t *record);
+void add_assoc_record(assoc_records_t *assocs, const char *command,
 		const char *description);
-/* Returns non-zero for an empty assoc_prog_t structure. */
-int assoc_prog_is_empty(const assoc_prog_t *assoc_prog);
+/* Returns non-zero for an empty assoc_record_t structure. */
+int assoc_prog_is_empty(const assoc_record_t *record);
 
 #ifdef TEST
 void replace_double_comma(char *cmd, int put_null);

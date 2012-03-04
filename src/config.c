@@ -86,9 +86,6 @@ init_config(void)
 
 	cfg.num_bookmarks = 0;
 	cfg.command_num = 0;
-	cfg.filetypes_num = 0;
-	cfg.xfiletypes_num = 0;
-	cfg.fileviewers_num = 0;
 	cfg.vim_filter = 0;
 	cfg.show_one_window = 0;
 
@@ -888,11 +885,11 @@ write_info_file(void)
 			{
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
-					assoc_prog_t prog;
+					assoc_record_t prog;
 					curr_stats.is_console = 1;
 					if(get_default_program_for_file(line + 1, &prog))
 					{
-						free_assoc_prog(&prog);
+						free_assoc_record(&prog);
 						continue;
 					}
 					prepare_line(line2);
@@ -903,22 +900,22 @@ write_info_file(void)
 			{
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
-					assoc_prog_t x_prog;
+					assoc_record_t x_prog;
 					curr_stats.is_console = 0;
 					if(get_default_program_for_file(line + 1, &x_prog))
 					{
-						assoc_prog_t console_prog;
+						assoc_record_t console_prog;
 						curr_stats.is_console = 1;
 						if(get_default_program_for_file(line + 1, &console_prog))
 						{
-							if(strcmp(x_prog.com, console_prog.com) == 0)
+							if(strcmp(x_prog.command, console_prog.command) == 0)
 							{
-								free_assoc_prog(&console_prog);
-								free_assoc_prog(&x_prog);
+								free_assoc_record(&console_prog);
+								free_assoc_record(&x_prog);
 								continue;
 							}
 						}
-						free_assoc_prog(&x_prog);
+						free_assoc_record(&x_prog);
 					}
 					prepare_line(line2);
 					nfx = add_to_string_array(&fx, nfx, 2, line + 1, line2);
@@ -1149,39 +1146,39 @@ write_info_file(void)
 	if(cfg.vifm_info & VIFMINFO_FILETYPES)
 	{
 		fputs("\n# Filetypes:\n", fp);
-		for(i = 0; i < cfg.filetypes_num; i++)
+		for(i = 0; i < filetypes.count; i++)
 		{
 			int j;
-			for(j = 0; j < filetypes[i].programs.count; j++)
-				if(filetypes[i].programs.list[j].com[0] != '\0')
-					fprintf(fp, ".%s\n\t{%s}%s\n", filetypes[i].pattern,
-							filetypes[i].programs.list[j].description,
-							filetypes[i].programs.list[j].com);
+			for(j = 0; j < filetypes.list[i].records.count; j++)
+				if(filetypes.list[i].records.list[j].command[0] != '\0')
+					fprintf(fp, ".%s\n\t{%s}%s\n", filetypes.list[i].pattern,
+							filetypes.list[i].records.list[j].description,
+							filetypes.list[i].records.list[j].command);
 		}
 		for(i = 0; i < nft; i += 2)
 			fprintf(fp, ".%s\n\t%s\n", ft[i], ft[i + 1]);
 
 		fputs("\n# X Filetypes:\n", fp);
-		for(i = 0; i < cfg.xfiletypes_num; i++)
+		for(i = 0; i < xfiletypes.count; i++)
 		{
 			int j;
-			for(j = 0; j < xfiletypes[i].programs.count; j++)
-				if(xfiletypes[i].programs.list[j].com[0] != '\0')
-					fprintf(fp, ".%s\n\t{%s}%s\n", xfiletypes[i].pattern,
-							xfiletypes[i].programs.list[j].description,
-							xfiletypes[i].programs.list[j].com);
+			for(j = 0; j < xfiletypes.list[i].records.count; j++)
+				if(xfiletypes.list[i].records.list[j].command[0] != '\0')
+					fprintf(fp, ".%s\n\t{%s}%s\n", xfiletypes.list[i].pattern,
+							xfiletypes.list[i].records.list[j].description,
+							xfiletypes.list[i].records.list[j].command);
 		}
 		for(i = 0; i < nfx; i += 2)
 			fprintf(fp, ".%s\n\t%s\n", fx[i], fx[i + 1]);
 
 		fputs("\n# Fileviewers:\n", fp);
-		for(i = 0; i < cfg.fileviewers_num; i++)
+		for(i = 0; i < fileviewers.count; i++)
 		{
 			int j;
-			for(j = 0; j < fileviewers[i].programs.count; j++)
-				if(fileviewers[i].programs.list[j].com[0] != '\0')
-					fprintf(fp, ",%s\n\t%s\n", fileviewers[i].pattern,
-							fileviewers[i].programs.list[j].com);
+			for(j = 0; j < fileviewers.list[i].records.count; j++)
+				if(fileviewers.list[i].records.list[j].command[0] != '\0')
+					fprintf(fp, ",%s\n\t%s\n", fileviewers.list[i].pattern,
+							fileviewers.list[i].records.list[j].command);
 		}
 		for(i = 0; i < nfv; i += 2)
 			fprintf(fp, ",%s\n\t%s\n", fv[i], fv[i + 1]);

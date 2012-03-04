@@ -605,7 +605,7 @@ execute_file(FileView *view, int dont_execute)
 {
 	/* TODO: refactor this function execute_file() */
 
-	assoc_prog_t program = {};
+	assoc_record_t program = {};
 	int undef;
 	int same;
 	int i;
@@ -616,12 +616,12 @@ execute_file(FileView *view, int dont_execute)
 
 	(void)get_default_program_for_file(view->dir_entry[view->list_pos].name,
 			&program);
-	no_multi_run += !multi_run_compat(view, program.com);
+	no_multi_run += !multi_run_compat(view, program.command);
 	undef = 0;
 	same = 1;
 	for(i = 0; i < view->list_rows; i++)
 	{
-		assoc_prog_t prog;
+		assoc_record_t prog;
 
 		if(!view->dir_entry[i].selected)
 			continue;
@@ -630,23 +630,23 @@ execute_file(FileView *view, int dont_execute)
 		{
 			show_error_msgf("Broken Link", "Destination of \"%s\" link doesn't exist",
 					view->dir_entry[i].name);
-			free_assoc_prog(&program);
+			free_assoc_record(&program);
 			return;
 		}
 
 		if(get_default_program_for_file(view->dir_entry[i].name, &prog))
 		{
-			no_multi_run += !multi_run_compat(view, prog.com);
+			no_multi_run += !multi_run_compat(view, prog.command);
 			if(assoc_prog_is_empty(&program))
 			{
-				free_assoc_prog(&program);
+				free_assoc_record(&program);
 				program = prog;
 			}
 			else
 			{
-				if(strcmp(prog.com, program.com) != 0)
+				if(strcmp(prog.command, program.command) != 0)
 					same = 0;
-				free_assoc_prog(&prog);
+				free_assoc_record(&prog);
 			}
 		}
 		else
@@ -655,18 +655,18 @@ execute_file(FileView *view, int dont_execute)
 
 	if(!same && undef == 0 && no_multi_run)
 	{
-		free_assoc_prog(&program);
+		free_assoc_record(&program);
 		(void)show_error_msg("Selection error", "Files have different programs");
 		return;
 	}
 	if(undef > 0)
 	{
-		free_assoc_prog(&program);
+		free_assoc_record(&program);
 	}
 
 	/* Check for a filetype */
 	/* vi is set as the default for any extension without a program */
-	if(program.com == NULL)
+	if(program.command == NULL)
 	{
 		if(view->dir_entry[view->list_pos].type == DIRECTORY)
 		{
@@ -695,7 +695,7 @@ execute_file(FileView *view, int dont_execute)
 	if(!no_multi_run)
 	{
 		int pos = view->list_pos;
-		free_assoc_prog(&program);
+		free_assoc_record(&program);
 
 		for(i = 0; i < view->list_rows; i++)
 		{
@@ -704,15 +704,15 @@ execute_file(FileView *view, int dont_execute)
 			view->list_pos = i;
 			(void)get_default_program_for_file(view->dir_entry[view->list_pos].name,
 					&program);
-			run_using_prog(view, program.com, dont_execute, 0);
-			free_assoc_prog(&program);
+			run_using_prog(view, program.command, dont_execute, 0);
+			free_assoc_record(&program);
 		}
 		view->list_pos = pos;
 	}
 	else
 	{
-		run_using_prog(view, program.com, dont_execute, 0);
-		free_assoc_prog(&program);
+		run_using_prog(view, program.command, dont_execute, 0);
+		free_assoc_record(&program);
 	}
 }
 
