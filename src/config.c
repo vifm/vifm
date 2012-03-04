@@ -1169,9 +1169,12 @@ write_info_file(void)
 		fputs("\n# Filetypes:\n", fp);
 		for(i = 0; i < cfg.filetypes_num; i++)
 		{
-			if(filetypes[i].program.com[0] != '\0')
-				fprintf(fp, ".%s\n\t{%s}%s\n", filetypes[i].pattern,
-						filetypes[i].program.description, filetypes[i].program.com);
+			int j;
+			for(j = 0; j < filetypes[i].programs.count; j++)
+				if(filetypes[i].programs.list[j].com[0] != '\0')
+					fprintf(fp, ".%s\n\t{%s}%s\n", filetypes[i].pattern,
+							filetypes[i].programs.list[j].description,
+							filetypes[i].programs.list[j].com);
 		}
 		for(i = 0; i < nft; i += 2)
 			fprintf(fp, ".%s\n\t%s\n", ft[i], ft[i + 1]);
@@ -1179,9 +1182,12 @@ write_info_file(void)
 		fputs("\n# X Filetypes:\n", fp);
 		for(i = 0; i < cfg.xfiletypes_num; i++)
 		{
-			if(xfiletypes[i].program.com[0] != '\0')
-				fprintf(fp, ".%s\n\t{%s}%s\n", xfiletypes[i].pattern,
-						xfiletypes[i].program.description, xfiletypes[i].program.com);
+			int j;
+			for(j = 0; j < xfiletypes[i].programs.count; j++)
+				if(xfiletypes[i].programs.list[j].com[0] != '\0')
+					fprintf(fp, ".%s\n\t{%s}%s\n", xfiletypes[i].pattern,
+							xfiletypes[i].programs.list[j].description,
+							xfiletypes[i].programs.list[j].com);
 		}
 		for(i = 0; i < nfx; i += 2)
 			fprintf(fp, ".%s\n\t%s\n", fx[i], fx[i + 1]);
@@ -1189,9 +1195,11 @@ write_info_file(void)
 		fputs("\n# Fileviewers:\n", fp);
 		for(i = 0; i < cfg.fileviewers_num; i++)
 		{
-			if(fileviewers[i].program.com[0] != '\0')
-				fprintf(fp, ",%s\n\t%s\n", fileviewers[i].pattern,
-						fileviewers[i].program.com);
+			int j;
+			for(j = 0; j < fileviewers[i].programs.count; j++)
+				if(fileviewers[i].programs.list[j].com[0] != '\0')
+					fprintf(fp, ",%s\n\t%s\n", fileviewers[i].pattern,
+							fileviewers[i].programs.list[j].com);
 		}
 		for(i = 0; i < nfv; i += 2)
 			fprintf(fp, ",%s\n\t%s\n", fv[i], fv[i + 1]);

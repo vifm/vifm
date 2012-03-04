@@ -29,8 +29,15 @@ assoc_prog_t;
 
 typedef struct
 {
+	assoc_prog_t *list;
+	int count;
+}
+assoc_progs_t;
+
+typedef struct
+{
 	char *pattern;
-	assoc_prog_t program;
+	assoc_progs_t programs;
 }
 assoc_t;
 

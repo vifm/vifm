@@ -209,8 +209,8 @@ get_default_program_for_file(const char *file, assoc_prog_t *result)
 	if(x < 0)
 		return 0;
 
-	result->com = strdup(all_filetypes[x].program.com);
-	result->description = strdup(all_filetypes[x].program.description);
+	result->com = strdup(all_filetypes[x].programs.list[0].com);
+	result->description = strdup(all_filetypes[x].programs.list[0].description);
 
 	replace_double_comma(result->com, 1);
 	return 1;
@@ -224,7 +224,7 @@ get_viewer_for_file(char *file)
 	if(x < 0)
 		return NULL;
 
-	return fileviewers[x].program.com;
+	return fileviewers[x].programs.list[0].com;
 }
 
 char *
@@ -239,11 +239,11 @@ get_all_programs_for_file(const char *file)
 		size_t new_size;
 		if(!matches_assoc(file, all_filetypes + x))
 			continue;
-		new_size = len + 1 + strlen(all_filetypes[x].program.com) + 1;
+		new_size = len + 1 + strlen(all_filetypes[x].programs.list[0].com) + 1;
 		result = realloc(result, new_size);
 		if(len > 0)
 			result[len++] = ',';
-		strcpy(result + len, all_filetypes[x].program.com);
+		strcpy(result + len, all_filetypes[x].programs.list[0].com);
 		len += strlen(result + len);
 	}
 
@@ -301,8 +301,10 @@ add_assoc(assoc_t **arr, int count, const char *pattern, const char *programs,
 	*arr = realloc(*arr, (count + 1)*sizeof(assoc_t));
 
 	(*arr)[count].pattern = strdup(pattern);
-	(*arr)[count].program.com = strdup(programs);
-	(*arr)[count].program.description = strdup(description);
+	(*arr)[count].programs.list = malloc(sizeof(assoc_prog_t));
+	(*arr)[count].programs.count = 1;
+	(*arr)[count].programs.list[0].com = strdup(programs);
+	(*arr)[count].programs.list[0].description = strdup(description);
 	return count + 1;
 }
 
@@ -351,8 +353,8 @@ assoc_viewer(const char *pattern, const char *viewer)
 	}
 	else
 	{
-		free(fileviewers[x].program.com);
-		fileviewers[x].program.com = strdup(viewer);
+		free(fileviewers[x].programs.list[0].com);
+		fileviewers[x].programs.list[0].com = strdup(viewer);
 	}
 }
 
@@ -393,8 +395,14 @@ reset_fileviewers(void)
 static void
 free_assoc(assoc_t *assoc)
 {
+	int i;
 	safe_free(&assoc->pattern);
-	free_assoc_prog(&assoc->program);
+	for(i = 0; i < assoc->programs.count; i++)
+		free_assoc_prog(&assoc->programs.list[i]);
+
+	free(assoc->programs.list);
+	assoc->programs.list = NULL;
+	assoc->programs.count = 0;
 }
 
 void
