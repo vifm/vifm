@@ -586,7 +586,7 @@ get_history(FileView *view, int reread, const char *dir, const char *file,
 }
 
 static void
-get_filetype(const char *exts, char *progs, int x)
+get_filetype(const char *patterns, char *progs, int x)
 {
 	const char *description = "";
 	if(*progs == '{')
@@ -600,7 +600,7 @@ get_filetype(const char *exts, char *progs, int x)
 		}
 	}
 
-	set_programs(exts, progs, description, 0);
+	set_programs(patterns, progs, description, 0);
 }
 
 void
@@ -1170,7 +1170,7 @@ write_info_file(void)
 		for(i = 0; i < cfg.filetypes_num; i++)
 		{
 			if(filetypes[i].program.com[0] != '\0')
-				fprintf(fp, ".%s\n\t{%s}%s\n", filetypes[i].ext,
+				fprintf(fp, ".%s\n\t{%s}%s\n", filetypes[i].pattern,
 						filetypes[i].program.description, filetypes[i].program.com);
 		}
 		for(i = 0; i < nft; i += 2)
@@ -1180,7 +1180,7 @@ write_info_file(void)
 		for(i = 0; i < cfg.xfiletypes_num; i++)
 		{
 			if(xfiletypes[i].program.com[0] != '\0')
-				fprintf(fp, ".%s\n\t{%s}%s\n", xfiletypes[i].ext,
+				fprintf(fp, ".%s\n\t{%s}%s\n", xfiletypes[i].pattern,
 						xfiletypes[i].program.description, xfiletypes[i].program.com);
 		}
 		for(i = 0; i < nfx; i += 2)
@@ -1190,7 +1190,8 @@ write_info_file(void)
 		for(i = 0; i < cfg.fileviewers_num; i++)
 		{
 			if(fileviewers[i].program.com[0] != '\0')
-				fprintf(fp, ",%s\n\t%s\n", fileviewers[i].ext, fileviewers[i].program.com);
+				fprintf(fp, ",%s\n\t%s\n", fileviewers[i].pattern,
+						fileviewers[i].program.com);
 		}
 		for(i = 0; i < nfv; i += 2)
 			fprintf(fp, ",%s\n\t%s\n", fv[i], fv[i + 1]);

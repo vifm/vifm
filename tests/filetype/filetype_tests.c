@@ -6,7 +6,7 @@
 #include "../../src/status.h"
 
 static void
-test_one_ext(void)
+test_one_pattern(void)
 {
 	assoc_prog_t program;
 
@@ -19,7 +19,7 @@ test_one_ext(void)
 }
 
 static void
-test_many_ext(void)
+test_many_pattern(void)
 {
 	assoc_prog_t program;
 
@@ -33,7 +33,7 @@ test_many_ext(void)
 }
 
 static void
-test_many_fileext(void)
+test_many_filepattern(void)
 {
 	assoc_prog_t program;
 
@@ -316,9 +316,9 @@ filetype_tests(void)
 {
 	test_fixture_start();
 
-	run_test(test_one_ext);
-	run_test(test_many_ext);
-	run_test(test_many_fileext);
+	run_test(test_one_pattern);
+	run_test(test_many_pattern);
+	run_test(test_many_filepattern);
 	run_test(test_dont_match_hidden);
 	run_test(test_match_empty);
 	run_test(test_match_full_line);

@@ -31,10 +31,11 @@
 static assoc_t *all_filetypes;
 static int nfiletypes;
 
-static void set_ext_programs(const char *extension, const char *programs,
+static void assoc_programs(const char *pattern, const char *programs,
 		const char *description, int for_x);
-static int add_assoc(assoc_t **arr, int count, const char *extension,
+static int add_assoc(assoc_t **arr, int count, const char *pattern,
 		const char *programs, const char *description);
+static void assoc_viewer(const char *pattern, const char *viewer);
 static void free_assoc(assoc_t *assoc);
 static void safe_free(char **adr);
 
@@ -130,15 +131,15 @@ matches_assoc(const char *file, const assoc_t *assoc)
 {
 	char *exptr;
 
-	/* Only one extension */
-	if((exptr = strchr(assoc->ext, ',')) == NULL)
+	/* Only one pattern */
+	if((exptr = strchr(assoc->pattern, ',')) == NULL)
 	{
-		if(global_matches(assoc->ext, file))
+		if(global_matches(assoc->pattern, file))
 			return 1;
 	}
 	else
 	{
-		char *ex_copy = strdup(assoc->ext);
+		char *ex_copy = strdup(assoc->pattern);
 		char *free_this = ex_copy;
 		while((exptr = strchr(ex_copy, ',')) != NULL)
 		{
@@ -250,95 +251,72 @@ get_all_programs_for_file(const char *file)
 }
 
 void
-set_programs(const char *extensions, const char *programs,
+set_programs(const char *patterns, const char *programs,
 		const char *description, int x)
 {
 	char *exptr;
-	if((exptr = strchr(extensions, ',')) == NULL)
+	if((exptr = strchr(patterns, ',')) == NULL)
 	{
-		set_ext_programs(extensions, programs, description, x);
+		assoc_programs(patterns, programs, description, x);
 	}
 	else
 	{
-		char *ex_copy = strdup(extensions);
+		char *ex_copy = strdup(patterns);
 		char *free_this = ex_copy;
 		while((exptr = strchr(ex_copy, ',')) != NULL)
 		{
 			*exptr++ = '\0';
 
-			set_ext_programs(ex_copy, programs, description, x);
+			assoc_programs(ex_copy, programs, description, x);
 
 			ex_copy = exptr;
 		}
-		set_ext_programs(ex_copy, programs, description, x);
+		assoc_programs(ex_copy, programs, description, x);
 		free(free_this);
 	}
 }
 
 static void
-set_ext_programs(const char *extension, const char *programs,
+assoc_programs(const char *pattern, const char *programs,
 		const char *description, int for_x)
 {
-	if(extension[0] == '\0')
+	if(pattern[0] == '\0')
 		return;
 
 	if(for_x)
-		cfg.xfiletypes_num = add_assoc(&xfiletypes, cfg.xfiletypes_num, extension,
+		cfg.xfiletypes_num = add_assoc(&xfiletypes, cfg.xfiletypes_num, pattern,
 				programs, description);
 	else
-		cfg.filetypes_num = add_assoc(&filetypes, cfg.filetypes_num, extension,
+		cfg.filetypes_num = add_assoc(&filetypes, cfg.filetypes_num, pattern,
 				programs, description);
 	if(!for_x || !curr_stats.is_console)
-		nfiletypes = add_assoc(&all_filetypes, nfiletypes, extension, programs,
+		nfiletypes = add_assoc(&all_filetypes, nfiletypes, pattern, programs,
 				description);
 }
 
-static void
-set_ext_viewer(const char *extension, const char *viewer)
-{
-	int x;
-
-	if(extension[0] == '\0')
-		return;
-
-	for(x = 0; x < cfg.fileviewers_num; x++)
-		if(strcasecmp(fileviewers[x].ext, extension) == 0)
-			break;
-	if(x == cfg.fileviewers_num)
-	{
-		cfg.fileviewers_num = add_assoc(&fileviewers, cfg.fileviewers_num,
-				extension, viewer, "");
-	}
-	else
-	{
-		free(fileviewers[x].program.com);
-		fileviewers[x].program.com = strdup(viewer);
-	}
-}
-
 static int
-add_assoc(assoc_t **arr, int count, const char *extension, const char *programs,
+add_assoc(assoc_t **arr, int count, const char *pattern, const char *programs,
 		const char *description)
 {
 	*arr = realloc(*arr, (count + 1)*sizeof(assoc_t));
 
-	(*arr)[count].ext = strdup(extension);
+	(*arr)[count].pattern = strdup(pattern);
 	(*arr)[count].program.com = strdup(programs);
 	(*arr)[count].program.description = strdup(description);
 	return count + 1;
 }
 
 void
-set_fileviewer(const char *extensions, const char *viewer)
+set_fileviewer(const char *patterns, const char *viewer)
 {
 	char *exptr;
-	if((exptr = strchr(extensions, ',')) == NULL)
+	if((exptr = strchr(patterns, ',')) == NULL)
 	{
-		set_ext_viewer(extensions, viewer);
+		assoc_viewer(patterns, viewer);
 	}
 	else
 	{
-		char *ex_copy = strdup(extensions);
+		char *ex_copy = strdup(patterns);
 		char *free_this = ex_copy;
 		char *exptr2 = NULL;
 		while((exptr = exptr2 = strchr(ex_copy, ',')) != NULL)
@@ -346,12 +324,35 @@ set_fileviewer(const char *extensions, const char *viewer)
 			*exptr = '\0';
 			exptr2++;
 
-			set_ext_viewer(ex_copy, viewer);
+			assoc_viewer(ex_copy, viewer);
 
 			ex_copy = exptr2;
 		}
-		set_ext_viewer(ex_copy, viewer);
+		assoc_viewer(ex_copy, viewer);
 		free(free_this);
+	}
+}
+
+static void
+assoc_viewer(const char *pattern, const char *viewer)
+{
+	int x;
+
+	if(pattern[0] == '\0')
+		return;
+
+	for(x = 0; x < cfg.fileviewers_num; x++)
+		if(strcasecmp(fileviewers[x].pattern, pattern) == 0)
+			break;
+	if(x == cfg.fileviewers_num)
+	{
+		cfg.fileviewers_num = add_assoc(&fileviewers, cfg.fileviewers_num,
+				pattern, viewer, "");
+	}
+	else
+	{
+		free(fileviewers[x].program.com);
+		fileviewers[x].program.com = strdup(viewer);
 	}
 }
 
@@ -392,7 +393,7 @@ reset_fileviewers(void)
 static void
 free_assoc(assoc_t *assoc)
 {
-	safe_free(&assoc->ext);
+	safe_free(&assoc->pattern);
 	free_assoc_prog(&assoc->program);
 }
 

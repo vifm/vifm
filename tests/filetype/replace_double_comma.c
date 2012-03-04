@@ -18,12 +18,12 @@ test_no_comma(void)
 static void
 test_one_command(void)
 {
-	char buf1[] = "echo text,,with,,comma";
-	char buf2[] = "echo text,,with,,comma";
+	char buf1[] = "echo tpattern,,with,,comma";
+	char buf2[] = "echo tpattern,,with,,comma";
 	replace_double_comma(buf1, 0);
-	assert_string_equal("echo text,with,comma", buf1);
+	assert_string_equal("echo tpattern,with,comma", buf1);
 	replace_double_comma(buf2, 1);
-	assert_string_equal("echo text,with,comma", buf2);
+	assert_string_equal("echo tpattern,with,comma", buf2);
 }
 
 static void

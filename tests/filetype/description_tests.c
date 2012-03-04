@@ -6,7 +6,7 @@
 #include "../../src/status.h"
 
 static void
-test_one_ext(void)
+test_one_pattern(void)
 {
 	assoc_prog_t program;
 
@@ -19,7 +19,7 @@ test_one_ext(void)
 }
 
 static void
-test_two_exts(void)
+test_two_patterns(void)
 {
 	assoc_prog_t program;
 
@@ -41,8 +41,8 @@ description_tests(void)
 {
 	test_fixture_start();
 
-	run_test(test_one_ext);
-	run_test(test_two_exts);
+	run_test(test_one_pattern);
+	run_test(test_two_patterns);
 
 	test_fixture_end();
 }
