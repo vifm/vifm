@@ -20,6 +20,7 @@
 #include <curses.h>
 #include <regex.h>
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -28,13 +29,16 @@
 
 #include "filetype.h"
 
+/* Internal list that stores only currently active associations.
+ * Since it holds only copies of structures from filetype and filextype lists,
+ * it doesn't consume much memory, and its items shouldn't be freed */
 static assoc_t *all_filetypes;
 static int nfiletypes;
 
 static void assoc_programs(const char *pattern, const char *programs,
 		const char *description, int for_x);
-static int add_assoc(assoc_t **arr, int count, const char *pattern,
-		const char *programs, const char *description);
+static void register_assoc(assoc_t assoc, int for_x);
+static int add_assoc(assoc_t **arr, int count, assoc_t assoc);
 static void assoc_viewer(const char *pattern, const char *viewer);
 static void free_assoc(assoc_t *assoc);
 static void safe_free(char **adr);
@@ -227,6 +231,7 @@ get_viewer_for_file(char *file)
 	return fileviewers[x].programs.list[0].com;
 }
 
+/* const assoc_progs_t * */
 char *
 get_all_programs_for_file(const char *file)
 {
@@ -236,15 +241,20 @@ get_all_programs_for_file(const char *file)
 
 	for(x = 0; x < nfiletypes; x++)
 	{
+		int j;
 		size_t new_size;
 		if(!matches_assoc(file, all_filetypes + x))
 			continue;
-		new_size = len + 1 + strlen(all_filetypes[x].programs.list[0].com) + 1;
-		result = realloc(result, new_size);
-		if(len > 0)
-			result[len++] = ',';
-		strcpy(result + len, all_filetypes[x].programs.list[0].com);
-		len += strlen(result + len);
+
+		for(j = 0; j < all_filetypes[x].programs.count; j++)
+		{
+			new_size = len + 1 + strlen(all_filetypes[x].programs.list[j].com) + 1;
+			result = realloc(result, new_size);
+			if(len > 0)
+				result[len++] = ',';
+			strcpy(result + len, all_filetypes[x].programs.list[j].com);
+			len += strlen(result + len);
+		}
 	}
 
 	return result;
@@ -280,32 +290,67 @@ static void
 assoc_programs(const char *pattern, const char *programs,
 		const char *description, int for_x)
 {
+	assoc_t assoc;
+	char *prog_copy;
+	char *free_this;
+	int count = 0;
+
 	if(pattern[0] == '\0')
 		return;
 
-	if(for_x)
-		cfg.xfiletypes_num = add_assoc(&xfiletypes, cfg.xfiletypes_num, pattern,
-				programs, description);
-	else
-		cfg.filetypes_num = add_assoc(&filetypes, cfg.filetypes_num, pattern,
-				programs, description);
-	if(!for_x || !curr_stats.is_console)
-		nfiletypes = add_assoc(&all_filetypes, nfiletypes, pattern, programs,
-				description);
+	assoc.pattern = strdup(pattern);
+	assoc.programs.list = NULL;
+	assoc.programs.count = 0;
+
+	prog_copy = strdup(programs);
+	free_this = prog_copy;
+
+	while(prog_copy != NULL)
+	{
+		char *ptr;
+		char *ptr1;
+
+		if((ptr = ptr1 = strchr(prog_copy, ',')) != NULL)
+		{
+			while(ptr != NULL && ptr[1] == ',')
+				ptr = ptr1 = strchr(ptr + 2, ',');
+			if(ptr == NULL)
+				break;
+
+			*ptr = '\0';
+			ptr1++;
+		}
+
+		while(isspace(*prog_copy) || *prog_copy == ',')
+			prog_copy++;
+
+		if(prog_copy[0] != '\0')
+		{
+			assoc.programs.list = realloc(assoc.programs.list,
+					sizeof(assoc_prog_t)*(count + 1));
+			replace_double_comma(prog_copy, 0);
+			assoc.programs.list[count].com = strdup(prog_copy);
+			assoc.programs.list[count].description = strdup(description);
+			count++;
+		}
+		prog_copy = ptr1;
+	}
+	assoc.programs.count = count;
+
+	free(free_this);
+
+	register_assoc(assoc, for_x);
 }
 
-static int
-add_assoc(assoc_t **arr, int count, const char *pattern, const char *programs,
-		const char *description)
+static void
+register_assoc(assoc_t assoc, int for_x)
 {
-	*arr = realloc(*arr, (count + 1)*sizeof(assoc_t));
-
-	(*arr)[count].pattern = strdup(pattern);
-	(*arr)[count].programs.list = malloc(sizeof(assoc_prog_t));
-	(*arr)[count].programs.count = 1;
-	(*arr)[count].programs.list[0].com = strdup(programs);
-	(*arr)[count].programs.list[0].description = strdup(description);
-	return count + 1;
+	if(for_x)
+		cfg.xfiletypes_num = add_assoc(&xfiletypes, cfg.xfiletypes_num, assoc);
+	else
+		cfg.filetypes_num = add_assoc(&filetypes, cfg.filetypes_num, assoc);
+	if(!for_x || !curr_stats.is_console)
+		nfiletypes = add_assoc(&all_filetypes, nfiletypes, assoc);
 }
 
 void
@@ -348,14 +393,28 @@ assoc_viewer(const char *pattern, const char *viewer)
 			break;
 	if(x == cfg.fileviewers_num)
 	{
-		cfg.fileviewers_num = add_assoc(&fileviewers, cfg.fileviewers_num,
-				pattern, viewer, "");
+		assoc_t assoc;
+		assoc.pattern = strdup(pattern);
+		assoc.programs.list = malloc(sizeof(assoc_prog_t));
+		assoc.programs.count = 1;
+		assoc.programs.list[0].com = strdup(viewer);
+		assoc.programs.list[0].description = strdup("");
+
+		cfg.fileviewers_num = add_assoc(&fileviewers, cfg.fileviewers_num, assoc);
 	}
 	else
 	{
 		free(fileviewers[x].programs.list[0].com);
 		fileviewers[x].programs.list[0].com = strdup(viewer);
 	}
+}
+
+static int
+add_assoc(assoc_t **arr, int count, assoc_t assoc)
+{
+	*arr = realloc(*arr, (count + 1)*sizeof(assoc_t));
+	(*arr)[count] = assoc;
+	return count + 1;
 }
 
 static void
@@ -377,7 +436,10 @@ void
 reset_filetypes(void)
 {
 	reset_list(&filetypes, &cfg.filetypes_num);
-	reset_list(&all_filetypes, &nfiletypes);
+
+	free(all_filetypes);
+	all_filetypes = NULL;
+	nfiletypes = 0;
 }
 
 void

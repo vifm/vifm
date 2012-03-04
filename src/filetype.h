@@ -27,6 +27,8 @@ typedef struct
 }
 assoc_prog_t;
 
+/* It's guarantied that for existent association there is at least on element in
+ * the programs list */
 typedef struct
 {
 	assoc_prog_t *list;
@@ -52,6 +54,8 @@ void set_programs(const char *patterns, const char *programs,
 		const char *description, int x);
 void set_fileviewer(const char *patterns, const char *viewer);
 char * get_all_programs_for_file(const char *file);
+/* Caller should free only the array, but not elements. */
+/* const assoc_progs_t * get_all_programs_for_file(const char *file); */
 void reset_filetypes(void);
 void reset_xfiletypes(void);
 void reset_fileviewers(void);
