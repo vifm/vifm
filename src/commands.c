@@ -140,6 +140,7 @@ static void complete_help(const char *str);
 static void complete_history(const char *str);
 static int complete_chown(const char *str);
 static void complete_filetype(const char *str);
+static void complete_progs(const char *str, assoc_progs_t progs);
 static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
 static void complete_winrun(const char *str);
@@ -973,12 +974,8 @@ complete_chown(const char *str)
 static void
 complete_filetype(const char *str)
 {
-	int i;
-	size_t len = strlen(str);
-
-	char *filename = get_current_file_name(curr_view);
-	assoc_progs_t ft = get_all_programs_for_file(filename);
-	const assoc_progs_t magic = get_magic_handlers(filename);
+	const size_t len = strlen(str);
+	const char *filename = get_current_file_name(curr_view);
 
 	if(curr_view->dir_entry[curr_view->list_pos].type == DIRECTORY &&
 			strncmp(VIFM_PREUDO_CMD, str, len) == 0)
@@ -986,28 +983,29 @@ complete_filetype(const char *str)
 		add_completion(VIFM_PREUDO_CMD);
 	}
 
-	for(i = 0; i < ft.count; i++)
-	{
-		if(strncmp(ft.list[i].com, str, len) == 0)
-		{
-			add_completion(ft.list[i].com);
-		}
-	}
-
-	free(ft.list);
-
-	for(i = 0; i < magic.count; i++)
-	{
-		if(strncmp(magic.list[i].com, str, len) == 0)
-		{
-			add_completion(magic.list[i].com);
-		}
-	}
-
-	free(magic.list);
+	complete_progs(str, get_all_programs_for_file(filename));
+	complete_progs(str, get_magic_handlers(filename));
 
 	completion_group_end();
 	add_completion(str);
+}
+
+/* This function frees list of programs passed to it. */
+static void
+complete_progs(const char *str, assoc_progs_t progs)
+{
+	int i;
+	const size_t len = strlen(str);
+
+	for(i = 0; i < progs.count; i++)
+	{
+		if(strncmp(progs.list[i].com, str, len) == 0)
+		{
+			add_completion(progs.list[i].com);
+		}
+	}
+
+	free(progs.list);
 }
 
 static void

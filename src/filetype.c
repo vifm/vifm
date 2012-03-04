@@ -30,14 +30,21 @@
 #include "utils.h"
 
 #include "filetype.h"
+const assoc_prog_t VIFM_PREUDO_PROG =
+{
+	.com = VIFM_PREUDO_CMD,
+	.description = "Enter directory",
+};
 
 /* Internal list that stores only currently active associations.
  * Since it holds only copies of structures from filetype and filextype lists,
  * it doesn't consume much memory, and its items shouldn't be freed */
 static assoc_t *active_filetypes;
-static int nfiletypes;
+static int nactive_filetypes;
 
-static void assoc_programs(const char *pattern, const char *programs, int for_x);
+TESTABLE_STATIC void replace_double_comma(char *cmd, int put_null);
+static void assoc_programs(const char *pattern, const char *programs,
+		int for_x);
 static void register_assoc(assoc_t assoc, int for_x);
 static int add_assoc(assoc_t **arr, int count, assoc_t assoc);
 static void assoc_viewer(const char *pattern, const char *viewer);
@@ -132,60 +139,20 @@ global_matches(const char *global, const char *file)
 }
 
 static int
-matches_assoc(const char *file, const assoc_t *assoc)
-{
-	char *exptr;
-
-	/* Only one pattern */
-	if((exptr = strchr(assoc->pattern, ',')) == NULL)
-	{
-		if(global_matches(assoc->pattern, file))
-		{
-			return 1;
-		}
-	}
-	else
-	{
-		char *ex_copy = strdup(assoc->pattern);
-		char *free_this = ex_copy;
-		while((exptr = strchr(ex_copy, ',')) != NULL)
-		{
-			*exptr++ = '\0';
-
-			if(global_matches(ex_copy, file))
-			{
-				free(free_this);
-				return 1;
-			}
-
-			ex_copy = exptr;
-		}
-		if(global_matches(ex_copy, file))
-		{
-			free(free_this);
-			return 1;
-		}
-		free(free_this);
-	}
-	return 0;
-}
-
-static int
 get_filetype_number(const char *file, int count, assoc_t *array)
 {
-	int x;
-
-	for(x = 0; x < count; x++)
+	int i;
+	for(i = 0; i < count; i++)
 	{
-		if(matches_assoc(file, array + x))
+		if(global_matches(array[i].pattern, file))
 		{
-			return x;
+			return i;
 		}
 	}
 	return -1;
 }
 
-void
+TESTABLE_STATIC void
 replace_double_comma(char *cmd, int put_null)
 {
 	char *p = cmd;
@@ -213,15 +180,15 @@ int
 get_default_program_for_file(const char *file, assoc_prog_t *result)
 {
 	assoc_prog_t prog;
-	int x;
+	int i;
 
-	x = get_filetype_number(file, nfiletypes, active_filetypes);
-	if(x < 0)
+	i = get_filetype_number(file, nactive_filetypes, active_filetypes);
+	if(i < 0)
 	{
 		return 0;
 	}
 
-	prog = active_filetypes[x].programs.list[0];
+	prog = active_filetypes[i].programs.list[0];
 	result->com = strdup(prog.com);
 	result->description = strdup(prog.description);
 
@@ -232,14 +199,14 @@ get_default_program_for_file(const char *file, assoc_prog_t *result)
 char *
 get_viewer_for_file(char *file)
 {
-	int x = get_filetype_number(file, cfg.fileviewers_num, fileviewers);
+	int i = get_filetype_number(file, cfg.fileviewers_num, fileviewers);
 
-	if(x < 0)
+	if(i < 0)
 	{
 		return NULL;
 	}
 
-	return fileviewers[x].programs.list[0].com;
+	return fileviewers[i].programs.list[0].com;
 }
 
 assoc_progs_t
@@ -248,12 +215,12 @@ get_all_programs_for_file(const char *file)
 	int i;
 	assoc_progs_t result = {};
 
-	for(i = 0; i < nfiletypes; i++)
+	for(i = 0; i < nactive_filetypes; i++)
 	{
 		assoc_progs_t progs;
 		int j;
 
-		if(!matches_assoc(file, active_filetypes + i))
+		if(!global_matches(active_filetypes[i].pattern, file))
 		{
 			continue;
 		}
@@ -273,25 +240,18 @@ void
 set_programs(const char *patterns, const char *programs, int x)
 {
 	char *exptr;
-	if((exptr = strchr(patterns, ',')) == NULL)
+	char *ex_copy = strdup(patterns);
+	char *free_this = ex_copy;
+	while((exptr = strchr(ex_copy, ',')) != NULL)
 	{
-		assoc_programs(patterns, programs, x);
-	}
-	else
-	{
-		char *ex_copy = strdup(patterns);
-		char *free_this = ex_copy;
-		while((exptr = strchr(ex_copy, ',')) != NULL)
-		{
-			*exptr++ = '\0';
+		*exptr = '\0';
 
-			assoc_programs(ex_copy, programs, x);
-
-			ex_copy = exptr;
-		}
 		assoc_programs(ex_copy, programs, x);
-		free(free_this);
+
+		ex_copy = exptr + 1;
 	}
+	assoc_programs(ex_copy, programs, x);
+	free(free_this);
 }
 
 static void
@@ -373,7 +333,7 @@ register_assoc(assoc_t assoc, int for_x)
 	}
 	if(!for_x || !curr_stats.is_console)
 	{
-		nfiletypes = add_assoc(&active_filetypes, nfiletypes, assoc);
+		nactive_filetypes = add_assoc(&active_filetypes, nactive_filetypes, assoc);
 	}
 }
 
@@ -381,47 +341,38 @@ void
 set_fileviewer(const char *patterns, const char *viewer)
 {
 	char *exptr;
-	if((exptr = strchr(patterns, ',')) == NULL)
+	char *ex_copy = strdup(patterns);
+	char *free_this = ex_copy;
+	while((exptr = strchr(ex_copy, ',')) != NULL)
 	{
-		assoc_viewer(patterns, viewer);
-	}
-	else
-	{
-		char *ex_copy = strdup(patterns);
-		char *free_this = ex_copy;
-		char *exptr2 = NULL;
-		while((exptr = exptr2 = strchr(ex_copy, ',')) != NULL)
-		{
-			*exptr = '\0';
-			exptr2++;
+		*exptr = '\0';
 
-			assoc_viewer(ex_copy, viewer);
-
-			ex_copy = exptr2;
-		}
 		assoc_viewer(ex_copy, viewer);
-		free(free_this);
+
+		ex_copy = exptr + 1;
 	}
+	assoc_viewer(ex_copy, viewer);
+	free(free_this);
 }
 
 static void
 assoc_viewer(const char *pattern, const char *viewer)
 {
-	int x;
+	int i;
 
 	if(pattern[0] == '\0')
 	{
 		return;
 	}
 
-	for(x = 0; x < cfg.fileviewers_num; x++)
+	for(i = 0; i < cfg.fileviewers_num; i++)
 	{
-		if(strcasecmp(fileviewers[x].pattern, pattern) == 0)
+		if(strcasecmp(fileviewers[i].pattern, pattern) == 0)
 		{
 			break;
 		}
 	}
-	if(x == cfg.fileviewers_num)
+	if(i == cfg.fileviewers_num)
 	{
 		assoc_t assoc;
 		assoc.pattern = strdup(pattern);
@@ -434,8 +385,8 @@ assoc_viewer(const char *pattern, const char *viewer)
 	}
 	else
 	{
-		free(fileviewers[x].programs.list[0].com);
-		fileviewers[x].programs.list[0].com = strdup(viewer);
+		free(fileviewers[i].programs.list[0].com);
+		fileviewers[i].programs.list[0].com = strdup(viewer);
 	}
 }
 
@@ -471,7 +422,7 @@ reset_all_file_associations(void)
 
 	free(active_filetypes);
 	active_filetypes = NULL;
-	nfiletypes = 0;
+	nactive_filetypes = 0;
 }
 
 static void

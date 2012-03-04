@@ -91,6 +91,8 @@ enum
 #endif
 };
 
+/* Returns pointer to a statically allocated buffer */
+static const char * form_filetype_entry(assoc_prog_t prog, int descr_width);
 /* Returns non-zero on successful running. */
 static int try_run_with_filetype(FileView *view, const assoc_progs_t assocs,
 		const char *start, int background);
@@ -1473,6 +1475,7 @@ show_filetypes_menu(FileView *view, int background)
 	static menu_info m;
 
 	int i;
+	int max_len;
 
 	char *filename = get_current_file_name(view);
 	assoc_progs_t ft = get_all_programs_for_file(filename);
@@ -1504,18 +1507,32 @@ show_filetypes_menu(FileView *view, int background)
 
 	getmaxyx(menu_win, m.win_rows, i);
 
+	max_len = 0;
+	for(i = 0; i < ft.count; i++)
+		max_len = MAX(max_len, strlen(ft.list[i].description));
+	for(i = 0; i < magic.count; i++)
+		max_len = MAX(max_len, strlen(magic.list[i].description));
+
 	if(view->dir_entry[view->list_pos].type == DIRECTORY)
-		m.len = add_to_string_array(&m.data, m.len, 1, VIFM_PREUDO_CMD);
+	{
+		if(max_len > 0)
+			max_len = MAX(max_len, strlen(VIFM_PREUDO_PROG.description));
+
+		m.len = add_to_string_array(&m.data, m.len, 1,
+				form_filetype_entry(VIFM_PREUDO_PROG, max_len));
+	}
 
 	for(i = 0; i < ft.count; i++)
-		m.len = add_to_string_array(&m.data, m.len, 1, ft.list[i].com);
+		m.len = add_to_string_array(&m.data, m.len, 1,
+				form_filetype_entry(ft.list[i], max_len));
 
 	free(ft.list);
 
 	m.len = add_to_string_array(&m.data, m.len, 1, "");
 
 	for(i = 0; i < magic.count; i++)
-		m.len = add_to_string_array(&m.data, m.len, 1, magic.list[i].com);
+		m.len = add_to_string_array(&m.data, m.len, 1,
+			form_filetype_entry(magic.list[i], max_len));
 
 	free(magic.list);
 
@@ -1525,6 +1542,30 @@ show_filetypes_menu(FileView *view, int background)
 	enter_menu_mode(&m, view);
 
 	return 0;
+}
+
+static const char *
+form_filetype_entry(assoc_prog_t prog, int descr_width)
+{
+	static char result[PATH_MAX];
+	if(descr_width > 0)
+	{
+		char format[16];
+		if(prog.description[0] == '\0')
+		{
+			snprintf(format, sizeof(format), " %%-%ds  %%s", descr_width);
+		}
+		else
+		{
+			snprintf(format, sizeof(format), "[%%-%ds] %%s", descr_width);
+		}
+		snprintf(result, sizeof(result), format, prog.description, prog.com);
+	}
+	else
+	{
+		snprintf(result, sizeof(result), "%s", prog.com);
+	}
+	return result;
 }
 
 int

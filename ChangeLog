@@ -2,6 +2,8 @@
 
 	Removed possibility of moving items in :file menu.
 
+	Added description for :filetype, :filextype and :fileviewer commands.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with

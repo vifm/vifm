@@ -45,6 +45,8 @@ typedef struct
 }
 assoc_t;
 
+const assoc_prog_t VIFM_PREUDO_PROG;
+
 assoc_t *filetypes;
 assoc_t *xfiletypes;
 assoc_t *fileviewers;
@@ -58,13 +60,19 @@ void set_fileviewer(const char *patterns, const char *viewer);
 assoc_progs_t get_all_programs_for_file(const char *file);
 /* Resets associations set by :filetype, :filextype and :fileviewer commands. */
 void reset_all_file_associations(void);
-void replace_double_comma(char *cmd, int put_null);
 /* After this call structure contains NULL values */
 void free_assoc_prog(assoc_prog_t *assoc_prog);
 void add_assoc_prog(assoc_progs_t *assocs, const char *program,
 		const char *description);
 /* Returns non-zero for an empty assoc_prog_t structure. */
 int assoc_prog_is_empty(const assoc_prog_t *assoc_prog);
+
+#ifdef TEST
+void replace_double_comma(char *cmd, int put_null);
+#define TESTABLE_STATIC
+#else /* TEST */
+#define TESTABLE_STATIC static
+#endif /* TEST */
 
 #endif
 
