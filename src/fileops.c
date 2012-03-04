@@ -603,7 +603,9 @@ handle_dir(FileView *view)
 static void
 execute_file(FileView *view, int dont_execute)
 {
-	char *program = NULL;
+	/* TODO: refactor this function execute_file() */
+
+	assoc_prog_t program = {};
 	int undef;
 	int same;
 	int i;
@@ -612,13 +614,14 @@ execute_file(FileView *view, int dont_execute)
 	if(!view->dir_entry[view->list_pos].selected)
 		clean_selected_files(view);
 
-	program = get_default_program_for_file(view->dir_entry[view->list_pos].name);
-	no_multi_run += !multi_run_compat(view, program);
+	(void)get_default_program_for_file(view->dir_entry[view->list_pos].name,
+			&program);
+	no_multi_run += !multi_run_compat(view, program.com);
 	undef = 0;
 	same = 1;
 	for(i = 0; i < view->list_rows; i++)
 	{
-		char *prog;
+		assoc_prog_t prog;
 
 		if(!view->dir_entry[i].selected)
 			continue;
@@ -627,21 +630,23 @@ execute_file(FileView *view, int dont_execute)
 		{
 			show_error_msgf("Broken Link", "Destination of \"%s\" link doesn't exist",
 					view->dir_entry[i].name);
-			free(program);
+			free_assoc_prog(&program);
 			return;
 		}
 
-		prog = get_default_program_for_file(view->dir_entry[i].name);
-		if(prog != NULL)
+		if(get_default_program_for_file(view->dir_entry[i].name, &prog))
 		{
-			no_multi_run += !multi_run_compat(view, prog);
-			if(program == NULL)
+			no_multi_run += !multi_run_compat(view, prog.com);
+			if(assoc_prog_is_empty(&program))
+			{
+				free_assoc_prog(&program);
 				program = prog;
+			}
 			else
 			{
-				if(strcmp(prog, program) != 0)
+				if(strcmp(prog.com, program.com) != 0)
 					same = 0;
-				free(prog);
+				free_assoc_prog(&prog);
 			}
 		}
 		else
@@ -650,19 +655,18 @@ execute_file(FileView *view, int dont_execute)
 
 	if(!same && undef == 0 && no_multi_run)
 	{
-		free(program);
+		free_assoc_prog(&program);
 		(void)show_error_msg("Selection error", "Files have different programs");
 		return;
 	}
 	if(undef > 0)
 	{
-		free(program);
-		program = NULL;
+		free_assoc_prog(&program);
 	}
 
 	/* Check for a filetype */
 	/* vi is set as the default for any extension without a program */
-	if(program == NULL)
+	if(program.com == NULL)
 	{
 		if(view->dir_entry[view->list_pos].type == DIRECTORY)
 		{
@@ -678,12 +682,12 @@ execute_file(FileView *view, int dont_execute)
 		else
 		{
 			int bg;
-			program = edit_selection(view, &bg);
+			char *cmd = edit_selection(view, &bg);
 			if(bg)
-				start_background_job(program);
+				start_background_job(cmd);
 			else
-				shellout(program, -1, 1);
-			free(program);
+				shellout(cmd, -1, 1);
+			free(cmd);
 		}
 		return;
 	}
@@ -691,23 +695,24 @@ execute_file(FileView *view, int dont_execute)
 	if(!no_multi_run)
 	{
 		int pos = view->list_pos;
-		free(program);
+		free_assoc_prog(&program);
+
 		for(i = 0; i < view->list_rows; i++)
 		{
 			if(!view->dir_entry[i].selected)
 				continue;
 			view->list_pos = i;
-			program = get_default_program_for_file(
-					view->dir_entry[view->list_pos].name);
-			run_using_prog(view, program, dont_execute, 0);
-			free(program);
+			(void)get_default_program_for_file(view->dir_entry[view->list_pos].name,
+					&program);
+			run_using_prog(view, program.com, dont_execute, 0);
+			free_assoc_prog(&program);
 		}
 		view->list_pos = pos;
 	}
 	else
 	{
-		run_using_prog(view, program, dont_execute, 0);
-		free(program);
+		run_using_prog(view, program.com, dont_execute, 0);
+		free_assoc_prog(&program);
 	}
 }
 

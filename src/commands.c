@@ -192,6 +192,7 @@ static int exe_cmd(const cmd_info_t *cmd_info);
 static int file_cmd(const cmd_info_t *cmd_info);
 static int filetype_cmd(const cmd_info_t *cmd_info);
 static int filextype_cmd(const cmd_info_t *cmd_info);
+static int add_filetype(const cmd_info_t *cmd_info, int x);
 static int fileviewer_cmd(const cmd_info_t *cmd_info);
 static int filter_cmd(const cmd_info_t *cmd_info);
 static int find_cmd(const cmd_info_t *cmd_info);
@@ -3554,24 +3555,37 @@ file_cmd(const cmd_info_t *cmd_info)
 static int
 filetype_cmd(const cmd_info_t *cmd_info)
 {
-	const char *progs;
-
-	progs = skip_non_whitespace(cmd_info->args);
-	progs = skip_whitespace(progs + 1);
-
-	set_programs(cmd_info->argv[0], progs, 0);
-	return 0;
+	return add_filetype(cmd_info, 0);
 }
 
 static int
 filextype_cmd(const cmd_info_t *cmd_info)
 {
+	return add_filetype(cmd_info, 1);
+}
+
+static int
+add_filetype(const cmd_info_t *cmd_info, int x)
+{
+	const char *description = "";
 	const char *progs;
 
 	progs = skip_non_whitespace(cmd_info->args);
 	progs = skip_whitespace(progs + 1);
+	if(*progs == '{')
+	{
+		char *p = strchr(progs + 1, '}');
+		if(p != NULL)
+		{
+			if(p[1] == '\0')
+				return CMDS_ERR_TOO_FEW_ARGS;
+			*p = '\0';
+			description = progs + 1;
+			progs = skip_whitespace(p + 1);
+		}
+	}
 
-	set_programs(cmd_info->argv[0], progs, 1);
+	set_programs(cmd_info->argv[0], progs, description, x);
 	return 0;
 }
 

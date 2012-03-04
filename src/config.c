@@ -585,6 +585,24 @@ get_history(FileView *view, int reread, const char *dir, const char *file,
 		view->list_rows = 0;
 }
 
+static void
+get_filetype(const char *exts, char *progs, int x)
+{
+	const char *description = "";
+	if(*progs == '{')
+	{
+		char *p = strchr(progs + 1, '}');
+		if(p != NULL)
+		{
+			*p = '\0';
+			description = progs + 1;
+			progs = p + 1;
+		}
+	}
+
+	set_programs(exts, progs, description, 0);
+}
+
 void
 read_info_file(int reread)
 {
@@ -612,7 +630,7 @@ read_info_file(int reread)
 			if(fgets(line2, sizeof(line2), fp) == line2)
 			{
 				prepare_line(line2);
-				set_programs(line + 1, line2, 0);
+				get_filetype(line + 1, line2, 0);
 			}
 		}
 		else if(line[0] == 'x') /* xfiletype */
@@ -620,7 +638,7 @@ read_info_file(int reread)
 			if(fgets(line2, sizeof(line2), fp) == line2)
 			{
 				prepare_line(line2);
-				set_programs(line + 1, line2, 1);
+				get_filetype(line + 1, line2, 1);
 			}
 		}
 		else if(line[0] == ',') /* fileviewer */
@@ -888,11 +906,11 @@ write_info_file(void)
 			{
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
-					char *p;
+					assoc_prog_t prog;
 					curr_stats.is_console = 1;
-					if((p = get_default_program_for_file(line + 1)) != NULL)
+					if(get_default_program_for_file(line + 1, &prog))
 					{
-						free(p);
+						free_assoc_prog(&prog);
 						continue;
 					}
 					prepare_line(line2);
@@ -903,21 +921,22 @@ write_info_file(void)
 			{
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
-					char *p;
+					assoc_prog_t x_prog;
 					curr_stats.is_console = 0;
-					if((p = get_default_program_for_file(line + 1)) != NULL)
+					if(get_default_program_for_file(line + 1, &x_prog))
 					{
-						char *t;
+						assoc_prog_t console_prog;
 						curr_stats.is_console = 1;
-						t = get_default_program_for_file(line + 1);
-						if(strcmp(p, t) == 0)
+						if(get_default_program_for_file(line + 1, &console_prog))
 						{
-							free(t);
-							free(p);
-							continue;
+							if(strcmp(x_prog.com, console_prog.com) == 0)
+							{
+								free_assoc_prog(&console_prog);
+								free_assoc_prog(&x_prog);
+								continue;
+							}
 						}
-						free(t);
-						free(p);
+						free_assoc_prog(&x_prog);
 					}
 					prepare_line(line2);
 					nfx = add_to_string_array(&fx, nfx, 2, line + 1, line2);
@@ -1150,8 +1169,9 @@ write_info_file(void)
 		fputs("\n# Filetypes:\n", fp);
 		for(i = 0; i < cfg.filetypes_num; i++)
 		{
-			if(filetypes[i].com[0] != '\0')
-				fprintf(fp, ".%s\n\t%s\n", filetypes[i].ext, filetypes[i].com);
+			if(filetypes[i].program.com[0] != '\0')
+				fprintf(fp, ".%s\n\t{%s}%s\n", filetypes[i].ext,
+						filetypes[i].program.description, filetypes[i].program.com);
 		}
 		for(i = 0; i < nft; i += 2)
 			fprintf(fp, ".%s\n\t%s\n", ft[i], ft[i + 1]);
@@ -1159,8 +1179,9 @@ write_info_file(void)
 		fputs("\n# X Filetypes:\n", fp);
 		for(i = 0; i < cfg.xfiletypes_num; i++)
 		{
-			if(xfiletypes[i].com[0] != '\0')
-				fprintf(fp, ".%s\n\t%s\n", xfiletypes[i].ext, xfiletypes[i].com);
+			if(xfiletypes[i].program.com[0] != '\0')
+				fprintf(fp, ".%s\n\t{%s}%s\n", xfiletypes[i].ext,
+						xfiletypes[i].program.description, xfiletypes[i].program.com);
 		}
 		for(i = 0; i < nfx; i += 2)
 			fprintf(fp, ".%s\n\t%s\n", fx[i], fx[i + 1]);
@@ -1168,8 +1189,8 @@ write_info_file(void)
 		fputs("\n# Fileviewers:\n", fp);
 		for(i = 0; i < cfg.fileviewers_num; i++)
 		{
-			if(fileviewers[i].com[0] != '\0')
-				fprintf(fp, ",%s\n\t%s\n", fileviewers[i].ext, fileviewers[i].com);
+			if(fileviewers[i].program.com[0] != '\0')
+				fprintf(fp, ",%s\n\t%s\n", fileviewers[i].ext, fileviewers[i].program.com);
 		}
 		for(i = 0; i < nfv; i += 2)
 			fprintf(fp, ",%s\n\t%s\n", fv[i], fv[i + 1]);

@@ -7,6 +7,7 @@
 
 void filetype_tests(void);
 void replace_double_comma_tests(void);
+void description_tests(void);
 
 static void
 setup(void)
@@ -27,6 +28,7 @@ all_tests(void)
 {
 	filetype_tests();
 	replace_double_comma_tests();
+	description_tests();
 }
 
 int

@@ -8,377 +8,336 @@
 static void
 test_one_ext(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
-	set_programs("*.tar", "tar prog", 0);
+	set_programs("*.tar", "tar prog", "description", 0);
 
-	buf = get_default_program_for_file("file.version.tar");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("tar prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("file.version.tar", &program));
+	if(program.com != NULL)
+		assert_string_equal("tar prog", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
 test_many_ext(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
-	set_programs("*.tar", "tar prog", 0);
-	set_programs("*.tar.gz", "tar.gz prog", 0);
+	set_programs("*.tar", "tar prog", "description", 0);
+	set_programs("*.tar.gz", "tar.gz prog", "description", 0);
 
-	buf = get_default_program_for_file("file.version.tar.gz");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("tar.gz prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("file.version.tar.gz", &program));
+	if(program.com != NULL)
+		assert_string_equal("tar.gz prog", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
 test_many_fileext(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
-	set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0);
+	set_programs("*.tgz,*.tar.gz", "tar.gz prog", "description", 0);
 
-	buf = get_default_program_for_file("file.version.tar.gz");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("tar.gz prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("file.version.tar.gz", &program));
+	if(program.com != NULL)
+		assert_string_equal("tar.gz prog", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
 test_dont_match_hidden(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
-	set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0);
+	set_programs("*.tgz,*.tar.gz", "tar.gz prog", "description", 0);
 
-	buf = get_default_program_for_file(".file.version.tar.gz");
-	assert_true(buf == NULL);
+	assert_false(get_default_program_for_file(".file.version.tar.gz", &program));
 }
 
 static void
 test_match_empty(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
-	set_programs("a*bc", "empty prog", 0);
+	set_programs("a*bc", "empty prog", "description", 0);
 
-	buf = get_default_program_for_file("abc");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("empty prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("abc", &program));
+	if(program.com != NULL)
+		assert_string_equal("empty prog", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
 test_match_full_line(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
-	set_programs("abc", "full prog", 0);
+	set_programs("abc", "full prog", "description", 0);
 
-	buf = get_default_program_for_file("abcd");
-	assert_true(buf == NULL);
+	assert_false(get_default_program_for_file("abcd", &program));
+	assert_false(get_default_program_for_file("0abc", &program));
+	assert_false(get_default_program_for_file("0abcd", &program));
 
-	buf = get_default_program_for_file("0abc");
-	assert_true(buf == NULL);
-
-	buf = get_default_program_for_file("0abcd");
-	assert_true(buf == NULL);
-
-	buf = get_default_program_for_file("abc");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("full prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("abc", &program));
+	if(program.com != NULL)
+		assert_string_equal("full prog", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
 test_match_qmark(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
-	set_programs("a?c", "full prog", 0);
+	set_programs("a?c", "full prog", "description", 0);
 
-	buf = get_default_program_for_file("ac");
-	assert_true(buf == NULL);
+	assert_false(get_default_program_for_file("ac", &program));
 
-	buf = get_default_program_for_file("abc");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("full prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("abc", &program));
+	if(program.com != NULL)
+		assert_string_equal("full prog", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
-test_escaping(void)
+test_qmark_escaping(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
-	set_programs("a\\?c", "qmark prog", 0);
+	set_programs("a\\?c", "qmark prog", "description", 0);
 
-	buf = get_default_program_for_file("abc");
-	assert_true(buf == NULL);
+	assert_false(get_default_program_for_file("abc", &program));
 
-	buf = get_default_program_for_file("a?c");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("qmark prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("a?c", &program));
+	if(program.com != NULL)
+		assert_string_equal("qmark prog", program.com);
+	free_assoc_prog(&program);
+}
 
-	set_programs("a\\*c", "star prog", 0);
+static void
+test_star_escaping(void)
+{
+	assoc_prog_t program;
 
-	buf = get_default_program_for_file("abc");
-	assert_true(buf == NULL);
+	set_programs("a\\*c", "star prog", "description", 0);
 
-	buf = get_default_program_for_file("a*c");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("star prog", buf);
-	free(buf);
+	assert_false(get_default_program_for_file("abc", &program));
+
+	assert_true(get_default_program_for_file("a*c", &program));
+	if(program.com != NULL)
+		assert_string_equal("star prog", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
 test_classes(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
-	set_programs("*.[ch]", "c file", 0);
+	set_programs("*.[ch]", "c file", "description", 0);
 
-	buf = get_default_program_for_file("main.cpp");
-	assert_true(buf == NULL);
+	assert_false(get_default_program_for_file("main.cpp", &program));
+	assert_false(get_default_program_for_file("main.hpp", &program));
 
-	buf = get_default_program_for_file("main.hpp");
-	assert_true(buf == NULL);
+	assert_true(get_default_program_for_file("main.c", &program));
+	if(program.com != NULL)
+		assert_string_equal("c file", program.com);
+	free_assoc_prog(&program);
 
-	buf = get_default_program_for_file("main.c");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("c file", buf);
-	free(buf);
-
-	buf = get_default_program_for_file("main.h");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("c file", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("main.h", &program));
+	if(program.com != NULL)
+		assert_string_equal("c file", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
-test_classes_negotiation(void)
+test_classes_negotiation_with_emark(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
-	set_programs("*.[!ch]", "not c file", 0);
+	set_programs("*.[!ch]", "not c file", "description", 0);
 
-	buf = get_default_program_for_file("main.c");
-	assert_true(buf == NULL);
+	assert_false(get_default_program_for_file("main.c", &program));
+	assert_false(get_default_program_for_file("main.h", &program));
 
-	buf = get_default_program_for_file("main.h");
-	assert_true(buf == NULL);
+	assert_true(get_default_program_for_file("main.o", &program));
+	if(program.com != NULL)
+		assert_string_equal("not c file", program.com);
+	free_assoc_prog(&program);
+}
 
-	buf = get_default_program_for_file("main.o");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("not c file", buf);
-	free(buf);
+static void
+test_classes_negotiation_with_hat(void)
+{
+	assoc_prog_t program;
 
-	set_programs("*.[^ch]", "c file", 0);
+	set_programs("*.[^ch]", "not c file", "description", 0);
 
-	buf = get_default_program_for_file("main.c");
-	assert_true(buf == NULL);
+	assert_false(get_default_program_for_file("main.c", &program));
+	assert_false(get_default_program_for_file("main.h", &program));
 
-	buf = get_default_program_for_file("main.h");
-	assert_true(buf == NULL);
-
-	buf = get_default_program_for_file("main.o");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("not c file", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("main.o", &program));
+	if(program.com != NULL)
+		assert_string_equal("not c file", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
 test_classes_ranges(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
-	set_programs("*.[0-9]", "part file", 0);
+	set_programs("*.[0-9]", "part file", "description", 0);
 
-	buf = get_default_program_for_file("main.c");
-	assert_true(buf == NULL);
+	assert_false(get_default_program_for_file("main.c", &program));
+	assert_false(get_default_program_for_file("main.A", &program));
 
-	buf = get_default_program_for_file("main.A");
-	assert_true(buf == NULL);
+	assert_true(get_default_program_for_file("main.0", &program));
+	if(program.com != NULL)
+		assert_string_equal("part file", program.com);
+	free_assoc_prog(&program);
 
-	buf = get_default_program_for_file("main.0");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("part file", buf);
-	free(buf);
-
-	buf = get_default_program_for_file("main.8");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("part file", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("main.8", &program));
+	if(program.com != NULL)
+		assert_string_equal("part file", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
 test_xfiletypes1_c(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
 	curr_stats.is_console = 1;
-	set_programs("*.tar", "x prog", 1);
-	set_programs("*.tar", "console prog", 0);
+	set_programs("*.tar", "x prog", "description", 1);
+	set_programs("*.tar", "console prog", "description", 0);
 
-	buf = get_default_program_for_file("file.version.tar");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("console prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("file.version.tar", &program));
+	if(program.com != NULL)
+		assert_string_equal("console prog", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
 test_xfiletypes1_x(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
 	curr_stats.is_console = 0;
-	set_programs("*.tar", "x prog", 1);
-	set_programs("*.tar", "console prog", 0);
+	set_programs("*.tar", "x prog", "description", 1);
+	set_programs("*.tar", "console prog", "description", 0);
 
-	buf = get_default_program_for_file("file.version.tar");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("x prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("file.version.tar", &program));
+	if(program.com != NULL)
+		assert_string_equal("x prog", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
 test_xfiletypes2_c(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
 	curr_stats.is_console = 1;
-	set_programs("*.tgz", "2 x prog", 1);
+	set_programs("*.tgz", "2 x prog", "description", 1);
 
-	buf = get_default_program_for_file("file.version.tgz");
-	assert_true(buf == NULL);
+	assert_false(get_default_program_for_file("file.version.tgz", &program));
 }
 
 static void
 test_xfiletypes2_x(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
 	curr_stats.is_console = 0;
-	set_programs("*.tgz", "2 x prog", 1);
+	set_programs("*.tgz", "2 x prog", "description", 1);
 
-	buf = get_default_program_for_file("file.version.tgz");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("2 x prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("file.version.tgz", &program));
+	if(program.com != NULL)
+		assert_string_equal("2 x prog", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
 test_xfiletypes3_c(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
 	curr_stats.is_console = 0;
-	set_programs("*.tar.bz2", "3 console prog", 0);
+	set_programs("*.tar.bz2", "3 console prog", "description", 0);
 
-	buf = get_default_program_for_file("file.version.tar.bz2");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("3 console prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("file.version.tar.bz2", &program));
+	if(program.com != NULL)
+		assert_string_equal("3 console prog", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
 test_xfiletypes3_x(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
 	curr_stats.is_console = 1;
-	set_programs("*.tar.bz2", "3 console prog", 0);
+	set_programs("*.tar.bz2", "3 console prog", "description", 0);
 
-	buf = get_default_program_for_file("file.version.tar.bz2");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("3 console prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("file.version.tar.bz2", &program));
+	if(program.com != NULL)
+		assert_string_equal("3 console prog", program.com);
+	free_assoc_prog(&program);
 }
-
 
 static void
 test_removing(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
 	curr_stats.is_console = 1;
-	set_programs("*.tar.bz2", "3 console prog", 0);
-	set_programs("*.tgz", "3 console prog", 0);
+	set_programs("*.tar.bz2", "3 console prog", "description", 0);
+	set_programs("*.tgz", "3 console prog", "description", 0);
 
-	buf = get_default_program_for_file("file.version.tar.bz2");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("3 console prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("file.version.tar.bz2", &program));
+	if(program.com != NULL)
+		assert_string_equal("3 console prog", program.com);
+	free_assoc_prog(&program);
 
-	buf = get_default_program_for_file("file.version.tgz");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("3 console prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("file.version.tgz", &program));
+	if(program.com != NULL)
+		assert_string_equal("3 console prog", program.com);
+	free_assoc_prog(&program);
 
 	remove_filetypes("*.tar.bz2");
 
-	buf = get_default_program_for_file("file.version.tar.bz2");
-	assert_true(buf == NULL);
+	assert_false(get_default_program_for_file("file.version.tar.bz2", &program));
 
-	buf = get_default_program_for_file("file.version.tgz");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("3 console prog", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("file.version.tgz", &program));
+	if(program.com != NULL)
+		assert_string_equal("3 console prog", program.com);
+	free_assoc_prog(&program);
 }
 
 static void
 test_star_and_dot(void)
 {
-	char *buf;
+	assoc_prog_t program;
 
 	curr_stats.is_console = 1;
-	set_programs("*.doc", "libreoffice", 0);
+	set_programs("*.doc", "libreoffice", "description", 0);
 
-	buf = get_default_program_for_file("a.doc");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("libreoffice", buf);
-	free(buf);
+	assert_true(get_default_program_for_file("a.doc", &program));
+	if(program.com != NULL)
+		assert_string_equal("libreoffice", program.com);
+	free_assoc_prog(&program);
 
-	buf = get_default_program_for_file(".a.doc");
-	assert_true(buf == NULL);
-	free(buf);
+	assert_false(get_default_program_for_file(".a.doc", &program));
+	assert_false(get_default_program_for_file(".doc", &program));
 
-	buf = get_default_program_for_file(".doc");
-	assert_true(buf == NULL);
-	free(buf);
+	set_programs(".*.doc", "hlibreoffice", "description", 0);
 
-	set_programs(".*.doc", "hlibreoffice", 0);
-
-	buf = get_default_program_for_file(".a.doc");
-	assert_false(buf == NULL);
-	if(buf != NULL)
-		assert_string_equal("hlibreoffice", buf);
-	free(buf);
+	assert_true(get_default_program_for_file(".a.doc", &program));
+	if(program.com != NULL)
+		assert_string_equal("hlibreoffice", program.com);
+	free_assoc_prog(&program);
 }
 
 void
@@ -393,9 +352,11 @@ filetype_tests(void)
 	run_test(test_match_empty);
 	run_test(test_match_full_line);
 	run_test(test_match_qmark);
-	run_test(test_escaping);
+	run_test(test_qmark_escaping);
+	run_test(test_star_escaping);
 	run_test(test_classes);
-	run_test(test_classes_negotiation);
+	run_test(test_classes_negotiation_with_emark);
+	run_test(test_classes_negotiation_with_hat);
 	run_test(test_classes_ranges);
 
 	run_test(test_xfiletypes1_c);

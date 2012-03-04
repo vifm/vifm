@@ -22,16 +22,27 @@
 
 typedef struct
 {
-	char *ext;
 	char *com;
-}assoc_t;
+	char *description;
+}
+assoc_prog_t;
+
+typedef struct
+{
+	char *ext;
+	assoc_prog_t program;
+}
+assoc_t;
 
 assoc_t *filetypes;
 assoc_t *xfiletypes;
 assoc_t *fileviewers;
-char * get_default_program_for_file(const char *file);
+
+/* Returns non-zero on success. */
+int get_default_program_for_file(const char *file, assoc_prog_t *result);
 char * get_viewer_for_file(char *file);
-void set_programs(const char *extensions, const char *programs, int x);
+void set_programs(const char *extensions, const char *programs,
+		const char *description, int x);
 void set_fileviewer(const char *extensions, const char *viewer);
 char * get_all_programs_for_file(const char *file);
 void reset_filetypes(void);
@@ -39,6 +50,10 @@ void reset_xfiletypes(void);
 void reset_fileviewers(void);
 void remove_filetypes(const char *extension);
 void replace_double_comma(char *cmd, int put_null);
+/* After this call structure contains NULL values */
+void free_assoc_prog(assoc_prog_t *assoc_prog);
+/* Returns non-zero for an empty assoc_prog_t structure. */
+int assoc_prog_is_empty(const assoc_prog_t *assoc_prog);
 
 #endif
 

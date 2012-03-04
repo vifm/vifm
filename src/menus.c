@@ -1527,7 +1527,7 @@ filetypes_khandler(struct menu_info *m, wchar_t *keys)
 		tmp[len - 2] = '\0';
 
 		remove_filetypes(ext);
-		set_programs(ext, tmp, 1);
+		set_programs(ext, tmp, NULL, 1);
 		free(tmp);
 		return 0;
 	}

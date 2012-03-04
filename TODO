@@ -68,6 +68,7 @@ Possible things to add.
         was passed on startup.
     'wildmode' option.
     A macro to redirect command output into view pane.
+    Maybe remove scripts from PATH on spawning subprocesses.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
