@@ -91,6 +91,10 @@ enum
 #endif
 };
 
+/* Returns non-zero on successful running. */
+static int try_run_with_filetype(FileView *view, const assoc_progs_t assocs,
+		const char *start, int background);
+
 static void
 show_position_in_menu(menu_info *m)
 {
@@ -1463,67 +1467,23 @@ show_commands_menu(FileView *view)
 	return 0;
 }
 
-char *
-form_program_list(const char *filename)
-{
-	char *ft_str, *mime_str;
-	int isdir;
-	char *result;
-
-	ft_str = get_all_programs_for_file(filename);
-	mime_str = get_magic_handlers(filename);
-
-	isdir = is_dir(filename);
-	if(ft_str == NULL && mime_str == NULL && !isdir) {
-		(void)show_error_msg("Filetype is not set.",
-				"No programs set for this filetype.");
-		return NULL;
-	}
-
-	if(ft_str == NULL)
-		ft_str = strdup("");
-	if(mime_str == NULL)
-		mime_str = "";
-
-	result = malloc(5 + strlen(ft_str) + 3 + strlen(mime_str) + 1);
-	if(result == NULL)
-	{
-		free(ft_str);
-		return NULL;
-	}
-
-	result[0] = '\0';
-	if(isdir)
-		strcat(result, "vifm,");
-	if(*ft_str != '\0')
-	{
-		strcat(result, ft_str);
-		strcat(result, ",");
-	}
-	strcat(result, "*,");
-	strcat(result, mime_str);
-	free(ft_str);
-
-	return result;
-}
-
 int
 show_filetypes_menu(FileView *view, int background)
 {
 	static menu_info m;
 
-	char *filename;
-	char *prog_str;
+	int i;
 
-	int x = 0;
-	int win_width;
-	char *p;
-	char *ptr;
+	char *filename = get_current_file_name(view);
+	assoc_progs_t ft = get_all_programs_for_file(filename);
+	const assoc_progs_t magic = get_magic_handlers(filename);
 
-	filename = get_current_file_name(view);
-	prog_str = form_program_list(filename);
-	if(prog_str == NULL)
+	if(ft.count == 0 && magic.count == 0)
+	{
+		(void)show_error_msg("Filetype is not set.",
+				"No programs set for this filetype.");
 		return 0;
+	}
 
 	m.top = 0;
 	m.current = 1;
@@ -1542,139 +1502,73 @@ show_filetypes_menu(FileView *view, int background)
 	m.extra_data = (background ? 1 : 0);
 	m.key_handler = NULL;
 
-	getmaxyx(menu_win, m.win_rows, win_width);
+	getmaxyx(menu_win, m.win_rows, i);
 
-	p = prog_str;
-	while(isspace(*p) || *p == ',')
-		p++;
+	if(view->dir_entry[view->list_pos].type == DIRECTORY)
+		m.len = add_to_string_array(&m.data, m.len, 1, VIFM_PREUDO_CMD);
 
-	if((ptr = strchr(p, ',')) == NULL)
-	{
-		m.len = 1;
-		m.data = (char **)realloc(m.data, sizeof(char *)*(win_width + 1));
-		m.data[0] = strdup(p);
-	}
-	else
-	{
-		char *prog_copy = strdup(p);
-		char *free_this = prog_copy;
-		char *ptr1 = NULL;
-		int i;
+	for(i = 0; i < ft.count; i++)
+		m.len = add_to_string_array(&m.data, m.len, 1, ft.list[i].com);
 
-		while((ptr = ptr1 = strchr(prog_copy, ',')) != NULL)
-		{
-			int i;
+	free(ft.list);
 
-			while(ptr != NULL && ptr[1] == ',')
-				ptr = ptr1 = strchr(ptr + 2, ',');
-			if(ptr == NULL)
-				break;
+	m.len = add_to_string_array(&m.data, m.len, 1, "");
 
-			*ptr = '\0';
-			ptr1++;
+	for(i = 0; i < magic.count; i++)
+		m.len = add_to_string_array(&m.data, m.len, 1, magic.list[i].com);
 
-			while(isspace(*prog_copy) || *prog_copy == ',')
-				prog_copy++;
+	free(magic.list);
 
-			for(i = 0; i < m.len; i++)
-				if(strcmp(m.data[i], prog_copy) == 0)
-					break;
-			if(i == m.len && prog_copy[0] != '\0')
-			{
-				m.data = (char **)realloc(m.data, sizeof(char *)*(m.len + 1));
-				if(strcmp(prog_copy, "*") == 0)
-					m.data[x] = strdup("");
-				else
-					m.data[x] = strdup(prog_copy);
-				replace_double_comma(m.data[x], 0);
-				x++;
-				m.len = x;
-			}
-			prog_copy = ptr1;
-		}
-
-		for(i = 0; i < m.len; i++)
-			if(strcmp(m.data[i], prog_copy) == 0)
-				break;
-		if(i == m.len)
-		{
-			m.data = (char **)realloc(m.data, sizeof(char *)*(m.len + 1));
-			m.data[x] = (char *)malloc((win_width + 1)*sizeof(char));
-			snprintf(m.data[x], win_width, "%s", prog_copy);
-			replace_double_comma(m.data[x], 0);
-			m.len++;
-		}
-
-		free(free_this);
-	}
 	setup_menu();
 	draw_menu(&m);
 	move_to_menu_pos(m.pos, &m);
 	enter_menu_mode(&m, view);
 
-	free(prog_str);
 	return 0;
 }
 
 int
 run_with_filetype(FileView *view, const char *beginning, int background)
 {
-	char *filename;
-	char *prog_str;
-	char *p;
-	char *prog_copy;
-	char *free_this;
 	size_t len = strlen(beginning);
 
-	filename = get_current_file_name(view);
-	prog_str = form_program_list(filename);
-	if(prog_str == NULL)
-		return 0;
+	char *filename = get_current_file_name(view);
+	assoc_progs_t ft = get_all_programs_for_file(filename);
+	const assoc_progs_t magic = get_magic_handlers(filename);
 
-	p = prog_str;
-	while(isspace(*p) || *p == ',')
-		p++;
-
-	prog_copy = strdup(p);
-	free_this = prog_copy;
-
-	while(prog_copy[0] != '\0')
+	if(view->dir_entry[view->list_pos].type == DIRECTORY &&
+			strncmp(VIFM_PREUDO_CMD, beginning, len) == 0)
 	{
-		char *ptr;
-		if((ptr = strchr(prog_copy, ',')) == NULL)
-			ptr = prog_copy + strlen(prog_copy);
-
-		while(ptr != NULL && ptr[1] == ',')
-			ptr = strchr(ptr + 2, ',');
-		if(ptr == NULL)
-			break;
-
-		*ptr++ = '\0';
-
-		while(isspace(*prog_copy) || *prog_copy == ',')
-			prog_copy++;
-
-		if(strcmp(prog_copy, "*") != 0)
-		{
-			replace_double_comma(prog_copy, 0);
-			if(strncmp(prog_copy, beginning, len) == 0)
-			{
-				if(view->dir_entry[view->list_pos].type == DIRECTORY &&
-						prog_copy == free_this)
-					handle_dir(view);
-				else
-					run_using_prog(view, prog_copy, 0, background);
-				free(free_this);
-				free(prog_str);
-				return 0;
-			}
-		}
-		prog_copy = ptr;
+		handle_dir(view);
+		return 0;
 	}
 
-	free(free_this);
-	free(prog_str);
-	return 1;
+	if(try_run_with_filetype(view, ft, beginning, background))
+	{
+		free(ft.list);
+		return 0;
+	}
+
+	free(ft.list);
+
+	return !try_run_with_filetype(view, magic, beginning, background);
+}
+
+static int
+try_run_with_filetype(FileView *view, const assoc_progs_t assocs,
+		const char *start, int background)
+{
+	const size_t len = strlen(start);
+	int i;
+	for(i = 0; i < assocs.count; i++)
+	{
+		if(strncmp(assocs.list[i].com, start, len) == 0)
+		{
+			run_using_prog(view, assocs.list[i].com, 0, background);
+			return 1;
+		}
+	}
+	return 0;
 }
 
 /* Returns new value for save_msg flag */

@@ -18,9 +18,7 @@ setup(void)
 static void
 teardown(void)
 {
-	reset_filetypes();
-	reset_xfiletypes();
-	reset_fileviewers();
+	reset_all_file_associations();
 }
 
 static void

@@ -30,33 +30,33 @@
 #ifndef _WIN32
 #include <sys/dir.h>
 #endif
-#include<dirent.h> /* DIR */
+#include <dirent.h> /* DIR */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "filetype.h"
 #include "status.h"
 #include "undo.h"
 #include "utils.h"
 
 #include "file_magic.h"
 
-static char* handlers;
-static size_t handlers_len;
+static assoc_progs_t handlers;
 
-static int get_gtk_mimetype(const char* filename, char* buf);
-static int get_magic_mimetype(const char* filename, char* buf);
-static int get_file_mimetype(const char* filename, char* buf, size_t buf_sz);
-static char * get_handlers(const char* mime_type);
+static int get_gtk_mimetype(const char *filename, char *buf);
+static int get_magic_mimetype(const char *filename, char *buf);
+static int get_file_mimetype(const char *filename, char *buf, size_t buf_sz);
+static assoc_progs_t get_handlers(const char *mime_type);
 #ifndef _WIN32
-static void enum_files(const char* path, const char* mime_type);
-static void process_file(const char* path, const char* mime_type);
-static void expand_desktop(const char* str, char* buf);
+static void enum_files(const char *path, const char *mime_type);
+static void process_file(const char *path, const char *mime_type);
+static void expand_desktop(const char *str, char *buf);
 #endif
 
-char*
-get_magic_handlers(const char* file)
+assoc_progs_t
+get_magic_handlers(const char *file)
 {
 	return get_handlers(get_mimetype(file));
 }
@@ -80,11 +80,11 @@ get_mimetype(const char *file)
 }
 
 static int
-get_gtk_mimetype(const char* filename, char* buf)
+get_gtk_mimetype(const char *filename, char *buf)
 {
 #ifdef HAVE_LIBGTK
-	GFile* file;
-	GFileInfo* info;
+	GFile *file;
+	GFileInfo *info;
 
 	if(!curr_stats.gtk_available)
 		return -1;
@@ -108,7 +108,7 @@ get_gtk_mimetype(const char* filename, char* buf)
 }
 
 static int
-get_magic_mimetype(const char* filename, char* buf)
+get_magic_mimetype(const char *filename, char *buf)
 {
 #ifdef HAVE_LIBMAGIC
 	magic_t magic;
@@ -129,7 +129,7 @@ get_magic_mimetype(const char* filename, char* buf)
 }
 
 static int
-get_file_mimetype(const char* filename, char* buf, size_t buf_sz)
+get_file_mimetype(const char *filename, char *buf, size_t buf_sz)
 {
 #ifdef HAVE_FILE_PROG
 	FILE *pipe;
@@ -155,12 +155,14 @@ get_file_mimetype(const char* filename, char* buf, size_t buf_sz)
 #endif /* #ifdef HAVE_FILE_PROG */
 }
 
-char *
-get_handlers(const char* mime_type)
+static assoc_progs_t
+get_handlers(const char *mime_type)
 {
-	free(handlers);
-	handlers = NULL;
-	handlers_len = 0;
+	int i;
+	for(i = 0; i < handlers.count; i++)
+		free_assoc_prog(&handlers.list[i]);
+	handlers.list = NULL;
+	handlers.count = 0;
 
 #ifndef _WIN32
 	enum_files("/usr/share/applications", mime_type);
@@ -174,8 +176,8 @@ get_handlers(const char* mime_type)
 static void
 enum_files(const char *path, const char *mime_type)
 {
-	DIR* dir;
-	struct dirent* dentry;
+	DIR *dir;
+	struct dirent *dentry;
 	const char *slash = "";
 
 	dir = opendir(path);
@@ -204,10 +206,9 @@ enum_files(const char *path, const char *mime_type)
 }
 
 static void
-process_file(const char* path, const char *mime_type)
+process_file(const char *path, const char *mime_type)
 {
-	FILE* f;
-	char *p;
+	FILE *f;
 	char exec_buf[1024] = "";
 	char mime_type_buf[2048] = "";
 	char buf[2048];
@@ -240,21 +241,12 @@ process_file(const char* path, const char *mime_type)
 		return;
 
 	expand_desktop(exec_buf + 5, buf);
-	p = realloc(handlers, handlers_len + 1 + strlen(buf) + 1);
-	if(p == NULL)
-		return;
 
-	handlers = p;
-	if(handlers_len == 0)
-		*handlers = '\0';
-	else
-		strcat(handlers, ",");
-	handlers_len += 1 + strlen(buf);
-	strcat(handlers, buf);
+	add_assoc_prog(&handlers, buf, "");
 }
 
 static void
-expand_desktop(const char* str, char* buf)
+expand_desktop(const char *str, char *buf)
 {
 	int substituted = 0;
 	while(*str != '\0')

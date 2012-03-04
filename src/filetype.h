@@ -20,6 +20,8 @@
 #ifndef __FILETYPE_H__
 #define __FILETYPE_H__
 
+#define VIFM_PREUDO_CMD "vifm"
+
 typedef struct
 {
 	char *com;
@@ -53,15 +55,15 @@ char * get_viewer_for_file(char *file);
 void set_programs(const char *patterns, const char *programs,
 		const char *description, int x);
 void set_fileviewer(const char *patterns, const char *viewer);
-char * get_all_programs_for_file(const char *file);
-/* Caller should free only the array, but not elements. */
-/* const assoc_progs_t * get_all_programs_for_file(const char *file); */
-void reset_filetypes(void);
-void reset_xfiletypes(void);
-void reset_fileviewers(void);
+/* Caller should free only the array, but not its elements. */
+assoc_progs_t get_all_programs_for_file(const char *file);
+/* Resets associations set by :filetype, :filextype and :fileviewer commands. */
+void reset_all_file_associations(void);
 void replace_double_comma(char *cmd, int put_null);
 /* After this call structure contains NULL values */
 void free_assoc_prog(assoc_prog_t *assoc_prog);
+void add_assoc_prog(assoc_progs_t *assocs, const char *program,
+		const char *description);
 /* Returns non-zero for an empty assoc_prog_t structure. */
 int assoc_prog_is_empty(const assoc_prog_t *assoc_prog);
 

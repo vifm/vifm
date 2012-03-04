@@ -19,8 +19,11 @@
 #ifndef __MAGIC_H__
 #define __MAGIC_H__
 
+#include "filetype.h"
+
 const char * get_mimetype(const char *file);
-char * get_magic_handlers(const char *file);
+/* Caller should free only the array, but not its elements. */
+assoc_progs_t get_magic_handlers(const char *file);
 
 #endif
 

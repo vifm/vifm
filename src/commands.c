@@ -55,6 +55,7 @@
 #include "completion.h"
 #include "config.h"
 #include "dir_stack.h"
+#include "file_magic.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
@@ -972,54 +973,38 @@ complete_chown(const char *str)
 static void
 complete_filetype(const char *str)
 {
-	char *filename;
-	char *prog_str;
-	char *p;
-	char *prog_copy;
-	char *free_this;
+	int i;
 	size_t len = strlen(str);
 
-	filename = get_current_file_name(curr_view);
-	prog_str = form_program_list(filename);
-	if(prog_str == NULL)
-		return;
+	char *filename = get_current_file_name(curr_view);
+	assoc_progs_t ft = get_all_programs_for_file(filename);
+	const assoc_progs_t magic = get_magic_handlers(filename);
 
-	p = prog_str;
-	while(isspace(*p) || *p == ',')
-		p++;
-
-	prog_copy = strdup(p);
-	free_this = prog_copy;
-
-	while(prog_copy[0] != '\0')
+	if(curr_view->dir_entry[curr_view->list_pos].type == DIRECTORY &&
+			strncmp(VIFM_PREUDO_CMD, str, len) == 0)
 	{
-		char *ptr;
-		if((ptr = strchr(prog_copy, ',')) == NULL)
-			ptr = prog_copy + strlen(prog_copy);
-
-		while(ptr != NULL && ptr[1] == ',')
-			ptr = strchr(ptr + 2, ',');
-		if(ptr == NULL)
-			break;
-
-		*ptr++ = '\0';
-
-		while(isspace(*prog_copy) || *prog_copy == ',')
-			prog_copy++;
-
-		if(strcmp(prog_copy, "*") != 0)
-		{
-			if((p = strchr(prog_copy, ' ')) != NULL)
-				*p = '\0';
-			replace_double_comma(prog_copy, 0);
-			if(strncmp(prog_copy, str, len) == 0)
-				add_completion(prog_copy);
-		}
-		prog_copy = ptr;
+		add_completion(VIFM_PREUDO_CMD);
 	}
 
-	free(free_this);
-	free(prog_str);
+	for(i = 0; i < ft.count; i++)
+	{
+		if(strncmp(ft.list[i].com, str, len) == 0)
+		{
+			add_completion(ft.list[i].com);
+		}
+	}
+
+	free(ft.list);
+
+	for(i = 0; i < magic.count; i++)
+	{
+		if(strncmp(magic.list[i].com, str, len) == 0)
+		{
+			add_completion(magic.list[i].com);
+		}
+	}
+
+	free(magic.list);
 
 	completion_group_end();
 	add_completion(str);
@@ -4318,12 +4303,8 @@ restart_cmd(const cmd_info_t *cmd_info)
 	/* options */
 	reset_options_to_default();
 
-	/* file types */
-	reset_filetypes();
-	reset_xfiletypes();
-
-	/* file viewers */
-	reset_fileviewers();
+	/* file types and viewers */
+	reset_all_file_associations();
 
 	/* ga command results */
 	tree_free(curr_stats.dirsize_cache);
