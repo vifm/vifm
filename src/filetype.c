@@ -389,24 +389,6 @@ reset_fileviewers(void)
 	reset_list(&fileviewers, &cfg.fileviewers_num);
 }
 
-void
-remove_filetypes(const char *extension)
-{
-	int x, y;
-
-	y = 0;
-	for(x = 0; x < nfiletypes; x++)
-	{
-		if(strcmp(all_filetypes[x].ext, extension) == 0)
-		{
-			free_assoc(&all_filetypes[x]);
-			continue;
-		}
-		all_filetypes[y++] = all_filetypes[x];
-	}
-	nfiletypes = y;
-}
-
 static void
 free_assoc(assoc_t *assoc)
 {

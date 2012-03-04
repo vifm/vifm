@@ -1463,78 +1463,6 @@ show_commands_menu(FileView *view)
 	return 0;
 }
 
-static int
-filetypes_khandler(struct menu_info *m, wchar_t *keys)
-{
-	if(wcscmp(keys, L"K") == 0) /* move element up */
-	{
-		char* tmp;
-
-		if(m->pos == 0)
-			return 0;
-
-		tmp = m->data[m->pos - 1];
-		m->data[m->pos - 1] = m->data[m->pos];
-		m->data[m->pos] = tmp;
-
-		m->pos--;
-		m->current--;
-
-		draw_menu(m);
-		move_to_menu_pos(m->pos, m);
-
-		return 1;
-	}
-	else if(wcscmp(keys, L"J") == 0) /* move element down */
-	{
-		char* tmp;
-
-		if(m->pos == m->len - 1)
-			return 0;
-
-		tmp = m->data[m->pos];
-		m->data[m->pos] = m->data[m->pos + 1];
-		m->data[m->pos + 1] = tmp;
-
-		m->pos++;
-		m->current++;
-
-		draw_menu(m);
-		move_to_menu_pos(m->pos, m);
-
-		return 1;
-	}
-	else if(wcscmp(keys, L"L") == 0 && m->len != 0) /* store list */
-	{
-		char ext[16];
-		char *tmp, *extension;
-		size_t len = 1;
-		int i;
-
-		extension = strchr(get_current_file_name(curr_view), '.');
-		if(extension == NULL)
-			snprintf(ext, sizeof(ext), "*.%s", extension);
-		else
-			snprintf(ext, sizeof(ext), "%s", get_current_file_name(curr_view));
-
-		for(i = 0; i < m->len && m->data[i][0] != '\0'; i++)
-			len += strlen(m->data[i]) + 1;
-
-		tmp = malloc(len);
-		tmp[0] = '\0';
-		for(i = 0; i < m->len && m->data[i][0] != '\0'; i++)
-			strcat(strcat(tmp, m->data[i]), ",");
-		tmp[len - 2] = '\0';
-
-		remove_filetypes(ext);
-		set_programs(ext, tmp, NULL, 1);
-		free(tmp);
-		return 0;
-	}
-
-	return -1;
-}
-
 char *
 form_program_list(const char *filename)
 {
@@ -1612,7 +1540,7 @@ show_filetypes_menu(FileView *view, int background)
 	m.args = NULL;
 	m.data = NULL;
 	m.extra_data = (background ? 1 : 0);
-	m.key_handler = filetypes_khandler;
+	m.key_handler = NULL;
 
 	getmaxyx(menu_win, m.win_rows, win_width);
 

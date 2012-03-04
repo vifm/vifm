@@ -1829,11 +1829,8 @@ directory pair at the top of the stack.
 
 Filetype menu~
 
-vifm-commands from vifmrc are displayed above empty line. When all commands below
-empty line were found in .desktop files.
-
-J and K - to move menu items
-L - save all commands above empty line as program list
+Commands from vifmrc or typed in command-line are displayed above empty line.
+All commands below empty line are from .desktop files.
 
 Fileinfo dialog~
 

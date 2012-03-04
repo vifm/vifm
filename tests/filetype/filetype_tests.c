@@ -288,35 +288,6 @@ test_xfiletypes3_x(void)
 }
 
 static void
-test_removing(void)
-{
-	assoc_prog_t program;
-
-	curr_stats.is_console = 1;
-	set_programs("*.tar.bz2", "3 console prog", "description", 0);
-	set_programs("*.tgz", "3 console prog", "description", 0);
-
-	assert_true(get_default_program_for_file("file.version.tar.bz2", &program));
-	if(program.com != NULL)
-		assert_string_equal("3 console prog", program.com);
-	free_assoc_prog(&program);
-
-	assert_true(get_default_program_for_file("file.version.tgz", &program));
-	if(program.com != NULL)
-		assert_string_equal("3 console prog", program.com);
-	free_assoc_prog(&program);
-
-	remove_filetypes("*.tar.bz2");
-
-	assert_false(get_default_program_for_file("file.version.tar.bz2", &program));
-
-	assert_true(get_default_program_for_file("file.version.tgz", &program));
-	if(program.com != NULL)
-		assert_string_equal("3 console prog", program.com);
-	free_assoc_prog(&program);
-}
-
-static void
 test_star_and_dot(void)
 {
 	assoc_prog_t program;
@@ -365,8 +336,6 @@ filetype_tests(void)
 	run_test(test_xfiletypes2_x);
 	run_test(test_xfiletypes3_c);
 	run_test(test_xfiletypes3_x);
-
-	run_test(test_removing);
 
 	run_test(test_star_and_dot);
 

@@ -1,5 +1,7 @@
 0.7.2 to current
 
+	Removed possibility of moving items in :file menu.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with

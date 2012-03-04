@@ -48,7 +48,6 @@ char * get_all_programs_for_file(const char *file);
 void reset_filetypes(void);
 void reset_xfiletypes(void);
 void reset_fileviewers(void);
-void remove_filetypes(const char *extension);
 void replace_double_comma(char *cmd, int put_null);
 /* After this call structure contains NULL values */
 void free_assoc_prog(assoc_prog_t *assoc_prog);
