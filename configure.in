@@ -169,12 +169,24 @@ AC_ARG_ENABLE(compatibility_mode,
 	[compatibility_mode=$enableval],
 	[compatibility_mode=yes])
 
+AC_ARG_ENABLE(desktop_files,
+	AS_HELP_STRING(
+		[--disable-desktop-files],
+		[disable parsing of *.desktop files found on your system to get a list
+		 of programs associated with filetypes @<:@default=enabled@:>@     ]),
+	[desktop_files=$enableval],
+	[desktop_files=yes])
+
 if test "$extended_keys" = "yes"; then
 	AC_DEFINE([ENABLE_EXTENDED_KEYS], [1], [enables extended keys (arrows etc.)])
 fi
 
 if test "$compatibility_mode" = "yes"; then
 	AC_DEFINE([ENABLE_COMPATIBILITY_MODE], [1], [old behaviour of dd and <tab>])
+fi
+
+if test "$desktop_files" = "yes"; then
+	AC_DEFINE([ENABLE_DESKTOP_FILES], [1], [parsing of .desktop files])
 fi
 
 AC_OUTPUT([

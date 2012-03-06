@@ -21,6 +21,7 @@ Basic things that need to be done.
 Documentation.
 	Better documentation.
     Maybe divide vifm.txt in several files (if it becomes too big).
+	Document ./configure options in the INSTALL file.
 
 Windows.
     Make :chmod accept arguments.

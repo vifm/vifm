@@ -12,6 +12,9 @@
 /* old behaviour of dd and <tab> */
 #undef ENABLE_COMPATIBILITY_MODE
 
+/* parsing of .desktop files */
+#undef ENABLE_DESKTOP_FILES
+
 /* enables extended keys (arrows etc.) */
 #undef ENABLE_EXTENDED_KEYS
 

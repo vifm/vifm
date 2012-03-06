@@ -16,11 +16,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __MAGIC_H__
-#define __MAGIC_H__
+#ifndef __FILE_MAGIC_H__
+#define __FILE_MAGIC_H__
 
 #include "filetype.h"
 
+/* Returns pointer to a statically allocated buffer. */
 const char * get_mimetype(const char *file);
 /* Caller shouldn't free anything. */
 assoc_records_t get_magic_handlers(const char *file);

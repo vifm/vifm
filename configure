@@ -738,6 +738,7 @@ with_gtk
 with_libmagic
 enable_extended_keys
 enable_compatibility_mode
+enable_desktop_files
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1380,6 +1381,9 @@ Optional Features:
   --disable-compatibility-mode
                           disable compatibility with previous versions of vifm
                           (behaviour of dd and <tab>) [default=enabled]
+  --disable-desktop-files disable parsing of *.desktop files found on your
+                          system to get a list of programs associated with
+                          filetypes [default=enabled]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -13308,6 +13312,14 @@ else
 fi
 
 
+# Check whether --enable-desktop_files was given.
+if test "${enable_desktop_files+set}" = set; then :
+  enableval=$enable_desktop_files; desktop_files=$enableval
+else
+  desktop_files=yes
+fi
+
+
 if test "$extended_keys" = "yes"; then
 
 $as_echo "#define ENABLE_EXTENDED_KEYS 1" >>confdefs.h
@@ -13317,6 +13329,12 @@ fi
 if test "$compatibility_mode" = "yes"; then
 
 $as_echo "#define ENABLE_COMPATIBILITY_MODE 1" >>confdefs.h
+
+fi
+
+if test "$desktop_files" = "yes"; then
+
+$as_echo "#define ENABLE_DESKTOP_FILES 1" >>confdefs.h
 
 fi
 

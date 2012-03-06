@@ -38,7 +38,6 @@
 
 #include "filetype.h"
 #include "status.h"
-#include "undo.h"
 #include "utils.h"
 
 #include "file_magic.h"
@@ -49,7 +48,7 @@ static int get_gtk_mimetype(const char *filename, char *buf);
 static int get_magic_mimetype(const char *filename, char *buf);
 static int get_file_mimetype(const char *filename, char *buf, size_t buf_sz);
 static assoc_records_t get_handlers(const char *mime_type);
-#ifndef _WIN32
+#if !defined(_WIN32) && defined(ENABLE_DESKTOP_FILES)
 static void enum_files(const char *path, const char *mime_type);
 static void process_file(const char *path, const char *mime_type);
 static void expand_desktop(const char *str, char *buf);
@@ -61,7 +60,7 @@ get_magic_handlers(const char *file)
 	return get_handlers(get_mimetype(file));
 }
 
-/* Returns pointer to a static buffer */
+/* Returns pointer to a statically allocated buffer. */
 const char *
 get_mimetype(const char *file)
 {
@@ -165,7 +164,7 @@ get_handlers(const char *mime_type)
 	handlers.list = NULL;
 	handlers.count = 0;
 
-#ifndef _WIN32
+#if !defined(_WIN32) && defined(ENABLE_DESKTOP_FILES)
 	enum_files("/usr/share/applications", mime_type);
 	enum_files("/usr/local/share/applications", mime_type);
 #endif
@@ -173,7 +172,7 @@ get_handlers(const char *mime_type)
 	return handlers;
 }
 
-#ifndef _WIN32
+#if !defined(_WIN32) && defined(ENABLE_DESKTOP_FILES)
 static void
 enum_files(const char *path, const char *mime_type)
 {

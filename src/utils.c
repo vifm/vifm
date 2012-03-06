@@ -49,6 +49,7 @@
 
 #include <unistd.h> /* chdir() */
 
+#include <assert.h>
 #include <ctype.h>
 #include <errno.h>
 #include <math.h>
@@ -436,10 +437,11 @@ get_perm_string(char * buf, int len, mode_t mode)
 int
 fill_version_info(char **list)
 {
+	const int LEN = 12;
 	int x = 0;
 
 	if(list == NULL)
-		return 16; /* ask for more than needed */
+		return LEN;
 
 	list[x++] = strdup("Version: " VERSION);
 	list[x] = malloc(sizeof("Git commit hash: ") + strlen(GIT_HASH) + 1);
@@ -457,6 +459,12 @@ fill_version_info(char **list)
 	list[x++] = strdup("Support of extended keys is on");
 #else
 	list[x++] = strdup("Support of extended keys is off");
+#endif
+
+#ifdef ENABLE_DESKTOP_FILES
+	list[x++] = strdup("Parsing of .desktop files is enabled");
+#else
+	list[x++] = strdup("Parsing of .desktop files is disabled");
 #endif
 
 #ifdef HAVE_LIBGTK
@@ -490,6 +498,8 @@ fill_version_info(char **list)
 	list[x++] = strdup("With -n option for cp and mv");
 #endif /* _WIN32 */
 #endif
+
+	assert(x == LEN);
 
 	return x;
 }
