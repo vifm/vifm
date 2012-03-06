@@ -165,3 +165,5 @@ function! s:StartVifm(editcmd, ...)
 	" Go to first file
 	execute 'drop' firstfile
 endfunction
+
+" vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
