@@ -148,6 +148,7 @@ get_file_mimetype(const char *filename, char *buf, size_t buf_sz)
 	}
 
 	pclose(pipe);
+	chomp(buf);
 
 	return 0;
 #else /* #ifdef HAVE_FILE_PROG */

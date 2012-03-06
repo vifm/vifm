@@ -31,6 +31,9 @@
 
 	Fixed bug with plugin and parenthesis.
 
+	Fixed getting list of associated programs using .desktop files when the
+	file utility is used to obtain mime-type of a file.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.
