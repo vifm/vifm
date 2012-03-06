@@ -4,7 +4,7 @@
 " Last Change: 2001 November 29
 
 " Maintainer: xaizek <xaizek@gmail.com>
-" Last Change: 2011 November 24
+" Last Change: 2012 March 6
 
 " vifm and vifm.vim can be found at http://vifm.sf.net
 
@@ -103,9 +103,9 @@ function! s:StartVifm(editcmd, ...)
 	endif
 
 	let ldir = (a:0 > 0) ? a:1 : expand('%:p:h')
-    let ldir = substitute(ldir, '\', '/', 'g')
+	let ldir = substitute(ldir, '\', '/', 'g')
 	let rdir = (a:0 > 1) ? a:2 : ''
-    let rdir = substitute(rdir, '\', '/', 'g')
+	let rdir = substitute(rdir, '\', '/', 'g')
 	if has('win32')
 		let ldir = '"'.ldir.'"'
 		if len(rdir) != 0
@@ -119,7 +119,7 @@ function! s:StartVifm(editcmd, ...)
 	" Gvim cannot handle ncurses so run vifm in a terminal.
 	if has('gui_running')
 		execute 'silent !' g:vifm_term g:vifm_exec '-f' g:vifm_exec_args ldir
-			\ rdir
+		      \ rdir
 	else
 		execute 'silent !' g:vifm_exec '-f' g:vifm_exec_args ldir rdir
 	endif
@@ -129,7 +129,7 @@ function! s:StartVifm(editcmd, ...)
 	" The selected files are written and read from a file instead of using
 	" vim's clientserver so that it will work in the console without a X server
 	" running.
-	
+
 	let vimfiles = fnamemodify(s:vifm_home.'/vimfiles', ':p')
 	if !file_readable(vimfiles)
 		echohl WarningMsg | echo 'vimfiles file not found' | echohl None
@@ -153,7 +153,7 @@ function! s:StartVifm(editcmd, ...)
 	endif
 
 	" Don't split if current window is empty
-    let firstfile = flist[0]
+	let firstfile = flist[0]
 	if expand('%') == '' && a:editcmd =~ '^v\?split$'
 		execute 'edit' fnamemodify(flist[0], ':.')
 		let flist = flist[1:-1]
