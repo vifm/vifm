@@ -103,18 +103,9 @@ function! s:StartVifm(editcmd, ...)
 	endif
 
 	let ldir = (a:0 > 0) ? a:1 : expand('%:p:h')
-	let ldir = substitute(ldir, '\', '/', 'g')
+	let ldir = s:PreparePath(ldir)
 	let rdir = (a:0 > 1) ? a:2 : ''
-	let rdir = substitute(rdir, '\', '/', 'g')
-	if has('win32')
-		let ldir = '"'.ldir.'"'
-		if len(rdir) != 0
-			let rdir = '"'.rdir.'"'
-		endif
-	else
-		let ldir = fnameescape(ldir)
-		let rdir = fnameescape(rdir)
-	endif
+	let rdir = s:PreparePath(rdir)
 
 	" Gvim cannot handle ncurses so run vifm in a terminal.
 	if has('gui_running')
@@ -164,6 +155,18 @@ function! s:StartVifm(editcmd, ...)
 	endfor
 	" Go to first file
 	execute 'drop' firstfile
+endfunction
+
+function! s:PreparePath(path)
+	let path = substitute(a:path, '\', '/', 'g')
+	if has('win32')
+		if len(path) != 0
+			let path = '"'.path.'"'
+		endif
+	else
+		let path = escape(fnameescape(path), '()')
+	endif
+	return path
 endfunction
 
 " vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
