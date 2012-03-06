@@ -332,6 +332,12 @@ chosp(char *text)
 		text[len - 1] = '\0';
 }
 
+int
+ends_with_slash(const char *str)
+{
+	return str[0] != '\0' && str[strlen(str) - 1] == '/';
+}
+
 wchar_t *
 to_wide(const char *s)
 {
@@ -939,15 +945,23 @@ is_path_absolute(const char *path)
 }
 
 int
-ends_with(const char* str, const char* suffix)
+starts_with(const char *str, const char *prefix)
+{
+	size_t prefix_len = strlen(prefix);
+	return strncmp(str, prefix, prefix_len) == 0;
+}
+
+int
+ends_with(const char *str, const char *suffix)
 {
 	size_t str_len = strlen(str);
-	size_t suf_len = strlen(suffix);
+	size_t suffix_len = strlen(suffix);
 
-	if(str_len < suf_len)
+	if(str_len < suffix_len)
+	{
 		return 0;
-	else
-		return (strcmp(suffix, str + str_len - suf_len) == 0);
+	}
+	return strcmp(suffix, str + str_len - suffix_len) == 0;
 }
 
 char *

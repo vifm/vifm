@@ -42,6 +42,10 @@
 
 #include "file_magic.h"
 
+static const char EXEC_KEY[] = "Exec=";
+static const char MIMETYPE_KEY[] = "MimeType=";
+static const char NAME_KEY[] = "Name=";
+
 static assoc_records_t handlers;
 
 static int get_gtk_mimetype(const char *filename, char *buf);
@@ -50,7 +54,7 @@ static int get_file_mimetype(const char *filename, char *buf, size_t buf_sz);
 static assoc_records_t get_handlers(const char *mime_type);
 #if !defined(_WIN32) && defined(ENABLE_DESKTOP_FILES)
 static void enum_files(const char *path, const char *mime_type);
-static void process_file(const char *path, const char *mime_type);
+static void process_file(const char *path, const char *file_mime_type);
 static void expand_desktop(const char *str, char *buf);
 #endif
 
@@ -86,7 +90,9 @@ get_gtk_mimetype(const char *filename, char *buf)
 	GFileInfo *info;
 
 	if(!curr_stats.gtk_available)
+	{
 		return -1;
+	}
 
 	file = g_file_new_for_path(filename);
 	info = g_file_query_info(file, "standard::", G_FILE_QUERY_INFO_NONE, NULL,
@@ -114,7 +120,9 @@ get_magic_mimetype(const char *filename, char *buf)
 
 	magic = magic_open(MAGIC_MIME_TYPE);
 	if(magic == NULL)
+	{
 		return -1;
+	}
 
 	magic_load(magic, NULL);
 
@@ -138,7 +146,9 @@ get_file_mimetype(const char *filename, char *buf, size_t buf_sz)
 	snprintf(command, sizeof(command), "file \"%s\" -b --mime-type", filename);
 
 	if((pipe = popen(command, "r")) == NULL)
+	{
 		return -1;
+	}
 
 	if(fgets(buf, buf_sz, pipe) != buf)
 	{
@@ -158,11 +168,7 @@ get_file_mimetype(const char *filename, char *buf, size_t buf_sz)
 static assoc_records_t
 get_handlers(const char *mime_type)
 {
-	int i;
-	for(i = 0; i < handlers.count; i++)
-		free_assoc_record(&handlers.list[i]);
-	handlers.list = NULL;
-	handlers.count = 0;
+	free_assoc_records(&handlers);
 
 #if !defined(_WIN32) && defined(ENABLE_DESKTOP_FILES)
 	enum_files("/usr/share/applications", mime_type);
@@ -178,71 +184,78 @@ enum_files(const char *path, const char *mime_type)
 {
 	DIR *dir;
 	struct dirent *dentry;
-	const char *slash = "";
+	const char *slash;
 
-	dir = opendir(path);
-	if(dir == NULL)
+	if((dir = opendir(path)) == NULL)
+	{
 		return;
+	}
 
-	if(path[strlen(path) - 1] != '/')
-		slash = "/";
+	slash = ends_with_slash(path) ? "" : "/";
 
-	while((dentry = readdir(dir)) != NULL) {
+	while((dentry = readdir(dir)) != NULL)
+	{
 		char buf[PATH_MAX];
 
-		if(pathcmp(dentry->d_name, ".") == 0)
+		if(pathcmp(dentry->d_name, ".") == 0 || pathcmp(dentry->d_name, "..") == 0)
+		{
 			continue;
-		else if(pathcmp(dentry->d_name, "..") == 0)
-			continue;
+		}
 
 		snprintf(buf, sizeof (buf), "%s%s%s", path, slash, dentry->d_name);
 		if(dentry->d_type == DT_DIR)
+		{
 			enum_files(buf, mime_type);
+		}
 		else
+		{
 			process_file(buf, mime_type);
+		}
 	}
 
 	closedir(dir);
 }
 
 static void
-process_file(const char *path, const char *mime_type)
+process_file(const char *path, const char *file_mime_type)
 {
 	FILE *f;
-	char exec_buf[1024] = "";
-	char mime_type_buf[2048] = "";
+	char exec[1024] = "", mime_type[2048] = "", name[2048] = "";
 	char buf[2048];
 
-	if(!ends_with(path, ".desktop"))
-		return;
-
-	f = fopen(path, "r");
-	if(f == NULL)
-		return;
-
-	while(fgets(buf, sizeof (buf), f) != NULL)
+	if(!ends_with(path, ".desktop") || (f = fopen(path, "r")) == NULL)
 	{
-		size_t len = strlen(buf);
+		return;
+	}
 
-		if(buf[len - 1] == '\n')
-			buf[len - 1] = '\0';
+	while(fgets(buf, sizeof(buf), f) != NULL)
+	{
+		chomp(buf);
 
-		if(strncmp(buf, "Exec=", 5) == 0)
-			strcpy(exec_buf, buf);
-		else if (strncmp(buf, "MimeType=", 9) == 0)
-			strcpy(mime_type_buf, buf);
+		if(starts_with(buf, EXEC_KEY))
+		{
+			snprintf(exec, sizeof(exec), "%s", buf + (ARRAY_LEN(EXEC_KEY) - 1));
+		}
+		else if(starts_with(buf, MIMETYPE_KEY))
+		{
+			snprintf(mime_type, sizeof(mime_type), "%s",
+					buf + (ARRAY_LEN(MIMETYPE_KEY) - 1));
+		}
+		else if(starts_with(buf, NAME_KEY))
+		{
+			snprintf(name, sizeof(name), "%s", buf + (ARRAY_LEN(NAME_KEY) - 1));
+		}
 	}
 
 	fclose(f);
 
-	if(strstr(mime_type_buf, mime_type) == NULL)
+	if(strstr(mime_type, file_mime_type) == NULL || exec[0] == '\0')
+	{
 		return;
-	if(exec_buf[0] == '\0')
-		return;
+	}
 
-	expand_desktop(exec_buf + 5, buf);
-
-	add_assoc_record(&handlers, buf, "");
+	expand_desktop(exec, buf);
+	add_assoc_record(&handlers, buf, name);
 }
 
 static void
@@ -256,10 +269,10 @@ expand_desktop(const char *str, char *buf)
 			*buf++ = *str++;
 			continue;
 		}
+
 		str++;
 		if(*str == 'c')
 		{
-			substituted = 1;
 			strcpy(buf, "caption");
 			buf += strlen(buf);
 		}
@@ -271,11 +284,10 @@ expand_desktop(const char *str, char *buf)
 		}
 		str++;
 	}
-	if(substituted)
-		*buf = '\0';
-	else
+
+	*buf = substituted ? '\0' : ' ';
+	if(!substituted)
 	{
-		*buf = ' ';
 		strcpy(buf + 1, "%f");
 	}
 }

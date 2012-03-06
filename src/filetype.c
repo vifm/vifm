@@ -432,16 +432,22 @@ reset_list_head(assoc_list_t *assoc_list)
 static void
 free_assoc(assoc_t *assoc)
 {
-	int i;
 	safe_free(&assoc->pattern);
-	for(i = 0; i < assoc->records.count; i++)
+	free_assoc_records(&assoc->records);
+}
+
+void
+free_assoc_records(assoc_records_t *records)
+{
+	int i;
+	for(i = 0; i < records->count; i++)
 	{
-		free_assoc_record(&assoc->records.list[i]);
+		free_assoc_record(&records->list[i]);
 	}
 
-	free(assoc->records.list);
-	assoc->records.list = NULL;
-	assoc->records.count = 0;
+	free(records->list);
+	records->list = NULL;
+	records->count = 0;
 }
 
 void

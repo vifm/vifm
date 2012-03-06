@@ -57,6 +57,7 @@ extern struct fuse_mount_t *fuse_mounts;
 
 void chomp(char *text);
 void chosp(char *text);
+int ends_with_slash(const char *str);
 /* Checks if path is an existing directory. */
 int is_dir(const char *path);
 /* Checks if path could be a directory (e.g. it can be UNC root on Windows). */
@@ -90,7 +91,8 @@ const char * get_regexp_error(int err, regex_t *re);
 int is_root_dir(const char *path);
 int is_unc_root(const char *path);
 int is_path_absolute(const char *path);
-int ends_with(const char* str, const char* suffix);
+int starts_with(const char *str, const char *prefix);
+int ends_with(const char *str, const char *suffix);
 char * to_multibyte(const wchar_t *s);
 int get_link_target(const char *link, char *buf, size_t buf_len);
 void strtolower(char *s);

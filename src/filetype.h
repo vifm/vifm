@@ -68,6 +68,8 @@ assoc_records_t get_all_programs_for_file(const char *file);
 /* Resets associations set by :filetype, :filextype and :fileviewer commands. */
 void reset_all_file_associations(void);
 /* After this call structure contains NULL values */
+void free_assoc_records(assoc_records_t *records);
+/* After this call structure contains NULL values */
 void free_assoc_record(assoc_record_t *record);
 void add_assoc_record(assoc_records_t *assocs, const char *command,
 		const char *description);
