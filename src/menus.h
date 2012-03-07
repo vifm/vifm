@@ -46,7 +46,7 @@ typedef struct menu_info
 	char *regexp;
 	char *title;
 	char *args;
-	char **data;
+	char **items;
 	/* should return value > 0 to request menu window refresh and < 0 on invalid
 	 * key */
 	int (*key_handler)(struct menu_info *m, wchar_t *keys);

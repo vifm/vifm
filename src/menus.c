@@ -117,21 +117,21 @@ clean_menu_position(menu_info *m)
 
 	x = getmaxx(menu_win);
 
-	x += get_utf8_overhead(m->data[m->pos]);
+	x += get_utf8_overhead(m->items[m->pos]);
 
 	buf = malloc(x + 2);
 
-	if(m->data != NULL && m->data[m->pos] != NULL)
+	if(m->items != NULL && m->items[m->pos] != NULL)
 	{
 		int off = 0;
 		z = m->hor_pos;
-		while(z-- > 0 && m->data[m->pos][off] != '\0')
+		while(z-- > 0 && m->items[m->pos][off] != '\0')
 		{
-			size_t l = get_char_width(m->data[m->pos] + off);
+			size_t l = get_char_width(m->items[m->pos] + off);
 			off += l;
 			x -= l - 1;
 		}
-		snprintf(buf, x, " %s", m->data[m->pos] + off);
+		snprintf(buf, x, " %s", m->items[m->pos] + off);
 	}
 
 	for(z = 0; buf[z] != '\0'; z++)
@@ -156,7 +156,7 @@ clean_menu_position(menu_info *m)
 	wattrset(menu_win, COLOR_PAIR(type + DCOLOR_BASE) | col.attr);
 
 	wmove(menu_win, m->current, 1);
-	if(strlen(m->data[m->pos]) > x - 4)
+	if(strlen(m->items[m->pos]) > x - 4)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf,
 				getmaxx(menu_win) - 3 - 4 + 1);
@@ -306,7 +306,7 @@ void
 reset_popup_menu(menu_info *m)
 {
 	free(m->args);
-	free_string_array(m->data, m->len);
+	free_string_array(m->items, m->len);
 	free(m->regexp);
 	free(m->matches);
 	free(m->title);
@@ -351,7 +351,7 @@ move_to_menu_pos(int pos, menu_info *m)
 	if(m->top < 0)
 		m->top = 0;
 
-	x += get_utf8_overhead(m->data[pos]);
+	x += get_utf8_overhead(m->items[pos]);
 
 	if((m->top <= pos) && (pos <= (m->top + m->win_rows + 1)))
 	{
@@ -400,18 +400,18 @@ move_to_menu_pos(int pos, menu_info *m)
 	buf = malloc(x + 2);
 	if(buf == NULL)
 		return;
-	if(m->data[pos] != NULL)
+	if(m->items[pos] != NULL)
 	{
 		int off = 0;
 		z = m->hor_pos;
-		while(z-- > 0 && m->data[pos][off] != '\0')
+		while(z-- > 0 && m->items[pos][off] != '\0')
 		{
-			size_t l = get_char_width(m->data[pos] + off);
+			size_t l = get_char_width(m->items[pos] + off);
 			off += l;
 			x -= l - 1;
 		}
 
-		snprintf(buf, x, " %s", m->data[pos] + off);
+		snprintf(buf, x, " %s", m->items[pos] + off);
 	}
 
 	for(z = 0; buf[z] != '\0'; z++)
@@ -435,7 +435,7 @@ move_to_menu_pos(int pos, menu_info *m)
 	wattrset(menu_win, COLOR_PAIR(DCOLOR_BASE + MENU_CURRENT_COLOR) | col.attr);
 
 	wmove(menu_win, m->current, 1);
-	if(strlen(m->data[pos]) > x - 4)
+	if(strlen(m->items[pos]) > x - 4)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf,
 				getmaxx(menu_win) - 3 - 4 + 1);
@@ -508,7 +508,7 @@ execute_apropos_cb(menu_info *m)
 	char *num_str;
 	char command[256];
 
-	free_this = man_page = line = strdup(m->data[m->pos]);
+	free_this = man_page = line = strdup(m->items[m->pos]);
 	if(free_this == NULL)
 	{
 		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -552,20 +552,20 @@ goto_selected_file(FileView *view, menu_info *m)
 	char *num = NULL;
 	char *p = NULL;
 
-	free_this = file = dir = malloc(2 + strlen(m->data[m->pos]) + 1 + 1);
+	free_this = file = dir = malloc(2 + strlen(m->items[m->pos]) + 1 + 1);
 	if(free_this == NULL)
 	{
 		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
-	if(m->data[m->pos][0] != '/')
+	if(m->items[m->pos][0] != '/')
 		strcpy(dir, "./");
 	else
 		dir[0] = '\0';
 	if(m->type == GREP)
 	{
-		p = strchr(m->data[m->pos], ':');
+		p = strchr(m->items[m->pos], ':');
 		if(p != NULL)
 		{
 			*p = '\0';
@@ -576,7 +576,7 @@ goto_selected_file(FileView *view, menu_info *m)
 			num = NULL;
 		}
 	}
-	strcat(dir, m->data[m->pos]);
+	strcat(dir, m->items[m->pos]);
 	chomp(file);
 	if(m->type == GREP && p != NULL)
 	{
@@ -640,7 +640,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 	}
 	else
 	{
-		char *prog_str = m->data[m->pos];
+		char *prog_str = m->items[m->pos];
 		if(prog_str[0] != '\0')
 		{
 			int background = m->extra_data & 1;
@@ -659,11 +659,11 @@ execute_dirstack_cb(FileView *view, menu_info *m)
 	int pos = 0;
 	int i;
 
-	if(m->data[m->pos][0] == '-')
+	if(m->items[m->pos][0] == '-')
 		return;
 
 	for(i = 0; i < m->pos; i++)
-		if(m->data[i][0] == '-')
+		if(m->items[i][0] == '-')
 			pos++;
 	rotate_stack(pos);
 }
@@ -673,7 +673,7 @@ static void
 execute_volumes_cb(FileView *view, menu_info *m)
 {
 	char buf[4];
-	snprintf(buf, 4, "%s", m->data[m->pos]);
+	snprintf(buf, 4, "%s", m->items[m->pos]);
 
 	if(change_directory(view, buf) < 0)
 		return;
@@ -695,20 +695,20 @@ execute_menu_cb(FileView *view, menu_info *m)
 			move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
 			break;
 		case CMDHISTORY:
-			exec_commands(m->data[m->pos], view, 1, GET_COMMAND);
+			exec_commands(m->items[m->pos], view, 1, GET_COMMAND);
 			break;
 		case FSEARCHHISTORY:
-			exec_commands(m->data[m->pos], view, 1, GET_FSEARCH_PATTERN);
+			exec_commands(m->items[m->pos], view, 1, GET_FSEARCH_PATTERN);
 			break;
 		case BSEARCHHISTORY:
-			exec_commands(m->data[m->pos], view, 1, GET_BSEARCH_PATTERN);
+			exec_commands(m->items[m->pos], view, 1, GET_BSEARCH_PATTERN);
 			break;
 		case COLORSCHEME:
-			load_color_scheme(m->data[m->pos]);
+			load_color_scheme(m->items[m->pos]);
 			break;
 		case COMMAND:
-			*strchr(m->data[m->pos], ' ') = '\0';
-			exec_command(m->data[m->pos], view, GET_COMMAND);
+			*strchr(m->items[m->pos], ' ') = '\0';
+			exec_command(m->items[m->pos], view, GET_COMMAND);
 			break;
 		case FILETYPE:
 			execute_filetype_cb(view, m);
@@ -719,7 +719,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 				clean_positions_in_history(curr_view);
 				curr_stats.ch_pos = 0;
 			}
-			if(change_directory(view, m->data[m->pos]) >= 0)
+			if(change_directory(view, m->items[m->pos]) >= 0)
 			{
 				load_dir_list(view, 0);
 				move_to_list_pos(view, view->list_pos);
@@ -787,10 +787,10 @@ draw_menu(menu_info *m)
 		col_attr_t col;
 		int type = WIN_COLOR;
 
-		chomp(m->data[x]);
-		if((ptr = strchr(m->data[x], '\n')) || (ptr = strchr(m->data[x], '\r')))
+		chomp(m->items[x]);
+		if((ptr = strchr(m->items[x], '\n')) || (ptr = strchr(m->items[x], '\r')))
 			*ptr = '\0';
-		len = win_len + get_utf8_overhead(m->data[x]);
+		len = win_len + get_utf8_overhead(m->items[x]);
 
 		col = cfg.cs.color[WIN_COLOR];
 
@@ -805,14 +805,14 @@ draw_menu(menu_info *m)
 
 		z = m->hor_pos;
 		off = 0;
-		while(z-- > 0 && m->data[x][off] != '\0')
+		while(z-- > 0 && m->items[x][off] != '\0')
 		{
-			size_t l = get_char_width(m->data[x] + off);
+			size_t l = get_char_width(m->items[x] + off);
 			off += l;
 			len -= l - 1;
 		}
 
-		buf = strdup(m->data[x] + off);
+		buf = strdup(m->items[x] + off);
 		for(z = 0; buf[z] != '\0'; z++)
 			if(buf[z] == '\t')
 				buf[z] = ' ';
@@ -988,7 +988,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
 	m.regexp = NULL;
 	m.title = NULL;
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 
 	m.title = malloc((strlen(mode_str) + 21)*sizeof(char));
 	sprintf(m.title, " Mappings for %s mode ", mode_str);
@@ -1006,7 +1006,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
 			continue;
 		}
 
-		m.data = realloc(m.data, sizeof(char *)*(m.len + 1));
+		m.items = realloc(m.items, sizeof(char *)*(m.len + 1));
 
 		str_len = wcslen(list[x]);
 		buf_len = 0;
@@ -1018,29 +1018,29 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
 		else
 			buf_len += 1 + 0 + 1;
 
-		m.data[m.len] = malloc(buf_len + MAP_WIDTH);
-		m.data[m.len][0] = '\0';
+		m.items[m.len] = malloc(buf_len + MAP_WIDTH);
+		m.items[m.len][0] = '\0';
 		for(i = 0; i < str_len; i += len)
-			strcat(m.data[m.len], uchar2str(list[x] + i, &len));
+			strcat(m.items[m.len], uchar2str(list[x] + i, &len));
 
 		if(str_len > 0)
 		{
 			int i;
-			for(i = strlen(m.data[m.len]); i < MAP_WIDTH; i++)
-				strcat(m.data[m.len], " ");
+			for(i = strlen(m.items[m.len]); i < MAP_WIDTH; i++)
+				strcat(m.items[m.len], " ");
 
-			strcat(m.data[m.len], " ");
+			strcat(m.items[m.len], " ");
 
 			for(i = str_len + 1; list[x][i] != L'\0'; i += len)
 			{
 				if(list[x][i] == L' ')
 				{
-					strcat(m.data[m.len], " ");
+					strcat(m.items[m.len], " ");
 					len = 1;
 				}
 				else
 				{
-					strcat(m.data[m.len], uchar2str(list[x] + i, &len));
+					strcat(m.items[m.len], uchar2str(list[x] + i, &len));
 				}
 			}
 		}
@@ -1086,9 +1086,9 @@ capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
 			j++;
 
 		show_progress("Loading menu", 1000);
-		m->data = realloc(m->data, sizeof(char *)*(x + 1));
+		m->items = realloc(m->items, sizeof(char *)*(x + 1));
 		len = strlen(buf) + j*(cfg.tab_stop - 1) + 2;
-		m->data[x] = malloc(len);
+		m->items[x] = malloc(len);
 
 		j = 0;
 		for(i = 0; buf[i] != '\0'; i++)
@@ -1097,14 +1097,14 @@ capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
 			{
 				int k = cfg.tab_stop - j%cfg.tab_stop;
 				while(k-- > 0)
-					m->data[x][j++] = ' ';
+					m->items[x][j++] = ' ';
 			}
 			else
 			{
-				m->data[x][j++] = buf[i];
+				m->items[x][j++] = buf[i];
 			}
 		}
-		m->data[x][j] = '\0';
+		m->items[x][j] = '\0';
 
 		x++;
 	}
@@ -1148,7 +1148,7 @@ show_apropos_menu(FileView *view, char *args)
 	m.regexp = NULL;
 	m.title = NULL;
 	m.args = strdup(args);
-	m.data = NULL;
+	m.items = NULL;
 
 	m.title = (char *)malloc((strlen(args) + 12) * sizeof(char));
 	snprintf(m.title, strlen(args) + 11,  " Apropos %s ",  args);
@@ -1169,7 +1169,7 @@ bookmark_khandler(struct menu_info *m, wchar_t *keys)
 		memmove(active_bookmarks + m->pos, active_bookmarks + m->pos + 1,
 				sizeof(int)*(m->len - 1 - m->pos));
 
-		remove_from_string_array(m->data, m->len, m->pos);
+		remove_from_string_array(m->items, m->len, m->pos);
 		if(m->matches != NULL)
 		{
 			if(m->matches[m->pos])
@@ -1207,7 +1207,7 @@ show_bookmarks_menu(FileView *view, const char *marks)
 	m.regexp = NULL;
 	m.title = NULL;
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 	m.key_handler = bookmark_khandler;
 
 	getmaxyx(menu_win, m.win_rows, x);
@@ -1262,9 +1262,9 @@ show_bookmarks_menu(FileView *view, const char *marks)
 					max_len + overhead, with_tilde, bookmarks[j].file);
 		}
 
-		m.data = realloc(m.data, sizeof(char *) * (x + 1));
-		m.data[x] = malloc(sizeof(buf) + 2);
-		snprintf(m.data[x], sizeof(buf), "%s", buf);
+		m.items = realloc(m.items, sizeof(char *) * (x + 1));
+		m.items[x] = malloc(sizeof(buf) + 2);
+		snprintf(m.items[x], sizeof(buf), "%s", buf);
 
 		x++;
 	}
@@ -1296,21 +1296,21 @@ show_dirstack_menu(FileView *view)
 	m.regexp = NULL;
 	m.title = NULL;
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 
 	m.title = strdup(" Directory Stack ");
 
-	m.data = dir_stack_list();
+	m.items = dir_stack_list();
 
 	i = -1;
-	while(m.data[++i] != NULL);
+	while(m.items[++i] != NULL);
 	if(i != 0)
 	{
 		m.len = i;
 	}
 	else
 	{
-		m.data[0] = strdup("Directory stack is empty");
+		m.items[0] = strdup("Directory stack is empty");
 		m.len = 1;
 	}
 
@@ -1343,7 +1343,7 @@ show_colorschemes_menu(FileView *view)
 	m.regexp = NULL;
 	m.title = NULL;
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 
 	getmaxyx(menu_win, m.win_rows, len);
 
@@ -1368,9 +1368,9 @@ show_colorschemes_menu(FileView *view)
 		if(d->d_name[0] == '.')
 			continue;
 
-		m.data = (char **)realloc(m.data, sizeof(char *)*(m.len + 1));
-		m.data[m.len] = (char *)malloc(len + 2);
-		snprintf(m.data[m.len++], len, "%s", d->d_name);
+		m.items = (char **)realloc(m.items, sizeof(char *)*(m.len + 1));
+		m.items[m.len] = (char *)malloc(len + 2);
+		snprintf(m.items[m.len++], len, "%s", d->d_name);
 		if(strcmp(d->d_name, cfg.cs.name) == 0)
 		{
 			m.current = m.len;
@@ -1392,11 +1392,11 @@ command_khandler(struct menu_info *m, wchar_t *keys)
 	{
 		char cmd_buf[512];
 
-		*strchr(m->data[m->pos] + 1, ' ') = '\0';
-		snprintf(cmd_buf, sizeof(cmd_buf), "delcommand %s", m->data[m->pos] + 1);
+		*strchr(m->items[m->pos] + 1, ' ') = '\0';
+		snprintf(cmd_buf, sizeof(cmd_buf), "delcommand %s", m->items[m->pos] + 1);
 		execute_cmd(cmd_buf);
 
-		remove_from_string_array(m->data, m->len, m->pos);
+		remove_from_string_array(m->items, m->len, m->pos);
 		if(m->matches != NULL)
 		{
 			if(m->matches[m->pos])
@@ -1433,7 +1433,7 @@ show_commands_menu(FileView *view)
 	m.regexp = NULL;
 	m.title = NULL;
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 	m.key_handler = command_khandler;
 
 	m.title = (char *)malloc((23 + 1)*sizeof(char));
@@ -1451,14 +1451,14 @@ show_commands_menu(FileView *view)
 	while(list[++m.len] != NULL);
 	m.len /= 2;
 
-	m.data = malloc(sizeof(char *)*m.len);
+	m.items = malloc(sizeof(char *)*m.len);
 	for(i = 0; i < m.len; i++)
 	{
 		char *buf;
 
 		buf = malloc(strlen(list[i*2]) + 20 + 1 + strlen(list[i*2 + 1]) + 1);
 		sprintf(buf, "%-*s %s", 10, list[i*2], list[i*2 + 1]);
-		m.data[i] = buf;
+		m.items[i] = buf;
 	}
 	free_string_array(list, m.len*2);
 
@@ -1501,7 +1501,7 @@ show_filetypes_menu(FileView *view, int background)
 	m.regexp = NULL;
 	m.title = strdup(" Filetype associated commands ");
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 	m.extra_data = (background ? 1 : 0);
 	m.key_handler = NULL;
 
@@ -1518,20 +1518,20 @@ show_filetypes_menu(FileView *view, int background)
 		if(max_len > 0)
 			max_len = MAX(max_len, strlen(VIFM_PREUDO_PROG.description));
 
-		m.len = add_to_string_array(&m.data, m.len, 1,
+		m.len = add_to_string_array(&m.items, m.len, 1,
 				form_filetype_entry(VIFM_PREUDO_PROG, max_len));
 	}
 
 	for(i = 0; i < ft.count; i++)
-		m.len = add_to_string_array(&m.data, m.len, 1,
+		m.len = add_to_string_array(&m.items, m.len, 1,
 				form_filetype_entry(ft.list[i], max_len));
 
 	free(ft.list);
 
-	m.len = add_to_string_array(&m.data, m.len, 1, "");
+	m.len = add_to_string_array(&m.items, m.len, 1, "");
 
 	for(i = 0; i < magic.count; i++)
-		m.len = add_to_string_array(&m.data, m.len, 1,
+		m.len = add_to_string_array(&m.items, m.len, 1,
 			form_filetype_entry(magic.list[i], max_len));
 
 	setup_menu();
@@ -1636,7 +1636,7 @@ show_history_menu(FileView *view)
 	m.regexp = NULL;
 	m.title = strdup(" Directory History ");
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 
 	getmaxyx(menu_win, m.win_rows, x);
 
@@ -1661,15 +1661,15 @@ show_history_menu(FileView *view)
 			m.pos = m.len;
 		}
 
-		m.data = realloc(m.data, sizeof(char *)*(m.len + 1));
-		m.data[m.len] = strdup(view->history[x].dir);
+		m.items = realloc(m.items, sizeof(char *)*(m.len + 1));
+		m.items[m.len] = strdup(view->history[x].dir);
 		m.len++;
 	}
 	for(x = 0; x < m.len/2; x++)
 	{
-		char *t = m.data[x];
-		m.data[x] = m.data[m.len - 1 - x];
-		m.data[m.len - 1 - x] = t;
+		char *t = m.items[x];
+		m.items[x] = m.items[m.len - 1 - x];
+		m.items[m.len - 1 - x] = t;
 	}
 	m.pos = m.len - 1 - m.pos;
 	setup_menu();
@@ -1705,15 +1705,15 @@ show_history(FileView *view, int type, int len, char **hist, const char *msg)
 	m.regexp = NULL;
 	m.title = strdup(msg);
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 
 	getmaxyx(menu_win, m.win_rows, x);
 
 	for(x = 0; x < len; x++)
 	{
-		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
-		m.data[x] = (char *)malloc((strlen(hist[x]) + 1)*sizeof(char));
-		strcpy(m.data[x], hist[x]);
+		m.items = (char **)realloc(m.items, sizeof(char *) * (x + 1));
+		m.items[x] = (char *)malloc((strlen(hist[x]) + 1)*sizeof(char));
+		strcpy(m.items[x], hist[x]);
 	}
 
 	setup_menu();
@@ -1771,7 +1771,7 @@ show_locate_menu(FileView *view, const char *args)
 	m.regexp = NULL;
 	m.title = NULL;
 	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0);
-	m.data = NULL;
+	m.items = NULL;
 
 	snprintf(buf, sizeof(buf), "locate %s", m.args);
 	m.title = strdup(buf);
@@ -1807,7 +1807,7 @@ show_find_menu(FileView *view, int with_path, const char *args)
 	m.regexp = NULL;
 	m.title = NULL;
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 
 	snprintf(buf, sizeof(buf), "find %s", args);
 	m.title = strdup(buf);
@@ -1865,7 +1865,7 @@ show_grep_menu(FileView *view, const char *args, int invert)
 	m.regexp = NULL;
 	m.title = NULL;
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 
 	snprintf(title_buf, sizeof(title_buf), "grep %s", args);
 	m.title = strdup(title_buf);
@@ -1924,7 +1924,7 @@ show_user_menu(FileView *view, const char *command, int navigate)
 	m.regexp = NULL;
 	m.title = NULL;
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 
 	m.title = strdup(command);
 
@@ -1959,7 +1959,7 @@ show_jobs_menu(FileView *view)
 	m.regexp = NULL;
 	m.title = NULL;
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 
 	/*
 	 * SIGCHLD needs to be blocked anytime the finished_jobs list
@@ -1992,13 +1992,13 @@ show_jobs_menu(FileView *view)
 
 		if(p->running)
 		{
-			m.data = (char **)realloc(m.data, sizeof(char *)*(x + 1));
-			m.data[x] = (char *)malloc(strlen(p->cmd) + 24);
+			m.items = (char **)realloc(m.items, sizeof(char *)*(x + 1));
+			m.items[x] = (char *)malloc(strlen(p->cmd) + 24);
 			if(p->pid == -1)
-				snprintf(m.data[x], strlen(p->cmd) + 22, " %d/%d %s ", p->done + 1,
+				snprintf(m.items[x], strlen(p->cmd) + 22, " %d/%d %s ", p->done + 1,
 						p->total, p->cmd);
 			else
-				snprintf(m.data[x], strlen(p->cmd) + 22, " %d %s ", p->pid, p->cmd);
+				snprintf(m.items[x], strlen(p->cmd) + 22, " %d %s ", p->pid, p->cmd);
 
 			x++;
 		}
@@ -2017,9 +2017,9 @@ show_jobs_menu(FileView *view)
 	{
 		char buf[256];
 
-		m.data = (char **)realloc(m.data, sizeof(char *) * (x + 1));
-		m.data[x] = (char *)malloc(strlen("Press return to continue.") + 2);
-		snprintf(m.data[x], strlen("Press return to continue."),
+		m.items = (char **)realloc(m.items, sizeof(char *) * (x + 1));
+		m.items[x] = (char *)malloc(strlen("Press return to continue.") + 2);
+		snprintf(m.items[x], strlen("Press return to continue."),
 					"Press return to continue.");
 		snprintf(buf, sizeof(buf), "No background jobs are running");
 		m.len = 1;
@@ -2055,16 +2055,16 @@ show_register_menu(FileView *view, const char *registers)
 	m.regexp = NULL;
 	m.title = strdup(" Registers ");
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 
-	m.data = list_registers_content(registers);
-	while(m.data[m.len] != NULL)
+	m.items = list_registers_content(registers);
+	while(m.items[m.len] != NULL)
 		m.len++;
 
 	if(!m.len)
 	{
-		m.data = (char **)realloc(m.data, sizeof(char *) * 1);
-		m.data[0] = strdup(" Registers are empty ");
+		m.items = (char **)realloc(m.items, sizeof(char *) * 1);
+		m.items[0] = strdup(" Registers are empty ");
 		m.len = 1;
 	}
 
@@ -2094,30 +2094,30 @@ show_undolist_menu(FileView *view, int with_details)
 	m.regexp = NULL;
 	m.title = strdup(" Undolist ");
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 
-	m.data = undolist(with_details);
-	p = m.data;
+	m.items = undolist(with_details);
+	p = m.items;
 	while(*p++ != NULL)
 		m.len++;
 
 	if(!m.len)
 	{
-		m.data = (char **)realloc(m.data, sizeof(char *) * 1);
-		m.data[0] = strdup(" Undolist is empty ");
+		m.items = (char **)realloc(m.items, sizeof(char *) * 1);
+		m.items[0] = strdup(" Undolist is empty ");
 		m.len = 1;
 	}
 	else
 	{
 		size_t len;
 
-		m.data[m.len] = strdup("list end");
+		m.items[m.len] = strdup("list end");
 		m.len++;
 
-		len = (m.data[m.pos] != NULL) ? strlen(m.data[m.pos]) : 0;
-		m.data[m.pos] = realloc(m.data[m.pos], len + 1 + 1);
-		memmove(m.data[m.pos] + 1, m.data[m.pos], len + 1);
-		m.data[m.pos][0] = '*';
+		len = (m.items[m.pos] != NULL) ? strlen(m.items[m.pos]) : 0;
+		m.items[m.pos] = realloc(m.items[m.pos], len + 1 + 1);
+		memmove(m.items[m.pos] + 1, m.items[m.pos], len + 1);
+		m.items[m.pos][0] = '*';
 	}
 
 	setup_menu();
@@ -2149,7 +2149,7 @@ show_volumes_menu(FileView *view)
 	m.regexp = NULL;
 	m.title = strdup(" Mounted Volumes ");
 	m.args = NULL;
-	m.data = NULL;
+	m.items = NULL;
 
 	for(c = TEXT('a'); c < TEXT('z'); c++)
 	{
@@ -2160,10 +2160,10 @@ show_volumes_menu(FileView *view)
 			if(GetVolumeInformation(drive, vol_name, MAX_PATH, NULL, NULL, NULL,
 					file_buf, MAX_PATH))
 			{
-				m.data = (char **)realloc(m.data, sizeof(char *) * (m.len + 1));
-				m.data[m.len] = (char *)malloc((MAX_PATH + 5) * sizeof(char));
+				m.items = (char **)realloc(m.items, sizeof(char *) * (m.len + 1));
+				m.items[m.len] = (char *)malloc((MAX_PATH + 5) * sizeof(char));
 
-				snprintf(m.data[m.len], MAX_PATH, "%s  %s ", drive, vol_name);
+				snprintf(m.items[m.len], MAX_PATH, "%s  %s ", drive, vol_name);
 				m.len++;
 			}
 		}
@@ -2193,9 +2193,9 @@ show_vifm_menu(FileView *view)
 	m.regexp = NULL;
 	m.title = strdup(" vifm information ");
 	m.args = NULL;
-	m.data = malloc(sizeof(char*)*m.len);
+	m.items = malloc(sizeof(char*)*m.len);
 
-	m.len = fill_version_info(m.data);
+	m.len = fill_version_info(m.items);
 
 	setup_menu();
 	draw_menu(&m);
