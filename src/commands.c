@@ -979,9 +979,9 @@ complete_filetype(const char *str)
 	assoc_records_t ft = get_all_programs_for_file(filename);
 
 	if(curr_view->dir_entry[curr_view->list_pos].type == DIRECTORY &&
-			strncmp(VIFM_PREUDO_CMD, str, len) == 0)
+			strncmp(VIFM_PSEUDO_CMD, str, len) == 0)
 	{
-		add_completion(VIFM_PREUDO_CMD);
+		add_completion(VIFM_PSEUDO_CMD);
 	}
 
 	complete_progs(str, ft);

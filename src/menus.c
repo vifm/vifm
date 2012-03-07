@@ -306,6 +306,10 @@ void
 reset_popup_menu(menu_info *m)
 {
 	free(m->args);
+	if(m->data != NULL)
+	{
+		free_string_array(m->data, m->len);
+	}
 	free_string_array(m->items, m->len);
 	free(m->regexp);
 	free(m->matches);
@@ -640,7 +644,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 	}
 	else
 	{
-		char *prog_str = m->items[m->pos];
+		const char *prog_str = m->data[m->pos];
 		if(prog_str[0] != '\0')
 		{
 			int background = m->extra_data & 1;
@@ -989,6 +993,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
 	m.title = NULL;
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 
 	m.title = malloc((strlen(mode_str) + 21)*sizeof(char));
 	sprintf(m.title, " Mappings for %s mode ", mode_str);
@@ -1149,6 +1154,7 @@ show_apropos_menu(FileView *view, char *args)
 	m.title = NULL;
 	m.args = strdup(args);
 	m.items = NULL;
+	m.data = NULL;
 
 	m.title = (char *)malloc((strlen(args) + 12) * sizeof(char));
 	snprintf(m.title, strlen(args) + 11,  " Apropos %s ",  args);
@@ -1208,6 +1214,7 @@ show_bookmarks_menu(FileView *view, const char *marks)
 	m.title = NULL;
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 	m.key_handler = bookmark_khandler;
 
 	getmaxyx(menu_win, m.win_rows, x);
@@ -1297,6 +1304,7 @@ show_dirstack_menu(FileView *view)
 	m.title = NULL;
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 
 	m.title = strdup(" Directory Stack ");
 
@@ -1344,6 +1352,7 @@ show_colorschemes_menu(FileView *view)
 	m.title = NULL;
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 
 	getmaxyx(menu_win, m.win_rows, len);
 
@@ -1434,6 +1443,7 @@ show_commands_menu(FileView *view)
 	m.title = NULL;
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 	m.key_handler = command_khandler;
 
 	m.title = (char *)malloc((23 + 1)*sizeof(char));
@@ -1502,6 +1512,7 @@ show_filetypes_menu(FileView *view, int background)
 	m.title = strdup(" Filetype associated commands ");
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 	m.extra_data = (background ? 1 : 0);
 	m.key_handler = NULL;
 
@@ -1516,23 +1527,31 @@ show_filetypes_menu(FileView *view, int background)
 	if(view->dir_entry[view->list_pos].type == DIRECTORY)
 	{
 		if(max_len > 0)
-			max_len = MAX(max_len, strlen(VIFM_PREUDO_PROG.description));
+			max_len = MAX(max_len, strlen(VIFM_PSEUDO_PROG.description));
 
+		(void)add_to_string_array(&m.data, m.len, 1, VIFM_PSEUDO_PROG);
 		m.len = add_to_string_array(&m.items, m.len, 1,
-				form_filetype_entry(VIFM_PREUDO_PROG, max_len));
+				form_filetype_entry(VIFM_PSEUDO_PROG, max_len));
 	}
 
 	for(i = 0; i < ft.count; i++)
+	{
+		(void)add_to_string_array(&m.data, m.len, 1, ft.list[i].command);
 		m.len = add_to_string_array(&m.items, m.len, 1,
 				form_filetype_entry(ft.list[i], max_len));
+	}
 
 	free(ft.list);
 
+	(void)add_to_string_array(&m.data, m.len, 1, "");
 	m.len = add_to_string_array(&m.items, m.len, 1, "");
 
 	for(i = 0; i < magic.count; i++)
+	{
+		(void)add_to_string_array(&m.data, m.len, 1, magic.list[i].command);
 		m.len = add_to_string_array(&m.items, m.len, 1,
 			form_filetype_entry(magic.list[i], max_len));
+	}
 
 	setup_menu();
 	draw_menu(&m);
@@ -1576,7 +1595,7 @@ run_with_filetype(FileView *view, const char *beginning, int background)
 	assoc_records_t magic = get_magic_handlers(filename);
 
 	if(view->dir_entry[view->list_pos].type == DIRECTORY &&
-			strncmp(VIFM_PREUDO_CMD, beginning, len) == 0)
+			strncmp(VIFM_PSEUDO_CMD, beginning, len) == 0)
 	{
 		handle_dir(view);
 		return 0;
@@ -1637,6 +1656,7 @@ show_history_menu(FileView *view)
 	m.title = strdup(" Directory History ");
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 
 	getmaxyx(menu_win, m.win_rows, x);
 
@@ -1706,6 +1726,7 @@ show_history(FileView *view, int type, int len, char **hist, const char *msg)
 	m.title = strdup(msg);
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 
 	getmaxyx(menu_win, m.win_rows, x);
 
@@ -1772,6 +1793,7 @@ show_locate_menu(FileView *view, const char *args)
 	m.title = NULL;
 	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0);
 	m.items = NULL;
+	m.data = NULL;
 
 	snprintf(buf, sizeof(buf), "locate %s", m.args);
 	m.title = strdup(buf);
@@ -1808,6 +1830,7 @@ show_find_menu(FileView *view, int with_path, const char *args)
 	m.title = NULL;
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 
 	snprintf(buf, sizeof(buf), "find %s", args);
 	m.title = strdup(buf);
@@ -1866,6 +1889,7 @@ show_grep_menu(FileView *view, const char *args, int invert)
 	m.title = NULL;
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 
 	snprintf(title_buf, sizeof(title_buf), "grep %s", args);
 	m.title = strdup(title_buf);
@@ -1925,6 +1949,7 @@ show_user_menu(FileView *view, const char *command, int navigate)
 	m.title = NULL;
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 
 	m.title = strdup(command);
 
@@ -1960,6 +1985,7 @@ show_jobs_menu(FileView *view)
 	m.title = NULL;
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 
 	/*
 	 * SIGCHLD needs to be blocked anytime the finished_jobs list
@@ -2056,6 +2082,7 @@ show_register_menu(FileView *view, const char *registers)
 	m.title = strdup(" Registers ");
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 
 	m.items = list_registers_content(registers);
 	while(m.items[m.len] != NULL)
@@ -2095,6 +2122,7 @@ show_undolist_menu(FileView *view, int with_details)
 	m.title = strdup(" Undolist ");
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 
 	m.items = undolist(with_details);
 	p = m.items;
@@ -2150,6 +2178,7 @@ show_volumes_menu(FileView *view)
 	m.title = strdup(" Mounted Volumes ");
 	m.args = NULL;
 	m.items = NULL;
+	m.data = NULL;
 
 	for(c = TEXT('a'); c < TEXT('z'); c++)
 	{
@@ -2194,6 +2223,7 @@ show_vifm_menu(FileView *view)
 	m.title = strdup(" vifm information ");
 	m.args = NULL;
 	m.items = malloc(sizeof(char*)*m.len);
+	m.data = NULL;
 
 	m.len = fill_version_info(m.items);
 

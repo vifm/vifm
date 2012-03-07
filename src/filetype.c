@@ -30,9 +30,9 @@
 #include "utils.h"
 
 #include "filetype.h"
-const assoc_record_t VIFM_PREUDO_PROG =
+const assoc_record_t VIFM_PSEUDO_PROG =
 {
-	.command = VIFM_PREUDO_CMD,
+	.command = VIFM_PSEUDO_CMD,
 	.description = "Enter directory",
 };
 
