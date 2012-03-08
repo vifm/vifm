@@ -91,9 +91,9 @@ enum
 #endif
 };
 
-/* Returns pointer to a statically allocated buffer */
-static const char * form_filetype_entry(assoc_record_t prog, int descr_width);
-/* Returns non-zero on successful running. */
+static const char * form_filetype_menu_entry(assoc_record_t prog,
+		int descr_width);
+static const char * form_filetype_data_entry(assoc_record_t prog);
 static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char *start, int background);
 
@@ -644,7 +644,7 @@ execute_filetype_cb(FileView *view, menu_info *m)
 	}
 	else
 	{
-		const char *prog_str = m->data[m->pos];
+		const char *prog_str = strchr(m->data[m->pos], '|') + 1;
 		if(prog_str[0] != '\0')
 		{
 			int background = m->extra_data & 1;
@@ -1529,28 +1529,32 @@ show_filetypes_menu(FileView *view, int background)
 		if(max_len > 0)
 			max_len = MAX(max_len, strlen(VIFM_PSEUDO_PROG.description));
 
-		(void)add_to_string_array(&m.data, m.len, 1, VIFM_PSEUDO_PROG);
+		(void)add_to_string_array(&m.data, m.len, 1,
+				form_filetype_data_entry(VIFM_PSEUDO_PROG));
 		m.len = add_to_string_array(&m.items, m.len, 1,
-				form_filetype_entry(VIFM_PSEUDO_PROG, max_len));
+				form_filetype_menu_entry(VIFM_PSEUDO_PROG, max_len));
 	}
 
 	for(i = 0; i < ft.count; i++)
 	{
-		(void)add_to_string_array(&m.data, m.len, 1, ft.list[i].command);
+		(void)add_to_string_array(&m.data, m.len, 1,
+				form_filetype_data_entry(ft.list[i]));
 		m.len = add_to_string_array(&m.items, m.len, 1,
-				form_filetype_entry(ft.list[i], max_len));
+				form_filetype_menu_entry(ft.list[i], max_len));
 	}
 
 	free(ft.list);
 
-	(void)add_to_string_array(&m.data, m.len, 1, "");
+	(void)add_to_string_array(&m.data, m.len, 1,
+			form_filetype_data_entry(NONE_PSEUDO_PROG));
 	m.len = add_to_string_array(&m.items, m.len, 1, "");
 
 	for(i = 0; i < magic.count; i++)
 	{
-		(void)add_to_string_array(&m.data, m.len, 1, magic.list[i].command);
+		(void)add_to_string_array(&m.data, m.len, 1,
+				form_filetype_data_entry(magic.list[i]));
 		m.len = add_to_string_array(&m.items, m.len, 1,
-			form_filetype_entry(magic.list[i], max_len));
+				form_filetype_menu_entry(magic.list[i], max_len));
 	}
 
 	setup_menu();
@@ -1561,8 +1565,9 @@ show_filetypes_menu(FileView *view, int background)
 	return 0;
 }
 
+/* Returns pointer to a statically allocated buffer */
 static const char *
-form_filetype_entry(assoc_record_t prog, int descr_width)
+form_filetype_menu_entry(assoc_record_t prog, int descr_width)
 {
 	static char result[PATH_MAX];
 	if(descr_width > 0)
@@ -1582,6 +1587,15 @@ form_filetype_entry(assoc_record_t prog, int descr_width)
 	{
 		snprintf(result, sizeof(result), "%s", prog.command);
 	}
+	return result;
+}
+
+/* Returns pointer to a statically allocated buffer */
+static const char *
+form_filetype_data_entry(assoc_record_t prog)
+{
+	static char result[PATH_MAX];
+	snprintf(result, sizeof(result), "%s|%s", prog.description, prog.command);
 	return result;
 }
 
@@ -1612,6 +1626,7 @@ run_with_filetype(FileView *view, const char *beginning, int background)
 	return !try_run_with_filetype(view, magic, beginning, background);
 }
 
+/* Returns non-zero on successful running. */
 static int
 try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char *start, int background)

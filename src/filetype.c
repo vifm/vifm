@@ -30,10 +30,17 @@
 #include "utils.h"
 
 #include "filetype.h"
+
 const assoc_record_t VIFM_PSEUDO_PROG =
 {
 	.command = VIFM_PSEUDO_CMD,
 	.description = "Enter directory",
+};
+
+const assoc_record_t NONE_PSEUDO_PROG =
+{
+	.command = "",
+	.description = "",
 };
 
 /* Internal list that stores only currently active associations.
