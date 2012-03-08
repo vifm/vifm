@@ -20,7 +20,7 @@
 #ifndef __ATTR_DIALOG_NIX_H__
 #define __ATTR_DIALOG_NIX_H__
 
-#include "ui.h"
+#include "../ui.h"
 
 void init_attr_dialog_mode(int *key_mode);
 void enter_attr_mode(FileView *active_view);

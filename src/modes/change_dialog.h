@@ -17,21 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __MENU_H__
-#define __MENU_H__
+#ifndef __CHANGE_DIALOG_H__
+#define __CHANGE_DIALOG_H__
 
-#include "menus.h"
-#include "ui.h"
+#include "../ui.h"
 
-void init_menu_mode(int *key_mode);
-void enter_menu_mode(menu_info *m, FileView *active_view);
-void menu_pre(void);
-void menu_post(void);
-void menu_redraw(void);
-void update_menu(void);
-void save_menu_pos(void);
-void load_menu_pos(void);
-int search_menu_list(const char *pattern, menu_info *m);
+void init_change_dialog_mode(int *key_mode);
+void enter_change_mode(FileView *active_view);
+void redraw_change_dialog(void);
 
 #endif
 

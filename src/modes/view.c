@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "../config.h"
+#include "../../config.h"
 
 #include <regex.h>
 
@@ -25,22 +25,22 @@
 #include <assert.h>
 #include <string.h>
 
-#include "utils/macros.h"
-#include "utils/string_array.h"
-#include "utils/utf8.h"
-#include "utils/utils.h"
+#include "../utils/macros.h"
+#include "../utils/string_array.h"
+#include "../utils/utf8.h"
+#include "../utils/utils.h"
+#include "../commands.h"
+#include "../config.h"
+#include "../filelist.h"
+#include "../fileops.h"
+#include "../filetype.h"
+#include "../keys.h"
+#include "../menus.h"
+#include "../status.h"
+#include "../ui.h"
 #include "cmdline.h"
-#include "commands.h"
-#include "config.h"
-#include "filelist.h"
-#include "fileops.h"
-#include "filetype.h"
-#include "keys.h"
-#include "menus.h"
 #include "modes.h"
 #include "normal.h"
-#include "status.h"
-#include "ui.h"
 
 #include "view.h"
 

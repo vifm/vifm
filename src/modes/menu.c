@@ -25,21 +25,21 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "../config.h"
+#include "../../config.h"
 
-#include "utils/utils.h"
-#include "bookmarks.h"
+#include "../utils/utils.h"
+#include "../bookmarks.h"
+#include "../cmds.h"
+#include "../commands.h"
+#include "../config.h"
+#include "../filelist.h"
+#include "../fileops.h"
+#include "../keys.h"
+#include "../menus.h"
+#include "../status.h"
+#include "../ui.h"
 #include "cmdline.h"
-#include "cmds.h"
-#include "commands.h"
-#include "config.h"
-#include "filelist.h"
-#include "fileops.h"
-#include "keys.h"
-#include "menus.h"
 #include "modes.h"
-#include "status.h"
-#include "ui.h"
 
 #include "menu.h"
 

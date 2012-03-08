@@ -44,10 +44,10 @@
 
 #include <wchar.h> /* swprintf */
 
+#include "modes/cmdline.h"
 #include "utils/string_array.h"
 #include "utils/utils.h"
 #include "background.h"
-#include "cmdline.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "config.h"

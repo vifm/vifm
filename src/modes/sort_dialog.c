@@ -23,38 +23,66 @@
 #include <ctype.h>
 #include <string.h>
 
+#include "../../config.h"
+
+#include "../bookmarks.h"
+#include "../color_scheme.h"
+#include "../commands.h"
 #include "../config.h"
-
-#include "attr_dialog.h"
-#include "bookmarks.h"
+#include "../filelist.h"
+#include "../fileops.h"
+#include "../keys.h"
+#include "../menus.h"
+#include "../status.h"
+#include "../ui.h"
 #include "cmdline.h"
-#include "color_scheme.h"
-#include "commands.h"
-#include "config.h"
-#include "filelist.h"
-#include "fileops.h"
-#include "keys.h"
-#include "menus.h"
 #include "modes.h"
-#include "status.h"
-#include "ui.h"
 
-#include "change_dialog.h"
+#include "sort_dialog.h"
 
-static void leave_change_mode(int clean_selection);
+static int *mode;
+static FileView *view;
+static int top, bottom, curr, col;
+static int descending;
+
+static const char * caps[] = { "a-z", "z-a" };
+
+#ifndef _WIN32
+#define CORRECTION 0
+#else
+#define CORRECTION -5
+#endif
+
+static int indexes[] = {
+	-1,
+	0,               /* SORT_BY_EXTENSION */
+	1,               /* SORT_BY_NAME */
+#ifndef _WIN32
+	3,               /* SORT_BY_GROUP_ID */
+	4,               /* SORT_BY_GROUP_NAME */
+	5,               /* SORT_BY_MODE */
+	6,               /* SORT_BY_OWNER_ID */
+	7,               /* SORT_BY_OWNER_NAME */
+#endif
+	8 + CORRECTION,  /* SORT_BY_SIZE */
+	9 + CORRECTION,  /* SORT_BY_TIME_ACCESSED */
+	10 + CORRECTION, /* SORT_BY_TIME_CHANGED */
+	11 + CORRECTION, /* SORT_BY_TIME_MODIFIED */
+	2,               /* SORT_BY_INAME */
+};
+ARRAY_GUARD(indexes, NUM_SORT_OPTIONS + 1);
+
+static void leave_sort_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void goto_line(int line);
+static void cmd_h(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
 static void print_at_pos(void);
 static void clear_at_pos(void);
-
-static int *mode;
-static FileView *view;
-static int top, bottom, step, curr, col;
 
 static keys_add_info_t builtin_cmds[] = {
 	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
@@ -68,6 +96,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"ZQ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"ZZ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{L"h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
+	{L" ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
 	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
@@ -75,6 +105,7 @@ static keys_add_info_t builtin_cmds[] = {
 #ifdef ENABLE_EXTENDED_KEYS
 	{{KEY_UP}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
 	{{KEY_DOWN}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+	{{KEY_LEFT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
 	{{KEY_RIGHT}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{{KEY_HOME}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
 	{{KEY_END}, {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
@@ -82,7 +113,7 @@ static keys_add_info_t builtin_cmds[] = {
 };
 
 void
-init_change_dialog_mode(int *key_mode)
+init_sort_dialog_mode(int *key_mode)
 {
 	int ret_code;
 
@@ -90,74 +121,77 @@ init_change_dialog_mode(int *key_mode)
 
 	mode = key_mode;
 
-	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), CHANGE_MODE);
+	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), SORT_MODE);
 	assert(ret_code == 0);
 }
 
 void
-enter_change_mode(FileView *active_view)
+enter_sort_mode(FileView *active_view)
 {
 	if(curr_stats.load_stage < 2)
 		return;
 
 	view = active_view;
-	*mode = CHANGE_MODE;
+	descending = (view->sort[0] < 0);
+	*mode = SORT_MODE;
 
 	wattroff(view->win, COLOR_PAIR(DCOLOR_BASE + CURR_LINE_COLOR) | A_BOLD);
 	curs_set(FALSE);
 	update_all_windows();
 
-	top = 2;
-#ifndef _WIN32
-	bottom = 8;
-#else
-	bottom = 4;
-#endif
-	curr = 2;
+	top = 3;
+	bottom = top + NUM_SORT_OPTIONS - 1;
+	curr = top + indexes[abs(view->sort[0])];
 	col = 6;
-	step = 2;
 
-	redraw_change_dialog();
+	redraw_sort_dialog();
 }
 
 void
-redraw_change_dialog(void)
+redraw_sort_dialog(void)
 {
-	int x, y;
+	int x, y, cy;
 
-	wresize(change_win, bottom + 3, 25);
+	werase(sort_win);
+	box(sort_win, ACS_VLINE, ACS_HLINE);
 
-	getmaxyx(change_win, y, x);
-	werase(change_win);
-	box(change_win, ACS_VLINE, ACS_HLINE);
-
-	mvwaddstr(change_win, 0, (x - 20)/2, " Change Current File ");
-	mvwaddstr(change_win, 2, 4, " [ ] Name");
+	getmaxyx(sort_win, y, x);
+	mvwaddstr(sort_win, 0, (x - 6)/2, " Sort ");
+	mvwaddstr(sort_win, top - 1, 2, " Sort files by:");
+	cy = top;
+	mvwaddstr(sort_win, cy++, 4, " [   ] File Extenstion");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Name");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Name (ignore case)");
 #ifndef _WIN32
-	mvwaddstr(change_win, 4, 4, " [ ] Owner");
-	mvwaddstr(change_win, 6, 4, " [ ] Group");
-	mvwaddstr(change_win, 8, 4, " [ ] Permissions");
-#else
-	mvwaddstr(change_win, 4, 4, " [ ] Properties");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Group ID");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Group Name");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Mode");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Owner ID");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Owner Name");
 #endif
-	mvwaddch(change_win, 2, 6, '*');
+	mvwaddstr(sort_win, cy++, 4, " [   ] Size");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Time Accessed");
+#ifndef _WIN32
+	mvwaddstr(sort_win, cy++, 4, " [   ] Time Changed");
+#else
+	mvwaddstr(sort_win, cy++, 4, " [   ] Time Created");
+#endif
+	mvwaddstr(sort_win, cy++, 4, " [   ] Time Modified");
+	mvwaddstr(sort_win, curr, 6, caps[descending]);
 
 	getmaxyx(stdscr, y, x);
-	mvwin(change_win, (y - getmaxy(change_win))/2, (x - getmaxx(change_win))/2);
-	wrefresh(change_win);
+	mvwin(sort_win, (y - (cy - 2 + 3))/2, (x - SORT_WIN_WIDTH)/2);
+	wrefresh(sort_win);
 }
 
 static void
-leave_change_mode(int clean_selection)
+leave_sort_mode(void)
 {
 	*mode = NORMAL_MODE;
 
-	if(clean_selection)
-	{
-		clean_selected_files(view);
-		load_saving_pos(view, 1);
-		move_to_list_pos(view, view->list_pos);
-	}
+	clean_selected_files(view);
+	load_saving_pos(view, 1);
+	move_to_list_pos(view, view->list_pos);
 
 	update_all_windows();
 }
@@ -165,27 +199,20 @@ leave_change_mode(int clean_selection)
 static void
 cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
-	leave_change_mode(1);
+	leave_sort_mode();
 }
 
 static void
 cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
-	leave_change_mode(0);
+	int i;
 
-	if(curr == 2)
-		rename_file(view, 0);
-#ifndef _WIN32
-	else if(curr == 4)
-		change_owner();
-	else if(curr == 6)
-		change_group();
-	else if(curr == 8)
-		enter_attr_mode(view);
-#else
-	else if(curr == 4)
-		enter_attr_mode(view);
-#endif
+	leave_sort_mode();
+
+	for(i = 0; i < ARRAY_LEN(indexes); i++)
+		if(indexes[i] == curr - top)
+			break;
+	change_sort_type(view, i, descending);
 }
 
 static void
@@ -194,22 +221,21 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		goto_line(bottom);
 	else
-		goto_line(key_info.count);
+		goto_line(key_info.count + top - 1);
 }
 
 static void
 cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
-		goto_line(1);
+		goto_line(top);
 	else
-		goto_line(key_info.count);
+		goto_line(key_info.count + top - 1);
 }
 
 static void
 goto_line(int line)
 {
-	line = top + (line - 1)*step;
 	if(line > bottom)
 		line = bottom;
 	if(curr == line)
@@ -218,7 +244,16 @@ goto_line(int line)
 	clear_at_pos();
 	curr = line;
 	print_at_pos();
-	wrefresh(change_win);
+	wrefresh(sort_win);
+}
+
+static void
+cmd_h(key_info_t key_info, keys_info_t *keys_info)
+{
+	descending = !descending;
+	clear_at_pos();
+	print_at_pos();
+	wrefresh(sort_win);
 }
 
 static void
@@ -228,12 +263,12 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 		key_info.count = 1;
 
 	clear_at_pos();
-	curr += key_info.count*step;
+	curr += key_info.count;
 	if(curr > bottom)
 		curr = bottom;
 
 	print_at_pos();
-	wrefresh(change_win);
+	wrefresh(sort_win);
 }
 
 static void
@@ -243,24 +278,24 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 		key_info.count = 1;
 
 	clear_at_pos();
-	curr -= key_info.count*step;
+	curr -= key_info.count;
 	if(curr < top)
 		curr = top;
 
 	print_at_pos();
-	wrefresh(change_win);
+	wrefresh(sort_win);
 }
 
 static void
 print_at_pos(void)
 {
-	mvwaddstr(change_win, curr, col, "*");
+	mvwaddstr(sort_win, curr, col, caps[descending]);
 }
 
 static void
 clear_at_pos(void)
 {
-	mvwaddstr(change_win, curr, col, " ");
+	mvwaddstr(sort_win, curr, col, "   ");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -32,17 +32,17 @@
 #include <string.h>
 #include <time.h>
 
-#include "../config.h"
+#include "../../config.h"
 
-#include "utils/utils.h"
-#include "config.h"
-#include "filelist.h"
-#include "file_magic.h"
-#include "keys.h"
-#include "menus.h"
+#include "../utils/utils.h"
+#include "../config.h"
+#include "../filelist.h"
+#include "../file_magic.h"
+#include "../keys.h"
+#include "../menus.h"
+#include "../status.h"
+#include "../ui.h"
 #include "modes.h"
-#include "status.h"
-#include "ui.h"
 
 #include "file_info.h"
 

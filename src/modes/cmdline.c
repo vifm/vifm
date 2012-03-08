@@ -34,25 +34,25 @@
 #include <string.h>
 #include <wctype.h>
 
-#include "../config.h"
+#include "../../config.h"
 
-#include "utils/utils.h"
+#include "../utils/utils.h"
+#include "../bookmarks.h"
+#include "../cmds.h"
+#include "../color_scheme.h"
+#include "../commands.h"
+#include "../completion.h"
+#include "../config.h"
+#include "../filelist.h"
+#include "../keys.h"
+#include "../menus.h"
+#include "../options.h"
+#include "../status.h"
+#include "../ui.h"
 #include "attr_dialog.h"
-#include "bookmarks.h"
-#include "cmds.h"
-#include "color_scheme.h"
-#include "commands.h"
-#include "completion.h"
-#include "config.h"
-#include "filelist.h"
-#include "keys.h"
 #include "menu.h"
-#include "menus.h"
 #include "modes.h"
-#include "options.h"
 #include "sort_dialog.h"
-#include "status.h"
-#include "ui.h"
 #include "visual.h"
 
 #include "cmdline.h"
@@ -700,7 +700,7 @@ draw_wild_menu(int op)
 	int count = get_completion_count() - 1;
 	int i;
 	int len = getmaxx(stdscr);
-	
+
 	if(sub_mode == MENU_CMD_SUBMODE || input_stat.complete == NULL)
 		return;
 

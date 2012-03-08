@@ -51,23 +51,24 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(pkgdatadir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_vifm_OBJECTS = utils/log.$(OBJEXT) utils/string_array.$(OBJEXT) \
-	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
-	utils/utils.$(OBJEXT) attr_dialog_nix.$(OBJEXT) \
-	background.$(OBJEXT) bookmarks.$(OBJEXT) \
-	change_dialog.$(OBJEXT) cmdline.$(OBJEXT) cmds.$(OBJEXT) \
+am_vifm_OBJECTS = modes/attr_dialog_nix.$(OBJEXT) \
+	modes/change_dialog.$(OBJEXT) modes/cmdline.$(OBJEXT) \
+	modes/file_info.$(OBJEXT) modes/menu.$(OBJEXT) \
+	modes/modes.$(OBJEXT) modes/normal.$(OBJEXT) \
+	modes/sort_dialog.$(OBJEXT) modes/view.$(OBJEXT) \
+	modes/visual.$(OBJEXT) utils/log.$(OBJEXT) \
+	utils/string_array.$(OBJEXT) utils/tree.$(OBJEXT) \
+	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
+	background.$(OBJEXT) bookmarks.$(OBJEXT) cmds.$(OBJEXT) \
 	color_scheme.$(OBJEXT) commands.$(OBJEXT) completion.$(OBJEXT) \
-	config.$(OBJEXT) dir_stack.$(OBJEXT) file_info.$(OBJEXT) \
-	file_magic.$(OBJEXT) filelist.$(OBJEXT) fileops.$(OBJEXT) \
-	filetype.$(OBJEXT) ipc.$(OBJEXT) keys.$(OBJEXT) \
-	main_loop.$(OBJEXT) menu.$(OBJEXT) menus.$(OBJEXT) \
-	modes.$(OBJEXT) normal.$(OBJEXT) ops.$(OBJEXT) \
-	opt_handlers.$(OBJEXT) options.$(OBJEXT) registers.$(OBJEXT) \
-	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
-	sort_dialog.$(OBJEXT) status.$(OBJEXT) tags.$(OBJEXT) \
-	trash.$(OBJEXT) ui.$(OBJEXT) undo.$(OBJEXT) \
-	variables.$(OBJEXT) version.$(OBJEXT) view.$(OBJEXT) \
-	vifm.$(OBJEXT) visual.$(OBJEXT)
+	config.$(OBJEXT) dir_stack.$(OBJEXT) file_magic.$(OBJEXT) \
+	filelist.$(OBJEXT) fileops.$(OBJEXT) filetype.$(OBJEXT) \
+	ipc.$(OBJEXT) keys.$(OBJEXT) main_loop.$(OBJEXT) \
+	menus.$(OBJEXT) ops.$(OBJEXT) opt_handlers.$(OBJEXT) \
+	options.$(OBJEXT) registers.$(OBJEXT) search.$(OBJEXT) \
+	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
+	tags.$(OBJEXT) trash.$(OBJEXT) ui.$(OBJEXT) undo.$(OBJEXT) \
+	variables.$(OBJEXT) version.$(OBJEXT) vifm.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
@@ -239,6 +240,17 @@ bin_SCRIPTS = vifm-pause
 man_MANS = ../data/vifm.1
 vifm_SOURCES = \
 	\
+	modes/attr_dialog_nix.c modes/attr_dialog_nix.h modes/attr_dialog.h \
+	modes/change_dialog.c modes/change_dialog.h \
+	modes/cmdline.c modes/cmdline.h \
+	modes/file_info.c modes/file_info.h \
+	modes/menu.c modes/menu.h \
+	modes/modes.c modes/modes.h \
+	modes/normal.c modes/normal.h \
+	modes/sort_dialog.c modes/sort_dialog.h \
+	modes/view.c modes/view.h \
+	modes/visual.c modes/visual.h \
+	\
 	utils/log.c utils/log.h \
 	utils/macros.h \
 	utils/string_array.c utils/string_array.h \
@@ -246,18 +258,14 @@ vifm_SOURCES = \
 	utils/utf8.c utils/utf8.h \
 	utils/utils.c utils/utils.h \
 	\
-	attr_dialog_nix.c attr_dialog_nix.h attr_dialog.h \
 	background.c background.h \
 	bookmarks.c bookmarks.h \
-	change_dialog.c change_dialog.h \
-	cmdline.c cmdline.h \
 	cmds.c cmds.h \
 	color_scheme.c colorscheme.h \
 	commands.c commands.h \
 	completion.c completion.h \
 	config.c config.h \
 	dir_stack.c dir_stack.h \
-	file_info.c file_info.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \
 	fileops.c fileops.h \
@@ -265,10 +273,7 @@ vifm_SOURCES = \
 	ipc.c ipc.h \
 	keys.c keys.h \
 	main_loop.c main_loop.h \
-	menu.c menu.h \
 	menus.c menus.h \
-	modes.c modes.h \
-	normal.c normal.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
 	options.c options.h \
@@ -276,7 +281,6 @@ vifm_SOURCES = \
 	search.c search.h \
 	signals.c signals.h \
 	sort.c sort.h \
-	sort_dialog.c sort_dialog.h \
 	status.c status.h \
 	tags.c tags.h \
 	trash.c trash.h \
@@ -284,9 +288,7 @@ vifm_SOURCES = \
 	undo.c undo.h \
 	variables.c variables.h \
 	version.c version.h \
-	view.c view.h \
-	vifm.c \
-	visual.c visual.h
+	vifm.c
 
 vifmrc_converter_SOURCES = \
 	color_scheme.h \
@@ -369,6 +371,32 @@ clean-binPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
+modes/$(am__dirstamp):
+	@$(MKDIR_P) modes
+	@: > modes/$(am__dirstamp)
+modes/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) modes/$(DEPDIR)
+	@: > modes/$(DEPDIR)/$(am__dirstamp)
+modes/attr_dialog_nix.$(OBJEXT): modes/$(am__dirstamp) \
+	modes/$(DEPDIR)/$(am__dirstamp)
+modes/change_dialog.$(OBJEXT): modes/$(am__dirstamp) \
+	modes/$(DEPDIR)/$(am__dirstamp)
+modes/cmdline.$(OBJEXT): modes/$(am__dirstamp) \
+	modes/$(DEPDIR)/$(am__dirstamp)
+modes/file_info.$(OBJEXT): modes/$(am__dirstamp) \
+	modes/$(DEPDIR)/$(am__dirstamp)
+modes/menu.$(OBJEXT): modes/$(am__dirstamp) \
+	modes/$(DEPDIR)/$(am__dirstamp)
+modes/modes.$(OBJEXT): modes/$(am__dirstamp) \
+	modes/$(DEPDIR)/$(am__dirstamp)
+modes/normal.$(OBJEXT): modes/$(am__dirstamp) \
+	modes/$(DEPDIR)/$(am__dirstamp)
+modes/sort_dialog.$(OBJEXT): modes/$(am__dirstamp) \
+	modes/$(DEPDIR)/$(am__dirstamp)
+modes/view.$(OBJEXT): modes/$(am__dirstamp) \
+	modes/$(DEPDIR)/$(am__dirstamp)
+modes/visual.$(OBJEXT): modes/$(am__dirstamp) \
+	modes/$(DEPDIR)/$(am__dirstamp)
 utils/$(am__dirstamp):
 	@$(MKDIR_P) utils
 	@: > utils/$(am__dirstamp)
@@ -428,6 +456,16 @@ uninstall-binSCRIPTS:
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f modes/attr_dialog_nix.$(OBJEXT)
+	-rm -f modes/change_dialog.$(OBJEXT)
+	-rm -f modes/cmdline.$(OBJEXT)
+	-rm -f modes/file_info.$(OBJEXT)
+	-rm -f modes/menu.$(OBJEXT)
+	-rm -f modes/modes.$(OBJEXT)
+	-rm -f modes/normal.$(OBJEXT)
+	-rm -f modes/sort_dialog.$(OBJEXT)
+	-rm -f modes/view.$(OBJEXT)
+	-rm -f modes/visual.$(OBJEXT)
 	-rm -f utils/log.$(OBJEXT)
 	-rm -f utils/string_array.$(OBJEXT)
 	-rm -f utils/tree.$(OBJEXT)
@@ -437,18 +475,14 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/attr_dialog_nix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/background.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bookmarks.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/change_dialog.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmdline.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmds.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_scheme.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/completion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dir_stack.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_magic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filelist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fileops.Po@am__quote@
@@ -456,10 +490,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/keys.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main_loop.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/menus.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/modes.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/normal.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opt_handlers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/options.Po@am__quote@
@@ -467,7 +498,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/search.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/signals.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/status.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tags.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/trash.Po@am__quote@
@@ -475,10 +505,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/undo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/variables.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifmrc-converter.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/visual.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/attr_dialog_nix.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/change_dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/cmdline.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/file_info.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/menu.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/modes.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/normal.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/sort_dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/view.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@modes/$(DEPDIR)/visual.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/log.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/string_array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/tree.Po@am__quote@
@@ -696,6 +734,8 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f modes/$(DEPDIR)/$(am__dirstamp)
+	-rm -f modes/$(am__dirstamp)
 	-rm -f utils/$(DEPDIR)/$(am__dirstamp)
 	-rm -f utils/$(am__dirstamp)
 
@@ -707,7 +747,7 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) modes/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -753,7 +793,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) modes/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

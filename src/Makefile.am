@@ -15,6 +15,17 @@ man_MANS = ../data/vifm.1
 
 vifm_SOURCES = \
 	\
+	modes/attr_dialog_nix.c modes/attr_dialog_nix.h modes/attr_dialog.h \
+	modes/change_dialog.c modes/change_dialog.h \
+	modes/cmdline.c modes/cmdline.h \
+	modes/file_info.c modes/file_info.h \
+	modes/menu.c modes/menu.h \
+	modes/modes.c modes/modes.h \
+	modes/normal.c modes/normal.h \
+	modes/sort_dialog.c modes/sort_dialog.h \
+	modes/view.c modes/view.h \
+	modes/visual.c modes/visual.h \
+	\
 	utils/log.c utils/log.h \
 	utils/macros.h \
 	utils/string_array.c utils/string_array.h \
@@ -22,18 +33,14 @@ vifm_SOURCES = \
 	utils/utf8.c utils/utf8.h \
 	utils/utils.c utils/utils.h \
 	\
-	attr_dialog_nix.c attr_dialog_nix.h attr_dialog.h \
 	background.c background.h \
 	bookmarks.c bookmarks.h \
-	change_dialog.c change_dialog.h \
-	cmdline.c cmdline.h \
 	cmds.c cmds.h \
 	color_scheme.c colorscheme.h \
 	commands.c commands.h \
 	completion.c completion.h \
 	config.c config.h \
 	dir_stack.c dir_stack.h \
-	file_info.c file_info.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \
 	fileops.c fileops.h \
@@ -41,10 +48,7 @@ vifm_SOURCES = \
 	ipc.c ipc.h \
 	keys.c keys.h \
 	main_loop.c main_loop.h \
-	menu.c menu.h \
 	menus.c menus.h \
-	modes.c modes.h \
-	normal.c normal.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
 	options.c options.h \
@@ -52,7 +56,6 @@ vifm_SOURCES = \
 	search.c search.h \
 	signals.c signals.h \
 	sort.c sort.h \
-	sort_dialog.c sort_dialog.h \
 	status.c status.h \
 	tags.c tags.h \
 	trash.c trash.h \
@@ -60,9 +63,7 @@ vifm_SOURCES = \
 	undo.c undo.h \
 	variables.c variables.h \
 	version.c version.h \
-	view.c view.h \
-	vifm.c \
-	visual.c visual.h
+	vifm.c
 
 vifmrc_converter_SOURCES = \
 	color_scheme.h \

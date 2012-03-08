@@ -36,6 +36,8 @@
 #include <assert.h>
 #include <string.h> /* strncpy */
 
+#include "modes/modes.h"
+#include "modes/normal.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/utils.h"
@@ -45,8 +47,6 @@
 #include "filelist.h"
 #include "ipc.h"
 #include "keys.h"
-#include "modes.h"
-#include "normal.h"
 #include "status.h"
 #include "ui.h"
 

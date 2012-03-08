@@ -22,22 +22,22 @@
 #include <assert.h>
 #include <string.h>
 
-#include "../config.h"
+#include "../../config.h"
 
-#include "utils/utils.h"
+#include "../utils/utils.h"
+#include "../bookmarks.h"
+#include "../commands.h"
+#include "../config.h"
+#include "../filelist.h"
+#include "../fileops.h"
+#include "../keys.h"
+#include "../menus.h"
+#include "../search.h"
+#include "../status.h"
 #include "attr_dialog.h"
-#include "bookmarks.h"
 #include "cmdline.h"
-#include "commands.h"
-#include "config.h"
-#include "filelist.h"
-#include "fileops.h"
-#include "keys.h"
-#include "menus.h"
 #include "modes.h"
 #include "normal.h"
-#include "search.h"
-#include "status.h"
 
 #include "visual.h"
 
