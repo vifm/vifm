@@ -28,6 +28,7 @@
 
 #include "../../config.h"
 
+#include "../engine/keys.h"
 #include "../utils/macros.h"
 #include "../utils/tree.h"
 #include "../utils/utf8.h"
@@ -39,7 +40,6 @@
 #include "../config.h"
 #include "../filelist.h"
 #include "../fileops.h"
-#include "../keys.h"
 #include "../menus.h"
 #include "../registers.h"
 #include "../search.h"

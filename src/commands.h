@@ -67,7 +67,7 @@ void filename_completion(const char *str, int type);
 void exec_startup_commands(int argc, char **argv);
 
 #ifdef TEST
-#include "cmds.h"
+#include "engine/cmds.h"
 
 char * append_selected_files(FileView *view, char *expanded, int under_cursor,
 		int quotes, const char *mod);

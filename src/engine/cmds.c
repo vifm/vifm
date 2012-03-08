@@ -22,10 +22,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils/log.h"
-#include "utils/macros.h"
-#include "utils/string_array.h"
-#include "utils/utils.h"
+#include "../utils/log.h"
+#include "../utils/macros.h"
+#include "../utils/string_array.h"
+#include "../utils/utils.h"
 #include "completion.h"
 
 #include "cmds.h"

@@ -38,6 +38,7 @@
 #include <locale.h> /* setlocale */
 #include <string.h> /* strncpy */
 
+#include "engine/variables.h"
 #include "modes/modes.h"
 #include "modes/normal.h"
 #include "modes/view.h"
@@ -64,7 +65,6 @@
 #include "status.h"
 #include "ui.h"
 #include "undo.h"
-#include "variables.h"
 
 #ifndef _WIN32
 #define CONF_DIR "~/.vifm"

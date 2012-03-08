@@ -27,14 +27,14 @@
 
 #include "../../config.h"
 
+#include "../engine/cmds.h"
+#include "../engine/keys.h"
 #include "../utils/utils.h"
 #include "../bookmarks.h"
-#include "../cmds.h"
 #include "../commands.h"
 #include "../config.h"
 #include "../filelist.h"
 #include "../fileops.h"
-#include "../keys.h"
 #include "../menus.h"
 #include "../status.h"
 #include "../ui.h"

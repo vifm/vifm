@@ -40,6 +40,7 @@
 
 #include "../config.h"
 
+#include "engine/cmds.h"
 #include "modes/cmdline.h"
 #include "modes/menu.h"
 #include "modes/modes.h"
@@ -48,7 +49,6 @@
 #include "utils/utils.h"
 #include "background.h"
 #include "bookmarks.h"
-#include "cmds.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "config.h"

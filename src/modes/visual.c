@@ -24,13 +24,13 @@
 
 #include "../../config.h"
 
+#include "../engine/keys.h"
 #include "../utils/utils.h"
 #include "../bookmarks.h"
 #include "../commands.h"
 #include "../config.h"
 #include "../filelist.h"
 #include "../fileops.h"
-#include "../keys.h"
 #include "../menus.h"
 #include "../search.h"
 #include "../status.h"

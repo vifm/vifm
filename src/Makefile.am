@@ -15,6 +15,12 @@ man_MANS = ../data/vifm.1
 
 vifm_SOURCES = \
 	\
+	engine/cmds.c engine/cmds.h \
+	engine/completion.c engine/completion.h \
+	engine/keys.c engine/keys.h \
+	engine/options.c engine/options.h \
+	engine/variables.c engine/variables.h \
+	\
 	modes/attr_dialog_nix.c modes/attr_dialog_nix.h modes/attr_dialog.h \
 	modes/change_dialog.c modes/change_dialog.h \
 	modes/cmdline.c modes/cmdline.h \
@@ -35,10 +41,8 @@ vifm_SOURCES = \
 	\
 	background.c background.h \
 	bookmarks.c bookmarks.h \
-	cmds.c cmds.h \
 	color_scheme.c colorscheme.h \
 	commands.c commands.h \
-	completion.c completion.h \
 	config.c config.h \
 	dir_stack.c dir_stack.h \
 	file_magic.c file_magic.h \
@@ -46,12 +50,10 @@ vifm_SOURCES = \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
 	ipc.c ipc.h \
-	keys.c keys.h \
 	main_loop.c main_loop.h \
 	menus.c menus.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
-	options.c options.h \
 	registers.c registers.h \
 	search.c search.h \
 	signals.c signals.h \
@@ -61,7 +63,6 @@ vifm_SOURCES = \
 	trash.c trash.h \
 	ui.c ui.h \
 	undo.c undo.h \
-	variables.c variables.h \
 	version.c version.h \
 	vifm.c
 

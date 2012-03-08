@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "engine/options.h"
 #include "modes/view.h"
 #include "utils/log.h"
 #include "utils/macros.h"
@@ -29,7 +30,6 @@
 #include "color_scheme.h"
 #include "config.h"
 #include "filelist.h"
-#include "options.h"
 #include "status.h"
 #include "ui.h"
 

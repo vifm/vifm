@@ -37,13 +37,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "engine/cmds.h"
 #include "utils/log.h"
 #include "utils/string_array.h"
 #include "utils/utils.h"
 #include "bookmarks.h"
 #include "color_scheme.h"
 #include "commands.h"
-#include "cmds.h"
 #include "config.h"
 #include "dir_stack.h"
 #include "fileops.h"

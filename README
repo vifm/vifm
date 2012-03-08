@@ -9,6 +9,11 @@ GitHub: https://github.com/xaizek/vifm (might be removed in the future)
 
 If you are interested in playing with the source code.
 
+src/engine/cmds.c - command line parsing core
+src/engine/completion.c - provides means to fill and get completion list
+src/engine/keys.c - analyzes users input
+src/engine/options.c - :set command
+src/engine/variables.c - handles :let and :unlet commands
 src/modes/attr_dialog_nix.c - file permissions dialog for *nix systems
 src/modes/attr_dialog_win.c - file properties dialog for MS Windows systems
 src/modes/change_dialog.c - change dialog
@@ -28,9 +33,7 @@ src/utils/utils.c - various utilities
 src/background.c - runs commands in background
 src/bookmarks.c - stores information about bookmarked directories
 src/color_scheme.c - color schemes
-src/cmds.c - command line parsing core
 src/commands.c - handles command line commands
-src/completion.c - provides means to fill and get completion list
 src/config.c - read and write vifmrc
 src/dir_stack.c - for :pushd and :popd commands
 src/file_magic.c - determines programs associated with file using its mime-type
@@ -38,12 +41,10 @@ src/filelist.c - display/redraw/fill list
 src/fileops.c - delete/copy/put selected file(s)
 src/filetype.c - stores filetype information from vifmrc
 src/ipc.c - handles communication across instances of vifm
-src/keys.c - analyzes users input
 src/main_loop.c - the main loop
 src/menus.c - handles all kinds of menus
 src/ops.c - most of operations performed on file system
 src/opt_handlers.c - initialization of options and option change handlers
-src/options.c - :set command
 src/registers.c - implementation of registers
 src/search.c - code for / and ? commands of normal mode
 src/signals.c - handlers for different signals
@@ -53,7 +54,6 @@ src/tags.c - tags for :h completion
 src/trash.c - code that handles list of files in trash
 src/ui.c - setup_ncurses_interface() and other ui related functions
 src/undo.c - stores and handles the undo list
-src/variables.c - handles :let and :unlet commands
 src/version.c - contains git hash
 src/vifm.c - contains main() which does basic initialization
 src/vifmrc-converter.c - converter for vifmrc, vifminfo and colorscheme files

@@ -28,11 +28,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "engine/completion.h"
 #include "utils/macros.h"
 #include "utils/tree.h"
 #include "utils/utils.h"
 #include "color_scheme.h"
-#include "completion.h"
 #include "config.h"
 #include "filelist.h"
 #include "menus.h"

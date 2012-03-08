@@ -44,6 +44,11 @@
 #include <string.h> /* strncmp() */
 #include <time.h>
 
+#include "engine/cmds.h"
+#include "engine/completion.h"
+#include "engine/keys.h"
+#include "engine/options.h"
+#include "engine/variables.h"
 #include "modes/attr_dialog.h"
 #include "modes/change_dialog.h"
 #include "modes/cmdline.h"
@@ -60,19 +65,15 @@
 #include "background.h"
 #include "bookmarks.h"
 #include "bracket_notation.h"
-#include "cmds.h"
 #include "color_scheme.h"
-#include "completion.h"
 #include "config.h"
 #include "dir_stack.h"
 #include "file_magic.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
-#include "keys.h"
 #include "menus.h"
 #include "opt_handlers.h"
-#include "options.h"
 #include "registers.h"
 #include "signals.h"
 #include "sort.h"
@@ -81,7 +82,6 @@
 #include "trash.h"
 #include "ui.h"
 #include "undo.h"
-#include "variables.h"
 
 #include "commands.h"
 

@@ -19,11 +19,11 @@
 
 #include <stdlib.h>
 
+#include "../engine/keys.h"
 #include "../utils/log.h"
 #include "../utils/macros.h"
 #include "../background.h"
 #include "../filelist.h"
-#include "../keys.h"
 #include "../main_loop.h"
 #include "../status.h"
 #include "../ui.h"

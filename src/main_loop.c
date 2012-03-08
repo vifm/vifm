@@ -36,6 +36,7 @@
 #include <assert.h>
 #include <string.h> /* strncpy */
 
+#include "engine/keys.h"
 #include "modes/modes.h"
 #include "modes/normal.h"
 #include "utils/log.h"
@@ -46,7 +47,6 @@
 #include "config.h"
 #include "filelist.h"
 #include "ipc.h"
-#include "keys.h"
 #include "status.h"
 #include "ui.h"
 

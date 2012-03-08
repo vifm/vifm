@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils/utils.h"
+#include "../utils/utils.h"
 #include "completion.h"
 
 #include "options.h"
@@ -527,7 +527,7 @@ set_set(opt_t *opt, const char *value)
 
 			snprintf(buf, p - value + 1, "%s", value);
 			set_add(opt, buf);
-			
+
 			value = (*p == '\0') ? p : p + 1;
 		}
 	}
@@ -723,7 +723,7 @@ str_add(char *old, const char *value)
 {
 	size_t len;
 	char *new;
-	
+
 	len = 0;
 	if(old != NULL)
 		len = strlen(old);

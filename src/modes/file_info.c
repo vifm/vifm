@@ -34,11 +34,11 @@
 
 #include "../../config.h"
 
+#include "../engine/keys.h"
 #include "../utils/utils.h"
 #include "../config.h"
 #include "../filelist.h"
 #include "../file_magic.h"
-#include "../keys.h"
 #include "../menus.h"
 #include "../status.h"
 #include "../ui.h"

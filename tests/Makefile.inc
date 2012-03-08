@@ -1,4 +1,5 @@
-SOURCES := ../../src/*.c ../../src/modes/*.c ../../src/utils/*.c
+SOURCES := ../../src/*.c ../../src/engine/*.c ../../src/modes/*.c
+SOURCES += ../../src/utils/*.c
 SOURCES := $(filter-out ../../src/vifm.c, $(wildcard $(SOURCES)))
 SOURCES := $(filter-out ../../src/vifmrc-converter.c, $(SOURCES))
 SOURCES := $(filter-out ../../src/win_helper.c, $(SOURCES))

@@ -20,7 +20,7 @@
 #ifndef __NORMAL_H__
 #define __NORMAL_H__
 
-#include "../keys.h"
+#include "../engine/keys.h"
 #include "../ui.h"
 
 void init_normal_mode(int *key_mode);
