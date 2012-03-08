@@ -49,10 +49,10 @@
 #include "../menus.h"
 #include "../status.h"
 #include "../ui.h"
-#include "attr_dialog.h"
+#include "dialogs/attr_dialog.h"
+#include "dialogs/sort_dialog.h"
 #include "menu.h"
 #include "modes.h"
-#include "sort_dialog.h"
 #include "visual.h"
 
 #include "cmdline.h"

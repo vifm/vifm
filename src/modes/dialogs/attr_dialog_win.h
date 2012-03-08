@@ -1,6 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2012 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,14 +16,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __CHANGE_DIALOG_H__
-#define __CHANGE_DIALOG_H__
+#ifndef __ATTR_DIALOG_WIN_H__
+#define __ATTR_DIALOG_WIN_H__
 
-#include "../ui.h"
+#include "../../ui.h"
 
-void init_change_dialog_mode(int *key_mode);
-void enter_change_mode(FileView *active_view);
-void redraw_change_dialog(void);
+void init_attr_dialog_mode(int *key_mode);
+void enter_attr_mode(FileView *active_view);
+void redraw_attr_dialog(void);
 
 #endif
 

@@ -34,7 +34,7 @@
 #include "../menus.h"
 #include "../search.h"
 #include "../status.h"
-#include "attr_dialog.h"
+#include "dialogs/attr_dialog.h"
 #include "cmdline.h"
 #include "modes.h"
 #include "normal.h"

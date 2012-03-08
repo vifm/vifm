@@ -1,5 +1,5 @@
-SOURCES := ../../src/*.c ../../src/engine/*.c ../../src/modes/*.c
-SOURCES += ../../src/utils/*.c
+SOURCES := ../../src/*.c ../../src/engine/*.c ../../src/modes/dialogs/*.c
+SOURCES += ../../src/modes/*.c ../../src/utils/*.c
 SOURCES := $(filter-out ../../src/vifm.c, $(wildcard $(SOURCES)))
 SOURCES := $(filter-out ../../src/vifmrc-converter.c, $(SOURCES))
 SOURCES := $(filter-out ../../src/win_helper.c, $(SOURCES))
@@ -13,10 +13,11 @@ endif
 
 SOURCES += ../seatest/seatest.c
 ifeq ($(OS),Windows_NT)
-    SOURCES := $(filter-out ../../src/modes/attr_dialog_nix.c, $(SOURCES))
+    DIALOG := ../../src/modes/dialogs/attr_dialog_nix.c
 else
-    SOURCES := $(filter-out ../../src/modes/attr_dialog_win.c, $(SOURCES))
+    DIALOG := ../../src/modes/dialogs/attr_dialog_win.c
 endif
+SOURCES := $(filter-out $(DIALOG), $(SOURCES))
 LOCAL_SOURCES += $(wildcard *.c)
 
 OBJECTS := $(SOURCES:.c=.o)

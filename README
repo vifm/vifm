@@ -14,15 +14,15 @@ src/engine/completion.c - provides means to fill and get completion list
 src/engine/keys.c - analyzes users input
 src/engine/options.c - :set command
 src/engine/variables.c - handles :let and :unlet commands
-src/modes/attr_dialog_nix.c - file permissions dialog for *nix systems
-src/modes/attr_dialog_win.c - file properties dialog for MS Windows systems
-src/modes/change_dialog.c - change dialog
+src/modes/dialogs/attr_dialog_nix.c - file permissions dialog for *nix systems
+src/modes/dialogs/attr_dialog_win.c - file properties dialog for MS Windows systems
+src/modes/dialogs/change_dialog.c - change dialog
+src/modes/dialogs/sort_dialog.c - dialog to choose sort type
 src/modes/cmdline.c - command line mode
 src/modes/file_info.c - Control+G
 src/modes/menu.c - handles commands in menus
 src/modes/modes.c - general code (e.g. before and after key pressed) for modes
 src/modes/normal.c - normal mode commands
-src/modes/sort_dialog.c - dialog to choose sort type
 src/modes/view.c - view mode commands
 src/modes/visual.c - implementation of visual mode commands
 src/utils/log.c - primitive logging

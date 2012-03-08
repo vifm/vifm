@@ -23,20 +23,20 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "../../config.h"
+#include "../../../config.h"
 
-#include "../engine/keys.h"
-#include "../bookmarks.h"
-#include "../color_scheme.h"
-#include "../commands.h"
-#include "../config.h"
-#include "../filelist.h"
-#include "../fileops.h"
-#include "../menus.h"
-#include "../status.h"
-#include "../ui.h"
-#include "cmdline.h"
-#include "modes.h"
+#include "../../engine/keys.h"
+#include "../../bookmarks.h"
+#include "../../color_scheme.h"
+#include "../../commands.h"
+#include "../../config.h"
+#include "../../filelist.h"
+#include "../../fileops.h"
+#include "../../menus.h"
+#include "../../status.h"
+#include "../../ui.h"
+#include "../cmdline.h"
+#include "../modes.h"
 
 #include "sort_dialog.h"
 

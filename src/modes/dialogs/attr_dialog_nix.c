@@ -22,17 +22,17 @@
 #include <assert.h>
 #include <string.h>
 
-#include "../../config.h"
+#include "../../../config.h"
 
-#include "../engine/keys.h"
-#include "../utils/utils.h"
-#include "../background.h"
-#include "../filelist.h"
-#include "../fileops.h"
-#include "../menus.h"
-#include "../status.h"
-#include "../undo.h"
-#include "modes.h"
+#include "../../engine/keys.h"
+#include "../../utils/utils.h"
+#include "../../background.h"
+#include "../../filelist.h"
+#include "../../fileops.h"
+#include "../../menus.h"
+#include "../../status.h"
+#include "../../undo.h"
+#include "../modes.h"
 
 #include "attr_dialog_nix.h"
 

@@ -17,15 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __ATTR_DIALOG_NIX_H__
-#define __ATTR_DIALOG_NIX_H__
+#ifndef __CHANGE_DIALOG_H__
+#define __CHANGE_DIALOG_H__
 
-#include "../ui.h"
+#include "../../ui.h"
 
-void init_attr_dialog_mode(int *key_mode);
-void enter_attr_mode(FileView *active_view);
-void redraw_attr_dialog(void);
-void files_chmod(FileView *view, const char *mode, int recurse_dirs);
+void init_change_dialog_mode(int *key_mode);
+void enter_change_mode(FileView *active_view);
+void redraw_change_dialog(void);
 
 #endif
 

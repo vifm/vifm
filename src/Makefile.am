@@ -21,14 +21,16 @@ vifm_SOURCES = \
 	engine/options.c engine/options.h \
 	engine/variables.c engine/variables.h \
 	\
-	modes/attr_dialog_nix.c modes/attr_dialog_nix.h modes/attr_dialog.h \
-	modes/change_dialog.c modes/change_dialog.h \
+	modes/dialogs/attr_dialog.h \
+	modes/dialogs/attr_dialog_nix.c modes/dialogs/attr_dialog_nix.h \
+	modes/dialogs/change_dialog.c modes/dialogs/change_dialog.h \
+	modes/dialogs/sort_dialog.c modes/dialogs/sort_dialog.h \
+	\
 	modes/cmdline.c modes/cmdline.h \
 	modes/file_info.c modes/file_info.h \
 	modes/menu.c modes/menu.h \
 	modes/modes.c modes/modes.h \
 	modes/normal.c modes/normal.h \
-	modes/sort_dialog.c modes/sort_dialog.h \
 	modes/view.c modes/view.h \
 	modes/visual.c modes/visual.h \
 	\

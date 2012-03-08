@@ -46,7 +46,7 @@
 #include "../status.h"
 #include "../ui.h"
 #include "../undo.h"
-#include "attr_dialog.h"
+#include "dialogs/attr_dialog.h"
 #include "file_info.h"
 #include "cmdline.h"
 #include "modes.h"

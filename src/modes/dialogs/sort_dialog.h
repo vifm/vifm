@@ -20,7 +20,7 @@
 #ifndef __SORT_DIALOG_H__
 #define __SORT_DIALOG_H__
 
-#include "../ui.h"
+#include "../../ui.h"
 
 void init_sort_dialog_mode(int *key_mode);
 void enter_sort_mode(FileView *active_view);

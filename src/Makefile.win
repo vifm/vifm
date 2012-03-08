@@ -13,8 +13,11 @@ LIBS := -lregex -lpdcurses -lnetapi32 -lpthread -lws2_32
 engine = cmds.c completion.c keys.c options.c variables.c
 engine := $(addprefix engine/, $(engine))
 
-modes := attr_dialog_win.c change_dialog.c cmdline.c file_info.c menu.c \
-         modes.c normal.c sort_dialog.c view.c visual.c
+dialogs := attr_dialog_win.c change_dialog.c sort_dialog.c
+dialogs := $(addprefix dialogs/, $(dialogs))
+
+modes := $(dialogs) cmdline.c file_info.c menu.c modes.c normal.c \
+         sort_dialog.c view.c visual.c
 modes := $(addprefix modes/, $(modes))
 
 utilities := log.c string_array.c tree.c utf8.c utils.c

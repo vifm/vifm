@@ -21,15 +21,15 @@
 #include <assert.h>
 #include <string.h>
 
-#include "../../config.h"
+#include "../../../config.h"
 
-#include "../utils/log.h"
-#include "../utils/utils.h"
-#include "../filelist.h"
-#include "../keys.h"
-#include "../status.h"
-#include "../undo.h"
-#include "modes.h"
+#include "../../utils/log.h"
+#include "../../utils/utils.h"
+#include "../../filelist.h"
+#include "../../keys.h"
+#include "../../status.h"
+#include "../../undo.h"
+#include "../modes.h"
 
 #include "attr_dialog_win.h"
 
