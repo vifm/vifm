@@ -44,6 +44,10 @@
 #include <string.h> /* strncmp() */
 #include <time.h>
 
+#include "utils/log.h"
+#include "utils/macros.h"
+#include "utils/string_array.h"
+#include "utils/utils.h"
 #include "attr_dialog.h"
 #include "background.h"
 #include "bookmarks.h"
@@ -60,8 +64,6 @@
 #include "fileops.h"
 #include "filetype.h"
 #include "keys.h"
-#include "log.h"
-#include "macros.h"
 #include "menu.h"
 #include "menus.h"
 #include "modes.h"
@@ -73,12 +75,10 @@
 #include "sort.h"
 #include "sort_dialog.h"
 #include "status.h"
-#include "string_array.h"
 #include "tags.h"
 #include "trash.h"
 #include "ui.h"
 #include "undo.h"
-#include "utils.h"
 #include "variables.h"
 #include "view.h"
 #include "visual.h"

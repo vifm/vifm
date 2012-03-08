@@ -37,6 +37,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils/log.h"
+#include "utils/string_array.h"
+#include "utils/utils.h"
 #include "bookmarks.h"
 #include "color_scheme.h"
 #include "commands.h"
@@ -46,14 +49,11 @@
 #include "fileops.h"
 #include "filelist.h"
 #include "filetype.h"
-#include "log.h"
 #include "menus.h"
 #include "opt_handlers.h"
 #include "registers.h"
 #include "status.h"
-#include "string_array.h"
 #include "trash.h"
-#include "utils.h"
 
 #define MAX_LEN 1024
 

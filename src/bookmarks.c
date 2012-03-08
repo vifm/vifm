@@ -22,11 +22,11 @@
 #include <ctype.h> /* isalnum() */
 #include <string.h>
 
+#include "utils/utils.h"
 #include "config.h"
 #include "filelist.h"
 #include "status.h"
 #include "ui.h"
-#include "utils.h"
 
 #include "bookmarks.h"
 

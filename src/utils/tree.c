@@ -125,7 +125,7 @@ tree_get_data(tree_t tree, const char *path, unsigned long long *data)
 	node = find_node(&tree->node, real_path, 0, tree->longest ? &last : NULL);
 	if((node == NULL || !node->valid) && last == NULL)
 		return -1;
-	
+
 	if(node != NULL && node->valid)
 		*data = node->data;
 	else

@@ -26,10 +26,10 @@
 #include <signal.h>
 #include <stdio.h> /* fprintf */
 
+#include "utils/log.h"
+#include "utils/utils.h"
 #include "config.h"
 #include "fileops.h"
-#include "log.h"
-#include "utils.h"
 
 static void _gnuc_noreturn shutdown_nicely(void);
 
@@ -44,13 +44,13 @@ static void _gnuc_noreturn shutdown_nicely(void);
 #include <errno.h>
 #include <time.h>
 
+#include "utils/macros.h"
 #include "background.h"
 #include "config.h"
 #include "file_info.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
-#include "macros.h"
 #include "menus.h"
 #include "status.h"
 #include "ui.h"

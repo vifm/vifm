@@ -44,6 +44,8 @@
 
 #include <wchar.h> /* swprintf */
 
+#include "utils/string_array.h"
+#include "utils/utils.h"
 #include "background.h"
 #include "cmdline.h"
 #include "color_scheme.h"
@@ -56,10 +58,8 @@
 #include "ops.h"
 #include "registers.h"
 #include "status.h"
-#include "string_array.h"
 #include "ui.h"
 #include "undo.h"
-#include "utils.h"
 
 static char rename_file_ext[NAME_MAX];
 

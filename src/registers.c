@@ -23,9 +23,9 @@
 
 #include <string.h>
 
+#include "utils/utils.h"
 #include "config.h"
 #include "menus.h"
-#include "utils.h"
 
 #include "registers.h"
 

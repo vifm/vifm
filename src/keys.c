@@ -23,8 +23,8 @@
 #include <wchar.h> /* swprintf */
 #include <wctype.h> /* iswdigit */
 
-#include "string_array.h"
-#include "utils.h"
+#include "utils/string_array.h"
+#include "utils/utils.h"
 
 #include "keys.h"
 

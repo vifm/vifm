@@ -28,6 +28,10 @@
 
 #include "../config.h"
 
+#include "utils/macros.h"
+#include "utils/tree.h"
+#include "utils/utf8.h"
+#include "utils/utils.h"
 #include "attr_dialog.h"
 #include "background.h"
 #include "bookmarks.h"
@@ -39,17 +43,13 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "keys.h"
-#include "macros.h"
 #include "menus.h"
 #include "modes.h"
 #include "registers.h"
 #include "search.h"
 #include "status.h"
-#include "tree.h"
 #include "ui.h"
 #include "undo.h"
-#include "utf8.h"
-#include "utils.h"
 #include "view.h"
 #include "visual.h"
 

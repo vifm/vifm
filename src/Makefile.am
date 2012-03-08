@@ -2,6 +2,8 @@
 
 .PHONY: version.c
 
+AUTOMAKE_OPTIONS = subdir-objects
+
 pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifm-help.txt
 
@@ -12,6 +14,14 @@ bin_SCRIPTS = vifm-pause
 man_MANS = ../data/vifm.1
 
 vifm_SOURCES = \
+	\
+	utils/log.c utils/log.h \
+	utils/macros.h \
+	utils/string_array.c utils/string_array.h \
+	utils/tree.c utils/tree.h \
+	utils/utf8.c utils/utf8.h \
+	utils/utils.c utils/utils.h \
+	\
 	attr_dialog_nix.c attr_dialog_nix.h attr_dialog.h \
 	background.c background.h \
 	bookmarks.c bookmarks.h \
@@ -30,7 +40,6 @@ vifm_SOURCES = \
 	filetype.c filetype.h \
 	ipc.c ipc.h \
 	keys.c keys.h \
-	log.c log.h \
 	main_loop.c main_loop.h \
 	menu.c menu.h \
 	menus.c menus.h \
@@ -45,14 +54,10 @@ vifm_SOURCES = \
 	sort.c sort.h \
 	sort_dialog.c sort_dialog.h \
 	status.c status.h \
-	string_array.c string_array.h \
 	tags.c tags.h \
 	trash.c trash.h \
-	tree.c tree.h \
 	ui.c ui.h \
 	undo.c undo.h \
-	utf8.c utf8.h \
-	utils.c utils.h \
 	variables.c variables.h \
 	version.c version.h \
 	view.c view.h \

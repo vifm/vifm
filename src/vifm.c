@@ -38,6 +38,10 @@
 #include <locale.h> /* setlocale */
 #include <string.h> /* strncpy */
 
+#include "utils/log.h"
+#include "utils/macros.h"
+#include "utils/tree.h"
+#include "utils/utils.h"
 #include "background.h"
 #include "bookmarks.h"
 #include "color_scheme.h"
@@ -47,8 +51,6 @@
 #include "fileops.h"
 #include "filetype.h"
 #include "ipc.h"
-#include "log.h"
-#include "macros.h"
 #include "main_loop.h"
 #include "menus.h"
 #include "modes.h"
@@ -59,10 +61,8 @@
 #include "signals.h"
 #include "sort.h"
 #include "status.h"
-#include "tree.h"
 #include "ui.h"
 #include "undo.h"
-#include "utils.h"
 #include "variables.h"
 #include "view.h"
 

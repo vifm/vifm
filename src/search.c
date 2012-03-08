@@ -24,10 +24,10 @@
 
 #include <string.h>
 
+#include "utils/utils.h"
 #include "config.h"
 #include "filelist.h"
 #include "ui.h"
-#include "utils.h"
 
 #include "search.h"
 

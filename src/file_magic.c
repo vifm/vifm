@@ -36,9 +36,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils/utils.h"
 #include "filetype.h"
 #include "status.h"
-#include "utils.h"
 
 #include "file_magic.h"
 

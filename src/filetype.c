@@ -24,10 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils/utils.h"
 #include "config.h"
 #include "menus.h"
 #include "status.h"
-#include "utils.h"
 
 #include "filetype.h"
 

@@ -1,3 +1,8 @@
+SOURCES := ../../src/*.c ../../src/utils/*.c
+SOURCES := $(filter-out ../../src/vifm.c, $(wildcard $(SOURCES)))
+SOURCES := $(filter-out ../../src/vifmrc-converter.c, $(SOURCES))
+SOURCES := $(filter-out ../../src/win_helper.c, $(SOURCES))
+
 TEST_NAME := $(notdir $(abspath .))
 ifneq ($(OS),Windows_NT)
     BIN := ../bin/$(TEST_NAME)

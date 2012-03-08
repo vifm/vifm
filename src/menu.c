@@ -27,6 +27,7 @@
 
 #include "../config.h"
 
+#include "utils/utils.h"
 #include "bookmarks.h"
 #include "cmdline.h"
 #include "cmds.h"
@@ -39,7 +40,6 @@
 #include "modes.h"
 #include "status.h"
 #include "ui.h"
-#include "utils.h"
 
 #include "menu.h"
 

@@ -36,19 +36,19 @@
 #include <assert.h>
 #include <string.h> /* strncpy */
 
+#include "utils/log.h"
+#include "utils/macros.h"
+#include "utils/utils.h"
 #include "background.h"
 #include "color_scheme.h"
 #include "config.h"
 #include "filelist.h"
 #include "ipc.h"
 #include "keys.h"
-#include "log.h"
-#include "macros.h"
 #include "modes.h"
 #include "normal.h"
 #include "status.h"
 #include "ui.h"
-#include "utils.h"
 
 #include "main_loop.h"
 

@@ -20,7 +20,7 @@
 #ifndef __COMMANDS_H__
 #define __COMMANDS_H__
 
-#include "macros.h"
+#include "utils/macros.h"
 #include "ui.h"
 
 enum

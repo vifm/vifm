@@ -37,12 +37,12 @@
 #include <sys/wait.h>
 #endif
 
+#include "utils/utils.h"
 #include "background.h"
 #include "commands.h"
 #include "config.h"
 #include "menus.h"
 #include "status.h"
-#include "utils.h"
 
 job_t *jobs;
 finished_job_t *fjobs;

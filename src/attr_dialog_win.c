@@ -23,13 +23,13 @@
 
 #include "../config.h"
 
+#include "utils/log.h"
+#include "utils/utils.h"
 #include "filelist.h"
 #include "keys.h"
-#include "log.h"
 #include "modes.h"
 #include "status.h"
 #include "undo.h"
-#include "utils.h"
 
 #include "attr_dialog_win.h"
 

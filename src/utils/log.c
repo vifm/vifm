@@ -23,9 +23,10 @@
 #include <string.h>
 #include <time.h>
 
-#include "config.h"
+#include "../config.h"
 
-#include "status.h"
+#include "../status.h"
+
 #include "log.h"
 
 static FILE *log;
@@ -40,7 +41,7 @@ init_logger(int verbosity_level)
 	verbosity = verbosity_level;
 	if(verbosity <= 0)
 		return;
-	
+
 	init();
 }
 

@@ -22,9 +22,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils/macros.h"
+#include "utils/utils.h"
 #include "completion.h"
-#include "macros.h"
-#include "utils.h"
 
 #include "variables.h"
 

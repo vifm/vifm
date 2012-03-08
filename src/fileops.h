@@ -20,7 +20,7 @@
 #ifndef __FILEOPS_H__
 #define __FILEOPS_H__
 
-#include "macros.h"
+#include "utils/macros.h"
 #include "ui.h"
 
 #define DEFAULT_REG_NAME '"'

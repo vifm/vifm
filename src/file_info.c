@@ -34,6 +34,7 @@
 
 #include "../config.h"
 
+#include "utils/utils.h"
 #include "config.h"
 #include "filelist.h"
 #include "file_magic.h"
@@ -42,7 +43,6 @@
 #include "modes.h"
 #include "status.h"
 #include "ui.h"
-#include "utils.h"
 
 #include "file_info.h"
 

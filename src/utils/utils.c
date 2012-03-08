@@ -22,7 +22,7 @@
 #include <winioctl.h>
 #endif
 
-#include "../config.h"
+#include "../../config.h"
 
 #if !defined(_WIN32) && defined(HAVE_X11)
 #include <X11/Xlib.h>
@@ -62,14 +62,14 @@
 
 #include "../config.h"
 
-#include "config.h"
+#include "../config.h"
+#include "../status.h"
+#include "../version.h"
+#include "../ui.h"
 #include "log.h"
 #include "macros.h"
-#include "status.h"
 #include "string_array.h"
-#include "version.h"
 #include "utf8.h"
-#include "ui.h"
 
 #include "utils.h"
 
@@ -1054,7 +1054,7 @@ get_link_target(const char *link, char *buf, size_t buf_len)
 		return -1;
 	}
 	CloseHandle(hfile);
-	
+
 	sbuf = (REPARSE_DATA_BUFFER *)rdb;
 	path = sbuf->SymbolicLinkReparseBuffer.PathBuffer;
 	path[sbuf->SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(WCHAR) +

@@ -19,14 +19,14 @@
 
 #include <stdlib.h>
 
+#include "utils/log.h"
+#include "utils/macros.h"
 #include "background.h"
 #include "change_dialog.h"
 #include "cmdline.h"
 #include "file_info.h"
 #include "filelist.h"
 #include "keys.h"
-#include "log.h"
-#include "macros.h"
 #include "main_loop.h"
 #include "menu.h"
 #include "normal.h"

@@ -10,14 +10,17 @@ LDFLAGS := $(LDFLAGS)
 
 LIBS := -lregex -lpdcurses -lnetapi32 -lpthread -lws2_32
 
-vifm_SOURCES := background.c bookmarks.c change_dialog.c cmdline.c cmds.c \
-                color_scheme.c commands.c completion.c config.c dir_stack.c \
-                file_info.c file_magic.c filelist.c fileops.c filetype.c ipc.c \
-                keys.c log.c main_loop.c menu.c menus.c modes.c normal.c ops.c \
-                opt_handlers.c options.c attr_dialog_win.c registers.c \
-                search.c signals.c sort.c sort_dialog.c status.c \
-                string_array.c tags.c trash.c tree.c ui.c undo.c utf8.c \
-                utils.c variables.c version.c view.c vifmres.o vifm.c visual.c
+utilities := log.c string_array.c tree.c utf8.c utils.c
+utilities := $(addprefix utils/, $(utilities))
+
+vifm_SOURCES := $(utilities) background.c bookmarks.c change_dialog.c \
+                cmdline.c cmds.c color_scheme.c commands.c completion.c \
+                config.c dir_stack.c file_info.c file_magic.c filelist.c \
+                fileops.c filetype.c ipc.c keys.c main_loop.c menu.c menus.c \
+                modes.c normal.c ops.c opt_handlers.c options.c \
+                attr_dialog_win.c registers.c search.c signals.c sort.c \
+                sort_dialog.c status.c tags.c trash.c ui.c undo.c variables.c \
+                version.c view.c vifmres.o vifm.c visual.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe

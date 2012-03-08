@@ -25,6 +25,10 @@
 #include <assert.h>
 #include <string.h>
 
+#include "utils/macros.h"
+#include "utils/string_array.h"
+#include "utils/utf8.h"
+#include "utils/utils.h"
 #include "cmdline.h"
 #include "commands.h"
 #include "config.h"
@@ -32,15 +36,11 @@
 #include "fileops.h"
 #include "filetype.h"
 #include "keys.h"
-#include "macros.h"
 #include "menus.h"
 #include "modes.h"
 #include "normal.h"
 #include "status.h"
-#include "string_array.h"
 #include "ui.h"
-#include "utf8.h"
-#include "utils.h"
 
 #include "view.h"
 

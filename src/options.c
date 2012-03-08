@@ -22,8 +22,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils/utils.h"
 #include "completion.h"
-#include "utils.h"
 
 #include "options.h"
 

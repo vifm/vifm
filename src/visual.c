@@ -24,6 +24,7 @@
 
 #include "../config.h"
 
+#include "utils/utils.h"
 #include "attr_dialog.h"
 #include "bookmarks.h"
 #include "cmdline.h"
@@ -37,7 +38,6 @@
 #include "normal.h"
 #include "search.h"
 #include "status.h"
-#include "utils.h"
 
 #include "visual.h"
 

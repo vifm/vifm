@@ -40,6 +40,9 @@
 
 #include "../config.h"
 
+#include "utils/string_array.h"
+#include "utils/utf8.h"
+#include "utils/utils.h"
 #include "background.h"
 #include "bookmarks.h"
 #include "cmdline.h"
@@ -57,11 +60,8 @@
 #include "registers.h"
 #include "search.h"
 #include "status.h"
-#include "string_array.h"
 #include "ui.h"
 #include "undo.h"
-#include "utf8.h"
-#include "utils.h"
 
 enum
 {

@@ -45,6 +45,11 @@
 #include <string.h> /* strcat() */
 #include <time.h>
 
+#include "utils/log.h"
+#include "utils/string_array.h"
+#include "utils/tree.h"
+#include "utils/utf8.h"
+#include "utils/utils.h"
 #include "background.h"
 #include "color_scheme.h"
 #include "commands.h"
@@ -54,17 +59,12 @@
 #include "fileops.h"
 #include "fileops.h"
 #include "filetype.h"
-#include "log.h"
 #include "menus.h"
 #include "modes.h"
 #include "opt_handlers.h"
 #include "sort.h"
 #include "status.h"
-#include "string_array.h"
-#include "tree.h"
 #include "ui.h"
-#include "utf8.h"
-#include "utils.h"
 
 static int
 get_line_color(FileView* view, int pos)

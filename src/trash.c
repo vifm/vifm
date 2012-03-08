@@ -24,12 +24,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils/utils.h"
 #include "background.h"
 #include "config.h"
 #include "ops.h"
 #include "registers.h"
 #include "undo.h"
-#include "utils.h"
 
 #include "trash.h"
 

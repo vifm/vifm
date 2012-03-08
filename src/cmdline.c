@@ -36,6 +36,7 @@
 
 #include "../config.h"
 
+#include "utils/utils.h"
 #include "attr_dialog.h"
 #include "bookmarks.h"
 #include "cmds.h"
@@ -52,7 +53,6 @@
 #include "sort_dialog.h"
 #include "status.h"
 #include "ui.h"
-#include "utils.h"
 #include "visual.h"
 
 #include "cmdline.h"
