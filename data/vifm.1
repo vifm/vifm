@@ -1,4 +1,4 @@
-.TH vifm 1 "February 28, 2012" "" "Vifm"
+.TH vifm 1 "March 6, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -654,7 +654,7 @@ This keys apply to all submodes of the command line mode: command, prompt and
 search.
 .LP
 Down, Up, Left, Right, Home, End and Delete are extended keys and they are not
-available if vifm is compiled with --disable-extended-keys option
+available if vifm is compiled with --disable-extended-keys option.
 .TP
 .BI "Esc, Ctrl-C"
 leave command line mode, cancels input.
@@ -952,17 +952,19 @@ the end of command to run program in background.
 .BI ":f[ile] arg"
 run associated command that begins with the arg without opening menu.
 .TP
-.BI ":filet[ype] pat1,pat2,... def_program[ &],program2[ &],..."
-will associate given program list to each of the patterns.  Associated program
-(command) is used by handlers of l and Enter keys (and also in the :file menu).
-*, ?, [ and ] are treated as special symbols in the pattern.  Inside square
-brackets ^ or ! can be used for symbol class negotiation and the - symbol to
-set a range.  Asterisk at the pattern beginning don't match dot in the first
-position.  If you need to insert comma into command just double it (",,").
-Space followed by an ampersand as two last characters of a command means running
-of the command in the background.
+.BI ":filet[ype] pat1,pat2,... [{descr}]def_program[ &],[{descr}]prog2[ &],..."
+will associate given program list to each of the patterns.  Associated
+program (command) is used by handlers of l and Enter keys (and also in
+the :file menu).  *, ?, [ and ] are treated as special symbols in the
+pattern.  Inside square brackets ^ or ! can be used for symbol class
+negotiation and the - symbol to set a range.  Asterisk at the pattern
+beginning don't match dot in the first position.  If you need to insert
+comma into command just double it (",,").  Space followed by an
+ampersand as two last characters of a command means running of the
+command in the background.  Optional description can be given to each command to
+ease understanding of what command will do in the :file menu.
 .TP
-.BI ":filex[type] pat1,pat2,... def_program,program2,..."
+.BI ":filex[type] pat1,pat2,... [{ description }] def_program,program2,..."
 same as :filetype, but vifm will ignore this command if it's not running in X.
 In X :filextype is equal to :filetype.
 .TP
@@ -2104,11 +2106,8 @@ directory pair at the top of the stack.
 
 Filetype menu
 
-Commands from vifmrc are displayed above empty line. When all commands below
-empty line were found in .desktop files.
-
-J and K - to move menu items
-L - save all commands above empty line as program list
+Commands from vifmrc or typed in command-line are displayed above empty line.
+All commands below empty line are from .desktop files.
 
 Fileinfo dialog
 

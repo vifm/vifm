@@ -458,8 +458,6 @@ main(int argc, char *argv[])
 	init_window(&rwin);
 	init_window(&lwin);
 
-	filetypes = NULL;
-
 	init_registers();
 	set_config_paths();
 	reinit_logger();

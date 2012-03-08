@@ -837,7 +837,7 @@ search_menu(menu_info *m, int start_pos)
 		m->matching_entries = 0;
 		for(x = 0; x < m->len; x++)
 		{
-			if(regexec(&re, m->data[x], 0, NULL, 0) != 0)
+			if(regexec(&re, m->items[x], 0, NULL, 0) != 0)
 				continue;
 			m->matches[x] = 1;
 

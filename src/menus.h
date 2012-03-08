@@ -46,6 +46,10 @@ typedef struct menu_info
 	char *regexp;
 	char *title;
 	char *args;
+	/* contains titles of all menu items */
+	char **items;
+	/* contains additional data, associated with each of menu items, can be
+	 * NULL */
 	char **data;
 	/* should return value > 0 to request menu window refresh and < 0 on invalid
 	 * key */
@@ -64,8 +68,8 @@ int show_fsearchhistory_menu(FileView *view);
 int show_bsearchhistory_menu(FileView *view);
 int show_vifm_menu(FileView *view);
 int show_filetypes_menu(FileView *view, int background);
+/* Returns zero on successful running */
 int run_with_filetype(FileView *view, const char *beginning, int background);
-char * form_program_list(const char *filename);
 int show_jobs_menu(FileView *view);
 int show_locate_menu(FileView *view, const char *args);
 int show_find_menu(FileView *view, int with_path, const char *args);

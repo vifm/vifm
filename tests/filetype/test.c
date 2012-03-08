@@ -6,7 +6,10 @@
 #include "../../src/status.h"
 
 void filetype_tests(void);
+void filextype_tests(void);
+void classes_tests(void);
 void replace_double_comma_tests(void);
+void description_tests(void);
 
 static void
 setup(void)
@@ -17,16 +20,17 @@ setup(void)
 static void
 teardown(void)
 {
-	reset_filetypes();
-	reset_xfiletypes();
-	reset_fileviewers();
+	reset_all_file_associations();
 }
 
 static void
 all_tests(void)
 {
 	filetype_tests();
+	filextype_tests();
+	classes_tests();
 	replace_double_comma_tests();
+	description_tests();
 }
 
 int

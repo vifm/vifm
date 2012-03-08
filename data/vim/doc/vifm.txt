@@ -846,20 +846,22 @@ The builtin commands are:
     opening menu.
 
                                                *vifm-:filetype* *vifm-:filet*
-:filet[ype] pat1,pat2,... def_program[ &],program2[ &],... - will associate
-    given program list to each of the patterns.  Associated program (command)
-    is used by handlers of l and Enter keys (and also in the :file menu).  *,
-    ?, [ and ] are treated as special symbols in the pattern.  Inside square
-    brackets ^ or ! can be used for symbol class negotiation and the - symbol
-    to set a range.  Asterisk at the pattern beginning don't match dot in the
-    first position.  If you need to insert comma into command just double it
-    (",,").  Space followed by an ampersand as two last characters of a
-    command means running of the command in the background.
+:filet[ype] pat1,pat2,... [{ descr }]def_program[ &],[{ descr }]prog2[ &],...
+    will associate given program list to each of the patterns.  Associated
+    program (command) is used by handlers of l and Enter keys (and also in
+    the :file menu).  *, ?, [ and ] are treated as special symbols in the
+    pattern.  Inside square brackets ^ or ! can be used for symbol class
+    negotiation and the - symbol to set a range.  Asterisk at the pattern
+    beginning don't match dot in the first position.  If you need to insert
+    comma into command just double it (",,").  Space followed by an
+    ampersand as two last characters of a command means running of the
+    command in the background.  Optional description can be given to each
+    command to ease understanding of what command will do in the :file menu.
 
                                                *vifm-:filextype* *vifm-:filex*
-:filex[type] pat1,pat2,... def_program,program2,... - same as :filetype, but
-    vifm will ignore this command if it's not running in X.  In X :filextype
-    is equal to :filetype.
+:filex[type] pat1,pat2,... [{ description }] def_program,program2,... - same
+    as :filetype, but vifm will ignore this command if it's not running in X.
+    In X :filextype is equal to :filetype.
 
                                                *vifm-:filevtype* *vifm-:filev*
 :filev[iewer] pat1,pat2,... command - will associate given command as a
@@ -1827,11 +1829,8 @@ directory pair at the top of the stack.
 
 Filetype menu~
 
-vifm-commands from vifmrc are displayed above empty line. When all commands below
-empty line were found in .desktop files.
-
-J and K - to move menu items
-L - save all commands above empty line as program list
+Commands from vifmrc or typed in command-line are displayed above empty line.
+All commands below empty line are from .desktop files.
 
 Fileinfo dialog~
 

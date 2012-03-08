@@ -55,6 +55,7 @@
 #include "completion.h"
 #include "config.h"
 #include "dir_stack.h"
+#include "file_magic.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
@@ -139,6 +140,7 @@ static void complete_help(const char *str);
 static void complete_history(const char *str);
 static int complete_chown(const char *str);
 static void complete_filetype(const char *str);
+static void complete_progs(const char *str, assoc_records_t records);
 static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
 static void complete_winrun(const char *str);
@@ -192,6 +194,7 @@ static int exe_cmd(const cmd_info_t *cmd_info);
 static int file_cmd(const cmd_info_t *cmd_info);
 static int filetype_cmd(const cmd_info_t *cmd_info);
 static int filextype_cmd(const cmd_info_t *cmd_info);
+static int add_filetype(const cmd_info_t *cmd_info, int x);
 static int fileviewer_cmd(const cmd_info_t *cmd_info);
 static int filter_cmd(const cmd_info_t *cmd_info);
 static int find_cmd(const cmd_info_t *cmd_info);
@@ -971,57 +974,38 @@ complete_chown(const char *str)
 static void
 complete_filetype(const char *str)
 {
-	char *filename;
-	char *prog_str;
-	char *p;
-	char *prog_copy;
-	char *free_this;
-	size_t len = strlen(str);
+	const size_t len = strlen(str);
+	const char *filename = get_current_file_name(curr_view);
+	assoc_records_t ft = get_all_programs_for_file(filename);
 
-	filename = get_current_file_name(curr_view);
-	prog_str = form_program_list(filename);
-	if(prog_str == NULL)
-		return;
-
-	p = prog_str;
-	while(isspace(*p) || *p == ',')
-		p++;
-
-	prog_copy = strdup(p);
-	free_this = prog_copy;
-
-	while(prog_copy[0] != '\0')
+	if(curr_view->dir_entry[curr_view->list_pos].type == DIRECTORY &&
+			strncmp(VIFM_PSEUDO_CMD, str, len) == 0)
 	{
-		char *ptr;
-		if((ptr = strchr(prog_copy, ',')) == NULL)
-			ptr = prog_copy + strlen(prog_copy);
-
-		while(ptr != NULL && ptr[1] == ',')
-			ptr = strchr(ptr + 2, ',');
-		if(ptr == NULL)
-			break;
-
-		*ptr++ = '\0';
-
-		while(isspace(*prog_copy) || *prog_copy == ',')
-			prog_copy++;
-
-		if(strcmp(prog_copy, "*") != 0)
-		{
-			if((p = strchr(prog_copy, ' ')) != NULL)
-				*p = '\0';
-			replace_double_comma(prog_copy, 0);
-			if(strncmp(prog_copy, str, len) == 0)
-				add_completion(prog_copy);
-		}
-		prog_copy = ptr;
+		add_completion(VIFM_PSEUDO_CMD);
 	}
 
-	free(free_this);
-	free(prog_str);
+	complete_progs(str, ft);
+	free(ft.list);
+
+	complete_progs(str, get_magic_handlers(filename));
 
 	completion_group_end();
 	add_completion(str);
+}
+
+static void
+complete_progs(const char *str, assoc_records_t records)
+{
+	int i;
+	const size_t len = strlen(str);
+
+	for(i = 0; i < records.count; i++)
+	{
+		if(strncmp(records.list[i].command, str, len) == 0)
+		{
+			add_completion(records.list[i].command);
+		}
+	}
 }
 
 static void
@@ -3554,36 +3538,36 @@ file_cmd(const cmd_info_t *cmd_info)
 static int
 filetype_cmd(const cmd_info_t *cmd_info)
 {
-	const char *progs;
-
-	progs = skip_non_whitespace(cmd_info->args);
-	progs = skip_whitespace(progs + 1);
-
-	set_programs(cmd_info->argv[0], progs, 0);
-	return 0;
+	return add_filetype(cmd_info, 0);
 }
 
 static int
 filextype_cmd(const cmd_info_t *cmd_info)
 {
-	const char *progs;
+	return add_filetype(cmd_info, 1);
+}
 
-	progs = skip_non_whitespace(cmd_info->args);
-	progs = skip_whitespace(progs + 1);
+static int
+add_filetype(const cmd_info_t *cmd_info, int x)
+{
+	const char *records;
 
-	set_programs(cmd_info->argv[0], progs, 1);
+	records = skip_non_whitespace(cmd_info->args);
+	records = skip_whitespace(records + 1);
+
+	set_programs(cmd_info->argv[0], records, x);
 	return 0;
 }
 
 static int
 fileviewer_cmd(const cmd_info_t *cmd_info)
 {
-	const char *progs;
+	const char *records;
 
-	progs = skip_non_whitespace(cmd_info->args);
-	progs = skip_whitespace(progs + 1);
+	records = skip_non_whitespace(cmd_info->args);
+	records = skip_whitespace(records + 1);
 
-	set_fileviewer(cmd_info->argv[0], progs);
+	set_fileviewer(cmd_info->argv[0], records);
 	return 0;
 }
 
@@ -4304,12 +4288,8 @@ restart_cmd(const cmd_info_t *cmd_info)
 	/* options */
 	reset_options_to_default();
 
-	/* file types */
-	reset_filetypes();
-	reset_xfiletypes();
-
-	/* file viewers */
-	reset_fileviewers();
+	/* file types and viewers */
+	reset_all_file_associations();
 
 	/* ga command results */
 	tree_free(curr_stats.dirsize_cache);

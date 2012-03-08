@@ -49,6 +49,7 @@
 
 #include <unistd.h> /* chdir() */
 
+#include <assert.h>
 #include <ctype.h>
 #include <errno.h>
 #include <math.h>
@@ -331,6 +332,12 @@ chosp(char *text)
 		text[len - 1] = '\0';
 }
 
+int
+ends_with_slash(const char *str)
+{
+	return str[0] != '\0' && str[strlen(str) - 1] == '/';
+}
+
 wchar_t *
 to_wide(const char *s)
 {
@@ -436,10 +443,11 @@ get_perm_string(char * buf, int len, mode_t mode)
 int
 fill_version_info(char **list)
 {
+	const int LEN = 12;
 	int x = 0;
 
 	if(list == NULL)
-		return 16; /* ask for more than needed */
+		return LEN;
 
 	list[x++] = strdup("Version: " VERSION);
 	list[x] = malloc(sizeof("Git commit hash: ") + strlen(GIT_HASH) + 1);
@@ -457,6 +465,12 @@ fill_version_info(char **list)
 	list[x++] = strdup("Support of extended keys is on");
 #else
 	list[x++] = strdup("Support of extended keys is off");
+#endif
+
+#ifdef ENABLE_DESKTOP_FILES
+	list[x++] = strdup("Parsing of .desktop files is enabled");
+#else
+	list[x++] = strdup("Parsing of .desktop files is disabled");
 #endif
 
 #ifdef HAVE_LIBGTK
@@ -490,6 +504,8 @@ fill_version_info(char **list)
 	list[x++] = strdup("With -n option for cp and mv");
 #endif /* _WIN32 */
 #endif
+
+	assert(x == LEN);
 
 	return x;
 }
@@ -929,15 +945,23 @@ is_path_absolute(const char *path)
 }
 
 int
-ends_with(const char* str, const char* suffix)
+starts_with(const char *str, const char *prefix)
+{
+	size_t prefix_len = strlen(prefix);
+	return strncmp(str, prefix, prefix_len) == 0;
+}
+
+int
+ends_with(const char *str, const char *suffix)
 {
 	size_t str_len = strlen(str);
-	size_t suf_len = strlen(suffix);
+	size_t suffix_len = strlen(suffix);
 
-	if(str_len < suf_len)
+	if(str_len < suffix_len)
+	{
 		return 0;
-	else
-		return (strcmp(suffix, str + str_len - suf_len) == 0);
+	}
+	return strcmp(suffix, str + str_len - suffix_len) == 0;
 }
 
 char *

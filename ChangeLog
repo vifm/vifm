@@ -1,5 +1,11 @@
 0.7.2 to current
 
+	Removed possibility of moving items in :file menu.
+
+	Added description for :filetype, :filextype and :fileviewer commands.
+
+	Added --enable-desktop-files (enabled by default) configure option.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with
@@ -26,6 +32,9 @@
 	Fixed displaying of wrong drive paths in history menu ("d:" or "c:").
 
 	Fixed bug with plugin and parenthesis.
+
+	Fixed getting list of associated programs using .desktop files when the
+	file utility is used to obtain mime-type of a file.
 
 0.7.1 to 0.7.2
 

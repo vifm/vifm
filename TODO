@@ -16,11 +16,12 @@ Basic things that need to be done.
     Make status bar able to display error and info messages at the same time.
     Command to create multiple copies of selected one with ability to rename
         it (e.g. a -> :hub b c -> a b c, a -> :hub! b c -> b c).
-    Add description to :file[x]type command.
+    Make :filetype, :filextype and :fileviewer show menus with 0 or 1 args.
 
 Documentation.
 	Better documentation.
     Maybe divide vifm.txt in several files (if it becomes too big).
+	Document ./configure options in the INSTALL file.
 
 Windows.
     Make :chmod accept arguments.
@@ -68,6 +69,7 @@ Possible things to add.
         was passed on startup.
     'wildmode' option.
     A macro to redirect command output into view pane.
+    Maybe remove scripts from PATH on spawning subprocesses.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
