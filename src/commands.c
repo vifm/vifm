@@ -72,6 +72,7 @@
 #include "fuse.h"
 #include "menus.h"
 #include "opt_handlers.h"
+#include "quickview.h"
 #include "registers.h"
 #include "running.h"
 #include "status.h"

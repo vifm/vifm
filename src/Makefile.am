@@ -59,6 +59,7 @@ vifm_SOURCES = \
 	menus.c menus.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
+	quickview.c quickview.h \
 	registers.c registers.h \
 	running.c running.h \
 	search.c search.h \

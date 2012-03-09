@@ -59,6 +59,7 @@
 #include "main_loop.h"
 #include "menus.h"
 #include "opt_handlers.h"
+#include "quickview.h"
 #include "signals.h"
 #include "status.h"
 

@@ -59,6 +59,7 @@
 #include "menus.h"
 #include "ops.h"
 #include "opt_handlers.h"
+#include "quickview.h"
 #include "registers.h"
 #include "running.h"
 #include "signals.h"
