@@ -50,6 +50,7 @@ vifm_SOURCES = \
 	dir_stack.c dir_stack.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \
+	filename_modifiers.c filename_modifiers.h \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
 	ipc.c ipc.h \
