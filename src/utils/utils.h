@@ -44,17 +44,6 @@
 #define lstat stat
 #endif
 
-typedef struct fuse_mount_t
-{
-	char source_file_name[PATH_MAX];
-	char source_file_dir[PATH_MAX];
-	char mount_point[PATH_MAX];
-	int mount_point_id;
-	struct fuse_mount_t *next;
-}fuse_mount_t;
-
-extern struct fuse_mount_t *fuse_mounts;
-
 void chomp(char *text);
 void chosp(char *text);
 int ends_with_slash(const char *str);
@@ -103,6 +92,10 @@ int symlinks_available(void);
 int make_dir(const char *dir_name, mode_t mode);
 int pathcmp(const char *file_name_a, const char *file_name_b);
 int pathncmp(const char *file_name_a, const char *file_name_b, size_t n);
+
+/* Makes filename unique by adding an unique suffix to it.
+ * Returns pointer to a statically allocated buffer */
+const char * make_name_unique(const char *filename);
 
 /* Various string functions. */
 void break_at(char *str, char c);

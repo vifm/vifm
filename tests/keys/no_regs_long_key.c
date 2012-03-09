@@ -1,7 +1,7 @@
 #include "seatest.h"
 
-#include "../../src/keys.h"
-#include "../../src/modes.h"
+#include "../../src/engine/keys.h"
+#include "../../src/modes/modes.h"
 
 static int
 def_handler(const wchar_t keys)

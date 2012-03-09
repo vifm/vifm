@@ -1,6 +1,6 @@
 #include "seatest.h"
 
-#include "../../src/options.h"
+#include "../../src/engine/options.h"
 
 extern int fastrun;
 

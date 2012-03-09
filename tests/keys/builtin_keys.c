@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../src/keys.h"
-#include "../../src/modes.h"
+#include "../../src/engine/keys.h"
+#include "../../src/modes/modes.h"
 
 #include "builtin_keys.h"
 

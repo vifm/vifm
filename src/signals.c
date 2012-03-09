@@ -29,7 +29,7 @@
 #include "utils/log.h"
 #include "utils/utils.h"
 #include "config.h"
-#include "fileops.h"
+#include "fuse.h"
 
 static void _gnuc_noreturn shutdown_nicely(void);
 

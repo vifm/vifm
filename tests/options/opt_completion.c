@@ -2,8 +2,8 @@
 
 #include "seatest.h"
 
-#include "../../src/completion.h"
-#include "../../src/options.h"
+#include "../../src/engine/completion.h"
+#include "../../src/engine/options.h"
 
 static void
 test_space_at_the_end(void)

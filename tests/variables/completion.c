@@ -2,8 +2,8 @@
 
 #include "seatest.h"
 
-#include "../../src/completion.h"
-#include "../../src/variables.h"
+#include "../../src/engine/completion.h"
+#include "../../src/engine/variables.h"
 
 static void
 test_vars_empty_completion(void)

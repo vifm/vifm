@@ -1,6 +1,6 @@
 #include "seatest.h"
 
-#include "../../src/utils.h"
+#include "../../src/utils/utils.h"
 
 static void
 test_in_one_dir(void)

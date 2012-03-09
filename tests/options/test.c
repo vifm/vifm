@@ -1,7 +1,7 @@
 #include "seatest.h"
 
-#include "../../src/macros.h"
-#include "../../src/options.h"
+#include "../../src/engine/options.h"
+#include "../../src/utils/macros.h"
 
 int fastrun;
 const char *value;

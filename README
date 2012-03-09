@@ -42,6 +42,7 @@ src/filelist.c - display/redraw/fill list
 src/filename_modifiers.c - expands filename modifiers
 src/fileops.c - delete/copy/put selected file(s)
 src/filetype.c - stores filetype information from vifmrc
+src/fuse.c - provides support of FUSE filesystems
 src/ipc.c - handles communication across instances of vifm
 src/main_loop.c - the main loop
 src/menus.c - handles all kinds of menus

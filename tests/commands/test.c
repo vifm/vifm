@@ -5,8 +5,8 @@
 
 #include "seatest.h"
 
-#include "../../src/cmds.h"
-#include "../../src/completion.h"
+#include "../../src/engine/cmds.h"
+#include "../../src/engine/completion.h"
 
 cmd_info_t user_cmd_info;
 

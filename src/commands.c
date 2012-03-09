@@ -69,6 +69,7 @@
 #include "filename_modifiers.h"
 #include "fileops.h"
 #include "filetype.h"
+#include "fuse.h"
 #include "menus.h"
 #include "opt_handlers.h"
 #include "registers.h"

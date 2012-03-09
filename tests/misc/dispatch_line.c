@@ -1,7 +1,7 @@
 #include "seatest.h"
 
-#include "../../src/cmds.h"
-#include "../../src/utils.h"
+#include "../../src/engine/cmds.h"
+#include "../../src/utils/utils.h"
 
 static void
 test_no_quotes(void)

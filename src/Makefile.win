@@ -26,7 +26,7 @@ utilities := $(addprefix utils/, $(utilities))
 vifm_SOURCES := $(engine) $(modes) $(utilities) background.c bookmarks.c \
                 color_scheme.c commands.c commands_completion.c config.c \
                 dir_stack.c file_magic.c filelist.c filename_modifiers.c \
-                fileops.c filetype.c ipc.c main_loop.c menus.c ops.c \
+                fileops.c filetype.c fuse.c ipc.c main_loop.c menus.c ops.c \
                 opt_handlers.c registers.c search.c signals.c sort.c status.c \
                 tags.c trash.c ui.c undo.c version.c vifmres.o vifm.c
 

@@ -1,7 +1,7 @@
 #include "seatest.h"
 
+#include "../../src/utils/macros.h"
 #include "../../src/fileops.h"
-#include "../../src/macros.h"
 
 static void
 test_names_less_than_files(void)

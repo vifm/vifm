@@ -2,7 +2,7 @@
 
 #include "seatest.h"
 
-#include "../../src/variables.h"
+#include "../../src/engine/variables.h"
 
 static void
 test_full_tree_args_ok(void)

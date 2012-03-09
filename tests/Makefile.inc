@@ -50,6 +50,18 @@ bin/dummy:
 ../bin/%.o: ../../src/%.c
 	gcc -c -o $@ $< $(CFLAGS)
 
+../bin/%.o: ../../src/engine/%.c
+	gcc -c -o $@ $< $(CFLAGS)
+
+../bin/%.o: ../../src/modes/dialogs/%.c
+	gcc -c -o $@ $< $(CFLAGS)
+
+../bin/%.o: ../../src/modes/%.c
+	gcc -c -o $@ $< $(CFLAGS)
+
+../bin/%.o: ../../src/utils/%.c
+	gcc -c -o $@ $< $(CFLAGS)
+
 ../bin/%.o: ../seatest/%.c
 	gcc -c -o $@ $< $(CFLAGS)
 

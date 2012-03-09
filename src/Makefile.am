@@ -53,6 +53,7 @@ vifm_SOURCES = \
 	filename_modifiers.c filename_modifiers.h \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
+	fuse.c fuse.h \
 	ipc.c ipc.h \
 	main_loop.c main_loop.h \
 	menus.c menus.h \

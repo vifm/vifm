@@ -73,8 +73,6 @@
 
 #include "utils.h"
 
-fuse_mount_t *fuse_mounts = NULL;
-
 static struct
 {
 	int initialized;
@@ -1305,6 +1303,29 @@ pathncmp(const char *file_name_a, const char *file_name_b, size_t n)
 #else
 	return strncasecmp(file_name_a, file_name_b, n);
 #endif
+}
+
+/* Makes filename unique by adding an unique suffix to it.
+ * Returns pointer to a statically allocated buffer */
+const char *
+make_name_unique(const char *filename)
+{
+	static char unique[PATH_MAX];
+	size_t len;
+	int i;
+
+#ifndef _WIN32
+	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, getppid(),
+			getpid());
+#else
+	/* TODO: fix name uniqualization on Windows */
+	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, 0, 0);
+#endif
+	i = 0;
+
+	while(access(unique, F_OK) == 0)
+		sprintf(unique + len - 2, "%d", ++i);
+	return unique;
 }
 
 /* Replaces the first found occurrence of c char in str with '\0' */

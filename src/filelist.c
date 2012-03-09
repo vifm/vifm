@@ -60,6 +60,7 @@
 #include "fileops.h"
 #include "fileops.h"
 #include "filetype.h"
+#include "fuse.h"
 #include "menus.h"
 #include "opt_handlers.h"
 #include "sort.h"
@@ -1291,54 +1292,21 @@ clean_selection(FileView *view)
 	view->selected_files = 0;
 }
 
-static void
-updir_from_mount(FileView *view, fuse_mount_t *runner)
-{
-	char *file;
-	int pos;
-
-	if(change_directory(view, runner->source_file_dir) < 0)
-		return;
-
-	load_dir_list(view, 0);
-
-	file = runner->source_file_name;
-	file += strlen(runner->source_file_dir) + 1;
-	pos = find_file_pos_in_list(view, file);
-	move_to_list_pos(view, pos);
-}
-
-static fuse_mount_t *
-find_fuse_mount(const char *dir)
-{
-	fuse_mount_t *runner = fuse_mounts;
-	while(runner)
-	{
-		if(pathcmp(runner->mount_point, dir) == 0)
-			break;
-		runner = runner->next;
-	}
-	return runner;
-}
-
 /* Modifies path */
 void
 leave_invalid_dir(FileView *view, char *path)
 {
-	fuse_mount_t *runner;
 	char *p;
 
-	if((runner = find_fuse_mount(path)) != NULL)
+	if(try_updir_from_mount(path, view))
 	{
-		updir_from_mount(view, runner);
 		return;
 	}
 
 	while(access(path, F_OK | R_OK) != 0)
 	{
-		if((runner = find_fuse_mount(path)) != NULL)
+		if(try_updir_from_mount(path, view))
 		{
-			updir_from_mount(view, runner);
 			break;
 		}
 
@@ -1361,92 +1329,6 @@ leave_invalid_dir(FileView *view, char *path)
 		strcat(path, "/");
 	}
 #endif
-}
-
-static int
-in_mounted_dir(const char *path)
-{
-	fuse_mount_t *runner;
-
-	runner = fuse_mounts;
-	while(runner)
-	{
-		if(pathcmp(runner->mount_point, path) == 0)
-			return 1;
-
-		runner = runner->next;
-	}
-	return 0;
-}
-
-/*
- * Return value:
- *   -1 error occurred.
- *   0  not mount point.
- *   1  left FUSE mount directory.
- */
-static int
-try_unmount_fuse(FileView *view)
-{
-	char buf[14 + PATH_MAX + 1];
-	fuse_mount_t *runner, *trailer;
-	int status;
-	fuse_mount_t *sniffer;
-	char *escaped_mount_point;
-
-	runner = fuse_mounts;
-	trailer = NULL;
-	while(runner)
-	{
-		if(!pathcmp(runner->mount_point, view->curr_dir))
-			break;
-
-		trailer = runner;
-		runner = runner->next;
-	}
-
-	if(runner == NULL)
-		return 0;
-
-	/* we are exiting a top level dir */
-	status_bar_message("FUSE unmounting selected file, please stand by..");
-	escaped_mount_point = escape_filename(runner->mount_point, 0);
-	snprintf(buf, sizeof(buf), "fusermount -u %s 2> /dev/null",
-			escaped_mount_point);
-	free(escaped_mount_point);
-
-	/* have to chdir to parent temporarily, so that this DIR can be unmounted */
-	if(my_chdir(cfg.fuse_home) != 0)
-	{
-		(void)show_error_msg("FUSE UMOUNT ERROR", "Can't chdir to FUSE home");
-		return -1;
-	}
-
-	status = background_and_wait_for_status(buf);
-	/* check child status */
-	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
-	{
-		werase(status_bar);
-		(void)show_error_msgf("FUSE UMOUNT ERROR",
-				"Can't unmount %s.  It may be busy.", runner->source_file_name);
-		(void)my_chdir(view->curr_dir);
-		return -1;
-	}
-
-	/* remove the DIR we created for the mount */
-	if(access(runner->mount_point, F_OK) == 0)
-		rmdir(runner->mount_point);
-
-	/* remove mount point from fuse_mount_t */
-	sniffer = runner->next;
-	if(trailer)
-		trailer->next = sniffer ? sniffer : NULL;
-	else
-		fuse_mounts = sniffer;
-
-	updir_from_mount(view, runner);
-	free(runner);
-	return 1;
 }
 
 #ifdef _WIN32

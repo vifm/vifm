@@ -1,7 +1,7 @@
 #include "seatest.h"
 
-#include "../../src/keys.h"
-#include "../../src/modes.h"
+#include "../../src/engine/keys.h"
+#include "../../src/modes/modes.h"
 
 static void
 dont_tread_all_cmds_as_motions(void)

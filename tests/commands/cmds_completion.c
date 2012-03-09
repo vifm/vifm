@@ -3,9 +3,9 @@
 
 #include "seatest.h"
 
-#include "../../src/cmds.h"
-#include "../../src/completion.h"
-#include "../../src/macros.h"
+#include "../../src/engine/cmds.h"
+#include "../../src/engine/completion.h"
+#include "../../src/utils/macros.h"
 
 extern cmds_conf_t cmds_conf;
 

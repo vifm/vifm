@@ -2,7 +2,7 @@
 
 #include "seatest.h"
 
-#include "../../src/cmds.h"
+#include "../../src/engine/cmds.h"
 #include "../../src/commands.h"
 #include "../../src/ui.h"
 

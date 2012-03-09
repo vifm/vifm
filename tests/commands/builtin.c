@@ -3,10 +3,9 @@
 
 #include "seatest.h"
 
-#include "../../src/cmds.h"
+#include "../../src/engine/cmds.h"
+#include "../../src/engine/completion.h"
 #include "../../src/commands.h"
-#include "../../src/completion.h"
-#include "../../src/macros.h"
 
 extern struct cmds_conf cmds_conf;
 
