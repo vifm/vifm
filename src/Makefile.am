@@ -45,6 +45,7 @@ vifm_SOURCES = \
 	bookmarks.c bookmarks.h \
 	color_scheme.c colorscheme.h \
 	commands.c commands.h \
+	commands_completion.c commands_completion.h \
 	config.c config.h \
 	dir_stack.c dir_stack.h \
 	file_magic.c file_magic.h \

@@ -34,6 +34,7 @@ src/background.c - runs commands in background
 src/bookmarks.c - stores information about bookmarked directories
 src/color_scheme.c - color schemes
 src/commands.c - handles command line commands
+src/commands_completion.c - handles command line completion
 src/config.c - read and write vifmrc
 src/dir_stack.c - for :pushd and :popd commands
 src/file_magic.c - determines programs associated with file using its mime-type

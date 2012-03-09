@@ -20,7 +20,6 @@
 #ifdef _WIN32
 #define _WIN32_WINNT 0x0500
 #include <windows.h>
-#include <lm.h>
 #endif
 
 #include <regex.h>
@@ -29,15 +28,11 @@
 
 #include <sys/types.h> /* passwd */
 #ifndef _WIN32
-#include <grp.h>
-#include <pwd.h>
 #include <sys/wait.h>
 #endif
-#include <dirent.h> /* DIR */
 
 #include <assert.h>
 #include <ctype.h> /* isspace() */
-#include <errno.h> /* errno */
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h> /*  system() */
@@ -58,7 +53,6 @@
 #include "modes/normal.h"
 #include "modes/view.h"
 #include "modes/visual.h"
-#include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/string_array.h"
 #include "utils/utils.h"
@@ -66,6 +60,7 @@
 #include "bookmarks.h"
 #include "bracket_notation.h"
 #include "color_scheme.h"
+#include "commands_completion.h"
 #include "config.h"
 #include "dir_stack.h"
 #include "file_magic.h"
@@ -75,10 +70,7 @@
 #include "menus.h"
 #include "opt_handlers.h"
 #include "registers.h"
-#include "signals.h"
-#include "sort.h"
 #include "status.h"
-#include "tags.h"
 #include "trash.h"
 #include "ui.h"
 #include "undo.h"
@@ -95,59 +87,21 @@
 
 enum
 {
-	/* commands without completion */
+	/* FIXME: commands without completion */
 	COM_FILTER = -100,
 	COM_SUBSTITUTE,
 	COM_TR,
-
-	/* commands with completion */
-	COM_CD,
-	COM_CHOWN,
-	COM_COLORSCHEME,
-	COM_EDIT,
-	COM_EXECUTE,
-	COM_FILE,
-	COM_FIND,
-	COM_GOTO = 0,
-	COM_GREP,
-	COM_HELP,
-	COM_HIGHLIGHT,
-	COM_HISTORY,
-	COM_PUSHD,
-	COM_SET,
-	COM_SOURCE,
-	COM_SYNC,
-	COM_LET,
-	COM_UNLET,
-	COM_WINDO,
-	COM_WINRUN,
 };
 
-static int complete_args(int id, const char *args, int argc, char **argv,
-		int arg_pos);
 static int swap_range(void);
 static int resolve_mark(char mark);
 static char * cmds_expand_macros(const char *str, int *use_menu, int *split);
-static char * cmds_expand_envvars(const char *str);
 static void post(int id);
 #ifndef TEST
 static
 #endif
 void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
-static void exec_completion(const char *str);
-static void complete_help(const char *str);
-static void complete_history(const char *str);
-static int complete_chown(const char *str);
-static void complete_filetype(const char *str);
-static void complete_progs(const char *str, assoc_records_t records);
-static void complete_highlight_groups(const char *str);
-static int complete_highlight_arg(const char *str);
-static void complete_winrun(const char *str);
-static void complete_envvar(const char *str);
-static int is_entry_dir(const struct dirent *d);
-static int is_entry_exec(const struct dirent *d);
-static void split_path(void);
 static int apply_p_mod(const char *path, const char *parent, char *buf,
 		size_t buf_len);
 static int apply_tilde_mod(const char *path, char *buf, size_t buf_len);
@@ -465,665 +419,7 @@ static cmds_conf_t cmds_conf = {
 
 static int need_clean_selection;
 
-static char **paths;
-static int paths_count;
-
 static char print_buf[320*80];
-
-static int
-cmd_ends_with_space(const char *cmd)
-{
-	while(cmd[0] != '\0' && cmd[1] != '\0')
-	{
-		if(cmd[0] == '\\')
-			cmd++;
-		cmd++;
-	}
-	return cmd[0] == ' ';
-}
-
-static int
-complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
-{
-	const char *arg;
-	const char *start;
-	const char *slash;
-	const char *dollar;
-
-	arg = strrchr(args, ' ');
-	if(arg == NULL)
-		arg = args;
-	else
-		arg++;
-
-	start = arg;
-	dollar = strrchr(arg, '$');
-	slash = strrchr(args + arg_pos, '/');
-
-	if(id == COM_COLORSCHEME)
-		complete_colorschemes((argc > 0) ? argv[argc - 1] : arg);
-	else if(id == COM_SET)
-		complete_options(args, &start);
-	else if(id == COM_LET)
-		complete_variables(args, &start);
-	else if(id == COM_UNLET)
-		complete_variables(arg, &start);
-	else if(id == COM_HELP)
-		complete_help(args);
-	else if(id == COM_HISTORY)
-		complete_history(args);
-	else if(id == COM_CHOWN)
-		start += complete_chown(args);
-	else if(id == COM_FILE)
-		complete_filetype(args);
-	else if(id == COM_HIGHLIGHT)
-	{
-		if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
-			complete_highlight_groups(args);
-		else
-			start += complete_highlight_arg(arg);
-	}
-	else if((id == COM_CD || id == COM_PUSHD || id == COM_EXECUTE ||
-			id == COM_SOURCE) && dollar != NULL && dollar > slash)
-	{
-		start = dollar + 1;
-		complete_envvar(start);
-	}
-	else if(id == COM_WINDO)
-		;
-	else if(id == COM_WINRUN)
-	{
-		if(argc == 0)
-			complete_winrun(args);
-	}
-	else
-	{
-		start = slash;
-		if(start == NULL)
-			start = args + arg_pos;
-		else
-			start++;
-
-		if(argc > 0 && !cmd_ends_with_space(args))
-			arg = argv[argc - 1];
-
-		if(id == COM_CD || id == COM_PUSHD)
-			filename_completion(arg, FNC_DIRONLY);
-		else if(id == COM_FIND)
-		{
-			if(argc == 1 && !cmd_ends_with_space(args))
-				filename_completion(arg, FNC_DIRONLY);
-		}
-		else if(id == COM_EXECUTE)
-		{
-			if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
-			{
-				if(*arg == '.')
-					filename_completion(arg, FNC_DIREXEC);
-				else
-					exec_completion(arg);
-			}
-			else
-				filename_completion(arg, FNC_ALL);
-		}
-		else
-			filename_completion(arg, FNC_ALL);
-	}
-
-	return start - args;
-}
-
-static void
-exec_completion(const char *str)
-{
-	int i;
-
-	for(i = 0; i < paths_count; i++)
-	{
-		if(my_chdir(paths[i]) != 0)
-			continue;
-		filename_completion(str, FNC_EXECONLY);
-	}
-	add_completion(str);
-}
-
-#ifdef _WIN32
-static void
-complete_with_shared(const char *server, const char *file)
-{
-	NET_API_STATUS res;
-	size_t len = strlen(file);
-
-	do
-	{
-		PSHARE_INFO_502 buf_ptr;
-		DWORD er = 0, tr = 0, resume = 0;
-		wchar_t *wserver = to_wide(server + 2);
-
-		if(wserver == NULL)
-		{
-			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
-			return;
-		}
-
-		res = NetShareEnum(wserver, 502, (LPBYTE *)&buf_ptr, -1, &er, &tr, &resume);
-		free(wserver);
-		if(res == ERROR_SUCCESS || res == ERROR_MORE_DATA)
-		{
-			PSHARE_INFO_502 p;
-			DWORD i;
-
-			p = buf_ptr;
-			for(i = 1; i <= er; i++)
-			{
-				char buf[512];
-				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi502_netname, -1, buf,
-						sizeof(buf), NULL, NULL);
-				strcat(buf, "/");
-				if(pathncmp(buf, file, len) == 0)
-				{
-					char *escaped = escape_filename(buf, 1);
-					add_completion(escaped);
-					free(escaped);
-				}
-				p++;
-			}
-			NetApiBufferFree(buf_ptr);
-		}
-	}
-	while(res == ERROR_MORE_DATA);
-}
-#endif
-
-#ifdef _WIN32
-/* Returns pointer to a statically allocated buffer */
-static const char *
-escape_for_cd(const char *str)
-{
-	static char buf[PATH_MAX*2];
-	char *p;
-
-	p = buf;
-	while(*str != '\0')
-	{
-		if(strchr("\\ $", *str) != NULL)
-			*p++ = '\\';
-		else if(*str == '%')
-			*p++ = '%';
-		*p++ = *str;
-
-		str++;
-	}
-	*p = '\0';
-	return buf;
-}
-#endif
-
-/*
- * type: FNC_*
- */
-void
-filename_completion(const char *str, int type)
-{
-	/* TODO refactor filename_completion(...) function */
-	const char *string;
-
-	DIR *dir;
-	struct dirent *d;
-	char * dirname;
-	char * filename;
-	char * temp;
-	int filename_len;
-	int isdir;
-#ifndef _WIN32
-	int woe = (type == FNC_ALL_WOE || type == FNC_FILE_WOE);
-#endif
-
-	if(str[0] == '~' && strchr(str, '/') == NULL)
-	{
-		char *s = expand_tilde(strdup(str));
-		add_completion(s);
-		free(s);
-		return;
-	}
-
-	string = str;
-
-	if(string[0] == '~')
-	{
-		dirname = expand_tilde(strdup(string));
-		filename = strdup(dirname);
-	}
-	else
-	{
-		if(strlen(string) > 0)
-		{
-			dirname = strdup(string);
-		}
-		else
-		{
-			dirname = malloc(strlen(string) + 2);
-			strcpy(dirname, string);
-		}
-		filename = strdup(string);
-	}
-
-	temp = cmds_expand_envvars(dirname);
-	free(dirname);
-	dirname = temp;
-
-	temp = strrchr(dirname, '/');
-	if(temp && type != FNC_FILE_WOE)
-	{
-		strcpy(filename, ++temp);
-		*temp = '\0';
-	}
-	else
-	{
-		dirname[0] = '.';
-		dirname[1] = '\0';
-	}
-
-#ifdef _WIN32
-	if(is_unc_root(dirname) ||
-			(pathcmp(dirname, ".") == 0 && is_unc_root(curr_view->curr_dir)) ||
-			(pathcmp(dirname, "/") == 0 && is_unc_path(curr_view->curr_dir)))
-	{
-		char buf[PATH_MAX];
-		if(!is_unc_root(dirname))
-			snprintf(buf,
-					strchr(curr_view->curr_dir + 2, '/') - curr_view->curr_dir + 1, "%s",
-					curr_view->curr_dir);
-		else
-			strcpy(buf, dirname);
-
-		complete_with_shared(buf, filename);
-		free(filename);
-		free(dirname);
-		return;
-	}
-	if(is_unc_path(curr_view->curr_dir))
-	{
-		char buf[PATH_MAX];
-		if(is_path_absolute(dirname) && !is_unc_root(curr_view->curr_dir))
-			snprintf(buf,
-					strchr(curr_view->curr_dir + 2, '/') - curr_view->curr_dir + 2, "%s",
-					curr_view->curr_dir);
-		else
-				snprintf(buf, sizeof(buf), "%s", curr_view->curr_dir);
-		strcat(buf, dirname);
-		chosp(buf);
-		free(dirname);
-		dirname = strdup(buf);
-	}
-#endif
-
-	dir = opendir(dirname);
-
-	if(dir == NULL || my_chdir(dirname) != 0)
-	{
-		add_completion(filename);
-		free(filename);
-		free(dirname);
-		return;
-	}
-
-	filename_len = strlen(filename);
-	while((d = readdir(dir)) != NULL)
-	{
-#ifndef _WIN32
-		char *escaped;
-#endif
-
-		if(filename[0] == '\0' && d->d_name[0] == '.')
-			continue;
-		if(pathncmp(d->d_name, filename, filename_len) != 0)
-			continue;
-
-		if(type == FNC_DIRONLY && !is_entry_dir(d))
-			continue;
-		else if(type == FNC_EXECONLY && !is_entry_exec(d))
-			continue;
-		else if(type == FNC_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
-			continue;
-
-		isdir = 0;
-		if(is_dir(d->d_name))
-		{
-			isdir = 1;
-		}
-		else if(pathcmp(dirname, "."))
-  	{
-			char * tempfile = (char *)NULL;
-			int len = strlen(dirname) + strlen(d->d_name) + 1;
-			tempfile = malloc(len*sizeof(char));
-			if(!tempfile)
-			{
-				closedir(dir);
-				(void)my_chdir(curr_view->curr_dir);
-				add_completion(filename);
-				free(filename);
-				free(dirname);
-				return;
-			}
-			snprintf(tempfile, len, "%s%s", dirname, d->d_name);
-			if(is_dir(tempfile))
-				isdir = 1;
-			else
-				temp = strdup(d->d_name);
-
-			free(tempfile);
-		}
-		else
-		{
-			temp = strdup(d->d_name);
-		}
-
-		if(isdir)
-		{
-			char * tempfile = (char *)NULL;
-			tempfile = malloc((strlen(d->d_name) + 2) * sizeof(char));
-			if(tempfile == NULL)
-			{
-				closedir(dir);
-				(void)my_chdir(curr_view->curr_dir);
-				add_completion(filename);
-				free(filename);
-				free(dirname);
-				return;
-			}
-			snprintf(tempfile, strlen(d->d_name) + 2, "%s/", d->d_name);
-			temp = strdup(tempfile);
-
-			free(tempfile);
-		}
-#ifndef _WIN32
-		escaped = woe ? strdup(temp) : escape_filename(temp, 1);
-		add_completion(escaped);
-		free(escaped);
-#else
-		add_completion(escape_for_cd(temp));
-#endif
-		free(temp);
-	}
-
-	(void)my_chdir(curr_view->curr_dir);
-
-	completion_group_end();
-	if(type != FNC_EXECONLY)
-	{
-		if(get_completion_count() == 0)
-		{
-			add_completion(filename);
-		}
-		else
-		{
-#ifndef _WIN32
-			temp = woe ? strdup(filename) : escape_filename(filename, 1);
-			add_completion(temp);
-			free(temp);
-#else
-			add_completion(escape_for_cd(filename));
-#endif
-		}
-	}
-
-	free(filename);
-	free(dirname);
-	closedir(dir);
-}
-
-static void
-complete_help(const char *str)
-{
-	int i;
-
-	if(!cfg.use_vim_help)
-		return;
-
-	for(i = 0; tags[i] != NULL; i++)
-	{
-		if(strstr(tags[i], str) != NULL)
-			add_completion(tags[i]);
-	}
-	completion_group_end();
-	add_completion(str);
-}
-
-static void
-complete_history(const char *str)
-{
-	static const char *lines[] = {
-		".",
-		"dir",
-		"@",
-		"input",
-		"/",
-		"search",
-		"fsearch",
-		"?",
-		"bsearch",
-		":",
-		"cmd",
-	};
-	int i;
-	size_t len = strlen(str);
-	for(i = 0; i < ARRAY_LEN(lines); i++)
-	{
-		if(strncmp(str, lines[i], len) == 0)
-			add_completion(lines[i]);
-	}
-	completion_group_end();
-	add_completion(str);
-}
-
-#ifndef _WIN32
-void complete_user_name(const char *str)
-{
-	struct passwd* pw;
-	size_t len;
-
-	len = strlen(str);
-	setpwent();
-	while((pw = getpwent()) != NULL)
-	{
-		if(strncmp(pw->pw_name, str, len) == 0)
-			add_completion(pw->pw_name);
-	}
-	completion_group_end();
-	add_completion(str);
-}
-
-void complete_group_name(const char *str)
-{
-	struct group* gr;
-	size_t len = strlen(str);
-
-	setgrent();
-	while((gr = getgrent()) != NULL)
-	{
-		if(strncmp(gr->gr_name, str, len) == 0)
-			add_completion(gr->gr_name);
-	}
-	completion_group_end();
-	add_completion(str);
-}
-#endif
-
-static int
-complete_chown(const char *str)
-{
-#ifndef _WIN32
-	char *colon = strchr(str, ':');
-	if(colon == NULL)
-	{
-		complete_user_name(str);
-		return 0;
-	}
-	else
-	{
-		complete_user_name(colon + 1);
-		return colon - str + 1;
-	}
-#else
-	add_completion(str);
-	return 0;
-#endif
-}
-
-static void
-complete_filetype(const char *str)
-{
-	const size_t len = strlen(str);
-	const char *filename = get_current_file_name(curr_view);
-	assoc_records_t ft = get_all_programs_for_file(filename);
-
-	if(curr_view->dir_entry[curr_view->list_pos].type == DIRECTORY &&
-			strncmp(VIFM_PSEUDO_CMD, str, len) == 0)
-	{
-		add_completion(VIFM_PSEUDO_CMD);
-	}
-
-	complete_progs(str, ft);
-	free(ft.list);
-
-	complete_progs(str, get_magic_handlers(filename));
-
-	completion_group_end();
-	add_completion(str);
-}
-
-static void
-complete_progs(const char *str, assoc_records_t records)
-{
-	int i;
-	const size_t len = strlen(str);
-
-	for(i = 0; i < records.count; i++)
-	{
-		if(strncmp(records.list[i].command, str, len) == 0)
-		{
-			add_completion(records.list[i].command);
-		}
-	}
-}
-
-static void
-complete_highlight_groups(const char *str)
-{
-	int i;
-	size_t len = strlen(str);
-	for(i = 0; i < MAXNUM_COLOR - 2; i++)
-	{
-		if(strncasecmp(str, HI_GROUPS[i], len) == 0)
-			add_completion(HI_GROUPS[i]);
-	}
-	completion_group_end();
-	add_completion(str);
-}
-
-static int
-complete_highlight_arg(const char *str)
-{
-	int i;
-	char *equal = strchr(str, '=');
-	int result = (equal == NULL) ? 0 : (equal - str + 1);
-	size_t len = strlen((equal == NULL) ? str : ++equal);
-	if(equal == NULL)
-	{
-		static const char *args[] = {
-			"cterm",
-			"ctermfg",
-			"ctermbg",
-		};
-		for(i = 0; i < ARRAY_LEN(args); i++)
-		{
-			if(strncmp(str, args[i], len) == 0)
-				add_completion(args[i]);
-		}
-	}
-	else
-	{
-		if(strncmp(str, "cterm", equal - str - 1) == 0)
-		{
-			static const char *STYLES[] = {
-				"bold",
-				"underline",
-				"reverse",
-				"inverse",
-				"standout",
-				"none",
-			};
-			char *comma = strrchr(equal, ',');
-			if(comma != NULL)
-			{
-				result += comma - equal + 1;
-				equal = comma + 1;
-				len = strlen(equal);
-			}
-
-			for(i = 0; i < ARRAY_LEN(STYLES); i++)
-			{
-				if(strncasecmp(equal, STYLES[i], len) == 0)
-					add_completion(STYLES[i]);
-			}
-		}
-		else
-		{
-			if(strncasecmp(equal, "default", len) == 0)
-				add_completion("default");
-			if(strncasecmp(equal, "none", len) == 0)
-				add_completion("none");
-			for(i = 0; i < ARRAY_LEN(COLOR_NAMES); i++)
-			{
-				if(strncasecmp(equal, COLOR_NAMES[i], len) == 0)
-					add_completion(COLOR_NAMES[i]);
-			}
-		}
-	}
-	completion_group_end();
-	add_completion((equal == NULL) ? str : equal);
-	return result;
-}
-
-static void
-complete_winrun(const char *str)
-{
-	static const char *VARIANTS[] = { "^", "$", "%", ".", "," };
-	size_t len = strlen(str);
-	int i;
-
-	for(i = 0; i < ARRAY_LEN(VARIANTS); i++)
-	{
-		if(strncmp(str, VARIANTS[i], len) == 0)
-			add_completion(VARIANTS[i]);
-	}
-	completion_group_end();
-	add_completion(str);
-}
-
-static void
-complete_envvar(const char *str)
-{
-	extern char **environ;
-	char **p = environ;
-	size_t len = strlen(str);
-
-	while(*p != NULL)
-	{
-		if(strncmp(*p, str, len) == 0)
-		{
-			char *equal = strchr(*p, '=');
-			*equal = '\0';
-			add_completion(*p);
-			*equal = '=';
-		}
-		p++;
-	}
-
-	completion_group_end();
-	add_completion(str);
-}
 
 void
 exec_startup_commands(int c, char **v)
@@ -1150,47 +446,6 @@ exec_startup_commands(int c, char **v)
 			exec_commands(argv[x] + 1, curr_view, 0, GET_COMMAND);
 		}
 	}
-}
-
-static int
-is_entry_dir(const struct dirent *d)
-{
-#ifdef _WIN32
-	struct stat st;
-	if(stat(d->d_name, &st) != 0)
-		return 0;
-	return S_ISDIR(st.st_mode);
-#else
-	if(d->d_type == DT_UNKNOWN)
-	{
-		struct stat st;
-		if(stat(d->d_name, &st) != 0)
-			return 0;
-		return S_ISDIR(st.st_mode);
-	}
-
-	if(d->d_type != DT_DIR && d->d_type != DT_LNK)
-		return 0;
-	if(d->d_type == DT_LNK && !check_link_is_dir(d->d_name))
-		return 0;
-	return 1;
-#endif
-}
-
-static int
-is_entry_exec(const struct dirent *d)
-{
-#ifndef _WIN32
-	if(d->d_type == DT_DIR)
-		return 0;
-	if(d->d_type == DT_LNK && check_link_is_dir(d->d_name))
-		return 0;
-	if(access(d->d_name, X_OK) != 0)
-		return 0;
-	return 1;
-#else
-	return is_win_executable(d->d_name);
-#endif
 }
 
 static int
@@ -1224,7 +479,7 @@ cmds_expand_macros(const char *str, int *use_menu, int *split)
 	return result;
 }
 
-static char *
+char *
 cmds_expand_envvars(const char *str)
 {
 	char *result = NULL;
@@ -1417,89 +672,12 @@ init_commands(void)
 	init_cmds(1, &cmds_conf);
 	add_builtin_commands((const cmd_add_t *)&commands, ARRAY_LEN(commands));
 
-	split_path();
+	init_commands_completion();
 	qsort(key_pairs, ARRAY_LEN(key_pairs), sizeof(*key_pairs), notation_sorter);
 	for(i = 0; i < ARRAY_LEN(key_pairs); i++)
 		key_pairs[i].len = strlen(key_pairs[i].notation);
 
 	init_variables(&print_func);
-}
-
-static void
-split_path(void)
-{
-	const char *path, *p, *q;
-	int i;
-
-	path = env_get("PATH");
-
-	if(paths != NULL)
-		free_string_array(paths, paths_count);
-
-	paths_count = 1;
-	p = path;
-	while((p = strchr(p, ':')) != NULL)
-	{
-		paths_count++;
-		p++;
-	}
-
-	paths = malloc(paths_count*sizeof(paths[0]));
-	if(paths == NULL)
-		return;
-
-	i = 0;
-	p = path - 1;
-	do
-	{
-		int j;
-		char *s;
-
-		p++;
-#ifndef _WIN32
-		q = strchr(p, ':');
-#else
-		q = strchr(p, ';');
-#endif
-		if(q == NULL)
-		{
-			q = p + strlen(p);
-		}
-
-		s = malloc((q - p + 1)*sizeof(s[0]));
-		if(s == NULL)
-		{
-			for(j = 0; j < i - 1; j++)
-				free(paths[j]);
-			paths_count = 0;
-			return;
-		}
-		snprintf(s, q - p + 1, "%s", p);
-
-		p = q;
-
-		s = expand_tilde(s);
-
-		if(access(s, F_OK) != 0)
-		{
-			free(s);
-			continue;
-		}
-
-		paths[i++] = s;
-
-		for(j = 0; j < i - 1; j++)
-		{
-			if(pathcmp(paths[j], s) == 0)
-			{
-				free(s);
-				i--;
-				break;
-			}
-		}
-	}
-	while (q[0] != '\0');
-	paths_count = i;
 }
 
 static void
@@ -2276,39 +1454,6 @@ shellout(const char *command, int pause, int allow_screen)
 }
 
 char *
-fast_run_complete(char *cmd)
-{
-	char *buf = NULL;
-	char *p;
-
-	p = strchr(cmd, ' ');
-	if(p == NULL)
-		p = cmd + strlen(cmd);
-	else
-		*p = '\0';
-
-	reset_completion();
-	exec_completion(cmd);
-	free(next_completion());
-
-	if(get_completion_count() > 2)
-	{
-		status_bar_error("Command beginning is ambiguous");
-	}
-	else
-	{
-		char *completed;
-
-		completed = next_completion();
-		buf = malloc(strlen(completed) + 1 + strlen(p) + 1);
-		sprintf(buf, "%s %s", completed, p);
-		free(completed);
-	}
-
-	return buf;
-}
-
-char *
 edit_selection(FileView *view, int *bg)
 {
 	int use_menu = 0;
@@ -3004,15 +2149,18 @@ emark_cmd(const cmd_info_t *cmd_info)
 	else
 	{
 		clean_selected_files(curr_view);
-		if(shellout(com + i, cmd_info->emark ? 1 : (cfg.fast_run ? 0 : -1), 1)
-				== 127 && cfg.fast_run)
+		if(cfg.fast_run)
 		{
 			char *buf = fast_run_complete(com + i);
 			if(buf == NULL)
 				return 1;
 
-			shellout(buf, cmd_info->emark ? 1 : -1, 1);
+			(void)shellout(buf, cmd_info->emark ? 1 : -1, 1);
 			free(buf);
+		}
+		else
+		{
+			(void)shellout(com + i, cmd_info->emark ? 1 : (cfg.fast_run ? 0 : -1), 1);
 		}
 	}
 
@@ -4913,6 +4061,8 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 static int
 usercmd_cmd(const cmd_info_t *cmd_info)
 {
+	/* TODO: Refactor this function usercmd_cmd() */
+
 	char *expanded_com = NULL;
 	int use_menu = 0;
 	int split = 0;
@@ -5023,5 +4173,5 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
-/* vim: set cinoptions+=t0 : */
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

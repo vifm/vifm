@@ -15,6 +15,8 @@
 
 	Show host's root in history menu (e.g. //ZX_SPECTRUM).
 
+	Changed the way 'fastrun' works.
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.

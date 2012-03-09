@@ -63,7 +63,8 @@ am_vifm_OBJECTS = engine/cmds.$(OBJEXT) engine/completion.$(OBJEXT) \
 	utils/log.$(OBJEXT) utils/string_array.$(OBJEXT) \
 	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
 	utils/utils.$(OBJEXT) background.$(OBJEXT) bookmarks.$(OBJEXT) \
-	color_scheme.$(OBJEXT) commands.$(OBJEXT) config.$(OBJEXT) \
+	color_scheme.$(OBJEXT) commands.$(OBJEXT) \
+	commands_completion.$(OBJEXT) config.$(OBJEXT) \
 	dir_stack.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
 	fileops.$(OBJEXT) filetype.$(OBJEXT) ipc.$(OBJEXT) \
 	main_loop.$(OBJEXT) menus.$(OBJEXT) ops.$(OBJEXT) \
@@ -272,6 +273,7 @@ vifm_SOURCES = \
 	bookmarks.c bookmarks.h \
 	color_scheme.c colorscheme.h \
 	commands.c commands.h \
+	commands_completion.c commands_completion.h \
 	config.c config.h \
 	dir_stack.c dir_stack.h \
 	file_magic.c file_magic.h \
@@ -512,6 +514,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bookmarks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_scheme.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands_completion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dir_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_magic.Po@am__quote@

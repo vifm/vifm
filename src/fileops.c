@@ -50,6 +50,7 @@
 #include "background.h"
 #include "color_scheme.h"
 #include "commands.h"
+#include "commands_completion.h"
 #include "config.h"
 #include "filelist.h"
 #include "fileops.h"
