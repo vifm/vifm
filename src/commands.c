@@ -73,20 +73,13 @@
 #include "menus.h"
 #include "opt_handlers.h"
 #include "registers.h"
+#include "running.h"
 #include "status.h"
 #include "trash.h"
 #include "ui.h"
 #include "undo.h"
 
 #include "commands.h"
-
-#ifndef _WIN32
-#define PAUSE_CMD "vifm-pause"
-#define PAUSE_STR "; "PAUSE_CMD
-#else
-#define PAUSE_CMD "vifm-pause"
-#define PAUSE_STR " && pause || pause"
-#endif
 
 enum
 {
@@ -1031,169 +1024,6 @@ split_screen(FileView *view, char *command)
 		snprintf(buf, sizeof(buf), "screen-open-region-with-program %s", cfg.shell);
 		my_system(buf);
 	}
-}
-
-/*
- * pause:
- *  > 0 - pause always
- *  = 0 - do not pause
- *  < 0 - pause on error
- */
-int
-shellout(const char *command, int pause, int allow_screen)
-{
-	/* TODO: refactor this big function shellout() */
-	size_t len = (command != NULL) ? strlen(command) : 0;
-	char buf[cfg.max_args];
-	int result;
-	int ec;
-
-	if(pause > 0 && len > 1 && command[len - 1] == '&')
-		pause = -1;
-
-	if(command != NULL)
-	{
-		if(allow_screen && cfg.use_screen)
-		{
-			int bg;
-			char *escaped;
-			char *ptr = NULL;
-			char *title = strstr(command, get_vicmd(&bg));
-			char *escaped_sh = escape_filename(cfg.shell, 0);
-
-			/* Needed for symlink directories and sshfs mounts */
-			escaped = escape_filename(curr_view->curr_dir, 0);
-			snprintf(buf, sizeof(buf), "screen -X setenv PWD %s", escaped);
-			free(escaped);
-
-			my_system(buf);
-
-			if(title != NULL)
-			{
-				if(pause > 0)
-				{
-					snprintf(buf, sizeof(buf),
-							"screen -t \"%s\" %s -c '%s" PAUSE_STR "'",
-							title + strlen(get_vicmd(&bg)) + 1, escaped_sh, command);
-				}
-				else
-				{
-					escaped = escape_filename(command, 0);
-					snprintf(buf, sizeof(buf), "screen -t \"%s\" %s -c %s",
-							title + strlen(get_vicmd(&bg)) + 1, escaped_sh, escaped);
-					free(escaped);
-				}
-			}
-			else
-			{
-				ptr = strchr(command, ' ');
-				if(ptr != NULL)
-				{
-					*ptr = '\0';
-					title = strdup(command);
-					*ptr = ' ';
-				}
-				else
-				{
-					title = strdup("Shell");
-				}
-
-				if(pause > 0)
-				{
-					snprintf(buf, sizeof(buf),
-							"screen -t \"%.10s\" %s -c '%s" PAUSE_STR "'", title,
-							escaped_sh, command);
-				}
-				else
-				{
-					escaped = escape_filename(command, 0);
-					snprintf(buf, sizeof(buf), "screen -t \"%.10s\" %s -c %s", title,
-							escaped_sh, escaped);
-					free(escaped);
-				}
-				free(title);
-			}
-			free(escaped_sh);
-		}
-		else
-		{
-			if(pause > 0)
-			{
-#ifdef _WIN32
-				if(pathcmp(cfg.shell, "cmd") == 0)
-					snprintf(buf, sizeof(buf), "%s" PAUSE_STR, command);
-				else
-#endif
-					snprintf(buf, sizeof(buf), "%s; " PAUSE_CMD, command);
-			}
-			else
-			{
-				snprintf(buf, sizeof(buf), "%s", command);
-			}
-		}
-	}
-	else
-	{
-		if(allow_screen && cfg.use_screen)
-		{
-			snprintf(buf, sizeof(buf), "screen -X setenv PWD \'%s\'",
-					curr_view->curr_dir);
-
-			my_system(buf);
-
-			snprintf(buf, sizeof(buf), "screen");
-		}
-		else
-		{
-			snprintf(buf, sizeof(buf), "%s", cfg.shell);
-		}
-	}
-
-	def_prog_mode();
-	endwin();
-
-	/* Need to use setenv instead of getcwd for a symlink directory */
-	env_set("PWD", curr_view->curr_dir);
-
-	ec = my_system(buf);
-	result = WEXITSTATUS(ec);
-
-#ifndef _WIN32
-	if(result != 0 && pause < 0)
-		my_system(PAUSE_CMD);
-
-	/* force views update */
-	memset(&lwin.dir_mtime, 0, sizeof(lwin.dir_mtime));
-	memset(&rwin.dir_mtime, 0, sizeof(rwin.dir_mtime));
-#endif
-
-#ifdef _WIN32
-	reset_prog_mode();
-	resize_term(cfg.lines, cfg.columns);
-#endif
-	/* always redraw to handle resizing of terminal */
-	if(!curr_stats.auto_redraws)
-		curr_stats.need_redraw = 1;
-
-	curs_set(FALSE);
-
-	return result;
-}
-
-char *
-edit_selection(FileView *view, int *bg)
-{
-	int use_menu = 0;
-	int split = 0;
-	char *buf;
-	char *files = expand_macros(view, "%f", NULL, &use_menu, &split);
-
-	if((buf = malloc(strlen(get_vicmd(bg)) + strlen(files) + 2)) != NULL)
-		snprintf(buf, strlen(get_vicmd(bg)) + 1 + strlen(files) + 1, "%s %s",
-				get_vicmd(bg), files);
-
-	free(files);
-	return buf;
 }
 
 static int

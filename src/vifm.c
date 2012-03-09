@@ -60,6 +60,7 @@
 #include "ops.h"
 #include "opt_handlers.h"
 #include "registers.h"
+#include "running.h"
 #include "signals.h"
 #include "sort.h"
 #include "status.h"

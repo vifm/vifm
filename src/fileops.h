@@ -20,24 +20,16 @@
 #ifndef __FILEOPS_H__
 #define __FILEOPS_H__
 
-#include "utils/macros.h"
 #include "ui.h"
 
 #define DEFAULT_REG_NAME '"'
 
-void cd_updir(FileView *view);
-void handle_file(FileView *view, int dont_execute, int force_follow);
-void _gnuc_noreturn use_vim_plugin(FileView *view, int argc, char **argv);
 int delete_file(FileView *view, int reg, int count, int *indexes,
 		int use_trash);
 int delete_file_bg(FileView *view, int use_trash);
-void run_using_prog(FileView *view, const char *program, int dont_execute,
-		int force_background);
 int yank_files(FileView *view, int reg, int count, int *indexes);
 void yank_selected_files(FileView *view, int reg);
-void handle_dir(FileView *view);
 int file_exec(char *command);
-void view_file(const char *filename, int line, int do_fork);
 void show_change_window(FileView *view, int type);
 void rename_file(FileView *view, int name_only);
 int rename_files(FileView *view, char **list, int nlines, int recursive);

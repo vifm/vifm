@@ -36,6 +36,7 @@
 #include "../fileops.h"
 #include "../filetype.h"
 #include "../menus.h"
+#include "../running.h"
 #include "../status.h"
 #include "../ui.h"
 #include "cmdline.h"

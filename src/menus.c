@@ -58,6 +58,7 @@
 #include "fileops.h"
 #include "filetype.h"
 #include "registers.h"
+#include "running.h"
 #include "search.h"
 #include "status.h"
 #include "ui.h"

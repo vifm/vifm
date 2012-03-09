@@ -49,6 +49,7 @@ src/menus.c - handles all kinds of menus
 src/ops.c - most of operations performed on file system
 src/opt_handlers.c - initialization of options and option change handlers
 src/registers.c - implementation of registers
+src/running.c - code of handing file and commands running
 src/search.c - code for / and ? commands of normal mode
 src/signals.c - handlers for different signals
 src/sort.c - sort function

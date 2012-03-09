@@ -39,7 +39,6 @@ void init_commands(void);
 int exec_commands(char *cmd, FileView *view, int save_hist, int type);
 int exec_command(char *cmd, FileView *view, int type);
 char * find_last_command(char *cmd);
-int shellout(const char *command, int pause, int allow_screen);
 char * expand_macros(FileView *view, const char *command, const char *args,
 		int *menu, int *split);
 void comm_quit(int write_info, int force);
@@ -48,7 +47,6 @@ void comm_split(int vertical);
 void save_command_history(const char *command);
 void save_search_history(const char *pattern);
 void save_prompt_history(const char *line);
-char * edit_selection(FileView *view, int *bg);
 void exec_startup_commands(int argc, char **argv);
 /* Allocates memory, that should be freed by the caller. */
 char * cmds_expand_envvars(const char *str);

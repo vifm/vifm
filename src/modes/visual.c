@@ -32,6 +32,7 @@
 #include "../filelist.h"
 #include "../fileops.h"
 #include "../menus.h"
+#include "../running.h"
 #include "../search.h"
 #include "../status.h"
 #include "dialogs/attr_dialog.h"

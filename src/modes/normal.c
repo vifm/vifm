@@ -42,6 +42,7 @@
 #include "../fileops.h"
 #include "../menus.h"
 #include "../registers.h"
+#include "../running.h"
 #include "../search.h"
 #include "../status.h"
 #include "../ui.h"

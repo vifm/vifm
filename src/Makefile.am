@@ -60,6 +60,7 @@ vifm_SOURCES = \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
 	registers.c registers.h \
+	running.c running.h \
 	search.c search.h \
 	signals.c signals.h \
 	sort.c sort.h \
