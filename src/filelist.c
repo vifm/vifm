@@ -511,17 +511,37 @@ use_info_prog(const char *viewer)
 	}
 }
 #else
+static FILE *
+use_info_prog_internal(const char *viewer, int out_pipe[2])
+{
+	char *cmd;
+	char *args[4];
+	int retcode;
+
+	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
+		return NULL;
+	if(_dup2(out_pipe[1], _fileno(stderr)) != 0)
+		return NULL;
+
+	cmd = get_viewer_command(viewer);
+
+	args[0] = "cmd";
+	args[1] = "/C";
+	args[2] = cmd;
+	args[3] = NULL;
+
+	retcode = _spawnvp(P_NOWAIT, args[0], (const char **)args);
+	free(cmd);
+
+	return (retcode == 0) ? NULL : _fdopen(out_pipe[0], "r");
+}
+
 FILE *
 use_info_prog(const char *viewer)
 {
 	int out_fd, err_fd;
 	int out_pipe[2];
-	char *cmd;
-	char *args[4];
-	FILE * f;
-	int retcode;
-
-	cmd = get_viewer_command(viewer);
+	FILE *result;
 
 	if(_pipe(out_pipe, 512, O_NOINHERIT) != 0)
 	{
@@ -532,43 +552,16 @@ use_info_prog(const char *viewer)
 	out_fd = dup(_fileno(stdout));
 	err_fd = dup(_fileno(stderr));
 
-	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
-	{
-		close(out_pipe[0]);
-		close(out_pipe[1]);
-		return NULL;
-	}
-
-	if(_dup2(out_pipe[1], _fileno(stderr)) != 0)
-	{
-		_dup2(out_fd, _fileno(stdout));
-		close(out_pipe[0]);
-		close(out_pipe[1]);
-		return NULL;
-	}
-
-	args[0] = "cmd";
-	args[1] = "/C";
-	args[2] = cmd;
-	args[3] = NULL;
-
-	retcode = _spawnvp(P_NOWAIT, args[0], (const char **)args);
+	result = use_info_prog_internal(viewer, out_pipe);
 
 	_dup2(out_fd, _fileno(stdout));
 	_dup2(err_fd, _fileno(stderr));
-	close(out_pipe[1]); /* close write end of pipe */
-	free(cmd);
 
-	if(retcode == 0)
-	{
+	if(result == NULL)
 		close(out_pipe[0]);
-		return NULL;
-	}
+	close(out_pipe[1]);
 
-	f = _fdopen(out_pipe[0], "r");
-	if(f == NULL)
-		close(out_pipe[0]);
-	return f;
+	return result;
 }
 #endif
 
