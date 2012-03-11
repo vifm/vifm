@@ -200,10 +200,10 @@ move_to_bookmark(FileView *view, char mark)
 	{
 		if(!isalnum(mark))
 			status_bar_message("Invalid mark name");
-		else if(!is_valid_dir(bookmarks[x].directory))
-			status_bar_message("Mark is invalid");
-		else
+		else if(is_bookmark_empty(x))
 			status_bar_message("Mark is not set");
+		else
+			status_bar_message("Mark is invalid");
 
 		move_to_list_pos(view, view->list_pos);
 		return 1;
