@@ -195,9 +195,7 @@ void
 enter_view_mode(int explore)
 {
 	char buf[PATH_MAX];
-#ifndef _WIN32
 	const char *viewer;
-#endif
 	FILE *fp;
 
 	if(!can_be_explored(curr_view, buf))
@@ -206,12 +204,10 @@ enter_view_mode(int explore)
 		return;
 	}
 
-#ifndef _WIN32
 	viewer = get_viewer_for_file(buf);
 	if(viewer != NULL && viewer[0] != '\0')
 		fp = use_info_prog(viewer);
 	else
-#endif
 		fp = fopen(buf, "r");
 
 	if(fp == NULL)

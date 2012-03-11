@@ -25,6 +25,7 @@
 #include <windows.h>
 #include <winioctl.h>
 #include <lm.h>
+#include <fcntl.h>
 #endif
 
 #include <curses.h>
@@ -65,6 +66,8 @@
 #include "ui.h"
 #include "utf8.h"
 #include "utils.h"
+
+static char * get_viewer_command(const char *viewer);
 
 static int
 get_line_color(FileView* view, int pos)
@@ -429,11 +432,9 @@ quick_view_file(FileView *view)
 					mvwaddstr(other_view->win, ++x, y, "File is a Directory");
 					break;
 				}
-#ifndef _WIN32
 				if(viewer != NULL && viewer[0] != '\0')
 					fp = use_info_prog(viewer);
 				else
-#endif
 					fp = fopen(buf, "r");
 
 				if(fp == NULL)
@@ -479,21 +480,9 @@ use_info_prog(const char *viewer)
 {
 	pid_t pid;
 	int error_pipe[2];
-	int use_menu = 0, split = 0;
 	char *cmd;
 
-	if(strchr(viewer, '%') == NULL)
-	{
-		char *escaped = escape_filename(
-				curr_view->dir_entry[curr_view->list_pos].name, 0);
-		char *t = malloc(strlen(viewer) + 1 + strlen(escaped) + 1);
-		sprintf(t, "%s %s", viewer, escaped);
-		cmd = t;
-	}
-	else
-	{
-		cmd = expand_macros(curr_view, viewer, NULL, &use_menu, &split);
-	}
+	cmd = get_viewer_command(viewer);
 
 	if(pipe(error_pipe) != 0)
 	{
@@ -521,7 +510,87 @@ use_info_prog(const char *viewer)
 		return f;
 	}
 }
+#else
+FILE *
+use_info_prog(const char *viewer)
+{
+	int out_fd, err_fd;
+	int out_pipe[2];
+	char *cmd;
+	char *args[4];
+	FILE * f;
+	int retcode;
+
+	cmd = get_viewer_command(viewer);
+
+	if(_pipe(out_pipe, 512, O_NOINHERIT) != 0)
+	{
+		(void)show_error_msg("File pipe error", "Error creating pipe");
+		return NULL;
+	}
+
+	out_fd = dup(_fileno(stdout));
+	err_fd = dup(_fileno(stderr));
+
+	if(_dup2(out_pipe[1], _fileno(stdout)) != 0)
+	{
+		close(out_pipe[0]);
+		close(out_pipe[1]);
+		return NULL;
+	}
+
+	if(_dup2(out_pipe[1], _fileno(stderr)) != 0)
+	{
+		_dup2(out_fd, _fileno(stdout));
+		close(out_pipe[0]);
+		close(out_pipe[1]);
+		return NULL;
+	}
+
+	args[0] = "cmd";
+	args[1] = "/C";
+	args[2] = cmd;
+	args[3] = NULL;
+
+	retcode = _spawnvp(P_NOWAIT, args[0], (const char **)args);
+
+	_dup2(out_fd, _fileno(stdout));
+	_dup2(err_fd, _fileno(stderr));
+	close(out_pipe[1]); /* close write end of pipe */
+	free(cmd);
+
+	if(retcode == 0)
+	{
+		close(out_pipe[0]);
+		return NULL;
+	}
+
+	f = _fdopen(out_pipe[0], "r");
+	if(f == NULL)
+		close(out_pipe[0]);
+	return f;
+}
 #endif
+
+static char *
+get_viewer_command(const char *viewer)
+{
+	char *result;
+	if(strchr(viewer, '%') == NULL)
+	{
+		char *escaped = escape_filename(
+				curr_view->dir_entry[curr_view->list_pos].name, 0);
+		char *t = malloc(strlen(viewer) + 1 + strlen(escaped) + 1);
+		sprintf(t, "%s %s", viewer, escaped);
+		result = t;
+	}
+	else
+	{
+		int use_menu = 0, split = 0;
+		result = expand_macros(curr_view, viewer, NULL, &use_menu, &split);
+	}
+	return result;
+}
 
 char *
 get_current_file_name(FileView *view)
