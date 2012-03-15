@@ -68,7 +68,7 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
     # make archive
     if [ "$OS" != "Windows_NT" ]; then
         archive_name="vifm-$1.tar.bz2"
-        git archive "v$1" --format tar | bzip2 > "$archive_name"
+        git archive "v$1" --prefix "vifm-$1/" --format tar | bzip2 > "$archive_name"
     else
         # remove config.h
         if [ -f config.h ]; then
