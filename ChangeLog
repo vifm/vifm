@@ -38,6 +38,8 @@
 	Fixed getting list of associated programs using .desktop files when the
 	file utility is used to obtain mime-type of a file.
 
+	Fixed result of applying :p filename modifier in root of file system.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

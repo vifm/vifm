@@ -1671,8 +1671,9 @@ apply_p_mod(const char *path, const char *parent, char *buf, size_t buf_len)
 		return 0;
 	}
 
-	len = snprintf(buf, buf_len, "%s", parent);
+	snprintf(buf, buf_len, "%s", parent);
 	chosp(buf);
+	len = strlen(buf);
 	snprintf(buf + len, buf_len - len, "/%s", path);
 	return 0;
 }

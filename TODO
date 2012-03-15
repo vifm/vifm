@@ -65,11 +65,11 @@ Possible things to add.
     Position macros for user defined commands (%1, %2, ..., %9).
     Some key to (un)select all files with extension of current file.
     'incfilter' option.
-    Maybe we should reread configuration files on :restart when --no-configs
-        was passed on startup.
+    Maybe we should not reread configuration files on :restart when
+        --no-configs was passed on startup.
     'wildmode' option.
     A macro to redirect command output into view pane.
-    Maybe remove scripts from PATH on spawning subprocesses.
+    Maybe remove scripts (~/.vifm/scripts/**) from PATH on shellout.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
