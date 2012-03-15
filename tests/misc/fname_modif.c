@@ -95,7 +95,7 @@ test_colon_p(void)
 
 	expanded = expand_macros(&lwin, " cp %F:p ", "", &menu, &split);
 	assert_string_equal(" cp " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
-											expanded);
+	                    expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %b:p ", "", &menu, &split);
@@ -114,6 +114,46 @@ test_colon_p(void)
 
 	expanded = expand_macros(&lwin, " cp %d:p ", "", &menu, &split);
 	assert_string_equal(" cp " SL "lwin ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, " cp %D:p ", "", &menu, &split);
+	assert_string_equal(" cp " SL "rwin ", expanded);
+	free(expanded);
+}
+
+static void
+test_colon_p_in_root(void)
+{
+	int menu, split;
+	char *expanded;
+
+	strcpy(lwin.curr_dir, "/");
+
+	expanded = expand_macros(&lwin, " cp %f:p ", "", &menu, &split);
+	assert_string_equal(" cp " SL "lfile0 " SL "lfile2 ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, " cp %F:p ", "", &menu, &split);
+	assert_string_equal(" cp " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
+	                    expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, " cp %b:p ", "", &menu, &split);
+	assert_string_equal(
+			" cp " SL "lfile0 " SL "lfile2 " SL "rwin" SL"rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
+			expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, " cp %c:p ", "", &menu, &split);
+	assert_string_equal(" cp " SL "lfile2 ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, " cp %C:p ", "", &menu, &split);
+	assert_string_equal(" cp " SL "rwin" SL "rfile5 ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(&lwin, " cp %d:p ", "", &menu, &split);
+	assert_string_equal(" cp " SL " ", expanded);
 	free(expanded);
 
 	expanded = expand_macros(&lwin, " cp %D:p ", "", &menu, &split);
@@ -573,6 +613,7 @@ fname_modif_tests(void)
 	fixture_teardown(teardown);
 
 	run_test(test_colon_p);
+	run_test(test_colon_p_in_root);
 	run_test(test_colon_tilde);
 	run_test(test_colon_dot);
 	run_test(test_colon_h);
