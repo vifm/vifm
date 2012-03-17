@@ -3,9 +3,9 @@
 
 #include "seatest.h"
 
-#include "../../src/commands.h"
 #include "../../src/config.h"
 #include "../../src/filelist.h"
+#include "../../src/macros.h"
 #include "../../src/ui.h"
 
 #ifdef _WIN32

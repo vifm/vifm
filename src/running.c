@@ -27,11 +27,11 @@
 #include "utils/macros.h"
 #include "utils/utils.h"
 #include "background.h"
-#include "commands.h"
 #include "config.h"
 #include "filelist.h"
 #include "filetype.h"
 #include "fuse.h"
+#include "macros.h"
 #include "status.h"
 #include "ui.h"
 

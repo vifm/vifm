@@ -75,6 +75,7 @@ vifm_SOURCES = \
 	filetype.c filetype.h \
 	fuse.c fuse.h \
 	ipc.c ipc.h \
+	macros.c macros.h \
 	main_loop.c main_loop.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \

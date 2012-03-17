@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __MACROS_H__
-#define __MACROS_H__
+#ifndef __UTILS_MACROS_H__
+#define __UTILS_MACROS_H__
 
 /* some useful macros */
 

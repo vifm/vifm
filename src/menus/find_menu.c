@@ -20,7 +20,7 @@
 #include <string.h> /* strdup() */
 
 #include "../utils/utils.h"
-#include "../commands.h"
+#include "../macros.h"
 #include "../ui.h"
 #include "menus.h"
 

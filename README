@@ -63,6 +63,7 @@ src/fileops.c - delete/copy/put selected file(s)
 src/filetype.c - stores filetype information from vifmrc
 src/fuse.c - provides support of FUSE filesystems
 src/ipc.c - handles communication across instances of vifm
+src/macros - code of macros expanding
 src/main_loop.c - the main loop
 src/ops.c - most of operations performed on file system
 src/opt_handlers.c - initialization of options and option change handlers

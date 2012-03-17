@@ -77,11 +77,11 @@ am_vifm_OBJECTS = engine/cmds.$(OBJEXT) engine/completion.$(OBJEXT) \
 	dir_stack.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) fuse.$(OBJEXT) ipc.$(OBJEXT) \
-	main_loop.$(OBJEXT) ops.$(OBJEXT) opt_handlers.$(OBJEXT) \
-	quickview.$(OBJEXT) registers.$(OBJEXT) running.$(OBJEXT) \
-	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
-	status.$(OBJEXT) tags.$(OBJEXT) trash.$(OBJEXT) ui.$(OBJEXT) \
-	undo.$(OBJEXT) version.$(OBJEXT) vifm.$(OBJEXT)
+	macros.$(OBJEXT) main_loop.$(OBJEXT) ops.$(OBJEXT) \
+	opt_handlers.$(OBJEXT) quickview.$(OBJEXT) registers.$(OBJEXT) \
+	running.$(OBJEXT) search.$(OBJEXT) signals.$(OBJEXT) \
+	sort.$(OBJEXT) status.$(OBJEXT) tags.$(OBJEXT) trash.$(OBJEXT) \
+	ui.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) vifm.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
@@ -313,6 +313,7 @@ vifm_SOURCES = \
 	filetype.c filetype.h \
 	fuse.c fuse.h \
 	ipc.c ipc.h \
+	macros.c macros.h \
 	main_loop.c main_loop.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
@@ -617,6 +618,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filetype.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuse.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ipc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/macros.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main_loop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/opt_handlers.Po@am__quote@
