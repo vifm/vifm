@@ -46,6 +46,7 @@
 
 #include "../config.h"
 
+#include "menus/menus.h"
 #include "modes/file_info.h"
 #include "modes/modes.h"
 #include "modes/view.h"
@@ -57,7 +58,6 @@
 #include "config.h"
 #include "filelist.h"
 #include "main_loop.h"
-#include "menus.h"
 #include "opt_handlers.h"
 #include "quickview.h"
 #include "signals.h"

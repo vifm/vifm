@@ -45,6 +45,7 @@
 #include <string.h> /* strcat() */
 #include <time.h>
 
+#include "menus/menus.h"
 #include "modes/file_info.h"
 #include "modes/modes.h"
 #include "utils/log.h"
@@ -61,7 +62,6 @@
 #include "fileops.h"
 #include "filetype.h"
 #include "fuse.h"
-#include "menus.h"
 #include "opt_handlers.h"
 #include "quickview.h"
 #include "sort.h"

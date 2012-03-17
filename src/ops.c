@@ -25,13 +25,13 @@
 
 #include "../config.h"
 
+#include "menus/menus.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "config.h"
 #include "fileops.h"
-#include "menus.h"
 #include "status.h"
 #include "trash.h"
 #include "undo.h"

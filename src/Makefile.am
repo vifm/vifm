@@ -21,6 +21,26 @@ vifm_SOURCES = \
 	engine/options.c engine/options.h \
 	engine/variables.c engine/variables.h \
 	\
+	menus/all.h \
+	menus/apropos_menu.c menus/apropos_menu.h \
+	menus/bookmarks_menu.c menus/bookmarks_menu.h \
+	menus/colorscheme_menu.c menus/colorscheme_menu.h \
+	menus/commands_menu.c menus/commands_menu.h \
+	menus/dirhistory_menu.c menus/dirhistory_menu.h \
+	menus/dirstask_menu.c menus/dirstask_menu.h \
+	menus/filetypes_menu.c menus/filetypes_menu.h \
+	menus/find_menu.c menus/find_menu.h \
+	menus/grep_menu.c menus/grep_menu.h \
+	menus/history_menu.c menus/history_menu.h \
+	menus/jobs_menu.c menus/jobs_menu.h \
+	menus/locate_menu.c menus/locate_menu.h \
+	menus/map_menu.c menus/map_menu.h \
+	menus/menus.c menus/menus.h \
+	menus/registers_menu.c menus/registers_menu.h \
+	menus/undolist_menu.c menus/undolist_menu.h \
+	menus/users_menu.c menus/users_menu.h \
+	menus/vifm_menu.c menus/vifm_menu.h \
+	\
 	modes/dialogs/attr_dialog.h \
 	modes/dialogs/attr_dialog_nix.c modes/dialogs/attr_dialog_nix.h \
 	modes/dialogs/change_dialog.c modes/dialogs/change_dialog.h \
@@ -56,7 +76,6 @@ vifm_SOURCES = \
 	fuse.c fuse.h \
 	ipc.c ipc.h \
 	main_loop.c main_loop.h \
-	menus.c menus.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
 	quickview.c quickview.h \

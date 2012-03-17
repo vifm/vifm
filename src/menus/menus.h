@@ -22,13 +22,41 @@
 
 #include <stdio.h>
 
-#include "ui.h"
+#include "../ui.h"
 
 enum
 {
 	NONE,
 	UP,
 	DOWN
+};
+
+enum
+{
+	APROPOS,
+	BOOKMARK,
+	CMDHISTORY,
+	PROMPTHISTORY,
+	FSEARCHHISTORY,
+	BSEARCHHISTORY,
+	COLORSCHEME,
+	COMMAND,
+	DIRSTACK,
+	FILETYPE,
+	FIND,
+	DIRHISTORY,
+	JOBS,
+	LOCATE,
+	MAP,
+	REGISTER,
+	UNDOLIST,
+	USER,
+	USER_NAVIGATE,
+	VIFM,
+	GREP,
+#ifdef _WIN32
+	VOLUMES,
+#endif
 };
 
 typedef struct menu_info
@@ -55,32 +83,11 @@ typedef struct menu_info
 	 * key */
 	int (*key_handler)(struct menu_info *m, wchar_t *keys);
 	int extra_data; /* for filetype background and mime flags */
+	int (*execute_handler)(FileView *view, struct menu_info *m);
 }menu_info;
 
-int show_bookmarks_menu(FileView *view, const char *marks);
-int show_dirstack_menu(FileView *view);
-void show_colorschemes_menu(FileView *view);
-int show_commands_menu(FileView *view);
-int show_history_menu(FileView *view);
-int show_cmdhistory_menu(FileView *view);
-int show_prompthistory_menu(FileView *view);
-int show_fsearchhistory_menu(FileView *view);
-int show_bsearchhistory_menu(FileView *view);
-int show_vifm_menu(FileView *view);
-int show_filetypes_menu(FileView *view, int background);
 /* Returns zero on successful running */
 int run_with_filetype(FileView *view, const char *beginning, int background);
-int show_jobs_menu(FileView *view);
-int show_locate_menu(FileView *view, const char *args);
-int show_find_menu(FileView *view, int with_path, const char *args);
-int show_grep_menu(FileView *view, const char *args, int invert);
-void show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
-		const wchar_t *start);
-void show_apropos_menu(FileView *view, char *args);
-void show_user_menu(FileView *view, const char *command, int navigate);
-int show_register_menu(FileView *view, const char *registers);
-int show_undolist_menu(FileView *view, int with_details);
-void show_volumes_menu(FileView *view);
 void reset_popup_menu(menu_info *m);
 void setup_menu(void);
 void redraw_error_msg(const char *title_arg, const char *message_arg);
@@ -95,6 +102,8 @@ void draw_menu(menu_info *m);
 /* Returns zero if menu mode should be leaved */
 int execute_menu_cb(FileView *view, menu_info *m);
 int print_errors(FILE *ef);
+
+int capture_output_to_menu(FileView *view, const char *cmd, menu_info *m);
 
 #endif
 

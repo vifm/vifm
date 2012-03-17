@@ -14,6 +14,25 @@ src/engine/completion.c - provides means to fill and get completion list
 src/engine/keys.c - analyzes users input
 src/engine/options.c - :set command
 src/engine/variables.c - handles :let and :unlet commands
+src/menus/apropos_menu.c - handles :apropos menu
+src/menus/bookmarks_menu.c - handles :marks menu
+src/menus/colorscheme_menu.c - handles :colorscheme menu
+src/menus/commands_menu.c - handles :command menu
+src/menus/dirhistory_menu.c - handles :history menu
+src/menus/dirstask_menu.c - handles :dirs menu
+src/menus/filetypes_menu.c - handles :file menu
+src/menus/find_menu.c - handles :file menu
+src/menus/grep_menu.c - hanldes :grep menu
+src/menus/history_menu.c - handles :history command menus except directory history
+src/menus/jobs_menu.c - handles :jobs menu
+src/menus/locate_menu.c - handles :locale menu
+src/menus/map_menu.c - handles :map menu
+src/menus/menus.c - handles all kinds of menus
+src/menus/registers_menu.c - handles :registers menu
+src/menus/undolist_menu.c - handles :undolist menu
+src/menus/users_menu.c - handles menus created by %m or %M macros
+src/menus/vifm_menu.c - handles :vifm (or :version) menu
+src/menus/volumes_menu.c - handles :volumes menu on MS Windows systems
 src/modes/dialogs/attr_dialog_nix.c - file permissions dialog for *nix systems
 src/modes/dialogs/attr_dialog_win.c - file properties dialog for MS Windows systems
 src/modes/dialogs/change_dialog.c - change dialog
@@ -45,7 +64,6 @@ src/filetype.c - stores filetype information from vifmrc
 src/fuse.c - provides support of FUSE filesystems
 src/ipc.c - handles communication across instances of vifm
 src/main_loop.c - the main loop
-src/menus.c - handles all kinds of menus
 src/ops.c - most of operations performed on file system
 src/opt_handlers.c - initialization of options and option change handlers
 src/quickview.c - implementation of quick view

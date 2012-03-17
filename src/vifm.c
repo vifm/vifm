@@ -39,6 +39,7 @@
 #include <string.h> /* strncpy */
 
 #include "engine/variables.h"
+#include "menus/menus.h"
 #include "modes/modes.h"
 #include "modes/normal.h"
 #include "modes/view.h"
@@ -56,7 +57,6 @@
 #include "filetype.h"
 #include "ipc.h"
 #include "main_loop.h"
-#include "menus.h"
 #include "ops.h"
 #include "opt_handlers.h"
 #include "quickview.h"

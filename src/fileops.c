@@ -43,6 +43,7 @@
 
 #include <wchar.h> /* swprintf */
 
+#include "menus/menus.h"
 #include "modes/cmdline.h"
 #include "utils/string_array.h"
 #include "utils/utils.h"
@@ -54,7 +55,6 @@
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
-#include "menus.h"
 #include "ops.h"
 #include "registers.h"
 #include "running.h"

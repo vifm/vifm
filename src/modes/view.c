@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "../engine/keys.h"
+#include "../menus/menus.h"
 #include "../utils/macros.h"
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
@@ -35,7 +36,6 @@
 #include "../filelist.h"
 #include "../fileops.h"
 #include "../filetype.h"
-#include "../menus.h"
 #include "../quickview.h"
 #include "../running.h"
 #include "../status.h"

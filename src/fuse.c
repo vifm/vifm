@@ -21,11 +21,11 @@
 
 #include <string.h> /* strcpy() strlen() strcmp() strcat() */
 
+#include "menus/menus.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "config.h"
 #include "filelist.h"
-#include "menus.h"
 #include "status.h"
 
 #include "fuse.h"

@@ -23,6 +23,7 @@
 #include <string.h> /* strcmp() strrchr() strcat() strstr() strlen() strchr()
                        strdup() */
 
+#include "menus/menus.h"
 #include "utils/macros.h"
 #include "utils/utils.h"
 #include "background.h"
@@ -31,7 +32,6 @@
 #include "filelist.h"
 #include "filetype.h"
 #include "fuse.h"
-#include "menus.h"
 #include "status.h"
 #include "ui.h"
 

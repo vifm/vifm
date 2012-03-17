@@ -44,6 +44,7 @@ static void _gnuc_noreturn shutdown_nicely(void);
 #include <errno.h>
 #include <time.h>
 
+#include "menus/menus.h"
 #include "modes/file_info.h"
 #include "utils/macros.h"
 #include "background.h"
@@ -51,7 +52,6 @@ static void _gnuc_noreturn shutdown_nicely(void);
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
-#include "menus.h"
 #include "status.h"
 #include "ui.h"
 

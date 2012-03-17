@@ -1,5 +1,5 @@
 SOURCES := ../../src/*.c ../../src/engine/*.c ../../src/modes/dialogs/*.c
-SOURCES += ../../src/modes/*.c ../../src/utils/*.c
+SOURCES += ../../src/menus/*.c ../../src/modes/*.c ../../src/utils/*.c
 SOURCES := $(filter-out ../../src/vifm.c, $(wildcard $(SOURCES)))
 SOURCES := $(filter-out ../../src/vifmrc-converter.c, $(SOURCES))
 SOURCES := $(filter-out ../../src/win_helper.c, $(SOURCES))
@@ -16,6 +16,7 @@ ifeq ($(OS),Windows_NT)
     DIALOG := ../../src/modes/dialogs/attr_dialog_nix.c
 else
     DIALOG := ../../src/modes/dialogs/attr_dialog_win.c
+    SOURCES := $(filter-out ../../src/menus/volumes_menu.c, $(SOURCES))
 endif
 SOURCES := $(filter-out $(DIALOG), $(SOURCES))
 LOCAL_SOURCES += $(wildcard *.c)
@@ -51,6 +52,9 @@ bin/dummy:
 	gcc -c -o $@ $< $(CFLAGS)
 
 ../bin/%.o: ../../src/engine/%.c
+	gcc -c -o $@ $< $(CFLAGS)
+
+../bin/%.o: ../../src/menus/%.c
 	gcc -c -o $@ $< $(CFLAGS)
 
 ../bin/%.o: ../../src/modes/dialogs/%.c

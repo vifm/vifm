@@ -29,13 +29,13 @@
 #include <string.h>
 
 #include "engine/completion.h"
+#include "menus/menus.h"
 #include "utils/macros.h"
 #include "utils/tree.h"
 #include "utils/utils.h"
 #include "color_scheme.h"
 #include "config.h"
 #include "filelist.h"
-#include "menus.h"
 #include "status.h"
 
 char *HI_GROUPS[] = {

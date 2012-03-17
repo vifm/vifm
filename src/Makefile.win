@@ -13,6 +13,12 @@ LIBS := -lregex -lpdcurses -lnetapi32 -lpthread -lws2_32
 engine = cmds.c completion.c keys.c options.c variables.c
 engine := $(addprefix engine/, $(engine))
 
+menus := apropos_menu.c bookmarks_menu.c colorscheme_menu.c commands_menu.c \
+         dirhistory_menu.c dirstask_menu.c filetypes_menu.c find_menu.c \
+         grep_menu.c history_menu.c jobs_menu.c locate_menu.c map_menu.c \
+         menus.c registers_menu.c undolist_menu.c users_menu.c vifm_menu.c \
+         volumes_menu.c
+
 dialogs := attr_dialog_win.c change_dialog.c sort_dialog.c
 dialogs := $(addprefix dialogs/, $(dialogs))
 
@@ -23,13 +29,13 @@ modes := $(addprefix modes/, $(modes))
 utilities := log.c string_array.c tree.c utf8.c utils.c
 utilities := $(addprefix utils/, $(utilities))
 
-vifm_SOURCES := $(engine) $(modes) $(utilities) background.c bookmarks.c \
-                color_scheme.c commands.c commands_completion.c config.c \
-                dir_stack.c file_magic.c filelist.c filename_modifiers.c \
-                fileops.c filetype.c fuse.c ipc.c main_loop.c menus.c ops.c \
-                opt_handlers.c quickview.c registers.c running.c search.c \
-                signals.c sort.c status.c tags.c trash.c ui.c undo.c version.c \
-                vifmres.o vifm.c
+vifm_SOURCES := $(engine) $(menus) $(modes) $(utilities) background.c \
+                bookmarks.c color_scheme.c commands.c commands_completion.c \
+                config.c dir_stack.c file_magic.c filelist.c \
+                filename_modifiers.c fileops.c filetype.c fuse.c ipc.c \
+                main_loop.c ops.c opt_handlers.c quickview.c registers.c \
+                running.c search.c signals.c sort.c status.c tags.c trash.c \
+                ui.c undo.c version.c vifmres.o vifm.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe

@@ -20,7 +20,7 @@
 #ifndef __MENU_H__
 #define __MENU_H__
 
-#include "../menus.h"
+#include "../menus/menus.h"
 #include "../ui.h"
 
 void init_menu_mode(int *key_mode);

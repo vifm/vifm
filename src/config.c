@@ -19,9 +19,9 @@
 
 #include "../config.h"
 
-#define HOME "HOME"
-#define VIFM "VIFM"
-#define MYVIFMRC "MYVIFMRC"
+#define HOME_EV "HOME"
+#define VIFM_EV "VIFM"
+#define MYVIFMRC_EV "MYVIFMRC"
 #define TRASH "Trash"
 #define LOG "log"
 #define VIFMRC "vifmrc"
@@ -38,6 +38,7 @@
 #include <string.h>
 
 #include "engine/cmds.h"
+#include "menus/menus.h"
 #include "utils/log.h"
 #include "utils/string_array.h"
 #include "utils/utils.h"
@@ -49,7 +50,6 @@
 #include "fileops.h"
 #include "filelist.h"
 #include "filetype.h"
-#include "menus.h"
 #include "opt_handlers.h"
 #include "registers.h"
 #include "status.h"
@@ -205,7 +205,7 @@ try_home_envvar_for_home(void)
 {
 	LOG_FUNC_ENTER;
 
-	const char *home = env_get(HOME);
+	const char *home = env_get(HOME_EV);
 	return home != NULL && is_dir(home);
 }
 
@@ -224,7 +224,7 @@ try_userprofile_envvar_for_home(void)
 		return 0;
 	snprintf(home, sizeof(home), "%s", userprofile);
 	to_forward_slash(home);
-	env_set(HOME, home);
+	env_set(HOME_EV, home);
 	return 1;
 #endif
 }
@@ -247,7 +247,7 @@ try_homepath_envvar_for_home(void)
 
 	snprintf(home, sizeof(home), "%s%s", homedrive, homepath);
 	to_forward_slash(home);
-	env_set(HOME, home);
+	env_set(HOME_EV, home);
 	return 1;
 #endif
 }
@@ -274,7 +274,7 @@ try_vifm_envvar_for_conf(void)
 {
 	LOG_FUNC_ENTER;
 
-	const char *vifm = env_get(VIFM);
+	const char *vifm = env_get(VIFM_EV);
 	return vifm != NULL && is_dir(vifm);
 }
 
@@ -293,7 +293,7 @@ try_exe_directory_for_conf(void)
 	*strrchr(exe_dir, '/') = '\0';
 	if(!file_exists(exe_dir, VIFMRC))
 		return 0;
-	env_set(VIFM, exe_dir);
+	env_set(VIFM_EV, exe_dir);
 	return 1;
 #endif
 }
@@ -305,7 +305,7 @@ try_home_envvar_for_conf(void)
 	LOG_FUNC_ENTER;
 
 	char vifm[PATH_MAX];
-	const char *home = env_get(HOME);
+	const char *home = env_get(HOME_EV);
 	if(home == NULL || !is_dir(home))
 		return 0;
 	snprintf(vifm, sizeof(vifm), "%s/.vifm", home);
@@ -313,7 +313,7 @@ try_home_envvar_for_conf(void)
 	if(!is_dir(vifm))
 		return 0;
 #endif
-	env_set(VIFM, vifm);
+	env_set(VIFM_EV, vifm);
 	return 1;
 }
 
@@ -332,7 +332,7 @@ try_appdata_for_conf(void)
 		return 0;
 	snprintf(vifm, sizeof(vifm), "%s/Vifm", appdata);
 	to_forward_slash(vifm);
-	env_set(VIFM, vifm);
+	env_set(VIFM_EV, vifm);
 	return 1;
 #endif
 }
@@ -357,7 +357,7 @@ try_myvifmrc_envvar_for_vifmrc(void)
 {
 	LOG_FUNC_ENTER;
 
-	const char *myvifmrc = env_get(MYVIFMRC);
+	const char *myvifmrc = env_get(MYVIFMRC_EV);
 	return myvifmrc != NULL && file_exists(NULL, myvifmrc);
 }
 
@@ -377,7 +377,7 @@ try_exe_directory_for_vifmrc(void)
 	strcat(vifmrc, "/" VIFMRC);
 	if(!file_exists(NULL, vifmrc))
 		return 0;
-	env_set(MYVIFMRC, vifmrc);
+	env_set(MYVIFMRC_EV, vifmrc);
 	return 1;
 #endif
 }
@@ -389,13 +389,13 @@ try_vifm_vifmrc_for_vifmrc(void)
 	LOG_FUNC_ENTER;
 
 	char vifmrc[PATH_MAX];
-	const char *vifm = env_get(VIFM);
+	const char *vifm = env_get(VIFM_EV);
 	if(vifm == NULL || !is_dir(vifm))
 		return 0;
 	snprintf(vifmrc, sizeof(vifmrc), "%s/" VIFMRC, vifm);
 	if(!file_exists(NULL, vifmrc))
 		return 0;
-	env_set(MYVIFMRC, vifmrc);
+	env_set(MYVIFMRC_EV, vifmrc);
 	return 1;
 }
 
@@ -405,8 +405,8 @@ store_config_paths(void)
 {
 	LOG_FUNC_ENTER;
 
-	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", env_get(HOME));
-	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s", env_get(VIFM));
+	snprintf(cfg.home_dir, sizeof(cfg.home_dir), "%s/", env_get(HOME_EV));
+	snprintf(cfg.config_dir, sizeof(cfg.config_dir), "%s", env_get(VIFM_EV));
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s/" TRASH, cfg.config_dir);
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "%s/" LOG, cfg.config_dir);
 }
@@ -1361,7 +1361,7 @@ write_info_file(void)
 void
 exec_config(void)
 {
-	(void)source_file(env_get(MYVIFMRC));
+	(void)source_file(env_get(MYVIFMRC_EV));
 }
 
 int
@@ -1446,7 +1446,7 @@ is_conf_file(const char *file)
 int
 is_old_config(void)
 {
-	return is_conf_file(env_get(MYVIFMRC));
+	return is_conf_file(env_get(MYVIFMRC_EV));
 }
 
 int

@@ -29,6 +29,7 @@
 #include "../../config.h"
 
 #include "../engine/keys.h"
+#include "../menus/menus.h"
 #include "../utils/macros.h"
 #include "../utils/tree.h"
 #include "../utils/utf8.h"
@@ -40,7 +41,6 @@
 #include "../config.h"
 #include "../filelist.h"
 #include "../fileops.h"
-#include "../menus.h"
 #include "../quickview.h"
 #include "../registers.h"
 #include "../running.h"
