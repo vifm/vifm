@@ -27,6 +27,7 @@
 #include <stdio.h> /* fprintf */
 
 #include "cfg/config.h"
+#include "cfg/info.h"
 #include "utils/log.h"
 #include "utils/utils.h"
 #include "fuse.h"

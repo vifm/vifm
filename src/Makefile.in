@@ -51,10 +51,11 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(pkgdatadir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_vifm_OBJECTS = cfg/config.$(OBJEXT) engine/cmds.$(OBJEXT) \
-	engine/completion.$(OBJEXT) engine/keys.$(OBJEXT) \
-	engine/options.$(OBJEXT) engine/variables.$(OBJEXT) \
-	menus/apropos_menu.$(OBJEXT) menus/bookmarks_menu.$(OBJEXT) \
+am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
+	engine/cmds.$(OBJEXT) engine/completion.$(OBJEXT) \
+	engine/keys.$(OBJEXT) engine/options.$(OBJEXT) \
+	engine/variables.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
+	menus/bookmarks_menu.$(OBJEXT) \
 	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
 	menus/dirhistory_menu.$(OBJEXT) menus/dirstask_menu.$(OBJEXT) \
 	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
@@ -254,6 +255,7 @@ man_MANS = ../data/vifm.1
 vifm_SOURCES = \
 	\
 	cfg/config.c cfg/config.h \
+	cfg/info.c cfg/info.h \
 	\
 	engine/cmds.c engine/cmds.h \
 	engine/completion.c engine/completion.h \
@@ -421,6 +423,7 @@ cfg/$(DEPDIR)/$(am__dirstamp):
 	@: > cfg/$(DEPDIR)/$(am__dirstamp)
 cfg/config.$(OBJEXT): cfg/$(am__dirstamp) \
 	cfg/$(DEPDIR)/$(am__dirstamp)
+cfg/info.$(OBJEXT): cfg/$(am__dirstamp) cfg/$(DEPDIR)/$(am__dirstamp)
 engine/$(am__dirstamp):
 	@$(MKDIR_P) engine
 	@: > engine/$(am__dirstamp)
@@ -572,6 +575,7 @@ uninstall-binSCRIPTS:
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f cfg/config.$(OBJEXT)
+	-rm -f cfg/info.$(OBJEXT)
 	-rm -f engine/cmds.$(OBJEXT)
 	-rm -f engine/completion.$(OBJEXT)
 	-rm -f engine/keys.$(OBJEXT)
@@ -646,6 +650,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifmrc-converter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/config.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/cmds.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/completion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/keys.Po@am__quote@

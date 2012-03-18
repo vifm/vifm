@@ -39,6 +39,7 @@
 #include <string.h> /* strncpy */
 
 #include "cfg/config.h"
+#include "cfg/info.h"
 #include "engine/variables.h"
 #include "menus/menus.h"
 #include "modes/modes.h"

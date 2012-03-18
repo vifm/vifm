@@ -47,6 +47,7 @@
 #include "../config.h"
 
 #include "cfg/config.h"
+#include "cfg/info.h"
 #include "menus/menus.h"
 #include "modes/file_info.h"
 #include "modes/modes.h"

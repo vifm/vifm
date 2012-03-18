@@ -41,6 +41,7 @@
 #include <time.h>
 
 #include "cfg/config.h"
+#include "cfg/info.h"
 #include "engine/cmds.h"
 #include "engine/completion.h"
 #include "engine/keys.h"

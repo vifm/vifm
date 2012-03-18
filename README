@@ -9,7 +9,8 @@ GitHub: https://github.com/xaizek/vifm (might be removed in the future)
 
 If you are interested in playing with the source code.
 
-src/cfg/config.c - read and write vifmrc
+src/cfg/config.c - reads scripts and manages configuration
+src/cfg/info.c - read and write vifminfo
 src/engine/cmds.c - command line parsing core
 src/engine/completion.c - provides means to fill and get completion list
 src/engine/keys.c - analyzes users input

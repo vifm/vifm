@@ -10,7 +10,7 @@ LDFLAGS := $(LDFLAGS)
 
 LIBS := -lregex -lpdcurses -lnetapi32 -lpthread -lws2_32
 
-cfg := config.c
+cfg := config.c info.c
 cfg := $(addprefix cfg/, $(cfg))
 
 engine := cmds.c completion.c keys.c options.c variables.c

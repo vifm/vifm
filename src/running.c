@@ -24,6 +24,7 @@
                        strdup() */
 
 #include "cfg/config.h"
+#include "cfg/info.h"
 #include "menus/menus.h"
 #include "utils/macros.h"
 #include "utils/utils.h"
