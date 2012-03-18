@@ -16,6 +16,7 @@ endif
 SOURCES += ../seatest/seatest.c
 ifeq ($(OS),Windows_NT)
     DIALOG := ../../src/modes/dialogs/attr_dialog_nix.c
+    SOURCES := $(filter-out ../../src/desktop.c, $(SOURCES))
 else
     DIALOG := ../../src/modes/dialogs/attr_dialog_win.c
     SOURCES := $(filter-out ../../src/menus/volumes_menu.c, $(SOURCES))

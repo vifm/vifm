@@ -393,6 +393,31 @@ add_assoc_record(assoc_records_t *records, const char *command,
 	records->count++;
 }
 
+void
+add_assoc_records(assoc_records_t *assocs, const assoc_records_t src)
+{
+	int i;
+	void *p = realloc(assocs->list,
+			sizeof(assoc_record_t)*(assocs->count + src.count));
+
+	if(p == NULL)
+	{
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return;
+	}
+
+	assocs->list = p;
+
+	for(i = 0; i < src.count; i++)
+	{
+		assocs->list[assocs->count + i].command = strdup(src.list[i].command);
+		assocs->list[assocs->count + i].description =
+				strdup(src.list[i].description);
+	}
+
+	assocs->count += src.count;
+}
+
 static void
 safe_free(char **adr)
 {

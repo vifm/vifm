@@ -74,15 +74,16 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
 	utils/utils.$(OBJEXT) background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	color_scheme.$(OBJEXT) commands.$(OBJEXT) \
-	commands_completion.$(OBJEXT) dir_stack.$(OBJEXT) \
-	globals.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
-	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
-	filetype.$(OBJEXT) fuse.$(OBJEXT) ipc.$(OBJEXT) \
-	macros.$(OBJEXT) main_loop.$(OBJEXT) ops.$(OBJEXT) \
-	opt_handlers.$(OBJEXT) quickview.$(OBJEXT) registers.$(OBJEXT) \
-	running.$(OBJEXT) search.$(OBJEXT) signals.$(OBJEXT) \
-	sort.$(OBJEXT) status.$(OBJEXT) tags.$(OBJEXT) trash.$(OBJEXT) \
-	ui.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) vifm.$(OBJEXT)
+	commands_completion.$(OBJEXT) desktop.$(OBJEXT) \
+	dir_stack.$(OBJEXT) globals.$(OBJEXT) file_magic.$(OBJEXT) \
+	filelist.$(OBJEXT) filename_modifiers.$(OBJEXT) \
+	fileops.$(OBJEXT) filetype.$(OBJEXT) fuse.$(OBJEXT) \
+	ipc.$(OBJEXT) macros.$(OBJEXT) main_loop.$(OBJEXT) \
+	ops.$(OBJEXT) opt_handlers.$(OBJEXT) quickview.$(OBJEXT) \
+	registers.$(OBJEXT) running.$(OBJEXT) search.$(OBJEXT) \
+	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
+	tags.$(OBJEXT) trash.$(OBJEXT) ui.$(OBJEXT) undo.$(OBJEXT) \
+	version.$(OBJEXT) vifm.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
@@ -308,6 +309,7 @@ vifm_SOURCES = \
 	color_scheme.c colorscheme.h \
 	commands.c commands.h \
 	commands_completion.c commands_completion.h \
+	desktop.c desktop.h \
 	dir_stack.c dir_stack.h \
 	globals.c globals.h \
 	file_magic.c file_magic.h \
@@ -624,6 +626,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_scheme.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands_completion.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/desktop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dir_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_magic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filelist.Po@am__quote@

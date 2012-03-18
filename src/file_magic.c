@@ -27,24 +27,13 @@
 #include <magic.h>
 #endif
 
-#ifndef _WIN32
-#include <sys/dir.h>
-#endif
-#include <dirent.h> /* DIR */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdio.h> /* popen() */
 
 #include "utils/utils.h"
 #include "filetype.h"
 #include "status.h"
 
 #include "file_magic.h"
-
-static const char EXEC_KEY[] = "Exec=";
-static const char MIMETYPE_KEY[] = "MimeType=";
-static const char NAME_KEY[] = "Name=";
 
 static assoc_records_t handlers;
 
@@ -53,9 +42,8 @@ static int get_magic_mimetype(const char *filename, char *buf);
 static int get_file_mimetype(const char *filename, char *buf, size_t buf_sz);
 static assoc_records_t get_handlers(const char *mime_type);
 #if !defined(_WIN32) && defined(ENABLE_DESKTOP_FILES)
-static void enum_files(const char *path, const char *mime_type);
-static void process_file(const char *path, const char *file_mime_type);
-static void expand_desktop(const char *str, char *buf);
+static void parse_app_dir(const char *directory, const char *mime_type,
+		assoc_records_t *result);
 #endif
 
 assoc_records_t
@@ -171,8 +159,8 @@ get_handlers(const char *mime_type)
 	free_assoc_records(&handlers);
 
 #if !defined(_WIN32) && defined(ENABLE_DESKTOP_FILES)
-	enum_files("/usr/share/applications", mime_type);
-	enum_files("/usr/local/share/applications", mime_type);
+	parse_app_dir("/usr/share/applications", mime_type, &handlers);
+	parse_app_dir("/usr/local/share/applications", mime_type, &handlers);
 #endif
 
 	return handlers;
@@ -180,116 +168,12 @@ get_handlers(const char *mime_type)
 
 #if !defined(_WIN32) && defined(ENABLE_DESKTOP_FILES)
 static void
-enum_files(const char *path, const char *mime_type)
+parse_app_dir(const char *directory, const char *mime_type,
+		assoc_records_t *result)
 {
-	DIR *dir;
-	struct dirent *dentry;
-	const char *slash;
-
-	if((dir = opendir(path)) == NULL)
-	{
-		return;
-	}
-
-	slash = ends_with_slash(path) ? "" : "/";
-
-	while((dentry = readdir(dir)) != NULL)
-	{
-		char buf[PATH_MAX];
-
-		if(pathcmp(dentry->d_name, ".") == 0 || pathcmp(dentry->d_name, "..") == 0)
-		{
-			continue;
-		}
-
-		snprintf(buf, sizeof (buf), "%s%s%s", path, slash, dentry->d_name);
-		if(dentry->d_type == DT_DIR)
-		{
-			enum_files(buf, mime_type);
-		}
-		else
-		{
-			process_file(buf, mime_type);
-		}
-	}
-
-	closedir(dir);
-}
-
-static void
-process_file(const char *path, const char *file_mime_type)
-{
-	FILE *f;
-	char exec[1024] = "", mime_type[2048] = "", name[2048] = "";
-	char buf[2048];
-
-	if(!ends_with(path, ".desktop") || (f = fopen(path, "r")) == NULL)
-	{
-		return;
-	}
-
-	while(fgets(buf, sizeof(buf), f) != NULL)
-	{
-		chomp(buf);
-
-		if(starts_with(buf, EXEC_KEY))
-		{
-			snprintf(exec, sizeof(exec), "%s", buf + (ARRAY_LEN(EXEC_KEY) - 1));
-		}
-		else if(starts_with(buf, MIMETYPE_KEY))
-		{
-			snprintf(mime_type, sizeof(mime_type), "%s",
-					buf + (ARRAY_LEN(MIMETYPE_KEY) - 1));
-		}
-		else if(starts_with(buf, NAME_KEY))
-		{
-			snprintf(name, sizeof(name), "%s", buf + (ARRAY_LEN(NAME_KEY) - 1));
-		}
-	}
-
-	fclose(f);
-
-	if(strstr(mime_type, file_mime_type) == NULL || exec[0] == '\0')
-	{
-		return;
-	}
-
-	expand_desktop(exec, buf);
-	add_assoc_record(&handlers, buf, name);
-}
-
-static void
-expand_desktop(const char *str, char *buf)
-{
-	int substituted = 0;
-	while(*str != '\0')
-	{
-		if(*str != '%')
-		{
-			*buf++ = *str++;
-			continue;
-		}
-
-		str++;
-		if(*str == 'c')
-		{
-			strcpy(buf, "caption");
-			buf += strlen(buf);
-		}
-		else if(strchr("Uuf", *str) != NULL)
-		{
-			substituted = 1;
-			strcpy(buf, "%f");
-			buf += strlen(buf);
-		}
-		str++;
-	}
-
-	*buf = substituted ? '\0' : ' ';
-	if(!substituted)
-	{
-		strcpy(buf + 1, "%f");
-	}
+	assoc_records_t tmp = parse_desktop_files(directory, mime_type);
+	add_assoc_records(result, tmp);
+	free_assoc_records(&tmp);
 }
 #endif
 

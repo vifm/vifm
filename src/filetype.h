@@ -74,6 +74,7 @@ void free_assoc_records(assoc_records_t *records);
 void free_assoc_record(assoc_record_t *record);
 void add_assoc_record(assoc_records_t *assocs, const char *command,
 		const char *description);
+void add_assoc_records(assoc_records_t *assocs, const assoc_records_t src);
 /* Returns non-zero for an empty assoc_record_t structure. */
 int assoc_prog_is_empty(const assoc_record_t *record);
 

@@ -69,6 +69,7 @@ vifm_SOURCES = \
 	color_scheme.c colorscheme.h \
 	commands.c commands.h \
 	commands_completion.c commands_completion.h \
+	desktop.c desktop.h \
 	dir_stack.c dir_stack.h \
 	globals.c globals.h \
 	file_magic.c file_magic.h \
