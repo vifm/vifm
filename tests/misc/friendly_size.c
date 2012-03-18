@@ -1,7 +1,7 @@
 #include "seatest.h"
 
+#include "../../src/cfg/config.h"
 #include "../../src/utils/utils.h"
-#include "../../src/config.h"
 
 static void
 test_removing_useless_trailing_zero(void)

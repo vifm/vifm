@@ -19,12 +19,12 @@
 
 #include <string.h> /* strdup() strcpy() strlen() */
 
+#include "../cfg/config.h"
 #include "../modes/menu.h"
 #include "../utils/macros.h"
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
-#include "../config.h"
 #include "../bookmarks.h"
 
 #include "bookmarks_menu.h"

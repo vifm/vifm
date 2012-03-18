@@ -23,11 +23,11 @@
 #include <string.h> /* strcmp() strrchr() strcat() strstr() strlen() strchr()
                        strdup() */
 
+#include "cfg/config.h"
 #include "menus/menus.h"
 #include "utils/macros.h"
 #include "utils/utils.h"
 #include "background.h"
-#include "config.h"
 #include "filelist.h"
 #include "filetype.h"
 #include "fuse.h"

@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cfg/config.h"
 #include "engine/options.h"
 #include "modes/view.h"
 #include "utils/log.h"
@@ -28,7 +29,6 @@
 #include "utils/string_array.h"
 #include "utils/utils.h"
 #include "color_scheme.h"
-#include "config.h"
 #include "filelist.h"
 #include "quickview.h"
 #include "status.h"

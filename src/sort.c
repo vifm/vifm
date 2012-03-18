@@ -27,10 +27,10 @@
 #include <ctype.h>
 #include <string.h> /* strrchr */
 
+#include "cfg/config.h"
 #include "utils/macros.h"
 #include "utils/tree.h"
 #include "utils/utils.h"
-#include "config.h"
 #include "filelist.h"
 #include "status.h"
 #include "ui.h"

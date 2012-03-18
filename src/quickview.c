@@ -20,10 +20,10 @@
 #include <limits.h> /* PATH_MAX */
 #include <string.h> /* strcpy() strlen() strcat() */
 
+#include "cfg/config.h"
 #include "modes/modes.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
-#include "config.h"
 #include "filelist.h"
 #include "filetype.h"
 #include "status.h"

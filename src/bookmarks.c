@@ -22,8 +22,8 @@
 #include <ctype.h> /* isalnum() */
 #include <string.h>
 
+#include "cfg/config.h"
 #include "utils/utils.h"
-#include "config.h"
 #include "filelist.h"
 #include "status.h"
 #include "ui.h"

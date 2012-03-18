@@ -24,9 +24,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cfg/config.h"
 #include "menus/menus.h"
 #include "utils/utils.h"
-#include "config.h"
 #include "status.h"
 
 #include "filetype.h"

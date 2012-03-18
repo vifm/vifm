@@ -38,8 +38,9 @@
 #include <stdarg.h>
 #include <signal.h>
 
-#include "../config.h"
+#include "../cfg/config.h"
 
+#include "../cfg/config.h"
 #include "../modes/cmdline.h"
 #include "../modes/menu.h"
 #include "../modes/modes.h"
@@ -49,7 +50,6 @@
 #include "../background.h"
 #include "../bookmarks.h"
 #include "../commands.h"
-#include "../config.h"
 #include "../file_magic.h"
 #include "../filelist.h"
 #include "../filetype.h"

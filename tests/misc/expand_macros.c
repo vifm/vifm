@@ -3,7 +3,7 @@
 
 #include "seatest.h"
 
-#include "../../src/config.h"
+#include "../../src/cfg/config.h"
 #include "../../src/filelist.h"
 #include "../../src/macros.h"
 #include "../../src/ui.h"

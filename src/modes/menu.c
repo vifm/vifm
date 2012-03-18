@@ -27,13 +27,13 @@
 
 #include "../../config.h"
 
+#include "../cfg/config.h"
 #include "../engine/cmds.h"
 #include "../engine/keys.h"
 #include "../menus/menus.h"
 #include "../utils/utils.h"
 #include "../bookmarks.h"
 #include "../commands.h"
-#include "../config.h"
 #include "../filelist.h"
 #include "../fileops.h"
 #include "../status.h"

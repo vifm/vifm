@@ -46,6 +46,7 @@
 
 #include "../config.h"
 
+#include "cfg/config.h"
 #include "menus/menus.h"
 #include "modes/file_info.h"
 #include "modes/modes.h"
@@ -55,7 +56,6 @@
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "color_scheme.h"
-#include "config.h"
 #include "filelist.h"
 #include "main_loop.h"
 #include "opt_handlers.h"

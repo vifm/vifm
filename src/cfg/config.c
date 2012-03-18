@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "../config.h"
+#include "../../config.h"
 
 #define HOME_EV "HOME"
 #define VIFM_EV "VIFM"
@@ -37,23 +37,24 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "engine/cmds.h"
-#include "menus/menus.h"
-#include "utils/log.h"
-#include "utils/string_array.h"
-#include "utils/utils.h"
-#include "bookmarks.h"
-#include "color_scheme.h"
-#include "commands.h"
+#include "../engine/cmds.h"
+#include "../menus/menus.h"
+#include "../utils/log.h"
+#include "../utils/string_array.h"
+#include "../utils/utils.h"
+#include "../bookmarks.h"
+#include "../color_scheme.h"
+#include "../commands.h"
+#include "../dir_stack.h"
+#include "../fileops.h"
+#include "../filelist.h"
+#include "../filetype.h"
+#include "../opt_handlers.h"
+#include "../registers.h"
+#include "../status.h"
+#include "../trash.h"
+
 #include "config.h"
-#include "dir_stack.h"
-#include "fileops.h"
-#include "filelist.h"
-#include "filetype.h"
-#include "opt_handlers.h"
-#include "registers.h"
-#include "status.h"
-#include "trash.h"
 
 #define MAX_LEN 1024
 

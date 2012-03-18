@@ -21,9 +21,9 @@
 #include <stdlib.h> /* realloc() free() calloc() */
 #include <string.h> /* strchr() strncat() strcpy() strlen() strcat() */
 
+#include "cfg/config.h"
 #include "menus/menus.h"
 #include "utils/utils.h"
-#include "config.h"
 #include "filename_modifiers.h"
 
 #include "macros.h"

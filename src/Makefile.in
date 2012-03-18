@@ -51,10 +51,10 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(pkgdatadir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
-am_vifm_OBJECTS = engine/cmds.$(OBJEXT) engine/completion.$(OBJEXT) \
-	engine/keys.$(OBJEXT) engine/options.$(OBJEXT) \
-	engine/variables.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
-	menus/bookmarks_menu.$(OBJEXT) \
+am_vifm_OBJECTS = cfg/config.$(OBJEXT) engine/cmds.$(OBJEXT) \
+	engine/completion.$(OBJEXT) engine/keys.$(OBJEXT) \
+	engine/options.$(OBJEXT) engine/variables.$(OBJEXT) \
+	menus/apropos_menu.$(OBJEXT) menus/bookmarks_menu.$(OBJEXT) \
 	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
 	menus/dirhistory_menu.$(OBJEXT) menus/dirstask_menu.$(OBJEXT) \
 	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
@@ -73,8 +73,8 @@ am_vifm_OBJECTS = engine/cmds.$(OBJEXT) engine/completion.$(OBJEXT) \
 	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
 	utils/utils.$(OBJEXT) background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	color_scheme.$(OBJEXT) commands.$(OBJEXT) \
-	commands_completion.$(OBJEXT) config.$(OBJEXT) \
-	dir_stack.$(OBJEXT) file_magic.$(OBJEXT) filelist.$(OBJEXT) \
+	commands_completion.$(OBJEXT) dir_stack.$(OBJEXT) \
+	file_magic.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) fuse.$(OBJEXT) ipc.$(OBJEXT) \
 	macros.$(OBJEXT) main_loop.$(OBJEXT) ops.$(OBJEXT) \
@@ -253,6 +253,8 @@ bin_SCRIPTS = vifm-pause
 man_MANS = ../data/vifm.1
 vifm_SOURCES = \
 	\
+	cfg/config.c cfg/config.h \
+	\
 	engine/cmds.c engine/cmds.h \
 	engine/completion.c engine/completion.h \
 	engine/keys.c engine/keys.h \
@@ -304,7 +306,6 @@ vifm_SOURCES = \
 	color_scheme.c colorscheme.h \
 	commands.c commands.h \
 	commands_completion.c commands_completion.h \
-	config.c config.h \
 	dir_stack.c dir_stack.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \
@@ -412,6 +413,14 @@ clean-binPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
+cfg/$(am__dirstamp):
+	@$(MKDIR_P) cfg
+	@: > cfg/$(am__dirstamp)
+cfg/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) cfg/$(DEPDIR)
+	@: > cfg/$(DEPDIR)/$(am__dirstamp)
+cfg/config.$(OBJEXT): cfg/$(am__dirstamp) \
+	cfg/$(DEPDIR)/$(am__dirstamp)
 engine/$(am__dirstamp):
 	@$(MKDIR_P) engine
 	@: > engine/$(am__dirstamp)
@@ -562,6 +571,7 @@ uninstall-binSCRIPTS:
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f cfg/config.$(OBJEXT)
 	-rm -f engine/cmds.$(OBJEXT)
 	-rm -f engine/completion.$(OBJEXT)
 	-rm -f engine/keys.$(OBJEXT)
@@ -609,7 +619,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_scheme.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands_completion.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dir_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_magic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filelist.Po@am__quote@
@@ -636,6 +645,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifmrc-converter.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/cmds.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/completion.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/keys.Po@am__quote@
@@ -886,6 +896,8 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f cfg/$(DEPDIR)/$(am__dirstamp)
+	-rm -f cfg/$(am__dirstamp)
 	-rm -f engine/$(DEPDIR)/$(am__dirstamp)
 	-rm -f engine/$(am__dirstamp)
 	-rm -f menus/$(DEPDIR)/$(am__dirstamp)
@@ -905,7 +917,7 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR) engine/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) engine/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -951,7 +963,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR) engine/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) utils/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) cfg/$(DEPDIR) engine/$(DEPDIR) menus/$(DEPDIR) modes/$(DEPDIR) modes/dialogs/$(DEPDIR) utils/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cfg/config.h"
 #include "engine/completion.h"
 #include "engine/options.h"
 #include "engine/variables.h"
@@ -42,7 +43,6 @@
 #include "utils/utils.h"
 #include "color_scheme.h"
 #include "commands.h"
-#include "config.h"
 #include "file_magic.h"
 #include "filelist.h"
 #include "filetype.h"
@@ -484,30 +484,38 @@ fast_run_complete(const char *cmd)
 {
 	char *result = NULL;
 	const char *p;
+	char buf[PATH_MAX];
+	char *completed;
 
 	p = strchr(cmd, ' ');
 	if(p == NULL)
 		p = cmd + strlen(cmd);
-	else
-		p++;
+
+	snprintf(buf, p - cmd + 1, "%s", cmd);
 
 	reset_completion();
-	exec_completion(cmd);
-	free(next_completion());
+	exec_completion(buf);
+	completed = next_completion();
 
 	if(get_completion_count() > 2)
 	{
-		status_bar_error("Command beginning is ambiguous");
+		if(pathcmp(buf, completed) != 0)
+		{
+			status_bar_error("Command beginning is ambiguous");
+		}
+		else
+		{
+			result = strdup(cmd);
+		}
 	}
 	else
 	{
-		char *completed;
-
+		free(completed);
 		completed = next_completion();
 		result = malloc(strlen(completed) + 1 + strlen(p) + 1);
-		sprintf(result, "%s%s%s", completed, (*p == '\0') ? "" : " ", p);
-		free(completed);
+		sprintf(result, "%s%s", completed, p);
 	}
+	free(completed);
 
 	return result;
 }

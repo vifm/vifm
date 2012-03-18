@@ -45,6 +45,7 @@
 #include <string.h> /* strcat() */
 #include <time.h>
 
+#include "cfg/config.h"
 #include "menus/menus.h"
 #include "modes/file_info.h"
 #include "modes/modes.h"
@@ -55,7 +56,6 @@
 #include "utils/utils.h"
 #include "background.h"
 #include "color_scheme.h"
-#include "config.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "fileops.h"

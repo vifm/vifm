@@ -21,8 +21,8 @@
 
 #include <string.h> /* strdup() strcmp() */
 
+#include "../cfg/config.h"
 #include "../modes/menu.h"
-#include "../config.h"
 #include "menus.h"
 
 #include "colorscheme_menu.h"

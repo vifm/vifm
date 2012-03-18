@@ -9,6 +9,7 @@ GitHub: https://github.com/xaizek/vifm (might be removed in the future)
 
 If you are interested in playing with the source code.
 
+src/cfg/config.c - read and write vifmrc
 src/engine/cmds.c - command line parsing core
 src/engine/completion.c - provides means to fill and get completion list
 src/engine/keys.c - analyzes users input
@@ -54,7 +55,6 @@ src/bookmarks.c - stores information about bookmarked directories
 src/color_scheme.c - color schemes
 src/commands.c - handles command line commands
 src/commands_completion.c - handles command line completion
-src/config.c - read and write vifmrc
 src/dir_stack.c - for :pushd and :popd commands
 src/file_magic.c - determines programs associated with file using its mime-type
 src/filelist.c - display/redraw/fill list

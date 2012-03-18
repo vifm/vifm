@@ -20,8 +20,8 @@
 #include <limits.h>
 #include <string.h>
 
+#include "cfg/config.h"
 #include "color_scheme.h"
-#include "config.h"
 
 #include "status.h"
 

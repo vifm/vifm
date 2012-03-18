@@ -40,6 +40,7 @@
 #include <string.h> /* strncmp() */
 #include <time.h>
 
+#include "cfg/config.h"
 #include "engine/cmds.h"
 #include "engine/completion.h"
 #include "engine/keys.h"
@@ -64,7 +65,6 @@
 #include "bracket_notation.h"
 #include "color_scheme.h"
 #include "commands_completion.h"
-#include "config.h"
 #include "dir_stack.h"
 #include "file_magic.h"
 #include "filelist.h"

@@ -60,9 +60,7 @@
 #include <wchar.h>
 #include <wctype.h>
 
-#include "../config.h"
-
-#include "../config.h"
+#include "../cfg/config.h"
 #include "../status.h"
 #include "../version.h"
 #include "../ui.h"

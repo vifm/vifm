@@ -25,12 +25,12 @@
 
 #include "../../../config.h"
 
+#include "../../cfg/config.h"
 #include "../../engine/keys.h"
 #include "../../menus/menus.h"
 #include "../../bookmarks.h"
 #include "../../color_scheme.h"
 #include "../../commands.h"
-#include "../../config.h"
 #include "../../filelist.h"
 #include "../../fileops.h"
 #include "../../status.h"

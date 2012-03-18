@@ -43,6 +43,7 @@
 
 #include <wchar.h> /* swprintf */
 
+#include "cfg/config.h"
 #include "menus/menus.h"
 #include "modes/cmdline.h"
 #include "utils/string_array.h"
@@ -51,7 +52,6 @@
 #include "color_scheme.h"
 #include "commands.h"
 #include "commands_completion.h"
-#include "config.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"

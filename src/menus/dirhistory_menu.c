@@ -19,9 +19,9 @@
 
 #include <string.h> /* strdup() */
 
+#include "../cfg/config.h"
 #include "../modes/menu.h"
 #include "../utils/utils.h"
-#include "../config.h"
 #include "../ui.h"
 #include "menus.h"
 

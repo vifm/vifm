@@ -20,8 +20,8 @@
 #include <stdlib.h> /* malloc() realloc() */
 #include <string.h> /* strdup() strcpy() strlen() */
 
+#include "../cfg/config.h"
 #include "../modes/menu.h"
-#include "../config.h"
 #include "../ui.h"
 #include "menus.h"
 

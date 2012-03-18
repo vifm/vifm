@@ -38,6 +38,7 @@
 #include <locale.h> /* setlocale */
 #include <string.h> /* strncpy */
 
+#include "cfg/config.h"
 #include "engine/variables.h"
 #include "menus/menus.h"
 #include "modes/modes.h"
@@ -51,7 +52,6 @@
 #include "bookmarks.h"
 #include "color_scheme.h"
 #include "commands.h"
-#include "config.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"

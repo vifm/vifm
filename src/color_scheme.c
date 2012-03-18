@@ -28,13 +28,13 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "cfg/config.h"
 #include "engine/completion.h"
 #include "menus/menus.h"
 #include "utils/macros.h"
 #include "utils/tree.h"
 #include "utils/utils.h"
 #include "color_scheme.h"
-#include "config.h"
 #include "filelist.h"
 #include "status.h"
 

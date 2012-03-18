@@ -21,8 +21,8 @@
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strcpy() strchr() strlen() strrchr() */
 
+#include "cfg/config.h"
 #include "utils/utils.h"
-#include "config.h"
 #include "fileops.h"
 #include "ui.h"
 

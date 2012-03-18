@@ -25,6 +25,7 @@
 #include <assert.h>
 #include <string.h>
 
+#include "../cfg/config.h"
 #include "../engine/keys.h"
 #include "../menus/menus.h"
 #include "../utils/macros.h"
@@ -32,7 +33,6 @@
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../commands.h"
-#include "../config.h"
 #include "../filelist.h"
 #include "../fileops.h"
 #include "../filetype.h"

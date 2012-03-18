@@ -24,9 +24,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cfg/config.h"
 #include "utils/utils.h"
 #include "background.h"
-#include "config.h"
 #include "ops.h"
 #include "registers.h"
 #include "undo.h"

@@ -26,9 +26,9 @@
 #include <signal.h>
 #include <stdio.h> /* fprintf */
 
+#include "cfg/config.h"
 #include "utils/log.h"
 #include "utils/utils.h"
-#include "config.h"
 #include "fuse.h"
 
 static void _gnuc_noreturn shutdown_nicely(void);
@@ -48,7 +48,6 @@ static void _gnuc_noreturn shutdown_nicely(void);
 #include "modes/file_info.h"
 #include "utils/macros.h"
 #include "background.h"
-#include "config.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"

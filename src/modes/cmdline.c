@@ -36,6 +36,7 @@
 
 #include "../../config.h"
 
+#include "../cfg/config.h"
 #include "../engine/cmds.h"
 #include "../engine/completion.h"
 #include "../engine/keys.h"
@@ -45,7 +46,6 @@
 #include "../bookmarks.h"
 #include "../color_scheme.h"
 #include "../commands.h"
-#include "../config.h"
 #include "../filelist.h"
 #include "../status.h"
 #include "../ui.h"

@@ -1,5 +1,7 @@
-SOURCES := ../../src/*.c ../../src/engine/*.c ../../src/modes/dialogs/*.c
-SOURCES += ../../src/menus/*.c ../../src/modes/*.c ../../src/utils/*.c
+SOURCES := ../../src/*.c ../../src/cfg/*.c ../../src/engine/*.c
+SOURCES += ../../src/modes/dialogs/*.c ../../src/menus/*.c ../../src/modes/*.c
+SOURCES += ../../src/utils/*.c
+
 SOURCES := $(filter-out ../../src/vifm.c, $(wildcard $(SOURCES)))
 SOURCES := $(filter-out ../../src/vifmrc-converter.c, $(SOURCES))
 SOURCES := $(filter-out ../../src/win_helper.c, $(SOURCES))
@@ -49,6 +51,9 @@ bin/dummy:
 	touch bin/dummy
 
 ../bin/%.o: ../../src/%.c
+	gcc -c -o $@ $< $(CFLAGS)
+
+../bin/%.o: ../../src/cfg/%.c
 	gcc -c -o $@ $< $(CFLAGS)
 
 ../bin/%.o: ../../src/engine/%.c

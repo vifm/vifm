@@ -37,10 +37,10 @@
 #include <sys/wait.h>
 #endif
 
+#include "cfg/config.h"
 #include "menus/menus.h"
 #include "utils/utils.h"
 #include "commands_completion.h"
-#include "config.h"
 #include "status.h"
 
 #include "background.h"
