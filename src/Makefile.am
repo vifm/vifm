@@ -70,6 +70,7 @@ vifm_SOURCES = \
 	commands.c commands.h \
 	commands_completion.c commands_completion.h \
 	dir_stack.c dir_stack.h \
+	globals.c globals.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \
 	filename_modifiers.c filename_modifiers.h \

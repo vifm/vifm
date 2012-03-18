@@ -18,15 +18,14 @@
  */
 
 #include <curses.h>
-#include <regex.h>
 
-#include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
+#include <ctype.h> /* isspace() */
+#include <string.h> /* strchr() strdup() strcasecmp() */
 
 #include "cfg/config.h"
 #include "menus/menus.h"
 #include "utils/utils.h"
+#include "globals.h"
 #include "status.h"
 
 #include "filetype.h"
@@ -59,117 +58,6 @@ static void reset_list(assoc_list_t *assoc_list);
 static void reset_list_head(assoc_list_t *assoc_list);
 static void free_assoc(assoc_t *assoc);
 static void safe_free(char **adr);
-
-static char *
-to_regex(const char *global)
-{
-	char *result = strdup("^$");
-	int result_len = 1;
-	while(*global != '\0')
-	{
-		if(strchr("^.$()|+{", *global) != NULL)
-		{
-		  if(*global != '^' || result[result_len - 1] != '[')
-			{
-				result = realloc(result, result_len + 2 + 1 + 1);
-				result[result_len++] = '\\';
-			}
-		}
-		else if(*global == '!' && result[result_len - 1] == '[')
-		{
-			result = realloc(result, result_len + 2 + 1 + 1);
-			result[result_len++] = '^';
-			continue;
-		}
-		else if(*global == '\\')
-		{
-			result = realloc(result, result_len + 2 + 1 + 1);
-			result[result_len++] = *global++;
-		}
-		else if(*global == '?')
-		{
-			result = realloc(result, result_len + 1 + 1 + 1);
-			result[result_len++] = '.';
-			global++;
-			continue;
-		}
-		else if(*global == '*')
-		{
-			if(result_len == 1)
-			{
-				result = realloc(result, result_len + 9 + 1 + 1);
-				result[result_len++] = '[';
-				result[result_len++] = '^';
-				result[result_len++] = '.';
-				result[result_len++] = ']';
-				result[result_len++] = '.';
-				result[result_len++] = '*';
-			}
-			else
-			{
-				result = realloc(result, result_len + 2 + 1 + 1);
-				result[result_len++] = '.';
-				result[result_len++] = '*';
-			}
-			global++;
-			continue;
-		}
-		else
-		{
-			result = realloc(result, result_len + 1 + 1 + 1);
-		}
-		result[result_len++] = *global++;
-	}
-	result[result_len++] = '$';
-	result[result_len] = '\0';
-	return result;
-}
-
-static int
-global_matches(const char *global, const char *file)
-{
-	char *regex;
-	regex_t re;
-
-	regex = to_regex(global);
-
-	if(regcomp(&re, regex, REG_EXTENDED | REG_ICASE) == 0)
-	{
-		if(regexec(&re, file, 0, NULL, 0) == 0)
-		{
-			regfree(&re);
-			free(regex);
-			return 1;
-		}
-	}
-	regfree(&re);
-	free(regex);
-	return 0;
-}
-
-TESTABLE_STATIC void
-replace_double_comma(char *cmd, int put_null)
-{
-	char *p = cmd;
-	while(*cmd != '\0')
-	{
-		if(cmd[0] == ',')
-		{
-			if(cmd[1] == ',')
-			{
-				*p++ = *cmd++;
-				cmd++;
-				continue;
-			}
-			else if(put_null)
-			{
-				break;
-			}
-		}
-		*p++ = *cmd++;
-	}
-	*p = '\0';
-}
 
 int
 get_default_program_for_file(const char *file, assoc_record_t *result)
@@ -327,6 +215,30 @@ assoc_programs(const char *pattern, const char *records, int for_x)
 	free(free_this);
 
 	register_assoc(assoc, for_x);
+}
+
+TESTABLE_STATIC void
+replace_double_comma(char *cmd, int put_null)
+{
+	char *p = cmd;
+	while(*cmd != '\0')
+	{
+		if(cmd[0] == ',')
+		{
+			if(cmd[1] == ',')
+			{
+				*p++ = *cmd++;
+				cmd++;
+				continue;
+			}
+			else if(put_null)
+			{
+				break;
+			}
+		}
+		*p++ = *cmd++;
+	}
+	*p = '\0';
 }
 
 static void

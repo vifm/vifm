@@ -63,6 +63,7 @@ src/filename_modifiers.c - expands filename modifiers
 src/fileops.c - delete/copy/put selected file(s)
 src/filetype.c - stores filetype information from vifmrc
 src/fuse.c - provides support of FUSE filesystems
+src/globals.c - provides support of globals
 src/ipc.c - handles communication across instances of vifm
 src/macros - code of macros expanding
 src/main_loop.c - the main loop
