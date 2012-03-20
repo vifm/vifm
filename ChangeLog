@@ -40,6 +40,8 @@
 
 	Fixed result of applying :p filename modifier in root of file system.
 
+	Fixed opening of tagged (selected) symbolic links to a directory.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.
