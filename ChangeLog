@@ -2,6 +2,9 @@
 
 	Removed possibility of moving items in :file menu.
 
+	Removed empty line from :file menu for case when vifm was configured with
+	--disable-desktop-files flag.
+
 	Added description for :filetype, :filextype and :fileviewer commands.
 
 	Added --enable-desktop-files (enabled by default) configure option.
