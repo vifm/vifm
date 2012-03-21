@@ -550,6 +550,8 @@ main(int argc, char *argv[])
 
 	curr_stats.load_stage = 1;
 
+	set_programs("*/", "{Enter directory}" VIFM_PSEUDO_CMD , 0);
+
 	if(!old_config && !no_configs)
 	{
 		if(are_old_color_schemes())

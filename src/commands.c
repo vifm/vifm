@@ -974,15 +974,8 @@ complete_chown(const char *str)
 static void
 complete_filetype(const char *str)
 {
-	const size_t len = strlen(str);
 	const char *filename = get_current_file_name(curr_view);
 	assoc_records_t ft = get_all_programs_for_file(filename);
-
-	if(curr_view->dir_entry[curr_view->list_pos].type == DIRECTORY &&
-			strncmp(VIFM_PSEUDO_CMD, str, len) == 0)
-	{
-		add_completion(VIFM_PSEUDO_CMD);
-	}
 
 	complete_progs(str, ft);
 	free(ft.list);

@@ -747,6 +747,10 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 		else
 			fuse_try_mount(view, program);
 	}
+	else if(strcmp(program, VIFM_PSEUDO_CMD) == 0)
+	{
+		handle_dir(view);
+	}
 	else if(strchr(program, '%') != NULL)
 	{
 		int use_menu = 0, split = 0;

@@ -20,8 +20,6 @@
 #ifndef __FILETYPE_H__
 #define __FILETYPE_H__
 
-#define VIFM_PSEUDO_CMD "vifm"
-
 typedef struct
 {
 	char *command;
@@ -52,7 +50,6 @@ typedef struct
 }
 assoc_list_t;
 
-const assoc_record_t VIFM_PSEUDO_PROG;
 const assoc_record_t NONE_PSEUDO_PROG;
 
 assoc_list_t filetypes;

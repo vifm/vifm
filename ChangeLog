@@ -17,6 +17,8 @@
 
 	Made :fileviewer command work on Windows.
 
+	Open selected directories with l or Enter keys.
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.
