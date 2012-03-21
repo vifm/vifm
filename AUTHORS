@@ -64,3 +64,6 @@ stat structure by Kaspars Bankovskis.
 Chris Yuen provided a patch to fix compilation on Mac OS X.
 
 Chris Skalenda wrote a patch to allow setting the trash directory location.
+
+Miles (pkordy) provided a patch to fix opening of tagged (selected) symbolic
+links to a directory.

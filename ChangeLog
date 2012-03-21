@@ -2,6 +2,9 @@
 
 	Removed possibility of moving items in :file menu.
 
+	Removed empty line from :file menu for case when vifm was configured with
+	--disable-desktop-files flag.
+
 	Added description for :filetype, :filextype and :fileviewer commands.
 
 	Added --enable-desktop-files (enabled by default) configure option.
@@ -16,6 +19,8 @@
 	Show host's root in history menu (e.g. //ZX_SPECTRUM).
 
 	Made :fileviewer command work on Windows.
+
+	Open selected directories with l or Enter keys.
 
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
@@ -39,6 +44,8 @@
 	file utility is used to obtain mime-type of a file.
 
 	Fixed result of applying :p filename modifier in root of file system.
+
+	Fixed opening of tagged (selected) symbolic links to a directory.
 
 0.7.1 to 0.7.2
 

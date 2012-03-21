@@ -648,6 +648,8 @@ friendly_size_notation(unsigned long long num, int str_size, char *str)
 int
 check_link_is_dir(const char *filename)
 {
+	/* TODO: think if we can remove this function and use is_dir() */
+
 	char linkto[PATH_MAX + NAME_MAX];
 	int saved_errno;
 	char *filename_copy;

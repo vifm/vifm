@@ -89,6 +89,7 @@ typedef struct
 	job_t *job;
 }bg_args_t;
 
+static int is_dir_entry(const char *filename, int type);
 static void put_confirm_cb(const char *dest_name);
 static void put_decide_cb(const char *dest_name);
 static int put_files_from_register_i(FileView *view, int start);
@@ -668,16 +669,19 @@ execute_file(FileView *view, int dont_execute)
 	/* vi is set as the default for any extension without a program */
 	if(program.command == NULL)
 	{
-		if(view->dir_entry[view->list_pos].type == DIRECTORY)
+		char full_path[PATH_MAX];
+		const dir_entry_t *curr = &view->dir_entry[view->list_pos];
+
+		snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir, curr->name);
+		chosp(full_path);
+
+		if(is_dir_entry(full_path, curr->type))
 		{
 			handle_dir(view);
 		}
 		else if(view->selected_files <= 1)
 		{
-			char buf[PATH_MAX];
-			snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
-					get_current_file_name(view));
-			view_file(buf, -1, 1);
+			view_file(full_path, -1, 1);
 		}
 		else
 		{
@@ -742,6 +746,10 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 		}
 		else
 			fuse_try_mount(view, program);
+	}
+	else if(strcmp(program, VIFM_PSEUDO_CMD) == 0)
+	{
+		handle_dir(view);
 	}
 	else if(strchr(program, '%') != NULL)
 	{
@@ -872,55 +880,51 @@ follow_link(FileView *view, int follow_dirs)
 void
 handle_file(FileView *view, int dont_execute, int force_follow)
 {
-	char name[NAME_MAX];
-	int type;
+	char full[PATH_MAX];
 	int executable;
 	int runnable;
-	char *filename;
+	const dir_entry_t *curr = &view->dir_entry[view->list_pos];
 	
-	filename = get_current_file_name(view);
-	snprintf(name, sizeof(name), "%s", filename);
-	chosp(name);
+	snprintf(full, sizeof(full), "%s/%s", view->curr_dir, curr->name);
+	chosp(full);
 
-	type = view->dir_entry[view->list_pos].type;
-
-	if(is_dir(name) || is_unc_root(view->curr_dir))
+	if(is_dir(full) || is_unc_root(view->curr_dir))
 	{
 		if(!view->dir_entry[view->list_pos].selected &&
-				(view->dir_entry[view->list_pos].type != LINK || !force_follow))
+				(curr->type != LINK || !force_follow))
 		{
 			handle_dir(view);
 			return;
 		}
 	}
 
-	runnable = !cfg.follow_links && type == LINK && !check_link_is_dir(filename);
+	runnable = !cfg.follow_links && curr->type == LINK &&
+			!check_link_is_dir(full);
 	if(runnable && force_follow)
 		runnable = 0;
 	if(view->selected_files > 0)
 		runnable = 1;
-	runnable = type == REGULAR || type == EXECUTABLE || runnable ||
-			type == DIRECTORY;
+	runnable = curr->type == REGULAR || curr->type == EXECUTABLE || runnable ||
+			curr->type == DIRECTORY;
 
 #ifndef _WIN32
-	executable = type == EXECUTABLE || (runnable && access(filename, X_OK) == 0 &&
+	executable = curr->type == EXECUTABLE ||
+			(runnable && access(full, X_OK) == 0 &&
 			S_ISEXE(view->dir_entry[view->list_pos].mode));
 #else
-	executable = type == EXECUTABLE;
+	executable = curr->type == EXECUTABLE;
 #endif
 	executable = executable && !dont_execute && cfg.auto_execute;
 
 	if(cfg.vim_filter && (executable || runnable))
 		use_vim_plugin(view, 0, NULL); /* no return */
 
-	if(executable && type != DIRECTORY)
+	if(executable && !is_dir_entry(full, curr->type))
 	{
-		char buf[NAME_MAX];
-		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, filename);
 #ifndef _WIN32
-		shellout(buf, 1, 1);
+		shellout(full, 1, 1);
 #else
-		to_back_slash(buf);
+		to_back_slash(full);
 		if(curr_stats.as_admin && is_vista_and_above())
 		{
 			SHELLEXECUTEINFOA sei;
@@ -928,7 +932,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 			sei.cbSize = sizeof(sei);
 			sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
 			sei.lpVerb = "runas";
-			sei.lpFile = buf;
+			sei.lpFile = full;
 			sei.lpParameters = NULL;
 			sei.nShow = SW_SHOWNORMAL;
 
@@ -937,7 +941,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 		}
 		else
 		{
-			exec_program(buf);
+			exec_program(full);
 			redraw_window();
 		}
 #endif
@@ -950,11 +954,13 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 			int i;
 			for(i = 0; i < view->list_rows; i++)
 			{
-				int type = view->dir_entry[i].type;
-				if(!view->dir_entry[i].selected)
+				curr = &view->dir_entry[i];
+				if(!curr->selected)
 					continue;
-				if(type == DIRECTORY ||
-						(type == LINK && is_dir(view->dir_entry[i].name)))
+
+				snprintf(full, sizeof(full), "%s/%s", view->curr_dir, curr->name);
+				chosp(full);
+				if(is_dir_entry(full, curr->type))
 					dirs++;
 				else
 					files++;
@@ -969,10 +975,16 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 
 		execute_file(view, dont_execute);
 	}
-	else if(type == LINK)
+	else if(curr->type == LINK)
 	{
 		follow_link(view, force_follow);
 	}
+}
+
+static int
+is_dir_entry(const char *filename, int type)
+{
+	return type == DIRECTORY || (type == LINK && is_dir(filename));
 }
 
 void _gnuc_noreturn

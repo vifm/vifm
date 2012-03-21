@@ -638,18 +638,11 @@ goto_selected_file(FileView *view, menu_info *m)
 static void
 execute_filetype_cb(FileView *view, menu_info *m)
 {
-	if(view->dir_entry[view->list_pos].type == DIRECTORY && m->pos == 0)
+	const char *prog_str = strchr(m->data[m->pos], '|') + 1;
+	if(prog_str[0] != '\0')
 	{
-		handle_dir(view);
-	}
-	else
-	{
-		const char *prog_str = strchr(m->data[m->pos], '|') + 1;
-		if(prog_str[0] != '\0')
-		{
-			int background = m->extra_data & 1;
-			run_using_prog(view, prog_str, 0, background);
-		}
+		int background = m->extra_data & 1;
+		run_using_prog(view, prog_str, 0, background);
 	}
 
 	clean_selected_files(view);
@@ -1524,17 +1517,6 @@ show_filetypes_menu(FileView *view, int background)
 	for(i = 0; i < magic.count; i++)
 		max_len = MAX(max_len, strlen(magic.list[i].description));
 
-	if(view->dir_entry[view->list_pos].type == DIRECTORY)
-	{
-		if(max_len > 0)
-			max_len = MAX(max_len, strlen(VIFM_PSEUDO_PROG.description));
-
-		(void)add_to_string_array(&m.data, m.len, 1,
-				form_filetype_data_entry(VIFM_PSEUDO_PROG));
-		m.len = add_to_string_array(&m.items, m.len, 1,
-				form_filetype_menu_entry(VIFM_PSEUDO_PROG, max_len));
-	}
-
 	for(i = 0; i < ft.count; i++)
 	{
 		(void)add_to_string_array(&m.data, m.len, 1,
@@ -1545,9 +1527,11 @@ show_filetypes_menu(FileView *view, int background)
 
 	free(ft.list);
 
+#ifdef ENABLE_DESKTOP_FILES
 	(void)add_to_string_array(&m.data, m.len, 1,
 			form_filetype_data_entry(NONE_PSEUDO_PROG));
 	m.len = add_to_string_array(&m.items, m.len, 1, "");
+#endif
 
 	for(i = 0; i < magic.count; i++)
 	{
@@ -1602,18 +1586,9 @@ form_filetype_data_entry(assoc_record_t prog)
 int
 run_with_filetype(FileView *view, const char *beginning, int background)
 {
-	size_t len = strlen(beginning);
-
 	char *filename = get_current_file_name(view);
 	assoc_records_t ft = get_all_programs_for_file(filename);
 	assoc_records_t magic = get_magic_handlers(filename);
-
-	if(view->dir_entry[view->list_pos].type == DIRECTORY &&
-			strncmp(VIFM_PSEUDO_CMD, beginning, len) == 0)
-	{
-		handle_dir(view);
-		return 0;
-	}
 
 	if(try_run_with_filetype(view, ft, beginning, background))
 	{

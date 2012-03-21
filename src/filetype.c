@@ -31,12 +31,6 @@
 
 #include "filetype.h"
 
-const assoc_record_t VIFM_PSEUDO_PROG =
-{
-	.command = VIFM_PSEUDO_CMD,
-	.description = "Enter directory",
-};
-
 const assoc_record_t NONE_PSEUDO_PROG =
 {
 	.command = "",
@@ -50,8 +44,7 @@ static assoc_list_t active_filetypes;
 
 TESTABLE_STATIC void replace_double_comma(char *cmd, int put_null);
 static int get_filetype_number(const char *file, assoc_list_t assoc_list);
-static void assoc_programs(const char *pattern, const char *records,
-		int for_x);
+static void assoc_programs(const char *pattern, const char *records, int for_x);
 static void register_assoc(assoc_t assoc, int for_x);
 static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
 static void assoc_viewer(const char *pattern, const char *viewer);
