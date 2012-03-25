@@ -19,7 +19,7 @@
 
 #include <string.h> /* strdup() strlen() */
 
-#include "../utils/utils.h"
+#include "../utils/path.h"
 #include "../macros.h"
 #include "../ui.h"
 #include "menus.h"

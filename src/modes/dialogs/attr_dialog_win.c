@@ -23,8 +23,10 @@
 
 #include "../../../config.h"
 
+#include "../../utils/fs.h"
 #include "../../utils/log.h"
-#include "../../utils/utils.h"
+#include "../../utils/macros.h"
+#include "../../utils/path.h"
 #include "../../filelist.h"
 #include "../../keys.h"
 #include "../../status.h"

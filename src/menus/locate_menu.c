@@ -19,7 +19,7 @@
 
 #include <string.h> /* strdup() */
 
-#include "../utils/utils.h"
+#include "../utils/path.h"
 #include "../ui.h"
 #include "menus.h"
 

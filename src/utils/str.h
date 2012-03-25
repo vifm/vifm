@@ -17,44 +17,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <stdlib.h> /* malloc() */
-#include <string.h> /* strdup() */
+#ifndef __STR_H__
+#define __STR_H__
 
-#include "../modes/menu.h"
-#include "../ui.h"
-#include "../version.h"
-#include "menus.h"
+#include <wchar.h> /* wchar_t */
 
-#include "vifm_menu.h"
+/* Various string functions. */
 
-int
-show_vifm_menu(FileView *view)
-{
-	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = fill_version_info(NULL);
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = VIFM;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = strdup(" vifm information ");
-	m.args = NULL;
-	m.items = malloc(sizeof(char*)*m.len);
-	m.data = NULL;
+void chomp(char *text);
+wchar_t * to_wide(const char *s);
+wchar_t * my_wcsdup(const wchar_t *ws);
+int starts_with(const char *str, const char *prefix);
+int ends_with(const char *str, const char *suffix);
+char * to_multibyte(const wchar_t *s);
+void strtolower(char *s);
+void break_at(char *str, char c);
+void break_atr(char *str, char c);
+char * skip_non_whitespace(const char *str);
+char * skip_whitespace(const char *str);
 
-	m.len = fill_version_info(m.items);
-
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
-	return 0;
-}
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

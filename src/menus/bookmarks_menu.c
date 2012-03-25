@@ -22,9 +22,9 @@
 #include "../cfg/config.h"
 #include "../modes/menu.h"
 #include "../utils/macros.h"
+#include "../utils/path.h"
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
-#include "../utils/utils.h"
 #include "../bookmarks.h"
 
 #include "bookmarks_menu.h"

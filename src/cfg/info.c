@@ -22,8 +22,8 @@
 #include <string.h> /* strcpy() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
+#include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../utils/utils.h"
 #include "../bookmarks.h"
 #include "../commands.h"
 #include "../dir_stack.h"

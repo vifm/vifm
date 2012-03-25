@@ -1,0 +1,338 @@
+/* vifm
+ * Copyright (C) 2001 Ken Steen.
+ * Copyright (C) 2011 xaizek.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+#ifdef _WIN32
+#include <windows.h>
+#include <winioctl.h>
+#endif
+
+#include <sys/stat.h> /* statbuf stat() mkdir() */
+#include <sys/types.h> /* size_t mode_t */
+#include <unistd.h> /* access() */
+
+#include <errno.h> /* errno */
+#include <limits.h> /* PATH_MAX */
+#include <stddef.h> /* NULL */
+#include <stdio.h> /* snprintf() */
+#include <stdlib.h> /* realpath() */
+#include <string.h> /* strdup() strncmp() strncpy() */
+
+#include "log.h"
+#include "path.h"
+#include "utils.h"
+
+#include "fs.h"
+
+int
+is_dir(const char *path)
+{
+#ifndef _WIN32
+	struct stat statbuf;
+	if(stat(path, &statbuf) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Can't stat \"%s\"", path);
+		log_cwd();
+		return 0;
+	}
+
+	return S_ISDIR(statbuf.st_mode);
+#else
+	DWORD attr;
+
+	if(is_path_absolute(path) && !is_unc_path(path))
+	{
+		char buf[] = {path[0], ':', '\\', '\0'};
+		UINT type = GetDriveTypeA(buf);
+		if(type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR)
+			return 0;
+	}
+
+	attr = GetFileAttributesA(path);
+	if(attr == INVALID_FILE_ATTRIBUTES)
+	{
+		LOG_SERROR_MSG(errno, "Can't get attributes of \"%s\"", path);
+		log_cwd();
+		return 0;
+	}
+
+	return (attr & FILE_ATTRIBUTE_DIRECTORY);
+#endif
+}
+
+int
+is_valid_dir(const char *path)
+{
+	return is_dir(path) || is_unc_root(path);
+}
+
+/* Checks whether path/file exists. path can be NULL */
+int
+file_exists(const char *path, const char *file)
+{
+	char full[PATH_MAX];
+	if(path == NULL)
+		snprintf(full, sizeof(full), "%s", file);
+	else
+		snprintf(full, sizeof(full), "%s/%s", path, file);
+#ifndef _WIN32
+	return access(full, F_OK) == 0;
+#else
+	if(is_path_absolute(full) && !is_unc_path(full))
+	{
+		char buf[] = {full[0], ':', '\\', '\0'};
+		UINT type = GetDriveTypeA(buf);
+		if(type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR)
+			return 0;
+	}
+
+	return (GetFileAttributesA(full) != INVALID_FILE_ATTRIBUTES);
+#endif
+}
+
+int
+check_link_is_dir(const char *filename)
+{
+	char linkto[PATH_MAX + NAME_MAX];
+	int saved_errno;
+	char *filename_copy;
+	char *p;
+
+	filename_copy = strdup(filename);
+	chosp(filename_copy);
+
+	p = realpath(filename, linkto);
+	saved_errno = errno;
+
+	free(filename_copy);
+
+	if(p == linkto)
+	{
+		return is_dir(linkto);
+	}
+	else
+	{
+		LOG_SERROR_MSG(saved_errno, "Can't readlink \"%s\"", filename);
+		log_cwd();
+	}
+
+	return 0;
+}
+
+int
+get_link_target(const char *link, char *buf, size_t buf_len)
+{
+	LOG_FUNC_ENTER;
+
+#ifndef _WIN32
+	char *filename;
+	ssize_t len;
+
+	filename = strdup(link);
+	chosp(filename);
+
+	len = readlink(filename, buf, buf_len);
+
+	free(filename);
+
+	if(len == -1)
+		return -1;
+
+	buf[len] = '\0';
+	return 0;
+#else
+	char filename[PATH_MAX];
+	DWORD attr;
+	HANDLE hfind;
+	WIN32_FIND_DATAA ffd;
+	HANDLE hfile;
+	char rdb[2048];
+	char *t;
+	REPARSE_DATA_BUFFER *sbuf;
+	WCHAR *path;
+
+	attr = GetFileAttributes(link);
+	if(attr == INVALID_FILE_ATTRIBUTES)
+	{
+		LOG_WERROR(GetLastError());
+		return -1;
+	}
+
+	if(!(attr & FILE_ATTRIBUTE_REPARSE_POINT))
+		return -1;
+
+	snprintf(filename, sizeof(filename), "%s", link);
+	chosp(filename);
+	hfind = FindFirstFileA(filename, &ffd);
+	if(hfind == INVALID_HANDLE_VALUE)
+	{
+		LOG_WERROR(GetLastError());
+		return -1;
+	}
+
+	if(!FindClose(hfind))
+	{
+		LOG_WERROR(GetLastError());
+	}
+
+	if(ffd.dwReserved0 != IO_REPARSE_TAG_SYMLINK)
+		return -1;
+
+	hfile = CreateFileA(filename, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
+			OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT,
+			NULL);
+	if(hfile == INVALID_HANDLE_VALUE)
+	{
+		LOG_WERROR(GetLastError());
+		return -1;
+	}
+
+	if(!DeviceIoControl(hfile, FSCTL_GET_REPARSE_POINT, NULL, 0, rdb,
+			sizeof(rdb), &attr, NULL))
+	{
+		LOG_WERROR(GetLastError());
+		CloseHandle(hfile);
+		return -1;
+	}
+	CloseHandle(hfile);
+
+	sbuf = (REPARSE_DATA_BUFFER *)rdb;
+	path = sbuf->SymbolicLinkReparseBuffer.PathBuffer;
+	path[sbuf->SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(WCHAR) +
+			sbuf->SymbolicLinkReparseBuffer.PrintNameLength/sizeof(WCHAR)] = L'\0';
+	t = to_multibyte(path +
+			sbuf->SymbolicLinkReparseBuffer.PrintNameOffset/sizeof(WCHAR));
+	if(strncmp(t, "\\??\\", 4) == 0)
+		strncpy(buf, t + 4, buf_len);
+	else
+		strncpy(buf, t, buf_len);
+	buf[buf_len - 1] = '\0';
+	free(t);
+	to_forward_slash(buf);
+	return 0;
+#endif
+}
+
+int
+make_dir(const char *dir_name, mode_t mode)
+{
+#ifndef _WIN32
+	return mkdir(dir_name, mode);
+#else
+	return mkdir(dir_name);
+#endif
+}
+
+int
+symlinks_available(void)
+{
+#ifndef _WIN32
+	return 1;
+#else
+	return is_vista_and_above();
+#endif
+}
+
+#ifdef _WIN32
+
+char *
+realpath(const char *path, char *buf)
+{
+	if(get_link_target(path, buf, PATH_MAX) == 0)
+		return buf;
+
+	buf[0] = '\0';
+	if(!is_path_absolute(path) && GetCurrentDirectory(PATH_MAX, buf) > 0)
+	{
+		to_forward_slash(buf);
+		chosp(buf);
+		strcat(buf, "/");
+	}
+
+	strcat(buf, path);
+	return buf;
+}
+
+int
+S_ISLNK(mode_t mode)
+{
+	return 0;
+}
+
+int
+readlink(const char *path, char *buf, size_t len)
+{
+	return -1;
+}
+
+int
+is_on_fat_volume(const char *path)
+{
+	char buf[NAME_MAX];
+	char fs[16];
+	if(is_unc_path(path))
+	{
+		int i = 4, j = 0;
+		snprintf(buf, sizeof(buf), "%s", path);
+		while(i > 0 && buf[j] != '\0')
+			if(buf[j++] == '/')
+				i--;
+		if(i == 0)
+			buf[j - 1] = '\0';
+	}
+	else
+	{
+		strcpy(buf, "x:\\");
+		buf[0] = path[0];
+	}
+	if(GetVolumeInformationA(buf, NULL, 0, NULL, NULL, NULL, fs, sizeof(fs)))
+	{
+		if(strncasecmp(fs, "fat", 3) == 0)
+			return 1;
+	}
+	return 0;
+}
+
+/* Checks specified drive for existence */
+int
+drive_exists(TCHAR letter)
+{
+	TCHAR drive[] = TEXT("?:\\");
+	drive[0] = letter;
+	int type = GetDriveType(drive);
+
+	switch(type)
+	{
+		case DRIVE_CDROM:
+		case DRIVE_REMOTE:
+		case DRIVE_RAMDISK:
+		case DRIVE_REMOVABLE:
+		case DRIVE_FIXED:
+			return 1;
+
+		case DRIVE_UNKNOWN:
+		case DRIVE_NO_ROOT_DIR:
+		default:
+			return 0;
+	}
+}
+
+#endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

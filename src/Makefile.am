@@ -57,8 +57,13 @@ vifm_SOURCES = \
 	modes/view.c modes/view.h \
 	modes/visual.c modes/visual.h \
 	\
+	utils/env.c utils/env.h \
+	utils/file_streams.c utils/file_streams.h \
+	utils/fs.c utils/fs.h \
 	utils/log.c utils/log.h \
 	utils/macros.h \
+	utils/path.c utils/path.h \
+	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
 	utils/tree.c utils/tree.h \
 	utils/utf8.c utils/utf8.h \
@@ -91,6 +96,7 @@ vifm_SOURCES = \
 	sort.c sort.h \
 	status.c status.h \
 	tags.c tags.h \
+	term_title.c term_title.h \
 	trash.c trash.h \
 	ui.c ui.h \
 	undo.c undo.h \
@@ -104,12 +110,10 @@ vifmrc_converter_SOURCES = \
 utils.o: version.o
 
 version.c:
-	@if [ "x$$(whereis git)" != "x" ] ; then \
-		/bin/echo -n 'const char GIT_HASH[] = "' > version.c; \
-		/bin/echo -n `git rev-parse HEAD` >> version.c; \
-		/bin/echo '";' >> version.c; \
-	else \
-		/bin/echo -n 'const char GIT_HASH[] = "";' > version.c; \
+	@if [ "x$$(which git)" != "x" ]; then \
+		cp version.c version.c_; \
+		sed "s/GIT_HASH\[\] = \"[^\"]*\"/GIT_HASH[] = \"$$(git rev-parse HEAD)\"/" version.c_ > version.c; \
+		rm version.c_; \
 	fi
 
 ../data/vifm-help.txt: ../data/vifm.1

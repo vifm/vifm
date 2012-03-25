@@ -23,6 +23,9 @@
 
 #include "cfg/config.h"
 #include "menus/menus.h"
+#include "utils/fs.h"
+#include "utils/path.h"
+#include "utils/str.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "filelist.h"

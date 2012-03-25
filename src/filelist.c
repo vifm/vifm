@@ -49,7 +49,10 @@
 #include "menus/menus.h"
 #include "modes/file_info.h"
 #include "modes/modes.h"
+#include "utils/env.h"
+#include "utils/fs.h"
 #include "utils/log.h"
+#include "utils/path.h"
 #include "utils/string_array.h"
 #include "utils/tree.h"
 #include "utils/utf8.h"
@@ -66,6 +69,7 @@
 #include "quickview.h"
 #include "sort.h"
 #include "status.h"
+#include "term_title.h"
 #include "ui.h"
 
 static int

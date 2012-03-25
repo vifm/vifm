@@ -22,7 +22,8 @@
 #include <string.h> /* strcpy() strchr() strlen() strrchr() */
 
 #include "cfg/config.h"
-#include "utils/utils.h"
+#include "utils/path.h"
+#include "utils/str.h"
 #include "fileops.h"
 #include "ui.h"
 

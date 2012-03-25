@@ -17,43 +17,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <stdlib.h> /* malloc() */
-#include <string.h> /* strdup() */
+#include <stdlib.h> /* getenv() unsetenv() env_set() */
 
-#include "../modes/menu.h"
-#include "../ui.h"
-#include "../version.h"
-#include "menus.h"
+#include "env.h"
 
-#include "vifm_menu.h"
-
-int
-show_vifm_menu(FileView *view)
+const char *
+env_get(const char *name)
 {
-	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = fill_version_info(NULL);
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = VIFM;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = strdup(" vifm information ");
-	m.args = NULL;
-	m.items = malloc(sizeof(char*)*m.len);
-	m.data = NULL;
+	return getenv(name);
+}
 
-	m.len = fill_version_info(m.items);
+void
+env_set(const char *name, const char *value)
+{
+#ifndef _WIN32
+	setenv(name, value, 1);
+#else
+	char buf[strlen(name) + 1 + strlen(value) + 1];
+	sprintf(buf, "%s=%s", name, value);
+	putenv(buf);
+#endif
+}
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
-	return 0;
+void
+env_remove(const char *name)
+{
+#ifndef _WIN32
+	unsetenv(name);
+#else
+	env_set(name, "");
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

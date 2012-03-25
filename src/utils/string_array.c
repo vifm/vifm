@@ -23,7 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils.h"
+#include "file_streams.h"
+#include "str.h"
 
 #include "string_array.h"
 

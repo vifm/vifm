@@ -22,7 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../utils/utils.h"
+#include "../utils/str.h"
 #include "completion.h"
 
 #include "options.h"

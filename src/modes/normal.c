@@ -32,6 +32,7 @@
 #include "../engine/keys.h"
 #include "../menus/menus.h"
 #include "../utils/macros.h"
+#include "../utils/path.h"
 #include "../utils/tree.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"

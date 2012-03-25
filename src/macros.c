@@ -23,6 +23,7 @@
 
 #include "cfg/config.h"
 #include "menus/menus.h"
+#include "utils/path.h"
 #include "utils/utils.h"
 #include "filename_modifiers.h"
 

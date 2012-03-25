@@ -22,8 +22,10 @@
 
 #include "cfg/config.h"
 #include "modes/modes.h"
+#include "utils/file_streams.h"
+#include "utils/fs.h"
+#include "utils/path.h"
 #include "utils/utf8.h"
-#include "utils/utils.h"
 #include "filelist.h"
 #include "filetype.h"
 #include "status.h"

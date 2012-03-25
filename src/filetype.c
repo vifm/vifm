@@ -24,7 +24,7 @@
 
 #include "cfg/config.h"
 #include "menus/menus.h"
-#include "utils/utils.h"
+#include "utils/str.h"
 #include "globals.h"
 #include "status.h"
 

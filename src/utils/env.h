@@ -17,44 +17,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <stdlib.h> /* malloc() */
-#include <string.h> /* strdup() */
+#ifndef __ENV_H__
+#define __ENV_H__
 
-#include "../modes/menu.h"
-#include "../ui.h"
-#include "../version.h"
-#include "menus.h"
+/* Environment variables related functions */
 
-#include "vifm_menu.h"
+/* Returns environment variable value or NULL if it doesn't exist */
+const char * env_get(const char *name);
+/* Sets new value of environment variable or creates it if it doesn't exist */
+void env_set(const char *name, const char *value);
+/* Removes environment variable */
+void env_remove(const char *name);
 
-int
-show_vifm_menu(FileView *view)
-{
-	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = fill_version_info(NULL);
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = VIFM;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = strdup(" vifm information ");
-	m.args = NULL;
-	m.items = malloc(sizeof(char*)*m.len);
-	m.data = NULL;
-
-	m.len = fill_version_info(m.items);
-
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
-	return 0;
-}
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

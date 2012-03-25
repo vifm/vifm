@@ -10,6 +10,7 @@ AC_PROG_CC
 AM_PROG_CC_STDC
 AC_HEADER_STDC
 AM_PROG_LIBTOOL
+AM_PROG_CC_C_O
 AC_CONFIG_MACRO_DIR([m4])
 AC_CHECK_HEADERS(limits.h sys/time.h unistd.h wchar.h)
 AC_CHECK_FUNCS(getcwd mkdir regcomp strdup strstr)

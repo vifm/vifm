@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils.h"
+#include "path.h"
 
 #include "tree.h"
 

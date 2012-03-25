@@ -45,8 +45,12 @@
 #include "modes/modes.h"
 #include "modes/normal.h"
 #include "modes/view.h"
+#include "utils/env.h"
+#include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/path.h"
+#include "utils/str.h"
 #include "utils/tree.h"
 #include "utils/utils.h"
 #include "background.h"
@@ -68,6 +72,7 @@
 #include "status.h"
 #include "ui.h"
 #include "undo.h"
+#include "version.h"
 
 #ifndef _WIN32
 #define CONF_DIR "~/.vifm"

@@ -70,7 +70,9 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	modes/file_info.$(OBJEXT) modes/menu.$(OBJEXT) \
 	modes/modes.$(OBJEXT) modes/normal.$(OBJEXT) \
 	modes/view.$(OBJEXT) modes/visual.$(OBJEXT) \
-	utils/log.$(OBJEXT) utils/string_array.$(OBJEXT) \
+	utils/env.$(OBJEXT) utils/file_streams.$(OBJEXT) \
+	utils/fs.$(OBJEXT) utils/log.$(OBJEXT) utils/path.$(OBJEXT) \
+	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
 	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
 	utils/utils.$(OBJEXT) background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	color_scheme.$(OBJEXT) commands.$(OBJEXT) \
@@ -82,8 +84,8 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	ops.$(OBJEXT) opt_handlers.$(OBJEXT) quickview.$(OBJEXT) \
 	registers.$(OBJEXT) running.$(OBJEXT) search.$(OBJEXT) \
 	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
-	tags.$(OBJEXT) trash.$(OBJEXT) ui.$(OBJEXT) undo.$(OBJEXT) \
-	version.$(OBJEXT) vifm.$(OBJEXT)
+	tags.$(OBJEXT) term_title.$(OBJEXT) trash.$(OBJEXT) \
+	ui.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) vifm.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
@@ -297,8 +299,13 @@ vifm_SOURCES = \
 	modes/view.c modes/view.h \
 	modes/visual.c modes/visual.h \
 	\
+	utils/env.c utils/env.h \
+	utils/file_streams.c utils/file_streams.h \
+	utils/fs.c utils/fs.h \
 	utils/log.c utils/log.h \
 	utils/macros.h \
+	utils/path.c utils/path.h \
+	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \
 	utils/tree.c utils/tree.h \
 	utils/utf8.c utils/utf8.h \
@@ -331,6 +338,7 @@ vifm_SOURCES = \
 	sort.c sort.h \
 	status.c status.h \
 	tags.c tags.h \
+	term_title.c term_title.h \
 	trash.c trash.h \
 	ui.c ui.h \
 	undo.c undo.h \
@@ -524,7 +532,17 @@ utils/$(am__dirstamp):
 utils/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) utils/$(DEPDIR)
 	@: > utils/$(DEPDIR)/$(am__dirstamp)
+utils/env.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
+utils/file_streams.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
+utils/fs.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/log.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
+utils/path.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
+utils/str.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/string_array.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
@@ -612,7 +630,12 @@ mostlyclean-compile:
 	-rm -f modes/normal.$(OBJEXT)
 	-rm -f modes/view.$(OBJEXT)
 	-rm -f modes/visual.$(OBJEXT)
+	-rm -f utils/env.$(OBJEXT)
+	-rm -f utils/file_streams.$(OBJEXT)
+	-rm -f utils/fs.$(OBJEXT)
 	-rm -f utils/log.$(OBJEXT)
+	-rm -f utils/path.$(OBJEXT)
+	-rm -f utils/str.$(OBJEXT)
 	-rm -f utils/string_array.$(OBJEXT)
 	-rm -f utils/tree.$(OBJEXT)
 	-rm -f utils/utf8.$(OBJEXT)
@@ -648,6 +671,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sort.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/status.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tags.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/term_title.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/trash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/undo.Po@am__quote@
@@ -689,7 +713,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/attr_dialog_nix.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/change_dialog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@modes/dialogs/$(DEPDIR)/sort_dialog.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/env.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/file_streams.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/log.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/path.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/str.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/string_array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/tree.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/utf8.Po@am__quote@
@@ -1019,12 +1048,10 @@ uninstall-man: uninstall-man1
 utils.o: version.o
 
 version.c:
-	@if [ "x$$(whereis git)" != "x" ] ; then \
-		/bin/echo -n 'const char GIT_HASH[] = "' > version.c; \
-		/bin/echo -n `git rev-parse HEAD` >> version.c; \
-		/bin/echo '";' >> version.c; \
-	else \
-		/bin/echo -n 'const char GIT_HASH[] = "";' > version.c; \
+	@if [ "x$$(which git)" != "x" ]; then \
+		cp version.c version.c_; \
+		sed "s/GIT_HASH\[\] = \"[^\"]*\"/GIT_HASH[] = \"$$(git rev-parse HEAD)\"/" version.c_ > version.c; \
+		rm version.c_; \
 	fi
 
 ../data/vifm-help.txt: ../data/vifm.1

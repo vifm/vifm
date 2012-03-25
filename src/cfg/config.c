@@ -38,9 +38,11 @@
 #include <string.h>
 
 #include "../menus/menus.h"
+#include "../utils/env.h"
+#include "../utils/fs.h"
 #include "../utils/log.h"
+#include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../utils/utils.h"
 #include "../bookmarks.h"
 #include "../color_scheme.h"
 #include "../commands.h"

@@ -26,7 +26,9 @@
 
 #include "../../engine/keys.h"
 #include "../../menus/menus.h"
-#include "../../utils/utils.h"
+#include "../../utils/fs.h"
+#include "../../utils/macros.h"
+#include "../../utils/path.h"
 #include "../../background.h"
 #include "../../filelist.h"
 #include "../../fileops.h"

@@ -29,7 +29,7 @@
 
 #include <stdio.h> /* popen() */
 
-#include "utils/utils.h"
+#include "utils/str.h"
 #include "filetype.h"
 #include "status.h"
 

@@ -54,6 +54,7 @@
 #include "modes/view.h"
 #include "utils/log.h"
 #include "utils/macros.h"
+#include "utils/str.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
 #include "color_scheme.h"

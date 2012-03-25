@@ -27,7 +27,7 @@
 
 #include "cfg/config.h"
 #include "utils/macros.h"
-#include "utils/utils.h"
+#include "utils/path.h"
 #include "ops.h"
 #include "registers.h"
 

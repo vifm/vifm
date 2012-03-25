@@ -42,7 +42,7 @@
 #include "../engine/keys.h"
 #include "../engine/options.h"
 #include "../menus/menus.h"
-#include "../utils/utils.h"
+#include "../utils/str.h"
 #include "../bookmarks.h"
 #include "../color_scheme.h"
 #include "../commands.h"

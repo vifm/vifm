@@ -17,44 +17,39 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <stdlib.h> /* malloc() */
-#include <string.h> /* strdup() */
+#ifndef __FS_H__
+#define __FS_H__
 
-#include "../modes/menu.h"
-#include "../ui.h"
-#include "../version.h"
-#include "menus.h"
+#ifdef _WIN32
+#include <windef.h>
+#endif
 
-#include "vifm_menu.h"
+#include <sys/types.h> /* size_t mode_t */
 
-int
-show_vifm_menu(FileView *view)
-{
-	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = fill_version_info(NULL);
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = VIFM;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = strdup(" vifm information ");
-	m.args = NULL;
-	m.items = malloc(sizeof(char*)*m.len);
-	m.data = NULL;
+/* Functions to deal with file system objects */
 
-	m.len = fill_version_info(m.items);
+/* Checks if path is an existing directory. */
+int is_dir(const char *path);
+/* Checks if path could be a directory (e.g. it can be UNC root on Windows). */
+int is_valid_dir(const char *path);
+/* if path is NULL, file assumed to contain full path */
+int file_exists(const char *path, const char *file);
+int check_link_is_dir(const char *filename);
+int get_link_target(const char *link, char *buf, size_t buf_len);
+int make_dir(const char *dir_name, mode_t mode);
+int symlinks_available(void);
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
-	return 0;
-}
+#ifdef _WIN32
+
+char * realpath(const char *path, char *buf);
+int S_ISLNK(mode_t mode);
+int readlink(const char *path, char *buf, size_t len);
+int is_on_fat_volume(const char *path);
+int drive_exists(TCHAR letter);
+
+#endif
+
+#endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

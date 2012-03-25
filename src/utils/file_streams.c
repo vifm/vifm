@@ -17,43 +17,56 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <stdlib.h> /* malloc() */
-#include <string.h> /* strdup() */
+#include <stdio.h>
 
-#include "../modes/menu.h"
-#include "../ui.h"
-#include "../version.h"
-#include "menus.h"
+#include "file_streams.h"
 
-#include "vifm_menu.h"
+char *
+get_line(FILE *fp, char *buf, size_t bufsz)
+{
+	int c = '\0';
+	char *start = buf;
+
+	while(bufsz-- > 1 && (c = get_char(fp)) != EOF)
+	{
+		*buf++ = c;
+		if(c == '\n')
+			break;
+		bufsz--;
+	}
+	*buf = '\0';
+
+	return (c == EOF && buf == start) ? NULL : start;
+}
 
 int
-show_vifm_menu(FileView *view)
+get_char(FILE *fp)
 {
-	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = fill_version_info(NULL);
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = VIFM;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = strdup(" vifm information ");
-	m.args = NULL;
-	m.items = malloc(sizeof(char*)*m.len);
-	m.data = NULL;
+	int c = fgetc(fp);
+	if(c == '\r')
+	{
+		int c2 = fgetc(fp);
+		if(c2 != '\n')
+			ungetc(c2, fp);
+		c = '\n';
+	}
+	return c;
+}
 
-	m.len = fill_version_info(m.items);
+void
+skip_until_eol(FILE *fp)
+{
+	while(get_char(fp) != '\n' && !feof(fp));
+}
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
-	return 0;
+void
+remove_eol(FILE *fp)
+{
+	int c = fgetc(fp);
+	if(c == '\r')
+		c = fgetc(fp);
+	if(c != '\n')
+		ungetc(c, fp);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

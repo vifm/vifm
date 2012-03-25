@@ -25,7 +25,7 @@
 
 #include "cfg/config.h"
 #include "menus/menus.h"
-#include "utils/utils.h"
+#include "utils/path.h"
 
 #include "registers.h"
 

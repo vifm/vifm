@@ -53,6 +53,7 @@ static void _gnuc_noreturn shutdown_nicely(void);
 #include "fileops.h"
 #include "filetype.h"
 #include "status.h"
+#include "term_title.h"
 #include "ui.h"
 
 #include "signals.h"

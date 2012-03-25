@@ -36,40 +36,61 @@ enum
 	UNKNOWN
 };
 
-FILE * use_info_prog(const char *viewer);
-void clean_selected_files(FileView *view);
-void goto_history_pos(FileView *view, int pos);
-int change_directory(FileView *view, const char *directory);
-void leave_invalid_dir(FileView *view, char *path);
-void load_dir_list(FileView *view, int reload);
-void draw_dir_list(FileView *view, int top);
+/* Position related functions. */
+
+int find_file_pos_in_list(FileView *view, const char *file);
 int correct_list_pos_on_scroll_up(FileView *view, int pos_delta);
 int correct_list_pos_on_scroll_down(FileView *view, int pos_delta);
-char * get_current_file_name(FileView *view);
 void move_to_list_pos(FileView *view, int pos);
-int find_file_pos_in_list(FileView *view, const char *file);
+
+/* Appearance related functions. */
+
+void draw_dir_list(FileView *view, int top);
+void erase_current_line_bar(FileView *view);
+void scroll_view(FileView *view);
+void change_sort_type(FileView *view, char type, char descending);
+void update_view_title(FileView *view);
+
+/* Directory traversing functions. */
+
+int change_directory(FileView *view, const char *path);
+int cd(FileView *view, const char *path);
+void leave_invalid_dir(FileView *view, char *path);
+int pane_in_dir(FileView *view, const char *path);
+
+/* Selection related functions. */
+
+void clean_selected_files(FileView *view);
 void get_all_selected_files(FileView *view);
 void get_selected_files(FileView *view, int count, const int *indexes);
 void count_selected(FileView *view);
 void free_selected_file_array(FileView *view);
-void erase_current_line_bar(FileView *view);
-void filter_selected_files(FileView *view);
+int ensure_file_is_selected(FileView *view, const char *name);
+
+/* Filters related functions. */
+
 void set_dot_files_visible(FileView *view, int visible);
 void toggle_dot_files(FileView *view);
+
+void filter_selected_files(FileView *view);
 void remove_filename_filter(FileView *view);
 void restore_filename_filter(FileView *view);
-void scroll_view(FileView *view);
-void check_if_filelists_have_changed(FileView *view);
-void change_sort_type(FileView *view, char type, char descending);
-void load_saving_pos(FileView *view, int reload);
+
+/* Directory history related functions. */
+
+void goto_history_pos(FileView *view, int pos);
 void save_view_history(FileView *view, const char *path, const char *file,
 		int pos);
 int is_in_view_history(FileView *view, const char *path);
-int pane_in_dir(FileView *view, const char *path);
-void update_view_title(FileView *view);
 void clean_positions_in_history(FileView *view);
-int ensure_file_is_selected(FileView *view, const char *name);
-int cd(FileView *view, const char *path);
+
+/* Other functions. */
+
+FILE * use_info_prog(const char *viewer);
+void load_dir_list(FileView *view, int reload);
+void load_saving_pos(FileView *view, int reload);
+char * get_current_file_name(FileView *view);
+void check_if_filelists_have_changed(FileView *view);
 
 #ifdef TEST
 int regexp_filter_match(FileView *view, char *filename);

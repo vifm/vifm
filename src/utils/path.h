@@ -1,0 +1,51 @@
+/* vifm
+ * Copyright (C) 2001 Ken Steen.
+ * Copyright (C) 2011 xaizek.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+#ifndef __PATH_H__
+#define __PATH_H__
+
+/* Various functions to work with paths */
+
+void chosp(char *path);
+int ends_with_slash(const char *path);
+int path_starts_with(const char *path, const char *begin);
+void canonicalize_path(const char *directory, char *buf, size_t buf_size);
+const char * make_rel_path(const char *path, const char *base);
+int pathcmp(const char *file_name_a, const char *file_name_b);
+int pathncmp(const char *file_name_a, const char *file_name_b, size_t n);
+int is_path_absolute(const char *path);
+int is_root_dir(const char *path);
+int is_unc_root(const char *path);
+char * escape_filename(const char *string, int quote_percent);
+/* Returns pointer to a statically allocated buffer */
+char *replace_home_part(const char *directory);
+char * expand_tilde(char *path);
+
+#ifdef _WIN32
+
+int is_unc_path(const char *path);
+void to_forward_slash(char *path);
+void to_back_slash(char *path);
+
+#endif
+
+#endif
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

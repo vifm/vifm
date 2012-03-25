@@ -27,7 +27,7 @@
 #include "../cfg/config.h"
 #include "../engine/keys.h"
 #include "../menus/menus.h"
-#include "../utils/utils.h"
+#include "../utils/path.h"
 #include "../bookmarks.h"
 #include "../commands.h"
 #include "../filelist.h"

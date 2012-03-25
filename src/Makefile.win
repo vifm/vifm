@@ -29,7 +29,8 @@ modes := $(dialogs) cmdline.c file_info.c menu.c modes.c normal.c \
          sort_dialog.c view.c visual.c
 modes := $(addprefix modes/, $(modes))
 
-utilities := log.c string_array.c tree.c utf8.c utils.c
+utilities := env.c file_streams.c fs.c log.c path.c str.c string_array.c \
+             tree.c utf8.c utils.c
 utilities := $(addprefix utils/, $(utilities))
 
 vifm_SOURCES := $(cfg) $(engine) $(menus) $(modes) $(utilities) background.c \
@@ -37,8 +38,8 @@ vifm_SOURCES := $(cfg) $(engine) $(menus) $(modes) $(utilities) background.c \
                 dir_stack.c file_magic.c filelist.c filename_modifiers.c \
                 fileops.c filetype.c fuse.c globals.c ipc.c macros.c \
                 main_loop.c ops.c opt_handlers.c quickview.c registers.c \
-                running.c search.c signals.c sort.c status.c tags.c trash.c \
-                ui.c undo.c version.c vifmres.o vifm.c
+                running.c search.c signals.c sort.c status.c tags.c \
+                term_title.c trash.c ui.c undo.c version.c vifmres.o vifm.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe
@@ -80,11 +81,9 @@ utils.c: version.c
 
 version.c:
 	@if [ "x$$(which git)" != "x" ]; then \
-		/bin/echo -n 'const char GIT_HASH[] = "' > version.c; \
-		/bin/echo -n `git rev-parse HEAD` >> version.c; \
-		/bin/echo '";' >> version.c; \
-	else \
-		/bin/echo -n 'const char GIT_HASH[] = "";' > version.c; \
+		cp version.c version.c_; \
+		sed "s/GIT_HASH\[\] = \"[^\"]*\"/GIT_HASH[] = \"$$(git rev-parse HEAD)\"/" version.c_ > version.c; \
+		rm version.c_; \
 	fi
 
 .c.o:

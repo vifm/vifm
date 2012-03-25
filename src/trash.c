@@ -25,7 +25,7 @@
 #include <string.h>
 
 #include "cfg/config.h"
-#include "utils/utils.h"
+#include "utils/path.h"
 #include "background.h"
 #include "ops.h"
 #include "registers.h"

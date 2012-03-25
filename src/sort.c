@@ -29,8 +29,9 @@
 
 #include "cfg/config.h"
 #include "utils/macros.h"
+#include "utils/path.h"
+#include "utils/str.h"
 #include "utils/tree.h"
-#include "utils/utils.h"
 #include "filelist.h"
 #include "status.h"
 #include "ui.h"

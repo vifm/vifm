@@ -23,8 +23,9 @@
 #include <wchar.h> /* swprintf */
 #include <wctype.h> /* iswdigit */
 
+#include "../utils/macros.h"
+#include "../utils/str.h"
 #include "../utils/string_array.h"
-#include "../utils/utils.h"
 
 #include "keys.h"
 
