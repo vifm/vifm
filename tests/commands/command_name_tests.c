@@ -2,8 +2,8 @@
 
 #include "seatest.h"
 
-#include "../../src/cmds.h"
-#include "../../src/macros.h"
+#include "../../src/engine/cmds.h"
+#include "../../src/utils/macros.h"
 
 extern cmds_conf_t cmds_conf;
 

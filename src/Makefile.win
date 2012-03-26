@@ -10,14 +10,36 @@ LDFLAGS := $(LDFLAGS)
 
 LIBS := -lregex -lpdcurses -lnetapi32 -lpthread -lws2_32
 
-vifm_SOURCES := background.c bookmarks.c change_dialog.c cmdline.c cmds.c \
-                color_scheme.c commands.c completion.c config.c dir_stack.c \
-                file_info.c file_magic.c filelist.c fileops.c filetype.c ipc.c \
-                keys.c log.c main_loop.c menu.c menus.c modes.c normal.c ops.c \
-                opt_handlers.c options.c attr_dialog_win.c registers.c \
-                search.c signals.c sort.c sort_dialog.c status.c \
-                string_array.c tags.c trash.c tree.c ui.c undo.c utf8.c \
-                utils.c variables.c version.c view.c vifmres.o vifm.c visual.c
+cfg := config.c info.c
+cfg := $(addprefix cfg/, $(cfg))
+
+engine := cmds.c completion.c keys.c options.c variables.c
+engine := $(addprefix engine/, $(engine))
+
+menus := apropos_menu.c bookmarks_menu.c colorscheme_menu.c commands_menu.c \
+         dirhistory_menu.c dirstask_menu.c filetypes_menu.c find_menu.c \
+         grep_menu.c history_menu.c jobs_menu.c locate_menu.c map_menu.c \
+         menus.c registers_menu.c undolist_menu.c users_menu.c vifm_menu.c \
+         volumes_menu.c
+
+dialogs := attr_dialog_win.c change_dialog.c sort_dialog.c
+dialogs := $(addprefix dialogs/, $(dialogs))
+
+modes := $(dialogs) cmdline.c file_info.c menu.c modes.c normal.c \
+         sort_dialog.c view.c visual.c
+modes := $(addprefix modes/, $(modes))
+
+utilities := env.c file_streams.c fs.c log.c path.c str.c string_array.c \
+             tree.c utf8.c utils.c
+utilities := $(addprefix utils/, $(utilities))
+
+vifm_SOURCES := $(cfg) $(engine) $(menus) $(modes) $(utilities) background.c \
+                bookmarks.c color_scheme.c commands.c commands_completion.c \
+                dir_stack.c file_magic.c filelist.c filename_modifiers.c \
+                fileops.c filetype.c fuse.c globals.c ipc.c macros.c \
+                main_loop.c ops.c opt_handlers.c quickview.c registers.c \
+                running.c search.c signals.c sort.c status.c tags.c \
+                term_title.c trash.c ui.c undo.c version.c vifmres.o vifm.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe
@@ -59,11 +81,9 @@ utils.c: version.c
 
 version.c:
 	@if [ "x$$(which git)" != "x" ]; then \
-		/bin/echo -n 'const char GIT_HASH[] = "' > version.c; \
-		/bin/echo -n `git rev-parse HEAD` >> version.c; \
-		/bin/echo '";' >> version.c; \
-	else \
-		/bin/echo -n 'const char GIT_HASH[] = "";' > version.c; \
+		cp version.c version.c_; \
+		sed "s/GIT_HASH\[\] = \"[^\"]*\"/GIT_HASH[] = \"$$(git rev-parse HEAD)\"/" version.c_ > version.c; \
+		rm version.c_; \
 	fi
 
 .c.o:

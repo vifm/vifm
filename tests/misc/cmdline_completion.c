@@ -3,11 +3,11 @@
 
 #include "seatest.h"
 
-#include "../../src/cmdline.h"
-#include "../../src/cmds.h"
+#include "../../src/engine/cmds.h"
+#include "../../src/engine/completion.h"
+#include "../../src/engine/options.h"
+#include "../../src/modes/cmdline.h"
 #include "../../src/commands.h"
-#include "../../src/completion.h"
-#include "../../src/options.h"
 
 line_stats_t stats;
 

@@ -1,7 +1,6 @@
 #include "seatest.h"
 
-#include "../../src/keys.h"
-#include "../../src/modes.h"
+#include "../../src/engine/keys.h"
 
 static void
 multi_as_a_motion(void)

@@ -20,7 +20,6 @@
 #ifdef _WIN32
 #define _WIN32_WINNT 0x0500
 #include <windows.h>
-#include <lm.h>
 #endif
 
 #include <regex.h>
@@ -29,142 +28,84 @@
 
 #include <sys/types.h> /* passwd */
 #ifndef _WIN32
-#include <grp.h>
-#include <pwd.h>
 #include <sys/wait.h>
 #endif
-#include <dirent.h> /* DIR */
 
 #include <assert.h>
 #include <ctype.h> /* isspace() */
-#include <errno.h> /* errno */
+#include <limits.h> /* PATH_MAX */
 #include <signal.h>
-#include <stdio.h>
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h> /*  system() */
 #include <string.h> /* strncmp() */
 #include <time.h>
 
-#include "attr_dialog.h"
+#include "cfg/config.h"
+#include "cfg/info.h"
+#include "engine/cmds.h"
+#include "engine/completion.h"
+#include "engine/keys.h"
+#include "engine/options.h"
+#include "engine/variables.h"
+#include "menus/all.h"
+#include "menus/menus.h"
+#include "modes/dialogs/attr_dialog.h"
+#include "modes/dialogs/change_dialog.h"
+#include "modes/dialogs/sort_dialog.h"
+#include "modes/cmdline.h"
+#include "modes/menu.h"
+#include "modes/modes.h"
+#include "modes/normal.h"
+#include "modes/view.h"
+#include "modes/visual.h"
+#include "utils/env.h"
+#include "utils/fs.h"
+#include "utils/macros.h"
+#include "utils/path.h"
+#include "utils/str.h"
+#include "utils/string_array.h"
+#include "utils/utils.h"
 #include "background.h"
 #include "bookmarks.h"
 #include "bracket_notation.h"
-#include "change_dialog.h"
-#include "cmdline.h"
-#include "cmds.h"
 #include "color_scheme.h"
-#include "completion.h"
-#include "config.h"
+#include "commands_completion.h"
 #include "dir_stack.h"
 #include "file_magic.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
-#include "keys.h"
-#include "log.h"
+#include "fuse.h"
 #include "macros.h"
-#include "menu.h"
-#include "menus.h"
-#include "modes.h"
-#include "normal.h"
 #include "opt_handlers.h"
-#include "options.h"
+#include "quickview.h"
 #include "registers.h"
-#include "signals.h"
-#include "sort.h"
-#include "sort_dialog.h"
+#include "running.h"
 #include "status.h"
-#include "string_array.h"
-#include "tags.h"
+#include "term_title.h"
 #include "trash.h"
 #include "ui.h"
 #include "undo.h"
-#include "utils.h"
-#include "variables.h"
-#include "view.h"
-#include "visual.h"
 
 #include "commands.h"
 
-#ifndef _WIN32
-#define PAUSE_CMD "vifm-pause"
-#define PAUSE_STR "; "PAUSE_CMD
-#else
-#define PAUSE_CMD "vifm-pause"
-#define PAUSE_STR " && pause || pause"
-#endif
-
 enum
 {
-	/* commands without completion */
+	/* FIXME: commands without completion */
 	COM_FILTER = -100,
 	COM_SUBSTITUTE,
 	COM_TR,
-
-	/* commands with completion */
-	COM_CD,
-	COM_CHOWN,
-	COM_COLORSCHEME,
-	COM_EDIT,
-	COM_EXECUTE,
-	COM_FILE,
-	COM_FIND,
-	COM_GOTO = 0,
-	COM_GREP,
-	COM_HELP,
-	COM_HIGHLIGHT,
-	COM_HISTORY,
-	COM_PUSHD,
-	COM_SET,
-	COM_SOURCE,
-	COM_SYNC,
-	COM_LET,
-	COM_UNLET,
-	COM_WINDO,
-	COM_WINRUN,
 };
 
-static int complete_args(int id, const char *args, int argc, char **argv,
-		int arg_pos);
 static int swap_range(void);
 static int resolve_mark(char mark);
 static char * cmds_expand_macros(const char *str, int *use_menu, int *split);
-static char * cmds_expand_envvars(const char *str);
 static void post(int id);
 #ifndef TEST
 static
 #endif
 void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
-static void exec_completion(const char *str);
-static void complete_help(const char *str);
-static void complete_history(const char *str);
-static int complete_chown(const char *str);
-static void complete_filetype(const char *str);
-static void complete_progs(const char *str, assoc_records_t records);
-static void complete_highlight_groups(const char *str);
-static int complete_highlight_arg(const char *str);
-static void complete_winrun(const char *str);
-static void complete_envvar(const char *str);
-static int is_entry_dir(const struct dirent *d);
-static int is_entry_exec(const struct dirent *d);
-static void split_path(void);
-static int apply_p_mod(const char *path, const char *parent, char *buf,
-		size_t buf_len);
-static int apply_tilde_mod(const char *path, char *buf, size_t buf_len);
-static int apply_dot_mod(const char *path, char *buf, size_t buf_len);
-static int apply_h_mod(const char *path, char *buf, size_t buf_len);
-#ifdef _WIN32
-static int apply_u_mod(const char *path, char *buf, size_t buf_len);
-#endif
-static int apply_t_mod(const char *path, char *buf, size_t buf_len);
-static int apply_r_mod(const char *path, char *buf, size_t buf_len);
-static int apply_e_mod(const char *path, char *buf, size_t buf_len);;;
-static int apply_s_gs_mod(const char *path, const char *mod,
-		char *buf, size_t buf_len);
-static const char * apply_mods(const char *path, const char *parent,
-		const char *mod);
-static const char * apply_mod(const char *path, const char *parent,
-		const char *mod, int *mod_len);
 static wchar_t * substitute_specs(const char *cmd);
 static void print_func(int error, const char *msg, const char *description);
 
@@ -465,658 +406,7 @@ static cmds_conf_t cmds_conf = {
 
 static int need_clean_selection;
 
-static char **paths;
-static int paths_count;
-
 static char print_buf[320*80];
-
-static int
-cmd_ends_with_space(const char *cmd)
-{
-	while(cmd[0] != '\0' && cmd[1] != '\0')
-	{
-		if(cmd[0] == '\\')
-			cmd++;
-		cmd++;
-	}
-	return cmd[0] == ' ';
-}
-
-static int
-complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
-{
-	const char *arg;
-	const char *start;
-	const char *slash;
-	const char *dollar;
-
-	arg = strrchr(args, ' ');
-	if(arg == NULL)
-		arg = args;
-	else
-		arg++;
-
-	start = arg;
-	dollar = strrchr(arg, '$');
-	slash = strrchr(args + arg_pos, '/');
-
-	if(id == COM_COLORSCHEME)
-		complete_colorschemes((argc > 0) ? argv[argc - 1] : arg);
-	else if(id == COM_SET)
-		complete_options(args, &start);
-	else if(id == COM_LET)
-		complete_variables(args, &start);
-	else if(id == COM_UNLET)
-		complete_variables(arg, &start);
-	else if(id == COM_HELP)
-		complete_help(args);
-	else if(id == COM_HISTORY)
-		complete_history(args);
-	else if(id == COM_CHOWN)
-		start += complete_chown(args);
-	else if(id == COM_FILE)
-		complete_filetype(args);
-	else if(id == COM_HIGHLIGHT)
-	{
-		if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
-			complete_highlight_groups(args);
-		else
-			start += complete_highlight_arg(arg);
-	}
-	else if((id == COM_CD || id == COM_PUSHD || id == COM_EXECUTE ||
-			id == COM_SOURCE) && dollar != NULL && dollar > slash)
-	{
-		start = dollar + 1;
-		complete_envvar(start);
-	}
-	else if(id == COM_WINDO)
-		;
-	else if(id == COM_WINRUN)
-	{
-		if(argc == 0)
-			complete_winrun(args);
-	}
-	else
-	{
-		start = slash;
-		if(start == NULL)
-			start = args + arg_pos;
-		else
-			start++;
-
-		if(argc > 0 && !cmd_ends_with_space(args))
-			arg = argv[argc - 1];
-
-		if(id == COM_CD || id == COM_PUSHD)
-			filename_completion(arg, FNC_DIRONLY);
-		else if(id == COM_FIND)
-		{
-			if(argc == 1 && !cmd_ends_with_space(args))
-				filename_completion(arg, FNC_DIRONLY);
-		}
-		else if(id == COM_EXECUTE)
-		{
-			if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
-			{
-				if(*arg == '.')
-					filename_completion(arg, FNC_DIREXEC);
-				else
-					exec_completion(arg);
-			}
-			else
-				filename_completion(arg, FNC_ALL);
-		}
-		else
-			filename_completion(arg, FNC_ALL);
-	}
-
-	return start - args;
-}
-
-static void
-exec_completion(const char *str)
-{
-	int i;
-
-	for(i = 0; i < paths_count; i++)
-	{
-		if(my_chdir(paths[i]) != 0)
-			continue;
-		filename_completion(str, FNC_EXECONLY);
-	}
-	add_completion(str);
-}
-
-#ifdef _WIN32
-static void
-complete_with_shared(const char *server, const char *file)
-{
-	NET_API_STATUS res;
-	size_t len = strlen(file);
-
-	do
-	{
-		PSHARE_INFO_502 buf_ptr;
-		DWORD er = 0, tr = 0, resume = 0;
-		wchar_t *wserver = to_wide(server + 2);
-
-		if(wserver == NULL)
-		{
-			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
-			return;
-		}
-
-		res = NetShareEnum(wserver, 502, (LPBYTE *)&buf_ptr, -1, &er, &tr, &resume);
-		free(wserver);
-		if(res == ERROR_SUCCESS || res == ERROR_MORE_DATA)
-		{
-			PSHARE_INFO_502 p;
-			DWORD i;
-
-			p = buf_ptr;
-			for(i = 1; i <= er; i++)
-			{
-				char buf[512];
-				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi502_netname, -1, buf,
-						sizeof(buf), NULL, NULL);
-				strcat(buf, "/");
-				if(pathncmp(buf, file, len) == 0)
-				{
-					char *escaped = escape_filename(buf, 1);
-					add_completion(escaped);
-					free(escaped);
-				}
-				p++;
-			}
-			NetApiBufferFree(buf_ptr);
-		}
-	}
-	while(res == ERROR_MORE_DATA);
-}
-#endif
-
-#ifdef _WIN32
-/* Returns pointer to a statically allocated buffer */
-static const char *
-escape_for_cd(const char *str)
-{
-	static char buf[PATH_MAX*2];
-	char *p;
-
-	p = buf;
-	while(*str != '\0')
-	{
-		if(strchr("\\ $", *str) != NULL)
-			*p++ = '\\';
-		else if(*str == '%')
-			*p++ = '%';
-		*p++ = *str;
-
-		str++;
-	}
-	*p = '\0';
-	return buf;
-}
-#endif
-
-/*
- * type: FNC_*
- */
-void
-filename_completion(const char *str, int type)
-{
-	/* TODO refactor filename_completion(...) function */
-	const char *string;
-
-	DIR *dir;
-	struct dirent *d;
-	char * dirname;
-	char * filename;
-	char * temp;
-	int filename_len;
-	int isdir;
-#ifndef _WIN32
-	int woe = (type == FNC_ALL_WOE || type == FNC_FILE_WOE);
-#endif
-
-	if(str[0] == '~' && strchr(str, '/') == NULL)
-	{
-		char *s = expand_tilde(strdup(str));
-		add_completion(s);
-		free(s);
-		return;
-	}
-
-	string = str;
-
-	if(string[0] == '~')
-	{
-		dirname = expand_tilde(strdup(string));
-		filename = strdup(dirname);
-	}
-	else
-	{
-		if(strlen(string) > 0)
-		{
-			dirname = strdup(string);
-		}
-		else
-		{
-			dirname = malloc(strlen(string) + 2);
-			strcpy(dirname, string);
-		}
-		filename = strdup(string);
-	}
-
-	temp = cmds_expand_envvars(dirname);
-	free(dirname);
-	dirname = temp;
-
-	temp = strrchr(dirname, '/');
-	if(temp && type != FNC_FILE_WOE)
-	{
-		strcpy(filename, ++temp);
-		*temp = '\0';
-	}
-	else
-	{
-		dirname[0] = '.';
-		dirname[1] = '\0';
-	}
-
-#ifdef _WIN32
-	if(is_unc_root(dirname) ||
-			(pathcmp(dirname, ".") == 0 && is_unc_root(curr_view->curr_dir)) ||
-			(pathcmp(dirname, "/") == 0 && is_unc_path(curr_view->curr_dir)))
-	{
-		char buf[PATH_MAX];
-		if(!is_unc_root(dirname))
-			snprintf(buf,
-					strchr(curr_view->curr_dir + 2, '/') - curr_view->curr_dir + 1, "%s",
-					curr_view->curr_dir);
-		else
-			strcpy(buf, dirname);
-
-		complete_with_shared(buf, filename);
-		free(filename);
-		free(dirname);
-		return;
-	}
-	if(is_unc_path(curr_view->curr_dir))
-	{
-		char buf[PATH_MAX];
-		if(is_path_absolute(dirname) && !is_unc_root(curr_view->curr_dir))
-			snprintf(buf,
-					strchr(curr_view->curr_dir + 2, '/') - curr_view->curr_dir + 2, "%s",
-					curr_view->curr_dir);
-		else
-				snprintf(buf, sizeof(buf), "%s", curr_view->curr_dir);
-		strcat(buf, dirname);
-		chosp(buf);
-		free(dirname);
-		dirname = strdup(buf);
-	}
-#endif
-
-	dir = opendir(dirname);
-
-	if(dir == NULL || my_chdir(dirname) != 0)
-	{
-		add_completion(filename);
-		free(filename);
-		free(dirname);
-		return;
-	}
-
-	filename_len = strlen(filename);
-	while((d = readdir(dir)) != NULL)
-	{
-#ifndef _WIN32
-		char *escaped;
-#endif
-
-		if(filename[0] == '\0' && d->d_name[0] == '.')
-			continue;
-		if(pathncmp(d->d_name, filename, filename_len) != 0)
-			continue;
-
-		if(type == FNC_DIRONLY && !is_entry_dir(d))
-			continue;
-		else if(type == FNC_EXECONLY && !is_entry_exec(d))
-			continue;
-		else if(type == FNC_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
-			continue;
-
-		isdir = 0;
-		if(is_dir(d->d_name))
-		{
-			isdir = 1;
-		}
-		else if(pathcmp(dirname, "."))
-  	{
-			char * tempfile = (char *)NULL;
-			int len = strlen(dirname) + strlen(d->d_name) + 1;
-			tempfile = malloc(len*sizeof(char));
-			if(!tempfile)
-			{
-				closedir(dir);
-				(void)my_chdir(curr_view->curr_dir);
-				add_completion(filename);
-				free(filename);
-				free(dirname);
-				return;
-			}
-			snprintf(tempfile, len, "%s%s", dirname, d->d_name);
-			if(is_dir(tempfile))
-				isdir = 1;
-			else
-				temp = strdup(d->d_name);
-
-			free(tempfile);
-		}
-		else
-		{
-			temp = strdup(d->d_name);
-		}
-
-		if(isdir)
-		{
-			char * tempfile = (char *)NULL;
-			tempfile = malloc((strlen(d->d_name) + 2) * sizeof(char));
-			if(tempfile == NULL)
-			{
-				closedir(dir);
-				(void)my_chdir(curr_view->curr_dir);
-				add_completion(filename);
-				free(filename);
-				free(dirname);
-				return;
-			}
-			snprintf(tempfile, strlen(d->d_name) + 2, "%s/", d->d_name);
-			temp = strdup(tempfile);
-
-			free(tempfile);
-		}
-#ifndef _WIN32
-		escaped = woe ? strdup(temp) : escape_filename(temp, 1);
-		add_completion(escaped);
-		free(escaped);
-#else
-		add_completion(escape_for_cd(temp));
-#endif
-		free(temp);
-	}
-
-	(void)my_chdir(curr_view->curr_dir);
-
-	completion_group_end();
-	if(type != FNC_EXECONLY)
-	{
-		if(get_completion_count() == 0)
-		{
-			add_completion(filename);
-		}
-		else
-		{
-#ifndef _WIN32
-			temp = woe ? strdup(filename) : escape_filename(filename, 1);
-			add_completion(temp);
-			free(temp);
-#else
-			add_completion(escape_for_cd(filename));
-#endif
-		}
-	}
-
-	free(filename);
-	free(dirname);
-	closedir(dir);
-}
-
-static void
-complete_help(const char *str)
-{
-	int i;
-
-	if(!cfg.use_vim_help)
-		return;
-
-	for(i = 0; tags[i] != NULL; i++)
-	{
-		if(strstr(tags[i], str) != NULL)
-			add_completion(tags[i]);
-	}
-	completion_group_end();
-	add_completion(str);
-}
-
-static void
-complete_history(const char *str)
-{
-	static const char *lines[] = {
-		".",
-		"dir",
-		"@",
-		"input",
-		"/",
-		"search",
-		"fsearch",
-		"?",
-		"bsearch",
-		":",
-		"cmd",
-	};
-	int i;
-	size_t len = strlen(str);
-	for(i = 0; i < ARRAY_LEN(lines); i++)
-	{
-		if(strncmp(str, lines[i], len) == 0)
-			add_completion(lines[i]);
-	}
-	completion_group_end();
-	add_completion(str);
-}
-
-#ifndef _WIN32
-void complete_user_name(const char *str)
-{
-	struct passwd* pw;
-	size_t len;
-
-	len = strlen(str);
-	setpwent();
-	while((pw = getpwent()) != NULL)
-	{
-		if(strncmp(pw->pw_name, str, len) == 0)
-			add_completion(pw->pw_name);
-	}
-	completion_group_end();
-	add_completion(str);
-}
-
-void complete_group_name(const char *str)
-{
-	struct group* gr;
-	size_t len = strlen(str);
-
-	setgrent();
-	while((gr = getgrent()) != NULL)
-	{
-		if(strncmp(gr->gr_name, str, len) == 0)
-			add_completion(gr->gr_name);
-	}
-	completion_group_end();
-	add_completion(str);
-}
-#endif
-
-static int
-complete_chown(const char *str)
-{
-#ifndef _WIN32
-	char *colon = strchr(str, ':');
-	if(colon == NULL)
-	{
-		complete_user_name(str);
-		return 0;
-	}
-	else
-	{
-		complete_user_name(colon + 1);
-		return colon - str + 1;
-	}
-#else
-	add_completion(str);
-	return 0;
-#endif
-}
-
-static void
-complete_filetype(const char *str)
-{
-	const char *filename = get_current_file_name(curr_view);
-	assoc_records_t ft = get_all_programs_for_file(filename);
-
-	complete_progs(str, ft);
-	free(ft.list);
-
-	complete_progs(str, get_magic_handlers(filename));
-
-	completion_group_end();
-	add_completion(str);
-}
-
-static void
-complete_progs(const char *str, assoc_records_t records)
-{
-	int i;
-	const size_t len = strlen(str);
-
-	for(i = 0; i < records.count; i++)
-	{
-		if(strncmp(records.list[i].command, str, len) == 0)
-		{
-			add_completion(records.list[i].command);
-		}
-	}
-}
-
-static void
-complete_highlight_groups(const char *str)
-{
-	int i;
-	size_t len = strlen(str);
-	for(i = 0; i < MAXNUM_COLOR - 2; i++)
-	{
-		if(strncasecmp(str, HI_GROUPS[i], len) == 0)
-			add_completion(HI_GROUPS[i]);
-	}
-	completion_group_end();
-	add_completion(str);
-}
-
-static int
-complete_highlight_arg(const char *str)
-{
-	int i;
-	char *equal = strchr(str, '=');
-	int result = (equal == NULL) ? 0 : (equal - str + 1);
-	size_t len = strlen((equal == NULL) ? str : ++equal);
-	if(equal == NULL)
-	{
-		static const char *args[] = {
-			"cterm",
-			"ctermfg",
-			"ctermbg",
-		};
-		for(i = 0; i < ARRAY_LEN(args); i++)
-		{
-			if(strncmp(str, args[i], len) == 0)
-				add_completion(args[i]);
-		}
-	}
-	else
-	{
-		if(strncmp(str, "cterm", equal - str - 1) == 0)
-		{
-			static const char *STYLES[] = {
-				"bold",
-				"underline",
-				"reverse",
-				"inverse",
-				"standout",
-				"none",
-			};
-			char *comma = strrchr(equal, ',');
-			if(comma != NULL)
-			{
-				result += comma - equal + 1;
-				equal = comma + 1;
-				len = strlen(equal);
-			}
-
-			for(i = 0; i < ARRAY_LEN(STYLES); i++)
-			{
-				if(strncasecmp(equal, STYLES[i], len) == 0)
-					add_completion(STYLES[i]);
-			}
-		}
-		else
-		{
-			if(strncasecmp(equal, "default", len) == 0)
-				add_completion("default");
-			if(strncasecmp(equal, "none", len) == 0)
-				add_completion("none");
-			for(i = 0; i < ARRAY_LEN(COLOR_NAMES); i++)
-			{
-				if(strncasecmp(equal, COLOR_NAMES[i], len) == 0)
-					add_completion(COLOR_NAMES[i]);
-			}
-		}
-	}
-	completion_group_end();
-	add_completion((equal == NULL) ? str : equal);
-	return result;
-}
-
-static void
-complete_winrun(const char *str)
-{
-	static const char *VARIANTS[] = { "^", "$", "%", ".", "," };
-	size_t len = strlen(str);
-	int i;
-
-	for(i = 0; i < ARRAY_LEN(VARIANTS); i++)
-	{
-		if(strncmp(str, VARIANTS[i], len) == 0)
-			add_completion(VARIANTS[i]);
-	}
-	completion_group_end();
-	add_completion(str);
-}
-
-static void
-complete_envvar(const char *str)
-{
-	extern char **environ;
-	char **p = environ;
-	size_t len = strlen(str);
-
-	while(*p != NULL)
-	{
-		if(strncmp(*p, str, len) == 0)
-		{
-			char *equal = strchr(*p, '=');
-			*equal = '\0';
-			add_completion(*p);
-			*equal = '=';
-		}
-		p++;
-	}
-
-	completion_group_end();
-	add_completion(str);
-}
 
 void
 exec_startup_commands(int c, char **v)
@@ -1143,47 +433,6 @@ exec_startup_commands(int c, char **v)
 			exec_commands(argv[x] + 1, curr_view, 0, GET_COMMAND);
 		}
 	}
-}
-
-static int
-is_entry_dir(const struct dirent *d)
-{
-#ifdef _WIN32
-	struct stat st;
-	if(stat(d->d_name, &st) != 0)
-		return 0;
-	return S_ISDIR(st.st_mode);
-#else
-	if(d->d_type == DT_UNKNOWN)
-	{
-		struct stat st;
-		if(stat(d->d_name, &st) != 0)
-			return 0;
-		return S_ISDIR(st.st_mode);
-	}
-
-	if(d->d_type != DT_DIR && d->d_type != DT_LNK)
-		return 0;
-	if(d->d_type == DT_LNK && !check_link_is_dir(d->d_name))
-		return 0;
-	return 1;
-#endif
-}
-
-static int
-is_entry_exec(const struct dirent *d)
-{
-#ifndef _WIN32
-	if(d->d_type == DT_DIR)
-		return 0;
-	if(d->d_type == DT_LNK && check_link_is_dir(d->d_name))
-		return 0;
-	if(access(d->d_name, X_OK) != 0)
-		return 0;
-	return 1;
-#else
-	return is_win_executable(d->d_name);
-#endif
 }
 
 static int
@@ -1217,7 +466,7 @@ cmds_expand_macros(const char *str, int *use_menu, int *split)
 	return result;
 }
 
-static char *
+char *
 cmds_expand_envvars(const char *str)
 {
 	char *result = NULL;
@@ -1287,6 +536,8 @@ static
 void
 select_range(int id, const cmd_info_t *cmd_info)
 {
+	/* TODO: refactor this function select_range() */
+
 	int x;
 	int y = 0;
 
@@ -1410,89 +661,12 @@ init_commands(void)
 	init_cmds(1, &cmds_conf);
 	add_builtin_commands((const cmd_add_t *)&commands, ARRAY_LEN(commands));
 
-	split_path();
+	init_commands_completion();
 	qsort(key_pairs, ARRAY_LEN(key_pairs), sizeof(*key_pairs), notation_sorter);
 	for(i = 0; i < ARRAY_LEN(key_pairs); i++)
 		key_pairs[i].len = strlen(key_pairs[i].notation);
 
 	init_variables(&print_func);
-}
-
-static void
-split_path(void)
-{
-	const char *path, *p, *q;
-	int i;
-
-	path = env_get("PATH");
-
-	if(paths != NULL)
-		free_string_array(paths, paths_count);
-
-	paths_count = 1;
-	p = path;
-	while((p = strchr(p, ':')) != NULL)
-	{
-		paths_count++;
-		p++;
-	}
-
-	paths = malloc(paths_count*sizeof(paths[0]));
-	if(paths == NULL)
-		return;
-
-	i = 0;
-	p = path - 1;
-	do
-	{
-		int j;
-		char *s;
-
-		p++;
-#ifndef _WIN32
-		q = strchr(p, ':');
-#else
-		q = strchr(p, ';');
-#endif
-		if(q == NULL)
-		{
-			q = p + strlen(p);
-		}
-
-		s = malloc((q - p + 1)*sizeof(s[0]));
-		if(s == NULL)
-		{
-			for(j = 0; j < i - 1; j++)
-				free(paths[j]);
-			paths_count = 0;
-			return;
-		}
-		snprintf(s, q - p + 1, "%s", p);
-
-		p = q;
-
-		s = expand_tilde(s);
-
-		if(access(s, F_OK) != 0)
-		{
-			free(s);
-			continue;
-		}
-
-		paths[i++] = s;
-
-		for(j = 0; j < i - 1; j++)
-		{
-			if(pathcmp(paths[j], s) == 0)
-			{
-				free(s);
-				i--;
-				break;
-			}
-		}
-	}
-	while (q[0] != '\0');
-	paths_count = i;
 }
 
 static void
@@ -1567,536 +741,6 @@ save_prompt_history(const char *line)
 			&cfg.prompt_history_len);
 }
 
-static const char *
-find_nth_chr(const char *str, char c, int n)
-{
-	str--;
-	while(n-- > 0 && (str = strchr(str + 1, c)) != NULL);
-	return str;
-}
-
-/* Applies all filename modifiers. */
-static const char *
-apply_mods(const char *path, const char *parent, const char *mod)
-{
-	static char buf[PATH_MAX];
-	int napplied = 0;
-
-	strcpy(buf, path);
-	while(*mod != '\0')
-	{
-		int mod_len;
-		const char *p = apply_mod(buf, parent, mod, &mod_len);
-		if(p == NULL)
-			break;
-		strcpy(buf, p);
-		mod += mod_len;
-		napplied++;
-	}
-
-#ifdef _WIN32
-	/* this is needed to run something like explorer.exe, which isn't smart enough
-	 * to understand forward slashes */
-	if(napplied == 0 && pathcmp(cfg.shell, "cmd") != 0)
-		to_back_slash(buf);
-#endif
-
-	return buf;
-}
-
-/* Applies one filename modifiers per call. */
-static const char *
-apply_mod(const char *path, const char *parent, const char *mod, int *mod_len)
-{
-	char path_buf[PATH_MAX];
-	static char buf[PATH_MAX];
-
-	snprintf(path_buf, sizeof(path_buf), "%s", path);
-#ifdef _WIN32
-	to_forward_slash(path_buf);
-#endif
-
-	*mod_len = 2;
-	if(strncmp(mod, ":p", 2) == 0)
-		*mod_len += apply_p_mod(path_buf, parent, buf, sizeof(buf));
-	else if(strncmp(mod, ":~", 2) == 0)
-		*mod_len += apply_tilde_mod(path_buf, buf, sizeof(buf));
-	else if(strncmp(mod, ":.", 2) == 0)
-		*mod_len += apply_dot_mod(path_buf, buf, sizeof(buf));
-	else if(strncmp(mod, ":h", 2) == 0)
-		*mod_len += apply_h_mod(path_buf, buf, sizeof(buf));
-#ifdef _WIN32
-	else if(strncmp(mod, ":u", 2) == 0)
-		*mod_len += apply_u_mod(path_buf, buf, sizeof(buf));
-#endif
-	else if(strncmp(mod, ":t", 2) == 0)
-		*mod_len += apply_t_mod(path_buf, buf, sizeof(buf));
-	else if(strncmp(mod, ":r", 2) == 0)
-		*mod_len += apply_r_mod(path_buf, buf, sizeof(buf));
-	else if(strncmp(mod, ":e", 2) == 0)
-		*mod_len += apply_e_mod(path_buf, buf, sizeof(buf));
-	else if(strncmp(mod, ":s", 2) == 0 || strncmp(mod, ":gs", 3) == 0)
-		*mod_len += apply_s_gs_mod(path_buf, mod, buf, sizeof(buf));
-	else
-		return NULL;
-
-#ifdef _WIN32
-	/* this is needed to run something like explorer.exe, which isn't smart enough
-	 * to understand forward slashes */
-	if(strncmp(mod, ":s", 2) != 0 && strncmp(mod, ":gs", 3) != 0)
-	{
-		if(pathcmp(cfg.shell, "cmd") != 0)
-			to_back_slash(buf);
-	}
-#endif
-
-	return buf;
-}
-
-/* Implementation of :p filename modifier. */
-static int
-apply_p_mod(const char *path, const char *parent, char *buf, size_t buf_len)
-{
-	size_t len;
-	if(is_path_absolute(path))
-	{
-		snprintf(buf, buf_len, "%s", path);
-		return 0;
-	}
-
-	snprintf(buf, buf_len, "%s", parent);
-	chosp(buf);
-	len = strlen(buf);
-	snprintf(buf + len, buf_len - len, "/%s", path);
-	return 0;
-}
-
-/* Implementation of :~ filename modifier. */
-static int
-apply_tilde_mod(const char *path, char *buf, size_t buf_len)
-{
-	size_t home_len = strlen(cfg.home_dir);
-	if(pathncmp(path, cfg.home_dir, home_len - 1) != 0)
-	{
-		snprintf(buf, buf_len, "%s", path);
-		return 0;
-	}
-
-	snprintf(buf, buf_len, "~%s", path + home_len - 1);
-	return 0;
-}
-
-/* Implementation of :. filename modifier. */
-static int
-apply_dot_mod(const char *path, char *buf, size_t buf_len)
-{
-	size_t len = strlen(curr_view->curr_dir);
-	if(pathncmp(path, curr_view->curr_dir, len) != 0 || path[len] == '\0')
-		snprintf(buf, buf_len, "%s", path);
-	else
-		snprintf(buf, buf_len, "%s", path + len + 1);
-	return 0;
-}
-
-/* Implementation of :h filename modifier. */
-static int
-apply_h_mod(const char *path, char *buf, size_t buf_len)
-{
-	char *p = strrchr(path, '/');
-	if(p == NULL)
-	{
-		snprintf(buf, buf_len, ".");
-	}
-	else
-	{
-		snprintf(buf, buf_len, "%s", path);
-		if(!is_root_dir(path))
-		{
-			buf[p - path + 1] = '\0';
-			if(!is_root_dir(buf))
-				buf[p - path] = '\0';
-		}
-	}
-	return 0;
-}
-
-#ifdef _WIN32
-/* Implementation of :u filename modifier. */
-static int
-apply_u_mod(const char *path, char *buf, size_t buf_len)
-{
-	char *p;
-	if(!is_unc_path(path))
-	{
-		DWORD size = buf_len - 2;
-		snprintf(buf, buf_len, "//");
-		GetComputerNameA(buf + 2, &size);
-		return 0;
-	}
-	snprintf(buf, buf_len, "%s", path);
-	p = strchr(path + 2, '/');
-	if(p != NULL)
-		buf[p - path] = '\0';
-	return 0;
-}
-#endif
-
-/* Implementation of :t filename modifier. */
-static int
-apply_t_mod(const char *path, char *buf, size_t buf_len)
-{
-	char *p = strrchr(path, '/');
-	snprintf(buf, buf_len, "%s", (p == NULL) ? path : (p + 1));
-	return 0;
-}
-
-/* Implementation of :r filename modifier. */
-static int
-apply_r_mod(const char *path, char *buf, size_t buf_len)
-{
-	char *slash = strrchr(path, '/');
-	char *dot = strrchr(path, '.');
-	snprintf(buf, buf_len, "%s", path);
-	if(dot == NULL || (slash != NULL && dot < slash) || dot == path ||
-			dot == slash + 1)
-		return 0;
-	buf[dot - path] = '\0';
-	return 0;
-}
-
-/* Implementation of :e filename modifier. */
-static int
-apply_e_mod(const char *path, char *buf, size_t buf_len)
-{
-	char *slash = strrchr(path, '/');
-	char *dot = strrchr(path, '.');
-	if(dot == NULL || (slash != NULL && dot < slash) || dot == path ||
-			dot == slash + 1)
-		snprintf(buf, buf_len, "%s", "");
-	else
-		snprintf(buf, buf_len, "%s", dot + 1);
-	return 0;
-}
-
-/* Implementation of :s and :gs filename modifiers. */
-static int
-apply_s_gs_mod(const char *path, const char *mod, char *buf, size_t buf_len)
-{
-	char pattern[256], sub[256];
-	int global;
-	const char *start = mod;
-	char c = (mod[1] == 'g') ? mod++[3] : mod[2];
-	const char *t, *p = find_nth_chr(mod, c, 3);
-	if(p == NULL)
-	{
-		snprintf(buf, buf_len, "%s", path);
-		return 0;
-	}
-	t = find_nth_chr(mod, c, 2);
-	snprintf(pattern, t - (mod + 3) + 1, "%s", mod + 3);
-	snprintf(sub, p - (t + 1) + 1, "%s", t + 1);
-	global = (mod[0] == 'g');
-	snprintf(buf, buf_len, "%s", substitute_in_name(path, pattern, sub, global));
-	return (p + 1) - start - 2;
-}
-
-static char *
-append_selected_file(FileView *view, char *expanded, int dir_name_len, int pos,
-		int quotes, const char *mod)
-{
-	char buf[PATH_MAX] = "";
-
-	if(dir_name_len != 0)
-		strcat(strcpy(buf, view->curr_dir), "/");
-	strcat(buf, view->dir_entry[pos].name);
-	chosp(buf);
-
-	if(quotes)
-	{
-		const char *s = enclose_in_dquotes(apply_mods(buf, view->curr_dir, mod));
-		expanded = realloc(expanded, strlen(expanded) + strlen(s) + 1 + 1);
-		strcat(expanded, s);
-	}
-	else
-	{
-		char *temp;
-
-		temp = escape_filename(apply_mods(buf, view->curr_dir, mod), 0);
-		expanded = realloc(expanded, strlen(expanded) + strlen(temp) + 1 + 1);
-		strcat(expanded, temp);
-		free(temp);
-	}
-
-	return expanded;
-}
-
-#ifndef TEST
-static
-#endif
-char *
-append_selected_files(FileView *view, char *expanded, int under_cursor,
-		int quotes, const char *mod)
-{
-	int dir_name_len = 0;
-#ifdef _WIN32
-	size_t old_len = strlen(expanded);
-#endif
-
-	if(view == other_view)
-		dir_name_len = strlen(other_view->curr_dir) + 1;
-
-	if(view->selected_files && !under_cursor)
-	{
-		int y, x = 0;
-		for(y = 0; y < view->list_rows; y++)
-		{
-			if(!view->dir_entry[y].selected)
-				continue;
-
-			expanded = append_selected_file(view, expanded, dir_name_len, y, quotes,
-					mod);
-
-			if(++x != view->selected_files)
-				strcat(expanded, " ");
-		}
-	}
-	else
-	{
-		expanded = append_selected_file(view, expanded, dir_name_len,
-				view->list_pos, quotes, mod);
-	}
-
-#ifdef _WIN32
-	if(pathcmp(cfg.shell, "cmd") == 0)
-		to_back_slash(expanded + old_len);
-#endif
-
-	return expanded;
-}
-
-static char *
-append_to_expanded(char *expanded, const char* str)
-{
-	char *t;
-
-	t = realloc(expanded, strlen(expanded) + strlen(str) + 1);
-	if(t == NULL)
-	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
-		free(expanded);
-		return NULL;
-	}
-	strcat(t, str);
-	return t;
-}
-
-static char *
-expand_directory_path(FileView *view, char *expanded, int quotes,
-		const char *mod)
-{
-	char *result;
-	if(quotes)
-	{
-		const char *s = enclose_in_dquotes(apply_mods(view->curr_dir, "/", mod));
-		result = append_to_expanded(expanded, s);
-	}
-	else
-	{
-		char *escaped;
-
-		escaped = escape_filename(apply_mods(view->curr_dir, "/", mod), 0);
-		if(escaped == NULL)
-		{
-			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
-			free(expanded);
-			return NULL;
-		}
-
-		result = append_to_expanded(expanded, escaped);
-		free(escaped);
-	}
-
-#ifdef _WIN32
-	if(pathcmp(cfg.shell, "cmd") == 0)
-		to_back_slash(result);
-#endif
-
-	return result;
-}
-
-/* args could be equal NULL
- * The string returned needs to be freed in the calling function */
-char *
-expand_macros(FileView *view, const char *command, const char *args,
-		int *use_menu, int *split)
-{
-	/* TODO: refactor this function expand_macros() */
-
-	size_t cmd_len;
-	char *expanded;
-	size_t x;
-	int y = 0;
-	int len = 0;
-
-	cmd_len = strlen(command);
-
-	expanded = calloc(cmd_len + 1, sizeof(char *));
-
-	for(x = 0; x < cmd_len; x++)
-		if(command[x] == '%')
-			break;
-
-	strncat(expanded, command, x);
-	x++;
-	len = strlen(expanded);
-
-	do
-	{
-		int quotes = 0;
-		if(command[x] == '"' && strchr("cCfFbdD", command[x + 1]) != NULL)
-		{
-			quotes = 1;
-			x++;
-		}
-		switch(command[x])
-		{
-			case 'a': /* user arguments */
-				if(args != NULL)
-				{
-					char arg_buf[strlen(args) + 2];
-
-					expanded = (char *)realloc(expanded,
-							strlen(expanded) + strlen(args) + 3);
-					snprintf(arg_buf, sizeof(arg_buf), "%s", args);
-					strcat(expanded, arg_buf);
-					len = strlen(expanded);
-				}
-				break;
-			case 'b': /* selected files of both dirs */
-				expanded = append_selected_files(curr_view, expanded, 0, quotes,
-						command + x + 1);
-				len = strlen(expanded);
-				expanded = realloc(expanded, len + 1 + 1);
-				strcat(expanded, " ");
-				expanded = append_selected_files(other_view, expanded, 0, quotes,
-						command + x + 1);
-				len = strlen(expanded);
-				break;
-			case 'c': /* current dir file under the cursor */
-				expanded = append_selected_files(curr_view, expanded, 1, quotes,
-						command + x + 1);
-				len = strlen(expanded);
-				break;
-			case 'C': /* other dir file under the cursor */
-				expanded = append_selected_files(other_view, expanded, 1, quotes,
-						command + x + 1);
-				len = strlen(expanded);
-				break;
-			case 'f': /* current dir selected files */
-				expanded = append_selected_files(curr_view, expanded, 0, quotes,
-						command + x + 1);
-				len = strlen(expanded);
-				break;
-			case 'F': /* other dir selected files */
-				expanded = append_selected_files(other_view, expanded, 0, quotes,
-						command + x + 1);
-				len = strlen(expanded);
-				break;
-			case 'd': /* current directory */
-				expanded = expand_directory_path(curr_view, expanded, quotes,
-						command + x + 1);
-				len = strlen(expanded);
-				break;
-			case 'D': /* other directory */
-				expanded = expand_directory_path(other_view, expanded, quotes,
-						command + x + 1);
-				len = strlen(expanded);
-				break;
-			case 'm': /* use menu */
-				*use_menu = 1;
-				break;
-			case 'M': /* use menu like with :locate and :find */
-				*use_menu = 2;
-				break;
-			case 'S': /* show command output in the status bar */
-				*use_menu = 3;
-				break;
-			case 's': /* split in new screen region */
-				*split = 1;
-				break;
-			case '%':
-				expanded = (char *)realloc(expanded, len + 2);
-				strcat(expanded, "%");
-				len++;
-				break;
-
-			default:
-				break;
-		}
-		if(command[x] != '\0')
-			x++;
-		y = x;
-
-		while(x < cmd_len)
-		{
-			if(x == y)
-			{
-				if(strncmp(command + x, ":p", 2) == 0)
-					y += 2;
-				else if(strncmp(command + x, ":~", 2) == 0)
-					y += 2;
-				else if(strncmp(command + x, ":.", 2) == 0)
-					y += 2;
-				else if(strncmp(command + x, ":h", 2) == 0)
-					y += 2;
-#ifdef _WIN32
-				else if(strncmp(command + x, ":u", 2) == 0)
-					y += 2;
-#endif
-				else if(strncmp(command + x, ":t", 2) == 0)
-					y += 2;
-				else if(strncmp(command + x, ":r", 2) == 0)
-					y += 2;
-				else if(strncmp(command + x, ":e", 2) == 0)
-					y += 2;
-				else if(strncmp(command + x, ":s", 2) == 0 ||
-						strncmp(command + x, ":gs", 3) == 0)
-				{
-					const char *p;
-					if(command[x + 1] == 'g')
-						x += 3;
-					else
-						x += 2;
-					y = x;
-					p = find_nth_chr(command + x, command[x], 3);
-					if(p != NULL)
-						y += (p - (command + x)) + 1;
-					else
-						y += strlen(command + y);
-					x = y;
-					continue;
-				}
-			}
-			if(command[x] == '%')
-				break;
-			if(command[x] != '\0')
-				x++;
-		}
-		assert(x >= y);
-		assert(y <= cmd_len);
-		expanded = realloc(expanded, len + (x - y) + 1);
-		strncat(expanded, command + y, x - y);
-		len = strlen(expanded);
-		x++;
-	}
-	while(x < cmd_len);
-
-	if(len > cfg.max_args/2)
-		(void)show_error_msg("Argument is too long", " FIXME ");
-
-	return expanded;
-}
-
 static void
 split_screen(FileView *view, char *command)
 {
@@ -2120,202 +764,6 @@ split_screen(FileView *view, char *command)
 		snprintf(buf, sizeof(buf), "screen-open-region-with-program %s", cfg.shell);
 		my_system(buf);
 	}
-}
-
-/*
- * pause:
- *  > 0 - pause always
- *  = 0 - do not pause
- *  < 0 - pause on error
- */
-int
-shellout(const char *command, int pause, int allow_screen)
-{
-	/* TODO: refactor this big function shellout() */
-	size_t len = (command != NULL) ? strlen(command) : 0;
-	char buf[cfg.max_args];
-	int result;
-	int ec;
-
-	if(pause > 0 && len > 1 && command[len - 1] == '&')
-		pause = -1;
-
-	if(command != NULL)
-	{
-		if(allow_screen && cfg.use_screen)
-		{
-			int bg;
-			char *escaped;
-			char *ptr = NULL;
-			char *title = strstr(command, get_vicmd(&bg));
-			char *escaped_sh = escape_filename(cfg.shell, 0);
-
-			/* Needed for symlink directories and sshfs mounts */
-			escaped = escape_filename(curr_view->curr_dir, 0);
-			snprintf(buf, sizeof(buf), "screen -X setenv PWD %s", escaped);
-			free(escaped);
-
-			my_system(buf);
-
-			if(title != NULL)
-			{
-				if(pause > 0)
-				{
-					snprintf(buf, sizeof(buf),
-							"screen -t \"%s\" %s -c '%s" PAUSE_STR "'",
-							title + strlen(get_vicmd(&bg)) + 1, escaped_sh, command);
-				}
-				else
-				{
-					escaped = escape_filename(command, 0);
-					snprintf(buf, sizeof(buf), "screen -t \"%s\" %s -c %s",
-							title + strlen(get_vicmd(&bg)) + 1, escaped_sh, escaped);
-					free(escaped);
-				}
-			}
-			else
-			{
-				ptr = strchr(command, ' ');
-				if(ptr != NULL)
-				{
-					*ptr = '\0';
-					title = strdup(command);
-					*ptr = ' ';
-				}
-				else
-				{
-					title = strdup("Shell");
-				}
-
-				if(pause > 0)
-				{
-					snprintf(buf, sizeof(buf),
-							"screen -t \"%.10s\" %s -c '%s" PAUSE_STR "'", title,
-							escaped_sh, command);
-				}
-				else
-				{
-					escaped = escape_filename(command, 0);
-					snprintf(buf, sizeof(buf), "screen -t \"%.10s\" %s -c %s", title,
-							escaped_sh, escaped);
-					free(escaped);
-				}
-				free(title);
-			}
-			free(escaped_sh);
-		}
-		else
-		{
-			if(pause > 0)
-			{
-#ifdef _WIN32
-				if(pathcmp(cfg.shell, "cmd") == 0)
-					snprintf(buf, sizeof(buf), "%s" PAUSE_STR, command);
-				else
-#endif
-					snprintf(buf, sizeof(buf), "%s; " PAUSE_CMD, command);
-			}
-			else
-			{
-				snprintf(buf, sizeof(buf), "%s", command);
-			}
-		}
-	}
-	else
-	{
-		if(allow_screen && cfg.use_screen)
-		{
-			snprintf(buf, sizeof(buf), "screen -X setenv PWD \'%s\'",
-					curr_view->curr_dir);
-
-			my_system(buf);
-
-			snprintf(buf, sizeof(buf), "screen");
-		}
-		else
-		{
-			snprintf(buf, sizeof(buf), "%s", cfg.shell);
-		}
-	}
-
-	def_prog_mode();
-	endwin();
-
-	/* Need to use setenv instead of getcwd for a symlink directory */
-	env_set("PWD", curr_view->curr_dir);
-
-	ec = my_system(buf);
-	result = WEXITSTATUS(ec);
-
-#ifndef _WIN32
-	if(result != 0 && pause < 0)
-		my_system(PAUSE_CMD);
-
-	/* force views update */
-	memset(&lwin.dir_mtime, 0, sizeof(lwin.dir_mtime));
-	memset(&rwin.dir_mtime, 0, sizeof(rwin.dir_mtime));
-#endif
-
-#ifdef _WIN32
-	reset_prog_mode();
-	resize_term(cfg.lines, cfg.columns);
-#endif
-	/* always redraw to handle resizing of terminal */
-	if(!curr_stats.auto_redraws)
-		curr_stats.need_redraw = 1;
-
-	curs_set(FALSE);
-
-	return result;
-}
-
-char *
-fast_run_complete(char *cmd)
-{
-	char *buf = NULL;
-	char *p;
-
-	p = strchr(cmd, ' ');
-	if(p == NULL)
-		p = cmd + strlen(cmd);
-	else
-		*p = '\0';
-
-	reset_completion();
-	exec_completion(cmd);
-	free(next_completion());
-
-	if(get_completion_count() > 2)
-	{
-		status_bar_error("Command beginning is ambiguous");
-	}
-	else
-	{
-		char *completed;
-
-		completed = next_completion();
-		buf = malloc(strlen(completed) + 1 + strlen(p) + 1);
-		sprintf(buf, "%s %s", completed, p);
-		free(completed);
-	}
-
-	return buf;
-}
-
-char *
-edit_selection(FileView *view, int *bg)
-{
-	int use_menu = 0;
-	int split = 0;
-	char *buf;
-	char *files = expand_macros(view, "%f", NULL, &use_menu, &split);
-
-	if((buf = malloc(strlen(get_vicmd(bg)) + strlen(files) + 2)) != NULL)
-		snprintf(buf, strlen(get_vicmd(bg)) + 1 + strlen(files) + 1, "%s %s",
-				get_vicmd(bg), files);
-
-	free(files);
-	return buf;
 }
 
 static int
@@ -2998,15 +1446,18 @@ emark_cmd(const cmd_info_t *cmd_info)
 	else
 	{
 		clean_selected_files(curr_view);
-		if(shellout(com + i, cmd_info->emark ? 1 : (cfg.fast_run ? 0 : -1), 1)
-				== 127 && cfg.fast_run)
+		if(cfg.fast_run)
 		{
 			char *buf = fast_run_complete(com + i);
 			if(buf == NULL)
 				return 1;
 
-			shellout(buf, cmd_info->emark ? 1 : -1, 1);
+			(void)shellout(buf, cmd_info->emark ? 1 : -1, 1);
 			free(buf);
+		}
+		else
+		{
+			(void)shellout(com + i, cmd_info->emark ? 1 : (cfg.fast_run ? 0 : -1), 1);
 		}
 	}
 
@@ -4907,6 +3358,8 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 static int
 usercmd_cmd(const cmd_info_t *cmd_info)
 {
+	/* TODO: Refactor this function usercmd_cmd() */
+
 	char *expanded_com = NULL;
 	int use_menu = 0;
 	int split = 0;
@@ -5017,5 +3470,5 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
-/* vim: set cinoptions+=t0 : */
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

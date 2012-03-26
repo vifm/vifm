@@ -22,6 +22,8 @@
 
 	Open selected directories with l or Enter keys.
 
+	Changed the way 'fastrun' works.
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.

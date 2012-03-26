@@ -1,3 +1,11 @@
+SOURCES := ../../src/*.c ../../src/cfg/*.c ../../src/engine/*.c
+SOURCES += ../../src/modes/dialogs/*.c ../../src/menus/*.c ../../src/modes/*.c
+SOURCES += ../../src/utils/*.c
+
+SOURCES := $(filter-out ../../src/vifm.c, $(wildcard $(SOURCES)))
+SOURCES := $(filter-out ../../src/vifmrc-converter.c, $(SOURCES))
+SOURCES := $(filter-out ../../src/win_helper.c, $(SOURCES))
+
 TEST_NAME := $(notdir $(abspath .))
 ifneq ($(OS),Windows_NT)
     BIN := ../bin/$(TEST_NAME)
@@ -7,10 +15,13 @@ endif
 
 SOURCES += ../seatest/seatest.c
 ifeq ($(OS),Windows_NT)
-    SOURCES := $(filter-out ../../src/attr_dialog_nix.c, $(SOURCES))
+    DIALOG := ../../src/modes/dialogs/attr_dialog_nix.c
+    SOURCES := $(filter-out ../../src/desktop.c, $(SOURCES))
 else
-    SOURCES := $(filter-out ../../src/attr_dialog_win.c, $(SOURCES))
+    DIALOG := ../../src/modes/dialogs/attr_dialog_win.c
+    SOURCES := $(filter-out ../../src/menus/volumes_menu.c, $(SOURCES))
 endif
+SOURCES := $(filter-out $(DIALOG), $(SOURCES))
 LOCAL_SOURCES += $(wildcard *.c)
 
 OBJECTS := $(SOURCES:.c=.o)
@@ -41,6 +52,24 @@ bin/dummy:
 	touch bin/dummy
 
 ../bin/%.o: ../../src/%.c
+	gcc -c -o $@ $< $(CFLAGS)
+
+../bin/%.o: ../../src/cfg/%.c
+	gcc -c -o $@ $< $(CFLAGS)
+
+../bin/%.o: ../../src/engine/%.c
+	gcc -c -o $@ $< $(CFLAGS)
+
+../bin/%.o: ../../src/menus/%.c
+	gcc -c -o $@ $< $(CFLAGS)
+
+../bin/%.o: ../../src/modes/dialogs/%.c
+	gcc -c -o $@ $< $(CFLAGS)
+
+../bin/%.o: ../../src/modes/%.c
+	gcc -c -o $@ $< $(CFLAGS)
+
+../bin/%.o: ../../src/utils/%.c
 	gcc -c -o $@ $< $(CFLAGS)
 
 ../bin/%.o: ../seatest/%.c

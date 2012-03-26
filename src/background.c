@@ -37,12 +37,13 @@
 #include <sys/wait.h>
 #endif
 
-#include "background.h"
-#include "commands.h"
-#include "config.h"
-#include "menus.h"
+#include "cfg/config.h"
+#include "menus/menus.h"
+#include "utils/utils.h"
+#include "commands_completion.h"
 #include "status.h"
-#include "utils.h"
+
+#include "background.h"
 
 job_t *jobs;
 finished_job_t *fjobs;
@@ -107,9 +108,6 @@ check_background_jobs(void)
 
 	while(p != NULL)
 	{
-		int rerun = 0;
-		char *completed = NULL;
-
 		/* Mark any finished jobs */
 		while(fj != NULL)
 		{
@@ -165,20 +163,13 @@ check_background_jobs(void)
 			if(error_buf == NULL)
 				continue;
 
-			if(!p->running && p->exit_code == 127 && cfg.fast_run)
-			{
-				rerun = 1;
-			}
-			else if(!p->skip_errors)
+			if(!p->skip_errors)
 			{
 				p->skip_errors = show_error_msg("Background Process Error",
 						error_buf);
 			}
 			free(error_buf);
 		}
-
-		if(rerun)
-			completed = fast_run_complete(p->cmd);
 
 		/* Remove any finished jobs. */
 		if(!p->running)
@@ -197,19 +188,6 @@ check_background_jobs(void)
 		{
 			prev = p;
 			p = p->next;
-		}
-
-		if(rerun)
-		{
-			if(completed == NULL)
-			{
-				curr_stats.save_msg = 1;
-			}
-			else
-			{
-				(void)start_background_job(completed);
-				free(completed);
-			}
 		}
 	}
 
@@ -524,15 +502,26 @@ start_background_job(const char *cmd)
 	pid_t pid;
 	char *args[4];
 	int error_pipe[2];
+	char *command;
+
+	command = cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd);
+	if(command == NULL)
+	{
+		return -1;
+	}
 
 	if(pipe(error_pipe) != 0)
 	{
 		(void)show_error_msg("File pipe error", "Error creating pipe");
+		free(command);
 		return -1;
 	}
 
 	if((pid = fork()) == -1)
+	{
+		free(command);
 		return -1;
+	}
 
 	if(pid == 0)
 	{
@@ -558,7 +547,7 @@ start_background_job(const char *cmd)
 
 		args[0] = cfg.shell;
 		args[1] = "-c";
-		args[2] = (char *)cmd;
+		args[2] = command;
 		args[3] = NULL;
 
 		setpgid(0, 0);
@@ -570,24 +559,39 @@ start_background_job(const char *cmd)
 	{
 		close(error_pipe[1]); /* Close write end of pipe. */
 
-		if(add_background_job(pid, cmd, error_pipe[0]) == NULL)
+		if(add_background_job(pid, command, error_pipe[0]) == NULL)
+		{
+			free(command);
 			return -1;
+		}
 	}
+	free(command);
 	return 0;
 #else
 	BOOL ret;
-
 	STARTUPINFO startup = {};
 	PROCESS_INFORMATION pinfo;
-	ret = CreateProcess(NULL, (char *)cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
+	char *command;
+
+	command = cfg.fast_run ? fast_run_complete(cmd) : strdup(cmd);
+	if(command == NULL)
+	{
+		return -1;
+	}
+
+	ret = CreateProcess(NULL, command, NULL, NULL, 0, 0, NULL, NULL, &startup,
 			&pinfo);
 	if(ret != 0)
 	{
 		CloseHandle(pinfo.hThread);
 
-		if(add_background_job(pinfo.dwProcessId, cmd, pinfo.hProcess) == NULL)
+		if(add_background_job(pinfo.dwProcessId, command, pinfo.hProcess) == NULL)
+		{
+			free(command);
 			return -1;
+		}
 	}
+	free(command);
 	return (ret == 0);
 #endif
 }

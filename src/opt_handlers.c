@@ -21,17 +21,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cfg/config.h"
+#include "engine/options.h"
+#include "modes/view.h"
+#include "utils/log.h"
+#include "utils/macros.h"
+#include "utils/path.h"
+#include "utils/string_array.h"
 #include "color_scheme.h"
-#include "config.h"
 #include "filelist.h"
-#include "log.h"
-#include "macros.h"
-#include "options.h"
+#include "quickview.h"
 #include "status.h"
-#include "string_array.h"
 #include "ui.h"
-#include "utils.h"
-#include "view.h"
 
 #include "opt_handlers.h"
 

@@ -28,15 +28,16 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "cfg/config.h"
+#include "engine/completion.h"
+#include "menus/menus.h"
+#include "utils/fs.h"
+#include "utils/macros.h"
+#include "utils/path.h"
+#include "utils/tree.h"
 #include "color_scheme.h"
-#include "completion.h"
-#include "config.h"
 #include "filelist.h"
-#include "macros.h"
-#include "menus.h"
 #include "status.h"
-#include "tree.h"
-#include "utils.h"
 
 char *HI_GROUPS[] = {
 	[WIN_COLOR]          = "Win",

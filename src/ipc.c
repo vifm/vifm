@@ -31,11 +31,11 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include "log.h"
-#include "macros.h"
+#include "utils/log.h"
+#include "utils/macros.h"
+#include "utils/string_array.h"
+#include "utils/utils.h"
 #include "status.h"
-#include "string_array.h"
-#include "utils.h"
 
 #include "ipc.h"
 

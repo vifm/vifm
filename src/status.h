@@ -26,7 +26,7 @@
 #include <limits.h>
 
 #include "../config.h"
-#include "tree.h"
+#include "utils/tree.h"
 
 #if !defined(NAME_MAX) && defined(_WIN32)
 #include <io.h>

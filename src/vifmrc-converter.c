@@ -33,8 +33,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils/macros.h"
 #include "color_scheme.h"
-#include "macros.h"
 
 #define MAX_LEN 1024
 

@@ -2,7 +2,7 @@
 
 #include "seatest.h"
 
-#include "../../src/config.h"
+#include "../../src/cfg/config.h"
 #include "../../src/sort.h"
 #include "../../src/ui.h"
 

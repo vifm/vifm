@@ -2,6 +2,8 @@
 
 .PHONY: version.c
 
+AUTOMAKE_OPTIONS = subdir-objects
+
 pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifm-help.txt
 
@@ -12,52 +14,94 @@ bin_SCRIPTS = vifm-pause
 man_MANS = ../data/vifm.1
 
 vifm_SOURCES = \
-	attr_dialog_nix.c attr_dialog_nix.h attr_dialog.h \
+	\
+	cfg/config.c cfg/config.h \
+	cfg/info.c cfg/info.h \
+	\
+	engine/cmds.c engine/cmds.h \
+	engine/completion.c engine/completion.h \
+	engine/keys.c engine/keys.h \
+	engine/options.c engine/options.h \
+	engine/variables.c engine/variables.h \
+	\
+	menus/all.h \
+	menus/apropos_menu.c menus/apropos_menu.h \
+	menus/bookmarks_menu.c menus/bookmarks_menu.h \
+	menus/colorscheme_menu.c menus/colorscheme_menu.h \
+	menus/commands_menu.c menus/commands_menu.h \
+	menus/dirhistory_menu.c menus/dirhistory_menu.h \
+	menus/dirstask_menu.c menus/dirstask_menu.h \
+	menus/filetypes_menu.c menus/filetypes_menu.h \
+	menus/find_menu.c menus/find_menu.h \
+	menus/grep_menu.c menus/grep_menu.h \
+	menus/history_menu.c menus/history_menu.h \
+	menus/jobs_menu.c menus/jobs_menu.h \
+	menus/locate_menu.c menus/locate_menu.h \
+	menus/map_menu.c menus/map_menu.h \
+	menus/menus.c menus/menus.h \
+	menus/registers_menu.c menus/registers_menu.h \
+	menus/undolist_menu.c menus/undolist_menu.h \
+	menus/users_menu.c menus/users_menu.h \
+	menus/vifm_menu.c menus/vifm_menu.h \
+	\
+	modes/dialogs/attr_dialog.h \
+	modes/dialogs/attr_dialog_nix.c modes/dialogs/attr_dialog_nix.h \
+	modes/dialogs/change_dialog.c modes/dialogs/change_dialog.h \
+	modes/dialogs/sort_dialog.c modes/dialogs/sort_dialog.h \
+	\
+	modes/cmdline.c modes/cmdline.h \
+	modes/file_info.c modes/file_info.h \
+	modes/menu.c modes/menu.h \
+	modes/modes.c modes/modes.h \
+	modes/normal.c modes/normal.h \
+	modes/view.c modes/view.h \
+	modes/visual.c modes/visual.h \
+	\
+	utils/env.c utils/env.h \
+	utils/file_streams.c utils/file_streams.h \
+	utils/fs.c utils/fs.h \
+	utils/log.c utils/log.h \
+	utils/macros.h \
+	utils/path.c utils/path.h \
+	utils/str.c utils/str.h \
+	utils/string_array.c utils/string_array.h \
+	utils/tree.c utils/tree.h \
+	utils/utf8.c utils/utf8.h \
+	utils/utils.c utils/utils.h \
+	\
 	background.c background.h \
 	bookmarks.c bookmarks.h \
-	change_dialog.c change_dialog.h \
-	cmdline.c cmdline.h \
-	cmds.c cmds.h \
 	color_scheme.c colorscheme.h \
 	commands.c commands.h \
-	completion.c completion.h \
-	config.c config.h \
+	commands_completion.c commands_completion.h \
+	desktop.c desktop.h \
 	dir_stack.c dir_stack.h \
-	file_info.c file_info.h \
+	globals.c globals.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \
+	filename_modifiers.c filename_modifiers.h \
 	fileops.c fileops.h \
 	filetype.c filetype.h \
+	fuse.c fuse.h \
 	ipc.c ipc.h \
-	keys.c keys.h \
-	log.c log.h \
+	macros.c macros.h \
 	main_loop.c main_loop.h \
-	menu.c menu.h \
-	menus.c menus.h \
-	modes.c modes.h \
-	normal.c normal.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
-	options.c options.h \
+	quickview.c quickview.h \
 	registers.c registers.h \
+	running.c running.h \
 	search.c search.h \
 	signals.c signals.h \
 	sort.c sort.h \
-	sort_dialog.c sort_dialog.h \
 	status.c status.h \
-	string_array.c string_array.h \
 	tags.c tags.h \
+	term_title.c term_title.h \
 	trash.c trash.h \
-	tree.c tree.h \
 	ui.c ui.h \
 	undo.c undo.h \
-	utf8.c utf8.h \
-	utils.c utils.h \
-	variables.c variables.h \
 	version.c version.h \
-	view.c view.h \
-	vifm.c \
-	visual.c visual.h
+	vifm.c
 
 vifmrc_converter_SOURCES = \
 	color_scheme.h \
@@ -66,12 +110,10 @@ vifmrc_converter_SOURCES = \
 utils.o: version.o
 
 version.c:
-	@if [ "x$$(whereis git)" != "x" ] ; then \
-		/bin/echo -n 'const char GIT_HASH[] = "' > version.c; \
-		/bin/echo -n `git rev-parse HEAD` >> version.c; \
-		/bin/echo '";' >> version.c; \
-	else \
-		/bin/echo -n 'const char GIT_HASH[] = "";' > version.c; \
+	@if [ "x$$(which git)" != "x" ]; then \
+		cp version.c version.c_; \
+		sed "s/GIT_HASH\[\] = \"[^\"]*\"/GIT_HASH[] = \"$$(git rev-parse HEAD)\"/" version.c_ > version.c; \
+		rm version.c_; \
 	fi
 
 ../data/vifm-help.txt: ../data/vifm.1

@@ -18,16 +18,15 @@
  */
 
 #include <curses.h>
-#include <regex.h>
 
-#include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
+#include <ctype.h> /* isspace() */
+#include <string.h> /* strchr() strdup() strcasecmp() */
 
-#include "config.h"
-#include "menus.h"
+#include "cfg/config.h"
+#include "menus/menus.h"
+#include "utils/str.h"
+#include "globals.h"
 #include "status.h"
-#include "utils.h"
 
 #include "filetype.h"
 
@@ -52,117 +51,6 @@ static void reset_list(assoc_list_t *assoc_list);
 static void reset_list_head(assoc_list_t *assoc_list);
 static void free_assoc(assoc_t *assoc);
 static void safe_free(char **adr);
-
-static char *
-to_regex(const char *global)
-{
-	char *result = strdup("^$");
-	int result_len = 1;
-	while(*global != '\0')
-	{
-		if(strchr("^.$()|+{", *global) != NULL)
-		{
-		  if(*global != '^' || result[result_len - 1] != '[')
-			{
-				result = realloc(result, result_len + 2 + 1 + 1);
-				result[result_len++] = '\\';
-			}
-		}
-		else if(*global == '!' && result[result_len - 1] == '[')
-		{
-			result = realloc(result, result_len + 2 + 1 + 1);
-			result[result_len++] = '^';
-			continue;
-		}
-		else if(*global == '\\')
-		{
-			result = realloc(result, result_len + 2 + 1 + 1);
-			result[result_len++] = *global++;
-		}
-		else if(*global == '?')
-		{
-			result = realloc(result, result_len + 1 + 1 + 1);
-			result[result_len++] = '.';
-			global++;
-			continue;
-		}
-		else if(*global == '*')
-		{
-			if(result_len == 1)
-			{
-				result = realloc(result, result_len + 9 + 1 + 1);
-				result[result_len++] = '[';
-				result[result_len++] = '^';
-				result[result_len++] = '.';
-				result[result_len++] = ']';
-				result[result_len++] = '.';
-				result[result_len++] = '*';
-			}
-			else
-			{
-				result = realloc(result, result_len + 2 + 1 + 1);
-				result[result_len++] = '.';
-				result[result_len++] = '*';
-			}
-			global++;
-			continue;
-		}
-		else
-		{
-			result = realloc(result, result_len + 1 + 1 + 1);
-		}
-		result[result_len++] = *global++;
-	}
-	result[result_len++] = '$';
-	result[result_len] = '\0';
-	return result;
-}
-
-static int
-global_matches(const char *global, const char *file)
-{
-	char *regex;
-	regex_t re;
-
-	regex = to_regex(global);
-
-	if(regcomp(&re, regex, REG_EXTENDED | REG_ICASE) == 0)
-	{
-		if(regexec(&re, file, 0, NULL, 0) == 0)
-		{
-			regfree(&re);
-			free(regex);
-			return 1;
-		}
-	}
-	regfree(&re);
-	free(regex);
-	return 0;
-}
-
-TESTABLE_STATIC void
-replace_double_comma(char *cmd, int put_null)
-{
-	char *p = cmd;
-	while(*cmd != '\0')
-	{
-		if(cmd[0] == ',')
-		{
-			if(cmd[1] == ',')
-			{
-				*p++ = *cmd++;
-				cmd++;
-				continue;
-			}
-			else if(put_null)
-			{
-				break;
-			}
-		}
-		*p++ = *cmd++;
-	}
-	*p = '\0';
-}
 
 int
 get_default_program_for_file(const char *file, assoc_record_t *result)
@@ -322,6 +210,30 @@ assoc_programs(const char *pattern, const char *records, int for_x)
 	register_assoc(assoc, for_x);
 }
 
+TESTABLE_STATIC void
+replace_double_comma(char *cmd, int put_null)
+{
+	char *p = cmd;
+	while(*cmd != '\0')
+	{
+		if(cmd[0] == ',')
+		{
+			if(cmd[1] == ',')
+			{
+				*p++ = *cmd++;
+				cmd++;
+				continue;
+			}
+			else if(put_null)
+			{
+				break;
+			}
+		}
+		*p++ = *cmd++;
+	}
+	*p = '\0';
+}
+
 static void
 register_assoc(assoc_t assoc, int for_x)
 {
@@ -472,6 +384,31 @@ add_assoc_record(assoc_records_t *records, const char *command,
 	records->list[records->count].command = strdup(command);
 	records->list[records->count].description = strdup(description);
 	records->count++;
+}
+
+void
+add_assoc_records(assoc_records_t *assocs, const assoc_records_t src)
+{
+	int i;
+	void *p = realloc(assocs->list,
+			sizeof(assoc_record_t)*(assocs->count + src.count));
+
+	if(p == NULL)
+	{
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return;
+	}
+
+	assocs->list = p;
+
+	for(i = 0; i < src.count; i++)
+	{
+		assocs->list[assocs->count + i].command = strdup(src.list[i].command);
+		assocs->list[assocs->count + i].description =
+				strdup(src.list[i].description);
+	}
+
+	assocs->count += src.count;
 }
 
 static void

@@ -2,7 +2,7 @@
 
 #include "seatest.h"
 
-#include "../../src/completion.h"
+#include "../../src/engine/completion.h"
 
 void completion_tests(void);
 

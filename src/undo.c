@@ -25,11 +25,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "config.h"
-#include "macros.h"
+#include "cfg/config.h"
+#include "utils/macros.h"
+#include "utils/path.h"
 #include "ops.h"
 #include "registers.h"
-#include "utils.h"
 
 #include "undo.h"
 

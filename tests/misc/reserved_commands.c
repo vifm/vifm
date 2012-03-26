@@ -2,9 +2,9 @@
 
 #include "seatest.h"
 
-#include "../../src/cmds.h"
+#include "../../src/engine/cmds.h"
+#include "../../src/engine/completion.h"
 #include "../../src/commands.h"
-#include "../../src/completion.h"
 
 static void
 vim_like_completion(void)

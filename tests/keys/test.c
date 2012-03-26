@@ -1,8 +1,8 @@
 #include "seatest.h"
 
+#include "../../src/engine/keys.h"
+#include "../../src/modes/modes.h"
 #include "builtin_keys.h"
-#include "../../src/keys.h"
-#include "../../src/modes.h"
 
 int mode = NORMAL_MODE;
 

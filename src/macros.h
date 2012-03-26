@@ -1,4 +1,5 @@
 /* vifm
+ * Copyright (C) 2001 Ken Steen.
  * Copyright (C) 2011 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,52 +20,19 @@
 #ifndef __MACROS_H__
 #define __MACROS_H__
 
-/* some useful macros */
+#include "ui.h"
 
-/* for portable use of GNUC extensions (see Robert Love's book about system
- * programming in Linux) */
-#if __GNUC__ > 3
-#undef inline
-#define inline inline     __attribute__ ((always_inline))
-#define _gnuc_noinline    __attribute__ ((noinline))
-#define _gnuc_pure        __attribute__ ((pure))
-#define _gnuc_const       __attribute__ ((const))
-#define _gnuc_noreturn    __attribute__ ((noreturn))
-#define _gnuc_malloc      __attribute__ ((malloc))
-#define _gnuc_must_check  __attribute__ ((must_check))
-#define _gnuc_deprecated  __attribute__ ((deprecated))
-#define _gnuc_used        __attribute__ ((used))
-#define _gnuc_unused      __attribute__ ((unused))
-#define _gnuc_packed      __attribute__ ((packed))
-#define _gnuc_align(x)    __attribute__ ((aligned(x)))
-#define _gnuc_align_max   __attribute__ ((aligned))
-#define _gnuc_likely(x)   __builtin_expect (!!(x), 1)
-#define _gnuc_unlikely(x) __builtin_expect (!!(x), 0)
-#else
-#define _gnuc_noinline
-#define _gnuc_pure
-#define _gnuc_const
-#define _gnuc_noreturn
-#define _gnuc_malloc
-#define _gnuc_must_check
-#define _gnuc_deprecated
-#define _gnuc_used
-#define _gnuc_unused
-#define _gnuc_packed
-#define _gnuc_align
-#define _gnuc_align_max
-#define _gnuc_likely(x)   (x)
-#define _gnuc_unlikely(x) (x)
+char * expand_macros(FileView *view, const char *command, const char *args,
+		int *menu, int *split);
+
+#ifdef TEST
+#include "engine/cmds.h"
+
+char * append_selected_files(FileView *view, char *expanded, int under_cursor,
+		int quotes, const char *mod);
 #endif
-
-#define ARRAY_LEN(x) (sizeof(x)/sizeof((x)[0]))
-#define ARRAY_GUARD(x, len) \
-    typedef int x##_array_guard[(ARRAY_LEN(x) == (len)) ? 1 : -1]
-
-#define MIN(a,b) ({int _a = (a), _b = (b); (_a < _b) ? _a : _b;})
-#define MAX(a,b) ({int _a = (a), _b = (b); (_a > _b) ? _a : _b;})
 
 #endif
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

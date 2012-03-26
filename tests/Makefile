@@ -35,10 +35,10 @@ else
 endif
 
 $(dirs_s): bin
-	make --directory=$(subst _t,,$@)
+	make --directory=$(subst _t,,$@) --makefile=../Makefile.inc
 
 $(dirs): bin
-	make --directory=$@
+	make --directory=$@ --makefile=../Makefile.inc
 ifneq ($(OS),Windows_NT)
 	@test=bin/$@;\
 	echo '==================================================';\

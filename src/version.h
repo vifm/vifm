@@ -19,7 +19,9 @@
 #ifndef __VERSION_H__
 #define __VERSION_H__
 
-extern const char GIT_HASH[];
+/* When list is NULL returns maximum number of lines, otherwise returns number
+ * of filled lines */
+int fill_version_info(char **list);
 
 #endif
 

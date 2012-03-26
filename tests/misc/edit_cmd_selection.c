@@ -3,9 +3,9 @@
 
 #include "seatest.h"
 
-#include "../../src/commands.h"
-#include "../../src/config.h"
+#include "../../src/cfg/config.h"
 #include "../../src/filelist.h"
+#include "../../src/running.h"
 #include "../../src/ui.h"
 
 static void
