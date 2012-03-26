@@ -26,6 +26,7 @@
 #include <string.h> /* strdup() */
 
 #include "../modes/menu.h"
+#include "../utils/fs.h"
 #include "../filelist.h"
 #include "../ui.h"
 #include "menus.h"

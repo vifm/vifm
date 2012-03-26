@@ -282,7 +282,7 @@ get_mods_len(const char *str)
 		result = 2;
 	}
 #ifdef _WIN32
-	else if(str[1] == 'u'))
+	else if(str[1] == 'u')
 	{
 		result = 2;
 	}

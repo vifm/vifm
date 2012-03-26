@@ -43,6 +43,9 @@
 #include "../engine/options.h"
 #include "../menus/menus.h"
 #include "../utils/str.h"
+#ifdef _WIN32
+#include "../utils/utils.h"
+#endif
 #include "../bookmarks.h"
 #include "../color_scheme.h"
 #include "../commands.h"

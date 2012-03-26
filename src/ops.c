@@ -27,6 +27,9 @@
 
 #include "cfg/config.h"
 #include "menus/menus.h"
+#ifdef _WIN32
+#include "utils/fs.h"
+#endif
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"

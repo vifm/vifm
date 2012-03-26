@@ -31,6 +31,7 @@
 #include "utils/log.h"
 #include "utils/utils.h"
 #include "fuse.h"
+#include "term_title.h"
 
 static void _gnuc_noreturn shutdown_nicely(void);
 

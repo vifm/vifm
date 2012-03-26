@@ -21,6 +21,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include "fs.h"
+#endif
 #include "path.h"
 
 #include "tree.h"

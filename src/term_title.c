@@ -18,6 +18,10 @@
 
 #include "../config.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #if !defined(_WIN32) && defined(HAVE_X11)
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>

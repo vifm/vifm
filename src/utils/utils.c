@@ -50,6 +50,10 @@
 #include "../cfg/config.h"
 #include "../status.h"
 #include "../ui.h"
+#ifdef _WIN32
+#include "env.h"
+#include "fs.h"
+#endif
 #include "macros.h"
 #include "path.h"
 #include "str.h"
@@ -125,6 +129,8 @@ my_system(char *command)
 #endif
 }
 
+#ifndef _WIN32
+
 /* if err == 1 then use stderr and close stdin and stdout */
 void _gnuc_noreturn
 run_from_fork(int pipe[2], int err, char *cmd)
@@ -153,18 +159,13 @@ run_from_fork(int pipe[2], int err, char *cmd)
 	args[2] = cmd;
 	args[3] = NULL;
 
-#ifndef _WIN32
 	execvp(args[0], args);
-#else
-	execvp(args[0], (const char **)args);
-#endif
 	exit(1);
 }
 
 void
 get_perm_string(char * buf, int len, mode_t mode)
 {
-#ifndef _WIN32
 	char *perm_sets[] =
 	{ "---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx" };
 	int u, g, o;
@@ -194,10 +195,9 @@ get_perm_string(char * buf, int len, mode_t mode)
 		buf[6] = (buf[6] == '-') ? 'S' : 's';
 	if(mode & S_ISUID)
 		buf[3] = (buf[3] == '-') ? 'S' : 's';
-#else
-	buf[0] = '\0';
-#endif
 }
+
+#endif
 
 int
 my_chdir(const char *path)

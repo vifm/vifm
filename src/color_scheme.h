@@ -22,9 +22,8 @@
 
 #include <limits.h>
 
-#if !defined(NAME_MAX) && defined(_WIN32)
-#include <io.h>
-#define NAME_MAX FILENAME_MAX
+#ifdef _WIN32
+#include "utils/utils.h"
 #endif
 
 #define MAX_COLOR_SCHEMES 8

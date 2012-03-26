@@ -33,6 +33,9 @@
 
 #include "utils/log.h"
 #include "utils/macros.h"
+#ifdef _WIN32
+#include "utils/path.h"
+#endif
 #include "utils/string_array.h"
 #include "utils/utils.h"
 #include "status.h"

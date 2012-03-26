@@ -38,10 +38,16 @@
 #include "engine/completion.h"
 #include "engine/options.h"
 #include "engine/variables.h"
+#ifdef _WIN32
+#include "menus/menus.h"
+#endif
 #include "utils/env.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
 #include "utils/path.h"
+#ifdef _WIN32
+#include "utils/str.h"
+#endif
 #include "utils/string_array.h"
 #include "utils/utils.h"
 #include "color_scheme.h"
