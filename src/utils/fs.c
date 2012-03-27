@@ -35,6 +35,9 @@
 
 #include "log.h"
 #include "path.h"
+#ifdef _WIN32
+#include "str.h"
+#endif
 #include "utils.h"
 
 #include "fs.h"

@@ -42,6 +42,9 @@
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/str.h"
+#ifdef _WIN32
+#include "../utils/path.h"
+#endif
 #include "../utils/string_array.h"
 #include "../bookmarks.h"
 #include "../color_scheme.h"

@@ -113,11 +113,9 @@ quick_view_file(FileView *view)
 					mvwaddstr(other_view->win, ++x, y, "File is a Directory");
 					break;
 				}
-#ifndef _WIN32
 				if(viewer != NULL && viewer[0] != '\0')
 					fp = use_info_prog(viewer);
 				else
-#endif
 					fp = fopen(buf, "r");
 
 				if(fp == NULL)

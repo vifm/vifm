@@ -46,6 +46,9 @@
 #include "cfg/config.h"
 #include "menus/menus.h"
 #include "modes/cmdline.h"
+#ifdef _WIN32
+#include "utils/env.h"
+#endif
 #include "utils/fs.h"
 #include "utils/path.h"
 #include "utils/str.h"

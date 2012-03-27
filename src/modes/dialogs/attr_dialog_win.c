@@ -23,12 +23,12 @@
 
 #include "../../../config.h"
 
+#include "../../engine/keys.h"
 #include "../../utils/fs.h"
 #include "../../utils/log.h"
 #include "../../utils/macros.h"
 #include "../../utils/path.h"
 #include "../../filelist.h"
-#include "../../keys.h"
 #include "../../status.h"
 #include "../../undo.h"
 #include "../modes.h"

@@ -21,12 +21,13 @@ menus := apropos_menu.c bookmarks_menu.c colorscheme_menu.c commands_menu.c \
          grep_menu.c history_menu.c jobs_menu.c locate_menu.c map_menu.c \
          menus.c registers_menu.c undolist_menu.c users_menu.c vifm_menu.c \
          volumes_menu.c
+menus := $(addprefix menus/, $(menus))
 
 dialogs := attr_dialog_win.c change_dialog.c sort_dialog.c
 dialogs := $(addprefix dialogs/, $(dialogs))
 
-modes := $(dialogs) cmdline.c file_info.c menu.c modes.c normal.c \
-         sort_dialog.c view.c visual.c
+modes := $(dialogs) cmdline.c file_info.c menu.c modes.c normal.c view.c \
+         visual.c
 modes := $(addprefix modes/, $(modes))
 
 utilities := env.c file_streams.c fs.c log.c path.c str.c string_array.c \

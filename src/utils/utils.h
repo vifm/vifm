@@ -44,6 +44,11 @@
 #define lstat stat
 #endif
 
+#if !defined(NAME_MAX) && defined(_WIN32)
+#include <io.h>
+#define NAME_MAX FILENAME_MAX
+#endif
+
 /* Regular expressions. */
 
 int get_regexp_cflags(const char *pattern);

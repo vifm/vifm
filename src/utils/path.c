@@ -17,6 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#ifdef _WIN32
+#include <ctype.h>
+#endif
 #include <limits.h> /* PATH_MAX */
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* malloc() free() */
