@@ -1109,39 +1109,22 @@ clean_selection(FileView *view)
 void
 leave_invalid_dir(FileView *view, char *path)
 {
-	char *p;
-
 	if(try_updir_from_fuse_mount(path, view))
 	{
 		return;
 	}
 
-	while(access(path, F_OK | R_OK) != 0)
+	while(directory_accessible(path))
 	{
 		if(try_updir_from_fuse_mount(path, view))
 		{
 			break;
 		}
 
-		chosp(path);
-
-		p = strrchr(path, '/');
-		if(p == NULL)
-			break;
-		p[1] = '\0';
+		remove_last_path_component(path);
 	}
 
-#ifndef _WIN32
-	if(strchr(path, '/') == NULL)
-		strcpy(path, "/");
-#else
-	if(!is_unc_root(path) && (strlen(path) < 2 || path[1] != ':' ||
-			!drive_exists(path[0])))
-	{
-		strcpy(path, env_get("SYSTEMDRIVE"));
-		strcat(path, "/");
-	}
-#endif
+	ensure_path_well_formed(path);
 }
 
 #ifdef _WIN32

@@ -334,7 +334,7 @@ static void
 exclude_file_name(char *path)
 {
 	if(file_exists(NULL, path) && !is_valid_dir(path))
-		break_atr(path, '/');
+		remove_last_path_component(path);
 }
 
 /* Sets view's current directory from path value.

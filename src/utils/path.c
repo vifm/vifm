@@ -32,21 +32,22 @@
 #endif
 
 #include "../cfg/config.h"
+#include "fs.h"
 
 #include "path.h"
 
 /* like chomp() but removes trailing slash */
 void
-chosp(char *text)
+chosp(char *path)
 {
 	size_t len;
 
-	if(text[0] == '\0')
+	if(path[0] == '\0')
 		return;
 
-	len = strlen(text);
-	if(text[len - 1] == '/')
-		text[len - 1] = '\0';
+	len = strlen(path);
+	if(path[len - 1] == '/')
+		path[len - 1] = '\0';
 }
 
 int
@@ -395,6 +396,38 @@ expand_tilde(char *path)
 	return result;
 #else
 	return path;
+#endif
+}
+
+void
+remove_last_path_component(char *path)
+{
+	char *slash;
+
+	while(ends_with_slash(path))
+		chosp(path);
+
+	slash = strrchr(path, '/');
+	if(slash != NULL)
+	{
+		int pos = is_root_dir(path) ? 1 : 0;
+		slash[pos] = '\0';
+	}
+}
+
+void
+ensure_path_well_formed(char *path)
+{
+#ifndef _WIN32
+	if(strchr(path, '/') == NULL)
+		strcpy(path, "/");
+#else
+	if(!is_unc_root(path) && (strlen(path) < 2 || path[1] != ':' ||
+			!drive_exists(path[0])))
+	{
+		strcpy(path, env_get("SYSTEMDRIVE"));
+		strcat(path, "/");
+	}
 #endif
 }
 

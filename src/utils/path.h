@@ -36,6 +36,10 @@ char * escape_filename(const char *string, int quote_percent);
 /* Returns pointer to a statically allocated buffer */
 char *replace_home_part(const char *directory);
 char * expand_tilde(char *path);
+/* Modifies path. */
+void remove_last_path_component(char *path);
+/* Modifies path. */
+void ensure_path_well_formed(char *path);
 
 #ifdef _WIN32
 
