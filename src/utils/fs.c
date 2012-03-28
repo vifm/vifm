@@ -251,6 +251,12 @@ symlinks_available(void)
 #endif
 }
 
+int
+directory_accessible(const char *path)
+{
+	return access(path, F_OK) == 0 && access(path, X_OK) == 0;
+}
+
 #ifdef _WIN32
 
 char *

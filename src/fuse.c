@@ -331,7 +331,7 @@ unmount_fuse(void)
 }
 
 int
-try_updir_from_mount(const char *path, FileView *view)
+try_updir_from_fuse_mount(const char *path, FileView *view)
 {
 	fuse_mount_t *runner;
 	if((runner = find_fuse_mount(path)) != NULL)

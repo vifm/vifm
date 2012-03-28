@@ -38,6 +38,8 @@ int check_link_is_dir(const char *filename);
 int get_link_target(const char *link, char *buf, size_t buf_len);
 int make_dir(const char *dir_name, mode_t mode);
 int symlinks_available(void);
+/* Checks if one can change directory to a path. */
+int directory_accessible(const char *path);
 
 #ifdef _WIN32
 
