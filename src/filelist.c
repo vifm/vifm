@@ -1111,14 +1111,14 @@ leave_invalid_dir(FileView *view, char *path)
 {
 	char *p;
 
-	if(try_updir_from_mount(path, view))
+	if(try_updir_from_fuse_mount(path, view))
 	{
 		return;
 	}
 
 	while(access(path, F_OK | R_OK) != 0)
 	{
-		if(try_updir_from_mount(path, view))
+		if(try_updir_from_fuse_mount(path, view))
 		{
 			break;
 		}
