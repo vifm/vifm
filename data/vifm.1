@@ -1,4 +1,4 @@
-.TH vifm 1 "March 6, 2012" "" "Vifm"
+.TH vifm 1 "March 28, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1143,7 +1143,7 @@ repeats last :locate command.
 .BI :[range]ma[rk][?] x [/full/path] [filename]
 Set mark x (a-zA-Z0-9) at /full/path and filename.  By default current directory
 is being used.  If no filename was given and /full/path is current directory
-then last file in [range] is used.  Using macros is allowed.  Question mark
+then last file in [range] is used.  Using of macros is allowed.  Question mark
 will stop command from overwriting existing marks.
 .TP
 .BI :marks
@@ -1157,7 +1157,7 @@ shows previously given messages (up to 50).
 .TP
 .BI ":mkdir[!] dir ..."
 creates directories with given names.  "!" means make parent directories as
-needed.
+needed.  Macros are expanded.
 .TP
 .BI ":[range]m[ove][!?][ &]"
 moves files to directory of other view.  With "?" vifm will open vi to edit

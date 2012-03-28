@@ -1006,8 +1006,8 @@ of the hierarchy and transparency for all others.
 :[range]ma[rk][?] x /full/path [filename] - set mark x (a-zA-Z0-9) at
     /full/path and filename.  By default current directory is used.  If
     no filename was given and /full/path is current directory then last
-    file in [range] is being used.  Using macros is allowed.  Question mark
-    will stop command from overwriting existing marks.
+    file in [range] is being used.  Using of macros is allowed.  Question
+    mark will stop command from overwriting existing marks.
 
                                                *vifm-:marks*
 :marks - menu of bookmarks.
@@ -1018,7 +1018,7 @@ of the hierarchy and transparency for all others.
 
                                                *vifm-:mkdir*
 :mkdir[!] dir... - creates directories with given names.  "!" means make
-    parent directories as needed.
+    parent directories as needed.  Macros are expanded.
 
                                                *vifm-:move* *vifm-:m*
 :[range]m[ove][!?][ &] - moves files to directory of other view.  With "?"

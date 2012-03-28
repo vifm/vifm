@@ -11,6 +11,8 @@
 
 	Added completion for :touch command.
 
+	Added macros expanding for :mkdir command.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with

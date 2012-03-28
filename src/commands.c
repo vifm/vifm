@@ -299,7 +299,7 @@ static const cmd_add_t commands[] = {
 	{ .name = "messages",         .abbr = "mes",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = messages_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "mkdir",            .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
-		.handler = mkdir_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
+		.handler = mkdir_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "move",             .abbr = "m",     .emark = 1,  .id = -1,              .range = 1,    .bg = 1, .quote = 1, .regexp = 0,
 		.handler = move_cmd,        .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "nmap",             .abbr = "nm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
