@@ -250,7 +250,7 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 				filename_completion(arg, FNC_ALL);
 		}
 		else
-			filename_completion(arg, FNC_ALL);
+			filename_completion(arg, id == COM_TOUCH ? FNC_ALL_WS : FNC_ALL);
 	}
 
 	return start - args;
@@ -555,6 +555,7 @@ filename_completion(const char *str, int type)
 #ifndef _WIN32
 	int woe = (type == FNC_ALL_WOE || type == FNC_FILE_WOE);
 #endif
+	int wos = type == FNC_ALL_WS;
 
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
@@ -665,11 +666,11 @@ filename_completion(const char *str, int type)
 			continue;
 
 		isdir = 0;
-		if(is_dir(d->d_name))
+		if(is_dir(d->d_name) && !wos)
 		{
 			isdir = 1;
 		}
-		else if(pathcmp(dirname, "."))
+		else if(pathcmp(dirname, ".") != 0)
 		{
 			char * tempfile = (char *)NULL;
 			int len = strlen(dirname) + strlen(d->d_name) + 1;
@@ -684,7 +685,7 @@ filename_completion(const char *str, int type)
 				return;
 			}
 			snprintf(tempfile, len, "%s%s", dirname, d->d_name);
-			if(is_dir(tempfile))
+			if(is_dir(tempfile) && !wos)
 				isdir = 1;
 			else
 				temp = strdup(d->d_name);

@@ -9,6 +9,8 @@
 
 	Added --enable-desktop-files (enabled by default) configure option.
 
+	Added completion for :touch command.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with
