@@ -1152,7 +1152,7 @@ of the hierarchy and transparency for all others.
 
                                                *vifm-:touch*
 :touch file... - will create files.  Aborts on errors and won't update
-    time of existing files.
+    time of existing files.  Macros are expanded.
 
                                                *vifm-:tr*
 :[range]tr/pattern/string/ - for each file in range transliterate the
