@@ -45,6 +45,10 @@ enum
 	COM_WINRUN,
 	COM_TOUCH,
 	COM_CLONE,
+	COM_COPY,
+	COM_MOVE,
+	COM_ALINK,
+	COM_RLINK,
 };
 
 /* values of type argument for filename_completion() function */

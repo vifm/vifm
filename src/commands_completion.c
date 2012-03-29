@@ -70,6 +70,8 @@ static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char *str);
 static void complete_winrun(const char *str);
+static void filename_completion_in_dir(const char *path, const char *str,
+		int type);
 static int is_entry_dir(const struct dirent *d);
 static int is_entry_exec(const struct dirent *d);
 #ifdef _WIN32
@@ -231,7 +233,14 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 			arg = argv[argc - 1];
 
 		if(id == COM_CD || id == COM_PUSHD || id == COM_SYNC)
+		{
 			filename_completion(arg, FNC_DIRONLY);
+		}
+		else if(id == COM_COPY || id == COM_MOVE || id == COM_ALINK ||
+				id == COM_RLINK)
+		{
+			filename_completion_in_dir(other_view->curr_dir, arg, FNC_ALL);
+		}
 		else if(id == COM_FIND)
 		{
 			if(argc == 1 && !cmd_ends_with_space(args))
@@ -534,6 +543,21 @@ exec_completion(const char *str)
 		filename_completion(str, FNC_EXECONLY);
 	}
 	add_completion(str);
+}
+
+static void
+filename_completion_in_dir(const char *path, const char *str, int type)
+{
+	char buf[PATH_MAX];
+	if(is_root_dir(str))
+	{
+		snprintf(buf, sizeof(buf), "%s", str);
+	}
+	else
+	{
+		snprintf(buf, sizeof(buf), "%s/%s", path, str);
+	}
+	filename_completion(buf, type);
 }
 
 /*
