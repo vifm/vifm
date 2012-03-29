@@ -44,6 +44,7 @@ enum
 	COM_WINDO,
 	COM_WINRUN,
 	COM_TOUCH,
+	COM_CLONE,
 };
 
 /* values of type argument for filename_completion() function */

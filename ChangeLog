@@ -15,6 +15,8 @@
 
 	Added macros expanding for :touch command.
 
+	Added completion for :clone command.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with
