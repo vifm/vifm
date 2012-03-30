@@ -55,7 +55,7 @@ enum
 enum
 {
 	FNC_ALL,      /* all files and directories */
-	FNC_ALL_WS,   /* all files and directories without trailing slash */
+	FNC_ALL_WOS,  /* all files and directories without trailing slash */
 	FNC_ALL_WOE,  /* all files and directories without escaping */
 	FNC_FILE_WOE, /* only files in the current directory without escaping */
 	FNC_DIRONLY,  /* only directories */

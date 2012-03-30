@@ -43,7 +43,7 @@ Vi(m) specific features that need to be added.
     Ctrl-W F key.
     'wildignore' ('wig') option.
     Kinda macros like in Vim (qa ... q).
-    Something like :silent in Vim (don't command blinking in the command-line)
+    Something like <silent> in Vim (no command blinking in the command-line)
     Better :let command (allow :let $A=$B and string concatenation).
     :set command should understand environment variables and concatenation too.
     :let mapleader and <leader> support.
