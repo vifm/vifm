@@ -19,6 +19,8 @@
 
 	Added completion for :copy, :move, :alink and :rlink commands.
 
+	Added completion for :mkdir command.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with

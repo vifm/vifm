@@ -49,6 +49,7 @@ enum
 	COM_MOVE,
 	COM_ALINK,
 	COM_RLINK,
+	COM_MKDIR,
 };
 
 /* values of type argument for filename_completion() function */

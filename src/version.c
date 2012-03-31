@@ -25,7 +25,7 @@
 #include "../config.h"
 
 /* This hash is automatically updated by make. */
-static const char GIT_HASH[] = "d15d6c15110667f80b56a3010d780f370b04b001";
+static const char GIT_HASH[] = "6b662b6db818248b55e412803dc86307ae55034c";
 
 /* When list is NULL returns maximum number of lines, otherwise returns number
  * of filled lines */

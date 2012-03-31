@@ -235,7 +235,7 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		if(argc > 0 && !cmd_ends_with_space(args))
 			arg = argv[argc - 1];
 
-		if(id == COM_CD || id == COM_PUSHD || id == COM_SYNC)
+		if(id == COM_CD || id == COM_PUSHD || id == COM_SYNC || id == COM_MKDIR)
 		{
 			filename_completion(arg, FNC_DIRONLY);
 		}
