@@ -1135,7 +1135,8 @@ of the hierarchy and transparency for all others.
 :sp[lit] - switch to a two window horizontal view.
 :sp[lit]! - toggles window horizontal splitting.
 :sp[lit] path - splits the window horizontally to show both file
-    directories.  And changes other pane to path.
+    directories.  And changes other pane to path (absolute or relative to it's
+    current directory).
 
                                                *vifm-:substitute* *vifm-:s*
 :[range]s[ubstitute]/pattern/string/[flags] - for each file in range
@@ -1187,11 +1188,12 @@ of the hierarchy and transparency for all others.
 :volumes - will popup menu with volume list.  Hitting l (or Enter) key will
     open appropriate volume in the current pane.
 
-                                               *vifm-:vsplit* *vifm-:vsp*
+                                               *vifm-:vsplit* *vifm-:vs*
 :vs[plit] - switch to a two window vertical view.
 :vs[plit]! - toggles window vertical splitting.
 :vs[plit] path - splits the window vertically to show both file
-    directories.  And changes other pane to path.
+    directories.  And changes other pane to path (absolute or relative to it's
+    current directory).
 
                                                *vifm-:windo*
 :windo [command...]

@@ -1,4 +1,4 @@
-.TH vifm 1 "March 29, 2012" "" "Vifm"
+.TH vifm 1 "March 31, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1284,14 +1284,14 @@ creates a popup menu of different sorting methods.
 reads command-line commands from the file.
 .TP
 .BI :sp[lit]
-splits the window to show both file directories.
+switch to a two window horizontal view.
 .TP
 .BI :sp[lit]!
-toggles windows splitting.
+toggles window horizontal splitting.
 .TP
 .BI ":sp[lit] path"
-splits the window to show both file directories.  And changes other pane to
-path.
+splits the window horizontally to show both file directories.  And changes other
+pane to path (absolute or relative to it's current directory).
 .TP
 .BI :[range]s[ubstitite]/pattern/string/[flags]
 for each file in range replace a match of pattern with string.
@@ -1353,6 +1353,16 @@ only for MS-Windows
 .br
 will popup menu with volume list.  Hitting l (or Enter) key will open
 appropriate volume in the current pane.
+.TP
+.BI :vs[plit]
+switch to a two window vertical view.
+.TP
+.BI :vs[plit]!
+toggles window vertical splitting.
+.TP
+.BI ":vs[plit] path"
+splits the window vertically to show both file directories.  And changes other
+pane to path (absolute or relative to it's current directory).
 .TP
 .BI :windo [command...]
 Execute command for each pane (same as :winrun % command).
