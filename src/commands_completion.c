@@ -71,10 +71,10 @@ static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char *str);
 static void complete_winrun(const char *str);
 static void filename_completion_in_dir(const char *path, const char *str,
-		int type);
+		CompletionType type);
 static void filename_completion_internal(DIR * dir, const char * dirname,
-		const char * filename, int type);
-static void add_filename_completion(const char * filename, int type);
+		const char * filename, CompletionType type);
+static void add_filename_completion(const char * filename, CompletionType type);
 static int is_entry_dir(const struct dirent *d);
 static int is_entry_exec(const struct dirent *d);
 #ifdef _WIN32
@@ -237,37 +237,37 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 
 		if(id == COM_CD || id == COM_PUSHD || id == COM_SYNC || id == COM_MKDIR)
 		{
-			filename_completion(arg, FNC_DIRONLY);
+			filename_completion(arg, CT_DIRONLY);
 		}
 		else if(id == COM_COPY || id == COM_MOVE || id == COM_ALINK ||
 				id == COM_RLINK || id == COM_SPLIT || id == COM_VSPLIT)
 		{
-			filename_completion_in_dir(other_view->curr_dir, arg, FNC_ALL);
+			filename_completion_in_dir(other_view->curr_dir, arg, CT_ALL);
 		}
 		else if(id == COM_FIND)
 		{
 			if(argc == 1 && !cmd_ends_with_space(args))
-				filename_completion(arg, FNC_DIRONLY);
+				filename_completion(arg, CT_DIRONLY);
 		}
 		else if(id == COM_EXECUTE)
 		{
 			if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
 			{
 				if(*arg == '.')
-					filename_completion(arg, FNC_DIREXEC);
+					filename_completion(arg, CT_DIREXEC);
 				else
 					exec_completion(arg);
 			}
 			else
-				filename_completion(arg, FNC_ALL);
+				filename_completion(arg, CT_ALL);
 		}
 		else if(id == COM_TOUCH || id == COM_RENAME)
 		{
-			filename_completion(arg, FNC_ALL_WOS);
+			filename_completion(arg, CT_ALL_WOS);
 		}
 		else
 		{
-			filename_completion(arg, FNC_ALL);
+			filename_completion(arg, CT_ALL);
 		}
 	}
 
@@ -549,13 +549,14 @@ exec_completion(const char *str)
 	{
 		if(my_chdir(paths[i]) != 0)
 			continue;
-		filename_completion(str, FNC_EXECONLY);
+		filename_completion(str, CT_EXECONLY);
 	}
 	add_completion(str);
 }
 
 static void
-filename_completion_in_dir(const char *path, const char *str, int type)
+filename_completion_in_dir(const char *path, const char *str,
+		CompletionType type)
 {
 	char buf[PATH_MAX];
 	if(is_root_dir(str))
@@ -570,10 +571,10 @@ filename_completion_in_dir(const char *path, const char *str, int type)
 }
 
 /*
- * type: FNC_*
+ * type: CT_*
  */
 void
-filename_completion(const char *str, int type)
+filename_completion(const char *str, CompletionType type)
 {
 	/* TODO refactor filename_completion(...) function */
 	DIR * dir;
@@ -597,7 +598,7 @@ filename_completion(const char *str, int type)
 	dirname = temp;
 
 	temp = strrchr(dirname, '/');
-	if(temp != NULL && type != FNC_FILE && type != FNC_FILE_WOE)
+	if(temp != NULL && type != CT_FILE && type != CT_FILE_WOE)
 	{
 		strcpy(filename, ++temp);
 		*temp = '\0';
@@ -661,7 +662,7 @@ filename_completion(const char *str, int type)
 
 static void
 filename_completion_internal(DIR * dir, const char * dirname,
-		const char * filename, int type)
+		const char * filename, CompletionType type)
 {
 	struct dirent *d;
 
@@ -673,14 +674,14 @@ filename_completion_internal(DIR * dir, const char * dirname,
 		if(pathncmp(d->d_name, filename, filename_len) != 0)
 			continue;
 
-		if(type == FNC_DIRONLY && !is_entry_dir(d))
+		if(type == CT_DIRONLY && !is_entry_dir(d))
 			continue;
-		else if(type == FNC_EXECONLY && !is_entry_exec(d))
+		else if(type == CT_EXECONLY && !is_entry_exec(d))
 			continue;
-		else if(type == FNC_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
+		else if(type == CT_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
 			continue;
 
-		if(is_entry_dir(d) && type != FNC_ALL_WOS)
+		if(is_entry_dir(d) && type != CT_ALL_WOS)
 		{
 			char buf[NAME_MAX + 1];
 			snprintf(buf, sizeof(buf), "%s/", d->d_name);
@@ -693,7 +694,7 @@ filename_completion_internal(DIR * dir, const char * dirname,
 	}
 
 	completion_group_end();
-	if(type != FNC_EXECONLY)
+	if(type != CT_EXECONLY)
 	{
 		if(get_completion_count() == 0)
 		{
@@ -707,10 +708,10 @@ filename_completion_internal(DIR * dir, const char * dirname,
 }
 
 static void
-add_filename_completion(const char * filename, int type)
+add_filename_completion(const char * filename, CompletionType type)
 {
 #ifndef _WIN32
-	int woe = (type == FNC_ALL_WOE || type == FNC_FILE_WOE);
+	int woe = (type == CT_ALL_WOE || type == CT_FILE_WOE);
 	char * temp = woe ? strdup(filename) : escape_filename(filename, 1);
 	add_completion(temp);
 	free(temp);

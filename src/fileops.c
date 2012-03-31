@@ -626,7 +626,7 @@ rename_file_cb(const char *new_name)
 static int
 complete_filename_only(const char *str)
 {
-	filename_completion(str, FNC_FILE_WOE);
+	filename_completion(str, CT_FILE_WOE);
 	return 0;
 }
 
@@ -1406,7 +1406,7 @@ complete_filename(const char *str)
 		slash = str;
 	else
 		slash++;
-	filename_completion(str, FNC_ALL_WOE);
+	filename_completion(str, CT_ALL_WOE);
 	return slash - str;
 }
 
