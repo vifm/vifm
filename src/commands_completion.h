@@ -50,6 +50,8 @@ enum
 	COM_ALINK,
 	COM_RLINK,
 	COM_MKDIR,
+	COM_SPLIT,
+	COM_VSPLIT,
 };
 
 /* values of type argument for filename_completion() function */

@@ -21,6 +21,8 @@
 
 	Added completion for :mkdir command.
 
+	Added completion for :split and :vsplit commands.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with
