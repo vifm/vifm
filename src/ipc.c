@@ -140,9 +140,24 @@ try_become_a_server(void)
 	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	addr.sin_port = htons(PORT);
 	server = bind(sock, (struct sockaddr *)&addr, sizeof(addr)) != -1;
-	if(!server && curr_stats.load_stage < 3)
+	if(!server)
 	{
-		LOG_SERROR_MSG(errno, "Can't become an IPC sever");
+		if(curr_stats.load_stage < 3)
+		{
+			LOG_SERROR_MSG(errno, "Can't become an IPC server");
+		}
+	}
+	else
+	{
+#ifdef _WIN32
+		char yes = 1;
+#else
+		int yes = 1;
+#endif
+		if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) != 0)
+		{
+			LOG_SERROR_MSG(errno, "Can't set reusable option on server socket");
+		}
 	}
 }
 

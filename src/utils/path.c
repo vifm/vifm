@@ -32,6 +32,9 @@
 #endif
 
 #include "../cfg/config.h"
+#ifdef _WIN32
+#include "env.h"
+#endif
 #include "fs.h"
 
 #include "path.h"

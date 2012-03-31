@@ -49,6 +49,8 @@
 
 	Fixed opening of tagged (selected) symbolic links to a directory.
 
+	Fixed problem with leaving socket alive on crash.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.
