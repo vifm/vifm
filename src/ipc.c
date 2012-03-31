@@ -149,7 +149,11 @@ try_become_a_server(void)
 	}
 	else
 	{
+#ifdef _WIN32
+		char yes = 1;
+#else
 		int yes = 1;
+#endif
 		if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) != 0)
 		{
 			LOG_SERROR_MSG(errno, "Can't set reusable option on server socket");
