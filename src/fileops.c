@@ -1399,15 +1399,9 @@ change_link_cb(const char *new_target)
 static int
 complete_filename(const char *str)
 {
-	const char *slash;
-
-	slash = strrchr(str, '/');
-	if(slash == NULL)
-		slash = str;
-	else
-		slash++;
+	const char *name_begin = after_last(str, '/');
 	filename_completion(str, CT_ALL_WOE);
-	return slash - str;
+	return name_begin - str;
 }
 
 int

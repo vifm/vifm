@@ -45,9 +45,7 @@
 #include "utils/fs.h"
 #include "utils/macros.h"
 #include "utils/path.h"
-#ifdef _WIN32
 #include "utils/str.h"
-#endif
 #include "utils/string_array.h"
 #include "utils/utils.h"
 #include "color_scheme.h"
@@ -178,12 +176,7 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 	const char *slash;
 	const char *dollar;
 
-	arg = strrchr(args, ' ');
-	if(arg == NULL)
-		arg = args;
-	else
-		arg++;
-
+	arg = after_last(args, ' ');
 	start = arg;
 	dollar = strrchr(arg, '$');
 	slash = strrchr(args + arg_pos, '/');

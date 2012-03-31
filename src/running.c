@@ -30,6 +30,7 @@
 #include "utils/fs.h"
 #include "utils/macros.h"
 #include "utils/path.h"
+#include "utils/str.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "filelist.h"
@@ -509,10 +510,7 @@ follow_link(FileView *view, int follow_dirs)
 			chosp(link_dup);
 			len = strlen(link_dup);
 			link_dup = realloc(link_dup, len + 1 + 1);
-			if((file = strrchr(link_dup, '/')) == NULL)
-				file = link_dup;
-			else
-				file++;
+			file = after_last(link_dup, '/');
 			strcat(file, "/");
 		}
 		pos = find_file_pos_in_list(view, file);
