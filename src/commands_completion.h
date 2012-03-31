@@ -52,6 +52,7 @@ enum
 	COM_MKDIR,
 	COM_SPLIT,
 	COM_VSPLIT,
+	COM_RENAME,
 };
 
 /* values of type argument for filename_completion() function */
@@ -60,6 +61,7 @@ enum
 	FNC_ALL,      /* all files and directories */
 	FNC_ALL_WOS,  /* all files and directories without trailing slash */
 	FNC_ALL_WOE,  /* all files and directories without escaping */
+	FNC_FILE,     /* only files in the current directory */
 	FNC_FILE_WOE, /* only files in the current directory without escaping */
 	FNC_DIRONLY,  /* only directories */
 	FNC_EXECONLY, /* only executable files */

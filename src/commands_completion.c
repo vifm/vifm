@@ -261,8 +261,14 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 			else
 				filename_completion(arg, FNC_ALL);
 		}
+		else if(id == COM_TOUCH || id == COM_RENAME)
+		{
+			filename_completion(arg, FNC_ALL_WOS);
+		}
 		else
-			filename_completion(arg, id == COM_TOUCH ? FNC_ALL_WOS : FNC_ALL);
+		{
+			filename_completion(arg, FNC_ALL);
+		}
 	}
 
 	return start - args;
@@ -591,7 +597,7 @@ filename_completion(const char *str, int type)
 	dirname = temp;
 
 	temp = strrchr(dirname, '/');
-	if(temp != NULL && type != FNC_FILE_WOE)
+	if(temp != NULL && type != FNC_FILE && type != FNC_FILE_WOE)
 	{
 		strcpy(filename, ++temp);
 		*temp = '\0';

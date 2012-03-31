@@ -23,6 +23,8 @@
 
 	Added completion for :split and :vsplit commands.
 
+	Added completion for :rename command.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with
