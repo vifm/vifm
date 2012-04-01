@@ -626,7 +626,7 @@ rename_file_cb(const char *new_name)
 static int
 complete_filename_only(const char *str)
 {
-	filename_completion(str, FNC_FILE_WOE);
+	filename_completion(str, CT_FILE_WOE);
 	return 0;
 }
 
@@ -1399,15 +1399,9 @@ change_link_cb(const char *new_target)
 static int
 complete_filename(const char *str)
 {
-	const char *slash;
-
-	slash = strrchr(str, '/');
-	if(slash == NULL)
-		slash = str;
-	else
-		slash++;
-	filename_completion(str, FNC_ALL_WOE);
-	return slash - str;
+	const char *name_begin = after_last(str, '/');
+	filename_completion(str, CT_ALL_WOE);
+	return name_begin - str;
 }
 
 int

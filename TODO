@@ -41,14 +41,21 @@ Vi(m) specific features that need to be added.
     :map without arguments
     Better ranges (add support for search patterns).
     Ctrl-W F key.
-    'wildignore' ('wig') option.
+    'wildignore' ('wig') option (also think about it in context of file
+        filtering).
     Kinda macros like in Vim (qa ... q).
-    Something like :silent in Vim (don't command blinking in the command-line)
+    Something like <silent> in Vim (no command blinking in the command-line)
     Better :let command (allow :let $A=$B and string concatenation).
     :set command should understand environment variables and concatenation too.
     :let mapleader and <leader> support.
     Add :echo command.
     'cdpath' ('cd') option.
+    Completion of first argument for :map commands.
+    Add Ctrl-W H/J/K/L keys.
+    Think about :split and :vsplit commands with path passed (what base should
+        relative paths have?).
+    Save last typed but not executed command in command-line mode (this also
+        includes searches).
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
@@ -62,7 +69,8 @@ Possible things to add.
         reverse)
     Improve sorting (maybe iext; maybe ignore dirs).
     Add :mksession command and 'sessionoptions' option.
-    Position macros for user defined commands (%1, %2, ..., %9).
+    Position macros for user defined commands (%1, %2, ..., %9). Something
+        like %!1 could be used for mandatory parameters.
     Some key to (un)select all files with extension of current file.
     'incfilter' option.
     Maybe we should not reread configuration files on :restart when
@@ -70,6 +78,7 @@ Possible things to add.
     'wildmode' option.
     A macro to redirect command output into view pane.
     Maybe remove scripts (~/.vifm/scripts/**) from PATH on shellout.
+    $_ env var and Alt-. combination as in bash shell.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.

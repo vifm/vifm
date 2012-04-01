@@ -195,7 +195,6 @@ apply_h_mod(const char *path, char *buf, size_t buf_len)
 static int
 apply_u_mod(const char *path, char *buf, size_t buf_len)
 {
-	char *p;
 	if(!is_unc_path(path))
 	{
 		DWORD size = buf_len - 2;
@@ -204,9 +203,7 @@ apply_u_mod(const char *path, char *buf, size_t buf_len)
 		return 0;
 	}
 	snprintf(buf, buf_len, "%s", path);
-	p = strchr(path + 2, '/');
-	if(p != NULL)
-		buf[p - path] = '\0';
+	break_at(buf + 2, '/');
 	return 0;
 }
 #endif

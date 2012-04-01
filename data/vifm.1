@@ -1,4 +1,4 @@
-.TH vifm 1 "March 6, 2012" "" "Vifm"
+.TH vifm 1 "March 31, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1143,7 +1143,7 @@ repeats last :locate command.
 .BI :[range]ma[rk][?] x [/full/path] [filename]
 Set mark x (a-zA-Z0-9) at /full/path and filename.  By default current directory
 is being used.  If no filename was given and /full/path is current directory
-then last file in [range] is used.  Using macros is allowed.  Question mark
+then last file in [range] is used.  Using of macros is allowed.  Question mark
 will stop command from overwriting existing marks.
 .TP
 .BI :marks
@@ -1157,7 +1157,7 @@ shows previously given messages (up to 50).
 .TP
 .BI ":mkdir[!] dir ..."
 creates directories with given names.  "!" means make parent directories as
-needed.
+needed.  Macros are expanded.
 .TP
 .BI ":[range]m[ove][!?][ &]"
 moves files to directory of other view.  With "?" vifm will open vi to edit
@@ -1284,14 +1284,14 @@ creates a popup menu of different sorting methods.
 reads command-line commands from the file.
 .TP
 .BI :sp[lit]
-splits the window to show both file directories.
+switch to a two window horizontal view.
 .TP
 .BI :sp[lit]!
-toggles windows splitting.
+toggles window horizontal splitting.
 .TP
 .BI ":sp[lit] path"
-splits the window to show both file directories.  And changes other pane to
-path.
+splits the window horizontally to show both file directories.  And changes other
+pane to path (absolute or relative to it's current directory).
 .TP
 .BI :[range]s[ubstitite]/pattern/string/[flags]
 for each file in range replace a match of pattern with string.
@@ -1319,6 +1319,7 @@ to the current directory.  Using macros is allowed.
 .TP
 .BI ":touch file..."
 will create files.  Aborts on errors and won't update time of existing files.
+Macros are expanded.
 .TP
 .BI :[range]tr/pattern/string/
 for each file in range transliterate the characters which appear in pattern to
@@ -1352,6 +1353,16 @@ only for MS-Windows
 .br
 will popup menu with volume list.  Hitting l (or Enter) key will open
 appropriate volume in the current pane.
+.TP
+.BI :vs[plit]
+switch to a two window vertical view.
+.TP
+.BI :vs[plit]!
+toggles window vertical splitting.
+.TP
+.BI ":vs[plit] path"
+splits the window vertically to show both file directories.  And changes other
+pane to path (absolute or relative to it's current directory).
 .TP
 .BI :windo [command...]
 Execute command for each pane (same as :winrun % command).

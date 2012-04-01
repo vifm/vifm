@@ -1006,8 +1006,8 @@ of the hierarchy and transparency for all others.
 :[range]ma[rk][?] x /full/path [filename] - set mark x (a-zA-Z0-9) at
     /full/path and filename.  By default current directory is used.  If
     no filename was given and /full/path is current directory then last
-    file in [range] is being used.  Using macros is allowed.  Question mark
-    will stop command from overwriting existing marks.
+    file in [range] is being used.  Using of macros is allowed.  Question
+    mark will stop command from overwriting existing marks.
 
                                                *vifm-:marks*
 :marks - menu of bookmarks.
@@ -1018,7 +1018,7 @@ of the hierarchy and transparency for all others.
 
                                                *vifm-:mkdir*
 :mkdir[!] dir... - creates directories with given names.  "!" means make
-    parent directories as needed.
+    parent directories as needed.  Macros are expanded.
 
                                                *vifm-:move* *vifm-:m*
 :[range]m[ove][!?][ &] - moves files to directory of other view.  With "?"
@@ -1135,7 +1135,8 @@ of the hierarchy and transparency for all others.
 :sp[lit] - switch to a two window horizontal view.
 :sp[lit]! - toggles window horizontal splitting.
 :sp[lit] path - splits the window horizontally to show both file
-    directories.  And changes other pane to path.
+    directories.  And changes other pane to path (absolute or relative to it's
+    current directory).
 
                                                *vifm-:substitute* *vifm-:s*
 :[range]s[ubstitute]/pattern/string/[flags] - for each file in range
@@ -1152,7 +1153,7 @@ of the hierarchy and transparency for all others.
 
                                                *vifm-:touch*
 :touch file... - will create files.  Aborts on errors and won't update
-    time of existing files.
+    time of existing files.  Macros are expanded.
 
                                                *vifm-:tr*
 :[range]tr/pattern/string/ - for each file in range transliterate the
@@ -1187,11 +1188,12 @@ of the hierarchy and transparency for all others.
 :volumes - will popup menu with volume list.  Hitting l (or Enter) key will
     open appropriate volume in the current pane.
 
-                                               *vifm-:vsplit* *vifm-:vsp*
+                                               *vifm-:vsplit* *vifm-:vs*
 :vs[plit] - switch to a two window vertical view.
 :vs[plit]! - toggles window vertical splitting.
 :vs[plit] path - splits the window vertically to show both file
-    directories.  And changes other pane to path.
+    directories.  And changes other pane to path (absolute or relative to it's
+    current directory).
 
                                                *vifm-:windo*
 :windo [command...]

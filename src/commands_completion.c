@@ -45,9 +45,7 @@
 #include "utils/fs.h"
 #include "utils/macros.h"
 #include "utils/path.h"
-#ifdef _WIN32
 #include "utils/str.h"
-#endif
 #include "utils/string_array.h"
 #include "utils/utils.h"
 #include "color_scheme.h"
@@ -70,6 +68,11 @@ static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char *str);
 static void complete_winrun(const char *str);
+static void filename_completion_in_dir(const char *path, const char *str,
+		CompletionType type);
+static void filename_completion_internal(DIR * dir, const char * dirname,
+		const char * filename, CompletionType type);
+static void add_filename_completion(const char * filename, CompletionType type);
 static int is_entry_dir(const struct dirent *d);
 static int is_entry_exec(const struct dirent *d);
 #ifdef _WIN32
@@ -173,12 +176,7 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 	const char *slash;
 	const char *dollar;
 
-	arg = strrchr(args, ' ');
-	if(arg == NULL)
-		arg = args;
-	else
-		arg++;
-
+	arg = after_last(args, ' ');
 	start = arg;
 	dollar = strrchr(arg, '$');
 	slash = strrchr(args + arg_pos, '/');
@@ -230,27 +228,40 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 		if(argc > 0 && !cmd_ends_with_space(args))
 			arg = argv[argc - 1];
 
-		if(id == COM_CD || id == COM_PUSHD || id == COM_SYNC)
-			filename_completion(arg, FNC_DIRONLY);
+		if(id == COM_CD || id == COM_PUSHD || id == COM_SYNC || id == COM_MKDIR)
+		{
+			filename_completion(arg, CT_DIRONLY);
+		}
+		else if(id == COM_COPY || id == COM_MOVE || id == COM_ALINK ||
+				id == COM_RLINK || id == COM_SPLIT || id == COM_VSPLIT)
+		{
+			filename_completion_in_dir(other_view->curr_dir, arg, CT_ALL);
+		}
 		else if(id == COM_FIND)
 		{
 			if(argc == 1 && !cmd_ends_with_space(args))
-				filename_completion(arg, FNC_DIRONLY);
+				filename_completion(arg, CT_DIRONLY);
 		}
 		else if(id == COM_EXECUTE)
 		{
 			if(argc == 0 || (argc == 1 && !cmd_ends_with_space(args)))
 			{
 				if(*arg == '.')
-					filename_completion(arg, FNC_DIREXEC);
+					filename_completion(arg, CT_DIREXEC);
 				else
 					exec_completion(arg);
 			}
 			else
-				filename_completion(arg, FNC_ALL);
+				filename_completion(arg, CT_ALL);
+		}
+		else if(id == COM_TOUCH || id == COM_RENAME)
+		{
+			filename_completion(arg, CT_ALL_WOS);
 		}
 		else
-			filename_completion(arg, FNC_ALL);
+		{
+			filename_completion(arg, CT_ALL);
+		}
 	}
 
 	return start - args;
@@ -501,13 +512,24 @@ fast_run_complete(const char *cmd)
 
 	if(get_completion_count() > 2)
 	{
-		if(pathcmp(buf, completed) != 0)
+		int c = get_completion_count() - 1;
+		while(c-- > 0)
+		{
+			if(pathcmp(buf, completed) == 0)
+			{
+				result = strdup(cmd);
+				break;
+			}
+			else
+			{
+				free(completed);
+				completed = next_completion();
+			}
+		}
+
+		if(result == NULL)
 		{
 			status_bar_error("Command beginning is ambiguous");
-		}
-		else
-		{
-			result = strdup(cmd);
 		}
 	}
 	else
@@ -531,30 +553,38 @@ exec_completion(const char *str)
 	{
 		if(my_chdir(paths[i]) != 0)
 			continue;
-		filename_completion(str, FNC_EXECONLY);
+		filename_completion(str, CT_EXECONLY);
 	}
 	add_completion(str);
 }
 
+static void
+filename_completion_in_dir(const char *path, const char *str,
+		CompletionType type)
+{
+	char buf[PATH_MAX];
+	if(is_root_dir(str))
+	{
+		snprintf(buf, sizeof(buf), "%s", str);
+	}
+	else
+	{
+		snprintf(buf, sizeof(buf), "%s/%s", path, str);
+	}
+	filename_completion(buf, type);
+}
+
 /*
- * type: FNC_*
+ * type: CT_*
  */
 void
-filename_completion(const char *str, int type)
+filename_completion(const char *str, CompletionType type)
 {
 	/* TODO refactor filename_completion(...) function */
-	const char *string;
-
-	DIR *dir;
-	struct dirent *d;
+	DIR * dir;
 	char * dirname;
 	char * filename;
 	char * temp;
-	int filename_len;
-	int isdir;
-#ifndef _WIN32
-	int woe = (type == FNC_ALL_WOE || type == FNC_FILE_WOE);
-#endif
 
 	if(str[0] == '~' && strchr(str, '/') == NULL)
 	{
@@ -564,41 +594,23 @@ filename_completion(const char *str, int type)
 		return;
 	}
 
-	string = str;
-
-	if(string[0] == '~')
-	{
-		dirname = expand_tilde(strdup(string));
-		filename = strdup(dirname);
-	}
-	else
-	{
-		if(strlen(string) > 0)
-		{
-			dirname = strdup(string);
-		}
-		else
-		{
-			dirname = malloc(strlen(string) + 2);
-			strcpy(dirname, string);
-		}
-		filename = strdup(string);
-	}
+	dirname = expand_tilde(strdup(str));
+	filename = strdup(dirname);
 
 	temp = cmds_expand_envvars(dirname);
 	free(dirname);
 	dirname = temp;
 
 	temp = strrchr(dirname, '/');
-	if(temp && type != FNC_FILE_WOE)
+	if(temp != NULL && type != CT_FILE && type != CT_FILE_WOE)
 	{
 		strcpy(filename, ++temp);
 		*temp = '\0';
 	}
 	else
 	{
-		dirname[0] = '.';
-		dirname[1] = '\0';
+		dirname = realloc(dirname, 2);
+		strcpy(dirname, ".");
 	}
 
 #ifdef _WIN32
@@ -612,7 +624,7 @@ filename_completion(const char *str, int type)
 					strchr(curr_view->curr_dir + 2, '/') - curr_view->curr_dir + 1, "%s",
 					curr_view->curr_dir);
 		else
-			strcpy(buf, dirname);
+			snprintf(buf, sizeof(buf), "%s", dirname);
 
 		complete_with_shared(buf, filename);
 		free(filename);
@@ -627,7 +639,7 @@ filename_completion(const char *str, int type)
 					strchr(curr_view->curr_dir + 2, '/') - curr_view->curr_dir + 2, "%s",
 					curr_view->curr_dir);
 		else
-				snprintf(buf, sizeof(buf), "%s", curr_view->curr_dir);
+			snprintf(buf, sizeof(buf), "%s", curr_view->curr_dir);
 		strcat(buf, dirname);
 		chosp(buf);
 		free(dirname);
@@ -640,94 +652,53 @@ filename_completion(const char *str, int type)
 	if(dir == NULL || my_chdir(dirname) != 0)
 	{
 		add_completion(filename);
-		free(filename);
-		free(dirname);
-		return;
+	}
+	else
+	{
+		filename_completion_internal(dir, dirname, filename, type);
+		closedir(dir);
+		(void)my_chdir(curr_view->curr_dir);
 	}
 
-	filename_len = strlen(filename);
+	free(filename);
+	free(dirname);
+}
+
+static void
+filename_completion_internal(DIR * dir, const char * dirname,
+		const char * filename, CompletionType type)
+{
+	struct dirent *d;
+
+	size_t filename_len = strlen(filename);
 	while((d = readdir(dir)) != NULL)
 	{
-#ifndef _WIN32
-		char *escaped;
-#endif
-
 		if(filename[0] == '\0' && d->d_name[0] == '.')
 			continue;
 		if(pathncmp(d->d_name, filename, filename_len) != 0)
 			continue;
 
-		if(type == FNC_DIRONLY && !is_entry_dir(d))
+		if(type == CT_DIRONLY && !is_entry_dir(d))
 			continue;
-		else if(type == FNC_EXECONLY && !is_entry_exec(d))
+		else if(type == CT_EXECONLY && !is_entry_exec(d))
 			continue;
-		else if(type == FNC_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
+		else if(type == CT_DIREXEC && !is_entry_dir(d) && !is_entry_exec(d))
 			continue;
 
-		isdir = 0;
-		if(is_dir(d->d_name))
+		if(is_entry_dir(d) && type != CT_ALL_WOS)
 		{
-			isdir = 1;
-		}
-		else if(pathcmp(dirname, "."))
-		{
-			char * tempfile = (char *)NULL;
-			int len = strlen(dirname) + strlen(d->d_name) + 1;
-			tempfile = malloc(len*sizeof(char));
-			if(!tempfile)
-			{
-				closedir(dir);
-				(void)my_chdir(curr_view->curr_dir);
-				add_completion(filename);
-				free(filename);
-				free(dirname);
-				return;
-			}
-			snprintf(tempfile, len, "%s%s", dirname, d->d_name);
-			if(is_dir(tempfile))
-				isdir = 1;
-			else
-				temp = strdup(d->d_name);
-
-			free(tempfile);
+			char buf[NAME_MAX + 1];
+			snprintf(buf, sizeof(buf), "%s/", d->d_name);
+			add_filename_completion(buf, type);
 		}
 		else
 		{
-			temp = strdup(d->d_name);
+			add_filename_completion(d->d_name, type);
 		}
-
-		if(isdir)
-		{
-			char * tempfile = (char *)NULL;
-			tempfile = malloc((strlen(d->d_name) + 2) * sizeof(char));
-			if(tempfile == NULL)
-			{
-				closedir(dir);
-				(void)my_chdir(curr_view->curr_dir);
-				add_completion(filename);
-				free(filename);
-				free(dirname);
-				return;
-			}
-			snprintf(tempfile, strlen(d->d_name) + 2, "%s/", d->d_name);
-			temp = strdup(tempfile);
-
-			free(tempfile);
-		}
-#ifndef _WIN32
-		escaped = woe ? strdup(temp) : escape_filename(temp, 1);
-		add_completion(escaped);
-		free(escaped);
-#else
-		add_completion(escape_for_cd(temp));
-#endif
-		free(temp);
 	}
 
-	(void)my_chdir(curr_view->curr_dir);
-
 	completion_group_end();
-	if(type != FNC_EXECONLY)
+	if(type != CT_EXECONLY)
 	{
 		if(get_completion_count() == 0)
 		{
@@ -735,19 +706,22 @@ filename_completion(const char *str, int type)
 		}
 		else
 		{
-#ifndef _WIN32
-			temp = woe ? strdup(filename) : escape_filename(filename, 1);
-			add_completion(temp);
-			free(temp);
-#else
-			add_completion(escape_for_cd(filename));
-#endif
+			add_filename_completion(filename, type);
 		}
 	}
+}
 
-	free(filename);
-	free(dirname);
-	closedir(dir);
+static void
+add_filename_completion(const char * filename, CompletionType type)
+{
+#ifndef _WIN32
+	int woe = (type == CT_ALL_WOE || type == CT_FILE_WOE);
+	char * temp = woe ? strdup(filename) : escape_filename(filename, 1);
+	add_completion(temp);
+	free(temp);
+#else
+	add_completion(escape_for_cd(filename));
+#endif
 }
 
 static int
