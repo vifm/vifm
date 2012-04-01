@@ -40,6 +40,7 @@ static int group_begin;
 static int order;
 
 static int sorter(const void *first, const void *second);
+static size_t remove_duplicates(char **arr, size_t count);
 
 void
 reset_completion(void)
@@ -76,9 +77,13 @@ add_completion(const char *completion)
 void
 completion_group_end(void)
 {
+	size_t n_group_items;
+
 	assert(state != COMPLETING);
 
-	qsort(lines + group_begin, count - group_begin, sizeof(*lines), sorter);
+	n_group_items = count - group_begin;
+	qsort(lines + group_begin, n_group_items, sizeof(*lines), sorter);
+	count = group_begin + remove_duplicates(lines + group_begin, n_group_items);
 
 	group_begin = count;
 }
@@ -96,12 +101,12 @@ sorter(const void *first, const void *second)
 	if(stra[lena - 1] == '/' && strb[lenb - 1] == '/')
 	{
 		size_t len = MIN(lena - 1, lenb - 1);
-		// compare case sensitive strings even on Windows
+		/* compare case sensitive strings even on Windows */
 		int res = strncmp(stra, strb, len);
 		if(res == 0)
 			return lena - lenb;
 	}
-	// compare case sensitive strings even on Windows
+	/* compare case sensitive strings even on Windows */
 	return strcmp(stra, strb);
 }
 
@@ -113,20 +118,8 @@ next_completion(void)
 
 	if(curr == -1)
 	{
-		int i, j;
-		/* remove consecutive duplicates */
-		j = 1;
-		for(i = 1; i < count; i++)
-		{
-			// compare case sensitive strings even on Windows
-			if(strcmp(lines[i], lines[j - 1]) == 0)
-			{
-				free(lines[i]);
-				continue;
-			}
-			lines[j++] = lines[i];
-		}
-		count = j;
+		size_t n_group_items = count - group_begin;
+		count = group_begin + remove_duplicates(lines + group_begin, n_group_items);
 	}
 
 	if(count == 2)
@@ -150,6 +143,26 @@ next_completion(void)
 			curr = count - 1;
 	}
 	return strdup(lines[curr]);
+}
+
+/* Removes series consecutive duplicates.
+ * Returns new count. */
+static size_t
+remove_duplicates(char **arr, size_t count)
+{
+	size_t i, j;
+	j = 0;
+	for(i = 0; i < count; i++)
+	{
+		/* compare case sensitive strings even on Windows */
+		if(i != j && strcmp(arr[i], arr[j]) == 0)
+		{
+			free(arr[i]);
+			continue;
+		}
+		arr[j++] = arr[i];
+	}
+	return j;
 }
 
 int

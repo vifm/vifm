@@ -230,6 +230,35 @@ test_umbiguous_begin(void)
 	free(buf);
 }
 
+static void
+test_two_matches(void)
+{
+	char *buf;
+
+	assert_int_equal(0, add_completion("mountpoint"));
+	completion_group_end();
+	assert_int_equal(0, add_completion("mount"));
+	completion_group_end();
+
+	assert_int_equal(0, add_completion("mount"));
+
+	buf = next_completion();
+	assert_string_equal("mountpoint", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("mount", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("mount", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("mountpoint", buf);
+	free(buf);
+}
+
 void
 completion_tests(void)
 {
@@ -243,6 +272,7 @@ completion_tests(void)
 	run_test(test_rewind);
 	run_test(test_order);
 	run_test(test_umbiguous_begin);
+	run_test(test_two_matches);
 
 	test_fixture_end();
 }
