@@ -512,13 +512,24 @@ fast_run_complete(const char *cmd)
 
 	if(get_completion_count() > 2)
 	{
-		if(pathcmp(buf, completed) != 0)
+		int c = get_completion_count() - 1;
+		while(c-- > 0)
+		{
+			if(pathcmp(buf, completed) == 0)
+			{
+				result = strdup(cmd);
+				break;
+			}
+			else
+			{
+				free(completed);
+				completed = next_completion();
+			}
+		}
+
+		if(result == NULL)
 		{
 			status_bar_error("Command beginning is ambiguous");
-		}
-		else
-		{
-			result = strdup(cmd);
 		}
 	}
 	else
