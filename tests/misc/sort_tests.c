@@ -42,7 +42,7 @@ test_special_chars_ignore_case_sort(void)
 	assert_string_equal("_", lwin.dir_entry[0].name);
 }
 
-#if defined(_WIN32) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
 static void
 test_versort_without_numbers(void)
 {
@@ -194,7 +194,7 @@ sort_tests(void)
 
 	run_test(test_special_chars_ignore_case_sort);
 
-#if defined(_WIN32) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
 	run_test(test_versort_without_numbers);
 	run_test(test_versort_with_numbers);
 	run_test(test_versort_numbers_only);

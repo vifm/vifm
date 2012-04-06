@@ -43,7 +43,7 @@ static int sort_descending;
 static int sort_type;
 
 static int sort_dir_list(const void *one, const void *two);
-#if defined(_WIN32) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
 #ifndef TEST
 static
 #endif
@@ -96,14 +96,14 @@ compare_file_names(const char *s, const char *t, int ignore_case)
 	if(!cfg.sort_numbers)
 		return strcmp(s, t);
 	else
-#if defined(_WIN32) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
 		return vercmp(s, t);
 #else
 		return strverscmp(s, t);
 #endif
 }
 
-#if defined(_WIN32) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
 #ifndef TEST
 static
 #endif

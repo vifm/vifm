@@ -19,8 +19,8 @@
 #ifndef __STRING_ARRAY_H__
 #define __STRING_ARRAY_H__
 
-#include <stdio.h>
-#include <wchar.h>
+#include <stdio.h> /* FILE */
+#include <wchar.h> /* wchar_t */
 
 /* Returns new size */
 int add_to_string_array(char ***array, int len, int count, ...);
