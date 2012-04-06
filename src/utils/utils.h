@@ -26,8 +26,9 @@
 
 #include <regex.h>
 
-#include <limits.h> /* PATH_MAX */
 #include <sys/types.h> /* mode_t */
+
+#include <limits.h> /* PATH_MAX */
 #include <wchar.h> /* wchar_t ... */
 
 #include "macros.h"

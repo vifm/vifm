@@ -24,7 +24,7 @@
 
 void sort_view(FileView *view);
 
-#if (defined(_WIN32) || defined(__APPLE__)) && defined(TEST)
+#if (defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)) && defined(TEST)
 int vercmp(const char *s, const char *t);
 #endif
 
