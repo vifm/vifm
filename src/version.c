@@ -24,7 +24,7 @@
 
 #include "../config.h"
 
-/* These variables are automatically updated on building. */
+/* This variable is automatically updated on building. */
 extern const char GIT_HASH[];
 
 /* When list is NULL returns maximum number of lines, otherwise returns number

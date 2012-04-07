@@ -96,6 +96,7 @@ typedef struct
 	job_t *job;
 }bg_args_t;
 
+static int check_file_rename(const char *old, const char *new);
 static void put_confirm_cb(const char *dest_name);
 static void put_decide_cb(const char *dest_name);
 static int put_files_from_register_i(FileView *view, int start);
@@ -597,14 +598,8 @@ rename_file_cb(const char *new_name)
 			(rename_file_ext[0] == '\0') ? "" : ".", rename_file_ext,
 			(filename[len - 1] == '/') ? "/" : "");
 
-	/* Filename unchanged */
-	if(strcmp(filename, new) == 0)
-		return;
-
-	if(access(new, F_OK) == 0 && pathncmp(filename, new, strlen(filename)) != 0)
+	if(check_file_rename(filename, new) <= 0)
 	{
-		(void)show_error_msg("File exists",
-				"That file already exists. Will not overwrite.");
 		return;
 	}
 
@@ -767,12 +762,30 @@ is_rename_list_ok(FileView *view, char **files, int *is_dup, int len,
 				break;
 			}
 		}
-		if(j >= len && access(list[i], F_OK) == 0)
+		if(j >= len && check_file_rename(files[i], list[i]) == 0)
 		{
-			status_bar_errorf("File \"%s\" already exists", list[i]);
 			curr_stats.save_msg = 1;
 			return 0;
 		}
+	}
+
+	return 1;
+}
+
+/* Returns value > 0 if rename is correct, < 0 if rename isn't needed and 0
+ * when rename operation should be aborted. */
+static int
+check_file_rename(const char *old, const char *new)
+{
+	/* Filename unchanged */
+	if(strcmp(old, new) == 0)
+		return -1;
+
+	if(access(new, F_OK) == 0 && pathncmp(old, new, strlen(old)) != 0)
+	{
+		(void)show_error_msg("File exists",
+				"That file already exists. Will not overwrite.");
+		return 0;
 	}
 
 	return 1;

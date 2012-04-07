@@ -77,6 +77,8 @@
 
 	Fixed :cd (so and :pushd) with absolute path as second argument.
 
+	Fixed case insensitive renames using :rename command on Windows.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.
