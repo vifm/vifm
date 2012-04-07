@@ -79,6 +79,8 @@
 
 	Fixed case insensitive renames using :rename command on Windows.
 
+	Fixed message about failed rename operation.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

@@ -64,6 +64,19 @@ test_incdec_leaves_zeros(void)
 	assert_string_equal("a01.", add_to_name("a00.", 1));
 }
 
+static void
+test_single_file_rename(void)
+{
+	chdir("test-data/rename");
+	assert_true(check_file_rename("a", "a") < 0);
+	assert_true(check_file_rename("a", "b") > 0);
+	assert_true(check_file_rename("a", "aa") == 0);
+#ifdef _WIN32
+	assert_true(check_file_rename("a", "A") > 0);
+#endif
+	chdir("../..");
+}
+
 void
 rename_tests(void)
 {
@@ -74,6 +87,7 @@ rename_tests(void)
 	run_test(test_move_fail);
 	run_test(test_rename_inside_subdir_ok);
 	run_test(test_incdec_leaves_zeros);
+	run_test(test_single_file_rename);
 
 	test_fixture_end();
 }

@@ -96,7 +96,10 @@ typedef struct
 	job_t *job;
 }bg_args_t;
 
-static int check_file_rename(const char *old, const char *new);
+#ifndef TEST
+static
+#endif
+int check_file_rename(const char *old, const char *new);
 static void put_confirm_cb(const char *dest_name);
 static void put_decide_cb(const char *dest_name);
 static int put_files_from_register_i(FileView *view, int start);
@@ -774,14 +777,17 @@ is_rename_list_ok(FileView *view, char **files, int *is_dup, int len,
 
 /* Returns value > 0 if rename is correct, < 0 if rename isn't needed and 0
  * when rename operation should be aborted. */
-static int
+#ifndef TEST
+static
+#endif
+int
 check_file_rename(const char *old, const char *new)
 {
 	/* Filename unchanged */
 	if(strcmp(old, new) == 0)
 		return -1;
 
-	if(access(new, F_OK) == 0 && pathncmp(old, new, strlen(old)) != 0)
+	if(access(new, F_OK) == 0 && pathcmp(old, new) != 0)
 	{
 		(void)show_error_msg("File exists",
 				"That file already exists. Will not overwrite.");
