@@ -22,6 +22,7 @@
 #include <string.h> /* strcpy() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
+#include "../utils/fs.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../bookmarks.h"
@@ -240,9 +241,7 @@ read_info_file(int reread)
 		{
 			if(fgets(line2, sizeof(line2), fp) == line2)
 			{
-				char buf[PATH_MAX];
-				snprintf(buf, sizeof(buf), "%s/%s", cfg.trash_dir, line + 1);
-				if(access(buf, F_OK) != 0)
+				if(!path_exists_at(cfg.trash_dir, line + 1))
 					continue;
 				prepare_line(line2);
 				add_to_trash(line2, line + 1);
@@ -524,10 +523,8 @@ write_info_file(void)
 			{
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
-					char buf[PATH_MAX];
-					snprintf(buf, sizeof(buf), "%s/%s", cfg.trash_dir, line + 1);
 					prepare_line(line2);
-					if(access(buf, F_OK) != 0)
+					if(!path_exists_at(cfg.trash_dir, line + 1))
 						continue;
 					if(is_in_trash(line + 1))
 						continue;

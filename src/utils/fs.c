@@ -26,6 +26,8 @@
 #include <sys/types.h> /* size_t mode_t */
 #include <unistd.h> /* access() */
 
+#include <assert.h>
+#include <ctype.h> /* touuper() */
 #include <errno.h> /* errno */
 #include <limits.h> /* PATH_MAX */
 #include <stddef.h> /* NULL */
@@ -41,6 +43,8 @@
 #include "utils.h"
 
 #include "fs.h"
+
+static int path_exists_internal(const char *path, const char *filename);
 
 int
 is_dir(const char *path)
@@ -84,27 +88,46 @@ is_valid_dir(const char *path)
 	return is_dir(path) || is_unc_root(path);
 }
 
-/* Checks whether path/file exists. path can be NULL */
 int
-file_exists(const char *path, const char *file)
+path_exists(const char *path)
 {
+	return path_exists_internal(NULL, path);
+}
+
+int
+path_exists_at(const char *path, const char *filename)
+{
+	return path_exists_internal(path, filename);
+}
+
+/* Checks whether path/file exists. If path is NULL, filename is assumed to
+ * contain full path. */
+static int
+path_exists_internal(const char *path, const char *filename)
+{
+	const char *path_to_check;
 	char full[PATH_MAX];
 	if(path == NULL)
-		snprintf(full, sizeof(full), "%s", file);
-	else
-		snprintf(full, sizeof(full), "%s/%s", path, file);
-#ifndef _WIN32
-	return access(full, F_OK) == 0;
-#else
-	if(is_path_absolute(full) && !is_unc_path(full))
 	{
-		char buf[] = {full[0], ':', '\\', '\0'};
-		UINT type = GetDriveTypeA(buf);
-		if(type == DRIVE_UNKNOWN || type == DRIVE_NO_ROOT_DIR)
+		path_to_check = filename;
+	}
+	else
+	{
+		snprintf(full, sizeof(full), "%s/%s", path, filename);
+		path_to_check = full;
+	}
+#ifndef _WIN32
+	return access(path_to_check, F_OK) == 0;
+#else
+	if(is_path_absolute(path_to_check) && !is_unc_path(path_to_check))
+	{
+		if(!drive_exists(path_to_check[0]))
+		{
 			return 0;
+		}
 	}
 
-	return (GetFileAttributesA(full) != INVALID_FILE_ATTRIBUTES);
+	return (GetFileAttributesA(path_to_check) != INVALID_FILE_ATTRIBUTES);
 #endif
 }
 
@@ -254,7 +277,36 @@ symlinks_available(void)
 int
 directory_accessible(const char *path)
 {
-	return access(path, F_OK) == 0 && access(path, X_OK) == 0;
+	return (path_exists(path) && access(path, X_OK) == 0) || is_unc_root(path);
+}
+
+/* path should be absolute */
+int
+is_dir_writable(const char *path)
+{
+	assert(is_path_absolute(path));
+
+	if(!is_unc_root(path))
+	{
+#ifdef _WIN32
+		HANDLE hdir;
+		if(is_on_fat_volume(path))
+			return 1;
+		hdir = CreateFileA(path, GENERIC_WRITE,
+				FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+				FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
+		if(hdir != INVALID_HANDLE_VALUE)
+		{
+			CloseHandle(hdir);
+			return 1;
+		}
+#else
+	if(access(path, W_OK) == 0)
+		return 1;
+#endif
+	}
+
+	return 0;
 }
 
 #ifdef _WIN32
@@ -319,11 +371,10 @@ is_on_fat_volume(const char *path)
 
 /* Checks specified drive for existence */
 int
-drive_exists(TCHAR letter)
+drive_exists(char letter)
 {
-	TCHAR drive[] = TEXT("?:\\");
-	drive[0] = letter;
-	int type = GetDriveType(drive);
+	const char drive[] = {letter, ':', '\\', '\0'};
+	int type = GetDriveTypeA(drive);
 
 	switch(type)
 	{

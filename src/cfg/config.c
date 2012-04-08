@@ -27,7 +27,7 @@
 #define VIFMRC "vifmrc"
 
 #ifndef _WIN32
-#define CP_HELP "cp " PACKAGE_DATA_DIR "/vifm-help.txt ~/.vifm"
+#define CP_HELP "cp " PACKAGE_DATA_DIR "/" VIFM_HELP " ~/.vifm"
 #define CP_RC "cp " PACKAGE_DATA_DIR "/" VIFMRC " ~/.vifm"
 #endif
 
@@ -296,7 +296,7 @@ try_exe_directory_for_conf(void)
 	GetModuleFileNameA(NULL, exe_dir, sizeof(exe_dir));
 	to_forward_slash(exe_dir);
 	*strrchr(exe_dir, '/') = '\0';
-	if(!file_exists(exe_dir, VIFMRC))
+	if(!path_exists_at(exe_dir, VIFMRC))
 		return 0;
 	env_set(VIFM_EV, exe_dir);
 	return 1;
@@ -363,7 +363,7 @@ try_myvifmrc_envvar_for_vifmrc(void)
 	LOG_FUNC_ENTER;
 
 	const char *myvifmrc = env_get(MYVIFMRC_EV);
-	return myvifmrc != NULL && file_exists(NULL, myvifmrc);
+	return myvifmrc != NULL && path_exists(myvifmrc);
 }
 
 /* tries to use vifmrc in directory of executable file as configuration file */
@@ -380,7 +380,7 @@ try_exe_directory_for_vifmrc(void)
 	to_forward_slash(vifmrc);
 	*strrchr(vifmrc, '/') = '\0';
 	strcat(vifmrc, "/" VIFMRC);
-	if(!file_exists(NULL, vifmrc))
+	if(!path_exists(vifmrc))
 		return 0;
 	env_set(MYVIFMRC_EV, vifmrc);
 	return 1;
@@ -398,7 +398,7 @@ try_vifm_vifmrc_for_vifmrc(void)
 	if(vifm == NULL || !is_dir(vifm))
 		return 0;
 	snprintf(vifmrc, sizeof(vifmrc), "%s/" VIFMRC, vifm);
-	if(!file_exists(NULL, vifmrc))
+	if(!path_exists(vifmrc))
 		return 0;
 	env_set(MYVIFMRC_EV, vifmrc);
 	return 1;
@@ -433,7 +433,7 @@ create_config_dir(void)
 		if(make_dir(cfg.config_dir, 0777) != 0)
 			return;
 
-		snprintf(help_file, sizeof(help_file), "%s/vifm-help_txt", cfg.config_dir);
+		snprintf(help_file, sizeof(help_file), "%s/" VIFM_HELP, cfg.config_dir);
 		if((f = fopen(help_file, "r")) == NULL)
 			create_help_file();
 		else
@@ -484,7 +484,7 @@ create_trash_dir(void)
 {
 	LOG_FUNC_ENTER;
 
-	if(access(cfg.trash_dir, F_OK) == 0)
+	if(is_dir_writable(cfg.trash_dir))
 		return;
 
 	if(make_dir(cfg.trash_dir, 0777) != 0)
@@ -616,7 +616,7 @@ are_old_color_schemes(void)
 {
 	char colors_dir[PATH_MAX];
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
-	return !is_dir(colors_dir) && file_exists(cfg.config_dir, "colorschemes");
+	return !is_dir(colors_dir) && path_exists_at(cfg.config_dir, "colorschemes");
 }
 
 const char *

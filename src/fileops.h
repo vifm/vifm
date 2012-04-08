@@ -24,6 +24,12 @@
 
 #define DEFAULT_REG_NAME '"'
 
+typedef enum
+{
+	DR_CURRENT,
+	DR_DESTINATION,
+}DirRole;
+
 int delete_file(FileView *view, int reg, int count, int *indexes,
 		int use_trash);
 int delete_file_bg(FileView *view, int use_trash);
@@ -45,7 +51,9 @@ int change_link(FileView *view);
 int put_files_from_register(FileView *view, int name, int force_move);
 int clone_files(FileView *view, char **list, int nlines, int force, int copies);
 unsigned long long calc_dirsize(const char *path, int force_update);
-int is_dir_writable(int dest, const char *path);
+/* This is a wrapper for is_dir_writable() function, which adds message
+ * dialogs. */
+int check_if_dir_writable(DirRole dir_role, const char *path);
 /* Returns new value for save_msg flag. */
 int put_links(FileView *view, int reg_name, int relative);
 /* Returns new value for save_msg flag. */

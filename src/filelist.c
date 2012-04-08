@@ -106,10 +106,7 @@ get_line_color(FileView* view, int pos)
 				else
 					snprintf(full, sizeof(full), "%s/%s", view->curr_dir, linkto);
 
-				if(access(full, F_OK) == 0)
-					return LINK_COLOR;
-				else
-					return BROKEN_LINK_COLOR;
+				return path_exists(full) ? LINK_COLOR : BROKEN_LINK_COLOR;
 			}
 #ifndef _WIN32
 		case SOCKET:
@@ -1340,12 +1337,12 @@ change_directory(FileView *view, const char *directory)
 		chosp(view->last_dir);
 
 #ifndef _WIN32
-	if(access(dir_dup, F_OK) != 0)
+	if(!path_exists(dir_dup))
 #else
 	if(!is_valid_dir(dir_dup))
 #endif
 	{
-		LOG_SERROR_MSG(errno, "Can't access(, F_OK) \"%s\"", dir_dup);
+		LOG_SERROR_MSG(errno, "Can't access \"%s\"", dir_dup);
 		log_cwd();
 
 		(void)show_error_msgf("Directory Access Error", "Cannot open %s", dir_dup);
@@ -2319,12 +2316,9 @@ int
 ensure_file_is_selected(FileView *view, const char *name)
 {
 	int file_pos;
-	char full_path[PATH_MAX];
-
-	snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir, name);
 
 	file_pos = find_file_pos_in_list(view, name);
-	if(file_pos < 0 && access(full_path, F_OK) == 0)
+	if(file_pos < 0 && path_exists_at(view->curr_dir, name))
 	{
 		if(name[0] == '.')
 		{
@@ -2382,14 +2376,14 @@ cd(FileView *view, const char *path)
 		snprintf(dir, sizeof(dir), "%s", cfg.home_dir);
 	}
 
-	if(access(dir, F_OK) != 0 && !is_unc_root(dir))
+	if(!is_valid_dir(dir))
 	{
-		LOG_SERROR_MSG(errno, "Can't access(,F_OK) \"%s\"", dir);
+		LOG_SERROR_MSG(errno, "Can't access \"%s\"", dir);
 
 		(void)show_error_msgf("Destination doesn't exist", "\"%s\"", dir);
 		return 0;
 	}
-	if(access(dir, X_OK) != 0 && !is_unc_root(dir))
+	if(!directory_accessible(dir))
 	{
 		LOG_SERROR_MSG(errno, "Can't access(,X_OK) \"%s\"", dir);
 

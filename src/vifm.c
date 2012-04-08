@@ -266,7 +266,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		{
 			/* do nothing, it's handeled in exec_startup_commands() */
 		}
-		else if(access(argv[x], F_OK) == 0 || is_path_absolute(argv[x]) ||
+		else if(path_exists(argv[x]) || is_path_absolute(argv[x]) ||
 				is_root_dir(argv[x]))
 		{
 			if(lwin_path[0] != '\0')
@@ -333,7 +333,7 @@ check_path(FileView *view, const char *path)
 static void
 exclude_file_name(char *path)
 {
-	if(file_exists(NULL, path) && !is_valid_dir(path))
+	if(path_exists(path) && !is_valid_dir(path))
 		remove_last_path_component(path);
 }
 

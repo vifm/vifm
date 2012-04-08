@@ -27,8 +27,6 @@
 /* This variable is automatically updated on building. */
 extern const char GIT_HASH[];
 
-/* When list is NULL returns maximum number of lines, otherwise returns number
- * of filled lines */
 int
 fill_version_info(char **list)
 {
@@ -94,7 +92,7 @@ fill_version_info(char **list)
 #endif /* _WIN32 */
 #endif
 
-	assert(x == LEN);
+	assert(x <= LEN);
 
 	return x;
 }

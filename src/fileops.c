@@ -107,6 +107,7 @@ int check_file_rename(const char *old, const char *new, int silent);
 static void put_confirm_cb(const char *dest_name);
 static void put_decide_cb(const char *dest_name);
 static int put_files_from_register_i(FileView *view, int start);
+static int have_read_access(FileView *view);
 
 static int
 execute(char **args)
@@ -224,41 +225,6 @@ gen_trash_name(const char *name)
 	return strdup(buf);
 }
 
-/* path should be absolute */
-int
-is_dir_writable(int dest, const char *path)
-{
-	assert(is_path_absolute(path));
-
-	if(!is_unc_root(path))
-	{
-#ifdef _WIN32
-		HANDLE hdir;
-		if(is_on_fat_volume(path))
-			return 1;
-		hdir = CreateFileA(path, GENERIC_WRITE,
-				FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
-				FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
-		if(hdir != INVALID_HANDLE_VALUE)
-		{
-			CloseHandle(hdir);
-			return 1;
-		}
-#else
-	if(access(path, W_OK) == 0)
-		return 1;
-#endif
-	}
-
-	if(dest)
-		(void)show_error_msg("Operation error",
-				"Destination directory is not writable");
-	else
-		(void)show_error_msg("Operation error",
-				"Current directory is not writable");
-	return 0;
-}
-
 /* buf should be at least COMMAND_GROUP_INFO_LEN characters length */
 static void
 get_group_file_list(char **list, int count, char *buf)
@@ -287,7 +253,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	int x, y;
 	int i;
 
-	if(!is_dir_writable(0, view->curr_dir))
+	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
 
 	if(cfg.use_trash && use_trash &&
@@ -476,7 +442,7 @@ delete_file_bg(FileView *view, int use_trash)
 	int i;
 	bg_args_t *args;
 	
-	if(!is_dir_writable(0, view->curr_dir))
+	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
 
 	args = malloc(sizeof(*args));
@@ -639,7 +605,7 @@ rename_file(FileView *view, int name_only)
 {
 	char filename[NAME_MAX + 1];
 
-	if(!is_dir_writable(0, view->curr_dir))
+	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return;
 
 	snprintf(filename, sizeof(filename), get_current_file_name(view));
@@ -955,7 +921,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	int i;
 	int *is_dup;
 
-	if(!is_dir_writable(0, view->curr_dir))
+	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
 
 	if(view->selected_files == 0)
@@ -1066,7 +1032,7 @@ check_file_rename(const char *old, const char *new, int silent)
 	if(new[0] == '\0' || strcmp(old, new) == 0)
 		return -1;
 
-	if(access(new, F_OK) == 0 && pathcmp(old, new) != 0)
+	if(path_exists(new) && pathcmp(old, new) != 0)
 	{
 		if(silent)
 		{
@@ -1194,7 +1160,7 @@ incdec_names(FileView *view, int k)
 	for(i = 0; i < names_len; i++)
 	{
 		const char *p = add_to_name(names[i], k);
-		if(!file_exists(view->curr_dir, p))
+		if(!path_exists_at(view->curr_dir, p))
 			continue;
 #ifndef _WIN32
 		if(is_in_string_array(names, names_len, p))
@@ -1429,7 +1395,7 @@ change_link(FileView *view)
 		return 0;
 	}
 
-	if(!is_dir_writable(0, view->curr_dir))
+	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
 
 	if(view->dir_entry[view->list_pos].type != LINK)
@@ -1520,7 +1486,7 @@ put_next(const char *dest_name, int override)
 		dest_name++;
 	}
 
-	if(access(dest_name, F_OK) == 0 && !override)
+	if(path_exists(dest_name) && !override)
 	{
 		prompt_what_to_do(dest_name);
 		return 1;
@@ -1648,7 +1614,7 @@ put_files_from_register(FileView *view, int name, int force_move)
 {
 	registers_t *reg;
 
-	if(!is_dir_writable(0, view->curr_dir))
+	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
 
 	reg = find_register(tolower(name));
@@ -1705,7 +1671,7 @@ gen_clone_name(const char *normal_name)
 		snprintf(result + len, sizeof(result) - len, "(%d)%s%s", i++,
 				(extension[0] == '\0') ? "" : ".", extension);
 	}
-	while(access(result, F_OK) == 0);
+	while(path_exists(result));
 
 	return result;
 }
@@ -1724,7 +1690,7 @@ clone_file(FileView* view, const char *filename, const char *path,
 
 	snprintf(clone_name, sizeof(clone_name), "%s/%s", path, clone);
 	chosp(clone_name);
-	if(access(clone_name, F_OK) == 0)
+	if(path_exists(clone_name))
 	{
 		if(perform_operation(OP_REMOVESL, NULL, clone_name, NULL) != 0)
 			return;
@@ -1743,7 +1709,7 @@ is_clone_list_ok(int count, char **list)
 	int i;
 	for(i = 0; i < count; i++)
 	{
-		if(access(list[i], F_OK) == 0)
+		if(path_exists(list[i]))
 		{
 			status_bar_errorf("File \"%s\" already exists", list[i]);
 			return 0;
@@ -1776,33 +1742,6 @@ is_dir_path(FileView *view, const char *path, char *buf)
 	return 0;
 }
 
-static int
-have_read_access(FileView *view)
-{
-	int i;
-
-#ifdef _WIN32
-	if(is_unc_path(view->curr_dir))
-		return 1;
-#endif
-
-	for(i = 0; i < view->list_rows; i++)
-	{
-		if(!view->dir_entry[i].selected)
-			continue;
-		if(access(view->dir_entry[i].name, R_OK) != 0)
-		{
-			show_error_msgf("Access denied",
-					"You don't have read permissions on \"%s\"", view->dir_entry[i].name);
-			clean_selected_files(view);
-			draw_dir_list(view, view->top_line);
-			move_to_list_pos(view, view->list_pos);
-			return 0;
-		}
-	}
-	return 1;
-}
-
 /* returns new value for save_msg */
 int
 clone_files(FileView *view, char **list, int nlines, int force, int copies)
@@ -1827,7 +1766,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	{
 		strcpy(path, view->curr_dir);
 	}
-	if(!is_dir_writable(1, path))
+	if(!check_if_dir_writable(with_dir ? DR_DESTINATION : DR_CURRENT, path))
 		return 0;
 
 	get_all_selected_files(view);
@@ -1876,12 +1815,21 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 	for(i = 0; i < sel_len; i++)
 	{
 		int j;
-		const char * clone_name = (nlines > 0) ? list[i] : gen_clone_name(sel[i]);
+		const char * clone_name;
+		if(nlines > 0)
+		{
+			clone_name = list[i];
+		}
+		else
+		{
+			clone_name = path_exists_at(path, sel[i]) ? gen_clone_name(sel[i]) :
+				sel[i];
+		}
 		progress_msg("Cloning files", i + 1, sel_len);
 
 		for(j = 0; j < copies; j++)
 		{
-			if(file_exists(NULL, clone_name))
+			if(path_exists_at(path, clone_name))
 				clone_name = gen_clone_name((nlines > 0) ? list[i] : sel[i]);
 			clone_file(view, sel[i], path, clone_name);
 		}
@@ -1975,7 +1923,7 @@ put_links(FileView *view, int reg_name, int relative)
 {
 	registers_t *reg;
 
-	if(!is_dir_writable(0, view->curr_dir))
+	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
 
 	reg = find_register(reg_name);
@@ -2210,7 +2158,7 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 	int cflags;
 	int err;
 
-	if(!is_dir_writable(0, view->curr_dir))
+	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
 
 	if(view->selected_files == 0)
@@ -2322,7 +2270,7 @@ tr_in_names(FileView *view, const char *pattern, const char *sub)
 	char **dest = NULL;
 	int n = 0;
 
-	if(!is_dir_writable(0, view->curr_dir))
+	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
 
 	if(view->selected_files == 0)
@@ -2409,7 +2357,7 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 	int n = 0, k;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 
-	if(!is_dir_writable(0, view->curr_dir))
+	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
 
 	if(count > 0)
@@ -2492,9 +2440,7 @@ is_copy_list_ok(const char *dst, int count, char **list)
 	int i;
 	for(i = 0; i < count; i++)
 	{
-		char buf[PATH_MAX];
-		snprintf(buf, sizeof(buf), "%s/%s", dst, list[i]);
-		if(access(buf, F_OK) == 0)
+		if(path_exists_at(dst, list[i]))
 		{
 			status_bar_errorf("File \"%s\" already exists", list[i]);
 			return 0;
@@ -2551,7 +2497,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 {
 	int error = 0;
 
-	if(move && !is_dir_writable(0, view->curr_dir))
+	if(move && !check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return -1;
 
 	if(move == 0 && type == 0 && !have_read_access(view))
@@ -2566,7 +2512,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 	{
 		strcpy(path, other_view->curr_dir);
 	}
-	if(!is_dir_writable(1, path))
+	if(!check_if_dir_writable(DR_DESTINATION, path))
 		return -1;
 
 	get_all_selected_files(view);
@@ -2621,6 +2567,33 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 
 	*from_trash = path_starts_with(view->curr_dir, cfg.trash_dir);
 	return 0;
+}
+
+static int
+have_read_access(FileView *view)
+{
+	int i;
+
+#ifdef _WIN32
+	if(is_unc_path(view->curr_dir))
+		return 1;
+#endif
+
+	for(i = 0; i < view->list_rows; i++)
+	{
+		if(!view->dir_entry[i].selected)
+			continue;
+		if(access(view->dir_entry[i].name, R_OK) != 0)
+		{
+			show_error_msgf("Access denied",
+					"You don't have read permissions on \"%s\"", view->dir_entry[i].name);
+			clean_selected_files(view);
+			draw_dir_list(view, view->top_line);
+			move_to_list_pos(view, view->list_pos);
+			return 0;
+		}
+	}
+	return 1;
 }
 
 int
@@ -2678,8 +2651,10 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
-		if(access(dst_full, F_OK) == 0)
+		if(path_exists(dst_full))
+		{
 			perform_operation(OP_REMOVESL, NULL, dst_full, NULL);
+		}
 
 		if(move)
 		{
@@ -2731,8 +2706,10 @@ cpmv_files_bg_i(char **list, int nlines, int move, int force, char **sel_list,
 		}
 
 		snprintf(dst_full, sizeof(dst_full), "%s/%s", path, dst);
-		if(access(dst_full, F_OK) == 0)
+		if(path_exists(dst_full))
+		{
 			perform_operation(OP_REMOVESL, NULL, dst_full, NULL);
+		}
 
 		if(move)
 			(void)mv_file(sel_list[i], src, dst, path, -1);
@@ -2907,7 +2884,7 @@ make_files(FileView *view, char **names, int count)
 	int n;
 	char buf[COMMAND_GROUP_INFO_LEN + 1];
 
-	if(!is_dir_writable(0, view->curr_dir))
+	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return 0;
 
 	for(i = 0; i < count; i++)
@@ -2958,6 +2935,21 @@ make_files(FileView *view, char **names, int count)
 
 	status_bar_messagef("%d file%s created", n, (n == 1) ? "" : "s");
 	return 1;
+}
+
+int
+check_if_dir_writable(DirRole dir_role, const char *path)
+{
+	if(is_dir_writable(path))
+		return 1;
+
+	if(dir_role == DR_DESTINATION)
+		(void)show_error_msg("Operation error",
+				"Destination directory is not writable");
+	else
+		(void)show_error_msg("Operation error",
+				"Current directory is not writable");
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

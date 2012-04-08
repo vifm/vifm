@@ -144,7 +144,7 @@ split_path(void)
 
 		s = expand_tilde(s);
 
-		if(access(s, F_OK) != 0)
+		if(!path_exists(s))
 		{
 			free(s);
 			continue;
