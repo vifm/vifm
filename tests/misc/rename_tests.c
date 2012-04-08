@@ -68,13 +68,30 @@ static void
 test_single_file_rename(void)
 {
 	chdir("test-data/rename");
-	assert_true(check_file_rename("a", "a") < 0);
-	assert_true(check_file_rename("a", "b") > 0);
-	assert_true(check_file_rename("a", "aa") == 0);
+	assert_true(check_file_rename("a", "a", 1) < 0);
+	assert_true(check_file_rename("a", "", 1) < 0);
+	assert_true(check_file_rename("a", "b", 1) > 0);
+	assert_true(check_file_rename("a", "aa", 1) == 0);
 #ifdef _WIN32
-	assert_true(check_file_rename("a", "A") > 0);
+	assert_true(check_file_rename("a", "A", 1) > 0);
 #endif
 	chdir("../..");
+}
+
+static void
+test_rename_list_checks(void)
+{
+	int i;
+	char *list[] = { "a", "aa", "aaa" };
+	char *files[] = { "", "aa", "bbb" };
+	ARRAY_GUARD(files, ARRAY_LEN(list));
+	int dup[ARRAY_LEN(files)] = {};
+
+	assert_true(is_rename_list_ok(files, dup, ARRAY_LEN(list), list));
+	for(i = 0; i < ARRAY_LEN(list); i++)
+	{
+		assert_false(dup[i]);
+	}
 }
 
 void
@@ -88,6 +105,7 @@ rename_tests(void)
 	run_test(test_rename_inside_subdir_ok);
 	run_test(test_incdec_leaves_zeros);
 	run_test(test_single_file_rename);
+	run_test(test_rename_list_checks);
 
 	test_fixture_end();
 }

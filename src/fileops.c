@@ -99,7 +99,11 @@ typedef struct
 #ifndef TEST
 static
 #endif
-int check_file_rename(const char *old, const char *new);
+int is_rename_list_ok(char **files, int *is_dup, int len, char **list);
+#ifndef TEST
+static
+#endif
+int check_file_rename(const char *old, const char *new, int silent);
 static void put_confirm_cb(const char *dest_name);
 static void put_decide_cb(const char *dest_name);
 static int put_files_from_register_i(FileView *view, int start);
@@ -601,7 +605,7 @@ rename_file_cb(const char *new_name)
 			(rename_file_ext[0] == '\0') ? "" : ".", rename_file_ext,
 			(filename[len - 1] == '/') ? "/" : "");
 
-	if(check_file_rename(filename, new) <= 0)
+	if(check_file_rename(filename, new, 0) <= 0)
 	{
 		return;
 	}
@@ -735,63 +739,6 @@ is_name_list_ok(int count, int nlines, char **list, char **files)
 
 		if(list[i][0] == '\0')
 			continue;
-	}
-
-	return 1;
-}
-
-static int
-is_rename_list_ok(FileView *view, char **files, int *is_dup, int len,
-		char **list)
-{
-	int i;
-
-	for(i = 0; i < len; i++)
-	{
-		int j;
-
-		if(list[i][0] == '\0')
-			continue;
-
-		if(strcmp(list[i], files[i]) == 0)
-			continue;
-
-		for(j = 0; j < len; j++)
-		{
-			chosp(files[i]);
-			if(strcmp(list[i], files[j]) == 0 && !is_dup[j])
-			{
-				is_dup[j] = !is_dup[j];
-				break;
-			}
-		}
-		if(j >= len && check_file_rename(files[i], list[i]) == 0)
-		{
-			curr_stats.save_msg = 1;
-			return 0;
-		}
-	}
-
-	return 1;
-}
-
-/* Returns value > 0 if rename is correct, < 0 if rename isn't needed and 0
- * when rename operation should be aborted. */
-#ifndef TEST
-static
-#endif
-int
-check_file_rename(const char *old, const char *new)
-{
-	/* Filename unchanged */
-	if(strcmp(old, new) == 0)
-		return -1;
-
-	if(access(new, F_OK) == 0 && pathcmp(old, new) != 0)
-	{
-		(void)show_error_msg("File exists",
-				"That file already exists. Will not overwrite.");
-		return 0;
 	}
 
 	return 1;
@@ -973,7 +920,7 @@ rename_files_ind(FileView *view, char **files, int *is_dup, int len)
 	}
 
 	if(is_name_list_ok(len, nlines, list, files) &&
-			is_rename_list_ok(view, files, is_dup, len, list))
+			is_rename_list_ok(files, is_dup, len, list))
 		renamed = perform_renaming(view, files, is_dup, len, list);
 	free_string_array(list, nlines);
 
@@ -1071,7 +1018,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 		int renamed = -1;
 
 		if(is_name_list_ok(len, nlines, list, files) &&
-				is_rename_list_ok(view, files, is_dup, len, list))
+				is_rename_list_ok(files, is_dup, len, list))
 			renamed = perform_renaming(view, files, is_dup, len, list);
 
 		if(renamed >= 0)
@@ -1086,6 +1033,73 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	draw_dir_list(view, view->top_line);
 	move_to_list_pos(view, view->list_pos);
 	curr_stats.save_msg = 1;
+	return 1;
+}
+
+/* Checks rename correctness and forms an array of duplication marks.
+ * Directory names in files array should be without trailing slash. */
+#ifndef TEST
+static
+#endif
+int
+is_rename_list_ok(char **files, int *is_dup, int len, char **list)
+{
+	int i;
+	for(i = 0; i < len; i++)
+	{
+		int j;
+		int check_result;
+
+		check_result = check_file_rename(files[i], list[i], 1);
+		if(check_result < 0)
+		{
+			continue;
+		}
+
+		for(j = 0; j < len; j++)
+		{
+			if(strcmp(list[i], files[j]) == 0 && !is_dup[j])
+			{
+				is_dup[j] = 1;
+				break;
+			}
+		}
+		if(j >= len && check_result == 0)
+		{
+			break;
+		}
+	}
+	return i >= len;
+}
+
+/* Returns value > 0 if rename is correct, < 0 if rename isn't needed and 0
+ * when rename operation should be aborted. silent parameter controls whether
+ * error dialog or status bar message should be shown, 0 means dialog. */
+#ifndef TEST
+static
+#endif
+int
+check_file_rename(const char *old, const char *new, int silent)
+{
+	/* Filename unchanged */
+	if(new[0] == '\0' || strcmp(old, new) == 0)
+		return -1;
+
+	if(access(new, F_OK) == 0 && pathcmp(old, new) != 0)
+	{
+		if(silent)
+		{
+			status_bar_errorf("File \"%s\" already exists", new);
+			curr_stats.save_msg = 1;
+		}
+		else
+		{
+			(void)show_error_msg("File exists",
+					"That file already exists. Will not overwrite.");
+		}
+		return 0;
+	}
+
 	return 1;
 }
 
