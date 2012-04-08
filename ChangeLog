@@ -81,6 +81,8 @@
 
 	Fixed message about failed rename operation.
 
+	Fixed renaming of files on Windows (sometimes files could be moved).
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

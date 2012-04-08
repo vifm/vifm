@@ -593,7 +593,7 @@ rename_file_cb(const char *new_name)
 	if(new_name == NULL || new_name[0] == '\0')
 		return;
 
-	if(strchr(new_name, '/') != 0)
+	if(contains_slash(new_name))
 	{
 		status_bar_error("Name can not contain slash");
 		curr_stats.save_msg = 1;
@@ -675,17 +675,6 @@ rename_file(FileView *view, int name_only)
 	enter_prompt_mode(L"New name: ", buf, rename_file_cb, complete_filename_only);
 }
 
-static char *
-find_slash(const char *path)
-{
-	char *result = strrchr(path, '/');
-#ifdef _WIN32
-	if(result == NULL)
-		result = strrchr(path, '\\');
-#endif
-	return result;
-}
-
 #ifndef TEST
 static
 #endif
@@ -713,9 +702,9 @@ is_name_list_ok(int count, int nlines, char **list, char **files)
 		char *file_s = NULL, *list_s;
 		chomp(list[i]);
 
-		list_s = find_slash(list[i]);
+		list_s = find_slashr(list[i]);
 		if(files != NULL)
-			file_s = find_slash(files[i]);
+			file_s = find_slashr(files[i]);
 		if(list_s != NULL || file_s != NULL)
 		{
 			if(list_s - list[i] != file_s - files[i] ||
@@ -1527,7 +1516,7 @@ put_next(const char *dest_name, int override)
 	move = from_trash || put_confirm.force_move;
 
 	if(dest_name[0] == '\0')
-		dest_name = strrchr(filename, '/') + 1;
+		dest_name = find_slashr(filename) + 1;
 
 	strcpy(src_buf, filename);
 	chosp(src_buf);
@@ -2308,7 +2297,7 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 			status_bar_errorf("Destination name of \"%s\" is empty", buf);
 			return 1;
 		}
-		if(strchr(dst, '/') != NULL)
+		if(contains_slash(dst))
 		{
 			regfree(&re);
 			free_string_array(dest, n);
@@ -2395,7 +2384,7 @@ tr_in_names(FileView *view, const char *pattern, const char *sub)
 			status_bar_errorf("Destination name of \"%s\" is empty", buf);
 			return 1;
 		}
-		if(strchr(dst, '/') != NULL)
+		if(contains_slash(dst))
 		{
 			free_string_array(dest, n);
 			status_bar_errorf("Destination name \"%s\" contains slash", dst);
@@ -2954,7 +2943,7 @@ make_files(FileView *view, char **names, int count)
 			status_bar_errorf("Name #%d is empty", i + 1);
 			return 1;
 		}
-		if(strchr(names[i], '/') != NULL)
+		if(contains_slash(names[i]))
 		{
 			status_bar_errorf("Name \"%s\" contains slash", names[i]);
 			return 1;

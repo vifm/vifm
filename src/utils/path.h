@@ -43,6 +43,11 @@ int is_path_well_formed(const char *path);
 /* Checks if path could refer to a real file system object. And modifies path to
  * something meaningful if the check failed. */
 void ensure_path_well_formed(char *path);
+/* Checks if path contains slash (also checks for backward slash on Windows). */
+int contains_slash(const char *path);
+/* Returns position of the last slash (including backward slash on Windows) in
+ * the path. */
+char * find_slashr(const char *path);
 
 #ifdef _WIN32
 

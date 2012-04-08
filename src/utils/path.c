@@ -446,6 +446,28 @@ ensure_path_well_formed(char *path)
 #endif
 }
 
+int
+contains_slash(const char *path)
+{
+	char *slash_pos = strchr(path, '/');
+#ifdef _WIN32
+	if(slash_pos == NULL)
+		slash_pos = strchr(path, '\\');
+#endif
+	return slash_pos != NULL;
+}
+
+char *
+find_slashr(const char *path)
+{
+	char *result = strrchr(path, '/');
+#ifdef _WIN32
+	if(result == NULL)
+		result = strrchr(path, '\\');
+#endif
+	return result;
+}
+
 #ifdef _WIN32
 
 int
