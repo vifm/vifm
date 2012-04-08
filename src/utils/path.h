@@ -48,6 +48,9 @@ int contains_slash(const char *path);
 /* Returns position of the last slash (including backward slash on Windows) in
  * the path. */
 char * find_slashr(const char *path);
+/* Removes extension part from the path and returns a pointer to the first
+ * character of the extension part. */
+char * extract_extension(char *path);
 
 #ifdef _WIN32
 

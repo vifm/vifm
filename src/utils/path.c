@@ -468,6 +468,26 @@ find_slashr(const char *path)
 	return result;
 }
 
+char *
+extract_extension(char *path)
+{
+	char *e;
+	char *ext;
+
+	if((ext = strrchr(path, '.')) == NULL)
+		return path + strlen(path);
+
+	*ext = '\0';
+	if((e = strrchr(path, '.')) != NULL && pathcmp(e + 1, "tar") == 0)
+	{
+		*ext = '.';
+		ext = e;
+	}
+	*ext = '\0';
+
+	return ext + 1;
+}
+
 #ifdef _WIN32
 
 int

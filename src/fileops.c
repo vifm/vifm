@@ -637,42 +637,34 @@ complete_filename_only(const char *str)
 void
 rename_file(FileView *view, int name_only)
 {
-	char* p;
-	char buf[NAME_MAX + 1];
+	char filename[NAME_MAX + 1];
 
 	if(!is_dir_writable(0, view->curr_dir))
 		return;
 
-	strncpy(buf, get_current_file_name(view), sizeof(buf));
-	buf[sizeof(buf) - 1] = '\0';
-	if(pathcmp(buf, "../") == 0)
+	snprintf(filename, sizeof(filename), get_current_file_name(view));
+	if(pathcmp(filename, "../") == 0)
 	{
 		(void)show_error_msg("Rename error",
 				"You can't rename parent directory this way");
 		return;
 	}
 
-	chosp(buf);
+	chosp(filename);
 
-	if(!name_only || (p = strrchr(buf, '.')) == NULL)
+	if(name_only)
 	{
-		rename_file_ext[0] = '\0';
+		snprintf(rename_file_ext, sizeof(rename_file_ext), "%s",
+				extract_extension(filename));
 	}
 	else
 	{
-		char *e;
-		*p = '\0';
-		if((e = strrchr(buf, '.')) != NULL && pathcmp(e + 1, "tar") == 0)
-		{
-			*p = '.';
-			p = e;
-		}
-		*p = '\0';
-		strcpy(rename_file_ext, p + 1);
+		rename_file_ext[0] = '\0';
 	}
 
 	clean_selected_files(view);
-	enter_prompt_mode(L"New name: ", buf, rename_file_cb, complete_filename_only);
+	enter_prompt_mode(L"New name: ", filename, rename_file_cb,
+			complete_filename_only);
 }
 
 #ifndef TEST
@@ -1651,49 +1643,6 @@ put_decide_cb(const char *choice)
 }
 
 /* Returns new value for save_msg flag. */
-static int
-put_files_from_register_i(FileView *view, int start)
-{
-	if(start)
-	{
-		char buf[MAX(COMMAND_GROUP_INFO_LEN, PATH_MAX + NAME_MAX*2 + 4)];
-		const char *op = "UNKNOWN";
-		int from_trash = pathncmp(put_confirm.reg->files[0], cfg.trash_dir,
-				strlen(cfg.trash_dir)) == 0;
-		if(put_confirm.link == 0)
-			op = (put_confirm.force_move || from_trash) ? "Put" : "put";
-		else if(put_confirm.link == 1)
-			op = "put absolute links";
-		else if(put_confirm.link == 2)
-			op = "put relative links";
-		snprintf(buf, sizeof(buf), "%s in %s: ", op,
-				replace_home_part(view->curr_dir));
-		cmd_group_begin(buf);
-		cmd_group_end();
-	}
-
-	if(my_chdir(view->curr_dir) != 0)
-	{
-		(void)show_error_msg("Directory Return",
-				"Can't chdir() to current directory");
-		return 1;
-	}
-	while(put_confirm.x < put_confirm.reg->num_files)
-	{
-		if(put_next("", 0) != 0)
-			return 0;
-		put_confirm.x++;
-	}
-
-	pack_register(put_confirm.reg->name);
-
-	status_bar_messagef("%d file%s inserted", put_confirm.y,
-			(put_confirm.y == 1) ? "" : "s");
-
-	return 1;
-}
-
-/* Returns new value for save_msg flag. */
 int
 put_files_from_register(FileView *view, int name, int force_move)
 {
@@ -1728,29 +1677,15 @@ gen_clone_name(const char *normal_name)
 {
 	static char result[NAME_MAX];
 
-	char tmp[NAME_MAX];
+	char extension[NAME_MAX];
 	int i;
 	size_t len;
-	char *ext;
 	char *p;
 
-	snprintf(tmp, sizeof(tmp), "%s", normal_name);
-	chosp(tmp);
 	snprintf(result, sizeof(result), "%s", normal_name);
 	chosp(result);
 
-	if((ext = strrchr(tmp, '.')) != NULL)
-	{
-		char *e;
-		*ext = '\0';
-		if((e = strrchr(tmp, '.')) != NULL && pathcmp(e + 1, "tar") == 0)
-		{
-			*ext = '.';
-			ext = e;
-		}
-		*ext++ = '\0';
-		result[strlen(result) - strlen(ext) - 1] = '\0';
-	}
+	snprintf(extension, sizeof(extension), "%s", extract_extension(result));
 
 	len = strlen(result);
 	i = 1;
@@ -1766,8 +1701,10 @@ gen_clone_name(const char *normal_name)
 	}
 
 	do
+	{
 		snprintf(result + len, sizeof(result) - len, "(%d)%s%s", i++,
-				(ext == NULL) ? "" : ".", (ext == NULL) ? "" : ext);
+				(extension[0] == '\0') ? "" : ".", extension);
+	}
 	while(access(result, F_OK) == 0);
 
 	return result;
@@ -2057,6 +1994,49 @@ put_links(FileView *view, int reg_name, int relative)
 	put_confirm.overwrite_all = 0;
 	put_confirm.link = relative ? 2 : 1;
 	return put_files_from_register_i(view, 1);
+}
+
+/* Returns new value for save_msg flag. */
+static int
+put_files_from_register_i(FileView *view, int start)
+{
+	if(start)
+	{
+		char buf[MAX(COMMAND_GROUP_INFO_LEN, PATH_MAX + NAME_MAX*2 + 4)];
+		const char *op = "UNKNOWN";
+		int from_trash = pathncmp(put_confirm.reg->files[0], cfg.trash_dir,
+				strlen(cfg.trash_dir)) == 0;
+		if(put_confirm.link == 0)
+			op = (put_confirm.force_move || from_trash) ? "Put" : "put";
+		else if(put_confirm.link == 1)
+			op = "put absolute links";
+		else if(put_confirm.link == 2)
+			op = "put relative links";
+		snprintf(buf, sizeof(buf), "%s in %s: ", op,
+				replace_home_part(view->curr_dir));
+		cmd_group_begin(buf);
+		cmd_group_end();
+	}
+
+	if(my_chdir(view->curr_dir) != 0)
+	{
+		(void)show_error_msg("Directory Return",
+				"Can't chdir() to current directory");
+		return 1;
+	}
+	while(put_confirm.x < put_confirm.reg->num_files)
+	{
+		if(put_next("", 0) != 0)
+			return 0;
+		put_confirm.x++;
+	}
+
+	pack_register(put_confirm.reg->name);
+
+	status_bar_messagef("%d file%s inserted", put_confirm.y,
+			(put_confirm.y == 1) ? "" : "s");
+
+	return 1;
 }
 
 /* off can be NULL */
