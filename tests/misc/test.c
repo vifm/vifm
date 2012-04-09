@@ -21,6 +21,7 @@ void filtering_tests(void);
 void bookmarks_tests(void);
 void leave_invalid_dir_tests(void);
 void remove_last_path_component_tests(void);
+void substitute_tests(void);
 
 void
 all_tests(void)
@@ -46,6 +47,7 @@ all_tests(void)
 	bookmarks_tests();
 	leave_invalid_dir_tests();
 	remove_last_path_component_tests();
+	substitute_tests();
 }
 
 int
