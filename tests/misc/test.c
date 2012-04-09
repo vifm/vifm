@@ -19,8 +19,11 @@ void rename_tests(void);
 void sort_tests(void);
 void filtering_tests(void);
 void bookmarks_tests(void);
+void leave_invalid_dir_tests(void);
+void remove_last_path_component_tests(void);
 
-void all_tests(void)
+void
+all_tests(void)
 {
 	canonical();
 	test_append_selected_files();
@@ -41,9 +44,12 @@ void all_tests(void)
 	sort_tests();
 	filtering_tests();
 	bookmarks_tests();
+	leave_invalid_dir_tests();
+	remove_last_path_component_tests();
 }
 
-int main(int argc, char **argv)
+int
+main(void)
 {
 	return run_tests(all_tests) == 0;
 }

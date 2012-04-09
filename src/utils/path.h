@@ -34,11 +34,14 @@ int is_root_dir(const char *path);
 int is_unc_root(const char *path);
 char * escape_filename(const char *string, int quote_percent);
 /* Returns pointer to a statically allocated buffer */
-char *replace_home_part(const char *directory);
+char * replace_home_part(const char *directory);
 char * expand_tilde(char *path);
 /* Modifies path. */
 void remove_last_path_component(char *path);
-/* Modifies path. */
+/* Checks if path could refer to a real file system object. */
+int is_path_well_formed(const char *path);
+/* Checks if path could refer to a real file system object. And modifies path to
+ * something meaningful if the check failed. */
 void ensure_path_well_formed(char *path);
 
 #ifdef _WIN32

@@ -55,6 +55,7 @@ void update_view_title(FileView *view);
 
 int change_directory(FileView *view, const char *path);
 int cd(FileView *view, const char *path);
+/* Modifies path. */
 void leave_invalid_dir(FileView *view, char *path);
 int pane_in_dir(FileView *view, const char *path);
 

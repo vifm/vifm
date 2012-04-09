@@ -408,29 +408,41 @@ remove_last_path_component(char *path)
 	char *slash;
 
 	while(ends_with_slash(path))
+	{
 		chosp(path);
+	}
 
-	slash = strrchr(path, '/');
-	if(slash != NULL)
+	if((slash = strrchr(path, '/')) != NULL)
 	{
 		int pos = is_root_dir(path) ? 1 : 0;
 		slash[pos] = '\0';
 	}
 }
 
+int
+is_path_well_formed(const char *path)
+{
+#ifndef _WIN32
+	return strchr(path, '/') != NULL;
+#else
+	return is_unc_path(path) || (strlen(path) >= 2 && path[1] == ':' &&
+			drive_exists(path[0]));
+#endif
+}
+
 void
 ensure_path_well_formed(char *path)
 {
-#ifndef _WIN32
-	if(strchr(path, '/') == NULL)
-		strcpy(path, "/");
-#else
-	if(!is_unc_root(path) && (strlen(path) < 2 || path[1] != ':' ||
-			!drive_exists(path[0])))
+	if(is_path_well_formed(path))
 	{
-		strcpy(path, env_get("SYSTEMDRIVE"));
-		strcat(path, "/");
+		return;
 	}
+
+#ifndef _WIN32
+	strcpy(path, "/");
+#else
+	strcpy(path, env_get("SYSTEMDRIVE"));
+	strcat(path, "/");
 #endif
 }
 
