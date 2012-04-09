@@ -2037,6 +2037,7 @@ put_links(FileView *view, int reg_name, int relative)
 	return put_files_from_register_i(view, 1);
 }
 
+/* off can be NULL */
 static const char *
 substitute_regexp(const char *src, const char *sub, const regmatch_t *matches,
 		int *off)
@@ -2097,7 +2098,7 @@ gsubstitute_regexp(regex_t *re, const char *src, const char *sub,
 		src = substitute_regexp(buf, sub, matches, &off);
 		strcpy(buf, src);
 
-		if(matches[i].rm_eo == matches[i].rm_so)
+		if(matches[0].rm_eo == matches[0].rm_so)
 			break;
 	}while(regexec(re, buf + off, 10, matches, 0) == 0);
 	return buf;
@@ -2126,7 +2127,7 @@ substitute_in_name(const char *name, const char *pattern, const char *sub,
 		return buf;
 	}
 
-	if(glob)
+	if(glob && pattern[0] != '^')
 		dst = gsubstitute_regexp(&re, name, sub, matches);
 	else
 		dst = substitute_regexp(name, sub, matches, NULL);
