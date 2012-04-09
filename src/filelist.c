@@ -1105,7 +1105,6 @@ clean_selection(FileView *view)
 	view->selected_files = 0;
 }
 
-/* Modifies path */
 void
 leave_invalid_dir(FileView *view, char *path)
 {
@@ -1114,7 +1113,7 @@ leave_invalid_dir(FileView *view, char *path)
 		return;
 	}
 
-	while(!directory_accessible(path))
+	while(!directory_accessible(path) && is_path_well_formed(path))
 	{
 		if(try_updir_from_fuse_mount(path, view))
 		{
