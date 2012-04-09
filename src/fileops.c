@@ -2097,7 +2097,7 @@ gsubstitute_regexp(regex_t *re, const char *src, const char *sub,
 		src = substitute_regexp(buf, sub, matches, &off);
 		strcpy(buf, src);
 
-		if(matches[i].rm_eo == matches[i].rm_so)
+		if(matches[0].rm_eo == matches[0].rm_so)
 			break;
 	}while(regexec(re, buf + off, 10, matches, 0) == 0);
 	return buf;

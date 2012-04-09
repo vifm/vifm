@@ -64,6 +64,13 @@ test_incdec_leaves_zeros(void)
 	assert_string_equal("a01.", add_to_name("a00.", 1));
 }
 
+static void
+test_substitute_segfault_bug(void)
+{
+	/* see #SF3515922 */
+	assert_string_equal("barfoobar", substitute_in_name("foobar", "^", "bar", 1));
+}
+
 void
 rename_tests(void)
 {
@@ -74,6 +81,7 @@ rename_tests(void)
 	run_test(test_move_fail);
 	run_test(test_rename_inside_subdir_ok);
 	run_test(test_incdec_leaves_zeros);
+	run_test(test_substitute_segfault_bug);
 
 	test_fixture_end();
 }
