@@ -37,6 +37,8 @@ char * skip_non_whitespace(const char *str);
 char * skip_whitespace(const char *str);
 /* Returns pointer to first character after last c occurrence in str or str. */
 char * after_last(const char *str, char c);
+/* Replaces *str with a copy of with string. */
+void replace_string(char **str, const char *with);
 
 #endif
 

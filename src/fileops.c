@@ -580,6 +580,7 @@ rename_file_cb(const char *new_name)
 	char new[NAME_MAX + 1];
 	size_t len;
 	int tmp;
+	char **filename_ptr;
 
 	if(new_name == NULL || new_name[0] == '\0')
 		return;
@@ -618,8 +619,9 @@ rename_file_cb(const char *new_name)
 		return;
 	}
 
-	free(curr_view->dir_entry[curr_view->list_pos].name);
-	curr_view->dir_entry[curr_view->list_pos].name = strdup(new);
+	filename_ptr = &curr_view->dir_entry[curr_view->list_pos].name;
+	replace_string(filename_ptr, new);
+
 	load_saving_pos(curr_view, 1);
 }
 
@@ -823,8 +825,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			curr_stats.save_msg = 1;
 			return 0;
 		}
-		free(files[i]);
-		files[i] = strdup(tmp);
+		replace_string(&files[i], tmp);
 	}
 
 	for(i = 0; i < len; i++)
@@ -844,8 +845,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			pos = find_file_pos_in_list(view, files[i]);
 			if(pos == view->list_pos)
 			{
-				free(view->dir_entry[pos].name);
-				view->dir_entry[pos].name = strdup(list[i]);
+				replace_string(&view->dir_entry[pos].name, list[i]);
 			}
 		}
 	}
@@ -1223,9 +1223,8 @@ incdec_names(FileView *view, int k)
 	}
 	else if(view->dir_entry[view->list_pos].selected || !view->user_selection)
 	{
-		char *filename = view->dir_entry[view->list_pos].name;
-		view->dir_entry[view->list_pos].name = strdup(add_to_name(filename, k));
-		free(filename);
+		char **filename = &view->dir_entry[view->list_pos].name;
+		replace_string(filename, add_to_name(*filename, k));
 	}
 
 	clean_selected_files(view);
@@ -1457,8 +1456,7 @@ prompt_what_to_do(const char *src_name)
 
 	if(src_name != put_confirm.name)
 	{
-		free(put_confirm.name);
-		put_confirm.name = strdup(src_name);
+		replace_string(&put_confirm.name, src_name);
 	}
 #ifndef _WIN32
 	swprintf(buf, sizeof(buf)/sizeof(buf[0]),
@@ -2185,8 +2183,7 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 
 		if(i == view->list_pos)
 		{
-			free(view->dir_entry[i].name);
-			view->dir_entry[i].name = strdup(dest[j]);
+			replace_string(&view->dir_entry[i].name, dest[j]);
 		}
 
 		if(mv_file(buf, view->curr_dir, dest[j], view->curr_dir, 0) == 0)
@@ -2471,8 +2468,7 @@ change_case(FileView *view, int toupper, int count, int *indexes)
 		pos = find_file_pos_in_list(view, view->selected_filelist[i]);
 		if(pos == view->list_pos)
 		{
-			free(view->dir_entry[pos].name);
-			view->dir_entry[pos].name = strdup(dest[i]);
+			replace_string(&view->dir_entry[pos].name, dest[i]);
 		}
 		if(mv_file(view->selected_filelist[i], view->curr_dir, dest[i],
 				view->curr_dir, 0) == 0)

@@ -27,6 +27,7 @@
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"
+#include "utils/str.h"
 #include "utils/string_array.h"
 #include "color_scheme.h"
 #include "filelist.h"
@@ -922,8 +923,7 @@ vicmd_handler(OPT_OP op, optval_t val)
 {
 	size_t len;
 
-	free(cfg.vi_command);
-	cfg.vi_command = strdup(val.str_val);
+	replace_string(&cfg.vi_command, val.str_val);
 	len = strlen(cfg.vi_command);
 	cfg.vi_cmd_bg = (len > 1 && cfg.vi_command[len - 1] == '&');
 	if(cfg.vi_cmd_bg)
@@ -935,8 +935,7 @@ vixcmd_handler(OPT_OP op, optval_t val)
 {
 	size_t len;
 
-	free(cfg.vi_x_command);
-	cfg.vi_x_command = strdup(val.str_val);
+	replace_string(&cfg.vi_x_command, val.str_val);
 	len = strlen(cfg.vi_x_command);
 	cfg.vi_x_cmd_bg = (len > 1 && cfg.vi_x_command[len - 1] == '&');
 	if(cfg.vi_x_cmd_bg)

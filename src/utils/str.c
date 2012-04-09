@@ -150,5 +150,16 @@ after_last(const char *str, char c)
 	return result;
 }
 
+void
+replace_string(char **str, const char *with)
+{
+	char *new = strdup(with);
+	if(new != NULL)
+	{
+		free(*str);
+		*str = new;
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
