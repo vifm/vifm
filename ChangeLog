@@ -73,6 +73,8 @@
 
 	Fixed using of uninitialized memory on :substitute.
 
+	Fixed global substitution of patterns beginning with a caret.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.
