@@ -408,10 +408,11 @@ remove_last_path_component(char *path)
 	char *slash;
 
 	while(ends_with_slash(path))
+	{
 		chosp(path);
+	}
 
-	slash = strrchr(path, '/');
-	if(slash != NULL)
+	if((slash = strrchr(path, '/')) != NULL)
 	{
 		int pos = is_root_dir(path) ? 1 : 0;
 		slash[pos] = '\0';
