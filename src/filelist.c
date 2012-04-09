@@ -1114,7 +1114,7 @@ leave_invalid_dir(FileView *view, char *path)
 		return;
 	}
 
-	while(directory_accessible(path))
+	while(!directory_accessible(path))
 	{
 		if(try_updir_from_fuse_mount(path, view))
 		{
