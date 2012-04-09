@@ -1221,11 +1221,11 @@ incdec_names(FileView *view, int k)
 		if(err > 0 && !last_cmd_group_empty())
 			undo_group();
 	}
-	else
+	else if(view->dir_entry[view->list_pos].selected || !view->user_selection)
 	{
-		if(view->dir_entry[view->list_pos].selected || !view->user_selection)
-			strcpy(view->dir_entry[view->list_pos].name,
-					add_to_name(view->dir_entry[view->list_pos].name, k));
+		char *filename = view->dir_entry[view->list_pos].name;
+		view->dir_entry[view->list_pos].name = strdup(add_to_name(filename, k));
+		free(filename);
 	}
 
 	clean_selected_files(view);
