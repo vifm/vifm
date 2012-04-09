@@ -69,6 +69,8 @@
 
 	Fixed compilation using cygwin.
 
+	Fixed memory errors connected with Ctrl-A and Ctrl-X commands.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

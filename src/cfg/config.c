@@ -155,13 +155,17 @@ init_config(void)
 
 	p = env_get("SHELL");
 	if(p == NULL || *p == '\0')
+	{
 #ifndef _WIN32
 		cfg.shell = strdup("sh");
 #else
 		cfg.shell = strdup("cmd");
 #endif
+	}
 	else
+	{
 		cfg.shell = strdup(p);
+	}
 
 #ifndef _WIN32
 	/* Maximum argument length to pass to the shell */
@@ -496,10 +500,8 @@ load_view_defaults(FileView *view)
 
 	strncpy(view->regexp, "\\..~$", sizeof(view->regexp) - 1);
 
-	free(view->filename_filter);
-	view->filename_filter = strdup("");
-	free(view->prev_filter);
-	view->prev_filter = strdup("");
+	replace_string(&view->filename_filter, "");
+	replace_string(&view->prev_filter, "");
 	view->invert = TRUE;
 
 #ifndef _WIN32

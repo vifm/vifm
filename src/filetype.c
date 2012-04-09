@@ -292,8 +292,7 @@ assoc_viewer(const char *pattern, const char *viewer)
 	}
 	else
 	{
-		free(fileviewers.list[i].records.list[0].command);
-		fileviewers.list[i].records.list[0].command = strdup(viewer);
+		replace_string(&fileviewers.list[i].records.list[0].command, viewer);
 	}
 }
 

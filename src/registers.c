@@ -26,6 +26,7 @@
 #include "cfg/config.h"
 #include "menus/menus.h"
 #include "utils/path.h"
+#include "utils/str.h"
 
 #include "registers.h"
 
@@ -183,8 +184,7 @@ rename_in_registers(const char *old, const char *new)
 			if(pathcmp(registers[x].files[y], old) != 0)
 				continue;
 
-			free(registers[x].files[y]);
-			registers[x].files[y] = strdup(new);
+			replace_string(&registers[x].files[y], new);
 			break; /* registers don't contain duplicates */
 		}
 	}

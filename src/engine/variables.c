@@ -99,10 +99,8 @@ init_var(const char *env)
 		return;
 	record->from_parent = 1;
 
-	free(record->initial);
-	record->initial = strdup(p + 1);
-	free(record->val);
-	record->val = strdup(p + 1);
+	replace_string(&record->initial, p + 1);
+	replace_string(&record->val, p + 1);
 	if(record->initial == NULL || record->val == NULL)
 	{
 		free_record(record);

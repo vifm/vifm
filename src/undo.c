@@ -28,6 +28,7 @@
 #include "cfg/config.h"
 #include "utils/macros.h"
 #include "utils/path.h"
+#include "utils/str.h"
 #include "ops.h"
 #include "registers.h"
 
@@ -240,8 +241,7 @@ cmd_group_begin(const char *msg)
 
 	group_opened = 1;
 
-	free(group_msg);
-	group_msg = strdup(msg);
+	replace_string(&group_msg, msg);
 	last_group = NULL;
 }
 
@@ -264,8 +264,7 @@ replace_group_msg(const char *msg)
 	group_msg = (msg != NULL) ? strdup(msg) : NULL;
 	if(last_group != NULL && group_msg != NULL)
 	{
-		free(last_group->msg);
-		last_group->msg = strdup(group_msg);
+		replace_string(&last_group->msg, group_msg);
 	}
 	return result;
 }
@@ -618,8 +617,7 @@ change_filename_in_trash(cmd_t *cmd, const char *filename)
 	rename_in_registers(filename, buf);
 
 	old = cmd->buf2;
-	free(cmd->buf2);
-	cmd->buf2 = strdup(buf);
+	replace_string(&cmd->buf2, buf);
 
 	update_entry(&cmd->do_op.src, old, cmd->buf2);
 	update_entry(&cmd->do_op.dst, old, cmd->buf2);

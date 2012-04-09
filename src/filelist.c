@@ -1086,6 +1086,10 @@ clean_selected_files(FileView *view)
 		view->selected_filelist = tmp;
 	}
 
+	/* This is needed, since otherwise we loose number of items in the array,
+	 * which can cause access violation of memory leaks. */
+	free_selected_file_array(view);
+
 	for(x = 0; x < view->list_rows; x++)
 		view->dir_entry[x].selected = 0;
 	view->selected_files = 0;

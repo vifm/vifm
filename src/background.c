@@ -39,6 +39,7 @@
 
 #include "cfg/config.h"
 #include "menus/menus.h"
+#include "utils/str.h"
 #include "utils/utils.h"
 #include "commands_completion.h"
 #include "status.h"
@@ -306,8 +307,7 @@ error_msg(const char *title, const char *text)
 	}
 	else
 	{
-		free(job->error);
-		job->error = strdup(text);
+		replace_string(&job->error, text);
 	}
 }
 #endif

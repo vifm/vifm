@@ -708,13 +708,11 @@ save_history(const char *line, char **hist, int *num, int *len)
 
 	while(x > 0)
 	{
-		free(hist[x]);
-		hist[x] = strdup(hist[x - 1]);
+		replace_string(&hist[x], hist[x - 1]);
 		x--;
 	}
 
-	free(hist[0]);
-	hist[0] = strdup(line);
+	replace_string(&hist[0], line);
 	(*num)++;
 	if(*num >= *len)
 		*num = *len - 1;
@@ -1496,8 +1494,7 @@ apropos_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc > 0)
 	{
-		free(last_args);
-		last_args = strdup(cmd_info->args);
+		replace_string(&last_args, cmd_info->args);
 	}
 	else if(last_args == NULL)
 	{
@@ -2055,14 +2052,13 @@ find_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc > 0)
 	{
-		free(last_args);
 		if(cmd_info->argc == 1)
 			last_dir = 0;
 		else if(is_dir(cmd_info->argv[0]))
 			last_dir = 1;
 		else
 			last_dir = 0;
-		last_args = strdup(cmd_info->args);
+		replace_string(&last_args, cmd_info->args);
 	}
 	else if(last_args == NULL)
 	{
@@ -2082,8 +2078,7 @@ grep_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc > 0)
 	{
-		free(last_args);
-		last_args = strdup(cmd_info->args);
+		replace_string(&last_args, cmd_info->args);
 		last_invert = cmd_info->emark;
 	}
 	else if(last_args == NULL)
@@ -2393,8 +2388,7 @@ locate_cmd(const cmd_info_t *cmd_info)
 	static char *last_args;
 	if(cmd_info->argc > 0)
 	{
-		free(last_args);
-		last_args = strdup(cmd_info->args);
+		replace_string(&last_args, cmd_info->args);
 	}
 	else if(last_args == NULL)
 	{
@@ -2935,19 +2929,16 @@ substitute_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc >= 1 && cmd_info->argv[0][0] != '\0')
 	{
-		free(last_pattern);
-		last_pattern = strdup(cmd_info->argv[0]);
+		replace_string(&last_pattern, cmd_info->argv[0]);
 	}
 
 	if(cmd_info->argc >= 2)
 	{
-		free(last_sub);
-		last_sub = strdup(cmd_info->argv[1]);
+		replace_string(&last_sub, cmd_info->argv[1]);
 	}
 	else if(cmd_info->argc == 1)
 	{
-		free(last_sub);
-		last_sub = strdup("");
+		replace_string(&last_sub, "");
 	}
 
 	if(last_pattern == NULL)
