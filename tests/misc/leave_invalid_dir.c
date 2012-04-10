@@ -2,12 +2,18 @@
 
 #include "../../src/filelist.h"
 
+#ifndef _WIN32
+#define ROOT "/"
+#else
+#define ROOT "C:/"
+#endif
+
 static void
 test_empty_path(void)
 {
 	char path[PATH_MAX] = "";
 	leave_invalid_dir(NULL, path);
-	assert_string_equal("/", path);
+	assert_string_equal(ROOT, path);
 }
 
 static void
@@ -15,7 +21,7 @@ test_wrong_path_without_trailing_slash(void)
 {
 	char path[PATH_MAX] = "/aaaaaaaaaaa/bbbbbbbbbbb/cccccccccc";
 	leave_invalid_dir(NULL, path);
-	assert_string_equal("/", path);
+	assert_string_equal(ROOT, path);
 }
 
 static void
@@ -23,7 +29,7 @@ test_wrong_path_with_trailing_slash(void)
 {
 	char path[PATH_MAX] = "/aaaaaaaaaaa/bbbbbbbbbbb/cccccccccc/";
 	leave_invalid_dir(NULL, path);
-	assert_string_equal("/", path);
+	assert_string_equal(ROOT, path);
 }
 
 void
