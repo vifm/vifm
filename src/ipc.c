@@ -67,7 +67,6 @@ ipc_pre_init(void)
 	if(result != 0)
 	{
 		LOG_ERROR_MSG("Can't initialize Windows sockets");
-		initialized = -1;
 		return;
 	}
 #endif
@@ -113,7 +112,6 @@ clean_at_exit(void)
 void
 ipc_check(void)
 {
-	/* unsigned long n; */
 	fd_set ready;
 	int maxfd;
 	struct timeval ts = { 0, 0 };
@@ -140,7 +138,7 @@ try_become_a_server(void)
 {
 	struct sockaddr_in addr;
 #ifdef _WIN32
-	char yes = 1;
+	BOOL yes = TRUE;
 #else
 	int yes = 1;
 #endif
@@ -148,7 +146,12 @@ try_become_a_server(void)
 	if(server)
 		return;
 
+#ifdef _WIN32
+	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&yes,
+			sizeof(yes)) != 0)
+#else
 	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) != 0)
+#endif
 	{
 		LOG_SERROR_MSG(errno, "Can't set reusable option on a socket");
 	}
