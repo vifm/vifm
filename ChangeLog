@@ -75,6 +75,8 @@
 
 	Fixed global substitution of patterns beginning with a caret.
 
+	Fixed :cd (so and :pushd) with absolute path as second argument.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

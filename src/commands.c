@@ -1509,7 +1509,6 @@ apropos_cmd(const cmd_info_t *cmd_info)
 static int
 cd_cmd(const cmd_info_t *cmd_info)
 {
-	char dir[PATH_MAX];
 	int result;
 	if(!cfg.auto_ch_pos)
 	{
@@ -1524,28 +1523,42 @@ cd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(cmd_info->argc == 1)
 	{
-		snprintf(dir, sizeof(dir), "%s/%s", curr_view->curr_dir, cmd_info->argv[0]);
 		result = cd(curr_view, cmd_info->argv[0]);
 		if(cmd_info->emark)
 		{
-			if(cmd_info->argv[0][0] != '/' && cmd_info->argv[0][0] != '~' &&
+			if(!is_path_absolute(cmd_info->argv[0]) && cmd_info->argv[0][0] != '~' &&
 					strcmp(cmd_info->argv[0], "-") != 0)
+			{
+				char dir[PATH_MAX];
+				snprintf(dir, sizeof(dir), "%s/%s", curr_view->curr_dir,
+						cmd_info->argv[0]);
 				result += cd(other_view, dir);
+			}
 			else if(strcmp(cmd_info->argv[0], "-") == 0)
+			{
 				result += cd(other_view, curr_view->curr_dir);
+			}
 			else
+			{
 				result += cd(other_view, cmd_info->argv[0]);
+			}
 			wrefresh(other_view->win);
 		}
 	}
 	else
 	{
-		snprintf(dir, sizeof(dir), "%s/%s", curr_view->curr_dir, cmd_info->argv[1]);
 		result = cd(curr_view, cmd_info->argv[0]);
-		if(cmd_info->argv[1][0] != '/' && cmd_info->argv[1][0] != '~')
+		if(!is_path_absolute(cmd_info->argv[1]) && cmd_info->argv[1][0] != '~')
+		{
+			char dir[PATH_MAX];
+			snprintf(dir, sizeof(dir), "%s/%s", curr_view->curr_dir,
+					cmd_info->argv[1]);
 			result += cd(other_view, dir);
+		}
 		else
+		{
 			result += cd(other_view, cmd_info->argv[1]);
+		}
 		wrefresh(other_view->win);
 	}
 	if(!cfg.auto_ch_pos)
