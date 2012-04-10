@@ -16,6 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "../config.h"
+
 #include "desktop.h"
 
 #if defined(ENABLE_DESKTOP_FILES)
@@ -28,6 +30,8 @@
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strstr() strchr() strlen() strcpy() */
 
+#include "utils/path.h"
+#include "utils/str.h"
 #include "utils/utils.h"
 #include "filetype.h"
 

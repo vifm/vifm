@@ -28,8 +28,10 @@
 #endif
 
 #include <stdio.h> /* popen() */
+#include <string.h> /* strcpy() */
 
 #include "utils/str.h"
+#include "desktop.h"
 #include "filetype.h"
 #include "status.h"
 
