@@ -40,7 +40,7 @@ vifm_SOURCES := $(cfg) $(engine) $(menus) $(modes) $(utilities) background.c \
                 fileops.c filetype.c fuse.c globals.c ipc.c macros.c \
                 main_loop.c ops.c opt_handlers.c quickview.c registers.c \
                 running.c search.c signals.c sort.c status.c tags.c \
-                term_title.c trash.c ui.c undo.c version.c version_hash.c \
+                term_title.c trash.c ui.c undo.c version.c compile_info.c \
                 vifmres.o vifm.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
@@ -54,7 +54,7 @@ win_helper_SOURCES := win_helper.c
 win_helper_OBJECTS := $(win_helper_SOURCES:.c=.o)
 win_helper_EXECUTABLE := win_helper.exe
 
-.PHONY: all clean tests version_hash.c
+.PHONY: all clean tests update_compile_info
 
 all: ../config.h ../data/vifm-help.txt $(vifm_EXECUTABLE) \
 	$(converter_EXECUTABLE) $(win_helper_EXECUTABLE)
@@ -79,11 +79,17 @@ vifmres.o: vifm.res
 #	echo '#define ENABLE_COMPATIBILITY_MODE' >> ../config.h; \
 #	echo '#define HAVE_FILE_PROG' >> ../config.h; \
 
-version_hash.c:
-	@if [ "x$$(which git)" != "x" ]; then \
-		echo "const char GIT_HASH[] = \"$$(git rev-parse HEAD)\";" > $@; \
+compile_info.c: update_compile_info
+
+update_compile_info:
+	@before="$$(cat "compile_info.c" 2> /dev/null)"; \
+	if [ "x$$(which git)" != "x" ]; then \
+		new="const char GIT_HASH[] = \"$$(git rev-parse HEAD)\";"; \
 	else \
-		echo 'const char GIT_HASH[] = "";' > $@; \
+		new='const char GIT_HASH[] = "";'; \
+	fi; \
+	if [ "x$$before" != "x$$new" -o ! -f "compile_info.c" ]; then \
+		echo "$$new" > compile_info.c; \
 	fi
 
 .c.o:

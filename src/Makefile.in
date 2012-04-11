@@ -86,7 +86,7 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
 	tags.$(OBJEXT) term_title.$(OBJEXT) trash.$(OBJEXT) \
 	ui.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
-	version_hash.$(OBJEXT) vifm.$(OBJEXT)
+	compile_info.$(OBJEXT) vifm.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
@@ -344,7 +344,7 @@ vifm_SOURCES = \
 	ui.c ui.h \
 	undo.c undo.h \
 	version.c version.h \
-	version_hash.c \
+	compile_info.c \
 	vifm.c
 
 vifmrc_converter_SOURCES = \
@@ -651,6 +651,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_scheme.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands_completion.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compile_info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/desktop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dir_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_magic.Po@am__quote@
@@ -678,7 +679,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/undo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version_hash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifmrc-converter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/config.Po@am__quote@
@@ -1046,16 +1046,22 @@ uninstall-man: uninstall-man1
 	uninstall-man1 uninstall-pkgdataDATA
 
 
-.PHONY: tests version_hash.c
+.PHONY: tests update_compile_info
 
 tests:
 	make -C ../tests
 
-version_hash.c:
-	@if [ "x$$(which git)" != "x" ]; then \
-		echo "const char GIT_HASH[] = \"$$(git rev-parse HEAD)\";" > $@; \
+compile_info.c: update_compile_info
+
+update_compile_info:
+	@before="$$(cat "compile_info.c" 2> /dev/null)"; \
+	if [ "x$$(which git)" != "x" ]; then \
+		new="const char GIT_HASH[] = \"$$(git rev-parse HEAD)\";"; \
 	else \
-		echo 'const char GIT_HASH[] = "";' > $@; \
+		new='const char GIT_HASH[] = "";'; \
+	fi; \
+	if [ "x$$before" != "x$$new" -o ! -f "compile_info.c" ]; then \
+		echo "$$new" > compile_info.c; \
 	fi
 
 ../data/vifm-help.txt: ../data/vifm.1
