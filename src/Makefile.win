@@ -40,7 +40,8 @@ vifm_SOURCES := $(cfg) $(engine) $(menus) $(modes) $(utilities) background.c \
                 fileops.c filetype.c fuse.c globals.c ipc.c macros.c \
                 main_loop.c ops.c opt_handlers.c quickview.c registers.c \
                 running.c search.c signals.c sort.c status.c tags.c \
-                term_title.c trash.c ui.c undo.c version.c vifmres.o vifm.c
+                term_title.c trash.c ui.c undo.c version.c version_hash.c \
+                vifmres.o vifm.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe
@@ -53,7 +54,7 @@ win_helper_SOURCES := win_helper.c
 win_helper_OBJECTS := $(win_helper_SOURCES:.c=.o)
 win_helper_EXECUTABLE := win_helper.exe
 
-.PHONY: all clean tests version.c
+.PHONY: all clean tests version_hash.c
 
 all: ../config.h ../data/vifm-help.txt $(vifm_EXECUTABLE) \
 	$(converter_EXECUTABLE) $(win_helper_EXECUTABLE)
@@ -78,13 +79,11 @@ vifmres.o: vifm.res
 #	echo '#define ENABLE_COMPATIBILITY_MODE' >> ../config.h; \
 #	echo '#define HAVE_FILE_PROG' >> ../config.h; \
 
-utils.c: version.c
-
-version.c:
+version_hash.c:
 	@if [ "x$$(which git)" != "x" ]; then \
-		cp version.c version.c_; \
-		sed "s/GIT_HASH\[\] = \"[^\"]*\"/GIT_HASH[] = \"$$(git rev-parse HEAD)\"/" version.c_ > version.c; \
-		rm version.c_; \
+		echo "const char GIT_HASH[] = \"$$(git rev-parse HEAD)\";" > $@; \
+	else \
+		echo 'const char GIT_HASH[] = "";' > $@; \
 	fi
 
 .c.o:

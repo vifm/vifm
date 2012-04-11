@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-.PHONY: tests version.c
+.PHONY: tests version_hash.c
 
 AUTOMAKE_OPTIONS = subdir-objects
 
@@ -101,6 +101,7 @@ vifm_SOURCES = \
 	ui.c ui.h \
 	undo.c undo.h \
 	version.c version.h \
+	version_hash.c \
 	vifm.c
 
 vifmrc_converter_SOURCES = \
@@ -110,13 +111,11 @@ vifmrc_converter_SOURCES = \
 tests:
 	make -C ../tests
 
-utils.o: version.o
-
-version.c:
+version_hash.c:
 	@if [ "x$$(which git)" != "x" ]; then \
-		cp version.c version.c_; \
-		sed "s/GIT_HASH\[\] = \"[^\"]*\"/GIT_HASH[] = \"$$(git rev-parse HEAD)\"/" version.c_ > version.c; \
-		rm version.c_; \
+		echo "const char GIT_HASH[] = \"$$(git rev-parse HEAD)\";" > $@; \
+	else \
+		echo 'const char GIT_HASH[] = "";' > $@; \
 	fi
 
 ../data/vifm-help.txt: ../data/vifm.1

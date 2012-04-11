@@ -85,7 +85,8 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	registers.$(OBJEXT) running.$(OBJEXT) search.$(OBJEXT) \
 	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
 	tags.$(OBJEXT) term_title.$(OBJEXT) trash.$(OBJEXT) \
-	ui.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) vifm.$(OBJEXT)
+	ui.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
+	version_hash.$(OBJEXT) vifm.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
 vifm_LDADD = $(LDADD)
 am_vifmrc_converter_OBJECTS = vifmrc-converter.$(OBJEXT)
@@ -343,6 +344,7 @@ vifm_SOURCES = \
 	ui.c ui.h \
 	undo.c undo.h \
 	version.c version.h \
+	version_hash.c \
 	vifm.c
 
 vifmrc_converter_SOURCES = \
@@ -676,6 +678,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/undo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version_hash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifm.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vifmrc-converter.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/config.Po@am__quote@
@@ -1043,18 +1046,16 @@ uninstall-man: uninstall-man1
 	uninstall-man1 uninstall-pkgdataDATA
 
 
-.PHONY: tests version.c
+.PHONY: tests version_hash.c
 
 tests:
 	make -C ../tests
 
-utils.o: version.o
-
-version.c:
+version_hash.c:
 	@if [ "x$$(which git)" != "x" ]; then \
-		cp version.c version.c_; \
-		sed "s/GIT_HASH\[\] = \"[^\"]*\"/GIT_HASH[] = \"$$(git rev-parse HEAD)\"/" version.c_ > version.c; \
-		rm version.c_; \
+		echo "const char GIT_HASH[] = \"$$(git rev-parse HEAD)\";" > $@; \
+	else \
+		echo 'const char GIT_HASH[] = "";' > $@; \
 	fi
 
 ../data/vifm-help.txt: ../data/vifm.1
