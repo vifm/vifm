@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-.PHONY: version.c
+.PHONY: tests version.c
 
 AUTOMAKE_OPTIONS = subdir-objects
 
@@ -106,6 +106,9 @@ vifm_SOURCES = \
 vifmrc_converter_SOURCES = \
 	color_scheme.h \
 	vifmrc-converter.c
+
+tests:
+	make -C ../tests
 
 utils.o: version.o
 
