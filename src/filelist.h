@@ -92,6 +92,9 @@ void load_dir_list(FileView *view, int reload);
 void load_saving_pos(FileView *view, int reload);
 char * get_current_file_name(FileView *view);
 void check_if_filelists_have_changed(FileView *view);
+/* Checks whether cd'ing into path is possible. Shows cd errors to a user.
+ * Returns non-zero if it's possible, zero otherwise. */
+int cd_is_possible(const char *path);
 
 #ifdef TEST
 int regexp_filter_match(FileView *view, char *filename);

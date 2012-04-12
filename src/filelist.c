@@ -77,6 +77,7 @@
 #include "ui.h"
 
 static char * get_viewer_command(const char *viewer);
+static void rescue_from_empty_filelist(FileView * view);
 
 static int
 get_line_color(FileView* view, int pos)
@@ -1486,8 +1487,7 @@ load_parent_dir_only(FileView *view)
 	struct stat s;
 
 	view->list_rows = 1;
-	view->dir_entry = (dir_entry_t *)realloc(view->dir_entry,
-			sizeof(dir_entry_t));
+	view->dir_entry = realloc(view->dir_entry, sizeof(dir_entry_t));
 	if(view->dir_entry == NULL)
 	{
 		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -1496,7 +1496,6 @@ load_parent_dir_only(FileView *view)
 
 	dir_entry = view->dir_entry;
 
-	/* Allocate extra for adding / to directories. */
 	dir_entry->name = strdup("../");
 	if(dir_entry->name == NULL)
 	{
@@ -1809,19 +1808,17 @@ fill_dir_list(FileView *view)
 	if(is_unc_root(view->curr_dir))
 	{
 		fill_with_shared(view);
-		if(view->list_rows > 0)
-			return 0;
-		else
-			return -1;
+		return 0;
 	}
 
 	snprintf(buf, sizeof(buf), "%s/*", view->curr_dir);
+
+	view->list_rows = 0;
 
 	hfind = FindFirstFileA(buf, &ffd);
 	if(hfind == INVALID_HANDLE_VALUE)
 		return -1;
 
-	view->list_rows = 0;
 	do
 	{
 		dir_entry_t *dir_entry;
@@ -1847,7 +1844,7 @@ fill_dir_list(FileView *view)
 			continue;
 		}
 
-		view->dir_entry = (dir_entry_t *)realloc(view->dir_entry,
+		view->dir_entry = realloc(view->dir_entry,
 				(view->list_rows + 1) * sizeof(dir_entry_t));
 		if(view->dir_entry == NULL)
 		{
@@ -1988,31 +1985,12 @@ load_dir_list(FileView *view, int reload)
 	view->color_scheme = check_directory_for_color_scheme(view == &lwin,
 			view->curr_dir);
 
-	/*
-	 * It is possible to set the file name filter so that no files are showing
-	 * in the / directory.  All other directorys will always show at least the
-	 * ../ file.  This resets the filter and reloads the directory.
-	 */
 	if(view->list_rows < 1)
 	{
-		(void)show_error_msgf("Filter error",
-				"The %s pattern %s did not match any files. It was reset.",
-				view->filename_filter, view->invert ? "inverted" : "");
-		view->filename_filter = (char *)realloc(view->filename_filter, 1);
-		if(view->filename_filter == NULL)
-		{
-			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
-			return;
-		}
-		strcpy(view->filename_filter, "");
-		view->invert = !view->invert;
-
-		load_dir_list(view, 1);
-
-		if(curr_stats.load_stage >= 2)
-			draw_dir_list(view, view->top_line);
+		rescue_from_empty_filelist(view);
 		return;
 	}
+
 	if(reload && view->selected_files)
 		reset_selected_files(view, need_free);
 	else if(view->selected_files)
@@ -2027,6 +2005,35 @@ load_dir_list(FileView *view, int reload)
 				pathcmp(other_view->curr_dir, view->curr_dir) == 0)
 			load_dir_list(other_view, 1);
 	}
+}
+
+/* Performs actions needed to rescue from abnormal situation with empty
+ * filelist. */
+static void
+rescue_from_empty_filelist(FileView * view)
+{
+	/*
+	 * It is possible to set the file name filter so that no files are showing
+	 * in the / directory.  All other directories will always show at least the
+	 * ../ file.  This resets the filter and reloads the directory.
+	 */
+	if(is_path_absolute(view->curr_dir) && view->filename_filter[0] != '\0')
+	{
+		(void)show_error_msgf("Filter error",
+				"The %s\"%s\" pattern did not match any files. It was reset.",
+				view->invert ? "" : "inverted ", view->filename_filter);
+		replace_string(&view->filename_filter, "");
+		view->invert = 1;
+
+		load_dir_list(view, 1);
+	}
+	else
+	{
+		load_parent_dir_only(view);
+	}
+
+	if(curr_stats.load_stage >= 2)
+		draw_dir_list(view, view->top_line);
 }
 
 /*
@@ -2247,6 +2254,29 @@ check_if_filelists_have_changed(FileView *view)
 		reload_window(view);
 }
 
+int
+cd_is_possible(const char *path)
+{
+	if(!is_valid_dir(path))
+	{
+		LOG_SERROR_MSG(errno, "Can't access \"%s\"", path);
+
+		(void)show_error_msgf("Destination doesn't exist", "\"%s\"", path);
+		return 0;
+	}
+	else if(!directory_accessible(path))
+	{
+		LOG_SERROR_MSG(errno, "Can't access(,X_OK) \"%s\"", path);
+
+		(void)show_error_msgf("Permission denied", "\"%s\"", path);
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
 void
 load_saving_pos(FileView *view, int reload)
 {
@@ -2376,23 +2406,14 @@ cd(FileView *view, const char *path)
 		snprintf(dir, sizeof(dir), "%s", cfg.home_dir);
 	}
 
-	if(!is_valid_dir(dir))
+	if(!cd_is_possible(dir))
 	{
-		LOG_SERROR_MSG(errno, "Can't access \"%s\"", dir);
-
-		(void)show_error_msgf("Destination doesn't exist", "\"%s\"", dir);
 		return 0;
 	}
-	if(!directory_accessible(dir))
-	{
-		LOG_SERROR_MSG(errno, "Can't access(,X_OK) \"%s\"", dir);
-
-		(void)show_error_msgf("Permission denied", "\"%s\"", dir);
-		return 0;
-	}
-
 	if(change_directory(view, dir) < 0)
+	{
 		return 0;
+	}
 
 	load_dir_list(view, 0);
 	if(view == curr_view)

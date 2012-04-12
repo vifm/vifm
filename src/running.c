@@ -524,6 +524,7 @@ follow_link(FileView *view, int follow_dirs)
 void
 handle_dir(FileView *view)
 {
+	char full_path[PATH_MAX];
 	char *filename;
 
 	filename = get_current_file_name(view);
@@ -531,8 +532,17 @@ handle_dir(FileView *view)
 	if(pathcmp(filename, "../") == 0)
 	{
 		cd_updir(view);
+		return;
 	}
-	else if(change_directory(view, filename) >= 0)
+
+	snprintf(full_path, sizeof(full_path), "%s%s%s", view->curr_dir,
+			ends_with_slash(view->curr_dir) ? "" : "/", filename);
+	if(!cd_is_possible(full_path))
+	{
+		return;
+	}
+
+	if(change_directory(view, filename) >= 0)
 	{
 		load_dir_list(view, 0);
 		move_to_list_pos(view, view->list_pos);
