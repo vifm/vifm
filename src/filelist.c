@@ -2254,6 +2254,29 @@ check_if_filelists_have_changed(FileView *view)
 		reload_window(view);
 }
 
+int
+cd_is_possible(const char *path)
+{
+	if(!is_valid_dir(path))
+	{
+		LOG_SERROR_MSG(errno, "Can't access \"%s\"", path);
+
+		(void)show_error_msgf("Destination doesn't exist", "\"%s\"", path);
+		return 0;
+	}
+	else if(!directory_accessible(path))
+	{
+		LOG_SERROR_MSG(errno, "Can't access(,X_OK) \"%s\"", path);
+
+		(void)show_error_msgf("Permission denied", "\"%s\"", path);
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
 void
 load_saving_pos(FileView *view, int reload)
 {
@@ -2383,23 +2406,14 @@ cd(FileView *view, const char *path)
 		snprintf(dir, sizeof(dir), "%s", cfg.home_dir);
 	}
 
-	if(!is_valid_dir(dir))
+	if(!cd_is_possible(dir))
 	{
-		LOG_SERROR_MSG(errno, "Can't access \"%s\"", dir);
-
-		(void)show_error_msgf("Destination doesn't exist", "\"%s\"", dir);
 		return 0;
 	}
-	if(!directory_accessible(dir))
-	{
-		LOG_SERROR_MSG(errno, "Can't access(,X_OK) \"%s\"", dir);
-
-		(void)show_error_msgf("Permission denied", "\"%s\"", dir);
-		return 0;
-	}
-
 	if(change_directory(view, dir) < 0)
+	{
 		return 0;
+	}
 
 	load_dir_list(view, 0);
 	if(view == curr_view)
