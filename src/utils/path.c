@@ -446,6 +446,48 @@ ensure_path_well_formed(char *path)
 #endif
 }
 
+int
+contains_slash(const char *path)
+{
+	char *slash_pos = strchr(path, '/');
+#ifdef _WIN32
+	if(slash_pos == NULL)
+		slash_pos = strchr(path, '\\');
+#endif
+	return slash_pos != NULL;
+}
+
+char *
+find_slashr(const char *path)
+{
+	char *result = strrchr(path, '/');
+#ifdef _WIN32
+	if(result == NULL)
+		result = strrchr(path, '\\');
+#endif
+	return result;
+}
+
+char *
+extract_extension(char *path)
+{
+	char *e;
+	char *ext;
+
+	if((ext = strrchr(path, '.')) == NULL)
+		return path + strlen(path);
+
+	*ext = '\0';
+	if((e = strrchr(path, '.')) != NULL && pathcmp(e + 1, "tar") == 0)
+	{
+		*ext = '.';
+		ext = e;
+	}
+	*ext = '\0';
+
+	return ext + 1;
+}
+
 #ifdef _WIN32
 
 int

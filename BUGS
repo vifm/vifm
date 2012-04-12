@@ -3,3 +3,7 @@ Strange piece of escape sequence 37m (maybe fixed).
 Selection isn't cleared on keys in normal mode.
 
 vifm freezes sometimes on Windows
+
+Case insensitive rename can not be undone on Windows.
+
+Files with names containing Unicode characters are not always processed correctly.

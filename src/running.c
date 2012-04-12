@@ -192,7 +192,7 @@ execute_file(FileView *view, int dont_execute)
 		if(!view->dir_entry[i].selected)
 			continue;
 
-		if(access(view->dir_entry[i].name, F_OK) != 0)
+		if(!path_exists(view->dir_entry[i].name))
 		{
 			show_error_msgf("Broken Link", "Destination of \"%s\" link doesn't exist",
 					view->dir_entry[i].name);
@@ -311,7 +311,7 @@ view_file(const char *filename, int line, int do_fork)
 	char *escaped;
 	int bg;
 
-	if(access(filename, F_OK) != 0)
+	if(!path_exists(filename))
 	{
 		(void)show_error_msg("Broken Link", "Link destination doesn't exist");
 		return;
@@ -373,7 +373,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 	if(pause)
 		program += 2;
 
-	if(access(view->dir_entry[view->list_pos].name, F_OK) != 0)
+	if(!path_exists(view->dir_entry[view->list_pos].name))
 	{
 		(void)show_error_msg("Broken Link", "Link destination doesn't exist");
 		return;
@@ -447,7 +447,7 @@ follow_link(FileView *view, int follow_dirs)
 		return;
 	}
 
-	if(access(linkto, F_OK) != 0)
+	if(!path_exists(linkto))
 	{
 		(void)show_error_msg("Broken Link",
 				"Can't access link destination. It might be broken");

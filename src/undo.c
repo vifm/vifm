@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "cfg/config.h"
+#include "utils/fs.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -612,8 +613,10 @@ change_filename_in_trash(cmd_t *cmd, const char *filename)
 
 	i = -1;
 	do
+	{
 		snprintf(buf, sizeof(buf), "%s/%03i_%s", cfg.trash_dir, ++i, p);
-	while(access(buf, F_OK) == 0);
+	}
+	while(path_exists(buf));
 	rename_in_registers(filename, buf);
 
 	old = cmd->buf2;

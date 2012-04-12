@@ -25,6 +25,7 @@
 
 #include "cfg/config.h"
 #include "menus/menus.h"
+#include "utils/fs.h"
 #include "utils/path.h"
 #include "utils/str.h"
 
@@ -203,7 +204,7 @@ clean_regs_with_trash(void)
 		{
 			if(pathncmp(registers[x].files[y], cfg.trash_dir, trash_dir_len) != 0)
 				continue;
-			if(access(registers[x].files[y], F_OK) != 0)
+			if(!path_exists(registers[x].files[y]))
 				continue;
 
 			free(registers[x].files[y]);

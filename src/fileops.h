@@ -24,6 +24,18 @@
 
 #define DEFAULT_REG_NAME '"'
 
+typedef enum
+{
+	DR_CURRENT,
+	DR_DESTINATION,
+}DirRole;
+
+typedef enum
+{
+	ST_STATUS_BAR, /* show message in the status bar */
+	ST_DIALOG, /* shows error dialog */
+}SignalType;
+
 int delete_file(FileView *view, int reg, int count, int *indexes,
 		int use_trash);
 int delete_file_bg(FileView *view, int use_trash);
@@ -45,7 +57,9 @@ int change_link(FileView *view);
 int put_files_from_register(FileView *view, int name, int force_move);
 int clone_files(FileView *view, char **list, int nlines, int force, int copies);
 unsigned long long calc_dirsize(const char *path, int force_update);
-int is_dir_writable(int dest, const char *path);
+/* This is a wrapper for is_dir_writable() function, which adds message
+ * dialogs. */
+int check_if_dir_writable(DirRole dir_role, const char *path);
 /* Returns new value for save_msg flag. */
 int put_links(FileView *view, int reg_name, int relative);
 /* Returns new value for save_msg flag. */
@@ -63,6 +77,8 @@ void make_dirs(FileView *view, char **names, int count, int create_parent);
 int make_files(FileView *view, char **names, int count);
 
 #ifdef TEST
+int is_rename_list_ok(char **files, int *is_dup, int len, char **list);
+int check_file_rename(const char *old, const char *new, SignalType signal_type);
 const char * gen_clone_name(const char *normal_name);
 int is_name_list_ok(int count, int nlines, char **list, char **files);
 const char * add_to_name(const char *filename, int k);

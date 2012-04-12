@@ -114,6 +114,7 @@ tags.c: ../data/vim/doc/vifm.txt
 				print "\t0,\n};" \
 			} \
 		' > $@; \
+		dos2unix "$@"; \
 	fi
 
 tests:

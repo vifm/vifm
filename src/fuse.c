@@ -91,7 +91,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		snprintf(mount_point, PATH_MAX, "%s/%03d_%s", cfg.fuse_home,
 				++mount_point_id, get_current_file_name(view));
 	}
-	while(access(mount_point, F_OK) == 0);
+	while(path_exists(mount_point));
 	if(make_dir(mount_point, S_IRWXU) != 0)
 	{
 		free(escaped_filename);
@@ -188,8 +188,8 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		unlink(tmp_file);
 
 		werase(status_bar);
-		/* remove the DIR we created for the mount */
-		if(!access(mount_point, F_OK))
+		/* remove the directory we created for the mount */
+		if(path_exists(mount_point))
 			rmdir(mount_point);
 		(void)show_error_msg("FUSE MOUNT ERROR", filename);
 		(void)my_chdir(view->curr_dir);
@@ -220,7 +220,7 @@ fuse_try_mount(FileView *view, const char *program)
 	char mount_point[PATH_MAX];
 	int mount_found;
 
-	if(access(cfg.fuse_home, F_OK|W_OK|X_OK) != 0)
+	if(!path_exists(cfg.fuse_home))
 	{
 		if(make_dir(cfg.fuse_home, S_IRWXU) != 0)
 		{
@@ -320,7 +320,7 @@ unmount_fuse(void)
 		free(tmp);
 
 		my_system(buf);
-		if(access(runner->mount_point, F_OK) == 0)
+		if(path_exists(runner->mount_point))
 			rmdir(runner->mount_point);
 
 		runner = runner->next;
@@ -409,8 +409,8 @@ try_unmount_fuse(FileView *view)
 		return -1;
 	}
 
-	/* remove the DIR we created for the mount */
-	if(access(runner->mount_point, F_OK) == 0)
+	/* remove the directory we created for the mount */
+	if(path_exists(runner->mount_point))
 		rmdir(runner->mount_point);
 
 	/* remove mount point from fuse_mount_t */

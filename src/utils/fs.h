@@ -20,10 +20,6 @@
 #ifndef __FS_H__
 #define __FS_H__
 
-#ifdef _WIN32
-#include <windef.h>
-#endif
-
 #include <sys/types.h> /* size_t mode_t */
 
 /* Functions to deal with file system objects */
@@ -32,14 +28,19 @@
 int is_dir(const char *path);
 /* Checks if path could be a directory (e.g. it can be UNC root on Windows). */
 int is_valid_dir(const char *path);
-/* if path is NULL, file assumed to contain full path */
-int file_exists(const char *path, const char *file);
+/* Checks whether file at path exists. */
+int path_exists(const char *path);
+/* Checks whether path/file exists. */
+int path_exists_at(const char *path, const char *filename);
 int check_link_is_dir(const char *filename);
 int get_link_target(const char *link, char *buf, size_t buf_len);
 int make_dir(const char *dir_name, mode_t mode);
 int symlinks_available(void);
-/* Checks if one can change directory to a path. */
+/* Checks if one can change current directory to a path. */
 int directory_accessible(const char *path);
+/* Checks if one can write in directory specified by the path, which should be
+ * absolute. */
+int is_dir_writable(const char *path);
 
 #ifdef _WIN32
 
@@ -47,7 +48,7 @@ char * realpath(const char *path, char *buf);
 int S_ISLNK(mode_t mode);
 int readlink(const char *path, char *buf, size_t len);
 int is_on_fat_volume(const char *path);
-int drive_exists(TCHAR letter);
+int drive_exists(char letter);
 
 #endif
 

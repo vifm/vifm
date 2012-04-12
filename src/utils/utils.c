@@ -424,8 +424,10 @@ make_name_unique(const char *filename)
 #endif
 	i = 0;
 
-	while(access(unique, F_OK) == 0)
+	while(path_exists(unique))
+	{
 		sprintf(unique + len - 2, "%d", ++i);
+	}
 	return unique;
 }
 

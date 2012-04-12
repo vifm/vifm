@@ -26,6 +26,8 @@
 
 #include "../color_scheme.h"
 
+#define VIFM_HELP "vifm-help.txt"
+
 typedef struct
 {
 	char home_dir[PATH_MAX]; /* ends with a slash */

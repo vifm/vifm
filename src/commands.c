@@ -1904,7 +1904,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 			if(curr_view->dir_entry[i].selected == 0)
 				continue;
 			if(lstat(curr_view->dir_entry[i].name, &st) == 0 &&
-					access(curr_view->dir_entry[i].name, F_OK) != 0)
+					!path_exists(curr_view->dir_entry[i].name))
 			{
 				(void)show_error_msgf("Access error",
 						"Can't access destination of link \"%s\". It might be broken.",
@@ -2135,31 +2135,33 @@ help_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		snprintf(buf, sizeof(buf), "%s/vifm-help.txt", cfg.config_dir);
-		if(access(buf, F_OK) != 0)
+		if(!path_exists_at(cfg.config_dir, VIFM_HELP))
 		{
-			(void)show_error_msgf("No help file", "Can't find \"%s\" file", buf);
+			(void)show_error_msgf("No help file",
+					"Can't find \"%s/" VIFM_HELP "\" file", cfg.config_dir);
 			return 0;
 		}
 
-		snprintf(buf, sizeof(buf), "%s %s/vifm-help.txt", get_vicmd(&bg),
+		snprintf(buf, sizeof(buf), "%s %s/" VIFM_HELP, get_vicmd(&bg),
 				cfg.config_dir);
 	}
 
 	if(bg)
+	{
 		start_background_job(buf);
+	}
 	else
+	{
 #ifndef _WIN32
 		shellout(buf, -1, 1);
 #else
-	{
 		def_prog_mode();
 		endwin();
 		system("cls");
 		system(buf);
 		redraw_window();
-	}
 #endif
+	}
 	return 0;
 }
 
@@ -2891,7 +2893,7 @@ source_cmd(const cmd_info_t *cmd_info)
 {
 	int ret = 0;
 	char *path = expand_tilde(strdup(cmd_info->argv[0]));
-	if(access(path, F_OK) != 0)
+	if(!path_exists(path))
 	{
 		status_bar_errorf("File doesn't exist: %s", cmd_info->argv[0]);
 		ret = 1;
