@@ -40,6 +40,8 @@
 
 	Changed the way 'fastrun' works.
 
+	Replace home directory with the tilde in terminal title.
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.
