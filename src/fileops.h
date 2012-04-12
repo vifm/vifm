@@ -30,6 +30,12 @@ typedef enum
 	DR_DESTINATION,
 }DirRole;
 
+typedef enum
+{
+	ST_STATUS_BAR, /* show message in the status bar */
+	ST_DIALOG, /* shows error dialog */
+}SignalType;
+
 int delete_file(FileView *view, int reg, int count, int *indexes,
 		int use_trash);
 int delete_file_bg(FileView *view, int use_trash);
@@ -72,7 +78,7 @@ int make_files(FileView *view, char **names, int count);
 
 #ifdef TEST
 int is_rename_list_ok(char **files, int *is_dup, int len, char **list);
-int check_file_rename(const char *old, const char *new, int silent);
+int check_file_rename(const char *old, const char *new, SignalType signal_type);
 const char * gen_clone_name(const char *normal_name);
 int is_name_list_ok(int count, int nlines, char **list, char **files);
 const char * add_to_name(const char *filename, int k);

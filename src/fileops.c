@@ -103,7 +103,7 @@ int is_rename_list_ok(char **files, int *is_dup, int len, char **list);
 #ifndef TEST
 static
 #endif
-int check_file_rename(const char *old, const char *new, int silent);
+int check_file_rename(const char *old, const char *new, SignalType signal_type);
 static void put_confirm_cb(const char *dest_name);
 static void put_decide_cb(const char *dest_name);
 static int put_files_from_register_i(FileView *view, int start);
@@ -571,7 +571,7 @@ rename_file_cb(const char *new_name)
 			(rename_file_ext[0] == '\0') ? "" : ".", rename_file_ext,
 			(filename[len - 1] == '/') ? "/" : "");
 
-	if(check_file_rename(filename, new, 0) <= 0)
+	if(check_file_rename(filename, new, ST_DIALOG) <= 0)
 	{
 		return;
 	}
@@ -997,7 +997,7 @@ is_rename_list_ok(char **files, int *is_dup, int len, char **list)
 		int j;
 		int check_result;
 
-		check_result = check_file_rename(files[i], list[i], 1);
+		check_result = check_file_rename(files[i], list[i], ST_STATUS_BAR);
 		if(check_result < 0)
 		{
 			continue;
@@ -1017,37 +1017,6 @@ is_rename_list_ok(char **files, int *is_dup, int len, char **list)
 		}
 	}
 	return i >= len;
-}
-
-/* Returns value > 0 if rename is correct, < 0 if rename isn't needed and 0
- * when rename operation should be aborted. silent parameter controls whether
- * error dialog or status bar message should be shown, 0 means dialog. */
-#ifndef TEST
-static
-#endif
-int
-check_file_rename(const char *old, const char *new, int silent)
-{
-	/* Filename unchanged */
-	if(new[0] == '\0' || strcmp(old, new) == 0)
-		return -1;
-
-	if(path_exists(new) && pathcmp(old, new) != 0)
-	{
-		if(silent)
-		{
-			status_bar_errorf("File \"%s\" already exists", new);
-			curr_stats.save_msg = 1;
-		}
-		else
-		{
-			(void)show_error_msg("File exists",
-					"That file already exists. Will not overwrite.");
-		}
-		return 0;
-	}
-
-	return 1;
 }
 
 static void
@@ -1133,6 +1102,7 @@ incdec_names(FileView *view, int k)
 	char buf[MAX(NAME_MAX, COMMAND_GROUP_INFO_LEN)];
 	int i;
 	int err = 0;
+	int renames = 0;
 
 	get_all_selected_files(view);
 	names_len = view->selected_files;
@@ -1160,7 +1130,7 @@ incdec_names(FileView *view, int k)
 	for(i = 0; i < names_len; i++)
 	{
 		const char *p = add_to_name(names[i], k);
-		if(!path_exists_at(view->curr_dir, p))
+		if(check_file_rename(names[i], p, ST_STATUS_BAR) != 0)
 			continue;
 #ifndef _WIN32
 		if(is_in_string_array(names, names_len, p))
@@ -1181,6 +1151,7 @@ incdec_names(FileView *view, int k)
 			err = 1;
 			break;
 		}
+		renames++;
 	}
 	for(i = 0; i < names_len && !err; i++)
 	{
@@ -1190,6 +1161,7 @@ incdec_names(FileView *view, int k)
 			err = 1;
 			break;
 		}
+		renames++;
 	}
 	cmd_group_end();
 
@@ -1208,13 +1180,51 @@ incdec_names(FileView *view, int k)
 	}
 
 	clean_selected_files(view);
-	load_saving_pos(view, 0);
+	if(renames > 0)
+	{
+		load_saving_pos(view, 0);
+	}
 
-	if(err)
+	if(err > 0)
+	{
 		status_bar_error("Rename error");
-	else
+	}
+	else if(err == 0)
+	{
 		status_bar_messagef("%d file%s renamed", names_len,
 				(names_len == 1) ? "" : "s");
+	}
+
+	return 1;
+}
+
+/* Returns value > 0 if rename is correct, < 0 if rename isn't needed and 0
+ * when rename operation should be aborted. silent parameter controls whether
+ * error dialog or status bar message should be shown, 0 means dialog. */
+#ifndef TEST
+static
+#endif
+int
+check_file_rename(const char *old, const char *new, SignalType signal_type)
+{
+	/* Filename unchanged */
+	if(new[0] == '\0' || strcmp(old, new) == 0)
+		return -1;
+
+	if(path_exists(new) && pathcmp(old, new) != 0)
+	{
+		if(signal_type == ST_STATUS_BAR)
+		{
+			status_bar_errorf("File \"%s\" already exists", new);
+			curr_stats.save_msg = 1;
+		}
+		else
+		{
+			(void)show_error_msg("File exists",
+					"That file already exists. Will not overwrite.");
+		}
+		return 0;
+	}
 
 	return 1;
 }
