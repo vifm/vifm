@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-.PHONY: version.c
+.PHONY: tests update_compile_info
 
 AUTOMAKE_OPTIONS = subdir-objects
 
@@ -101,19 +101,27 @@ vifm_SOURCES = \
 	ui.c ui.h \
 	undo.c undo.h \
 	version.c version.h \
+	compile_info.c \
 	vifm.c
 
 vifmrc_converter_SOURCES = \
 	color_scheme.h \
 	vifmrc-converter.c
 
-utils.o: version.o
+tests:
+	make -C ../tests
 
-version.c:
-	@if [ "x$$(which git)" != "x" ]; then \
-		cp version.c version.c_; \
-		sed "s/GIT_HASH\[\] = \"[^\"]*\"/GIT_HASH[] = \"$$(git rev-parse HEAD)\"/" version.c_ > version.c; \
-		rm version.c_; \
+compile_info.c: update_compile_info
+
+update_compile_info:
+	@before="$$(cat "compile_info.c" 2> /dev/null)"; \
+	if [ "x$$(which git)" != "x" ]; then \
+		new="const char GIT_HASH[] = \"$$(git rev-parse HEAD)\";"; \
+	else \
+		new='const char GIT_HASH[] = "";'; \
+	fi; \
+	if [ "x$$before" != "x$$new" -o ! -f "compile_info.c" ]; then \
+		echo "$$new" > compile_info.c; \
 	fi
 
 ../data/vifm-help.txt: ../data/vifm.1
