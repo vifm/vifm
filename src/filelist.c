@@ -78,6 +78,7 @@
 
 static char * get_viewer_command(const char *viewer);
 static void rescue_from_empty_filelist(FileView * view);
+static void add_parent_dir(FileView *view);
 
 static int
 get_line_color(FileView* view, int pos)
@@ -1483,66 +1484,6 @@ type_from_dir_entry(const struct dirent *d)
 }
 #endif
 
-static void
-load_parent_dir_only(FileView *view)
-{
-	dir_entry_t *dir_entry;
-	struct stat s;
-
-	view->list_rows = 1;
-	view->dir_entry = realloc(view->dir_entry, sizeof(dir_entry_t));
-	if(view->dir_entry == NULL)
-	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return;
-	}
-
-	dir_entry = view->dir_entry;
-
-	dir_entry->name = strdup("../");
-	if(dir_entry->name == NULL)
-	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
-		return;
-	}
-
-	/* All files start as unselected and unmatched */
-	dir_entry->selected = 0;
-	dir_entry->search_match = 0;
-
-	dir_entry->type = DIRECTORY;
-
-	/* Load the inode info */
-	if(lstat(dir_entry->name, &s) != 0)
-	{
-		LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
-				dir_entry->name);
-		log_cwd();
-
-		dir_entry->size = 0;
-#ifndef _WIN32
-		dir_entry->mode = 0;
-		dir_entry->uid = -1;
-		dir_entry->gid = -1;
-#endif
-		dir_entry->mtime = 0;
-		dir_entry->atime = 0;
-		dir_entry->ctime = 0;
-	}
-	else
-	{
-		dir_entry->size = (uintmax_t)s.st_size;
-#ifndef _WIN32
-		dir_entry->mode = s.st_mode;
-		dir_entry->uid = s.st_uid;
-		dir_entry->gid = s.st_gid;
-#endif
-		dir_entry->mtime = s.st_mtime;
-		dir_entry->atime = s.st_atime;
-		dir_entry->ctime = s.st_ctime;
-	}
-}
-
 static int
 is_executable(dir_entry_t *d)
 {
@@ -1670,6 +1611,8 @@ fill_dir_list(FileView *view)
 #ifndef _WIN32
 	DIR *dir;
 	struct dirent *d;
+	int with_parent_dir = 0;
+	const int is_root = is_root_dir(view->curr_dir);
 
 	if((dir = opendir(view->curr_dir)) == NULL)
 		return -1;
@@ -1689,11 +1632,12 @@ fill_dir_list(FileView *view)
 		/* Always include the ../ directory unless it is the root directory. */
 		if(pathcmp(d->d_name, "..") == 0)
 		{
-			if(is_root_dir(view->curr_dir))
+			if(is_root)
 			{
 				view->list_rows--;
 				continue;
 			}
+			with_parent_dir = 1;
 		}
 		else if(regexp_filter_match(view, d->d_name) == 0)
 		{
@@ -1800,13 +1744,20 @@ fill_dir_list(FileView *view)
 			}
 		}
 	}
-
 	closedir(dir);
+
+	if(!with_parent_dir && !is_root)
+	{
+		add_parent_dir(view);
+	}
+
 	return 0;
 #else
 	char buf[PATH_MAX];
 	HANDLE hfind;
 	WIN32_FIND_DATAA ffd;
+	int with_parent_dir = 0;
+	const int is_root = is_root_dir(view->curr_dir);
 
 	if(is_unc_root(view->curr_dir))
 	{
@@ -1833,8 +1784,9 @@ fill_dir_list(FileView *view)
 		/* Always include the ../ directory unless it is the root directory. */
 		if(pathcmp(ffd.cFileName, "..") == 0)
 		{
-			if(is_root_dir(view->curr_dir))
+			if(is_root)
 				continue;
+			with_parent_dir = 1;
 		}
 		else if(regexp_filter_match(view, ffd.cFileName) == 0)
 		{
@@ -1902,8 +1854,13 @@ fill_dir_list(FileView *view)
 		view->list_rows++;
 	}
 	while(FindNextFileA(hfind, &ffd));
-
 	FindClose(hfind);
+
+	if(!with_parent_dir && !is_root)
+	{
+		add_parent_dir(view);
+	}
+
 	return 0;
 #endif
 }
@@ -1962,7 +1919,7 @@ load_dir_list(FileView *view, int reload)
 		free(view->dir_entry);
 		view->dir_entry = NULL;
 	}
-	view->dir_entry = (dir_entry_t *)malloc(sizeof(dir_entry_t));
+	view->dir_entry = malloc(sizeof(dir_entry_t));
 	if(view->dir_entry == NULL)
 	{
 		(void)show_error_msg("Memory Error", "Unable to allocate enough memory.");
@@ -1971,8 +1928,10 @@ load_dir_list(FileView *view, int reload)
 
 	if(fill_dir_list(view) != 0)
 	{
-		/* we don't have read access, only execute, or there are other problems */
-		load_parent_dir_only(view);
+		/* we don't have read access, only execute, or there were other problems */
+		/* all memory from file names was released in a loop above */
+		view->list_rows = 0;
+		add_parent_dir(view);
 	}
 
 	if(!reload && view->list_rows > 2048)
@@ -2032,11 +1991,74 @@ rescue_from_empty_filelist(FileView * view)
 	}
 	else
 	{
-		load_parent_dir_only(view);
+		add_parent_dir(view);
 	}
 
 	if(curr_stats.load_stage >= 2)
 		draw_dir_list(view, view->top_line);
+}
+
+/* Adds parent directory entry (..) to filelist. */
+static void
+add_parent_dir(FileView *view)
+{
+	dir_entry_t *dir_entry;
+	struct stat s;
+
+	view->dir_entry = realloc(view->dir_entry,
+			sizeof(dir_entry_t)*(view->list_rows + 1));
+	if(view->dir_entry == NULL)
+	{
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return;
+	}
+
+	dir_entry = &view->dir_entry[view->list_rows];
+
+	dir_entry->name = strdup("../");
+	if(dir_entry->name == NULL)
+	{
+		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		return;
+	}
+
+	view->list_rows++;
+
+	/* All files start as unselected and unmatched */
+	dir_entry->selected = 0;
+	dir_entry->search_match = 0;
+
+	dir_entry->type = DIRECTORY;
+
+	/* Load the inode info */
+	if(lstat(dir_entry->name, &s) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Can't lstat() \"%s/%s\"", view->curr_dir,
+				dir_entry->name);
+		log_cwd();
+
+		dir_entry->size = 0;
+#ifndef _WIN32
+		dir_entry->mode = 0;
+		dir_entry->uid = -1;
+		dir_entry->gid = -1;
+#endif
+		dir_entry->mtime = 0;
+		dir_entry->atime = 0;
+		dir_entry->ctime = 0;
+	}
+	else
+	{
+		dir_entry->size = (uintmax_t)s.st_size;
+#ifndef _WIN32
+		dir_entry->mode = s.st_mode;
+		dir_entry->uid = s.st_uid;
+		dir_entry->gid = s.st_gid;
+#endif
+		dir_entry->mtime = s.st_mtime;
+		dir_entry->atime = s.st_atime;
+		dir_entry->ctime = s.st_ctime;
+	}
 }
 
 /*
