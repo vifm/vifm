@@ -52,8 +52,8 @@
 #include "../ui.h"
 #ifdef _WIN32
 #include "env.h"
-#include "fs.h"
 #endif
+#include "fs.h"
 #include "macros.h"
 #include "path.h"
 #include "str.h"

@@ -54,9 +54,7 @@
 #include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/path.h"
-#ifdef _WIN32
 #include "utils/str.h"
-#endif
 #include "utils/string_array.h"
 #include "utils/tree.h"
 #include "utils/utf8.h"
