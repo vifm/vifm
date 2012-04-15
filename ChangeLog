@@ -87,6 +87,8 @@
 
 	Fixed infinite loop of filter inverting.
 
+	Fixed adding of ellipsis into view title when it's actually don't needed.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.
