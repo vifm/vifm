@@ -1502,7 +1502,7 @@ right aligned.  Following macros are supported:
 Percent sign can be followed by optional minimum field width.  Add '-' before
 minimum field width if you want field to be right aligned.
 Example: >
- set statusline="  %t%= %A %10u:%-7g %15s %20d "
+ set rulerformat="%=%2l-%S [%L] "
 <
                                                *vifm-'runexec'*
 runexec

@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "../../config.h"
+
 #include <string.h> /* strdup() strlen() */
 
 #include "../modes/menu.h"
@@ -90,9 +92,11 @@ show_filetypes_menu(FileView *view, int background)
 
 	free(ft.list);
 
+#ifdef ENABLE_DESKTOP_FILES
 	(void)add_to_string_array(&m.data, m.len, 1,
 			form_filetype_data_entry(NONE_PSEUDO_PROG));
 	m.len = add_to_string_array(&m.items, m.len, 1, "");
+#endif
 
 	for(i = 0; i < magic.count; i++)
 	{

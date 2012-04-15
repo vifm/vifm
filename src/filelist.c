@@ -54,9 +54,7 @@
 #include "utils/fs.h"
 #include "utils/log.h"
 #include "utils/path.h"
-#ifdef _WIN32
 #include "utils/str.h"
-#endif
 #include "utils/string_array.h"
 #include "utils/tree.h"
 #include "utils/utf8.h"
@@ -521,7 +519,7 @@ update_view_title(FileView *view)
 	}
 
 	len = get_utf8_string_length(buf);
-	if(len + 1 > view->window_width && view == selected)
+	if(len > view->window_width + 1 && view == selected)
 	{ /* Truncate long directory names */
 		const char *ptr;
 
@@ -535,7 +533,7 @@ update_view_title(FileView *view)
 		wprintw(view->title, "...");
 		wprint(view->title, ptr);
 	}
-	else if(len + 1 > view->window_width && view != selected)
+	else if(len > view->window_width + 1 && view != selected)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf, view->window_width - 3 + 1);
 		buf[len] = '\0';

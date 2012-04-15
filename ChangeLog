@@ -25,6 +25,10 @@
 
 	Added completion for :rename command.
 
+	Added size of file in bytes in file info mode (Ctrl-G).
+
+	Added "Y" key to visual mode as an alias for "yy".
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with
@@ -86,6 +90,8 @@
 	Fixed renaming of files on Windows (sometimes files could be moved).
 
 	Fixed infinite loop of filter inverting.
+
+	Fixed adding of ellipsis into view title when it's actually don't needed.
 
 0.7.1 to 0.7.2
 
