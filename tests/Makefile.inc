@@ -31,7 +31,7 @@ LOCAL_OBJECTS := $(addprefix bin/, $(notdir $(LOCAL_OBJECTS)))
 
 ifneq ($(OS),Windows_NT)
     CFLAGS := -MD -g -Werror -I../seatest `pkg-config --cflags gtk+-2.0` -DTEST
-    LDFLAGS := `pkg-config --libs gtk+-2.0` -lncursesw -lmagic
+    LDFLAGS := `pkg-config --libs gtk+-2.0` -lncursesw -lmagic -lX11
 else
     CFLAGS := -MD -g -Werror -I../seatest -DTEST
     LDFLAGS := -lpdcurses -lregex -lnetapi32 -lpthread -lws2_32
