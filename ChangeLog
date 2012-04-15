@@ -25,6 +25,8 @@
 
 	Added completion for :rename command.
 
+	Added size of file in bytes in file info mode (Ctrl-G).
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with

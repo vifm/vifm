@@ -165,6 +165,8 @@ redraw_file_info_dialog(void)
 	curr_y += 2;
 	mvwaddstr(menu_win, curr_y, 2, "Size: ");
 	mvwaddstr(menu_win, curr_y, 8, size_buf);
+	snprintf(size_buf, sizeof(size_buf), " (%lld bytes)", size);
+	waddstr(menu_win, size_buf);
 	curr_y += 2;
 
 	curr_y += show_file_type(view, curr_y);
