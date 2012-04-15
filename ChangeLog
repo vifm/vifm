@@ -29,6 +29,8 @@
 
 	Added "Y" key to visual mode as an alias for "yy".
 
+	Added :finish command to use in sourced scripts.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with
