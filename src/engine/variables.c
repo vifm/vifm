@@ -40,6 +40,9 @@ typedef struct {
 	int removed;
 }var_t;
 
+static const char ENV_VAR_NAME_CHARS[] = "abcdefghijklmnopqrstuvwxyz"
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+
 static void init_var(const char *env);
 static const char *parse_val(const char *str);
 static void append_envvar(const char *name, const char *val);
@@ -154,8 +157,8 @@ let_variable(const char *cmd)
 
 	/* copy variable name */
 	p = name;
-	while(*cmd != '\0' && !isspace(*cmd) && *cmd != '.' && *cmd != '=' &&
-			p - name < sizeof(name) - 1)
+	while(*cmd != '\0' && strchr(ENV_VAR_NAME_CHARS, *cmd) != NULL &&
+			*cmd != '.' && *cmd != '=' && p - name < sizeof(name) - 1)
 	{
 		if(*cmd != '_' && !isalnum(*cmd))
 		{
@@ -380,10 +383,17 @@ unlet_variables(const char *cmd)
 
 		/* copy variable name */
 		p = name;
-		while(*cmd != '\0' && !isspace(*cmd) && *cmd != '=' &&
+		while(*cmd != '\0' && strchr(ENV_VAR_NAME_CHARS, *cmd) != NULL &&
 				p - name < sizeof(name) - 1)
 			*p++ = *cmd++;
 		*p = '\0';
+
+		if(*cmd != '\0' && !isspace(*cmd))
+		{
+			print_msg(1, "", "Trailing characters");
+			error++;
+			break;
+		}
 
 		cmd = skip_whitespace(cmd);
 

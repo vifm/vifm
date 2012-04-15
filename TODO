@@ -56,6 +56,10 @@ Vi(m) specific features that need to be added.
         relative paths have?).
     Save last typed but not executed command in command-line mode (this also
         includes searches).
+    Support hex and octal numbers in :set
+    Allow whitespace between option and any of operators (now works only for
+        ?, ! and & ).
+    Add support for ^= in :set command.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
