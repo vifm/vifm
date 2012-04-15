@@ -41,6 +41,13 @@ typedef enum
 	VSPLIT,
 }SPLIT;
 
+typedef enum
+{
+	SOURCING_NONE,
+	SOURCING_PROCESSING,
+	SOURCING_FINISHING,
+}SourcingState;
+
 typedef struct
 {
 	int need_redraw;
@@ -93,6 +100,8 @@ typedef struct
 	int scroll_bind_off;
 	SPLIT split;
 	int splitter_pos;
+
+	SourcingState sourcing_state;
 }status_t;
 
 extern status_t curr_stats;

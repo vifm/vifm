@@ -79,6 +79,7 @@ static void create_config_dir(void);
 static void create_help_file(void);
 static void create_rc_file(void);
 #endif
+static int source_file_internal(FILE *fp, const char *filename);
 
 void
 init_config(void)
@@ -530,55 +531,71 @@ int
 source_file(const char *file)
 {
 	FILE *fp;
-	char line[MAX_LEN*2];
+	int result;
+	SourcingState sourcing_state;
 
 	if((fp = fopen(file, "r")) == NULL)
 		return 1;
 
-	if(fgets(line, MAX_LEN, fp) != NULL)
-	{
-		int line_num = 1;
-		for(;;)
-		{
-			char next_line[MAX_LEN];
-			char *p;
-			int line_num_delta = 0;
+	sourcing_state = curr_stats.sourcing_state;
+	curr_stats.sourcing_state = SOURCING_PROCESSING;
 
-			if((p = fgets(next_line, sizeof(next_line), fp)) != NULL)
-			{
-				do
-				{
-					line_num_delta++;
-					p = skip_whitespace(p);
-					chomp(p);
-					if(*p == '"')
-						continue;
-					else if(*p == '\\')
-						strncat(line, p + 1, sizeof(line) - strlen(line) - 1);
-					else
-						break;
-				}
-				while((p = fgets(next_line, sizeof(next_line), fp)) != NULL);
-			}
-			chomp(line);
-			if(exec_commands(line, curr_view, 0, GET_COMMAND) < 0)
-			{
-				show_error_msgf("File Sourcing Error", "Error in %s at %d line", file,
-						line_num);
-			}
-			if(p == NULL)
-				break;
-			strcpy(line, p);
-			line_num += line_num_delta;
-		}
-	}
-	else
+	result = source_file_internal(fp, file);
+
+	curr_stats.sourcing_state = sourcing_state;
+
+	fclose(fp);
+	return result;
+}
+
+static int
+source_file_internal(FILE *fp, const char *filename)
+{
+	char line[MAX_LEN*2];
+	int line_num;
+
+	if(fgets(line, MAX_LEN, fp) == NULL)
 	{
-		fclose(fp);
 		return 1;
 	}
 
-	fclose(fp);
+	line_num = 1;
+	for(;;)
+	{
+		char next_line[MAX_LEN];
+		char *p;
+		int line_num_delta = 0;
+
+		if((p = fgets(next_line, sizeof(next_line), fp)) != NULL)
+		{
+			do
+			{
+				line_num_delta++;
+				p = skip_whitespace(p);
+				chomp(p);
+				if(*p == '"')
+					continue;
+				else if(*p == '\\')
+					strncat(line, p + 1, sizeof(line) - strlen(line) - 1);
+				else
+					break;
+			}
+			while((p = fgets(next_line, sizeof(next_line), fp)) != NULL);
+		}
+		chomp(line);
+		if(exec_commands(line, curr_view, 0, GET_COMMAND) < 0)
+		{
+			show_error_msgf("File Sourcing Error", "Error in %s at %d line", filename,
+					line_num);
+		}
+		if(curr_stats.sourcing_state == SOURCING_FINISHING)
+			break;
+		if(p == NULL)
+			break;
+		strcpy(line, p);
+		line_num += line_num_delta;
+	}
+
 	return 0;
 }
 
