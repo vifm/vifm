@@ -27,6 +27,8 @@
 
 	Added size of file in bytes in file info mode (Ctrl-G).
 
+	Added "Y" key to visual mode as an alias for "yy".
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with
