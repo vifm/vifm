@@ -58,7 +58,8 @@ static int initialized;
 static var_t *vars;
 static size_t nvars;
 
-void init_variables(var_print handler)
+void
+init_variables(var_print handler)
 {
 	int i;
 	extern char **environ;
