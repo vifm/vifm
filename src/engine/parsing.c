@@ -185,7 +185,6 @@ static int
 eval_single_quoted_char(const char **in)
 {
 	int double_sq;
-	char buf[2];
 	int sq_char;
 
 	double_sq = (last_token.type == SQ && **in == '\'');
@@ -193,9 +192,7 @@ eval_single_quoted_char(const char **in)
 	if(!sq_char && !double_sq)
 		return 0;
 
-	buf[0] = last_token.c;
-	buf[1] = '\0';
-	strcat(buffer, buf);
+	strcatch(buffer, last_token.c);
 	get_next(in);
 
 	if(double_sq)
@@ -244,7 +241,6 @@ eval_double_quoted_char(const char **in)
 	/* e0 */	"\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef"
 	/* f0 */	"\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff";
 
-	char buf[2];
 	int dq_char;
 
 	dq_char = last_token.type != DQ && last_token.type != END;
@@ -263,9 +259,7 @@ eval_double_quoted_char(const char **in)
 		last_token.c = table[(int)last_token.c];
 	}
 
-	buf[0] = last_token.c;
-	buf[1] = '\0';
-	strcat(buffer, buf);
+	strcatch(buffer, last_token.c);
 	get_next(in);
 
 	return dq_char;
@@ -279,10 +273,7 @@ eval_envvar(const char **in)
 	name[0] = '\0';
 	while(last_token.type == CHAR)
 	{
-		char buf[2];
-		buf[0] = last_token.c;
-		buf[1] = '\0';
-		strcat(name, buf);
+		strcatch(name, last_token.c);
 		get_next(in);
 	}
 	strcat(buffer, getenv_fu(name));
