@@ -48,6 +48,9 @@
 
 	Replace home directory with the tilde in terminal title.
 
+	Improved :let command (allowed using of expressions at the right side of
+	the statement).
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.

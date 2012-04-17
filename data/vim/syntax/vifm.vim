@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@gmail.com>
-" Last Change: April 15, 2012
+" Last Change: April 17, 2012
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -104,9 +104,11 @@ syntax region vifmSet2 contained
 syntax region vifmLet
 		\ matchgroup=vifmCommand
 		\ start='\<let\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
-		\ keepend contains=vifmEnvVar,vifmString
+		\ keepend contains=vifmEnvVar,vifmString,vifmStringInExpr
 syntax region vifmString contained start=+="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
 syntax region vifmString contained start=+='+hs=s+1 skip=+\\\\\|\\'+  end=+'+
+syntax region vifmStringInExpr contained start=+\."+hs=s+1 skip=+\\\\\|\\"+  end=+"+
+syntax region vifmStringInExpr contained start=+\.'+hs=s+1 skip=+\\\\\|\\'+  end=+'+
 syntax match vifmEnvVar contained /\$[0-9a-zA-Z_]\+/
 syntax match vifmNumber contained /\d\+/
 
@@ -136,6 +138,7 @@ highlight link vifmHiColors Special
 highlight link vifmOption PreProc
 highlight link vifmNotation Special
 highlight link vifmString String
+highlight link vifmStringInExpr String
 highlight link vifmEnvVar PreProc
 highlight link vifmNumber Number
 

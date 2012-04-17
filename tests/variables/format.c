@@ -49,10 +49,17 @@ test_double_quotes_ok(void)
 }
 
 static void
+test_trailing_spaces_ok(void)
+{
+	assert_true(let_variable("$VAR = \"VAL\" ") == 0);
+	assert_true(let_variable("$VAR .= \"VAL\" ") == 0);
+}
+
+static void
 test_too_many_arguments_fail(void)
 {
-	assert_false(let_variable("$VAR = \"VAL\" ") == 0);
-	assert_false(let_variable("$VAR .= \"VAL\" ") == 0);
+	assert_false(let_variable("$VAR = \"VAL\" bbb") == 0);
+	assert_false(let_variable("$VAR .= \"VAL\" $aaa") == 0);
 }
 
 static void
@@ -151,6 +158,7 @@ format_tests(void)
 	run_test(test_single_quotes_ok);
 	run_test(test_double_quotes_ok);
 
+	run_test(test_trailing_spaces_ok);
 	run_test(test_too_many_arguments_fail);
 	run_test(test_incomplete_two_args_fail);
 	run_test(test_incomplete_one_arg_fail);

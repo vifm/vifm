@@ -26,6 +26,7 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "completion.h"
+#include "parsing.h"
 
 #include "variables.h"
 
@@ -43,8 +44,9 @@ typedef struct {
 static const char ENV_VAR_NAME_CHARS[] = "abcdefghijklmnopqrstuvwxyz"
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
+static const char * local_getenv(const char *envname);
 static void init_var(const char *env);
-static const char *parse_val(const char *str);
+static void report_parsing_error(ParsingErrors error);
 static void append_envvar(const char *name, const char *val);
 static void set_envvar(const char *name, const char *val);
 static var_t * get_record(const char *name);
@@ -86,7 +88,16 @@ init_variables(var_print handler)
 		i++;
 	}
 
+	init_parser(&local_getenv);
+
 	initialized = 1;
+}
+
+static const char *
+local_getenv(const char *envname)
+{
+	var_t *record = find_record(envname);
+	return (record == NULL || record->removed) ? "" : record->val;
 }
 
 static void
@@ -111,7 +122,8 @@ init_var(const char *env)
 	}
 }
 
-void clear_variables(void)
+void
+clear_variables(void)
 {
 	int i;
 	assert(initialized);
@@ -185,25 +197,25 @@ let_variable(const char *cmd)
 		cmd++;
 	}
 
-	/* check for equal sign and skip it and all whitespace */
+	/* check for equal sign and skip it */
 	if(*cmd != '=')
 	{
 		print_msg(1, "Incorrect :let statement", "'=' expected");
 		return -1;
 	}
-	cmd = skip_whitespace(cmd + 1);
 
-	/* ensure value starts with quotes */
-	if(*cmd != '\'' && *cmd != '"')
+	cp = parse(cmd + 1);
+	if(cp == NULL)
 	{
-		print_msg(1, "Incorrect :let statement", "expected single or double quote");
+		report_parsing_error(get_parsing_error());
 		return -1;
 	}
 
-	/* parse value */
-	cp = parse_val(cmd);
-	if(cp == NULL)
+	if(get_last_position() != NULL && *get_last_position() != '\0')
+	{
+		print_msg(1, "Incorrect :let statement", "trailing characters");
 		return -1;
+	}
 
 	/* update environment variable */
 	if(append)
@@ -214,62 +226,22 @@ let_variable(const char *cmd)
 	return 0;
 }
 
-/* Returns pointer to a statically allocated buffer or NULL on error */
-static const char *
-parse_val(const char *str)
+static void
+report_parsing_error(ParsingErrors error)
 {
-	static char buf[VAL_LEN_MAX + 1];
-	char *p = buf;
-	int quote = (*str++ == '"') ? 2 : 1;
-	int slash = 0;
-
-	/* parse all in currect quotes */
-	while(*str != '\0' && quote != 0)
+	if(error == PE_INVALID_EXPRESSION)
 	{
-		if(slash == 1)
-		{
-			*p++ = *str++;
-			slash = 0;
-		}
-		else if(*str == '\\')
-		{
-			slash = 1;
-		}
-		else if(*str == '\'' && quote == 0)
-		{
-			quote = 1;
-		}
-		else if(*str == '\'' && quote == 1)
-		{
-			quote = 0;
-		}
-		else if(*str == '"' && quote == 0)
-		{
-			quote = 2;
-		}
-		else if(*str == '"' && quote == 2)
-		{
-			quote = 0;
-		}
-		else
-		{
-			*p++ = *str;
-		}
-		str++;
+		print_msg(1, "Invalid expression", get_last_position());
 	}
-
-	/* report an error if input is invalid */
-	if(*str != '\0' || quote != 0)
+	else if(error == PE_MISSING_QUOTE)
 	{
-		if(quote != 0)
-			print_msg(1, "Incorrect value", "unclosed quote");
-		else
-			print_msg(1, "Incorrect value", "trailing characters");
-		return NULL;
+		print_msg(1, "Invalid :let expression (missing quote)",
+				get_last_position());
 	}
-
-	*p = '\0';
-	return buf;
+	else
+	{
+		assert(0 && "Unexpected parsing error code.");
+	}
 }
 
 static void
