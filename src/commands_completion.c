@@ -186,7 +186,7 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 	else if(id == COM_SET)
 		complete_options(args, &start);
 	else if(id == COM_LET)
-		complete_variables(args, &start);
+		complete_variables((dollar > arg) ? dollar : arg, &start);
 	else if(id == COM_UNLET)
 		complete_variables(arg, &start);
 	else if(id == COM_HELP)
