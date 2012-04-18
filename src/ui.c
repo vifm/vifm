@@ -525,6 +525,10 @@ status_bar_message_i(const char *message, int error)
 		}
 		p = q + 1;
 	}
+	if(*p == '\0')
+	{
+		status_bar_lines++;
+	}
 	status_bar_lines += (strlen(p) + len - 1)/len;
 	if(status_bar_lines == 0)
 		status_bar_lines = 1;
