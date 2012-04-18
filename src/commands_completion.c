@@ -367,9 +367,13 @@ complete_progs(const char *str, assoc_records_t records)
 
 	for(i = 0; i < records.count; i++)
 	{
-		if(strncmp(records.list[i].command, str, len) == 0)
+		char command[NAME_MAX];
+
+		(void)get_command_name(records.list[i].command, sizeof(command), command);
+
+		if(strncmp(command, str, len) == 0)
 		{
-			add_completion(records.list[i].command);
+			add_completion(command);
 		}
 	}
 }
