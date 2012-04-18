@@ -519,6 +519,10 @@ status_bar_message_i(const char *message, int error)
 	while((q = strchr(q + 1, '\n')) != NULL)
 	{
 		status_bar_lines += (q - p + len - 1)/len;
+		if(q == p)
+		{
+			status_bar_lines++;
+		}
 		p = q + 1;
 	}
 	status_bar_lines += (strlen(p) + len - 1)/len;
