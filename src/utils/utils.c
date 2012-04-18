@@ -406,8 +406,6 @@ get_mode_str(mode_t mode)
 		return "?";
 }
 
-/* Makes filename unique by adding an unique suffix to it.
- * Returns pointer to a statically allocated buffer */
 const char *
 make_name_unique(const char *filename)
 {
@@ -429,6 +427,25 @@ make_name_unique(const char *filename)
 		sprintf(unique + len - 2, "%d", ++i);
 	}
 	return unique;
+}
+
+char *
+get_command_name(const char *line, size_t buf_len, char *buf)
+{
+	const char *result;
+
+	line = skip_whitespace(line);
+
+	result = strchr(line, ' ');
+	if(result == NULL)
+	{
+		result = line + strlen(line);
+	}
+
+	snprintf(buf, MIN(result - line + 1, buf_len), "%s", line);
+	result = skip_whitespace(result);
+
+	return (char *)result;
 }
 
 #ifndef _WIN32
