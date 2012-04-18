@@ -1130,13 +1130,13 @@ incdec_names(FileView *view, int k)
 	for(i = 0; i < names_len; i++)
 	{
 		const char *p = add_to_name(names[i], k);
-		if(check_file_rename(names[i], p, ST_STATUS_BAR) != 0)
-			continue;
 #ifndef _WIN32
 		if(is_in_string_array(names, names_len, p))
 #else
 		if(is_in_string_array_case(names, names_len, p))
 #endif
+			continue;
+		if(check_file_rename(names[i], p, ST_STATUS_BAR) != 0)
 			continue;
 
 		err = -1;
