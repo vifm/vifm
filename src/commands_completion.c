@@ -371,7 +371,7 @@ complete_progs(const char *str, assoc_records_t records)
 
 		(void)get_command_name(records.list[i].command, sizeof(command), command);
 
-		if(strncmp(command, str, len) == 0)
+		if(pathncmp(command, str, len) == 0)
 		{
 			add_completion(command);
 		}
