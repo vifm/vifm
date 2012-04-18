@@ -367,9 +367,13 @@ complete_progs(const char *str, assoc_records_t records)
 
 	for(i = 0; i < records.count; i++)
 	{
-		if(strncmp(records.list[i].command, str, len) == 0)
+		char command[NAME_MAX];
+
+		(void)get_command_name(records.list[i].command, sizeof(command), command);
+
+		if(pathncmp(command, str, len) == 0)
 		{
-			add_completion(records.list[i].command);
+			add_completion(command);
 		}
 	}
 }
@@ -496,18 +500,14 @@ char *
 fast_run_complete(const char *cmd)
 {
 	char *result = NULL;
-	const char *p;
-	char buf[PATH_MAX];
+	const char *args;
+	char command[NAME_MAX];
 	char *completed;
 
-	p = strchr(cmd, ' ');
-	if(p == NULL)
-		p = cmd + strlen(cmd);
-
-	snprintf(buf, p - cmd + 1, "%s", cmd);
+	args = get_command_name(cmd, sizeof(command), command);
 
 	reset_completion();
-	exec_completion(buf);
+	exec_completion(command);
 	completed = next_completion();
 
 	if(get_completion_count() > 2)
@@ -515,7 +515,7 @@ fast_run_complete(const char *cmd)
 		int c = get_completion_count() - 1;
 		while(c-- > 0)
 		{
-			if(pathcmp(buf, completed) == 0)
+			if(pathcmp(command, completed) == 0)
 			{
 				result = strdup(cmd);
 				break;
@@ -536,8 +536,8 @@ fast_run_complete(const char *cmd)
 	{
 		free(completed);
 		completed = next_completion();
-		result = malloc(strlen(completed) + 1 + strlen(p) + 1);
-		sprintf(result, "%s%s", completed, p);
+		result = malloc(strlen(completed) + 1 + strlen(args) + 1);
+		sprintf(result, "%s %s", completed, args);
 	}
 	free(completed);
 

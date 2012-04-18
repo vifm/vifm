@@ -71,6 +71,9 @@ int my_chdir(const char *path);
 /* Makes filename unique by adding an unique suffix to it.
  * Returns pointer to a statically allocated buffer */
 const char * make_name_unique(const char *filename);
+/* Finds command name in the command line and writes it to the buf.
+ * Returns a pointer to the argument list. */
+char * get_command_name(const char *line, size_t buf_len, char *buf);
 
 #ifndef _WIN32
 int get_uid(const char *user, uid_t *uid);
