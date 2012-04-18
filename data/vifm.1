@@ -1,4 +1,4 @@
-.TH vifm 1 "April 15, 2012" "" "Vifm"
+.TH vifm 1 "April 16, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1129,12 +1129,16 @@ show current filter state.
 .BI :jobs
 shows menu of current backgrounded processes.
 .TP
-.BI ":let $ENV_VAR = 'VALUE'"
+.BI ":let $ENV_VAR = <expr>"
 sets environment variable.  Warning: setting environment variable to an empty
 string on Windows removes it.
 .TP
-.BI ":let $ENV_VAR .= 'VALUE'"
+.BI ":let $ENV_VAR .= <expr>"
 append value to environment variable.
+.TP
+Where <expr> could be a single-quoted string, double-quoted string, an \
+environment variable or a concatanation of any of them in any order using \
+the '.' operator. Any whitespace is ignored.
 .TP
 .BI ":locate filename"
 uses the locate command to create a menu of filenames

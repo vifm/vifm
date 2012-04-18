@@ -40,6 +40,8 @@ char * skip_whitespace(const char *str);
 char * after_last(const char *str, char c);
 /* Replaces *str with a copy of with string. */
 void replace_string(char **str, const char *with);
+/* Adds a character to the end of a string. */
+char * strcatch(char *str, char c);
 
 #endif
 

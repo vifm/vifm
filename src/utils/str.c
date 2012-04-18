@@ -161,5 +161,12 @@ replace_string(char **str, const char *with)
 	}
 }
 
+char *
+strcatch(char *str, char c)
+{
+	const char buf[2] = { c, '\0' };
+	return strcat(str, buf);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

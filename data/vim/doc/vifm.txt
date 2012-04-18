@@ -996,9 +996,13 @@ of the hierarchy and transparency for all others.
 :jobs - shows menu of current backgrounded processes.
 
                                                *vifm-:let*
-:let $ENV_VAR = 'VALUE' - sets environment variable.  Warning: setting
+:let $ENV_VAR = <expr> - sets environment variable.  Warning: setting
     environment variable to an empty string on Windows removes it.
-:let $ENV_VAR .= 'VALUE' - append value to environment variable.
+:let $ENV_VAR .= <expr> - append value to environment variable.
+
+Where <expr> could be a single-quoted string, double-quoted string, an
+environment variable or a concatanation of any of them in any order using
+the '.' operator. Any whitespace is ignored.
 
                                                *vifm-:locate*
 :locate filename - uses the locate command to create a menu of filenames

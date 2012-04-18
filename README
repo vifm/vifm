@@ -15,6 +15,7 @@ src/engine/cmds.c - command line parsing core
 src/engine/completion.c - provides means to fill and get completion list
 src/engine/keys.c - analyzes users input
 src/engine/options.c - :set command
+src/engine/paring.c - parses expressions
 src/engine/variables.c - handles :let and :unlet commands
 src/menus/apropos_menu.c - handles :apropos menu
 src/menus/bookmarks_menu.c - handles :marks menu

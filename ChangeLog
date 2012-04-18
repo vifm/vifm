@@ -48,6 +48,9 @@
 
 	Replace home directory with the tilde in terminal title.
 
+	Improved :let command (allowed using of expressions at the right side of
+	the statement).
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.
@@ -94,6 +97,8 @@
 	Fixed infinite loop of filter inverting.
 
 	Fixed adding of ellipsis into view title when it's actually don't needed.
+
+	Fixed handling of equal sign after variable names in :unlet command.
 
 0.7.1 to 0.7.2
 
