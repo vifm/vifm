@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <dirent.h> /* DIR opendir() readdir() closedir() DT_* */
+#include <dirent.h> /* DIR opendir() readdir() closedir() DT_DIR */
 
 #include <limits.h> /* PATH_MAX */
 #include <stdlib.h> /* malloc() free() */
@@ -26,14 +26,16 @@
 #include "utils/env.h"
 #include "utils/fs.h"
 #include "utils/path.h"
+#include "utils/str.h"
 #include "utils/string_array.h"
 
 #include "path_env.h"
 
+static int path_env_was_changed(void);
 static void append_scripts_dirs(void);
 static void add_dirs_to_path(const char *path);
 static void add_to_path(const char *path);
-static void split_path(void);
+static void split_path_list(void);
 
 static char **paths;
 static int paths_count;
@@ -49,8 +51,31 @@ get_paths(size_t *count)
 void
 update_path_env(void)
 {
-	append_scripts_dirs();
-	split_path();
+	if(path_env_was_changed())
+	{
+		append_scripts_dirs();
+		split_path_list();
+	}
+}
+
+/* Checks if PATH environment variable was changed. Returns non-zero if path was
+ * altered since last call. */
+static int
+path_env_was_changed(void)
+{
+	static char *last_path_value;
+
+	const char *path;
+
+	path = env_get("PATH");
+
+	if(last_path_value != NULL && pathcmp(last_path_value, path) == 0)
+	{
+		return 0;
+	}
+
+	replace_string(&last_path_value, path);
+	return 1;
 }
 
 /* Adds $VIFM/scripts and its subdirectories to PATH environment variable. */
@@ -68,8 +93,8 @@ static void
 add_dirs_to_path(const char *path)
 {
 	DIR *dir;
-	struct dirent* dentry;
-	const char* slash = "";
+	struct dirent *dentry;
+	const char *slash = "";
 
 	dir = opendir(path);
 	if(dir == NULL)
@@ -123,8 +148,9 @@ add_to_path(const char *path)
 	free(new_path);
 }
 
+/* Breaks PATH environment variable into list of paths. */
 static void
-split_path(void)
+split_path_list(void)
 {
 	const char *path, *p, *q;
 	int i;
@@ -144,7 +170,10 @@ split_path(void)
 
 	paths = malloc(paths_count*sizeof(paths[0]));
 	if(paths == NULL)
+	{
+		paths_count = 0;
 		return;
+	}
 
 	i = 0;
 	p = path - 1;
@@ -167,8 +196,8 @@ split_path(void)
 		s = malloc((q - p + 1)*sizeof(s[0]));
 		if(s == NULL)
 		{
-			for(j = 0; j < i - 1; j++)
-				free(paths[j]);
+			free_string_array(paths, i - 1);
+			paths = NULL;
 			paths_count = 0;
 			return;
 		}

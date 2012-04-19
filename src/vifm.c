@@ -404,14 +404,9 @@ main(int argc, char *argv[])
 	set_config_paths();
 	reinit_logger();
 
-	update_path_env();
-
 	init_commands();
+	update_path_env();
 	load_default_configuration();
-
-	/* Safety check for existing vifmrc file without FUSE_HOME */
-	if(cfg.fuse_home == NULL)
-		cfg.fuse_home = strdup("/tmp/vifm_FUSE");
 
 	/* Misc configuration */
 
