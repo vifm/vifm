@@ -664,7 +664,6 @@ init_commands(void)
 	init_cmds(1, &cmds_conf);
 	add_builtin_commands((const cmd_add_t *)&commands, ARRAY_LEN(commands));
 
-	init_commands_completion();
 	qsort(key_pairs, ARRAY_LEN(key_pairs), sizeof(*key_pairs), notation_sorter);
 	for(i = 0; i < ARRAY_LEN(key_pairs); i++)
 		key_pairs[i].len = strlen(key_pairs[i].notation);

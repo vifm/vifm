@@ -41,23 +41,21 @@
 #ifdef _WIN32
 #include "menus/menus.h"
 #endif
-#include "utils/env.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
-#include "utils/string_array.h"
 #include "utils/utils.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "file_magic.h"
 #include "filelist.h"
 #include "filetype.h"
+#include "path_env.h"
 #include "tags.h"
 
 #include "commands_completion.h"
 
-static void split_path(void);
 static int cmd_ends_with_space(const char *cmd);
 static void complete_help(const char *str);
 static void complete_history(const char *str);
@@ -79,92 +77,6 @@ static int is_entry_exec(const struct dirent *d);
 static const char * escape_for_cd(const char *str);
 static void complete_with_shared(const char *server, const char *file);
 #endif
-
-static char **paths;
-static int paths_count;
-
-void
-init_commands_completion(void)
-{
-	split_path();
-}
-
-static void
-split_path(void)
-{
-	const char *path, *p, *q;
-	int i;
-
-	path = env_get("PATH");
-
-	if(paths != NULL)
-		free_string_array(paths, paths_count);
-
-	paths_count = 1;
-	p = path;
-	while((p = strchr(p, ':')) != NULL)
-	{
-		paths_count++;
-		p++;
-	}
-
-	paths = malloc(paths_count*sizeof(paths[0]));
-	if(paths == NULL)
-		return;
-
-	i = 0;
-	p = path - 1;
-	do
-	{
-		int j;
-		char *s;
-
-		p++;
-#ifndef _WIN32
-		q = strchr(p, ':');
-#else
-		q = strchr(p, ';');
-#endif
-		if(q == NULL)
-		{
-			q = p + strlen(p);
-		}
-
-		s = malloc((q - p + 1)*sizeof(s[0]));
-		if(s == NULL)
-		{
-			for(j = 0; j < i - 1; j++)
-				free(paths[j]);
-			paths_count = 0;
-			return;
-		}
-		snprintf(s, q - p + 1, "%s", p);
-
-		p = q;
-
-		s = expand_tilde(s);
-
-		if(!path_exists(s))
-		{
-			free(s);
-			continue;
-		}
-
-		paths[i++] = s;
-
-		for(j = 0; j < i - 1; j++)
-		{
-			if(pathcmp(paths[j], s) == 0)
-			{
-				free(s);
-				i--;
-				break;
-			}
-		}
-	}
-	while(q[0] != '\0');
-	paths_count = i;
-}
 
 int
 complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
@@ -548,7 +460,10 @@ void
 exec_completion(const char *str)
 {
 	int i;
+	char ** paths;
+	size_t paths_count;
 
+	paths = get_paths(&paths_count);
 	for(i = 0; i < paths_count; i++)
 	{
 		if(my_chdir(paths[i]) != 0)

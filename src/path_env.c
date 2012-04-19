@@ -1,0 +1,204 @@
+/* vifm
+ * Copyright (C) 2012 xaizek.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+
+#include <dirent.h> /* DIR opendir() readdir() closedir() DT_* */
+
+#include <limits.h> /* PATH_MAX */
+#include <stdlib.h> /* malloc() free() */
+#include <string.h> /* strchr() strlen() */
+
+#include "cfg/config.h"
+#include "utils/env.h"
+#include "utils/fs.h"
+#include "utils/path.h"
+#include "utils/string_array.h"
+
+#include "path_env.h"
+
+static void append_scripts_dirs(void);
+static void add_dirs_to_path(const char *path);
+static void add_to_path(const char *path);
+static void split_path(void);
+
+static char **paths;
+static int paths_count;
+
+char **
+get_paths(size_t *count)
+{
+	update_path_env();
+	*count = paths_count;
+	return paths;
+}
+
+void
+update_path_env(void)
+{
+	append_scripts_dirs();
+	split_path();
+}
+
+/* Adds $VIFM/scripts and its subdirectories to PATH environment variable. */
+static void
+append_scripts_dirs(void)
+{
+	char scripts_dir[PATH_MAX];
+	snprintf(scripts_dir, sizeof(scripts_dir), "%s/" SCRIPTS_DIR, cfg.config_dir);
+	add_dirs_to_path(scripts_dir);
+}
+
+/* Traverses passed directory recursively and adds it and all found
+ * subdirectories to PATH environment variable. */
+static void
+add_dirs_to_path(const char *path)
+{
+	DIR *dir;
+	struct dirent* dentry;
+	const char* slash = "";
+
+	dir = opendir(path);
+	if(dir == NULL)
+		return;
+
+	slash = ends_with_slash(path) ? "" : "/";
+
+	add_to_path(path);
+
+	while((dentry = readdir(dir)) != NULL)
+	{
+		char buf[PATH_MAX];
+
+		if(pathcmp(dentry->d_name, ".") == 0)
+			continue;
+		else if(pathcmp(dentry->d_name, "..") == 0)
+			continue;
+
+		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
+#ifndef _WIN32
+		if(dentry->d_type == DT_DIR)
+#else
+		if(is_dir(buf))
+#endif
+		{
+			add_dirs_to_path(buf);
+		}
+	}
+
+	closedir(dir);
+}
+
+/* Adds a path to PATH environment variable. */
+static void
+add_to_path(const char *path)
+{
+	const char *old_path;
+	char *new_path;
+
+	old_path = env_get("PATH");
+	new_path = malloc(strlen(path) + 1 + strlen(old_path) + 1);
+
+#ifndef _WIN32
+	sprintf(new_path, "%s:%s", path, old_path);
+#else
+	sprintf(new_path, "%s;%s", path, old_path);
+	to_back_slash(new_path);
+#endif
+	env_set("PATH", new_path);
+
+	free(new_path);
+}
+
+static void
+split_path(void)
+{
+	const char *path, *p, *q;
+	int i;
+
+	path = env_get("PATH");
+
+	if(paths != NULL)
+		free_string_array(paths, paths_count);
+
+	paths_count = 1;
+	p = path;
+	while((p = strchr(p, ':')) != NULL)
+	{
+		paths_count++;
+		p++;
+	}
+
+	paths = malloc(paths_count*sizeof(paths[0]));
+	if(paths == NULL)
+		return;
+
+	i = 0;
+	p = path - 1;
+	do
+	{
+		int j;
+		char *s;
+
+		p++;
+#ifndef _WIN32
+		q = strchr(p, ':');
+#else
+		q = strchr(p, ';');
+#endif
+		if(q == NULL)
+		{
+			q = p + strlen(p);
+		}
+
+		s = malloc((q - p + 1)*sizeof(s[0]));
+		if(s == NULL)
+		{
+			for(j = 0; j < i - 1; j++)
+				free(paths[j]);
+			paths_count = 0;
+			return;
+		}
+		snprintf(s, q - p + 1, "%s", p);
+
+		p = q;
+
+		s = expand_tilde(s);
+
+		if(!path_exists(s))
+		{
+			free(s);
+			continue;
+		}
+
+		paths[i++] = s;
+
+		for(j = 0; j < i - 1; j++)
+		{
+			if(pathcmp(paths[j], s) == 0)
+			{
+				free(s);
+				i--;
+				break;
+			}
+		}
+	}
+	while(q[0] != '\0');
+	paths_count = i;
+}
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */
