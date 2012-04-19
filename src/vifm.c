@@ -76,6 +76,9 @@
 #endif
 
 static void quit_on_invalid_arg(void);
+static void update_path_env(void);
+static void add_dirs_to_path(const char *path);
+static void add_to_path(const char *path);
 static void parse_recieved_arguments(char *args[]);
 static void remote_cd(FileView *view, const char *path, int handle);
 
@@ -295,26 +298,6 @@ quit_on_invalid_arg(void)
 		exit(1);
 }
 
-static void
-add_to_path(const char *str)
-{
-	const char *old_path;
-	char *new_path;
-
-	old_path = env_get("PATH");
-	new_path = malloc(5 + strlen(str) + 1 + strlen(old_path) + 1);
-
-#ifndef _WIN32
-	sprintf(new_path, "%s:%s", str, old_path);
-#else
-	sprintf(new_path, "%s;%s", str, old_path);
-	to_back_slash(new_path);
-#endif
-	env_set("PATH", new_path);
-
-	free(new_path);
-}
-
 /* Returns non-zero if path should be changed. */
 static int
 check_path(FileView *view, const char *path)
@@ -387,52 +370,12 @@ run_converter(int vifm_like)
 #endif
 }
 
-void
-add_dirs_to_path(const char *path)
-{
-	DIR* dir;
-	struct dirent* dentry;
-	const char* slash = "";
-
-	dir = opendir(path);
-	if(dir == NULL)
-		return;
-
-	if(path[strlen(path) - 1] != '/')
-		slash = "/";
-
-	add_to_path(path);
-
-	while((dentry = readdir(dir)) != NULL)
-	{
-		char buf[PATH_MAX];
-
-		if(pathcmp(dentry->d_name, ".") == 0)
-			continue;
-		else if(pathcmp(dentry->d_name, "..") == 0)
-			continue;
-
-		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
-#ifndef _WIN32
-		if(dentry->d_type == DT_DIR)
-#else
-		if(is_dir(buf))
-#endif
-		{
-			add_dirs_to_path(buf);
-		}
-	}
-
-	closedir(dir);
-}
-
 int
 main(int argc, char *argv[])
 {
 	/* TODO: refactor main() function */
 
 	char dir[PATH_MAX];
-	char config_dir[PATH_MAX];
 	char lwin_path[PATH_MAX] = "";
 	char rwin_path[PATH_MAX] = "";
 	int lwin_handle = 0, rwin_handle = 0;
@@ -464,8 +407,7 @@ main(int argc, char *argv[])
 	set_config_paths();
 	reinit_logger();
 
-	snprintf(config_dir, sizeof(config_dir), "%s/scripts", cfg.config_dir);
-	add_dirs_to_path(config_dir);
+	update_path_env();
 
 	init_commands();
 	load_default_configuration();
@@ -615,6 +557,76 @@ main(int argc, char *argv[])
 	main_loop();
 
 	return 0;
+}
+
+/* Adds $VIFM/scripts and its subdirectories to PATH environment variable. */
+static void
+update_path_env(void)
+{
+	char scripts_dir[PATH_MAX];
+	snprintf(scripts_dir, sizeof(scripts_dir), "%s/" SCRIPTS_DIR, cfg.config_dir);
+	add_dirs_to_path(scripts_dir);
+}
+
+/* Traverses passed directory recursively and adds it and all found
+ * subdirectories to PATH environment variable. */
+static void
+add_dirs_to_path(const char *path)
+{
+	DIR *dir;
+	struct dirent* dentry;
+	const char* slash = "";
+
+	dir = opendir(path);
+	if(dir == NULL)
+		return;
+
+	slash = ends_with_slash(path) ? "" : "/";
+
+	add_to_path(path);
+
+	while((dentry = readdir(dir)) != NULL)
+	{
+		char buf[PATH_MAX];
+
+		if(pathcmp(dentry->d_name, ".") == 0)
+			continue;
+		else if(pathcmp(dentry->d_name, "..") == 0)
+			continue;
+
+		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
+#ifndef _WIN32
+		if(dentry->d_type == DT_DIR)
+#else
+		if(is_dir(buf))
+#endif
+		{
+			add_dirs_to_path(buf);
+		}
+	}
+
+	closedir(dir);
+}
+
+/* Adds a path to PATH environment variable. */
+static void
+add_to_path(const char *path)
+{
+	const char *old_path;
+	char *new_path;
+
+	old_path = env_get("PATH");
+	new_path = malloc(strlen(path) + 1 + strlen(old_path) + 1);
+
+#ifndef _WIN32
+	sprintf(new_path, "%s:%s", path, old_path);
+#else
+	sprintf(new_path, "%s;%s", path, old_path);
+	to_back_slash(new_path);
+#endif
+	env_set("PATH", new_path);
+
+	free(new_path);
 }
 
 static void

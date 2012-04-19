@@ -27,6 +27,7 @@
 #include "../color_scheme.h"
 
 #define VIFM_HELP "vifm-help.txt"
+#define SCRIPTS_DIR "scripts"
 
 typedef struct
 {
