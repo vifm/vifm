@@ -78,6 +78,7 @@
 #include "fuse.h"
 #include "macros.h"
 #include "opt_handlers.h"
+#include "path_env.h"
 #include "quickview.h"
 #include "registers.h"
 #include "running.h"
@@ -2409,6 +2410,7 @@ let_cmd(const cmd_info_t *cmd_info)
 	{
 		status_bar_message(print_buf);
 	}
+	update_path_env();
 	return 0;
 }
 
