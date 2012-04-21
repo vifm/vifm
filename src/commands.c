@@ -2761,9 +2761,8 @@ restart_cmd(const cmd_info_t *cmd_info)
 	/* file types and viewers */
 	reset_all_file_associations();
 
-	/* ga command results */
-	tree_free(curr_stats.dirsize_cache);
-	curr_stats.dirsize_cache = tree_create(0, 0);
+	/* session status */
+	(void)reset_status();
 
 	/* undo list */
 	reset_undo_list();

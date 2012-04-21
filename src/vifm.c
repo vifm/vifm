@@ -25,11 +25,6 @@
 #include <windows.h>
 #endif
 
-#ifdef HAVE_LIBGTK
-#include <glib-2.0/gio/gio.h>
-#include <gtk/gtk.h>
-#endif
-
 #include <curses.h>
 
 #include <dirent.h> /* DIR */
@@ -51,7 +46,6 @@
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
-#include "utils/tree.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "bookmarks.h"
@@ -438,7 +432,6 @@ main(int argc, char *argv[])
 
 	char dir[PATH_MAX];
 	char config_dir[PATH_MAX];
-	const char *console;
 	char lwin_path[PATH_MAX] = "";
 	char rwin_path[PATH_MAX] = "";
 	int lwin_handle = 0, rwin_handle = 0;
@@ -494,33 +487,11 @@ main(int argc, char *argv[])
 	rwin.matches = 0;
 	init_window_history(&rwin);
 
-	init_status();
-	curr_stats.dirsize_cache = tree_create(0, 0);
-	if(curr_stats.dirsize_cache == NULL)
+	if(init_status() != 0)
 	{
-		puts("Not enough memory for initialization");
+		puts("Error during session status initialization.");
 		return -1;
 	}
-
-#ifdef HAVE_LIBGTK
-	curr_stats.gtk_available = gtk_init_check(&argc, &argv);
-#endif
-
-	if(cfg.show_one_window)
-		curr_stats.number_of_windows = 1;
-	else
-		curr_stats.number_of_windows = 2;
-
-	snprintf(config_dir, sizeof(config_dir), "%s/vifmrc", cfg.config_dir);
-
-	/* Check if running in X */
-#ifndef _WIN32
-	console = env_get("DISPLAY");
-#else
-	console = "WIN";
-#endif
-	if(!console || !*console)
-		curr_stats.is_console = 1;
 
 	curr_view = &lwin;
 	other_view = &rwin;
