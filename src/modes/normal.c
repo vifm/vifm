@@ -1008,12 +1008,11 @@ dir_size_stub(void *arg)
 	dir_size_t *dir_size = (dir_size_t *)arg;
 	calc_dirsize(dir_size->path, dir_size->force);
 
-	chosp(dir_size->path);
-	*strrchr(dir_size->path, '/') = '\0';
+	remove_last_path_component(dir_size->path);
 	if(path_starts_with(lwin.curr_dir, dir_size->path))
-		memset(&lwin.dir_mtime, 0, sizeof(lwin.dir_mtime));
+		request_view_update(&lwin);
 	if(path_starts_with(rwin.curr_dir, dir_size->path))
-		memset(&rwin.dir_mtime, 0, sizeof(rwin.dir_mtime));
+		request_view_update(&rwin);
 
 	free(dir_size->path);
 	free(dir_size);
@@ -2119,9 +2118,7 @@ pick_files(FileView *view, int end, keys_info_t *keys_info)
 
 	if(end < view->list_pos)
 	{
-#ifndef _WIN32
-		memset(&view->dir_mtime, 0, sizeof(view->dir_mtime));
-#endif
+		request_view_update(view);
 		view->list_pos = end;
 	}
 }

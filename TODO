@@ -17,6 +17,8 @@ Basic things that need to be done.
     Command to create multiple copies of selected one with ability to rename
         it (e.g. a -> :hub b c -> a b c, a -> :hub! b c -> b c).
     Make :filetype, :filextype and :fileviewer show menus with 0 or 1 args.
+    Add :increment and :decrement commands, which should work in two modes
+        in the same way as Ctrl-X/Ctrl-A and like their combination with :clone.
 
 Documentation.
 	Better documentation.

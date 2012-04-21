@@ -184,6 +184,9 @@ void show_progress(const char *msg, int period);
 void redraw_lists(void);
 int load_color_scheme(const char *name);
 void wprint(WINDOW *win, const char *str);
+/* Sets inner flag or signals about needed view update in some other way.
+ * It doesn't perform any update, just request one to happen in the future. */
+void request_view_update(FileView *view);
 
 #endif
 

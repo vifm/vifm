@@ -752,11 +752,11 @@ shellout(const char *command, int pause, int allow_screen)
 #ifndef _WIN32
 	if(result != 0 && pause < 0)
 		my_system(PAUSE_CMD);
+#endif
 
 	/* force views update */
-	memset(&lwin.dir_mtime, 0, sizeof(lwin.dir_mtime));
-	memset(&rwin.dir_mtime, 0, sizeof(rwin.dir_mtime));
-#endif
+	request_view_update(&lwin);
+	request_view_update(&rwin);
 
 #ifdef _WIN32
 	reset_prog_mode();
