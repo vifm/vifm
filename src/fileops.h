@@ -20,6 +20,8 @@
 #ifndef __FILEOPS_H__
 #define __FILEOPS_H__
 
+#include <stdint.h> /* uint64_t */
+
 #include "ui.h"
 
 #define DEFAULT_REG_NAME '"'
@@ -56,7 +58,7 @@ int change_link(FileView *view);
 /* Returns new value for save_msg flag. */
 int put_files_from_register(FileView *view, int name, int force_move);
 int clone_files(FileView *view, char **list, int nlines, int force, int copies);
-unsigned long long calc_dirsize(const char *path, int force_update);
+uint64_t calc_dirsize(const char *path, int force_update);
 /* This is a wrapper for is_dir_writable() function, which adds message
  * dialogs. */
 int check_if_dir_writable(DirRole dir_role, const char *path);

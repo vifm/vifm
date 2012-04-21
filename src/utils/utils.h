@@ -29,6 +29,7 @@
 #include <sys/types.h> /* mode_t */
 
 #include <limits.h> /* PATH_MAX */
+#include <stdint.h> /* uint64_t */
 #include <wchar.h> /* wchar_t ... */
 
 #include "macros.h"
@@ -64,7 +65,7 @@ void _gnuc_noreturn run_from_fork(int pipe[2], int err, char *cmd);
 
 void get_perm_string(char *buf, int len, mode_t mode);
 int is_on_slow_fs(const char *full_path);
-void friendly_size_notation(unsigned long long num, int str_size, char *str);
+void friendly_size_notation(uint64_t num, int str_size, char *str);
 const char * enclose_in_dquotes(const char *str);
 const char * get_mode_str(mode_t mode);
 int my_chdir(const char *path);

@@ -27,6 +27,7 @@
 
 #include <assert.h>
 #include <signal.h>
+#include <stdint.h> /* uint64_t */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -118,7 +119,7 @@ redraw_file_info_dialog(void)
 	struct tm *tm_ptr;
 	int x;
 	int curr_y;
-	unsigned long long size;
+	uint64_t size;
 
 	assert(view != NULL);
 
@@ -165,7 +166,7 @@ redraw_file_info_dialog(void)
 	curr_y += 2;
 	mvwaddstr(menu_win, curr_y, 2, "Size: ");
 	mvwaddstr(menu_win, curr_y, 8, size_buf);
-	snprintf(size_buf, sizeof(size_buf), " (%lld bytes)", size);
+	snprintf(size_buf, sizeof(size_buf), " (%" PRId64 " bytes)", size);
 	waddstr(menu_win, size_buf);
 	curr_y += 2;
 

@@ -1979,8 +1979,7 @@ cmd_paren(int lb, int ub, int inc)
 #endif
 		case SORT_BY_SIZE:
 			{
-				unsigned long long size =
-						curr_view->dir_entry[pos].size;
+				uint64_t size = curr_view->dir_entry[pos].size;
 				while(pos > lb && pos < ub)
 				{
 					pos += inc;
