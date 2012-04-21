@@ -46,6 +46,7 @@
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/string_array.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "bookmarks.h"
@@ -436,15 +437,15 @@ main(int argc, char *argv[])
 	char rwin_path[PATH_MAX] = "";
 	int lwin_handle = 0, rwin_handle = 0;
 	int old_config;
-	int i;
 	int no_configs;
 	int lcd, rcd;
 
 	init_config();
 
-	for(i = 1; i < argc; i++)
-		if(strcmp(argv[i], "--logging") == 0)
-			init_logger(1);
+	if(is_in_string_array(argv + 1, argc - 1, "--logging"))
+	{
+		init_logger(1);
+	}
 
 	(void)setlocale(LC_ALL, "");
 	if(getcwd(dir, sizeof(dir)) == NULL)
@@ -496,10 +497,7 @@ main(int argc, char *argv[])
 	curr_view = &lwin;
 	other_view = &rwin;
 
-	no_configs = 0;
-	for(i = 1; i < argc; i++)
-		if(strcmp("--no-configs", argv[i]) == 0)
-			no_configs = 1;
+	no_configs = is_in_string_array(argv + 1, argc - 1, "--no-configs");
 
 	old_config = is_old_config();
 	if(!old_config && !no_configs)
