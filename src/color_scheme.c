@@ -93,29 +93,11 @@ static const int default_colors[][3] = {
 };
 ARRAY_GUARD(default_colors, MAXNUM_COLOR - 2);
 
-static tree_t dirs;
+static void init_color_scheme(col_scheme_t *cs);
+static void load_color_pairs(int base, const col_scheme_t *cs);
+static void ensure_dirs_tree_exists(void);
 
-static void
-init_color_scheme(col_scheme_t *cs)
-{
-	int i;
-	strcpy(cs->name, "built-in default");
-	strcpy(cs->dir, "/");
-	cs->defaulted = 0;
-
-	for(i = 0; i < ARRAY_LEN(default_colors); i++)
-	{
-		cs->color[i].fg = default_colors[i][0];
-		cs->color[i].bg = default_colors[i][1];
-		cs->color[i].attr = default_colors[i][2];
-	}
-	for(i = ARRAY_LEN(default_colors); i < MAXNUM_COLOR; i++)
-	{
-		cs->color[i].fg = -1;
-		cs->color[i].bg = -1;
-		cs->color[i].attr = 0;
-	}
-}
+static tree_t dirs = NULL_TREE;
 
 void
 check_color_scheme(col_scheme_t *cs)
@@ -249,19 +231,10 @@ write_color_scheme_file(void)
 	fclose(fp);
 }
 
-static void
-load_color_pairs(int base, const col_scheme_t *cs)
-{
-	int i;
-	for(i = 0; i < MAXNUM_COLOR; i++)
-		init_pair(base + i, cs->color[i].fg, cs->color[i].bg);
-}
-
 void
 load_color_scheme_colors(void)
 {
-	if(dirs == NULL)
-		dirs = tree_create(1, 1);
+	ensure_dirs_tree_exists();
 
 	load_color_pairs(DCOLOR_BASE, &cfg.cs);
 	load_color_pairs(LCOLOR_BASE, &lwin.cs);
@@ -272,7 +245,7 @@ void
 load_def_scheme(void)
 {
 	tree_free(dirs);
-	dirs = NULL;
+	dirs = NULL_TREE;
 
 	init_color_scheme(&cfg.cs);
 	init_color_scheme(&lwin.cs);
@@ -283,6 +256,28 @@ load_def_scheme(void)
 	load_color_pairs(DCOLOR_BASE, &cfg.cs);
 	load_color_pairs(LCOLOR_BASE, &lwin.cs);
 	load_color_pairs(RCOLOR_BASE, &rwin.cs);
+}
+
+static void
+init_color_scheme(col_scheme_t *cs)
+{
+	int i;
+	strcpy(cs->name, "built-in default");
+	strcpy(cs->dir, "/");
+	cs->defaulted = 0;
+
+	for(i = 0; i < ARRAY_LEN(default_colors); i++)
+	{
+		cs->color[i].fg = default_colors[i][0];
+		cs->color[i].bg = default_colors[i][1];
+		cs->color[i].attr = default_colors[i][2];
+	}
+	for(i = ARRAY_LEN(default_colors); i < MAXNUM_COLOR; i++)
+	{
+		cs->color[i].fg = -1;
+		cs->color[i].bg = -1;
+		cs->color[i].attr = 0;
+	}
 }
 
 /* The return value is the color scheme base number for the colorpairs.
@@ -299,10 +294,10 @@ check_directory_for_color_scheme(int left, const char *dir)
 	union
 	{
 		char *name;
-		unsigned long long buf;
+		tree_val_t buf;
 	}u;
 
-	if(dirs == NULL)
+	if(dirs == NULL_TREE)
 		return DCOLOR_BASE;
 
 	curr_stats.cs_base = left ? LCOLOR_BASE : RCOLOR_BASE;
@@ -339,6 +334,14 @@ check_directory_for_color_scheme(int left, const char *dir)
 	curr_stats.cs = &cfg.cs;
 
 	return left ? LCOLOR_BASE : RCOLOR_BASE;
+}
+
+static void
+load_color_pairs(int base, const col_scheme_t *cs)
+{
+	int i;
+	for(i = 0; i < MAXNUM_COLOR; i++)
+		init_pair(base + i, cs->color[i].fg, cs->color[i].bg);
 }
 
 void
@@ -401,16 +404,24 @@ assoc_dir(const char *name, const char *dir)
 	union
 	{
 		char *s;
-		unsigned long long l;
+		tree_val_t l;
 	}u = {
 		.s = strdup(name),
 	};
 
-	if(dirs == NULL)
-		dirs = tree_create(1, 1);
+	ensure_dirs_tree_exists();
 
 	if(tree_set_data(dirs, dir, u.l) != 0)
 		free(u.s);
+}
+
+static void
+ensure_dirs_tree_exists(void)
+{
+	if(dirs == NULL_TREE)
+	{
+		dirs = tree_create(1, 1);
+	}
 }
 
 void
