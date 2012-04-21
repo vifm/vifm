@@ -149,8 +149,10 @@ find_node(node_t *root, const char *name, int create, node_t **last)
 	node_t *prev = NULL, *curr;
 	node_t *new_node;
 
-	if(*name == '/')
+	while(*name == '/')
+	{
 		name++;
+	}
 
 	if(*name == '\0')
 		return root;
