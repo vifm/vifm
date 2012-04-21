@@ -17,7 +17,7 @@
  */
 
 #include <limits.h>
-
+#include <stdint.h> /* uint64_t */
 #include <stdlib.h>
 #include <string.h>
 
@@ -32,7 +32,7 @@ typedef struct node_t
 {
 	char *name;
 	size_t name_len;
-	unsigned long long data;
+	tree_val_t data;
 	int valid;
 	struct node_t *next;
 	struct node_t *child;
@@ -54,7 +54,11 @@ tree_create(int longest, int mem)
 {
 	root_t *tree;
 
-	tree = malloc(sizeof(*tree));
+	if((tree = malloc(sizeof(*tree))) == NULL)
+	{
+		return NULL_TREE;
+	}
+
 	tree->node.child = NULL;
 	tree->node.next = NULL;
 	tree->node.name = NULL;
@@ -67,9 +71,10 @@ tree_create(int longest, int mem)
 void
 tree_free(tree_t tree)
 {
-	if(tree == NULL)
-		return;
-	nodes_free(&tree->node);
+	if(tree != NULL_TREE)
+	{
+		nodes_free(&tree->node);
+	}
 }
 
 static void
@@ -86,7 +91,7 @@ nodes_free(node_t *node)
 }
 
 int
-tree_set_data(tree_t tree, const char *path, unsigned long long data)
+tree_set_data(tree_t tree, const char *path, tree_val_t data)
 {
 	node_t *node;
 	char real_path[PATH_MAX];
@@ -99,7 +104,7 @@ tree_set_data(tree_t tree, const char *path, unsigned long long data)
 	{
 		union
 		{
-			unsigned long long l;
+			tree_val_t l;
 			void *p;
 		}u = {
 			.l = node->data,
@@ -113,7 +118,7 @@ tree_set_data(tree_t tree, const char *path, unsigned long long data)
 }
 
 int
-tree_get_data(tree_t tree, const char *path, unsigned long long *data)
+tree_get_data(tree_t tree, const char *path, tree_val_t *data)
 {
 	node_t *last = NULL;
 	node_t *node;
