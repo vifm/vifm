@@ -78,6 +78,7 @@
 #include "fuse.h"
 #include "macros.h"
 #include "opt_handlers.h"
+#include "path_env.h"
 #include "quickview.h"
 #include "registers.h"
 #include "running.h"
@@ -664,7 +665,6 @@ init_commands(void)
 	init_cmds(1, &cmds_conf);
 	add_builtin_commands((const cmd_add_t *)&commands, ARRAY_LEN(commands));
 
-	init_commands_completion();
 	qsort(key_pairs, ARRAY_LEN(key_pairs), sizeof(*key_pairs), notation_sorter);
 	for(i = 0; i < ARRAY_LEN(key_pairs); i++)
 		key_pairs[i].len = strlen(key_pairs[i].notation);
@@ -2410,6 +2410,7 @@ let_cmd(const cmd_info_t *cmd_info)
 	{
 		status_bar_message(print_buf);
 	}
+	update_path_env();
 	return 0;
 }
 
@@ -2890,8 +2891,15 @@ shell_cmd(const cmd_info_t *cmd_info)
 {
 	const char *sh = env_get("SHELL");
 	if(sh == NULL || sh[0] == '\0')
+	{
 		sh = cfg.shell;
+	}
+
+	/* Run shell with clean PATH environment variable. */
+	load_clean_path_env();
 	shellout(sh, 0, 1);
+	load_real_path_env();
+
 	return 0;
 }
 

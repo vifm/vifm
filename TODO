@@ -82,7 +82,6 @@ Possible things to add.
         --no-configs was passed on startup.
     'wildmode' option.
     A macro to redirect command output into view pane.
-    Maybe remove scripts (~/.vifm/scripts/**) from PATH on shellout.
     $_ env var and Alt-. combination as in bash shell.
 
 Other (questionable) things.

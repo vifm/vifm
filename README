@@ -79,6 +79,7 @@ src/opt_handlers.c - initialization of options and option change handlers
 src/quickview.c - implementation of quick view
 src/registers.c - implementation of registers
 src/running.c - code of handing file and commands running
+src/path_env.c - parses and modifies PATH environment variables
 src/search.c - code for / and ? commands of normal mode
 src/signals.c - handlers for different signals
 src/sort.c - sort function

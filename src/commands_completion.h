@@ -68,7 +68,6 @@ typedef enum
 	CT_DIREXEC   /* directories and executable files */
 }CompletionType;
 
-void init_commands_completion(void);
 int complete_args(int id, const char *args, int argc, char **argv, int arg_pos);
 char * fast_run_complete(const char *cmd);
 void exec_completion(const char *str);

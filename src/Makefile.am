@@ -89,6 +89,7 @@ vifm_SOURCES = \
 	main_loop.c main_loop.h \
 	ops.c ops.h \
 	opt_handlers.c opt_handlers.h \
+	path_env.c path_env.h \
 	quickview.c quickview.h \
 	registers.c registers.h \
 	running.c running.h \
