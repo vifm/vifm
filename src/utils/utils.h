@@ -65,7 +65,9 @@ void _gnuc_noreturn run_from_fork(int pipe[2], int err, char *cmd);
 
 void get_perm_string(char *buf, int len, mode_t mode);
 int is_on_slow_fs(const char *full_path);
-void friendly_size_notation(uint64_t num, int str_size, char *str);
+/* Fills supplied buffer with user friendly representation of file size.
+ * Returns non-zero in case resulting string is a shortened variant of size. */
+int friendly_size_notation(uint64_t num, int str_size, char *str);
 const char * enclose_in_dquotes(const char *str);
 const char * get_mode_str(mode_t mode);
 int my_chdir(const char *path);

@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "cfg/config.h"
+#include "utils/env.h"
 #include "utils/tree.h"
 #include "color_scheme.h"
 

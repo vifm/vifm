@@ -277,7 +277,7 @@ is_on_slow_fs(const char *full_path)
 #endif
 }
 
-void
+int
 friendly_size_notation(uint64_t num, int str_size, char *str)
 {
 	static const char* iec_units[] = {
@@ -315,6 +315,8 @@ friendly_size_notation(uint64_t num, int str_size, char *str)
 				snprintf(str, str_size, "%.0f %s", d, units[u]);
 		}
 	}
+
+	return u > 0;
 }
 
 int
