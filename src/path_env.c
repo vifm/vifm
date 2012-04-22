@@ -32,7 +32,7 @@
 
 #include "path_env.h"
 
-static int path_env_was_changed(void);
+static int path_env_was_changed(int force);
 static void append_scripts_dirs(void);
 static void add_dirs_to_path(const char *path);
 static void add_to_path(const char *path);
@@ -47,15 +47,15 @@ static char *real_path;
 char **
 get_paths(size_t *count)
 {
-	update_path_env();
+	update_path_env(0);
 	*count = paths_count;
 	return paths;
 }
 
 void
-update_path_env(void)
+update_path_env(int force)
 {
-	if(path_env_was_changed())
+	if(path_env_was_changed(force))
 	{
 		append_scripts_dirs();
 		split_path_list();
@@ -65,7 +65,7 @@ update_path_env(void)
 /* Checks if PATH environment variable was changed. Returns non-zero if path was
  * altered since last call. */
 static int
-path_env_was_changed(void)
+path_env_was_changed(int force)
 {
 	const char *path;
 
@@ -73,7 +73,7 @@ path_env_was_changed(void)
 
 	if(clean_path != NULL && pathcmp(clean_path, path) == 0)
 	{
-		return 0;
+		return force;
 	}
 
 	replace_string(&clean_path, path);

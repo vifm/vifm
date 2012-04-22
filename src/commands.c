@@ -2390,7 +2390,7 @@ let_cmd(const cmd_info_t *cmd_info)
 	{
 		status_bar_message(print_buf);
 	}
-	update_path_env();
+	update_path_env(0);
 	return 0;
 }
 
@@ -2782,8 +2782,10 @@ restart_cmd(const cmd_info_t *cmd_info)
 
 	/* variables */
 	clear_variables();
-
 	init_variables(&print_func);
+	/* this update is needed as clear_variables() will reset $PATH */
+	update_path_env(1);
+
 	load_default_configuration();
 	read_info_file(1);
 	save_view_history(&lwin, NULL, NULL, -1);

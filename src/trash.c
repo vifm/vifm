@@ -96,8 +96,15 @@ add_to_trash(const char *path, const char *trash_name)
 {
 	void *p;
 
+	if(is_in_trash(trash_name))
+	{
+		return 0;
+	}
+
 	if((p = realloc(trash_list, sizeof(*trash_list)*(nentries + 1))) == NULL)
+	{
 		return -1;
+	}
 	trash_list = p;
 
 	trash_list[nentries].path = strdup(path);

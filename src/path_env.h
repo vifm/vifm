@@ -21,8 +21,8 @@
 
 #include <stddef.h> /* size_t */
 
-/* Asks for updating of PATH if needed. */
-void update_path_env(void);
+/* Asks for updating of PATH if needed (or if force parameters is true). */
+void update_path_env(int force);
 
 /* Reparses PATH environment variable if needed. Returns list of paths, which
  * shouldn't be freed by the caller. The number of paths is returned through
