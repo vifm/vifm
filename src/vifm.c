@@ -461,7 +461,7 @@ main(int argc, char *argv[])
 
 	curr_stats.load_stage = 1;
 
-	set_programs("*/", "{Enter directory}" VIFM_PSEUDO_CMD , 0);
+	reset_all_file_associations();
 
 	if(!old_config && !no_configs)
 	{
