@@ -336,7 +336,7 @@ op_chmodr(void *data, const char *src, const char *dst)
 	escaped = escape_filename(src, 0);
 	snprintf(cmd, sizeof(cmd), "chmod -R %s %s", (char *)data, escaped);
 	free(escaped);
-	start_background_job(cmd);
+	start_background_job(cmd, 0);
 	return 0;
 }
 #else

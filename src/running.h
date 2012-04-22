@@ -32,6 +32,7 @@ void handle_dir(FileView *view);
 void cd_updir(FileView *view);
 void _gnuc_noreturn use_vim_plugin(FileView *view, int argc, char **argv);
 int shellout(const char *command, int pause, int allow_screen);
+void output_to_nowhere(const char *cmd);
 
 #endif
 

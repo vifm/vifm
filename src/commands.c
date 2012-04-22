@@ -209,6 +209,7 @@ static int wq_cmd(const cmd_info_t *cmd_info);
 static int yank_cmd(const cmd_info_t *cmd_info);
 static int get_reg_and_count(const cmd_info_t *cmd_info, int *reg);
 static int usercmd_cmd(const cmd_info_t* cmd_info);
+static void output_to_statusbar(const char *cmd);
 
 static const cmd_add_t commands[] = {
 	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = COM_GOTO,        .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1381,36 +1382,6 @@ goto_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
-static void
-output_to_statusbar(const char *cmd)
-{
-	FILE *file, *err;
-	char buf[2048];
-	char *lines;
-	size_t len;
-
-	if(background_and_capture((char *)cmd, &file, &err) != 0)
-	{
-		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
-		return;
-	}
-
-	lines = NULL;
-	len = 0;
-	while(fgets(buf, sizeof(buf), file) == buf)
-	{
-		chomp(buf);
-		lines = realloc(lines, len + 1 + strlen(buf) + 1);
-		len += sprintf(lines + len, "%s%s", (len == 0) ? "": "\n", buf);
-	}
-
-	fclose(file);
-	fclose(err);
-
-	status_bar_message((lines == NULL) ? "" : lines);
-	free(lines);
-}
-
 static int
 emark_cmd(const cmd_info_t *cmd_info)
 {
@@ -1430,6 +1401,11 @@ emark_cmd(const cmd_info_t *cmd_info)
 		output_to_statusbar(com);
 		return 1;
 	}
+	else if(flags == MACRO_IGNORE)
+	{
+		output_to_nowhere(com);
+		return 1;
+	}
 	else if(flags == MACRO_MENU_OUTPUT || flags == MACRO_MENU_NAV_OUTPUT)
 	{
 		show_user_menu(curr_view, com, flags == MACRO_MENU_NAV_OUTPUT);
@@ -1446,7 +1422,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(cmd_info->bg)
 	{
-		start_background_job(com + i);
+		start_background_job(com + i, 0);
 	}
 	else
 	{
@@ -1883,7 +1859,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 			free(escaped);
 		}
 		if(bg)
-			start_background_job(buf);
+			start_background_job(buf, 0);
 		else
 			shellout(buf, -1, 1);
 		return 0;
@@ -1929,7 +1905,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 			return 0;
 		}
 		if(bg)
-			start_background_job(cmd);
+			start_background_job(cmd, 0);
 		else
 			shellout(cmd, -1, 1);
 		free(cmd);
@@ -2168,7 +2144,7 @@ help_cmd(const cmd_info_t *cmd_info)
 
 	if(bg)
 	{
-		start_background_job(buf);
+		start_background_job(buf, 0);
 	}
 	else
 	{
@@ -3426,6 +3402,12 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		free(expanded_com);
 		return 1;
 	}
+	else if(flags == MACRO_IGNORE)
+	{
+		output_to_nowhere(expanded_com);
+		free(expanded_com);
+		return 1;
+	}
 	else if(flags == MACRO_MENU_OUTPUT || flags == MACRO_MENU_NAV_OUTPUT)
 	{
 		show_user_menu(curr_view, expanded_com, flags == MACRO_MENU_NAV_OUTPUT);
@@ -3467,7 +3449,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		if(*tmp != '\0' && bg)
 		{
 			expanded_com[len - 2] = '\0';
-			start_background_job(tmp);
+			start_background_job(tmp, 0);
 		}
 		else if(strlen(tmp) > 0)
 		{
@@ -3483,7 +3465,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	else if(bg)
 	{
 		expanded_com[len - 2] = '\0';
-		start_background_job(expanded_com);
+		start_background_job(expanded_com, 0);
 	}
 	else
 	{
@@ -3500,6 +3482,36 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	free(expanded_com);
 
 	return 0;
+}
+
+static void
+output_to_statusbar(const char *cmd)
+{
+	FILE *file, *err;
+	char buf[2048];
+	char *lines;
+	size_t len;
+
+	if(background_and_capture((char *)cmd, &file, &err) != 0)
+	{
+		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
+		return;
+	}
+
+	lines = NULL;
+	len = 0;
+	while(fgets(buf, sizeof(buf), file) == buf)
+	{
+		chomp(buf);
+		lines = realloc(lines, len + 1 + strlen(buf) + 1);
+		len += sprintf(lines + len, "%s%s", (len == 0) ? "": "\n", buf);
+	}
+
+	fclose(file);
+	fclose(err);
+
+	status_bar_message((lines == NULL) ? "" : lines);
+	free(lines);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

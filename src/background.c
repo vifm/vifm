@@ -496,8 +496,9 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 #endif
 
 int
-start_background_job(const char *cmd)
+start_background_job(const char *cmd, int skip_errors)
 {
+	job_t *job = NULL;
 #ifndef _WIN32
 	pid_t pid;
 	char *args[4];
@@ -559,14 +560,14 @@ start_background_job(const char *cmd)
 	{
 		close(error_pipe[1]); /* Close write end of pipe. */
 
-		if(add_background_job(pid, command, error_pipe[0]) == NULL)
+		job = add_background_job(pid, command, error_pipe[0]);
+		if(job == NULL)
 		{
 			free(command);
 			return -1;
 		}
 	}
 	free(command);
-	return 0;
 #else
 	BOOL ret;
 	STARTUPINFO startup = {};
@@ -585,15 +586,25 @@ start_background_job(const char *cmd)
 	{
 		CloseHandle(pinfo.hThread);
 
-		if(add_background_job(pinfo.dwProcessId, command, pinfo.hProcess) == NULL)
+		job = add_background_job(pinfo.dwProcessId, command, pinfo.hProcess);
+		if(job == NULL)
 		{
 			free(command);
 			return -1;
 		}
 	}
 	free(command);
-	return (ret == 0);
+	if(ret == 0)
+	{
+		return 1;
+	}
 #endif
+
+	if(job != NULL)
+	{
+		job->skip_errors = skip_errors;
+	}
+	return 0;
 }
 
 #ifndef _WIN32

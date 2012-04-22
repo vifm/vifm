@@ -30,6 +30,7 @@ typedef enum
 	MACRO_MENU_NAV_OUTPUT, /* redirect output to the navigation menu */
 	MACRO_STATUSBAR_OUTPUT, /* redirect output to the status bar */
 	MACRO_SPLIT, /* run command in a new screen region */
+	MACRO_IGNORE, /* completely ignore command output */
 }
 MacroFlags;
 

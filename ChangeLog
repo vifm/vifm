@@ -31,6 +31,8 @@
 
 	Added :finish command to use in sourced scripts.
 
+	Added %i macro to completely ignore output of external commands.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with

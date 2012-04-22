@@ -155,6 +155,12 @@ expand_macros(FileView *view, const char *command, const char *args,
 					*flags = MACRO_SPLIT;
 				}
 				break;
+			case 'i': /* ignore output */
+				if(flags != NULL)
+				{
+					*flags = MACRO_IGNORE;
+				}
+				break;
 			case '%':
 				expanded = (char *)realloc(expanded, len + 2);
 				strcat(expanded, "%");
