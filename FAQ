@@ -62,13 +62,6 @@ A: Yes, to do that, one should yank (copy) files as usual, but use "P" key (not
 
 --------------------------------------------------------------------------------
 
-Q: How can I help vifm?
-
-A: Just use it and report any problems, bugs and suggestions to its developers
-by email or trackers.
-
---------------------------------------------------------------------------------
-
 Q: vifm expands macros in a wrong way in user defined commands with vifm's
    commands (like in `:command com :mkdir ~/tmp/%c:e | cd ~/tmp/%c:e`). What to
    do to fix it?
@@ -78,3 +71,14 @@ A: Just double percent sign (%%).  Why?  Because user commands containing
    macro, and second time during command execution.  So doubled percent sign
    will be parsed with single % during first parse and a %x macro will be
    expanded during second parse.
+
+--------------------------------------------------------------------------------
+
+Q: How can I help vifm?
+
+A: Just use it and report any problems, bugs or suggestions to its developers by
+   email or trackers.  You also can send you configuration and colorscheme files
+   to developers.  They can be collected and published at site of vifm.
+   Examples of configuration files can also show developers of vifm how users
+   typically uses vifm, so they can improve support of the most common use
+   cases.
