@@ -100,7 +100,7 @@ enum
 
 static int swap_range(void);
 static int resolve_mark(char mark);
-static char * cmds_expand_macros(const char *str, int *use_menu, int *split);
+static char * cmds_expand_macros(const char *str, int *usr1, int *usr2);
 static void post(int id);
 #ifndef TEST
 static
@@ -457,16 +457,18 @@ resolve_mark(char mark)
 }
 
 static char *
-cmds_expand_macros(const char *str, int *use_menu, int *split)
+cmds_expand_macros(const char *str, int *usr1, int *usr2)
 {
 	char *result;
+	MacroFlags flags = MACRO_NONE;
 
-	*use_menu = 0;
-	*split = 0;
 	if(strchr(str, '%') != NULL)
-		result = expand_macros(curr_view, str, NULL, use_menu, split);
+		result = expand_macros(curr_view, str, NULL, &flags);
 	else
 		result = strdup(str);
+
+	*usr1 = flags;
+
 	return result;
 }
 
@@ -1415,22 +1417,24 @@ emark_cmd(const cmd_info_t *cmd_info)
 	int i;
 	char *com = (char *)cmd_info->args;
 	char buf[COMMAND_GROUP_INFO_LEN];
+	MacroFlags flags;
 
 	i = skip_whitespace(com) - com;
 
 	if(com[i] == '\0')
 		return 0;
 
-	if(cmd_info->usr1 == 3)
+	flags = (MacroFlags)cmd_info->usr1;
+	if(flags == MACRO_STATUSBAR_OUTPUT)
 	{
 		output_to_statusbar(com);
 		return 1;
 	}
-	else if(cmd_info->usr1)
+	else if(flags == MACRO_MENU_OUTPUT || flags == MACRO_MENU_NAV_OUTPUT)
 	{
-		show_user_menu(curr_view, com, cmd_info->usr1 == 2);
+		show_user_menu(curr_view, com, flags == MACRO_MENU_NAV_OUTPUT);
 	}
-	else if(cmd_info->usr2)
+	else if(flags == MACRO_SPLIT)
 	{
 		if(!cfg.use_screen)
 		{
@@ -3390,15 +3394,14 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	/* TODO: Refactor this function usercmd_cmd() */
 
 	char *expanded_com = NULL;
-	int use_menu = 0;
-	int split = 0;
+	MacroFlags flags;
 	size_t len;
 	int external = 1;
 	int bg = 0;
 
 	if(strchr(cmd_info->cmd, '%') != NULL)
 		expanded_com = expand_macros(curr_view, cmd_info->cmd, cmd_info->args,
-				&use_menu, &split);
+				&flags);
 	else
 		expanded_com = strdup(cmd_info->cmd);
 
@@ -3417,17 +3420,17 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		free(expanded_com);
 		return sm;
 	}
-	else if(use_menu == 3)
+	else if(flags == MACRO_STATUSBAR_OUTPUT)
 	{
 		output_to_statusbar(expanded_com);
 		free(expanded_com);
 		return 1;
 	}
-	else if(use_menu)
+	else if(flags == MACRO_MENU_OUTPUT || flags == MACRO_MENU_NAV_OUTPUT)
 	{
-		show_user_menu(curr_view, expanded_com, use_menu == 2);
+		show_user_menu(curr_view, expanded_com, flags == MACRO_MENU_NAV_OUTPUT);
 	}
-	else if(split)
+	else if(flags == MACRO_SPLIT)
 	{
 		if(!cfg.use_screen)
 		{

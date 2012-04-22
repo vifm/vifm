@@ -22,8 +22,22 @@
 
 #include "ui.h"
 
+/* Macros that affect running of commands and processing their output. */
+typedef enum
+{
+	MACRO_NONE, /* no special macro specified */
+	MACRO_MENU_OUTPUT, /* redirect output to the menu */
+	MACRO_MENU_NAV_OUTPUT, /* redirect output to the navigation menu */
+	MACRO_STATUSBAR_OUTPUT, /* redirect output to the status bar */
+	MACRO_SPLIT, /* run command in a new screen region */
+}
+MacroFlags;
+
+/* args and flags parameters can equal NULL. The string returned needs to be
+ * freed in the calling function. After executing flags is one of MACRO_*
+ * values. */
 char * expand_macros(FileView *view, const char *command, const char *args,
-		int *menu, int *split);
+		MacroFlags *flags);
 
 #ifdef TEST
 #include "engine/cmds.h"

@@ -352,10 +352,8 @@ view_file(const char *filename, int line, int do_fork)
 char *
 edit_selection(FileView *view, int *bg)
 {
-	int use_menu = 0;
-	int split = 0;
 	char *buf;
-	char *files = expand_macros(view, "%f", NULL, &use_menu, &split);
+	char *files = expand_macros(view, "%f", NULL, NULL);
 
 	if((buf = malloc(strlen(get_vicmd(bg)) + strlen(files) + 2)) != NULL)
 		snprintf(buf, strlen(get_vicmd(bg)) + 1 + strlen(files) + 1, "%s %s",
@@ -398,10 +396,9 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 	}
 	else if(strchr(program, '%') != NULL)
 	{
-		int use_menu = 0, split = 0;
 		size_t len;
 		int background;
-		char *command = expand_macros(view, program, NULL, &use_menu, &split);
+		char *command = expand_macros(view, program, NULL, NULL);
 
 		len = strlen(command);
 		background = len > 1 && command[len - 1] == '&' && command[len - 2] == ' ';

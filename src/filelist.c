@@ -329,8 +329,7 @@ get_viewer_command(const char *viewer)
 	}
 	else
 	{
-		int use_menu = 0, split = 0;
-		result = expand_macros(curr_view, viewer, NULL, &use_menu, &split);
+		result = expand_macros(curr_view, viewer, NULL, NULL);
 	}
 	return result;
 }
