@@ -23,6 +23,7 @@
 #include <string.h> /* strchr() strlen() */
 
 #include "cfg/config.h"
+#include "engine/variables.h"
 #include "utils/env.h"
 #include "utils/fs.h"
 #include "utils/path.h"
@@ -39,6 +40,9 @@ static void split_path_list(void);
 
 static char **paths;
 static int paths_count;
+
+static char *clean_path;
+static char *real_path;
 
 char **
 get_paths(size_t *count)
@@ -63,18 +67,16 @@ update_path_env(void)
 static int
 path_env_was_changed(void)
 {
-	static char *last_path_value;
-
 	const char *path;
 
-	path = env_get("PATH");
+	path = local_getenv("PATH");
 
-	if(last_path_value != NULL && pathcmp(last_path_value, path) == 0)
+	if(clean_path != NULL && pathcmp(clean_path, path) == 0)
 	{
 		return 0;
 	}
 
-	replace_string(&last_path_value, path);
+	replace_string(&clean_path, path);
 	return 1;
 }
 
@@ -227,6 +229,22 @@ split_path_list(void)
 	}
 	while(q[0] != '\0');
 	paths_count = i;
+}
+
+void
+load_clean_path_env(void)
+{
+	replace_string(&real_path, env_get("PATH"));
+	env_set("PATH", clean_path);
+}
+
+void
+load_real_path_env(void)
+{
+	env_set("PATH", real_path);
+
+	free(real_path);
+	real_path = NULL;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

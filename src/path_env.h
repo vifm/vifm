@@ -29,6 +29,14 @@ void update_path_env(void);
  * the count argument. */
 char ** get_paths(size_t *count);
 
+/* Sets PATH to its value that was set by user or another program. Use
+ * load_real_path_env() function to revert this effect. */
+void load_clean_path_env(void);
+
+/* Sets PATH to its value with additional paths added by vifm for its internal
+ * needs. */
+void load_real_path_env(void);
+
 #endif /* __PATH_ENV_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

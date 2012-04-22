@@ -30,6 +30,10 @@ typedef void (*var_print)(int error, const char *msg, const char *description);
  */
 void init_variables(var_print handler);
 
+/* Gets cached value of environment variable envname. Returns empty string if
+ * requested variable doesn't exist. */
+const char * local_getenv(const char *envname);
+
 /* Removes all defined variables and resets environment variables to their
  * initial values
  */

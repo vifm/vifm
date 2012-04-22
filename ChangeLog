@@ -54,6 +54,8 @@
 	Properly handle when user alters PATH environment variable using :let
 	command.
 
+	Now vifm removes scripts ($VIFM/scripts/**) from PATH for :shell command.
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.

@@ -44,7 +44,6 @@ typedef struct {
 static const char ENV_VAR_NAME_CHARS[] = "abcdefghijklmnopqrstuvwxyz"
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
-static const char * local_getenv(const char *envname);
 static void init_var(const char *env);
 static void report_parsing_error(ParsingErrors error);
 static void append_envvar(const char *name, const char *val);
@@ -93,7 +92,7 @@ init_variables(var_print handler)
 	initialized = 1;
 }
 
-static const char *
+const char *
 local_getenv(const char *envname)
 {
 	var_t *record = find_record(envname);

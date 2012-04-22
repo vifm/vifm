@@ -2891,8 +2891,15 @@ shell_cmd(const cmd_info_t *cmd_info)
 {
 	const char *sh = env_get("SHELL");
 	if(sh == NULL || sh[0] == '\0')
+	{
 		sh = cfg.shell;
+	}
+
+	/* Run shell with clean PATH environment variable. */
+	load_clean_path_env();
 	shellout(sh, 0, 1);
+	load_real_path_env();
+
 	return 0;
 }
 
