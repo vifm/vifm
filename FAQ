@@ -1,7 +1,22 @@
 Q: How can I use SSH with vifm?
 
-A: See an example in comments of vifmrc file (below lines starting with
-FILETYPE).
+A: Follow this steps:
+   1) Download and install sshfs
+   2) Register an extension that will be used for connections over SSH.
+      The format is:
+      :filetype extensions FUSE_MOUNT2|some_mount_command using %PARAM and %DESTINATION_DIR variables
+
+      A sample line might look like this:
+      :filetype *.ssh FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
+
+      %PARAM and %DESTINATION_DIR are filled in by vifm at runtime.
+      %PARAM value is filled from the first line of file (whole line).
+
+      You can also add %CLEAR if you want to clear screen before running FUSE
+      program.
+   3) Create a file with ssh extension that contain connection parameters in the
+      first line.  A sample first line could be:
+      root@127.0.0.1:/
 
 --------------------------------------------------------------------------------
 
