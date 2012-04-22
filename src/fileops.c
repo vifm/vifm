@@ -42,8 +42,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <wchar.h> /* swprintf */
-
 #include "cfg/config.h"
 #include "menus/menus.h"
 #include "modes/cmdline.h"
@@ -1432,11 +1430,8 @@ prompt_dest_name(const char *src_name)
 {
 	wchar_t buf[256];
 
-#ifndef _WIN32
-	swprintf(buf, ARRAY_LEN(buf), L"New name for %s: ", src_name);
-#else
-	swprintf(buf, L"New name for %S: ", src_name);
-#endif
+	my_swprintf(buf, ARRAY_LEN(buf), L"New name for %" WPRINTF_MBSTR L": ",
+			src_name);
 	enter_prompt_mode(buf, src_name, put_confirm_cb, NULL);
 }
 
@@ -1449,15 +1444,8 @@ prompt_what_to_do(const char *src_name)
 	{
 		replace_string(&put_confirm.name, src_name);
 	}
-#ifndef _WIN32
-	swprintf(buf, sizeof(buf)/sizeof(buf[0]),
-			L"Name conflict for %s. [r]ename/[s]kip/[o]verwrite/overwrite [a]ll: ",
-			src_name);
-#else
-	swprintf(buf,
-			L"Name conflict for %S. [r]ename/[s]kip/[o]verwrite/overwrite [a]ll: ",
-			src_name);
-#endif
+	my_swprintf(buf, ARRAY_LEN(buf), L"Name conflict for %" WPRINTF_MBSTR
+			L". [r]ename/[s]kip/[o]verwrite/overwrite [a]ll: ", src_name);
 	enter_prompt_mode(buf, "", put_decide_cb, NULL);
 }
 

@@ -84,15 +84,14 @@ teardown(void)
 static void
 test_b_both_have_selection(void)
 {
-	int menu, split;
 	char *expanded;
 
-	expanded = expand_macros(&lwin, "/%b ", "", &menu, &split);
+	expanded = expand_macros(&lwin, "/%b ", "", NULL);
 	assert_string_equal(
 			"/lfi\\ le0 lfile\\\"2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, "%b", "", &menu, &split);
+	expanded = expand_macros(&lwin, "%b", "", NULL);
 	assert_string_equal(
 			"lfi\\ le0 lfile\\\"2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5", expanded);
 	free(expanded);
@@ -101,17 +100,16 @@ test_b_both_have_selection(void)
 static void
 test_f_both_have_selection(void)
 {
-	int menu, split;
 	char *expanded;
 
 	lwin.dir_entry[2].selected = 0;
 	lwin.selected_files--;
 
-	expanded = expand_macros(&lwin, "/%f ", "", &menu, &split);
+	expanded = expand_macros(&lwin, "/%f ", "", NULL);
 	assert_string_equal("/lfi\\ le0 ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, "%f", "", &menu, &split);
+	expanded = expand_macros(&lwin, "%f", "", NULL);
 	assert_string_equal("lfi\\ le0", expanded);
 	free(expanded);
 }
@@ -119,17 +117,16 @@ test_f_both_have_selection(void)
 static void
 test_b_only_lwin_has_selection(void)
 {
-	int menu, split;
 	char *expanded;
 
 	clean_selected_files(&lwin);
 
-	expanded = expand_macros(&lwin, "/%b ", "", &menu, &split);
+	expanded = expand_macros(&lwin, "/%b ", "", NULL);
 	assert_string_equal("/lfile\\\"2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, "%b", "", &menu, &split);
+	expanded = expand_macros(&lwin, "%b", "", NULL);
 	assert_string_equal("lfile\\\"2 " SL "rwin" SL "rfile1 " SL "rwin" SL "rfile3 " SL "rwin" SL "rfile5",
 			expanded);
 	free(expanded);
@@ -138,17 +135,16 @@ test_b_only_lwin_has_selection(void)
 static void
 test_b_only_rwin_has_selection(void)
 {
-	int menu, split;
 	char *expanded;
 
 	clean_selected_files(&rwin);
 
-	expanded = expand_macros(&lwin, "/%b ", "", &menu, &split);
+	expanded = expand_macros(&lwin, "/%b ", "", NULL);
 	assert_string_equal("/lfi\\ le0 lfile\\\"2 " SL "rwin" SL "rfile5 ",
 			expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, "%b", "", &menu, &split);
+	expanded = expand_macros(&lwin, "%b", "", NULL);
 	assert_string_equal("lfi\\ le0 lfile\\\"2 " SL "rwin" SL "rfile5", expanded);
 	free(expanded);
 }
@@ -156,17 +152,16 @@ test_b_only_rwin_has_selection(void)
 static void
 test_b_noone_has_selection(void)
 {
-	int menu, split;
 	char *expanded;
 
 	clean_selected_files(&lwin);
 	clean_selected_files(&rwin);
 
-	expanded = expand_macros(&lwin, "/%b ", "", &menu, &split);
+	expanded = expand_macros(&lwin, "/%b ", "", NULL);
 	assert_string_equal("/lfile\\\"2 " SL "rwin" SL "rfile5 ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, "%b", "", &menu, &split);
+	expanded = expand_macros(&lwin, "%b", "", NULL);
 	assert_string_equal("lfile\\\"2 " SL "rwin" SL "rfile5", expanded);
 	free(expanded);
 }
@@ -174,13 +169,12 @@ test_b_noone_has_selection(void)
 static void
 test_no_slash_after_dirname(void)
 {
-	int menu, split;
 	char *expanded;
 
 	rwin.list_pos = 6;
 	curr_view = &rwin;
 	other_view = &lwin;
-	expanded = expand_macros(&rwin, "%c", "", &menu, &split);
+	expanded = expand_macros(&rwin, "%c", "", NULL);
 	assert_string_equal("rdir6", expanded);
 	free(expanded);
 }
@@ -188,56 +182,55 @@ test_no_slash_after_dirname(void)
 static void
 test_m(void)
 {
-	int menu, split;
+	MacroFlags flags;
 	char *expanded;
 
 	rwin.list_pos = 6;
 	curr_view = &rwin;
 	other_view = &lwin;
-	expanded = expand_macros(&rwin, "%M echo log", "", &menu, &split);
+	expanded = expand_macros(&rwin, "%M echo log", "", &flags);
 	assert_string_equal(" echo log", expanded);
-	assert_int_equal(menu, 2);
+	assert_int_equal(MACRO_MENU_NAV_OUTPUT, flags);
 	free(expanded);
 }
 
 static void
 test_with_quotes(void)
 {
-	int menu, split;
 	char *expanded;
 
-	expanded = expand_macros(&lwin, "/%\"b ", "", &menu, &split);
+	expanded = expand_macros(&lwin, "/%\"b ", "", NULL);
 	assert_string_equal(
 			"/\"lfi le0\" \"lfile\\\"2\" "
 			"\"" SL "rwin" SL "rfile1\" \"" SL "rwin" SL "rfile3\" \"" SL "rwin" SL "rfile5\" ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, "/%\"f ", "", &menu, &split);
+	expanded = expand_macros(&lwin, "/%\"f ", "", NULL);
 	assert_string_equal("/\"lfi le0\" \"lfile\\\"2\" ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, "/%\"F ", "", &menu, &split);
+	expanded = expand_macros(&lwin, "/%\"F ", "", NULL);
 	assert_string_equal("/\"" SL "rwin" SL "rfile1\" \"" SL "rwin" SL "rfile3\" \"" SL "rwin" SL "rfile5\" ",
 			expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, "/%\"c ", "", &menu, &split);
+	expanded = expand_macros(&lwin, "/%\"c ", "", NULL);
 	assert_string_equal("/\"lfile\\\"2\" ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, "/%\"C ", "", &menu, &split);
+	expanded = expand_macros(&lwin, "/%\"C ", "", NULL);
 	assert_string_equal("/\"" SL "rwin" SL "rfile5\" ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, "/%\"d ", "", &menu, &split);
+	expanded = expand_macros(&lwin, "/%\"d ", "", NULL);
 	assert_string_equal("/\"" SL "lwin\" ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, "/%\"D ", "", &menu, &split);
+	expanded = expand_macros(&lwin, "/%\"D ", "", NULL);
 	assert_string_equal("/\"" SL "rwin\" ", expanded);
 	free(expanded);
 
-	expanded = expand_macros(&lwin, " %\"a %\"m %\"M %\"s ", "", &menu, &split);
+	expanded = expand_macros(&lwin, " %\"a %\"m %\"M %\"s ", "", NULL);
 	assert_string_equal(" a m M s ", expanded);
 	free(expanded);
 }
@@ -245,10 +238,9 @@ test_with_quotes(void)
 static void
 test_single_percent_sign(void)
 {
-	int menu, split;
 	char *expanded;
 
-	expanded = expand_macros(&lwin, "%", "", &menu, &split);
+	expanded = expand_macros(&lwin, "%", "", NULL);
 	assert_string_equal("", expanded);
 	free(expanded);
 }
@@ -256,10 +248,9 @@ test_single_percent_sign(void)
 static void
 test_percent_sign_and_double_quote(void)
 {
-	int menu, split;
 	char *expanded;
 
-	expanded = expand_macros(&lwin, "%\"", "", &menu, &split);
+	expanded = expand_macros(&lwin, "%\"", "", NULL);
 	assert_string_equal("", expanded);
 	free(expanded);
 }

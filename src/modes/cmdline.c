@@ -1418,12 +1418,8 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 		return -1;
 	stat->line = (wchar_t *) t;
 
-#ifndef _WIN32
-	swprintf(stat->line + (p - line_mb), new_len, L"%s%ls", completed,
-			line_ending);
-#else
-	swprintf(stat->line + (p - line_mb), L"%S%s", completed, line_ending);
-#endif
+	my_swprintf(stat->line + (p - line_mb), new_len,
+			L"%" WPRINTF_MBSTR L"%" WPRINTF_WSTR, completed, line_ending);
 	free(line_ending);
 
 	update_line_stat(stat, new_len);

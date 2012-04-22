@@ -22,6 +22,14 @@
 
 #include <wchar.h> /* wchar_t */
 
+#ifndef _WIN32
+#define WPRINTF_MBSTR L"s"
+#define WPRINTF_WSTR L"ls"
+#else
+#define WPRINTF_MBSTR L"S"
+#define WPRINTF_WSTR L"s"
+#endif
+
 /* Various string functions. */
 
 void chomp(char *text);
@@ -42,6 +50,9 @@ char * after_last(const char *str, char c);
 void replace_string(char **str, const char *with);
 /* Adds a character to the end of a string. */
 char * strcatch(char *str, char c);
+/* A wrapper of swprintf() functions to make its differences on various
+ * platforms transparently in other parts of the program. */
+int my_swprintf(wchar_t *str, size_t len, const wchar_t *format, ...);
 
 #endif
 

@@ -1314,6 +1314,7 @@ The command macros may be used in user commands.
           and :find commands.
   %S      show command output in the status bar.
   %s      execute command in screen split.
+  %i      completely ignore command output.
 
 Use %% if you need to put a percent sign in your command.
 

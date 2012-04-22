@@ -250,7 +250,7 @@ execute_file(FileView *view, int dont_execute)
 			int bg;
 			char *cmd = edit_selection(view, &bg);
 			if(bg)
-				start_background_job(cmd);
+				start_background_job(cmd, 0);
 			else
 				shellout(cmd, -1, 1);
 			free(cmd);
@@ -343,7 +343,7 @@ view_file(const char *filename, int line, int do_fork)
 #endif
 
 	if(bg && do_fork)
-		start_background_job(command);
+		start_background_job(command, 0);
 	else
 		shellout(command, -1, 0);
 	curs_set(FALSE);
@@ -352,10 +352,8 @@ view_file(const char *filename, int line, int do_fork)
 char *
 edit_selection(FileView *view, int *bg)
 {
-	int use_menu = 0;
-	int split = 0;
 	char *buf;
-	char *files = expand_macros(view, "%f", NULL, &use_menu, &split);
+	char *files = expand_macros(view, "%f", NULL, NULL);
 
 	if((buf = malloc(strlen(get_vicmd(bg)) + strlen(files) + 2)) != NULL)
 		snprintf(buf, strlen(get_vicmd(bg)) + 1 + strlen(files) + 1, "%s %s",
@@ -398,10 +396,10 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 	}
 	else if(strchr(program, '%') != NULL)
 	{
-		int use_menu = 0, split = 0;
 		size_t len;
 		int background;
-		char *command = expand_macros(view, program, NULL, &use_menu, &split);
+		MacroFlags flags;
+		char *command = expand_macros(view, program, NULL, &flags);
 
 		len = strlen(command);
 		background = len > 1 && command[len - 1] == '&' && command[len - 2] == ' ';
@@ -409,7 +407,9 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 			command[len - 2] = '\0';
 
 		if(!pause && (background || force_background))
-			start_background_job(command);
+			start_background_job(command, flags == MACRO_IGNORE);
+		else if(flags == MACRO_IGNORE)
+			output_to_nowhere(command);
 		else
 			shellout(command, pause ? 1 : -1, 1);
 
@@ -769,6 +769,21 @@ shellout(const char *command, int pause, int allow_screen)
 	curs_set(FALSE);
 
 	return result;
+}
+
+void
+output_to_nowhere(const char *cmd)
+{
+	FILE *file, *err;
+
+	if(background_and_capture((char *)cmd, &file, &err) != 0)
+	{
+		show_error_msgf("Trouble running command", "Unable to run: %s", cmd);
+		return;
+	}
+
+	fclose(file);
+	fclose(err);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

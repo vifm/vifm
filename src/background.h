@@ -60,7 +60,7 @@ typedef struct finished_job_t
 extern struct job_t *jobs;
 extern struct finished_job_t *fjobs;
 
-int start_background_job(const char *cmd);
+int start_background_job(const char *cmd, int skip_errors);
 int background_and_wait_for_status(char *cmd);
 int background_and_wait_for_errors(char *cmd);
 int background_and_capture(char *cmd, FILE **out, FILE **err);

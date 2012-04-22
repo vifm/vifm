@@ -31,7 +31,6 @@ show_find_menu(FileView *view, int with_path, const char *args)
 {
 	char buf[256];
 	char *files;
-	int menu, split;
 	int were_errors;
 
 	static menu_info m;
@@ -55,7 +54,7 @@ show_find_menu(FileView *view, int with_path, const char *args)
 	m.title = strdup(buf);
 
 	if(view->selected_files > 0)
-		files = expand_macros(view, "%f", NULL, &menu, &split);
+		files = expand_macros(view, "%f", NULL, NULL);
 	else
 		files = strdup(".");
 

@@ -40,11 +40,9 @@ static char * expand_directory_path(FileView *view, char *expanded, int quotes,
 		const char *mod);
 static char * append_to_expanded(char *expanded, const char* str);
 
-/* args could be equal NULL
- * The string returned needs to be freed in the calling function */
 char *
 expand_macros(FileView *view, const char *command, const char *args,
-		int *use_menu, int *split)
+		MacroFlags *flags)
 {
 	/* TODO: refactor this function expand_macros() */
 
@@ -53,6 +51,11 @@ expand_macros(FileView *view, const char *command, const char *args,
 	size_t x;
 	int y = 0;
 	int len = 0;
+
+	if(flags != NULL)
+	{
+		*flags = MACRO_NONE;
+	}
 
 	cmd_len = strlen(command);
 
@@ -129,16 +132,34 @@ expand_macros(FileView *view, const char *command, const char *args,
 				len = strlen(expanded);
 				break;
 			case 'm': /* use menu */
-				*use_menu = 1;
+				if(flags != NULL)
+				{
+					*flags = MACRO_MENU_OUTPUT;
+				}
 				break;
 			case 'M': /* use menu like with :locate and :find */
-				*use_menu = 2;
+				if(flags != NULL)
+				{
+					*flags = MACRO_MENU_NAV_OUTPUT;
+				}
 				break;
 			case 'S': /* show command output in the status bar */
-				*use_menu = 3;
+				if(flags != NULL)
+				{
+					*flags = MACRO_STATUSBAR_OUTPUT;
+				}
 				break;
 			case 's': /* split in new screen region */
-				*split = 1;
+				if(flags != NULL)
+				{
+					*flags = MACRO_SPLIT;
+				}
+				break;
+			case 'i': /* ignore output */
+				if(flags != NULL)
+				{
+					*flags = MACRO_IGNORE;
+				}
 				break;
 			case '%':
 				expanded = (char *)realloc(expanded, len + 2);

@@ -20,7 +20,6 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wchar.h> /* swprintf */
 #include <wctype.h> /* iswdigit */
 
 #include "../utils/macros.h"
@@ -396,18 +395,10 @@ run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 
 			buf[0] = '\0';
 			if(key_info.reg != NO_REG_GIVEN)
-#ifndef _WIN32
-				swprintf(buf, ARRAY_LEN(buf), L"\"%c", key_info.reg);
-#else
-				swprintf(buf, L"\"%c", key_info.reg);
-#endif
+				my_swprintf(buf, ARRAY_LEN(buf), L"\"%c", key_info.reg);
 			if(key_info.count != NO_COUNT_GIVEN)
-#ifndef _WIN32
-				swprintf(buf + wcslen(buf), ARRAY_LEN(buf) - wcslen(buf), L"%d",
+				my_swprintf(buf + wcslen(buf), ARRAY_LEN(buf) - wcslen(buf), L"%d",
 						key_info.count);
-#else
-				swprintf(buf + wcslen(buf), L"%d", key_info.count);
-#endif
 			wcscat(buf, info->data.cmd);
 			wcscat(buf, keys);
 

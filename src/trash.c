@@ -56,7 +56,7 @@ empty_trash_dir(void)
 	snprintf(cmd, sizeof(cmd), "sh -c 'rm -rf %s/* %s/.[!.]*'", escaped, escaped);
 	free(escaped);
 
-	start_background_job(cmd);
+	start_background_job(cmd, 0);
 #else
 	DIR *dir;
 	struct dirent *d;

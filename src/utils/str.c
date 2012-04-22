@@ -18,8 +18,10 @@
  */
 
 #include <ctype.h> /* tolower() isspace() */
+#include <stdarg.h> /* va_list va_start() va_end() */
 #include <stdlib.h> /* mbstowcs() wcstombs() */
 #include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr() */
+#include <wchar.h> /* vswprintf() wchar_t */
 
 #include "str.h"
 
@@ -166,6 +168,25 @@ strcatch(char *str, char c)
 {
 	const char buf[2] = { c, '\0' };
 	return strcat(str, buf);
+}
+
+int
+my_swprintf(wchar_t *str, size_t len, const wchar_t *format, ...)
+{
+	int result;
+	va_list ap;
+
+	va_start(ap, format);
+
+#ifndef _WIN32
+	result = vswprintf(str, len, format, ap);
+#else
+	result = vswprintf(str, format, ap);
+#endif
+
+	va_end(ap);
+
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

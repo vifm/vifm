@@ -31,7 +31,6 @@ show_grep_menu(FileView *view, const char *args, int invert)
 {
 	char title_buf[256];
 	char *files;
-	int menu, split;
 	int were_errors;
 	const char *inv_str = invert ? "-v" : "";
 	const char grep_cmd[] = "grep -n -H -I -r";
@@ -58,7 +57,7 @@ show_grep_menu(FileView *view, const char *args, int invert)
 	m.title = strdup(title_buf);
 
 	if(view->selected_files > 0)
-		files = expand_macros(view, "%f", NULL, &menu, &split);
+		files = expand_macros(view, "%f", NULL, NULL);
 	else
 		files = strdup(".");
 
