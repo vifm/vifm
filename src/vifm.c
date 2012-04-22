@@ -405,7 +405,7 @@ main(int argc, char *argv[])
 	reinit_logger();
 
 	init_commands();
-	update_path_env();
+	update_path_env(1);
 	load_default_configuration();
 
 	/* Misc configuration */
