@@ -113,6 +113,8 @@
 
 	Fixed trash elements duplication in vifminfo file.
 
+	Fixed memory corruption if :restart command is called from key mapping.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

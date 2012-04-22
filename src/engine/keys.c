@@ -34,6 +34,7 @@ typedef struct key_chunk_t
 	int no_remap;
 	size_t children_count;
 	int enters; /* to prevent stack overflow */
+	int deleted; /* postpone free() call for proper lazy deletion */
 	key_conf_t conf;
 	struct key_chunk_t *child;
 	struct key_chunk_t *parent;
@@ -50,6 +51,7 @@ static default_handler *def_handlers;
 static size_t counter;
 
 static void free_tree(key_chunk_t *root);
+static void free_chunk(key_chunk_t *chunk);
 static int execute_keys_general(const wchar_t *keys, int timed_out, int mapped,
 		int no_remap);
 static int execute_keys_inner(const wchar_t *keys, keys_info_t *keys_info,
@@ -63,6 +65,8 @@ static int execute_next_keys(key_chunk_t *curr, const wchar_t *keys,
 		int no_remap);
 static int run_cmd(key_info_t key_info, keys_info_t *keys_info,
 		key_chunk_t *curr, const wchar_t *keys);
+static void enter_chunk(key_chunk_t *chunk);
+static void leave_chunk(key_chunk_t *chunk);
 static void init_keys_info(keys_info_t *keys_info, int mapped);
 static const wchar_t* get_reg(const wchar_t *keys, int *reg);
 static const wchar_t* get_count(const wchar_t *keys, int *count);
@@ -133,17 +137,30 @@ free_tree(key_chunk_t *root)
 	if(root->child != NULL)
 	{
 		free_tree(root->child);
-		free(root->child);
+		free_chunk(root->child);
 	}
 
 	if(root->next != NULL)
 	{
 		free_tree(root->next);
-		free(root->next);
+		free_chunk(root->next);
 	}
 
 	if(root->conf.type == USER_CMD || root->conf.type == BUILTIN_CMD)
 		free(root->conf.data.cmd);
+}
+
+static void
+free_chunk(key_chunk_t *chunk)
+{
+	if(chunk->enters == 0)
+	{
+		free(chunk);
+	}
+	else
+	{
+		chunk->deleted = 1;
+	}
 }
 
 void
@@ -402,9 +419,9 @@ run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 			wcscat(buf, info->data.cmd);
 			wcscat(buf, keys);
 
-			curr->enters = 1;
+			enter_chunk(curr);
 			result = execute_keys_inner(buf, &ki, curr->no_remap);
-			curr->enters = 0;
+			leave_chunk(curr);
 		}
 		else if(def_handlers[*mode] != NULL)
 		{
@@ -419,9 +436,9 @@ run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 			if(curr->enters == 0)
 			{
 				result = def_handlers[*mode](info->data.cmd[0]);
-				curr->enters = 1;
+				enter_chunk(curr);
 				execute_keys_general(info->data.cmd + 1, 0, 1, curr->no_remap);
-				curr->enters = 0;
+				leave_chunk(curr);
 			}
 			else
 			{
@@ -431,6 +448,25 @@ run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 			}
 		}
 		return result;
+	}
+}
+
+static void
+enter_chunk(key_chunk_t *chunk)
+{
+	chunk->enters = 1;
+}
+
+static void
+leave_chunk(key_chunk_t *chunk)
+{
+	if(!chunk->deleted)
+	{
+		chunk->enters = 0;
+	}
+	else
+	{
+		free(chunk);
 	}
 }
 
@@ -657,6 +693,7 @@ add_keys_inner(key_chunk_t *root, const wchar_t *keys)
 			c->parent = curr;
 			c->children_count = 0;
 			c->enters = 0;
+			c->deleted = 0;
 			c->no_remap = 1;
 			if(prev == NULL)
 				curr->child = c;
