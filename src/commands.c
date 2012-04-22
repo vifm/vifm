@@ -1404,7 +1404,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	else if(flags == MACRO_IGNORE)
 	{
 		output_to_nowhere(com);
-		return 1;
+		return 0;
 	}
 	else if(flags == MACRO_MENU_OUTPUT || flags == MACRO_MENU_NAV_OUTPUT)
 	{
@@ -3408,7 +3408,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	{
 		output_to_nowhere(expanded_com);
 		free(expanded_com);
-		return 1;
+		return 0;
 	}
 	else if(flags == MACRO_MENU_OUTPUT || flags == MACRO_MENU_NAV_OUTPUT)
 	{
