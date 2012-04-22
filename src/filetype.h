@@ -65,7 +65,8 @@ void set_programs(const char *patterns, const char *programs, int x);
 void set_fileviewer(const char *patterns, const char *viewer);
 /* Caller should free only the array, but not its elements. */
 assoc_records_t get_all_programs_for_file(const char *file);
-/* Resets associations set by :filetype, :filextype and :fileviewer commands. */
+/* Resets associations set by :filetype, :filextype and :fileviewer commands.
+ * Also registers default file associations. */
 void reset_all_file_associations(void);
 /* After this call structure contains NULL values */
 void free_assoc_records(assoc_records_t *records);

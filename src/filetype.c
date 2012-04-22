@@ -47,6 +47,8 @@ static void assoc_programs(const char *pattern, const char *records, int for_x);
 static void register_assoc(assoc_t assoc, int for_x);
 static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
 static void assoc_viewer(const char *pattern, const char *viewer);
+static void reset_all_list(void);
+static void add_defaults(void);
 static void reset_list(assoc_list_t *assoc_list);
 static void reset_list_head(assoc_list_t *assoc_list);
 static void free_assoc(assoc_t *assoc);
@@ -314,11 +316,24 @@ add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 void
 reset_all_file_associations(void)
 {
+	reset_all_list();
+	add_defaults();
+}
+
+static void
+reset_all_list(void)
+{
 	reset_list(&filetypes);
 	reset_list(&xfiletypes);
 	reset_list(&fileviewers);
 
 	reset_list_head(&active_filetypes);
+}
+
+static void
+add_defaults(void)
+{
+	set_programs("*/", "{Enter directory}" VIFM_PSEUDO_CMD , 0);
 }
 
 static void
