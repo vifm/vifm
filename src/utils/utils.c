@@ -277,8 +277,8 @@ is_on_slow_fs(const char *full_path)
 #endif
 }
 
-void
-friendly_size_notation(unsigned long long num, int str_size, char *str)
+int
+friendly_size_notation(uint64_t num, int str_size, char *str)
 {
 	static const char* iec_units[] = {
 		"  B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"
@@ -292,10 +292,7 @@ friendly_size_notation(unsigned long long num, int str_size, char *str)
 	size_t u;
 	double d = num;
 
-	if(cfg.use_iec_prefixes)
-		units = iec_units;
-	else
-		units = si_units;
+	units = cfg.use_iec_prefixes ? iec_units : si_units;
 
 	u = 0;
 	while(d >= 1023.5 && u < ARRAY_LEN(iec_units) - 1)
@@ -318,6 +315,8 @@ friendly_size_notation(unsigned long long num, int str_size, char *str)
 				snprintf(str, str_size, "%.0f %s", d, units[u]);
 		}
 	}
+
+	return u > 0;
 }
 
 int

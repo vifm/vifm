@@ -100,6 +100,10 @@
 
 	Fixed handling of equal sign after variable names in :unlet command.
 
+	Fixed automatic refresh of view on Windows.
+
+	Fixed displaying of cached directory size.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

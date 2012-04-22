@@ -38,6 +38,7 @@
 #include <assert.h>
 #include <ctype.h> /* isdigit */
 #include <signal.h>
+#include <stdint.h> /* uint64_t */
 #include <stdio.h>
 #include <string.h>
 
@@ -1515,10 +1516,7 @@ put_next(const char *dest_name, int override)
 				return 0;
 		}
 
-#ifndef _WIN32
-		memset(&put_confirm.view->dir_mtime, 0,
-				sizeof(put_confirm.view->dir_mtime));
-#endif
+		request_view_update(put_confirm.view);
 	}
 
 	if(put_confirm.link)
@@ -1866,7 +1864,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 }
 
 static void
-set_dir_size(const char *path, unsigned long long size)
+set_dir_size(const char *path, uint64_t size)
 {
 	static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -1875,13 +1873,13 @@ set_dir_size(const char *path, unsigned long long size)
 	pthread_mutex_unlock(&mutex);
 }
 
-unsigned long long
+uint64_t
 calc_dirsize(const char *path, int force_update)
 {
 	DIR* dir;
 	struct dirent* dentry;
 	const char* slash = "";
-	unsigned long long size;
+	uint64_t size;
 
 	dir = opendir(path);
 	if(dir == NULL)
@@ -1907,7 +1905,7 @@ calc_dirsize(const char *path, int force_update)
 		if(is_dir(buf))
 #endif
 		{
-			unsigned long long dir_size = 0;
+			uint64_t dir_size = 0;
 			if(tree_get_data(curr_stats.dirsize_cache, buf, &dir_size) != 0
 					|| force_update)
 				dir_size = calc_dirsize(buf, force_update);

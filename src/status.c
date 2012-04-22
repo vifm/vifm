@@ -17,59 +17,132 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include "../config.h"
+
+#ifdef HAVE_LIBGTK
+#include <glib-2.0/gio/gio.h>
+#include <gtk/gtk.h>
+#endif
+
 #include <limits.h>
 #include <string.h>
 
 #include "cfg/config.h"
+#include "utils/env.h"
+#include "utils/tree.h"
 #include "color_scheme.h"
 
 #include "status.h"
 
+static void load_def_values(status_t *stats);
+static void set_gtk_available(status_t *stats);
+static void set_number_of_windows(status_t *stats);
+static void set_console(status_t *stats);
+static int reset_dircache(status_t *stats);
+
 status_t curr_stats;
 
-void
+int
 init_status(void)
 {
-	curr_stats.need_redraw = 0;
-	curr_stats.last_char = 0;
-	curr_stats.is_console = 0;
-	curr_stats.search = 0;
-	curr_stats.save_msg = 0;
-	curr_stats.use_register = 0;
-	curr_stats.curr_register = -1;
-	curr_stats.register_saved = 0;
-	curr_stats.show_full = 0;
-	curr_stats.view = 0;
-	curr_stats.use_input_bar = 1;
-	curr_stats.errmsg_shown = 0;
-	curr_stats.load_stage = 0;
-	curr_stats.too_small_term = 0;
-	curr_stats.dirsize_cache = 0;
-	curr_stats.ch_pos = 1;
-	curr_stats.confirmed = 0;
-	curr_stats.auto_redraws = 0;
-	curr_stats.pending_redraw = 0;
-	curr_stats.cs_base = DCOLOR_BASE;
-	curr_stats.cs = &cfg.cs;
-	strcpy(curr_stats.color_scheme, "");
+	load_def_values(&curr_stats);
+	set_gtk_available(&curr_stats);
+	set_number_of_windows(&curr_stats);
+	set_console(&curr_stats);
+
+	return reset_status();
+}
+
+static void
+load_def_values(status_t *stats)
+{
+	stats->need_redraw = 0;
+	stats->last_char = 0;
+	stats->is_console = 0;
+	stats->search = 0;
+	stats->save_msg = 0;
+	stats->use_register = 0;
+	stats->curr_register = -1;
+	stats->register_saved = 0;
+	stats->show_full = 0;
+	stats->view = 0;
+	stats->use_input_bar = 1;
+	stats->errmsg_shown = 0;
+	stats->load_stage = 0;
+	stats->too_small_term = 0;
+	stats->dirsize_cache = NULL_TREE;
+	stats->ch_pos = 1;
+	stats->confirmed = 0;
+	stats->auto_redraws = 0;
+	stats->pending_redraw = 0;
+	stats->cs_base = DCOLOR_BASE;
+	stats->cs = &cfg.cs;
+	strcpy(stats->color_scheme, "");
 
 #ifdef HAVE_LIBGTK
-	curr_stats.gtk_available = 0;
+	stats->gtk_available = 0;
 #endif
 
-	curr_stats.msg_head = 0;
-	curr_stats.msg_tail = 0;
-	curr_stats.save_msg_in_list = 1;
+	stats->msg_head = 0;
+	stats->msg_tail = 0;
+	stats->save_msg_in_list = 1;
 
 #ifdef _WIN32
-	curr_stats.as_admin = 0;
+	stats->as_admin = 0;
 #endif
 
-	curr_stats.scroll_bind_off = 0;
-	curr_stats.split = VSPLIT;
-	curr_stats.splitter_pos = -1.0;
+	stats->scroll_bind_off = 0;
+	stats->split = VSPLIT;
+	stats->splitter_pos = -1.0;
 
-	curr_stats.sourcing_state = SOURCING_NONE;
+	stats->sourcing_state = SOURCING_NONE;
+}
+
+static void
+set_gtk_available(status_t *stats)
+{
+#ifdef HAVE_LIBGTK
+	curr_stats.gtk_available = gtk_init_check(&argc, &argv);
+#endif
+}
+
+static void
+set_number_of_windows(status_t *stats)
+{
+	if(cfg.show_one_window)
+		curr_stats.number_of_windows = 1;
+	else
+		curr_stats.number_of_windows = 2;
+}
+
+static void
+set_console(status_t *stats)
+{
+	const char *console;
+
+	/* Check if running in X */
+#ifndef _WIN32
+	console = env_get("DISPLAY");
+#else
+	console = "WIN";
+#endif
+	if(!console || !*console)
+		curr_stats.is_console = 1;
+}
+
+int
+reset_status(void)
+{
+	return reset_dircache(&curr_stats);
+}
+
+/* Returns non-zero on error. */
+static int
+reset_dircache(status_t *stats)
+{
+	tree_free(stats->dirsize_cache);
+	stats->dirsize_cache = tree_create(0, 0);
+	return stats->dirsize_cache == NULL_TREE;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -1495,5 +1495,11 @@ wprint(WINDOW *win, const char *str)
 #endif
 }
 
+void
+request_view_update(FileView *view)
+{
+	memset(&view->dir_mtime, -1, sizeof(view->dir_mtime));
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

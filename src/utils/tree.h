@@ -19,14 +19,29 @@
 #ifndef __TREE_H__
 #define __TREE_H__
 
+#include <stdint.h> /* uint64_t */
+
+#define NULL_TREE NULL
+
 typedef struct root_t *tree_t;
+typedef uint64_t tree_val_t;
 
+/* longest parameter determines whether implementation will return the last
+ * value found during searching in the tree. mem parameter shows whether tree
+ * will contain pointers, which will be freed by tree_free(). Returns
+ * NULL_TREE on error. */
 tree_t tree_create(int longest, int mem);
-void tree_free(tree_t tree);
-int tree_set_data(tree_t tree, const char *path, unsigned long long data);
 
-/* Wont change data content it path absent in tree */
-int tree_get_data(tree_t tree, const char *path, unsigned long long *data);
+/* Frees memory from values if tree was created with mem parameter set to
+ * true. Freeing of NULL_TREE tree is OK. */
+void tree_free(tree_t tree);
+
+/* Returns non-zero on error. */
+int tree_set_data(tree_t tree, const char *path, tree_val_t data);
+
+/* Wont change data content if path absent in tree. Returns non-zero on
+ * error. */
+int tree_get_data(tree_t tree, const char *path, tree_val_t *data);
 
 #endif
 

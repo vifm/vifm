@@ -26,6 +26,7 @@
 
 #include <limits.h> /* PATH_MAX NAME_MAX */
 #include <curses.h>
+#include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* off_t mode_t... */
 #include <inttypes.h> /* uintmax_t */
 #include <sys/types.h>
@@ -75,7 +76,7 @@ typedef struct
 typedef struct
 {
 	char *name;
-	unsigned long long size;
+	uint64_t size;
 #ifndef _WIN32
 	uid_t uid;
 	gid_t gid;
@@ -184,6 +185,9 @@ void show_progress(const char *msg, int period);
 void redraw_lists(void);
 int load_color_scheme(const char *name);
 void wprint(WINDOW *win, const char *str);
+/* Sets inner flag or signals about needed view update in some other way.
+ * It doesn't perform any update, just request one to happen in the future. */
+void request_view_update(FileView *view);
 
 #endif
 

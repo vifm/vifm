@@ -42,6 +42,7 @@
 #endif
 
 #include <errno.h>
+#include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* malloc() */
 #include <string.h> /* strcat() */
 #include <time.h>
@@ -177,7 +178,7 @@ add_sort_type_info(FileView *view, int y, int x, int is_current_line)
 		case SORT_BY_SIZE:
 		default:
 			{
-				unsigned long long size = 0;
+				uint64_t size = 0;
 				char str[24] = "";
 
 				if(view->dir_entry[x].type == DIRECTORY)
@@ -1590,9 +1591,9 @@ is_win_symlink(DWORD attr, DWORD tag)
 static time_t
 win_to_unix_time(FILETIME ft)
 {
-	const unsigned long long WINDOWS_TICK = 10000000;
-	const unsigned long long SEC_TO_UNIX_EPOCH = 11644473600LL;
-	unsigned long long win_time;
+	const uint64_t WINDOWS_TICK = 10000000;
+	const uint64_t SEC_TO_UNIX_EPOCH = 11644473600LL;
+	uint64_t win_time;
 
 	win_time = ft.dwHighDateTime;
 	win_time = (win_time << 32) | ft.dwLowDateTime;

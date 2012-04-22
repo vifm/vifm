@@ -69,7 +69,7 @@ typedef struct
 
 	int too_small_term;
 
-	tree_t dirsize_cache;
+	tree_t dirsize_cache; /* ga command results */
 	
 	int last_search_backward;
 
@@ -106,7 +106,11 @@ typedef struct
 
 extern status_t curr_stats;
 
-void init_status(void);
+/* Returns non-zero on error. */
+int init_status(void);
+
+/* Returns non-zero on error. */
+int reset_status(void);
 
 #endif
 

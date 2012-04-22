@@ -27,6 +27,7 @@
 
 #include <assert.h>
 #include <signal.h>
+#include <stdint.h> /* uint64_t */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -118,7 +119,8 @@ redraw_file_info_dialog(void)
 	struct tm *tm_ptr;
 	int x;
 	int curr_y;
-	unsigned long long size;
+	uint64_t size;
+	int size_not_precise;
 
 	assert(view != NULL);
 
@@ -138,7 +140,7 @@ redraw_file_info_dialog(void)
 	if(size == 0)
 		size = view->dir_entry[view->list_pos].size;
 
-	friendly_size_notation(size, sizeof(size_buf), size_buf);
+	size_not_precise = friendly_size_notation(size, sizeof(size_buf), size_buf);
 
 #ifndef _WIN32
 	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
@@ -165,8 +167,11 @@ redraw_file_info_dialog(void)
 	curr_y += 2;
 	mvwaddstr(menu_win, curr_y, 2, "Size: ");
 	mvwaddstr(menu_win, curr_y, 8, size_buf);
-	snprintf(size_buf, sizeof(size_buf), " (%lld bytes)", size);
-	waddstr(menu_win, size_buf);
+	if(size_not_precise)
+	{
+		snprintf(size_buf, sizeof(size_buf), " (%" PRId64 " bytes)", size);
+		waddstr(menu_win, size_buf);
+	}
 	curr_y += 2;
 
 	curr_y += show_file_type(view, curr_y);
