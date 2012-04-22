@@ -44,69 +44,74 @@
 
 #define PORT 31230
 
-static void cleanup_on_exit(void);
+static void clean_at_exit(void);
 static void try_become_a_server(void);
+static int create_socket(void);
+static void close_socket(void);
 static void recieve_data(void);
 static void parse_data(const char *buf);
 
 static recieve_callback callback;
 static int initialized;
 static int server;
-static int sock;
+static int sock = -1;
 
 void
-ipc_init(recieve_callback callback_func)
+ipc_pre_init(void)
 {
 #ifdef _WIN32
 	int result;
 	WSADATA wsaData;
-#endif
 
-	assert(!initialized);
-	callback = callback_func;
-
-#ifdef _WIN32
 	result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if(result != 0)
 	{
 		LOG_ERROR_MSG("Can't initialize Windows sockets");
-		initialized = -1;
 		return;
 	}
 #endif
 
-	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	(void)create_socket();
+}
+
+void
+ipc_init(recieve_callback callback_func)
+{
+	assert(!initialized);
+	callback = callback_func;
+
 	if(sock == -1)
+	{
+		ipc_pre_init();
+	}
+
+	if(create_socket() != 0)
 	{
 #ifdef _WIN32
 		WSACleanup();
 #endif
-		LOG_ERROR_MSG("Can't create socket");
 		initialized = -1;
 		return;
 	}
 
 	try_become_a_server();
 
-	atexit(&cleanup_on_exit);
+	atexit(&clean_at_exit);
 	initialized = 1;
 }
 
 static void
-cleanup_on_exit(void)
+clean_at_exit(void)
 {
+	close_socket();
 #ifdef _WIN32
-	closesocket(sock);
 	WSACleanup();
-#else
-	close(sock);
 #endif
 }
 
 void
 ipc_check(void)
 {
-	/* unsigned long n; */
 	fd_set ready;
 	int maxfd;
 	struct timeval ts = { 0, 0 };
@@ -132,9 +137,24 @@ static void
 try_become_a_server(void)
 {
 	struct sockaddr_in addr;
+#ifdef _WIN32
+	BOOL yes = TRUE;
+#else
+	int yes = 1;
+#endif
 
 	if(server)
 		return;
+
+#ifdef _WIN32
+	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&yes,
+			sizeof(yes)) != 0)
+#else
+	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) != 0)
+#endif
+	{
+		LOG_SERROR_MSG(errno, "Can't set reusable option on a socket");
+	}
 
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = inet_addr("127.0.0.1");
@@ -149,15 +169,36 @@ try_become_a_server(void)
 	}
 	else
 	{
+		LOG_INFO_MSG("Successfully became an IPC server");
+	}
+}
+
+/* Returns zero on success. */
+static int
+create_socket(void)
+{
+	if(sock != -1)
+		return 0;
+
+	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if(sock == -1)
+	{
+		LOG_ERROR_MSG("Can't create socket");
+	}
+	return sock == -1;
+}
+
+static void
+close_socket(void)
+{
+	if(sock != -1)
+	{
 #ifdef _WIN32
-		char yes = 1;
+		closesocket(sock);
 #else
-		int yes = 1;
+		close(sock);
 #endif
-		if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) != 0)
-		{
-			LOG_SERROR_MSG(errno, "Can't set reusable option on server socket");
-		}
+		sock = -1;
 	}
 }
 
@@ -203,7 +244,7 @@ ipc_send(char *data[])
 	if(server)
 		return;
 
-	assert(initialized);
+	assert(initialized || sock != -1);
 	if(initialized < 0)
 		return;
 

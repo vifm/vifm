@@ -437,9 +437,11 @@ main(int argc, char *argv[])
 	if(!old_config && !no_configs)
 		read_info_file(0);
 
-	ipc_init(&parse_recieved_arguments);
+	ipc_pre_init();
 
 	parse_args(argc, argv, dir, lwin_path, rwin_path, &lwin_handle, &rwin_handle);
+
+	ipc_init(&parse_recieved_arguments);
 
 	lcd = set_path(&lwin, lwin_path);
 	rcd = set_path(&rwin, rwin_path);
