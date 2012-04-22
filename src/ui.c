@@ -40,7 +40,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <signal.h> /* signal() */
-#include <stdarg.h>
+#include <stdarg.h> /* va_list va_start() va_end() */
 #include <string.h>
 #include <time.h>
 

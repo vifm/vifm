@@ -24,7 +24,6 @@
 #include <assert.h>
 #include <string.h>
 #include <wctype.h> /* wtoupper */
-#include <wchar.h> /* swprintf */
 
 #include "../../config.h"
 
@@ -33,6 +32,7 @@
 #include "../menus/menus.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
+#include "../utils/str.h"
 #include "../utils/tree.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
@@ -482,11 +482,7 @@ cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info)
 {
 	wchar_t buf[16] = L".!";
 	if(key_info.count != NO_COUNT_GIVEN)
-#ifndef _WIN32
-		swprintf(buf, ARRAY_LEN(buf), L".,.+%d!", key_info.count - 1);
-#else
-		swprintf(buf, L".,.+%d!", key_info.count - 1);
-#endif
+		my_swprintf(buf, ARRAY_LEN(buf), L".,.+%d!", key_info.count - 1);
 	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
 }
 
@@ -1286,11 +1282,7 @@ cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
 	wchar_t buf[16] = L"";
 	if(key_info.count != NO_COUNT_GIVEN)
-#ifndef _WIN32
-		swprintf(buf, ARRAY_LEN(buf), L".,.+%d", key_info.count - 1);
-#else
-		swprintf(buf, L".,.+%d", key_info.count - 1);
-#endif
+		my_swprintf(buf, ARRAY_LEN(buf), L".,.+%d", key_info.count - 1);
 	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
 }
 
