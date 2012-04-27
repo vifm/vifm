@@ -22,6 +22,8 @@
 #ifdef HAVE_LIBGTK
 #include <glib-2.0/gio/gio.h>
 #include <gtk/gtk.h>
+#undef MAX
+#undef MIN
 #endif
 
 #include <limits.h>
@@ -29,6 +31,7 @@
 
 #include "cfg/config.h"
 #include "utils/env.h"
+#include "utils/macros.h"
 #include "utils/tree.h"
 #include "color_scheme.h"
 
@@ -102,7 +105,10 @@ static void
 set_gtk_available(status_t *stats)
 {
 #ifdef HAVE_LIBGTK
-	curr_stats.gtk_available = gtk_init_check(&argc, &argv);
+	char *argv[] = { "vifm", NULL };
+	int argc = ARRAY_LEN(argv) - 1;
+	char **ptr = argv;
+	curr_stats.gtk_available = gtk_init_check(&argc, &ptr);
 #endif
 }
 
