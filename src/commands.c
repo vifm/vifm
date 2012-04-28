@@ -668,6 +668,7 @@ init_commands(void)
 	init_cmds(1, &cmds_conf);
 	add_builtin_commands((const cmd_add_t *)&commands, ARRAY_LEN(commands));
 
+	/* TODO: move this to bracket_notation.c */
 	qsort(key_pairs, ARRAY_LEN(key_pairs), sizeof(*key_pairs), notation_sorter);
 	for(i = 0; i < ARRAY_LEN(key_pairs); i++)
 		key_pairs[i].len = strlen(key_pairs[i].notation);
@@ -773,6 +774,7 @@ split_screen(FileView *view, char *command)
 static int
 set_view_filter(FileView *view, const char *filter, int invert)
 {
+	/* TODO: move this to filelist.c */
 	regex_t re;
 	int err;
 
@@ -794,6 +796,7 @@ set_view_filter(FileView *view, const char *filter, int invert)
 static key_pair_t *
 find_notation(const char *str)
 {
+	/* TODO: move this to bracket_notation.c */
 	int l = 0, u = ARRAY_LEN(key_pairs) - 1;
 	while(l <= u)
 	{
@@ -812,6 +815,7 @@ find_notation(const char *str)
 static wchar_t *
 substitute_specs(const char *cmd)
 {
+	/* TODO: move this to bracket_notation.c */
 	wchar_t *buf, *p;
 	size_t len = strlen(cmd) + 1;
 
@@ -862,6 +866,7 @@ print_func(int error, const char *msg, const char *description)
 static void
 remove_selection(FileView *view)
 {
+	/* TODO: maybe move this to filelist.c */
 	if(view->selected_files == 0)
 		return;
 
@@ -1288,6 +1293,7 @@ exec_command(char *cmd, FileView *view, int type)
 void
 comm_quit(int write_info, int force)
 {
+	/* TODO: move this to some other unit */
 	if(!force)
 	{
 		job_t *job;
@@ -1348,6 +1354,7 @@ comm_quit(int write_info, int force)
 void
 comm_only(void)
 {
+	/* TODO: move this to ui.c */
 	if(curr_stats.number_of_windows == 1)
 		return;
 
@@ -1358,6 +1365,7 @@ comm_only(void)
 void
 comm_split(int vertical)
 {
+	/* TODO: move this to ui.c */
 	SPLIT orient = vertical ? VSPLIT : HSPLIT;
 	if(curr_stats.number_of_windows == 2 && curr_stats.split == orient)
 		return;
@@ -2518,6 +2526,7 @@ marks_cmd(const cmd_info_t *cmd_info)
 static int
 messages_cmd(const cmd_info_t *cmd_info)
 {
+	/* TODO: move this code to ui.c */
 	char *lines;
 	size_t len;
 	int count;
@@ -2799,6 +2808,7 @@ restart_cmd(const cmd_info_t *cmd_info)
 static int
 restore_cmd(const cmd_info_t *cmd_info)
 {
+	/* TODO: move this either to fileops.c or to trash.c */
 	int i;
 	int m = 0;
 	int n = curr_view->selected_files;

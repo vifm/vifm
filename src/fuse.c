@@ -24,6 +24,7 @@
 #include "cfg/config.h"
 #include "menus/menus.h"
 #include "utils/fs.h"
+#include "utils/log.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utils.h"
@@ -179,6 +180,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	tmp_file = make_name_unique("/tmp/vifm.errors");
 	strcat(buf, " 2> ");
 	strcat(buf, tmp_file);
+	LOG_INFO_MSG("FUSE mount command: `%s`", buf);
 	status = background_and_wait_for_status(buf);
 	/* check child status */
 	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
@@ -389,6 +391,7 @@ try_unmount_fuse(FileView *view)
 	escaped_mount_point = escape_filename(runner->mount_point, 0);
 	snprintf(buf, sizeof(buf), "fusermount -u %s 2> /dev/null",
 			escaped_mount_point);
+	LOG_INFO_MSG("FUSE unmount command: `%s`", buf);
 	free(escaped_mount_point);
 
 	/* have to chdir to parent temporarily, so that this DIR can be unmounted */
