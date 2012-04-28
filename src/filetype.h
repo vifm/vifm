@@ -20,6 +20,8 @@
 #ifndef __FILETYPE_H__
 #define __FILETYPE_H__
 
+#include "utils/test_helpers.h"
+
 typedef struct
 {
 	char *command;
@@ -78,12 +80,9 @@ void add_assoc_records(assoc_records_t *assocs, const assoc_records_t src);
 /* Returns non-zero for an empty assoc_record_t structure. */
 int assoc_prog_is_empty(const assoc_record_t *record);
 
-#ifdef TEST
-void replace_double_comma(char *cmd, int put_null);
-#define TESTABLE_STATIC
-#else /* TEST */
-#define TESTABLE_STATIC static
-#endif /* TEST */
+TSTATIC_DEFS(
+	void replace_double_comma(char *cmd, int put_null);
+)
 
 #endif
 

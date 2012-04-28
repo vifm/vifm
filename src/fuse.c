@@ -251,7 +251,8 @@ fuse_mount(FileView *view, char *filename, const char *program,
  *   FUSE_MOUNT2|some_mount_command %PARAM %DESTINATION_DIR [%CLEAR]
  * Returns non-zero if format contains %CLEAR.
  * */
-TSTATIC int format_mount_command(const char *mount_point, const char *file_name,
+TSTATIC int
+format_mount_command(const char *mount_point, const char *file_name,
 		const char *format, size_t buf_size, char *buf)
 {
 	char *buf_pos;
