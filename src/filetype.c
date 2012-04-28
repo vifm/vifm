@@ -70,7 +70,6 @@ get_default_program_for_file(const char *file, assoc_record_t *result)
 	result->command = strdup(prog.command);
 	result->description = strdup(prog.description);
 
-	replace_double_comma(result->command, 1);
 	return 1;
 }
 

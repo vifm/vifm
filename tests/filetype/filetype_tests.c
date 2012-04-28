@@ -154,6 +154,26 @@ test_star_and_dot(void)
 	free_assoc_record(&program);
 }
 
+static void
+test_double_comma(void)
+{
+	assoc_record_t program;
+
+	set_programs("*.tar", "prog -o opt1,,opt2", 0);
+
+	assert_true(get_default_program_for_file("file.version.tar", &program));
+	if(program.command != NULL)
+		assert_string_equal("prog -o opt1,opt2", program.command);
+	free_assoc_record(&program);
+
+	set_programs("*.zip", "prog1 -o opt1, prog2", 0);
+
+	assert_true(get_default_program_for_file("file.version.zip", &program));
+	if(program.command != NULL)
+		assert_string_equal("prog1 -o opt1", program.command);
+	free_assoc_record(&program);
+}
+
 void
 filetype_tests(void)
 {
@@ -168,6 +188,7 @@ filetype_tests(void)
 	run_test(test_match_qmark);
 	run_test(test_qmark_escaping);
 	run_test(test_star_escaping);
+	run_test(test_double_comma);
 
 	run_test(test_star_and_dot);
 
