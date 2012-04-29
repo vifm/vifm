@@ -47,7 +47,6 @@
 #include "background.h"
 
 job_t *jobs;
-finished_job_t *fjobs;
 
 #ifndef _WIN32
 job_t * add_background_job(pid_t pid, const char *cmd, int fd);
@@ -61,26 +60,24 @@ static pthread_once_t key_once = PTHREAD_ONCE_INIT;
 void
 add_finished_job(pid_t pid, int status)
 {
-	finished_job_t *new;
+	job_t *job;
 
-	if((new = malloc(sizeof(finished_job_t))) == NULL)
-		return;
-	new->pid = pid;
-	new->remove = 0;
-	new->next = fjobs;
-#ifndef _WIN32
-	new->exit_code = WEXITSTATUS(status);
-#else
-	new->exit_code = 0;
-#endif
-	fjobs = new;
+	/* Mark any finished jobs */
+	job = jobs;
+	while(job != NULL)
+	{
+		if(job->pid == pid)
+		{
+			job->running = 0;
+		}
+		job = job->next;
+	}
 }
 
 void
 check_background_jobs(void)
 {
 #ifndef _WIN32
-	finished_job_t *fj = NULL;
 	job_t *p = jobs;
 	job_t *prev = NULL;
 	sigset_t new_mask;
@@ -91,10 +88,7 @@ check_background_jobs(void)
 	if(p == NULL)
 		return;
 
-	/*
-	 * SIGCHLD	needs to be blocked anytime the finished_job_t list
-	 * is accessed from anywhere except the received_sigchld().
-	 */
+	/* SIGCHLD needs to be blocked. */
 	if(sigemptyset(&new_mask) == -1)
 		return;
 	if(sigaddset(&new_mask, SIGCHLD) == -1)
@@ -102,25 +96,11 @@ check_background_jobs(void)
 	if(sigprocmask(SIG_BLOCK, &new_mask, NULL) == -1)
 		return;
 
-	fj = fjobs;
-
 	ts.tv_sec = 0;
 	ts.tv_usec = 1000;
 
 	while(p != NULL)
 	{
-		/* Mark any finished jobs */
-		while(fj != NULL)
-		{
-			if(p->pid == fj->pid)
-			{
-				p->running = 0;
-				fj->remove = 1;
-				p->exit_code = fj->exit_code;
-			}
-			fj = fj->next;
-		}
-
 		/* Setup pipe for reading */
 
 		FD_ZERO(&ready);
@@ -189,33 +169,6 @@ check_background_jobs(void)
 		{
 			prev = p;
 			p = p->next;
-		}
-	}
-
-	/* Clean up Finished Jobs list */
-	fj = fjobs;
-	if(fj != NULL)
-	{
-		finished_job_t *prev = NULL;
-		while(fj)
-		{
-			if(fj->remove)
-			{
-				finished_job_t *j = fj;
-
-				if(prev)
-					prev->next = fj->next;
-				else
-					fjobs = fj->next;
-
-				fj = fj->next;
-				free(j);
-			}
-			else
-			{
-				prev = fj;
-				fj = fj->next;
-			}
 		}
 	}
 

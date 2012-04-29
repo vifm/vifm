@@ -49,16 +49,7 @@ typedef struct job_t
 	struct job_t *next;
 }job_t;
 
-typedef struct finished_job_t
-{
-	pid_t pid;
-	int remove;
-	int exit_code;
-	struct finished_job_t *next;
-}finished_job_t;
-
 extern struct job_t *jobs;
-extern struct finished_job_t *fjobs;
 
 int start_background_job(const char *cmd, int skip_errors);
 int background_and_wait_for_status(char *cmd);
