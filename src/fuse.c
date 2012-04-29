@@ -37,9 +37,9 @@
 
 typedef struct fuse_mount_t
 {
-	char source_file_name[PATH_MAX];
-	char source_file_dir[PATH_MAX];
-	char mount_point[PATH_MAX];
+	char source_file_name[PATH_MAX]; /* full path to source file */
+	char source_file_dir[PATH_MAX]; /* full path to directory of source file */
+	char mount_point[PATH_MAX]; /* full path to mount point */
 	int mount_point_id;
 	struct fuse_mount_t *next;
 }
@@ -47,11 +47,12 @@ fuse_mount_t;
 
 static fuse_mount_t *fuse_mounts;
 
-static fuse_mount_t * fuse_mount(FileView *view, char *filename,
+static fuse_mount_t * fuse_mount(FileView *view, char *file_full_path,
 		const char *program, char *mount_point);
 TSTATIC int format_mount_command(const char *mount_point, const char *file_name,
 		const char *format, size_t buf_size, char *buf);
-static fuse_mount_t * find_fuse_mount(const char *dir);
+static fuse_mount_t * get_mount_by_source(const char *source);
+static fuse_mount_t * get_mount_by_mount_point(const char *dir);
 static void updir_from_mount(FileView *view, fuse_mount_t *runner);
 
 void
@@ -60,9 +61,8 @@ fuse_try_mount(FileView *view, const char *program)
 	/* TODO: refactor this function fuse_try_mount() */
 
 	fuse_mount_t *runner;
-	char filename[PATH_MAX];
+	char file_full_path[PATH_MAX];
 	char mount_point[PATH_MAX];
-	int mount_found;
 
 	if(!path_exists(cfg.fuse_home))
 	{
@@ -74,63 +74,51 @@ fuse_try_mount(FileView *view, const char *program)
 		}
 	}
 
-	runner = fuse_mounts;
-	mount_found = 0;
-
-	snprintf(filename, PATH_MAX, "%s/%s", view->curr_dir,
+	snprintf(file_full_path, PATH_MAX, "%s/%s", view->curr_dir,
 			get_current_file_name(view));
-	/* check if already mounted */
-	while(runner)
-	{
-		if(!pathcmp(filename, runner->source_file_name))
-		{
-			strcpy(mount_point, runner->mount_point);
-			mount_found = 1;
-			break;
-		}
-		runner = runner->next;
-	}
 
-	if(!mount_found)
+	/* check if already mounted */
+	runner = get_mount_by_source(file_full_path);
+
+	if(runner != NULL)
+	{
+		strcpy(mount_point, runner->mount_point);
+	}
+	else
 	{
 		fuse_mount_t *item;
 		/* new file to be mounted */
 		if(starts_with(program, "FUSE_MOUNT2"))
 		{
 			FILE *f;
-			size_t len;
-			if((f = fopen(filename, "r")) == NULL)
+			if((f = fopen(file_full_path, "r")) == NULL)
 			{
 				(void)show_error_msg("SSH mount failed", "Can't open file for reading");
 				curr_stats.save_msg = 1;
 				return;
 			}
 
-			if(fgets(filename, sizeof(filename), f) == NULL)
+			if(fgets(file_full_path, sizeof(file_full_path), f) == NULL)
 			{
 				(void)show_error_msg("SSH mount failed", "Can't read file content");
 				curr_stats.save_msg = 1;
 				fclose(f);
 				return;
 			}
-			len = strlen(filename);
+			fclose(f);
 
-			if(len == 0 || (len == 1 && filename[0] == '\n'))
+			chomp(file_full_path);
+			if(file_full_path[0] == '\0')
 			{
 				(void)show_error_msg("SSH mount failed", "File is empty");
 				curr_stats.save_msg = 1;
-				fclose(f);
 				return;
 			}
 
-			if(filename[len - 1] == '\n')
-				filename[len - 1] = '\0';
-
-			fclose(f);
 		}
-		if((item = fuse_mount(view, filename, program, mount_point)) != NULL)
-			snprintf(item->source_file_name, PATH_MAX, "%s/%s", view->curr_dir,
-					get_current_file_name(view));
+		if((item = fuse_mount(view, file_full_path, program, mount_point)) != NULL)
+			snprintf(item->source_file_name, sizeof(item->source_file_name), "%s",
+					file_full_path);
 		else
 			return;
 	}
@@ -142,12 +130,26 @@ fuse_try_mount(FileView *view, const char *program)
 	}
 }
 
+/* Searchers for mount record by source file path. */
+static fuse_mount_t *
+get_mount_by_source(const char *source)
+{
+	fuse_mount_t *runner = fuse_mounts;
+	while(runner != NULL)
+	{
+		if(pathcmp(runner->source_file_name, source) == 0)
+			break;
+		runner = runner->next;
+	}
+	return runner;
+}
+
 /*
  * mount_point should be an array of at least PATH_MAX characters
- * Returns 0 on success.
+ * Returns NULL on error.
  */
 static fuse_mount_t *
-fuse_mount(FileView *view, char *filename, const char *program,
+fuse_mount(FileView *view, char *file_full_path, const char *program,
 		char *mount_point)
 {
 	/* TODO: refactor this function fuse_mount() */
@@ -200,8 +202,8 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		return NULL;
 	}
 
-	clear_before_mount = format_mount_command(mount_point, filename, program,
-			sizeof(buf), buf);
+	clear_before_mount = format_mount_command(mount_point, file_full_path,
+			program, sizeof(buf), buf);
 
 	if(clear_before_mount)
 	{
@@ -225,7 +227,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 		/* remove the directory we created for the mount */
 		if(path_exists(mount_point))
 			rmdir(mount_point);
-		(void)show_error_msg("FUSE MOUNT ERROR", filename);
+		(void)show_error_msg("FUSE MOUNT ERROR", file_full_path);
 		(void)my_chdir(view->curr_dir);
 		return NULL;
 	}
@@ -233,7 +235,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	status_bar_message("FUSE mount success");
 
 	fuse_item = (fuse_mount_t *)malloc(sizeof(fuse_mount_t));
-	strcpy(fuse_item->source_file_name, filename);
+	strcpy(fuse_item->source_file_name, file_full_path);
 	strcpy(fuse_item->source_file_dir, view->curr_dir);
 	strcpy(fuse_item->mount_point, mount_point);
 	fuse_item->mount_point_id = mount_point_id;
@@ -358,7 +360,7 @@ int
 try_updir_from_fuse_mount(const char *path, FileView *view)
 {
 	fuse_mount_t *runner;
-	if((runner = find_fuse_mount(path)) != NULL)
+	if((runner = get_mount_by_mount_point(path)) != NULL)
 	{
 		updir_from_mount(view, runner);
 		return 1;
@@ -369,14 +371,15 @@ try_updir_from_fuse_mount(const char *path, FileView *view)
 int
 in_mounted_dir(const char *path)
 {
-	return find_fuse_mount(path) != NULL;
+	return get_mount_by_mount_point(path) != NULL;
 }
 
+/* Searchers for mount record by path to mount point. */
 static fuse_mount_t *
-find_fuse_mount(const char *dir)
+get_mount_by_mount_point(const char *dir)
 {
 	fuse_mount_t *runner = fuse_mounts;
-	while(runner)
+	while(runner != NULL)
 	{
 		if(pathcmp(runner->mount_point, dir) == 0)
 			break;
