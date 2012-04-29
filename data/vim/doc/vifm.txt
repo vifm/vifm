@@ -13,9 +13,10 @@
 |vifm-mappings|           Special sequences.
 |vifm-startup|            Determining of environment variables on startup.
 |vifm-configure|          Configuration of vifm.
-|vifm-plugin|             Using the vifm.vim plugin.
 |vifm-compatibility-mode| Its description.
 |vifm-menus-and-dialogs|  Keys for menus and dialogs.
+|vifm-fuse|               Using automated FUSE mounts.
+|vifm-plugin|             Using the vifm.vim plugin.
 |vifm-reserved|           List of reserved commands.
 
 Tag name structure:
@@ -857,11 +858,12 @@ The builtin commands are:
     ampersand as two last characters of a command means running of the
     command in the background.  Optional description can be given to each
     command to ease understanding of what command will do in the :file menu.
+    See |vifm-fuse|.
 
                                                *vifm-:filextype* *vifm-:filex*
 :filex[type] pat1,pat2,... [{ description }] def_program,program2,... - same
     as :filetype, but vifm will ignore this command if it's not running in X.
-    In X :filextype is equal to :filetype.
+    In X :filextype is equal to :filetype.  See |vifm-fuse|.
 
                                                *vifm-:filevtype* *vifm-:filev*
 :filev[iewer] pat1,pat2,... command - will associate given command as a
@@ -1445,7 +1447,7 @@ type: string
 default: "/tmp/vifm_FUSE/"
 Directory to be used as a root dir for FUSE mounts.
 If you change this option, vifm won't remount anything.  It affects future
-mounts only.
+mounts only. See |vifm-fuse| section for more information about FUSE mounts.
 
                                                *vifm-'gdefault'* |vifm-'gd'|
 gdefault gd
@@ -1934,6 +1936,52 @@ directories.
 
                                                *vifm-colors*
 The $VIFM/colors directory contains color schemes.
+
+--------------------------------------------------------------------------------
+*vifm-fuse*
+
+vifm has a builtin support of automated FUSE file system mounts.  It is
+implemented using file associations mechanism.  To enable automated mounts, one
+needs to use a specially formated program line in |vifm-:filetype| or
+|vifm-:filextype| commands.  Currently two formats are supported:
+
+1) FUSE_MOUNT                                  *vifm-FUSE_MOUNT*
+   This format should be used in case when all information needed for mounting
+   all files of a particular type is the same.  E.g. mounting of tar files
+   don't require any file specific options.
+
+   Format line:
+       FUSE_MOUNT|mounter %SOURCE_FILE %DESTINATION_DIR [%CLEAR]
+
+   Example |vifm-:filetype| command: >
+       :filetype FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+<
+
+2) FUSE_MOUNT2                                 *vifm-FUSE_MOUNT2*
+   This format allows to use specially formatted files to perform mounting and
+   is useful for mounting remotes, for example remote file systems over ftp or
+   ssh.
+
+   Format line:
+       FUSE_MOUNT2|mounter %PARAM %DESTINATION_DIR [%CLEAR]
+
+   Example |vifm-:filetype| command: >
+       :filetype FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
+<
+   Example file content: >
+       root@127.0.0.1:/
+<
+
+All % macros are expanded by vifm at runtime and have the following meaning:
+   - %SOURCE_FILE is replaced by full path to selected file
+   - %DESTINATION_DIR is replaced by full path to mount directory, which is
+     created by vifm basing on the value of |vifm-'fusehome'| option.
+   - %PARAM value is filled from the first line of file (whole line), though
+     in the future it can be changed to whole file content
+   - %CLEAR means that you want to clear screen before running mount command.
+
+%CLEAR is an optional macro.  Other macros are not mandatory, but mount
+commands likely wont work without them.
 
 --------------------------------------------------------------------------------
 *vifm-plugin*

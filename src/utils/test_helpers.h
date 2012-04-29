@@ -1,6 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2012 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,33 +16,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __FUSE_H__
-#define __FUSE_H__
+#ifndef __TEST_HELPERS_H__
+#define __TEST_HELPERS_H__
 
-#include "utils/test_helpers.h"
-#include "ui.h"
+#ifdef TEST
+#define TSTATIC
+#define TSTATIC_DEFS(x) x
+#else /* TEST */
+#define TSTATIC static
+#define TSTATIC_DEFS(x)
+#endif /* TEST */
 
-/* Wont mount same file twice */
-void fuse_try_mount(FileView *view, const char *program);
-/* Unmounts all FUSE mounded filesystems. */
-void unmount_fuse(void);
-/* Returns non-zero on successful unmount. */
-int try_updir_from_fuse_mount(const char *path, FileView *view);
-int in_mounted_dir(const char *path);
-/*
- * Return value:
- *   -1 error occurred.
- *   0  not mount point.
- *   1  left FUSE mount directory.
- */
-int try_unmount_fuse(FileView *view);
-
-TSTATIC_DEFS(
-	int format_mount_command(const char *mount_point, const char *file_name,
-		const char *format, size_t buf_size, char *buf);
-)
-
-#endif
+#endif /* __TEST_HELPERS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

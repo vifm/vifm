@@ -41,7 +41,7 @@ const assoc_record_t NONE_PSEUDO_PROG =
  * it doesn't consume much memory, and its items shouldn't be freed */
 static assoc_list_t active_filetypes;
 
-TESTABLE_STATIC void replace_double_comma(char *cmd, int put_null);
+TSTATIC void replace_double_comma(char *cmd, int put_null);
 static int get_filetype_number(const char *file, assoc_list_t assoc_list);
 static void assoc_programs(const char *pattern, const char *records, int for_x);
 static void register_assoc(assoc_t assoc, int for_x);
@@ -70,7 +70,6 @@ get_default_program_for_file(const char *file, assoc_record_t *result)
 	result->command = strdup(prog.command);
 	result->description = strdup(prog.description);
 
-	replace_double_comma(result->command, 1);
 	return 1;
 }
 
@@ -212,7 +211,7 @@ assoc_programs(const char *pattern, const char *records, int for_x)
 	register_assoc(assoc, for_x);
 }
 
-TESTABLE_STATIC void
+TSTATIC void
 replace_double_comma(char *cmd, int put_null)
 {
 	char *p = cmd;

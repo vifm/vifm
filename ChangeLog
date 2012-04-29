@@ -33,6 +33,8 @@
 
 	Added %i macro to completely ignore output of external commands.
 
+	Added notes about automatic FUSE mounts to the documentation.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with

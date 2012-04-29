@@ -24,8 +24,10 @@
 #include "cfg/config.h"
 #include "menus/menus.h"
 #include "utils/fs.h"
+#include "utils/log.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "filelist.h"
@@ -35,9 +37,9 @@
 
 typedef struct fuse_mount_t
 {
-	char source_file_name[PATH_MAX];
-	char source_file_dir[PATH_MAX];
-	char mount_point[PATH_MAX];
+	char source_file_name[PATH_MAX]; /* full path to source file */
+	char source_file_dir[PATH_MAX]; /* full path to directory of source file */
+	char mount_point[PATH_MAX]; /* full path to mount point */
 	int mount_point_id;
 	struct fuse_mount_t *next;
 }
@@ -45,17 +47,109 @@ fuse_mount_t;
 
 static fuse_mount_t *fuse_mounts;
 
-static fuse_mount_t * fuse_mount(FileView *view, char *filename,
+static fuse_mount_t * fuse_mount(FileView *view, char *file_full_path,
 		const char *program, char *mount_point);
-static fuse_mount_t * find_fuse_mount(const char *dir);
+TSTATIC int format_mount_command(const char *mount_point, const char *file_name,
+		const char *format, size_t buf_size, char *buf);
+static fuse_mount_t * get_mount_by_source(const char *source);
+static fuse_mount_t * get_mount_by_mount_point(const char *dir);
 static void updir_from_mount(FileView *view, fuse_mount_t *runner);
+
+void
+fuse_try_mount(FileView *view, const char *program)
+{
+	/* TODO: refactor this function fuse_try_mount() */
+
+	fuse_mount_t *runner;
+	char file_full_path[PATH_MAX];
+	char mount_point[PATH_MAX];
+
+	if(!path_exists(cfg.fuse_home))
+	{
+		if(make_dir(cfg.fuse_home, S_IRWXU) != 0)
+		{
+			(void)show_error_msg("Unable to create FUSE mount home directory",
+					cfg.fuse_home);
+			return;
+		}
+	}
+
+	snprintf(file_full_path, PATH_MAX, "%s/%s", view->curr_dir,
+			get_current_file_name(view));
+
+	/* check if already mounted */
+	runner = get_mount_by_source(file_full_path);
+
+	if(runner != NULL)
+	{
+		strcpy(mount_point, runner->mount_point);
+	}
+	else
+	{
+		fuse_mount_t *item;
+		/* new file to be mounted */
+		if(starts_with(program, "FUSE_MOUNT2"))
+		{
+			FILE *f;
+			if((f = fopen(file_full_path, "r")) == NULL)
+			{
+				(void)show_error_msg("SSH mount failed", "Can't open file for reading");
+				curr_stats.save_msg = 1;
+				return;
+			}
+
+			if(fgets(file_full_path, sizeof(file_full_path), f) == NULL)
+			{
+				(void)show_error_msg("SSH mount failed", "Can't read file content");
+				curr_stats.save_msg = 1;
+				fclose(f);
+				return;
+			}
+			fclose(f);
+
+			chomp(file_full_path);
+			if(file_full_path[0] == '\0')
+			{
+				(void)show_error_msg("SSH mount failed", "File is empty");
+				curr_stats.save_msg = 1;
+				return;
+			}
+
+		}
+		if((item = fuse_mount(view, file_full_path, program, mount_point)) != NULL)
+			snprintf(item->source_file_name, sizeof(item->source_file_name), "%s",
+					file_full_path);
+		else
+			return;
+	}
+
+	if(change_directory(view, mount_point) >= 0)
+	{
+		load_dir_list(view, 0);
+		move_to_list_pos(view, view->curr_line);
+	}
+}
+
+/* Searchers for mount record by source file path. */
+static fuse_mount_t *
+get_mount_by_source(const char *source)
+{
+	fuse_mount_t *runner = fuse_mounts;
+	while(runner != NULL)
+	{
+		if(pathcmp(runner->source_file_name, source) == 0)
+			break;
+		runner = runner->next;
+	}
+	return runner;
+}
 
 /*
  * mount_point should be an array of at least PATH_MAX characters
- * Returns 0 on success.
+ * Returns NULL on error.
  */
 static fuse_mount_t *
-fuse_mount(FileView *view, char *filename, const char *program,
+fuse_mount(FileView *view, char *file_full_path, const char *program,
 		char *mount_point)
 {
 	/* TODO: refactor this function fuse_mount() */
@@ -64,13 +158,7 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	int mount_point_id = 0;
 	fuse_mount_t *fuse_item = NULL;
 	char buf[2*PATH_MAX];
-	char cmd_buf[96];
-	char *cmd_pos;
-	char *buf_pos;
-	const char *prog_pos;
-	char *escaped_path;
 	char *escaped_filename;
-	char *escaped_mount_point;
 	int clear_before_mount = 0;
 	const char *tmp_file;
 	int status;
@@ -100,17 +188,88 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	}
 	free(escaped_filename);
 
-	escaped_path = escape_filename(filename, 0);
-	escaped_mount_point = escape_filename(mount_point, 0);
-
 	/* I need the return code of the mount command */
 	status_bar_message("FUSE mounting selected file, please stand by..");
+
+	/* Just before running the mount,
+		 I need to chdir out temporarily from any FUSE mounted
+		 paths, Otherwise the fuse-zip command fails with
+		 "fusermount: failed to open current directory: permission denied"
+		 (this happens when mounting JARs from mounted JARs) */
+	if(my_chdir(cfg.fuse_home) != 0)
+	{
+		(void)show_error_msg("FUSE MOUNT ERROR", "Can't chdir() to FUSE home");
+		return NULL;
+	}
+
+	clear_before_mount = format_mount_command(mount_point, file_full_path,
+			program, sizeof(buf), buf);
+
+	if(clear_before_mount)
+	{
+		def_prog_mode();
+		endwin();
+	}
+
+	tmp_file = make_name_unique("/tmp/vifm.errors");
+	strcat(buf, " 2> ");
+	strcat(buf, tmp_file);
+	LOG_INFO_MSG("FUSE mount command: `%s`", buf);
+	status = background_and_wait_for_status(buf);
+	/* check child status */
+	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
+	{
+		FILE *ef = fopen(tmp_file, "r");
+		print_errors(ef);
+		unlink(tmp_file);
+
+		werase(status_bar);
+		/* remove the directory we created for the mount */
+		if(path_exists(mount_point))
+			rmdir(mount_point);
+		(void)show_error_msg("FUSE MOUNT ERROR", file_full_path);
+		(void)my_chdir(view->curr_dir);
+		return NULL;
+	}
+	unlink(tmp_file);
+	status_bar_message("FUSE mount success");
+
+	fuse_item = (fuse_mount_t *)malloc(sizeof(fuse_mount_t));
+	strcpy(fuse_item->source_file_name, file_full_path);
+	strcpy(fuse_item->source_file_dir, view->curr_dir);
+	strcpy(fuse_item->mount_point, mount_point);
+	fuse_item->mount_point_id = mount_point_id;
+	fuse_item->next = NULL;
+	if(fuse_mounts == NULL)
+		fuse_mounts = fuse_item;
+	else
+		runner->next = fuse_item;
+
+	return fuse_item;
+}
+
+/* Builds the mount command based on the file type program.
+ * Accepted formats are:
+ *   FUSE_MOUNT|some_mount_command %SOURCE_FILE %DESTINATION_DIR [%CLEAR]
+ * and
+ *   FUSE_MOUNT2|some_mount_command %PARAM %DESTINATION_DIR [%CLEAR]
+ * Returns non-zero if format contains %CLEAR.
+ * */
+TSTATIC int
+format_mount_command(const char *mount_point, const char *file_name,
+		const char *format, size_t buf_size, char *buf)
+{
+	char *buf_pos;
+	const char *prog_pos;
+	char *escaped_path;
+	char *escaped_mount_point;
+	int result = 0;
+
+	escaped_path = escape_filename(file_name, 0);
+	escaped_mount_point = escape_filename(mount_point, 0);
+
 	buf_pos = buf;
-	prog_pos = program;
-	/* Build the mount command based on the FUSE program config line in vifmrc.
-		 Accepted FORMAT: FUSE_MOUNT|some_mount_command %SOURCE_FILE %DESTINATION_DIR
-		 or
-		 FUSE_MOUNT2|some_mount_command %PARAM %DESTINATION_DIR */
+	prog_pos = format;
 	strcpy(buf_pos, "");
 	buf_pos += strlen(buf_pos);
 	while(*prog_pos != '\0' && *prog_pos != '|')
@@ -120,16 +279,19 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	{
 		if(*prog_pos == '%')
 		{
+			char cmd_buf[96];
+			char *cmd_pos;
+
 			cmd_pos = cmd_buf;
 			while(*prog_pos != '\0' && *prog_pos != ' ')
 			{
 				*cmd_pos = *prog_pos;
-				if(cmd_pos < cmd_pos+sizeof(cmd_buf))
+				if(cmd_pos - cmd_buf < sizeof(cmd_buf))
 					cmd_pos++;
 				prog_pos++;
 			}
 			*cmd_pos = '\0';
-			if(buf_pos + strlen(escaped_path) >= buf + sizeof(buf) + 2)
+			if(buf_pos + strlen(escaped_path) >= buf + buf_size + 2)
 				continue;
 			else if(!strcmp(cmd_buf, "%SOURCE_FILE") || !strcmp(cmd_buf, "%PARAM"))
 			{
@@ -143,13 +305,13 @@ fuse_mount(FileView *view, char *filename, const char *program,
 			}
 			else if(!strcmp(cmd_buf, "%CLEAR"))
 			{
-				clear_before_mount = 1;
+				result = 1;
 			}
 		}
 		else
 		{
 			*buf_pos = *prog_pos;
-			if(buf_pos < buf_pos + sizeof(buf) - 1)
+			if(buf_pos - buf < buf_size - 1)
 				buf_pos++;
 			prog_pos++;
 		}
@@ -158,144 +320,8 @@ fuse_mount(FileView *view, char *filename, const char *program,
 	*buf_pos = '\0';
 	free(escaped_mount_point);
 	free(escaped_path);
-	/* CMD built */
-	/* Just before running the mount,
-		 I need to chdir out temporarily from any FUSE mounted
-		 paths, Otherwise the fuse-zip command fails with
-		 "fusermount: failed to open current directory: permission denied"
-		 (this happens when mounting JARs from mounted JARs) */
-	if(my_chdir(cfg.fuse_home) != 0)
-	{
-		(void)show_error_msg("FUSE MOUNT ERROR", "Can't chdir() to FUSE home");
-		return NULL;
-	}
 
-	if(clear_before_mount)
-	{
-		def_prog_mode();
-		endwin();
-	}
-
-	tmp_file = make_name_unique("/tmp/vifm.errors");
-	strcat(buf, " 2> ");
-	strcat(buf, tmp_file);
-	status = background_and_wait_for_status(buf);
-	/* check child status */
-	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
-	{
-		FILE *ef = fopen(tmp_file, "r");
-		print_errors(ef);
-		unlink(tmp_file);
-
-		werase(status_bar);
-		/* remove the directory we created for the mount */
-		if(path_exists(mount_point))
-			rmdir(mount_point);
-		(void)show_error_msg("FUSE MOUNT ERROR", filename);
-		(void)my_chdir(view->curr_dir);
-		return NULL;
-	}
-	unlink(tmp_file);
-	status_bar_message("FUSE mount success");
-
-	fuse_item = (fuse_mount_t *)malloc(sizeof(fuse_mount_t));
-	strcpy(fuse_item->source_file_name, filename);
-	strcpy(fuse_item->source_file_dir, view->curr_dir);
-	strcpy(fuse_item->mount_point, mount_point);
-	fuse_item->mount_point_id = mount_point_id;
-	fuse_item->next = NULL;
-	if(fuse_mounts == NULL)
-		fuse_mounts = fuse_item;
-	else
-		runner->next = fuse_item;
-
-	return fuse_item;
-}
-
-void
-fuse_try_mount(FileView *view, const char *program)
-{
-	fuse_mount_t *runner;
-	char filename[PATH_MAX];
-	char mount_point[PATH_MAX];
-	int mount_found;
-
-	if(!path_exists(cfg.fuse_home))
-	{
-		if(make_dir(cfg.fuse_home, S_IRWXU) != 0)
-		{
-			(void)show_error_msg("Unable to create FUSE mount home directory",
-					cfg.fuse_home);
-			return;
-		}
-	}
-
-	runner = fuse_mounts;
-	mount_found = 0;
-
-	snprintf(filename, PATH_MAX, "%s/%s", view->curr_dir,
-			get_current_file_name(view));
-	/* check if already mounted */
-	while(runner)
-	{
-		if(!pathcmp(filename, runner->source_file_name))
-		{
-			strcpy(mount_point, runner->mount_point);
-			mount_found = 1;
-			break;
-		}
-		runner = runner->next;
-	}
-
-	if(!mount_found)
-	{
-		fuse_mount_t *item;
-		/* new file to be mounted */
-		if(starts_with(program, "FUSE_MOUNT2"))
-		{
-			FILE *f;
-			size_t len;
-			if((f = fopen(filename, "r")) == NULL)
-			{
-				(void)show_error_msg("SSH mount failed", "Can't open file for reading");
-				curr_stats.save_msg = 1;
-				return;
-			}
-
-			if(fgets(filename, sizeof(filename), f) == NULL)
-			{
-				(void)show_error_msg("SSH mount failed", "Can't read file content");
-				curr_stats.save_msg = 1;
-				fclose(f);
-				return;
-			}
-			len = strlen(filename);
-
-			if(len == 0 || (len == 1 && filename[0] == '\n'))
-			{
-				(void)show_error_msg("SSH mount failed", "File is empty");
-				curr_stats.save_msg = 1;
-				fclose(f);
-				return;
-			}
-
-			if(filename[len - 1] == '\n')
-				filename[len - 1] = '\0';
-
-			fclose(f);
-		}
-		if((item = fuse_mount(view, filename, program, mount_point)) != NULL)
-			snprintf(item->source_file_name, PATH_MAX, "%s/%s", view->curr_dir,
-					get_current_file_name(view));
-		else
-			return;
-	}
-
-	if(change_directory(view, mount_point) >= 0)
-	{
-		load_dir_list(view, 0);
-		move_to_list_pos(view, view->curr_line);
-	}
+	return result;
 }
 
 void
@@ -334,7 +360,7 @@ int
 try_updir_from_fuse_mount(const char *path, FileView *view)
 {
 	fuse_mount_t *runner;
-	if((runner = find_fuse_mount(path)) != NULL)
+	if((runner = get_mount_by_mount_point(path)) != NULL)
 	{
 		updir_from_mount(view, runner);
 		return 1;
@@ -342,23 +368,24 @@ try_updir_from_fuse_mount(const char *path, FileView *view)
 	return 0;
 }
 
+int
+in_mounted_dir(const char *path)
+{
+	return get_mount_by_mount_point(path) != NULL;
+}
+
+/* Searchers for mount record by path to mount point. */
 static fuse_mount_t *
-find_fuse_mount(const char *dir)
+get_mount_by_mount_point(const char *dir)
 {
 	fuse_mount_t *runner = fuse_mounts;
-	while(runner)
+	while(runner != NULL)
 	{
 		if(pathcmp(runner->mount_point, dir) == 0)
 			break;
 		runner = runner->next;
 	}
 	return runner;
-}
-
-int
-in_mounted_dir(const char *path)
-{
-	return find_fuse_mount(path) != NULL;
 }
 
 int
@@ -389,6 +416,7 @@ try_unmount_fuse(FileView *view)
 	escaped_mount_point = escape_filename(runner->mount_point, 0);
 	snprintf(buf, sizeof(buf), "fusermount -u %s 2> /dev/null",
 			escaped_mount_point);
+	LOG_INFO_MSG("FUSE unmount command: `%s`", buf);
 	free(escaped_mount_point);
 
 	/* have to chdir to parent temporarily, so that this DIR can be unmounted */
