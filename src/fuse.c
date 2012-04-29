@@ -57,6 +57,8 @@ static void updir_from_mount(FileView *view, fuse_mount_t *runner);
 void
 fuse_try_mount(FileView *view, const char *program)
 {
+	/* TODO: refactor this function fuse_try_mount() */
+
 	fuse_mount_t *runner;
 	char filename[PATH_MAX];
 	char mount_point[PATH_MAX];
