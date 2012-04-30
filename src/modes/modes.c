@@ -120,7 +120,7 @@ modes_pre(void)
 		view_pre();
 		return;
 	}
-	else if(mode == MENU_MODE)
+	else if(is_in_menu_like_mode())
 	{
 		menu_pre();
 		return;
@@ -149,7 +149,7 @@ modes_post(void)
 		view_post();
 		return;
 	}
-	else if(mode == MENU_MODE)
+	else if(is_in_menu_like_mode())
 	{
 		menu_post();
 		return;
@@ -213,6 +213,13 @@ modes_redraw(void)
 			modes_redraw();
 		return;
 	}
+	else if(mode == FILE_INFO_MODE)
+	{
+		redraw_file_info_dialog();
+		if(--in_here > 0)
+			modes_redraw();
+		return;
+	}
 
 	redraw_window();
 
@@ -247,6 +254,11 @@ modes_update(void)
 		menu_redraw();
 		return;
 	}
+	else if(mode == FILE_INFO_MODE)
+	{
+		redraw_file_info_dialog();
+		return;
+	}
 
 	touchwin(stdscr);
 	update_all_windows();
@@ -278,6 +290,12 @@ int
 get_mode(void)
 {
 	return mode;
+}
+
+int
+is_in_menu_like_mode(void)
+{
+	return mode == MENU_MODE || mode == FILE_INFO_MODE;
 }
 
 void

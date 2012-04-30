@@ -67,7 +67,6 @@ load_def_values(status_t *stats)
 	stats->use_register = 0;
 	stats->curr_register = -1;
 	stats->register_saved = 0;
-	stats->show_full = 0;
 	stats->view = 0;
 	stats->use_input_bar = 1;
 	stats->errmsg_shown = 0;

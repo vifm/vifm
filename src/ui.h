@@ -188,6 +188,8 @@ void wprint(WINDOW *win, const char *str);
 /* Sets inner flag or signals about needed view update in some other way.
  * It doesn't perform any update, just request one to happen in the future. */
 void request_view_update(FileView *view);
+/* Performs resizing of some of TUI elements for menu like modes. */
+void resize_for_menu_like(void);
 
 #endif
 

@@ -88,7 +88,7 @@ enter_file_info_mode(FileView *v)
 {
 	*mode = FILE_INFO_MODE;
 	view = v;
-	curr_stats.show_full = 1;
+	setup_menu();
 	redraw_file_info_dialog();
 
 	was_redraw = 0;
@@ -97,7 +97,6 @@ enter_file_info_mode(FileView *v)
 static void
 leave_file_info_mode(void)
 {
-	curr_stats.show_full = 0;
 	*mode = NORMAL_MODE;
 
 	if(was_redraw)
@@ -119,17 +118,15 @@ redraw_file_info_dialog(void)
 	struct group *grp_buf;
 #endif
 	struct tm *tm_ptr;
-	int x;
 	int curr_y;
 	uint64_t size;
 	int size_not_precise;
 
 	assert(view != NULL);
 
-	setup_menu();
+	resize_for_menu_like();
 
-	x = getmaxx(menu_win);
-	wclear(menu_win);
+	werase(menu_win);
 
 	snprintf(name_buf, sizeof(name_buf), "%s",
 			view->dir_entry[view->list_pos].name);
@@ -163,7 +160,7 @@ redraw_file_info_dialog(void)
 
 	curr_y = 2;
 	mvwaddstr(menu_win, curr_y, 2, "File: ");
-	name_buf[x - 8] = '\0';
+	name_buf[getmaxx(menu_win) - 8] = '\0';
 	wmove(menu_win, curr_y, 8);
 	wprint(menu_win, name_buf);
 	curr_y += 2;
@@ -221,8 +218,6 @@ redraw_file_info_dialog(void)
 	if((grp_buf = getgrgid(view->dir_entry[view->list_pos].gid)) != NULL)
 		mvwaddstr(menu_win, curr_y, 10, grp_buf->gr_name);
 #endif
-
-	wnoutrefresh(menu_win);
 
 	box(menu_win, 0, 0);
 	wmove(menu_win, 0, 3);

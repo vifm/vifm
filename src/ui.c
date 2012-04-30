@@ -22,19 +22,15 @@
                      * functions
                      */
 
-#ifndef _WIN32
-#include <sys/ioctl.h>
-#endif
 #include <sys/stat.h> /* stat */
 #include <dirent.h> /* DIR */
 #ifndef _WIN32
 #include <grp.h> /* getgrgid() */
 #include <pwd.h> /* getpwent() */
-#endif
-#include <stdlib.h> /* malloc */
-#ifndef _WIN32
+#include <sys/ioctl.h>
 #include <termios.h> /* struct winsize */
 #endif
+#include <stdlib.h> /* malloc */
 #include <unistd.h>
 
 #include <assert.h>
@@ -580,7 +576,7 @@ status_bar_message_i(const char *message, int error)
 
 	wattrset(status_bar, 0);
 	wrefresh(status_bar);
-	if(get_mode() != MENU_MODE && get_mode() != FILE_INFO_MODE && cfg.last_status)
+	if(!is_in_menu_like_mode() && cfg.last_status)
 		wrefresh(stat_win);
 }
 
@@ -1118,13 +1114,6 @@ redraw_window(void)
 	werase(mborder);
 	werase(rborder);
 
-	if(curr_stats.show_full)
-	{
-		redraw_file_info_dialog();
-		curr_stats.need_redraw = curr_stats.too_small_term;
-		return;
-	}
-
 	if(curr_stats.too_small_term)
 		return;
 
@@ -1499,6 +1488,35 @@ void
 request_view_update(FileView *view)
 {
 	memset(&view->dir_mtime, -1, sizeof(view->dir_mtime));
+}
+
+void
+resize_for_menu_like(void)
+{
+	int screen_x, screen_y;
+#ifndef _WIN32
+	struct winsize ws;
+
+	ioctl(0, TIOCGWINSZ, &ws);
+	/* changed for pdcurses */
+	resizeterm(ws.ws_row, ws.ws_col);
+#endif
+	flushinp(); /* without it we will get strange character on input */
+	getmaxyx(stdscr, screen_y, screen_x);
+
+	werase(stdscr);
+	werase(status_bar);
+	werase(pos_win);
+
+	wresize(menu_win, screen_y - 1, screen_x);
+	wresize(status_bar, 1, screen_x - 19);
+	mvwin(status_bar, screen_y - 1, 0);
+	wresize(pos_win, 1, 13);
+	mvwin(pos_win, screen_y - 1, screen_x - 13);
+	mvwin(input_win, screen_y - 1, screen_x - 19);
+	wrefresh(status_bar);
+	wrefresh(pos_win);
+	wrefresh(input_win);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

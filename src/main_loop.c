@@ -84,7 +84,7 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 			curr_stats.pending_redraw = 0;
 		}
 
-		if(get_mode() != MENU_MODE && get_mode() != CMDLINE_MODE)
+		if(!is_in_menu_like_mode() && get_mode() != CMDLINE_MODE)
 		{
 			check_if_filelists_have_changed(curr_view);
 			if(curr_stats.number_of_windows != 1 && !curr_stats.view)

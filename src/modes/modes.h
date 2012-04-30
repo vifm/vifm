@@ -45,6 +45,8 @@ void modupd_input_bar(wchar_t *str);
 void clear_input_bar(void);
 /* returns current mode id */
 int get_mode(void);
+/* Returns non-zero if current mode is a menu like one. */
+int is_in_menu_like_mode(void);
 void print_selected_msg(void);
 
 #endif
