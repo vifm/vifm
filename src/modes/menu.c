@@ -394,9 +394,7 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	draw_menu(menu);
-	move_to_menu_pos(menu->pos, menu);
-	wrefresh(menu_win);
+	redraw_menu(menu);
 }
 
 static void
