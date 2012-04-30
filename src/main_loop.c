@@ -146,7 +146,7 @@ main_loop(void)
 
 			mvwin(status_bar, 0, 0);
 			wresize(status_bar, getmaxy(stdscr), getmaxx(stdscr));
-			wclear(status_bar);
+			werase(status_bar);
 			waddstr(status_bar, "Terminal is too small for vifm");
 			touchwin(status_bar);
 			wrefresh(status_bar);
