@@ -45,6 +45,8 @@ static int reset_dircache(status_t *stats);
 
 status_t curr_stats;
 
+static int pending_redraw;
+
 int
 init_status(void)
 {
@@ -59,6 +61,8 @@ init_status(void)
 static void
 load_def_values(status_t *stats)
 {
+	pending_redraw = 0;
+
 	stats->need_redraw = 0;
 	stats->last_char = 0;
 	stats->is_console = 0;
@@ -76,7 +80,6 @@ load_def_values(status_t *stats)
 	stats->ch_pos = 1;
 	stats->confirmed = 0;
 	stats->auto_redraws = 0;
-	stats->pending_redraw = 0;
 	stats->cs_base = DCOLOR_BASE;
 	stats->cs = &cfg.cs;
 	strcpy(stats->color_scheme, "");
@@ -148,6 +151,23 @@ reset_dircache(status_t *stats)
 	tree_free(stats->dirsize_cache);
 	stats->dirsize_cache = tree_create(0, 0);
 	return stats->dirsize_cache == NULL_TREE;
+}
+
+void
+schedule_redraw(void)
+{
+	pending_redraw++;
+}
+
+int
+is_redraw_scheduled(void)
+{
+	if(pending_redraw)
+	{
+		pending_redraw--;
+		return 1;
+	}
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

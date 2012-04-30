@@ -68,7 +68,7 @@ received_sigwinch(void)
 
 	if(!isendwin())
 	{
-		curr_stats.pending_redraw = 1;
+		schedule_redraw();
 	}
 	else
 	{
@@ -80,7 +80,7 @@ static void
 received_sigcont(void)
 {
 	reset_prog_mode();
-	curr_stats.pending_redraw = 1;
+	schedule_redraw();
 }
 
 static void

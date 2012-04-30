@@ -78,8 +78,6 @@ typedef struct
 
 	int auto_redraws;
 
-	int pending_redraw;
-
 	int cs_base;
 	col_scheme_t *cs;
 	char color_scheme[NAME_MAX];
@@ -110,6 +108,13 @@ int init_status(void);
 
 /* Returns non-zero on error. */
 int reset_status(void);
+
+/* Sets internal flag to schedule postponed redraw operation. */
+void schedule_redraw(void);
+
+/* Checks for postponed redraw operations. Returns non-zero if redraw operation
+ * was scheduled and resets internal flag. */
+int is_redraw_scheduled(void);
 
 #endif
 

@@ -124,6 +124,8 @@
 	Fixed deadlock issue that caused vifm to freeze after running external
 	commands in certain cases.
 
+	Fixed wrong resizing of file info mode.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

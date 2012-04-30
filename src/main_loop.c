@@ -78,10 +78,9 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 	{
 		int j;
 
-		if(curr_stats.pending_redraw)
+		if(is_redraw_scheduled())
 		{
 			modes_redraw();
-			curr_stats.pending_redraw = 0;
 		}
 
 		if(!is_in_menu_like_mode() && get_mode() != CMDLINE_MODE)
@@ -247,10 +246,9 @@ main_loop(void)
 
 		timeout = cfg.timeout_len;
 
-		if(curr_stats.pending_redraw)
+		if(is_redraw_scheduled())
 		{
 			modes_redraw();
-			curr_stats.pending_redraw = 0;
 		}
 
 		pos = 0;
