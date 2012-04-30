@@ -513,6 +513,8 @@ status_bar_message_i(const char *message, int error)
 
 	if(msg == NULL)
 		return;
+	if(get_mode() == CMDLINE_MODE)
+		return;
 
 	p = msg;
 	q = msg - 1;
