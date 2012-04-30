@@ -2212,7 +2212,7 @@ window_shows_dirlist(FileView *view)
 	if(view == other_view && curr_stats.view)
 		return 0;
 	if(get_mode() != NORMAL_MODE && get_mode() != VISUAL_MODE &&
-			get_mode() != VIEW_MODE)
+			get_mode() != VIEW_MODE && get_mode() != CMDLINE_MODE)
 		return 0;
 	return 1;
 }

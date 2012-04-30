@@ -19,6 +19,8 @@ Basic things that need to be done.
     Make :filetype, :filextype and :fileviewer show menus with 0 or 1 args.
     Add :increment and :decrement commands, which should work in two modes
         in the same way as Ctrl-X/Ctrl-A and like their combination with :clone.
+    Improve ga and gA commands to recalculate sizes of modified directories
+        only, and maybe update size of all parent cached directories.
 
 Documentation.
 	Better documentation.
