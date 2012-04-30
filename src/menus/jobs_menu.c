@@ -32,7 +32,6 @@ int
 show_jobs_menu(FileView *view)
 {
 	job_t *p;
-	finished_job_t *fj;
 #ifndef _WIN32
 	sigset_t new_mask;
 #endif
@@ -67,22 +66,10 @@ show_jobs_menu(FileView *view)
 #endif
 
 	p = jobs;
-	fj = fjobs;
 
 	x = 0;
 	while(p != NULL)
 	{
-		/* Mark any finished jobs */
-		while(fj != NULL)
-		{
-			if(p->pid == fj->pid)
-			{
-				p->running = 0;
-				fj->remove = 1;
-			}
-			fj = fj->next;
-		}
-
 		if(p->running)
 		{
 			m.items = (char **)realloc(m.items, sizeof(char *)*(x + 1));
