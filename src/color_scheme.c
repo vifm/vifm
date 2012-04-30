@@ -33,7 +33,7 @@
 #include "menus/menus.h"
 #include "utils/fs.h"
 #include "utils/macros.h"
-#include "utils/path.h"
+#include "utils/str.h"
 #include "utils/tree.h"
 #include "color_scheme.h"
 #include "filelist.h"

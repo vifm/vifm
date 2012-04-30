@@ -28,6 +28,9 @@ int find_next_pattern(FileView *view, int wrap);
 /* returns non-zero if pattern was found */
 int find_previous_pattern(FileView *view, int wrap);
 
+/* Prints error message about failed search to the user. */
+void print_search_fail_msg(FileView *view, int backward);
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

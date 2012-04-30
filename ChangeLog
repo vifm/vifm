@@ -64,6 +64,8 @@
 
 	Less blinking of the screen in various scenarios.
 
+	Corrected status bar messages about failed search.
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.

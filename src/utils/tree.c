@@ -24,7 +24,7 @@
 #ifdef _WIN32
 #include "fs.h"
 #endif
-#include "path.h"
+#include "str.h"
 
 #include "tree.h"
 

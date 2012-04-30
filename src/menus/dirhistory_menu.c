@@ -22,7 +22,7 @@
 #include "../cfg/config.h"
 #include "../modes/menu.h"
 #include "../utils/fs.h"
-#include "../utils/path.h"
+#include "../utils/str.h"
 #include "../ui.h"
 #include "menus.h"
 
