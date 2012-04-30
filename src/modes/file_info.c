@@ -52,6 +52,7 @@ static void leave_file_info_mode(void);
 static int show_file_type(FileView *view, int curr_y);
 static int show_mime_type(FileView *view, int curr_y);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 
 static int *mode;
 static FileView *view;
@@ -59,6 +60,7 @@ static int was_redraw;
 
 static keys_add_info_t builtin_cmds[] = {
 	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
 	/* return */
 	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	/* escape */
@@ -346,6 +348,12 @@ static void
 cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
 	leave_file_info_mode();
+}
+
+static void
+cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
+{
+	redraw_file_info_dialog();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

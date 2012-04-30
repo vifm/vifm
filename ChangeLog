@@ -35,6 +35,8 @@
 
 	Added notes about automatic FUSE mounts to the documentation.
 
+	Added Ctrl-L handling in file info (Ctrl-G) mode.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with
