@@ -62,6 +62,8 @@
 
 	Now vifm removes scripts ($VIFM/scripts/**) from PATH for :shell command.
 
+	Less blinking of the screen in various scenarios.
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.
