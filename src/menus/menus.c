@@ -445,9 +445,9 @@ redraw_menu(menu_info *m)
 	flushinp(); /* without it we will get strange character on input */
 	getmaxyx(stdscr, screen_y, screen_x);
 
-	wclear(stdscr);
-	wclear(status_bar);
-	wclear(pos_win);
+	werase(stdscr);
+	werase(status_bar);
+	werase(pos_win);
 
 	wresize(menu_win, screen_y - 1, screen_x);
 	wresize(status_bar, 1, screen_x - 19);
