@@ -412,7 +412,13 @@ find_record(const char *name)
 	int i;
 	for(i = 0; i < nvars; i++)
 	{
-		if(vars[i].name != NULL && strcmp(vars[i].name, name) == 0)
+		if(vars[i].name != NULL &&
+#ifndef _WIN32
+				strcmp(vars[i].name, name) == 0
+#else
+				strcasecmp(vars[i].name, name) == 0
+#endif
+				)
 			return &vars[i];
 	}
 	return NULL;
@@ -469,8 +475,13 @@ complete_variables(const char *cmd, const char **start)
 			continue;
 		if(vars[i].removed)
 			continue;
+#ifndef _WIN32
 		if(strncmp(vars[i].name, cmd, len) == 0)
 			add_completion(vars[i].name);
+#else
+		if(strncasecmp(vars[i].name, cmd, len) == 0)
+			add_completion(vars[i].name);
+#endif
 	}
 	completion_group_end();
 	add_completion(cmd);
