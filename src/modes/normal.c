@@ -1663,7 +1663,7 @@ cmd_t(key_info_t key_info, keys_info_t *keys_info)
 	if(curr_view->dir_entry[curr_view->list_pos].selected == 0)
 	{
 		/* The ../ dir cannot be selected */
-		if(!pathcmp(curr_view->dir_entry[curr_view->list_pos].name, "../"))
+		if(!stroscmp(curr_view->dir_entry[curr_view->list_pos].name, "../"))
 			return;
 
 		curr_view->dir_entry[curr_view->list_pos].selected = 1;
@@ -2130,7 +2130,7 @@ selector_S(key_info_t key_info, keys_info_t *keys_info)
 	i = 0;
 	for(x = 0; x < curr_view->list_rows; x++)
 	{
-		if(pathcmp(curr_view->dir_entry[x].name, "../") == 0)
+		if(stroscmp(curr_view->dir_entry[x].name, "../") == 0)
 			continue;
 		if(curr_view->dir_entry[x].selected)
 			continue;
@@ -2155,7 +2155,7 @@ selector_a(key_info_t key_info, keys_info_t *keys_info)
 	i = 0;
 	for(x = 0; x < curr_view->list_rows; x++)
 	{
-		if(pathcmp(curr_view->dir_entry[x].name, "../") == 0)
+		if(stroscmp(curr_view->dir_entry[x].name, "../") == 0)
 			continue;
 		keys_info->indexes[i++] = x;
 	}

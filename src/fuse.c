@@ -137,7 +137,7 @@ get_mount_by_source(const char *source)
 	fuse_mount_t *runner = fuse_mounts;
 	while(runner != NULL)
 	{
-		if(pathcmp(runner->source_file_name, source) == 0)
+		if(stroscmp(runner->source_file_name, source) == 0)
 			break;
 		runner = runner->next;
 	}
@@ -381,7 +381,7 @@ get_mount_by_mount_point(const char *dir)
 	fuse_mount_t *runner = fuse_mounts;
 	while(runner != NULL)
 	{
-		if(pathcmp(runner->mount_point, dir) == 0)
+		if(stroscmp(runner->mount_point, dir) == 0)
 			break;
 		runner = runner->next;
 	}
@@ -401,7 +401,7 @@ try_unmount_fuse(FileView *view)
 	trailer = NULL;
 	while(runner)
 	{
-		if(!pathcmp(runner->mount_point, view->curr_dir))
+		if(!stroscmp(runner->mount_point, view->curr_dir))
 			break;
 
 		trailer = runner;

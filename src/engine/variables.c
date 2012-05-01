@@ -412,7 +412,7 @@ find_record(const char *name)
 	int i;
 	for(i = 0; i < nvars; i++)
 	{
-		if(vars[i].name != NULL && strcmp(vars[i].name, name) == 0)
+		if(vars[i].name != NULL && stroscmp(vars[i].name, name) == 0)
 			return &vars[i];
 	}
 	return NULL;
@@ -469,7 +469,7 @@ complete_variables(const char *cmd, const char **start)
 			continue;
 		if(vars[i].removed)
 			continue;
-		if(strncmp(vars[i].name, cmd, len) == 0)
+		if(strnoscmp(vars[i].name, cmd, len) == 0)
 			add_completion(vars[i].name);
 	}
 	completion_group_end();

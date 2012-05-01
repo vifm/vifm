@@ -244,7 +244,7 @@ append_selected_files(FileView *view, char *expanded, int under_cursor,
 	}
 
 #ifdef _WIN32
-	if(pathcmp(cfg.shell, "cmd") == 0)
+	if(stroscmp(cfg.shell, "cmd") == 0)
 		to_back_slash(expanded + old_len);
 #endif
 
@@ -308,7 +308,7 @@ expand_directory_path(FileView *view, char *expanded, int quotes,
 	}
 
 #ifdef _WIN32
-	if(pathcmp(cfg.shell, "cmd") == 0)
+	if(stroscmp(cfg.shell, "cmd") == 0)
 		to_back_slash(result);
 #endif
 

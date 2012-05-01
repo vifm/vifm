@@ -71,7 +71,7 @@ path_env_was_changed(int force)
 
 	path = local_getenv("PATH");
 
-	if(clean_path != NULL && pathcmp(clean_path, path) == 0)
+	if(clean_path != NULL && stroscmp(clean_path, path) == 0)
 	{
 		return force;
 	}
@@ -110,9 +110,9 @@ add_dirs_to_path(const char *path)
 	{
 		char buf[PATH_MAX];
 
-		if(pathcmp(dentry->d_name, ".") == 0)
+		if(stroscmp(dentry->d_name, ".") == 0)
 			continue;
-		else if(pathcmp(dentry->d_name, "..") == 0)
+		else if(stroscmp(dentry->d_name, "..") == 0)
 			continue;
 
 		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
@@ -219,7 +219,7 @@ split_path_list(void)
 
 		for(j = 0; j < i - 1; j++)
 		{
-			if(pathcmp(paths[j], s) == 0)
+			if(stroscmp(paths[j], s) == 0)
 			{
 				free(s);
 				i--;

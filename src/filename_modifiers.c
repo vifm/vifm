@@ -67,7 +67,7 @@ apply_mods(const char *path, const char *parent, const char *mod)
 #ifdef _WIN32
 	/* this is needed to run something like explorer.exe, which isn't smart enough
 	 * to understand forward slashes */
-	if(napplied == 0 && pathcmp(cfg.shell, "cmd") != 0)
+	if(napplied == 0 && stroscmp(cfg.shell, "cmd") != 0)
 		to_back_slash(buf);
 #endif
 
@@ -115,7 +115,7 @@ apply_mod(const char *path, const char *parent, const char *mod, int *mod_len)
 	 * to understand forward slashes */
 	if(strncmp(mod, ":s", 2) != 0 && strncmp(mod, ":gs", 3) != 0)
 	{
-		if(pathcmp(cfg.shell, "cmd") != 0)
+		if(stroscmp(cfg.shell, "cmd") != 0)
 			to_back_slash(buf);
 	}
 #endif
@@ -146,7 +146,7 @@ static int
 apply_tilde_mod(const char *path, char *buf, size_t buf_len)
 {
 	size_t home_len = strlen(cfg.home_dir);
-	if(pathncmp(path, cfg.home_dir, home_len - 1) != 0)
+	if(strnoscmp(path, cfg.home_dir, home_len - 1) != 0)
 	{
 		snprintf(buf, buf_len, "%s", path);
 		return 0;
@@ -161,7 +161,7 @@ static int
 apply_dot_mod(const char *path, char *buf, size_t buf_len)
 {
 	size_t len = strlen(curr_view->curr_dir);
-	if(pathncmp(path, curr_view->curr_dir, len) != 0 || path[len] == '\0')
+	if(strnoscmp(path, curr_view->curr_dir, len) != 0 || path[len] == '\0')
 		snprintf(buf, buf_len, "%s", path);
 	else
 		snprintf(buf, buf_len, "%s", path + len + 1);

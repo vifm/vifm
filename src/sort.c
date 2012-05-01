@@ -164,9 +164,9 @@ sort_dir_list(const void *one, const void *two)
 	if(first_is_dir != second_is_dir)
 		return first_is_dir ? -1 : 1;
 
-	if(pathcmp(first->name, "../") == 0)
+	if(stroscmp(first->name, "../") == 0)
 		return -1;
-	else if(pathcmp(second->name, "../") == 0)
+	else if(stroscmp(second->name, "../") == 0)
 		return 1;
 
 	retval = 0;

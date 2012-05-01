@@ -144,6 +144,26 @@ skip_whitespace(const char *str)
 	return (char *)str;
 }
 
+int
+stroscmp(const char *s, const char *t)
+{
+#ifndef _WIN32
+	return strcmp(s, t);
+#else
+	return strcasecmp(s, t);
+#endif
+}
+
+int
+strnoscmp(const char *s, const char *t, size_t n)
+{
+#ifndef _WIN32
+	return strncmp(s, t, n);
+#else
+	return strncasecmp(s, t, n);
+#endif
+}
+
 char *
 after_last(const char *str, char c)
 {
