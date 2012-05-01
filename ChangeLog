@@ -132,6 +132,8 @@
 
 	Fixed saving of partially typed search pattern with 'incsearch' on.
 
+	Fixed searching in visual mode with 'incsearch' on.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

@@ -903,6 +903,21 @@ update(void)
 	update_pos_window(view);
 }
 
+void
+update_visual_mode(void)
+{
+	int pos = view->list_pos;
+
+	clean_selected_files(view);
+	view->dir_entry[start_pos].selected = 1;
+	view->selected_files = 1;
+
+	view->list_pos = start_pos;
+	goto_pos(pos);
+
+	update();
+}
+
 int
 find_vpattern(FileView *view, const char *pattern, int backward)
 {

@@ -361,7 +361,11 @@ input_line_changed(void)
 		free(p);
 	}
 
-	if(prev_mode != MENU_MODE)
+	if(prev_mode == VISUAL_MODE)
+	{
+		update_visual_mode();
+	}
+	else if(prev_mode != MENU_MODE)
 	{
 		draw_dir_list(curr_view, curr_view->top_line);
 		move_to_list_pos(curr_view, curr_view->list_pos);
@@ -594,8 +598,11 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 
 	if(prev_mode == VISUAL_MODE)
 	{
-		leave_visual_mode(curr_stats.save_msg, 1, 1);
-		move_to_list_pos(curr_view, check_mark_directory(curr_view, '<'));
+		if(!input_stat.search_mode)
+		{
+			leave_visual_mode(curr_stats.save_msg, 1, 1);
+			move_to_list_pos(curr_view, check_mark_directory(curr_view, '<'));
+		}
 	}
 	if(sub_mode == CMD_SUBMODE)
 	{
