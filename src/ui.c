@@ -207,7 +207,7 @@ update_pos_window(FileView *view)
 
 	werase(pos_win);
 	mvwaddstr(pos_win, 0, 0, buf);
-	wnoutrefresh(pos_win);
+	wrefresh(pos_win);
 
 	free(buf);
 }
