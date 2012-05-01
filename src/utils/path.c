@@ -67,7 +67,7 @@ path_starts_with(const char *path, const char *begin)
 	if(len > 0 && begin[len - 1] == '/')
 		len--;
 
-	if(pathncmp(path, begin, len) != 0)
+	if(strnoscmp(path, begin, len) != 0)
 		return 0;
 
 	return (path[len] == '\0' || path[len] == '/');
@@ -102,13 +102,13 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 		int prev_dir_present;
 
 		prev_dir_present = (q != buf - 1 && *q == '/');
-		if(prev_dir_present && pathncmp(p, "./", 2) == 0)
+		if(prev_dir_present && strnoscmp(p, "./", 2) == 0)
 			p++;
-		else if(prev_dir_present && pathcmp(p, ".") == 0)
+		else if(prev_dir_present && stroscmp(p, ".") == 0)
 			;
 		else if(prev_dir_present &&
-				(pathncmp(p, "../", 3) == 0 || pathcmp(p, "..") == 0) &&
-				pathcmp(buf, "../") != 0)
+				(strnoscmp(p, "../", 3) == 0 || stroscmp(p, "..") == 0) &&
+				stroscmp(buf, "../") != 0)
 		{
 #ifdef _WIN32
 			if(*(q - 1) != ':')
@@ -163,7 +163,7 @@ make_rel_path(const char *path, const char *base)
 			p = path + strlen(path);
 		if((b = strchr(b + 1, '/')) == NULL)
 			b = base + strlen(base);
-		if(p - path != b - base || pathncmp(path, base, p - path) != 0)
+		if(p - path != b - base || strnoscmp(path, base, p - path) != 0)
 		{
 			p = op;
 			b = ob;
@@ -194,26 +194,6 @@ make_rel_path(const char *path, const char *base)
 }
 
 int
-pathcmp(const char *file_name_a, const char *file_name_b)
-{
-#ifndef _WIN32
-	return strcmp(file_name_a, file_name_b);
-#else
-	return strcasecmp(file_name_a, file_name_b);
-#endif
-}
-
-int
-pathncmp(const char *file_name_a, const char *file_name_b, size_t n)
-{
-#ifndef _WIN32
-	return strncmp(file_name_a, file_name_b, n);
-#else
-	return strncasecmp(file_name_a, file_name_b, n);
-#endif
-}
-
-int
 is_path_absolute(const char *path)
 {
 #ifdef _WIN32
@@ -229,7 +209,7 @@ int
 is_root_dir(const char *path)
 {
 #ifdef _WIN32
-	if(isalpha(path[0]) && pathcmp(path + 1, ":/") == 0)
+	if(isalpha(path[0]) && stroscmp(path + 1, ":/") == 0)
 		return 1;
 
 	if(path[0] == '/' && path[1] == '/' && path[2] != '\0')
@@ -338,7 +318,7 @@ replace_home_part(const char *directory)
 	size_t len;
 
 	len = strlen(cfg.home_dir) - 1;
-	if(pathncmp(directory, cfg.home_dir, len) == 0 &&
+	if(strnoscmp(directory, cfg.home_dir, len) == 0 &&
 			(directory[len] == '\0' || directory[len] == '/'))
 		strncat(strcpy(buf, "~"), directory + len, sizeof(buf) - strlen(buf) - 1);
 	else
@@ -478,7 +458,7 @@ extract_extension(char *path)
 		return path + strlen(path);
 
 	*ext = '\0';
-	if((e = strrchr(path, '.')) != NULL && pathcmp(e + 1, "tar") == 0)
+	if((e = strrchr(path, '.')) != NULL && stroscmp(e + 1, "tar") == 0)
 	{
 		*ext = '.';
 		ext = e;

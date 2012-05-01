@@ -142,7 +142,7 @@ find_color_scheme(const char *name)
 		if(d->d_name[0] == '.')
 			continue;
 
-		if(pathcmp(d->d_name, name) == 0)
+		if(stroscmp(d->d_name, name) == 0)
 		{
 			closedir(dir);
 			return 1;

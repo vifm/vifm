@@ -529,7 +529,7 @@ handle_dir(FileView *view)
 
 	filename = get_current_file_name(view);
 
-	if(pathcmp(filename, "../") == 0)
+	if(stroscmp(filename, "../") == 0)
 	{
 		cd_updir(view);
 		return;
@@ -711,7 +711,7 @@ shellout(const char *command, int pause, int allow_screen)
 			if(pause > 0)
 			{
 #ifdef _WIN32
-				if(pathcmp(cfg.shell, "cmd") == 0)
+				if(stroscmp(cfg.shell, "cmd") == 0)
 					snprintf(buf, sizeof(buf), "%s" PAUSE_STR, command);
 				else
 #endif

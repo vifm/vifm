@@ -299,7 +299,7 @@ quit_on_invalid_arg(void)
 static int
 check_path(FileView *view, const char *path)
 {
-	if(path[0] == '\0' || pathcmp(view->curr_dir, path) == 0)
+	if(path[0] == '\0' || stroscmp(view->curr_dir, path) == 0)
 		return 0;
 	return 1;
 }

@@ -555,7 +555,7 @@ select_range(int id, const cmd_info_t *cmd_info)
 
 		for(x = cmd_info->begin; x <= cmd_info->end; x++)
 		{
-			if(pathcmp(curr_view->dir_entry[x].name, "../") == 0 &&
+			if(stroscmp(curr_view->dir_entry[x].name, "../") == 0 &&
 					cmd_info->begin != cmd_info->end)
 				continue;
 			curr_view->dir_entry[x].selected = 1;
@@ -618,7 +618,7 @@ select_count(const cmd_info_t *cmd_info, int count)
 
 	while(count-- > 0 && pos < curr_view->list_rows)
 	{
-		if(pathcmp(curr_view->dir_entry[pos].name, "../") != 0)
+		if(stroscmp(curr_view->dir_entry[pos].name, "../") != 0)
 		{
 			curr_view->dir_entry[pos].selected = 1;
 			curr_view->selected_files++;

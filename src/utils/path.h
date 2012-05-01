@@ -27,8 +27,6 @@ int ends_with_slash(const char *path);
 int path_starts_with(const char *path, const char *begin);
 void canonicalize_path(const char *directory, char *buf, size_t buf_size);
 const char * make_rel_path(const char *path, const char *base);
-int pathcmp(const char *file_name_a, const char *file_name_b);
-int pathncmp(const char *file_name_a, const char *file_name_b, size_t n);
 int is_path_absolute(const char *path);
 int is_root_dir(const char *path);
 int is_unc_root(const char *path);

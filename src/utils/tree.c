@@ -165,7 +165,7 @@ find_node(node_t *root, const char *name, int create, node_t **last)
 	curr = root->child;
 	while(curr != NULL)
 	{
-		int comp = pathncmp(name, curr->name, end - name);
+		int comp = strnoscmp(name, curr->name, end - name);
 		if(comp == 0 && curr->name_len == name_len)
 		{
 			if(curr->valid && last != NULL)

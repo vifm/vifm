@@ -315,7 +315,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		char full_buf[PATH_MAX];
 		int result;
 
-		if(pathcmp(view->selected_filelist[x], "../") == 0)
+		if(stroscmp(view->selected_filelist[x], "../") == 0)
 		{
 			(void)show_error_msg("Background Process Error",
 					"You cannot delete the ../ directory");
@@ -329,7 +329,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		progress_msg("Deleting files", x + 1, view->selected_files);
 		if(cfg.use_trash && use_trash)
 		{
-			if(pathcmp(full_buf, cfg.trash_dir) == 0)
+			if(stroscmp(full_buf, cfg.trash_dir) == 0)
 			{
 				(void)show_error_msg("Background Process Error",
 						"You cannot delete trash directory to trash");
@@ -390,7 +390,7 @@ delete_file_bg_i(const char *curr_dir, char **list, int count, int use_trash)
 	{
 		char full_buf[PATH_MAX];
 
-		if(pathcmp(list[i], "../") == 0)
+		if(stroscmp(list[i], "../") == 0)
 			continue;
 
 		snprintf(full_buf, sizeof(full_buf), "%s/%s", curr_dir, list[i]);
@@ -608,7 +608,7 @@ rename_file(FileView *view, int name_only)
 		return;
 
 	snprintf(filename, sizeof(filename), get_current_file_name(view));
-	if(pathcmp(filename, "../") == 0)
+	if(stroscmp(filename, "../") == 0)
 	{
 		(void)show_error_msg("Rename error",
 				"You can't rename parent directory this way");
@@ -665,7 +665,7 @@ is_name_list_ok(int count, int nlines, char **list, char **files)
 		if(list_s != NULL || file_s != NULL)
 		{
 			if(list_s - list[i] != file_s - files[i] ||
-					pathncmp(files[i], list[i], list_s - list[i]) != 0)
+					strnoscmp(files[i], list[i], list_s - list[i]) != 0)
 			{
 				if(file_s == NULL)
 					status_bar_errorf("Name \"%s\" contains slash", list[i]);
@@ -899,9 +899,9 @@ add_files_to_list(const char *path, char **files, int *len)
 	{
 		char buf[PATH_MAX];
 
-		if(pathcmp(dentry->d_name, ".") == 0)
+		if(stroscmp(dentry->d_name, ".") == 0)
 			continue;
-		else if(pathcmp(dentry->d_name, "..") == 0)
+		else if(stroscmp(dentry->d_name, "..") == 0)
 			continue;
 
 		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
@@ -934,7 +934,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	{
 		if(!view->dir_entry[i].selected)
 			continue;
-		if(pathcmp(view->dir_entry[i].name, "../") == 0)
+		if(stroscmp(view->dir_entry[i].name, "../") == 0)
 			continue;
 		if(recursive)
 		{
@@ -1210,7 +1210,7 @@ check_file_rename(const char *old, const char *new, SignalType signal_type)
 	if(new[0] == '\0' || strcmp(old, new) == 0)
 		return -1;
 
-	if(path_exists(new) && pathcmp(old, new) != 0)
+	if(path_exists(new) && stroscmp(old, new) != 0)
 	{
 		if(signal_type == ST_STATUS_BAR)
 		{
@@ -1469,7 +1469,7 @@ put_next(const char *dest_name, int override)
 	if(lstat(filename, &st) != 0)
 		return 0;
 
-	from_trash = pathncmp(filename, cfg.trash_dir, strlen(cfg.trash_dir)) == 0;
+	from_trash = strnoscmp(filename, cfg.trash_dir, strlen(cfg.trash_dir)) == 0;
 	move = from_trash || put_confirm.force_move;
 
 	if(dest_name[0] == '\0')
@@ -1679,9 +1679,9 @@ clone_file(FileView* view, const char *filename, const char *path,
 	char full[PATH_MAX];
 	char clone_name[PATH_MAX];
 	
-	if(pathcmp(filename, "./") == 0)
+	if(stroscmp(filename, "./") == 0)
 		return;
-	if(pathcmp(filename, "../") == 0)
+	if(stroscmp(filename, "../") == 0)
 		return;
 
 	snprintf(clone_name, sizeof(clone_name), "%s/%s", path, clone);
@@ -1881,9 +1881,9 @@ calc_dirsize(const char *path, int force_update)
 	{
 		char buf[PATH_MAX];
 
-		if(pathcmp(dentry->d_name, ".") == 0)
+		if(stroscmp(dentry->d_name, ".") == 0)
 			continue;
-		else if(pathcmp(dentry->d_name, "..") == 0)
+		else if(stroscmp(dentry->d_name, "..") == 0)
 			continue;
 
 		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
@@ -1948,7 +1948,7 @@ put_files_from_register_i(FileView *view, int start)
 	{
 		char buf[MAX(COMMAND_GROUP_INFO_LEN, PATH_MAX + NAME_MAX*2 + 4)];
 		const char *op = "UNKNOWN";
-		int from_trash = pathncmp(put_confirm.reg->files[0], cfg.trash_dir,
+		int from_trash = strnoscmp(put_confirm.reg->files[0], cfg.trash_dir,
 				strlen(cfg.trash_dir)) == 0;
 		if(put_confirm.link == 0)
 			op = (put_confirm.force_move || from_trash) ? "Put" : "put";
@@ -2099,7 +2099,7 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 	{
 		if(!view->dir_entry[i].selected)
 			continue;
-		if(pathcmp(view->dir_entry[i].name, "../") == 0)
+		if(stroscmp(view->dir_entry[i].name, "../") == 0)
 			continue;
 
 		if(buf[len - 2] != ':')
@@ -2119,7 +2119,7 @@ change_in_names(FileView *view, char c, const char *pattern, const char *sub,
 
 		if(!view->dir_entry[i].selected)
 			continue;
-		if(pathcmp(view->dir_entry[i].name, "../") == 0)
+		if(stroscmp(view->dir_entry[i].name, "../") == 0)
 			continue;
 
 		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
@@ -2185,7 +2185,7 @@ substitute_in_names(FileView *view, const char *pattern, const char *sub,
 
 		if(!view->dir_entry[i].selected)
 			continue;
-		if(pathcmp(view->dir_entry[i].name, "../") == 0)
+		if(stroscmp(view->dir_entry[i].name, "../") == 0)
 			continue;
 
 		strncpy(buf, view->dir_entry[i].name, sizeof(buf));
@@ -2283,7 +2283,7 @@ tr_in_names(FileView *view, const char *pattern, const char *sub)
 
 		if(!view->dir_entry[i].selected)
 			continue;
-		if(pathcmp(view->dir_entry[i].name, "../") == 0)
+		if(stroscmp(view->dir_entry[i].name, "../") == 0)
 			continue;
 
 		strncpy(buf, view->dir_entry[i].name, sizeof(buf));

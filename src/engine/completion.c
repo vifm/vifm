@@ -94,9 +94,9 @@ sorter(const void *first, const void *second)
 	const char *stra = *(const char **)first;
 	const char *strb = *(const char **)second;
 	size_t lena = strlen(stra), lenb = strlen(strb);
-	if(pathcmp(stra, "./") == 0)
+	if(stroscmp(stra, "./") == 0)
 		return -1;
-	if(pathcmp(strb, "./") == 0)
+	if(stroscmp(strb, "./") == 0)
 		return 1;
 	if(stra[lena - 1] == '/' && strb[lenb - 1] == '/')
 	{
