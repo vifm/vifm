@@ -1274,13 +1274,11 @@ exec_command(char *cmd, FileView *view, int type)
 	else if(type == GET_FSEARCH_PATTERN || type == GET_BSEARCH_PATTERN)
 	{
 		strncpy(view->regexp, cmd, sizeof(view->regexp));
-		save_search_history(cmd);
 		return find_npattern(view, cmd, type == GET_BSEARCH_PATTERN, 1);
 	}
 	else if(type == GET_VFSEARCH_PATTERN || type == GET_VBSEARCH_PATTERN)
 	{
 		strncpy(view->regexp, cmd, sizeof(view->regexp));
-		save_search_history(cmd);
 		return find_vpattern(view, cmd, type == GET_VBSEARCH_PATTERN);
 	}
 	else if(type == GET_VWFSEARCH_PATTERN || type == GET_VWBSEARCH_PATTERN)

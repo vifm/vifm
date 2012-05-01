@@ -825,6 +825,9 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 			sub_mode != VSEARCH_BACKWARD_SUBMODE)
 		leave_visual_mode(curr_stats.save_msg, 1, 0);
 
+	if(input_stat.search_mode && p != NULL)
+		save_search_history(p);
+
 	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 	{
 		char* s = (p != NULL) ? p : "";
@@ -994,8 +997,7 @@ search_next(void)
 	{
 		complete_cmd_next();
 	}
-	else if(sub_mode == SEARCH_FORWARD_SUBMODE ||
-			sub_mode == SEARCH_BACKWARD_SUBMODE)
+	else if(input_stat.search_mode)
 	{
 		complete_search_next();
 	}
@@ -1337,8 +1339,7 @@ search_prev(void)
 	{
 		complete_cmd_prev();
 	}
-	else if(sub_mode == SEARCH_FORWARD_SUBMODE ||
-			sub_mode == SEARCH_BACKWARD_SUBMODE)
+	else if(input_stat.search_mode)
 	{
 		complete_search_prev();
 	}
