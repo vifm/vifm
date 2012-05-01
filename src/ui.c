@@ -22,19 +22,15 @@
                      * functions
                      */
 
-#ifndef _WIN32
-#include <sys/ioctl.h>
-#endif
 #include <sys/stat.h> /* stat */
 #include <dirent.h> /* DIR */
 #ifndef _WIN32
 #include <grp.h> /* getgrgid() */
 #include <pwd.h> /* getpwent() */
-#endif
-#include <stdlib.h> /* malloc */
-#ifndef _WIN32
+#include <sys/ioctl.h>
 #include <termios.h> /* struct winsize */
 #endif
+#include <stdlib.h> /* malloc */
 #include <unistd.h>
 
 #include <assert.h>
@@ -211,7 +207,7 @@ update_pos_window(FileView *view)
 
 	werase(pos_win);
 	mvwaddstr(pos_win, 0, 0, buf);
-	wnoutrefresh(pos_win);
+	wrefresh(pos_win);
 
 	free(buf);
 }
@@ -517,6 +513,8 @@ status_bar_message_i(const char *message, int error)
 
 	if(msg == NULL)
 		return;
+	if(get_mode() == CMDLINE_MODE)
+		return;
 
 	p = msg;
 	q = msg - 1;
@@ -580,7 +578,7 @@ status_bar_message_i(const char *message, int error)
 
 	wattrset(status_bar, 0);
 	wrefresh(status_bar);
-	if(get_mode() != MENU_MODE && get_mode() != FILE_INFO_MODE && cfg.last_status)
+	if(!is_in_menu_like_mode() && cfg.last_status)
 		wrefresh(stat_win);
 }
 
@@ -1033,23 +1031,23 @@ resize_all(void)
 	prev_x = screen_x;
 	prev_y = screen_y;
 
-	wclear(stdscr);
-	wclear(mborder);
-	wclear(ltop_line1);
-	wclear(ltop_line2);
-	wclear(top_line);
-	wclear(rtop_line1);
-	wclear(rtop_line2);
-	wclear(lwin.title);
-	wclear(lwin.win);
-	wclear(rwin.title);
-	wclear(rwin.win);
-	wclear(stat_win);
-	wclear(pos_win);
-	wclear(input_win);
-	wclear(rborder);
-	wclear(lborder);
-	wclear(status_bar);
+	werase(stdscr);
+	werase(mborder);
+	werase(ltop_line1);
+	werase(ltop_line2);
+	werase(top_line);
+	werase(rtop_line1);
+	werase(rtop_line2);
+	werase(lwin.title);
+	werase(lwin.win);
+	werase(rwin.title);
+	werase(rwin.win);
+	werase(stat_win);
+	werase(pos_win);
+	werase(input_win);
+	werase(rborder);
+	werase(lborder);
+	werase(status_bar);
 
 	wresize(stdscr, screen_y, screen_x);
 	wresize(menu_win, screen_y - 1, screen_x);
@@ -1117,13 +1115,6 @@ redraw_window(void)
 	werase(lborder);
 	werase(mborder);
 	werase(rborder);
-
-	if(curr_stats.show_full)
-	{
-		redraw_file_info_dialog();
-		curr_stats.need_redraw = curr_stats.too_small_term;
-		return;
-	}
 
 	if(curr_stats.too_small_term)
 		return;
@@ -1499,6 +1490,35 @@ void
 request_view_update(FileView *view)
 {
 	memset(&view->dir_mtime, -1, sizeof(view->dir_mtime));
+}
+
+void
+resize_for_menu_like(void)
+{
+	int screen_x, screen_y;
+#ifndef _WIN32
+	struct winsize ws;
+
+	ioctl(0, TIOCGWINSZ, &ws);
+	/* changed for pdcurses */
+	resizeterm(ws.ws_row, ws.ws_col);
+#endif
+	flushinp(); /* without it we will get strange character on input */
+	getmaxyx(stdscr, screen_y, screen_x);
+
+	werase(stdscr);
+	werase(status_bar);
+	werase(pos_win);
+
+	wresize(menu_win, screen_y - 1, screen_x);
+	wresize(status_bar, 1, screen_x - 19);
+	mvwin(status_bar, screen_y - 1, 0);
+	wresize(pos_win, 1, 13);
+	mvwin(pos_win, screen_y - 1, screen_x - 13);
+	mvwin(input_win, screen_y - 1, screen_x - 19);
+	wrefresh(status_bar);
+	wrefresh(pos_win);
+	wrefresh(input_win);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

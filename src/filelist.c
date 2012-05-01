@@ -880,11 +880,11 @@ move_to_list_pos(FileView *view, int pos)
 
 	add_sort_type_info(view, view->curr_line, pos, 1);
 
-	if(curr_stats.view)
-		quick_view_file(view);
-
 	wrefresh(view->win);
 	update_stat_window(view);
+
+	if(curr_stats.view)
+		quick_view_file(view);
 }
 
 void
@@ -2212,7 +2212,7 @@ window_shows_dirlist(FileView *view)
 	if(view == other_view && curr_stats.view)
 		return 0;
 	if(get_mode() != NORMAL_MODE && get_mode() != VISUAL_MODE &&
-			get_mode() != VIEW_MODE)
+			get_mode() != VIEW_MODE && get_mode() != CMDLINE_MODE)
 		return 0;
 	return 1;
 }

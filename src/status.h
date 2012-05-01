@@ -61,7 +61,6 @@ typedef struct
 	int register_saved;
 	int number_of_windows;
 	int view;
-	int show_full;
 	int skip_history;
 	int load_stage; /* 0 - no TUI, 1 - part of TUI, 2 - TUI, 3 - all */
 
@@ -78,8 +77,6 @@ typedef struct
 	int confirmed;
 
 	int auto_redraws;
-
-	int pending_redraw;
 
 	int cs_base;
 	col_scheme_t *cs;
@@ -111,6 +108,13 @@ int init_status(void);
 
 /* Returns non-zero on error. */
 int reset_status(void);
+
+/* Sets internal flag to schedule postponed redraw operation. */
+void schedule_redraw(void);
+
+/* Checks for postponed redraw operations. Returns non-zero if redraw operation
+ * was scheduled and resets internal flag. */
+int is_redraw_scheduled(void);
 
 #endif
 

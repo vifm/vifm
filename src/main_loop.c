@@ -78,13 +78,12 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 	{
 		int j;
 
-		if(curr_stats.pending_redraw)
+		if(is_redraw_scheduled())
 		{
 			modes_redraw();
-			curr_stats.pending_redraw = 0;
 		}
 
-		if(get_mode() != MENU_MODE && get_mode() != CMDLINE_MODE)
+		if(!is_in_menu_like_mode() && get_mode() != CMDLINE_MODE)
 		{
 			check_if_filelists_have_changed(curr_view);
 			if(curr_stats.number_of_windows != 1 && !curr_stats.view)
@@ -146,7 +145,7 @@ main_loop(void)
 
 			mvwin(status_bar, 0, 0);
 			wresize(status_bar, getmaxy(stdscr), getmaxx(stdscr));
-			wclear(status_bar);
+			werase(status_bar);
 			waddstr(status_bar, "Terminal is too small for vifm");
 			touchwin(status_bar);
 			wrefresh(status_bar);
@@ -247,10 +246,9 @@ main_loop(void)
 
 		timeout = cfg.timeout_len;
 
-		if(curr_stats.pending_redraw)
+		if(is_redraw_scheduled())
 		{
 			modes_redraw();
-			curr_stats.pending_redraw = 0;
 		}
 
 		pos = 0;

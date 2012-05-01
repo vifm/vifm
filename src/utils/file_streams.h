@@ -20,7 +20,8 @@
 #ifndef __FILE_STREAMS_H__
 #define __FILE_STREAMS_H__
 
-#include <stdio.h>
+#include <stddef.h> /* size_t */
+#include <stdio.h> /* FILE */
 
 /* File stream reading related functions, that treat all eols (unix, mac, dos)
  * right. */

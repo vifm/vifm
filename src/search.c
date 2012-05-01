@@ -26,6 +26,7 @@
 
 #include "cfg/config.h"
 #include "utils/path.h"
+#include "utils/str.h"
 #include "utils/utils.h"
 #include "filelist.h"
 #include "ui.h"
@@ -95,15 +96,6 @@ find_next_pattern(FileView *view, int wrap)
 	else
 		return 0;
 	return 1;
-}
-
-static void
-top_bottom_msg(FileView *view, int backward)
-{
-	if(backward)
-		status_bar_errorf("Search hit TOP without match for: %s", view->regexp);
-	else
-		status_bar_errorf("Search hit BOTTOM without match for: %s", view->regexp);
 }
 
 int
@@ -177,7 +169,7 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 
 			if(!was_found)
 			{
-				top_bottom_msg(view, backward);
+				print_search_fail_msg(view, backward);
 				return 1;
 			}
 
@@ -190,11 +182,25 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 	else
 	{
 		move_to_list_pos(view, view->list_pos);
-		if(!cfg.wrap_scan)
-			top_bottom_msg(view, backward);
-		else
-			status_bar_errorf("No matching files for: %s", view->regexp);
+		print_search_fail_msg(view, backward);
 		return 1;
+	}
+}
+
+void
+print_search_fail_msg(FileView *view, int backward)
+{
+	if(!cfg.wrap_scan)
+	{
+		if(backward)
+			status_bar_errorf("Search hit TOP without match for: %s", view->regexp);
+		else
+			status_bar_errorf("Search hit BOTTOM without match for: %s",
+					view->regexp);
+	}
+	else
+	{
+		status_bar_errorf("No matching files for: %s", view->regexp);
 	}
 }
 

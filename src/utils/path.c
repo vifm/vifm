@@ -36,6 +36,7 @@
 #include "env.h"
 #endif
 #include "fs.h"
+#include "str.h"
 
 #include "path.h"
 

@@ -52,6 +52,7 @@ static void leave_file_info_mode(void);
 static int show_file_type(FileView *view, int curr_y);
 static int show_mime_type(FileView *view, int curr_y);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 
 static int *mode;
 static FileView *view;
@@ -59,6 +60,7 @@ static int was_redraw;
 
 static keys_add_info_t builtin_cmds[] = {
 	{L"\x03", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
+	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
 	/* return */
 	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	/* escape */
@@ -86,7 +88,7 @@ enter_file_info_mode(FileView *v)
 {
 	*mode = FILE_INFO_MODE;
 	view = v;
-	curr_stats.show_full = 1;
+	setup_menu();
 	redraw_file_info_dialog();
 
 	was_redraw = 0;
@@ -95,7 +97,6 @@ enter_file_info_mode(FileView *v)
 static void
 leave_file_info_mode(void)
 {
-	curr_stats.show_full = 0;
 	*mode = NORMAL_MODE;
 
 	if(was_redraw)
@@ -117,17 +118,15 @@ redraw_file_info_dialog(void)
 	struct group *grp_buf;
 #endif
 	struct tm *tm_ptr;
-	int x;
 	int curr_y;
 	uint64_t size;
 	int size_not_precise;
 
 	assert(view != NULL);
 
-	setup_menu();
+	resize_for_menu_like();
 
-	x = getmaxx(menu_win);
-	wclear(menu_win);
+	werase(menu_win);
 
 	snprintf(name_buf, sizeof(name_buf), "%s",
 			view->dir_entry[view->list_pos].name);
@@ -161,7 +160,7 @@ redraw_file_info_dialog(void)
 
 	curr_y = 2;
 	mvwaddstr(menu_win, curr_y, 2, "File: ");
-	name_buf[x - 8] = '\0';
+	name_buf[getmaxx(menu_win) - 8] = '\0';
 	wmove(menu_win, curr_y, 8);
 	wprint(menu_win, name_buf);
 	curr_y += 2;
@@ -219,8 +218,6 @@ redraw_file_info_dialog(void)
 	if((grp_buf = getgrgid(view->dir_entry[view->list_pos].gid)) != NULL)
 		mvwaddstr(menu_win, curr_y, 10, grp_buf->gr_name);
 #endif
-
-	wnoutrefresh(menu_win);
 
 	box(menu_win, 0, 0);
 	wmove(menu_win, 0, 3);
@@ -346,6 +343,12 @@ static void
 cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
 	leave_file_info_mode();
+}
+
+static void
+cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
+{
+	redraw_file_info_dialog();
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

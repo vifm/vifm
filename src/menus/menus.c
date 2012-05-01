@@ -26,10 +26,6 @@
 #include <dirent.h> /* DIR */
 #include <sys/stat.h>
 #include <sys/types.h>
-#ifndef _WIN32
-#include <sys/ioctl.h>
-#include <termios.h> /* struct winsize */
-#endif
 #include <unistd.h> /* access() */
 
 #include <assert.h>
@@ -434,31 +430,8 @@ move_to_menu_pos(int pos, menu_info *m)
 void
 redraw_menu(menu_info *m)
 {
-	int screen_x, screen_y;
-#ifndef _WIN32
-	struct winsize ws;
-
-	ioctl(0, TIOCGWINSZ, &ws);
-	/* changed for pdcurses */
-	resizeterm(ws.ws_row, ws.ws_col);
-#endif
-	flushinp(); /* without it we will get strange character on input */
-	getmaxyx(stdscr, screen_y, screen_x);
-
-	wclear(stdscr);
-	wclear(status_bar);
-	wclear(pos_win);
-
-	wresize(menu_win, screen_y - 1, screen_x);
-	wresize(status_bar, 1, screen_x - 19);
-	mvwin(status_bar, screen_y - 1, 0);
-	wresize(pos_win, 1, 13);
-	mvwin(pos_win, screen_y - 1, screen_x - 13);
-	mvwin(input_win, screen_y - 1, screen_x - 19);
-	wrefresh(status_bar);
-	wrefresh(pos_win);
-	wrefresh(input_win);
-	m->win_rows = screen_y - 1;
+	resize_for_menu_like();
+	m->win_rows = getmaxy(stdscr) - 1;
 
 	draw_menu(m);
 	move_to_menu_pos(m->pos, m);

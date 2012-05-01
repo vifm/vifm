@@ -69,8 +69,8 @@ quick_view_file(FileView *view)
 	if(curr_stats.number_of_windows == 1)
 		return;
 
-	wclear(other_view->win);
-	wclear(other_view->title);
+	werase(other_view->win);
+	werase(other_view->title);
 	mvwaddstr(other_view->title, 0, 0, "File: ");
 	wprint(other_view->title, view->dir_entry[view->list_pos].name);
 

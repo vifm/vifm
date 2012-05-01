@@ -1614,12 +1614,7 @@ search(key_info_t key_info, int backward)
 
 	if(!found)
 	{
-		if(backward)
-			status_bar_errorf("Search hit TOP without match for: %s",
-					curr_view->regexp);
-		else
-			status_bar_errorf("Search hit BOTTOM without match for: %s",
-					curr_view->regexp);
+		print_search_fail_msg(curr_view, backward);
 		curr_stats.save_msg = 1;
 		return;
 	}
