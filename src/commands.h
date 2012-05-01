@@ -36,7 +36,7 @@ enum
 };
 
 void init_commands(void);
-int exec_commands(char *cmd, FileView *view, int save_hist, int type);
+int exec_commands(char *cmd, FileView *view, int type);
 int exec_command(char *cmd, FileView *view, int type);
 char * find_last_command(char *cmd);
 void comm_quit(int write_info, int force);

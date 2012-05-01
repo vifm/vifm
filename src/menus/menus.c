@@ -538,13 +538,16 @@ execute_menu_cb(FileView *view, menu_info *m)
 			move_to_bookmark(view, index2mark(active_bookmarks[m->pos]));
 			break;
 		case CMDHISTORY:
-			exec_commands(m->items[m->pos], view, 1, GET_COMMAND);
+			save_command_history(m->items[m->pos]);
+			exec_commands(m->items[m->pos], view, GET_COMMAND);
 			break;
 		case FSEARCHHISTORY:
-			exec_commands(m->items[m->pos], view, 1, GET_FSEARCH_PATTERN);
+			save_search_history(m->items[m->pos]);
+			exec_commands(m->items[m->pos], view, GET_FSEARCH_PATTERN);
 			break;
 		case BSEARCHHISTORY:
-			exec_commands(m->items[m->pos], view, 1, GET_BSEARCH_PATTERN);
+			save_search_history(m->items[m->pos]);
+			exec_commands(m->items[m->pos], view, GET_BSEARCH_PATTERN);
 			break;
 		case COLORSCHEME:
 			load_color_scheme(m->items[m->pos]);

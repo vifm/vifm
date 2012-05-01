@@ -103,7 +103,7 @@ read_info_file(int reread)
 				char buf[MAX_LEN*2];
 				prepare_line(line2);
 				snprintf(buf, sizeof(buf), "command %s %s", line + 1, line2);
-				exec_commands(buf, curr_view, 0, GET_COMMAND);
+				exec_commands(buf, curr_view, GET_COMMAND);
 			}
 		}
 		else if(line[0] == '\'') /* bookmark */

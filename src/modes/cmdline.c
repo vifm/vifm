@@ -591,7 +591,16 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	wnoutrefresh(status_bar);
 
 	if(input_stat.line != NULL)
+	{
+		char *mbstr = to_multibyte(input_stat.line);
+		if(input_stat.search_mode)
+			save_search_history(mbstr);
+		else if(sub_mode == CMD_SUBMODE)
+			save_command_history(mbstr);
+		free(mbstr);
+
 		input_stat.line[0] = L'\0';
+	}
 	input_line_changed();
 
 	leave_cmdline_mode();
@@ -606,8 +615,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	}
 	if(sub_mode == CMD_SUBMODE)
 	{
-		int save_hist = !keys_info->mapped;
-		curr_stats.save_msg = exec_commands("", curr_view, save_hist, GET_COMMAND);
+		curr_stats.save_msg = exec_commands("", curr_view, GET_COMMAND);
 	}
 }
 
@@ -832,8 +840,13 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 			sub_mode != VSEARCH_BACKWARD_SUBMODE)
 		leave_visual_mode(curr_stats.save_msg, 1, 0);
 
-	if(input_stat.search_mode && p != NULL)
-		save_search_history(p);
+	if(p != NULL)
+	{
+		if(input_stat.search_mode)
+			save_search_history(p);
+		else if(save_hist && sub_mode == CMD_SUBMODE)
+			save_command_history(p);
+	}
 
 	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 	{
@@ -841,10 +854,9 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 		while(*s == ' ' || *s == ':')
 			s++;
 		if(sub_mode == CMD_SUBMODE)
-			curr_stats.save_msg = exec_commands(s, curr_view, save_hist, GET_COMMAND);
+			curr_stats.save_msg = exec_commands(s, curr_view, GET_COMMAND);
 		else
-			curr_stats.save_msg = exec_commands(s, curr_view, save_hist,
-					GET_MENU_COMMAND);
+			curr_stats.save_msg = exec_commands(s, curr_view, GET_MENU_COMMAND);
 	}
 	else if(sub_mode == PROMPT_SUBMODE)
 	{

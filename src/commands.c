@@ -430,12 +430,12 @@ exec_startup_commands(int c, char **v)
 	{
 		if(strcmp(argv[x], "-c") == 0)
 		{
-			exec_commands(argv[x + 1], curr_view, 0, GET_COMMAND);
+			exec_commands(argv[x + 1], curr_view, GET_COMMAND);
 			x++;
 		}
 		else if(argv[x][0] == '+')
 		{
-			exec_commands(argv[x] + 1, curr_view, 0, GET_COMMAND);
+			exec_commands(argv[x] + 1, curr_view, GET_COMMAND);
 		}
 	}
 }
@@ -1141,13 +1141,10 @@ is_whole_line_command(const char *cmd)
 }
 
 int
-exec_commands(char *cmd, FileView *view, int save_hist, int type)
+exec_commands(char *cmd, FileView *view, int type)
 {
 	int save_msg = 0;
 	char *p, *q;
-
-	if(save_hist && type == GET_COMMAND)
-		save_command_history(cmd);
 
 	if(*cmd == '\0')
 		return exec_command(cmd, view, type);
@@ -1954,7 +1951,7 @@ exe_cmd(const cmd_info_t *cmd_info)
 	if(line == NULL)
 		return 0;
 
-	result = exec_commands(line, curr_view, 0, GET_COMMAND);
+	result = exec_commands(line, curr_view, GET_COMMAND);
 	free(line);
 	return result != 0;
 }
@@ -3291,7 +3288,7 @@ winrun(FileView *view, char *cmd)
 	other_view = (view == tmp_curr) ? tmp_other : tmp_curr;
 
 	load_local_options(curr_view);
-	result = exec_commands(cmd, curr_view, 0, GET_COMMAND);
+	result = exec_commands(cmd, curr_view, GET_COMMAND);
 
 	curr_view = tmp_curr;
 	other_view = tmp_other;
@@ -3402,7 +3399,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	if(expanded_com[0] == ':')
 	{
-		int sm = exec_commands(expanded_com, curr_view, 0, GET_COMMAND);
+		int sm = exec_commands(expanded_com, curr_view, GET_COMMAND);
 		free(expanded_com);
 		return sm;
 	}

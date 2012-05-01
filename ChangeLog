@@ -68,6 +68,9 @@
 
 	Use common search history for normal, visual and menu modes.
 
+	Save last typed but not executed command in command-line mode (this also
+	includes searches).
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.
