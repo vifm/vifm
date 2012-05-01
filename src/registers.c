@@ -74,7 +74,7 @@ check_for_duplicate_file_names(registers_t *reg, const char *file)
 	int x;
 	for(x = 0; x < reg->num_files; x++)
 	{
-		if(pathcmp(file, reg->files[x]) == 0)
+		if(stroscmp(file, reg->files[x]) == 0)
 			return 1;
 	}
 	return 0;
@@ -182,7 +182,7 @@ rename_in_registers(const char *old, const char *new)
 		n = registers[x].num_files;
 		for(y = 0; y < n; y++)
 		{
-			if(pathcmp(registers[x].files[y], old) != 0)
+			if(stroscmp(registers[x].files[y], old) != 0)
 				continue;
 
 			replace_string(&registers[x].files[y], new);
@@ -202,7 +202,7 @@ clean_regs_with_trash(void)
 		n = registers[x].num_files;
 		for(y = 0; y < n; y++)
 		{
-			if(pathncmp(registers[x].files[y], cfg.trash_dir, trash_dir_len) != 0)
+			if(strnoscmp(registers[x].files[y], cfg.trash_dir, trash_dir_len) != 0)
 				continue;
 			if(!path_exists(registers[x].files[y]))
 				continue;

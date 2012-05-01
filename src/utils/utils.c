@@ -102,7 +102,7 @@ my_system(char *command)
 
 	system("cls");
 
-	if(pathcmp(cfg.shell, "cmd") == 0)
+	if(stroscmp(cfg.shell, "cmd") == 0)
 	{
 		snprintf(buf, sizeof(buf), "%s /C \"%s\"", cfg.shell, command);
 		return system(buf);
@@ -205,7 +205,7 @@ my_chdir(const char *path)
 	char curr_path[PATH_MAX];
 	if(getcwd(curr_path, sizeof(curr_path)) == curr_path)
 	{
-		if(pathcmp(curr_path, path) == 0)
+		if(stroscmp(curr_path, path) == 0)
 			return 0;
 	}
 	return chdir(path);

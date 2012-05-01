@@ -65,7 +65,7 @@ show_history_menu(FileView *view)
 		if(view->history[x].dir[0] == '\0')
 			break;
 		for(y = x + 1; y < view->history_num && y < cfg.history_len; y++)
-			if(pathcmp(view->history[x].dir, view->history[y].dir) == 0)
+			if(stroscmp(view->history[x].dir, view->history[y].dir) == 0)
 				break;
 		if(y < view->history_num && y < cfg.history_len)
 			continue;
@@ -73,7 +73,7 @@ show_history_menu(FileView *view)
 			continue;
 
 		/* Change the current dir to reflect the current file. */
-		if(pathcmp(view->history[x].dir, view->curr_dir) == 0)
+		if(stroscmp(view->history[x].dir, view->curr_dir) == 0)
 		{
 			snprintf(view->history[x].file, sizeof(view->history[x].file),
 					"%s", view->dir_entry[view->list_pos].name);

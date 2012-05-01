@@ -283,7 +283,7 @@ complete_progs(const char *str, assoc_records_t records)
 
 		(void)get_command_name(records.list[i].command, sizeof(command), command);
 
-		if(pathncmp(command, str, len) == 0)
+		if(strnoscmp(command, str, len) == 0)
 		{
 			add_completion(command);
 		}
@@ -427,7 +427,7 @@ fast_run_complete(const char *cmd)
 		int c = get_completion_count() - 1;
 		while(c-- > 0)
 		{
-			if(pathcmp(command, completed) == 0)
+			if(stroscmp(command, completed) == 0)
 			{
 				result = strdup(cmd);
 				break;
@@ -530,8 +530,8 @@ filename_completion(const char *str, CompletionType type)
 
 #ifdef _WIN32
 	if(is_unc_root(dirname) ||
-			(pathcmp(dirname, ".") == 0 && is_unc_root(curr_view->curr_dir)) ||
-			(pathcmp(dirname, "/") == 0 && is_unc_path(curr_view->curr_dir)))
+			(stroscmp(dirname, ".") == 0 && is_unc_root(curr_view->curr_dir)) ||
+			(stroscmp(dirname, "/") == 0 && is_unc_path(curr_view->curr_dir)))
 	{
 		char buf[PATH_MAX];
 		if(!is_unc_root(dirname))
@@ -589,7 +589,7 @@ filename_completion_internal(DIR * dir, const char * dirname,
 	{
 		if(filename[0] == '\0' && d->d_name[0] == '.')
 			continue;
-		if(pathncmp(d->d_name, filename, filename_len) != 0)
+		if(strnoscmp(d->d_name, filename, filename_len) != 0)
 			continue;
 
 		if(type == CT_DIRONLY && !is_entry_dir(d))
@@ -770,7 +770,7 @@ complete_with_shared(const char *server, const char *file)
 				WideCharToMultiByte(CP_ACP, 0, (LPCWSTR)p->shi502_netname, -1, buf,
 						sizeof(buf), NULL, NULL);
 				strcat(buf, "/");
-				if(pathncmp(buf, file, len) == 0)
+				if(strnoscmp(buf, file, len) == 0)
 				{
 					char *escaped = escape_filename(buf, 1);
 					add_completion(escaped);

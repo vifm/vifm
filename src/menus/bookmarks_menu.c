@@ -96,8 +96,8 @@ show_bookmarks_menu(FileView *view, const char *marks)
 			snprintf(buf, sizeof(buf), "%c   %-*s%s", index2mark(j),
 					max_len + overhead, with_tilde, "[invalid]");
 		}
-		else if(!pathcmp(bookmarks[j].file, "..") ||
-				!pathcmp(bookmarks[j].file, "../"))
+		else if(!stroscmp(bookmarks[j].file, "..") ||
+				!stroscmp(bookmarks[j].file, "../"))
 		{
 			snprintf(buf, sizeof(buf), "%c   %-*s%s", index2mark(j),
 					max_len + overhead, with_tilde, "[none]");

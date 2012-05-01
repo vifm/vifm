@@ -43,6 +43,10 @@ void break_at(char *str, char c);
 void break_atr(char *str, char c);
 char * skip_non_whitespace(const char *str);
 char * skip_whitespace(const char *str);
+/* Compares strings in OS dependent way. */
+int stroscmp(const char *s, const char *t);
+/* Compares part of strings in OS dependent way. */
+int strnoscmp(const char *s, const char *t, size_t n);
 /* Returns pointer to first character after last occurrence of c in str or
  * str. */
 char * after_last(const char *str, char c);

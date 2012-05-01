@@ -128,7 +128,7 @@ is_in_trash(const char *trash_name)
 
 	for(i = 0; i < nentries; i++)
 	{
-		if(pathcmp(trash_list[i].trash_name, trash_name) == 0)
+		if(stroscmp(trash_list[i].trash_name, trash_name) == 0)
 			return 1;
 	}
 	return 0;
@@ -143,7 +143,7 @@ restore_from_trash(const char *trash_name)
 
 	for(i = 0; i < nentries; i++)
 	{
-		if(pathcmp(trash_list[i].trash_name, trash_name) == 0)
+		if(stroscmp(trash_list[i].trash_name, trash_name) == 0)
 			break;
 	}
 	if(i >= nentries)
@@ -185,7 +185,7 @@ remove_from_trash(const char *trash_name)
 	int i;
 	for(i = 0; i < nentries; i++)
 	{
-		if(pathcmp(trash_list[i].trash_name, trash_name) == 0)
+		if(stroscmp(trash_list[i].trash_name, trash_name) == 0)
 			break;
 	}
 	if(i >= nentries)

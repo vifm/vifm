@@ -31,6 +31,7 @@
 
 #include "utils/env.h"
 #include "utils/macros.h"
+#include "utils/str.h"
 #include "utils/string_array.h"
 
 #include "term_title.h"
@@ -182,7 +183,7 @@ set_terminal_title(const char *path)
 {
 #ifdef _WIN32
 	wchar_t buf[2048];
-	my_swprintf(buf, L"%" SWPRINTF_MBSTR " - VIFM", path);
+	my_swprintf(buf, ARRAY_LEN(buf), L"%" WPRINTF_MBSTR L" - VIFM", path);
 	SetConsoleTitleW(buf);
 #else
 	printf("\033]2;%s - VIFM\007", path);
