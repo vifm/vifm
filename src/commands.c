@@ -688,10 +688,6 @@ save_history(const char *line, char **hist, int *num, int *len)
 	if(line[0] == '\0')
 		return;
 
-	/* Don't add :!! or :! to history list */
-	if(strcmp(line, "!!") == 0 || strcmp(line, "!") == 0)
-		return;
-
 	/* Don't add duplicates */
 	for(x = 0; x <= *num; x++)
 	{
@@ -735,6 +731,10 @@ save_search_history(const char *pattern)
 void
 save_command_history(const char *command)
 {
+	/* Don't add :!! or :! to history list */
+	if(strcmp(command, "!!") == 0 || strcmp(command, "!") == 0)
+		return;
+
 	save_history(command, cfg.cmd_history, &cfg.cmd_history_num,
 			&cfg.cmd_history_len);
 }
