@@ -47,10 +47,10 @@ fuse_mount_t;
 
 static fuse_mount_t *fuse_mounts;
 
-static fuse_mount_t * fuse_mount(FileView *view, char *file_full_path,
+static int fuse_mount(FileView *view, char *file_full_path, const char *param,
 		const char *program, char *mount_point);
 TSTATIC int format_mount_command(const char *mount_point, const char *file_name,
-		const char *format, size_t buf_size, char *buf);
+		const char *param, const char *format, size_t buf_size, char *buf);
 static fuse_mount_t * get_mount_by_source(const char *source);
 static fuse_mount_t * get_mount_by_mount_point(const char *dir);
 static void updir_from_mount(FileView *view, fuse_mount_t *runner);
@@ -86,7 +86,7 @@ fuse_try_mount(FileView *view, const char *program)
 	}
 	else
 	{
-		fuse_mount_t *item;
+		char param[PATH_MAX] = "";
 		/* new file to be mounted */
 		if(starts_with(program, "FUSE_MOUNT2"))
 		{
@@ -98,7 +98,7 @@ fuse_try_mount(FileView *view, const char *program)
 				return;
 			}
 
-			if(fgets(file_full_path, sizeof(file_full_path), f) == NULL)
+			if(fgets(param, sizeof(param), f) == NULL)
 			{
 				(void)show_error_msg("SSH mount failed", "Can't read file content");
 				curr_stats.save_msg = 1;
@@ -107,8 +107,8 @@ fuse_try_mount(FileView *view, const char *program)
 			}
 			fclose(f);
 
-			chomp(file_full_path);
-			if(file_full_path[0] == '\0')
+			chomp(param);
+			if(param[0] == '\0')
 			{
 				(void)show_error_msg("SSH mount failed", "File is empty");
 				curr_stats.save_msg = 1;
@@ -116,10 +116,7 @@ fuse_try_mount(FileView *view, const char *program)
 			}
 
 		}
-		if((item = fuse_mount(view, file_full_path, program, mount_point)) != NULL)
-			snprintf(item->source_file_name, sizeof(item->source_file_name), "%s",
-					file_full_path);
-		else
+		if(fuse_mount(view, file_full_path, param, program, mount_point) != 0)
 			return;
 	}
 
@@ -146,11 +143,11 @@ get_mount_by_source(const char *source)
 
 /*
  * mount_point should be an array of at least PATH_MAX characters
- * Returns NULL on error.
+ * Returns non-zero on error.
  */
-static fuse_mount_t *
-fuse_mount(FileView *view, char *file_full_path, const char *program,
-		char *mount_point)
+static int
+fuse_mount(FileView *view, char *file_full_path, const char *param,
+		const char *program, char *mount_point)
 {
 	/* TODO: refactor this function fuse_mount() */
 
@@ -184,7 +181,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *program,
 	{
 		free(escaped_filename);
 		(void)show_error_msg("Unable to create FUSE mount directory", mount_point);
-		return NULL;
+		return -1;
 	}
 	free(escaped_filename);
 
@@ -196,10 +193,10 @@ fuse_mount(FileView *view, char *file_full_path, const char *program,
 	if(my_chdir(cfg.fuse_home) != 0)
 	{
 		(void)show_error_msg("FUSE MOUNT ERROR", "Can't chdir() to FUSE home");
-		return NULL;
+		return -1;
 	}
 
-	clear_before_mount = format_mount_command(mount_point, file_full_path,
+	clear_before_mount = format_mount_command(mount_point, file_full_path, param,
 			program, sizeof(buf), buf);
 
 	status_bar_message("FUSE mounting selected file, please stand by..");
@@ -231,7 +228,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *program,
 			rmdir(mount_point);
 		(void)show_error_msg("FUSE MOUNT ERROR", file_full_path);
 		(void)my_chdir(view->curr_dir);
-		return NULL;
+		return -1;
 	}
 	unlink(tmp_file);
 	status_bar_message("FUSE mount success");
@@ -247,7 +244,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *program,
 	else
 		runner->next = fuse_item;
 
-	return fuse_item;
+	return 0;
 }
 
 /* Builds the mount command based on the file type program.
@@ -259,7 +256,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *program,
  * */
 TSTATIC int
 format_mount_command(const char *mount_point, const char *file_name,
-		const char *format, size_t buf_size, char *buf)
+		const char *param, const char *format, size_t buf_size, char *buf)
 {
 	char *buf_pos;
 	const char *prog_pos;
@@ -293,12 +290,18 @@ format_mount_command(const char *mount_point, const char *file_name,
 				prog_pos++;
 			}
 			*cmd_pos = '\0';
+			/* FIXME: possible buffer overflow */
 			if(buf_pos + strlen(escaped_path) >= buf + buf_size + 2)
 				continue;
-			else if(!strcmp(cmd_buf, "%SOURCE_FILE") || !strcmp(cmd_buf, "%PARAM"))
+			else if(!strcmp(cmd_buf, "%SOURCE_FILE"))
 			{
 				strcpy(buf_pos, escaped_path);
 				buf_pos += strlen(escaped_path);
+			}
+			else if(!strcmp(cmd_buf, "%PARAM"))
+			{
+				strcpy(buf_pos, param);
+				buf_pos += strlen(param);
 			}
 			else if(!strcmp(cmd_buf, "%DESTINATION_DIR"))
 			{

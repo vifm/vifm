@@ -10,8 +10,8 @@ test_no_macro_string_unchanged(void)
 	char format[] = "FUSE_MOUNT|mount";
 	char expected[] = "mount";
 
-	clear = format_mount_command("/mnt/point", "/file/path", format, sizeof(buf),
-			buf);
+	clear = format_mount_command("/mnt/point", "/file/path", "param", format,
+			sizeof(buf), buf);
 	assert_int_equal(0, clear);
 	assert_string_equal(expected, buf);
 }
@@ -24,8 +24,8 @@ test_wrong_macro_expanded_to_empty_string(void)
 	char format[] = "FUSE_MOUNT|mount %SRC";
 	char expected[] = "mount ";
 
-	clear = format_mount_command("/mnt/point", "/file/path", format, sizeof(buf),
-			buf);
+	clear = format_mount_command("/mnt/point", "/file/path", "param", format,
+			sizeof(buf), buf);
 	assert_int_equal(0, clear);
 	assert_string_equal(expected, buf);
 }
@@ -38,8 +38,8 @@ test_clear_macro_returns_non_zero(void)
 	char format[] = "FUSE_MOUNT|mount %CLEAR %SRC";
 	char expected[] = "mount  ";
 
-	clear = format_mount_command("/mnt/point", "/file/path", format, sizeof(buf),
-			buf);
+	clear = format_mount_command("/mnt/point", "/file/path", "param", format,
+			sizeof(buf), buf);
 	assert_int_equal(1, clear);
 	assert_string_equal(expected, buf);
 }
@@ -50,10 +50,10 @@ test_options_before_macros(void)
 	int clear;
 	char buf[256];
 	char format[] = "FUSE_MOUNT2|mount -o opt1=-,opt2 %PARAM %DESTINATION_DIR";
-	char expected[] = "mount -o opt1=-,opt2 /file/path/dir/file /mnt/point";
+	char expected[] = "mount -o opt1=-,opt2 param /mnt/point";
 
-	clear = format_mount_command("/mnt/point", "/file/path/dir/file", format, sizeof(buf),
-			buf);
+	clear = format_mount_command("/mnt/point", "/file/path/dir/file", "param",
+			format, sizeof(buf), buf);
 
 	assert_int_equal(0, clear);
 	assert_string_equal(expected, buf);

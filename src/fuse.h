@@ -40,7 +40,7 @@ int try_unmount_fuse(FileView *view);
 
 TSTATIC_DEFS(
 	int format_mount_command(const char *mount_point, const char *file_name,
-		const char *format, size_t buf_size, char *buf);
+		const char *param, const char *format, size_t buf_size, char *buf);
 )
 
 #endif
