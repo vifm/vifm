@@ -58,8 +58,6 @@ Vi(m) specific features that need to be added.
     Add Ctrl-W H/J/K/L keys.
     Think about :split and :vsplit commands with path passed (what base should
         relative paths have?).
-    Save last typed but not executed command in command-line mode (this also
-        includes searches).
     Support hex and octal numbers in :set
     Allow whitespace between option and any of operators (now works only for
         ?, ! and & ).

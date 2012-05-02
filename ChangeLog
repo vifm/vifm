@@ -66,6 +66,11 @@
 
 	Corrected status bar messages about failed search.
 
+	Use common search history for normal, visual and menu modes.
+
+	Save last typed but not executed command in command-line mode (this also
+	includes searches).
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.
@@ -127,6 +132,10 @@
 	commands in certain cases.
 
 	Fixed wrong resizing of file info mode.
+
+	Fixed saving of partially typed search pattern with 'incsearch' on.
+
+	Fixed searching in visual mode with 'incsearch' on.
 
 0.7.1 to 0.7.2
 

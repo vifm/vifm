@@ -361,7 +361,11 @@ input_line_changed(void)
 		free(p);
 	}
 
-	if(prev_mode != MENU_MODE)
+	if(prev_mode == VISUAL_MODE)
+	{
+		update_visual_mode();
+	}
+	else if(prev_mode != MENU_MODE)
 	{
 		draw_dir_list(curr_view, curr_view->top_line);
 		move_to_list_pos(curr_view, curr_view->list_pos);
@@ -587,20 +591,31 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	wnoutrefresh(status_bar);
 
 	if(input_stat.line != NULL)
+	{
+		char *mbstr = to_multibyte(input_stat.line);
+		if(input_stat.search_mode)
+			save_search_history(mbstr);
+		else if(sub_mode == CMD_SUBMODE)
+			save_command_history(mbstr);
+		free(mbstr);
+
 		input_stat.line[0] = L'\0';
+	}
 	input_line_changed();
 
 	leave_cmdline_mode();
 
 	if(prev_mode == VISUAL_MODE)
 	{
-		leave_visual_mode(curr_stats.save_msg, 1, 1);
-		move_to_list_pos(curr_view, check_mark_directory(curr_view, '<'));
+		if(!input_stat.search_mode)
+		{
+			leave_visual_mode(curr_stats.save_msg, 1, 1);
+			move_to_list_pos(curr_view, check_mark_directory(curr_view, '<'));
+		}
 	}
 	if(sub_mode == CMD_SUBMODE)
 	{
-		int save_hist = !keys_info->mapped;
-		curr_stats.save_msg = exec_commands("", curr_view, save_hist, GET_COMMAND);
+		curr_stats.save_msg = exec_commands("", curr_view, GET_COMMAND);
 	}
 }
 
@@ -825,16 +840,23 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 			sub_mode != VSEARCH_BACKWARD_SUBMODE)
 		leave_visual_mode(curr_stats.save_msg, 1, 0);
 
+	if(p != NULL)
+	{
+		if(input_stat.search_mode)
+			save_search_history(p);
+		else if(save_hist && sub_mode == CMD_SUBMODE)
+			save_command_history(p);
+	}
+
 	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 	{
 		char* s = (p != NULL) ? p : "";
 		while(*s == ' ' || *s == ':')
 			s++;
 		if(sub_mode == CMD_SUBMODE)
-			curr_stats.save_msg = exec_commands(s, curr_view, save_hist, GET_COMMAND);
+			curr_stats.save_msg = exec_commands(s, curr_view, GET_COMMAND);
 		else
-			curr_stats.save_msg = exec_commands(s, curr_view, save_hist,
-					GET_MENU_COMMAND);
+			curr_stats.save_msg = exec_commands(s, curr_view, GET_MENU_COMMAND);
 	}
 	else if(sub_mode == PROMPT_SUBMODE)
 	{
@@ -994,8 +1016,7 @@ search_next(void)
 	{
 		complete_cmd_next();
 	}
-	else if(sub_mode == SEARCH_FORWARD_SUBMODE ||
-			sub_mode == SEARCH_BACKWARD_SUBMODE)
+	else if(input_stat.search_mode)
 	{
 		complete_search_next();
 	}
@@ -1337,8 +1358,7 @@ search_prev(void)
 	{
 		complete_cmd_prev();
 	}
-	else if(sub_mode == SEARCH_FORWARD_SUBMODE ||
-			sub_mode == SEARCH_BACKWARD_SUBMODE)
+	else if(input_stat.search_mode)
 	{
 		complete_search_prev();
 	}

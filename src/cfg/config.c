@@ -583,7 +583,7 @@ source_file_internal(FILE *fp, const char *filename)
 			while((p = fgets(next_line, sizeof(next_line), fp)) != NULL);
 		}
 		chomp(line);
-		if(exec_commands(line, curr_view, 0, GET_COMMAND) < 0)
+		if(exec_commands(line, curr_view, GET_COMMAND) < 0)
 		{
 			show_error_msgf("File Sourcing Error", "Error in %s at %d line", filename,
 					line_num);
