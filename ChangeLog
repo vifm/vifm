@@ -137,6 +137,8 @@
 
 	Fixed searching in visual mode with 'incsearch' on.
 
+	Fixed artifacts at the bottom of screen on FUSE mountings.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.
