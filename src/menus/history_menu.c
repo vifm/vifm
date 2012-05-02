@@ -22,13 +22,14 @@
 
 #include "../cfg/config.h"
 #include "../modes/menu.h"
+#include "../utils/string_array.h"
 #include "../ui.h"
 #include "menus.h"
 
 #include "history_menu.h"
 
 static int show_history(FileView *view, int type, int len, char **hist,
-		const char *msg);
+		const char *title);
 
 int
 show_cmdhistory_menu(FileView *view)
@@ -59,7 +60,7 @@ show_bsearchhistory_menu(FileView *view)
 }
 
 static int
-show_history(FileView *view, int type, int len, char **hist, const char *msg)
+show_history(FileView *view, int type, int len, char **hist, const char *title)
 {
 	int x;
 	static menu_info m;
@@ -72,27 +73,23 @@ show_history(FileView *view, int type, int len, char **hist, const char *msg)
 
 	m.top = 0;
 	m.current = 1;
-	m.len = len;
+	m.len = 0;
 	m.pos = 0;
 	m.hor_pos = 0;
-	m.win_rows = 0;
+	m.win_rows = getmaxy(menu_win);
 	m.type = type;
 	m.matching_entries = 0;
 	m.matches = NULL;
 	m.match_dir = NONE;
 	m.regexp = NULL;
-	m.title = strdup(msg);
+	m.title = strdup(title);
 	m.args = NULL;
 	m.items = NULL;
 	m.data = NULL;
 
-	getmaxyx(menu_win, m.win_rows, x);
-
 	for(x = 0; x < len; x++)
 	{
-		m.items = (char **)realloc(m.items, sizeof(char *) * (x + 1));
-		m.items[x] = (char *)malloc((strlen(hist[x]) + 1)*sizeof(char));
-		strcpy(m.items[x], hist[x]);
+		m.len = add_to_string_array(&m.items, m.len, 1, hist[x]);
 	}
 
 	setup_menu();
