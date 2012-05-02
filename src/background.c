@@ -208,7 +208,7 @@ check_background_jobs(void)
 #endif
 }
 
-/* Used for FUSE mounting of files only */
+/* Used for FUSE mounting and unmounting only */
 int
 background_and_wait_for_status(char *cmd)
 {

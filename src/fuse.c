@@ -188,9 +188,6 @@ fuse_mount(FileView *view, char *file_full_path, const char *program,
 	}
 	free(escaped_filename);
 
-	/* I need the return code of the mount command */
-	status_bar_message("FUSE mounting selected file, please stand by..");
-
 	/* Just before running the mount,
 		 I need to chdir out temporarily from any FUSE mounted
 		 paths, Otherwise the fuse-zip command fails with
@@ -205,6 +202,8 @@ fuse_mount(FileView *view, char *file_full_path, const char *program,
 	clear_before_mount = format_mount_command(mount_point, file_full_path,
 			program, sizeof(buf), buf);
 
+	status_bar_message("FUSE mounting selected file, please stand by..");
+
 	if(clear_before_mount)
 	{
 		def_prog_mode();
@@ -216,6 +215,9 @@ fuse_mount(FileView *view, char *file_full_path, const char *program,
 	strcat(buf, tmp_file);
 	LOG_INFO_MSG("FUSE mount command: `%s`", buf);
 	status = background_and_wait_for_status(buf);
+
+	clean_status_bar();
+
 	/* check child status */
 	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
 	{
@@ -412,7 +414,6 @@ try_unmount_fuse(FileView *view)
 		return 0;
 
 	/* we are exiting a top level dir */
-	status_bar_message("FUSE unmounting selected file, please stand by..");
 	escaped_mount_point = escape_filename(runner->mount_point, 0);
 	snprintf(buf, sizeof(buf), "fusermount -u %s 2> /dev/null",
 			escaped_mount_point);
@@ -426,7 +427,9 @@ try_unmount_fuse(FileView *view)
 		return -1;
 	}
 
+	status_bar_message("FUSE unmounting selected file, please stand by..");
 	status = background_and_wait_for_status(buf);
+	clean_status_bar();
 	/* check child status */
 	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
 	{
