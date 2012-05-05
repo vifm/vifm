@@ -211,7 +211,7 @@ my_chdir(const char *path)
 	return chdir(path);
 }
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
 static int
 begins_with_list_item(const char *pattern, const char *list)
 {

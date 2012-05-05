@@ -30,6 +30,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h> /* strlen() strcpy() */
 
 #include "utils/log.h"
 #include "utils/macros.h"

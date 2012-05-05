@@ -22,6 +22,11 @@
                      * functions
                      */
 
+#ifdef __APPLE__
+/* Enable wide functions of ncurses for Mac OS. */
+#define _XOPEN_SOURCE_EXTENDED
+#endif
+
 #include <sys/stat.h> /* stat */
 #include <dirent.h> /* DIR */
 #ifndef _WIN32
@@ -835,9 +840,9 @@ is_term_working(void)
 
 	if(ioctl(0, TIOCGWINSZ, &ws) == -1)
 		finish("Terminal error");
-	if(ws.ws_row < 0)
+	if(ws.ws_row <= 0)
 		finish("Terminal is too small to run vifm\n");
-	if(ws.ws_col < 0)
+	if(ws.ws_col <= 0)
 		finish("Terminal is too small to run vifm\n");
 
 	resize_term(ws.ws_row, ws.ws_col);

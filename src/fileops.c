@@ -607,7 +607,7 @@ rename_file(FileView *view, int name_only)
 	if(!check_if_dir_writable(DR_CURRENT, view->curr_dir))
 		return;
 
-	snprintf(filename, sizeof(filename), get_current_file_name(view));
+	snprintf(filename, sizeof(filename), "%s", get_current_file_name(view));
 	if(stroscmp(filename, "../") == 0)
 	{
 		(void)show_error_msg("Rename error",
