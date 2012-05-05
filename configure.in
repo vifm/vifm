@@ -141,10 +141,12 @@ dnl checks for mimetype detection
 dnl ----------------------------------------------------------------------------
 
 if test "$use_gtk" = "yes"; then
-	if pkg-config --exists glib-2.0 gtk+-2.0; then
-		CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
-		LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
-		AC_DEFINE([HAVE_LIBGTK], [1], [use gtk to determine mime type])
+	if test "x$(which pkg-config)" != "x"; then
+		if pkg-config --exists glib-2.0 gtk+-2.0; then
+			CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
+			LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
+			AC_DEFINE([HAVE_LIBGTK], [1], [use gtk to determine mime type])
+		fi
 	fi
 fi
 
