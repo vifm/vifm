@@ -47,6 +47,12 @@
 #define NO_CLOBBER
 #endif /* SUPPORT_NO_CLOBBER */
 
+#ifdef GNU_TOOLCHAIN
+#define PRESERVE_FLAGS "--preserve=mode,timestamps"
+#else
+#define PRESERVE_FLAGS "-p"
+#endif
+
 static int op_none(void *data, const char *src, const char *dst);
 static int op_remove(void *data, const char *src, const char *dst);
 static int op_removesl(void *data, const char *src, const char *dst);
@@ -195,7 +201,7 @@ op_copy(void *data, const char *src, const char *dst)
 	}
 
 	snprintf(cmd, sizeof(cmd),
-			"cp " NO_CLOBBER " -R --preserve=mode,timestamps %s %s",
+			"cp " NO_CLOBBER " -R " PRESERVE_FLAGS " %s %s",
 			escaped_src, escaped_dst);
 	LOG_INFO_MSG("Running cp command: \"%s\"", cmd);
 	result = background_and_wait_for_errors(cmd);
