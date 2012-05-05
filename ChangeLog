@@ -71,6 +71,8 @@
 	Save last typed but not executed command in command-line mode (this also
 	includes searches).
 
+	Better handling of multiline messages in status bar.
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.

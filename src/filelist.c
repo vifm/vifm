@@ -1936,6 +1936,8 @@ load_dir_list(FileView *view, int reload)
 		status_bar_message("Sorting directory...");
 	sort_view(view);
 
+	clean_status_bar();
+
 	/* If reloading the same directory don't jump to
 	 * history position.  Stay at the current line
 	 */

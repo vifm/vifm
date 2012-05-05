@@ -64,6 +64,8 @@
 #define MIN(a,b) ({int _a = (a), _b = (b); (_a < _b) ? _a : _b;})
 #define MAX(a,b) ({int _a = (a), _b = (b); (_a > _b) ? _a : _b;})
 
+#define DIV_ROUND_UP(a,b) ({int _a = (a), _b = (b); (_a + (_b - 1))/_b;})
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
