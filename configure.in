@@ -108,8 +108,10 @@ minor="${version#*.}"
 min_major="${min_version%.*}"
 min_minor="${min_version#*.}"
 
-if test $major -ge $min_major -a $minor -ge $min_minor ; then
-	AC_DEFINE([SUPPORT_NO_CLOBBER], [1], [-n option is available for cp and mv])
+if test "x$major" != "x" -a "x$minor" != "x" ; then
+	if test $major -ge $min_major -a $minor -ge $min_minor ; then
+		AC_DEFINE([SUPPORT_NO_CLOBBER], [1], [-n option is available for cp and mv])
+	fi
 fi
 
 dnl ----------------------------------------------------------------------------
