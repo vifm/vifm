@@ -58,6 +58,13 @@ static pthread_key_t key;
 static pthread_once_t key_once = PTHREAD_ONCE_INIT;
 
 void
+init_background(void)
+{
+	/* Initialize state for the main thread. */
+	add_inner_bg_job(NULL);
+}
+
+void
 add_finished_job(pid_t pid, int status)
 {
 	job_t *job;

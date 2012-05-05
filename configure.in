@@ -59,7 +59,9 @@ fi
 changequote([,])dnl
 
 dnl This is for Mac OS
-CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE"
+if test "x$(uname)" = "xDarwin"; then
+  CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE"
+fi
 
 dnl Use 64-bit off_t type
 CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64"
@@ -101,15 +103,18 @@ dnl check for gnu coreutils version
 dnl ----------------------------------------------------------------------------
 
 min_version="7.1"
-version="$(mv --version | sed -ne 's/^.*(GNU coreutils) //p')"
+version="$(mv --version 2> /dev/null | sed -ne 's/^.*(GNU coreutils) //p')"
 
 major="${version%.*}"
 minor="${version#*.}"
 min_major="${min_version%.*}"
 min_minor="${min_version#*.}"
 
-if test $major -ge $min_major -a $minor -ge $min_minor ; then
-	AC_DEFINE([SUPPORT_NO_CLOBBER], [1], [-n option is available for cp and mv])
+if test "x$major" != "x" -a "x$minor" != "x" ; then
+	AC_DEFINE([GNU_TOOLCHAIN], [1], [GNU toolchain is installed])
+	if test $major -ge $min_major -a $minor -ge $min_minor ; then
+		AC_DEFINE([SUPPORT_NO_CLOBBER], [1], [-n option is available for cp and mv])
+	fi
 fi
 
 dnl ----------------------------------------------------------------------------
@@ -139,10 +144,12 @@ dnl checks for mimetype detection
 dnl ----------------------------------------------------------------------------
 
 if test "$use_gtk" = "yes"; then
-	if pkg-config --exists glib-2.0 gtk+-2.0; then
-		CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
-		LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
-		AC_DEFINE([HAVE_LIBGTK], [1], [use gtk to determine mime type])
+	if test "x$(which pkg-config)" != "x"; then
+		if pkg-config --exists glib-2.0 gtk+-2.0; then
+			CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
+			LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
+			AC_DEFINE([HAVE_LIBGTK], [1], [use gtk to determine mime type])
+		fi
 	fi
 fi
 

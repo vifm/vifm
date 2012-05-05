@@ -443,6 +443,8 @@ main(int argc, char *argv[])
 
 	ipc_init(&parse_recieved_arguments);
 
+	init_background();
+
 	lcd = set_path(&lwin, lwin_path);
 	rcd = set_path(&rwin, rwin_path);
 
