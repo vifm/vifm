@@ -101,7 +101,7 @@ dnl check for gnu coreutils version
 dnl ----------------------------------------------------------------------------
 
 min_version="7.1"
-version="$(mv --version | sed -ne 's/^.*(GNU coreutils) //p')"
+version="$(mv --version 2> /dev/null | sed -ne 's/^.*(GNU coreutils) //p')"
 
 major="${version%.*}"
 minor="${version#*.}"
