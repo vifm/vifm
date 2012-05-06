@@ -13172,7 +13172,9 @@ if test "x$GCC" = "xyes"; then
   esac
 fi
 
-CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE"
+if test "x$(uname)" = "xDarwin"; then
+  CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE"
+fi
 
 CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64"
 
@@ -13262,17 +13264,22 @@ LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
 
 min_version="7.1"
-version="$(mv --version | sed -ne 's/^.*(GNU coreutils) //p')"
+version="$(mv --version 2> /dev/null | sed -ne 's/^.*(GNU coreutils) //p')"
 
 major="${version%.*}"
 minor="${version#*.}"
 min_major="${min_version%.*}"
 min_minor="${min_version#*.}"
 
-if test $major -ge $min_major -a $minor -ge $min_minor ; then
+if test "x$major" != "x" -a "x$minor" != "x" ; then
+
+$as_echo "#define GNU_TOOLCHAIN 1" >>confdefs.h
+
+	if test $major -ge $min_major -a $minor -ge $min_minor ; then
 
 $as_echo "#define SUPPORT_NO_CLOBBER 1" >>confdefs.h
 
+	fi
 fi
 
 
@@ -13364,12 +13371,14 @@ fi
 
 
 if test "$use_gtk" = "yes"; then
-	if pkg-config --exists glib-2.0 gtk+-2.0; then
-		CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
-		LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
+	if test "x$(which pkg-config)" != "x"; then
+		if pkg-config --exists glib-2.0 gtk+-2.0; then
+			CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
+			LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
 
 $as_echo "#define HAVE_LIBGTK 1" >>confdefs.h
 
+		fi
 	fi
 fi
 

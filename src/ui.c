@@ -68,7 +68,9 @@
 
 #include "ui.h"
 
-static int status_bar_lines;
+static const char PRESS_ENTER_MSG[] = "Press ENTER or type command to continue";
+
+static int multiline_status_bar;
 
 static WINDOW *ltop_line1;
 static WINDOW *ltop_line2;
@@ -498,6 +500,7 @@ status_bar_message_i(const char *message, int error)
 	int len;
 	const char *p, *q;
 	int lines;
+	int status_bar_lines;
 
 	if(curr_stats.load_stage == 0)
 		return;
@@ -527,7 +530,7 @@ status_bar_message_i(const char *message, int error)
 	len = getmaxx(stdscr);
 	while((q = strchr(q + 1, '\n')) != NULL)
 	{
-		status_bar_lines += (q - p + len - 1)/len;
+		status_bar_lines += DIV_ROUND_UP(q - p, len );
 		if(q == p)
 		{
 			status_bar_lines++;
@@ -538,13 +541,19 @@ status_bar_message_i(const char *message, int error)
 	{
 		status_bar_lines++;
 	}
-	status_bar_lines += (strlen(p) + len - 1)/len;
+	status_bar_lines += DIV_ROUND_UP(strlen(p), len);
 	if(status_bar_lines == 0)
 		status_bar_lines = 1;
 
-	if(status_bar_lines > 1 || strlen(p) > getmaxx(status_bar))
-		status_bar_lines++;
 	lines = status_bar_lines;
+	if(status_bar_lines > 1 || strlen(p) > getmaxx(status_bar))
+		lines++;
+
+	if(lines > 1)
+	{
+		int extra = DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG) - 1, len) - 1;
+		lines += extra;
+	}
 
 	if(lines > getmaxy(stdscr))
 		lines = getmaxy(stdscr);
@@ -552,9 +561,13 @@ status_bar_message_i(const char *message, int error)
 	mvwin(stat_win, getmaxy(stdscr) - lines - 1, 0);
 	mvwin(status_bar, getmaxy(stdscr) - lines, 0);
 	if(lines == 1)
+	{
 		wresize(status_bar, lines, getmaxx(stdscr) - 19);
+	}
 	else
+	{
 		wresize(status_bar, lines, getmaxx(stdscr));
+	}
 	wmove(status_bar, 0, 0);
 
 	if(err)
@@ -572,13 +585,15 @@ status_bar_message_i(const char *message, int error)
 	werase(status_bar);
 
 	wprint(status_bar, msg);
-	if(lines > 1)
+	multiline_status_bar = lines > 1;
+	if(multiline_status_bar)
 	{
-		wmove(status_bar, lines - 1, 0);
+		wmove(status_bar, lines - DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG), len),
+				0);
 		wclrtoeol(status_bar);
 		if(lines < status_bar_lines)
 			wprintw(status_bar, "%d of %d lines.  ", lines, status_bar_lines);
-		wprintw(status_bar, "%s", "Press ENTER or type command to continue");
+		wprintw(status_bar, "%s", PRESS_ENTER_MSG);
 	}
 
 	wattrset(status_bar, 0);
@@ -638,7 +653,7 @@ status_bar_message(const char *message)
 int
 is_status_bar_multiline(void)
 {
-	return status_bar_lines > 1;
+	return multiline_status_bar;
 }
 
 void
@@ -650,12 +665,19 @@ clean_status_bar(void)
 	mvwin(status_bar, getmaxy(stdscr) - 1, 0);
 	wnoutrefresh(status_bar);
 
-	if(status_bar_lines > 1)
+	if(curr_stats.load_stage <= 2)
 	{
-		status_bar_lines = 1;
+		multiline_status_bar = 0;
+		curr_stats.need_redraw = 1;
+		return;
+	}
+
+	if(multiline_status_bar)
+	{
+		multiline_status_bar = 0;
 		redraw_window();
 	}
-	status_bar_lines = 1;
+	multiline_status_bar = 0;
 }
 
 int

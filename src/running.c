@@ -371,9 +371,9 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 	if(pause)
 		program += 2;
 
-	if(!path_exists(view->dir_entry[view->list_pos].name))
+	if(!path_exists_at(view->curr_dir, view->dir_entry[view->list_pos].name))
 	{
-		(void)show_error_msg("Broken Link", "Link destination doesn't exist");
+		(void)show_error_msg("Access Error", "File doesn't exist.");
 		return;
 	}
 
