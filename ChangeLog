@@ -73,6 +73,8 @@
 
 	Better handling of multiline messages in status bar.
 
+	Increased directory modification stamp precision on *nix.
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.

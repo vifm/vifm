@@ -1186,7 +1186,11 @@ update_dir_mtime(FileView *view)
 
 	if(stat(view->curr_dir, &s) != 0)
 		return -1;
+#ifdef HAVE_STRUCT_STAT_ST_MTIM
+	view->dir_mtime = s.st_mtim;
+#else
 	view->dir_mtime = s.st_mtime;
+#endif
 	return 0;
 #else
 	char buf[PATH_MAX];
@@ -2272,7 +2276,11 @@ check_if_filelists_have_changed(FileView *view)
 	}
 
 #ifndef _WIN32
+#ifdef HAVE_STRUCT_STAT_ST_MTIM
+	if(memcmp(&s.st_mtim, &view->dir_mtime, sizeof(view->dir_mtime)) != 0)
+#else
 	if(s.st_mtime != view->dir_mtime)
+#endif
 #else
 	if(r > 0)
 #endif
