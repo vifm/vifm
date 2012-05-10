@@ -14,6 +14,7 @@ AM_PROG_CC_C_O
 AC_CONFIG_MACRO_DIR([m4])
 AC_CHECK_HEADERS(limits.h sys/time.h unistd.h wchar.h)
 AC_CHECK_FUNCS(getcwd mkdir regcomp strdup strstr)
+AC_CHECK_MEMBERS([struct stat.st_mtim])
 AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO
 AC_TYPE_OFF_T

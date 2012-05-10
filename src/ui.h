@@ -20,6 +20,8 @@
 #ifndef __UI_H__
 #define __UI_H__
 
+#include "../config.h"
+
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -104,7 +106,11 @@ typedef struct _FileView
 	WINDOW *title;
 	char curr_dir[PATH_MAX];
 #ifndef _WIN32
+#ifdef HAVE_STRUCT_STAT_ST_MTIM
+	struct timespec dir_mtime;
+#else
 	time_t dir_mtime;
+#endif
 #else
 	FILETIME dir_mtime;
 	HANDLE dir_watcher;
