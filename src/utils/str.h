@@ -33,6 +33,8 @@
 /* Various string functions. */
 
 void chomp(char *text);
+/* Removes all trailing whitespace. */
+void trim_right(char *text);
 wchar_t * to_wide(const char *s);
 wchar_t * my_wcsdup(const wchar_t *ws);
 int starts_with(const char *str, const char *prefix);
