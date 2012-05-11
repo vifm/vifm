@@ -38,6 +38,18 @@ chomp(char *text)
 		text[len - 1] = '\0';
 }
 
+void
+trim_right(char *text)
+{
+	size_t len;
+
+	len = strlen(text);
+	while(len > 0 && isspace(text[len - 1]))
+	{
+		text[--len] = '\0';
+	}
+}
+
 wchar_t *
 to_wide(const char *s)
 {
