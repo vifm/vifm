@@ -145,6 +145,8 @@
 
 	Fixed check for file existence on file running.
 
+	Fixed running 'vicmd' on :rename and similar commands with ending \s+&.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

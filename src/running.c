@@ -324,6 +324,7 @@ view_file(const char *filename, int line, int do_fork)
 #endif
 
 	snprintf(vicmd, sizeof(vicmd), "%s", get_vicmd(&bg));
+	trim_right(vicmd);
 	if(!do_fork)
 	{
 		char *p = strrchr(vicmd, ' ');
