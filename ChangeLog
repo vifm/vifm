@@ -149,6 +149,8 @@
 
 	Fixed appearing of cursor in stat line on resize with active wildmenu.
 
+	Fixed unexpected appearing of wildmenu on terminal resizing.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

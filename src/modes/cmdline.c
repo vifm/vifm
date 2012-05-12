@@ -473,7 +473,7 @@ redraw_cmdline(void)
 	update_cmdline_size();
 	update_cmdline_text();
 
-	if(cfg.wild_menu)
+	if(input_stat.complete_continue && cfg.wild_menu)
 		draw_wild_menu(-1);
 }
 
