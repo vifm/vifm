@@ -156,7 +156,7 @@ reset_dircache(status_t *stats)
 void
 schedule_redraw(void)
 {
-	pending_redraw++;
+	pending_redraw = 1;
 }
 
 int
@@ -164,7 +164,7 @@ is_redraw_scheduled(void)
 {
 	if(pending_redraw)
 	{
-		pending_redraw--;
+		pending_redraw = 0;
 		return 1;
 	}
 	return 0;
