@@ -136,6 +136,7 @@ static void cmd_right(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_home(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_end(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_delete(key_info_t key_info, keys_info_t *keys_info);
+static void update_cursor(void);
 static void update_cmdline(void);
 static void complete_cmd_next(void);
 static void complete_search_next(void);
@@ -308,8 +309,7 @@ update_cmdline_text(void)
 	if(input_stat.line != NULL)
 		mvwaddwstr(status_bar, input_stat.prompt_wid/line_width,
 				input_stat.prompt_wid%line_width, input_stat.line);
-	wmove(status_bar, input_stat.curs_pos/line_width,
-			input_stat.curs_pos%line_width);
+	update_cursor();
 	wrefresh(status_bar);
 }
 
@@ -1083,8 +1083,7 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
 
-	wmove(status_bar, input_stat.curs_pos/line_width,
-			input_stat.curs_pos%line_width);
+	update_cursor();
 }
 
 static void
@@ -1131,8 +1130,7 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	waddwstr(status_bar, input_stat.line);
-	wmove(status_bar, input_stat.curs_pos/line_width,
-			input_stat.curs_pos%line_width);
+	update_cursor();
 }
 
 static void
@@ -1156,8 +1154,7 @@ static void
 cmd_meta_b(key_info_t key_info, keys_info_t *keys_info)
 {
 	find_prev_word();
-	wmove(status_bar, input_stat.curs_pos/line_width,
-			input_stat.curs_pos%line_width);
+	update_cursor();
 }
 
 static void
@@ -1198,16 +1195,14 @@ cmd_meta_d(key_info_t key_info, keys_info_t *keys_info)
 	werase(status_bar);
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	waddwstr(status_bar, input_stat.line);
-	wmove(status_bar, input_stat.curs_pos/line_width,
-			input_stat.curs_pos%line_width);
+	update_cursor();
 }
 
 static void
 cmd_meta_f(key_info_t key_info, keys_info_t *keys_info)
 {
 	find_next_word();
-	wmove(status_bar, input_stat.curs_pos/line_width,
-			input_stat.curs_pos%line_width);
+	update_cursor();
 }
 
 static void
@@ -1237,8 +1232,7 @@ cmd_left(key_info_t key_info, keys_info_t *keys_info)
 	{
 		input_stat.index--;
 		input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index]);
-		wmove(status_bar, input_stat.curs_pos/line_width,
-				input_stat.curs_pos%line_width);
+		update_cursor();
 	}
 }
 
@@ -1252,8 +1246,7 @@ cmd_right(key_info_t key_info, keys_info_t *keys_info)
 	{
 		input_stat.curs_pos += wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;
-		wmove(status_bar, input_stat.curs_pos/line_width,
-				input_stat.curs_pos%line_width);
+		update_cursor();
 	}
 }
 
@@ -1262,8 +1255,7 @@ cmd_home(key_info_t key_info, keys_info_t *keys_info)
 {
 	input_stat.index = 0;
 	input_stat.curs_pos = wcslen(input_stat.prompt);
-	wmove(status_bar, input_stat.curs_pos/line_width,
-			input_stat.curs_pos%line_width);
+	update_cursor();
 }
 
 static void
@@ -1271,8 +1263,7 @@ cmd_end(key_info_t key_info, keys_info_t *keys_info)
 {
 	input_stat.index = input_stat.len;
 	input_stat.curs_pos = input_stat.prompt_wid + input_stat.len;
-	wmove(status_bar, input_stat.curs_pos/line_width,
-			input_stat.curs_pos%line_width);
+	update_cursor();
 }
 
 static void
@@ -1291,6 +1282,12 @@ cmd_delete(key_info_t key_info, keys_info_t *keys_info)
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
 
+	update_cursor();
+}
+
+static void
+update_cursor(void)
+{
 	wmove(status_bar, input_stat.curs_pos/line_width,
 			input_stat.curs_pos%line_width);
 }
