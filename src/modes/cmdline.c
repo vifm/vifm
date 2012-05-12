@@ -803,6 +803,8 @@ draw_wild_menu(int op)
 	if(op == 0 && len < 2 && i - 1 == pos)
 		last_pos = i;
 	wrefresh(stat_win);
+
+	update_cursor();
 }
 
 static void
