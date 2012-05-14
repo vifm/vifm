@@ -248,7 +248,10 @@ is_on_slow_fs(const char *full_path)
 	size_t len = 0;
 	char max[PATH_MAX] = "";
 
-	f = setmntent("/etc/mtab", "r");
+	if((f = setmntent("/etc/mtab", "r")) == NULL)
+	{
+		return 0;
+	}
 
 	while((ent = getmntent(f)) != NULL)
 	{

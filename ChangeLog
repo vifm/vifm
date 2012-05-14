@@ -151,6 +151,8 @@
 
 	Fixed unexpected appearing of wildmenu on terminal resizing.
 
+	Fixed running when /etc/mtab file doesn't exist.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.
