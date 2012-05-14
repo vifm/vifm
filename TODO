@@ -63,6 +63,7 @@ Vi(m) specific features that need to be added.
         ?, ! and & ).
     Add support for ^= in :set command.
     Add support of 'n' flag for :substitute command.
+    Expand environment variables for :edit command.
 
 Possible things to add.
 	Use system wide mimetypes file. /etc/mailcap?
