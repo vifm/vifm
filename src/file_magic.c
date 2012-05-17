@@ -19,6 +19,7 @@
 #include "../config.h"
 
 #ifdef HAVE_LIBGTK
+#include <gio/gio.h>
 #include <glib.h>
 #include <gtk/gtk.h>
 #endif
