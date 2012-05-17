@@ -108,7 +108,11 @@ get_magic_mimetype(const char *filename, char *buf)
 #ifdef HAVE_LIBMAGIC
 	magic_t magic;
 
+#if HAVE_DECL_MAGIC_MIME_TYPE
 	magic = magic_open(MAGIC_MIME_TYPE);
+#else
+	magic = magic_open(MAGIC_MIME);
+#endif
 	if(magic == NULL)
 	{
 		return -1;
@@ -117,6 +121,9 @@ get_magic_mimetype(const char *filename, char *buf)
 	magic_load(magic, NULL);
 
 	strcpy(buf, magic_file(magic, filename));
+#if !HAVE_DECL_MAGIC_MIME_TYPE
+	break_atr(buf, ';');
+#endif
 
 	magic_close(magic);
 	return 0;

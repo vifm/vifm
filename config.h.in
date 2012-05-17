@@ -21,6 +21,10 @@
 /* GNU toolchain is installed */
 #undef GNU_TOOLCHAIN
 
+/* Define to 1 if you have the declaration of `MAGIC_MIME_TYPE', and to 0 if
+   you don't. */
+#undef HAVE_DECL_MAGIC_MIME_TYPE
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
