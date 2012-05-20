@@ -155,6 +155,8 @@
 
 	Fixed compiling with file tool (libmagic) of version 4.21 or older.
 
+	Fixed work of ga/gA commands with huge files on Windows.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

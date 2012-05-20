@@ -1901,9 +1901,7 @@ calc_dirsize(const char *path, int force_update)
 		}
 		else
 		{
-			struct stat st;
-			if(lstat(buf, &st) == 0)
-				size += (size_t)st.st_size;
+			size += get_file_size(buf);
 		}
 	}
 

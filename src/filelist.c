@@ -579,7 +579,7 @@ draw_dir_list(FileView *view, int top)
 	}
 	else if((view->list_rows - top) <= view->window_rows)
 	{
-		top = view->list_rows - view->window_rows -1;
+		top = view->list_rows - view->window_rows - 1;
 		view->curr_line++;
 	}
 
