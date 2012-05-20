@@ -1,14 +1,14 @@
 Basic things that need to be done.
-	Termcap or terminfo support for keybindings (do we need this? curses does).
-	Backgrounding of commands with job control (pause/resume/kill).
+    Termcap or terminfo support for keybindings (do we need this? curses does).
+    Backgrounding of commands with job control (pause/resume/kill).
     Show background commands presence in the TUI.
-	Fix window resizing (I think it's almost done).
-	Handle commands that are too long to be passed directly to the shell.
+    Fix window resizing (I think it's almost done).
+    Handle commands that are too long to be passed directly to the shell.
     Perform operations using system calls, not programs.  This is much faster.
     Show operation progress.
     Maybe remove 'trash' option, since we have two commands for deletion.
     Templates for :touch.
-	Mouse support.
+    Mouse support.
     Ctrl-R combinations in the command-line mode.
     Wrapping of lines in the menus.
     IPC among all running vifm instances (share settings among instances).
@@ -23,9 +23,9 @@ Basic things that need to be done.
         only, and maybe update size of all parent cached directories.
 
 Documentation.
-	Better documentation.
+    Better documentation.
     Maybe divide vifm.txt in several files (if it becomes too big).
-	Document ./configure options in the INSTALL file.
+    Document ./configure options in the INSTALL file.
     Document that %m, %M, %s, %S and %i have bigger priority than &.
 
 Windows.
@@ -36,9 +36,9 @@ Windows.
     Fix freezing.
 
 Vi(m) specific features that need to be added.
-	Fix '' to go back to all jumps G gg links (in one directory?).
-	Change file list filters to use fold levels instead of just
-		the dot filter and regular expression filter (what does this mean?).
+    Fix '' to go back to all jumps G gg links (in one directory?).
+    Change file list filters to use fold levels instead of just
+        the dot filter and regular expression filter (what does this mean?).
     Some kind of selection mode (multiple blocks, mixing).
     Better registers support.
     /, ?, n, N as selectors.
@@ -66,9 +66,9 @@ Vi(m) specific features that need to be added.
     Expand environment variables for :edit command.
 
 Possible things to add.
-	Use system wide mimetypes file. /etc/mailcap?
-	Virtual File System - currently vifm can use fuse to mount most
-		file systems.
+    Use system wide mimetypes file. /etc/mailcap?
+    Virtual File System - currently vifm can use fuse to mount most
+        file systems.
     Invert selection? (what :command or key?)
     Make :undolist more interactive.
     Maybe something like :g/.../com and :v/.../com in Vim.
@@ -125,7 +125,7 @@ Code improvements.
         to a separate file.
     Get rid of repeatable `menu->win_rows - 3` in menu.c and menus.c.
     Get rid of repeatable `(menu->win_rows - 3 + 1)/2 - 1` in menu.c.
-	Get rid of repeatable `(curr_view->window_rows + 1)/2 - 1` in normal.c.
+    Get rid of repeatable `(curr_view->window_rows + 1)/2 - 1` in normal.c.
     Think about window_rows and window_width members of FileView: why
         do they contain (rows - 1) and (width - 1) ?
     Add null_or_empty() function to utils/str.c unit.
