@@ -22,6 +22,8 @@
 
 #include <sys/types.h> /* size_t mode_t */
 
+#include <stdint.h> /* uint64_t */
+
 /* Functions to deal with file system objects */
 
 /* Checks if path is an existing directory. */
@@ -41,6 +43,8 @@ int directory_accessible(const char *path);
 /* Checks if one can write in directory specified by the path, which should be
  * absolute. */
 int is_dir_writable(const char *path);
+/* Gets correct file size independently of platform. */
+uint64_t get_file_size(const char *path);
 
 #ifdef _WIN32
 

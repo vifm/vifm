@@ -33,7 +33,8 @@ Windows.
     Make properties dialog change file attributes recursively.
     Add a command to create .lnk files.
     Follow targets of .lnk files.
-    Fix freezing.
+    Fix freezing (maybe already fixed).
+    Use UTF8 internally.
 
 Vi(m) specific features that need to be added.
     Fix '' to go back to all jumps G gg links (in one directory?).
@@ -64,6 +65,7 @@ Vi(m) specific features that need to be added.
     Add support for ^= in :set command.
     Add support of 'n' flag for :substitute command.
     Expand environment variables for :edit command.
+    Think about dot normal mode command.
 
 Possible things to add.
     Use system wide mimetypes file. /etc/mailcap?

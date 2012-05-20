@@ -18,6 +18,7 @@
  */
 
 #ifdef _WIN32
+#define _WIN32_WINNT 0x0500 /* to get GetFileSizeEx() */
 #include <windows.h>
 #include <winioctl.h>
 #endif
@@ -307,6 +308,37 @@ is_dir_writable(const char *path)
 	}
 
 	return 0;
+}
+
+uint64_t
+get_file_size(const char *path)
+{
+#ifndef _WIN32
+	struct stat st;
+	if(lstat(path, &st) == 0)
+	{
+		return (size_t)st.st_size;
+	}
+#else
+	HANDLE hfile;
+	LARGE_INTEGER size;
+
+	hfile = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if(hfile == INVALID_HANDLE_VALUE)
+	{
+		LOG_WERROR(GetLastError());
+		return 0;
+	}
+
+	if(GetFileSizeEx(hfile, &size))
+	{
+		CloseHandle(hfile);
+		return size.QuadPart;
+	}
+	CloseHandle(hfile);
+	return 0;
+#endif
 }
 
 #ifdef _WIN32
