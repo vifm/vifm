@@ -187,7 +187,11 @@ main_loop(void)
 				def_prog_mode();
 				endwin();
 #ifndef _WIN32
-				kill(0, SIGSTOP);
+				{
+					void (*tmp)(int) = signal(SIGTSTP, SIG_DFL);
+					kill(0, SIGTSTP);
+					signal(SIGTSTP, tmp);
+				}
 #endif
 				continue;
 			}

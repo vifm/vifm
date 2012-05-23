@@ -19,6 +19,7 @@
 
 #include <sys/stat.h> /* stat */
 
+#include <signal.h> /* sighandler_t, signal() */
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strcmp() strrchr() strcat() strstr() strlen() strchr()
                        strdup() */
