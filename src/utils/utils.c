@@ -44,6 +44,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <signal.h> /* signal() SIGINT SIGTSTP SIG_DFL */
 #include <string.h>
 #include <wctype.h>
 
@@ -65,19 +66,26 @@ my_system(char *command)
 {
 #ifndef _WIN32
 	int pid;
-	int status;
+	int result;
 	extern char **environ;
+	void (*tmp)(int);
 
 	if(command == NULL)
 		return 1;
 
+	tmp = signal(SIGTSTP, SIG_DFL);
+
 	pid = fork();
 	if(pid == -1)
+	{
+		signal(SIGTSTP, tmp);
 		return -1;
+	}
 	if(pid == 0)
 	{
 		char *args[4];
 
+		signal(SIGTSTP, SIG_DFL);
 		signal(SIGINT, SIG_DFL);
 
 		args[0] = cfg.shell;
@@ -89,14 +97,23 @@ my_system(char *command)
 	}
 	do
 	{
+		int status;
 		if(waitpid(pid, &status, 0) == -1)
 		{
 			if(errno != EINTR)
-				return -1;
+			{
+				result = -1;
+				break;
+			}
 		}
 		else
-			return status;
+		{
+			result = status;
+			break;
+		}
 	}while(1);
+	signal(SIGTSTP, tmp);
+	return result;
 #else
 	char buf[strlen(cfg.shell) + 5 + strlen(command)*4 + 1 + 1];
 

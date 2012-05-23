@@ -84,18 +84,6 @@ received_sigcont(void)
 }
 
 static void
-received_sigtstp(void)
-{
-	/* End program so key strokes are not registered while stopped. */
-	def_prog_mode();
-	set_term_title(NULL);
-	endwin();
-	pause();
-	refresh();
-	curs_set(FALSE);
-}
-
-static void
 received_sigchld(void)
 {
 	int status;
@@ -119,9 +107,6 @@ handle_signal(int sig)
 			break;
 		case SIGCONT:
 			received_sigcont();
-			break;
-		case SIGTSTP:
-			received_sigtstp();
 			break;
 		/* Shutdown nicely */
 		case SIGHUP:
@@ -183,13 +168,13 @@ setup_signals(void)
 	sigaction(SIGCHLD, &handle_signal_action, NULL);
 	sigaction(SIGHUP, &handle_signal_action, NULL);
 	sigaction(SIGQUIT, &handle_signal_action, NULL);
-	sigaction(SIGTSTP, &handle_signal_action, NULL);
 	sigaction(SIGCONT, &handle_signal_action, NULL);
 	sigaction(SIGTERM, &handle_signal_action, NULL);
 	sigaction(SIGWINCH, &handle_signal_action, NULL);
 	signal(SIGUSR1, SIG_IGN);
 	signal(SIGUSR2, SIG_IGN);
 	signal(SIGALRM, SIG_IGN);
+	signal(SIGTSTP, SIG_IGN);
 #else
 	if(!SetConsoleCtrlHandler(ctrl_handler, TRUE))
 	{

@@ -157,6 +157,8 @@
 
 	Fixed work of ga/gA commands with huge files on Windows.
 
+	Fixed terminal freezing on Ctrl-Z in vim launched from vifm.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.
