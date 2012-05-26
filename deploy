@@ -51,6 +51,11 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
     cp "$vimdoc" "${vimdoc}_tmp"
     sed "1s/version \\S\\+/version $1/" "${vimdoc}_tmp" > "$vimdoc"
     rm "${vimdoc}_tmp"
+
+    # update version in README
+    cp README README_tmp
+    sed "5s/ .*/ $1/" README_tmp > README
+    rm README_tmp
 fi
 
 if [ "x$target" == "xall" -o "x$target" == "xcommit" ]; then
