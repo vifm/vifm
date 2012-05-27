@@ -333,7 +333,7 @@ input_line_changed(void)
 
 	if(input_stat.line == NULL || input_stat.line[0] == L'\0')
 	{
-		if(cfg.hl_search)
+		if(cfg.hl_search && prev_mode != MENU_MODE)
 		{
 			clean_selected_files(curr_view);
 			draw_dir_list(curr_view, curr_view->top_line);

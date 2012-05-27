@@ -159,6 +159,9 @@
 
 	Fixed terminal freezing on Ctrl-Z in vim launched from vifm.
 
+	Fixed blinking of file list in the menu mode while working with command
+	line.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.
