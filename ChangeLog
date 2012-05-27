@@ -160,7 +160,10 @@
 	Fixed terminal freezing on Ctrl-Z in vim launched from vifm.
 
 	Fixed blinking of file list in the menu mode while working with command
-	line.
+	line with 'hlsearch' and 'incsearch' set.
+
+	Fixed clearing of selection on search cancel in menus with 'hlsearch' and
+	'incsearch' set.
 
 0.7.1 to 0.7.2
 
