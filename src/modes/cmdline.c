@@ -335,9 +335,15 @@ input_line_changed(void)
 	{
 		if(cfg.hl_search)
 		{
-			clean_selected_files(curr_view);
-			draw_dir_list(curr_view, curr_view->top_line);
-			move_to_list_pos(curr_view, curr_view->list_pos);
+			/* clear selection */
+			if(prev_mode != MENU_MODE)
+			{
+				clean_selected_files(curr_view);
+			}
+			else
+			{
+				search_menu_list("", sub_mode_ptr);
+			}
 		}
 		free(previous);
 		previous = NULL;
