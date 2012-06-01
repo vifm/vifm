@@ -77,6 +77,8 @@
 
 	Increased directory modification stamp precision on *nix.
 
+	Documented ./configure script options in the INSTALL file.
+
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
 	Fixed undoing of previous operation on error in current one.

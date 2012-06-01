@@ -25,7 +25,6 @@ Basic things that need to be done.
 Documentation.
     Better documentation.
     Maybe divide vifm.txt in several files (if it becomes too big).
-    Document ./configure options in the INSTALL file.
     Document that %m, %M, %s, %S and %i have bigger priority than &.
 
 Windows.
