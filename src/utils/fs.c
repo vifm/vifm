@@ -319,6 +319,7 @@ get_file_size(const char *path)
 	{
 		return (size_t)st.st_size;
 	}
+	return 0;
 #else
 	HANDLE hfile;
 	LARGE_INTEGER size;
