@@ -45,6 +45,12 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
     cp "$makefile" "${makefile}_tmp"
     sed "s/VERSION \".*\"/VERSION \"$1\"/" "${makefile}_tmp" > "$makefile"
     rm "${makefile}_tmp"
+
+    # update version in data/vim/doc/vifm.txt
+    vimdoc=data/vim/doc/vifm.txt
+    cp "$vimdoc" "${vimdoc}_tmp"
+    sed "1s/version \\S\\+/version $1/" "${vimdoc}_tmp" > "$vimdoc"
+    rm "${vimdoc}_tmp"
 fi
 
 if [ "x$target" == "xall" -o "x$target" == "xcommit" ]; then

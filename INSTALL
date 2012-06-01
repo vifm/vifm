@@ -13,6 +13,27 @@ On *nix you need:
 	("su" if you don't have access to /usr/local/bin)
 	make install
 
+    ./configure has the following options (the value in square brackets shows
+    is the default one):
+
+      --disable/[enable]-extended-keys - controls whether to build vifm with
+          support of extended keys (like arrows, home, end, etc.).
+          If it's disabled, there absence of a delay after pressing escape is
+          guaranteed for all curses implementations.
+
+      --disable/[enable]-compatibility-mode - controls compatibility with
+          previous versions of vifm (prior to 0.6). In particular the
+          behaviour of dd and <tab> keys.
+
+      --disable/[enable]-desktop-files - controls whether vifm will parse
+          *.desktop files found on your system to get a list of programs
+          associated with mimetype of a file.
+
+      --without/[with]-gtk - use GTK+ to determine mimetypes if available.
+
+      --without/[with]-libmagic - use libmagic to determine mimetypes if
+          available.
+
 	You can install vifm in your ~/ directory if you prefer.  
     Copy the vifm, vifmrc-converter and pauseme executables to where you
     want to run them.  You will also need to copy vifm help files and

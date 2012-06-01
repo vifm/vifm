@@ -37,6 +37,8 @@
 
 	Added Ctrl-L handling in file info (Ctrl-G) mode.
 
+	Added vifm version and last modification date to vim documentation file.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with
@@ -74,6 +76,8 @@
 	Better handling of multiline messages in status bar.
 
 	Increased directory modification stamp precision on *nix.
+
+	Documented ./configure script options in the INSTALL file.
 
 	Fixed bug with running Ctrl-A/Ctrl-X commands on directories.
 
@@ -166,6 +170,8 @@
 	'incsearch' set.
 
 	Fixed selection of created directory on `:mkdir! dir1/dir2`.
+
+	Fixed case of letters of Ctrl-W combinations in the documentation.
 
 0.7.1 to 0.7.2
 
