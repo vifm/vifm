@@ -173,6 +173,8 @@
 
 	Fixed case of letters of Ctrl-W combinations in the documentation.
 
+	Fixed copying of vifm-help.txt and sample vifmrc to ~/.vifm directory.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.

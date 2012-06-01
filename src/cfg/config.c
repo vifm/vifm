@@ -424,7 +424,7 @@ create_config_dir(void)
 	LOG_FUNC_ENTER;
 
 	/* ensure existence of configuration directory */
-	if(!is_dir(cfg.config_dir) && make_dir(cfg.config_dir, 0777) == 0)
+	if(!is_dir(cfg.config_dir))
 	{
 #ifndef _WIN32
 		FILE *f;
