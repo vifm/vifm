@@ -144,18 +144,18 @@ Pane manipulation~
 
 Second character can be entered with or without Control key.
 
-Ctrl-W B - switch to bottom-right window       *vifm-CTRL-W_B*
-Ctrl-W H - switch to left pane.                *vifm-CTRL-W_H*
-Ctrl-W J - switch to pane below.               *vifm-CTRL-W_J*
-Ctrl-W K - switch to pane above.               *vifm-CTRL-W_K*
-Ctrl-W L - switch to right pane.               *vifm-CTRL-W_L*
-Ctrl-W W - switch to other pane.               *vifm-CTRL-W_W*
-Ctrl-W O - shortcut for |vifm-:only|           *vifm-CTRL-W_O*
-Ctrl-W P - switch to previous window           *vifm-CTRL-W_P*
-Ctrl-W S - shortcut for |vifm-:split|          *vifm-CTRL-W_S*
-Ctrl-W T - switch to top-left window           *vifm-CTRL-W_T*
-Ctrl-W V - shortcut for |vifm-:vsplit|         *vifm-CTRL-W_V*
-Ctrl-W X - exchange panes                      *vifm-CTRL-W_X*
+Ctrl-W b - switch to bottom-right window       *vifm-CTRL-W_b*
+Ctrl-W h - switch to left pane.                *vifm-CTRL-W_h*
+Ctrl-W j - switch to pane below.               *vifm-CTRL-W_j*
+Ctrl-W k - switch to pane above.               *vifm-CTRL-W_k*
+Ctrl-W l - switch to right pane.               *vifm-CTRL-W_l*
+Ctrl-W w - switch to other pane.               *vifm-CTRL-W_w*
+Ctrl-W o - shortcut for |vifm-:only|           *vifm-CTRL-W_o*
+Ctrl-W p - switch to previous window           *vifm-CTRL-W_p*
+Ctrl-W s - shortcut for |vifm-:split|          *vifm-CTRL-W_s*
+Ctrl-W t - switch to top-left window           *vifm-CTRL-W_t*
+Ctrl-W v - shortcut for |vifm-:vsplit|         *vifm-CTRL-W_v*
+Ctrl-W x - exchange panes                      *vifm-CTRL-W_x*
 Ctrl-W + - increase size of the view.          *vifm-CTRL-W_+*
 Ctrl-W - - decrease size of the view.          *vifm-CTRL-W_-*
 Ctrl-W < - increase size of the view.          *vifm-CTRL-W_<*

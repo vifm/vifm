@@ -167,6 +167,8 @@
 
 	Fixed selection of created directory on `:mkdir! dir1/dir2`.
 
+	Fixed case of letters of Ctrl-W combinations in the documentation.
+
 0.7.1 to 0.7.2
 
 	Added --select command line argument.
