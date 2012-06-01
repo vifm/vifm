@@ -2863,7 +2863,16 @@ make_dirs(FileView *view, char **names, int count, int create_parent)
 	cmd_group_end();
 
 	if(count > 0)
+	{
+		if(create_parent)
+		{
+			for(i = 0; i < count; i++)
+			{
+				break_at(names[i], '/');
+			}
+		}
 		go_to_first_file(view, names, count);
+	}
 
 	if(n == 1)
 		status_bar_message("1 directory created");
