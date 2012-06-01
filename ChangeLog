@@ -37,6 +37,8 @@
 
 	Added Ctrl-L handling in file info (Ctrl-G) mode.
 
+	Added vifm version and last modification date to vim documentation file.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with
