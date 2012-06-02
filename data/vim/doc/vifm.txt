@@ -1,5 +1,6 @@
 *vifm.txt*    For Vifm version 0.7.2  Last change: 2012 Jun 02
 
+ Email for bugs and suggestions: <xaizek@lavabit.com>
 
 |vifm-options|            Command line arguments.
 |vifm-general-keys|       General keys, that work in the most of modes.

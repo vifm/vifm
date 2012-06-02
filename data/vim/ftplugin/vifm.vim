@@ -1,5 +1,5 @@
 " vifmrc filetype plugin
-" Maintainer:  xaizek <xaizek@gmail.com>
+" Maintainer:  xaizek <xaizek@lavabit.com>
 " Last Change: August 18, 2011
 " Based On:    Vim file type file by Bram Moolenaar
 
