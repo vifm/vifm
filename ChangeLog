@@ -39,6 +39,8 @@
 
 	Added vifm version and last modification date to vim documentation file.
 
+	Added q key to close menus.
+
 	Leave leading zeros on Ctrl-A/X commands.
 
 	Check coreutils version on configuring to omit using of -n option with
