@@ -1,4 +1,5 @@
 " vim: filetype=vifm :
+" Sample configuration file for vifm (last updated: 2 Jun, 2012)
 " You can edit this file by hand.
 " The " character at the beginning of a line comments out the line.
 " Blank lines are ignored.
@@ -23,7 +24,7 @@ set trash
 
 " This is how many directories to store in the directory history.
 
-set history=15
+set history=100
 
 " Follow links on l or Enter.
 
@@ -54,7 +55,7 @@ set norunexec
 
 " Use KiB, MiB, ... instead of KB, MB, ...
 
-set iec
+set noiec
 
 " Selected color scheme
 
@@ -72,9 +73,39 @@ set fusehome=/tmp/vifm_FUSE
 
 set timefmt=%m/%d\ %H:%M
 
+" Show list of matches on tab complition in command-line mode
+
+set wildmenu
+
+" Ignore case in search patterns unless it contains at least one uppercase
+" letter
+
+set ignorecase
+set smartcase
+
+" Don't highlight search results automatically
+
+set nohlsearch
+
+" Use increment searching (search while typing)
+set incsearch
+
+" Try to leave some space from cursor to upper/lower border in lists
+
+set scrolloff=4
+
+" Don't do to much requests to slow file systems
+
+set slowfs=curlftpfs
+
+" Set custom status line look
+
+set statusline="  %t%= %A %10u:%-7g %15s %20d  "
+
 " :mark mark /full/directory/path [filename]
 
 mark b ~/bin/
+mark h ~/
 
 " :com[mand] command_name action
 " The following macros can be used in a command
@@ -105,43 +136,105 @@ command vgrep vim "+grep %a"
 
 " Pdf
 filetype *.pdf zathura %f,apvlv %f,xpdf %f
+fileview *.pdf pdftotext -nopgbrk %c -
 
-" Mp3
-filetype *.mp3 ffplay %f
-fileviewer *.mp3 ffprobe -show_format -pretty %f 2> /dev/null
+" PostScript
+filextype *.ps,*.ps.gz gv %c %i &
+
+" Djvu
+filextype *.djvu apvlv %f
+
+" Audio
+filetype *.wav,*.mp3,*.flac,*.ogg,*.m4a
+       \ {Play using ffplay}
+       \ ffplay %c,
+       \ {Play using MPlayer}
+       \ play_music %f,
+fileviewer *.mp3 mp3info
 
 " Video
-filetype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv dragon %f
-fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv ffprobe -show_format -pretty %f 2> /dev/null
+filextype *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob,*.flv
+        \ {View using ffplay}
+        \ ffplay -fs %c,
+        \ {View using Dragon}
+        \ dragon %f,
+        \ {View using mplayer}
+        \ mplayer %f,
+fileviewer *.avi,*.mp4,*.wmv,*.dat,*.3gp,*.ogv,*.mkv,*.mpg,*.vob
+         \ ffprobe -show_files -pretty %f 2> /dev/null
 
 " Web
-filetype *.html,*.htm links,mozilla
+filetype *.html,*.htm links,mozilla,uzbl-browser %f %i &
 
 " Object
 filetype *.o nm %f | less
 
 " Image
-filetype *.jpg,*.jpeg,*.png,*.gif gpicview %c
+filextype *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm
+        \ {View in sxiv}
+        \ sxiv,
+        \ {View in gpicview}
+        \ gpicview %c,
+fileviewer *.bmp,*.jpg,*.jpeg,*.png,*.gif,*.xpm convert -identify %f -verbose /dev/null
 
-" Md5
-filetype *.md5 md5sum -c %f
+" MD5
+filetype *.md5
+       \ {Check MD5 hash sum}
+       \ md5sum -c %f,
 
 " FuseZipMount
-filetype *.zip,*.jar,*.war,*.ear FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+filetype *.zip,*.jar,*.war,*.ear
+       \ {Mount with fuse-zip}
+       \ FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR,
+       \ {View contents}
+       \ zip -sf %c | less,
+       \ tar -xf %c,
 fileviewer *.zip,*.jar,*.war,*.ear zip -sf %c
 
 " ArchiveMount
-filetype *.bz2,*.tgz,*.tar.gz FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR
-fileviewer *.bz2,*.tgz,*.tar.gz tar -tzf %c
+filetype *.tar.bz2,*.tbz2,*.tgz,*.tar.gz
+       \ {Mount with archivemount}
+       \ FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR,
+fileviewer *.tgz,*.tar.gz tar -tzf %c
+fileviewer *.tar.bz2,*.tbz2 tar -tjf %c
 
 " Rar2FsMount
-filetype *.rar FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR
+filetype *.rar
+       \ {Mount with rar2fs}
+       \ FUSE_MOUNT|rar2fs %SOURCE_FILE %DESTINATION_DIR,
 
 " IsoMount
-filetype *.iso FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR
+filetype *.iso
+       \ {Mount with fuseiso}
+       \ FUSE_MOUNT|fuseiso %SOURCE_FILE %DESTINATION_DIR,
 
 " SshMount
-filetype *.ssh FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
+filetype *.ssh
+       \ {Mount with sshfs}
+       \ FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR,
+
+" FtpMount
+filetype *.ftp
+       \ {Mount with curlftpfs}
+       \ FUSE_MOUNT2|curlftpfs -o ftp_port=-,,disable_eprt %PARAM %DESTINATION_DIR,
+
+" Fuse7z
+filetype *.7z
+       \ {Mount with fuse-7z}
+       \ FUSE_MOUNT|fuse-7z %SOURCE_FILE %DESTINATION_DIR,
+
+" Office files
+filextype *.doc,*.docx,*.xsl,*.xslx libreoffice %f &
+fileview *.docx, docx2txt.pl %f -
+
+" Qt projects
+filextype *.pro qtcreator %f &
+
+" Directories
+filextype */
+        \ {View in thunar}
+        \ Thunar %f &,
+fileview */ tree %f
 
 " For automated FUSE mounts, you must register an extension with FILETYPE=..
 " in one of following formats:
@@ -165,7 +258,8 @@ filetype *.ssh FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR
 " Like in previous versions of vifm
 " set vifminfo=options,filetypes,commands,bookmarks,dhistory,state,cs
 " Like in vi
-set vifminfo=bookmarks
+set vifminfo=dhistory,savedirs,chistory,state,tui,shistory,
+    \phistory,dirstack,registers,bookmarks
 
 " Sample mappings
 
@@ -174,9 +268,33 @@ nmap S :sort<cr>
 nmap w :view<cr>
 nmap o :!gvim --remote-tab-silent %f<cr>
 nmap O :!gvim %f<cr>
-" open file in the background using its default program
+
+" Open file in the background using its default program
 nmap gb :file &<cr>l
 
+" Yank current directory path into the clipboard
+nmap yd :!echo %d | xclip %i<cr>
+
+" Yank current file path into the clipboard
+nmap yf :!echo %c:p | xclip %i<cr>
+
+" Mappings for faster renaming
+nmap I cw<c-a>
+nmap cc cw<c-u>
+nmap A cw<c-w>
+
+" Opening console in current directory
+nmap ,t :!xterm &<cr>
+
+" Opening vim to edit .vifmrc
+nmap ,c :execute ':!vim $MYVIFMRC' | restart<cr>
+" Opening gvim to edit .vifmrc
+nmap ,C :!gvim --remote-tab-silent $MYVIFMRC &<cr>
+
+" Toggle wrap setting on ,w key
+nmap ,w :set wrap!<cr>
+
+" Example of standard two-panel file managers mappings
 nmap <f3> :!less %f<cr>
 nmap <f4> :edit<cr>
 nmap <f5> :copy<cr>
