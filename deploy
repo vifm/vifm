@@ -83,20 +83,24 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
 
         # build vifm
         export RELEASE=1
-        make -C src -f Makefile.win
+        make -B -C src -f Makefile.win
         if [ "$?" != "0" ]; then
             echo "ERROR: Building project failed."
             exit 3
         fi
 
         dir="vifm-w32-$1-binary"
+        rm -rf "$dir"
         mkdir "$dir"
         cp -R data "$dir"
-        for i in ChangeLog COPYING FAQ INSTALL THANKS TODO; do
+        rm -f "$dir/data/vim/doc/tags"
+        pkgfiles='AUTHORS BUGS ChangeLog COPYING FAQ INSTALL README THANKS TODO'
+        for i in $pkgfiles; do
             cp "$i" "$dir/$i.txt"
         done
         cp src/vifm-pause src/*.dll src/*.exe "$dir"
-        strip -S $dir/*.dll $dir/*.exe
+        strip -S --strip-unneeded $dir/*.dll $dir/*.exe
+        rm -f "$dir.zip"
         zip -9 -r "$dir.zip" "$dir"
     fi
 fi
