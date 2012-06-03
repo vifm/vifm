@@ -97,7 +97,7 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
             cp "$i" "$dir/$i.txt"
         done
         cp src/vifm-pause src/*.dll src/*.exe "$dir"
-        strip -S $dir/*.dll $dir/*.exe
+        strip -S --strip-unneeded $dir/*.dll $dir/*.exe
         zip -9 -r "$dir.zip" "$dir"
     fi
 fi
