@@ -83,7 +83,7 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
 
         # build vifm
         export RELEASE=1
-        make -C src -f Makefile.win
+        make -B -C src -f Makefile.win
         if [ "$?" != "0" ]; then
             echo "ERROR: Building project failed."
             exit 3
