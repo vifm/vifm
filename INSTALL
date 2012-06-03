@@ -3,15 +3,15 @@ Installation
 
 On *nix you need:
 
-	A working version of ncursesw and an ascii compliant terminal.
-	Vifm will currently not work with Solaris curses or with PDcurses.
+    A working version of ncursesw and an ascii compliant terminal.
+    Vifm will currently not work with Solaris curses or with PDcurses.
 
 *nix Installation:
 
-	./configure
-	make
-	("su" if you don't have access to /usr/local/bin)
-	make install
+    ./configure
+    make
+    ("su" if you don't have access to /usr/local/bin)
+    make install
 
     ./configure has the following options (the value in square brackets shows
     is the default one):
@@ -34,28 +34,27 @@ On *nix you need:
       --without/[with]-libmagic - use libmagic to determine mimetypes if
           available.
 
-	You can install vifm in your ~/ directory if you prefer.  
+    You can install vifm in your ~/ directory if you prefer.
     Copy the vifm, vifmrc-converter and pauseme executables to where you
     want to run them.  You will also need to copy vifm help files and
     vifmrc file to ~/.vifm/.
 
-	After you start vifm for the first time, you should edit the configuration 
-	file.  It will be at ~/.vifm/vifmrc.
-	If you edit the vifmrc file with vifm running any changes you make
-	will be overwritten when you close vifm.
+    After you start vifm for the first time, you can edit the configuration
+    file.  It will be at ~/.vifm/vifmrc.  See help for description of other
+    files in ~/.vifm directory.
 
 On Mac OS you need:
 
-    Get and install libscursesw.
+    Get and install libscursesw or libncursesw.
     Proceed like in *nix Installation section.
     Also you probably want to pass --with-gtk=no argument to ./configure
     script to omit unwanted error message when vifm starts.
 
 On Windows you need:
 
-	Mingw
-	Pdcurses for Mingw
-	Regex for Mingw
+    Mingw
+    Pdcurses for Mingw
+    Regex for Mingw
     pthreads for Windows
 
 Windows Installation:
@@ -83,31 +82,31 @@ Windows Installation:
 
 Vim Specific Options:
 
-	If you use vim, copy the vifm.txt file in the data/vim/doc directory to 
-	your ~/.vim/doc directory or the system vim/doc directory. 
-	Then launch vim ahd give the command
-	:helptags ~/.vim/doc
-	or
-	:helptags path/to/system/vim/doc 
-	depending on where you installed the vifm.txt file.
+    If you use vim, copy the vifm.txt file in the data/vim/doc directory to
+    your ~/.vim/doc directory or the system vim/doc directory.
+    Then launch vim ahd give the command
+    :helptags ~/.vim/doc
+    or
+    :helptags path/to/system/vim/doc
+    depending on where you installed the vifm.txt file.
 
-	You will also need to change set 'vimhelp' option
-	in ~/.vifm/vifmrc as the default setting is to use the plain text file.
+    You will also need to change set 'vimhelp' option
+    in ~/.vifm/vifmrc as the default setting is to use the plain text file.
 
-	If you want to use syntax highlighting and file type plugin for
-	~/.vifm/vifmrc file, copy the data/vim/syntax/vifmrc.vim and
-	data/vim/ftplugin/vifmrc.vim file to either the system wide vim syntax and
-	ftplugin directories appropriately just copy the
+    If you want to use syntax highlighting and file type plugin for
+    ~/.vifm/vifmrc file, copy the data/vim/syntax/vifmrc.vim and
+    data/vim/ftplugin/vifmrc.vim file to either the system wide vim syntax and
+    ftplugin directories appropriately just copy the
     data/vim/ftdetect/vifm.vim file to appropriate vim configuration
     directory.  Or add to your .vimrc file commands like:
-		autocmd BufNewFile,BufRead vifmrc :set filetype=vifm
-		autocmd BufNewFile,BufRead ~/.vifm/colors/* :set filetype=vifm
-	or if you use mode lines, add as the first or the last line to
+        autocmd BufNewFile,BufRead vifmrc :set filetype=vifm
+        autocmd BufNewFile,BufRead ~/.vifm/colors/* :set filetype=vifm
+    or if you use mode lines, add as the first or the last line to
     configuration file and color schemes:
-		" vim: set filetype=vifm :
+        " vim: set filetype=vifm :
 
-	If you want to use the vifm.vim plugin, copy the vifm.vim plugin script in
-	data/vim/plugin to either the system wide vim/plugin or to ~/.vim/plugin/.
-	The vifm.vim script allows you to use vifm from vim to select files.  The
-	vifm.vim script is not installed by default and must be manually copied to
-	the plugin directory.  Note: you need Vim 7.3 for plugin.
+    If you want to use the vifm.vim plugin, copy the vifm.vim plugin script in
+    data/vim/plugin to either the system wide vim/plugin or to ~/.vim/plugin/.
+    The vifm.vim script allows you to use vifm from vim to select files.  The
+    vifm.vim script is not installed by default and must be manually copied to
+    the plugin directory.  Note: you need Vim 7.3 for plugin.

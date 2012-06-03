@@ -3,7 +3,7 @@
 " Maintainer: Ken Steen <ksteen@users.sourceforge.net>
 " Last Change: 2001 November 29
 
-" Maintainer: xaizek <xaizek@gmail.com>
+" Maintainer: xaizek <xaizek@lavabit.com>
 " Last Change: 2012 March 6
 
 " vifm and vifm.vim can be found at http://vifm.sf.net

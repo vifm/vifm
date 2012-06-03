@@ -89,6 +89,16 @@ A: Just double percent sign (%%).  Why?  Because user commands containing
 
 --------------------------------------------------------------------------------
 
+Q: How to browse FTP in vifm?
+
+A: Use CurlFTPFS FUSE filesystem on *nix, which you can find here:
+     http://curlftpfs.sourceforge.net/
+   And on Windows you need to use FTPDrive, which will mount a FTP remote as
+   a drive for you. Get it here:
+     http://www.killprog.com/fdrve.html
+
+--------------------------------------------------------------------------------
+
 Q: How can I help vifm?
 
 A: Just use it and report any problems, bugs or suggestions to its developers by
