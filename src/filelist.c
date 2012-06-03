@@ -1897,7 +1897,12 @@ load_dir_list(FileView *view, int reload)
 #else
 	if(!reload)
 #endif
-		status_bar_message("Reading directory...");
+	{
+		if(get_mode() != CMDLINE_MODE)
+		{
+			status_bar_message("Reading directory...");
+		}
+	}
 
 	if(curr_stats.load_stage < 2)
 		update_all_windows();
@@ -1936,11 +1941,16 @@ load_dir_list(FileView *view, int reload)
 		add_parent_dir(view);
 	}
 
-	if(!reload && view->list_rows > 2048)
+	if(!reload && view->list_rows > 2048 && get_mode() != CMDLINE_MODE)
+	{
 		status_bar_message("Sorting directory...");
+	}
 	sort_view(view);
 
-	clean_status_bar();
+	if(get_mode() != CMDLINE_MODE)
+	{
+		clean_status_bar();
+	}
 
 	/* If reloading the same directory don't jump to
 	 * history position.  Stay at the current line
