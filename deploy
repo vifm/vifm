@@ -90,6 +90,7 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
         fi
 
         dir="vifm-w32-$1-binary"
+        rm -rf "$dir"
         mkdir "$dir"
         cp -R data "$dir"
         rm -f "$dir/data/vim/doc/tags"
@@ -99,6 +100,7 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
         done
         cp src/vifm-pause src/*.dll src/*.exe "$dir"
         strip -S --strip-unneeded $dir/*.dll $dir/*.exe
+        rm -f "$dir.zip"
         zip -9 -r "$dir.zip" "$dir"
     fi
 fi
