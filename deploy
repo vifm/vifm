@@ -92,6 +92,7 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
         dir="vifm-w32-$1-binary"
         mkdir "$dir"
         cp -R data "$dir"
+        rm -f "$dir/data/vim/doc/tags"
         pkgfiles='AUTHORS BUGS ChangeLog COPYING FAQ INSTALL README THANKS TODO'
         for i in $pkgfiles; do
             cp "$i" "$dir/$i.txt"
