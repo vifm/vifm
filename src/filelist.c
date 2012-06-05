@@ -78,6 +78,7 @@
 static char * get_viewer_command(const char *viewer);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
+static int file_can_be_displayed(const char *directory, const char *filename);
 
 static int
 get_line_color(FileView* view, int pos)
@@ -2391,7 +2392,7 @@ ensure_file_is_selected(FileView *view, const char *name)
 	int file_pos;
 
 	file_pos = find_file_pos_in_list(view, name);
-	if(file_pos < 0 && path_exists_at(view->curr_dir, name))
+	if(file_pos < 0 && file_can_be_displayed(view->curr_dir, name))
 	{
 		if(name[0] == '.')
 		{
@@ -2408,6 +2409,17 @@ ensure_file_is_selected(FileView *view, const char *name)
 
 	move_to_list_pos(view, (file_pos < 0) ? 0 : file_pos);
 	return file_pos >= 0;
+}
+
+/* Checks if file specified can be displayed. Used to filter some files, that
+ * are hidden intensionally. */
+static int
+file_can_be_displayed(const char *directory, const char *filename)
+{
+	if(is_root_dir(directory) &&
+			(strcmp(filename, "..") == 0 || strcmp(filename, "../") == 0))
+		return 0;
+	return path_exists_at(directory, filename);
 }
 
 int

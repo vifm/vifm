@@ -21,7 +21,7 @@ Basic things that need to be done.
         in the same way as Ctrl-X/Ctrl-A and like their combination with :clone.
     Improve ga and gA commands to recalculate sizes of modified directories
         only, and maybe update size of all parent cached directories.
-    Close menus on 'q' key.
+    Use -i (--in-place) option of sed in deploy script.
 
 Documentation.
     Better documentation.

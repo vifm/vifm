@@ -1,3 +1,8 @@
+0.7.3 to current
+
+	Fixed unexpected resetting of dot filter on following mark to root
+	directory.
+
 0.7.2 to 0.7.3
 
 	Removed possibility of moving items in :file menu.
