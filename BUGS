@@ -7,3 +7,5 @@ vifm freezes sometimes on Windows (maybe fixed).
 Case insensitive rename can not be undone on Windows.
 
 Files with names containing Unicode characters are not always processed correctly.
+
+Commands line history seems to have maximum 15 elements in it after starting vifm (but setting 'history' makes it work).
