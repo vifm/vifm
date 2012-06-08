@@ -90,7 +90,7 @@ show_filetypes_menu(FileView *view, int background)
 				form_filetype_menu_entry(ft.list[i], max_len));
 	}
 
-	free(ft.list);
+	free_assoc_records(&ft);
 
 #ifdef ENABLE_DESKTOP_FILES
 	(void)add_to_string_array(&m.data, m.len, 1,
