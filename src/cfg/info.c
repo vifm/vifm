@@ -77,7 +77,11 @@ read_info_file(int reread)
 			if(fgets(line2, sizeof(line2), fp) == line2)
 			{
 				prepare_line(line2);
-				set_programs(line + 1, line2, 0);
+				/* This is to prevent old builtin fake associations to be loaded. */
+				if(!ends_with(line2, "}" VIFM_PSEUDO_CMD))
+				{
+					set_programs(line + 1, line2, 0);
+				}
 			}
 		}
 		else if(line[0] == 'x') /* xfiletype */
@@ -649,11 +653,18 @@ write_info_file(void)
 		for(i = 0; i < filetypes.count; i++)
 		{
 			int j;
-			for(j = 0; j < filetypes.list[i].records.count; j++)
-				if(filetypes.list[i].records.list[j].command[0] != '\0')
-					fprintf(fp, ".%s\n\t{%s}%s\n", filetypes.list[i].pattern,
-							filetypes.list[i].records.list[j].description,
-							filetypes.list[i].records.list[j].command);
+			assoc_t ft_assoc = filetypes.list[i];
+			for(j = 0; j < ft_assoc.records.count; j++)
+			{
+				assoc_record_t ft_record = ft_assoc.records.list[j];
+				/* The type check is to prevent builtin fake associations to be written
+				 * into vifminfo file */
+				if(ft_record.command[0] != '\0' && ft_record.type != ART_BUILTIN)
+				{
+					fprintf(fp, ".%s\n\t{%s}%s\n", ft_assoc.pattern,
+							ft_record.description, ft_record.command);
+				}
+			}
 		}
 		for(i = 0; i < nft; i += 2)
 			fprintf(fp, ".%s\n\t%s\n", ft[i], ft[i + 1]);

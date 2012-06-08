@@ -22,10 +22,19 @@
 
 #include "utils/test_helpers.h"
 
+/* Type of file association by it's source. */
+typedef enum
+{
+	ART_BUILTIN, /* builtin type of file association, set automatically by vifm */
+	ART_CUSTOM, /* custom type of file association, which is set by user */
+}
+assoc_record_type_t;
+
 typedef struct
 {
 	char *command;
 	char *description;
+	assoc_record_type_t type;
 }
 assoc_record_t;
 
