@@ -673,11 +673,16 @@ write_info_file(void)
 		for(i = 0; i < xfiletypes.count; i++)
 		{
 			int j;
-			for(j = 0; j < xfiletypes.list[i].records.count; j++)
-				if(xfiletypes.list[i].records.list[j].command[0] != '\0')
-					fprintf(fp, ".%s\n\t{%s}%s\n", xfiletypes.list[i].pattern,
-							xfiletypes.list[i].records.list[j].description,
-							xfiletypes.list[i].records.list[j].command);
+			assoc_t xft_assoc = xfiletypes.list[i];
+			for(j = 0; j < xft_assoc.records.count; j++)
+			{
+				assoc_record_t xft_record = xft_assoc.records.list[j];
+				if(xft_record.command[0] != '\0')
+				{
+					fprintf(fp, "x%s\n\t{%s}%s\n", xft_assoc.pattern,
+							xft_record.description, xft_record.command);
+				}
+			}
 		}
 		for(i = 0; i < nfx; i += 2)
 			fprintf(fp, ".%s\n\t%s\n", fx[i], fx[i + 1]);
@@ -686,10 +691,15 @@ write_info_file(void)
 		for(i = 0; i < fileviewers.count; i++)
 		{
 			int j;
-			for(j = 0; j < fileviewers.list[i].records.count; j++)
-				if(fileviewers.list[i].records.list[j].command[0] != '\0')
-					fprintf(fp, ",%s\n\t%s\n", fileviewers.list[i].pattern,
-							fileviewers.list[i].records.list[j].command);
+			assoc_t fv_assoc = fileviewers.list[i];
+			for(j = 0; j < fv_assoc.records.count; j++)
+			{
+				assoc_record_t fv_record = fileviewers.list[i].records.list[j];
+				if(fv_record.command[0] != '\0')
+				{
+					fprintf(fp, ",%s\n\t%s\n", fv_assoc.pattern, fv_record.command);
+				}
+			}
 		}
 		for(i = 0; i < nfv; i += 2)
 			fprintf(fp, ",%s\n\t%s\n", fv[i], fv[i + 1]);
