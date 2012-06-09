@@ -2,6 +2,8 @@
 
 	Expand tilde in the second argument of :colorscheme command.
 
+	Better completion for :colorscheme command.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 

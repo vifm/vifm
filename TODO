@@ -114,6 +114,7 @@ Other (questionable) things.
     Maybe expand macros for :touch amd :mkdir commands (for :touch %"d)
     An option to hide ../ directory.
     An ability to customize how directories are shown (e.g. dir/, [dir]).
+    Live preview of color schemes.
 
 Code improvements.
     Write more tests.
