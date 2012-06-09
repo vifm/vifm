@@ -26,7 +26,6 @@ Basic things that need to be done.
 Documentation.
     Better documentation.
     Maybe divide vifm.txt in several files (if it becomes too big).
-    Document that %m, %M, %s, %S and %i have bigger priority than &.
 
 Windows.
     Make :chmod accept arguments.
