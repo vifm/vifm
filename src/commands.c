@@ -1698,13 +1698,33 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cmd_info->argc == 2)
 		{
-			if(!is_dir(cmd_info->argv[1]))
+			char *directory = expand_tilde(strdup(cmd_info->argv[1]));
+			if(!is_path_absolute(directory))
 			{
-				status_bar_errorf("%s isn't a directory" , cmd_info->argv[1]);
+				if(curr_stats.load_stage < 3)
+				{
+					status_bar_errorf("The path in :colorscheme command cannot be "
+							"relative in startup scripts (%s)", directory);
+					free(directory);
+					return 1;
+				}
+				else
+				{
+					char path[PATH_MAX];
+					snprintf(path, sizeof(path), "%s/%s", curr_view->curr_dir, directory);
+					replace_string(&directory, path);
+				}
+			}
+			if(!is_dir(directory))
+			{
+				status_bar_errorf("%s isn't a directory", directory);
+				free(directory);
 				return 1;
 			}
 
-			assoc_dir(cmd_info->argv[0], cmd_info->argv[1]);
+			assoc_dir(cmd_info->argv[0], directory);
+			free(directory);
+
 			lwin.color_scheme = check_directory_for_color_scheme(1, lwin.curr_dir);
 			rwin.color_scheme = check_directory_for_color_scheme(0, rwin.curr_dir);
 			redraw_lists();

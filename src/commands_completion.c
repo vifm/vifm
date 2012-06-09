@@ -57,6 +57,7 @@
 #include "commands_completion.h"
 
 static int cmd_ends_with_space(const char *cmd);
+static void complete_colorscheme(const char *str, size_t arg_num);
 static void complete_help(const char *str);
 static void complete_history(const char *str);
 static int complete_chown(const char *str);
@@ -93,9 +94,7 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 	dollar = strrchr(arg, '$');
 	slash = strrchr(args + arg_pos, '/');
 
-	if(id == COM_COLORSCHEME)
-		complete_colorschemes((argc > 0) ? argv[argc - 1] : arg);
-	else if(id == COM_SET)
+	if(id == COM_SET)
 		complete_options(args, &start);
 	else if(id == COM_LET)
 		complete_variables((dollar > arg) ? dollar : arg, &start);
@@ -131,6 +130,7 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 	}
 	else
 	{
+		size_t arg_num = argc;
 		start = slash;
 		if(start == NULL)
 			start = args + arg_pos;
@@ -138,9 +138,17 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 			start++;
 
 		if(argc > 0 && !cmd_ends_with_space(args))
-			arg = argv[argc - 1];
+		{
+			arg_num = argc - 1;
+			arg = argv[arg_num];
+		}
 
-		if(id == COM_CD || id == COM_PUSHD || id == COM_SYNC || id == COM_MKDIR)
+		if(id == COM_COLORSCHEME)
+		{
+			complete_colorscheme(arg, arg_num);
+		}
+		else if(id == COM_CD || id == COM_PUSHD || id == COM_SYNC ||
+				id == COM_MKDIR)
 		{
 			filename_completion(arg, CT_DIRONLY);
 		}
@@ -189,6 +197,19 @@ cmd_ends_with_space(const char *cmd)
 		cmd++;
 	}
 	return cmd[0] == ' ';
+}
+
+static void
+complete_colorscheme(const char *str, size_t arg_num)
+{
+	if(arg_num == 0)
+	{
+		complete_colorschemes(str);
+	}
+	else if(arg_num == 1)
+	{
+		filename_completion(str, CT_DIRONLY);
+	}
 }
 
 static void

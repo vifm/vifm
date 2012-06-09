@@ -1,4 +1,4 @@
-.TH vifm 1 "June 2, 2012" "" "Vifm"
+.TH vifm 1 "June 9, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -860,7 +860,10 @@ and colors in the menus and dialogs.
 changes default color scheme to color_scheme_name.
 .TP
 .BI ":colo[rscheme] color_scheme_name directory"
-associates directory with the color scheme.
+associates directory with the color scheme.  The directory argument can be
+both absolute or relative path when :colorscheme command is executed from
+command line, but mandatory should be an absolute path when the command is
+executed in scripts loaded at startup (until vifm is completely loaded).
 .TP
 .BI :comc[lear]
 removes all user defined commands.

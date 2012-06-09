@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3  Last change: 2012 Jun 02
+*vifm.txt*    For Vifm version 0.7.3  Last change: 2012 Jun 09
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -768,7 +768,10 @@ The builtin commands are:
 :colo[rscheme] color_scheme_name - changes default color scheme to
     color_scheme_name.
 :colo[rscheme] color_scheme_name directory - associates directory with the
-    color scheme.
+    color scheme.  The directory argument can be both absolute or relative
+    path when :colorscheme command is executed from command line, but
+    mandatory should be an absolute path when the command is executed in
+    scripts loaded at startup (until vifm is completely loaded).
 
                                                *vifm-:comclear* *vifm-:comc*
 :comc[lear] - removes all user defined commands.

@@ -1,5 +1,12 @@
 0.7.3 to current
 
+	Expand tilde in the second argument of :colorscheme command.
+
+	Better completion for :colorscheme command.
+
+	Forbid relative paths in :colorscheme command until vifm is completely
+	loaded.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
