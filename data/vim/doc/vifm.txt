@@ -1343,8 +1343,7 @@ Supported modifiers are:
                    or sub
     :gs?pat?sub? - like :s, but substitutes all occurrences of "pat" with
                    "sub".
-See ':h filename-modifiers' in Vim's documentation for the detailed
-description.
+See |filename-modifiers| for the detailed description.
 
 Using %x means expand corresponding macro escaping all characters that have
 special meaning.  And %"x means using of double quotes and escape only backslash
@@ -1381,7 +1380,13 @@ You don't want to run terminal commands, which require terminal input or
 output something because they will mess up vifm's TUI. Anyway, if you did run
 such a command, you can use Ctrl-L key to update vifm's TUI.
 
-:!mv %f %D &
+Rewriting the example command with macros given above with backgrounding:
+>
+ :!mv %f %D &
+<
+Note that %m, %M, %s, %S and %i macros have bigger priority than &.  So
+command containing at least one of them can't be backgrounded and " &" at the
+end will be just silently ignored.
 
 --------------------------------------------------------------------------------
 *vifm-commands-bg*

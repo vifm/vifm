@@ -9,6 +9,8 @@
 	Forbid relative paths in :colorscheme command until vifm is completely
 	loaded.
 
+	Documented that %m, %M, %s, %S and %i have bigger priority than &.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
