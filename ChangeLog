@@ -1,5 +1,7 @@
 0.7.3 to current
 
+	Expand tilde in the second argument of :colorscheme command.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
