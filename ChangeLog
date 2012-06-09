@@ -4,6 +4,9 @@
 
 	Better completion for :colorscheme command.
 
+	Forbid relative paths in :colorscheme command until vifm is completely
+	loaded.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 

@@ -1699,6 +1699,22 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 		if(cmd_info->argc == 2)
 		{
 			char *directory = expand_tilde(strdup(cmd_info->argv[1]));
+			if(!is_path_absolute(directory))
+			{
+				if(curr_stats.load_stage < 3)
+				{
+					status_bar_errorf("The path in :colorscheme command cannot be "
+							"relative in startup scripts (%s)", directory);
+					free(directory);
+					return 1;
+				}
+				else
+				{
+					char path[PATH_MAX];
+					snprintf(path, sizeof(path), "%s/%s", curr_view->curr_dir, directory);
+					replace_string(&directory, path);
+				}
+			}
 			if(!is_dir(directory))
 			{
 				status_bar_errorf("%s isn't a directory", directory);
