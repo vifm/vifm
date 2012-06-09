@@ -512,10 +512,10 @@ will insert previously yanked and deleted files into current directory.
 .SH Selectors
 .\" ---------------------------------------------------------------------------
 .TP
-y, d and D commands accept selectors.  You can combine them with every of
+y, d and D commands accept selectors.  You can combine them with any of \
 selectors below to quickly remove or yank several files.
-.br
-Most of selectors are like vi motions: j, k, gg, G, H, L, M, %, f, F, ;, comma
+.LP
+Most of selectors are like vi motions: j, k, gg, G, H, L, M, %, f, F, ;, comma \
 and '.  But there are some additional ones.
 .TP
 .BI a
@@ -1045,7 +1045,7 @@ will show information on given highlight group of the default color scheme.
 .TP
 .BI ":hi[ghlight] group-name cterm=style | ctermfg=color | ctermbg=color"
 sets style (cterm), foreground (ctermfg) or/and background (ctermbg) parameters
-of highlight group of the current default color scheme.
+of highlight groups of the current default color scheme.
 .LP
 Available style values (some of them can be combined):
  - bold
@@ -1084,7 +1084,7 @@ Available colors:
  - cyan
  - white
 
-Here is the hierarchy of the highlight group, which you need to know for using
+Here is the hierarchy of highlight groups, which you need to know for using
 transparency:
   StatusLine
     WildMenu
@@ -2276,6 +2276,80 @@ in the future it can be changed to whole file content
 
 %CLEAR is an optional macro.  Other macros are not mandatory, but mount \
 commands likely wont work without them.
+.\" ---------------------------------------------------------------------------
+.SH Color schemes
+.\" ---------------------------------------------------------------------------
+The color schemes in vifm can be applied in two different ways:
+.IP - 2
+as the default (or main) color scheme
+.IP - 2
+as local to a panel color scheme
+.LP
+Both types are set using |vifm-:colorscheme| command, but of different forms:
+.IP - 2
+:colorscheme color_scheme_name - for the default color scheme
+.IP - 2
+:colorscheme color_scheme_name directory - for local color schemes
+.LP
+Look of different parts of the TUI (Terminal User Interface) is determined in \
+this way:
+.IP - 2
+Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine and WildMenu are \
+always determined by the default color scheme
+.IP - 2
+CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device, Executable, \
+Fifo and Win are determined by default color scheme and a set of local \
+colorschemes, which can be empty
+.LP
+There might be a set of local color schemes because they are structured
+hierarchically according to file system structure. For example, having the
+following piece of file system:
+.EX
+
+ ~
+ `-- bin
+    |
+    `-- my
+
+.EE
+Two color schemes:
+.EX
+
+ # ~/.vifm/colors/for_bin
+ highlight Win cterm=none ctermfg=white ctermbg=red
+ highlight CurrLine cterm=none ctermfg=red ctermbg=black
+
+ # ~/.vifm/colors/for_bin_my
+ highlight CurrLine cterm=none ctermfg=green ctermbg=black
+
+.EE
+And these three commands in the vifmrc file:
+.EX
+
+ colorscheme Default
+ colorscheme for_bin ~/bin
+ colorscheme for_bin_my ~/bin/my
+
+.EE
+File list will look in the following way for each level:
+.IP - 2
+~/ - Default color scheme
+.br
+black background
+.br
+cursor with blue background
+.IP - 2
+~/bin/ - mix of Default and for_bin color schemes
+.br
+red background
+.br
+cursor with black background and red foreground
+.IP - 2
+~/bin/my/ - mix of Default, for_bin and for_bin_my color schemes
+.br
+red background
+.br
+cursor with black background and green foreground
 .\" ---------------------------------------------------------------------------
 .SH Plugin
 .\" ---------------------------------------------------------------------------

@@ -370,6 +370,7 @@ const char *tags[] = {
 	"vifm-cl",
 	"vifm-co",
 	"vifm-colors",
+	"vifm-colorschemes",
 	"vifm-command-line",
 	"vifm-commands",
 	"vifm-commands-bg",

@@ -1,5 +1,7 @@
 0.7.3 to current
 
+	Added a section about color schemes to the documentation.
+
 	Expand tilde in the second argument of :colorscheme command.
 
 	Better completion for :colorscheme command.

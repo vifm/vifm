@@ -16,6 +16,7 @@
 |vifm-configure|          Configuration of vifm.
 |vifm-compatibility-mode| Its description.
 |vifm-menus-and-dialogs|  Keys for menus and dialogs.
+|vifm-colorschemes|       Details on using color schemes in vifm.
 |vifm-fuse|               Using automated FUSE mounts.
 |vifm-plugin|             Using the vifm.vim plugin.
 |vifm-reserved|           List of reserved commands.
@@ -444,7 +445,7 @@ will insert previously yanked and deleted files into current directory.
 
 Selectors~
                                                *vifm-selectors*
-y, d and D commands accept selectors.  You can combine them with every of
+y, d and D commands accept selectors.  You can combine them with any of
 selectors below to quickly remove or yank several files.
 
 j, k, gg, G, H, L, M, %, f, F, ;, comma and ' can be used as selectors for
@@ -960,7 +961,7 @@ Available colors:
  - cyan
  - white
 
-Here is the hierarchy of the highlight group, which you need to know for using
+Here is the hierarchy of highlight groups, which you need to know for using
 transparency:
   StatusLine
     WildMenu
@@ -1986,6 +1987,60 @@ All % macros are expanded by vifm at runtime and have the following meaning:
 
 %CLEAR is an optional macro.  Other macros are not mandatory, but mount
 commands likely wont work without them.
+
+--------------------------------------------------------------------------------
+*vifm-colorschemes*
+
+The color schemes in vifm can be applied in two different ways:
+   - as the default (or main) color scheme
+   - as local to a panel color scheme
+
+Both types are set using |vifm-:colorscheme| command, but of different forms:
+   - :colorscheme color_scheme_name - for the default color scheme
+   - :colorscheme color_scheme_name directory - for local color schemes
+
+Look of different parts of the TUI (Terminal User Interface) is determined in
+this way:
+   - Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine and WildMenu
+     are always determined by the default color scheme
+   - CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device,
+     Executable, Fifo and Win are determined by default color scheme and a set
+     of local colorschemes, which can be empty
+
+There might be a set of local color schemes because they are structured
+hierarchically according to file system structure. For example, having the
+following piece of file system: >
+
+ ~
+ `-- bin
+    |
+    `-- my
+<
+Two color schemes: >
+
+ # ~/.vifm/colors/for_bin
+ highlight Win cterm=none ctermfg=white ctermbg=red
+ highlight CurrLine cterm=none ctermfg=red ctermbg=black
+
+ # ~/.vifm/colors/for_bin_my
+ highlight CurrLine cterm=none ctermfg=green ctermbg=black
+<
+And these three commands in the vifmrc file: >
+
+ colorscheme Default
+ colorscheme for_bin ~/bin
+ colorscheme for_bin_my ~/bin/my
+<
+File list will look in the following way for each level:
+   - ~/ - Default color scheme
+       black background
+       cursor with blue background
+   - ~/bin/ - mix of Default and for_bin color schemes
+       red background
+       cursor with black background and red foreground
+   - ~/bin/my/ - mix of Default, for_bin and for_bin_my color schemes
+       red background
+       cursor with black background and green foreground
 
 --------------------------------------------------------------------------------
 *vifm-plugin*
