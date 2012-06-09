@@ -3,6 +3,15 @@
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
+	Fixed loading file associations from vifminfo.
+
+	Fixed small memory leak on displaying :file menu.
+
+	Fixed saving of x file associations to vifminfo.
+
+	Fixed segmentation fault on :file command on files without associations
+	and vifm built with --enable-desktop-files.
+
 0.7.2 to 0.7.3
 
 	Removed possibility of moving items in :file menu.

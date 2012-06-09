@@ -41,6 +41,9 @@ const assoc_record_t NONE_PSEUDO_PROG =
  * it doesn't consume much memory, and its items shouldn't be freed */
 static assoc_list_t active_filetypes;
 
+/* Used to set type of new association records */
+static assoc_record_type_t new_records_type = ART_CUSTOM;
+
 TSTATIC void replace_double_comma(char *cmd, int put_null);
 static int get_filetype_number(const char *file, assoc_list_t assoc_list);
 static void assoc_programs(const char *pattern, const char *records, int for_x);
@@ -332,7 +335,9 @@ reset_all_list(void)
 static void
 add_defaults(void)
 {
-	set_programs("*/", "{Enter directory}" VIFM_PSEUDO_CMD , 0);
+	new_records_type = ART_BUILTIN;
+	set_programs("*/", "{Enter directory}" VIFM_PSEUDO_CMD, 0);
+	new_records_type = ART_CUSTOM;
 }
 
 static void
@@ -396,6 +401,7 @@ add_assoc_record(assoc_records_t *records, const char *command,
 	records->list = p;
 	records->list[records->count].command = strdup(command);
 	records->list[records->count].description = strdup(description);
+	records->list[records->count].type = new_records_type;
 	records->count++;
 }
 
@@ -403,9 +409,14 @@ void
 add_assoc_records(assoc_records_t *assocs, const assoc_records_t src)
 {
 	int i;
-	void *p = realloc(assocs->list,
-			sizeof(assoc_record_t)*(assocs->count + src.count));
+	void *p;
 
+	if(src.count == 0)
+	{
+		return;
+	}
+
+	p = realloc(assocs->list, sizeof(assoc_record_t)*(assocs->count + src.count));
 	if(p == NULL)
 	{
 		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -419,6 +430,7 @@ add_assoc_records(assoc_records_t *assocs, const assoc_records_t src)
 		assocs->list[assocs->count + i].command = strdup(src.list[i].command);
 		assocs->list[assocs->count + i].description =
 				strdup(src.list[i].description);
+		assocs->list[assocs->count + i].type = src.list[i].type;
 	}
 
 	assocs->count += src.count;

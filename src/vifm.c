@@ -433,6 +433,9 @@ main(int argc, char *argv[])
 
 	no_configs = is_in_string_array(argv + 1, argc - 1, "--no-configs");
 
+	/* This should be called before loading any configuration file. */
+	reset_all_file_associations();
+
 	old_config = is_old_config();
 	if(!old_config && !no_configs)
 		read_info_file(0);
@@ -464,8 +467,6 @@ main(int argc, char *argv[])
 	load_local_options(curr_view);
 
 	curr_stats.load_stage = 1;
-
-	reset_all_file_associations();
 
 	if(!old_config && !no_configs)
 	{
