@@ -409,9 +409,14 @@ void
 add_assoc_records(assoc_records_t *assocs, const assoc_records_t src)
 {
 	int i;
-	void *p = realloc(assocs->list,
-			sizeof(assoc_record_t)*(assocs->count + src.count));
+	void *p;
 
+	if(src.count == 0)
+	{
+		return;
+	}
+
+	p = realloc(assocs->list, sizeof(assoc_record_t)*(assocs->count + src.count));
 	if(p == NULL)
 	{
 		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
