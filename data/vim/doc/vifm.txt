@@ -1288,12 +1288,13 @@ Execute command for pane(s), which is determined by type argument:
 Ranges~
                                                                *vifm-ranges*
 The ranges implemented include:
-  Numbers :2,3
+  2,3 - from second to third file in the list (including it)
   % - the entire directory.
   . - the current position in the filelist.
   $ - the end of the filelist.
   't - the mark position t.
 
+Examples:
   :%delete would delete all files in the directory.
   :2,4delete would delete the files in the list positions 2 through 4.
   :.,$delete would delete the files from the current position to the end
