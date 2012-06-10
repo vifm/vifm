@@ -333,9 +333,7 @@ get_history(FileView *view, int reread, const char *dir, const char *file,
 {
 	if(view->history_num == cfg.history_len)
 	{
-		cfg.history_len++;
-		lwin.history = realloc(lwin.history, sizeof(history_t)*cfg.history_len);
-		rwin.history = realloc(rwin.history, sizeof(history_t)*cfg.history_len);
+		resize_history(cfg.history_len + 1);
 	}
 
 	if(!reread)

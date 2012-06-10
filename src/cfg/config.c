@@ -80,6 +80,8 @@ static void create_help_file(void);
 static void create_rc_file(void);
 #endif
 static int source_file_internal(FILE *fp, const char *filename);
+static void free_view_history(FileView *view);
+static void reduce_view_history(FileView *view, size_t size);
 
 void
 init_config(void)
@@ -654,6 +656,112 @@ get_vicmd(int *bg)
 		*bg = cfg.vi_cmd_bg;
 		return cfg.vi_command;
 	}
+}
+
+void
+resize_history(size_t new_len)
+{
+	int delta;
+
+	if(new_len == 0)
+	{
+		free_view_history(&lwin);
+		free_view_history(&rwin);
+
+		cfg.history_len = new_len;
+		cfg.cmd_history_len = new_len;
+		cfg.prompt_history_len = new_len;
+		cfg.search_history_len = new_len;
+
+		cfg.cmd_history_num = -1;
+		cfg.prompt_history_num = -1;
+		cfg.search_history_num = -1;
+		return;
+	}
+
+	if(cfg.history_len > new_len)
+	{
+		reduce_view_history(&lwin, new_len);
+		reduce_view_history(&rwin, new_len);
+	}
+
+	lwin.history = realloc(lwin.history, sizeof(history_t)*new_len);
+	rwin.history = realloc(rwin.history, sizeof(history_t)*new_len);
+
+	if(cfg.history_len <= 0)
+	{
+		cfg.history_len = new_len;
+
+		save_view_history(&lwin, NULL, NULL, -1);
+		save_view_history(&rwin, NULL, NULL, -1);
+	}
+	else
+	{
+		cfg.history_len = new_len;
+	}
+
+	delta = (int)new_len - cfg.cmd_history_len;
+	if(delta < 0 && cfg.cmd_history_len > 0)
+	{
+		size_t i;
+		for(i = new_len; i < cfg.cmd_history_len; i++)
+			free(cfg.cmd_history[i]);
+		for(i = new_len; i < cfg.cmd_history_len; i++)
+			free(cfg.prompt_history[i]);
+		for(i = new_len; i < cfg.cmd_history_len; i++)
+			free(cfg.search_history[i]);
+	}
+	cfg.cmd_history = realloc(cfg.cmd_history, new_len*sizeof(char *));
+	cfg.prompt_history = realloc(cfg.prompt_history, new_len*sizeof(char *));
+	cfg.search_history = realloc(cfg.search_history, new_len*sizeof(char *));
+	if(delta > 0)
+	{
+		size_t i;
+		for(i = cfg.cmd_history_len; i < new_len; i++)
+			cfg.cmd_history[i] = NULL;
+		for(i = cfg.cmd_history_len; i < new_len; i++)
+			cfg.prompt_history[i] = NULL;
+		for(i = cfg.cmd_history_len; i < new_len; i++)
+			cfg.search_history[i] = NULL;
+	}
+
+	cfg.cmd_history_len = new_len;
+	cfg.prompt_history_len = new_len;
+	cfg.search_history_len = new_len;
+}
+
+/* Clears and frees directory history of the view. */
+static void
+free_view_history(FileView *view)
+{
+	free(view->history);
+	view->history = NULL;
+	view->history_num = 0;
+	view->history_pos = 0;
+}
+
+/* Moves items of directory history when size of history becomes smaller. */
+static void
+reduce_view_history(FileView *view, size_t size)
+{
+	int i;
+	int delta;
+
+	delta = MIN(view->history_num - (int)size, view->history_pos);
+	if(delta <= 0)
+		return;
+
+	for(i = 0; i < size && i + delta <= view->history_num; i++)
+	{
+		strncpy(view->history[i].file, view->history[i + delta].file,
+				sizeof(view->history[i].file));
+		strncpy(view->history[i].dir, view->history[i + delta].dir,
+				sizeof(view->history[i].dir));
+	}
+
+	if(view->history_num >= size)
+		view->history_num = size - 1;
+	view->history_pos -= delta;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

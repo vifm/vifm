@@ -110,6 +110,8 @@ int is_old_config(void);
 int are_old_color_schemes(void);
 const char * get_vicmd(int *bg);
 void create_trash_dir(void);
+/* Changes size of all histories. */
+void resize_history(size_t new_len);
 
 #endif
 
