@@ -88,10 +88,14 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
         rm -rf "$dir"
         mkdir "$dir"
         cp -R data "$dir"
+        dos2unix "$dir/data/vifm-help.txt"
+        dos2unix "$dir/data/vifmrc"
         rm -f "$dir/data/vim/doc/tags"
         pkgfiles='AUTHORS BUGS ChangeLog COPYING FAQ INSTALL README THANKS TODO'
         for i in $pkgfiles; do
-            cp "$i" "$dir/$i.txt"
+            dest="$dir/$i.txt"
+            cp "$i" "$dest"
+            dos2unix "$dest"
         done
         cp src/vifm-pause src/*.dll src/*.exe "$dir"
         strip -S --strip-unneeded $dir/*.dll $dir/*.exe
