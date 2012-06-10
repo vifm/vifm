@@ -28,6 +28,8 @@
 	Fixed going to top of selection after Ctrl-A/X, C, i and zf in visual
 	mode if visual mode was activated at least once before that.
 
+	Fixed compilation with ncurses prior to 5.7 version.
+
 0.7.2 to 0.7.3
 
 	Removed possibility of moving items in :file menu.
