@@ -35,6 +35,9 @@
 	Fixed merging of directory history in vifminfo file (loosed relative
 	positions of directories absent in history of running instance).
 
+	Fixed history size issue, when real histories size diverged with the
+	value of 'history' option.
+
 0.7.2 to 0.7.3
 
 	Removed possibility of moving items in :file menu.
