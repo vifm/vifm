@@ -26,14 +26,10 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
     echo "Updating version number..."
 
     # update version in ChangeLog
-    cp ChangeLog ChangeLog_tmp
-    sed "1s/current/$1/" ChangeLog_tmp > ChangeLog
-    rm ChangeLog_tmp
+    sed -i "1s/current/$1/" ChangeLog
 
     # update version in configure script
-    cp configure.in configure.in_tmp
-    sed "4s/, .*)/, $1)/" configure.in_tmp > configure.in
-    rm configure.in_tmp
+    sed -i "4s/, .*)/, $1)/" configure.in
 
     if [ "x$OS" != "xWindows_NT" ]; then
         # regenerate automake/autoconf files
@@ -42,20 +38,14 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
 
     # update version in src/Makefile.win
     makefile=src/Makefile.win
-    cp "$makefile" "${makefile}_tmp"
-    sed "s/VERSION \".*\"/VERSION \"$1\"/" "${makefile}_tmp" > "$makefile"
-    rm "${makefile}_tmp"
+    sed -i "s/VERSION \".*\"/VERSION \"$1\"/" "${makefile}"
 
     # update version in data/vim/doc/vifm.txt
     vimdoc=data/vim/doc/vifm.txt
-    cp "$vimdoc" "${vimdoc}_tmp"
-    sed "1s/version \\S\\+/version $1/" "${vimdoc}_tmp" > "$vimdoc"
-    rm "${vimdoc}_tmp"
+    sed -i "1s/version \\S\\+/version $1/" "${vimdoc}"
 
     # update version in README
-    cp README README_tmp
-    sed "5s/ .*/ $1/" README_tmp > README
-    rm README_tmp
+    sed -i "5s/ .*/ $1/" README
 fi
 
 if [ "x$target" == "xall" -o "x$target" == "xcommit" ]; then
@@ -98,10 +88,14 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
         rm -rf "$dir"
         mkdir "$dir"
         cp -R data "$dir"
+        dos2unix "$dir/data/vifm-help.txt"
+        dos2unix "$dir/data/vifmrc"
         rm -f "$dir/data/vim/doc/tags"
         pkgfiles='AUTHORS BUGS ChangeLog COPYING FAQ INSTALL README THANKS TODO'
         for i in $pkgfiles; do
-            cp "$i" "$dir/$i.txt"
+            dest="$dir/$i.txt"
+            cp "$i" "$dest"
+            dos2unix "$dest"
         done
         cp src/vifm-pause src/*.dll src/*.exe "$dir"
         strip -S --strip-unneeded $dir/*.dll $dir/*.exe

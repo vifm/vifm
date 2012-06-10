@@ -21,7 +21,6 @@ Basic things that need to be done.
         in the same way as Ctrl-X/Ctrl-A and like their combination with :clone.
     Improve ga and gA commands to recalculate sizes of modified directories
         only, and maybe update size of all parent cached directories.
-    Use -i (--in-place) option of sed in deploy script.
 
 Documentation.
     Better documentation.
@@ -34,7 +33,6 @@ Windows.
     Follow targets of .lnk files.
     Fix freezing (maybe already fixed).
     Use UTF8 internally.
-    Convert eol in deploy script for Windows.
 
 Vi(m) specific features that need to be added.
     Fix '' to go back to all jumps G gg links (in one directory?).
