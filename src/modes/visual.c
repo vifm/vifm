@@ -393,7 +393,7 @@ cmd_C(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	curr_stats.save_msg = clone_files(view, NULL, 0, 0, key_info.count);
-	leave_visual_mode(curr_stats.save_msg, 1, 1);
+	leave_clearing_selection(curr_stats.save_msg);
 }
 
 static void
@@ -671,7 +671,7 @@ static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
 	handle_file(curr_view, 1, 0);
-	leave_visual_mode(curr_stats.save_msg, 1, 1);
+	leave_clearing_selection(curr_stats.save_msg);
 }
 
 static void
@@ -796,7 +796,7 @@ static void
 cmd_zf(key_info_t key_info, keys_info_t *keys_info)
 {
 	filter_selected_files(view);
-	leave_visual_mode(0, 1, 1);
+	leave_clearing_selection(0);
 }
 
 static void
