@@ -86,13 +86,14 @@ static void cmd_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void search(key_info_t key_info, int backward);
 static void cmd_y(key_info_t key_info, keys_info_t *keys_info);
+static void leave_clearing_selection(int save_msg);
+static void update_marks(FileView *view);
 static void cmd_zf(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_left_paren(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right_paren(key_info_t key_info, keys_info_t *keys_info);
 static void find_goto(int ch, int count, int backward);
 static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
-static void update_marks(FileView *view);
 static void update(void);
 static int find_update(FileView *view, int backward);
 
@@ -246,30 +247,12 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 }
 
 static void
-update_marks(FileView *view)
-{
-	if(start_pos >= view->list_rows)
-		start_pos = view->list_rows - 1;
-	upwards_range = view->list_pos < start_pos;
-	if(upwards_range)
-	{
-		set_specmark('<', view->curr_dir, get_current_file_name(view));
-		set_specmark('>', view->curr_dir, view->dir_entry[start_pos].name);
-	}
-	else
-	{
-		set_specmark('<', view->curr_dir, view->dir_entry[start_pos].name);
-		set_specmark('>', view->curr_dir, get_current_file_name(view));
-	}
-}
-
-static void
 cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	curr_stats.save_msg = incdec_names(view, key_info.count);
-	leave_visual_mode(curr_stats.save_msg, 1, 1);
+	leave_clearing_selection(curr_stats.save_msg);
 }
 
 static void
@@ -386,7 +369,7 @@ cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	curr_stats.save_msg = incdec_names(view, -key_info.count);
-	leave_visual_mode(curr_stats.save_msg, 1, 1);
+	leave_clearing_selection(curr_stats.save_msg);
 }
 
 static void
@@ -410,7 +393,7 @@ cmd_C(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	curr_stats.save_msg = clone_files(view, NULL, 0, 0, key_info.count);
-	leave_visual_mode(curr_stats.save_msg, 1, 1);
+	leave_clearing_selection(curr_stats.save_msg);
 }
 
 static void
@@ -579,8 +562,7 @@ delete(key_info_t key_info, int use_trash)
 	}
 
 	save_msg = delete_file(view, key_info.reg, 0, NULL, use_trash);
-	update_marks(view);
-	leave_visual_mode(save_msg, 1, 1);
+	leave_clearing_selection(save_msg);
 }
 
 static void
@@ -641,8 +623,7 @@ cmd_gU(key_info_t key_info, keys_info_t *keys_info)
 {
 	int save_msg;
 	save_msg = change_case(view, 1, 0, NULL);
-	update_marks(view);
-	leave_visual_mode(save_msg, 1, 1);
+	leave_clearing_selection(save_msg);
 }
 
 static void
@@ -650,8 +631,7 @@ cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 {
 	int save_msg;
 	save_msg = change_case(view, 0, 0, NULL);
-	update_marks(view);
-	leave_visual_mode(save_msg, 1, 1);
+	leave_clearing_selection(save_msg);
 }
 
 static void
@@ -691,7 +671,7 @@ static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
 	handle_file(curr_view, 1, 0);
-	leave_visual_mode(curr_stats.save_msg, 1, 1);
+	leave_clearing_selection(curr_stats.save_msg);
 }
 
 static void
@@ -782,15 +762,41 @@ cmd_y(key_info_t key_info, keys_info_t *keys_info)
 
 	free_selected_file_array(view);
 
+	leave_clearing_selection(1);
+}
+
+/* Correctly leaves visual mode updating marks, clearing selection and going to
+ * the top of selection. */
+static void
+leave_clearing_selection(int save_msg)
+{
 	update_marks(view);
-	leave_visual_mode(1, 1, 1);
+	leave_visual_mode(save_msg, 1, 1);
+}
+
+static void
+update_marks(FileView *view)
+{
+	if(start_pos >= view->list_rows)
+		start_pos = view->list_rows - 1;
+	upwards_range = view->list_pos < start_pos;
+	if(upwards_range)
+	{
+		set_specmark('<', view->curr_dir, get_current_file_name(view));
+		set_specmark('>', view->curr_dir, view->dir_entry[start_pos].name);
+	}
+	else
+	{
+		set_specmark('<', view->curr_dir, view->dir_entry[start_pos].name);
+		set_specmark('>', view->curr_dir, get_current_file_name(view));
+	}
 }
 
 static void
 cmd_zf(key_info_t key_info, keys_info_t *keys_info)
 {
 	filter_selected_files(view);
-	leave_visual_mode(0, 1, 1);
+	leave_clearing_selection(0);
 }
 
 static void
