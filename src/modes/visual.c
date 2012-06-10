@@ -269,6 +269,7 @@ cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	curr_stats.save_msg = incdec_names(view, key_info.count);
+	update_marks(view);
 	leave_visual_mode(curr_stats.save_msg, 1, 1);
 }
 
@@ -386,6 +387,7 @@ cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 	curr_stats.save_msg = incdec_names(view, -key_info.count);
+	update_marks(view);
 	leave_visual_mode(curr_stats.save_msg, 1, 1);
 }
 
