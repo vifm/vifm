@@ -602,8 +602,8 @@ draw_dir_list(FileView *view, int top)
 		/* Extra long file names are truncated to fit */
 
 		print_width = get_real_string_width(view->dir_entry[x].name,
-				view->window_width - 2) + 2;
-		snprintf(file_name, print_width, "%s", view->dir_entry[x].name);
+				view->window_width - 1);
+		snprintf(file_name, print_width + 1, "%s", view->dir_entry[x].name);
 
 		wmove(view->win, y, 1);
 
@@ -710,7 +710,7 @@ erase_current_line_bar(FileView *view)
 	if(old_pos >= 0 && old_pos < view->list_rows)
 	{
 		print_width = get_real_string_width(view->dir_entry[old_pos].name,
-				view->window_width - 2) + 2;
+				view->window_width - 1) + 1;
 		snprintf(file_name, print_width, "%s", view->dir_entry[old_pos].name);
 	}
 	else /* The entire list is going to be redrawn so just return. */
@@ -870,8 +870,8 @@ move_to_list_pos(FileView *view, int pos)
 	mvwaddstr(view->win, view->curr_line, 1, file_name);
 
 	print_width = get_real_string_width(view->dir_entry[pos].name,
-			view->window_width - 2) + 2;
-	snprintf(file_name, print_width, " %s", view->dir_entry[pos].name);
+			view->window_width - 1);
+	snprintf(file_name, 1 + print_width + 1, " %s", view->dir_entry[pos].name);
 
 	wmove(view->win, view->curr_line, 0);
 	wprint(view->win, file_name);

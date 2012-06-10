@@ -38,6 +38,9 @@
 	Fixed history size issue, when real histories size diverged with the
 	value of 'history' option.
 
+	Fixed displaying of non-latin characters when panel width is only
+	one character.
+
 0.7.2 to 0.7.3
 
 	Removed possibility of moving items in :file menu.
