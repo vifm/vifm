@@ -30,6 +30,8 @@
 
 	Fixed compilation with ncurses prior to 5.7 version.
 
+	Fixed compilation warnings about unused result of fscanf.
+
 0.7.2 to 0.7.3
 
 	Removed possibility of moving items in :file menu.

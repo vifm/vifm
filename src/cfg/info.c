@@ -47,6 +47,7 @@ static void get_history(FileView *view, int reread, const char *dir,
 		const char *file, int pos);
 static void prepare_line(char *line);
 static const char * escape_spaces(const char *str);
+static int read_possible_possible_pos(FILE *f);
 
 void
 read_info_file(int reread)
@@ -162,8 +163,7 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'd') /* left pane history */
 		{
-			int pos = -1;
-			char c;
+			int pos;
 
 			if(line[1] == '\0')
 			{
@@ -178,16 +178,12 @@ read_info_file(int reread)
 				continue;
 			prepare_line(line2);
 
-			c = getc(fp);
-			ungetc(c, fp);
-			if(isdigit(c))
-				(void)fscanf(fp, "%d\n", &pos);
+			pos = read_possible_possible_pos(fp);
 			get_history(&lwin, reread, line + 1, line2, pos);
 		}
 		else if(line[0] == 'D') /* right pane history */
 		{
-			char c;
-			int pos = -1;
+			int pos;
 
 			if(line[1] == '\0')
 			{
@@ -202,10 +198,7 @@ read_info_file(int reread)
 				continue;
 			prepare_line(line2);
 
-			c = getc(fp);
-			ungetc(c, fp);
-			if(isdigit(c))
-				(void)fscanf(fp, "%d\n", &pos);
+			pos = read_possible_possible_pos(fp);
 			get_history(&rwin, reread, line + 1, line2, pos);
 		}
 		else if(line[0] == ':') /* command line history */
@@ -465,20 +458,13 @@ write_info_file(void)
 					continue;
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
-					char c;
-					int pos;
-
 					if(lwin.history_pos + nlh/2 == cfg.history_len - 1)
 						continue;
 					if(is_in_view_history(&lwin, line + 1))
 						continue;
 					prepare_line(line2);
 
-					c = getc(fp);
-					ungetc(c, fp);
-					if(isdigit(c))
-						(void)fscanf(fp, "%d\n", &pos);
-
+					(void)read_possible_possible_pos(fp);
 					nlh = add_to_string_array(&lh, nlh, 2, line + 1, line2);
 				}
 			}
@@ -488,20 +474,13 @@ write_info_file(void)
 					continue;
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
-					char c;
-					int pos;
-
 					if(rwin.history_pos + nrh/2 == cfg.history_len - 1)
 						continue;
 					if(is_in_view_history(&rwin, line + 1))
 						continue;
 					prepare_line(line2);
 
-					c = getc(fp);
-					ungetc(c, fp);
-					if(isdigit(c))
-						(void)fscanf(fp, "%d\n", &pos);
-
+					(void)read_possible_possible_pos(fp);
 					nrh = add_to_string_array(&rh, nrh, 2, line + 1, line2);
 				}
 			}
@@ -908,6 +887,22 @@ escape_spaces(const char *str)
 	}
 	*p = '\0';
 	return buf;
+}
+
+static int
+read_possible_possible_pos(FILE *f)
+{
+	char c;
+	int result;
+
+	c = getc(f);
+	ungetc(c, f);
+	if(!isdigit(c) || fscanf(f, "%d\n", &result) != 1)
+	{
+		result = -1;
+	}
+
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
