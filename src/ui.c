@@ -846,9 +846,10 @@ setup_ncurses_interface(void)
 
 	cfg.tab_stop = TABSIZE;
 
-#ifdef NCURSES_EXT_FUNCS
+#if defined(NCURSES_EXT_FUNCS) && NCURSES_EXT_FUNCS >= 20081102
+	/* Use ncurses specific function to disable delay after pressing escape key */
 	set_escdelay(0);
-#endif /* NCURSES_EXT_FUNCS */
+#endif
 
 	return 1;
 }
