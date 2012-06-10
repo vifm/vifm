@@ -48,6 +48,7 @@ static void get_history(FileView *view, int reread, const char *dir,
 static void prepare_line(char *line);
 static const char * escape_spaces(const char *str);
 static int read_possible_possible_pos(FILE *f);
+static size_t add_to_int_array(int **array, size_t len, int what);
 
 void
 read_info_file(int reread)
@@ -355,6 +356,8 @@ write_info_file(void)
 	int nlist = -1;
 	char **ft = NULL, **fx = NULL , **fv = NULL, **cmds = NULL, **marks = NULL;
 	char **lh = NULL, **rh = NULL, **cmdh = NULL, **srch = NULL, **regs = NULL;
+	int *lhp = NULL, *rhp = NULL;
+	size_t nlhp = 0, nrhp = 0;
 	char **prompt = NULL, **trash = NULL;
 	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0, nlh = 0, nrh = 0;
 	int ncmdh = 0, nsrch = 0, nregs = 0, nprompt = 0, ntrash = 0;
@@ -458,14 +461,21 @@ write_info_file(void)
 					continue;
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
+					int pos;
+
 					if(lwin.history_pos + nlh/2 == cfg.history_len - 1)
 						continue;
 					if(is_in_view_history(&lwin, line + 1))
 						continue;
 					prepare_line(line2);
 
-					(void)read_possible_possible_pos(fp);
+					pos = read_possible_possible_pos(fp);
 					nlh = add_to_string_array(&lh, nlh, 2, line + 1, line2);
+					if(nlh/2 > nlhp)
+					{
+						nlhp = add_to_int_array(&lhp, nlhp, pos);
+						nlhp = MIN(nlh/2, nlhp);
+					}
 				}
 			}
 			else if(line[0] == 'D') /* right view directory history */
@@ -474,14 +484,21 @@ write_info_file(void)
 					continue;
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
+					int pos;
+
 					if(rwin.history_pos + nrh/2 == cfg.history_len - 1)
 						continue;
 					if(is_in_view_history(&rwin, line + 1))
 						continue;
 					prepare_line(line2);
 
-					(void)read_possible_possible_pos(fp);
+					pos = read_possible_possible_pos(fp);
 					nrh = add_to_string_array(&rh, nrh, 2, line + 1, line2);
+					if(nrh/2 > nrhp)
+					{
+						nrhp = add_to_int_array(&rhp, nrhp, pos);
+						nrhp = MIN(nrh/2, nrhp);
+					}
 				}
 			}
 			else if(line[0] == '\'') /* bookmark */
@@ -744,7 +761,7 @@ write_info_file(void)
 		save_view_history(&lwin, NULL, NULL, -1);
 		fputs("\n# Left window history (oldest to newest):\n", fp);
 		for(i = 0; i < nlh; i += 2)
-			fprintf(fp, "d%s\n\t%s\n", lh[i], lh[i + 1]);
+			fprintf(fp, "d%s\n\t%s\n%d\n", lh[i], lh[i + 1], lhp[i/2]);
 		for(i = 0; i <= lwin.history_pos; i++)
 			fprintf(fp, "d%s\n\t%s\n%d\n", lwin.history[i].dir, lwin.history[i].file,
 					lwin.history[i].rel_pos);
@@ -754,7 +771,7 @@ write_info_file(void)
 		save_view_history(&rwin, NULL, NULL, -1);
 		fputs("\n# Right window history (oldest to newest):\n", fp);
 		for(i = 0; i < nrh; i += 2)
-			fprintf(fp, "D%s\n\t%s\n", rh[i], rh[i + 1]);
+			fprintf(fp, "D%s\n\t%s\n%d\n", rh[i], rh[i + 1], rhp[i/2]);
 		for(i = 0; i <= rwin.history_pos; i++)
 			fprintf(fp, "D%s\n\t%s\n%d\n", rwin.history[i].dir, rwin.history[i].file,
 					rwin.history[i].rel_pos);
@@ -851,6 +868,8 @@ write_info_file(void)
 	free_string_array(list, nlist);
 	free_string_array(lh, nlh);
 	free_string_array(rh, nrh);
+	free(lhp);
+	free(rhp);
 	free_string_array(cmdh, ncmdh);
 	free_string_array(srch, nsrch);
 	free_string_array(regs, nregs);
@@ -903,6 +922,21 @@ read_possible_possible_pos(FILE *f)
 	}
 
 	return result;
+}
+
+static size_t
+add_to_int_array(int **array, size_t len, int what)
+{
+	int *p;
+
+	p = realloc(*array, sizeof(int)*(len + 1));
+	if(p != NULL)
+	{
+		*array = p;
+		(*array)[len++] = what;
+	}
+
+	return len;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

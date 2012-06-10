@@ -41,7 +41,7 @@ add_to_string_array(char ***array, int len, int count, ...)
 
 	p = realloc(*array, sizeof(char *)*(len + count));
 	if(p == NULL)
-		return count;
+		return len;
 	*array = p;
 
 	va_start(va, count);
