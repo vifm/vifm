@@ -604,13 +604,16 @@ lines_handler(OPT_OP op, optval_t val)
 		print_func("", buf);
 	}
 
-	if(cfg.lines == val.int_val)
-		return;
+	if(cfg.lines != val.int_val)
+	{
+		LOG_INFO_MSG("resize_term(%d, %d)", val.int_val, getmaxx(stdscr));
+		resize_term(val.int_val, getmaxx(stdscr));
+		redraw_window();
+		cfg.lines = getmaxy(stdscr);
+	}
 
-	LOG_INFO_MSG("resize_term(%d, %d)", val.int_val, getmaxx(stdscr));
-	resize_term(val.int_val, getmaxx(stdscr));
-	redraw_window();
-	cfg.lines = getmaxy(stdscr);
+	val.int_val = cfg.lines;
+	set_option("lines", val);
 }
 
 static void

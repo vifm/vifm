@@ -21,6 +21,8 @@
 
 	Reset value of 'columns' option to real number of columns.
 
+	Reset value of 'lines' option to real number of lines.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
