@@ -4,6 +4,8 @@
 
 	Added checks for correct value of 'tabstop' option.
 
+	Added checks for correct value of 'timeoutlen' option.
+
 	Expand tilde in the second argument of :colorscheme command.
 
 	Better completion for :colorscheme command.

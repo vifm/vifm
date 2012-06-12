@@ -811,6 +811,16 @@ timefmt_handler(OPT_OP op, optval_t val)
 static void
 timeoutlen_handler(OPT_OP op, optval_t val)
 {
+	if(val.int_val < 0)
+	{
+		char buf[128];
+		snprintf(buf, sizeof(buf), "Argument must be >= 0: %d", val.int_val);
+		print_func("", buf);
+		val.int_val = 0;
+		set_option("timeoutlen", val);
+		return;
+	}
+
 	cfg.timeout_len = val.int_val;
 }
 
