@@ -655,6 +655,15 @@ scrollbind_handler(OPT_OP op, optval_t val)
 static void
 scrolloff_handler(OPT_OP op, optval_t val)
 {
+	if(val.int_val < 0)
+	{
+		char buf[128];
+		snprintf(buf, sizeof(buf), "Invalid scroll size: %d", val.int_val);
+		print_func("", buf);
+		reset_option_to_default("scrolloff");
+		return;
+	}
+
 	cfg.scroll_off = val.int_val;
 	if(cfg.scroll_off > 0)
 		move_to_list_pos(curr_view, curr_view->list_pos);

@@ -25,6 +25,9 @@
 
 	Reset value of 'lines' option to real number of lines.
 
+	Reset value of 'scrolloff' option to zero on attempt to assign a negative
+	value to it.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
