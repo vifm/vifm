@@ -2,6 +2,10 @@
 
 	Added a section about color schemes to the documentation.
 
+	Added checks for correct value of 'tabstop' option.
+
+	Added checks for correct value of 'timeoutlen' option.
+
 	Expand tilde in the second argument of :colorscheme command.
 
 	Better completion for :colorscheme command.
@@ -16,6 +20,13 @@
 	Allowed whitespace after option name in :set command.
 
 	Documented treating of whitespace around option names in :set command.
+
+	Reset value of 'columns' option to real number of columns.
+
+	Reset value of 'lines' option to real number of lines.
+
+	Reset value of 'scrolloff' option to zero on attempt to assign a negative
+	value to it.
 
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.

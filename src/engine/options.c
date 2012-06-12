@@ -88,6 +88,16 @@ init_options(int *opts_changed_flag, opt_print handler)
 }
 
 void
+reset_option_to_default(const char *name)
+{
+	opt_t *opt = find_option(name);
+	if(opt != NULL)
+	{
+		set_reset(opt);
+	}
+}
+
+void
 reset_options_to_default(void)
 {
 	int i;

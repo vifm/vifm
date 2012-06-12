@@ -447,12 +447,15 @@ columns_handler(OPT_OP op, optval_t val)
 		print_func("", buf);
 	}
 
-	if(cfg.columns == val.int_val)
-		return;
+	if(cfg.columns != val.int_val)
+	{
+		resize_term(getmaxy(stdscr), val.int_val);
+		redraw_window();
+		cfg.columns = getmaxx(stdscr);
+	}
 
-	resize_term(getmaxy(stdscr), val.int_val);
-	redraw_window();
-	cfg.columns = getmaxx(stdscr);
+	val.int_val = cfg.columns;
+	set_option("columns", val);
 }
 
 static void
@@ -601,13 +604,16 @@ lines_handler(OPT_OP op, optval_t val)
 		print_func("", buf);
 	}
 
-	if(cfg.lines == val.int_val)
-		return;
+	if(cfg.lines != val.int_val)
+	{
+		LOG_INFO_MSG("resize_term(%d, %d)", val.int_val, getmaxx(stdscr));
+		resize_term(val.int_val, getmaxx(stdscr));
+		redraw_window();
+		cfg.lines = getmaxy(stdscr);
+	}
 
-	LOG_INFO_MSG("resize_term(%d, %d)", val.int_val, getmaxx(stdscr));
-	resize_term(val.int_val, getmaxx(stdscr));
-	redraw_window();
-	cfg.lines = getmaxy(stdscr);
+	val.int_val = cfg.lines;
+	set_option("lines", val);
 }
 
 static void
@@ -649,6 +655,15 @@ scrollbind_handler(OPT_OP op, optval_t val)
 static void
 scrolloff_handler(OPT_OP op, optval_t val)
 {
+	if(val.int_val < 0)
+	{
+		char buf[128];
+		snprintf(buf, sizeof(buf), "Invalid scroll size: %d", val.int_val);
+		print_func("", buf);
+		reset_option_to_default("scrolloff");
+		return;
+	}
+
 	cfg.scroll_off = val.int_val;
 	if(cfg.scroll_off > 0)
 		move_to_list_pos(curr_view, curr_view->list_pos);
@@ -775,6 +790,15 @@ statusline_handler(OPT_OP op, optval_t val)
 static void
 tabstop_handler(OPT_OP op, optval_t val)
 {
+	if(val.int_val <= 0)
+	{
+		char buf[128];
+		snprintf(buf, sizeof(buf), "Argument must be positive: %d", val.int_val);
+		print_func("", buf);
+		reset_option_to_default("tabstop");
+		return;
+	}
+
 	cfg.tab_stop = val.int_val;
 	if(curr_stats.view)
 		quick_view_file(curr_view);
@@ -796,6 +820,16 @@ timefmt_handler(OPT_OP op, optval_t val)
 static void
 timeoutlen_handler(OPT_OP op, optval_t val)
 {
+	if(val.int_val < 0)
+	{
+		char buf[128];
+		snprintf(buf, sizeof(buf), "Argument must be >= 0: %d", val.int_val);
+		print_func("", buf);
+		val.int_val = 0;
+		set_option("timeoutlen", val);
+		return;
+	}
+
 	cfg.timeout_len = val.int_val;
 }
 
