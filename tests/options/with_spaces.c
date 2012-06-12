@@ -3,6 +3,7 @@
 #include "../../src/engine/options.h"
 
 extern int fastrun;
+extern int tabstop;
 
 static void
 test_bang(void)
@@ -24,7 +25,7 @@ static void
 test_qmark(void)
 {
 	optval_t val = { .bool_val = 0 };
-	fastrun = 0;
+	fastrun = 8;
 	set_option("fastrun", val);
 
 	assert_true(set_options("fastrun?") == 0);
@@ -43,6 +44,27 @@ test_ampersand(void)
 	assert_false(fastrun);
 }
 
+static void
+test_assignment(void)
+{
+	optval_t val = { .int_val = 8 };
+	tabstop = 4;
+	set_option("tabstop", val);
+	assert_int_equal(4, tabstop);
+
+	assert_true(set_options("tabstop =5") == 0);
+	assert_int_equal(5, tabstop);
+
+	assert_true(set_options("tabstop   :8") == 0);
+	assert_int_equal(8, tabstop);
+
+	assert_true(set_options("tabstop +=2") == 0);
+	assert_int_equal(10, tabstop);
+
+	assert_true(set_options("tabstop -=1") == 0);
+	assert_int_equal(9, tabstop);
+}
+
 void
 with_spaces_tests(void)
 {
@@ -51,6 +73,7 @@ with_spaces_tests(void)
 	run_test(test_bang);
 	run_test(test_qmark);
 	run_test(test_ampersand);
+	run_test(test_assignment);
 
 	test_fixture_end();
 }

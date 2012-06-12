@@ -118,6 +118,10 @@ test_skip_abbreviations(void)
 	free(completed);
 
 	completed = next_completion();
+	assert_string_equal("tabstop", completed);
+	free(completed);
+
+	completed = next_completion();
 	assert_string_equal("vifminfo", completed);
 	free(completed);
 

@@ -13,6 +13,8 @@
 
 	Documented that %m, %M, %s, %S and %i are mutually exclusive.
 
+	Allowed whitespace after option name in :set command.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
