@@ -4,6 +4,7 @@
 #include "../../src/utils/macros.h"
 
 int fastrun;
+int tabstop;
 const char *value;
 
 static const char * sort_enum[] = {
@@ -57,17 +58,13 @@ fusehome_handler(OPT_OP op, optval_t val)
 }
 
 static void
-sort_handler(OPT_OP op, optval_t val)
+tabstop_handler(OPT_OP op, optval_t val)
 {
+	tabstop = val.int_val;
 }
 
 static void
-sortorder_handler(OPT_OP op, optval_t val)
-{
-}
-
-static void
-vifminfo_handler(OPT_OP op, optval_t val)
+dummy_handler(OPT_OP op, optval_t val)
 {
 }
 
@@ -85,11 +82,13 @@ setup(void)
 	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler, val);
 	val.enum_item = 1;
 	add_option("sort", "so", OPT_ENUM, ARRAY_LEN(sort_enum), sort_enum,
-			&sort_handler, val);
-	add_option("sortorder", "", OPT_BOOL, 0, NULL, &sortorder_handler, val);
+			&dummy_handler, val);
+	add_option("sortorder", "", OPT_BOOL, 0, NULL, &dummy_handler, val);
+	val.int_val = 8;
+	add_option("tabstop", "ts", OPT_INT, 0, NULL, &tabstop_handler, val);
 	val.set_items = 0;
 	add_option("vifminfo", "", OPT_SET, ARRAY_LEN(vifminfo_set), vifminfo_set,
-			&vifminfo_handler, val);
+			&dummy_handler, val);
 }
 
 int main(int argc, char **argv)

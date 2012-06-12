@@ -286,6 +286,12 @@ extract_option(const char *cmd, char *buf, int replace)
 				}
 				cmd = skip_whitespace(cmd);
 			}
+			else if(strchr("+-=:", *cmd) != NULL)
+			{
+					while(*cmd != '\0' && !isspace(*cmd))
+						*buf++ = *cmd++;
+					*buf = '\0';
+			}
 			break;
 		}
 		else if(*cmd == '\'' && quote == 0)
