@@ -19,6 +19,8 @@
 
 	Documented treating of whitespace around option names in :set command.
 
+	Reset value of 'columns' option to real number of columns.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 

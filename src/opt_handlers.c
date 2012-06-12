@@ -447,12 +447,15 @@ columns_handler(OPT_OP op, optval_t val)
 		print_func("", buf);
 	}
 
-	if(cfg.columns == val.int_val)
-		return;
+	if(cfg.columns != val.int_val)
+	{
+		resize_term(getmaxy(stdscr), val.int_val);
+		redraw_window();
+		cfg.columns = getmaxx(stdscr);
+	}
 
-	resize_term(getmaxy(stdscr), val.int_val);
-	redraw_window();
-	cfg.columns = getmaxx(stdscr);
+	val.int_val = cfg.columns;
+	set_option("columns", val);
 }
 
 static void
