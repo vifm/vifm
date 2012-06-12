@@ -775,6 +775,15 @@ statusline_handler(OPT_OP op, optval_t val)
 static void
 tabstop_handler(OPT_OP op, optval_t val)
 {
+	if(val.int_val <= 0)
+	{
+		char buf[128];
+		snprintf(buf, sizeof(buf), "Argument must be positive: %d", val.int_val);
+		print_func("", buf);
+		reset_option_to_default("tabstop");
+		return;
+	}
+
 	cfg.tab_stop = val.int_val;
 	if(curr_stats.view)
 		quick_view_file(curr_view);
