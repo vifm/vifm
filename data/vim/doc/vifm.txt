@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3  Last change: 2012 Jun 09
+*vifm.txt*    For Vifm version 0.7.3  Last change: 2012 Jun 12
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1136,6 +1136,9 @@ the '.' operator. Any whitespace is ignored.
      - option=x or option:x - set option to x
      - option+=x - add x to option
      - option-=x - remove (or subtract) x from option
+
+    Option name can be prepended and appended by any number of whitespace
+    characters.
 
                                                *vifm-:shell* *vifm-:sh*
 :sh[ell] - will start a shell.

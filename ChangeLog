@@ -15,6 +15,8 @@
 
 	Allowed whitespace after option name in :set command.
 
+	Documented treating of whitespace around option names in :set command.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
