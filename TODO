@@ -49,7 +49,6 @@ Vi(m) specific features that need to be added.
         filtering).
     Kinda macros like in Vim (qa ... q).
     Something like <silent> in Vim (no command blinking in the command-line)
-    :set command should understand environment variables and concatenation too.
     :let mapleader and <leader> support.
     Add :echo command.
     'cdpath' ('cd') option.
@@ -64,7 +63,6 @@ Vi(m) specific features that need to be added.
     Add support of 'n' flag for :substitute command.
     Expand environment variables for :edit command.
     Think about dot normal mode command.
-    Ctrl-W-H/J/K/L combinations.
 
 Possible things to add.
     Use system wide mimetypes file. /etc/mailcap?
