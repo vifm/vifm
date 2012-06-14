@@ -233,9 +233,7 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 		for(i = 0; i < view->list_rows; i++)
 			view->dir_entry[i].search_match = 0;
 
-		for(i = 0; i < view->list_rows; i++)
-			view->dir_entry[i].selected = 0;
-		view->selected_files = 0;
+		erase_selection(view);
 
 		draw_dir_list(view, view->top_line);
 		move_to_list_pos(view, view->list_pos);
@@ -637,16 +635,13 @@ cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 {
-	int x;
 	int ub = check_mark_directory(view, '<');
 	int lb = check_mark_directory(view, '>');
 
 	if(ub < 0 || lb < 0)
 		return;
 
-	for(x = 0; x < view->list_rows; x++)
-		view->dir_entry[x].selected = 0;
-	view->selected_files = 0;
+	erase_selection(view);
 
 	start_pos = ub;
 	view->list_pos = ub;
@@ -931,8 +926,7 @@ find_vpattern(FileView *view, const char *pattern, int backward)
 	int result;
 	int hls = cfg.hl_search;
 
-	for(i = 0; i < view->list_rows; i++)
-		view->dir_entry[i].selected = 0;
+	erase_selection(view);
 
 	cfg.hl_search = 0;
 	result = find_pattern(view, pattern, backward, 0);
