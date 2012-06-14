@@ -56,6 +56,8 @@
 	Fixed displaying of non-latin characters when panel width is only
 	one character.
 
+	Fixed selection of ../ directory on gv key.
+
 0.7.2 to 0.7.3
 
 	Removed possibility of moving items in :file menu.

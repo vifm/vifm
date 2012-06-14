@@ -78,6 +78,7 @@ static void goto_pos(int pos);
 static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gu(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gv(key_info_t key_info, keys_info_t *keys_info);
+static void select_first_one(void);
 static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
@@ -206,11 +207,9 @@ enter_visual_mode(int restore_selection)
 		key_info_t ki;
 		cmd_gv(ki, NULL);
 	}
-	else if(stroscmp(view->dir_entry[view->list_pos].name, "../"))
+	else
 	{
-		/* Don't allow the ../ dir to be selected */
-		view->selected_files = 1;
-		view->dir_entry[view->list_pos].selected = 1;
+		select_first_one();
 	}
 
 	draw_dir_list(view, view->top_line);
@@ -646,8 +645,7 @@ cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 	start_pos = ub;
 	view->list_pos = ub;
 
-	view->selected_files = 1;
-	view->dir_entry[view->list_pos].selected = 1;
+	select_first_one();
 
 	while(view->list_pos != lb)
 		select_down_one(view, start_pos);
@@ -660,6 +658,18 @@ cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	update();
+}
+
+/* Performs correct selection of first item. */
+static void
+select_first_one(void)
+{
+	/* Don't allow the ../ dir to be selected */
+	if(stroscmp(view->dir_entry[view->list_pos].name, "../") != 0)
+	{
+		view->selected_files = 1;
+		view->dir_entry[view->list_pos].selected = 1;
+	}
 }
 
 static void
