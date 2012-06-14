@@ -78,6 +78,7 @@ static void goto_pos(int pos);
 static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gu(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gv(key_info_t key_info, keys_info_t *keys_info);
+static void select_first_one(void);
 static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
@@ -94,6 +95,7 @@ static void cmd_right_paren(key_info_t key_info, keys_info_t *keys_info);
 static void find_goto(int ch, int count, int backward);
 static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
+static int is_parent_dir(int pos);
 static void update(void);
 static int find_update(FileView *view, int backward);
 
@@ -206,11 +208,9 @@ enter_visual_mode(int restore_selection)
 		key_info_t ki;
 		cmd_gv(ki, NULL);
 	}
-	else if(stroscmp(view->dir_entry[view->list_pos].name, "../"))
+	else
 	{
-		/* Don't allow the ../ dir to be selected */
-		view->selected_files = 1;
-		view->dir_entry[view->list_pos].selected = 1;
+		select_first_one();
 	}
 
 	draw_dir_list(view, view->top_line);
@@ -233,9 +233,7 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 		for(i = 0; i < view->list_rows; i++)
 			view->dir_entry[i].search_match = 0;
 
-		for(i = 0; i < view->list_rows; i++)
-			view->dir_entry[i].selected = 0;
-		view->selected_files = 0;
+		erase_selection(view);
 
 		draw_dir_list(view, view->top_line);
 		move_to_list_pos(view, view->list_pos);
@@ -637,22 +635,18 @@ cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 {
-	int x;
 	int ub = check_mark_directory(view, '<');
 	int lb = check_mark_directory(view, '>');
 
 	if(ub < 0 || lb < 0)
 		return;
 
-	for(x = 0; x < view->list_rows; x++)
-		view->dir_entry[x].selected = 0;
-	view->selected_files = 0;
+	erase_selection(view);
 
 	start_pos = ub;
 	view->list_pos = ub;
 
-	view->selected_files = 1;
-	view->dir_entry[view->list_pos].selected = 1;
+	select_first_one();
 
 	while(view->list_pos != lb)
 		select_down_one(view, start_pos);
@@ -665,6 +659,17 @@ cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	update();
+}
+
+/* Performs correct selection of first item. */
+static void
+select_first_one(void)
+{
+	if(!is_parent_dir(view->list_pos))
+	{
+		view->selected_files = 1;
+		view->dir_entry[view->list_pos].selected = 1;
+	}
 }
 
 static void
@@ -834,15 +839,15 @@ select_up_one(FileView *view, int start_pos)
 	view->list_pos--;
 	if(view->list_pos < 0)
 	{
-		if(start_pos == 0)
+		if(is_parent_dir(start_pos))
 			view->selected_files = 0;
 		view->list_pos = 0;
 	}
-	else if(view->list_pos == 0)
+	else if(view->list_pos == 0 && is_parent_dir(0))
 	{
 		if(start_pos == 0)
 		{
-			view->dir_entry[view->list_pos + 1].selected = 0;
+			view->dir_entry[1].selected = 0;
 			view->selected_files = 0;
 		}
 	}
@@ -879,9 +884,9 @@ select_down_one(FileView *view, int start_pos)
 		if(start_pos == 0)
 			view->selected_files = 0;
 	}
-	else if (view->list_pos == 1 && start_pos != 0)
+	else if(view->list_pos == 1 && start_pos != 0 && is_parent_dir(0))
 	{
-		return;
+		/* do nothing */
 	}
 	else if(view->list_pos > start_pos)
 	{
@@ -899,6 +904,14 @@ select_down_one(FileView *view, int start_pos)
 		view->dir_entry[view->list_pos - 1].selected = 0;
 		view->selected_files--;
 	}
+}
+
+/* Checks whether current file is a link to parent directory. */
+static int
+is_parent_dir(int pos)
+{
+	/* Don't allow the ../ dir to be selected */
+	return stroscmp(view->dir_entry[pos].name, "../") == 0;
 }
 
 static void
@@ -931,8 +944,7 @@ find_vpattern(FileView *view, const char *pattern, int backward)
 	int result;
 	int hls = cfg.hl_search;
 
-	for(i = 0; i < view->list_rows; i++)
-		view->dir_entry[i].selected = 0;
+	erase_selection(view);
 
 	cfg.hl_search = 0;
 	result = find_pattern(view, pattern, backward, 0);

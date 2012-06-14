@@ -76,6 +76,8 @@
 #include "ui.h"
 
 static char * get_viewer_command(const char *viewer);
+static void save_selection(FileView *view);
+static void free_saved_selection(FileView *view);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
 static int file_can_be_displayed(const char *directory, const char *filename);
@@ -1069,8 +1071,14 @@ check_view_dir_history(FileView *view)
 void
 clean_selected_files(FileView *view)
 {
-	int x;
+	save_selection(view);
+	erase_selection(view);
+}
 
+/* Saves list of selected files if any. */
+static void
+save_selection(FileView *view)
+{
 	if(view->selected_files != 0)
 	{
 		char **tmp;
@@ -1086,24 +1094,16 @@ clean_selected_files(FileView *view)
 
 		view->selected_filelist = tmp;
 	}
+}
+
+void
+erase_selection(FileView *view)
+{
+	int x;
 
 	/* This is needed, since otherwise we loose number of items in the array,
 	 * which can cause access violation of memory leaks. */
 	free_selected_file_array(view);
-
-	for(x = 0; x < view->list_rows; x++)
-		view->dir_entry[x].selected = 0;
-	view->selected_files = 0;
-}
-
-static void
-clean_selection(FileView *view)
-{
-	int x;
-
-	free_string_array(view->saved_selection, view->nsaved_selection);
-	view->nsaved_selection = 0;
-	view->saved_selection = NULL;
 
 	for(x = 0; x < view->list_rows; x++)
 		view->dir_entry[x].selected = 0;
@@ -1397,9 +1397,14 @@ change_directory(FileView *view, const char *directory)
 		chosp(dir_dup);
 
 	if(stroscmp(dir_dup, view->curr_dir) != 0)
-		clean_selection(view);
+	{
+		free_saved_selection(view);
+	}
 	else
-		clean_selected_files(view);
+	{
+		save_selection(view);
+	}
+	erase_selection(view);
 
 	/* Need to use setenv instead of getcwd for a symlink directory */
 	env_set("PWD", dir_dup);
@@ -1411,6 +1416,15 @@ change_directory(FileView *view, const char *directory)
 
 	save_view_history(view, NULL, "", -1);
 	return 0;
+}
+
+/* Frees list of previously selected files. */
+static void
+free_saved_selection(FileView *view)
+{
+	free_string_array(view->saved_selection, view->nsaved_selection);
+	view->nsaved_selection = 0;
+	view->saved_selection = NULL;
 }
 
 static void
