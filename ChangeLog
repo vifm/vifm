@@ -58,6 +58,8 @@
 
 	Fixed selection of ../ directory on gv key.
 
+	Fixed visual selection of the first file in the root directory.
+
 0.7.2 to 0.7.3
 
 	Removed possibility of moving items in :file menu.

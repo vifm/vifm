@@ -95,6 +95,7 @@ static void cmd_right_paren(key_info_t key_info, keys_info_t *keys_info);
 static void find_goto(int ch, int count, int backward);
 static void select_up_one(FileView *view, int start_pos);
 static void select_down_one(FileView *view, int start_pos);
+static int is_parent_dir(int pos);
 static void update(void);
 static int find_update(FileView *view, int backward);
 
@@ -664,8 +665,7 @@ cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 static void
 select_first_one(void)
 {
-	/* Don't allow the ../ dir to be selected */
-	if(stroscmp(view->dir_entry[view->list_pos].name, "../") != 0)
+	if(!is_parent_dir(view->list_pos))
 	{
 		view->selected_files = 1;
 		view->dir_entry[view->list_pos].selected = 1;
@@ -839,15 +839,15 @@ select_up_one(FileView *view, int start_pos)
 	view->list_pos--;
 	if(view->list_pos < 0)
 	{
-		if(start_pos == 0)
+		if(is_parent_dir(start_pos))
 			view->selected_files = 0;
 		view->list_pos = 0;
 	}
-	else if(view->list_pos == 0)
+	else if(view->list_pos == 0 && is_parent_dir(0))
 	{
 		if(start_pos == 0)
 		{
-			view->dir_entry[view->list_pos + 1].selected = 0;
+			view->dir_entry[1].selected = 0;
 			view->selected_files = 0;
 		}
 	}
@@ -884,9 +884,9 @@ select_down_one(FileView *view, int start_pos)
 		if(start_pos == 0)
 			view->selected_files = 0;
 	}
-	else if (view->list_pos == 1 && start_pos != 0)
+	else if(view->list_pos == 1 && start_pos != 0 && is_parent_dir(0))
 	{
-		return;
+		/* do nothing */
 	}
 	else if(view->list_pos > start_pos)
 	{
@@ -904,6 +904,14 @@ select_down_one(FileView *view, int start_pos)
 		view->dir_entry[view->list_pos - 1].selected = 0;
 		view->selected_files--;
 	}
+}
+
+/* Checks whether current file is a link to parent directory. */
+static int
+is_parent_dir(int pos)
+{
+	/* Don't allow the ../ dir to be selected */
+	return stroscmp(view->dir_entry[pos].name, "../") == 0;
 }
 
 static void
