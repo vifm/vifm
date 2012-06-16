@@ -38,6 +38,8 @@
 	Made file filtering using regular expressions work faster (matters when
 	directory contains several thousands files).
 
+	Draw quickview on startup only once.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
@@ -73,6 +75,9 @@
 	Fixed memory leak on `:[ncv]map foo`.
 
 	Fixed restoring of file name filters.
+
+	Fixed restoring of cursor position in the other view if quick view was
+	opened too.
 
 0.7.2 to 0.7.3
 

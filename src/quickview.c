@@ -63,6 +63,9 @@ quick_view_file(FileView *view)
 	char buf[PATH_MAX];
 	char link[PATH_MAX];
 
+	if(curr_stats.load_stage < 2)
+		return;
+
 	if(get_mode() == VIEW_MODE)
 		return;
 
