@@ -47,7 +47,8 @@ void move_to_list_pos(FileView *view, int pos);
 
 void draw_dir_list(FileView *view, int top);
 void erase_current_line_bar(FileView *view);
-void scroll_view(FileView *view);
+/* Updates view on the screen (redraws file list and cursor) */
+void redraw_view(FileView *view);
 void change_sort_type(FileView *view, char type, char descending);
 void update_view_title(FileView *view);
 

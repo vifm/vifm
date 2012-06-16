@@ -442,7 +442,7 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 		return;
 
 	curr_view->top_line++;
-	scroll_view(curr_view);
+	redraw_view(curr_view);
 }
 
 static void
@@ -819,7 +819,7 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 		return;
 
 	curr_view->top_line--;
-	scroll_view(curr_view);
+	redraw_view(curr_view);
 }
 
 static void
@@ -1825,7 +1825,7 @@ normal_cmd_zb(key_info_t key_info, keys_info_t *keys_info)
 			curr_view->top_line += s;
 		}
 	}
-	scroll_view(curr_view);
+	redraw_view(curr_view);
 }
 
 /* Filter selected files. */
@@ -2047,7 +2047,7 @@ normal_cmd_zt(key_info_t key_info, keys_info_t *keys_info)
 	{
 		curr_view->top_line = curr_view->list_rows - curr_view->window_rows;
 	}
-	scroll_view(curr_view);
+	redraw_view(curr_view);
 }
 
 /* Redraw with file in center of list. */
@@ -2063,7 +2063,7 @@ normal_cmd_zz(key_info_t key_info, keys_info_t *keys_info)
 		curr_view->top_line = curr_view->list_rows - curr_view->window_rows;
 	else
 		curr_view->top_line = curr_view->list_pos - curr_view->window_rows/2;
-	scroll_view(curr_view);
+	redraw_view(curr_view);
 }
 
 static void
