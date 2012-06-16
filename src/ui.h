@@ -26,6 +26,8 @@
 #include <windows.h>
 #endif
 
+#include <regex.h>
+
 #include <limits.h> /* PATH_MAX NAME_MAX */
 #include <curses.h>
 #include <stdint.h> /* uint64_t */
@@ -140,8 +142,10 @@ typedef struct _FileView
 	int user_selection;
 	int explore_mode; /* shows whether this view is used for file exploring */
 
-	char * prev_filter;
-	char * filename_filter; /* regexp for filtering files in dir list */
+	char *filename_filter; /* regexp for filtering files in dir list, not NULL */
+	char *prev_filter; /* for remove/restore with filename_filter, not NULL */
+	int filter_is_valid;
+	regex_t filter_regex;
 
 	char sort[NUM_SORT_OPTIONS];
 

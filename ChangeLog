@@ -35,6 +35,9 @@
 
 	Faster execution of `:set sort=foo sortorder sortnumbers` in vifmrc.
 
+	Made file filtering using regular expressions work faster (matters when
+	directory contains several thousands files).
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
@@ -68,6 +71,8 @@
 	Fixed visual selection of the first file in the root directory.
 
 	Fixed memory leak on `:[ncv]map foo`.
+
+	Fixed restoring of file name filters.
 
 0.7.2 to 0.7.3
 

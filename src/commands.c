@@ -787,8 +787,7 @@ set_view_filter(FileView *view, const char *filter, int invert)
 	regfree(&re);
 
 	view->invert = invert;
-	view->filename_filter = realloc(view->filename_filter, strlen(filter) + 1);
-	strcpy(view->filename_filter, filter);
+	set_filename_filter(view, filter);
 	load_saving_pos(view, 1);
 	return 0;
 }
@@ -3452,10 +3451,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	else if(strncmp(expanded_com, "filter ", 7) == 0)
 	{
 		curr_view->invert = 1;
-		curr_view->filename_filter = (char *)realloc(curr_view->filename_filter,
-				strlen(strchr(expanded_com, ' ')) + 1);
-		snprintf(curr_view->filename_filter, strlen(strchr(expanded_com, ' ')) + 1,
-				"%s", strchr(expanded_com, ' ') + 1);
+		set_filename_filter(curr_view, strchr(expanded_com, ' ') + 1);
 
 		load_saving_pos(curr_view, 1);
 		external = 0;

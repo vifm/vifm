@@ -79,6 +79,8 @@ void toggle_dot_files(FileView *view);
 void filter_selected_files(FileView *view);
 void remove_filename_filter(FileView *view);
 void restore_filename_filter(FileView *view);
+/* Sets filter regexp for the view. */
+void set_filename_filter(FileView *view, const char *filter);
 
 /* Directory history related functions. */
 
@@ -103,7 +105,7 @@ void check_if_filelists_have_changed(FileView *view);
 int cd_is_possible(const char *path);
 
 #ifdef TEST
-int regexp_filter_match(FileView *view, char *filename);
+int regexp_filter_match(FileView *view, const char *filename);
 #endif
 
 #endif
