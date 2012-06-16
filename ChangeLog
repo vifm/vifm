@@ -28,6 +28,8 @@
 	Reset value of 'scrolloff' option to zero on attempt to assign a negative
 	value to it.
 
+	Faster Ctrl-W x.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
