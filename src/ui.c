@@ -1248,12 +1248,13 @@ change_window(void)
 		update_view_title(other_view);
 	}
 
-	if(curr_stats.view)
+	if(curr_stats.view && curr_view->dir_entry[0].name[0] == '\0')
 	{
-		if(change_directory(other_view, other_view->curr_dir) >= 0)
-			load_dir_list(other_view, 1);
 		if(change_directory(curr_view, curr_view->curr_dir) >= 0)
-			load_dir_list(curr_view, 1);
+		{
+			load_dir_list(curr_view, 0);
+			move_to_list_pos(curr_view, curr_view->list_pos);
+		}
 	}
 
 	update_view_title(curr_view);

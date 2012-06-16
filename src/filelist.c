@@ -1293,7 +1293,10 @@ change_directory(FileView *view, const char *directory)
 	char newdir[PATH_MAX];
 	char dir_dup[PATH_MAX];
 
-	save_view_history(view, NULL, NULL, -1);
+	if(view->dir_entry[0].name[0] != '\0')
+	{
+		save_view_history(view, NULL, NULL, -1);
+	}
 
 #ifdef _WIN32
 	directory = handle_mount_points(directory);
@@ -1414,7 +1417,10 @@ change_directory(FileView *view, const char *directory)
 	/* Save the directory modified time to check for file changes */
 	update_dir_mtime(view);
 
-	save_view_history(view, NULL, "", -1);
+	if(view->dir_entry[0].name[0] != '\0')
+	{
+		save_view_history(view, NULL, "", -1);
+	}
 	return 0;
 }
 
