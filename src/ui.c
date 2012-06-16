@@ -1152,6 +1152,8 @@ update_screen(UpdateType update_kind)
 	if(curr_stats.too_small_term)
 		return;
 
+	curr_stats.need_update = UT_NONE;
+
 	update_views(update_kind == UT_FULL);
 
 	update_stat_window(curr_view);
@@ -1173,7 +1175,6 @@ update_screen(UpdateType update_kind)
 
 	if(!curr_view->explore_mode)
 		move_to_list_pos(curr_view, curr_view->list_pos);
-	curr_stats.need_update = UT_NONE;
 
 	if(curr_stats.errmsg_shown)
 	{

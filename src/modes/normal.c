@@ -797,7 +797,7 @@ cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 	lwin = rwin;
 	rwin = tmp_view;
 
-	redraw_lists();
+	curr_stats.need_update = UT_REDRAW;
 }
 
 static void

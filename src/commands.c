@@ -1371,7 +1371,7 @@ comm_split(SPLIT orientation)
 
 	curr_stats.split = orientation;
 	curr_stats.number_of_windows = 2;
-	update_screen(UT_REDRAW);
+	curr_stats.need_update = UT_REDRAW;
 }
 
 static int
