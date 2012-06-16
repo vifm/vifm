@@ -2256,6 +2256,12 @@ redraw_view(FileView *view)
 	move_to_list_pos(view, view->list_pos);
 }
 
+void
+redraw_current_view(void)
+{
+	redraw_view(curr_view);
+}
+
 static int
 window_shows_dirlist(FileView *view)
 {

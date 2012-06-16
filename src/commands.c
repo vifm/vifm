@@ -2622,8 +2622,7 @@ nohlsearch_cmd(const cmd_info_t *cmd_info)
 		return 0;
 
 	clean_selected_files(curr_view);
-	draw_dir_list(curr_view, curr_view->top_line);
-	move_to_list_pos(curr_view, curr_view->list_pos);
+	redraw_current_view();
 	return 0;
 }
 

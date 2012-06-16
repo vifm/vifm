@@ -1269,8 +1269,7 @@ change_window(void)
 
 	if(!curr_view->explore_mode)
 	{
-		draw_dir_list(curr_view, curr_view->top_line);
-		move_to_list_pos(curr_view, curr_view->list_pos);
+		redraw_current_view();
 	}
 	werase(status_bar);
 	wnoutrefresh(status_bar);
@@ -1426,8 +1425,7 @@ show_progress(const char *msg, int period)
 void
 redraw_lists(void)
 {
-	draw_dir_list(curr_view, curr_view->top_line);
-	move_to_list_pos(curr_view, curr_view->list_pos);
+	redraw_current_view();
 	if(curr_stats.number_of_windows == 2)
 	{
 		if(curr_stats.view)

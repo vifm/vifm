@@ -367,8 +367,7 @@ leave_view_mode(void)
 	if(curr_view->explore_mode)
 	{
 		curr_view->explore_mode = 0;
-		draw_dir_list(curr_view, curr_view->top_line);
-		move_to_list_pos(curr_view, curr_view->list_pos);
+		redraw_current_view();
 	}
 	else
 	{

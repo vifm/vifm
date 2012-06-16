@@ -378,8 +378,7 @@ input_line_changed(void)
 
 	if(prev_mode != MENU_MODE && prev_mode != VISUAL_MODE)
 	{
-		draw_dir_list(curr_view, curr_view->top_line);
-		move_to_list_pos(curr_view, curr_view->list_pos);
+		redraw_current_view();
 	}
 	else if(prev_mode != VISUAL_MODE)
 	{
@@ -589,8 +588,7 @@ leave_cmdline_mode(void)
 
 	if(prev_mode != MENU_MODE && prev_mode != VIEW_MODE)
 	{
-		draw_dir_list(curr_view, curr_view->top_line);
-		move_to_list_pos(curr_view, curr_view->list_pos);
+		redraw_current_view();
 	}
 }
 
