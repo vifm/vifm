@@ -548,7 +548,7 @@ main(int argc, char *argv[])
 
 	exec_startup_commands(argc, argv);
 
-	redraw_window(1);
+	update_screen(1);
 	curr_stats.load_stage = 3;
 
 	main_loop();

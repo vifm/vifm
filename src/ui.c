@@ -677,7 +677,7 @@ clean_status_bar(void)
 	if(multiline_status_bar)
 	{
 		multiline_status_bar = 0;
-		redraw_window(1);
+		update_screen(1);
 	}
 	multiline_status_bar = 0;
 }
@@ -1135,7 +1135,7 @@ resize_all(void)
 }
 
 void
-redraw_window(int reload)
+update_screen(int reload)
 {
 	if(curr_stats.load_stage < 2)
 		return;

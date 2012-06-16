@@ -181,7 +181,7 @@ void update_stat_window(FileView *view);
 float get_splitter_pos(int max);
 /* Redraws whole screen with possible reloading of file lists (depends on reload
  * argument). */
-void redraw_window(int reload);
+void update_screen(int reload);
 void update_pos_window(FileView *view);
 void status_bar_messagef(const char *format, ...);
 void status_bar_message(const char *message);

@@ -825,7 +825,7 @@ query_user_menu(char *title, char *message)
 	update_all_windows();
 
 	if(curr_stats.need_update != UT_NONE)
-		redraw_window(1);
+		update_screen(1);
 
 	if(key == 'y')
 		return 1;

@@ -451,7 +451,7 @@ columns_handler(OPT_OP op, optval_t val)
 	if(cfg.columns != val.int_val)
 	{
 		resize_term(getmaxy(stdscr), val.int_val);
-		redraw_window(1);
+		update_screen(1);
 		cfg.columns = getmaxx(stdscr);
 	}
 
@@ -609,7 +609,7 @@ lines_handler(OPT_OP op, optval_t val)
 	{
 		LOG_INFO_MSG("resize_term(%d, %d)", val.int_val, getmaxx(stdscr));
 		resize_term(val.int_val, getmaxx(stdscr));
-		redraw_window(1);
+		update_screen(1);
 		cfg.lines = getmaxy(stdscr);
 	}
 

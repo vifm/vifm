@@ -333,7 +333,7 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	redraw_window(1);
+	update_screen(1);
 	curs_set(FALSE);
 }
 

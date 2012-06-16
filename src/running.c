@@ -122,7 +122,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 		else
 		{
 			exec_program(full);
-			redraw_window(1);
+			update_screen(1);
 		}
 #endif
 	}
