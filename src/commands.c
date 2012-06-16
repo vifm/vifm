@@ -1354,7 +1354,7 @@ comm_only(void)
 		return;
 
 	curr_stats.number_of_windows = 1;
-	redraw_window(1);
+	redraw_window(0);
 }
 
 void
@@ -1375,7 +1375,7 @@ comm_split(int vertical)
 
 	curr_stats.split = orient;
 	curr_stats.number_of_windows = 2;
-	redraw_window(1);
+	redraw_window(0);
 }
 
 static int

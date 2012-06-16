@@ -708,7 +708,7 @@ void
 normal_cmd_ctrl_wequal(key_info_t key_info, keys_info_t *keys_info)
 {
 	curr_stats.splitter_pos = -1;
-	redraw_window(1);
+	redraw_window(0);
 }
 
 void
@@ -770,7 +770,7 @@ move_splitter(key_info_t key_info, int fact)
 	curr_stats.splitter_pos += fact*key_info.count;
 	if(curr_stats.splitter_pos < 0)
 		curr_stats.splitter_pos = 0;
-	redraw_window(1);
+	redraw_window(0);
 }
 
 /* Switch views. */
