@@ -195,7 +195,7 @@ static int vnoremap_cmd(const cmd_info_t *cmd_info);
 static int volumes_cmd(const cmd_info_t *cmd_info);
 #endif
 static int vsplit_cmd(const cmd_info_t *cmd_info);
-static int do_split(const cmd_info_t *cmd_info, int vertical);
+static int do_split(const cmd_info_t *cmd_info, SPLIT orientation);
 static int do_map(const cmd_info_t *cmd_info, const char *map_type,
 		const char *map_cmd, int mode, int no_remap);
 static int vunmap_cmd(const cmd_info_t *cmd_info);
@@ -1358,22 +1358,21 @@ comm_only(void)
 }
 
 void
-comm_split(int vertical)
+comm_split(SPLIT orientation)
 {
 	/* TODO: move this to ui.c */
-	SPLIT orient = vertical ? VSPLIT : HSPLIT;
-	if(curr_stats.number_of_windows == 2 && curr_stats.split == orient)
+	if(curr_stats.number_of_windows == 2 && curr_stats.split == orientation)
 		return;
 
 	if(curr_stats.number_of_windows == 2 && curr_stats.splitter_pos > 0)
 	{
-		if(orient == VSPLIT)
+		if(orientation == VSPLIT)
 			curr_stats.splitter_pos *= (float)getmaxx(stdscr)/getmaxy(stdscr);
 		else
 			curr_stats.splitter_pos *= (float)getmaxy(stdscr)/getmaxx(stdscr);
 	}
 
-	curr_stats.split = orient;
+	curr_stats.split = orientation;
 	curr_stats.number_of_windows = 2;
 	redraw_window(0);
 }
@@ -2945,7 +2944,7 @@ source_cmd(const cmd_info_t *cmd_info)
 static int
 split_cmd(const cmd_info_t *cmd_info)
 {
-	return do_split(cmd_info, 0);
+	return do_split(cmd_info, HSPLIT);
 }
 
 static int
@@ -3187,11 +3186,11 @@ volumes_cmd(const cmd_info_t *cmd_info)
 static int
 vsplit_cmd(const cmd_info_t *cmd_info)
 {
-	return do_split(cmd_info, 1);
+	return do_split(cmd_info, VSPLIT);
 }
 
 static int
-do_split(const cmd_info_t *cmd_info, int vertical)
+do_split(const cmd_info_t *cmd_info, SPLIT orientation)
 {
 	if(cmd_info->emark && cmd_info->argc != 0)
 	{
@@ -3202,7 +3201,7 @@ do_split(const cmd_info_t *cmd_info, int vertical)
 	if(cmd_info->emark)
 	{
 		if(curr_stats.number_of_windows == 1)
-			comm_split(vertical);
+			comm_split(orientation);
 		else
 			comm_only();
 	}
@@ -3210,7 +3209,7 @@ do_split(const cmd_info_t *cmd_info, int vertical)
 	{
 		if(cmd_info->argc == 1)
 			cd(other_view, cmd_info->argv[0]);
-		comm_split(vertical);
+		comm_split(orientation);
 	}
 	return 0;
 }

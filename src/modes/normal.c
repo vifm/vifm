@@ -672,7 +672,7 @@ cmd_ctrl_wo(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(0);
+	comm_split(HSPLIT);
 }
 
 /* Go to top-left window. */
@@ -687,7 +687,7 @@ cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(1);
+	comm_split(VSPLIT);
 }
 
 static void
