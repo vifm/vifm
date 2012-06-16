@@ -1453,25 +1453,16 @@ reset_selected_files(FileView *view, int need_free)
 static
 #endif
 int
-regexp_filter_match(FileView *view, char *filename)
+regexp_filter_match(FileView *view, const char *filename)
 {
-	regex_t re;
-
-	if(view->filename_filter[0] == '\0')
+	if(!view->filter_is_valid)
 		return view->invert;
 
-	if(regcomp(&re, view->filename_filter, REG_EXTENDED) == 0)
+	if(regexec(&view->filter_regex, filename, 0, NULL, 0) == 0)
 	{
-		if(regexec(&re, filename, 0, NULL, 0) == 0)
-		{
-			regfree(&re);
-			return !view->invert;
-		}
-		regfree(&re);
-		return view->invert;
+		return !view->invert;
 	}
-	regfree(&re);
-	return 1;
+	return view->invert;
 }
 
 #ifndef _WIN32
@@ -2024,7 +2015,7 @@ rescue_from_empty_filelist(FileView * view)
 		(void)show_error_msgf("Filter error",
 				"The %s\"%s\" pattern did not match any files. It was reset.",
 				view->invert ? "" : "inverted ", view->filename_filter);
-		replace_string(&view->filename_filter, "");
+		set_filename_filter(view, "");
 		view->invert = 1;
 
 		load_dir_list(view, 1);
@@ -2147,6 +2138,7 @@ escape_name_for_filter(const char *string)
 void
 filter_selected_files(FileView *view)
 {
+	char *filter = strdup(view->filename_filter);
 	int x;
 
 	if(!view->selected_files)
@@ -2164,32 +2156,27 @@ filter_selected_files(FileView *view)
 			continue;
 
 		name = escape_name_for_filter(view->dir_entry[x].name);
+		chosp(name);
 
-		/* realloc memory allocated for view->filename_filter */
-		if(view->filename_filter == NULL || view->filename_filter[0] == '\0')
-		{
-			buf_size = 1 + strlen(name) + 1 + 1;
-		}
-		else
-		{
-			buf_size = strlen(view->filename_filter) + 1 + 1 + strlen(name) + 1 + 1;
-		}
-		view->filename_filter = realloc(view->filename_filter, buf_size);
+		/* realloc memory allocated for filter */
+		buf_size = strlen(filter) + 1 + 1 + strlen(name) + 1 + 1;
+		filter = realloc(filter, buf_size);
 
 		/* add OR if needed */
-		if(view->filename_filter[0] != '\0')
+		if(filter[0] != '\0')
 		{
-			strcat(view->filename_filter, "|");
+			strcat(filter, "|");
 		}
 
 		/* update filename filter */
-		strcat(view->filename_filter, "^");
-		strcat(view->filename_filter, name);
-		chosp(view->filename_filter);
-		strcat(view->filename_filter, "$");
+		strcat(filter, "^");
+		strcat(filter, name);
+		strcat(filter, "$");
 
 		free(name);
 	}
+	set_filename_filter(view, filter);
+	free(filter);
 
 	/* reload view */
 	view->invert = 1;
@@ -2215,12 +2202,9 @@ toggle_dot_files(FileView *view)
 void
 remove_filename_filter(FileView *view)
 {
-	view->prev_filter = realloc(view->prev_filter,
-			strlen(view->filename_filter) + 1);
-	snprintf(view->prev_filter, sizeof(view->prev_filter), "%s",
-			view->filename_filter);
-	view->filename_filter = (char *)realloc(view->filename_filter, 1);
-	strcpy(view->filename_filter, "");
+	replace_string(&view->prev_filter, view->filename_filter);
+	set_filename_filter(view, "");
+
 	view->prev_invert = view->invert;
 	view->invert = 1;
 	load_saving_pos(view, 0);
@@ -2229,12 +2213,34 @@ remove_filename_filter(FileView *view)
 void
 restore_filename_filter(FileView *view)
 {
-	view->filename_filter = realloc(view->filename_filter,
-			strlen(view->prev_filter) + 1);
-	snprintf(view->filename_filter, sizeof(view->filename_filter), "%s",
-			view->prev_filter);
+	set_filename_filter(view, view->prev_filter);
 	view->invert = view->prev_invert;
 	load_saving_pos(view, 0);
+}
+
+void
+set_filename_filter(FileView *view, const char *filter)
+{
+	if(view->filter_is_valid)
+	{
+		regfree(&view->filter_regex);
+	}
+
+	replace_string(&view->filename_filter, filter);
+	if(view->filename_filter[0] == '\0')
+	{
+		view->filter_is_valid = 0;
+		return;
+	}
+
+	if(regcomp(&view->filter_regex, view->filename_filter, REG_EXTENDED) == 0)
+	{
+		view->filter_is_valid = 1;
+	}
+	else
+	{
+		view->filter_is_valid = 0;
+	}
 }
 
 void

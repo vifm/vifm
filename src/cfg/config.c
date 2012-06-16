@@ -502,10 +502,9 @@ load_view_defaults(FileView *view)
 	int i;
 
 	strncpy(view->regexp, "\\..~$", sizeof(view->regexp) - 1);
-
-	replace_string(&view->filename_filter, "");
 	replace_string(&view->prev_filter, "");
-	view->invert = TRUE;
+	set_filename_filter(view, "");
+	view->invert = 1;
 
 #ifndef _WIN32
 	view->sort[0] = SORT_BY_NAME;

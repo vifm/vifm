@@ -251,21 +251,13 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'f') /* left pane filter */
 		{
-			lwin.filename_filter = (char *)realloc(lwin.filename_filter,
-					strlen(line + 1) + 1);
-			strcpy(lwin.filename_filter, line + 1);
-			lwin.prev_filter = (char *)realloc(lwin.prev_filter,
-					strlen(line + 1) + 1);
-			strcpy(lwin.prev_filter, line + 1);
+			replace_string(&lwin.prev_filter, line + 1);
+			set_filename_filter(&lwin, line + 1);
 		}
 		else if(line[0] == 'F') /* right pane filter */
 		{
-			rwin.filename_filter = (char *)realloc(rwin.filename_filter,
-					strlen(line + 1) + 1);
-			strcpy(rwin.filename_filter, line + 1);
-			rwin.prev_filter = (char *)realloc(rwin.prev_filter,
-					strlen(line + 1) + 1);
-			strcpy(rwin.prev_filter, line + 1);
+			replace_string(&rwin.prev_filter, line + 1);
+			set_filename_filter(&rwin, line + 1);
 		}
 		else if(line[0] == 'i') /* left pane filter inverted */
 		{
