@@ -28,6 +28,13 @@
 	Reset value of 'scrolloff' option to zero on attempt to assign a negative
 	value to it.
 
+	Faster Ctrl-W x, Ctrl-W o, Ctrl-W s, Ctrl-W v, Ctrl-W =, Ctrl-W <,
+	Ctrl-W >, Ctrl-W -, Ctrl-W +, Ctrl-W |, Ctrl-W _.
+
+	Faster redraw on terminal resizing.
+
+	Faster execution of `:set sort=foo sortorder sortnumbers` in vifmrc.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 

@@ -541,7 +541,7 @@ cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	redraw_window();
+	redraw_window(1);
 	curs_set(FALSE);
 }
 
@@ -672,7 +672,7 @@ cmd_ctrl_wo(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(0);
+	comm_split(HSPLIT);
 }
 
 /* Go to top-left window. */
@@ -687,7 +687,7 @@ cmd_ctrl_wt(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info)
 {
-	comm_split(1);
+	comm_split(VSPLIT);
 }
 
 static void
@@ -708,7 +708,7 @@ void
 normal_cmd_ctrl_wequal(key_info_t key_info, keys_info_t *keys_info)
 {
 	curr_stats.splitter_pos = -1;
-	redraw_window();
+	redraw_window(0);
 }
 
 void
@@ -770,7 +770,7 @@ move_splitter(key_info_t key_info, int fact)
 	curr_stats.splitter_pos += fact*key_info.count;
 	if(curr_stats.splitter_pos < 0)
 		curr_stats.splitter_pos = 0;
-	redraw_window();
+	redraw_window(0);
 }
 
 /* Switch views. */
@@ -801,17 +801,7 @@ cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 	lwin = rwin;
 	rwin = tmp_view;
 
-	load_dir_list(curr_view, 1);
-	move_to_list_pos(curr_view, curr_view->list_pos);
-
-	if(curr_stats.number_of_windows == 2)
-	{
-		if(curr_stats.view)
-			quick_view_file(curr_view);
-		else
-			load_dir_list(other_view, 1);
-		wrefresh(other_view->win);
-	}
+	redraw_lists();
 }
 
 static void

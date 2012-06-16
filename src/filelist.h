@@ -92,6 +92,9 @@ void clean_positions_in_history(FileView *view);
 
 FILE * use_info_prog(const char *viewer);
 void load_dir_list(FileView *view, int reload);
+/* Resorts view without reloading it.  msg parameter controls whether to show
+ * "Sorting..." statusbar message. */
+void resort_dir_list(int msg, FileView *view);
 void load_saving_pos(FileView *view, int reload);
 char * get_current_file_name(FileView *view);
 void check_if_filelists_have_changed(FileView *view);

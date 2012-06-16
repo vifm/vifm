@@ -20,6 +20,7 @@
 #ifndef __COMMANDS_H__
 #define __COMMANDS_H__
 
+#include "status.h"
 #include "utils/macros.h"
 #include "ui.h"
 
@@ -41,7 +42,7 @@ int exec_command(char *cmd, FileView *view, int type);
 char * find_last_command(char *cmd);
 void comm_quit(int write_info, int force);
 void comm_only(void);
-void comm_split(int vertical);
+void comm_split(SPLIT orientation);
 void save_command_history(const char *command);
 void save_search_history(const char *pattern);
 void save_prompt_history(const char *line);

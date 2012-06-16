@@ -1956,13 +1956,9 @@ load_dir_list(FileView *view, int reload)
 		add_parent_dir(view);
 	}
 
-	if(!reload && view->list_rows > 2048 && get_mode() != CMDLINE_MODE)
-	{
-		status_bar_message("Sorting directory...");
-	}
-	sort_view(view);
+	resort_dir_list(!reload, view);
 
-	if(get_mode() != CMDLINE_MODE)
+	if(!reload && get_mode() != CMDLINE_MODE)
 	{
 		clean_status_bar();
 	}
@@ -1995,6 +1991,21 @@ load_dir_list(FileView *view, int reload)
 		if(strnoscmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)) == 0 &&
 				stroscmp(other_view->curr_dir, view->curr_dir) == 0)
 			load_dir_list(other_view, 1);
+	}
+}
+
+void
+resort_dir_list(int msg, FileView *view)
+{
+	if(msg && view->list_rows > 2048 && get_mode() != CMDLINE_MODE)
+	{
+		status_bar_message("Sorting directory...");
+	}
+	sort_view(view);
+
+	if(msg && get_mode() != CMDLINE_MODE)
+	{
+		clean_status_bar();
 	}
 }
 

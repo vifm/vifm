@@ -100,7 +100,7 @@ leave_file_info_mode(void)
 	*mode = NORMAL_MODE;
 
 	if(was_redraw)
-		redraw_window();
+		redraw_window(1);
 	else
 		update_all_windows();
 }

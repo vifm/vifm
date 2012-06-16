@@ -156,7 +156,7 @@ modes_post(void)
 	}
 
 	if(curr_stats.need_redraw)
-		redraw_window();
+		redraw_window(1);
 
 	if(curr_stats.save_msg)
 		status_bar_message(NULL);
@@ -193,7 +193,7 @@ modes_redraw(void)
 
 	if(curr_stats.too_small_term)
 	{
-		redraw_window();
+		redraw_window(0);
 		if(--in_here > 0)
 			modes_redraw();
 		return;
@@ -221,7 +221,7 @@ modes_redraw(void)
 		return;
 	}
 
-	redraw_window();
+	redraw_window(0);
 
 	if(curr_stats.save_msg)
 		status_bar_message(NULL);
@@ -234,8 +234,6 @@ modes_redraw(void)
 		redraw_attr_dialog();
 	else if(mode == VIEW_MODE)
 		view_redraw();
-
-	curr_stats.load_stage = 3;
 
 	if(--in_here > 0)
 		modes_redraw();
