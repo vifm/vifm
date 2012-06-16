@@ -376,8 +376,6 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	load_saving_pos(view, 1);
 
-	move_to_list_pos(view, view->list_pos);
-
 	status_bar_messagef("%d %s deleted", y, y == 1 ? "file" : "files");
 	return 1;
 }

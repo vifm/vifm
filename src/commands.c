@@ -534,7 +534,6 @@ post(int id)
 
 	clean_selected_files(curr_view);
 	load_saving_pos(curr_view, 1);
-	move_to_list_pos(curr_view, curr_view->list_pos);
 }
 
 #ifndef TEST
