@@ -31,6 +31,8 @@
 	Faster Ctrl-W x, Ctrl-W o, Ctrl-W s, Ctrl-W v, Ctrl-W =, Ctrl-W <,
 	Ctrl-W >, Ctrl-W -, Ctrl-W +, Ctrl-W |, Ctrl-W _.
 
+	Faster redraw on terminal resizing.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
