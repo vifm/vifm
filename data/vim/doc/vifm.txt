@@ -146,6 +146,10 @@ Pane manipulation~
 
 Second character can be entered with or without Control key.
 
+Ctrl-W H - move the pane to the far left.      *vifm-CTRL-W_H*
+Ctrl-W J - move the pane to the very bottom.   *vifm-CTRL-W_J*
+Ctrl-W K - move the pane to the very top.      *vifm-CTRL-W_K*
+Ctrl-W L - move the pane to the far right.     *vifm-CTRL-W_L*
 Ctrl-W b - switch to bottom-right window       *vifm-CTRL-W_b*
 Ctrl-W h - switch to left pane.                *vifm-CTRL-W_h*
 Ctrl-W j - switch to pane below.               *vifm-CTRL-W_j*
