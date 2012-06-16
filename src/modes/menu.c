@@ -270,7 +270,7 @@ enter_menu_mode(menu_info *m, FileView *active_view)
 	view = active_view;
 	menu = m;
 	*mode = MENU_MODE;
-	curr_stats.need_redraw = 1;
+	curr_stats.need_update = UT_FULL;
 	was_redraw = 0;
 
 	init_cmds(0, &cmds_conf);
@@ -286,11 +286,11 @@ menu_pre(void)
 void
 menu_post(void)
 {
-	if(curr_stats.need_redraw)
+	if(curr_stats.need_update != UT_NONE)
 	{
 		touchwin(menu_win);
 		wrefresh(menu_win);
-		curr_stats.need_redraw = 0;
+		curr_stats.need_update = UT_NONE;
 	}
 }
 

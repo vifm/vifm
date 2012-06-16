@@ -48,9 +48,16 @@ typedef enum
 	SOURCING_FINISHING,
 }SourcingState;
 
+typedef enum
+{
+	UT_NONE, /* no update needed */
+	UT_REDRAW, /* screen redraw requested */
+	UT_FULL, /* file lists reload followed by screen redraw requested */
+}UpdateType;
+
 typedef struct
 {
-	int need_redraw;
+	UpdateType need_update;
 	int last_char;
 	int is_console;
 	int search;

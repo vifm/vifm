@@ -766,7 +766,7 @@ shellout(const char *command, int pause, int allow_screen)
 #endif
 	/* always redraw to handle resizing of terminal */
 	if(!curr_stats.auto_redraws)
-		curr_stats.need_redraw = 1;
+		curr_stats.need_update = UT_FULL;
 
 	curs_set(FALSE);
 

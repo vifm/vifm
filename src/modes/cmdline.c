@@ -557,7 +557,7 @@ leave_cmdline_mode(void)
 
 	if(getmaxy(status_bar) > 1)
 	{
-		curr_stats.need_redraw = 2;
+		curr_stats.need_update = UT_FULL;
 		wresize(status_bar, 1, getmaxx(stdscr) - 19);
 		mvwin(status_bar, getmaxy(stdscr) - 1, 0);
 		if(prev_mode == MENU_MODE)
@@ -893,7 +893,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 		else if(sub_mode == MENU_SEARCH_FORWARD_SUBMODE ||
 				sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
 		{
-			curr_stats.need_redraw = 1;
+			curr_stats.need_update = UT_FULL;
 			search_menu_list(p, sub_mode_ptr);
 		}
 		else if(sub_mode == VSEARCH_FORWARD_SUBMODE)

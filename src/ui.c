@@ -670,7 +670,7 @@ clean_status_bar(void)
 	if(curr_stats.load_stage <= 2)
 	{
 		multiline_status_bar = 0;
-		curr_stats.need_redraw = 1;
+		curr_stats.need_update = UT_FULL;
 		return;
 	}
 
@@ -1170,7 +1170,7 @@ redraw_window(int reload)
 
 	if(!curr_view->explore_mode)
 		move_to_list_pos(curr_view, curr_view->list_pos);
-	curr_stats.need_redraw = 0;
+	curr_stats.need_update = UT_NONE;
 
 	if(curr_stats.errmsg_shown)
 	{

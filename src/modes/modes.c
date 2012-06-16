@@ -158,8 +158,8 @@ modes_post(void)
 		return;
 	}
 
-	if(curr_stats.need_redraw)
-		redraw_window(1);
+	if(curr_stats.need_update != UT_NONE)
+		redraw_window(curr_stats.need_update == UT_FULL);
 
 	if(curr_stats.save_msg)
 		status_bar_message(NULL);

@@ -258,7 +258,7 @@ show_error_msg(const char *title, const char *message)
 	curr_stats.errmsg_shown = 0;
 
 	modes_update();
-	if(curr_stats.need_redraw)
+	if(curr_stats.need_update != UT_NONE)
 		modes_redraw();
 
 	return key == 3;
@@ -824,7 +824,7 @@ query_user_menu(char *title, char *message)
 
 	update_all_windows();
 
-	if(curr_stats.need_redraw)
+	if(curr_stats.need_update != UT_NONE)
 		redraw_window(1);
 
 	if(key == 'y')

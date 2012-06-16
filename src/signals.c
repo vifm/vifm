@@ -72,7 +72,7 @@ received_sigwinch(void)
 	}
 	else
 	{
-		curr_stats.need_redraw = 1;
+		curr_stats.need_update = UT_FULL;
 	}
 }
 
