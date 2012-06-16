@@ -1354,7 +1354,7 @@ comm_only(void)
 		return;
 
 	curr_stats.number_of_windows = 1;
-	redraw_window();
+	redraw_window(1);
 }
 
 void
@@ -1375,7 +1375,7 @@ comm_split(int vertical)
 
 	curr_stats.split = orient;
 	curr_stats.number_of_windows = 2;
-	redraw_window();
+	redraw_window(1);
 }
 
 static int
@@ -2178,7 +2178,7 @@ help_cmd(const cmd_info_t *cmd_info)
 		endwin();
 		system("cls");
 		system(buf);
-		redraw_window();
+		redraw_window(1);
 #endif
 	}
 	return 0;
@@ -3250,7 +3250,7 @@ windo_cmd(const cmd_info_t *cmd_info)
 	result += winrun(&lwin, cmd_info->args) != 0;
 	result += winrun(&rwin, cmd_info->args) != 0;
 
-	redraw_window();
+	redraw_window(1);
 
 	return result;
 }
@@ -3292,7 +3292,7 @@ winrun_cmd(const cmd_info_t *cmd_info)
 			break;
 	}
 
-	redraw_window();
+	redraw_window(1);
 
 	return result;
 }

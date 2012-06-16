@@ -320,7 +320,7 @@ leave_menu_mode(void)
 
 	*mode = NORMAL_MODE;
 	if(was_redraw)
-		redraw_window();
+		redraw_window(1);
 	else
 		update_all_windows();
 }
@@ -423,7 +423,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	if(was_redraw)
-		redraw_window();
+		redraw_window(1);
 	else
 		update_all_windows();
 }

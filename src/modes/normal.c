@@ -541,7 +541,7 @@ cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	redraw_window();
+	redraw_window(1);
 	curs_set(FALSE);
 }
 
@@ -708,7 +708,7 @@ void
 normal_cmd_ctrl_wequal(key_info_t key_info, keys_info_t *keys_info)
 {
 	curr_stats.splitter_pos = -1;
-	redraw_window();
+	redraw_window(1);
 }
 
 void
@@ -770,7 +770,7 @@ move_splitter(key_info_t key_info, int fact)
 	curr_stats.splitter_pos += fact*key_info.count;
 	if(curr_stats.splitter_pos < 0)
 		curr_stats.splitter_pos = 0;
-	redraw_window();
+	redraw_window(1);
 }
 
 /* Switch views. */

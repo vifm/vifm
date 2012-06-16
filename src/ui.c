@@ -78,7 +78,9 @@ static WINDOW *rtop_line1;
 static WINDOW *rtop_line2;
 
 static void update_attributes(void);
-static void reload_view(FileView *view);
+static void update_views(int reload);
+static void reload_lists(void);
+static void reload_list(FileView *view);
 
 static void _gnuc_noreturn
 finish(const char *message)
@@ -675,7 +677,7 @@ clean_status_bar(void)
 	if(multiline_status_bar)
 	{
 		multiline_status_bar = 0;
-		redraw_window();
+		redraw_window(1);
 	}
 	multiline_status_bar = 0;
 }
@@ -1133,7 +1135,7 @@ resize_all(void)
 }
 
 void
-redraw_window(void)
+redraw_window(int reload)
 {
 	if(curr_stats.load_stage < 2)
 		return;
@@ -1147,16 +1149,7 @@ redraw_window(void)
 	if(curr_stats.too_small_term)
 		return;
 
-	reload_view(curr_view);
-
-	if(curr_stats.number_of_windows == 2)
-	{
-		update_view_title(other_view);
-		if(curr_stats.view)
-			quick_view_file(curr_view);
-		else if(!other_view->explore_mode)
-			reload_view(other_view);
-	}
+	update_views(reload);
 
 	update_stat_window(curr_view);
 
@@ -1193,9 +1186,35 @@ redraw_window(void)
 		view_redraw();
 }
 
+/* Updates (redraws or reloads) views. */
+static void
+update_views(int reload)
+{
+	if(reload)
+		reload_lists();
+	else
+		redraw_lists();
+}
+
+/* Reloads file lists for both views. */
+static void
+reload_lists(void)
+{
+	reload_list(curr_view);
+
+	if(curr_stats.number_of_windows == 2)
+	{
+		update_view_title(other_view);
+		if(curr_stats.view)
+			quick_view_file(curr_view);
+		else if(!other_view->explore_mode)
+			reload_list(other_view);
+	}
+}
+
 /* reloads view on window_reload() call */
 static void
-reload_view(FileView *view)
+reload_list(FileView *view)
 {
 	if(curr_stats.load_stage >= 3)
 		load_saving_pos(view, 1);

@@ -156,7 +156,7 @@ modes_post(void)
 	}
 
 	if(curr_stats.need_redraw)
-		redraw_window();
+		redraw_window(1);
 
 	if(curr_stats.save_msg)
 		status_bar_message(NULL);
@@ -193,7 +193,7 @@ modes_redraw(void)
 
 	if(curr_stats.too_small_term)
 	{
-		redraw_window();
+		redraw_window(1);
 		if(--in_here > 0)
 			modes_redraw();
 		return;
@@ -221,7 +221,7 @@ modes_redraw(void)
 		return;
 	}
 
-	redraw_window();
+	redraw_window(1);
 
 	if(curr_stats.save_msg)
 		status_bar_message(NULL);

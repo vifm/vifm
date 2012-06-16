@@ -467,7 +467,7 @@ redraw_cmdline(void)
 	}
 	else
 	{
-		redraw_window();
+		redraw_window(1);
 		if(prev_mode == SORT_MODE)
 			redraw_sort_dialog();
 		else if(prev_mode == ATTR_MODE)
