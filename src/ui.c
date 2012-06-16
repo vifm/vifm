@@ -1149,11 +1149,14 @@ redraw_window(void)
 
 	reload_view(curr_view);
 
-	update_view_title(other_view);
-	if(curr_stats.view)
-		quick_view_file(curr_view);
-	else if(!other_view->explore_mode)
-		reload_view(other_view);
+	if(curr_stats.number_of_windows == 2)
+	{
+		update_view_title(other_view);
+		if(curr_stats.view)
+			quick_view_file(curr_view);
+		else if(!other_view->explore_mode)
+			reload_view(other_view);
+	}
 
 	update_stat_window(curr_view);
 
