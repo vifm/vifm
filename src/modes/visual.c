@@ -213,8 +213,7 @@ enter_visual_mode(int restore_selection)
 		select_first_one();
 	}
 
-	draw_dir_list(view, view->top_line);
-	move_to_list_pos(view, view->list_pos);
+	redraw_view(view);
 }
 
 void
@@ -236,8 +235,7 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 
 		erase_selection(view);
 
-		draw_dir_list(view, view->top_line);
-		move_to_list_pos(view, view->list_pos);
+		redraw_view(view);
 	}
 
 	curr_stats.save_msg = save_msg;
@@ -703,8 +701,7 @@ cmd_l(key_info_t key_info, keys_info_t *keys_info)
 	leave_visual_mode(curr_stats.save_msg, 1, 0);
 	handle_file(view, 0, 0);
 	clean_selected_files(view);
-	draw_dir_list(view, view->top_line);
-	move_to_list_pos(view, view->list_pos);
+	redraw_view(view);
 }
 
 static void
@@ -918,8 +915,7 @@ is_parent_dir(int pos)
 static void
 update(void)
 {
-	draw_dir_list(view, view->top_line);
-	move_to_list_pos(view, view->list_pos);
+	redraw_view(view);
 	update_pos_window(view);
 }
 

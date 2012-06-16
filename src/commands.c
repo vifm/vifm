@@ -869,8 +869,7 @@ remove_selection(FileView *view)
 		return;
 
 	clean_selected_files(view);
-	draw_dir_list(view, view->top_line);
-	move_to_list_pos(view, view->list_pos);
+	redraw_view(view);
 }
 
 /* Returns negative value in case of error */
