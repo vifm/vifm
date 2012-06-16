@@ -327,6 +327,8 @@ view_post(void)
 {
 	char buf[13];
 
+	update_screen(curr_stats.need_update);
+
 	werase(pos_win);
 	snprintf(buf, sizeof(buf), "%d-%d ", vi->line + 1, vi->nlines);
 	mvwaddstr(pos_win, 0, 13 - strlen(buf), buf);

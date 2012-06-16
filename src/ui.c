@@ -1188,6 +1188,8 @@ update_screen(UpdateType update_kind)
 	
 	if(get_mode() == VIEW_MODE || lwin.explore_mode || rwin.explore_mode)
 		view_redraw();
+
+	curr_stats.need_update = UT_NONE;
 }
 
 /* Updates (redraws or reloads) views. */

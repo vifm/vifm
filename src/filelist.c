@@ -2262,7 +2262,10 @@ redraw_view(FileView *view)
 void
 redraw_current_view(void)
 {
-	redraw_view(curr_view);
+	if(!curr_view->explore_mode)
+	{
+		redraw_view(curr_view);
+	}
 }
 
 static int
