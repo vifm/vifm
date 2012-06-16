@@ -1405,10 +1405,14 @@ redraw_lists(void)
 {
 	draw_dir_list(curr_view, curr_view->top_line);
 	move_to_list_pos(curr_view, curr_view->list_pos);
-	if(curr_stats.view)
-		quick_view_file(curr_view);
-	else
-		draw_dir_list(other_view, other_view->top_line);
+	if(curr_stats.number_of_windows == 2)
+	{
+		if(curr_stats.view)
+			quick_view_file(curr_view);
+		else
+			draw_dir_list(other_view, other_view->top_line);
+		wrefresh(other_view->win);
+	}
 }
 
 int
