@@ -45,6 +45,7 @@
 #endif
 
 #include "color_scheme.h"
+#include "status.h"
 
 #define MIN_TERM_HEIGHT 10
 #define MIN_TERM_WIDTH 30
@@ -181,7 +182,7 @@ void update_stat_window(FileView *view);
 float get_splitter_pos(int max);
 /* Redraws whole screen with possible reloading of file lists (depends on reload
  * argument). */
-void update_screen(int reload);
+void update_screen(UpdateType update_kind);
 void update_pos_window(FileView *view);
 void status_bar_messagef(const char *format, ...);
 void status_bar_message(const char *message);

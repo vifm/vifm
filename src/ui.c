@@ -677,7 +677,7 @@ clean_status_bar(void)
 	if(multiline_status_bar)
 	{
 		multiline_status_bar = 0;
-		update_screen(1);
+		update_screen(UT_FULL);
 	}
 	multiline_status_bar = 0;
 }
@@ -1135,9 +1135,12 @@ resize_all(void)
 }
 
 void
-update_screen(int reload)
+update_screen(UpdateType update_kind)
 {
 	if(curr_stats.load_stage < 2)
+		return;
+
+	if(update_kind == UT_NONE)
 		return;
 
 	resize_all();
@@ -1149,7 +1152,7 @@ update_screen(int reload)
 	if(curr_stats.too_small_term)
 		return;
 
-	update_views(reload);
+	update_views(update_kind == UT_FULL);
 
 	update_stat_window(curr_view);
 
