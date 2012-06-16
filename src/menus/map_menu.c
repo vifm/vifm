@@ -66,6 +66,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
 
 		if(list[x][0] != L'\0' && wcsncmp(start, list[x], start_len) != 0)
 		{
+			free(list[x]);
 			x++;
 			continue;
 		}
