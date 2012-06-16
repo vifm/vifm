@@ -33,6 +33,8 @@
 
 	Faster redraw on terminal resizing.
 
+	Faster execution of `:set sort=foo sortorder sortnumbers` in vifmrc.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 

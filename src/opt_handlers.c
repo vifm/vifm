@@ -92,6 +92,7 @@ static void smartcase_handler(OPT_OP op, optval_t val);
 static void sortnumbers_handler(OPT_OP op, optval_t val);
 static void sort_handler(OPT_OP op, optval_t val);
 static void sortorder_handler(OPT_OP op, optval_t val);
+static void resort_view(FileView * view);
 static void statusline_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
 static void timefmt_handler(OPT_OP op, optval_t val);
@@ -701,9 +702,9 @@ static void
 sortnumbers_handler(OPT_OP op, optval_t val)
 {
 	cfg.sort_numbers = val.bool_val;
-	load_saving_pos(curr_view, 1);
-	load_dir_list(other_view, 1);
-	wrefresh(other_view->win);
+	resort_dir_list(1, curr_view);
+	resort_dir_list(1, other_view);
+	redraw_lists();
 }
 
 static void
@@ -761,8 +762,8 @@ sort_handler(OPT_OP op, optval_t val)
 #endif
 	while(i < NUM_SORT_OPTIONS)
 		curr_view->sort[i++] = NUM_SORT_OPTIONS + 1;
-	load_saving_pos(curr_view, 1);
 
+	resort_view(curr_view);
 	load_sort(curr_view);
 }
 
@@ -772,9 +773,19 @@ sortorder_handler(OPT_OP op, optval_t val)
 	if((val.enum_item ? -1 : +1)*curr_view->sort[0] < 0)
 	{
 		curr_view->sort[0] = -curr_view->sort[0];
-		load_saving_pos(curr_view, 1);
+
+		resort_view(curr_view);
 		load_sort(curr_view);
 	}
+}
+
+/* Resorts and redraws given view. */
+static void
+resort_view(FileView * view)
+{
+	resort_dir_list(1, view);
+	draw_dir_list(view, view->top_line);
+	wrefresh(view->win);
 }
 
 static void
