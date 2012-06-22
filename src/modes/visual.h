@@ -25,7 +25,8 @@
 void init_visual_mode(int *key_mode);
 void enter_visual_mode(int restore_selection);
 void leave_visual_mode(int save_msg, int goto_top, int clean_selection);
-/* Should be used to ask visual mode to redraw file list correctly. */
+/* Should be used to ask visual mode to redraw file list correctly.
+ * Intented to be used after setting list position from side. */
 void update_visual_mode(void);
 int find_vpattern(FileView *view, const char *pattern, int backward);
 

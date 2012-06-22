@@ -944,8 +944,6 @@ find_vpattern(FileView *view, const char *pattern, int backward)
 	int result;
 	int hls = cfg.hl_search;
 
-	erase_selection(view);
-
 	cfg.hl_search = 0;
 	result = find_pattern(view, pattern, backward, 0);
 	cfg.hl_search = hls;

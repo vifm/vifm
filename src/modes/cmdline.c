@@ -325,6 +325,10 @@ input_line_changed(void)
 	{
 		curr_view->top_line = input_stat.old_top;
 		curr_view->list_pos = input_stat.old_pos;
+		if(prev_mode == VISUAL_MODE)
+		{
+			update_visual_mode();
+		}
 	}
 	else
 	{
@@ -372,16 +376,12 @@ input_line_changed(void)
 		free(p);
 	}
 
-	if(prev_mode == VISUAL_MODE)
-	{
-		update_visual_mode();
-	}
-	else if(prev_mode != MENU_MODE)
+	if(prev_mode != MENU_MODE && prev_mode != VISUAL_MODE)
 	{
 		draw_dir_list(curr_view, curr_view->top_line);
 		move_to_list_pos(curr_view, curr_view->list_pos);
 	}
-	else
+	else if(prev_mode != VISUAL_MODE)
 	{
 		menu_redraw();
 	}
