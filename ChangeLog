@@ -40,6 +40,9 @@
 
 	Draw quickview on startup only once.
 
+	Faster redrawing of statusbar with "-- VISUAL --" message after "Press
+	Enter message".
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
