@@ -79,10 +79,6 @@ static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info);
-static void cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wb(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wh(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wj(key_info_t key_info, keys_info_t *keys_info);
@@ -208,10 +204,10 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x12", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_r}}},
 	{L"\x15", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
 	{L"\x17\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wb}}},
-	{L"\x17H", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wH}}},
-	{L"\x17J", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wJ}}},
-	{L"\x17K", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wK}}},
-	{L"\x17L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wL}}},
+	{L"\x17H", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wH}}},
+	{L"\x17J", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wJ}}},
+	{L"\x17K", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wK}}},
+	{L"\x17L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = normal_cmd_ctrl_wL}}},
 	{L"\x17"L"b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wb}}},
 	{L"\x17\x08", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wh}}},
 	{L"\x17h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wh}}},
@@ -629,50 +625,6 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 	redraw_current_view();
 }
 
-static void
-cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
-{
-	comm_split(VSPLIT);
-	if(curr_view != &lwin)
-	{
-		cmd_ctrl_wx(key_info, NULL);
-		go_to_other_window();
-	}
-}
-
-static void
-cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
-{
-	comm_split(HSPLIT);
-	if(curr_view != &rwin)
-	{
-		cmd_ctrl_wx(key_info, NULL);
-		go_to_other_window();
-	}
-}
-
-static void
-cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
-{
-	comm_split(HSPLIT);
-	if(curr_view != &lwin)
-	{
-		cmd_ctrl_wx(key_info, NULL);
-		go_to_other_window();
-	}
-}
-
-static void
-cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
-{
-	comm_split(VSPLIT);
-	if(curr_view != &rwin)
-	{
-		cmd_ctrl_wx(key_info, NULL);
-		go_to_other_window();
-	}
-}
-
 /* Go to bottom-right window. */
 static void
 cmd_ctrl_wb(key_info_t key_info, keys_info_t *keys_info)
@@ -750,6 +702,50 @@ go_to_other_window(void)
 	change_window();
 	if(curr_view->explore_mode)
 		activate_view_mode();
+}
+
+void
+normal_cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
+{
+	comm_split(VSPLIT);
+	if(curr_view != &lwin)
+	{
+		cmd_ctrl_wx(key_info, NULL);
+		go_to_other_window();
+	}
+}
+
+void
+normal_cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
+{
+	comm_split(HSPLIT);
+	if(curr_view != &rwin)
+	{
+		cmd_ctrl_wx(key_info, NULL);
+		go_to_other_window();
+	}
+}
+
+void
+normal_cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
+{
+	comm_split(HSPLIT);
+	if(curr_view != &lwin)
+	{
+		cmd_ctrl_wx(key_info, NULL);
+		go_to_other_window();
+	}
+}
+
+void
+normal_cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
+{
+	comm_split(VSPLIT);
+	if(curr_view != &rwin)
+	{
+		cmd_ctrl_wx(key_info, NULL);
+		go_to_other_window();
+	}
 }
 
 void
