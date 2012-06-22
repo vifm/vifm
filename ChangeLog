@@ -40,6 +40,11 @@
 
 	Draw quickview on startup only once.
 
+	Faster redrawing of statusbar with "-- VISUAL --" message after "Press
+	Enter message".
+
+	Show correct number of selected files in visual mode after n and N keys.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
@@ -78,6 +83,13 @@
 
 	Fixed restoring of cursor position in the other view if quick view was
 	opened too.
+
+	Fixed selection of files on search in visual mode with 'incsearch' option
+	turned off or n and N keys regardless of 'incsearch' state.
+
+	Fixed search repeat in visual mode.
+
+	Fixed search update with 'incsearch' on Ctrl-<x> keys in search prompt.
 
 0.7.2 to 0.7.3
 

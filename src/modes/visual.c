@@ -232,6 +232,7 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 		int i;
 		for(i = 0; i < view->list_rows; i++)
 			view->dir_entry[i].search_match = 0;
+		view->matches = 0;
 
 		erase_selection(view);
 
@@ -943,8 +944,6 @@ find_vpattern(FileView *view, const char *pattern, int backward)
 	int i;
 	int result;
 	int hls = cfg.hl_search;
-
-	erase_selection(view);
 
 	cfg.hl_search = 0;
 	result = find_pattern(view, pattern, backward, 0);

@@ -198,9 +198,9 @@ main_loop(void)
 
 			if(wait_enter)
 			{
-				clean_status_bar();
-				curr_stats.save_msg = 0;
 				wait_enter = 0;
+				curr_stats.save_msg = 0;
+				clean_status_bar();
 				if(c == L'\x0d')
 					continue;
 			}

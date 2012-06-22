@@ -325,6 +325,10 @@ input_line_changed(void)
 	{
 		curr_view->top_line = input_stat.old_top;
 		curr_view->list_pos = input_stat.old_pos;
+		if(prev_mode == VISUAL_MODE)
+		{
+			update_visual_mode();
+		}
 	}
 	else
 	{
@@ -372,16 +376,12 @@ input_line_changed(void)
 		free(p);
 	}
 
-	if(prev_mode == VISUAL_MODE)
-	{
-		update_visual_mode();
-	}
-	else if(prev_mode != MENU_MODE)
+	if(prev_mode != MENU_MODE && prev_mode != VISUAL_MODE)
 	{
 		draw_dir_list(curr_view, curr_view->top_line);
 		move_to_list_pos(curr_view, curr_view->list_pos);
 	}
-	else
+	else if(prev_mode != VISUAL_MODE)
 	{
 		menu_redraw();
 	}
@@ -1091,7 +1091,7 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
 
-	update_cursor();
+	update_cmdline_text();
 }
 
 static void
@@ -1135,10 +1135,7 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 		input_stat.len -= old - input_stat.index;
 	}
 
-	werase(status_bar);
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	waddwstr(status_bar, input_stat.line);
-	update_cursor();
+	update_cmdline_text();
 }
 
 static void
@@ -1200,10 +1197,7 @@ cmd_meta_d(key_info_t key_info, keys_info_t *keys_info)
 	input_stat.index = old_i;
 	input_stat.curs_pos = old_c;
 
-	werase(status_bar);
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	waddwstr(status_bar, input_stat.line);
-	update_cursor();
+	update_cmdline_text();
 }
 
 static void
@@ -1286,11 +1280,7 @@ cmd_delete(key_info_t key_info, keys_info_t *keys_info)
 	wcsdel(input_stat.line, input_stat.index+1, 1);
 	input_stat.len--;
 
-	werase(status_bar);
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
-
-	update_cursor();
+	update_cmdline_text();
 }
 
 static void
