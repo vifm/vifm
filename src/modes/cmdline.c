@@ -1091,7 +1091,7 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
 	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
 
-	update_cursor();
+	update_cmdline_text();
 }
 
 static void
@@ -1135,10 +1135,7 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 		input_stat.len -= old - input_stat.index;
 	}
 
-	werase(status_bar);
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	waddwstr(status_bar, input_stat.line);
-	update_cursor();
+	update_cmdline_text();
 }
 
 static void
@@ -1200,10 +1197,7 @@ cmd_meta_d(key_info_t key_info, keys_info_t *keys_info)
 	input_stat.index = old_i;
 	input_stat.curs_pos = old_c;
 
-	werase(status_bar);
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	waddwstr(status_bar, input_stat.line);
-	update_cursor();
+	update_cmdline_text();
 }
 
 static void
@@ -1286,11 +1280,7 @@ cmd_delete(key_info_t key_info, keys_info_t *keys_info)
 	wcsdel(input_stat.line, input_stat.index+1, 1);
 	input_stat.len--;
 
-	werase(status_bar);
-	mvwaddwstr(status_bar, 0, 0, input_stat.prompt);
-	mvwaddwstr(status_bar, 0, input_stat.prompt_wid, input_stat.line);
-
-	update_cursor();
+	update_cmdline_text();
 }
 
 static void

@@ -84,6 +84,8 @@
 
 	Fixed search repeat in visual mode.
 
+	Fixed search update with 'incsearch' on Ctrl-<x> keys in search prompt.
+
 0.7.2 to 0.7.3
 
 	Removed possibility of moving items in :file menu.
