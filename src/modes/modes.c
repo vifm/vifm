@@ -81,6 +81,9 @@ static mode_init_func mode_init_funcs[] = {
 };
 ARRAY_GUARD(mode_init_funcs, MODES_COUNT);
 
+static void modes_statusbar_update(void);
+static void update_vmode_input(void);
+
 void
 init_modes(void)
 {
@@ -170,8 +173,19 @@ modes_post(void)
 		}
 	}
 
+	modes_statusbar_update();
+}
+
+void
+modes_statusbar_update(void)
+{
 	if(curr_stats.save_msg)
-		;
+	{
+		if(mode == VISUAL_MODE)
+		{
+			update_vmode_input();
+		}
+	}
 	else if(curr_view->selected_files || mode == VISUAL_MODE)
 		print_selected_msg();
 	else
@@ -302,13 +316,7 @@ print_selected_msg(void)
 	if(mode == VISUAL_MODE)
 	{
 		status_bar_message("-- VISUAL -- ");
-		if(is_input_buf_empty())
-		{
-			werase(input_win);
-			wmove(input_win, 0, 0);
-			wprintw(input_win, "%d", curr_view->selected_files);
-			wrefresh(input_win);
-		}
+		update_vmode_input();
 	}
 	else
 	{
@@ -316,6 +324,18 @@ print_selected_msg(void)
 				curr_view->selected_files == 1 ? "file" : "files");
 	}
 	curr_stats.save_msg = 2;
+}
+
+static void
+update_vmode_input(void)
+{
+	if(is_input_buf_empty())
+	{
+		werase(input_win);
+		wmove(input_win, 0, 0);
+		wprintw(input_win, "%d", curr_view->selected_files);
+		wrefresh(input_win);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

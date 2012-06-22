@@ -1369,7 +1369,7 @@ update_all_windows(void)
 }
 
 void
-update_input_bar(wchar_t *str)
+update_input_bar(const wchar_t *str)
 {
 	if(!curr_stats.use_input_bar)
 		return;

@@ -191,7 +191,7 @@ int is_status_bar_multiline(void);
 void clean_status_bar(void);
 void change_window(void);
 void update_all_windows(void);
-void update_input_bar(wchar_t *str);
+void update_input_bar(const wchar_t *str);
 void clear_num_window(void);
 void show_progress(const char *msg, int period);
 void redraw_lists(void);

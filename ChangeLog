@@ -43,6 +43,8 @@
 	Faster redrawing of statusbar with "-- VISUAL --" message after "Press
 	Enter message".
 
+	Show correct number of selected files in visual mode after n and N keys.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 
