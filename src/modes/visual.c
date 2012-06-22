@@ -232,6 +232,7 @@ leave_visual_mode(int save_msg, int goto_top, int clean_selection)
 		int i;
 		for(i = 0; i < view->list_rows; i++)
 			view->dir_entry[i].search_match = 0;
+		view->matches = 0;
 
 		erase_selection(view);
 

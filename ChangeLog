@@ -82,6 +82,8 @@
 	Fixed selection of files on search in visual mode with 'incsearch' option
 	turned off or n and N keys regardless of 'incsearch' state.
 
+	Fixed search repeat in visual mode.
+
 0.7.2 to 0.7.3
 
 	Removed possibility of moving items in :file menu.
