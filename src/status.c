@@ -63,7 +63,7 @@ load_def_values(status_t *stats)
 {
 	pending_redraw = 0;
 
-	stats->need_redraw = 0;
+	stats->need_update = UT_NONE;
 	stats->last_char = 0;
 	stats->is_console = 0;
 	stats->search = 0;

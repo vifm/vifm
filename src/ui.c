@@ -670,14 +670,14 @@ clean_status_bar(void)
 	if(curr_stats.load_stage <= 2)
 	{
 		multiline_status_bar = 0;
-		curr_stats.need_redraw = 1;
+		curr_stats.need_update = UT_FULL;
 		return;
 	}
 
 	if(multiline_status_bar)
 	{
 		multiline_status_bar = 0;
-		redraw_window(1);
+		update_screen(UT_FULL);
 	}
 	multiline_status_bar = 0;
 }
@@ -1135,9 +1135,12 @@ resize_all(void)
 }
 
 void
-redraw_window(int reload)
+update_screen(UpdateType update_kind)
 {
 	if(curr_stats.load_stage < 2)
+		return;
+
+	if(update_kind == UT_NONE)
 		return;
 
 	resize_all();
@@ -1149,7 +1152,9 @@ redraw_window(int reload)
 	if(curr_stats.too_small_term)
 		return;
 
-	update_views(reload);
+	curr_stats.need_update = UT_NONE;
+
+	update_views(update_kind == UT_FULL);
 
 	update_stat_window(curr_view);
 
@@ -1170,7 +1175,6 @@ redraw_window(int reload)
 
 	if(!curr_view->explore_mode)
 		move_to_list_pos(curr_view, curr_view->list_pos);
-	curr_stats.need_redraw = 0;
 
 	if(curr_stats.errmsg_shown)
 	{
@@ -1184,6 +1188,8 @@ redraw_window(int reload)
 	
 	if(get_mode() == VIEW_MODE || lwin.explore_mode || rwin.explore_mode)
 		view_redraw();
+
+	curr_stats.need_update = UT_NONE;
 }
 
 /* Updates (redraws or reloads) views. */
@@ -1269,8 +1275,7 @@ change_window(void)
 
 	if(!curr_view->explore_mode)
 	{
-		draw_dir_list(curr_view, curr_view->top_line);
-		move_to_list_pos(curr_view, curr_view->list_pos);
+		redraw_current_view();
 	}
 	werase(status_bar);
 	wnoutrefresh(status_bar);
@@ -1426,8 +1431,7 @@ show_progress(const char *msg, int period)
 void
 redraw_lists(void)
 {
-	draw_dir_list(curr_view, curr_view->top_line);
-	move_to_list_pos(curr_view, curr_view->list_pos);
+	redraw_current_view();
 	if(curr_stats.number_of_windows == 2)
 	{
 		if(curr_stats.view)

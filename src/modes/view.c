@@ -73,6 +73,10 @@ static void draw(void);
 static int gets_line(const char *line, int offset, int max_len, char *buf);
 static void puts_line(FileView *view, char *line);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ws(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_meta_space(key_info_t key_info, keys_info_t *keys_info);
@@ -115,6 +119,10 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x12", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
 	{L"\x15", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_u}}},
 	{L"\x16", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_f}}},
+	{L"\x17H", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wH}}},
+	{L"\x17J", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wJ}}},
+	{L"\x17K", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wK}}},
+	{L"\x17L", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wL}}},
 	{L"\x17\x13", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ws}}},
 	{L"\x17s", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_ws}}},
 	{L"\x17\x16", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_wv}}},
@@ -327,6 +335,8 @@ view_post(void)
 {
 	char buf[13];
 
+	update_screen(curr_stats.need_update);
+
 	werase(pos_win);
 	snprintf(buf, sizeof(buf), "%d-%d ", vi->line + 1, vi->nlines);
 	mvwaddstr(pos_win, 0, 13 - strlen(buf), buf);
@@ -367,8 +377,7 @@ leave_view_mode(void)
 	if(curr_view->explore_mode)
 	{
 		curr_view->explore_mode = 0;
-		draw_dir_list(curr_view, curr_view->top_line);
-		move_to_list_pos(curr_view, curr_view->list_pos);
+		redraw_current_view();
 	}
 	else
 	{
@@ -561,6 +570,60 @@ static void
 cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {
 	view_redraw();
+}
+
+static void
+switch_vi(void)
+{
+	view_info_t tmp = *vi;
+	int i = (curr_view == &lwin) ? 2 : 1;
+
+	*vi = view_info[i];
+	view_info[i] = tmp;
+	vi = &view_info[i];
+
+	view_info[1].view = &lwin;
+	view_info[2].view = &rwin;
+}
+
+static void
+cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(curr_view != &lwin)
+	{
+		switch_vi();
+	}
+	normal_cmd_ctrl_wH(key_info, keys_info);
+}
+
+static void
+cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(curr_view != &rwin)
+	{
+		switch_vi();
+	}
+	normal_cmd_ctrl_wJ(key_info, keys_info);
+}
+
+static void
+cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(curr_view != &lwin)
+	{
+		switch_vi();
+	}
+	normal_cmd_ctrl_wK(key_info, keys_info);
+}
+
+static void
+cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(curr_view != &rwin)
+	{
+		switch_vi();
+	}
+	normal_cmd_ctrl_wL(key_info, keys_info);
 }
 
 static void

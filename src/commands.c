@@ -534,7 +534,6 @@ post(int id)
 
 	clean_selected_files(curr_view);
 	load_saving_pos(curr_view, 1);
-	move_to_list_pos(curr_view, curr_view->list_pos);
 }
 
 #ifndef TEST
@@ -870,8 +869,7 @@ remove_selection(FileView *view)
 		return;
 
 	clean_selected_files(view);
-	draw_dir_list(view, view->top_line);
-	move_to_list_pos(view, view->list_pos);
+	redraw_view(view);
 }
 
 /* Returns negative value in case of error */
@@ -1353,7 +1351,7 @@ comm_only(void)
 		return;
 
 	curr_stats.number_of_windows = 1;
-	redraw_window(0);
+	update_screen(UT_REDRAW);
 }
 
 void
@@ -1373,7 +1371,7 @@ comm_split(SPLIT orientation)
 
 	curr_stats.split = orientation;
 	curr_stats.number_of_windows = 2;
-	redraw_window(0);
+	curr_stats.need_update = UT_REDRAW;
 }
 
 static int
@@ -2176,7 +2174,7 @@ help_cmd(const cmd_info_t *cmd_info)
 		endwin();
 		system("cls");
 		system(buf);
-		redraw_window(1);
+		update_screen(UT_FULL);
 #endif
 	}
 	return 0;
@@ -2270,7 +2268,7 @@ highlight_cmd(const cmd_info_t *cmd_info)
 	}
 	init_pair(curr_stats.cs_base + pos, curr_stats.cs->color[pos].fg,
 			curr_stats.cs->color[pos].bg);
-  curr_stats.need_redraw = 1;
+	curr_stats.need_update = UT_FULL;
 	return 0;
 }
 
@@ -2623,8 +2621,7 @@ nohlsearch_cmd(const cmd_info_t *cmd_info)
 		return 0;
 
 	clean_selected_files(curr_view);
-	draw_dir_list(curr_view, curr_view->top_line);
-	move_to_list_pos(curr_view, curr_view->list_pos);
+	redraw_current_view();
 	return 0;
 }
 
@@ -3248,7 +3245,7 @@ windo_cmd(const cmd_info_t *cmd_info)
 	result += winrun(&lwin, cmd_info->args) != 0;
 	result += winrun(&rwin, cmd_info->args) != 0;
 
-	redraw_window(1);
+	update_screen(UT_FULL);
 
 	return result;
 }
@@ -3290,7 +3287,7 @@ winrun_cmd(const cmd_info_t *cmd_info)
 			break;
 	}
 
-	redraw_window(1);
+	update_screen(UT_FULL);
 
 	return result;
 }

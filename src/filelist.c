@@ -2250,10 +2250,22 @@ set_filename_filter(FileView *view, const char *filter)
 }
 
 void
-scroll_view(FileView *view)
+redraw_view(FileView *view)
 {
-	draw_dir_list(view, view->top_line);
-	move_to_list_pos(view, view->list_pos);
+	if(curr_stats.need_update == UT_NONE)
+	{
+		draw_dir_list(view, view->top_line);
+		move_to_list_pos(view, view->list_pos);
+	}
+}
+
+void
+redraw_current_view(void)
+{
+	if(!curr_view->explore_mode)
+	{
+		redraw_view(curr_view);
+	}
 }
 
 static int

@@ -191,7 +191,6 @@ leave_sort_mode(void)
 
 	clean_selected_files(view);
 	load_saving_pos(view, 1);
-	move_to_list_pos(view, view->list_pos);
 
 	update_all_windows();
 }

@@ -44,8 +44,7 @@ toggle_quick_view(void)
 	{
 		curr_stats.view = 0;
 
-		if(change_directory(other_view, other_view->curr_dir) >= 0)
-			load_dir_list(other_view, 1);
+		draw_dir_list(other_view, other_view->top_line);
 		wrefresh(other_view->win);
 	}
 	else

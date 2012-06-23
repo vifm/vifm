@@ -270,7 +270,7 @@ enter_menu_mode(menu_info *m, FileView *active_view)
 	view = active_view;
 	menu = m;
 	*mode = MENU_MODE;
-	curr_stats.need_redraw = 1;
+	curr_stats.need_update = UT_FULL;
 	was_redraw = 0;
 
 	init_cmds(0, &cmds_conf);
@@ -286,11 +286,11 @@ menu_pre(void)
 void
 menu_post(void)
 {
-	if(curr_stats.need_redraw)
+	if(curr_stats.need_update != UT_NONE)
 	{
 		touchwin(menu_win);
 		wrefresh(menu_win);
-		curr_stats.need_redraw = 0;
+		curr_stats.need_update = UT_NONE;
 	}
 }
 
@@ -315,12 +315,11 @@ leave_menu_mode(void)
 	reset_popup_menu(menu);
 
 	clean_selected_files(view);
-	draw_dir_list(view, view->top_line);
-	move_to_list_pos(view, view->list_pos);
+	redraw_view(view);
 
 	*mode = NORMAL_MODE;
 	if(was_redraw)
-		redraw_window(1);
+		update_screen(UT_FULL);
 	else
 		update_all_windows();
 }
@@ -423,7 +422,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	if(was_redraw)
-		redraw_window(1);
+		update_screen(UT_FULL);
 	else
 		update_all_windows();
 }

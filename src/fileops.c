@@ -147,8 +147,7 @@ yank_files(FileView *view, int reg, int count, int *indexes)
 	if(count == 0)
 	{
 		clean_selected_files(view);
-		draw_dir_list(view, view->top_line);
-		move_to_list_pos(view, view->list_pos);
+		redraw_view(view);
 	}
 
 	status_bar_messagef("%d %s yanked", yanked, yanked == 1 ? "file" : "files");
@@ -375,8 +374,6 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	cmd_group_end();
 
 	load_saving_pos(view, 1);
-
-	move_to_list_pos(view, view->list_pos);
 
 	status_bar_messagef("%d %s deleted", y, y == 1 ? "file" : "files");
 	return 1;
@@ -976,8 +973,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	free(is_dup);
 
 	clean_selected_files(view);
-	draw_dir_list(view, view->top_line);
-	move_to_list_pos(view, view->list_pos);
+	redraw_view(view);
 	curr_stats.save_msg = 1;
 	return 1;
 }
@@ -1784,8 +1780,7 @@ clone_files(FileView *view, char **list, int nlines, int force, int copies)
 			(!force && !is_clone_list_ok(nlines, list))))
 	{
 		clean_selected_files(view);
-		draw_dir_list(view, view->top_line);
-		move_to_list_pos(view, view->list_pos);
+		redraw_view(view);
 		if(from_file)
 			free_string_array(list, nlines);
 		return 1;
@@ -2530,8 +2525,7 @@ cpmv_prepare(FileView *view, char ***list, int *nlines, int move, int type,
 	if(error)
 	{
 		clean_selected_files(view);
-		draw_dir_list(view, view->top_line);
-		move_to_list_pos(view, view->list_pos);
+		redraw_view(view);
 		if(*from_file)
 			free_string_array(*list, *nlines);
 		return 1;
@@ -2582,8 +2576,7 @@ have_read_access(FileView *view)
 			show_error_msgf("Access denied",
 					"You don't have read permissions on \"%s\"", view->dir_entry[i].name);
 			clean_selected_files(view);
-			draw_dir_list(view, view->top_line);
-			move_to_list_pos(view, view->list_pos);
+			redraw_view(view);
 			return 0;
 		}
 	}
@@ -2806,8 +2799,7 @@ go_to_first_file(FileView *view, char **names, int count)
 			break;
 		}
 	}
-	draw_dir_list(view, view->top_line);
-	move_to_list_pos(view, view->list_pos);
+	redraw_view(view);
 }
 
 void
