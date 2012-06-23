@@ -3413,15 +3413,16 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	if(len > 1)
 		bg = expanded_com[len - 1] == '&' && expanded_com[len - 2] == ' ';
 
-	clean_selected_files(curr_view);
-
 	if(expanded_com[0] == ':')
 	{
 		int sm = exec_commands(expanded_com, curr_view, GET_COMMAND);
 		free(expanded_com);
 		return sm;
 	}
-	else if(flags == MACRO_STATUSBAR_OUTPUT)
+
+	clean_selected_files(curr_view);
+
+	if(flags == MACRO_STATUSBAR_OUTPUT)
 	{
 		output_to_statusbar(expanded_com);
 		free(expanded_com);

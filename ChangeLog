@@ -45,6 +45,8 @@
 
 	Show correct number of selected files in visual mode after n and N keys.
 
+	Pass range given to alias to an aliased command.
+
 	Fixed unexpected resetting of dot filter on following mark to root
 	directory.
 

@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3  Last change: 2012 Jun 12
+*vifm.txt*    For Vifm version 0.7.3  Last change: 2012 Jun 23
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -792,7 +792,11 @@ The builtin commands are:
 :com[mand] backup /pattern - will set search pattern.
 :com[mand] name filter pattern - will set file name filter.
 :com[mand] cmd :commands - will set kind of alias for internal command (like
-    in a shell).
+    in a shell).  Will pass range given to alias to an aliased command, so
+    running :%cp after >
+      :command cp :copy %a
+<   equals >
+      :%copy
 
                                                *vifm-:copy* *vifm-:co*
 :[range]co[py][!?][ &] - copies files to directory of other view.  With
