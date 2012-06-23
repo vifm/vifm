@@ -1,4 +1,4 @@
-.TH vifm 1 "June 12, 2012" "" "Vifm"
+.TH vifm 1 "June 23, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -905,7 +905,13 @@ will set search pattern.
 will set file name filter.
 .TP
 .BI ":com[mand] cmd :commands"
-will set kind of alias for internal command (like in a shell).
+will set kind of alias for internal command (like in a shell).  Will pass range
+given to alias to an aliased command, so running :%cp after
+  :command cp :copy %a
+.br
+equals
+  :%copy
+.EE
 .TP
 .BI ":[range]co[py][!?][ &]"
 copies files to directory of other view.  With "?" vifm will open vi to edit
