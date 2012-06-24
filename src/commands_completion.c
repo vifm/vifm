@@ -807,5 +807,30 @@ complete_with_shared(const char *server, const char *file)
 
 #endif
 
+int
+external_command_exists(const char *name)
+{
+	size_t i;
+	size_t paths_count;
+	char **paths;
+
+	paths = get_paths(&paths_count);
+	for(i = 0; i < paths_count; i++)
+	{
+		char full_path[PATH_MAX];
+		snprintf(full_path, sizeof(full_path), "%s/%s", paths[i], name);
+
+		if(!path_exists(full_path))
+			continue;
+#ifndef _WIN32
+		if(access(full_path, X_OK) == 0)
+#else
+		if(is_win_executable(d->d_name))
+#endif
+			return 1;
+	}
+	return 0;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

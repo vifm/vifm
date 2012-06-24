@@ -9,31 +9,42 @@ static void
 test_one_pattern(void)
 {
 	assoc_record_t program;
+	int success;
 
 	set_programs("*.tar", "{description} tar prog", 0);
 
-	assert_true(get_default_program_for_file("file.version.tar", &program));
-	if(program.description != NULL)
+	success = get_default_program_for_file("file.version.tar", &program);
+	assert_true(success);
+	if(success)
+	{
 		assert_string_equal("description", program.description);
-	free_assoc_record(&program);
+		free_assoc_record(&program);
+	}
 }
 
 static void
 test_two_patterns(void)
 {
 	assoc_record_t program;
+	int success;
 
 	set_programs("*.tar,*.zip", "{archives} prog", 0);
 
-	assert_true(get_default_program_for_file("file.version.tar", &program));
-	if(program.description != NULL)
+	success = get_default_program_for_file("file.version.tar", &program);
+	assert_true(success);
+	if(success)
+	{
 		assert_string_equal("archives", program.description);
-	free_assoc_record(&program);
+		free_assoc_record(&program);
+	}
 
-	assert_true(get_default_program_for_file("file.version.zip", &program));
-	if(program.description != NULL)
+	success = get_default_program_for_file("file.version.zip", &program);
+	assert_true(success);
+	if(success)
+	{
 		assert_string_equal("archives", program.description);
-	free_assoc_record(&program);
+		free_assoc_record(&program);
+	}
 }
 
 static void

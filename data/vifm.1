@@ -1,4 +1,4 @@
-.TH vifm 1 "June 23, 2012" "" "Vifm"
+.TH vifm 1 "June 24, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -994,7 +994,8 @@ beginning don't match dot in the first position.  If you need to insert
 comma into command just double it (",,").  Space followed by an
 ampersand as two last characters of a command means running of the
 command in the background.  Optional description can be given to each command to
-ease understanding of what command will do in the :file menu.
+ease understanding of what command will do in the :file menu.  Vifm will try
+the rest of the programs for an association when the default isn't found.
 See also "Automatic FUSE mounts" section below.
 .TP
 .BI ":filex[type] pat1,pat2,... [{ description }] def_program,program2,..."

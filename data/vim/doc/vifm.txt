@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Jun 23
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Jun 24
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -871,12 +871,13 @@ The builtin commands are:
     ampersand as two last characters of a command means running of the
     command in the background.  Optional description can be given to each
     command to ease understanding of what command will do in the :file menu.
-    See |vifm-fuse|.
+    Vifm will try the rest of the programs for an association when the
+    default isn't found.  See also |vifm-fuse|.
 
                                                *vifm-:filextype* *vifm-:filex*
 :filex[type] pat1,pat2,... [{ description }] def_program,program2,... - same
     as :filetype, but vifm will ignore this command if it's not running in X.
-    In X :filextype is equal to :filetype.  See |vifm-fuse|.
+    In X :filextype is equal to :filetype.  See also |vifm-fuse|.
 
                                                *vifm-:filevtype* *vifm-:filev*
 :filev[iewer] pat1,pat2,... command - will associate given command as a

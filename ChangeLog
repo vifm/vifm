@@ -5,6 +5,9 @@
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
 
+	Try the rest of the programs for an association when the default isn't
+	found.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
