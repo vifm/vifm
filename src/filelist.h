@@ -108,6 +108,8 @@ void check_if_filelists_have_changed(FileView *view);
 /* Checks whether cd'ing into path is possible. Shows cd errors to a user.
  * Returns non-zero if it's possible, zero otherwise. */
 int cd_is_possible(const char *path);
+/* Checks whether directory list was loaded at least once since startup. */
+int is_dir_list_loaded(FileView *view);
 
 #ifdef TEST
 int regexp_filter_match(FileView *view, const char *filename);

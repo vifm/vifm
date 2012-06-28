@@ -157,7 +157,7 @@ load_initial_directory(FileView *view, const char *dir)
 	else
 		dir = view->curr_dir;
 
-	view->dir_entry = (dir_entry_t *)malloc(sizeof(dir_entry_t));
+	view->dir_entry = malloc(sizeof(dir_entry_t));
 	memset(view->dir_entry, 0, sizeof(dir_entry_t));
 
 	view->dir_entry[0].name = strdup("");

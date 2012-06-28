@@ -1293,7 +1293,7 @@ change_directory(FileView *view, const char *directory)
 	char newdir[PATH_MAX];
 	char dir_dup[PATH_MAX];
 
-	if(view->dir_entry[0].name[0] != '\0')
+	if(is_dir_list_loaded(view))
 	{
 		save_view_history(view, NULL, NULL, -1);
 	}
@@ -1412,16 +1412,23 @@ change_directory(FileView *view, const char *directory)
 	/* Need to use setenv instead of getcwd for a symlink directory */
 	env_set("PWD", dir_dup);
 
-	snprintf(view->curr_dir, PATH_MAX, "%s", dir_dup);
+	snprintf(view->curr_dir, sizeof(view->curr_dir), "%s", dir_dup);
 
 	/* Save the directory modified time to check for file changes */
 	update_dir_mtime(view);
 
-	if(view->dir_entry[0].name[0] != '\0')
+	if(is_dir_list_loaded(view))
 	{
 		save_view_history(view, NULL, "", -1);
 	}
 	return 0;
+}
+
+int
+is_dir_list_loaded(FileView *view)
+{
+	dir_entry_t *entry = &view->dir_entry[0];
+	return entry == NULL || entry->name[0] == '\0';
 }
 
 /* Frees list of previously selected files. */
