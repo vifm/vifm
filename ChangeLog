@@ -2,6 +2,9 @@
 
 	Added Ctrl-W H/J/K/L normal mode keys.
 
+	Fixed segmentation fault on running vifm with one path in the argument
+	list.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
