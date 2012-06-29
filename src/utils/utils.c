@@ -61,6 +61,10 @@
 
 #include "utils.h"
 
+#ifdef _WIN32
+static void unquote(char quoted[]);
+#endif
+
 int
 my_system(char *command)
 {
@@ -449,23 +453,61 @@ make_name_unique(const char *filename)
 }
 
 char *
-get_command_name(const char *line, size_t buf_len, char *buf)
+get_command_name(const char line[], int raw, size_t buf_len, char buf[])
 {
 	const char *result;
+#ifdef _WIN32
+	int left_quote, right_quote;
+#endif
 
 	line = skip_whitespace(line);
 
-	result = strchr(line, ' ');
+#ifdef _WIN32
+	if((left_quote = line[0] == '"'))
+	{
+		result = strchr(line + 1, '"');
+	}
+	else
+#endif
+	{
+		result = strchr(line, ' ');
+	}
 	if(result == NULL)
 	{
 		result = line + strlen(line);
 	}
 
+#ifdef _WIN32
+	if(left_quote && (right_quote = result[0] == '"'))
+	{
+		result++;
+	}
+#endif
 	snprintf(buf, MIN(result - line + 1, buf_len), "%s", line);
+#ifdef _WIN32
+	if(!raw && left_quote && right_quote)
+	{
+		unquote(buf);
+	}
+#endif
 	result = skip_whitespace(result);
 
 	return (char *)result;
 }
+
+#ifdef _WIN32
+/* Removes first and the last charater of the string, if they are quotes. */
+static void
+unquote(char quoted[])
+{
+	size_t len = strlen(quoted);
+	if(len > 2 && quoted[0] == quoted[len - 1] && strpbrk(quoted, "\"'`") != NULL)
+	{
+		memmove(quoted, quoted + 1, len - 2);
+		quoted[len - 2] = '\0';
+	}
+}
+#endif
 
 #ifndef _WIN32
 int

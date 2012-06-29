@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Jun 24
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Jun 29
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -872,7 +872,9 @@ The builtin commands are:
     command in the background.  Optional description can be given to each
     command to ease understanding of what command will do in the :file menu.
     Vifm will try the rest of the programs for an association when the
-    default isn't found.  See also |vifm-fuse|.
+    default isn't found.  On Windows path to executables containing spaces
+    can (and should be for correct work with such paths) be double quoted.
+    See also |vifm-fuse|.
 
                                                *vifm-:filextype* *vifm-:filex*
 :filex[type] pat1,pat2,... [{ description }] def_program,program2,... - same

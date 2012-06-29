@@ -8,6 +8,9 @@
 	Try the rest of the programs for an association when the default isn't
 	found.
 
+	Allow paths in :file[x]type command that contain spaces to be doublequoted
+	on Windows.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.

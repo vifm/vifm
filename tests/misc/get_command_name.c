@@ -9,7 +9,7 @@ test_empty_command_line(void)
 	char command[NAME_MAX];
 	const char *args;
 
-	args = get_command_name(cmd, sizeof(command), command);
+	args = get_command_name(cmd, 0, sizeof(command), command);
 	assert_string_equal("", command);
 	assert_string_equal("", args);
 }
@@ -21,7 +21,7 @@ test_command_name_only(void)
 	char command[NAME_MAX];
 	const char *args;
 
-	args = get_command_name(cmd, sizeof(command), command);
+	args = get_command_name(cmd, 0, sizeof(command), command);
 	assert_string_equal("cmd", command);
 	assert_string_equal("", args);
 }
@@ -33,7 +33,7 @@ test_leading_whitespase_ignored(void)
 	char command[NAME_MAX];
 	const char *args;
 
-	args = get_command_name(cmd, sizeof(command), command);
+	args = get_command_name(cmd, 0, sizeof(command), command);
 	assert_string_equal("cmd", command);
 	assert_string_equal("", args);
 }
@@ -45,7 +45,7 @@ test_with_argument_list(void)
 	char command[NAME_MAX];
 	const char *args;
 
-	args = get_command_name(cmd, sizeof(command), command);
+	args = get_command_name(cmd, 0, sizeof(command), command);
 	assert_string_equal("cmd", command);
 	assert_string_equal("arg1 arg2", args);
 }
@@ -57,10 +57,36 @@ test_whitespace_after_command_ignored(void)
 	char command[NAME_MAX];
 	const char *args;
 
-	args = get_command_name(cmd, sizeof(command), command);
+	args = get_command_name(cmd, 0, sizeof(command), command);
 	assert_string_equal("cmd", command);
 	assert_string_equal("arg1 arg2", args);
 }
+
+#ifdef _WIN32
+static void
+test_quoted_command_raw_ok(void)
+{
+	char cmd[] = "\"quoted cmd\"   \t  arg1 arg2";
+	char command[NAME_MAX];
+	const char *args;
+
+	args = get_command_name(cmd, 1, sizeof(command), command);
+	assert_string_equal("\"quoted cmd\"", command);
+	assert_string_equal("arg1 arg2", args);
+}
+
+static void
+test_quoted_command_coocked_ok(void)
+{
+	char cmd[] = "\"quoted cmd\"   \t  arg1 arg2";
+	char command[NAME_MAX];
+	const char *args;
+
+	args = get_command_name(cmd, 0, sizeof(command), command);
+	assert_string_equal("quoted cmd", command);
+	assert_string_equal("arg1 arg2", args);
+}
+#endif
 
 void
 get_command_name_tests(void)
@@ -72,6 +98,10 @@ get_command_name_tests(void)
 	run_test(test_leading_whitespase_ignored);
 	run_test(test_with_argument_list);
 	run_test(test_whitespace_after_command_ignored);
+#ifdef _WIN32
+	run_test(test_quoted_command_raw_ok);
+	run_test(test_quoted_command_coocked_ok);
+#endif
 
 	test_fixture_end();
 }

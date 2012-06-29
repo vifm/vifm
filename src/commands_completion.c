@@ -302,7 +302,8 @@ complete_progs(const char *str, assoc_records_t records)
 	{
 		char command[NAME_MAX];
 
-		(void)get_command_name(records.list[i].command, sizeof(command), command);
+		(void)get_command_name(records.list[i].command, 1, sizeof(command),
+				command);
 
 		if(strnoscmp(command, str, len) == 0)
 		{
@@ -437,7 +438,7 @@ fast_run_complete(const char *cmd)
 	char command[NAME_MAX];
 	char *completed;
 
-	args = get_command_name(cmd, sizeof(command), command);
+	args = get_command_name(cmd, 0, sizeof(command), command);
 
 	reset_completion();
 	exec_completion(command);
@@ -825,7 +826,7 @@ external_command_exists(const char *name)
 #ifndef _WIN32
 		if(access(full_path, X_OK) == 0)
 #else
-		if(is_win_executable(d->d_name))
+		if(is_win_executable(full_path))
 #endif
 			return 1;
 	}
