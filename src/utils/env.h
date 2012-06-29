@@ -24,6 +24,8 @@
 
 /* Returns environment variable value or NULL if it doesn't exist */
 const char * env_get(const char *name);
+/* Returns environment variable value or def if it doesn't exist or empty */
+const char * env_get_def(const char name[], const char def[]);
 /* Sets new value of environment variable or creates it if it doesn't exist */
 void env_set(const char *name, const char *value);
 /* Removes environment variable */

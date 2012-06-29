@@ -86,8 +86,6 @@ static void reduce_view_history(FileView *view, size_t size);
 void
 init_config(void)
 {
-	const char *p;
-
 	cfg.num_bookmarks = 0;
 	cfg.command_num = 0;
 	cfg.vim_filter = 0;
@@ -156,19 +154,11 @@ init_config(void)
 	strcat(cfg.log_file, "/startup-log");
 #endif
 
-	p = env_get("SHELL");
-	if(p == NULL || *p == '\0')
-	{
 #ifndef _WIN32
-		cfg.shell = strdup("sh");
+	cfg.shell = strdup(env_get_def("SHELL", "sh"));
 #else
-		cfg.shell = strdup("cmd");
+	cfg.shell = strdup(env_get_def("SHELL", "cmd"));
 #endif
-	}
-	else
-	{
-		cfg.shell = strdup(p);
-	}
 
 #ifndef _WIN32
 	/* Maximum argument length to pass to the shell */

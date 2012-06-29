@@ -19,6 +19,7 @@
 
 #include <ctype.h> /* tolower() isspace() */
 #include <stdarg.h> /* va_list va_start() va_end() */
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* mbstowcs() wcstombs() */
 #include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr() */
 #include <wchar.h> /* vswprintf() wchar_t */
@@ -184,6 +185,17 @@ after_last(const char *str, char c)
 	return result;
 }
 
+char *
+until_first(const char str[], char c)
+{
+	const char *result = strchr(str, c);
+	if(result == NULL)
+	{
+		result = str + strlen(str);
+	}
+	return (char *)result;
+}
+
 void
 replace_string(char **str, const char *with)
 {
@@ -219,6 +231,14 @@ my_swprintf(wchar_t *str, size_t len, const wchar_t *format, ...)
 	va_end(ap);
 
 	return result;
+}
+
+const char *
+extract_part(const char str[], char separator, char part_buf[])
+{
+	const char *end = until_first(++str, separator);
+	snprintf(part_buf, end - str + 1, "%s", str);
+	return end;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

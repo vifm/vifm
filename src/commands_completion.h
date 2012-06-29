@@ -75,8 +75,8 @@ void filename_completion(const char *str, CompletionType type);
 void complete_user_name(const char *str);
 void complete_group_name(const char *str);
 /* Checks whether program with given name is an executable that present in the
- * $PATH environment variable. */
-int external_command_exists(const char *name);
+ * $PATH environment variable or can be found by full path. */
+int external_command_exists(const char command[]);
 
 #endif
 

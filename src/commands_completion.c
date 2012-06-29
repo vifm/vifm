@@ -78,6 +78,8 @@ static int is_entry_exec(const struct dirent *d);
 static const char * escape_for_cd(const char *str);
 static void complete_with_shared(const char *server, const char *file);
 #endif
+static int executable_exists_in_path(const char command_name[]);
+static int executable_exists(const char full_path[]);
 
 int
 complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
@@ -809,7 +811,21 @@ complete_with_shared(const char *server, const char *file)
 #endif
 
 int
-external_command_exists(const char *name)
+external_command_exists(const char command[])
+{
+	if(strchr(command, '/') == NULL)
+	{
+		return executable_exists_in_path(command);
+	}
+	else
+	{
+		return executable_exists(command);
+	}
+}
+
+/* Checks for executable in all directories in PATH environment variables. */
+static int
+executable_exists_in_path(const char command_name[])
 {
 	size_t i;
 	size_t paths_count;
@@ -819,18 +835,29 @@ external_command_exists(const char *name)
 	for(i = 0; i < paths_count; i++)
 	{
 		char full_path[PATH_MAX];
-		snprintf(full_path, sizeof(full_path), "%s/%s", paths[i], name);
+		snprintf(full_path, sizeof(full_path), "%s/%s", paths[i], command_name);
 
-		if(!path_exists(full_path))
-			continue;
-#ifndef _WIN32
-		if(access(full_path, X_OK) == 0)
-#else
-		if(is_win_executable(full_path))
-#endif
+		if(executable_exists(full_path))
+		{
 			return 1;
+		}
 	}
 	return 0;
+}
+
+/* Checks for executable by its full path. */
+static int
+executable_exists(const char full_path[])
+{
+#ifndef _WIN32
+	if(!path_exists(full_path))
+	{
+		return 0;
+	}
+	return access(full_path, X_OK) == 0;
+#else
+	return win_executable_exists(full_path);
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

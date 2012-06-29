@@ -87,6 +87,8 @@ int S_ISEXE(mode_t mode);
 int wcwidth(wchar_t c);
 int wcswidth(const wchar_t *str, size_t len);
 int exec_program(TCHAR *cmd);
+/* Checks executable existence trying to add executable extensions if needed. */
+int win_executable_exists(const char *path);
 int is_win_executable(const char *name);
 int is_vista_and_above(void);
 const char *attr_str(DWORD attr);

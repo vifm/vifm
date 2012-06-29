@@ -62,6 +62,9 @@
 #include "utils.h"
 
 #ifdef _WIN32
+
+static const char PATHEXT_EXT[] = ".bat;.exe;.com";
+
 static void unquote(char quoted[]);
 #endif
 
@@ -610,36 +613,50 @@ strtoupper(char *s)
 }
 
 int
+win_executable_exists(const char *path)
+{
+	const char *p;
+	char path_buf[NAME_MAX];
+	size_t pos;
+
+	if(strchr(after_last(path, '/'), '.') != NULL)
+	{
+		return path_exists(path);
+	}
+
+	snprintf(path_buf, sizeof(path_buf), "%s", path);
+	pos = strlen(path_buf);
+
+	p = env_get_def("PATHEXT", PATHEXT_EXT) - 1;
+	while((p = extract_part(p, ';', path_buf + pos))[0] != '\0')
+	{
+		if(path_exists(path_buf))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int
 is_win_executable(const char *name)
 {
-	const char *path, *p, *q;
+	const char *p;
 	char name_buf[NAME_MAX];
-
-	path = env_get("PATHEXT");
-	if(path == NULL || path[0] == '\0')
-		path = ".bat;.exe;.com";
+	char ext_buf[16];
 
 	snprintf(name_buf, sizeof(name_buf), "%s", name);
 	strtoupper(name_buf);
 
-	p = path - 1;
-	do
+	p = env_get_def("PATHEXT", PATHEXT_EXT) - 1;
+	while((p = extract_part(p, ';', ext_buf))[0] != '\0')
 	{
-		char ext_buf[16];
-
-		p++;
-		q = strchr(p, ';');
-		if(q == NULL)
-			q = p + strlen(p);
-
-		snprintf(ext_buf, q - p + 1, "%s", p);
 		strtoupper(ext_buf);
-		p = q;
-
 		if(ends_with(name_buf, ext_buf))
+		{
 			return 1;
+		}
 	}
-	while(q[0] != '\0');
 	return 0;
 }
 
