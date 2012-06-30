@@ -25,6 +25,7 @@
 #include "cfg/config.h"
 #include "menus/menus.h"
 #include "utils/str.h"
+#include "utils/utils.h"
 #include "globals.h"
 #include "status.h"
 
@@ -44,6 +45,9 @@ static assoc_list_t active_filetypes;
 /* Used to set type of new association records */
 static assoc_record_type_t new_records_type = ART_CUSTOM;
 
+/* Pointer to external command existence check function. */
+static external_command_exists_t external_command_exists_func;
+
 TSTATIC void replace_double_comma(char *cmd, int put_null);
 static int get_filetype_number(const char *file, assoc_list_t assoc_list);
 static void assoc_programs(const char *pattern, const char *records, int for_x);
@@ -57,21 +61,41 @@ static void reset_list_head(assoc_list_t *assoc_list);
 static void free_assoc(assoc_t *assoc);
 static void safe_free(char **adr);
 
+void
+config_filetypes(external_command_exists_t ece_func)
+{
+	external_command_exists_func = ece_func;
+}
+
 int
 get_default_program_for_file(const char *file, assoc_record_t *result)
 {
+	int j;
+	assoc_records_t records;
 	assoc_record_t prog;
-	int i;
 
-	i = get_filetype_number(file, active_filetypes);
-	if(i < 0)
+	j = 0;
+	records = get_all_programs_for_file(file);
+	while(j < records.count)
 	{
+		char name_buf[NAME_MAX];
+		(void)get_command_name(records.list[j].command, 0, sizeof(name_buf),
+				name_buf);
+		if(external_command_exists_func == NULL ||
+				external_command_exists_func(name_buf))
+			break;
+		j++;
+	}
+	if(j >= records.count)
+	{
+		free(records.list);
 		return 0;
 	}
 
-	prog = active_filetypes.list[i].records.list[0];
+	prog = records.list[j];
 	result->command = strdup(prog.command);
 	result->description = strdup(prog.description);
+	free(records.list);
 
 	return 1;
 }

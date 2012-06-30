@@ -63,6 +63,7 @@ static void complete_history(const char *str);
 static int complete_chown(const char *str);
 static void complete_filetype(const char *str);
 static void complete_progs(const char *str, assoc_records_t records);
+static char * escape_pipe_char(const char string[]);
 static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char *str);
@@ -78,6 +79,8 @@ static int is_entry_exec(const struct dirent *d);
 static const char * escape_for_cd(const char *str);
 static void complete_with_shared(const char *server, const char *file);
 #endif
+static int executable_exists_in_path(const char command_name[]);
+static int executable_exists(const char full_path[]);
 
 int
 complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
@@ -302,13 +305,42 @@ complete_progs(const char *str, assoc_records_t records)
 	{
 		char command[NAME_MAX];
 
-		(void)get_command_name(records.list[i].command, sizeof(command), command);
+		(void)get_command_name(records.list[i].command, 1, sizeof(command),
+				command);
 
 		if(strnoscmp(command, str, len) == 0)
 		{
-			add_completion(command);
+			char *escaped = escape_pipe_char(command);
+			add_completion(escaped);
+			free(escaped);
 		}
 	}
+}
+
+/* Escape the pipe symbol in the string.  Returns new string, caller should free
+ * it.
+ */
+static char *
+escape_pipe_char(const char string[])
+{
+	size_t len;
+	size_t i;
+	char *ret, *dup;
+
+	len = strlen(string);
+
+	dup = ret = malloc(len*2 + 2 + 1);
+
+	for(i = 0; i < len; i++)
+	{
+		if(*string == '|')
+		{
+			*dup++ = '\\';
+		}
+		*dup++ = *string++;
+	}
+	*dup = '\0';
+	return ret;
 }
 
 static void
@@ -437,7 +469,7 @@ fast_run_complete(const char *cmd)
 	char command[NAME_MAX];
 	char *completed;
 
-	args = get_command_name(cmd, sizeof(command), command);
+	args = get_command_name(cmd, 0, sizeof(command), command);
 
 	reset_completion();
 	exec_completion(command);
@@ -806,6 +838,56 @@ complete_with_shared(const char *server, const char *file)
 }
 
 #endif
+
+int
+external_command_exists(const char command[])
+{
+	if(strchr(command, '/') == NULL)
+	{
+		return executable_exists_in_path(command);
+	}
+	else
+	{
+		return executable_exists(command);
+	}
+}
+
+/* Checks for executable in all directories in PATH environment variables. */
+static int
+executable_exists_in_path(const char command_name[])
+{
+	size_t i;
+	size_t paths_count;
+	char **paths;
+
+	paths = get_paths(&paths_count);
+	for(i = 0; i < paths_count; i++)
+	{
+		char full_path[PATH_MAX];
+		snprintf(full_path, sizeof(full_path), "%s/%s", paths[i], command_name);
+
+		if(executable_exists(full_path))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/* Checks for executable by its full path. */
+static int
+executable_exists(const char full_path[])
+{
+#ifndef _WIN32
+	if(!path_exists(full_path))
+	{
+		return 0;
+	}
+	return access(full_path, X_OK) == 0;
+#else
+	return win_executable_exists(full_path);
+#endif
+}
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

@@ -379,8 +379,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 		return;
 	}
 
-	if(strncmp(program, "FUSE_MOUNT", 10) == 0
-			|| strncmp(program, "FUSE_MOUNT2", 11) == 0)
+	if(has_mount_prefixes(program))
 	{
 		if(dont_execute)
 		{

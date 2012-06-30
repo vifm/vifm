@@ -9,30 +9,38 @@ static void
 test_1_c(void)
 {
 	assoc_record_t program;
+	int success;
 
 	curr_stats.is_console = 1;
 	set_programs("*.tar", "x prog", 1);
 	set_programs("*.tar", "console prog", 0);
 
-	assert_true(get_default_program_for_file("file.version.tar", &program));
-	if(program.command != NULL)
+	success = get_default_program_for_file("file.version.tar", &program);
+	assert_true(success);
+	if(success)
+	{
 		assert_string_equal("console prog", program.command);
-	free_assoc_record(&program);
+		free_assoc_record(&program);
+	}
 }
 
 static void
 test_1_x(void)
 {
 	assoc_record_t program;
+	int success;
 
 	curr_stats.is_console = 0;
 	set_programs("*.tar", "x prog", 1);
 	set_programs("*.tar", "console prog", 0);
 
-	assert_true(get_default_program_for_file("file.version.tar", &program));
-	if(program.command != NULL)
+	success = get_default_program_for_file("file.version.tar", &program);
+	assert_true(success);
+	if(success)
+	{
 		assert_string_equal("x prog", program.command);
-	free_assoc_record(&program);
+		free_assoc_record(&program);
+	}
 }
 
 static void
@@ -50,42 +58,54 @@ static void
 test_2_x(void)
 {
 	assoc_record_t program;
+	int success;
 
 	curr_stats.is_console = 0;
 	set_programs("*.tgz", "2 x prog", 1);
 
-	assert_true(get_default_program_for_file("file.version.tgz", &program));
-	if(program.command != NULL)
+	success = get_default_program_for_file("file.version.tgz", &program);
+	assert_true(success);
+	if(success)
+	{
 		assert_string_equal("2 x prog", program.command);
-	free_assoc_record(&program);
+		free_assoc_record(&program);
+	}
 }
 
 static void
 test_3_c(void)
 {
 	assoc_record_t program;
+	int success;
 
 	curr_stats.is_console = 0;
 	set_programs("*.tar.bz2", "3 console prog", 0);
 
-	assert_true(get_default_program_for_file("file.version.tar.bz2", &program));
-	if(program.command != NULL)
+	success = get_default_program_for_file("file.version.tar.bz2", &program);
+	assert_true(success);
+	if(success)
+	{
 		assert_string_equal("3 console prog", program.command);
-	free_assoc_record(&program);
+		free_assoc_record(&program);
+	}
 }
 
 static void
 test_3_x(void)
 {
 	assoc_record_t program;
+	int success;
 
 	curr_stats.is_console = 1;
 	set_programs("*.tar.bz2", "3 console prog", 0);
 
-	assert_true(get_default_program_for_file("file.version.tar.bz2", &program));
-	if(program.command != NULL)
+	success = get_default_program_for_file("file.version.tar.bz2", &program);
+	assert_true(success);
+	if(success)
+	{
 		assert_string_equal("3 console prog", program.command);
-	free_assoc_record(&program);
+		free_assoc_record(&program);
+	}
 }
 
 void

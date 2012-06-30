@@ -31,6 +31,17 @@ env_get(const char *name)
 	return getenv(name);
 }
 
+const char *
+env_get_def(const char name[], const char def[])
+{
+	const char *result = env_get(name);
+	if(result == NULL || result[0] == '\0')
+	{
+		result = def;
+	}
+	return result;
+}
+
 void
 env_set(const char *name, const char *value)
 {

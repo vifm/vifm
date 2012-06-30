@@ -51,6 +51,7 @@
 #include "bookmarks.h"
 #include "color_scheme.h"
 #include "commands.h"
+#include "commands_completion.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "filetype.h"
@@ -432,6 +433,9 @@ main(int argc, char *argv[])
 
 	no_configs = is_in_string_array(argv + 1, argc - 1, "--no-configs");
 
+	/* Tell file type module what function to use to check availability of
+	 * external programs. */
+	config_filetypes(&external_command_exists);
 	/* This should be called before loading any configuration file. */
 	reset_all_file_associations();
 

@@ -75,8 +75,9 @@ int my_chdir(const char *path);
  * Returns pointer to a statically allocated buffer */
 const char * make_name_unique(const char *filename);
 /* Finds command name in the command line and writes it to the buf.
+ * Raw mode will preserve quotes on Windows.
  * Returns a pointer to the argument list. */
-char * get_command_name(const char *line, size_t buf_len, char *buf);
+char * get_command_name(const char line[], int raw, size_t buf_len, char buf[]);
 
 #ifndef _WIN32
 int get_uid(const char *user, uid_t *uid);
@@ -86,6 +87,8 @@ int S_ISEXE(mode_t mode);
 int wcwidth(wchar_t c);
 int wcswidth(const wchar_t *str, size_t len);
 int exec_program(TCHAR *cmd);
+/* Checks executable existence trying to add executable extensions if needed. */
+int win_executable_exists(const char *path);
 int is_win_executable(const char *name);
 int is_vista_and_above(void);
 const char *attr_str(DWORD attr);

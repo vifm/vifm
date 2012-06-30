@@ -37,6 +37,10 @@ int in_mounted_dir(const char *path);
  *   1  left FUSE mount directory.
  */
 int try_unmount_fuse(FileView *view);
+/* Returns non-zero in case string is a FUSE mount string. */
+int has_mount_prefixes(const char string[]);
+/* Removes fuse mount prefixes from the string. */
+void remove_mount_prefixes(char string[]);
 
 TSTATIC_DEFS(
 	int format_mount_command(const char *mount_point, const char *file_name,

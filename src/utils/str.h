@@ -52,6 +52,9 @@ int strnoscmp(const char *s, const char *t, size_t n);
 /* Returns pointer to first character after last occurrence of c in str or
  * str. */
 char * after_last(const char *str, char c);
+/* Returns pointer to the first occurrence of c in str or a pointer to its
+ * end. */
+char * until_first(const char str[], char c);
 /* Replaces *str with a copy of with string. */
 void replace_string(char **str, const char *with);
 /* Adds a character to the end of a string. */
@@ -59,6 +62,9 @@ char * strcatch(char *str, char c);
 /* A wrapper of swprintf() functions to make its differences on various
  * platforms transparently in other parts of the program. */
 int my_swprintf(wchar_t *str, size_t len, const wchar_t *format, ...);
+/* Extracts next part of string with separators.  Call with str - 1 first time,
+ * and with value returned until pointer to '\0' is returned. */
+const char * extract_part(const char str[], char separator, char part_buf[]);
 
 #endif
 

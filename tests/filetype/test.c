@@ -10,11 +10,13 @@ void filextype_tests(void);
 void classes_tests(void);
 void replace_double_comma_tests(void);
 void description_tests(void);
+void find_program_tests(void);
 
 static void
 setup(void)
 {
 	curr_stats.is_console = 1;
+	config_filetypes(NULL);
 }
 
 static void
@@ -31,6 +33,7 @@ all_tests(void)
 	classes_tests();
 	replace_double_comma_tests();
 	description_tests();
+	find_program_tests();
 }
 
 int

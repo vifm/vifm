@@ -49,6 +49,7 @@
 #include <wctype.h>
 
 #include "../cfg/config.h"
+#include "../fuse.h"
 #include "../status.h"
 #include "../ui.h"
 #ifdef _WIN32
@@ -60,6 +61,13 @@
 #include "str.h"
 
 #include "utils.h"
+
+#ifdef _WIN32
+
+static const char PATHEXT_EXT[] = ".bat;.exe;.com";
+
+static void unquote(char quoted[]);
+#endif
 
 int
 my_system(char *command)
@@ -449,23 +457,65 @@ make_name_unique(const char *filename)
 }
 
 char *
-get_command_name(const char *line, size_t buf_len, char *buf)
+get_command_name(const char line[], int raw, size_t buf_len, char buf[])
 {
 	const char *result;
+#ifdef _WIN32
+	int left_quote, right_quote;
+#endif
 
 	line = skip_whitespace(line);
 
-	result = strchr(line, ' ');
+#ifdef _WIN32
+	if((left_quote = line[0] == '"'))
+	{
+		result = strchr(line + 1, '"');
+	}
+	else
+#endif
+	{
+		result = strchr(line, ' ');
+	}
 	if(result == NULL)
 	{
 		result = line + strlen(line);
 	}
 
+#ifdef _WIN32
+	if(left_quote && (right_quote = result[0] == '"'))
+	{
+		result++;
+	}
+#endif
 	snprintf(buf, MIN(result - line + 1, buf_len), "%s", line);
+#ifdef _WIN32
+	if(!raw && left_quote && right_quote)
+	{
+		unquote(buf);
+	}
+#endif
+	if(!raw)
+	{
+		remove_mount_prefixes(buf);
+	}
 	result = skip_whitespace(result);
 
 	return (char *)result;
 }
+
+#ifdef _WIN32
+/* Removes first and the last charater of the string, if they are quotes. */
+static void
+unquote(char quoted[])
+{
+	size_t len = strlen(quoted);
+	if(len > 2 && quoted[0] == quoted[len - 1] && strpbrk(quoted, "\"'`") != NULL)
+	{
+		memmove(quoted, quoted + 1, len - 2);
+		quoted[len - 2] = '\0';
+	}
+}
+#endif
 
 #ifndef _WIN32
 int
@@ -568,36 +618,50 @@ strtoupper(char *s)
 }
 
 int
+win_executable_exists(const char *path)
+{
+	const char *p;
+	char path_buf[NAME_MAX];
+	size_t pos;
+
+	if(strchr(after_last(path, '/'), '.') != NULL)
+	{
+		return path_exists(path);
+	}
+
+	snprintf(path_buf, sizeof(path_buf), "%s", path);
+	pos = strlen(path_buf);
+
+	p = env_get_def("PATHEXT", PATHEXT_EXT) - 1;
+	while((p = extract_part(p, ';', path_buf + pos))[0] != '\0')
+	{
+		if(path_exists(path_buf))
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int
 is_win_executable(const char *name)
 {
-	const char *path, *p, *q;
+	const char *p;
 	char name_buf[NAME_MAX];
-
-	path = env_get("PATHEXT");
-	if(path == NULL || path[0] == '\0')
-		path = ".bat;.exe;.com";
+	char ext_buf[16];
 
 	snprintf(name_buf, sizeof(name_buf), "%s", name);
 	strtoupper(name_buf);
 
-	p = path - 1;
-	do
+	p = env_get_def("PATHEXT", PATHEXT_EXT) - 1;
+	while((p = extract_part(p, ';', ext_buf))[0] != '\0')
 	{
-		char ext_buf[16];
-
-		p++;
-		q = strchr(p, ';');
-		if(q == NULL)
-			q = p + strlen(p);
-
-		snprintf(ext_buf, q - p + 1, "%s", p);
 		strtoupper(ext_buf);
-		p = q;
-
 		if(ends_with(name_buf, ext_buf))
+		{
 			return 1;
+		}
 	}
-	while(q[0] != '\0');
 	return 0;
 }
 

@@ -63,12 +63,18 @@ assoc_list_t;
 
 #define VIFM_PSEUDO_CMD "vifm"
 
+/* Prototype for external command existence check function. */
+typedef int (*external_command_exists_t)(const char *name);
+
 const assoc_record_t NONE_PSEUDO_PROG;
 
 assoc_list_t filetypes;
 assoc_list_t xfiletypes;
 assoc_list_t fileviewers;
 
+/* Configures external functions for filetype unit.  If ece_func is NULL or this
+ * function is not called, the module acts like all commands exist. */
+void config_filetypes(external_command_exists_t ece_func);
 /* Returns non-zero on success. */
 int get_default_program_for_file(const char *file, assoc_record_t *result);
 char * get_viewer_for_file(char *file);
