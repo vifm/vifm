@@ -49,6 +49,7 @@
 #include <wctype.h>
 
 #include "../cfg/config.h"
+#include "../fuse.h"
 #include "../status.h"
 #include "../ui.h"
 #ifdef _WIN32
@@ -493,6 +494,10 @@ get_command_name(const char line[], int raw, size_t buf_len, char buf[])
 		unquote(buf);
 	}
 #endif
+	if(!raw)
+	{
+		remove_mount_prefixes(buf);
+	}
 	result = skip_whitespace(result);
 
 	return (char *)result;

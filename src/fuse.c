@@ -19,7 +19,7 @@
 
 #include <sys/stat.h> /* S_IRWXU */
 
-#include <string.h> /* strcpy() strlen() strcmp() strcat() */
+#include <string.h> /* memmove() strcpy() strlen() strcmp() strcat() */
 
 #include "cfg/config.h"
 #include "menus/menus.h"
@@ -474,6 +474,37 @@ updir_from_mount(FileView *view, fuse_mount_t *runner)
 	file += strlen(runner->source_file_dir) + 1;
 	pos = find_file_pos_in_list(view, file);
 	move_to_list_pos(view, pos);
+}
+
+int
+has_mount_prefixes(const char string[])
+{
+	return starts_with(string, "FUSE_MOUNT|") ||
+		starts_with(string, "FUSE_MOUNT2|");
+}
+
+void
+remove_mount_prefixes(char string[])
+{
+	size_t prefix_len;
+	if(starts_with(string, "FUSE_MOUNT|"))
+	{
+		prefix_len = ARRAY_LEN("FUSE_MOUNT|") - 1;
+	}
+	else if(starts_with(string, "FUSE_MOUNT2|"))
+	{
+		prefix_len = ARRAY_LEN("FUSE_MOUNT2|") - 1;
+	}
+	else
+	{
+		prefix_len = 0;
+	}
+
+	if(prefix_len != 0)
+	{
+		size_t new_len = strlen(string) - prefix_len;
+		memmove(string, string + prefix_len, new_len + 1);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -5,7 +5,7 @@
 static void
 test_empty_command_line(void)
 {
-	char cmd[] = "";
+	const char cmd[] = "";
 	char command[NAME_MAX];
 	const char *args;
 
@@ -17,7 +17,7 @@ test_empty_command_line(void)
 static void
 test_command_name_only(void)
 {
-	char cmd[] = "cmd";
+	const char cmd[] = "cmd";
 	char command[NAME_MAX];
 	const char *args;
 
@@ -29,7 +29,7 @@ test_command_name_only(void)
 static void
 test_leading_whitespase_ignored(void)
 {
-	char cmd[] = "  \t  cmd";
+	const char cmd[] = "  \t  cmd";
 	char command[NAME_MAX];
 	const char *args;
 
@@ -41,7 +41,7 @@ test_leading_whitespase_ignored(void)
 static void
 test_with_argument_list(void)
 {
-	char cmd[] = "cmd arg1 arg2";
+	const char cmd[] = "cmd arg1 arg2";
 	char command[NAME_MAX];
 	const char *args;
 
@@ -53,7 +53,7 @@ test_with_argument_list(void)
 static void
 test_whitespace_after_command_ignored(void)
 {
-	char cmd[] = "cmd   \t  arg1 arg2";
+	const char cmd[] = "cmd   \t  arg1 arg2";
 	char command[NAME_MAX];
 	const char *args;
 
@@ -62,11 +62,35 @@ test_whitespace_after_command_ignored(void)
 	assert_string_equal("arg1 arg2", args);
 }
 
+static void
+test_fusemount_part_removed(void)
+{
+	const char cmd[] = "FUSE_MOUNT|archivemount %SOURCE_FILE %DESTINATION_DIR";
+	char command[NAME_MAX];
+	const char *args;
+
+	args = get_command_name(cmd, 0, sizeof(command), command);
+	assert_string_equal("archivemount", command);
+	assert_string_equal("%SOURCE_FILE %DESTINATION_DIR", args);
+}
+
+static void
+test_fusemount2_part_removed(void)
+{
+	const char cmd[] = "FUSE_MOUNT2|sshfs %PARAM %DESTINATION_DIR";
+	char command[NAME_MAX];
+	const char *args;
+
+	args = get_command_name(cmd, 0, sizeof(command), command);
+	assert_string_equal("sshfs", command);
+	assert_string_equal("%PARAM %DESTINATION_DIR", args);
+}
+
 #ifdef _WIN32
 static void
 test_quoted_command_raw_ok(void)
 {
-	char cmd[] = "\"quoted cmd\"   \t  arg1 arg2";
+	const char cmd[] = "\"quoted cmd\"   \t  arg1 arg2";
 	char command[NAME_MAX];
 	const char *args;
 
@@ -78,7 +102,7 @@ test_quoted_command_raw_ok(void)
 static void
 test_quoted_command_coocked_ok(void)
 {
-	char cmd[] = "\"quoted cmd\"   \t  arg1 arg2";
+	const char cmd[] = "\"quoted cmd\"   \t  arg1 arg2";
 	char command[NAME_MAX];
 	const char *args;
 
@@ -98,6 +122,8 @@ get_command_name_tests(void)
 	run_test(test_leading_whitespase_ignored);
 	run_test(test_with_argument_list);
 	run_test(test_whitespace_after_command_ignored);
+	run_test(test_fusemount_part_removed);
+	run_test(test_fusemount2_part_removed);
 #ifdef _WIN32
 	run_test(test_quoted_command_raw_ok);
 	run_test(test_quoted_command_coocked_ok);
