@@ -11,6 +11,8 @@
 	Allow paths in :file[x]type command that contain spaces to be doublequoted
 	on Windows.
 
+	Escape pipe character during :file completion.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.

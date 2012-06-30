@@ -63,6 +63,7 @@ static void complete_history(const char *str);
 static int complete_chown(const char *str);
 static void complete_filetype(const char *str);
 static void complete_progs(const char *str, assoc_records_t records);
+static char * escape_pipe_char(const char string[]);
 static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char *str);
@@ -309,9 +310,37 @@ complete_progs(const char *str, assoc_records_t records)
 
 		if(strnoscmp(command, str, len) == 0)
 		{
-			add_completion(command);
+			char *escaped = escape_pipe_char(command);
+			add_completion(escaped);
+			free(escaped);
 		}
 	}
+}
+
+/* Escape the pipe symbol in the string.  Returns new string, caller should free
+ * it.
+ */
+static char *
+escape_pipe_char(const char string[])
+{
+	size_t len;
+	size_t i;
+	char *ret, *dup;
+
+	len = strlen(string);
+
+	dup = ret = malloc(len*2 + 2 + 1);
+
+	for(i = 0; i < len; i++)
+	{
+		if(*string == '|')
+		{
+			*dup++ = '\\';
+		}
+		*dup++ = *string++;
+	}
+	*dup = '\0';
+	return ret;
 }
 
 static void
