@@ -1428,7 +1428,7 @@ int
 is_dir_list_loaded(FileView *view)
 {
 	dir_entry_t *entry = &view->dir_entry[0];
-	return entry == NULL || entry->name[0] == '\0';
+	return entry != NULL && entry->name[0] != '\0';
 }
 
 /* Frees list of previously selected files. */
