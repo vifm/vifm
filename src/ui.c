@@ -1254,7 +1254,7 @@ change_window(void)
 		update_view_title(other_view);
 	}
 
-	if(curr_stats.view && is_dir_list_loaded(curr_view))
+	if(curr_stats.view && !is_dir_list_loaded(curr_view))
 	{
 		if(change_directory(curr_view, curr_view->curr_dir) >= 0)
 		{
