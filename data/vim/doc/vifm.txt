@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Jun 29
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Jul 08
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1323,7 +1323,8 @@ The builtin commands that accept a range are :d[elete] and :y[ank].
 Command macros~
 
 The command macros may be used in user commands.
-  %a      user arguments.
+  %a      user arguments.  When user arguments contain macros, they are
+          expanded before preforming substitution of %a.
   %c %"c  the current file under the cursor.
   %C %"C  the current file under the cursor in the other directory.
   %f %"f  all of the selected files.
