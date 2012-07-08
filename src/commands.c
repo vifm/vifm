@@ -463,10 +463,7 @@ cmds_expand_macros(const char *str, int *usr1, int *usr2)
 	char *result;
 	MacroFlags flags = MACRO_NONE;
 
-	if(strchr(str, '%') != NULL)
-		result = expand_macros(curr_view, str, NULL, &flags);
-	else
-		result = strdup(str);
+	result = expand_macros(curr_view, str, NULL, &flags);
 
 	*usr1 = flags;
 
@@ -3393,11 +3390,9 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	int external = 1;
 	int bg = 0;
 
-	if(strchr(cmd_info->cmd, '%') != NULL)
-		expanded_com = expand_macros(curr_view, cmd_info->cmd, cmd_info->args,
-				&flags);
-	else
-		expanded_com = strdup(cmd_info->cmd);
+	/* Expand macros in a binded command. */
+	expanded_com = expand_macros(curr_view, cmd_info->cmd, cmd_info->args,
+			&flags);
 
 	len = strlen(expanded_com);
 	while(len > 1 && isspace(expanded_com[len - 1]))
