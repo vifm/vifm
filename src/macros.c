@@ -60,12 +60,16 @@ expand_macros(FileView *view, const char *command, const char *args,
 
 	cmd_len = strlen(command);
 
-	expanded = calloc(cmd_len + 1, sizeof(char *));
-
 	for(x = 0; x < cmd_len; x++)
 		if(command[x] == '%')
 			break;
 
+	if(x >= cmd_len)
+	{
+		return strdup(command);
+	}
+
+	expanded = calloc(cmd_len + 1, sizeof(char));
 	strncat(expanded, command, x);
 	x++;
 	len = strlen(expanded);

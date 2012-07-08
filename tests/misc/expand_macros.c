@@ -255,6 +255,16 @@ test_percent_sign_and_double_quote(void)
 	free(expanded);
 }
 
+static void
+test_empty_line_ok(void)
+{
+	char *expanded;
+
+	expanded = expand_macros(&lwin, "", "", NULL);
+	assert_string_equal("", expanded);
+	free(expanded);
+}
+
 void
 test_expand_macros(void)
 {
@@ -273,6 +283,7 @@ test_expand_macros(void)
 	run_test(test_with_quotes);
 	run_test(test_single_percent_sign);
 	run_test(test_percent_sign_and_double_quote);
+	run_test(test_empty_line_ok);
 
 	test_fixture_end();
 }
