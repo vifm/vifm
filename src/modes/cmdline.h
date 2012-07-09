@@ -20,6 +20,9 @@
 #ifndef __CMDLINE_H__
 #define __CMDLINE_H__
 
+#ifdef TEST
+#include <limits.h> /* NAME_MAX */
+#endif
 #include <wchar.h>
 
 typedef enum
@@ -46,6 +49,37 @@ void enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd,
 void enter_prompt_mode(const wchar_t *prompt, const char *cmd, prompt_cb cb,
 		complete_cmd_func complete);
 void redraw_cmdline(void);
+
+#ifdef TEST
+
+typedef enum
+{
+	HIST_NONE,
+	HIST_GO,
+	HIST_SEARCH
+}HIST;
+
+typedef struct
+{
+	wchar_t *line;            /* the line reading */
+	int index;                /* index of the current character */
+	int curs_pos;             /* position of the cursor */
+	int len;                  /* length of the string */
+	int cmd_pos;              /* position in the history */
+	wchar_t prompt[NAME_MAX]; /* prompt */
+	int prompt_wid;           /* width of prompt */
+	int complete_continue;    /* if non-zero, continue the previous completion */
+	HIST history_search;      /* HIST_* */
+	int hist_search_len;      /* length of history search pattern */
+	wchar_t *line_buf;        /* content of line before using history */
+	int reverse_completion;
+	complete_cmd_func complete;
+	int search_mode;
+	int old_top;              /* for search_mode */
+	int old_pos;              /* for search_mode */
+}line_stats_t;
+
+#endif
 
 #endif
 
