@@ -33,8 +33,8 @@
 /* Various string functions. */
 
 void chomp(char *text);
-/* Removes all trailing whitespace. */
-void trim_right(char *text);
+/* Removes all trailing whitespace. Returns new length of the string. */
+size_t trim_right(char *text);
 wchar_t * to_wide(const char *s);
 wchar_t * my_wcsdup(const wchar_t *ws);
 int starts_with(const char *str, const char *prefix);
@@ -44,7 +44,10 @@ void strtolower(char *s);
 void break_at(char *str, char c);
 void break_atr(char *str, char c);
 char * skip_non_whitespace(const char *str);
+/* Skips consecutive whitespace characters. */
 char * skip_whitespace(const char *str);
+/* Checks if the c is one of characters in the list string. c cannot be '\0'. */
+int char_is_one_of(const char *list, char c);
 /* Compares strings in OS dependent way. */
 int stroscmp(const char *s, const char *t);
 /* Compares part of strings in OS dependent way. */

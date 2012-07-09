@@ -259,7 +259,7 @@ init_active_bookmarks(const char *marks)
 	{
 		if(is_bookmark_empty(x))
 			continue;
-		if(strchr(marks, index2mark(x)) == NULL)
+		if(!char_is_one_of(marks, index2mark(x)))
 			continue;
 		active_bookmarks[i++] = x;
 	}

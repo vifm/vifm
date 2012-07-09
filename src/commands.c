@@ -1831,7 +1831,7 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		int j;
 		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
 		{
-			if(strchr(valid_bookmarks, cmd_info->argv[i][j]) == NULL)
+			if(!char_is_one_of(valid_bookmarks, cmd_info->argv[i][j]))
 				return CMDS_ERR_INVALID_ARG;
 		}
 	}
@@ -3253,7 +3253,7 @@ winrun_cmd(const cmd_info_t *cmd_info)
 		return 0;
 
 	if(cmd_info->argv[0][1] != '\0' ||
-			strchr("^$%.,", cmd_info->argv[0][0]) == NULL)
+			!char_is_one_of("^$%.,", cmd_info->argv[0][0]))
 		return CMDS_ERR_INVALID_ARG;
 
 	if(cmd_info->argc == 1)
@@ -3388,18 +3388,17 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	MacroFlags flags;
 	size_t len;
 	int external = 1;
-	int bg = 0;
+	int bg;
 
 	/* Expand macros in a binded command. */
 	expanded_com = expand_macros(curr_view, cmd_info->cmd, cmd_info->args,
 			&flags);
 
-	len = strlen(expanded_com);
-	while(len > 1 && isspace(expanded_com[len - 1]))
-		expanded_com[--len] = '\0';
-
-	if(len > 1)
-		bg = expanded_com[len - 1] == '&' && expanded_com[len - 2] == ' ';
+	len = trim_right(expanded_com);
+	if((bg = ends_with(expanded_com, " &")))
+	{
+		expanded_com[len - 2] = '\0';
+	}
 
 	if(expanded_com[0] == ':')
 	{
@@ -3459,7 +3458,6 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 		if(*tmp != '\0' && bg)
 		{
-			expanded_com[len - 2] = '\0';
 			start_background_job(tmp, 0);
 		}
 		else if(strlen(tmp) > 0)
@@ -3475,7 +3473,6 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(bg)
 	{
-		expanded_com[len - 2] = '\0';
 		start_background_job(expanded_com, 0);
 	}
 	else

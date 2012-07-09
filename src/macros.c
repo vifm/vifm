@@ -47,6 +47,8 @@ expand_macros(FileView *view, const char *command, const char *args,
 {
 	/* TODO: refactor this function expand_macros() */
 
+	static const char MACROS_WITH_QUOTING[] = "cCfFbdD";
+
 	size_t cmd_len;
 	char *expanded;
 	size_t x;
@@ -77,7 +79,7 @@ expand_macros(FileView *view, const char *command, const char *args,
 	do
 	{
 		int quotes = 0;
-		if(command[x] == '"' && strchr("cCfFbdD", command[x + 1]) != NULL)
+		if(command[x] == '"' && char_is_one_of(MACROS_WITH_QUOTING, command[x + 1]))
 		{
 			quotes = 1;
 			x++;

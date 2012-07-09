@@ -779,7 +779,7 @@ escape_for_cd(const char *str)
 	p = buf;
 	while(*str != '\0')
 	{
-		if(strchr("\\ $", *str) != NULL)
+		if(char_is_one_of("\\ $", *str))
 			*p++ = '\\';
 		else if(*str == '%')
 			*p++ = '%';

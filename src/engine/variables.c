@@ -169,7 +169,7 @@ let_variable(const char *cmd)
 
 	/* copy variable name */
 	p = name;
-	while(*cmd != '\0' && strchr(ENV_VAR_NAME_CHARS, *cmd) != NULL &&
+	while(*cmd != '\0' && char_is_one_of(ENV_VAR_NAME_CHARS, *cmd) &&
 			*cmd != '.' && *cmd != '=' && p - name < sizeof(name) - 1)
 	{
 		if(*cmd != '_' && !isalnum(*cmd))
@@ -355,7 +355,7 @@ unlet_variables(const char *cmd)
 
 		/* copy variable name */
 		p = name;
-		while(*cmd != '\0' && strchr(ENV_VAR_NAME_CHARS, *cmd) != NULL &&
+		while(*cmd != '\0' && char_is_one_of(ENV_VAR_NAME_CHARS, *cmd) &&
 				p - name < sizeof(name) - 1)
 			*p++ = *cmd++;
 		*p = '\0';
