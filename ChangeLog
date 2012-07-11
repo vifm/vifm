@@ -15,6 +15,9 @@
 
 	Expand macros for user defined commands.
 
+	Fixed directory content update on chain execution of several commands in
+	mappings.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.

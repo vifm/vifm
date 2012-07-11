@@ -1414,9 +1414,6 @@ change_directory(FileView *view, const char *directory)
 
 	snprintf(view->curr_dir, sizeof(view->curr_dir), "%s", dir_dup);
 
-	/* Save the directory modified time to check for file changes */
-	update_dir_mtime(view);
-
 	if(is_dir_list_loaded(view))
 	{
 		save_view_history(view, NULL, "", -1);
