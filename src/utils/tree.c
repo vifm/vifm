@@ -157,15 +157,13 @@ find_node(node_t *root, const char *name, int create, node_t **last)
 	if(*name == '\0')
 		return root;
 
-	end = strchr(name, '/');
-	if(end == NULL)
-		end = name + strlen(name);
+	end = until_first(name, '/');
 
 	name_len = end - name;
 	curr = root->child;
 	while(curr != NULL)
 	{
-		int comp = strnoscmp(name, curr->name, end - name);
+		int comp = strnoscmp(name, curr->name, name_len);
 		if(comp == 0 && curr->name_len == name_len)
 		{
 			if(curr->valid && last != NULL)
