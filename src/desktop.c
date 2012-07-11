@@ -156,7 +156,7 @@ expand_desktop(const char *str, char *buf)
 			strcpy(buf, "caption");
 			buf += strlen(buf);
 		}
-		else if(strchr(FILE_MACROS, *str) != NULL)
+		else if(char_is_one_of(FILE_MACROS, *str))
 		{
 			substituted = 1;
 			strcpy(buf, "%f");

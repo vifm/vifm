@@ -134,6 +134,8 @@ break_in_two(char *str, size_t max)
 static char *
 expand_ruler_macros(FileView *view, const char *format)
 {
+	static const char RULER_CHARS[] = "-lLS%0123456789";
+
 	char *result = strdup("");
 	size_t len = 0;
 	char c;
@@ -144,7 +146,7 @@ expand_ruler_macros(FileView *view, const char *format)
 		int left_align = 0;
 		char *p;
 		char buf[32];
-		if(c != '%' || (strchr("-lLS%0123456789", *format) == NULL))
+		if(c != '%' || !char_is_one_of(RULER_CHARS, *format))
 		{
 			p = realloc(result, len + 1 + 1);
 			if(p == NULL)
@@ -276,6 +278,8 @@ get_gid_string(FileView *view, size_t len, char *out_buf)
 static char *
 expand_status_line_macros(FileView *view, const char *format)
 {
+	static const char STATUS_CHARS[] = "tAugsd-lLS%0123456789";
+
 	char *result = strdup("");
 	size_t len = 0;
 	char c;
@@ -286,7 +290,7 @@ expand_status_line_macros(FileView *view, const char *format)
 		int left_align = 0;
 		char *p;
 		char buf[PATH_MAX];
-		if(c != '%' || (strchr("tAugsd-lLS%0123456789", *format) == NULL))
+		if(c != '%' || !char_is_one_of(STATUS_CHARS, *format))
 		{
 			p = realloc(result, len + 1 + 1);
 			if(p == NULL)

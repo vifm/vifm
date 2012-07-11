@@ -92,15 +92,11 @@ typedef struct
 	time_t mtime;
 	time_t atime;
 	time_t ctime;
-	char *owner;
-	char *group;
 	char date[16];
 	char type;
 	int selected;
 	int search_match;
-	char executable;
-	int list_num;
-	char ext[24];
+	int list_num; /* to be used by sorting comparer to perform stable sort */
 }dir_entry_t;
 
 typedef struct _FileView

@@ -21,6 +21,8 @@
 #include <stdlib.h> /* realloc() free() */
 #include <string.h> /* strdup() strchr() */
 
+#include "utils/str.h"
+
 #include "globals.h"
 
 static char * to_regex(const char *global);
@@ -50,11 +52,12 @@ global_matches(const char *global, const char *file)
 static char *
 to_regex(const char *global)
 {
+	static const char CHARS_TO_ESCAPE[] = "^.$()|+{";
 	char *result = strdup("^$");
 	int result_len = 1;
 	while(*global != '\0')
 	{
-		if(strchr("^.$()|+{", *global) != NULL)
+		if(char_is_one_of(CHARS_TO_ESCAPE, *global))
 		{
 		  if(*global != '^' || result[result_len - 1] != '[')
 			{

@@ -176,7 +176,6 @@ execute_cmd(const char *cmd)
 	cmd_info_t cmd_info;
 	char cmd_name[256];
 	cmd_t *cur;
-	size_t len;
 	const char *args;
 	int result;
 	int i;
@@ -213,21 +212,18 @@ execute_cmd(const char *cmd)
 	while(cur != NULL && strcmp(cur->name, cmd_name) < 0)
 		cur = cur->next;
 
-	len = strlen(cmd_name);
-	if(cur == NULL || strncmp(cmd_name, cur->name, len) != 0)
+	if(cur == NULL || strncmp(cmd_name, cur->name, strlen(cmd_name)) != 0)
 		return CMDS_ERR_INVALID_CMD;
 
 	args = parse_tail(cur, cmd, &cmd_info);
 
 	cmd_info.raw_args = strdup(args);
-	len = strlen(cmd_info.raw_args);
-	if(cur->bg && len >= 2 && cmd_info.raw_args[len - 1] == '&' &&
-			cmd_info.raw_args[len - 2] == ' ')
+	if(cur->bg && ends_with(cmd_info.raw_args, " &"))
 	{
 		cmd_info.bg = 1;
-		cmd_info.raw_args[len - 2] = '\0';
+		cmd_info.raw_args[strlen(cmd_info.raw_args) - 2] = '\0';
 	}
-	else if(cur->bg && len == 1 && cmd_info.raw_args[0] == '&')
+	else if(cur->bg && strcmp(cmd_info.raw_args, "&") == 0)
 	{
 		cmd_info.bg = 1;
 		cmd_info.raw_args[0] = '\0';

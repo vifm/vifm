@@ -395,7 +395,7 @@ static const cmd_add_t commands[] = {
 		.handler = yank_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 1, },
 
 	{ .name = "<USERCMD>",        .abbr = NULL,    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
-		.handler = usercmd_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
+		.handler = usercmd_cmd,     .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 };
 
 static cmds_conf_t cmds_conf = {
@@ -463,10 +463,7 @@ cmds_expand_macros(const char *str, int *usr1, int *usr2)
 	char *result;
 	MacroFlags flags = MACRO_NONE;
 
-	if(strchr(str, '%') != NULL)
-		result = expand_macros(curr_view, str, NULL, &flags);
-	else
-		result = strdup(str);
+	result = expand_macros(curr_view, str, NULL, &flags);
 
 	*usr1 = flags;
 
@@ -1834,7 +1831,7 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		int j;
 		for(j = 0; cmd_info->argv[i][j] != '\0'; j++)
 		{
-			if(strchr(valid_bookmarks, cmd_info->argv[i][j]) == NULL)
+			if(!char_is_one_of(valid_bookmarks, cmd_info->argv[i][j]))
 				return CMDS_ERR_INVALID_ARG;
 		}
 	}
@@ -3256,7 +3253,7 @@ winrun_cmd(const cmd_info_t *cmd_info)
 		return 0;
 
 	if(cmd_info->argv[0][1] != '\0' ||
-			strchr("^$%.,", cmd_info->argv[0][0]) == NULL)
+			!char_is_one_of("^$%.,", cmd_info->argv[0][0]))
 		return CMDS_ERR_INVALID_ARG;
 
 	if(cmd_info->argc == 1)
@@ -3391,20 +3388,17 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	MacroFlags flags;
 	size_t len;
 	int external = 1;
-	int bg = 0;
+	int bg;
 
-	if(strchr(cmd_info->cmd, '%') != NULL)
-		expanded_com = expand_macros(curr_view, cmd_info->cmd, cmd_info->args,
-				&flags);
-	else
-		expanded_com = strdup(cmd_info->cmd);
+	/* Expand macros in a binded command. */
+	expanded_com = expand_macros(curr_view, cmd_info->cmd, cmd_info->args,
+			&flags);
 
-	len = strlen(expanded_com);
-	while(len > 1 && isspace(expanded_com[len - 1]))
-		expanded_com[--len] = '\0';
-
-	if(len > 1)
-		bg = expanded_com[len - 1] == '&' && expanded_com[len - 2] == ' ';
+	len = trim_right(expanded_com);
+	if((bg = ends_with(expanded_com, " &")))
+	{
+		expanded_com[len - 2] = '\0';
+	}
 
 	if(expanded_com[0] == ':')
 	{
@@ -3464,7 +3458,6 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 		if(*tmp != '\0' && bg)
 		{
-			expanded_com[len - 2] = '\0';
 			start_background_job(tmp, 0);
 		}
 		else if(strlen(tmp) > 0)
@@ -3480,7 +3473,6 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(bg)
 	{
-		expanded_com[len - 2] = '\0';
 		start_background_job(expanded_com, 0);
 	}
 	else

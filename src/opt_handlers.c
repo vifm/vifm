@@ -476,7 +476,7 @@ cpoptions_handler(OPT_OP op, optval_t val)
 	p = val.str_val;
 	while(*p != '\0')
 	{
-		if(strchr(VALID, *p) != NULL)
+		if(char_is_one_of(VALID, *p))
 		{
 			buf[strlen(buf) + 1] = '\0';
 			buf[strlen(buf)] = *p;
@@ -868,25 +868,19 @@ undolevels_handler(OPT_OP op, optval_t val)
 static void
 vicmd_handler(OPT_OP op, optval_t val)
 {
-	size_t len;
-
 	replace_string(&cfg.vi_command, val.str_val);
-	len = strlen(cfg.vi_command);
-	cfg.vi_cmd_bg = (len > 1 && cfg.vi_command[len - 1] == '&');
+	cfg.vi_cmd_bg = ends_with(cfg.vi_command, "&");
 	if(cfg.vi_cmd_bg)
-		cfg.vi_command[len - 1] = '\0';
+		cfg.vi_command[strlen(cfg.vi_command) - 1] = '\0';
 }
 
 static void
 vixcmd_handler(OPT_OP op, optval_t val)
 {
-	size_t len;
-
 	replace_string(&cfg.vi_x_command, val.str_val);
-	len = strlen(cfg.vi_x_command);
-	cfg.vi_x_cmd_bg = (len > 1 && cfg.vi_x_command[len - 1] == '&');
+	cfg.vi_x_cmd_bg = ends_with(cfg.vi_x_command, "&");
 	if(cfg.vi_x_cmd_bg)
-		cfg.vi_x_command[len - 1] = '\0';
+		cfg.vi_x_command[strlen(cfg.vi_x_command) - 1] = '\0';
 }
 
 static void

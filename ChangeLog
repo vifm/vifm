@@ -13,6 +13,8 @@
 
 	Escape pipe character during :file completion.
 
+	Expand macros for user defined commands.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.

@@ -270,11 +270,12 @@ apply_s_gs_mod(const char *path, const char *mod, char *buf, size_t buf_len)
 size_t
 get_mods_len(const char *str)
 {
+	static const char FIXED_LENGTH_FILEMODS[] = "p~.htre";
 	size_t result = 0;
 	if(str[0] != ':')
 	{
 	}
-	else if(strchr("p~.htre", str[1]) != NULL)
+	else if(char_is_one_of(FIXED_LENGTH_FILEMODS, str[1]))
 	{
 		result = 2;
 	}

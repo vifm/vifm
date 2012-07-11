@@ -72,6 +72,9 @@ static void print_msg(const char *msg, const char *description);
 static void complete_option(const char *buf, int bool_only);
 static void complete_value(const char *buf, opt_t *opt);
 
+static const char ENDING_CHARS[] = "!?&";
+static const char MIDDLE_CHARS[] = "+-=:";
+
 static opt_print print_func;
 static int *opts_changed;
 
@@ -283,7 +286,7 @@ extract_option(const char *cmd, char *buf, int replace)
 		{
 			const char *p = cmd;
 			cmd = skip_whitespace(cmd);
-			if(*cmd == '?' || *cmd == '!' || *cmd == '&')
+			if(char_is_one_of(ENDING_CHARS, *cmd))
 			{
 				*buf++ = *cmd++;
 				if(*cmd != '\0' && !isspace(*cmd))
@@ -296,7 +299,7 @@ extract_option(const char *cmd, char *buf, int replace)
 				}
 				cmd = skip_whitespace(cmd);
 			}
-			else if(strchr("+-=:", *cmd) != NULL)
+			else if(char_is_one_of(MIDDLE_CHARS, *cmd))
 			{
 					while(*cmd != '\0' && !isspace(*cmd))
 						*buf++ = *cmd++;
@@ -378,7 +381,8 @@ process_option(const char *cmd)
 			err = set_inv(opt);
 		}
 	}
-	else if(*p == '!' || *p == '?' || *p == '&')
+	else if(char_is_one_of(ENDING_CHARS, *p))
+	/* else if(*p == '!' || *p == '?' || *p == '&') */
 	{
 		if(*(p + 1) != '\0')
 		{

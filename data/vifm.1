@@ -1,4 +1,4 @@
-.TH vifm 1 "June 29, 2012" "" "Vifm"
+.TH vifm 1 "July 8, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1553,7 +1553,8 @@ The builtin commands that accept a range are :d[elete] and :y[ank].
 The command macros may be used in user commands.
 .TP
 .BI %a
-User arguments.
+User arguments.  When user arguments contain macros, they are expanded before
+preforming substitution of %a.
 .TP
 .BI "%c %""c"
 The current file under the cursor.

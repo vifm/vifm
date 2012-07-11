@@ -325,7 +325,7 @@ view_file(const char *filename, int line, int do_fork)
 #endif
 
 	snprintf(vicmd, sizeof(vicmd), "%s", get_vicmd(&bg));
-	trim_right(vicmd);
+	(void)trim_right(vicmd);
 	if(!do_fork)
 	{
 		char *p = strrchr(vicmd, ' ');
@@ -397,15 +397,13 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 	}
 	else if(strchr(program, '%') != NULL)
 	{
-		size_t len;
 		int background;
 		MacroFlags flags;
 		char *command = expand_macros(view, program, NULL, &flags);
 
-		len = strlen(command);
-		background = len > 1 && command[len - 1] == '&' && command[len - 2] == ' ';
+		background = ends_with(command, " &");
 		if(background)
-			command[len - 2] = '\0';
+			command[strlen(command) - 2] = '\0';
 
 		if(!pause && (background || force_background))
 			start_background_job(command, flags == MACRO_IGNORE);
@@ -635,12 +633,11 @@ shellout(const char *command, int pause, int allow_screen)
 {
 	/* TODO: refactor this big function shellout() */
 
-	size_t len = (command != NULL) ? strlen(command) : 0;
 	char buf[cfg.max_args];
 	int result;
 	int ec;
 
-	if(pause > 0 && len > 1 && command[len - 1] == '&')
+	if(pause > 0 && command != NULL && ends_with(command, "&"))
 		pause = -1;
 
 	if(command != NULL)

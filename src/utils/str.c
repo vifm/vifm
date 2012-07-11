@@ -39,7 +39,7 @@ chomp(char *text)
 		text[len - 1] = '\0';
 }
 
-void
+size_t
 trim_right(char *text)
 {
 	size_t len;
@@ -49,6 +49,8 @@ trim_right(char *text)
 	{
 		text[--len] = '\0';
 	}
+
+	return len;
 }
 
 wchar_t *
@@ -148,13 +150,18 @@ skip_non_whitespace(const char *str)
 	return (char *)str;
 }
 
-/* Skips consecutive whitespace characters. */
 char *
 skip_whitespace(const char *str)
 {
 	while(isspace(*str))
 		str++;
 	return (char *)str;
+}
+
+int
+char_is_one_of(const char *list, char c)
+{
+	return c != '\0' && strchr(list, c) != NULL;
 }
 
 int
