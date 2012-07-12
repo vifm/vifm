@@ -81,6 +81,8 @@ static void update_attributes(void);
 static void update_views(int reload);
 static void reload_lists(void);
 static void reload_list(FileView *view);
+static void update_view(FileView *win);
+static void update_window_lazy(WINDOW *win);
 
 static void _gnuc_noreturn
 finish(const char *message)
@@ -603,11 +605,18 @@ status_bar_message_i(const char *message, int error)
 	}
 
 	wattrset(status_bar, 0);
-	wrefresh(status_bar);
+	update_window_lazy(status_bar);
 	if(!is_in_menu_like_mode() && cfg.last_status)
 	{
-		wrefresh(stat_win);
+		update_window_lazy(stat_win);
 	}
+
+	update_window_lazy(lborder);
+	update_window_lazy(rborder);
+	update_window_lazy(mborder);
+	update_window_lazy(lwin.win);
+	update_window_lazy(rwin.win);
+	doupdate();
 }
 
 static void
@@ -1185,8 +1194,7 @@ update_screen(UpdateType update_kind)
 	if(curr_stats.errmsg_shown)
 	{
 		redraw_error_msg(NULL, NULL);
-		redrawwin(error_win);
-		wnoutrefresh(error_win);
+		update_window_lazy(error_win);
 		doupdate();
 	}
 
@@ -1290,45 +1298,21 @@ change_window(void)
 		update_all_windows();
 }
 
-static void
-update_view(FileView *win)
-{
-	touchwin(win->title);
-	touchwin(win->win);
-
-	redrawwin(win->title);
-	redrawwin(win->win);
-
-	wnoutrefresh(win->title);
-	wnoutrefresh(win->win);
-}
-
 void
 update_all_windows(void)
 {
 	if(curr_stats.load_stage < 2)
 		return;
 
-	touchwin(lborder);
+	update_window_lazy(lborder);
 	if(cfg.last_status)
-		touchwin(stat_win);
-	touchwin(pos_win);
-	touchwin(input_win);
-	touchwin(rborder);
-	touchwin(status_bar);
-
-	/*
-	 * redrawwin() shouldn't be needed.  But without it there is a
-	 * lot of flickering when redrawing the windows?
-	 */
-
-	redrawwin(lborder);
-	if(cfg.last_status)
-		redrawwin(stat_win);
-	redrawwin(pos_win);
-	redrawwin(input_win);
-	redrawwin(rborder);
-	redrawwin(status_bar);
+	{
+		update_window_lazy(stat_win);
+	}
+	update_window_lazy(pos_win);
+	update_window_lazy(input_win);
+	update_window_lazy(rborder);
+	update_window_lazy(status_bar);
 
 	/* In One window view */
 	if(curr_stats.number_of_windows == 1)
@@ -1338,45 +1322,41 @@ update_all_windows(void)
 	/* Two Pane View */
 	else
 	{
-		touchwin(mborder);
-		redrawwin(mborder);
-		wnoutrefresh(mborder);
-
-		touchwin(top_line);
-		redrawwin(top_line);
-		wnoutrefresh(top_line);
+		update_window_lazy(mborder);
+		update_window_lazy(top_line);
 
 		update_view(&lwin);
 		update_view(&rwin);
 	}
 
-	wnoutrefresh(lborder);
-	wnoutrefresh(rborder);
-
-	touchwin(ltop_line1);
-	redrawwin(ltop_line1);
-	wnoutrefresh(ltop_line1);
-
-	touchwin(ltop_line2);
-	redrawwin(ltop_line2);
-	wnoutrefresh(ltop_line2);
-
-	touchwin(rtop_line1);
-	redrawwin(rtop_line1);
-	wnoutrefresh(rtop_line1);
-
-	touchwin(rtop_line2);
-	redrawwin(rtop_line2);
-	wnoutrefresh(rtop_line2);
-
-	if(cfg.last_status)
-		wnoutrefresh(stat_win);
-	wnoutrefresh(pos_win);
-	wnoutrefresh(input_win);
-	wnoutrefresh(status_bar);
+	update_window_lazy(ltop_line1);
+	update_window_lazy(ltop_line2);
+	update_window_lazy(rtop_line1);
+	update_window_lazy(rtop_line2);
 
 	if(!curr_stats.errmsg_shown && curr_stats.load_stage >= 2)
 		doupdate();
+}
+
+/* Updates all parts of file view. */
+static void
+update_view(FileView *win)
+{
+	update_window_lazy(win->title);
+	update_window_lazy(win->win);
+}
+
+/* Tell curses to internally mark window as changed. */
+static void
+update_window_lazy(WINDOW *win)
+{
+	touchwin(win);
+	/*
+	 * redrawwin() shouldn't be needed.  But without it there is a
+	 * lot of flickering when redrawing the windows?
+	 */
+	redrawwin(win);
+	wnoutrefresh(win);
 }
 
 void

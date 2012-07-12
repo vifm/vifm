@@ -21,6 +21,9 @@
 	Fixed partial drawing of file list over status line after expanding one
 	line status bar to multiple lines.
 
+	Fixed artifacts with bottom of the TUI after shrinking multiline status
+	bar to one line.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
