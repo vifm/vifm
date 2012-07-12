@@ -464,7 +464,7 @@ draw(void)
 		while(vi->lines[l][offset] != '\0' && vl < vi->view->window_rows - 1 &&
 				cfg.wrap_quick_view);
 	}
-	wrefresh(vi->view->win);
+	refresh_view_win(vi->view);
 }
 
 static int

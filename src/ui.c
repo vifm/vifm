@@ -605,7 +605,9 @@ status_bar_message_i(const char *message, int error)
 	wattrset(status_bar, 0);
 	wrefresh(status_bar);
 	if(!is_in_menu_like_mode() && cfg.last_status)
+	{
 		wrefresh(stat_win);
+	}
 }
 
 static void
@@ -1442,7 +1444,7 @@ redraw_lists(void)
 			quick_view_file(curr_view);
 		else
 			draw_dir_list(other_view, other_view->top_line);
-		wrefresh(other_view->win);
+		refresh_view_win(other_view);
 	}
 }
 
@@ -1582,6 +1584,19 @@ resize_for_menu_like(void)
 	wrefresh(status_bar);
 	wrefresh(pos_win);
 	wrefresh(input_win);
+}
+
+void
+refresh_view_win(FileView *view)
+{
+	wrefresh(view->win);
+	/* we use getmaxy(...) instead of multiline_status_bar to handle command line
+	 * mode, which doesn't use this module to show multilined messages */
+	if(cfg.last_status && getmaxy(status_bar) > 1)
+	{
+		touchwin(stat_win);
+		wrefresh(stat_win);
+	}
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

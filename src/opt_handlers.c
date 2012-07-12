@@ -785,7 +785,7 @@ resort_view(FileView * view)
 {
 	resort_dir_list(1, view);
 	draw_dir_list(view, view->top_line);
-	wrefresh(view->win);
+	refresh_view_win(view);
 }
 
 static void

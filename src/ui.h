@@ -199,6 +199,8 @@ void wprint(WINDOW *win, const char *str);
 void request_view_update(FileView *view);
 /* Performs resizing of some of TUI elements for menu like modes. */
 void resize_for_menu_like(void);
+/* Performs real pane redraw in the TUI and maybe some related operations. */
+void refresh_view_win(FileView *view);
 
 #endif
 
