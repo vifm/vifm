@@ -33,6 +33,7 @@ Windows.
     Follow targets of .lnk files.
     Fix freezing (maybe already fixed).
     Use UTF8 internally.
+    Make 'fastrun' understand file extensions on Windows (to ignore them).
 
 Vi(m) specific features that need to be added.
     Fix '' to go back to all jumps G gg links (in one directory?).
@@ -127,3 +128,4 @@ Code improvements.
         do they contain (rows - 1) and (width - 1) ?
     Add null_or_empty() function to utils/str.c unit.
     Get file size on Windows using GetFileAttributesEx().
+    Reduce number of magic numbers.

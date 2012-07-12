@@ -45,7 +45,7 @@ toggle_quick_view(void)
 		curr_stats.view = 0;
 
 		draw_dir_list(other_view, other_view->top_line);
-		wrefresh(other_view->win);
+		refresh_view_win(other_view);
 	}
 	else
 	{
@@ -135,7 +135,7 @@ quick_view_file(FileView *view)
 			}
 			break;
 	}
-	wrefresh(other_view->win);
+	refresh_view_win(other_view);
 	wrefresh(other_view->title);
 }
 

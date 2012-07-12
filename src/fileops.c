@@ -1481,20 +1481,20 @@ put_next(const char *dest_name, int override)
 		dest_name++;
 	}
 
-	if(path_exists(dest_name) && !override)
-	{
-		prompt_what_to_do(dest_name);
-		return 1;
-	}
-
 	snprintf(dst_buf, sizeof(dst_buf), "%s/%s", put_confirm.view->curr_dir,
 			dest_name);
 	chosp(dst_buf);
 
+	if(path_exists(dst_buf) && !override)
+	{
+		prompt_what_to_do(dst_buf);
+		return 1;
+	}
+
 	if(override)
 	{
 		struct stat st;
-		if(lstat(dest_name, &st) == 0)
+		if(lstat(dst_buf, &st) == 0)
 		{
 			if(perform_operation(OP_REMOVESL, NULL, dst_buf, NULL) != 0)
 				return 0;

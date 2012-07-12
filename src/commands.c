@@ -1521,7 +1521,7 @@ cd_cmd(const cmd_info_t *cmd_info)
 			{
 				result += cd(other_view, cmd_info->argv[0]);
 			}
-			wrefresh(other_view->win);
+			refresh_view_win(other_view);
 		}
 	}
 	else
@@ -1538,7 +1538,7 @@ cd_cmd(const cmd_info_t *cmd_info)
 		{
 			result += cd(other_view, cmd_info->argv[1]);
 		}
-		wrefresh(other_view->win);
+		refresh_view_win(other_view);
 	}
 	if(!cfg.auto_ch_pos)
 		curr_stats.ch_pos = 1;
@@ -2995,7 +2995,7 @@ sync_cmd(const cmd_info_t *cmd_info)
 	if(change_directory(other_view, buf) >= 0)
 	{
 		load_dir_list(other_view, 0);
-		wrefresh(other_view->win);
+		refresh_view_win(other_view);
 	}
 	return 0;
 }

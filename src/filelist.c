@@ -657,7 +657,7 @@ draw_dir_list(FileView *view, int top)
   	other->curr_line = other->list_pos - other->top_line;
 
 		draw_dir_list(other, other->top_line);
-		wrefresh(other->win);
+		refresh_view_win(other);
 	}
 }
 
@@ -845,7 +845,7 @@ move_to_list_pos(FileView *view, int pos)
 
 	wattrset(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
 	mvwaddstr(view->win, old_cursor, 0, " ");
-	wrefresh(view->win);
+	refresh_view_win(view);
 	wattroff(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
 
 	LINE_COLOR = get_line_color(view, pos);
@@ -883,7 +883,7 @@ move_to_list_pos(FileView *view, int pos)
 
 	add_sort_type_info(view, view->curr_line, pos, 1);
 
-	wrefresh(view->win);
+	refresh_view_win(view);
 	update_stat_window(view);
 
 	if(curr_stats.view)
@@ -2300,7 +2300,7 @@ reload_window(FileView *view)
 	if(view != curr_view)
 	{
 		mvwaddstr(view->win, view->curr_line, 0, "*");
-		wrefresh(view->win);
+		refresh_view_win(view);
 	}
 
 	curr_stats.skip_history = 0;
@@ -2405,7 +2405,9 @@ load_saving_pos(FileView *view, int reload)
 	}
 
 	if(curr_stats.number_of_windows != 1 || view == curr_view)
-		wrefresh(view->win);
+	{
+		refresh_view_win(view);
+	}
 }
 
 void
@@ -2531,7 +2533,7 @@ cd(FileView *view, const char *path)
 	else
 	{
 		draw_dir_list(other_view, other_view->top_line);
-		wrefresh(other_view->win);
+		refresh_view_win(other_view);
 	}
 	return 0;
 }
