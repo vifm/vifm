@@ -1487,7 +1487,7 @@ put_next(const char *dest_name, int override)
 
 	if(path_exists(dst_buf) && !override)
 	{
-		prompt_what_to_do(dst_buf);
+		prompt_what_to_do(dest_name);
 		return 1;
 	}
 
@@ -1972,6 +1972,8 @@ put_files_from_register_i(FileView *view, int start)
 
 	status_bar_messagef("%d file%s inserted", put_confirm.y,
 			(put_confirm.y == 1) ? "" : "s");
+
+	load_saving_pos(put_confirm.view, 1);
 
 	return 1;
 }

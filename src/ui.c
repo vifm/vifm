@@ -610,12 +610,6 @@ status_bar_message_i(const char *message, int error)
 	{
 		update_window_lazy(stat_win);
 	}
-
-	update_window_lazy(lborder);
-	update_window_lazy(rborder);
-	update_window_lazy(mborder);
-	update_window_lazy(lwin.win);
-	update_window_lazy(rwin.win);
 	doupdate();
 }
 
@@ -1304,16 +1298,6 @@ update_all_windows(void)
 	if(curr_stats.load_stage < 2)
 		return;
 
-	update_window_lazy(lborder);
-	if(cfg.last_status)
-	{
-		update_window_lazy(stat_win);
-	}
-	update_window_lazy(pos_win);
-	update_window_lazy(input_win);
-	update_window_lazy(rborder);
-	update_window_lazy(status_bar);
-
 	/* In One window view */
 	if(curr_stats.number_of_windows == 1)
 	{
@@ -1328,6 +1312,16 @@ update_all_windows(void)
 		update_view(&lwin);
 		update_view(&rwin);
 	}
+
+	update_window_lazy(lborder);
+	if(cfg.last_status)
+	{
+		update_window_lazy(stat_win);
+	}
+	update_window_lazy(pos_win);
+	update_window_lazy(input_win);
+	update_window_lazy(rborder);
+	update_window_lazy(status_bar);
 
 	update_window_lazy(ltop_line1);
 	update_window_lazy(ltop_line2);
