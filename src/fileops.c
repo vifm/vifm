@@ -1487,7 +1487,7 @@ put_next(const char *dest_name, int override)
 
 	if(path_exists(dst_buf) && !override)
 	{
-		prompt_what_to_do(dst_buf);
+		prompt_what_to_do(dest_name);
 		return 1;
 	}
 
