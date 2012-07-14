@@ -2486,7 +2486,7 @@ mark_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cmd_info->end == NOT_DEF || !pane_in_dir(curr_view, tmp))
 		{
-			if(pane_in_dir(curr_view, tmp))
+			if(curr_stats.load_stage >= 3 && pane_in_dir(curr_view, tmp))
 				result = add_bookmark(cmd_info->argv[0][0], tmp,
 						curr_view->dir_entry[curr_view->list_pos].name);
 			else
