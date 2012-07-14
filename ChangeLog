@@ -26,6 +26,10 @@
 
 	Fixed file overwriting issue.
 
+	Fixed appearance of an empty filename in the :marks menu.
+
+	Fixed filter resetting on following bookmarks.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
