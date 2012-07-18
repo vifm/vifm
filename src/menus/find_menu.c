@@ -72,6 +72,8 @@ show_find_menu(FileView *view, int with_path, const char *args)
 	}
 	free(files);
 
+	status_bar_message("find...");
+
 	were_errors = capture_output_to_menu(view, buf, &m);
 	if(!were_errors && m.len < 1)
 	{

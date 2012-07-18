@@ -2,6 +2,8 @@
 
 	Added Ctrl-W H/J/K/L normal mode keys.
 
+	Added status bar messages for :apropos, :find and :locate commands.
+
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
 

@@ -51,6 +51,8 @@ show_locate_menu(FileView *view, const char *args)
 	snprintf(buf, sizeof(buf), "locate %s", m.args);
 	m.title = strdup(buf);
 
+	status_bar_message("locate...");
+
 	were_errors = capture_output_to_menu(view, buf, &m);
 	if(!were_errors && m.len < 1)
 	{
