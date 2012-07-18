@@ -79,7 +79,7 @@ show_grep_menu(FileView *view, const char *args, int invert)
 	}
 	free(files);
 
-	status_bar_message("grep is working...");
+	status_bar_message("grep...");
 
 	were_errors = capture_output_to_menu(view, cmd, &m);
 	free(cmd);
