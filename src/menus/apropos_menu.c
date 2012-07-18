@@ -52,6 +52,8 @@ show_apropos_menu(FileView *view, char *args)
 	snprintf(m.title, strlen(args) + 11,  " Apropos %s ",  args);
 	snprintf(buf, sizeof(buf), "apropos %s", args);
 
+	status_bar_message("apropos...");
+
 	were_errors = capture_output_to_menu(view, buf, &m);
 	if(!were_errors && m.len < 1)
 		show_error_msgf("Nothing Appropriate", "No matches for \'%s\'", m.title);
