@@ -32,6 +32,8 @@
 
 	Fixed filter resetting on following bookmarks.
 
+	Fixed mapping of <c-h>.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
