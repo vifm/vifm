@@ -41,7 +41,7 @@ key_pair_t key_pairs[] = {
 	{ "<c-e>",      L"\x05"              },
 	{ "<c-f>",      L"\x06"              },
 	{ "<c-g>",      L"\x07"              },
-	{ "<c-h>",      L"\x08"              },
+	{ "<c-h>",      { KEY_BACKSPACE, 0 } },
 	{ "<c-i>",      L"\x09"              },
 	{ "<c-j>",      L"\x0a"              },
 	{ "<c-k>",      L"\x0b"              },
