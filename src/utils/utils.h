@@ -27,6 +27,7 @@
 #include <regex.h>
 
 #include <sys/types.h> /* mode_t */
+#include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() */
 
 #include <limits.h> /* PATH_MAX */
 #include <stdint.h> /* uint64_t */
@@ -34,6 +35,7 @@
 
 #include "macros.h"
 
+#ifdef _WIN32
 #ifndef WEXITSTATUS
 #define WEXITSTATUS(a) (a)
 #endif
@@ -42,7 +44,6 @@
 #define WIFEXITED(a) 1
 #endif
 
-#ifdef _WIN32
 #define lstat stat
 #endif
 

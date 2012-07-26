@@ -34,6 +34,8 @@
 
 	Fixed mapping of <c-h>.
 
+	Fixed "Press return..." message appearing always on OSX.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
