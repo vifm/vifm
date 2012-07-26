@@ -18,6 +18,7 @@
  */
 
 #include <sys/stat.h> /* stat */
+#include <sys/wait.h> /* WEXITSTATUS() */
 
 #include <signal.h> /* sighandler_t, signal() */
 #include <stdio.h> /* snprintf() */
@@ -745,6 +746,8 @@ shellout(const char *command, int pause, int allow_screen)
 	env_set("PWD", curr_view->curr_dir);
 
 	ec = my_system(buf);
+	/* No WIFEXITED(ec) check here, since my_system(...) shouldn't return until
+	 * subprocess exited. */
 	result = WEXITSTATUS(ec);
 
 #ifndef _WIN32
