@@ -109,6 +109,7 @@ Package content
     |  |-- background.c - runs commands in background
     |  |-- bookmarks.c - stores information about bookmarked directories
     |  |-- color_scheme.c - color schemes
+    |  |-- column_view.c - column formatting unit
     |  |-- commands.c - handles command line commands
     |  |-- commands_completion.c - handles command line completion
     |  |-- desktop.c - code that parses *.desktop files on *nix systems

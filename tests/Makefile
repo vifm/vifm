@@ -1,4 +1,5 @@
-dirs := commands completion filetype keys misc options parsing undo variables
+dirs := commands column_view completion filetype keys misc options parsing undo
+dirs += variables
 dirs_s := $(addsuffix _t, $(dirs))
 
 .PHONY: tests $(dirs) $(dirs_s)
