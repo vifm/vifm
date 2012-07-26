@@ -36,6 +36,13 @@ enum
 	UNKNOWN
 };
 
+/* Initialization/termination functions. */
+
+/* Prepares views. */
+void init_filelists(void);
+/* Loads view file list for the first time. */
+void load_initial_directory(FileView *view, const char *dir);
+
 /* Position related functions. */
 
 int find_file_pos_in_list(FileView *view, const char *file);
@@ -110,6 +117,11 @@ void check_if_filelists_have_changed(FileView *view);
 int cd_is_possible(const char *path);
 /* Checks whether directory list was loaded at least once since startup. */
 int is_dir_list_loaded(FileView *view);
+/* Returns non-zero if path should be changed. */
+int view_is_at_path(FileView *view, const char *path);
+/* Sets view's current directory from path value.
+ * Returns non-zero if view's directory was changed. */
+int set_view_path(FileView *view, const char *path);
 
 #ifdef TEST
 int regexp_filter_match(FileView *view, const char *filename);

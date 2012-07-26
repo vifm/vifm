@@ -75,12 +75,78 @@
 #include "term_title.h"
 #include "ui.h"
 
+static void init_view(FileView *view);
+static void init_view_history(FileView *view);
 static char * get_viewer_command(const char *viewer);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
 static int file_can_be_displayed(const char *directory, const char *filename);
+
+void
+init_filelists(void)
+{
+	init_view(&rwin);
+	init_view(&lwin);
+}
+
+/* Loads initial display values into view structure. */
+static void
+init_view(FileView *view)
+{
+	view->curr_line = 0;
+	view->top_line = 0;
+	view->list_rows = 0;
+	view->list_pos = 0;
+	view->selected_filelist = NULL;
+	view->history_num = 0;
+	view->history_pos = 0;
+	view->invert = 0;
+	view->color_scheme = 1;
+
+	view->prev_invert = view->invert;
+	view->hide_dot = 1;
+	strncpy(view->regexp, "", sizeof(view->regexp));
+	view->matches = 0;
+
+	init_view_history(view);
+}
+
+/* Allocates memory for view history smartly (handles huge values). */
+static void
+init_view_history(FileView *view)
+{
+	if(cfg.history_len == 0)
+		return;
+
+	view->history = malloc(sizeof(history_t)*cfg.history_len);
+	while(view->history == NULL)
+	{
+		cfg.history_len /= 2;
+		view->history = malloc(sizeof(history_t)*cfg.history_len);
+	}
+}
+
+void
+load_initial_directory(FileView *view, const char *dir)
+{
+	if(view->curr_dir[0] == '\0')
+		snprintf(view->curr_dir, sizeof(view->curr_dir), "%s", dir);
+	else
+		dir = view->curr_dir;
+
+	view->dir_entry = malloc(sizeof(dir_entry_t));
+	memset(view->dir_entry, 0, sizeof(dir_entry_t));
+
+	view->dir_entry[0].name = strdup("");
+	view->dir_entry[0].type = DIRECTORY;
+
+	view->list_rows = 1;
+	if(!is_root_dir(view->curr_dir))
+		chosp(view->curr_dir);
+	(void)change_directory(view, dir);
+}
 
 static int
 get_line_color(FileView* view, int pos)
@@ -2536,6 +2602,25 @@ cd(FileView *view, const char *path)
 		refresh_view_win(other_view);
 	}
 	return 0;
+}
+
+int
+view_is_at_path(FileView *view, const char *path)
+{
+	if(path[0] == '\0' || stroscmp(view->curr_dir, path) == 0)
+		return 0;
+	return 1;
+}
+
+int
+set_view_path(FileView *view, const char *path)
+{
+	if(!view_is_at_path(view, path))
+		return 0;
+
+	strcpy(view->curr_dir, path);
+	exclude_file_name(view->curr_dir);
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
