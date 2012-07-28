@@ -81,6 +81,7 @@ typedef struct
 {
 	FileView *view;
 	size_t line;
+	int current;
 }
 column_data_t;
 
@@ -151,18 +152,38 @@ column_line_print(const void *data, int column_id, const char *buf,
 
 	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
 	{
-		LINE_COLOR = get_line_color(view, view->list_pos);
-		col = view->cs.color[WIN_COLOR];
-		mix_colors(&col, &view->cs.color[LINE_COLOR]);
+		if(cdt->current)
+		{
+			LINE_COLOR = get_line_color(view, view->list_pos);
+			col = view->cs.color[WIN_COLOR];
+			mix_colors(&col, &view->cs.color[LINE_COLOR]);
 
-		if(entry->selected)
-			mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+			if(entry->selected)
+				mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
 
-		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
 
-		init_pair(view->color_scheme + CURRENT_COLOR, col.fg, col.bg);
-		wattron(view->win,
-				COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
+			init_pair(view->color_scheme + CURRENT_COLOR, col.fg, col.bg);
+			wattron(view->win,
+					COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
+		}
+		else
+		{
+			LINE_COLOR = get_line_color(view, i);
+			col = view->cs.color[WIN_COLOR];
+			mix_colors(&col, &view->cs.color[LINE_COLOR]);
+
+			if(entry->selected)
+			{
+				mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+				LINE_COLOR = SELECTED_COLOR;
+			}
+
+			init_pair(view->color_scheme + LINE_COLOR, col.fg, col.bg);
+
+			wattrset(view->win,
+					COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
+		}
 	}
 	else
 	{
@@ -175,7 +196,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 			type = SELECTED_COLOR;
 		}
 
-		if(view->list_pos == i)
+		if(cdt->current)
 		{
 			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
 			type = CURRENT_COLOR;
@@ -196,8 +217,16 @@ column_line_print(const void *data, int column_id, const char *buf,
 
 	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
 	{
-		wattroff(view->win,
-				COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
+		if(cdt->current)
+		{
+			wattroff(view->win,
+					COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
+		}
+		else
+		{
+			wattroff(view->win,
+					COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
+		}
 	}
 	else
 	{
@@ -1068,10 +1097,7 @@ erase_current_line_bar(FileView *view)
 {
 	int old_cursor = view->curr_line;
 	int old_pos = view->top_line + old_cursor;
-	char file_name[view->window_width*2 - 2];
-	int LINE_COLOR;
-	size_t print_width;
-	col_attr_t col;
+	column_data_t cdt = {view, old_pos, 0};
 
 	if(old_cursor < 0)
 		return;
@@ -1079,40 +1105,17 @@ erase_current_line_bar(FileView *view)
 	if(curr_stats.load_stage < 2)
 		return;
 
-	/* Extra long file names are truncated to fit */
-
-	if(old_pos >= 0 && old_pos < view->list_rows)
+	if(old_pos < 0 || old_pos >= view->list_rows)
 	{
-		print_width = get_real_string_width(view->dir_entry[old_pos].name,
-				view->window_width - 1) + 1;
-		snprintf(file_name, print_width, "%s", view->dir_entry[old_pos].name);
-	}
-	else /* The entire list is going to be redrawn so just return. */
+		/* The entire list is going to be redrawn so just return. */
 		return;
+	}
 
 	wmove(view->win, old_cursor, 1);
 
 	wclrtoeol(view->win);
 
-	LINE_COLOR = get_line_color(view, old_pos);
-	col = view->cs.color[WIN_COLOR];
-	mix_colors(&col, &view->cs.color[LINE_COLOR]);
-
-	if(view->dir_entry[old_pos].selected)
-	{
-		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-		LINE_COLOR = SELECTED_COLOR;
-	}
-
-	init_pair(view->color_scheme + LINE_COLOR, col.fg, col.bg);
-
-	wattrset(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
-	file_name[print_width] = '\0';
-	wmove(view->win, old_cursor, 1);
-  wprint(view->win, file_name);
-	wattroff(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
-
-	add_sort_type_info(view, old_cursor, old_pos, 0);
+	columns_format_line(view->columns, &cdt, view->window_width - 1);
 }
 
 /* Returns non-zero if redraw is needed */
@@ -1186,6 +1189,7 @@ move_to_list_pos(FileView *view, int pos)
 {
 	int redraw = 0;
 	int old_cursor = view->curr_line;
+	column_data_t cdt = {view, 0, 1};
 
 	if(pos < 1)
 		pos = 0;
@@ -1200,6 +1204,7 @@ move_to_list_pos(FileView *view, int pos)
 		view->curr_line = view->list_rows - 1;
 
 	view->list_pos = pos;
+	cdt.line = pos;
 
 	erase_current_line_bar(view);
 
@@ -1219,7 +1224,6 @@ move_to_list_pos(FileView *view, int pos)
 	wmove(view->win, view->curr_line, 1);
 	wclrtoeol(view->win);
 
-	column_data_t cdt = {view, view->list_pos};
 	column_line_print(&cdt, FILL_COLUMN_ID, " ", -1);
 	columns_format_line(view->columns, &cdt, view->window_width - 1);
 	column_line_print(&cdt, FILL_COLUMN_ID, " ", view->window_width);
