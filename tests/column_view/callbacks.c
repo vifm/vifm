@@ -21,15 +21,16 @@ column_line_print(const void *data, int column_id, const char *buf,
 }
 
 static void
-column1_func(const void *data, size_t buf_len, char *buf)
+columns_func(int id, const void *data, size_t buf_len, char *buf)
 {
-	column1_counter++;
-}
-
-static void
-column2_func(const void *data, size_t buf_len, char *buf)
-{
-	column2_counter++;
+	if(id == COL1_ID)
+	{
+		column1_counter++;
+	}
+	else
+	{
+		column2_counter++;
+	}
 }
 
 static void
@@ -44,8 +45,8 @@ setup(void)
 	};
 
 	print_next = column_line_print;
-	col1_next = column1_func;
-	col2_next = column2_func;
+	col1_next = columns_func;
+	col2_next = columns_func;
 
 	print_counter = 0;
 	column1_counter = 0;

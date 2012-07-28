@@ -30,17 +30,17 @@ column_line_print(const void *data, int column_id, const char *buf,
 }
 
 static void
-column1_func(const void *data, size_t buf_len, char *buf)
+column1_func(int id, const void *data, size_t buf_len, char *buf)
 {
 	assert_true(col1_next != NULL);
-	col1_next(data, buf_len, buf);
+	col1_next(id, data, buf_len, buf);
 }
 
 static void
-column2_func(const void *data, size_t buf_len, char *buf)
+column2_func(int id, const void *data, size_t buf_len, char *buf)
 {
 	assert_true(col2_next != NULL);
-	col2_next(data, buf_len, buf);
+	col2_next(id, data, buf_len, buf);
 }
 
 static void

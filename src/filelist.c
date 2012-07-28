@@ -86,7 +86,7 @@ column_data_t;
 
 static void column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset);
-static void print_stub(const void *data, size_t buf_len, char *buf);
+static void print_stub(int id, const void *data, size_t buf_len, char *buf);
 static void init_view(FileView *view);
 static void prepare_view(FileView *view);
 static void init_view_history(FileView *view);
@@ -199,7 +199,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 
 /* Print callback stub for column_view unit. */
 static void
-print_stub(const void *data, size_t buf_len, char *buf)
+print_stub(int id, const void *data, size_t buf_len, char *buf)
 {
 	buf[0] = '\0';
 }

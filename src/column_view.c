@@ -253,9 +253,13 @@ columns_format_line(const columns_t columns, const void *data, size_t max_width)
 	{
 		char format_buffer[max_width*4 + 1];
 		size_t start;
+		size_t max_field_width;
 		column_t *col = &columns->list[i];
-		col->func(data, ARRAY_LEN(format_buffer), format_buffer);
-		decorate_output(col, format_buffer, max_width - ((col->info.align == AT_LEFT) ? col->start : 0));
+		col->func(col->info.column_id, data, ARRAY_LEN(format_buffer),
+				format_buffer);
+		max_field_width = max_width;
+		max_field_width -= ((col->info.align == AT_LEFT) ? col->start : 0);
+		decorate_output(col, format_buffer, max_field_width);
 		start = calculate_start_pos(col, format_buffer);
 
 		if(start > end)

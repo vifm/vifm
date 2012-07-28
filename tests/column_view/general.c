@@ -15,7 +15,7 @@ print_not_less_than_zero(const void *data, int column_id, const char *buf,
 }
 
 static void
-column12_func(const void *data, size_t buf_len, char *buf)
+column12_func(int id, const void *data, size_t buf_len, char *buf)
 {
 }
 

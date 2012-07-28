@@ -16,13 +16,13 @@ column_line_print(const void *data, int column_id, const char *buf,
 }
 
 static void
-column1_func(const void *data, size_t buf_len, char *buf)
+column1_func(int id, const void *data, size_t buf_len, char *buf)
 {
 	snprintf(buf, buf_len + 1, "%s", "абвгдеёжзийклмнопрстуфхцчшщьыъэюя");
 }
 
 static void
-column2_func(const void *data, size_t buf_len, char *buf)
+column2_func(int id, const void *data, size_t buf_len, char *buf)
 {
 	snprintf(buf, buf_len + 1, "%s", "яюэъыьщшчцхфутсрпонмлкйизжёедгвба");
 }

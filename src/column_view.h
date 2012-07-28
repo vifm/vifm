@@ -57,7 +57,8 @@ CropType;
 typedef struct cols_t *columns_t;
 
 /* A column callback function, which sould fill the buf with column text. */
-typedef void (*column_func)(const void *data, size_t buf_len, char *buf);
+typedef void (*column_func)(int id, const void *data, size_t buf_len,
+		char *buf);
 /* A callback function, for displaying column contents. */
 typedef void (*column_line_print_func)(const void *data, int column_id,
 		const char *buf, size_t offset);
