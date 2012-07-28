@@ -751,9 +751,11 @@ sort_handler(OPT_OP op, optval_t val)
 	while(*p != '\0');
 
 	for(j = 0; j < i; j++)
-		if(abs(curr_view->sort[j]) == SORT_BY_NAME ||
-				abs(curr_view->sort[j]) == SORT_BY_INAME)
+	{
+		int sort_key = abs(curr_view->sort[j]);
+		if(sort_key == SORT_BY_NAME || sort_key == SORT_BY_INAME)
 			break;
+	}
 	if(j == i)
 #ifndef _WIN32
 		curr_view->sort[i++] = SORT_BY_NAME;

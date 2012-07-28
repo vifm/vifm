@@ -45,6 +45,7 @@
 #endif
 
 #include "color_scheme.h"
+#include "column_view.h"
 #include "status.h"
 
 #define MIN_TERM_HEIGHT 10
@@ -151,6 +152,8 @@ typedef struct _FileView
 	history_t *history;
 
 	col_scheme_t cs;
+
+	columns_t columns; /* handle for column_view unit */
 }FileView;
 
 FileView lwin;

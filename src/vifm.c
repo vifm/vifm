@@ -326,7 +326,6 @@ main(int argc, char *argv[])
 
 	init_commands();
 	update_path_env(1);
-	load_default_configuration();
 
 	if(init_status() != 0)
 	{

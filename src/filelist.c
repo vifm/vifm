@@ -62,6 +62,7 @@
 #include "utils/utils.h"
 #include "background.h"
 #include "color_scheme.h"
+#include "column_view.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "fileops.h"
@@ -75,9 +76,23 @@
 #include "term_title.h"
 #include "ui.h"
 
+/* Packet set of parameters to pass as user data for processing columns. */
+typedef struct
+{
+	FileView *view;
+	size_t line;
+}
+column_data_t;
+
+static void column_line_print(const void *data, int column_id, const char *buf,
+		size_t offset);
+static void print_stub(const void *data, size_t buf_len, char *buf);
 static void init_view(FileView *view);
+static void prepare_view(FileView *view);
 static void init_view_history(FileView *view);
+static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
+static int get_secondary_key(int primary_key);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
 static void rescue_from_empty_filelist(FileView * view);
@@ -87,8 +102,106 @@ static int file_can_be_displayed(const char *directory, const char *filename);
 void
 init_filelists(void)
 {
+	columns_set_line_print_func(column_line_print);
+	columns_add_column_desc(SORT_BY_NAME, print_stub);
+	columns_add_column_desc(SORT_BY_INAME, print_stub);
+	columns_add_column_desc(SORT_BY_SIZE, print_stub);
+
+	columns_add_column_desc(SORT_BY_EXTENSION, print_stub);
+#ifndef _WIN32
+	columns_add_column_desc(SORT_BY_GROUP_ID, print_stub);
+	columns_add_column_desc(SORT_BY_GROUP_NAME, print_stub);
+	columns_add_column_desc(SORT_BY_MODE, print_stub);
+	columns_add_column_desc(SORT_BY_OWNER_ID, print_stub);
+	columns_add_column_desc(SORT_BY_OWNER_NAME, print_stub);
+#endif
+	columns_add_column_desc(SORT_BY_TIME_ACCESSED, print_stub);
+	columns_add_column_desc(SORT_BY_TIME_CHANGED, print_stub);
+	columns_add_column_desc(SORT_BY_TIME_MODIFIED, print_stub);
+
 	init_view(&rwin);
 	init_view(&lwin);
+}
+
+/* Print callback for column_view unit. */
+static void
+column_line_print(const void *data, int column_id, const char *buf,
+		size_t offset)
+{
+	int LINE_COLOR;
+	col_attr_t col;
+	int type;
+	char print_buf[strlen(buf) + 1];
+	size_t width_left;
+	size_t trim_pos;
+
+	const column_data_t *cdt = data;
+	size_t i = cdt->line;
+	FileView *view = cdt->view;
+	dir_entry_t *entry = &view->dir_entry[cdt->line];
+	wmove(view->win, view->curr_line, 1 + offset);
+
+	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
+	{
+		LINE_COLOR = get_line_color(view, view->list_pos);
+		col = view->cs.color[WIN_COLOR];
+		mix_colors(&col, &view->cs.color[LINE_COLOR]);
+
+		if(entry->selected)
+			mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+
+		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+
+		init_pair(view->color_scheme + CURRENT_COLOR, col.fg, col.bg);
+		wattron(view->win,
+				COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
+	}
+	else
+	{
+		type = WIN_COLOR;
+		col = view->cs.color[WIN_COLOR];
+
+		if(entry->selected)
+		{
+			mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+			type = SELECTED_COLOR;
+		}
+
+		if(view->list_pos == i)
+		{
+			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+			type = CURRENT_COLOR;
+		}
+		else
+		{
+			init_pair(view->color_scheme + type, col.fg, col.bg);
+		}
+
+		wattron(view->win, COLOR_PAIR(type + view->color_scheme) | col.attr);
+	}
+
+	strcpy(print_buf, buf);
+	width_left = view->window_width - 1 - offset;
+	trim_pos = get_normal_utf8_string_widthn(buf, width_left);
+	print_buf[trim_pos] = '\0';
+	wprint(view->win, print_buf);
+
+	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
+	{
+		wattroff(view->win,
+				COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
+	}
+	else
+	{
+		wattroff(view->win, COLOR_PAIR(type + view->color_scheme) | col.attr);
+	}
+}
+
+/* Print callback stub for column_view unit. */
+static void
+print_stub(const void *data, size_t buf_len, char *buf)
+{
+	buf[0] = '\0';
 }
 
 /* Loads initial display values into view structure. */
@@ -102,15 +215,45 @@ init_view(FileView *view)
 	view->selected_filelist = NULL;
 	view->history_num = 0;
 	view->history_pos = 0;
-	view->invert = 0;
 	view->color_scheme = 1;
 
-	view->prev_invert = view->invert;
 	view->hide_dot = 1;
-	strncpy(view->regexp, "", sizeof(view->regexp));
 	view->matches = 0;
+	view->columns = columns_create();
+
+	prepare_view(view);
 
 	init_view_history(view);
+	reset_view_sort(view);
+}
+
+void
+prepare_views(void)
+{
+	prepare_view(&lwin);
+	prepare_view(&rwin);
+}
+
+/* Loads some of view parameters that should be restored on configuration
+ * reloading (e.g. on :restart command). */
+static void
+prepare_view(FileView *view)
+{
+	int i;
+
+	strncpy(view->regexp, "", sizeof(view->regexp));
+	replace_string(&view->prev_filter, "");
+	set_filename_filter(view, "");
+	view->invert = 1;
+	view->prev_invert = view->invert;
+
+#ifndef _WIN32
+	view->sort[0] = SORT_BY_NAME;
+#else
+	view->sort[0] = SORT_BY_INAME;
+#endif
+	for(i = 1; i < NUM_SORT_OPTIONS; i++)
+		view->sort[i] = NUM_SORT_OPTIONS + 1;
 }
 
 /* Allocates memory for view history smartly (handles huge values). */
@@ -618,6 +761,49 @@ update_view_title(FileView *view)
 }
 
 void
+reset_view_sort(FileView *view)
+{
+	column_info_t column_info =
+	{
+		.column_id = SORT_BY_NAME, .full_width = 0UL, .text_width = 0UL,
+		.align = AT_LEFT,          .sizing = ST_AUTO, .cropping = CT_NONE,
+	};
+
+	columns_clear(view->columns);
+	columns_add_column(view->columns, column_info);
+
+	column_info.column_id = get_secondary_key(abs(view->sort[0]));
+	column_info.align = AT_RIGHT;
+	columns_add_column(view->columns, column_info);
+}
+
+/* Maps primary sort key to second column type. */
+static int
+get_secondary_key(int primary_key)
+{
+	switch(primary_key)
+	{
+#ifndef _WIN32
+		case SORT_BY_OWNER_NAME:
+		case SORT_BY_OWNER_ID:
+		case SORT_BY_GROUP_NAME:
+		case SORT_BY_GROUP_ID:
+		case SORT_BY_MODE:
+#endif
+		case SORT_BY_TIME_MODIFIED:
+		case SORT_BY_TIME_ACCESSED:
+		case SORT_BY_TIME_CHANGED:
+			return primary_key;
+		case SORT_BY_NAME:
+		case SORT_BY_INAME:
+		case SORT_BY_EXTENSION:
+		case SORT_BY_SIZE:
+		default:
+			return SORT_BY_SIZE;
+	}
+}
+
+void
 draw_dir_list(FileView *view, int top)
 {
 	int attr;
@@ -880,10 +1066,6 @@ move_to_list_pos(FileView *view, int pos)
 {
 	int redraw = 0;
 	int old_cursor = view->curr_line;
-	char file_name[view->window_width*2 + 1];
-	size_t print_width;
-	int LINE_COLOR;
-	col_attr_t col;
 
 	if(pos < 1)
 		pos = 0;
@@ -914,40 +1096,13 @@ move_to_list_pos(FileView *view, int pos)
 	refresh_view_win(view);
 	wattroff(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
 
-	LINE_COLOR = get_line_color(view, pos);
-	col = view->cs.color[WIN_COLOR];
-	mix_colors(&col, &view->cs.color[LINE_COLOR]);
+	wmove(view->win, view->curr_line, 1);
+	wclrtoeol(view->win);
 
-	if(view->dir_entry[pos].selected)
-		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-
-	mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-
-	init_pair(view->color_scheme + CURRENT_COLOR, col.fg, col.bg);
-	wattron(view->win,
-			COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
-
-	/* Blank the current line and
-	 * print out the current line bar
-	 */
-
-	memset(file_name, ' ', view->window_width);
-
-	file_name[view->window_width] = '\0';
-
-	mvwaddstr(view->win, view->curr_line, 1, file_name);
-
-	print_width = get_real_string_width(view->dir_entry[pos].name,
-			view->window_width - 1);
-	snprintf(file_name, 1 + print_width + 1, " %s", view->dir_entry[pos].name);
-
-	wmove(view->win, view->curr_line, 0);
-	wprint(view->win, file_name);
-
-	wattroff(view->win,
-			COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
-
-	add_sort_type_info(view, view->curr_line, pos, 1);
+	column_data_t cdt = {view, view->list_pos};
+	column_line_print(&cdt, FILL_COLUMN_ID, " ", -1);
+	columns_format_line(view->columns, &cdt, view->window_width - 1);
+	column_line_print(&cdt, FILL_COLUMN_ID, " ", view->window_width);
 
 	refresh_view_win(view);
 	update_stat_window(view);
@@ -2484,6 +2639,8 @@ change_sort_type(FileView *view, char type, char descending)
 	view->sort[0] = descending ? -type : type;
 	for(i = 1; i < NUM_SORT_OPTIONS; i++)
 		view->sort[i] = NUM_SORT_OPTIONS + 1;
+
+	reset_view_sort(view);
 
 	load_sort(view);
 

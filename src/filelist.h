@@ -38,8 +38,10 @@ enum
 
 /* Initialization/termination functions. */
 
-/* Prepares views. */
+/* Prepares views for the first time. */
 void init_filelists(void);
+/* Reinitializes views. */
+void prepare_views(void);
 /* Loads view file list for the first time. */
 void load_initial_directory(FileView *view, const char *dir);
 
@@ -52,6 +54,8 @@ void move_to_list_pos(FileView *view, int pos);
 
 /* Appearance related functions. */
 
+/* Reinitializes view columns. */
+void reset_view_sort(FileView *view);
 void draw_dir_list(FileView *view, int top);
 void erase_current_line_bar(FileView *view);
 /* Updates view (maybe postponed) on the screen (redraws file list and
