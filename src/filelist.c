@@ -86,7 +86,15 @@ column_data_t;
 
 static void column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset);
-static void print_stub(int id, const void *data, size_t buf_len, char *buf);
+static void format_name(int id, const void *data, size_t buf_len, char *buf);
+static void format_size(int id, const void *data, size_t buf_len, char *buf);
+static void format_ext(int id, const void *data, size_t buf_len, char *buf);
+#ifndef _WIN32
+static void format_group(int id, const void *data, size_t buf_len, char *buf);
+static void format_mode(int id, const void *data, size_t buf_len, char *buf);
+static void format_owner(int id, const void *data, size_t buf_len, char *buf);
+#endif
+static void format_time(int id, const void *data, size_t buf_len, char *buf);
 static void init_view(FileView *view);
 static void prepare_view(FileView *view);
 static void init_view_history(FileView *view);
@@ -103,21 +111,21 @@ void
 init_filelists(void)
 {
 	columns_set_line_print_func(column_line_print);
-	columns_add_column_desc(SORT_BY_NAME, print_stub);
-	columns_add_column_desc(SORT_BY_INAME, print_stub);
-	columns_add_column_desc(SORT_BY_SIZE, print_stub);
+	columns_add_column_desc(SORT_BY_NAME, format_name);
+	columns_add_column_desc(SORT_BY_INAME, format_name);
+	columns_add_column_desc(SORT_BY_SIZE, format_size);
 
-	columns_add_column_desc(SORT_BY_EXTENSION, print_stub);
+	columns_add_column_desc(SORT_BY_EXTENSION, format_ext);
 #ifndef _WIN32
-	columns_add_column_desc(SORT_BY_GROUP_ID, print_stub);
-	columns_add_column_desc(SORT_BY_GROUP_NAME, print_stub);
-	columns_add_column_desc(SORT_BY_MODE, print_stub);
-	columns_add_column_desc(SORT_BY_OWNER_ID, print_stub);
-	columns_add_column_desc(SORT_BY_OWNER_NAME, print_stub);
+	columns_add_column_desc(SORT_BY_GROUP_ID, format_group);
+	columns_add_column_desc(SORT_BY_GROUP_NAME, format_group);
+	columns_add_column_desc(SORT_BY_MODE, format_mode);
+	columns_add_column_desc(SORT_BY_OWNER_ID, format_owner);
+	columns_add_column_desc(SORT_BY_OWNER_NAME, format_owner);
 #endif
-	columns_add_column_desc(SORT_BY_TIME_ACCESSED, print_stub);
-	columns_add_column_desc(SORT_BY_TIME_CHANGED, print_stub);
-	columns_add_column_desc(SORT_BY_TIME_MODIFIED, print_stub);
+	columns_add_column_desc(SORT_BY_TIME_ACCESSED, format_time);
+	columns_add_column_desc(SORT_BY_TIME_CHANGED, format_time);
+	columns_add_column_desc(SORT_BY_TIME_MODIFIED, format_time);
 
 	init_view(&rwin);
 	init_view(&lwin);
@@ -197,11 +205,123 @@ column_line_print(const void *data, int column_id, const char *buf,
 	}
 }
 
-/* Print callback stub for column_view unit. */
+/* File name format callback for column_view unit. */
 static void
-print_stub(int id, const void *data, size_t buf_len, char *buf)
+format_name(int id, const void *data, size_t buf_len, char *buf)
 {
-	buf[0] = '\0';
+	const column_data_t *cdt = data;
+	FileView *view = cdt->view;
+	dir_entry_t *entry = &view->dir_entry[cdt->line];
+	snprintf(buf, buf_len + 1, "%s", entry->name);
+}
+
+/* File size format callback for column_view unit. */
+static void
+format_size(int id, const void *data, size_t buf_len, char *buf)
+{
+	uint64_t size = 0;
+	char str[24] = "";
+	const column_data_t *cdt = data;
+	FileView *view = cdt->view;
+	dir_entry_t *entry = &view->dir_entry[cdt->line];
+
+	if(entry->type == DIRECTORY)
+	{
+		char buf[PATH_MAX];
+		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, entry->name);
+		tree_get_data(curr_stats.dirsize_cache, buf, &size);
+	}
+
+	if(size == 0)
+		size = entry->size;
+
+	friendly_size_notation(size, sizeof(str), str);
+	snprintf(buf, buf_len + 1, " %s", str);
+}
+
+/* File extension format callback for column_view unit. */
+static void
+format_ext(int id, const void *data, size_t buf_len, char *buf)
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	const char *dot = strrchr(entry->name,  '.');
+	snprintf(buf, buf_len + 1, "%s", (dot == NULL) ? "" : (dot + 1));
+	chosp(buf);
+}
+
+#ifndef _WIN32
+
+/* File group id/name format callback for column_view unit. */
+static void
+format_group(int id, const void *data, size_t buf_len, char *buf)
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	if(id == SORT_BY_GROUP_NAME)
+	{
+		struct group *grp_buf;
+		if((grp_buf = getgrgid(entry->gid)) != NULL)
+		{
+			snprintf(buf, buf_len, " %s", grp_buf->gr_name);
+			return;
+		}
+	}
+
+	snprintf(buf, buf_len, " %d", (int)entry->gid);
+}
+
+/* File owner id/name format callback for column_view unit. */
+static void
+format_owner(int id, const void *data, size_t buf_len, char *buf)
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	if(id == SORT_BY_OWNER_NAME)
+	{
+		struct passwd *pwd_buf;
+		if((pwd_buf = getpwuid(entry->uid)) != NULL)
+		{
+			snprintf(buf, buf_len, " %s", pwd_buf->pw_name);
+			return;
+		}
+	}
+
+	snprintf(buf, buf_len, " %d", (int)entry->uid);
+}
+
+/* File mode format callback for column_view unit. */
+static void
+format_mode(int id, const void *data, size_t buf_len, char *buf)
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	snprintf(buf, buf_len, " %s", get_mode_str(entry->mode));
+}
+
+#endif
+
+/* File modification/access/change date format callback for column_view unit. */
+static void
+format_time(int id, const void *data, size_t buf_len, char *buf)
+{
+	struct tm *tm_ptr;
+	const column_data_t *cdt = data;
+	FileView *view = cdt->view;
+	dir_entry_t *entry = &view->dir_entry[cdt->line];
+	switch(id)
+	{
+		case SORT_BY_TIME_MODIFIED:
+			tm_ptr = localtime(&entry->mtime);
+			break;
+		case SORT_BY_TIME_ACCESSED:
+			tm_ptr = localtime(&entry->atime);
+			break;
+		case SORT_BY_TIME_CHANGED:
+			tm_ptr = localtime(&entry->ctime);
+			break;
+	}
+	strftime(buf, buf_len + 1, cfg.time_format, tm_ptr);
 }
 
 /* Loads initial display values into view structure. */
