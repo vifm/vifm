@@ -182,6 +182,28 @@ test_truncating_align_right(void)
 	assert_string_equal(expected, print_buffer);
 }
 
+static void
+test_ellipsis_less_space(void)
+{
+	static column_info_t column_info =
+	{
+		.column_id = COL1_ID, .full_width = 0UL, .text_width = 0UL,
+		.align = AT_LEFT,     .sizing = ST_AUTO, .cropping = CT_ELLIPSIS,
+	};
+	static const char expected[] = "..";
+
+	columns_t cols = columns_create();
+	columns_add_column(cols, column_info);
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	print_buffer[2] = '\0';
+	columns_format_line(cols, NULL, 2);
+
+	columns_free(cols);
+
+	assert_string_equal(expected, print_buffer);
+}
+
 void
 cropping_tests(void)
 {
@@ -198,6 +220,8 @@ cropping_tests(void)
 	run_test(test_none_align_right_overlapping);
 	run_test(test_ellipsis_align_right);
 	run_test(test_truncating_align_right);
+
+	run_test(test_ellipsis_less_space);
 
 	test_fixture_end();
 }

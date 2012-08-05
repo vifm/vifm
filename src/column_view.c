@@ -297,11 +297,11 @@ decorate_output(column_t *column, char *buf, size_t max_width)
 
 		if(column->info.cropping == CT_ELLIPSIS)
 		{
-			size_t count = MIN(len, 3);
-			size_t len = get_normal_utf8_string_length(buf);
+			size_t truncated_len = get_normal_utf8_string_length(buf);
+			size_t count = MIN(truncated_len, 3);
 			if(column->info.align == AT_LEFT)
 			{
-				size_t pos = get_real_string_width(buf, len - count);
+				size_t pos = get_real_string_width(buf, truncated_len - count);
 				buf[pos] = '\0';
 				while(count-- > 0)
 				{
