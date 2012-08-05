@@ -344,6 +344,8 @@ main(int argc, char *argv[])
 	/* This should be called before loading any configuration file. */
 	reset_all_file_associations();
 
+	init_option_handlers();
+
 	old_config = is_old_config();
 	if(!old_config && !no_configs)
 		read_info_file(0);
@@ -370,7 +372,6 @@ main(int argc, char *argv[])
 		return -1;
 
 	init_modes();
-	init_option_handlers();
 	init_undo_list(&perform_operation, &cfg.undo_levels);
 	load_local_options(curr_view);
 

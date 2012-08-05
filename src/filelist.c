@@ -817,6 +817,11 @@ reset_view_sort(FileView *view)
 		.align = AT_LEFT,          .sizing = ST_AUTO, .cropping = CT_NONE,
 	};
 
+	if(view->view_columns[0] != '\0')
+	{
+		return;
+	}
+
 	columns_clear(view->columns);
 	columns_add_column(view->columns, column_info);
 
@@ -2613,10 +2618,7 @@ change_sort_type(FileView *view, char type, char descending)
 	for(i = 1; i < NUM_SORT_OPTIONS; i++)
 		view->sort[i] = NUM_SORT_OPTIONS + 1;
 
-	if(view->view_columns[0] == '\0')
-	{
-		reset_view_sort(view);
-	}
+	reset_view_sort(view);
 
 	load_sort_option(view);
 

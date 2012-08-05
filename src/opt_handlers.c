@@ -786,6 +786,7 @@ sort_handler(OPT_OP op, optval_t val)
 	while(i < NUM_SORT_OPTIONS)
 		curr_view->sort[i++] = NUM_SORT_OPTIONS + 1;
 
+	reset_view_sort(curr_view);
 	resort_view(curr_view);
 	move_to_list_pos(curr_view, curr_view->list_pos);
 	load_sort_option(curr_view);

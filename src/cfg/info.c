@@ -72,7 +72,17 @@ read_info_file(int reread)
 
 		if(line[0] == '=') /* option */
 		{
-			process_set_args(line + 1);
+			if(line[1] == '[' || line[1] == ']')
+			{
+				FileView *v = curr_view;
+				curr_view = (line[1] == '[') ? &lwin : &rwin;
+				process_set_args(line + 2);
+				curr_view = v;
+			}
+			else
+			{
+				process_set_args(line + 1);
+			}
 		}
 		else if(line[0] == '.') /* filetype */
 		{
@@ -600,6 +610,8 @@ write_info_file(void)
 		fprintf(fp, "=vixcmd=%s%s\n", escape_spaces(cfg.vi_x_command),
 				cfg.vi_cmd_bg ? " &" : "");
 		fprintf(fp, "=%swrapscan\n", cfg.wrap_scan ? "" : "no");
+		fprintf(fp, "=[viewcolumns=%s\n", escape_spaces(lwin.view_columns));
+		fprintf(fp, "=]viewcolumns=%s\n", escape_spaces(rwin.view_columns));
 
 		fprintf(fp, "=vifminfo=options");
 		if(cfg.vifm_info & VIFMINFO_FILETYPES)
