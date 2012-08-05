@@ -102,7 +102,6 @@ static void prepare_view(FileView *view);
 static void init_view_history(FileView *view);
 static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
-static int get_secondary_key(int primary_key);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
 static void rescue_from_empty_filelist(FileView * view);
@@ -370,6 +369,7 @@ init_view(FileView *view)
 	view->hide_dot = 1;
 	view->matches = 0;
 	view->columns = columns_create();
+	view->view_columns = strdup("");
 
 	prepare_view(view);
 
@@ -823,32 +823,6 @@ reset_view_sort(FileView *view)
 	column_info.column_id = get_secondary_key(abs(view->sort[0]));
 	column_info.align = AT_RIGHT;
 	columns_add_column(view->columns, column_info);
-}
-
-/* Maps primary sort key to second column type. */
-static int
-get_secondary_key(int primary_key)
-{
-	switch(primary_key)
-	{
-#ifndef _WIN32
-		case SORT_BY_OWNER_NAME:
-		case SORT_BY_OWNER_ID:
-		case SORT_BY_GROUP_NAME:
-		case SORT_BY_GROUP_ID:
-		case SORT_BY_MODE:
-#endif
-		case SORT_BY_TIME_MODIFIED:
-		case SORT_BY_TIME_ACCESSED:
-		case SORT_BY_TIME_CHANGED:
-			return primary_key;
-		case SORT_BY_NAME:
-		case SORT_BY_INAME:
-		case SORT_BY_EXTENSION:
-		case SORT_BY_SIZE:
-		default:
-			return SORT_BY_SIZE;
-	}
 }
 
 void
@@ -2639,9 +2613,12 @@ change_sort_type(FileView *view, char type, char descending)
 	for(i = 1; i < NUM_SORT_OPTIONS; i++)
 		view->sort[i] = NUM_SORT_OPTIONS + 1;
 
-	reset_view_sort(view);
+	if(view->view_columns[0] == '\0')
+	{
+		reset_view_sort(view);
+	}
 
-	load_sort(view);
+	load_sort_option(view);
 
 	load_saving_pos(view, 1);
 }

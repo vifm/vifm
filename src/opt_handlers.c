@@ -17,6 +17,7 @@
  */
 
 #include <assert.h>
+#include <math.h> /* abs() */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,10 +31,13 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "color_scheme.h"
+#include "column_view.h"
 #include "filelist.h"
 #include "quickview.h"
+#include "sort.h"
 #include "status.h"
 #include "ui.h"
+#include "viewcolumns_parser.h"
 
 #include "opt_handlers.h"
 
@@ -61,6 +65,7 @@ static void init_timefmt(optval_t *val);
 static void init_trash_dir(optval_t *val);
 static void init_sort(optval_t *val);
 static void init_sortorder(optval_t *val);
+static void init_viewcolumns(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
 static void print_func(const char *msg, const char *description);
@@ -92,6 +97,9 @@ static void smartcase_handler(OPT_OP op, optval_t val);
 static void sortnumbers_handler(OPT_OP op, optval_t val);
 static void sort_handler(OPT_OP op, optval_t val);
 static void sortorder_handler(OPT_OP op, optval_t val);
+static void viewcolumns_handler(OPT_OP op, optval_t val);
+static void add_column(columns_t columns, column_info_t column_info);
+static int map_name(const char *name);
 static void resort_view(FileView * view);
 static void statusline_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
@@ -262,6 +270,8 @@ static struct
 		{ .init = &init_sort }                                                                                 },
 	{ "sortorder",   "",     OPT_ENUM,    ARRAY_LEN(sortorder_enum),  sortorder_enum,  &sortorder_handler,
 		{ .init = &init_sortorder }                                                                            },
+	{ "viewcolumns", "",     OPT_STRLIST, 0,                          NULL,            &viewcolumns_handler,
+		{ .init = &init_viewcolumns }                                                                          },
 };
 
 void
@@ -318,6 +328,12 @@ init_sortorder(optval_t *val)
 }
 
 static void
+init_viewcolumns(optval_t *val)
+{
+	val->str_val = "";
+}
+
+static void
 load_options_defaults(void)
 {
 	int i;
@@ -349,11 +365,16 @@ add_options(void)
 void
 load_local_options(FileView *view)
 {
-	load_sort(view);
+	optval_t val;
+
+	load_sort_option(view);
+
+	val.str_val = view->view_columns;
+	set_option("viewcolumns", val);
 }
 
 void
-load_sort(FileView *view)
+load_sort_option(FileView *view)
 {
 	optval_t val;
 	char buf[64] = "";
@@ -766,7 +787,8 @@ sort_handler(OPT_OP op, optval_t val)
 		curr_view->sort[i++] = NUM_SORT_OPTIONS + 1;
 
 	resort_view(curr_view);
-	load_sort(curr_view);
+	move_to_list_pos(curr_view, curr_view->list_pos);
+	load_sort_option(curr_view);
 }
 
 static void
@@ -777,11 +799,56 @@ sortorder_handler(OPT_OP op, optval_t val)
 		curr_view->sort[0] = -curr_view->sort[0];
 
 		resort_view(curr_view);
-		load_sort(curr_view);
+		load_sort_option(curr_view);
 	}
 }
 
-/* Resorts and redraws given view. */
+static void
+viewcolumns_handler(OPT_OP op, optval_t val)
+{
+	columns_clear(curr_view->columns);
+	if(val.str_val[0] == '\0')
+	{
+		char buffer[128];
+		(void)snprintf(buffer, sizeof(buffer), "-{name},{%s}",
+				sort_enum[get_secondary_key(abs(curr_view->sort[0])) - 1]);
+		(void)parse_columns(curr_view->columns, add_column, map_name,
+				buffer);
+		replace_string(&curr_view->view_columns, "");
+		redraw_current_view();
+		return;
+	}
+
+	if(parse_columns(curr_view->columns, add_column, map_name, val.str_val) != 0)
+	{
+		print_func("", "Invalid format of 'viewcolumns' option");
+		(void)parse_columns(curr_view->columns, add_column, map_name,
+				curr_view->view_columns);
+	}
+	else
+	{
+		replace_string(&curr_view->view_columns, val.str_val);
+		redraw_current_view();
+	}
+}
+
+/* Adds new column to view columns. */
+static void
+add_column(columns_t columns, column_info_t column_info)
+{
+	columns_add_column(columns, column_info);
+}
+
+/* Maps column name to column id. Returns column id. */
+static int
+map_name(const char *name)
+{
+	int pos;
+	pos = string_array_pos((char **)sort_enum, ARRAY_LEN(sort_enum), name);
+	/* Position is sort key minus one. */
+	return pos + 1;
+}
+
 static void
 resort_view(FileView * view)
 {
@@ -855,7 +922,7 @@ trash_handler(OPT_OP op, optval_t val)
 static void
 trashdir_handler(OPT_OP op, optval_t val)
 {
-	char * s = expand_tilde(strdup(val.str_val));
+	char *s = expand_tilde(strdup(val.str_val));
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s", s);
 	create_trash_dir();
 	free(s);

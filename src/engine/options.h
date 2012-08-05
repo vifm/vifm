@@ -58,6 +58,7 @@ void reset_options_to_default(void);
 void clear_options(void);
 void add_option(const char *name, const char *abbr, OPT_TYPE type,
 		int val_count, const char **vals, opt_handler handler, optval_t def);
+/* Sets option value without calling its change handler. */
 void set_option(const char *name, optval_t val);
 /* Returns non-zero on error */
 int set_options(const char *cmd);

@@ -295,6 +295,7 @@ decorate_output(column_t *column, char *buf, size_t max_width)
 		{
 			size_t pos = get_real_string_width(buf, len - max_col_width);
 			memmove(buf, buf + pos, strlen(buf + pos) + 1);
+			assert(get_normal_utf8_string_length(buf) == max_col_width);
 		}
 
 		if(column->info.cropping == CT_ELLIPSIS)
