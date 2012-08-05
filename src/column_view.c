@@ -251,7 +251,9 @@ columns_format_line(const columns_t columns, const void *data, size_t max_width)
 	recalculate_if_needed(columns, max_width);
 	for(i = 0; i < columns->count; i++)
 	{
-		char format_buffer[max_width*4 + 1];
+		/* Use big buffer to hold whole item so there will be no issues with right
+		 * aligned fields. */
+		char format_buffer[1024 + 1];
 		size_t start;
 		size_t max_field_width;
 		column_t *col = &columns->list[i];

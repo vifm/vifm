@@ -27,6 +27,12 @@ column1_func(int id, const void *data, size_t buf_len, char *buf)
 }
 
 static void
+column1_func2(int id, const void *data, size_t buf_len, char *buf)
+{
+	snprintf(buf, buf_len + 1, "%s", "abcdefg");
+}
+
+static void
 setup(void)
 {
 	print_next = column_line_print;
@@ -96,6 +102,29 @@ test_very_long_line_right_align(void)
 	assert_string_equal(expected, print_buffer);
 }
 
+static void
+test_truncation_on_right_align(void)
+{
+	static column_info_t column_info =
+	{
+		.column_id = COL1_ID, .full_width = 0UL, .text_width = 0UL,
+		.align = AT_RIGHT,    .sizing = ST_AUTO, .cropping = CT_TRUNCATE,
+	};
+	static const char expected[] = "g";
+
+	columns_t cols = columns_create();
+	col1_next = column1_func2;
+	columns_add_column(cols, column_info);
+
+	memset(print_buffer, '\0', MAX_WIDTH);
+	print_buffer[1] = '\0';
+	columns_format_line(cols, NULL, 1);
+
+	columns_free(cols);
+
+	assert_string_equal(expected, print_buffer);
+}
+
 void
 align_tests(void)
 {
@@ -107,6 +136,7 @@ align_tests(void)
 	run_test(test_right_align);
 	run_test(test_left_align);
 	run_test(test_very_long_line_right_align);
+	run_test(test_truncation_on_right_align);
 
 	test_fixture_end();
 }
