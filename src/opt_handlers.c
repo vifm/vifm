@@ -415,11 +415,12 @@ process_set_args(const char *args)
 {
 	save_msg = 0;
 	print_buf[0] = '\0';
-	if(set_options(args) != 0) /* changes print_buf and save_msg */
+	/* call of set_options() can changs print_buf and save_msg */
+	if(set_options(args) != 0 || save_msg < 0)
 	{
 		print_func("", "Invalid argument for :set command");
-		status_bar_error(print_buf);
 		save_msg = -1;
+		status_bar_error(print_buf);
 	}
 	else if(print_buf[0] != '\0')
 	{
@@ -467,6 +468,7 @@ columns_handler(OPT_OP op, optval_t val)
 		val.int_val = MIN_TERM_WIDTH;
 		snprintf(buf, sizeof(buf), "At least %d columns needed", MIN_TERM_WIDTH);
 		print_func("", buf);
+		save_msg = -1;
 	}
 
 	if(cfg.columns != val.int_val)
@@ -624,6 +626,7 @@ lines_handler(OPT_OP op, optval_t val)
 		val.int_val = MIN_TERM_HEIGHT;
 		snprintf(buf, sizeof(buf), "At least %d lines needed", MIN_TERM_HEIGHT);
 		print_func("", buf);
+		save_msg = -1;
 	}
 
 	if(cfg.lines != val.int_val)
@@ -682,6 +685,7 @@ scrolloff_handler(OPT_OP op, optval_t val)
 		char buf[128];
 		snprintf(buf, sizeof(buf), "Invalid scroll size: %d", val.int_val);
 		print_func("", buf);
+		save_msg = -1;
 		reset_option_to_default("scrolloff");
 		return;
 	}
@@ -823,6 +827,7 @@ viewcolumns_handler(OPT_OP op, optval_t val)
 	if(parse_columns(curr_view->columns, add_column, map_name, val.str_val) != 0)
 	{
 		print_func("", "Invalid format of 'viewcolumns' option");
+		save_msg = -1;
 		(void)parse_columns(curr_view->columns, add_column, map_name,
 				curr_view->view_columns);
 	}
@@ -876,6 +881,7 @@ tabstop_handler(OPT_OP op, optval_t val)
 		char buf[128];
 		snprintf(buf, sizeof(buf), "Argument must be positive: %d", val.int_val);
 		print_func("", buf);
+		save_msg = -1;
 		reset_option_to_default("tabstop");
 		return;
 	}
@@ -906,6 +912,7 @@ timeoutlen_handler(OPT_OP op, optval_t val)
 		char buf[128];
 		snprintf(buf, sizeof(buf), "Argument must be >= 0: %d", val.int_val);
 		print_func("", buf);
+		save_msg = -1;
 		val.int_val = 0;
 		set_option("timeoutlen", val);
 		return;
