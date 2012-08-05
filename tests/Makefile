@@ -1,5 +1,5 @@
 dirs := commands column_view completion filetype keys misc options parsing undo
-dirs += variables
+dirs += variables viewcolumns_parser
 dirs_s := $(addsuffix _t, $(dirs))
 
 .PHONY: tests $(dirs) $(dirs_s)

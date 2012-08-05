@@ -141,6 +141,7 @@ Package content
     |  |-- ui.c - setup_ncurses_interface() and other ui related functions
     |  |-- undo.c - stores and handles the undo list
     |  |-- version.c - git hash and other version information
+    |  |-- viewcolumns_parser.c - contains code for parsing 'viewcolumns' option
     |  |-- vifm.c - contains main() which does basic initialization
     |  |-- vifmrc-converter.c - converter for vifmrc, vifminfo and colorscheme
     |  |                        files

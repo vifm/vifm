@@ -104,6 +104,7 @@ vifm_SOURCES = \
 	ui.c ui.h \
 	undo.c undo.h \
 	version.c version.h \
+	viewcolumns_parser.c viewcolumns_parser.h \
 	compile_info.c \
 	vifm.c
 
