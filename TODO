@@ -102,7 +102,6 @@ Other (questionable) things.
     Modify marks on rename operations.
     :toupper and :tolower
     Maybe accept regular expressions as second argument of :colo command.
-    Think about setting filters for both views in vifmrc.
     Make :alink, :copy, ... accept globs (e.g. :co *.c).
     Option to trigger completion on slash in command-line.
     Maybe expand macros for :touch amd :mkdir commands (for :touch %"d)

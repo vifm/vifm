@@ -1,4 +1,4 @@
-.TH vifm 1 "July 8, 2012" "" "Vifm"
+.TH vifm 1 "August 6, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1685,6 +1685,10 @@ Background operations cannot be undone.
 .SH :set options
 .\" ---------------------------------------------------------------------------
 .TP
+.BI "Local options"
+These are kind of options that are local to a specific view. So you can set
+ascending sorting order for left pane and descending order for right pane.
+.TP
 .BI autochpos
 type: boolean
 .br
@@ -1891,7 +1895,9 @@ affect file filtering.
 .BI sort
 type: string list
 .br
-default: +name
+default: +name on *nix and +iname on Windows
+.br
+type: local
 .br
 Sets list of sorting keys (first item is primary key, second is secondary key,
 etc.):
@@ -1912,11 +1918,16 @@ etc.):
 
 In case name (iname on Windoes) is skipped, it will be added at the end
 automatically.
+
+This option also changes view columns according to primary sorting key set,
+unless 'viewcolumns' option is not empty.
 .TP
 .BI sortnumbers
 type: boolean
 .br
 default: false
+.br
+type: local
 .br
 Natural sort of (version) numbers within text.
 .TP
@@ -2031,6 +2042,17 @@ default: "vim"
 .br
 The actual command used to start vi.  Ampersand sign at the end (regardless
 whether it's preceded by space or not) means backgrounding of command.
+.TP
+.BI viewcolumns
+type: string
+.br
+default: ""
+.br
+type: local
+.br
+Format string containing list of columns in the view. When this option is empty
+view columns to show are chosen automatically using sorting keys (see 'sort') as
+a base. See Column view section below for format description.
 .TP
 .BI vixcmd
 type: string
@@ -2371,6 +2393,101 @@ in the future it can be changed to whole file content
 
 %CLEAR is an optional macro.  Other macros are not mandatory, but mount \
 commands likely wont work without them.
+.\" ---------------------------------------------------------------------------
+.SH Column view
+.\" ---------------------------------------------------------------------------
+View columns are described by a comma-separated list of column descriptions,
+each of which has the following format
+    [ '-' ] [ fw ( [ '.' tw ] | '%' ) ] '{' type '}' '.'{0,3}
+.br
+where fw stands for full width and tw stands for text width.
+
+So it basically consists of four parts:
+ 1. Optional alignment specifier
+ 2. Optional width specifier
+ 3. Mandatory column name
+ 4. Optional cropping specifier
+
+Alignment specifier
+
+It's an optional minus sign as the first symbol of the string.
+
+Specifies type of text alignment within a column. Two types are supported:
+.IP - 2
+left align (default)
+.EX
+     set viewcolumns=-{name}
+.EE
+.IP - 2
+right align
+.EX
+     set viewcolumns={name}
+.EE
+.LP
+Width specifier
+
+It's a number followed by a percent sign, two numbers (second one should be
+less than or equal to the first one) separated with a dot or a single number.
+
+Specifies column width and its units. There are tree size types:
+.IP - 2
+absolute size - column width is specified in characters
+.EX
+     set viewcolumns=-100{name},20.15{ext}
+.EE
+results in two columns with lengths of 100 and 20 and a reserved space of five \
+characters on the left of second column.
+.IP - 2
+relative (percent) size - column width is specified in percents of view width
+.EX
+     set viewcolumns=-80%{name},15%{ext},5%{mtime}
+.EE
+results in three columns with lengths of 80/100, 15/100 and 5/100 of view width.
+.IP - 2
+auto size (default) - column width is automatically determined
+.EX
+     set viewcolumns=-{name},{ext},{mtime}
+.EE
+results in three columns with length of one third of view width. There is no \
+size adjustment to content, since it will slow down rendering.
+.LP
+Columns of different sizing types can be freely mixed in one view. Though
+sometimes some of columns can be seen partly or be completely invisible if
+there is not enough space to display them.
+.LP
+Column name
+
+This is just a sort key surrounded with curly braces, e.g.
+.EX
+    {name},{ext},{mtime}
+.EE
+{name} and {iname} keys are the same and present both for consistency with
+\'sort' option.
+.LP
+Cropping specifier
+
+It's from one to three dots after closing curly brace in column format.
+
+Specifies type of text truncation if it doesn't fix in the column. Currently
+tree types are supported:
+.IP - 2
+truncation - text is truncated
+.EX
+     set viewcolumns=-{name}.
+.EE
+results in truncation of names that are too long too fit in the view.
+.IP - 2
+adding of ellipsis - ellipsis on the left or right are added when needed
+.EX
+     set viewcolumns=-{name}..
+.EE
+results in that ellipsis are added at the end of too long file names.
+.IP - 2
+none (default) - text can pass column boundaries
+.EX
+     set viewcolumns=-{name}...,{ext}
+.EE
+results in that long file names can partially be written on the ext column.
 .\" ---------------------------------------------------------------------------
 .SH Color schemes
 .\" ---------------------------------------------------------------------------

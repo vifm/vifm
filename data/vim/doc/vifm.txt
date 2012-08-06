@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Jul 08
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 06
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -16,6 +16,7 @@
 |vifm-configure|          Configuration of vifm.
 |vifm-compatibility-mode| Its description.
 |vifm-menus-and-dialogs|  Keys for menus and dialogs.
+|vifm-column-view|        Column view configuration details.
 |vifm-colorschemes|       Details on using color schemes in vifm.
 |vifm-fuse|               Using automated FUSE mounts.
 |vifm-plugin|             Using the vifm.vim plugin.
@@ -1424,6 +1425,10 @@ Background operations cannot be undone.
 --------------------------------------------------------------------------------
 *vifm-set-options*
 
+                                               *vifm-local-options*
+These are kind of options that are local to a specific view. So you can set
+ascending sorting order for left pane and descending order for right pane.
+
                                                *vifm-'autochpos'*
 autochpos
 type: boolean
@@ -1594,7 +1599,8 @@ is enabled.  It doesn't affect file filtering.
                                                *vifm-'sort'*
 sort
 type: enumeration
-default: name
+default: +name on *nix and +iname on Windows
+type: local
 Sets list of sorting keys (first item is primary key, second is secondary
 key, etc.):
    [+-]ext   - sort by extension
@@ -1614,6 +1620,9 @@ key, etc.):
 In case name (iname on Windows) is skipped, it will be added at the end
 automatically.
 
+This option also changes view columns according to primary sorting key set,
+unless |vifm-'viewcolumns'| option is not empty.
+
                                                *vifm-'sortnumbers'*
 sortnumbers
 type: boolean
@@ -1624,6 +1633,7 @@ Natural sort of (version) numbers within text.
 sortorder
 type: enumeration
 default: ascending
+type: local
 Sets sort order for primary key: ascending, descending.
 
                                                *vifm-'statusline'* *vifm-'stl'*
@@ -1702,6 +1712,15 @@ type: string
 default: "vim"
 The actual command used to start vi.  Ampersand sign at the end (regardless
 whether it's preceded by space or not) means backgrounding of command.
+
+                                               *vifm-'viewcolumns'*
+viewcolumns
+type: string
+default: ""
+type: local
+Format string containing list of columns in the view. When this option is
+empty view columns to show are chosen automatically using sorting keys
+(see |vifm-'sort'|) as a base. See |vifm-column-view| for format description.
 
                                                *vifm-'vixcmd'*
 vixcmd
@@ -2011,6 +2030,77 @@ All % macros are expanded by vifm at runtime and have the following meaning:
 
 %CLEAR is an optional macro.  Other macros are not mandatory, but mount
 commands likely wont work without them.
+
+--------------------------------------------------------------------------------
+*vifm-column-view*
+
+View columns are described by a comma-separated list of column descriptions,
+each of which has the following format >
+    [ '-' ] [ fw ( [ '.' tw ] | '%' ) ] '{' type '}' '.'{0,3}
+where fw stands for full width and tw stands for text width.
+
+So it basically consists of four parts:
+ 1. Optional alignment specifier
+ 2. Optional width specifier
+ 3. Mandatory column name
+ 4. Optional cropping specifier
+
+Alignment specifier~
+
+It's an optional minus sign as the first symbol of the string.
+
+Specifies type of text alignment within a column. Two types are supported:
+ - left align (default) >
+     set viewcolumns=-{name}
+<- right align >
+     set viewcolumns={name}
+<
+Width specifier~
+
+It's a number followed by a percent sign, two numbers (second one should be
+less than or equal to the first one) separated with a dot or a single number.
+
+Specifies column width and its units. There are tree size types:
+ - absolute size - column width is specified in characters >
+     set viewcolumns=-100{name},20.15{ext}
+<  results in two columns with lengths of 100 and 20 and a reserved space of
+   five characters on the left of second column.
+ - relative (percent) size - column width is specified in percents of view width >
+     set viewcolumns=-80%{name},15%{ext},5%{mtime}
+<  results in three columns with lengths of 80/100, 15/100 and 5/100 of view
+   width.
+ - auto size (default) - column width is automatically determined >
+     set viewcolumns=-{name},{ext},{mtime}
+<  results in three columns with length of one third of view width. There is
+   no size adjustment to content, since it will slow down rendering.
+
+Columns of different sizing types can be freely mixed in one view. Though
+sometimes some of columns can be seen partly or be completely invisible if
+there is not enough space to display them.
+
+Column name~
+
+This is just a sort key surrounded with curly braces, e.g. >
+    {name},{ext},{mtime}
+<
+{name} and {iname} keys are the same and present both for consistency with
+|vifm-'sort'| option.
+
+Cropping specifier~
+
+It's from one to three dots after closing curly brace in column format.
+
+Specifies type of text truncation if it doesn't fix in the column. Currently
+tree types are supported:
+ - truncation - text is truncated >
+     set viewcolumns=-{name}.
+<  results in truncation of names that are too long too fit in the view.
+ - adding of ellipsis - ellipsis on the left or right are added when needed >
+     set viewcolumns=-{name}..
+<  results in that ellipsis are added at the end of too long file names.
+ - none (default) - text can pass column boundaries >
+     set viewcolumns=-{name}...,{ext}
+<  results in that long file names can partially be written on the ext column.
 
 --------------------------------------------------------------------------------
 *vifm-colorschemes*

@@ -4,6 +4,8 @@
 
 	Added status bar messages for :apropos, :find and :locate commands.
 
+	Added 'viewcolumns' local option to control view columns.
+
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
 
