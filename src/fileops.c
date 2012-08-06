@@ -653,23 +653,24 @@ is_name_list_ok(int count, int nlines, char **list, char **files)
 
 	for(i = 0; i < count; i++)
 	{
-		char *file_s = NULL, *list_s;
 		chomp(list[i]);
 
-		list_s = find_slashr(list[i]);
 		if(files != NULL)
-			file_s = find_slashr(files[i]);
-		if(list_s != NULL || file_s != NULL)
 		{
-			if(list_s - list[i] != file_s - files[i] ||
-					strnoscmp(files[i], list[i], list_s - list[i]) != 0)
+			char *file_s = find_slashr(files[i]);
+			char *list_s = find_slashr(list[i]);
+			if(list_s != NULL || file_s != NULL)
 			{
-				if(file_s == NULL)
-					status_bar_errorf("Name \"%s\" contains slash", list[i]);
-				else
-					status_bar_errorf("Wont move \"%s\" file", files[i]);
-				curr_stats.save_msg = 1;
-				return 0;
+				if(list_s - list[i] != file_s - files[i] ||
+						strnoscmp(files[i], list[i], list_s - list[i]) != 0)
+				{
+					if(file_s == NULL)
+						status_bar_errorf("Name \"%s\" contains slash", list[i]);
+					else
+						status_bar_errorf("Wont move \"%s\" file", files[i]);
+					curr_stats.save_msg = 1;
+					return 0;
+				}
 			}
 		}
 
