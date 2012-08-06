@@ -2745,6 +2745,7 @@ static int
 restart_cmd(const cmd_info_t *cmd_info)
 {
 	const char *p;
+	FileView *tmp_view;
 
 	/* all user mappings in all modes */
 	clear_user_keys();
@@ -2752,8 +2753,14 @@ restart_cmd(const cmd_info_t *cmd_info)
 	/* user defined commands */
 	execute_cmd("comclear");
 
-	/* options */
+	/* options of current pane */
 	reset_options_to_default();
+	/* options of other pane */
+	tmp_view = curr_view;
+	curr_view = other_view;
+	load_local_options(other_view);
+	reset_options_to_default();
+	curr_view = tmp_view;
 
 	/* file types and viewers */
 	reset_all_file_associations();
