@@ -2780,6 +2780,9 @@ restart_cmd(const cmd_info_t *cmd_info)
 	/* command line history */
 	cfg.cmd_history_num = 0;
 
+	/* prompt history */
+	cfg.prompt_history_num = -1;
+
 	/* search history */
 	cfg.search_history_num = -1;
 

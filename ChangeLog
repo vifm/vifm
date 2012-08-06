@@ -40,6 +40,8 @@
 
 	Fixed segmentation fault on :move command with path containing slash.
 
+	Fixed segmentatino fault on :restart during prompt history load.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
