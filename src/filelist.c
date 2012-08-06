@@ -137,9 +137,8 @@ static void
 column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset)
 {
-	int LINE_COLOR;
+	int line_color;
 	col_attr_t col;
-	int type;
 	char print_buf[strlen(buf) + 1];
 	size_t width_left;
 	size_t trim_pos;
@@ -150,64 +149,45 @@ column_line_print(const void *data, int column_id, const char *buf,
 	dir_entry_t *entry = &view->dir_entry[cdt->line];
 	wmove(view->win, cdt->current_line, 1 + offset);
 
+	col = view->cs.color[WIN_COLOR];
 	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
 	{
+		line_color = get_line_color(view, i);
+		mix_colors(&col, &view->cs.color[line_color]);
+		if(entry->selected)
+			mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
 		if(cdt->current)
 		{
-			LINE_COLOR = get_line_color(view, view->list_pos);
-			col = view->cs.color[WIN_COLOR];
-			mix_colors(&col, &view->cs.color[LINE_COLOR]);
-
-			if(entry->selected)
-				mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-
 			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-
-			init_pair(view->color_scheme + CURRENT_COLOR, col.fg, col.bg);
-			wattron(view->win,
-					COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
+			line_color = CURRENT_COLOR;
 		}
-		else
+		else if(entry->selected)
 		{
-			LINE_COLOR = get_line_color(view, i);
-			col = view->cs.color[WIN_COLOR];
-			mix_colors(&col, &view->cs.color[LINE_COLOR]);
-
-			if(entry->selected)
-			{
-				mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-				LINE_COLOR = SELECTED_COLOR;
-			}
-
-			init_pair(view->color_scheme + LINE_COLOR, col.fg, col.bg);
-
-			wattrset(view->win,
-					COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
+			line_color = SELECTED_COLOR;
 		}
+		init_pair(view->color_scheme + line_color, col.fg, col.bg);
 	}
 	else
 	{
-		type = WIN_COLOR;
-		col = view->cs.color[WIN_COLOR];
+		line_color = WIN_COLOR;
 
 		if(entry->selected)
 		{
 			mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-			type = SELECTED_COLOR;
+			line_color = SELECTED_COLOR;
 		}
 
 		if(cdt->current)
 		{
 			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-			type = CURRENT_COLOR;
+			line_color = CURRENT_COLOR;
 		}
 		else
 		{
-			init_pair(view->color_scheme + type, col.fg, col.bg);
+			init_pair(view->color_scheme + line_color, col.fg, col.bg);
 		}
-
-		wattron(view->win, COLOR_PAIR(type + view->color_scheme) | col.attr);
 	}
+	wattron(view->win, COLOR_PAIR(view->color_scheme + line_color) | col.attr);
 
 	strcpy(print_buf, buf);
 	width_left = view->window_width - 1 - offset;
@@ -215,23 +195,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 	print_buf[trim_pos] = '\0';
 	wprint(view->win, print_buf);
 
-	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
-	{
-		if(cdt->current)
-		{
-			wattroff(view->win,
-					COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
-		}
-		else
-		{
-			wattroff(view->win,
-					COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
-		}
-	}
-	else
-	{
-		wattroff(view->win, COLOR_PAIR(type + view->color_scheme) | col.attr);
-	}
+	wattroff(view->win, COLOR_PAIR(view->color_scheme + line_color) | col.attr);
 }
 
 /* File name format callback for column_view unit. */
