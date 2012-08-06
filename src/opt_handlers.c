@@ -811,29 +811,32 @@ sortorder_handler(OPT_OP op, optval_t val)
 static void
 viewcolumns_handler(OPT_OP op, optval_t val)
 {
-	columns_clear(curr_view->columns);
 	if(val.str_val[0] == '\0')
 	{
 		char buffer[128];
-		(void)snprintf(buffer, sizeof(buffer), "-{name},{%s}",
-				sort_enum[get_secondary_key(abs(curr_view->sort[0])) - 1]);
-		(void)parse_columns(curr_view->columns, add_column, map_name,
-				buffer);
+		(void)snprintf(buffer, sizeof(buffer), "%s", "-{name},{}");
+		load_view_columns_option(curr_view, buffer);
 		replace_string(&curr_view->view_columns, "");
-		redraw_current_view();
 		return;
 	}
 
-	if(parse_columns(curr_view->columns, add_column, map_name, val.str_val) != 0)
+	load_view_columns_option(curr_view, val.str_val);
+}
+
+void
+load_view_columns_option(FileView *view, const char *value)
+{
+	columns_clear(curr_view->columns);
+	if(parse_columns(view->columns, add_column, map_name, value) != 0)
 	{
 		print_func("", "Invalid format of 'viewcolumns' option");
 		save_msg = -1;
-		(void)parse_columns(curr_view->columns, add_column, map_name,
-				curr_view->view_columns);
+		(void)parse_columns(view->columns, add_column, map_name,
+				view->view_columns);
 	}
 	else
 	{
-		replace_string(&curr_view->view_columns, val.str_val);
+		replace_string(&view->view_columns, value);
 		redraw_current_view();
 	}
 }
@@ -849,10 +852,13 @@ add_column(columns_t columns, column_info_t column_info)
 static int
 map_name(const char *name)
 {
-	int pos;
-	pos = string_array_pos((char **)sort_enum, ARRAY_LEN(sort_enum), name);
-	/* Position is sort key minus one. */
-	return pos + 1;
+	if(*name != '\0')
+	{
+		int pos;
+		pos = string_array_pos((char **)sort_enum, ARRAY_LEN(sort_enum), name);
+		return (pos >= 0) ? (pos + 1) : -1;
+	}
+	return get_secondary_key(abs(curr_view->sort[0]));
 }
 
 static void

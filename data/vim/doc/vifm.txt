@@ -2086,6 +2086,12 @@ This is just a sort key surrounded with curly braces, e.g. >
 {name} and {iname} keys are the same and present both for consistency with
 |vifm-'sort'| option.
 
+Empty curly braces ({}) are replaced with the default secondary column for
+primary sort key. So after the next command views will be displayed almost as
+if |vifm-'viewcolumns'| is empty, but adding ellipsis for long file names: >
+    set viewcolumns=-{name}..,6{}.
+<
+
 Cropping specifier~
 
 It's from one to three dots after closing curly brace in column format.

@@ -811,23 +811,25 @@ update_view_title(FileView *view)
 void
 reset_view_sort(FileView *view)
 {
-	column_info_t column_info =
+	if(view->view_columns[0] == '\0')
 	{
-		.column_id = SORT_BY_NAME, .full_width = 0UL, .text_width = 0UL,
-		.align = AT_LEFT,          .sizing = ST_AUTO, .cropping = CT_NONE,
-	};
+		column_info_t column_info =
+		{
+			.column_id = SORT_BY_NAME, .full_width = 0UL, .text_width = 0UL,
+			.align = AT_LEFT,          .sizing = ST_AUTO, .cropping = CT_NONE,
+		};
 
-	if(view->view_columns[0] != '\0')
-	{
-		return;
+		columns_clear(view->columns);
+		columns_add_column(view->columns, column_info);
+
+		column_info.column_id = get_secondary_key(abs(view->sort[0]));
+		column_info.align = AT_RIGHT;
+		columns_add_column(view->columns, column_info);
 	}
-
-	columns_clear(view->columns);
-	columns_add_column(view->columns, column_info);
-
-	column_info.column_id = get_secondary_key(abs(view->sort[0]));
-	column_info.align = AT_RIGHT;
-	columns_add_column(view->columns, column_info);
+	else if(strstr(view->view_columns, "{}") != NULL)
+	{
+		load_view_columns_option(view, view->view_columns);
+	}
 }
 
 void

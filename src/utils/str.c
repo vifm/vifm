@@ -206,11 +206,14 @@ until_first(const char str[], char c)
 void
 replace_string(char **str, const char *with)
 {
-	char *new = strdup(with);
-	if(new != NULL)
+	if(*str != with)
 	{
-		free(*str);
-		*str = new;
+		char *new = strdup(with);
+		if(new != NULL)
+		{
+			free(*str);
+			*str = new;
+		}
 	}
 }
 

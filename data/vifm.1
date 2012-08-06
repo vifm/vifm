@@ -2463,6 +2463,13 @@ This is just a sort key surrounded with curly braces, e.g.
 .EE
 {name} and {iname} keys are the same and present both for consistency with
 \'sort' option.
+
+Empty curly braces ({}) are replaced with the default secondary column for
+primary sort key. So after the next command view will be displayed almost as
+if 'viewcolumns' is empty, but adding ellipsis for long file names:
+.EX
+    set viewcolumns=-{name}..,6{}.
+.EE
 .LP
 Cropping specifier
 
