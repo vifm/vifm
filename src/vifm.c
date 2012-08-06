@@ -122,54 +122,6 @@ show_help_msg(void)
 	puts("    don't read vifmrc and vifminfo.");
 }
 
-static void
-init_window(FileView *win)
-{
-	win->curr_line = 0;
-	win->top_line = 0;
-	win->list_rows = 0;
-	win->list_pos = 0;
-	win->selected_filelist = NULL;
-	win->history_num = 0;
-	win->history_pos = 0;
-	win->invert = 0;
-	win->color_scheme = 1;
-}
-
-static void
-init_window_history(FileView *win)
-{
-	if(cfg.history_len == 0)
-		return;
-
-	win->history = malloc(sizeof(history_t)*cfg.history_len);
-	while(win->history == NULL)
-	{
-		cfg.history_len /= 2;
-		win->history = malloc(sizeof(history_t)*cfg.history_len);
-	}
-}
-
-static void
-load_initial_directory(FileView *view, const char *dir)
-{
-	if(view->curr_dir[0] == '\0')
-		snprintf(view->curr_dir, sizeof(view->curr_dir), "%s", dir);
-	else
-		dir = view->curr_dir;
-
-	view->dir_entry = malloc(sizeof(dir_entry_t));
-	memset(view->dir_entry, 0, sizeof(dir_entry_t));
-
-	view->dir_entry[0].name = strdup("");
-	view->dir_entry[0].type = DIRECTORY;
-
-	view->list_rows = 1;
-	if(!is_root_dir(view->curr_dir))
-		chosp(view->curr_dir);
-	(void)change_directory(view, dir);
-}
-
 /* buf should be at least PATH_MAX characters length */
 static void
 parse_path(const char *dir, const char *path, char *buf)
@@ -295,36 +247,6 @@ quit_on_invalid_arg(void)
 		exit(1);
 }
 
-/* Returns non-zero if path should be changed. */
-static int
-check_path(FileView *view, const char *path)
-{
-	if(path[0] == '\0' || stroscmp(view->curr_dir, path) == 0)
-		return 0;
-	return 1;
-}
-
-/* Removes file name from path. */
-static void
-exclude_file_name(char *path)
-{
-	if(path_exists(path) && !is_valid_dir(path))
-		remove_last_path_component(path);
-}
-
-/* Sets view's current directory from path value.
- * Returns non-zero if view's directory was changed. */
-static int
-set_path(FileView *view, const char *path)
-{
-	if(!check_path(view, path))
-		return 0;
-
-	strcpy(view->curr_dir, path);
-	exclude_file_name(view->curr_dir);
-	return 1;
-}
-
 static void
 check_path_for_file(FileView *view, const char *path, int handle)
 {
@@ -397,30 +319,13 @@ main(int argc, char *argv[])
 	to_forward_slash(dir);
 #endif
 
-	init_window(&rwin);
-	init_window(&lwin);
-
+	init_filelists();
 	init_registers();
 	set_config_paths();
 	reinit_logger();
 
 	init_commands();
 	update_path_env(1);
-	load_default_configuration();
-
-	/* Misc configuration */
-
-	lwin.prev_invert = lwin.invert;
-	lwin.hide_dot = 1;
-	strncpy(lwin.regexp, "", sizeof(lwin.regexp));
-	lwin.matches = 0;
-	init_window_history(&lwin);
-
-	rwin.prev_invert = rwin.invert;
-	rwin.hide_dot = 1;
-	strncpy(rwin.regexp, "", sizeof(rwin.regexp));
-	rwin.matches = 0;
-	init_window_history(&rwin);
 
 	if(init_status() != 0)
 	{
@@ -439,6 +344,8 @@ main(int argc, char *argv[])
 	/* This should be called before loading any configuration file. */
 	reset_all_file_associations();
 
+	init_option_handlers();
+
 	old_config = is_old_config();
 	if(!old_config && !no_configs)
 		read_info_file(0);
@@ -451,8 +358,8 @@ main(int argc, char *argv[])
 
 	init_background();
 
-	lcd = set_path(&lwin, lwin_path);
-	rcd = set_path(&rwin, rwin_path);
+	lcd = set_view_path(&lwin, lwin_path);
+	rcd = set_view_path(&rwin, rwin_path);
 
 	if(lcd && !rcd && curr_view != &lwin)
 		change_window();
@@ -465,7 +372,6 @@ main(int argc, char *argv[])
 		return -1;
 
 	init_modes();
-	init_option_handlers();
 	init_undo_list(&perform_operation, &cfg.undo_levels);
 	load_local_options(curr_view);
 
@@ -534,8 +440,8 @@ main(int argc, char *argv[])
 		read_info_file(0);
 		curr_stats.load_stage = 1;
 
-		set_path(&lwin, lwin_path);
-		set_path(&rwin, rwin_path);
+		(void)set_view_path(&lwin, lwin_path);
+		(void)set_view_path(&rwin, rwin_path);
 
 		load_initial_directory(&lwin, dir);
 		load_initial_directory(&rwin, dir);
@@ -585,10 +491,10 @@ parse_recieved_arguments(char *args[])
 	SetForegroundWindow(GetConsoleWindow());
 #endif
 
-	if((lcd = check_path(&lwin, lwin_path)))
+	if((lcd = view_is_at_path(&lwin, lwin_path)))
 		remote_cd(&lwin, lwin_path, lwin_handle);
 
-	if((rcd = check_path(&rwin, rwin_path)))
+	if((rcd = view_is_at_path(&rwin, rwin_path)))
 		remote_cd(&rwin, rwin_path, rwin_handle);
 
 	if(lcd && !rcd && curr_view != &lwin)

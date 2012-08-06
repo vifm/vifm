@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@lavabit.com>
-" Last Change: April 17, 2012
+" Last Change: August 06, 2012
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -50,7 +50,8 @@ syntax keyword vifmOption contained autochpos columns co confirm cf cpoptions
 		\ ignorecase ic incsearch is laststatus lines ls rulerformat ruf runexec
 		\ scrollbind scb scrolloff so sort sortorder shell sh slowfs smartcase scs
 		\ sortnumbers statusline stl tabstop timefmt timeoutlen trash trashdir ts
-		\ undolevels ul vicmd vixcmd vifminfo vimhelp wildmenu wmnu wrap wrapscan ws
+		\ undolevels ul vicmd viewcolumns vifminfo vimhelp vixcmd wildmenu wmnu wrap
+		\ wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun

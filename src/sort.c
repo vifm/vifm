@@ -245,5 +245,30 @@ sort_dir_list(const void *one, const void *two)
 	return retval;
 }
 
+int
+get_secondary_key(int primary_key)
+{
+	switch(primary_key)
+	{
+#ifndef _WIN32
+		case SORT_BY_OWNER_NAME:
+		case SORT_BY_OWNER_ID:
+		case SORT_BY_GROUP_NAME:
+		case SORT_BY_GROUP_ID:
+		case SORT_BY_MODE:
+#endif
+		case SORT_BY_TIME_MODIFIED:
+		case SORT_BY_TIME_ACCESSED:
+		case SORT_BY_TIME_CHANGED:
+			return primary_key;
+		case SORT_BY_NAME:
+		case SORT_BY_INAME:
+		case SORT_BY_EXTENSION:
+		case SORT_BY_SIZE:
+		default:
+			return SORT_BY_SIZE;
+	}
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

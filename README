@@ -1,7 +1,7 @@
 Vifm - vi[m] like file manager
 2001 - 2012
 
-Updated: 23 June, 2012
+Updated: 08 August, 2012
 Version: 0.7.3a
 
 Brief Description
@@ -109,6 +109,7 @@ Package content
     |  |-- background.c - runs commands in background
     |  |-- bookmarks.c - stores information about bookmarked directories
     |  |-- color_scheme.c - color schemes
+    |  |-- column_view.c - column formatting unit
     |  |-- commands.c - handles command line commands
     |  |-- commands_completion.c - handles command line completion
     |  |-- desktop.c - code that parses *.desktop files on *nix systems
@@ -140,6 +141,7 @@ Package content
     |  |-- ui.c - setup_ncurses_interface() and other ui related functions
     |  |-- undo.c - stores and handles the undo list
     |  |-- version.c - git hash and other version information
+    |  |-- viewcolumns_parser.c - contains code for parsing 'viewcolumns' option
     |  |-- vifm.c - contains main() which does basic initialization
     |  |-- vifmrc-converter.c - converter for vifmrc, vifminfo and colorscheme
     |  |                        files

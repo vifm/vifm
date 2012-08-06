@@ -73,6 +73,7 @@ vifm_SOURCES = \
 	background.c background.h \
 	bookmarks.c bookmarks.h \
 	color_scheme.c colorscheme.h \
+	column_view.c column_view.h \
 	commands.c commands.h \
 	commands_completion.c commands_completion.h \
 	desktop.c desktop.h \
@@ -103,6 +104,7 @@ vifm_SOURCES = \
 	ui.c ui.h \
 	undo.c undo.h \
 	version.c version.h \
+	viewcolumns_parser.c viewcolumns_parser.h \
 	compile_info.c \
 	vifm.c
 

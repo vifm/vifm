@@ -101,7 +101,6 @@ typedef struct
 
 extern config_t cfg;
 
-void load_default_configuration(void);
 void init_config(void);
 void set_config_paths(void);
 void exec_config(void);

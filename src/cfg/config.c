@@ -486,32 +486,6 @@ create_trash_dir(void)
 				cfg.trash_dir, strerror(errno));
 }
 
-static void
-load_view_defaults(FileView *view)
-{
-	int i;
-
-	strncpy(view->regexp, "\\..~$", sizeof(view->regexp) - 1);
-	replace_string(&view->prev_filter, "");
-	set_filename_filter(view, "");
-	view->invert = 1;
-
-#ifndef _WIN32
-	view->sort[0] = SORT_BY_NAME;
-#else
-	view->sort[0] = SORT_BY_INAME;
-#endif
-	for(i = 1; i < NUM_SORT_OPTIONS; i++)
-		view->sort[i] = NUM_SORT_OPTIONS + 1;
-}
-
-void
-load_default_configuration(void)
-{
-	load_view_defaults(&lwin);
-	load_view_defaults(&rwin);
-}
-
 void
 exec_config(void)
 {

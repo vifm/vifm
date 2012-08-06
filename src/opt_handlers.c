@@ -17,6 +17,7 @@
  */
 
 #include <assert.h>
+#include <math.h> /* abs() */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,10 +31,13 @@
 #include "utils/str.h"
 #include "utils/string_array.h"
 #include "color_scheme.h"
+#include "column_view.h"
 #include "filelist.h"
 #include "quickview.h"
+#include "sort.h"
 #include "status.h"
 #include "ui.h"
+#include "viewcolumns_parser.h"
 
 #include "opt_handlers.h"
 
@@ -61,6 +65,7 @@ static void init_timefmt(optval_t *val);
 static void init_trash_dir(optval_t *val);
 static void init_sort(optval_t *val);
 static void init_sortorder(optval_t *val);
+static void init_viewcolumns(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
 static void print_func(const char *msg, const char *description);
@@ -92,6 +97,9 @@ static void smartcase_handler(OPT_OP op, optval_t val);
 static void sortnumbers_handler(OPT_OP op, optval_t val);
 static void sort_handler(OPT_OP op, optval_t val);
 static void sortorder_handler(OPT_OP op, optval_t val);
+static void viewcolumns_handler(OPT_OP op, optval_t val);
+static void add_column(columns_t columns, column_info_t column_info);
+static int map_name(const char *name);
 static void resort_view(FileView * view);
 static void statusline_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
@@ -262,6 +270,8 @@ static struct
 		{ .init = &init_sort }                                                                                 },
 	{ "sortorder",   "",     OPT_ENUM,    ARRAY_LEN(sortorder_enum),  sortorder_enum,  &sortorder_handler,
 		{ .init = &init_sortorder }                                                                            },
+	{ "viewcolumns", "",     OPT_STRLIST, 0,                          NULL,            &viewcolumns_handler,
+		{ .init = &init_viewcolumns }                                                                          },
 };
 
 void
@@ -318,6 +328,12 @@ init_sortorder(optval_t *val)
 }
 
 static void
+init_viewcolumns(optval_t *val)
+{
+	val->str_val = "";
+}
+
+static void
 load_options_defaults(void)
 {
 	int i;
@@ -349,11 +365,16 @@ add_options(void)
 void
 load_local_options(FileView *view)
 {
-	load_sort(view);
+	optval_t val;
+
+	load_sort_option(view);
+
+	val.str_val = view->view_columns;
+	set_option("viewcolumns", val);
 }
 
 void
-load_sort(FileView *view)
+load_sort_option(FileView *view)
 {
 	optval_t val;
 	char buf[64] = "";
@@ -394,11 +415,12 @@ process_set_args(const char *args)
 {
 	save_msg = 0;
 	print_buf[0] = '\0';
-	if(set_options(args) != 0) /* changes print_buf and save_msg */
+	/* call of set_options() can changs print_buf and save_msg */
+	if(set_options(args) != 0 || save_msg < 0)
 	{
 		print_func("", "Invalid argument for :set command");
-		status_bar_error(print_buf);
 		save_msg = -1;
+		status_bar_error(print_buf);
 	}
 	else if(print_buf[0] != '\0')
 	{
@@ -446,6 +468,7 @@ columns_handler(OPT_OP op, optval_t val)
 		val.int_val = MIN_TERM_WIDTH;
 		snprintf(buf, sizeof(buf), "At least %d columns needed", MIN_TERM_WIDTH);
 		print_func("", buf);
+		save_msg = -1;
 	}
 
 	if(cfg.columns != val.int_val)
@@ -603,6 +626,7 @@ lines_handler(OPT_OP op, optval_t val)
 		val.int_val = MIN_TERM_HEIGHT;
 		snprintf(buf, sizeof(buf), "At least %d lines needed", MIN_TERM_HEIGHT);
 		print_func("", buf);
+		save_msg = -1;
 	}
 
 	if(cfg.lines != val.int_val)
@@ -661,6 +685,7 @@ scrolloff_handler(OPT_OP op, optval_t val)
 		char buf[128];
 		snprintf(buf, sizeof(buf), "Invalid scroll size: %d", val.int_val);
 		print_func("", buf);
+		save_msg = -1;
 		reset_option_to_default("scrolloff");
 		return;
 	}
@@ -751,9 +776,11 @@ sort_handler(OPT_OP op, optval_t val)
 	while(*p != '\0');
 
 	for(j = 0; j < i; j++)
-		if(abs(curr_view->sort[j]) == SORT_BY_NAME ||
-				abs(curr_view->sort[j]) == SORT_BY_INAME)
+	{
+		int sort_key = abs(curr_view->sort[j]);
+		if(sort_key == SORT_BY_NAME || sort_key == SORT_BY_INAME)
 			break;
+	}
 	if(j == i)
 #ifndef _WIN32
 		curr_view->sort[i++] = SORT_BY_NAME;
@@ -763,8 +790,10 @@ sort_handler(OPT_OP op, optval_t val)
 	while(i < NUM_SORT_OPTIONS)
 		curr_view->sort[i++] = NUM_SORT_OPTIONS + 1;
 
+	reset_view_sort(curr_view);
 	resort_view(curr_view);
-	load_sort(curr_view);
+	move_to_list_pos(curr_view, curr_view->list_pos);
+	load_sort_option(curr_view);
 }
 
 static void
@@ -775,11 +804,63 @@ sortorder_handler(OPT_OP op, optval_t val)
 		curr_view->sort[0] = -curr_view->sort[0];
 
 		resort_view(curr_view);
-		load_sort(curr_view);
+		load_sort_option(curr_view);
 	}
 }
 
-/* Resorts and redraws given view. */
+static void
+viewcolumns_handler(OPT_OP op, optval_t val)
+{
+	if(val.str_val[0] == '\0')
+	{
+		char buffer[128];
+		(void)snprintf(buffer, sizeof(buffer), "%s", "-{name},{}");
+		load_view_columns_option(curr_view, buffer);
+		replace_string(&curr_view->view_columns, "");
+		return;
+	}
+
+	load_view_columns_option(curr_view, val.str_val);
+}
+
+void
+load_view_columns_option(FileView *view, const char *value)
+{
+	columns_clear(curr_view->columns);
+	if(parse_columns(view->columns, add_column, map_name, value) != 0)
+	{
+		print_func("", "Invalid format of 'viewcolumns' option");
+		save_msg = -1;
+		(void)parse_columns(view->columns, add_column, map_name,
+				view->view_columns);
+	}
+	else
+	{
+		replace_string(&view->view_columns, value);
+		redraw_current_view();
+	}
+}
+
+/* Adds new column to view columns. */
+static void
+add_column(columns_t columns, column_info_t column_info)
+{
+	columns_add_column(columns, column_info);
+}
+
+/* Maps column name to column id. Returns column id. */
+static int
+map_name(const char *name)
+{
+	if(*name != '\0')
+	{
+		int pos;
+		pos = string_array_pos((char **)sort_enum, ARRAY_LEN(sort_enum), name);
+		return (pos >= 0) ? (pos + 1) : -1;
+	}
+	return get_secondary_key(abs(curr_view->sort[0]));
+}
+
 static void
 resort_view(FileView * view)
 {
@@ -806,6 +887,7 @@ tabstop_handler(OPT_OP op, optval_t val)
 		char buf[128];
 		snprintf(buf, sizeof(buf), "Argument must be positive: %d", val.int_val);
 		print_func("", buf);
+		save_msg = -1;
 		reset_option_to_default("tabstop");
 		return;
 	}
@@ -836,6 +918,7 @@ timeoutlen_handler(OPT_OP op, optval_t val)
 		char buf[128];
 		snprintf(buf, sizeof(buf), "Argument must be >= 0: %d", val.int_val);
 		print_func("", buf);
+		save_msg = -1;
 		val.int_val = 0;
 		set_option("timeoutlen", val);
 		return;
@@ -853,7 +936,7 @@ trash_handler(OPT_OP op, optval_t val)
 static void
 trashdir_handler(OPT_OP op, optval_t val)
 {
-	char * s = expand_tilde(strdup(val.str_val));
+	char *s = expand_tilde(strdup(val.str_val));
 	snprintf(cfg.trash_dir, sizeof(cfg.trash_dir), "%s", s);
 	create_trash_dir();
 	free(s);

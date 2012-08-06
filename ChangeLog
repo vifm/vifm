@@ -4,6 +4,8 @@
 
 	Added status bar messages for :apropos, :find and :locate commands.
 
+	Added 'viewcolumns' local option to control view columns.
+
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
 
@@ -35,6 +37,10 @@
 	Fixed mapping of <c-h>.
 
 	Fixed "Press return..." message appearing always on OSX.
+
+	Fixed segmentation fault on :move command with path containing slash.
+
+	Fixed segmentatino fault on :restart during prompt history load.
 
 0.7.3 to 0.7.3a
 

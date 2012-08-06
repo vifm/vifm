@@ -62,6 +62,7 @@
 #include "utils/utils.h"
 #include "background.h"
 #include "color_scheme.h"
+#include "column_view.h"
 #include "filelist.h"
 #include "fileops.h"
 #include "fileops.h"
@@ -75,12 +76,334 @@
 #include "term_title.h"
 #include "ui.h"
 
+/* Packet set of parameters to pass as user data for processing columns. */
+typedef struct
+{
+	FileView *view;
+	size_t line;
+	int current;
+	size_t current_line;
+}
+column_data_t;
+
+static void column_line_print(const void *data, int column_id, const char *buf,
+		size_t offset);
+static void format_name(int id, const void *data, size_t buf_len, char *buf);
+static void format_size(int id, const void *data, size_t buf_len, char *buf);
+static void format_ext(int id, const void *data, size_t buf_len, char *buf);
+#ifndef _WIN32
+static void format_group(int id, const void *data, size_t buf_len, char *buf);
+static void format_mode(int id, const void *data, size_t buf_len, char *buf);
+static void format_owner(int id, const void *data, size_t buf_len, char *buf);
+#endif
+static void format_time(int id, const void *data, size_t buf_len, char *buf);
+static void init_view(FileView *view);
+static void prepare_view(FileView *view);
+static void init_view_history(FileView *view);
+static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
 static int file_can_be_displayed(const char *directory, const char *filename);
+
+void
+init_filelists(void)
+{
+	columns_set_line_print_func(column_line_print);
+	columns_add_column_desc(SORT_BY_NAME, format_name);
+	columns_add_column_desc(SORT_BY_INAME, format_name);
+	columns_add_column_desc(SORT_BY_SIZE, format_size);
+
+	columns_add_column_desc(SORT_BY_EXTENSION, format_ext);
+#ifndef _WIN32
+	columns_add_column_desc(SORT_BY_GROUP_ID, format_group);
+	columns_add_column_desc(SORT_BY_GROUP_NAME, format_group);
+	columns_add_column_desc(SORT_BY_MODE, format_mode);
+	columns_add_column_desc(SORT_BY_OWNER_ID, format_owner);
+	columns_add_column_desc(SORT_BY_OWNER_NAME, format_owner);
+#endif
+	columns_add_column_desc(SORT_BY_TIME_ACCESSED, format_time);
+	columns_add_column_desc(SORT_BY_TIME_CHANGED, format_time);
+	columns_add_column_desc(SORT_BY_TIME_MODIFIED, format_time);
+
+	init_view(&rwin);
+	init_view(&lwin);
+}
+
+/* Print callback for column_view unit. */
+static void
+column_line_print(const void *data, int column_id, const char *buf,
+		size_t offset)
+{
+	int line_color;
+	col_attr_t col;
+	char print_buf[strlen(buf) + 1];
+	size_t width_left;
+	size_t trim_pos;
+
+	const column_data_t *cdt = data;
+	size_t i = cdt->line;
+	FileView *view = cdt->view;
+	dir_entry_t *entry = &view->dir_entry[cdt->line];
+	wmove(view->win, cdt->current_line, 1 + offset);
+
+	col = view->cs.color[WIN_COLOR];
+	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
+	{
+		line_color = get_line_color(view, i);
+		mix_colors(&col, &view->cs.color[line_color]);
+		if(entry->selected)
+			mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+		if(cdt->current)
+		{
+			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+			line_color = CURRENT_COLOR;
+		}
+		else if(entry->selected)
+		{
+			line_color = SELECTED_COLOR;
+		}
+		init_pair(view->color_scheme + line_color, col.fg, col.bg);
+	}
+	else
+	{
+		line_color = WIN_COLOR;
+
+		if(entry->selected)
+		{
+			mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+			line_color = SELECTED_COLOR;
+		}
+
+		if(cdt->current)
+		{
+			mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
+			line_color = CURRENT_COLOR;
+		}
+		else
+		{
+			init_pair(view->color_scheme + line_color, col.fg, col.bg);
+		}
+	}
+	wattron(view->win, COLOR_PAIR(view->color_scheme + line_color) | col.attr);
+
+	strcpy(print_buf, buf);
+	width_left = view->window_width - 1 - offset;
+	trim_pos = get_normal_utf8_string_widthn(buf, width_left);
+	print_buf[trim_pos] = '\0';
+	wprint(view->win, print_buf);
+
+	wattroff(view->win, COLOR_PAIR(view->color_scheme + line_color) | col.attr);
+}
+
+/* File name format callback for column_view unit. */
+static void
+format_name(int id, const void *data, size_t buf_len, char *buf)
+{
+	const column_data_t *cdt = data;
+	FileView *view = cdt->view;
+	dir_entry_t *entry = &view->dir_entry[cdt->line];
+	snprintf(buf, buf_len + 1, "%s", entry->name);
+}
+
+/* File size format callback for column_view unit. */
+static void
+format_size(int id, const void *data, size_t buf_len, char *buf)
+{
+	uint64_t size = 0;
+	char str[24] = "";
+	const column_data_t *cdt = data;
+	FileView *view = cdt->view;
+	dir_entry_t *entry = &view->dir_entry[cdt->line];
+
+	if(entry->type == DIRECTORY)
+	{
+		char buf[PATH_MAX];
+		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, entry->name);
+		tree_get_data(curr_stats.dirsize_cache, buf, &size);
+	}
+
+	if(size == 0)
+		size = entry->size;
+
+	friendly_size_notation(size, sizeof(str), str);
+	snprintf(buf, buf_len + 1, " %s", str);
+}
+
+/* File extension format callback for column_view unit. */
+static void
+format_ext(int id, const void *data, size_t buf_len, char *buf)
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	const char *dot = strrchr(entry->name,  '.');
+	snprintf(buf, buf_len + 1, "%s", (dot == NULL) ? "" : (dot + 1));
+	chosp(buf);
+}
+
+#ifndef _WIN32
+
+/* File group id/name format callback for column_view unit. */
+static void
+format_group(int id, const void *data, size_t buf_len, char *buf)
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	if(id == SORT_BY_GROUP_NAME)
+	{
+		struct group *grp_buf;
+		if((grp_buf = getgrgid(entry->gid)) != NULL)
+		{
+			snprintf(buf, buf_len, " %s", grp_buf->gr_name);
+			return;
+		}
+	}
+
+	snprintf(buf, buf_len, " %d", (int)entry->gid);
+}
+
+/* File owner id/name format callback for column_view unit. */
+static void
+format_owner(int id, const void *data, size_t buf_len, char *buf)
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	if(id == SORT_BY_OWNER_NAME)
+	{
+		struct passwd *pwd_buf;
+		if((pwd_buf = getpwuid(entry->uid)) != NULL)
+		{
+			snprintf(buf, buf_len, " %s", pwd_buf->pw_name);
+			return;
+		}
+	}
+
+	snprintf(buf, buf_len, " %d", (int)entry->uid);
+}
+
+/* File mode format callback for column_view unit. */
+static void
+format_mode(int id, const void *data, size_t buf_len, char *buf)
+{
+	const column_data_t *cdt = data;
+	dir_entry_t *entry = &cdt->view->dir_entry[cdt->line];
+	snprintf(buf, buf_len, " %s", get_mode_str(entry->mode));
+}
+
+#endif
+
+/* File modification/access/change date format callback for column_view unit. */
+static void
+format_time(int id, const void *data, size_t buf_len, char *buf)
+{
+	struct tm *tm_ptr;
+	const column_data_t *cdt = data;
+	FileView *view = cdt->view;
+	dir_entry_t *entry = &view->dir_entry[cdt->line];
+	switch(id)
+	{
+		case SORT_BY_TIME_MODIFIED:
+			tm_ptr = localtime(&entry->mtime);
+			break;
+		case SORT_BY_TIME_ACCESSED:
+			tm_ptr = localtime(&entry->atime);
+			break;
+		case SORT_BY_TIME_CHANGED:
+			tm_ptr = localtime(&entry->ctime);
+			break;
+	}
+	strftime(buf, buf_len + 1, cfg.time_format, tm_ptr);
+}
+
+/* Loads initial display values into view structure. */
+static void
+init_view(FileView *view)
+{
+	view->curr_line = 0;
+	view->top_line = 0;
+	view->list_rows = 0;
+	view->list_pos = 0;
+	view->selected_filelist = NULL;
+	view->history_num = 0;
+	view->history_pos = 0;
+	view->color_scheme = 1;
+
+	view->hide_dot = 1;
+	view->matches = 0;
+	view->columns = columns_create();
+	view->view_columns = strdup("");
+
+	prepare_view(view);
+
+	init_view_history(view);
+	reset_view_sort(view);
+}
+
+void
+prepare_views(void)
+{
+	prepare_view(&lwin);
+	prepare_view(&rwin);
+}
+
+/* Loads some of view parameters that should be restored on configuration
+ * reloading (e.g. on :restart command). */
+static void
+prepare_view(FileView *view)
+{
+	int i;
+
+	strncpy(view->regexp, "", sizeof(view->regexp));
+	replace_string(&view->prev_filter, "");
+	set_filename_filter(view, "");
+	view->invert = 1;
+	view->prev_invert = view->invert;
+
+#ifndef _WIN32
+	view->sort[0] = SORT_BY_NAME;
+#else
+	view->sort[0] = SORT_BY_INAME;
+#endif
+	for(i = 1; i < NUM_SORT_OPTIONS; i++)
+		view->sort[i] = NUM_SORT_OPTIONS + 1;
+}
+
+/* Allocates memory for view history smartly (handles huge values). */
+static void
+init_view_history(FileView *view)
+{
+	if(cfg.history_len == 0)
+		return;
+
+	view->history = malloc(sizeof(history_t)*cfg.history_len);
+	while(view->history == NULL)
+	{
+		cfg.history_len /= 2;
+		view->history = malloc(sizeof(history_t)*cfg.history_len);
+	}
+}
+
+void
+load_initial_directory(FileView *view, const char *dir)
+{
+	if(view->curr_dir[0] == '\0')
+		snprintf(view->curr_dir, sizeof(view->curr_dir), "%s", dir);
+	else
+		dir = view->curr_dir;
+
+	view->dir_entry = malloc(sizeof(dir_entry_t));
+	memset(view->dir_entry, 0, sizeof(dir_entry_t));
+
+	view->dir_entry[0].name = strdup("");
+	view->dir_entry[0].type = DIRECTORY;
+
+	view->list_rows = 1;
+	if(!is_root_dir(view->curr_dir))
+		chosp(view->curr_dir);
+	(void)change_directory(view, dir);
+}
 
 static int
 get_line_color(FileView* view, int pos)
@@ -123,108 +446,6 @@ get_line_color(FileView* view, int pos)
 		default:
 			return WIN_COLOR;
 	}
-}
-
-static void
-add_sort_type_info(FileView *view, int y, int x, int is_current_line)
-{
-	char buf[24];
-#ifndef _WIN32
-	struct passwd *pwd_buf;
-	struct group *grp_buf;
-#endif
-	struct tm *tm_ptr;
-	col_attr_t col;
-	int type;
-
-	switch(abs(view->sort[0]))
-	{
-#ifndef _WIN32
-		case SORT_BY_OWNER_NAME:
-			if((pwd_buf = getpwuid(view->dir_entry[x].uid)) != NULL)
-			{
-				snprintf(buf, sizeof(buf), " %s", pwd_buf->pw_name);
-				break;
-			}
-			/* break skipped */
-		case SORT_BY_OWNER_ID:
-			snprintf(buf, sizeof(buf), " %d", (int) view->dir_entry[x].uid);
-			break;
-		case SORT_BY_GROUP_NAME:
-			if((grp_buf = getgrgid(view->dir_entry[x].gid)) != NULL)
-			{
-				snprintf(buf, sizeof(buf), " %s", grp_buf->gr_name);
-				break;
-			}
-			/* break skipped */
-		case SORT_BY_GROUP_ID:
-			snprintf(buf, sizeof(buf), " %d", (int) view->dir_entry[x].gid);
-			break;
-		case SORT_BY_MODE:
-			snprintf(buf, sizeof(buf), " %s", get_mode_str(view->dir_entry[x].mode));
-			break;
-#endif
-		case SORT_BY_TIME_MODIFIED:
-			tm_ptr = localtime(&view->dir_entry[x].mtime);
-			strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
-			break;
-		case SORT_BY_TIME_ACCESSED:
-			tm_ptr = localtime(&view->dir_entry[x].atime);
-			strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
-			break;
-		case SORT_BY_TIME_CHANGED:
-			tm_ptr = localtime(&view->dir_entry[x].ctime);
-			strftime(buf, sizeof(buf), cfg.time_format, tm_ptr);
-			break;
-		case SORT_BY_NAME:
-		case SORT_BY_EXTENSION:
-		case SORT_BY_SIZE:
-		default:
-			{
-				uint64_t size = 0;
-				char str[24] = "";
-
-				if(view->dir_entry[x].type == DIRECTORY)
-				{
-					char buf[PATH_MAX];
-					snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
-							view->dir_entry[x].name);
-					tree_get_data(curr_stats.dirsize_cache, buf, &size);
-				}
-
-				if(size == 0)
-					size = view->dir_entry[x].size;
-
-				friendly_size_notation(size, sizeof(str), str);
-				snprintf(buf, sizeof(buf), " %s", str);
-			}
-			break;
-	}
-
-	type = WIN_COLOR;
-	col = view->cs.color[WIN_COLOR];
-
-	if(view->dir_entry[x].selected)
-	{
-		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-		type = SELECTED_COLOR;
-	}
-
-	if(is_current_line)
-	{
-		mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-		type = CURRENT_COLOR;
-	}
-	else
-	{
-		init_pair(view->color_scheme + type, col.fg, col.bg);
-	}
-
-	wattron(view->win, COLOR_PAIR(type + view->color_scheme) | col.attr);
-
-	mvwaddstr(view->win, y, view->window_width - strlen(buf), buf);
-
-	wattroff(view->win, COLOR_PAIR(type + view->color_scheme) | col.attr);
 }
 
 #ifndef _WIN32
@@ -552,6 +773,30 @@ update_view_title(FileView *view)
 }
 
 void
+reset_view_sort(FileView *view)
+{
+	if(view->view_columns[0] == '\0')
+	{
+		column_info_t column_info =
+		{
+			.column_id = SORT_BY_NAME, .full_width = 0UL, .text_width = 0UL,
+			.align = AT_LEFT,          .sizing = ST_AUTO, .cropping = CT_NONE,
+		};
+
+		columns_clear(view->columns);
+		columns_add_column(view->columns, column_info);
+
+		column_info.column_id = get_secondary_key(abs(view->sort[0]));
+		column_info.align = AT_RIGHT;
+		columns_add_column(view->columns, column_info);
+	}
+	else if(strstr(view->view_columns, "{}") != NULL)
+	{
+		load_view_columns_option(view, view->view_columns);
+	}
+}
+
+void
 draw_dir_list(FileView *view, int top)
 {
 	int attr;
@@ -597,36 +842,10 @@ draw_dir_list(FileView *view, int top)
 
 	for(x = top; x < view->list_rows; x++)
 	{
-		size_t print_width;
-		int LINE_COLOR;
-		char file_name[view->window_width*2 - 2];
-		col_attr_t col;
-		/* Extra long file names are truncated to fit */
-
-		print_width = get_real_string_width(view->dir_entry[x].name,
-				view->window_width - 1);
-		snprintf(file_name, print_width + 1, "%s", view->dir_entry[x].name);
-
 		wmove(view->win, y, 1);
-
-		LINE_COLOR = get_line_color(view, x);
-		col = view->cs.color[WIN_COLOR];
-		mix_colors(&col, &view->cs.color[LINE_COLOR]);
-
-		if(view->dir_entry[x].selected)
-		{
-			mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-			LINE_COLOR = SELECTED_COLOR;
-		}
-
-		init_pair(view->color_scheme + LINE_COLOR, col.fg, col.bg);
-
-		wattrset(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
-		wprint(view->win, file_name);
-		wattroff(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
-
-		add_sort_type_info(view, y, x, 0);
-
+		wclrtoeol(view->win);
+		column_data_t cdt = {view, x, 0, y};
+		columns_format_line(view->columns, &cdt, view->window_width - 1);
 		y++;
 		if(y > view->window_rows)
 			break;
@@ -696,10 +915,7 @@ erase_current_line_bar(FileView *view)
 {
 	int old_cursor = view->curr_line;
 	int old_pos = view->top_line + old_cursor;
-	char file_name[view->window_width*2 - 2];
-	int LINE_COLOR;
-	size_t print_width;
-	col_attr_t col;
+	column_data_t cdt = {view, old_pos, 0, old_cursor};
 
 	if(old_cursor < 0)
 		return;
@@ -707,40 +923,17 @@ erase_current_line_bar(FileView *view)
 	if(curr_stats.load_stage < 2)
 		return;
 
-	/* Extra long file names are truncated to fit */
-
-	if(old_pos >= 0 && old_pos < view->list_rows)
+	if(old_pos < 0 || old_pos >= view->list_rows)
 	{
-		print_width = get_real_string_width(view->dir_entry[old_pos].name,
-				view->window_width - 1) + 1;
-		snprintf(file_name, print_width, "%s", view->dir_entry[old_pos].name);
-	}
-	else /* The entire list is going to be redrawn so just return. */
+		/* The entire list is going to be redrawn so just return. */
 		return;
+	}
 
 	wmove(view->win, old_cursor, 1);
 
 	wclrtoeol(view->win);
 
-	LINE_COLOR = get_line_color(view, old_pos);
-	col = view->cs.color[WIN_COLOR];
-	mix_colors(&col, &view->cs.color[LINE_COLOR]);
-
-	if(view->dir_entry[old_pos].selected)
-	{
-		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
-		LINE_COLOR = SELECTED_COLOR;
-	}
-
-	init_pair(view->color_scheme + LINE_COLOR, col.fg, col.bg);
-
-	wattrset(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
-	file_name[print_width] = '\0';
-	wmove(view->win, old_cursor, 1);
-  wprint(view->win, file_name);
-	wattroff(view->win, COLOR_PAIR(LINE_COLOR + view->color_scheme) | col.attr);
-
-	add_sort_type_info(view, old_cursor, old_pos, 0);
+	columns_format_line(view->columns, &cdt, view->window_width - 1);
 }
 
 /* Returns non-zero if redraw is needed */
@@ -814,10 +1007,7 @@ move_to_list_pos(FileView *view, int pos)
 {
 	int redraw = 0;
 	int old_cursor = view->curr_line;
-	char file_name[view->window_width*2 + 1];
-	size_t print_width;
-	int LINE_COLOR;
-	col_attr_t col;
+	column_data_t cdt = {view, 0, 1, 0};
 
 	if(pos < 1)
 		pos = 0;
@@ -848,40 +1038,15 @@ move_to_list_pos(FileView *view, int pos)
 	refresh_view_win(view);
 	wattroff(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
 
-	LINE_COLOR = get_line_color(view, pos);
-	col = view->cs.color[WIN_COLOR];
-	mix_colors(&col, &view->cs.color[LINE_COLOR]);
+	wmove(view->win, view->curr_line, 1);
+	wclrtoeol(view->win);
 
-	if(view->dir_entry[pos].selected)
-		mix_colors(&col, &view->cs.color[SELECTED_COLOR]);
+	cdt.line = pos;
+	cdt.current_line = view->curr_line;
 
-	mix_colors(&col, &view->cs.color[CURR_LINE_COLOR]);
-
-	init_pair(view->color_scheme + CURRENT_COLOR, col.fg, col.bg);
-	wattron(view->win,
-			COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
-
-	/* Blank the current line and
-	 * print out the current line bar
-	 */
-
-	memset(file_name, ' ', view->window_width);
-
-	file_name[view->window_width] = '\0';
-
-	mvwaddstr(view->win, view->curr_line, 1, file_name);
-
-	print_width = get_real_string_width(view->dir_entry[pos].name,
-			view->window_width - 1);
-	snprintf(file_name, 1 + print_width + 1, " %s", view->dir_entry[pos].name);
-
-	wmove(view->win, view->curr_line, 0);
-	wprint(view->win, file_name);
-
-	wattroff(view->win,
-			COLOR_PAIR(CURRENT_COLOR + view->color_scheme) | col.attr);
-
-	add_sort_type_info(view, view->curr_line, pos, 1);
+	column_line_print(&cdt, FILL_COLUMN_ID, " ", -1);
+	columns_format_line(view->columns, &cdt, view->window_width - 1);
+	column_line_print(&cdt, FILL_COLUMN_ID, " ", view->window_width);
 
 	refresh_view_win(view);
 	update_stat_window(view);
@@ -2419,7 +2584,9 @@ change_sort_type(FileView *view, char type, char descending)
 	for(i = 1; i < NUM_SORT_OPTIONS; i++)
 		view->sort[i] = NUM_SORT_OPTIONS + 1;
 
-	load_sort(view);
+	reset_view_sort(view);
+
+	load_sort_option(view);
 
 	load_saving_pos(view, 1);
 }
@@ -2536,6 +2703,25 @@ cd(FileView *view, const char *path)
 		refresh_view_win(other_view);
 	}
 	return 0;
+}
+
+int
+view_is_at_path(FileView *view, const char *path)
+{
+	if(path[0] == '\0' || stroscmp(view->curr_dir, path) == 0)
+		return 0;
+	return 1;
+}
+
+int
+set_view_path(FileView *view, const char *path)
+{
+	if(!view_is_at_path(view, path))
+		return 0;
+
+	strcpy(view->curr_dir, path);
+	exclude_file_name(view->curr_dir);
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
