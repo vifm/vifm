@@ -156,9 +156,13 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 			filename_completion(arg, CT_DIRONLY);
 		}
 		else if(id == COM_COPY || id == COM_MOVE || id == COM_ALINK ||
-				id == COM_RLINK || id == COM_SPLIT || id == COM_VSPLIT)
+				id == COM_RLINK)
 		{
 			filename_completion_in_dir(other_view->curr_dir, arg, CT_ALL);
+		}
+		else if(id == COM_SPLIT || id == COM_VSPLIT)
+		{
+			filename_completion_in_dir(curr_view->curr_dir, arg, CT_DIRONLY);
 		}
 		else if(id == COM_FIND)
 		{

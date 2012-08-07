@@ -20,7 +20,9 @@ Basic things that need to be done.
     Add :increment and :decrement commands, which should work in two modes
         in the same way as Ctrl-X/Ctrl-A and like their combination with :clone.
     Improve ga and gA commands to recalculate sizes of modified directories
-        only, and maybe update size of all parent cached directories.
+        only, and maybe update size of all parent cached directories. And maybe
+        show somehow in the TUI calculation process.
+    Check current view of other pane on leaving FUSE mount dir.
 
 Documentation.
     Better documentation.
@@ -54,10 +56,10 @@ Vi(m) specific features that need to be added.
     Add :echo command.
     'cdpath' ('cd') option.
     Completion of first argument for :map commands.
-    Think about :split and :vsplit commands with path passed (what base should
-        relative paths have?).
     Support hex and octal numbers in :set
     Add support for ^= in :set command.
+    Add completion for :set option=<tab>
+    Fix completion for :set so (should enumerate 'sort', not only 'scrolloff').
     Add support of 'n' flag for :substitute command.
     Expand environment variables for :edit command.
     Think about dot normal mode command.
@@ -83,6 +85,7 @@ Possible things to add.
     'wildmode' option.
     A macro to redirect command output into view pane.
     $_ env var and Alt-. combination as in bash shell.
+    Rename existing file option on name conflicts.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.

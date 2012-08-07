@@ -1,4 +1,4 @@
-.TH vifm 1 "August 6, 2012" "" "Vifm"
+.TH vifm 1 "August 7, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1341,7 +1341,7 @@ toggles window horizontal splitting.
 .TP
 .BI ":sp[lit] path"
 splits the window horizontally to show both file directories.  And changes other
-pane to path (absolute or relative to it's current directory).
+pane to path (absolute or relative to current directory of active pane).
 .TP
 .BI :[range]s[ubstitite]/pattern/string/[flags]
 for each file in range replace a match of pattern with string.
@@ -1412,7 +1412,7 @@ toggles window vertical splitting.
 .TP
 .BI ":vs[plit] path"
 splits the window vertically to show both file directories.  And changes other
-pane to path (absolute or relative to it's current directory).
+pane to path (absolute or relative to current directory of active pane).
 .TP
 .BI ":windo [command...]"
 Execute command for each pane (same as :winrun % command).
