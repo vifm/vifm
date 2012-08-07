@@ -2645,7 +2645,7 @@ file_can_be_displayed(const char *directory, const char *filename)
 }
 
 int
-cd(FileView *view, const char *path)
+cd(FileView *view, const char *base_dir, const char *path)
 {
 	char dir[PATH_MAX];
 
@@ -2656,7 +2656,7 @@ cd(FileView *view, const char *path)
 		if(is_path_absolute(arg))
 			snprintf(dir, sizeof(dir), "%s", arg);
 #else
-		strcpy(dir, view->curr_dir);
+		strcpy(dir, base_dir);
 		break_at(dir + 2, '/');
 		if(is_path_absolute(arg) && *arg != '/')
 			snprintf(dir, sizeof(dir), "%s", arg);
@@ -2664,18 +2664,17 @@ cd(FileView *view, const char *path)
 			snprintf(dir, sizeof(dir), "%s", arg);
 		else if(*arg == '/' && is_unc_path(arg))
 			snprintf(dir, sizeof(dir), "%s", arg);
-		else if(*arg == '/' && is_unc_path(view->curr_dir))
+		else if(*arg == '/' && is_unc_path(base_dir))
 			sprintf(dir + strlen(dir), "/%s", arg + 1);
-		else if(stroscmp(arg, "/") == 0 && is_unc_path(view->curr_dir))
-			snprintf(dir, strchr(view->curr_dir + 2, '/') - view->curr_dir + 1, "%s",
-					view->curr_dir);
+		else if(stroscmp(arg, "/") == 0 && is_unc_path(base_dir))
+			snprintf(dir, strchr(base_dir + 2, '/') - base_dir + 1, "%s", base_dir);
 		else if(*arg == '/')
-			snprintf(dir, sizeof(dir), "%c:%s", view->curr_dir[0], arg);
+			snprintf(dir, sizeof(dir), "%c:%s", base_dir[0], arg);
 #endif
 		else if(strcmp(arg, "-") == 0)
 			snprintf(dir, sizeof(dir), "%s", view->last_dir);
 		else
-			snprintf(dir, sizeof(dir), "%s/%s", view->curr_dir, arg);
+			snprintf(dir, sizeof(dir), "%s/%s", base_dir, arg);
 		free(arg);
 	}
 	else

@@ -521,7 +521,7 @@ remote_cd(FileView *view, const char *path, int handle)
 	snprintf(buf, sizeof(buf), "%s", path);
 	exclude_file_name(buf);
 
-	(void)cd(view, buf);
+	(void)cd(view, view->curr_dir, buf);
 	check_path_for_file(view, path, handle);
 }
 
