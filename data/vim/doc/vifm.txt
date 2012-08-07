@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 06
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 07
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1165,8 +1165,8 @@ the '.' operator. Any whitespace is ignored.
 :sp[lit] - switch to a two window horizontal view.
 :sp[lit]! - toggles window horizontal splitting.
 :sp[lit] path - splits the window horizontally to show both file
-    directories.  And changes other pane to path (absolute or relative to it's
-    current directory).
+    directories.  And changes other pane to path (absolute or relative to
+    current directory of active pane).
 
                                                *vifm-:substitute* *vifm-:s*
 :[range]s[ubstitute]/pattern/string/[flags] - for each file in range
@@ -1222,8 +1222,8 @@ the '.' operator. Any whitespace is ignored.
 :vs[plit] - switch to a two window vertical view.
 :vs[plit]! - toggles window vertical splitting.
 :vs[plit] path - splits the window vertically to show both file
-    directories.  And changes other pane to path (absolute or relative to it's
-    current directory).
+    directories.  And changes other pane to path (absolute or relative to
+    current directory of active pane).
 
                                                *vifm-:windo*
 :windo [command...]

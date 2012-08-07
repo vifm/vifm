@@ -56,8 +56,6 @@ Vi(m) specific features that need to be added.
     Add :echo command.
     'cdpath' ('cd') option.
     Completion of first argument for :map commands.
-    Think about :split and :vsplit commands with path passed (what base should
-        relative paths have?).
     Support hex and octal numbers in :set
     Add support for ^= in :set command.
     Add completion for :set option=<tab>

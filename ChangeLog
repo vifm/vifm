@@ -6,9 +6,6 @@
 
 	Added 'viewcolumns' local option to control view columns.
 
-	Fixed segmentation fault on running vifm with one path in the argument
-	list.
-
 	Try the rest of the programs for an association when the default isn't
 	found.
 
@@ -18,6 +15,13 @@
 	Escape pipe character during :file completion.
 
 	Expand macros for user defined commands.
+
+	Changed relative path base for :split and :vsplit commands.
+
+	Complete only directory names for :split and :vsplit commands.
+
+	Fixed segmentation fault on running vifm with one path in the argument
+	list.
 
 	Fixed directory content update on chain execution of several commands in
 	mappings.
