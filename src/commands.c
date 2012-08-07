@@ -3207,7 +3207,7 @@ do_split(const cmd_info_t *cmd_info, SPLIT orientation)
 	else
 	{
 		if(cmd_info->argc == 1)
-			cd(other_view, other_view->curr_dir, cmd_info->argv[0]);
+			cd(other_view, curr_view->curr_dir, cmd_info->argv[0]);
 		comm_split(orientation);
 	}
 	return 0;
