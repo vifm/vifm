@@ -71,6 +71,7 @@
 #include "macros.h"
 #include "opt_handlers.h"
 #include "quickview.h"
+#include "running.h"
 #include "sort.h"
 #include "status.h"
 #include "term_title.h"
@@ -1497,13 +1498,22 @@ change_directory(FileView *view, const char *directory)
 
 	snprintf(view->last_dir, sizeof(view->last_dir), "%s", view->curr_dir);
 
-	/* check if we're exiting from a FUSE mounted top level dir.
+	/* Check if we're exiting from a FUSE mounted top level directory and the
+	 * other pane isn't in it or any of it subdirectories.
 	 * If so, unmount & let FUSE serialize */
 	if(!stroscmp(directory, "../") && in_mounted_dir(view->curr_dir))
 	{
-		int r = try_unmount_fuse(view);
-		if(r != 0)
-			return r;
+		FileView *other = (view == curr_view) ? other_view : curr_view;
+		if(!path_starts_with(other->curr_dir, view->curr_dir))
+		{
+			int r = try_unmount_fuse(view);
+			if(r != 0)
+				return r;
+		}
+		else if(try_updir_from_fuse_mount(view->curr_dir, view))
+		{
+			return 1;
+		}
 	}
 
 	/* Clean up any excess separators */
@@ -2648,6 +2658,7 @@ int
 cd(FileView *view, const char *base_dir, const char *path)
 {
 	char dir[PATH_MAX];
+	int updir = 0;
 
 	if(path != NULL)
 	{
@@ -2675,6 +2686,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 			snprintf(dir, sizeof(dir), "%s", view->last_dir);
 		else
 			snprintf(dir, sizeof(dir), "%s/%s", base_dir, arg);
+		updir = (strcmp(arg, "..") == 0 || strcmp(arg, "../") == 0);
 		free(arg);
 	}
 	else
@@ -2686,7 +2698,11 @@ cd(FileView *view, const char *base_dir, const char *path)
 	{
 		return 0;
 	}
-	if(change_directory(view, dir) < 0)
+	if(updir)
+	{
+		cd_updir(view);
+	}
+	else if(change_directory(view, dir) < 0)
 	{
 		return 0;
 	}

@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 07
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 08
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -2030,6 +2030,12 @@ All % macros are expanded by vifm at runtime and have the following meaning:
 
 %CLEAR is an optional macro.  Other macros are not mandatory, but mount
 commands likely wont work without them.
+
+The mounted FUSE file systems will be automatically unmounted in two cases:
+   - when vifm quits (with |vifm-ZZ|, |vifm-:q|, etc. or when killed by signal)
+   - when you explicitly leave mount point going up to its parent directory
+     (with |vifm-h|, |vifm-Enter| on "../" or ":cd ..") and other pane is not
+     in the same directory or its child directories.
 
 --------------------------------------------------------------------------------
 *vifm-column-view*

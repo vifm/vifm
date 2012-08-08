@@ -20,6 +20,9 @@
 
 	Complete only directory names for :split and :vsplit commands.
 
+	Check current view of other pane on leaving FUSE mount directory an don't
+	unmount if that file system is still in use.
+
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
 

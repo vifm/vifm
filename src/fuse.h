@@ -27,7 +27,7 @@
 void fuse_try_mount(FileView *view, const char *program);
 /* Unmounts all FUSE mounded filesystems. */
 void unmount_fuse(void);
-/* Returns non-zero on successful unmount. */
+/* Returns non-zero on successful leaving mount point directory. */
 int try_updir_from_fuse_mount(const char *path, FileView *view);
 int in_mounted_dir(const char *path);
 /*
