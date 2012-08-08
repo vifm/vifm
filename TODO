@@ -22,7 +22,6 @@ Basic things that need to be done.
     Improve ga and gA commands to recalculate sizes of modified directories
         only, and maybe update size of all parent cached directories. And maybe
         show somehow in the TUI calculation process.
-    Check current view of other pane on leaving FUSE mount dir.
 
 Documentation.
     Better documentation.

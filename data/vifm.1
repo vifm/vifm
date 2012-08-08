@@ -1,4 +1,4 @@
-.TH vifm 1 "August 7, 2012" "" "Vifm"
+.TH vifm 1 "August 8, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2393,6 +2393,14 @@ in the future it can be changed to whole file content
 
 %CLEAR is an optional macro.  Other macros are not mandatory, but mount \
 commands likely wont work without them.
+
+The mounted FUSE file systems will be automatically unmounted in two cases:
+.IP - 2
+when vifm quits (with ZZ, :q, etc. or when killed by signal)
+.IP - 2
+when you explicitly leave mount point going up to its parent directory (with \
+h, Enter on "../" or ":cd ..") and other pane is not in the same directory or \
+its child directories.
 .\" ---------------------------------------------------------------------------
 .SH Column view
 .\" ---------------------------------------------------------------------------
