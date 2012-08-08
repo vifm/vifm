@@ -1497,13 +1497,22 @@ change_directory(FileView *view, const char *directory)
 
 	snprintf(view->last_dir, sizeof(view->last_dir), "%s", view->curr_dir);
 
-	/* check if we're exiting from a FUSE mounted top level dir.
+	/* Check if we're exiting from a FUSE mounted top level directory and the
+	 * other pane isn't in it or any of it subdirectories.
 	 * If so, unmount & let FUSE serialize */
 	if(!stroscmp(directory, "../") && in_mounted_dir(view->curr_dir))
 	{
-		int r = try_unmount_fuse(view);
-		if(r != 0)
-			return r;
+		FileView *other = (view == curr_view) ? other_view : curr_view;
+		if(!path_starts_with(other->curr_dir, view->curr_dir))
+		{
+			int r = try_unmount_fuse(view);
+			if(r != 0)
+				return r;
+		}
+		else if(try_updir_from_fuse_mount(view->curr_dir, view))
+		{
+			return 1;
+		}
 	}
 
 	/* Clean up any excess separators */
