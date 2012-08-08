@@ -71,6 +71,7 @@
 #include "macros.h"
 #include "opt_handlers.h"
 #include "quickview.h"
+#include "running.h"
 #include "sort.h"
 #include "status.h"
 #include "term_title.h"
@@ -2657,6 +2658,7 @@ int
 cd(FileView *view, const char *base_dir, const char *path)
 {
 	char dir[PATH_MAX];
+	int updir = 0;
 
 	if(path != NULL)
 	{
@@ -2684,6 +2686,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 			snprintf(dir, sizeof(dir), "%s", view->last_dir);
 		else
 			snprintf(dir, sizeof(dir), "%s/%s", base_dir, arg);
+		updir = (strcmp(arg, "..") == 0 || strcmp(arg, "../") == 0);
 		free(arg);
 	}
 	else
@@ -2695,7 +2698,11 @@ cd(FileView *view, const char *base_dir, const char *path)
 	{
 		return 0;
 	}
-	if(change_directory(view, dir) < 0)
+	if(updir)
+	{
+		cd_updir(view);
+	}
+	else if(change_directory(view, dir) < 0)
 	{
 		return 0;
 	}
