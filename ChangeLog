@@ -49,6 +49,9 @@
 
 	Fixed segmentatino fault on :restart during prompt history load.
 
+	Fixed eternal looping on "(" or ")" in normal or visual mode and iname
+	sort.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.

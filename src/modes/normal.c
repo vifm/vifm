@@ -1912,131 +1912,68 @@ int
 cmd_paren(int lb, int ub, int inc)
 {
 	int pos = curr_view->list_pos;
-	switch(abs(curr_view->sort[0]))
+	dir_entry_t *pentry = &curr_view->dir_entry[pos];
+	const char *ext = get_last_ext(pentry->name);
+	size_t char_width = get_char_width(pentry->name);
+	wchar_t ch = towupper(get_first_wchar(pentry->name));
+	const char *mode_str = get_mode_str(pentry->mode);
+	int sort_key = abs(curr_view->sort[0]);
+	while(pos > lb && pos < ub)
 	{
-		case SORT_BY_EXTENSION:
-			{
-				const char *name = curr_view->dir_entry[pos].name;
-				const char *ext = get_last_ext(name);
-				while(pos > lb && pos < ub)
-				{
-					pos += inc;
-					name = curr_view->dir_entry[pos].name;
-					if(strcmp(get_last_ext(name), ext) != 0)
-						break;
-				}
-			}
-			break;
-		case SORT_BY_NAME:
-			{
-				const char *name = curr_view->dir_entry[pos].name;
-				size_t len = get_char_width(name);
-				while(pos > lb && pos < ub)
-				{
-					const char *tmp;
-					pos += inc;
-					tmp = curr_view->dir_entry[pos].name;
-					if(strncmp(name, tmp, len) != 0)
-						break;
-				}
-			}
-			break;
-		case SORT_BY_INAME:
-			{
-				const char *name = curr_view->dir_entry[pos].name;
-				wchar_t ch = towupper(get_first_wchar(name));
-				while(pos > lb && pos < ub)
-				{
-					const char *tmp;
-					tmp = curr_view->dir_entry[pos].name;
-					if(towupper(get_first_wchar(tmp)) != ch)
-						break;
-				}
-			}
-			break;
+		dir_entry_t *nentry;
+		pos += inc;
+		nentry = &curr_view->dir_entry[pos];
+		switch(sort_key)
+		{
+			case SORT_BY_EXTENSION:
+				if(strcmp(get_last_ext(nentry->name), ext) != 0)
+					return pos;
+				break;
+			case SORT_BY_NAME:
+				if(strncmp(pentry->name, nentry->name, char_width) != 0)
+					return pos;
+				break;
+			case SORT_BY_INAME:
+				if(towupper(get_first_wchar(nentry->name)) != ch)
+					return pos;
+				break;
 #ifndef _WIN32
 		case SORT_BY_GROUP_NAME:
 		case SORT_BY_GROUP_ID:
-			{
-				gid_t g = curr_view->dir_entry[pos].gid;
-				while(pos > lb && pos < ub)
-				{
-					pos += inc;
-					if(curr_view->dir_entry[pos].gid != g)
-						break;
-				}
-			}
-			break;
+				if(nentry->gid != pentry->gid)
+					return pos;
+				break;
 		case SORT_BY_OWNER_NAME:
 		case SORT_BY_OWNER_ID:
-			{
-				uid_t u = curr_view->dir_entry[pos].uid;
-				while(pos > lb && pos < ub)
-				{
-					pos += inc;
-					if(curr_view->dir_entry[pos].uid != u)
-						break;
-				}
-			}
-			break;
+				if(nentry->uid != pentry->uid)
+					return pos;
+				break;
 		case SORT_BY_MODE:
-			{
-				mode_t mode = curr_view->dir_entry[pos].mode;
-				const char *mode_str = get_mode_str(mode);
-				while(pos > lb && pos < ub)
-				{
-					pos += inc;
-					mode = curr_view->dir_entry[pos].mode;
-					if(get_mode_str(mode) != mode_str)
-						break;
-				}
-			}
-			break;
+				if(get_mode_str(nentry->mode) != mode_str)
+					return pos;
+				break;
 #endif
 		case SORT_BY_SIZE:
-			{
-				uint64_t size = curr_view->dir_entry[pos].size;
-				while(pos > lb && pos < ub)
-				{
-					pos += inc;
-					if(curr_view->dir_entry[pos].size != size)
-						break;
-				}
-			}
-			break;
+				if(nentry->size != pentry->size)
+					return pos;
+				break;
 		case SORT_BY_TIME_ACCESSED:
-			{
-				time_t time = curr_view->dir_entry[pos].atime;
-				while(pos > lb && pos < ub)
-				{
-					pos += inc;
-					if(curr_view->dir_entry[pos].atime != time)
-						break;
-				}
-			}
-			break;
+				if(nentry->atime != pentry->atime)
+					return pos;
+				break;
 		case SORT_BY_TIME_CHANGED:
-			{
-				time_t time = curr_view->dir_entry[pos].ctime;
-				while(pos > lb && pos < ub)
-				{
-					pos += inc;
-					if(curr_view->dir_entry[pos].ctime != time)
-						break;
-				}
-			}
-			break;
+				if(nentry->ctime != pentry->ctime)
+					return pos;
+				break;
 		case SORT_BY_TIME_MODIFIED:
-			{
-				time_t time = curr_view->dir_entry[pos].mtime;
-				while(pos > lb && pos < ub)
-				{
-					pos += inc;
-					if(curr_view->dir_entry[pos].mtime != time)
-						break;
-				}
-			}
-			break;
+				if(nentry->mtime != pentry->mtime)
+					return pos;
+				break;
+
+		default:
+				assert(false);
+				break;
+		}
 	}
 	return pos;
 }
