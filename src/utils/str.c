@@ -251,5 +251,28 @@ extract_part(const char str[], char separator, char part_buf[])
 	return end;
 }
 
+char *
+escape_chars(const char string[], const char chars[])
+{
+	size_t len;
+	size_t i;
+	char *ret, *dup;
+
+	len = strlen(string);
+
+	dup = ret = malloc(len*2 + 2 + 1);
+
+	for(i = 0; i < len; i++)
+	{
+		if(string[i] == '\\' || char_is_one_of(chars, string[i]))
+		{
+			*dup++ = '\\';
+		}
+		*dup++ = string[i];
+	}
+	*dup = '\0';
+	return ret;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

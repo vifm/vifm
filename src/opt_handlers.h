@@ -47,6 +47,8 @@ int process_set_args(const char *args);
 void load_sort_option(FileView *view);
 /* Updates view columns as if option value has been changed. */
 void load_view_columns_option(FileView *view, const char *value);
+/* Updates geometry related options. */
+void load_geometry(void);
 
 #endif
 

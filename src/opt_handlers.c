@@ -861,6 +861,16 @@ map_name(const char *name)
 	return get_secondary_key(abs(curr_view->sort[0]));
 }
 
+void
+load_geometry(void)
+{
+	optval_t val;
+	val.int_val = cfg.columns;
+	set_option("columns", val);
+	val.int_val = cfg.lines;
+	set_option("lines", val);
+}
+
 static void
 resort_view(FileView * view)
 {

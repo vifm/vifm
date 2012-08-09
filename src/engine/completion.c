@@ -151,18 +151,18 @@ static size_t
 remove_duplicates(char **arr, size_t count)
 {
 	size_t i, j;
-	j = 0;
-	for(i = 0; i < count; i++)
+	j = 1;
+	for(i = j; i < count; i++)
 	{
 		/* compare case sensitive strings even on Windows */
-		if(i != j && strcmp(arr[i], arr[j]) == 0)
+		if(strcmp(arr[i], arr[j - 1]) == 0)
 		{
 			free(arr[i]);
 			continue;
 		}
 		arr[j++] = arr[i];
 	}
-	return j;
+	return (count == 0) ? 0 : j;
 }
 
 int

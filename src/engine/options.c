@@ -68,6 +68,7 @@ static char * str_add(char *old, const char *value);
 static char * str_remove(char *old, const char *value);
 static int find_val(const opt_t *opt, const char *value);
 static int set_print(opt_t *opt);
+static const char * get_value(const opt_t *opt);
 static void print_msg(const char *msg, const char *description);
 static void complete_option(const char *buf, int bool_only);
 static void complete_value(const char *buf, opt_t *opt);
@@ -261,6 +262,8 @@ print_changed_options(void)
 	}
 }
 
+/* Extracts next option from option list. Returns NULL on error and next call
+ * start position on success. */
 static const char *
 extract_option(const char *cmd, char *buf, int replace)
 {
@@ -292,9 +295,7 @@ extract_option(const char *cmd, char *buf, int replace)
 				if(*cmd != '\0' && !isspace(*cmd))
 				{
 					buf -= cmd - p - 1;
-					while(*p != '\0')
-						*buf++ = *p++;
-					*buf = '\0';
+					strcpy(buf, p);
 					return NULL;
 				}
 				cmd = skip_whitespace(cmd);
@@ -382,7 +383,6 @@ process_option(const char *cmd)
 		}
 	}
 	else if(char_is_one_of(ENDING_CHARS, *p))
-	/* else if(*p == '!' || *p == '?' || *p == '&') */
 	{
 		if(*(p + 1) != '\0')
 		{
@@ -807,24 +807,40 @@ set_print(opt_t *opt)
 		snprintf(buf, sizeof(buf), "%s%s",
 				opt->val.bool_val ? "  " : "no", opt->name);
 	}
+	else
+	{
+		snprintf(buf, sizeof(buf), "  %s=%s", opt->name, get_value(opt));
+	}
+	print_msg("", buf);
+	return 0;
+}
+
+/* Converts option value to string representation. Returns pointer to a
+ * statically allocated buffer. */
+static const char *
+get_value(const opt_t *opt)
+{
+	static char buf[1024];
+	if(opt->type == OPT_BOOL)
+	{
+		buf[0] = '\0';
+	}
 	else if(opt->type == OPT_INT)
 	{
-		snprintf(buf, sizeof(buf), "  %s=%d", opt->name, opt->val.int_val);
+		snprintf(buf, sizeof(buf), "%d", opt->val.int_val);
 	}
 	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
 	{
-		snprintf(buf, sizeof(buf), "  %s=%s", opt->name,
-				opt->val.str_val ? opt->val.str_val : "");
+		snprintf(buf, sizeof(buf), "%s", opt->val.str_val ? opt->val.str_val : "");
 	}
 	else if(opt->type == OPT_ENUM)
 	{
-		snprintf(buf, sizeof(buf), "  %s=%s", opt->name,
-				opt->vals[opt->val.enum_item]);
+		snprintf(buf, sizeof(buf), "%s", opt->vals[opt->val.enum_item]);
 	}
 	else if(opt->type == OPT_SET)
 	{
 		int i, first = 1;
-		snprintf(buf, sizeof(buf), "  %s=", opt->name);
+		buf[0] = '\0';
 		for(i = 0; i < opt->val_count; i++)
 			if(opt->val.set_items & (1 << i))
 			{
@@ -834,8 +850,11 @@ set_print(opt_t *opt)
 				first = 0;
 			}
 	}
-	print_msg("", buf);
-	return 0;
+	else
+	{
+		assert(0 && "Don't know how to convert value of this type to a string");
+	}
+	return buf;
 }
 
 static void
@@ -854,6 +873,7 @@ complete_options(const char *cmd, const char **start)
 	opt_t *opt = NULL;
 	char * p;
 
+	/* Skip all options except the last one. */
 	*start = cmd;
 	buf[0] = '\0';
 	while(*cmd != '\0')
@@ -884,7 +904,7 @@ complete_options(const char *cmd, const char **start)
 		*p++ = t;
 		if(t != '=' && t != ':')
 			p++;
-		if(opt->type == OPT_SET || opt->type == OPT_STRLIST)
+		if(opt != NULL && (opt->type == OPT_SET || opt->type == OPT_STRLIST))
 		{
 			char *t = strrchr(buf, ',');
 			if(t != NULL)
@@ -912,7 +932,18 @@ complete_options(const char *cmd, const char **start)
 	if(!value)
 		complete_option(buf, bool_only);
 	else if(opt != NULL)
-		complete_value(p, opt);
+	{
+		if(opt->val_count > 0)
+		{
+			complete_value(p, opt);
+		}
+		else if(*p == '\0' && opt->type != OPT_BOOL)
+		{
+			char *escaped = escape_chars(get_value(opt), " |");
+			add_completion(escaped);
+			free(escaped);
+		}
+	}
 
 	completion_group_end();
 	if(!value)
@@ -924,28 +955,27 @@ complete_options(const char *cmd, const char **start)
 static void
 complete_option(const char *buf, int bool_only)
 {
-	opt_t *opt;
 	size_t len;
 	int i;
-
-	opt = find_option(buf);
-	if(opt != NULL && strcmp(opt->name, buf) != 0)
-	{
-		add_completion(opt->name);
-		return;
-	}
 
 	len = strlen(buf);
 	if(strncmp(buf, "all", len) == 0)
 		add_completion("all");
 	for(i = 0; i < options_count; i++)
 	{
-		if(options[i].full != NULL)
-			continue;
 		if(bool_only && options[i].type != OPT_BOOL)
 			continue;
 		if(strncmp(buf, options[i].name, len) == 0)
-			add_completion(options[i].name);
+		{
+			if(options[i].full != NULL)
+			{
+				add_completion(options[i].full);
+			}
+			else
+			{
+				add_completion(options[i].name);
+			}
+		}
 	}
 }
 

@@ -57,8 +57,7 @@ Vi(m) specific features that need to be added.
     Completion of first argument for :map commands.
     Support hex and octal numbers in :set
     Add support for ^= in :set command.
-    Add completion for :set option=<tab>
-    Fix completion for :set so (should enumerate 'sort', not only 'scrolloff').
+    Add support for directory completion in for some of :set options.
     Add support of 'n' flag for :substitute command.
     Expand environment variables for :edit command.
     Think about dot normal mode command.

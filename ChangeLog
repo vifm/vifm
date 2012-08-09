@@ -6,6 +6,8 @@
 
 	Added 'viewcolumns' local option to control view columns.
 
+	Added completion for :set option=<tab> even for options without variants.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 
@@ -22,6 +24,9 @@
 
 	Check current view of other pane on leaving FUSE mount directory an don't
 	unmount if that file system is still in use.
+
+	Complete :set for short and full option names like Vim does (e.g. 'so'
+	should be expanded to 'sort', not only 'scrolloff').
 
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
@@ -51,6 +56,10 @@
 
 	Fixed eternal looping on "(" or ")" in normal or visual mode and iname
 	sort.
+
+	Fixed segfault on `:set all=` completion try.
+
+	Fixed displaying of 'columns' and 'lines' option values.
 
 0.7.3 to 0.7.3a
 

@@ -274,6 +274,93 @@ test_umbiguous_beginning(void)
 	free(completed);
 }
 
+static void
+test_matching_short_full(void)
+{
+	const char *start;
+	char *completed;
+
+	reset_completion();
+	complete_options("so", &start);
+
+	completed = next_completion();
+	assert_string_equal("sort", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("sortorder", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("so", completed);
+	free(completed);
+}
+
+static void
+test_after_equal_sign_completion_ok(void)
+{
+	const char *start;
+	char *completed;
+
+	optval_t val = { .str_val = "/home/tmp" };
+	set_option("fusehome", val);
+
+	reset_completion();
+	complete_options("fusehome=", &start);
+
+	completed = next_completion();
+	assert_string_equal("/home/tmp", completed);
+	free(completed);
+}
+
+static void
+test_after_equal_sign_completion_spaces_ok(void)
+{
+	const char *start;
+	char *completed;
+
+	optval_t val = { .str_val = "/home directory/tmp" };
+	set_option("fusehome", val);
+
+	reset_completion();
+	complete_options("fusehome=", &start);
+
+	completed = next_completion();
+	assert_string_equal("/home\\ directory/tmp", completed);
+	free(completed);
+}
+
+static void
+test_after_fake_equal_sign_completion_fail(void)
+{
+	const char *start;
+	char *completed;
+
+	optval_t val = { .str_val = "/home/tmp" };
+	set_option("fusehome", val);
+
+	reset_completion();
+	complete_options("fusehome=a=", &start);
+
+	completed = next_completion();
+	assert_string_equal("a=", completed);
+	free(completed);
+}
+
+static void
+test_all_completion_ok(void)
+{
+	const char *start;
+	char *completed;
+
+	reset_completion();
+	complete_options("all=", &start);
+
+	completed = next_completion();
+	assert_string_equal("", completed);
+	free(completed);
+}
+
 void
 opt_completion(void)
 {
@@ -291,6 +378,11 @@ opt_completion(void)
 	run_test(test_set_values_completion);
 	run_test(test_colon);
 	run_test(test_umbiguous_beginning);
+	run_test(test_matching_short_full);
+	run_test(test_after_equal_sign_completion_ok);
+	run_test(test_after_equal_sign_completion_spaces_ok);
+	run_test(test_after_fake_equal_sign_completion_fail);
+	run_test(test_all_completion_ok);
 
 	test_fixture_end();
 }

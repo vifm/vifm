@@ -259,6 +259,35 @@ test_two_matches(void)
 	free(buf);
 }
 
+static void
+test_removes_duplicates(void)
+{
+	char *buf;
+
+	assert_int_equal(0, add_completion("mou"));
+	assert_int_equal(0, add_completion("mount"));
+	assert_int_equal(0, add_completion("mount"));
+	completion_group_end();
+
+	assert_int_equal(0, add_completion("m"));
+
+	buf = next_completion();
+	assert_string_equal("mou", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("mount", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("m", buf);
+	free(buf);
+
+	buf = next_completion();
+	assert_string_equal("mou", buf);
+	free(buf);
+}
+
 void
 completion_tests(void)
 {
@@ -273,6 +302,7 @@ completion_tests(void)
 	run_test(test_order);
 	run_test(test_umbiguous_begin);
 	run_test(test_two_matches);
+	run_test(test_removes_duplicates);
 
 	test_fixture_end();
 }
