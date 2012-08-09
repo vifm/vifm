@@ -59,6 +59,8 @@
 
 	Fixed segfault on `:set all=` completion try.
 
+	Fixed displaying of 'columns' and 'lines' option values.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
