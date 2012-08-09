@@ -6,6 +6,8 @@
 
 	Added 'viewcolumns' local option to control view columns.
 
+	Added completion for :set option=<tab> even for options without variants.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 
