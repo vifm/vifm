@@ -939,7 +939,9 @@ complete_options(const char *cmd, const char **start)
 		}
 		else if(*p == '\0' && opt->type != OPT_BOOL)
 		{
-			add_completion(get_value(opt));
+			char *escaped = escape_chars(get_value(opt), " |");
+			add_completion(escaped);
+			free(escaped);
 		}
 	}
 
