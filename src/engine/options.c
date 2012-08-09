@@ -884,7 +884,7 @@ complete_options(const char *cmd, const char **start)
 		*p++ = t;
 		if(t != '=' && t != ':')
 			p++;
-		if(opt->type == OPT_SET || opt->type == OPT_STRLIST)
+		if(opt != NULL && (opt->type == OPT_SET || opt->type == OPT_STRLIST))
 		{
 			char *t = strrchr(buf, ',');
 			if(t != NULL)

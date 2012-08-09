@@ -55,6 +55,8 @@
 	Fixed eternal looping on "(" or ")" in normal or visual mode and iname
 	sort.
 
+	Fixed segfault on `:set all=` completion try.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.

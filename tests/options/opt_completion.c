@@ -296,6 +296,20 @@ test_matching_short_full(void)
 	free(completed);
 }
 
+static void
+test_all_completion_ok(void)
+{
+	const char *start;
+	char *completed;
+
+	reset_completion();
+	complete_options("all=", &start);
+
+	completed = next_completion();
+	assert_string_equal("", completed);
+	free(completed);
+}
+
 void
 opt_completion(void)
 {
@@ -314,6 +328,7 @@ opt_completion(void)
 	run_test(test_colon);
 	run_test(test_umbiguous_beginning);
 	run_test(test_matching_short_full);
+	run_test(test_all_completion_ok);
 
 	test_fixture_end();
 }
