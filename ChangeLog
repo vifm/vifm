@@ -23,6 +23,9 @@
 	Check current view of other pane on leaving FUSE mount directory an don't
 	unmount if that file system is still in use.
 
+	Complete :set for short and full option names like Vim does (e.g. 'so'
+	should be expanded to 'sort', not only 'scrolloff').
+
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
 

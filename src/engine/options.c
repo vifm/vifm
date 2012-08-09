@@ -261,6 +261,8 @@ print_changed_options(void)
 	}
 }
 
+/* Extracts next option from option list. Returns NULL on error and next call
+ * start position on success. */
 static const char *
 extract_option(const char *cmd, char *buf, int replace)
 {
@@ -292,9 +294,7 @@ extract_option(const char *cmd, char *buf, int replace)
 				if(*cmd != '\0' && !isspace(*cmd))
 				{
 					buf -= cmd - p - 1;
-					while(*p != '\0')
-						*buf++ = *p++;
-					*buf = '\0';
+					strcpy(buf, p);
 					return NULL;
 				}
 				cmd = skip_whitespace(cmd);
@@ -382,7 +382,6 @@ process_option(const char *cmd)
 		}
 	}
 	else if(char_is_one_of(ENDING_CHARS, *p))
-	/* else if(*p == '!' || *p == '?' || *p == '&') */
 	{
 		if(*(p + 1) != '\0')
 		{
@@ -854,6 +853,7 @@ complete_options(const char *cmd, const char **start)
 	opt_t *opt = NULL;
 	char * p;
 
+	/* Skip all options except the last one. */
 	*start = cmd;
 	buf[0] = '\0';
 	while(*cmd != '\0')
@@ -924,28 +924,27 @@ complete_options(const char *cmd, const char **start)
 static void
 complete_option(const char *buf, int bool_only)
 {
-	opt_t *opt;
 	size_t len;
 	int i;
-
-	opt = find_option(buf);
-	if(opt != NULL && strcmp(opt->name, buf) != 0)
-	{
-		add_completion(opt->name);
-		return;
-	}
 
 	len = strlen(buf);
 	if(strncmp(buf, "all", len) == 0)
 		add_completion("all");
 	for(i = 0; i < options_count; i++)
 	{
-		if(options[i].full != NULL)
-			continue;
 		if(bool_only && options[i].type != OPT_BOOL)
 			continue;
 		if(strncmp(buf, options[i].name, len) == 0)
-			add_completion(options[i].name);
+		{
+			if(options[i].full != NULL)
+			{
+				add_completion(options[i].full);
+			}
+			else
+			{
+				add_completion(options[i].name);
+			}
+		}
 	}
 }
 
