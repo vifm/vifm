@@ -63,6 +63,9 @@
 
 	Fixed ga and gA over sshfs.
 
+	Fixed small issues with other pane position and mark update on startup and
+	terminal resizing.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
