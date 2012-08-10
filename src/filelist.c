@@ -937,8 +937,7 @@ erase_current_line_bar(FileView *view)
 	columns_format_line(view->columns, &cdt, view->window_width - 1);
 }
 
-/* Returns non-zero if redraw is needed */
-static int
+int
 move_curr_line(FileView *view, int pos)
 {
 	int redraw = 0;
