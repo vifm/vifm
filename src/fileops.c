@@ -105,6 +105,7 @@ static
 int check_file_rename(const char *old, const char *new, SignalType signal_type);
 static void put_confirm_cb(const char *dest_name);
 static void put_decide_cb(const char *dest_name);
+static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
 static int have_read_access(FileView *view);
 
@@ -1883,11 +1884,7 @@ calc_dirsize(const char *path, int force_update)
 			continue;
 
 		snprintf(buf, sizeof(buf), "%s%s%s", path, slash, dentry->d_name);
-#ifndef _WIN32
-		if(dentry->d_type == DT_DIR)
-#else
-		if(is_dir(buf))
-#endif
+		if(entry_is_dir(buf, dentry))
 		{
 			uint64_t dir_size = 0;
 			if(tree_get_data(curr_stats.dirsize_cache, buf, &dir_size) != 0
@@ -1905,6 +1902,27 @@ calc_dirsize(const char *path, int force_update)
 
 	set_dir_size(path, size);
 	return size;
+}
+
+/* Uses dentry to check file type and fallbacks to lstat() if dentry contains
+ * unknown type. */
+static int
+entry_is_dir(const char full_path[], const struct dirent* dentry)
+{
+#ifndef _WIN32
+		struct stat s;
+		if(dentry->d_type != DT_UNKNOWN)
+		{
+			return dentry->d_type == DT_DIR;
+		}
+		if(lstat(full_path, &s) == 0 && s.st_ino != 0)
+		{
+			return (s.st_mode&S_IFMT) == S_IFDIR;
+		}
+		return 0;
+#else
+		return is_dir(buf);
+#endif
 }
 
 /* Returns new value for save_msg flag. */

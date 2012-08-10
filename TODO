@@ -84,6 +84,7 @@ Possible things to add.
     A macro to redirect command output into view pane.
     $_ env var and Alt-. combination as in bash shell.
     Rename existing file option on name conflicts.
+    Support of command line arguments like ~/some.ssh/server/path (for FUSE).
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
