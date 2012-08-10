@@ -61,6 +61,8 @@
 
 	Fixed displaying of 'columns' and 'lines' option values.
 
+	Fixed ga and gA over sshfs.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
