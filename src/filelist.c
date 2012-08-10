@@ -103,6 +103,7 @@ static void prepare_view(FileView *view);
 static void init_view_history(FileView *view);
 static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
+static int calculate_top_position(FileView *view, int top);
 static void save_selection(FileView *view);
 static void free_saved_selection(FileView *view);
 static void rescue_from_empty_filelist(FileView * view);
@@ -821,16 +822,7 @@ draw_dir_list(FileView *view, int top)
 		view->curr_line--;
 	}
 
-	/* Show as much of the directory as possible. */
-	if(view->window_rows >= view->list_rows)
-	{
-		top = 0;
-	}
-	else if((view->list_rows - top) <= view->window_rows)
-	{
-		top = view->list_rows - view->window_rows - 1;
-		view->curr_line++;
-	}
+	top = calculate_top_position(view, top);
 
 	/* Colorize the files */
 
@@ -954,6 +946,8 @@ move_curr_line(FileView *view, int pos)
 	if(view->curr_line > view->list_rows - 1)
 		view->curr_line = view->list_rows - 1;
 
+	view->top_line = calculate_top_position(view, view->top_line);
+
 	if(view->top_line <= pos && pos <= view->top_line + view->window_rows)
 	{
 		view->curr_line = pos - view->top_line;
@@ -1000,6 +994,25 @@ move_curr_line(FileView *view, int pos)
 	}
 
 	return redraw;
+}
+
+/* Calculates top position basing on window and list size and trying to show as
+ * much of the directory as possible.  Can modify view->curr_line.  Returns
+ * new top. */
+static int
+calculate_top_position(FileView *view, int top)
+{
+	int result = top;
+	if(view->window_rows >= view->list_rows)
+	{
+		result = 0;
+	}
+	else if((view->list_rows - top) <= view->window_rows)
+	{
+		result = view->list_rows - view->window_rows - 1;
+		view->curr_line++;
+	}
+	return result;
 }
 
 void
