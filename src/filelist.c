@@ -103,7 +103,9 @@ static void prepare_view(FileView *view);
 static void init_view_history(FileView *view);
 static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
+static int calculate_top_position(FileView *view, int top);
 static void save_selection(FileView *view);
+int consider_scroll_offset(FileView *view, int pos);
 static void free_saved_selection(FileView *view);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
@@ -821,16 +823,7 @@ draw_dir_list(FileView *view, int top)
 		view->curr_line--;
 	}
 
-	/* Show as much of the directory as possible. */
-	if(view->window_rows >= view->list_rows)
-	{
-		top = 0;
-	}
-	else if((view->list_rows - top) <= view->window_rows)
-	{
-		top = view->list_rows - view->window_rows - 1;
-		view->curr_line++;
-	}
+	top = calculate_top_position(view, top);
 
 	/* Colorize the files */
 
@@ -937,8 +930,7 @@ erase_current_line_bar(FileView *view)
 	columns_format_line(view->columns, &cdt, view->window_width - 1);
 }
 
-/* Returns non-zero if redraw is needed */
-static int
+int
 move_curr_line(FileView *view, int pos)
 {
 	int redraw = 0;
@@ -954,6 +946,8 @@ move_curr_line(FileView *view, int pos)
 
 	if(view->curr_line > view->list_rows - 1)
 		view->curr_line = view->list_rows - 1;
+
+	view->top_line = calculate_top_position(view, view->top_line);
 
 	if(view->top_line <= pos && pos <= view->top_line + view->window_rows)
 	{
@@ -976,31 +970,28 @@ move_curr_line(FileView *view, int pos)
 		redraw = 1;
 	}
 
-	if(cfg.scroll_off > 0)
-	{
-		int s = MIN((view->window_rows + 1)/2, cfg.scroll_off);
-		if(pos - view->top_line < s && view->top_line > 0)
-		{
-			view->top_line -= s - (pos - view->top_line);
-			if(view->top_line < 0)
-				view->top_line = 0;
-			view->curr_line = MIN(s, pos);
-			redraw = 1;
-		}
-		if(view->top_line + view->window_rows < view->list_rows)
-		{
-			if((view->top_line + view->window_rows) - pos < s)
-			{
-				view->top_line += s - ((view->top_line + view->window_rows) - pos);
-				if(pos + s > view->list_rows)
-					view->top_line -= pos + s - view->list_rows;
-				view->curr_line = pos - view->top_line;
-				redraw = 1;
-			}
-		}
-	}
+	redraw = consider_scroll_offset(view, pos) ? 1 : redraw;
 
 	return redraw;
+}
+
+/* Calculates top position basing on window and list size and trying to show as
+ * much of the directory as possible.  Can modify view->curr_line.  Returns
+ * new top. */
+static int
+calculate_top_position(FileView *view, int top)
+{
+	int result = top;
+	if(view->window_rows >= view->list_rows)
+	{
+		result = 0;
+	}
+	else if((view->list_rows - top) <= view->window_rows)
+	{
+		result = view->list_rows - view->window_rows - 1;
+		view->curr_line++;
+	}
+	return result;
 }
 
 void
@@ -1212,7 +1203,7 @@ check_view_dir_history(FileView *view)
 	view->list_pos = pos;
 	if(rel_pos >= 0)
 	{
-		view->top_line = pos - rel_pos;
+		view->top_line = pos - MIN(view->window_rows, rel_pos);
 		if(view->top_line < 0)
 			view->top_line = 0;
 		view->curr_line = pos - view->top_line;
@@ -1232,6 +1223,39 @@ check_view_dir_history(FileView *view)
 			view->curr_line = view->window_rows;
 		}
 	}
+	(void)consider_scroll_offset(view, pos);
+}
+
+/* Updates current and top line of a view according to scrolloff option value.
+ * Returns non-zero if redraw is needed. */
+int
+consider_scroll_offset(FileView *view, int pos)
+{
+	int result = 0;
+	if(cfg.scroll_off > 0)
+	{
+		int s = MIN((view->window_rows + 1)/2, cfg.scroll_off);
+		if(pos - view->top_line < s && view->top_line > 0)
+		{
+			view->top_line -= s - (pos - view->top_line);
+			if(view->top_line < 0)
+				view->top_line = 0;
+			view->curr_line = MIN(s, pos);
+			result = 1;
+		}
+		if(view->top_line + view->window_rows < view->list_rows)
+		{
+			if((view->top_line + view->window_rows) - pos < s)
+			{
+				view->top_line += s - ((view->top_line + view->window_rows) - pos);
+				if(pos + s > view->list_rows)
+					view->top_line -= pos + s - view->list_rows;
+				view->curr_line = pos - view->top_line;
+				result = 1;
+			}
+		}
+	}
+	return result;
 }
 
 void
