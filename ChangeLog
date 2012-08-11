@@ -28,6 +28,8 @@
 	Complete :set for short and full option names like Vim does (e.g. 'so'
 	should be expanded to 'sort', not only 'scrolloff').
 
+	Reduce delay between terminal resize and TUI redrawing.
+
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
 

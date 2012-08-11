@@ -105,6 +105,11 @@ read_char(WINDOW *win, wint_t *c, int timeout)
 
 			if((result = wget_wch(win, c)) != ERR)
 				break;
+
+			if(is_redraw_scheduled())
+			{
+				modes_redraw();
+			}
 		}
 		if(result != ERR)
 			break;
