@@ -69,6 +69,9 @@ typedef struct
 	wchar_t prompt[NAME_MAX]; /* prompt */
 	int prompt_wid;           /* width of prompt */
 	int complete_continue;    /* if non-zero, continue the previous completion */
+	int dot_pos;              /* history position for dot completion, or < 0 */
+	size_t dot_index;         /* dot completion line index */
+	size_t dot_len;           /* dot completion previous completion len */
 	HIST history_search;      /* HIST_* */
 	int hist_search_len;      /* length of history search pattern */
 	wchar_t *line_buf;        /* content of line before using history */

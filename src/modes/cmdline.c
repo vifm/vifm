@@ -84,6 +84,9 @@ typedef struct
 	wchar_t prompt[NAME_MAX]; /* prompt */
 	int prompt_wid;           /* width of prompt */
 	int complete_continue;    /* if non-zero, continue the previous completion */
+	int dot_pos;              /* history position for dot completion, or < 0 */
+	size_t dot_index;         /* dot completion line index */
+	size_t dot_len;           /* dot completion previous completion len */
 	HIST history_search;      /* HIST_* */
 	int hist_search_len;      /* length of history search pattern */
 	wchar_t *line_buf;        /* content of line before using history */
@@ -107,7 +110,7 @@ static int def_handler(wchar_t key);
 static void update_cmdline_size(void);
 static void update_cmdline_text(void);
 static void input_line_changed(void);
-static wchar_t * wcsins(wchar_t *src, wchar_t *ins, int pos);
+static wchar_t * wcsins(wchar_t src[], const wchar_t ins[], int pos);
 static void prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 		complete_cmd_func complete);
 static void leave_cmdline_mode(void);
@@ -131,6 +134,9 @@ static void find_prev_word(void);
 static void cmd_meta_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_meta_f(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_meta_dot(key_info_t key_info, keys_info_t *keys_info);
+static void remove_previous_dot_completion(void);
+static wchar_t * next_dot_completion(void);
+static int insert_dot_completion(const wchar_t completion[]);
 static void find_next_word(void);
 static void cmd_left(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right(key_info_t key_info, keys_info_t *keys_info);
@@ -155,6 +161,8 @@ int line_completion(line_stats_t *stat);
 static void update_line_stat(line_stats_t *stat, int new_len);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static void stop_completion(void);
+static void stop_dot_completion(void);
+static void stop_history_completion(void);
 
 static keys_add_info_t builtin_cmds[] = {
 	{L"\x03",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
@@ -396,7 +404,7 @@ input_line_changed(void)
  * If pos is larger then wcslen(src), the character will
  * be added at the end of the src */
 static wchar_t *
-wcsins(wchar_t *src, wchar_t *ins, int pos)
+wcsins(wchar_t src[], const wchar_t ins[], int pos)
 {
 	int i;
 	wchar_t *p;
@@ -506,6 +514,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 	input_stat.reverse_completion = 0;
 	input_stat.complete = complete;
 	input_stat.search_mode = 0;
+	input_stat.dot_pos = -1;
 
 	if(sub_mode == SEARCH_FORWARD_SUBMODE
 			|| sub_mode == VSEARCH_FORWARD_SUBMODE
@@ -1210,44 +1219,109 @@ cmd_meta_f(key_info_t key_info, keys_info_t *keys_info)
 	update_cursor();
 }
 
+/* Inserts last part of previous command to current cursor position.  Each next
+ * call will insert last part of older command. */
 static void
 cmd_meta_dot(key_info_t key_info, keys_info_t *keys_info)
 {
-	size_t len;
-	char *last;
 	wchar_t *wide;
-	wchar_t *ptr;
 
-	stop_completion();
+	stop_history_completion();
 
-	if(cfg.cmd_history_num <= 0)
+	if(cfg.cmd_history_num < 0)
 	{
 		return;
 	}
 
-	last = get_last_argument(cfg.cmd_history[input_stat.cmd_pos + 1], &len);
+	if(input_stat.dot_pos < 0)
+	{
+		input_stat.dot_pos = input_stat.cmd_pos + 1;
+	}
+	else
+	{
+		remove_previous_dot_completion();
+	}
+
+	wide = next_dot_completion();
+
+	if(insert_dot_completion(wide) == 0)
+	{
+		update_cmdline_text();
+	}
+	else
+	{
+		stop_dot_completion();
+	}
+
+	free(wide);
+}
+
+/* Removes previous dot completion from any part of command line. */
+static void
+remove_previous_dot_completion(void)
+{
+	size_t start = input_stat.dot_index;
+	size_t end = start + input_stat.dot_len;
+	memmove(input_stat.line + start, input_stat.line + end,
+			sizeof(wchar_t)*(input_stat.len - end + 1));
+	input_stat.len -= input_stat.dot_len;
+	input_stat.index -= input_stat.dot_len;
+	input_stat.curs_pos -= input_stat.dot_len;
+}
+
+/* Gets next dot completion from history of commands. Returns new string, caller
+ * should free it. */
+static wchar_t *
+next_dot_completion(void)
+{
+	size_t len;
+	char *last;
+	wchar_t *wide;
+
+	if(input_stat.dot_pos <= cfg.cmd_history_num)
+	{
+		last = get_last_argument(cfg.cmd_history[input_stat.dot_pos++], &len);
+	}
+	else
+	{
+		last = "";
+		len = 0;
+	}
 	last = strdup(last);
 	last[len] = '\0';
 	wide = to_wide(last);
 	free(last);
 
-	ptr = realloc(input_stat.line, (input_stat.len + len + 1) * sizeof(wchar_t));
-	if(ptr != NULL)
-	{
-		if(input_stat.line == NULL)
-		{
-			ptr[0] = L'\0';
-		}
-		input_stat.line = ptr;
-		wcsins(input_stat.line, wide, input_stat.index + 1);
-		input_stat.index += len;
-		input_stat.curs_pos += len;
-		input_stat.len += len;
+	return wide;
+}
 
-		update_cmdline();
+/* Inserts dot completion into current cursor position in the command line.
+ * Returns zero on success. */
+static int
+insert_dot_completion(const wchar_t completion[])
+{
+	wchar_t *ptr;
+	size_t len = wcslen(completion);
+
+	ptr = realloc(input_stat.line, (input_stat.len + len + 1)*sizeof(wchar_t));
+	if(ptr == NULL)
+	{
+		return 1;
 	}
 
-	free(wide);
+	input_stat.dot_index = input_stat.index;
+	input_stat.dot_len = len;
+
+	if(input_stat.line == NULL)
+	{
+		ptr[0] = L'\0';
+	}
+	input_stat.line = ptr;
+	wcsins(input_stat.line, completion, input_stat.index + 1);
+	input_stat.index += len;
+	input_stat.curs_pos += len;
+	input_stat.len += len;
+	return 0;
 }
 
 static void
@@ -1614,6 +1688,19 @@ wcsdel(wchar_t *src, int pos, int len)
 
 static void
 stop_completion(void)
+{
+	stop_dot_completion();
+	stop_history_completion();
+}
+
+static void
+stop_dot_completion(void)
+{
+	input_stat.dot_pos = -1;
+}
+
+static void
+stop_history_completion(void)
 {
 	if(!input_stat.complete_continue)
 		return;
