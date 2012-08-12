@@ -657,6 +657,10 @@ Ctrl-T - swap the order of current and previous character and move cursor
     forward or, if cursor past the end of line, swap the order of two last
     characters in the line.
 
+                                               *vifm-c_ALT-.*
+Alt-. - insert last part of previous command to current cursor position.
+    Each next call will insert last part of older command.
+
                                                *vifm-c_CTRL-N*
 Ctrl-N - recall more recent command-line from history.
 

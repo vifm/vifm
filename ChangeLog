@@ -10,6 +10,9 @@
 
 	Added Ctrl-T handling in command line to swap characters.
 
+	Added Meta-. handling in command line to paste last parts of previous
+	commands.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 
