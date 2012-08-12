@@ -3,13 +3,19 @@
 #include "../../src/engine/cmds.h"
 #include "../../src/utils/utils.h"
 
+static char **
+dispatch(const char cmd[], int *count, char separator, int regexp, int quotes)
+{
+	return dispatch_line(cmd, count, separator, regexp, quotes, NULL, NULL, NULL);
+}
+
 static void
 test_no_quotes(void)
 {
 	int count;
 	char **args;
 
-	args = dispatch_line("abc def ghi", &count, ' ', 0, 1, NULL, NULL);
+	args = dispatch("abc def ghi", &count, ' ', 0, 1);
 	assert_int_equal(3, count);
 	if(count != 3)
 		return;
@@ -25,7 +31,7 @@ test_single_quotes(void)
 	int count;
 	char **args;
 
-	args = dispatch_line("'abc' 'def' 'ghi'", &count, ' ', 0, 1, NULL, NULL);
+	args = dispatch("'abc' 'def' 'ghi'", &count, ' ', 0, 1);
 	assert_int_equal(3, count);
 	if(count != 3)
 		return;
@@ -34,10 +40,10 @@ test_single_quotes(void)
 	assert_string_equal("ghi", args[2]);
 	free_string_array(args, count);
 
-	args = dispatch_line("'     '     '", &count, ' ', 0, 1, NULL, NULL);
+	args = dispatch("'     '     '", &count, ' ', 0, 1);
 	assert_true(args == NULL);
 
-	args = dispatch_line("'     \\'     '", &count, ' ', 0, 1, NULL, NULL);
+	args = dispatch("'     \\'     '", &count, ' ', 0, 1);
 	assert_true(args == NULL);
 }
 
@@ -47,7 +53,7 @@ test_double_quotes(void)
 	int count;
 	char **args;
 
-	args = dispatch_line("\"abc\" \"def\" \"ghi\"", &count, ' ', 0, 1, NULL, NULL);
+	args = dispatch("\"abc\" \"def\" \"ghi\"", &count, ' ', 0, 1);
 	assert_int_equal(3, count);
 	if(count != 3)
 		return;
@@ -56,7 +62,7 @@ test_double_quotes(void)
 	assert_string_equal("ghi", args[2]);
 	free_string_array(args, count);
 
-	args = dispatch_line("\"     \"     \"", &count, ' ', 0, 1, NULL, NULL);
+	args = dispatch("\"     \"     \"", &count, ' ', 0, 1);
 	assert_true(args == NULL);
 }
 
@@ -66,7 +72,7 @@ test_regexp_quotes(void)
 	int count;
 	char **args;
 
-	args = dispatch_line("/abc/ /def/ /ghi/", &count, ' ', 1, 1, NULL, NULL);
+	args = dispatch("/abc/ /def/ /ghi/", &count, ' ', 1, 1);
 	assert_int_equal(3, count);
 	if(count != 3)
 		return;
@@ -75,7 +81,7 @@ test_regexp_quotes(void)
 	assert_string_equal("ghi", args[2]);
 	free_string_array(args, count);
 
-	args = dispatch_line("/     /     /", &count, ' ', 1, 1, NULL, NULL);
+	args = dispatch("/     /     /", &count, ' ', 1, 1);
 	assert_true(args == NULL);
 }
 
@@ -85,7 +91,7 @@ test_no_quotes_escaping(void)
 	int count;
 	char **args;
 
-	args = dispatch_line("abc\\ def g\\ h\\ i\\ ", &count, ' ', 0, 1, NULL, NULL);
+	args = dispatch("abc\\ def g\\ h\\ i\\ ", &count, ' ', 0, 1);
 	assert_int_equal(2, count);
 	if(count != 2)
 		return;
@@ -100,7 +106,7 @@ test_single_quotes_escaping(void)
 	int count;
 	char **args;
 
-	args = dispatch_line("'abc\\ def' '\\g\\h\\\\i'", &count, ' ', 0, 1, NULL, NULL);
+	args = dispatch("'abc\\ def' '\\g\\h\\\\i'", &count, ' ', 0, 1);
 	assert_int_equal(2, count);
 	if(count != 2)
 		return;
@@ -115,7 +121,7 @@ test_double_quotes_escaping(void)
 	int count;
 	char **args;
 
-	args = dispatch_line("\" \\\" \"", &count, ' ', 0, 1, NULL, NULL);
+	args = dispatch("\" \\\" \"", &count, ' ', 0, 1);
 	assert_int_equal(1, count);
 	if(count != 1)
 		return;
@@ -129,14 +135,14 @@ test_regexp_quotes_escaping(void)
 	int count;
 	char **args;
 
-	args = dispatch_line("/ \\( \\/ \\) /", &count, '/', 1, 0, NULL, NULL);
+	args = dispatch("/ \\( \\/ \\) /", &count, '/', 1, 0);
 	assert_int_equal(1, count);
 	if(count != 1)
 		return;
 	assert_string_equal(" \\( / \\) ", args[0]);
 	free_string_array(args, count);
 
-	args = dispatch_line("/\\.c$/", &count, ' ', 1, 1, NULL, NULL);
+	args = dispatch("/\\.c$/", &count, ' ', 1, 1);
 	assert_int_equal(1, count);
 	if(count != 1)
 		return;
@@ -150,21 +156,21 @@ test_start_and_end_spaces(void)
 	int count;
 	char **args;
 
-	args = dispatch_line(" a", &count, ' ', 0, 1, NULL, NULL);
+	args = dispatch(" a", &count, ' ', 0, 1);
 	assert_int_equal(1, count);
 	if(count != 1)
 		return;
 	assert_string_equal("a", args[0]);
 	free_string_array(args, count);
 
-	args = dispatch_line("a ", &count, ' ', 0, 1, NULL, NULL);
+	args = dispatch("a ", &count, ' ', 0, 1);
 	assert_int_equal(1, count);
 	if(count != 1)
 		return;
 	assert_string_equal("a", args[0]);
 	free_string_array(args, count);
 
-	args = dispatch_line(" a ", &count, ' ', 0, 1, NULL, NULL);
+	args = dispatch(" a ", &count, ' ', 0, 1);
 	assert_int_equal(1, count);
 	if(count != 1)
 		return;
@@ -178,21 +184,21 @@ test_no_quoting(void)
 	int count;
 	char **args;
 
-	args = dispatch_line("\"a", &count, ' ', 0, 0, NULL, NULL);
+	args = dispatch("\"a", &count, ' ', 0, 0);
 	assert_int_equal(1, count);
 	if(count != 1)
 		return;
 	assert_string_equal("\"a", args[0]);
 	free_string_array(args, count);
 
-	args = dispatch_line("a\"", &count, ' ', 0, 0, NULL, NULL);
+	args = dispatch("a\"", &count, ' ', 0, 0);
 	assert_int_equal(1, count);
 	if(count != 1)
 		return;
 	assert_string_equal("a\"", args[0]);
 	free_string_array(args, count);
 
-	args = dispatch_line("\"a\"", &count, ' ', 0, 0, NULL, NULL);
+	args = dispatch("\"a\"", &count, ' ', 0, 0);
 	assert_int_equal(1, count);
 	if(count != 1)
 		return;
@@ -206,7 +212,7 @@ test_cust_sep(void)
 	int count;
 	char **args;
 
-	args = dispatch_line("//abc/", &count, '/', 1, 0, NULL, NULL);
+	args = dispatch("//abc/", &count, '/', 1, 0);
 	assert_int_equal(2, count);
 	if(count != 2)
 		return;
@@ -214,7 +220,7 @@ test_cust_sep(void)
 	assert_string_equal("abc", args[1]);
 	free_string_array(args, count);
 
-	args = dispatch_line("/abc//", &count, '/', 1, 0, NULL, NULL);
+	args = dispatch("/abc//", &count, '/', 1, 0);
 	assert_int_equal(2, count);
 	if(count != 2)
 		return;
@@ -222,7 +228,7 @@ test_cust_sep(void)
 	assert_string_equal("", args[1]);
 	free_string_array(args, count);
 
-	args = dispatch_line("!!abc!", &count, '!', 1, 0, NULL, NULL);
+	args = dispatch("!!abc!", &count, '!', 1, 0);
 	assert_int_equal(2, count);
 	if(count != 2)
 		return;

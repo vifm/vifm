@@ -19,6 +19,8 @@
 #ifndef __CMDS_H__
 #define __CMDS_H__
 
+#include <stddef.h> /* size_t */
+
 enum
 {
 	CMDS_ERR_LOOP = -1,
@@ -123,6 +125,9 @@ int complete_cmd(const char *cmd);
 
 void add_builtin_commands(const cmd_add_t *cmds, int count);
 
+/* Returns pointer to the first character of the last argument in cmd. */
+char * get_last_argument(const char cmd[], size_t *len);
+
 /* Last element is followed by a NULL */
 char ** list_udf(void);
 
@@ -131,7 +136,7 @@ char * list_udf_content(const char *beginning);
 #ifdef TEST
 int add_builtin_cmd(const char *name, int abbr, const cmd_add_t *conf);
 char ** dispatch_line(const char *args, int *count, char sep, int regexp,
-		int quotes, int *last_arg, int *last_end);
+		int quotes, int *last_arg, int *last_begin, int *last_end);
 #endif
 
 #endif
