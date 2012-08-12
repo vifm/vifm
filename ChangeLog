@@ -8,6 +8,8 @@
 
 	Added completion for :set option=<tab> even for options without variants.
 
+	Added Ctrl-T handling in command line to swap characters.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 
