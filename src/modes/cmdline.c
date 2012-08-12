@@ -130,6 +130,7 @@ static void cmd_meta_b(key_info_t key_info, keys_info_t *keys_info);
 static void find_prev_word(void);
 static void cmd_meta_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_meta_f(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_meta_dot(key_info_t key_info, keys_info_t *keys_info);
 static void find_next_word(void);
 static void cmd_left(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right(key_info_t key_info, keys_info_t *keys_info);
@@ -195,6 +196,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x04",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_delete}}},
 	{L"\x15",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
 	{L"\x17",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_w}}},
+	{L"\x1b"L".",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_dot}}},
 #ifndef __PDCURSES__
 	{L"\x1b"L"b",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_b}}},
 	{L"\x1b"L"d",     {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_meta_d}}},
@@ -1206,6 +1208,46 @@ cmd_meta_f(key_info_t key_info, keys_info_t *keys_info)
 {
 	find_next_word();
 	update_cursor();
+}
+
+static void
+cmd_meta_dot(key_info_t key_info, keys_info_t *keys_info)
+{
+	size_t len;
+	char *last;
+	wchar_t *wide;
+	wchar_t *ptr;
+
+	stop_completion();
+
+	if(cfg.cmd_history_num <= 0)
+	{
+		return;
+	}
+
+	last = get_last_argument(cfg.cmd_history[input_stat.cmd_pos + 1], &len);
+	last = strdup(last);
+	last[len] = '\0';
+	wide = to_wide(last);
+	free(last);
+
+	ptr = realloc(input_stat.line, (input_stat.len + len + 1) * sizeof(wchar_t));
+	if(ptr != NULL)
+	{
+		if(input_stat.line == NULL)
+		{
+			ptr[0] = L'\0';
+		}
+		input_stat.line = ptr;
+		wcsins(input_stat.line, wide, input_stat.index + 1);
+		input_stat.index += len;
+		input_stat.curs_pos += len;
+		input_stat.len += len;
+
+		update_cmdline();
+	}
+
+	free(wide);
 }
 
 static void
