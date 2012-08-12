@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 08
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 12
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -651,6 +651,11 @@ Ctrl-W - remove characters from cursor position till the beginning of previous
                                                *vifm-c_ALT-D*
 Alt-D - remove characters from cursor position till the beginning of next
     word.
+
+                                               *vifm-c_CTRL-T*
+Ctrl-T - swap the order of current and previous character and move cursor
+    forward or, if cursor past the end of line, swap the order of two last
+    characters in the line.
 
                                                *vifm-c_CTRL-N*
 Ctrl-N - recall more recent command-line from history.

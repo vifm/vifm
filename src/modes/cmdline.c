@@ -141,6 +141,7 @@ static void update_cmdline(void);
 static void complete_cmd_next(void);
 static void complete_search_next(void);
 static void cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info);
 #ifdef ENABLE_EXTENDED_KEYS
 static void cmd_up(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
@@ -163,6 +164,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x0d",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{L"\x0e",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_n}}},
 	{L"\x10",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_p}}},
+	{L"\x14",         {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_t}}},
 	/* escape */
 	{L"\x1b",         {BUILTIN_WAIT_POINT, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	/* escape escape */
@@ -293,6 +295,7 @@ update_cmdline_size(void)
 	}
 }
 
+/* Also updates cursor. */
 static void
 update_cmdline_text(void)
 {
@@ -1377,6 +1380,36 @@ cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info)
 	input_stat.history_search = HIST_GO;
 
 	search_prev();
+}
+
+/* Swaps the order of two characters. */
+static void
+cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info)
+{
+	wchar_t tmp;
+	size_t index;
+
+	stop_completion();
+
+	index = input_stat.index;
+	if(index == 0 || input_stat.len == 1)
+		return;
+
+	if(index == input_stat.len)
+	{
+		index--;
+	}
+	else
+	{
+		input_stat.curs_pos++;
+		input_stat.index++;
+	}
+
+	tmp = input_stat.line[index - 1];
+	input_stat.line[index - 1] = input_stat.line[index];
+	input_stat.line[index] = tmp;
+
+	update_cmdline_text();
 }
 
 #ifdef ENABLE_EXTENDED_KEYS
