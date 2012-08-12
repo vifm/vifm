@@ -1226,6 +1226,11 @@ cmd_meta_dot(key_info_t key_info, keys_info_t *keys_info)
 {
 	wchar_t *wide;
 
+	if(sub_mode != CMD_SUBMODE)
+	{
+		return;
+	}
+
 	stop_history_completion();
 
 	if(cfg.cmd_history_num < 0)
