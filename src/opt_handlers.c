@@ -63,6 +63,7 @@ static void init_cpoptions(optval_t *val);
 static void init_lines(optval_t *val);
 static void init_timefmt(optval_t *val);
 static void init_trash_dir(optval_t *val);
+static void init_lsview(optval_t *val);
 static void init_sort(optval_t *val);
 static void init_sortorder(optval_t *val);
 static void init_viewcolumns(optval_t *val);
@@ -95,6 +96,7 @@ static void slowfs_handler(OPT_OP op, optval_t val);
 #endif
 static void smartcase_handler(OPT_OP op, optval_t val);
 static void sortnumbers_handler(OPT_OP op, optval_t val);
+static void lsview_handler(OPT_OP op, optval_t val);
 static void sort_handler(OPT_OP op, optval_t val);
 static void sortorder_handler(OPT_OP op, optval_t val);
 static void viewcolumns_handler(OPT_OP op, optval_t val);
@@ -266,6 +268,8 @@ static struct
 	{ "wrapscan",    "ws",   OPT_BOOL,    0,                          NULL,            &wrapscan_handler,
 		{ .ref.bool_val = &cfg.wrap_scan }                                                                     },
 	/* local options */
+	{ "lsview",      "",     OPT_BOOL,    0,                          NULL,            &lsview_handler,
+		{ .init = &init_lsview }                                                                               },
 	{ "sort",        "",     OPT_STRLIST, ARRAY_LEN(sort_types),      sort_types,      &sort_handler,
 		{ .init = &init_sort }                                                                                 },
 	{ "sortorder",   "",     OPT_ENUM,    ARRAY_LEN(sortorder_enum),  sortorder_enum,  &sortorder_handler,
@@ -316,6 +320,12 @@ init_trash_dir(optval_t *val)
 }
 
 static void
+init_lsview(optval_t *val)
+{
+	val->bool_val = curr_view->ls_view;
+}
+
+static void
 init_sort(optval_t *val)
 {
 	val->str_val = "+name";
@@ -336,7 +346,7 @@ init_viewcolumns(optval_t *val)
 static void
 load_options_defaults(void)
 {
-	int i;
+	size_t i;
 	for(i = 0; i < ARRAY_LEN(options); i++)
 	{
 		if(options[i].initializer.init != NULL)
@@ -371,6 +381,9 @@ load_local_options(FileView *view)
 
 	val.str_val = view->view_columns;
 	set_option("viewcolumns", val);
+
+	val.bool_val = view->ls_view;
+	set_option("lsview", val);
 }
 
 void
@@ -730,6 +743,29 @@ sortnumbers_handler(OPT_OP op, optval_t val)
 	resort_dir_list(1, curr_view);
 	resort_dir_list(1, other_view);
 	redraw_lists();
+}
+
+static void
+lsview_handler(OPT_OP op, optval_t val)
+{
+	curr_view->ls_view = val.bool_val;
+
+	if(val.bool_val)
+	{
+		column_info_t column_info =
+		{
+			.column_id = SORT_BY_NAME, .full_width = 0UL, .text_width = 0UL,
+			.align = AT_LEFT,          .sizing = ST_AUTO, .cropping = CT_ELLIPSIS,
+		};
+
+		columns_clear(curr_view->columns);
+		columns_add_column(curr_view->columns, column_info);
+		redraw_current_view();
+	}
+	else
+	{
+		load_view_columns_option(curr_view, curr_view->view_columns);
+	}
 }
 
 static void

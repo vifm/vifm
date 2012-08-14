@@ -363,6 +363,7 @@ prepare_view(FileView *view)
 	set_filename_filter(view, "");
 	view->invert = 1;
 	view->prev_invert = view->invert;
+	view->ls_view = 0;
 
 #ifndef _WIN32
 	view->sort[0] = SORT_BY_NAME;

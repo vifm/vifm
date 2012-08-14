@@ -155,6 +155,8 @@ typedef struct _FileView
 
 	columns_t columns; /* handle for column_view unit */
 	char *view_columns; /* format string of columns */
+
+	int ls_view; /* non-zero if ls-like view is enabled */
 }FileView;
 
 FileView lwin;

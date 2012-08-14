@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 12
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 14
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1541,6 +1541,13 @@ lines
 type: int
 default: terminal height on startup
 Terminal height in lines.
+
+                                               *vifm-'lsview'*
+lsview
+type: boolean
+default: false
+When this option is set, directory view will be displayed in multiple
+columns with filenames similar to output of `ls -x` command.
 
                                                *vifm-'rulerformat'* *vifm-'ruf'*
 rulerformat ruf

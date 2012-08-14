@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@lavabit.com>
-" Last Change: August 06, 2012
+" Last Change: August 14, 2012
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -47,24 +47,24 @@ syntax case match
 " Options
 syntax keyword vifmOption contained autochpos columns co confirm cf cpoptions
 		\ cpo fastrun followlinks fusehome gdefault history hi hlsearch hls iec
-		\ ignorecase ic incsearch is laststatus lines ls rulerformat ruf runexec
-		\ scrollbind scb scrolloff so sort sortorder shell sh slowfs smartcase scs
-		\ sortnumbers statusline stl tabstop timefmt timeoutlen trash trashdir ts
-		\ undolevels ul vicmd viewcolumns vifminfo vimhelp vixcmd wildmenu wmnu wrap
-		\ wrapscan ws
+		\ ignorecase ic incsearch is laststatus lines ls lsview rulerformat ruf
+		\ runexec scrollbind scb scrolloff so sort sortorder shell sh slowfs
+		\ smartcase scs sortnumbers statusline stl tabstop timefmt timeoutlen trash
+		\ trashdir ts undolevels ul vicmd viewcolumns vifminfo vimhelp vixcmd
+		\ wildmenu wmnu wrap wrapscan ws
 
 " Disabled boolean options
 syntax keyword vifmOption contained noautochpos noconfirm nocf nofastrun
 		\ nofollowlinks nohlsearch nohls noiec noignorecase noic noincsearch nois
-		\ nolaststatus nols noscrollbind noscb norunexec nosmartcase noscs
+		\ nolaststatus nols nolsview noscrollbind noscb norunexec nosmartcase noscs
 		\ nosortnumbers notrash novimhelp nowildmenu nowmnu nowrap nowrapscan nows
 
 " Inverted boolean options
 syntax keyword vifmOption contained invautochpos invconfirm invcf invfastrun
 		\ invfollowlinks invhlsearch invhls inviec invignorecase invic invincsearch
-		\ invis invlaststatus invls invscrollbind invscb invrunexec invsmartcase
-		\ invscs invsortnumbers invtrash invvimhelp invwildmenu invwmnu invwrap
-		\ invwrapscan invws
+		\ invis invlaststatus invls invlsview invscrollbind invscb invrunexec
+		\ invsmartcase invscs invsortnumbers invtrash invvimhelp invwildmenu invwmnu
+		\ invwrap invwrapscan invws
 
 " Expressions
 syntax region vifmStatement start='^\s*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'

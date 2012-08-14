@@ -28,6 +28,7 @@ const char *tags[] = {
 	"vifm-'laststatus'",
 	"vifm-'lines'",
 	"vifm-'ls'",
+	"vifm-'lsview'",
 	"vifm-'ruf'",
 	"vifm-'rulerformat'",
 	"vifm-'runexec'",
