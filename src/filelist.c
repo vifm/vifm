@@ -84,6 +84,7 @@ typedef struct
 	size_t line;
 	int current;
 	size_t current_line;
+	size_t column_offset;
 }
 column_data_t;
 
@@ -104,12 +105,15 @@ static void init_view_history(FileView *view);
 static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
 static int calculate_top_position(FileView *view, int top);
+static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 static void save_selection(FileView *view);
 int consider_scroll_offset(FileView *view, int pos);
 static void free_saved_selection(FileView *view);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
 static int file_can_be_displayed(const char *directory, const char *filename);
+
+const size_t COLUMN_GAP = 2;
 
 void
 init_filelists(void)
@@ -150,7 +154,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 	size_t i = cdt->line;
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[cdt->line];
-	wmove(view->win, cdt->current_line, 1 + offset);
+	wmove(view->win, cdt->current_line, 1 + cdt->column_offset + offset);
 
 	col = view->cs.color[WIN_COLOR];
 	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
@@ -193,7 +197,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 	wattron(view->win, COLOR_PAIR(view->color_scheme + line_color) | col.attr);
 
 	strcpy(print_buf, buf);
-	width_left = view->window_width - 1 - offset;
+	width_left = view->window_width - (column_id != FILL_COLUMN_ID) - offset;
 	trim_pos = get_normal_utf8_string_widthn(buf, width_left);
 	print_buf[trim_pos] = '\0';
 	wprint(view->win, print_buf);
@@ -364,6 +368,8 @@ prepare_view(FileView *view)
 	view->invert = 1;
 	view->prev_invert = view->invert;
 	view->ls_view = 0;
+	view->max_filename_len = 0;
+	view->column_count = 1;
 
 #ifndef _WIN32
 	view->sort[0] = SORT_BY_NAME;
@@ -806,9 +812,13 @@ draw_dir_list(FileView *view, int top)
 	int attr;
 	int x;
 	int y = 0;
+	size_t col_width;
+	size_t col_count;
 
 	if(curr_stats.load_stage < 2)
 		return;
+
+	calculate_table_conf(view, &col_count, &col_width);
 
 	if(top + view->window_rows > view->list_rows)
 		top = view->list_rows - view->window_rows;
@@ -839,10 +849,10 @@ draw_dir_list(FileView *view, int top)
 	{
 		wmove(view->win, y, 1);
 		wclrtoeol(view->win);
-		column_data_t cdt = {view, x, 0, y};
-		columns_format_line(view->columns, &cdt, view->window_width - 1);
+		column_data_t cdt = {view, x, 0, y/col_count, (y%col_count)*col_width};
+		columns_format_line(view->columns, &cdt, col_width);
 		y++;
-		if(y > view->window_rows)
+		if(y > view->window_rows*col_count)
 			break;
 	}
 
@@ -910,7 +920,10 @@ erase_current_line_bar(FileView *view)
 {
 	int old_cursor = view->curr_line;
 	int old_pos = view->top_line + old_cursor;
-	column_data_t cdt = {view, old_pos, 0, old_cursor};
+	size_t col_width;
+	size_t col_count;
+	size_t print_width;
+	column_data_t cdt = {view, old_pos, 0};
 
 	if(old_cursor < 0)
 		return;
@@ -924,11 +937,19 @@ erase_current_line_bar(FileView *view)
 		return;
 	}
 
-	wmove(view->win, old_cursor, 1);
+	calculate_table_conf(view, &col_count, &col_width);
+	print_width = col_width;
+	if(view->ls_view)
+	{
+		print_width = MIN(col_width - 1, strlen(view->dir_entry[old_pos].name));
+	}
 
-	wclrtoeol(view->win);
+	cdt.current_line = old_cursor/col_count;
+	cdt.column_offset = (old_cursor%col_count)*col_width;
 
-	columns_format_line(view->columns, &cdt, view->window_width - 1);
+	column_line_print(&cdt, FILL_COLUMN_ID, " ", -1);
+	columns_format_line(view->columns, &cdt, col_width);
+	column_line_print(&cdt, FILL_COLUMN_ID, " ", print_width);
 }
 
 int
@@ -999,7 +1020,9 @@ void
 move_to_list_pos(FileView *view, int pos)
 {
 	int redraw = 0;
-	int old_cursor = view->curr_line;
+	size_t col_width;
+	size_t col_count;
+	size_t print_width;
 	column_data_t cdt = {view, 0, 1, 0};
 
 	if(pos < 1)
@@ -1026,26 +1049,43 @@ move_to_list_pos(FileView *view, int pos)
 	if(redraw)
 		draw_dir_list(view, view->top_line);
 
-	wattrset(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
-	mvwaddstr(view->win, old_cursor, 0, " ");
-	refresh_view_win(view);
-	wattroff(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
-
-	wmove(view->win, view->curr_line, 1);
-	wclrtoeol(view->win);
+	calculate_table_conf(view, &col_count, &col_width);
+	print_width = col_width;
+	if(view->ls_view)
+	{
+		print_width = MIN(col_width - 1,
+				strlen(view->dir_entry[view->list_pos].name));
+	}
 
 	cdt.line = pos;
-	cdt.current_line = view->curr_line;
+	cdt.current_line = view->curr_line/col_count;
+	cdt.column_offset = (view->curr_line%col_count)*col_width;
+
+	view->column_count = col_count;
 
 	column_line_print(&cdt, FILL_COLUMN_ID, " ", -1);
-	columns_format_line(view->columns, &cdt, view->window_width - 1);
-	column_line_print(&cdt, FILL_COLUMN_ID, " ", view->window_width);
+	columns_format_line(view->columns, &cdt, print_width);
+	column_line_print(&cdt, FILL_COLUMN_ID, " ", print_width);
 
 	refresh_view_win(view);
 	update_stat_window(view);
 
 	if(curr_stats.view)
 		quick_view_file(view);
+}
+
+/* Calculates number of columns and maximum width of column in a view. */
+static void
+calculate_table_conf(FileView *view, size_t *count, size_t *width)
+{
+	*width = view->window_width - 1;
+	*count = 1;
+
+	if(view->ls_view)
+	{
+		*width = MIN(view->max_filename_len + COLUMN_GAP, view->window_width - 1);
+		*count = (view->window_width - 1)/(*width);
+	}
 }
 
 void
@@ -1825,6 +1865,7 @@ static int
 fill_dir_list(FileView *view)
 {
 	view->matches = 0;
+	view->max_filename_len = 0;
 
 #ifndef _WIN32
 	DIR *dir;
@@ -1882,6 +1923,7 @@ fill_dir_list(FileView *view)
 		dir_entry = view->dir_entry + view->list_rows;
 
 		name_len = strlen(d->d_name);
+		view->max_filename_len = MAX(view->max_filename_len, name_len);
 		/* Allocate extra for adding / to directories. */
 		dir_entry->name = malloc(name_len + 1 + 1);
 		if(dir_entry->name == NULL)
@@ -2029,6 +2071,7 @@ fill_dir_list(FileView *view)
 		dir_entry = view->dir_entry + view->list_rows;
 
 		name_len = strlen(ffd.cFileName);
+		view->max_filename_len = MAX(view->max_filename_len, name_len);
 		/* Allocate extra for adding / to directories. */
 		dir_entry->name = malloc(name_len + 1 + 1);
 		if(dir_entry->name == NULL)
@@ -2262,6 +2305,7 @@ add_parent_dir(FileView *view)
 		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
+	view->max_filename_len = MAX(view->max_filename_len, strlen(dir_entry->name));
 
 	view->list_rows++;
 

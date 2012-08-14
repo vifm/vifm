@@ -156,7 +156,10 @@ typedef struct _FileView
 	columns_t columns; /* handle for column_view unit */
 	char *view_columns; /* format string of columns */
 
+	/* ls-like view related fields */
 	int ls_view; /* non-zero if ls-like view is enabled */
+	size_t max_filename_len; /* max length of filename in current directory */
+	size_t column_count; /* number of columns in the view, used for list view */
 }FileView;
 
 FileView lwin;
