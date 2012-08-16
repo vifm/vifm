@@ -1084,7 +1084,13 @@ move_to_list_pos(FileView *view, int pos)
 void
 put_inactive_mark(FileView *view)
 {
-	mvwaddstr(view->win, view->curr_line, 0, "*");
+	size_t col_width;
+	size_t col_count;
+
+	calculate_table_conf(view, &col_count, &col_width);
+
+	mvwaddstr(view->win, view->curr_line/col_count,
+			(view->curr_line%col_count)*col_width, "*");
 }
 
 /* Calculates number of columns and maximum width of column in a view. */
