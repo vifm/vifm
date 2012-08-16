@@ -1257,7 +1257,7 @@ change_window(void)
 	{
 		if(!other_view->explore_mode)
 		{
-			mvwaddstr(other_view->win, other_view->curr_line, 0, "*");
+			put_inactive_mark(other_view);
 			erase_current_line_bar(other_view);
 		}
 		update_view_title(other_view);

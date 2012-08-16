@@ -51,6 +51,8 @@ int find_file_pos_in_list(FileView *view, const char *file);
 int correct_list_pos_on_scroll_up(FileView *view, int pos_delta);
 int correct_list_pos_on_scroll_down(FileView *view, int pos_delta);
 void move_to_list_pos(FileView *view, int pos);
+/* Adds inactive cursor mark to the view. */
+void put_inactive_mark(FileView *view);
 
 /* Appearance related functions. */
 

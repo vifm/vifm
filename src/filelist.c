@@ -857,7 +857,9 @@ draw_dir_list(FileView *view, int top)
 	}
 
 	if(view != curr_view)
-		mvwaddstr(view->win, view->curr_line, 0, "*");
+	{
+		put_inactive_mark(view);
+	}
 
 	view->top_line = top;
 
@@ -950,6 +952,11 @@ erase_current_line_bar(FileView *view)
 	column_line_print(&cdt, FILL_COLUMN_ID, " ", -1);
 	columns_format_line(view->columns, &cdt, col_width);
 	column_line_print(&cdt, FILL_COLUMN_ID, " ", print_width);
+
+	if(view == other_view)
+	{
+		put_inactive_mark(view);
+	}
 }
 
 int
@@ -1072,6 +1079,12 @@ move_to_list_pos(FileView *view, int pos)
 
 	if(curr_stats.view)
 		quick_view_file(view);
+}
+
+void
+put_inactive_mark(FileView *view)
+{
+	mvwaddstr(view->win, view->curr_line, 0, "*");
 }
 
 /* Calculates number of columns and maximum width of column in a view. */
@@ -2543,7 +2556,7 @@ reload_window(FileView *view)
 
 	if(view != curr_view)
 	{
-		mvwaddstr(view->win, view->curr_line, 0, "*");
+		put_inactive_mark(view);
 		refresh_view_win(view);
 	}
 
@@ -2645,7 +2658,7 @@ load_saving_pos(FileView *view, int reload)
 		view->list_pos = pos;
 		if(move_curr_line(view, pos))
 			draw_dir_list(view, view->top_line);
-		mvwaddstr(view->win, view->curr_line, 0, "*");
+		put_inactive_mark(view);
 	}
 
 	if(curr_stats.number_of_windows != 1 || view == curr_view)
