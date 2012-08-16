@@ -811,7 +811,7 @@ draw_dir_list(FileView *view, int top)
 {
 	int attr;
 	int x;
-	int y = 0;
+	int y;
 	size_t col_width;
 	size_t col_count;
 
@@ -845,6 +845,7 @@ draw_dir_list(FileView *view, int top)
 	wbkgdset(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme) | attr);
 	werase(view->win);
 
+	y = 0;
 	for(x = top; x < view->list_rows; x++)
 	{
 		wmove(view->win, y, 1);
@@ -852,7 +853,7 @@ draw_dir_list(FileView *view, int top)
 		column_data_t cdt = {view, x, 0, y/col_count, (y%col_count)*col_width};
 		columns_format_line(view->columns, &cdt, col_width);
 		y++;
-		if(y > view->window_rows*col_count)
+		if(y >= view->window_cells)
 			break;
 	}
 
@@ -1069,6 +1070,7 @@ move_to_list_pos(FileView *view, int pos)
 	cdt.column_offset = (view->curr_line%col_count)*col_width;
 
 	view->column_count = col_count;
+	view->window_cells = col_count*(view->window_rows + 1);
 
 	column_line_print(&cdt, FILL_COLUMN_ID, " ", -1);
 	columns_format_line(view->columns, &cdt, print_width);
@@ -1105,6 +1107,8 @@ calculate_table_conf(FileView *view, size_t *count, size_t *width)
 		*width = MIN(view->max_filename_len + COLUMN_GAP, view->window_width - 1);
 		*count = (view->window_width - 1)/(*width);
 	}
+	view->column_count = *count;
+	view->window_cells = *count*(view->window_rows + 1);
 }
 
 void

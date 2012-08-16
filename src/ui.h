@@ -160,6 +160,7 @@ typedef struct _FileView
 	int ls_view; /* non-zero if ls-like view is enabled */
 	size_t max_filename_len; /* max length of filename in current directory */
 	size_t column_count; /* number of columns in the view, used for list view */
+	size_t window_cells; /* max number of files that can be displayed */
 }FileView;
 
 FileView lwin;
