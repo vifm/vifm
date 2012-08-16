@@ -979,16 +979,16 @@ move_curr_line(FileView *view, int pos)
 
 	view->top_line = calculate_top_position(view, view->top_line);
 
-	if(view->top_line <= pos && pos <= view->top_line + view->window_rows)
+	if(view->top_line <= pos && pos < view->top_line + view->window_cells)
 	{
 		view->curr_line = pos - view->top_line;
 	}
-	else if(pos > view->top_line + view->window_rows)
+	else if(pos >= view->top_line + view->window_cells)
 	{
-		while(pos > view->top_line + view->window_rows)
+		while(pos >= view->top_line + view->window_cells)
 			view->top_line++;
 
-		view->curr_line = view->window_rows;
+		view->curr_line = view->window_cells - 1;
 		redraw = 1;
 	}
 	else if(pos < view->top_line)
