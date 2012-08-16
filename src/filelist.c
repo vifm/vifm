@@ -1936,7 +1936,6 @@ fill_dir_list(FileView *view)
 		dir_entry = view->dir_entry + view->list_rows;
 
 		name_len = strlen(d->d_name);
-		view->max_filename_len = MAX(view->max_filename_len, name_len);
 		/* Allocate extra for adding / to directories. */
 		dir_entry->name = malloc(name_len + 1 + 1);
 		if(dir_entry->name == NULL)
@@ -1961,7 +1960,10 @@ fill_dir_list(FileView *view)
 
 			dir_entry->type = type_from_dir_entry(d);
 			if(dir_entry->type == DIRECTORY)
+			{
 				strcat(dir_entry->name, "/");
+				name_len++;
+			}
 			dir_entry->size = 0;
 			dir_entry->mode = 0;
 			dir_entry->uid = -1;
@@ -1969,6 +1971,8 @@ fill_dir_list(FileView *view)
 			dir_entry->mtime = 0;
 			dir_entry->atime = 0;
 			dir_entry->ctime = 0;
+
+			view->max_filename_len = MAX(view->max_filename_len, name_len);
 			continue;
 		}
 
@@ -1997,6 +2001,7 @@ fill_dir_list(FileView *view)
 				case S_IFDIR:
 					strcat(dir_entry->name, "/");
 					dir_entry->type = DIRECTORY;
+					name_len++;
 					break;
 				case S_IFCHR:
 				case S_IFBLK:
@@ -2015,6 +2020,7 @@ fill_dir_list(FileView *view)
 					dir_entry->type = UNKNOWN;
 					break;
 			}
+			view->max_filename_len = MAX(view->max_filename_len, name_len);
 		}
 	}
 	closedir(dir);
@@ -2084,7 +2090,6 @@ fill_dir_list(FileView *view)
 		dir_entry = view->dir_entry + view->list_rows;
 
 		name_len = strlen(ffd.cFileName);
-		view->max_filename_len = MAX(view->max_filename_len, name_len);
 		/* Allocate extra for adding / to directories. */
 		dir_entry->name = malloc(name_len + 1 + 1);
 		if(dir_entry->name == NULL)
@@ -2116,6 +2121,7 @@ fill_dir_list(FileView *view)
 		{
 			strcat(dir_entry->name, "/");
 			dir_entry->type = DIRECTORY;
+			name_len++;
 		}
 		else if(is_executable(dir_entry))
 		{
@@ -2126,6 +2132,7 @@ fill_dir_list(FileView *view)
 			dir_entry->type = REGULAR;
 		}
 		view->list_rows++;
+		view->max_filename_len = MAX(view->max_filename_len, name_len);
 	}
 	while(FindNextFileA(hfind, &ffd));
 	FindClose(hfind);
