@@ -1069,9 +1069,6 @@ move_to_list_pos(FileView *view, int pos)
 	cdt.current_line = view->curr_line/col_count;
 	cdt.column_offset = (view->curr_line%col_count)*col_width;
 
-	view->column_count = col_count;
-	view->window_cells = col_count*(view->window_rows + 1);
-
 	column_line_print(&cdt, FILL_COLUMN_ID, " ", -1);
 	columns_format_line(view->columns, &cdt, print_width);
 	column_line_print(&cdt, FILL_COLUMN_ID, " ", print_width);
