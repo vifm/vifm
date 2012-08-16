@@ -986,17 +986,17 @@ move_curr_line(FileView *view, int pos)
 	else if(pos >= view->top_line + view->window_cells)
 	{
 		while(pos >= view->top_line + view->window_cells)
-			view->top_line++;
+			view->top_line += view->column_count;
 
-		view->curr_line = view->window_cells - 1;
+		view->curr_line = pos - view->top_line;
 		redraw = 1;
 	}
 	else if(pos < view->top_line)
 	{
 		while(pos < view->top_line)
-			view->top_line--;
+			view->top_line -= view->column_count;
 
-		view->curr_line = 0;
+		view->curr_line = pos - view->top_line;
 		redraw = 1;
 	}
 
@@ -1011,14 +1011,14 @@ move_curr_line(FileView *view, int pos)
 static int
 calculate_top_position(FileView *view, int top)
 {
-	int result = top;
-	if(view->window_rows >= view->list_rows)
+	int result = top - top%view->column_count;
+	if(view->window_cells >= view->list_rows)
 	{
 		result = 0;
 	}
-	else if((view->list_rows - top) <= view->window_rows)
+	else if((view->list_rows - top) < view->window_cells)
 	{
-		result = view->list_rows - view->window_rows - 1;
+		result = view->list_rows - view->window_cells;
 		view->curr_line++;
 	}
 	return result;
@@ -1299,9 +1299,10 @@ consider_scroll_offset(FileView *view, int pos)
 		if(pos - view->top_line < s && view->top_line > 0)
 		{
 			view->top_line -= s - (pos - view->top_line);
+			view->top_line = calculate_top_position(view, view->top_line);
 			if(view->top_line < 0)
 				view->top_line = 0;
-			view->curr_line = MIN(s, pos);
+			view->curr_line = (view->top_line == 0) ? pos : (pos - view->top_line);
 			need_redraw = 1;
 		}
 		if(view->top_line + view->window_cells - 1 < view->list_rows)

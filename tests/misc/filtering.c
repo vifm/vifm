@@ -31,6 +31,8 @@ setup(void)
 
 	lwin.filename_filter = strdup("");
 	lwin.invert = 0;
+
+	lwin.column_count = 1;
 }
 
 static void
