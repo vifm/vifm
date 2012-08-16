@@ -898,7 +898,7 @@ correct_list_pos_on_scroll_down(FileView *view, int pos_delta)
 	if(view->top_line == view->list_rows - view->window_rows - 1)
 		return 0;
 
-	off = MAX(cfg.scroll_off, 0);
+	off = MAX(cfg.scroll_off, 0)*view->column_count;
 	if(view->list_pos <= view->top_line + off)
 		view->list_pos = view->top_line + pos_delta + off;
 	return 1;
@@ -912,7 +912,7 @@ correct_list_pos_on_scroll_up(FileView *view, int pos_delta)
 	if(view->list_rows <= view->window_rows + 1 || view->top_line == 0)
 		return 0;
 
-	off = MAX(cfg.scroll_off, 0);
+	off = MAX(cfg.scroll_off, 0)*view->column_count;
 	if(view->list_pos >= view->top_line + view->window_rows - off)
 		view->list_pos = view->top_line + pos_delta + view->window_rows - off;
 	return 1;
@@ -1292,31 +1292,31 @@ check_view_dir_history(FileView *view)
 int
 consider_scroll_offset(FileView *view, int pos)
 {
-	int result = 0;
+	int need_redraw = 0;
 	if(cfg.scroll_off > 0)
 	{
-		int s = MIN((view->window_rows + 1)/2, cfg.scroll_off);
+		int s = MIN((view->window_rows + 1)/2, cfg.scroll_off)*view->column_count;
 		if(pos - view->top_line < s && view->top_line > 0)
 		{
 			view->top_line -= s - (pos - view->top_line);
 			if(view->top_line < 0)
 				view->top_line = 0;
 			view->curr_line = MIN(s, pos);
-			result = 1;
+			need_redraw = 1;
 		}
-		if(view->top_line + view->window_rows < view->list_rows)
+		if(view->top_line + view->window_cells - 1 < view->list_rows)
 		{
-			if((view->top_line + view->window_rows) - pos < s)
+			if((view->top_line + view->window_cells - 1) - pos < s)
 			{
-				view->top_line += s - ((view->top_line + view->window_rows) - pos);
+				view->top_line += s - ((view->top_line + view->window_cells - 1) - pos);
 				if(pos + s > view->list_rows)
 					view->top_line -= pos + s - view->list_rows;
 				view->curr_line = pos - view->top_line;
-				result = 1;
+				need_redraw = 1;
 			}
 		}
 	}
-	return result;
+	return need_redraw;
 }
 
 void
