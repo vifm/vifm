@@ -44,7 +44,7 @@ toggle_quick_view(void)
 	{
 		curr_stats.view = 0;
 
-		draw_dir_list(other_view, other_view->top_line);
+		draw_dir_list(other_view);
 		refresh_view_win(other_view);
 	}
 	else

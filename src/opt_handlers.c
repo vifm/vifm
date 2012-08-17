@@ -612,8 +612,8 @@ laststatus_handler(OPT_OP op, optval_t val)
 		rwin.window_rows++;
 		wresize(lwin.win, lwin.window_rows + 1, lwin.window_width + 1);
 		wresize(rwin.win, rwin.window_rows + 1, rwin.window_width + 1);
-		draw_dir_list(&lwin, lwin.top_line);
-		draw_dir_list(&rwin, rwin.top_line);
+		draw_dir_list(&lwin);
+		draw_dir_list(&rwin);
 	}
 	move_to_list_pos(curr_view, curr_view->list_pos);
 	touchwin(lwin.win);
@@ -662,7 +662,7 @@ scroll_line_down(FileView *view)
 	{
 		view->top_line++;
 		view->curr_line--;
-		draw_dir_list(view, view->top_line);
+		draw_dir_list(view);
 	}
 	wresize(view->win, view->window_rows + 1, view->window_width + 1);
 }
@@ -911,7 +911,7 @@ static void
 resort_view(FileView * view)
 {
 	resort_dir_list(1, view);
-	draw_dir_list(view, view->top_line);
+	draw_dir_list(view);
 	refresh_view_win(view);
 }
 

@@ -58,7 +58,7 @@ void put_inactive_mark(FileView *view);
 
 /* Reinitializes view columns. */
 void reset_view_sort(FileView *view);
-void draw_dir_list(FileView *view, int top);
+void draw_dir_list(FileView *view);
 void erase_current_line_bar(FileView *view);
 /* Updates view (maybe postponed) on the screen (redraws file list and
  * cursor) */

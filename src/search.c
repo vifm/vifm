@@ -151,7 +151,7 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 	}
 
 	/* Need to redraw the list so that the matching files are highlighted */
-	draw_dir_list(view, view->top_line);
+	draw_dir_list(view);
 
 	if(found > 0)
 	{

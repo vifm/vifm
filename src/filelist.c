@@ -807,13 +807,14 @@ reset_view_sort(FileView *view)
 }
 
 void
-draw_dir_list(FileView *view, int top)
+draw_dir_list(FileView *view)
 {
 	int attr;
 	int x;
 	int y;
 	size_t col_width;
 	size_t col_count;
+	int top = view->top_line;
 
 	if(curr_stats.load_stage < 2)
 		return;
@@ -883,7 +884,7 @@ draw_dir_list(FileView *view, int top)
 			(void)correct_list_pos_on_scroll_up(other, 0);
   	other->curr_line = other->list_pos - other->top_line;
 
-		draw_dir_list(other, other->top_line);
+		draw_dir_list(other);
 		refresh_view_win(other);
 	}
 }
@@ -1058,7 +1059,7 @@ move_to_list_pos(FileView *view, int pos)
 		return;
 
 	if(redraw)
-		draw_dir_list(view, view->top_line);
+		draw_dir_list(view);
 
 	calculate_table_conf(view, &col_count, &col_width);
 	print_width = col_width;
@@ -2260,7 +2261,7 @@ load_dir_list(FileView *view, int reload)
 		view->selected_files = 0;
 
 	if(curr_stats.load_stage >= 2)
-		draw_dir_list(view, view->top_line);
+		draw_dir_list(view);
 
 	if(view == curr_view)
 	{
@@ -2311,7 +2312,7 @@ rescue_from_empty_filelist(FileView * view)
 	}
 
 	if(curr_stats.load_stage >= 2)
-		draw_dir_list(view, view->top_line);
+		draw_dir_list(view);
 }
 
 /* Adds parent directory entry (..) to filelist. */
@@ -2534,7 +2535,7 @@ redraw_view(FileView *view)
 {
 	if(curr_stats.need_update == UT_NONE)
 	{
-		draw_dir_list(view, view->top_line);
+		draw_dir_list(view);
 		move_to_list_pos(view, view->list_pos);
 	}
 }
@@ -2676,7 +2677,7 @@ load_saving_pos(FileView *view, int reload)
 		mvwaddstr(view->win, view->curr_line, 0, " ");
 		view->list_pos = pos;
 		if(move_curr_line(view))
-			draw_dir_list(view, view->top_line);
+			draw_dir_list(view);
 		put_inactive_mark(view);
 	}
 
@@ -2815,7 +2816,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 	}
 	else
 	{
-		draw_dir_list(other_view, other_view->top_line);
+		draw_dir_list(other_view);
 		refresh_view_win(other_view);
 	}
 	return 0;

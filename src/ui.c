@@ -1420,7 +1420,7 @@ redraw_lists(void)
 		else
 		{
 			(void)move_curr_line(other_view);
-			draw_dir_list(other_view, other_view->top_line);
+			draw_dir_list(other_view);
 		}
 		refresh_view_win(other_view);
 	}
