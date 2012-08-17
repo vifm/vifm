@@ -107,7 +107,7 @@ static char * get_viewer_command(const char *viewer);
 static int calculate_top_position(FileView *view, int top);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 static void save_selection(FileView *view);
-int consider_scroll_offset(FileView *view, int pos);
+int consider_scroll_offset(FileView *view);
 static void free_saved_selection(FileView *view);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
@@ -1003,7 +1003,7 @@ move_curr_line(FileView *view)
 		redraw = 1;
 	}
 
-	redraw = consider_scroll_offset(view, pos) ? 1 : redraw;
+	redraw = consider_scroll_offset(view) ? 1 : redraw;
 
 	return redraw;
 }
@@ -1287,15 +1287,16 @@ check_view_dir_history(FileView *view)
 			view->curr_line = view->window_rows;
 		}
 	}
-	(void)consider_scroll_offset(view, pos);
+	(void)consider_scroll_offset(view);
 }
 
 /* Updates current and top line of a view according to scrolloff option value.
  * Returns non-zero if redraw is needed. */
 int
-consider_scroll_offset(FileView *view, int pos)
+consider_scroll_offset(FileView *view)
 {
 	int need_redraw = 0;
+	int pos = view->list_pos;
 	if(cfg.scroll_off > 0)
 	{
 		int s = MIN((view->window_rows + 1)/2, cfg.scroll_off)*view->column_count;
