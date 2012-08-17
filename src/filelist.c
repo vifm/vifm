@@ -961,9 +961,10 @@ erase_current_line_bar(FileView *view)
 }
 
 int
-move_curr_line(FileView *view, int pos)
+move_curr_line(FileView *view)
 {
 	int redraw = 0;
+	int pos = view->list_pos;
 
 	if(pos < 1)
 		pos = 0;
@@ -973,6 +974,8 @@ move_curr_line(FileView *view, int pos)
 
 	if(pos == -1)
 		return 0;
+
+	view->list_pos = pos;
 
 	if(view->curr_line > view->list_rows - 1)
 		view->curr_line = view->list_rows - 1;
@@ -1049,7 +1052,7 @@ move_to_list_pos(FileView *view, int pos)
 
 	erase_current_line_bar(view);
 
-	redraw = move_curr_line(view, pos);
+	redraw = move_curr_line(view);
 
 	if(curr_stats.load_stage < 2)
 		return;
@@ -2671,7 +2674,7 @@ load_saving_pos(FileView *view, int reload)
 	{
 		mvwaddstr(view->win, view->curr_line, 0, " ");
 		view->list_pos = pos;
-		if(move_curr_line(view, pos))
+		if(move_curr_line(view))
 			draw_dir_list(view, view->top_line);
 		put_inactive_mark(view);
 	}

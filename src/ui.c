@@ -1419,7 +1419,7 @@ redraw_lists(void)
 			quick_view_file(curr_view);
 		else
 		{
-			(void)move_curr_line(other_view, other_view->list_pos);
+			(void)move_curr_line(other_view);
 			draw_dir_list(other_view, other_view->top_line);
 		}
 		refresh_view_win(other_view);
