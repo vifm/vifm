@@ -106,6 +106,8 @@ static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
 static int calculate_top_position(FileView *view, int top);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
+size_t calculate_columns_count(FileView *view);
+static size_t calculate_column_width(FileView *view);
 static void save_selection(FileView *view);
 int consider_scroll_offset(FileView *view);
 static void free_saved_selection(FileView *view);
@@ -1105,11 +1107,32 @@ calculate_table_conf(FileView *view, size_t *count, size_t *width)
 
 	if(view->ls_view)
 	{
-		*width = MIN(view->max_filename_len + COLUMN_GAP, view->window_width - 1);
-		*count = (view->window_width - 1)/(*width);
+		*count = calculate_columns_count(view);
+		*width = calculate_column_width(view);
 	}
 	view->column_count = *count;
 	view->window_cells = *count*(view->window_rows + 1);
+}
+
+size_t
+calculate_columns_count(FileView *view)
+{
+	if(view->ls_view)
+	{
+		size_t column_width = calculate_column_width(view);
+		return (view->window_width - 1)/column_width;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
+/* Returns width of one column in the view. */
+static size_t
+calculate_column_width(FileView *view)
+{
+	return MIN(view->max_filename_len + COLUMN_GAP, view->window_width - 1);
 }
 
 void

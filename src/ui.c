@@ -767,6 +767,7 @@ setup_ncurses_interface(void)
 	werase(lwin.win);
 	getmaxyx(lwin.win, y, x);
 	lwin.window_rows = y - 1;
+	lwin.window_cells = y;
 	lwin.window_width = x - 1;
 
 	mborder = newwin(screen_y - 1, 2 - screen_x%2, 1,
@@ -825,6 +826,7 @@ setup_ncurses_interface(void)
 	werase(rwin.win);
 	getmaxyx(rwin.win, y, x);
 	rwin.window_rows = y - 1;
+	rwin.window_cells = y;
 	rwin.window_width = x - 1;
 
 	rborder = newwin(screen_y - 2, 1, 1, screen_x - 1);
@@ -898,6 +900,8 @@ correct_size(FileView *view)
 	getmaxyx(view->win, y, x);
 	view->window_width = x - 1;
 	view->window_rows = y - 1;
+	view->column_count = calculate_columns_count(view);
+	view->window_cells = view->column_count*y;
 }
 
 static void
