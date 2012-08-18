@@ -424,38 +424,28 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 	goto_pos(key_info.count - 1);
 }
 
+/* Move to the first line of window, selecting as we go. */
 static void
 cmd_H(key_info_t key_info, keys_info_t *keys_info)
 {
-	int off = MAX(cfg.scroll_off, 0);
-	if(off > view->window_rows/2)
-		return;
-	if(view->top_line == 0)
-		goto_pos(0);
-	else
-		goto_pos(view->top_line + off);
+	size_t new_pos = get_window_top_pos(view);
+	goto_pos(new_pos);
 }
 
-/* move to last line of window, selecting as we go */
+/* Move to the last line of window, selecting as we go. */
 static void
 cmd_L(key_info_t key_info, keys_info_t *keys_info)
 {
-	int off = MAX(cfg.scroll_off, 0);
-	if(off > view->window_rows/2)
-		return;
-	if(view->top_line + view->window_rows < view->list_rows - 1)
-		goto_pos(view->top_line + view->window_rows - off);
-	else
-		goto_pos(view->top_line + view->window_rows);
+	size_t new_pos = get_window_bottom_pos(view);
+	goto_pos(new_pos);
 }
 
-/* move to middle of window, selecting from start position to there */
+/* Move to middle line of window, selecting from start position to there. */
 static void
 cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
-	int pos1 = view->list_rows/2;
-	int pos2 = view->top_line + view->window_rows/2;
-	goto_pos(MIN(pos1, pos2));
+	size_t new_pos = get_window_middle_pos(view);
+	goto_pos(new_pos);
 }
 
 static void

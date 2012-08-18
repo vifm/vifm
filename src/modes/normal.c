@@ -112,6 +112,7 @@ static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_H(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_L(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_M(key_info_t key_info, keys_info_t *keys_info);
+static void pick_or_move(keys_info_t *keys_info, int new_pos);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_P(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_V(key_info_t key_info, keys_info_t *keys_info);
@@ -1176,56 +1177,35 @@ cmd_gv(key_info_t key_info, keys_info_t *keys_info)
 	enter_visual_mode(1);
 }
 
-/* Go to first file in window. */
+/* Go to the first file in window. */
 static void
 cmd_H(key_info_t key_info, keys_info_t *keys_info)
 {
-	int top;
-	int off = MAX(cfg.scroll_off, 0);
-	if(off > curr_view->window_rows/2)
-		return;
-
-	if(curr_view->top_line == 0)
-		top = 0;
-	else
-		top = curr_view->top_line + off;
-
-	if(keys_info->selector)
-		pick_files(curr_view, top, keys_info);
-	else
-		move_to_list_pos(curr_view, top);
+	size_t new_pos = get_window_top_pos(curr_view);
+	pick_or_move(keys_info, new_pos);
 }
 
-/* Go to last file in window. */
+/* Go to the last file in window. */
 static void
 cmd_L(key_info_t key_info, keys_info_t *keys_info)
 {
-	int top;
-	int off = MAX(cfg.scroll_off, 0);
-	if(off > curr_view->window_rows/2)
-		return;
-
-	if(curr_view->top_line + curr_view->window_rows < curr_view->list_rows - 1)
-		top = curr_view->top_line + curr_view->window_rows - off;
-	else
-		top = curr_view->top_line + curr_view->window_rows;
-
-	if(keys_info->selector)
-		pick_files(curr_view, top, keys_info);
-	else
-		move_to_list_pos(curr_view, top);
+	size_t new_pos = get_window_bottom_pos(curr_view);
+	pick_or_move(keys_info, new_pos);
 }
 
-/* Go to middle of window. */
+/* Go to middle line of window. */
 static void
 cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
-	int new_pos;
-	if(curr_view->list_rows < curr_view->window_rows)
-		new_pos = curr_view->list_rows/2;
-	else
-		new_pos = curr_view->top_line + (curr_view->window_rows/2);
+	size_t new_pos = get_window_middle_pos(curr_view);
+	pick_or_move(keys_info, new_pos);
+}
 
+/* Picks files or moves cursor depending whether key was pressed as a selector
+ * or not. */
+static void
+pick_or_move(keys_info_t *keys_info, int new_pos)
+{
 	if(keys_info->selector)
 		pick_files(curr_view, new_pos, keys_info);
 	else

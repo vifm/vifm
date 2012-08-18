@@ -67,6 +67,12 @@ void scroll_down(FileView *view, size_t by);
 int at_first_line(FileView *view);
 /* Returns non-zero if cursor is on the last line. */
 int at_last_line(FileView *view);
+/* Returns window top position adjusted for 'scrolloff' option. */
+size_t get_window_top_pos(FileView *view);
+/* Returns window middle position adjusted for 'scrolloff' option. */
+size_t get_window_middle_pos(FileView *view);
+/* Returns window bottom position adjusted for 'scrolloff' option. */
+size_t get_window_bottom_pos(FileView *view);
 
 /* Appearance related functions. */
 

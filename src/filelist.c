@@ -1430,6 +1430,43 @@ at_last_line(FileView *view)
 	return view->list_pos/col_count == (view->list_rows - 1)/col_count;
 }
 
+size_t
+get_window_top_pos(FileView *view)
+{
+	if(view->top_line == 0)
+	{
+		return 0;
+	}
+	else
+	{
+		return view->top_line + get_effective_scroll_offset(view);
+	}
+}
+
+size_t
+get_window_middle_pos(FileView *view)
+{
+	int list_middle = view->list_rows/(2*view->column_count);
+	int window_middle = view->window_rows/2;
+	return view->top_line + MIN(list_middle, window_middle)*view->column_count;
+}
+
+size_t
+get_window_bottom_pos(FileView *view)
+{
+	if(all_files_visible(view))
+	{
+		size_t last = view->list_rows - 1;
+		return last - last%view->column_count;
+	}
+	else
+	{
+		size_t off = get_effective_scroll_offset(view);
+		size_t column_correction = view->column_count - 1;
+		return get_last_visible_file(view) - off - column_correction;
+	}
+}
+
 void
 clean_selected_files(FileView *view)
 {
