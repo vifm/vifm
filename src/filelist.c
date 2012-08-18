@@ -1043,8 +1043,11 @@ calculate_top_position(FileView *view, int top)
 	}
 	else if((view->list_rows - top) < view->window_cells)
 	{
-		result = view->list_rows - view->window_cells;
-		view->curr_line++;
+		if(view->window_cells - (view->list_rows - top) >= view->column_count)
+		{
+			result = view->list_rows - view->window_cells;
+			view->curr_line++;
+		}
 	}
 	return result;
 }
