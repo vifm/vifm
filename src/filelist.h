@@ -63,6 +63,10 @@ void scroll_up(FileView *view, size_t by);
 /* Scrolls view down at least by specified number of files. Updates both top and
  * cursor positions. */
 void scroll_down(FileView *view, size_t by);
+/* Returns non-zero if cursor is on the first line. */
+int at_first_line(FileView *view);
+/* Returns non-zero if cursor is on the last line. */
+int at_last_line(FileView *view);
 
 /* Appearance related functions. */
 

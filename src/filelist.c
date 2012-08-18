@@ -1417,6 +1417,19 @@ scroll_down(FileView *view, size_t by)
 	view->curr_line = view->list_pos - view->top_line;
 }
 
+int
+at_first_line(FileView *view)
+{
+	return view->list_pos/view->column_count == 0;
+}
+
+int
+at_last_line(FileView *view)
+{
+	size_t col_count = view->column_count;
+	return view->list_pos/col_count == (view->list_rows - 1)/col_count;
+}
+
 void
 clean_selected_files(FileView *view)
 {

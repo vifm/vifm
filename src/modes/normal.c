@@ -76,6 +76,7 @@ static void cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_emark_selector(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
@@ -155,9 +156,13 @@ static void cmd_h(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
+static void go_to_prev(key_info_t key_info, keys_info_t *keys_info, int def,
+		int step);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void search(key_info_t key_info, int backward);
 static void cmd_l(key_info_t key_info, keys_info_t *keys_info);
+static void go_to_next(key_info_t key_info, keys_info_t *keys_info, int def,
+		int step);
 static void cmd_p(key_info_t key_info, keys_info_t *keys_info);
 static void put_files(key_info_t key_info, int move);
 static void cmd_m(key_info_t key_info, keys_info_t *keys_info);
@@ -197,7 +202,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x07", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_g}}},
 	{L"\x09", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_i}}},
 	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
-	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_l}}},
+	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"\x0f", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_o}}},
 	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
@@ -347,8 +352,8 @@ static keys_add_info_t selectors[] = {
 	{L"%", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
 	{L",", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
 	{L";", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_semicolon}}},
-	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}}, /* Ctrl-N */
+	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}}, /* Ctrl-P */
 	{L"F", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_F}}},
 	{L"G", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_G}}},
 	{L"H", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_H}}},
@@ -358,8 +363,10 @@ static keys_add_info_t selectors[] = {
 	{L"a", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_a}}},
 	{L"f", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_f}}},
 	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{L"h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
 	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"l", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_l}}},
 	{L"s", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = selector_s}}},
 	{L"(", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_left_paren}}},
 	{L")", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_right_paren}}},
@@ -543,6 +550,15 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {
 	update_screen(UT_FULL);
 	curs_set(FALSE);
+}
+
+/* Enters directory or runs file. */
+static void
+cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
+{
+	handle_file(curr_view, 0, 0);
+	clean_selected_files(curr_view);
+	redraw_current_view();
 }
 
 static void
@@ -1534,11 +1550,18 @@ cmd_f(key_info_t key_info, keys_info_t *keys_info)
 	find_goto(key_info.multi, key_info.count, 0, keys_info);
 }
 
-/* Updir. */
+/* Updir or one file left in less-like sub-mode. */
 static void
 cmd_h(key_info_t key_info, keys_info_t *keys_info)
 {
-	cd_updir(curr_view);
+	if(curr_view->ls_view)
+	{
+		go_to_prev(key_info, keys_info, 1, 1);
+	}
+	else
+	{
+		cd_updir(curr_view);
+	}
 }
 
 static void
@@ -1553,18 +1576,9 @@ cmd_i(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-
-	if(keys_info->selector)
+	if(!curr_view->ls_view || !at_last_line(curr_view))
 	{
-		pick_files(curr_view, curr_view->list_pos + key_info.count, keys_info);
-	}
-	else
-	{
-		if(curr_view->list_pos == curr_view->list_rows - 1)
-			return;
-		move_to_list_pos(curr_view, curr_view->list_pos + key_info.count);
+		go_to_next(key_info, keys_info, 1, curr_view->column_count);
 	}
 }
 
@@ -1572,17 +1586,26 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
+	if(!curr_view->ls_view || !at_first_line(curr_view))
+	{
+		go_to_prev(key_info, keys_info, 1, curr_view->column_count);
+	}
+}
+
+/* Moves cursor to one of previous files in the list. */
+static void
+go_to_prev(key_info_t key_info, keys_info_t *keys_info, int def, int step)
+{
 	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
+		key_info.count = def;
+	key_info.count *= step;
 
 	if(keys_info->selector)
 	{
 		pick_files(curr_view, curr_view->list_pos - key_info.count, keys_info);
 	}
-	else
+	else if(curr_view->list_pos != 0)
 	{
-		if(curr_view->list_pos == 0)
-			return;
 		move_to_list_pos(curr_view, curr_view->list_pos - key_info.count);
 	}
 }
@@ -1590,9 +1613,32 @@ cmd_k(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_file(curr_view, 0, 0);
-	clean_selected_files(curr_view);
-	redraw_current_view();
+	if(curr_view->ls_view)
+	{
+		go_to_next(key_info, keys_info, 1, 1);
+	}
+	else
+	{
+		cmd_ctrl_m(key_info, keys_info);
+	}
+}
+
+/* Moves cursor to one of next files in the list. */
+static void
+go_to_next(key_info_t key_info, keys_info_t *keys_info, int def, int step)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = def;
+	key_info.count *= step;
+
+	if(keys_info->selector)
+	{
+		pick_files(curr_view, curr_view->list_pos + key_info.count, keys_info);
+	}
+	else if(curr_view->list_pos != curr_view->list_rows - 1)
+	{
+		move_to_list_pos(curr_view, curr_view->list_pos + key_info.count);
+	}
 }
 
 /* Set mark. */

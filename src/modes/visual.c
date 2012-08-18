@@ -79,10 +79,15 @@ static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gu(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gv(key_info_t key_info, keys_info_t *keys_info);
 static void select_first_one(void);
+static void cmd_h(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
+static void go_to_prev(key_info_t key_info, keys_info_t *keys_info, int def,
+		int step);
 static void cmd_l(key_info_t key_info, keys_info_t *keys_info);
+static void go_to_next(key_info_t key_info, keys_info_t *keys_info, int def,
+		int step);
 static void cmd_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void search(key_info_t key_info, int backward);
@@ -116,8 +121,8 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x06", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
 	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
 	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}}, /* Ctrl-N */
+	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}}, /* Ctrl-P */
 	{L"\x15", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
 	{L"\x18", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_x}}},
 	{L"\x19", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
@@ -150,6 +155,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"gU", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
 	{L"gu", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gu}}},
 	{L"gv", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gv}}},
+	{L"h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
 	{L"i", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_i}}},
 	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
@@ -671,37 +677,76 @@ select_first_one(void)
 	}
 }
 
+/* Go backwards [count] (one by default) files in ls-like sub-mode. */
+static void
+cmd_h(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(curr_view->ls_view)
+	{
+		go_to_prev(key_info, keys_info, 1, 1);
+	}
+}
+
 static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_file(curr_view, 1, 0);
+	handle_file(view, 1, 0);
 	leave_clearing_selection(curr_stats.save_msg);
 }
 
 static void
 cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	goto_pos(view->list_pos + key_info.count);
+	if(!curr_view->ls_view || !at_last_line(curr_view))
+	{
+		go_to_next(key_info, keys_info, 1, curr_view->column_count);
+	}
 }
 
 static void
 cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
+	if(!curr_view->ls_view || !at_first_line(curr_view))
+	{
+		go_to_prev(key_info, keys_info, 1, view->column_count);
+	}
+}
+
+/* Moves cursor to one of previous files in the list. */
+static void
+go_to_prev(key_info_t key_info, keys_info_t *keys_info, int def, int step)
+{
 	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
+		key_info.count = def;
+	key_info.count *= step;
 	goto_pos(view->list_pos - key_info.count);
 }
 
 static void
 cmd_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	update_marks(view);
-	leave_visual_mode(curr_stats.save_msg, 1, 0);
-	handle_file(view, 0, 0);
-	clean_selected_files(view);
-	redraw_view(view);
+	if(view->ls_view)
+	{
+		go_to_next(key_info, keys_info, 1, 1);
+	}
+	else
+	{
+		update_marks(view);
+		leave_visual_mode(curr_stats.save_msg, 1, 0);
+		handle_file(view, 0, 0);
+		clean_selected_files(view);
+		redraw_view(view);
+	}
+}
+
+/* Moves cursor to one of next files in the list. */
+static void
+go_to_next(key_info_t key_info, keys_info_t *keys_info, int def, int step)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = def;
+	key_info.count *= step;
+	goto_pos(view->list_pos + key_info.count);
 }
 
 static void
@@ -742,7 +787,7 @@ search(key_info_t key_info, int backward)
 
 	if(!found)
 	{
-		print_search_fail_msg(curr_view, backward);
+		print_search_fail_msg(view, backward);
 		curr_stats.save_msg = 1;
 		return;
 	}
