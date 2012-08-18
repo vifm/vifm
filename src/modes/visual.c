@@ -302,7 +302,7 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 	if(view->top_line == view->list_rows - view->window_rows - 1)
 		return;
 
-	off = MAX(cfg.scroll_off, 0);
+	off = get_effective_scroll_offset(view);
 	if(view->list_pos <= view->top_line + off)
 		goto_pos(view->top_line + 1 + off);
 	view->top_line++;
@@ -377,7 +377,7 @@ cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 	if(view->list_rows <= view->window_rows + 1 || view->top_line == 0)
 		return;
 
-	off = MAX(cfg.scroll_off, 0);
+	off = get_effective_scroll_offset(view);
 	if(view->list_pos >= view->top_line + view->window_rows - off)
 		goto_pos(view->top_line - 1 + view->window_rows - off);
 	view->top_line--;

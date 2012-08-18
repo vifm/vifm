@@ -20,6 +20,8 @@
 #ifndef __FILELIST_H__
 #define __FILELIST_H__
 
+#include <stddef.h> /* size_t */
+
 #include "ui.h"
 
 enum
@@ -48,11 +50,19 @@ void load_initial_directory(FileView *view, const char *dir);
 /* Position related functions. */
 
 int find_file_pos_in_list(FileView *view, const char *file);
-int correct_list_pos_on_scroll_up(FileView *view, int pos_delta);
-int correct_list_pos_on_scroll_down(FileView *view, int pos_delta);
+int correct_list_pos_on_scroll_up(FileView *view, size_t pos_delta);
+int correct_list_pos_on_scroll_down(FileView *view, size_t pos_delta);
 void move_to_list_pos(FileView *view, int pos);
 /* Adds inactive cursor mark to the view. */
 void put_inactive_mark(FileView *view);
+/* Returns scroll offset value for the view taking view height into account. */
+size_t get_effective_scroll_offset(FileView *view);
+/* Scrolls view up at least by specified number of files.  Updates both top and
+ * cursor positions. */
+void scroll_up(FileView *view, size_t by);
+/* Scrolls view down at least by specified number of files. Updates both top and
+ * cursor positions. */
+void scroll_down(FileView *view, size_t by);
 
 /* Appearance related functions. */
 

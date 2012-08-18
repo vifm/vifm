@@ -442,7 +442,7 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 	if(!correct_list_pos_on_scroll_down(curr_view, +1))
 		return;
 
-	curr_view->top_line++;
+	scroll_down(curr_view, 1);
 	redraw_view(curr_view);
 }
 
@@ -859,10 +859,10 @@ cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!correct_list_pos_on_scroll_up(curr_view, -1))
+	if(!correct_list_pos_on_scroll_up(curr_view, 1))
 		return;
 
-	curr_view->top_line--;
+	scroll_up(curr_view, 1);
 	redraw_view(curr_view);
 }
 

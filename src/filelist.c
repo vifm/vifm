@@ -104,16 +104,14 @@ static void prepare_view(FileView *view);
 static void init_view_history(FileView *view);
 static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
+static int all_files_visible(FileView *view);
 static int calculate_top_position(FileView *view, int top);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 size_t calculate_columns_count(FileView *view);
 static size_t calculate_column_width(FileView *view);
-static int get_effective_scroll_offset(FileView *view);
 static int can_scroll_up(FileView *view);
 static int can_scroll_down(FileView *view);
-static int get_last_visible_file(FileView *view);
-static void scroll_up(FileView *view, size_t by);
-static void scroll_down(FileView *view, size_t by);
+static size_t get_last_visible_file(FileView *view);
 static void save_selection(FileView *view);
 int consider_scroll_offset(FileView *view);
 static void free_saved_selection(FileView *view);
@@ -897,34 +895,53 @@ draw_dir_list(FileView *view)
 	}
 }
 
-/* returns non-zero if doing something makes sense */
+/* Returns non-zero if doing something makes sense. */
 int
-correct_list_pos_on_scroll_down(FileView *view, int pos_delta)
+correct_list_pos_on_scroll_down(FileView *view, size_t pos_delta)
 {
-	int off;
-	if(view->list_rows <= view->window_rows + 1)
-		return 0;
-	if(view->top_line == view->list_rows - view->window_rows - 1)
+	size_t scroll_offset;
+
+	if(all_files_visible(view) || !can_scroll_down(view))
 		return 0;
 
-	off = MAX(cfg.scroll_off, 0)*view->column_count;
-	if(view->list_pos <= view->top_line + off)
-		view->list_pos = view->top_line + pos_delta + off;
+	pos_delta *= view->column_count;
+	scroll_offset = get_effective_scroll_offset(view);
+	if(view->list_pos <= view->top_line + scroll_offset + (pos_delta - 1))
+	{
+		size_t column_correction = view->list_pos%view->column_count;
+		size_t offset = scroll_offset + pos_delta + column_correction;
+		view->list_pos = view->top_line + offset;
+	}
 	return 1;
 }
 
-/* returns non-zero if doing something makes sense */
+/* Returns non-zero if doing something makes sense. */
 int
-correct_list_pos_on_scroll_up(FileView *view, int pos_delta)
+correct_list_pos_on_scroll_up(FileView *view, size_t pos_delta)
 {
-	int off;
-	if(view->list_rows <= view->window_rows + 1 || view->top_line == 0)
+	size_t scroll_offset;
+	size_t last;
+	if(all_files_visible(view) || !can_scroll_up(view))
 		return 0;
 
-	off = MAX(cfg.scroll_off, 0)*view->column_count;
-	if(view->list_pos >= view->top_line + view->window_rows - off)
-		view->list_pos = view->top_line + pos_delta + view->window_rows - off;
+	pos_delta *= view->column_count;
+	scroll_offset = get_effective_scroll_offset(view);
+	last = get_last_visible_file(view);
+	if(view->list_pos >= last - scroll_offset - (pos_delta - 1))
+	{
+		size_t column_correction = (view->column_count - 1) -
+			view->list_pos%view->column_count;
+		size_t offset = scroll_offset + pos_delta + column_correction;
+		view->list_pos = last - offset;
+	}
 	return 1;
+}
+
+/* Returns non-zero if all files are visible, so no scrolling is needed. */
+static int
+all_files_visible(FileView *view)
+{
+	return view->list_rows <= view->window_cells;
 }
 
 void
@@ -974,7 +991,7 @@ move_curr_line(FileView *view)
 {
 	int redraw = 0;
 	int pos = view->list_pos;
-	int last;
+	size_t last;
 
 	if(pos < 1)
 		pos = 0;
@@ -1325,7 +1342,7 @@ consider_scroll_offset(FileView *view)
 	int pos = view->list_pos;
 	if(cfg.scroll_off > 0)
 	{
-		int s = get_effective_scroll_offset(view);
+		size_t s = get_effective_scroll_offset(view);
 		/* Check scroll offset at the top. */
 		if(can_scroll_up(view) && pos - view->top_line < s)
 		{
@@ -1335,10 +1352,10 @@ consider_scroll_offset(FileView *view)
 		/* Check scroll offset at the bottom. */
 		if(can_scroll_down(view))
 		{
-			int offset = s - (get_last_visible_file(view) - pos);
-			if(offset > 0)
+			size_t last = get_last_visible_file(view);
+			if(pos > last - s)
 			{
-				scroll_down(view, offset);
+				scroll_down(view, s + (pos - last));
 				need_redraw = 1;
 			}
 		}
@@ -1346,11 +1363,11 @@ consider_scroll_offset(FileView *view)
 	return need_redraw;
 }
 
-/* Returns scroll offset value for the view taking view height into account. */
-static int
+size_t
 get_effective_scroll_offset(FileView *view)
 {
-	return MIN((view->window_rows + 1)/2, cfg.scroll_off)*view->column_count;
+	int val = MIN((view->window_rows + 1)/2, MAX(cfg.scroll_off, 0));
+	return val*view->column_count;
 }
 
 /* Returns non-zero in case view can be scrolled up (there are more files). */
@@ -1364,21 +1381,20 @@ can_scroll_up(FileView *view)
 static int
 can_scroll_down(FileView *view)
 {
-	return get_last_visible_file(view) < view->list_rows;
+	return get_last_visible_file(view) < view->list_rows - 1;
 }
 
-static int
+static size_t
 get_last_visible_file(FileView *view)
 {
 	return view->top_line + view->window_cells - 1;
 }
 
-/* Scrolls view up at least by specified number of files.  Updates both top and
- * cursor positions. */
-static void
+void
 scroll_up(FileView *view, size_t by)
 {
-	view->top_line -= by;
+	/* Round it up, so 1 will cause one line scrolling. */
+	view->top_line -= view->column_count*DIV_ROUND_UP(by, view->column_count);
 	if(view->top_line < 0)
 	{
 		view->top_line = 0;
@@ -1388,12 +1404,10 @@ scroll_up(FileView *view, size_t by)
 	view->curr_line = view->list_pos - view->top_line;
 }
 
-/* Scrolls view down at least by specified number of files. Updates both top and
- * cursor positions. */
-static void
+void
 scroll_down(FileView *view, size_t by)
 {
-	/* Round it up, so -1 will cause one line up scrolling. */
+	/* Round it up, so 1 will cause one line scrolling. */
 	view->top_line += view->column_count*DIV_ROUND_UP(by, view->column_count);
 	view->top_line = calculate_top_position(view, view->top_line);
 
