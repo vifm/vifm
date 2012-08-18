@@ -144,8 +144,9 @@ static void start_dir_size_calc(const char *path, int force);
 static void * dir_size_stub(void *arg);
 static void cmd_gf(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_gh(key_info_t key_info, keys_info_t *keys_info);
 #ifdef _WIN32
-static void cmd_gl(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_gr(key_info_t key_info, keys_info_t *keys_info);
 #endif
 static void cmd_gs(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
@@ -297,8 +298,12 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"ga", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ga}}},
 	{L"gf", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gf}}},
 	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{L"gh", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gh}}},
+	{L"gj", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+	{L"gk", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"gl", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
 #ifdef _WIN32
-	{L"gl", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gl}}},
+	{L"gr", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gr}}},
 #endif
 	{L"gs", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gs}}},
 	{L"gU", {BUILTIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_gU}}},
@@ -1087,9 +1092,16 @@ cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 		move_to_list_pos(curr_view, key_info.count - 1);
 }
 
+/* Goes to parent directory regardless of ls-like state. */
+static void
+cmd_gh(key_info_t key_info, keys_info_t *keys_info)
+{
+	cd_updir(curr_view);
+}
+
 #ifdef _WIN32
 static void
-cmd_gl(key_info_t key_info, keys_info_t *keys_info)
+cmd_gr(key_info_t key_info, keys_info_t *keys_info)
 {
 	curr_stats.as_admin = 1;
 	handle_file(curr_view, 0, 0);
@@ -1540,7 +1552,7 @@ cmd_h(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else
 	{
-		cd_updir(curr_view);
+		cmd_gh(key_info, keys_info);
 	}
 }
 

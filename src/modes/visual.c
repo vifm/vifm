@@ -74,6 +74,7 @@ static void delete(key_info_t key_info, int use_trash);
 static void cmd_cp(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_gl(key_info_t key_info, keys_info_t *keys_info);
 static void goto_pos(int pos);
 static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gu(key_info_t key_info, keys_info_t *keys_info);
@@ -152,6 +153,10 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"cp", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
 	{L"cw", {BUILTIN_CMD, FOLLOWED_BY_NONE, {.cmd = L":rename\r"}}},
 	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{L"gh", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
+	{L"gj", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+	{L"gk", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"gl", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gl}}},
 	{L"gU", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
 	{L"gu", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gu}}},
 	{L"gv", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gv}}},
@@ -593,6 +598,16 @@ cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
+cmd_gl(key_info_t key_info, keys_info_t *keys_info)
+{
+	update_marks(view);
+	leave_visual_mode(curr_stats.save_msg, 1, 0);
+	handle_file(view, 0, 0);
+	clean_selected_files(view);
+	redraw_view(view);
+}
+
+static void
 goto_pos(int pos)
 {
 	if(pos < 0)
@@ -671,7 +686,7 @@ select_first_one(void)
 static void
 cmd_h(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view->ls_view)
+	if(view->ls_view)
 	{
 		go_to_prev(key_info, keys_info, 1, 1);
 	}
@@ -687,16 +702,16 @@ cmd_i(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!curr_view->ls_view || !at_last_line(curr_view))
+	if(!view->ls_view || !at_last_line(view))
 	{
-		go_to_next(key_info, keys_info, 1, curr_view->column_count);
+		go_to_next(key_info, keys_info, 1, view->column_count);
 	}
 }
 
 static void
 cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!curr_view->ls_view || !at_first_line(curr_view))
+	if(!view->ls_view || !at_first_line(view))
 	{
 		go_to_prev(key_info, keys_info, 1, view->column_count);
 	}
@@ -721,11 +736,7 @@ cmd_l(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else
 	{
-		update_marks(view);
-		leave_visual_mode(curr_stats.save_msg, 1, 0);
-		handle_file(view, 0, 0);
-		clean_selected_files(view);
-		redraw_view(view);
+		cmd_gl(key_info, keys_info);
 	}
 }
 

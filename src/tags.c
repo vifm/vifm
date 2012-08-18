@@ -402,7 +402,7 @@ const char *tags[] = {
 	"vifm-general-keys",
 	"vifm-gf",
 	"vifm-gg",
-	"vifm-gl",
+	"vifm-gr",
 	"vifm-gs",
 	"vifm-gu",
 	"vifm-gugu",

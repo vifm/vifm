@@ -1,4 +1,4 @@
-.TH vifm 1 "August 14, 2012" "" "Vifm"
+.TH vifm 1 "August 18, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -78,20 +78,27 @@ clear and redraw the screen.
 .\" ---------------------------------------------------------------------------
 The basic vi key bindings are used to move through the files and popup windows.
 .TP
-.BI "k or Ctrl-P"
-moves up.
+.BI "k, gk, or Ctrl-P"
+moves cursor up one line.
 .TP
-.BI "j or Ctrl-N"
-moves down.
+.BI "j, gj or Ctrl-N"
+moves cursor down one line.
 .TP
 .BI h
-moves up one directory.
+when 'lsview' is off moves up one directory, otherwise moves left one file.
 .TP
-.BI "l or Enter"
-moves into a directory or launches a file.
+.BI l
+when 'lsview' is off moves into a directory or launches a file, otherwise moves
+left one file.
 .TP
 .BI gg
 move to the top of the file list.
+.TP
+.BI gh
+moves up one directory.
+.TP
+.BI "gl or Enter"
+moves into a directory or launches a file.
 .TP
 .BI G
 move to the bottom of the file list.
@@ -338,7 +345,7 @@ like ga, but force update.
 find link destination (like l with 'followlinks' off, but also finds
 directories).
 .TP
-.BI gl
+.BI gr
 only for MS-Windows
 .br
 same as l key, but tries to run program with administrative privileges.

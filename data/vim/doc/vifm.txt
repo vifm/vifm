@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 14
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 18
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -89,17 +89,25 @@ Basic Movement~
 
 The basic vi key bindings are used to move through the files and popup windows.
 
-k is up                                        *vifm-k*
-j is down                                      *vifm-j*
+k, gk or Ctrl-P moves cursor up one line.      *vifm-k* *vifm-gk* *vifm-CTRL-P*
+j, gj or Ctrl-N moves cursor down one line.    *vifm-j* *vifm-gj* *vifm-CTRL-N*
 
                                                *vifm-h*
-h is up directory
+when |vifm-'lsview'| is off moves up one directory, otherwise moves left one
+file.
 
-                                               *vifm-l* *vifm-Enter*
-l, Enter - handle file (enter directory or run program)
+                                               *vifm-l*
+l - when |vifm-'lsview'| is off moves into a directory or launches a file,
+    otherwise moves left one file.
 
                                                *vifm-gg*
 gg will move to the first line of the file list.
+
+                                               *vifm-gh*
+gh is up one directory.
+
+                                               *vifm-gl* *vifm-Enter*
+gl or Enter moves into a directory or launches a file.
 
                                                *vifm-G*
 G will move to the last line in the file list.
@@ -282,9 +290,9 @@ gA - like ga, but force update.                *vifm-gA*
 gf - find link destination (like l with |vifm-'followlinks'| off, but also
     finds directories).
 
-                                               *vifm-gl*
+                                               *vifm-gr*
                                                {only for MS-Windows}
-gl - same as l key, but tries to run program with administrative
+gr - same as l key, but tries to run program with administrative
     privileges.
 
 
