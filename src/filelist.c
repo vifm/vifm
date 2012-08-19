@@ -928,6 +928,19 @@ correct_list_pos_down(FileView *view, size_t pos_delta)
 }
 
 int
+get_corrected_list_pos(FileView *view, ssize_t pos_delta)
+{
+	if(pos_delta < 0)
+	{
+		return get_corrected_list_pos_up(view, -pos_delta);
+	}
+	else
+	{
+		return get_corrected_list_pos_down(view, pos_delta);
+	}
+}
+
+int
 get_corrected_list_pos_down(const FileView *view, size_t pos_delta)
 {
 	size_t scroll_offset = get_effective_scroll_offset(view);

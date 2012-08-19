@@ -48,6 +48,7 @@ static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info);
+static void page_scroll(int base, int direction);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
@@ -268,23 +269,11 @@ cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	int s;
-	int l = view->window_rows - 1;
-	int pos;
-
-	if(view->top_line == 0)
-		return;
-
-	pos = view->top_line + 1;
-	view->top_line -= l;
-	if(view->top_line < 0)
-		view->top_line = 0;
-	s = MIN((view->window_rows + 1)/2 - 1, cfg.scroll_off);
-	if(cfg.scroll_off > 0 &&
-			view->top_line + view->window_rows - pos < s)
-		pos -= s - (view->top_line + view->window_rows - pos);
-
-	goto_pos(pos);
+	if(can_scroll_up(view))
+	{
+		int base = get_window_bottom_pos(view);
+		page_scroll(base, -1);
+	}
 }
 
 static void
@@ -325,22 +314,28 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
-	int s;
-	int l = view->window_rows - 1;
-	int pos;
+	if(can_scroll_down(view))
+	{
+		int base = get_window_top_pos(view);
+		page_scroll(base, 1);
+	}
+}
 
-	if(view->top_line + 1 == view->list_rows - (l + 1))
-		return;
-
-	pos = view->top_line + l;
-	view->top_line += l;
-	if(view->top_line > view->list_rows)
-		view->top_line = view->list_rows - l;
-	s = MIN((view->window_rows + 1)/2 - 1, cfg.scroll_off);
-	if(cfg.scroll_off > 0 && pos - view->top_line < s)
-		pos += s - (pos - view->top_line);
-
-	goto_pos(pos);
+/* Scrolls pane by one view in both directions. The direction should be 1 or
+ * -1. */
+static void
+page_scroll(int base, int direction)
+{
+	int new_pos;
+	int old_pos = view->list_pos;
+	/* Two lines gap. */
+	int lines = view->window_rows - 1;
+	int offset = lines*view->column_count;
+	view->list_pos = base;
+	new_pos = get_corrected_list_pos(view, direction*offset);
+	view->list_pos = old_pos;
+	scroll_by_files(view, direction*offset);
+	goto_pos(new_pos);
 }
 
 static void
