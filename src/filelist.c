@@ -1073,7 +1073,7 @@ move_curr_line(FileView *view)
 static int
 calculate_top_position(FileView *view, int top)
 {
-	int result = top - top%view->column_count;
+	int result = ROUND_DOWN(top, view->column_count);
 	if(view->window_cells >= view->list_rows)
 	{
 		result = 0;
@@ -1083,7 +1083,7 @@ calculate_top_position(FileView *view, int top)
 		if(view->window_cells - (view->list_rows - top) >= view->column_count)
 		{
 			result = view->list_rows - view->window_cells + (view->column_count - 1);
-			result -= result%view->column_count;
+			result = ROUND_DOWN(result, view->column_count);
 			view->curr_line++;
 		}
 	}
@@ -1523,7 +1523,7 @@ go_to_start_of_line(FileView *view)
 	{
 		view->list_pos = view->list_rows - 1;
 	}
-	view->list_pos -= view->list_pos%view->column_count;
+	view->list_pos = ROUND_DOWN(view->list_pos, view->column_count);
 }
 
 void

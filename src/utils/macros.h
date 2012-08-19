@@ -66,6 +66,8 @@
 
 #define DIV_ROUND_UP(a,b) ({int _a = (a), _b = (b); (_a + (_b - 1))/_b;})
 
+#define ROUND_DOWN(a,b) ({ssize_t _a = (a), _b = (b);  _a - _a%_b;})
+
 #endif
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */

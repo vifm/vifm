@@ -441,7 +441,10 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	scroll_view(curr_view->window_cells/2);
+	if(!at_last_line(curr_view))
+	{
+		scroll_view(curr_view->window_cells/2);
+	}
 }
 
 /* Scroll pane one line down. */
@@ -633,22 +636,17 @@ cmd_ctrl_r(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
-	scroll_view(-(ssize_t)curr_view->window_cells/2);
-	/* size_t offset = curr_view->window_cells/2; */
-	/* offset -= offset%curr_view->column_count; */
-
-	/* curr_view->list_pos -= offset; */
-	/* correct_list_pos_up(curr_view, offset); */
-	/* go_to_start_of_line(curr_view); */
-	/* scroll_up(curr_view, offset); */
-	/* redraw_current_view(); */
+	if(!at_first_line(curr_view))
+	{
+		scroll_view(-(ssize_t)curr_view->window_cells/2);
+	}
 }
 
 /* Scrolls view by specified number of files. */
 static void
 scroll_view(ssize_t offset)
 {
-	offset -= offset%curr_view->column_count;
+	offset = ROUND_DOWN(offset, curr_view->column_count);
 	curr_view->list_pos += offset;
 	correct_list_pos(curr_view, offset);
 	go_to_start_of_line(curr_view);
