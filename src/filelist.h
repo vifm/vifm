@@ -58,15 +58,23 @@ void correct_list_pos(FileView *view, ssize_t pos_delta);
 int correct_list_pos_on_scroll_down(FileView *view, size_t pos_delta);
 /* Tries to move cursor forwards by pos_delta positions. */
 void correct_list_pos_down(FileView *view, size_t pos_delta);
+/* Returns new list position after making correction for scrolling down. */
+int get_corrected_list_pos_down(const FileView *view, size_t pos_delta);
 /* Returns non-zero if doing something makes sense. */
 int correct_list_pos_on_scroll_up(FileView *view, size_t pos_delta);
 /* Tries to move cursor backwards by pos_delta positions. */
 void correct_list_pos_up(FileView *view, size_t pos_delta);
+/* Returns new list position after making correction for scrolling up. */
+int get_corrected_list_pos_up(const FileView *view, size_t pos_delta);
 void move_to_list_pos(FileView *view, int pos);
 /* Adds inactive cursor mark to the view. */
 void put_inactive_mark(FileView *view);
 /* Returns scroll offset value for the view taking view height into account. */
-size_t get_effective_scroll_offset(FileView *view);
+size_t get_effective_scroll_offset(const FileView *view);
+/* Returns non-zero in case view can be scrolled up (there are more files). */
+int can_scroll_up(const FileView *view);
+/* Returns non-zero in case view can be scrolled down (there are more files). */
+int can_scroll_down(const FileView *view);
 /* Scrolls view down at least by specified number of files.  Updates both top
  * and cursor positions.  A wrapper for scroll_up() and scroll_down()
  * functions. */

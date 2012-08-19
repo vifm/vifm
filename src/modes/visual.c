@@ -75,7 +75,6 @@ static void cmd_cp(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gl(key_info_t key_info, keys_info_t *keys_info);
-static void goto_pos(int pos);
 static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gu(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gv(key_info_t key_info, keys_info_t *keys_info);
@@ -104,6 +103,9 @@ static void select_down_one(FileView *view, int start_pos);
 static int is_parent_dir(int pos);
 static void update(void);
 static int find_update(FileView *view, int backward);
+static void goto_pos_force_update(int pos);
+static void goto_pos(int pos);
+static int move_pos(int pos);
 
 static int *mode;
 static FileView *view;
@@ -306,18 +308,12 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
-	int off;
-
-	if(view->list_rows <= view->window_rows + 1)
-		return;
-	if(view->top_line == view->list_rows - view->window_rows - 1)
-		return;
-
-	off = get_effective_scroll_offset(view);
-	if(view->list_pos <= view->top_line + off)
-		goto_pos(view->top_line + 1 + off);
-	view->top_line++;
-	redraw_view(view);
+	if(can_scroll_down(view))
+	{
+		int new_pos = get_corrected_list_pos_down(view, view->column_count);
+		scroll_down(view, view->column_count);
+		goto_pos_force_update(new_pos);
+	}
 }
 
 static void
@@ -383,16 +379,12 @@ cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	int off;
-
-	if(view->list_rows <= view->window_rows + 1 || view->top_line == 0)
-		return;
-
-	off = get_effective_scroll_offset(view);
-	if(view->list_pos >= view->top_line + view->window_rows - off)
-		goto_pos(view->top_line - 1 + view->window_rows - off);
-	view->top_line--;
-	redraw_view(view);
+	if(can_scroll_up(view))
+	{
+		int new_pos = get_corrected_list_pos_up(view, view->column_count);
+		scroll_up(view, view->column_count);
+		goto_pos_force_update(new_pos);
+	}
 }
 
 static void
@@ -605,25 +597,6 @@ cmd_gl(key_info_t key_info, keys_info_t *keys_info)
 	handle_file(view, 0, 0);
 	clean_selected_files(view);
 	redraw_view(view);
-}
-
-static void
-goto_pos(int pos)
-{
-	if(pos < 0)
-		pos = 0;
-	if(pos > view->list_rows - 1)
-		pos = view->list_rows - 1;
-
-	if(view->list_pos == pos)
-		return;
-
-	while(view->list_pos < pos)
-		select_down_one(view, start_pos);
-	while(view->list_pos > pos)
-		select_up_one(view, start_pos);
-
-	update();
 }
 
 static void
@@ -1010,6 +983,47 @@ find_update(FileView *view, int backward)
 	view->list_pos = old_pos;
 	goto_pos(new_pos);
 	return found;
+}
+
+/* Moves cursor from its current position to specified pos selecting or
+ * unselecting files while moving.  Always redraws view. */
+static void
+goto_pos_force_update(int pos)
+{
+	(void)move_pos(pos);
+	update();
+}
+
+/* Moves cursor from its current position to specified pos selecting or
+ * unselecting files while moving.  Automatically redraws view if needed. */
+static void
+goto_pos(int pos)
+{
+	if(move_pos(pos))
+	{
+		update();
+	}
+}
+
+/* Moves cursor from its current position to specified pos selecting or
+ * unselecting files while moving.  Don't call it explicitly, call goto_pos()
+ * and goto_pos_force_update() instead.  Returns non-zero if cursor was
+ * moved. */
+static int
+move_pos(int pos)
+{
+	pos = MIN(view->list_rows - 1, MAX(0, pos));
+	if(view->list_pos == pos)
+	{
+		return 0;
+	}
+
+	while(view->list_pos < pos)
+		select_down_one(view, start_pos);
+	while(view->list_pos > pos)
+		select_up_one(view, start_pos);
+
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
