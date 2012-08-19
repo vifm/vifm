@@ -104,7 +104,6 @@ static void prepare_view(FileView *view);
 static void init_view_history(FileView *view);
 static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
-static int all_files_visible(FileView *view);
 static int calculate_top_position(FileView *view, int top);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 size_t calculate_columns_count(FileView *view);
@@ -989,8 +988,7 @@ get_corrected_list_pos_up(const FileView *view, size_t pos_delta)
 	return view->list_pos;
 }
 
-/* Returns non-zero if all files are visible, so no scrolling is needed. */
-static int
+int
 all_files_visible(FileView *view)
 {
 	return view->list_rows <= view->window_cells;

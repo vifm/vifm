@@ -1887,23 +1887,12 @@ cmd_za(key_info_t key_info, keys_info_t *keys_info)
 void
 normal_cmd_zb(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view->list_rows <= curr_view->window_rows + 1)
-		return;
-
-	if(curr_view->list_pos < curr_view->window_rows)
+	if(can_scroll_up(curr_view))
 	{
-		curr_view->top_line = 0;
+		int bottom = get_window_bottom_pos(curr_view);
+		scroll_up(curr_view, bottom - curr_view->list_pos);
+		redraw_current_view();
 	}
-	else
-	{
-		curr_view->top_line = curr_view->list_pos - curr_view->window_rows;
-		if(cfg.scroll_off > 0)
-		{
-			int s = MIN((curr_view->window_rows + 1)/2 - 1, cfg.scroll_off);
-			curr_view->top_line += s;
-		}
-	}
-	redraw_current_view();
 }
 
 /* Filter selected files. */
@@ -2044,41 +2033,24 @@ get_first_wchar(const char *str)
 void
 normal_cmd_zt(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view->list_rows <= curr_view->window_rows + 1)
-		return;
-
-	if(curr_view->list_rows - curr_view->list_pos >= curr_view->window_rows)
+	if(can_scroll_down(curr_view))
 	{
-		curr_view->top_line = curr_view->list_pos;
-		if(cfg.scroll_off > 0)
-		{
-			int s = MIN((curr_view->window_rows + 1)/2 - 1, cfg.scroll_off);
-			curr_view->top_line -= s;
-		}
-		if(curr_view->top_line < 0)
-			curr_view->top_line = 0;
+		int top = get_window_top_pos(curr_view);
+		scroll_down(curr_view, curr_view->list_pos - top);
+		redraw_current_view();
 	}
-	else
-	{
-		curr_view->top_line = curr_view->list_rows - curr_view->window_rows;
-	}
-	redraw_current_view();
 }
 
 /* Redraw with file in center of list. */
 void
 normal_cmd_zz(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view->list_rows <= curr_view->window_rows + 1)
-		return;
-
-	if(curr_view->list_pos < curr_view->window_rows/2)
-		curr_view->top_line = 0;
-	else if(curr_view->list_pos > curr_view->list_rows - curr_view->window_rows/2)
-		curr_view->top_line = curr_view->list_rows - curr_view->window_rows;
-	else
-		curr_view->top_line = curr_view->list_pos - curr_view->window_rows/2;
-	redraw_current_view();
+	if(!all_files_visible(curr_view))
+	{
+		int middle = get_window_middle_pos(curr_view);
+		scroll_by_files(curr_view, curr_view->list_pos - middle);
+		redraw_current_view();
+	}
 }
 
 static void

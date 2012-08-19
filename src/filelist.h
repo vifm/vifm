@@ -70,6 +70,8 @@ int correct_list_pos_on_scroll_up(FileView *view, size_t lines_count);
 void correct_list_pos_up(FileView *view, size_t pos_delta);
 /* Returns new list position after making correction for scrolling up. */
 int get_corrected_list_pos_up(const FileView *view, size_t pos_delta);
+/* Returns non-zero if all files are visible, so no scrolling is needed. */
+int all_files_visible(FileView *view);
 void move_to_list_pos(FileView *view, int pos);
 /* Adds inactive cursor mark to the view. */
 void put_inactive_mark(FileView *view);
