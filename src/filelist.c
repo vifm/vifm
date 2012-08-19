@@ -895,46 +895,67 @@ draw_dir_list(FileView *view)
 	}
 }
 
-/* Returns non-zero if doing something makes sense. */
+void
+correct_list_pos(FileView *view, ssize_t pos_delta)
+{
+	if(pos_delta > 0)
+	{
+		correct_list_pos_down(view, pos_delta);
+	}
+	else if(pos_delta < 0)
+	{
+		correct_list_pos_up(view, -pos_delta);
+	}
+}
+
 int
 correct_list_pos_on_scroll_down(FileView *view, size_t pos_delta)
 {
-	size_t scroll_offset;
+	if(!all_files_visible(view))
+	{
+		correct_list_pos_down(view, pos_delta*view->column_count);
+		return 1;
+	}
+	return 0;
+}
 
-	if(all_files_visible(view) || !can_scroll_down(view))
-		return 0;
-
-	pos_delta *= view->column_count;
-	scroll_offset = get_effective_scroll_offset(view);
-	if(view->list_pos <= view->top_line + scroll_offset + (pos_delta - 1))
+void
+correct_list_pos_down(FileView *view, size_t pos_delta)
+{
+	size_t scroll_offset = get_effective_scroll_offset(view);
+	if(can_scroll_down(view) &&
+			view->list_pos <= view->top_line + scroll_offset + (pos_delta - 1))
 	{
 		size_t column_correction = view->list_pos%view->column_count;
 		size_t offset = scroll_offset + pos_delta + column_correction;
 		view->list_pos = view->top_line + offset;
 	}
-	return 1;
 }
 
-/* Returns non-zero if doing something makes sense. */
 int
 correct_list_pos_on_scroll_up(FileView *view, size_t pos_delta)
 {
-	size_t scroll_offset;
-	size_t last;
-	if(all_files_visible(view) || !can_scroll_up(view))
-		return 0;
+	if(!all_files_visible(view))
+	{
+		correct_list_pos_up(view, pos_delta*view->column_count);
+		return 1;
+	}
+	return 0;
+}
 
-	pos_delta *= view->column_count;
-	scroll_offset = get_effective_scroll_offset(view);
-	last = get_last_visible_file(view);
-	if(view->list_pos >= last - scroll_offset - (pos_delta - 1))
+void
+correct_list_pos_up(FileView *view, size_t pos_delta)
+{
+	size_t scroll_offset = get_effective_scroll_offset(view);
+	size_t last = get_last_visible_file(view);
+	if(can_scroll_up(view) &&
+			view->list_pos >= last - scroll_offset - (pos_delta - 1))
 	{
 		size_t column_correction = (view->column_count - 1) -
-			view->list_pos%view->column_count;
+				view->list_pos%view->column_count;
 		size_t offset = scroll_offset + pos_delta + column_correction;
 		view->list_pos = last - offset;
 	}
-	return 1;
 }
 
 /* Returns non-zero if all files are visible, so no scrolling is needed. */
@@ -1045,7 +1066,8 @@ calculate_top_position(FileView *view, int top)
 	{
 		if(view->window_cells - (view->list_rows - top) >= view->column_count)
 		{
-			result = view->list_rows - view->window_cells;
+			result = view->list_rows - view->window_cells + (view->column_count - 1);
+			result -= result%view->column_count;
 			view->curr_line++;
 		}
 	}
@@ -1394,6 +1416,19 @@ get_last_visible_file(FileView *view)
 }
 
 void
+scroll_by_files(FileView *view, ssize_t by)
+{
+	if(by > 0)
+	{
+		scroll_down(view, by);
+	}
+	else if(by < 0)
+	{
+		scroll_up(view, -by);
+	}
+}
+
+void
 scroll_up(FileView *view, size_t by)
 {
 	/* Round it up, so 1 will cause one line scrolling. */
@@ -1465,6 +1500,16 @@ get_window_bottom_pos(FileView *view)
 		size_t column_correction = view->column_count - 1;
 		return get_last_visible_file(view) - off - column_correction;
 	}
+}
+
+void
+go_to_start_of_line(FileView *view)
+{
+	if(view->list_pos > view->list_rows - 1)
+	{
+		view->list_pos = view->list_rows - 1;
+	}
+	view->list_pos -= view->list_pos%view->column_count;
 }
 
 void
