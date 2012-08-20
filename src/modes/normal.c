@@ -1007,10 +1007,12 @@ find_goto(int ch, int count, int backward, keys_info_t *keys_info)
 static void
 cmd_G(key_info_t key_info, keys_info_t *keys_info)
 {
+	int new_pos;
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = curr_view->list_rows;
 
-	pick_or_move(keys_info, key_info.count - 1);
+	new_pos = ROUND_DOWN(key_info.count - 1, curr_view->column_count);
+	pick_or_move(keys_info, new_pos);
 }
 
 static void
