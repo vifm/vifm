@@ -1364,24 +1364,21 @@ check_view_dir_history(FileView *view)
 	view->list_pos = pos;
 	if(rel_pos >= 0)
 	{
-		view->top_line = pos - MIN(view->window_rows, rel_pos);
+		view->top_line = pos - MIN(view->window_cells - 1, rel_pos);
 		if(view->top_line < 0)
 			view->top_line = 0;
 		view->curr_line = pos - view->top_line;
 	}
 	else
 	{
-		if(view->list_pos <= view->window_rows)
+		size_t last = get_last_visible_file(view);
+		if(view->list_pos < view->window_cells)
 		{
-			view->top_line = 0;
-			view->curr_line = view->list_pos;
+			scroll_up(view, view->top_line);
 		}
-		else if(view->list_pos > (view->top_line + view->window_rows))
+		else if(view->list_pos > last)
 		{
-			while(view->list_pos > (view->top_line + view->window_rows))
-				view->top_line++;
-
-			view->curr_line = view->window_rows;
+			scroll_down(view, view->list_pos - last);
 		}
 	}
 	(void)consider_scroll_offset(view);
@@ -2453,6 +2450,8 @@ load_dir_list(FileView *view, int reload)
 	{
 		clean_status_bar();
 	}
+
+	view->column_count = calculate_columns_count(view);
 
 	/* If reloading the same directory don't jump to
 	 * history position.  Stay at the current line

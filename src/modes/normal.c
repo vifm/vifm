@@ -536,10 +536,10 @@ cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 #ifdef ENABLE_COMPATIBILITY_MODE
 	go_to_other_window();
 #else /* ENABLE_COMPATIBILITY_MODE */
-	if(curr_view->history_pos >= curr_view->history_num - 1)
-		return;
-
-	goto_history_pos(curr_view, curr_view->history_pos + 1);
+	if(curr_view->history_pos < curr_view->history_num - 1)
+	{
+		goto_history_pos(curr_view, curr_view->history_pos + 1);
+	}
 #endif /* ENABLE_COMPATIBILITY_MODE */
 }
 
@@ -563,10 +563,10 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_o(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(curr_view->history_pos == 0)
-		return;
-
-	goto_history_pos(curr_view, curr_view->history_pos - 1);
+	if(curr_view->history_pos != 0)
+	{
+		goto_history_pos(curr_view, curr_view->history_pos - 1);
+	}
 }
 
 static void
