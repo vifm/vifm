@@ -1010,10 +1010,7 @@ cmd_G(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = curr_view->list_rows;
 
-	if(keys_info->selector)
-		pick_files(curr_view, key_info.count - 1, keys_info);
-	else
-		move_to_list_pos(curr_view, key_info.count - 1);
+	pick_or_move(keys_info, key_info.count - 1);
 }
 
 static void
@@ -1087,10 +1084,7 @@ cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = 1;
 
-	if(keys_info->selector)
-		pick_files(curr_view, key_info.count - 1, keys_info);
-	else
-		move_to_list_pos(curr_view, key_info.count - 1);
+	pick_or_move(keys_info, key_info.count - 1);
 }
 
 /* Goes to parent directory regardless of ls-like state. */
@@ -1220,9 +1214,13 @@ static void
 pick_or_move(keys_info_t *keys_info, int new_pos)
 {
 	if(keys_info->selector)
+	{
 		pick_files(curr_view, new_pos, keys_info);
+	}
 	else
+	{
 		move_to_list_pos(curr_view, new_pos);
+	}
 }
 
 static void
@@ -1263,8 +1261,7 @@ cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(keys_info->selector)
 	{
-		int pos;
-		pos = check_mark_directory(curr_view, key_info.multi);
+		int pos = check_mark_directory(curr_view, key_info.multi);
 		if(pos < 0)
 			return;
 		pick_files(curr_view, pos, keys_info);
@@ -1287,10 +1284,7 @@ cmd_percent(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.count > 100)
 		return;
 	line = (key_info.count * curr_view->list_rows)/100;
-	if(keys_info->selector)
-		pick_files(curr_view, line - 1, keys_info);
-	else
-		move_to_list_pos(curr_view, line - 1);
+	pick_or_move(keys_info, line - 1);
 }
 
 static void
@@ -1569,7 +1563,7 @@ cmd_i(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!curr_view->ls_view || !at_last_line(curr_view))
+	if(!at_last_line(curr_view))
 	{
 		go_to_next(key_info, keys_info, 1, curr_view->column_count);
 	}
@@ -1579,7 +1573,7 @@ cmd_j(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!curr_view->ls_view || !at_first_line(curr_view))
+	if(!at_first_line(curr_view))
 	{
 		go_to_prev(key_info, keys_info, 1, curr_view->column_count);
 	}
@@ -1593,14 +1587,7 @@ go_to_prev(key_info_t key_info, keys_info_t *keys_info, int def, int step)
 		key_info.count = def;
 	key_info.count *= step;
 
-	if(keys_info->selector)
-	{
-		pick_files(curr_view, curr_view->list_pos - key_info.count, keys_info);
-	}
-	else if(curr_view->list_pos != 0)
-	{
-		move_to_list_pos(curr_view, curr_view->list_pos - key_info.count);
-	}
+	pick_or_move(keys_info, curr_view->list_pos - key_info.count);
 }
 
 static void
@@ -1624,14 +1611,7 @@ go_to_next(key_info_t key_info, keys_info_t *keys_info, int def, int step)
 		key_info.count = def;
 	key_info.count *= step;
 
-	if(keys_info->selector)
-	{
-		pick_files(curr_view, curr_view->list_pos + key_info.count, keys_info);
-	}
-	else if(curr_view->list_pos != curr_view->list_rows - 1)
-	{
-		move_to_list_pos(curr_view, curr_view->list_pos + key_info.count);
-	}
+	pick_or_move(keys_info, curr_view->list_pos + key_info.count);
 }
 
 /* Set mark. */
@@ -1920,20 +1900,14 @@ static void
 cmd_left_paren(key_info_t key_info, keys_info_t *keys_info)
 {
 	int pos = cmd_paren(0, curr_view->list_rows, -1);
-	if(keys_info->selector)
-		pick_files(curr_view, pos, keys_info);
-	else
-		move_to_list_pos(curr_view, pos);
+	pick_or_move(keys_info, pos);
 }
 
 static void
 cmd_right_paren(key_info_t key_info, keys_info_t *keys_info)
 {
 	int pos = cmd_paren(-1, curr_view->list_rows - 1, +1);
-	if(keys_info->selector)
-		pick_files(curr_view, pos, keys_info);
-	else
-		move_to_list_pos(curr_view, pos);
+	pick_or_move(keys_info, pos);
 }
 
 int
