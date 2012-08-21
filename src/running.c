@@ -370,7 +370,7 @@ void
 run_using_prog(FileView *view, const char *program, int dont_execute,
 		int force_background)
 {
-	int pause = strncmp(program, "!!", 2) == 0;
+	int pause = starts_with(program, "!!");
 	if(pause)
 		program += 2;
 
