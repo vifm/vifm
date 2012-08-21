@@ -363,7 +363,10 @@ static keys_add_info_t builtin_cmds[] = {
 static keys_add_info_t selectors[] = {
 	{L"'", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_quote}}},
 	{L"%", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
+	{L"^", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
+	{L"$", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dollar}}},
 	{L",", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
+	{L"0", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
 	{L";", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_semicolon}}},
 	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}}, /* Ctrl-N */
 	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}}, /* Ctrl-P */
@@ -1285,10 +1288,9 @@ cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_dollar(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_last_column(curr_view))
+	if(!at_last_column(curr_view) || keys_info->selector)
 	{
-		go_to_end_of_line(curr_view);
-		redraw_current_view();
+		pick_or_move(keys_info, get_end_of_line(curr_view));
 	}
 }
 
@@ -1332,10 +1334,9 @@ cmd_dot(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_zero(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(!at_first_column(curr_view))
+	if(!at_first_column(curr_view) || keys_info->selector)
 	{
-		go_to_start_of_line(curr_view);
-		redraw_current_view();
+		pick_or_move(keys_info, get_start_of_line(curr_view));
 	}
 }
 
