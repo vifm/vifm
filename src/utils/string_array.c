@@ -123,7 +123,7 @@ string_array_pos_case(char **array, size_t len, const char *key)
 void
 free_string_array(char **array, size_t len)
 {
-	int i;
+	size_t i;
 
 	for(i = 0; i < len; i++)
 		free(array[i]);

@@ -170,7 +170,7 @@ yank_selected_files(FileView *view, int reg)
 	for(x = 0; x < view->selected_files; x++)
 	{
 		char buf[PATH_MAX];
-		if(!view->selected_filelist[x])
+		if(view->selected_filelist[x] == NULL)
 			break;
 
 		snprintf(buf, sizeof(buf), "%s%s%s", view->curr_dir,

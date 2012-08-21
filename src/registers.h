@@ -30,13 +30,12 @@ typedef struct
 extern const char valid_registers[];
 
 void init_registers(void);
-void load_register(int reg, char *file);
 registers_t * find_register(int key);
-void append_to_register(int reg, char *file);
+void append_to_register(int reg, const char file[]);
 void clear_register(int reg);
 void pack_register(int reg);
-char ** list_registers_content(const char *registers);
-void rename_in_registers(const char *old, const char *new);
+char ** list_registers_content(const char registers[]);
+void rename_in_registers(const char old[], const char new[]);
 void clean_regs_with_trash(void);
 void update_unnamed_reg(int reg);
 

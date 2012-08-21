@@ -28,6 +28,7 @@
 #include "utils/fs.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/string_array.h"
 
 #include "registers.h"
 
@@ -69,7 +70,7 @@ find_register(int key)
 }
 
 static int
-check_for_duplicate_file_names(registers_t *reg, const char *file)
+check_for_duplicate_file_names(registers_t *reg, const char file[])
 {
 	int x;
 	for(x = 0; x < reg->num_files; x++)
@@ -81,7 +82,7 @@ check_for_duplicate_file_names(registers_t *reg, const char *file)
 }
 
 void
-append_to_register(int key, char *file)
+append_to_register(int key, const char file[])
 {
 	registers_t *reg;
 	struct stat st;
@@ -98,23 +99,19 @@ append_to_register(int key, char *file)
 	if(check_for_duplicate_file_names(reg, file))
 		return;
 
-	reg->num_files++;
-	reg->files = (char **)realloc(reg->files, reg->num_files * sizeof(char *));
-	reg->files[reg->num_files - 1] = strdup(file);
+	reg->num_files = add_to_string_array(&reg->files, reg->num_files, 1, file);
 }
 
 void
 clear_register(int key)
 {
-	int y;
 	registers_t *reg;
 
 	if((reg = find_register(key)) == NULL)
 		return;
 
-	y = reg->num_files;
-	while(y--)
-		free(reg->files[y]);
+	free_string_array(reg->files, reg->num_files);
+	reg->files = NULL;
 	reg->num_files = 0;
 }
 
@@ -135,7 +132,7 @@ pack_register(int key)
 }
 
 char **
-list_registers_content(const char *registers)
+list_registers_content(const char registers[])
 {
 	char **list = NULL;
 	size_t len = 0;
@@ -153,27 +150,21 @@ list_registers_content(const char *registers)
 			continue;
 
 		snprintf(buf, sizeof(buf), "\"%c", reg->name);
-		list = (char **)realloc(list, sizeof(char *)*(len + 1));
-		list[len] = strdup(buf);
-		len++;
+		len = add_to_string_array(&list, len, 1, buf);
 
 		y = reg->num_files;
 		while(y-- > 0)
 		{
-			list = (char **)realloc(list, sizeof(char *)*(len + 1));
-			list[len] = strdup(reg->files[y]);
-
-			len++;
+			len = add_to_string_array(&list, len, 1, reg->files[y]);
 		}
 	}
 
-	list = (char **)realloc(list, sizeof(char *)*(len + 1));
-	list[len] = NULL;
+	(void)add_to_string_array(&list, len, 1, NULL);
 	return list;
 }
 
 void
-rename_in_registers(const char *old, const char *new)
+rename_in_registers(const char old[], const char new[])
 {
 	int x;
 	for(x = 0; x < NUM_REGISTERS; x++)
