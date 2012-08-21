@@ -819,6 +819,11 @@ complete_with_shared(const char *server, const char *file)
 int
 external_command_exists(const char command[])
 {
+	if(starts_with(command, "!!"))
+	{
+		command += 2;
+	}
+
 	if(strchr(command, '/') == NULL)
 	{
 		return executable_exists_in_path(command);
