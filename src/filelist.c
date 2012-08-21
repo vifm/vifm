@@ -1489,6 +1489,12 @@ at_first_column(const FileView *view)
 	return view->list_pos%view->column_count == 0;
 }
 
+int
+at_last_column(const FileView *view)
+{
+	return view->list_pos%view->column_count == view->column_count - 1;
+}
+
 size_t
 get_window_top_pos(const FileView *view)
 {
@@ -1538,10 +1544,25 @@ go_to_start_of_line(FileView *view)
 	view->list_pos = get_start_of_line(view);
 }
 
-int get_start_of_line(const FileView *view)
+int
+get_start_of_line(const FileView *view)
 {
-	int pos = MIN(view->list_pos, view->list_rows - 1);
+	int pos = MAX(MIN(view->list_pos, view->list_rows - 1), 0);
 	return ROUND_DOWN(pos, view->column_count);
+}
+
+void
+go_to_end_of_line(FileView *view)
+{
+	view->list_pos = get_end_of_line(view);
+}
+
+int
+get_end_of_line(const FileView *view)
+{
+	int pos = MAX(MIN(view->list_pos, view->list_rows - 1), 0);
+	pos += (view->column_count - 1) - pos%view->column_count;
+	return MIN(pos, view->list_rows - 1);
 }
 
 void

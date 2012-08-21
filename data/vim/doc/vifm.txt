@@ -135,6 +135,9 @@ n% move to nth file of the file list (for example 25%).
                                                *vifm-0* *vifm-^*
 move cursor to the first column.  See |vifm-'lsview'| option description.
 
+                                               *vifm-$*
+move cursor to the last column.  See |vifm-'lsview'| option description.
+
                                                *vifm-Space* *vifm-Tab*
 Space or Tab to switch file lists.
 

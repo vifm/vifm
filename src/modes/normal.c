@@ -100,6 +100,7 @@ static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_dollar(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_comma(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dot(key_info_t key_info, keys_info_t *keys_info);
@@ -262,6 +263,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"!", {BUILTIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_emark_selector}}},
 	{L"!!", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_emarkemark}}},
 	{L"^", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
+	{L"$", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dollar}}},
 	{L"%", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
 	{L",", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
 	{L".", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dot}}},
@@ -1276,6 +1278,17 @@ cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 		curr_stats.save_msg = get_bookmark(curr_view, key_info.multi);
 		if(!cfg.auto_ch_pos)
 			move_to_list_pos(curr_view, 0);
+	}
+}
+
+/* Move cursor to the last column in ls-view sub-mode. */
+static void
+cmd_dollar(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(!at_last_column(curr_view))
+	{
+		go_to_end_of_line(curr_view);
+		redraw_current_view();
 	}
 }
 

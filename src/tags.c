@@ -1,5 +1,6 @@
 const char *tags[] = {
 	"vifm-!!",
+	"vifm-$",
 	"vifm-$HOME",
 	"vifm-$MYVIFMRC",
 	"vifm-$VIFM",

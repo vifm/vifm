@@ -97,16 +97,22 @@ int at_first_line(const FileView *view);
 int at_last_line(const FileView *view);
 /* Returns non-zero if cursor is on the first column. */
 int at_first_column(const FileView *view);
+/* Returns non-zero if cursor is on the last column. */
+int at_last_column(const FileView *view);
 /* Returns window top position adjusted for 'scrolloff' option. */
 size_t get_window_top_pos(const FileView *view);
 /* Returns window middle position adjusted for 'scrolloff' option. */
 size_t get_window_middle_pos(const FileView *view);
 /* Returns window bottom position adjusted for 'scrolloff' option. */
 size_t get_window_bottom_pos(const FileView *view);
-/* Moves cursor to first file in a row. */
+/* Moves cursor to the first file in a row. */
 void go_to_start_of_line(FileView *view);
-/* Returns position of first file in current line. */
+/* Returns position of the first file in current line. */
 int get_start_of_line(const FileView *view);
+/* Moves cursor to the last file in a row. */
+void go_to_end_of_line(FileView *view);
+/* Returns position of the last file in current line. */
+int get_end_of_line(const FileView *view);
 
 /* Appearance related functions. */
 

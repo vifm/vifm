@@ -55,6 +55,7 @@ static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_dollar(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_comma(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zero(key_info_t key_info, keys_info_t *keys_info);
@@ -135,6 +136,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"'", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_quote}}},
 	{L"^", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
+	{L"$", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dollar}}},
 	{L"%", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
 	{L",", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
 	{L"0", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
@@ -476,6 +478,17 @@ cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 	if(pos < 0)
 		return;
 	goto_pos(pos);
+}
+
+/* Move cursor to the last column in ls-view sub-mode selecting or unselecting
+ * files while moving. */
+static void
+cmd_dollar(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(!at_last_column(view))
+	{
+		goto_pos(get_end_of_line(view));
+	}
 }
 
 static void
