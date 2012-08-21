@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 18
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 21
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -131,6 +131,9 @@ Ctrl-U - jump forward one half page.           *vifm-CTRL-U*
 
                                                *vifm-%*
 n% move to nth file of the file list (for example 25%).
+
+                                               *vifm-0* *vifm-^*
+move cursor to the first column.  See |vifm-'lsview'| option description.
 
                                                *vifm-Space* *vifm-Tab*
 Space or Tab to switch file lists.

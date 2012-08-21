@@ -989,7 +989,7 @@ get_corrected_list_pos_up(const FileView *view, size_t pos_delta)
 }
 
 int
-all_files_visible(FileView *view)
+all_files_visible(const FileView *view)
 {
 	return view->list_rows <= view->window_cells;
 }
@@ -1471,20 +1471,26 @@ scroll_down(FileView *view, size_t by)
 }
 
 int
-at_first_line(FileView *view)
+at_first_line(const FileView *view)
 {
 	return view->list_pos/view->column_count == 0;
 }
 
 int
-at_last_line(FileView *view)
+at_last_line(const FileView *view)
 {
 	size_t col_count = view->column_count;
 	return view->list_pos/col_count == (view->list_rows - 1)/col_count;
 }
 
+int
+at_first_column(const FileView *view)
+{
+	return view->list_pos%view->column_count == 0;
+}
+
 size_t
-get_window_top_pos(FileView *view)
+get_window_top_pos(const FileView *view)
 {
 	if(view->top_line == 0)
 	{
@@ -1497,7 +1503,7 @@ get_window_top_pos(FileView *view)
 }
 
 size_t
-get_window_middle_pos(FileView *view)
+get_window_middle_pos(const FileView *view)
 {
 	int list_middle = view->list_rows/(2*view->column_count);
 	int window_middle = view->window_rows/2;
@@ -1505,7 +1511,7 @@ get_window_middle_pos(FileView *view)
 }
 
 size_t
-get_window_bottom_pos(FileView *view)
+get_window_bottom_pos(const FileView *view)
 {
 	if(all_files_visible(view))
 	{
@@ -1529,11 +1535,13 @@ get_last_visible_file(const FileView *view)
 void
 go_to_start_of_line(FileView *view)
 {
-	if(view->list_pos > view->list_rows - 1)
-	{
-		view->list_pos = view->list_rows - 1;
-	}
-	view->list_pos = ROUND_DOWN(view->list_pos, view->column_count);
+	view->list_pos = get_start_of_line(view);
+}
+
+int get_start_of_line(const FileView *view)
+{
+	int pos = MIN(view->list_pos, view->list_rows - 1);
+	return ROUND_DOWN(pos, view->column_count);
 }
 
 void
@@ -2721,6 +2729,8 @@ restore_filename_filter(FileView *view)
 void
 set_filename_filter(FileView *view, const char *filter)
 {
+	int ret;
+
 	if(view->filter_is_valid)
 	{
 		regfree(&view->filter_regex);
@@ -2733,14 +2743,8 @@ set_filename_filter(FileView *view, const char *filter)
 		return;
 	}
 
-	if(regcomp(&view->filter_regex, view->filename_filter, REG_EXTENDED) == 0)
-	{
-		view->filter_is_valid = 1;
-	}
-	else
-	{
-		view->filter_is_valid = 0;
-	}
+	ret = regcomp(&view->filter_regex, view->filename_filter, REG_EXTENDED);
+	view->filter_is_valid = ret == 0;
 }
 
 void
@@ -3036,7 +3040,7 @@ cd(FileView *view, const char *base_dir, const char *path)
 }
 
 int
-view_is_at_path(FileView *view, const char *path)
+view_is_at_path(const FileView *view, const char path[])
 {
 	if(path[0] == '\0' || stroscmp(view->curr_dir, path) == 0)
 		return 0;

@@ -71,7 +71,7 @@ void correct_list_pos_up(FileView *view, size_t pos_delta);
 /* Returns new list position after making correction for scrolling up. */
 int get_corrected_list_pos_up(const FileView *view, size_t pos_delta);
 /* Returns non-zero if all files are visible, so no scrolling is needed. */
-int all_files_visible(FileView *view);
+int all_files_visible(const FileView *view);
 void move_to_list_pos(FileView *view, int pos);
 /* Adds inactive cursor mark to the view. */
 void put_inactive_mark(FileView *view);
@@ -92,17 +92,21 @@ void scroll_up(FileView *view, size_t by);
  * and cursor positions. */
 void scroll_down(FileView *view, size_t by);
 /* Returns non-zero if cursor is on the first line. */
-int at_first_line(FileView *view);
+int at_first_line(const FileView *view);
 /* Returns non-zero if cursor is on the last line. */
-int at_last_line(FileView *view);
+int at_last_line(const FileView *view);
+/* Returns non-zero if cursor is on the first column. */
+int at_first_column(const FileView *view);
 /* Returns window top position adjusted for 'scrolloff' option. */
-size_t get_window_top_pos(FileView *view);
+size_t get_window_top_pos(const FileView *view);
 /* Returns window middle position adjusted for 'scrolloff' option. */
-size_t get_window_middle_pos(FileView *view);
+size_t get_window_middle_pos(const FileView *view);
 /* Returns window bottom position adjusted for 'scrolloff' option. */
-size_t get_window_bottom_pos(FileView *view);
+size_t get_window_bottom_pos(const FileView *view);
 /* Moves cursor to first file in a row. */
 void go_to_start_of_line(FileView *view);
+/* Returns position of first file in current line. */
+int get_start_of_line(const FileView *view);
 
 /* Appearance related functions. */
 
@@ -179,7 +183,7 @@ int cd_is_possible(const char *path);
 /* Checks whether directory list was loaded at least once since startup. */
 int is_dir_list_loaded(FileView *view);
 /* Returns non-zero if path should be changed. */
-int view_is_at_path(FileView *view, const char *path);
+int view_is_at_path(const FileView *view, const char path[]);
 /* Sets view's current directory from path value.
  * Returns non-zero if view's directory was changed. */
 int set_view_path(FileView *view, const char *path);

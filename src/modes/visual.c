@@ -57,6 +57,7 @@ static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_comma(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_zero(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_colon(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_semicolon(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
@@ -133,8 +134,10 @@ static keys_add_info_t builtin_cmds[] = {
 	/* escape */
 	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"'", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_quote}}},
+	{L"^", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
 	{L"%", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
 	{L",", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
+	{L"0", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
 	{L":", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
 	{L";", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_semicolon}}},
 	{L"/", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_slash}}},
@@ -498,6 +501,18 @@ cmd_comma(key_info_t key_info, keys_info_t *keys_info)
 	find_goto(last_fast_search_char, key_info.count, !last_fast_search_backward);
 }
 
+/* Move cursor to the first column in ls-view sub-mode selecting or unselecting
+ * files while moving. */
+static void
+cmd_zero(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(!at_first_column(view))
+	{
+		goto_pos(get_start_of_line(view));
+	}
+}
+
+/* Switch to command-line mode. */
 static void
 cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {

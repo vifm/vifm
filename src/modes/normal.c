@@ -23,7 +23,7 @@
 
 #include <assert.h>
 #include <string.h>
-#include <wctype.h> /* wtoupper */
+#include <wctype.h> /* wtoupper() */
 
 #include "../../config.h"
 
@@ -103,6 +103,7 @@ static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_comma(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_dot(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_zero(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_colon(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_semicolon(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
@@ -258,11 +259,13 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"'", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_quote}}},
 	{L" ", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_space}}},
-	{L"!!", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_emarkemark}}},
 	{L"!", {BUILTIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_emark_selector}}},
+	{L"!!", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_emarkemark}}},
+	{L"^", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
 	{L"%", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
 	{L",", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
 	{L".", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dot}}},
+	{L"0", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
 	{L":", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
 	{L";", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_semicolon}}},
 	{L"/", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_slash}}},
@@ -1312,7 +1315,18 @@ cmd_dot(key_info_t key_info, keys_info_t *keys_info)
 				GET_COMMAND);
 }
 
-/* Command. */
+/* Move cursor to the first column in ls-view sub-mode. */
+static void
+cmd_zero(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(!at_first_column(curr_view))
+	{
+		go_to_start_of_line(curr_view);
+		redraw_current_view();
+	}
+}
+
+/* Switch to command-line mode. */
 static void
 cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
