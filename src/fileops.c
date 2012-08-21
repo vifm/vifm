@@ -170,11 +170,11 @@ yank_selected_files(FileView *view, int reg)
 	for(x = 0; x < view->selected_files; x++)
 	{
 		char buf[PATH_MAX];
-		if(!view->selected_filelist[x])
+		if(view->selected_filelist[x] == NULL)
 			break;
 
-		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir,
-				view->selected_filelist[x]);
+		snprintf(buf, sizeof(buf), "%s%s%s", view->curr_dir,
+				ends_with_slash(view->curr_dir) ? "" : "/", view->selected_filelist[x]);
 		chosp(buf);
 		append_to_register(reg, buf);
 	}
