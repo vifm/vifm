@@ -134,11 +134,11 @@ AC_ARG_WITH(libmagic,
 	[use_libmagic=$withval],
 	[use_libmagic=yes])
 
-AC_CHECK_LIB(X11, XOpenDisplay,
-	[LIBS="$LIBS -lX11"
-	AC_CHECK_HEADERS(X11/Xlib.h)
-	AC_CHECK_HEADERS(X11/Xutil.h)
-	AC_DEFINE([HAVE_X11], [1], [use X11 to determine terminal emulator title])])
+AC_ARG_WITH(X11,
+	AS_HELP_STRING([--with-X11],
+		[use libX11 to determine terminal emulator title  @<:@default=yes@:>@]),
+	[use_libX11=$withval],
+	[use_libX11=yes])
 
 dnl ----------------------------------------------------------------------------
 dnl checks for mimetype detection
@@ -197,6 +197,14 @@ fi
 
 if test "$desktop_files" = "yes"; then
 	AC_DEFINE([ENABLE_DESKTOP_FILES], [1], [parsing of .desktop files])
+fi
+
+if test "$use_libX11" = "yes"; then
+	AC_CHECK_LIB(X11, XOpenDisplay,
+		[LIBS="$LIBS -lX11"
+		AC_CHECK_HEADERS(X11/Xlib.h)
+		AC_CHECK_HEADERS(X11/Xutil.h)
+		AC_DEFINE([HAVE_X11], [1], [use X11 to determine terminal emulator title])])
 fi
 
 AC_OUTPUT([

@@ -34,6 +34,9 @@ On *nix you need:
       --without/[with]-libmagic - use libmagic to determine mimetypes if
           available.
 
+      --without/[with]-X11 - use libX11 to get terminal window title before
+          changing it to restore it on exit.
+
     You can install vifm in your ~/ directory if you prefer.
     Copy the vifm, vifmrc-converter and pauseme executables to where you
     want to run them.  You will also need to copy vifm help files and
