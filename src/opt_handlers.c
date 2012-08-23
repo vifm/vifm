@@ -687,7 +687,7 @@ static void
 scrollbind_handler(OPT_OP op, optval_t val)
 {
 	cfg.scroll_bind = val.bool_val;
-	curr_stats.scroll_bind_off = rwin.top_line - lwin.top_line;
+	update_scroll_bind_offset();
 }
 
 static void

@@ -50,6 +50,8 @@ void load_initial_directory(FileView *view, const char *dir);
 /* Position related functions. */
 
 int find_file_pos_in_list(FileView *view, const char *file);
+/* Recalculates difference of two panes scroll positions. */
+void update_scroll_bind_offset(void);
 /* Tries to move cursor by pos_delta positions.  A wrapper for
  * correct_list_pos_on_scroll_up() and correct_list_pos_on_scroll_down()
  * functions. */

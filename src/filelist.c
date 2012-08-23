@@ -104,6 +104,7 @@ static void prepare_view(FileView *view);
 static void init_view_history(FileView *view);
 static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
+static void consider_scroll_bind(FileView *view);
 static int calculate_top_position(FileView *view, int top);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 size_t calculate_columns_count(FileView *view);
@@ -868,28 +869,52 @@ draw_dir_list(FileView *view)
 
 	view->top_line = top;
 
-	if(view == curr_view && cfg.scroll_bind)
+	if(view == curr_view)
+	{
+		consider_scroll_bind(view);
+	}
+}
+
+/* Corrects top of the other view to synchronize it with the current view if
+ * 'scrollbind' option is set. */
+static void
+consider_scroll_bind(FileView *view)
+{
+	if(cfg.scroll_bind)
 	{
 		FileView *other = (view == &lwin) ? &rwin : &lwin;
+		other->top_line = view->top_line/view->column_count;
 		if(view == &lwin)
-			other->top_line = view->top_line + curr_stats.scroll_bind_off;
+		{
+			other->top_line += curr_stats.scroll_bind_off;
+		}
 		else
-			other->top_line = view->top_line - curr_stats.scroll_bind_off;
-
-		if(other->top_line + other->window_rows >= other->list_rows)
-			other->top_line = other->list_rows - other->window_rows;
-		if(other->top_line < 0)
-			other->top_line = 0;
+		{
+			other->top_line -= curr_stats.scroll_bind_off;
+		}
+		other->top_line *= other->column_count;
+		other->top_line = calculate_top_position(other, other->top_line);
 
 		if(can_scroll_up(other))
+		{
 			(void)correct_list_pos_on_scroll_down(other, 0);
+		}
 		if(can_scroll_down(other))
+		{
 			(void)correct_list_pos_on_scroll_up(other, 0);
+		}
+
   	other->curr_line = other->list_pos - other->top_line;
 
 		draw_dir_list(other);
 		refresh_view_win(other);
 	}
+}
+
+void
+update_scroll_bind_offset(void)
+{
+	curr_stats.scroll_bind_off = rwin.top_line/rwin.column_count - lwin.top_line/lwin.column_count;
 }
 
 void
@@ -908,7 +933,6 @@ correct_list_pos(FileView *view, ssize_t pos_delta)
 int
 correct_list_pos_on_scroll_down(FileView *view, size_t lines_count)
 {
-	/* This check seems to be odd, since function checks for scroll down. */
 	if(!all_files_visible(view))
 	{
 		correct_list_pos_down(view, lines_count*view->column_count);
@@ -920,10 +944,7 @@ correct_list_pos_on_scroll_down(FileView *view, size_t lines_count)
 void
 correct_list_pos_down(FileView *view, size_t pos_delta)
 {
-	if(can_scroll_down(view))
-	{
-		view->list_pos = get_corrected_list_pos_down(view, pos_delta);
-	}
+	view->list_pos = get_corrected_list_pos_down(view, pos_delta);
 }
 
 int
@@ -943,7 +964,7 @@ int
 get_corrected_list_pos_down(const FileView *view, size_t pos_delta)
 {
 	size_t scroll_offset = get_effective_scroll_offset(view);
-	if(view->list_pos <= view->top_line + scroll_offset + (pos_delta - 1))
+	if(view->list_pos <= view->top_line + scroll_offset + (MAX(pos_delta, 1) - 1))
 	{
 		size_t column_correction = view->list_pos%view->column_count;
 		size_t offset = scroll_offset + pos_delta + column_correction;
@@ -955,7 +976,6 @@ get_corrected_list_pos_down(const FileView *view, size_t pos_delta)
 int
 correct_list_pos_on_scroll_up(FileView *view, size_t lines_count)
 {
-	/* This check seems to be odd, since function checks for scroll up. */
 	if(!all_files_visible(view))
 	{
 		correct_list_pos_up(view, lines_count*view->column_count);
@@ -967,10 +987,7 @@ correct_list_pos_on_scroll_up(FileView *view, size_t lines_count)
 void
 correct_list_pos_up(FileView *view, size_t pos_delta)
 {
-	if(can_scroll_up(view))
-	{
-		view->list_pos = get_corrected_list_pos_up(view, pos_delta);
-	}
+	view->list_pos = get_corrected_list_pos_up(view, pos_delta);
 }
 
 int
@@ -978,7 +995,7 @@ get_corrected_list_pos_up(const FileView *view, size_t pos_delta)
 {
 	size_t scroll_offset = get_effective_scroll_offset(view);
 	size_t last = get_last_visible_file(view);
-	if(view->list_pos >= last - scroll_offset - (pos_delta - 1))
+	if(view->list_pos >= last - scroll_offset - (MAX(pos_delta, 1) - 1))
 	{
 		size_t column_correction = (view->column_count - 1) -
 				view->list_pos%view->column_count;
@@ -1086,7 +1103,8 @@ move_curr_line(FileView *view)
 static int
 calculate_top_position(FileView *view, int top)
 {
-	int result = ROUND_DOWN(top, view->column_count);
+	int result = MIN(MAX(top, 0), view->list_rows - 1);
+	result = ROUND_DOWN(result, view->column_count);
 	if(view->window_cells >= view->list_rows)
 	{
 		result = 0;
