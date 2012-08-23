@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 21
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 23
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -16,6 +16,8 @@
 |vifm-configure|          Configuration of vifm.
 |vifm-compatibility-mode| Its description.
 |vifm-menus-and-dialogs|  Keys for menus and dialogs.
+|vifm-view-look|          Gives general overview of view displaying variants.
+|vifm-ls-view|            ls-like view details.
 |vifm-column-view|        Column view configuration details.
 |vifm-colorschemes|       Details on using color schemes in vifm.
 |vifm-fuse|               Using automated FUSE mounts.
@@ -171,11 +173,11 @@ Ctrl-W j - switch to pane below.               *vifm-CTRL-W_j*
 Ctrl-W k - switch to pane above.               *vifm-CTRL-W_k*
 Ctrl-W l - switch to right pane.               *vifm-CTRL-W_l*
 Ctrl-W w - switch to other pane.               *vifm-CTRL-W_w*
-Ctrl-W o - shortcut for |vifm-:only|           *vifm-CTRL-W_o*
+Ctrl-W o - shortcut for |vifm-:only|             *vifm-CTRL-W_o*
 Ctrl-W p - switch to previous window           *vifm-CTRL-W_p*
-Ctrl-W s - shortcut for |vifm-:split|          *vifm-CTRL-W_s*
+Ctrl-W s - shortcut for |vifm-:split|            *vifm-CTRL-W_s*
 Ctrl-W t - switch to top-left window           *vifm-CTRL-W_t*
-Ctrl-W v - shortcut for |vifm-:vsplit|         *vifm-CTRL-W_v*
+Ctrl-W v - shortcut for |vifm-:vsplit|           *vifm-CTRL-W_v*
 Ctrl-W x - exchange panes                      *vifm-CTRL-W_x*
 Ctrl-W + - increase size of the view.          *vifm-CTRL-W_+*
 Ctrl-W - - decrease size of the view.          *vifm-CTRL-W_-*
@@ -1179,7 +1181,10 @@ the '.' operator. Any whitespace is ignored.
 :sh[ell] - will start a shell.
 
                                                *vifm-:sort* *vifm-:sor*
-:sor[t] - menu of different sorting methods.
+:sor[t] - menu of different sorting methods, when one can select primary
+sorting key.  When |vifm-'viewcolumns'| options is empty and |vifm-'lsview'|
+is off, changing primary sorting key will also affect view look (in
+particular the second column of the view will be changed).
 
                                                *vifm-:source* *vifm-:so*
 :so[urce] file - reads command-line commands from the file.
@@ -1560,8 +1565,10 @@ Terminal height in lines.
 lsview
 type: boolean
 default: false
+type: local
 When this option is set, directory view will be displayed in multiple
-columns with filenames similar to output of `ls -x` command.
+columns with filenames similar to output of `ls -x` command.  See also
+|vifm-ls-view|.
 
                                                *vifm-'rulerformat'* *vifm-'ruf'*
 rulerformat ruf
@@ -1750,7 +1757,8 @@ default: ""
 type: local
 Format string containing list of columns in the view. When this option is
 empty view columns to show are chosen automatically using sorting keys
-(see |vifm-'sort'|) as a base. See |vifm-column-view| for format description.
+(see |vifm-'sort'|) as a base.  Value of this option is ignored if
+|vifm-'lsview'| is set.  See |vifm-column-view| for format description.
 
                                                *vifm-'vixcmd'*
 vixcmd
@@ -2062,10 +2070,45 @@ All % macros are expanded by vifm at runtime and have the following meaning:
 commands likely wont work without them.
 
 The mounted FUSE file systems will be automatically unmounted in two cases:
-   - when vifm quits (with |vifm-ZZ|, |vifm-:q|, etc. or when killed by signal)
+   - when vifm quits (with |vifm-ZZ|, |vifm-:q|, etc. or when killed by signal);
    - when you explicitly leave mount point going up to its parent directory
      (with |vifm-h|, |vifm-Enter| on "../" or ":cd ..") and other pane is not
      in the same directory or its child directories.
+
+--------------------------------------------------------------------------------
+*vifm-view-look*
+
+vifm supports displaying of file list view in two different ways:
+   - in a table mode, when multiple columns can be set using |vifm-'viewcolumns'|
+     option (see |vifm-column-view| for details);
+   - in a multicolumn list manner which looks almost like `ls -x` command
+     output (see |vifm-ls-view| for details).
+
+The look is local for each view and can be chosen by changing value of the
+|vifm-'lsview'| boolean option.
+
+Depending on view look some of keys change their meaning to allow more natural
+cursor moving.  This concerns mainly |vifm-h|, |vifm-j|, |vifm-k|, |vifm-l| and other
+similar navigation keys.
+
+Also some of options can be ignored if they don't affect view displaying in
+selected look.  For example value of |vifm-'viewcolumns'| when |vifm-'lsview'| is
+set.
+
+--------------------------------------------------------------------------------
+*vifm-ls-view*
+
+When this view look is enabled by setting |vifm-'lsview'| option on, vifm will
+display files in multiple columns.  Number of columns depends on the length of
+the longest file name present in current directory of the view.  Whole file
+list is automatically reflowed on directory change, terminal or view resize.
+
+View looks close to output of `ls -x` command, so files are listed left to
+right in rows.
+
+In this mode file manipulation commands (e.g. |vifm-d|) don't work line-wise like
+they do in Vim, since such operations would be uncommon for file manipulating
+tasks.  Thus, for example, |vifm-dd| will remove only current file.
 
 --------------------------------------------------------------------------------
 *vifm-column-view*
@@ -2127,7 +2170,6 @@ primary sort key. So after the next command views will be displayed almost as
 if |vifm-'viewcolumns'| is empty, but adding ellipsis for long file names: >
     set viewcolumns=-{name}..,6{}.
 <
-
 Cropping specifier~
 
 It's from one to three dots after closing curly brace in column format.

@@ -1,4 +1,4 @@
-.TH vifm 1 "August 21, 2012" "" "Vifm"
+.TH vifm 1 "August 23, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1349,7 +1349,10 @@ characters.
 will start a shell.
 .TP
 .BI :sor[t]
-creates a popup menu of different sorting methods.
+creates a popup menu of different sorting methods, when one can select primary
+sorting key.  When 'viewcolumns' options is empty and 'lsview' is off, changing
+primary sorting key will also affect view look (in particular the second column
+of the view will be changed).
 .TP
 .BI ":so[urce] file"
 reads command-line commands from the file.
@@ -1835,8 +1838,11 @@ type: boolean
 .br
 default: false
 .br
+type: local
+.br
 When this option is set, directory view will be displayed in multiple columns
-with filenames similar to output of `ls -x` command.
+with filenames similar to output of `ls -x` command.  See ls-like view section
+below for format description.
 .TP
 .BI "rulerformat ruf"
 type: string
@@ -2079,9 +2085,10 @@ default: ""
 .br
 type: local
 .br
-Format string containing list of columns in the view. When this option is empty
+Format string containing list of columns in the view.  When this option is empty
 view columns to show are chosen automatically using sorting keys (see 'sort') as
-a base. See Column view section below for format description.
+a base.  Value of this option is ignored if 'lsview' is set.  See Column view
+section below for format description.
 .TP
 .BI vixcmd
 type: string
@@ -2430,6 +2437,40 @@ when vifm quits (with ZZ, :q, etc. or when killed by signal)
 when you explicitly leave mount point going up to its parent directory (with \
 h, Enter on "../" or ":cd ..") and other pane is not in the same directory or \
 its child directories.
+.\" ---------------------------------------------------------------------------
+.SH View look
+.\" ---------------------------------------------------------------------------
+vifm supports displaying of file list view in two different ways:
+.IP - 2
+in a table mode, when multiple columns can be set using 'viewcolumns' option
+(see Column view section below for details);
+.IP - 2
+in a multicolumn list manner which looks almost like `ls -x` command output (see
+ls-like view section below for details).
+.LP
+The look is local for each view and can be chosen by changing value of the
+\'lsview' boolean option.
+
+Depending on view look some of keys change their meaning to allow more natural
+cursor moving.  This concerns mainly h, j, k, l and other similar navigation
+keys.
+
+Also some of options can be ignored if they don't affect view displaying in
+selected look.  For example value of 'viewcolumns' when 'lsview' is set.
+.\" ---------------------------------------------------------------------------
+.SH ls-like view
+.\" ---------------------------------------------------------------------------
+When this view look is enabled by setting 'lsview' option on, vifm will display
+files in multiple columns.  Number of columns depends on the length of the
+longest file name present in current directory of the view.  Whole file list is
+automatically reflowed on directory change, terminal or view resize.
+
+View looks close to output of `ls -x` command, so files are listed left to right
+in rows.
+
+In this mode file manipulation commands (e.g. d) don't work line-wise like they
+do in Vim, since such operations would be uncommon for file manipulating
+tasks.  Thus, for example, dd will remove only current file.
 .\" ---------------------------------------------------------------------------
 .SH Column view
 .\" ---------------------------------------------------------------------------
