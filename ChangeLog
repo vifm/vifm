@@ -1,5 +1,7 @@
 0.7.3a to current
 
+	Replaced gl normal mode mapping for Windows with gr because of conflict.
+
 	Added Ctrl-W H/J/K/L normal mode keys.
 
 	Added status bar messages for :apropos, :find and :locate commands.
@@ -14,6 +16,13 @@
 	commands.
 
 	Added --without/[with]-X11 configure script option.
+
+	Added 'lsview' option to control ls-like view look.
+
+	Added gh, gj, gk and gl keys for normal and visual modes.
+
+	Added 0, ^ and $ keys for normal and visual modes, which also work as
+	selectors in normal mode.
 
 	Try the rest of the programs for an association when the default isn't
 	found.

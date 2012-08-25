@@ -84,6 +84,7 @@ typedef struct
 	size_t line;
 	int current;
 	size_t current_line;
+	size_t column_offset;
 }
 column_data_t;
 
@@ -103,13 +104,20 @@ static void prepare_view(FileView *view);
 static void init_view_history(FileView *view);
 static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
+static void consider_scroll_bind(FileView *view);
 static int calculate_top_position(FileView *view, int top);
+static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
+size_t calculate_columns_count(FileView *view);
+static size_t calculate_column_width(FileView *view);
+static size_t get_last_visible_file(const FileView *view);
 static void save_selection(FileView *view);
-int consider_scroll_offset(FileView *view, int pos);
+int consider_scroll_offset(FileView *view);
 static void free_saved_selection(FileView *view);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
 static int file_can_be_displayed(const char *directory, const char *filename);
+
+const size_t COLUMN_GAP = 2;
 
 void
 init_filelists(void)
@@ -150,7 +158,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 	size_t i = cdt->line;
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[cdt->line];
-	wmove(view->win, cdt->current_line, 1 + offset);
+	wmove(view->win, cdt->current_line, 1 + cdt->column_offset + offset);
 
 	col = view->cs.color[WIN_COLOR];
 	if(column_id == SORT_BY_NAME || column_id == SORT_BY_INAME)
@@ -193,7 +201,7 @@ column_line_print(const void *data, int column_id, const char *buf,
 	wattron(view->win, COLOR_PAIR(view->color_scheme + line_color) | col.attr);
 
 	strcpy(print_buf, buf);
-	width_left = view->window_width - 1 - offset;
+	width_left = view->window_width - (column_id != FILL_COLUMN_ID) - offset;
 	trim_pos = get_normal_utf8_string_widthn(buf, width_left);
 	print_buf[trim_pos] = '\0';
 	wprint(view->win, print_buf);
@@ -363,6 +371,9 @@ prepare_view(FileView *view)
 	set_filename_filter(view, "");
 	view->invert = 1;
 	view->prev_invert = view->invert;
+	view->ls_view = 0;
+	view->max_filename_len = 0;
+	view->column_count = 1;
 
 #ifndef _WIN32
 	view->sort[0] = SORT_BY_NAME;
@@ -800,14 +811,19 @@ reset_view_sort(FileView *view)
 }
 
 void
-draw_dir_list(FileView *view, int top)
+draw_dir_list(FileView *view)
 {
 	int attr;
 	int x;
-	int y = 0;
+	int y;
+	size_t col_width;
+	size_t col_count;
+	int top = view->top_line;
 
 	if(curr_stats.load_stage < 2)
 		return;
+
+	calculate_table_conf(view, &col_count, &col_width);
 
 	if(top + view->window_rows > view->list_rows)
 		top = view->list_rows - view->window_rows;
@@ -834,74 +850,165 @@ draw_dir_list(FileView *view, int top)
 	wbkgdset(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme) | attr);
 	werase(view->win);
 
+	y = 0;
 	for(x = top; x < view->list_rows; x++)
 	{
 		wmove(view->win, y, 1);
 		wclrtoeol(view->win);
-		column_data_t cdt = {view, x, 0, y};
-		columns_format_line(view->columns, &cdt, view->window_width - 1);
+		column_data_t cdt = {view, x, 0, y/col_count, (y%col_count)*col_width};
+		columns_format_line(view->columns, &cdt, col_width);
 		y++;
-		if(y > view->window_rows)
+		if(y >= view->window_cells)
 			break;
 	}
 
 	if(view != curr_view)
-		mvwaddstr(view->win, view->curr_line, 0, "*");
+	{
+		put_inactive_mark(view);
+	}
 
 	view->top_line = top;
 
-	if(view == curr_view && cfg.scroll_bind)
+	if(view == curr_view)
+	{
+		consider_scroll_bind(view);
+	}
+}
+
+/* Corrects top of the other view to synchronize it with the current view if
+ * 'scrollbind' option is set. */
+static void
+consider_scroll_bind(FileView *view)
+{
+	if(cfg.scroll_bind)
 	{
 		FileView *other = (view == &lwin) ? &rwin : &lwin;
+		other->top_line = view->top_line/view->column_count;
 		if(view == &lwin)
-			other->top_line = view->top_line + curr_stats.scroll_bind_off;
+		{
+			other->top_line += curr_stats.scroll_bind_off;
+		}
 		else
-			other->top_line = view->top_line - curr_stats.scroll_bind_off;
+		{
+			other->top_line -= curr_stats.scroll_bind_off;
+		}
+		other->top_line *= other->column_count;
+		other->top_line = calculate_top_position(other, other->top_line);
 
-		if(other->top_line + other->window_rows >= other->list_rows)
-			other->top_line = other->list_rows - other->window_rows;
-		if(other->top_line < 0)
-			other->top_line = 0;
-
-		if(other->top_line > 0)
+		if(can_scroll_up(other))
+		{
 			(void)correct_list_pos_on_scroll_down(other, 0);
-		if(other->top_line < other->list_rows - other->window_rows - 1)
+		}
+		if(can_scroll_down(other))
+		{
 			(void)correct_list_pos_on_scroll_up(other, 0);
+		}
+
   	other->curr_line = other->list_pos - other->top_line;
 
-		draw_dir_list(other, other->top_line);
+		draw_dir_list(other);
 		refresh_view_win(other);
 	}
 }
 
-/* returns non-zero if doing something makes sense */
-int
-correct_list_pos_on_scroll_down(FileView *view, int pos_delta)
+void
+update_scroll_bind_offset(void)
 {
-	int off;
-	if(view->list_rows <= view->window_rows + 1)
-		return 0;
-	if(view->top_line == view->list_rows - view->window_rows - 1)
-		return 0;
-
-	off = MAX(cfg.scroll_off, 0);
-	if(view->list_pos <= view->top_line + off)
-		view->list_pos = view->top_line + pos_delta + off;
-	return 1;
+	curr_stats.scroll_bind_off = rwin.top_line/rwin.column_count - lwin.top_line/lwin.column_count;
 }
 
-/* returns non-zero if doing something makes sense */
-int
-correct_list_pos_on_scroll_up(FileView *view, int pos_delta)
+void
+correct_list_pos(FileView *view, ssize_t pos_delta)
 {
-	int off;
-	if(view->list_rows <= view->window_rows + 1 || view->top_line == 0)
-		return 0;
+	if(pos_delta > 0)
+	{
+		correct_list_pos_down(view, pos_delta);
+	}
+	else if(pos_delta < 0)
+	{
+		correct_list_pos_up(view, -pos_delta);
+	}
+}
 
-	off = MAX(cfg.scroll_off, 0);
-	if(view->list_pos >= view->top_line + view->window_rows - off)
-		view->list_pos = view->top_line + pos_delta + view->window_rows - off;
-	return 1;
+int
+correct_list_pos_on_scroll_down(FileView *view, size_t lines_count)
+{
+	if(!all_files_visible(view))
+	{
+		correct_list_pos_down(view, lines_count*view->column_count);
+		return 1;
+	}
+	return 0;
+}
+
+void
+correct_list_pos_down(FileView *view, size_t pos_delta)
+{
+	view->list_pos = get_corrected_list_pos_down(view, pos_delta);
+}
+
+int
+get_corrected_list_pos(FileView *view, ssize_t pos_delta)
+{
+	if(pos_delta < 0)
+	{
+		return get_corrected_list_pos_up(view, -pos_delta);
+	}
+	else
+	{
+		return get_corrected_list_pos_down(view, pos_delta);
+	}
+}
+
+int
+get_corrected_list_pos_down(const FileView *view, size_t pos_delta)
+{
+	size_t scroll_offset = get_effective_scroll_offset(view);
+	if(view->list_pos <= view->top_line + scroll_offset + (MAX(pos_delta, 1) - 1))
+	{
+		size_t column_correction = view->list_pos%view->column_count;
+		size_t offset = scroll_offset + pos_delta + column_correction;
+		return view->top_line + offset;
+	}
+	return view->list_pos;
+}
+
+int
+correct_list_pos_on_scroll_up(FileView *view, size_t lines_count)
+{
+	if(!all_files_visible(view))
+	{
+		correct_list_pos_up(view, lines_count*view->column_count);
+		return 1;
+	}
+	return 0;
+}
+
+void
+correct_list_pos_up(FileView *view, size_t pos_delta)
+{
+	view->list_pos = get_corrected_list_pos_up(view, pos_delta);
+}
+
+int
+get_corrected_list_pos_up(const FileView *view, size_t pos_delta)
+{
+	size_t scroll_offset = get_effective_scroll_offset(view);
+	size_t last = get_last_visible_file(view);
+	if(view->list_pos >= last - scroll_offset - (MAX(pos_delta, 1) - 1))
+	{
+		size_t column_correction = (view->column_count - 1) -
+				view->list_pos%view->column_count;
+		size_t offset = scroll_offset + pos_delta + column_correction;
+		return last - offset;
+	}
+	return view->list_pos;
+}
+
+int
+all_files_visible(const FileView *view)
+{
+	return view->list_rows <= view->window_cells;
 }
 
 void
@@ -909,7 +1016,10 @@ erase_current_line_bar(FileView *view)
 {
 	int old_cursor = view->curr_line;
 	int old_pos = view->top_line + old_cursor;
-	column_data_t cdt = {view, old_pos, 0, old_cursor};
+	size_t col_width;
+	size_t col_count;
+	size_t print_width;
+	column_data_t cdt = {view, old_pos, 0};
 
 	if(old_cursor < 0)
 		return;
@@ -923,17 +1033,32 @@ erase_current_line_bar(FileView *view)
 		return;
 	}
 
-	wmove(view->win, old_cursor, 1);
+	calculate_table_conf(view, &col_count, &col_width);
+	print_width = col_width;
+	if(view->ls_view)
+	{
+		print_width = MIN(col_width - 1, strlen(view->dir_entry[old_pos].name));
+	}
 
-	wclrtoeol(view->win);
+	cdt.current_line = old_cursor/col_count;
+	cdt.column_offset = (old_cursor%col_count)*col_width;
 
-	columns_format_line(view->columns, &cdt, view->window_width - 1);
+	column_line_print(&cdt, FILL_COLUMN_ID, " ", -1);
+	columns_format_line(view->columns, &cdt, col_width);
+	column_line_print(&cdt, FILL_COLUMN_ID, " ", print_width);
+
+	if(view == other_view)
+	{
+		put_inactive_mark(view);
+	}
 }
 
 int
-move_curr_line(FileView *view, int pos)
+move_curr_line(FileView *view)
 {
 	int redraw = 0;
+	int pos = view->list_pos;
+	size_t last;
 
 	if(pos < 1)
 		pos = 0;
@@ -944,33 +1069,30 @@ move_curr_line(FileView *view, int pos)
 	if(pos == -1)
 		return 0;
 
+	view->list_pos = pos;
+
 	if(view->curr_line > view->list_rows - 1)
 		view->curr_line = view->list_rows - 1;
 
 	view->top_line = calculate_top_position(view, view->top_line);
 
-	if(view->top_line <= pos && pos <= view->top_line + view->window_rows)
+	last = get_last_visible_file(view);
+	if(view->top_line <= pos && pos <= last)
 	{
 		view->curr_line = pos - view->top_line;
 	}
-	else if(pos > view->top_line + view->window_rows)
+	else if(pos > last)
 	{
-		while(pos > view->top_line + view->window_rows)
-			view->top_line++;
-
-		view->curr_line = view->window_rows;
+		scroll_down(view, pos - last);
 		redraw = 1;
 	}
 	else if(pos < view->top_line)
 	{
-		while(pos < view->top_line)
-			view->top_line--;
-
-		view->curr_line = 0;
+		scroll_up(view, view->top_line - pos);
 		redraw = 1;
 	}
 
-	redraw = consider_scroll_offset(view, pos) ? 1 : redraw;
+	redraw = consider_scroll_offset(view) ? 1 : redraw;
 
 	return redraw;
 }
@@ -981,15 +1103,20 @@ move_curr_line(FileView *view, int pos)
 static int
 calculate_top_position(FileView *view, int top)
 {
-	int result = top;
-	if(view->window_rows >= view->list_rows)
+	int result = MIN(MAX(top, 0), view->list_rows - 1);
+	result = ROUND_DOWN(result, view->column_count);
+	if(view->window_cells >= view->list_rows)
 	{
 		result = 0;
 	}
-	else if((view->list_rows - top) <= view->window_rows)
+	else if((view->list_rows - top) < view->window_cells)
 	{
-		result = view->list_rows - view->window_rows - 1;
-		view->curr_line++;
+		if(view->window_cells - (view->list_rows - top) >= view->column_count)
+		{
+			result = view->list_rows - view->window_cells + (view->column_count - 1);
+			result = ROUND_DOWN(result, view->column_count);
+			view->curr_line++;
+		}
 	}
 	return result;
 }
@@ -998,7 +1125,9 @@ void
 move_to_list_pos(FileView *view, int pos)
 {
 	int redraw = 0;
-	int old_cursor = view->curr_line;
+	size_t col_width;
+	size_t col_count;
+	size_t print_width;
 	column_data_t cdt = {view, 0, 1, 0};
 
 	if(pos < 1)
@@ -1017,34 +1146,84 @@ move_to_list_pos(FileView *view, int pos)
 
 	erase_current_line_bar(view);
 
-	redraw = move_curr_line(view, pos);
+	redraw = move_curr_line(view);
 
 	if(curr_stats.load_stage < 2)
 		return;
 
 	if(redraw)
-		draw_dir_list(view, view->top_line);
+		draw_dir_list(view);
 
-	wattrset(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
-	mvwaddstr(view->win, old_cursor, 0, " ");
-	refresh_view_win(view);
-	wattroff(view->win, COLOR_PAIR(WIN_COLOR + view->color_scheme));
-
-	wmove(view->win, view->curr_line, 1);
-	wclrtoeol(view->win);
+	calculate_table_conf(view, &col_count, &col_width);
+	print_width = col_width;
+	if(view->ls_view)
+	{
+		print_width = MIN(col_width - 1,
+				strlen(view->dir_entry[view->list_pos].name));
+	}
 
 	cdt.line = pos;
-	cdt.current_line = view->curr_line;
+	cdt.current_line = view->curr_line/col_count;
+	cdt.column_offset = (view->curr_line%col_count)*col_width;
 
 	column_line_print(&cdt, FILL_COLUMN_ID, " ", -1);
-	columns_format_line(view->columns, &cdt, view->window_width - 1);
-	column_line_print(&cdt, FILL_COLUMN_ID, " ", view->window_width);
+	columns_format_line(view->columns, &cdt, print_width);
+	column_line_print(&cdt, FILL_COLUMN_ID, " ", print_width);
 
 	refresh_view_win(view);
 	update_stat_window(view);
 
 	if(curr_stats.view)
 		quick_view_file(view);
+}
+
+void
+put_inactive_mark(FileView *view)
+{
+	size_t col_width;
+	size_t col_count;
+
+	calculate_table_conf(view, &col_count, &col_width);
+
+	mvwaddstr(view->win, view->curr_line/col_count,
+			(view->curr_line%col_count)*col_width, "*");
+}
+
+/* Calculates number of columns and maximum width of column in a view. */
+static void
+calculate_table_conf(FileView *view, size_t *count, size_t *width)
+{
+	*width = view->window_width - 1;
+	*count = 1;
+
+	if(view->ls_view)
+	{
+		*count = calculate_columns_count(view);
+		*width = calculate_column_width(view);
+	}
+	view->column_count = *count;
+	view->window_cells = *count*(view->window_rows + 1);
+}
+
+size_t
+calculate_columns_count(FileView *view)
+{
+	if(view->ls_view)
+	{
+		size_t column_width = calculate_column_width(view);
+		return (view->window_width - 1)/column_width;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
+/* Returns width of one column in the view. */
+static size_t
+calculate_column_width(FileView *view)
+{
+	return MIN(view->max_filename_len + COLUMN_GAP, view->window_width - 1);
 }
 
 void
@@ -1203,59 +1382,205 @@ check_view_dir_history(FileView *view)
 	view->list_pos = pos;
 	if(rel_pos >= 0)
 	{
-		view->top_line = pos - MIN(view->window_rows, rel_pos);
+		view->top_line = pos - MIN(view->window_cells - 1, rel_pos);
 		if(view->top_line < 0)
 			view->top_line = 0;
 		view->curr_line = pos - view->top_line;
 	}
 	else
 	{
-		if(view->list_pos <= view->window_rows)
+		size_t last = get_last_visible_file(view);
+		if(view->list_pos < view->window_cells)
 		{
-			view->top_line = 0;
-			view->curr_line = view->list_pos;
+			scroll_up(view, view->top_line);
 		}
-		else if(view->list_pos > (view->top_line + view->window_rows))
+		else if(view->list_pos > last)
 		{
-			while(view->list_pos > (view->top_line + view->window_rows))
-				view->top_line++;
-
-			view->curr_line = view->window_rows;
+			scroll_down(view, view->list_pos - last);
 		}
 	}
-	(void)consider_scroll_offset(view, pos);
+	(void)consider_scroll_offset(view);
 }
 
 /* Updates current and top line of a view according to scrolloff option value.
  * Returns non-zero if redraw is needed. */
 int
-consider_scroll_offset(FileView *view, int pos)
+consider_scroll_offset(FileView *view)
 {
-	int result = 0;
+	int need_redraw = 0;
+	int pos = view->list_pos;
 	if(cfg.scroll_off > 0)
 	{
-		int s = MIN((view->window_rows + 1)/2, cfg.scroll_off);
-		if(pos - view->top_line < s && view->top_line > 0)
+		size_t s = get_effective_scroll_offset(view);
+		/* Check scroll offset at the top. */
+		if(can_scroll_up(view) && pos - view->top_line < s)
 		{
-			view->top_line -= s - (pos - view->top_line);
-			if(view->top_line < 0)
-				view->top_line = 0;
-			view->curr_line = MIN(s, pos);
-			result = 1;
+			scroll_up(view, s - (pos - view->top_line));
+			need_redraw = 1;
 		}
-		if(view->top_line + view->window_rows < view->list_rows)
+		/* Check scroll offset at the bottom. */
+		if(can_scroll_down(view))
 		{
-			if((view->top_line + view->window_rows) - pos < s)
+			size_t last = get_last_visible_file(view);
+			if(pos > last - s)
 			{
-				view->top_line += s - ((view->top_line + view->window_rows) - pos);
-				if(pos + s > view->list_rows)
-					view->top_line -= pos + s - view->list_rows;
-				view->curr_line = pos - view->top_line;
-				result = 1;
+				scroll_down(view, s + (pos - last));
+				need_redraw = 1;
 			}
 		}
 	}
-	return result;
+	return need_redraw;
+}
+
+size_t
+get_effective_scroll_offset(const FileView *view)
+{
+	int val = MIN((view->window_rows + 1)/2, MAX(cfg.scroll_off, 0));
+	return val*view->column_count;
+}
+
+int
+can_scroll_up(const FileView *view)
+{
+	return view->top_line > 0;
+}
+
+int
+can_scroll_down(const FileView *view)
+{
+	return get_last_visible_file(view) < view->list_rows - 1;
+}
+
+void
+scroll_by_files(FileView *view, ssize_t by)
+{
+	if(by > 0)
+	{
+		scroll_down(view, by);
+	}
+	else if(by < 0)
+	{
+		scroll_up(view, -by);
+	}
+}
+
+void
+scroll_up(FileView *view, size_t by)
+{
+	/* Round it up, so 1 will cause one line scrolling. */
+	view->top_line -= view->column_count*DIV_ROUND_UP(by, view->column_count);
+	if(view->top_line < 0)
+	{
+		view->top_line = 0;
+	}
+	view->top_line = calculate_top_position(view, view->top_line);
+
+	view->curr_line = view->list_pos - view->top_line;
+}
+
+void
+scroll_down(FileView *view, size_t by)
+{
+	/* Round it up, so 1 will cause one line scrolling. */
+	view->top_line += view->column_count*DIV_ROUND_UP(by, view->column_count);
+	view->top_line = calculate_top_position(view, view->top_line);
+
+	view->curr_line = view->list_pos - view->top_line;
+}
+
+int
+at_first_line(const FileView *view)
+{
+	return view->list_pos/view->column_count == 0;
+}
+
+int
+at_last_line(const FileView *view)
+{
+	size_t col_count = view->column_count;
+	return view->list_pos/col_count == (view->list_rows - 1)/col_count;
+}
+
+int
+at_first_column(const FileView *view)
+{
+	return view->list_pos%view->column_count == 0;
+}
+
+int
+at_last_column(const FileView *view)
+{
+	return view->list_pos%view->column_count == view->column_count - 1;
+}
+
+size_t
+get_window_top_pos(const FileView *view)
+{
+	if(view->top_line == 0)
+	{
+		return 0;
+	}
+	else
+	{
+		return view->top_line + get_effective_scroll_offset(view);
+	}
+}
+
+size_t
+get_window_middle_pos(const FileView *view)
+{
+	int list_middle = view->list_rows/(2*view->column_count);
+	int window_middle = view->window_rows/2;
+	return view->top_line + MIN(list_middle, window_middle)*view->column_count;
+}
+
+size_t
+get_window_bottom_pos(const FileView *view)
+{
+	if(all_files_visible(view))
+	{
+		size_t last = view->list_rows - 1;
+		return last - last%view->column_count;
+	}
+	else
+	{
+		size_t off = get_effective_scroll_offset(view);
+		size_t column_correction = view->column_count - 1;
+		return get_last_visible_file(view) - off - column_correction;
+	}
+}
+
+static size_t
+get_last_visible_file(const FileView *view)
+{
+	return view->top_line + view->window_cells - 1;
+}
+
+void
+go_to_start_of_line(FileView *view)
+{
+	view->list_pos = get_start_of_line(view);
+}
+
+int
+get_start_of_line(const FileView *view)
+{
+	int pos = MAX(MIN(view->list_pos, view->list_rows - 1), 0);
+	return ROUND_DOWN(pos, view->column_count);
+}
+
+void
+go_to_end_of_line(FileView *view)
+{
+	view->list_pos = get_end_of_line(view);
+}
+
+int
+get_end_of_line(const FileView *view)
+{
+	int pos = MAX(MIN(view->list_pos, view->list_rows - 1), 0);
+	pos += (view->column_count - 1) - pos%view->column_count;
+	return MIN(pos, view->list_rows - 1);
 }
 
 void
@@ -1824,6 +2149,7 @@ static int
 fill_dir_list(FileView *view)
 {
 	view->matches = 0;
+	view->max_filename_len = 0;
 
 #ifndef _WIN32
 	DIR *dir;
@@ -1905,7 +2231,10 @@ fill_dir_list(FileView *view)
 
 			dir_entry->type = type_from_dir_entry(d);
 			if(dir_entry->type == DIRECTORY)
+			{
 				strcat(dir_entry->name, "/");
+				name_len++;
+			}
 			dir_entry->size = 0;
 			dir_entry->mode = 0;
 			dir_entry->uid = -1;
@@ -1913,6 +2242,8 @@ fill_dir_list(FileView *view)
 			dir_entry->mtime = 0;
 			dir_entry->atime = 0;
 			dir_entry->ctime = 0;
+
+			view->max_filename_len = MAX(view->max_filename_len, name_len);
 			continue;
 		}
 
@@ -1941,6 +2272,7 @@ fill_dir_list(FileView *view)
 				case S_IFDIR:
 					strcat(dir_entry->name, "/");
 					dir_entry->type = DIRECTORY;
+					name_len++;
 					break;
 				case S_IFCHR:
 				case S_IFBLK:
@@ -1959,6 +2291,7 @@ fill_dir_list(FileView *view)
 					dir_entry->type = UNKNOWN;
 					break;
 			}
+			view->max_filename_len = MAX(view->max_filename_len, name_len);
 		}
 	}
 	closedir(dir);
@@ -2059,6 +2392,7 @@ fill_dir_list(FileView *view)
 		{
 			strcat(dir_entry->name, "/");
 			dir_entry->type = DIRECTORY;
+			name_len++;
 		}
 		else if(is_executable(dir_entry))
 		{
@@ -2069,6 +2403,7 @@ fill_dir_list(FileView *view)
 			dir_entry->type = REGULAR;
 		}
 		view->list_rows++;
+		view->max_filename_len = MAX(view->max_filename_len, name_len);
 	}
 	while(FindNextFileA(hfind, &ffd));
 	FindClose(hfind);
@@ -2163,6 +2498,8 @@ load_dir_list(FileView *view, int reload)
 		clean_status_bar();
 	}
 
+	view->column_count = calculate_columns_count(view);
+
 	/* If reloading the same directory don't jump to
 	 * history position.  Stay at the current line
 	 */
@@ -2184,7 +2521,7 @@ load_dir_list(FileView *view, int reload)
 		view->selected_files = 0;
 
 	if(curr_stats.load_stage >= 2)
-		draw_dir_list(view, view->top_line);
+		draw_dir_list(view);
 
 	if(view == curr_view)
 	{
@@ -2235,7 +2572,7 @@ rescue_from_empty_filelist(FileView * view)
 	}
 
 	if(curr_stats.load_stage >= 2)
-		draw_dir_list(view, view->top_line);
+		draw_dir_list(view);
 }
 
 /* Adds parent directory entry (..) to filelist. */
@@ -2261,6 +2598,7 @@ add_parent_dir(FileView *view)
 		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
+	view->max_filename_len = MAX(view->max_filename_len, strlen(dir_entry->name));
 
 	view->list_rows++;
 
@@ -2430,6 +2768,8 @@ restore_filename_filter(FileView *view)
 void
 set_filename_filter(FileView *view, const char *filter)
 {
+	int ret;
+
 	if(view->filter_is_valid)
 	{
 		regfree(&view->filter_regex);
@@ -2442,14 +2782,8 @@ set_filename_filter(FileView *view, const char *filter)
 		return;
 	}
 
-	if(regcomp(&view->filter_regex, view->filename_filter, REG_EXTENDED) == 0)
-	{
-		view->filter_is_valid = 1;
-	}
-	else
-	{
-		view->filter_is_valid = 0;
-	}
+	ret = regcomp(&view->filter_regex, view->filename_filter, REG_EXTENDED);
+	view->filter_is_valid = ret == 0;
 }
 
 void
@@ -2457,7 +2791,7 @@ redraw_view(FileView *view)
 {
 	if(curr_stats.need_update == UT_NONE)
 	{
-		draw_dir_list(view, view->top_line);
+		draw_dir_list(view);
 		move_to_list_pos(view, view->list_pos);
 	}
 }
@@ -2498,7 +2832,7 @@ reload_window(FileView *view)
 
 	if(view != curr_view)
 	{
-		mvwaddstr(view->win, view->curr_line, 0, "*");
+		put_inactive_mark(view);
 		refresh_view_win(view);
 	}
 
@@ -2598,9 +2932,9 @@ load_saving_pos(FileView *view, int reload)
 	{
 		mvwaddstr(view->win, view->curr_line, 0, " ");
 		view->list_pos = pos;
-		if(move_curr_line(view, pos))
-			draw_dir_list(view, view->top_line);
-		mvwaddstr(view->win, view->curr_line, 0, "*");
+		if(move_curr_line(view))
+			draw_dir_list(view);
+		put_inactive_mark(view);
 	}
 
 	if(curr_stats.number_of_windows != 1 || view == curr_view)
@@ -2738,14 +3072,14 @@ cd(FileView *view, const char *base_dir, const char *path)
 	}
 	else
 	{
-		draw_dir_list(other_view, other_view->top_line);
+		draw_dir_list(other_view);
 		refresh_view_win(other_view);
 	}
 	return 0;
 }
 
 int
-view_is_at_path(FileView *view, const char *path)
+view_is_at_path(const FileView *view, const char path[])
 {
 	if(path[0] == '\0' || stroscmp(view->curr_dir, path) == 0)
 		return 0;

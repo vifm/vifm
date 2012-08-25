@@ -48,14 +48,17 @@ static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info);
+static void page_scroll(int base, int direction);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_quote(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_dollar(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_comma(key_info_t key_info, keys_info_t *keys_info);
+static void cmd_zero(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_colon(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_semicolon(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
@@ -74,15 +77,20 @@ static void delete(key_info_t key_info, int use_trash);
 static void cmd_cp(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_f(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gg(key_info_t key_info, keys_info_t *keys_info);
-static void goto_pos(int pos);
+static void cmd_gl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gU(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gu(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_gv(key_info_t key_info, keys_info_t *keys_info);
 static void select_first_one(void);
+static void cmd_h(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_i(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_j(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_k(key_info_t key_info, keys_info_t *keys_info);
+static void go_to_prev(key_info_t key_info, keys_info_t *keys_info, int def,
+		int step);
 static void cmd_l(key_info_t key_info, keys_info_t *keys_info);
+static void go_to_next(key_info_t key_info, keys_info_t *keys_info, int def,
+		int step);
 static void cmd_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_n(key_info_t key_info, keys_info_t *keys_info);
 static void search(key_info_t key_info, int backward);
@@ -98,6 +106,9 @@ static void select_down_one(FileView *view, int start_pos);
 static int is_parent_dir(int pos);
 static void update(void);
 static int find_update(FileView *view, int backward);
+static void goto_pos_force_update(int pos);
+static void goto_pos(int pos);
+static int move_pos(int pos);
 
 static int *mode;
 static FileView *view;
@@ -116,16 +127,19 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"\x06", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_f}}},
 	{L"\x0c", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_l}}},
 	{L"\x0d", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_m}}},
-	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
-	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"\x0e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}}, /* Ctrl-N */
+	{L"\x10", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}}, /* Ctrl-P */
 	{L"\x15", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_u}}},
 	{L"\x18", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_x}}},
 	{L"\x19", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_y}}},
 	/* escape */
 	{L"\x1b", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_ctrl_c}}},
 	{L"'", {BUILTIN_WAIT_POINT, FOLLOWED_BY_MULTIKEY, {.handler = cmd_quote}}},
+	{L"^", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
+	{L"$", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dollar}}},
 	{L"%", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_percent}}},
 	{L",", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_comma}}},
+	{L"0", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zero}}},
 	{L":", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_colon}}},
 	{L";", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_semicolon}}},
 	{L"/", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_slash}}},
@@ -147,9 +161,14 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"cp", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
 	{L"cw", {BUILTIN_CMD, FOLLOWED_BY_NONE, {.cmd = L":rename\r"}}},
 	{L"gg", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gg}}},
+	{L"gh", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
+	{L"gj", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
+	{L"gk", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
+	{L"gl", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gl}}},
 	{L"gU", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gU}}},
 	{L"gu", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gu}}},
 	{L"gv", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_gv}}},
+	{L"h", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_h}}},
 	{L"i", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_i}}},
 	{L"j", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_j}}},
 	{L"k", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_k}}},
@@ -255,23 +274,11 @@ cmd_ctrl_a(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	int s;
-	int l = view->window_rows - 1;
-	int pos;
-
-	if(view->top_line == 0)
-		return;
-
-	pos = view->top_line + 1;
-	view->top_line -= l;
-	if(view->top_line < 0)
-		view->top_line = 0;
-	s = MIN((view->window_rows + 1)/2 - 1, cfg.scroll_off);
-	if(cfg.scroll_off > 0 &&
-			view->top_line + view->window_rows - pos < s)
-		pos -= s - (view->top_line + view->window_rows - pos);
-
-	goto_pos(pos);
+	if(can_scroll_up(view))
+	{
+		int base = get_window_bottom_pos(view);
+		page_scroll(base, -1);
+	}
 }
 
 static void
@@ -284,50 +291,56 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	int pos = view->list_pos;
-	int s = MIN((view->window_rows + 1)/2 - 1, cfg.scroll_off);
-	if(cfg.scroll_off > 0 && view->list_pos - view->top_line < s)
-		pos += s - (view->list_pos - view->top_line);
-	view->top_line += (view->window_rows + 1)/2;
-	goto_pos(pos + (view->window_rows + 1)/2);
+	if(!at_last_line(view))
+	{
+		int new_pos;
+		size_t offset = view->window_cells/2;
+		offset = ROUND_DOWN(offset, view->column_count);
+		new_pos = get_corrected_list_pos_down(view, offset);
+		new_pos = MAX(new_pos, view->list_pos + offset);
+		new_pos = MIN(new_pos, view->list_rows);
+		new_pos = ROUND_DOWN(new_pos, view->column_count);
+		view->top_line += new_pos - view->list_pos;
+		goto_pos(new_pos);
+	}
 }
 
 static void
 cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
-	int off;
-
-	if(view->list_rows <= view->window_rows + 1)
-		return;
-	if(view->top_line == view->list_rows - view->window_rows - 1)
-		return;
-
-	off = MAX(cfg.scroll_off, 0);
-	if(view->list_pos <= view->top_line + off)
-		goto_pos(view->top_line + 1 + off);
-	view->top_line++;
-	redraw_view(view);
+	if(can_scroll_down(view))
+	{
+		int new_pos = get_corrected_list_pos_down(view, view->column_count);
+		scroll_down(view, view->column_count);
+		goto_pos_force_update(new_pos);
+	}
 }
 
 static void
 cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
-	int s;
-	int l = view->window_rows - 1;
-	int pos;
+	if(can_scroll_down(view))
+	{
+		int base = get_window_top_pos(view);
+		page_scroll(base, 1);
+	}
+}
 
-	if(view->top_line + 1 == view->list_rows - (l + 1))
-		return;
-
-	pos = view->top_line + l;
-	view->top_line += l;
-	if(view->top_line > view->list_rows)
-		view->top_line = view->list_rows - l;
-	s = MIN((view->window_rows + 1)/2 - 1, cfg.scroll_off);
-	if(cfg.scroll_off > 0 && pos - view->top_line < s)
-		pos += s - (pos - view->top_line);
-
-	goto_pos(pos);
+/* Scrolls pane by one view in both directions. The direction should be 1 or
+ * -1. */
+static void
+page_scroll(int base, int direction)
+{
+	int new_pos;
+	int old_pos = view->list_pos;
+	/* Two lines gap. */
+	int lines = view->window_rows - 1;
+	int offset = lines*view->column_count;
+	view->list_pos = base;
+	new_pos = get_corrected_list_pos(view, direction*offset);
+	view->list_pos = old_pos;
+	scroll_by_files(view, direction*offset);
+	goto_pos(new_pos);
 }
 
 static void
@@ -348,16 +361,18 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
-	int pos = view->list_pos;
-	int s = MIN((view->window_rows + 1)/2 - 1, cfg.scroll_off);
-	if(cfg.scroll_off > 0 &&
-			view->top_line + view->window_rows - view->list_pos < s)
-		pos -= s - (view->top_line + view->window_rows - view->list_pos);
-
-	view->top_line -= (view->window_rows + 1)/2;
-	if(view->top_line < 0)
-		view->top_line = 0;
-	goto_pos(pos - (view->window_rows + 1)/2);
+	if(!at_first_line(view))
+	{
+		int new_pos;
+		size_t offset = view->window_cells/2;
+		offset = ROUND_DOWN(offset, view->column_count);
+		new_pos = get_corrected_list_pos_up(view, offset);
+		new_pos = MIN(new_pos, view->list_pos - offset);
+		new_pos = MAX(new_pos, 0);
+		new_pos = ROUND_DOWN(new_pos, view->column_count);
+		view->top_line += new_pos - view->list_pos;
+		goto_pos(new_pos);
+	}
 }
 
 static void
@@ -372,16 +387,12 @@ cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	int off;
-
-	if(view->list_rows <= view->window_rows + 1 || view->top_line == 0)
-		return;
-
-	off = MAX(cfg.scroll_off, 0);
-	if(view->list_pos >= view->top_line + view->window_rows - off)
-		goto_pos(view->top_line - 1 + view->window_rows - off);
-	view->top_line--;
-	redraw_view(view);
+	if(can_scroll_up(view))
+	{
+		int new_pos = get_corrected_list_pos_up(view, view->column_count);
+		scroll_up(view, view->column_count);
+		goto_pos_force_update(new_pos);
+	}
 }
 
 static void
@@ -413,43 +424,35 @@ cmd_F(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_G(key_info_t key_info, keys_info_t *keys_info)
 {
+	int new_pos;
 	if(key_info.count == NO_COUNT_GIVEN)
 		key_info.count = view->list_rows;
-	goto_pos(key_info.count - 1);
+	new_pos = ROUND_DOWN(key_info.count - 1, view->column_count);
+	goto_pos(new_pos);
 }
 
+/* Move to the first line of window, selecting as we go. */
 static void
 cmd_H(key_info_t key_info, keys_info_t *keys_info)
 {
-	int off = MAX(cfg.scroll_off, 0);
-	if(off > view->window_rows/2)
-		return;
-	if(view->top_line == 0)
-		goto_pos(0);
-	else
-		goto_pos(view->top_line + off);
+	size_t new_pos = get_window_top_pos(view);
+	goto_pos(new_pos);
 }
 
-/* move to last line of window, selecting as we go */
+/* Move to the last line of window, selecting as we go. */
 static void
 cmd_L(key_info_t key_info, keys_info_t *keys_info)
 {
-	int off = MAX(cfg.scroll_off, 0);
-	if(off > view->window_rows/2)
-		return;
-	if(view->top_line + view->window_rows < view->list_rows - 1)
-		goto_pos(view->top_line + view->window_rows - off);
-	else
-		goto_pos(view->top_line + view->window_rows);
+	size_t new_pos = get_window_bottom_pos(view);
+	goto_pos(new_pos);
 }
 
-/* move to middle of window, selecting from start position to there */
+/* Move to middle line of window, selecting from start position to there. */
 static void
 cmd_M(key_info_t key_info, keys_info_t *keys_info)
 {
-	int pos1 = view->list_rows/2;
-	int pos2 = view->top_line + view->window_rows/2;
-	goto_pos(MIN(pos1, pos2));
+	size_t new_pos = get_window_middle_pos(view);
+	goto_pos(new_pos);
 }
 
 static void
@@ -477,6 +480,17 @@ cmd_quote(key_info_t key_info, keys_info_t *keys_info)
 	goto_pos(pos);
 }
 
+/* Move cursor to the last column in ls-view sub-mode selecting or unselecting
+ * files while moving. */
+static void
+cmd_dollar(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(!at_last_column(view))
+	{
+		goto_pos(get_end_of_line(view));
+	}
+}
+
 static void
 cmd_percent(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -500,6 +514,18 @@ cmd_comma(key_info_t key_info, keys_info_t *keys_info)
 	find_goto(last_fast_search_char, key_info.count, !last_fast_search_backward);
 }
 
+/* Move cursor to the first column in ls-view sub-mode selecting or unselecting
+ * files while moving. */
+static void
+cmd_zero(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(!at_first_column(view))
+	{
+		goto_pos(get_start_of_line(view));
+	}
+}
+
+/* Switch to command-line mode. */
 static void
 cmd_colon(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -597,22 +623,13 @@ cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-goto_pos(int pos)
+cmd_gl(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(pos < 0)
-		pos = 0;
-	if(pos > view->list_rows - 1)
-		pos = view->list_rows - 1;
-
-	if(view->list_pos == pos)
-		return;
-
-	while(view->list_pos < pos)
-		select_down_one(view, start_pos);
-	while(view->list_pos > pos)
-		select_up_one(view, start_pos);
-
-	update();
+	update_marks(view);
+	leave_visual_mode(curr_stats.save_msg, 1, 0);
+	handle_file(view, 0, 0);
+	clean_selected_files(view);
+	redraw_view(view);
 }
 
 static void
@@ -671,37 +688,72 @@ select_first_one(void)
 	}
 }
 
+/* Go backwards [count] (one by default) files in ls-like sub-mode. */
+static void
+cmd_h(key_info_t key_info, keys_info_t *keys_info)
+{
+	if(view->ls_view)
+	{
+		go_to_prev(key_info, keys_info, 1, 1);
+	}
+}
+
 static void
 cmd_i(key_info_t key_info, keys_info_t *keys_info)
 {
-	handle_file(curr_view, 1, 0);
+	handle_file(view, 1, 0);
 	leave_clearing_selection(curr_stats.save_msg);
 }
 
 static void
 cmd_j(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
-	goto_pos(view->list_pos + key_info.count);
+	if(!view->ls_view || !at_last_line(view))
+	{
+		go_to_next(key_info, keys_info, 1, view->column_count);
+	}
 }
 
 static void
 cmd_k(key_info_t key_info, keys_info_t *keys_info)
 {
+	if(!view->ls_view || !at_first_line(view))
+	{
+		go_to_prev(key_info, keys_info, 1, view->column_count);
+	}
+}
+
+/* Moves cursor to one of previous files in the list. */
+static void
+go_to_prev(key_info_t key_info, keys_info_t *keys_info, int def, int step)
+{
 	if(key_info.count == NO_COUNT_GIVEN)
-		key_info.count = 1;
+		key_info.count = def;
+	key_info.count *= step;
 	goto_pos(view->list_pos - key_info.count);
 }
 
 static void
 cmd_l(key_info_t key_info, keys_info_t *keys_info)
 {
-	update_marks(view);
-	leave_visual_mode(curr_stats.save_msg, 1, 0);
-	handle_file(view, 0, 0);
-	clean_selected_files(view);
-	redraw_view(view);
+	if(view->ls_view)
+	{
+		go_to_next(key_info, keys_info, 1, 1);
+	}
+	else
+	{
+		cmd_gl(key_info, keys_info);
+	}
+}
+
+/* Moves cursor to one of next files in the list. */
+static void
+go_to_next(key_info_t key_info, keys_info_t *keys_info, int def, int step)
+{
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = def;
+	key_info.count *= step;
+	goto_pos(view->list_pos + key_info.count);
 }
 
 static void
@@ -742,7 +794,7 @@ search(key_info_t key_info, int backward)
 
 	if(!found)
 	{
-		print_search_fail_msg(curr_view, backward);
+		print_search_fail_msg(view, backward);
 		curr_stats.save_msg = 1;
 		return;
 	}
@@ -964,6 +1016,47 @@ find_update(FileView *view, int backward)
 	view->list_pos = old_pos;
 	goto_pos(new_pos);
 	return found;
+}
+
+/* Moves cursor from its current position to specified pos selecting or
+ * unselecting files while moving.  Always redraws view. */
+static void
+goto_pos_force_update(int pos)
+{
+	(void)move_pos(pos);
+	update();
+}
+
+/* Moves cursor from its current position to specified pos selecting or
+ * unselecting files while moving.  Automatically redraws view if needed. */
+static void
+goto_pos(int pos)
+{
+	if(move_pos(pos))
+	{
+		update();
+	}
+}
+
+/* Moves cursor from its current position to specified pos selecting or
+ * unselecting files while moving.  Don't call it explicitly, call goto_pos()
+ * and goto_pos_force_update() instead.  Returns non-zero if cursor was
+ * moved. */
+static int
+move_pos(int pos)
+{
+	pos = MIN(view->list_rows - 1, MAX(0, pos));
+	if(view->list_pos == pos)
+	{
+		return 0;
+	}
+
+	while(view->list_pos < pos)
+		select_down_one(view, start_pos);
+	while(view->list_pos > pos)
+		select_up_one(view, start_pos);
+
+	return 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -767,6 +767,7 @@ setup_ncurses_interface(void)
 	werase(lwin.win);
 	getmaxyx(lwin.win, y, x);
 	lwin.window_rows = y - 1;
+	lwin.window_cells = y;
 	lwin.window_width = x - 1;
 
 	mborder = newwin(screen_y - 1, 2 - screen_x%2, 1,
@@ -825,6 +826,7 @@ setup_ncurses_interface(void)
 	werase(rwin.win);
 	getmaxyx(rwin.win, y, x);
 	rwin.window_rows = y - 1;
+	rwin.window_cells = y;
 	rwin.window_width = x - 1;
 
 	rborder = newwin(screen_y - 2, 1, 1, screen_x - 1);
@@ -898,6 +900,8 @@ correct_size(FileView *view)
 	getmaxyx(view->win, y, x);
 	view->window_width = x - 1;
 	view->window_rows = y - 1;
+	view->column_count = calculate_columns_count(view);
+	view->window_cells = view->column_count*y;
 }
 
 static void
@@ -1257,7 +1261,7 @@ change_window(void)
 	{
 		if(!other_view->explore_mode)
 		{
-			mvwaddstr(other_view->win, other_view->curr_line, 0, "*");
+			put_inactive_mark(other_view);
 			erase_current_line_bar(other_view);
 		}
 		update_view_title(other_view);
@@ -1419,8 +1423,8 @@ redraw_lists(void)
 			quick_view_file(curr_view);
 		else
 		{
-			(void)move_curr_line(other_view, other_view->list_pos);
-			draw_dir_list(other_view, other_view->top_line);
+			(void)move_curr_line(other_view);
+			draw_dir_list(other_view);
 		}
 		refresh_view_win(other_view);
 	}

@@ -20,6 +20,8 @@
 #ifndef __FILELIST_H__
 #define __FILELIST_H__
 
+#include <stddef.h> /* size_t ssize_t */
+
 #include "ui.h"
 
 enum
@@ -48,15 +50,77 @@ void load_initial_directory(FileView *view, const char *dir);
 /* Position related functions. */
 
 int find_file_pos_in_list(FileView *view, const char *file);
-int correct_list_pos_on_scroll_up(FileView *view, int pos_delta);
-int correct_list_pos_on_scroll_down(FileView *view, int pos_delta);
+/* Recalculates difference of two panes scroll positions. */
+void update_scroll_bind_offset(void);
+/* Tries to move cursor by pos_delta positions.  A wrapper for
+ * correct_list_pos_on_scroll_up() and correct_list_pos_on_scroll_down()
+ * functions. */
+void correct_list_pos(FileView *view, ssize_t pos_delta);
+/* Returns non-zero if doing something makes sense. */
+int correct_list_pos_on_scroll_down(FileView *view, size_t lines_count);
+/* Tries to move cursor forwards by pos_delta positions. */
+void correct_list_pos_down(FileView *view, size_t pos_delta);
+/* A wrapper for get_corrected_list_pos_down() and get_corrected_list_pos_up()
+ * functions.  Returns new list position after making correction for scrolling
+ * down. */
+int get_corrected_list_pos(FileView *view, ssize_t pos_delta);
+/* Returns new list position after making correction for scrolling down. */
+int get_corrected_list_pos_down(const FileView *view, size_t pos_delta);
+/* Returns non-zero if doing something makes sense. */
+int correct_list_pos_on_scroll_up(FileView *view, size_t lines_count);
+/* Tries to move cursor backwards by pos_delta positions. */
+void correct_list_pos_up(FileView *view, size_t pos_delta);
+/* Returns new list position after making correction for scrolling up. */
+int get_corrected_list_pos_up(const FileView *view, size_t pos_delta);
+/* Returns non-zero if all files are visible, so no scrolling is needed. */
+int all_files_visible(const FileView *view);
 void move_to_list_pos(FileView *view, int pos);
+/* Adds inactive cursor mark to the view. */
+void put_inactive_mark(FileView *view);
+/* Returns scroll offset value for the view taking view height into account. */
+size_t get_effective_scroll_offset(const FileView *view);
+/* Returns non-zero in case view can be scrolled up (there are more files). */
+int can_scroll_up(const FileView *view);
+/* Returns non-zero in case view can be scrolled down (there are more files). */
+int can_scroll_down(const FileView *view);
+/* Scrolls view down at least by specified number of files.  Updates both top
+ * and cursor positions.  A wrapper for scroll_up() and scroll_down()
+ * functions. */
+void scroll_by_files(FileView *view, ssize_t by);
+/* Scrolls view up at least by specified number of files.  Updates both top and
+ * cursor positions. */
+void scroll_up(FileView *view, size_t by);
+/* Scrolls view down at least by specified number of files.  Updates both top
+ * and cursor positions. */
+void scroll_down(FileView *view, size_t by);
+/* Returns non-zero if cursor is on the first line. */
+int at_first_line(const FileView *view);
+/* Returns non-zero if cursor is on the last line. */
+int at_last_line(const FileView *view);
+/* Returns non-zero if cursor is on the first column. */
+int at_first_column(const FileView *view);
+/* Returns non-zero if cursor is on the last column. */
+int at_last_column(const FileView *view);
+/* Returns window top position adjusted for 'scrolloff' option. */
+size_t get_window_top_pos(const FileView *view);
+/* Returns window middle position adjusted for 'scrolloff' option. */
+size_t get_window_middle_pos(const FileView *view);
+/* Returns window bottom position adjusted for 'scrolloff' option. */
+size_t get_window_bottom_pos(const FileView *view);
+/* Moves cursor to the first file in a row. */
+void go_to_start_of_line(FileView *view);
+/* Returns position of the first file in current line. */
+int get_start_of_line(const FileView *view);
+/* Moves cursor to the last file in a row. */
+void go_to_end_of_line(FileView *view);
+/* Returns position of the last file in current line. */
+int get_end_of_line(const FileView *view);
 
 /* Appearance related functions. */
 
 /* Reinitializes view columns. */
 void reset_view_sort(FileView *view);
-void draw_dir_list(FileView *view, int top);
+void draw_dir_list(FileView *view);
 void erase_current_line_bar(FileView *view);
 /* Updates view (maybe postponed) on the screen (redraws file list and
  * cursor) */
@@ -67,7 +131,9 @@ void redraw_current_view(void);
 void change_sort_type(FileView *view, char type, char descending);
 void update_view_title(FileView *view);
 /* Returns non-zero if redraw is needed */
-int move_curr_line(FileView *view, int pos);
+int move_curr_line(FileView *view);
+/* Returns number of columns in the view. */
+size_t calculate_columns_count(FileView *view);
 
 /* Directory traversing functions. */
 
@@ -125,7 +191,7 @@ int cd_is_possible(const char *path);
 /* Checks whether directory list was loaded at least once since startup. */
 int is_dir_list_loaded(FileView *view);
 /* Returns non-zero if path should be changed. */
-int view_is_at_path(FileView *view, const char *path);
+int view_is_at_path(const FileView *view, const char path[]);
 /* Sets view's current directory from path value.
  * Returns non-zero if view's directory was changed. */
 int set_view_path(FileView *view, const char *path);
