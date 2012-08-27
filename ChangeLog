@@ -86,6 +86,8 @@
 
 	Fixed extra slash in :registers menu for files in root directory.
 
+	Fixed file viewer matching when symbolic link target is a directory.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.

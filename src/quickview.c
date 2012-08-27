@@ -102,6 +102,10 @@ quick_view_file(FileView *view)
 				strcpy(buf, link);
 			else
 				snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, link);
+			if(!ends_with_slash(buf) && is_dir(buf))
+			{
+				strcat(buf, "/");
+			}
 			/* break intensionally omitted */
 		case UNKNOWN:
 		default:
