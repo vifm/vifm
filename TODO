@@ -111,6 +111,7 @@ Other (questionable) things.
     An option to hide ../ directory.
     An ability to customize how directories are shown (e.g. dir/, [dir]).
     Live preview of color schemes.
+    "Blow directory" command to replace directory with its content.
 
 Code improvements.
     Write more tests.

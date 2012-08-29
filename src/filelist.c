@@ -963,7 +963,7 @@ get_corrected_list_pos(FileView *view, ssize_t pos_delta)
 int
 get_corrected_list_pos_down(const FileView *view, size_t pos_delta)
 {
-	size_t scroll_offset = get_effective_scroll_offset(view);
+	int scroll_offset = get_effective_scroll_offset(view);
 	if(view->list_pos <= view->top_line + scroll_offset + (MAX(pos_delta, 1) - 1))
 	{
 		size_t column_correction = view->list_pos%view->column_count;
@@ -993,8 +993,8 @@ correct_list_pos_up(FileView *view, size_t pos_delta)
 int
 get_corrected_list_pos_up(const FileView *view, size_t pos_delta)
 {
-	size_t scroll_offset = get_effective_scroll_offset(view);
-	size_t last = get_last_visible_file(view);
+	int scroll_offset = get_effective_scroll_offset(view);
+	int last = get_last_visible_file(view);
 	if(view->list_pos >= last - scroll_offset - (MAX(pos_delta, 1) - 1))
 	{
 		size_t column_correction = (view->column_count - 1) -
