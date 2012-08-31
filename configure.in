@@ -12,7 +12,10 @@ AC_HEADER_STDC
 AM_PROG_LIBTOOL
 AM_PROG_CC_C_O
 AC_CONFIG_MACRO_DIR([m4])
-AC_CHECK_HEADERS(limits.h sys/time.h unistd.h wchar.h)
+AC_CHECK_HEADER([limits.h], [], [AC_MSG_ERROR([limits.h header not found.])])
+AC_CHECK_HEADER([sys/time.h], [], [AC_MSG_ERROR([sys/time.h header not found.])])
+AC_CHECK_HEADER([unistd.h], [], [AC_MSG_ERROR([unistd.h header not found.])])
+AC_CHECK_HEADER([wchar.h], [], [AC_MSG_ERROR([wchar.h header not found.])])
 AC_CHECK_FUNCS(getcwd mkdir regcomp strdup strstr)
 AC_CHECK_MEMBERS([struct stat.st_mtim])
 AC_SYS_LARGEFILE
@@ -86,7 +89,7 @@ AC_CHECK_LIB(ncursesw, initscr,
 	if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncursesw; then
 		CPPFLAGS="$CPPFLAGS -I/usr/include/ncursesw"
 	fi
-	AC_CHECK_HEADERS(ncurses.h)],
+	AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])],
 	[AC_MSG_ERROR([libncursesw not found])])
 	#[ac_widec_possible=no
 	#AC_CHECK_LIB(ncurses, initscr,
@@ -94,7 +97,7 @@ AC_CHECK_LIB(ncursesw, initscr,
 		#if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
 			#CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
 		#fi
-		#AC_CHECK_HEADERS(ncurses.h)],
+		#AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])],
 		#[CF_CURSES_LIBS])
 	#])
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
@@ -202,8 +205,8 @@ fi
 if test "$use_libX11" = "yes"; then
 	AC_CHECK_LIB(X11, XOpenDisplay,
 		[LIBS="$LIBS -lX11"
-		AC_CHECK_HEADERS(X11/Xlib.h)
-		AC_CHECK_HEADERS(X11/Xutil.h)
+		AC_CHECK_HEADER([X11/Xlib.h], [], [AC_MSG_ERROR([X11/Xlib.h header not found.])])
+		AC_CHECK_HEADER([X11/Xutil.h], [], [AC_MSG_ERROR([X11/Xutil.h header not found.])])
 		AC_DEFINE([HAVE_X11], [1], [use X11 to determine terminal emulator title])])
 fi
 

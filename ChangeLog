@@ -88,6 +88,8 @@
 
 	Fixed file viewer matching when symbolic link target is a directory.
 
+	Fixed checks for required headers in ./configure script.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.

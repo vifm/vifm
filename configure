@@ -12902,18 +12902,37 @@ fi
 
 
 
-for ac_header in limits.h sys/time.h unistd.h wchar.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
+ac_fn_c_check_header_mongrel "$LINENO" "limits.h" "ac_cv_header_limits_h" "$ac_includes_default"
+if test "x$ac_cv_header_limits_h" = xyes; then :
 
+else
+  as_fn_error $? "limits.h header not found." "$LINENO" 5
 fi
 
-done
+
+ac_fn_c_check_header_mongrel "$LINENO" "sys/time.h" "ac_cv_header_sys_time_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_time_h" = xyes; then :
+
+else
+  as_fn_error $? "sys/time.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "unistd.h" "ac_cv_header_unistd_h" "$ac_includes_default"
+if test "x$ac_cv_header_unistd_h" = xyes; then :
+
+else
+  as_fn_error $? "unistd.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "wchar.h" "ac_cv_header_wchar_h" "$ac_includes_default"
+if test "x$ac_cv_header_wchar_h" = xyes; then :
+
+else
+  as_fn_error $? "wchar.h header not found." "$LINENO" 5
+fi
+
 
 for ac_func in getcwd mkdir regcomp strdup strstr
 do :
@@ -13373,17 +13392,13 @@ if test "x$ac_cv_lib_ncursesw_initscr" = xyes; then :
 	if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncursesw; then
 		CPPFLAGS="$CPPFLAGS -I/usr/include/ncursesw"
 	fi
-	for ac_header in ncurses.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "ncurses.h" "ac_cv_header_ncurses_h" "$ac_includes_default"
-if test "x$ac_cv_header_ncurses_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_NCURSES_H 1
-_ACEOF
+	ac_fn_c_check_header_mongrel "$LINENO" "curses.h" "ac_cv_header_curses_h" "$ac_includes_default"
+if test "x$ac_cv_header_curses_h" = xyes; then :
 
+else
+  as_fn_error $? "curses.h header not found." "$LINENO" 5
 fi
 
-done
 
 else
   as_fn_error $? "libncursesw not found" "$LINENO" 5
@@ -13395,7 +13410,7 @@ fi
 		#if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
 			#CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
 		#fi
-		#AC_CHECK_HEADERS(ncurses.h)],
+		#AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])],
 		#[CF_CURSES_LIBS])
 	#])
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
@@ -13603,29 +13618,21 @@ fi
 $as_echo "$ac_cv_lib_X11_XOpenDisplay" >&6; }
 if test "x$ac_cv_lib_X11_XOpenDisplay" = xyes; then :
   LIBS="$LIBS -lX11"
-		for ac_header in X11/Xlib.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "X11/Xlib.h" "ac_cv_header_X11_Xlib_h" "$ac_includes_default"
+		ac_fn_c_check_header_mongrel "$LINENO" "X11/Xlib.h" "ac_cv_header_X11_Xlib_h" "$ac_includes_default"
 if test "x$ac_cv_header_X11_Xlib_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_X11_XLIB_H 1
-_ACEOF
 
+else
+  as_fn_error $? "X11/Xlib.h header not found." "$LINENO" 5
 fi
 
-done
 
-		for ac_header in X11/Xutil.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "X11/Xutil.h" "ac_cv_header_X11_Xutil_h" "$ac_includes_default"
+		ac_fn_c_check_header_mongrel "$LINENO" "X11/Xutil.h" "ac_cv_header_X11_Xutil_h" "$ac_includes_default"
 if test "x$ac_cv_header_X11_Xutil_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_X11_XUTIL_H 1
-_ACEOF
 
+else
+  as_fn_error $? "X11/Xutil.h header not found." "$LINENO" 5
 fi
 
-done
 
 
 $as_echo "#define HAVE_X11 1" >>confdefs.h
