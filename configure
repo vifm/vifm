@@ -12934,17 +12934,40 @@ else
 fi
 
 
-for ac_func in getcwd mkdir regcomp strdup strstr
-do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
+ac_fn_c_check_func "$LINENO" "getcwd" "ac_cv_func_getcwd"
+if test "x$ac_cv_func_getcwd" = xyes; then :
 
+else
+  as_fn_error $? "getcwd() function not found." "$LINENO" 5
 fi
-done
+
+ac_fn_c_check_func "$LINENO" "mkdir" "ac_cv_func_mkdir"
+if test "x$ac_cv_func_mkdir" = xyes; then :
+
+else
+  as_fn_error $? "mkdir() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "regcomp" "ac_cv_func_regcomp"
+if test "x$ac_cv_func_regcomp" = xyes; then :
+
+else
+  as_fn_error $? "regcomp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strdup" "ac_cv_func_strdup"
+if test "x$ac_cv_func_strdup" = xyes; then :
+
+else
+  as_fn_error $? "strdup() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strstr" "ac_cv_func_strstr"
+if test "x$ac_cv_func_strstr" = xyes; then :
+
+else
+  as_fn_error $? "strstr() function not found." "$LINENO" 5
+fi
 
 ac_fn_c_check_member "$LINENO" "struct stat" "st_mtim" "ac_cv_member_struct_stat_st_mtim" "$ac_includes_default"
 if test "x$ac_cv_member_struct_stat_st_mtim" = xyes; then :

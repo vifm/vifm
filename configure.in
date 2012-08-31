@@ -16,7 +16,11 @@ AC_CHECK_HEADER([limits.h], [], [AC_MSG_ERROR([limits.h header not found.])])
 AC_CHECK_HEADER([sys/time.h], [], [AC_MSG_ERROR([sys/time.h header not found.])])
 AC_CHECK_HEADER([unistd.h], [], [AC_MSG_ERROR([unistd.h header not found.])])
 AC_CHECK_HEADER([wchar.h], [], [AC_MSG_ERROR([wchar.h header not found.])])
-AC_CHECK_FUNCS(getcwd mkdir regcomp strdup strstr)
+AC_CHECK_FUNC([getcwd], [], [AC_MSG_ERROR([getcwd() function not found.])])
+AC_CHECK_FUNC([mkdir], [], [AC_MSG_ERROR([mkdir() function not found.])])
+AC_CHECK_FUNC([regcomp], [], [AC_MSG_ERROR([regcomp() function not found.])])
+AC_CHECK_FUNC([strdup], [], [AC_MSG_ERROR([strdup() function not found.])])
+AC_CHECK_FUNC([strstr], [], [AC_MSG_ERROR([strstr() function not found.])])
 AC_CHECK_MEMBERS([struct stat.st_mtim])
 AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO

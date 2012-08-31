@@ -90,6 +90,8 @@
 
 	Fixed checks for required headers in ./configure script.
 
+	Fixed checks for required functions in ./configure script.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
