@@ -106,6 +106,21 @@ AC_CHECK_LIB(pthread, pthread_create,
 	],
 	[AC_MSG_ERROR([libpthread not found])])
 
+dnl Check for all required elements in pthread.h.
+AC_CHECK_FUNC([pthread_create], [], [AC_MSG_ERROR([pthread_create() function not found.])])
+AC_CHECK_FUNC([pthread_getspecific], [], [AC_MSG_ERROR([pthread_getspecific() function not found.])])
+AC_CHECK_FUNC([pthread_key_create], [], [AC_MSG_ERROR([pthread_key_create() function not found.])])
+AC_CHECK_FUNC([pthread_mutex_lock], [], [AC_MSG_ERROR([pthread_mutex_lock() function not found.])])
+AC_CHECK_FUNC([pthread_mutex_unlock], [], [AC_MSG_ERROR([pthread_mutex_unlock() function not found.])])
+AC_CHECK_FUNC([pthread_once], [], [AC_MSG_ERROR([pthread_once() function not found.])])
+AC_CHECK_FUNC([pthread_setspecific], [], [AC_MSG_ERROR([pthread_setspecific() function not found.])])
+AC_CHECK_TYPE([pthread_t], [], [AC_MSG_ERROR([pthread_t type not found in pthread.h])], [[#include <pthread.h>]])
+AC_CHECK_TYPE([pthread_once_t], [], [AC_MSG_ERROR([pthread_once_t type not found in pthread.h])], [[#include <pthread.h>]])
+AC_CHECK_TYPE([pthread_key_t], [], [AC_MSG_ERROR([pthread_key_t type not found in pthread.h])], [[#include <pthread.h>]])
+AC_CHECK_TYPE([pthread_mutex_t], [], [AC_MSG_ERROR([pthread_mutex_t type not found in pthread.h])], [[#include <pthread.h>]])
+AC_CHECK_DECL([PTHREAD_ONCE_INIT], [], [AC_MSG_ERROR([PTHREAD_ONCE_INIT not found in pthread.h])], [[#include <pthread.h>]])
+AC_CHECK_DECL([PTHREAD_MUTEX_INITIALIZER], [], [AC_MSG_ERROR([PTHREAD_MUTEX_INITIALIZER not found in pthread.h])], [[#include <pthread.h>]])
+
 dnl AC_CHECK_LIB(XCurses, initscr)
 vifm_cv_curses=/usr
 AC_ARG_WITH(curses, [  --with-curses=DIR       where ncurses is installed ],

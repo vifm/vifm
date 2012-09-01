@@ -62,6 +62,8 @@
 
 	Check for socket related headers and function in ./configure script.
 
+	Check for all required elements in pthread.h.
+
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
 

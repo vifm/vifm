@@ -13562,6 +13562,104 @@ else
 fi
 
 
+ac_fn_c_check_func "$LINENO" "pthread_create" "ac_cv_func_pthread_create"
+if test "x$ac_cv_func_pthread_create" = xyes; then :
+
+else
+  as_fn_error $? "pthread_create() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pthread_getspecific" "ac_cv_func_pthread_getspecific"
+if test "x$ac_cv_func_pthread_getspecific" = xyes; then :
+
+else
+  as_fn_error $? "pthread_getspecific() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pthread_key_create" "ac_cv_func_pthread_key_create"
+if test "x$ac_cv_func_pthread_key_create" = xyes; then :
+
+else
+  as_fn_error $? "pthread_key_create() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pthread_mutex_lock" "ac_cv_func_pthread_mutex_lock"
+if test "x$ac_cv_func_pthread_mutex_lock" = xyes; then :
+
+else
+  as_fn_error $? "pthread_mutex_lock() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pthread_mutex_unlock" "ac_cv_func_pthread_mutex_unlock"
+if test "x$ac_cv_func_pthread_mutex_unlock" = xyes; then :
+
+else
+  as_fn_error $? "pthread_mutex_unlock() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pthread_once" "ac_cv_func_pthread_once"
+if test "x$ac_cv_func_pthread_once" = xyes; then :
+
+else
+  as_fn_error $? "pthread_once() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pthread_setspecific" "ac_cv_func_pthread_setspecific"
+if test "x$ac_cv_func_pthread_setspecific" = xyes; then :
+
+else
+  as_fn_error $? "pthread_setspecific() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_type "$LINENO" "pthread_t" "ac_cv_type_pthread_t" "#include <pthread.h>
+"
+if test "x$ac_cv_type_pthread_t" = xyes; then :
+
+else
+  as_fn_error $? "pthread_t type not found in pthread.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_type "$LINENO" "pthread_once_t" "ac_cv_type_pthread_once_t" "#include <pthread.h>
+"
+if test "x$ac_cv_type_pthread_once_t" = xyes; then :
+
+else
+  as_fn_error $? "pthread_once_t type not found in pthread.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_type "$LINENO" "pthread_key_t" "ac_cv_type_pthread_key_t" "#include <pthread.h>
+"
+if test "x$ac_cv_type_pthread_key_t" = xyes; then :
+
+else
+  as_fn_error $? "pthread_key_t type not found in pthread.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_type "$LINENO" "pthread_mutex_t" "ac_cv_type_pthread_mutex_t" "#include <pthread.h>
+"
+if test "x$ac_cv_type_pthread_mutex_t" = xyes; then :
+
+else
+  as_fn_error $? "pthread_mutex_t type not found in pthread.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_decl "$LINENO" "PTHREAD_ONCE_INIT" "ac_cv_have_decl_PTHREAD_ONCE_INIT" "#include <pthread.h>
+"
+if test "x$ac_cv_have_decl_PTHREAD_ONCE_INIT" = xyes; then :
+
+else
+  as_fn_error $? "PTHREAD_ONCE_INIT not found in pthread.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_decl "$LINENO" "PTHREAD_MUTEX_INITIALIZER" "ac_cv_have_decl_PTHREAD_MUTEX_INITIALIZER" "#include <pthread.h>
+"
+if test "x$ac_cv_have_decl_PTHREAD_MUTEX_INITIALIZER" = xyes; then :
+
+else
+  as_fn_error $? "PTHREAD_MUTEX_INITIALIZER not found in pthread.h" "$LINENO" 5
+fi
+
+
 vifm_cv_curses=/usr
 
 # Check whether --with-curses was given.
