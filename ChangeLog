@@ -46,6 +46,26 @@
 
 	Reduce delay between terminal resize and TUI redrawing.
 
+	Check for used curses symbols in ./configure script.
+
+	Check for libpthread presence in ./configure script.
+
+	Check for pthread.h header and all its required elements in ./configure
+	script.
+
+	Check for magic.h header and required libmagic functions in ./configure
+	script.
+
+	Check for regex.h header and all functions, macro and types connected with
+	it in ./configure script.
+
+	Check for GTK headers and all related in ./configure script.
+
+	Check for socket related headers and function in ./configure script.
+
+	Check for a bunch of system headers, types and functions in ./configure
+	script.
+
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
 
@@ -87,6 +107,10 @@
 	Fixed extra slash in :registers menu for files in root directory.
 
 	Fixed file viewer matching when symbolic link target is a directory.
+
+	Fixed checks for required headers in ./configure script.
+
+	Fixed checks for required functions in ./configure script.
 
 0.7.3 to 0.7.3a
 

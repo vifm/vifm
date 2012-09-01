@@ -20,7 +20,7 @@
 #include "../config.h"
 
 #ifdef HAVE_LIBGTK
-#include <glib-2.0/gio/gio.h>
+#include <gio/gio.h>
 #include <gtk/gtk.h>
 #undef MAX
 #undef MIN

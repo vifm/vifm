@@ -1859,63 +1859,6 @@ fi
 
 } # ac_fn_c_check_header_mongrel
 
-# ac_fn_c_check_member LINENO AGGR MEMBER VAR INCLUDES
-# ----------------------------------------------------
-# Tries to find if the field MEMBER exists in type AGGR, after including
-# INCLUDES, setting cache variable VAR accordingly.
-ac_fn_c_check_member ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2.$3" >&5
-$as_echo_n "checking for $2.$3... " >&6; }
-if eval \${$4+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$5
-int
-main ()
-{
-static $2 ac_aggr;
-if (ac_aggr.$3)
-return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  eval "$4=yes"
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$5
-int
-main ()
-{
-static $2 ac_aggr;
-if (sizeof ac_aggr.$3)
-return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  eval "$4=yes"
-else
-  eval "$4=no"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-eval ac_res=\$$4
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-
-} # ac_fn_c_check_member
-
 # ac_fn_c_check_type LINENO TYPE VAR INCLUDES
 # -------------------------------------------
 # Tests whether TYPE exists after having included INCLUDES, setting cache
@@ -2015,6 +1958,63 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_decl
+
+# ac_fn_c_check_member LINENO AGGR MEMBER VAR INCLUDES
+# ----------------------------------------------------
+# Tries to find if the field MEMBER exists in type AGGR, after including
+# INCLUDES, setting cache variable VAR accordingly.
+ac_fn_c_check_member ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2.$3" >&5
+$as_echo_n "checking for $2.$3... " >&6; }
+if eval \${$4+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$5
+int
+main ()
+{
+static $2 ac_aggr;
+if (ac_aggr.$3)
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$4=yes"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$5
+int
+main ()
+{
+static $2 ac_aggr;
+if (sizeof ac_aggr.$3)
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$4=yes"
+else
+  eval "$4=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$4
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_check_member
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -12902,30 +12902,1358 @@ fi
 
 
 
-for ac_header in limits.h sys/time.h unistd.h wchar.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
+
+ac_fn_c_check_header_mongrel "$LINENO" "assert.h" "ac_cv_header_assert_h" "$ac_includes_default"
+if test "x$ac_cv_header_assert_h" = xyes; then :
+
+else
+  as_fn_error $? "assert.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "ctype.h" "ac_cv_header_ctype_h" "$ac_includes_default"
+if test "x$ac_cv_header_ctype_h" = xyes; then :
+
+else
+  as_fn_error $? "ctype.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "dirent.h" "ac_cv_header_dirent_h" "$ac_includes_default"
+if test "x$ac_cv_header_dirent_h" = xyes; then :
+
+else
+  as_fn_error $? "dirent.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "errno.h" "ac_cv_header_errno_h" "$ac_includes_default"
+if test "x$ac_cv_header_errno_h" = xyes; then :
+
+else
+  as_fn_error $? "errno.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "fcntl.h" "ac_cv_header_fcntl_h" "$ac_includes_default"
+if test "x$ac_cv_header_fcntl_h" = xyes; then :
+
+else
+  as_fn_error $? "fcntl.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "grp.h" "ac_cv_header_grp_h" "$ac_includes_default"
+if test "x$ac_cv_header_grp_h" = xyes; then :
+
+else
+  as_fn_error $? "grp.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "inttypes.h" "ac_cv_header_inttypes_h" "$ac_includes_default"
+if test "x$ac_cv_header_inttypes_h" = xyes; then :
+
+else
+  as_fn_error $? "inttypes.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "limits.h" "ac_cv_header_limits_h" "$ac_includes_default"
+if test "x$ac_cv_header_limits_h" = xyes; then :
+
+else
+  as_fn_error $? "limits.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "locale.h" "ac_cv_header_locale_h" "$ac_includes_default"
+if test "x$ac_cv_header_locale_h" = xyes; then :
+
+else
+  as_fn_error $? "locale.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "math.h" "ac_cv_header_math_h" "$ac_includes_default"
+if test "x$ac_cv_header_math_h" = xyes; then :
+
+else
+  as_fn_error $? "math.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "mntent.h" "ac_cv_header_mntent_h" "$ac_includes_default"
+if test "x$ac_cv_header_mntent_h" = xyes; then :
+
+else
+  as_fn_error $? "mntent.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "pwd.h" "ac_cv_header_pwd_h" "$ac_includes_default"
+if test "x$ac_cv_header_pwd_h" = xyes; then :
+
+else
+  as_fn_error $? "pwd.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "signal.h" "ac_cv_header_signal_h" "$ac_includes_default"
+if test "x$ac_cv_header_signal_h" = xyes; then :
+
+else
+  as_fn_error $? "signal.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "stdarg.h" "ac_cv_header_stdarg_h" "$ac_includes_default"
+if test "x$ac_cv_header_stdarg_h" = xyes; then :
+
+else
+  as_fn_error $? "stdarg.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "stddef.h" "ac_cv_header_stddef_h" "$ac_includes_default"
+if test "x$ac_cv_header_stddef_h" = xyes; then :
+
+else
+  as_fn_error $? "stddef.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "stdint.h" "ac_cv_header_stdint_h" "$ac_includes_default"
+if test "x$ac_cv_header_stdint_h" = xyes; then :
+
+else
+  as_fn_error $? "stdint.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "stdio.h" "ac_cv_header_stdio_h" "$ac_includes_default"
+if test "x$ac_cv_header_stdio_h" = xyes; then :
+
+else
+  as_fn_error $? "stdio.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "stdlib.h" "ac_cv_header_stdlib_h" "$ac_includes_default"
+if test "x$ac_cv_header_stdlib_h" = xyes; then :
+
+else
+  as_fn_error $? "stdlib.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "string.h" "ac_cv_header_string_h" "$ac_includes_default"
+if test "x$ac_cv_header_string_h" = xyes; then :
+
+else
+  as_fn_error $? "string.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "sys/dir.h" "ac_cv_header_sys_dir_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_dir_h" = xyes; then :
+
+else
+  as_fn_error $? "sys/dir.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "sys/ioctl.h" "ac_cv_header_sys_ioctl_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_ioctl_h" = xyes; then :
+
+else
+  as_fn_error $? "sys/ioctl.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "sys/stat.h" "ac_cv_header_sys_stat_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_stat_h" = xyes; then :
+
+else
+  as_fn_error $? "sys/stat.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "sys/time.h" "ac_cv_header_sys_time_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_time_h" = xyes; then :
+
+else
+  as_fn_error $? "sys/time.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "sys/types.h" "ac_cv_header_sys_types_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_types_h" = xyes; then :
+
+else
+  as_fn_error $? "sys/types.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "sys/wait.h" "ac_cv_header_sys_wait_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_wait_h" = xyes; then :
+
+else
+  as_fn_error $? "sys/wait.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "termios.h" "ac_cv_header_termios_h" "$ac_includes_default"
+if test "x$ac_cv_header_termios_h" = xyes; then :
+
+else
+  as_fn_error $? "termios.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "time.h" "ac_cv_header_time_h" "$ac_includes_default"
+if test "x$ac_cv_header_time_h" = xyes; then :
+
+else
+  as_fn_error $? "time.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "unistd.h" "ac_cv_header_unistd_h" "$ac_includes_default"
+if test "x$ac_cv_header_unistd_h" = xyes; then :
+
+else
+  as_fn_error $? "unistd.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "wchar.h" "ac_cv_header_wchar_h" "$ac_includes_default"
+if test "x$ac_cv_header_wchar_h" = xyes; then :
+
+else
+  as_fn_error $? "wchar.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "wctype.h" "ac_cv_header_wctype_h" "$ac_includes_default"
+if test "x$ac_cv_header_wctype_h" = xyes; then :
+
+else
+  as_fn_error $? "wctype.h header not found." "$LINENO" 5
+fi
+
+
+
+ac_fn_c_check_type "$LINENO" "uid_t" "ac_cv_type_uid_t" "$ac_includes_default"
+if test "x$ac_cv_type_uid_t" = xyes; then :
 
 fi
 
-done
-
-for ac_func in getcwd mkdir regcomp strdup strstr
-do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
+ac_fn_c_check_type "$LINENO" "gid_t" "ac_cv_type_gid_t" "$ac_includes_default"
+if test "x$ac_cv_type_gid_t" = xyes; then :
 
 fi
-done
+
+ac_fn_c_check_type "$LINENO" "mode_t" "ac_cv_type_mode_t" "$ac_includes_default"
+if test "x$ac_cv_type_mode_t" = xyes; then :
+
+fi
+
+ac_fn_c_check_type "$LINENO" "off_t" "ac_cv_type_off_t" "$ac_includes_default"
+if test "x$ac_cv_type_off_t" = xyes; then :
+
+fi
+
+ac_fn_c_check_type "$LINENO" "time_t" "ac_cv_type_time_t" "$ac_includes_default"
+if test "x$ac_cv_type_time_t" = xyes; then :
+
+fi
+
+ac_fn_c_check_type "$LINENO" "uint64_t" "ac_cv_type_uint64_t" "$ac_includes_default"
+if test "x$ac_cv_type_uint64_t" = xyes; then :
+
+fi
+
+ac_fn_c_check_type "$LINENO" "direntry_t" "ac_cv_type_direntry_t" "$ac_includes_default"
+if test "x$ac_cv_type_direntry_t" = xyes; then :
+
+fi
+
+ac_fn_c_check_type "$LINENO" "mntent" "ac_cv_type_mntent" "$ac_includes_default"
+if test "x$ac_cv_type_mntent" = xyes; then :
+
+fi
+
+ac_fn_c_check_type "$LINENO" "stat" "ac_cv_type_stat" "$ac_includes_default"
+if test "x$ac_cv_type_stat" = xyes; then :
+
+fi
+
+ac_fn_c_check_type "$LINENO" "FILE" "ac_cv_type_FILE" "$ac_includes_default"
+if test "x$ac_cv_type_FILE" = xyes; then :
+
+fi
+
+ac_fn_c_check_type "$LINENO" "wchar_t" "ac_cv_type_wchar_t" "$ac_includes_default"
+if test "x$ac_cv_type_wchar_t" = xyes; then :
+
+fi
+
+
+ac_fn_c_check_func "$LINENO" "access" "ac_cv_func_access"
+if test "x$ac_cv_func_access" = xyes; then :
+
+else
+  as_fn_error $? "access() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "atexit" "ac_cv_func_atexit"
+if test "x$ac_cv_func_atexit" = xyes; then :
+
+else
+  as_fn_error $? "atexit() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "atof" "ac_cv_func_atof"
+if test "x$ac_cv_func_atof" = xyes; then :
+
+else
+  as_fn_error $? "atof() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "atoi" "ac_cv_func_atoi"
+if test "x$ac_cv_func_atoi" = xyes; then :
+
+else
+  as_fn_error $? "atoi() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "calloc" "ac_cv_func_calloc"
+if test "x$ac_cv_func_calloc" = xyes; then :
+
+else
+  as_fn_error $? "calloc() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "chdir" "ac_cv_func_chdir"
+if test "x$ac_cv_func_chdir" = xyes; then :
+
+else
+  as_fn_error $? "chdir() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "close" "ac_cv_func_close"
+if test "x$ac_cv_func_close" = xyes; then :
+
+else
+  as_fn_error $? "close() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "closedir" "ac_cv_func_closedir"
+if test "x$ac_cv_func_closedir" = xyes; then :
+
+else
+  as_fn_error $? "closedir() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "dup" "ac_cv_func_dup"
+if test "x$ac_cv_func_dup" = xyes; then :
+
+else
+  as_fn_error $? "dup() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "dup2" "ac_cv_func_dup2"
+if test "x$ac_cv_func_dup2" = xyes; then :
+
+else
+  as_fn_error $? "dup2() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "endmntent" "ac_cv_func_endmntent"
+if test "x$ac_cv_func_endmntent" = xyes; then :
+
+else
+  as_fn_error $? "endmntent() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "execve" "ac_cv_func_execve"
+if test "x$ac_cv_func_execve" = xyes; then :
+
+else
+  as_fn_error $? "execve() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "execvp" "ac_cv_func_execvp"
+if test "x$ac_cv_func_execvp" = xyes; then :
+
+else
+  as_fn_error $? "execvp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "exit" "ac_cv_func_exit"
+if test "x$ac_cv_func_exit" = xyes; then :
+
+else
+  as_fn_error $? "exit() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "fclose" "ac_cv_func_fclose"
+if test "x$ac_cv_func_fclose" = xyes; then :
+
+else
+  as_fn_error $? "fclose() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "fdopen" "ac_cv_func_fdopen"
+if test "x$ac_cv_func_fdopen" = xyes; then :
+
+else
+  as_fn_error $? "fdopen() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "feof" "ac_cv_func_feof"
+if test "x$ac_cv_func_feof" = xyes; then :
+
+else
+  as_fn_error $? "feof() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "fgetc" "ac_cv_func_fgetc"
+if test "x$ac_cv_func_fgetc" = xyes; then :
+
+else
+  as_fn_error $? "fgetc() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "fgets" "ac_cv_func_fgets"
+if test "x$ac_cv_func_fgets" = xyes; then :
+
+else
+  as_fn_error $? "fgets() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "fork" "ac_cv_func_fork"
+if test "x$ac_cv_func_fork" = xyes; then :
+
+else
+  as_fn_error $? "fork() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "fprintf" "ac_cv_func_fprintf"
+if test "x$ac_cv_func_fprintf" = xyes; then :
+
+else
+  as_fn_error $? "fprintf() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "fputc" "ac_cv_func_fputc"
+if test "x$ac_cv_func_fputc" = xyes; then :
+
+else
+  as_fn_error $? "fputc() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "fputs" "ac_cv_func_fputs"
+if test "x$ac_cv_func_fputs" = xyes; then :
+
+else
+  as_fn_error $? "fputs() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "free" "ac_cv_func_free"
+if test "x$ac_cv_func_free" = xyes; then :
+
+else
+  as_fn_error $? "free() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "fwrite" "ac_cv_func_fwrite"
+if test "x$ac_cv_func_fwrite" = xyes; then :
+
+else
+  as_fn_error $? "fwrite() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "getcwd" "ac_cv_func_getcwd"
+if test "x$ac_cv_func_getcwd" = xyes; then :
+
+else
+  as_fn_error $? "getcwd() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "getenv" "ac_cv_func_getenv"
+if test "x$ac_cv_func_getenv" = xyes; then :
+
+else
+  as_fn_error $? "getenv() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "geteuid" "ac_cv_func_geteuid"
+if test "x$ac_cv_func_geteuid" = xyes; then :
+
+else
+  as_fn_error $? "geteuid() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "getgrent" "ac_cv_func_getgrent"
+if test "x$ac_cv_func_getgrent" = xyes; then :
+
+else
+  as_fn_error $? "getgrent() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "getgrgid" "ac_cv_func_getgrgid"
+if test "x$ac_cv_func_getgrgid" = xyes; then :
+
+else
+  as_fn_error $? "getgrgid() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "getgrgid_r" "ac_cv_func_getgrgid_r"
+if test "x$ac_cv_func_getgrgid_r" = xyes; then :
+
+else
+  as_fn_error $? "getgrgid_r() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "getgrnam" "ac_cv_func_getgrnam"
+if test "x$ac_cv_func_getgrnam" = xyes; then :
+
+else
+  as_fn_error $? "getgrnam() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "getmntent" "ac_cv_func_getmntent"
+if test "x$ac_cv_func_getmntent" = xyes; then :
+
+else
+  as_fn_error $? "getmntent() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "getpid" "ac_cv_func_getpid"
+if test "x$ac_cv_func_getpid" = xyes; then :
+
+else
+  as_fn_error $? "getpid() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "getppid" "ac_cv_func_getppid"
+if test "x$ac_cv_func_getppid" = xyes; then :
+
+else
+  as_fn_error $? "getppid() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "getpwent" "ac_cv_func_getpwent"
+if test "x$ac_cv_func_getpwent" = xyes; then :
+
+else
+  as_fn_error $? "getpwent() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "getpwnam" "ac_cv_func_getpwnam"
+if test "x$ac_cv_func_getpwnam" = xyes; then :
+
+else
+  as_fn_error $? "getpwnam() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "getpwuid" "ac_cv_func_getpwuid"
+if test "x$ac_cv_func_getpwuid" = xyes; then :
+
+else
+  as_fn_error $? "getpwuid() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "getpwuid_r" "ac_cv_func_getpwuid_r"
+if test "x$ac_cv_func_getpwuid_r" = xyes; then :
+
+else
+  as_fn_error $? "getpwuid_r() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "ioctl" "ac_cv_func_ioctl"
+if test "x$ac_cv_func_ioctl" = xyes; then :
+
+else
+  as_fn_error $? "ioctl() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "iswalnum" "ac_cv_func_iswalnum"
+if test "x$ac_cv_func_iswalnum" = xyes; then :
+
+else
+  as_fn_error $? "iswalnum() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "iswdigit" "ac_cv_func_iswdigit"
+if test "x$ac_cv_func_iswdigit" = xyes; then :
+
+else
+  as_fn_error $? "iswdigit() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "iswprint" "ac_cv_func_iswprint"
+if test "x$ac_cv_func_iswprint" = xyes; then :
+
+else
+  as_fn_error $? "iswprint() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "iswspace" "ac_cv_func_iswspace"
+if test "x$ac_cv_func_iswspace" = xyes; then :
+
+else
+  as_fn_error $? "iswspace() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "iswupper" "ac_cv_func_iswupper"
+if test "x$ac_cv_func_iswupper" = xyes; then :
+
+else
+  as_fn_error $? "iswupper() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "kill" "ac_cv_func_kill"
+if test "x$ac_cv_func_kill" = xyes; then :
+
+else
+  as_fn_error $? "kill() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "localtime" "ac_cv_func_localtime"
+if test "x$ac_cv_func_localtime" = xyes; then :
+
+else
+  as_fn_error $? "localtime() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "malloc" "ac_cv_func_malloc"
+if test "x$ac_cv_func_malloc" = xyes; then :
+
+else
+  as_fn_error $? "malloc() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "mbstowcs" "ac_cv_func_mbstowcs"
+if test "x$ac_cv_func_mbstowcs" = xyes; then :
+
+else
+  as_fn_error $? "mbstowcs() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "memcmp" "ac_cv_func_memcmp"
+if test "x$ac_cv_func_memcmp" = xyes; then :
+
+else
+  as_fn_error $? "memcmp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "memcpy" "ac_cv_func_memcpy"
+if test "x$ac_cv_func_memcpy" = xyes; then :
+
+else
+  as_fn_error $? "memcpy() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "memmove" "ac_cv_func_memmove"
+if test "x$ac_cv_func_memmove" = xyes; then :
+
+else
+  as_fn_error $? "memmove() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "memset" "ac_cv_func_memset"
+if test "x$ac_cv_func_memset" = xyes; then :
+
+else
+  as_fn_error $? "memset() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "mkdir" "ac_cv_func_mkdir"
+if test "x$ac_cv_func_mkdir" = xyes; then :
+
+else
+  as_fn_error $? "mkdir() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "opendir" "ac_cv_func_opendir"
+if test "x$ac_cv_func_opendir" = xyes; then :
+
+else
+  as_fn_error $? "opendir() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pause" "ac_cv_func_pause"
+if test "x$ac_cv_func_pause" = xyes; then :
+
+else
+  as_fn_error $? "pause() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pclose" "ac_cv_func_pclose"
+if test "x$ac_cv_func_pclose" = xyes; then :
+
+else
+  as_fn_error $? "pclose() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "perror" "ac_cv_func_perror"
+if test "x$ac_cv_func_perror" = xyes; then :
+
+else
+  as_fn_error $? "perror() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pipe" "ac_cv_func_pipe"
+if test "x$ac_cv_func_pipe" = xyes; then :
+
+else
+  as_fn_error $? "pipe() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "popen" "ac_cv_func_popen"
+if test "x$ac_cv_func_popen" = xyes; then :
+
+else
+  as_fn_error $? "popen() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "printf" "ac_cv_func_printf"
+if test "x$ac_cv_func_printf" = xyes; then :
+
+else
+  as_fn_error $? "printf() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "puts" "ac_cv_func_puts"
+if test "x$ac_cv_func_puts" = xyes; then :
+
+else
+  as_fn_error $? "puts() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "qsort" "ac_cv_func_qsort"
+if test "x$ac_cv_func_qsort" = xyes; then :
+
+else
+  as_fn_error $? "qsort() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "read" "ac_cv_func_read"
+if test "x$ac_cv_func_read" = xyes; then :
+
+else
+  as_fn_error $? "read() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "readlink" "ac_cv_func_readlink"
+if test "x$ac_cv_func_readlink" = xyes; then :
+
+else
+  as_fn_error $? "readlink() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "realloc" "ac_cv_func_realloc"
+if test "x$ac_cv_func_realloc" = xyes; then :
+
+else
+  as_fn_error $? "realloc() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "realpath" "ac_cv_func_realpath"
+if test "x$ac_cv_func_realpath" = xyes; then :
+
+else
+  as_fn_error $? "realpath() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "rename" "ac_cv_func_rename"
+if test "x$ac_cv_func_rename" = xyes; then :
+
+else
+  as_fn_error $? "rename() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "rmdir" "ac_cv_func_rmdir"
+if test "x$ac_cv_func_rmdir" = xyes; then :
+
+else
+  as_fn_error $? "rmdir() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "select" "ac_cv_func_select"
+if test "x$ac_cv_func_select" = xyes; then :
+
+else
+  as_fn_error $? "select() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "setenv" "ac_cv_func_setenv"
+if test "x$ac_cv_func_setenv" = xyes; then :
+
+else
+  as_fn_error $? "setenv() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "setgrent" "ac_cv_func_setgrent"
+if test "x$ac_cv_func_setgrent" = xyes; then :
+
+else
+  as_fn_error $? "setgrent() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "setlocale" "ac_cv_func_setlocale"
+if test "x$ac_cv_func_setlocale" = xyes; then :
+
+else
+  as_fn_error $? "setlocale() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "setmntent" "ac_cv_func_setmntent"
+if test "x$ac_cv_func_setmntent" = xyes; then :
+
+else
+  as_fn_error $? "setmntent() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "setpgid" "ac_cv_func_setpgid"
+if test "x$ac_cv_func_setpgid" = xyes; then :
+
+else
+  as_fn_error $? "setpgid() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "setpwent" "ac_cv_func_setpwent"
+if test "x$ac_cv_func_setpwent" = xyes; then :
+
+else
+  as_fn_error $? "setpwent() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "setsid" "ac_cv_func_setsid"
+if test "x$ac_cv_func_setsid" = xyes; then :
+
+else
+  as_fn_error $? "setsid() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "setvbuf" "ac_cv_func_setvbuf"
+if test "x$ac_cv_func_setvbuf" = xyes; then :
+
+else
+  as_fn_error $? "setvbuf() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "sigaction" "ac_cv_func_sigaction"
+if test "x$ac_cv_func_sigaction" = xyes; then :
+
+else
+  as_fn_error $? "sigaction() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "sigaddset" "ac_cv_func_sigaddset"
+if test "x$ac_cv_func_sigaddset" = xyes; then :
+
+else
+  as_fn_error $? "sigaddset() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "sigemptyset" "ac_cv_func_sigemptyset"
+if test "x$ac_cv_func_sigemptyset" = xyes; then :
+
+else
+  as_fn_error $? "sigemptyset() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "signal" "ac_cv_func_signal"
+if test "x$ac_cv_func_signal" = xyes; then :
+
+else
+  as_fn_error $? "signal() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "sigprocmask" "ac_cv_func_sigprocmask"
+if test "x$ac_cv_func_sigprocmask" = xyes; then :
+
+else
+  as_fn_error $? "sigprocmask() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "snprintf" "ac_cv_func_snprintf"
+if test "x$ac_cv_func_snprintf" = xyes; then :
+
+else
+  as_fn_error $? "snprintf() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "sprintf" "ac_cv_func_sprintf"
+if test "x$ac_cv_func_sprintf" = xyes; then :
+
+else
+  as_fn_error $? "sprintf() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strcasecmp" "ac_cv_func_strcasecmp"
+if test "x$ac_cv_func_strcasecmp" = xyes; then :
+
+else
+  as_fn_error $? "strcasecmp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strcat" "ac_cv_func_strcat"
+if test "x$ac_cv_func_strcat" = xyes; then :
+
+else
+  as_fn_error $? "strcat() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strchr" "ac_cv_func_strchr"
+if test "x$ac_cv_func_strchr" = xyes; then :
+
+else
+  as_fn_error $? "strchr() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strcmp" "ac_cv_func_strcmp"
+if test "x$ac_cv_func_strcmp" = xyes; then :
+
+else
+  as_fn_error $? "strcmp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strcpy" "ac_cv_func_strcpy"
+if test "x$ac_cv_func_strcpy" = xyes; then :
+
+else
+  as_fn_error $? "strcpy() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strdup" "ac_cv_func_strdup"
+if test "x$ac_cv_func_strdup" = xyes; then :
+
+else
+  as_fn_error $? "strdup() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strerror" "ac_cv_func_strerror"
+if test "x$ac_cv_func_strerror" = xyes; then :
+
+else
+  as_fn_error $? "strerror() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strftime" "ac_cv_func_strftime"
+if test "x$ac_cv_func_strftime" = xyes; then :
+
+else
+  as_fn_error $? "strftime() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strlen" "ac_cv_func_strlen"
+if test "x$ac_cv_func_strlen" = xyes; then :
+
+else
+  as_fn_error $? "strlen() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strncasecmp" "ac_cv_func_strncasecmp"
+if test "x$ac_cv_func_strncasecmp" = xyes; then :
+
+else
+  as_fn_error $? "strncasecmp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strncat" "ac_cv_func_strncat"
+if test "x$ac_cv_func_strncat" = xyes; then :
+
+else
+  as_fn_error $? "strncat() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strncmp" "ac_cv_func_strncmp"
+if test "x$ac_cv_func_strncmp" = xyes; then :
+
+else
+  as_fn_error $? "strncmp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strncpy" "ac_cv_func_strncpy"
+if test "x$ac_cv_func_strncpy" = xyes; then :
+
+else
+  as_fn_error $? "strncpy() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strpbrk" "ac_cv_func_strpbrk"
+if test "x$ac_cv_func_strpbrk" = xyes; then :
+
+else
+  as_fn_error $? "strpbrk() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strrchr" "ac_cv_func_strrchr"
+if test "x$ac_cv_func_strrchr" = xyes; then :
+
+else
+  as_fn_error $? "strrchr() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strspn" "ac_cv_func_strspn"
+if test "x$ac_cv_func_strspn" = xyes; then :
+
+else
+  as_fn_error $? "strspn() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strstr" "ac_cv_func_strstr"
+if test "x$ac_cv_func_strstr" = xyes; then :
+
+else
+  as_fn_error $? "strstr() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strtok_r" "ac_cv_func_strtok_r"
+if test "x$ac_cv_func_strtok_r" = xyes; then :
+
+else
+  as_fn_error $? "strtok_r() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strtol" "ac_cv_func_strtol"
+if test "x$ac_cv_func_strtol" = xyes; then :
+
+else
+  as_fn_error $? "strtol() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strtoll" "ac_cv_func_strtoll"
+if test "x$ac_cv_func_strtoll" = xyes; then :
+
+else
+  as_fn_error $? "strtoll() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "strverscmp" "ac_cv_func_strverscmp"
+if test "x$ac_cv_func_strverscmp" = xyes; then :
+
+else
+  as_fn_error $? "strverscmp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "sysconf" "ac_cv_func_sysconf"
+if test "x$ac_cv_func_sysconf" = xyes; then :
+
+else
+  as_fn_error $? "sysconf() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "time" "ac_cv_func_time"
+if test "x$ac_cv_func_time" = xyes; then :
+
+else
+  as_fn_error $? "time() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "tolower" "ac_cv_func_tolower"
+if test "x$ac_cv_func_tolower" = xyes; then :
+
+else
+  as_fn_error $? "tolower() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "toupper" "ac_cv_func_toupper"
+if test "x$ac_cv_func_toupper" = xyes; then :
+
+else
+  as_fn_error $? "toupper() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "towupper" "ac_cv_func_towupper"
+if test "x$ac_cv_func_towupper" = xyes; then :
+
+else
+  as_fn_error $? "towupper() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "ungetc" "ac_cv_func_ungetc"
+if test "x$ac_cv_func_ungetc" = xyes; then :
+
+else
+  as_fn_error $? "ungetc() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "unlink" "ac_cv_func_unlink"
+if test "x$ac_cv_func_unlink" = xyes; then :
+
+else
+  as_fn_error $? "unlink() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "unsetenv" "ac_cv_func_unsetenv"
+if test "x$ac_cv_func_unsetenv" = xyes; then :
+
+else
+  as_fn_error $? "unsetenv() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "vfprintf" "ac_cv_func_vfprintf"
+if test "x$ac_cv_func_vfprintf" = xyes; then :
+
+else
+  as_fn_error $? "vfprintf() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "vsnprintf" "ac_cv_func_vsnprintf"
+if test "x$ac_cv_func_vsnprintf" = xyes; then :
+
+else
+  as_fn_error $? "vsnprintf() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "vswprintf" "ac_cv_func_vswprintf"
+if test "x$ac_cv_func_vswprintf" = xyes; then :
+
+else
+  as_fn_error $? "vswprintf() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "waitpid" "ac_cv_func_waitpid"
+if test "x$ac_cv_func_waitpid" = xyes; then :
+
+else
+  as_fn_error $? "waitpid() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wcscat" "ac_cv_func_wcscat"
+if test "x$ac_cv_func_wcscat" = xyes; then :
+
+else
+  as_fn_error $? "wcscat() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wcscmp" "ac_cv_func_wcscmp"
+if test "x$ac_cv_func_wcscmp" = xyes; then :
+
+else
+  as_fn_error $? "wcscmp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wcscpy" "ac_cv_func_wcscpy"
+if test "x$ac_cv_func_wcscpy" = xyes; then :
+
+else
+  as_fn_error $? "wcscpy() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wcslen" "ac_cv_func_wcslen"
+if test "x$ac_cv_func_wcslen" = xyes; then :
+
+else
+  as_fn_error $? "wcslen() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wcsncmp" "ac_cv_func_wcsncmp"
+if test "x$ac_cv_func_wcsncmp" = xyes; then :
+
+else
+  as_fn_error $? "wcsncmp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wcsncpy" "ac_cv_func_wcsncpy"
+if test "x$ac_cv_func_wcsncpy" = xyes; then :
+
+else
+  as_fn_error $? "wcsncpy() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wcstof" "ac_cv_func_wcstof"
+if test "x$ac_cv_func_wcstof" = xyes; then :
+
+else
+  as_fn_error $? "wcstof() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wcstol" "ac_cv_func_wcstol"
+if test "x$ac_cv_func_wcstol" = xyes; then :
+
+else
+  as_fn_error $? "wcstol() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wcstombs" "ac_cv_func_wcstombs"
+if test "x$ac_cv_func_wcstombs" = xyes; then :
+
+else
+  as_fn_error $? "wcstombs() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wcswidth" "ac_cv_func_wcswidth"
+if test "x$ac_cv_func_wcswidth" = xyes; then :
+
+else
+  as_fn_error $? "wcswidth() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wcwidth" "ac_cv_func_wcwidth"
+if test "x$ac_cv_func_wcwidth" = xyes; then :
+
+else
+  as_fn_error $? "wcwidth() function not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "regex.h" "ac_cv_header_regex_h" "$ac_includes_default"
+if test "x$ac_cv_header_regex_h" = xyes; then :
+
+else
+  as_fn_error $? "regex.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_func "$LINENO" "regcomp" "ac_cv_func_regcomp"
+if test "x$ac_cv_func_regcomp" = xyes; then :
+
+else
+  as_fn_error $? "regcomp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "regerror" "ac_cv_func_regerror"
+if test "x$ac_cv_func_regerror" = xyes; then :
+
+else
+  as_fn_error $? "regerror() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "regexec" "ac_cv_func_regexec"
+if test "x$ac_cv_func_regexec" = xyes; then :
+
+else
+  as_fn_error $? "regexec() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "regfree" "ac_cv_func_regfree"
+if test "x$ac_cv_func_regfree" = xyes; then :
+
+else
+  as_fn_error $? "regfree() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_type "$LINENO" "regex_t" "ac_cv_type_regex_t" "#include <regex.h>
+"
+if test "x$ac_cv_type_regex_t" = xyes; then :
+
+else
+  as_fn_error $? "regex_t type not found in regex.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_decl "$LINENO" "REG_EXTENDED" "ac_cv_have_decl_REG_EXTENDED" "#include <regex.h>
+"
+if test "x$ac_cv_have_decl_REG_EXTENDED" = xyes; then :
+
+else
+  as_fn_error $? "REG_EXTENDED not found in regex.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_decl "$LINENO" "REG_ICASE" "ac_cv_have_decl_REG_ICASE" "#include <regex.h>
+"
+if test "x$ac_cv_have_decl_REG_ICASE" = xyes; then :
+
+else
+  as_fn_error $? "REG_ICASE not found in regex.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_decl "$LINENO" "REG_NOMATCH" "ac_cv_have_decl_REG_NOMATCH" "#include <regex.h>
+"
+if test "x$ac_cv_have_decl_REG_NOMATCH" = xyes; then :
+
+else
+  as_fn_error $? "REG_NOMATCH not found in regex.h" "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "arpa/inet.h" "ac_cv_header_arpa_inet_h" "$ac_includes_default"
+if test "x$ac_cv_header_arpa_inet_h" = xyes; then :
+
+else
+  as_fn_error $? "arpa/inet.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "netinet/in.h" "ac_cv_header_netinet_in_h" "$ac_includes_default"
+if test "x$ac_cv_header_netinet_in_h" = xyes; then :
+
+else
+  as_fn_error $? "netinet/in.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "sys/socket.h" "ac_cv_header_sys_socket_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_socket_h" = xyes; then :
+
+else
+  as_fn_error $? "sys/socket.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "sys/un.h" "ac_cv_header_sys_un_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_un_h" = xyes; then :
+
+else
+  as_fn_error $? "sys/un.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_func "$LINENO" "bind" "ac_cv_func_bind"
+if test "x$ac_cv_func_bind" = xyes; then :
+
+else
+  as_fn_error $? "bind() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "htons" "ac_cv_func_htons"
+if test "x$ac_cv_func_htons" = xyes; then :
+
+else
+  as_fn_error $? "htons() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "inet_addr" "ac_cv_func_inet_addr"
+if test "x$ac_cv_func_inet_addr" = xyes; then :
+
+else
+  as_fn_error $? "inet_addr() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "recv" "ac_cv_func_recv"
+if test "x$ac_cv_func_recv" = xyes; then :
+
+else
+  as_fn_error $? "recv() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "sendto" "ac_cv_func_sendto"
+if test "x$ac_cv_func_sendto" = xyes; then :
+
+else
+  as_fn_error $? "sendto() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "setsockopt" "ac_cv_func_setsockopt"
+if test "x$ac_cv_func_setsockopt" = xyes; then :
+
+else
+  as_fn_error $? "setsockopt() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "socket" "ac_cv_func_socket"
+if test "x$ac_cv_func_socket" = xyes; then :
+
+else
+  as_fn_error $? "socket() function not found." "$LINENO" 5
+fi
+
 
 ac_fn_c_check_member "$LINENO" "struct stat" "st_mtim" "ac_cv_member_struct_stat_st_mtim" "$ac_includes_default"
 if test "x$ac_cv_member_struct_stat_st_mtim" = xyes; then :
@@ -13316,7 +14644,155 @@ fi
 
 CFLAGS="$CFLAGS -D_FILE_OFFSET_BITS=64"
 
-LDFLAGS="-lpthread $LDFLAGS"
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for pthread_create in -lpthread" >&5
+$as_echo_n "checking for pthread_create in -lpthread... " >&6; }
+if ${ac_cv_lib_pthread_pthread_create+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpthread  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char pthread_create ();
+int
+main ()
+{
+return pthread_create ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_pthread_pthread_create=yes
+else
+  ac_cv_lib_pthread_pthread_create=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_pthread_pthread_create" >&5
+$as_echo "$ac_cv_lib_pthread_pthread_create" >&6; }
+if test "x$ac_cv_lib_pthread_pthread_create" = xyes; then :
+  LIBS="$LIBS -lpthread"
+	ac_fn_c_check_header_mongrel "$LINENO" "pthread.h" "ac_cv_header_pthread_h" "$ac_includes_default"
+if test "x$ac_cv_header_pthread_h" = xyes; then :
+
+else
+  as_fn_error $? "pthread.h header not found." "$LINENO" 5
+fi
+
+
+
+else
+  as_fn_error $? "libpthread not found" "$LINENO" 5
+fi
+
+
+ac_fn_c_check_func "$LINENO" "pthread_create" "ac_cv_func_pthread_create"
+if test "x$ac_cv_func_pthread_create" = xyes; then :
+
+else
+  as_fn_error $? "pthread_create() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pthread_getspecific" "ac_cv_func_pthread_getspecific"
+if test "x$ac_cv_func_pthread_getspecific" = xyes; then :
+
+else
+  as_fn_error $? "pthread_getspecific() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pthread_key_create" "ac_cv_func_pthread_key_create"
+if test "x$ac_cv_func_pthread_key_create" = xyes; then :
+
+else
+  as_fn_error $? "pthread_key_create() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pthread_mutex_lock" "ac_cv_func_pthread_mutex_lock"
+if test "x$ac_cv_func_pthread_mutex_lock" = xyes; then :
+
+else
+  as_fn_error $? "pthread_mutex_lock() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pthread_mutex_unlock" "ac_cv_func_pthread_mutex_unlock"
+if test "x$ac_cv_func_pthread_mutex_unlock" = xyes; then :
+
+else
+  as_fn_error $? "pthread_mutex_unlock() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pthread_once" "ac_cv_func_pthread_once"
+if test "x$ac_cv_func_pthread_once" = xyes; then :
+
+else
+  as_fn_error $? "pthread_once() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "pthread_setspecific" "ac_cv_func_pthread_setspecific"
+if test "x$ac_cv_func_pthread_setspecific" = xyes; then :
+
+else
+  as_fn_error $? "pthread_setspecific() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_type "$LINENO" "pthread_t" "ac_cv_type_pthread_t" "#include <pthread.h>
+"
+if test "x$ac_cv_type_pthread_t" = xyes; then :
+
+else
+  as_fn_error $? "pthread_t type not found in pthread.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_type "$LINENO" "pthread_once_t" "ac_cv_type_pthread_once_t" "#include <pthread.h>
+"
+if test "x$ac_cv_type_pthread_once_t" = xyes; then :
+
+else
+  as_fn_error $? "pthread_once_t type not found in pthread.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_type "$LINENO" "pthread_key_t" "ac_cv_type_pthread_key_t" "#include <pthread.h>
+"
+if test "x$ac_cv_type_pthread_key_t" = xyes; then :
+
+else
+  as_fn_error $? "pthread_key_t type not found in pthread.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_type "$LINENO" "pthread_mutex_t" "ac_cv_type_pthread_mutex_t" "#include <pthread.h>
+"
+if test "x$ac_cv_type_pthread_mutex_t" = xyes; then :
+
+else
+  as_fn_error $? "pthread_mutex_t type not found in pthread.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_decl "$LINENO" "PTHREAD_ONCE_INIT" "ac_cv_have_decl_PTHREAD_ONCE_INIT" "#include <pthread.h>
+"
+if test "x$ac_cv_have_decl_PTHREAD_ONCE_INIT" = xyes; then :
+
+else
+  as_fn_error $? "PTHREAD_ONCE_INIT not found in pthread.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_decl "$LINENO" "PTHREAD_MUTEX_INITIALIZER" "ac_cv_have_decl_PTHREAD_MUTEX_INITIALIZER" "#include <pthread.h>
+"
+if test "x$ac_cv_have_decl_PTHREAD_MUTEX_INITIALIZER" = xyes; then :
+
+else
+  as_fn_error $? "PTHREAD_MUTEX_INITIALIZER not found in pthread.h" "$LINENO" 5
+fi
+
 
 vifm_cv_curses=/usr
 
@@ -13373,17 +14849,6 @@ if test "x$ac_cv_lib_ncursesw_initscr" = xyes; then :
 	if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncursesw; then
 		CPPFLAGS="$CPPFLAGS -I/usr/include/ncursesw"
 	fi
-	for ac_header in ncurses.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "ncurses.h" "ac_cv_header_ncurses_h" "$ac_includes_default"
-if test "x$ac_cv_header_ncurses_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_NCURSES_H 1
-_ACEOF
-
-fi
-
-done
 
 else
   as_fn_error $? "libncursesw not found" "$LINENO" 5
@@ -13395,10 +14860,352 @@ fi
 		#if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
 			#CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
 		#fi
-		#AC_CHECK_HEADERS(ncurses.h)],
+		#AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])],
 		#[CF_CURSES_LIBS])
 	#])
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
+
+ac_fn_c_check_header_mongrel "$LINENO" "curses.h" "ac_cv_header_curses_h" "$ac_includes_default"
+if test "x$ac_cv_header_curses_h" = xyes; then :
+
+else
+  as_fn_error $? "curses.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_decl "$LINENO" "COLORS" "ac_cv_have_decl_COLORS" "#include <curses.h>
+"
+if test "x$ac_cv_have_decl_COLORS" = xyes; then :
+
+else
+  as_fn_error $? "COLORS not found in curses.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_decl "$LINENO" "COLOR_PAIR" "ac_cv_have_decl_COLOR_PAIR" "#include <curses.h>
+"
+if test "x$ac_cv_have_decl_COLOR_PAIR" = xyes; then :
+
+else
+  as_fn_error $? "COLOR_PAIR not found in curses.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_decl "$LINENO" "TABSIZE" "ac_cv_have_decl_TABSIZE" "#include <curses.h>
+"
+if test "x$ac_cv_have_decl_TABSIZE" = xyes; then :
+
+else
+  as_fn_error $? "TABSIZE not found in curses.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_type "$LINENO" "WINDOW" "ac_cv_type_WINDOW" "#include <curses.h>
+"
+if test "x$ac_cv_type_WINDOW" = xyes; then :
+
+else
+  as_fn_error $? "WINDOW type not found in curses.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "curs_set" "ac_cv_func_curs_set"
+if test "x$ac_cv_func_curs_set" = xyes; then :
+
+else
+  as_fn_error $? "curs_set() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "def_prog_mode" "ac_cv_func_def_prog_mode"
+if test "x$ac_cv_func_def_prog_mode" = xyes; then :
+
+else
+  as_fn_error $? "def_prog_mode() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "doupdate" "ac_cv_func_doupdate"
+if test "x$ac_cv_func_doupdate" = xyes; then :
+
+else
+  as_fn_error $? "doupdate() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "endwin" "ac_cv_func_endwin"
+if test "x$ac_cv_func_endwin" = xyes; then :
+
+else
+  as_fn_error $? "endwin() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "flushinp" "ac_cv_func_flushinp"
+if test "x$ac_cv_func_flushinp" = xyes; then :
+
+else
+  as_fn_error $? "flushinp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "has_colors" "ac_cv_func_has_colors"
+if test "x$ac_cv_func_has_colors" = xyes; then :
+
+else
+  as_fn_error $? "has_colors() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "init_pair" "ac_cv_func_init_pair"
+if test "x$ac_cv_func_init_pair" = xyes; then :
+
+else
+  as_fn_error $? "init_pair() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "initscr" "ac_cv_func_initscr"
+if test "x$ac_cv_func_initscr" = xyes; then :
+
+else
+  as_fn_error $? "initscr() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "isendwin" "ac_cv_func_isendwin"
+if test "x$ac_cv_func_isendwin" = xyes; then :
+
+else
+  as_fn_error $? "isendwin() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "keypad" "ac_cv_func_keypad"
+if test "x$ac_cv_func_keypad" = xyes; then :
+
+else
+  as_fn_error $? "keypad() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "mvwin" "ac_cv_func_mvwin"
+if test "x$ac_cv_func_mvwin" = xyes; then :
+
+else
+  as_fn_error $? "mvwin() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "mvwprintw" "ac_cv_func_mvwprintw"
+if test "x$ac_cv_func_mvwprintw" = xyes; then :
+
+else
+  as_fn_error $? "mvwprintw() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "newwin" "ac_cv_func_newwin"
+if test "x$ac_cv_func_newwin" = xyes; then :
+
+else
+  as_fn_error $? "newwin() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "noecho" "ac_cv_func_noecho"
+if test "x$ac_cv_func_noecho" = xyes; then :
+
+else
+  as_fn_error $? "noecho() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "nonl" "ac_cv_func_nonl"
+if test "x$ac_cv_func_nonl" = xyes; then :
+
+else
+  as_fn_error $? "nonl() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "raw" "ac_cv_func_raw"
+if test "x$ac_cv_func_raw" = xyes; then :
+
+else
+  as_fn_error $? "raw() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "reset_prog_mode" "ac_cv_func_reset_prog_mode"
+if test "x$ac_cv_func_reset_prog_mode" = xyes; then :
+
+else
+  as_fn_error $? "reset_prog_mode() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "resize_term" "ac_cv_func_resize_term"
+if test "x$ac_cv_func_resize_term" = xyes; then :
+
+else
+  as_fn_error $? "resize_term() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "resizeterm" "ac_cv_func_resizeterm"
+if test "x$ac_cv_func_resizeterm" = xyes; then :
+
+else
+  as_fn_error $? "resizeterm() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "scrollok" "ac_cv_func_scrollok"
+if test "x$ac_cv_func_scrollok" = xyes; then :
+
+else
+  as_fn_error $? "scrollok() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "set_escdelay" "ac_cv_func_set_escdelay"
+if test "x$ac_cv_func_set_escdelay" = xyes; then :
+
+else
+  as_fn_error $? "set_escdelay() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "start_color" "ac_cv_func_start_color"
+if test "x$ac_cv_func_start_color" = xyes; then :
+
+else
+  as_fn_error $? "start_color() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "stdscr" "ac_cv_func_stdscr"
+if test "x$ac_cv_func_stdscr" = xyes; then :
+
+else
+  as_fn_error $? "stdscr() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "use_default_colors" "ac_cv_func_use_default_colors"
+if test "x$ac_cv_func_use_default_colors" = xyes; then :
+
+else
+  as_fn_error $? "use_default_colors() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "waddch" "ac_cv_func_waddch"
+if test "x$ac_cv_func_waddch" = xyes; then :
+
+else
+  as_fn_error $? "waddch() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "waddnstr" "ac_cv_func_waddnstr"
+if test "x$ac_cv_func_waddnstr" = xyes; then :
+
+else
+  as_fn_error $? "waddnstr() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "waddnwstr" "ac_cv_func_waddnwstr"
+if test "x$ac_cv_func_waddnwstr" = xyes; then :
+
+else
+  as_fn_error $? "waddnwstr() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wattr_off" "ac_cv_func_wattr_off"
+if test "x$ac_cv_func_wattr_off" = xyes; then :
+
+else
+  as_fn_error $? "wattr_off() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wattr_on" "ac_cv_func_wattr_on"
+if test "x$ac_cv_func_wattr_on" = xyes; then :
+
+else
+  as_fn_error $? "wattr_on() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wbkgdset" "ac_cv_func_wbkgdset"
+if test "x$ac_cv_func_wbkgdset" = xyes; then :
+
+else
+  as_fn_error $? "wbkgdset() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wborder" "ac_cv_func_wborder"
+if test "x$ac_cv_func_wborder" = xyes; then :
+
+else
+  as_fn_error $? "wborder() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wclrtoeol" "ac_cv_func_wclrtoeol"
+if test "x$ac_cv_func_wclrtoeol" = xyes; then :
+
+else
+  as_fn_error $? "wclrtoeol() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "werase" "ac_cv_func_werase"
+if test "x$ac_cv_func_werase" = xyes; then :
+
+else
+  as_fn_error $? "werase() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wget_wch" "ac_cv_func_wget_wch"
+if test "x$ac_cv_func_wget_wch" = xyes; then :
+
+else
+  as_fn_error $? "wget_wch() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wgetch" "ac_cv_func_wgetch"
+if test "x$ac_cv_func_wgetch" = xyes; then :
+
+else
+  as_fn_error $? "wgetch() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wmove" "ac_cv_func_wmove"
+if test "x$ac_cv_func_wmove" = xyes; then :
+
+else
+  as_fn_error $? "wmove() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wnoutrefresh" "ac_cv_func_wnoutrefresh"
+if test "x$ac_cv_func_wnoutrefresh" = xyes; then :
+
+else
+  as_fn_error $? "wnoutrefresh() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wprintw" "ac_cv_func_wprintw"
+if test "x$ac_cv_func_wprintw" = xyes; then :
+
+else
+  as_fn_error $? "wprintw() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wredrawln" "ac_cv_func_wredrawln"
+if test "x$ac_cv_func_wredrawln" = xyes; then :
+
+else
+  as_fn_error $? "wredrawln() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wrefresh" "ac_cv_func_wrefresh"
+if test "x$ac_cv_func_wrefresh" = xyes; then :
+
+else
+  as_fn_error $? "wrefresh() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wresize" "ac_cv_func_wresize"
+if test "x$ac_cv_func_wresize" = xyes; then :
+
+else
+  as_fn_error $? "wresize() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wtimeout" "ac_cv_func_wtimeout"
+if test "x$ac_cv_func_wtimeout" = xyes; then :
+
+else
+  as_fn_error $? "wtimeout() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wtouchln" "ac_cv_func_wtouchln"
+if test "x$ac_cv_func_wtouchln" = xyes; then :
+
+else
+  as_fn_error $? "wtouchln() function not found." "$LINENO" 5
+fi
+
 
 
 min_version="7.1"
@@ -13454,6 +15261,68 @@ if test "$use_gtk" = "yes"; then
 		if pkg-config --exists glib-2.0 gtk+-2.0; then
 			CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
 			LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
+			ac_fn_c_check_header_compile "$LINENO" "gio/gio.h" "ac_cv_header_gio_gio_h" "#include <gio/gio.h>
+"
+if test "x$ac_cv_header_gio_gio_h" = xyes; then :
+
+else
+  as_fn_error $? "gio/gio.h header not found." "$LINENO" 5
+fi
+
+
+			ac_fn_c_check_header_compile "$LINENO" "glib.h" "ac_cv_header_glib_h" "#include <glib.h>
+"
+if test "x$ac_cv_header_glib_h" = xyes; then :
+
+else
+  as_fn_error $? "glib.h header not found." "$LINENO" 5
+fi
+
+
+			ac_fn_c_check_header_compile "$LINENO" "gtk/gtk.h" "ac_cv_header_gtk_gtk_h" "#include <gtk/gtk.h>
+"
+if test "x$ac_cv_header_gtk_gtk_h" = xyes; then :
+
+else
+  as_fn_error $? "gtk/gtk.h header not found." "$LINENO" 5
+fi
+
+
+			ac_fn_c_check_func "$LINENO" "gtk_init_check" "ac_cv_func_gtk_init_check"
+if test "x$ac_cv_func_gtk_init_check" = xyes; then :
+
+else
+  as_fn_error $? "gtk_init_check() function not found." "$LINENO" 5
+fi
+
+			ac_fn_c_check_func "$LINENO" "g_file_info_get_content_type" "ac_cv_func_g_file_info_get_content_type"
+if test "x$ac_cv_func_g_file_info_get_content_type" = xyes; then :
+
+else
+  as_fn_error $? "g_file_info_get_content_type() function not found." "$LINENO" 5
+fi
+
+			ac_fn_c_check_func "$LINENO" "g_file_new_for_path" "ac_cv_func_g_file_new_for_path"
+if test "x$ac_cv_func_g_file_new_for_path" = xyes; then :
+
+else
+  as_fn_error $? "g_file_new_for_path() function not found." "$LINENO" 5
+fi
+
+			ac_fn_c_check_func "$LINENO" "g_file_query_info" "ac_cv_func_g_file_query_info"
+if test "x$ac_cv_func_g_file_query_info" = xyes; then :
+
+else
+  as_fn_error $? "g_file_query_info() function not found." "$LINENO" 5
+fi
+
+			ac_fn_c_check_func "$LINENO" "g_object_unref" "ac_cv_func_g_object_unref"
+if test "x$ac_cv_func_g_object_unref" = xyes; then :
+
+else
+  as_fn_error $? "g_object_unref() function not found." "$LINENO" 5
+fi
+
 
 $as_echo "#define HAVE_LIBGTK 1" >>confdefs.h
 
@@ -13506,6 +15375,42 @@ _ACEOF
   LIBS="-lmagic $LIBS"
 
 fi
+
+	ac_fn_c_check_func "$LINENO" "magic_close" "ac_cv_func_magic_close"
+if test "x$ac_cv_func_magic_close" = xyes; then :
+
+else
+  as_fn_error $? "magic_close() function not found." "$LINENO" 5
+fi
+
+	ac_fn_c_check_func "$LINENO" "magic_file" "ac_cv_func_magic_file"
+if test "x$ac_cv_func_magic_file" = xyes; then :
+
+else
+  as_fn_error $? "magic_file() function not found." "$LINENO" 5
+fi
+
+	ac_fn_c_check_func "$LINENO" "magic_load" "ac_cv_func_magic_load"
+if test "x$ac_cv_func_magic_load" = xyes; then :
+
+else
+  as_fn_error $? "magic_load() function not found." "$LINENO" 5
+fi
+
+	ac_fn_c_check_func "$LINENO" "magic_open" "ac_cv_func_magic_open"
+if test "x$ac_cv_func_magic_open" = xyes; then :
+
+else
+  as_fn_error $? "magic_open() function not found." "$LINENO" 5
+fi
+
+	ac_fn_c_check_header_mongrel "$LINENO" "magic.h" "ac_cv_header_magic_h" "$ac_includes_default"
+if test "x$ac_cv_header_magic_h" = xyes; then :
+
+else
+  as_fn_error $? "magic.h header not found." "$LINENO" 5
+fi
+
 
 	ac_fn_c_check_decl "$LINENO" "MAGIC_MIME_TYPE" "ac_cv_have_decl_MAGIC_MIME_TYPE" "#include <magic.h>
 "
@@ -13603,29 +15508,21 @@ fi
 $as_echo "$ac_cv_lib_X11_XOpenDisplay" >&6; }
 if test "x$ac_cv_lib_X11_XOpenDisplay" = xyes; then :
   LIBS="$LIBS -lX11"
-		for ac_header in X11/Xlib.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "X11/Xlib.h" "ac_cv_header_X11_Xlib_h" "$ac_includes_default"
+		ac_fn_c_check_header_mongrel "$LINENO" "X11/Xlib.h" "ac_cv_header_X11_Xlib_h" "$ac_includes_default"
 if test "x$ac_cv_header_X11_Xlib_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_X11_XLIB_H 1
-_ACEOF
 
+else
+  as_fn_error $? "X11/Xlib.h header not found." "$LINENO" 5
 fi
 
-done
 
-		for ac_header in X11/Xutil.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "X11/Xutil.h" "ac_cv_header_X11_Xutil_h" "$ac_includes_default"
+		ac_fn_c_check_header_mongrel "$LINENO" "X11/Xutil.h" "ac_cv_header_X11_Xutil_h" "$ac_includes_default"
 if test "x$ac_cv_header_X11_Xutil_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_X11_XUTIL_H 1
-_ACEOF
 
+else
+  as_fn_error $? "X11/Xutil.h header not found." "$LINENO" 5
 fi
 
-done
 
 
 $as_echo "#define HAVE_X11 1" >>confdefs.h
