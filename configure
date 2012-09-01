@@ -13629,6 +13629,68 @@ if test "$use_gtk" = "yes"; then
 		if pkg-config --exists glib-2.0 gtk+-2.0; then
 			CFLAGS="$CFLAGS $(pkg-config --cflags glib-2.0 gtk+-2.0)"
 			LIBS="$LIBS $(pkg-config --libs glib-2.0 gtk+-2.0)"
+			ac_fn_c_check_header_compile "$LINENO" "gio/gio.h" "ac_cv_header_gio_gio_h" "#include <gio/gio.h>
+"
+if test "x$ac_cv_header_gio_gio_h" = xyes; then :
+
+else
+  as_fn_error $? "gio/gio.h header not found." "$LINENO" 5
+fi
+
+
+			ac_fn_c_check_header_compile "$LINENO" "glib.h" "ac_cv_header_glib_h" "#include <glib.h>
+"
+if test "x$ac_cv_header_glib_h" = xyes; then :
+
+else
+  as_fn_error $? "glib.h header not found." "$LINENO" 5
+fi
+
+
+			ac_fn_c_check_header_compile "$LINENO" "gtk/gtk.h" "ac_cv_header_gtk_gtk_h" "#include <gtk/gtk.h>
+"
+if test "x$ac_cv_header_gtk_gtk_h" = xyes; then :
+
+else
+  as_fn_error $? "gtk/gtk.h header not found." "$LINENO" 5
+fi
+
+
+			ac_fn_c_check_func "$LINENO" "gtk_init_check" "ac_cv_func_gtk_init_check"
+if test "x$ac_cv_func_gtk_init_check" = xyes; then :
+
+else
+  as_fn_error $? "gtk_init_check() function not found." "$LINENO" 5
+fi
+
+			ac_fn_c_check_func "$LINENO" "g_file_info_get_content_type" "ac_cv_func_g_file_info_get_content_type"
+if test "x$ac_cv_func_g_file_info_get_content_type" = xyes; then :
+
+else
+  as_fn_error $? "g_file_info_get_content_type() function not found." "$LINENO" 5
+fi
+
+			ac_fn_c_check_func "$LINENO" "g_file_new_for_path" "ac_cv_func_g_file_new_for_path"
+if test "x$ac_cv_func_g_file_new_for_path" = xyes; then :
+
+else
+  as_fn_error $? "g_file_new_for_path() function not found." "$LINENO" 5
+fi
+
+			ac_fn_c_check_func "$LINENO" "g_file_query_info" "ac_cv_func_g_file_query_info"
+if test "x$ac_cv_func_g_file_query_info" = xyes; then :
+
+else
+  as_fn_error $? "g_file_query_info() function not found." "$LINENO" 5
+fi
+
+			ac_fn_c_check_func "$LINENO" "g_object_unref" "ac_cv_func_g_object_unref"
+if test "x$ac_cv_func_g_object_unref" = xyes; then :
+
+else
+  as_fn_error $? "g_object_unref() function not found." "$LINENO" 5
+fi
+
 
 $as_echo "#define HAVE_LIBGTK 1" >>confdefs.h
 
