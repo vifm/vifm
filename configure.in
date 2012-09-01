@@ -33,6 +33,19 @@ AC_CHECK_DECL([REG_EXTENDED], [], [AC_MSG_ERROR([REG_EXTENDED not found in regex
 AC_CHECK_DECL([REG_ICASE], [], [AC_MSG_ERROR([REG_ICASE not found in regex.h])], [[#include <regex.h>]])
 AC_CHECK_DECL([REG_NOMATCH], [], [AC_MSG_ERROR([REG_NOMATCH not found in regex.h])], [[#include <regex.h>]])
 
+dnl Check for socket related headers and functions.
+AC_CHECK_HEADER([arpa/inet.h], [], [AC_MSG_ERROR([arpa/inet.h header not found.])])
+AC_CHECK_HEADER([netinet/in.h], [], [AC_MSG_ERROR([netinet/in.h header not found.])])
+AC_CHECK_HEADER([sys/socket.h], [], [AC_MSG_ERROR([sys/socket.h header not found.])])
+AC_CHECK_HEADER([sys/un.h], [], [AC_MSG_ERROR([sys/un.h header not found.])])
+AC_CHECK_FUNC([bind], [], [AC_MSG_ERROR([bind() function not found.])])
+AC_CHECK_FUNC([htons], [], [AC_MSG_ERROR([htons() function not found.])])
+AC_CHECK_FUNC([inet_addr], [], [AC_MSG_ERROR([inet_addr() function not found.])])
+AC_CHECK_FUNC([recv], [], [AC_MSG_ERROR([recv() function not found.])])
+AC_CHECK_FUNC([sendto], [], [AC_MSG_ERROR([sendto() function not found.])])
+AC_CHECK_FUNC([setsockopt], [], [AC_MSG_ERROR([setsockopt() function not found.])])
+AC_CHECK_FUNC([socket], [], [AC_MSG_ERROR([socket() function not found.])])
+
 AC_CHECK_MEMBERS([struct stat.st_mtim])
 AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO

@@ -60,6 +60,8 @@
 
 	Check for GTK headers and all related in ./configure script.
 
+	Check for socket related headers and function in ./configure script.
+
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
 
