@@ -27,7 +27,6 @@
                        strncat() strncpy() strchr() strcpy() strlen() */
 
 #ifndef _WIN32
-#include <grp.h> /* getgrnam() */
 #include <pwd.h> /* getpwnam() */
 #endif
 

@@ -63,6 +63,9 @@
 
 	Check for socket related headers and function in ./configure script.
 
+	Check for a bunch of system headers, types and functions in ./configure
+	script.
+
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
 
