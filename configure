@@ -13715,30 +13715,6 @@ if test "x$ac_cv_lib_ncursesw_initscr" = xyes; then :
 	if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncursesw; then
 		CPPFLAGS="$CPPFLAGS -I/usr/include/ncursesw"
 	fi
-	ac_fn_c_check_header_mongrel "$LINENO" "curses.h" "ac_cv_header_curses_h" "$ac_includes_default"
-if test "x$ac_cv_header_curses_h" = xyes; then :
-
-else
-  as_fn_error $? "curses.h header not found." "$LINENO" 5
-fi
-
-
-	ac_fn_c_check_decl "$LINENO" "TABSIZE" "ac_cv_have_decl_TABSIZE" "#include <curses.h>
-"
-if test "x$ac_cv_have_decl_TABSIZE" = xyes; then :
-
-else
-  as_fn_error $? "TABSIZE not found in curses.h" "$LINENO" 5
-fi
-
-	ac_fn_c_check_decl "$LINENO" "COLORS" "ac_cv_have_decl_COLORS" "#include <curses.h>
-"
-if test "x$ac_cv_have_decl_COLORS" = xyes; then :
-
-else
-  as_fn_error $? "COLORS not found in curses.h" "$LINENO" 5
-fi
-
 
 else
   as_fn_error $? "libncursesw not found" "$LINENO" 5
@@ -13754,6 +13730,348 @@ fi
 		#[CF_CURSES_LIBS])
 	#])
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
+
+ac_fn_c_check_header_mongrel "$LINENO" "curses.h" "ac_cv_header_curses_h" "$ac_includes_default"
+if test "x$ac_cv_header_curses_h" = xyes; then :
+
+else
+  as_fn_error $? "curses.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_decl "$LINENO" "COLORS" "ac_cv_have_decl_COLORS" "#include <curses.h>
+"
+if test "x$ac_cv_have_decl_COLORS" = xyes; then :
+
+else
+  as_fn_error $? "COLORS not found in curses.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_decl "$LINENO" "COLOR_PAIR" "ac_cv_have_decl_COLOR_PAIR" "#include <curses.h>
+"
+if test "x$ac_cv_have_decl_COLOR_PAIR" = xyes; then :
+
+else
+  as_fn_error $? "COLOR_PAIR not found in curses.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_decl "$LINENO" "TABSIZE" "ac_cv_have_decl_TABSIZE" "#include <curses.h>
+"
+if test "x$ac_cv_have_decl_TABSIZE" = xyes; then :
+
+else
+  as_fn_error $? "TABSIZE not found in curses.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_type "$LINENO" "WINDOW" "ac_cv_type_WINDOW" "#include <curses.h>
+"
+if test "x$ac_cv_type_WINDOW" = xyes; then :
+
+else
+  as_fn_error $? "WINDOW type not found in curses.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "curs_set" "ac_cv_func_curs_set"
+if test "x$ac_cv_func_curs_set" = xyes; then :
+
+else
+  as_fn_error $? "curs_set() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "def_prog_mode" "ac_cv_func_def_prog_mode"
+if test "x$ac_cv_func_def_prog_mode" = xyes; then :
+
+else
+  as_fn_error $? "def_prog_mode() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "doupdate" "ac_cv_func_doupdate"
+if test "x$ac_cv_func_doupdate" = xyes; then :
+
+else
+  as_fn_error $? "doupdate() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "endwin" "ac_cv_func_endwin"
+if test "x$ac_cv_func_endwin" = xyes; then :
+
+else
+  as_fn_error $? "endwin() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "flushinp" "ac_cv_func_flushinp"
+if test "x$ac_cv_func_flushinp" = xyes; then :
+
+else
+  as_fn_error $? "flushinp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "has_colors" "ac_cv_func_has_colors"
+if test "x$ac_cv_func_has_colors" = xyes; then :
+
+else
+  as_fn_error $? "has_colors() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "init_pair" "ac_cv_func_init_pair"
+if test "x$ac_cv_func_init_pair" = xyes; then :
+
+else
+  as_fn_error $? "init_pair() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "initscr" "ac_cv_func_initscr"
+if test "x$ac_cv_func_initscr" = xyes; then :
+
+else
+  as_fn_error $? "initscr() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "isendwin" "ac_cv_func_isendwin"
+if test "x$ac_cv_func_isendwin" = xyes; then :
+
+else
+  as_fn_error $? "isendwin() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "keypad" "ac_cv_func_keypad"
+if test "x$ac_cv_func_keypad" = xyes; then :
+
+else
+  as_fn_error $? "keypad() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "mvwin" "ac_cv_func_mvwin"
+if test "x$ac_cv_func_mvwin" = xyes; then :
+
+else
+  as_fn_error $? "mvwin() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "mvwprintw" "ac_cv_func_mvwprintw"
+if test "x$ac_cv_func_mvwprintw" = xyes; then :
+
+else
+  as_fn_error $? "mvwprintw() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "newwin" "ac_cv_func_newwin"
+if test "x$ac_cv_func_newwin" = xyes; then :
+
+else
+  as_fn_error $? "newwin() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "noecho" "ac_cv_func_noecho"
+if test "x$ac_cv_func_noecho" = xyes; then :
+
+else
+  as_fn_error $? "noecho() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "nonl" "ac_cv_func_nonl"
+if test "x$ac_cv_func_nonl" = xyes; then :
+
+else
+  as_fn_error $? "nonl() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "raw" "ac_cv_func_raw"
+if test "x$ac_cv_func_raw" = xyes; then :
+
+else
+  as_fn_error $? "raw() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "reset_prog_mode" "ac_cv_func_reset_prog_mode"
+if test "x$ac_cv_func_reset_prog_mode" = xyes; then :
+
+else
+  as_fn_error $? "reset_prog_mode() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "resize_term" "ac_cv_func_resize_term"
+if test "x$ac_cv_func_resize_term" = xyes; then :
+
+else
+  as_fn_error $? "resize_term() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "resizeterm" "ac_cv_func_resizeterm"
+if test "x$ac_cv_func_resizeterm" = xyes; then :
+
+else
+  as_fn_error $? "resizeterm() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "scrollok" "ac_cv_func_scrollok"
+if test "x$ac_cv_func_scrollok" = xyes; then :
+
+else
+  as_fn_error $? "scrollok() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "set_escdelay" "ac_cv_func_set_escdelay"
+if test "x$ac_cv_func_set_escdelay" = xyes; then :
+
+else
+  as_fn_error $? "set_escdelay() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "start_color" "ac_cv_func_start_color"
+if test "x$ac_cv_func_start_color" = xyes; then :
+
+else
+  as_fn_error $? "start_color() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "stdscr" "ac_cv_func_stdscr"
+if test "x$ac_cv_func_stdscr" = xyes; then :
+
+else
+  as_fn_error $? "stdscr() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "use_default_colors" "ac_cv_func_use_default_colors"
+if test "x$ac_cv_func_use_default_colors" = xyes; then :
+
+else
+  as_fn_error $? "use_default_colors() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "waddch" "ac_cv_func_waddch"
+if test "x$ac_cv_func_waddch" = xyes; then :
+
+else
+  as_fn_error $? "waddch() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "waddnstr" "ac_cv_func_waddnstr"
+if test "x$ac_cv_func_waddnstr" = xyes; then :
+
+else
+  as_fn_error $? "waddnstr() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "waddnwstr" "ac_cv_func_waddnwstr"
+if test "x$ac_cv_func_waddnwstr" = xyes; then :
+
+else
+  as_fn_error $? "waddnwstr() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wattr_off" "ac_cv_func_wattr_off"
+if test "x$ac_cv_func_wattr_off" = xyes; then :
+
+else
+  as_fn_error $? "wattr_off() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wattr_on" "ac_cv_func_wattr_on"
+if test "x$ac_cv_func_wattr_on" = xyes; then :
+
+else
+  as_fn_error $? "wattr_on() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wbkgdset" "ac_cv_func_wbkgdset"
+if test "x$ac_cv_func_wbkgdset" = xyes; then :
+
+else
+  as_fn_error $? "wbkgdset() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wborder" "ac_cv_func_wborder"
+if test "x$ac_cv_func_wborder" = xyes; then :
+
+else
+  as_fn_error $? "wborder() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wclrtoeol" "ac_cv_func_wclrtoeol"
+if test "x$ac_cv_func_wclrtoeol" = xyes; then :
+
+else
+  as_fn_error $? "wclrtoeol() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "werase" "ac_cv_func_werase"
+if test "x$ac_cv_func_werase" = xyes; then :
+
+else
+  as_fn_error $? "werase() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wget_wch" "ac_cv_func_wget_wch"
+if test "x$ac_cv_func_wget_wch" = xyes; then :
+
+else
+  as_fn_error $? "wget_wch() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wgetch" "ac_cv_func_wgetch"
+if test "x$ac_cv_func_wgetch" = xyes; then :
+
+else
+  as_fn_error $? "wgetch() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wmove" "ac_cv_func_wmove"
+if test "x$ac_cv_func_wmove" = xyes; then :
+
+else
+  as_fn_error $? "wmove() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wnoutrefresh" "ac_cv_func_wnoutrefresh"
+if test "x$ac_cv_func_wnoutrefresh" = xyes; then :
+
+else
+  as_fn_error $? "wnoutrefresh() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wprintw" "ac_cv_func_wprintw"
+if test "x$ac_cv_func_wprintw" = xyes; then :
+
+else
+  as_fn_error $? "wprintw() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wredrawln" "ac_cv_func_wredrawln"
+if test "x$ac_cv_func_wredrawln" = xyes; then :
+
+else
+  as_fn_error $? "wredrawln() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wrefresh" "ac_cv_func_wrefresh"
+if test "x$ac_cv_func_wrefresh" = xyes; then :
+
+else
+  as_fn_error $? "wrefresh() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wresize" "ac_cv_func_wresize"
+if test "x$ac_cv_func_wresize" = xyes; then :
+
+else
+  as_fn_error $? "wresize() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wtimeout" "ac_cv_func_wtimeout"
+if test "x$ac_cv_func_wtimeout" = xyes; then :
+
+else
+  as_fn_error $? "wtimeout() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "wtouchln" "ac_cv_func_wtouchln"
+if test "x$ac_cv_func_wtouchln" = xyes; then :
+
+else
+  as_fn_error $? "wtouchln() function not found." "$LINENO" 5
+fi
+
 
 
 min_version="7.1"

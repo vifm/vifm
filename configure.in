@@ -137,9 +137,6 @@ AC_CHECK_LIB(ncursesw, initscr,
 	if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncursesw; then
 		CPPFLAGS="$CPPFLAGS -I/usr/include/ncursesw"
 	fi
-	AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])
-	AC_CHECK_DECL([TABSIZE], [], [AC_MSG_ERROR([TABSIZE not found in curses.h])], [[#include <curses.h>]])
-	AC_CHECK_DECL([COLORS], [], [AC_MSG_ERROR([COLORS not found in curses.h])], [[#include <curses.h>]])
     ],
 	[AC_MSG_ERROR([libncursesw not found])])
 	#[ac_widec_possible=no
@@ -152,6 +149,56 @@ AC_CHECK_LIB(ncursesw, initscr,
 		#[CF_CURSES_LIBS])
 	#])
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
+
+dnl Check for curses.h header and all its required elements.
+AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])
+AC_CHECK_DECL([COLORS], [], [AC_MSG_ERROR([COLORS not found in curses.h])], [[#include <curses.h>]])
+AC_CHECK_DECL([COLOR_PAIR], [], [AC_MSG_ERROR([COLOR_PAIR not found in curses.h])], [[#include <curses.h>]])
+AC_CHECK_DECL([TABSIZE], [], [AC_MSG_ERROR([TABSIZE not found in curses.h])], [[#include <curses.h>]])
+AC_CHECK_TYPE([WINDOW], [], [AC_MSG_ERROR([WINDOW type not found in curses.h])], [[#include <curses.h>]])
+AC_CHECK_FUNC([curs_set], [], [AC_MSG_ERROR([curs_set() function not found.])])
+AC_CHECK_FUNC([def_prog_mode], [], [AC_MSG_ERROR([def_prog_mode() function not found.])])
+AC_CHECK_FUNC([doupdate], [], [AC_MSG_ERROR([doupdate() function not found.])])
+AC_CHECK_FUNC([endwin], [], [AC_MSG_ERROR([endwin() function not found.])])
+AC_CHECK_FUNC([flushinp], [], [AC_MSG_ERROR([flushinp() function not found.])])
+AC_CHECK_FUNC([has_colors], [], [AC_MSG_ERROR([has_colors() function not found.])])
+AC_CHECK_FUNC([init_pair], [], [AC_MSG_ERROR([init_pair() function not found.])])
+AC_CHECK_FUNC([initscr], [], [AC_MSG_ERROR([initscr() function not found.])])
+AC_CHECK_FUNC([isendwin], [], [AC_MSG_ERROR([isendwin() function not found.])])
+AC_CHECK_FUNC([keypad], [], [AC_MSG_ERROR([keypad() function not found.])])
+AC_CHECK_FUNC([mvwin], [], [AC_MSG_ERROR([mvwin() function not found.])])
+AC_CHECK_FUNC([mvwprintw], [], [AC_MSG_ERROR([mvwprintw() function not found.])])
+AC_CHECK_FUNC([newwin], [], [AC_MSG_ERROR([newwin() function not found.])])
+AC_CHECK_FUNC([noecho], [], [AC_MSG_ERROR([noecho() function not found.])])
+AC_CHECK_FUNC([nonl], [], [AC_MSG_ERROR([nonl() function not found.])])
+AC_CHECK_FUNC([raw], [], [AC_MSG_ERROR([raw() function not found.])])
+AC_CHECK_FUNC([reset_prog_mode], [], [AC_MSG_ERROR([reset_prog_mode() function not found.])])
+AC_CHECK_FUNC([resize_term], [], [AC_MSG_ERROR([resize_term() function not found.])])
+AC_CHECK_FUNC([resizeterm], [], [AC_MSG_ERROR([resizeterm() function not found.])])
+AC_CHECK_FUNC([scrollok], [], [AC_MSG_ERROR([scrollok() function not found.])])
+AC_CHECK_FUNC([set_escdelay], [], [AC_MSG_ERROR([set_escdelay() function not found.])])
+AC_CHECK_FUNC([start_color], [], [AC_MSG_ERROR([start_color() function not found.])])
+AC_CHECK_FUNC([stdscr], [], [AC_MSG_ERROR([stdscr() function not found.])])
+AC_CHECK_FUNC([use_default_colors], [], [AC_MSG_ERROR([use_default_colors() function not found.])])
+AC_CHECK_FUNC([waddch], [], [AC_MSG_ERROR([waddch() function not found.])])
+AC_CHECK_FUNC([waddnstr], [], [AC_MSG_ERROR([waddnstr() function not found.])])
+AC_CHECK_FUNC([waddnwstr], [], [AC_MSG_ERROR([waddnwstr() function not found.])])
+AC_CHECK_FUNC([wattr_off], [], [AC_MSG_ERROR([wattr_off() function not found.])])
+AC_CHECK_FUNC([wattr_on], [], [AC_MSG_ERROR([wattr_on() function not found.])])
+AC_CHECK_FUNC([wbkgdset], [], [AC_MSG_ERROR([wbkgdset() function not found.])])
+AC_CHECK_FUNC([wborder], [], [AC_MSG_ERROR([wborder() function not found.])])
+AC_CHECK_FUNC([wclrtoeol], [], [AC_MSG_ERROR([wclrtoeol() function not found.])])
+AC_CHECK_FUNC([werase], [], [AC_MSG_ERROR([werase() function not found.])])
+AC_CHECK_FUNC([wget_wch], [], [AC_MSG_ERROR([wget_wch() function not found.])])
+AC_CHECK_FUNC([wgetch], [], [AC_MSG_ERROR([wgetch() function not found.])])
+AC_CHECK_FUNC([wmove], [], [AC_MSG_ERROR([wmove() function not found.])])
+AC_CHECK_FUNC([wnoutrefresh], [], [AC_MSG_ERROR([wnoutrefresh() function not found.])])
+AC_CHECK_FUNC([wprintw], [], [AC_MSG_ERROR([wprintw() function not found.])])
+AC_CHECK_FUNC([wredrawln], [], [AC_MSG_ERROR([wredrawln() function not found.])])
+AC_CHECK_FUNC([wrefresh], [], [AC_MSG_ERROR([wrefresh() function not found.])])
+AC_CHECK_FUNC([wresize], [], [AC_MSG_ERROR([wresize() function not found.])])
+AC_CHECK_FUNC([wtimeout], [], [AC_MSG_ERROR([wtimeout() function not found.])])
+AC_CHECK_FUNC([wtouchln], [], [AC_MSG_ERROR([wtouchln() function not found.])])
 
 dnl ----------------------------------------------------------------------------
 dnl check for gnu coreutils version
