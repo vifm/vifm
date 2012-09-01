@@ -170,6 +170,11 @@ fi
 
 if test "$use_libmagic" = "yes"; then
 	AC_CHECK_LIB(magic, magic_open)
+	AC_CHECK_FUNC([magic_close], [], [AC_MSG_ERROR([magic_close() function not found.])])
+	AC_CHECK_FUNC([magic_file], [], [AC_MSG_ERROR([magic_file() function not found.])])
+	AC_CHECK_FUNC([magic_load], [], [AC_MSG_ERROR([magic_load() function not found.])])
+	AC_CHECK_FUNC([magic_open], [], [AC_MSG_ERROR([magic_open() function not found.])])
+	AC_CHECK_HEADER([magic.h], [], [AC_MSG_ERROR([magic.h header not found.])])
 	AC_CHECK_DECLS([MAGIC_MIME_TYPE], [], [], [[#include <magic.h>]])
 fi
 

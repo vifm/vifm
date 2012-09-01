@@ -13612,6 +13612,42 @@ _ACEOF
 
 fi
 
+	ac_fn_c_check_func "$LINENO" "magic_close" "ac_cv_func_magic_close"
+if test "x$ac_cv_func_magic_close" = xyes; then :
+
+else
+  as_fn_error $? "magic_close() function not found." "$LINENO" 5
+fi
+
+	ac_fn_c_check_func "$LINENO" "magic_file" "ac_cv_func_magic_file"
+if test "x$ac_cv_func_magic_file" = xyes; then :
+
+else
+  as_fn_error $? "magic_file() function not found." "$LINENO" 5
+fi
+
+	ac_fn_c_check_func "$LINENO" "magic_load" "ac_cv_func_magic_load"
+if test "x$ac_cv_func_magic_load" = xyes; then :
+
+else
+  as_fn_error $? "magic_load() function not found." "$LINENO" 5
+fi
+
+	ac_fn_c_check_func "$LINENO" "magic_open" "ac_cv_func_magic_open"
+if test "x$ac_cv_func_magic_open" = xyes; then :
+
+else
+  as_fn_error $? "magic_open() function not found." "$LINENO" 5
+fi
+
+	ac_fn_c_check_header_mongrel "$LINENO" "magic.h" "ac_cv_header_magic_h" "$ac_includes_default"
+if test "x$ac_cv_header_magic_h" = xyes; then :
+
+else
+  as_fn_error $? "magic.h header not found." "$LINENO" 5
+fi
+
+
 	ac_fn_c_check_decl "$LINENO" "MAGIC_MIME_TYPE" "ac_cv_have_decl_MAGIC_MIME_TYPE" "#include <magic.h>
 "
 if test "x$ac_cv_have_decl_MAGIC_MIME_TYPE" = xyes; then :
