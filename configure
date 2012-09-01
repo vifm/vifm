@@ -13396,6 +13396,14 @@ fi
 $as_echo "$ac_cv_lib_pthread_pthread_create" >&6; }
 if test "x$ac_cv_lib_pthread_pthread_create" = xyes; then :
   LIBS="$LIBS -lpthread"
+	ac_fn_c_check_header_mongrel "$LINENO" "pthread.h" "ac_cv_header_pthread_h" "$ac_includes_default"
+if test "x$ac_cv_header_pthread_h" = xyes; then :
+
+else
+  as_fn_error $? "pthread.h header not found." "$LINENO" 5
+fi
+
+
 
 else
   as_fn_error $? "libpthread not found" "$LINENO" 5

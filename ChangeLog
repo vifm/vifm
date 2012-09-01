@@ -50,6 +50,8 @@
 
 	Check for libpthread presence in ./configure script.
 
+	Check for pthread.h header in ./configure script.
+
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
 
