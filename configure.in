@@ -93,7 +93,10 @@ AC_CHECK_LIB(ncursesw, initscr,
 	if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncursesw; then
 		CPPFLAGS="$CPPFLAGS -I/usr/include/ncursesw"
 	fi
-	AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])],
+	AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])
+	AC_CHECK_DECL([TABSIZE], [], [AC_MSG_ERROR([TABSIZE not found in curses.h])], [[#include <curses.h>]])
+	AC_CHECK_DECL([COLORS], [], [AC_MSG_ERROR([COLORS not found in curses.h])], [[#include <curses.h>]])
+    ],
 	[AC_MSG_ERROR([libncursesw not found])])
 	#[ac_widec_possible=no
 	#AC_CHECK_LIB(ncurses, initscr,

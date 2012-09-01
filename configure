@@ -13423,6 +13423,23 @@ else
 fi
 
 
+	ac_fn_c_check_decl "$LINENO" "TABSIZE" "ac_cv_have_decl_TABSIZE" "#include <curses.h>
+"
+if test "x$ac_cv_have_decl_TABSIZE" = xyes; then :
+
+else
+  as_fn_error $? "TABSIZE not found in curses.h" "$LINENO" 5
+fi
+
+	ac_fn_c_check_decl "$LINENO" "COLORS" "ac_cv_have_decl_COLORS" "#include <curses.h>
+"
+if test "x$ac_cv_have_decl_COLORS" = xyes; then :
+
+else
+  as_fn_error $? "COLORS not found in curses.h" "$LINENO" 5
+fi
+
+
 else
   as_fn_error $? "libncursesw not found" "$LINENO" 5
 fi
