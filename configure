@@ -1859,63 +1859,6 @@ fi
 
 } # ac_fn_c_check_header_mongrel
 
-# ac_fn_c_check_member LINENO AGGR MEMBER VAR INCLUDES
-# ----------------------------------------------------
-# Tries to find if the field MEMBER exists in type AGGR, after including
-# INCLUDES, setting cache variable VAR accordingly.
-ac_fn_c_check_member ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2.$3" >&5
-$as_echo_n "checking for $2.$3... " >&6; }
-if eval \${$4+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$5
-int
-main ()
-{
-static $2 ac_aggr;
-if (ac_aggr.$3)
-return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  eval "$4=yes"
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$5
-int
-main ()
-{
-static $2 ac_aggr;
-if (sizeof ac_aggr.$3)
-return 0;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  eval "$4=yes"
-else
-  eval "$4=no"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-eval ac_res=\$$4
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-
-} # ac_fn_c_check_member
-
 # ac_fn_c_check_type LINENO TYPE VAR INCLUDES
 # -------------------------------------------
 # Tests whether TYPE exists after having included INCLUDES, setting cache
@@ -2015,6 +1958,63 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_c_check_decl
+
+# ac_fn_c_check_member LINENO AGGR MEMBER VAR INCLUDES
+# ----------------------------------------------------
+# Tries to find if the field MEMBER exists in type AGGR, after including
+# INCLUDES, setting cache variable VAR accordingly.
+ac_fn_c_check_member ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2.$3" >&5
+$as_echo_n "checking for $2.$3... " >&6; }
+if eval \${$4+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$5
+int
+main ()
+{
+static $2 ac_aggr;
+if (ac_aggr.$3)
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$4=yes"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$5
+int
+main ()
+{
+static $2 ac_aggr;
+if (sizeof ac_aggr.$3)
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  eval "$4=yes"
+else
+  eval "$4=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$4
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_c_check_member
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -12968,6 +12968,76 @@ if test "x$ac_cv_func_strstr" = xyes; then :
 else
   as_fn_error $? "strstr() function not found." "$LINENO" 5
 fi
+
+
+ac_fn_c_check_header_mongrel "$LINENO" "regex.h" "ac_cv_header_regex_h" "$ac_includes_default"
+if test "x$ac_cv_header_regex_h" = xyes; then :
+
+else
+  as_fn_error $? "regex.h header not found." "$LINENO" 5
+fi
+
+
+ac_fn_c_check_func "$LINENO" "regcomp" "ac_cv_func_regcomp"
+if test "x$ac_cv_func_regcomp" = xyes; then :
+
+else
+  as_fn_error $? "regcomp() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "regerror" "ac_cv_func_regerror"
+if test "x$ac_cv_func_regerror" = xyes; then :
+
+else
+  as_fn_error $? "regerror() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "regexec" "ac_cv_func_regexec"
+if test "x$ac_cv_func_regexec" = xyes; then :
+
+else
+  as_fn_error $? "regexec() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_func "$LINENO" "regfree" "ac_cv_func_regfree"
+if test "x$ac_cv_func_regfree" = xyes; then :
+
+else
+  as_fn_error $? "regfree() function not found." "$LINENO" 5
+fi
+
+ac_fn_c_check_type "$LINENO" "regex_t" "ac_cv_type_regex_t" "#include <regex.h>
+"
+if test "x$ac_cv_type_regex_t" = xyes; then :
+
+else
+  as_fn_error $? "regex_t type not found in regex.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_decl "$LINENO" "REG_EXTENDED" "ac_cv_have_decl_REG_EXTENDED" "#include <regex.h>
+"
+if test "x$ac_cv_have_decl_REG_EXTENDED" = xyes; then :
+
+else
+  as_fn_error $? "REG_EXTENDED not found in regex.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_decl "$LINENO" "REG_ICASE" "ac_cv_have_decl_REG_ICASE" "#include <regex.h>
+"
+if test "x$ac_cv_have_decl_REG_ICASE" = xyes; then :
+
+else
+  as_fn_error $? "REG_ICASE not found in regex.h" "$LINENO" 5
+fi
+
+ac_fn_c_check_decl "$LINENO" "REG_NOMATCH" "ac_cv_have_decl_REG_NOMATCH" "#include <regex.h>
+"
+if test "x$ac_cv_have_decl_REG_NOMATCH" = xyes; then :
+
+else
+  as_fn_error $? "REG_NOMATCH not found in regex.h" "$LINENO" 5
+fi
+
 
 ac_fn_c_check_member "$LINENO" "struct stat" "st_mtim" "ac_cv_member_struct_stat_st_mtim" "$ac_includes_default"
 if test "x$ac_cv_member_struct_stat_st_mtim" = xyes; then :

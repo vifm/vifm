@@ -55,6 +55,9 @@
 	Check for magic.h header and required libmagic functions in ./configure
 	script.
 
+	Check for regex.h header and all functions, macro and types connected with
+	it in ./configure script.
+
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
 
