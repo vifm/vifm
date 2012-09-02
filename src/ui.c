@@ -333,6 +333,29 @@ expand_status_line_macros(FileView *view, const char *format)
 				friendly_size_notation(view->dir_entry[view->list_pos].size,
 						sizeof(buf), buf);
 				break;
+			case 'E':
+				{
+					uint64_t size = 0;
+					if(view->selected_files > 0)
+					{
+						int i;
+						for(i = 0; i < view->list_rows; i++)
+						{
+							if(view->dir_entry[i].selected)
+							{
+								size += get_file_size_by_entry(view, i);
+							}
+						}
+					}
+					/* Make exception for VISUAL_MODE, since it can contain empty
+					 * selection when cursor is on ../ directory. */
+					else if(get_mode() != VISUAL_MODE)
+					{
+						size = get_file_size_by_entry(view, view->list_pos);
+					}
+					friendly_size_notation(size, sizeof(buf), buf);
+				}
+				break;
 			case 'd':
 				{
 					struct tm *tm_ptr = localtime(&view->dir_entry[view->list_pos].mtime);

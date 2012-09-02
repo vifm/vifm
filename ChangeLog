@@ -24,6 +24,9 @@
 	Added 0, ^ and $ keys for normal and visual modes, which also work as
 	selectors in normal mode.
 
+	Added %E 'statusline' option macro, which means size of all selected files
+	or current file, if no files are selected.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 

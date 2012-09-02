@@ -223,22 +223,9 @@ format_name(int id, const void *data, size_t buf_len, char *buf)
 static void
 format_size(int id, const void *data, size_t buf_len, char *buf)
 {
-	uint64_t size = 0;
 	char str[24] = "";
 	const column_data_t *cdt = data;
-	FileView *view = cdt->view;
-	dir_entry_t *entry = &view->dir_entry[cdt->line];
-
-	if(entry->type == DIRECTORY)
-	{
-		char buf[PATH_MAX];
-		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, entry->name);
-		tree_get_data(curr_stats.dirsize_cache, buf, &size);
-	}
-
-	if(size == 0)
-		size = entry->size;
-
+	uint64_t size = get_file_size_by_entry(cdt->view, cdt->line);
 	friendly_size_notation(size, sizeof(str), str);
 	snprintf(buf, buf_len + 1, " %s", str);
 }
@@ -3095,6 +3082,22 @@ set_view_path(FileView *view, const char *path)
 	strcpy(view->curr_dir, path);
 	exclude_file_name(view->curr_dir);
 	return 1;
+}
+
+uint64_t
+get_file_size_by_entry(const FileView *view, size_t pos)
+{
+	uint64_t size = 0;
+	dir_entry_t *entry = &view->dir_entry[pos];
+
+	if(entry->type == DIRECTORY)
+	{
+		char buf[PATH_MAX];
+		snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, entry->name);
+		tree_get_data(curr_stats.dirsize_cache, buf, &size);
+	}
+
+	return (size == 0) ? entry->size : size;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
