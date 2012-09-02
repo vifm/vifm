@@ -195,6 +195,8 @@ int view_is_at_path(const FileView *view, const char path[]);
 /* Sets view's current directory from path value.
  * Returns non-zero if view's directory was changed. */
 int set_view_path(FileView *view, const char *path);
+/* Returns possible cached or calculated value of file size. */
+uint64_t get_file_size_by_entry(const FileView *view, size_t pos);
 
 #ifdef TEST
 int regexp_filter_match(FileView *view, const char *filename);

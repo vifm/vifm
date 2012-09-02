@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Aug 23
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 2
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1685,6 +1685,9 @@ are supported:
     %u - user name or uid (if it cannot be resolved)
     %g - group name or gid (if it cannot be resolved)
     %s - file size in human readable format
+    %E - size of selected files in human readable format, same as %s when no
+         files are selected, except that it will never show size of ../ in
+         visual mode, since it cannot be selected
     %d - file modification date (uses |vifm-'timefmt'| option)
     all |vifm-'rulerformat'| macros
 Percent sign can be followed by optional minimum field width.  Add '-' before
