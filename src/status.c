@@ -101,6 +101,8 @@ load_def_values(status_t *stats)
 	stats->splitter_pos = -1.0;
 
 	stats->sourcing_state = SOURCING_NONE;
+
+	stats->restart_in_progress = 0;
 }
 
 static void

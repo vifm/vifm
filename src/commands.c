@@ -2747,6 +2747,8 @@ restart_cmd(const cmd_info_t *cmd_info)
 	const char *p;
 	FileView *tmp_view;
 
+	curr_stats.restart_in_progress = 1;
+
 	/* all user mappings in all modes */
 	clear_user_keys();
 
@@ -2819,6 +2821,9 @@ restart_cmd(const cmd_info_t *cmd_info)
 	load_color_scheme_colors();
 	exec_config();
 	exec_startup_commands(0, NULL);
+
+	curr_stats.restart_in_progress = 0;
+
 	return 0;
 }
 

@@ -1181,6 +1181,10 @@ update_screen(UpdateType update_kind)
 		return;
 
 	resize_all();
+
+	if(curr_stats.restart_in_progress)
+		return;
+
 	update_attributes();
 	werase(lborder);
 	werase(mborder);
@@ -1594,6 +1598,9 @@ resize_for_menu_like(void)
 void
 refresh_view_win(FileView *view)
 {
+	if(curr_stats.restart_in_progress)
+		return;
+
 	wrefresh(view->win);
 	/* we use getmaxy(...) instead of multiline_status_bar to handle command line
 	 * mode, which doesn't use this module to show multilined messages */

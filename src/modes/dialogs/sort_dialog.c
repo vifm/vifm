@@ -152,6 +152,8 @@ redraw_sort_dialog(void)
 {
 	int x, y, cy;
 
+	wresize(sort_win, NUM_SORT_OPTIONS + 5, SORT_WIN_WIDTH);
+
 	werase(sort_win);
 	box(sort_win, ACS_VLINE, ACS_HLINE);
 

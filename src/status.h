@@ -106,6 +106,9 @@ typedef struct
 	int splitter_pos;
 
 	SourcingState sourcing_state;
+
+	/* Set while executing :restart command to prevent excess screen updates. */
+	int restart_in_progress;
 }status_t;
 
 extern status_t curr_stats;

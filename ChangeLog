@@ -69,6 +69,8 @@
 	Check for a bunch of system headers, types and functions in ./configure
 	script.
 
+	Flicker less on :restart command.
+
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.
 
