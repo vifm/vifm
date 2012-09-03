@@ -487,10 +487,11 @@ columns_handler(OPT_OP op, optval_t val)
 	if(cfg.columns != val.int_val)
 	{
 		resize_term(getmaxy(stdscr), val.int_val);
-		update_screen(UT_FULL);
+		update_screen(UT_REDRAW);
 		cfg.columns = getmaxx(stdscr);
 	}
 
+	/* Need to update value of option in case it was corrected above. */
 	val.int_val = cfg.columns;
 	set_option("columns", val);
 }
@@ -646,10 +647,11 @@ lines_handler(OPT_OP op, optval_t val)
 	{
 		LOG_INFO_MSG("resize_term(%d, %d)", val.int_val, getmaxx(stdscr));
 		resize_term(val.int_val, getmaxx(stdscr));
-		update_screen(UT_FULL);
+		update_screen(UT_REDRAW);
 		cfg.lines = getmaxy(stdscr);
 	}
 
+	/* Need to update value of option in case it was corrected above. */
 	val.int_val = cfg.lines;
 	set_option("lines", val);
 }
