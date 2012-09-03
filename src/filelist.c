@@ -2776,7 +2776,7 @@ set_filename_filter(FileView *view, const char *filter)
 void
 redraw_view(FileView *view)
 {
-	if(curr_stats.need_update == UT_NONE)
+	if(curr_stats.need_update == UT_NONE && !curr_stats.restart_in_progress)
 	{
 		draw_dir_list(view);
 		move_to_list_pos(view, view->list_pos);
