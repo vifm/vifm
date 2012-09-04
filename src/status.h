@@ -51,6 +51,7 @@ typedef enum
 /* Type of execution environment. */
 typedef enum
 {
+	ENVTYPE_LINUX_NATIVE, /* Running in linux native console. */
 	ENVTYPE_EMULATOR, /* Running in terminal emulator with no DISPLAY defined. */
 	ENVTYPE_EMULATOR_WITH_X, /* Running in emulator within accessible X. */
 }EnvType;
