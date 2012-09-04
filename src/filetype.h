@@ -78,13 +78,17 @@ void config_filetypes(external_command_exists_t ece_func);
 /* Returns non-zero on success. */
 int get_default_program_for_file(const char *file, assoc_record_t *result);
 char * get_viewer_for_file(char *file);
-void set_programs(const char *patterns, const char *programs, int x);
+/* Associates list of comma separated patters with list of comma separated
+ * programs either for X or non-X associations and depending on current
+ * execution environment. */
+void set_programs(const char patterns[], const char programs[], int for_x,
+		int in_x);
 void set_fileviewer(const char *patterns, const char *viewer);
 /* Caller should free only the array, but not its elements. */
 assoc_records_t get_all_programs_for_file(const char *file);
 /* Resets associations set by :filetype, :filextype and :fileviewer commands.
  * Also registers default file associations. */
-void reset_all_file_associations(void);
+void reset_all_file_associations(int in_x);
 /* After this call structure contains NULL values */
 void free_assoc_records(assoc_records_t *records);
 /* After this call structure contains NULL values */

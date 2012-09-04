@@ -11,7 +11,7 @@ test_enumeration(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("*.[ch]", "c file", 0);
+	set_programs("*.[ch]", "c file", 0, 0);
 
 	assert_false(get_default_program_for_file("main.cpp", &program));
 	assert_false(get_default_program_for_file("main.hpp", &program));
@@ -39,7 +39,7 @@ test_negotiation_with_emark(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("*.[!ch]", "not c file", 0);
+	set_programs("*.[!ch]", "not c file", 0, 0);
 
 	assert_false(get_default_program_for_file("main.c", &program));
 	assert_false(get_default_program_for_file("main.h", &program));
@@ -59,7 +59,7 @@ test_negotiation_with_hat(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("*.[^ch]", "not c file", 0);
+	set_programs("*.[^ch]", "not c file", 0, 0);
 
 	assert_false(get_default_program_for_file("main.c", &program));
 	assert_false(get_default_program_for_file("main.h", &program));
@@ -79,7 +79,7 @@ test_ranges(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("*.[0-9]", "part file", 0);
+	set_programs("*.[0-9]", "part file", 0, 0);
 
 	assert_false(get_default_program_for_file("main.A", &program));
 

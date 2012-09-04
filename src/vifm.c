@@ -342,7 +342,7 @@ main(int argc, char *argv[])
 	 * external programs. */
 	config_filetypes(&external_command_exists);
 	/* This should be called before loading any configuration file. */
-	reset_all_file_associations();
+	reset_all_file_associations(!curr_stats.is_console);
 
 	init_option_handlers();
 

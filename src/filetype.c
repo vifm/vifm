@@ -27,7 +27,6 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "globals.h"
-#include "status.h"
 
 #include "filetype.h"
 
@@ -50,12 +49,13 @@ static external_command_exists_t external_command_exists_func;
 
 TSTATIC void replace_double_comma(char *cmd, int put_null);
 static int get_filetype_number(const char *file, assoc_list_t assoc_list);
-static void assoc_programs(const char *pattern, const char *records, int for_x);
-static void register_assoc(assoc_t assoc, int for_x);
+static void assoc_programs(const char pattern[], const char programs[],
+		int for_x, int in_x);
+static void register_assoc(assoc_t assoc, int for_x, int in_x);
 static void add_assoc(assoc_list_t *assoc_list, assoc_t assoc);
 static void assoc_viewer(const char *pattern, const char *viewer);
 static void reset_all_list(void);
-static void add_defaults(void);
+static void add_defaults(int in_x);
 static void reset_list(assoc_list_t *assoc_list);
 static void reset_list_head(assoc_list_t *assoc_list);
 static void free_assoc(assoc_t *assoc);
@@ -155,7 +155,7 @@ get_all_programs_for_file(const char *file)
 }
 
 void
-set_programs(const char *patterns, const char *records, int x)
+set_programs(const char patterns[], const char programs[], int for_x, int in_x)
 {
 	char *exptr;
 	char *ex_copy = strdup(patterns);
@@ -164,16 +164,18 @@ set_programs(const char *patterns, const char *records, int x)
 	{
 		*exptr = '\0';
 
-		assoc_programs(ex_copy, records, x);
+		assoc_programs(ex_copy, programs, for_x, in_x);
 
 		ex_copy = exptr + 1;
 	}
-	assoc_programs(ex_copy, records, x);
+	assoc_programs(ex_copy, programs, for_x, in_x);
 	free(free_this);
 }
 
+/* Associates patter with list of comma separated programs either for X or non-X
+ * associations and depending on current execution environment. */
 static void
-assoc_programs(const char *pattern, const char *records, int for_x)
+assoc_programs(const char pattern[], const char programs[], int for_x, int in_x)
 {
 	assoc_t assoc;
 	char *prog;
@@ -188,7 +190,7 @@ assoc_programs(const char *pattern, const char *records, int for_x)
 	assoc.records.list = NULL;
 	assoc.records.count = 0;
 
-	prog = strdup(records);
+	prog = strdup(programs);
 	free_this = prog;
 
 	while(prog != NULL)
@@ -235,7 +237,7 @@ assoc_programs(const char *pattern, const char *records, int for_x)
 
 	free(free_this);
 
-	register_assoc(assoc, for_x);
+	register_assoc(assoc, for_x, in_x);
 }
 
 TSTATIC void
@@ -262,11 +264,14 @@ replace_double_comma(char *cmd, int put_null)
 	*p = '\0';
 }
 
+/* Registers association in appropriate associations list and possibly in list
+ * of active associations, which depends on association type and execution
+ * environment. */
 static void
-register_assoc(assoc_t assoc, int for_x)
+register_assoc(assoc_t assoc, int for_x, int in_x)
 {
 	add_assoc(for_x ? &xfiletypes : &filetypes, assoc);
-	if(!for_x || !curr_stats.is_console)
+	if(!for_x || in_x)
 	{
 		add_assoc(&active_filetypes, assoc);
 	}
@@ -340,10 +345,10 @@ add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 }
 
 void
-reset_all_file_associations(void)
+reset_all_file_associations(int in_x)
 {
 	reset_all_list();
-	add_defaults();
+	add_defaults(in_x);
 }
 
 static void
@@ -356,11 +361,12 @@ reset_all_list(void)
 	reset_list_head(&active_filetypes);
 }
 
+/* Loads default (builtin) associations. */
 static void
-add_defaults(void)
+add_defaults(int in_x)
 {
 	new_records_type = ART_BUILTIN;
-	set_programs("*/", "{Enter directory}" VIFM_PSEUDO_CMD, 0);
+	set_programs("*/", "{Enter directory}" VIFM_PSEUDO_CMD, 0, in_x);
 	new_records_type = ART_CUSTOM;
 }
 

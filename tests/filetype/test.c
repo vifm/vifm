@@ -15,14 +15,13 @@ void find_program_tests(void);
 static void
 setup(void)
 {
-	curr_stats.is_console = 1;
 	config_filetypes(NULL);
 }
 
 static void
 teardown(void)
 {
-	reset_all_file_associations();
+	reset_all_file_associations(0);
 }
 
 static void
