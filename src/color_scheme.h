@@ -76,6 +76,7 @@ typedef struct
 
 extern char *HI_GROUPS[];
 extern char *COLOR_NAMES[8];
+extern char *LIGHT_COLOR_NAMES[8];
 
 /* directory should be NULL if you want to set default directory */
 void load_color_scheme_colors(void);

@@ -71,6 +71,17 @@ char *COLOR_NAMES[8] = {
 	[COLOR_WHITE]   = "white",
 };
 
+char *LIGHT_COLOR_NAMES[8] = {
+	[COLOR_BLACK]   = "lightblack",
+	[COLOR_RED]     = "lightred",
+	[COLOR_GREEN]   = "lightgreen",
+	[COLOR_YELLOW]  = "lightyellow",
+	[COLOR_BLUE]    = "lightblue",
+	[COLOR_MAGENTA] = "lightmagenta",
+	[COLOR_CYAN]    = "lightcyan",
+	[COLOR_WHITE]   = "lightwhite",
+};
+
 static const int default_colors[][3] = {
 	                      /* fg             bg           attr */
 	[WIN_COLOR]          = { COLOR_WHITE,   COLOR_BLACK, 0                       },
@@ -189,7 +200,17 @@ write_color_scheme_file(void)
 	fprintf(fp, "\" Cyan = 6\n");
 	fprintf(fp, "\" White = 7\n\n");
 
-	fprintf(fp, "\" Available style values (some of them can be combined):\n");
+	fprintf(fp, "\" Light versions of colors are also available (set bold attribute):\n");
+	fprintf(fp, "\" LightBlack\n");
+	fprintf(fp, "\" LightRed\n");
+	fprintf(fp, "\" LightGreen\n");
+	fprintf(fp, "\" LightYellow\n");
+	fprintf(fp, "\" LightBlue\n");
+	fprintf(fp, "\" LightMagenta\n");
+	fprintf(fp, "\" LightCyan\n");
+	fprintf(fp, "\" LightWhite\n\n");
+
+	fprintf(fp, "\" Available attributes (some of them can be combined):\n");
 	fprintf(fp, "\" bold\n");
 	fprintf(fp, "\" underline\n");
 	fprintf(fp, "\" reverse or inverse\n");
@@ -202,7 +223,7 @@ write_color_scheme_file(void)
 	fprintf(fp, "\" xterm-256color) from /usr/lib/terminfo/; you can check current number\n");
 	fprintf(fp, "\" of colors in your terminal with tput colors command)\n\n");
 
-	fprintf(fp, "\" highlight group cterm=style ctermfg=foreground_color ctermbg=background_color\n\n");
+	fprintf(fp, "\" highlight group cterm=attrs ctermfg=foreground_color ctermbg=background_color\n\n");
 
 	for(y = 0; y < MAXNUM_COLOR - 2; y++)
 	{
@@ -394,7 +415,8 @@ attrs_to_str(int attrs)
 		strcat(result, "reverse,");
 	if((attrs & A_STANDOUT) == A_STANDOUT)
 		strcat(result, "standout,");
-	result[strlen(result) - 1] = '\0';
+	if(result[0] != '\0')
+		result[strlen(result) - 1] = '\0';
 	return result;
 }
 
