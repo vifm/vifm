@@ -2257,6 +2257,11 @@ highlight_cmd(const cmd_info_t *cmd_info)
 				return 1;
 			}
 			curr_stats.cs->color[pos].attr = attrs;
+			if(curr_stats.env_type == ENVTYPE_LINUX_NATIVE &&
+					(attrs & (A_BOLD | A_REVERSE)) == (A_BOLD | A_REVERSE))
+			{
+				curr_stats.cs->color[pos].attr |= A_BLINK;
+			}
 		}
 		else
 		{
@@ -2312,11 +2317,16 @@ get_color(const char str[], int fg, int *attr)
 
 	if(light_col_pos >= 0)
 	{
-		*attr |= A_BOLD;
+		*attr |= (!fg && curr_stats.env_type == ENVTYPE_LINUX_NATIVE) ?
+				A_BLINK : A_BOLD;
 		return light_col_pos;
 	}
 	else if(col_pos >= 0)
 	{
+		if(!fg && curr_stats.env_type == ENVTYPE_LINUX_NATIVE)
+		{
+			*attr &= ~A_BLINK;
+		}
 		return col_pos;
 	}
 	else
