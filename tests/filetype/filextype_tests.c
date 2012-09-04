@@ -11,9 +11,8 @@ test_1_c(void)
 	assoc_record_t program;
 	int success;
 
-	curr_stats.is_console = 1;
-	set_programs("*.tar", "x prog", 1);
-	set_programs("*.tar", "console prog", 0);
+	set_programs("*.tar", "x prog", 1, 0);
+	set_programs("*.tar", "console prog", 0, 0);
 
 	success = get_default_program_for_file("file.version.tar", &program);
 	assert_true(success);
@@ -30,9 +29,8 @@ test_1_x(void)
 	assoc_record_t program;
 	int success;
 
-	curr_stats.is_console = 0;
-	set_programs("*.tar", "x prog", 1);
-	set_programs("*.tar", "console prog", 0);
+	set_programs("*.tar", "x prog", 1, 1);
+	set_programs("*.tar", "console prog", 0, 1);
 
 	success = get_default_program_for_file("file.version.tar", &program);
 	assert_true(success);
@@ -48,8 +46,7 @@ test_2_c(void)
 {
 	assoc_record_t program;
 
-	curr_stats.is_console = 1;
-	set_programs("*.tgz", "2 x prog", 1);
+	set_programs("*.tgz", "2 x prog", 1, 0);
 
 	assert_false(get_default_program_for_file("file.version.tgz", &program));
 }
@@ -60,8 +57,7 @@ test_2_x(void)
 	assoc_record_t program;
 	int success;
 
-	curr_stats.is_console = 0;
-	set_programs("*.tgz", "2 x prog", 1);
+	set_programs("*.tgz", "2 x prog", 1, 1);
 
 	success = get_default_program_for_file("file.version.tgz", &program);
 	assert_true(success);
@@ -78,8 +74,7 @@ test_3_c(void)
 	assoc_record_t program;
 	int success;
 
-	curr_stats.is_console = 0;
-	set_programs("*.tar.bz2", "3 console prog", 0);
+	set_programs("*.tar.bz2", "3 console prog", 0, 1);
 
 	success = get_default_program_for_file("file.version.tar.bz2", &program);
 	assert_true(success);
@@ -96,8 +91,7 @@ test_3_x(void)
 	assoc_record_t program;
 	int success;
 
-	curr_stats.is_console = 1;
-	set_programs("*.tar.bz2", "3 console prog", 0);
+	set_programs("*.tar.bz2", "3 console prog", 0, 0);
 
 	success = get_default_program_for_file("file.version.tar.bz2", &program);
 	assert_true(success);

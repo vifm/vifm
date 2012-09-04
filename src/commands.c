@@ -145,7 +145,7 @@ static int grep_cmd(const cmd_info_t *cmd_info);
 static int help_cmd(const cmd_info_t *cmd_info);
 static int highlight_cmd(const cmd_info_t *cmd_info);
 static const char *get_group_str(int group, col_attr_t col);
-static int get_color(const char *text);
+static int get_color(const char str[], int fg, int *attr);
 static int get_attrs(const char *text);
 static int history_cmd(const cmd_info_t *cmd_info);
 static int invert_cmd(const cmd_info_t *cmd_info);
@@ -2009,7 +2009,8 @@ add_filetype(const cmd_info_t *cmd_info, int x)
 	records = skip_non_whitespace(cmd_info->args);
 	records = skip_whitespace(records + 1);
 
-	set_programs(cmd_info->argv[0], records, x);
+	set_programs(cmd_info->argv[0], records, x,
+			curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 	return 0;
 }
 
@@ -2228,7 +2229,7 @@ highlight_cmd(const cmd_info_t *cmd_info)
 		if(strcmp(arg_name, "ctermbg") == 0)
 		{
 			int col;
-			if((col = get_color(equal + 1)) < -1)
+			if((col = get_color(equal + 1, 0, &curr_stats.cs->color[pos].attr)) < -1)
 			{
 				status_bar_errorf("Color name or number not recognized: %s", equal + 1);
 				curr_stats.cs->defaulted = -1;
@@ -2239,7 +2240,7 @@ highlight_cmd(const cmd_info_t *cmd_info)
 		else if(strcmp(arg_name, "ctermfg") == 0)
 		{
 			int col;
-			if((col = get_color(equal + 1)) < -1)
+			if((col = get_color(equal + 1, 1, &curr_stats.cs->color[pos].attr)) < -1)
 			{
 				status_bar_errorf("Color name or number not recognized: %s", equal + 1);
 				curr_stats.cs->defaulted = -1;
@@ -2256,6 +2257,11 @@ highlight_cmd(const cmd_info_t *cmd_info)
 				return 1;
 			}
 			curr_stats.cs->color[pos].attr = attrs;
+			if(curr_stats.env_type == ENVTYPE_LINUX_NATIVE &&
+					(attrs & (A_BOLD | A_REVERSE)) == (A_BOLD | A_REVERSE))
+			{
+				curr_stats.cs->color[pos].attr |= A_BLINK;
+			}
 		}
 		else
 		{
@@ -2290,24 +2296,43 @@ get_group_str(int group, col_attr_t col)
 	else
 		snprintf(bg_buf, sizeof(bg_buf), "%d", col.bg);
 
-	snprintf(buf, sizeof(buf), "%-10s ctermfg=%-7s ctermbg=%-7s cterm=%s",
-			HI_GROUPS[group], fg_buf, bg_buf, attrs_to_str(col.attr));
+	snprintf(buf, sizeof(buf), "%-10s cterm=%s ctermfg=%-7s ctermbg=%-7s",
+			HI_GROUPS[group], attrs_to_str(col.attr), fg_buf, bg_buf);
 	return buf;
 }
 
 static int
-get_color(const char *text)
+get_color(const char str[], int fg, int *attr)
 {
-	int col_pos = string_array_pos_case(COLOR_NAMES, ARRAY_LEN(COLOR_NAMES),
-			text);
-	int col_num = isdigit(*text) ? atoi(text) : -1;
-	if(strcmp(text, "-1") == 0 || strcasecmp(text, "default") == 0 ||
-			strcasecmp(text, "none") == 0)
+	int col_pos = string_array_pos_case(COLOR_NAMES, ARRAY_LEN(COLOR_NAMES), str);
+	int light_col_pos = string_array_pos_case(LIGHT_COLOR_NAMES,
+			ARRAY_LEN(LIGHT_COLOR_NAMES), str);
+	int col_num = isdigit(*str) ? atoi(str) : -1;
+	if(strcmp(str, "-1") == 0 || strcasecmp(str, "default") == 0 ||
+			strcasecmp(str, "none") == 0)
 		return -1;
-	if(col_pos < 0 && (col_num < 0 ||
+	if(col_pos < 0 && light_col_pos < 0 && (col_num < 0 ||
 			(curr_stats.load_stage >= 2 && col_num > COLORS)))
 		return -2;
-	return MAX(col_pos, col_num);
+
+	if(light_col_pos >= 0)
+	{
+		*attr |= (!fg && curr_stats.env_type == ENVTYPE_LINUX_NATIVE) ?
+				A_BLINK : A_BOLD;
+		return light_col_pos;
+	}
+	else if(col_pos >= 0)
+	{
+		if(!fg && curr_stats.env_type == ENVTYPE_LINUX_NATIVE)
+		{
+			*attr &= ~A_BLINK;
+		}
+		return col_pos;
+	}
+	else
+	{
+		return col_num;
+	}
 }
 
 static int
@@ -2765,7 +2790,7 @@ restart_cmd(const cmd_info_t *cmd_info)
 	curr_view = tmp_view;
 
 	/* file types and viewers */
-	reset_all_file_associations();
+	reset_all_file_associations(curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 
 	/* session status */
 	(void)reset_status();

@@ -48,6 +48,14 @@ typedef enum
 	SOURCING_FINISHING,
 }SourcingState;
 
+/* Type of execution environment. */
+typedef enum
+{
+	ENVTYPE_LINUX_NATIVE, /* Running in linux native console. */
+	ENVTYPE_EMULATOR, /* Running in terminal emulator with no DISPLAY defined. */
+	ENVTYPE_EMULATOR_WITH_X, /* Running in emulator within accessible X. */
+}EnvType;
+
 typedef enum
 {
 	UT_NONE, /* no update needed */
@@ -59,7 +67,6 @@ typedef struct
 {
 	UpdateType need_update;
 	int last_char;
-	int is_console;
 	int search;
 	int save_msg; /* zero - don't save, 2 - save after resize, other - save */
 	int use_register;
@@ -109,6 +116,8 @@ typedef struct
 
 	/* Set while executing :restart command to prevent excess screen updates. */
 	int restart_in_progress;
+
+	EnvType env_type; /* Specifies execution environment type. */
 }status_t;
 
 extern status_t curr_stats;

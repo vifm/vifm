@@ -32,6 +32,7 @@
 #include "cfg/config.h"
 #include "utils/env.h"
 #include "utils/macros.h"
+#include "utils/str.h"
 #include "utils/tree.h"
 #include "color_scheme.h"
 
@@ -40,7 +41,7 @@
 static void load_def_values(status_t *stats);
 static void set_gtk_available(status_t *stats);
 static void set_number_of_windows(status_t *stats);
-static void set_console(status_t *stats);
+static void set_env_type(status_t *stats);
 static int reset_dircache(status_t *stats);
 
 status_t curr_stats;
@@ -53,7 +54,7 @@ init_status(void)
 	load_def_values(&curr_stats);
 	set_gtk_available(&curr_stats);
 	set_number_of_windows(&curr_stats);
-	set_console(&curr_stats);
+	set_env_type(&curr_stats);
 
 	return reset_status();
 }
@@ -65,7 +66,6 @@ load_def_values(status_t *stats)
 
 	stats->need_update = UT_NONE;
 	stats->last_char = 0;
-	stats->is_console = 0;
 	stats->search = 0;
 	stats->save_msg = 0;
 	stats->use_register = 0;
@@ -103,6 +103,8 @@ load_def_values(status_t *stats)
 	stats->sourcing_state = SOURCING_NONE;
 
 	stats->restart_in_progress = 0;
+
+	stats->env_type = ENVTYPE_EMULATOR;
 }
 
 static void
@@ -125,19 +127,25 @@ set_number_of_windows(status_t *stats)
 		curr_stats.number_of_windows = 2;
 }
 
+/* Checks if running in X, terminal emulator or linux native console. */
 static void
-set_console(status_t *stats)
+set_env_type(status_t *stats)
 {
-	const char *console;
-
-	/* Check if running in X */
 #ifndef _WIN32
-	console = env_get("DISPLAY");
+	const char *term = env_get("TERM");
+	if(term != NULL && strcmp(term, "linux") == 0)
+	{
+		curr_stats.env_type = ENVTYPE_LINUX_NATIVE;
+	}
+	else
+	{
+		const char *display = env_get("DISPLAY");
+		curr_stats.env_type = is_null_or_empty(display) ?
+			ENVTYPE_EMULATOR : ENVTYPE_EMULATOR_WITH_X;
+	}
 #else
-	console = "WIN";
+	curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X;
 #endif
-	if(!console || !*console)
-		curr_stats.is_console = 1;
 }
 
 int

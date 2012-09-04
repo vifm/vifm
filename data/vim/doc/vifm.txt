@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 2
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 4
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -989,14 +989,25 @@ Available group-name values:
 
 Available colors:
  - -1 or default or none - transparent
- - black
- - red
- - green
- - yellow
- - blue
- - magenta
- - cyan
- - white
+ - black   and lightblack
+ - red     and lightred
+ - green   and lightgreen
+ - yellow  and lightyellow
+ - blue    and lightblue
+ - magenta and lightmagenta
+ - cyan    and lightcyan
+ - white   and lightwhite
+
+Light versions of colors are regular colors with bold attribute set.  So order
+of arguments of :highlight command is important and it's better to put "cterm"
+in front of others to prevent it from overwriting attributes set by "ctermfg" or
+"ctermbg" arguments.
+
+Since there are two colors and only one bold attribute it affects both colors
+when "reverse" attribute is used when running vifm in terminal emulator.  While
+linux native console can handle boldness of foreground and background colors
+independently, which is for consistency with terminal emulators accessible from
+vifm only implicitly by using light versions of colors.
 
 Here is the hierarchy of highlight groups, which you need to know for using
 transparency:

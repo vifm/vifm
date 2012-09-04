@@ -92,7 +92,8 @@ read_info_file(int reread)
 				/* This is to prevent old builtin fake associations to be loaded. */
 				if(!ends_with(line2, "}" VIFM_PSEUDO_CMD))
 				{
-					set_programs(line + 1, line2, 0);
+					set_programs(line + 1, line2, 0,
+							curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 				}
 			}
 		}
@@ -101,7 +102,8 @@ read_info_file(int reread)
 			if(fgets(line2, sizeof(line2), fp) == line2)
 			{
 				prepare_line(line2);
-				set_programs(line + 1, line2, 1);
+				set_programs(line + 1, line2, 1,
+						curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 			}
 		}
 		else if(line[0] == ',') /* fileviewer */
@@ -364,7 +366,6 @@ write_info_file(void)
 	int nft = 0, nfx = 0, nfv = 0, ncmds = 0, nmarks = 0, nlh = 0, nrh = 0;
 	int ncmdh = 0, nsrch = 0, nregs = 0, nprompt = 0, ntrash = 0;
 	int i;
-	int is_console;
 
 	if(cfg.vifm_info == 0)
 		return;
@@ -377,8 +378,6 @@ write_info_file(void)
 	if((fp = fopen(info_file, "r")) != NULL)
 	{
 		char line[MAX_LEN], line2[MAX_LEN], line3[MAX_LEN];
-
-		is_console = curr_stats.is_console;
 		while(fgets(line, sizeof(line), fp) == line)
 		{
 			prepare_line(line);
@@ -390,7 +389,6 @@ write_info_file(void)
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
 					assoc_record_t prog;
-					curr_stats.is_console = 1;
 					if(get_default_program_for_file(line + 1, &prog))
 					{
 						free_assoc_record(&prog);
@@ -405,11 +403,9 @@ write_info_file(void)
 				if(fgets(line2, sizeof(line2), fp) == line2)
 				{
 					assoc_record_t x_prog;
-					curr_stats.is_console = 0;
 					if(get_default_program_for_file(line + 1, &x_prog))
 					{
 						assoc_record_t console_prog;
-						curr_stats.is_console = 1;
 						if(get_default_program_for_file(line + 1, &console_prog))
 						{
 							if(strcmp(x_prog.command, console_prog.command) == 0)
@@ -562,7 +558,6 @@ write_info_file(void)
 				nregs = add_to_string_array(&regs, nregs, 1, line);
 			}
 		}
-		curr_stats.is_console = is_console;
 		fclose(fp);
 	}
 

@@ -11,7 +11,7 @@ test_one_pattern(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("*.tar", "{description} tar prog", 0);
+	set_programs("*.tar", "{description} tar prog", 0, 0);
 
 	success = get_default_program_for_file("file.version.tar", &program);
 	assert_true(success);
@@ -28,7 +28,7 @@ test_two_patterns(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("*.tar,*.zip", "{archives} prog", 0);
+	set_programs("*.tar,*.zip", "{archives} prog", 0, 0);
 
 	success = get_default_program_for_file("file.version.tar", &program);
 	assert_true(success);
@@ -52,7 +52,7 @@ test_two_programs(void)
 {
 	assoc_records_t ft;
 
-	set_programs("*.tar", "{rar} rarprog, {zip} zipprog", 0);
+	set_programs("*.tar", "{rar} rarprog, {zip} zipprog", 0, 0);
 
 	ft = get_all_programs_for_file("a.tar");
 

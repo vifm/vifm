@@ -20,9 +20,8 @@ test_find_program(void)
 
 	config_filetypes(&prog_exists);
 
-	curr_stats.is_console = 1;
-	set_programs("*.tar.bz2", "no console prog", 0);
-	set_programs("*.tar.bz2", "console prog", 0);
+	set_programs("*.tar.bz2", "no console prog", 0, 0);
+	set_programs("*.tar.bz2", "console prog", 0, 0);
 
 	success = get_default_program_for_file("file.version.tar.bz2", &program);
 	assert_true(success);

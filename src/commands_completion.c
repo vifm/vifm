@@ -392,6 +392,11 @@ complete_highlight_arg(const char *str)
 				if(strncasecmp(equal, COLOR_NAMES[i], len) == 0)
 					add_completion(COLOR_NAMES[i]);
 			}
+			for(i = 0; i < ARRAY_LEN(LIGHT_COLOR_NAMES); i++)
+			{
+				if(strncasecmp(equal, LIGHT_COLOR_NAMES[i], len) == 0)
+					add_completion(LIGHT_COLOR_NAMES[i]);
+			}
 		}
 	}
 	completion_group_end();

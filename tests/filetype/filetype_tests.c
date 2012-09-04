@@ -11,7 +11,7 @@ test_one_pattern(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("*.tar", "tar prog", 0);
+	set_programs("*.tar", "tar prog", 0, 0);
 
 	success = get_default_program_for_file("file.version.tar", &program);
 	assert_true(success);
@@ -28,8 +28,8 @@ test_many_pattern(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("*.tar", "tar prog", 0);
-	set_programs("*.tar.gz", "tar.gz prog", 0);
+	set_programs("*.tar", "tar prog", 0, 0);
+	set_programs("*.tar.gz", "tar.gz prog", 0, 0);
 
 	success = get_default_program_for_file("file.version.tar.gz", &program);
 	assert_true(success);
@@ -46,7 +46,7 @@ test_many_filepattern(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0);
+	set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0, 0);
 
 	success = get_default_program_for_file("file.version.tar.gz", &program);
 	assert_true(success);
@@ -62,7 +62,7 @@ test_dont_match_hidden(void)
 {
 	assoc_record_t program;
 
-	set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0);
+	set_programs("*.tgz,*.tar.gz", "tar.gz prog", 0, 0);
 
 	assert_false(get_default_program_for_file(".file.version.tar.gz", &program));
 }
@@ -73,7 +73,7 @@ test_match_empty(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("a*bc", "empty prog", 0);
+	set_programs("a*bc", "empty prog", 0, 0);
 
 	success = get_default_program_for_file("abc", &program);
 	assert_true(success);
@@ -90,7 +90,7 @@ test_match_full_line(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("abc", "full prog", 0);
+	set_programs("abc", "full prog", 0, 0);
 
 	assert_false(get_default_program_for_file("abcd", &program));
 	assert_false(get_default_program_for_file("0abc", &program));
@@ -111,7 +111,7 @@ test_match_qmark(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("a?c", "full prog", 0);
+	set_programs("a?c", "full prog", 0, 0);
 
 	assert_false(get_default_program_for_file("ac", &program));
 
@@ -130,7 +130,7 @@ test_qmark_escaping(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("a\\?c", "qmark prog", 0);
+	set_programs("a\\?c", "qmark prog", 0, 0);
 
 	assert_false(get_default_program_for_file("abc", &program));
 
@@ -149,7 +149,7 @@ test_star_escaping(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("a\\*c", "star prog", 0);
+	set_programs("a\\*c", "star prog", 0, 0);
 
 	assert_false(get_default_program_for_file("abc", &program));
 
@@ -168,8 +168,7 @@ test_star_and_dot(void)
 	assoc_record_t program;
 	int success;
 
-	curr_stats.is_console = 1;
-	set_programs("*.doc", "libreoffice", 0);
+	set_programs("*.doc", "libreoffice", 0, 0);
 
 	success = get_default_program_for_file("a.doc", &program);
 	assert_true(success);
@@ -182,7 +181,7 @@ test_star_and_dot(void)
 	assert_false(get_default_program_for_file(".a.doc", &program));
 	assert_false(get_default_program_for_file(".doc", &program));
 
-	set_programs(".*.doc", "hlibreoffice", 0);
+	set_programs(".*.doc", "hlibreoffice", 0, 0);
 
 	success = get_default_program_for_file(".a.doc", &program);
 	assert_true(success);
@@ -199,7 +198,7 @@ test_double_comma(void)
 	assoc_record_t program;
 	int success;
 
-	set_programs("*.tar", "prog -o opt1,,opt2", 0);
+	set_programs("*.tar", "prog -o opt1,,opt2", 0, 0);
 
 	success = get_default_program_for_file("file.version.tar", &program);
 	assert_true(success);
@@ -209,7 +208,7 @@ test_double_comma(void)
 		free_assoc_record(&program);
 	}
 
-	set_programs("*.zip", "prog1 -o opt1, prog2", 0);
+	set_programs("*.zip", "prog1 -o opt1, prog2", 0, 0);
 
 	success = get_default_program_for_file("file.version.zip", &program);
 	assert_true(success);

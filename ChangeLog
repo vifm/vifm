@@ -27,6 +27,8 @@
 	Added %E 'statusline' option macro, which means size of all selected files
 	or current file, if no files are selected.
 
+	Added light versions of color names.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 
@@ -70,6 +72,8 @@
 	script.
 
 	Flicker less on :restart command.
+
+	Fixed background bold (light) colors in linux native console.
 
 	Fixed segmentation fault on running vifm with one path in the argument
 	list.

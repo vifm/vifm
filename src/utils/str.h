@@ -71,6 +71,8 @@ const char * extract_part(const char str[], char separator, char part_buf[]);
 /* Escapes chars symbols in the string.  Returns new string, caller should free
  * it. */
 char * escape_chars(const char string[], const char chars[]);
+/* Returns non-zero if the string is NULL or empty. */
+int is_null_or_empty(const char string[]);
 
 #endif
 
