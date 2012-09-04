@@ -604,7 +604,7 @@ are_old_color_schemes(void)
 const char *
 get_vicmd(int *bg)
 {
-	if(curr_stats.is_console)
+	if(curr_stats.env_type != ENVTYPE_EMULATOR_WITH_X)
 	{
 		*bg = cfg.vi_cmd_bg;
 		return cfg.vi_command;

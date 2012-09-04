@@ -40,7 +40,7 @@
 static void load_def_values(status_t *stats);
 static void set_gtk_available(status_t *stats);
 static void set_number_of_windows(status_t *stats);
-static void set_console(status_t *stats);
+static void set_env_type(status_t *stats);
 static int reset_dircache(status_t *stats);
 
 status_t curr_stats;
@@ -53,7 +53,7 @@ init_status(void)
 	load_def_values(&curr_stats);
 	set_gtk_available(&curr_stats);
 	set_number_of_windows(&curr_stats);
-	set_console(&curr_stats);
+	set_env_type(&curr_stats);
 
 	return reset_status();
 }
@@ -65,7 +65,6 @@ load_def_values(status_t *stats)
 
 	stats->need_update = UT_NONE;
 	stats->last_char = 0;
-	stats->is_console = 0;
 	stats->search = 0;
 	stats->save_msg = 0;
 	stats->use_register = 0;
@@ -103,6 +102,8 @@ load_def_values(status_t *stats)
 	stats->sourcing_state = SOURCING_NONE;
 
 	stats->restart_in_progress = 0;
+
+	stats->env_type = ENVTYPE_EMULATOR;
 }
 
 static void
@@ -126,7 +127,7 @@ set_number_of_windows(status_t *stats)
 }
 
 static void
-set_console(status_t *stats)
+set_env_type(status_t *stats)
 {
 	const char *console;
 
@@ -137,7 +138,7 @@ set_console(status_t *stats)
 	console = "WIN";
 #endif
 	if(!console || !*console)
-		curr_stats.is_console = 1;
+		stats->env_type = ENVTYPE_EMULATOR_WITH_X;
 }
 
 int

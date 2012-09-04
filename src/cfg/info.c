@@ -92,7 +92,8 @@ read_info_file(int reread)
 				/* This is to prevent old builtin fake associations to be loaded. */
 				if(!ends_with(line2, "}" VIFM_PSEUDO_CMD))
 				{
-					set_programs(line + 1, line2, 0, !curr_stats.is_console);
+					set_programs(line + 1, line2, 0,
+							curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 				}
 			}
 		}
@@ -101,7 +102,8 @@ read_info_file(int reread)
 			if(fgets(line2, sizeof(line2), fp) == line2)
 			{
 				prepare_line(line2);
-				set_programs(line + 1, line2, 1, !curr_stats.is_console);
+				set_programs(line + 1, line2, 1,
+						curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 			}
 		}
 		else if(line[0] == ',') /* fileviewer */

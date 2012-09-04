@@ -2009,7 +2009,8 @@ add_filetype(const cmd_info_t *cmd_info, int x)
 	records = skip_non_whitespace(cmd_info->args);
 	records = skip_whitespace(records + 1);
 
-	set_programs(cmd_info->argv[0], records, x, !curr_stats.is_console);
+	set_programs(cmd_info->argv[0], records, x,
+			curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 	return 0;
 }
 
@@ -2765,7 +2766,7 @@ restart_cmd(const cmd_info_t *cmd_info)
 	curr_view = tmp_view;
 
 	/* file types and viewers */
-	reset_all_file_associations(!curr_stats.is_console);
+	reset_all_file_associations(curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 
 	/* session status */
 	(void)reset_status();
