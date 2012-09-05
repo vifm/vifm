@@ -121,6 +121,8 @@
 
 	Fixed checks for required functions in ./configure script.
 
+	Fixed check for git command presence in src/Makefile.am.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
