@@ -1111,7 +1111,7 @@ compile_info.c: update_compile_info
 
 update_compile_info:
 	@before="$$(cat "compile_info.c" 2> /dev/null)"; \
-	if [ "x$$(which git)" != "x" ]; then \
+	if [ "x$$(which git 2> /dev/null)" != "x" ]; then \
 		new="const char GIT_HASH[] = \"$$(git rev-parse HEAD)\";"; \
 	else \
 		new='const char GIT_HASH[] = "";'; \
