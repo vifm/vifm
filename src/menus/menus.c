@@ -312,14 +312,12 @@ move_to_menu_pos(int pos, menu_info *m)
 
 	if(pos > get_last_visible_line(m))
 	{
-		while(pos > get_last_visible_line(m))
-			m->top++;
+		m->top = pos - (m->win_rows - 2 - 1);
 		redraw = 1;
 	}
 	else if(pos < m->top)
 	{
-		while(pos < m->top)
-			m->top--;
+		m->top = pos;
 		redraw = 1;
 	}
 
