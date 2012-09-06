@@ -22,8 +22,9 @@
 
 #include <signal.h> /* sighandler_t, signal() */
 #include <stdio.h> /* snprintf() */
+#include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strcmp() strrchr() strcat() strstr() strlen() strchr()
-                       strdup() */
+                       strdup() strncmp() */
 
 #include "cfg/config.h"
 #include "cfg/info.h"
@@ -35,6 +36,7 @@
 #include "utils/str.h"
 #include "utils/utils.h"
 #include "background.h"
+#include "file_magic.h"
 #include "filelist.h"
 #include "filetype.h"
 #include "fuse.h"
@@ -57,6 +59,8 @@ static void execute_file(FileView *view, int dont_execute);
 static int multi_run_compat(FileView *view, const char *program);
 static void follow_link(FileView *view, int follow_dirs);
 static void get_last_path_component(const char *path, char* buf);
+static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
+		const char start[], int background);
 
 void
 handle_file(FileView *view, int dont_execute, int force_follow)
@@ -785,6 +789,42 @@ output_to_nowhere(const char *cmd)
 
 	fclose(file);
 	fclose(err);
+}
+
+int
+run_with_filetype(FileView *view, const char beginning[], int background)
+{
+	char *filename = get_current_file_name(view);
+	assoc_records_t ft = get_all_programs_for_file(filename);
+	assoc_records_t magic = get_magic_handlers(filename);
+
+	if(try_run_with_filetype(view, ft, beginning, background))
+	{
+		free(ft.list);
+		return 0;
+	}
+
+	free(ft.list);
+
+	return !try_run_with_filetype(view, magic, beginning, background);
+}
+
+/* Returns non-zero on successful running. */
+static int
+try_run_with_filetype(FileView *view, const assoc_records_t assocs,
+		const char start[], int background)
+{
+	const size_t len = strlen(start);
+	int i;
+	for(i = 0; i < assocs.count; i++)
+	{
+		if(strncmp(assocs.list[i].command, start, len) == 0)
+		{
+			run_using_prog(view, assocs.list[i].command, 0, background);
+			return 1;
+		}
+	}
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

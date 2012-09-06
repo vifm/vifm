@@ -33,6 +33,8 @@ void cd_updir(FileView *view);
 void _gnuc_noreturn use_vim_plugin(FileView *view, int argc, char **argv);
 int shellout(const char *command, int pause, int allow_screen);
 void output_to_nowhere(const char *cmd);
+/* Returns zero on successful running. */
+int run_with_filetype(FileView *view, const char beginning[], int background);
 
 #endif
 

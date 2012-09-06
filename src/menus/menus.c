@@ -47,9 +47,7 @@
 #include "../background.h"
 #include "../bookmarks.h"
 #include "../commands.h"
-#include "../file_magic.h"
 #include "../filelist.h"
-#include "../filetype.h"
 #include "../running.h"
 #include "../search.h"
 #include "../status.h"
@@ -58,8 +56,6 @@
 
 static void normalize_top(menu_info *m);
 static int get_last_visible_line(const menu_info *m);
-static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
-		const char *start, int background);
 
 static void
 show_position_in_menu(menu_info *m)
@@ -755,24 +751,6 @@ capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
 	return 0;
 }
 
-int
-run_with_filetype(FileView *view, const char *beginning, int background)
-{
-	char *filename = get_current_file_name(view);
-	assoc_records_t ft = get_all_programs_for_file(filename);
-	assoc_records_t magic = get_magic_handlers(filename);
-
-	if(try_run_with_filetype(view, ft, beginning, background))
-	{
-		free(ft.list);
-		return 0;
-	}
-
-	free(ft.list);
-
-	return !try_run_with_filetype(view, magic, beginning, background);
-}
-
 /* Returns index of last visible line in the menu.  Value returned may be
  * greater than or equal to number of lines in the menu, which should be
  * threated correctly. */
@@ -780,24 +758,6 @@ static int
 get_last_visible_line(const menu_info *m)
 {
 	return m->top + (m->win_rows - 2) - 1;
-}
-
-/* Returns non-zero on successful running. */
-static int
-try_run_with_filetype(FileView *view, const assoc_records_t assocs,
-		const char *start, int background)
-{
-	const size_t len = strlen(start);
-	int i;
-	for(i = 0; i < assocs.count; i++)
-	{
-		if(strncmp(assocs.list[i].command, start, len) == 0)
-		{
-			run_using_prog(view, assocs.list[i].command, 0, background);
-			return 1;
-		}
-	}
-	return 0;
 }
 
 int

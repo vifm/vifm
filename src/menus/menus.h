@@ -86,8 +86,6 @@ typedef struct menu_info
 	int (*execute_handler)(FileView *view, struct menu_info *m);
 }menu_info;
 
-/* Returns zero on successful running */
-int run_with_filetype(FileView *view, const char *beginning, int background);
 void reset_popup_menu(menu_info *m);
 void setup_menu(void);
 void redraw_error_msg(const char *title_arg, const char *message_arg);
