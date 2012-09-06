@@ -749,6 +749,7 @@ add_builtin_commands(const cmd_add_t *cmds, int count)
 		{
 			size_t full_len, short_len;
 			char buf[strlen(cmds[i].name) + 1];
+			assert(starts_with(cmds[i].name, cmds[i].abbr));
 			strcpy(buf, cmds[i].name);
 			full_len = strlen(buf);
 			short_len = strlen(cmds[i].abbr);

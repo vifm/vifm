@@ -158,7 +158,10 @@ static int mark_cmd(const cmd_info_t *cmd_info);
 static int marks_cmd(const cmd_info_t *cmd_info);
 static int messages_cmd(const cmd_info_t *cmd_info);
 static int mkdir_cmd(const cmd_info_t *cmd_info);
+static int mmap_cmd(const cmd_info_t *cmd_info);
+static int mnoremap_cmd(const cmd_info_t *cmd_info);
 static int move_cmd(const cmd_info_t *cmd_info);
+static int munmap_cmd(const cmd_info_t *cmd_info);
 static int nmap_cmd(const cmd_info_t *cmd_info);
 static int nnoremap_cmd(const cmd_info_t *cmd_info);
 static int nohlsearch_cmd(const cmd_info_t *cmd_info);
@@ -305,8 +308,14 @@ static const cmd_add_t commands[] = {
 		.handler = messages_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "mkdir",            .abbr = NULL,    .emark = 1,  .id = COM_MKDIR,       .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = mkdir_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "mmap",             .abbr = "mm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = mmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "mnoremap",         .abbr = "mno",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = mnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "move",             .abbr = "m",     .emark = 1,  .id = COM_MOVE,        .range = 1,    .bg = 1, .quote = 1, .regexp = 0,
 		.handler = move_cmd,        .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
+	{ .name = "munmap",           .abbr = "mu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = munmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "nmap",             .abbr = "nm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "nnoremap",         .abbr = "nn",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2593,6 +2602,18 @@ mkdir_cmd(const cmd_info_t *cmd_info)
 }
 
 static int
+mmap_cmd(const cmd_info_t *cmd_info)
+{
+	return do_map(cmd_info, "Menu", "cmap", MENU_MODE, 0) != 0;
+}
+
+static int
+mnoremap_cmd(const cmd_info_t *cmd_info)
+{
+	return do_map(cmd_info, "Menu", "cmap", MENU_MODE, 1) != 0;
+}
+
+static int
 move_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
@@ -2617,6 +2638,12 @@ move_cmd(const cmd_info_t *cmd_info)
 		return cpmv_files(curr_view, cmd_info->argv, cmd_info->argc, 1, 0,
 				cmd_info->emark) != 0;
 	}
+}
+
+static int
+munmap_cmd(const cmd_info_t *cmd_info)
+{
+	return do_unmap(cmd_info->argv[0], MENU_MODE);
 }
 
 static int
