@@ -56,6 +56,7 @@
 #include "../ui.h"
 #include "all.h"
 
+static void normalize_top(menu_info *m);
 static int get_last_visible_line(const menu_info *m);
 static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char *start, int background);
@@ -305,20 +306,11 @@ move_to_menu_pos(int pos, menu_info *m)
 
 	x = getmaxx(menu_win);
 
-	if(pos < 1)
-		pos = 0;
-
-	if(pos > m->len - 1)
-		pos = m->len - 1;
-
+	pos = MIN(m->len - 1, MAX(0, pos));
 	if(pos < 0)
 		return;
 
-	if(m->top + m->win_rows - 3 > m->len)
-		m->top = m->len - (m->win_rows - 3);
-
-	if(m->top < 0)
-		m->top = 0;
+	normalize_top(m);
 
 	x += get_utf8_overhead(m->items[pos]);
 
@@ -348,18 +340,14 @@ move_to_menu_pos(int pos, menu_info *m)
 		if(pos - m->top < s && m->top > 0)
 		{
 			m->top -= s - (pos - m->top);
-			if(m->top < 0)
-				m->top = 0;
+			normalize_top(m);
 			m->current = 1 + m->pos - m->top;
 			redraw = 1;
 		}
 		if(pos > get_last_visible_line(m) - s)
 		{
 			m->top += s - (get_last_visible_line(m) - pos);
-			if(m->top + m->win_rows - 2 > m->len)
-				m->top = m->len - (m->win_rows - 2);
-			if(m->top < 0)
-				m->top = 0;
+			normalize_top(m);
 			m->current = 1 + pos - m->top;
 			redraw = 1;
 		}
@@ -617,10 +605,8 @@ draw_menu(menu_info *m)
 
 	box(menu_win, 0, 0);
 
-	if(m->win_rows - 2 >= m->len)
-		m->top = 0;
-	else if(m->len - m->top < m->win_rows - 2)
-		m->top = m->len - (m->win_rows - 2);
+	normalize_top(m);
+
 	x = m->top;
 
 	wattron(menu_win, A_BOLD);
@@ -690,6 +676,13 @@ draw_menu(menu_info *m)
 		if(i + 3 > y)
 			break;
 	}
+}
+
+/* Ensures that value of m->top lies in a correct range. */
+static void
+normalize_top(menu_info *m)
+{
+	m->top = MAX(0, MIN(m->len - (m->win_rows - 2), m->top));
 }
 
 int
