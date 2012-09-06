@@ -56,6 +56,7 @@
 #include "../ui.h"
 #include "all.h"
 
+static int get_last_visible_line(const menu_info *m);
 static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 		const char *start, int background);
 
@@ -321,16 +322,16 @@ move_to_menu_pos(int pos, menu_info *m)
 
 	x += get_utf8_overhead(m->items[pos]);
 
-	if(m->top <= pos && pos < m->top + m->win_rows - 2)
+	if(m->top <= pos && pos <= get_last_visible_line(m))
 	{
-		m->current = 1 + pos - m->top;
+		m->current = 1 + (pos - m->top);
 	}
-	if(pos >= m->top + m->win_rows - 2)
+	if(pos > get_last_visible_line(m))
 	{
-		while(pos >= m->top + m->win_rows - 2)
+		while(pos > get_last_visible_line(m))
 			m->top++;
 
-		m->current = m->win_rows - 2;
+		m->current = 1 + (m->win_rows - 3);
 		redraw = 1;
 	}
 	else if(pos < m->top)
@@ -352,9 +353,9 @@ move_to_menu_pos(int pos, menu_info *m)
 			m->current = 1 + m->pos - m->top;
 			redraw = 1;
 		}
-		if(pos > (m->top + m->win_rows - 2 - 1) - s)
+		if(pos > get_last_visible_line(m) - s)
 		{
-			m->top += s - ((m->top + m->win_rows - 2 - 1) - pos);
+			m->top += s - (get_last_visible_line(m) - pos);
 			if(m->top + m->win_rows - 2 > m->len)
 				m->top = m->len - (m->win_rows - 2);
 			if(m->top < 0)
@@ -777,6 +778,15 @@ run_with_filetype(FileView *view, const char *beginning, int background)
 	free(ft.list);
 
 	return !try_run_with_filetype(view, magic, beginning, background);
+}
+
+/* Returns index of last visible line in the menu.  Value returned may be
+ * greater than or equal to number of lines in the menu, which should be
+ * threated correctly. */
+static int
+get_last_visible_line(const menu_info *m)
+{
+	return m->top + (m->win_rows - 2) - 1;
 }
 
 /* Returns non-zero on successful running. */
