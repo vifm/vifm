@@ -310,23 +310,16 @@ move_to_menu_pos(int pos, menu_info *m)
 
 	x += get_utf8_overhead(m->items[pos]);
 
-	if(m->top <= pos && pos <= get_last_visible_line(m))
-	{
-		m->current = 1 + (pos - m->top);
-	}
 	if(pos > get_last_visible_line(m))
 	{
 		while(pos > get_last_visible_line(m))
 			m->top++;
-
-		m->current = 1 + (m->win_rows - 3);
 		redraw = 1;
 	}
 	else if(pos < m->top)
 	{
 		while(pos < m->top)
 			m->top--;
-		m->current = 1;
 		redraw = 1;
 	}
 
@@ -337,17 +330,17 @@ move_to_menu_pos(int pos, menu_info *m)
 		{
 			m->top -= s - (pos - m->top);
 			normalize_top(m);
-			m->current = 1 + m->pos - m->top;
 			redraw = 1;
 		}
 		if(pos > get_last_visible_line(m) - s)
 		{
 			m->top += s - (get_last_visible_line(m) - pos);
 			normalize_top(m);
-			m->current = 1 + pos - m->top;
 			redraw = 1;
 		}
 	}
+
+	m->current = 1 + (pos - m->top);
 
 	if(redraw)
 		draw_menu(m);
