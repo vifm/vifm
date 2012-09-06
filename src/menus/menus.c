@@ -321,16 +321,16 @@ move_to_menu_pos(int pos, menu_info *m)
 
 	x += get_utf8_overhead(m->items[pos]);
 
-	if((m->top <= pos) && (pos <= (m->top + m->win_rows + 1)))
+	if(m->top <= pos && pos < m->top + m->win_rows - 2)
 	{
-		m->current = pos - m->top + 1;
+		m->current = 1 + pos - m->top;
 	}
-	if((pos >= (m->top + m->win_rows - 3 + 1)))
+	if(pos >= m->top + m->win_rows - 2)
 	{
-		while(pos >= (m->top + m->win_rows - 3 + 1))
+		while(pos >= m->top + m->win_rows - 2)
 			m->top++;
 
-		m->current = m->win_rows - 3 + 1;
+		m->current = m->win_rows - 2;
 		redraw = 1;
 	}
 	else if(pos < m->top)
@@ -343,7 +343,7 @@ move_to_menu_pos(int pos, menu_info *m)
 
 	if(cfg.scroll_off > 0)
 	{
-		int s = MIN((m->win_rows - 2 + 1)/2, cfg.scroll_off);
+		int s = MIN(DIV_ROUND_UP(m->win_rows - 2, 2), cfg.scroll_off);
 		if(pos - m->top < s && m->top > 0)
 		{
 			m->top -= s - (pos - m->top);
@@ -352,11 +352,13 @@ move_to_menu_pos(int pos, menu_info *m)
 			m->current = 1 + m->pos - m->top;
 			redraw = 1;
 		}
-		if((m->top + m->win_rows - 2) - pos - 1 < s)
+		if(pos > (m->top + m->win_rows - 2 - 1) - s)
 		{
-			m->top += s - ((m->top + m->win_rows - 2) - pos - 1);
+			m->top += s - ((m->top + m->win_rows - 2 - 1) - pos);
 			if(m->top + m->win_rows - 2 > m->len)
 				m->top = m->len - (m->win_rows - 2);
+			if(m->top < 0)
+				m->top = 0;
 			m->current = 1 + pos - m->top;
 			redraw = 1;
 		}

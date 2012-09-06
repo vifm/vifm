@@ -1422,7 +1422,7 @@ consider_scroll_offset(FileView *view)
 size_t
 get_effective_scroll_offset(const FileView *view)
 {
-	int val = MIN((view->window_rows + 1)/2, MAX(cfg.scroll_off, 0));
+	int val = MIN(DIV_ROUND_UP(view->window_rows, 2), MAX(cfg.scroll_off, 0));
 	return val*view->column_count;
 }
 
