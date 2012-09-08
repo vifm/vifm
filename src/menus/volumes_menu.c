@@ -22,7 +22,6 @@
 #endif
 
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* malloc() realloc() */
 #include <string.h> /* strdup() */
 
 #include "../modes/menu.h"

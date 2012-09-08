@@ -17,12 +17,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <dirent.h> /* DIR dirent */
+#include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 
+#include <stdio.h> /* snprintf() */
+#include <stdlib.h> /* free() */
 #include <string.h> /* strdup() strcmp() */
 
 #include "../cfg/config.h"
 #include "../modes/menu.h"
+#include "../utils/string_array.h"
 #include "menus.h"
 
 #include "colorscheme_menu.h"
@@ -30,16 +33,12 @@
 void
 show_colorschemes_menu(FileView *view)
 {
-	int width;
 	DIR *dir;
 	struct dirent *d;
 	char colors_dir[PATH_MAX];
 
 	static menu_info m;
 	init_menu_info(&m, COLORSCHEME);
-
-	width = getmaxx(menu_win);
-
 	m.title = strdup(" Choose the default Color Scheme ");
 
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
@@ -61,9 +60,7 @@ show_colorschemes_menu(FileView *view)
 		if(d->d_name[0] == '.')
 			continue;
 
-		m.items = realloc(m.items, sizeof(char *)*(m.len + 1));
-		m.items[m.len] = malloc(width + 2);
-		snprintf(m.items[m.len++], width, "%s", d->d_name);
+		m.len = add_to_string_array(&m.items, m.len, 1, d->d_name);
 		if(strcmp(d->d_name, cfg.cs.name) == 0)
 		{
 			m.current = m.len;

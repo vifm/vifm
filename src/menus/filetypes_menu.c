@@ -19,6 +19,7 @@
 
 #include "../../config.h"
 
+#include <stdio.h> /* snprintf() */
 #include <string.h> /* strdup() strlen() */
 
 #include "../modes/menu.h"

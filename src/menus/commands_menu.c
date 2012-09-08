@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strlen() strchr() */
 #include <wchar.h> /* wcscmp() */

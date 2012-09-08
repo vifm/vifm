@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include <stdio.h> /* snprintf() */
 #include <string.h> /* strdup() strcpy() strlen() */
 
 #include "../cfg/config.h"
@@ -37,7 +38,6 @@ show_bookmarks_menu(FileView *view, const char marks[])
 {
 	int i;
 	int max_len;
-	char buf[PATH_MAX];
 
 	static menu_info m;
 	init_menu_info(&m, BOOKMARK);
@@ -68,6 +68,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 	i = 0;
 	while(i < m.len)
 	{
+		char item_buf[PATH_MAX];
 		char *with_tilde;
 		int overhead;
 		int j;
@@ -82,26 +83,22 @@ show_bookmarks_menu(FileView *view, const char marks[])
 		overhead = get_utf8_overhead(with_tilde);
 		if(!is_bookmark(j))
 		{
-			snprintf(buf, sizeof(buf), "%c   %-*s%s", index2mark(j),
+			snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),
 					max_len + overhead, with_tilde, "[invalid]");
 		}
 		else if(!stroscmp(bookmarks[j].file, "..") ||
 				!stroscmp(bookmarks[j].file, "../"))
 		{
-			snprintf(buf, sizeof(buf), "%c   %-*s%s", index2mark(j),
+			snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),
 					max_len + overhead, with_tilde, "[none]");
 		}
 		else
 		{
-			snprintf(buf, sizeof(buf), "%c   %-*s%s", index2mark(j),
+			snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),
 					max_len + overhead, with_tilde, bookmarks[j].file);
 		}
 
-		m.items = realloc(m.items, sizeof(char *)*(i + 1));
-		m.items[i] = malloc(sizeof(buf) + 2);
-		snprintf(m.items[i], sizeof(buf), "%s", buf);
-
-		i++;
+		i = add_to_string_array(&m.items, i, 1, item_buf);
 	}
 	m.len = i;
 

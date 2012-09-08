@@ -20,7 +20,7 @@
 #ifndef __MENUS_H__
 #define __MENUS_H__
 
-#include <stdio.h>
+#include <stdio.h> /* FILE */
 
 #include "../ui.h"
 
