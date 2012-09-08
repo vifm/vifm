@@ -62,6 +62,7 @@ Vi(m) specific features that need to be added.
     Expand environment variables for :edit command.
     Think about dot normal mode command.
     Add support of [count] for Ctrl-E/Ctrl-Y.
+    Fix behavior of Ctrl-B/F in normal mode at bottom/top with 'so' != 0.
 
 Possible things to add.
     Use system wide mimetypes file. /etc/mailcap?

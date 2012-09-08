@@ -131,6 +131,9 @@
 
 	Fixed invoking of menus from command-line (with -c or + argument).
 
+	Fixed Ctrl-F and Ctrl-B in menus again (they probably didn't work
+	correctly ever until now).
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
