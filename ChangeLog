@@ -129,6 +129,8 @@
 
 	Fixed dd in :commands menu.
 
+	Fixed invoking of menus from command-line (with -c or + argument).
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.

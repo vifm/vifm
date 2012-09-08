@@ -186,7 +186,7 @@ void is_term_working(void);
 int setup_ncurses_interface(void);
 void update_stat_window(FileView *view);
 float get_splitter_pos(int max);
-/* Redraws whole screen with possible reloading of file lists (depends on reload
+/* Redraws whole screen with possible reloading of file lists (depends on
  * argument). */
 void update_screen(UpdateType update_kind);
 void update_pos_window(FileView *view);
