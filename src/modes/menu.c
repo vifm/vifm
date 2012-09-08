@@ -332,9 +332,8 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 	menu->pos -= menu->win_rows - 3;
 	if(cfg.scroll_off > 0 && menu->top + (menu->win_rows - 3) - menu->pos < s)
 		menu->pos -= s - (menu->top + (menu->win_rows - 3) - menu->pos);
-	draw_menu(menu);
-	move_to_menu_pos(menu->pos, menu);
-	wrefresh(menu_win);
+
+	update_menu();
 }
 
 static void
@@ -352,9 +351,8 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 	menu->pos += (menu->win_rows - 3 + 1)/2;
 	if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
 		menu->pos += s - (menu->pos - menu->top);
-	draw_menu(menu);
-	move_to_menu_pos(menu->pos, menu);
-	wrefresh(menu_win);
+
+	update_menu();
 }
 
 static void
@@ -384,9 +382,8 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 	menu->top += l;
 	if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
 		menu->pos += s - (menu->pos - menu->top);
-	draw_menu(menu);
-	move_to_menu_pos(menu->pos, menu);
-	wrefresh(menu_win);
+
+	update_menu();
 }
 
 static void
@@ -438,9 +435,8 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 	if(menu->top < 0)
 		menu->top = 0;
 	menu->pos -= (menu->win_rows - 3 + 1)/2;
-	draw_menu(menu);
-	move_to_menu_pos(menu->pos, menu);
-	wrefresh(menu_win);
+
+	update_menu();
 }
 
 /* Returns scroll offset value for the menu taking menu height into account. */

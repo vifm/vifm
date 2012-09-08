@@ -28,6 +28,7 @@ void enter_menu_mode(menu_info *m, FileView *active_view);
 void menu_pre(void);
 void menu_post(void);
 void menu_redraw(void);
+/* Redraws and refreshes menu window. */
 void update_menu(void);
 void save_menu_pos(void);
 void load_menu_pos(void);
