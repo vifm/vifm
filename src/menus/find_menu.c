@@ -27,31 +27,17 @@
 #include "find_menu.h"
 
 int
-show_find_menu(FileView *view, int with_path, const char *args)
+show_find_menu(FileView *view, int with_path, const char args[])
 {
-	char buf[256];
+	char cmd_buf[256];
 	char *files;
 	int were_errors;
 
 	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = 0;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = FIND;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = NULL;
-	m.args = NULL;
-	m.items = NULL;
-	m.data = NULL;
+	init_menu_info(&m, FIND);
 
-	snprintf(buf, sizeof(buf), "find %s", args);
-	m.title = strdup(buf);
+	snprintf(cmd_buf, sizeof(cmd_buf), "find %s", args);
+	m.title = strdup(cmd_buf);
 
 	if(view->selected_files > 0)
 		files = expand_macros(view, "%f", NULL, NULL);
@@ -59,13 +45,13 @@ show_find_menu(FileView *view, int with_path, const char *args)
 		files = strdup(".");
 
 	if(args[0] == '-')
-		snprintf(buf, sizeof(buf), "find %s %s", files, args);
+		snprintf(cmd_buf, sizeof(cmd_buf), "find %s %s", files, args);
 	else if(with_path)
-		snprintf(buf, sizeof(buf), "find %s", args);
+		snprintf(cmd_buf, sizeof(cmd_buf), "find %s", args);
 	else
 	{
 		char *escaped_args = escape_filename(args, 0);
-		snprintf(buf, sizeof(buf),
+		snprintf(cmd_buf, sizeof(cmd_buf),
 				"find %s -type d \\( ! -readable -o ! -executable \\) -prune -o "
 				"-name %s -print", files, escaped_args);
 		free(escaped_args);
@@ -74,7 +60,7 @@ show_find_menu(FileView *view, int with_path, const char *args)
 
 	status_bar_message("find...");
 
-	were_errors = capture_output_to_menu(view, buf, &m);
+	were_errors = capture_output_to_menu(view, cmd_buf, &m);
 	if(!were_errors && m.len < 1)
 	{
 		status_bar_error("No files found");

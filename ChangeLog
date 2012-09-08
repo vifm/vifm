@@ -125,6 +125,10 @@
 
 	Fixed cursor position in menus, when 'scrolloff' is set.
 
+	Fixed utf-8 issue in :marks menu.
+
+	Fixed dd in :commands menu.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.

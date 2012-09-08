@@ -23,7 +23,7 @@
 #include "../ui.h"
 #include "menus.h"
 
-int show_bookmarks_menu(FileView *view, const char *marks);
+int show_bookmarks_menu(FileView *view, const char marks[]);
 
 #endif
 

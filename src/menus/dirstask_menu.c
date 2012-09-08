@@ -32,22 +32,7 @@ show_dirstack_menu(FileView *view)
 	int i;
 
 	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = 0;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = DIRSTACK;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = NULL;
-	m.args = NULL;
-	m.items = NULL;
-	m.data = NULL;
-
+	init_menu_info(&m, DIRSTACK);
 	m.title = strdup(" Directory Stack ");
 
 	m.items = dir_stack_list();

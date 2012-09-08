@@ -33,31 +33,15 @@
 static int bookmark_khandler(struct menu_info *m, wchar_t *keys);
 
 int
-show_bookmarks_menu(FileView *view, const char *marks)
+show_bookmarks_menu(FileView *view, const char marks[])
 {
-	int j, x;
+	int i;
 	int max_len;
 	char buf[PATH_MAX];
 
 	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = cfg.num_bookmarks;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = 0;
-	m.type = BOOKMARK;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = NULL;
-	m.args = NULL;
-	m.items = NULL;
-	m.data = NULL;
+	init_menu_info(&m, BOOKMARK);
 	m.key_handler = bookmark_khandler;
-
-	getmaxyx(menu_win, m.win_rows, x);
 
 	m.len = init_active_bookmarks(marks);
 	if(m.len == 0)
@@ -69,28 +53,32 @@ show_bookmarks_menu(FileView *view, const char *marks)
 	m.title = strdup(" Mark -- Directory -- File ");
 
 	max_len = 0;
-	x = 0;
-	while(x < m.len)
+	i = 0;
+	while(i < m.len)
 	{
 		size_t len;
 
-		len = get_utf8_string_length(bookmarks[active_bookmarks[x]].directory);
+		len = get_utf8_string_length(bookmarks[active_bookmarks[i]].directory);
 		if(len > max_len)
 			max_len = len;
-		x++;
+		i++;
 	}
 	max_len = MIN(max_len + 3, getmaxx(menu_win) - 5 - 2 - 10);
 
-	x = 0;
-	while(x < m.len)
+	i = 0;
+	while(i < m.len)
 	{
 		char *with_tilde;
 		int overhead;
+		int j;
 
-		j = active_bookmarks[x];
+		j = active_bookmarks[i];
 		with_tilde = replace_home_part(bookmarks[j].directory);
-		if(strlen(with_tilde) > max_len - 3)
-			strcpy(with_tilde + max_len - 6, "...");
+		if(get_utf8_string_length(with_tilde) > max_len - 3)
+		{
+			size_t width = get_normal_utf8_string_widthn(with_tilde, max_len - 6);
+			strcpy(with_tilde + width, "...");
+		}
 		overhead = get_utf8_overhead(with_tilde);
 		if(!is_bookmark(j))
 		{
@@ -109,13 +97,13 @@ show_bookmarks_menu(FileView *view, const char *marks)
 					max_len + overhead, with_tilde, bookmarks[j].file);
 		}
 
-		m.items = realloc(m.items, sizeof(char *) * (x + 1));
-		m.items[x] = malloc(sizeof(buf) + 2);
-		snprintf(m.items[x], sizeof(buf), "%s", buf);
+		m.items = realloc(m.items, sizeof(char *)*(i + 1));
+		m.items[i] = malloc(sizeof(buf) + 2);
+		snprintf(m.items[i], sizeof(buf), "%s", buf);
 
-		x++;
+		i++;
 	}
-	m.len = x;
+	m.len = i;
 
 	setup_menu();
 	draw_menu(&m);

@@ -23,6 +23,7 @@
 #include "../modes/menu.h"
 #include "../utils/fs.h"
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 #include "../ui.h"
 #include "menus.h"
 
@@ -32,7 +33,7 @@
 int
 show_history_menu(FileView *view)
 {
-	int x;
+	int i;
 	static menu_info m;
 
 	if(cfg.history_len <= 0)
@@ -41,56 +42,42 @@ show_history_menu(FileView *view)
 		return 1;
 	}
 
-	m.top = 0;
-	m.current = 1;
-	m.len = 0;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = 0;
-	m.type = DIRHISTORY;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
+	init_menu_info(&m, DIRHISTORY);
 	m.title = strdup(" Directory History ");
-	m.args = NULL;
-	m.items = NULL;
-	m.data = NULL;
 
-	getmaxyx(menu_win, m.win_rows, x);
-
-	for(x = 0; x < view->history_num && x < cfg.history_len; x++)
+	for(i = 0; i < view->history_num && i < cfg.history_len; i++)
 	{
-		int y;
-		if(view->history[x].dir[0] == '\0')
+		int j;
+		if(view->history[i].dir[0] == '\0')
 			break;
-		for(y = x + 1; y < view->history_num && y < cfg.history_len; y++)
-			if(stroscmp(view->history[x].dir, view->history[y].dir) == 0)
+		for(j = i + 1; j < view->history_num && j < cfg.history_len; j++)
+			if(stroscmp(view->history[i].dir, view->history[j].dir) == 0)
 				break;
-		if(y < view->history_num && y < cfg.history_len)
+		if(j < view->history_num && j < cfg.history_len)
 			continue;
-		if(!is_valid_dir(view->history[x].dir))
+		if(!is_valid_dir(view->history[i].dir))
 			continue;
 
 		/* Change the current dir to reflect the current file. */
-		if(stroscmp(view->history[x].dir, view->curr_dir) == 0)
+		if(stroscmp(view->history[i].dir, view->curr_dir) == 0)
 		{
-			snprintf(view->history[x].file, sizeof(view->history[x].file),
-					"%s", view->dir_entry[view->list_pos].name);
+			snprintf(view->history[i].file, sizeof(view->history[i].file), "%s",
+					view->dir_entry[view->list_pos].name);
 			m.pos = m.len;
 		}
 
-		m.items = realloc(m.items, sizeof(char *)*(m.len + 1));
-		m.items[m.len] = strdup(view->history[x].dir);
-		m.len++;
+		m.len = add_to_string_array(&m.items, m.len, 1, view->history[i].dir);
 	}
-	for(x = 0; x < m.len/2; x++)
+
+	/* Reverse order in which items appear. */
+	for(i = 0; i < m.len/2; i++)
 	{
-		char *t = m.items[x];
-		m.items[x] = m.items[m.len - 1 - x];
-		m.items[m.len - 1 - x] = t;
+		char *t = m.items[i];
+		m.items[i] = m.items[m.len - 1 - i];
+		m.items[m.len - 1 - i] = t;
 	}
 	m.pos = m.len - 1 - m.pos;
+
 	setup_menu();
 	draw_menu(&m);
 	move_to_menu_pos(m.pos, &m);

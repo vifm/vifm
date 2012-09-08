@@ -21,6 +21,7 @@
 #include <string.h> /* strdup() strlen() */
 
 #include "../modes/menu.h"
+#include "../utils/string_array.h"
 #include "../ui.h"
 #include "../undo.h"
 #include "menus.h"
@@ -33,40 +34,27 @@ show_undolist_menu(FileView *view, int with_details)
 	char **p;
 
 	static menu_info m;
-	m.top = 0;
+	init_menu_info(&m, UNDOLIST);
 	m.current = get_undolist_pos(with_details) + 1;
-	m.len = 0;
 	m.pos = m.current - 1;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = UNDOLIST;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
 	m.title = strdup(" Undolist ");
-	m.args = NULL;
-	m.items = NULL;
-	m.data = NULL;
 
 	m.items = undolist(with_details);
 	p = m.items;
 	while(*p++ != NULL)
 		m.len++;
 
-	if(!m.len)
+	if(m.len == 0)
 	{
-		m.items = (char **)realloc(m.items, sizeof(char *) * 1);
-		m.items[0] = strdup(" Undolist is empty ");
-		m.len = 1;
+		m.len = add_to_string_array(&m.items, m.len, 1, " Undolist is empty ");
 	}
 	else
 	{
 		size_t len;
 
-		m.items[m.len] = strdup("list end");
-		m.len++;
+		m.len = add_to_string_array(&m.items, m.len, 1, "list end");
 
+		/* Add current position mark to menu item. */
 		len = (m.items[m.pos] != NULL) ? strlen(m.items[m.pos]) : 0;
 		m.items[m.pos] = realloc(m.items[m.pos], len + 1 + 1);
 		memmove(m.items[m.pos] + 1, m.items[m.pos], len + 1);
@@ -79,8 +67,6 @@ show_undolist_menu(FileView *view, int with_details)
 	enter_menu_mode(&m, view);
 	return 0;
 }
-
-
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

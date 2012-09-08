@@ -263,6 +263,29 @@ show_error_msg(const char *title, const char *message)
 }
 
 void
+init_menu_info(menu_info *m, int menu_type)
+{
+	m->top = 0;
+	m->current = 1;
+	m->len = 0;
+	m->pos = 0;
+	m->hor_pos = 0;
+	m->win_rows = getmaxy(menu_win);
+	m->type = menu_type;
+	m->match_dir = NONE;
+	m->matching_entries = 0;
+	m->matches = NULL;
+	m->regexp = NULL;
+	m->title = NULL;
+	m->args = NULL;
+	m->items = NULL;
+	m->data = NULL;
+	m->key_handler = NULL;
+	m->extra_data = 0;
+	m->execute_handler = NULL;
+}
+
+void
 reset_popup_menu(menu_info *m)
 {
 	free(m->args);
@@ -409,7 +432,7 @@ void
 redraw_menu(menu_info *m)
 {
 	resize_for_menu_like();
-	m->win_rows = getmaxy(stdscr) - 1;
+	m->win_rows = getmaxy(menu_win);
 
 	draw_menu(m);
 	move_to_menu_pos(m->pos, m);

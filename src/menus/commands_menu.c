@@ -29,7 +29,7 @@
 
 #include "commands_menu.h"
 
-static int command_khandler(struct menu_info *m, wchar_t *keys);
+static int command_khandler(struct menu_info *m, wchar_t keys[]);
 
 int
 show_commands_menu(FileView *view)
@@ -38,25 +38,10 @@ show_commands_menu(FileView *view)
 	int i;
 
 	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = -1;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = COMMAND;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = NULL;
-	m.args = NULL;
-	m.items = NULL;
-	m.data = NULL;
+	init_menu_info(&m, COMMAND);
 	m.key_handler = command_khandler;
 
-	m.title = (char *)malloc((23 + 1)*sizeof(char));
-	snprintf(m.title, 23 + 1, " Command ------ Action  ");
+	m.title = strdup(" Command ------ Action ");
 
 	list = list_udf();
 
@@ -67,6 +52,7 @@ show_commands_menu(FileView *view)
 		return 0;
 	}
 
+	m.len = -1;
 	while(list[++m.len] != NULL);
 	m.len /= 2;
 
@@ -89,15 +75,15 @@ show_commands_menu(FileView *view)
 }
 
 static int
-command_khandler(struct menu_info *m, wchar_t *keys)
+command_khandler(struct menu_info *m, wchar_t keys[])
 {
 	if(wcscmp(keys, L"dd") == 0) /* remove element */
 	{
 		char cmd_buf[512];
 
-		*strchr(m->items[m->pos] + 1, ' ') = '\0';
-		snprintf(cmd_buf, sizeof(cmd_buf), "delcommand %s", m->items[m->pos] + 1);
-		execute_cmd(cmd_buf);
+		*strchr(m->items[m->pos], ' ') = '\0';
+		snprintf(cmd_buf, sizeof(cmd_buf), "delcommand %s", m->items[m->pos]);
+		execute_cmdline_command(cmd_buf);
 
 		remove_from_string_array(m->items, m->len, m->pos);
 		if(m->matches != NULL)

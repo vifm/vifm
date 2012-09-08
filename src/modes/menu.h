@@ -32,6 +32,8 @@ void update_menu(void);
 void save_menu_pos(void);
 void load_menu_pos(void);
 int search_menu_list(const char *pattern, menu_info *m);
+/* Allows running regular command-line mode commands from menu mode. */
+void execute_cmdline_command(const char cmd[]);
 
 #endif
 

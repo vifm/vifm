@@ -45,7 +45,7 @@ show_filetypes_menu(FileView *view, int background)
 	int i;
 	int max_len;
 
-	char *filename = get_current_file_name(view);
+	const char *const filename = get_current_file_name(view);
 	assoc_records_t ft = get_all_programs_for_file(filename);
 	assoc_records_t magic = get_magic_handlers(filename);
 
@@ -56,25 +56,9 @@ show_filetypes_menu(FileView *view, int background)
 		return 0;
 	}
 
-	m.top = 0;
-	m.current = 1;
-	m.len = 0;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = 0;
-	m.type = FILETYPE;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
+	init_menu_info(&m, FILETYPE);
 	m.title = strdup(" Filetype associated commands ");
-	m.args = NULL;
-	m.items = NULL;
-	m.data = NULL;
 	m.extra_data = (background ? 1 : 0);
-	m.key_handler = NULL;
-
-	getmaxyx(menu_win, m.win_rows, i);
 
 	max_len = 0;
 	for(i = 0; i < ft.count; i++)

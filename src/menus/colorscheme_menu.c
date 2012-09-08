@@ -30,29 +30,15 @@
 void
 show_colorschemes_menu(FileView *view)
 {
-	int len;
+	int width;
 	DIR *dir;
 	struct dirent *d;
 	char colors_dir[PATH_MAX];
 
 	static menu_info m;
-	m.top = 0;
-	m.current = 0;
-	m.len = 0;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = 0;
-	m.type = COLORSCHEME;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = NULL;
-	m.args = NULL;
-	m.items = NULL;
-	m.data = NULL;
+	init_menu_info(&m, COLORSCHEME);
 
-	getmaxyx(menu_win, m.win_rows, len);
+	width = getmaxx(menu_win);
 
 	m.title = strdup(" Choose the default Color Scheme ");
 
@@ -75,9 +61,9 @@ show_colorschemes_menu(FileView *view)
 		if(d->d_name[0] == '.')
 			continue;
 
-		m.items = (char **)realloc(m.items, sizeof(char *)*(m.len + 1));
-		m.items[m.len] = (char *)malloc(len + 2);
-		snprintf(m.items[m.len++], len, "%s", d->d_name);
+		m.items = realloc(m.items, sizeof(char *)*(m.len + 1));
+		m.items[m.len] = malloc(width + 2);
+		snprintf(m.items[m.len++], width, "%s", d->d_name);
 		if(strcmp(d->d_name, cfg.cs.name) == 0)
 		{
 			m.current = m.len;

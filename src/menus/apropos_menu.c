@@ -26,37 +26,28 @@
 #include "apropos_menu.h"
 
 void
-show_apropos_menu(FileView *view, char *args)
+show_apropos_menu(FileView *view, char args[])
 {
-	char buf[256];
+	char cmd_buf[256];
 	int were_errors;
+	size_t title_len;
 
 	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = 0;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = APROPOS;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = NULL;
+	init_menu_info(&m, APROPOS);
 	m.args = strdup(args);
-	m.items = NULL;
-	m.data = NULL;
 
-	m.title = (char *)malloc((strlen(args) + 12) * sizeof(char));
-	snprintf(m.title, strlen(args) + 11,  " Apropos %s ",  args);
-	snprintf(buf, sizeof(buf), "apropos %s", args);
+	title_len = 9 + strlen(args) + 1 + 1;
+	m.title = malloc(title_len);
+	snprintf(m.title, title_len, " Apropos %s ", args);
 
 	status_bar_message("apropos...");
 
-	were_errors = capture_output_to_menu(view, buf, &m);
+	snprintf(cmd_buf, sizeof(cmd_buf), "apropos %s", args);
+	were_errors = capture_output_to_menu(view, cmd_buf, &m);
 	if(!were_errors && m.len < 1)
+	{
 		show_error_msgf("Nothing Appropriate", "No matches for \'%s\'", m.title);
+	}
 }
 
 void

@@ -22,7 +22,7 @@
 
 #include "../ui.h"
 
-void show_user_menu(FileView *view, const char *command, int navigate);
+void show_user_menu(FileView *view, const char command[], int navigate);
 
 #endif
 

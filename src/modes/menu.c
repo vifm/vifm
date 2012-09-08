@@ -958,5 +958,15 @@ search_menu_backwards(menu_info *m, int start_pos)
 	return 0;
 }
 
+void
+execute_cmdline_command(const char cmd[])
+{
+	if(exec_command(cmd, curr_view, GET_COMMAND) < 0)
+	{
+		status_bar_error("An error occuried while trying to execute command");
+	}
+	init_cmds(0, &cmds_conf);
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

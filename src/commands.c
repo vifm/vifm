@@ -871,7 +871,7 @@ remove_selection(FileView *view)
 
 /* Returns negative value in case of error */
 static int
-execute_command(FileView *view, char *command, int menu)
+execute_command(FileView *view, const char command[], int menu)
 {
 	int id;
 	int result;
@@ -1239,7 +1239,7 @@ find_last_command(char *cmd)
 }
 
 int
-exec_command(char *cmd, FileView *view, int type)
+exec_command(const char cmd[], FileView *view, int type)
 {
 	if(cmd == NULL)
 	{
@@ -2371,14 +2371,9 @@ get_attrs(const char *text)
 static int
 history_cmd(const cmd_info_t *cmd_info)
 {
-	const char *type;
-	size_t len;
+	const char *const type = (cmd_info->argc == 0) ? "." : cmd_info->argv[0];
+	const size_t len = strlen(type);
 
-	if(cmd_info->argc == 0)
-		return show_history_menu(curr_view) != 0;
-
-	type = cmd_info->argv[0];
-	len = strlen(type);
 	if(strcmp(type, ":") == 0 || strncmp("cmd", type, len) == 0)
 		return show_cmdhistory_menu(curr_view) != 0;
 	else if(strcmp(type, "@") == 0 || strncmp("input", type, len) == 0)
