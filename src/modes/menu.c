@@ -31,6 +31,7 @@
 #include "../engine/cmds.h"
 #include "../engine/keys.h"
 #include "../menus/menus.h"
+#include "../utils/macros.h"
 #include "../utils/utils.h"
 #include "../bookmarks.h"
 #include "../commands.h"
@@ -347,8 +348,8 @@ cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
 	const int s = get_effective_menu_scroll_offset(menu);
 	clean_menu_position(menu);
-	menu->top += (menu->win_rows - 3 + 1)/2;
-	menu->pos += (menu->win_rows - 3 + 1)/2;
+	menu->top += DIV_ROUND_UP(menu->win_rows - 3, 2);
+	menu->pos += DIV_ROUND_UP(menu->win_rows - 3, 2);
 	if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
 		menu->pos += s - (menu->pos - menu->top);
 
@@ -431,10 +432,10 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 	if(cfg.scroll_off > 0 && menu->top + menu->win_rows - menu->pos < s)
 		menu->pos -= s - (menu->top + (menu->win_rows - 3) - menu->pos);
 
-	menu->top -= (menu->win_rows - 3 + 1)/2;
+	menu->top -= DIV_ROUND_UP(menu->win_rows - 3, 2);
 	if(menu->top < 0)
 		menu->top = 0;
-	menu->pos -= (menu->win_rows - 3 + 1)/2;
+	menu->pos -= DIV_ROUND_UP(menu->win_rows - 3, 2);
 
 	update_menu();
 }
@@ -443,7 +444,7 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 static int
 get_effective_menu_scroll_offset(const menu_info *menu)
 {
-	return MIN((menu->win_rows - 3 + 1)/2 - 1, cfg.scroll_off);
+	return MIN(DIV_ROUND_UP(menu->win_rows - 3, 2) - 1, cfg.scroll_off);
 }
 
 static void
@@ -729,10 +730,10 @@ cmd_zz(key_info_t key_info, keys_info_t *keys_info)
 
 	if(menu->pos <= (menu->win_rows - 3)/2)
 		menu->top = 0;
-	else if(menu->pos > menu->len - (menu->win_rows - 3 + 1)/2)
+	else if(menu->pos > menu->len - DIV_ROUND_UP(menu->win_rows - 3, 2))
 		menu->top = menu->len - (menu->win_rows - 3 + 1);
 	else
-		menu->top = menu->pos - (menu->win_rows - 3 + 1)/2;
+		menu->top = menu->pos - DIV_ROUND_UP(menu->win_rows - 3, 2);
 
 	update_menu();
 }
