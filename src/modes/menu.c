@@ -63,6 +63,7 @@ static void cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
+static int get_effective_menu_scroll_offset(const menu_info *menu);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_colon(key_info_t key_info, keys_info_t *keys_info);
@@ -327,10 +328,9 @@ leave_menu_mode(void)
 static void
 cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	int s = MIN((menu->win_rows - 3 + 1)/2 - 1, cfg.scroll_off);
+	const int s = get_effective_menu_scroll_offset(menu);
 	menu->pos -= menu->win_rows - 3;
-	if(cfg.scroll_off > 0 &&
-			menu->top + (menu->win_rows - 3) - menu->pos < s)
+	if(cfg.scroll_off > 0 && menu->top + (menu->win_rows - 3) - menu->pos < s)
 		menu->pos -= s - (menu->top + (menu->win_rows - 3) - menu->pos);
 	draw_menu(menu);
 	move_to_menu_pos(menu->pos, menu);
@@ -346,11 +346,10 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	int s;
+	const int s = get_effective_menu_scroll_offset(menu);
 	clean_menu_position(menu);
 	menu->top += (menu->win_rows - 3 + 1)/2;
 	menu->pos += (menu->win_rows - 3 + 1)/2;
-	s = MIN((menu->win_rows - 3 + 1)/2 - 1, cfg.scroll_off);
 	if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
 		menu->pos += s - (menu->pos - menu->top);
 	draw_menu(menu);
@@ -379,11 +378,10 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
-	int s;
+	const int s = get_effective_menu_scroll_offset(menu);
 	int l = (menu->win_rows - 3) - 1;
 	menu->pos = menu->top + l;
 	menu->top += l;
-	s = MIN((menu->win_rows - 3 + 1)/2 - 1, cfg.scroll_off);
 	if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
 		menu->pos += s - (menu->pos - menu->top);
 	draw_menu(menu);
@@ -430,7 +428,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
-	int s = MIN((menu->win_rows - 3 + 1)/2 - 1, cfg.scroll_off);
+	const int s = get_effective_menu_scroll_offset(menu);
 	clean_menu_position(menu);
 
 	if(cfg.scroll_off > 0 && menu->top + menu->win_rows - menu->pos < s)
@@ -443,6 +441,13 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 	draw_menu(menu);
 	move_to_menu_pos(menu->pos, menu);
 	wrefresh(menu_win);
+}
+
+/* Returns scroll offset value for the menu taking menu height into account. */
+static int
+get_effective_menu_scroll_offset(const menu_info *menu)
+{
+	return MIN((menu->win_rows - 3 + 1)/2 - 1, cfg.scroll_off);
 }
 
 static void
