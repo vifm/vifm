@@ -57,10 +57,12 @@ static int skip_at_beginning(int id, const char *args);
 static int key_handler(wchar_t key);
 static void leave_menu_mode(void);
 static void cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info);
+static int can_scroll_menu_up(const menu_info *menu);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info);
+static int can_scroll_menu_down(const menu_info *menu);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
@@ -329,12 +331,21 @@ leave_menu_mode(void)
 static void
 cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	const int s = get_effective_menu_scroll_offset(menu);
-	menu->pos -= menu->win_rows - 3;
-	if(cfg.scroll_off > 0 && menu->top + (menu->win_rows - 3) - menu->pos < s)
-		menu->pos -= s - (menu->top + (menu->win_rows - 3) - menu->pos);
+	if(can_scroll_menu_up(menu))
+	{
+		const int s = get_effective_menu_scroll_offset(menu);
+		menu->pos -= menu->win_rows - 3;
+		if(cfg.scroll_off > 0 && menu->top + (menu->win_rows - 3) - menu->pos < s)
+			menu->pos -= s - (menu->top + (menu->win_rows - 3) - menu->pos);
 
-	update_menu();
+		update_menu();
+	}
+}
+
+static int
+can_scroll_menu_up(const menu_info *menu)
+{
+	return menu->top > 0;
 }
 
 static void
@@ -377,14 +388,23 @@ cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
-	const int s = get_effective_menu_scroll_offset(menu);
-	int l = (menu->win_rows - 3) - 1;
-	menu->pos = menu->top + l;
-	menu->top += l;
-	if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
-		menu->pos += s - (menu->pos - menu->top);
+	if(can_scroll_menu_down(menu))
+	{
+		const int s = get_effective_menu_scroll_offset(menu);
+		int l = (menu->win_rows - 3) - 1;
+		menu->pos = menu->top + l;
+		menu->top += l;
+		if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
+			menu->pos += s - (menu->pos - menu->top);
 
-	update_menu();
+		update_menu();
+	}
+}
+
+static int
+can_scroll_menu_down(const menu_info *menu)
+{
+	return get_last_visible_line(menu) < menu->len - 1;
 }
 
 int
