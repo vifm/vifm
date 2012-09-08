@@ -20,6 +20,7 @@
 #include <ctype.h> /* tolower() */
 #include <stdlib.h> /* malloc() realloc() free() */
 #include <string.h> /* strlen() strcat() */
+#include <wchar.h> /* wcsncmp() wcslen() */
 
 #include "../modes/menu.h"
 #include "../utils/utils.h"
@@ -28,33 +29,19 @@
 
 #include "map_menu.h"
 
-static char * uchar2str(wchar_t *c, size_t *len);
+static char * uchar2str(wchar_t c[], size_t *len);
 
 void
-show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
-		const wchar_t *start)
+show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
+		const wchar_t start[])
 {
 	int x;
 	size_t start_len = wcslen(start);
 
 	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = 0;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = MAP;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = NULL;
-	m.args = NULL;
-	m.items = NULL;
-	m.data = NULL;
+	init_menu_info(&m, MAP);
 
-	m.title = malloc((strlen(mode_str) + 21)*sizeof(char));
+	m.title = malloc(strlen(mode_str) + 21);
 	sprintf(m.title, " Mappings for %s mode ", mode_str);
 
 	x = 0;
@@ -71,8 +58,6 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
 			continue;
 		}
 
-		m.items = realloc(m.items, sizeof(char *)*(m.len + 1));
-
 		str_len = wcslen(list[x]);
 		buf_len = 0;
 		for(i = 0; i < str_len; i += len)
@@ -83,6 +68,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
 		else
 			buf_len += 1 + 0 + 1;
 
+		m.items = realloc(m.items, sizeof(char *)*(m.len + 1));
 		m.items[m.len] = malloc(buf_len + MAP_WIDTH);
 		m.items[m.len][0] = '\0';
 		for(i = 0; i < str_len; i += len)
@@ -124,7 +110,7 @@ show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
 }
 
 static char *
-uchar2str(wchar_t *c, size_t *len)
+uchar2str(wchar_t c[], size_t *len)
 {
 	/* TODO: refactor this function uchar2str() */
 

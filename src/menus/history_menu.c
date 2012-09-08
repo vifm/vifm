@@ -28,8 +28,8 @@
 
 #include "history_menu.h"
 
-static int show_history(FileView *view, int type, int len, char **hist,
-		const char *title);
+static int show_history(FileView *view, int type, int len, char *hist[],
+		const char title[]);
 
 int
 show_cmdhistory_menu(FileView *view)
@@ -60,9 +60,10 @@ show_bsearchhistory_menu(FileView *view)
 }
 
 static int
-show_history(FileView *view, int type, int len, char **hist, const char *title)
+show_history(FileView *view, int type, int len, char *hist[],
+		const char title[])
 {
-	int x;
+	int i;
 	static menu_info m;
 
 	if(len <= 0)
@@ -71,25 +72,12 @@ show_history(FileView *view, int type, int len, char **hist, const char *title)
 		return 1;
 	}
 
-	m.top = 0;
-	m.current = 1;
-	m.len = 0;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = type;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
+	init_menu_info(&m, type);
 	m.title = strdup(title);
-	m.args = NULL;
-	m.items = NULL;
-	m.data = NULL;
 
-	for(x = 0; x < len; x++)
+	for(i = 0; i < len; i++)
 	{
-		m.len = add_to_string_array(&m.items, m.len, 1, hist[x]);
+		m.len = add_to_string_array(&m.items, m.len, 1, hist[i]);
 	}
 
 	setup_menu();

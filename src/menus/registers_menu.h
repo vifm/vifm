@@ -22,7 +22,7 @@
 
 #include "../ui.h"
 
-int show_register_menu(FileView *view, const char *registers);
+int show_register_menu(FileView *view, const char registers[]);
 
 #endif
 

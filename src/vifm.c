@@ -457,8 +457,9 @@ main(int argc, char *argv[])
 	curr_stats.load_stage = 2;
 
 	exec_startup_commands(argc, argv);
-
 	update_screen(UT_FULL);
+	modes_update();
+
 	curr_stats.load_stage = 3;
 
 	main_loop();

@@ -28,10 +28,17 @@ void enter_menu_mode(menu_info *m, FileView *active_view);
 void menu_pre(void);
 void menu_post(void);
 void menu_redraw(void);
+/* Redraws and refreshes menu window. */
 void update_menu(void);
 void save_menu_pos(void);
 void load_menu_pos(void);
 int search_menu_list(const char *pattern, menu_info *m);
+/* Allows running regular command-line mode commands from menu mode. */
+void execute_cmdline_command(const char cmd[]);
+/* Returns index of last visible line in the menu.  Value returned may be
+ * greater than or equal to number of lines in the menu, which should be
+ * threated correctly. */
+int get_last_visible_line(const menu_info *m);
 
 #endif
 

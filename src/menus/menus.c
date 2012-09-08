@@ -47,17 +47,14 @@
 #include "../background.h"
 #include "../bookmarks.h"
 #include "../commands.h"
-#include "../file_magic.h"
 #include "../filelist.h"
-#include "../filetype.h"
 #include "../running.h"
 #include "../search.h"
 #include "../status.h"
 #include "../ui.h"
 #include "all.h"
 
-static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
-		const char *start, int background);
+static void normalize_top(menu_info *m);
 
 static void
 show_position_in_menu(menu_info *m)
@@ -265,6 +262,29 @@ show_error_msg(const char *title, const char *message)
 }
 
 void
+init_menu_info(menu_info *m, int menu_type)
+{
+	m->top = 0;
+	m->current = 1;
+	m->len = 0;
+	m->pos = 0;
+	m->hor_pos = 0;
+	m->win_rows = getmaxy(menu_win);
+	m->type = menu_type;
+	m->match_dir = NONE;
+	m->matching_entries = 0;
+	m->matches = NULL;
+	m->regexp = NULL;
+	m->title = NULL;
+	m->args = NULL;
+	m->items = NULL;
+	m->data = NULL;
+	m->key_handler = NULL;
+	m->extra_data = 0;
+	m->execute_handler = NULL;
+}
+
+void
 reset_popup_menu(menu_info *m)
 {
 	free(m->args);
@@ -304,63 +324,43 @@ move_to_menu_pos(int pos, menu_info *m)
 
 	x = getmaxx(menu_win);
 
-	if(pos < 1)
-		pos = 0;
-
-	if(pos > m->len - 1)
-		pos = m->len - 1;
-
+	pos = MIN(m->len - 1, MAX(0, pos));
 	if(pos < 0)
 		return;
 
-	if(m->top + m->win_rows - 3 > m->len)
-		m->top = m->len - (m->win_rows - 3);
-
-	if(m->top < 0)
-		m->top = 0;
+	normalize_top(m);
 
 	x += get_utf8_overhead(m->items[pos]);
 
-	if((m->top <= pos) && (pos <= (m->top + m->win_rows + 1)))
+	if(pos > get_last_visible_line(m))
 	{
-		m->current = pos - m->top + 1;
-	}
-	if((pos >= (m->top + m->win_rows - 3 + 1)))
-	{
-		while(pos >= (m->top + m->win_rows - 3 + 1))
-			m->top++;
-
-		m->current = m->win_rows - 3 + 1;
+		m->top = pos - (m->win_rows - 2 - 1);
 		redraw = 1;
 	}
 	else if(pos < m->top)
 	{
-		while(pos < m->top)
-			m->top--;
-		m->current = 1;
+		m->top = pos;
 		redraw = 1;
 	}
 
 	if(cfg.scroll_off > 0)
 	{
-		int s = MIN((m->win_rows - 2 + 1)/2, cfg.scroll_off);
+		int s = MIN(DIV_ROUND_UP(m->win_rows - 2, 2), cfg.scroll_off);
 		if(pos - m->top < s && m->top > 0)
 		{
 			m->top -= s - (pos - m->top);
-			if(m->top < 0)
-				m->top = 0;
-			m->current = 1 + m->pos - m->top;
+			normalize_top(m);
 			redraw = 1;
 		}
-		if((m->top + m->win_rows - 2) - pos - 1 < s)
+		if(pos > get_last_visible_line(m) - s)
 		{
-			m->top += s - ((m->top + m->win_rows - 2) - pos - 1);
-			if(m->top + m->win_rows - 2 > m->len)
-				m->top = m->len - (m->win_rows - 2);
-			m->current = 1 + pos - m->top;
+			m->top += s - (get_last_visible_line(m) - pos);
+			normalize_top(m);
 			redraw = 1;
 		}
 	}
+
+	m->current = 1 + (pos - m->top);
 
 	if(redraw)
 		draw_menu(m);
@@ -431,7 +431,7 @@ void
 redraw_menu(menu_info *m)
 {
 	resize_for_menu_like();
-	m->win_rows = getmaxy(stdscr) - 1;
+	m->win_rows = getmaxy(menu_win);
 
 	draw_menu(m);
 	move_to_menu_pos(m->pos, m);
@@ -614,10 +614,8 @@ draw_menu(menu_info *m)
 
 	box(menu_win, 0, 0);
 
-	if(m->win_rows - 2 >= m->len)
-		m->top = 0;
-	else if(m->len - m->top < m->win_rows - 2)
-		m->top = m->len - (m->win_rows - 2);
+	normalize_top(m);
+
 	x = m->top;
 
 	wattron(menu_win, A_BOLD);
@@ -689,6 +687,13 @@ draw_menu(menu_info *m)
 	}
 }
 
+/* Ensures that value of m->top lies in a correct range. */
+static void
+normalize_top(menu_info *m)
+{
+	m->top = MAX(0, MIN(m->len - (m->win_rows - 2), m->top));
+}
+
 int
 capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
 {
@@ -756,42 +761,6 @@ capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
 	draw_menu(m);
 	move_to_menu_pos(m->pos, m);
 	enter_menu_mode(m, view);
-	return 0;
-}
-
-int
-run_with_filetype(FileView *view, const char *beginning, int background)
-{
-	char *filename = get_current_file_name(view);
-	assoc_records_t ft = get_all_programs_for_file(filename);
-	assoc_records_t magic = get_magic_handlers(filename);
-
-	if(try_run_with_filetype(view, ft, beginning, background))
-	{
-		free(ft.list);
-		return 0;
-	}
-
-	free(ft.list);
-
-	return !try_run_with_filetype(view, magic, beginning, background);
-}
-
-/* Returns non-zero on successful running. */
-static int
-try_run_with_filetype(FileView *view, const assoc_records_t assocs,
-		const char *start, int background)
-{
-	const size_t len = strlen(start);
-	int i;
-	for(i = 0; i < assocs.count; i++)
-	{
-		if(strncmp(assocs.list[i].command, start, len) == 0)
-		{
-			run_using_prog(view, assocs.list[i].command, 0, background);
-			return 1;
-		}
-	}
 	return 0;
 }
 

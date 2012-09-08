@@ -20,7 +20,7 @@
 #ifndef __MENUS_H__
 #define __MENUS_H__
 
-#include <stdio.h>
+#include <stdio.h> /* FILE */
 
 #include "../ui.h"
 
@@ -86,8 +86,8 @@ typedef struct menu_info
 	int (*execute_handler)(FileView *view, struct menu_info *m);
 }menu_info;
 
-/* Returns zero on successful running */
-int run_with_filetype(FileView *view, const char *beginning, int background);
+/* Fills fields of menu_info structure with some safe values. */
+void init_menu_info(menu_info *m, int menu_type);
 void reset_popup_menu(menu_info *m);
 void setup_menu(void);
 void redraw_error_msg(const char *title_arg, const char *message_arg);

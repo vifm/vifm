@@ -31,6 +31,7 @@
 #include "../engine/cmds.h"
 #include "../engine/keys.h"
 #include "../menus/menus.h"
+#include "../utils/macros.h"
 #include "../utils/utils.h"
 #include "../bookmarks.h"
 #include "../commands.h"
@@ -42,6 +43,8 @@
 #include "modes.h"
 
 #include "menu.h"
+
+static const int SCROLL_GAP = 2;
 
 static int complete_args(int id, const char *args, int argc, char **argv,
 		int arg_pos);
@@ -56,13 +59,17 @@ static int skip_at_beginning(int id, const char *args);
 static int key_handler(wchar_t key);
 static void leave_menu_mode(void);
 static void cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info);
+static int can_scroll_menu_up(const menu_info *menu);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info);
+static int can_scroll_menu_down(const menu_info *menu);
+static void change_menu_top(menu_info *const menu, int delta);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info);
+static int get_effective_menu_scroll_offset(const menu_info *menu);
 static void cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_colon(key_info_t key_info, keys_info_t *keys_info);
@@ -85,6 +92,7 @@ static void cmd_zh(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zt(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zz(key_info_t key_info, keys_info_t *keys_info);
+static int all_lines_visible(const menu_info *const menu);
 
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
@@ -327,14 +335,24 @@ leave_menu_mode(void)
 static void
 cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
-	int s = MIN((menu->win_rows - 3 + 1)/2 - 1, cfg.scroll_off);
-	menu->pos -= menu->win_rows - 3;
-	if(cfg.scroll_off > 0 &&
-			menu->top + (menu->win_rows - 3) - menu->pos < s)
-		menu->pos -= s - (menu->top + (menu->win_rows - 3) - menu->pos);
-	draw_menu(menu);
-	move_to_menu_pos(menu->pos, menu);
-	wrefresh(menu_win);
+	if(can_scroll_menu_up(menu))
+	{
+		const int s = get_effective_menu_scroll_offset(menu);
+		const int off = (menu->win_rows - 2) - SCROLL_GAP;
+		menu->pos = get_last_visible_line(menu) - off;
+		change_menu_top(menu, -off);
+		if(cfg.scroll_off > 0 && menu->top + (menu->win_rows - 3) - menu->pos < s)
+			menu->pos -= s - (menu->top + (menu->win_rows - 3) - menu->pos);
+
+		update_menu();
+	}
+}
+
+/* Returns non-zero if menu can be scrolled up. */
+static int
+can_scroll_menu_up(const menu_info *menu)
+{
+	return menu->top > 0;
 }
 
 static void
@@ -346,49 +364,64 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_d(key_info_t key_info, keys_info_t *keys_info)
 {
-	int s;
+	const int s = get_effective_menu_scroll_offset(menu);
 	clean_menu_position(menu);
-	menu->top += (menu->win_rows - 3 + 1)/2;
-	menu->pos += (menu->win_rows - 3 + 1)/2;
-	s = MIN((menu->win_rows - 3 + 1)/2 - 1, cfg.scroll_off);
+	menu->top += DIV_ROUND_UP(menu->win_rows - 3, 2);
+	menu->pos += DIV_ROUND_UP(menu->win_rows - 3, 2);
 	if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
 		menu->pos += s - (menu->pos - menu->top);
-	draw_menu(menu);
-	move_to_menu_pos(menu->pos, menu);
-	wrefresh(menu_win);
+
+	update_menu();
 }
 
 static void
 cmd_ctrl_e(key_info_t key_info, keys_info_t *keys_info)
 {
-	int off;
+	if(can_scroll_menu_down(menu))
+	{
+		int off = MAX(cfg.scroll_off, 0);
+		if(menu->pos <= menu->top + off)
+			menu->pos = menu->top + 1 + off;
 
-	if(menu->len <= menu->win_rows - 3)
-		return;
-	if(menu->top == menu->len - (menu->win_rows - 3) - 1)
-		return;
-
-	off = MAX(cfg.scroll_off, 0);
-	if(menu->pos <= menu->top + off)
-		menu->pos = menu->top + 1 + off;
-
-	menu->top++;
-	update_menu();
+		menu->top++;
+		update_menu();
+	}
 }
 
 static void
 cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
-	int s;
-	int l = (menu->win_rows - 3) - 1;
-	menu->pos = menu->top + l;
-	menu->top += l;
-	s = MIN((menu->win_rows - 3 + 1)/2 - 1, cfg.scroll_off);
-	if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
-		menu->pos += s - (menu->pos - menu->top);
-	draw_menu(menu);
-	move_to_menu_pos(menu->pos, menu);
-	wrefresh(menu_win);
+	if(can_scroll_menu_down(menu))
+	{
+		const int s = get_effective_menu_scroll_offset(menu);
+		const int off = (menu->win_rows - 2) - SCROLL_GAP;
+		menu->pos = menu->top + off;
+		change_menu_top(menu, off);
+		if(cfg.scroll_off > 0 && menu->pos - menu->top < s)
+			menu->pos += s - (menu->pos - menu->top);
+
+		update_menu();
+	}
+}
+
+/* Returns non-zero if menu can be scrolled down. */
+static int
+can_scroll_menu_down(const menu_info *menu)
+{
+	return get_last_visible_line(menu) < menu->len - 1;
+}
+
+/* Moves top line of the menu ensuring that its value is correct. */
+static void
+change_menu_top(menu_info *const menu, int delta)
+{
+	menu->top = MAX(MIN(menu->top + delta, menu->len - (menu->win_rows - 2)), 0);
+}
+
+int
+get_last_visible_line(const menu_info *menu)
+{
+	return menu->top + (menu->win_rows - 2) - 1;
 }
 
 static void
@@ -430,35 +463,39 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 {
-	int s = MIN((menu->win_rows - 3 + 1)/2 - 1, cfg.scroll_off);
+	const int s = get_effective_menu_scroll_offset(menu);
 	clean_menu_position(menu);
 
 	if(cfg.scroll_off > 0 && menu->top + menu->win_rows - menu->pos < s)
 		menu->pos -= s - (menu->top + (menu->win_rows - 3) - menu->pos);
 
-	menu->top -= (menu->win_rows - 3 + 1)/2;
+	menu->top -= DIV_ROUND_UP(menu->win_rows - 3, 2);
 	if(menu->top < 0)
 		menu->top = 0;
-	menu->pos -= (menu->win_rows - 3 + 1)/2;
-	draw_menu(menu);
-	move_to_menu_pos(menu->pos, menu);
-	wrefresh(menu_win);
+	menu->pos -= DIV_ROUND_UP(menu->win_rows - 3, 2);
+
+	update_menu();
+}
+
+/* Returns scroll offset value for the menu taking menu height into account. */
+static int
+get_effective_menu_scroll_offset(const menu_info *menu)
+{
+	return MIN(DIV_ROUND_UP(menu->win_rows - 3, 2) - 1, cfg.scroll_off);
 }
 
 static void
 cmd_ctrl_y(key_info_t key_info, keys_info_t *keys_info)
 {
-	int off;
+	if(can_scroll_menu_up(menu))
+	{
+		int off = MAX(cfg.scroll_off, 0);
+		if(menu->pos >= menu->top + menu->win_rows - 3 - off)
+			menu->pos = menu->top - 1 + menu->win_rows - 3 - off;
 
-	if(menu->len <= menu->win_rows - 3 || menu->top == 0)
-		return;
-
-	off = MAX(cfg.scroll_off, 0);
-	if(menu->pos >= menu->top + menu->win_rows - 3 - off)
-		menu->pos = menu->top - 1 + menu->win_rows - 3 - off;
-
-	menu->top--;
-	update_menu();
+		menu->top--;
+		update_menu();
+	}
 }
 
 static void
@@ -661,14 +698,14 @@ search(int backward)
 static void
 cmd_zb(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(menu->len <= menu->win_rows - 3)
-		return;
-
-	if(menu->pos < menu->win_rows)
-		menu->top = 0;
-	else
-		menu->top = menu->pos - (menu->win_rows - 3);
-	update_menu();
+	if(can_scroll_menu_up(menu))
+	{
+		if(menu->pos < menu->win_rows)
+			menu->top = 0;
+		else
+			menu->top = menu->pos - (menu->win_rows - 3);
+		update_menu();
+	}
 }
 
 static void
@@ -710,30 +747,37 @@ cmd_zl(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_zt(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(menu->len <= menu->win_rows - 3)
-		return;
-
-	if(menu->len - menu->pos >= menu->win_rows - 3 + 1)
-		menu->top = menu->pos;
-	else
-		menu->top = menu->len - (menu->win_rows - 3 + 1);
-	update_menu();
+	if(can_scroll_menu_down(menu))
+	{
+		if(menu->len - menu->pos >= menu->win_rows - 3 + 1)
+			menu->top = menu->pos;
+		else
+			menu->top = menu->len - (menu->win_rows - 3 + 1);
+		update_menu();
+	}
 }
 
 static void
 cmd_zz(key_info_t key_info, keys_info_t *keys_info)
 {
-	if(menu->len <= menu->win_rows - 3)
-		return;
+	if(!all_lines_visible(menu))
+	{
+		if(menu->pos <= (menu->win_rows - 3)/2)
+			menu->top = 0;
+		else if(menu->pos > menu->len - DIV_ROUND_UP(menu->win_rows - 3, 2))
+			menu->top = menu->len - (menu->win_rows - 3 + 1);
+		else
+			menu->top = menu->pos - DIV_ROUND_UP(menu->win_rows - 3, 2);
 
-	if(menu->pos <= (menu->win_rows - 3)/2)
-		menu->top = 0;
-	else if(menu->pos > menu->len - (menu->win_rows - 3 + 1)/2)
-		menu->top = menu->len - (menu->win_rows - 3 + 1);
-	else
-		menu->top = menu->pos - (menu->win_rows - 3 + 1)/2;
+		update_menu();
+	}
+}
 
-	update_menu();
+/* Returns non-zero if all menu lines are visible, so no scrolling is needed. */
+static int
+all_lines_visible(const menu_info *const menu)
+{
+	return menu->len <= menu->win_rows - 2;
 }
 
 void
@@ -956,6 +1000,16 @@ search_menu_backwards(menu_info *m, int start_pos)
 		return 1;
 	}
 	return 0;
+}
+
+void
+execute_cmdline_command(const char cmd[])
+{
+	if(exec_command(cmd, curr_view, GET_COMMAND) < 0)
+	{
+		status_bar_error("An error occuried while trying to execute command");
+	}
+	init_cmds(0, &cmds_conf);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

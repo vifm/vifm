@@ -18,10 +18,12 @@
  */
 
 #include <signal.h> /* sig* */
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() realloc() */
 #include <string.h> /* strlen() strdup() */
 
 #include "../modes/menu.h"
+#include "../utils/string_array.h"
 #include "../background.h"
 #include "../ui.h"
 #include "menus.h"
@@ -35,23 +37,9 @@ show_jobs_menu(FileView *view)
 #ifndef _WIN32
 	sigset_t new_mask;
 #endif
-	int x;
+	int i;
 	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = 0;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = JOBS;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = NULL;
-	m.args = NULL;
-	m.items = NULL;
-	m.data = NULL;
+	init_menu_info(&m, JOBS);
 
 	/*
 	 * SIGCHLD needs to be blocked anytime the finished_jobs list
@@ -67,43 +55,33 @@ show_jobs_menu(FileView *view)
 
 	p = jobs;
 
-	x = 0;
+	i = 0;
 	while(p != NULL)
 	{
 		if(p->running)
 		{
-			m.items = (char **)realloc(m.items, sizeof(char *)*(x + 1));
-			m.items[x] = (char *)malloc(strlen(p->cmd) + 24);
+			char item_buf[strlen(p->cmd) + 24];
 			if(p->pid == -1)
-				snprintf(m.items[x], strlen(p->cmd) + 22, " %d/%d %s ", p->done + 1,
+				snprintf(item_buf, sizeof(item_buf), " %d/%d %s ", p->done + 1,
 						p->total, p->cmd);
 			else
-				snprintf(m.items[x], strlen(p->cmd) + 22, " %d %s ", p->pid, p->cmd);
-
-			x++;
+				snprintf(item_buf, sizeof(item_buf), " %d %s ", p->pid, p->cmd);
+			i = add_to_string_array(&m.items, i, 1, item_buf);
 		}
 
 		p = p->next;
 	}
 
 #ifndef _WIN32
-	/* Unblock SIGCHLD signal */
+	/* Unblock SIGCHLD signal. */
 	sigprocmask(SIG_UNBLOCK, &new_mask, NULL);
 #endif
 
-	m.len = x;
+	m.len = i;
 
 	if(m.len < 1)
 	{
-		char buf[256];
-
-		m.items = (char **)realloc(m.items, sizeof(char *) * (x + 1));
-		m.items[x] = (char *)malloc(strlen("Press return to continue.") + 2);
-		snprintf(m.items[x], strlen("Press return to continue."),
-					"Press return to continue.");
-		snprintf(buf, sizeof(buf), "No background jobs are running");
-		m.len = 1;
-
+		m.len = add_to_string_array(&m.items, 0, 1, "Press return to continue.");
 		m.title = strdup(" No jobs currently running ");
 	}
 	else

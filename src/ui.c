@@ -1447,7 +1447,9 @@ redraw_lists(void)
 	if(curr_stats.number_of_windows == 2)
 	{
 		if(curr_stats.view)
+		{
 			quick_view_file(curr_view);
+		}
 		else
 		{
 			(void)move_curr_line(other_view);

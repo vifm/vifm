@@ -22,11 +22,11 @@
 #endif
 
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* malloc() realloc() */
 #include <string.h> /* strdup() */
 
 #include "../modes/menu.h"
 #include "../utils/fs.h"
+#include "../utils/string_array.h"
 #include "../filelist.h"
 #include "../ui.h"
 #include "menus.h"
@@ -41,21 +41,8 @@ show_volumes_menu(FileView *view)
 	TCHAR file_buf[MAX_PATH];
 
 	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = 0;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = VOLUMES;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
+	init_menu_info(&m, VOLUMES);
 	m.title = strdup(" Mounted Volumes ");
-	m.args = NULL;
-	m.items = NULL;
-	m.data = NULL;
 
 	for(c = TEXT('a'); c < TEXT('z'); c++)
 	{
@@ -66,11 +53,9 @@ show_volumes_menu(FileView *view)
 			if(GetVolumeInformation(drive, vol_name, MAX_PATH, NULL, NULL, NULL,
 					file_buf, MAX_PATH))
 			{
-				m.items = (char **)realloc(m.items, sizeof(char *) * (m.len + 1));
-				m.items[m.len] = (char *)malloc((MAX_PATH + 5) * sizeof(char));
-
-				snprintf(m.items[m.len], MAX_PATH, "%s  %s ", drive, vol_name);
-				m.len++;
+				char item_buf[MAX_PATH + 5];
+				snprintf(item_buf, sizeof(item_buf), "%s  %s ", drive, vol_name);
+				m.len = add_to_string_array(&m.items, m.len, 1, item_buf);
 			}
 		}
 	}
@@ -84,10 +69,10 @@ show_volumes_menu(FileView *view)
 void
 execute_volumes_cb(FileView *view, menu_info *m)
 {
-	char buf[4];
-	snprintf(buf, 4, "%s", m->items[m->pos]);
+	char path_buf[4];
+	snprintf(path_buf, 4, "%s", m->items[m->pos]);
 
-	if(change_directory(view, buf) < 0)
+	if(change_directory(view, path_buf) < 0)
 		return;
 
 	load_dir_list(view, 0);

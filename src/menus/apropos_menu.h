@@ -23,7 +23,7 @@
 #include "../ui.h"
 #include "menus.h"
 
-void show_apropos_menu(FileView *view, char *args);
+void show_apropos_menu(FileView *view, char args[]);
 void execute_apropos_cb(menu_info *m);
 
 #endif

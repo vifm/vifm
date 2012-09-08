@@ -901,7 +901,9 @@ consider_scroll_bind(FileView *view)
 void
 update_scroll_bind_offset(void)
 {
-	curr_stats.scroll_bind_off = rwin.top_line/rwin.column_count - lwin.top_line/lwin.column_count;
+	int rwin_pos = rwin.top_line/rwin.column_count;
+	int lwin_pos = lwin.top_line/lwin.column_count;
+	curr_stats.scroll_bind_off = rwin_pos - lwin_pos;
 }
 
 void
@@ -1096,7 +1098,7 @@ calculate_top_position(FileView *view, int top)
 	{
 		result = 0;
 	}
-	else if((view->list_rows - top) < view->window_cells)
+	else if(view->list_rows - top < view->window_cells)
 	{
 		if(view->window_cells - (view->list_rows - top) >= view->column_count)
 		{
@@ -1422,7 +1424,7 @@ consider_scroll_offset(FileView *view)
 size_t
 get_effective_scroll_offset(const FileView *view)
 {
-	int val = MIN((view->window_rows + 1)/2, MAX(cfg.scroll_off, 0));
+	int val = MIN(DIV_ROUND_UP(view->window_rows, 2), MAX(cfg.scroll_off, 0));
 	return val*view->column_count;
 }
 
@@ -1537,6 +1539,9 @@ get_window_bottom_pos(const FileView *view)
 	}
 }
 
+/* Returns index of last visible file in the view.  Value returned may be
+ * greater than or equal to number of files in the view, which should be
+ * threated correctly. */
 static size_t
 get_last_visible_file(const FileView *view)
 {

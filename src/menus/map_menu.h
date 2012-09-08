@@ -24,8 +24,8 @@
 
 #include "../ui.h"
 
-void show_map_menu(FileView *view, const char *mode_str, wchar_t **list,
-		const wchar_t *start);
+void show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
+		const wchar_t start[]);
 
 #endif
 

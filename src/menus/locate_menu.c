@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include <stdio.h> /* snprintf() */
 #include <string.h> /* strdup() */
 
 #include "../utils/path.h"
@@ -26,34 +27,21 @@
 #include "locate_menu.h"
 
 int
-show_locate_menu(FileView *view, const char *args)
+show_locate_menu(FileView *view, const char args[])
 {
-	char buf[256];
+	char cmd_buf[256];
 	int were_errors;
 
 	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = 0;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = LOCATE;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = NULL;
+	init_menu_info(&m, LOCATE);
 	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0);
-	m.items = NULL;
-	m.data = NULL;
 
-	snprintf(buf, sizeof(buf), "locate %s", m.args);
-	m.title = strdup(buf);
+	snprintf(cmd_buf, sizeof(cmd_buf), "locate %s", m.args);
+	m.title = strdup(cmd_buf);
 
 	status_bar_message("locate...");
 
-	were_errors = capture_output_to_menu(view, buf, &m);
+	were_errors = capture_output_to_menu(view, cmd_buf, &m);
 	if(!were_errors && m.len < 1)
 	{
 		status_bar_error("No files found");

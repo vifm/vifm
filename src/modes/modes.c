@@ -276,6 +276,8 @@ modes_update(void)
 
 	if(mode == SORT_MODE)
 		redraw_sort_dialog();
+	else if(mode == CHANGE_MODE)
+		redraw_change_dialog();
 	else if(mode == ATTR_MODE)
 		redraw_attr_dialog();
 }

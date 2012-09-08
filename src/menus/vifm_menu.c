@@ -31,22 +31,12 @@ int
 show_vifm_menu(FileView *view)
 {
 	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = fill_version_info(NULL);
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = VIFM;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
+	int len;
+	init_menu_info(&m, VIFM);
 	m.title = strdup(" vifm information ");
-	m.args = NULL;
-	m.items = malloc(sizeof(char*)*m.len);
-	m.data = NULL;
 
+	len = fill_version_info(NULL);
+	m.items = malloc(sizeof(char*)*len);
 	m.len = fill_version_info(m.items);
 
 	setup_menu();

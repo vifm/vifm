@@ -17,10 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <stdlib.h> /* realloc() */
 #include <string.h> /* strdup() */
 
 #include "../modes/menu.h"
+#include "../utils/string_array.h"
 #include "../registers.h"
 #include "../ui.h"
 #include "menus.h"
@@ -28,34 +28,19 @@
 #include "registers_menu.h"
 
 int
-show_register_menu(FileView *view, const char *registers)
+show_register_menu(FileView *view, const char registers[])
 {
 	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = 0;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = REGISTER;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
+	init_menu_info(&m, REGISTER);
 	m.title = strdup(" Registers ");
-	m.args = NULL;
-	m.items = NULL;
-	m.data = NULL;
 
 	m.items = list_registers_content(registers);
 	while(m.items[m.len] != NULL)
 		m.len++;
 
-	if(!m.len)
+	if(m.len == 0)
 	{
-		m.items = (char **)realloc(m.items, sizeof(char *) * 1);
-		m.items[0] = strdup(" Registers are empty ");
-		m.len = 1;
+		m.len = add_to_string_array(&m.items, m.len, 1, " Registers are empty ");
 	}
 
 	setup_menu();

@@ -26,26 +26,12 @@
 #include "users_menu.h"
 
 void
-show_user_menu(FileView *view, const char *command, int navigate)
+show_user_menu(FileView *view, const char command[], int navigate)
 {
-	int were_errors;
-
 	static menu_info m;
-	m.top = 0;
-	m.current = 1;
-	m.len = 0;
-	m.pos = 0;
-	m.hor_pos = 0;
-	m.win_rows = getmaxy(menu_win);
-	m.type = navigate ? USER_NAVIGATE : USER;
-	m.matching_entries = 0;
-	m.matches = NULL;
-	m.match_dir = NONE;
-	m.regexp = NULL;
-	m.title = NULL;
-	m.args = NULL;
-	m.items = NULL;
-	m.data = NULL;
+	int were_errors;
+	const int menu_type = navigate ? USER_NAVIGATE : USER;
+	init_menu_info(&m, menu_type);
 
 	m.title = strdup(command);
 

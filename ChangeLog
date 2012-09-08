@@ -123,6 +123,17 @@
 
 	Fixed check for git command presence in src/Makefile.am.
 
+	Fixed cursor position in menus, when 'scrolloff' is set.
+
+	Fixed utf-8 issue in :marks menu.
+
+	Fixed dd in :commands menu.
+
+	Fixed invoking of menus from command-line (with -c or + argument).
+
+	Fixed Ctrl-F and Ctrl-B in menus again (they probably didn't work
+	correctly ever until now).
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
