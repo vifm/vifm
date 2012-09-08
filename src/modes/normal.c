@@ -422,8 +422,7 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_up(curr_view))
 	{
-		size_t base = get_window_bottom_pos(curr_view);
-		page_scroll(base, -1);
+		page_scroll(get_last_visible_file(curr_view), -1);
 	}
 }
 
@@ -461,8 +460,7 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_down(curr_view))
 	{
-		size_t base = get_window_top_pos(curr_view);
-		page_scroll(base, 1);
+		page_scroll(curr_view->top_line, 1);
 	}
 }
 
@@ -473,8 +471,7 @@ page_scroll(int base, int direction)
 {
 	/* Two lines gap. */
 	int offset = (curr_view->window_rows - 1)*curr_view->column_count;
-	curr_view->list_pos = base;
-	correct_list_pos(curr_view, direction*offset);
+	curr_view->list_pos = base + direction*offset;
 	scroll_by_files(curr_view, direction*offset);
 	redraw_current_view();
 }

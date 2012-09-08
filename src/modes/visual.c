@@ -276,8 +276,7 @@ cmd_ctrl_b(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_up(view))
 	{
-		int base = get_window_bottom_pos(view);
-		page_scroll(base, -1);
+		page_scroll(get_last_visible_file(view), -1);
 	}
 }
 
@@ -321,8 +320,7 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(can_scroll_down(view))
 	{
-		int base = get_window_top_pos(view);
-		page_scroll(base, 1);
+		page_scroll(view->top_line, 1);
 	}
 }
 
@@ -332,13 +330,10 @@ static void
 page_scroll(int base, int direction)
 {
 	int new_pos;
-	int old_pos = view->list_pos;
 	/* Two lines gap. */
 	int lines = view->window_rows - 1;
 	int offset = lines*view->column_count;
-	view->list_pos = base;
-	new_pos = get_corrected_list_pos(view, direction*offset);
-	view->list_pos = old_pos;
+	new_pos = base + direction*offset;
 	scroll_by_files(view, direction*offset);
 	goto_pos(new_pos);
 }
