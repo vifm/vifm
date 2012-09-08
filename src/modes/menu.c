@@ -387,6 +387,12 @@ cmd_ctrl_f(key_info_t key_info, keys_info_t *keys_info)
 	update_menu();
 }
 
+int
+get_last_visible_line(const menu_info *menu)
+{
+	return menu->top + (menu->win_rows - 2) - 1;
+}
+
 static void
 cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 {

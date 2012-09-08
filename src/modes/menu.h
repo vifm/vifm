@@ -35,6 +35,10 @@ void load_menu_pos(void);
 int search_menu_list(const char *pattern, menu_info *m);
 /* Allows running regular command-line mode commands from menu mode. */
 void execute_cmdline_command(const char cmd[]);
+/* Returns index of last visible line in the menu.  Value returned may be
+ * greater than or equal to number of lines in the menu, which should be
+ * threated correctly. */
+int get_last_visible_line(const menu_info *m);
 
 #endif
 

@@ -55,7 +55,6 @@
 #include "all.h"
 
 static void normalize_top(menu_info *m);
-static int get_last_visible_line(const menu_info *m);
 
 static void
 show_position_in_menu(menu_info *m)
@@ -763,15 +762,6 @@ capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
 	move_to_menu_pos(m->pos, m);
 	enter_menu_mode(m, view);
 	return 0;
-}
-
-/* Returns index of last visible line in the menu.  Value returned may be
- * greater than or equal to number of lines in the menu, which should be
- * threated correctly. */
-static int
-get_last_visible_line(const menu_info *m)
-{
-	return m->top + (m->win_rows - 2) - 1;
 }
 
 int
