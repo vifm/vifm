@@ -83,8 +83,8 @@ size_t get_effective_scroll_offset(const FileView *view);
 int can_scroll_up(const FileView *view);
 /* Returns non-zero in case view can be scrolled down (there are more files). */
 int can_scroll_down(const FileView *view);
-/* Scrolls view down at least by specified number of files.  Updates both top
- * and cursor positions.  A wrapper for scroll_up() and scroll_down()
+/* Scrolls view down or up at least by specified number of files.  Updates both
+ * top and cursor positions.  A wrapper for scroll_up() and scroll_down()
  * functions. */
 void scroll_by_files(FileView *view, ssize_t by);
 /* Scrolls view up at least by specified number of files.  Updates both top and
@@ -115,6 +115,10 @@ int get_start_of_line(const FileView *view);
 void go_to_end_of_line(FileView *view);
 /* Returns position of the last file in current line. */
 int get_end_of_line(const FileView *view);
+/* Returns index of last visible file in the view.  Value returned may be
+ * greater than or equal to number of files in the view, which should be
+ * threated correctly. */
+size_t get_last_visible_file(const FileView *view);
 
 /* Appearance related functions. */
 

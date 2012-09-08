@@ -109,7 +109,6 @@ static int calculate_top_position(FileView *view, int top);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 size_t calculate_columns_count(FileView *view);
 static size_t calculate_column_width(FileView *view);
-static size_t get_last_visible_file(const FileView *view);
 static void save_selection(FileView *view);
 int consider_scroll_offset(FileView *view);
 static void free_saved_selection(FileView *view);
@@ -1539,10 +1538,7 @@ get_window_bottom_pos(const FileView *view)
 	}
 }
 
-/* Returns index of last visible file in the view.  Value returned may be
- * greater than or equal to number of files in the view, which should be
- * threated correctly. */
-static size_t
+size_t
 get_last_visible_file(const FileView *view)
 {
 	return view->top_line + view->window_cells - 1;
