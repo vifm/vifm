@@ -199,8 +199,8 @@ static int volumes_cmd(const cmd_info_t *cmd_info);
 #endif
 static int vsplit_cmd(const cmd_info_t *cmd_info);
 static int do_split(const cmd_info_t *cmd_info, SPLIT orientation);
-static int do_map(const cmd_info_t *cmd_info, const char *map_type,
-		const char *map_cmd, int mode, int no_remap);
+static int do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
+		int no_remap);
 static int vunmap_cmd(const cmd_info_t *cmd_info);
 static int do_unmap(const char *keys, int mode);
 static int windo_cmd(const cmd_info_t *cmd_info);
@@ -1673,13 +1673,13 @@ clone_cmd(const cmd_info_t *cmd_info)
 static int
 cmap_cmd(const cmd_info_t *cmd_info)
 {
-	return do_map(cmd_info, "Command Line", "cmap", CMDLINE_MODE, 0) != 0;
+	return do_map(cmd_info, "Command Line", CMDLINE_MODE, 0) != 0;
 }
 
 static int
 cnoremap_cmd(const cmd_info_t *cmd_info)
 {
-	return do_map(cmd_info, "Command Line", "cmap", CMDLINE_MODE, 1) != 0;
+	return do_map(cmd_info, "Command Line", CMDLINE_MODE, 1) != 0;
 }
 
 static int
@@ -2604,13 +2604,13 @@ mkdir_cmd(const cmd_info_t *cmd_info)
 static int
 mmap_cmd(const cmd_info_t *cmd_info)
 {
-	return do_map(cmd_info, "Menu", "cmap", MENU_MODE, 0) != 0;
+	return do_map(cmd_info, "Menu", MENU_MODE, 0) != 0;
 }
 
 static int
 mnoremap_cmd(const cmd_info_t *cmd_info)
 {
-	return do_map(cmd_info, "Menu", "cmap", MENU_MODE, 1) != 0;
+	return do_map(cmd_info, "Menu", MENU_MODE, 1) != 0;
 }
 
 static int
@@ -2649,13 +2649,13 @@ munmap_cmd(const cmd_info_t *cmd_info)
 static int
 nmap_cmd(const cmd_info_t *cmd_info)
 {
-	return do_map(cmd_info, "Normal", "nmap", NORMAL_MODE, 0) != 0;
+	return do_map(cmd_info, "Normal", NORMAL_MODE, 0) != 0;
 }
 
 static int
 nnoremap_cmd(const cmd_info_t *cmd_info)
 {
-	return do_map(cmd_info, "Normal", "nmap", NORMAL_MODE, 1) != 0;
+	return do_map(cmd_info, "Normal", NORMAL_MODE, 1) != 0;
 }
 
 static int
@@ -2681,13 +2681,13 @@ map_or_remap(const cmd_info_t *cmd_info, int no_remap)
 	int result;
 	if(cmd_info->emark)
 	{
-		result = do_map(cmd_info, "", "map", CMDLINE_MODE, no_remap);
+		result = do_map(cmd_info, "", CMDLINE_MODE, no_remap);
 	}
 	else
 	{
-		result = do_map(cmd_info, "", "map", NORMAL_MODE, no_remap);
+		result = do_map(cmd_info, "", NORMAL_MODE, no_remap);
 		if(result == 0)
-			result = do_map(cmd_info, "", "map", VISUAL_MODE, no_remap);
+			result = do_map(cmd_info, "", VISUAL_MODE, no_remap);
 	}
 	return result != 0;
 }
@@ -3180,18 +3180,18 @@ vifm_cmd(const cmd_info_t *cmd_info)
 static int
 vmap_cmd(const cmd_info_t *cmd_info)
 {
-	return do_map(cmd_info, "Visual", "vmap", VISUAL_MODE, 0) != 0;
+	return do_map(cmd_info, "Visual", VISUAL_MODE, 0) != 0;
 }
 
 static int
 vnoremap_cmd(const cmd_info_t *cmd_info)
 {
-	return do_map(cmd_info, "Visual", "vmap", VISUAL_MODE, 1) != 0;
+	return do_map(cmd_info, "Visual", VISUAL_MODE, 1) != 0;
 }
 
 static int
-do_map(const cmd_info_t *cmd_info, const char *map_type,
-		const char *map_cmd, int mode, int no_remap)
+do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
+		int no_remap)
 {
 	wchar_t *keys, *mapping;
 	char *raw_rhs, *rhs;
