@@ -132,6 +132,8 @@ void redraw_view(FileView *view);
 /* Updates current view (maybe postponed) on the screen (redraws file list and
  * cursor) */
 void redraw_current_view(void);
+/* Returns non-zero in case view shows list of files at the moment. */
+int window_shows_dirlist(const FileView *const view);
 void change_sort_type(FileView *view, char type, char descending);
 void update_view_title(FileView *view);
 /* Returns non-zero if redraw is needed */

@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@lavabit.com>
-" Last Change: September 4, 2012
+" Last Change: September 9, 2012
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -22,8 +22,9 @@ syntax keyword vifmCommand contained alink apropos cd change chmod chown clone
 		\ unl[et] ve[rsion] vie[w] vifm windo winrun w[rite] wq x[it] y[ank]
 
 " Map commands
-syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map nm[ap]
-		\ nn[oremap] no[remap] nun[map] unm[ap] vm[ap] vn[oremap] vu[nmap]
+syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map mm[ap]
+		\ mn[oremap] mu[nmap] nm[ap] nn[oremap] no[remap] nun[map] qm[ap] qn[oremap]
+		\ qun[map] unm[ap] vm[ap] vn[oremap] vu[nmap]
 		\ skipwhite nextgroup=vifmMapLhs
 
 " Other commands
@@ -116,7 +117,7 @@ syntax match vifmNumber contained /\d\+/
 
 " Ange-bracket notation
 syntax case ignore
-syntax match vifmNotation '<\(esc\|cr\|space\|del\|\(s-\)\?tabhome\|end\|left\|right\|up\|down\|bs\|delete\|pageup\|pagedown\|\([acms]-\)\?f\d\{1,2\}\|c-s-[a-z[\]^_]\|s-c-[a-z[\]^_]\|c-[a-z[\]^_]\|[am]-c-[a-z]\|c-[am]-[a-z]\|[am]-[a-z]\)>'
+syntax match vifmNotation '<\(esc\|cr\|space\|del\|\(s-\)\?tabhome\|end\|left\|right\|up\|down\|bs\|delete\|pageup\|pagedown\|tab\|s-tab\|\([acms]-\)\?f\d\{1,2\}\|c-s-[a-z[\]^_]\|s-c-[a-z[\]^_]\|c-[a-z[\]^_]\|[am]-c-[a-z]\|c-[am]-[a-z]\|[am]-[a-z]\)>'
 syntax case match
 
 " Whole line comments

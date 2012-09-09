@@ -158,7 +158,10 @@ static int mark_cmd(const cmd_info_t *cmd_info);
 static int marks_cmd(const cmd_info_t *cmd_info);
 static int messages_cmd(const cmd_info_t *cmd_info);
 static int mkdir_cmd(const cmd_info_t *cmd_info);
+static int mmap_cmd(const cmd_info_t *cmd_info);
+static int mnoremap_cmd(const cmd_info_t *cmd_info);
 static int move_cmd(const cmd_info_t *cmd_info);
+static int munmap_cmd(const cmd_info_t *cmd_info);
 static int nmap_cmd(const cmd_info_t *cmd_info);
 static int nnoremap_cmd(const cmd_info_t *cmd_info);
 static int nohlsearch_cmd(const cmd_info_t *cmd_info);
@@ -169,6 +172,9 @@ static int only_cmd(const cmd_info_t *cmd_info);
 static int popd_cmd(const cmd_info_t *cmd_info);
 static int pushd_cmd(const cmd_info_t *cmd_info);
 static int pwd_cmd(const cmd_info_t *cmd_info);
+static int qmap_cmd(const cmd_info_t *cmd_info);
+static int qnoremap_cmd(const cmd_info_t *cmd_info);
+static int qunmap_cmd(const cmd_info_t *cmd_info);
 static int registers_cmd(const cmd_info_t *cmd_info);
 static int rename_cmd(const cmd_info_t *cmd_info);
 static int restart_cmd(const cmd_info_t *cmd_info);
@@ -196,8 +202,8 @@ static int volumes_cmd(const cmd_info_t *cmd_info);
 #endif
 static int vsplit_cmd(const cmd_info_t *cmd_info);
 static int do_split(const cmd_info_t *cmd_info, SPLIT orientation);
-static int do_map(const cmd_info_t *cmd_info, const char *map_type,
-		const char *map_cmd, int mode, int no_remap);
+static int do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
+		int no_remap);
 static int vunmap_cmd(const cmd_info_t *cmd_info);
 static int do_unmap(const char *keys, int mode);
 static int windo_cmd(const cmd_info_t *cmd_info);
@@ -305,8 +311,14 @@ static const cmd_add_t commands[] = {
 		.handler = messages_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "mkdir",            .abbr = NULL,    .emark = 1,  .id = COM_MKDIR,       .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = mkdir_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "mmap",             .abbr = "mm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = mmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "mnoremap",         .abbr = "mno",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = mnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "move",             .abbr = "m",     .emark = 1,  .id = COM_MOVE,        .range = 1,    .bg = 1, .quote = 1, .regexp = 0,
 		.handler = move_cmd,        .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
+	{ .name = "munmap",           .abbr = "mu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = munmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "nmap",             .abbr = "nm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "nnoremap",         .abbr = "nn",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -325,8 +337,14 @@ static const cmd_add_t commands[] = {
 		.handler = pushd_cmd,       .qmark = 0,      .expand = 2, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
 	{ .name = "pwd",              .abbr = "pw",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = pwd_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "qmap",             .abbr = "qm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = qmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "qnoremap",         .abbr = "qno",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = qnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "quit",             .abbr = "q",     .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "qunmap",           .abbr = "qun",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = qunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "registers",        .abbr = "reg",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "rename",           .abbr = NULL,    .emark = 1,  .id = COM_RENAME,      .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
@@ -1664,13 +1682,13 @@ clone_cmd(const cmd_info_t *cmd_info)
 static int
 cmap_cmd(const cmd_info_t *cmd_info)
 {
-	return do_map(cmd_info, "Command Line", "cmap", CMDLINE_MODE, 0) != 0;
+	return do_map(cmd_info, "Command Line", CMDLINE_MODE, 0) != 0;
 }
 
 static int
 cnoremap_cmd(const cmd_info_t *cmd_info)
 {
-	return do_map(cmd_info, "Command Line", "cmap", CMDLINE_MODE, 1) != 0;
+	return do_map(cmd_info, "Command Line", CMDLINE_MODE, 1) != 0;
 }
 
 static int
@@ -2593,6 +2611,18 @@ mkdir_cmd(const cmd_info_t *cmd_info)
 }
 
 static int
+mmap_cmd(const cmd_info_t *cmd_info)
+{
+	return do_map(cmd_info, "Menu", MENU_MODE, 0) != 0;
+}
+
+static int
+mnoremap_cmd(const cmd_info_t *cmd_info)
+{
+	return do_map(cmd_info, "Menu", MENU_MODE, 1) != 0;
+}
+
+static int
 move_cmd(const cmd_info_t *cmd_info)
 {
 	if(cmd_info->qmark)
@@ -2620,15 +2650,21 @@ move_cmd(const cmd_info_t *cmd_info)
 }
 
 static int
+munmap_cmd(const cmd_info_t *cmd_info)
+{
+	return do_unmap(cmd_info->argv[0], MENU_MODE);
+}
+
+static int
 nmap_cmd(const cmd_info_t *cmd_info)
 {
-	return do_map(cmd_info, "Normal", "nmap", NORMAL_MODE, 0) != 0;
+	return do_map(cmd_info, "Normal", NORMAL_MODE, 0) != 0;
 }
 
 static int
 nnoremap_cmd(const cmd_info_t *cmd_info)
 {
-	return do_map(cmd_info, "Normal", "nmap", NORMAL_MODE, 1) != 0;
+	return do_map(cmd_info, "Normal", NORMAL_MODE, 1) != 0;
 }
 
 static int
@@ -2654,13 +2690,13 @@ map_or_remap(const cmd_info_t *cmd_info, int no_remap)
 	int result;
 	if(cmd_info->emark)
 	{
-		result = do_map(cmd_info, "", "map", CMDLINE_MODE, no_remap);
+		result = do_map(cmd_info, "", CMDLINE_MODE, no_remap);
 	}
 	else
 	{
-		result = do_map(cmd_info, "", "map", NORMAL_MODE, no_remap);
+		result = do_map(cmd_info, "", NORMAL_MODE, no_remap);
 		if(result == 0)
-			result = do_map(cmd_info, "", "map", VISUAL_MODE, no_remap);
+			result = do_map(cmd_info, "", VISUAL_MODE, no_remap);
 	}
 	return result != 0;
 }
@@ -2715,6 +2751,24 @@ pwd_cmd(const cmd_info_t *cmd_info)
 {
 	status_bar_message(curr_view->curr_dir);
 	return 1;
+}
+
+static int
+qmap_cmd(const cmd_info_t *cmd_info)
+{
+	return do_map(cmd_info, "View", VIEW_MODE, 0) != 0;
+}
+
+static int
+qnoremap_cmd(const cmd_info_t *cmd_info)
+{
+	return do_map(cmd_info, "View", VIEW_MODE, 1) != 0;
+}
+
+static int
+qunmap_cmd(const cmd_info_t *cmd_info)
+{
+	return do_unmap(cmd_info->argv[0], VIEW_MODE);
 }
 
 static int
@@ -3153,18 +3207,18 @@ vifm_cmd(const cmd_info_t *cmd_info)
 static int
 vmap_cmd(const cmd_info_t *cmd_info)
 {
-	return do_map(cmd_info, "Visual", "vmap", VISUAL_MODE, 0) != 0;
+	return do_map(cmd_info, "Visual", VISUAL_MODE, 0) != 0;
 }
 
 static int
 vnoremap_cmd(const cmd_info_t *cmd_info)
 {
-	return do_map(cmd_info, "Visual", "vmap", VISUAL_MODE, 1) != 0;
+	return do_map(cmd_info, "Visual", VISUAL_MODE, 1) != 0;
 }
 
 static int
-do_map(const cmd_info_t *cmd_info, const char *map_type,
-		const char *map_cmd, int mode, int no_remap)
+do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
+		int no_remap)
 {
 	wchar_t *keys, *mapping;
 	char *raw_rhs, *rhs;

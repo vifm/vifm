@@ -1,4 +1,4 @@
-.TH vifm 1 "September 04, 2012" "" "Vifm"
+.TH vifm 1 "September 09, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1480,8 +1480,14 @@ map lhs key sequence to rhs in command line mode.
 .BI ":cm[ap] lhs rhs"
 map lhs to rhs in command line mode.
 .TP
+.BI ":mm[ap] lhs rhs"
+map lhs to rhs in menu mode.
+.TP
 .BI ":nm[ap] lhs rhs"
 map lhs to rhs in normal mode.
+.TP
+.BI ":qm[ap] lhs rhs"
+map lhs to rhs in view mode.
 .TP
 .BI ":vm[ap] lhs rhs"
 map lhs to rhs in visual mode.
@@ -1490,8 +1496,14 @@ map lhs to rhs in visual mode.
 .BI :cm[ap]
 lists all maps in command line mode.
 .TP
+.BI :mm[ap]
+lists all maps in menu mode.
+.TP
 .BI :nm[ap]
 lists all maps in normal mode.
+.TP
+.BI :qm[ap]
+lists all maps in view mode.
 .TP
 .BI :vm[ap]
 lists all maps in visual mode.
@@ -1500,8 +1512,14 @@ lists all maps in visual mode.
 .BI ":cm[ap] beginning"
 lists all maps in command line mode that start with the beginning.
 .TP
+.BI ":mm[ap] beginning"
+lists all maps in menu mode that start with the beginning.
+.TP
 .BI ":nm[ap] beginning"
 lists all maps in normal mode that start with the beginning.
+.TP
+.BI ":qm[ap] beginning"
+lists all maps in view mode that start with the beginning.
 .TP
 .BI ":vm[ap] beginning"
 lists all maps in visual mode that start with the beginning.
@@ -1520,8 +1538,14 @@ rhs.
 map the key sequence lhs to {rhs} for command line mode, but disallow mapping of
 rhs.
 .TP
+.BI ":mn[oremap] lhs rhs"
+map the key sequence lhs to {rhs} for menu mode, but disallow mapping of rhs.
+.TP
 .BI ":nn[oremap] lhs rhs"
 map the key sequence lhs to {rhs} for normal mode, but disallow mapping of rhs.
+.TP
+.BI ":qn[oremap] lhs rhs"
+map the key sequence lhs to {rhs} for view mode, but disallow mapping of rhs.
 .TP
 .BI ":vn[oremap] lhs rhs"
 map the key sequence lhs to {rhs} for visual mode, but disallow mapping of rhs.
@@ -1537,8 +1561,14 @@ remove the mapping of lhs from command line mode.
 .BI ":cu[nmap] lhs"
 remove the mapping of lhs from command line mode.
 .TP
+.BI ":mu[nmap] lhs"
+remove the mapping of lhs from menu mode.
+.TP
 .BI ":nun[map] lhs"
 remove the mapping of lhs from normal mode.
+.TP
+.BI ":qun[map] lhs"
+remove the mapping of lhs from view mode.
 .TP
 .BI ":vu[nmap] lhs"
 remove the mapping of lhs from visual mode.

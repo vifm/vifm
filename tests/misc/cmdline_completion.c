@@ -56,7 +56,7 @@ leave_spaces_at_begin(void)
 	char *buf;
 
 	reset_completion();
-	assert_int_equal(1, complete_cmd(" q"));
+	assert_int_equal(1, complete_cmd(" qui"));
 	buf = next_completion();
 	assert_string_equal("quit", buf);
 	free(buf);

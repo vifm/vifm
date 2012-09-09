@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 4
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 9
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -29,7 +29,7 @@ Tag name structure:
           WHAT                 PREPEND     EXAMPLE~
       Normal mode command      vifm-       :help vifm-h
       Visual mode command      vifm-v_     :help vifm-v_u
-      View mode command        vifm-V_     :help vifm-V_j
+      View mode command        vifm-q_     :help vifm-q_j
       Menu or dialog command   vifm-m_     :help vifm-m_zh
       Command-line command     vifm-:      :help vifm-:quit
       Command-line editing     vifm-c_     :help vifm-c_CTRL-H
@@ -514,96 +514,96 @@ gU, U - make names of selected files uppercase.
 This mode tries to imitate the less program. Currently the following keys are
 supported:
 
-                                               *vifm-V_SHIFT-Tab* *vifm-V_Tab*
-                                               *vifm-V_q* *vifm-V_Q* *vifm-V_ZZ*
+                                               *vifm-q_SHIFT-Tab* *vifm-q_Tab*
+                                               *vifm-q_q* *vifm-q_Q* *vifm-q_ZZ*
 Shift-Tab, Tab, q, Q, ZZ - go back to normal mode.
 
 
-                                               *vifm-V_e* *vifm-V_CTRL-E*
-                                               *vifm-V_j* *vifm-V_CTRL-N*
-                                               *vifm-V_Enter*
+                                               *vifm-q_e* *vifm-q_CTRL-E*
+                                               *vifm-q_j* *vifm-q_CTRL-N*
+                                               *vifm-q_Enter*
 [count]e, [count]Ctrl-E, [count]j, [count]Ctrl-N, [count]Enter
 forward one line (or [count] lines).
 
-                                               *vifm-V_y* *vifm-V_CTRL-Y*
-                                               *vifm-V_k* *vifm-V_CTRL-K*
-                                               *vifm-V_CTRL-P*
+                                               *vifm-q_y* *vifm-q_CTRL-Y*
+                                               *vifm-q_k* *vifm-q_CTRL-K*
+                                               *vifm-q_CTRL-P*
 [count]y, [count]Ctrl-Y, [count]k, [count]Ctrl-K, [count]Ctrl-P
 backward one line (or [count] lines).
 
 
-                                               *vifm-V_f* *vifm-V_CTRL-F*
-                                               *vifm-V_CTRL-V* *vifm-V_Space*
+                                               *vifm-q_f* *vifm-q_CTRL-F*
+                                               *vifm-q_CTRL-V* *vifm-q_Space*
 [count]f, [count]Ctrl-F, [count]Ctrl-V, [count]Space Bar
 forward one window (or [count] lines).
 
-                                               *vifm-V_b* *vifm-V_CTRL-B*
-                                               *vifm-V_ALT-V*
+                                               *vifm-q_b* *vifm-q_CTRL-B*
+                                               *vifm-q_ALT-V*
 [count]b, [count]Ctrl-B, [count]Alt-V
 backward one window (or [count] lines).
 
 
-                                               *vifm-V_z*
+                                               *vifm-q_z*
 [count]z - forward one window (and set window to [count]).
 
-                                               *vifm-V_w*
+                                               *vifm-q_w*
 [count]w - backward one window (and set window to [count]).
 
-                                               *vifm-V_ALT-Space*
+                                               *vifm-q_ALT-Space*
 [count]Alt-Space - forward one window, but don't stop at end-of-file.
 
 
-                                               *vifm-V_d* *vifm-V_CTRL-D*
+                                               *vifm-q_d* *vifm-q_CTRL-D*
 [count]d, [count]Ctrl-D - forward one half-window (and set half-window to
     [count]).
 
-                                               *vifm-V_u* *vifm-V_CTRL-U*
+                                               *vifm-q_u* *vifm-q_CTRL-U*
 [count]u, [count]Ctrl-U - backward one half-window (and set half-window to
     [count]).
 
 
-                                               *vifm-V_r* *vifm-V_CTRL-R*
-                                               *vifm-V_R* *vifm-V_CTRL-L*
+                                               *vifm-q_r* *vifm-q_CTRL-R*
+                                               *vifm-q_R* *vifm-q_CTRL-L*
 r, Ctrl-R, Ctrl-L, R - repaint screen.
 
 
-                                               *vifm-V_/*
+                                               *vifm-q_/*
 [count]/pattern - search forward for ([count]-th) matching line.
 
-                                               *vifm-V_?*
+                                               *vifm-q_?*
 [count]?pattern - search backward for ([count]-th) matching line.
 
-                                               *vifm-V_n*
+                                               *vifm-q_n*
 [count]n - repeat previous search (for [count]-th occurrence).
 
-                                               *vifm-V_N*
+                                               *vifm-q_N*
 [count]N - repeat previous search in reverse direction.
 
 
-                                               *vifm-V_g* *vifm-V_<*
-                                               *vifm-V_ALT-<*
+                                               *vifm-q_g* *vifm-q_<*
+                                               *vifm-q_ALT-<*
 [count]g, [count]<, [count]Alt-< - go to first line in file (or line [count]).
 
-                                               *vifm-V_G* *vifm-V_>*
-                                               *vifm-V_ALT->*
+                                               *vifm-q_G* *vifm-q_>*
+                                               *vifm-q_ALT->*
 [count]G, [count]>, [count]Alt-> - go to last line in file (or line [count]).
 
-                                               *vifm-V_p* *vifm-V_%*
+                                               *vifm-q_p* *vifm-q_%*
 [count]p, [count]% - go to beginning of file (or N percent into file).
 
-                                               *vifm-V_v*
+                                               *vifm-q_v*
 v - edit the current file with vim.
 
 
-Ctrl-W S - split window horizontally.          *vifm-V_CTRL-W_S*
-Ctrl-W V - split window vertically.            *vifm-V_CTRL-W_v*
-Ctrl-W + - increase size of the view.          *vifm-V_CTRL-W_+*
-Ctrl-W - - decrease size of the view.          *vifm-V_CTRL-W_-*
-Ctrl-W < - increase size of the view.          *vifm-V_CTRL-W_<*
-Ctrl-W > - decrease size of the view.          *vifm-V_CTRL-W_>*
-Ctrl-W | - maximize current view.              *vifm-V_CTRL-W_|*
-Ctrl-W _ - maximize current view.              *vifm-V_CTRL-W__*
-Ctrl-W = - make size of two views equal.       *vifm-V_CTRL-W_=*
+Ctrl-W S - split window horizontally.          *vifm-q_CTRL-W_S*
+Ctrl-W V - split window vertically.            *vifm-q_CTRL-W_v*
+Ctrl-W + - increase size of the view.          *vifm-q_CTRL-W_+*
+Ctrl-W - - decrease size of the view.          *vifm-q_CTRL-W_-*
+Ctrl-W < - increase size of the view.          *vifm-q_CTRL-W_<*
+Ctrl-W > - decrease size of the view.          *vifm-q_CTRL-W_>*
+Ctrl-W | - maximize current view.              *vifm-q_CTRL-W_|*
+Ctrl-W _ - maximize current view.              *vifm-q_CTRL-W__*
+Ctrl-W = - make size of two views equal.       *vifm-q_CTRL-W_=*
 
 --------------------------------------------------------------------------------
 *vifm-command-line*
@@ -1295,19 +1295,29 @@ Execute command for pane(s), which is determined by type argument:
 :map! lhs rhs - map lhs key sequence to rhs in command line mode.
 
                                                *vifm-:cmap* *vifm-:cm*
+                                               *vifm-:mmap* *vifm-:mm*
                                                *vifm-:nmap* *vifm-:nm*
+                                               *vifm-:qmap* *vifm-:qm*
                                                *vifm-:vmap* *vifm-:vm*
 :cm[ap] lhs rhs - map lhs to rhs in command line mode.
+:mm[ap] lhs rhs - map lhs to rhs in menu mode.
 :nm[ap] lhs rhs - map lhs to rhs in normal mode.
+:qm[ap] lhs rhs - map lhs to rhs in view mode.
 :vm[ap] lhs rhs - map lhs to rhs in visual mode.
 
 :cm[ap] - lists all maps in command line mode.
+:mm[ap] - lists all maps in menu mode.
 :nm[ap] - lists all maps in normal mode.
+:qm[ap] - lists all maps in view mode.
 :vm[ap] - lists all maps in visual mode.
 
 :cm[ap] beginning - lists all maps in command line mode that start with
     the beginning.
+:mm[ap] beginning - lists all maps in menu mode that start with the
+    beginning.
 :nm[ap] beginning - lists all maps in normal mode that start with the
+    beginning.
+:qm[ap] beginning - lists all maps in view mode that start with the
     beginning.
 :vm[ap] beginning - lists all maps in visual mode that start with the
     beginning.
@@ -1319,11 +1329,17 @@ Execute command for pane(s), which is determined by type argument:
     mode, but disallow mapping of rhs.
 
                                                *vifm-:cnoremap* *vifm-:cno*
+                                               *vifm-:mnoremap* *vifm-:mn*
                                                *vifm-:nnoremap* *vifm-:nn*
+                                               *vifm-:qnoremap* *vifm-:qn*
                                                *vifm-:vnoremap* *vifm-:vn*
 :cno[remap] lhs rhs - map the key sequence lhs to {rhs} for command line
     mode, but disallow mapping of rhs.
+:mn[oremap] lhs rhs - map the key sequence lhs to {rhs} for menu mode,
+    but disallow mapping of rhs.
 :nn[oremap] lhs rhs - map the key sequence lhs to {rhs} for normal mode,
+    but disallow mapping of rhs.
+:qn[oremap] lhs rhs - map the key sequence lhs to {rhs} for view mode,
     but disallow mapping of rhs.
 :vn[oremap] lhs rhs - map the key sequence lhs to {rhs} for visual mode,
     but disallow mapping of rhs.
@@ -1333,10 +1349,14 @@ Execute command for pane(s), which is determined by type argument:
 :unm[ap]! lhs - remove the mapping of lhs from command line mode.
 
                                                *vifm-:cunmap* *vifm-:cu*
+                                               *vifm-:munmap* *vifm-:mu*
                                                *vifm-:nunmap* *vifm-:nun*
+                                               *vifm-:qunmap* *vifm-:qun*
                                                *vifm-:vunmap* *vifm-:vu*
 :cu[nmap] lhs - remove the mapping of lhs from command line mode.
+:mu[nmap] lhs - remove the mapping of lhs from menu mode.
 :nun[map] lhs - remove the mapping of lhs from normal mode.
+:qun[map] lhs - remove the mapping of lhs from view mode.
 :vu[nmap] lhs - remove the mapping of lhs from visual mode.
 
 Ranges~

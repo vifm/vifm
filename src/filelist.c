@@ -2793,21 +2793,6 @@ redraw_current_view(void)
 	}
 }
 
-static int
-window_shows_dirlist(FileView *view)
-{
-	if(view->explore_mode)
-		return 0;
-	if(view == other_view && get_mode() == VIEW_MODE)
-		return 0;
-	if(view == other_view && curr_stats.view)
-		return 0;
-	if(get_mode() != NORMAL_MODE && get_mode() != VISUAL_MODE &&
-			get_mode() != VIEW_MODE && get_mode() != CMDLINE_MODE)
-		return 0;
-	return 1;
-}
-
 static void
 reload_window(FileView *view)
 {
@@ -2929,6 +2914,21 @@ load_saving_pos(FileView *view, int reload)
 	{
 		refresh_view_win(view);
 	}
+}
+
+int
+window_shows_dirlist(const FileView *const view)
+{
+	if(view->explore_mode)
+		return 0;
+	if(view == other_view && get_mode() == VIEW_MODE)
+		return 0;
+	if(view == other_view && curr_stats.view)
+		return 0;
+	if(get_mode() != NORMAL_MODE && get_mode() != VISUAL_MODE &&
+			get_mode() != VIEW_MODE && get_mode() != CMDLINE_MODE)
+		return 0;
+	return 1;
 }
 
 void
