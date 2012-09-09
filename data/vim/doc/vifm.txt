@@ -1295,19 +1295,29 @@ Execute command for pane(s), which is determined by type argument:
 :map! lhs rhs - map lhs key sequence to rhs in command line mode.
 
                                                *vifm-:cmap* *vifm-:cm*
+                                               *vifm-:mmap* *vifm-:mm*
                                                *vifm-:nmap* *vifm-:nm*
+                                               *vifm-:qmap* *vifm-:qm*
                                                *vifm-:vmap* *vifm-:vm*
 :cm[ap] lhs rhs - map lhs to rhs in command line mode.
+:mm[ap] lhs rhs - map lhs to rhs in menu mode.
 :nm[ap] lhs rhs - map lhs to rhs in normal mode.
+:qm[ap] lhs rhs - map lhs to rhs in view mode.
 :vm[ap] lhs rhs - map lhs to rhs in visual mode.
 
 :cm[ap] - lists all maps in command line mode.
+:mm[ap] - lists all maps in menu mode.
 :nm[ap] - lists all maps in normal mode.
+:qm[ap] - lists all maps in view mode.
 :vm[ap] - lists all maps in visual mode.
 
 :cm[ap] beginning - lists all maps in command line mode that start with
     the beginning.
+:mm[ap] beginning - lists all maps in menu mode that start with the
+    beginning.
 :nm[ap] beginning - lists all maps in normal mode that start with the
+    beginning.
+:qm[ap] beginning - lists all maps in view mode that start with the
     beginning.
 :vm[ap] beginning - lists all maps in visual mode that start with the
     beginning.
@@ -1319,11 +1329,17 @@ Execute command for pane(s), which is determined by type argument:
     mode, but disallow mapping of rhs.
 
                                                *vifm-:cnoremap* *vifm-:cno*
+                                               *vifm-:mnoremap* *vifm-:mn*
                                                *vifm-:nnoremap* *vifm-:nn*
+                                               *vifm-:qnoremap* *vifm-:qn*
                                                *vifm-:vnoremap* *vifm-:vn*
 :cno[remap] lhs rhs - map the key sequence lhs to {rhs} for command line
     mode, but disallow mapping of rhs.
+:mn[oremap] lhs rhs - map the key sequence lhs to {rhs} for menu mode,
+    but disallow mapping of rhs.
 :nn[oremap] lhs rhs - map the key sequence lhs to {rhs} for normal mode,
+    but disallow mapping of rhs.
+:qn[oremap] lhs rhs - map the key sequence lhs to {rhs} for view mode,
     but disallow mapping of rhs.
 :vn[oremap] lhs rhs - map the key sequence lhs to {rhs} for visual mode,
     but disallow mapping of rhs.
@@ -1333,10 +1349,14 @@ Execute command for pane(s), which is determined by type argument:
 :unm[ap]! lhs - remove the mapping of lhs from command line mode.
 
                                                *vifm-:cunmap* *vifm-:cu*
+                                               *vifm-:munmap* *vifm-:mu*
                                                *vifm-:nunmap* *vifm-:nun*
+                                               *vifm-:qunmap* *vifm-:qun*
                                                *vifm-:vunmap* *vifm-:vu*
 :cu[nmap] lhs - remove the mapping of lhs from command line mode.
+:mu[nmap] lhs - remove the mapping of lhs from menu mode.
 :nun[map] lhs - remove the mapping of lhs from normal mode.
+:qun[map] lhs - remove the mapping of lhs from view mode.
 :vu[nmap] lhs - remove the mapping of lhs from visual mode.
 
 Ranges~
