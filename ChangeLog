@@ -134,6 +134,9 @@
 	Fixed Ctrl-F and Ctrl-B in menus again (they probably didn't work
 	correctly ever until now).
 
+	Fixed unexpected file list drawing on switching between panes in one pane
+	mode with view active.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.

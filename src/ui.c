@@ -1310,8 +1310,10 @@ change_window(void)
 
 	(void)change_directory(curr_view, curr_view->curr_dir);
 
-	if(curr_stats.number_of_windows == 1)
+	if(curr_stats.number_of_windows == 1 && window_shows_dirlist(curr_view))
+	{
 		load_dir_list(curr_view, 1);
+	}
 
 	if(!curr_view->explore_mode)
 	{
