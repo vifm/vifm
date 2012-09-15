@@ -82,7 +82,7 @@ static int executable_exists_in_path(const char command_name[]);
 static int executable_exists(const char full_path[]);
 
 int
-complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
+complete_args(int id, const char args[], int argc, char *argv[], int arg_pos)
 {
 	/* TODO: Refactor this function complete_args() */
 
@@ -98,7 +98,7 @@ complete_args(int id, const char *args, int argc, char **argv, int arg_pos)
 
 	if(id == COM_SET)
 		complete_options(args, &start);
-	else if(id == COM_LET)
+	else if(id == COM_LET || id == COM_ECHO)
 		complete_variables((dollar > arg) ? dollar : arg, &start);
 	else if(id == COM_UNLET)
 		complete_variables(arg, &start);

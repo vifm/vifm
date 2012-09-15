@@ -46,6 +46,7 @@
 #include "engine/completion.h"
 #include "engine/keys.h"
 #include "engine/options.h"
+#include "engine/parsing.h"
 #include "engine/variables.h"
 #include "menus/all.h"
 #include "menus/menus.h"
@@ -130,6 +131,7 @@ static int cunmap_cmd(const cmd_info_t *cmd_info);
 static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
 static int dirs_cmd(const cmd_info_t *cmd_info);
+static int echo_cmd(const cmd_info_t *cmd_info);
 static int edit_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
 static int exe_cmd(const cmd_info_t *cmd_info);
@@ -261,6 +263,8 @@ static const cmd_add_t commands[] = {
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "dirs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = dirs_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "echo",             .abbr = "ec",    .emark = 0,  .id = COM_ECHO,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = echo_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "edit",             .abbr = "e",     .emark = 0,  .id = COM_EDIT,        .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = edit_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "empty",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -1870,6 +1874,29 @@ static int
 dirs_cmd(const cmd_info_t *cmd_info)
 {
 	return show_dirstack_menu(curr_view) != 0;
+}
+
+/* Evaluates arguments as expression and outputs result to statusbar. */
+static int
+echo_cmd(const cmd_info_t *cmd_info)
+{
+	const char *eval_result;
+
+	if(cmd_info->argc == 0)
+	{
+		return 0;
+	}
+
+	eval_result = parse(cmd_info->args);
+	if(eval_result != NULL)
+	{
+		status_bar_message(eval_result);
+	}
+	else
+	{
+		status_bar_error("Error in expression");
+	}
+	return 1;
 }
 
 static int
