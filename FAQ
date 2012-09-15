@@ -110,7 +110,8 @@ A: Just use it and report any problems, bugs or suggestions to its developers by
 
 --------------------------------------------------------------------------------
 
-Q: How to make aliases work in vifm when running them like ":!alias"?
+Q: How to make shell aliases and functions work in vifm when running them like
+   ":!foo"?
 
 A: Here is solution for bash, other shells should allow to do something similar.
 
@@ -123,6 +124,6 @@ A: Here is solution for bash, other shells should allow to do something similar.
 
        let $BASH_ENV='~/.bashrc'
 
-   After following the steps above aliases should work the same way as if they
-   are typed in interactive shell by a user.  But they won't be completed with
-   <tab> completion.
+   After following the steps above aliases and functions should work the same
+   way as if they were typed in interactive shell by user.  But they won't be
+   completed with <tab> completion.
