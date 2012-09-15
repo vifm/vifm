@@ -107,3 +107,23 @@ A: Just use it and report any problems, bugs or suggestions to its developers by
    Examples of configuration files can also show developers of vifm how users
    typically uses vifm, so they can improve support of the most common use
    cases.
+
+--------------------------------------------------------------------------------
+
+Q: How to make shell aliases and functions work in vifm when running them like
+   ":!foo"?
+
+A: Here is solution for bash, other shells should allow to do something similar.
+
+   1. Add the following lines to ~/.bashrc
+
+       shopt -s expand_aliases
+       unset BASH_ENV
+
+   2. Add the following line to ~/.vifm/vifmrc
+
+       let $BASH_ENV='~/.bashrc'
+
+   After following the steps above aliases and functions should work the same
+   way as if they were typed in interactive shell by user.  But they won't be
+   completed with <tab> completion.
