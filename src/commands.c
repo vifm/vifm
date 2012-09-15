@@ -132,6 +132,7 @@ static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
 static int dirs_cmd(const cmd_info_t *cmd_info);
 static int echo_cmd(const cmd_info_t *cmd_info);
+static char * extend_string(char *str, const char with[], size_t *len);
 static int edit_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
 static int exe_cmd(const cmd_info_t *cmd_info);
@@ -1880,23 +1881,69 @@ dirs_cmd(const cmd_info_t *cmd_info)
 static int
 echo_cmd(const cmd_info_t *cmd_info)
 {
-	const char *eval_result;
+	const char *input;
+	size_t len = 0;
+	char *eval_result = NULL;
 
 	if(cmd_info->argc == 0)
 	{
 		return 0;
 	}
 
-	eval_result = parse(cmd_info->args);
-	if(eval_result != NULL)
+	input = cmd_info->args;
+	while(input[0] != '\0')
+	{
+		const char *tmp_result = parse(input);
+		if(tmp_result == NULL && get_last_parsed_char() != input &&
+				get_parsing_error() == PE_INVALID_EXPRESSION)
+		{
+			tmp_result = get_parsing_result();
+			input = get_last_parsed_char();
+		}
+		else
+		{
+			input = get_last_position();
+		}
+
+		if(tmp_result != NULL)
+		{
+			if(!is_null_or_empty(eval_result))
+			{
+				eval_result = extend_string(eval_result, " ", &len);
+			}
+			eval_result = extend_string(eval_result, tmp_result, &len);
+		}
+		else
+		{
+			break;
+		}
+	}
+	if(input[0] == '\0')
 	{
 		status_bar_message(eval_result);
+		free(eval_result);
 	}
 	else
 	{
-		status_bar_error("Error in expression");
+		status_bar_errorf("Invalid expression: %s", input);
 	}
 	return 1;
+}
+
+/* Concatenates the str with the with by reallocating string. */
+static char *
+extend_string(char *str, const char with[], size_t *len)
+{
+	size_t with_len = strlen(with);
+	char *new = realloc(str, *len + with_len + 1);
+	if(new == NULL)
+	{
+		return NULL;
+	}
+
+	strncpy(new + *len, with, with_len + 1);
+	*len += with_len;
+	return new;
 }
 
 static int

@@ -39,14 +39,21 @@ void init_parser(getenv_func getenv_f);
 /* Returns the last error occurred during parsing. */
 ParsingErrors get_parsing_error(void);
 
-/* Returns position in string, where parser has stopped. */
+/* Returns logical (e.g. beginning of wrong expression) position in a string,
+ * where parser has stopped. */
 const char * get_last_position(void);
+
+/* Returns actual position in a string, where parser has stopped. */
+const char * get_last_parsed_char(void);
 
 /* Performs parsing. After calling this function get_parsing_error() and
  * get_last_position() will return useful information.
  * Returns a pointer to a statically allocated buffer, that contains result of
  * expression evaluation or NULL on error. */
 const char * parse(const char *input);
+
+/* Returns evaluation result, may be to get value on error. */
+const char * get_parsing_result(void);
 
 #endif
 
