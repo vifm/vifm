@@ -58,8 +58,14 @@ test_concatenation(void)
 static void
 test_double_single_quote_ok(void)
 {
-	const char input[] = "''''";
+	const char *input;
+
+	input = "''''";
 	assert_string_equal("'", parse(input));
+	assert_int_equal(PE_NO_ERROR, get_parsing_error());
+
+	input = "'foo''bar'";
+	assert_string_equal("foo'bar", parse(input));
 	assert_int_equal(PE_NO_ERROR, get_parsing_error());
 }
 
@@ -124,4 +130,5 @@ single_quoted_tests(void)
 	test_fixture_end();
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

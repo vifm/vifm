@@ -221,8 +221,7 @@ eval_single_quoted_char(const char **in)
 
 	if(double_sq)
 		get_next(in);
-	double_sq = (last_token.type == SQ && **in == '\'');
-	return sq_char || double_sq;
+	return 1;
 }
 
 /* dqstr ::= ''' dqchar { dqchar } ''' */

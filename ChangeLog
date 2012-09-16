@@ -141,6 +141,8 @@
 
 	Fixed small issue with sorting files with numbers in names on *nix.
 
+	Fixed parsing of double single quote in single quoted strings.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
