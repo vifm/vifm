@@ -139,6 +139,8 @@
 	Fixed unexpected file list drawing on switching between panes in one pane
 	mode with view active.
 
+	Fixed small issue with sorting files with numbers in names on *nix.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.

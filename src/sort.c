@@ -31,6 +31,7 @@
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/test_helpers.h"
 #include "utils/tree.h"
 #include "filelist.h"
 #include "status.h"
@@ -43,11 +44,9 @@ static int sort_descending;
 static int sort_type;
 
 static int sort_dir_list(const void *one, const void *two);
+TSTATIC int strnumcmp(const char s[], const char t[]);
 #if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
-#ifndef TEST
-static
-#endif
-int vercmp(const char *s, const char *t);
+static int vercmp(const char s[], const char t[]);
 #endif
 
 void
@@ -93,21 +92,25 @@ compare_file_names(const char *s, const char *t, int ignore_case)
 		strtolower(t_buf);
 	}
 
-	if(!cfg.sort_numbers)
-		return strcmp(s, t);
-	else
+	return !cfg.sort_numbers ? strcmp(s, t) : strnumcmp(s, t);
+}
+
+/* Compares file names containing numbers correctly. */
+TSTATIC int
+strnumcmp(const char s[], const char t[])
+{
 #if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
 		return vercmp(s, t);
 #else
+		s = skip_all(s, '0');
+		t = skip_all(t, '0');
 		return strverscmp(s, t);
 #endif
 }
 
 #if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
-#ifndef TEST
-static
-#endif
-int vercmp(const char *s, const char *t)
+static int
+vercmp(const char s[], const char t[])
 {
 	while(*s != '\0' && *t != '\0')
 	{
