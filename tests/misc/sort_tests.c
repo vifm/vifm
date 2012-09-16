@@ -42,7 +42,6 @@ test_special_chars_ignore_case_sort(void)
 	assert_string_equal("_", lwin.dir_entry[0].name);
 }
 
-#if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
 static void
 test_versort_without_numbers(void)
 {
@@ -52,35 +51,35 @@ test_versort_without_numbers(void)
 
 	s = "abc";
 	t = "abcdef";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
 
 	s = "abcdef";
 	t = "abc";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
 
 	s = "";
 	t = "abc";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
 
 	s = "abc";
 	t = "";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
 
 	s = "";
 	t = "";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
 
 	s = "abcdef";
 	t = "abcdef";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
 
 	s = "abcdef";
 	t = "abcdeg";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
 
 	s = "abcdeg";
 	t = "abcdef";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(vercmp(s, t)));
+	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
 
 #undef SIGN
 }
@@ -92,39 +91,39 @@ test_versort_with_numbers(void)
 
 	s = "abcdef0";
 	t = "abcdef0";
-	assert_int_equal(strcmp(s, t), vercmp(s, t));
+	assert_int_equal(strcmp(s, t), strnumcmp(s, t));
 
 	s = "abcdef0";
 	t = "abcdef1";
-	assert_int_equal(strcmp(s, t), vercmp(s, t));
+	assert_int_equal(strcmp(s, t), strnumcmp(s, t));
 
 	s = "abcdef1";
 	t = "abcdef0";
-	assert_int_equal(strcmp(s, t), vercmp(s, t));
+	assert_int_equal(strcmp(s, t), strnumcmp(s, t));
 
 	s = "abcdef9";
 	t = "abcdef10";
-	assert_true(vercmp(s, t) < 0);
+	assert_true(strnumcmp(s, t) < 0);
 
 	s = "abcdef10";
 	t = "abcdef10";
-	assert_true(vercmp(s, t) == 0);
+	assert_true(strnumcmp(s, t) == 0);
 
 	s = "abcdef10";
 	t = "abcdef9";
-	assert_true(vercmp(s, t) > 0);
+	assert_true(strnumcmp(s, t) > 0);
 
 	s = "abcdef1.20.0";
 	t = "abcdef1.5.1";
-	assert_true(vercmp(s, t) > 0);
+	assert_true(strnumcmp(s, t) > 0);
 
 	s = "x001";
 	t = "x1";
-	assert_true(vercmp(s, t) < 0);
+	assert_true(strnumcmp(s, t) < 0);
 
 	s = "x1";
 	t = "x001";
-	assert_true(vercmp(s, t) > 0);
+	assert_true(strnumcmp(s, t) > 0);
 }
 
 static void
@@ -134,39 +133,39 @@ test_versort_numbers_only(void)
 
 	s = "00";
 	t = "01";
-	assert_true(vercmp(s, t) < 0);
+	assert_true(strnumcmp(s, t) < 0);
 
 	s = "01";
 	t = "10";
-	assert_true(vercmp(s, t) < 0);
+	assert_true(strnumcmp(s, t) < 0);
 
 	s = "10";
 	t = "11";
-	assert_true(vercmp(s, t) < 0);
+	assert_true(strnumcmp(s, t) < 0);
 
 	s = "01";
 	t = "00";
-	assert_true(vercmp(s, t) > 0);
+	assert_true(strnumcmp(s, t) > 0);
 
 	s = "10";
 	t = "01";
-	assert_true(vercmp(s, t) > 0);
+	assert_true(strnumcmp(s, t) > 0);
 
 	s = "11";
 	t = "10";
-	assert_true(vercmp(s, t) > 0);
+	assert_true(strnumcmp(s, t) > 0);
 
 	s = "11";
 	t = "10";
-	assert_true(vercmp(s, t) > 0);
+	assert_true(strnumcmp(s, t) > 0);
 
 	s = "13";
 	t = "100";
-	assert_true(vercmp(s, t) < 0);
+	assert_true(strnumcmp(s, t) < 0);
 
 	s = "100";
 	t = "13";
-	assert_true(vercmp(s, t) > 0);
+	assert_true(strnumcmp(s, t) > 0);
 }
 
 static void
@@ -176,13 +175,22 @@ test_versort_numbers_only_and_letters_only(void)
 
 	s = "A";
 	t = "10";
-	assert_true(vercmp(s, t) > 0);
+	assert_true(strnumcmp(s, t) > 0);
 
 	s = "10";
 	t = "A";
-	assert_true(vercmp(s, t) < 0);
+	assert_true(strnumcmp(s, t) < 0);
 }
-#endif
+
+static void
+test_versort_zero_and_zerox(void)
+{
+	const char *s, *t;
+
+	s = "0";
+	t = "01";
+	assert_true(strnumcmp(s, t) < 0);
+}
 
 void
 sort_tests(void)
@@ -194,14 +202,14 @@ sort_tests(void)
 
 	run_test(test_special_chars_ignore_case_sort);
 
-#if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
 	run_test(test_versort_without_numbers);
 	run_test(test_versort_with_numbers);
 	run_test(test_versort_numbers_only);
 	run_test(test_versort_numbers_only_and_letters_only);
-#endif
+	run_test(test_versort_zero_and_zerox);
 
 	test_fixture_end();
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

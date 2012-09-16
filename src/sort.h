@@ -20,15 +20,16 @@
 #ifndef __SORT_H__
 #define __SORT_H__
 
+#include "utils/test_helpers.h"
 #include "ui.h"
 
 void sort_view(FileView *view);
 /* Maps primary sort key to second column type. */
 int get_secondary_key(int primary_key);
 
-#if (defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)) && defined(TEST)
-int vercmp(const char *s, const char *t);
-#endif
+TSTATIC_DEFS(
+	int strnumcmp(const char s[], const char t[]);
+)
 
 #endif
 
