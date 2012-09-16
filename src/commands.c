@@ -132,6 +132,7 @@ static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
 static int dirs_cmd(const cmd_info_t *cmd_info);
 static int echo_cmd(const cmd_info_t *cmd_info);
+static char * eval_echo(const char args[], const char **stop_ptr);
 static char * extend_string(char *str, const char with[], size_t *len);
 static int edit_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
@@ -1881,28 +1882,49 @@ dirs_cmd(const cmd_info_t *cmd_info)
 static int
 echo_cmd(const cmd_info_t *cmd_info)
 {
-	const char *input;
-	size_t len = 0;
-	char *eval_result = NULL;
+	char *eval_result;
+	const char *error_pos;
 
 	if(cmd_info->argc == 0)
 	{
 		return 0;
 	}
 
-	input = cmd_info->args;
-	while(input[0] != '\0')
+	eval_result = eval_echo(cmd_info->args, &error_pos);
+
+	if(eval_result == NULL)
 	{
-		const char *tmp_result = parse(input);
-		if(tmp_result == NULL && get_last_parsed_char() != input &&
+		status_bar_errorf("Invalid expression: %s", error_pos);
+	}
+	else
+	{
+		status_bar_message(eval_result);
+		free(eval_result);
+	}
+	return 1;
+}
+
+/* Evaluates :echo result for arguments.  Returns pointer to newly allocated
+ * string, which should be freed by caller, or NULL on error.  stop_ptr will
+ * point to the beginning of invalid expression in case of error. */
+static char *
+eval_echo(const char args[], const char **stop_ptr)
+{
+	size_t len = 0;
+	char *eval_result = NULL;
+
+	while(args[0] != '\0')
+	{
+		const char *tmp_result = parse(args);
+		if(tmp_result == NULL && get_last_parsed_char() != args &&
 				get_parsing_error() == PE_INVALID_EXPRESSION)
 		{
 			tmp_result = get_parsing_result();
-			input = get_last_parsed_char();
+			args = get_last_parsed_char();
 		}
 		else
 		{
-			input = get_last_position();
+			args = get_last_position();
 		}
 
 		if(tmp_result != NULL)
@@ -1918,16 +1940,16 @@ echo_cmd(const cmd_info_t *cmd_info)
 			break;
 		}
 	}
-	if(input[0] == '\0')
+	if(args[0] == '\0')
 	{
-		status_bar_message(eval_result);
-		free(eval_result);
+		return eval_result;
 	}
 	else
 	{
-		status_bar_errorf("Invalid expression: %s", input);
+		free(eval_result);
+		*stop_ptr = args;
+		return NULL;
 	}
-	return 1;
 }
 
 /* Concatenates the str with the with by reallocating string. */
