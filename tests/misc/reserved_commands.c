@@ -6,48 +6,31 @@
 #include "../../src/engine/completion.h"
 #include "../../src/commands.h"
 
+#include "test.h"
+
 static void
 vim_like_completion(void)
 {
-	char *buf;
-
 	init_commands();
 
 	reset_completion();
 	assert_int_equal(0, complete_cmd("e"));
-	buf = next_completion();
-	assert_string_equal("edit", buf);
-	free(buf);
-	buf = next_completion();
-	assert_string_equal("empty", buf);
-	free(buf);
-	buf = next_completion();
-	assert_string_equal("execute", buf);
-	free(buf);
-	buf = next_completion();
-	assert_string_equal("exit", buf);
-	free(buf);
-	buf = next_completion();
-	assert_string_equal("e", buf);
-	free(buf);
+	ASSERT_NEXT_MATCH("echo");
+	ASSERT_NEXT_MATCH("edit");
+	ASSERT_NEXT_MATCH("empty");
+	ASSERT_NEXT_MATCH("execute");
+	ASSERT_NEXT_MATCH("exit");
+	ASSERT_NEXT_MATCH("e");
 
 	reset_completion();
 	assert_int_equal(0, complete_cmd("vm"));
-	buf = next_completion();
-	assert_string_equal("vmap", buf);
-	free(buf);
-	buf = next_completion();
-	assert_string_equal("vmap", buf);
-	free(buf);
+	ASSERT_NEXT_MATCH("vmap");
+	ASSERT_NEXT_MATCH("vmap");
 
 	reset_completion();
 	assert_int_equal(0, complete_cmd("j"));
-	buf = next_completion();
-	assert_string_equal("jobs", buf);
-	free(buf);
-	buf = next_completion();
-	assert_string_equal("jobs", buf);
-	free(buf);
+	ASSERT_NEXT_MATCH("jobs");
+	ASSERT_NEXT_MATCH("jobs");
 
 	reset_cmds();
 }
@@ -62,4 +45,5 @@ test_reserved_commands(void)
 	test_fixture_end();
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

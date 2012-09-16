@@ -31,6 +31,8 @@
 
 	Added mapping commands for view and menu modes.
 
+	Added :echo command.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 
@@ -140,6 +142,8 @@
 	mode with view active.
 
 	Fixed small issue with sorting files with numbers in names on *nix.
+
+	Fixed parsing of double single quote in single quoted strings.
 
 0.7.3 to 0.7.3a
 

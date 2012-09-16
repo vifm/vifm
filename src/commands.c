@@ -46,6 +46,7 @@
 #include "engine/completion.h"
 #include "engine/keys.h"
 #include "engine/options.h"
+#include "engine/parsing.h"
 #include "engine/variables.h"
 #include "menus/all.h"
 #include "menus/menus.h"
@@ -64,6 +65,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "bookmarks.h"
@@ -102,10 +104,7 @@ static int swap_range(void);
 static int resolve_mark(char mark);
 static char * cmds_expand_macros(const char *str, int *usr1, int *usr2);
 static void post(int id);
-#ifndef TEST
-static
-#endif
-void select_range(int id, const cmd_info_t *cmd_info);
+TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 static wchar_t * substitute_specs(const char *cmd);
 static void print_func(int error, const char *msg, const char *description);
@@ -130,6 +129,9 @@ static int cunmap_cmd(const cmd_info_t *cmd_info);
 static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
 static int dirs_cmd(const cmd_info_t *cmd_info);
+static int echo_cmd(const cmd_info_t *cmd_info);
+TSTATIC char * eval_echo(const char args[], const char **stop_ptr);
+static char * extend_string(char *str, const char with[], size_t *len);
 static int edit_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
 static int exe_cmd(const cmd_info_t *cmd_info);
@@ -261,6 +263,8 @@ static const cmd_add_t commands[] = {
 		.handler = registers_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "dirs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = dirs_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "echo",             .abbr = "ec",    .emark = 0,  .id = COM_ECHO,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = echo_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "edit",             .abbr = "e",     .emark = 0,  .id = COM_EDIT,        .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = edit_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "empty",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -551,10 +555,7 @@ post(int id)
 	load_saving_pos(curr_view, 1);
 }
 
-#ifndef TEST
-static
-#endif
-void
+TSTATIC void
 select_range(int id, const cmd_info_t *cmd_info)
 {
 	/* TODO: refactor this function select_range() */
@@ -1006,10 +1007,7 @@ execute_command(FileView *view, const char command[], int menu)
  *  - 1 skip next char
  *  - 2 in arg
  */
-#ifndef TEST
-static
-#endif
-int
+TSTATIC int
 line_pos(const char *begin, const char *end, char sep, int rquoting)
 {
 	int state;
@@ -1870,6 +1868,96 @@ static int
 dirs_cmd(const cmd_info_t *cmd_info)
 {
 	return show_dirstack_menu(curr_view) != 0;
+}
+
+/* Evaluates arguments as expression and outputs result to statusbar. */
+static int
+echo_cmd(const cmd_info_t *cmd_info)
+{
+	char *eval_result;
+	const char *error_pos;
+
+	if(cmd_info->argc == 0)
+	{
+		return 0;
+	}
+
+	eval_result = eval_echo(cmd_info->args, &error_pos);
+
+	if(eval_result == NULL)
+	{
+		status_bar_errorf("Invalid expression: %s", error_pos);
+	}
+	else
+	{
+		status_bar_message(eval_result);
+		free(eval_result);
+	}
+	return 1;
+}
+
+/* Evaluates :echo result for arguments.  Returns pointer to newly allocated
+ * string, which should be freed by caller, or NULL on error.  stop_ptr will
+ * point to the beginning of invalid expression in case of error. */
+TSTATIC char *
+eval_echo(const char args[], const char **stop_ptr)
+{
+	size_t len = 0;
+	char *eval_result = NULL;
+
+	while(args[0] != '\0')
+	{
+		const char *tmp_result = parse(args);
+		if(tmp_result == NULL && get_last_parsed_char() != args &&
+				get_parsing_error() == PE_INVALID_EXPRESSION)
+		{
+			tmp_result = get_parsing_result();
+			args = get_last_parsed_char();
+		}
+		else
+		{
+			args = get_last_position();
+		}
+
+		if(tmp_result != NULL)
+		{
+			if(!is_null_or_empty(eval_result))
+			{
+				eval_result = extend_string(eval_result, " ", &len);
+			}
+			eval_result = extend_string(eval_result, tmp_result, &len);
+		}
+		else
+		{
+			break;
+		}
+	}
+	if(args[0] == '\0')
+	{
+		return eval_result;
+	}
+	else
+	{
+		free(eval_result);
+		*stop_ptr = args;
+		return NULL;
+	}
+}
+
+/* Concatenates the str with the with by reallocating string. */
+static char *
+extend_string(char *str, const char with[], size_t *len)
+{
+	size_t with_len = strlen(with);
+	char *new = realloc(str, *len + with_len + 1);
+	if(new == NULL)
+	{
+		return NULL;
+	}
+
+	strncpy(new + *len, with, with_len + 1);
+	*len += with_len;
+	return new;
 }
 
 static int

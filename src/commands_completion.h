@@ -53,6 +53,7 @@ enum
 	COM_SPLIT,
 	COM_VSPLIT,
 	COM_RENAME,
+	COM_ECHO,
 };
 
 /* values of type argument for filename_completion() function */
@@ -68,7 +69,9 @@ typedef enum
 	CT_DIREXEC   /* directories and executable files */
 }CompletionType;
 
-int complete_args(int id, const char *args, int argc, char **argv, int arg_pos);
+/* argv isn't array of pointers to constant strings to omit type conversion. */
+int complete_args(int id, const char args[], int argc, char *argv[],
+		int arg_pos);
 char * fast_run_complete(const char *cmd);
 void exec_completion(const char *str);
 void filename_completion(const char *str, CompletionType type);

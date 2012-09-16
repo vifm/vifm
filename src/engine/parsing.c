@@ -38,7 +38,7 @@ TOKEN_TYPE;
 
 static const int whitespace_allowed = 1;
 
-static void eval_expression(const char **in);
+static const char * eval_expression(const char **in);
 static void skip_whitespace_tokens(const char **in);
 static void eval_term(const char **in);
 static void eval_single_quoted_string(const char **in);
@@ -60,6 +60,7 @@ static getenv_func getenv_fu;
 static char buffer[CMD_LINE_LENGTH_MAX];
 static ParsingErrors last_error;
 static const char *last_position;
+static const char *last_parsed_char;
 
 void
 init_parser(getenv_func getenv_f)
@@ -83,6 +84,13 @@ get_last_position(void)
 }
 
 const char *
+get_last_parsed_char(void)
+{
+	assert(initialized);
+	return last_parsed_char;
+}
+
+const char *
 parse(const char *input)
 {
 	assert(initialized);
@@ -93,13 +101,21 @@ parse(const char *input)
 	buffer[0] = '\0';
 	last_position = input;
 	get_next(&last_position);
-	eval_expression(&last_position);
+	last_parsed_char = eval_expression(&last_position);
 
 	return (last_error == PE_NO_ERROR) ? buffer : NULL;
 }
 
-/* expr ::= term { '.' term } */
-static void
+const char *
+get_parsing_result(void)
+{
+	assert(initialized);
+	return buffer;
+}
+
+/* expr ::= term { '.' term }
+ * Returns last position. */
+static const char *
 eval_expression(const char **in)
 {
 	const char *expr_begin = *in - 1;
@@ -114,7 +130,7 @@ eval_expression(const char **in)
 		}
 		else if(last_token.type != END && last_token.type != DOT)
 		{
-			*in = skip_whitespace(expr_begin);
+			--*in;
 			last_error = PE_INVALID_EXPRESSION;
 		}
 		else if(last_token.type == DOT)
@@ -126,6 +142,14 @@ eval_expression(const char **in)
 			break;
 		}
 	}
+
+	if(last_error == PE_INVALID_EXPRESSION)
+	{
+		const char *last_pos = *in;
+		*in = skip_whitespace(expr_begin);
+		return last_pos;
+	}
+	return *in;
 }
 
 /* Skips series of consecutive whitespace. */
@@ -197,8 +221,7 @@ eval_single_quoted_char(const char **in)
 
 	if(double_sq)
 		get_next(in);
-	double_sq = (last_token.type == SQ && **in == '\'');
-	return sq_char || double_sq;
+	return 1;
 }
 
 /* dqstr ::= ''' dqchar { dqchar } ''' */
