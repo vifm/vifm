@@ -73,6 +73,8 @@ const char * extract_part(const char str[], char separator, char part_buf[]);
 char * escape_chars(const char string[], const char chars[]);
 /* Returns non-zero if the string is NULL or empty. */
 int is_null_or_empty(const char string[]);
+/* Returns pointer to first character in the string not equal to the ch. */
+char * skip_all(const char string[], char ch);
 
 #endif
 

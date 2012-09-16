@@ -94,13 +94,19 @@ compare_file_names(const char *s, const char *t, int ignore_case)
 	}
 
 	if(!cfg.sort_numbers)
+	{
 		return strcmp(s, t);
+	}
 	else
+	{
 #if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
 		return vercmp(s, t);
 #else
+		s = skip_all(s, '0');
+		t = skip_all(t, '0');
 		return strverscmp(s, t);
 #endif
+	}
 }
 
 #if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)

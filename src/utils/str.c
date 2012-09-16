@@ -280,5 +280,15 @@ is_null_or_empty(const char string[])
 	return string == NULL || string[0] == '\0';
 }
 
+char *
+skip_all(const char string[], char ch)
+{
+	while(*string == ch)
+	{
+		string++;
+	}
+	return (char *)string;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
