@@ -26,6 +26,7 @@ void extract_extension_tests(void);
 void get_command_name_tests(void);
 void format_mount_command_tests(void);
 void trim_right_tests(void);
+void echo_tests(void);
 
 void
 all_tests(void)
@@ -56,6 +57,7 @@ all_tests(void)
 	get_command_name_tests();
 	format_mount_command_tests();
 	trim_right_tests();
+	echo_tests();
 }
 
 int

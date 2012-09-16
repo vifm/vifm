@@ -65,6 +65,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "bookmarks.h"
@@ -103,10 +104,7 @@ static int swap_range(void);
 static int resolve_mark(char mark);
 static char * cmds_expand_macros(const char *str, int *usr1, int *usr2);
 static void post(int id);
-#ifndef TEST
-static
-#endif
-void select_range(int id, const cmd_info_t *cmd_info);
+TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 static wchar_t * substitute_specs(const char *cmd);
 static void print_func(int error, const char *msg, const char *description);
@@ -132,7 +130,7 @@ static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
 static int dirs_cmd(const cmd_info_t *cmd_info);
 static int echo_cmd(const cmd_info_t *cmd_info);
-static char * eval_echo(const char args[], const char **stop_ptr);
+TSTATIC char * eval_echo(const char args[], const char **stop_ptr);
 static char * extend_string(char *str, const char with[], size_t *len);
 static int edit_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
@@ -557,10 +555,7 @@ post(int id)
 	load_saving_pos(curr_view, 1);
 }
 
-#ifndef TEST
-static
-#endif
-void
+TSTATIC void
 select_range(int id, const cmd_info_t *cmd_info)
 {
 	/* TODO: refactor this function select_range() */
@@ -1012,10 +1007,7 @@ execute_command(FileView *view, const char command[], int menu)
  *  - 1 skip next char
  *  - 2 in arg
  */
-#ifndef TEST
-static
-#endif
-int
+TSTATIC int
 line_pos(const char *begin, const char *end, char sep, int rquoting)
 {
 	int state;
@@ -1907,7 +1899,7 @@ echo_cmd(const cmd_info_t *cmd_info)
 /* Evaluates :echo result for arguments.  Returns pointer to newly allocated
  * string, which should be freed by caller, or NULL on error.  stop_ptr will
  * point to the beginning of invalid expression in case of error. */
-static char *
+TSTATIC char *
 eval_echo(const char args[], const char **stop_ptr)
 {
 	size_t len = 0;

@@ -22,6 +22,7 @@
 
 #include "status.h"
 #include "utils/macros.h"
+#include "utils/test_helpers.h"
 #include "ui.h"
 
 enum
@@ -52,10 +53,12 @@ char * cmds_expand_envvars(const char *str);
 
 #ifdef TEST
 #include "engine/cmds.h"
-
-int line_pos(const char *begin, const char *end, char sep, int regexp);
-void select_range(int id, const cmd_info_t *cmd_info);
 #endif
+TSTATIC_DEFS(
+	int line_pos(const char *begin, const char *end, char sep, int regexp);
+	void select_range(int id, const cmd_info_t *cmd_info);
+	char * eval_echo(const char args[], const char **stop_ptr);
+)
 
 #endif
 
