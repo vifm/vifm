@@ -118,6 +118,8 @@ const char *tags[] = {
 	"vifm-:dirs",
 	"vifm-:display",
 	"vifm-:e",
+	"vifm-:ec",
+	"vifm-:echo",
 	"vifm-:edit",
 	"vifm-:empty",
 	"vifm-:exe",

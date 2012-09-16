@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 9
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 16
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -860,6 +860,10 @@ The builtin commands are:
 
                                                *vifm-:dirs*
 :dirs - display directory stack.
+
+                                               *vifm-:echo* *vifm-:ec*
+:ec[ho] [expression...] - echoes each of argument as expressions and
+    outputs them separated by a space.
 
                                                *vifm-:edit* *vifm-:e*
 :[range]e[dit] [file...] - will load the selected or passed file or files

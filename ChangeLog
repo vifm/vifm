@@ -31,6 +31,8 @@
 
 	Added mapping commands for view and menu modes.
 
+	Added :echo command.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 

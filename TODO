@@ -53,7 +53,6 @@ Vi(m) specific features that need to be added.
     Kinda macros like in Vim (qa ... q).
     Something like <silent> in Vim (no command blinking in the command-line)
     :let mapleader and <leader> support.
-    Add :echo command.
     'cdpath' ('cd') option.
     Completion of first argument for :map commands.
     Support hex and octal numbers in :set
