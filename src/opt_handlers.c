@@ -30,6 +30,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/utils.h"
 #include "color_scheme.h"
 #include "column_view.h"
 #include "filelist.h"
@@ -69,7 +70,6 @@ static void init_sortorder(optval_t *val);
 static void init_viewcolumns(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
-static void print_func(const char *msg, const char *description);
 static void autochpos_handler(OPT_OP op, optval_t val);
 static void columns_handler(OPT_OP op, optval_t val);
 static void confirm_handler(OPT_OP op, optval_t val);
@@ -107,6 +107,7 @@ static void statusline_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
 static void timefmt_handler(OPT_OP op, optval_t val);
 static void timeoutlen_handler(OPT_OP op, optval_t val);
+static void print_func(const char msg[], const char description[]);
 static void trash_handler(OPT_OP op, optval_t val);
 static void trashdir_handler(OPT_OP op, optval_t val);
 static void undolevels_handler(OPT_OP op, optval_t val);
@@ -440,25 +441,6 @@ process_set_args(const char *args)
 		status_bar_message(print_buf);
 	}
 	return save_msg;
-}
-
-static void
-print_func(const char *msg, const char *description)
-{
-	if(print_buf[0] != '\0')
-	{
-		strncat(print_buf, "\n", sizeof(print_buf) - strlen(print_buf) - 1);
-	}
-	if(*msg == '\0')
-	{
-		strncat(print_buf, description, sizeof(print_buf) - strlen(print_buf) - 1);
-	}
-	else
-	{
-		snprintf(print_buf, sizeof(print_buf) - strlen(print_buf), "%s: %s", msg,
-				description);
-	}
-	save_msg = 1;
 }
 
 static void
@@ -973,6 +955,13 @@ timeoutlen_handler(OPT_OP op, optval_t val)
 	}
 
 	cfg.timeout_len = val.int_val;
+}
+
+static void
+print_func(const char msg[], const char description[])
+{
+	add_error_msg(print_buf, sizeof(print_buf), msg, description);
+	save_msg = 1;
 }
 
 static void

@@ -107,7 +107,7 @@ static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 static wchar_t * substitute_specs(const char *cmd);
-static void print_func(int error, const char *msg, const char *description);
+static void print_func(int error, const char msg[], const char description[]);
 
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
@@ -857,24 +857,6 @@ substitute_specs(const char *cmd)
 	assert(p + 1 - buf <= len);
 
 	return buf;
-}
-
-static void
-print_func(int error, const char *msg, const char *description)
-{
-	if(print_buf[0] != '\0')
-	{
-		strncat(print_buf, "\n", sizeof(print_buf) - strlen(print_buf) - 1);
-	}
-	if(*msg == '\0')
-	{
-		strncat(print_buf, description, sizeof(print_buf) - strlen(print_buf) - 1);
-	}
-	else
-	{
-		snprintf(print_buf, sizeof(print_buf) - strlen(print_buf), "%s: %s", msg,
-				description);
-	}
 }
 
 static void
@@ -2985,6 +2967,12 @@ restart_cmd(const cmd_info_t *cmd_info)
 	curr_stats.restart_in_progress = 0;
 
 	return 0;
+}
+
+static void
+print_func(int error, const char msg[], const char description[])
+{
+	add_error_msg(print_buf, sizeof(print_buf), msg, description);
 }
 
 static int
