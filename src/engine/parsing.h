@@ -24,6 +24,7 @@ typedef enum
 {
 	PE_NO_ERROR,
 	PE_INVALID_EXPRESSION,
+	PE_INVALID_SUBEXPRESSION,
 	PE_MISSING_QUOTE,
 }ParsingErrors;
 
@@ -54,6 +55,9 @@ const char * parse(const char *input);
 
 /* Returns evaluation result, may be to get value on error. */
 const char * get_parsing_result(void);
+
+/* Returns non-zero if previously read token was whitespace. */
+int is_prev_token_whitespace(void);
 
 #endif
 

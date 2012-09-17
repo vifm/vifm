@@ -1908,7 +1908,7 @@ eval_echo(const char args[], const char **stop_ptr)
 	while(args[0] != '\0')
 	{
 		const char *tmp_result = parse(args);
-		if(tmp_result == NULL && get_last_parsed_char() != args &&
+		if(tmp_result == NULL && is_prev_token_whitespace() &&
 				get_parsing_error() == PE_INVALID_EXPRESSION)
 		{
 			tmp_result = get_parsing_result();
@@ -1919,18 +1919,16 @@ eval_echo(const char args[], const char **stop_ptr)
 			args = get_last_position();
 		}
 
-		if(tmp_result != NULL)
-		{
-			if(!is_null_or_empty(eval_result))
-			{
-				eval_result = extend_string(eval_result, " ", &len);
-			}
-			eval_result = extend_string(eval_result, tmp_result, &len);
-		}
-		else
+		if(tmp_result == NULL)
 		{
 			break;
 		}
+
+		if(!is_null_or_empty(eval_result))
+		{
+			eval_result = extend_string(eval_result, " ", &len);
+		}
+		eval_result = extend_string(eval_result, tmp_result, &len);
 	}
 	if(args[0] == '\0')
 	{

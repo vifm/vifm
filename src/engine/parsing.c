@@ -17,35 +17,41 @@
  */
 
 #include <assert.h>
+#include <ctype.h> /* isalnum() isalpha() tolower() */
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "../utils/str.h"
+#include "functions.h"
 
 #include "parsing.h"
 
 #define ENVVAR_NAME_LENGTH_MAX 1024
+#define NAME_LENGTH_MAX 256
 #define CMD_LINE_LENGTH_MAX 4096
 
 /* Supported types of tokens. */
 typedef enum
 {
-	BEGIN, SQ, DQ, DOT, DOLLAR, WHITESPACE, CHAR, END
+	BEGIN, SQ, DQ, DOT, DOLLAR, LPAREN, RPAREN, COMMA, WHITESPACE, CHAR, END
 }
 TOKEN_TYPE;
 
 static const int whitespace_allowed = 1;
 
-static const char * eval_expression(const char **in);
-static void skip_whitespace_tokens(const char **in);
+static void eval_expression(const char **in);
 static void eval_term(const char **in);
 static void eval_single_quoted_string(const char **in);
 static int eval_single_quoted_char(const char **in);
 static void eval_double_quoted_string(const char **in);
 static int eval_double_quoted_char(const char **in);
 static void eval_envvar(const char **in);
+static void eval_funccall(const char **in);
+static void eval_arglist(const char **in, call_info_t *call_info);
+static void eval_arg(const char **in, call_info_t *call_info);
+static void skip_whitespace_tokens(const char **in);
 static void get_next(const char **in);
 
 /* This contains information about the last token read. */
@@ -53,11 +59,12 @@ struct
 {
 	TOKEN_TYPE type;
 	char c;
-}last_token;
+}prev_token, last_token;
 
 static int initialized;
 static getenv_func getenv_fu;
 static char buffer[CMD_LINE_LENGTH_MAX];
+static char *target_buffer;
 static ParsingErrors last_error;
 static const char *last_position;
 static const char *last_parsed_char;
@@ -99,9 +106,27 @@ parse(const char *input)
 	last_token.type = BEGIN;
 
 	buffer[0] = '\0';
+	target_buffer = buffer;
 	last_position = input;
 	get_next(&last_position);
-	last_parsed_char = eval_expression(&last_position);
+	eval_expression(&last_position);
+	last_parsed_char = last_position;
+
+	if(last_token.type != END)
+	{
+		if(last_parsed_char > input)
+		{
+			last_parsed_char--;
+		}
+		if(last_error == PE_NO_ERROR)
+		{
+			last_error = PE_INVALID_EXPRESSION;
+		}
+	}
+	if(last_error == PE_INVALID_EXPRESSION)
+	{
+		last_position = skip_whitespace(input);
+	}
 
 	return (last_error == PE_NO_ERROR) ? buffer : NULL;
 }
@@ -113,25 +138,28 @@ get_parsing_result(void)
 	return buffer;
 }
 
-/* expr ::= term { '.' term }
- * Returns last position. */
-static const char *
+int
+is_prev_token_whitespace(void)
+{
+	return prev_token.type == WHITESPACE;
+}
+
+/* expr ::= term { '.' term } */
+static void
 eval_expression(const char **in)
 {
-	const char *expr_begin = *in - 1;
 	while(last_error == PE_NO_ERROR)
 	{
 		skip_whitespace_tokens(in);
 		eval_term(in);
 		skip_whitespace_tokens(in);
-		if(last_token.type == WHITESPACE && !whitespace_allowed)
+		if(last_error != PE_NO_ERROR)
 		{
 			break;
 		}
-		else if(last_token.type != END && last_token.type != DOT)
+		else if(last_token.type == WHITESPACE && !whitespace_allowed)
 		{
-			--*in;
-			last_error = PE_INVALID_EXPRESSION;
+			break;
 		}
 		else if(last_token.type == DOT)
 		{
@@ -141,28 +169,14 @@ eval_expression(const char **in)
 		{
 			break;
 		}
+		else
+		{
+			break;
+		}
 	}
-
-	if(last_error == PE_INVALID_EXPRESSION)
-	{
-		const char *last_pos = *in;
-		*in = skip_whitespace(expr_begin);
-		return last_pos;
-	}
-	return *in;
 }
 
-/* Skips series of consecutive whitespace. */
-static void
-skip_whitespace_tokens(const char **in)
-{
-	if(!whitespace_allowed)
-		return;
-	while(last_token.type == WHITESPACE)
-		get_next(in);
-}
-
-/* term ::= sqstr | dqstr | envvar */
+/* term ::= sqstr | dqstr | envvar | funccall */
 static void
 eval_term(const char **in)
 {
@@ -181,7 +195,16 @@ eval_term(const char **in)
 			eval_envvar(in);
 			break;
 
+		case CHAR:
+			if(char_is_one_of("abcdefghijklmnopqrstuvwxyz_", tolower(last_token.c)))
+			{
+				eval_funccall(in);
+			}
+			break;
+			/* break is omitted intensionally. */
+
 		default:
+			--*in;
 			last_error = PE_INVALID_EXPRESSION;
 			break;
 	}
@@ -216,7 +239,7 @@ eval_single_quoted_char(const char **in)
 	if(!sq_char && !double_sq)
 		return 0;
 
-	strcatch(buffer, last_token.c);
+	strcatch(target_buffer, last_token.c);
 	get_next(in);
 
 	if(double_sq)
@@ -282,7 +305,7 @@ eval_double_quoted_char(const char **in)
 		last_token.c = table[(int)last_token.c];
 	}
 
-	strcatch(buffer, last_token.c);
+	strcatch(target_buffer, last_token.c);
 	get_next(in);
 
 	return dq_char;
@@ -299,7 +322,106 @@ eval_envvar(const char **in)
 		strcatch(name, last_token.c);
 		get_next(in);
 	}
-	strcat(buffer, getenv_fu(name));
+	strcat(target_buffer, getenv_fu(name));
+}
+
+/* funccall ::= varname '(' arglist ')' */
+static void
+eval_funccall(const char **in)
+{
+	char name[NAME_LENGTH_MAX];
+	call_info_t call_info;
+	char *ret_val;
+
+	if(!isalpha(last_token.c))
+	{
+		last_error = PE_INVALID_EXPRESSION;
+		return;
+	}
+
+	name[0] = last_token.c;
+	name[1] = '\0';
+	get_next(in);
+	while(last_token.type == CHAR && isalnum(last_token.c))
+	{
+		strcatch(name, last_token.c);
+		get_next(in);
+	}
+
+	if(last_token.type != LPAREN)
+	{
+		last_error = PE_INVALID_EXPRESSION;
+		return;
+	}
+	get_next(in);
+	skip_whitespace_tokens(in);
+
+	function_call_info_init(&call_info);
+	if(last_token.type != RPAREN)
+	{
+		const char *old_in = *in - 1;
+		eval_arglist(in, &call_info);
+		if(last_error != PE_NO_ERROR)
+		{
+			*in = old_in;
+			function_call_info_free(&call_info);
+			return;
+		}
+	}
+
+	ret_val = function_call(name, &call_info);
+	strcat(target_buffer, ret_val);
+	free(ret_val);
+	function_call_info_free(&call_info);
+
+	skip_whitespace_tokens(in);
+	if(last_token.type != RPAREN)
+	{
+		last_error = PE_INVALID_EXPRESSION;
+	}
+	get_next(in);
+}
+
+/* arglist ::= expr { ',' expr } */
+static void
+eval_arglist(const char **in, call_info_t *call_info)
+{
+	eval_arg(in, call_info);
+	while(last_error == PE_NO_ERROR && last_token.type == COMMA)
+	{
+		get_next(in);
+		eval_arg(in, call_info);
+	}
+
+	if(last_error == PE_INVALID_EXPRESSION)
+	{
+		last_error = PE_INVALID_SUBEXPRESSION;
+	}
+}
+
+static void
+eval_arg(const char **in, call_info_t *call_info)
+{
+	char *old_target_buffer = target_buffer;
+	char buffer[CMD_LINE_LENGTH_MAX];
+	target_buffer = buffer;
+	buffer[0] = '\0';
+
+	(void)eval_expression(in);
+	skip_whitespace_tokens(in);
+	function_call_info_add_arg(call_info, buffer);
+
+	target_buffer = old_target_buffer;
+}
+
+/* Skips series of consecutive whitespace. */
+static void
+skip_whitespace_tokens(const char **in)
+{
+	if(!whitespace_allowed)
+		return;
+	while(last_token.type == WHITESPACE)
+		get_next(in);
 }
 
 /* Gets next token from input. Configures last_token global variable. */
@@ -325,6 +447,15 @@ get_next(const char **in)
 		case '$':
 			tt = DOLLAR;
 			break;
+		case '(':
+			tt = LPAREN;
+			break;
+		case ')':
+			tt = RPAREN;
+			break;
+		case ',':
+			tt = COMMA;
+			break;
 		case ' ':
 		case '\t':
 			tt = WHITESPACE;
@@ -337,6 +468,7 @@ get_next(const char **in)
 			tt = CHAR;
 			break;
 	}
+	prev_token = last_token;
 	last_token.c = **in;
 	last_token.type = tt;
 

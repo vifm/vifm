@@ -20,6 +20,7 @@ vifm_SOURCES = \
 	\
 	engine/cmds.c engine/cmds.h \
 	engine/completion.c engine/completion.h \
+	engine/functions.c engine/functions.h \
 	engine/keys.c engine/keys.h \
 	engine/options.c engine/options.h \
 	engine/parsing.c engine/parsing.h \
