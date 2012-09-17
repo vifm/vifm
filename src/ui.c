@@ -35,13 +35,14 @@
 #include <sys/ioctl.h>
 #include <termios.h> /* struct winsize */
 #endif
-#include <stdlib.h> /* malloc */
 #include <unistd.h>
 
 #include <assert.h>
 #include <ctype.h>
 #include <signal.h> /* signal() */
 #include <stdarg.h> /* va_list va_start() va_end() */
+#include <stdlib.h> /* malloc */
+#include <stdio.h> /* snprintf() vsnprintf() */
 #include <string.h>
 #include <time.h>
 

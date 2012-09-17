@@ -504,25 +504,6 @@ get_command_name(const char line[], int raw, size_t buf_len, char buf[])
 	return (char *)result;
 }
 
-void
-add_error_msg(char print_buf[], size_t buf_len, const char msg[],
-		const char description[])
-{
-	const size_t space_left = buf_len - strlen(print_buf) - 1;
-	if(print_buf[0] != '\0')
-	{
-		strncat(print_buf, "\n", space_left);
-	}
-	if(*msg == '\0')
-	{
-		strncat(print_buf, description, space_left);
-	}
-	else
-	{
-		snprintf(print_buf, space_left, "%s: %s", msg, description);
-	}
-}
-
 #ifdef _WIN32
 /* Removes first and the last charater of the string, if they are quotes. */
 static void

@@ -38,7 +38,7 @@ setup(void)
 	execute_cmd("command baz b");
 	execute_cmd("command foo c");
 
-	init_options(&option_changed, NULL);
+	init_options(&option_changed);
 	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler, def);
 }
 

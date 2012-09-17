@@ -27,6 +27,7 @@
 #include "../utils/str.h"
 #include "completion.h"
 #include "parsing.h"
+#include "text_buffer.h"
 
 #include "variables.h"
 
@@ -52,20 +53,16 @@ static var_t * get_record(const char *name);
 static var_t * find_record(const char *name);
 static void free_record(var_t *record);
 static void clear_record(var_t *record);
-static void print_msg(int error, const char *msg, const char *description);
 
-static var_print print_func;
 static int initialized;
 static var_t *vars;
 static size_t nvars;
 
 void
-init_variables(var_print handler)
+init_variables(void)
 {
 	int i;
 	extern char **environ;
-
-	print_func = handler;
 
 	if(nvars > 0)
 		clear_variables();
@@ -162,7 +159,7 @@ let_variable(const char *cmd)
 	/* currently we support only environment variables */
 	if(*cmd != '$')
 	{
-		print_msg(1, "", "Incorrect variable type");
+		text_buffer_add("Incorrect variable type");
 		return -1;
 	}
 	cmd++;
@@ -174,7 +171,7 @@ let_variable(const char *cmd)
 	{
 		if(*cmd != '_' && !isalnum(*cmd))
 		{
-			print_msg(1, "", "Incorrect variable name");
+			text_buffer_add("Incorrect variable name");
 			return -1;
 		}
 		*p++ = *cmd++;
@@ -182,7 +179,7 @@ let_variable(const char *cmd)
 	/* test for empty variable name */
 	if(p == name)
 	{
-		print_msg(1, "Unsupported variable name", "empty name");
+		text_buffer_addf("%s: %s", "Unsupported variable name", "empty name");
 		return -1;
 	}
 	*p = '\0';
@@ -199,7 +196,7 @@ let_variable(const char *cmd)
 	/* check for equal sign and skip it */
 	if(*cmd != '=')
 	{
-		print_msg(1, "Incorrect :let statement", "'=' expected");
+		text_buffer_addf("%s: %s", "Incorrect :let statement", "'=' expected");
 		return -1;
 	}
 
@@ -212,7 +209,8 @@ let_variable(const char *cmd)
 
 	if(get_last_position() != NULL && *get_last_position() != '\0')
 	{
-		print_msg(1, "Incorrect :let statement", "trailing characters");
+		text_buffer_addf("%s: %s", "Incorrect :let statement",
+				"trailing characters");
 		return -1;
 	}
 
@@ -230,11 +228,11 @@ report_parsing_error(ParsingErrors error)
 {
 	if(error == PE_INVALID_EXPRESSION)
 	{
-		print_msg(1, "Invalid expression", get_last_position());
+		text_buffer_addf("%s: %s", "Invalid expression", get_last_position());
 	}
 	else if(error == PE_MISSING_QUOTE)
 	{
-		print_msg(1, "Invalid :let expression (missing quote)",
+		text_buffer_addf("%s: %s", "Invalid :let expression (missing quote)",
 				get_last_position());
 	}
 	else
@@ -259,7 +257,7 @@ append_envvar(const char *name, const char *val)
 	p = realloc(record->val, strlen(record->val) + strlen(val) + 1);
 	if(p == NULL)
 	{
-		print_msg(1, "", "Not enough memory");
+		text_buffer_add("Not enough memory");
 		return;
 	}
 	record->val = p;
@@ -277,14 +275,14 @@ set_envvar(const char *name, const char *val)
 	record = get_record(name);
 	if(record == NULL)
 	{
-		print_msg(1, "", "Not enough memory");
+		text_buffer_add("Not enough memory");
 		return;
 	}
 
 	p = strdup(val);
 	if(p == NULL)
 	{
-		print_msg(1, "", "Not enough memory");
+		text_buffer_add("Not enough memory");
 		return;
 	}
 	free(record->val);
@@ -362,7 +360,7 @@ unlet_variables(const char *cmd)
 
 		if(*cmd != '\0' && !isspace(*cmd))
 		{
-			print_msg(1, "", "Trailing characters");
+			text_buffer_add("Trailing characters");
 			error++;
 			break;
 		}
@@ -372,7 +370,7 @@ unlet_variables(const char *cmd)
 		/* currently we support only environment variables */
 		if(!envvar)
 		{
-			print_msg(1, "Unsupported variable type", name);
+			text_buffer_addf("%s: %s", "Unsupported variable type", name);
 
 			cmd = skip_non_whitespace(cmd);
 			error++;
@@ -382,7 +380,7 @@ unlet_variables(const char *cmd)
 		/* test for empty variable name */
 		if(name[0] == '\0')
 		{
-			print_msg(1, "Unsupported variable name", "empty name");
+			text_buffer_addf("%s: %s", "Unsupported variable name", "empty name");
 			error++;
 			continue;
 		}
@@ -390,7 +388,7 @@ unlet_variables(const char *cmd)
 		record = find_record(name);
 		if(record == NULL || record->removed)
 		{
-			print_msg(1, "No such variable", name);
+			text_buffer_addf("%s: %s", "No such variable", name);
 			error++;
 			continue;
 		}
@@ -434,14 +432,6 @@ clear_record(var_t *record)
 	record->initial = NULL;
 	record->name = NULL;
 	record->val = NULL;
-}
-
-static void
-print_msg(int error, const char *msg, const char *description)
-{
-	if(print_func == NULL)
-		return;
-	print_func(error, msg, description);
 }
 
 void

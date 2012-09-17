@@ -24,6 +24,7 @@ vifm_SOURCES = \
 	engine/keys.c engine/keys.h \
 	engine/options.c engine/options.h \
 	engine/parsing.c engine/parsing.h \
+	engine/text_buffer.c engine/text_buffer.h \
 	engine/variables.c engine/variables.h \
 	\
 	menus/all.h \

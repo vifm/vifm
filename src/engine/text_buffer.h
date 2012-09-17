@@ -16,40 +16,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __VARIABLES_H__
-#define __VARIABLES_H__
+#ifndef __TEXT_BUFFER_H__
+#define __TEXT_BUFFER_H__
 
-/* This module handles :let command */
+/* Makes buffer empty. */
+void text_buffer_clear(void);
 
-/* Initializes variables module.  Should be called before any of other
- * functions.
- * handler can be NULL
- */
-void init_variables(void);
+/* Adds the string to buffer. */
+void text_buffer_add(const char msg[]);
 
-/* Gets cached value of environment variable envname. Returns empty string if
- * requested variable doesn't exist. */
-const char * local_getenv(const char *envname);
+/* Adds formated string to buffer. */
+void text_buffer_addf(const char format[], ...);
 
-/* Removes all defined variables and resets environment variables to their
- * initial values
- */
-void clear_variables(void);
+/* Returns pointer to a read-only string, which may become invalid on any other
+ * call of functions in this module.  Never returns NULL, only empty string. */
+const char * text_buffer_get(void);
 
-/* Processes :let command arguments
- * Returns non-zero on error
- */
-int let_variable(const char *cmd);
-
-/* Processes :unlet command arguments
- * Returns non-zero on error
- */
-int unlet_variables(const char *cmd);
-
-/* Performs :let command completion */
-void complete_variables(const char *cmd, const char **start);
-
-#endif
+#endif /* __TEXT_BUFFER_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

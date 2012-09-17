@@ -80,9 +80,6 @@ const char * make_name_unique(const char *filename);
  * Raw mode will preserve quotes on Windows.
  * Returns a pointer to the argument list. */
 char * get_command_name(const char line[], int raw, size_t buf_len, char buf[]);
-/* Adds error message to the print_buf after a new line character. */
-void add_error_msg(char print_buf[], size_t buf_len, const char msg[],
-		const char description[]);
 
 #ifndef _WIN32
 int get_uid(const char *user, uid_t *uid);

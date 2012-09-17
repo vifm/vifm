@@ -26,7 +26,7 @@ setup(void)
 	env_set("VAR_B", "VAL_B");
 	env_set("VAR_C", "VAL_C");
 
-	init_variables(NULL);
+	init_variables();
 }
 
 static void

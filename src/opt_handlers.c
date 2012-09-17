@@ -24,6 +24,7 @@
 
 #include "cfg/config.h"
 #include "engine/options.h"
+#include "engine/text_buffer.h"
 #include "modes/view.h"
 #include "utils/log.h"
 #include "utils/macros.h"
@@ -107,7 +108,6 @@ static void statusline_handler(OPT_OP op, optval_t val);
 static void tabstop_handler(OPT_OP op, optval_t val);
 static void timefmt_handler(OPT_OP op, optval_t val);
 static void timeoutlen_handler(OPT_OP op, optval_t val);
-static void print_func(const char msg[], const char description[]);
 static void trash_handler(OPT_OP op, optval_t val);
 static void trashdir_handler(OPT_OP op, optval_t val);
 static void undolevels_handler(OPT_OP op, optval_t val);
@@ -118,9 +118,6 @@ static void vimhelp_handler(OPT_OP op, optval_t val);
 static void wildmenu_handler(OPT_OP op, optval_t val);
 static void wrap_handler(OPT_OP op, optval_t val);
 static void wrapscan_handler(OPT_OP op, optval_t val);
-
-static int save_msg;
-static char print_buf[320*80];
 
 static const char * sort_enum[] = {
 	"ext",
@@ -279,11 +276,13 @@ static struct
 		{ .init = &init_viewcolumns }                                                                          },
 };
 
+static int error;
+
 void
 init_option_handlers(void)
 {
 	static int opt_changed;
-	init_options(&opt_changed, &print_func);
+	init_options(&opt_changed);
 	load_options_defaults();
 	add_options();
 }
@@ -427,20 +426,27 @@ load_sort_option(FileView *view)
 int
 process_set_args(const char *args)
 {
-	save_msg = 0;
-	print_buf[0] = '\0';
-	/* call of set_options() can changs print_buf and save_msg */
-	if(set_options(args) != 0 || save_msg < 0)
+	int set_options_error;
+	const char *text_buffer;
+
+	text_buffer_clear();
+
+	/* Call of set_options() can change error. */
+	error = 0;
+	set_options_error = set_options(args) != 0;
+	error = error || set_options_error;
+	text_buffer = text_buffer_get();
+
+	if(error)
 	{
-		print_func("", "Invalid argument for :set command");
-		save_msg = -1;
-		status_bar_error(print_buf);
+		text_buffer_add("Invalid argument for :set command");
+		status_bar_error(text_buffer);
 	}
-	else if(print_buf[0] != '\0')
+	else if(text_buffer[0] != '\0')
 	{
-		status_bar_message(print_buf);
+		status_bar_message(text_buffer);
 	}
-	return save_msg;
+	return error ? -1 : (text_buffer[0] != '\0');
 }
 
 static void
@@ -459,11 +465,9 @@ columns_handler(OPT_OP op, optval_t val)
 {
 	if(val.int_val < MIN_TERM_WIDTH)
 	{
-		char buf[128];
 		val.int_val = MIN_TERM_WIDTH;
-		snprintf(buf, sizeof(buf), "At least %d columns needed", MIN_TERM_WIDTH);
-		print_func("", buf);
-		save_msg = -1;
+		text_buffer_addf("At least %d columns needed", MIN_TERM_WIDTH);
+		error = 1;
 	}
 
 	if(cfg.columns != val.int_val)
@@ -618,11 +622,9 @@ lines_handler(OPT_OP op, optval_t val)
 {
 	if(val.int_val < MIN_TERM_HEIGHT)
 	{
-		char buf[128];
 		val.int_val = MIN_TERM_HEIGHT;
-		snprintf(buf, sizeof(buf), "At least %d lines needed", MIN_TERM_HEIGHT);
-		print_func("", buf);
-		save_msg = -1;
+		text_buffer_addf("At least %d lines needed", MIN_TERM_HEIGHT);
+		error = 1;
 	}
 
 	if(cfg.lines != val.int_val)
@@ -679,10 +681,8 @@ scrolloff_handler(OPT_OP op, optval_t val)
 {
 	if(val.int_val < 0)
 	{
-		char buf[128];
-		snprintf(buf, sizeof(buf), "Invalid scroll size: %d", val.int_val);
-		print_func("", buf);
-		save_msg = -1;
+		text_buffer_addf("Invalid scroll size: %d", val.int_val);
+		error = 1;
 		reset_option_to_default("scrolloff");
 		return;
 	}
@@ -849,8 +849,8 @@ load_view_columns_option(FileView *view, const char *value)
 	columns_clear(curr_view->columns);
 	if(parse_columns(view->columns, add_column, map_name, value) != 0)
 	{
-		print_func("", "Invalid format of 'viewcolumns' option");
-		save_msg = -1;
+		text_buffer_add("Invalid format of 'viewcolumns' option");
+		error = 1;
 		(void)parse_columns(view->columns, add_column, map_name,
 				view->view_columns);
 	}
@@ -914,10 +914,8 @@ tabstop_handler(OPT_OP op, optval_t val)
 {
 	if(val.int_val <= 0)
 	{
-		char buf[128];
-		snprintf(buf, sizeof(buf), "Argument must be positive: %d", val.int_val);
-		print_func("", buf);
-		save_msg = -1;
+		text_buffer_addf("Argument must be positive: %d", val.int_val);
+		error = 1;
 		reset_option_to_default("tabstop");
 		return;
 	}
@@ -945,23 +943,14 @@ timeoutlen_handler(OPT_OP op, optval_t val)
 {
 	if(val.int_val < 0)
 	{
-		char buf[128];
-		snprintf(buf, sizeof(buf), "Argument must be >= 0: %d", val.int_val);
-		print_func("", buf);
-		save_msg = -1;
+		text_buffer_addf("Argument must be >= 0: %d", val.int_val);
+		error = 1;
 		val.int_val = 0;
 		set_option("timeoutlen", val);
 		return;
 	}
 
 	cfg.timeout_len = val.int_val;
-}
-
-static void
-print_func(const char msg[], const char description[])
-{
-	add_error_msg(print_buf, sizeof(print_buf), msg, description);
-	save_msg = 1;
 }
 
 static void
