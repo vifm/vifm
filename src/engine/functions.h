@@ -21,28 +21,41 @@
 
 #include <stddef.h> /* size_t */
 
+/* Typename for script variable. */
 typedef char *var_t;
 
+/* Structure, which describes details about function call. */
 typedef struct
 {
-	size_t argc;
-	var_t *argv;
+	size_t argc; /* Number of arguments passed to the function. */
+	var_t *argv; /* Arguments passed to the function. */
 }call_info_t;
 
+/* A function prototype for builtin function implementation. */
 typedef var_t (*function_ptr_t)(const call_info_t *call_info);
 
+/* Function description. */
 typedef struct
 {
-	char *name;
-	size_t arg_count;
+	const char *name; /* Name of a function. */
+	size_t arg_count; /* Required number of arguments. */
+	function_ptr_t ptr; /* Pointer to function implementation. */
 }function_t;
 
-void function_register(const function_t func_info);
-int function_registered(const char func_name[]);
+/* Registers new function.  Returns non-zero on error. */
+int function_register(const function_t *func_info);
+
+/* Calls function.  Returns its result (can be NULL). */
 var_t function_call(const char func_name[], const call_info_t *call_info);
 
+
+/* Initializes function call information structure. */
 void function_call_info_init(call_info_t *call_info);
+
+/* Adds new arguments to call information structure. */
 void function_call_info_add_arg(call_info_t *call_info, const char arg[]);
+
+/* Frees resources allocated for the call_info structure. */
 void function_call_info_free(call_info_t *call_info);
 
 #endif /* __FUNCTIONS_H__ */

@@ -74,6 +74,7 @@ vifm_SOURCES = \
 	\
 	background.c background.h \
 	bookmarks.c bookmarks.h \
+	builtin_functions.c builtin_functions.h \
 	color_scheme.c colorscheme.h \
 	column_view.c column_view.h \
 	commands.c commands.h \

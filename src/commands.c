@@ -1862,11 +1862,13 @@ echo_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
+	text_buffer_clear();
 	eval_result = eval_echo(cmd_info->args, &error_pos);
 
 	if(eval_result == NULL)
 	{
-		status_bar_errorf("Invalid expression: %s", error_pos);
+		text_buffer_addf("%s: %s", "Invalid expression", error_pos);
+		status_bar_errorf(text_buffer_get());
 	}
 	else
 	{

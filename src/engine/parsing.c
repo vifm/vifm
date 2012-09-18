@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "../utils/str.h"
+#include "../utils/utils.h"
 #include "functions.h"
 
 #include "parsing.h"
@@ -353,6 +354,7 @@ eval_funccall(const char **in)
 		last_error = PE_INVALID_EXPRESSION;
 		return;
 	}
+
 	get_next(in);
 	skip_whitespace_tokens(in);
 
@@ -370,8 +372,15 @@ eval_funccall(const char **in)
 	}
 
 	ret_val = function_call(name, &call_info);
-	strcat(target_buffer, ret_val);
-	free(ret_val);
+	if(ret_val != NULL)
+	{
+		strcat(target_buffer, ret_val);
+		free(ret_val);
+	}
+	else
+	{
+		last_error = PE_INVALID_EXPRESSION;
+	}
 	function_call_info_free(&call_info);
 
 	skip_whitespace_tokens(in);

@@ -33,6 +33,9 @@ typedef enum
  * string. The function should not allocate new string. */
 typedef const char * (*getenv_func)(const char *envname);
 
+/* A type of function that will be used to print error messages. */
+typedef void (*print_error_func)(const char msg[]);
+
 /* Can be called several times. */
 /* getenv_f can be NULL */
 void init_parser(getenv_func getenv_f);
