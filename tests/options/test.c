@@ -74,7 +74,7 @@ setup(void)
 	static int option_changed;
 	optval_t val;
 
-	init_options(&option_changed, NULL);
+	init_options(&option_changed);
 
 	val.bool_val = 0;
 	add_option("fastrun", "fr", OPT_BOOL, 0, NULL, fastrun_handler, val);

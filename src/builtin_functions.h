@@ -16,40 +16,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __VARIABLES_H__
-#define __VARIABLES_H__
+#ifndef __BUILTIN_FUNCTIONS_H__
+#define __BUILTIN_FUNCTIONS_H__
 
-/* This module handles :let command */
+/* Initializes builtin functions. */
+void init_builtin_functions(void);
 
-/* Initializes variables module.  Should be called before any of other
- * functions.
- * handler can be NULL
- */
-void init_variables(void);
-
-/* Gets cached value of environment variable envname. Returns empty string if
- * requested variable doesn't exist. */
-const char * local_getenv(const char *envname);
-
-/* Removes all defined variables and resets environment variables to their
- * initial values
- */
-void clear_variables(void);
-
-/* Processes :let command arguments
- * Returns non-zero on error
- */
-int let_variable(const char *cmd);
-
-/* Processes :unlet command arguments
- * Returns non-zero on error
- */
-int unlet_variables(const char *cmd);
-
-/* Performs :let command completion */
-void complete_variables(const char *cmd, const char **start);
-
-#endif
+#endif /* __BUILTIN_FUNCTIONS_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

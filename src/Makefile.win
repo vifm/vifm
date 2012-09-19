@@ -13,7 +13,8 @@ LIBS := -lregex -lpdcurses -lnetapi32 -lpthread -lws2_32
 cfg := config.c info.c
 cfg := $(addprefix cfg/, $(cfg))
 
-engine := cmds.c completion.c keys.c options.c parsing.c variables.c
+engine := cmds.c functions.c completion.c keys.c options.c parsing.c \
+          text_buffer.c variables.c
 engine := $(addprefix engine/, $(engine))
 
 menus := apropos_menu.c bookmarks_menu.c colorscheme_menu.c commands_menu.c \
@@ -37,10 +38,10 @@ utilities := $(addprefix utils/, $(utilities))
 vifm_SOURCES := $(cfg) $(engine) $(menus) $(modes) $(utilities) background.c \
                 bookmarks.c color_scheme.c commands.c commands_completion.c \
                 dir_stack.c file_magic.c filelist.c filename_modifiers.c \
-                fileops.c filetype.c fuse.c globals.c ipc.c macros.c \
-                main_loop.c ops.c opt_handlers.c path_env.c quickview.c \
-                registers.c running.c search.c signals.c sort.c status.c \
-                tags.c term_title.c trash.c ui.c undo.c version.c \
+                fileops.c filetype.c functions.c fuse.c globals.c ipc.c \
+                macros.c main_loop.c ops.c opt_handlers.c path_env.c \
+                quickview.c registers.c running.c search.c signals.c sort.c \
+                status.c tags.c term_title.c trash.c ui.c undo.c version.c \
                 compile_info.c vifmres.o vifm.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)

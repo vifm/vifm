@@ -49,6 +49,7 @@
 #include "utils/utils.h"
 #include "background.h"
 #include "bookmarks.h"
+#include "builtin_functions.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "commands_completion.h"
@@ -91,10 +92,9 @@ show_version_msg(void)
 	for(i = 0; i < len; i++)
 	{
 		puts(list[i]);
-		free(list[i]);
 	}
 
-	free(list);
+	free_string_array(list, len);
 }
 
 static void
@@ -325,6 +325,7 @@ main(int argc, char *argv[])
 	reinit_logger();
 
 	init_commands();
+	init_builtin_functions();
 	update_path_env(1);
 
 	if(init_status() != 0)

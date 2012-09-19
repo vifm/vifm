@@ -24,6 +24,7 @@
 
 #include "../utils/str.h"
 #include "completion.h"
+#include "text_buffer.h"
 
 #include "options.h"
 
@@ -69,26 +70,23 @@ static char * str_remove(char *old, const char *value);
 static int find_val(const opt_t *opt, const char *value);
 static int set_print(opt_t *opt);
 static const char * get_value(const opt_t *opt);
-static void print_msg(const char *msg, const char *description);
 static void complete_option(const char *buf, int bool_only);
 static void complete_value(const char *buf, opt_t *opt);
 
 static const char ENDING_CHARS[] = "!?&";
 static const char MIDDLE_CHARS[] = "+-=:";
 
-static opt_print print_func;
 static int *opts_changed;
 
 static opt_t *options;
 static size_t options_count;
 
 void
-init_options(int *opts_changed_flag, opt_print handler)
+init_options(int *opts_changed_flag)
 {
 	assert(opts_changed_flag != NULL);
 
 	opts_changed = opts_changed_flag;
-	print_func = handler;
 }
 
 void
@@ -358,7 +356,7 @@ process_option(const char *cmd)
 	opt = get_option(option);
 	if(opt == NULL)
 	{
-		print_msg("Unknown option", cmd);
+		text_buffer_addf("%s: %s", "Unknown option", cmd);
 		return 1;
 	}
 
@@ -386,7 +384,7 @@ process_option(const char *cmd)
 	{
 		if(*(p + 1) != '\0')
 		{
-			print_msg("Trailing characters", cmd);
+			text_buffer_addf("%s: %s", "Trailing characters", cmd);
 			return 1;
 		}
 		if(*p == '!')
@@ -410,11 +408,13 @@ process_option(const char *cmd)
 	}
 	else
 	{
-		print_msg("Trailing characters", cmd);
+		text_buffer_addf("%s: %s", "Trailing characters", cmd);
 	}
 
 	if(err)
-		print_msg("Invalid argument", cmd);
+	{
+		text_buffer_addf("%s: %s", "Invalid argument", cmd);
+	}
 	return err;
 }
 
@@ -811,7 +811,7 @@ set_print(opt_t *opt)
 	{
 		snprintf(buf, sizeof(buf), "  %s=%s", opt->name, get_value(opt));
 	}
-	print_msg("", buf);
+	text_buffer_add(buf);
 	return 0;
 }
 
@@ -855,13 +855,6 @@ get_value(const opt_t *opt)
 		assert(0 && "Don't know how to convert value of this type to a string");
 	}
 	return buf;
-}
-
-static void
-print_msg(const char *msg, const char *description)
-{
-	if(print_func != NULL)
-		print_func(msg, description);
 }
 
 void

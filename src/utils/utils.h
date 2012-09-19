@@ -30,6 +30,7 @@
 #include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() */
 
 #include <limits.h> /* PATH_MAX */
+#include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 #include <wchar.h> /* wchar_t ... */
 

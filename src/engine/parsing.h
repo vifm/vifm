@@ -24,6 +24,7 @@ typedef enum
 {
 	PE_NO_ERROR,
 	PE_INVALID_EXPRESSION,
+	PE_INVALID_SUBEXPRESSION,
 	PE_MISSING_QUOTE,
 }ParsingErrors;
 
@@ -31,6 +32,9 @@ typedef enum
  * value. If variable doesn't exist the function should return an empty
  * string. The function should not allocate new string. */
 typedef const char * (*getenv_func)(const char *envname);
+
+/* A type of function that will be used to print error messages. */
+typedef void (*print_error_func)(const char msg[]);
 
 /* Can be called several times. */
 /* getenv_f can be NULL */
@@ -54,6 +58,9 @@ const char * parse(const char *input);
 
 /* Returns evaluation result, may be to get value on error. */
 const char * get_parsing_result(void);
+
+/* Returns non-zero if previously read token was whitespace. */
+int is_prev_token_whitespace(void);
 
 #endif
 

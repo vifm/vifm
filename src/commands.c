@@ -47,6 +47,7 @@
 #include "engine/keys.h"
 #include "engine/options.h"
 #include "engine/parsing.h"
+#include "engine/text_buffer.h"
 #include "engine/variables.h"
 #include "menus/all.h"
 #include "menus/menus.h"
@@ -107,7 +108,6 @@ static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 static wchar_t * substitute_specs(const char *cmd);
-static void print_func(int error, const char *msg, const char *description);
 
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
@@ -433,8 +433,6 @@ static cmds_conf_t cmds_conf = {
 
 static int need_clean_selection;
 
-static char print_buf[320*80];
-
 void
 exec_startup_commands(int c, char **v)
 {
@@ -688,7 +686,7 @@ init_commands(void)
 	for(i = 0; i < ARRAY_LEN(key_pairs); i++)
 		key_pairs[i].len = strlen(key_pairs[i].notation);
 
-	init_variables(&print_func);
+	init_variables();
 }
 
 static void
@@ -857,24 +855,6 @@ substitute_specs(const char *cmd)
 	assert(p + 1 - buf <= len);
 
 	return buf;
-}
-
-static void
-print_func(int error, const char *msg, const char *description)
-{
-	if(print_buf[0] != '\0')
-	{
-		strncat(print_buf, "\n", sizeof(print_buf) - strlen(print_buf) - 1);
-	}
-	if(*msg == '\0')
-	{
-		strncat(print_buf, description, sizeof(print_buf) - strlen(print_buf) - 1);
-	}
-	else
-	{
-		snprintf(print_buf, sizeof(print_buf) - strlen(print_buf), "%s: %s", msg,
-				description);
-	}
 }
 
 static void
@@ -1882,11 +1862,13 @@ echo_cmd(const cmd_info_t *cmd_info)
 		return 0;
 	}
 
+	text_buffer_clear();
 	eval_result = eval_echo(cmd_info->args, &error_pos);
 
 	if(eval_result == NULL)
 	{
-		status_bar_errorf("Invalid expression: %s", error_pos);
+		text_buffer_addf("%s: %s", "Invalid expression", error_pos);
+		status_bar_errorf(text_buffer_get());
 	}
 	else
 	{
@@ -1908,7 +1890,7 @@ eval_echo(const char args[], const char **stop_ptr)
 	while(args[0] != '\0')
 	{
 		const char *tmp_result = parse(args);
-		if(tmp_result == NULL && get_last_parsed_char() != args &&
+		if(tmp_result == NULL && is_prev_token_whitespace() &&
 				get_parsing_error() == PE_INVALID_EXPRESSION)
 		{
 			tmp_result = get_parsing_result();
@@ -1919,18 +1901,16 @@ eval_echo(const char args[], const char **stop_ptr)
 			args = get_last_position();
 		}
 
-		if(tmp_result != NULL)
-		{
-			if(!is_null_or_empty(eval_result))
-			{
-				eval_result = extend_string(eval_result, " ", &len);
-			}
-			eval_result = extend_string(eval_result, tmp_result, &len);
-		}
-		else
+		if(tmp_result == NULL)
 		{
 			break;
 		}
+
+		if(!is_null_or_empty(eval_result))
+		{
+			eval_result = extend_string(eval_result, " ", &len);
+		}
+		eval_result = extend_string(eval_result, tmp_result, &len);
 	}
 	if(args[0] == '\0')
 	{
@@ -2522,15 +2502,15 @@ jobs_cmd(const cmd_info_t *cmd_info)
 static int
 let_cmd(const cmd_info_t *cmd_info)
 {
-	print_buf[0] = '\0';
+	text_buffer_clear();
 	if(let_variable(cmd_info->args) != 0)
 	{
-		status_bar_error(print_buf);
+		status_bar_error(text_buffer_get());
 		return 1;
 	}
-	else if(print_buf[0] != '\0')
+	else if(*text_buffer_get() != '\0')
 	{
-		status_bar_message(print_buf);
+		status_bar_message(text_buffer_get());
 	}
 	update_path_env(0);
 	return 0;
@@ -2972,7 +2952,7 @@ restart_cmd(const cmd_info_t *cmd_info)
 
 	/* variables */
 	clear_variables();
-	init_variables(&print_func);
+	init_variables();
 	/* this update is needed as clear_variables() will reset $PATH */
 	update_path_env(1);
 
@@ -3258,10 +3238,10 @@ unmap_cmd(const cmd_info_t *cmd_info)
 static int
 unlet_cmd(const cmd_info_t *cmd_info)
 {
-	print_buf[0] = '\0';
+	text_buffer_clear();
 	if(unlet_variables(cmd_info->args) != 0 && !cmd_info->emark)
 	{
-		status_bar_error(print_buf);
+		status_bar_error(text_buffer_get());
 		return 1;
 	}
 	return 0;

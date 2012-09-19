@@ -70,8 +70,9 @@ PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	engine/cmds.$(OBJEXT) engine/completion.$(OBJEXT) \
-	engine/keys.$(OBJEXT) engine/options.$(OBJEXT) \
-	engine/parsing.$(OBJEXT) engine/variables.$(OBJEXT) \
+	engine/functions.$(OBJEXT) engine/keys.$(OBJEXT) \
+	engine/options.$(OBJEXT) engine/parsing.$(OBJEXT) \
+	engine/text_buffer.$(OBJEXT) engine/variables.$(OBJEXT) \
 	menus/apropos_menu.$(OBJEXT) menus/bookmarks_menu.$(OBJEXT) \
 	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
 	menus/dirhistory_menu.$(OBJEXT) menus/dirstask_menu.$(OBJEXT) \
@@ -92,18 +93,18 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
 	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
 	utils/utils.$(OBJEXT) background.$(OBJEXT) bookmarks.$(OBJEXT) \
-	color_scheme.$(OBJEXT) column_view.$(OBJEXT) \
-	commands.$(OBJEXT) commands_completion.$(OBJEXT) \
-	desktop.$(OBJEXT) dir_stack.$(OBJEXT) globals.$(OBJEXT) \
-	file_magic.$(OBJEXT) filelist.$(OBJEXT) \
-	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
-	filetype.$(OBJEXT) fuse.$(OBJEXT) ipc.$(OBJEXT) \
-	macros.$(OBJEXT) main_loop.$(OBJEXT) ops.$(OBJEXT) \
-	opt_handlers.$(OBJEXT) path_env.$(OBJEXT) quickview.$(OBJEXT) \
-	registers.$(OBJEXT) running.$(OBJEXT) search.$(OBJEXT) \
-	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
-	tags.$(OBJEXT) term_title.$(OBJEXT) trash.$(OBJEXT) \
-	ui.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
+	builtin_functions.$(OBJEXT) color_scheme.$(OBJEXT) \
+	column_view.$(OBJEXT) commands.$(OBJEXT) \
+	commands_completion.$(OBJEXT) desktop.$(OBJEXT) \
+	dir_stack.$(OBJEXT) globals.$(OBJEXT) file_magic.$(OBJEXT) \
+	filelist.$(OBJEXT) filename_modifiers.$(OBJEXT) \
+	fileops.$(OBJEXT) filetype.$(OBJEXT) fuse.$(OBJEXT) \
+	ipc.$(OBJEXT) macros.$(OBJEXT) main_loop.$(OBJEXT) \
+	ops.$(OBJEXT) opt_handlers.$(OBJEXT) path_env.$(OBJEXT) \
+	quickview.$(OBJEXT) registers.$(OBJEXT) running.$(OBJEXT) \
+	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
+	status.$(OBJEXT) tags.$(OBJEXT) term_title.$(OBJEXT) \
+	trash.$(OBJEXT) ui.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
 	viewcolumns_parser.$(OBJEXT) compile_info.$(OBJEXT) \
 	vifm.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
@@ -293,9 +294,11 @@ vifm_SOURCES = \
 	\
 	engine/cmds.c engine/cmds.h \
 	engine/completion.c engine/completion.h \
+	engine/functions.c engine/functions.h \
 	engine/keys.c engine/keys.h \
 	engine/options.c engine/options.h \
 	engine/parsing.c engine/parsing.h \
+	engine/text_buffer.c engine/text_buffer.h \
 	engine/variables.c engine/variables.h \
 	\
 	menus/all.h \
@@ -345,6 +348,7 @@ vifm_SOURCES = \
 	\
 	background.c background.h \
 	bookmarks.c bookmarks.h \
+	builtin_functions.c builtin_functions.h \
 	color_scheme.c colorscheme.h \
 	column_view.c column_view.h \
 	commands.c commands.h \
@@ -484,11 +488,15 @@ engine/cmds.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
 engine/completion.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
+engine/functions.$(OBJEXT): engine/$(am__dirstamp) \
+	engine/$(DEPDIR)/$(am__dirstamp)
 engine/keys.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
 engine/options.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
 engine/parsing.$(OBJEXT): engine/$(am__dirstamp) \
+	engine/$(DEPDIR)/$(am__dirstamp)
+engine/text_buffer.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
 engine/variables.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
@@ -641,9 +649,11 @@ mostlyclean-compile:
 	-rm -f cfg/info.$(OBJEXT)
 	-rm -f engine/cmds.$(OBJEXT)
 	-rm -f engine/completion.$(OBJEXT)
+	-rm -f engine/functions.$(OBJEXT)
 	-rm -f engine/keys.$(OBJEXT)
 	-rm -f engine/options.$(OBJEXT)
 	-rm -f engine/parsing.$(OBJEXT)
+	-rm -f engine/text_buffer.$(OBJEXT)
 	-rm -f engine/variables.$(OBJEXT)
 	-rm -f menus/apropos_menu.$(OBJEXT)
 	-rm -f menus/bookmarks_menu.$(OBJEXT)
@@ -689,6 +699,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/background.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bookmarks.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/builtin_functions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_scheme.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/column_view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands.Po@am__quote@
@@ -729,9 +740,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cfg/$(DEPDIR)/info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/cmds.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/completion.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/functions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/keys.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/options.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/parsing.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/text_buffer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/variables.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/apropos_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/bookmarks_menu.Po@am__quote@

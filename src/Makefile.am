@@ -20,9 +20,11 @@ vifm_SOURCES = \
 	\
 	engine/cmds.c engine/cmds.h \
 	engine/completion.c engine/completion.h \
+	engine/functions.c engine/functions.h \
 	engine/keys.c engine/keys.h \
 	engine/options.c engine/options.h \
 	engine/parsing.c engine/parsing.h \
+	engine/text_buffer.c engine/text_buffer.h \
 	engine/variables.c engine/variables.h \
 	\
 	menus/all.h \
@@ -72,6 +74,7 @@ vifm_SOURCES = \
 	\
 	background.c background.h \
 	bookmarks.c bookmarks.h \
+	builtin_functions.c builtin_functions.h \
 	color_scheme.c colorscheme.h \
 	column_view.c column_view.h \
 	commands.c commands.h \

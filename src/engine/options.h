@@ -48,10 +48,9 @@ typedef union
 }optval_t;
 
 typedef void (*opt_handler)(OPT_OP op, optval_t val);
-typedef void (*opt_print)(const char *msg, const char *description);
 
 /* handler can be NULL */
-void init_options(int *opts_changed_flag, opt_print handler);
+void init_options(int *opts_changed_flag);
 /* Resets one option to its default value */
 void reset_option_to_default(const char *name);
 void reset_options_to_default(void);
