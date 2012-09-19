@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 16
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 18
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -12,6 +12,7 @@
 |vifm-commands-bg|        Backgrounding of commands.
 |vifm-set-options|        Available options.
 |vifm-mappings|           Special sequences.
+|vifm-functions|          List of builtin functions with description.
 |vifm-startup|            Determining of environment variables on startup.
 |vifm-configure|          Configuration of vifm.
 |vifm-compatibility-mode| Its description.
@@ -862,8 +863,9 @@ The builtin commands are:
 :dirs - display directory stack.
 
                                                *vifm-:echo* *vifm-:ec*
-:ec[ho] [expression...] - echoes each of argument as expressions and
-    outputs them separated by a space.
+:ec[ho] [<expr>...] - echoes each of argument as expressions and
+    outputs them separated by a space.  See |vifm-:let| for definition of
+    <expr>.
 
                                                *vifm-:edit* *vifm-:e*
 :[range]e[dit] [file...] - will load the selected or passed file or files
@@ -1060,8 +1062,8 @@ of the hierarchy and transparency for all others.
 :let $ENV_VAR .= <expr> - append value to environment variable.
 
 Where <expr> could be a single-quoted string, double-quoted string, an
-environment variable or a concatanation of any of them in any order using
-the '.' operator. Any whitespace is ignored.
+environment variable, function call or a concatanation of any of them in any
+order using the '.' operator.  Any whitespace is ignored.
 
                                                *vifm-:locate*
 :locate filename - uses the locate command to create a menu of filenames
@@ -1887,6 +1889,27 @@ That's why you may want to use <space> at the end of rhs in mappings.  For
 example: >
  cmap <f1> man<space>
 will put "man " in line when you hit the <f1> key in the command line mode.
+
+--------------------------------------------------------------------------------
+*vifm-functions*
+
+USAGE             RESULT        DESCRIPTION	~
+
+filetype({fnum})  String        Returns file type from position.
+
+filetype({fnum})                               *vifm-filetype()*
+The result is a string, which represents file type and is one of the list:
+    exe    executables
+    reg    regular files
+    link   symbolic links
+    dir    directories
+    char   character devices
+    block  block devices
+    fifo   pipes
+    sock   *nix domain sockets
+    ?      unknown file type (should never appear)
+Parameter {fnum} can have following values:
+    - '.' to get type of file under the cursor in the active pane
 
 --------------------------------------------------------------------------------
 *vifm-compatibility-mode*
