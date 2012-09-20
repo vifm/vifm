@@ -14,7 +14,7 @@ cfg := config.c info.c
 cfg := $(addprefix cfg/, $(cfg))
 
 engine := cmds.c functions.c completion.c keys.c options.c parsing.c \
-          text_buffer.c variables.c
+          text_buffer.c var.c variables.c
 engine := $(addprefix engine/, $(engine))
 
 menus := apropos_menu.c bookmarks_menu.c colorscheme_menu.c commands_menu.c \

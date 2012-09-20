@@ -46,9 +46,11 @@ Package content
     |  |  |
     |  |  |-- cmds.c - command line parsing core
     |  |  |-- completion.c - provides means to fill and get completion list
+    |  |  |-- functions.c - provides support for builtin functions
     |  |  |-- keys.c - analyzes users input
     |  |  |-- options.c - :set command
     |  |  |-- parsing.c - parses expressions
+    |  |  |-- var.c - all needed to work with variables
     |  |  `-- variables.c - handles :let and :unlet commands
     |  |
     |  |-- menus/ - implementation of all menus
