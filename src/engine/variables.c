@@ -19,7 +19,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> /* free() */
 #include <string.h>
 
 #include "../utils/env.h"
@@ -28,6 +28,7 @@
 #include "completion.h"
 #include "parsing.h"
 #include "text_buffer.h"
+#include "var.h"
 
 #include "variables.h"
 
@@ -40,7 +41,7 @@ typedef struct {
 	char *initial;
 	int from_parent;
 	int removed;
-}var_t;
+}envvar_t;
 
 static const char ENV_VAR_NAME_CHARS[] = "abcdefghijklmnopqrstuvwxyz"
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
@@ -49,13 +50,13 @@ static void init_var(const char *env);
 static void report_parsing_error(ParsingErrors error);
 static void append_envvar(const char *name, const char *val);
 static void set_envvar(const char *name, const char *val);
-static var_t * get_record(const char *name);
-static var_t * find_record(const char *name);
-static void free_record(var_t *record);
-static void clear_record(var_t *record);
+static envvar_t * get_record(const char *name);
+static envvar_t * find_record(const char *name);
+static void free_record(envvar_t *record);
+static void clear_record(envvar_t *record);
 
 static int initialized;
-static var_t *vars;
+static envvar_t *vars;
 static size_t nvars;
 
 void
@@ -92,14 +93,14 @@ init_variables(void)
 const char *
 local_getenv(const char *envname)
 {
-	var_t *record = find_record(envname);
+	envvar_t *record = find_record(envname);
 	return (record == NULL || record->removed) ? "" : record->val;
 }
 
 static void
 init_var(const char *env)
 {
-	var_t *record;
+	envvar_t *record;
 	char name[VAR_NAME_MAX + 1];
 	char *p = strchr(env, '=');
 	assert(p != NULL);
@@ -151,8 +152,10 @@ let_variable(const char *cmd)
 {
 	char name[VAR_NAME_MAX + 1];
 	char *p;
-	const char *cp;
 	int append = 0;
+	var_t res_var;
+	char *str_var;
+	ParsingErrors parsing_error;
 
 	assert(initialized);
 
@@ -200,10 +203,10 @@ let_variable(const char *cmd)
 		return -1;
 	}
 
-	cp = parse(cmd + 1);
-	if(cp == NULL)
+	parsing_error = parse(cmd + 1, &res_var);
+	if(parsing_error != PE_NO_ERROR)
 	{
-		report_parsing_error(get_parsing_error());
+		report_parsing_error(parsing_error);
 		return -1;
 	}
 
@@ -215,10 +218,14 @@ let_variable(const char *cmd)
 	}
 
 	/* update environment variable */
+	str_var = var_to_string(res_var);
 	if(append)
-		append_envvar(name, cp);
+		append_envvar(name, str_var);
 	else
-		set_envvar(name, cp);
+		set_envvar(name, str_var);
+	free(str_var);
+
+	var_free(res_var);
 
 	return 0;
 }
@@ -244,7 +251,7 @@ report_parsing_error(ParsingErrors error)
 static void
 append_envvar(const char *name, const char *val)
 {
-	var_t *record;
+	envvar_t *record;
 	char *p;
 
 	record = find_record(name);
@@ -269,7 +276,7 @@ append_envvar(const char *name, const char *val)
 static void
 set_envvar(const char *name, const char *val)
 {
-	var_t *record;
+	envvar_t *record;
 	char *p;
 
 	record = get_record(name);
@@ -291,10 +298,10 @@ set_envvar(const char *name, const char *val)
 }
 
 /* searches for variable and creates new record if it didn't existed */
-static var_t *
+static envvar_t *
 get_record(const char *name)
 {
-	var_t *p = NULL;
+	envvar_t *p = NULL;
 	int i;
 
 	/* search for existent variable */
@@ -339,7 +346,7 @@ unlet_variables(const char *cmd)
 
 	while(*cmd != '\0')
 	{
-		var_t *record;
+		envvar_t *record;
 
 		char name[VAR_NAME_MAX + 1];
 		char *p;
@@ -404,7 +411,7 @@ unlet_variables(const char *cmd)
 }
 
 /* searches for existent variable */
-static var_t *
+static envvar_t *
 find_record(const char *name)
 {
 	int i;
@@ -417,7 +424,7 @@ find_record(const char *name)
 }
 
 static void
-free_record(var_t *record)
+free_record(envvar_t *record)
 {
 	free(record->initial);
 	free(record->name);
@@ -427,7 +434,7 @@ free_record(var_t *record)
 }
 
 static void
-clear_record(var_t *record)
+clear_record(envvar_t *record)
 {
 	record->initial = NULL;
 	record->name = NULL;

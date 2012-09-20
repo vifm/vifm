@@ -27,7 +27,7 @@
 var_t
 var_false(void)
 {
-	static const var_t false_var = { VT_INT, 0 };
+	static const var_t false_var = { VT_INT, { .integer = 0 } };
 	return false_var;
 }
 

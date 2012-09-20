@@ -4,6 +4,8 @@
 
 #include "../../src/engine/parsing.h"
 
+#include "test.h"
+
 static const char *
 ge(const char *name)
 {
@@ -19,54 +21,34 @@ setup(void)
 static void
 test_simple_ok(void)
 {
-	const char input[] = "$ENV";
-	assert_string_equal("NV", parse(input));
-	assert_int_equal(PE_NO_ERROR, get_parsing_error());
+	ASSERT_OK("$ENV", "NV");
 }
 
 static void
 test_leading_spaces_ok(void)
 {
-	const char input[] = " $ENV";
-	assert_string_equal("NV", parse(input));
-	assert_int_equal(PE_NO_ERROR, get_parsing_error());
+	ASSERT_OK(" $ENV", "NV");
 }
 
 static void
 test_trailing_spaces_ok(void)
 {
-	const char input[] = "$ENV ";
-	assert_string_equal("NV", parse(input));
-	assert_int_equal(PE_NO_ERROR, get_parsing_error());
+	ASSERT_OK("$ENV ", "NV");
 }
 
 static void
 test_space_in_the_middle_fail(void)
 {
-	const char input[] = "$ENV $VAR";
-	assert_true(parse(input) == NULL);
-	assert_int_equal(PE_INVALID_EXPRESSION, get_parsing_error());
+	ASSERT_FAIL("$ENV $VAR", PE_INVALID_EXPRESSION);
 }
 
 static void
 test_concatenation(void)
 {
-	const char input_1[] = "$ENV.$VAR";
-	const char input_2[] = "$ENV .$VAR";
-	const char input_3[] = "$ENV. $VAR";
-	const char input_4[] = "$ENV . $VAR";
-
-	assert_string_equal("NVAR", parse(input_1));
-	assert_int_equal(PE_NO_ERROR, get_parsing_error());
-
-	assert_string_equal("NVAR", parse(input_2));
-	assert_int_equal(PE_NO_ERROR, get_parsing_error());
-
-	assert_string_equal("NVAR", parse(input_3));
-	assert_int_equal(PE_NO_ERROR, get_parsing_error());
-
-	assert_string_equal("NVAR", parse(input_4));
-	assert_int_equal(PE_NO_ERROR, get_parsing_error());
+	ASSERT_OK("$ENV.$VAR", "NVAR");
+	ASSERT_OK("$ENV .$VAR", "NVAR");
+	ASSERT_OK("$ENV. $VAR", "NVAR");
+	ASSERT_OK("$ENV . $VAR", "NVAR");
 }
 
 void
@@ -85,4 +67,5 @@ envvar_tests(void)
 	test_fixture_end();
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

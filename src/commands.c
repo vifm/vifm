@@ -48,6 +48,7 @@
 #include "engine/options.h"
 #include "engine/parsing.h"
 #include "engine/text_buffer.h"
+#include "engine/var.h"
 #include "engine/variables.h"
 #include "menus/all.h"
 #include "menus/menus.h"
@@ -1889,15 +1890,17 @@ eval_echo(const char args[], const char **stop_ptr)
 
 	while(args[0] != '\0')
 	{
-		const char *tmp_result = parse(args);
-		if(tmp_result == NULL && is_prev_token_whitespace() &&
-				get_parsing_error() == PE_INVALID_EXPRESSION)
+		var_t result = var_false();
+		const ParsingErrors parsing_error = parse(args, &result);
+		const char *tmp_result = NULL;
+		if(parsing_error == PE_INVALID_EXPRESSION && is_prev_token_whitespace())
 		{
 			tmp_result = get_parsing_result();
 			args = get_last_parsed_char();
 		}
 		else
 		{
+			tmp_result = result.value.string;
 			args = get_last_position();
 		}
 
@@ -1911,6 +1914,8 @@ eval_echo(const char args[], const char **stop_ptr)
 			eval_result = extend_string(eval_result, " ", &len);
 		}
 		eval_result = extend_string(eval_result, tmp_result, &len);
+
+		var_free(result);
 	}
 	if(args[0] == '\0')
 	{

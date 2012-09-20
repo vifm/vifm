@@ -4,10 +4,15 @@
 
 #include "../../src/engine/functions.h"
 #include "../../src/engine/parsing.h"
+#include "../../src/engine/var.h"
 
-static var_t dummy(const call_info_t *call_info)
+#include "test.h"
+
+static var_t
+dummy(const call_info_t *call_info)
 {
-	return strdup("");
+	static const var_val_t var_val = { .string = "" };
+	return var_new(VT_STRING, var_val);
 }
 
 static void
@@ -19,91 +24,62 @@ setup(void)
 static void
 test_wrong_arg_fail(void)
 {
-	const char *input = "a(a)";
-	assert_true(parse(input) == NULL);
-	assert_int_equal(PE_INVALID_SUBEXPRESSION, get_parsing_error());
-	assert_true(input + 2 == get_last_position());
+	ASSERT_FAIL("a(a)", PE_INVALID_SUBEXPRESSION);
+	assert_string_equal("a)", get_last_position());
 }
 
 static void
 test_two_args_ok(void)
 {
-	const char *input = "b('a','b')";
-	const char *eval_res = parse(input);
-	assert_true(eval_res != NULL);
-	assert_int_equal(PE_NO_ERROR, get_parsing_error());
+	ASSERT_OK("b('a','b')", "");
 }
 
 static void
 test_space_before_first_arg_ok(void)
 {
-	const char *input = "b( 'a','b')";
-	const char *eval_res = parse(input);
-	assert_true(eval_res != NULL);
-	assert_int_equal(PE_NO_ERROR, get_parsing_error());
+	ASSERT_OK("b( 'a','b')", "");
 }
 
 static void
 test_space_after_last_arg_ok(void)
 {
-	const char *input = "b('a','b' )";
-	const char *eval_res = parse(input);
-	assert_true(eval_res != NULL);
-	assert_int_equal(PE_NO_ERROR, get_parsing_error());
+	ASSERT_OK("b('a','b' )", "");
 }
 
 static void
 test_space_before_comma_ok(void)
 {
-	const char *input = "b('a' ,'b')";
-	const char *eval_res = parse(input);
-	assert_true(eval_res != NULL);
-	assert_int_equal(PE_NO_ERROR, get_parsing_error());
+	ASSERT_OK("b('a' ,'b')", "");
 }
 
 static void
 test_space_after_comma_ok(void)
 {
-	const char *input = "b('a', 'b')";
-	const char *eval_res = parse(input);
-	assert_true(eval_res != NULL);
-	assert_int_equal(PE_NO_ERROR, get_parsing_error());
+	ASSERT_OK("b('a', 'b')", "");
 }
 
 static void
 test_concatenation_as_arg_ok(void)
 {
-	const char *input = "a('a'.'b')";
-	const char *eval_res = parse(input);
-	assert_true(eval_res != NULL);
-	assert_int_equal(PE_NO_ERROR, get_parsing_error());
+	ASSERT_OK("a('a'.'b')", "");
 }
 
 static void
 test_no_args_ok(void)
 {
-	const char *input = "c()";
-	const char *eval_res = parse(input);
-	assert_true(eval_res != NULL);
-	assert_int_equal(PE_NO_ERROR, get_parsing_error());
+	ASSERT_OK("c()", "");
 }
 
 static void
 test_no_function_name_fail(void)
 {
-	const char *input = "()";
-	const char *eval_res = parse(input);
-	assert_true(eval_res == NULL);
-	assert_int_equal(PE_INVALID_EXPRESSION, get_parsing_error());
+	ASSERT_FAIL("()", PE_INVALID_EXPRESSION);
 }
 
 static void
 test_chars_after_function_call_fail(void)
 {
-	const char *input = "a()a";
-	const char *eval_res = parse(input);
-	assert_true(eval_res == NULL);
-	assert_int_equal(PE_INVALID_EXPRESSION, get_parsing_error());
+	ASSERT_FAIL("a()a", PE_INVALID_EXPRESSION);
 }
 
 void

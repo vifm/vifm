@@ -3,6 +3,9 @@
 #include "seatest.h"
 
 #include "../../src/engine/parsing.h"
+#include "../../src/engine/var.h"
+
+#include "test.h"
 
 static void
 setup(void)
@@ -13,70 +16,50 @@ setup(void)
 static void
 test_empty_fail(void)
 {
-	const char input[] = "";
-	assert_true(parse(input) == NULL);
-	assert_int_equal(PE_INVALID_EXPRESSION, get_parsing_error());
+	ASSERT_FAIL("", PE_INVALID_EXPRESSION);
 }
 
 static void
 test_non_quoted_fail(void)
 {
-	const char input[] = "b";
-	assert_true(parse(input) == NULL);
-	assert_int_equal(PE_INVALID_EXPRESSION, get_parsing_error());
+	ASSERT_FAIL("b", PE_INVALID_EXPRESSION);
 }
 
 static void
 test_double_dot_fail(void)
 {
-	const char input[] = "'a'..'b'";
-	assert_true(parse(input) == NULL);
-	assert_int_equal(PE_INVALID_EXPRESSION, get_parsing_error());
+	ASSERT_FAIL("'a'..'b'", PE_INVALID_EXPRESSION);
 }
 
 static void
 test_starts_with_dot_fail(void)
 {
-	const char input[] = ".'b'";
-	assert_true(parse(input) == NULL);
-	assert_int_equal(PE_INVALID_EXPRESSION, get_parsing_error());
+	ASSERT_FAIL(".'b'", PE_INVALID_EXPRESSION);
 }
 
 static void
 test_ends_with_dot_fail(void)
 {
-	const char input[] = "'a'.";
-	assert_true(parse(input) == NULL);
-	assert_int_equal(PE_INVALID_EXPRESSION, get_parsing_error());
+	ASSERT_FAIL("'a'.", PE_INVALID_EXPRESSION);
 }
 
 static void
 test_fail_position_correct(void)
 {
-	const char input1[] = "'b' c";
-	const char input2[] = "a b";
-
-	assert_true(parse(input1) == NULL);
-	assert_int_equal(PE_INVALID_EXPRESSION, get_parsing_error());
+	ASSERT_FAIL("'b' c", PE_INVALID_EXPRESSION)
 	assert_string_equal("'b' c", get_last_position());
 
-	assert_true(parse(input2) == NULL);
-	assert_int_equal(PE_INVALID_EXPRESSION, get_parsing_error());
+	ASSERT_FAIL("a b", PE_INVALID_EXPRESSION)
 	assert_string_equal("a b", get_last_position());
 }
 
 static void
 test_spaces_and_fail_position_correct(void)
 {
-	const char input1[] = "  'b' c";
-	const char input2[] = "  a b";
-
-	assert_true(parse(input1) == NULL);
-	assert_int_equal(PE_INVALID_EXPRESSION, get_parsing_error());
+	ASSERT_FAIL("  'b' c", PE_INVALID_EXPRESSION)
 	assert_string_equal("'b' c", get_last_position());
 
-	assert_true(parse(input2) == NULL);
-	assert_int_equal(PE_INVALID_EXPRESSION, get_parsing_error());
+	ASSERT_FAIL("  a b", PE_INVALID_EXPRESSION)
 	assert_string_equal("a b", get_last_position());
 }
 

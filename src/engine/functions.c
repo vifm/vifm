@@ -23,6 +23,7 @@
 #include "../utils/string_array.h"
 #include "../ui.h"
 #include "text_buffer.h"
+#include "var.h"
 
 #include "functions.h"
 
@@ -80,17 +81,17 @@ function_call(const char func_name[], const call_info_t *call_info)
 	if(function == NULL)
 	{
 		text_buffer_addf("%s: %s", "Unknown function", func_name);
-		return NULL;
+		return var_false();
 	}
 	if(call_info->argc < function->arg_count)
 	{
 		text_buffer_addf("%s: %s", "Not enough arguments for function", func_name);
-		return NULL;
+		return var_false();
 	}
 	if(call_info->argc > function->arg_count)
 	{
 		text_buffer_addf("%s: %s", "Too many arguments for function", func_name);
-		return NULL;
+		return var_false();
 	}
 	return function->ptr(call_info);
 }
@@ -118,16 +119,29 @@ function_call_info_init(call_info_t *call_info)
 }
 
 void
-function_call_info_add_arg(call_info_t *call_info, const char arg[])
+function_call_info_add_string_arg(call_info_t *call_info, const char arg[])
 {
-	call_info->argc = add_to_string_array(&call_info->argv, call_info->argc, 1,
-			arg);
+	var_val_t var_val;
+	var_t *ptr = realloc(call_info->argv, sizeof(var_t)*(call_info->argc + 1));
+	if(ptr == NULL)
+	{
+		return;
+	}
+
+	var_val.string = (char *)arg;
+	ptr[call_info->argc++] = var_new(VT_STRING, var_val);
+	call_info->argv = ptr;
 }
 
 void
 function_call_info_free(call_info_t *call_info)
 {
-	free_string_array(call_info->argv, call_info->argc);
+	size_t i;
+	for(i = 0; i < call_info->argc; i++)
+	{
+		var_free(call_info->argv[i]);
+	}
+
 	call_info->argv = NULL;
 	call_info->argc = 0;
 }

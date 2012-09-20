@@ -26,6 +26,7 @@
 #include "../utils/str.h"
 #include "../utils/utils.h"
 #include "functions.h"
+#include "var.h"
 
 #include "parsing.h"
 
@@ -77,13 +78,6 @@ init_parser(getenv_func getenv_f)
 	initialized = 1;
 }
 
-ParsingErrors
-get_parsing_error(void)
-{
-	assert(initialized);
-	return last_error;
-}
-
 const char *
 get_last_position(void)
 {
@@ -98,8 +92,8 @@ get_last_parsed_char(void)
 	return last_parsed_char;
 }
 
-const char *
-parse(const char *input)
+ParsingErrors
+parse(const char input[], var_t *result)
 {
 	assert(initialized);
 
@@ -129,7 +123,12 @@ parse(const char *input)
 		last_position = skip_whitespace(input);
 	}
 
-	return (last_error == PE_NO_ERROR) ? buffer : NULL;
+	if(last_error == PE_NO_ERROR)
+	{
+		const var_val_t var_val = { .string = buffer };
+		*result = var_new(VT_STRING, var_val);
+	}
+	return last_error;
 }
 
 const char *
@@ -332,7 +331,8 @@ eval_funccall(const char **in)
 {
 	char name[NAME_LENGTH_MAX];
 	call_info_t call_info;
-	char *ret_val;
+	var_t ret_val;
+	char *str_val;
 
 	if(!isalpha(last_token.c))
 	{
@@ -372,15 +372,10 @@ eval_funccall(const char **in)
 	}
 
 	ret_val = function_call(name, &call_info);
-	if(ret_val != NULL)
-	{
-		strcat(target_buffer, ret_val);
-		free(ret_val);
-	}
-	else
-	{
-		last_error = PE_INVALID_EXPRESSION;
-	}
+	str_val = var_to_string(ret_val);
+	strcat(target_buffer, str_val);
+	free(str_val);
+	var_free(ret_val);
 	function_call_info_free(&call_info);
 
 	skip_whitespace_tokens(in);
@@ -418,7 +413,7 @@ eval_arg(const char **in, call_info_t *call_info)
 
 	(void)eval_expression(in);
 	skip_whitespace_tokens(in);
-	function_call_info_add_arg(call_info, buffer);
+	function_call_info_add_string_arg(call_info, buffer);
 
 	target_buffer = old_target_buffer;
 }
