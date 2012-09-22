@@ -4,10 +4,12 @@
 /* This should be a macro to see what test have failed. */
 #define ASSERT_OK(str, result) \
 	{ \
+		char *str_res; \
 		var_t res_var = var_false(); \
 		assert_int_equal(PE_NO_ERROR, parse((str), &res_var)); \
-		assert_int_equal(VT_STRING, res_var.type); \
-		assert_string_equal((result), res_var.value.string); \
+		str_res = var_to_string(res_var); \
+		assert_string_equal((result), str_res); \
+		free(str_res); \
 		var_free(res_var); \
 	}
 

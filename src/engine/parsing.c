@@ -21,7 +21,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> /* strcmp() */
 
 #include "../utils/str.h"
 #include "../utils/utils.h"
@@ -37,12 +37,14 @@
 /* Supported types of tokens. */
 typedef enum
 {
-	BEGIN, SQ, DQ, DOT, DOLLAR, LPAREN, RPAREN, COMMA, WHITESPACE, CHAR, END
+	BEGIN, SQ, DQ, DOT, DOLLAR, LPAREN, RPAREN, COMMA, EQ, NE, WHITESPACE, CHAR,
+	END
 }
 TOKEN_TYPE;
 
 static const int whitespace_allowed = 1;
 
+static void eval_statement(const char **in);
 static void eval_expression(const char **in);
 static void eval_term(const char **in);
 static void eval_single_quoted_string(const char **in);
@@ -65,11 +67,11 @@ struct
 
 static int initialized;
 static getenv_func getenv_fu;
-static char buffer[CMD_LINE_LENGTH_MAX];
 static char *target_buffer;
 static ParsingErrors last_error;
 static const char *last_position;
 static const char *last_parsed_char;
+static var_t res_val;
 
 void
 init_parser(getenv_func getenv_f)
@@ -100,11 +102,11 @@ parse(const char input[], var_t *result)
 	last_error = PE_NO_ERROR;
 	last_token.type = BEGIN;
 
-	buffer[0] = '\0';
-	target_buffer = buffer;
+	var_free(res_val);
+	res_val = var_false();
 	last_position = input;
 	get_next(&last_position);
-	eval_expression(&last_position);
+	eval_statement(&last_position);
 	last_parsed_char = last_position;
 
 	if(last_token.type != END)
@@ -125,17 +127,16 @@ parse(const char input[], var_t *result)
 
 	if(last_error == PE_NO_ERROR)
 	{
-		const var_val_t var_val = { .string = buffer };
-		*result = var_new(VT_STRING, var_val);
+		*result = var_clone(res_val);
 	}
 	return last_error;
 }
 
-const char *
+var_t
 get_parsing_result(void)
 {
 	assert(initialized);
-	return buffer;
+	return var_clone(res_val);
 }
 
 int
@@ -144,10 +145,63 @@ is_prev_token_whitespace(void)
 	return prev_token.type == WHITESPACE;
 }
 
+/* stmt ::= expr | expr op expr */
+/* op ::= '==' | '!=' */
+static void
+eval_statement(const char **in)
+{
+	TOKEN_TYPE op;
+	var_t left_operand;
+	var_val_t result;
+
+	eval_expression(in);
+	if(last_error != PE_NO_ERROR)
+	{
+		return;
+	}
+	else if(last_token.type == END)
+	{
+		return;
+	}
+	else if(last_token.type != EQ && last_token.type != NE)
+	{
+		last_error = PE_INVALID_EXPRESSION;
+		return;
+	}
+	op = last_token.type;
+
+	left_operand = res_val;
+	res_val = var_false();
+	target_buffer[0] = '\0';
+
+	get_next(in);
+	eval_expression(in);
+	if(last_error != PE_NO_ERROR)
+	{
+		var_free(left_operand);
+		return;
+	}
+
+	result.integer = strcmp(left_operand.value.string, res_val.value.string) == 0;
+	if(op == NE)
+	{
+		result.integer = !result.integer;
+	}
+
+	var_free(res_val);
+	res_val = var_new(VT_INT, result);
+
+	var_free(left_operand);
+}
+
 /* expr ::= term { '.' term } */
 static void
 eval_expression(const char **in)
 {
+	char buffer[CMD_LINE_LENGTH_MAX];
+	buffer[0] = '\0';
+	target_buffer = buffer;
+
 	while(last_error == PE_NO_ERROR)
 	{
 		skip_whitespace_tokens(in);
@@ -173,6 +227,12 @@ eval_expression(const char **in)
 		{
 			break;
 		}
+	}
+
+	if(last_error == PE_NO_ERROR)
+	{
+		const var_val_t var_val = { .string = buffer };
+		res_val = var_new(VT_STRING, var_val);
 	}
 }
 
@@ -276,8 +336,8 @@ eval_double_quoted_char(const char **in)
 	/* 30 */	"\x00\x31\x32\x33\x34\x35\x36\x37\x38\x39\x3a\x3b\x3c\x3d\x3e\x3f"
 	/* 40 */	"\x40\x41\x42\x43\x44\x45\x46\x47\x48\x49\x4a\x4b\x4c\x4d\x4e\x4f"
 	/* 50 */	"\x50\x51\x52\x53\x54\x55\x56\x57\x58\x59\x5a\x5b\x5c\x5d\x5e\x5f"
-	/* 60 */	"\x60\x07\x0b\x63\x64\x65\x0c\x67\x68\x69\x6a\x6b\x6c\x6d\x0a\x6f"
-	/* 70 */	"\x70\x71\x0d\x73\x09\x75\x0b\x77\x78\x79\x7a\x7b\x7c\x7d\x7e\x7f"
+	/* 60 */	"\x60\x61\x08\x63\x64\x1b\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x0a\x6f"
+	/* 70 */	"\x70\x71\x0d\x73\x09\x75\x76\x77\x78\x79\x7a\x7b\x7c\x7d\x7e\x7f"
 	/* 80 */	"\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f"
 	/* 90 */	"\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f"
 	/* a0 */	"\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf"
@@ -437,7 +497,7 @@ get_next(const char **in)
 	if(last_token.type == END)
 		return;
 
-	switch(**in)
+	switch((*in)[0])
 	{
 		case '\'':
 			tt = SQ;
@@ -467,6 +527,15 @@ get_next(const char **in)
 		case '\0':
 			tt = END;
 			break;
+		case '=':
+		case '!':
+			if((*in)[1] == '=')
+			{
+				tt = ((*in)[0] == '=') ? EQ : NE;
+				++*in;
+				break;
+			}
+			/* break is omitted intensionally. */
 
 		default:
 			tt = CHAR;

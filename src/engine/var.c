@@ -42,6 +42,12 @@ var_new(VarType type, const var_val_t value)
 	return new_var;
 }
 
+var_t
+var_clone(var_t var)
+{
+	return var_new(var.type, var.value);
+}
+
 char *
 var_to_string(const var_t var)
 {

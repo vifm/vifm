@@ -1,6 +1,6 @@
-#include <string.h>
-
 #include "seatest.h"
+
+#include <stdlib.h> /* free() */
 
 #include "../../src/engine/parsing.h"
 

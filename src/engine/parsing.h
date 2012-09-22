@@ -54,8 +54,8 @@ const char * get_last_parsed_char(void);
  * evaluation in the result parameter. */
 ParsingErrors parse(const char input[], var_t *result);
 
-/* Returns evaluation result, may be to get value on error. */
-const char * get_parsing_result(void);
+/* Returns evaluation result, may be used to get value on error. */
+var_t get_parsing_result(void);
 
 /* Returns non-zero if previously read token was whitespace. */
 int is_prev_token_whitespace(void);

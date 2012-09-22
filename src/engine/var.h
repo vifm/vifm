@@ -21,6 +21,7 @@
 
 /* This unit provides all necessary to work with variables. */
 
+
 /* Enumeration of variable types. */
 typedef enum
 {
@@ -42,11 +43,15 @@ typedef struct
 	var_val_t value; /* Value depending on type. */
 }var_t;
 
+
 /* Returns variable, which evaluates to false. */
 var_t var_false(void);
 
 /* Constructs variable in convenient way. */
 var_t var_new(VarType type, const var_val_t value);
+
+/* Convenient function to clones a variable. */
+var_t var_clone(var_t var);
 
 /* Converts variable to a string.  Returns new string, which should be freed by
  * the caller. */

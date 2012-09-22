@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 18
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 22
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -12,6 +12,7 @@
 |vifm-commands-bg|        Backgrounding of commands.
 |vifm-set-options|        Available options.
 |vifm-mappings|           Special sequences.
+|vifm-expression-syntax|  Syntax of supported expressions.
 |vifm-functions|          List of builtin functions with description.
 |vifm-startup|            Determining of environment variables on startup.
 |vifm-configure|          Configuration of vifm.
@@ -1889,6 +1890,109 @@ That's why you may want to use <space> at the end of rhs in mappings.  For
 example: >
  cmap <f1> man<space>
 will put "man " in line when you hit the <f1> key in the command line mode.
+
+--------------------------------------------------------------------------------
+*vifm-expression-syntax*
+
+Supported expressions is a subset of what VimL provides.
+
+Expression syntax summary, from least to most significant:
+
+|vifm-expr1| expr2 == expr2          equal
+             expr2 != expr2          not equal
+
+|vifm-expr2| expr3 . expr3 ..        string concatenation
+
+|vifm-expr3| "string"                string constant, backslash is special
+             'string'                string constant, ' is doubled
+             $VAR                    environment variable
+             function(expr1, ...)    function call
+
+".." indicates that the operations in this level can be concatenated.
+
+expr1                                          *vifm-expr1*
+-----
+expr2 {cmp} expr2
+
+Compare two expr2 expressions, resulting in a 0 if it evaluates to false or 1
+if it evaluates to true.
+
+equal     ==                                   *vifm-expr-==*
+notequal  !=                                   *vifm-expr-!=*
+
+Examples: >
+  'a' == 'a'    evaluates to 1
+  'a' == 'b'    evaluates to 0
+<
+
+expr2                                          *vifm-expr2*
+-----
+expr3 . expr3 ..     string concatenation      *vifm-expr-.*
+
+Examples: >
+  'a' . 'b' = 'ab'
+  'aaa' . '' . 'c' = 'aaac'
+<
+
+expr3                                          *vifm-expr3*
+-----
+
+string                                         *vifm-expr-string*
+------
+"string"             string constant           *vifm-expr-quote*
+
+Note that double quotes are used.
+
+A string constant accepts these special characters:
+\b      backspace <bs>
+\e      escape <esc>
+\n      newline
+\r      return <cr>
+\t      tab <tab>
+\\      backslash
+\"      double quote
+
+Examples: >
+  "\"Hello,\tWorld!\""
+  "Hi,\nthere!"
+<
+
+literal-string                                 *vifm-literal-string*
+--------------
+'string'             string constant           *vifm-expr-'*
+
+Note that single quotes are used.
+
+This string is taken as it is.  No backslashes are removed or have a special
+meaning.  The only exception is that two quotes stand for one quote.
+
+Examples: >
+  'All\slashes\are\saved.'
+  'This string contains doubled single quotes ''here'''
+<
+
+environment variable                           *vifm-expr-env*
+--------------------
+$VAR                  environment variable
+
+The String value of any environment variable.  When it is not defined, the
+result is an empty string.
+
+Examples: >
+  'This is my $PATH env: ' . $PATH
+  'vifmrc at ' . $MYVIFMRC . ' is used.'
+<
+
+function call                                  *vifm-expr-function*
+-------------
+function(expr1, ...)  function call
+
+See below |vifm-functions|.
+
+Examples: >
+  "'" . filetype('.') . "'"
+  filetype('.') == 'reg'
+<
 
 --------------------------------------------------------------------------------
 *vifm-functions*

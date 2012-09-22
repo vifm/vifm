@@ -93,6 +93,32 @@ test_chars_after_function_call_fail(void)
 	free(result);
 }
 
+static void
+test_statement(void)
+{
+	const char *args = "'a'=='a'";
+	const char *stop_ptr;
+	char *result;
+
+	result = eval_echo(args, &stop_ptr);
+	assert_true(result != NULL);
+	assert_string_equal("1", result);
+	free(result);
+}
+
+static void
+test_statement_and_not_statement(void)
+{
+	const char *args = "'a'=='a' 'b'";
+	const char *stop_ptr;
+	char *result;
+
+	result = eval_echo(args, &stop_ptr);
+	assert_true(result != NULL);
+	assert_string_equal("1 b", result);
+	free(result);
+}
+
 void
 echo_tests(void)
 {
@@ -105,6 +131,8 @@ echo_tests(void)
 	run_test(test_wrong_expression_position);
 	run_test(test_empty_parens_fail);
 	run_test(test_chars_after_function_call_fail);
+	run_test(test_statement);
+	run_test(test_statement_and_not_statement);
 
 	test_fixture_end();
 }

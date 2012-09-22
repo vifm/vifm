@@ -1892,20 +1892,23 @@ eval_echo(const char args[], const char **stop_ptr)
 	{
 		var_t result = var_false();
 		const ParsingErrors parsing_error = parse(args, &result);
+		char *free_this = NULL;
 		const char *tmp_result = NULL;
 		if(parsing_error == PE_INVALID_EXPRESSION && is_prev_token_whitespace())
 		{
-			tmp_result = get_parsing_result();
+			result = get_parsing_result();
+			tmp_result = free_this = var_to_string(result);
 			args = get_last_parsed_char();
 		}
-		else
+		else if(parsing_error == PE_NO_ERROR)
 		{
-			tmp_result = result.value.string;
+			tmp_result = free_this = var_to_string(result);
 			args = get_last_position();
 		}
 
 		if(tmp_result == NULL)
 		{
+			var_free(result);
 			break;
 		}
 
@@ -1916,6 +1919,7 @@ eval_echo(const char args[], const char **stop_ptr)
 		eval_result = extend_string(eval_result, tmp_result, &len);
 
 		var_free(result);
+		free(free_this);
 	}
 	if(args[0] == '\0')
 	{
