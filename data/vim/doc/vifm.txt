@@ -872,6 +872,10 @@ The builtin commands are:
 :[range]e[dit] [file...] - will load the selected or passed file or files
     into vi.  Accepts macros.
 
+                                               *vifm-:else* *vifm-:el*
+:el[se] - executes commands until next matching |vifm-:endif| if they
+    previously were not being executed.  See also |vifm-:if|.
+
                                                *vifm-:empty*
 :empty - permanently remove files from the $VIFM/Trash directory.  It will
     also remove all operations from undolist that have no sense after :empty
@@ -879,7 +883,7 @@ The builtin commands are:
     registers.
 
                                                *vifm-:endif* *vifm-:en*
-:en[dif] - ends conditional block.  See also |vifm-:if|.
+:en[dif] - ends conditional block.  See also |vifm-:if| and |vifm-:else|.
 
                                                *vifm-:execute* *vifm-:exe*
 :exe[cute] [arg...] - will join all passed arguments by inserting a single
@@ -1054,9 +1058,9 @@ of the hierarchy and transparency for all others.
       c[md]     or :  show command line history.
 
                                                *vifm-:if*
-:if {expr1} - starts conditional block.  Commands are executed until :endif
-    if {expr1} evaluates to non-zero, otherwise they are ignored.  See also
-    |vifm-:endif|.
+:if {expr1} - starts conditional block.  Commands are executed until next
+    matching |vifm-:else| or |vifm-:endif| command if {expr1} evaluates to
+    non-zero, otherwise they are ignored.
 
                                                *vifm-:invert*
 :invert - invert file name filter.

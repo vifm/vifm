@@ -101,6 +101,7 @@ enum
 	COM_SUBSTITUTE,
 	COM_TR,
 	COM_ENDIF,
+	COM_ELSE,
 };
 
 static int swap_range(void);
@@ -135,6 +136,7 @@ static int echo_cmd(const cmd_info_t *cmd_info);
 TSTATIC char * eval_echo(const char args[], const char **stop_ptr);
 static char * extend_string(char *str, const char with[], size_t *len);
 static int edit_cmd(const cmd_info_t *cmd_info);
+static int else_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
 static int endif_cmd(const cmd_info_t *cmd_info);
 static int exe_cmd(const cmd_info_t *cmd_info);
@@ -271,6 +273,8 @@ static const cmd_add_t commands[] = {
 		.handler = echo_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "edit",             .abbr = "e",     .emark = 0,  .id = COM_EDIT,        .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = edit_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
+	{ .name = "else",             .abbr = "el",    .emark = 0,  .id = COM_ELSE,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = else_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "empty",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = empty_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "endif",            .abbr = "en",    .emark = 0,  .id = COM_ENDIF,       .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -915,7 +919,7 @@ execute_command(FileView *view, const char command[], int menu)
 
 	id = get_cmd_id(command);
 
-	if(if_level > 0 && !if_cond && id != COM_ENDIF)
+	if(if_level > 0 && !if_cond && id != COM_ELSE && id != COM_ENDIF)
 	{
 		return 0;
 	}
@@ -2038,6 +2042,20 @@ edit_cmd(const cmd_info_t *cmd_info)
 			shellout(cmd, -1, 1);
 		free(cmd);
 	}
+	return 0;
+}
+
+/* This command designates beginning of the alternative part of if-endif
+ * statement. */
+static int
+else_cmd(const cmd_info_t *cmd_info)
+{
+	if(if_level == 0)
+	{
+		status_bar_error(":else without :if");
+		return 1;
+	}
+	if_cond = !if_cond;
 	return 0;
 }
 

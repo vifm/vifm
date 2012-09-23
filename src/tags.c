@@ -121,6 +121,8 @@ const char *tags[] = {
 	"vifm-:ec",
 	"vifm-:echo",
 	"vifm-:edit",
+	"vifm-:el",
+	"vifm-:else",
 	"vifm-:empty",
 	"vifm-:en",
 	"vifm-:endif",
