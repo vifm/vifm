@@ -51,9 +51,8 @@ var_t function_call(const char func_name[], const call_info_t *call_info);
 /* Initializes function call information structure. */
 void function_call_info_init(call_info_t *call_info);
 
-/* Adds new string argument to call information structure. */
-void function_call_info_add_string_arg(call_info_t *call_info,
-		const char arg[]);
+/* Adds new argument to call information structure.  The var isn't cloned. */
+void function_call_info_add_arg(call_info_t *call_info, var_t var);
 
 /* Frees resources allocated for the call_info structure. */
 void function_call_info_free(call_info_t *call_info);

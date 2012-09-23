@@ -119,17 +119,15 @@ function_call_info_init(call_info_t *call_info)
 }
 
 void
-function_call_info_add_string_arg(call_info_t *call_info, const char arg[])
+function_call_info_add_arg(call_info_t *call_info, var_t var)
 {
-	var_val_t var_val;
 	var_t *ptr = realloc(call_info->argv, sizeof(var_t)*(call_info->argc + 1));
 	if(ptr == NULL)
 	{
 		return;
 	}
 
-	var_val.string = (char *)arg;
-	ptr[call_info->argc++] = var_new(VT_STRING, var_val);
+	ptr[call_info->argc++] = var;
 	call_info->argv = ptr;
 }
 

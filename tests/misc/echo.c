@@ -2,7 +2,15 @@
 
 #include <stdlib.h> /* free() */
 
+#include "../../src/engine/functions.h"
+#include "../../src/engine/var.h"
 #include "../../src/commands.h"
+
+static var_t
+echo_builtin(const call_info_t *call_info)
+{
+	return var_clone(call_info->argv[0]);
+}
 
 static void
 test_one_arg(void)
@@ -119,10 +127,27 @@ test_statement_and_not_statement(void)
 	free(result);
 }
 
+static void
+test_function_call(void)
+{
+	const char *args = "a('hello')";
+	const char *stop_ptr;
+	char *result;
+
+	result = eval_echo(args, &stop_ptr);
+	assert_true(result != NULL);
+	assert_string_equal("hello", result);
+	free(result);
+}
+
 void
 echo_tests(void)
 {
+	static const function_t echo_function = { "a", 1, &echo_builtin };
+
 	test_fixture_start();
+
+	assert_int_equal(0, function_register(&echo_function));
 
 	run_test(test_one_arg);
 	run_test(test_two_space_separated_args);
@@ -133,6 +158,7 @@ echo_tests(void)
 	run_test(test_chars_after_function_call_fail);
 	run_test(test_statement);
 	run_test(test_statement_and_not_statement);
+	run_test(test_function_call);
 
 	test_fixture_end();
 }

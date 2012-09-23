@@ -58,11 +58,7 @@ filetype_builtin(const call_info_t *call_info)
 	var_val_t var_val = { .string = "" };
   free(str_val);
 
-	if(fnum == 0)
-	{
-		var_val.string = "";
-	}
-	else
+	if(fnum >= 0)
 	{
 		const mode_t mode = curr_view->dir_entry[fnum].mode;
 		var_val.string = (char *)get_mode_str(mode);
@@ -70,7 +66,7 @@ filetype_builtin(const call_info_t *call_info)
 	return var_new(VT_STRING, var_val);
 }
 
-/* Returns file type from position. */
+/* Returns file type from position or -1 if the position has wrong value. */
 static int
 get_fnum(const char position[])
 {
@@ -80,7 +76,7 @@ get_fnum(const char position[])
 	}
 	else
 	{
-		return 0;
+		return -1;
 	}
 }
 

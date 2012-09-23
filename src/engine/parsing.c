@@ -44,9 +44,9 @@ TOKEN_TYPE;
 
 static const int whitespace_allowed = 1;
 
-static void eval_statement(const char **in);
-static void eval_expression(const char **in);
-static void eval_term(const char **in);
+static var_t eval_statement(const char **in);
+static var_t eval_expression(const char **in);
+static var_t eval_term(const char **in);
 static void eval_single_quoted_string(const char **in);
 static int eval_single_quoted_char(const char **in);
 static void eval_double_quoted_string(const char **in);
@@ -106,7 +106,7 @@ parse(const char input[], var_t *result)
 	res_val = var_false();
 	last_position = input;
 	get_next(&last_position);
-	eval_statement(&last_position);
+	res_val = eval_statement(&last_position);
 	last_parsed_char = last_position;
 
 	if(last_token.type != END)
@@ -147,65 +147,66 @@ is_prev_token_whitespace(void)
 
 /* stmt ::= expr | expr op expr */
 /* op ::= '==' | '!=' */
-static void
+static var_t
 eval_statement(const char **in)
 {
 	TOKEN_TYPE op;
-	var_t left_operand;
+	var_t lhs;
+	var_t rhs;
 	var_val_t result;
 
-	eval_expression(in);
+	lhs = eval_expression(in);
 	if(last_error != PE_NO_ERROR)
 	{
-		return;
+		return lhs;
 	}
 	else if(last_token.type == END)
 	{
-		return;
+		return lhs;
 	}
 	else if(last_token.type != EQ && last_token.type != NE)
 	{
 		last_error = PE_INVALID_EXPRESSION;
-		return;
+		/* Return partial result. */
+		return lhs;
 	}
 	op = last_token.type;
 
-	left_operand = res_val;
-	res_val = var_false();
-	target_buffer[0] = '\0';
-
 	get_next(in);
-	eval_expression(in);
+	rhs = eval_expression(in);
 	if(last_error != PE_NO_ERROR)
 	{
-		var_free(left_operand);
-		return;
+		var_free(lhs);
+		return var_false();
 	}
 
-	result.integer = strcmp(left_operand.value.string, res_val.value.string) == 0;
+	/* This is OK for now, but needs to be improved in the future. */
+	result.integer = strcmp(lhs.value.string, rhs.value.string) == 0;
 	if(op == NE)
 	{
 		result.integer = !result.integer;
 	}
 
-	var_free(res_val);
-	res_val = var_new(VT_INT, result);
-
-	var_free(left_operand);
+	var_free(lhs);
+	var_free(rhs);
+	return var_new(VT_INT, result);
 }
 
 /* expr ::= term { '.' term } */
-static void
+static var_t
 eval_expression(const char **in)
 {
 	char buffer[CMD_LINE_LENGTH_MAX];
+	char *old_target_buffer = target_buffer;
 	buffer[0] = '\0';
 	target_buffer = buffer;
 
 	while(last_error == PE_NO_ERROR)
 	{
+		var_t term;
+
 		skip_whitespace_tokens(in);
-		eval_term(in);
+		term = eval_term(in);
 		skip_whitespace_tokens(in);
 		if(last_error != PE_NO_ERROR)
 		{
@@ -213,33 +214,43 @@ eval_expression(const char **in)
 		}
 		else if(last_token.type == WHITESPACE && !whitespace_allowed)
 		{
+			var_free(term);
 			break;
 		}
-		else if(last_token.type == DOT)
-		{
-			get_next(in);
-		}
-		else if(last_token.type == END)
-		{
-			break;
-		}
-		else
+
+		strcat(buffer, term.value.string);
+		var_free(term);
+
+		if(last_token.type != DOT)
 		{
 			break;
 		}
+
+		get_next(in);
 	}
+
+	target_buffer = old_target_buffer;
 
 	if(last_error == PE_NO_ERROR)
 	{
 		const var_val_t var_val = { .string = buffer };
-		res_val = var_new(VT_STRING, var_val);
+		return var_new(VT_STRING, var_val);
+	}
+	else
+	{
+		return var_false();
 	}
 }
 
 /* term ::= sqstr | dqstr | envvar | funccall */
-static void
+static var_t
 eval_term(const char **in)
 {
+	char buffer[CMD_LINE_LENGTH_MAX];
+	char *old_target_buffer = target_buffer;
+	buffer[0] = '\0';
+	target_buffer = buffer;
+
 	switch(last_token.type)
 	{
 		case SQ:
@@ -261,12 +272,23 @@ eval_term(const char **in)
 				eval_funccall(in);
 			}
 			break;
-			/* break is omitted intensionally. */
 
 		default:
 			--*in;
 			last_error = PE_INVALID_EXPRESSION;
 			break;
+	}
+
+	target_buffer = old_target_buffer;
+
+	if(last_error == PE_NO_ERROR)
+	{
+		const var_val_t var_val = { .string = buffer };
+		return var_new(VT_STRING, var_val);
+	}
+	else
+	{
+		return var_false();
 	}
 }
 
@@ -419,6 +441,7 @@ eval_funccall(const char **in)
 	skip_whitespace_tokens(in);
 
 	function_call_info_init(&call_info);
+	/* If argument list is not empty. */
 	if(last_token.type != RPAREN)
 	{
 		const char *old_in = *in - 1;
@@ -463,19 +486,16 @@ eval_arglist(const char **in, call_info_t *call_info)
 	}
 }
 
+/* arg ::= expr */
 static void
 eval_arg(const char **in, call_info_t *call_info)
 {
-	char *old_target_buffer = target_buffer;
-	char buffer[CMD_LINE_LENGTH_MAX];
-	target_buffer = buffer;
-	buffer[0] = '\0';
-
-	(void)eval_expression(in);
-	skip_whitespace_tokens(in);
-	function_call_info_add_string_arg(call_info, buffer);
-
-	target_buffer = old_target_buffer;
+	var_t arg = eval_expression(in);
+	if(last_error == PE_NO_ERROR)
+	{
+		function_call_info_add_arg(call_info, arg);
+		skip_whitespace_tokens(in);
+	}
 }
 
 /* Skips series of consecutive whitespace. */
