@@ -37,6 +37,8 @@
 
 	Added support for `==` and `!=` operators.
 
+	Added :if and :endif commands.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 

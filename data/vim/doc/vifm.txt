@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 22
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 23
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -878,6 +878,9 @@ The builtin commands are:
     and remove all records about files in the Trash directory from all
     registers.
 
+                                               *vifm-:endif* *vifm-:en*
+:en[dif] - ends conditional block.  See also |vifm-:if|.
+
                                                *vifm-:execute* *vifm-:exe*
 :exe[cute] [arg...] - will join all passed arguments by inserting a single
     space between them and execute resulting string as a command-line command.
@@ -1049,6 +1052,11 @@ of the hierarchy and transparency for all others.
       f[search] or /  show search history and search forward on l key.
       b[search] or ?  show search history and search backward on l key.
       c[md]     or :  show command line history.
+
+                                               *vifm-:if*
+:if {expr1} - starts conditional block.  Commands are executed until :endif
+    if {expr1} evaluates to non-zero, otherwise they are ignored.  See also
+    |vifm-:endif|.
 
                                                *vifm-:invert*
 :invert - invert file name filter.

@@ -18,6 +18,7 @@ vim_like_completion(void)
 	ASSERT_NEXT_MATCH("echo");
 	ASSERT_NEXT_MATCH("edit");
 	ASSERT_NEXT_MATCH("empty");
+	ASSERT_NEXT_MATCH("endif");
 	ASSERT_NEXT_MATCH("execute");
 	ASSERT_NEXT_MATCH("exit");
 	ASSERT_NEXT_MATCH("e");

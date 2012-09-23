@@ -1,4 +1,4 @@
-.TH vifm 1 "September 22, 2012" "" "Vifm"
+.TH vifm 1 "September 23, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -995,6 +995,9 @@ will permanently remove 'rm -fr' files from the Trash directory.  It will also
 remove all operations from undolist that have no sense after :empty and remove
 all records about files in the Trash directory from all registers.
 .TP
+.BI :en[dif]
+ends conditional block.  See also help on :if.
+.TP
 .BI ":exe[cute] [arg...]"
 will join all passed arguments by inserting a single space between them and
 execute resulting string as a command-line command.
@@ -1192,6 +1195,11 @@ f[search] or / show search history and search forward on l key.
 b[search] or ? show search history and search backward on l key.
 .br
 c[md]     or : show command line history.
+.TP
+.BI ":if {expr1}"
+starts conditional block.  Commands are executed until :endif if {expr1}
+evaluates to non-zero, otherwise they are ignored.  See also help on :endif
+command.
 .TP
 .BI :invert
 invert file name filter.
