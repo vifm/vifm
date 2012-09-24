@@ -90,10 +90,11 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	modes/modes.$(OBJEXT) modes/normal.$(OBJEXT) \
 	modes/view.$(OBJEXT) modes/visual.$(OBJEXT) \
 	utils/env.$(OBJEXT) utils/file_streams.$(OBJEXT) \
-	utils/fs.$(OBJEXT) utils/log.$(OBJEXT) utils/path.$(OBJEXT) \
-	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
-	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
-	utils/utils.$(OBJEXT) background.$(OBJEXT) bookmarks.$(OBJEXT) \
+	utils/fs.$(OBJEXT) utils/int_stack.$(OBJEXT) \
+	utils/log.$(OBJEXT) utils/path.$(OBJEXT) utils/str.$(OBJEXT) \
+	utils/string_array.$(OBJEXT) utils/tree.$(OBJEXT) \
+	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
+	background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	builtin_functions.$(OBJEXT) color_scheme.$(OBJEXT) \
 	column_view.$(OBJEXT) commands.$(OBJEXT) \
 	commands_completion.$(OBJEXT) desktop.$(OBJEXT) \
@@ -339,6 +340,7 @@ vifm_SOURCES = \
 	utils/env.c utils/env.h \
 	utils/file_streams.c utils/file_streams.h \
 	utils/fs.c utils/fs.h \
+	utils/int_stack.c utils/int_stack.h \
 	utils/log.c utils/log.h \
 	utils/macros.h \
 	utils/path.c utils/path.h \
@@ -591,6 +593,8 @@ utils/file_streams.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/fs.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
+utils/int_stack.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/log.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/path.$(OBJEXT): utils/$(am__dirstamp) \
@@ -691,6 +695,7 @@ mostlyclean-compile:
 	-rm -f utils/env.$(OBJEXT)
 	-rm -f utils/file_streams.$(OBJEXT)
 	-rm -f utils/fs.$(OBJEXT)
+	-rm -f utils/int_stack.$(OBJEXT)
 	-rm -f utils/log.$(OBJEXT)
 	-rm -f utils/path.$(OBJEXT)
 	-rm -f utils/str.$(OBJEXT)
@@ -783,6 +788,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/env.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/file_streams.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/int_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/log.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/path.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/str.Po@am__quote@
