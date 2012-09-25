@@ -35,6 +35,10 @@
 
 	Added support for builtin functions and filetype() as the first one.
 
+	Added support for `==` and `!=` operators.
+
+	Added :if, :else and :endif commands.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 

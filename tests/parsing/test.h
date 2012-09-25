@@ -1,0 +1,27 @@
+#ifndef __TEST_H__
+#define __TEST_H__
+
+/* This should be a macro to see what test have failed. */
+#define ASSERT_OK(str, result) \
+	{ \
+		char *str_res; \
+		var_t res_var = var_false(); \
+		assert_int_equal(PE_NO_ERROR, parse((str), &res_var)); \
+		str_res = var_to_string(res_var); \
+		assert_string_equal((result), str_res); \
+		free(str_res); \
+		var_free(res_var); \
+	}
+
+/* This should be a macro to see what test have failed. */
+#define ASSERT_FAIL(str, error) \
+	{ \
+		var_t res_var = var_false(); \
+		assert_int_equal((error), parse((str), &res_var)); \
+		var_free(res_var); \
+	}
+
+#endif /* __TEST_H__ */
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

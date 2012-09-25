@@ -19,9 +19,11 @@
 #include <sys/types.h> /* mode_t */
 
 #include <assert.h>
+#include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() strdup() */
 
 #include "engine/functions.h"
+#include "engine/var.h"
 #include "utils/macros.h"
 #include "utils/utils.h"
 #include "ui.h"
@@ -51,19 +53,20 @@ init_builtin_functions(void)
 static var_t
 filetype_builtin(const call_info_t *call_info)
 {
-	const int fnum = get_fnum(call_info->argv[0]);
-	if(fnum == 0)
+	char *str_val = var_to_string(call_info->argv[0]);
+	const int fnum = get_fnum(str_val);
+	var_val_t var_val = { .string = "" };
+  free(str_val);
+
+	if(fnum >= 0)
 	{
-		return strdup("");
+		const mode_t mode = curr_view->dir_entry[fnum].mode;
+		var_val.string = (char *)get_mode_str(mode);
 	}
-	else
-	{
-		mode_t mode = curr_view->dir_entry[fnum].mode;
-		return strdup(get_mode_str(mode));
-	}
+	return var_new(VT_STRING, var_val);
 }
 
-/* Returns file type from position. */
+/* Returns file type from position or -1 if the position has wrong value. */
 static int
 get_fnum(const char position[])
 {
@@ -73,7 +76,7 @@ get_fnum(const char position[])
 	}
 	else
 	{
-		return 0;
+		return -1;
 	}
 }
 

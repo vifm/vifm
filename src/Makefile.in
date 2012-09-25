@@ -72,8 +72,9 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	engine/cmds.$(OBJEXT) engine/completion.$(OBJEXT) \
 	engine/functions.$(OBJEXT) engine/keys.$(OBJEXT) \
 	engine/options.$(OBJEXT) engine/parsing.$(OBJEXT) \
-	engine/text_buffer.$(OBJEXT) engine/variables.$(OBJEXT) \
-	menus/apropos_menu.$(OBJEXT) menus/bookmarks_menu.$(OBJEXT) \
+	engine/text_buffer.$(OBJEXT) engine/var.$(OBJEXT) \
+	engine/variables.$(OBJEXT) menus/apropos_menu.$(OBJEXT) \
+	menus/bookmarks_menu.$(OBJEXT) \
 	menus/colorscheme_menu.$(OBJEXT) menus/commands_menu.$(OBJEXT) \
 	menus/dirhistory_menu.$(OBJEXT) menus/dirstask_menu.$(OBJEXT) \
 	menus/filetypes_menu.$(OBJEXT) menus/find_menu.$(OBJEXT) \
@@ -89,10 +90,11 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	modes/modes.$(OBJEXT) modes/normal.$(OBJEXT) \
 	modes/view.$(OBJEXT) modes/visual.$(OBJEXT) \
 	utils/env.$(OBJEXT) utils/file_streams.$(OBJEXT) \
-	utils/fs.$(OBJEXT) utils/log.$(OBJEXT) utils/path.$(OBJEXT) \
-	utils/str.$(OBJEXT) utils/string_array.$(OBJEXT) \
-	utils/tree.$(OBJEXT) utils/utf8.$(OBJEXT) \
-	utils/utils.$(OBJEXT) background.$(OBJEXT) bookmarks.$(OBJEXT) \
+	utils/fs.$(OBJEXT) utils/int_stack.$(OBJEXT) \
+	utils/log.$(OBJEXT) utils/path.$(OBJEXT) utils/str.$(OBJEXT) \
+	utils/string_array.$(OBJEXT) utils/tree.$(OBJEXT) \
+	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
+	background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	builtin_functions.$(OBJEXT) color_scheme.$(OBJEXT) \
 	column_view.$(OBJEXT) commands.$(OBJEXT) \
 	commands_completion.$(OBJEXT) desktop.$(OBJEXT) \
@@ -299,6 +301,7 @@ vifm_SOURCES = \
 	engine/options.c engine/options.h \
 	engine/parsing.c engine/parsing.h \
 	engine/text_buffer.c engine/text_buffer.h \
+	engine/var.c engine/var.h \
 	engine/variables.c engine/variables.h \
 	\
 	menus/all.h \
@@ -337,6 +340,7 @@ vifm_SOURCES = \
 	utils/env.c utils/env.h \
 	utils/file_streams.c utils/file_streams.h \
 	utils/fs.c utils/fs.h \
+	utils/int_stack.c utils/int_stack.h \
 	utils/log.c utils/log.h \
 	utils/macros.h \
 	utils/path.c utils/path.h \
@@ -498,6 +502,8 @@ engine/parsing.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
 engine/text_buffer.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
+engine/var.$(OBJEXT): engine/$(am__dirstamp) \
+	engine/$(DEPDIR)/$(am__dirstamp)
 engine/variables.$(OBJEXT): engine/$(am__dirstamp) \
 	engine/$(DEPDIR)/$(am__dirstamp)
 menus/$(am__dirstamp):
@@ -587,6 +593,8 @@ utils/file_streams.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/fs.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
+utils/int_stack.$(OBJEXT): utils/$(am__dirstamp) \
+	utils/$(DEPDIR)/$(am__dirstamp)
 utils/log.$(OBJEXT): utils/$(am__dirstamp) \
 	utils/$(DEPDIR)/$(am__dirstamp)
 utils/path.$(OBJEXT): utils/$(am__dirstamp) \
@@ -654,6 +662,7 @@ mostlyclean-compile:
 	-rm -f engine/options.$(OBJEXT)
 	-rm -f engine/parsing.$(OBJEXT)
 	-rm -f engine/text_buffer.$(OBJEXT)
+	-rm -f engine/var.$(OBJEXT)
 	-rm -f engine/variables.$(OBJEXT)
 	-rm -f menus/apropos_menu.$(OBJEXT)
 	-rm -f menus/bookmarks_menu.$(OBJEXT)
@@ -686,6 +695,7 @@ mostlyclean-compile:
 	-rm -f utils/env.$(OBJEXT)
 	-rm -f utils/file_streams.$(OBJEXT)
 	-rm -f utils/fs.$(OBJEXT)
+	-rm -f utils/int_stack.$(OBJEXT)
 	-rm -f utils/log.$(OBJEXT)
 	-rm -f utils/path.$(OBJEXT)
 	-rm -f utils/str.$(OBJEXT)
@@ -745,6 +755,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/options.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/parsing.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/text_buffer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/var.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@engine/$(DEPDIR)/variables.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/apropos_menu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@menus/$(DEPDIR)/bookmarks_menu.Po@am__quote@
@@ -777,6 +788,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/env.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/file_streams.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/fs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/int_stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/log.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/path.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@utils/$(DEPDIR)/str.Po@am__quote@

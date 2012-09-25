@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@lavabit.com>
-" Last Change: September 16, 2012
+" Last Change: September 24, 2012
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -14,13 +14,13 @@ set cpo-=C
 
 " General commands
 syntax keyword vifmCommand contained alink apropos cd change chmod chown clone
-		\ co[py] d[elete] delm[arks] di[splay] dirs ec[ho] e[dit] empty exe[cute]
-		\ exi[t] file filter fin[d] fini[sh] gr[ep] h[elp] hi[ghlight] his[tory]
-		\ invert jobs let locate ls marks mes[sages] mkdir m[ove] noh[lsearch]
-		\ on[ly] popd pushd pwd q[uit] reg[isters] rename restart restore rlink
-		\ screen se[t] sh[ell] sor[t] so[urce] sp[lit] s[ubstitute] touch tr sync
-		\ undol[ist] unl[et] ve[rsion] vie[w] vifm windo winrun w[rite] wq x[it]
-		] y[ank]
+		\ co[py] d[elete] delm[arks] di[splay] dirs e[dit] el[se] empty en[dif]
+		\ exe[cute] exi[t] file filter fin[d] fini[sh] gr[ep] h[elp] hi[ghlight]
+		\ his[tory] invert jobs let locate ls marks mes[sages] mkdir m[ove]
+		\ noh[lsearch] on[ly] popd pushd pwd q[uit] reg[isters] rename restart
+		\ restore rlink screen se[t] sh[ell] sor[t] so[urce] sp[lit] s[ubstitute]
+		\ touch tr sync undol[ist] unl[et] ve[rsion] vie[w] vifm windo winrun
+		\ w[rite] wq x[it] y[ank]
 
 " Map commands
 syntax keyword vifmMap contained cm[ap] cno[remap] cu[nmap] map mm[ap]
@@ -33,6 +33,13 @@ syntax keyword vifmCmdCommand contained com[mand]
 syntax keyword vifmColoCommand contained colo[rscheme]
 syntax keyword vifmMarkCommand contained ma[rk]
 syntax keyword vifmFtCommand contained filet[ype] filex[type] filev[iewer]
+syntax keyword vifmExprCommand contained if ec[ho]
+
+" Builtin functions
+syntax match vifmBuiltinFunction 'filetype\ze('
+
+" Operators
+syntax match vifmOperator "\(==\|!=\)" skipwhite
 
 " Highlight groups
 syntax keyword vifmHiArgs contained cterm ctermfg ctermbg
@@ -74,6 +81,7 @@ syntax region vifmStatement start='^\s*' skip='\(\n\s*\\\)\|\(\n\s*".*$\)'
 		\ end='$' keepend
 		\ contains=vifmCommand,vifmCmdCommandSt,vifmMarkCommandSt,vifmFtCommandSt
 		\,vifmMap,vifmMapSt,vifmExecute,vifmCommands,vifmMapRhs,vifmComment
+		\,vifmExprCommandSt
 syntax region vifmCmdCommandSt start='^\s*com\%[mand]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend contains=vifmCmdCommand,vifmComment
@@ -84,6 +92,10 @@ syntax region vifmMarkCommandSt start='^\s*ma\%[rk]\>' end='$' keepend oneline
 syntax region vifmFtCommandSt start='^\s*file[tvx]'
 		\ skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$' keepend
 		\ contains=vifmFtCommand,vifmComment
+syntax region vifmExprCommandSt start='\<\(if\|ec\%[ho]\)\>'
+		\ end='$' keepend
+		\ contains=vifmExprCommand,vifmString,vifmStringInExpr,vifmBuiltinFunction
+		\,vifmOperator,vifmEnvVar
 syntax region vifmExecute start='!' end='$' keepend oneline
 		\ contains=vifmNotation
 syntax region vifmCommands start=':' end='$' keepend oneline
@@ -91,7 +103,7 @@ syntax region vifmCommands start=':' end='$' keepend oneline
 syntax match vifmMapLhs /\S\+/ contained contains=vifmNotation
 		\ nextgroup=vifmMapRhs
 syntax match vifmMapRhs /\s\+\S\+/ contained
-		\ contains=vifmNotation,vifmCommand,vifmExecute,vifmSet2
+		\ contains=vifmNotation,vifmCommand,vifmExecute,vifmSet2,vifmExprCommandSt
 syntax region vifmHi matchgroup=vifmCommand
 		\ start='\<hi\%[ghlight]\>' skip='\(\n\s*\\\)\|\(\n\s*".*$\)' end='$'
 		\ keepend
@@ -111,8 +123,10 @@ syntax region vifmLet
 		\ keepend contains=vifmEnvVar,vifmString,vifmStringInExpr
 syntax region vifmString contained start=+="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
 syntax region vifmString contained start=+='+hs=s+1 skip=+\\\\\|\\'+  end=+'+
-syntax region vifmStringInExpr contained start=+\."+hs=s+1 skip=+\\\\\|\\"+  end=+"+
-syntax region vifmStringInExpr contained start=+\.'+hs=s+1 skip=+\\\\\|\\'+  end=+'+
+syntax region vifmStringInExpr contained start=+=\@<="+hs=s+1 skip=+\\\\\|\\"+  end=+"+
+syntax region vifmStringInExpr contained start=+=\@<='+hs=s+1 skip=+\\\\\|\\'+  end=+'+
+syntax region vifmStringInExpr contained start=+[.( ]"+hs=s+1 skip=+\\\\\|\\"+  end=+"+
+syntax region vifmStringInExpr contained start=+[.( ]'+hs=s+1 skip=+\\\\\|\\'+  end=+'+
 syntax match vifmEnvVar contained /\$[0-9a-zA-Z_]\+/
 syntax match vifmNumber contained /\d\+/
 
@@ -134,6 +148,9 @@ highlight link vifmCmdCommand Statement
 highlight link vifmColoCommand Statement
 highlight link vifmMarkCommand Statement
 highlight link vifmFtCommand Statement
+highlight link vifmExprCommand Statement
+highlight link vifmBuiltinFunction Function
+highlight link vifmOperator Operator
 highlight link vifmMap Statement
 highlight link vifmHiArgs Type
 highlight link vifmHiGroups Identifier

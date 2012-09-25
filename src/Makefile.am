@@ -25,6 +25,7 @@ vifm_SOURCES = \
 	engine/options.c engine/options.h \
 	engine/parsing.c engine/parsing.h \
 	engine/text_buffer.c engine/text_buffer.h \
+	engine/var.c engine/var.h \
 	engine/variables.c engine/variables.h \
 	\
 	menus/all.h \
@@ -63,6 +64,7 @@ vifm_SOURCES = \
 	utils/env.c utils/env.h \
 	utils/file_streams.c utils/file_streams.h \
 	utils/fs.c utils/fs.h \
+	utils/int_stack.c utils/int_stack.h \
 	utils/log.c utils/log.h \
 	utils/macros.h \
 	utils/path.c utils/path.h \

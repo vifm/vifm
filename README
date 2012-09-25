@@ -46,9 +46,11 @@ Package content
     |  |  |
     |  |  |-- cmds.c - command line parsing core
     |  |  |-- completion.c - provides means to fill and get completion list
+    |  |  |-- functions.c - provides support for builtin functions
     |  |  |-- keys.c - analyzes users input
     |  |  |-- options.c - :set command
     |  |  |-- parsing.c - parses expressions
+    |  |  |-- var.c - all needed to work with variables
     |  |  `-- variables.c - handles :let and :unlet commands
     |  |
     |  |-- menus/ - implementation of all menus
@@ -98,6 +100,7 @@ Package content
     |  |  |-- env.c - environment variables related functions
     |  |  |-- fs.c - functions to deal with file system objects
     |  |  |-- file_streams.c - file stream reading related functions
+    |  |  |-- int_stack.c - int stack "object"
     |  |  |-- log.c - primitive logging
     |  |  |-- path.c - various functions to work with paths
     |  |  |-- str.c - various string functions

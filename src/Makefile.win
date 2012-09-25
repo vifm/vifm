@@ -14,7 +14,7 @@ cfg := config.c info.c
 cfg := $(addprefix cfg/, $(cfg))
 
 engine := cmds.c functions.c completion.c keys.c options.c parsing.c \
-          text_buffer.c variables.c
+          text_buffer.c var.c variables.c
 engine := $(addprefix engine/, $(engine))
 
 menus := apropos_menu.c bookmarks_menu.c colorscheme_menu.c commands_menu.c \
@@ -31,8 +31,8 @@ modes := $(dialogs) cmdline.c file_info.c menu.c modes.c normal.c view.c \
          visual.c
 modes := $(addprefix modes/, $(modes))
 
-utilities := env.c file_streams.c fs.c log.c path.c str.c string_array.c \
-             tree.c utf8.c utils.c
+utilities := env.c file_streams.c fs.c int_stack.c log.c path.c str.c \
+             string_array.c tree.c utf8.c utils.c
 utilities := $(addprefix utils/, $(utilities))
 
 vifm_SOURCES := $(cfg) $(engine) $(menus) $(modes) $(utilities) background.c \

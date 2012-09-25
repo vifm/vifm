@@ -19,6 +19,8 @@
 #ifndef __PARSING_H__
 #define __PARSING_H__
 
+#include "var.h"
+
 /* An enumeration of possible parsing errors. */
 typedef enum
 {
@@ -40,9 +42,6 @@ typedef void (*print_error_func)(const char msg[]);
 /* getenv_f can be NULL */
 void init_parser(getenv_func getenv_f);
 
-/* Returns the last error occurred during parsing. */
-ParsingErrors get_parsing_error(void);
-
 /* Returns logical (e.g. beginning of wrong expression) position in a string,
  * where parser has stopped. */
 const char * get_last_position(void);
@@ -50,14 +49,13 @@ const char * get_last_position(void);
 /* Returns actual position in a string, where parser has stopped. */
 const char * get_last_parsed_char(void);
 
-/* Performs parsing. After calling this function get_parsing_error() and
- * get_last_position() will return useful information.
- * Returns a pointer to a statically allocated buffer, that contains result of
- * expression evaluation or NULL on error. */
-const char * parse(const char *input);
+/* Performs parsing.  After calling this function get_last_position() will
+ * return useful information.  Returns error code and puts result of expression
+ * evaluation in the result parameter. */
+ParsingErrors parse(const char input[], var_t *result);
 
-/* Returns evaluation result, may be to get value on error. */
-const char * get_parsing_result(void);
+/* Returns evaluation result, may be used to get value on error. */
+var_t get_parsing_result(void);
 
 /* Returns non-zero if previously read token was whitespace. */
 int is_prev_token_whitespace(void);

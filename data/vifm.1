@@ -1,4 +1,4 @@
-.TH vifm 1 "September 18, 2012" "" "Vifm"
+.TH vifm 1 "September 23, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -990,10 +990,17 @@ See help on :let command for definition of <expr>.
 .BI ":[range]e[dit] [file...]"
 will load the selected or passed file or files into vi.  Accepts macros.
 .TP
+.BI :el[se]
+executes commands until next matching :endif if they previously were not being
+executed.  See also help on :if and :endif commands.
+.TP
 .BI :empty
 will permanently remove 'rm -fr' files from the Trash directory.  It will also
 remove all operations from undolist that have no sense after :empty and remove
 all records about files in the Trash directory from all registers.
+.TP
+.BI :en[dif]
+ends conditional block.  See also help on :if and :else commands.
 .TP
 .BI ":exe[cute] [arg...]"
 will join all passed arguments by inserting a single space between them and
@@ -1192,6 +1199,11 @@ f[search] or / show search history and search forward on l key.
 b[search] or ? show search history and search backward on l key.
 .br
 c[md]     or : show command line history.
+.TP
+.BI ":if {expr1}"
+starts conditional block.  Commands are executed until next matching :else of
+:endif command if {expr1} evaluates to non-zero, otherwise they are ignored.
+See also help on :else and :endif commands.
 .TP
 .BI :invert
 invert file name filter.
@@ -2260,6 +2272,137 @@ example:
 .EE
 
 will put "man " in line when you hit the <f1> key in the command line mode.
+.\" ---------------------------------------------------------------------------
+.SH Expression syntax
+.\" ---------------------------------------------------------------------------
+Supported expressions is a subset of what VimL provides.
+
+Expression syntax summary, from least to most significant:
+
+vifm-expr1 expr2 == expr2          equal
+           expr2 != expr2          not equal
+
+vifm-expr2 expr3 . expr3 ..        string concatenation
+
+vifm-expr3 "string"                string constant, \\ is special
+           'string'                string constant, ' is doubled
+           $VAR                    environment variable
+           function(expr1, ...)    function call
+
+".." indicates that the operations in this level can be concatenated.
+
+expr1
+.br
+-----
+.br
+expr2 {cmp} expr2
+
+Compare two expr2 expressions, resulting in a 0 if it evaluates to false or 1
+if it evaluates to true.
+
+equal     ==
+.br
+notequal  !=
+
+Examples:
+.EX
+ 'a' == 'a'    evaluates to 1
+ 'a' == 'b'    evaluates to 0
+.EE
+
+expr2
+.br
+-----
+.br
+expr3 . expr3 ..     string concatenation
+
+Examples:
+.EX
+ 'a' . 'b' = 'ab'
+ 'aaa' . '' . 'c' = 'aaac'
+.EE
+
+expr3
+.br
+-----
+.br
+
+string
+.br
+------
+.br
+"string"             string constant
+
+Note that double quotes are used.
+
+A string constant accepts these special characters:
+.br
+\\b      backspace <bs>
+.br
+\\e      escape <esc>
+.br
+\\n      newline
+.br
+\\r      return <cr>
+.br
+\\t      tab <tab>
+.br
+\\\\      backslash
+.br
+\\"      double quote
+.br
+
+Examples:
+.EX
+ "\\"Hello,\\tWorld!\\""
+ "Hi,\\nthere!"
+.EE
+
+literal-string
+.br
+--------------
+.br
+\'string'             string constant
+
+Note that single quotes are used.
+
+This string is taken as it is.  No backslashes are removed or have a special
+meaning.  The only exception is that two quotes stand for one quote.
+
+Examples:
+.EX
+ 'All\\slashes\\are\\saved.'
+ 'This string contains doubled single quotes ''here'''
+.EE
+
+environment variable
+.br
+--------------------
+.br
+$VAR                  environment variable
+
+The String value of any environment variable.  When it is not defined, the
+result is an empty string.
+
+Examples:
+.EX
+ 'This is my $PATH env: ' . $PATH
+ 'vifmrc at ' . $MYVIFMRC . ' is used.'
+.EE
+
+function call
+.br
+-------------
+.br
+function(expr1, ...)  function call
+
+See Functions section below.
+
+Examples:
+.EX
+ "'" . filetype('.') . "'"
+ filetype('.') == 'reg'
+.EE
 .\" ---------------------------------------------------------------------------
 .SH Functions
 .\" ---------------------------------------------------------------------------

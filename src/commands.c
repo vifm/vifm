@@ -48,6 +48,7 @@
 #include "engine/options.h"
 #include "engine/parsing.h"
 #include "engine/text_buffer.h"
+#include "engine/var.h"
 #include "engine/variables.h"
 #include "menus/all.h"
 #include "menus/menus.h"
@@ -62,6 +63,7 @@
 #include "modes/visual.h"
 #include "utils/env.h"
 #include "utils/fs.h"
+#include "utils/int_stack.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -99,6 +101,7 @@ enum
 	COM_FILTER = -100,
 	COM_SUBSTITUTE,
 	COM_TR,
+	COM_IF_STMT,
 };
 
 static int swap_range(void);
@@ -133,7 +136,9 @@ static int echo_cmd(const cmd_info_t *cmd_info);
 TSTATIC char * eval_echo(const char args[], const char **stop_ptr);
 static char * extend_string(char *str, const char with[], size_t *len);
 static int edit_cmd(const cmd_info_t *cmd_info);
+static int else_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
+static int endif_cmd(const cmd_info_t *cmd_info);
 static int exe_cmd(const cmd_info_t *cmd_info);
 static int file_cmd(const cmd_info_t *cmd_info);
 static int filetype_cmd(const cmd_info_t *cmd_info);
@@ -150,6 +155,7 @@ static const char *get_group_str(int group, col_attr_t col);
 static int get_color(const char str[], int fg, int *attr);
 static int get_attrs(const char *text);
 static int history_cmd(const cmd_info_t *cmd_info);
+static int if_cmd(const cmd_info_t *cmd_info);
 static int invert_cmd(const cmd_info_t *cmd_info);
 static int jobs_cmd(const cmd_info_t *cmd_info);
 static int let_cmd(const cmd_info_t *cmd_info);
@@ -267,8 +273,12 @@ static const cmd_add_t commands[] = {
 		.handler = echo_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "edit",             .abbr = "e",     .emark = 0,  .id = COM_EDIT,        .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = edit_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
+	{ .name = "else",             .abbr = "el",    .emark = 0,  .id = COM_IF_STMT,     .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = else_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "empty",            .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = empty_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
+	{ .name = "endif",            .abbr = "en",    .emark = 0,  .id = COM_IF_STMT,     .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = endif_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "execute",          .abbr = "exe",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = exe_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "exit",             .abbr = "exi",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -295,6 +305,8 @@ static const cmd_add_t commands[] = {
 		.handler = highlight_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 4,       .select = 0, },
 	{ .name = "history",          .abbr = "his",   .emark = 0,  .id = COM_HISTORY,     .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = history_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
+	{ .name = "if",               .abbr = NULL,    .emark = 0,  .id = COM_IF_STMT,     .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = if_cmd,          .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "invert",           .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = invert_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "jobs",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -432,6 +444,8 @@ static cmds_conf_t cmds_conf = {
 };
 
 static int need_clean_selection;
+/* Stores condition evaluation result for all nesting if-endif statements. */
+static int_stack_t if_levels;
 
 void
 exec_startup_commands(int c, char **v)
@@ -902,6 +916,13 @@ execute_command(FileView *view, const char command[], int menu)
 	}
 
 	id = get_cmd_id(command);
+
+	if(!int_stack_is_empty(&if_levels) && !int_stack_get_top(&if_levels) &&
+			id != COM_IF_STMT)
+	{
+		return 0;
+	}
+
 	if(id == USER_CMD_ID)
 	{
 		char buf[COMMAND_GROUP_INFO_LEN];
@@ -1889,20 +1910,25 @@ eval_echo(const char args[], const char **stop_ptr)
 
 	while(args[0] != '\0')
 	{
-		const char *tmp_result = parse(args);
-		if(tmp_result == NULL && is_prev_token_whitespace() &&
-				get_parsing_error() == PE_INVALID_EXPRESSION)
+		var_t result = var_false();
+		const ParsingErrors parsing_error = parse(args, &result);
+		char *free_this = NULL;
+		const char *tmp_result = NULL;
+		if(parsing_error == PE_INVALID_EXPRESSION && is_prev_token_whitespace())
 		{
-			tmp_result = get_parsing_result();
+			result = get_parsing_result();
+			tmp_result = free_this = var_to_string(result);
 			args = get_last_parsed_char();
 		}
-		else
+		else if(parsing_error == PE_NO_ERROR)
 		{
+			tmp_result = free_this = var_to_string(result);
 			args = get_last_position();
 		}
 
 		if(tmp_result == NULL)
 		{
+			var_free(result);
 			break;
 		}
 
@@ -1911,6 +1937,9 @@ eval_echo(const char args[], const char **stop_ptr)
 			eval_result = extend_string(eval_result, " ", &len);
 		}
 		eval_result = extend_string(eval_result, tmp_result, &len);
+
+		var_free(result);
+		free(free_this);
 	}
 	if(args[0] == '\0')
 	{
@@ -2015,10 +2044,37 @@ edit_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* This command designates beginning of the alternative part of if-endif
+ * statement. */
+static int
+else_cmd(const cmd_info_t *cmd_info)
+{
+	if(int_stack_is_empty(&if_levels))
+	{
+		status_bar_error(":else without :if");
+		return 1;
+	}
+	int_stack_set_top(&if_levels, !int_stack_get_top(&if_levels));
+	return 0;
+}
+
 static int
 empty_cmd(const cmd_info_t *cmd_info)
 {
 	empty_trash();
+	return 0;
+}
+
+/* This command ends conditional block. */
+static int
+endif_cmd(const cmd_info_t *cmd_info)
+{
+	if(int_stack_is_empty(&if_levels))
+	{
+		status_bar_error(":endif without :if");
+		return 1;
+	}
+	int_stack_pop(&if_levels);
 	return 0;
 }
 
@@ -2473,6 +2529,23 @@ history_cmd(const cmd_info_t *cmd_info)
 		return show_history_menu(curr_view) != 0;
 	else
 		return CMDS_ERR_TRAILING_CHARS;
+}
+
+/* This command starts conditional block. */
+static int
+if_cmd(const cmd_info_t *cmd_info)
+{
+	var_t condition;
+	text_buffer_clear();
+	if(parse(cmd_info->args, &condition) != PE_NO_ERROR)
+	{
+		text_buffer_addf("%s: %s", "Invalid expression", cmd_info->args);
+		status_bar_error(text_buffer_get());
+		return 1;
+	}
+	int_stack_push(&if_levels, var_to_boolean(condition));
+	var_free(condition);
+	return 0;
 }
 
 static int
