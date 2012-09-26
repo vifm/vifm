@@ -85,6 +85,8 @@
 
 	Flicker less on :restart command.
 
+	Remove automatically generated files on `make clean`.
+
 	Fixed background bold (light) colors in linux native console.
 
 	Fixed segmentation fault on running vifm with one path in the argument

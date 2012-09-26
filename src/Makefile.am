@@ -156,4 +156,8 @@ tags.c: ../data/vim/doc/vifm.txt
 		' > $@; \
 	fi
 
+clean: clean-am
+	-$(RM) ../data/vifm-help.txt
+	-$(RM) compile_info.c
+
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
