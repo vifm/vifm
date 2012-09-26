@@ -288,7 +288,9 @@ pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifm-help.txt
 
 bin_SCRIPTS = vifm-pause
-man_MANS = ../data/vifm.1
+man_MANS = ../data/vifm.1 \
+					 ../data/vifm-pause.1
+
 vifm_SOURCES = \
 	\
 	cfg/config.c cfg/config.h \

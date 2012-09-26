@@ -11,7 +11,8 @@ bin_PROGRAMS = vifm vifmrc-converter
 
 bin_SCRIPTS = vifm-pause
 
-man_MANS = ../data/vifm.1
+man_MANS = ../data/vifm.1 \
+					 ../data/vifm-pause.1
 
 vifm_SOURCES = \
 	\

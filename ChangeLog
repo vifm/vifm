@@ -39,6 +39,8 @@
 
 	Added :if, :else and :endif commands.
 
+	Added man page for vifm-pause script.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 
