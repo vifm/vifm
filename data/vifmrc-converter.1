@@ -1,0 +1,46 @@
+.TH "vifmrc-converter" "1" "September 26, 2012" "" "vifmrc-converter"
+.\" ---------------------------------------------------------------------------
+.SH "NAME"
+.\" ---------------------------------------------------------------------------
+vifmrc-converter \- a helper script for vifm
+.\" ---------------------------------------------------------------------------
+.SH "SYNOPSIS"
+.\" ---------------------------------------------------------------------------
+Only called automagically from within vifm
+.LP
+vifmrc-converter 0|1|2 [vifmrc_file vifminfo_file]
+.\" ---------------------------------------------------------------------------
+.SH "DESCRIPTION"
+.\" ---------------------------------------------------------------------------
+A helper script for vifm, not for standalone use.
+.LP
+It's main purpose is to automatically convert configuration files (vifmrc,
+vifminfo, startup and colorschemes files) of vifm prior to 0.7 version to new
+format.  You don't have to run it by yourself, vifm will do this for you after
+asking some questions at first startup.
+.TP
+.BI 0
+Makes vifmrc-converter create more vi-like configuration.  Will put as much as
+possible to vifmrc file, and less to vifminfo.
+.TP
+.BI 1
+Makes vifmrc-converter create more old-vifm-like configuration.  vifmrc file is
+generated as for 0, but with commented out commands and more things are put to
+vifminfo file.
+.TP
+.BI 2
+Converting of colorscheme file only.
+.LP
+When vifmrc_file and vifminfo_file arguments are ommited, default locations are
+used (~/.vifm/vifmrc and ~/.vifm/vifminfo accordingly).
+.\" ---------------------------------------------------------------------------
+.SH "SEE ALSO"
+.\" ---------------------------------------------------------------------------
+\fBvifm\fR (1)
+.\" ---------------------------------------------------------------------------
+.SH "AUTHOR"
+.\" ---------------------------------------------------------------------------
+This manual page was written by Hendrik Jaeger <deb@henk.geekmail.org>,
+for the Debian GNU/Linux system (but may be used by others).
+.br
+Updated with some details by xaizek <xaizek@lavabit.com>.
