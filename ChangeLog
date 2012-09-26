@@ -39,6 +39,8 @@
 
 	Added :if, :else and :endif commands.
 
+	Added man pages for vifm-pause script and vifmrc-converter.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 
@@ -82,6 +84,8 @@
 	script.
 
 	Flicker less on :restart command.
+
+	Remove automatically generated files on `make clean`.
 
 	Fixed background bold (light) colors in linux native console.
 

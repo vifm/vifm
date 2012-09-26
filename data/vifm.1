@@ -2,7 +2,7 @@
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
-vifm - vi file manager
+vifm \- vi file manager
 .\" ---------------------------------------------------------------------------
 .SH SYNOPSIS
 .\" ---------------------------------------------------------------------------
@@ -30,32 +30,32 @@ Starts Vifm in the specified path.
 Starts Vifm in the specified paths.
 .LP
 Paths to files are also allowed in case you want vifm to start with some
-archive opened.  If you want to select file, prepend its path with --select.
+archive opened.  If you want to select file, prepend its path with \-\-select.
 .TP
-.BI -f
+.BI \-f
 only used from the vifm.vim script.  The selected files are written
 to $VIFM/vimfiles and vifm exits.
 .TP
-.BI "--logging"
+.BI "\-\-logging"
 Log some errors to $VIFM/log.
-Also /var/log/vifm-startup-log (on *nix) and startup-log in the directory of
+Also /var/log/vifm\-startup\-log (on *nix) and startup\-log in the directory of
 executable (on Windows) is used to log startup process (when configuration
 directory isn't determined).
 .TP
-.BI "--remote"
+.BI "\-\-remote"
 Passes all arguments that left in command line to active vifm server (already
 running instance if any).
 .TP
-.BI "-c <command> or +<command>"
+.BI "\-c <command> or +<command>"
 Run <command> on startup.
 .TP
-.BI "--help, -h"
+.BI "\-\-help, \-h"
 Show an overview of the commandline options.
 .TP
-.BI "--version, -v"
+.BI "\-\-version, \-v"
 Show version information and quit.
 .TP
-.BI --no-configs
+.BI \-\-no\-configs
 Don't read vifmrc and vifminfo.
 
 .LP
@@ -226,7 +226,7 @@ exchange panes.
 .BI "Ctrl-W +"
 increase size of the view.
 .TP
-.BI "Ctrl-W -"
+.BI "Ctrl-W \-"
 decrease size of the view.
 .TP
 .BI "Ctrl-W <"
@@ -249,12 +249,12 @@ make size of two views equal.
 .TP
 Marks are set the same way as they are in vi.
 .LP
-You can use this characters for marks [a-z][A-Z][0-9].
+You can use this characters for marks [a\-z][A\-Z][0\-9].
 .TP
-.BI m[a-z][A-Z][0-9]
+.BI m[a\-z][A\-Z][0\-9]
 to set a mark for the current file.
 .TP
-.BI '[a-z][A-Z][0-9]
+.BI '[a\-z][A\-Z][0\-9]
 moves to the file set for the mark.
 .\" ---------------------------------------------------------------------------
 .SH Searching
@@ -634,13 +634,13 @@ backward one half-window (and set half-window to [count]).
 repaint screen.
 .TP
 .BI [count]/pattern
-search forward for ([count]-th) matching line.
+search forward for ([count]\(hyth) matching line.
 .TP
 .BI [count]?pattern
-search backward for ([count]-th) matching line.
+search backward for ([count]\(hyth) matching line.
 .TP
 .BI [count]n
-repeat previous search (for [count]-th occurrence).
+repeat previous search (for [count]\(hyth occurrence).
 .TP
 .BI [count]N
 repeat previous search in reverse direction.
@@ -666,7 +666,7 @@ split window vertically.
 .BI "Ctrl-W +"
 increase size of the view.
 .TP
-.BI "Ctrl-W -"
+.BI "Ctrl-W \-"
 decrease size of the view.
 .TP
 .BI "Ctrl-W <"
@@ -690,7 +690,7 @@ This keys apply to all submodes of the command line mode: command, prompt and
 search.
 .LP
 Down, Up, Left, Right, Home, End and Delete are extended keys and they are not
-available if vifm is compiled with --disable-extended-keys option.
+available if vifm is compiled with \-\-disable\-extended\-keys option.
 .TP
 .BI "Esc, Ctrl-C"
 leave command line mode, cancels input.
@@ -839,7 +839,7 @@ repeats last :apropos command.
 .BI ":cd or :cd ~ or :cd $HOME"
 change to your home directory.
 .TP
-.BI ":cd -"
+.BI ":cd \-"
 go to previous directory.
 .TP
 .BI ":cd ~/dir"
@@ -995,7 +995,7 @@ executes commands until next matching :endif if they previously were not being
 executed.  See also help on :if and :endif commands.
 .TP
 .BI :empty
-will permanently remove 'rm -fr' files from the Trash directory.  It will also
+will permanently remove 'rm \-fr' files from the Trash directory.  It will also
 remove all operations from undolist that have no sense after :empty and remove
 all records about files in the Trash directory from all registers.
 .TP
@@ -1021,7 +1021,7 @@ will associate given program list to each of the patterns.  Associated
 program (command) is used by handlers of l and Enter keys (and also in
 the :file menu).  *, ?, [ and ] are treated as special symbols in the
 pattern.  Inside square brackets ^ or ! can be used for symbol class
-negotiation and the - symbol to set a range.  Asterisk at the pattern
+negotiation and the \- symbol to set a range.  Asterisk at the pattern
 beginning don't match dot in the first position.  If you need to insert
 comma into command just double it (",,").  Space followed by an
 ampersand as two last characters of a command means running of the
@@ -1047,7 +1047,7 @@ the pattern.
 .BI ":filter /regular_expression_pattern/"
 will filter all the files out of the directory listing that match the regular
 expression.  Using second variant you can use | symbol without escaping.  Add
-'!' to invert filter.
+\'!' to invert filter.
 .br
 :filter /\.o$ would filter all files ending in .o from the filelist.
 .br
@@ -1066,11 +1066,11 @@ show current filter value.
 will show results of find command in the menu.  Searches among selected files if
 any.  Accepts macros.
 .TP
-.BI ":[range]fin[d] -opt..."
+.BI ":[range]fin[d] \-opt..."
 same as :find above, but user defines all find arguments.  Searches among
 selected files if any.
 .TP
-.BI ":[range]fin[d] path -opt..."
+.BI ":[range]fin[d] path \-opt..."
 same as :find above, but user defines all find arguments.  Ignores selection and
 range.
 .TP
@@ -1086,7 +1086,7 @@ will show results of grep command in the menu.  Add "!" to search lines that do
 not match pattern.  Searches among selected files if any and no range given.
 Ignores binary files.
 .TP
-.BI ":[range]gr[ep][!] -opt..."
+.BI ":[range]gr[ep][!] \-opt..."
 same as :grep above, but user defines all find arguments, which are not escaped.
 Searches among selected files if any.
 .TP
@@ -1098,55 +1098,55 @@ command.
 show the help file.
 .TP
 .BI ":h[elp] argument"
-is the same as using ':h argument' in vim.  Use vifm-<something> to get help
+is the same as using ':h argument' in vim.  Use vifm\-<something> to get help
 on vifm (tab completion works).
 .TP
 .BI :hi[ghlight]
 will show information about all highlight groups in the current directory.
 .TP
-.BI ":hi[ghlight] group-name"
+.BI ":hi[ghlight] group\-name"
 will show information on given highlight group of the default color scheme.
 .TP
-.BI ":hi[ghlight] group-name cterm=style | ctermfg=color | ctermbg=color"
+.BI ":hi[ghlight] group\-name cterm=style | ctermfg=color | ctermbg=color"
 sets style (cterm), foreground (ctermfg) or/and background (ctermbg) parameters
 of highlight groups of the current default color scheme.
 .LP
 Available style values (some of them can be combined):
- - bold
- - underline
- - reverse or inverse
- - standout
- - none
+ \- bold
+ \- underline
+ \- reverse or inverse
+ \- standout
+ \- none
 
 Available group-name values:
- - Win - color of all windows (views, dialogs, menus)
- - Border - color of vertical parts of the border
- - TopLineSel - top line color of the current pane
- - TopLine - top line color of the other pane
- - CmdLine - the command line/status bar color
- - ErrorMsg - color of error messages in the status bar
- - StatusLine - color of the line above the status bar
- - WildMenu - color of the wild menu items
- - CurrLine - line at cursor position in the view
- - Selected - color of selected files
- - Directory - color of directories
- - Link - color of symbolic links in the views
- - BrokenLink - color of broken symbolic links
- - Socket - color of sockets
- - Device - color of block and character devices
- - Executable - color of executable files
- - Fifo - color of fifo pipes
+ \- Win \- color of all windows (views, dialogs, menus)
+ \- Border \- color of vertical parts of the border
+ \- TopLineSel \- top line color of the current pane
+ \- TopLine \- top line color of the other pane
+ \- CmdLine \- the command line/status bar color
+ \- ErrorMsg \- color of error messages in the status bar
+ \- StatusLine \- color of the line above the status bar
+ \- WildMenu \- color of the wild menu items
+ \- CurrLine \- line at cursor position in the view
+ \- Selected \- color of selected files
+ \- Directory \- color of directories
+ \- Link \- color of symbolic links in the views
+ \- BrokenLink \- color of broken symbolic links
+ \- Socket \- color of sockets
+ \- Device \- color of block and character devices
+ \- Executable \- color of executable files
+ \- Fifo \- color of fifo pipes
 
 Available colors:
- - -1 or default or none - default or transparent
- - black   and lightblack
- - red     and lightred
- - green   and lightgreen
- - yellow  and lightyellow
- - blue    and lightblue
- - magenta and lightmagenta
- - cyan    and lightcyan
- - white   and lightwhite
+ \- \-1 or default or none \- default or transparent
+ \- black
+ \- red
+ \- green
+ \- yellow
+ \- blue
+ \- magenta
+ \- cyan
+ \- white
 
 Light versions of colors are regular colors with bold attribute set.  So order
 of arguments of :highlight command is important and it's better to put "cterm"
@@ -1234,7 +1234,7 @@ to show the selected file.
 repeats last :locate command.
 .TP
 .BI ":[range]ma[rk][?] x [/full/path] [filename]"
-Set mark x (a-zA-Z0-9) at /full/path and filename.  By default current directory
+Set mark x (a\-zA\-Z0\-9) at /full/path and filename.  By default current directory
 is being used.  If no filename was given and /full/path is current directory
 then last file in [range] is used.  Using of macros is allowed.  Question mark
 will stop command from overwriting existing marks.
@@ -1334,7 +1334,7 @@ a single xterm.  Starting vifm from screen with the screen option turned on will
 cause vifm to open a new screen window for each new file edited or program
 launched from vifm.
 .br
-This requires screen version 3.9.9 or newer for the screen -X argument.
+This requires screen version 3.9.9 or newer for the screen \-X argument.
 .TP
 .BI :screen?
 shows whether screen program is used.
@@ -1349,25 +1349,25 @@ shows all options.
 will set options to given values.
 .br
 You can use following syntax:
- - for all options - option, option? and option&
- - for boolean options - nooption, invoption and option!
- - for integer options - option=x, option+=x and option-=x
- - for string options - option=x
- - for string list options - option=x, option+=x and option-=x
- - for enumeration options - option=x, option+=x and option-=x
- - for enumeration options - option=x
- - for set options - option=x, option+=x and option-=x
+ \- for all options \- option, option? and option&
+ \- for boolean options \- nooption, invoption and option!
+ \- for integer options \- option=x, option+=x and option\-=x
+ \- for string options \- option=x
+ \- for string list options \- option=x, option+=x and option\-=x
+ \- for enumeration options \- option=x, option+=x and option\-=x
+ \- for enumeration options \- option=x
+ \- for set options \- option=x, option+=x and option\-=x
 
 the meaning:
- - option - turn option on (for boolean) or print its value (for all others)
- - nooption - turn option off
- - invoption - invert option state
- - option! - invert option state
- - option? - print option value
- - option& - reset option to its default value
- - option=x or option:x - set option to x
- - option+=x - add x to option
- - option-=x - remove (or subtract) x from option
+ \- option \- turn option on (for boolean) or print its value (for all others)
+ \- nooption \- turn option off
+ \- invoption \- invert option state
+ \- option! \- invert option state
+ \- option? \- print option value
+ \- option& \- reset option to its default value
+ \- option=x or option:x \- set option to x
+ \- option+=x \- add x to option
+ \- option\-=x \- remove (or subtract) x from option
 
 Option name can be prepended and appended by any number of whitespace
 characters.
@@ -1397,16 +1397,16 @@ pane to path (absolute or relative to current directory of active pane).
 .BI :[range]s[ubstitite]/pattern/string/[flags]
 for each file in range replace a match of pattern with string.
 .LP
-String can contain \\0...\\9 to link to capture groups (\\0 - all match, \\1 -
+String can contain \\0...\\9 to link to capture groups (\\0 \- all match, \\1 \-
 first group, etc.).
 
 Available flags:
-.IP - 2
-i - ignore case (the 'ignorecase' and 'smartcase' options are not used)
-.IP - 2
-I - don't ignore case (the 'ignorecase' and 'smartcase' options are not used)
-.IP - 2
-g - substitute all matches in each file name (each g toggles this)
+.IP \- 2
+i \- ignore case (the 'ignorecase' and 'smartcase' options are not used)
+.IP \- 2
+I \- don't ignore case (the 'ignorecase' and 'smartcase' options are not used)
+.IP \- 2
+g \- substitute all matches in each file name (each g toggles this)
 .TP
 .BI :[range]s[ubstitute]//string/[flags]
 will use previous pattern.
@@ -1427,7 +1427,7 @@ for each file in range transliterate the characters which appear in pattern to
 the corresponding character in string.  When string is shorter than pattern,
 it's padded with its last character.
 .LP
-String can contain \0...\9 to link to capture groups (0 - all match, 1 - first
+String can contain \0...\9 to link to capture groups (0 \- all match, 1 \- first
 group, etc.).
 .TP
 .BI :undol[ist]
@@ -1470,11 +1470,11 @@ Execute command for each pane (same as :winrun % command).
 .TP
 .BI ":winrun type [command...]"
 Execute command for pane(s), which is determined by type argument:
- - ^ - top-left pane
- - $ - bottom-right pane
- - % - all panes
- - . - current pane
- - , - other pane
+ \- ^ \- top-left pane
+ \- $ \- bottom-right pane
+ \- % \- all panes
+ \- . \- current pane
+ \- , \- other pane
 .TP
 .BI :w[rite]
 write vifminfo file (add ! to force write even if settings weren't changed).
@@ -1592,11 +1592,11 @@ remove the mapping of lhs from visual mode.
 .SH Ranges
 .\" ---------------------------------------------------------------------------
 The ranges implemented include:
-  2,3 - from second to third file in the list (including it)
-  % - the entire directory.
-  . - the current position in the filelist.
-  $ - the end of the filelist.
-  't - the mark position t.
+  2,3 \- from second to third file in the list (including it)
+  % \- the entire directory.
+  . \- the current position in the filelist.
+  $ \- the end of the filelist.
+  't \- the mark position t.
 
 Examples:
 .EX
@@ -1624,7 +1624,7 @@ would delete the files from the current position to the end of the filelist.
 .EE
 would delete the files in the list positions 3, 4, 5, 6.
 
-If a backward range is given :4,2delete - an query message is given and
+If a backward range is given :4,2delete \- an query message is given and
 user can chose what to do next.
 
 The builtin commands that accept a range are :d[elete] and :y[ank].
@@ -1680,28 +1680,28 @@ of them in the command will take effect.
 
 You can use filename modifiers after %c, %C, %f, %F, %b, %d and %D macros.
 Supported modifiers are:
-.IP - 2
-:p           - full path
-.IP - 2
-:u           - UNC name of path (e.g. "\\\\server" in "\\\\server\\share"), Windows only.  Expands to current computer name for not UNC paths.
-.IP - 2
-:~           - relative to the home directory
-.IP - 2
-:.           - relative to current directory
-.IP - 2
-:h           - head of the filename
-.IP - 2
-:t           - tail of the filename
-.IP - 2
-:r           - root of the filename (without last extension)
-.IP - 2
-:e           - extension of the filename (last one)
-.IP - 2
-:s?pat?sub?  - substitute the first occurrence of pat with sub.  You can use any character for '?', but it must not occur in pat or sub.
-.IP - 2
-:gs?pat?sub? - like :s, but substitutes all occurrences of pat with sub.
+.IP \- 2
+:p           \- full path
+.IP \- 2
+:u           \- UNC name of path (e.g. "\\\\server" in "\\\\server\\share"), Windows only.  Expands to current computer name for not UNC paths.
+.IP \- 2
+:~           \- relative to the home directory
+.IP \- 2
+:.           \- relative to current directory
+.IP \- 2
+:h           \- head of the filename
+.IP \- 2
+:t           \- tail of the filename
+.IP \- 2
+:r           \- root of the filename (without last extension)
+.IP \- 2
+:e           \- extension of the filename (last one)
+.IP \- 2
+:s?pat?sub?  \- substitute the first occurrence of pat with sub.  You can use any character for '?', but it must not occur in pat or sub.
+.IP \- 2
+:gs?pat?sub? \- like :s, but substitutes all occurrences of pat with sub.
 
-See ':h filename-modifiers' in Vim's documentation for the detailed
+See ':h filename\-modifiers' in Vim's documentation for the detailed
 description.
 
 Using %x means expand corresponding macro escaping all characters that have
@@ -1719,7 +1719,7 @@ to full paths.  %f and %F follow this in %b too.
 would set the :move command to move all of the files
 selected in the current directory to the other directory.
 .TP
-The %a macro will substitute any arguments given in a command into the command.  All arguments are considered optional.  ":com lsl !!ls -l %a" will set the lsl command to execute ls -l with or without an argument.
+The %a macro will substitute any arguments given in a command into the command.  All arguments are considered optional.  ":com lsl !!ls \-l %a" will set the lsl command to execute ls \-l with or without an argument.
 .TP
 .BI ":lsl<Return>"
 will list the directory contents of the current directory.
@@ -1732,8 +1732,8 @@ The macros can also be used in directly executing commands. ":!mv %f %D" would m
 Appending & to the end of a command will cause it to be executed in the background.\
 Typically you want to run two kinds of external commands in the\
 background:
- - GUI applications that doesn't fork thus block vifm (:!sxiv %f &);
- - console tools that do not work with terminal (:!mv %f %D &).
+ \- GUI applications that doesn't fork thus block vifm (:!sxiv %f &);
+ \- console tools that do not work with terminal (:!mv %f %D &).
 .TP
 You don't want to run terminal commands, which require terminal input or\
 output something because they will mess up vifm's TUI. Anyway, if you did run\
@@ -1804,7 +1804,7 @@ default: "s"
 .br
 Contains a sequence of single-character flags.  Each flag enables behaviour of
 older versions of vifm.  Flags:
-s - when included, yy and dd act on the selection, otherwise they operate on \
+s \- when included, yy and dd act on the selection, otherwise they operate on \
 current file only.
 .TP
 .BI fastrun
@@ -1898,36 +1898,36 @@ default: false
 type: local
 .br
 When this option is set, directory view will be displayed in multiple columns
-with filenames similar to output of `ls -x` command.  See ls-like view section
+with filenames similar to output of `ls \-x` command.  See ls-like view section
 below for format description.
 .TP
 .BI "rulerformat ruf"
 type: string
 .br
-default: "%=%l-%S "
+default: "%=%l\-%S "
 .br
 Determines the content of the ruler.  Its width is 13 characters and it's right
 aligned.  Following macros are supported:
 .br
- %l - file number
+ %l \- file number
 .br
- %L - total number of files in view (including filtered)
+ %L \- total number of files in view (including filtered)
 .br
- %- - number of filtered files
+ %\- \- number of filtered files
 .br
- %S - number of showed files
+ %S \- number of showed files
 .br
- %= - separation point between left and right align items
+ %= \- separation point between left and right align items
 .br
- %% - percent sign
+ %% \- percent sign
 .br
 
-Percent sign can be followed by optional minimum field width.  Add '-' before
+Percent sign can be followed by optional minimum field width.  Add '\-' before
 minimum field width if you want field to be right aligned.
 Example:
 
 .EX
- set rulerformat="%=%2l-%S [%L] "
+ set rulerformat="%=%2l\-%S [%L] "
 .EE
 .TP
 .BI runexec
@@ -1993,20 +1993,20 @@ type: local
 .br
 Sets list of sorting keys (first item is primary key, second is secondary key,
 etc.):
-   [+-]ext   - sort by extension
-   [+-]name  - sort by name (including extension)
-   [+-]iname - sort by name (including extension, ignores case)
-   [+-]gid   - sort by group id (*nix only)
-   [+-]gname - sort by group name (*nix only)
-   [+-]mode  - sort by mode (*nix only)
-   [+-]uid   - sort by owner id (*nix only)
-   [+-]uname - sort by owner name (*nix only)
-   [+-]size  - sort by size
-   [+-]atime - sort by time accessed
-   [+-]ctime - sort by time changed
-   [+-]mtime - sort by time modified
+   [+\-]ext   \- sort by extension
+   [+\-]name  \- sort by name (including extension)
+   [+\-]iname \- sort by name (including extension, ignores case)
+   [+\-]gid   \- sort by group id (*nix only)
+   [+\-]gname \- sort by group name (*nix only)
+   [+\-]mode  \- sort by mode (*nix only)
+   [+\-]uid   \- sort by owner id (*nix only)
+   [+\-]uname \- sort by owner name (*nix only)
+   [+\-]size  \- sort by size
+   [+\-]atime \- sort by time accessed
+   [+\-]ctime \- sort by time changed
+   [+\-]mtime \- sort by time modified
 .LP
-\'+' means ascending sort for this key, and '-' means descending sort.
+\'+' means ascending sort for this key, and '\-' means descending sort.
 
 In case name (iname on Windoes) is skipped, it will be added at the end
 automatically.
@@ -2033,54 +2033,54 @@ Empty string means use same format like in previous versions.  Following macros
 are supported:
 .RS
 .HP 7
-- %t - file name
+\- %t \- file name
 .HP 7
-- %A - file attributes (permissions on *nix or properties on Windows)
+\- %A \- file attributes (permissions on *nix or properties on Windows)
 .HP 7
-- %u - user name or uid (if it cannot be resolved)
+\- %u \- user name or uid (if it cannot be resolved)
 .HP 7
-- %g - group name or gid (if it cannot be resolved)
+\- %g \- group name or gid (if it cannot be resolved)
 .HP 7
-- %s - file size in human readable format
+\- %s \- file size in human readable format
 .HP 7
-- %E - size of selected files in human readable format, same as %s when no files
-are selected, except that it will never show size of ../ in visual mode, since
-it cannot be selected
+\- %E \- size of selected files in human readable format, same as %s when no
+files are selected, except that it will never show size of ../ in visual mode,
+since it cannot be selected
 .HP 7
-- %d - file modification date (uses 'timefmt' option)
+\- %d \- file modification date (uses 'timefmt' option)
 .HP 7
-- all 'rulerformat' macros
+\- all 'rulerformat' macros
 .LP
 
-Percent sign can be followed by optional minimum field width.  Add '-' before
+Percent sign can be followed by optional minimum field width.  Add '\-' before
 minimum field width if you want field to be right aligned.
 Example:
 
 .EX
- set statusline="  %t%= %A %10u:%-7g %15s %20d "
+ set statusline="  %t%= %A %10u:%\-7g %15s %20d "
 .EE
 
 On Windows file properties include next flags (upper case means flag is on):
 .br
- A - archive
+ A \- archive
 .br
- H - hidden
+ H \- hidden
 .br
- I - content isn't indexed
+ I \- content isn't indexed
 .br
- R - readonly
+ R \- readonly
 .br
- S - system
+ S \- system
 .br
- C - compressed
+ C \- compressed
 .br
- D - directory
+ D \- directory
 .br
- E - encrypted
+ E \- encrypted
 .br
- P - reparse point (e.g. symbolic link)
+ P \- reparse point (e.g. symbolic link)
 .br
- Z - sparse file
+ Z \- sparse file
 .TP
 .BI sortorder
 type: enumeration
@@ -2166,21 +2166,21 @@ type: set
 default: bookmarks
 .LP
 Controls what will be saved in the $VIFM/vifminfo file.
-   options   - all options that can be set with the :set command
-   filetypes - associated programs and viewers
-   commands  - user defined commands (see :command description)
-   bookmarks - bookmarks, except special ones like '< and '>
-   tui       - state of the user interface (sorting, number of windows, quick
+   options   \- all options that can be set with the :set command
+   filetypes \- associated programs and viewers
+   commands  \- user defined commands (see :command description)
+   bookmarks \- bookmarks, except special ones like '< and '>
+   tui       \- state of the user interface (sorting, number of windows, quick
                view state, active view)
-   dhistory  - directory history
-   state     - filters and screen program using state
-   cs        - default color scheme
-   savedirs  - save last visited directory (needs dhistory)
-   chistory  - command line history
-   shistory  - search history (/ and ? commands)
-   dirstack  - directory stack
-   registers - registers content
-   phistory  - prompt history
+   dhistory  \- directory history
+   state     \- filters and screen program using state
+   cs        \- default color scheme
+   savedirs  \- save last visited directory (needs dhistory)
+   chistory  \- command line history
+   shistory  \- search history (/ and ? commands)
+   dirstack  \- directory stack
+   registers \- registers content
+   phistory  \- prompt history
 .TP
 .BI vimhelp
 type: boolean
@@ -2245,20 +2245,20 @@ only for *nix
 .br
 Alt + Ctrl + some key.
 .TP
-.BI "<f0> - <f63>"
+.BI "<f0> \- <f63>"
 Functional keys
 .TP
-.BI "<c-f1> - <c-f12>"
+.BI "<c-f1> \- <c-f12>"
 only for MS-Windows
 .br
 Functional keys with Control key pressed.
 .TP
-.BI "<a-f1> - <a-f12>"
+.BI "<a-f1> \- <a-f12>"
 only for MS-Windows
 .br
 Functional keys with Alt key pressed.
 .TP
-.BI "<s-f1> - <s-f12>"
+.BI "<s-f1> \- <s-f12>"
 only for MS-Windows
 .br
 Functional keys with Shift key pressed.
@@ -2424,29 +2424,29 @@ The result is a string, which represents file type and is one of the list:
     ?      unknown file type (should never appear)
 .br
 Parameter {fnum} can have following values:
-    - '.' to get type of file under the cursor in the active pane
+    \- '.' to get type of file under the cursor in the active pane
 .\" ---------------------------------------------------------------------------
 .SH Compatibility mode
 .\" ---------------------------------------------------------------------------
 Compatibility mode:
-    - <tab> to switch between panes.
+    \- <tab> to switch between panes.
 
 Vim like mode:
-    - <c-i> (<tab>) to go forward on history.
+    \- <c-i> (<tab>) to go forward on history.
 .\" ---------------------------------------------------------------------------
 .SH Menus and dialogs
 .\" ---------------------------------------------------------------------------
 .B General
 
-j, k - move.
+j, k \- move.
 .br
-<Escape>, Ctrl-C, ZZ, ZQ - quit.
+<Escape>, Ctrl-C, ZZ, ZQ \- quit.
 .br
-<Return>, l - select and exit the menu.
+<Return>, l \- select and exit the menu.
 .br
-Ctrl-L - redraw the menu.
+Ctrl-L \- redraw the menu.
 
-Escape, Ctrl-C, ZZ, ZQ, q - quit.
+Escape, Ctrl-C, ZZ, ZQ, q \- quit.
 
 .B In all menus
 
@@ -2464,18 +2464,18 @@ H/M/L
 .br
 zb/zt/zz
 .br
-zh - scroll menu items [count] characters to the right.
+zh \- scroll menu items [count] characters to the right.
 .br
-zl - scroll menu items [count] characters to the left.
+zl \- scroll menu items [count] characters to the left.
 .br
-zH - scroll menu items half of screen width characters to the right.
+zH \- scroll menu items half of screen width characters to the right.
 .br
-zL - scroll menu items half of screen width characters to the left.
+zL \- scroll menu items half of screen width characters to the left.
 
 All these keys have the same meaning as in normal mode (but not L in filetype
 menu).
 
-: - enter command line mode for menus (currently only :exi[t], :q[uit], :x[it]
+: \- enter command line mode for menus (currently only :exi[t], :q[uit], :x[it]
 and :range are supported).
 
 .B Apropos menu
@@ -2505,33 +2505,33 @@ All commands below empty line are from .desktop files.
 
 .B Fileinfo dialog
 
-Enter - close dialog
+Enter \- close dialog
 .br
-q - close dialog
+q \- close dialog
 
 .B Sort dialog
 
-h - switch ascending/descending.
+h \- switch ascending/descending.
 .br
-Space - switch ascending/descending.
+Space \- switch ascending/descending.
 .br
-q - close dialog
+q \- close dialog
 
 .B Attributes (permissions or properties) dialog
 
-h - check/uncheck.
+h \- check/uncheck.
 .br
-Space - check/uncheck.
+Space \- check/uncheck.
 .br
-q - close dialog
+q \- close dialog
 
 Item states:
-.IP - 2
-* - checked flag.
-.IP - 2
-X - means that it has different value for files in selection.
-.IP - 2
-d (*nix only) - (only for execute flags) means u-x+X, g-x+X or o-x+X argument \
+.IP \- 2
+* \- checked flag.
+.IP \- 2
+X \- means that it has different value for files in selection.
+.IP \- 2
+d (*nix only) \- (only for execute flags) means u\-x+X, g\-x+X or o\-x+X argument \
 for the chmod program.  If you want to remove execute right from all files, \
 but preserve it for directories, set all execute flags to 'd' and check \
 \'Set Recursively' flag.
@@ -2544,21 +2544,21 @@ They are determined in the order they appear below.
 On *nix systems $HOME is normally present and used as is.
 On Windows systems vifm tries to find correct home directory in the following
 order:
- - $HOME variable;
- - $USERPROFILE variable;
- - a combination of $HOMEDRIVE and $HOMEPATH variables.
+ \- $HOME variable;
+ \- $USERPROFILE variable;
+ \- a combination of $HOMEDRIVE and $HOMEPATH variables.
 
 vifm tries to find correct configuration directory by checking the following
 places:
- - $VIFM variable;
- - parent directory of the executable file (on Windows only);
- - $HOME/.vifm directory;
- - $APPDATA/Vifm directory (on Windows only).
+ \- $VIFM variable;
+ \- parent directory of the executable file (on Windows only);
+ \- $HOME/.vifm directory;
+ \- $APPDATA/Vifm directory (on Windows only).
 
 vifm tries to find correct configuration file by checking the following places:
- - $MYVIFMRC variable;
- - vifmrc in parent directory of the executable file (on Windows only);
- - $VIFM/vifmrc file.
+ \- $MYVIFMRC variable;
+ \- vifmrc in parent directory of the executable file (on Windows only);
+ \- $VIFM/vifmrc file.
 .\" ---------------------------------------------------------------------------
 .SH Configure
 .\" ---------------------------------------------------------------------------
@@ -2613,13 +2613,13 @@ Format line:
 
 Example filetype command:
 .EX
-  :filetype FUSE_MOUNT|fuse-zip %SOURCE_FILE %DESTINATION_DIR
+  :filetype FUSE_MOUNT|fuse\-zip %SOURCE_FILE %DESTINATION_DIR
 .EE
 
 2) FUSE_MOUNT2
-This format allows to use specially formatted files to perform mounting and \
-is useful for mounting remotes, for example remote file systems over ftp or \
-ssh.
+This format allows one to use specially formatted files to perform mounting \
+and is useful for mounting remotes, for example remote file systems over ftp \
+or ssh.
 
 Format line:
   FUSE_MOUNT2|mounter %PARAM %DESTINATION_DIR [%CLEAR]
@@ -2635,20 +2635,20 @@ Example file content:
 .EE
 
 All % macros are expanded by vifm at runtime and have the following meaning:
-  - %SOURCE_FILE is replaced by full path to selected file
-  - %DESTINATION_DIR is replaced by full path to mount directory, which is \
+  \- %SOURCE_FILE is replaced by full path to selected file
+  \- %DESTINATION_DIR is replaced by full path to mount directory, which is \
 created by vifm basing on the value of fusehome option.
-  - %PARAM value is filled from the first line of file (whole line), though \
+  \- %PARAM value is filled from the first line of file (whole line), though \
 in the future it can be changed to whole file content
-  - %CLEAR means that you want to clear screen before running mount command.
+  \- %CLEAR means that you want to clear screen before running mount command.
 
 %CLEAR is an optional macro.  Other macros are not mandatory, but mount \
 commands likely wont work without them.
 
 The mounted FUSE file systems will be automatically unmounted in two cases:
-.IP - 2
+.IP \- 2
 when vifm quits (with ZZ, :q, etc. or when killed by signal)
-.IP - 2
+.IP \- 2
 when you explicitly leave mount point going up to its parent directory (with \
 h, Enter on "../" or ":cd ..") and other pane is not in the same directory or \
 its child directories.
@@ -2656,12 +2656,12 @@ its child directories.
 .SH View look
 .\" ---------------------------------------------------------------------------
 vifm supports displaying of file list view in two different ways:
-.IP - 2
+.IP \- 2
 in a table mode, when multiple columns can be set using 'viewcolumns' option
 (see Column view section below for details);
-.IP - 2
-in a multicolumn list manner which looks almost like `ls -x` command output (see
-ls-like view section below for details).
+.IP \- 2
+in a multicolumn list manner which looks almost like `ls \-x` command output
+(see ls-like view section below for details).
 .LP
 The look is local for each view and can be chosen by changing value of the
 \'lsview' boolean option.
@@ -2680,8 +2680,8 @@ files in multiple columns.  Number of columns depends on the length of the
 longest file name present in current directory of the view.  Whole file list is
 automatically reflowed on directory change, terminal or view resize.
 
-View looks close to output of `ls -x` command, so files are listed left to right
-in rows.
+View looks close to output of `ls \-x` command, so files are listed left to
+right in rows.
 
 In this mode file manipulation commands (e.g. d) don't work line-wise like they
 do in Vim, since such operations would be uncommon for file manipulating
@@ -2691,7 +2691,7 @@ tasks.  Thus, for example, dd will remove only current file.
 .\" ---------------------------------------------------------------------------
 View columns are described by a comma-separated list of column descriptions,
 each of which has the following format
-    [ '-' ] [ fw ( [ '.' tw ] | '%' ) ] '{' type '}' '.'{0,3}
+    [ '\-' ] [ fw ( [ '.' tw ] | '%' ) ] '{' type '}' '.'{0,3}
 .br
 where fw stands for full width and tw stands for text width.
 
@@ -2706,12 +2706,12 @@ Alignment specifier
 It's an optional minus sign as the first symbol of the string.
 
 Specifies type of text alignment within a column. Two types are supported:
-.IP - 2
+.IP \- 2
 left align (default)
 .EX
-     set viewcolumns=-{name}
+     set viewcolumns=\-{name}
 .EE
-.IP - 2
+.IP \- 2
 right align
 .EX
      set viewcolumns={name}
@@ -2723,23 +2723,23 @@ It's a number followed by a percent sign, two numbers (second one should be
 less than or equal to the first one) separated with a dot or a single number.
 
 Specifies column width and its units. There are tree size types:
-.IP - 2
-absolute size - column width is specified in characters
+.IP \- 2
+absolute size \- column width is specified in characters
 .EX
-     set viewcolumns=-100{name},20.15{ext}
+     set viewcolumns=\-100{name},20.15{ext}
 .EE
 results in two columns with lengths of 100 and 20 and a reserved space of five \
 characters on the left of second column.
-.IP - 2
-relative (percent) size - column width is specified in percents of view width
+.IP \- 2
+relative (percent) size \- column width is specified in percents of view width
 .EX
-     set viewcolumns=-80%{name},15%{ext},5%{mtime}
+     set viewcolumns=\-80%{name},15%{ext},5%{mtime}
 .EE
 results in three columns with lengths of 80/100, 15/100 and 5/100 of view width.
-.IP - 2
-auto size (default) - column width is automatically determined
+.IP \- 2
+auto size (default) \- column width is automatically determined
 .EX
-     set viewcolumns=-{name},{ext},{mtime}
+     set viewcolumns=\-{name},{ext},{mtime}
 .EE
 results in three columns with length of one third of view width. There is no \
 size adjustment to content, since it will slow down rendering.
@@ -2761,7 +2761,7 @@ Empty curly braces ({}) are replaced with the default secondary column for
 primary sort key. So after the next command view will be displayed almost as
 if 'viewcolumns' is empty, but adding ellipsis for long file names:
 .EX
-    set viewcolumns=-{name}..,6{}.
+    set viewcolumns=\-{name}..,6{}.
 .EE
 .LP
 Cropping specifier
@@ -2770,45 +2770,45 @@ It's from one to three dots after closing curly brace in column format.
 
 Specifies type of text truncation if it doesn't fix in the column. Currently
 tree types are supported:
-.IP - 2
-truncation - text is truncated
+.IP \- 2
+truncation \- text is truncated
 .EX
-     set viewcolumns=-{name}.
+     set viewcolumns=\-{name}.
 .EE
 results in truncation of names that are too long too fit in the view.
-.IP - 2
-adding of ellipsis - ellipsis on the left or right are added when needed
+.IP \- 2
+adding of ellipsis \- ellipsis on the left or right are added when needed
 .EX
-     set viewcolumns=-{name}..
+     set viewcolumns=\-{name}..
 .EE
 results in that ellipsis are added at the end of too long file names.
-.IP - 2
-none (default) - text can pass column boundaries
+.IP \- 2
+none (default) \- text can pass column boundaries
 .EX
-     set viewcolumns=-{name}...,{ext}
+     set viewcolumns=\-{name}...,{ext}
 .EE
 results in that long file names can partially be written on the ext column.
 .\" ---------------------------------------------------------------------------
 .SH Color schemes
 .\" ---------------------------------------------------------------------------
 The color schemes in vifm can be applied in two different ways:
-.IP - 2
+.IP \- 2
 as the default (or main) color scheme
-.IP - 2
+.IP \- 2
 as local to a panel color scheme
 .LP
-Both types are set using |vifm-:colorscheme| command, but of different forms:
-.IP - 2
-:colorscheme color_scheme_name - for the default color scheme
-.IP - 2
-:colorscheme color_scheme_name directory - for local color schemes
+Both types are set using |vifm\-:colorscheme| command, but of different forms:
+.IP \- 2
+:colorscheme color_scheme_name \- for the default color scheme
+.IP \- 2
+:colorscheme color_scheme_name directory \- for local color schemes
 .LP
 Look of different parts of the TUI (Terminal User Interface) is determined in \
 this way:
-.IP - 2
+.IP \- 2
 Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine and WildMenu are \
 always determined by the default color scheme
-.IP - 2
+.IP \- 2
 CurrLine, Selected, Directory, Link, BrokenLink, Socket, Device, Executable, \
 Fifo and Win are determined by default color scheme and a set of local \
 colorschemes, which can be empty
@@ -2819,9 +2819,9 @@ following piece of file system:
 .EX
 
  ~
- `-- bin
+ `\-\- bin
     |
-    `-- my
+    `\-\- my
 
 .EE
 Two color schemes:
@@ -2844,20 +2844,20 @@ And these three commands in the vifmrc file:
 
 .EE
 File list will look in the following way for each level:
-.IP - 2
-~/ - Default color scheme
+.IP \- 2
+~/ \- Default color scheme
 .br
 black background
 .br
 cursor with blue background
-.IP - 2
-~/bin/ - mix of Default and for_bin color schemes
+.IP \- 2
+~/bin/ \- mix of Default and for_bin color schemes
 .br
 red background
 .br
 cursor with black background and red foreground
-.IP - 2
-~/bin/my/ - mix of Default, for_bin and for_bin_my color schemes
+.IP \- 2
+~/bin/my/ \- mix of Default, for_bin and for_bin_my color schemes
 .br
 red background
 .br
@@ -2881,7 +2881,7 @@ directory.
 
 The plugin have only two settings.  It's a string variable named g:vifm_term to
 let user specify command to run gui terminal.  By default it's equal to
-\'xterm -e'.  And another string variable named g:vifm_exec, which equals "vifm"
+\'xterm \-e'.  And another string variable named g:vifm_exec, which equals "vifm"
 by default and specifies path to vifm's executable.  To pass arguments to
 vifm use g:vifm_exec_args, which is empty by default.
 

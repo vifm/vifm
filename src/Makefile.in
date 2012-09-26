@@ -288,7 +288,10 @@ pkgdata_DATA = ../data/vifmrc \
 							 ../data/vifm-help.txt
 
 bin_SCRIPTS = vifm-pause
-man_MANS = ../data/vifm.1
+man_MANS = ../data/vifm.1 \
+					 ../data/vifm-pause.1 \
+					 ../data/vifmrc-converter.1
+
 vifm_SOURCES = \
 	\
 	cfg/config.c cfg/config.h \
@@ -1035,8 +1038,6 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-clean: clean-am
-
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
@@ -1165,6 +1166,10 @@ tags.c: ../data/vim/doc/vifm.txt
 			} \
 		' > $@; \
 	fi
+
+clean: clean-am
+	-$(RM) ../data/vifm-help.txt
+	-$(RM) compile_info.c
 
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
 

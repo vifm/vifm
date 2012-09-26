@@ -11,7 +11,9 @@ bin_PROGRAMS = vifm vifmrc-converter
 
 bin_SCRIPTS = vifm-pause
 
-man_MANS = ../data/vifm.1
+man_MANS = ../data/vifm.1 \
+					 ../data/vifm-pause.1 \
+					 ../data/vifmrc-converter.1
 
 vifm_SOURCES = \
 	\
@@ -153,5 +155,9 @@ tags.c: ../data/vim/doc/vifm.txt
 			} \
 		' > $@; \
 	fi
+
+clean: clean-am
+	-$(RM) ../data/vifm-help.txt
+	-$(RM) compile_info.c
 
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
