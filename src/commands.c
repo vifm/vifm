@@ -36,7 +36,7 @@
 #include <limits.h> /* PATH_MAX */
 #include <signal.h>
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /*  system() */
+#include <stdlib.h> /* system() free() */
 #include <string.h> /* strncmp() */
 #include <time.h>
 
@@ -175,6 +175,7 @@ static int nnoremap_cmd(const cmd_info_t *cmd_info);
 static int nohlsearch_cmd(const cmd_info_t *cmd_info);
 static int noremap_cmd(const cmd_info_t *cmd_info);
 static int map_or_remap(const cmd_info_t *cmd_info, int no_remap);
+static int normal_cmd(const cmd_info_t *cmd_info);
 static int nunmap_cmd(const cmd_info_t *cmd_info);
 static int only_cmd(const cmd_info_t *cmd_info);
 static int popd_cmd(const cmd_info_t *cmd_info);
@@ -343,6 +344,8 @@ static const cmd_add_t commands[] = {
 		.handler = nohlsearch_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "noremap",          .abbr = "no",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = noremap_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "normal",           .abbr = "norm",  .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = normal_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "nunmap",           .abbr = "nun",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "only",             .abbr = "on",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -2840,6 +2843,18 @@ map_or_remap(const cmd_info_t *cmd_info, int no_remap)
 			result = do_map(cmd_info, "", VISUAL_MODE, no_remap);
 	}
 	return result != 0;
+}
+
+/* Executes normal mode commands. */
+static int
+normal_cmd(const cmd_info_t *cmd_info)
+{
+	wchar_t *wide = to_wide(cmd_info->args);
+
+	execute_keys_timed_out(wide);
+
+	free(wide);
+	return 0;
 }
 
 static int

@@ -185,7 +185,7 @@ int remove_user_keys(const wchar_t *keys, int mode);
 wchar_t ** list_cmds(int mode);
 
 /*
- * Returns count of processed keys
+ * Returns number of processed keys.
  */
 size_t get_key_counter(void);
 

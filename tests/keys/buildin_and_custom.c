@@ -69,6 +69,16 @@ test_udm_and_builtin_wait_point(void)
 	assert_int_equal(KEYS_WAIT, execute_keys(L"Z"));
 }
 
+static void
+test_counter_no_change_on_reenter(void)
+{
+	size_t counter;
+
+	counter = get_key_counter();
+	assert_false(IS_KEYS_RET_CODE(execute_keys(L"norm")));
+	assert_int_equal(counter + 4, get_key_counter());
+}
+
 void
 builtin_and_custom(void)
 {
@@ -81,8 +91,10 @@ builtin_and_custom(void)
 	run_test(test_cancel_reg_with_esc_or_ctrl_c);
 	run_test(test_udm_and_builtin_selector);
 	run_test(test_udm_and_builtin_wait_point);
+	run_test(test_counter_no_change_on_reenter);
 
 	test_fixture_end();
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */
