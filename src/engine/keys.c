@@ -54,7 +54,9 @@ static size_t enters_counter;
 
 static void free_tree(key_chunk_t *root);
 static void free_chunk(key_chunk_t *chunk);
-static int execute_keys_general(const wchar_t *keys, int timed_out, int mapped,
+static int execute_keys_general_wrapper(const wchar_t keys[], int timed_out,
+		int mapped, int no_remap);
+static int execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 		int no_remap);
 static int execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info,
 		int no_remap);
@@ -172,34 +174,49 @@ set_def_handler(int mode, default_handler handler)
 	def_handlers[mode] = handler;
 }
 
-/* This function should not be ever called from this module, only externally. */
+/* This function should never be called from this module, only externally. */
 int
-execute_keys(const wchar_t *keys)
+execute_keys(const wchar_t keys[])
 {
-	int result;
-
-	enters_counter++;
-	result = execute_keys_general(keys, 0, 0, 0);
-	enters_counter--;
-
-	return result;
+	return execute_keys_general_wrapper(keys, 0, 0, 0);
 }
 
-/* This function should not be ever called from this module, only externally. */
+/* This function should never be called from this module, only externally. */
 int
-execute_keys_timed_out(const wchar_t *keys)
+execute_keys_no_remap(const wchar_t keys[])
+{
+	return execute_keys_general_wrapper(keys, 0, 0, 1);
+}
+
+/* This function should never be called from this module, only externally. */
+int
+execute_keys_timed_out(const wchar_t keys[])
+{
+	return execute_keys_general_wrapper(keys, 1, 0, 0);
+}
+
+/* This function should never be called from this module, only externally. */
+int
+execute_keys_timed_out_no_remap(const wchar_t keys[])
+{
+	return execute_keys_general_wrapper(keys, 1, 0, 1);
+}
+
+static int
+execute_keys_general_wrapper(const wchar_t keys[], int timed_out, int mapped,
+		int no_remap)
 {
 	int result;
 
 	enters_counter++;
-	result = execute_keys_general(keys, 1, 0, 0);
+	result = execute_keys_general(keys, timed_out, mapped, no_remap);
 	enters_counter--;
 
 	return result;
 }
 
 static int
-execute_keys_general(const wchar_t *keys, int timed_out, int mapped,
+execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 		int no_remap)
 {
 	int result;

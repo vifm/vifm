@@ -138,15 +138,22 @@ void set_def_handler(int mode, default_handler handler);
  *  - KEYS_*
  *  - something else from the default key handler
  */
-int execute_keys(const wchar_t *keys);
+int execute_keys(const wchar_t keys[]);
 
 /*
- * Return value:
- *  - 0 - success
- *  - KEYS_*
- *  - something else from the default key handler
+ * See execute_keys(...) comments.
  */
-int execute_keys_timed_out(const wchar_t *keys);
+int execute_keys_no_remap(const wchar_t keys[]);
+
+/*
+ * See execute_keys(...) comments.
+ */
+int execute_keys_timed_out(const wchar_t keys[]);
+
+/*
+ * See execute_keys(...) comments.
+ */
+int execute_keys_timed_out_no_remap(const wchar_t keys[]);
 
 /*
  * Returns not zero on error

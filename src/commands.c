@@ -2851,7 +2851,14 @@ normal_cmd(const cmd_info_t *cmd_info)
 {
 	wchar_t *wide = to_wide(cmd_info->args);
 
-	execute_keys_timed_out(wide);
+	if(cmd_info->emark)
+	{
+		execute_keys_timed_out_no_remap(wide);
+	}
+	else
+	{
+		execute_keys_timed_out(wide);
+	}
 
 	free(wide);
 	return 0;
