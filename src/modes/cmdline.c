@@ -122,6 +122,7 @@ static void do_completion(void);
 static void draw_wild_menu(int op);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
+static void save_command(const keys_info_t *keys_info, const char cmd[]);
 static void cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info);
 #ifdef ENABLE_EXTENDED_KEYS
 static void cmd_down(key_info_t key_info, keys_info_t *keys_info);
@@ -609,8 +610,6 @@ leave_cmdline_mode(void)
 static void
 cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
-	const int save_hist = !keys_info->mapped && !keys_info->recursive;
-
 	stop_completion();
 	werase(status_bar);
 	wnoutrefresh(status_bar);
@@ -618,10 +617,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 	if(input_stat.line != NULL)
 	{
 		char *mbstr = to_multibyte(input_stat.line);
-		if(input_stat.search_mode)
-			save_search_history(mbstr);
-		else if(save_hist && sub_mode == CMD_SUBMODE)
-			save_command_history(mbstr);
+		save_command(keys_info, mbstr);
 		free(mbstr);
 
 		input_stat.line[0] = L'\0';
@@ -846,8 +842,8 @@ cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
+	/* TODO: refactor this cmd_ctrl_m() function. */
 	char* p;
-	const int save_hist = !keys_info->mapped && !keys_info->recursive;
 
 	stop_completion();
 	werase(status_bar);
@@ -867,13 +863,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 			sub_mode != VSEARCH_BACKWARD_SUBMODE)
 		leave_visual_mode(curr_stats.save_msg, 1, 0);
 
-	if(p != NULL)
-	{
-		if(input_stat.search_mode)
-			save_search_history(p);
-		else if(save_hist && sub_mode == CMD_SUBMODE)
-			save_command_history(p);
-	}
+	save_command(keys_info, p);
 
 	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 	{
@@ -931,6 +921,26 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	}
 
 	free(p);
+}
+
+/* Saves command in command line history.  cmd can be NULL. */
+static void
+save_command(const keys_info_t *keys_info, const char cmd[])
+{
+	if(cmd != NULL)
+	{
+		if(input_stat.search_mode)
+		{
+			save_search_history(cmd);
+		}
+		else if(sub_mode == CMD_SUBMODE)
+		{
+			if(!keys_info->mapped && !keys_info->recursive)
+			{
+				save_command_history(cmd);
+			}
+		}
+	}
 }
 
 static void
