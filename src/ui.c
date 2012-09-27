@@ -1556,7 +1556,7 @@ wprint(WINDOW *win, const char *str)
 	wchar_t *t = to_wide(str);
 	if(t == NULL)
 	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 

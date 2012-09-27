@@ -2033,7 +2033,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 			if(lstat(curr_view->dir_entry[i].name, &st) == 0 &&
 					!path_exists(curr_view->dir_entry[i].name))
 			{
-				(void)show_error_msgf("Access error",
+				show_error_msgf("Access error",
 						"Can't access destination of link \"%s\". It might be broken.",
 						curr_view->dir_entry[i].name);
 				return 0;
@@ -2045,7 +2045,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 
 		if((cmd = edit_selection(curr_view, &bg)) == NULL)
 		{
-			(void)show_error_msg("Memory error", "Unable to allocate enough memory");
+			show_error_msg("Memory error", "Unable to allocate enough memory");
 			return 0;
 		}
 		if(bg)
@@ -2108,7 +2108,7 @@ exe_cmd(const cmd_info_t *cmd_info)
 		p = realloc(line, len);
 		if(p == NULL)
 		{
-			(void)show_error_msg("Memory error", "Unable to allocate enough memory");
+			show_error_msg("Memory error", "Unable to allocate enough memory");
 			break;
 		}
 		if(line == NULL)
@@ -2305,7 +2305,7 @@ help_cmd(const cmd_info_t *cmd_info)
 	{
 		if(!path_exists_at(cfg.config_dir, VIFM_HELP))
 		{
-			(void)show_error_msgf("No help file",
+			show_error_msgf("No help file",
 					"Can't find \"%s/" VIFM_HELP "\" file", cfg.config_dir);
 			return 0;
 		}
@@ -2918,7 +2918,7 @@ pushd_cmd(const cmd_info_t *cmd_info)
 	}
 	if(pushd() != 0)
 	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return 0;
 	}
 	cd_cmd(cmd_info);
@@ -3426,7 +3426,7 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 	*raw_rhs = t;
 
 	if(result == -1)
-		(void)show_error_msg("Mapping Error", "Unable to allocate enough memory");
+		show_error_msg("Mapping Error", "Unable to allocate enough memory");
 
 	return 0;
 }

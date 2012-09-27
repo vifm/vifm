@@ -68,7 +68,7 @@ fuse_try_mount(FileView *view, const char *program)
 	{
 		if(make_dir(cfg.fuse_home, S_IRWXU) != 0)
 		{
-			(void)show_error_msg("Unable to create FUSE mount home directory",
+			show_error_msg("Unable to create FUSE mount home directory",
 					cfg.fuse_home);
 			return;
 		}
@@ -93,14 +93,14 @@ fuse_try_mount(FileView *view, const char *program)
 			FILE *f;
 			if((f = fopen(file_full_path, "r")) == NULL)
 			{
-				(void)show_error_msg("SSH mount failed", "Can't open file for reading");
+				show_error_msg("SSH mount failed", "Can't open file for reading");
 				curr_stats.save_msg = 1;
 				return;
 			}
 
 			if(fgets(param, sizeof(param), f) == NULL)
 			{
-				(void)show_error_msg("SSH mount failed", "Can't read file content");
+				show_error_msg("SSH mount failed", "Can't read file content");
 				curr_stats.save_msg = 1;
 				fclose(f);
 				return;
@@ -110,7 +110,7 @@ fuse_try_mount(FileView *view, const char *program)
 			chomp(param);
 			if(param[0] == '\0')
 			{
-				(void)show_error_msg("SSH mount failed", "File is empty");
+				show_error_msg("SSH mount failed", "File is empty");
 				curr_stats.save_msg = 1;
 				return;
 			}
@@ -180,7 +180,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 	if(make_dir(mount_point, S_IRWXU) != 0)
 	{
 		free(escaped_filename);
-		(void)show_error_msg("Unable to create FUSE mount directory", mount_point);
+		show_error_msg("Unable to create FUSE mount directory", mount_point);
 		return -1;
 	}
 	free(escaped_filename);
@@ -192,7 +192,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 		 (this happens when mounting JARs from mounted JARs) */
 	if(my_chdir(cfg.fuse_home) != 0)
 	{
-		(void)show_error_msg("FUSE MOUNT ERROR", "Can't chdir() to FUSE home");
+		show_error_msg("FUSE MOUNT ERROR", "Can't chdir() to FUSE home");
 		return -1;
 	}
 
@@ -226,7 +226,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 		/* remove the directory we created for the mount */
 		if(path_exists(mount_point))
 			rmdir(mount_point);
-		(void)show_error_msg("FUSE MOUNT ERROR", file_full_path);
+		show_error_msg("FUSE MOUNT ERROR", file_full_path);
 		(void)my_chdir(view->curr_dir);
 		return -1;
 	}
@@ -426,7 +426,7 @@ try_unmount_fuse(FileView *view)
 	/* have to chdir to parent temporarily, so that this DIR can be unmounted */
 	if(my_chdir(cfg.fuse_home) != 0)
 	{
-		(void)show_error_msg("FUSE UMOUNT ERROR", "Can't chdir to FUSE home");
+		show_error_msg("FUSE UMOUNT ERROR", "Can't chdir to FUSE home");
 		return -1;
 	}
 
@@ -437,8 +437,8 @@ try_unmount_fuse(FileView *view)
 	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
 	{
 		werase(status_bar);
-		(void)show_error_msgf("FUSE UMOUNT ERROR",
-				"Can't unmount %s.  It may be busy.", runner->source_file_name);
+		show_error_msgf("FUSE UMOUNT ERROR", "Can't unmount %s.  It may be busy.",
+				runner->source_file_name);
 		(void)my_chdir(view->curr_dir);
 		return -1;
 	}

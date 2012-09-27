@@ -214,9 +214,14 @@ redraw_error_msg(const char *title_arg, const char *message_arg)
 		mvwaddstr(error_win, y - 2, (x - 20)/2, "Enter [y]es or [n]o");
 }
 
-/* Returns not zero when user asked to skip error messages that left */
-int
-show_error_msgf(char *title, const char *format, ...)
+void
+show_error_msg(const char title[], const char message[])
+{
+	(void)prompt_error_msg(title, message);
+}
+
+void
+show_error_msgf(const char title[], const char format[], ...)
 {
 	char buf[2048];
 	va_list pa;
@@ -226,9 +231,8 @@ show_error_msgf(char *title, const char *format, ...)
 	return show_error_msg(title, buf);
 }
 
-/* Returns not zero when user asked to skip error messages that left */
 int
-show_error_msg(const char *title, const char *message)
+prompt_error_msg(const char title[], const char message[])
 {
 	static int skip_until_started;
 	int key;
@@ -450,7 +454,7 @@ goto_selected_file(FileView *view, menu_info *m)
 	free_this = file = dir = malloc(2 + strlen(m->items[m->pos]) + 1 + 1);
 	if(free_this == NULL)
 	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -821,7 +825,7 @@ print_errors(FILE *ef)
 			continue;
 		if(strlen(buf) + strlen(linebuf) + 1 >= sizeof(buf))
 		{
-			int skip = (show_error_msg("Background Process Error", buf) != 0);
+			int skip = (prompt_error_msg("Background Process Error", buf) != 0);
 			buf[0] = '\0';
 			if(skip)
 				break;
@@ -830,7 +834,7 @@ print_errors(FILE *ef)
 	}
 
 	if(buf[0] != '\0')
-		(void)show_error_msg("Background Process Error", buf);
+		show_error_msg("Background Process Error", buf);
 
 	fclose(ef);
 	return error;

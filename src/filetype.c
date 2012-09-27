@@ -335,7 +335,7 @@ add_assoc(assoc_list_t *assoc_list, assoc_t assoc)
 	void *p = realloc(assoc_list->list, (assoc_list->count + 1)*sizeof(assoc_t));
 	if(p == NULL)
 	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -424,7 +424,7 @@ add_assoc_record(assoc_records_t *records, const char *command,
 	void *p = realloc(records->list, sizeof(assoc_record_t)*(records->count + 1));
 	if(p == NULL)
 	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 
@@ -449,7 +449,7 @@ add_assoc_records(assoc_records_t *assocs, const assoc_records_t src)
 	p = realloc(assocs->list, sizeof(assoc_record_t)*(assocs->count + src.count));
 	if(p == NULL)
 	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 

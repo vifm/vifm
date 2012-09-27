@@ -212,7 +212,7 @@ enter_view_mode(int explore)
 
 	if(!can_be_explored(curr_view, buf))
 	{
-		(void)show_error_msg("File exploring", "The file cannot be explored");
+		show_error_msg("File exploring", "The file cannot be explored");
 		return;
 	}
 
@@ -224,7 +224,7 @@ enter_view_mode(int explore)
 
 	if(fp == NULL)
 	{
-		(void)show_error_msg("File exploring", "Cannot open file for reading");
+		show_error_msg("File exploring", "Cannot open file for reading");
 		return;
 	}
 
@@ -240,7 +240,7 @@ enter_view_mode(int explore)
 
 	if(vi->lines == NULL)
 	{
-		(void)show_error_msg("File exploring", "Wont explore empty file");
+		show_error_msg("File exploring", "Wont explore empty file");
 		return;
 	}
 	vi->widths = malloc(sizeof(*vi->widths)*vi->nlines);

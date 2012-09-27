@@ -152,7 +152,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 			}
 			if(dirs > 0 && files > 0)
 			{
-				(void)show_error_msg("Selection error",
+				show_error_msg("Selection error",
 						"Selection cannot contain files and directories at the same time");
 				return;
 			}
@@ -228,7 +228,7 @@ execute_file(FileView *view, int dont_execute)
 	if(!same && undef == 0 && no_multi_run)
 	{
 		free_assoc_record(&program);
-		(void)show_error_msg("Selection error", "Files have different programs");
+		show_error_msg("Selection error", "Files have different programs");
 		return;
 	}
 	if(undef > 0)
@@ -319,7 +319,7 @@ view_file(const char *filename, int line, int do_fork)
 
 	if(!path_exists(filename))
 	{
-		(void)show_error_msg("Broken Link", "Link destination doesn't exist");
+		show_error_msg("Broken Link", "Link destination doesn't exist");
 		return;
 	}
 
@@ -380,7 +380,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 
 	if(!path_exists_at(view->curr_dir, view->dir_entry[view->list_pos].name))
 	{
-		(void)show_error_msg("Access Error", "File doesn't exist.");
+		show_error_msg("Access Error", "File doesn't exist.");
 		return;
 	}
 
@@ -447,13 +447,13 @@ follow_link(FileView *view, int follow_dirs)
 
 	if(get_link_target(buf, linkto, sizeof(linkto)) != 0)
 	{
-		(void)show_error_msg("Error", "Can't read link");
+		show_error_msg("Error", "Can't read link");
 		return;
 	}
 
 	if(!path_exists(linkto))
 	{
-		(void)show_error_msg("Broken Link",
+		show_error_msg("Broken Link",
 				"Can't access link destination. It might be broken");
 		curr_stats.save_msg = 1;
 		return;

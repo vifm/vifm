@@ -787,7 +787,7 @@ complete_with_shared(const char *server, const char *file)
 
 		if(wserver == NULL)
 		{
-			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			return;
 		}
 
