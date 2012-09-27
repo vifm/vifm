@@ -64,7 +64,7 @@ execute_apropos_cb(menu_info *m)
 	free_this = man_page = line = strdup(m->items[m->pos]);
 	if(free_this == NULL)
 	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 

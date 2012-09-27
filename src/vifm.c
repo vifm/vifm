@@ -235,7 +235,7 @@ parse_args(int argc, char *argv[], const char *dir, char *lwin_path,
 		}
 		else
 		{
-			(void)show_error_msgf("--remote error", "Invalid argument: %s", argv[x]);
+			show_error_msgf("--remote error", "Invalid argument: %s", argv[x]);
 		}
 	}
 }
@@ -429,8 +429,7 @@ main(int argc, char *argv[])
 			exit(0);
 		}
 
-		(void)show_error_msg("Configuration update", "Your vifmrc has been "
-				"upgraded to "
+		show_error_msg("Configuration update", "Your vifmrc has been upgraded to "
 				"new format, you can find its old version in " CONF_DIR "/vifmrc.bak.  "
 				"vifm will not write anything to vifmrc, and all variables that are "
 				"saved between runs of vifm are stored in " CONF_DIR "/vifminfo now "

@@ -118,7 +118,7 @@ check_background_jobs(void)
 		if(p->error != NULL)
 		{
 			if(!p->skip_errors)
-				p->skip_errors = show_error_msg("Background Process Error", p->error);
+				p->skip_errors = prompt_error_msg("Background Process Error", p->error);
 			free(p->error);
 			p->error = NULL;
 		}
@@ -139,8 +139,7 @@ check_background_jobs(void)
 				error_buf = malloc( (size_t)nread + 1);
 				if(error_buf == NULL)
 				{
-					(void)show_error_msg("Memory Error",
-							"Unable to allocate enough memory");
+					show_error_msg("Memory Error", "Unable to allocate enough memory");
 				}
 				else
 				{
@@ -153,7 +152,7 @@ check_background_jobs(void)
 
 			if(!p->skip_errors)
 			{
-				p->skip_errors = show_error_msg("Background Process Error",
+				p->skip_errors = prompt_error_msg("Background Process Error",
 						error_buf);
 			}
 			free(error_buf);
@@ -263,7 +262,7 @@ error_msg(const char *title, const char *text)
 	job_t *job = pthread_getspecific(key);
 	if(job == NULL)
 	{
-		(void)show_error_msg(title, text);
+		show_error_msg(title, text);
 	}
 	else
 	{
@@ -332,13 +331,13 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 
 	if(pipe(out_pipe) != 0)
 	{
-		(void)show_error_msg("File pipe error", "Error creating pipe");
+		show_error_msg("File pipe error", "Error creating pipe");
 		return -1;
 	}
 
 	if(pipe(error_pipe) != 0)
 	{
-		(void)show_error_msg("File pipe error", "Error creating pipe");
+		show_error_msg("File pipe error", "Error creating pipe");
 		close(out_pipe[0]);
 		close(out_pipe[1]);
 		return -1;
@@ -422,13 +421,13 @@ background_and_capture(char *cmd, FILE **out, FILE **err)
 
 	if(_pipe(out_pipe, 512, O_NOINHERIT) != 0)
 	{
-		(void)show_error_msg("File pipe error", "Error creating pipe");
+		show_error_msg("File pipe error", "Error creating pipe");
 		return -1;
 	}
 
 	if(_pipe(err_pipe, 512, O_NOINHERIT) != 0)
 	{
-		(void)show_error_msg("File pipe error", "Error creating pipe");
+		show_error_msg("File pipe error", "Error creating pipe");
 		close(out_pipe[0]);
 		close(out_pipe[1]);
 		return -1;
@@ -473,7 +472,7 @@ start_background_job(const char *cmd, int skip_errors)
 
 	if(pipe(error_pipe) != 0)
 	{
-		(void)show_error_msg("File pipe error", "Error creating pipe");
+		show_error_msg("File pipe error", "Error creating pipe");
 		free(command);
 		return -1;
 	}
@@ -579,7 +578,7 @@ add_background_job(pid_t pid, const char *cmd, HANDLE hprocess)
 
 	if((new = malloc(sizeof(job_t))) == 0)
 	{
-		(void)show_error_msg("Memory error", "Unable to allocate enough memory");
+		show_error_msg("Memory error", "Unable to allocate enough memory");
 		return NULL;
 	}
 	new->pid = pid;

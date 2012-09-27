@@ -90,11 +90,16 @@ typedef struct menu_info
 void init_menu_info(menu_info *m, int menu_type);
 void reset_popup_menu(menu_info *m);
 void setup_menu(void);
-void redraw_error_msg(const char *title_arg, const char *message_arg);
-/* Returns not zero when user asked to skip error messages that left */
-int show_error_msg(const char *title, const char *message);
-int show_error_msgf(char *title, const char *format, ...);
+/* Shows error message to a user. */
+void show_error_msg(const char title[], const char message[]);
+/* Same as show_error_msg(...), but with format. */
+void show_error_msgf(const char title[], const char format[], ...);
+/* Same as show_error_msg(...), but asks about future errors.  Returns not zero
+ * when user asked to skip error messages that left. */
+int prompt_error_msg(const char title[], const char message[]);
 int query_user_menu(char *title, char *message);
+/* Redraws currently visible error message on the screen. */
+void redraw_error_msg_window(void);
 void clean_menu_position(menu_info *m);
 void move_to_menu_pos(int pos, menu_info *m);
 void redraw_menu(menu_info *m);

@@ -260,7 +260,7 @@ key_handler(wchar_t key)
 
 	if(menu->len == 0)
 	{
-		(void)show_error_msg("No more items in the menu", "Menu will be closed");
+		show_error_msg("No more items in the menu", "Menu will be closed");
 		leave_menu_mode();
 	}
 
@@ -310,7 +310,7 @@ menu_redraw(void)
 
 	if(curr_stats.errmsg_shown)
 	{
-		redraw_error_msg(NULL, NULL);
+		redraw_error_msg_window();
 		redrawwin(error_win);
 		wnoutrefresh(error_win);
 		doupdate();
@@ -622,7 +622,7 @@ cmd_dd(key_info_t key_info, keys_info_t *keys_info)
 
 	if(menu->len == 0)
 	{
-		(void)show_error_msg("No more items in the menu", "Menu will be closed");
+		show_error_msg("No more items in the menu", "Menu will be closed");
 		leave_menu_mode();
 	}
 }

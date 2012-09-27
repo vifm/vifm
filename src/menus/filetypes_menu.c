@@ -52,7 +52,7 @@ show_filetypes_menu(FileView *view, int background)
 
 	if(ft.count == 0 && magic.count == 0)
 	{
-		(void)show_error_msg("Filetype is not set.",
+		show_error_msg("Filetype is not set.",
 				"No programs set for this filetype.");
 		return 0;
 	}

@@ -1220,7 +1220,7 @@ update_screen(UpdateType update_kind)
 
 	if(curr_stats.errmsg_shown)
 	{
-		redraw_error_msg(NULL, NULL);
+		redraw_error_msg_window();
 		update_window_lazy(error_win);
 		doupdate();
 	}
@@ -1556,7 +1556,7 @@ wprint(WINDOW *win, const char *str)
 	wchar_t *t = to_wide(str);
 	if(t == NULL)
 	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return;
 	}
 

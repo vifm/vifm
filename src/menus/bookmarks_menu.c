@@ -46,7 +46,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 	m.len = init_active_bookmarks(marks);
 	if(m.len == 0)
 	{
-		(void)show_error_msg("No bookmarks set", "No bookmarks are set.");
+		show_error_msg("No bookmarks set", "No bookmarks are set.");
 		return 0;
 	}
 

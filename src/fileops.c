@@ -258,7 +258,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	if(cfg.use_trash && use_trash &&
 			path_starts_with(view->curr_dir, cfg.trash_dir))
 	{
-		(void)show_error_msg("Can't perform deletion",
+		show_error_msg("Can't perform deletion",
 				"Current directory is under Trash directory");
 		return 0;
 	}
@@ -306,8 +306,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	y = 0;
 	if(my_chdir(curr_view->curr_dir) != 0)
 	{
-		(void)show_error_msg("Directory return",
-				"Can't chdir() to current directory");
+		show_error_msg("Directory return", "Can't chdir() to current directory");
 		return 1;
 	}
 	for(x = 0; x < view->selected_files; x++)
@@ -317,7 +316,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 		if(stroscmp(view->selected_filelist[x], "../") == 0)
 		{
-			(void)show_error_msg("Background Process Error",
+			show_error_msg("Background Process Error",
 					"You cannot delete the ../ directory");
 			continue;
 		}
@@ -331,7 +330,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 		{
 			if(stroscmp(full_buf, cfg.trash_dir) == 0)
 			{
-				(void)show_error_msg("Background Process Error",
+				show_error_msg("Background Process Error",
 						"You cannot delete trash directory to trash");
 				result = -1;
 			}
@@ -447,7 +446,7 @@ delete_file_bg(FileView *view, int use_trash)
 
 	if(args->from_trash && path_starts_with(view->curr_dir, cfg.trash_dir))
 	{
-		(void)show_error_msg("Can't perform deletion",
+		show_error_msg("Can't perform deletion",
 				"Current directory is under Trash directory");
 		free(args);
 		return 0;
@@ -580,7 +579,7 @@ rename_file_cb(const char *new_name)
 	cmd_group_end();
 	if(tmp != 0)
 	{
-		(void)show_error_msg("Rename Error", "Rename operation failed");
+		show_error_msg("Rename Error", "Rename operation failed");
 		return;
 	}
 
@@ -608,7 +607,7 @@ rename_file(FileView *view, int name_only)
 	snprintf(filename, sizeof(filename), "%s", get_current_file_name(view));
 	if(stroscmp(filename, "../") == 0)
 	{
-		(void)show_error_msg("Rename error",
+		show_error_msg("Rename error",
 				"You can't rename parent directory this way");
 		return;
 	}
@@ -950,7 +949,7 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 	if(is_dup == NULL)
 	{
 		free_string_array(files, len);
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		return 0;
 	}
 
@@ -1217,7 +1216,7 @@ check_file_rename(const char *old, const char *new, SignalType signal_type)
 		}
 		else
 		{
-			(void)show_error_msg("File exists",
+			show_error_msg("File exists",
 					"That file already exists. Will not overwrite.");
 		}
 		return 0;
@@ -1363,7 +1362,7 @@ change_link_cb(const char *new_target)
 	filename = curr_view->dir_entry[curr_view->list_pos].name;
 	if(get_link_target(filename, linkto, sizeof(linkto)) != 0)
 	{
-		(void)show_error_msg("Error", "Can't read link");
+		show_error_msg("Error", "Can't read link");
 		return;
 	}
 
@@ -1397,7 +1396,7 @@ change_link(FileView *view)
 
 	if(!symlinks_available())
 	{
-		(void)show_error_msg("Symbolic Links Error",
+		show_error_msg("Symbolic Links Error",
 				"Your OS doesn't support symbolic links");
 		return 0;
 	}
@@ -1414,7 +1413,7 @@ change_link(FileView *view)
 	if(get_link_target(view->dir_entry[view->list_pos].name, linkto,
 			sizeof(linkto)) != 0)
 	{
-		(void)show_error_msg("Error", "Can't read link");
+		show_error_msg("Error", "Can't read link");
 		return 0;
 	}
 
@@ -1976,8 +1975,7 @@ put_files_from_register_i(FileView *view, int start)
 
 	if(my_chdir(view->curr_dir) != 0)
 	{
-		(void)show_error_msg("Directory Return",
-				"Can't chdir() to current directory");
+		show_error_msg("Directory Return", "Can't chdir() to current directory");
 		return 1;
 	}
 	while(put_confirm.x < put_confirm.reg->num_files)
@@ -2618,7 +2616,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 
 	if(!move && type != 0 && !symlinks_available())
 	{
-		(void)show_error_msg("Symbolic Links Error",
+		show_error_msg("Symbolic Links Error",
 				"Your OS doesn't support symbolic links");
 		return 0;
 	}
@@ -2630,7 +2628,7 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 
 	if(pane_in_dir(curr_view, path) && force)
 	{
-		(void)show_error_msg("Operation Error",
+		show_error_msg("Operation Error",
 				"Forcing overwrite when destination and source is same directory will "
 				"lead to losing data");
 		return 0;
@@ -2960,11 +2958,9 @@ check_if_dir_writable(DirRole dir_role, const char *path)
 		return 1;
 
 	if(dir_role == DR_DESTINATION)
-		(void)show_error_msg("Operation error",
-				"Destination directory is not writable");
+		show_error_msg("Operation error", "Destination directory is not writable");
 	else
-		(void)show_error_msg("Operation error",
-				"Current directory is not writable");
+		show_error_msg("Operation error", "Current directory is not writable");
 	return 0;
 }
 

@@ -209,7 +209,7 @@ expand_macros(FileView *view, const char *command, const char *args,
 	while(x < cmd_len);
 
 	if(len > cfg.max_args/2)
-		(void)show_error_msg("Argument is too long", " FIXME ");
+		show_error_msg("Argument is too long", " FIXME ");
 
 	return expanded;
 }
@@ -305,7 +305,7 @@ expand_directory_path(FileView *view, char *expanded, int quotes,
 		escaped = escape_filename(apply_mods(view->curr_dir, "/", mod), 0);
 		if(escaped == NULL)
 		{
-			(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
 			free(expanded);
 			return NULL;
 		}
@@ -330,7 +330,7 @@ append_to_expanded(char *expanded, const char* str)
 	t = realloc(expanded, strlen(expanded) + strlen(str) + 1);
 	if(t == NULL)
 	{
-		(void)show_error_msg("Memory Error", "Unable to allocate enough memory");
+		show_error_msg("Memory Error", "Unable to allocate enough memory");
 		free(expanded);
 		return NULL;
 	}
