@@ -609,6 +609,8 @@ leave_cmdline_mode(void)
 static void
 cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 {
+	const int save_hist = !keys_info->mapped && !keys_info->recursive;
+
 	stop_completion();
 	werase(status_bar);
 	wnoutrefresh(status_bar);
@@ -618,7 +620,7 @@ cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info)
 		char *mbstr = to_multibyte(input_stat.line);
 		if(input_stat.search_mode)
 			save_search_history(mbstr);
-		else if(sub_mode == CMD_SUBMODE)
+		else if(save_hist && sub_mode == CMD_SUBMODE)
 			save_command_history(mbstr);
 		free(mbstr);
 
@@ -845,7 +847,7 @@ static void
 cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 {
 	char* p;
-	int save_hist = !keys_info->mapped;
+	const int save_hist = !keys_info->mapped && !keys_info->recursive;
 
 	stop_completion();
 	werase(status_bar);

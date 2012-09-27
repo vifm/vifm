@@ -84,6 +84,7 @@ typedef struct
 	int *indexes;   /* item indexes */
 	int after_wait; /* after short timeout */
 	int mapped;     /* not users input */
+	int recursive;  /* the key is from recursive call of execute_keys_*(...) */
 }keys_info_t;
 
 typedef void (*keys_handler)(key_info_t key_info, keys_info_t *keys_info);

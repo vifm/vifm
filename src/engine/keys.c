@@ -78,6 +78,7 @@ static key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
 static key_chunk_t* add_keys_inner(key_chunk_t *root, const wchar_t *keys);
 static int fill_list(const key_chunk_t *curr, size_t len, wchar_t **list);
 static void inc_counter(const keys_info_t *const keys_info, const size_t by);
+static int is_recursive(void);
 
 void
 init_keys(int modes_count, int *key_mode, int *key_mode_flags)
@@ -512,6 +513,7 @@ init_keys_info(keys_info_t *keys_info, int mapped)
 	keys_info->indexes = NULL;
 	keys_info->after_wait = 0;
 	keys_info->mapped = mapped;
+	keys_info->recursive = is_recursive();
 }
 
 static const wchar_t *
@@ -890,10 +892,17 @@ inc_counter(const keys_info_t *const keys_info, const size_t by)
 {
 	assert(enters_counter > 0);
 
-	if(enters_counter == 1)
+	if(!is_recursive())
 	{
 		counter += keys_info->mapped ? 0 : by;
 	}
+}
+
+/* Returns non-zero if current level of recursion is deeper than 1. */
+static int
+is_recursive(void)
+{
+	return enters_counter > 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */
