@@ -755,6 +755,8 @@ static void
 redraw_error_msg(const char title_arg[], const char message_arg[],
 		int prompt_skip)
 {
+	/* TODO: refactor this function redraw_error_msg() */
+
 	static const char *title;
 	static const char *message;
 	static int ctrl_c;
@@ -762,6 +764,7 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	int sx, sy;
 	int x, y;
 	int z;
+	const char *text;
 
 	if(title_arg != NULL && message_arg != NULL)
 	{
@@ -828,18 +831,18 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	{
 		if(ctrl_c)
 		{
-			mvwaddstr(error_win, y - 2, (x - 63)/2,
-					"Press Return to continue or Ctrl-C to skip other error messages");
+			text = "Press Return to continue or Ctrl-C to skip other error messages";
 		}
 		else
 		{
-			mvwaddstr(error_win, y - 2, (x - 24)/2, "Press Return to continue");
+			text = "Press Return to continue";
 		}
 	}
 	else
 	{
-		mvwaddstr(error_win, y - 2, (x - 20)/2, "Enter [y]es or [n]o");
+		text = "Enter [y]es or [n]o";
 	}
+	mvwaddstr(error_win, y - 2, (x - strlen(text))/2, text);
 }
 
 /* Returns non-zero if there were errors, closes ef */
