@@ -54,11 +54,11 @@
 #include "../ui.h"
 #include "all.h"
 
-static void redraw_error_msg(const char title_arg[], const char message_arg[],
-		int prompt_skip);
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
 static void normalize_top(menu_info *m);
+static void redraw_error_msg(const char title_arg[], const char message_arg[],
+		int prompt_skip);
 
 static void
 show_position_in_menu(menu_info *m)
@@ -139,105 +139,6 @@ clean_menu_position(menu_info *m)
 	wattroff(menu_win, COLOR_PAIR(type + DCOLOR_BASE) | col.attr);
 
 	free(buf);
-}
-
-void
-redraw_error_msg_window(void)
-{
-	redraw_error_msg(NULL, NULL, 0);
-}
-
-/* Draws error message on the screen or redraws the last message when both
- * title_arg and message_arg are NULL. */
-static void
-redraw_error_msg(const char title_arg[], const char message_arg[],
-		int prompt_skip)
-{
-	static const char *title;
-	static const char *message;
-	static int ctrl_c;
-
-	int sx, sy;
-	int x, y;
-	int z;
-
-	if(title_arg != NULL && message_arg != NULL)
-	{
-		title = title_arg;
-		message = message_arg;
-		ctrl_c = prompt_skip;
-	}
-
-	assert(message != NULL);
-
-	curs_set(FALSE);
-	werase(error_win);
-
-	getmaxyx(stdscr, sy, sx);
-	getmaxyx(error_win, y, x);
-
-	z = strlen(message);
-	if(z <= x - 2 && strchr(message, '\n') == NULL)
-	{
-		y = 6;
-		wresize(error_win, y, x);
-		mvwin(error_win, (sy - y)/2, (sx - x)/2);
-		wmove(error_win, 2, (x - z)/2);
-		wprint(error_win, message);
-	}
-	else
-	{
-		int i;
-		int cy = 2;
-		i = 0;
-		while(i < z)
-		{
-			int j;
-			char buf[x - 2 + 1];
-
-			snprintf(buf, sizeof(buf), "%s", message + i);
-
-			for(j = 0; buf[j] != '\0'; j++)
-				if(buf[j] == '\n')
-					break;
-
-			if(buf[j] != '\0')
-				i++;
-			buf[j] = '\0';
-			i += j;
-
-			if(buf[0] == '\0')
-				continue;
-
-			y = cy + 4;
-			mvwin(error_win, (sy - y)/2, (sx - x)/2);
-			wresize(error_win, y, x);
-
-			wmove(error_win, cy++, 1);
-			wprint(error_win, buf);
-		}
-	}
-
-	box(error_win, 0, 0);
-	if(title[0] != '\0')
-		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
-
-	if(curr_stats.errmsg_shown == 1)
-	{
-		if(ctrl_c)
-		{
-			mvwaddstr(error_win, y - 2, (x - 63)/2,
-					"Press Return to continue or Ctrl-C to skip other error messages");
-		}
-		else
-		{
-			mvwaddstr(error_win, y - 2, (x - 24)/2, "Press Return to continue");
-		}
-	}
-	else
-	{
-		mvwaddstr(error_win, y - 2, (x - 20)/2, "Enter [y]es or [n]o");
-	}
 }
 
 void
@@ -840,6 +741,105 @@ query_user_menu(char *title, char *message)
 		return 1;
 	else
 		return 0;
+}
+
+void
+redraw_error_msg_window(void)
+{
+	redraw_error_msg(NULL, NULL, 0);
+}
+
+/* Draws error message on the screen or redraws the last message when both
+ * title_arg and message_arg are NULL. */
+static void
+redraw_error_msg(const char title_arg[], const char message_arg[],
+		int prompt_skip)
+{
+	static const char *title;
+	static const char *message;
+	static int ctrl_c;
+
+	int sx, sy;
+	int x, y;
+	int z;
+
+	if(title_arg != NULL && message_arg != NULL)
+	{
+		title = title_arg;
+		message = message_arg;
+		ctrl_c = prompt_skip;
+	}
+
+	assert(message != NULL);
+
+	curs_set(FALSE);
+	werase(error_win);
+
+	getmaxyx(stdscr, sy, sx);
+	getmaxyx(error_win, y, x);
+
+	z = strlen(message);
+	if(z <= x - 2 && strchr(message, '\n') == NULL)
+	{
+		y = 6;
+		wresize(error_win, y, x);
+		mvwin(error_win, (sy - y)/2, (sx - x)/2);
+		wmove(error_win, 2, (x - z)/2);
+		wprint(error_win, message);
+	}
+	else
+	{
+		int i;
+		int cy = 2;
+		i = 0;
+		while(i < z)
+		{
+			int j;
+			char buf[x - 2 + 1];
+
+			snprintf(buf, sizeof(buf), "%s", message + i);
+
+			for(j = 0; buf[j] != '\0'; j++)
+				if(buf[j] == '\n')
+					break;
+
+			if(buf[j] != '\0')
+				i++;
+			buf[j] = '\0';
+			i += j;
+
+			if(buf[0] == '\0')
+				continue;
+
+			y = cy + 4;
+			mvwin(error_win, (sy - y)/2, (sx - x)/2);
+			wresize(error_win, y, x);
+
+			wmove(error_win, cy++, 1);
+			wprint(error_win, buf);
+		}
+	}
+
+	box(error_win, 0, 0);
+	if(title[0] != '\0')
+		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
+
+	if(curr_stats.errmsg_shown == 1)
+	{
+		if(ctrl_c)
+		{
+			mvwaddstr(error_win, y - 2, (x - 63)/2,
+					"Press Return to continue or Ctrl-C to skip other error messages");
+		}
+		else
+		{
+			mvwaddstr(error_win, y - 2, (x - 24)/2, "Press Return to continue");
+		}
+	}
+	else
+	{
+		mvwaddstr(error_win, y - 2, (x - 20)/2, "Enter [y]es or [n]o");
+	}
 }
 
 /* Returns non-zero if there were errors, closes ef */
