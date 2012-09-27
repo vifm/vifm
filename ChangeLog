@@ -87,6 +87,9 @@
 
 	Flicker less on :restart command.
 
+	Don't show Ctrl-C part in information message boxes where it doesn't make
+	sense.
+
 	Remove automatically generated files on `make clean`.
 
 	Fixed background bold (light) colors in linux native console.
