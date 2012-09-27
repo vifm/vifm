@@ -1220,7 +1220,7 @@ update_screen(UpdateType update_kind)
 
 	if(curr_stats.errmsg_shown)
 	{
-		redraw_error_msg(NULL, NULL);
+		redraw_error_msg_window();
 		update_window_lazy(error_win);
 		doupdate();
 	}

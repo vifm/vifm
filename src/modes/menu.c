@@ -310,7 +310,7 @@ menu_redraw(void)
 
 	if(curr_stats.errmsg_shown)
 	{
-		redraw_error_msg(NULL, NULL);
+		redraw_error_msg_window();
 		redrawwin(error_win);
 		wnoutrefresh(error_win);
 		doupdate();

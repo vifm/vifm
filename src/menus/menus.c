@@ -54,6 +54,10 @@
 #include "../ui.h"
 #include "all.h"
 
+static void redraw_error_msg(const char title_arg[], const char message_arg[],
+		int prompt_skip);
+static int prompt_error_msg_internal(const char title[], const char message[],
+		int prompt_skip);
 static void normalize_top(menu_info *m);
 
 static void
@@ -138,10 +142,20 @@ clean_menu_position(menu_info *m)
 }
 
 void
-redraw_error_msg(const char *title_arg, const char *message_arg)
+redraw_error_msg_window(void)
+{
+	redraw_error_msg(NULL, NULL, 0);
+}
+
+/* Draws error message on the screen or redraws the last message when both
+ * title_arg and message_arg are NULL. */
+static void
+redraw_error_msg(const char title_arg[], const char message_arg[],
+		int prompt_skip)
 {
 	static const char *title;
 	static const char *message;
+	static int ctrl_c;
 
 	int sx, sy;
 	int x, y;
@@ -151,6 +165,7 @@ redraw_error_msg(const char *title_arg, const char *message_arg)
 	{
 		title = title_arg;
 		message = message_arg;
+		ctrl_c = prompt_skip;
 	}
 
 	assert(message != NULL);
@@ -208,16 +223,27 @@ redraw_error_msg(const char *title_arg, const char *message_arg)
 		mvwprintw(error_win, 0, (x - strlen(title) - 2)/2, " %s ", title);
 
 	if(curr_stats.errmsg_shown == 1)
-		mvwaddstr(error_win, y - 2, (x - 63)/2,
-				"Press Return to continue or Ctrl-C to skip other error messages");
+	{
+		if(ctrl_c)
+		{
+			mvwaddstr(error_win, y - 2, (x - 63)/2,
+					"Press Return to continue or Ctrl-C to skip other error messages");
+		}
+		else
+		{
+			mvwaddstr(error_win, y - 2, (x - 24)/2, "Press Return to continue");
+		}
+	}
 	else
+	{
 		mvwaddstr(error_win, y - 2, (x - 20)/2, "Enter [y]es or [n]o");
+	}
 }
 
 void
 show_error_msg(const char title[], const char message[])
 {
-	(void)prompt_error_msg(title, message);
+	(void)prompt_error_msg_internal(title, message, 0);
 }
 
 void
@@ -228,27 +254,37 @@ show_error_msgf(const char title[], const char format[], ...)
 	va_start(pa, format);
 	vsnprintf(buf, sizeof(buf), format, pa);
 	va_end(pa);
-	return show_error_msg(title, buf);
+	(void)prompt_error_msg_internal(title, buf, 0);
 }
 
 int
 prompt_error_msg(const char title[], const char message[])
 {
+	return prompt_error_msg_internal(title, message, 1);
+}
+
+/* Internal function for displaying messages to a user.  When the prompt_skip
+ * isn't zero, asks user about successive messages.  Returns non-zero if all
+ * successive messages should be skipped. */
+static int
+prompt_error_msg_internal(const char title[], const char message[],
+		int prompt_skip)
+{
 	static int skip_until_started;
 	int key;
 
-	if(!curr_stats.load_stage)
+	if(curr_stats.load_stage == 0)
 		return 1;
 	if(curr_stats.load_stage < 2 && skip_until_started)
 		return 1;
 
 	curr_stats.errmsg_shown = 1;
 
-	redraw_error_msg(title, message);
+	redraw_error_msg(title, message, prompt_skip);
 
 	do
 		key = wgetch(error_win);
-	while(key != 13 && key != 3); /* ascii Return, ascii Ctrl-c */
+	while(key != 13 && (!prompt_skip || key != 3)); /* ascii Return, Ctrl-c */
 
 	if(curr_stats.load_stage < 2)
 		skip_until_started = key == 3;
@@ -777,7 +813,7 @@ query_user_menu(char *title, char *message)
 
 	curr_stats.errmsg_shown = 2;
 
-	redraw_error_msg(title, message);
+	redraw_error_msg(title, message, 0);
 
 	while(!done)
 	{

@@ -90,7 +90,8 @@ typedef struct menu_info
 void init_menu_info(menu_info *m, int menu_type);
 void reset_popup_menu(menu_info *m);
 void setup_menu(void);
-void redraw_error_msg(const char *title_arg, const char *message_arg);
+/* Redraws currently visible error message on the screen. */
+void redraw_error_msg_window(void);
 /* Shows error message to a user. */
 void show_error_msg(const char title[], const char message[]);
 /* Same as show_error_msg(...), but with format. */
