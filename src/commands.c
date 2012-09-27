@@ -2863,11 +2863,17 @@ normal_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->emark)
 	{
-		execute_keys_timed_out_no_remap(wide);
+		(void)execute_keys_timed_out_no_remap(wide);
 	}
 	else
 	{
-		execute_keys_timed_out(wide);
+		(void)execute_keys_timed_out(wide);
+	}
+
+	/* Force leaving command-line mode if the wide contains unfinished ":". */
+	if(get_mode() == CMDLINE_MODE)
+	{
+		(void)execute_keys_timed_out(L"\x03");
 	}
 
 	free(wide);
