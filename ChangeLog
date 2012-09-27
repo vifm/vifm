@@ -41,6 +41,8 @@
 
 	Added man pages for vifm-pause script and vifmrc-converter.
 
+	Added :normal command.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 

@@ -180,6 +180,8 @@ const char *tags[] = {
 	"vifm-:noh",
 	"vifm-:nohlsearch",
 	"vifm-:noremap",
+	"vifm-:norm",
+	"vifm-:normal",
 	"vifm-:nun",
 	"vifm-:nunmap",
 	"vifm-:on",
