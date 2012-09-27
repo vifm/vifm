@@ -84,6 +84,7 @@ typedef struct
 	int *indexes;   /* item indexes */
 	int after_wait; /* after short timeout */
 	int mapped;     /* not users input */
+	int recursive;  /* the key is from recursive call of execute_keys_*(...) */
 }keys_info_t;
 
 typedef void (*keys_handler)(key_info_t key_info, keys_info_t *keys_info);
@@ -138,15 +139,22 @@ void set_def_handler(int mode, default_handler handler);
  *  - KEYS_*
  *  - something else from the default key handler
  */
-int execute_keys(const wchar_t *keys);
+int execute_keys(const wchar_t keys[]);
 
 /*
- * Return value:
- *  - 0 - success
- *  - KEYS_*
- *  - something else from the default key handler
+ * See execute_keys(...) comments.
  */
-int execute_keys_timed_out(const wchar_t *keys);
+int execute_keys_no_remap(const wchar_t keys[]);
+
+/*
+ * See execute_keys(...) comments.
+ */
+int execute_keys_timed_out(const wchar_t keys[]);
+
+/*
+ * See execute_keys(...) comments.
+ */
+int execute_keys_timed_out_no_remap(const wchar_t keys[]);
 
 /*
  * Returns not zero on error
@@ -185,7 +193,7 @@ int remove_user_keys(const wchar_t *keys, int mode);
 wchar_t ** list_cmds(int mode);
 
 /*
- * Returns count of processed keys
+ * Returns number of processed keys.
  */
 size_t get_key_counter(void);
 

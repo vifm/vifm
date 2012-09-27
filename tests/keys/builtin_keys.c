@@ -32,6 +32,7 @@ static void keys_delete(key_info_t key_info, keys_info_t *keys_info);
 static void keys_delete_selector(key_info_t key_info, keys_info_t *keys_info);
 static void keys_v(key_info_t key_info, keys_info_t *keys_info);
 static void keys_quit(key_info_t key_info, keys_info_t *keys_info);
+static void keys_norm(key_info_t key_info, keys_info_t *keys_info);
 
 void
 init_builtin_keys(int *key_mode)
@@ -152,6 +153,9 @@ init_builtin_keys(int *key_mode)
 
 	curr = add_cmd(L"ZZ", VISUAL_MODE);
 	curr->data.handler = keys_quit;
+
+	curr = add_cmd(L"norm", NORMAL_MODE);
+	curr->data.handler = keys_norm;
 }
 
 static void
@@ -284,4 +288,11 @@ keys_quit(key_info_t key_info, keys_info_t *keys_info)
 	printf("(%d)quit in register %c\n", key_info.count, key_info.reg);
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+static void
+keys_norm(key_info_t key_info, keys_info_t *keys_info)
+{
+	execute_keys_timed_out(L"ZZ");
+}
+
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

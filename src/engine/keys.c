@@ -49,12 +49,16 @@ static int *mode;
 static int *mode_flags;
 static default_handler *def_handlers;
 static size_t counter;
+/* Main external functions enter recursion level. */
+static size_t enters_counter;
 
 static void free_tree(key_chunk_t *root);
 static void free_chunk(key_chunk_t *chunk);
-static int execute_keys_general(const wchar_t *keys, int timed_out, int mapped,
+static int execute_keys_general_wrapper(const wchar_t keys[], int timed_out,
+		int mapped, int no_remap);
+static int execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 		int no_remap);
-static int execute_keys_inner(const wchar_t *keys, keys_info_t *keys_info,
+static int execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info,
 		int no_remap);
 static int execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
 		key_chunk_t *root, key_info_t key_info, int no_remap);
@@ -73,6 +77,8 @@ static const wchar_t* get_count(const wchar_t *keys, int *count);
 static key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
 static key_chunk_t* add_keys_inner(key_chunk_t *root, const wchar_t *keys);
 static int fill_list(const key_chunk_t *curr, size_t len, wchar_t **list);
+static void inc_counter(const keys_info_t *const keys_info, const size_t by);
+static int is_recursive(void);
 
 void
 init_keys(int modes_count, int *key_mode, int *key_mode_flags)
@@ -169,19 +175,49 @@ set_def_handler(int mode, default_handler handler)
 	def_handlers[mode] = handler;
 }
 
+/* This function should never be called from this module, only externally. */
 int
-execute_keys(const wchar_t *keys)
+execute_keys(const wchar_t keys[])
 {
-	return execute_keys_general(keys, 0, 0, 0);
+	return execute_keys_general_wrapper(keys, 0, 0, 0);
 }
 
-int execute_keys_timed_out(const wchar_t *keys)
+/* This function should never be called from this module, only externally. */
+int
+execute_keys_no_remap(const wchar_t keys[])
 {
-	return execute_keys_general(keys, 1, 0, 0);
+	return execute_keys_general_wrapper(keys, 0, 0, 1);
+}
+
+/* This function should never be called from this module, only externally. */
+int
+execute_keys_timed_out(const wchar_t keys[])
+{
+	return execute_keys_general_wrapper(keys, 1, 0, 0);
+}
+
+/* This function should never be called from this module, only externally. */
+int
+execute_keys_timed_out_no_remap(const wchar_t keys[])
+{
+	return execute_keys_general_wrapper(keys, 1, 0, 1);
 }
 
 static int
-execute_keys_general(const wchar_t *keys, int timed_out, int mapped,
+execute_keys_general_wrapper(const wchar_t keys[], int timed_out, int mapped,
+		int no_remap)
+{
+	int result;
+
+	enters_counter++;
+	result = execute_keys_general(keys, timed_out, mapped, no_remap);
+	enters_counter--;
+
+	return result;
+}
+
+static int
+execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 		int no_remap)
 {
 	int result;
@@ -202,7 +238,7 @@ execute_keys_general(const wchar_t *keys, int timed_out, int mapped,
 }
 
 static int
-execute_keys_inner(const wchar_t *keys, keys_info_t *keys_info, int no_remap)
+execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info, int no_remap)
 {
 	key_info_t key_info;
 	key_chunk_t *root;
@@ -214,8 +250,7 @@ execute_keys_inner(const wchar_t *keys, keys_info_t *keys_info, int no_remap)
 	if(key_info.reg == L'\x1b' || key_info.reg == L'\x03')
 		return 0;
 	keys = get_count(keys, &key_info.count);
-	root = keys_info->selector ?
-		&selectors_root[*mode] : &user_cmds_root[*mode];
+	root = keys_info->selector ? &selectors_root[*mode] : &user_cmds_root[*mode];
 
 	if(!no_remap)
 		result = execute_keys_loop(keys, keys_info, root, key_info, no_remap);
@@ -288,7 +323,7 @@ execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
 
 				return result;
 			}
-			counter += keys_info->mapped ? 0 : (keys - keys_start);
+			inc_counter(keys_info, keys - keys_start);
 			return execute_keys_general(keys, 0, keys_info->mapped, no_remap);
 		}
 		keys++;
@@ -308,7 +343,7 @@ execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
 			no_remap);
 	if(!IS_KEYS_RET_CODE(result))
 	{
-		counter += keys_info->mapped ? 0 : (keys - keys_start);
+		inc_counter(keys_info, keys - keys_start);
 	}
 	else if(*keys == '\0' && result == KEYS_UNKNOWN && curr->children_count > 0)
 	{
@@ -478,6 +513,7 @@ init_keys_info(keys_info_t *keys_info, int mapped)
 	keys_info->indexes = NULL;
 	keys_info->after_wait = 0;
 	keys_info->mapped = mapped;
+	keys_info->recursive = is_recursive();
 }
 
 static const wchar_t *
@@ -847,6 +883,26 @@ size_t
 get_key_counter(void)
 {
 	return counter;
+}
+
+/* Increments counter if we are at the first level of key parsing recursion and
+ * the key sequence isn't mapped. */
+static void
+inc_counter(const keys_info_t *const keys_info, const size_t by)
+{
+	assert(enters_counter > 0);
+
+	if(!is_recursive())
+	{
+		counter += keys_info->mapped ? 0 : by;
+	}
+}
+
+/* Returns non-zero if current level of recursion is deeper than 1. */
+static int
+is_recursive(void)
+{
+	return enters_counter > 1;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */

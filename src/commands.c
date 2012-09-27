@@ -36,7 +36,7 @@
 #include <limits.h> /* PATH_MAX */
 #include <signal.h>
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /*  system() */
+#include <stdlib.h> /* system() free() */
 #include <string.h> /* strncmp() */
 #include <time.h>
 
@@ -102,6 +102,19 @@ enum
 	COM_SUBSTITUTE,
 	COM_TR,
 	COM_IF_STMT,
+	COM_CMAP,
+	COM_CNOREMAP,
+	COM_COMMAND,
+	COM_FILETYPE,
+	COM_FILEVIEWER,
+	COM_FILEXTYPE,
+	COM_MAP,
+	COM_NMAP,
+	COM_NNOREMAP,
+	COM_NORMAL,
+	COM_VMAP,
+	COM_VNOREMAP,
+	COM_NOREMAP,
 };
 
 static int swap_range(void);
@@ -111,6 +124,7 @@ static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 static wchar_t * substitute_specs(const char *cmd);
+static int is_whole_line_command(const char cmd[]);
 
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
@@ -175,6 +189,7 @@ static int nnoremap_cmd(const cmd_info_t *cmd_info);
 static int nohlsearch_cmd(const cmd_info_t *cmd_info);
 static int noremap_cmd(const cmd_info_t *cmd_info);
 static int map_or_remap(const cmd_info_t *cmd_info, int no_remap);
+static int normal_cmd(const cmd_info_t *cmd_info);
 static int nunmap_cmd(const cmd_info_t *cmd_info);
 static int only_cmd(const cmd_info_t *cmd_info);
 static int popd_cmd(const cmd_info_t *cmd_info);
@@ -249,13 +264,13 @@ static const cmd_add_t commands[] = {
 #endif
 	{ .name = "clone",            .abbr = NULL,    .emark = 1,  .id = COM_CLONE,       .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = clone_cmd,       .qmark = 1,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
-	{ .name = "cmap",             .abbr = "cm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "cmap",             .abbr = "cm",    .emark = 0,  .id = COM_CMAP,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "cnoremap",         .abbr = "cno",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "cnoremap",         .abbr = "cno",   .emark = 0,  .id = COM_CNOREMAP,    .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = cnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "colorscheme",      .abbr = "colo",  .emark = 0,  .id = COM_COLORSCHEME, .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = colorscheme_cmd, .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 2,       .select = 0, },
-  { .name = "command",          .abbr = "com",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+  { .name = "command",          .abbr = "com",   .emark = 1,  .id = COM_COMMAND,     .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
     .handler = command_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "copy",             .abbr = "co",    .emark = 1,  .id = COM_COPY,        .range = 1,    .bg = 1, .quote = 1, .regexp = 0,
 		.handler = copy_cmd,        .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
@@ -285,11 +300,11 @@ static const cmd_add_t commands[] = {
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "file",             .abbr = "f",     .emark = 0,  .id = COM_FILE,        .range = 0,    .bg = 1, .quote = 0, .regexp = 0,
 		.handler = file_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "filetype",         .abbr = "filet", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "filetype",         .abbr = "filet", .emark = 0,  .id = COM_FILETYPE,    .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = filetype_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "fileviewer",       .abbr = "filev", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "fileviewer",       .abbr = "filev", .emark = 0,  .id = COM_FILEVIEWER,  .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = fileviewer_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "filextype",        .abbr = "filex", .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "filextype",        .abbr = "filex", .emark = 0,  .id = COM_FILEXTYPE,   .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = filextype_cmd,   .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "filter",           .abbr = NULL,    .emark = 1,  .id = COM_FILTER,      .range = 0,    .bg = 0, .quote = 1, .regexp = 1,
 		.handler = filter_cmd,      .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
@@ -317,7 +332,7 @@ static const cmd_add_t commands[] = {
 		.handler = locate_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "ls",               .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = ls_cmd,          .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "map",              .abbr = NULL,    .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "map",              .abbr = NULL,    .emark = 1,  .id = COM_MAP,         .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = map_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 2, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "mark",             .abbr = "ma",    .emark = 0,  .id = -1,              .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = mark_cmd,        .qmark = 2,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = 3,       .select = 0, },
@@ -335,14 +350,16 @@ static const cmd_add_t commands[] = {
 		.handler = move_cmd,        .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "munmap",           .abbr = "mu",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = munmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
-	{ .name = "nmap",             .abbr = "nm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "nmap",             .abbr = "nm",    .emark = 0,  .id = COM_NMAP,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "nnoremap",         .abbr = "nn",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "nnoremap",         .abbr = "nn",    .emark = 0,  .id = COM_NNOREMAP,    .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "nohlsearch",       .abbr = "noh",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nohlsearch_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "noremap",          .abbr = "no",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "noremap",          .abbr = "no",    .emark = 0,  .id = COM_NOREMAP,     .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = noremap_cmd,     .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
+	{ .name = "normal",           .abbr = "norm",  .emark = 1,  .id = COM_NORMAL,      .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+		.handler = normal_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "nunmap",           .abbr = "nun",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = nunmap_cmd,      .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 1, .max_args = 1,       .select = 0, },
 	{ .name = "only",             .abbr = "on",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -403,9 +420,9 @@ static const cmd_add_t commands[] = {
 		.handler = view_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "vifm",             .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vifm_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "vmap",             .abbr = "vm",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "vmap",             .abbr = "vm",    .emark = 0,  .id = COM_VMAP,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vmap_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
-	{ .name = "vnoremap",         .abbr = "vn",    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "vnoremap",         .abbr = "vn",    .emark = 0,  .id = COM_VNOREMAP,    .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = vnoremap_cmd,    .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 #ifdef _WIN32
 	{ .name = "volumes",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -901,7 +918,7 @@ execute_command(FileView *view, const char command[], int menu)
 	if(command[0] == '"')
 		return 0;
 
-	if((command[0] == '\0') && !menu)
+	if(command[0] == '\0' && !menu)
 	{
 		remove_selection(view);
 		return 0;
@@ -1116,41 +1133,6 @@ is_in_arg(const char *cmd, const char *pos)
 		return (line_pos(cmd, pos, ' ', 0) == 0);
 }
 
-static int
-is_whole_line_command(const char *cmd)
-{
-	/* TODO: rewrite this using cmds.c */
-
-	if(*cmd == '!')
-		return 1;
-	else if(strncmp(cmd, "cm", 2) == 0)
-		return 1;
-	else if(strncmp(cmd, "nm", 2) == 0)
-		return 1;
-	else if(strncmp(cmd, "vm", 2) == 0)
-		return 1;
-	else if(strncmp(cmd, "vn", 2) == 0)
-		return 1;
-	else if(strncmp(cmd, "nn", 2) == 0)
-		return 1;
-	else if(strncmp(cmd, "no", 2) == 0)
-		return 1;
-	else if(strncmp(cmd, "cno", 3) == 0)
-		return 1;
-	else if(strncmp(cmd, "map", 3) == 0)
-		return 1;
-	else if(strncmp(cmd, "com", 3) == 0)
-		return 1;
-	else if(strncmp(cmd, "filet", 5) == 0)
-		return 1;
-	else if(strncmp(cmd, "filev", 5) == 0)
-		return 1;
-	else if(strncmp(cmd, "win", 3) == 0)
-		return 1;
-	else
-		return 0;
-}
-
 int
 exec_commands(char *cmd, FileView *view, int type)
 {
@@ -1209,6 +1191,37 @@ exec_commands(char *cmd, FileView *view, int type)
 
 	return save_msg;
 }
+
+static int
+is_whole_line_command(const char cmd[])
+{
+	const int cmd_id = get_cmd_id(cmd);
+	switch(cmd_id)
+	{
+		case COM_EXECUTE:
+		case COM_CMAP:
+		case COM_CNOREMAP:
+		case COM_COMMAND:
+		case COMMAND_CMD_ID:
+		case COM_FILETYPE:
+		case COM_FILEVIEWER:
+		case COM_FILEXTYPE:
+		case COM_MAP:
+		case COM_NMAP:
+		case COM_NNOREMAP:
+		case COM_NORMAL:
+		case COM_VMAP:
+		case COM_VNOREMAP:
+		case COM_NOREMAP:
+		case COM_WINDO:
+		case COM_WINRUN:
+			return 1;
+
+		default:
+			return 0;
+	}
+}
+
 
 char *
 find_last_command(char *cmd)
@@ -2840,6 +2853,31 @@ map_or_remap(const cmd_info_t *cmd_info, int no_remap)
 			result = do_map(cmd_info, "", VISUAL_MODE, no_remap);
 	}
 	return result != 0;
+}
+
+/* Executes normal mode commands. */
+static int
+normal_cmd(const cmd_info_t *cmd_info)
+{
+	wchar_t *wide = to_wide(cmd_info->args);
+
+	if(cmd_info->emark)
+	{
+		(void)execute_keys_timed_out_no_remap(wide);
+	}
+	else
+	{
+		(void)execute_keys_timed_out(wide);
+	}
+
+	/* Force leaving command-line mode if the wide contains unfinished ":". */
+	if(get_mode() == CMDLINE_MODE)
+	{
+		(void)execute_keys_timed_out(L"\x03");
+	}
+
+	free(wide);
+	return 0;
 }
 
 static int

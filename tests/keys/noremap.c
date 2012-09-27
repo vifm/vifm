@@ -43,6 +43,18 @@ test_with_noremap(void)
 	assert_int_equal(2, last);
 }
 
+static void
+test_noremap_functions(void)
+{
+	assert_int_equal(0, add_user_keys(L"y", L"k", NORMAL_MODE, 0));
+
+	assert_false(IS_KEYS_RET_CODE(execute_keys(L"y")));
+	assert_true(IS_KEYS_RET_CODE(execute_keys_no_remap(L"y")));
+
+	assert_false(IS_KEYS_RET_CODE(execute_keys_timed_out(L"y")));
+	assert_true(IS_KEYS_RET_CODE(execute_keys_timed_out_no_remap(L"y")));
+}
+
 void
 noremap_tests(void)
 {
@@ -50,6 +62,7 @@ noremap_tests(void)
 
 	run_test(test_without_noremap);
 	run_test(test_with_noremap);
+	run_test(test_noremap_functions);
 
 	test_fixture_end();
 }
