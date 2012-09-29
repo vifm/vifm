@@ -72,10 +72,10 @@ static int run_cmd(key_info_t key_info, keys_info_t *keys_info,
 static void enter_chunk(key_chunk_t *chunk);
 static void leave_chunk(key_chunk_t *chunk);
 static void init_keys_info(keys_info_t *keys_info, int mapped);
-static const wchar_t* get_reg(const wchar_t *keys, int *reg);
-static const wchar_t* get_count(const wchar_t *keys, int *count);
+static const wchar_t * get_reg(const wchar_t *keys, int *reg);
+static const wchar_t * get_count(const wchar_t keys[], int *count);
 static key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
-static key_chunk_t* add_keys_inner(key_chunk_t *root, const wchar_t *keys);
+static key_chunk_t * add_keys_inner(key_chunk_t *root, const wchar_t *keys);
 static int fill_list(const key_chunk_t *curr, size_t len, wchar_t **list);
 static void inc_counter(const keys_info_t *const keys_info, const size_t by);
 static int is_recursive(void);
@@ -299,12 +299,14 @@ execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
 				p = p->next;
 			}
 
-			if(nim && iswdigit(*keys))
+			if(nim)
 			{
-				wchar_t *ptr;
-				key_info.count = wcstol(keys, &ptr, 10);
-				keys = ptr;
-				continue;
+				const wchar_t *new_keys = get_count(keys, &key_info.count);
+				if(new_keys != keys)
+				{
+					keys = new_keys;
+					continue;
+				}
 			}
 
 			if(curr->conf.type == BUILTIN_WAIT_POINT)
@@ -537,8 +539,11 @@ get_reg(const wchar_t *keys, int *reg)
 	return keys;
 }
 
+/* Reads count of the command.  Sets *count to NO_COUNT_GIVEN if there is no
+ * count in the current position.  Returns pointer to a character right next to
+ * the count. */
 static const wchar_t *
-get_count(const wchar_t *keys, int *count)
+get_count(const wchar_t keys[], int *count)
 {
 	if((mode_flags[*mode] & MF_USES_COUNT) == 0)
 	{
@@ -547,7 +552,9 @@ get_count(const wchar_t *keys, int *count)
 	}
 	if(keys[0] != L'0' && iswdigit(keys[0]))
 	{
-		*count = wcstof(keys, (wchar_t**)&keys);
+		wchar_t *ptr;
+		*count = wcstol(keys, &ptr, 10);
+		keys = ptr;
 	}
 	else
 	{

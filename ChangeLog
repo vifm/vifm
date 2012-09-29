@@ -92,6 +92,8 @@
 
 	Remove automatically generated files on `make clean`.
 
+	Don't pause on '0' after Ctrl-W (count cannot start with zero).
+
 	Fixed background bold (light) colors in linux native console.
 
 	Fixed segmentation fault on running vifm with one path in the argument
