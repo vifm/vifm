@@ -422,6 +422,8 @@ execute_next_keys(key_chunk_t *curr, const wchar_t *keys, key_info_t *key_info,
 		keys_info->selector = 0;
 		if(IS_KEYS_RET_CODE(result))
 			return result;
+		/* We used this count in selector, so don't pass it to command. */
+		key_info->count = NO_COUNT_GIVEN;
 	}
 	return run_cmd(*key_info, keys_info, curr, keys);
 }

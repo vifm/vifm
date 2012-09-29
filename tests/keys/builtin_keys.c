@@ -13,7 +13,7 @@
 #endif
 
 int last; /* 1 = k, 2 = j */
-int last_command_count; /* for ctrl+w < */
+int last_command_count; /* for ctrl+w < and d + selector*/
 int last_selector_count; /* for k */
 
 static int* mode;
@@ -277,6 +277,7 @@ keys_delete(key_info_t key_info, keys_info_t *keys_info)
 static void
 keys_delete_selector(key_info_t key_info, keys_info_t *keys_info)
 {
+	last_command_count = key_info.count;
 	printf("(%d)delete with selector in register %c\n", key_info.count,
 			key_info.reg);
 }
