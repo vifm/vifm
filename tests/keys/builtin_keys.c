@@ -13,6 +13,8 @@
 #endif
 
 int last; /* 1 = k, 2 = j */
+int last_command_count; /* for ctrl+w < and d + selector*/
+int last_selector_count; /* for k */
 
 static int* mode;
 
@@ -27,7 +29,7 @@ static void keys_k(key_info_t key_info, keys_info_t *keys_info);
 static void keys_s(key_info_t key_info, keys_info_t *keys_info);
 static void keys_i(key_info_t key_info, keys_info_t *keys_info);
 static void keys_if(key_info_t key_info, keys_info_t *keys_info);
-static void keys_dummy(key_info_t key_info, keys_info_t *keys_info);
+static void keys_ctrl_w_less_than(key_info_t key_info, keys_info_t *keys_info);
 static void keys_delete(key_info_t key_info, keys_info_t *keys_info);
 static void keys_delete_selector(key_info_t key_info, keys_info_t *keys_info);
 static void keys_v(key_info_t key_info, keys_info_t *keys_info);
@@ -129,7 +131,7 @@ init_builtin_keys(int *key_mode)
 
 	curr = add_cmd(L"<", NORMAL_MODE);
 	curr->type = BUILTIN_NIM_KEYS;
-	curr->data.handler = keys_dummy;
+	curr->data.handler = keys_ctrl_w_less_than;
 
 	curr = add_cmd(L"d", NORMAL_MODE);
 	curr->type = BUILTIN_WAIT_POINT;
@@ -229,7 +231,10 @@ keys_k(key_info_t key_info, keys_info_t *keys_info)
 {
 	last = 1;
 	if(keys_info->selector)
+	{
+		last_selector_count = key_info.count;
 		printf("as a selector: ");
+	}
 	printf("(%d)k in register %c\n", key_info.count, key_info.reg);
 }
 
@@ -258,8 +263,9 @@ keys_if(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-keys_dummy(key_info_t key_info, keys_info_t *keys_info)
+keys_ctrl_w_less_than(key_info_t key_info, keys_info_t *keys_info)
 {
+	last_command_count = key_info.count;
 }
 
 static void
@@ -271,6 +277,7 @@ keys_delete(key_info_t key_info, keys_info_t *keys_info)
 static void
 keys_delete_selector(key_info_t key_info, keys_info_t *keys_info)
 {
+	last_command_count = key_info.count;
 	printf("(%d)delete with selector in register %c\n", key_info.count,
 			key_info.reg);
 }

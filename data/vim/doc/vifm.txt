@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 27
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Sep 29
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -181,13 +181,18 @@ Ctrl-W s - shortcut for |vifm-:split|            *vifm-CTRL-W_s*
 Ctrl-W t - switch to top-left window           *vifm-CTRL-W_t*
 Ctrl-W v - shortcut for |vifm-:vsplit|           *vifm-CTRL-W_v*
 Ctrl-W x - exchange panes                      *vifm-CTRL-W_x*
-Ctrl-W + - increase size of the view.          *vifm-CTRL-W_+*
-Ctrl-W - - decrease size of the view.          *vifm-CTRL-W_-*
-Ctrl-W < - increase size of the view.          *vifm-CTRL-W_<*
-Ctrl-W > - decrease size of the view.          *vifm-CTRL-W_>*
+Ctrl-W + - increase size of the view by count. *vifm-CTRL-W_+*
+Ctrl-W - - decrease size of the view by count. *vifm-CTRL-W_-*
+Ctrl-W < - increase size of the view by count. *vifm-CTRL-W_<*
+Ctrl-W > - decrease size of the view by count. *vifm-CTRL-W_>*
 Ctrl-W | - maximize current view.              *vifm-CTRL-W_|*
 Ctrl-W _ - maximize current view.              *vifm-CTRL-W__*
 Ctrl-W = - make size of two views equal.       *vifm-CTRL-W_=*
+
+For Ctrl-W +, Ctrl-W -, Ctrl-W < and Ctrl-W > commands count
+can be given before and/or after Ctrl-W.  The resulting count
+is a multiplication of those two.  So "2 Ctrl-W 2 - " will
+decrease window size by 4 lines or columns.
 
 Marks~
 
@@ -468,8 +473,8 @@ will insert previously yanked and deleted files into current directory.
 
 Selectors~
                                                *vifm-selectors*
-y, d and D commands accept selectors.  You can combine them with any of
-selectors below to quickly remove or yank several files.
+y, d, D, !, gu and gU commands accept selectors.  You can combine them with
+any of selectors below to quickly remove or yank several files.
 
 j, k, gg, G, H, L, M, %, f, F, ;, comma, ', ^, 0 and $ can be used as
 selectors for several commands.
@@ -482,6 +487,12 @@ For example:
 dj - delete file under cursor and one below.
 d2j - delete file under cursor and two below.
 y6gg - yank all files from cursor position to 6th file in the list.
+
+When you pass a count to whole command and its selector they are
+multiplied. So:
+2d2j - delete file under cursor and four below.
+2dj - delete file under cursor and two below.
+2y6gg - yank all files from cursor position to 12th file in the list.
 
 --------------------------------------------------------------------------------
 *vifm-visual*

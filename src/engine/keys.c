@@ -52,6 +52,7 @@ static size_t counter;
 /* Main external functions enter recursion level. */
 static size_t enters_counter;
 
+static void free_forest(key_chunk_t *forest, size_t size);
 static void free_tree(key_chunk_t *root);
 static void free_chunk(key_chunk_t *chunk);
 static int execute_keys_general_wrapper(const wchar_t keys[], int timed_out,
@@ -59,7 +60,7 @@ static int execute_keys_general_wrapper(const wchar_t keys[], int timed_out,
 static int execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 		int no_remap);
 static int execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info,
-		int no_remap);
+		int no_remap, int prev_count);
 static int execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
 		key_chunk_t *root, key_info_t key_info, int no_remap);
 static int contains_chain(key_chunk_t *root, const wchar_t *begin,
@@ -72,10 +73,11 @@ static int run_cmd(key_info_t key_info, keys_info_t *keys_info,
 static void enter_chunk(key_chunk_t *chunk);
 static void leave_chunk(key_chunk_t *chunk);
 static void init_keys_info(keys_info_t *keys_info, int mapped);
-static const wchar_t* get_reg(const wchar_t *keys, int *reg);
-static const wchar_t* get_count(const wchar_t *keys, int *count);
+static const wchar_t * get_reg(const wchar_t *keys, int *reg);
+static const wchar_t * get_count(const wchar_t keys[], int *count);
+static int combine_counts(int count_a, int count_b);
 static key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
-static key_chunk_t* add_keys_inner(key_chunk_t *root, const wchar_t *keys);
+static key_chunk_t * add_keys_inner(key_chunk_t *root, const wchar_t *keys);
 static int fill_list(const key_chunk_t *curr, size_t len, wchar_t **list);
 static void inc_counter(const keys_info_t *const keys_info, const size_t by);
 static int is_recursive(void);
@@ -107,21 +109,23 @@ init_keys(int modes_count, int *key_mode, int *key_mode_flags)
 void
 clear_keys(void)
 {
-	int i;
-
-	for(i = 0; i < max_modes; i++)
-		free_tree(&builtin_cmds_root[i]);
-	free(builtin_cmds_root);
-
-	for(i = 0; i < max_modes; i++)
-		free_tree(&user_cmds_root[i]);
-	free(user_cmds_root);
-
-	for(i = 0; i < max_modes; i++)
-		free_tree(&selectors_root[i]);
-	free(selectors_root);
+	free_forest(builtin_cmds_root, max_modes);
+	free_forest(user_cmds_root, max_modes);
+	free_forest(selectors_root, max_modes);
 
 	free(def_handlers);
+}
+
+/* Releases array of trees of length size including trees. */
+static void
+free_forest(key_chunk_t *forest, size_t size)
+{
+	size_t i;
+	for(i = 0; i < size; i++)
+	{
+		free_tree(&forest[i]);
+	}
+	free(forest);
 }
 
 void
@@ -228,7 +232,7 @@ execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 
 	init_keys_info(&keys_info, mapped);
 	keys_info.after_wait = timed_out;
-	result = execute_keys_inner(keys, &keys_info, no_remap);
+	result = execute_keys_inner(keys, &keys_info, no_remap, NO_COUNT_GIVEN);
 	if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
 	{
 		result = def_handlers[*mode](keys[0]);
@@ -238,7 +242,8 @@ execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 }
 
 static int
-execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info, int no_remap)
+execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
+		int prev_count)
 {
 	key_info_t key_info;
 	key_chunk_t *root;
@@ -250,6 +255,7 @@ execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info, int no_remap)
 	if(key_info.reg == L'\x1b' || key_info.reg == L'\x03')
 		return 0;
 	keys = get_count(keys, &key_info.count);
+	key_info.count = combine_counts(key_info.count, prev_count);
 	root = keys_info->selector ? &selectors_root[*mode] : &user_cmds_root[*mode];
 
 	if(!no_remap)
@@ -299,12 +305,16 @@ execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
 				p = p->next;
 			}
 
-			if(nim && iswdigit(*keys))
+			if(nim)
 			{
-				wchar_t *ptr;
-				key_info.count = wcstol(keys, &ptr, 10);
-				keys = ptr;
-				continue;
+				int count;
+				const wchar_t *new_keys = get_count(keys, &count);
+				if(new_keys != keys)
+				{
+					key_info.count = combine_counts(key_info.count, count);
+					keys = new_keys;
+					continue;
+				}
 			}
 
 			if(curr->conf.type == BUILTIN_WAIT_POINT)
@@ -411,10 +421,12 @@ execute_next_keys(key_chunk_t *curr, const wchar_t *keys, key_info_t *key_info,
 			return run_cmd(*key_info, keys_info, curr, L"");
 		}
 		keys_info->selector = 1;
-		result = execute_keys_inner(keys, keys_info, no_remap);
+		result = execute_keys_inner(keys, keys_info, no_remap, key_info->count);
 		keys_info->selector = 0;
 		if(IS_KEYS_RET_CODE(result))
 			return result;
+		/* We used this count in selector, so don't pass it to command. */
+		key_info->count = NO_COUNT_GIVEN;
 	}
 	return run_cmd(*key_info, keys_info, curr, keys);
 }
@@ -455,7 +467,7 @@ run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 			wcscat(buf, keys);
 
 			enter_chunk(curr);
-			result = execute_keys_inner(buf, &ki, curr->no_remap);
+			result = execute_keys_inner(buf, &ki, curr->no_remap, NO_COUNT_GIVEN);
 			leave_chunk(curr);
 		}
 		else if(def_handlers[*mode] != NULL)
@@ -537,8 +549,11 @@ get_reg(const wchar_t *keys, int *reg)
 	return keys;
 }
 
+/* Reads count of the command.  Sets *count to NO_COUNT_GIVEN if there is no
+ * count in the current position.  Returns pointer to a character right next to
+ * the count. */
 static const wchar_t *
-get_count(const wchar_t *keys, int *count)
+get_count(const wchar_t keys[], int *count)
 {
 	if((mode_flags[*mode] & MF_USES_COUNT) == 0)
 	{
@@ -547,7 +562,9 @@ get_count(const wchar_t *keys, int *count)
 	}
 	if(keys[0] != L'0' && iswdigit(keys[0]))
 	{
-		*count = wcstof(keys, (wchar_t**)&keys);
+		wchar_t *ptr;
+		*count = wcstol(keys, &ptr, 10);
+		keys = ptr;
 	}
 	else
 	{
@@ -555,6 +572,24 @@ get_count(const wchar_t *keys, int *count)
 	}
 
 	return keys;
+}
+
+/* Combines two counts: before command and in the middle of it. */
+static int
+combine_counts(int count_a, int count_b)
+{
+	if(count_a == NO_COUNT_GIVEN)
+	{
+		return count_b;
+	}
+	else if(count_b == NO_COUNT_GIVEN)
+	{
+		return count_a;
+	}
+	else
+	{
+		return count_a*count_b;
+	}
 }
 
 #ifndef TEST
