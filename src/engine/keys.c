@@ -74,6 +74,7 @@ static void leave_chunk(key_chunk_t *chunk);
 static void init_keys_info(keys_info_t *keys_info, int mapped);
 static const wchar_t * get_reg(const wchar_t *keys, int *reg);
 static const wchar_t * get_count(const wchar_t keys[], int *count);
+static int combine_counts(int count_a, int count_b);
 static key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
 static key_chunk_t * add_keys_inner(key_chunk_t *root, const wchar_t *keys);
 static int fill_list(const key_chunk_t *curr, size_t len, wchar_t **list);
@@ -301,9 +302,11 @@ execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
 
 			if(nim)
 			{
-				const wchar_t *new_keys = get_count(keys, &key_info.count);
+				int count;
+				const wchar_t *new_keys = get_count(keys, &count);
 				if(new_keys != keys)
 				{
+					key_info.count = combine_counts(key_info.count, count);
 					keys = new_keys;
 					continue;
 				}
@@ -562,6 +565,15 @@ get_count(const wchar_t keys[], int *count)
 	}
 
 	return keys;
+}
+
+/* Combines two counts: before command and in the middle of it. */
+static int
+combine_counts(int count_a, int count_b)
+{
+	const int a = (count_a == NO_COUNT_GIVEN) ? 1 : count_a;
+	const int b = (count_b == NO_COUNT_GIVEN) ? 1 : count_b;
+	return a*b;
 }
 
 #ifndef TEST

@@ -2,6 +2,8 @@
 
 #include "../../src/engine/keys.h"
 
+extern int last_count;
+
 static void
 test_no_number_ok(void)
 {
@@ -31,6 +33,22 @@ test_with_zero_number_fail(void)
 	assert_int_equal(KEYS_UNKNOWN, execute_keys(L"012<"));
 }
 
+static void
+test_with_number_before_and_in_the_middle_ok(void)
+{
+	assert_int_equal(KEYS_WAIT, execute_keys(L"21"));
+	assert_int_equal(0, execute_keys(L"21<"));
+	assert_int_equal(2*1, last_count);
+
+	assert_int_equal(KEYS_WAIT, execute_keys(L"112"));
+	assert_int_equal(0, execute_keys(L"312<"));
+	assert_int_equal(3*12, last_count);
+
+	assert_int_equal(KEYS_WAIT, execute_keys(L"2123"));
+	assert_int_equal(0, execute_keys(L"2123<"));
+	assert_int_equal(2*123, last_count);
+}
+
 void
 num_in_the_middle_tests(void)
 {
@@ -39,6 +57,7 @@ num_in_the_middle_tests(void)
 	run_test(test_no_number_ok);
 	run_test(test_with_number_ok);
 	run_test(test_with_zero_number_fail);
+	run_test(test_with_number_before_and_in_the_middle_ok);
 
 	test_fixture_end();
 }
