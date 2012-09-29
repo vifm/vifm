@@ -181,13 +181,18 @@ Ctrl-W s - shortcut for |vifm-:split|            *vifm-CTRL-W_s*
 Ctrl-W t - switch to top-left window           *vifm-CTRL-W_t*
 Ctrl-W v - shortcut for |vifm-:vsplit|           *vifm-CTRL-W_v*
 Ctrl-W x - exchange panes                      *vifm-CTRL-W_x*
-Ctrl-W + - increase size of the view.          *vifm-CTRL-W_+*
-Ctrl-W - - decrease size of the view.          *vifm-CTRL-W_-*
-Ctrl-W < - increase size of the view.          *vifm-CTRL-W_<*
-Ctrl-W > - decrease size of the view.          *vifm-CTRL-W_>*
+Ctrl-W + - increase size of the view by count. *vifm-CTRL-W_+*
+Ctrl-W - - decrease size of the view by count. *vifm-CTRL-W_-*
+Ctrl-W < - increase size of the view by count. *vifm-CTRL-W_<*
+Ctrl-W > - decrease size of the view by count. *vifm-CTRL-W_>*
 Ctrl-W | - maximize current view.              *vifm-CTRL-W_|*
 Ctrl-W _ - maximize current view.              *vifm-CTRL-W__*
 Ctrl-W = - make size of two views equal.       *vifm-CTRL-W_=*
+
+For Ctrl-W +, Ctrl-W -, Ctrl-W < and Ctrl-W > commands count
+can be given before and/or after Ctrl-W.  The resulting count
+is a multiplication of those two.  So "2 Ctrl-W 2 - " will
+decrease window size by 4 lines or columns.
 
 Marks~
 
