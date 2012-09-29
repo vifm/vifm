@@ -1,4 +1,4 @@
-.TH vifm 1 "September 27, 2012" "" "Vifm"
+.TH vifm 1 "September 29, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -548,11 +548,11 @@ will insert previously yanked and deleted files into current directory.
 .SH Selectors
 .\" ---------------------------------------------------------------------------
 .TP
-y, d and D commands accept selectors.  You can combine them with any of \
-selectors below to quickly remove or yank several files.
+y, d, D, !, gu and gU commands accept selectors.  You can combine them with \
+any of selectors below to quickly remove or yank several files.
 .LP
 Most of selectors are like vi motions: j, k, gg, G, H, L, M, %, f, F, ;, \
-comma, ', ^, 0 and $ .  But there are some additional ones.
+comma, ', ^, 0 and $.  But there are some additional ones.
 .TP
 .BI a
 all files in current view.
@@ -562,6 +562,20 @@ selected files.
 .TP
 .BI S
 all files except selected.
+.LP
+Examples:
+.EX
+ dj \- delete file under cursor and one below.
+ d2j \- delete file under cursor and two below.
+ y6gg \- yank all files from cursor position to 6th file in the list.
+.EE
+
+When you pass a count to whole command and its selector they are multiplied. So:
+.EX
+ 2d2j \- delete file under cursor and four below.
+ 2dj \- delete file under cursor and two below.
+ 2y6gg \- yank all files from cursor position to 12th file in the list.
+.EE
 .\" ---------------------------------------------------------------------------
 .SH Visual Mode
 .\" ---------------------------------------------------------------------------
