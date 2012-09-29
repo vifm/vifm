@@ -59,7 +59,7 @@ static int execute_keys_general_wrapper(const wchar_t keys[], int timed_out,
 static int execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 		int no_remap);
 static int execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info,
-		int no_remap);
+		int no_remap, int prev_count);
 static int execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
 		key_chunk_t *root, key_info_t key_info, int no_remap);
 static int contains_chain(key_chunk_t *root, const wchar_t *begin,
@@ -229,7 +229,7 @@ execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 
 	init_keys_info(&keys_info, mapped);
 	keys_info.after_wait = timed_out;
-	result = execute_keys_inner(keys, &keys_info, no_remap);
+	result = execute_keys_inner(keys, &keys_info, no_remap, NO_COUNT_GIVEN);
 	if(result == KEYS_UNKNOWN && def_handlers[*mode] != NULL)
 	{
 		result = def_handlers[*mode](keys[0]);
@@ -239,7 +239,8 @@ execute_keys_general(const wchar_t keys[], int timed_out, int mapped,
 }
 
 static int
-execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info, int no_remap)
+execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
+		int prev_count)
 {
 	key_info_t key_info;
 	key_chunk_t *root;
@@ -251,6 +252,7 @@ execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info, int no_remap)
 	if(key_info.reg == L'\x1b' || key_info.reg == L'\x03')
 		return 0;
 	keys = get_count(keys, &key_info.count);
+	key_info.count = combine_counts(key_info.count, prev_count);
 	root = keys_info->selector ? &selectors_root[*mode] : &user_cmds_root[*mode];
 
 	if(!no_remap)
@@ -416,7 +418,7 @@ execute_next_keys(key_chunk_t *curr, const wchar_t *keys, key_info_t *key_info,
 			return run_cmd(*key_info, keys_info, curr, L"");
 		}
 		keys_info->selector = 1;
-		result = execute_keys_inner(keys, keys_info, no_remap);
+		result = execute_keys_inner(keys, keys_info, no_remap, key_info->count);
 		keys_info->selector = 0;
 		if(IS_KEYS_RET_CODE(result))
 			return result;
@@ -460,7 +462,7 @@ run_cmd(key_info_t key_info, keys_info_t *keys_info, key_chunk_t *curr,
 			wcscat(buf, keys);
 
 			enter_chunk(curr);
-			result = execute_keys_inner(buf, &ki, curr->no_remap);
+			result = execute_keys_inner(buf, &ki, curr->no_remap, NO_COUNT_GIVEN);
 			leave_chunk(curr);
 		}
 		else if(def_handlers[*mode] != NULL)
@@ -571,9 +573,18 @@ get_count(const wchar_t keys[], int *count)
 static int
 combine_counts(int count_a, int count_b)
 {
-	const int a = (count_a == NO_COUNT_GIVEN) ? 1 : count_a;
-	const int b = (count_b == NO_COUNT_GIVEN) ? 1 : count_b;
-	return a*b;
+	if(count_a == NO_COUNT_GIVEN)
+	{
+		return count_b;
+	}
+	else if(count_b == NO_COUNT_GIVEN)
+	{
+		return count_a;
+	}
+	else
+	{
+		return count_a*count_b;
+	}
 }
 
 #ifndef TEST

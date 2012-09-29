@@ -97,6 +97,8 @@
 	Multiply counts in front and in the middle of commands with Ctrl-W (as Vim
 	does).
 
+	Multiply counts in front of command and its selector (as Vim does).
+
 	Fixed background bold (light) colors in linux native console.
 
 	Fixed segmentation fault on running vifm with one path in the argument

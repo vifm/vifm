@@ -25,8 +25,10 @@ void pick_longest(void);
 void unmap_tests(void);
 void noremap_tests(void);
 void num_in_the_middle_tests(void);
+void selectors_tests(void);
 
-void all_tests(void)
+void
+all_tests(void)
 {
 	builtin_and_custom();
 	diff_motions();
@@ -48,9 +50,11 @@ void all_tests(void)
 	unmap_tests();
 	noremap_tests();
 	num_in_the_middle_tests();
+	selectors_tests();
 }
 
-void my_suite_setup(void)
+void
+my_suite_setup(void)
 {
 	static int mode_flags[] = {
 		MF_USES_REGS | MF_USES_COUNT,
@@ -62,12 +66,14 @@ void my_suite_setup(void)
 	init_builtin_keys(&mode);
 }
 
-void my_suite_teardown(void)
+void
+my_suite_teardown(void)
 {
 	clear_keys();
 }
 
-int main(int argc, char **argv)
+int
+main(void)
 {
 	suite_setup(my_suite_setup);
 	suite_teardown(my_suite_teardown);
@@ -75,4 +81,5 @@ int main(int argc, char **argv)
 	return run_tests(all_tests) == 0;
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0: */
+/* vim: set cinoptions+=t0 : */
