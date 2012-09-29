@@ -52,6 +52,7 @@ static size_t counter;
 /* Main external functions enter recursion level. */
 static size_t enters_counter;
 
+static void free_forest(key_chunk_t *forest, size_t size);
 static void free_tree(key_chunk_t *root);
 static void free_chunk(key_chunk_t *chunk);
 static int execute_keys_general_wrapper(const wchar_t keys[], int timed_out,
@@ -108,21 +109,23 @@ init_keys(int modes_count, int *key_mode, int *key_mode_flags)
 void
 clear_keys(void)
 {
-	int i;
-
-	for(i = 0; i < max_modes; i++)
-		free_tree(&builtin_cmds_root[i]);
-	free(builtin_cmds_root);
-
-	for(i = 0; i < max_modes; i++)
-		free_tree(&user_cmds_root[i]);
-	free(user_cmds_root);
-
-	for(i = 0; i < max_modes; i++)
-		free_tree(&selectors_root[i]);
-	free(selectors_root);
+	free_forest(builtin_cmds_root, max_modes);
+	free_forest(user_cmds_root, max_modes);
+	free_forest(selectors_root, max_modes);
 
 	free(def_handlers);
+}
+
+/* Releases array of trees of length size including trees. */
+static void
+free_forest(key_chunk_t *forest, size_t size)
+{
+	size_t i;
+	for(i = 0; i < size; i++)
+	{
+		free_tree(&forest[i]);
+	}
+	free(forest);
 }
 
 void
