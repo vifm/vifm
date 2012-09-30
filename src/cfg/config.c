@@ -93,9 +93,8 @@ init_config(void)
 	cfg.show_one_window = 0;
 	cfg.history_len = 15;
 
-	cfg.search_history_len = 15;
 	cfg.search_history_num = -1;
-	cfg.search_history = calloc(cfg.search_history_len, sizeof(char *));
+	cfg.search_history = calloc(cfg.history_len, sizeof(char *));
 
 	cfg.cmd_history_num = -1;
 	cfg.cmd_history = calloc(cfg.history_len, sizeof(char *));
@@ -630,8 +629,6 @@ resize_history(size_t new_len)
 		free_view_history(&lwin);
 		free_view_history(&rwin);
 
-		cfg.search_history_len = new_len;
-
 		cfg.cmd_history_num = -1;
 		cfg.prompt_history_num = -1;
 		cfg.search_history_num = -1;
@@ -686,8 +683,6 @@ resize_history(size_t new_len)
 		memset(cfg.prompt_history + cfg.history_len, 0, len);
 		memset(cfg.search_history + cfg.history_len, 0, len);
 	}
-
-	cfg.search_history_len = new_len;
 }
 
 /* Clears and frees directory history of the view. */

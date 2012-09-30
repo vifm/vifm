@@ -769,7 +769,7 @@ void
 save_search_history(const char *pattern)
 {
 	save_history(pattern, cfg.search_history, &cfg.search_history_num,
-			&cfg.search_history_len);
+			&cfg.history_len);
 }
 
 void

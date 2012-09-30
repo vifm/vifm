@@ -222,7 +222,7 @@ read_info_file(int reread)
 		else if(line[0] == '/') /* search history */
 		{
 			inc_history(&cfg.search_history, &cfg.search_history_num,
-					&cfg.search_history_len);
+					&cfg.history_len);
 			save_search_history(line + 1);
 		}
 		else if(line[0] == 'p') /* prompt history */

@@ -57,7 +57,6 @@ typedef struct
 	char *fuse_home;
 
 	char **search_history;
-	int search_history_len;
 	int search_history_num;
 
 	char **cmd_history;

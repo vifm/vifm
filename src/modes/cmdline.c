@@ -1035,8 +1035,7 @@ complete_cmd_next(void)
 static void
 complete_search_next(void)
 {
-	complete_next(cfg.search_history, cfg.search_history_num,
-			cfg.search_history_len);
+	complete_next(cfg.search_history, cfg.search_history_num, cfg.history_len);
 }
 
 static void
@@ -1473,8 +1472,7 @@ complete_cmd_prev(void)
 static void
 complete_search_prev(void)
 {
-	complete_prev(cfg.search_history, cfg.search_history_num,
-			cfg.search_history_len);
+	complete_prev(cfg.search_history, cfg.search_history_num, cfg.history_len);
 }
 
 static void
