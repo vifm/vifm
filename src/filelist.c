@@ -377,11 +377,11 @@ init_view_history(FileView *view)
 	if(cfg.history_len == 0)
 		return;
 
-	view->history = malloc(sizeof(history_t)*cfg.history_len);
+	view->history = calloc(cfg.history_len, sizeof(history_t));
 	while(view->history == NULL)
 	{
 		cfg.history_len /= 2;
-		view->history = malloc(sizeof(history_t)*cfg.history_len);
+		view->history = calloc(cfg.history_len, sizeof(history_t));
 	}
 }
 
@@ -1264,7 +1264,7 @@ save_view_history(FileView *view, const char *path, const char *file, int pos)
 		if(curr_stats.load_stage < 2)
 			return;
 		x = view->history_pos;
-		snprintf(view->history[x].file, sizeof(view->history[x].file), "%s", file);
+		replace_string(&view->history[x].file, file);
 		view->history[x].rel_pos = pos - view->top_line;
 		return;
 	}
@@ -1283,18 +1283,15 @@ save_view_history(FileView *view, const char *path, const char *file, int pos)
 
 	if(x == cfg.history_len)
 	{
-		int y;
-		for(y = 0; y < cfg.history_len - 1; y++)
-		{
-			strcpy(view->history[y].file, view->history[y + 1].file);
-			strcpy(view->history[y].dir, view->history[y + 1].dir);
-			view->history[y].rel_pos = view->history[y + 1].rel_pos;
-		}
+		free_history_items(view->history, 1);
+		memmove(view->history, view->history + 1,
+				sizeof(history_t)*(cfg.history_len - 1));
+
 		x--;
 		view->history_num = x;
 	}
-	snprintf(view->history[x].dir, sizeof(view->history[x].dir), "%s", path);
-	snprintf(view->history[x].file, sizeof(view->history[x].file), "%s", file);
+	replace_string(&view->history[x].dir, path);
+	replace_string(&view->history[x].file, file);
 	view->history[x].rel_pos = pos - view->top_line;
 	view->history_num++;
 	view->history_pos = view->history_num - 1;

@@ -25,6 +25,7 @@
 #include <limits.h>
 
 #include "../color_scheme.h"
+#include "../ui.h"
 
 #define VIFM_HELP "vifm-help.txt"
 #define SCRIPTS_DIR "scripts"
@@ -111,6 +112,8 @@ const char * get_vicmd(int *bg);
 void create_trash_dir(void);
 /* Changes size of all histories. */
 void resize_history(size_t new_len);
+/* Frees memory previously allocated for specified history items. */
+void free_history_items(const history_t history[], size_t len);
 
 #endif
 
