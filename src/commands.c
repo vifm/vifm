@@ -779,7 +779,7 @@ save_command_history(const char *command)
 	if(strcmp(command, "!!") != 0 && strcmp(command, "!") != 0)
 	{
 		save_history(command, cfg.cmd_history, &cfg.cmd_history_num,
-				&cfg.cmd_history_len);
+				&cfg.history_len);
 	}
 }
 

@@ -91,14 +91,14 @@ init_config(void)
 	cfg.command_num = 0;
 	cfg.vim_filter = 0;
 	cfg.show_one_window = 0;
+	cfg.history_len = 15;
 
 	cfg.search_history_len = 15;
 	cfg.search_history_num = -1;
 	cfg.search_history = calloc(cfg.search_history_len, sizeof(char *));
 
-	cfg.cmd_history_len = 15;
 	cfg.cmd_history_num = -1;
-	cfg.cmd_history = calloc(cfg.cmd_history_len, sizeof(char *));
+	cfg.cmd_history = calloc(cfg.history_len, sizeof(char *));
 
 	cfg.prompt_history_len = 15;
 	cfg.prompt_history_num = -1;
@@ -120,7 +120,6 @@ init_config(void)
 	cfg.use_trash = 1;
 	cfg.fuse_home = strdup("/tmp/vifm_FUSE");
 	cfg.use_screen = 0;
-	cfg.history_len = 15;
 	cfg.use_vim_help = 0;
 	cfg.wild_menu = 0;
 	cfg.ignore_case = 0;
@@ -633,7 +632,6 @@ resize_history(size_t new_len)
 		free_view_history(&rwin);
 
 		cfg.history_len = new_len;
-		cfg.cmd_history_len = new_len;
 		cfg.prompt_history_len = new_len;
 		cfg.search_history_len = new_len;
 
@@ -649,8 +647,8 @@ resize_history(size_t new_len)
 		reduce_view_history(&rwin, new_len);
 	}
 
-	delta = (int)new_len - cfg.cmd_history_len;
-	if(delta < 0 && cfg.cmd_history_len > 0)
+	delta = (int)new_len - cfg.history_len;
+	if(delta < 0 && cfg.history_len > 0)
 	{
 		const size_t abs_delta = -delta;
 		free_strings(cfg.cmd_history + new_len, abs_delta);
@@ -686,16 +684,12 @@ resize_history(size_t new_len)
 	cfg.search_history = realloc(cfg.search_history, new_len*sizeof(char *));
 	if(delta > 0)
 	{
-		size_t i;
-		for(i = cfg.cmd_history_len; i < new_len; i++)
-			cfg.cmd_history[i] = NULL;
-		for(i = cfg.cmd_history_len; i < new_len; i++)
-			cfg.prompt_history[i] = NULL;
-		for(i = cfg.cmd_history_len; i < new_len; i++)
-			cfg.search_history[i] = NULL;
+		const size_t len = sizeof(history_t)*delta;
+		memset(cfg.cmd_history + cfg.history_len, 0, len);
+		memset(cfg.prompt_history + cfg.history_len, 0, len);
+		memset(cfg.search_history + cfg.history_len, 0, len);
 	}
 
-	cfg.cmd_history_len = new_len;
 	cfg.prompt_history_len = new_len;
 	cfg.search_history_len = new_len;
 }

@@ -1029,7 +1029,7 @@ complete_next(char **hist, int num, size_t len)
 static void
 complete_cmd_next(void)
 {
-	complete_next(cfg.cmd_history, cfg.cmd_history_num, cfg.cmd_history_len);
+	complete_next(cfg.cmd_history, cfg.cmd_history_num, cfg.history_len);
 }
 
 static void
@@ -1468,7 +1468,7 @@ complete_prev(char **hist, int num, size_t len)
 static void
 complete_cmd_prev(void)
 {
-	complete_prev(cfg.cmd_history, cfg.cmd_history_num, cfg.cmd_history_len);
+	complete_prev(cfg.cmd_history, cfg.cmd_history_num, cfg.history_len);
 }
 
 static void

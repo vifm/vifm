@@ -61,7 +61,6 @@ typedef struct
 	int search_history_num;
 
 	char **cmd_history;
-	int cmd_history_len;
 	int cmd_history_num;
 
 	char **prompt_history;
