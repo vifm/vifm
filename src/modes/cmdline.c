@@ -1042,8 +1042,7 @@ complete_search_next(void)
 static void
 complete_prompt_next(void)
 {
-	complete_next(cfg.prompt_history, cfg.prompt_history_num,
-			cfg.prompt_history_len);
+	complete_next(cfg.prompt_history, cfg.prompt_history_num, cfg.history_len);
 }
 
 static void
@@ -1481,8 +1480,7 @@ complete_search_prev(void)
 static void
 complete_prompt_prev(void)
 {
-	complete_prev(cfg.prompt_history, cfg.prompt_history_num,
-			cfg.prompt_history_len);
+	complete_prev(cfg.prompt_history, cfg.prompt_history_num, cfg.history_len);
 }
 
 static void

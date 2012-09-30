@@ -787,7 +787,7 @@ void
 save_prompt_history(const char *line)
 {
 	save_history(line, cfg.prompt_history, &cfg.prompt_history_num,
-			&cfg.prompt_history_len);
+			&cfg.history_len);
 }
 
 static void

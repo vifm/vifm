@@ -64,7 +64,6 @@ typedef struct
 	int cmd_history_num;
 
 	char **prompt_history;
-	int prompt_history_len;
 	int prompt_history_num;
 
 	col_scheme_t cs;

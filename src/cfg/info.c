@@ -228,7 +228,7 @@ read_info_file(int reread)
 		else if(line[0] == 'p') /* prompt history */
 		{
 			inc_history(&cfg.prompt_history, &cfg.prompt_history_num,
-					&cfg.prompt_history_len);
+					&cfg.history_len);
 			save_prompt_history(line + 1);
 		}
 		else if(line[0] == 'S') /* directory stack */
