@@ -121,13 +121,20 @@ string_array_pos_case(char **array, size_t len, const char *key)
 }
 
 void
-free_string_array(char **array, size_t len)
+free_string_array(char *array[], size_t len)
+{
+	free_strings(array, len);
+	free(array);
+}
+
+void
+free_strings(char *array[], size_t len)
 {
 	size_t i;
-
 	for(i = 0; i < len; i++)
+	{
 		free(array[i]);
-	free(array);
+	}
 }
 
 void

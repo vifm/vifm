@@ -216,19 +216,19 @@ read_info_file(int reread)
 		}
 		else if(line[0] == ':') /* command line history */
 		{
-			inc_history(&cfg.cmd_history, &cfg.cmd_history_num, &cfg.cmd_history_len);
+			inc_history(&cfg.cmd_history, &cfg.cmd_history_num, &cfg.history_len);
 			save_command_history(line + 1);
 		}
 		else if(line[0] == '/') /* search history */
 		{
 			inc_history(&cfg.search_history, &cfg.search_history_num,
-					&cfg.search_history_len);
+					&cfg.history_len);
 			save_search_history(line + 1);
 		}
 		else if(line[0] == 'p') /* prompt history */
 		{
 			inc_history(&cfg.prompt_history, &cfg.prompt_history_num,
-					&cfg.prompt_history_len);
+					&cfg.history_len);
 			save_prompt_history(line + 1);
 		}
 		else if(line[0] == 'S') /* directory stack */
@@ -783,7 +783,7 @@ write_info_file(void)
 	if(cfg.vifm_info & VIFMINFO_CHISTORY)
 	{
 		fputs("\n# Command line history (oldest to newest):\n", fp);
-		for(i = 0; i < MIN(ncmdh, cfg.cmd_history_len - cfg.cmd_history_num); i++)
+		for(i = 0; i < MIN(ncmdh, cfg.history_len - cfg.cmd_history_num); i++)
 			fprintf(fp, ":%s\n", cmdh[i]);
 		for(i = cfg.cmd_history_num; i >= 0; i--)
 			fprintf(fp, ":%s\n", cfg.cmd_history[i]);

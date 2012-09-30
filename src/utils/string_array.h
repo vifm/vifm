@@ -19,6 +19,7 @@
 #ifndef __STRING_ARRAY_H__
 #define __STRING_ARRAY_H__
 
+#include <stddef.h> /* size_t */
 #include <stdio.h> /* FILE */
 #include <wchar.h> /* wchar_t */
 
@@ -31,7 +32,9 @@ char ** copy_string_array(char **array, size_t len);
 int string_array_pos(char **array, size_t len, const char *key);
 int string_array_pos_case(char **array, size_t len, const char *key);
 /* Frees memory of all array items and from the array itself. */
-void free_string_array(char **array, size_t len);
+void free_string_array(char *array[], size_t len);
+/* Frees memory of all array items, but not from the array itself. */
+void free_strings(char *array[], size_t len);
 void free_wstring_array(wchar_t **array, size_t len);
 char ** read_file_lines(FILE *f, int *nlines);
 

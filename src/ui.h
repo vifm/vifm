@@ -75,8 +75,8 @@ enum
 typedef struct
 {
 	int rel_pos;
-	char dir[PATH_MAX];
-	char file[NAME_MAX];
+	char *dir;
+	char *file;
 }history_t;
 
 typedef struct

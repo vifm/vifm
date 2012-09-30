@@ -769,7 +769,7 @@ void
 save_search_history(const char *pattern)
 {
 	save_history(pattern, cfg.search_history, &cfg.search_history_num,
-			&cfg.search_history_len);
+			&cfg.history_len);
 }
 
 void
@@ -779,7 +779,7 @@ save_command_history(const char *command)
 	if(strcmp(command, "!!") != 0 && strcmp(command, "!") != 0)
 	{
 		save_history(command, cfg.cmd_history, &cfg.cmd_history_num,
-				&cfg.cmd_history_len);
+				&cfg.history_len);
 	}
 }
 
@@ -787,7 +787,7 @@ void
 save_prompt_history(const char *line)
 {
 	save_history(line, cfg.prompt_history, &cfg.prompt_history_num,
-			&cfg.prompt_history_len);
+			&cfg.history_len);
 }
 
 static void

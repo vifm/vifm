@@ -25,6 +25,7 @@
 #include <limits.h>
 
 #include "../color_scheme.h"
+#include "../ui.h"
 
 #define VIFM_HELP "vifm-help.txt"
 #define SCRIPTS_DIR "scripts"
@@ -56,15 +57,12 @@ typedef struct
 	char *fuse_home;
 
 	char **search_history;
-	int search_history_len;
 	int search_history_num;
 
 	char **cmd_history;
-	int cmd_history_len;
 	int cmd_history_num;
 
 	char **prompt_history;
-	int prompt_history_len;
 	int prompt_history_num;
 
 	col_scheme_t cs;
@@ -111,6 +109,8 @@ const char * get_vicmd(int *bg);
 void create_trash_dir(void);
 /* Changes size of all histories. */
 void resize_history(size_t new_len);
+/* Frees memory previously allocated for specified history items. */
+void free_history_items(const history_t history[], size_t len);
 
 #endif
 
