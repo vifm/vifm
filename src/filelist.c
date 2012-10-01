@@ -1319,7 +1319,7 @@ check_view_dir_history(FileView *view)
 	int pos = 0;
 	int rel_pos = -1;
 
-	if(cfg.history_len > 0 && curr_stats.ch_pos)
+	if(cfg.history_len > 0 && view->history_num > 0 && curr_stats.ch_pos)
 	{
 		int x;
 		int found = 0;
