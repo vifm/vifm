@@ -54,6 +54,8 @@
 #include "../ui.h"
 #include "all.h"
 
+static int prompt_error_msg_internalv(const char title[], const char format[],
+		int prompt_skip, va_list pa);
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
 static void normalize_top(menu_info *m);
@@ -150,18 +152,40 @@ show_error_msg(const char title[], const char message[])
 void
 show_error_msgf(const char title[], const char format[], ...)
 {
-	char buf[2048];
 	va_list pa;
+
 	va_start(pa, format);
-	vsnprintf(buf, sizeof(buf), format, pa);
+	(void)prompt_error_msg_internalv(title, format, 0, pa);
 	va_end(pa);
-	(void)prompt_error_msg_internal(title, buf, 0);
 }
 
 int
 prompt_error_msg(const char title[], const char message[])
 {
 	return prompt_error_msg_internal(title, message, 1);
+}
+
+int
+prompt_error_msgf(const char title[], const char format[], ...)
+{
+	int result;
+	va_list pa;
+
+	va_start(pa, format);
+	result = prompt_error_msg_internalv(title, format, 1, pa);
+	va_end(pa);
+
+	return result;
+}
+
+/* Just a varargs wrapper over prompt_error_msg_internal. */
+static int
+prompt_error_msg_internalv(const char title[], const char format[],
+		int prompt_skip, va_list pa)
+{
+	char buf[2048];
+	vsnprintf(buf, sizeof(buf), format, pa);
+	return prompt_error_msg_internal(title, buf, prompt_skip);
 }
 
 /* Internal function for displaying messages to a user.  When the prompt_skip

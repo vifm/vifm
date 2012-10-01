@@ -548,8 +548,9 @@ source_file_internal(FILE *fp, const char *filename)
 		chomp(line);
 		if(exec_commands(line, curr_view, GET_COMMAND) < 0)
 		{
-			show_error_msgf("File Sourcing Error", "Error in %s at %d line", filename,
-					line_num);
+			/* User choice is saved by show_error_promptf internally. */
+			(void)prompt_error_msgf("File Sourcing Error", "Error in %s at %d line",
+					filename, line_num);
 		}
 		if(curr_stats.sourcing_state == SOURCING_FINISHING)
 			break;
