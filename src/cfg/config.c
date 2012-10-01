@@ -80,7 +80,7 @@ static void create_config_dir(void);
 static void create_help_file(void);
 static void create_rc_file(void);
 #endif
-static int source_file_internal(FILE *fp, const char *filename);
+static int source_file_internal(FILE *fp, const char filename[]);
 static void free_view_history(FileView *view);
 static void reduce_view_history(FileView *view, size_t size);
 
@@ -491,19 +491,19 @@ exec_config(void)
 }
 
 int
-source_file(const char *file)
+source_file(const char filename[])
 {
 	FILE *fp;
 	int result;
 	SourcingState sourcing_state;
 
-	if((fp = fopen(file, "r")) == NULL)
+	if((fp = fopen(filename, "r")) == NULL)
 		return 1;
 
 	sourcing_state = curr_stats.sourcing_state;
 	curr_stats.sourcing_state = SOURCING_PROCESSING;
 
-	result = source_file_internal(fp, file);
+	result = source_file_internal(fp, filename);
 
 	curr_stats.sourcing_state = sourcing_state;
 
@@ -512,7 +512,7 @@ source_file(const char *file)
 }
 
 static int
-source_file_internal(FILE *fp, const char *filename)
+source_file_internal(FILE *fp, const char filename[])
 {
 	char line[MAX_LEN*2];
 	int line_num;
