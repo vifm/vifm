@@ -139,6 +139,7 @@ function_call_info_free(call_info_t *call_info)
 	{
 		var_free(call_info->argv[i]);
 	}
+	free(call_info->argv);
 
 	call_info->argv = NULL;
 	call_info->argc = 0;
