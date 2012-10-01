@@ -529,21 +529,17 @@ source_file_internal(FILE *fp, const char *filename)
 		char *p;
 		int line_num_delta = 0;
 
-		if((p = fgets(next_line, sizeof(next_line), fp)) != NULL)
+		while((p = fgets(next_line, sizeof(next_line), fp)) != NULL)
 		{
-			do
-			{
-				line_num_delta++;
-				p = skip_whitespace(p);
-				chomp(p);
-				if(*p == '"')
-					continue;
-				else if(*p == '\\')
-					strncat(line, p + 1, sizeof(line) - strlen(line) - 1);
-				else
-					break;
-			}
-			while((p = fgets(next_line, sizeof(next_line), fp)) != NULL);
+			line_num_delta++;
+			p = skip_whitespace(p);
+			chomp(p);
+			if(*p == '"')
+				continue;
+			else if(*p == '\\')
+				strncat(line, p + 1, sizeof(line) - strlen(line) - 1);
+			else
+				break;
 		}
 		chomp(line);
 		if(exec_commands(line, curr_view, GET_COMMAND) < 0)
