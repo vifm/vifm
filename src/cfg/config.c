@@ -620,6 +620,7 @@ void
 resize_history(size_t new_len)
 {
 	int delta;
+	const int old_len = cfg.history_len;
 
 	if(new_len == 0)
 	{
@@ -632,14 +633,14 @@ resize_history(size_t new_len)
 		return;
 	}
 
-	if(cfg.history_len > new_len)
+	if(old_len > new_len)
 	{
 		reduce_view_history(&lwin, new_len);
 		reduce_view_history(&rwin, new_len);
 	}
 
-	delta = (int)new_len - cfg.history_len;
-	if(delta < 0 && cfg.history_len > 0)
+	delta = (int)new_len - old_len;
+	if(delta < 0 && old_len > 0)
 	{
 		const size_t abs_delta = -delta;
 		free_strings(cfg.cmd_history + new_len, abs_delta);
@@ -654,20 +655,16 @@ resize_history(size_t new_len)
 
 	if(delta > 0)
 	{
-		memset(lwin.history + cfg.history_len, 0, sizeof(history_t)*delta);
-		memset(rwin.history + cfg.history_len, 0, sizeof(history_t)*delta);
+		memset(lwin.history + old_len, 0, sizeof(history_t)*delta);
+		memset(rwin.history + old_len, 0, sizeof(history_t)*delta);
 	}
 
-	if(cfg.history_len <= 0)
-	{
-		cfg.history_len = new_len;
+	cfg.history_len = new_len;
 
+	if(old_len <= 0)
+	{
 		save_view_history(&lwin, NULL, NULL, -1);
 		save_view_history(&rwin, NULL, NULL, -1);
-	}
-	else
-	{
-		cfg.history_len = new_len;
 	}
 
 	cfg.cmd_history = realloc(cfg.cmd_history, new_len*sizeof(char *));
@@ -675,10 +672,10 @@ resize_history(size_t new_len)
 	cfg.search_history = realloc(cfg.search_history, new_len*sizeof(char *));
 	if(delta > 0)
 	{
-		const size_t len = sizeof(history_t)*delta;
-		memset(cfg.cmd_history + cfg.history_len, 0, len);
-		memset(cfg.prompt_history + cfg.history_len, 0, len);
-		memset(cfg.search_history + cfg.history_len, 0, len);
+		const size_t len = sizeof(char *)*delta;
+		memset(cfg.cmd_history + old_len, 0, len);
+		memset(cfg.prompt_history + old_len, 0, len);
+		memset(cfg.search_history + old_len, 0, len);
 	}
 }
 
