@@ -97,6 +97,9 @@ void show_error_msgf(const char title[], const char format[], ...);
 /* Same as show_error_msg(...), but asks about future errors.  Returns not zero
  * when user asked to skip error messages that left. */
 int prompt_error_msg(const char title[], const char message[]);
+/* Same as show_error_msgf(...), but asks about future errors.  Returns not zero
+ * when user asked to skip error messages that left. */
+int prompt_error_msgf(const char title[], const char format[], ...);
 int query_user_menu(char *title, char *message);
 /* Redraws currently visible error message on the screen. */
 void redraw_error_msg_window(void);

@@ -80,7 +80,7 @@ static void create_config_dir(void);
 static void create_help_file(void);
 static void create_rc_file(void);
 #endif
-static int source_file_internal(FILE *fp, const char *filename);
+static int source_file_internal(FILE *fp, const char filename[]);
 static void free_view_history(FileView *view);
 static void reduce_view_history(FileView *view, size_t size);
 
@@ -491,19 +491,19 @@ exec_config(void)
 }
 
 int
-source_file(const char *file)
+source_file(const char filename[])
 {
 	FILE *fp;
 	int result;
 	SourcingState sourcing_state;
 
-	if((fp = fopen(file, "r")) == NULL)
+	if((fp = fopen(filename, "r")) == NULL)
 		return 1;
 
 	sourcing_state = curr_stats.sourcing_state;
 	curr_stats.sourcing_state = SOURCING_PROCESSING;
 
-	result = source_file_internal(fp, file);
+	result = source_file_internal(fp, filename);
 
 	curr_stats.sourcing_state = sourcing_state;
 
@@ -512,12 +512,12 @@ source_file(const char *file)
 }
 
 static int
-source_file_internal(FILE *fp, const char *filename)
+source_file_internal(FILE *fp, const char filename[])
 {
 	char line[MAX_LEN*2];
 	int line_num;
 
-	if(fgets(line, MAX_LEN, fp) == NULL)
+	if(fgets(line, sizeof(line), fp) == NULL)
 	{
 		return 1;
 	}
@@ -529,27 +529,24 @@ source_file_internal(FILE *fp, const char *filename)
 		char *p;
 		int line_num_delta = 0;
 
-		if((p = fgets(next_line, sizeof(next_line), fp)) != NULL)
+		while((p = fgets(next_line, sizeof(next_line), fp)) != NULL)
 		{
-			do
-			{
-				line_num_delta++;
-				p = skip_whitespace(p);
-				chomp(p);
-				if(*p == '"')
-					continue;
-				else if(*p == '\\')
-					strncat(line, p + 1, sizeof(line) - strlen(line) - 1);
-				else
-					break;
-			}
-			while((p = fgets(next_line, sizeof(next_line), fp)) != NULL);
+			line_num_delta++;
+			p = skip_whitespace(p);
+			chomp(p);
+			if(*p == '"')
+				continue;
+			else if(*p == '\\')
+				strncat(line, p + 1, sizeof(line) - strlen(line) - 1);
+			else
+				break;
 		}
 		chomp(line);
 		if(exec_commands(line, curr_view, GET_COMMAND) < 0)
 		{
-			show_error_msgf("File Sourcing Error", "Error in %s at %d line", filename,
-					line_num);
+			/* User choice is saved by show_error_promptf internally. */
+			(void)prompt_error_msgf("File Sourcing Error", "Error in %s at %d line",
+					filename, line_num);
 		}
 		if(curr_stats.sourcing_state == SOURCING_FINISHING)
 			break;
@@ -623,6 +620,7 @@ void
 resize_history(size_t new_len)
 {
 	int delta;
+	const int old_len = cfg.history_len;
 
 	if(new_len == 0)
 	{
@@ -635,14 +633,14 @@ resize_history(size_t new_len)
 		return;
 	}
 
-	if(cfg.history_len > new_len)
+	if(old_len > new_len)
 	{
 		reduce_view_history(&lwin, new_len);
 		reduce_view_history(&rwin, new_len);
 	}
 
-	delta = (int)new_len - cfg.history_len;
-	if(delta < 0 && cfg.history_len > 0)
+	delta = (int)new_len - old_len;
+	if(delta < 0 && old_len > 0)
 	{
 		const size_t abs_delta = -delta;
 		free_strings(cfg.cmd_history + new_len, abs_delta);
@@ -657,20 +655,16 @@ resize_history(size_t new_len)
 
 	if(delta > 0)
 	{
-		memset(lwin.history + cfg.history_len, 0, sizeof(history_t)*delta);
-		memset(rwin.history + cfg.history_len, 0, sizeof(history_t)*delta);
+		memset(lwin.history + old_len, 0, sizeof(history_t)*delta);
+		memset(rwin.history + old_len, 0, sizeof(history_t)*delta);
 	}
 
-	if(cfg.history_len <= 0)
-	{
-		cfg.history_len = new_len;
+	cfg.history_len = new_len;
 
+	if(old_len <= 0)
+	{
 		save_view_history(&lwin, NULL, NULL, -1);
 		save_view_history(&rwin, NULL, NULL, -1);
-	}
-	else
-	{
-		cfg.history_len = new_len;
 	}
 
 	cfg.cmd_history = realloc(cfg.cmd_history, new_len*sizeof(char *));
@@ -678,10 +672,10 @@ resize_history(size_t new_len)
 	cfg.search_history = realloc(cfg.search_history, new_len*sizeof(char *));
 	if(delta > 0)
 	{
-		const size_t len = sizeof(history_t)*delta;
-		memset(cfg.cmd_history + cfg.history_len, 0, len);
-		memset(cfg.prompt_history + cfg.history_len, 0, len);
-		memset(cfg.search_history + cfg.history_len, 0, len);
+		const size_t len = sizeof(char *)*delta;
+		memset(cfg.cmd_history + old_len, 0, len);
+		memset(cfg.prompt_history + old_len, 0, len);
+		memset(cfg.search_history + old_len, 0, len);
 	}
 }
 

@@ -99,6 +99,8 @@
 
 	Multiply counts in front of command and its selector (as Vim does).
 
+	Reduced memory consumption of view histories.
+
 	Fixed background bold (light) colors in linux native console.
 
 	Fixed segmentation fault on running vifm with one path in the argument

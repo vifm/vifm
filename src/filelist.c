@@ -1290,8 +1290,8 @@ save_view_history(FileView *view, const char *path, const char *file, int pos)
 		x--;
 		view->history_num = x;
 	}
-	replace_string(&view->history[x].dir, path);
-	replace_string(&view->history[x].file, file);
+	view->history[x].dir = strdup(path);
+	view->history[x].file = strdup(file);
 	view->history[x].rel_pos = pos - view->top_line;
 	view->history_num++;
 	view->history_pos = view->history_num - 1;
@@ -1319,7 +1319,7 @@ check_view_dir_history(FileView *view)
 	int pos = 0;
 	int rel_pos = -1;
 
-	if(cfg.history_len > 0 && curr_stats.ch_pos)
+	if(cfg.history_len > 0 && view->history_num > 0 && curr_stats.ch_pos)
 	{
 		int x;
 		int found = 0;

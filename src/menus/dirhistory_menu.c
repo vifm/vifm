@@ -37,9 +37,9 @@ show_history_menu(FileView *view)
 	int i;
 	static menu_info m;
 
-	if(cfg.history_len <= 0)
+	if(view->history_num <= 0)
 	{
-		status_bar_message("History is disabled");
+		status_bar_message("History is disabled or empty");
 		return 1;
 	}
 
