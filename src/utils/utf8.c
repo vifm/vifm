@@ -105,23 +105,6 @@ get_normal_utf8_string_widthn(const char *string, size_t max)
 #endif
 }
 
-/* returns count of bytes excluding incomplete utf8 characters */
-size_t
-get_normal_utf8_string_width(const char *string)
-{
-	size_t length = 0;
-	while(*string != '\0')
-	{
-		size_t char_width = guess_char_width(*string);
-		if(char_width <= strlen(string))
-			length += char_width;
-		else
-			break;
-		string += char_width;
-	}
-	return length;
-}
-
 /* returns count of utf8 characters in string */
 size_t
 get_utf8_string_length(const char *string)
