@@ -123,7 +123,6 @@ static char * cmds_expand_macros(const char *str, int *usr1, int *usr2);
 static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
-static wchar_t * substitute_specs(const char *cmd);
 static int is_whole_line_command(const char cmd[]);
 
 static int goto_cmd(const cmd_info_t *cmd_info);
@@ -687,21 +686,9 @@ skip_at_beginning(int id, const char *args)
 	return -1;
 }
 
-static int
-notation_sorter(const void *first, const void *second)
-{
-	const key_pair_t *paira = (const key_pair_t *)first;
-	const key_pair_t *pairb = (const key_pair_t *)second;
-	const char *stra = paira->notation;
-	const char *strb = pairb->notation;
-	return strcasecmp(stra, strb);
-}
-
 void
 init_commands(void)
 {
-	int i;
-
 	if(cmds_conf.inner != NULL)
 	{
 		init_cmds(1, &cmds_conf);
@@ -712,11 +699,7 @@ init_commands(void)
 	init_cmds(1, &cmds_conf);
 	add_builtin_commands((const cmd_add_t *)&commands, ARRAY_LEN(commands));
 
-	/* TODO: move this to bracket_notation.c */
-	qsort(key_pairs, ARRAY_LEN(key_pairs), sizeof(key_pairs[0]), notation_sorter);
-	for(i = 0; i < ARRAY_LEN(key_pairs); i++)
-		key_pairs[i].len = strlen(key_pairs[i].notation);
-
+	init_bracket_notation();
 	init_variables();
 }
 
@@ -834,58 +817,6 @@ set_view_filter(FileView *view, const char *filter, int invert)
 	set_filename_filter(view, filter);
 	load_saving_pos(view, 1);
 	return 0;
-}
-
-static key_pair_t *
-find_notation(const char *str)
-{
-	/* TODO: move this to bracket_notation.c */
-	int l = 0, u = ARRAY_LEN(key_pairs) - 1;
-	while(l <= u)
-	{
-		int i = (l + u)/2;
-		int comp = strncasecmp(str, key_pairs[i].notation, key_pairs[i].len);
-		if(comp == 0)
-			return &key_pairs[i];
-		else if(comp < 0)
-			u = i - 1;
-		else
-			l = i + 1;
-	}
-	return NULL;
-}
-
-static wchar_t *
-substitute_specs(const char *cmd)
-{
-	/* TODO: move this to bracket_notation.c */
-	wchar_t *buf, *p;
-	size_t len = strlen(cmd) + 1;
-
-	buf = malloc(len*sizeof(wchar_t));
-	if(buf == NULL)
-		return NULL;
-
-	p = buf;
-	while(*cmd != '\0')
-	{
-		key_pair_t *pair;
-		pair = find_notation(cmd);
-		if(pair == NULL)
-		{
-			*p++ = (wchar_t)*cmd++;
-		}
-		else
-		{
-			wcscpy(p, pair->key);
-			p += wcslen(p);
-			cmd += pair->len;
-		}
-	}
-	*p = L'\0';
-	assert(p + 1 - buf <= len);
-
-	return buf;
 }
 
 static void
