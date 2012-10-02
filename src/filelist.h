@@ -58,10 +58,6 @@ void update_scroll_bind_offset(void);
 void correct_list_pos(FileView *view, ssize_t pos_delta);
 /* Returns non-zero if doing something makes sense. */
 int correct_list_pos_on_scroll_down(FileView *view, size_t lines_count);
-/* A wrapper for get_corrected_list_pos_down() and get_corrected_list_pos_up()
- * functions.  Returns new list position after making correction for scrolling
- * down. */
-int get_corrected_list_pos(FileView *view, ssize_t pos_delta);
 /* Returns new list position after making correction for scrolling down. */
 int get_corrected_list_pos_down(const FileView *view, size_t pos_delta);
 /* Returns non-zero if doing something makes sense. */
