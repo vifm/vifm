@@ -517,7 +517,7 @@ source_file_internal(FILE *fp, const char filename[])
 	char line[MAX_LEN*2];
 	int line_num;
 
-	if(fgets(line, MAX_LEN, fp) == NULL)
+	if(fgets(line, sizeof(line), fp) == NULL)
 	{
 		return 1;
 	}

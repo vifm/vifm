@@ -70,12 +70,11 @@ to_wide(const char *s)
 wchar_t *
 my_wcsdup(const wchar_t *ws)
 {
-	wchar_t *result;
-
-	result = malloc((wcslen(ws) + 1)*sizeof(wchar_t));
+	const size_t len = wcslen(ws) + 1;
+	wchar_t * const result = malloc(len*sizeof(wchar_t));
 	if(result == NULL)
 		return NULL;
-	wcscpy(result, ws);
+	wcsncpy(result, ws, len);
 	return result;
 }
 

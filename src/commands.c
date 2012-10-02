@@ -713,7 +713,7 @@ init_commands(void)
 	add_builtin_commands((const cmd_add_t *)&commands, ARRAY_LEN(commands));
 
 	/* TODO: move this to bracket_notation.c */
-	qsort(key_pairs, ARRAY_LEN(key_pairs), sizeof(*key_pairs), notation_sorter);
+	qsort(key_pairs, ARRAY_LEN(key_pairs), sizeof(key_pairs[0]), notation_sorter);
 	for(i = 0; i < ARRAY_LEN(key_pairs); i++)
 		key_pairs[i].len = strlen(key_pairs[i].notation);
 
