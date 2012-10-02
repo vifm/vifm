@@ -21,6 +21,8 @@
 
 #include "file_streams.h"
 
+static int get_char(FILE *fp);
+
 char *
 get_line(FILE *fp, char *buf, size_t bufsz)
 {
@@ -39,7 +41,14 @@ get_line(FILE *fp, char *buf, size_t bufsz)
 	return (c == EOF && buf == start) ? NULL : start;
 }
 
-int
+void
+skip_until_eol(FILE *fp)
+{
+	while(get_char(fp) != '\n' && !feof(fp));
+}
+
+/* Returns next character from file stream. */
+static int
 get_char(FILE *fp)
 {
 	int c = fgetc(fp);
@@ -51,12 +60,6 @@ get_char(FILE *fp)
 		c = '\n';
 	}
 	return c;
-}
-
-void
-skip_until_eol(FILE *fp)
-{
-	while(get_char(fp) != '\n' && !feof(fp));
 }
 
 void
