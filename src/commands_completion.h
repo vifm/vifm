@@ -73,7 +73,6 @@ typedef enum
 int complete_args(int id, const char args[], int argc, char *argv[],
 		int arg_pos);
 char * fast_run_complete(const char *cmd);
-void exec_completion(const char *str);
 void filename_completion(const char *str, CompletionType type);
 void complete_user_name(const char *str);
 void complete_group_name(const char *str);
