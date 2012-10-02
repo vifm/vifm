@@ -1547,12 +1547,6 @@ get_start_of_line(const FileView *view)
 	return ROUND_DOWN(pos, view->column_count);
 }
 
-void
-go_to_end_of_line(FileView *view)
-{
-	view->list_pos = get_end_of_line(view);
-}
-
 int
 get_end_of_line(const FileView *view)
 {

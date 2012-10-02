@@ -101,8 +101,6 @@ size_t get_window_bottom_pos(const FileView *view);
 void go_to_start_of_line(FileView *view);
 /* Returns position of the first file in current line. */
 int get_start_of_line(const FileView *view);
-/* Moves cursor to the last file in a row. */
-void go_to_end_of_line(FileView *view);
 /* Returns position of the last file in current line. */
 int get_end_of_line(const FileView *view);
 /* Returns index of last visible file in the view.  Value returned may be
