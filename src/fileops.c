@@ -95,6 +95,8 @@ typedef struct
 	job_t *job;
 }bg_args_t;
 
+static void delete_file_bg_i(const char curr_dir[], char *list[], int count,
+		int use_trash);
 #ifndef TEST
 static
 #endif
@@ -379,8 +381,25 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	return 1;
 }
 
-void
-delete_file_bg_i(const char *curr_dir, char **list, int count, int use_trash)
+static void *
+delete_file_stub(void *arg)
+{
+	bg_args_t *args = (bg_args_t *)arg;
+
+	add_inner_bg_job(args->job);
+
+	delete_file_bg_i(args->src, args->sel_list, args->sel_list_len,
+			args->from_trash);
+
+	remove_inner_bg_job();
+
+	free_string_array(args->sel_list, args->sel_list_len);
+	free(args);
+	return NULL;
+}
+
+static void
+delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 {
 	int i;
 	for(i = 0; i < count; i++)
@@ -410,23 +429,6 @@ delete_file_bg_i(const char *curr_dir, char **list, int count, int use_trash)
 		}
 		inner_bg_next();
 	}
-}
-
-static void *
-delete_file_stub(void *arg)
-{
-	bg_args_t *args = (bg_args_t *)arg;
-
-	add_inner_bg_job(args->job);
-
-	delete_file_bg_i(args->src, args->sel_list, args->sel_list_len,
-			args->from_trash);
-
-	remove_inner_bg_job();
-
-	free_string_array(args->sel_list, args->sel_list_len);
-	free(args);
-	return NULL;
 }
 
 /* returns new value for save_msg */
