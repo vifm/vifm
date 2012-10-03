@@ -22,8 +22,6 @@
 #include <winioctl.h>
 #endif
 
-#include "../../config.h"
-
 #include <regex.h>
 
 #include <curses.h>

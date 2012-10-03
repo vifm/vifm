@@ -35,8 +35,6 @@
 #include <signal.h>
 
 #include "../cfg/config.h"
-
-#include "../cfg/config.h"
 #include "../modes/cmdline.h"
 #include "../modes/menu.h"
 #include "../modes/modes.h"

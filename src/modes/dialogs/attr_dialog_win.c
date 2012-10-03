@@ -21,8 +21,6 @@
 #include <assert.h>
 #include <string.h>
 
-#include "../../../config.h"
-
 #include "../../engine/keys.h"
 #include "../../utils/fs.h"
 #include "../../utils/log.h"

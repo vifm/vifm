@@ -488,6 +488,9 @@ if test "$use_libX11" = "yes"; then
 		AC_DEFINE([HAVE_X11], [1], [use X11 to determine terminal emulator title])])
 fi
 
+dnl Include config.h in all translation units implicitly
+CFLAGS="$CFLAGS -include ../config.h"
+
 AC_OUTPUT([
 Makefile
 src/Makefile

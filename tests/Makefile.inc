@@ -29,12 +29,13 @@ OBJECTS := $(addprefix ../bin/, $(notdir $(OBJECTS)))
 LOCAL_OBJECTS := $(LOCAL_SOURCES:.c=.o)
 LOCAL_OBJECTS := $(addprefix bin/, $(notdir $(LOCAL_OBJECTS)))
 
+CFLAGS := -MD -g -Werror -I../seatest -DTEST -include ../../config.h
+LDFLAGS := -lpthread
 ifneq ($(OS),Windows_NT)
-    CFLAGS := -MD -g -Werror -I../seatest `pkg-config --cflags gtk+-2.0` -DTEST
-    LDFLAGS := `pkg-config --libs gtk+-2.0` -lncursesw -lpthread -lmagic -lX11
+    CFLAGS += `pkg-config --cflags gtk+-2.0`
+    LDFLAGS += `pkg-config --libs gtk+-2.0` -lncursesw -lmagic -lX11
 else
-    CFLAGS := -MD -g -Werror -I../seatest -DTEST
-    LDFLAGS := -lpdcurses -lregex -lnetapi32 -lpthread -lws2_32
+    LDFLAGS += -lpdcurses -lregex -lnetapi32 -lws2_32
 endif
 
 $(BIN): ../bin/dummy $(OBJECTS) $(LOCAL_OBJECTS)

@@ -22,8 +22,6 @@
 #include <stdlib.h> /* malloc() */
 #include <string.h> /* strlen() strdup() */
 
-#include "../config.h"
-
 /* This variable is automatically updated on building. */
 extern const char GIT_HASH[];
 

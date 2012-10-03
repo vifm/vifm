@@ -46,8 +46,6 @@
 #include <string.h>
 #include <time.h>
 
-#include "../config.h"
-
 #include "cfg/config.h"
 #include "cfg/info.h"
 #include "menus/menus.h"

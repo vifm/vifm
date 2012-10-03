@@ -1,9 +1,10 @@
 CC := gcc
 
+CFLAGS := -c -Wall -Werror -MD $(CFLAGS) -include ../config.h
 ifeq ($(RELEASE),1)
-    CFLAGS := -c -O2 -Wall -Werror -MD $(CFLAGS)
+    CFLAGS += -O2
 else
-    CFLAGS := -c -g -O0 -Wall -Werror -MD $(CFLAGS)
+    CFLAGS += -g -O0
 endif
 
 LDFLAGS := $(LDFLAGS)
