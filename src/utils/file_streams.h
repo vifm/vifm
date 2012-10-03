@@ -28,8 +28,6 @@
 
 /* Reads line from file stream. */
 char * get_line(FILE *fp, char *buf, size_t bufsz);
-/* Returns next character from file stream. */
-int get_char(FILE *fp);
 /* Skips file stream content until and including eol character. */
 void skip_until_eol(FILE *fp);
 /* Removes eol symbols from file stream. */

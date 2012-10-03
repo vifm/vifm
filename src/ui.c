@@ -46,8 +46,6 @@
 #include <string.h>
 #include <time.h>
 
-#include "../config.h"
-
 #include "cfg/config.h"
 #include "cfg/info.h"
 #include "menus/menus.h"
@@ -981,22 +979,6 @@ vertical_layout(int screen_x, int screen_y)
 	wresize(rwin.win, screen_y - 3 + !cfg.last_status,
 			screen_x - (splitter_pos + splitter_width + 1));
 	mvwin(rwin.win, 1, splitter_pos + splitter_width);
-}
-
-float
-get_splitter_pos(int max)
-{
-	if(curr_stats.split == HSPLIT)
-	{
-		return (curr_stats.splitter_pos*max)/100;
-	}
-	else
-	{
-		if(curr_stats.splitter_pos == 50.f)
-			return max/2 - 1 + max%2;
-		else
-			return (curr_stats.splitter_pos*max)/100;
-	}
 }
 
 static void

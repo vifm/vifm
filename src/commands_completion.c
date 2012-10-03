@@ -67,6 +67,7 @@ static void complete_highlight_groups(const char *str);
 static int complete_highlight_arg(const char *str);
 static void complete_envvar(const char *str);
 static void complete_winrun(const char *str);
+static void exec_completion(const char str[]);
 static void filename_completion_in_dir(const char *path, const char *str,
 		CompletionType type);
 static void filename_completion_internal(DIR * dir, const char * dirname,
@@ -491,8 +492,9 @@ fast_run_complete(const char *cmd)
 	return result;
 }
 
-void
-exec_completion(const char *str)
+/* Fills list of complitions with executables in $PATH. */
+static void
+exec_completion(const char str[])
 {
 	int i;
 	char ** paths;

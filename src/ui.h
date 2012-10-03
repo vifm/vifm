@@ -20,8 +20,6 @@
 #ifndef __UI_H__
 #define __UI_H__
 
-#include "../config.h"
-
 #ifdef _WIN32
 #include <windows.h>
 #endif

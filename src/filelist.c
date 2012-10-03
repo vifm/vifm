@@ -105,12 +105,15 @@ static void init_view_history(FileView *view);
 static int get_line_color(FileView* view, int pos);
 static char * get_viewer_command(const char *viewer);
 static void consider_scroll_bind(FileView *view);
+static void correct_list_pos_down(FileView *view, size_t pos_delta);
+static void correct_list_pos_up(FileView *view, size_t pos_delta);
 static int calculate_top_position(FileView *view, int top);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 size_t calculate_columns_count(FileView *view);
 static size_t calculate_column_width(FileView *view);
+static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
-int consider_scroll_offset(FileView *view);
+static int consider_scroll_offset(FileView *view);
 static void free_saved_selection(FileView *view);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
@@ -929,23 +932,11 @@ correct_list_pos_on_scroll_down(FileView *view, size_t lines_count)
 	return 0;
 }
 
-void
+/* Tries to move cursor forwards by pos_delta positions. */
+static void
 correct_list_pos_down(FileView *view, size_t pos_delta)
 {
 	view->list_pos = get_corrected_list_pos_down(view, pos_delta);
-}
-
-int
-get_corrected_list_pos(FileView *view, ssize_t pos_delta)
-{
-	if(pos_delta < 0)
-	{
-		return get_corrected_list_pos_up(view, -pos_delta);
-	}
-	else
-	{
-		return get_corrected_list_pos_down(view, pos_delta);
-	}
 }
 
 int
@@ -972,7 +963,8 @@ correct_list_pos_on_scroll_up(FileView *view, size_t lines_count)
 	return 0;
 }
 
-void
+/* Tries to move cursor backwards by pos_delta positions. */
+static void
 correct_list_pos_up(FileView *view, size_t pos_delta)
 {
 	view->list_pos = get_corrected_list_pos_up(view, pos_delta);
@@ -1389,7 +1381,7 @@ check_view_dir_history(FileView *view)
 
 /* Updates current and top line of a view according to scrolloff option value.
  * Returns non-zero if redraw is needed. */
-int
+static int
 consider_scroll_offset(FileView *view)
 {
 	int need_redraw = 0;
@@ -1417,7 +1409,8 @@ consider_scroll_offset(FileView *view)
 	return need_redraw;
 }
 
-size_t
+/* Returns scroll offset value for the view taking view height into account. */
+static size_t
 get_effective_scroll_offset(const FileView *view)
 {
 	int val = MIN(DIV_ROUND_UP(view->window_rows, 2), MAX(cfg.scroll_off, 0));
@@ -1552,12 +1545,6 @@ get_start_of_line(const FileView *view)
 {
 	int pos = MAX(MIN(view->list_pos, view->list_rows - 1), 0);
 	return ROUND_DOWN(pos, view->column_count);
-}
-
-void
-go_to_end_of_line(FileView *view)
-{
-	view->list_pos = get_end_of_line(view);
 }
 
 int

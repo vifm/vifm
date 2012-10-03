@@ -95,18 +95,19 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	utils/string_array.$(OBJEXT) utils/tree.$(OBJEXT) \
 	utils/utf8.$(OBJEXT) utils/utils.$(OBJEXT) \
 	background.$(OBJEXT) bookmarks.$(OBJEXT) \
-	builtin_functions.$(OBJEXT) color_scheme.$(OBJEXT) \
-	column_view.$(OBJEXT) commands.$(OBJEXT) \
-	commands_completion.$(OBJEXT) desktop.$(OBJEXT) \
-	dir_stack.$(OBJEXT) globals.$(OBJEXT) file_magic.$(OBJEXT) \
-	filelist.$(OBJEXT) filename_modifiers.$(OBJEXT) \
-	fileops.$(OBJEXT) filetype.$(OBJEXT) fuse.$(OBJEXT) \
-	ipc.$(OBJEXT) macros.$(OBJEXT) main_loop.$(OBJEXT) \
-	ops.$(OBJEXT) opt_handlers.$(OBJEXT) path_env.$(OBJEXT) \
-	quickview.$(OBJEXT) registers.$(OBJEXT) running.$(OBJEXT) \
-	search.$(OBJEXT) signals.$(OBJEXT) sort.$(OBJEXT) \
-	status.$(OBJEXT) tags.$(OBJEXT) term_title.$(OBJEXT) \
-	trash.$(OBJEXT) ui.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
+	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
+	color_scheme.$(OBJEXT) column_view.$(OBJEXT) \
+	commands.$(OBJEXT) commands_completion.$(OBJEXT) \
+	desktop.$(OBJEXT) dir_stack.$(OBJEXT) globals.$(OBJEXT) \
+	file_magic.$(OBJEXT) filelist.$(OBJEXT) \
+	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
+	filetype.$(OBJEXT) fuse.$(OBJEXT) ipc.$(OBJEXT) \
+	macros.$(OBJEXT) main_loop.$(OBJEXT) ops.$(OBJEXT) \
+	opt_handlers.$(OBJEXT) path_env.$(OBJEXT) quickview.$(OBJEXT) \
+	registers.$(OBJEXT) running.$(OBJEXT) search.$(OBJEXT) \
+	signals.$(OBJEXT) sort.$(OBJEXT) status.$(OBJEXT) \
+	tags.$(OBJEXT) term_title.$(OBJEXT) trash.$(OBJEXT) \
+	ui.$(OBJEXT) undo.$(OBJEXT) version.$(OBJEXT) \
 	viewcolumns_parser.$(OBJEXT) compile_info.$(OBJEXT) \
 	vifm.$(OBJEXT)
 vifm_OBJECTS = $(am_vifm_OBJECTS)
@@ -355,6 +356,7 @@ vifm_SOURCES = \
 	\
 	background.c background.h \
 	bookmarks.c bookmarks.h \
+	bracket_notation.c bracket_notation.h \
 	builtin_functions.c builtin_functions.h \
 	color_scheme.c colorscheme.h \
 	column_view.c column_view.h \
@@ -712,6 +714,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/background.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bookmarks.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bracket_notation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/builtin_functions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_scheme.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/column_view.Po@am__quote@

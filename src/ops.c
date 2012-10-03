@@ -23,8 +23,6 @@
 
 #include <string.h>
 
-#include "../config.h"
-
 #include "cfg/config.h"
 #include "menus/menus.h"
 #ifdef _WIN32

@@ -15531,6 +15531,8 @@ fi
 
 fi
 
+CFLAGS="$CFLAGS -include ../config.h"
+
 ac_config_files="$ac_config_files Makefile src/Makefile"
 
 cat >confcache <<\_ACEOF

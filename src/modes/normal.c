@@ -25,8 +25,6 @@
 #include <string.h>
 #include <wctype.h> /* wtoupper() */
 
-#include "../../config.h"
-
 #include "../cfg/config.h"
 #include "../engine/keys.h"
 #include "../menus/menus.h"

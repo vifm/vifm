@@ -58,18 +58,10 @@ void update_scroll_bind_offset(void);
 void correct_list_pos(FileView *view, ssize_t pos_delta);
 /* Returns non-zero if doing something makes sense. */
 int correct_list_pos_on_scroll_down(FileView *view, size_t lines_count);
-/* Tries to move cursor forwards by pos_delta positions. */
-void correct_list_pos_down(FileView *view, size_t pos_delta);
-/* A wrapper for get_corrected_list_pos_down() and get_corrected_list_pos_up()
- * functions.  Returns new list position after making correction for scrolling
- * down. */
-int get_corrected_list_pos(FileView *view, ssize_t pos_delta);
 /* Returns new list position after making correction for scrolling down. */
 int get_corrected_list_pos_down(const FileView *view, size_t pos_delta);
 /* Returns non-zero if doing something makes sense. */
 int correct_list_pos_on_scroll_up(FileView *view, size_t lines_count);
-/* Tries to move cursor backwards by pos_delta positions. */
-void correct_list_pos_up(FileView *view, size_t pos_delta);
 /* Returns new list position after making correction for scrolling up. */
 int get_corrected_list_pos_up(const FileView *view, size_t pos_delta);
 /* Returns non-zero if all files are visible, so no scrolling is needed. */
@@ -77,8 +69,6 @@ int all_files_visible(const FileView *view);
 void move_to_list_pos(FileView *view, int pos);
 /* Adds inactive cursor mark to the view. */
 void put_inactive_mark(FileView *view);
-/* Returns scroll offset value for the view taking view height into account. */
-size_t get_effective_scroll_offset(const FileView *view);
 /* Returns non-zero in case view can be scrolled up (there are more files). */
 int can_scroll_up(const FileView *view);
 /* Returns non-zero in case view can be scrolled down (there are more files). */
@@ -111,8 +101,6 @@ size_t get_window_bottom_pos(const FileView *view);
 void go_to_start_of_line(FileView *view);
 /* Returns position of the first file in current line. */
 int get_start_of_line(const FileView *view);
-/* Moves cursor to the last file in a row. */
-void go_to_end_of_line(FileView *view);
 /* Returns position of the last file in current line. */
 int get_end_of_line(const FileView *view);
 /* Returns index of last visible file in the view.  Value returned may be

@@ -17,8 +17,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include "../../config.h"
-
 #define HOME_EV "HOME"
 #define VIFM_EV "VIFM"
 #define MYVIFMRC_EV "MYVIFMRC"
@@ -46,6 +44,7 @@
 #include "../utils/path.h"
 #endif
 #include "../utils/string_array.h"
+#include "../utils/utils.h"
 #include "../bookmarks.h"
 #include "../color_scheme.h"
 #include "../commands.h"
@@ -79,6 +78,7 @@ static void create_config_dir(void);
 #ifndef _WIN32
 static void create_help_file(void);
 static void create_rc_file(void);
+static void add_default_bookmarks(void);
 #endif
 static int source_file_internal(FILE *fp, const char filename[]);
 static void free_view_history(FileView *view);
@@ -439,31 +439,38 @@ create_config_dir(void)
 		if(make_dir(cfg.config_dir, 0777) != 0)
 			return;
 #endif
+
+		add_default_bookmarks();
 	}
 }
 
 #ifndef _WIN32
+/* Copies help file from shared files to the ~/.vifm directory. */
 static void
 create_help_file(void)
 {
 	LOG_FUNC_ENTER;
 
-	char command[PATH_MAX];
-
-	snprintf(command, sizeof(command), CP_HELP);
-	fprintf(stderr, "%s", command);
-	file_exec(command);
+	char command[] = CP_HELP;
+	(void)my_system(command);
 }
 
+/* Copies example vifmrc file from shared files to the ~/.vifm directory. */
 static void
 create_rc_file(void)
 {
 	LOG_FUNC_ENTER;
 
-	char command[PATH_MAX];
+	char command[] = CP_RC;
+	(void)my_system(command);
+}
 
-	snprintf(command, sizeof(command), CP_RC);
-	file_exec(command);
+/* Adds 'H' and 'z' default bookmarks. */
+static void
+add_default_bookmarks(void)
+{
+	LOG_FUNC_ENTER;
+
 	add_bookmark('H', cfg.home_dir, "../");
 	add_bookmark('z', cfg.config_dir, "../");
 }

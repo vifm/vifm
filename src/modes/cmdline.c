@@ -39,8 +39,6 @@
 #include <string.h>
 #include <wctype.h>
 
-#include "../../config.h"
-
 #include "../cfg/config.h"
 #include "../engine/cmds.h"
 #include "../engine/completion.h"

@@ -1,9 +1,10 @@
 CC := gcc
 
+CFLAGS := -c -Wall -Werror -MD $(CFLAGS) -include ../config.h
 ifeq ($(RELEASE),1)
-    CFLAGS := -c -O2 -Wall -Werror -MD $(CFLAGS)
+    CFLAGS += -O2
 else
-    CFLAGS := -c -g -O0 -Wall -Werror -MD $(CFLAGS)
+    CFLAGS += -g -O0
 endif
 
 LDFLAGS := $(LDFLAGS)
@@ -36,13 +37,13 @@ utilities := env.c file_streams.c fs.c int_stack.c log.c path.c str.c \
 utilities := $(addprefix utils/, $(utilities))
 
 vifm_SOURCES := $(cfg) $(engine) $(menus) $(modes) $(utilities) background.c \
-                bookmarks.c color_scheme.c commands.c commands_completion.c \
-                dir_stack.c file_magic.c filelist.c filename_modifiers.c \
-                fileops.c filetype.c functions.c fuse.c globals.c ipc.c \
-                macros.c main_loop.c ops.c opt_handlers.c path_env.c \
-                quickview.c registers.c running.c search.c signals.c sort.c \
-                status.c tags.c term_title.c trash.c ui.c undo.c version.c \
-                compile_info.c vifmres.o vifm.c
+                bookmarks.c bracket_notation.c color_scheme.c commands.c \
+                commands_completion.c dir_stack.c file_magic.c filelist.c \
+                filename_modifiers.c fileops.c filetype.c functions.c fuse.c \
+                globals.c ipc.c macros.c main_loop.c ops.c opt_handlers.c \
+                path_env.c quickview.c registers.c running.c search.c \
+                signals.c sort.c status.c tags.c term_title.c trash.c ui.c \
+                undo.c version.c compile_info.c vifmres.o vifm.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe

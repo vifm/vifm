@@ -22,6 +22,7 @@
 
 #include <stdint.h> /* uint64_t */
 
+#include "utils/test_helpers.h"
 #include "ui.h"
 
 #define DEFAULT_REG_NAME '"'
@@ -79,13 +80,14 @@ int cpmv_files_bg(FileView *view, char **list, int nlines, int move, int force);
 void make_dirs(FileView *view, char **names, int count, int create_parent);
 int make_files(FileView *view, char **names, int count);
 
-#ifdef TEST
-int is_rename_list_ok(char **files, int *is_dup, int len, char **list);
-int check_file_rename(const char *old, const char *new, SignalType signal_type);
-const char * gen_clone_name(const char *normal_name);
-int is_name_list_ok(int count, int nlines, char **list, char **files);
-const char * add_to_name(const char *filename, int k);
-#endif
+TSTATIC_DEFS(
+	int is_rename_list_ok(char *files[], int *is_dup, int len, char *list[]);
+	int check_file_rename(const char old[], const char new[],
+		SignalType signal_type);
+	const char * gen_clone_name(const char normal_name[]);
+	int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
+	const char * add_to_name(const char filename[], int k);
+)
 
 #endif
 

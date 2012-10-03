@@ -33,8 +33,6 @@
 #include <string.h>
 #include <time.h>
 
-#include "../../config.h"
-
 #include "../cfg/config.h"
 #include "../engine/keys.h"
 #include "../menus/menus.h"

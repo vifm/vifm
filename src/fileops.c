@@ -52,6 +52,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "color_scheme.h"
@@ -95,40 +96,20 @@ typedef struct
 	job_t *job;
 }bg_args_t;
 
-#ifndef TEST
-static
-#endif
-int is_rename_list_ok(char **files, int *is_dup, int len, char **list);
-#ifndef TEST
-static
-#endif
-int check_file_rename(const char *old, const char *new, SignalType signal_type);
+static void delete_file_bg_i(const char curr_dir[], char *list[], int count,
+		int use_trash);
+TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
+TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
+		char *list[]);
+TSTATIC const char * add_to_name(const char filename[], int k);
+TSTATIC int check_file_rename(const char old[], const char new[],
+		SignalType signal_type);
 static void put_confirm_cb(const char *dest_name);
+TSTATIC const char * gen_clone_name(const char normal_name[]);
 static void put_decide_cb(const char *dest_name);
 static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
 static int have_read_access(FileView *view);
-
-static int
-execute(char **args)
-{
-#ifndef _WIN32
-	int pid;
-
-	if((pid = fork()) == 0)
-	{
-		/* Run as a separate session */
-		setsid();
-		close(0);
-		execvp(args[0], args);
-		exit(127);
-	}
-
-	return pid;
-#else
-	return -1;
-#endif
-}
 
 /* returns new value for save_msg */
 int
@@ -179,22 +160,6 @@ yank_selected_files(FileView *view, int reg)
 		append_to_register(reg, buf);
 	}
 	update_unnamed_reg(reg);
-}
-
-/* execute command. */
-int
-file_exec(char *command)
-{
-	char *args[4];
-	pid_t pid;
-
-	args[0] = cfg.shell;
-	args[1] = "-c";
-	args[2] = command;
-	args[3] = NULL;
-
-	pid = execute(args);
-	return pid;
 }
 
 static void
@@ -379,8 +344,25 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 	return 1;
 }
 
-void
-delete_file_bg_i(const char *curr_dir, char **list, int count, int use_trash)
+static void *
+delete_file_stub(void *arg)
+{
+	bg_args_t *args = (bg_args_t *)arg;
+
+	add_inner_bg_job(args->job);
+
+	delete_file_bg_i(args->src, args->sel_list, args->sel_list_len,
+			args->from_trash);
+
+	remove_inner_bg_job();
+
+	free_string_array(args->sel_list, args->sel_list_len);
+	free(args);
+	return NULL;
+}
+
+static void
+delete_file_bg_i(const char curr_dir[], char *list[], int count, int use_trash)
 {
 	int i;
 	for(i = 0; i < count; i++)
@@ -410,23 +392,6 @@ delete_file_bg_i(const char *curr_dir, char **list, int count, int use_trash)
 		}
 		inner_bg_next();
 	}
-}
-
-static void *
-delete_file_stub(void *arg)
-{
-	bg_args_t *args = (bg_args_t *)arg;
-
-	add_inner_bg_job(args->job);
-
-	delete_file_bg_i(args->src, args->sel_list, args->sel_list_len,
-			args->from_trash);
-
-	remove_inner_bg_job();
-
-	free_string_array(args->sel_list, args->sel_list_len);
-	free(args);
-	return NULL;
 }
 
 /* returns new value for save_msg */
@@ -629,11 +594,8 @@ rename_file(FileView *view, int name_only)
 			complete_filename_only);
 }
 
-#ifndef TEST
-static
-#endif
-int
-is_name_list_ok(int count, int nlines, char **list, char **files)
+TSTATIC int
+is_name_list_ok(int count, int nlines, char *list[], char *files[])
 {
 	int i;
 
@@ -981,11 +943,8 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 
 /* Checks rename correctness and forms an array of duplication marks.
  * Directory names in files array should be without trailing slash. */
-#ifndef TEST
-static
-#endif
-int
-is_rename_list_ok(char **files, int *is_dup, int len, char **list)
+TSTATIC int
+is_rename_list_ok(char *files[], int *is_dup, int len, char *list[])
 {
 	int i;
 	for(i = 0; i < len; i++)
@@ -1053,11 +1012,8 @@ count_digits(int number)
 }
 
 /* Returns pointer to a statically allocated buffer */
-#ifndef TEST
-static
-#endif
-const char *
-add_to_name(const char *filename, int k)
+TSTATIC const char *
+add_to_name(const char filename[], int k)
 {
 	static char result[NAME_MAX];
 	char format[16];
@@ -1197,11 +1153,8 @@ incdec_names(FileView *view, int k)
 /* Returns value > 0 if rename is correct, < 0 if rename isn't needed and 0
  * when rename operation should be aborted. silent parameter controls whether
  * error dialog or status bar message should be shown, 0 means dialog. */
-#ifndef TEST
-static
-#endif
-int
-check_file_rename(const char *old, const char *new, SignalType signal_type)
+TSTATIC int
+check_file_rename(const char old[], const char new[], SignalType signal_type)
 {
 	/* Filename unchanged */
 	if(new[0] == '\0' || strcmp(old, new) == 0)
@@ -1628,11 +1581,8 @@ put_files_from_register(FileView *view, int name, int force_move)
 	return put_files_from_register_i(view, 1);
 }
 
-#ifndef TEST
-static
-#endif
-const char *
-gen_clone_name(const char *normal_name)
+TSTATIC const char *
+gen_clone_name(const char normal_name[])
 {
 	static char result[NAME_MAX];
 
