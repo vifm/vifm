@@ -111,27 +111,6 @@ static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
 static int have_read_access(FileView *view);
 
-static int
-execute(char **args)
-{
-#ifndef _WIN32
-	int pid;
-
-	if((pid = fork()) == 0)
-	{
-		/* Run as a separate session */
-		setsid();
-		close(0);
-		execvp(args[0], args);
-		exit(127);
-	}
-
-	return pid;
-#else
-	return -1;
-#endif
-}
-
 /* returns new value for save_msg */
 int
 yank_files(FileView *view, int reg, int count, int *indexes)
@@ -181,22 +160,6 @@ yank_selected_files(FileView *view, int reg)
 		append_to_register(reg, buf);
 	}
 	update_unnamed_reg(reg);
-}
-
-/* execute command. */
-int
-file_exec(char *command)
-{
-	char *args[4];
-	pid_t pid;
-
-	args[0] = cfg.shell;
-	args[1] = "-c";
-	args[2] = command;
-	args[3] = NULL;
-
-	pid = execute(args);
-	return pid;
 }
 
 static void
