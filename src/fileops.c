@@ -52,6 +52,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "color_scheme.h"
@@ -97,15 +98,14 @@ typedef struct
 
 static void delete_file_bg_i(const char curr_dir[], char *list[], int count,
 		int use_trash);
-#ifndef TEST
-static
-#endif
-int is_rename_list_ok(char **files, int *is_dup, int len, char **list);
-#ifndef TEST
-static
-#endif
-int check_file_rename(const char *old, const char *new, SignalType signal_type);
+TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
+TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
+		char *list[]);
+TSTATIC const char * add_to_name(const char filename[], int k);
+TSTATIC int check_file_rename(const char old[], const char new[],
+		SignalType signal_type);
 static void put_confirm_cb(const char *dest_name);
+TSTATIC const char * gen_clone_name(const char normal_name[]);
 static void put_decide_cb(const char *dest_name);
 static int entry_is_dir(const char full_path[], const struct dirent* dentry);
 static int put_files_from_register_i(FileView *view, int start);
@@ -631,11 +631,8 @@ rename_file(FileView *view, int name_only)
 			complete_filename_only);
 }
 
-#ifndef TEST
-static
-#endif
-int
-is_name_list_ok(int count, int nlines, char **list, char **files)
+TSTATIC int
+is_name_list_ok(int count, int nlines, char *list[], char *files[])
 {
 	int i;
 
@@ -983,11 +980,8 @@ rename_files(FileView *view, char **list, int nlines, int recursive)
 
 /* Checks rename correctness and forms an array of duplication marks.
  * Directory names in files array should be without trailing slash. */
-#ifndef TEST
-static
-#endif
-int
-is_rename_list_ok(char **files, int *is_dup, int len, char **list)
+TSTATIC int
+is_rename_list_ok(char *files[], int *is_dup, int len, char *list[])
 {
 	int i;
 	for(i = 0; i < len; i++)
@@ -1055,11 +1049,8 @@ count_digits(int number)
 }
 
 /* Returns pointer to a statically allocated buffer */
-#ifndef TEST
-static
-#endif
-const char *
-add_to_name(const char *filename, int k)
+TSTATIC const char *
+add_to_name(const char filename[], int k)
 {
 	static char result[NAME_MAX];
 	char format[16];
@@ -1199,11 +1190,8 @@ incdec_names(FileView *view, int k)
 /* Returns value > 0 if rename is correct, < 0 if rename isn't needed and 0
  * when rename operation should be aborted. silent parameter controls whether
  * error dialog or status bar message should be shown, 0 means dialog. */
-#ifndef TEST
-static
-#endif
-int
-check_file_rename(const char *old, const char *new, SignalType signal_type)
+TSTATIC int
+check_file_rename(const char old[], const char new[], SignalType signal_type)
 {
 	/* Filename unchanged */
 	if(new[0] == '\0' || strcmp(old, new) == 0)
@@ -1630,11 +1618,8 @@ put_files_from_register(FileView *view, int name, int force_move)
 	return put_files_from_register_i(view, 1);
 }
 
-#ifndef TEST
-static
-#endif
-const char *
-gen_clone_name(const char *normal_name)
+TSTATIC const char *
+gen_clone_name(const char normal_name[])
 {
 	static char result[NAME_MAX];
 
