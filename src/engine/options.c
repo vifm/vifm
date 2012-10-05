@@ -34,6 +34,14 @@
 /* TODO possibly add default handlers (just set new value) and types
  * OPT_*_PTR */
 
+/* List of operations on options of set type for the set_op(...) function. */
+typedef enum
+{
+	SO_SET, /* Set value of the option. */
+	SO_ADD, /* Add item(s) to a set. */
+	SO_REMOVE, /* Remove item(s) from a set. */
+}SetOp;
+
 typedef struct
 {
 	char *name;
@@ -64,7 +72,7 @@ static int set_set(opt_t *opt, const char *value);
 static int set_reset(opt_t *opt);
 static int set_add(opt_t *opt, const char *value);
 static int set_remove(opt_t *opt, const char *value);
-static int set_op(opt_t *opt, const char *value, int add);
+static int set_op(opt_t *opt, const char value[], SetOp op);
 static char * str_add(char *old, const char *value);
 static char * str_remove(char *old, const char *value);
 static int find_val(const opt_t *opt, const char *value);
@@ -535,10 +543,7 @@ set_set(opt_t *opt, const char *value)
 
 	if(opt->type == OPT_SET)
 	{
-		const int items = opt->val.set_items;
-		opt->val.set_items = 0;
-		(void)set_op(opt, value, 1);
-		if(opt->val.set_items != items)
+		if(set_op(opt, value, SO_SET))
 		{
 			opt->handler(OP_SET, opt->val);
 		}
@@ -629,7 +634,7 @@ set_add(opt_t *opt, const char *value)
 	}
 	else if(opt->type == OPT_SET)
 	{
-		if(set_op(opt, value, 1))
+		if(set_op(opt, value, SO_ADD))
 		{
 			*opts_changed = 1;
 			opt->handler(OP_MODIFIED, opt->val);
@@ -668,7 +673,7 @@ set_remove(opt_t *opt, const char *value)
 	}
 	else if(opt->type == OPT_SET)
 	{
-		if(set_op(opt, value, 0))
+		if(set_op(opt, value, SO_REMOVE))
 		{
 			*opts_changed = 1;
 			opt->handler(OP_MODIFIED, opt->val);
@@ -692,13 +697,15 @@ set_remove(opt_t *opt, const char *value)
 	return 0;
 }
 
-/* returns not zero if set was modified */
+/* Performs set/add/remove operations on options of set kind.  Returns not zero
+ * if set was modified. */
 static int
-set_op(opt_t *opt, const char *value, int add)
+set_op(opt_t *opt, const char value[], SetOp op)
 {
 	char val[1024];
 	const char *p;
-	int saved_val = opt->val.set_items;
+	const int old_val = opt->val.set_items;
+	int new_val = (op == SO_SET) ? 0 : old_val;
 
 	while(*value != '\0')
 	{
@@ -712,10 +719,10 @@ set_op(opt_t *opt, const char *value, int add)
 		i = find_val(opt, val);
 		if(i != -1)
 		{
-			if(add)
-				opt->val.set_items |= 1 << i;
+			if(op == SO_SET || op == SO_ADD)
+				new_val |= 1 << i;
 			else
-				opt->val.set_items &= ~(1 << i);
+				new_val &= ~(1 << i);
 		}
 
 		if(*p == '\0')
@@ -726,7 +733,8 @@ set_op(opt_t *opt, const char *value, int add)
 			++value;
 	}
 
-	return opt->val.set_items != saved_val;
+	opt->val.set_items = new_val;
+	return new_val != old_val;
 }
 
 static char *
