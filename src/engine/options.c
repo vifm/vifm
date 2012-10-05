@@ -535,6 +535,7 @@ set_set(opt_t *opt, const char *value)
 
 	if(opt->type == OPT_SET)
 	{
+		const int items = opt->val.set_items;
 		opt->val.set_items = 0;
 		while(*value != '\0')
 		{
@@ -548,6 +549,10 @@ set_set(opt_t *opt, const char *value)
 			set_add(opt, buf);
 
 			value = (*p == '\0') ? p : p + 1;
+		}
+		if(opt->val.set_items != items)
+		{
+			opt->handler(OP_SET, opt->val);
 		}
 	}
 	else if(opt->type == OPT_ENUM)
