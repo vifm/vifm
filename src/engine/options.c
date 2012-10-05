@@ -537,19 +537,7 @@ set_set(opt_t *opt, const char *value)
 	{
 		const int items = opt->val.set_items;
 		opt->val.set_items = 0;
-		while(*value != '\0')
-		{
-			const char *p;
-			char buf[64];
-
-			if((p = strchr(value, ',')) == 0)
-				p = value + strlen(value);
-
-			snprintf(buf, p - value + 1, "%s", value);
-			set_add(opt, buf);
-
-			value = (*p == '\0') ? p : p + 1;
-		}
+		(void)set_op(opt, value, 1);
 		if(opt->val.set_items != items)
 		{
 			opt->handler(OP_SET, opt->val);

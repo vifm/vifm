@@ -7,6 +7,7 @@ int fastrun;
 int tabstop;
 const char *value;
 int vifminfo;
+int vifminfo_handler_calls;
 
 static const char * sort_enum[] = {
 	"ext",
@@ -71,6 +72,7 @@ static void
 vifminfo_handler(OPT_OP op, optval_t val)
 {
 	vifminfo = val.set_items;
+	vifminfo_handler_calls++;
 }
 
 static void
