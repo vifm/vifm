@@ -43,6 +43,8 @@
 
 	Added :normal command.
 
+	Added 'dotdirs' option to control displaying of "../" directory.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 

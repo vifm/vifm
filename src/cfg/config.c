@@ -143,6 +143,8 @@ init_config(void)
 	cfg.lines = -1;
 	cfg.columns = -1;
 
+	cfg.dot_dirs = DD_NONROOT_PARENT;
+
 #ifndef _WIN32
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
 #else

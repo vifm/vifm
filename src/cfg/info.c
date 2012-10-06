@@ -610,6 +610,13 @@ write_info_file(void)
 		fprintf(fp, "=[%slsview\n", lwin.ls_view ? "" : "no");
 		fprintf(fp, "=]%slsview\n", rwin.ls_view ? "" : "no");
 
+		fprintf(fp, "%s", "=dotdirs=");
+		if(cfg.dot_dirs & DD_ROOT_PARENT)
+			fprintf(fp, "%s", "rootparent,");
+		if(cfg.dot_dirs & DD_NONROOT_PARENT)
+			fprintf(fp, "%s", "nonrootparent,");
+		fprintf(fp, "\n");
+
 		fprintf(fp, "=vifminfo=options");
 		if(cfg.vifm_info & VIFMINFO_FILETYPES)
 			fprintf(fp, ",filetypes");

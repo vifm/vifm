@@ -30,6 +30,13 @@
 #define VIFM_HELP "vifm-help.txt"
 #define SCRIPTS_DIR "scripts"
 
+typedef enum
+{
+	DD_ROOT_PARENT    = 1 << 0,
+	DD_NONROOT_PARENT = 1 << 1,
+	NUM_DOT_DIRS      =      2
+}DotDirs;
+
 typedef struct
 {
 	char home_dir[PATH_MAX]; /* ends with a slash */
@@ -95,6 +102,7 @@ typedef struct
 	char *status_line;
 	int lines; /* Terminal height in lines. */
 	int columns; /* Terminal width in characters. */
+	int dot_dirs; /* Controls displaying of dot directories. */
 }config_t;
 
 extern config_t cfg;

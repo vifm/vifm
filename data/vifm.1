@@ -1,4 +1,4 @@
-.TH vifm 1 "September 29, 2012" "" "Vifm"
+.TH vifm 1 "October 6, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1826,6 +1826,15 @@ Contains a sequence of single-character flags.  Each flag enables behaviour of
 older versions of vifm.  Flags:
 s \- when included, yy and dd act on the selection, otherwise they operate on \
 current file only.
+.TP
+.BI dotdirs
+type: set
+.br
+default: nonrootparent
+.br
+Controls displaying of dot directories.  The following values are possible:
+ - rootparent    \- show "../" in root directory of file system
+ - nonrootparent \- show "../" in non-root directories of file system
 .TP
 .BI fastrun
 type: boolean
