@@ -75,6 +75,7 @@ static void autochpos_handler(OPT_OP op, optval_t val);
 static void columns_handler(OPT_OP op, optval_t val);
 static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
+static void dotdirs_handler(OPT_OP op, optval_t val);
 static void fastrun_handler(OPT_OP op, optval_t val);
 static void followlinks_handler(OPT_OP op, optval_t val);
 static void fusehome_handler(OPT_OP op, optval_t val);
@@ -137,6 +138,12 @@ static const char * sort_enum[] = {
 };
 ARRAY_GUARD(sort_enum, NUM_SORT_OPTIONS);
 
+static const char * dotdirs_vals[] = {
+	"rootparent",
+	"nonrootparent",
+};
+ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
+
 static const char * sort_types[] = {
 	"ext",   "+ext",   "-ext",
 	"name",  "+name",  "-name",
@@ -197,6 +204,8 @@ static struct
 		{ .ref.bool_val = &cfg.confirm }                                                                       },
 	{ "cpoptions",   "cpo",  OPT_STR,     0,                          NULL,            &cpoptions_handler,
 		{ .init = &init_cpoptions }                                                                            },
+	{ "dotdirs",     "",     OPT_SET,     ARRAY_LEN(dotdirs_vals),    dotdirs_vals,    &dotdirs_handler,
+		{ .ref.set_items = &cfg.dot_dirs }                                                                     },
 	{ "fastrun",     "",     OPT_BOOL,    0,                          NULL,            &fastrun_handler,
 		{ .ref.bool_val = &cfg.fast_run }                                                                      },
 	{ "followlinks", "",     OPT_BOOL,    0,                          NULL,            &followlinks_handler,
@@ -523,6 +532,13 @@ cpoptions_handler(OPT_OP op, optval_t val)
 			cfg.selection_cp = 1;
 		p++;
 	}
+}
+
+static void
+dotdirs_handler(OPT_OP op, optval_t val)
+{
+	cfg.dot_dirs = val.set_items;
+	update_screen(UT_FULL);
 }
 
 static void

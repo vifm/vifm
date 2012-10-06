@@ -2141,10 +2141,10 @@ fill_dir_list(FileView *view)
 			view->list_rows--;
 			continue;
 		}
-		/* Always include the ../ directory unless it is the root directory. */
 		if(stroscmp(d->d_name, "..") == 0)
 		{
-			if(is_root)
+			if((is_root && !(cfg.dot_dirs & DD_ROOT_PARENT)) ||
+					(!is_root && !(cfg.dot_dirs & DD_NONROOT_PARENT)))
 			{
 				view->list_rows--;
 				continue;
@@ -2267,7 +2267,10 @@ fill_dir_list(FileView *view)
 
 	if(!with_parent_dir && !is_root)
 	{
-		add_parent_dir(view);
+		if((cfg.dot_dirs & DD_NONROOT_PARENT) || view->list_rows == 0)
+		{
+			add_parent_dir(view);
+		}
 	}
 
 	return 0;
