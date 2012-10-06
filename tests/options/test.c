@@ -6,6 +6,8 @@
 int fastrun;
 int tabstop;
 const char *value;
+int vifminfo;
+int vifminfo_handler_calls;
 
 static const char * sort_enum[] = {
 	"ext",
@@ -36,13 +38,16 @@ void test_quotes(void);
 void opt_completion(void);
 void with_spaces_tests(void);
 void input_tests(void);
+void set_tests(void);
 
-void all_tests(void)
+void
+all_tests(void)
 {
 	test_quotes();
 	opt_completion();
 	with_spaces_tests();
 	input_tests();
+	set_tests();
 }
 
 static void
@@ -61,6 +66,13 @@ static void
 tabstop_handler(OPT_OP op, optval_t val)
 {
 	tabstop = val.int_val;
+}
+
+static void
+vifminfo_handler(OPT_OP op, optval_t val)
+{
+	vifminfo = val.set_items;
+	vifminfo_handler_calls++;
 }
 
 static void
@@ -88,10 +100,11 @@ setup(void)
 	add_option("tabstop", "ts", OPT_INT, 0, NULL, &tabstop_handler, val);
 	val.set_items = 0;
 	add_option("vifminfo", "", OPT_SET, ARRAY_LEN(vifminfo_set), vifminfo_set,
-			&dummy_handler, val);
+			&vifminfo_handler, val);
 }
 
-int main(int argc, char **argv)
+int
+main(int argc, char *argv[])
 {
 	suite_setup(setup);
 	suite_teardown(clear_options);
@@ -99,4 +112,5 @@ int main(int argc, char **argv)
 	return run_tests(all_tests) == 0;
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

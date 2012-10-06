@@ -20,9 +20,10 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> /* memset() */
 
 #include "../utils/str.h"
+#include "../utils/string_array.h"
 #include "completion.h"
 #include "text_buffer.h"
 
@@ -30,48 +31,58 @@
 
 #define OPTION_NAME_MAX 64
 
-/* TODO possibly add validators */
-/* TODO possibly add default handlers (just set new value) and types
- * OPT_*_PTR */
+/* TODO: possibly add validators. */
+/* TODO: possibly add default handlers (just set new value) and types
+ *       OPT_*_PTR. */
 
+/* List of operations on options of set type for the set_op(...) function. */
+typedef enum
+{
+	SO_SET, /* Set value of the option. */
+	SO_ADD, /* Add item(s) to a set. */
+	SO_REMOVE, /* Remove item(s) from a set. */
+}SetOp;
+
+/* Internal structure holding information about an option.  Options with short
+ * form of name will get two such structures, the one for the short name will
+ * have the full member set to the name member of other structure. */
 typedef struct
 {
-	char *name;
-	OPT_TYPE type;
-	optval_t val;
-	optval_t def;
-	opt_handler handler;
-	/* for OPT_ENUM and OPT_SET */
-	int val_count;
-	const char **vals;
+	char *name;          /* Name of an option. */
+	OPT_TYPE type;       /* Option type. */
+	optval_t val;        /* Current value of an option. */
+	optval_t def;        /* Default value of an option. */
+	opt_handler handler; /* A pointer to option handler. */
+	int val_count;       /* For OPT_ENUM and OPT_SET types. */
+	const char **vals;   /* For OPT_ENUM and OPT_SET types. */
 
-	const char *full;
+	const char *full;    /* Points to full name of an option. */
 }opt_t;
 
-static opt_t * add_option_inner(const char *name, OPT_TYPE type, int val_count,
-		const char **vals, opt_handler handler);
+static opt_t * add_option_inner(const char name[], OPT_TYPE type, int val_count,
+		const char *vals[], opt_handler handler);
 static void print_changed_options(void);
-static const char * extract_option(const char *cmd, char *buf, int replace);
-static int process_option(const char *cmd);
-static const char * skip_alphas(const char *cmd);
+static int process_option(const char arg[]);
 static void print_options(void);
-static opt_t * get_option(const char *option);
-static opt_t * find_option(const char *option);
+static opt_t * get_option(const char option[]);
+static opt_t * find_option(const char option[]);
 static int set_on(opt_t *opt);
 static int set_off(opt_t *opt);
 static int set_inv(opt_t *opt);
-static int set_set(opt_t *opt, const char *value);
+static int set_set(opt_t *opt, const char value[]);
 static int set_reset(opt_t *opt);
-static int set_add(opt_t *opt, const char *value);
-static int set_remove(opt_t *opt, const char *value);
-static int set_op(opt_t *opt, const char *value, int add);
-static char * str_add(char *old, const char *value);
-static char * str_remove(char *old, const char *value);
-static int find_val(const opt_t *opt, const char *value);
-static int set_print(opt_t *opt);
+static int set_add(opt_t *opt, const char value[]);
+static int set_remove(opt_t *opt, const char value[]);
+static int set_op(opt_t *opt, const char value[], SetOp op);
+static char * str_add(char old[], const char value[]);
+static void str_remove(char old[], const char value[]);
+static int find_val(const opt_t *opt, const char value[]);
+static int set_print(const opt_t *opt);
 static const char * get_value(const opt_t *opt);
-static void complete_option(const char *buf, int bool_only);
-static void complete_value(const char *buf, opt_t *opt);
+static const char * extract_option(const char args[], char buf[], int replace);
+static char * skip_alphas(const char str[]);
+static void complete_option_name(const char buf[], int bool_only);
+static void complete_option_value(const opt_t *opt, const char beginning[]);
 
 static const char ENDING_CHARS[] = "!?&";
 static const char MIDDLE_CHARS[] = "+-=:";
@@ -90,7 +101,7 @@ init_options(int *opts_changed_flag)
 }
 
 void
-reset_option_to_default(const char *name)
+reset_option_to_default(const char name[])
 {
 	opt_t *opt = find_option(name);
 	if(opt != NULL)
@@ -132,8 +143,8 @@ clear_options(void)
 }
 
 void
-add_option(const char *name, const char *abbr, OPT_TYPE type, int val_count,
-		const char **vals, opt_handler handler, optval_t def)
+add_option(const char name[], const char abbr[], OPT_TYPE type, int val_count,
+		const char *vals[], opt_handler handler, optval_t def)
 {
 	opt_t *full;
 
@@ -165,9 +176,11 @@ add_option(const char *name, const char *abbr, OPT_TYPE type, int val_count,
 	}
 }
 
+/* Adds option to internal array of option descriptors.  Returns a pointer to
+ * the descriptor or NULL on out of memory error. */
 static opt_t *
-add_option_inner(const char *name, OPT_TYPE type, int val_count,
-		const char **vals, opt_handler handler)
+add_option_inner(const char name[], OPT_TYPE type, int val_count,
+		const char *vals[], opt_handler handler)
 {
 	opt_t *p;
 
@@ -190,13 +203,13 @@ add_option_inner(const char *name, OPT_TYPE type, int val_count,
 	p->handler = handler;
 	p->val_count = val_count;
 	p->vals = vals;
-	p->val.str_val = NULL;
+	memset(&p->val, 0, sizeof(p->val));
 	p->full = NULL;
 	return p;
 }
 
 void
-set_option(const char *name, optval_t val)
+set_option(const char name[], optval_t val)
 {
 	opt_t *opt = find_option(name);
 	if(opt == NULL)
@@ -213,28 +226,29 @@ set_option(const char *name, optval_t val)
 }
 
 int
-set_options(const char *cmd)
+set_options(const char args[])
 {
 	int err = 0;
 
-	if(*cmd == '\0')
+	if(*args == '\0')
 	{
 		print_changed_options();
 		return 0;
 	}
 
-	while(*cmd != '\0')
+	while(*args != '\0')
 	{
 		char buf[1024];
 
-		cmd = extract_option(cmd, buf, 1);
-		if(cmd == NULL)
+		args = extract_option(args, buf, 1);
+		if(args == NULL)
 			return -1;
 		err += process_option(buf);
 	}
 	return err;
 }
 
+/* Prints options, which value differs from the default one. */
 static void
 print_changed_options(void)
 {
@@ -260,92 +274,18 @@ print_changed_options(void)
 	}
 }
 
-/* Extracts next option from option list. Returns NULL on error and next call
- * start position on success. */
-static const char *
-extract_option(const char *cmd, char *buf, int replace)
-{
-	int quote = 0;
-	int slash = 0;
-
-	while(*cmd != '\0')
-	{
-		if(slash == 1)
-		{
-			*buf++ = *cmd++;
-			slash = 0;
-		}
-		else if(*cmd == '\\')
-		{
-			slash = 1;
-			if(replace && (quote == 0 || quote == 2))
-				cmd++;
-			else
-				*buf++ = *cmd++;
-		}
-		else if(*cmd == ' ' && quote == 0)
-		{
-			const char *p = cmd;
-			cmd = skip_whitespace(cmd);
-			if(char_is_one_of(ENDING_CHARS, *cmd))
-			{
-				*buf++ = *cmd++;
-				if(*cmd != '\0' && !isspace(*cmd))
-				{
-					buf -= cmd - p - 1;
-					strcpy(buf, p);
-					return NULL;
-				}
-				cmd = skip_whitespace(cmd);
-			}
-			else if(char_is_one_of(MIDDLE_CHARS, *cmd))
-			{
-					while(*cmd != '\0' && !isspace(*cmd))
-						*buf++ = *cmd++;
-					*buf = '\0';
-			}
-			break;
-		}
-		else if(*cmd == '\'' && quote == 0)
-		{
-			quote = 1;
-			cmd++;
-		}
-		else if(*cmd == '\'' && quote == 1)
-		{
-			quote = 0;
-			cmd++;
-		}
-		else if(*cmd == '"' && quote == 0)
-		{
-			quote = 2;
-			cmd++;
-		}
-		else if(*cmd == '"' && quote == 2)
-		{
-			quote = 0;
-			cmd++;
-		}
-		else
-		{
-			*buf++ = *cmd++;
-		}
-	}
-	*buf = '\0';
-	return cmd;
-}
-
+/* Processes one :set statement.  Returns zero on success. */
 static int
-process_option(const char *cmd)
+process_option(const char arg[])
 {
 	char option[OPTION_NAME_MAX + 1];
 	int err;
 	const char *p;
 	opt_t *opt;
 
-	p = skip_alphas(cmd);
+	p = skip_alphas(arg);
 
-	snprintf(option, p - cmd + 1, "%s", cmd);
+	snprintf(option, p - arg + 1, "%s", arg);
 
 	if(strcmp(option, "all") == 0)
 	{
@@ -356,7 +296,7 @@ process_option(const char *cmd)
 	opt = get_option(option);
 	if(opt == NULL)
 	{
-		text_buffer_addf("%s: %s", "Unknown option", cmd);
+		text_buffer_addf("%s: %s", "Unknown option", arg);
 		return 1;
 	}
 
@@ -384,7 +324,7 @@ process_option(const char *cmd)
 	{
 		if(*(p + 1) != '\0')
 		{
-			text_buffer_addf("%s: %s", "Trailing characters", cmd);
+			text_buffer_addf("%s: %s", "Trailing characters", arg);
 			return 1;
 		}
 		if(*p == '!')
@@ -408,24 +348,17 @@ process_option(const char *cmd)
 	}
 	else
 	{
-		text_buffer_addf("%s: %s", "Trailing characters", cmd);
+		text_buffer_addf("%s: %s", "Trailing characters", arg);
 	}
 
 	if(err)
 	{
-		text_buffer_addf("%s: %s", "Invalid argument", cmd);
+		text_buffer_addf("%s: %s", "Invalid argument", arg);
 	}
 	return err;
 }
 
-static const char *
-skip_alphas(const char *cmd)
-{
-	while(isalpha(*cmd))
-		cmd++;
-	return cmd;
-}
-
+/* Prints values of all options. */
 static void
 print_options(void)
 {
@@ -438,8 +371,10 @@ print_options(void)
 	}
 }
 
+/* Finds option by its name.  Understands "no" and "inv" boolean option
+ * prefixes.  Returns NULL for unknown option names. */
 static opt_t *
-get_option(const char *option)
+get_option(const char option[])
 {
 	opt_t *opt;
 
@@ -455,8 +390,10 @@ get_option(const char *option)
 		return NULL;
 }
 
+/* Returns a pointer to a structure describing option of given name or NULL
+ * when no such option exists. */
 static opt_t *
-find_option(const char *option)
+find_option(const char option[])
 {
 	int l = 0, u = options_count - 1;
 	while(l <= u)
@@ -482,6 +419,7 @@ find_option(const char *option)
 	return NULL;
 }
 
+/* Turns boolean option on.  Returns non-zero in case of error. */
 static int
 set_on(opt_t *opt)
 {
@@ -498,6 +436,7 @@ set_on(opt_t *opt)
 	return 0;
 }
 
+/* Turns boolean option off.  Returns non-zero in case of error. */
 static int
 set_off(opt_t *opt)
 {
@@ -514,6 +453,7 @@ set_off(opt_t *opt)
 	return 0;
 }
 
+/* Inverts value of boolean option.  Returns non-zero in case of error. */
 static int
 set_inv(opt_t *opt)
 {
@@ -527,27 +467,19 @@ set_inv(opt_t *opt)
 	return 0;
 }
 
+/* Assigns value to an option of all kinds except boolean.  Returns non-zero in
+ * case of error. */
 static int
-set_set(opt_t *opt, const char *value)
+set_set(opt_t *opt, const char value[])
 {
 	if(opt->type == OPT_BOOL)
 		return -1;
 
 	if(opt->type == OPT_SET)
 	{
-		opt->val.set_items = 0;
-		while(*value != '\0')
+		if(set_op(opt, value, SO_SET))
 		{
-			const char *p;
-			char buf[64];
-
-			if((p = strchr(value, ',')) == 0)
-				p = value + strlen(value);
-
-			snprintf(buf, p - value + 1, "%s", value);
-			set_add(opt, buf);
-
-			value = (*p == '\0') ? p : p + 1;
+			opt->handler(OP_SET, opt->val);
 		}
 	}
 	else if(opt->type == OPT_ENUM)
@@ -587,6 +519,7 @@ set_set(opt_t *opt, const char *value)
 	return 0;
 }
 
+/* Resets an option to its default value (opt&). */
 static int
 set_reset(opt_t *opt)
 {
@@ -613,8 +546,9 @@ set_reset(opt_t *opt)
 	return 0;
 }
 
+/* Adds value(s) to the option (+= operator).  Returns zero on success. */
 static int
-set_add(opt_t *opt, const char *value)
+set_add(opt_t *opt, const char value[])
 {
 	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST)
 		return -1;
@@ -636,7 +570,7 @@ set_add(opt_t *opt, const char *value)
 	}
 	else if(opt->type == OPT_SET)
 	{
-		if(set_op(opt, value, 1))
+		if(set_op(opt, value, SO_ADD))
 		{
 			*opts_changed = 1;
 			opt->handler(OP_MODIFIED, opt->val);
@@ -652,8 +586,10 @@ set_add(opt_t *opt, const char *value)
 	return 0;
 }
 
+/* Removes value(s) from the option (-= operator).  Returns non-zero on
+ * success. */
 static int
-set_remove(opt_t *opt, const char *value)
+set_remove(opt_t *opt, const char value[])
 {
 	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST)
 		return -1;
@@ -675,7 +611,7 @@ set_remove(opt_t *opt, const char *value)
 	}
 	else if(opt->type == OPT_SET)
 	{
-		if(set_op(opt, value, 0))
+		if(set_op(opt, value, SO_REMOVE))
 		{
 			*opts_changed = 1;
 			opt->handler(OP_MODIFIED, opt->val);
@@ -687,7 +623,7 @@ set_remove(opt_t *opt, const char *value)
 		if(opt->val.str_val != NULL)
 			len = strlen(opt->val.str_val);
 
-		opt->val.str_val = str_remove(opt->val.str_val, value);
+		str_remove(opt->val.str_val, value);
 
 		if(opt->val.str_val != NULL && len != strlen(opt->val.str_val))
 		{
@@ -699,13 +635,15 @@ set_remove(opt_t *opt, const char *value)
 	return 0;
 }
 
-/* returns not zero if set was modified */
+/* Performs set/add/remove operations on options of set kind.  Returns not zero
+ * if set was modified. */
 static int
-set_op(opt_t *opt, const char *value, int add)
+set_op(opt_t *opt, const char value[], SetOp op)
 {
 	char val[1024];
 	const char *p;
-	int saved_val = opt->val.set_items;
+	const int old_val = opt->val.set_items;
+	int new_val = (op == SO_SET) ? 0 : old_val;
 
 	while(*value != '\0')
 	{
@@ -719,10 +657,10 @@ set_op(opt_t *opt, const char *value, int add)
 		i = find_val(opt, val);
 		if(i != -1)
 		{
-			if(add)
-				opt->val.set_items |= 1 << i;
+			if(op == SO_SET || op == SO_ADD)
+				new_val |= 1 << i;
 			else
-				opt->val.set_items &= ~(1 << i);
+				new_val &= ~(1 << i);
 		}
 
 		if(*p == '\0')
@@ -733,9 +671,12 @@ set_op(opt_t *opt, const char *value, int add)
 			++value;
 	}
 
-	return opt->val.set_items != saved_val;
+	opt->val.set_items = new_val;
+	return new_val != old_val;
 }
 
+/* And an element to string list.  Reallocates the memory of old and returns
+ * its new address or NULL if there isn't enough memory. */
 static char *
 str_add(char *old, const char *value)
 {
@@ -757,10 +698,11 @@ str_add(char *old, const char *value)
 	return new;
 }
 
-static char *
-str_remove(char *old, const char *value)
+/* Removes an element from string list or does nothing if there is no such
+ * element. */
+static void
+str_remove(char old[], const char value[])
 {
-	char *s = old;
 	while(*old != '\0')
 	{
 		char *p;
@@ -783,23 +725,19 @@ str_remove(char *old, const char *value)
 
 		old = p + 1;
 	}
-	return s;
 }
 
+/* Returns index of the value in the list of options value, or -1 if value name
+ * is wrong. */
 static int
-find_val(const opt_t *opt, const char *value)
+find_val(const opt_t *opt, const char value[])
 {
-	int i;
-	for(i = 0; i < opt->val_count; i++)
-		if(strcmp(opt->vals[i], value) == 0)
-			break;
-	if(i == opt->val_count)
-		return -1;
-	return i;
+	return string_array_pos((char **)opt->vals, opt->val_count, value);
 }
 
+/* Prints value of the given option to text buffer. */
 static int
-set_print(opt_t *opt)
+set_print(const opt_t *opt)
 {
 	char buf[1024];
 	if(opt->type == OPT_BOOL)
@@ -815,7 +753,7 @@ set_print(opt_t *opt)
 	return 0;
 }
 
-/* Converts option value to string representation. Returns pointer to a
+/* Converts option value to string representation.  Returns pointer to a
  * statically allocated buffer. */
 static const char *
 get_value(const opt_t *opt)
@@ -858,38 +796,38 @@ get_value(const opt_t *opt)
 }
 
 void
-complete_options(const char *cmd, const char **start)
+complete_options(const char args[], const char **start)
 {
 	char buf[1024];
 	int bool_only;
-	int value;
+	int is_value_completion;
 	opt_t *opt = NULL;
 	char * p;
 
 	/* Skip all options except the last one. */
-	*start = cmd;
+	*start = args;
 	buf[0] = '\0';
-	while(*cmd != '\0')
+	while(*args != '\0')
 	{
-		*start = cmd;
-		cmd = extract_option(cmd, buf, 0);
-		if(cmd == NULL)
+		*start = args;
+		args = extract_option(args, buf, 0);
+		if(args == NULL)
 		{
 			add_completion(buf);
 			return;
 		}
 	}
-	if(strlen(buf) != cmd - *start)
+	if(strlen(buf) != args - *start)
 	{
-		*start = cmd;
+		*start = args;
 		buf[0] = '\0';
 	}
 
-	p = (char *)skip_alphas(buf);
-	value = (p[0] == '=' || p[0] == ':');
-	value = value || (p[0] == '-' && p[1] == '=');
-	value = value || (p[0] == '+' && p[1] == '=');
-	if(value)
+	p = skip_alphas(buf);
+	is_value_completion = (p[0] == '=' || p[0] == ':');
+	is_value_completion = is_value_completion || (p[0] == '-' && p[1] == '=');
+	is_value_completion = is_value_completion || (p[0] == '+' && p[1] == '=');
+	if(is_value_completion)
 	{
 		char t = *p;
 		*p = '\0';
@@ -922,13 +860,13 @@ complete_options(const char *cmd, const char **start)
 		bool_only = 0;
 	}
 
-	if(!value)
-		complete_option(buf, bool_only);
+	if(!is_value_completion)
+		complete_option_name(buf, bool_only);
 	else if(opt != NULL)
 	{
 		if(opt->val_count > 0)
 		{
-			complete_value(p, opt);
+			complete_option_value(opt, p);
 		}
 		else if(*p == '\0' && opt->type != OPT_BOOL)
 		{
@@ -939,14 +877,99 @@ complete_options(const char *cmd, const char **start)
 	}
 
 	completion_group_end();
-	if(!value)
+	if(!is_value_completion)
 		add_completion(buf);
 	else
 		add_completion(p);
 }
 
+/* Extracts next option from option list.  Returns NULL on error and next call
+ * start position on success. */
+static const char *
+extract_option(const char args[], char buf[], int replace)
+{
+	int quote = 0;
+	int slash = 0;
+
+	while(*args != '\0')
+	{
+		if(slash == 1)
+		{
+			*buf++ = *args++;
+			slash = 0;
+		}
+		else if(*args == '\\')
+		{
+			slash = 1;
+			if(replace && (quote == 0 || quote == 2))
+				args++;
+			else
+				*buf++ = *args++;
+		}
+		else if(*args == ' ' && quote == 0)
+		{
+			const char *p = args;
+			args = skip_whitespace(args);
+			if(char_is_one_of(ENDING_CHARS, *args))
+			{
+				*buf++ = *args++;
+				if(*args != '\0' && !isspace(*args))
+				{
+					buf -= args - p - 1;
+					strcpy(buf, p);
+					return NULL;
+				}
+				args = skip_whitespace(args);
+			}
+			else if(char_is_one_of(MIDDLE_CHARS, *args))
+			{
+					while(*args != '\0' && !isspace(*args))
+						*buf++ = *args++;
+					*buf = '\0';
+			}
+			break;
+		}
+		else if(*args == '\'' && quote == 0)
+		{
+			quote = 1;
+			args++;
+		}
+		else if(*args == '\'' && quote == 1)
+		{
+			quote = 0;
+			args++;
+		}
+		else if(*args == '"' && quote == 0)
+		{
+			quote = 2;
+			args++;
+		}
+		else if(*args == '"' && quote == 2)
+		{
+			quote = 0;
+			args++;
+		}
+		else
+		{
+			*buf++ = *args++;
+		}
+	}
+	*buf = '\0';
+	return args;
+}
+
+/* Returns pointer to the first non-alpha character in the string. */
+static char *
+skip_alphas(const char str[])
+{
+	while(isalpha(*str))
+		str++;
+	return (char *)str;
+}
+
+/* Completes name of an option. */
 static void
-complete_option(const char *buf, int bool_only)
+complete_option_name(const char buf[], int bool_only)
 {
 	size_t len;
 	int i;
@@ -972,17 +995,18 @@ complete_option(const char *buf, int bool_only)
 	}
 }
 
+/* Completes value of the given option. */
 static void
-complete_value(const char *buf, opt_t *opt)
+complete_option_value(const opt_t *opt, const char beginning[])
 {
 	size_t len;
 	int i;
 
-	len = strlen(buf);
+	len = strlen(beginning);
 
 	for(i = 0; i < opt->val_count; i++)
 	{
-		if(strncmp(buf, opt->vals[i], len) == 0)
+		if(strncmp(beginning, opt->vals[i], len) == 0)
 			add_completion(opt->vals[i]);
 	}
 }

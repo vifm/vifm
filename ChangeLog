@@ -171,6 +171,8 @@
 
 	Fixed description of installation to $HOME in the INSTALL file.
 
+	Fixed assignment of empty value to a option of set type.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.
