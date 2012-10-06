@@ -23,6 +23,7 @@ Basic things that need to be done.
         only, and maybe update size of all parent cached directories. And maybe
         show somehow in the TUI calculation process.
     Make ga and gA work in visual mode.
+    Remove compile-time compatibility mode and add new char to 'cpoptions'.
 
 Documentation.
     Better documentation.
