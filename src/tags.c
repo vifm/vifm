@@ -13,6 +13,7 @@ const char *tags[] = {
 	"vifm-'confirm'",
 	"vifm-'cpo'",
 	"vifm-'cpoptions'",
+	"vifm-'dotdirs'",
 	"vifm-'fastrun'",
 	"vifm-'followlinks'",
 	"vifm-'fusehome'",

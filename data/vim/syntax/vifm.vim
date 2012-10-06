@@ -1,6 +1,6 @@
 " vifm syntax file
 " Maintainer:  xaizek <xaizek@lavabit.com>
-" Last Change: September 27, 2012
+" Last Change: October 6, 2012
 " Based On:    Vim syntax file by Dr. Charles E. Campbell, Jr.
 
 if exists('b:current_syntax')
@@ -58,8 +58,8 @@ syntax case match
 
 " Options
 syntax keyword vifmOption contained autochpos columns co confirm cf cpoptions
-		\ cpo fastrun followlinks fusehome gdefault history hi hlsearch hls iec
-		\ ignorecase ic incsearch is laststatus lines ls lsview rulerformat ruf
+		\ cpo dotdirs fastrun followlinks fusehome gdefault history hi hlsearch hls
+		\ iec ignorecase ic incsearch is laststatus lines ls lsview rulerformat ruf
 		\ runexec scrollbind scb scrolloff so sort sortorder shell sh slowfs
 		\ smartcase scs sortnumbers statusline stl tabstop timefmt timeoutlen trash
 		\ trashdir ts undolevels ul vicmd viewcolumns vifminfo vimhelp vixcmd
