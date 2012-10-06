@@ -450,7 +450,8 @@ process_set_args(const char *args)
 	if(error)
 	{
 		text_buffer_add("Invalid argument for :set command");
-		status_bar_error(text_buffer);
+		/* We just modified text buffer and can't use text_buffer variable. */
+		status_bar_error(text_buffer_get());
 	}
 	else if(text_buffer[0] != '\0')
 	{
