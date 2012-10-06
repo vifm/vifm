@@ -759,7 +759,6 @@ with_gtk
 with_libmagic
 with_X11
 enable_extended_keys
-enable_compatibility_mode
 enable_desktop_files
 '
       ac_precious_vars='build_alias
@@ -1398,9 +1397,6 @@ Optional Features:
   --disable-extended-keys disable extended keys (like arrows, home etc.).
                           Without it will be no delay after pressing escape
                           [default=enabled]
-  --disable-compatibility-mode
-                          disable compatibility with previous versions of vifm
-                          (behaviour of dd and <tab>) [default=enabled]
   --disable-desktop-files disable parsing of *.desktop files found on your
                           system to get a list of programs associated with
                           filetypes [default=enabled]
@@ -15435,14 +15431,6 @@ else
 fi
 
 
-# Check whether --enable-compatibility_mode was given.
-if test "${enable_compatibility_mode+set}" = set; then :
-  enableval=$enable_compatibility_mode; compatibility_mode=$enableval
-else
-  compatibility_mode=yes
-fi
-
-
 # Check whether --enable-desktop_files was given.
 if test "${enable_desktop_files+set}" = set; then :
   enableval=$enable_desktop_files; desktop_files=$enableval
@@ -15454,12 +15442,6 @@ fi
 if test "$extended_keys" = "yes"; then
 
 $as_echo "#define ENABLE_EXTENDED_KEYS 1" >>confdefs.h
-
-fi
-
-if test "$compatibility_mode" = "yes"; then
-
-$as_echo "#define ENABLE_COMPATIBILITY_MODE 1" >>confdefs.h
 
 fi
 
