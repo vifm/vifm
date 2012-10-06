@@ -572,7 +572,8 @@ write_info_file(void)
 		fprintf(fp, "=%sautochpos\n", cfg.auto_ch_pos ? "" : "no");
 		fprintf(fp, "=columns=%d\n", cfg.columns);
 		fprintf(fp, "=%sconfirm\n", cfg.confirm ? "" : "no");
-		fprintf(fp, "=cpoptions=%s\n", cfg.selection_cp ? "s" : "");
+		fprintf(fp, "=cpoptions=%s%s\n", cfg.selection_cp ? "s" : "",
+				cfg.tab_switches_pane ? "t" : "");
 		fprintf(fp, "=%sfastrun\n", cfg.fast_run ? "" : "no");
 		fprintf(fp, "=%sfollowlinks\n", cfg.follow_links ? "" : "no");
 		fprintf(fp, "=fusehome=%s\n", escape_spaces(cfg.fuse_home));

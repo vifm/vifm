@@ -135,6 +135,7 @@ init_config(void)
 	cfg.wrap_scan = 1;
 	cfg.inc_search = 0;
 	cfg.selection_cp = 1;
+	cfg.tab_switches_pane = 1;
 	cfg.last_status = 1;
 	cfg.tab_stop = 8;
 	cfg.ruler_format = strdup("%=%l/%S ");

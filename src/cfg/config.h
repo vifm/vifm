@@ -96,6 +96,7 @@ typedef struct
 	int wrap_scan;
 	int inc_search;
 	int selection_cp;
+	int tab_switches_pane; /* Whether <tab> is switch pane or history forward. */
 	int last_status;
 	int tab_stop;
 	char *ruler_format;
