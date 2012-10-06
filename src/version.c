@@ -40,12 +40,6 @@ fill_version_info(char **list)
 	list[x++] = strdup("Compiled at: " __DATE__ " " __TIME__);
 	list[x++] = strdup("");
 
-#ifdef ENABLE_COMPATIBILITY_MODE
-	list[x++] = strdup("Compatibility mode is on");
-#else
-	list[x++] = strdup("Compatibility mode is off");
-#endif
-
 #ifdef ENABLE_EXTENDED_KEYS
 	list[x++] = strdup("Support of extended keys is on");
 #else

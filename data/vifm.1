@@ -133,7 +133,7 @@ move cursor to the first column.  See 'lsview' option description.
 .BI $
 move cursor to the last column.  See 'lsview' option description.
 .TP
-.BI "Space Bar or Tab Key"
+.BI "Space Bar"
 toggles between the two file lists.
 .\" ---------------------------------------------------------------------------
 .SH Movement with Count
@@ -333,7 +333,9 @@ enter command line mode with entered ! command.  Count will modify range.
 go backward through history.
 .TP
 .BI Ctrl-I
-go forward through history.
+if 'cpoptions' contains "f" flag, <tab> and <c-i> switch active pane just like
+<space> does, otherwise it goes forward through directory history of the current
+view.
 .TP
 .BI Ctrl-G
 creates a window showing detailed information about the current file.
@@ -1820,12 +1822,16 @@ operation).
 .BI "cpoptions cpo"
 type: string
 .br
-default: "s"
+default: "st"
 .br
 Contains a sequence of single-character flags.  Each flag enables behaviour of
 older versions of vifm.  Flags:
-s \- when included, yy and dd act on the selection, otherwise they operate on \
-current file only.
+.br
+s \- when included, yy, dd and DD normal mode commands act on selection, \
+otherwise they operate on current file only;
+.br
+t \- when included, <tab> (thus <c-i>) behave as <space> and switch active \
+pane, otherwise <tab> and <c-i> go forward in the view history.
 .TP
 .BI dotdirs
 type: set
@@ -2454,14 +2460,6 @@ The result is a string, which represents file type and is one of the list:
 .br
 Parameter {fnum} can have following values:
     \- '.' to get type of file under the cursor in the active pane
-.\" ---------------------------------------------------------------------------
-.SH Compatibility mode
-.\" ---------------------------------------------------------------------------
-Compatibility mode:
-    \- <tab> to switch between panes.
-
-Vim like mode:
-    \- <c-i> (<tab>) to go forward on history.
 .\" ---------------------------------------------------------------------------
 .SH Menus and dialogs
 .\" ---------------------------------------------------------------------------

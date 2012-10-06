@@ -536,14 +536,17 @@ cmd_emark_selector(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_i(key_info_t key_info, keys_info_t *keys_info)
 {
-#ifdef ENABLE_COMPATIBILITY_MODE
-	go_to_other_window();
-#else /* ENABLE_COMPATIBILITY_MODE */
-	if(curr_view->history_pos < curr_view->history_num - 1)
+	if(cfg.tab_switches_pane)
 	{
-		goto_history_pos(curr_view, curr_view->history_pos + 1);
+		go_to_other_window();
 	}
-#endif /* ENABLE_COMPATIBILITY_MODE */
+	else
+	{
+		if(curr_view->history_pos < curr_view->history_num - 1)
+		{
+			goto_history_pos(curr_view, curr_view->history_pos + 1);
+		}
+	}
 }
 
 /* Clear screen and redraw. */
@@ -1464,7 +1467,7 @@ delete(key_info_t key_info, int use_trash)
 		curr_stats.confirmed = 1;
 	}
 
-	if(cfg.selection_cp)
+	if(cfg.selection_is_primary)
 	{
 		if(key_info.reg == NO_REG_GIVEN)
 			key_info.reg = DEFAULT_REG_NAME;
@@ -1817,7 +1820,7 @@ cmd_yy(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 
-	if(cfg.selection_cp)
+	if(cfg.selection_is_primary)
 	{
 		curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
 				keys_info->indexes);

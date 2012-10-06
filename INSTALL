@@ -21,10 +21,6 @@ On *nix you need:
           If it's disabled, there absence of a delay after pressing escape is
           guaranteed for all curses implementations.
 
-      --disable/[enable]-compatibility-mode - controls compatibility with
-          previous versions of vifm (prior to 0.6). In particular the
-          behaviour of dd and <tab> keys.
-
       --disable/[enable]-desktop-files - controls whether vifm will parse
           *.desktop files found on your system to get a list of programs
           associated with mimetype of a file.

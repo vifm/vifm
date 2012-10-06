@@ -16,7 +16,6 @@
 |vifm-functions|          List of builtin functions with description.
 |vifm-startup|            Determining of environment variables on startup.
 |vifm-configure|          Configuration of vifm.
-|vifm-compatibility-mode| Its description.
 |vifm-menus-and-dialogs|  Keys for menus and dialogs.
 |vifm-view-look|          Gives general overview of view displaying variants.
 |vifm-ls-view|            ls-like view details.
@@ -142,8 +141,8 @@ move cursor to the first column.  See |vifm-'lsview'| option description.
                                                *vifm-$*
 move cursor to the last column.  See |vifm-'lsview'| option description.
 
-                                               *vifm-Space* *vifm-Tab*
-Space or Tab to switch file lists.
+                                               *vifm-Space*
+switch file lists.
 
 Movement with Count~
 
@@ -287,8 +286,13 @@ Other Normal Mode Keys~
 [count]!! and [count]!<selector> - enter command line mode with entered !
     command.  Count will modify range.
 
-Ctrl-O - go backward through history.          *vifm-CTRL-O*
-Ctrl-I - go forward through history.           *vifm-CTRL-I*
+                                               *vifm-CTRL-O*
+Ctrl-O - go backward through history.
+
+                                               *vifm-CTRL-I* *vifm-Tab*
+Ctrl-I - if |vifm-'cpoptions'| contains "f" flag, <tab> and <c-i> switch
+    active pane just like |vifm-Space| does, otherwise it goes forward
+    through directory history of the current view.
 
                                                *vifm-CTRL-G*
 Ctrl-G - creates a window showing detailed information about the current
@@ -1552,11 +1556,13 @@ undo/redo operation).
                                                *vifm-'cpoptions'* *vifm-'cpo'*
 cpoptions cpo
 type: string
-default: "s"
+default: "st"
 Contains a sequence of single-character flags.  Each flag enables behaviour of
 older versions of vifm.  Flags:
-s - when included, yy and dd act on the selection, otherwise they operate on
-    current file only.
+s - when included, |vifm-yy|, |vifm-dd| and |vifm-DD| normal mode commands act on
+    selection, otherwise they operate on current file only;
+t - when included, <tab> (thus <c-i>) behave as <space> and switch active
+    pane, otherwise <c-i> goes forward in the view history.
 
                                                *vifm-'dotdirs'*
 dotdirs
@@ -2052,15 +2058,6 @@ The result is a string, which represents file type and is one of the list:
     ?      unknown file type (should never appear)
 Parameter {fnum} can have following values:
     - '.' to get type of file under the cursor in the active pane
-
---------------------------------------------------------------------------------
-*vifm-compatibility-mode*
-
-Compatibility mode:
-    - <tab> to switch between panes.
-
-Vim like mode:
-    - <c-i> (<tab>) to go forward on history.
 
 --------------------------------------------------------------------------------
 *vifm-menus-and-dialogs*

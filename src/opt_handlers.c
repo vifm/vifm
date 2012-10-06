@@ -306,7 +306,8 @@ static void
 init_cpoptions(optval_t *val)
 {
 	static char buf[32];
-	snprintf(buf, sizeof(buf), "%s", cfg.selection_cp ? "s" : "");
+	snprintf(buf, sizeof(buf), "%s%s", cfg.selection_is_primary ? "s" : "",
+			cfg.tab_switches_pane ? "t" : "");
 	val->str_val = buf;
 }
 
@@ -500,7 +501,7 @@ confirm_handler(OPT_OP op, optval_t val)
 static void
 cpoptions_handler(OPT_OP op, optval_t val)
 {
-	const char VALID[] = "s";
+	const char VALID[] = "st";
 	char buf[ARRAY_LEN(VALID)];
 	char *p;
 
@@ -523,13 +524,20 @@ cpoptions_handler(OPT_OP op, optval_t val)
 		return;
 	}
 
-	cfg.selection_cp = 0;
+	cfg.selection_is_primary = 0;
+	cfg.tab_switches_pane = 0;
 
 	p = buf;
 	while(*p != '\0')
 	{
 		if(*p == 's')
-			cfg.selection_cp = 1;
+		{
+			cfg.selection_is_primary = 1;
+		}
+		else if(*p == 't')
+		{
+			cfg.tab_switches_pane = 1;
+		}
 		p++;
 	}
 }
