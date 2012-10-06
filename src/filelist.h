@@ -28,7 +28,8 @@ enum
 {
 	LINK,
 	DIRECTORY,
-	DEVICE,
+	CHARACTER_DEVICE,
+	BLOCK_DEVICE,
 #ifndef _WIN32
 	SOCKET,
 #endif

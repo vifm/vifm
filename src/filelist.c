@@ -442,7 +442,8 @@ get_line_color(FileView* view, int pos)
 		case SOCKET:
 			return SOCKET_COLOR;
 #endif
-		case DEVICE:
+		case CHARACTER_DEVICE:
+		case BLOCK_DEVICE:
 			return DEVICE_COLOR;
 		case EXECUTABLE:
 			return EXECUTABLE_COLOR;
@@ -1976,9 +1977,10 @@ type_from_dir_entry(const struct dirent *d)
 {
 	switch(d->d_type)
 	{
-		case DT_BLK:
 		case DT_CHR:
-			return DEVICE;
+			return CHARACTER_DEVICE;
+		case DT_BLK:
+			return BLOCK_DEVICE;
 		case DT_DIR:
 			return DIRECTORY;
 		case DT_LNK:
@@ -2244,8 +2246,10 @@ fill_dir_list(FileView *view)
 					name_len++;
 					break;
 				case S_IFCHR:
+					dir_entry->type = CHARACTER_DEVICE;
+					break;
 				case S_IFBLK:
-					dir_entry->type = DEVICE;
+					dir_entry->type = BLOCK_DEVICE;
 					break;
 				case S_IFSOCK:
 					dir_entry->type = SOCKET;

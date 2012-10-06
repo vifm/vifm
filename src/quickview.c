@@ -81,8 +81,11 @@ quick_view_file(FileView *view)
 
 	switch(view->dir_entry[view->list_pos].type)
 	{
-		case DEVICE:
-			mvwaddstr(other_view->win, ++x, y, "File is a Device");
+		case CHARACTER_DEVICE:
+			mvwaddstr(other_view->win, ++x, y, "File is a Character Device");
+			break;
+		case BLOCK_DEVICE:
+			mvwaddstr(other_view->win, ++x, y, "File is a Block Device");
 			break;
 #ifndef _WIN32
 		case SOCKET:
