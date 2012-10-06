@@ -1467,7 +1467,7 @@ delete(key_info_t key_info, int use_trash)
 		curr_stats.confirmed = 1;
 	}
 
-	if(cfg.selection_cp)
+	if(cfg.selection_is_primary)
 	{
 		if(key_info.reg == NO_REG_GIVEN)
 			key_info.reg = DEFAULT_REG_NAME;
@@ -1820,7 +1820,7 @@ cmd_yy(key_info_t key_info, keys_info_t *keys_info)
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 
-	if(cfg.selection_cp)
+	if(cfg.selection_is_primary)
 	{
 		curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
 				keys_info->indexes);

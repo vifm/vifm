@@ -306,7 +306,7 @@ static void
 init_cpoptions(optval_t *val)
 {
 	static char buf[32];
-	snprintf(buf, sizeof(buf), "%s%s", cfg.selection_cp ? "s" : "",
+	snprintf(buf, sizeof(buf), "%s%s", cfg.selection_is_primary ? "s" : "",
 			cfg.tab_switches_pane ? "t" : "");
 	val->str_val = buf;
 }
@@ -524,7 +524,7 @@ cpoptions_handler(OPT_OP op, optval_t val)
 		return;
 	}
 
-	cfg.selection_cp = 0;
+	cfg.selection_is_primary = 0;
 	cfg.tab_switches_pane = 0;
 
 	p = buf;
@@ -532,7 +532,7 @@ cpoptions_handler(OPT_OP op, optval_t val)
 	{
 		if(*p == 's')
 		{
-			cfg.selection_cp = 1;
+			cfg.selection_is_primary = 1;
 		}
 		else if(*p == 't')
 		{

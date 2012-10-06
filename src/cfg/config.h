@@ -95,7 +95,7 @@ typedef struct
 	int scroll_bind;
 	int wrap_scan;
 	int inc_search;
-	int selection_cp;
+	int selection_is_primary; /* For yy, dd and DD: act on selection not file. */
 	int tab_switches_pane; /* Whether <tab> is switch pane or history forward. */
 	int last_status;
 	int tab_stop;
