@@ -15,6 +15,9 @@ man_MANS = ../data/vifm.1 \
 					 ../data/vifm-pause.1 \
 					 ../data/vifmrc-converter.1
 
+MOSTLYCLEANFILES = compile_info.c \
+									 ../data/vifm-help.txt
+
 vifm_SOURCES = \
 	\
 	cfg/config.c cfg/config.h \
@@ -157,9 +160,5 @@ tags.c: ../data/vim/doc/vifm.txt
 			} \
 		' > $@; \
 	fi
-
-clean: clean-am
-	-$(RM) ../data/vifm-help.txt
-	-$(RM) compile_info.c
 
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :

@@ -293,6 +293,9 @@ man_MANS = ../data/vifm.1 \
 					 ../data/vifm-pause.1 \
 					 ../data/vifmrc-converter.1
 
+MOSTLYCLEANFILES = compile_info.c \
+									 ../data/vifm-help.txt
+
 vifm_SOURCES = \
 	\
 	cfg/config.c cfg/config.h \
@@ -1021,6 +1024,7 @@ install-strip:
 	    "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'" install; \
 	fi
 mostlyclean-generic:
+	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
 
@@ -1043,6 +1047,8 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+clean: clean-am
+
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
@@ -1171,10 +1177,6 @@ tags.c: ../data/vim/doc/vifm.txt
 			} \
 		' > $@; \
 	fi
-
-clean: clean-am
-	-$(RM) ../data/vifm-help.txt
-	-$(RM) compile_info.c
 
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :
 
