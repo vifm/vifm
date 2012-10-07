@@ -45,6 +45,7 @@
 #include "color_scheme.h"
 #include "column_view.h"
 #include "status.h"
+#include "types.h"
 
 #define MIN_TERM_HEIGHT 10
 #define MIN_TERM_WIDTH 30
@@ -92,7 +93,7 @@ typedef struct
 	time_t atime;
 	time_t ctime;
 	char date[16];
-	char type;
+	FileType type;
 	int selected;
 	int search_match;
 	int list_num; /* to be used by sorting comparer to perform stable sort */

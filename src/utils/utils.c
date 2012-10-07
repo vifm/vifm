@@ -403,36 +403,6 @@ enclose_in_dquotes(const char *str)
 }
 
 const char *
-get_mode_str(mode_t mode)
-{
-	if(S_ISREG(mode))
-	{
-#ifndef _WIN32
-		if((S_IXUSR & mode) || (S_IXGRP & mode) || (S_IXOTH & mode))
-			return "exe";
-		else
-#endif
-			return "reg";
-	}
-	else if(S_ISLNK(mode))
-		return "link";
-	else if(S_ISDIR(mode))
-		return "dir";
-	else if(S_ISCHR(mode))
-		return "char";
-	else if(S_ISBLK(mode))
-		return "block";
-	else if(S_ISFIFO(mode))
-		return "fifo";
-#ifndef _WIN32
-	else if(S_ISSOCK(mode))
-		return "sock";
-#endif
-	else
-		return "?";
-}
-
-const char *
 make_name_unique(const char *filename)
 {
 	static char unique[PATH_MAX];
@@ -560,7 +530,7 @@ get_gid(const char *group, gid_t *gid)
 int
 S_ISEXE(mode_t mode)
 {
-	return ((S_IXUSR & mode) || (S_IXGRP & mode) || (S_IXOTH & mode));
+	return ((S_IXUSR | S_IXGRP | S_IXOTH) & mode);
 }
 
 #else

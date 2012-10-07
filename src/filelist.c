@@ -42,9 +42,10 @@
 #endif
 
 #include <errno.h>
+#include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* malloc() */
-#include <string.h> /* strcat() */
+#include <string.h> /* strcat() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -75,6 +76,7 @@
 #include "sort.h"
 #include "status.h"
 #include "term_title.h"
+#include "types.h"
 #include "ui.h"
 
 /* Packet set of parameters to pass as user data for processing columns. */
@@ -108,6 +110,8 @@ static void consider_scroll_bind(FileView *view);
 static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
 static int calculate_top_position(FileView *view, int top);
+static size_t calculate_print_width(const FileView *view, int i,
+		size_t max_width);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 size_t calculate_columns_count(FileView *view);
 static size_t calculate_column_width(FileView *view);
@@ -115,6 +119,7 @@ static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
 static int consider_scroll_offset(FileView *view);
 static void free_saved_selection(FileView *view);
+static size_t get_filetype_decoration_width(FileType type);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
 static int file_can_be_displayed(const char *directory, const char *filename);
@@ -218,7 +223,22 @@ format_name(int id, const void *data, size_t buf_len, char *buf)
 	const column_data_t *cdt = data;
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[cdt->line];
-	snprintf(buf, buf_len + 1, "%s", entry->name);
+	const char prefix[2] = { cfg.decorations[entry->type][DECORATION_PREFIX] };
+	const char suffix[2] = { cfg.decorations[entry->type][DECORATION_SUFFIX] };
+	size_t name_len = 1;
+
+	/* FIXME: remove this hack for directories. */
+	if(entry->type == DIRECTORY)
+	{
+		name_len = strlen(entry->name);
+		entry->name[name_len - 1] = '\0';
+	}
+	snprintf(buf, buf_len + 1, "%s%s%s", prefix, entry->name, suffix);
+	/* FIXME: remove this hack for directories. */
+	if(entry->type == DIRECTORY)
+	{
+		entry->name[name_len - 1] = '/';
+	}
 }
 
 /* File size format callback for column_view unit. */
@@ -442,7 +462,8 @@ get_line_color(FileView* view, int pos)
 		case SOCKET:
 			return SOCKET_COLOR;
 #endif
-		case DEVICE:
+		case CHARACTER_DEVICE:
+		case BLOCK_DEVICE:
 			return DEVICE_COLOR;
 		case EXECUTABLE:
 			return EXECUTABLE_COLOR;
@@ -1014,11 +1035,7 @@ erase_current_line_bar(FileView *view)
 	}
 
 	calculate_table_conf(view, &col_count, &col_width);
-	print_width = col_width;
-	if(view->ls_view)
-	{
-		print_width = MIN(col_width - 1, strlen(view->dir_entry[old_pos].name));
-	}
+	print_width = calculate_print_width(view, old_pos, col_width);
 
 	cdt.current_line = old_cursor/col_count;
 	cdt.column_offset = (old_cursor%col_count)*col_width;
@@ -1135,12 +1152,7 @@ move_to_list_pos(FileView *view, int pos)
 		draw_dir_list(view);
 
 	calculate_table_conf(view, &col_count, &col_width);
-	print_width = col_width;
-	if(view->ls_view)
-	{
-		print_width = MIN(col_width - 1,
-				strlen(view->dir_entry[view->list_pos].name));
-	}
+	print_width = calculate_print_width(view, view->list_pos, col_width);
 
 	cdt.line = pos;
 	cdt.current_line = view->curr_line/col_count;
@@ -1155,6 +1167,28 @@ move_to_list_pos(FileView *view, int pos)
 
 	if(curr_stats.view)
 		quick_view_file(view);
+}
+
+/* Calculates width of the column using entry and maximum width. */
+static size_t
+calculate_print_width(const FileView *view, int i, size_t max_width)
+{
+	if(view->ls_view)
+	{
+		const dir_entry_t *old_entry = &view->dir_entry[i];
+		size_t old_name_width = strlen(old_entry->name);
+		old_name_width += get_filetype_decoration_width(old_entry->type);
+		/* FIXME: remove this hack for directories. */
+		if(old_entry->type == DIRECTORY)
+		{
+			old_name_width--;
+		}
+		return MIN(max_width - 1, old_name_width);
+	}
+	else
+	{
+		return max_width;
+	}
 }
 
 void
@@ -1970,43 +2004,6 @@ regexp_filter_match(FileView *view, const char *filename)
 	return view->invert;
 }
 
-#ifndef _WIN32
-static int
-type_from_dir_entry(const struct dirent *d)
-{
-	switch(d->d_type)
-	{
-		case DT_BLK:
-		case DT_CHR:
-			return DEVICE;
-		case DT_DIR:
-			return DIRECTORY;
-		case DT_LNK:
-			return LINK;
-		case DT_REG:
-			return REGULAR;
-		case DT_SOCK:
-			return SOCKET;
-		case DT_FIFO:
-			return FIFO;
-
-		case DT_UNKNOWN:
-		default:
-			return UNKNOWN;
-	}
-}
-#endif
-
-static int
-is_executable(dir_entry_t *d)
-{
-#ifndef _WIN32
-	return S_ISEXE(d->mode);
-#else
-	return is_win_executable(d->name);
-#endif
-}
-
 #ifdef _WIN32
 static void
 fill_with_shared(FileView *view)
@@ -2088,9 +2085,7 @@ fill_with_shared(FileView *view)
 
 	free(wserver);
 }
-#endif
 
-#ifdef _WIN32
 static int
 is_win_symlink(DWORD attr, DWORD tag)
 {
@@ -2212,6 +2207,7 @@ fill_dir_list(FileView *view)
 			dir_entry->atime = 0;
 			dir_entry->ctime = 0;
 
+			name_len += get_filetype_decoration_width(dir_entry->type);
 			view->max_filename_len = MAX(view->max_filename_len, name_len);
 			continue;
 		}
@@ -2226,40 +2222,21 @@ fill_dir_list(FileView *view)
 
 		if(s.st_ino)
 		{
-			switch(s.st_mode & S_IFMT)
+			dir_entry->type = get_type_from_mode(s.st_mode);
+			if(dir_entry->type == LINK)
 			{
-				case S_IFLNK:
-					{
-						struct stat st;
-						if(check_link_is_dir(dir_entry->name))
-							strcat(dir_entry->name, "/");
-						if(stat(dir_entry->name, &st) == 0)
-							dir_entry->mode = st.st_mode;
-						dir_entry->type = LINK;
-					}
-					break;
-				case S_IFDIR:
+				struct stat st;
+				if(check_link_is_dir(dir_entry->name))
 					strcat(dir_entry->name, "/");
-					dir_entry->type = DIRECTORY;
-					name_len++;
-					break;
-				case S_IFCHR:
-				case S_IFBLK:
-					dir_entry->type = DEVICE;
-					break;
-				case S_IFSOCK:
-					dir_entry->type = SOCKET;
-					break;
-				case S_IFREG:
-					dir_entry->type = is_executable(dir_entry) ? EXECUTABLE : REGULAR;
-					break;
-				case S_IFIFO:
-					dir_entry->type = FIFO;
-					break;
-				default:
-					dir_entry->type = UNKNOWN;
-					break;
+				if(stat(dir_entry->name, &st) == 0)
+					dir_entry->mode = st.st_mode;
 			}
+			else if(dir_entry->type == DIRECTORY)
+			{
+					strcat(dir_entry->name, "/");
+					name_len++;
+			}
+			name_len += get_filetype_decoration_width(dir_entry->type);
 			view->max_filename_len = MAX(view->max_filename_len, name_len);
 		}
 	}
@@ -2366,7 +2343,7 @@ fill_dir_list(FileView *view)
 			dir_entry->type = DIRECTORY;
 			name_len++;
 		}
-		else if(is_executable(dir_entry))
+		else if(is_win_executable(dir_entry->name))
 		{
 			dir_entry->type = EXECUTABLE;
 		}
@@ -2375,6 +2352,7 @@ fill_dir_list(FileView *view)
 			dir_entry->type = REGULAR;
 		}
 		view->list_rows++;
+		name_len += get_filetype_decoration_width(dir_entry->type);
 		view->max_filename_len = MAX(view->max_filename_len, name_len);
 	}
 	while(FindNextFileA(hfind, &ffd));
@@ -2387,6 +2365,16 @@ fill_dir_list(FileView *view)
 
 	return 0;
 #endif
+}
+
+/* Returns additional number of characters which are needed to display names of
+ * files of specific type. */
+static size_t
+get_filetype_decoration_width(FileType type)
+{
+	const size_t prefix_len = cfg.decorations[type][DECORATION_PREFIX] != '\0';
+	const size_t suffix_len = cfg.decorations[type][DECORATION_SUFFIX] != '\0';
+	return prefix_len + suffix_len;
 }
 
 void

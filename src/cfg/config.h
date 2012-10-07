@@ -25,6 +25,7 @@
 #include <limits.h>
 
 #include "../color_scheme.h"
+#include "../types.h"
 #include "../ui.h"
 
 #define VIFM_HELP "vifm-help.txt"
@@ -36,6 +37,13 @@ typedef enum
 	DD_NONROOT_PARENT = 1 << 1,
 	NUM_DOT_DIRS      =      2
 }DotDirs;
+
+/* Indexes for cfg.decorations. */
+enum
+{
+	DECORATION_PREFIX, /* The symbol, which is prepended to file name. */
+	DECORATION_SUFFIX, /* The symbol, which is appended to file name. */
+};
 
 typedef struct
 {
@@ -104,6 +112,7 @@ typedef struct
 	int lines; /* Terminal height in lines. */
 	int columns; /* Terminal width in characters. */
 	int dot_dirs; /* Controls displaying of dot directories. */
+	char decorations[FILE_TYPE_COUNT][2]; /* Prefixes and suffixes of files. */
 }config_t;
 
 extern config_t cfg;

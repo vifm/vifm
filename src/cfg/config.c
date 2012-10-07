@@ -29,11 +29,10 @@
 #define CP_RC "cp " PACKAGE_DATA_DIR "/" VIFMRC " ~/.vifm"
 #endif
 
-#include <ctype.h> /* isalnum */
 #include <errno.h>
 #include <stdio.h> /* FILE */
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> /* memset() */
 
 #include "../menus/menus.h"
 #include "../utils/env.h"
@@ -166,6 +165,9 @@ init_config(void)
 	if((cfg.max_args = sysconf(_SC_ARG_MAX)) == 0)
 #endif
 		cfg.max_args = 4096; /* POSIX MINIMUM */
+
+	memset(&cfg.decorations, '\0', sizeof(cfg.decorations));
+	cfg.decorations[DIRECTORY][DECORATION_SUFFIX] = '/';
 }
 
 /* searches for configuration file and directories, stores them and ensures

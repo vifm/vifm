@@ -278,11 +278,10 @@ can_be_explored(FileView *view, char *buf)
 			view->dir_entry[view->list_pos].name);
 	switch(view->dir_entry[view->list_pos].type)
 	{
-		case DEVICE:
-			return 0;
+		case CHARACTER_DEVICE:
+		case BLOCK_DEVICE:
 #ifndef _WIN32
 		case SOCKET:
-			return 0;
 #endif
 		case FIFO:
 			return 0;
@@ -295,9 +294,11 @@ can_be_explored(FileView *view, char *buf)
 				snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, link);
 			if(access(buf, R_OK) != 0)
 				return 0;
-			break;
+			return 1;
+
+		default:
+			return 1;
 	}
-	return 1;
 }
 
 void

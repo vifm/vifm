@@ -8,6 +8,7 @@ const char *tags[] = {
 	"vifm-'",
 	"vifm-'autochpos'",
 	"vifm-'cf'",
+	"vifm-'classify'",
 	"vifm-'co'",
 	"vifm-'columns'",
 	"vifm-'confirm'",
