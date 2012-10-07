@@ -1036,7 +1036,14 @@ erase_current_line_bar(FileView *view)
 	print_width = col_width;
 	if(view->ls_view)
 	{
-		print_width = MIN(col_width - 1, strlen(view->dir_entry[old_pos].name));
+		const dir_entry_t *old_entry = &view->dir_entry[old_pos];
+		size_t old_name_width = strlen(old_entry->name);
+		old_name_width += get_filetype_decoration_width(old_entry->type);
+		if(old_entry->type == DIRECTORY)
+		{
+			old_name_width--;
+		}
+		print_width = MIN(col_width - 1, old_name_width);
 	}
 
 	cdt.current_line = old_cursor/col_count;
