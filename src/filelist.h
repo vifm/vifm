@@ -24,21 +24,6 @@
 
 #include "ui.h"
 
-enum
-{
-	LINK,
-	DIRECTORY,
-	CHARACTER_DEVICE,
-	BLOCK_DEVICE,
-#ifndef _WIN32
-	SOCKET,
-#endif
-	EXECUTABLE,
-	REGULAR,
-	FIFO,
-	UNKNOWN
-};
-
 /* Initialization/termination functions. */
 
 /* Prepares views for the first time. */

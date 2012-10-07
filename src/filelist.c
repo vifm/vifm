@@ -75,6 +75,7 @@
 #include "sort.h"
 #include "status.h"
 #include "term_title.h"
+#include "types.h"
 #include "ui.h"
 
 /* Packet set of parameters to pass as user data for processing columns. */
@@ -1971,44 +1972,6 @@ regexp_filter_match(FileView *view, const char *filename)
 	return view->invert;
 }
 
-#ifndef _WIN32
-static int
-type_from_dir_entry(const struct dirent *d)
-{
-	switch(d->d_type)
-	{
-		case DT_CHR:
-			return CHARACTER_DEVICE;
-		case DT_BLK:
-			return BLOCK_DEVICE;
-		case DT_DIR:
-			return DIRECTORY;
-		case DT_LNK:
-			return LINK;
-		case DT_REG:
-			return REGULAR;
-		case DT_SOCK:
-			return SOCKET;
-		case DT_FIFO:
-			return FIFO;
-
-		case DT_UNKNOWN:
-		default:
-			return UNKNOWN;
-	}
-}
-#endif
-
-static int
-is_executable(dir_entry_t *d)
-{
-#ifndef _WIN32
-	return S_ISEXE(d->mode);
-#else
-	return is_win_executable(d->name);
-#endif
-}
-
 #ifdef _WIN32
 static void
 fill_with_shared(FileView *view)
@@ -2090,9 +2053,7 @@ fill_with_shared(FileView *view)
 
 	free(wserver);
 }
-#endif
 
-#ifdef _WIN32
 static int
 is_win_symlink(DWORD attr, DWORD tag)
 {
@@ -2228,41 +2189,19 @@ fill_dir_list(FileView *view)
 
 		if(s.st_ino)
 		{
-			switch(s.st_mode & S_IFMT)
+			dir_entry->type = get_type_from_mode(s.st_mode);
+			if(dir_entry->type == LINK)
 			{
-				case S_IFLNK:
-					{
-						struct stat st;
-						if(check_link_is_dir(dir_entry->name))
-							strcat(dir_entry->name, "/");
-						if(stat(dir_entry->name, &st) == 0)
-							dir_entry->mode = st.st_mode;
-						dir_entry->type = LINK;
-					}
-					break;
-				case S_IFDIR:
+				struct stat st;
+				if(check_link_is_dir(dir_entry->name))
 					strcat(dir_entry->name, "/");
-					dir_entry->type = DIRECTORY;
+				if(stat(dir_entry->name, &st) == 0)
+					dir_entry->mode = st.st_mode;
+			}
+			else if(dir_entry->type == DIRECTORY)
+			{
+					strcat(dir_entry->name, "/");
 					name_len++;
-					break;
-				case S_IFCHR:
-					dir_entry->type = CHARACTER_DEVICE;
-					break;
-				case S_IFBLK:
-					dir_entry->type = BLOCK_DEVICE;
-					break;
-				case S_IFSOCK:
-					dir_entry->type = SOCKET;
-					break;
-				case S_IFREG:
-					dir_entry->type = is_executable(dir_entry) ? EXECUTABLE : REGULAR;
-					break;
-				case S_IFIFO:
-					dir_entry->type = FIFO;
-					break;
-				default:
-					dir_entry->type = UNKNOWN;
-					break;
 			}
 			view->max_filename_len = MAX(view->max_filename_len, name_len);
 		}
@@ -2370,7 +2309,7 @@ fill_dir_list(FileView *view)
 			dir_entry->type = DIRECTORY;
 			name_len++;
 		}
-		else if(is_executable(dir_entry))
+		else if(is_win_executable(dir_entry->name))
 		{
 			dir_entry->type = EXECUTABLE;
 		}

@@ -109,6 +109,7 @@ vifm_SOURCES = \
 	tags.c tags.h \
 	term_title.c term_title.h \
 	trash.c trash.h \
+	types.c types.h \
 	ui.c ui.h \
 	undo.c undo.h \
 	version.c version.h \
