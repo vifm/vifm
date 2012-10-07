@@ -167,7 +167,8 @@ init_config(void)
 		cfg.max_args = 4096; /* POSIX MINIMUM */
 
 	memset(&cfg.decorations, '\0', sizeof(cfg.decorations));
-	cfg.decorations[DIRECTORY][DECORATION_SUFFIX] = '/';
+	cfg.decorations[DIRECTORY][DECORATION_PREFIX] = '[';
+	cfg.decorations[DIRECTORY][DECORATION_SUFFIX] = ']';
 }
 
 /* searches for configuration file and directories, stores them and ensures

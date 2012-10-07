@@ -117,6 +117,7 @@ static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
 static int consider_scroll_offset(FileView *view);
 static void free_saved_selection(FileView *view);
+static size_t get_filetype_decoration_width(FileType type);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
 static int file_can_be_displayed(const char *directory, const char *filename);
@@ -2191,6 +2192,7 @@ fill_dir_list(FileView *view)
 			dir_entry->atime = 0;
 			dir_entry->ctime = 0;
 
+			name_len += get_filetype_decoration_width(dir_entry->type);
 			view->max_filename_len = MAX(view->max_filename_len, name_len);
 			continue;
 		}
@@ -2219,6 +2221,7 @@ fill_dir_list(FileView *view)
 					strcat(dir_entry->name, "/");
 					name_len++;
 			}
+			name_len += get_filetype_decoration_width(dir_entry->type);
 			view->max_filename_len = MAX(view->max_filename_len, name_len);
 		}
 	}
@@ -2334,6 +2337,7 @@ fill_dir_list(FileView *view)
 			dir_entry->type = REGULAR;
 		}
 		view->list_rows++;
+		name_len += get_filetype_decoration_width(dir_entry->type);
 		view->max_filename_len = MAX(view->max_filename_len, name_len);
 	}
 	while(FindNextFileA(hfind, &ffd));
@@ -2346,6 +2350,16 @@ fill_dir_list(FileView *view)
 
 	return 0;
 #endif
+}
+
+/* Returns additional number of characters which are needed to display names of
+ * files of specific type. */
+static size_t
+get_filetype_decoration_width(FileType type)
+{
+	const size_t prefix_len = cfg.decorations[type][DECORATION_PREFIX] != '\0';
+	const size_t suffix_len = cfg.decorations[type][DECORATION_SUFFIX] != '\0';
+	return prefix_len + suffix_len;
 }
 
 void
