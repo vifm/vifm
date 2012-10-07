@@ -42,9 +42,10 @@
 #endif
 
 #include <errno.h>
+#include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* malloc() */
-#include <string.h> /* strcat() */
+#include <string.h> /* strcat() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -219,7 +220,22 @@ format_name(int id, const void *data, size_t buf_len, char *buf)
 	const column_data_t *cdt = data;
 	FileView *view = cdt->view;
 	dir_entry_t *entry = &view->dir_entry[cdt->line];
-	snprintf(buf, buf_len + 1, "%s", entry->name);
+	const char prefix[2] = { cfg.decorations[entry->type][DECORATION_PREFIX] };
+	const char suffix[2] = { cfg.decorations[entry->type][DECORATION_SUFFIX] };
+	size_t name_len = 1;
+
+	/* FIXME: remove this hack for directories. */
+	if(entry->type == DIRECTORY)
+	{
+		name_len = strlen(entry->name);
+		entry->name[name_len - 1] = '\0';
+	}
+	snprintf(buf, buf_len + 1, "%s%s%s", prefix, entry->name, suffix);
+	/* FIXME: remove this hack for directories. */
+	if(entry->type == DIRECTORY)
+	{
+		entry->name[name_len - 1] = '/';
+	}
 }
 
 /* File size format callback for column_view unit. */
