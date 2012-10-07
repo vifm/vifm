@@ -618,6 +618,8 @@ write_info_file(void)
 			fprintf(fp, "%s", "nonrootparent,");
 		fprintf(fp, "\n");
 
+		fprintf(fp, "=classify=%s\n", escape_spaces(classify_to_str()));
+
 		fprintf(fp, "=vifminfo=options");
 		if(cfg.vifm_info & VIFMINFO_FILETYPES)
 			fprintf(fp, ",filetypes");

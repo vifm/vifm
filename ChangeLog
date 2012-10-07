@@ -50,6 +50,9 @@
 
 	Added "t" flag to 'cpoptions' option.
 
+	Added 'classify' option to set prefixes and suffixes for different file
+	types.
+
 	Try the rest of the programs for an association when the default isn't
 	found.
 

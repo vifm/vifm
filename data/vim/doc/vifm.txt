@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Oct 06
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Oct 07
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1539,6 +1539,19 @@ make vifm clear information about cursor position in the view history on :cd
 and :pushd commands (and on startup if autochpos is disabled in the vifmrc).
 l key in the :history . menu is treated like :cd command.  This option affects
 bookmarks, file position will not preserved.
+
+                                               *vifm-'classify'*
+classify
+type: string list
+default: ":dir:/"
+Specifies file name prefixes and suffixes depending on file types.  The format
+is: [{prefix}]:{filetype}:[{suffix}].  Either {prefix} or {suffix} or both of
+them can be omitted (which is the default for all unspecified file types),
+this means empty {prefix} and/or {suffix}.  Elements are separated by commas.
+Neither prefixes nor suffixes are part of file names, so they don't affect
+commands which operate on file names in any way. Comma (',') character should
+not be used.  List of file type names can be found in the description of
+|vifm-filetype()| function.
 
                                                *vifm-'columns'* *vifm-'co'*
 columns co

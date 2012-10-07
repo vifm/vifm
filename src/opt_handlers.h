@@ -49,6 +49,9 @@ void load_sort_option(FileView *view);
 void load_view_columns_option(FileView *view, const char *value);
 /* Updates geometry related options. */
 void load_geometry(void);
+/* Returns pointer to a statically allocated string containing string
+ * representation of the 'classify' option value. */
+const char * classify_to_str(void);
 
 #endif
 

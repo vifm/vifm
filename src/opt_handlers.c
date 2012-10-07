@@ -18,9 +18,9 @@
 
 #include <assert.h>
 #include <math.h> /* abs() */
-#include <stdio.h>
+#include <stdio.h> /* snprintf() */
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> /* memset(), strstr() */
 
 #include "cfg/config.h"
 #include "engine/options.h"
@@ -60,6 +60,7 @@ typedef struct
 	optinit_func init;
 }optinit_t;
 
+static void init_classify(optval_t *val);
 static void init_columns(optval_t *val);
 static void init_cpoptions(optval_t *val);
 static void init_lines(optval_t *val);
@@ -72,6 +73,8 @@ static void init_viewcolumns(optval_t *val);
 static void load_options_defaults(void);
 static void add_options(void);
 static void autochpos_handler(OPT_OP op, optval_t val);
+static void classify_handler(OPT_OP op, optval_t val);
+static const char * pick_out_decoration(char classify_item[], FileType *type);
 static void columns_handler(OPT_OP op, optval_t val);
 static void confirm_handler(OPT_OP op, optval_t val);
 static void cpoptions_handler(OPT_OP op, optval_t val);
@@ -198,6 +201,8 @@ static struct
 	/* global options */
 	{ "autochpos",   "",     OPT_BOOL,    0,                          NULL,            &autochpos_handler,
 		{ .ref.bool_val = &cfg.auto_ch_pos }                                                                   },
+	{ "classify",    "",     OPT_STRLIST, 0,                          NULL,            &classify_handler,
+		{ .init = &init_classify }                                                                             },
 	{ "columns",     "co",   OPT_INT,     0,                          NULL,            &columns_handler,
 		{ .init = &init_columns }                                                                              },
 	{ "confirm",     "cf",   OPT_BOOL,    0,                          NULL,            &confirm_handler,
@@ -294,6 +299,39 @@ init_option_handlers(void)
 	init_options(&opt_changed);
 	load_options_defaults();
 	add_options();
+}
+
+/* Composes the default value for the 'classify' option. */
+static void
+init_classify(optval_t *val)
+{
+	val->str_val = (char *)classify_to_str();
+}
+
+const char *
+classify_to_str(void)
+{
+	static char buf[64];
+	int filetype;
+	buf[0] = '\0';
+	for(filetype = 0; filetype < FILE_TYPE_COUNT; filetype++)
+	{
+		const char prefix[2] = { cfg.decorations[filetype][DECORATION_PREFIX] };
+		const char suffix[2] = { cfg.decorations[filetype][DECORATION_SUFFIX] };
+		if(prefix[0] != '\0' || suffix[0] != '\0')
+		{
+			if(buf[0] != '\0')
+			{
+				strncat(buf, ",", sizeof(buf) - 1);
+			}
+			strncat(buf, prefix, sizeof(buf) - 1);
+			strncat(buf, ":", sizeof(buf) - 1);
+			strncat(buf, get_type_str(filetype), sizeof(buf) - 1);
+			strncat(buf, ":", sizeof(buf) - 1);
+			strncat(buf, suffix, sizeof(buf) - 1);
+		}
+	}
+	return buf;
 }
 
 static void
@@ -469,6 +507,55 @@ autochpos_handler(OPT_OP op, optval_t val)
 		clean_positions_in_history(curr_view);
 		clean_positions_in_history(other_view);
 	}
+}
+
+static void
+classify_handler(OPT_OP op, optval_t val)
+{
+	char *saveptr;
+	char *str_copy;
+	char *token;
+
+	memset(&cfg.decorations, '\0', sizeof(cfg.decorations));
+
+	str_copy = strdup(val.str_val);
+	for(token = str_copy; (token = strtok_r(token, ",", &saveptr)); token = NULL)
+	{
+		FileType type;
+		const char *suffix = pick_out_decoration(token, &type);
+		if(suffix != NULL)
+		{
+			cfg.decorations[type][DECORATION_PREFIX] = token[0];
+			cfg.decorations[type][DECORATION_SUFFIX] = suffix[0];
+		}
+	}
+	free(str_copy);
+
+	init_classify(&val);
+	set_option("classify", val);
+
+	update_screen(UT_REDRAW);
+}
+
+/* Puts '\0' after prefix end and returns pointer to the suffix beginning or
+ * NULL on unknown filetype specifier. */
+static const char *
+pick_out_decoration(char classify_item[], FileType *type)
+{
+	int filetype;
+	for(filetype = 0; filetype < FILE_TYPE_COUNT; filetype++)
+	{
+		char name[16];
+		char *item_name;
+		(void)snprintf(name, sizeof(name), ":%s:", get_type_str(filetype));
+		if((item_name = strstr(classify_item, name)) != NULL)
+		{
+			*type = filetype;
+			item_name[0] = '\0';
+			return &item_name[strlen(name)];
+		}
+	}
+	return NULL;
 }
 
 static void
