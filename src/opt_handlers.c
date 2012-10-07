@@ -16,11 +16,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <math.h> /* abs() */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h>
-#include <string.h> /* memset(), strstr() */
+#include <string.h> /* memcpy() strstr() */
 
 #include "cfg/config.h"
 #include "engine/options.h"
@@ -515,26 +515,50 @@ classify_handler(OPT_OP op, optval_t val)
 	char *saveptr;
 	char *str_copy;
 	char *token;
-
-	memset(&cfg.decorations, '\0', sizeof(cfg.decorations));
+	char decorations[FILE_TYPE_COUNT][2] = {};
 
 	str_copy = strdup(val.str_val);
 	for(token = str_copy; (token = strtok_r(token, ",", &saveptr)); token = NULL)
 	{
 		FileType type;
 		const char *suffix = pick_out_decoration(token, &type);
-		if(suffix != NULL)
+		if(suffix == NULL)
 		{
-			cfg.decorations[type][DECORATION_PREFIX] = token[0];
-			cfg.decorations[type][DECORATION_SUFFIX] = suffix[0];
+			text_buffer_addf("Invalid filetype: %s", token);
+			error = 1;
+		}
+		else
+		{
+			if(strlen(token) > 1)
+			{
+				text_buffer_addf("Invalid prefix: %s", token);
+				error = 1;
+			}
+			if(strlen(suffix) > 1)
+			{
+				text_buffer_addf("Invalid suffix: %s", suffix);
+				error = 1;
+			}
+		}
+
+		if(!error)
+		{
+			decorations[type][DECORATION_PREFIX] = token[0];
+			decorations[type][DECORATION_SUFFIX] = suffix[0];
 		}
 	}
 	free(str_copy);
 
+	if(!error)
+	{
+		assert(sizeof(cfg.decorations) == sizeof(decorations) && "Arrays diverged.");
+		memcpy(&cfg.decorations, &decorations, sizeof(cfg.decorations));
+
+		update_screen(UT_REDRAW);
+	}
+
 	init_classify(&val);
 	set_option("classify", val);
-
-	update_screen(UT_REDRAW);
 }
 
 /* Puts '\0' after prefix end and returns pointer to the suffix beginning or
