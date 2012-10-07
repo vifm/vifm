@@ -110,6 +110,8 @@ static void consider_scroll_bind(FileView *view);
 static void correct_list_pos_down(FileView *view, size_t pos_delta);
 static void correct_list_pos_up(FileView *view, size_t pos_delta);
 static int calculate_top_position(FileView *view, int top);
+static size_t calculate_print_width(const FileView *view, int i,
+		size_t max_width);
 static void calculate_table_conf(FileView *view, size_t *count, size_t *width);
 size_t calculate_columns_count(FileView *view);
 static size_t calculate_column_width(FileView *view);
@@ -1033,18 +1035,7 @@ erase_current_line_bar(FileView *view)
 	}
 
 	calculate_table_conf(view, &col_count, &col_width);
-	print_width = col_width;
-	if(view->ls_view)
-	{
-		const dir_entry_t *old_entry = &view->dir_entry[old_pos];
-		size_t old_name_width = strlen(old_entry->name);
-		old_name_width += get_filetype_decoration_width(old_entry->type);
-		if(old_entry->type == DIRECTORY)
-		{
-			old_name_width--;
-		}
-		print_width = MIN(col_width - 1, old_name_width);
-	}
+	print_width = calculate_print_width(view, old_pos, col_width);
 
 	cdt.current_line = old_cursor/col_count;
 	cdt.column_offset = (old_cursor%col_count)*col_width;
@@ -1161,12 +1152,7 @@ move_to_list_pos(FileView *view, int pos)
 		draw_dir_list(view);
 
 	calculate_table_conf(view, &col_count, &col_width);
-	print_width = col_width;
-	if(view->ls_view)
-	{
-		print_width = MIN(col_width - 1,
-				strlen(view->dir_entry[view->list_pos].name));
-	}
+	print_width = calculate_print_width(view, view->list_pos, col_width);
 
 	cdt.line = pos;
 	cdt.current_line = view->curr_line/col_count;
@@ -1181,6 +1167,28 @@ move_to_list_pos(FileView *view, int pos)
 
 	if(curr_stats.view)
 		quick_view_file(view);
+}
+
+/* Calculates width of the column using entry and maximum width. */
+static size_t
+calculate_print_width(const FileView *view, int i, size_t max_width)
+{
+	if(view->ls_view)
+	{
+		const dir_entry_t *old_entry = &view->dir_entry[i];
+		size_t old_name_width = strlen(old_entry->name);
+		old_name_width += get_filetype_decoration_width(old_entry->type);
+		/* FIXME: remove this hack for directories. */
+		if(old_entry->type == DIRECTORY)
+		{
+			old_name_width--;
+		}
+		return MIN(max_width - 1, old_name_width);
+	}
+	else
+	{
+		return max_width;
+	}
 }
 
 void
