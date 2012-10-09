@@ -122,7 +122,8 @@ static void free_saved_selection(FileView *view);
 static size_t get_filetype_decoration_width(FileType type);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
-static int file_can_be_displayed(const char *directory, const char *filename);
+static int file_can_be_displayed(const char directory[], const char filename[]);
+static int parent_dir_is_visible(int in_root);
 
 const size_t COLUMN_GAP = 2;
 
@@ -2138,8 +2139,7 @@ fill_dir_list(FileView *view)
 		}
 		if(stroscmp(d->d_name, "..") == 0)
 		{
-			if((is_root && !(cfg.dot_dirs & DD_ROOT_PARENT)) ||
-					(!is_root && !(cfg.dot_dirs & DD_NONROOT_PARENT)))
+			if(!parent_dir_is_visible(is_root))
 			{
 				view->list_rows--;
 				continue;
@@ -2931,12 +2931,12 @@ pane_in_dir(FileView *view, const char *path)
 	return stroscmp(pane_dir, dir) == 0;
 }
 
-/* will remove dot and regexp filters if it's needed to make file visible
+/* Will remove dot and regexp filters if it's needed to make file visible.
  *
  * Returns non-zero if file was found.
  */
 int
-ensure_file_is_selected(FileView *view, const char *name)
+ensure_file_is_selected(FileView *view, const char name[])
 {
 	int file_pos;
 
@@ -2961,14 +2961,23 @@ ensure_file_is_selected(FileView *view, const char *name)
 }
 
 /* Checks if file specified can be displayed. Used to filter some files, that
- * are hidden intensionally. */
+ * are hidden intensionally.  Returns non-zero if file can be made visible. */
 static int
-file_can_be_displayed(const char *directory, const char *filename)
+file_can_be_displayed(const char directory[], const char filename[])
 {
-	if(is_root_dir(directory) &&
-			(strcmp(filename, "..") == 0 || strcmp(filename, "../") == 0))
-		return 0;
+	if(strcmp(filename, "..") == 0 || strcmp(filename, "../") == 0)
+	{
+		return parent_dir_is_visible(is_root_dir(directory));
+	}
 	return path_exists_at(directory, filename);
+}
+
+/* Returns non-zero if ../ directory can be displayed. */
+static int
+parent_dir_is_visible(int in_root)
+{
+	return ((in_root && (cfg.dot_dirs & DD_ROOT_PARENT)) ||
+			(!in_root && (cfg.dot_dirs & DD_NONROOT_PARENT)));
 }
 
 int
