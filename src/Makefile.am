@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-.PHONY: tests update_compile_info
+.PHONY: update_compile_info
 
 AUTOMAKE_OPTIONS = subdir-objects
 
@@ -124,8 +124,14 @@ vifmrc_converter_SOURCES = \
 	color_scheme.h \
 	vifmrc-converter.c
 
-tests:
-	make -C ../tests
+check_SCRIPTS = runtests
+TESTS = $(check_SCRIPTS)
+
+runtests:
+	echo 'make -C ../tests' > $@
+	chmod +x $@
+
+CLEANFILES = runtests
 
 compile_info.c: update_compile_info
 
