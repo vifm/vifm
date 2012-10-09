@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-.PHONY: tests update_compile_info
+.PHONY: update_compile_info
 
 AUTOMAKE_OPTIONS = subdir-objects
 
@@ -14,6 +14,9 @@ bin_SCRIPTS = vifm-pause
 man_MANS = ../data/vifm.1 \
 					 ../data/vifm-pause.1 \
 					 ../data/vifmrc-converter.1
+
+MOSTLYCLEANFILES = compile_info.c \
+									 ../data/vifm-help.txt
 
 vifm_SOURCES = \
 	\
@@ -121,8 +124,14 @@ vifmrc_converter_SOURCES = \
 	color_scheme.h \
 	vifmrc-converter.c
 
-tests:
-	make -C ../tests
+check_SCRIPTS = runtests
+TESTS = $(check_SCRIPTS)
+
+runtests:
+	echo 'make -C ../tests' > $@
+	chmod +x $@
+
+CLEANFILES = runtests
 
 compile_info.c: update_compile_info
 
@@ -157,9 +166,5 @@ tags.c: ../data/vim/doc/vifm.txt
 			} \
 		' > $@; \
 	fi
-
-clean: clean-am
-	-$(RM) ../data/vifm-help.txt
-	-$(RM) compile_info.c
 
 # vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab :

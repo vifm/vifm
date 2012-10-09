@@ -176,7 +176,7 @@ write_color_scheme_file(void)
 	if(make_dir(colors_dir, 0777) != 0)
 		return;
 
-	strcat(colors_dir, "/Default");
+	strncat(colors_dir, "/Default", sizeof(colors_dir) - 1);
 	if((fp = fopen(colors_dir, "w")) == NULL)
 		return;
 
@@ -283,8 +283,8 @@ static void
 init_color_scheme(col_scheme_t *cs)
 {
 	int i;
-	strcpy(cs->name, "built-in default");
-	strcpy(cs->dir, "/");
+	snprintf(cs->name, sizeof(cs->name), "%s", "built-in default");
+	snprintf(cs->dir, sizeof(cs->dir), "%s", "/");
 	cs->defaulted = 0;
 
 	for(i = 0; i < ARRAY_LEN(default_colors); i++)
