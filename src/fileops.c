@@ -629,7 +629,7 @@ is_name_list_ok(int count, int nlines, char *list[], char *files[])
 					if(file_s == NULL)
 						status_bar_errorf("Name \"%s\" contains slash", list[i]);
 					else
-						status_bar_errorf("Wont move \"%s\" file", files[i]);
+						status_bar_errorf("Won't move \"%s\" file", files[i]);
 					curr_stats.save_msg = 1;
 					return 0;
 				}
