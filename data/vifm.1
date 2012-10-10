@@ -1,4 +1,4 @@
-.TH vifm 1 "October 7, 2012" "" "Vifm"
+.TH vifm 1 "October 10, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -43,11 +43,16 @@ executable (on Windows) is used to log startup process (when configuration
 directory isn't determined).
 .TP
 .BI "\-\-remote"
-Passes all arguments that left in command line to active vifm server (already
-running instance if any).
+Sends the rest of command line to the active vifm server (one of already running
+instances if any).  When there is no server, quits silently.  There is no limit
+on how many arguments can be processed.  One can combine \-\-remote with \-c
+<command> or +<command> to execute command in already running instance of vifm.
 .TP
 .BI "\-c <command> or +<command>"
-Run <command> on startup.
+Run <command> on startup.  Commands in such arguments are executed in the order
+they appear in command line.  Commands with spaces or special symbols must be
+enclosed in double or single quotes or all special symbols should be escaped
+(the exact syntax strongly depends on shell).
 .TP
 .BI "\-\-help, \-h"
 Show an overview of the commandline options.
