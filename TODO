@@ -87,6 +87,8 @@ Possible things to add.
     $_ env var and Alt-T combination as in bash shell.
     Rename existing file option on name conflicts.
     Support of command line arguments like ~/some.ssh/server/path (for FUSE).
+    Think about running vim on :help command in kind of sandbox, so the only
+        help files available were those provided by vifm.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
