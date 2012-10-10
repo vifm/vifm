@@ -192,6 +192,16 @@ test_versort_zero_and_zerox(void)
 	assert_true(strnumcmp(s, t) < 0);
 }
 
+static void
+test_versort_zerox_and_one(void)
+{
+	const char *s, *t;
+
+	s = "00_";
+	t = "01";
+	assert_true(strnumcmp(s, t) < 0);
+}
+
 void
 sort_tests(void)
 {
@@ -207,6 +217,7 @@ sort_tests(void)
 	run_test(test_versort_numbers_only);
 	run_test(test_versort_numbers_only_and_letters_only);
 	run_test(test_versort_zero_and_zerox);
+	run_test(test_versort_zerox_and_one);
 
 	test_fixture_end();
 }
