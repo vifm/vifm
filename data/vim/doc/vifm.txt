@@ -2129,7 +2129,7 @@ and :range are supported).
 
 Apropos menu~
 
-l key wont close the menu allowing user to pick another man page, use :q to
+l key won't close the menu allowing user to pick another man page, use :q to
 close the menu.
 
 vifm-commands menu~
@@ -2287,7 +2287,7 @@ All % macros are expanded by vifm at runtime and have the following meaning:
    - %CLEAR means that you want to clear screen before running mount command.
 
 %CLEAR is an optional macro.  Other macros are not mandatory, but mount
-commands likely wont work without them.
+commands likely won't work without them.
 
 The mounted FUSE file systems will be automatically unmounted in two cases:
    - when vifm quits (with |vifm-ZZ|, |vifm-:q|, etc. or when killed by signal);
