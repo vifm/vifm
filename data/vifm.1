@@ -1,4 +1,4 @@
-.TH vifm 1 "October 10, 2012" "" "Vifm"
+.TH vifm 1 "October 11, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -416,8 +416,8 @@ change file attributes (permission on *nix and properties on Windows).
 clone file [count] times.
 .TP
 .BI "[count]dd or d[count]selector"
-moves the selected files to the trash directory (if option 'trash' is set
-otherwise delete)
+moves the selected files to trash directory (if option 'trash' is set, otherwise
+delete).
 .TP
 .BI "[count]DD or D[count]selector"
 removes the selected files.
@@ -431,7 +431,7 @@ same as yy.
 .BI p
 will copy the yanked files to the current directory or move the files
 to the current directory if they were deleted with dd or :d[elete] or if the
-files were yanked from the Trash directory.
+files were yanked from trash directory.
 .TP
 .BI P
 moves the last yanked files.  The advantage of using P instead of d followed by
@@ -524,7 +524,7 @@ registers are cleared before adding new files, while uppercase aren't and should
 be used to append new files to the existing file list of appropriate lowercase
 register (A for a, B for b, ...).
 
-Registers can be changed on :empty command if they contain files under Trash
+Registers can be changed on :empty command if they contain files under trash
 directory.
 
 Registers do not contain one file more than once.
@@ -1017,9 +1017,9 @@ executes commands until next matching :endif if they previously were not being
 executed.  See also help on :if and :endif commands.
 .TP
 .BI :empty
-will permanently remove 'rm \-fr' files from the Trash directory.  It will also
+will permanently remove 'rm \-fr' files from trash directory.  It will also
 remove all operations from undolist that have no sense after :empty and remove
-all records about files in the Trash directory from all registers.
+all records about files in trash directory from all registers.
 .TP
 .BI :en[dif]
 ends conditional block.  See also help on :if and :else commands.
@@ -1339,7 +1339,7 @@ vifmrc files and run startup commands passed in the argument list, thus losing
 all unsaved changes (e.g. recent history or keys mapped in current session).
 .TP
 .BI :[range]restore
-will restore file from Trash.  Works in trash directory only.
+will restore file from trash.  Works in trash directory only.
 .TP
 .BI :[range]rlink[!?]
 creates relative symbolic links of files in directory of other view.  With "?"
@@ -2179,7 +2179,8 @@ type: string
 .br
 default: "$HOME/.vifm/Trash"
 .br
-Sets the trash directory. Will attempt to create the directory if it does not exist.
+Sets path to trash directory.  Will attempt to create the directory if it does
+not exist.
 .TP
 .BI "undolevels ul"
 type: integer

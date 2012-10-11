@@ -373,7 +373,7 @@ cp - change file attributes (permission on *nix and properties on
 
                                                *vifm-d* *vifm-dd*
 dd - move selected file or files to $VIFM/Trash (if option |vifm-'trash'|
-    is set otherwise delete)
+    is set, otherwise delete).
 d<selector> - like dd.
 
                                                *vifm-D* *vifm-DD*
@@ -386,7 +386,7 @@ y<selector> - yank files.                      *vifm-y*
                                                *vifm-p*
 p - will copy the yanked files to the current directory or move the files
     to the current directory if they were deleted with dd or :d[elete] or
-    if the files were yanked from the Trash directory.
+    if the files were yanked from trash directory.
 
                                                *vifm-P*
 P - moves the last yanked files.  The advantage of using P instead of d
@@ -470,7 +470,7 @@ aren't and should be used to append new files to the existing file list
 of appropriate lowercase register (A for a, B for b, ...).
 
 Registers can be changed on :empty command if they contain files under
-Trash directory.
+trash directory.
 
 Registers do not contain one file more than once.
 
@@ -902,7 +902,7 @@ The builtin commands are:
                                                *vifm-:empty*
 :empty - permanently remove files from the $VIFM/Trash directory.  It will
     also remove all operations from undolist that have no sense after :empty
-    and remove all records about files in the Trash directory from all
+    and remove all records about files in the trash directory from all
     registers.
 
                                                *vifm-:endif* *vifm-:en*
@@ -1185,7 +1185,7 @@ order using the '.' operator.  Any whitespace is ignored.
     keys mapped in current session).
 
                                                *vifm-:restore*
-:[range]restore - will restore file from Trash.  Works in trash directory
+:[range]restore - will restore file from trash.  Works in trash directory
     only.
 
                                                *vifm-:rlink*
@@ -1834,8 +1834,8 @@ Use trash directory.
 trashdir
 type: string
 default: "$HOME/.vifm/Trash
-Sets the trash directory. Will attempt to create the directory if it does not
-exist.
+Sets path to trash directory.  Will attempt to create the directory if it
+does not exist.
 
                                                *vifm-'timeoutlen'* *vifm-'tm'*
 timeoutlen tm
