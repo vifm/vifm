@@ -128,10 +128,13 @@ check_SCRIPTS = runtests
 TESTS = $(check_SCRIPTS)
 
 runtests:
-	echo 'make -C ../tests' > $@
+	echo '$(MAKE) -C ../tests' > $@
 	chmod +x $@
 
 CLEANFILES = runtests
+
+distclean-local:
+	$(MAKE) -C ../tests clean
 
 compile_info.c: update_compile_info
 
