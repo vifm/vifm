@@ -1,12 +1,12 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Oct 10
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Oct 11
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
 |vifm-options|            Command line arguments.
 |vifm-general-keys|       General keys, that work in the most of modes.
-|vifm-normal|             normal mode keys.
-|vifm-visual|             visual mode keys.
-|vifm-view|               view mode keys.
+|vifm-normal|             Normal mode keys.
+|vifm-visual|             Visual mode keys.
+|vifm-view|               View mode keys.
 |vifm-command-line|       Command line mode keys.
 |vifm-commands|           How to use and set :commands.
 |vifm-commands-bg|        Backgrounding of commands.
@@ -18,11 +18,11 @@
 |vifm-configure|          Configuration of vifm.
 |vifm-menus-and-dialogs|  Keys for menus and dialogs.
 |vifm-view-look|          Gives general overview of view displaying variants.
-|vifm-ls-view|            ls-like view details.
+|vifm-ls-view|            Some details about ls-like view.
 |vifm-column-view|        Column view configuration details.
 |vifm-colorschemes|       Details on using color schemes in vifm.
 |vifm-fuse|               Using automated FUSE mounts.
-|vifm-clientserver|       vifm client-server communication.
+|vifm-clientserver|       Client-server communication.
 |vifm-plugin|             Using the vifm.vim plugin.
 |vifm-reserved|           List of reserved commands.
 

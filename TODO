@@ -63,6 +63,7 @@ Vi(m) specific features that need to be added.
     Expand environment variables for :edit command.
     Think about dot normal mode command.
     Add support of [count] for Ctrl-E/Ctrl-Y.
+    Completion based on global (when one enters pattern<tab>, e.g. *.c<tab>).
 
 Possible things to add.
     Use system wide mimetypes file. /etc/mailcap?
