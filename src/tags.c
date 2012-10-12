@@ -513,6 +513,7 @@ const char *tags[] = {
 	"vifm-set-options",
 	"vifm-startup",
 	"vifm-t",
+	"vifm-trash",
 	"vifm-u",
 	"vifm-v",
 	"vifm-v_:",

@@ -1,4 +1,4 @@
-.TH vifm 1 "October 11, 2012" "" "Vifm"
+.TH vifm 1 "October 12, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1860,8 +1860,8 @@ type: set
 default: nonrootparent
 .br
 Controls displaying of dot directories.  The following values are possible:
- - rootparent    \- show "../" in root directory of file system
- - nonrootparent \- show "../" in non-root directories of file system
+ \- rootparent    \- show "../" in root directory of file system
+ \- nonrootparent \- show "../" in non-root directories of file system
 .TP
 .BI fastrun
 type: boolean
@@ -2099,7 +2099,7 @@ are supported:
 .HP 7
 \- %s \- file size in human readable format
 .HP 7
-\- %E \- size of selected files in human readable format, same as %s when no
+\- %E \- size of selected files in human readable format, same as %s when no
 files are selected, except that it will never show size of ../ in visual mode,
 since it cannot be selected
 .HP 7
@@ -2912,6 +2912,40 @@ red background
 .br
 cursor with black background and green foreground
 .\" ---------------------------------------------------------------------------
+.SH Trash directory
+.\" ---------------------------------------------------------------------------
+vifm has support of trash directory, which is used as temporary storage for
+deleted files or files that were cut.  Using trash is controlled by the
+\'trash' option, and exact path to the trash can be set with 'trashdir' option.
+Trash directory in vifm differs from the system-wide one by default, because of
+possible incompatibilities of storing deleted files among different file
+managers.  But one can set 'trashdir' to "~/.local/share/Trash" to use a
+"standard" trash directory.
+
+There are two scenarios of using trash in vifm:
+.IP 1. 4
+As a place for storing files that were cut by "d" and may be inserted to some
+other place in file system.
+.IP 2. 4
+As a storage of files, that are deleted but not purged yet.
+.LP
+
+The first scenario uses deletion ("d") operations to put files to trash and
+put ("p") operations to restore files from trash directory.  Note that such
+operations move files to and from trash directory, which can be long term
+operations in case of different partitions or remote drives mounted locally.
+
+The second scenario uses deletion ("d") operations for moving files to trash
+directory and :empty command-line command to purge all previously deleted files.
+
+Deletion and put operations depend on registers, which can point to files in
+trash directory.  Normally, there are no nonexistent files in registers, but
+vifm doesn't keep track of modifications under trash directory, so one
+shouldn't expect value of registers to be absolutely correct if trash
+directory was modified not by operation that are meant for it.  But this
+won't lead to any issues with operations, since they ignore nonexistent
+files.
+.\" ---------------------------------------------------------------------------
 .SH Client\-Server
 .\" ---------------------------------------------------------------------------
 vifm supports remote execution of command-line mode commands as well as remote
@@ -2921,8 +2955,8 @@ argument.
 To execute a command remotely combine \-\-remote argument with \-c <command> or
 +<command>.  For example:
 .EX
-    vifm --remote -c 'cd /'
-    vifm --remote '+cd /'
+    vifm \-\-remote \-c 'cd /'
+    vifm \-\-remote '+cd /'
 .EE
 
 To change directory not using command-line mode commands one can specify paths
