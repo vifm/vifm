@@ -417,7 +417,7 @@ clone file [count] times.
 .TP
 .BI "[count]dd or d[count]selector"
 moves the selected files to trash directory (if 'trash' option is set, otherwise
-delete).
+delete).  See "Trash directory" section below.
 .TP
 .BI "[count]DD or D[count]selector"
 removes the selected files.
@@ -431,7 +431,7 @@ same as yy.
 .BI p
 will copy the yanked files to the current directory or move the files
 to the current directory if they were deleted with dd or :d[elete] or if the
-files were yanked from trash directory.
+files were yanked from trash directory.  See "Trash directory" section below.
 .TP
 .BI P
 moves the last yanked files.  The advantage of using P instead of d followed by
@@ -525,7 +525,7 @@ be used to append new files to the existing file list of appropriate lowercase
 register (A for a, B for b, ...).
 
 Registers can be changed on :empty command if they contain files under trash
-directory.
+directory (see "Trash directory" section below).
 
 Registers do not contain one file more than once.
 
@@ -1019,7 +1019,8 @@ executed.  See also help on :if and :endif commands.
 .BI :empty
 will permanently remove 'rm \-fr' files from trash directory.  It will also
 remove all operations from undolist that have no sense after :empty and remove
-all records about files in trash directory from all registers.
+all records about files in trash directory from all registers.  See
+"Trash directory" section below.
 .TP
 .BI :en[dif]
 ends conditional block.  See also help on :if and :else commands.
@@ -1340,6 +1341,7 @@ all unsaved changes (e.g. recent history or keys mapped in current session).
 .TP
 .BI :[range]restore
 will restore file from trash directory, doesn't work in any other directory.
+See "Trash directory" section below.
 .TP
 .BI :[range]rlink[!?]
 creates relative symbolic links of files in directory of other view.  With "?"
@@ -2172,7 +2174,7 @@ type: boolean
 .br
 default: true
 .br
-Use trash directory.
+Use trash directory.  See "Trash directory" section below.
 .TP
 .BI trashdir
 type: string
@@ -2180,7 +2182,7 @@ type: string
 default: "$HOME/.vifm/Trash"
 .br
 Sets path to trash directory.  Will attempt to create the directory if it does
-not exist.
+not exist.  See "Trash directory" section below.
 .TP
 .BI "undolevels ul"
 type: integer
