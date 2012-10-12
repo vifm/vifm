@@ -22,7 +22,7 @@
 |vifm-column-view|        Column view configuration details.
 |vifm-colorschemes|       Details on using color schemes in vifm.
 |vifm-fuse|               Using automated FUSE mounts.
-|vifm-trash|              Details about using trash in vifm.
+|vifm-trash|              Details about trash directory in vifm.
 |vifm-clientserver|       Client-server communication.
 |vifm-plugin|             Using the vifm.vim plugin.
 |vifm-reserved|           List of reserved commands.
@@ -373,13 +373,13 @@ cp - change file attributes (permission on *nix and properties on
 [count]C - clone file [count] times.
 
                                                *vifm-d* *vifm-dd*
-dd - move selected file or files to $VIFM/Trash (if option |vifm-'trash'|
+dd - move selected file or files to trash directory (if option |vifm-'trash'|
     is set, otherwise delete).
 d<selector> - like dd.
 
                                                *vifm-D* *vifm-DD*
 DD and D<selector> - like dd and d<selector>, but omitting trash directory
-    (even when option |vifm-'trash'| is set).
+    (even when |vifm-'trash'| option is set).
 
 yy, Y - yank selected files.                   *vifm-yy* *vifm-Y*
 y<selector> - yank files.                      *vifm-y*
@@ -901,10 +901,9 @@ The builtin commands are:
     previously were not being executed.  See also |vifm-:if|.
 
                                                *vifm-:empty*
-:empty - permanently remove files from the $VIFM/Trash directory.  It will
-    also remove all operations from undolist that have no sense after :empty
-    and remove all records about files in the trash directory from all
-    registers.
+:empty - permanently remove files from trash directory.  It will also remove
+    all operations from undolist that have no sense after :empty and remove
+    all records about files in trash directory from all registers.
 
                                                *vifm-:endif* *vifm-:en*
 :en[dif] - ends conditional block.  See also |vifm-:if| and |vifm-:else|.
@@ -1186,8 +1185,8 @@ order using the '.' operator.  Any whitespace is ignored.
     keys mapped in current session).
 
                                                *vifm-:restore*
-:[range]restore - will restore file from trash.  Works in trash directory
-    only.
+:[range]restore - will restore file from trash directory, doesn't work in any
+    other directory.
 
                                                *vifm-:rlink*
 :[range]rlink[!?] - creates relative symbolic links of files in directory of

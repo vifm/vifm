@@ -416,7 +416,7 @@ change file attributes (permission on *nix and properties on Windows).
 clone file [count] times.
 .TP
 .BI "[count]dd or d[count]selector"
-moves the selected files to trash directory (if option 'trash' is set, otherwise
+moves the selected files to trash directory (if 'trash' option is set, otherwise
 delete).
 .TP
 .BI "[count]DD or D[count]selector"
@@ -1339,7 +1339,7 @@ vifmrc files and run startup commands passed in the argument list, thus losing
 all unsaved changes (e.g. recent history or keys mapped in current session).
 .TP
 .BI :[range]restore
-will restore file from trash.  Works in trash directory only.
+will restore file from trash directory, doesn't work in any other directory.
 .TP
 .BI :[range]rlink[!?]
 creates relative symbolic links of files in directory of other view.  With "?"
