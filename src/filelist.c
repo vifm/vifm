@@ -44,7 +44,7 @@
 #include <errno.h>
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
-#include <stdlib.h> /* malloc() */
+#include <stdlib.h> /* calloc() malloc() */
 #include <string.h> /* strcat() strlen() */
 #include <time.h>
 
@@ -232,13 +232,19 @@ format_name(int id, const void *data, size_t buf_len, char *buf)
 	if(entry->type == DIRECTORY)
 	{
 		name_len = strlen(entry->name);
-		entry->name[name_len - 1] = '\0';
+		if(name_len > 0)
+		{
+			entry->name[name_len - 1] = '\0';
+		}
 	}
 	snprintf(buf, buf_len + 1, "%s%s%s", prefix, entry->name, suffix);
 	/* FIXME: remove this hack for directories. */
 	if(entry->type == DIRECTORY)
 	{
-		entry->name[name_len - 1] = '/';
+		if(name_len > 0)
+		{
+			entry->name[name_len - 1] = '/';
+		}
 	}
 }
 
@@ -417,8 +423,7 @@ load_initial_directory(FileView *view, const char *dir)
 	else
 		dir = view->curr_dir;
 
-	view->dir_entry = malloc(sizeof(dir_entry_t));
-	memset(view->dir_entry, 0, sizeof(dir_entry_t));
+	view->dir_entry = calloc(1, sizeof(dir_entry_t));
 
 	view->dir_entry[0].name = strdup("");
 	view->dir_entry[0].type = DIRECTORY;
@@ -2427,7 +2432,7 @@ load_dir_list(FileView *view, int reload)
 	if(reload && view->selected_files > 0 && view->selected_filelist == NULL)
 		get_all_selected_files(view);
 
-	if(view->dir_entry)
+	if(view->dir_entry != NULL)
 	{
 		int x;
 		for(x = 0; x < old_list; x++)
