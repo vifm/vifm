@@ -68,7 +68,7 @@ filetype_builtin(const call_info_t *call_info)
 		var_val.string = (char *)get_type_str(type);
 #endif
 	}
-	return var_new(VT_STRING, var_val);
+	return var_new(VTYPE_STRING, var_val);
 }
 
 /* Returns file type from position or -1 if the position has wrong value. */

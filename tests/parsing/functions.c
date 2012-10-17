@@ -12,7 +12,7 @@ static var_t
 dummy(const call_info_t *call_info)
 {
 	static const var_val_t var_val = { .string = "" };
-	return var_new(VT_STRING, var_val);
+	return var_new(VTYPE_STRING, var_val);
 }
 
 static void

@@ -37,10 +37,10 @@
 /* Supported types of tokens. */
 typedef enum
 {
-	BEGIN, SQ, DQ, DOT, DOLLAR, LPAREN, RPAREN, COMMA, EQ, NE, WHITESPACE, CHAR,
+	BEGIN, SQ, DQ, DOT, DOLLAR, LPAREN, RPAREN, COMMA, EQ, NE, WHITESPACE, SYM,
 	END
 }
-TOKEN_TYPE;
+TOKENS_TYPE;
 
 static const int whitespace_allowed = 1;
 
@@ -61,7 +61,7 @@ static void get_next(const char **in);
 /* This contains information about the last token read. */
 struct
 {
-	TOKEN_TYPE type;
+	TOKENS_TYPE type;
 	char c;
 }prev_token, last_token;
 
@@ -150,7 +150,7 @@ is_prev_token_whitespace(void)
 static var_t
 eval_statement(const char **in)
 {
-	TOKEN_TYPE op;
+	TOKENS_TYPE op;
 	var_t lhs;
 	var_t rhs;
 	var_val_t result;
@@ -189,7 +189,7 @@ eval_statement(const char **in)
 
 	var_free(lhs);
 	var_free(rhs);
-	return var_new(VT_INT, result);
+	return var_new(VTYPE_INT, result);
 }
 
 /* expr ::= term { '.' term } */
@@ -234,7 +234,7 @@ eval_expression(const char **in)
 	if(last_error == PE_NO_ERROR)
 	{
 		const var_val_t var_val = { .string = buffer };
-		return var_new(VT_STRING, var_val);
+		return var_new(VTYPE_STRING, var_val);
 	}
 	else
 	{
@@ -266,7 +266,7 @@ eval_term(const char **in)
 			eval_envvar(in);
 			break;
 
-		case CHAR:
+		case SYM:
 			if(char_is_one_of("abcdefghijklmnopqrstuvwxyz_", tolower(last_token.c)))
 			{
 				eval_funccall(in);
@@ -284,7 +284,7 @@ eval_term(const char **in)
 	if(last_error == PE_NO_ERROR)
 	{
 		const var_val_t var_val = { .string = buffer };
-		return var_new(VT_STRING, var_val);
+		return var_new(VTYPE_STRING, var_val);
 	}
 	else
 	{
@@ -399,7 +399,7 @@ eval_envvar(const char **in)
 {
 	char name[ENVVAR_NAME_LENGTH_MAX];
 	name[0] = '\0';
-	while(last_token.type == CHAR)
+	while(last_token.type == SYM)
 	{
 		strcatch(name, last_token.c);
 		get_next(in);
@@ -425,7 +425,7 @@ eval_funccall(const char **in)
 	name[0] = last_token.c;
 	name[1] = '\0';
 	get_next(in);
-	while(last_token.type == CHAR && isalnum(last_token.c))
+	while(last_token.type == SYM && isalnum(last_token.c))
 	{
 		strcatch(name, last_token.c);
 		get_next(in);
@@ -512,7 +512,7 @@ skip_whitespace_tokens(const char **in)
 static void
 get_next(const char **in)
 {
-	TOKEN_TYPE tt;
+	TOKENS_TYPE tt;
 
 	if(last_token.type == END)
 		return;
@@ -558,7 +558,7 @@ get_next(const char **in)
 			/* break is omitted intensionally. */
 
 		default:
-			tt = CHAR;
+			tt = SYM;
 			break;
 	}
 	prev_token = last_token;

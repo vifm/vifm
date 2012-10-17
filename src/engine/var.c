@@ -27,7 +27,7 @@
 var_t
 var_false(void)
 {
-	static const var_t false_var = { VT_INT, { .integer = 0 } };
+	static const var_t false_var = { VTYPE_INT, { .integer = 0 } };
 	return false_var;
 }
 
@@ -35,7 +35,7 @@ var_t
 var_new(VarType type, const var_val_t value)
 {
 	var_t new_var = { type, value };
-	if(type == VT_STRING)
+	if(type == VTYPE_STRING)
 	{
 		new_var.value.string = strdup(value.string);
 	}
@@ -53,9 +53,9 @@ var_to_string(const var_t var)
 {
 	switch(var.type)
 	{
-		case VT_STRING:
+		case VTYPE_STRING:
 			return strdup(var.value.string);
-		case VT_INT:
+		case VTYPE_INT:
 			{
 				size_t len = snprintf(NULL, 0, "%d", var.value.integer);
 				char *str = malloc(len + 1);
@@ -73,9 +73,9 @@ var_to_boolean(const var_t var)
 {
 	switch(var.type)
 	{
-		case VT_STRING:
+		case VTYPE_STRING:
 			return var.value.string[0] != '\0';
-		case VT_INT:
+		case VTYPE_INT:
 			return var.value.integer != 0;
 
 		default:
@@ -86,7 +86,7 @@ var_to_boolean(const var_t var)
 void
 var_free(const var_t var)
 {
-	if(var.type == VT_STRING)
+	if(var.type == VTYPE_STRING)
 	{
 		free(var.value.string);
 	}
