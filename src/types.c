@@ -61,16 +61,20 @@ get_type_from_mode(mode_t mode)
 {
 	switch(mode & S_IFMT)
 	{
+#ifndef _WIN32
 		case S_IFLNK:
 			return LINK;
+#endif
 		case S_IFDIR:
 			return DIRECTORY;
 		case S_IFCHR:
 			return CHARACTER_DEVICE;
 		case S_IFBLK:
 			return BLOCK_DEVICE;
+#ifndef _WIN32
 		case S_IFSOCK:
 			return SOCKET;
+#endif
 		case S_IFREG:
 #ifndef _WIN32
 			return S_ISEXE(mode) ? EXECUTABLE : REGULAR;
