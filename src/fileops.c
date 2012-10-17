@@ -1491,6 +1491,7 @@ put_next(const char *dest_name, int override)
 		snprintf(msg + len, COMMAND_GROUP_INFO_LEN - len, "%s%s",
 				(msg[len - 2] != ':') ? ", " : "", dest_name);
 		replace_group_msg(msg);
+		free(msg);
 
 		add_operation(op, NULL, NULL, src_buf, dst_buf);
 

@@ -257,7 +257,7 @@ cmd_group_continue(void)
 }
 
 char *
-replace_group_msg(const char *msg)
+replace_group_msg(const char msg[])
 {
 	char *result;
 

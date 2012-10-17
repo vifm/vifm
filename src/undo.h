@@ -54,11 +54,10 @@ void cmd_group_begin(const char *msg);
  */
 void cmd_group_continue(void);
 
-/*
- * Replaces group message
- * Returns previous value
+/* Replaces group message (makes its own copy of the msg).  If msg equals NULL
+ * or no group is currently open, does nothing.  Returns previous value.
  */
-char * replace_group_msg(const char *msg);
+char * replace_group_msg(const char msg[]);
 
 /*
  * Returns 0 on success
