@@ -1946,7 +1946,9 @@ cmd_paren(int lb, int ub, int inc)
 	const char *ext = get_last_ext(pentry->name);
 	size_t char_width = get_char_width(pentry->name);
 	wchar_t ch = towupper(get_first_wchar(pentry->name));
+#ifndef _WIN32
 	const char *mode_str = get_mode_str(pentry->mode);
+#endif
 	int sort_key = abs(curr_view->sort[0]);
 	while(pos > lb && pos < ub)
 	{
@@ -2001,7 +2003,7 @@ cmd_paren(int lb, int ub, int inc)
 				break;
 
 		default:
-				assert(false);
+				assert(0);
 				break;
 		}
 	}
