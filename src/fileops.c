@@ -2589,9 +2589,8 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	sel = copy_string_array(view->selected_filelist, sel_len);
 	if(!view->user_selection)
 	{
-		for(i = 0; i < view->list_rows; i++)
-			view->dir_entry[i].selected = 0;
-		view->selected_files = 0;
+		/* Clean selection so that it won't get stored for gs command. */
+		erase_selection(view);
 	}
 
 	processed = 0;
