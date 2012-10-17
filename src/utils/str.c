@@ -289,5 +289,13 @@ skip_all(const char string[], char ch)
 	return (char *)string;
 }
 
+#ifdef _WIN32
+char *
+strtok_r(char str[], const char delim[], char *saveptr[])
+{
+	return strtok(str, delim);
+}
+#endif
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
