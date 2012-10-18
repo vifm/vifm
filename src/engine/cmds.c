@@ -19,7 +19,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> /* realloc() */
 #include <string.h>
 
 #include "../utils/log.h"
@@ -1340,6 +1340,8 @@ list_udf_content(const char *beginning)
 	result = NULL;
 	while(cur != NULL)
 	{
+		void *ptr;
+
 		if(strncmp(cur->name, beginning, len) != 0 || cur->type != USER_CMD)
 		{
 			cur = cur->next;
@@ -1351,10 +1353,14 @@ list_udf_content(const char *beginning)
 			result = strdup("Command -- Action");
 			result_len = strlen(result);
 		}
-		result = realloc(result,
+		ptr = realloc(result,
 				result_len + 1 + strlen(cur->name) + 10 + strlen(cur->cmd) + 1);
-		result_len += sprintf(result + result_len, "\n%-*s %s", 10, cur->name,
-				cur->cmd);
+		if(ptr != NULL)
+		{
+			result = ptr;
+			result_len += sprintf(result + result_len, "\n%-*s %s", 10, cur->name,
+					cur->cmd);
+		}
 		cur = cur->next;
 	}
 
