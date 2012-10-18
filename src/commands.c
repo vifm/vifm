@@ -1897,7 +1897,8 @@ eval_echo(const char args[], const char **stop_ptr)
 	}
 }
 
-/* Concatenates the str with the with by reallocating string. */
+/* Concatenates the str with the with by reallocating string.  Returns str, when
+ * there is not enough memory. */
 static char *
 extend_string(char *str, const char with[], size_t *len)
 {
@@ -1905,7 +1906,7 @@ extend_string(char *str, const char with[], size_t *len)
 	char *new = realloc(str, *len + with_len + 1);
 	if(new == NULL)
 	{
-		return NULL;
+		return str;
 	}
 
 	strncpy(new + *len, with, with_len + 1);
