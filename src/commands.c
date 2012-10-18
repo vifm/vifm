@@ -31,7 +31,7 @@
 #include <sys/wait.h>
 #endif
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
 #include <limits.h> /* PATH_MAX */
 #include <signal.h>
@@ -1843,14 +1843,17 @@ echo_cmd(const cmd_info_t *cmd_info)
 	return 1;
 }
 
-/* Evaluates :echo result for arguments.  Returns pointer to newly allocated
- * string, which should be freed by caller, or NULL on error.  stop_ptr will
- * point to the beginning of invalid expression in case of error. */
+/* Evaluates :echo result for arguments.  args can not be empty string.  Returns
+ * pointer to newly allocated string, which should be freed by caller, or NULL
+ * on error.  stop_ptr will point to the beginning of invalid expression in case
+ * of error. */
 TSTATIC char *
 eval_echo(const char args[], const char **stop_ptr)
 {
 	size_t len = 0;
 	char *eval_result = NULL;
+
+	assert(args[0] != '\0');
 
 	while(args[0] != '\0')
 	{
