@@ -251,6 +251,8 @@ void
 reset_popup_menu(menu_info *m)
 {
 	free(m->args);
+	/* Menu elements don't always have data associated with them.  That's why we
+	 * need this check. */
 	if(m->data != NULL)
 	{
 		free_string_array(m->data, m->len);
@@ -658,7 +660,7 @@ normalize_top(menu_info *m)
 }
 
 int
-capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
+capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 {
 	FILE *file, *err;
 	char buf[4096];
