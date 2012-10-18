@@ -41,8 +41,6 @@ Windows.
     Make 'fastrun' understand file extensions on Windows (to ignore them).
     Maybe read first bytes of files and threat files as executable if first
         two bytes equal to '$!'.
-    Remove '     :     ' from default Windows statusbar (it's left from
-        user:group on *nix).
     Make 'slowfs' option available on Windows and provide a support for builtin
         file system time 'winnetwork', which will mean network resources.
 
