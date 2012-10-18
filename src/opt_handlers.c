@@ -315,6 +315,7 @@ const char *
 classify_to_str(void)
 {
 	static char buf[64];
+	size_t len = 0;
 	int filetype;
 	buf[0] = '\0';
 	for(filetype = 0; filetype < FILE_TYPE_COUNT; filetype++)
@@ -325,13 +326,12 @@ classify_to_str(void)
 		{
 			if(buf[0] != '\0')
 			{
-				strncat(buf, ",", sizeof(buf) - 1);
+				(void)strncat(buf + len, ",", sizeof(buf) - len - 1);
+				len += strlen(buf + len);
 			}
-			strncat(buf, prefix, sizeof(buf) - 1);
-			strncat(buf, ":", sizeof(buf) - 1);
-			strncat(buf, get_type_str(filetype), sizeof(buf) - 1);
-			strncat(buf, ":", sizeof(buf) - 1);
-			strncat(buf, suffix, sizeof(buf) - 1);
+			(void)snprintf(buf + len, sizeof(buf) - len, "%s:%s:%s", prefix,
+					get_type_str(filetype), suffix);
+			len += strlen(buf + len);
 		}
 	}
 	return buf;
