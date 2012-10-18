@@ -1560,7 +1560,7 @@ static int
 chown_cmd(const cmd_info_t *cmd_info)
 {
 	char *colon, *user, *group;
-	int u = 0, g = 0;
+	int u, g;
 	uid_t uid;
 	gid_t gid;
 
@@ -2673,9 +2673,13 @@ messages_cmd(const cmd_info_t *cmd_info)
 	while(count-- > 0)
 	{
 		const char *msg = curr_stats.msgs[t];
-		lines = realloc(lines, len + 1 + strlen(msg) + 1);
-		len += sprintf(lines + len, "%s%s", (len == 0) ? "": "\n", msg);
-		t = (t + 1) % ARRAY_LEN(curr_stats.msgs);
+		char *new_lines = realloc(lines, len + 1 + strlen(msg) + 1);
+		if(new_lines != NULL)
+		{
+			lines = new_lines;
+			len += sprintf(lines + len, "%s%s", (len == 0) ? "": "\n", msg);
+			t = (t + 1) % ARRAY_LEN(curr_stats.msgs);
+		}
 	}
 
 	if(lines == NULL)
