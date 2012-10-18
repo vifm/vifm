@@ -501,7 +501,11 @@ use_info_prog(const char *viewer)
 	}
 
 	if((pid = fork()) == -1)
+	{
+		show_error_msg("Fork error", "Error forking process");
+		free(cmd);
 		return NULL;
+	}
 
 	if(pid == 0)
 	{
