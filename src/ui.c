@@ -517,6 +517,8 @@ save_status_bar_msg(const char *msg)
 	if(curr_stats.msg_tail == curr_stats.msg_head)
 	{
 		free(curr_stats.msgs[curr_stats.msg_head]);
+		curr_stats.msg_head = (curr_stats.msg_head + 1) %
+				ARRAY_LEN(curr_stats.msgs);
 	}
 	curr_stats.msgs[curr_stats.msg_tail] = strdup(msg);
 }

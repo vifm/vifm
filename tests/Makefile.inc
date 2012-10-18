@@ -38,6 +38,8 @@ else
     LDFLAGS += -lpdcurses -lregex -lnetapi32 -lws2_32
 endif
 
+.PHONY: clean
+
 $(BIN): ../bin/dummy $(OBJECTS) $(LOCAL_OBJECTS)
 	gcc -o $@ $(OBJECTS) $(LOCAL_OBJECTS) $(LDFLAGS)
 
@@ -75,6 +77,9 @@ bin/dummy:
 
 ../bin/%.o: ../seatest/%.c
 	gcc -c -o $@ $< $(CFLAGS)
+
+clean:
+	-$(RM) -r bin/
 
 include $(wildcard ../bin/*.d) $(wildcard bin/*.d)
 

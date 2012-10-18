@@ -436,7 +436,7 @@ get_command_name(const char line[], int raw, size_t buf_len, char buf[])
 	line = skip_whitespace(line);
 
 #ifdef _WIN32
-	if((left_quote = line[0] == '"'))
+	if((left_quote = (line[0] == '"')))
 	{
 		result = strchr(line + 1, '"');
 	}
@@ -451,7 +451,7 @@ get_command_name(const char line[], int raw, size_t buf_len, char buf[])
 	}
 
 #ifdef _WIN32
-	if(left_quote && (right_quote = result[0] == '"'))
+	if(left_quote && (right_quote = (result[0] == '"')))
 	{
 		result++;
 	}

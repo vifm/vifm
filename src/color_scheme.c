@@ -176,7 +176,7 @@ write_color_scheme_file(void)
 	if(make_dir(colors_dir, 0777) != 0)
 		return;
 
-	strncat(colors_dir, "/Default", sizeof(colors_dir) - 1);
+	strncat(colors_dir, "/Default", sizeof(colors_dir) - strlen(colors_dir) - 1);
 	if((fp = fopen(colors_dir, "w")) == NULL)
 		return;
 

@@ -238,7 +238,7 @@ enter_view_mode(int explore)
 
 	if(vi->lines == NULL)
 	{
-		show_error_msg("File exploring", "Wont explore empty file");
+		show_error_msg("File exploring", "Won't explore empty file");
 		return;
 	}
 	vi->widths = malloc(sizeof(*vi->widths)*vi->nlines);

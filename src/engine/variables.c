@@ -62,27 +62,32 @@ static size_t nvars;
 void
 init_variables(void)
 {
-	int i;
+	int env_count;
 	extern char **environ;
 
 	if(nvars > 0)
 		clear_variables();
 
 	/* count environment variables */
-	i = 0;
-	while(environ[i] != NULL)
-		i++;
+	env_count = 0;
+	while(environ[env_count] != NULL)
+		env_count++;
 
-	/* allocate memory for environment variables */
-	vars = malloc(sizeof(*vars)*i);
-	assert(vars != NULL);
-
-	/* initialize variable list */
-	i = 0;
-	while(environ[i] != NULL)
+	if(env_count > 0)
 	{
-		init_var(environ[i]);
-		i++;
+		int i;
+
+		/* allocate memory for environment variables */
+		vars = malloc(sizeof(*vars)*env_count);
+		assert(vars != NULL);
+
+		/* initialize variable list */
+		i = 0;
+		while(environ[i] != NULL)
+		{
+			init_var(environ[i]);
+			i++;
+		}
 	}
 
 	init_parser(&local_getenv);

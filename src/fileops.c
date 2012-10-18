@@ -629,7 +629,7 @@ is_name_list_ok(int count, int nlines, char *list[], char *files[])
 					if(file_s == NULL)
 						status_bar_errorf("Name \"%s\" contains slash", list[i]);
 					else
-						status_bar_errorf("Wont move \"%s\" file", files[i]);
+						status_bar_errorf("Won't move \"%s\" file", files[i]);
 					curr_stats.save_msg = 1;
 					return 0;
 				}
@@ -1491,6 +1491,7 @@ put_next(const char *dest_name, int override)
 		snprintf(msg + len, COMMAND_GROUP_INFO_LEN - len, "%s%s",
 				(msg[len - 2] != ':') ? ", " : "", dest_name);
 		replace_group_msg(msg);
+		free(msg);
 
 		add_operation(op, NULL, NULL, src_buf, dst_buf);
 
@@ -2588,9 +2589,8 @@ cpmv_files(FileView *view, char **list, int nlines, int move, int type,
 	sel = copy_string_array(view->selected_filelist, sel_len);
 	if(!view->user_selection)
 	{
-		for(i = 0; i < view->list_rows; i++)
-			view->dir_entry[i].selected = 0;
-		view->selected_files = 0;
+		/* Clean selection so that it won't get stored for gs command. */
+		erase_selection(view);
 	}
 
 	processed = 0;

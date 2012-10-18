@@ -120,8 +120,8 @@ int get_cmd_id(const char *cmd);
 /* Returns command id */
 int get_cmd_info(const char *cmd, cmd_info_t *info);
 
-/* Returns offset in cmd, where completion elements should be pasted */
-int complete_cmd(const char *cmd);
+/* Returns offset in cmd, where completion elements should be pasted. */
+int complete_cmd(const char cmd[]);
 
 void add_builtin_commands(const cmd_add_t *cmds, int count);
 

@@ -39,7 +39,7 @@ void tree_free(tree_t tree);
 /* Returns non-zero on error. */
 int tree_set_data(tree_t tree, const char *path, tree_val_t data);
 
-/* Wont change data content if path absent in tree. Returns non-zero on
+/* Won't change data content if path absent in tree. Returns non-zero on
  * error. */
 int tree_get_data(tree_t tree, const char *path, tree_val_t *data);
 

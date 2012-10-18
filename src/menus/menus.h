@@ -111,7 +111,9 @@ void draw_menu(menu_info *m);
 int execute_menu_cb(FileView *view, menu_info *m);
 int print_errors(FILE *ef);
 
-int capture_output_to_menu(FileView *view, const char *cmd, menu_info *m);
+/* Runs external command and puts its output to the m menu.  Returns non-zero
+ * on errors and calls reset_popup_menu() in such case. */
+int capture_output_to_menu(FileView *view, const char cmd[], menu_info *m);
 
 #endif
 

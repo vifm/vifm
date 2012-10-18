@@ -84,6 +84,7 @@ clean_menu_position(menu_info *m)
 
 	buf = malloc(x + 2);
 
+	/* TODO: check if this can be false. */
 	if(m->items != NULL && m->items[m->pos] != NULL)
 	{
 		int off = 0;
@@ -95,6 +96,10 @@ clean_menu_position(menu_info *m)
 			x -= l - 1;
 		}
 		snprintf(buf, x, " %s", m->items[m->pos] + off);
+	}
+	else
+	{
+		buf[0] = '\0';
 	}
 
 	for(z = 0; buf[z] != '\0'; z++)
@@ -251,6 +256,8 @@ void
 reset_popup_menu(menu_info *m)
 {
 	free(m->args);
+	/* Menu elements don't always have data associated with them.  That's why we
+	 * need this check. */
 	if(m->data != NULL)
 	{
 		free_string_array(m->data, m->len);
@@ -331,6 +338,7 @@ move_to_menu_pos(int pos, menu_info *m)
 	buf = malloc(x + 2);
 	if(buf == NULL)
 		return;
+	/* TODO: check if this can be false. */
 	if(m->items[pos] != NULL)
 	{
 		int off = 0;
@@ -343,6 +351,10 @@ move_to_menu_pos(int pos, menu_info *m)
 		}
 
 		snprintf(buf, x, " %s", m->items[pos] + off);
+	}
+	else
+	{
+		buf[0] = '\0';
 	}
 
 	for(z = 0; buf[z] != '\0'; z++)
@@ -658,7 +670,7 @@ normalize_top(menu_info *m)
 }
 
 int
-capture_output_to_menu(FileView *view, const char *cmd, menu_info *m)
+capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 {
 	FILE *file, *err;
 	char buf[4096];

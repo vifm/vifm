@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include <assert.h> /* assert() */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strlen() strchr() */
@@ -49,12 +50,14 @@ show_commands_menu(FileView *view)
 	if(list[0] == NULL)
 	{
 		free(list);
+		free(m.title);
 		show_error_msg("No commands set", "No commands are set.");
 		return 0;
 	}
 
 	m.len = -1;
 	while(list[++m.len] != NULL);
+	assert(m.len % 2 == 0);
 	m.len /= 2;
 
 	m.items = malloc(sizeof(char *)*m.len);

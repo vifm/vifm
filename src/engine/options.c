@@ -693,7 +693,7 @@ str_add(char *old, const char *value)
 	if(old == NULL)
 		strcpy(new, "");
 	else
-		strcat(strcpy(new, old), ",");
+		strcat(new, ",");
 	strcat(new, value);
 	return new;
 }

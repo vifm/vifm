@@ -19,7 +19,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> /* realloc() */
 #include <string.h>
 
 #include "../utils/log.h"
@@ -75,7 +75,6 @@ typedef struct
 static inner_t *inner;
 static cmds_conf_t *cmds_conf;
 
-static const char * parse_range(const char *cmd, cmd_info_t *cmd_info);
 static const char * parse_limit(const char *cmd, cmd_info_t *cmd_info);
 static const char * correct_limit(const char *cmd, cmd_info_t *cmd_info);
 static int udf_is_ambiguous(const char *name);
@@ -83,8 +82,9 @@ static const char * parse_tail(cmd_t *cur, const char *cmd,
 		cmd_info_t *cmd_info);
 static const char *get_cmd_name(const char *cmd, char *buf, size_t buf_len);
 static void init_cmd_info(cmd_info_t *cmd_info);
-static const char * skip_prefix_commands(const char *cmd);
+static const char * skip_prefix_commands(const char cmd[]);
 static cmd_t * find_cmd(const char *name);
+static const char * parse_range(const char cmd[], cmd_info_t *cmd_info);
 static int complete_cmd_args(cmd_t *cur, const char *args,
 		cmd_info_t *cmd_info);
 static void complete_cmd_name(const char *cmd_name, int user_only);
@@ -309,42 +309,6 @@ execute_cmd(const char *cmd)
 	return result;
 }
 
-/* Returns NULL on invalid range */
-static const char *
-parse_range(const char *cmd, cmd_info_t *cmd_info)
-{
-	cmd = skip_whitespace(cmd);
-
-	if(isalpha(*cmd) || *cmd == '!' || *cmd == '\0')
-		return cmd;
-
-	for(;;)
-	{
-		cmd_info->begin = cmd_info->end;
-
-		cmd = parse_limit(cmd, cmd_info);
-
-		if(cmd == NULL)
-			return NULL;
-
-		cmd = correct_limit(cmd, cmd_info);
-
-		if(cmd_info->begin == NOT_DEF)
-			cmd_info->begin = cmd_info->end;
-
-		cmd = skip_whitespace(cmd);
-
-		if(*cmd != ',')
-			break;
-
-		cmd++;
-
-		cmd = skip_whitespace(cmd);
-	}
-
-	return cmd;
-}
-
 static const char *
 parse_limit(const char *cmd, cmd_info_t *cmd_info)
 {
@@ -546,13 +510,11 @@ get_cmd_info(const char *cmd, cmd_info_t *info)
 }
 
 int
-complete_cmd(const char *cmd)
+complete_cmd(const char cmd[])
 {
 	cmd_info_t cmd_info;
-	char cmd_name[256];
-	const char *begin, *args, *cmd_name_pos;
+	const char *begin, *cmd_name_pos;
 	size_t prefix_len;
-	cmd_t *cur;
 
 	begin = cmd;
 	cmd = skip_prefix_commands(begin);
@@ -561,53 +523,70 @@ complete_cmd(const char *cmd)
 	init_cmd_info(&cmd_info);
 
 	cmd_name_pos = parse_range(cmd, &cmd_info);
-	args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
-	cur = find_cmd(cmd_name);
+	if(cmd_name_pos != NULL)
+	{
+		char cmd_name[256];
+		const char *args;
+		cmd_t *cur;
 
-	if(*args == '\0' && *args != '!' && strcmp(cmd_name, "!") != 0)
-	{
-		complete_cmd_name(cmd_name, 0);
-		prefix_len += cmd_name_pos - cmd;
-	}
-	else
-	{
-		prefix_len += args - cmd;
-		prefix_len += complete_cmd_args(cur, args, &cmd_info);
+		args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
+		cur = find_cmd(cmd_name);
+
+		if(*args == '\0' && *args != '!' && strcmp(cmd_name, "!") != 0)
+		{
+			complete_cmd_name(cmd_name, 0);
+			prefix_len += cmd_name_pos - cmd;
+		}
+		else
+		{
+			prefix_len += args - cmd;
+			prefix_len += complete_cmd_args(cur, args, &cmd_info);
+		}
 	}
 
 	return prefix_len;
 }
 
+/* Skips prefix commands (which can be followed by an arbitrary command) at the
+ * beginning of command-line. */
 static const char *
-skip_prefix_commands(const char *cmd)
+skip_prefix_commands(const char cmd[])
 {
 	cmd_info_t cmd_info;
-	char cmd_name[256];
-	const char *args;
 	const char *cmd_name_pos;
-	cmd_t *cur;
 
 	init_cmd_info(&cmd_info);
 
 	cmd_name_pos = parse_range(cmd, &cmd_info);
-	args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
-	cur = find_cmd(cmd_name);
-	while(cur != NULL && *args != '\0')
+	if(cmd_name_pos != NULL)
 	{
-		int offset = cmds_conf->skip_at_beginning(cur->id, args);
-		if(offset >= 0)
-		{
-			int delta = (args - cmd) + offset;
-			cmd += delta;
-			init_cmd_info(&cmd_info);
-			cmd_name_pos = parse_range(cmd, &cmd_info);
-			args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
-		}
-		else
-		{
-			break;
-		}
+		char cmd_name[256];
+		const char *args;
+		cmd_t *cur;
+
+		args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
 		cur = find_cmd(cmd_name);
+		while(cur != NULL && *args != '\0')
+		{
+			int offset = cmds_conf->skip_at_beginning(cur->id, args);
+			if(offset >= 0)
+			{
+				int delta = (args - cmd) + offset;
+				cmd += delta;
+				init_cmd_info(&cmd_info);
+				cmd_name_pos = parse_range(cmd, &cmd_info);
+				if(cmd_name_pos == NULL)
+				{
+					break;
+				}
+				args = get_cmd_name(cmd_name_pos, cmd_name, sizeof(cmd_name));
+			}
+			else
+			{
+				break;
+			}
+			cur = find_cmd(cmd_name);
+		}
 	}
 	return cmd;
 }
@@ -625,6 +604,42 @@ find_cmd(const char *name)
 		result = NULL;
 
 	return result;
+}
+
+/* Returns NULL on invalid range. */
+static const char *
+parse_range(const char cmd[], cmd_info_t *cmd_info)
+{
+	cmd = skip_whitespace(cmd);
+
+	if(isalpha(*cmd) || *cmd == '!' || *cmd == '\0')
+		return cmd;
+
+	for(;;)
+	{
+		cmd_info->begin = cmd_info->end;
+
+		cmd = parse_limit(cmd, cmd_info);
+
+		if(cmd == NULL)
+			return NULL;
+
+		cmd = correct_limit(cmd, cmd_info);
+
+		if(cmd_info->begin == NOT_DEF)
+			cmd_info->begin = cmd_info->end;
+
+		cmd = skip_whitespace(cmd);
+
+		if(*cmd != ',')
+			break;
+
+		cmd++;
+
+		cmd = skip_whitespace(cmd);
+	}
+
+	return cmd;
 }
 
 static const char *
@@ -1325,6 +1340,8 @@ list_udf_content(const char *beginning)
 	result = NULL;
 	while(cur != NULL)
 	{
+		void *ptr;
+
 		if(strncmp(cur->name, beginning, len) != 0 || cur->type != USER_CMD)
 		{
 			cur = cur->next;
@@ -1336,10 +1353,14 @@ list_udf_content(const char *beginning)
 			result = strdup("Command -- Action");
 			result_len = strlen(result);
 		}
-		result = realloc(result,
+		ptr = realloc(result,
 				result_len + 1 + strlen(cur->name) + 10 + strlen(cur->cmd) + 1);
-		result_len += sprintf(result + result_len, "\n%-*s %s", 10, cur->name,
-				cur->cmd);
+		if(ptr != NULL)
+		{
+			result = ptr;
+			result_len += sprintf(result + result_len, "\n%-*s %s", 10, cur->name,
+					cur->cmd);
+		}
 		cur = cur->next;
 	}
 

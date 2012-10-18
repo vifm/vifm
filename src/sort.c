@@ -102,9 +102,16 @@ strnumcmp(const char s[], const char t[])
 #if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
 		return vercmp(s, t);
 #else
-		s = skip_all(s, '0');
-		t = skip_all(t, '0');
-		return strverscmp(s, t);
+		const char *new_s = skip_all(s, '0');
+		const char *new_t = skip_all(t, '0');
+		if(new_s[0] == '\0' || new_t[0] == '\0')
+		{
+			return strverscmp(new_s, new_t);
+		}
+		else
+		{
+			return strverscmp(s, t);
+		}
 #endif
 }
 

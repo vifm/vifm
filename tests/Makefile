@@ -1,10 +1,13 @@
 dirs := commands column_view completion filetype keys misc options parsing undo
 dirs += variables viewcolumns_parser
-dirs_s := $(addsuffix _t, $(dirs))
+# generate names for build sub-targets (one for each directory)
+dirs_b := $(addsuffix _b, $(dirs))
+# generate names for clean sub-targets (one for each directory)
+dirs_c := $(addsuffix _c, $(dirs))
 
-.PHONY: tests $(dirs) $(dirs_s)
+.PHONY: tests clean $(dirs) $(dirs_b) $(dirs_c)
 
-tests: bin $(dirs_s)
+tests: bin $(dirs_b)
 ifneq ($(OS),Windows_NT)
 	@for test in `find bin/ -executable -type f`; do\
 		echo '==================================================';\
@@ -35,11 +38,11 @@ else
 	done
 endif
 
-$(dirs_s): bin
-	make --directory=$(subst _t,,$@) --makefile=../Makefile.inc
+$(dirs_b): bin
+	$(MAKE) --directory=$(subst _b,,$@) --makefile=../Makefile.inc
 
 $(dirs): bin
-	make --directory=$@ --makefile=../Makefile.inc
+	$(MAKE) --directory=$@ --makefile=../Makefile.inc
 ifneq ($(OS),Windows_NT)
 	@test=bin/$@;\
 	echo '==================================================';\
@@ -56,3 +59,9 @@ endif
 
 bin:
 	mkdir $@
+
+clean: $(dirs_c)
+	-$(RM) -r bin/
+
+$(dirs_c):
+	$(MAKE) --directory=$(subst _c,,$@) --makefile=../Makefile.inc clean

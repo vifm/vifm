@@ -203,7 +203,7 @@ until_first(const char str[], char c)
 }
 
 void
-replace_string(char **str, const char *with)
+replace_string(char **str, const char with[])
 {
 	if(*str != with)
 	{

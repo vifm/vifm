@@ -43,6 +43,9 @@
 
 #include "opt_handlers.h"
 
+/* Default value of 'viewcolumns' option, used when it's empty. */
+#define DEFAULT_VIEW_COLUMNS "-{name},{}"
+
 typedef union
 {
 	int *bool_val;
@@ -312,6 +315,7 @@ const char *
 classify_to_str(void)
 {
 	static char buf[64];
+	size_t len = 0;
 	int filetype;
 	buf[0] = '\0';
 	for(filetype = 0; filetype < FILE_TYPE_COUNT; filetype++)
@@ -322,13 +326,12 @@ classify_to_str(void)
 		{
 			if(buf[0] != '\0')
 			{
-				strncat(buf, ",", sizeof(buf) - 1);
+				(void)strncat(buf + len, ",", sizeof(buf) - len - 1);
+				len += strlen(buf + len);
 			}
-			strncat(buf, prefix, sizeof(buf) - 1);
-			strncat(buf, ":", sizeof(buf) - 1);
-			strncat(buf, get_type_str(filetype), sizeof(buf) - 1);
-			strncat(buf, ":", sizeof(buf) - 1);
-			strncat(buf, suffix, sizeof(buf) - 1);
+			(void)snprintf(buf + len, sizeof(buf) - len, "%s:%s:%s", prefix,
+					get_type_str(filetype), suffix);
+			len += strlen(buf + len);
 		}
 	}
 	return buf;
@@ -964,26 +967,21 @@ sortorder_handler(OPT_OP op, optval_t val)
 	}
 }
 
+/* Handler of local to a view 'viewcolumns' option, which defines custom view
+ * columns. */
 static void
 viewcolumns_handler(OPT_OP op, optval_t val)
 {
-	if(val.str_val[0] == '\0')
-	{
-		char buffer[128];
-		(void)snprintf(buffer, sizeof(buffer), "%s", "-{name},{}");
-		load_view_columns_option(curr_view, buffer);
-		replace_string(&curr_view->view_columns, "");
-		return;
-	}
-
 	load_view_columns_option(curr_view, val.str_val);
 }
 
 void
-load_view_columns_option(FileView *view, const char *value)
+load_view_columns_option(FileView *view, const char value[])
 {
+	const char *new_value = (value[0] == '\0') ? DEFAULT_VIEW_COLUMNS : value;
+
 	columns_clear(curr_view->columns);
-	if(parse_columns(view->columns, add_column, map_name, value) != 0)
+	if(parse_columns(view->columns, add_column, map_name, new_value) != 0)
 	{
 		text_buffer_add("Invalid format of 'viewcolumns' option");
 		error = 1;
@@ -992,6 +990,9 @@ load_view_columns_option(FileView *view, const char *value)
 	}
 	else
 	{
+		/* Set value specified by user.  Can't use DEFAULT_VIEW_COLUMNS here,
+		 * because empty value of view->view->columns signals about disabled
+		 * columns customization. */
 		replace_string(&view->view_columns, value);
 		redraw_current_view();
 	}

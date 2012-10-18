@@ -41,10 +41,11 @@
 #include <grp.h>
 #endif
 
+#include <assert.h> /* assert() */
 #include <errno.h>
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
-#include <stdlib.h> /* malloc() */
+#include <stdlib.h> /* calloc() malloc() */
 #include <string.h> /* strcat() strlen() */
 #include <time.h>
 
@@ -122,7 +123,8 @@ static void free_saved_selection(FileView *view);
 static size_t get_filetype_decoration_width(FileType type);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
-static int file_can_be_displayed(const char *directory, const char *filename);
+static int file_can_be_displayed(const char directory[], const char filename[]);
+static int parent_dir_is_visible(int in_root);
 
 const size_t COLUMN_GAP = 2;
 
@@ -231,13 +233,19 @@ format_name(int id, const void *data, size_t buf_len, char *buf)
 	if(entry->type == DIRECTORY)
 	{
 		name_len = strlen(entry->name);
-		entry->name[name_len - 1] = '\0';
+		if(name_len > 0)
+		{
+			entry->name[name_len - 1] = '\0';
+		}
 	}
 	snprintf(buf, buf_len + 1, "%s%s%s", prefix, entry->name, suffix);
 	/* FIXME: remove this hack for directories. */
 	if(entry->type == DIRECTORY)
 	{
-		entry->name[name_len - 1] = '/';
+		if(name_len > 0)
+		{
+			entry->name[name_len - 1] = '/';
+		}
 	}
 }
 
@@ -333,6 +341,10 @@ format_time(int id, const void *data, size_t buf_len, char *buf)
 		case SORT_BY_TIME_CHANGED:
 			tm_ptr = localtime(&entry->ctime);
 			break;
+
+		default:
+			assert(0 && "Unknown sort by time type");
+			break;
 	}
 	strftime(buf, buf_len + 1, cfg.time_format, tm_ptr);
 }
@@ -416,8 +428,7 @@ load_initial_directory(FileView *view, const char *dir)
 	else
 		dir = view->curr_dir;
 
-	view->dir_entry = malloc(sizeof(dir_entry_t));
-	memset(view->dir_entry, 0, sizeof(dir_entry_t));
+	view->dir_entry = calloc(1, sizeof(dir_entry_t));
 
 	view->dir_entry[0].name = strdup("");
 	view->dir_entry[0].type = DIRECTORY;
@@ -485,11 +496,16 @@ use_info_prog(const char *viewer)
 	if(pipe(error_pipe) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
+		free(cmd);
 		return NULL;
 	}
 
 	if((pid = fork()) == -1)
+	{
+		show_error_msg("Fork error", "Error forking process");
+		free(cmd);
 		return NULL;
+	}
 
 	if(pid == 0)
 	{
@@ -563,6 +579,8 @@ use_info_prog(const char *viewer)
 }
 #endif
 
+/* Returns a pointer to newly allocated memory, which should be released by the
+ * caller. */
 static char *
 get_viewer_command(const char *viewer)
 {
@@ -2138,8 +2156,7 @@ fill_dir_list(FileView *view)
 		}
 		if(stroscmp(d->d_name, "..") == 0)
 		{
-			if((is_root && !(cfg.dot_dirs & DD_ROOT_PARENT)) ||
-					(!is_root && !(cfg.dot_dirs & DD_NONROOT_PARENT)))
+			if(!parent_dir_is_visible(is_root))
 			{
 				view->list_rows--;
 				continue;
@@ -2427,7 +2444,7 @@ load_dir_list(FileView *view, int reload)
 	if(reload && view->selected_files > 0 && view->selected_filelist == NULL)
 		get_all_selected_files(view);
 
-	if(view->dir_entry)
+	if(view->dir_entry != NULL)
 	{
 		int x;
 		for(x = 0; x < old_list; x++)
@@ -2655,6 +2672,7 @@ filter_selected_files(FileView *view)
 	{
 		size_t buf_size;
 		char *name;
+		char *new_filter;
 
 		if(!view->dir_entry[x].selected)
 			continue;
@@ -2667,18 +2685,23 @@ filter_selected_files(FileView *view)
 
 		/* realloc memory allocated for filter */
 		buf_size = strlen(filter) + 1 + 1 + strlen(name) + 1 + 1;
-		filter = realloc(filter, buf_size);
+		new_filter = realloc(filter, buf_size);
 
-		/* add OR if needed */
-		if(filter[0] != '\0')
+		if(new_filter != NULL)
 		{
-			strcat(filter, "|");
-		}
+			filter = new_filter;
 
-		/* update filename filter */
-		strcat(filter, "^");
-		strcat(filter, name);
-		strcat(filter, "$");
+			/* add OR if needed */
+			if(filter[0] != '\0')
+			{
+				strcat(filter, "|");
+			}
+
+			/* update filename filter */
+			strcat(filter, "^");
+			strcat(filter, name);
+			strcat(filter, "$");
+		}
 
 		free(name);
 	}
@@ -2931,12 +2954,12 @@ pane_in_dir(FileView *view, const char *path)
 	return stroscmp(pane_dir, dir) == 0;
 }
 
-/* will remove dot and regexp filters if it's needed to make file visible
+/* Will remove dot and regexp filters if it's needed to make file visible.
  *
  * Returns non-zero if file was found.
  */
 int
-ensure_file_is_selected(FileView *view, const char *name)
+ensure_file_is_selected(FileView *view, const char name[])
 {
 	int file_pos;
 
@@ -2961,14 +2984,23 @@ ensure_file_is_selected(FileView *view, const char *name)
 }
 
 /* Checks if file specified can be displayed. Used to filter some files, that
- * are hidden intensionally. */
+ * are hidden intensionally.  Returns non-zero if file can be made visible. */
 static int
-file_can_be_displayed(const char *directory, const char *filename)
+file_can_be_displayed(const char directory[], const char filename[])
 {
-	if(is_root_dir(directory) &&
-			(strcmp(filename, "..") == 0 || strcmp(filename, "../") == 0))
-		return 0;
+	if(strcmp(filename, "..") == 0 || strcmp(filename, "../") == 0)
+	{
+		return parent_dir_is_visible(is_root_dir(directory));
+	}
 	return path_exists_at(directory, filename);
+}
+
+/* Returns non-zero if ../ directory can be displayed. */
+static int
+parent_dir_is_visible(int in_root)
+{
+	return ((in_root && (cfg.dot_dirs & DD_ROOT_PARENT)) ||
+			(!in_root && (cfg.dot_dirs & DD_NONROOT_PARENT)));
 }
 
 int

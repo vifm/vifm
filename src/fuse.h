@@ -23,7 +23,7 @@
 #include "utils/test_helpers.h"
 #include "ui.h"
 
-/* Wont mount same file twice */
+/* Won't mount same file twice */
 void fuse_try_mount(FileView *view, const char *program);
 /* Unmounts all FUSE mounded filesystems. */
 void unmount_fuse(void);

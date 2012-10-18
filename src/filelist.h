@@ -134,7 +134,7 @@ void get_all_selected_files(FileView *view);
 void get_selected_files(FileView *view, int count, const int *indexes);
 void count_selected(FileView *view);
 void free_selected_file_array(FileView *view);
-int ensure_file_is_selected(FileView *view, const char *name);
+int ensure_file_is_selected(FileView *view, const char name[]);
 
 /* Filters related functions. */
 

@@ -97,6 +97,12 @@ get_default_program_for_file(const char *file, assoc_record_t *result)
 	result->description = strdup(prog.description);
 	free(records.list);
 
+	if(result->command == NULL || result->description == NULL)
+	{
+		free_assoc_record(result);
+		return 0;
+	}
+
 	return 1;
 }
 

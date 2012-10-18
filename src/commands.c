@@ -31,7 +31,7 @@
 #include <sys/wait.h>
 #endif
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
 #include <limits.h> /* PATH_MAX */
 #include <signal.h>
@@ -1560,7 +1560,7 @@ static int
 chown_cmd(const cmd_info_t *cmd_info)
 {
 	char *colon, *user, *group;
-	int u = 0, g = 0;
+	int u, g;
 	uid_t uid;
 	gid_t gid;
 
@@ -1843,14 +1843,17 @@ echo_cmd(const cmd_info_t *cmd_info)
 	return 1;
 }
 
-/* Evaluates :echo result for arguments.  Returns pointer to newly allocated
- * string, which should be freed by caller, or NULL on error.  stop_ptr will
- * point to the beginning of invalid expression in case of error. */
+/* Evaluates :echo result for arguments.  args can not be empty string.  Returns
+ * pointer to newly allocated string, which should be freed by caller, or NULL
+ * on error.  stop_ptr will point to the beginning of invalid expression in case
+ * of error. */
 TSTATIC char *
 eval_echo(const char args[], const char **stop_ptr)
 {
 	size_t len = 0;
 	char *eval_result = NULL;
+
+	assert(args[0] != '\0');
 
 	while(args[0] != '\0')
 	{
@@ -1897,7 +1900,8 @@ eval_echo(const char args[], const char **stop_ptr)
 	}
 }
 
-/* Concatenates the str with the with by reallocating string. */
+/* Concatenates the str with the with by reallocating string.  Returns str, when
+ * there is not enough memory. */
 static char *
 extend_string(char *str, const char with[], size_t *len)
 {
@@ -1905,7 +1909,7 @@ extend_string(char *str, const char with[], size_t *len)
 	char *new = realloc(str, *len + with_len + 1);
 	if(new == NULL)
 	{
-		return NULL;
+		return str;
 	}
 
 	strncpy(new + *len, with, with_len + 1);
@@ -2672,9 +2676,13 @@ messages_cmd(const cmd_info_t *cmd_info)
 	while(count-- > 0)
 	{
 		const char *msg = curr_stats.msgs[t];
-		lines = realloc(lines, len + 1 + strlen(msg) + 1);
-		len += sprintf(lines + len, "%s%s", (len == 0) ? "": "\n", msg);
-		t = (t + 1) % ARRAY_LEN(curr_stats.msgs);
+		char *new_lines = realloc(lines, len + 1 + strlen(msg) + 1);
+		if(new_lines != NULL)
+		{
+			lines = new_lines;
+			len += sprintf(lines + len, "%s%s", (len == 0) ? "": "\n", msg);
+			t = (t + 1) % ARRAY_LEN(curr_stats.msgs);
+		}
 	}
 
 	if(lines == NULL)

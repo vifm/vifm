@@ -183,6 +183,12 @@
 
 	Fixed assignment of empty value to a option of set type.
 
+	Fixed small memory leak on restoring files from trash and putting files.
+
+	Fixed small memory leak related to :messages command.
+
+	Fixed small memory leak related to implicit single file selection.
+
 0.7.3 to 0.7.3a
 
 	Added a section about color schemes to the documentation.

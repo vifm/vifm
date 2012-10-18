@@ -171,6 +171,7 @@ restore_from_trash(const char *trash_name)
 		snprintf(msg + len, COMMAND_GROUP_INFO_LEN - len, "%s%s",
 				(msg[len - 2] != ':') ? ", " : "", strchr(trash_name, '_') + 1);
 		replace_group_msg(msg);
+		free(msg);
 
 		add_operation(OP_MOVE, NULL, NULL, full, buf);
 		cmd_group_end();
