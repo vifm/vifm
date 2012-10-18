@@ -1,12 +1,12 @@
-*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Oct 07
+*vifm.txt*    For Vifm version 0.7.3a  Last change: 2012 Oct 15
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
 |vifm-options|            Command line arguments.
 |vifm-general-keys|       General keys, that work in the most of modes.
-|vifm-normal|             normal mode keys.
-|vifm-visual|             visual mode keys.
-|vifm-view|               view mode keys.
+|vifm-normal|             Normal mode keys.
+|vifm-visual|             Visual mode keys.
+|vifm-view|               View mode keys.
 |vifm-command-line|       Command line mode keys.
 |vifm-commands|           How to use and set :commands.
 |vifm-commands-bg|        Backgrounding of commands.
@@ -18,10 +18,12 @@
 |vifm-configure|          Configuration of vifm.
 |vifm-menus-and-dialogs|  Keys for menus and dialogs.
 |vifm-view-look|          Gives general overview of view displaying variants.
-|vifm-ls-view|            ls-like view details.
+|vifm-ls-view|            Some details about ls-like view.
 |vifm-column-view|        Column view configuration details.
 |vifm-colorschemes|       Details on using color schemes in vifm.
 |vifm-fuse|               Using automated FUSE mounts.
+|vifm-trash|              Details about trash directory in vifm.
+|vifm-clientserver|       Client-server communication.
 |vifm-plugin|             Using the vifm.vim plugin.
 |vifm-reserved|           List of reserved commands.
 
@@ -65,10 +67,17 @@ The other command line arguments are:
     of executable (on Windows) is used to log startup process (when
     configuration directory isn't determined).
 --remote                                       *vifm---remote*
-    passes all arguments that left in command line to active vifm server
-    (already running instance if any).
+    sends the rest of command line to the active vifm server (one of already
+    running instances if any).  When there is no server, quits silently.
+    There is no limit on how many arguments can be processed.  One can
+    combine --remote with -c <command> or +<command> to execute command in
+    already running instance of vifm.  See also |vifm-clientserver|.
 -c <command>, +<command>                       *vifm--c* *vifm--+c*
-    run <command> on startup.
+    run command-line mode <command> on startup.  Commands in such arguments
+    are executed in the order they appear in command line.  Commands with
+    spaces or special symbols must be enclosed in double or single quotes or
+    all special symbols should be escaped (the exact syntax strongly depends
+    on shell).
 --help, -h                                     *vifm---help* *vifm--h*
     show a brief command summary and exit vifm.
 --version, -v                                  *vifm---version* *vifm--v*
@@ -364,13 +373,13 @@ cp - change file attributes (permission on *nix and properties on
 [count]C - clone file [count] times.
 
                                                *vifm-d* *vifm-dd*
-dd - move selected file or files to $VIFM/Trash (if option |vifm-'trash'|
-    is set otherwise delete)
+dd - move selected file or files to |vifm-trash| directory (if option
+    |vifm-'trash'| is set, otherwise delete).
 d<selector> - like dd.
 
                                                *vifm-D* *vifm-DD*
-DD and D<selector> - like dd and d<selector>, but omitting trash directory
-    (even when option |vifm-'trash'| is set).
+DD and D<selector> - like dd and d<selector>, but omitting |vifm-trash|
+    directory (even when |vifm-'trash'| option is set).
 
 yy, Y - yank selected files.                   *vifm-yy* *vifm-Y*
 y<selector> - yank files.                      *vifm-y*
@@ -378,7 +387,7 @@ y<selector> - yank files.                      *vifm-y*
                                                *vifm-p*
 p - will copy the yanked files to the current directory or move the files
     to the current directory if they were deleted with dd or :d[elete] or
-    if the files were yanked from the Trash directory.
+    if the files were yanked from |vifm-trash| directory.
 
                                                *vifm-P*
 P - moves the last yanked files.  The advantage of using P instead of d
@@ -462,7 +471,7 @@ aren't and should be used to append new files to the existing file list
 of appropriate lowercase register (A for a, B for b, ...).
 
 Registers can be changed on :empty command if they contain files under
-Trash directory.
+|vifm-trash| directory.
 
 Registers do not contain one file more than once.
 
@@ -892,10 +901,9 @@ The builtin commands are:
     previously were not being executed.  See also |vifm-:if|.
 
                                                *vifm-:empty*
-:empty - permanently remove files from the $VIFM/Trash directory.  It will
-    also remove all operations from undolist that have no sense after :empty
-    and remove all records about files in the Trash directory from all
-    registers.
+:empty - permanently remove files from |vifm-trash| directory.  It will also
+    remove all operations from undolist that have no sense after :empty and
+    remove all records about files in |vifm-trash| directory from all registers.
 
                                                *vifm-:endif* *vifm-:en*
 :en[dif] - ends conditional block.  See also |vifm-:if| and |vifm-:else|.
@@ -1177,8 +1185,8 @@ order using the '.' operator.  Any whitespace is ignored.
     keys mapped in current session).
 
                                                *vifm-:restore*
-:[range]restore - will restore file from Trash.  Works in trash directory
-    only.
+:[range]restore - will restore file from |vifm-trash| directory, doesn't work
+    in any other directory.
 
                                                *vifm-:rlink*
 :[range]rlink[!?] - creates relative symbolic links of files in directory of
@@ -1585,6 +1593,9 @@ default: nonrootparent
 Controls displaying of dot directories.  The following values are possible:
    rootparent    - show "../" in root directory of file system
    nonrootparent - show "../" in non-root directories of file system
+Note that empty directories will always contain "../" entry regardless of value
+of this option.  "../" will disappear at the moment at least one file is created
+inside the directory.
 
                                                *vifm-'fastrun'*
 fastrun
@@ -1820,14 +1831,14 @@ Format of time in file list.  See man date or man strftime for details.
 trash
 type: boolean
 default: true
-Use trash directory.
+Use |vifm-trash| directory.
 
                                                *vifm-'trashdir'*
 trashdir
 type: string
 default: "$HOME/.vifm/Trash
-Sets the trash directory. Will attempt to create the directory if it does not
-exist.
+Sets path to |vifm-trash| directory.  Will attempt to create the directory
+if it does not exist.
 
                                                *vifm-'timeoutlen'* *vifm-'tm'*
 timeoutlen tm
@@ -2123,7 +2134,7 @@ and :range are supported).
 
 Apropos menu~
 
-l key wont close the menu allowing user to pick another man page, use :q to
+l key won't close the menu allowing user to pick another man page, use :q to
 close the menu.
 
 vifm-commands menu~
@@ -2281,7 +2292,7 @@ All % macros are expanded by vifm at runtime and have the following meaning:
    - %CLEAR means that you want to clear screen before running mount command.
 
 %CLEAR is an optional macro.  Other macros are not mandatory, but mount
-commands likely wont work without them.
+commands likely won't work without them.
 
 The mounted FUSE file systems will be automatically unmounted in two cases:
    - when vifm quits (with |vifm-ZZ|, |vifm-:q|, etc. or when killed by signal);
@@ -2453,6 +2464,63 @@ File list will look in the following way for each level:
    - ~/bin/my/ - mix of Default, for_bin and for_bin_my color schemes
        red background
        cursor with black background and green foreground
+
+--------------------------------------------------------------------------------
+*vifm-trash*
+
+vifm has support of trash directory, which is used as temporary storage for
+deleted files or files that were cut.  Using trash is controlled by the
+|vifm-'trash'| option, and exact path to the trash can be set with
+|vifm-'trashdir'| option.  Trash directory in vifm differs from the system-wide
+one by default, because of possible incompatibilities of storing deleted files
+among different file managers.  But one can set |vifm-'trashdir'| to
+"~/.local/share/Trash" to use a "standard" trash directory.
+
+There are two scenarios of using trash in vifm:
+
+1. As a place for storing files that were cut by |vifm-d| and may be
+   inserted to some other place in file system.
+2. As a storage of files, that are deleted but not purged yet.
+
+The first scenario uses deletion (|vifm-d|) operations to put files to
+trash and put (|vifm-p|) operations to restore files from trash directory.
+Note that such operations move files to and from trash directory,
+which can be long term operations in case of different partitions or
+remote drives mounted locally.
+
+The second scenario uses deletion (|vifm-d|) operations for moving files
+to trash directory and |vifm-:empty| command-line command to purge all
+previously deleted files.
+
+Deletion and put operations depend on registers, which can point to files in
+trash directory.  Normally, there are no nonexistent files in registers, but
+vifm doesn't keep track of modifications under trash directory, so one
+shouldn't expect value of registers to be absolutely correct if trash
+directory was modified not by operation that are meant for it.  But this
+won't lead to any issues with operations, since they ignore nonexistent
+files.
+
+--------------------------------------------------------------------------------
+*vifm-clientserver*
+
+vifm supports remote execution of command-line mode commands as well as remote
+changing of directories.  This is possible using |vifm---remote| command-line
+argument.
+
+To execute a command remotely combine --remote argument with |vifm--c| or
+|vifm--+c|.  For example: >
+    vifm --remote -c 'cd /'
+    vifm --remote '+cd /'
+<
+To change directory not using command-line mode commands one can specify paths
+right after --remote argument, like this: >
+    vifm --remote /
+    vifm --remote ~
+    vifm --remote /usr/bin /tmp
+<
+At the moment there is no way of specifying, which instance of vifm should
+arguments be sent.  The main purpose of --remote argument is to provide
+support of using vifm as a single-instance application.
 
 --------------------------------------------------------------------------------
 *vifm-plugin*

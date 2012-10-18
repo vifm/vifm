@@ -63,6 +63,10 @@ Vi(m) specific features that need to be added.
     Expand environment variables for :edit command.
     Think about dot normal mode command.
     Add support of [count] for Ctrl-E/Ctrl-Y.
+    Completion based on global (when one enters pattern<tab>, e.g. *.c<tab>).
+    Make d2d, y2y and D2D work as in Vim.
+    Quickfix list support (to navigate through file list produced by :find or
+        :locate with :cn, :cp and alike).
 
 Possible things to add.
     Use system wide mimetypes file. /etc/mailcap?
@@ -87,6 +91,8 @@ Possible things to add.
     $_ env var and Alt-T combination as in bash shell.
     Rename existing file option on name conflicts.
     Support of command line arguments like ~/some.ssh/server/path (for FUSE).
+    Think about running vim on :help command in kind of sandbox, so the only
+        help files available were those provided by vifm.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.

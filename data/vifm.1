@@ -1,4 +1,4 @@
-.TH vifm 1 "October 7, 2012" "" "Vifm"
+.TH vifm 1 "October 15, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -43,11 +43,17 @@ executable (on Windows) is used to log startup process (when configuration
 directory isn't determined).
 .TP
 .BI "\-\-remote"
-Passes all arguments that left in command line to active vifm server (already
-running instance if any).
+Sends the rest of command line to the active vifm server (one of already running
+instances if any).  When there is no server, quits silently.  There is no limit
+on how many arguments can be processed.  One can combine \-\-remote with \-c
+<command> or +<command> to execute command in already running instance of vifm.
+See also "Client\-Server" section below.
 .TP
 .BI "\-c <command> or +<command>"
-Run <command> on startup.
+Run command-line mode <command> on startup.  Commands in such arguments are
+executed in the order they appear in command line.  Commands with spaces or
+special symbols must be enclosed in double or single quotes or all special
+symbols should be escaped (the exact syntax strongly depends on shell).
 .TP
 .BI "\-\-help, \-h"
 Show an overview of the commandline options.
@@ -410,8 +416,8 @@ change file attributes (permission on *nix and properties on Windows).
 clone file [count] times.
 .TP
 .BI "[count]dd or d[count]selector"
-moves the selected files to the trash directory (if option 'trash' is set
-otherwise delete)
+moves the selected files to trash directory (if 'trash' option is set, otherwise
+delete).  See "Trash directory" section below.
 .TP
 .BI "[count]DD or D[count]selector"
 removes the selected files.
@@ -425,7 +431,7 @@ same as yy.
 .BI p
 will copy the yanked files to the current directory or move the files
 to the current directory if they were deleted with dd or :d[elete] or if the
-files were yanked from the Trash directory.
+files were yanked from trash directory.  See "Trash directory" section below.
 .TP
 .BI P
 moves the last yanked files.  The advantage of using P instead of d followed by
@@ -518,8 +524,8 @@ registers are cleared before adding new files, while uppercase aren't and should
 be used to append new files to the existing file list of appropriate lowercase
 register (A for a, B for b, ...).
 
-Registers can be changed on :empty command if they contain files under Trash
-directory.
+Registers can be changed on :empty command if they contain files under trash
+directory (see "Trash directory" section below).
 
 Registers do not contain one file more than once.
 
@@ -1011,9 +1017,10 @@ executes commands until next matching :endif if they previously were not being
 executed.  See also help on :if and :endif commands.
 .TP
 .BI :empty
-will permanently remove 'rm \-fr' files from the Trash directory.  It will also
+will permanently remove 'rm \-fr' files from trash directory.  It will also
 remove all operations from undolist that have no sense after :empty and remove
-all records about files in the Trash directory from all registers.
+all records about files in trash directory from all registers.  See
+"Trash directory" section below.
 .TP
 .BI :en[dif]
 ends conditional block.  See also help on :if and :else commands.
@@ -1333,7 +1340,8 @@ vifmrc files and run startup commands passed in the argument list, thus losing
 all unsaved changes (e.g. recent history or keys mapped in current session).
 .TP
 .BI :[range]restore
-will restore file from Trash.  Works in trash directory only.
+will restore file from trash directory, doesn't work in any other directory.
+See "Trash directory" section below.
 .TP
 .BI :[range]rlink[!?]
 creates relative symbolic links of files in directory of other view.  With "?"
@@ -1854,8 +1862,12 @@ type: set
 default: nonrootparent
 .br
 Controls displaying of dot directories.  The following values are possible:
- - rootparent    \- show "../" in root directory of file system
- - nonrootparent \- show "../" in non-root directories of file system
+ \- rootparent    \- show "../" in root directory of file system
+ \- nonrootparent \- show "../" in non-root directories of file system
+.br
+Note that empty directories will always contain "../" entry regardless of value
+of this option.  "../" will disappear at the moment at least one file is created
+inside the directory.
 .TP
 .BI fastrun
 type: boolean
@@ -2093,7 +2105,7 @@ are supported:
 .HP 7
 \- %s \- file size in human readable format
 .HP 7
-\- %E \- size of selected files in human readable format, same as %s when no
+\- %E \- size of selected files in human readable format, same as %s when no
 files are selected, except that it will never show size of ../ in visual mode,
 since it cannot be selected
 .HP 7
@@ -2166,14 +2178,15 @@ type: boolean
 .br
 default: true
 .br
-Use trash directory.
+Use trash directory.  See "Trash directory" section below.
 .TP
 .BI trashdir
 type: string
 .br
 default: "$HOME/.vifm/Trash"
 .br
-Sets the trash directory. Will attempt to create the directory if it does not exist.
+Sets path to trash directory.  Will attempt to create the directory if it does
+not exist.  See "Trash directory" section below.
 .TP
 .BI "undolevels ul"
 type: integer
@@ -2522,7 +2535,7 @@ and :range are supported).
 
 .B Apropos menu
 
-l key wont close the menu allowing user to pick another man page, use :q to
+l key won't close the menu allowing user to pick another man page, use :q to
 close the menu.
 
 .B Commands menu
@@ -2685,7 +2698,7 @@ in the future it can be changed to whole file content
   \- %CLEAR means that you want to clear screen before running mount command.
 
 %CLEAR is an optional macro.  Other macros are not mandatory, but mount \
-commands likely wont work without them.
+commands likely won't work without them.
 
 The mounted FUSE file systems will be automatically unmounted in two cases:
 .IP \- 2
@@ -2904,6 +2917,65 @@ cursor with black background and red foreground
 red background
 .br
 cursor with black background and green foreground
+.\" ---------------------------------------------------------------------------
+.SH Trash directory
+.\" ---------------------------------------------------------------------------
+vifm has support of trash directory, which is used as temporary storage for
+deleted files or files that were cut.  Using trash is controlled by the
+\'trash' option, and exact path to the trash can be set with 'trashdir' option.
+Trash directory in vifm differs from the system-wide one by default, because of
+possible incompatibilities of storing deleted files among different file
+managers.  But one can set 'trashdir' to "~/.local/share/Trash" to use a
+"standard" trash directory.
+
+There are two scenarios of using trash in vifm:
+.IP 1. 4
+As a place for storing files that were cut by "d" and may be inserted to some
+other place in file system.
+.IP 2. 4
+As a storage of files, that are deleted but not purged yet.
+.LP
+
+The first scenario uses deletion ("d") operations to put files to trash and
+put ("p") operations to restore files from trash directory.  Note that such
+operations move files to and from trash directory, which can be long term
+operations in case of different partitions or remote drives mounted locally.
+
+The second scenario uses deletion ("d") operations for moving files to trash
+directory and :empty command-line command to purge all previously deleted files.
+
+Deletion and put operations depend on registers, which can point to files in
+trash directory.  Normally, there are no nonexistent files in registers, but
+vifm doesn't keep track of modifications under trash directory, so one
+shouldn't expect value of registers to be absolutely correct if trash
+directory was modified not by operation that are meant for it.  But this
+won't lead to any issues with operations, since they ignore nonexistent
+files.
+.\" ---------------------------------------------------------------------------
+.SH Client\-Server
+.\" ---------------------------------------------------------------------------
+vifm supports remote execution of command-line mode commands as well as remote
+changing of directories.  This is possible using \-\-remote command-line
+argument.
+
+To execute a command remotely combine \-\-remote argument with \-c <command> or
++<command>.  For example:
+.EX
+    vifm \-\-remote \-c 'cd /'
+    vifm \-\-remote '+cd /'
+.EE
+
+To change directory not using command-line mode commands one can specify paths
+right after \-\-remote argument, like this:
+.EX
+    vifm \-\-remote /
+    vifm \-\-remote ~
+    vifm \-\-remote /usr/bin /tmp
+.EE
+
+At the moment there is no way of specifying, which instance of vifm should
+arguments be sent.  The main purpose of \-\-remote argument is to provide
+support of using vifm as a single-instance application.
 .\" ---------------------------------------------------------------------------
 .SH Plugin
 .\" ---------------------------------------------------------------------------
