@@ -41,6 +41,7 @@
 #include <grp.h>
 #endif
 
+#include <assert.h> /* assert() */
 #include <errno.h>
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
@@ -340,6 +341,10 @@ format_time(int id, const void *data, size_t buf_len, char *buf)
 		case SORT_BY_TIME_CHANGED:
 			tm_ptr = localtime(&entry->ctime);
 			break;
+
+		default:
+			assert(0 && "Unknown sort by time type");
+			break;
 	}
 	strftime(buf, buf_len + 1, cfg.time_format, tm_ptr);
 }
@@ -491,6 +496,7 @@ use_info_prog(const char *viewer)
 	if(pipe(error_pipe) != 0)
 	{
 		show_error_msg("File pipe error", "Error creating pipe");
+		free(cmd);
 		return NULL;
 	}
 
@@ -569,6 +575,8 @@ use_info_prog(const char *viewer)
 }
 #endif
 
+/* Returns a pointer to newly allocated memory, which should be released by the
+ * caller. */
 static char *
 get_viewer_command(const char *viewer)
 {
