@@ -104,7 +104,7 @@ strnumcmp(const char s[], const char t[])
 #else
 		const char *new_s = skip_all(s, '0');
 		const char *new_t = skip_all(t, '0');
-		if(new_s[0] == '\0' || new_t == '\0')
+		if(new_s[0] == '\0' || new_t[0] == '\0')
 		{
 			return strverscmp(new_s, new_t);
 		}
