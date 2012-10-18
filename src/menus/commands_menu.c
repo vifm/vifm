@@ -49,6 +49,7 @@ show_commands_menu(FileView *view)
 	if(list[0] == NULL)
 	{
 		free(list);
+		free(m.title);
 		show_error_msg("No commands set", "No commands are set.");
 		return 0;
 	}
