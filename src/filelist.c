@@ -2660,6 +2660,7 @@ filter_selected_files(FileView *view)
 	{
 		size_t buf_size;
 		char *name;
+		char *new_filter;
 
 		if(!view->dir_entry[x].selected)
 			continue;
@@ -2672,18 +2673,23 @@ filter_selected_files(FileView *view)
 
 		/* realloc memory allocated for filter */
 		buf_size = strlen(filter) + 1 + 1 + strlen(name) + 1 + 1;
-		filter = realloc(filter, buf_size);
+		new_filter = realloc(filter, buf_size);
 
-		/* add OR if needed */
-		if(filter[0] != '\0')
+		if(new_filter != NULL)
 		{
-			strcat(filter, "|");
-		}
+			filter = new_filter;
 
-		/* update filename filter */
-		strcat(filter, "^");
-		strcat(filter, name);
-		strcat(filter, "$");
+			/* add OR if needed */
+			if(filter[0] != '\0')
+			{
+				strcat(filter, "|");
+			}
+
+			/* update filename filter */
+			strcat(filter, "^");
+			strcat(filter, name);
+			strcat(filter, "$");
+		}
 
 		free(name);
 	}
