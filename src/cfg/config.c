@@ -77,8 +77,8 @@ static void create_config_dir(void);
 #ifndef _WIN32
 static void create_help_file(void);
 static void create_rc_file(void);
-static void add_default_bookmarks(void);
 #endif
+static void add_default_bookmarks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
 static void free_view_history(FileView *view);
 static void reduce_view_history(FileView *view, size_t size);
@@ -469,6 +469,7 @@ create_rc_file(void)
 	char command[] = CP_RC;
 	(void)my_system(command);
 }
+#endif
 
 /* Adds 'H' and 'z' default bookmarks. */
 static void
@@ -479,7 +480,6 @@ add_default_bookmarks(void)
 	add_bookmark('H', cfg.home_dir, "../");
 	add_bookmark('z', cfg.config_dir, "../");
 }
-#endif
 
 /* ensures existence of trash directory */
 void

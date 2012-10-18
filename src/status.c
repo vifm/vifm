@@ -142,7 +142,7 @@ set_env_type(status_t *stats)
 			ENVTYPE_EMULATOR : ENVTYPE_EMULATOR_WITH_X;
 	}
 #else
-	curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X;
+	curr_stats.env_type = ENVTYPE_EMULATOR_WITH_X;
 #endif
 }
 

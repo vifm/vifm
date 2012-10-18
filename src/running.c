@@ -18,7 +18,9 @@
  */
 
 #include <sys/stat.h> /* stat */
+#ifndef _WIN32
 #include <sys/wait.h> /* WEXITSTATUS() */
+#endif
 
 #include <signal.h> /* sighandler_t, signal() */
 #include <stdio.h> /* snprintf() */

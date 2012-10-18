@@ -1,3 +1,8 @@
+Q: Vifm doesn't run executables, what's wrong with it?
+
+A: Nothing.  Just set 'runexec' option on.  It's off by default.
+
+--------------------------------------------------------------------------------
 Q: How can I use SSH with vifm?
 
 A: Follow this steps:

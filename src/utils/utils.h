@@ -27,7 +27,9 @@
 #include <regex.h>
 
 #include <sys/types.h> /* mode_t */
+#ifndef _WIN32
 #include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() */
+#endif
 
 #include <limits.h> /* PATH_MAX */
 #include <stddef.h> /* size_t */

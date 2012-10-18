@@ -75,6 +75,9 @@ char * escape_chars(const char string[], const char chars[]);
 int is_null_or_empty(const char string[]);
 /* Returns pointer to first character in the string not equal to the ch. */
 char * skip_all(const char string[], char ch);
+#ifdef _WIN32
+char * strtok_r(char str[], const char delim[], char *saveptr[]);
+#endif
 
 #endif
 

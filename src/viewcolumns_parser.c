@@ -6,6 +6,10 @@
 #include <stdlib.h> /* free() */
 #include <string.h> /* strchr() strtok_r() */
 
+#ifdef _WIN32
+#include "utils/str.h" /* strtok_r() */
+#endif
+
 #include "viewcolumns_parser.h"
 
 static column_info_t * parse_all(map_name_cb cn, const char *str, size_t *len);

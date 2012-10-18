@@ -1870,7 +1870,7 @@ entry_is_dir(const char full_path[], const struct dirent* dentry)
 		}
 		return 0;
 #else
-		return is_dir(buf);
+		return is_dir(full_path);
 #endif
 }
 

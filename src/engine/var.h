@@ -25,8 +25,8 @@
 /* Enumeration of variable types. */
 typedef enum
 {
-	VT_STRING, /* Regular string value. */
-	VT_INT, /* Integer, which is also used for boolean. */
+	VTYPE_STRING, /* Regular string value. */
+	VTYPE_INT, /* Integer, which is also used for boolean. */
 }VarType;
 
 /* Union of possible variable contents. */
