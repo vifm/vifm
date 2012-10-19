@@ -1,6 +1,10 @@
 0.7.4 to current
 
+	Don't redraw statbar until end of :restart command.
+
 	Fixed autotools configuration files.
+
+	Fix terminal size resetting after :restart.
 
 0.7.3a to 0.7.4
 
