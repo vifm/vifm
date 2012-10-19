@@ -100,7 +100,7 @@ void add_assoc_records(assoc_records_t *assocs, const assoc_records_t src);
 int assoc_prog_is_empty(const assoc_record_t *record);
 
 TSTATIC_DEFS(
-	void replace_double_comma(char *cmd, int put_null);
+	void replace_double_comma(char cmd[], int put_null);
 )
 
 #endif

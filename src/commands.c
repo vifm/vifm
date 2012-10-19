@@ -957,7 +957,7 @@ execute_command(FileView *view, const char command[], int menu)
  *  - 2 in arg
  */
 TSTATIC int
-line_pos(const char *begin, const char *end, char sep, int rquoting)
+line_pos(const char begin[], const char end[], char sep, int rquoting)
 {
 	int state;
 	int count;

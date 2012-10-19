@@ -22,6 +22,8 @@
 
 #include <stddef.h> /* size_t ssize_t */
 
+
+#include "utils/test_helpers.h"
 #include "ui.h"
 
 /* Initialization/termination functions. */
@@ -178,9 +180,9 @@ int set_view_path(FileView *view, const char *path);
 /* Returns possible cached or calculated value of file size. */
 uint64_t get_file_size_by_entry(const FileView *view, size_t pos);
 
-#ifdef TEST
-int regexp_filter_match(FileView *view, const char *filename);
-#endif
+TSTATIC_DEFS(
+	int regexp_filter_match(FileView *view, const char filename[]);
+)
 
 #endif
 

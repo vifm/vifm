@@ -47,7 +47,7 @@ static assoc_record_type_t new_records_type = ART_CUSTOM;
 /* Pointer to external command existence check function. */
 static external_command_exists_t external_command_exists_func;
 
-TSTATIC void replace_double_comma(char *cmd, int put_null);
+TSTATIC void replace_double_comma(char cmd[], int put_null);
 static int get_filetype_number(const char *file, assoc_list_t assoc_list);
 static void assoc_programs(const char pattern[], const char programs[],
 		int for_x, int in_x);
@@ -247,7 +247,7 @@ assoc_programs(const char pattern[], const char programs[], int for_x, int in_x)
 }
 
 TSTATIC void
-replace_double_comma(char *cmd, int put_null)
+replace_double_comma(char cmd[], int put_null)
 {
 	char *p = cmd;
 	while(*cmd != '\0')

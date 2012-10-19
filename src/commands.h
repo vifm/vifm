@@ -55,7 +55,7 @@ char * cmds_expand_envvars(const char *str);
 #include "engine/cmds.h"
 #endif
 TSTATIC_DEFS(
-	int line_pos(const char *begin, const char *end, char sep, int regexp);
+	int line_pos(const char begin[], const char end[], char sep, int regexp);
 	void select_range(int id, const cmd_info_t *cmd_info);
 	char * eval_echo(const char args[], const char **stop_ptr);
 )

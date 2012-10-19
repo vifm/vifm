@@ -21,6 +21,8 @@
 
 #include <wchar.h>
 
+#include "../utils/test_helpers.h"
+
 enum
 {
 	NO_COUNT_GIVEN = -1,
@@ -197,17 +199,17 @@ wchar_t ** list_cmds(int mode);
  */
 size_t get_key_counter(void);
 
-#ifdef TEST
-/*
- * Returns NULL on error
- */
-key_conf_t * add_cmd(const wchar_t *keys, int mode);
+TSTATIC_DEFS(
+	/*
+	 * Returns NULL on error
+	 */
+	key_conf_t * add_cmd(const wchar_t keys[], int mode);
 
-/*
- * Returns NULL on error
- */
-key_conf_t* add_selector(const wchar_t *keys, int mode);
-#endif
+	/*
+	 * Returns NULL on error
+	 */
+	key_conf_t* add_selector(const wchar_t keys[], int mode);
+)
 
 #endif
 

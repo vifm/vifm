@@ -49,8 +49,9 @@ static fuse_mount_t *fuse_mounts;
 
 static int fuse_mount(FileView *view, char *file_full_path, const char *param,
 		const char *program, char *mount_point);
-TSTATIC int format_mount_command(const char *mount_point, const char *file_name,
-		const char *param, const char *format, size_t buf_size, char *buf);
+TSTATIC int format_mount_command(const char mount_point[],
+		const char file_name[], const char param[], const char format[],
+		size_t buf_size, char buf[]);
 static fuse_mount_t * get_mount_by_source(const char *source);
 static fuse_mount_t * get_mount_by_mount_point(const char *dir);
 static void updir_from_mount(FileView *view, fuse_mount_t *runner);
@@ -255,8 +256,8 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
  * Returns non-zero if format contains %CLEAR.
  * */
 TSTATIC int
-format_mount_command(const char *mount_point, const char *file_name,
-		const char *param, const char *format, size_t buf_size, char *buf)
+format_mount_command(const char mount_point[], const char file_name[],
+		const char param[], const char format[], size_t buf_size, char buf[])
 {
 	char *buf_pos;
 	const char *prog_pos;

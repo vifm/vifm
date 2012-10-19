@@ -59,6 +59,7 @@
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/test_helpers.h"
 #include "utils/tree.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
@@ -2006,11 +2007,8 @@ reset_selected_files(FileView *view, int need_free)
 	}
 }
 
-#ifndef TEST
-static
-#endif
-int
-regexp_filter_match(FileView *view, const char *filename)
+TSTATIC int
+regexp_filter_match(FileView *view, const char filename[])
 {
 	if(!view->filter_is_valid)
 		return view->invert;

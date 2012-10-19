@@ -25,6 +25,7 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/test_helpers.h"
 
 #include "keys.h"
 
@@ -592,11 +593,8 @@ combine_counts(int count_a, int count_b)
 	}
 }
 
-#ifndef TEST
-static
-#endif
-key_conf_t *
-add_cmd(const wchar_t *keys, int mode)
+TSTATIC key_conf_t *
+add_cmd(const wchar_t keys[], int mode)
 {
 	key_chunk_t *curr = add_keys_inner(&builtin_cmds_root[mode], keys);
 	return &curr->conf;
@@ -684,11 +682,8 @@ find_user_keys(const wchar_t *keys, int mode)
 	return curr;
 }
 
-#ifndef TEST
-static
-#endif
-key_conf_t *
-add_selector(const wchar_t *keys, int mode)
+TSTATIC key_conf_t *
+add_selector(const wchar_t keys[], int mode)
 {
 	key_chunk_t *curr = add_keys_inner(&selectors_root[mode], keys);
 	return &curr->conf;

@@ -25,16 +25,14 @@
 #include "menus/menus.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "filename_modifiers.h"
 
 #include "macros.h"
 
-#ifndef TEST
-static
-#endif
-char * append_selected_files(FileView *view, char *expanded, int under_cursor,
-		int quotes, const char *mod);
+TSTATIC char * append_selected_files(FileView *view, char expanded[],
+		int under_cursor, int quotes, const char mod[]);
 static char * append_selected_file(FileView *view, char *expanded,
 		int dir_name_len, int pos, int quotes, const char *mod);
 static char * expand_directory_path(FileView *view, char *expanded, int quotes,
@@ -214,12 +212,9 @@ expand_macros(FileView *view, const char *command, const char *args,
 	return expanded;
 }
 
-#ifndef TEST
-static
-#endif
-char *
-append_selected_files(FileView *view, char *expanded, int under_cursor,
-		int quotes, const char *mod)
+TSTATIC char *
+append_selected_files(FileView *view, char expanded[], int under_cursor,
+		int quotes, const char mod[])
 {
 	int dir_name_len = 0;
 #ifdef _WIN32
