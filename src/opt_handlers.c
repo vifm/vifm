@@ -17,6 +17,7 @@
  */
 
 #include <assert.h> /* assert() */
+#include <limits.h> /* INT_MIN */
 #include <math.h> /* abs() */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h>
@@ -64,9 +65,7 @@ typedef struct
 }optinit_t;
 
 static void init_classify(optval_t *val);
-static void init_columns(optval_t *val);
 static void init_cpoptions(optval_t *val);
-static void init_lines(optval_t *val);
 static void init_timefmt(optval_t *val);
 static void init_trash_dir(optval_t *val);
 static void init_lsview(optval_t *val);
@@ -207,7 +206,7 @@ static struct
 	{ "classify",    "",     OPT_STRLIST, 0,                          NULL,            &classify_handler,
 		{ .init = &init_classify }                                                                             },
 	{ "columns",     "co",   OPT_INT,     0,                          NULL,            &columns_handler,
-		{ .init = &init_columns }                                                                              },
+		{ .ref.int_val = &cfg.columns }                                                                        },
 	{ "confirm",     "cf",   OPT_BOOL,    0,                          NULL,            &confirm_handler,
 		{ .ref.bool_val = &cfg.confirm }                                                                       },
 	{ "cpoptions",   "cpo",  OPT_STR,     0,                          NULL,            &cpoptions_handler,
@@ -235,9 +234,9 @@ static struct
 	{ "laststatus",  "ls",   OPT_BOOL,    0,                          NULL,            &laststatus_handler,
 		{ .ref.bool_val = &cfg.last_status }                                                                   },
 	{ "lines",       "",     OPT_INT,     0,                          NULL,            &lines_handler,
-		{ .init = &init_lines }                                                                                },
+		{ .ref.int_val = &cfg.lines }                                                                          },
 	{ "rulerformat", "ruf",  OPT_STR,     0,                          NULL,            &rulerformat_handler,
-		{ .ref.str_val = &cfg.ruler_format }                                                                    },
+		{ .ref.str_val = &cfg.ruler_format }                                                                   },
 	{ "runexec",     "",     OPT_BOOL,    0,                          NULL,            &runexec_handler,
 		{ .ref.bool_val = &cfg.auto_execute }                                                                  },
 	{ "scrollbind",  "scb",  OPT_BOOL,    0,                          NULL,            &scrollbind_handler,
@@ -338,24 +337,12 @@ classify_to_str(void)
 }
 
 static void
-init_columns(optval_t *val)
-{
-	val->int_val = (cfg.columns > 0) ? cfg.columns : getmaxx(stdscr);
-}
-
-static void
 init_cpoptions(optval_t *val)
 {
 	static char buf[32];
 	snprintf(buf, sizeof(buf), "%s%s", cfg.selection_is_primary ? "s" : "",
 			cfg.tab_switches_pane ? "t" : "");
 	val->str_val = buf;
-}
-
-static void
-init_lines(optval_t *val)
-{
-	val->int_val = (cfg.lines > 0) ? cfg.lines : getmaxy(stdscr);
 }
 
 static void
@@ -585,9 +572,17 @@ pick_out_decoration(char classify_item[], FileType *type)
 	return NULL;
 }
 
+/* Handles updates of the global 'columns' option, which reflects width of
+ * terminal. */
 static void
 columns_handler(OPT_OP op, optval_t val)
 {
+	/* Handle case when 'columns' value wasn't yet initialized. */
+	if(val.int_val == INT_MIN)
+	{
+		val.int_val = getmaxx(stdscr);
+	}
+
 	if(val.int_val < MIN_TERM_WIDTH)
 	{
 		val.int_val = MIN_TERM_WIDTH;
@@ -756,9 +751,17 @@ laststatus_handler(OPT_OP op, optval_t val)
 	doupdate();
 }
 
+/* Handles updates of the global 'lines' option, which reflects height of
+ * terminal. */
 static void
 lines_handler(OPT_OP op, optval_t val)
 {
+	/* Handle case when 'lines' value wasn't yet initialized. */
+	if(val.int_val == INT_MIN)
+	{
+		val.int_val = getmaxy(stdscr);
+	}
+
 	if(val.int_val < MIN_TERM_HEIGHT)
 	{
 		val.int_val = MIN_TERM_HEIGHT;
