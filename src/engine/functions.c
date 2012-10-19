@@ -81,17 +81,17 @@ function_call(const char func_name[], const call_info_t *call_info)
 	if(function == NULL)
 	{
 		text_buffer_addf("%s: %s", "Unknown function", func_name);
-		return var_false();
+		return var_error();
 	}
 	if(call_info->argc < function->arg_count)
 	{
 		text_buffer_addf("%s: %s", "Not enough arguments for function", func_name);
-		return var_false();
+		return var_error();
 	}
 	if(call_info->argc > function->arg_count)
 	{
 		text_buffer_addf("%s: %s", "Too many arguments for function", func_name);
-		return var_false();
+		return var_error();
 	}
 	return function->ptr(call_info);
 }

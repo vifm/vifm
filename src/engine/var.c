@@ -32,6 +32,13 @@ var_false(void)
 }
 
 var_t
+var_error(void)
+{
+	static const var_t fail_var = { VTYPE_ERROR };
+	return fail_var;
+}
+
+var_t
 var_new(VarType type, const var_val_t value)
 {
 	var_t new_var = { type, value };

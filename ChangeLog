@@ -2,6 +2,8 @@
 
 	Don't redraw statbar until end of :restart command.
 
+	Don't ignore wrong number of arguments in function calls, show an error.
+
 	Fixed autotools configuration files.
 
 	Fix terminal size resetting after :restart.
