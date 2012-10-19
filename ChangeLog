@@ -8,6 +8,8 @@
 
 	Fix terminal size resetting after :restart.
 
+	Fix 'dotdirs' option on Windows.
+
 0.7.3a to 0.7.4
 
 	Removed compile-time compatibility mode (the compatibility-mode switch),
