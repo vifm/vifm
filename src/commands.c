@@ -230,7 +230,7 @@ static int vunmap_cmd(const cmd_info_t *cmd_info);
 static int do_unmap(const char *keys, int mode);
 static int windo_cmd(const cmd_info_t *cmd_info);
 static int winrun_cmd(const cmd_info_t *cmd_info);
-static int winrun(FileView *view, char *cmd);
+static int winrun(FileView *view, const char cmd[]);
 static int write_cmd(const cmd_info_t *cmd_info);
 static int quit_cmd(const cmd_info_t *cmd_info);
 static int wq_cmd(const cmd_info_t *cmd_info);
@@ -480,12 +480,12 @@ exec_startup_commands(int c, char **v)
 	{
 		if(strcmp(argv[x], "-c") == 0)
 		{
-			exec_commands(argv[x + 1], curr_view, GET_COMMAND);
+			(void)exec_commands(argv[x + 1], curr_view, GET_COMMAND);
 			x++;
 		}
 		else if(argv[x][0] == '+')
 		{
-			exec_commands(argv[x] + 1, curr_view, GET_COMMAND);
+			(void)exec_commands(argv[x] + 1, curr_view, GET_COMMAND);
 		}
 	}
 }
@@ -1065,16 +1065,22 @@ is_in_arg(const char *cmd, const char *pos)
 }
 
 int
-exec_commands(char *cmd, FileView *view, int type)
+exec_commands(const char cmd[], FileView *view, int type)
 {
+	char cmd_copy[strlen(cmd) + 1];
 	int save_msg = 0;
 	char *p, *q;
 
 	if(*cmd == '\0')
+	{
 		return exec_command(cmd, view, type);
+	}
 
-	p = cmd;
-	q = cmd;
+	strcpy(cmd_copy, cmd);
+	cmd = cmd_copy;
+
+	p = cmd_copy;
+	q = cmd_copy;
 	while(*cmd != '\0')
 	{
 		if(*p == '\\')
@@ -1095,10 +1101,14 @@ exec_commands(char *cmd, FileView *view, int type)
 			int ret;
 
 			if(*p != '\0')
+			{
 				p++;
+			}
 
 			while(*cmd == ' ' || *cmd == ':')
+			{
 				cmd++;
+			}
 			if(is_whole_line_command(cmd))
 			{
 				save_msg += exec_command(cmd, view, type) != 0;
@@ -1109,15 +1119,17 @@ exec_commands(char *cmd, FileView *view, int type)
 			q = p;
 
 			ret = exec_command(cmd, view, type);
-			if(ret < 0)
-				save_msg = -1;
-			else if(ret > 0)
-				save_msg = 1;
+			if(ret != 0)
+			{
+				save_msg = (ret < 0) ? -1 : 1;
+			}
 
 			cmd = q;
 		}
 		else
+		{
 			*q++ = *p++;
+		}
 	}
 
 	return save_msg;
@@ -3454,7 +3466,7 @@ static int
 winrun_cmd(const cmd_info_t *cmd_info)
 {
 	int result = 0;
-	char *cmd;
+	const char *cmd;
 
 	if(cmd_info->argc == 0)
 		return 0;
@@ -3492,8 +3504,9 @@ winrun_cmd(const cmd_info_t *cmd_info)
 	return result;
 }
 
+/* Executes cmd command-line command for a specific view. */
 static int
-winrun(FileView *view, char *cmd)
+winrun(FileView *view, const char cmd[])
 {
 	int result;
 	FileView *tmp_curr = curr_view;

@@ -12,6 +12,8 @@
 
 	Fix 'dotdirs' option on Windows.
 
+	Fix repetition of `bar` in `foo | bar` on '.' command.
+
 0.7.3a to 0.7.4
 
 	Removed compile-time compatibility mode (the compatibility-mode switch),

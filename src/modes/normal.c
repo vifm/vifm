@@ -1324,7 +1324,7 @@ cmd_dot(key_info_t key_info, keys_info_t *keys_info)
 	if(0 > cfg.cmd_history_num)
 		show_error_msg("Command Error", "Command history list is empty.");
 	else
-		curr_stats.save_msg = exec_command(cfg.cmd_history[0], curr_view,
+		curr_stats.save_msg = exec_commands(cfg.cmd_history[0], curr_view,
 				GET_COMMAND);
 }
 
