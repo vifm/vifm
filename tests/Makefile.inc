@@ -6,12 +6,16 @@ SOURCES := $(filter-out ../../src/vifm.c, $(wildcard $(SOURCES)))
 SOURCES := $(filter-out ../../src/vifmrc-converter.c, $(SOURCES))
 SOURCES := $(filter-out ../../src/win_helper.c, $(SOURCES))
 
-TEST_NAME := $(notdir $(abspath .))
 ifneq ($(OS),Windows_NT)
-    BIN := ../bin/$(TEST_NAME)
+    EXE_SUFFIX :=
 else
-    BIN := ../bin/$(TEST_NAME).exe
+    EXE_SUFFIX := .exe
 endif
+
+TEST_NAME := $(notdir $(abspath .))
+BIN := ../bin/$(TEST_NAME)$(EXE_SUFFIX)
+
+VIFM_BIN := ../../src/vifm$(EXE_SUFFIX)
 
 SOURCES += ../seatest/seatest.c
 ifeq ($(OS),Windows_NT)
@@ -25,23 +29,28 @@ SOURCES := $(filter-out $(DIALOG), $(SOURCES))
 LOCAL_SOURCES += $(wildcard *.c)
 
 OBJECTS := $(SOURCES:.c=.o)
-OBJECTS := $(addprefix ../bin/, $(notdir $(OBJECTS)))
 LOCAL_OBJECTS := $(LOCAL_SOURCES:.c=.o)
 LOCAL_OBJECTS := $(addprefix bin/, $(notdir $(LOCAL_OBJECTS)))
 
 CFLAGS := -MD -g -Werror -I../seatest -DTEST -include ../../config.h
 LDFLAGS := -lpthread
 ifneq ($(OS),Windows_NT)
-    CFLAGS += `pkg-config --cflags gtk+-2.0`
-    LDFLAGS += `pkg-config --libs gtk+-2.0` -lncursesw -lmagic -lX11
+    LDFLAGS += `grep LIBS\ = ../../src/Makefile | sed 's/^[^=]\+=//'`
 else
-    LDFLAGS += -lpdcurses -lregex -lnetapi32 -lws2_32
+    LDFLAGS += `grep LIBS\ := ../../src/Makefile.win | sed 's/^[^=]\+=//'`
 endif
 
 .PHONY: clean
 
-$(BIN): ../bin/dummy $(OBJECTS) $(LOCAL_OBJECTS)
+$(BIN): $(VIFM_BIN) ../bin/dummy $(OBJECTS) $(LOCAL_OBJECTS)
 	gcc -o $@ $(OBJECTS) $(LOCAL_OBJECTS) $(LDFLAGS)
+
+$(VIFM_BIN):
+ifneq ($(OS),Windows_NT)
+	$(MAKE) -C ../../src/ vifm
+else
+	$(MAKE) -C ../../src/ -f ../../Makefile.win vifm.exe
+endif
 
 ../bin/dummy:
 	-mkdir ../bin
@@ -53,27 +62,6 @@ bin/%.o: %.c bin/dummy
 bin/dummy:
 	-mkdir bin
 	touch bin/dummy
-
-../bin/%.o: ../../src/%.c
-	gcc -c -o $@ $< $(CFLAGS)
-
-../bin/%.o: ../../src/cfg/%.c
-	gcc -c -o $@ $< $(CFLAGS)
-
-../bin/%.o: ../../src/engine/%.c
-	gcc -c -o $@ $< $(CFLAGS)
-
-../bin/%.o: ../../src/menus/%.c
-	gcc -c -o $@ $< $(CFLAGS)
-
-../bin/%.o: ../../src/modes/dialogs/%.c
-	gcc -c -o $@ $< $(CFLAGS)
-
-../bin/%.o: ../../src/modes/%.c
-	gcc -c -o $@ $< $(CFLAGS)
-
-../bin/%.o: ../../src/utils/%.c
-	gcc -c -o $@ $< $(CFLAGS)
 
 ../bin/%.o: ../seatest/%.c
 	gcc -c -o $@ $< $(CFLAGS)

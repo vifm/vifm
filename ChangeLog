@@ -4,6 +4,8 @@
 
 	Don't ignore wrong number of arguments in function calls, show an error.
 
+	Don't build sources separately for tests.
+
 	Fixed autotools configuration files.
 
 	Fix terminal size resetting after :restart.

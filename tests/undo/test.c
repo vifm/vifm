@@ -2,6 +2,7 @@
 
 #include "seatest.h"
 
+#include "../../src/ops.h"
 #include "../../src/undo.h"
 
 void undolist_test(void);
@@ -15,13 +16,25 @@ exec_func(OPS op, void *data, const char *src, const char *dst)
 	return 0;
 }
 
+static int
+op_avail(OPS op)
+{
+	return op == OP_MOVE;
+}
+
+void
+init_undo_list_for_tests(perform_func exec_func, const int *max_levels)
+{
+	init_undo_list(exec_func, &op_avail, max_levels);
+}
+
 static void
 setup(void)
 {
 	static int undo_levels = 10;
 	int ret_code;
 
-	init_undo_list(exec_func, &undo_levels);
+	init_undo_list_for_tests(&exec_func, &undo_levels);
 
 	cmd_group_begin("msg1");
 	ret_code = add_operation(OP_MOVE, NULL, NULL, "do_msg1", "undo_msg1");

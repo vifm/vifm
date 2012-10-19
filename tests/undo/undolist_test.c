@@ -4,6 +4,8 @@
 
 #include "../../src/undo.h"
 
+#include "test.h"
+
 static void
 test_detail(void)
 {
@@ -63,7 +65,7 @@ test_detail_smaller_limit(void)
 	char ** list;
 	char ** p;
 
-	init_undo_list(exec_func, &undo_levels);
+	init_undo_list_for_tests(exec_func, &undo_levels);
 
 	list = undolist(1);
 
@@ -127,7 +129,7 @@ test_nondetail_smaller_limit(void)
 	char ** list;
 	char ** p;
 
-	init_undo_list(exec_func, &undo_levels);
+	init_undo_list_for_tests(exec_func, &undo_levels);
 
 	list = undolist(0);
 

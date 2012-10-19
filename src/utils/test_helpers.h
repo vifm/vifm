@@ -23,7 +23,7 @@
 #define TSTATIC
 #define TSTATIC_DEFS(x) x
 #else /* TEST */
-#define TSTATIC static
+#define TSTATIC
 #define TSTATIC_DEFS(x)
 #endif /* TEST */
 

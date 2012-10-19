@@ -28,15 +28,27 @@ enum
 	SKIP_UNDO_REDO_OPERATION = -8192,
 };
 
-typedef int (*perform_func)(OPS op, void *data, const char *src,
-		const char *dst);
+/* Operation execution handler.  data is from add_operation() call.  Should
+ * return zero on successful execution of operation, can return
+ * SKIP_UNDO_REDO_OPERATION.
+ */
+typedef int (*perform_func)(OPS op, void *data, const char src[],
+		const char dst[]);
+
+/* Return value meaning:
+ *   0 - available (but undo.c need to check file existence or absence)
+ * < 0 - not available
+ * > 0 - available always (no additional checks are performed) */
+typedef int (*op_available_func)(OPS op);
 
 /*
  * Won't call reset_undo_list, so this function could be called multiple
  * times.
  * exec_func can't be NULL and should return non-zero on error.
+ * op_avail can be NULL.
  */
-void init_undo_list(perform_func exec_func, const int* max_levels);
+void init_undo_list(perform_func exec_func, op_available_func op_avail,
+		const int* max_levels);
 
 /*
  * Frees all allocated memory
