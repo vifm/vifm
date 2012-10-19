@@ -40,7 +40,7 @@ else
     LDFLAGS += `grep LIBS\ := ../../src/Makefile.win | sed 's/^[^=]\+=//'`
 endif
 
-.PHONY: clean
+.PHONY: $(VIFM_BIN) clean
 
 $(BIN): $(VIFM_BIN) ../bin/dummy $(OBJECTS) $(LOCAL_OBJECTS)
 	gcc -o $@ $(OBJECTS) $(LOCAL_OBJECTS) $(LDFLAGS)
@@ -49,7 +49,7 @@ $(VIFM_BIN):
 ifneq ($(OS),Windows_NT)
 	$(MAKE) -C ../../src/ vifm
 else
-	$(MAKE) -C ../../src/ -f ../../Makefile.win vifm.exe
+	$(MAKE) -C ../../src/ -f Makefile.win vifm.exe
 endif
 
 ../bin/dummy:
