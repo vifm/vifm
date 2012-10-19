@@ -477,6 +477,12 @@ update_stat_window(FileView *view)
 	if(!cfg.last_status)
 		return;
 
+	/* Don't redraw anything until :restart command is finished. */
+	if(curr_stats.restart_in_progress)
+	{
+		return;
+	}
+
 	if(cfg.status_line[0] == '\0')
 	{
 		update_stat_window_old(view);
