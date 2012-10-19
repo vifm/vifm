@@ -21,7 +21,7 @@
 #define __CMDLINE_H__
 
 #ifdef TEST
-#include <limits.h> /* NAME_MAX */
+#include "../utils/fs_limits.h"
 #endif
 #include <wchar.h>
 

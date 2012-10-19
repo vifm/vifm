@@ -22,6 +22,7 @@
 #include <sys/wait.h> /* WEXITSTATUS() */
 #endif
 
+#include <limits.h> /* PATH_MAX */
 #include <signal.h> /* sighandler_t, signal() */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
@@ -33,6 +34,7 @@
 #include "menus/menus.h"
 #include "utils/env.h"
 #include "utils/fs.h"
+#include "utils/fs_limits.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"

@@ -31,7 +31,6 @@
 #include <sys/wait.h> /* WEXITSTATUS() WIFEXITED() */
 #endif
 
-#include <limits.h> /* PATH_MAX */
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 #include <wchar.h> /* wchar_t ... */
@@ -48,11 +47,6 @@
 #endif
 
 #define lstat stat
-#endif
-
-#if !defined(NAME_MAX) && defined(_WIN32)
-#include <io.h>
-#define NAME_MAX FILENAME_MAX
 #endif
 
 /* Regular expressions. */

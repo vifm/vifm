@@ -20,6 +20,7 @@
 #include <dirent.h> /* DIR */
 #endif
 
+#include <limits.h> /* PATH_MAX */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

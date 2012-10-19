@@ -33,7 +33,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
-#include <limits.h> /* PATH_MAX */
+#include <limits.h> /* NAME_MAX PATH_MAX */
 #include <signal.h>
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* system() free() */
@@ -63,6 +63,7 @@
 #include "modes/visual.h"
 #include "utils/env.h"
 #include "utils/fs.h"
+#include "utils/fs_limits.h"
 #include "utils/int_stack.h"
 #include "utils/macros.h"
 #include "utils/path.h"

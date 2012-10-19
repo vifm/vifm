@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <limits.h>
+#include <limits.h> /* PATH_MAX */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h>
 #include <string.h>

@@ -19,6 +19,7 @@
 
 #include <sys/stat.h> /* S_IRWXU */
 
+#include <limits.h> /* PATH_MAX */
 #include <string.h> /* memmove() strcpy() strlen() strcmp() strcat() */
 
 #include "cfg/config.h"

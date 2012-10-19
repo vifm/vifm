@@ -45,6 +45,7 @@
 #include "../engine/keys.h"
 #include "../engine/options.h"
 #include "../menus/menus.h"
+#include "../utils/fs_limits.h"
 #include "../utils/str.h"
 #include "../utils/test_helpers.h"
 #ifdef _WIN32

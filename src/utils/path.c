@@ -20,7 +20,7 @@
 #ifdef _WIN32
 #include <ctype.h>
 #endif
-#include <limits.h> /* PATH_MAX */
+#include <limits.h> /* NAME_MAX PATH_MAX */
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strcat() strcmp() strcasecmp() strncmp() strncasecmp()
@@ -35,6 +35,7 @@
 #include "env.h"
 #endif
 #include "fs.h"
+#include "fs_limits.h"
 #include "str.h"
 
 #include "path.h"

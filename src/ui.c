@@ -39,6 +39,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <limits.h> /* PATH_MAX */
 #include <signal.h> /* signal() */
 #include <stdarg.h> /* va_list va_start() va_end() */
 #include <stdlib.h> /* malloc */

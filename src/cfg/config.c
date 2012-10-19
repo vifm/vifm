@@ -30,7 +30,7 @@
 #endif
 
 #include <errno.h>
-#include <limits.h> /* INT_MIN */
+#include <limits.h> /* INT_MIN PATH_MAX */
 #include <stdio.h> /* FILE */
 #include <stdlib.h>
 #include <string.h> /* memset() */

@@ -27,6 +27,7 @@
 
 #include <unistd.h> /* getcwd, stat, sysconf */
 
+#include <limits.h> /* PATH_MAX */
 #include <locale.h> /* setlocale */
 #include <string.h> /* strncpy */
 

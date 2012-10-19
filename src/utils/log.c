@@ -18,6 +18,7 @@
 
 #include <unistd.h>
 
+#include <limits.h> /* PATH_MAX */
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>

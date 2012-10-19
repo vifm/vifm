@@ -16,22 +16,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <limits.h>
-
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "file_streams.h"
+#include "fs_limits.h"
 #include "str.h"
 
 #include "string_array.h"
-
-#if !defined(NAME_MAX) && defined(_WIN32)
-#include <io.h>
-#define NAME_MAX FILENAME_MAX
-#endif
 
 int
 add_to_string_array(char ***array, int len, int count, ...)

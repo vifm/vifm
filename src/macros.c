@@ -18,6 +18,7 @@
  */
 
 #include <assert.h> /* assert() */
+#include <limits.h> /* PATH_MAX */
 #include <stdlib.h> /* realloc() free() calloc() */
 #include <string.h> /* strchr() strncat() strcpy() strlen() strcat() */
 

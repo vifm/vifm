@@ -43,6 +43,7 @@
 
 #include <assert.h> /* assert() */
 #include <errno.h>
+#include <limits.h> /* PATH_MAX */
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* calloc() malloc() */
@@ -55,6 +56,7 @@
 #include "modes/modes.h"
 #include "utils/env.h"
 #include "utils/fs.h"
+#include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/path.h"
 #include "utils/str.h"

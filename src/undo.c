@@ -21,6 +21,7 @@
 #include <unistd.h>
 
 #include <assert.h>
+#include <limits.h> /* PATH_MAX */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
