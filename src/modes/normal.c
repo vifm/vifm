@@ -487,6 +487,8 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 	go_to_other_window();
 }
 
+/* Processes !! normal mode command, which can be prepended by a count, which is
+ * treated as number of lines to be processed. */
 static void
 cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -505,11 +507,12 @@ cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info)
 	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
 }
 
+/* Processes !<selector> normal mode command.  Processes results of applying
+ * selector and invokes cmd_emarkemark(...) to do the rest. */
 static void
 cmd_emark_selector(key_info_t key_info, keys_info_t *keys_info)
 {
 	int i, m;
-	wchar_t buf[16] = L".!";
 
 	if(keys_info->count == 0)
 	{
@@ -521,26 +524,17 @@ cmd_emark_selector(key_info_t key_info, keys_info_t *keys_info)
 	for(i = 1; i < keys_info->count; i++)
 	{
 		if(keys_info->indexes[i] > m)
+		{
 			m = keys_info->indexes[i];
+		}
 	}
 
 	free(keys_info->indexes);
 	keys_info->indexes = NULL;
 	keys_info->count = 0;
 
-	if(key_info.count != NO_COUNT_GIVEN)
-		m += curr_view->list_pos + key_info.count + 1;
-
-	if(m >= curr_view->list_rows - 1)
-	{
-		wcscpy(buf, L".,$!");
-		enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
-	}
-	else
-	{
-		key_info.count = m - curr_view->list_pos + 1;
-		cmd_emarkemark(key_info, keys_info);
-	}
+	key_info.count = m - curr_view->list_pos + 1;
+	cmd_emarkemark(key_info, keys_info);
 }
 
 static void
