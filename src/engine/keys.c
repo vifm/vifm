@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <limits.h> /* INT_MAX */
 #include <stdlib.h>
 #include <string.h>
 #include <wctype.h> /* iswdigit */
@@ -565,6 +566,11 @@ get_count(const wchar_t keys[], int *count)
 	{
 		wchar_t *ptr;
 		*count = wcstol(keys, &ptr, 10);
+		/* Handle overflow correctly. */
+		if(*count <= 0)
+		{
+			*count = INT_MAX;
+		}
 		keys = ptr;
 	}
 	else

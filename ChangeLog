@@ -8,6 +8,8 @@
 
 	Better processing of count given to "!!" normal mode command.
 
+	Handle integer overflow of huge count correctly.
+
 	Fixed autotools configuration files.
 
 	Fixed terminal size resetting after :restart.
@@ -16,7 +18,7 @@
 
 	Fixed repetition of `bar` in `foo | bar` on "." command.
 
-	Fixed segmentation faults on passing huge count to DD, dd or yy normal
+	Fixed segmentation faults on passing to big count to DD, dd or yy normal
 	mode commands.
 
 0.7.3a to 0.7.4

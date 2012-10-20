@@ -175,6 +175,7 @@ static void cmd_rl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_t(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_yy(key_info_t key_info, keys_info_t *keys_info);
+static int calc_pick_files_end_pos(const FileView *view, int count);
 static void cmd_y_selector(key_info_t key_info, keys_info_t *keys_info);
 static void free_list_of_file_indexes(keys_info_t *keys_info);
 static void cmd_zM(key_info_t key_info, keys_info_t *keys_info);
@@ -1474,7 +1475,10 @@ delete(key_info_t key_info, int use_trash)
 	}
 
 	if(key_info.count != NO_COUNT_GIVEN)
-		pick_files(curr_view, curr_view->list_pos + key_info.count - 1, &keys_info);
+	{
+		const int end_pos = calc_pick_files_end_pos(curr_view, key_info.count);
+		pick_files(curr_view, end_pos, &keys_info);
+	}
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 
@@ -1802,7 +1806,10 @@ static void
 cmd_yy(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count != NO_COUNT_GIVEN)
-		pick_files(curr_view, curr_view->list_pos + key_info.count - 1, keys_info);
+	{
+		const int end_pos = calc_pick_files_end_pos(curr_view, key_info.count);
+		pick_files(curr_view, end_pos, keys_info);
+	}
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 
@@ -1815,6 +1822,23 @@ cmd_yy(key_info_t key_info, keys_info_t *keys_info)
 
 	if(key_info.count != NO_COUNT_GIVEN)
 		free(keys_info->indexes);
+}
+
+/* Calculates end position for pick_files(...) function using cursor position
+ * and count of a command.  Considers possible integer overflow. */
+static int
+calc_pick_files_end_pos(const FileView *view, int count)
+{
+	/* Way of comparing values makes difference!  This way it will work even when
+	 * count equals to INT_MAX.  Don't change it! */
+	if(count > view->list_rows - view->list_pos)
+	{
+		return view->list_rows - 1;
+	}
+	else
+	{
+		return view->list_pos + count - 1;
+	}
 }
 
 /* Processes y<selector> normal mode command, which copies files to one of
