@@ -44,6 +44,14 @@ test_with_number_before_and_in_the_middle_ok(void)
 	check(L"2123", L"2123<", 2*123);
 }
 
+static void
+test_dd_nim_ok(void)
+{
+	check(L"2d1",   L"2d1d",   2*1);
+	check(L"3d12",  L"3d12d",  3*12);
+	check(L"2d123", L"2d123d", 2*123);
+}
+
 void
 num_in_the_middle_tests(void)
 {
@@ -53,6 +61,7 @@ num_in_the_middle_tests(void)
 	run_test(test_with_number_ok);
 	run_test(test_with_zero_number_fail);
 	run_test(test_with_number_before_and_in_the_middle_ok);
+	run_test(test_dd_nim_ok);
 
 	test_fixture_end();
 }

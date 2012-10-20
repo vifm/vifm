@@ -13,7 +13,7 @@
 #endif
 
 int last; /* 1 = k, 2 = j */
-int last_command_count; /* for ctrl+w < and d + selector*/
+int last_command_count; /* for ctrl+w <, dd and d + selector*/
 int last_selector_count; /* for k */
 
 static int* mode;
@@ -140,6 +140,7 @@ init_builtin_keys(int *key_mode)
 
 	curr = add_cmd(L"dd", NORMAL_MODE);
 	curr->data.handler = keys_delete;
+	curr->type = BUILTIN_NIM_KEYS;
 
 	curr = add_cmd(L"v", NORMAL_MODE);
 	curr->data.handler = keys_v;
@@ -271,7 +272,7 @@ keys_ctrl_w_less_than(key_info_t key_info, keys_info_t *keys_info)
 static void
 keys_delete(key_info_t key_info, keys_info_t *keys_info)
 {
-	printf("(%d)delete in register %c\n", key_info.count, key_info.reg);
+	last_command_count = key_info.count;
 }
 
 static void

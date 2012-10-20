@@ -10,6 +10,8 @@
 
 	Handle integer overflow of huge count correctly.
 
+	Make commands like d2d, y2y and D2D work as in Vim.
+
 	Fixed autotools configuration files.
 
 	Fixed terminal size resetting after :restart.

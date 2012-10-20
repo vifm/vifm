@@ -77,6 +77,7 @@ static void leave_chunk(key_chunk_t *chunk);
 static void init_keys_info(keys_info_t *keys_info, int mapped);
 static const wchar_t * get_reg(const wchar_t *keys, int *reg);
 static const wchar_t * get_count(const wchar_t keys[], int *count);
+static int is_at_count(const wchar_t keys[]);
 static int combine_counts(int count_a, int count_b);
 static key_chunk_t * find_user_keys(const wchar_t *keys, int mode);
 static key_chunk_t * add_keys_inner(key_chunk_t *root, const wchar_t *keys);
@@ -297,14 +298,17 @@ execute_keys_loop(const wchar_t *keys, keys_info_t *keys_info,
 			if(curr == root)
 				return KEYS_UNKNOWN;
 
-			if(curr->conf.followed != FOLLOWED_BY_NONE)
-				break;
-
 			while(p != NULL)
 			{
 				if(p->conf.type == BUILTIN_NIM_KEYS)
 					nim = 1;
 				p = p->next;
+			}
+
+			if(curr->conf.followed != FOLLOWED_BY_NONE &&
+					(!nim || !is_at_count(keys)))
+			{
+				break;
 			}
 
 			if(nim)
@@ -557,12 +561,7 @@ get_reg(const wchar_t *keys, int *reg)
 static const wchar_t *
 get_count(const wchar_t keys[], int *count)
 {
-	if((mode_flags[*mode] & MF_USES_COUNT) == 0)
-	{
-		*count = NO_COUNT_GIVEN;
-		return keys;
-	}
-	if(keys[0] != L'0' && iswdigit(keys[0]))
+	if(is_at_count(keys))
 	{
 		wchar_t *ptr;
 		*count = wcstol(keys, &ptr, 10);
@@ -579,6 +578,21 @@ get_count(const wchar_t keys[], int *count)
 	}
 
 	return keys;
+}
+
+/* Checks keys for a count.  Returns non-zero if there is count in the current
+ * position. */
+static int
+is_at_count(const wchar_t keys[])
+{
+	if((mode_flags[*mode] & MF_USES_COUNT) != 0)
+	{
+		if(keys[0] != L'0' && iswdigit(keys[0]))
+		{
+			return 1;
+		}
+	}
+	return 0;
 }
 
 /* Combines two counts: before command and in the middle of it. */
