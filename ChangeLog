@@ -16,6 +16,9 @@
 
 	Fixed repetition of `bar` in `foo | bar` on "." command.
 
+	Fixed segmentation faults on passing huge count to DD, dd or yy normal
+	mode commands.
+
 0.7.3a to 0.7.4
 
 	Removed compile-time compatibility mode (the compatibility-mode switch),

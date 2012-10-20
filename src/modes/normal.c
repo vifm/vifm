@@ -175,6 +175,7 @@ static void cmd_rl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_t(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_yy(key_info_t key_info, keys_info_t *keys_info);
+static int * pick_sequence_of_files(key_info_t key_info, int *len);
 static void cmd_y_selector(key_info_t key_info, keys_info_t *keys_info);
 static void free_list_of_file_indexes(keys_info_t *keys_info);
 static void cmd_zM(key_info_t key_info, keys_info_t *keys_info);
@@ -907,7 +908,8 @@ cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info)
 		go_to_other_window();
 }
 
-/* Clone file. */
+/* Clone selection.  Count specifies number of copies of each file or directory
+ * to create (one by default). */
 static void
 cmd_C(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1088,7 +1090,7 @@ cmd_gf(key_info_t key_info, keys_info_t *keys_info)
 	redraw_current_view();
 }
 
-/* Jump to top of the list or to specified line. */
+/* Jump to the top of the list or to specified line. */
 static void
 cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1478,7 +1480,7 @@ delete(key_info_t key_info, int use_trash)
 		{
 			int x;
 			int y = curr_view->list_pos;
-			for(x = 0; x < key_info.count; x++)
+			for(x = 0; x < key_info.count && y < curr_view->list_rows; x++)
 			{
 				curr_view->dir_entry[y].selected = 1;
 				y++;
@@ -1489,19 +1491,18 @@ delete(key_info_t key_info, int use_trash)
 	}
 	else
 	{
-		int j, k;
-		int *i;
-
-		if(key_info.reg == NO_REG_GIVEN)
-			key_info.reg = DEFAULT_REG_NAME;
-		if(key_info.count == NO_COUNT_GIVEN)
-			key_info.count = 1;
-		i = malloc(sizeof(int)*key_info.count);
-		k = 0;
-		for(j = curr_view->list_pos; j < curr_view->list_pos + key_info.count; j++)
-			i[k++] = j;
-		curr_stats.save_msg = delete_file(curr_view, key_info.reg, k, i, use_trash);
-		free(i);
+		int len;
+		int *indexes = pick_sequence_of_files(key_info, &len);
+		if(indexes == NULL)
+		{
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
+		}
+		else
+		{
+			curr_stats.save_msg = delete_file(curr_view, key_info.reg, len, indexes,
+					use_trash);
+			free(indexes);
+		}
 	}
 }
 
@@ -1830,23 +1831,50 @@ cmd_yy(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else
 	{
-		int j, k;
-		int *i;
-
-		if(key_info.reg == NO_REG_GIVEN)
-			key_info.reg = DEFAULT_REG_NAME;
-		if(key_info.count == NO_COUNT_GIVEN)
-			key_info.count = 1;
-		i = malloc(sizeof(int)*key_info.count);
-		k = 0;
-		for(j = curr_view->list_pos; j < curr_view->list_pos + key_info.count; j++)
-			i[k++] = j;
-		curr_stats.save_msg = yank_files(curr_view, key_info.reg, k, i);
-		free(i);
+		int len;
+		int *indexes = pick_sequence_of_files(key_info, &len);
+		if(indexes == NULL)
+		{
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
+		}
+		else
+		{
+			curr_stats.save_msg = yank_files(curr_view, key_info.reg, len, indexes);
+			free(indexes);
+		}
 	}
 
 	if(key_info.count != NO_COUNT_GIVEN)
 		free(keys_info->indexes);
+}
+
+/* Selects up to {count} files next to the cursor including file under the
+ * cursor.  Returns array of length *len, which should be returned by the
+ * caller, or NULL if not enough memory error. */
+static int *
+pick_sequence_of_files(key_info_t key_info, int *len)
+{
+	int *indexes;
+
+	if(key_info.reg == NO_REG_GIVEN)
+		key_info.reg = DEFAULT_REG_NAME;
+	if(key_info.count == NO_COUNT_GIVEN)
+		key_info.count = 1;
+
+	indexes = malloc(sizeof(int)*key_info.count);
+	if(indexes != NULL)
+	{
+		int i, n;
+		int limit;
+
+		n = 0;
+		limit = MIN(curr_view->list_pos + key_info.count, curr_view->list_rows);
+		for(i = curr_view->list_pos; i < limit; i++)
+			indexes[n++] = i;
+
+		*len = n;
+	}
+	return indexes;
 }
 
 /* Processes y<selector> normal mode command, which copies files to one of

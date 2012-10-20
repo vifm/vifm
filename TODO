@@ -79,6 +79,7 @@ Vi(m) specific features that need to be added.
     Completion based on global (when one enters pattern<tab>, e.g. *.c<tab>).
     Make d2d, y2y and D2D work as in Vim.
     Support :set foo+=bar for strings (should append value).
+    Make gUU and similar commands accept [count].
 
 Possible things to add.
     Use system wide mimetypes file. /etc/mailcap?
