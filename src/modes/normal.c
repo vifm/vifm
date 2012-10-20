@@ -176,6 +176,7 @@ static void cmd_t(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_yy(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_y_selector(key_info_t key_info, keys_info_t *keys_info);
+static void free_list_of_file_indexes(keys_info_t *keys_info);
 static void cmd_zM(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zO(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zR(key_info_t key_info, keys_info_t *keys_info);
@@ -529,9 +530,7 @@ cmd_emark_selector(key_info_t key_info, keys_info_t *keys_info)
 		}
 	}
 
-	free(keys_info->indexes);
-	keys_info->indexes = NULL;
-	keys_info->count = 0;
+	free_list_of_file_indexes(keys_info);
 
 	key_info.count = m - curr_view->list_pos + 1;
 	cmd_emarkemark(key_info, keys_info);
@@ -1140,6 +1139,8 @@ cmd_gs(key_info_t key_info, keys_info_t *keys_info)
 	redraw_current_view();
 }
 
+/* Handles gU<selector>, gUgU and gUU normal mode commands, which convert file
+ * name symbols to uppercase. */
 static void
 cmd_gU(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1152,9 +1153,7 @@ cmd_gU(key_info_t key_info, keys_info_t *keys_info)
 		curr_stats.save_msg = change_case(curr_view, 1, keys_info->count,
 				keys_info->indexes);
 
-		free(keys_info->indexes);
-		keys_info->indexes = NULL;
-		keys_info->count = 0;
+		free_list_of_file_indexes(keys_info);
 	}
 }
 
@@ -1165,6 +1164,8 @@ cmd_gUgg(key_info_t key_info, keys_info_t *keys_info)
 	cmd_gU(key_info, keys_info);
 }
 
+/* Handles gu<selector>, gugu and guu normal mode commands, which convert file
+ * name symbols to lowercase. */
 static void
 cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1177,9 +1178,7 @@ cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 		curr_stats.save_msg = change_case(curr_view, 0, keys_info->count,
 				keys_info->indexes);
 
-		free(keys_info->indexes);
-		keys_info->indexes = NULL;
-		keys_info->count = 0;
+		free_list_of_file_indexes(keys_info);
 	}
 }
 
@@ -1530,9 +1529,11 @@ cmd_d_selector(key_info_t key_info, keys_info_t *keys_info)
 	delete_with_selector(key_info, keys_info, 1);
 }
 
+/* Removes (permanently or just moving to trash) files using selector.
+ * Processes d<selector> and D<selector> normal mode commands.  On moving to
+ * trash files are put in specified register (unnamed by default). */
 static void
-delete_with_selector(key_info_t key_info, keys_info_t *keys_info,
-		int use_trash)
+delete_with_selector(key_info_t key_info, keys_info_t *keys_info, int use_trash)
 {
 	if(keys_info->count == 0)
 		return;
@@ -1541,9 +1542,7 @@ delete_with_selector(key_info_t key_info, keys_info_t *keys_info,
 	curr_stats.save_msg = delete_file(curr_view, key_info.reg, keys_info->count,
 			keys_info->indexes, use_trash);
 
-	free(keys_info->indexes);
-	keys_info->indexes = NULL;
-	keys_info->count = 0;
+	free_list_of_file_indexes(keys_info);
 }
 
 static void
@@ -1850,6 +1849,8 @@ cmd_yy(key_info_t key_info, keys_info_t *keys_info)
 		free(keys_info->indexes);
 }
 
+/* Processes y<selector> normal mode command, which copies files to one of
+ * registers (unnamed by default). */
 static void
 cmd_y_selector(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1860,6 +1861,14 @@ cmd_y_selector(key_info_t key_info, keys_info_t *keys_info)
 	curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
 			keys_info->indexes);
 
+	free_list_of_file_indexes(keys_info);
+}
+
+/* Frees memory allocated for selected files list in keys_info_t structure and
+ * clears it. */
+static void
+free_list_of_file_indexes(keys_info_t *keys_info)
+{
 	free(keys_info->indexes);
 	keys_info->indexes = NULL;
 	keys_info->count = 0;
