@@ -27,6 +27,7 @@
 
 #include <unistd.h> /* getcwd, stat, sysconf */
 
+#include <limits.h> /* PATH_MAX */
 #include <locale.h> /* setlocale */
 #include <string.h> /* strncpy */
 
@@ -371,7 +372,7 @@ main(int argc, char *argv[])
 		return -1;
 
 	init_modes();
-	init_undo_list(&perform_operation, &cfg.undo_levels);
+	init_undo_list(&perform_operation, NULL, &cfg.undo_levels);
 	load_local_options(curr_view);
 
 	curr_stats.load_stage = 1;

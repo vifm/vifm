@@ -1,3 +1,28 @@
+0.7.4 to current
+
+	Don't redraw statbar until end of :restart command.
+
+	Don't ignore wrong number of arguments in function calls, show an error.
+
+	Don't build sources separately for tests.
+
+	Better processing of count given to "!!" normal mode command.
+
+	Handle integer overflow of huge count correctly.
+
+	Make commands like d2d, y2y and D2D work as in Vim.
+
+	Fixed autotools configuration files.
+
+	Fixed terminal size resetting after :restart.
+
+	Fixed 'dotdirs' option on Windows.
+
+	Fixed repetition of `bar` in `foo | bar` on "." command.
+
+	Fixed segmentation faults on passing to big count to DD, dd or yy normal
+	mode commands.
+
 0.7.3a to 0.7.4
 
 	Removed compile-time compatibility mode (the compatibility-mode switch),

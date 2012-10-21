@@ -21,6 +21,8 @@
 
 #include <stddef.h> /* size_t */
 
+#include "../utils/test_helpers.h"
+
 enum
 {
 	CMDS_ERR_LOOP = -1,
@@ -133,11 +135,11 @@ char ** list_udf(void);
 
 char * list_udf_content(const char *beginning);
 
-#ifdef TEST
-int add_builtin_cmd(const char *name, int abbr, const cmd_add_t *conf);
-char ** dispatch_line(const char *args, int *count, char sep, int regexp,
-		int quotes, int *last_arg, int *last_begin, int *last_end);
-#endif
+TSTATIC_DEFS(
+	int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
+	char ** dispatch_line(const char args[], int *count, char sep, int regexp,
+			int quotes, int *last_arg, int *last_begin, int *last_end);
+)
 
 #endif
 

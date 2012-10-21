@@ -44,7 +44,8 @@ typedef struct
 /* Registers new function.  Returns non-zero on error. */
 int function_register(const function_t *func_info);
 
-/* Calls function.  Returns its result (can be NULL). */
+/* Calls function.  Returns its result or variable of type VTYPE_ERROR in case
+ * of error. */
 var_t function_call(const char func_name[], const call_info_t *call_info);
 
 

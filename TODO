@@ -77,8 +77,9 @@ Vi(m) specific features that need to be added.
     Maybe add 'titleold' option.
     Maybe add "%p" and "%P" macros to 'rulerformat' option.
     Completion based on global (when one enters pattern<tab>, e.g. *.c<tab>).
-    Make d2d, y2y and D2D work as in Vim.
     Support :set foo+=bar for strings (should append value).
+    Make gUU and similar commands accept [count].
+    Make gU2U and similar commands work as in Vim.
 
 Possible things to add.
     Use system wide mimetypes file. /etc/mailcap?
@@ -103,13 +104,11 @@ Possible things to add.
     $_ env var and Alt-T combination as in bash shell.
     Rename existing file option on name conflicts.
     Support of command line arguments like ~/some.ssh/server/path (for FUSE).
-<<<<<<< HEAD
     Think about running vim on :help command in kind of sandbox, so the only
         help files available were those provided by vifm.
-=======
     Maybe provide a way to skip non-existent directory errors on <c-o>/<c-i>.
     Something to control the frequency of directory change changes.
->>>>>>> Fix bug #35 at SourceForge
+    Save dot files filter state in vifminfo.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.

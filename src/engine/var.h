@@ -27,6 +27,7 @@ typedef enum
 {
 	VTYPE_STRING, /* Regular string value. */
 	VTYPE_INT, /* Integer, which is also used for boolean. */
+	VTYPE_ERROR, /* Signals about fail. */
 }VarType;
 
 /* Union of possible variable contents. */
@@ -46,6 +47,9 @@ typedef struct
 
 /* Returns variable, which evaluates to false. */
 var_t var_false(void);
+
+/* Returns variable, which signals about failed operation. */
+var_t var_error(void);
 
 /* Constructs variable in convenient way. */
 var_t var_new(VarType type, const var_val_t value);

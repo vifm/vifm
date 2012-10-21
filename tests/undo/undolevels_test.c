@@ -4,6 +4,8 @@
 
 #include "../../src/undo.h"
 
+#include "test.h"
+
 static int
 execute_dummy(OPS op, void *data, const char *src, const char *dst)
 {
@@ -15,7 +17,7 @@ test_undolevel_change_to_smaller(void)
 {
 	static int undo_levels = 4;
 
-	init_undo_list(&execute_dummy, &undo_levels);
+	init_undo_list_for_tests(&execute_dummy, &undo_levels);
 
 	cmd_group_begin("msg4");
 	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg4",
@@ -33,7 +35,7 @@ test_zero_undolevel(void)
 {
 	static int undo_levels = 0;
 
-	init_undo_list(&execute_dummy, &undo_levels);
+	init_undo_list_for_tests(&execute_dummy, &undo_levels);
 
 	cmd_group_begin("msg4");
 	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg4",
@@ -48,7 +50,7 @@ test_negative_undolevel(void)
 {
 	static int undo_levels = -1;
 
-	init_undo_list(&execute_dummy, &undo_levels);
+	init_undo_list_for_tests(&execute_dummy, &undo_levels);
 
 	cmd_group_begin("msg4");
 	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg4",

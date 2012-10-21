@@ -25,6 +25,7 @@
 #endif
 #include <dirent.h> /* DIR */
 
+#include <limits.h> /* PATH_MAX */
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strstr() strchr() strlen() strcpy() */
 

@@ -26,6 +26,7 @@
 #include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/test_helpers.h"
 #include "completion.h"
 
 #include "cmds.h"
@@ -88,10 +89,7 @@ static const char * parse_range(const char cmd[], cmd_info_t *cmd_info);
 static int complete_cmd_args(cmd_t *cur, const char *args,
 		cmd_info_t *cmd_info);
 static void complete_cmd_name(const char *cmd_name, int user_only);
-#ifndef TEST
-static
-#endif
-int add_builtin_cmd(const char *name, int abbr, const cmd_add_t *conf);
+TSTATIC int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
 static int comclear_cmd(const cmd_info_t *cmd_info);
 static int command_cmd(const cmd_info_t *cmd_info);
 static const char * get_user_cmd_name(const char *cmd, char *buf,
@@ -99,11 +97,8 @@ static const char * get_user_cmd_name(const char *cmd, char *buf,
 static int is_correct_name(const char *name);
 static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
-#ifndef TEST
-static
-#endif
-char ** dispatch_line(const char *args, int *count, char sep, int regexp,
-		int quotes, int *last_arg, int *last_begin, int *last_end);
+TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
+		int regexp, int quotes, int *last_arg, int *last_begin, int *last_end);
 static int get_args_count(const char *cmdstr, char sep, int regexp, int quotes);
 static void unescape(char *s, int regexp);
 static void replace_esc(char *s);
@@ -779,11 +774,8 @@ add_builtin_commands(const cmd_add_t *cmds, int count)
 }
 
 /* Returns non-zero on error */
-#ifndef TEST
-static
-#endif
-int
-add_builtin_cmd(const char *name, int abbr, const cmd_add_t *conf)
+TSTATIC int
+add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf)
 {
 	int i;
 	int cmp;
@@ -1020,11 +1012,8 @@ get_last_argument(const char cmd[], size_t *len)
 	return (char *)cmd + last_start;
 }
 
-#ifndef TEST
-static
-#endif
-char **
-dispatch_line(const char *args, int *count, char sep, int regexp, int quotes,
+TSTATIC char **
+dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 		int *last_pos, int *last_begin, int *last_end)
 {
 	char *cmdstr;

@@ -30,6 +30,7 @@
 #endif
 
 #include <errno.h>
+#include <limits.h> /* INT_MIN PATH_MAX */
 #include <stdio.h> /* FILE */
 #include <stdlib.h>
 #include <string.h> /* memset() */
@@ -140,8 +141,8 @@ init_config(void)
 	cfg.ruler_format = strdup("%=%l/%S ");
 	cfg.status_line = strdup("");
 
-	cfg.lines = -1;
-	cfg.columns = -1;
+	cfg.lines = INT_MIN;
+	cfg.columns = INT_MIN;
 
 	cfg.dot_dirs = DD_NONROOT_PARENT;
 

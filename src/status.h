@@ -23,14 +23,9 @@
 #include <sys/stat.h>
 
 #include <inttypes.h>
-#include <limits.h>
 
 #include "utils/tree.h"
-
-#if !defined(NAME_MAX) && defined(_WIN32)
-#include <io.h>
-#define NAME_MAX FILENAME_MAX
-#endif
+#include "utils/fs_limits.h"
 
 #include "color_scheme.h"
 

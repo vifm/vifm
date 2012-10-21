@@ -24,7 +24,7 @@
 #include <unistd.h>
 
 #include <ctype.h>
-#include <limits.h>
+#include <limits.h> /* PATH_MAX */
 #include <stdio.h>
 #include <string.h>
 

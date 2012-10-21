@@ -39,6 +39,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <limits.h> /* PATH_MAX */
 #include <signal.h> /* signal() */
 #include <stdarg.h> /* va_list va_start() va_end() */
 #include <stdlib.h> /* malloc */
@@ -476,6 +477,12 @@ update_stat_window(FileView *view)
 
 	if(!cfg.last_status)
 		return;
+
+	/* Don't redraw anything until :restart command is finished. */
+	if(curr_stats.restart_in_progress)
+	{
+		return;
+	}
 
 	if(cfg.status_line[0] == '\0')
 	{

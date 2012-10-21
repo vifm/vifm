@@ -45,7 +45,9 @@
 #include "../engine/keys.h"
 #include "../engine/options.h"
 #include "../menus/menus.h"
+#include "../utils/fs_limits.h"
 #include "../utils/str.h"
+#include "../utils/test_helpers.h"
 #ifdef _WIN32
 #include "../utils/utils.h"
 #endif
@@ -153,10 +155,7 @@ static void cmd_up(key_info_t key_info, keys_info_t *keys_info);
 #endif /* ENABLE_EXTENDED_KEYS */
 static void complete_cmd_prev(void);
 static void complete_search_prev(void);
-#ifndef TEST
-static
-#endif
-int line_completion(line_stats_t *stat);
+TSTATIC int line_completion(line_stats_t *stat);
 static void update_line_stat(line_stats_t *stat, int new_len);
 static wchar_t * wcsdel(wchar_t *src, int pos, int len);
 static void stop_completion(void);
@@ -1607,10 +1606,7 @@ line_part_complete(line_stats_t *stat, const char *line_mb, const char *p,
 }
 
 /* Returns non-zero on error */
-#ifndef TEST
-static
-#endif
-int
+TSTATIC int
 line_completion(line_stats_t *stat)
 {
 	static int offset;

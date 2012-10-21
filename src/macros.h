@@ -20,6 +20,7 @@
 #ifndef __MACROS_H__
 #define __MACROS_H__
 
+#include "utils/test_helpers.h"
 #include "ui.h"
 
 /* Macros that affect running of commands and processing their output. */
@@ -42,10 +43,12 @@ char * expand_macros(FileView *view, const char *command, const char *args,
 
 #ifdef TEST
 #include "engine/cmds.h"
-
-char * append_selected_files(FileView *view, char *expanded, int under_cursor,
-		int quotes, const char *mod);
 #endif
+
+TSTATIC_DEFS(
+	char * append_selected_files(FileView *view, char *expanded, int under_cursor,
+			int quotes, const char *mod);
+)
 
 #endif
 

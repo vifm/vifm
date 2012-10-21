@@ -22,7 +22,7 @@
 
 #include <curses.h>
 
-#include <limits.h>
+#include <limits.h> /* NAME_MAX PATH_MAX */
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -34,6 +34,7 @@
 #include <string.h>
 
 #include "utils/macros.h"
+#include "utils/fs_limits.h"
 #include "color_scheme.h"
 
 #define MAX_LEN 1024

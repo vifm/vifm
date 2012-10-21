@@ -5,6 +5,8 @@
 #include "../../src/ops.h"
 #include "../../src/undo.h"
 
+#include "test.h"
+
 static int i;
 
 static int
@@ -43,7 +45,7 @@ setup(void)
 
 	i = 0;
 
-	init_undo_list(&execute, &undo_levels);
+	init_undo_list_for_tests(&execute, &undo_levels);
 }
 
 static void
@@ -98,7 +100,7 @@ test_cmd_1undo_1redo(void)
 	static int undo_levels = 10;
 
 	reset_undo_list();
-	init_undo_list(&exec_dummy, &undo_levels);
+	init_undo_list_for_tests(&exec_dummy, &undo_levels);
 
 	cmd_group_begin("msg0");
 	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg0",
@@ -122,7 +124,7 @@ test_failed_operation(void)
 {
 	static int undo_levels = 10;
 
-	init_undo_list(&execute_fail, &undo_levels);
+	init_undo_list_for_tests(&execute_fail, &undo_levels);
 	reset_undo_list();
 
 	cmd_group_begin("msg0");
@@ -148,7 +150,7 @@ test_disbalance(void)
 {
 	static int undo_levels = 10;
 
-	init_undo_list(&execute_fail, &undo_levels);
+	init_undo_list_for_tests(&execute_fail, &undo_levels);
 	reset_undo_list();
 
 	cmd_group_begin("msg0");
@@ -185,7 +187,7 @@ test_removing_of_incomplete_groups(void)
 	static int undo_levels = 10;
 	int i;
 
-	init_undo_list(&exec_dummy, &undo_levels);
+	init_undo_list_for_tests(&exec_dummy, &undo_levels);
 
 	cmd_group_begin("msg0");
 	for(i = 0; i < 10; i++)
@@ -212,7 +214,7 @@ static void
 test_skipping(void)
 {
 	static int undo_levels = 10;
-	init_undo_list(&exec_skip, &undo_levels);
+	init_undo_list_for_tests(&exec_skip, &undo_levels);
 
 	cmd_group_begin("msg0");
 	assert_int_equal(0, add_operation(OP_MOVE, NULL, NULL, "do_msg0",
@@ -227,7 +229,7 @@ static void
 test_to_many_commands_and_continue(void)
 {
 	static int undo_levels = 3;
-	init_undo_list(&exec_skip, &undo_levels);
+	init_undo_list_for_tests(&exec_skip, &undo_levels);
 
 	cmd_group_begin("msg0");
 	cmd_group_end();

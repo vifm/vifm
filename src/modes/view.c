@@ -21,6 +21,7 @@
 #include <curses.h>
 
 #include <assert.h>
+#include <limits.h> /* PATH_MAX */
 #include <string.h>
 
 #include "../cfg/config.h"

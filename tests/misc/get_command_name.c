@@ -1,5 +1,6 @@
 #include "seatest.h"
 
+#include "../../src/utils/fs_limits.h"
 #include "../../src/utils/utils.h"
 
 static void

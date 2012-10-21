@@ -7,5 +7,3 @@ vifm freezes sometimes on Windows (maybe fixed).
 Case insensitive rename can not be undone on Windows.
 
 Files with names containing Unicode characters are not always processed correctly.
-
-Dot normal mode command ('.') repeats `|echo b` after executing `echo a| echo b`.

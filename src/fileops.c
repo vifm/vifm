@@ -37,6 +37,7 @@
 
 #include <assert.h>
 #include <ctype.h> /* isdigit */
+#include <limits.h> /* PATH_MAX */
 #include <signal.h>
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
@@ -49,6 +50,7 @@
 #include "utils/env.h"
 #endif
 #include "utils/fs.h"
+#include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"

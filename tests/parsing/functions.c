@@ -22,6 +22,13 @@ setup(void)
 }
 
 static void
+test_wrong_number_of_arguments_fail(void)
+{
+	ASSERT_FAIL("a()", PE_INVALID_EXPRESSION);
+	assert_string_equal("a()", get_last_position());
+}
+
+static void
 test_wrong_arg_fail(void)
 {
 	ASSERT_FAIL("a(a)", PE_INVALID_SUBEXPRESSION);
@@ -97,6 +104,7 @@ functions_tests(void)
 
 	fixture_setup(&setup);
 
+	run_test(test_wrong_number_of_arguments_fail);
 	run_test(test_wrong_arg_fail);
 	run_test(test_two_args_ok);
 	run_test(test_space_before_first_arg_ok);

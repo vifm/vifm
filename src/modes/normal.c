@@ -22,6 +22,7 @@
 #include <pthread.h>
 
 #include <assert.h>
+#include <limits.h> /* PATH_MAX */
 #include <string.h>
 #include <wctype.h> /* wtoupper() */
 
@@ -174,7 +175,9 @@ static void cmd_rl(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_t(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_u(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_yy(key_info_t key_info, keys_info_t *keys_info);
+static int calc_pick_files_end_pos(const FileView *view, int count);
 static void cmd_y_selector(key_info_t key_info, keys_info_t *keys_info);
+static void free_list_of_file_indexes(keys_info_t *keys_info);
 static void cmd_zM(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zO(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_zR(key_info_t key_info, keys_info_t *keys_info);
@@ -293,8 +296,8 @@ static keys_add_info_t builtin_cmds[] = {
 #endif
 	{L"cp", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cp}}},
 	{L"cw", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_cw}}},
-	{L"DD", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_DD}}},
-	{L"dd", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dd}}},
+	{L"DD", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_DD}}},
+	{L"dd", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_dd}}},
 	{L"D", {BUILTIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_D_selector}}},
 	{L"d", {BUILTIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_d_selector}}},
 	{L"e", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_e}}},
@@ -331,7 +334,7 @@ static keys_add_info_t builtin_cmds[] = {
 	{L"rl", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_rl}}},
 	{L"t", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_t}}},
 	{L"u", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_u}}},
-	{L"yy", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_yy}}},
+	{L"yy", {BUILTIN_NIM_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_yy}}},
 	{L"y", {BUILTIN_WAIT_POINT, FOLLOWED_BY_SELECTOR, {.handler = cmd_y_selector}}},
 	{L"v", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_V}}},
 	{L"zM", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_zM}}},
@@ -486,20 +489,32 @@ cmd_space(key_info_t key_info, keys_info_t *keys_info)
 	go_to_other_window();
 }
 
+/* Processes !! normal mode command, which can be prepended by a count, which is
+ * treated as number of lines to be processed. */
 static void
 cmd_emarkemark(key_info_t key_info, keys_info_t *keys_info)
 {
 	wchar_t buf[16] = L".!";
-	if(key_info.count != NO_COUNT_GIVEN)
-		my_swprintf(buf, ARRAY_LEN(buf), L".,.+%d!", key_info.count - 1);
+	if(key_info.count != NO_COUNT_GIVEN && key_info.count != 1)
+	{
+		if(curr_view->list_pos + key_info.count - 1 >= curr_view->list_rows - 1)
+		{
+			wcscpy(buf, L".,$!");
+		}
+		else
+		{
+			my_swprintf(buf, ARRAY_LEN(buf), L".,.+%d!", key_info.count - 1);
+		}
+	}
 	enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
 }
 
+/* Processes !<selector> normal mode command.  Processes results of applying
+ * selector and invokes cmd_emarkemark(...) to do the rest. */
 static void
 cmd_emark_selector(key_info_t key_info, keys_info_t *keys_info)
 {
 	int i, m;
-	wchar_t buf[16] = L".!";
 
 	if(keys_info->count == 0)
 	{
@@ -511,26 +526,15 @@ cmd_emark_selector(key_info_t key_info, keys_info_t *keys_info)
 	for(i = 1; i < keys_info->count; i++)
 	{
 		if(keys_info->indexes[i] > m)
+		{
 			m = keys_info->indexes[i];
+		}
 	}
 
-	free(keys_info->indexes);
-	keys_info->indexes = NULL;
-	keys_info->count = 0;
+	free_list_of_file_indexes(keys_info);
 
-	if(key_info.count != NO_COUNT_GIVEN)
-		m += curr_view->list_pos + key_info.count + 1;
-
-	if(m >= curr_view->list_rows - 1)
-	{
-		wcscpy(buf, L".,$!");
-		enter_cmdline_mode(CMD_SUBMODE, buf, NULL);
-	}
-	else
-	{
-		key_info.count = m - curr_view->list_pos + 1;
-		cmd_emarkemark(key_info, keys_info);
-	}
+	key_info.count = m - curr_view->list_pos + 1;
+	cmd_emarkemark(key_info, keys_info);
 }
 
 static void
@@ -904,7 +908,8 @@ cmd_shift_tab(key_info_t key_info, keys_info_t *keys_info)
 		go_to_other_window();
 }
 
-/* Clone file. */
+/* Clone selection.  Count specifies number of copies of each file or directory
+ * to create (one by default). */
 static void
 cmd_C(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1085,7 +1090,7 @@ cmd_gf(key_info_t key_info, keys_info_t *keys_info)
 	redraw_current_view();
 }
 
-/* Jump to top of the list or to specified line. */
+/* Jump to the top of the list or to specified line. */
 static void
 cmd_gg(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1136,6 +1141,8 @@ cmd_gs(key_info_t key_info, keys_info_t *keys_info)
 	redraw_current_view();
 }
 
+/* Handles gU<selector>, gUgU and gUU normal mode commands, which convert file
+ * name symbols to uppercase. */
 static void
 cmd_gU(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1148,9 +1155,7 @@ cmd_gU(key_info_t key_info, keys_info_t *keys_info)
 		curr_stats.save_msg = change_case(curr_view, 1, keys_info->count,
 				keys_info->indexes);
 
-		free(keys_info->indexes);
-		keys_info->indexes = NULL;
-		keys_info->count = 0;
+		free_list_of_file_indexes(keys_info);
 	}
 }
 
@@ -1161,6 +1166,8 @@ cmd_gUgg(key_info_t key_info, keys_info_t *keys_info)
 	cmd_gU(key_info, keys_info);
 }
 
+/* Handles gu<selector>, gugu and guu normal mode commands, which convert file
+ * name symbols to lowercase. */
 static void
 cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1173,9 +1180,7 @@ cmd_gu(key_info_t key_info, keys_info_t *keys_info)
 		curr_stats.save_msg = change_case(curr_view, 0, keys_info->count,
 				keys_info->indexes);
 
-		free(keys_info->indexes);
-		keys_info->indexes = NULL;
-		keys_info->count = 0;
+		free_list_of_file_indexes(keys_info);
 	}
 }
 
@@ -1324,7 +1329,7 @@ cmd_dot(key_info_t key_info, keys_info_t *keys_info)
 	if(0 > cfg.cmd_history_num)
 		show_error_msg("Command Error", "Command history list is empty.");
 	else
-		curr_stats.save_msg = exec_command(cfg.cmd_history[0], curr_view,
+		curr_stats.save_msg = exec_commands(cfg.cmd_history[0], curr_view,
 				GET_COMMAND);
 }
 
@@ -1455,6 +1460,8 @@ cmd_dd(key_info_t key_info, keys_info_t *keys_info)
 static void
 delete(key_info_t key_info, int use_trash)
 {
+	keys_info_t keys_info = {};
+
 	if(!check_if_dir_writable(DR_CURRENT, curr_view->curr_dir))
 		return;
 
@@ -1467,39 +1474,22 @@ delete(key_info_t key_info, int use_trash)
 		curr_stats.confirmed = 1;
 	}
 
-	if(cfg.selection_is_primary)
+	if(key_info.count != NO_COUNT_GIVEN)
 	{
-		if(key_info.reg == NO_REG_GIVEN)
-			key_info.reg = DEFAULT_REG_NAME;
-		if(!curr_view->selected_files && key_info.count != NO_COUNT_GIVEN)
-		{
-			int x;
-			int y = curr_view->list_pos;
-			for(x = 0; x < key_info.count; x++)
-			{
-				curr_view->dir_entry[y].selected = 1;
-				y++;
-			}
-		}
-		curr_stats.save_msg = delete_file(curr_view, key_info.reg, 0, NULL,
-				use_trash);
+		const int end_pos = calc_pick_files_end_pos(curr_view, key_info.count);
+		pick_files(curr_view, end_pos, &keys_info);
 	}
-	else
-	{
-		int j, k;
-		int *i;
+	if(key_info.reg == NO_REG_GIVEN)
+		key_info.reg = DEFAULT_REG_NAME;
 
-		if(key_info.reg == NO_REG_GIVEN)
-			key_info.reg = DEFAULT_REG_NAME;
-		if(key_info.count == NO_COUNT_GIVEN)
-			key_info.count = 1;
-		i = malloc(sizeof(int)*key_info.count);
-		k = 0;
-		for(j = curr_view->list_pos; j < curr_view->list_pos + key_info.count; j++)
-			i[k++] = j;
-		curr_stats.save_msg = delete_file(curr_view, key_info.reg, k, i, use_trash);
-		free(i);
+	if(!cfg.selection_is_primary && key_info.count == NO_COUNT_GIVEN)
+	{
+		pick_files(curr_view, curr_view->list_pos, &keys_info);
 	}
+	curr_stats.save_msg = delete_file(curr_view, key_info.reg, keys_info.count,
+			keys_info.indexes, use_trash);
+
+	free_list_of_file_indexes(&keys_info);
 }
 
 static void
@@ -1526,9 +1516,11 @@ cmd_d_selector(key_info_t key_info, keys_info_t *keys_info)
 	delete_with_selector(key_info, keys_info, 1);
 }
 
+/* Removes (permanently or just moving to trash) files using selector.
+ * Processes d<selector> and D<selector> normal mode commands.  On moving to
+ * trash files are put in specified register (unnamed by default). */
 static void
-delete_with_selector(key_info_t key_info, keys_info_t *keys_info,
-		int use_trash)
+delete_with_selector(key_info_t key_info, keys_info_t *keys_info, int use_trash)
 {
 	if(keys_info->count == 0)
 		return;
@@ -1537,9 +1529,7 @@ delete_with_selector(key_info_t key_info, keys_info_t *keys_info,
 	curr_stats.save_msg = delete_file(curr_view, key_info.reg, keys_info->count,
 			keys_info->indexes, use_trash);
 
-	free(keys_info->indexes);
-	keys_info->indexes = NULL;
-	keys_info->count = 0;
+	free_list_of_file_indexes(keys_info);
 }
 
 static void
@@ -1816,36 +1806,43 @@ static void
 cmd_yy(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(key_info.count != NO_COUNT_GIVEN)
-		pick_files(curr_view, curr_view->list_pos + key_info.count - 1, keys_info);
+	{
+		const int end_pos = calc_pick_files_end_pos(curr_view, key_info.count);
+		pick_files(curr_view, end_pos, keys_info);
+	}
 	if(key_info.reg == NO_REG_GIVEN)
 		key_info.reg = DEFAULT_REG_NAME;
 
-	if(cfg.selection_is_primary)
+	if(!cfg.selection_is_primary && key_info.count == NO_COUNT_GIVEN)
 	{
-		curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
-				keys_info->indexes);
+		pick_files(curr_view, curr_view->list_pos, keys_info);
 	}
-	else
-	{
-		int j, k;
-		int *i;
-
-		if(key_info.reg == NO_REG_GIVEN)
-			key_info.reg = DEFAULT_REG_NAME;
-		if(key_info.count == NO_COUNT_GIVEN)
-			key_info.count = 1;
-		i = malloc(sizeof(int)*key_info.count);
-		k = 0;
-		for(j = curr_view->list_pos; j < curr_view->list_pos + key_info.count; j++)
-			i[k++] = j;
-		curr_stats.save_msg = yank_files(curr_view, key_info.reg, k, i);
-		free(i);
-	}
+	curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
+			keys_info->indexes);
 
 	if(key_info.count != NO_COUNT_GIVEN)
 		free(keys_info->indexes);
 }
 
+/* Calculates end position for pick_files(...) function using cursor position
+ * and count of a command.  Considers possible integer overflow. */
+static int
+calc_pick_files_end_pos(const FileView *view, int count)
+{
+	/* Way of comparing values makes difference!  This way it will work even when
+	 * count equals to INT_MAX.  Don't change it! */
+	if(count > view->list_rows - view->list_pos)
+	{
+		return view->list_rows - 1;
+	}
+	else
+	{
+		return view->list_pos + count - 1;
+	}
+}
+
+/* Processes y<selector> normal mode command, which copies files to one of
+ * registers (unnamed by default). */
 static void
 cmd_y_selector(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1856,6 +1853,14 @@ cmd_y_selector(key_info_t key_info, keys_info_t *keys_info)
 	curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
 			keys_info->indexes);
 
+	free_list_of_file_indexes(keys_info);
+}
+
+/* Frees memory allocated for selected files list in keys_info_t structure and
+ * clears it. */
+static void
+free_list_of_file_indexes(keys_info_t *keys_info)
+{
 	free(keys_info->indexes);
 	keys_info->indexes = NULL;
 	keys_info->count = 0;

@@ -26,6 +26,7 @@
 #include <unistd.h>
 
 #include <assert.h>
+#include <limits.h> /* NAME_MAX PATH_MAX */
 #include <signal.h>
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>
@@ -37,6 +38,7 @@
 #include "../engine/keys.h"
 #include "../menus/menus.h"
 #include "../utils/fs.h"
+#include "../utils/fs_limits.h"
 #include "../utils/utils.h"
 #include "../filelist.h"
 #include "../file_magic.h"

@@ -43,6 +43,7 @@
 
 #include <assert.h> /* assert() */
 #include <errno.h>
+#include <limits.h> /* PATH_MAX */
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* calloc() malloc() */
@@ -55,10 +56,12 @@
 #include "modes/modes.h"
 #include "utils/env.h"
 #include "utils/fs.h"
+#include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
+#include "utils/test_helpers.h"
 #include "utils/tree.h"
 #include "utils/utf8.h"
 #include "utils/utils.h"
@@ -2006,11 +2009,8 @@ reset_selected_files(FileView *view, int need_free)
 	}
 }
 
-#ifndef TEST
-static
-#endif
-int
-regexp_filter_match(FileView *view, const char *filename)
+TSTATIC int
+regexp_filter_match(FileView *view, const char filename[])
 {
 	if(!view->filter_is_valid)
 		return view->invert;
@@ -2130,14 +2130,15 @@ win_to_unix_time(FILETIME ft)
 static int
 fill_dir_list(FileView *view)
 {
+	int with_parent_dir = 0;
+	const int is_root = is_root_dir(view->curr_dir);
+
 	view->matches = 0;
 	view->max_filename_len = 0;
 
 #ifndef _WIN32
 	DIR *dir;
 	struct dirent *d;
-	int with_parent_dir = 0;
-	const int is_root = is_root_dir(view->curr_dir);
 
 	if((dir = opendir(view->curr_dir)) == NULL)
 		return -1;
@@ -2258,22 +2259,10 @@ fill_dir_list(FileView *view)
 		}
 	}
 	closedir(dir);
-
-	if(!with_parent_dir && !is_root)
-	{
-		if((cfg.dot_dirs & DD_NONROOT_PARENT) || view->list_rows == 0)
-		{
-			add_parent_dir(view);
-		}
-	}
-
-	return 0;
 #else
 	char buf[PATH_MAX];
 	HANDLE hfind;
 	WIN32_FIND_DATAA ffd;
-	int with_parent_dir = 0;
-	const int is_root = is_root_dir(view->curr_dir);
 
 	if(is_unc_root(view->curr_dir))
 	{
@@ -2300,8 +2289,10 @@ fill_dir_list(FileView *view)
 		/* Always include the ../ directory unless it is the root directory. */
 		if(stroscmp(ffd.cFileName, "..") == 0)
 		{
-			if(is_root)
+			if(!parent_dir_is_visible(is_root))
+			{
 				continue;
+			}
 			with_parent_dir = 1;
 		}
 		else if(regexp_filter_match(view, ffd.cFileName) == 0)
@@ -2375,13 +2366,24 @@ fill_dir_list(FileView *view)
 	while(FindNextFileA(hfind, &ffd));
 	FindClose(hfind);
 
-	if(!with_parent_dir && !is_root)
+	/* Not all Windows file systems contain or show dot directories. */
+	if(!with_parent_dir && parent_dir_is_visible(is_root))
 	{
 		add_parent_dir(view);
+		with_parent_dir = 1;
+	}
+
+#endif
+
+	if(!with_parent_dir && !is_root)
+	{
+		if((cfg.dot_dirs & DD_NONROOT_PARENT) || view->list_rows == 0)
+		{
+			add_parent_dir(view);
+		}
 	}
 
 	return 0;
-#endif
 }
 
 /* Returns additional number of characters which are needed to display names of

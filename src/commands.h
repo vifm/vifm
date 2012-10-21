@@ -38,7 +38,11 @@ enum
 };
 
 void init_commands(void);
-int exec_commands(char *cmd, FileView *view, int type);
+/* Executes one or more commands separated by a bar.  Returns zero on success if
+ * no message should be save in the status bar, positive value to save message
+ * on successful execution and negative value in case of error with error
+ * message. */
+int exec_commands(const char cmd[], FileView *view, int type);
 int exec_command(const char cmd[], FileView *view, int type);
 char * find_last_command(char *cmd);
 void comm_quit(int write_info, int force);
@@ -55,7 +59,7 @@ char * cmds_expand_envvars(const char *str);
 #include "engine/cmds.h"
 #endif
 TSTATIC_DEFS(
-	int line_pos(const char *begin, const char *end, char sep, int regexp);
+	int line_pos(const char begin[], const char end[], char sep, int regexp);
 	void select_range(int id, const cmd_info_t *cmd_info);
 	char * eval_echo(const char args[], const char **stop_ptr);
 )

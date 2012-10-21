@@ -42,6 +42,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h> /* PATH_MAX */
 #include <signal.h> /* signal() SIGINT SIGTSTP SIG_DFL */
 #include <stddef.h> /* size_t */
 #include <string.h>
@@ -55,6 +56,7 @@
 #include "env.h"
 #endif
 #include "fs.h"
+#include "fs_limits.h"
 #include "macros.h"
 #include "path.h"
 #include "str.h"

@@ -18,6 +18,7 @@
  */
 
 #include <ctype.h> /* isdigit() */
+#include <limits.h> /* PATH_MAX */
 #include <stdio.h> /* fscanf() fgets() snprintf() */
 #include <string.h> /* strcpy() strtol() strcmp() strchr() strlen() */
 

@@ -22,7 +22,7 @@
 
 #include <curses.h>
 
-#include <limits.h>
+#include <limits.h> /* PATH_MAX */
 
 #include "../color_scheme.h"
 #include "../types.h"

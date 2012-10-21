@@ -5,6 +5,8 @@
 #include "../../src/ops.h"
 #include "../../src/undo.h"
 
+#include "test.h"
+
 static int i;
 
 static int
@@ -44,7 +46,7 @@ setup(void)
 	i = 0;
 
 	reset_undo_list();
-	init_undo_list(&execute, &undo_levels);
+	init_undo_list_for_tests(&execute, &undo_levels);
 }
 
 static void

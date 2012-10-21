@@ -21,6 +21,7 @@
 #include <unistd.h>
 
 #include <assert.h>
+#include <limits.h> /* PATH_MAX */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -181,7 +182,12 @@ static int data_is_ptr[] = {
 };
 ARRAY_GUARD(data_is_ptr, OP_COUNT);
 
+/* Operation handler function.  Performs all undo and redo operations. */
 static perform_func do_func;
+/* External function, which corrects operation availability and influence on
+ * operation checks. */
+static op_available_func op_avail_func;
+/* Number of undo levels, which are not groups but operations. */
 static const int *undo_levels;
 
 static cmd_t cmds = {
@@ -211,11 +217,13 @@ static const char * get_op_desc(op_t op);
 static char **fill_undolist_nondetail(char **list);
 
 void
-init_undo_list(perform_func exec_func, const int* max_levels)
+init_undo_list(perform_func exec_func, op_available_func op_avail,
+		const int* max_levels)
 {
 	assert(exec_func != NULL);
 
 	do_func = exec_func;
+	op_avail_func = op_avail;
 	undo_levels = max_levels;
 
 	trash_dir_len = strlen(cfg.trash_dir);
@@ -586,10 +594,15 @@ is_op_possible(const op_t *op)
 {
 	struct stat st;
 
-#ifdef TEST
-	if(op->op == OP_MOVE)
-		return 1;
-#endif
+	if(op_avail_func != NULL)
+	{
+		const int avail = op_avail_func(op->op);
+		if(avail != 0)
+		{
+			return (avail > 0);
+		}
+	}
+
 	if(op->exists != NULL && lstat(op->exists, &st) != 0)
 		return 0;
 	if(op->dont_exist != NULL && lstat(op->dont_exist, &st) == 0)

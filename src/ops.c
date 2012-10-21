@@ -21,6 +21,7 @@
 #include <shellapi.h>
 #endif
 
+#include <limits.h> /* PATH_MAX */
 #include <string.h>
 
 #include "cfg/config.h"

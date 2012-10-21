@@ -30,12 +30,13 @@
 #include <assert.h>
 #include <ctype.h> /* touuper() */
 #include <errno.h> /* errno */
-#include <limits.h> /* PATH_MAX */
+#include <limits.h> /* NAME_MAX PATH_MAX */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* realpath() */
 #include <string.h> /* strdup() strncmp() strncpy() */
 
+#include "fs_limits.h"
 #include "log.h"
 #include "path.h"
 #ifdef _WIN32

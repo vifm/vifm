@@ -455,9 +455,16 @@ eval_funccall(const char **in)
 	}
 
 	ret_val = function_call(name, &call_info);
-	str_val = var_to_string(ret_val);
-	strcat(target_buffer, str_val);
-	free(str_val);
+	if(ret_val.type != VTYPE_ERROR)
+	{
+		str_val = var_to_string(ret_val);
+		strcat(target_buffer, str_val);
+		free(str_val);
+	}
+	else
+	{
+		last_error = PE_INVALID_EXPRESSION;
+	}
 	var_free(ret_val);
 	function_call_info_free(&call_info);
 
