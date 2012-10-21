@@ -131,7 +131,7 @@ set_env_type(status_t *stats)
 {
 #ifndef _WIN32
 	const char *term = env_get("TERM");
-	if(term != NULL && strcmp(term, "linux") == 0)
+	if(term != NULL && ends_with(term, "linux"))
 	{
 		curr_stats.env_type = ENVTYPE_LINUX_NATIVE;
 	}

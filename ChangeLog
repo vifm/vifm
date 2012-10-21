@@ -12,6 +12,9 @@
 
 	Make commands like d2d, y2y and D2D work as in Vim.
 
+	Use linux native console specific settings if $TERM ends with "linux" (not
+	only equals it).
+
 	Fixed autotools configuration files.
 
 	Fixed terminal size resetting after :restart.
