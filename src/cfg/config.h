@@ -70,7 +70,7 @@ typedef struct
 	int use_iec_prefixes;
 	int wrap_quick_view;
 	char *time_format;
-	char *fuse_home;
+	char *fuse_home; /* This one should be set using set_fuse_home() function. */
 
 	char **search_history;
 	int search_history_num;
@@ -130,6 +130,9 @@ void generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len);
 void create_trash_dir(void);
 /* Changes size of all histories. */
 void resize_history(size_t new_len);
+/* Sets value of cfg.fuse_home.  Returns non-zero in case of memory allocation
+ * error. */
+int set_fuse_home(const char new_value[]);
 /* Frees memory previously allocated for specified history items. */
 void free_history_items(const history_t history[], size_t len);
 

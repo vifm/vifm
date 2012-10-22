@@ -136,7 +136,7 @@ get_mount_by_source(const char *source)
 	fuse_mount_t *runner = fuse_mounts;
 	while(runner != NULL)
 	{
-		if(stroscmp(runner->source_file_name, source) == 0)
+		if(paths_are_equal(runner->source_file_name, source))
 			break;
 		runner = runner->next;
 	}
@@ -239,7 +239,8 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 	fuse_item = (fuse_mount_t *)malloc(sizeof(fuse_mount_t));
 	strcpy(fuse_item->source_file_name, file_full_path);
 	strcpy(fuse_item->source_file_dir, view->curr_dir);
-	strcpy(fuse_item->mount_point, mount_point);
+	canonicalize_path(mount_point, fuse_item->mount_point,
+			sizeof(fuse_item->mount_point));
 	fuse_item->mount_point_id = mount_point_id;
 	fuse_item->next = NULL;
 	if(fuse_mounts == NULL)
@@ -389,7 +390,7 @@ get_mount_by_mount_point(const char *dir)
 	fuse_mount_t *runner = fuse_mounts;
 	while(runner != NULL)
 	{
-		if(stroscmp(runner->mount_point, dir) == 0)
+		if(paths_are_equal(runner->mount_point, dir))
 			break;
 		runner = runner->next;
 	}
@@ -409,7 +410,7 @@ try_unmount_fuse(FileView *view)
 	trailer = NULL;
 	while(runner)
 	{
-		if(!stroscmp(runner->mount_point, view->curr_dir))
+		if(paths_are_equal(runner->mount_point, view->curr_dir))
 			break;
 
 		trailer = runner;

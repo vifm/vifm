@@ -596,7 +596,7 @@ filename_completion(const char *str, CompletionType type)
 			snprintf(buf, sizeof(buf), "%s", curr_view->curr_dir);
 		strcat(buf, dirname);
 		chosp(buf);
-		replace_string(&dirname, buf);
+		(void)replace_string(&dirname, buf);
 	}
 #endif
 

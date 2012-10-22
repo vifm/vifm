@@ -264,12 +264,12 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'f') /* left pane filter */
 		{
-			replace_string(&lwin.prev_filter, line + 1);
+			(void)replace_string(&lwin.prev_filter, line + 1);
 			set_filename_filter(&lwin, line + 1);
 		}
 		else if(line[0] == 'F') /* right pane filter */
 		{
-			replace_string(&rwin.prev_filter, line + 1);
+			(void)replace_string(&rwin.prev_filter, line + 1);
 			set_filename_filter(&rwin, line + 1);
 		}
 		else if(line[0] == 'i') /* left pane filter inverted */

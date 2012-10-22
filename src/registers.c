@@ -176,7 +176,7 @@ rename_in_registers(const char old[], const char new[])
 			if(stroscmp(registers[x].files[y], old) != 0)
 				continue;
 
-			replace_string(&registers[x].files[y], new);
+			(void)replace_string(&registers[x].files[y], new);
 			break; /* registers don't contain duplicates */
 		}
 	}

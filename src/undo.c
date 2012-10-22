@@ -250,7 +250,7 @@ cmd_group_begin(const char *msg)
 
 	group_opened = 1;
 
-	replace_string(&group_msg, msg);
+	(void)replace_string(&group_msg, msg);
 	last_group = NULL;
 }
 
@@ -273,7 +273,7 @@ replace_group_msg(const char msg[])
 	group_msg = (msg != NULL) ? strdup(msg) : NULL;
 	if(last_group != NULL && group_msg != NULL)
 	{
-		replace_string(&last_group->msg, group_msg);
+		(void)replace_string(&last_group->msg, group_msg);
 	}
 	return result;
 }
@@ -633,7 +633,7 @@ change_filename_in_trash(cmd_t *cmd, const char *filename)
 	rename_in_registers(filename, buf);
 
 	old = cmd->buf2;
-	replace_string(&cmd->buf2, buf);
+	(void)replace_string(&cmd->buf2, buf);
 
 	update_entry(&cmd->do_op.src, old, cmd->buf2);
 	update_entry(&cmd->do_op.dst, old, cmd->buf2);

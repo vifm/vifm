@@ -266,7 +266,7 @@ error_msg(const char *title, const char *text)
 	}
 	else
 	{
-		replace_string(&job->error, text);
+		(void)replace_string(&job->error, text);
 	}
 }
 #endif

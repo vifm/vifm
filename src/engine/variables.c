@@ -116,8 +116,8 @@ init_var(const char *env)
 		return;
 	record->from_parent = 1;
 
-	replace_string(&record->initial, p + 1);
-	replace_string(&record->val, p + 1);
+	(void)replace_string(&record->initial, p + 1);
+	(void)replace_string(&record->val, p + 1);
 	if(record->initial == NULL || record->val == NULL)
 	{
 		free_record(record);

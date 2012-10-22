@@ -76,7 +76,7 @@ path_env_was_changed(int force)
 		return force;
 	}
 
-	replace_string(&clean_path, path);
+	(void)replace_string(&clean_path, path);
 	return 1;
 }
 
@@ -234,7 +234,7 @@ split_path_list(void)
 void
 load_clean_path_env(void)
 {
-	replace_string(&real_path, env_get("PATH"));
+	(void)replace_string(&real_path, env_get("PATH"));
 	env_set("PATH", clean_path);
 }
 

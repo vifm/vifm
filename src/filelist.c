@@ -391,7 +391,7 @@ prepare_view(FileView *view)
 	int i;
 
 	strncpy(view->regexp, "", sizeof(view->regexp));
-	replace_string(&view->prev_filter, "");
+	(void)replace_string(&view->prev_filter, "");
 	set_filename_filter(view, "");
 	view->invert = 1;
 	view->prev_invert = view->invert;
@@ -1311,7 +1311,7 @@ save_view_history(FileView *view, const char *path, const char *file, int pos)
 		if(curr_stats.load_stage < 2)
 			return;
 		x = view->history_pos;
-		replace_string(&view->history[x].file, file);
+		(void)replace_string(&view->history[x].file, file);
 		view->history[x].rel_pos = pos - view->top_line;
 		return;
 	}
@@ -2734,7 +2734,7 @@ toggle_dot_files(FileView *view)
 void
 remove_filename_filter(FileView *view)
 {
-	replace_string(&view->prev_filter, view->filename_filter);
+	(void)replace_string(&view->prev_filter, view->filename_filter);
 	set_filename_filter(view, "");
 
 	view->prev_invert = view->invert;
@@ -2760,7 +2760,7 @@ set_filename_filter(FileView *view, const char *filter)
 		regfree(&view->filter_regex);
 	}
 
-	replace_string(&view->filename_filter, filter);
+	(void)replace_string(&view->filename_filter, filter);
 	if(view->filename_filter[0] == '\0')
 	{
 		view->filter_is_valid = 0;

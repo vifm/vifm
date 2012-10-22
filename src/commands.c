@@ -739,11 +739,11 @@ save_history(const char *line, char **hist, int *num, int *len)
 
 	while(x > 0)
 	{
-		replace_string(&hist[x], hist[x - 1]);
+		(void)replace_string(&hist[x], hist[x - 1]);
 		x--;
 	}
 
-	replace_string(&hist[0], line);
+	(void)replace_string(&hist[0], line);
 	(*num)++;
 	if(*num >= *len)
 		*num = *len - 1;
@@ -1447,7 +1447,7 @@ apropos_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc > 0)
 	{
-		replace_string(&last_args, cmd_info->args);
+		(void)replace_string(&last_args, cmd_info->args);
 	}
 	else if(last_args == NULL)
 	{
@@ -1679,7 +1679,7 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 				{
 					char path[PATH_MAX];
 					snprintf(path, sizeof(path), "%s/%s", curr_view->curr_dir, directory);
-					replace_string(&directory, path);
+					(void)replace_string(&directory, path);
 				}
 			}
 			if(!is_dir(directory))
@@ -2174,7 +2174,7 @@ find_cmd(const cmd_info_t *cmd_info)
 			last_dir = 1;
 		else
 			last_dir = 0;
-		replace_string(&last_args, cmd_info->args);
+		(void)replace_string(&last_args, cmd_info->args);
 	}
 	else if(last_args == NULL)
 	{
@@ -2207,7 +2207,7 @@ grep_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc > 0)
 	{
-		replace_string(&last_args, cmd_info->args);
+		(void)replace_string(&last_args, cmd_info->args);
 		last_invert = cmd_info->emark;
 	}
 	else if(last_args == NULL)
@@ -2556,7 +2556,7 @@ locate_cmd(const cmd_info_t *cmd_info)
 	static char *last_args;
 	if(cmd_info->argc > 0)
 	{
-		replace_string(&last_args, cmd_info->args);
+		(void)replace_string(&last_args, cmd_info->args);
 	}
 	else if(last_args == NULL)
 	{
@@ -3183,16 +3183,16 @@ substitute_cmd(const cmd_info_t *cmd_info)
 
 	if(cmd_info->argc >= 1 && cmd_info->argv[0][0] != '\0')
 	{
-		replace_string(&last_pattern, cmd_info->argv[0]);
+		(void)replace_string(&last_pattern, cmd_info->argv[0]);
 	}
 
 	if(cmd_info->argc >= 2)
 	{
-		replace_string(&last_sub, cmd_info->argv[1]);
+		(void)replace_string(&last_sub, cmd_info->argv[1]);
 	}
 	else if(cmd_info->argc == 1)
 	{
-		replace_string(&last_sub, "");
+		(void)replace_string(&last_sub, "");
 	}
 
 	if(last_pattern == NULL)

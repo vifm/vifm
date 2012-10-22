@@ -74,7 +74,26 @@ path_starts_with(const char *path, const char *begin)
 	return (path[len] == '\0' || path[len] == '/');
 }
 
-/* Removes excess slashes, "../" and "./" from the path */
+int
+paths_are_equal(const char s[], const char t[])
+{
+	size_t s_len = strlen(s);
+	size_t t_len = strlen(t);
+
+	if(s_len > 0 && s[s_len - 1] == '/')
+		s_len--;
+	if(t_len > 0 && t[t_len - 1] == '/')
+		t_len--;
+
+	if(s_len == t_len)
+	{
+		return strnoscmp(s, t, s_len) == 0;
+	}
+	return 0;
+}
+
+/* Removes excess slashes, "../" and "./" from the path.  buf will always
+ * contain trailing forward slash. */
 void
 canonicalize_path(const char *directory, char *buf, size_t buf_size)
 {

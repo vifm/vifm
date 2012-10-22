@@ -217,7 +217,7 @@ set_option(const char name[], optval_t val)
 
 	if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
 	{
-		replace_string(&opt->val.str_val, val.str_val);
+		(void)replace_string(&opt->val.str_val, val.str_val);
 	}
 	else
 	{
@@ -499,7 +499,7 @@ set_set(opt_t *opt, const char value[])
 	{
 		if(opt->val.str_val == NULL || strcmp(opt->val.str_val, value) != 0)
 		{
-			replace_string(&opt->val.str_val, value);
+			(void)replace_string(&opt->val.str_val, value);
 			*opts_changed = 1;
 			opt->handler(OP_SET, opt->val);
 		}

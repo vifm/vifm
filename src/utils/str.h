@@ -59,8 +59,9 @@ char * after_last(const char *str, char c);
  * end. */
 char * until_first(const char str[], char c);
 /* Replaces *str with a copy of with string.  *str can be NULL or equal to
- * with (then function does nothing). */
-void replace_string(char **str, const char with[]);
+ * with (then function does nothing).  Returns non-zero if memory allocation
+ * failed. */
+int replace_string(char **str, const char with[]);
 /* Adds a character to the end of a string. */
 char * strcatch(char *str, char c);
 /* A wrapper of swprintf() functions to make its differences on various
