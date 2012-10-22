@@ -1,0 +1,652 @@
+October 18, 2012
+================
+
+vifm v0.7.4
+-----------
+
+0.7.4 is a minor release, which improves existing features as well as adds
+some new ones.
+
+There are two main directions in which improvements were made.  One of them
+is TUI, which now has support of multiple columns and ls-like view as well as
+customizable file name decoration (prefix and suffix).  The second one is
+connected with command interpreter, which now supports builtin functions,
+conditional operators and conditional execution of commands
+(using if-else-endif statements).  Additionally, vifm's memory footprint was
+made smaller and running of programs associated with files made smarter
+(won't stop until existing program is found).
+
+Main changes:
+ - new multicolumn view;
+ - new ls-like view (see 'lsview' option) and related keys for it;
+ - prefixes and suffixes of files of different types are configurable now;
+ - smarter handling of file associations (now vifm will try to find existing
+   program);
+ - some basic means to do scripting (if-else-endif statements, builtin
+   functions, comparison operators);
+ - reduced history memory consumption;
+ - better configure script, which now checks more stuff (and does it in a
+   more accurate way) needed to build vifm.
+
+More detailed list of changes.
+
+Configuration:
+ - removed compile-time compatibility mode (the compatibility-mode switch),
+   now "f" flag in 'cpoptions' does the same;
+ - added --without/[with]-X11 configure script option;
+ - configure script now checks much more then before;
+ - better make files (thanks to Hendrik Jaeger).
+
+Only on Windows:
+ - replaced gl normal mode mapping for Windows with gr because of conflict
+   (with 'lsview');
+ - allow paths in :file[x]type command that contain spaces to be doublequoted
+   on Windows.
+
+Normal and visual modes related changes:
+ - added Ctrl-W H/J/K/L normal mode keys;
+ - added gh, gj, gk and gl keys for normal and visual modes;
+ - added 0, ^ and $ keys for normal and visual modes, which also work as
+   selectors in normal mode.
+
+Command-line mode related changes:
+ - added Ctrl-T handling in command line to swap characters;
+ - added Meta-. handling in command line to paste last parts of previous
+   commands;
+ - added :echo command;
+ - added :if, :else and :endif commands;
+ - added support for `==` and `!=` operators;
+ - added :normal command;
+ - added mapping commands for view and menu modes;
+ - changed relative path base for :split and :vsplit commands;
+ - expand macros for user defined commands.
+
+:set command and options:
+ - added 'viewcolumns' local option to control view columns;
+ - added 'lsview' option to control ls-like view look;
+ - added 'dotdirs' option to control visibility of "../" directory;
+ - added 'classify' option to set prefixes and suffixes for different file
+   types;
+ - added %E 'statusline' option macro, which means size of all selected files
+   or current file, if no files are selected;
+ - added "t" flag to 'cpoptions' option (replaces compile-time compatibility
+   mode).
+
+Completion:
+ - added completion for :set option= even for options without variants;
+ - complete only directory names for :split and :vsplit commands;
+ - escape pipe character during :file completion;
+ - complete :set for short and full option names like Vim does (e.g. 'so'
+   should be expanded to 'sort', not only 'scrolloff').
+
+TUI (Terminal User Interface):
+ - added status bar messages for :apropos, :find and :locate commands;
+ - flicker less on :restart command;
+ - don't show Ctrl-C part in information message boxes where it doesn't make
+   sense;
+ - reduce delay between terminal resize and TUI redrawing;
+ - fixed background bold (light) colors in linux native console.
+
+Color scheme related changes:
+ - added light versions of color names.
+
+Key bindings:
+ - don't pause on '0' after Ctrl-W (count cannot start with zero);
+ - multiply counts in front and in the middle of commands with Ctrl-W (as Vim
+   does);
+ - multiply counts in front of command and its selector (as Vim does).
+
+Other changes:
+ - added support for builtin functions and filetype() as the first one;
+ - check current view of other pane on leaving FUSE mount directory an don't
+   unmount if that file system is still in use;
+ - try the rest of the programs for an association when the default one isn't
+   found;
+ - reduced memory consumption of view histories.
+
+And fixes of bugs and memory leaks.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+June 23, 2012
+=============
+
+vifm v0.7.3a
+------------
+
+It happens some bugs are discovered just after making a new release.  And it
+happened with vifm 0.7.3, which was tested, but apparently not enough.  So
+0.7.3a is a bugfix release, which contains fixes for one serious bug and
+several small ones as well as adds some more information to the documentation
+and very small enhancements.
+
+If you would like to be notified about future releases of vifm or some
+important news related to vifm by email, consider subscribing to recently
+created vifm-announce@lists.sourceforge.net read-only mailing list.  You can
+do this by following this link.
+
+Though this is a bugfix release it has some changes since v0.7.3 that should
+be mentioned:
+
+Completion:
+ - better completion for :colorscheme command.
+
+Documentation:
+ - added a section about color schemes to the documentation;
+ - documented that %m, %M, %s, %S and %i have bigger priority than &;
+ - documented that %m, %M, %s, %S and %i are mutually exclusive;
+ - documented treating of whitespace around option names in :set command.
+
+:set command and options:
+ - allowed whitespace after option name in :set command;
+ - added checks for correct value of 'tabstop' and 'timeoutlen' options;
+ - reset 'columns' and 'lines' options to real number of columns;
+ - reset value of 'scrolloff' option to zero on attempt to assign a negative
+   value to it;
+ - faster execution of `:set sort=foo sortorder sortnumbers` in vifmrc.
+
+TUI (Terminal User Interface):
+ - faster redrawing of statusbar with "-- VISUAL --" message after "Press
+   Enter" message.
+
+Command-line mode related changes:
+ - expand tilde in the second argument of :colorscheme command;
+ - forbid relative paths in :colorscheme command until vifm is completely
+   loaded;
+ - pass range given to alias to an aliased command.
+
+Performance:
+ - faster Ctrl-W x, Ctrl-W o, Ctrl-W s, Ctrl-W v, Ctrl-W =, Ctrl-W <,
+   Ctrl-W >, Ctrl-W -, Ctrl-W +, Ctrl-W |, Ctrl-W _;
+ - faster redraw on terminal resizing;
+ - made file filtering using regular expressions work faster (matters when
+   directory contains several thousands files);
+ - draw quickview on startup only once.
+
+Normal and visual modes related changes:
+ - show correct number of selected files in visual mode after n and N keys.
+
+And bug fixes.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+June 3, 2012
+============
+
+vifm v0.7.3 release
+-------------------
+
+If you would like to be notified about future releases of vifm or some
+important news related to vifm by email, consider subscribing to recently
+created vifm-announce@lists.sourceforge.net read-only mailing list.  You can
+do this by following this link.
+
+Changes since v0.7.2 in general:
+ - removed support of moving items in the :file menu;
+ - added description of :file programs;
+ - improved messages in the TUI as well as it's redrawing in various
+   scenarios;
+ - changed behaviour of Enter key on a selected directories;
+ - better work with PATH environment variable.
+
+Changes since v0.7.2 in details:
+
+Completion:
+ - added completion for :copy, :clone, :move, :alink, :rlink and :rename
+   commands;
+ - added completion for :touch and :mkdir commands;
+ - added completion for :split and :vsplit commands.
+
+TUI (Terminal User Interface):
+ - added Ctrl-L handling in file info (Ctrl-G) mode;
+ - less blinking of the screen in various scenarios;
+ - replace home directory with the tilde in terminal title;
+ - corrected status bar messages about failed search;
+ - better handling of multiline messages in status bar.
+
+Normal and visual modes related changes:
+ - leave leading zeros on Ctrl-A/X commands;
+ - added "Y" key to visual mode as an alias for "yy";
+ - open selected directories with l or Enter keys.
+
+Configuration:
+ - added --enable-desktop-files (enabled by default) configure option.
+
+Only on Windows:
+ - allow bookmarking of host names on Windows (e.g. //ZX-SPECTRUM);
+ - show host's root in history menu (e.g. //ZX_SPECTRUM);
+ - made :fileviewer command work.
+
+Macros:
+ - added macros expansion for :touch and :mkdir commands;
+ - added %i macro to completely ignore output of external commands.
+
+Command-line mode related changes:
+ - added :finish command to use in sourced scripts;
+ - improved :let command (allowed using of expressions at the right side of
+   the statement);
+ - properly handle when user alters PATH environment variable using :let
+   command;
+ - added description for :filetype, :filextype and :fileviewer commands;
+ - save last typed but not executed command in command-line mode (this also
+   includes searches).
+
+Menus and dialogs:
+ - removed possibility of moving items in :file menu;
+ - added size of file in bytes in file info mode (Ctrl-G);
+ - added q key to close menus.
+
+Other changes:
+ - added notes about automatic FUSE mounts to the documentation;
+ - now vifm removes scripts ($VIFM/scripts/**) from PATH for :shell command;
+ - use common search history for normal, visual and menu modes;
+ - increased directory modification stamp precision on *nix.
+
+Plus bug fixes of course.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+February 19, 2012
+=================
+
+vifm v0.7.2
+-----------
+
+Changes since v0.7.1 :set command and options:
+ - added 'rulerformat' option;
+ - added 'statusline' option;
+ - added 'columns' and 'lines' options;
+ - added 'trashdir' option (by Chris Skalenda).
+
+Command-line mode related changes:
+ - added optional argument for the :sync command;
+ - added support for running :cmap, :nmap and :vmap with one argument;
+ - added recursive mode for :rename command;
+ - added :let and :unlet commands to work with environment variables;
+ - added :windo and :winrun commands;
+ - never change active view on :restart command;
+ - allowed using of macros with :clone command.
+
+Angle bracket notation:
+ - added <esc>.
+
+Only on Windows:
+ - added embedded icon;
+ - added file properties dialog;
+ - show "Sorting directory..." message only for big directories;
+ - change console title;
+ - made determining of home directory more intelligent;
+ - made 'sortnumbers' work;
+ - avoid unnecessary directory view updates (like after C key);
+ - allow using of backward slashes in :rename command;
+ - let :s and :gs filename modifiers change slash type;
+ - properly quit vifm on console closing;
+ - added :u filename modifier for UNC computer name;
+ - added file attributes in status bar and file info view.
+
+Normal and visual modes related changes:
+ - added ctrl-w p, ctrl-w b and ctrl-w t normal mode keys.
+
+Configuration:
+ - added $VIFM and $MYVIFMRC environment variables;
+ - now vifm will add all subdirectories of ~/.vifm/scripts to PATH;
+ - better check for old-style color schemes file.
+
+For Vim:
+ - added g:vifm_exec_args variable for the plugin.
+
+Other changes:
+ - added --select command line argument;
+ - added --remote command line argument;
+ - added support for character classes in globals;
+ - restore terminal title on exit;
+ - reset dot and filename filters if they hide bookmarked file;
+ - made vifm react faster on external changes.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+November 15, 2011
+=================
+
+vifm v0.7.1
+-----------
+
+Major changes since v0.7.0:
+ - changed meaning of :split command (so replace it with :vsplit in your
+   vifmrc);
+ - added backgrounding of :copy, :move, :delete, ga and gA commands;
+ - added horizontal splitting and keys to control size of the panes;
+ - added less-like view mode;
+ - made some changes to the Vim plugin;
+ - windows version was made much more usable.
+
+Changes in details
+
+:set command and options:
+ - added 'scrollbind', 'wrapscan', 'incsearch', 'cpoptions', 'laststatus' and
+   'tabstop' options;
+ - make 'ignorecase' and 'smartcase' affect f and F;
+ - don't use position in the view on ' key, when 'autochpos' is off.
+
+Angle bracket notation:
+ - added support for more angle bracket notations in mappings (<bs>, <tab>,
+   <s-tab>, <home>, <end>, <left>, <right>, <up>, <down>, <pageup>,
+   <pagedown>, <del>, <delete>, <m-a>, <m-b>, ..., <m-z>);
+ - added <s-f1>, ..., <s-f12>, <a-f1>, ..., <a-f12>, <c-f1>, ..., <c-f12>,
+   only for Windows;
+ - added <a-X> as synonyms for <m-X> (where X is a key);
+ - added angle bracket notation <c-s-X> and <s-c-X> as synonyms for <c-X>;
+ - added Ctrl + Alt + letter combinations, only for *nix.
+
+Command-line mode related changes:
+ - added :split! to toggle between only and split view;
+ - added :file to quick run one of associated commands;
+ - added backgrounding of :copy, :move and :delete commands;
+ - added :delete!;
+ - added :execute, :source commands;
+ - added support for using environment variables as :cd or :pushd arguments;
+ - added support for :substitute command without arguments;
+ - added notation to run internal vifm commands from user defined commands;
+ - allowed exclamation mark for :view command (to prevent view closing);
+ - allowed question mark for :mark command (to prevent bookmark overwriting).
+
+Completion:
+ - added completion of environment variables (:cd, :pushd, :! and :!!).
+
+Normal and visual modes related changes:
+ - added '(' and ')' keys for normal and visual modes;
+ - added Ctrl-A and Ctrl-X keys (normal and visual modes);
+ - added e key for normal mode;
+ - made i key work in visual mode;
+ - made ga and gA work in background;
+ - better cW command;
+ - clean selection after i key in normal mode.
+
+Menus and dialogs:
+ - added year in the file info dialog (on Ctrl-G);
+ - added zh, zl, zH and zL keys for the menus (horizontal scrolling);
+ - added ZQ and ZZ keys to close menus and dialogs.
+
+TUI (Terminal User Interface):
+ - added horizontal splitting of views (changed :split command, added :vsplit
+   command, changed Ctrl-w s mapping);
+ - added Ctrl-w j and Ctrl-w k keys;
+ - added Ctrl-w <, Ctrl-w >, Ctrl-w + and Ctrl-w - keys;
+ - added Ctrl-w | and Ctrl-w _ keys.
+
+File cloning:
+ - don't change file extension on cloning;
+ - move cursor to clone of current file after file cloning;
+ - smarter file name generation on cloning;
+ - made C command accept count.
+
+Only on Windows:
+ - added kind of portable mode on Windows;
+ - make macros expand to paths with forward slashes on Windows;
+ - better check if directory was changed on Windows;
+ - show all shares on Windows (including private ones);
+ - fixed a lot of bugs on Windows.
+
+For Vim:
+ - added g:vifm_exec variable for the plugin;
+ - added ftdetect plugin for vim (now there is no need for modelines or
+   changing .vimrc);
+ - allowed arguments for plugin's commands;
+ - added more tags to the documentation in vim-help format.
+
+Other changes:
+ - added Ctrl-n (j) and Ctrl-p (k) keys;
+ - added view mode (see documentation);
+ - added -c and + command line arguments;
+ - added support of [count] for / and ?;
+ - don't clear terminal title on exit;
+ - warn about symbolic links are not available;
+ - don't show current file as selected after executing a :command and resizing
+   terminal while it works;
+ - show progress message (e.g. on :copy) after terminal is resized;
+ - made some messages about operations more correct.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+September 29, 2011
+==================
+
+vifm v0.7.0 is out!
+-------------------
+
+And as it was promised vifm is back on Windows!
+
+This release breaks compatibility a little, which was done intensionally to
+make vifm more vi-like.  I hope that wont make too much discomfort for users,
+at least I tried to reduce discomfort as much as I can.  In particular, an
+utility program named vifmrc-converter is shipped with vifm now.  It's main
+purpose is to automatically convert configuration files (vifmrc, vifminfo,
+startup and colorschemes files) to new format.  You don't have to run it by
+yourself, vifm will do this for you after asking some questions at first
+startup.
+
+Here are the main changes by categories.
+
+Configuration:
+ - changed format of ~/.vifm/vifmrc and ~/.vifm/vifminfo files;
+ - removed support of startup file, all commands will be automatically moved
+   to the vifmrc file;
+ - added support for multi line commands in the vifmrc (ex-startup) file;
+ - now users can place scripts for vifm to ~/.vifm/scripts, vifm modifies its
+   PATH environment variable to let user run scripts without specifying full
+   path;
+ - now vifm also accepts paths to files as the startup arguments and
+   --no-configs option.
+
+Normal and visual modes related changes:
+ - added gf, al, rl and cl commands for dealing with symbolic links;
+ - added gu and gU commands (and their variations);
+ - added gs command to work with t selection like gv with visual mode
+   selection;
+ - made C handle selection, check read permission and work in visual mode;
+ - changed the way l key handles selection and made it work in visual mode.
+
+Command-line mode related changes:
+ - removed :cmdhistory command, use :history cmd or ":history :" instead;
+ - added :noremap, :cnoremap, :nnoremap, :vnoremap, :unmap, :cunmap, :nunmap
+   and :vunmap commands;
+ - added :filetype, :filextype and :fileviewer commands;
+ - added :find and :grep commands;
+ - added :substitute and :tr commands;
+ - added :clone, :copy, :move, :alink and :rlink commands;
+ - added :chmod, :chown, :mkdir and :touch commands;
+ - added :mark, :delmarks, :comclear, :highlight, :restart and :messages
+   command;
+ - documented command line keys and marked which :commands accept ranges;
+ - now vifm understands user name after tilde in paths;
+ - let user use short forms of user-defined commands with "!".
+
+Completion:
+ - added completion for co, cg, cw and cW commands;
+ - sort completion items;
+ - shift-Tab command line key to perform completion in reversed order;
+ - added Ctrl-_ command-line key to reject completion.
+
+Macros:
+ - added filename modifiers (:p, :~, :., :h, :t, :r, :e, :s and :gs);
+ - added %S and %M macros;
+ - added macros that are expanded to paths enclosed in double quotes (%"c,
+   %"C, %"f, %"F, %"b, %"d and %"D);
+ - handle %m, %M, %s and %S in the :! command.
+
+:set command and options:
+ - removed 'savelocation' option. Use :set vifminfo+=dhistory;
+ - added 'wildmenu', 'ignorecase', 'smartcase', 'hlsearch', 'vifminfo',
+   'shell', 'vixcmd', 'scrolloff', 'timeoutlen', 'autochpos','gdefault',
+   'slowfs' options;
+ - added abbreviations for options;
+ - added support for using ':' instead of '=';
+ - support for ':set' and ':set all' commands;
+ - made ':set option' equivalent to ':set option?' for all types of options
+   except boolean;
+ - made 'history' option control search, command line and prompt histories;
+ - better 'sort' option (support by multiple sort keys, added iname key);
+ - made 'vicmd' and 'vixcmd' understand & at the end;
+ - :set command now understands & (reset option to its default value).
+
+Color scheme related changes:
+ - all color schemes are stored under the ~/.vifm/colors/ directory, each
+   color scheme in its own file;
+ - color scheme file is a list of commands. All command-line commands are
+   handled, but only :highlight commands are really useful here;
+ - added colors for current top line, other top line, status line, error
+   messages in the status bar, broken links and FIFO files;
+ - now maximum number of color schemes is unlimited even on 8-color terminals
+   (there was a limit of 5 color schemes for such terminals before).
+
+Only on Windows:
+ - gl normal mode key;
+ - UNC names support;
+ - :volumes command.
+
+For Vim:
+ - added g:vifm_term variable for the plugin;
+ - added vifmrc syntax and filetype files for Vim;
+ - tags for some items in the help file for Vim.
+
+Other changes:
+ - let user go through directories with execute access, but no read access;
+ - made filetype understand star as in globals;
+ - removed duplicates from command and directory history;
+ - made directory, command line and search histories as well as dirstack and
+   registers persistent (when 'vifminfo' option contains appropriate value);
+ - show search matches in the menus;
+ - now keys can be used in mappings and mapping of keys like y, d or m works
+   right;
+ - modify terminal emulator title;
+ - don't quit when terminal is too small (print message and ignore input);
+ - fixed bugs.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+July 20, 2011
+=============
+
+vifm-0.6.3
+----------
+
+Main changes in vifm-0.6.3:
+ - added another format for filetype (FUSE_MOUNT2);
+ - added %CLEAR FUSE mount parameter.  See vifmrc for details;
+ - added %c and %C macros (current file of current and other directories, not
+   selected file or files);
+ - added :rename command (opens vi to let you edit names for selected file or
+   files);
+ - added undo list (u, Ctrl-R and :undolist commands; 'undolevels' option);
+ - added small FAQ;
+ - added gA command (like ga, but forces update);
+ - added whole line comments (can be useful in startup file);
+ - added :dirs command (shows directory stack);
+ - added 'sortnumbers', 'followlinks', 'fusehome', 'confirm' and 'history'
+   options;
+ - added dialog to ask user about backwards range in command;
+ - added some vi like keys for menus, dialogs and visual mode;
+ - added 'savelocation' option (start vifm in the last visited directory)
+   which is off be default thus returning old behaviour when vifm is started
+   with no argument;
+ - added gv command for visual mode;
+ - enter key in visual mode will leave it saving selection;
+ - now location of panes is saved in ~/.vifm/vifminfo instead of
+   ~/.vifm/vifmr;
+ - now builtin keys can be remapped;
+ - don't replace escape sequences for :! and :!! commands;
+ - more vi like completion and history in command line and search;
+ - some improvements for :filter command;
+ - some improvements for command ranges;
+ - now ranges modify %f macro for user defined commands;
+ - made f and F work with wide characters;
+ - made option parser handle quotes;
+ - rename files in Trash (to avoid name conflicts);
+ - don't terminate background processes on vifm exit;
+ - remove files that are in the Trash on :empty command from all registers;
+ - don't ignore Ctrl-Z;
+ - don't clear screen on shellout;
+ - updated Vim plugin;
+ - fixed a lot of bugs;
+
+See ChangeLog for details.  Also see THANKS file that was added in this
+release.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+June 19, 2011
+=============
+
+vifm-0.6.2
+-----------
+
+This release fixes some bugs and adds several commands for different modes.
+
+Main changes:
+ - added map menus (run :cmap, :vmap, :nmap commands without arguments);
+ - added :cmdhistory command;
+ - added 'fastrun' option;
+ - added o and O keys for Visual mode (go to other end of selection);
+ - added gv Normal mode command;
+ - added support for spaces and functional keys in mappings (<space> and
+   <f0> - <f63>);
+ - added mimetype to fileinfo dialog;
+ - added %b command macro;
+ - implemented :yank and :colorscheme commands;
+ - made filetype menu editable;
+ - restore SIGINT (Ctrl+C) default behaviour on shellout;
+ - replace escape sequences in quick view output with ^foo;
+ - give options if a file already exists in destination directory;
+ - unmount all FUSE mounts on exit;
+ - more verbose version information;
+ - added Ctrl-C key handling to error message dialog;
+ - use file command when GTK+ and libmagic are disabled;
+ - better error messages;
+ - use ga command results to sort by size;
+ - fixed paths in config.c to work with non standard install prefix;
+ - fixed several bugs with command completion and terminal resizing.
+
+See ChangeLog for details and AUTHORS for information about authors.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+June 11, 2011
+=============
+
+Vifm-0.6.1 is available.
+------------------------
+
+Windows version remains unchanged for now.  I'm planning to use one code base
+for both *nix and Windows platforms and it would take some time to do that.
+
+Major changes since 0.5:
+ - added support for user mappings;
+ - added file selectors (like motions and text-objects);
+ - improved sort dialog;
+ - added filetype detection using GTK+ or libmagic (:file);
+ - added directory stack (:pushd, :popd);
+ - added completion for :! and :!! commands;
+ - added custom file viewers (:view);
+ - added startup file;
+ - better utf8 support;
+ - added :set command and options.
+
+See ChangeLog for details.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+August 7, 2009
+==============
+
+Vifm-0.5 is available.
+----------------------
+
+This release is mainly user contributed patches and a new port for Windows.
+A filetype setting was added to allow the mounting of files with fuse-zip and
+other filesystems based on fuse.  The :com input was changed to accept wide
+characters.  The Windows port is missing some of the features of the Unix
+version but it is useful and stable enough for an initial release.  The
+following commands were added in the Windows port:
+ - :copy;
+ - :move;
+ - :volume - list mounted volumes.
