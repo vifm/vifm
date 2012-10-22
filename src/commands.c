@@ -2588,7 +2588,7 @@ static int
 mark_cmd(const cmd_info_t *cmd_info)
 {
 	int result;
-	char *tmp;
+	char *expanded_path;
 	char mark = cmd_info->argv[0][0];
 
 	if(cmd_info->argv[0][1] != '\0')
@@ -2614,33 +2614,34 @@ mark_cmd(const cmd_info_t *cmd_info)
 					curr_view->dir_entry[cmd_info->end].name);
 	}
 
-	tmp = expand_tilde(strdup(cmd_info->argv[1]));
-	if(!is_path_absolute(tmp))
+	expanded_path = expand_tilde(strdup(cmd_info->argv[1]));
+	if(!is_path_absolute(expanded_path))
 	{
-		free(tmp);
+		free(expanded_path);
 		status_bar_error("Expected full path to the directory");
 		return 1;
 	}
 
 	if(cmd_info->argc == 2)
 	{
-		if(cmd_info->end == NOT_DEF || !pane_in_dir(curr_view, tmp))
+		if(cmd_info->end == NOT_DEF || !pane_in_dir(curr_view, expanded_path))
 		{
-			if(curr_stats.load_stage >= 3 && pane_in_dir(curr_view, tmp))
-				result = add_bookmark(cmd_info->argv[0][0], tmp,
+			if(curr_stats.load_stage >= 3 && pane_in_dir(curr_view, expanded_path))
+				result = add_bookmark(cmd_info->argv[0][0], expanded_path,
 						curr_view->dir_entry[curr_view->list_pos].name);
 			else
-				result = add_bookmark(cmd_info->argv[0][0], tmp, "../");
+				result = add_bookmark(cmd_info->argv[0][0], expanded_path, "../");
 		}
 		else
-			result = add_bookmark(cmd_info->argv[0][0], tmp,
+			result = add_bookmark(cmd_info->argv[0][0], expanded_path,
 					curr_view->dir_entry[cmd_info->end].name);
 	}
 	else
 	{
-		result = add_bookmark(cmd_info->argv[0][0], tmp, cmd_info->argv[2]);
+		result = add_bookmark(cmd_info->argv[0][0], expanded_path,
+				cmd_info->argv[2]);
 	}
-	free(tmp);
+	free(expanded_path);
 	return result;
 }
 
