@@ -67,9 +67,14 @@ if [ "x$target" == "xall" -o "x$target" == "xcommit" ]; then
     # commit or ammend changes
     git tag "v$1"
     if [ "$?" != "0" ]; then
-        git commit -av --amend -m "Version v$1"
+        amendflag=--amend
     else
-        git commit -av -m "Version v$1"
+        amendflag=
+    fi
+    git commit -av $amendflag -m "Version v$1"
+    if [ "$?" != "0" ]; then
+        echo 'Committing error.'
+        exit 1
     fi
     # force mark commit with tag
     git tag --force "v$1"
