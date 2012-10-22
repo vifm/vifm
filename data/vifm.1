@@ -1,4 +1,4 @@
-.TH vifm 1 "October 15, 2012" "" "Vifm"
+.TH vifm 1 "October 22, 2012" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1887,7 +1887,7 @@ Follow links on l or Enter.
 .BI fusehome
 type: string
 .br
-default: "/tmp/vifm_FUSE/"
+default: "($TMPDIR | $TEMP | $TEMPDIR | $TMP)/vifm_FUSE/"
 .br
 Directory to be used as a root dir for FUSE mounts.
 If you change this option, vifm won't remount anything.  It affects future
@@ -2692,7 +2692,7 @@ Example file content:
 All % macros are expanded by vifm at runtime and have the following meaning:
   \- %SOURCE_FILE is replaced by full path to selected file
   \- %DESTINATION_DIR is replaced by full path to mount directory, which is \
-created by vifm basing on the value of fusehome option.
+created by vifm basing on the value of 'fusehome' option.
   \- %PARAM value is filled from the first line of file (whole line), though \
 in the future it can be changed to whole file content
   \- %CLEAR means that you want to clear screen before running mount command.
