@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.4  Last change: 2012 Oct 15
+*vifm.txt*    For Vifm version 0.7.4  Last change: 2012 Oct 22
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1613,7 +1613,7 @@ Follow links on l or Enter.
                                                *vifm-'fusehome'*
 fusehome
 type: string
-default: "/tmp/vifm_FUSE/"
+default: "($TMPDIR | $TEMP | $TEMPDIR | $TMP)/vifm_FUSE/"
 Directory to be used as a root dir for FUSE mounts.
 If you change this option, vifm won't remount anything.  It affects future
 mounts only. See |vifm-fuse| section for more information about FUSE mounts.
