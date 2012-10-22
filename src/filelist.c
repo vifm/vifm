@@ -1623,18 +1623,18 @@ save_selection(FileView *view)
 {
 	if(view->selected_files != 0)
 	{
-		char **tmp;
+		char **save_selected_filelist;
 
 		free_string_array(view->saved_selection, view->nsaved_selection);
 
-		tmp = view->selected_filelist;
+		save_selected_filelist = view->selected_filelist;
 		view->selected_filelist = NULL;
 
 		get_all_selected_files(view);
 		view->nsaved_selection = view->selected_files;
 		view->saved_selection = view->selected_filelist;
 
-		view->selected_filelist = tmp;
+		view->selected_filelist = save_selected_filelist;
 	}
 }
 
