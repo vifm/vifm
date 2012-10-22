@@ -516,7 +516,7 @@ rename_file_cb(const char *new_name)
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, 10 + NAME_MAX + 1)];
 	char new[NAME_MAX + 1];
 	size_t len;
-	int tmp;
+	int mv_res;
 	char **filename_ptr;
 
 	if(new_name == NULL || new_name[0] == '\0')
@@ -542,9 +542,9 @@ rename_file_cb(const char *new_name)
 	snprintf(buf, sizeof(buf), "rename in %s: %s to %s",
 			replace_home_part(curr_view->curr_dir), filename, new);
 	cmd_group_begin(buf);
-	tmp = mv_file(filename, curr_view->curr_dir, new, curr_view->curr_dir, 0);
+	mv_res = mv_file(filename, curr_view->curr_dir, new, curr_view->curr_dir, 0);
 	cmd_group_end();
-	if(tmp != 0)
+	if(mv_res != 0)
 	{
 		show_error_msg("Rename Error", "Rename operation failed");
 		return;
