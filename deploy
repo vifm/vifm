@@ -44,6 +44,9 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
     vimdoc=data/vim/doc/vifm.txt
     sed -i "1s/version \\S\\+/version $1/" "${vimdoc}"
 
+    # update date in README
+    sed -i "/^Updated:/s/ .*/$(date '+ %d %B, %Y')/" README
+
     # update version in README
     sed -i "5s/ .*/ $1/" README
 fi
