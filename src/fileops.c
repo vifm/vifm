@@ -680,7 +680,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 
 	for(i = 0; i < len; i++)
 	{
-		const char *tmp;
+		const char *unique_name;
 
 		if(list[i][0] == '\0')
 			continue;
@@ -689,8 +689,8 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 		if(!is_dup[i])
 			continue;
 
-		tmp = make_name_unique(files[i]);
-		if(mv_file(files[i], view->curr_dir, tmp, view->curr_dir, 2) != 0)
+		unique_name = make_name_unique(files[i]);
+		if(mv_file(files[i], view->curr_dir, unique_name, view->curr_dir, 2) != 0)
 		{
 			cmd_group_end();
 			if(!last_cmd_group_empty())
@@ -699,7 +699,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			curr_stats.save_msg = 1;
 			return 0;
 		}
-		replace_string(&files[i], tmp);
+		replace_string(&files[i], unique_name);
 	}
 
 	for(i = 0; i < len; i++)
