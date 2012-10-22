@@ -40,9 +40,11 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
     makefile=src/Makefile.win
     sed -i "/define VERSION/s/VERSION \".*\"/VERSION \"$1\"/" "${makefile}"
 
-    # update version in data/vim/doc/vifm.txt
     vimdoc=data/vim/doc/vifm.txt
+    # update version in data/vim/doc/vifm.txt
     sed -i "/For Vifm version/s/version \\S\\+/version $1/" "${vimdoc}"
+    # update last change date in data/vim/doc/vifm.txt
+    sed -i "/Last change/s/: .*/: $(date '+%Y %b %d')/" "${vimdoc}"
 
     # update date in README
     sed -i "/^Updated:/s/ .*/$(date '+ %d %B, %Y')/" README
