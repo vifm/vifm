@@ -3668,23 +3668,23 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(expanded_com[0] == '!')
 	{
-		char *tmp = expanded_com;
+		char *com_beginning = expanded_com;
 		int pause = 0;
-		tmp++;
-		if(*tmp == '!')
+		com_beginning++;
+		if(*com_beginning == '!')
 		{
 			pause = 1;
-			tmp++;
+			com_beginning++;
 		}
-		tmp = skip_whitespace(tmp);
+		com_beginning = skip_whitespace(com_beginning);
 
-		if(*tmp != '\0' && bg)
+		if(*com_beginning != '\0' && bg)
 		{
-			start_background_job(tmp, 0);
+			start_background_job(com_beginning, 0);
 		}
-		else if(strlen(tmp) > 0)
+		else if(strlen(com_beginning) > 0)
 		{
-			shellout(tmp, pause ? 1 : -1, 1);
+			shellout(com_beginning, pause ? 1 : -1, 1);
 		}
 	}
 	else if(expanded_com[0] == '/')
