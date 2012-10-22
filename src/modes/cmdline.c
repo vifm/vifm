@@ -1512,7 +1512,7 @@ cmd_ctrl_p(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info)
 {
-	wchar_t tmp;
+	wchar_t char_before_last;
 	size_t index;
 
 	stop_completion();
@@ -1531,9 +1531,9 @@ cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info)
 		input_stat.index++;
 	}
 
-	tmp = input_stat.line[index - 1];
+	char_before_last = input_stat.line[index - 1];
 	input_stat.line[index - 1] = input_stat.line[index];
-	input_stat.line[index] = tmp;
+	input_stat.line[index] = char_before_last;
 
 	update_cmdline_text();
 }
