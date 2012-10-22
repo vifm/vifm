@@ -1,5 +1,5 @@
-dirs := commands column_view completion filetype keys misc options parsing undo
-dirs += variables viewcolumns_parser
+dirs := commands column_view completion env filetype keys misc options parsing
+dirs += undo variables viewcolumns_parser
 # generate names for build sub-targets (one for each directory)
 dirs_b := $(addsuffix _b, $(dirs))
 # generate names for clean sub-targets (one for each directory)

@@ -516,7 +516,7 @@ rename_file_cb(const char *new_name)
 	char buf[MAX(COMMAND_GROUP_INFO_LEN, 10 + NAME_MAX + 1)];
 	char new[NAME_MAX + 1];
 	size_t len;
-	int tmp;
+	int mv_res;
 	char **filename_ptr;
 
 	if(new_name == NULL || new_name[0] == '\0')
@@ -542,9 +542,9 @@ rename_file_cb(const char *new_name)
 	snprintf(buf, sizeof(buf), "rename in %s: %s to %s",
 			replace_home_part(curr_view->curr_dir), filename, new);
 	cmd_group_begin(buf);
-	tmp = mv_file(filename, curr_view->curr_dir, new, curr_view->curr_dir, 0);
+	mv_res = mv_file(filename, curr_view->curr_dir, new, curr_view->curr_dir, 0);
 	cmd_group_end();
-	if(tmp != 0)
+	if(mv_res != 0)
 	{
 		show_error_msg("Rename Error", "Rename operation failed");
 		return;
@@ -680,7 +680,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 
 	for(i = 0; i < len; i++)
 	{
-		const char *tmp;
+		const char *unique_name;
 
 		if(list[i][0] == '\0')
 			continue;
@@ -689,8 +689,8 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 		if(!is_dup[i])
 			continue;
 
-		tmp = make_name_unique(files[i]);
-		if(mv_file(files[i], view->curr_dir, tmp, view->curr_dir, 2) != 0)
+		unique_name = make_name_unique(files[i]);
+		if(mv_file(files[i], view->curr_dir, unique_name, view->curr_dir, 2) != 0)
 		{
 			cmd_group_end();
 			if(!last_cmd_group_empty())
@@ -699,7 +699,7 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 			curr_stats.save_msg = 1;
 			return 0;
 		}
-		replace_string(&files[i], tmp);
+		replace_string(&files[i], unique_name);
 	}
 
 	for(i = 0; i < len; i++)
@@ -729,36 +729,17 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 	return renamed;
 }
 
-#ifdef _WIN32
-static void
-change_slashes(char *str)
-{
-	int i;
-	for(i = 0; str[i] != '\0'; i++)
-	{
-		if(str[i] == '\\')
-			str[i] = '/';
-	}
-}
-#endif
-
 static char **
 read_list_from_file(int count, char **names, int *nlines, int require_change)
 {
-	char temp_file[PATH_MAX];
+	char rename_file[PATH_MAX];
 	char **list;
 	FILE *f;
 	int i;
 
-#ifndef _WIN32
-	snprintf(temp_file, sizeof(temp_file), "/tmp/vifm.rename");
-#else
-	snprintf(temp_file, sizeof(temp_file), "%s\\vifm.rename", env_get("TMP"));
-	change_slashes(temp_file);
-#endif
-	strncpy(temp_file, make_name_unique(temp_file), sizeof(temp_file));
+	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
 
-	if((f = fopen(temp_file, "w")) == NULL)
+	if((f = fopen(rename_file, "w")) == NULL)
 	{
 		status_bar_error("Can't create temp file");
 		curr_stats.save_msg = 1;
@@ -774,28 +755,28 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 	{
 		struct stat st_before, st_after;
 
-		stat(temp_file, &st_before);
+		stat(rename_file, &st_before);
 
-		view_file(temp_file, -1, 0);
+		view_file(rename_file, -1, 0);
 
-		stat(temp_file, &st_after);
+		stat(rename_file, &st_after);
 
 		if(memcmp(&st_after.st_mtime, &st_before.st_mtime,
 				sizeof(st_after.st_mtime)) == 0)
 		{
-			unlink(temp_file);
+			unlink(rename_file);
 			curr_stats.save_msg = 0;
 			return NULL;
 		}
 	}
 	else
 	{
-		view_file(temp_file, -1, 0);
+		view_file(rename_file, -1, 0);
 	}
 
-	if((f = fopen(temp_file, "r")) == NULL)
+	if((f = fopen(rename_file, "r")) == NULL)
 	{
-		unlink(temp_file);
+		unlink(rename_file);
 		status_bar_error("Can't open temporary file");
 		curr_stats.save_msg = 1;
 		return NULL;
@@ -803,7 +784,7 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 
 	list = read_file_lines(f, nlines);
 	fclose(f);
-	unlink(temp_file);
+	unlink(rename_file);
 
 	curr_stats.save_msg = 0;
 	return list;
@@ -1671,9 +1652,9 @@ is_dir_path(FileView *view, const char *path, char *buf)
 
 	if(path[0] == '/' || path[0] == '~')
 	{
-		char *tmp = expand_tilde(strdup(path));
-		strcpy(buf, tmp);
-		free(tmp);
+		char *expanded_path = expand_tilde(strdup(path));
+		strcpy(buf, expanded_path);
+		free(expanded_path);
 	}
 	else
 	{

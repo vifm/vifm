@@ -22,6 +22,7 @@
 
 #include <curses.h>
 
+#include <stddef.h> /* size_t */
 #include <limits.h> /* PATH_MAX */
 
 #include "../color_scheme.h"
@@ -124,6 +125,8 @@ int source_file(const char filename[]);
 int is_old_config(void);
 int are_old_color_schemes(void);
 const char * get_vicmd(int *bg);
+/* Generates name of file inside tmp folder. */
+void generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len);
 void create_trash_dir(void);
 /* Changes size of all histories. */
 void resize_history(size_t new_len);

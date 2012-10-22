@@ -18,9 +18,9 @@
  */
 
 #include <ctype.h> /* tolower() isspace() */
-#include <stdarg.h> /* va_list va_start() va_end() */
+#include <stdarg.h> /* va_list va_start() va_copy() va_end() */
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* mbstowcs() wcstombs() */
+#include <stdlib.h> /* malloc() mbstowcs() wcstombs() */
 #include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr() */
 #include <wchar.h> /* vswprintf() wchar_t */
 
@@ -287,6 +287,29 @@ skip_all(const char string[], char ch)
 		string++;
 	}
 	return (char *)string;
+}
+
+char *
+format_str(const char format[], ...)
+{
+	va_list ap;
+	va_list aq;
+	size_t len;
+	char *result_buf;
+
+	va_start(ap, format);
+	va_copy(aq, ap);
+
+	len = vsnprintf(NULL, 0, format, ap);
+	va_end(ap);
+
+	if((result_buf = malloc(len + 1)) != NULL)
+	{
+		(void)vsprintf(result_buf, format, aq);
+	}
+	va_end(aq);
+
+	return result_buf;
 }
 
 #ifdef _WIN32

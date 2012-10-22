@@ -23,13 +23,17 @@
 /* Environment variables related functions */
 
 /* Returns environment variable value or NULL if it doesn't exist */
-const char * env_get(const char *name);
+const char * env_get(const char name[]);
 /* Returns environment variable value or def if it doesn't exist or empty */
 const char * env_get_def(const char name[], const char def[]);
+/* Returns value of the first environment variable found or def if none of
+ * specified environment variables are found (or empty).  The last name of
+ * environment variable have to be followed by NULL. */
+const char * env_get_one_of_def(const char def[], ...);
 /* Sets new value of environment variable or creates it if it doesn't exist */
-void env_set(const char *name, const char *value);
+void env_set(const char name[], const char value[]);
 /* Removes environment variable */
-void env_remove(const char *name);
+void env_remove(const char name[]);
 
 #endif
 

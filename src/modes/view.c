@@ -346,7 +346,7 @@ view_post(void)
 void
 view_redraw(void)
 {
-	view_info_t *tmp = vi;
+	view_info_t *saved_vi = vi;
 
 	if(lwin.explore_mode)
 	{
@@ -366,7 +366,7 @@ view_redraw(void)
 		draw();
 	}
 
-	vi = tmp;
+	vi = saved_vi;
 }
 
 void
@@ -575,11 +575,11 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 static void
 switch_vi(void)
 {
-	view_info_t tmp = *vi;
+	view_info_t saved_vi = *vi;
 	int i = (curr_view == &lwin) ? 2 : 1;
 
 	*vi = view_info[i];
-	view_info[i] = tmp;
+	view_info[i] = saved_vi;
 	vi = &view_info[i];
 
 	view_info[1].view = &lwin;

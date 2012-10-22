@@ -29,11 +29,12 @@
 #define CP_RC "cp " PACKAGE_DATA_DIR "/" VIFMRC " ~/.vifm"
 #endif
 
+#include <assert.h> /* assert() */
 #include <errno.h>
 #include <limits.h> /* INT_MIN PATH_MAX */
-#include <stdio.h> /* FILE */
+#include <stdio.h> /* FILE snprintf() */
 #include <stdlib.h>
-#include <string.h> /* memset() */
+#include <string.h> /* memset() strncpy() */
 
 #include "../menus/menus.h"
 #include "../utils/env.h"
@@ -81,6 +82,7 @@ static void create_rc_file(void);
 #endif
 static void add_default_bookmarks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
+static const char * get_tmpdir(void);
 static void free_view_history(FileView *view);
 static void reduce_view_history(FileView *view, size_t size);
 
@@ -116,7 +118,13 @@ init_config(void)
 	cfg.vi_x_command = strdup("");
 	cfg.vi_x_cmd_bg = 0;
 	cfg.use_trash = 1;
-	cfg.fuse_home = strdup("/tmp/vifm_FUSE");
+
+	cfg.fuse_home = format_str("%s/vifm_FUSE", get_tmpdir());
+	assert(cfg.fuse_home != NULL);
+#ifdef _WIN32
+	to_forward_slash(cfg.fuse_home);
+#endif
+
 	cfg.use_screen = 0;
 	cfg.use_vim_help = 0;
 	cfg.wild_menu = 0;
@@ -627,6 +635,24 @@ get_vicmd(int *bg)
 		*bg = cfg.vi_cmd_bg;
 		return cfg.vi_command;
 	}
+}
+
+void
+generate_tmp_file_name(const char prefix[], char buf[], size_t buf_len)
+{
+	snprintf(buf, buf_len, "%s/%s", get_tmpdir(), prefix);
+#ifdef _WIN32
+	to_forward_slash(buf);
+#endif
+	strncpy(buf, make_name_unique(buf), buf_len);
+}
+
+/* Returns path to tmp directory.  Uses environment variables to determine the
+ * correct place. */
+const char *
+get_tmpdir(void)
+{
+	return env_get_one_of_def("/tmp/", "TMPDIR", "TEMP", "TEMPDIR", "TMP", NULL);
 }
 
 void
