@@ -346,7 +346,7 @@ view_post(void)
 void
 view_redraw(void)
 {
-	view_info_t *tmp = vi;
+	view_info_t *saved_vi = vi;
 
 	if(lwin.explore_mode)
 	{
@@ -366,7 +366,7 @@ view_redraw(void)
 		draw();
 	}
 
-	vi = tmp;
+	vi = saved_vi;
 }
 
 void
