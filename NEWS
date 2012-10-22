@@ -1,3 +1,21 @@
+October 22, 2012
+================
+
+vifm v0.7.4a
+------------
+
+0.7.4 package contains configuration files of autotools of different
+versions.  As a result it's not always possible to build vifm 0.7.4 by
+running `./configure && make`.  The author is sorry about wasted time
+of users spent on building vifm with partially broken build system.
+
+Anyway this mistake has also a good point.  0.7.4a fixes several bugs,
+some of which are related to new features.
+
+See change log for full list of fixes.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 October 18, 2012
 ================
 
