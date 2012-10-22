@@ -194,9 +194,9 @@ main_loop(void)
 				endwin();
 #ifndef _WIN32
 				{
-					void (*tmp)(int) = signal(SIGTSTP, SIG_DFL);
+					void (*saved_stp_sig_handler)(int) = signal(SIGTSTP, SIG_DFL);
 					kill(0, SIGTSTP);
-					signal(SIGTSTP, tmp);
+					signal(SIGTSTP, saved_stp_sig_handler);
 				}
 #endif
 				continue;
