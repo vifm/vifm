@@ -22,27 +22,30 @@
 
 #include "utf8.h"
 
-/* returns width of utf8 character */
+static size_t guess_char_width(char c);
+
 size_t
-get_char_width(const char* string)
+get_char_width(const char string[])
 {
-	if((string[0] & 0xe0) == 0xc0 && (string[1] & 0xc0) == 0x80)
+	/* On Windows utf-8 is not used. */
+#ifndef _WIN32
+	const size_t expected = guess_char_width(string[0]);
+	if(expected == 2 && (string[1] & 0xc0) == 0x80)
 		return 2;
-	else if((string[0] & 0xf0) == 0xe0 && (string[1] & 0xc0) == 0x80 &&
+	else if(expected == 3 && (string[1] & 0xc0) == 0x80 &&
 			(string[2] & 0xc0) == 0x80)
 		return 3;
-	else if((string[0] & 0xf8) == 0xf0 && (string[1] & 0xc0) == 0x80 &&
+	else if(expected == 4 && (string[1] & 0xc0) == 0x80 &&
 			(string[2] & 0xc0) == 0x80 && (string[3] & 0xc0) == 0x80)
 		return 4;
 	else if(string[0] == '\0')
 		return 0;
-	else
-		return 1;
+#endif
+	return 1;
 }
 
-/* returns count of bytes of whole string or of first max_len utf8 characters */
 size_t
-get_real_string_width(char *string, size_t max_len)
+get_real_string_width(const char string[], size_t max_len)
 {
 	size_t width = 0;
 	while(*string != '\0' && max_len-- != 0)
@@ -54,22 +57,8 @@ get_real_string_width(char *string, size_t max_len)
 	return width;
 }
 
-static size_t
-guess_char_width(char c)
-{
-	if((c & 0xe0) == 0xc0)
-		return 2;
-	else if((c & 0xf0) == 0xe0)
-		return 3;
-	else if((c & 0xf8) == 0xf0)
-		return 4;
-	else
-		return 1;
-}
-
-/* returns count utf8 characters excluding incomplete utf8 characters */
 size_t
-get_normal_utf8_string_length(const char *string)
+get_normal_utf8_string_length(const char string[])
 {
 	size_t length = 0;
 	while(*string != '\0')
@@ -84,11 +73,9 @@ get_normal_utf8_string_length(const char *string)
 	return length;
 }
 
-/* returns count of bytes excluding incomplete utf8 characters */
 size_t
-get_normal_utf8_string_widthn(const char *string, size_t max)
+get_normal_utf8_string_widthn(const char string[], size_t max)
 {
-#ifndef _WIN32
 	size_t length = 0;
 	while(*string != '\0' && max-- > 0)
 	{
@@ -100,14 +87,26 @@ get_normal_utf8_string_widthn(const char *string, size_t max)
 		string += char_width;
 	}
 	return length;
-#else
-	return MIN(strlen(string), max);
-#endif
 }
 
-/* returns count of utf8 characters in string */
+/* Determines width of a utf-8 characted by its first byte. */
+static size_t
+guess_char_width(char c)
+{
+	/* On Windows utf-8 is not used. */
+#ifndef _WIN32
+	if((c & 0xe0) == 0xc0)
+		return 2;
+	else if((c & 0xf0) == 0xe0)
+		return 3;
+	else if((c & 0xf8) == 0xf0)
+		return 4;
+#endif
+	return 1;
+}
+
 size_t
-get_utf8_string_length(const char *string)
+get_utf8_string_length(const char string[])
 {
 	size_t length = 0;
 	while(*string != '\0')
@@ -119,9 +118,8 @@ get_utf8_string_length(const char *string)
 	return length;
 }
 
-/* returns (string_width - string_length) */
 size_t
-get_utf8_overhead(const char *string)
+get_utf8_overhead(const char string[])
 {
 	size_t overhead = 0;
 	while(*string != '\0')
