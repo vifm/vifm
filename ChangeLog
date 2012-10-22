@@ -18,6 +18,8 @@
 	Check TMPDIR, TEMP, TEMPDIR and TMP environment variables to determine
 	location of directory for temporary files.
 
+	Made processing of value of 'fusehome' option more error prone.
+
 	Fixed autotools configuration files.
 
 	Fixed terminal size resetting after :restart.

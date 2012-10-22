@@ -202,18 +202,20 @@ until_first(const char str[], char c)
 	return (char *)result;
 }
 
-void
+int
 replace_string(char **str, const char with[])
 {
 	if(*str != with)
 	{
 		char *new = strdup(with);
-		if(new != NULL)
+		if(new == NULL)
 		{
-			free(*str);
-			*str = new;
+			return 1;
 		}
+		free(*str);
+		*str = new;
 	}
+	return 0;
 }
 
 char *

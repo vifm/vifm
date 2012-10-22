@@ -674,8 +674,15 @@ followlinks_handler(OPT_OP op, optval_t val)
 static void
 fusehome_handler(OPT_OP op, optval_t val)
 {
-	free(cfg.fuse_home);
-	cfg.fuse_home = expand_tilde(strdup(val.str_val));
+	/* Set cfg.fuse_home in the correct way. */
+	char *expanded_path = expand_tilde(strdup(val.str_val));
+	(void)set_fuse_home(expanded_path);
+	free(expanded_path);
+
+	/* Update value of 'fusehome' in options unit to show its real value to
+	 * user. */
+	val.str_val = cfg.fuse_home;
+	set_option("fusehome", val);
 }
 
 static void
@@ -996,7 +1003,7 @@ load_view_columns_option(FileView *view, const char value[])
 		/* Set value specified by user.  Can't use DEFAULT_VIEW_COLUMNS here,
 		 * because empty value of view->view->columns signals about disabled
 		 * columns customization. */
-		replace_string(&view->view_columns, value);
+		(void)replace_string(&view->view_columns, value);
 		redraw_current_view();
 	}
 }
@@ -1117,7 +1124,7 @@ undolevels_handler(OPT_OP op, optval_t val)
 static void
 vicmd_handler(OPT_OP op, optval_t val)
 {
-	replace_string(&cfg.vi_command, val.str_val);
+	(void)replace_string(&cfg.vi_command, val.str_val);
 	cfg.vi_cmd_bg = ends_with(cfg.vi_command, "&");
 	if(cfg.vi_cmd_bg)
 		cfg.vi_command[strlen(cfg.vi_command) - 1] = '\0';
@@ -1126,7 +1133,7 @@ vicmd_handler(OPT_OP op, optval_t val)
 static void
 vixcmd_handler(OPT_OP op, optval_t val)
 {
-	replace_string(&cfg.vi_x_command, val.str_val);
+	(void)replace_string(&cfg.vi_x_command, val.str_val);
 	cfg.vi_x_cmd_bg = ends_with(cfg.vi_x_command, "&");
 	if(cfg.vi_x_cmd_bg)
 		cfg.vi_x_command[strlen(cfg.vi_x_command) - 1] = '\0';

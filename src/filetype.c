@@ -332,7 +332,7 @@ assoc_viewer(const char *pattern, const char *viewer)
 	}
 	else
 	{
-		replace_string(&fileviewers.list[i].records.list[0].command, viewer);
+		(void)replace_string(&fileviewers.list[i].records.list[0].command, viewer);
 	}
 }
 

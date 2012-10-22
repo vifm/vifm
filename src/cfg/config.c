@@ -41,9 +41,7 @@
 #include "../utils/fs.h"
 #include "../utils/log.h"
 #include "../utils/str.h"
-#ifdef _WIN32
 #include "../utils/path.h"
-#endif
 #include "../utils/string_array.h"
 #include "../utils/utils.h"
 #include "../bookmarks.h"
@@ -119,11 +117,13 @@ init_config(void)
 	cfg.vi_x_cmd_bg = 0;
 	cfg.use_trash = 1;
 
-	cfg.fuse_home = format_str("%s/vifm_FUSE", get_tmpdir());
-	assert(cfg.fuse_home != NULL);
-#ifdef _WIN32
-	to_forward_slash(cfg.fuse_home);
-#endif
+	{
+		char fuse_home[PATH_MAX];
+		int update_stat;
+		snprintf(fuse_home, sizeof(fuse_home), "%s/vifm_FUSE", get_tmpdir());
+		update_stat = set_fuse_home(fuse_home);
+		assert(update_stat == 0);
+	}
 
 	cfg.use_screen = 0;
 	cfg.use_vim_help = 0;
@@ -747,6 +747,20 @@ reduce_view_history(FileView *view, size_t size)
 	if(view->history_num >= size)
 		view->history_num = size - 1;
 	view->history_pos -= delta;
+}
+
+int
+set_fuse_home(const char new_value[])
+{
+	char canonicalized[PATH_MAX];
+#ifdef _WIN32
+	char with_forward_slashes[strlen(new_value) + 1];
+	strcpy(with_forward_slashes, new_value);
+	to_forward_slash(with_forward_slashes);
+	new_value = with_forward_slashes;
+#endif
+	canonicalize_path(new_value, canonicalized, sizeof(canonicalized));
+	return replace_string(&cfg.fuse_home, canonicalized);
 }
 
 void
