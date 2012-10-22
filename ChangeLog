@@ -26,6 +26,9 @@
 	Fixed segmentation faults on passing to big count to DD, dd or yy normal
 	mode commands.
 
+	Fixed displaying of filenames with non-latin characters in the view on
+	Windows.
+
 0.7.3a to 0.7.4
 
 	Removed compile-time compatibility mode (the compatibility-mode switch),

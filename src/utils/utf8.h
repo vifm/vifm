@@ -21,12 +21,20 @@
 
 #include <stddef.h>
 
-size_t get_char_width(const char* string);
-size_t get_normal_utf8_string_length(const char *string);
-size_t get_real_string_width(char *string, size_t max_len);
-size_t get_normal_utf8_string_widthn(const char *string, size_t max);
-size_t get_utf8_string_length(const char *string);
-size_t get_utf8_overhead(const char *string);
+/* Returns real width of valid and complete utf-8 character. */
+size_t get_char_width(const char string[]);
+/* Returns count utf-8 characters excluding incomplete utf-8 characters. */
+size_t get_normal_utf8_string_length(const char string[]);
+/* Returns count of bytes of whole string or of first max_len utf-8
+ * characters. */
+size_t get_real_string_width(const char string[], size_t max_len);
+/* Returns number of sequence of bytes, which represent valid utf-8 characters,
+ * excluding incomplete utf-8 characters. */
+size_t get_normal_utf8_string_widthn(const char string[], size_t max);
+/* Returns count of utf-8 characters in string. */
+size_t get_utf8_string_length(const char string[]);
+/* Returns (string_width - string_length). */
+size_t get_utf8_overhead(const char string[]);
 
 #endif
 
