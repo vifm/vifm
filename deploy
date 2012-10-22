@@ -32,8 +32,15 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
     sed -i "/AM_INIT_AUTOMAKE/s/, .*)/, $1)/" configure.in
 
     if [ "x$OS" != "xWindows_NT" ]; then
-        # regenerate automake/autoconf files
+        # regenerate autotools files
         autoreconf
+        # some voodoo magic to preserve old version of aclocal.m4 file
+        make
+        git checkout aclocal.m4
+        make
+        # this one is to get rid of trailing whitespace
+        git checkout src/Makefile.in
+        make
     fi
 
     # update version in src/Makefile.win
