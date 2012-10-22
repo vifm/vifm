@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.4  Last change: 2012 Oct 22
+*vifm.txt*    For Vifm version 0.7.4a  Last change: 2012 Oct 22
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
