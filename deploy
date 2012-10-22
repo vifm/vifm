@@ -29,7 +29,7 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
     sed -i "1s/current/$1/" ChangeLog
 
     # update version in configure script
-    sed -i "4s/, .*)/, $1)/" configure.in
+    sed -i "/AM_INIT_AUTOMAKE/s/, .*)/, $1)/" configure.in
 
     if [ "x$OS" != "xWindows_NT" ]; then
         # regenerate automake/autoconf files
@@ -38,17 +38,17 @@ if [ "x$target" == "xall" -o "x$target" == "xupdate" ]; then
 
     # update version in src/Makefile.win
     makefile=src/Makefile.win
-    sed -i "s/VERSION \".*\"/VERSION \"$1\"/" "${makefile}"
+    sed -i "/define VERSION/s/VERSION \".*\"/VERSION \"$1\"/" "${makefile}"
 
     # update version in data/vim/doc/vifm.txt
     vimdoc=data/vim/doc/vifm.txt
-    sed -i "1s/version \\S\\+/version $1/" "${vimdoc}"
+    sed -i "/For Vifm version/s/version \\S\\+/version $1/" "${vimdoc}"
 
     # update date in README
     sed -i "/^Updated:/s/ .*/$(date '+ %d %B, %Y')/" README
 
     # update version in README
-    sed -i "5s/ .*/ $1/" README
+    sed -i "/^Version:/s/ .*/ $1/" README
 fi
 
 if [ "x$target" == "xall" -o "x$target" == "xcommit" ]; then
