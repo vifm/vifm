@@ -346,11 +346,11 @@ unmount_fuse(void)
 	while(runner)
 	{
 		char buf[14 + PATH_MAX + 1];
-		char *tmp;
+		char *escaped_filename;
 
-		tmp = escape_filename(runner->mount_point, 0);
-		snprintf(buf, sizeof(buf), "fusermount -u %s", tmp);
-		free(tmp);
+		escaped_filename = escape_filename(runner->mount_point, 0);
+		snprintf(buf, sizeof(buf), "fusermount -u %s", escaped_filename);
+		free(escaped_filename);
 
 		my_system(buf);
 		if(path_exists(runner->mount_point))
