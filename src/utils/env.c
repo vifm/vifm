@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include <stdarg.h> /* va_list va_start() va_arg() va_end() */
 #ifdef _WIN32
 #include <stdio.h> /* sprintf() */
 #include <string.h> /* strlen() */
@@ -26,7 +27,7 @@
 #include "env.h"
 
 const char *
-env_get(const char *name)
+env_get(const char name[])
 {
 	return getenv(name);
 }
@@ -42,8 +43,32 @@ env_get_def(const char name[], const char def[])
 	return result;
 }
 
+const char *
+env_get_one_of_def(const char def[], ...)
+{
+	va_list ap;
+	const char *env_name;
+	const char *result = def;
+
+	va_start(ap, def);
+
+	while((env_name = va_arg(ap, const char *)) != NULL)
+	{
+		const char *val = env_get_def(env_name, NULL);
+		if(val != NULL)
+		{
+			result = val;
+			break;
+		}
+	}
+
+	va_end(ap);
+
+	return result;
+}
+
 void
-env_set(const char *name, const char *value)
+env_set(const char name[], const char value[])
 {
 #ifndef _WIN32
 	setenv(name, value, 1);
@@ -55,7 +80,7 @@ env_set(const char *name, const char *value)
 }
 
 void
-env_remove(const char *name)
+env_remove(const char name[])
 {
 #ifndef _WIN32
 	unsetenv(name);
