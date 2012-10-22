@@ -729,36 +729,17 @@ perform_renaming(FileView *view, char **files, int *is_dup, int len,
 	return renamed;
 }
 
-#ifdef _WIN32
-static void
-change_slashes(char *str)
-{
-	int i;
-	for(i = 0; str[i] != '\0'; i++)
-	{
-		if(str[i] == '\\')
-			str[i] = '/';
-	}
-}
-#endif
-
 static char **
 read_list_from_file(int count, char **names, int *nlines, int require_change)
 {
-	char temp_file[PATH_MAX];
+	char rename_file[PATH_MAX];
 	char **list;
 	FILE *f;
 	int i;
 
-#ifndef _WIN32
-	snprintf(temp_file, sizeof(temp_file), "/tmp/vifm.rename");
-#else
-	snprintf(temp_file, sizeof(temp_file), "%s\\vifm.rename", env_get("TMP"));
-	change_slashes(temp_file);
-#endif
-	strncpy(temp_file, make_name_unique(temp_file), sizeof(temp_file));
+	generate_tmp_file_name("vifm.rename", rename_file, sizeof(rename_file));
 
-	if((f = fopen(temp_file, "w")) == NULL)
+	if((f = fopen(rename_file, "w")) == NULL)
 	{
 		status_bar_error("Can't create temp file");
 		curr_stats.save_msg = 1;
@@ -774,28 +755,28 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 	{
 		struct stat st_before, st_after;
 
-		stat(temp_file, &st_before);
+		stat(rename_file, &st_before);
 
-		view_file(temp_file, -1, 0);
+		view_file(rename_file, -1, 0);
 
-		stat(temp_file, &st_after);
+		stat(rename_file, &st_after);
 
 		if(memcmp(&st_after.st_mtime, &st_before.st_mtime,
 				sizeof(st_after.st_mtime)) == 0)
 		{
-			unlink(temp_file);
+			unlink(rename_file);
 			curr_stats.save_msg = 0;
 			return NULL;
 		}
 	}
 	else
 	{
-		view_file(temp_file, -1, 0);
+		view_file(rename_file, -1, 0);
 	}
 
-	if((f = fopen(temp_file, "r")) == NULL)
+	if((f = fopen(rename_file, "r")) == NULL)
 	{
-		unlink(temp_file);
+		unlink(rename_file);
 		status_bar_error("Can't open temporary file");
 		curr_stats.save_msg = 1;
 		return NULL;
@@ -803,7 +784,7 @@ read_list_from_file(int count, char **names, int *nlines, int require_change)
 
 	list = read_file_lines(f, nlines);
 	fclose(f);
-	unlink(temp_file);
+	unlink(rename_file);
 
 	curr_stats.save_msg = 0;
 	return list;

@@ -159,7 +159,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 	char buf[2*PATH_MAX];
 	char *escaped_filename;
 	int clear_before_mount = 0;
-	const char *tmp_file;
+	char errors_file[PATH_MAX];
 	int status;
 
 	escaped_filename = escape_filename(get_current_file_name(view), 0);
@@ -209,9 +209,10 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 		endwin();
 	}
 
-	tmp_file = make_name_unique("/tmp/vifm.errors");
+	generate_tmp_file_name("vifm.errors", errors_file, sizeof(errors_file));
+
 	strcat(buf, " 2> ");
-	strcat(buf, tmp_file);
+	strcat(buf, errors_file);
 	LOG_INFO_MSG("FUSE mount command: `%s`", buf);
 	status = background_and_wait_for_status(buf);
 
@@ -220,9 +221,9 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 	/* check child status */
 	if(!WIFEXITED(status) || (WIFEXITED(status) && WEXITSTATUS(status)))
 	{
-		FILE *ef = fopen(tmp_file, "r");
+		FILE *ef = fopen(errors_file, "r");
 		print_errors(ef);
-		unlink(tmp_file);
+		unlink(errors_file);
 
 		werase(status_bar);
 		/* remove the directory we created for the mount */
@@ -232,7 +233,7 @@ fuse_mount(FileView *view, char *file_full_path, const char *param,
 		(void)my_chdir(view->curr_dir);
 		return -1;
 	}
-	unlink(tmp_file);
+	unlink(errors_file);
 	status_bar_message("FUSE mount success");
 
 	fuse_item = (fuse_mount_t *)malloc(sizeof(fuse_mount_t));

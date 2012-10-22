@@ -15,6 +15,9 @@
 	Use linux native console specific settings if $TERM ends with "linux" (not
 	only equals it).
 
+	Check TMPDIR, TEMP, TEMPDIR and TMP environment variables to determine
+	location of directory for temporary files.
+
 	Fixed autotools configuration files.
 
 	Fixed terminal size resetting after :restart.
