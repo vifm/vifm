@@ -1762,6 +1762,8 @@ cunmap_cmd(const cmd_info_t *cmd_info)
 	return do_unmap(cmd_info->argv[0], CMDLINE_MODE);
 }
 
+/* Processes :[range]delete command followed by "{reg} [{count}]" or
+ * "{reg}|{count}" with optional " &". */
 static int
 delete_cmd(const cmd_info_t *cmd_info)
 {
@@ -3546,6 +3548,8 @@ wq_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* Processes :[range]yank command followed by "{reg} [{count}]" or
+ * "{reg}|{count}". */
 static int
 yank_cmd(const cmd_info_t *cmd_info)
 {
@@ -3558,7 +3562,9 @@ yank_cmd(const cmd_info_t *cmd_info)
 	return result;
 }
 
-/* Returns zero on success */
+/* Processes arguments of form "{reg} [{count}]" or "{reg}|{count}". May set
+ * *reg (so it should be initialized before call) and returns zero on success,
+ * cmds unit error code otherwise. */
 static int
 get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 {
