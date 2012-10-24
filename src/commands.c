@@ -1345,6 +1345,11 @@ comm_split(SPLIT orientation)
 	curr_stats.need_update = UT_REDRAW;
 }
 
+/* Return value of all functions below which name ends with "_cmd" mean:
+ *  <0 - one of CMDS_* errors from cmds.h
+ *  =0 - nothing was outputted to the status bar, don't need to save its state
+ *  <0 - someting was outputted to the status bar, need to save its state */
+
 static int
 goto_cmd(const cmd_info_t *cmd_info)
 {
@@ -3607,6 +3612,8 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 	return 0;
 }
 
+/* Special handler for user defined commands, which are defined using
+ * :command. */
 static int
 usercmd_cmd(const cmd_info_t *cmd_info)
 {
@@ -3632,7 +3639,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	{
 		int sm = exec_commands(expanded_com, curr_view, GET_COMMAND);
 		free(expanded_com);
-		return sm;
+		return sm != 0;
 	}
 
 	clean_selected_files(curr_view);
