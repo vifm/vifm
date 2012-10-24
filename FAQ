@@ -61,10 +61,13 @@ A: List of currently supported operations:
   - move
   - copy
   - delete (when using Trash)
-  - permissions change
+  - permissions change (chmod)
   - owner change
   - group change
   - chmod
+  - creating symbolic links with absolute paths
+  - creating symbolic links with relative paths
+  - creating of directories
 
 --------------------------------------------------------------------------------
 
