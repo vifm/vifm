@@ -24,9 +24,10 @@ typedef struct
 {
 	int name;
 	int num_files;
-	char ** files;
+	char **files;
 }registers_t;
 
+/* Null terminated list of all valid register names. */
 extern const char valid_registers[];
 
 void init_registers(void);
