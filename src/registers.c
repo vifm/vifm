@@ -26,13 +26,14 @@
 #include "cfg/config.h"
 #include "menus/menus.h"
 #include "utils/fs.h"
+#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
 
 #include "registers.h"
 
-#define NUM_REGISTERS 27
+#define NUM_REGISTERS 28
 
 static registers_t registers[NUM_REGISTERS];
 
@@ -44,6 +45,7 @@ const char valid_registers[] = {
 	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 	'\0',
 };
+ARRAY_GUARD(valid_registers, NUM_REGISTERS + 26 + 1);
 
 void
 init_registers(void)
