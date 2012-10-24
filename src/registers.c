@@ -26,24 +26,34 @@
 #include "cfg/config.h"
 #include "menus/menus.h"
 #include "utils/fs.h"
+#include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"
 
 #include "registers.h"
 
-#define NUM_REGISTERS 27
+/* Number of registers named as alphabet letters. */
+#define NUM_LETTER_REGISTERS 26
+/* Number of all available registers (excludes 26 uppercase letters). */
+#define NUM_REGISTERS (2 + NUM_LETTER_REGISTERS)
 
+/* Data of all registers. */
 static registers_t registers[NUM_REGISTERS];
 
+/* Names of registers + names of 26 uppercase register names + termination null
+ * character. */
 const char valid_registers[] = {
 	'_', '"',
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
 	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-	'\0',
+	'\0'
 };
+/* Length should be equal to number of names of existing registers + names of 26
+ * uppercase registers (virtual ones) + termination null character. */
+ARRAY_GUARD(valid_registers, NUM_REGISTERS + NUM_LETTER_REGISTERS + 1);
 
 void
 init_registers(void)
