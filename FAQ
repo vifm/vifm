@@ -40,10 +40,7 @@ Q: How can I customize vifm?
 
 A: There are several ways to do that:
 
-  - modifying virmrc (it's in ~/.vifm/)
-    It contains options that will be automatically written on vifm exit.
-
-  - using startup script (it's in ~/.vifm/ too)
+  - using vifmrc file (it's in ~/.vifm/)
     This file can contain any of vifm commands.  You probably would like too set
     mappings and options here.  vifm will never change this file (it's something
     similar too ~/.vimrc).
@@ -61,10 +58,13 @@ A: List of currently supported operations:
   - move
   - copy
   - delete (when using Trash)
-  - permissions change
+  - permissions change (chmod)
   - owner change
   - group change
   - chmod
+  - creating symbolic links with absolute paths
+  - creating symbolic links with relative paths
+  - creating of directories
 
 --------------------------------------------------------------------------------
 
@@ -83,7 +83,7 @@ A: Yes, to do that, one should yank (copy) files as usual, but use "P" key (not
 --------------------------------------------------------------------------------
 
 Q: vifm expands macros in a wrong way in user defined commands with vifm's
-   commands (like in `:command com :mkdir ~/tmp/%c:e | cd ~/tmp/%c:e`). What to
+   commands (like in `:command com :mkdir ~/tmp/%c:e | cd ~/tmp/%c:e`).  What to
    do to fix it?
 
 A: Just double percent sign (%%).  Why?  Because user commands containing
@@ -91,6 +91,14 @@ A: Just double percent sign (%%).  Why?  Because user commands containing
    macro, and second time during command execution.  So doubled percent sign
    will be parsed with single % during first parse and a %x macro will be
    expanded during second parse.
+
+--------------------------------------------------------------------------------
+
+Q: vifm expands range in a wrong way in user defined commands (like in
+   `:command com :%yank`) and shows "Invalid command name" message.  What to
+   do to fix it?
+
+A: See answer for the previous question.
 
 --------------------------------------------------------------------------------
 
