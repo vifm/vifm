@@ -40,10 +40,7 @@ Q: How can I customize vifm?
 
 A: There are several ways to do that:
 
-  - modifying virmrc (it's in ~/.vifm/)
-    It contains options that will be automatically written on vifm exit.
-
-  - using startup script (it's in ~/.vifm/ too)
+  - using vifmrc file (it's in ~/.vifm/)
     This file can contain any of vifm commands.  You probably would like too set
     mappings and options here.  vifm will never change this file (it's something
     similar too ~/.vimrc).
