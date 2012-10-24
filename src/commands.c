@@ -3632,7 +3632,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	{
 		int sm = exec_commands(expanded_com, curr_view, GET_COMMAND);
 		free(expanded_com);
-		return sm;
+		return sm != 0;
 	}
 
 	clean_selected_files(curr_view);
