@@ -2915,6 +2915,9 @@ load_saving_pos(FileView *view, int reload)
 int
 window_shows_dirlist(const FileView *const view)
 {
+	if(curr_stats.number_of_windows == 1 && view == other_view)
+		return 0;
+
 	if(view->explore_mode)
 		return 0;
 	if(view == other_view && get_mode() == VIEW_MODE)
