@@ -40,6 +40,12 @@ else
     LDFLAGS += `grep LIBS\ := ../../src/Makefile.win | sed 's/^[^=]\+=//'`
 endif
 
+ifneq ($(OS),Windows_NT)
+    ifneq ($(wildcard /usr/include/ncursesw/.),)
+        CFLAGS += -I/usr/include/ncursesw
+    endif
+endif
+
 .PHONY: $(VIFM_BIN) clean
 
 $(BIN): $(VIFM_BIN) ../bin/dummy $(OBJECTS) $(LOCAL_OBJECTS)

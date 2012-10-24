@@ -62,6 +62,7 @@ bin:
 
 clean: $(dirs_c)
 	-$(RM) -r bin/
+	-$(RM) seatest/*.o seatest/*.d
 
 $(dirs_c):
 	$(MAKE) --directory=$(subst _c,,$@) --makefile=../Makefile.inc clean
