@@ -33,7 +33,8 @@
 
 #include "registers.h"
 
-#define NUM_REGISTERS 28
+#define NUM_LETTER_REGISTERS 26
+#define NUM_REGISTERS (2 + NUM_LETTER_REGISTERS)
 
 static registers_t registers[NUM_REGISTERS];
 
@@ -45,7 +46,7 @@ const char valid_registers[] = {
 	'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
 	'\0'
 };
-ARRAY_GUARD(valid_registers, NUM_REGISTERS + 26 + 1);
+ARRAY_GUARD(valid_registers, NUM_REGISTERS + NUM_LETTER_REGISTERS + 1);
 
 void
 init_registers(void)
