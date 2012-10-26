@@ -517,7 +517,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 	if(sub_mode == SEARCH_FORWARD_SUBMODE
 			|| sub_mode == VSEARCH_FORWARD_SUBMODE
 			|| sub_mode == MENU_SEARCH_FORWARD_SUBMODE
-	    || sub_mode == SEARCH_BACKWARD_SUBMODE
+			|| sub_mode == SEARCH_BACKWARD_SUBMODE
 			|| sub_mode == VSEARCH_BACKWARD_SUBMODE
 			|| sub_mode == MENU_SEARCH_BACKWARD_SUBMODE)
 	{
@@ -1114,6 +1114,8 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 	update_cmdline_text();
 }
 
+/* Handler of Ctrl-W shortcut, which remove all to the left until beginning of
+ * the word is found (i.e. until first delimiter character). */
 static void
 cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 {
@@ -1126,16 +1128,16 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 
 	while(input_stat.index > 0 && iswspace(input_stat.line[input_stat.index - 1]))
 	{
+		input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index - 1]);
 		input_stat.index--;
-		input_stat.curs_pos--;
 	}
 	if(iswalnum(input_stat.line[input_stat.index - 1]))
 	{
 		while(input_stat.index > 0 &&
 				iswalnum(input_stat.line[input_stat.index - 1]))
 		{
+			input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index - 1]);
 			input_stat.index--;
-			input_stat.curs_pos--;
 		}
 	}
 	else
@@ -1144,8 +1146,8 @@ cmd_ctrl_w(key_info_t key_info, keys_info_t *keys_info)
 				!iswalnum(input_stat.line[input_stat.index - 1]) &&
 				!iswspace(input_stat.line[input_stat.index - 1]))
 		{
+			input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index - 1]);
 			input_stat.index--;
-			input_stat.curs_pos--;
 		}
 	}
 
@@ -1182,19 +1184,20 @@ cmd_meta_b(key_info_t key_info, keys_info_t *keys_info)
 	update_cursor();
 }
 
+/* Moves cursor to the beginning of the current or previous word on Meta+B. */
 static void
 find_prev_word(void)
 {
 	while(input_stat.index > 0 && iswspace(input_stat.line[input_stat.index - 1]))
 	{
+		input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index - 1]);
 		input_stat.index--;
-		input_stat.curs_pos--;
 	}
 	while(input_stat.index > 0 &&
 			!iswspace(input_stat.line[input_stat.index - 1]))
 	{
+		input_stat.curs_pos -= wcwidth(input_stat.line[input_stat.index - 1]);
 		input_stat.index--;
-		input_stat.curs_pos--;
 	}
 }
 
@@ -1337,20 +1340,21 @@ insert_dot_completion(const wchar_t completion[])
 	return 0;
 }
 
+/* Moves cursor to the end of the current or next word on Meta+F. */
 static void
 find_next_word(void)
 {
 	while(input_stat.index < input_stat.len
 			&& iswspace(input_stat.line[input_stat.index]))
 	{
+		input_stat.curs_pos += wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;
-		input_stat.curs_pos++;
 	}
 	while(input_stat.index < input_stat.len
 			&& !iswspace(input_stat.line[input_stat.index]))
 	{
+		input_stat.curs_pos += wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;
-		input_stat.curs_pos++;
 	}
 }
 
@@ -1390,11 +1394,13 @@ cmd_home(key_info_t key_info, keys_info_t *keys_info)
 	update_cursor();
 }
 
+/* Moves cursor to the end of command-line on Ctrl+E and End. */
 static void
 cmd_end(key_info_t key_info, keys_info_t *keys_info)
 {
 	input_stat.index = input_stat.len;
-	input_stat.curs_pos = input_stat.prompt_wid + input_stat.len;
+	input_stat.curs_pos = input_stat.prompt_wid +
+			wcswidth(input_stat.line, (size_t)-1);
 	update_cursor();
 }
 
@@ -1528,7 +1534,7 @@ cmd_ctrl_t(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else
 	{
-		input_stat.curs_pos++;
+		input_stat.curs_pos += wcwidth(input_stat.line[input_stat.index]);
 		input_stat.index++;
 	}
 
