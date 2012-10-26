@@ -19,7 +19,7 @@
 #ifndef __UTF8_H__
 #define __UTF8_H__
 
-#include <stddef.h>
+#include <stddef.h> /* size_t */
 
 /* Returns real width of valid and complete utf-8 character. */
 size_t get_char_width(const char string[]);

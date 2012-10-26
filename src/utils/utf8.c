@@ -16,13 +16,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+/* To get wcwidth() function. */
+#define _XOPEN_SOURCE
+
+#include <assert.h> /* assert() */
+#include <stddef.h> /* wchar_t */
 #include <string.h>
+#include <wchar.h> /* wcwidth() */
 
 #include "macros.h"
+/* For wcwidth() stub. */
+#ifdef _WIN32
+#include "utils.h"
+#endif
 
 #include "utf8.h"
 
 static size_t guess_char_width(char c);
+static size_t get_char_screen_width(const char string[], size_t char_width);
+static wchar_t utf8_char_to_wchar(const char string[], size_t char_width);
 
 size_t
 get_char_width(const char string[])
@@ -48,9 +60,15 @@ size_t
 get_real_string_width(const char string[], size_t max_len)
 {
 	size_t width = 0;
-	while(*string != '\0' && max_len-- != 0)
+	while(*string != '\0' && max_len != 0)
 	{
 		size_t char_width = get_char_width(string);
+		size_t char_screen_width = get_char_screen_width(string, char_width);
+		if(char_screen_width > max_len)
+		{
+			break;
+		}
+		max_len -= char_screen_width;
 		width += char_width;
 		string += char_width;
 	}
@@ -77,13 +95,20 @@ size_t
 get_normal_utf8_string_widthn(const char string[], size_t max)
 {
 	size_t length = 0;
-	while(*string != '\0' && max-- > 0)
+	while(*string != '\0' && max > 0)
 	{
+		size_t char_screen_width;
 		size_t char_width = guess_char_width(*string);
 		if(char_width <= strlen(string))
 			length += char_width;
 		else
 			break;
+		char_screen_width = get_char_screen_width(string, char_width);
+		if(char_screen_width > max)
+		{
+			break;
+		}
+		max -= char_screen_width;
 		string += char_width;
 	}
 	return length;
@@ -103,6 +128,33 @@ guess_char_width(char c)
 		return 4;
 #endif
 	return 1;
+}
+
+static size_t
+get_char_screen_width(const char string[], size_t char_width)
+{
+	const wchar_t wide = utf8_char_to_wchar(string, char_width);
+	const size_t result = wcwidth(wide);
+	return (result == (size_t)-1) ? 1 : result;
+}
+
+static wchar_t
+utf8_char_to_wchar(const char string[], size_t char_width)
+{
+	static const int masks[] = { 0xff, 0x1f, 0x0f, 0x07 };
+
+	wchar_t result;
+
+	assert(char_width != 0 && "There are no zero width utf-8 characters.");
+	assert(char_width <= ARRAY_LEN(masks) && "To long utf-8 character.");
+
+	result = *string&masks[char_width - 1];
+	while(--char_width != 0)
+	{
+		result = (result << 6)|(*++string&0x3f);
+	}
+
+	return result;
 }
 
 size_t

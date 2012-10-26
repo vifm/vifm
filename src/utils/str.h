@@ -35,7 +35,10 @@
 void chomp(char *text);
 /* Removes all trailing whitespace. Returns new length of the string. */
 size_t trim_right(char *text);
-wchar_t * to_wide(const char *s);
+/* Converts multibyte string to a wide string.  On success returns newly
+ * allocated string, which should be freed by the caller, otherwise NULL is
+ * returned. */
+wchar_t * to_wide(const char s[]);
 wchar_t * my_wcsdup(const wchar_t *ws);
 int starts_with(const char *str, const char *prefix);
 int ends_with(const char *str, const char *suffix);

@@ -16,13 +16,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+/* This is to be able to use wcswidth() function. */
+#define _XOPEN_SOURCE
+
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* malloc() realloc() free() */
 #include <string.h> /* memmove() memset() strlen() */
+#include <wchar.h> /* wcswidth() */
 
 #include "utils/macros.h"
+#include "utils/str.h"
 #include "utils/utf8.h"
+/* For wcswidth() stub. */
+#ifdef _WIN32
+#include "utils/utils.h"
+#endif
 
 #include "column_view.h"
 
@@ -66,6 +75,7 @@ static void decorate_output(column_t *column, char *buf, size_t max_width);
 static size_t calculate_max_width(column_t *column, size_t buf_max);
 static size_t calculate_start_pos(column_t *column, const char *buf);
 static void fill_gap_pos(const void *data, size_t from, size_t to);
+static size_t get_width_on_screen(const char str[]);
 static void recalculate_if_needed(columns_t columns, size_t max_width);
 static int recalculation_is_needed(columns_t columns, size_t max_width);
 static void recalculate(columns_t columns, size_t max_width);
@@ -269,7 +279,7 @@ columns_format_line(const columns_t columns, const void *data, size_t max_width)
 			fill_gap_pos(data, end, start);
 		}
 		print_func(data, col->info.column_id, format_buffer, start);
-		end = start + get_normal_utf8_string_length(format_buffer);
+		end = start + get_width_on_screen(format_buffer);
 	}
 	if(max_width > end)
 	{
@@ -281,7 +291,7 @@ columns_format_line(const columns_t columns, const void *data, size_t max_width)
 static void
 decorate_output(column_t *column, char *buf, size_t max_width)
 {
-	size_t len = get_normal_utf8_string_length(buf);
+	size_t len = get_width_on_screen(buf);
 	size_t max_col_width = calculate_max_width(column, MIN(len, max_width));
 	int truncated = len > max_col_width;
 	if(truncated)
@@ -295,12 +305,12 @@ decorate_output(column_t *column, char *buf, size_t max_width)
 		{
 			size_t pos = get_real_string_width(buf, len - max_col_width);
 			memmove(buf, buf + pos, strlen(buf + pos) + 1);
-			assert(get_normal_utf8_string_length(buf) == max_col_width);
+			assert(get_width_on_screen(buf) == max_col_width);
 		}
 
 		if(column->info.cropping == CT_ELLIPSIS)
 		{
-			size_t truncated_len = get_normal_utf8_string_length(buf);
+			size_t truncated_len = get_width_on_screen(buf);
 			size_t count = MIN(truncated_len, 3);
 			if(column->info.align == AT_LEFT)
 			{
@@ -346,7 +356,7 @@ calculate_start_pos(column_t *column, const char *buf)
 	else
 	{
 		size_t end = column->start + column->width;
-		size_t len = get_normal_utf8_string_length(buf);
+		size_t len = get_width_on_screen(buf);
 		return (end > len) ? (end - len) : 0;
 	}
 }
@@ -359,6 +369,26 @@ fill_gap_pos(const void *data, size_t from, size_t to)
 	memset(spaces, ' ', to - from);
 	spaces[to - from] = '\0';
 	print_func(data, FILL_COLUMN_ID, spaces, from);
+}
+
+/* Returns number of character positions allocated by the string on the
+ * screen.  On issues will try to do the best, to make visible at least
+ * something. */
+static size_t
+get_width_on_screen(const char str[])
+{
+	size_t length = (size_t)-1;
+	wchar_t *wide = to_wide(str);
+	if(wide != NULL)
+	{
+		length = wcswidth(wide, (size_t)-1);
+		free(wide);
+	}
+	if(length == (size_t)-1)
+	{
+		length = get_normal_utf8_string_length(str);
+	}
+	return length;
 }
 
 /* Checks if recalculation is needed and runs it if yes. */
