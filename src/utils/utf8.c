@@ -21,7 +21,7 @@
 
 #include <assert.h> /* assert() */
 #include <stddef.h> /* wchar_t */
-#include <string.h>
+#include <string.h> /* strlen() */
 #include <wchar.h> /* wcwidth() */
 
 #include "macros.h"
@@ -130,6 +130,7 @@ guess_char_width(char c)
 	return 1;
 }
 
+/* Returns width of the character in the terminal. */
 static size_t
 get_char_screen_width(const char string[], size_t char_width)
 {
@@ -138,17 +139,19 @@ get_char_screen_width(const char string[], size_t char_width)
 	return (result == (size_t)-1) ? 1 : result;
 }
 
+/* Converts one utf-8 encoded character to wide character form. */
 static wchar_t
 utf8_char_to_wchar(const char string[], size_t char_width)
 {
-	static const int masks[] = { 0xff, 0x1f, 0x0f, 0x07 };
+	/* First mask is a fake one, to omit decrementing of char_width. */
+	static const int masks[] = { 0x00, 0xff, 0x1f, 0x0f, 0x07 };
 
 	wchar_t result;
 
 	assert(char_width != 0 && "There are no zero width utf-8 characters.");
-	assert(char_width <= ARRAY_LEN(masks) && "To long utf-8 character.");
+	assert(char_width < ARRAY_LEN(masks) && "To long utf-8 character.");
 
-	result = *string&masks[char_width - 1];
+	result = *string&masks[char_width];
 	while(--char_width != 0)
 	{
 		result = (result << 6)|(*++string&0x3f);
