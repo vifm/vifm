@@ -54,15 +54,20 @@ trim_right(char *text)
 }
 
 wchar_t *
-to_wide(const char *s)
+to_wide(const char s[])
 {
-	wchar_t *result;
-	int len;
+	wchar_t *result = NULL;
+	size_t len;
 
 	len = mbstowcs(NULL, s, 0);
-	result = malloc((len + 1)*sizeof(wchar_t));
-	if(result != NULL)
-		mbstowcs(result, s, len + 1);
+	if(len != (size_t)-1)
+	{
+		result = malloc((len + 1)*sizeof(wchar_t));
+		if(result != NULL)
+		{
+			(void)mbstowcs(result, s, len + 1);
+		}
+	}
 	return result;
 }
 

@@ -16,69 +16,84 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+/* This is to be able to use wcswidth() function. */
+#define _XOPEN_SOURCE
+
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
 #include <stdlib.h> /* malloc() realloc() free() */
 #include <string.h> /* memmove() memset() strlen() */
+#include <wchar.h> /* wcswidth() */
 
 #include "utils/macros.h"
+#include "utils/str.h"
 #include "utils/utf8.h"
+/* For wcswidth() stub. */
+#ifdef _WIN32
+#include "utils/utils.h"
+#endif
 
 #include "column_view.h"
+
+#define MAX_ELLIPSIS_DOT_COUNT 3
+#define GAP_FILL_CHAR ' '
 
 /* Holds general column information. */
 typedef struct
 {
-	int column_id;
-	column_func func;
+	int column_id; /* Unique column id. */
+	column_func func; /* Function, which prints column value. */
 }
 column_desc_t;
 
 /* Column information including calculated values. */
 typedef struct
 {
-	column_info_t info;
-	size_t start;
-	size_t width;
-	size_t print_width;
-	column_func func;
+	column_info_t info; /* Column properties specified by the client. */
+	size_t start; /* Start position of the column. */
+	size_t width; /* Calculated width of the column. */
+	size_t print_width; /* Print width (less or equal to the width field). */
+	column_func func; /* Cached column print function of column_desc_t. */
 }
 column_t;
 
-/* Column view description structure. */
-typedef struct cols_t
+/* Column view description structure.  Typedef is in the header file. */
+struct columns_t
 {
-	size_t max_width;
-	size_t count;
-	column_t *list;
-}
-cols_t;
+	size_t max_width; /* Maximum width of one line of the view. */
+	size_t count; /* Number of columns in the list. */
+	column_t *list; /* Array of columns of count length. */
+};
 
 static int extend_column_desc_list(void);
 static void init_new_column_desc(column_desc_t *desc, int column_id,
 		column_func func);
 static int column_id_present(int column_id);
-static int extend_column_list(columns_t columns);
+static int extend_column_list(columns_t cols);
 static void init_new_column(column_t *col, column_info_t info);
-static void mark_for_recalculation(columns_t columns);
+static void mark_for_recalculation(columns_t cols);
 static column_func get_column_func(int column_id);
-static void decorate_output(column_t *column, char *buf, size_t max_width);
-static size_t calculate_max_width(column_t *column, size_t buf_max);
-static size_t calculate_start_pos(column_t *column, const char *buf);
+static void decorate_output(const column_t *col, char buf[],
+		size_t max_line_width);
+static void add_ellipsis(AlignType align, char buf[]);
+static size_t calculate_max_width(const column_t *col, size_t len,
+		size_t max_line_width);
+static size_t calculate_start_pos(const column_t *col, const char buf[]);
 static void fill_gap_pos(const void *data, size_t from, size_t to);
-static void recalculate_if_needed(columns_t columns, size_t max_width);
-static int recalculation_is_needed(columns_t columns, size_t max_width);
-static void recalculate(columns_t columns, size_t max_width);
-static void update_widths(columns_t columns, size_t max_width);
-static int update_abs_and_rel_widths(columns_t columns, size_t *max_width);
-static void update_auto_widths(columns_t columns, size_t auto_count,
+static size_t get_width_on_screen(const char str[]);
+static void recalculate_if_needed(columns_t cols, size_t max_width);
+static int recalculation_is_needed(columns_t cols, size_t max_width);
+static void recalculate(columns_t cols, size_t max_width);
+static void update_widths(columns_t cols, size_t max_width);
+static int update_abs_and_rel_widths(columns_t cols, size_t *max_width);
+static void update_auto_widths(columns_t cols, size_t auto_count,
 		size_t max_width);
-static void update_start_positions(columns_t columns);
+static void update_start_positions(columns_t cols);
 
 /* Number of registered column descriptors. */
-static size_t column_desc_count;
+static size_t col_desc_count;
 /* List of column descriptors. */
-static column_desc_t *column_descs;
+static column_desc_t *col_descs;
 /* Column print function. */
 static column_line_print_func print_func;
 
@@ -93,26 +108,25 @@ columns_add_column_desc(int column_id, column_func func)
 {
 	if(!column_id_present(column_id) && extend_column_desc_list() == 0)
 	{
-		init_new_column_desc(&column_descs[column_desc_count - 1], column_id, func);
+		init_new_column_desc(&col_descs[col_desc_count - 1], column_id, func);
 		return 0;
 	}
 	return 1;
 }
 
 /* Extends column descriptors list by one element, but doesn't initialize it at
- * all. Returns zero on success. */
+ * all.  Returns zero on success. */
 static int
 extend_column_desc_list(void)
 {
-	static column_desc_t *mem_ptr;
-	mem_ptr = realloc(column_descs,
-			(column_desc_count + 1)*sizeof(column_desc_t));
+	const size_t new_size = (col_desc_count + 1)*sizeof(*col_descs);
+	column_desc_t *const mem_ptr = realloc(col_descs, new_size);
 	if(mem_ptr == NULL)
 	{
 		return 1;
 	}
-	column_descs = mem_ptr;
-	column_desc_count++;
+	col_descs = mem_ptr;
+	col_desc_count++;
 	return 0;
 }
 
@@ -127,7 +141,7 @@ init_new_column_desc(column_desc_t *desc, int column_id, column_func func)
 columns_t
 columns_create(void)
 {
-	cols_t *result = malloc(sizeof(cols_t));
+	struct columns_t *const result = malloc(sizeof(struct columns_t));
 	if(result == NULL)
 	{
 		return NULL_COLUMNS;
@@ -139,40 +153,41 @@ columns_create(void)
 }
 
 void
-columns_free(columns_t columns)
+columns_free(columns_t cols)
 {
-	if(columns != NULL_COLUMNS)
+	if(cols != NULL_COLUMNS)
 	{
-		columns_clear(columns);
-		free(columns);
+		columns_clear(cols);
+		free(cols);
 	}
 }
 
 void
-columns_clear(columns_t columns)
+columns_clear(columns_t cols)
 {
-	columns->count = 0;
-	free(columns->list);
-	columns->list = NULL;
+	free(cols->list);
+	cols->list = NULL;
+	cols->count = 0;
 }
 
 void
 columns_clear_column_descs(void)
 {
-	column_desc_count = 0;
-	free(column_descs);
-	column_descs = NULL;
+	free(col_descs);
+	col_descs = NULL;
+	col_desc_count = 0;
 }
 
 void
-columns_add_column(columns_t columns, column_info_t info)
+columns_add_column(columns_t cols, column_info_t info)
 {
-	assert(info.text_width <= info.full_width);
-	assert(column_id_present(info.column_id));
-	if(extend_column_list(columns) == 0)
+	assert(info.text_width <= info.full_width &&
+			"Text width should be bigger than full width.");
+	assert(column_id_present(info.column_id) && "Unknown column id.");
+	if(extend_column_list(cols) == 0)
 	{
-		init_new_column(&columns->list[columns->count - 1], info);
-		mark_for_recalculation(columns);
+		init_new_column(&cols->list[cols->count - 1], info);
+		mark_for_recalculation(cols);
 	}
 }
 
@@ -182,10 +197,10 @@ static int
 column_id_present(int column_id)
 {
 	size_t i;
-	/* validate column_id */
-	for(i = 0; i < column_desc_count; i++)
+	/* Validate column_id. */
+	for(i = 0; i < col_desc_count; i++)
 	{
-		if(column_descs[i].column_id == column_id)
+		if(col_descs[i].column_id == column_id)
 		{
 			return 1;
 		}
@@ -196,24 +211,24 @@ column_id_present(int column_id)
 /* Extends columns list by one element, but doesn't initialize it at all.
  * Returns zero on success. */
 static int
-extend_column_list(columns_t columns)
+extend_column_list(columns_t cols)
 {
 	static column_t *mem_ptr;
-	mem_ptr = realloc(columns->list, (columns->count + 1)*sizeof(column_t));
+	mem_ptr = realloc(cols->list, (cols->count + 1)*sizeof(column_t));
 	if(mem_ptr == NULL)
 	{
 		return 1;
 	}
-	columns->list = mem_ptr;
-	columns->count++;
+	cols->list = mem_ptr;
+	cols->count++;
 	return 0;
 }
 
 /* Marks columns structure as one that need to be recalculated. */
 static void
-mark_for_recalculation(columns_t columns)
+mark_for_recalculation(columns_t cols)
 {
-		columns->max_width = -1UL;
+	cols->max_width = -1UL;
 }
 
 /* Fills column structure with initial values. */
@@ -232,189 +247,223 @@ static column_func
 get_column_func(int column_id)
 {
 	size_t i;
-	for(i = 0; i < column_desc_count; i++)
+	for(i = 0; i < col_desc_count; i++)
 	{
-		column_desc_t *col_desc = &column_descs[i];
+		column_desc_t *col_desc = &col_descs[i];
 		if(col_desc->column_id == column_id)
 		{
 			return col_desc->func;
 		}
 	}
-	assert(0);
+	assert(0 && "Unknown column id");
 }
 
 void
-columns_format_line(const columns_t columns, const void *data, size_t max_width)
+columns_format_line(const columns_t cols, const void *data,
+		size_t max_line_width)
 {
 	size_t i;
-	size_t end = 0;
-	recalculate_if_needed(columns, max_width);
-	for(i = 0; i < columns->count; i++)
+	size_t prev_col_end = 0;
+
+	recalculate_if_needed(cols, max_line_width);
+
+	for(i = 0; i < cols->count; i++)
 	{
 		/* Use big buffer to hold whole item so there will be no issues with right
 		 * aligned fields. */
-		char format_buffer[1024 + 1];
-		size_t start;
-		size_t max_field_width;
-		column_t *col = &columns->list[i];
-		col->func(col->info.column_id, data, ARRAY_LEN(format_buffer),
-				format_buffer);
-		max_field_width = max_width;
-		max_field_width -= ((col->info.align == AT_LEFT) ? col->start : 0);
-		decorate_output(col, format_buffer, max_field_width);
-		start = calculate_start_pos(col, format_buffer);
+		char col_buffer[1024 + 1];
+		size_t cur_col_start;
+		const column_t *const col = &cols->list[i];
 
-		if(start > end)
-		{
-			fill_gap_pos(data, end, start);
-		}
-		print_func(data, col->info.column_id, format_buffer, start);
-		end = start + get_normal_utf8_string_length(format_buffer);
+		col->func(col->info.column_id, data, ARRAY_LEN(col_buffer), col_buffer);
+		decorate_output(col, col_buffer, max_line_width);
+		cur_col_start = calculate_start_pos(col, col_buffer);
+
+		fill_gap_pos(data, prev_col_end, cur_col_start);
+		print_func(data, col->info.column_id, col_buffer, cur_col_start);
+
+		prev_col_end = cur_col_start + get_width_on_screen(col_buffer);
 	}
-	if(max_width > end)
-	{
-		fill_gap_pos(data, end, max_width);
-	}
+
+	fill_gap_pos(data, prev_col_end, max_line_width);
 }
 
 /* Adds decorations like ellipsis to the output. */
 static void
-decorate_output(column_t *column, char *buf, size_t max_width)
+decorate_output(const column_t *col, char buf[], size_t max_line_width)
 {
-	size_t len = get_normal_utf8_string_length(buf);
-	size_t max_col_width = calculate_max_width(column, MIN(len, max_width));
-	int truncated = len > max_col_width;
-	if(truncated)
-	{
-		if(column->info.align == AT_LEFT)
-		{
-			size_t pos = get_real_string_width(buf, max_col_width);
-			buf[pos] = '\0';
-		}
-		else
-		{
-			size_t pos = get_real_string_width(buf, len - max_col_width);
-			memmove(buf, buf + pos, strlen(buf + pos) + 1);
-			assert(get_normal_utf8_string_length(buf) == max_col_width);
-		}
+	const size_t len = get_width_on_screen(buf);
+	const size_t max_col_width = calculate_max_width(col, len, max_line_width);
+	const int too_long = len > max_col_width;
 
-		if(column->info.cropping == CT_ELLIPSIS)
-		{
-			size_t truncated_len = get_normal_utf8_string_length(buf);
-			size_t count = MIN(truncated_len, 3);
-			if(column->info.align == AT_LEFT)
-			{
-				size_t pos = get_real_string_width(buf, truncated_len - count);
-				buf[pos] = '\0';
-				while(count-- > 0)
-				{
-					strcat(buf, ".");
-				}
-			}
-			else
-			{
-				size_t diff = get_real_string_width(buf, count);
-				memmove(buf + count, buf + diff, strlen(buf + diff) + 1);
-				memset(buf, '.', count);
-			}
-		}
+	if(!too_long)
+	{
+		return;
 	}
-}
 
-/* Calculates maximum width for outputting content of the column. */
-static size_t
-calculate_max_width(column_t *column, size_t buf_max)
-{
-	if(column->info.cropping == CT_NONE)
+	if(col->info.align == AT_LEFT)
 	{
-		return buf_max;
+		const size_t truncate_pos = get_real_string_width(buf, max_col_width);
+		buf[truncate_pos] = '\0';
 	}
 	else
 	{
-		return column->print_width;
+		const size_t truncate_pos = get_real_string_width(buf, len - max_col_width);
+		const char *const new_beginning = buf + truncate_pos;
+		memmove(buf, new_beginning, strlen(new_beginning) + 1);
+		assert(get_width_on_screen(buf) == max_col_width && "Column isn't filled.");
+	}
+
+	if(col->info.cropping == CT_ELLIPSIS)
+	{
+		add_ellipsis(col->info.align, buf);
 	}
 }
 
-/* Calculates start position for outputting content of the column. */
-static size_t
-calculate_start_pos(column_t *column, const char *buf)
+/* Adds ellipsis to the string in buf not changing its length (at most three
+ * first or last characters are replaced). */
+static void
+add_ellipsis(AlignType align, char buf[])
 {
-	if(column->info.align == AT_LEFT)
+	const size_t len = get_width_on_screen(buf);
+	const size_t dot_count = MIN(len, MAX_ELLIPSIS_DOT_COUNT);
+	if(align == AT_LEFT)
 	{
-		return column->start;
+		const size_t width_limit = len - dot_count;
+		const size_t pos = get_real_string_width(buf, width_limit);
+		memset(buf + pos, '.', dot_count);
+		buf[pos + dot_count] = '\0';
 	}
 	else
 	{
-		size_t end = column->start + column->width;
-		size_t len = get_normal_utf8_string_length(buf);
+		const size_t beginning_shift = get_real_string_width(buf, dot_count);
+		const char *const new_beginning = buf + beginning_shift;
+		memmove(buf + dot_count, new_beginning, strlen(new_beginning) + 1);
+		memset(buf, '.', dot_count);
+	}
+}
+
+/* Calculates maximum width for outputting content of the col. */
+static size_t
+calculate_max_width(const column_t *col, size_t len, size_t max_line_width)
+{
+	if(col->info.cropping == CT_NONE)
+	{
+		const size_t left_bound = (col->info.align == AT_LEFT) ? col->start : 0;
+		const size_t max_col_width = max_line_width - left_bound;
+		return MIN(len, max_col_width);
+	}
+	else
+	{
+		return col->print_width;
+	}
+}
+
+/* Calculates start position for outputting content of the col. */
+static size_t
+calculate_start_pos(const column_t *col, const char buf[])
+{
+	if(col->info.align == AT_LEFT)
+	{
+		return col->start;
+	}
+	else
+	{
+		const size_t end = col->start + col->width;
+		const size_t len = get_width_on_screen(buf);
 		return (end > len) ? (end - len) : 0;
 	}
 }
 
-/* Prints spaces in place of gaps. */
+/* Prints gap filler (GAP_FILL_CHAR) in place of gaps.  Does nothing if to less
+ * or equal to from. */
 static void
 fill_gap_pos(const void *data, size_t from, size_t to)
 {
-	char spaces[to - from + 1];
-	memset(spaces, ' ', to - from);
-	spaces[to - from] = '\0';
-	print_func(data, FILL_COLUMN_ID, spaces, from);
+	if(to > from)
+	{
+		char gap[to - from + 1];
+		memset(gap, GAP_FILL_CHAR, to - from);
+		gap[to - from] = '\0';
+		print_func(data, FILL_COLUMN_ID, gap, from);
+	}
+}
+
+/* Returns number of character positions allocated by the string on the
+ * screen.  On issues will try to do the best, to make visible at least
+ * something. */
+static size_t
+get_width_on_screen(const char str[])
+{
+	size_t length = (size_t)-1;
+	wchar_t *const wide = to_wide(str);
+	if(wide != NULL)
+	{
+		length = wcswidth(wide, (size_t)-1);
+		free(wide);
+	}
+	if(length == (size_t)-1)
+	{
+		length = get_normal_utf8_string_length(str);
+	}
+	return length;
 }
 
 /* Checks if recalculation is needed and runs it if yes. */
 static void
-recalculate_if_needed(columns_t columns, size_t max_width)
+recalculate_if_needed(columns_t cols, size_t max_width)
 {
-	if(recalculation_is_needed(columns, max_width))
+	if(recalculation_is_needed(cols, max_width))
 	{
-		recalculate(columns, max_width);
+		recalculate(cols, max_width);
 	}
 }
 
-/* Checks if recalculation is needed. */
+/* Checks if recalculation is needed, and returns non-zero if so. */
 static int
-recalculation_is_needed(columns_t columns, size_t max_width)
+recalculation_is_needed(columns_t cols, size_t max_width)
 {
-	return columns->max_width != max_width;
+	return cols->max_width != max_width;
 }
 
 /* Recalculates column widths and start offsets. */
 static void
-recalculate(columns_t columns, size_t max_width)
+recalculate(columns_t cols, size_t max_width)
 {
-	update_widths(columns, max_width);
-	update_start_positions(columns);
+	update_widths(cols, max_width);
+	update_start_positions(cols);
 
-	columns->max_width = max_width;
+	cols->max_width = max_width;
 }
 
 /* Recalculates column widths. */
 static void
-update_widths(columns_t columns, size_t max_width)
+update_widths(columns_t cols, size_t max_width)
 {
-	size_t left = max_width;
-	size_t auto_count = update_abs_and_rel_widths(columns, &left);
-	update_auto_widths(columns, auto_count, left);
+	size_t width_left = max_width;
+	const size_t auto_count = update_abs_and_rel_widths(cols, &width_left);
+	update_auto_widths(cols, auto_count, width_left);
 }
 
-/* Recalculates widths of columns with absolute or percent widths. */
+/* Recalculates widths of columns with absolute or percent widths.  Returns
+ * number of columns with auto size type. */
 static int
-update_abs_and_rel_widths(columns_t columns, size_t *max_width)
+update_abs_and_rel_widths(columns_t cols, size_t *max_width)
 {
 	size_t i;
 	size_t auto_count = 0;
-	size_t left = *max_width;
-	for(i = 0; i < columns->count; i++)
+	size_t width_left = *max_width;
+	for(i = 0; i < cols->count; i++)
 	{
 		size_t effective_width;
-		column_t *col = &columns->list[i];
+		column_t *col = &cols->list[i];
 		if(col->info.sizing == ST_ABSOLUTE)
 		{
-			effective_width = MIN(col->info.full_width, left);
+			effective_width = MIN(col->info.full_width, width_left);
 		}
 		else if(col->info.sizing == ST_PERCENT)
 		{
-			effective_width = MIN(col->info.full_width**max_width/100, left);
+			effective_width = MIN(col->info.full_width**max_width/100, width_left);
 		}
 		else
 		{
@@ -422,7 +471,7 @@ update_abs_and_rel_widths(columns_t columns, size_t *max_width)
 			continue;
 		}
 
-		left -= effective_width;
+		width_left -= effective_width;
 		col->width = effective_width;
 		if(col->info.sizing == ST_ABSOLUTE)
 		{
@@ -433,20 +482,20 @@ update_abs_and_rel_widths(columns_t columns, size_t *max_width)
 			col->print_width = col->width;
 		}
 	}
-	*max_width = left;
+	*max_width = width_left;
 	return auto_count;
 }
 
 /* Recalculates widths of columns with automatic widths. */
 static void
-update_auto_widths(columns_t columns, size_t auto_count, size_t max_width)
+update_auto_widths(columns_t cols, size_t auto_count, size_t max_width)
 {
 	size_t i;
 	size_t auto_left = auto_count;
 	size_t left = max_width;
-	for(i = 0; i < columns->count; i++)
+	for(i = 0; i < cols->count; i++)
 	{
-		column_t *col = &columns->list[i];
+		column_t *col = &cols->list[i];
 		if(col->info.sizing == ST_AUTO)
 		{
 			auto_left--;
@@ -461,19 +510,19 @@ update_auto_widths(columns_t columns, size_t auto_count, size_t max_width)
 
 /* Should be used after updating column widths. */
 static void
-update_start_positions(columns_t columns)
+update_start_positions(columns_t cols)
 {
 	size_t i;
-	for(i = 0; i < columns->count; i++)
+	for(i = 0; i < cols->count; i++)
 	{
 		if(i == 0)
 		{
-			columns->list[i].start = 0;
+			cols->list[i].start = 0;
 		}
 		else
 		{
-			column_t *prev_col = &columns->list[i - 1];
-			columns->list[i].start = prev_col->start + prev_col->width;
+			column_t *prev_col = &cols->list[i - 1];
+			cols->list[i].start = prev_col->start + prev_col->width;
 		}
 	}
 }

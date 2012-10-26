@@ -1,7 +1,9 @@
+#include <locale.h> /* setlocale() */
 #include <string.h>
 
 #include "seatest.h"
 
+#include "../../src/utils/utf8.h"
 #include "../../src/column_view.h"
 #include "test.h"
 
@@ -12,19 +14,20 @@ static void
 column_line_print(const void *data, int column_id, const char *buf,
 		size_t offset)
 {
-	strncpy(print_buffer + offset*2, buf, strlen(buf));
+	strncpy(print_buffer + get_normal_utf8_string_widthn(print_buffer, offset),
+			buf, strlen(buf));
 }
 
 static void
 column1_func(int id, const void *data, size_t buf_len, char *buf)
 {
-	snprintf(buf, buf_len + 1, "%s", "абвгдеёжзийклмнопрстуфхцчшщьыъэюя");
+	snprintf(buf, buf_len + 1, "%s", "师从螺丝刀йклмнопрстуфхцчшщьыъэюя");
 }
 
 static void
 column2_func(int id, const void *data, size_t buf_len, char *buf)
 {
-	snprintf(buf, buf_len + 1, "%s", "яюэъыьщшчцхфутсрпонмлкйизжёедгвба");
+	snprintf(buf, buf_len + 1, "%s", "яюэъыьщшчцхфутсрпонмлкйизжёедгв推");
 }
 
 static void
@@ -54,8 +57,7 @@ perform_test(column_info_t column_infos[], size_t count, size_t max_width)
 		columns_add_column(cols, column_infos[i]);
 	}
 
-	memset(print_buffer, ' ', 80);
-	print_buffer[40] = '\0';
+	memset(print_buffer, '\0', sizeof(print_buffer));
 	columns_format_line(cols, NULL, max_width);
 
 	columns_free(cols);
@@ -69,8 +71,7 @@ test_not_truncating_short_utf8_ok(void)
 		{ .column_id = COL1_ID, .full_width = 33UL,    .text_width = 33UL,
 		  .align = AT_LEFT,     .sizing = ST_ABSOLUTE, .cropping = CT_TRUNCATE, },
 	};
-	static const char expected[] =
-			"абвгдеёжзийклмнопрстуфхцчшщьыъэюя              ";
+	static const char expected[] = "师从螺丝刀йклмнопрстуфхцчшщьыъэюя       ";
 
 	perform_test(column_infos, 1, 40);
 
@@ -85,8 +86,7 @@ test_donot_add_ellipsis_short_utf8_ok(void)
 		{ .column_id = COL1_ID, .full_width = 33UL,    .text_width = 33UL,
 		  .align = AT_LEFT,     .sizing = ST_ABSOLUTE, .cropping = CT_ELLIPSIS, },
 	};
-	static const char expected[] =
-			"абвгдеёжзийклмнопрстуфхцчшщьыъэюя              ";
+	static const char expected[] = "师从螺丝刀йклмнопрстуфхцчшщьыъэюя       ";
 
 	perform_test(column_infos, 1, 40);
 
@@ -103,7 +103,7 @@ test_truncating_ok(void)
 		{ .column_id = COL2_ID, .full_width = 10UL,    .text_width = 10UL,
 		  .align = AT_RIGHT,    .sizing = ST_ABSOLUTE, .cropping = CT_TRUNCATE, },
 	};
-	static const char expected[] = "абвгдеёжзиизжёедгвба";
+	static const char expected[] = "师从螺丝刀изжёедгв推";
 
 	perform_test(column_infos, 2, MAX_WIDTH);
 
@@ -120,8 +120,7 @@ test_add_ellipsis_ok(void)
 		{ .column_id = COL2_ID, .full_width = 10UL,    .text_width = 10UL,
 		  .align = AT_RIGHT,    .sizing = ST_ABSOLUTE, .cropping = CT_ELLIPSIS, },
 	};
-	/* The spaces in the middle are because of special print function. */
-	static const char expected[] = "абвгдеё...   ...ёедгвба   ";
+	static const char expected[] = "师从螺... ...ёедгв推";
 
 	perform_test(column_infos, 2, MAX_WIDTH);
 
@@ -136,7 +135,7 @@ test_filling(void)
 		{ .column_id = COL1_ID, .full_width = 0UL, .text_width = 0UL,
 		  .align = AT_LEFT,     .sizing = ST_AUTO, .cropping = CT_NONE, },
 	};
-	static const char expected[] = "абвгдеёжзийклмнопрстуфхцчшщьыъэюя       ";
+	static const char expected[] = "师从螺丝刀йклмнопрстуфхцчшщьыъэюя       ";
 
 	columns_t cols = columns_create();
 	columns_add_column(cols, column_infos[0]);
@@ -153,6 +152,8 @@ void
 utf8_tests(void)
 {
 	test_fixture_start();
+
+	(void)setlocale(LC_ALL, "");
 
 	fixture_setup(setup);
 	fixture_teardown(teardown);

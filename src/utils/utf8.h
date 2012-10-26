@@ -19,22 +19,23 @@
 #ifndef __UTF8_H__
 #define __UTF8_H__
 
-#include <stddef.h>
+#include <stddef.h> /* size_t */
 
 /* Returns real width of valid and complete utf-8 character. */
-size_t get_char_width(const char string[]);
+size_t get_char_width(const char str[]);
 /* Returns count utf-8 characters excluding incomplete utf-8 characters. */
-size_t get_normal_utf8_string_length(const char string[]);
-/* Returns count of bytes of whole string or of first max_len utf-8
+size_t get_normal_utf8_string_length(const char str[]);
+/* Returns count of bytes of whole str or of the first max_screen_width utf-8
+ * characters (so one character which take several positions on the screen are
+ * counted as several positions). */
+size_t get_real_string_width(const char str[], size_t max_screen_width);
+/* Same as get_real_string_width(), but ignores trailing incomplete utf-8
  * characters. */
-size_t get_real_string_width(const char string[], size_t max_len);
-/* Returns number of sequence of bytes, which represent valid utf-8 characters,
- * excluding incomplete utf-8 characters. */
-size_t get_normal_utf8_string_widthn(const char string[], size_t max);
-/* Returns count of utf-8 characters in string. */
-size_t get_utf8_string_length(const char string[]);
+size_t get_normal_utf8_string_widthn(const char str[], size_t max_screen_width);
+/* Returns count of utf-8 characters in str. */
+size_t get_utf8_string_length(const char str[]);
 /* Returns (string_width - string_length). */
-size_t get_utf8_overhead(const char string[]);
+size_t get_utf8_overhead(const char str[]);
 
 #endif
 

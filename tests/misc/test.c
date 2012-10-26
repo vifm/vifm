@@ -28,6 +28,7 @@ void format_mount_command_tests(void);
 void trim_right_tests(void);
 void echo_tests(void);
 void format_str_tests(void);
+void utf8_tests(void);
 
 void
 all_tests(void)
@@ -60,6 +61,7 @@ all_tests(void)
 	trim_right_tests();
 	echo_tests();
 	format_str_tests();
+	utf8_tests();
 }
 
 int

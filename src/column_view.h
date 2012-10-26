@@ -42,7 +42,7 @@ typedef enum
 	ST_PERCENT, /* column width is specified in percents of view width */
 	ST_AUTO /* column width is automatically determined */
 }
-SizeType;
+SizingType;
 
 /* Type of text truncation if it doesn't fix in the column. */
 typedef enum
@@ -54,24 +54,24 @@ typedef enum
 CropType;
 
 /* Type of columns handle. */
-typedef struct cols_t *columns_t;
+typedef struct columns_t *columns_t;
 
 /* A column callback function, which sould fill the buf with column text. */
 typedef void (*column_func)(int id, const void *data, size_t buf_len,
-		char *buf);
+		char buf[]);
 /* A callback function, for displaying column contents. */
 typedef void (*column_line_print_func)(const void *data, int column_id,
-		const char *buf, size_t offset);
+		const char buf[], size_t offset);
 
 /* Structure containing various column display properties. */
 typedef struct
 {
-	int column_id; /* unique id of existing column */
-	size_t full_width; /* full width of the column, units depend on size type */
-	size_t text_width; /* text width, ignored unless size type is ST_ABSOLUTE */
-	AlignType align; /* specifies type of text alignment */
-	SizeType sizing; /* specifies type of sizing */
-	CropType cropping; /* specifies type of text cropping */
+	int column_id; /* Unique id of existing column. */
+	size_t full_width; /* Full width of the column, units depend on size type. */
+	size_t text_width; /* Text width, ignored unless size type is ST_ABSOLUTE. */
+	AlignType align; /* Specifies type of text alignment. */
+	SizingType sizing; /* Specifies type of sizing. */
+	CropType cropping; /* Specifies type of text cropping. */
 }
 column_info_t;
 
@@ -85,16 +85,16 @@ void columns_clear_column_descs(void);
 
 /* Creates column view. Returns NULL_COLUMNS on error. */
 columns_t columns_create(void);
-/* Frees previously allocated columns. Passing NULL_COLUMNS is ok. */
-void columns_free(columns_t columns);
-/* Adds one column to the columns as the most right one. Duplicates are
+/* Frees previously allocated columns.  Passing NULL_COLUMNS is ok. */
+void columns_free(columns_t cols);
+/* Adds one column to the cols as the most right one. Duplicates are
  * allowed. */
-void columns_add_column(columns_t columns, column_info_t info);
-/* Clears list of columns of the columns. */
-void columns_clear(columns_t columns);
+void columns_add_column(columns_t cols, column_info_t info);
+/* Clears list of columns of the cols. */
+void columns_clear(columns_t cols);
 /* Performs actual formatting of columns. */
-void columns_format_line(const columns_t columns, const void *data,
-		size_t max_width);
+void columns_format_line(const columns_t cols, const void *data,
+		size_t max_line_width);
 
 #endif /* __COLUMN_VIEW_H__ */
 
