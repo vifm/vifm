@@ -19,7 +19,7 @@
 
 #define _GNU_SOURCE /* I don't know how portable this is but it is
                      * needed in Linux for the ncurses wide char
-                     * functions
+                     * functions (wcswidth() and wcwidth()).
                      */
 
 #ifdef __APPLE__
@@ -31,12 +31,11 @@
 
 #include <limits.h>
 
-#include <wchar.h>
-
 #include <assert.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wchar.h> /* wcswidth() wcwidth() */
 #include <wctype.h>
 
 #include "../cfg/config.h"
@@ -49,6 +48,7 @@
 #include "../utils/str.h"
 #include "../utils/test_helpers.h"
 #ifdef _WIN32
+/* For wcswidth() and wcwidth() stubs. */
 #include "../utils/utils.h"
 #endif
 #include "../bookmarks.h"
@@ -534,7 +534,8 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 	}
 
 	wcsncpy(input_stat.prompt, prompt, ARRAY_LEN(input_stat.prompt));
-	input_stat.prompt_wid = input_stat.curs_pos = wcslen(input_stat.prompt);
+	input_stat.prompt_wid = wcslen(input_stat.prompt);
+	input_stat.curs_pos = input_stat.prompt_wid;
 
 	if(input_stat.len != 0)
 	{
@@ -547,7 +548,7 @@ prepare_cmdline_mode(const wchar_t *prompt, const wchar_t *cmd,
 		else
 		{
 			wcscpy(input_stat.line, cmd);
-			input_stat.curs_pos += input_stat.len;
+			input_stat.curs_pos += wcswidth(input_stat.line, (size_t)-1);
 		}
 	}
 
