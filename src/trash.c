@@ -20,12 +20,12 @@
 #include <dirent.h> /* DIR */
 #endif
 
-#include <limits.h> /* PATH_MAX */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "cfg/config.h"
+#include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "background.h"

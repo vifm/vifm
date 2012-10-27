@@ -27,10 +27,9 @@
 #include <sys/types.h> /* size_t mode_t */
 #include <unistd.h> /* access() */
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h> /* touuper() */
 #include <errno.h> /* errno */
-#include <limits.h> /* NAME_MAX PATH_MAX */
 #include <stddef.h> /* NULL */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* realpath() */

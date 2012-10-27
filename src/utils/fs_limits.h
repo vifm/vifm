@@ -19,9 +19,9 @@
 #ifndef __FS_LIMITS_H__
 #define __FS_LIMITS_H__
 
-/* Define NAME_MAX constant in a most portable way. */
+/* Define NAME_MAX and PATH_MAX constants in a most portable way. */
 
-#include <limits.h> /* NAME_MAX */
+#include <limits.h> /* NAME_MAX PATH_MAX */
 
 /* For Windows. */
 #if !defined(NAME_MAX) && defined(_WIN32)
@@ -29,13 +29,18 @@
 #define NAME_MAX (FILENAME_MAX)
 #endif
 
-/* For Solaris */
+/* For Solaris. */
 #ifndef NAME_MAX
 #include <dirent.h>
 #ifndef MAXNAMLEN
 #define MAXNAMLEN FILENAME_MAX
 #endif
 #define NAME_MAX MAXNAMLEN
+#endif
+
+/* For GNU Hurd (which doesn't have path length limit at all). */
+#ifndef PATH_MAX
+#define PATH_MAX 4096
 #endif
 
 #endif /* __FS_LIMITS_H__ */

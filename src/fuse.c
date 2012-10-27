@@ -19,12 +19,12 @@
 
 #include <sys/stat.h> /* S_IRWXU */
 
-#include <limits.h> /* PATH_MAX */
 #include <string.h> /* memmove() strcpy() strlen() strcmp() strcat() */
 
 #include "cfg/config.h"
 #include "menus/menus.h"
 #include "utils/fs.h"
+#include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/path.h"
 #include "utils/str.h"

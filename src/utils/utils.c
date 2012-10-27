@@ -42,7 +42,6 @@
 
 #include <ctype.h>
 #include <errno.h>
-#include <limits.h> /* PATH_MAX */
 #include <signal.h> /* signal() SIGINT SIGTSTP SIG_DFL */
 #include <stddef.h> /* size_t */
 #include <string.h>

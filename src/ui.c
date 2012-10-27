@@ -39,7 +39,6 @@
 
 #include <assert.h>
 #include <ctype.h>
-#include <limits.h> /* PATH_MAX */
 #include <signal.h> /* signal() */
 #include <stdarg.h> /* va_list va_start() va_end() */
 #include <stdlib.h> /* malloc */
@@ -53,6 +52,7 @@
 #include "modes/file_info.h"
 #include "modes/modes.h"
 #include "modes/view.h"
+#include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/str.h"

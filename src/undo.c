@@ -20,14 +20,14 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <assert.h>
-#include <limits.h> /* PATH_MAX */
+#include <assert.h> /* assert() */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "cfg/config.h"
 #include "utils/fs.h"
+#include "utils/fs_limits.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"

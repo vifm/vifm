@@ -31,7 +31,6 @@
 #include <pwd.h> /* getpwent setpwent */
 #endif
 
-#include <limits.h> /* PATH_MAX */
 #include <stdlib.h>
 #include <string.h>
 

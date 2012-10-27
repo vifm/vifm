@@ -19,13 +19,13 @@
 
 #include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 
-#include <limits.h> /* PATH_MAX */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strdup() strcmp() */
 
 #include "../cfg/config.h"
 #include "../modes/menu.h"
+#include "../utils/fs_limits.h"
 #include "../utils/string_array.h"
 #include "menus.h"
 

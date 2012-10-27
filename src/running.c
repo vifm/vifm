@@ -22,7 +22,6 @@
 #include <sys/wait.h> /* WEXITSTATUS() */
 #endif
 
-#include <limits.h> /* PATH_MAX */
 #include <signal.h> /* sighandler_t, signal() */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() free() */

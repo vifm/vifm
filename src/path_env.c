@@ -18,7 +18,6 @@
 
 #include <dirent.h> /* DIR opendir() readdir() closedir() DT_DIR */
 
-#include <limits.h> /* PATH_MAX */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strchr() strlen() */
 
@@ -26,6 +25,7 @@
 #include "engine/variables.h"
 #include "utils/env.h"
 #include "utils/fs.h"
+#include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/string_array.h"

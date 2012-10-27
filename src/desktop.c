@@ -25,10 +25,10 @@
 #endif
 #include <dirent.h> /* DIR */
 
-#include <limits.h> /* PATH_MAX */
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strstr() strchr() strlen() strcpy() */
 
+#include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/utils.h"

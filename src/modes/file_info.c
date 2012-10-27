@@ -25,8 +25,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#include <assert.h>
-#include <limits.h> /* NAME_MAX PATH_MAX */
+#include <assert.h> /* assert() */
 #include <signal.h>
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>

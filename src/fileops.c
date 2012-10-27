@@ -36,8 +36,7 @@
 #include <unistd.h>
 
 #include <assert.h>
-#include <ctype.h> /* isdigit */
-#include <limits.h> /* PATH_MAX */
+#include <ctype.h> /* isdigit() */
 #include <signal.h>
 #include <stdint.h> /* uint64_t */
 #include <stdio.h>

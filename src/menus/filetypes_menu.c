@@ -17,11 +17,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <limits.h> /* PATH_MAX */
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strdup() strlen() */
 
 #include "../modes/menu.h"
+#include "../utils/fs_limits.h"
 #include "../utils/macros.h"
 #include "../utils/string_array.h"
 #include "../file_magic.h"

@@ -26,7 +26,6 @@
 
 #include <regex.h>
 
-#include <limits.h> /* PATH_MAX */
 #include <curses.h>
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* off_t mode_t... */
@@ -34,6 +33,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "utils/fs_limits.h"
 #include "color_scheme.h"
 #include "column_view.h"
 #include "status.h"
