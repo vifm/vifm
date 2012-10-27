@@ -7,6 +7,8 @@
 #include "../../src/ui.h"
 
 #define SIGN(n) ({__typeof(n) _n = (n); (_n < 0) ? -1 : (_n > 0);})
+#define ASSERT_STRCMP_EQUAL(a, b) \
+		do { assert_int_equal(SIGN(a), SIGN(b)); } while(0)
 
 static void
 setup(void)
@@ -51,35 +53,35 @@ test_versort_without_numbers(void)
 
 	s = "abc";
 	t = "abcdef";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
+	ASSERT_STRCMP_EQUAL(strcmp(s, t), strnumcmp(s, t));
 
 	s = "abcdef";
 	t = "abc";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
+	ASSERT_STRCMP_EQUAL(strcmp(s, t), strnumcmp(s, t));
 
 	s = "";
 	t = "abc";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
+	ASSERT_STRCMP_EQUAL(strcmp(s, t), strnumcmp(s, t));
 
 	s = "abc";
 	t = "";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
+	ASSERT_STRCMP_EQUAL(strcmp(s, t), strnumcmp(s, t));
 
 	s = "";
 	t = "";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
+	ASSERT_STRCMP_EQUAL(strcmp(s, t), strnumcmp(s, t));
 
 	s = "abcdef";
 	t = "abcdef";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
+	ASSERT_STRCMP_EQUAL(strcmp(s, t), strnumcmp(s, t));
 
 	s = "abcdef";
 	t = "abcdeg";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
+	ASSERT_STRCMP_EQUAL(strcmp(s, t), strnumcmp(s, t));
 
 	s = "abcdeg";
 	t = "abcdef";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
+	ASSERT_STRCMP_EQUAL(strcmp(s, t), strnumcmp(s, t));
 }
 
 static void
@@ -89,15 +91,15 @@ test_versort_with_numbers(void)
 
 	s = "abcdef0";
 	t = "abcdef0";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
+	ASSERT_STRCMP_EQUAL(strcmp(s, t), strnumcmp(s, t));
 
 	s = "abcdef0";
 	t = "abcdef1";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
+	ASSERT_STRCMP_EQUAL(strcmp(s, t), strnumcmp(s, t));
 
 	s = "abcdef1";
 	t = "abcdef0";
-	assert_int_equal(SIGN(strcmp(s, t)), SIGN(strnumcmp(s, t)));
+	ASSERT_STRCMP_EQUAL(strcmp(s, t), strnumcmp(s, t));
 
 	s = "abcdef9";
 	t = "abcdef10";
