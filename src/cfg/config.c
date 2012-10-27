@@ -31,7 +31,7 @@
 
 #include <assert.h> /* assert() */
 #include <errno.h>
-#include <limits.h> /* INT_MIN PATH_MAX */
+#include <limits.h> /* INT_MIN */
 #include <stdio.h> /* FILE snprintf() */
 #include <stdlib.h>
 #include <string.h> /* memset() strncpy() */
@@ -39,6 +39,7 @@
 #include "../menus/menus.h"
 #include "../utils/env.h"
 #include "../utils/fs.h"
+#include "../utils/fs_limits.h"
 #include "../utils/log.h"
 #include "../utils/str.h"
 #include "../utils/path.h"

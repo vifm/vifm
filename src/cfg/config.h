@@ -23,8 +23,8 @@
 #include <curses.h>
 
 #include <stddef.h> /* size_t */
-#include <limits.h> /* PATH_MAX */
 
+#include "../utils/fs_limits.h"
 #include "../color_scheme.h"
 #include "../types.h"
 #include "../ui.h"

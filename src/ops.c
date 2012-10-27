@@ -21,7 +21,6 @@
 #include <shellapi.h>
 #endif
 
-#include <limits.h> /* PATH_MAX */
 #include <string.h>
 
 #include "cfg/config.h"
@@ -29,6 +28,7 @@
 #ifdef _WIN32
 #include "utils/fs.h"
 #endif
+#include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"

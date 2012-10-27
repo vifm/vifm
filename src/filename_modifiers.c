@@ -16,12 +16,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <limits.h> /* PATH_MAX */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strcpy() strchr() strlen() strrchr() */
 
 #include "cfg/config.h"
+#include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "fileops.h"

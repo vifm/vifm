@@ -39,7 +39,6 @@
 
 #include <assert.h>
 #include <ctype.h>
-#include <limits.h> /* PATH_MAX */
 #include <signal.h> /* signal() */
 #include <stdarg.h> /* va_list va_start() va_end() */
 #include <stdlib.h> /* malloc */
@@ -53,6 +52,7 @@
 #include "modes/file_info.h"
 #include "modes/modes.h"
 #include "modes/view.h"
+#include "utils/fs_limits.h"
 #include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/str.h"
@@ -627,8 +627,7 @@ status_bar_message_i(const char *message, int error)
 	multiline_status_bar = lines > 1;
 	if(multiline_status_bar)
 	{
-		wmove(status_bar, lines - DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG), len),
-				0);
+		wmove(status_bar, lines - DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG), len), 0);
 		wclrtoeol(status_bar);
 		if(lines < status_bar_lines)
 			wprintw(status_bar, "%d of %d lines.  ", lines, status_bar_lines);

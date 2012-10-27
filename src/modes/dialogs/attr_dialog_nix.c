@@ -19,13 +19,13 @@
 
 #include <fcntl.h>
 
-#include <assert.h>
-#include <limits.h> /* PATH_MAX */
+#include <assert.h> /* assert() */
 #include <string.h>
 
 #include "../../engine/keys.h"
 #include "../../menus/menus.h"
 #include "../../utils/fs.h"
+#include "../../utils/fs_limits.h"
 #include "../../utils/macros.h"
 #include "../../utils/path.h"
 #include "../../background.h"

@@ -19,12 +19,11 @@
 
 #include <curses.h>
 
-#include <dirent.h> /* DIR */
 #include <sys/stat.h>
+#include <dirent.h> /* DIR */
 #include <unistd.h>
 
 #include <ctype.h>
-#include <limits.h> /* PATH_MAX */
 #include <stdio.h>
 #include <string.h>
 
@@ -32,6 +31,7 @@
 #include "engine/completion.h"
 #include "menus/menus.h"
 #include "utils/fs.h"
+#include "utils/fs_limits.h"
 #include "utils/macros.h"
 #include "utils/str.h"
 #include "utils/tree.h"

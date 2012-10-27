@@ -20,12 +20,10 @@
 #ifndef __COLOR_SCHEME_H__
 #define __COLOR_SCHEME_H__
 
-#include <limits.h> /* NAME_MAX PATH_MAX */
-
+#include "utils/fs_limits.h"
 #ifdef _WIN32
 #include "utils/utils.h"
 #endif
-#include "utils/fs_limits.h"
 
 #define MAX_COLOR_SCHEMES 8
 

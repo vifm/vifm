@@ -17,13 +17,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <limits.h> /* PATH_MAX */
 #include <string.h> /* strcpy() strlen() strcat() */
 
 #include "cfg/config.h"
 #include "modes/modes.h"
 #include "utils/file_streams.h"
 #include "utils/fs.h"
+#include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/utf8.h"
 #include "filelist.h"

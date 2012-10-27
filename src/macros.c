@@ -18,12 +18,12 @@
  */
 
 #include <assert.h> /* assert() */
-#include <limits.h> /* PATH_MAX */
 #include <stdlib.h> /* realloc() free() calloc() */
 #include <string.h> /* strchr() strncat() strcpy() strlen() strcat() */
 
 #include "cfg/config.h"
 #include "menus/menus.h"
+#include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/str.h"
 #include "utils/test_helpers.h"
