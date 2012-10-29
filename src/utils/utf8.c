@@ -44,11 +44,10 @@ get_char_width(const char str[])
 	const size_t expected = guess_char_width(str[0]);
 	if(expected == 2 && (str[1] & 0xc0) == 0x80)
 		return 2;
-	else if(expected == 3 && (str[1] & 0xc0) == 0x80 &&
-			(str[2] & 0xc0) == 0x80)
+	else if(expected == 3 && (str[1] & 0xc0) == 0x80 && (str[2] & 0xc0) == 0x80)
 		return 3;
-	else if(expected == 4 && (str[1] & 0xc0) == 0x80 &&
-			(str[2] & 0xc0) == 0x80 && (str[3] & 0xc0) == 0x80)
+	else if(expected == 4 && (str[1] & 0xc0) == 0x80 && (str[2] & 0xc0) == 0x80 &&
+			(str[3] & 0xc0) == 0x80)
 		return 4;
 	else if(str[0] == '\0')
 		return 0;

@@ -16,6 +16,9 @@
 	Fixed command-line cursor positioning for Chinese and other languages that
 	can have characters taking more than one position on the screen.
 
+	Fixed segmentation fault on :colorscheme command with no color schemes
+	installed.
+
 0.7.4 to 0.7.4a
 
 	Don't redraw statbar until end of :restart command.

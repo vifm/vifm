@@ -70,6 +70,13 @@ show_colorschemes_menu(FileView *view)
 	}
 	closedir(dir);
 
+	if(m.len == 0)
+	{
+		free(m.title);
+		show_error_msg("No color schemes", "No color schemes found.");
+		return;
+	}
+
 	setup_menu();
 	draw_menu(&m);
 	move_to_menu_pos(m.pos, &m);
