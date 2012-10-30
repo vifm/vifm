@@ -61,10 +61,7 @@ show_undolist_menu(FileView *view, int with_details)
 		m.items[m.pos][0] = '*';
 	}
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
+	display_menu(&m, view);
 	return 0;
 }
 

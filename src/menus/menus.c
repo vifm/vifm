@@ -732,11 +732,17 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 		return were_errors;
 	}
 
+	display_menu(m, view);
+	return 0;
+}
+
+void
+display_menu(menu_info *m, FileView *view)
+{
 	setup_menu();
 	draw_menu(m);
 	move_to_menu_pos(m->pos, m);
 	enter_menu_mode(m, view);
-	return 0;
 }
 
 int

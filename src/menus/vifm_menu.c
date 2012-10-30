@@ -39,10 +39,7 @@ show_vifm_menu(FileView *view)
 	m.items = malloc(sizeof(char*)*len);
 	m.len = fill_version_info(m.items);
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
+	display_menu(&m, view);
 	return 0;
 }
 

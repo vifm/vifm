@@ -79,10 +79,7 @@ show_history_menu(FileView *view)
 	}
 	m.pos = m.len - 1 - m.pos;
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
+	display_menu(&m, view);
 
 	return 0;
 }

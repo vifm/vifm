@@ -103,10 +103,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 	}
 	m.len = i;
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
+	display_menu(&m, view);
 	return 0;
 }
 

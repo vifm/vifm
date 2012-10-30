@@ -103,10 +103,7 @@ show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 	}
 	free(list);
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
+	display_menu(&m, view);
 }
 
 static char *

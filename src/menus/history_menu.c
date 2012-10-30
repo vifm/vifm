@@ -80,10 +80,7 @@ show_history(FileView *view, int type, int len, char *hist[],
 		m.len = add_to_string_array(&m.items, m.len, 1, hist[i]);
 	}
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
+	display_menu(&m, view);
 	return 0;
 }
 

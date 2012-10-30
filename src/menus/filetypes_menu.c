@@ -90,10 +90,7 @@ show_filetypes_menu(FileView *view, int background)
 				form_filetype_menu_entry(magic.list[i], max_len));
 	}
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
+	display_menu(&m, view);
 
 	return 0;
 }

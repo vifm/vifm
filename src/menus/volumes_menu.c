@@ -17,9 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifdef _WIN32
 #include <windows.h>
-#endif
 
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strdup() */
@@ -60,10 +58,7 @@ show_volumes_menu(FileView *view)
 		}
 	}
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(0, &m);
-	enter_menu_mode(&m, view);
+	display_menu(&m, view);
 }
 
 void
