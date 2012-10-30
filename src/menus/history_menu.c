@@ -59,6 +59,7 @@ show_bsearchhistory_menu(FileView *view)
 			cfg.search_history, " Search History ");
 }
 
+/* Returns non-zero if status bar message should be saved. */
 static int
 show_history(FileView *view, int type, int len, char *hist[],
 		const char title[])

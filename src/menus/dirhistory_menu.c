@@ -30,7 +30,6 @@
 
 #include "dirhistory_menu.h"
 
-/* Returns new value for save_msg flag */
 int
 show_history_menu(FileView *view)
 {

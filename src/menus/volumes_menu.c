@@ -31,7 +31,7 @@
 
 #include "volumes_menu.h"
 
-void
+int
 show_volumes_menu(FileView *view)
 {
 	TCHAR c;
@@ -59,6 +59,7 @@ show_volumes_menu(FileView *view)
 	}
 
 	display_menu(&m, view);
+	return 0;
 }
 
 void

@@ -31,7 +31,7 @@
 
 #include "colorscheme_menu.h"
 
-void
+int
 show_colorschemes_menu(FileView *view)
 {
 	DIR *dir;
@@ -48,7 +48,7 @@ show_colorschemes_menu(FileView *view)
 	if(dir == NULL)
 	{
 		free(m.title);
-		return;
+		return 0;
 	}
 
 	while((d = readdir(dir)) != NULL)
@@ -74,10 +74,11 @@ show_colorschemes_menu(FileView *view)
 	{
 		free(m.title);
 		show_error_msg("No color schemes", "No color schemes found.");
-		return;
+		return 0;
 	}
 
 	display_menu(&m, view);
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

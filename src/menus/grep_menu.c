@@ -29,7 +29,7 @@
 #include "grep_menu.h"
 
 int
-show_grep_menu(FileView *view, const char *args, int invert)
+show_grep_menu(FileView *view, const char args[], int invert)
 {
 	char title_buf[256];
 	char *files;

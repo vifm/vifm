@@ -31,7 +31,7 @@
 
 static char * uchar2str(wchar_t c[], size_t *len);
 
-void
+int
 show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 		const wchar_t start[])
 {
@@ -104,6 +104,7 @@ show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 	free(list);
 
 	display_menu(&m, view);
+	return 0;
 }
 
 static char *

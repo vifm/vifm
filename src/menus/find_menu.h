@@ -22,6 +22,7 @@
 
 #include "../ui.h"
 
+/* Returns non-zero if status bar message should be saved. */
 int show_find_menu(FileView *view, int with_path, const char args[]);
 
 #endif

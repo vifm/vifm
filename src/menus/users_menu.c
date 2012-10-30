@@ -25,7 +25,7 @@
 
 #include "users_menu.h"
 
-void
+int
 show_user_menu(FileView *view, const char command[], int navigate)
 {
 	static menu_info m;
@@ -39,8 +39,9 @@ show_user_menu(FileView *view, const char command[], int navigate)
 	if(!were_errors && m.len < 1)
 	{
 		status_bar_error("No results found");
-		curr_stats.save_msg = 1;
+		return 1;
 	}
+	return 0;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

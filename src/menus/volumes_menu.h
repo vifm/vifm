@@ -22,7 +22,8 @@
 
 #include "../ui.h"
 
-void show_volumes_menu(FileView *view);
+/* Returns non-zero if status bar message should be saved. */
+int show_volumes_menu(FileView *view);
 void execute_volumes_cb(FileView *view, menu_info *m);
 
 #endif

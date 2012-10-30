@@ -27,8 +27,8 @@
 
 #include "apropos_menu.h"
 
-void
-show_apropos_menu(FileView *view, char args[])
+int
+show_apropos_menu(FileView *view, const char args[])
 {
 	char cmd_buf[256];
 	int were_errors;
@@ -50,6 +50,7 @@ show_apropos_menu(FileView *view, char args[])
 	{
 		show_error_msgf("Nothing Appropriate", "No matches for \'%s\'", m.title);
 	}
+	return 0;
 }
 
 void
