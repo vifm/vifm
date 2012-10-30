@@ -21,6 +21,7 @@
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strdup() strchr() strlen() */
 
+#include "../utils/str.h"
 #include "../running.h"
 #include "../status.h"
 #include "menus.h"
@@ -32,15 +33,11 @@ show_apropos_menu(FileView *view, const char args[])
 {
 	char cmd_buf[256];
 	int were_errors;
-	size_t title_len;
 
 	static menu_info m;
 	init_menu_info(&m, APROPOS);
 	m.args = strdup(args);
-
-	title_len = 9 + strlen(args) + 1 + 1;
-	m.title = malloc(title_len);
-	snprintf(m.title, title_len, " Apropos %s ", args);
+	m.title = format_str(" Apropos %s ", args);
 
 	status_bar_message("apropos...");
 

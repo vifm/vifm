@@ -23,6 +23,7 @@
 #include <wchar.h> /* wcsncmp() wcslen() */
 
 #include "../modes/menu.h"
+#include "../utils/str.h"
 #include "../utils/utils.h"
 #include "../ui.h"
 #include "menus.h"
@@ -40,9 +41,7 @@ show_map_menu(FileView *view, const char mode_str[], wchar_t *list[],
 
 	static menu_info m;
 	init_menu_info(&m, MAP);
-
-	m.title = malloc(strlen(mode_str) + 21);
-	sprintf(m.title, " Mappings for %s mode ", mode_str);
+	m.title = format_str(" Mappings for %s mode ", mode_str);
 
 	x = 0;
 	while(list[x] != NULL)

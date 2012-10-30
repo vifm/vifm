@@ -22,6 +22,7 @@
 #include <string.h> /* strdup() strlen() */
 
 #include "../utils/path.h"
+#include "../utils/str.h"
 #include "../macros.h"
 #include "../ui.h"
 #include "menus.h"
@@ -31,7 +32,6 @@
 int
 show_grep_menu(FileView *view, const char args[], int invert)
 {
-	char title_buf[256];
 	char *files;
 	int were_errors;
 	const char *inv_str = invert ? "-v" : "";
@@ -40,9 +40,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 
 	static menu_info m;
 	init_menu_info(&m, GREP);
-
-	snprintf(title_buf, sizeof(title_buf), "grep %s", args);
-	m.title = strdup(title_buf);
+	m.title = format_str("grep %s", args);
 
 	if(view->selected_files > 0)
 		files = expand_macros(view, "%f", NULL, NULL);

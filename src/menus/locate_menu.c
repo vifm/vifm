@@ -37,6 +37,7 @@ show_locate_menu(FileView *view, const char args[])
 	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0);
 
 	snprintf(cmd_buf, sizeof(cmd_buf), "locate %s", m.args);
+
 	m.title = strdup(cmd_buf);
 
 	status_bar_message("locate...");
