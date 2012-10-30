@@ -34,10 +34,9 @@ show_find_menu(FileView *view, int with_path, const char args[])
 {
 	char cmd_buf[256];
 	char *files;
-	int were_errors;
 
 	static menu_info m;
-	init_menu_info(&m, FIND);
+	init_menu_info(&m, FIND, strdup("No files found"));
 
 	m.title = format_str("find %s", args);
 
@@ -62,13 +61,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 
 	status_bar_message("find...");
 
-	were_errors = capture_output_to_menu(view, cmd_buf, &m);
-	if(!were_errors && m.len < 1)
-	{
-		status_bar_error("No files found");
-		return 1;
-	}
-	return 0;
+	return capture_output_to_menu(view, cmd_buf, &m);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

@@ -32,9 +32,10 @@ int
 show_undolist_menu(FileView *view, int with_details)
 {
 	char **p;
+	size_t len;
 
 	static menu_info m;
-	init_menu_info(&m, UNDOLIST);
+	init_menu_info(&m, UNDOLIST, strdup("Undolist is empty"));
 	m.current = get_undolist_pos(with_details) + 1;
 	m.pos = m.current - 1;
 	m.title = strdup(" Undolist ");
@@ -44,14 +45,8 @@ show_undolist_menu(FileView *view, int with_details)
 	while(*p++ != NULL)
 		m.len++;
 
-	if(m.len == 0)
+	if(m.len > 0)
 	{
-		m.len = add_to_string_array(&m.items, m.len, 1, " Undolist is empty ");
-	}
-	else
-	{
-		size_t len;
-
 		m.len = add_to_string_array(&m.items, m.len, 1, "list end");
 
 		/* Add current position mark to menu item. */
@@ -61,8 +56,7 @@ show_undolist_menu(FileView *view, int with_details)
 		m.items[m.pos][0] = '*';
 	}
 
-	display_menu(&m, view);
-	return 0;
+	return display_menu(&m, view);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

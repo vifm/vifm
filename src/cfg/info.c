@@ -340,7 +340,7 @@ get_history(FileView *view, int reread, const char *dir, const char *file,
 {
 	if(view->history_num == cfg.history_len)
 	{
-		resize_history(cfg.history_len + 1);
+		resize_history(MAX(0, cfg.history_len + 1));
 	}
 
 	if(!reread)

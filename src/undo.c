@@ -297,7 +297,17 @@ add_operation(OPS op, void *do_data, void *undo_data, const char *buf1,
 		remove_cmd(cmds.next);
 
 	if(*undo_levels <= 0)
+	{
+		if(data_is_ptr[op])
+		{
+			free(do_data);
+		}
+		if(data_is_ptr[undo_op[op]])
+		{
+			free(undo_data);
+		}
 		return 0;
+	}
 
 	command_count++;
 

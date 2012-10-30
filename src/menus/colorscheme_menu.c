@@ -39,46 +39,35 @@ show_colorschemes_menu(FileView *view)
 	char colors_dir[PATH_MAX];
 
 	static menu_info m;
-	init_menu_info(&m, COLORSCHEME);
+	init_menu_info(&m, COLORSCHEME, strdup("No color schemes found"));
 	m.title = strdup(" Choose the default Color Scheme ");
 
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
 
 	dir = opendir(colors_dir);
-	if(dir == NULL)
+	if(dir != NULL)
 	{
-		free(m.title);
-		return 0;
-	}
-
-	while((d = readdir(dir)) != NULL)
-	{
+		while((d = readdir(dir)) != NULL)
+		{
 #ifndef _WIN32
-		if(d->d_type != DT_REG && d->d_type != DT_LNK)
-			continue;
+			if(d->d_type != DT_REG && d->d_type != DT_LNK)
+				continue;
 #endif
 
-		if(d->d_name[0] == '.')
-			continue;
+			if(d->d_name[0] == '.')
+				continue;
 
-		m.len = add_to_string_array(&m.items, m.len, 1, d->d_name);
-		if(strcmp(d->d_name, cfg.cs.name) == 0)
-		{
-			m.current = m.len;
-			m.pos = m.len - 1;
+			m.len = add_to_string_array(&m.items, m.len, 1, d->d_name);
+			if(strcmp(d->d_name, cfg.cs.name) == 0)
+			{
+				m.current = m.len;
+				m.pos = m.len - 1;
+			}
 		}
-	}
-	closedir(dir);
-
-	if(m.len == 0)
-	{
-		free(m.title);
-		show_error_msg("No color schemes", "No color schemes found.");
-		return 0;
+		closedir(dir);
 	}
 
-	display_menu(&m, view);
-	return 0;
+	return display_menu(&m, view);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

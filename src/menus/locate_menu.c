@@ -30,10 +30,9 @@ int
 show_locate_menu(FileView *view, const char args[])
 {
 	char cmd_buf[256];
-	int were_errors;
 
 	static menu_info m;
-	init_menu_info(&m, LOCATE);
+	init_menu_info(&m, LOCATE, strdup("No files found"));
 	m.args = (args[0] == '-') ? strdup(args) : escape_filename(args, 0);
 
 	snprintf(cmd_buf, sizeof(cmd_buf), "locate %s", m.args);
@@ -42,13 +41,7 @@ show_locate_menu(FileView *view, const char args[])
 
 	status_bar_message("locate...");
 
-	were_errors = capture_output_to_menu(view, cmd_buf, &m);
-	if(!were_errors && m.len < 1)
-	{
-		status_bar_error("No files found");
-		return 1;
-	}
-	return 0;
+	return capture_output_to_menu(view, cmd_buf, &m);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

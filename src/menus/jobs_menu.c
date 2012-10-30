@@ -39,7 +39,8 @@ show_jobs_menu(FileView *view)
 #endif
 	int i;
 	static menu_info m;
-	init_menu_info(&m, JOBS);
+	init_menu_info(&m, JOBS, strdup("No jobs currently running"));
+	m.title = strdup(" Pid --- Command ");
 
 	/*
 	 * SIGCHLD needs to be blocked anytime the finished_jobs list
@@ -79,18 +80,7 @@ show_jobs_menu(FileView *view)
 
 	m.len = i;
 
-	if(m.len < 1)
-	{
-		m.len = add_to_string_array(&m.items, 0, 1, "Press return to continue.");
-		m.title = strdup(" No jobs currently running ");
-	}
-	else
-	{
-		m.title = strdup(" Pid --- Command ");
-	}
-
-	display_menu(&m, view);
-	return 0;
+	return display_menu(&m, view);
 }
 
 void

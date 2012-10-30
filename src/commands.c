@@ -1799,8 +1799,11 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		const char *p = valid_bookmarks;
 		while(*p != '\0')
 		{
-			int index = mark2index(*p++);
-			remove_bookmark(index);
+			const int index = mark2index(*p++);
+			if(!is_bookmark_empty(index))
+			{
+				remove_bookmark(index);
+			}
 		}
 		return 0;
 	}

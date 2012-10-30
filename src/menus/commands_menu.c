@@ -20,7 +20,7 @@
 #include <assert.h> /* assert() */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
-#include <string.h> /* strlen() strchr() */
+#include <string.h> /* strdup() strlen() strchr() */
 #include <wchar.h> /* wcscmp() */
 
 #include "../engine/cmds.h"
@@ -40,20 +40,12 @@ show_commands_menu(FileView *view)
 	int i;
 
 	static menu_info m;
-	init_menu_info(&m, COMMAND);
+	init_menu_info(&m, COMMAND, strdup("No commands set"));
 	m.key_handler = command_khandler;
 
 	m.title = strdup(" Command ------ Action ");
 
 	list = list_udf();
-
-	if(list[0] == NULL)
-	{
-		free(list);
-		free(m.title);
-		show_error_msg("No commands set", "No commands are set.");
-		return 0;
-	}
 
 	m.len = -1;
 	while(list[++m.len] != NULL);
@@ -71,8 +63,7 @@ show_commands_menu(FileView *view)
 	}
 	free_string_array(list, m.len*2);
 
-	display_menu(&m, view);
-	return 0;
+	return display_menu(&m, view);
 }
 
 static int

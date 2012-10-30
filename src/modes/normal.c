@@ -1820,8 +1820,7 @@ cmd_yy(key_info_t key_info, keys_info_t *keys_info)
 	curr_stats.save_msg = yank_files(curr_view, key_info.reg, keys_info->count,
 			keys_info->indexes);
 
-	if(key_info.count != NO_COUNT_GIVEN)
-		free(keys_info->indexes);
+	free(keys_info->indexes);
 }
 
 /* Calculates end position for pick_files(...) function using cursor position

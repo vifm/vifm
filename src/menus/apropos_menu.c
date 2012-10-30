@@ -32,22 +32,16 @@ int
 show_apropos_menu(FileView *view, const char args[])
 {
 	char cmd_buf[256];
-	int were_errors;
 
 	static menu_info m;
-	init_menu_info(&m, APROPOS);
+	init_menu_info(&m, APROPOS, format_str("No matches for \'%s\'", m.title));
 	m.args = strdup(args);
 	m.title = format_str(" Apropos %s ", args);
 
 	status_bar_message("apropos...");
 
 	snprintf(cmd_buf, sizeof(cmd_buf), "apropos %s", args);
-	were_errors = capture_output_to_menu(view, cmd_buf, &m);
-	if(!were_errors && m.len < 1)
-	{
-		show_error_msgf("Nothing Appropriate", "No matches for \'%s\'", m.title);
-	}
-	return 0;
+	return capture_output_to_menu(view, cmd_buf, &m);
 }
 
 void

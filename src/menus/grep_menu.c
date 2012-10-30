@@ -33,13 +33,13 @@ int
 show_grep_menu(FileView *view, const char args[], int invert)
 {
 	char *files;
-	int were_errors;
+	int result;
 	const char *inv_str = invert ? "-v" : "";
 	const char grep_cmd[] = "grep -n -H -I -r";
 	char *cmd;
 
 	static menu_info m;
-	init_menu_info(&m, GREP);
+	init_menu_info(&m, GREP, strdup("No matches found"));
 	m.title = format_str("grep %s", args);
 
 	if(view->selected_files > 0)
@@ -67,14 +67,9 @@ show_grep_menu(FileView *view, const char args[], int invert)
 
 	status_bar_message("grep...");
 
-	were_errors = capture_output_to_menu(view, cmd, &m);
+	result = capture_output_to_menu(view, cmd, &m);
 	free(cmd);
-	if(!were_errors && m.len < 1)
-	{
-		status_bar_error("No matches found");
-		return 1;
-	}
-	return 0;
+	return result;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

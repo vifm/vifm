@@ -31,20 +31,14 @@ int
 show_register_menu(FileView *view, const char registers[])
 {
 	static menu_info m;
-	init_menu_info(&m, REGISTER);
+	init_menu_info(&m, REGISTER, strdup("Registers are empty"));
 	m.title = strdup(" Registers ");
 
 	m.items = list_registers_content(registers);
 	while(m.items[m.len] != NULL)
 		m.len++;
 
-	if(m.len == 0)
-	{
-		m.len = add_to_string_array(&m.items, m.len, 1, " Registers are empty ");
-	}
-
-	display_menu(&m, view);
-	return 0;
+	return display_menu(&m, view);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

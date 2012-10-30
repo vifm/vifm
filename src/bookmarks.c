@@ -104,7 +104,7 @@ is_bookmark(const int x)
 int
 is_bookmark_empty(const int x)
 {
-	/* (i know, checking both is a bit paranoid, one should be enough.) */
+	/* Checking both is a bit paranoid, one should be enough. */
 	return bookmarks[x].directory == NULL || bookmarks[x].file == NULL;
 }
 

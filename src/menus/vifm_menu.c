@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#include <stddef.h> /* NULL */
 #include <stdlib.h> /* malloc() */
 #include <string.h> /* strdup() */
 
@@ -32,15 +33,15 @@ show_vifm_menu(FileView *view)
 {
 	static menu_info m;
 	int len;
-	init_menu_info(&m, VIFM);
+	/* Version information menu always contains at least one item. */
+	init_menu_info(&m, VIFM, NULL);
 	m.title = strdup(" vifm information ");
 
 	len = fill_version_info(NULL);
 	m.items = malloc(sizeof(char*)*len);
 	m.len = fill_version_info(m.items);
 
-	display_menu(&m, view);
-	return 0;
+	return display_menu(&m, view);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
