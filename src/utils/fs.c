@@ -375,7 +375,7 @@ is_regular_file(const char path[])
 {
 #ifndef _WIN32
 	struct stat s;
-	return lstat(path, &s) == 0 && (s.st_mode & S_IFMT) == S_IFREG;
+	return stat(path, &s) == 0 && (s.st_mode & S_IFMT) == S_IFREG;
 #else
 	const DWORD attrs = GetFileAttributesA(path);
 	if(attrs == INVALID_FILE_ATTRIBUTES)
