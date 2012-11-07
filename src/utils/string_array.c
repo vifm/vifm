@@ -105,7 +105,7 @@ string_array_pos(char *array[], size_t len, const char key[])
 }
 
 int
-string_array_pos_case(char **array, size_t len, const char *key)
+string_array_pos_case(char *array[], size_t len, const char key[])
 {
 	int i;
 	for(i = 0; i < len; i++)

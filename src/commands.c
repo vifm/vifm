@@ -1667,7 +1667,7 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 		/* Show menu with colorschemes listed. */
 		return show_colorschemes_menu(curr_view) != 0;
 	}
-	else if(find_color_scheme(cmd_info->argv[0]))
+	else if(color_scheme_exists(cmd_info->argv[0]))
 	{
 		if(cmd_info->argc == 2)
 		{

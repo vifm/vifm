@@ -24,8 +24,9 @@
 #include <unistd.h>
 
 #include <ctype.h>
-#include <stdio.h>
-#include <string.h>
+#include <stddef.h> /* size_t */
+#include <stdio.h> /* snprintf() */
+#include <string.h> /* strlen() */
 
 #include "cfg/config.h"
 #include "engine/completion.h"
@@ -34,6 +35,7 @@
 #include "utils/fs_limits.h"
 #include "utils/macros.h"
 #include "utils/str.h"
+#include "utils/string_array.h"
 #include "utils/tree.h"
 #include "color_scheme.h"
 #include "filelist.h"
@@ -127,41 +129,20 @@ check_color_scheme(col_scheme_t *cs)
 	}
 }
 
-int
-find_color_scheme(const char *name)
+char **
+list_color_schemes(int *len)
 {
 	char colors_dir[PATH_MAX];
-	DIR *dir;
-	struct dirent *d;
-
-	if(name[0] == '\0')
-		return 0;
-
 	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
+	return list_regular_files(colors_dir, len);
+}
 
-	dir = opendir(colors_dir);
-	if(dir == NULL)
-		return 0;
-
-	while((d = readdir(dir)) != NULL)
-	{
-#ifndef _WIN32
-		if(d->d_type != DT_REG && d->d_type != DT_LNK)
-			continue;
-#endif
-
-		if(d->d_name[0] == '.')
-			continue;
-
-		if(stroscmp(d->d_name, name) == 0)
-		{
-			closedir(dir);
-			return 1;
-		}
-	}
-	closedir(dir);
-
-	return 0;
+int
+color_scheme_exists(const char name[])
+{
+	char full_path[PATH_MAX];
+	snprintf(full_path, sizeof(full_path), "%s/colors/%s", cfg.config_dir, name);
+	return is_regular_file(full_path);
 }
 
 /* This function is called only when colorschemes file doesn't exist */
@@ -332,7 +313,7 @@ check_directory_for_color_scheme(int left, const char *dir)
 		t = *p;
 		*p = '\0';
 
-		if(tree_get_data(dirs, dir, &u.buf) != 0 || !find_color_scheme(u.name))
+		if(tree_get_data(dirs, dir, &u.buf) != 0 || !color_scheme_exists(u.name))
 		{
 			*p = t;
 			if((p = strchr(p + 1, '/')) == NULL)
@@ -366,35 +347,28 @@ load_color_pairs(int base, const col_scheme_t *cs)
 }
 
 void
-complete_colorschemes(const char *name)
+complete_colorschemes(const char name[])
 {
-	char colors_dir[PATH_MAX];
-	DIR *dir;
-	struct dirent *d;
+	int i;
 	size_t len;
-
-	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
-
-	dir = opendir(colors_dir);
-	if(dir == NULL)
-		return;
+	int schemes_len;
+	char **schemes;
 
 	len = strlen(name);
+	schemes = list_color_schemes(&schemes_len);
 
-	while((d = readdir(dir)) != NULL)
+	for(i = 0; i < schemes_len; i++)
 	{
-#ifndef _WIN32
-		if(d->d_type != DT_REG && d->d_type != DT_LNK)
-			continue;
-#endif
-
-		if(d->d_name[0] == '.')
-			continue;
-
-		if(strncmp(name, d->d_name, len) == 0)
-			add_completion(d->d_name);
+		if(schemes[i][0] != '.' || name[0] == '.')
+		{
+			if(strnoscmp(name, schemes[i], len) == 0)
+			{
+				add_completion(schemes[i]);
+			}
+		}
 	}
-	closedir(dir);
+
+	free_string_array(schemes, schemes_len);
 
 	completion_group_end();
 	add_completion(name);

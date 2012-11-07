@@ -193,7 +193,8 @@ void update_input_bar(const wchar_t *str);
 void clear_num_window(void);
 void show_progress(const char *msg, int period);
 void redraw_lists(void);
-int load_color_scheme(const char *name);
+/* Returns new value for curr_stats.save_msg. */
+int load_color_scheme(const char name[]);
 void wprint(WINDOW *win, const char *str);
 /* Sets inner flag or signals about needed view update in some other way.
  * It doesn't perform any update, just request one to happen in the future. */

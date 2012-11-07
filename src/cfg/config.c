@@ -534,6 +534,7 @@ source_file(const char filename[])
 	return result;
 }
 
+/* Returns non-zero on error. */
 static int
 source_file_internal(FILE *fp, const char filename[])
 {
@@ -542,7 +543,8 @@ source_file_internal(FILE *fp, const char filename[])
 
 	if(fgets(line, sizeof(line), fp) == NULL)
 	{
-		return 1;
+		/* File is empty. */
+		return 0;
 	}
 
 	line_num = 1;

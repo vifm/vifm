@@ -23,8 +23,9 @@
 #include <winioctl.h>
 #endif
 
-#include <sys/stat.h> /* statbuf stat() mkdir() */
+#include <sys/stat.h> /* statbuf stat() lstat() mkdir() */
 #include <sys/types.h> /* size_t mode_t */
+#include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
 #include <unistd.h> /* access() */
 
 #include <assert.h> /* assert() */
@@ -41,6 +42,7 @@
 #ifdef _WIN32
 #include "str.h"
 #endif
+#include "string_array.h"
 #include "utils.h"
 
 #include "fs.h"
@@ -339,6 +341,48 @@ get_file_size(const char *path)
 	}
 	CloseHandle(hfile);
 	return 0;
+#endif
+}
+
+char **
+list_regular_files(const char path[], int *len)
+{
+	DIR *dir;
+	char **list = NULL;
+	*len = 0;
+
+	if((dir = opendir(path)) != NULL)
+	{
+		struct dirent *d;
+		while((d = readdir(dir)) != NULL)
+		{
+			char full_path[PATH_MAX];
+			snprintf(full_path, sizeof(full_path), "%s/%s", path, d->d_name);
+
+			if(is_regular_file(full_path))
+			{
+				*len = add_to_string_array(&list, *len, 1, d->d_name);
+			}
+		}
+		closedir(dir);
+	}
+
+	return list;
+}
+
+int
+is_regular_file(const char path[])
+{
+#ifndef _WIN32
+	struct stat s;
+	return lstat(path, &s) == 0 && (s.st_mode & S_IFMT) == S_IFREG;
+#else
+	const DWORD attrs = GetFileAttributesA(path);
+	if(attrs == INVALID_FILE_ATTRIBUTES)
+	{
+		return 0;
+	}
+	return (attrs & FILE_ATTRIBUTE_DIRECTORY) == 0UL;
 #endif
 }
 

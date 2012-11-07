@@ -81,9 +81,12 @@ extern char *LIGHT_COLOR_NAMES[8];
 void load_color_scheme_colors(void);
 void load_def_scheme(void);
 int check_directory_for_color_scheme(int left, const char *dir);
-/* Returns value lower than zero when nothing is found */
-int find_color_scheme(const char *name);
-void complete_colorschemes(const char *name);
+/* Lists names of all color schemes.  Allocates an array of strings, which
+ * should be freed by the caller.  Always sets *len.  Returns NULL on error. */
+char ** list_color_schemes(int *len);
+/* Returns non-zero if colorscheme named name exists. */
+int color_scheme_exists(const char name[]);
+void complete_colorschemes(const char name[]);
 const char * attrs_to_str(int attrs);
 void check_color_scheme(col_scheme_t *cs);
 void assoc_dir(const char *name, const char *dir);

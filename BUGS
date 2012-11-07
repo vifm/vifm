@@ -3,7 +3,15 @@ Strange piece of escape sequence 37m (maybe fixed).
 Selection isn't cleared on keys in normal mode.
 
 vifm freezes sometimes on Windows (maybe fixed).
+New data, only on :copy! _directory (ies)_ to network drive, one needs to
+press anykey N times, where N is number of files inside folder.
 
 Case insensitive rename can not be undone on Windows.
 
 Files with names containing Unicode characters are not always processed correctly.
+
+:sync puts cursor of the other pane on a wrong file.
+
+Exploring doesn't display very long lines correctly when 'wrap' is off, need
+to make read_file_lines() (of string_array.c) read lines of unlimited length.
+See also capture_output_to_menu() (of menus.c).  So we need a readline() function.
