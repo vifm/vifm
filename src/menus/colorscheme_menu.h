@@ -22,7 +22,8 @@
 
 #include "../ui.h"
 
-void show_colorschemes_menu(FileView *view);
+/* Returns non-zero if status bar message should be saved. */
+int show_colorschemes_menu(FileView *view);
 
 #endif
 

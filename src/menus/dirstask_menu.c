@@ -29,31 +29,17 @@
 int
 show_dirstack_menu(FileView *view)
 {
-	int i;
-
 	static menu_info m;
-	init_menu_info(&m, DIRSTACK);
+	/* Directory stack always contains at least one item (current directories). */
+	init_menu_info(&m, DIRSTACK, NULL);
 	m.title = strdup(" Directory Stack ");
 
 	m.items = dir_stack_list();
 
-	i = -1;
-	while(m.items[++i] != NULL);
-	if(i != 0)
-	{
-		m.len = i;
-	}
-	else
-	{
-		m.items[0] = strdup("Directory stack is empty");
-		m.len = 1;
-	}
+	m.len = -1;
+	while(m.items[++m.len] != NULL);
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
-	return 0;
+	return display_menu(&m, view);
 }
 
 void

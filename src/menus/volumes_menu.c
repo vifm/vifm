@@ -17,9 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifdef _WIN32
 #include <windows.h>
-#endif
 
 #include <stdio.h> /* snprintf() */
 #include <string.h> /* strdup() */
@@ -33,7 +31,7 @@
 
 #include "volumes_menu.h"
 
-void
+int
 show_volumes_menu(FileView *view)
 {
 	TCHAR c;
@@ -41,7 +39,7 @@ show_volumes_menu(FileView *view)
 	TCHAR file_buf[MAX_PATH];
 
 	static menu_info m;
-	init_menu_info(&m, VOLUMES);
+	init_menu_info(&m, VOLUMES, strdup("No volumes mounted"));
 	m.title = strdup(" Mounted Volumes ");
 
 	for(c = TEXT('a'); c < TEXT('z'); c++)
@@ -60,10 +58,7 @@ show_volumes_menu(FileView *view)
 		}
 	}
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(0, &m);
-	enter_menu_mode(&m, view);
+	return display_menu(&m, view);
 }
 
 void

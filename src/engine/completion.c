@@ -16,8 +16,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <assert.h>
-#include <stdlib.h>
+#include <assert.h> /* assert() */
+#include <stdlib.h> /* qsort() */
 #include <string.h>
 
 #include "../utils/macros.h"

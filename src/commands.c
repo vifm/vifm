@@ -1359,7 +1359,10 @@ goto_cmd(const cmd_info_t *cmd_info)
 static int
 emark_cmd(const cmd_info_t *cmd_info)
 {
+	/* TODO: Refactor this function emark_cmd(), see usercmd_cmd() */
+
 	int i;
+	int save_msg = 0;
 	char *com = (char *)cmd_info->args;
 	char buf[COMMAND_GROUP_INFO_LEN];
 	MacroFlags flags;
@@ -1382,7 +1385,8 @@ emark_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(flags == MACRO_MENU_OUTPUT || flags == MACRO_MENU_NAV_OUTPUT)
 	{
-		show_user_menu(curr_view, com, flags == MACRO_MENU_NAV_OUTPUT);
+		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
+		save_msg = show_user_menu(curr_view, com, navigate) != 0;
 	}
 	else if(flags == MACRO_SPLIT)
 	{
@@ -1422,7 +1426,7 @@ emark_cmd(const cmd_info_t *cmd_info)
 	add_operation(OP_USR, strdup(com + i), NULL, "", "");
 	cmd_group_end();
 
-	return 0;
+	return save_msg;
 }
 
 static int
@@ -1459,8 +1463,7 @@ apropos_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	show_apropos_menu(curr_view, last_args);
-	return 0;
+	return show_apropos_menu(curr_view, last_args) != 0;
 }
 
 static int
@@ -1661,11 +1664,10 @@ colorscheme_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(cmd_info->argc == 0)
 	{
-		/* show menu with colorschemes listed */
-		show_colorschemes_menu(curr_view);
-		return 0;
+		/* Show menu with colorschemes listed. */
+		return show_colorschemes_menu(curr_view) != 0;
 	}
-	else if(find_color_scheme(cmd_info->argv[0]))
+	else if(color_scheme_exists(cmd_info->argv[0]))
 	{
 		if(cmd_info->argc == 2)
 		{
@@ -1797,8 +1799,11 @@ delmarks_cmd(const cmd_info_t *cmd_info)
 		const char *p = valid_bookmarks;
 		while(*p != '\0')
 		{
-			int index = mark2index(*p++);
-			remove_bookmark(index);
+			const int index = mark2index(*p++);
+			if(!is_bookmark_empty(index))
+			{
+				remove_bookmark(index);
+			}
 		}
 		return 0;
 	}
@@ -2675,7 +2680,7 @@ marks_cmd(const cmd_info_t *cmd_info)
 			p++;
 		}
 	}
-	return show_bookmarks_menu(curr_view, buf);
+	return show_bookmarks_menu(curr_view, buf) != 0;
 }
 
 static int
@@ -3365,10 +3370,11 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 
 	if(cmd_info->argc <= 1)
 	{
+		int save_msg;
 		keys = substitute_specs(cmd_info->args);
-		show_map_menu(curr_view, map_type, list_cmds(mode), keys);
+		save_msg = show_map_menu(curr_view, map_type, list_cmds(mode), keys);
 		free(keys);
-		return 0;
+		return save_msg != 0;
 	}
 
 	raw_rhs = skip_non_whitespace(cmd_info->args);
@@ -3394,8 +3400,7 @@ do_map(const cmd_info_t *cmd_info, const char map_type[], int mode,
 static int
 volumes_cmd(const cmd_info_t *cmd_info)
 {
-	show_volumes_menu(curr_view);
-	return 0;
+	return show_volumes_menu(curr_view) != 0;
 }
 #endif
 
@@ -3616,13 +3621,14 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 static int
 usercmd_cmd(const cmd_info_t *cmd_info)
 {
-	/* TODO: Refactor this function usercmd_cmd() */
+	/* TODO: Refactor this function usercmd_cmd(), see emark_cmd() */
 
 	char *expanded_com = NULL;
 	MacroFlags flags;
 	size_t len;
 	int external = 1;
 	int bg;
+	int save_msg = 0;
 
 	/* Expand macros in a binded command. */
 	expanded_com = expand_macros(curr_view, cmd_info->cmd, cmd_info->args,
@@ -3657,7 +3663,8 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	}
 	else if(flags == MACRO_MENU_OUTPUT || flags == MACRO_MENU_NAV_OUTPUT)
 	{
-		show_user_menu(curr_view, expanded_com, flags == MACRO_MENU_NAV_OUTPUT);
+		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
+		save_msg = show_user_menu(curr_view, expanded_com, navigate) != 0;
 	}
 	else if(flags == MACRO_SPLIT)
 	{
@@ -3723,7 +3730,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 
 	free(expanded_com);
 
-	return 0;
+	return save_msg;
 }
 
 static void

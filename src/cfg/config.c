@@ -41,6 +41,7 @@
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
+#include "../utils/macros.h"
 #include "../utils/str.h"
 #include "../utils/path.h"
 #include "../utils/string_array.h"
@@ -533,6 +534,7 @@ source_file(const char filename[])
 	return result;
 }
 
+/* Returns non-zero on error. */
 static int
 source_file_internal(FILE *fp, const char filename[])
 {
@@ -541,7 +543,8 @@ source_file_internal(FILE *fp, const char filename[])
 
 	if(fgets(line, sizeof(line), fp) == NULL)
 	{
-		return 1;
+		/* File is empty. */
+		return 0;
 	}
 
 	line_num = 1;
@@ -660,7 +663,7 @@ void
 resize_history(size_t new_len)
 {
 	int delta;
-	const int old_len = cfg.history_len;
+	const int old_len = MAX(cfg.history_len, 0);
 
 	if(new_len == 0)
 	{
@@ -670,6 +673,15 @@ resize_history(size_t new_len)
 		cfg.cmd_history_num = -1;
 		cfg.prompt_history_num = -1;
 		cfg.search_history_num = -1;
+
+		free_string_array(cfg.cmd_history, cfg.history_len);
+		cfg.cmd_history = NULL;
+		free_string_array(cfg.prompt_history, cfg.history_len);
+		cfg.prompt_history = NULL;
+		free_string_array(cfg.search_history, cfg.history_len);
+		cfg.search_history = NULL;
+
+		cfg.history_len = 0;
 		return;
 	}
 
@@ -680,9 +692,10 @@ resize_history(size_t new_len)
 	}
 
 	delta = (int)new_len - old_len;
-	if(delta < 0 && old_len > 0)
+	if(delta < 0 && old_len != 0)
 	{
 		const size_t abs_delta = -delta;
+
 		free_strings(cfg.cmd_history + new_len, abs_delta);
 		free_strings(cfg.prompt_history + new_len, abs_delta);
 		free_strings(cfg.search_history + new_len, abs_delta);

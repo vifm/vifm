@@ -22,9 +22,13 @@
 
 #include "../ui.h"
 
+/* Returns non-zero if status bar message should be saved. */
 int show_cmdhistory_menu(FileView *view);
+/* Returns non-zero if status bar message should be saved. */
 int show_prompthistory_menu(FileView *view);
+/* Returns non-zero if status bar message should be saved. */
 int show_fsearchhistory_menu(FileView *view);
+/* Returns non-zero if status bar message should be saved. */
 int show_bsearchhistory_menu(FileView *view);
 
 #endif

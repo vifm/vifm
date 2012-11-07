@@ -30,20 +30,14 @@
 
 #include "dirhistory_menu.h"
 
-/* Returns new value for save_msg flag */
 int
 show_history_menu(FileView *view)
 {
 	int i;
 	static menu_info m;
 
-	if(view->history_num <= 0)
-	{
-		status_bar_message("History is disabled or empty");
-		return 1;
-	}
+	init_menu_info(&m, DIRHISTORY, strdup("History disabled or empty"));
 
-	init_menu_info(&m, DIRHISTORY);
 	m.title = strdup(" Directory History ");
 
 	for(i = 0; i < view->history_num && i < cfg.history_len; i++)
@@ -79,12 +73,7 @@ show_history_menu(FileView *view)
 	}
 	m.pos = m.len - 1 - m.pos;
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
-
-	return 0;
+	return display_menu(&m, view);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

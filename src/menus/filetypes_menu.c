@@ -49,14 +49,8 @@ show_filetypes_menu(FileView *view, int background)
 	assoc_records_t ft = get_all_programs_for_file(filename);
 	assoc_records_t magic = get_magic_handlers(filename);
 
-	if(ft.count == 0 && magic.count == 0)
-	{
-		show_error_msg("Filetype is not set.",
-				"No programs set for this filetype.");
-		return 0;
-	}
+	init_menu_info(&m, FILETYPE, strdup("No programs set for this filetype"));
 
-	init_menu_info(&m, FILETYPE);
 	m.title = strdup(" Filetype associated commands ");
 	m.extra_data = (background ? 1 : 0);
 
@@ -90,12 +84,7 @@ show_filetypes_menu(FileView *view, int background)
 				form_filetype_menu_entry(magic.list[i], max_len));
 	}
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
-
-	return 0;
+	return display_menu(&m, view);
 }
 
 /* Returns pointer to a statically allocated buffer */

@@ -41,16 +41,10 @@ show_bookmarks_menu(FileView *view, const char marks[])
 	int max_len;
 
 	static menu_info m;
-	init_menu_info(&m, BOOKMARK);
+	init_menu_info(&m, BOOKMARK, strdup("No bookmarks set"));
 	m.key_handler = bookmark_khandler;
 
 	m.len = init_active_bookmarks(marks);
-	if(m.len == 0)
-	{
-		show_error_msg("No bookmarks set", "No bookmarks are set.");
-		return 0;
-	}
-
 	m.title = strdup(" Mark -- Directory -- File ");
 
 	max_len = 0;
@@ -103,11 +97,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 	}
 	m.len = i;
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
-	return 0;
+	return display_menu(&m, view);
 }
 
 static int

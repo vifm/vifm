@@ -22,6 +22,7 @@
 
 #include "../ui.h"
 
+/* Returns non-zero if status bar message should be saved. */
 int show_register_menu(FileView *view, const char registers[]);
 
 #endif

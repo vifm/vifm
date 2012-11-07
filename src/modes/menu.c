@@ -21,7 +21,7 @@
 
 #include <curses.h>
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h>
 #include <string.h>
 
@@ -270,6 +270,8 @@ enter_menu_mode(menu_info *m, FileView *active_view)
 {
 	if(curr_stats.load_stage < 2)
 		return;
+
+	assert(m->len > 0 && "Menu cannot be empty.");
 
 	werase(status_bar);
 

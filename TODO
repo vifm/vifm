@@ -26,6 +26,7 @@ Basic things that need to be done.
     Better remove confirmetion messages (should contain list of files).
     Better failed operation messages (list of errors, not just one first error).
     Check for X11 libraries dynamically.
+    Fix gU, gu and ignore case name sort on filenames with non-latin characters.
 
 Documentation.
     Better documentation.

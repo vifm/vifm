@@ -17,63 +17,50 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <dirent.h> /* DIR dirent opendir() readdir() closedir() */
-
 #include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() */
+#include <stdlib.h> /* free() qsort() */
 #include <string.h> /* strdup() strcmp() */
 
 #include "../cfg/config.h"
 #include "../modes/menu.h"
 #include "../utils/fs_limits.h"
+#include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "menus.h"
 
 #include "colorscheme_menu.h"
 
-void
+static int sorter(const void *first, const void *second);
+
+int
 show_colorschemes_menu(FileView *view)
 {
-	DIR *dir;
-	struct dirent *d;
-	char colors_dir[PATH_MAX];
-
 	static menu_info m;
-	init_menu_info(&m, COLORSCHEME);
+	init_menu_info(&m, COLORSCHEME, strdup("No color schemes found"));
 	m.title = strdup(" Choose the default Color Scheme ");
 
-	snprintf(colors_dir, sizeof(colors_dir), "%s/colors", cfg.config_dir);
+	m.items = list_color_schemes(&m.len);
 
-	dir = opendir(colors_dir);
-	if(dir == NULL)
-	{
-		free(m.title);
-		return;
-	}
-
-	while((d = readdir(dir)) != NULL)
-	{
+	/* It's safe to set m.pos to negative value, since menus.c handles this
+	 * correctly. */
 #ifndef _WIN32
-		if(d->d_type != DT_REG && d->d_type != DT_LNK)
-			continue;
+	m.pos = string_array_pos(m.items, m.len, cfg.cs.name);
+#else
+	m.pos = string_array_pos_case(m.items, m.len, cfg.cs.name);
 #endif
 
-		if(d->d_name[0] == '.')
-			continue;
+	qsort(m.items, m.len, sizeof(*m.items), &sorter);
 
-		m.len = add_to_string_array(&m.items, m.len, 1, d->d_name);
-		if(strcmp(d->d_name, cfg.cs.name) == 0)
-		{
-			m.current = m.len;
-			m.pos = m.len - 1;
-		}
-	}
-	closedir(dir);
+	return display_menu(&m, view);
+}
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
+/* Sorting function for qsort(). */
+static int
+sorter(const void *first, const void *second)
+{
+	const char *stra = *(const char **)first;
+	const char *strb = *(const char **)second;
+	return stroscmp(stra, strb);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

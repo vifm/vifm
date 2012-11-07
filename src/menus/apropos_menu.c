@@ -21,35 +21,27 @@
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strdup() strchr() strlen() */
 
+#include "../utils/str.h"
 #include "../running.h"
 #include "../status.h"
 #include "menus.h"
 
 #include "apropos_menu.h"
 
-void
-show_apropos_menu(FileView *view, char args[])
+int
+show_apropos_menu(FileView *view, const char args[])
 {
 	char cmd_buf[256];
-	int were_errors;
-	size_t title_len;
 
 	static menu_info m;
-	init_menu_info(&m, APROPOS);
+	init_menu_info(&m, APROPOS, format_str("No matches for \'%s\'", m.title));
 	m.args = strdup(args);
-
-	title_len = 9 + strlen(args) + 1 + 1;
-	m.title = malloc(title_len);
-	snprintf(m.title, title_len, " Apropos %s ", args);
+	m.title = format_str(" Apropos %s ", args);
 
 	status_bar_message("apropos...");
 
 	snprintf(cmd_buf, sizeof(cmd_buf), "apropos %s", args);
-	were_errors = capture_output_to_menu(view, cmd_buf, &m);
-	if(!were_errors && m.len < 1)
-	{
-		show_error_msgf("Nothing Appropriate", "No matches for \'%s\'", m.title);
-	}
+	return capture_output_to_menu(view, cmd_buf, &m);
 }
 
 void

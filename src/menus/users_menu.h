@@ -22,7 +22,8 @@
 
 #include "../ui.h"
 
-void show_user_menu(FileView *view, const char command[], int navigate);
+/* Returns non-zero if status bar message should be saved. */
+int show_user_menu(FileView *view, const char command[], int navigate);
 
 #endif
 

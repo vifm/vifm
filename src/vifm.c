@@ -388,8 +388,10 @@ main(int argc, char *argv[])
 				exit(0);
 			}
 		}
-		if(find_color_scheme(curr_stats.color_scheme))
+		if(color_scheme_exists(curr_stats.color_scheme))
+		{
 			load_color_scheme(curr_stats.color_scheme);
+		}
 		load_color_scheme_colors();
 		exec_config();
 	}

@@ -74,31 +74,36 @@ typedef struct menu_info
 	char *regexp;
 	char *title;
 	char *args;
-	/* contains titles of all menu items */
+	/* Contains titles of all menu items. */
 	char **items;
-	/* contains additional data, associated with each of menu items, can be
-	 * NULL */
+	/* Contains additional data, associated with each of menu items, can be
+	 * NULL. */
 	char **data;
-	/* should return value > 0 to request menu window refresh and < 0 on invalid
-	 * key */
+	/* Should return value > 0 to request menu window refresh and < 0 on invalid
+	 * key. */
 	int (*key_handler)(struct menu_info *m, wchar_t *keys);
-	int extra_data; /* for filetype background and mime flags */
+	int extra_data; /* For filetype background and mime flags. */
 	int (*execute_handler)(FileView *view, struct menu_info *m);
+	/* Text displayed by display_menu() function in case menu is empty, it can be
+	 * NULL if this cannot happen and will be freed by reset_popup_menu(). */
+	char *empty_msg;
 }menu_info;
 
-/* Fills fields of menu_info structure with some safe values. */
-void init_menu_info(menu_info *m, int menu_type);
+/* Fills fields of menu_info structure with some safe values.  empty_msg is
+ * text displayed by display_menu() function in case menu is empty, it can be
+ * NULL if this cannot happen and will be freed by reset_popup_menu(). */
+void init_menu_info(menu_info *m, int menu_type, char empty_msg[]);
 void reset_popup_menu(menu_info *m);
 void setup_menu(void);
 /* Shows error message to a user. */
 void show_error_msg(const char title[], const char message[]);
 /* Same as show_error_msg(...), but with format. */
 void show_error_msgf(const char title[], const char format[], ...);
-/* Same as show_error_msg(...), but asks about future errors.  Returns not zero
- * when user asked to skip error messages that left. */
+/* Same as show_error_msg(...), but asks about future errors.  Returns non-zero
+ * when user asks to skip error messages that left. */
 int prompt_error_msg(const char title[], const char message[]);
-/* Same as show_error_msgf(...), but asks about future errors.  Returns not zero
- * when user asked to skip error messages that left. */
+/* Same as show_error_msgf(...), but asks about future errors.  Returns non-zero
+ * when user asks to skip error messages that left. */
 int prompt_error_msgf(const char title[], const char format[], ...);
 int query_user_menu(char *title, char *message);
 /* Redraws currently visible error message on the screen. */
@@ -107,13 +112,17 @@ void clean_menu_position(menu_info *m);
 void move_to_menu_pos(int pos, menu_info *m);
 void redraw_menu(menu_info *m);
 void draw_menu(menu_info *m);
-/* Returns zero if menu mode should be leaved */
+/* Returns zero if menu mode should be leaved. */
 int execute_menu_cb(FileView *view, menu_info *m);
-int print_errors(FILE *ef);
+/* Closes ef. */
+void print_errors(FILE *ef);
 
-/* Runs external command and puts its output to the m menu.  Returns non-zero
- * on errors and calls reset_popup_menu() in such case. */
+/* Runs external command and puts its output to the m menu.  Returns non-zero if
+ * status bar message should be saved. */
 int capture_output_to_menu(FileView *view, const char cmd[], menu_info *m);
+/* Prepares menu, draws it and switches to the menu mode.  Returns non-zero if
+ * status bar message should be saved. */
+int display_menu(menu_info *m, FileView *view);
 
 #endif
 

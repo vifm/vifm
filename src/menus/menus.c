@@ -30,7 +30,7 @@
 
 #include <assert.h>
 #include <ctype.h> /* isspace() */
-#include <string.h> /* strchr() */
+#include <string.h> /* strdup() strchr() */
 #include <stdarg.h>
 #include <signal.h>
 
@@ -230,7 +230,7 @@ prompt_error_msg_internal(const char title[], const char message[],
 }
 
 void
-init_menu_info(menu_info *m, int menu_type)
+init_menu_info(menu_info *m, int menu_type, char empty_msg[])
 {
 	m->top = 0;
 	m->current = 1;
@@ -250,6 +250,7 @@ init_menu_info(menu_info *m, int menu_type)
 	m->key_handler = NULL;
 	m->extra_data = 0;
 	m->execute_handler = NULL;
+	m->empty_msg = empty_msg;
 }
 
 void
@@ -266,6 +267,7 @@ reset_popup_menu(menu_info *m)
 	free(m->regexp);
 	free(m->matches);
 	free(m->title);
+	free(m->empty_msg);
 
 	werase(menu_win);
 }
@@ -675,7 +677,6 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 	FILE *file, *err;
 	char buf[4096];
 	int x;
-	int were_errors;
 
 	if(background_and_capture((char *)cmd, &file, &err) != 0)
 	{
@@ -724,19 +725,28 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 	m->len = x;
 	curr_stats.search = 0;
 
-	were_errors = print_errors(err);
+	print_errors(err);
 
+	return display_menu(m, view);
+}
+
+int
+display_menu(menu_info *m, FileView *view)
+{
 	if(m->len < 1)
 	{
+		status_bar_message(m->empty_msg);
 		reset_popup_menu(m);
-		return were_errors;
+		return 1;
 	}
-
-	setup_menu();
-	draw_menu(m);
-	move_to_menu_pos(m->pos, m);
-	enter_menu_mode(m, view);
-	return 0;
+	else
+	{
+		setup_menu();
+		draw_menu(m);
+		move_to_menu_pos(m->pos, m);
+		enter_menu_mode(m, view);
+		return 0;
+	}
 }
 
 int
@@ -879,21 +889,18 @@ redraw_error_msg(const char title_arg[], const char message_arg[],
 	mvwaddstr(error_win, y - 2, (x - strlen(text))/2, text);
 }
 
-/* Returns non-zero if there were errors, closes ef */
-int
+void
 print_errors(FILE *ef)
 {
 	char linebuf[160];
 	char buf[sizeof(linebuf)*5];
-	int error = 0;
 
 	if(ef == NULL)
-		return 0;
+		return;
 
 	buf[0] = '\0';
 	while(fgets(linebuf, sizeof(linebuf), ef) == linebuf)
 	{
-		error = 1;
 		if(linebuf[0] == '\n')
 			continue;
 		if(strlen(buf) + strlen(linebuf) + 1 >= sizeof(buf))
@@ -910,7 +917,6 @@ print_errors(FILE *ef)
 		show_error_msg("Background Process Error", buf);
 
 	fclose(ef);
-	return error;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

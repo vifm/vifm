@@ -1453,11 +1453,11 @@ redraw_lists(void)
 }
 
 int
-load_color_scheme(const char *name)
+load_color_scheme(const char name[])
 {
 	char full[PATH_MAX];
 
-	if(!find_color_scheme(name))
+	if(!color_scheme_exists(name))
 	{
 		show_error_msgf("Color Scheme", "Invalid color scheme name: \"%s\"", name);
 		return 0;
@@ -1468,16 +1468,17 @@ load_color_scheme(const char *name)
 	cfg.cs.defaulted = 0;
 
 	snprintf(full, sizeof(full), "%s/colors/%s", cfg.config_dir, name);
-	(void)source_file(full);
+	if(source_file(full) != 0)
+	{
+		show_error_msgf("Color Scheme", "Can't load colorscheme: \"%s\"", name);
+		return 0;
+	}
 	strcpy(cfg.cs.name, name);
 	check_color_scheme(&cfg.cs);
 
 	update_attributes();
 
-	if(curr_stats.load_stage < 2)
-		return 0;
-
-	if(cfg.cs.defaulted)
+	if(curr_stats.load_stage >= 2 && cfg.cs.defaulted)
 	{
 		load_color_scheme_colors();
 		show_error_msg("Color Scheme Error", "Not supported by the terminal");

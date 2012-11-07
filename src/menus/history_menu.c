@@ -59,6 +59,7 @@ show_bsearchhistory_menu(FileView *view)
 			cfg.search_history, " Search History ");
 }
 
+/* Returns non-zero if status bar message should be saved. */
 static int
 show_history(FileView *view, int type, int len, char *hist[],
 		const char title[])
@@ -66,13 +67,7 @@ show_history(FileView *view, int type, int len, char *hist[],
 	int i;
 	static menu_info m;
 
-	if(len <= 0)
-	{
-		status_bar_message("History is disabled or empty");
-		return 1;
-	}
-
-	init_menu_info(&m, type);
+	init_menu_info(&m, type, strdup("History disabled or empty"));
 	m.title = strdup(title);
 
 	for(i = 0; i < len; i++)
@@ -80,11 +75,7 @@ show_history(FileView *view, int type, int len, char *hist[],
 		m.len = add_to_string_array(&m.items, m.len, 1, hist[i]);
 	}
 
-	setup_menu();
-	draw_menu(&m);
-	move_to_menu_pos(m.pos, &m);
-	enter_menu_mode(&m, view);
-	return 0;
+	return display_menu(&m, view);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

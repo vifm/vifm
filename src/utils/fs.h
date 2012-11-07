@@ -45,6 +45,13 @@ int directory_accessible(const char *path);
 int is_dir_writable(const char *path);
 /* Gets correct file size independently of platform. */
 uint64_t get_file_size(const char *path);
+/* Lists all regular files inside the path directory.  Allocates an array of
+ * strings, which should be freed by the caller.  Always sets *len.  Returns
+ * NULL on error. */
+char ** list_regular_files(const char path[], int *len);
+/* Returns non-zero if file (or symbolic link target) path points to is a
+ * regular file. */
+int is_regular_file(const char path[]);
 
 #ifdef _WIN32
 
