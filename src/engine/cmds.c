@@ -77,33 +77,34 @@ typedef struct
 static inner_t *inner;
 static cmds_conf_t *cmds_conf;
 
-static const char * parse_limit(const char *cmd, cmd_info_t *cmd_info);
-static const char * correct_limit(const char *cmd, cmd_info_t *cmd_info);
-static int udf_is_ambiguous(const char *name);
-static const char * parse_tail(cmd_t *cur, const char *cmd,
+static const char * parse_limit(const char cmd[], cmd_info_t *cmd_info);
+static const char * correct_limit(const char cmd[], cmd_info_t *cmd_info);
+static int udf_is_ambiguous(const char name[]);
+static const char * parse_tail(cmd_t *cur, const char cmd[],
 		cmd_info_t *cmd_info);
-static const char *get_cmd_name(const char *cmd, char *buf, size_t buf_len);
+static const char *get_cmd_name(const char cmd[], char buf[], size_t buf_len);
 static void init_cmd_info(cmd_info_t *cmd_info);
 static const char * skip_prefix_commands(const char cmd[]);
-static cmd_t * find_cmd(const char *name);
+static cmd_t * find_cmd(const char name[]);
 static const char * parse_range(const char cmd[], cmd_info_t *cmd_info);
-static int complete_cmd_args(cmd_t *cur, const char *args,
+static int complete_cmd_args(cmd_t *cur, const char args[],
 		cmd_info_t *cmd_info);
-static void complete_cmd_name(const char *cmd_name, int user_only);
+static void complete_cmd_name(const char cmd_name[], int user_only);
 TSTATIC int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
 static int comclear_cmd(const cmd_info_t *cmd_info);
 static int command_cmd(const cmd_info_t *cmd_info);
-static const char * get_user_cmd_name(const char *cmd, char *buf,
+static const char * get_user_cmd_name(const char cmd[], char buf[],
 		size_t buf_len);
-static int is_correct_name(const char *name);
+static int is_correct_name(const char name[]);
 static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
 		int regexp, int quotes, int *last_arg, int *last_begin, int *last_end);
-static int get_args_count(const char *cmdstr, char sep, int regexp, int quotes);
-static void unescape(char *s, int regexp);
+static int get_args_count(const char cmdstr[], char sep, int regexp,
+		int quotes);
+static void unescape(char s[], int regexp);
 static void replace_double_squotes(char s[]);
-static void replace_esc(char *s);
+static void replace_esc(char s[]);
 
 void
 init_cmds(int udf, cmds_conf_t *conf)
@@ -168,7 +169,7 @@ reset_cmds(void)
 }
 
 int
-execute_cmd(const char *cmd)
+execute_cmd(const char cmd[])
 {
 	cmd_info_t cmd_info;
 	char cmd_name[256];
@@ -307,7 +308,7 @@ execute_cmd(const char *cmd)
 }
 
 static const char *
-parse_limit(const char *cmd, cmd_info_t *cmd_info)
+parse_limit(const char cmd[], cmd_info_t *cmd_info)
 {
 	if(cmd[0] == '%')
 	{
@@ -366,7 +367,7 @@ parse_limit(const char *cmd, cmd_info_t *cmd_info)
 }
 
 static const char *
-correct_limit(const char *cmd, cmd_info_t *cmd_info)
+correct_limit(const char cmd[], cmd_info_t *cmd_info)
 {
 	while(*cmd == '+' || *cmd == '-')
 	{
@@ -393,7 +394,7 @@ correct_limit(const char *cmd, cmd_info_t *cmd_info)
 }
 
 static int
-udf_is_ambiguous(const char *name)
+udf_is_ambiguous(const char name[])
 {
 	size_t len;
 	int count;
@@ -429,7 +430,7 @@ udf_is_ambiguous(const char *name)
 }
 
 static const char *
-parse_tail(cmd_t *cur, const char *cmd, cmd_info_t *cmd_info)
+parse_tail(cmd_t *cur, const char cmd[], cmd_info_t *cmd_info)
 {
 	if(*cmd == '!' && (!cur->cust_sep || cur->emark))
 	{
@@ -453,7 +454,7 @@ parse_tail(cmd_t *cur, const char *cmd, cmd_info_t *cmd_info)
 }
 
 int
-get_cmd_id(const char *cmd)
+get_cmd_id(const char cmd[])
 {
 	cmd_info_t info;
 	return get_cmd_info(cmd, &info);
@@ -477,7 +478,7 @@ init_cmd_info(cmd_info_t *cmd_info)
 
 /* Returns command id */
 int
-get_cmd_info(const char *cmd, cmd_info_t *info)
+get_cmd_info(const char cmd[], cmd_info_t *info)
 {
 	cmd_info_t cmd_info;
 	char cmd_name[256];
@@ -589,7 +590,7 @@ skip_prefix_commands(const char cmd[])
 }
 
 static cmd_t *
-find_cmd(const char *name)
+find_cmd(const char name[])
 {
 	cmd_t *cmd;
 
@@ -644,7 +645,7 @@ parse_range(const char cmd[], cmd_info_t *cmd_info)
 }
 
 static const char *
-get_cmd_name(const char *cmd, char *buf, size_t buf_len)
+get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 {
 	const char *t;
 	size_t len;
@@ -688,7 +689,7 @@ get_cmd_name(const char *cmd, char *buf, size_t buf_len)
 
 /* Returns offset at which completion was done. */
 static int
-complete_cmd_args(cmd_t *cur, const char *args, cmd_info_t *cmd_info)
+complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info)
 {
 	const char *tmp_args = args;
 	int result = 0;
@@ -724,7 +725,7 @@ complete_cmd_args(cmd_t *cur, const char *args, cmd_info_t *cmd_info)
 }
 
 static void
-complete_cmd_name(const char *cmd_name, int user_only)
+complete_cmd_name(const char cmd_name[], int user_only)
 {
 	cmd_t *cur;
 	size_t len;
@@ -931,7 +932,7 @@ command_cmd(const cmd_info_t *cmd_info)
 }
 
 static const char *
-get_user_cmd_name(const char *cmd, char *buf, size_t buf_len)
+get_user_cmd_name(const char cmd[], char buf[], size_t buf_len)
 {
 	const char *t;
 	size_t len;
@@ -945,7 +946,7 @@ get_user_cmd_name(const char *cmd, char *buf, size_t buf_len)
 }
 
 static int
-is_correct_name(const char *name)
+is_correct_name(const char name[])
 {
 	if(strcmp(name, "!") == 0)
 		return 0;
@@ -1138,7 +1139,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 		}
 		if(state == ARG || state == QARG)
 		{
-			char c = cmdstr[i];
+			const char c = cmdstr[i];
 			/* found another argument */
 			cmdstr[i] = '\0';
 			if(last_end != NULL)
@@ -1170,7 +1171,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 }
 
 static int
-get_args_count(const char *cmdstr, char sep, int regexp, int quotes)
+get_args_count(const char cmdstr[], char sep, int regexp, int quotes)
 {
 	int i, state;
 	int arg_count = 0;
@@ -1255,7 +1256,7 @@ get_args_count(const char *cmdstr, char sep, int regexp, int quotes)
 }
 
 static void
-unescape(char *s, int regexp)
+unescape(char s[], int regexp)
 {
 	char *p;
 
@@ -1294,7 +1295,7 @@ replace_double_squotes(char s[])
 }
 
 static void
-replace_esc(char *s)
+replace_esc(char s[])
 {
 	static const char table[] =
 						/* 00  01  02  03  04  05  06  07  08  09  0a  0b  0c  0d  0e  0f */
@@ -1366,7 +1367,7 @@ list_udf(void)
 }
 
 char *
-list_udf_content(const char *beginning)
+list_udf_content(const char beginning[])
 {
 	size_t len;
 	cmd_t *cur;

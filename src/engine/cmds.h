@@ -94,18 +94,18 @@ typedef struct
 	int current;
 	int end;
 
-	int (*complete_args)(int id, const char *args, int argc, char **argv,
+	int (*complete_args)(int id, const char args[], int argc, char *argv[],
 			int arg_pos);
 	int (*swap_range)(void);
 	int (*resolve_mark)(char mark); /* should return value < 0 on error */
 	/* should allocate memory */
-	char *(*expand_macros)(const char *str, int *usr1, int *usr2);
+	char *(*expand_macros)(const char str[], int *usr1, int *usr2);
 	/* should allocate memory */
-	char *(*expand_envvars)(const char *str);
+	char *(*expand_envvars)(const char str[]);
 	void (*post)(int id); /* called after successful processing command */
 	void (*select_range)(int id, const cmd_info_t *cmd_info);
 	/* should return < 0 to do nothing, x to skip command name and x chars */
-	int (*skip_at_beginning)(int id, const char *args);
+	int (*skip_at_beginning)(int id, const char args[]);
 }cmds_conf_t;
 
 /* cmds_conf_t should be filled before calling this function */
@@ -114,13 +114,13 @@ void init_cmds(int udf, cmds_conf_t *cmds_conf);
 void reset_cmds(void);
 
 /* Returns one of CMDS_ERR_* codes or code returned by command handler. */
-int execute_cmd(const char *cmd);
+int execute_cmd(const char cmd[]);
 
 /* Returns -1 on error and USER_CMD_ID for user defined commands. */
-int get_cmd_id(const char *cmd);
+int get_cmd_id(const char cmd[]);
 
 /* Returns command id */
-int get_cmd_info(const char *cmd, cmd_info_t *info);
+int get_cmd_info(const char cmd[], cmd_info_t *info);
 
 /* Returns offset in cmd, where completion elements should be pasted. */
 int complete_cmd(const char cmd[]);
@@ -133,7 +133,7 @@ char * get_last_argument(const char cmd[], size_t *len);
 /* Last element is followed by a NULL */
 char ** list_udf(void);
 
-char * list_udf_content(const char *beginning);
+char * list_udf_content(const char beginning[]);
 
 TSTATIC_DEFS(
 	int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
