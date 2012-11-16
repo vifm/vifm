@@ -20,7 +20,7 @@
 #include <ctype.h>
 #include <stddef.h> /* size_t */
 #include <stdio.h>
-#include <stdlib.h> /* realloc() */
+#include <stdlib.h> /* calloc() malloc() free() realloc() */
 #include <string.h>
 
 #include "../utils/log.h"
@@ -300,9 +300,7 @@ execute_cmd(const char cmd[])
 
 	free(cmd_info.raw_args);
 	free(cmd_info.args);
-	for(i = 0; i < cmd_info.argc; i++)
-		free(cmd_info.argv[i]);
-	free(cmd_info.argv);
+	free_string_array(cmd_info.argv, cmd_info.argc);
 
 	return execution_code;
 }
