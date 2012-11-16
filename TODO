@@ -31,6 +31,7 @@ Basic things that need to be done.
 Documentation.
     Better documentation.
     Maybe divide vifm.txt in several files (if it becomes too big).
+    Document single and double quotes treating in the command-line mode.
 
 Windows.
     Make :chmod accept arguments.

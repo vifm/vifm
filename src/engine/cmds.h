@@ -113,7 +113,7 @@ void init_cmds(int udf, cmds_conf_t *cmds_conf);
 
 void reset_cmds(void);
 
-/* Returns one of CMDS_ERR_* codes. */
+/* Returns one of CMDS_ERR_* codes or code returned by command handler. */
 int execute_cmd(const char *cmd);
 
 /* Returns -1 on error and USER_CMD_ID for user defined commands. */

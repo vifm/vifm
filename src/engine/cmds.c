@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <stddef.h> /* size_t */
 #include <stdio.h>
 #include <stdlib.h> /* realloc() */
 #include <string.h>
@@ -173,7 +174,7 @@ execute_cmd(const char *cmd)
 	char cmd_name[256];
 	cmd_t *cur;
 	const char *args;
-	int result;
+	int execution_code;
 	int i;
 	int last_end;
 	cmds_conf_t *cc = cmds_conf;
@@ -252,31 +253,31 @@ execute_cmd(const char *cmd)
 	if((cmd_info.begin != NOT_DEF || cmd_info.end != NOT_DEF) &&
 			!cur->range)
 	{
-		result = CMDS_ERR_NO_RANGE_ALLOWED;
+		execution_code = CMDS_ERR_NO_RANGE_ALLOWED;
 	}
 	else if(cmd_info.argc < cur->min_args)
 	{
-		result = CMDS_ERR_TOO_FEW_ARGS;
+		execution_code = CMDS_ERR_TOO_FEW_ARGS;
 	}
 	else if(cmd_info.argc > cur->max_args && cur->max_args != NOT_DEF)
 	{
-		result = CMDS_ERR_TRAILING_CHARS;
+		execution_code = CMDS_ERR_TRAILING_CHARS;
 	}
 	else if(cmd_info.emark && !cur->emark)
 	{
-		result = CMDS_ERR_NO_BANG_ALLOWED;
+		execution_code = CMDS_ERR_NO_BANG_ALLOWED;
 	}
 	else if(cmd_info.qmark && !cur->qmark)
 	{
-		result = CMDS_ERR_NO_QMARK_ALLOWED;
+		execution_code = CMDS_ERR_NO_QMARK_ALLOWED;
 	}
 	else if(cmd_info.qmark && cur->qmark == 1 && *cmd_info.args != '\0')
 	{
-		result = CMDS_ERR_TRAILING_CHARS;
+		execution_code = CMDS_ERR_TRAILING_CHARS;
 	}
 	else if(cur->passed > MAX_CMD_RECURSION)
 	{
-		result = CMDS_ERR_LOOP;
+		execution_code = CMDS_ERR_LOOP;
 	}
 	else
 	{
@@ -285,11 +286,11 @@ execute_cmd(const char *cmd)
 		if(cur->type != BUILTIN_CMD && cur->type != BUILTIN_ABBR)
 		{
 			cmd_info.cmd = cur->cmd;
-			result = inner->user_cmd_handler.handler(&cmd_info);
+			execution_code = inner->user_cmd_handler.handler(&cmd_info);
 		}
 		else
 		{
-			result = cur->handler(&cmd_info);
+			execution_code = cur->handler(&cmd_info);
 		}
 
 		cc->post(cur->id);
@@ -302,7 +303,7 @@ execute_cmd(const char *cmd)
 		free(cmd_info.argv[i]);
 	free(cmd_info.argv);
 
-	return result;
+	return execution_code;
 }
 
 static const char *
@@ -590,16 +591,20 @@ skip_prefix_commands(const char cmd[])
 static cmd_t *
 find_cmd(const char *name)
 {
-	cmd_t *result;
+	cmd_t *cmd;
 
-	result = inner->head.next;
-	while(result != NULL && strcmp(result->name, name) < 0)
-		result = result->next;
+	cmd = inner->head.next;
+	while(cmd != NULL && strcmp(cmd->name, name) < 0)
+	{
+		cmd = cmd->next;
+	}
 
-	if(result != NULL && strncmp(name, result->name, strlen(name)) != 0)
-		result = NULL;
+	if(cmd != NULL && strncmp(name, cmd->name, strlen(name)) != 0)
+	{
+		cmd = NULL;
+	}
 
-	return result;
+	return cmd;
 }
 
 /* Returns NULL on invalid range. */
@@ -681,6 +686,7 @@ get_cmd_name(const char *cmd, char *buf, size_t buf_len)
 	return t;
 }
 
+/* Returns offset at which completion was done. */
 static int
 complete_cmd_args(cmd_t *cur, const char *args, cmd_info_t *cmd_info)
 {
@@ -1167,7 +1173,7 @@ static int
 get_args_count(const char *cmdstr, char sep, int regexp, int quotes)
 {
 	int i, state;
-	int result = 0;
+	int arg_count = 0;
 	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING };
 
 	state = BEGIN;
@@ -1192,7 +1198,7 @@ get_args_count(const char *cmdstr, char sep, int regexp, int quotes)
 			case NO_QUOTING:
 				if(cmdstr[i] == sep)
 				{
-					result++;
+					arg_count++;
 					state = BEGIN;
 				}
 				else if(cmdstr[i] == '\\')
@@ -1210,7 +1216,7 @@ get_args_count(const char *cmdstr, char sep, int regexp, int quotes)
 					}
 					else
 					{
-						result++;
+						arg_count++;
 						state = BEGIN;
 					}
 				}
@@ -1218,7 +1224,7 @@ get_args_count(const char *cmdstr, char sep, int regexp, int quotes)
 			case D_QUOTING:
 				if(cmdstr[i] == '"')
 				{
-					result++;
+					arg_count++;
 					state = BEGIN;
 				}
 				else if(cmdstr[i] == '\\')
@@ -1230,7 +1236,7 @@ get_args_count(const char *cmdstr, char sep, int regexp, int quotes)
 			case R_QUOTING:
 				if(cmdstr[i] == '/')
 				{
-					result++;
+					arg_count++;
 					state = BEGIN;
 				}
 				else if(cmdstr[i] == '\\')
@@ -1241,11 +1247,11 @@ get_args_count(const char *cmdstr, char sep, int regexp, int quotes)
 				break;
 		}
 	if(state == NO_QUOTING)
-		result++;
+		arg_count++;
 	else if(state != BEGIN)
 		return 0; /* error: no closing quote */
 
-	return result;
+	return arg_count;
 }
 
 static void
@@ -1364,15 +1370,15 @@ list_udf_content(const char *beginning)
 {
 	size_t len;
 	cmd_t *cur;
-	char *result;
-	size_t result_len = 0;
+	char *content = NULL;
+	size_t content_len = 0;
 
 	cur = inner->head.next;
 	len = strlen(beginning);
-	result = NULL;
 	while(cur != NULL)
 	{
 		void *ptr;
+		size_t new_size;
 
 		if(strncmp(cur->name, beginning, len) != 0 || cur->type != USER_CMD)
 		{
@@ -1380,23 +1386,23 @@ list_udf_content(const char *beginning)
 			continue;
 		}
 
-		if(result == NULL)
+		if(content == NULL)
 		{
-			result = strdup("Command -- Action");
-			result_len = strlen(result);
+			content = strdup("Command -- Action");
+			content_len = strlen(content);
 		}
-		ptr = realloc(result,
-				result_len + 1 + strlen(cur->name) + 10 + strlen(cur->cmd) + 1);
+		new_size = content_len + 1 + strlen(cur->name) + 10 + strlen(cur->cmd) + 1;
+		ptr = realloc(content, new_size);
 		if(ptr != NULL)
 		{
-			result = ptr;
-			result_len += sprintf(result + result_len, "\n%-*s %s", 10, cur->name,
+			content = ptr;
+			content_len += sprintf(content + content_len, "\n%-*s %s", 10, cur->name,
 					cur->cmd);
 		}
 		cur = cur->next;
 	}
 
-	return result;
+	return content;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
