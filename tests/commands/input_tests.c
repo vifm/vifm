@@ -31,7 +31,7 @@ static const cmd_add_t commands[] = {
 		.emark = 1,           .qmark = 1,    .expand = 0,               .regexp = 0, .min_args = 1, .max_args = 1,       .bg = 1,     },
 	{ .name = "call",       .abbr = "cal", .handler = call_cmd,       .id = -1,    .range = 0,    .cust_sep = 0,       .quote = 1,
 		.emark = 0,           .qmark = 2,    .expand = 1,               .regexp = 0, .min_args = 1, .max_args = 1,       .bg = 0,     },
-	{ .name = "delete",     .abbr = "d",   .handler = delete_cmd,     .id =  1,    .range = 1,    .cust_sep = 0,
+	{ .name = "delete",     .abbr = "d",   .handler = delete_cmd,     .id =  1,    .range = 1,    .cust_sep = 0,       .quote = 1,
 		.emark = 1,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = 1,       .bg = 0,     },
 	{ .name = "edia",       .abbr = NULL,  .handler = edia_cmd,       .id = -1,    .range = 1,    .cust_sep = 0,
 		.emark = 0,           .qmark = 0,    .expand = 0,               .regexp = 0, .min_args = 0, .max_args = NOT_DEF, .bg = 0,     },
@@ -189,6 +189,13 @@ test_range_acceptance(void)
 {
 	assert_int_equal(0, execute_cmd("%delete"));
 	assert_int_equal(CMDS_ERR_NO_RANGE_ALLOWED, execute_cmd("%history"));
+}
+
+static void
+test_single_quote_doubling(void)
+{
+	assert_int_equal(0, execute_cmd("delete 'file''with''single''quotes'"));
+	assert_string_equal("file'with'single'quotes", arg);
 }
 
 static void
@@ -589,6 +596,7 @@ input_tests(void)
 
 	run_test(test_trimming);
 	run_test(test_range_acceptance);
+	run_test(test_single_quote_doubling);
 	run_test(test_range);
 	run_test(test_range_plus_minus);
 	run_test(test_range_and_spaces);
@@ -616,4 +624,5 @@ input_tests(void)
 	test_fixture_end();
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

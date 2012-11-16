@@ -16,10 +16,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h>
+#include <stddef.h> /* size_t */
 #include <stdio.h>
-#include <stdlib.h> /* realloc() */
+#include <stdlib.h> /* calloc() malloc() free() realloc() */
 #include <string.h>
 
 #include "../utils/log.h"
@@ -76,32 +77,32 @@ typedef struct
 static inner_t *inner;
 static cmds_conf_t *cmds_conf;
 
-static const char * parse_limit(const char *cmd, cmd_info_t *cmd_info);
-static const char * correct_limit(const char *cmd, cmd_info_t *cmd_info);
-static int udf_is_ambiguous(const char *name);
-static const char * parse_tail(cmd_t *cur, const char *cmd,
+static const char * parse_limit(const char cmd[], cmd_info_t *cmd_info);
+static const char * correct_limit(const char cmd[], cmd_info_t *cmd_info);
+static int udf_is_ambiguous(const char name[]);
+static const char * parse_tail(cmd_t *cur, const char cmd[],
 		cmd_info_t *cmd_info);
-static const char *get_cmd_name(const char *cmd, char *buf, size_t buf_len);
+static const char *get_cmd_name(const char cmd[], char buf[], size_t buf_len);
 static void init_cmd_info(cmd_info_t *cmd_info);
 static const char * skip_prefix_commands(const char cmd[]);
-static cmd_t * find_cmd(const char *name);
+static cmd_t * find_cmd(const char name[]);
 static const char * parse_range(const char cmd[], cmd_info_t *cmd_info);
-static int complete_cmd_args(cmd_t *cur, const char *args,
+static int complete_cmd_args(cmd_t *cur, const char args[],
 		cmd_info_t *cmd_info);
-static void complete_cmd_name(const char *cmd_name, int user_only);
+static void complete_cmd_name(const char cmd_name[], int user_only);
 TSTATIC int add_builtin_cmd(const char name[], int abbr, const cmd_add_t *conf);
 static int comclear_cmd(const cmd_info_t *cmd_info);
 static int command_cmd(const cmd_info_t *cmd_info);
-static const char * get_user_cmd_name(const char *cmd, char *buf,
+static const char * get_user_cmd_name(const char cmd[], char buf[],
 		size_t buf_len);
-static int is_correct_name(const char *name);
+static int is_correct_name(const char name[]);
 static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
 		int regexp, int quotes, int *last_arg, int *last_begin, int *last_end);
-static int get_args_count(const char *cmdstr, char sep, int regexp, int quotes);
-static void unescape(char *s, int regexp);
-static void replace_esc(char *s);
+static void unescape(char s[], int regexp);
+static void replace_double_squotes(char s[]);
+static void replace_esc(char s[]);
 
 void
 init_cmds(int udf, cmds_conf_t *conf)
@@ -166,14 +167,13 @@ reset_cmds(void)
 }
 
 int
-execute_cmd(const char *cmd)
+execute_cmd(const char cmd[])
 {
 	cmd_info_t cmd_info;
 	char cmd_name[256];
 	cmd_t *cur;
 	const char *args;
-	int result;
-	int i;
+	int execution_code;
 	int last_end;
 	cmds_conf_t *cc = cmds_conf;
 
@@ -251,31 +251,31 @@ execute_cmd(const char *cmd)
 	if((cmd_info.begin != NOT_DEF || cmd_info.end != NOT_DEF) &&
 			!cur->range)
 	{
-		result = CMDS_ERR_NO_RANGE_ALLOWED;
+		execution_code = CMDS_ERR_NO_RANGE_ALLOWED;
 	}
 	else if(cmd_info.argc < cur->min_args)
 	{
-		result = CMDS_ERR_TOO_FEW_ARGS;
+		execution_code = CMDS_ERR_TOO_FEW_ARGS;
 	}
 	else if(cmd_info.argc > cur->max_args && cur->max_args != NOT_DEF)
 	{
-		result = CMDS_ERR_TRAILING_CHARS;
+		execution_code = CMDS_ERR_TRAILING_CHARS;
 	}
 	else if(cmd_info.emark && !cur->emark)
 	{
-		result = CMDS_ERR_NO_BANG_ALLOWED;
+		execution_code = CMDS_ERR_NO_BANG_ALLOWED;
 	}
 	else if(cmd_info.qmark && !cur->qmark)
 	{
-		result = CMDS_ERR_NO_QMARK_ALLOWED;
+		execution_code = CMDS_ERR_NO_QMARK_ALLOWED;
 	}
 	else if(cmd_info.qmark && cur->qmark == 1 && *cmd_info.args != '\0')
 	{
-		result = CMDS_ERR_TRAILING_CHARS;
+		execution_code = CMDS_ERR_TRAILING_CHARS;
 	}
 	else if(cur->passed > MAX_CMD_RECURSION)
 	{
-		result = CMDS_ERR_LOOP;
+		execution_code = CMDS_ERR_LOOP;
 	}
 	else
 	{
@@ -284,11 +284,11 @@ execute_cmd(const char *cmd)
 		if(cur->type != BUILTIN_CMD && cur->type != BUILTIN_ABBR)
 		{
 			cmd_info.cmd = cur->cmd;
-			result = inner->user_cmd_handler.handler(&cmd_info);
+			execution_code = inner->user_cmd_handler.handler(&cmd_info);
 		}
 		else
 		{
-			result = cur->handler(&cmd_info);
+			execution_code = cur->handler(&cmd_info);
 		}
 
 		cc->post(cur->id);
@@ -297,15 +297,13 @@ execute_cmd(const char *cmd)
 
 	free(cmd_info.raw_args);
 	free(cmd_info.args);
-	for(i = 0; i < cmd_info.argc; i++)
-		free(cmd_info.argv[i]);
-	free(cmd_info.argv);
+	free_string_array(cmd_info.argv, cmd_info.argc);
 
-	return result;
+	return execution_code;
 }
 
 static const char *
-parse_limit(const char *cmd, cmd_info_t *cmd_info)
+parse_limit(const char cmd[], cmd_info_t *cmd_info)
 {
 	if(cmd[0] == '%')
 	{
@@ -364,7 +362,7 @@ parse_limit(const char *cmd, cmd_info_t *cmd_info)
 }
 
 static const char *
-correct_limit(const char *cmd, cmd_info_t *cmd_info)
+correct_limit(const char cmd[], cmd_info_t *cmd_info)
 {
 	while(*cmd == '+' || *cmd == '-')
 	{
@@ -391,7 +389,7 @@ correct_limit(const char *cmd, cmd_info_t *cmd_info)
 }
 
 static int
-udf_is_ambiguous(const char *name)
+udf_is_ambiguous(const char name[])
 {
 	size_t len;
 	int count;
@@ -427,7 +425,7 @@ udf_is_ambiguous(const char *name)
 }
 
 static const char *
-parse_tail(cmd_t *cur, const char *cmd, cmd_info_t *cmd_info)
+parse_tail(cmd_t *cur, const char cmd[], cmd_info_t *cmd_info)
 {
 	if(*cmd == '!' && (!cur->cust_sep || cur->emark))
 	{
@@ -451,7 +449,7 @@ parse_tail(cmd_t *cur, const char *cmd, cmd_info_t *cmd_info)
 }
 
 int
-get_cmd_id(const char *cmd)
+get_cmd_id(const char cmd[])
 {
 	cmd_info_t info;
 	return get_cmd_info(cmd, &info);
@@ -475,7 +473,7 @@ init_cmd_info(cmd_info_t *cmd_info)
 
 /* Returns command id */
 int
-get_cmd_info(const char *cmd, cmd_info_t *info)
+get_cmd_info(const char cmd[], cmd_info_t *info)
 {
 	cmd_info_t cmd_info;
 	char cmd_name[256];
@@ -587,18 +585,22 @@ skip_prefix_commands(const char cmd[])
 }
 
 static cmd_t *
-find_cmd(const char *name)
+find_cmd(const char name[])
 {
-	cmd_t *result;
+	cmd_t *cmd;
 
-	result = inner->head.next;
-	while(result != NULL && strcmp(result->name, name) < 0)
-		result = result->next;
+	cmd = inner->head.next;
+	while(cmd != NULL && strcmp(cmd->name, name) < 0)
+	{
+		cmd = cmd->next;
+	}
 
-	if(result != NULL && strncmp(name, result->name, strlen(name)) != 0)
-		result = NULL;
+	if(cmd != NULL && strncmp(name, cmd->name, strlen(name)) != 0)
+	{
+		cmd = NULL;
+	}
 
-	return result;
+	return cmd;
 }
 
 /* Returns NULL on invalid range. */
@@ -638,7 +640,7 @@ parse_range(const char cmd[], cmd_info_t *cmd_info)
 }
 
 static const char *
-get_cmd_name(const char *cmd, char *buf, size_t buf_len)
+get_cmd_name(const char cmd[], char buf[], size_t buf_len)
 {
 	const char *t;
 	size_t len;
@@ -680,8 +682,9 @@ get_cmd_name(const char *cmd, char *buf, size_t buf_len)
 	return t;
 }
 
+/* Returns offset at which completion was done. */
 static int
-complete_cmd_args(cmd_t *cur, const char *args, cmd_info_t *cmd_info)
+complete_cmd_args(cmd_t *cur, const char args[], cmd_info_t *cmd_info)
 {
 	const char *tmp_args = args;
 	int result = 0;
@@ -717,7 +720,7 @@ complete_cmd_args(cmd_t *cur, const char *args, cmd_info_t *cmd_info)
 }
 
 static void
-complete_cmd_name(const char *cmd_name, int user_only)
+complete_cmd_name(const char cmd_name[], int user_only)
 {
 	cmd_t *cur;
 	size_t len;
@@ -924,7 +927,7 @@ command_cmd(const cmd_info_t *cmd_info)
 }
 
 static const char *
-get_user_cmd_name(const char *cmd, char *buf, size_t buf_len)
+get_user_cmd_name(const char cmd[], char buf[], size_t buf_len)
 {
 	const char *t;
 	size_t len;
@@ -938,7 +941,7 @@ get_user_cmd_name(const char *cmd, char *buf, size_t buf_len)
 }
 
 static int
-is_correct_name(const char *name)
+is_correct_name(const char name[])
 {
 	if(strcmp(name, "!") == 0)
 		return 0;
@@ -1012,18 +1015,20 @@ get_last_argument(const char cmd[], size_t *len)
 	return (char *)cmd + last_start;
 }
 
+/* Splits argument string into array of strings.  Returns NULL if no arguments
+ * are found or an error occurred.  Allways sets *count (to zero on errors). */
 TSTATIC char **
 dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 		int *last_pos, int *last_begin, int *last_end)
 {
 	char *cmdstr;
 	int len;
-	int i, j;
-	int state, st;
+	int i;
+	int st;
 	const char *args_beg;
 	char** params;
 
-	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING, ARG, QARG };
+	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING, ARG, QARG } state;
 
 	if(last_pos != NULL)
 		*last_pos = 0;
@@ -1032,13 +1037,8 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 	if(last_end != NULL)
 		*last_end = 0;
 
-	*count = get_args_count(args, sep, regexp, quotes);
-	if(*count == 0)
-		return NULL;
-
-	params = malloc(sizeof(char*)*(*count + 1));
-	if(params == NULL)
-		return NULL;
+	*count = 0;
+	params = NULL;
 
 	args_beg = args;
 	if(sep == ' ')
@@ -1046,7 +1046,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 			args++;
 	cmdstr = strdup(args);
 	len = strlen(cmdstr);
-	for(i = 0, st = 0, j = 0, state = BEGIN; i <= len; ++i)
+	for(i = 0, st = 0, state = BEGIN; i <= len; ++i)
 	{
 		int prev_state = state;
 		switch(state)
@@ -1083,154 +1083,99 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 				}
 				break;
 			case NO_QUOTING:
-				if(!cmdstr[i] || cmdstr[i] == sep)
+				if(cmdstr[i] == '\0' || cmdstr[i] == sep)
+				{
 					state = ARG;
-				else if(cmdstr[i] == '\\')
-				{
-					if(cmdstr[i + 1] != '\0')
-						i++;
 				}
-				break;
-			case S_QUOTING:
-				if(!cmdstr[i])
-					state = ARG;
-				else if(cmdstr[i] == '\'')
-					state = QARG;
-				break;
-			case D_QUOTING:
-				if(!cmdstr[i])
-					state = ARG;
-				else if(cmdstr[i] == '"')
-					state = QARG;
-				else if(cmdstr[i] == '\\')
+				else if(cmdstr[i] == '\\' && cmdstr[i + 1] != '\0')
 				{
-					if(cmdstr[i + 1] != '\0')
-						i++;
-				}
-				break;
-			case R_QUOTING:
-				if(!cmdstr[i])
-					state = ARG;
-				else if(cmdstr[i] == '/')
-					state = QARG;
-				else if(cmdstr[i] == '\\')
-				{
-					if(cmdstr[i + 1] == '/')
-						i++;
-				}
-				break;
-		}
-		if(state == ARG || state == QARG)
-		{
-			char c = cmdstr[i];
-			/* found another argument */
-			cmdstr[i] = '\0';
-			if(last_end != NULL)
-				*last_end = (args - args_beg) + ((state == ARG) ? i : (i + 1));
-
-			params[j] = strdup(&cmdstr[st]);
-			cmdstr[i] = c;
-			if(prev_state == NO_QUOTING)
-				unescape(params[j], (sep == ' ') ? 0 : 1);
-			else if(prev_state == D_QUOTING)
-				replace_esc(params[j]);
-			else if(prev_state == R_QUOTING)
-				unescape(params[j], 1);
-			j++;
-			state = BEGIN;
-		}
-	}
-
-	*count = j;
-	params[*count] = NULL;
-
-	if(last_pos != NULL)
-		*last_pos = (args - args_beg) + st;
-
-	free(cmdstr);
-	return params;
-}
-
-static int
-get_args_count(const char *cmdstr, char sep, int regexp, int quotes)
-{
-	int i, state;
-	int result = 0;
-	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING };
-
-	state = BEGIN;
-	for(i = 0; cmdstr[i] != '\0'; i++)
-		switch(state)
-		{
-			case BEGIN:
-				if(sep == ' ' && cmdstr[i] == '\'' && quotes)
-					state = S_QUOTING;
-				else if(sep == ' ' && cmdstr[i] == '"' && quotes)
-					state = D_QUOTING;
-				else if(sep == ' ' && cmdstr[i] == '/' && regexp)
-					state = R_QUOTING;
-				else if(cmdstr[i] != sep)
-					state = NO_QUOTING;
-				else if(sep != ' ' && i > 0 && cmdstr[i - 1] == sep)
-				{
-					state = NO_QUOTING;
-					i--;
-				}
-				break;
-			case NO_QUOTING:
-				if(cmdstr[i] == sep)
-				{
-					result++;
-					state = BEGIN;
-				}
-				else if(cmdstr[i] == '\\')
-				{
-					if(cmdstr[i + 1] != '\0')
-						i++;
+					i++;
 				}
 				break;
 			case S_QUOTING:
 				if(cmdstr[i] == '\'')
 				{
-					result++;
-					state = BEGIN;
+					if(cmdstr[i + 1] == '\'')
+					{
+						i++;
+					}
+					else
+					{
+						state = QARG;
+					}
 				}
 				break;
 			case D_QUOTING:
 				if(cmdstr[i] == '"')
 				{
-					result++;
-					state = BEGIN;
+					state = QARG;
 				}
-				else if(cmdstr[i] == '\\')
+				else if(cmdstr[i] == '\\' && cmdstr[i + 1] != '\0')
 				{
-					if(cmdstr[i + 1] != '\0')
-						i++;
+					i++;
 				}
 				break;
 			case R_QUOTING:
 				if(cmdstr[i] == '/')
+					state = QARG;
+				else if(cmdstr[i] == '\\' && cmdstr[i + 1] == '/')
 				{
-					result++;
-					state = BEGIN;
-				}
-				else if(cmdstr[i] == '\\')
-				{
-					if(cmdstr[i + 1] != '\0')
 						i++;
 				}
 				break;
-		}
-	if(state == NO_QUOTING)
-		result++;
-	else if(state != BEGIN)
-		return 0; /* error: no closing quote */
 
-	return result;
+			case ARG:
+			case QARG:
+				assert(0 && "Dispatch line state machine is broken");
+		}
+		if(state == ARG || state == QARG)
+		{
+			char *last_arg;
+			const char c = cmdstr[i];
+			/* found another argument */
+			cmdstr[i] = '\0';
+			if(last_end != NULL)
+				*last_end = (args - args_beg) + ((state == ARG) ? i : (i + 1));
+
+			*count = add_to_string_array(&params, *count, 1, &cmdstr[st]);
+			if(*count == 0)
+			{
+				break;
+			}
+			last_arg = params[*count - 1];
+
+			cmdstr[i] = c;
+			if(prev_state == NO_QUOTING)
+				unescape(last_arg, (sep == ' ') ? 0 : 1);
+			else if(prev_state == S_QUOTING)
+				replace_double_squotes(last_arg);
+			else if(prev_state == D_QUOTING)
+				replace_esc(last_arg);
+			else if(prev_state == R_QUOTING)
+				unescape(last_arg, 1);
+			state = BEGIN;
+		}
+	}
+	free(cmdstr);
+
+	if(*count == 0 || (state != BEGIN && state != NO_QUOTING) ||
+			add_to_string_array(&params, *count, 1, NULL) != *count + 1)
+	{
+		free_string_array(params, *count);
+		*count = 0;
+		return NULL;
+	}
+
+	if(last_pos != NULL)
+	{
+		*last_pos = (args - args_beg) + st;
+	}
+
+	return params;
 }
 
 static void
-unescape(char *s, int regexp)
+unescape(char s[], int regexp)
 {
 	char *p;
 
@@ -1244,8 +1189,32 @@ unescape(char *s, int regexp)
 	*p = '\0';
 }
 
+/* Replaces all '' with ' in place. */
 static void
-replace_esc(char *s)
+replace_double_squotes(char s[])
+{
+	char *p;
+	int sq_found;
+
+	p = s++;
+	sq_found = *p == '\'';
+	while(*p != '\0')
+	{
+		if(*s == '\'' && sq_found)
+		{
+			sq_found = 0;
+		}
+		else
+		{
+			*++p = *s;
+			sq_found = *s == '\'';
+		}
+		s++;
+	}
+}
+
+static void
+replace_esc(char s[])
 {
 	static const char table[] =
 						/* 00  01  02  03  04  05  06  07  08  09  0a  0b  0c  0d  0e  0f */
@@ -1317,19 +1286,19 @@ list_udf(void)
 }
 
 char *
-list_udf_content(const char *beginning)
+list_udf_content(const char beginning[])
 {
 	size_t len;
 	cmd_t *cur;
-	char *result;
-	size_t result_len = 0;
+	char *content = NULL;
+	size_t content_len = 0;
 
 	cur = inner->head.next;
 	len = strlen(beginning);
-	result = NULL;
 	while(cur != NULL)
 	{
 		void *ptr;
+		size_t new_size;
 
 		if(strncmp(cur->name, beginning, len) != 0 || cur->type != USER_CMD)
 		{
@@ -1337,23 +1306,23 @@ list_udf_content(const char *beginning)
 			continue;
 		}
 
-		if(result == NULL)
+		if(content == NULL)
 		{
-			result = strdup("Command -- Action");
-			result_len = strlen(result);
+			content = strdup("Command -- Action");
+			content_len = strlen(content);
 		}
-		ptr = realloc(result,
-				result_len + 1 + strlen(cur->name) + 10 + strlen(cur->cmd) + 1);
+		new_size = content_len + 1 + strlen(cur->name) + 10 + strlen(cur->cmd) + 1;
+		ptr = realloc(content, new_size);
 		if(ptr != NULL)
 		{
-			result = ptr;
-			result_len += sprintf(result + result_len, "\n%-*s %s", 10, cur->name,
+			content = ptr;
+			content_len += sprintf(content + content_len, "\n%-*s %s", 10, cur->name,
 					cur->cmd);
 		}
 		cur = cur->next;
 	}
 
-	return result;
+	return content;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
