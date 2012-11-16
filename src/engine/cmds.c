@@ -101,6 +101,7 @@ TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
 		int regexp, int quotes, int *last_arg, int *last_begin, int *last_end);
 static int get_args_count(const char *cmdstr, char sep, int regexp, int quotes);
 static void unescape(char *s, int regexp);
+static void replace_double_squotes(char s[]);
 static void replace_esc(char *s);
 
 void
@@ -1092,10 +1093,19 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 				}
 				break;
 			case S_QUOTING:
-				if(!cmdstr[i])
+				if(cmdstr[i] == '\0')
 					state = ARG;
 				else if(cmdstr[i] == '\'')
-					state = QARG;
+				{
+					if(cmdstr[i + 1] == '\'')
+					{
+						i++;
+					}
+					else
+					{
+						state = QARG;
+					}
+				}
 				break;
 			case D_QUOTING:
 				if(!cmdstr[i])
@@ -1132,6 +1142,8 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 			cmdstr[i] = c;
 			if(prev_state == NO_QUOTING)
 				unescape(params[j], (sep == ' ') ? 0 : 1);
+			else if(prev_state == S_QUOTING)
+				replace_double_squotes(params[j]);
 			else if(prev_state == D_QUOTING)
 				replace_esc(params[j]);
 			else if(prev_state == R_QUOTING)
@@ -1192,8 +1204,15 @@ get_args_count(const char *cmdstr, char sep, int regexp, int quotes)
 			case S_QUOTING:
 				if(cmdstr[i] == '\'')
 				{
-					result++;
-					state = BEGIN;
+					if(cmdstr[i + 1] == '\'')
+					{
+						i++;
+					}
+					else
+					{
+						result++;
+						state = BEGIN;
+					}
 				}
 				break;
 			case D_QUOTING:
@@ -1242,6 +1261,30 @@ unescape(char *s, int regexp)
 		*p++ = *s++;
 	}
 	*p = '\0';
+}
+
+/* Replaces all '' with ' in place. */
+static void
+replace_double_squotes(char s[])
+{
+	char *p;
+	int sq_found;
+
+	p = s++;
+	sq_found = *p == '\'';
+	while(*p != '\0')
+	{
+		if(*s == '\'' && sq_found)
+		{
+			sq_found = 0;
+		}
+		else
+		{
+			*++p = *s;
+			sq_found = *s == '\'';
+		}
+		s++;
+	}
 }
 
 static void
