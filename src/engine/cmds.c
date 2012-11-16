@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h>
 #include <stddef.h> /* size_t */
 #include <stdio.h>
@@ -100,8 +100,6 @@ static cmd_t * insert_cmd(cmd_t *after);
 static int delcommand_cmd(const cmd_info_t *cmd_info);
 TSTATIC char ** dispatch_line(const char args[], int *count, char sep,
 		int regexp, int quotes, int *last_arg, int *last_begin, int *last_end);
-static int get_args_count(const char cmdstr[], char sep, int regexp,
-		int quotes);
 static void unescape(char s[], int regexp);
 static void replace_double_squotes(char s[]);
 static void replace_esc(char s[]);
@@ -176,7 +174,6 @@ execute_cmd(const char cmd[])
 	cmd_t *cur;
 	const char *args;
 	int execution_code;
-	int i;
 	int last_end;
 	cmds_conf_t *cc = cmds_conf;
 
@@ -1018,18 +1015,20 @@ get_last_argument(const char cmd[], size_t *len)
 	return (char *)cmd + last_start;
 }
 
+/* Splits argument string into array of strings.  Returns NULL if no arguments
+ * are found or an error occurred.  Allways sets *count (to zero on errors). */
 TSTATIC char **
 dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 		int *last_pos, int *last_begin, int *last_end)
 {
 	char *cmdstr;
 	int len;
-	int i, j;
-	int state, st;
+	int i;
+	int st;
 	const char *args_beg;
 	char** params;
 
-	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING, ARG, QARG };
+	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING, ARG, QARG } state;
 
 	if(last_pos != NULL)
 		*last_pos = 0;
@@ -1038,13 +1037,8 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 	if(last_end != NULL)
 		*last_end = 0;
 
-	*count = get_args_count(args, sep, regexp, quotes);
-	if(*count == 0)
-		return NULL;
-
-	params = malloc(sizeof(char*)*(*count + 1));
-	if(params == NULL)
-		return NULL;
+	*count = 0;
+	params = NULL;
 
 	args_beg = args;
 	if(sep == ' ')
@@ -1052,7 +1046,7 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 			args++;
 	cmdstr = strdup(args);
 	len = strlen(cmdstr);
-	for(i = 0, st = 0, j = 0, state = BEGIN; i <= len; ++i)
+	for(i = 0, st = 0, state = BEGIN; i <= len; ++i)
 	{
 		int prev_state = state;
 		switch(state)
@@ -1089,18 +1083,17 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 				}
 				break;
 			case NO_QUOTING:
-				if(!cmdstr[i] || cmdstr[i] == sep)
-					state = ARG;
-				else if(cmdstr[i] == '\\')
+				if(cmdstr[i] == '\0' || cmdstr[i] == sep)
 				{
-					if(cmdstr[i + 1] != '\0')
-						i++;
+					state = ARG;
+				}
+				else if(cmdstr[i] == '\\' && cmdstr[i + 1] != '\0')
+				{
+					i++;
 				}
 				break;
 			case S_QUOTING:
-				if(cmdstr[i] == '\0')
-					state = ARG;
-				else if(cmdstr[i] == '\'')
+				if(cmdstr[i] == '\'')
 				{
 					if(cmdstr[i + 1] == '\'')
 					{
@@ -1113,144 +1106,72 @@ dispatch_line(const char args[], int *count, char sep, int regexp, int quotes,
 				}
 				break;
 			case D_QUOTING:
-				if(!cmdstr[i])
-					state = ARG;
-				else if(cmdstr[i] == '"')
-					state = QARG;
-				else if(cmdstr[i] == '\\')
+				if(cmdstr[i] == '"')
 				{
-					if(cmdstr[i + 1] != '\0')
-						i++;
+					state = QARG;
+				}
+				else if(cmdstr[i] == '\\' && cmdstr[i + 1] != '\0')
+				{
+					i++;
 				}
 				break;
 			case R_QUOTING:
-				if(!cmdstr[i])
-					state = ARG;
-				else if(cmdstr[i] == '/')
+				if(cmdstr[i] == '/')
 					state = QARG;
-				else if(cmdstr[i] == '\\')
+				else if(cmdstr[i] == '\\' && cmdstr[i + 1] == '/')
 				{
-					if(cmdstr[i + 1] == '/')
 						i++;
 				}
 				break;
+
+			case ARG:
+			case QARG:
+				assert(0 && "Dispatch line state machine is broken");
 		}
 		if(state == ARG || state == QARG)
 		{
+			char *last_arg;
 			const char c = cmdstr[i];
 			/* found another argument */
 			cmdstr[i] = '\0';
 			if(last_end != NULL)
 				*last_end = (args - args_beg) + ((state == ARG) ? i : (i + 1));
 
-			params[j] = strdup(&cmdstr[st]);
+			*count = add_to_string_array(&params, *count, 1, &cmdstr[st]);
+			if(*count == 0)
+			{
+				break;
+			}
+			last_arg = params[*count - 1];
+
 			cmdstr[i] = c;
 			if(prev_state == NO_QUOTING)
-				unescape(params[j], (sep == ' ') ? 0 : 1);
+				unescape(last_arg, (sep == ' ') ? 0 : 1);
 			else if(prev_state == S_QUOTING)
-				replace_double_squotes(params[j]);
+				replace_double_squotes(last_arg);
 			else if(prev_state == D_QUOTING)
-				replace_esc(params[j]);
+				replace_esc(last_arg);
 			else if(prev_state == R_QUOTING)
-				unescape(params[j], 1);
-			j++;
+				unescape(last_arg, 1);
 			state = BEGIN;
 		}
 	}
+	free(cmdstr);
 
-	*count = j;
-	params[*count] = NULL;
+	if(*count == 0 || (state != BEGIN && state != NO_QUOTING) ||
+			add_to_string_array(&params, *count, 1, NULL) != *count + 1)
+	{
+		free_string_array(params, *count);
+		*count = 0;
+		return NULL;
+	}
 
 	if(last_pos != NULL)
+	{
 		*last_pos = (args - args_beg) + st;
+	}
 
-	free(cmdstr);
 	return params;
-}
-
-static int
-get_args_count(const char cmdstr[], char sep, int regexp, int quotes)
-{
-	int i, state;
-	int arg_count = 0;
-	enum { BEGIN, NO_QUOTING, S_QUOTING, D_QUOTING, R_QUOTING };
-
-	state = BEGIN;
-	for(i = 0; cmdstr[i] != '\0'; i++)
-		switch(state)
-		{
-			case BEGIN:
-				if(sep == ' ' && cmdstr[i] == '\'' && quotes)
-					state = S_QUOTING;
-				else if(sep == ' ' && cmdstr[i] == '"' && quotes)
-					state = D_QUOTING;
-				else if(sep == ' ' && cmdstr[i] == '/' && regexp)
-					state = R_QUOTING;
-				else if(cmdstr[i] != sep)
-					state = NO_QUOTING;
-				else if(sep != ' ' && i > 0 && cmdstr[i - 1] == sep)
-				{
-					state = NO_QUOTING;
-					i--;
-				}
-				break;
-			case NO_QUOTING:
-				if(cmdstr[i] == sep)
-				{
-					arg_count++;
-					state = BEGIN;
-				}
-				else if(cmdstr[i] == '\\')
-				{
-					if(cmdstr[i + 1] != '\0')
-						i++;
-				}
-				break;
-			case S_QUOTING:
-				if(cmdstr[i] == '\'')
-				{
-					if(cmdstr[i + 1] == '\'')
-					{
-						i++;
-					}
-					else
-					{
-						arg_count++;
-						state = BEGIN;
-					}
-				}
-				break;
-			case D_QUOTING:
-				if(cmdstr[i] == '"')
-				{
-					arg_count++;
-					state = BEGIN;
-				}
-				else if(cmdstr[i] == '\\')
-				{
-					if(cmdstr[i + 1] != '\0')
-						i++;
-				}
-				break;
-			case R_QUOTING:
-				if(cmdstr[i] == '/')
-				{
-					arg_count++;
-					state = BEGIN;
-				}
-				else if(cmdstr[i] == '\\')
-				{
-					if(cmdstr[i + 1] != '\0')
-						i++;
-				}
-				break;
-		}
-	if(state == NO_QUOTING)
-		arg_count++;
-	else if(state != BEGIN)
-		return 0; /* error: no closing quote */
-
-	return arg_count;
 }
 
 static void
