@@ -78,8 +78,6 @@ const char * extract_part(const char str[], char separator, char part_buf[]);
 char * escape_chars(const char string[], const char chars[]);
 /* Returns non-zero if the string is NULL or empty. */
 int is_null_or_empty(const char string[]);
-/* Returns pointer to first character in the string not equal to the ch. */
-char * skip_all(const char string[], char ch);
 /* Formats string like printf, but instead of printing it, allocates memory and
  * and prints it there.  Returns newly allocated string, which should be freed
  * by the caller, or NULL if there is not enough memory. */

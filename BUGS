@@ -15,3 +15,5 @@ Files with names containing Unicode characters are not always processed correctl
 Exploring doesn't display very long lines correctly when 'wrap' is off, need
 to make read_file_lines() (of string_array.c) read lines of unlimited length.
 See also capture_output_to_menu() (of menus.c).  So we need a readline() function.
+
+Something is wrong with checking program existance on Windows.
