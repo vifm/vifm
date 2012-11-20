@@ -93,7 +93,7 @@ compare_file_names(const char *s, const char *t, int ignore_case)
 		strtolower(t_buf);
 	}
 
-	return !cfg.sort_numbers ? strcmp(s, t) : strnumcmp(s, t);
+	return cfg.sort_numbers ? strnumcmp(s, t) : strcmp(s, t);
 }
 
 /* Compares file names containing numbers correctly. */
