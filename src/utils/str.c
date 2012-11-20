@@ -287,16 +287,6 @@ is_null_or_empty(const char string[])
 }
 
 char *
-skip_all(const char string[], char ch)
-{
-	while(*string == ch)
-	{
-		string++;
-	}
-	return (char *)string;
-}
-
-char *
 format_str(const char format[], ...)
 {
 	va_list ap;

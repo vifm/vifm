@@ -48,6 +48,8 @@ static int sort_dir_list(const void *one, const void *two);
 TSTATIC int strnumcmp(const char s[], const char t[]);
 #if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
 static int vercmp(const char s[], const char t[]);
+#else
+static char * skip_leading_zeros(const char str[]);
 #endif
 
 void
@@ -101,18 +103,11 @@ TSTATIC int
 strnumcmp(const char s[], const char t[])
 {
 #if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
-		return vercmp(s, t);
+	return vercmp(s, t);
 #else
-		const char *new_s = skip_all(s, '0');
-		const char *new_t = skip_all(t, '0');
-		if(new_s[0] == '\0' || new_t[0] == '\0')
-		{
-			return strverscmp(new_s, new_t);
-		}
-		else
-		{
-			return strverscmp(s, t);
-		}
+	const char *new_s = skip_leading_zeros(s);
+	const char *new_t = skip_leading_zeros(t);
+	return strverscmp(new_s, new_t);
 #endif
 }
 
@@ -149,6 +144,18 @@ vercmp(const char s[], const char t[])
 	}
 
 	return *s - *t;
+}
+#else
+/* Skips all zeros in front of numbers (correctly handles zero).  Returns str, a
+ * pointer to '0' or a pointer to non-zero digit. */
+static char *
+skip_leading_zeros(const char str[])
+{
+	while(str[0] == '0' && isdigit(str[1]))
+	{
+		str++;
+	}
+	return (char *)str;
 }
 #endif
 

@@ -166,6 +166,14 @@ test_versort_numbers_only(void)
 	s = "100";
 	t = "13";
 	assert_true(strnumcmp(s, t) > 0);
+
+	s = "09";
+	t = "3";
+	assert_true(strnumcmp(s, t) > 0);
+
+	s = "3";
+	t = "10";
+	assert_true(strnumcmp(s, t) < 0);
 }
 
 static void
