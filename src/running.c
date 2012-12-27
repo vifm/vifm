@@ -355,7 +355,7 @@ view_file(const char *filename, int line, int do_fork)
 	if(bg && do_fork)
 		start_background_job(command, 0);
 	else
-		shellout(command, -1, 0);
+		shellout(command, -1, 1);
 	curs_set(FALSE);
 }
 
