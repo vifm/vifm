@@ -82,7 +82,7 @@ int get_gid(const char *group, gid_t *gid);
 int S_ISEXE(mode_t mode);
 #else
 int wcwidth(wchar_t c);
-int wcswidth(const wchar_t *str, size_t len);
+int wcswidth(const wchar_t str[], size_t max_len);
 int exec_program(TCHAR *cmd);
 /* Checks executable existence trying to add executable extensions if needed. */
 int win_executable_exists(const char *path);
