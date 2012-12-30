@@ -39,6 +39,8 @@
 
 #include "path.h"
 
+static int skip_dotdir_if_any(const char *path[], int fully);
+
 /* like chomp() but removes trailing slash */
 void
 chosp(char *path)
@@ -121,9 +123,7 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 		int prev_dir_present;
 
 		prev_dir_present = (q != buf - 1 && *q == '/');
-		if(prev_dir_present && strnoscmp(p, "./", 2) == 0)
-			p++;
-		else if(prev_dir_present && stroscmp(p, ".") == 0)
+		if(skip_dotdir_if_any(&p, prev_dir_present))
 			;
 		else if(prev_dir_present &&
 				(strnoscmp(p, "../", 3) == 0 || stroscmp(p, "..") == 0) &&
@@ -156,6 +156,43 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 		*++q = '/';
 
 	*++q = '\0';
+}
+
+/* Checks whether *path begins with current directory component ('./') and moves
+ * *path to the last character of such component (to slash if present) if fully
+ * is non-zero, otherwise to the previous of the last character. When fully is
+ * zero the function normalizes '\.\.\.+/?' on Windows to '\./?'. Returns
+ * non-zero if a path component was fully skipped. */
+static int
+skip_dotdir_if_any(const char *path[], int fully)
+{
+	size_t dot_count = 0;
+	while((*path)[dot_count] == '.')
+	{
+		dot_count++;
+	}
+	if((dot_count == 1
+#ifdef _WIN32
+				|| dot_count > 2
+#endif
+				) &&
+			strchr("/", (*path)[dot_count]) != NULL)
+	{
+		if(!fully)
+		{
+			dot_count--;
+		}
+		if((*path)[dot_count] == '\0')
+		{
+			*path += dot_count - 1;
+		}
+		else
+		{
+			*path += dot_count;
+		}
+		return fully;
+	}
+	return 0;
 }
 
 const char *
