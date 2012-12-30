@@ -93,59 +93,67 @@ paths_are_equal(const char s[], const char t[])
 	return 0;
 }
 
-/* Removes excess slashes, "../" and "./" from the path.  buf will always
- * contain trailing forward slash. */
 void
-canonicalize_path(const char *directory, char *buf, size_t buf_size)
+canonicalize_path(const char directory[], char buf[], size_t buf_size)
 {
-	const char *p; /* source string pointer */
-	char *q; /* destination string pointer */
+	/* Source string pointer. */
+	const char *p = directory;
+	/* Destination string pointer. */
+	char *q = buf - 1;
 
 	buf[0] = '\0';
 
-	q = buf - 1;
-	p = directory;
-
 #ifdef _WIN32
+	/* Handle first component of a UNC path. */
 	if(p[0] == '/' && p[1] == '/' && p[2] != '/')
 	{
 		strcpy(buf, "//");
 		q = buf + 1;
 		p += 2;
 		while(*p != '\0' && *p != '/')
+		{
 			*++q = *p++;
+		}
 		buf = q + 1;
 	}
 #endif
 
 	while(*p != '\0' && (size_t)((q + 1) - buf) < buf_size - 1)
 	{
-		int prev_dir_present;
-
-		prev_dir_present = (q != buf - 1 && *q == '/');
+		const int prev_dir_present = (q != buf - 1 && *q == '/');
 		if(skip_dotdir_if_any(&p, prev_dir_present))
-			;
+		{
+			/* skip_dotdir_if_any() function did all job for us. */
+		}
 		else if(prev_dir_present &&
 				(strnoscmp(p, "../", 3) == 0 || stroscmp(p, "..") == 0) &&
 				stroscmp(buf, "../") != 0)
 		{
+			/* Remove the last path component added. */
 #ifdef _WIN32
+			/* Special handling of Windows disk name. */
 			if(*(q - 1) != ':')
 #endif
 			{
 				p++;
 				q--;
 				while(q >= buf && *q != '/')
+				{
 					q--;
+				}
 			}
 		}
 		else if(*p == '/')
 		{
+			/* Don't add more than one slash between path components. */
 			if(!prev_dir_present)
+			{
 				*++q = '/';
+			}
 		}
 		else
 		{
+			/* Copy current path component till the end. */
 			*++q = *p;
 			while(p[1] != '\0' && p[1] != '/' &&
 					(size_t)((q + 1) - buf) < buf_size - 1)
@@ -158,7 +166,9 @@ canonicalize_path(const char *directory, char *buf, size_t buf_size)
 	}
 
 	if(*q != '/')
+	{
 		*++q = '/';
+	}
 
 	*++q = '\0';
 }
