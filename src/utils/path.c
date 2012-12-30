@@ -39,6 +39,8 @@
 
 #include "path.h"
 
+static int skip_dotdir_if_any(const char *path[], int fully);
+
 /* like chomp() but removes trailing slash */
 void
 chosp(char *path)
@@ -91,71 +93,121 @@ paths_are_equal(const char s[], const char t[])
 	return 0;
 }
 
-/* Removes excess slashes, "../" and "./" from the path.  buf will always
- * contain trailing forward slash. */
 void
-canonicalize_path(const char *directory, char *buf, size_t buf_size)
+canonicalize_path(const char directory[], char buf[], size_t buf_size)
 {
-	const char *p; /* source string pointer */
-	char *q; /* destination string pointer */
+	/* Source string pointer. */
+	const char *p = directory;
+	/* Destination string pointer. */
+	char *q = buf - 1;
 
 	buf[0] = '\0';
 
-	q = buf - 1;
-	p = directory;
-
 #ifdef _WIN32
+	/* Handle first component of a UNC path. */
 	if(p[0] == '/' && p[1] == '/' && p[2] != '/')
 	{
 		strcpy(buf, "//");
 		q = buf + 1;
 		p += 2;
 		while(*p != '\0' && *p != '/')
+		{
 			*++q = *p++;
+		}
 		buf = q + 1;
 	}
 #endif
 
 	while(*p != '\0' && (size_t)((q + 1) - buf) < buf_size - 1)
 	{
-		int prev_dir_present;
-
-		prev_dir_present = (q != buf - 1 && *q == '/');
-		if(prev_dir_present && strnoscmp(p, "./", 2) == 0)
-			p++;
-		else if(prev_dir_present && stroscmp(p, ".") == 0)
-			;
+		const int prev_dir_present = (q != buf - 1 && *q == '/');
+		if(skip_dotdir_if_any(&p, prev_dir_present))
+		{
+			/* skip_dotdir_if_any() function did all job for us. */
+		}
 		else if(prev_dir_present &&
 				(strnoscmp(p, "../", 3) == 0 || stroscmp(p, "..") == 0) &&
 				stroscmp(buf, "../") != 0)
 		{
+			/* Remove the last path component added. */
 #ifdef _WIN32
+			/* Special handling of Windows disk name. */
 			if(*(q - 1) != ':')
 #endif
 			{
 				p++;
 				q--;
 				while(q >= buf && *q != '/')
+				{
 					q--;
+				}
 			}
 		}
 		else if(*p == '/')
 		{
+			/* Don't add more than one slash between path components. */
 			if(!prev_dir_present)
+			{
 				*++q = '/';
+			}
 		}
 		else
 		{
+			/* Copy current path component till the end. */
 			*++q = *p;
+			while(p[1] != '\0' && p[1] != '/' &&
+					(size_t)((q + 1) - buf) < buf_size - 1)
+			{
+				*++q = *++p;
+			}
 		}
 
 		p++;
 	}
 
 	if(*q != '/')
+	{
 		*++q = '/';
+	}
 
 	*++q = '\0';
+}
+
+/* Checks whether *path begins with current directory component ('./') and moves
+ * *path to the last character of such component (to slash if present) if fully
+ * is non-zero, otherwise to the previous of the last character. When fully is
+ * zero the function normalizes '\.\.\.+/?' on Windows to '\./?'. Returns
+ * non-zero if a path component was fully skipped. */
+static int
+skip_dotdir_if_any(const char *path[], int fully)
+{
+	size_t dot_count = 0;
+	while((*path)[dot_count] == '.')
+	{
+		dot_count++;
+	}
+	if((dot_count == 1
+#ifdef _WIN32
+				|| dot_count > 2
+#endif
+				) &&
+			strchr("/", (*path)[dot_count]) != NULL)
+	{
+		if(!fully)
+		{
+			dot_count--;
+		}
+		if((*path)[dot_count] == '\0')
+		{
+			*path += dot_count - 1;
+		}
+		else
+		{
+			*path += dot_count;
+		}
+		return fully;
+	}
+	return 0;
 }
 
 const char *

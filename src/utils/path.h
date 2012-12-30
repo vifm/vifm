@@ -20,6 +20,8 @@
 #ifndef __PATH_H__
 #define __PATH_H__
 
+#include <stddef.h> /* size_t */
+
 /* Various functions to work with paths */
 
 void chosp(char *path);
@@ -29,7 +31,9 @@ int path_starts_with(const char *path, const char *begin);
 /* Checks if two paths point to the same location, treating ending slashes
  * correctly.  Returns non-zero for same path. */
 int paths_are_equal(const char s[], const char t[]);
-void canonicalize_path(const char *directory, char *buf, size_t buf_size);
+/* Removes excess slashes, "../" and "./" from the path.  buf will always
+ * contain trailing forward slash. */
+void canonicalize_path(const char directory[], char buf[], size_t buf_size);
 const char * make_rel_path(const char *path, const char *base);
 int is_path_absolute(const char *path);
 int is_root_dir(const char *path);
