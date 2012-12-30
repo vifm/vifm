@@ -61,12 +61,29 @@
 #define ARRAY_GUARD(x, len) \
     typedef int x##_array_guard[(ARRAY_LEN(x) == (len)) ? 1 : -1]
 
-#define MIN(a,b) ({int _a = (a), _b = (b); (_a < _b) ? _a : _b;})
-#define MAX(a,b) ({int _a = (a), _b = (b); (_a > _b) ? _a : _b;})
+#define MIN(a,b) ({ \
+										typeof(a) _a = (a); \
+										typeof(b) _b = (b); \
+										(_a < _b) ? _a : _b; \
+									})
 
-#define DIV_ROUND_UP(a,b) ({int _a = (a), _b = (b); (_a + (_b - 1))/_b;})
+#define MAX(a,b) ({ \
+										typeof(a) _a = (a); \
+										typeof(b) _b = (b); \
+										(_a > _b) ? _a : _b; \
+									})
 
-#define ROUND_DOWN(a,b) ({ssize_t _a = (a), _b = (b);  _a - _a%_b;})
+#define DIV_ROUND_UP(a,b)  ({ \
+															typeof(a) _a = (a); \
+															typeof(b) _b = (b); \
+															(_a + (_b - 1))/_b; \
+														})
+
+#define ROUND_DOWN(a,b)  ({ \
+														typeof(a) _a = (a); \
+														typeof(b) _b = (b); \
+														_a - _a%_b; \
+													})
 
 #endif
 

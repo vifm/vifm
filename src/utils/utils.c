@@ -543,9 +543,10 @@ wcwidth(wchar_t c)
 }
 
 int
-wcswidth(const wchar_t *str, size_t len)
+wcswidth(const wchar_t str[], size_t max_len)
 {
-	return MIN(len, wcslen(str));
+	const size_t wcslen_result = wcslen(str);
+	return MIN(max_len, wcslen_result);
 }
 
 int
