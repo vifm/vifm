@@ -124,6 +124,15 @@ treat_many_dots_right(void)
 	canonicalize_path("...abc", buf, sizeof(buf));
 	assert_string_equal("...abc/", buf);
 
+	canonicalize_path(".abc", buf, sizeof(buf));
+	assert_string_equal(".abc/", buf);
+
+	canonicalize_path("abc...", buf, sizeof(buf));
+	assert_string_equal("abc.../", buf);
+
+	canonicalize_path("abc.", buf, sizeof(buf));
+	assert_string_equal("abc./", buf);
+
 	canonicalize_path(ABS_PREFIX "/a/.../.", buf, sizeof(buf));
 #ifndef _WIN32
 	assert_string_equal(ABS_PREFIX "/a/.../", buf);
