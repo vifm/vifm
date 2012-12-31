@@ -41,6 +41,7 @@
 #include "utils/env.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
+#include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -65,6 +66,10 @@
 #endif
 
 static int is_dir_entry(const char *filename, int type);
+#ifdef _WIN32
+static void run_win_executable(char full_path[]);
+static int run_win_executable_as_evaluated(const char full_path[]);
+#endif
 static void execute_file(FileView *view, int dont_execute);
 static int multi_run_compat(FileView *view, const char *program);
 static void follow_link(FileView *view, int follow_dirs);
@@ -122,40 +127,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 		shellout(full, 1, 1);
 #else
 		to_back_slash(full);
-		if(curr_stats.as_admin && is_vista_and_above())
-		{
-			SHELLEXECUTEINFOA sei;
-			memset(&sei, 0, sizeof(sei));
-			sei.cbSize = sizeof(sei);
-			sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
-			sei.lpVerb = "runas";
-			sei.lpFile = full;
-			sei.lpParameters = NULL;
-			sei.nShow = SW_SHOWNORMAL;
-
-			if(ShellExecuteEx(&sei))
-			{
-				CloseHandle(sei.hProcess);
-			}
-		}
-		else
-		{
-			int returned_exit_code;
-			const int error = exec_program(full, &returned_exit_code);
-			if(error != 0 && !returned_exit_code)
-			{
-				if(error == ERROR_ELEVATION_REQUIRED)
-				{
-					show_error_msg("Program running error",
-							"Executable requires rights elevation, use \"gr\" to allow it.");
-				}
-				else
-				{
-					show_error_msg("Program running error", "Can't run an executable.");
-				}
-			}
-			update_screen(UT_FULL);
-		}
+		run_win_executable(full);
 #endif
 	}
 	else if(runnable)
@@ -200,6 +172,70 @@ is_dir_entry(const char *filename, int type)
 {
 	return type == DIRECTORY || (type == LINK && is_dir(filename));
 }
+
+#ifdef _WIN32
+
+/* Runs a Windows executable handling errors and rights elevation. */
+static void
+run_win_executable(char full_path[])
+{
+	int running_error = 0;
+	if(curr_stats.as_admin && is_vista_and_above())
+	{
+		running_error = run_win_executable_as_evaluated(full_path);
+	}
+	else
+	{
+		int returned_exit_code;
+		const int error = exec_program(full_path, &returned_exit_code);
+		if(error != 0 && !returned_exit_code)
+		{
+			if(error == ERROR_ELEVATION_REQUIRED && is_vista_and_above())
+			{
+				const int user_response = query_user_menu("Program running error",
+						"Executable requires rights elevation. Run with elevated rights?");
+				if(user_response != 0)
+				{
+					running_error = run_win_executable_as_evaluated(full_path);
+				}
+			}
+			else
+			{
+				running_error = 1;
+			}
+		}
+		update_screen(UT_FULL);
+	}
+	if(running_error)
+	{
+		show_error_msg("Program running error", "Can't run an executable.");
+	}
+}
+
+/* Returns non-zero on error, otherwise zero is returned. */
+static int
+run_win_executable_as_evaluated(const char full_path[])
+{
+	SHELLEXECUTEINFOA sei;
+	memset(&sei, 0, sizeof(sei));
+	sei.cbSize = sizeof(sei);
+	sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
+	sei.lpVerb = "runas";
+	sei.lpFile = full_path;
+	sei.lpParameters = NULL;
+	sei.nShow = SW_SHOWNORMAL;
+
+	if(!ShellExecuteEx(&sei))
+	{
+		const DWORD last_error = GetLastError();
+		LOG_WERROR(last_error);
+		return last_error != ERROR_CANCELLED;
+	}
+	CloseHandle(sei.hProcess);
+	return 0;
+}
+
+#endif /* _WIN32 */
 
 static void
 execute_file(FileView *view, int dont_execute)
