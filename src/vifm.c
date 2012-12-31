@@ -79,6 +79,7 @@
 static void quit_on_invalid_arg(void);
 static void parse_recieved_arguments(char *args[]);
 static void remote_cd(FileView *view, const char *path, int handle);
+static int run_converter(int vifm_like_mode);
 
 static void
 show_version_msg(void)
@@ -263,31 +264,6 @@ check_path_for_file(FileView *view, const char *path, int handle)
 	}
 }
 
-static int
-run_converter(int vifm_like)
-{
-#ifndef _WIN32
-	char buf[PATH_MAX];
-	snprintf(buf, sizeof(buf), "vifmrc-converter %d", vifm_like);
-	return shellout(buf, -1, 1);
-#else
-	TCHAR buf[PATH_MAX + 2];
-
-	if(GetModuleFileName(NULL, buf, ARRAY_LEN(buf)) == 0)
-		return -1;
-
-	*(_tcsrchr(buf, _T('\\')) + 1) = _T('\0');
-	if(vifm_like == 2)
-		_tcscat(buf, _T("vifmrc-converter 2"));
-	else if(vifm_like == 1)
-		_tcscat(buf, _T("vifmrc-converter 1"));
-	else
-		_tcscat(buf, _T("vifmrc-converter 0"));
-
-	return exec_program(buf);
-#endif
-}
-
 int
 main(int argc, char *argv[])
 {
@@ -401,8 +377,7 @@ main(int argc, char *argv[])
 
 	if(old_config && !no_configs)
 	{
-		int vifm_like;
-		int result;
+		int vifm_like_mode;
 		if(!query_user_menu("Configuration update", "Your vifmrc will be "
 				"upgraded to a new format.  Your current configuration will be copied "
 				"before performing any changes, but if you don't want to take the risk "
@@ -415,15 +390,14 @@ main(int argc, char *argv[])
 			exit(0);
 		}
 
-		vifm_like = !query_user_menu("Configuration update", "This version of vifm "
-				"is able to save changes in the configuration files automatically when "
-				"quitting, as it was possible in older versions.  It is from now on "
-				"recommended though, to save permanent changes manually in the "
+		vifm_like_mode = !query_user_menu("Configuration update", "This version of "
+				"vifm is able to save changes in the configuration files automatically "
+				"when quitting, as it was possible in older versions.  It is from now "
+				"on recommended though, to save permanent changes manually in the "
 				"configuration file as it is done in vi/vim.  Do you want vifm to "
 				"behave like vi/vim?");
 
-		result = run_converter(vifm_like);
-		if(result != 0)
+		if(run_converter(vifm_like_mode) != 0)
 		{
 			endwin();
 			fputs("Problems with running vifmrc-converter", stderr);
@@ -525,6 +499,45 @@ remote_cd(FileView *view, const char *path, int handle)
 
 	(void)cd(view, view->curr_dir, buf);
 	check_path_for_file(view, path, handle);
+}
+
+/* Runs vifmrc-converter in mode specified by the vifm_like_mode argument.
+ * Returns zero on success, non-zero otherwise. */
+static int
+run_converter(int vifm_like_mode)
+{
+#ifndef _WIN32
+	char buf[PATH_MAX];
+	snprintf(buf, sizeof(buf), "vifmrc-converter %d", vifm_like_mode);
+	return shellout(buf, -1, 1);
+#else
+	TCHAR buf[PATH_MAX + 2];
+	TCHAR *last_path_component;
+	int returned_exit_code;
+
+	if(GetModuleFileName(NULL, buf, ARRAY_LEN(buf)) == 0)
+		return -1;
+
+	/* Remove last path component. */
+	last_path_component = _tcsrchr(buf, _T('\\')) + 1;
+	*last_path_component = _T('\0');
+
+	switch(vifm_like_mode)
+	{
+		case 2:
+			_tcscat(buf, _T("vifmrc-converter 2"));
+			break;
+		case 1:
+			_tcscat(buf, _T("vifmrc-converter 1"));
+			break;
+
+		default:
+			_tcscat(buf, _T("vifmrc-converter 0"));
+			break;
+	}
+
+	return exec_program(buf, &returned_exit_code);
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

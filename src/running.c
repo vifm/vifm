@@ -20,6 +20,13 @@
 #include <sys/stat.h> /* stat */
 #ifndef _WIN32
 #include <sys/wait.h> /* WEXITSTATUS() */
+#else
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <shellapi.h>
+#ifndef ERROR_ELEVATION_REQUIRED /* Windows Vista and later. */
+#define ERROR_ELEVATION_REQUIRED 740L
+#endif
 #endif
 
 #include <signal.h> /* sighandler_t, signal() */
@@ -34,6 +41,7 @@
 #include "utils/env.h"
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
+#include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
@@ -57,8 +65,19 @@
 #define PAUSE_STR " && pause || pause"
 #endif
 
-static int is_dir_entry(const char *filename, int type);
-static void execute_file(FileView *view, int dont_execute);
+static int is_runnable(const FileView *const view, const char full_path[],
+		int type, int force_follow);
+static int is_executable(const char full_path[], const dir_entry_t *curr,
+		int dont_execute);
+static int is_dir_entry(const char full_path[], int type);
+#ifdef _WIN32
+static void run_win_executable(char full_path[]);
+static int run_win_executable_as_evaluated(const char full_path[]);
+#endif
+static int selection_is_consistent(const FileView *const view);
+static void execute_file(char full_path[]);
+static void run_selection(FileView *view, int dont_execute);
+static void run_file(FileView *view, int dont_execute);
 static int multi_run_compat(FileView *view, const char *program);
 static void follow_link(FileView *view, int follow_dirs);
 static void get_last_path_component(const char *path, char* buf);
@@ -68,100 +87,38 @@ static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
 void
 handle_file(FileView *view, int dont_execute, int force_follow)
 {
-	char full[PATH_MAX];
+	char full_path[PATH_MAX];
 	int executable;
 	int runnable;
-	const dir_entry_t *curr = &view->dir_entry[view->list_pos];
+	const dir_entry_t *const curr = &view->dir_entry[view->list_pos];
 
-	snprintf(full, sizeof(full), "%s/%s", view->curr_dir, curr->name);
-	chosp(full);
+	snprintf(full_path, sizeof(full_path), "%s/%s", view->curr_dir, curr->name);
+	chosp(full_path);
 
-	if(is_dir(full) || is_unc_root(view->curr_dir))
+	if(is_dir(full_path) || is_unc_root(view->curr_dir))
 	{
-		if(!view->dir_entry[view->list_pos].selected &&
-				(curr->type != LINK || !force_follow))
+		if(!curr->selected && (curr->type != LINK || !force_follow))
 		{
 			handle_dir(view);
 			return;
 		}
 	}
 
-	runnable = !cfg.follow_links && curr->type == LINK &&
-			!check_link_is_dir(full);
-	if(runnable && force_follow)
-		runnable = 0;
-	if(view->selected_files > 0)
-		runnable = 1;
-	runnable = curr->type == REGULAR || curr->type == EXECUTABLE || runnable ||
-			curr->type == DIRECTORY;
-
-#ifndef _WIN32
-	executable = curr->type == EXECUTABLE ||
-			(runnable && access(full, X_OK) == 0 &&
-			S_ISEXE(view->dir_entry[view->list_pos].mode));
-#else
-	executable = curr->type == EXECUTABLE;
-#endif
-	executable = executable && !dont_execute && cfg.auto_execute;
+	runnable = is_runnable(view, full_path, curr->type, force_follow);
+	executable = is_executable(full_path, curr, dont_execute);
 
 	if(cfg.vim_filter && (executable || runnable))
-		use_vim_plugin(view, 0, NULL); /* no return */
-
-	if(executable && !is_dir_entry(full, curr->type))
 	{
-#ifndef _WIN32
-		shellout(full, 1, 1);
-#else
-		to_back_slash(full);
-		if(curr_stats.as_admin && is_vista_and_above())
-		{
-			SHELLEXECUTEINFOA sei;
-			memset(&sei, 0, sizeof(sei));
-			sei.cbSize = sizeof(sei);
-			sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
-			sei.lpVerb = "runas";
-			sei.lpFile = full;
-			sei.lpParameters = NULL;
-			sei.nShow = SW_SHOWNORMAL;
+		use_vim_plugin(view, 0, NULL); /* No return. */
+	}
 
-			if(ShellExecuteEx(&sei))
-				CloseHandle(sei.hProcess);
-		}
-		else
-		{
-			exec_program(full);
-			update_screen(UT_FULL);
-		}
-#endif
+	if(executable && !is_dir_entry(full_path, curr->type))
+	{
+		execute_file(full_path);
 	}
 	else if(runnable)
 	{
-		if(view->selected_files > 1)
-		{
-			int files = 0, dirs = 0;
-			int i;
-			for(i = 0; i < view->list_rows; i++)
-			{
-				curr = &view->dir_entry[i];
-				if(!curr->selected)
-					continue;
-
-				snprintf(full, sizeof(full), "%s/%s", view->curr_dir, curr->name);
-				chosp(full);
-				if(is_dir_entry(full, curr->type))
-					dirs++;
-				else
-					files++;
-			}
-			if(dirs > 0 && files > 0)
-			{
-				show_error_msg("Selection error",
-						"Selection cannot contain files and directories at the same time");
-				return;
-			}
-		}
-
-		execute_file(view, dont_execute);
+		run_selection(view, dont_execute);
 	}
 	else if(curr->type == LINK)
 	{
@@ -169,16 +126,185 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	}
 }
 
+/* Returns non-zero if file can be executed or it's link to a directory (it can
+ * be entered), otherwise zero is returned. */
 static int
-is_dir_entry(const char *filename, int type)
+is_runnable(const FileView *const view, const char full_path[], int type,
+		int force_follow)
 {
-	return type == DIRECTORY || (type == LINK && is_dir(filename));
+	int runnable = !cfg.follow_links && type == LINK &&
+		!check_link_is_dir(full_path);
+	if(runnable && force_follow)
+	{
+		runnable = 0;
+	}
+	if(view->selected_files > 0)
+	{
+		runnable = 1;
+	}
+	if(!runnable)
+	{
+		runnable = type == REGULAR || type == EXECUTABLE || type == DIRECTORY;
+	}
+	return runnable;
+}
+
+/* Returns non-zero if file can be executed, otherwise zero is returned. */
+static int
+is_executable(const char full_path[], const dir_entry_t *curr, int dont_execute)
+{
+	int executable;
+#ifndef _WIN32
+	executable = curr->type == EXECUTABLE ||
+			(runnable && access(full, X_OK) == 0 && S_ISEXE(curr->mode));
+#else
+	executable = curr->type == EXECUTABLE;
+#endif
+	return executable && !dont_execute && cfg.auto_execute;
+}
+
+/* Returns non-zero if entry is directory or link to a directory, otherwise zero
+ * is returned. */
+static int
+is_dir_entry(const char full_path[], int type)
+{
+	return type == DIRECTORY || (type == LINK && is_dir(full_path));
+}
+
+#ifdef _WIN32
+
+/* Runs a Windows executable handling errors and rights elevation. */
+static void
+run_win_executable(char full_path[])
+{
+	int running_error = 0;
+	if(curr_stats.as_admin && is_vista_and_above())
+	{
+		running_error = run_win_executable_as_evaluated(full_path);
+	}
+	else
+	{
+		int returned_exit_code;
+		const int error = exec_program(full_path, &returned_exit_code);
+		if(error != 0 && !returned_exit_code)
+		{
+			if(error == ERROR_ELEVATION_REQUIRED && is_vista_and_above())
+			{
+				const int user_response = query_user_menu("Program running error",
+						"Executable requires rights elevation. Run with elevated rights?");
+				if(user_response != 0)
+				{
+					running_error = run_win_executable_as_evaluated(full_path);
+				}
+			}
+			else
+			{
+				running_error = 1;
+			}
+		}
+		update_screen(UT_FULL);
+	}
+	if(running_error)
+	{
+		show_error_msg("Program running error", "Can't run an executable.");
+	}
+}
+
+/* Returns non-zero on error, otherwise zero is returned. */
+static int
+run_win_executable_as_evaluated(const char full_path[])
+{
+	SHELLEXECUTEINFOA sei;
+	memset(&sei, 0, sizeof(sei));
+	sei.cbSize = sizeof(sei);
+	sei.fMask = SEE_MASK_FLAG_NO_UI | SEE_MASK_NOCLOSEPROCESS;
+	sei.lpVerb = "runas";
+	sei.lpFile = full_path;
+	sei.lpParameters = NULL;
+	sei.nShow = SW_SHOWNORMAL;
+
+	if(!ShellExecuteEx(&sei))
+	{
+		const DWORD last_error = GetLastError();
+		LOG_WERROR(last_error);
+		return last_error != ERROR_CANCELLED;
+	}
+	CloseHandle(sei.hProcess);
+	return 0;
+}
+
+#endif /* _WIN32 */
+
+/* Returns non-zero if selection doesn't mix files and directories, otherwise
+ * zero is returned. */
+static int
+selection_is_consistent(const FileView *const view)
+{
+	if(view->selected_files > 1)
+	{
+		int files = 0, dirs = 0;
+		int i;
+		for(i = 0; i < view->list_rows; i++)
+		{
+			char full[PATH_MAX];
+			const dir_entry_t *const curr = &view->dir_entry[i];
+			if(!curr->selected)
+			{
+				continue;
+			}
+
+			snprintf(full, sizeof(full), "%s/%s", view->curr_dir, curr->name);
+			chosp(full);
+			if(is_dir_entry(full, curr->type))
+			{
+				dirs++;
+			}
+			else
+			{
+				files++;
+			}
+		}
+		if(dirs > 0 && files > 0)
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
+
+/* Executes file, specified by the full_path.  Changes type of slashes on
+ * Windows. */
+static void
+execute_file(char full_path[])
+{
+#ifndef _WIN32
+	shellout(full_path, 1, 1);
+#else
+	to_back_slash(full_path);
+	run_win_executable(full_path);
+#endif
+}
+
+/* Tries to run selection displaying error message on file type
+ * inconsistency. */
+static void
+run_selection(FileView *view, int dont_execute)
+{
+	if(selection_is_consistent(view))
+	{
+		run_file(view, dont_execute);
+	}
+	else
+	{
+		show_error_msg("Selection error",
+				"Selection cannot contain files and directories at the same time");
+	}
 }
 
 static void
-execute_file(FileView *view, int dont_execute)
+run_file(FileView *view, int dont_execute)
 {
-	/* TODO: refactor this function execute_file() */
+	/* TODO: refactor this function run_file() */
 
 	assoc_record_t program = {};
 	int undef;

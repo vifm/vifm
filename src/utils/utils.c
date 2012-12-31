@@ -56,6 +56,7 @@
 #endif
 #include "fs.h"
 #include "fs_limits.h"
+#include "log.h"
 #include "macros.h"
 #include "path.h"
 #include "str.h"
@@ -135,6 +136,7 @@ my_system(char *command)
 	else
 	{
 		char *p;
+		int returned_exit_code;
 
 		strcpy(buf, cfg.shell);
 		strcat(buf, " -c '");
@@ -149,7 +151,7 @@ my_system(char *command)
 		*p = '\0';
 
 		strcat(buf, "'");
-		return exec_program(buf);
+		return exec_program(buf, &returned_exit_code);
 	}
 #endif
 }
@@ -550,32 +552,45 @@ wcswidth(const wchar_t str[], size_t max_len)
 }
 
 int
-exec_program(TCHAR *cmd)
+exec_program(char cmd[], int *const returned_exit_code)
 {
 	BOOL ret;
-	DWORD exitcode;
+	DWORD exit_code;
 	STARTUPINFO startup = {};
 	PROCESS_INFORMATION pinfo;
+
+	*returned_exit_code = 0;
 
 	ret = CreateProcessA(NULL, cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
 			&pinfo);
 	if(ret == 0)
-		return -1;
+	{
+		const DWORD last_error = GetLastError();
+		LOG_WERROR(last_error);
+		return last_error;
+	}
 
 	CloseHandle(pinfo.hThread);
 
 	if(WaitForSingleObject(pinfo.hProcess, INFINITE) != WAIT_OBJECT_0)
 	{
+		const DWORD last_error = GetLastError();
+		LOG_WERROR(last_error);
+
 		CloseHandle(pinfo.hProcess);
-		return -1;
+		return last_error;
 	}
-	if(GetExitCodeProcess(pinfo.hProcess, &exitcode) == 0)
+	if(GetExitCodeProcess(pinfo.hProcess, &exit_code) == 0)
 	{
+		const DWORD last_error = GetLastError();
+		LOG_WERROR(last_error);
+
 		CloseHandle(pinfo.hProcess);
-		return -1;
+		return last_error;
 	}
 	CloseHandle(pinfo.hProcess);
-	return exitcode;
+	*returned_exit_code = 1;
+	return exit_code;
 }
 
 static void
