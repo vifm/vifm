@@ -513,6 +513,7 @@ run_converter(int vifm_like_mode)
 #else
 	TCHAR buf[PATH_MAX + 2];
 	TCHAR *last_path_component;
+	int returned_exit_code;
 
 	if(GetModuleFileName(NULL, buf, ARRAY_LEN(buf)) == 0)
 		return -1;
@@ -535,7 +536,7 @@ run_converter(int vifm_like_mode)
 			break;
 	}
 
-	return exec_program(buf);
+	return exec_program(buf, &returned_exit_code);
 #endif
 }
 

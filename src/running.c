@@ -129,7 +129,11 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 		}
 		else
 		{
-			exec_program(full);
+			int returned_exit_code;
+			if(exec_program(full, &returned_exit_code) != 0 && !returned_exit_code)
+			{
+				show_error_msg("Program running error", "Can't run an executable.");
+			}
 			update_screen(UT_FULL);
 		}
 #endif

@@ -135,6 +135,7 @@ my_system(char *command)
 	else
 	{
 		char *p;
+		int returned_exit_code;
 
 		strcpy(buf, cfg.shell);
 		strcat(buf, " -c '");
@@ -149,7 +150,7 @@ my_system(char *command)
 		*p = '\0';
 
 		strcat(buf, "'");
-		return exec_program(buf);
+		return exec_program(buf, &returned_exit_code);
 	}
 #endif
 }
@@ -550,12 +551,14 @@ wcswidth(const wchar_t str[], size_t max_len)
 }
 
 int
-exec_program(TCHAR *cmd)
+exec_program(char cmd[], int *const returned_exit_code)
 {
 	BOOL ret;
-	DWORD exitcode;
+	DWORD exit_code;
 	STARTUPINFO startup = {};
 	PROCESS_INFORMATION pinfo;
+
+	*returned_exit_code = 0;
 
 	ret = CreateProcessA(NULL, cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
 			&pinfo);
@@ -569,13 +572,14 @@ exec_program(TCHAR *cmd)
 		CloseHandle(pinfo.hProcess);
 		return -1;
 	}
-	if(GetExitCodeProcess(pinfo.hProcess, &exitcode) == 0)
+	if(GetExitCodeProcess(pinfo.hProcess, &exit_code) == 0)
 	{
 		CloseHandle(pinfo.hProcess);
 		return -1;
 	}
 	CloseHandle(pinfo.hProcess);
-	return exitcode;
+	*returned_exit_code = 1;
+	return exit_code;
 }
 
 static void
