@@ -56,6 +56,7 @@
 #endif
 #include "fs.h"
 #include "fs_limits.h"
+#include "log.h"
 #include "macros.h"
 #include "path.h"
 #include "str.h"
@@ -563,19 +564,29 @@ exec_program(char cmd[], int *const returned_exit_code)
 	ret = CreateProcessA(NULL, cmd, NULL, NULL, 0, 0, NULL, NULL, &startup,
 			&pinfo);
 	if(ret == 0)
-		return -1;
+	{
+		const DWORD last_error = GetLastError();
+		LOG_WERROR(last_error);
+		return last_error;
+	}
 
 	CloseHandle(pinfo.hThread);
 
 	if(WaitForSingleObject(pinfo.hProcess, INFINITE) != WAIT_OBJECT_0)
 	{
+		const DWORD last_error = GetLastError();
+		LOG_WERROR(last_error);
+
 		CloseHandle(pinfo.hProcess);
-		return -1;
+		return last_error;
 	}
 	if(GetExitCodeProcess(pinfo.hProcess, &exit_code) == 0)
 	{
+		const DWORD last_error = GetLastError();
+		LOG_WERROR(last_error);
+
 		CloseHandle(pinfo.hProcess);
-		return -1;
+		return last_error;
 	}
 	CloseHandle(pinfo.hProcess);
 	*returned_exit_code = 1;

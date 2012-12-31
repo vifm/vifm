@@ -84,8 +84,8 @@ int S_ISEXE(mode_t mode);
 int wcwidth(wchar_t c);
 int wcswidth(const wchar_t str[], size_t max_len);
 /* Executes a command (cmd) using CreateProcess() API function.  On internal
- * error returns -1 and sets *returned_exit_code to zero, otherwise sets
- * *returned_exit_code to non-zero and returns exit code of a process. */
+ * error returns last error code and sets *returned_exit_code to zero, otherwise
+ * sets *returned_exit_code to non-zero and returns exit code of a process. */
 int exec_program(char cmd[], int *const returned_exit_code);
 /* Checks executable existence trying to add executable extensions if needed. */
 int win_executable_exists(const char *path);
