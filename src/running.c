@@ -20,6 +20,13 @@
 #include <sys/stat.h> /* stat */
 #ifndef _WIN32
 #include <sys/wait.h> /* WEXITSTATUS() */
+#else
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <shellapi.h>
+#ifndef ERROR_ELEVATION_REQUIRED /* Windows Vista and later. */
+#define ERROR_ELEVATION_REQUIRED 740L
+#endif
 #endif
 
 #include <signal.h> /* sighandler_t, signal() */
@@ -105,7 +112,9 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	executable = executable && !dont_execute && cfg.auto_execute;
 
 	if(cfg.vim_filter && (executable || runnable))
+	{
 		use_vim_plugin(view, 0, NULL); /* no return */
+	}
 
 	if(executable && !is_dir_entry(full, curr->type))
 	{
@@ -125,14 +134,25 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 			sei.nShow = SW_SHOWNORMAL;
 
 			if(ShellExecuteEx(&sei))
+			{
 				CloseHandle(sei.hProcess);
+			}
 		}
 		else
 		{
 			int returned_exit_code;
-			if(exec_program(full, &returned_exit_code) != 0 && !returned_exit_code)
+			const int error = exec_program(full, &returned_exit_code);
+			if(error != 0 && !returned_exit_code)
 			{
-				show_error_msg("Program running error", "Can't run an executable.");
+				if(error == ERROR_ELEVATION_REQUIRED)
+				{
+					show_error_msg("Program running error",
+							"Executable requires rights elevation, use \"gr\" to allow it.");
+				}
+				else
+				{
+					show_error_msg("Program running error", "Can't run an executable.");
+				}
 			}
 			update_screen(UT_FULL);
 		}
@@ -148,7 +168,9 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 			{
 				curr = &view->dir_entry[i];
 				if(!curr->selected)
+				{
 					continue;
+				}
 
 				snprintf(full, sizeof(full), "%s/%s", view->curr_dir, curr->name);
 				chosp(full);
