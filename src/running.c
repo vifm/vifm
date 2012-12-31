@@ -70,6 +70,7 @@ static int is_dir_entry(const char *filename, int type);
 static void run_win_executable(char full_path[]);
 static int run_win_executable_as_evaluated(const char full_path[]);
 #endif
+static int selection_is_consistent(const FileView *const view);
 static void execute_file(FileView *view, int dont_execute);
 static int multi_run_compat(FileView *view, const char *program);
 static void follow_link(FileView *view, int follow_dirs);
@@ -109,8 +110,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 
 #ifndef _WIN32
 	executable = curr->type == EXECUTABLE ||
-			(runnable && access(full, X_OK) == 0 &&
-			S_ISEXE(view->dir_entry[view->list_pos].mode));
+			(runnable && access(full, X_OK) == 0 && S_ISEXE(curr->mode));
 #else
 	executable = curr->type == EXECUTABLE;
 #endif
@@ -132,34 +132,15 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	}
 	else if(runnable)
 	{
-		if(view->selected_files > 1)
+		if(selection_is_consistent(view))
 		{
-			int files = 0, dirs = 0;
-			int i;
-			for(i = 0; i < view->list_rows; i++)
-			{
-				curr = &view->dir_entry[i];
-				if(!curr->selected)
-				{
-					continue;
-				}
-
-				snprintf(full, sizeof(full), "%s/%s", view->curr_dir, curr->name);
-				chosp(full);
-				if(is_dir_entry(full, curr->type))
-					dirs++;
-				else
-					files++;
-			}
-			if(dirs > 0 && files > 0)
-			{
-				show_error_msg("Selection error",
-						"Selection cannot contain files and directories at the same time");
-				return;
-			}
+			execute_file(view, dont_execute);
 		}
-
-		execute_file(view, dont_execute);
+		else
+		{
+			show_error_msg("Selection error",
+					"Selection cannot contain files and directories at the same time");
+		}
 	}
 	else if(curr->type == LINK)
 	{
@@ -236,6 +217,43 @@ run_win_executable_as_evaluated(const char full_path[])
 }
 
 #endif /* _WIN32 */
+
+/* Returns non-zero if selection doesn't mix files and directories, otherwise
+ * zero is returned. */
+static int
+selection_is_consistent(const FileView *const view)
+{
+	if(view->selected_files > 1)
+	{
+		int files = 0, dirs = 0;
+		int i;
+		for(i = 0; i < view->list_rows; i++)
+		{
+			char full[PATH_MAX];
+			const dir_entry_t *const curr = &view->dir_entry[i];
+			if(!curr->selected)
+			{
+				continue;
+			}
+
+			snprintf(full, sizeof(full), "%s/%s", view->curr_dir, curr->name);
+			chosp(full);
+			if(is_dir_entry(full, curr->type))
+			{
+				dirs++;
+			}
+			else
+			{
+				files++;
+			}
+		}
+		if(dirs > 0 && files > 0)
+		{
+			return 0;
+		}
+	}
+	return 1;
+}
 
 static void
 execute_file(FileView *view, int dont_execute)
