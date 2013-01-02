@@ -1563,12 +1563,16 @@ chmod_cmd(const cmd_info_t *cmd_info)
 	{
 		if(regexec(&re, cmd_info->argv[i], 0, NULL, 0) == REG_NOMATCH)
 		{
-			regfree(&re);
-			status_bar_errorf("Invalid argument: %s", cmd_info->argv[i]);
-			return 1;
+			break;
 		}
 	}
 	regfree(&re);
+
+	if(i < cmd_info->argc)
+	{
+		status_bar_errorf("Invalid argument: %s", cmd_info->argv[i]);
+		return 1;
+	}
 
 	files_chmod(curr_view, cmd_info->args, cmd_info->emark);
 #endif

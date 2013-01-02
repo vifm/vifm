@@ -810,6 +810,8 @@ shellout(const char *command, int pause, int allow_screen)
 			}
 			else
 			{
+				char title_arg_buffer[128];
+
 				ptr = strchr(command, ' ');
 				if(ptr != NULL)
 				{
@@ -819,19 +821,24 @@ shellout(const char *command, int pause, int allow_screen)
 				}
 				else
 				{
-					title = strdup("Shell");
+					title = NULL;
 				}
 
+				title_arg_buffer[0] = '\0';
+				if(!is_null_or_empty(title))
+				{
+					snprintf(title_arg_buffer, sizeof(title_arg_buffer), "-t \"%.10s\"",
+							title);
+				}
 				if(pause > 0)
 				{
-					snprintf(buf, sizeof(buf),
-							"screen -t \"%.10s\" %s -c '%s" PAUSE_STR "'", title,
-							escaped_sh, command);
+					snprintf(buf, sizeof(buf), "screen %s %s -c '%s" PAUSE_STR "'",
+							title_arg_buffer, escaped_sh, command);
 				}
 				else
 				{
 					escaped = escape_filename(command, 0);
-					snprintf(buf, sizeof(buf), "screen -t \"%.10s\" %s -c %s", title,
+					snprintf(buf, sizeof(buf), "screen %s %s -c %s", title_arg_buffer,
 							escaped_sh, escaped);
 					free(escaped);
 				}

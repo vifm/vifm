@@ -27,6 +27,7 @@ Basic things that need to be done.
     Better failed operation messages (list of errors, not just one first error).
     Check for X11 libraries dynamically.
     Fix gU, gu and ignore case name sort on filenames with non-latin characters.
+    Parse escape codes in preview pane.
 
 Documentation.
     Better documentation.
@@ -112,6 +113,7 @@ Possible things to add.
     Maybe provide a way to skip non-existent directory errors on <c-o>/<c-i>.
     Something to control the frequency of directory change changes.
     Save dot files filter state in vifminfo.
+    Invalidate calculated directory size if it's modification time changed.
 
 Other (questionable) things.
     Use mimetypes in FILETYPE.
