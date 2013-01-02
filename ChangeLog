@@ -1,5 +1,7 @@
 0.7.4a to current
 
+	Removed screen title forcing for shell commands.
+
 	Fixed 'z' (thus 'Z') register, which was unavailable (apparently since
 	0.6.3).
 
