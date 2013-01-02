@@ -152,7 +152,7 @@ treat_many_dots_right(void)
 
 	canonicalize_path(ABS_PREFIX "/windows/..................", buf, sizeof(buf));
 #ifndef _WIN32
-	assert_string_equal(ABS_PREFIX "/windows/..................", buf);
+	assert_string_equal(ABS_PREFIX "/windows/................../", buf);
 #else
 	assert_string_equal(ABS_PREFIX "/windows/", buf);
 #endif

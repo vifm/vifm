@@ -68,7 +68,7 @@
 static int is_runnable(const FileView *const view, const char full_path[],
 		int type, int force_follow);
 static int is_executable(const char full_path[], const dir_entry_t *curr,
-		int dont_execute);
+		int dont_execute, int runnable);
 static int is_dir_entry(const char full_path[], int type);
 #ifdef _WIN32
 static void run_win_executable(char full_path[]);
@@ -105,7 +105,7 @@ handle_file(FileView *view, int dont_execute, int force_follow)
 	}
 
 	runnable = is_runnable(view, full_path, curr->type, force_follow);
-	executable = is_executable(full_path, curr, dont_execute);
+	executable = is_executable(full_path, curr, dont_execute, runnable);
 
 	if(cfg.vim_filter && (executable || runnable))
 	{
@@ -151,12 +151,13 @@ is_runnable(const FileView *const view, const char full_path[], int type,
 
 /* Returns non-zero if file can be executed, otherwise zero is returned. */
 static int
-is_executable(const char full_path[], const dir_entry_t *curr, int dont_execute)
+is_executable(const char full_path[], const dir_entry_t *curr, int dont_execute,
+		int runnable)
 {
 	int executable;
 #ifndef _WIN32
 	executable = curr->type == EXECUTABLE ||
-			(runnable && access(full, X_OK) == 0 && S_ISEXE(curr->mode));
+			(runnable && access(full_path, X_OK) == 0 && S_ISEXE(curr->mode));
 #else
 	executable = curr->type == EXECUTABLE;
 #endif
