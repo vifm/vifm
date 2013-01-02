@@ -17,3 +17,5 @@ to make read_file_lines() (of string_array.c) read lines of unlimited length.
 See also capture_output_to_menu() (of menus.c).  So we need a readline() function.
 
 Something is wrong with checking program existance on Windows.
+
+After :screen if running not inside screen, :shell results in black shell.
