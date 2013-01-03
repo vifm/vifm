@@ -774,18 +774,17 @@ save_prompt_history(const char *line)
 }
 
 static void
-split_screen(FileView *view, char *command)
+split_screen(const FileView *view, const char command[])
 {
 	char buf[1024];
 
-	if(command)
+	if(command != NULL)
 	{
 		snprintf(buf, sizeof(buf), "screen -X eval \'chdir %s\'", view->curr_dir);
 		my_system(buf);
 
 		snprintf(buf, sizeof(buf), "screen-open-region-with-program \"%s\"",
 				command);
-
 		my_system(buf);
 	}
 	else

@@ -19,3 +19,5 @@ See also capture_output_to_menu() (of menus.c).  So we need a readline() functio
 Something is wrong with checking program existance on Windows.
 
 After :screen if running not inside screen, :shell results in black shell.
+
+%s macro doesn't work well (tries to use screen-open-region-with-program).
