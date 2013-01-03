@@ -3104,12 +3104,23 @@ screen_cmd(const cmd_info_t *cmd_info)
 	if(cmd_info->qmark)
 	{
 		if(cfg.use_screen)
-			status_bar_message("Screen support is enabled");
+		{
+			if(curr_stats.using_screen)
+			{
+				status_bar_message("Screen support is enabled");
+			}
+			else
+			{
+				status_bar_message("Screen support is enabled but inactive");
+			}
+		}
 		else
+		{
 			status_bar_message("Screen support is disabled");
+		}
 		return 1;
 	}
-	cfg.use_screen = !cfg.use_screen;
+	set_use_screen(!cfg.use_screen);
 	return 0;
 }
 
