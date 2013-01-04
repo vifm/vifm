@@ -1387,14 +1387,8 @@ emark_cmd(const cmd_info_t *cmd_info)
 		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
 		save_msg = show_user_menu(curr_view, com, navigate) != 0;
 	}
-	else if(flags == MACRO_SPLIT)
+	else if(flags == MACRO_SPLIT && curr_stats.using_screen)
 	{
-		if(!cfg.use_screen)
-		{
-			status_bar_error("The screen program support isn't enabled");
-			return 1;
-		}
-
 		split_screen(curr_view, com);
 	}
 	else if(cmd_info->bg)
@@ -2583,7 +2577,7 @@ locate_cmd(const cmd_info_t *cmd_info)
 static int
 ls_cmd(const cmd_info_t *cmd_info)
 {
-	if(!cfg.use_screen)
+	if(!curr_stats.using_screen)
 	{
 		status_bar_message("screen program isn't used");
 		return 1;
@@ -3680,15 +3674,8 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 		const int navigate = flags == MACRO_MENU_NAV_OUTPUT;
 		save_msg = show_user_menu(curr_view, expanded_com, navigate) != 0;
 	}
-	else if(flags == MACRO_SPLIT)
+	else if(flags == MACRO_SPLIT && curr_stats.using_screen)
 	{
-		if(!cfg.use_screen)
-		{
-			free(expanded_com);
-			status_bar_message("The screen program support isn't enabled");
-			return 1;
-		}
-
 		split_screen(curr_view, expanded_com);
 	}
 	else if(strncmp(expanded_com, "filter ", 7) == 0)

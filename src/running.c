@@ -777,7 +777,7 @@ shellout(const char *command, int pause, int allow_screen)
 
 	if(command != NULL)
 	{
-		if(allow_screen && cfg.use_screen)
+		if(allow_screen && curr_stats.using_screen)
 		{
 			int bg;
 			char *escaped;
@@ -865,7 +865,7 @@ shellout(const char *command, int pause, int allow_screen)
 	}
 	else
 	{
-		if(allow_screen && cfg.use_screen)
+		if(allow_screen && curr_stats.using_screen)
 		{
 			snprintf(buf, sizeof(buf), "screen -X setenv PWD \'%s\'",
 					curr_view->curr_dir);
