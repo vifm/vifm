@@ -112,6 +112,9 @@ typedef struct
 	int restart_in_progress;
 
 	EnvType env_type; /* Specifies execution environment type. */
+
+	/* Shows whether screen functionality is active at the moment. */
+	int using_screen;
 }status_t;
 
 extern status_t curr_stats;
@@ -128,6 +131,10 @@ void schedule_redraw(void);
 /* Checks for postponed redraw operations. Returns non-zero if redraw operation
  * was scheduled and resets internal flag. */
 int is_redraw_scheduled(void);
+
+/* Updates curr_stats.using_screen using parameter, which shows whether screen
+ * support is enabled. */
+void set_using_screen(int use_screen);
 
 #endif
 

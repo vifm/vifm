@@ -285,7 +285,7 @@ read_info_file(int reread)
 		else if(line[0] == 's') /* use screen program */
 		{
 			int i = atoi(line + 1);
-			cfg.use_screen = (i != 0);
+			set_use_screen(i != 0);
 		}
 		else if(line[0] == 'c') /* default color scheme */
 		{

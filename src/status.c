@@ -45,10 +45,13 @@ static int reset_dircache(status_t *stats);
 status_t curr_stats;
 
 static int pending_redraw;
+static int inside_screen;
 
 int
 init_status(void)
 {
+	inside_screen = !is_null_or_empty(env_get("STY"));
+
 	load_def_values(&curr_stats);
 	set_gtk_available(&curr_stats);
 	set_number_of_windows(&curr_stats);
@@ -103,6 +106,8 @@ load_def_values(status_t *stats)
 	stats->restart_in_progress = 0;
 
 	stats->env_type = ENVTYPE_EMULATOR;
+
+	stats->using_screen = 0;
 }
 
 static void
@@ -176,6 +181,12 @@ is_redraw_scheduled(void)
 		return 1;
 	}
 	return 0;
+}
+
+void
+set_using_screen(int use_screen)
+{
+	curr_stats.using_screen = inside_screen && use_screen;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

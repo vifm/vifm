@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.4a  Last change: 2012 Oct 22
+*vifm.txt*    For Vifm version 0.7.4a  Last change: 2013 Jan 4
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1445,7 +1445,7 @@ The command macros may be used in user commands.
   %M      same as %m, but l (or Enter) key is handled like for :locate
           and :find commands.
   %S      show command output in the status bar.
-  %s      execute command in screen split.
+  %s      execute command in screen split (ignored if not running in screen).
   %i      completely ignore command output.
 
 Use %% if you need to put a percent sign in your command.

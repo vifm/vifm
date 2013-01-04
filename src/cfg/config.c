@@ -777,6 +777,13 @@ set_fuse_home(const char new_value[])
 	return replace_string(&cfg.fuse_home, canonicalized);
 }
 
+int
+set_use_screen(int use_screen)
+{
+	cfg.use_screen = use_screen;
+	set_using_screen(use_screen);
+}
+
 void
 free_history_items(const history_t history[], size_t len)
 {

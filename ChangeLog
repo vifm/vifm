@@ -702,6 +702,9 @@
 
 	Fixed bug with unfinished :s or :gs filename modifier.
 
+	Fixed dumb black screen on :shell command after :screen when vifm is not
+	running inside screen.
+
 0.7.0 to 0.7.1
 
 	Added 'scrollbind' option.
