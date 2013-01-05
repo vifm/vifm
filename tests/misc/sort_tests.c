@@ -28,7 +28,9 @@ teardown(void)
 	int i;
 
 	for(i = 0; i < lwin.list_rows; i++)
+	{
 		free(lwin.dir_entry[i].name);
+	}
 	free(lwin.dir_entry);
 }
 
@@ -38,8 +40,10 @@ test_special_chars_ignore_case_sort(void)
 	int i;
 
 	lwin.sort[0] = SORT_BY_INAME;
-	for(i = 1; i < NUM_SORT_OPTIONS; i++)
-		lwin.sort[i] = NUM_SORT_OPTIONS + 1;
+	for(i = 1; i < LAST_SORT_OPTION; i++)
+	{
+		lwin.sort[i] = LAST_SORT_OPTION + 1;
+	}
 
 	sort_view(&lwin);
 

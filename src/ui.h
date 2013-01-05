@@ -60,7 +60,8 @@ enum
 	SORT_BY_TIME_CHANGED,
 	SORT_BY_TIME_MODIFIED,
 	SORT_BY_INAME,
-	NUM_SORT_OPTIONS = SORT_BY_INAME
+
+	LAST_SORT_OPTION = SORT_BY_INAME
 };
 
 typedef struct
@@ -136,7 +137,7 @@ typedef struct _FileView
 	int filter_is_valid;
 	regex_t filter_regex;
 
-	char sort[NUM_SORT_OPTIONS];
+	char sort[LAST_SORT_OPTION];
 
 	int history_num;
 	int history_pos;

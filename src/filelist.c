@@ -410,8 +410,10 @@ prepare_view(FileView *view)
 #else
 	view->sort[0] = SORT_BY_INAME;
 #endif
-	for(i = 1; i < NUM_SORT_OPTIONS; i++)
-		view->sort[i] = NUM_SORT_OPTIONS + 1;
+	for(i = 1; i < LAST_SORT_OPTION; i++)
+	{
+		view->sort[i] = LAST_SORT_OPTION + 1;
+	}
 }
 
 /* Allocates memory for view history smartly (handles huge values). */
@@ -2942,8 +2944,10 @@ change_sort_type(FileView *view, char type, char descending)
 	int i;
 
 	view->sort[0] = descending ? -type : type;
-	for(i = 1; i < NUM_SORT_OPTIONS; i++)
-		view->sort[i] = NUM_SORT_OPTIONS + 1;
+	for(i = 1; i < LAST_SORT_OPTION; i++)
+	{
+		view->sort[i] = LAST_SORT_OPTION + 1;
+	}
 
 	reset_view_sort(view);
 
