@@ -19,7 +19,7 @@
 
 #include <ctype.h> /* isdigit() */
 #include <stdio.h> /* fscanf() fgets() snprintf() */
-#include <string.h> /* strcpy() strtol() strcmp() strchr() strlen() */
+#include <string.h> /* memset() strcpy() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
 #include "../utils/fs.h"
@@ -312,10 +312,7 @@ get_sort(FileView *view, const char *line)
 		view->sort[j++] = n;
 	}
 	while(*line != '\0');
-	while(j < SORT_OPTION_COUNT)
-	{
-		view->sort[j++] = NO_SORT_OPTION;
-	}
+	memset(&view->sort[j], NO_SORT_OPTION, sizeof(view->sort) - j);
 
 	reset_view_sort(view);
 }

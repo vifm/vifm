@@ -21,7 +21,7 @@
 #include <math.h> /* abs() */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h>
-#include <string.h> /* memcpy() strstr() */
+#include <string.h> /* memcpy() memset() strstr() */
 
 #include "cfg/config.h"
 #include "engine/options.h"
@@ -962,10 +962,7 @@ sort_handler(OPT_OP op, optval_t val)
 #else
 		curr_view->sort[i++] = SORT_BY_INAME;
 #endif
-	while(i < SORT_OPTION_COUNT)
-	{
-		curr_view->sort[i++] = NO_SORT_OPTION;
-	}
+	memset(&curr_view->sort[i], NO_SORT_OPTION, sizeof(curr_view->sort) - i);
 
 	reset_view_sort(curr_view);
 	resort_view(curr_view);

@@ -1,4 +1,4 @@
-#include <string.h>
+#include <string.h> /* memset() */
 
 #include "seatest.h"
 
@@ -37,13 +37,8 @@ teardown(void)
 static void
 test_special_chars_ignore_case_sort(void)
 {
-	int i;
-
 	lwin.sort[0] = SORT_BY_INAME;
-	for(i = 1; i < SORT_OPTION_COUNT; i++)
-	{
-		lwin.sort[i] = NO_SORT_OPTION;
-	}
+	memset(&lwin.sort[1], NO_SORT_OPTION, sizeof(lwin.sort) - 1);
 
 	sort_view(&lwin);
 
