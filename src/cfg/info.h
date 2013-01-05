@@ -21,6 +21,7 @@
 #define __INFO_H__
 
 void read_info_file(int reread);
+/* Writes vifminfo file updating it with state of the current instance. */
 void write_info_file(void);
 
 #endif
