@@ -42,7 +42,7 @@
 
 #define MAX_LEN 1024
 
-static void get_sort(FileView *view, const char *line);
+static void get_sort_info(FileView *view, const char line[]);
 static void inc_history(char ***hist, int *num, int *len);
 static void get_history(FileView *view, int reread, const char *dir,
 		const char *file, int pos);
@@ -170,11 +170,11 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'l') /* left pane sort */
 		{
-			get_sort(&lwin, line + 1);
+			get_sort_info(&lwin, line + 1);
 		}
 		else if(line[0] == 'r') /* right pane sort */
 		{
-			get_sort(&rwin, line + 1);
+			get_sort_info(&rwin, line + 1);
 		}
 		else if(line[0] == 'd') /* left pane history */
 		{
@@ -297,22 +297,29 @@ read_info_file(int reread)
 	fclose(fp);
 }
 
+/* Parses sort description line of the view and initialized its sort field. */
 static void
-get_sort(FileView *view, const char *line)
+get_sort_info(FileView *view, const char line[])
 {
-	int j;
-
-	j = 0;
-	do
+	int j = 0;
+	while(*line != '\0' && j < SORT_OPTION_COUNT)
 	{
-		char *t;
-		int n = strtol(line, &t, 10);
-		line = t;
-		if(*line == ',')
+		char *endptr;
+		const int sort_opt = strtol(line, &endptr, 10);
+		if(endptr != line)
+		{
+			line = endptr;
+			view->sort[j++] = MIN(LAST_SORT_OPTION, MAX(-LAST_SORT_OPTION, sort_opt));
+		}
+		else
+		{
 			line++;
-		view->sort[j++] = n;
+		}
+		while(*line == ',')
+		{
+			line++;
+		}
 	}
-	while(*line != '\0');
 	memset(&view->sort[j], NO_SORT_OPTION, sizeof(view->sort) - j);
 
 	reset_view_sort(view);
