@@ -752,14 +752,9 @@ write_info_file(void)
 		i = -1;
 		while(++i < SORT_OPTION_COUNT && lwin.sort[i] <= LAST_SORT_OPTION)
 		{
-			if(i < SORT_OPTION_COUNT - 1 && lwin.sort[i + 1] <= LAST_SORT_OPTION)
-			{
-				fprintf(fp, "%d,", lwin.sort[i]);
-			}
-			else
-			{
-				fprintf(fp, "%d", lwin.sort[i]);
-			}
+			int last_option = i >= SORT_OPTION_COUNT - 1;
+			last_option = last_option || lwin.sort[i + 1] > LAST_SORT_OPTION;
+			fprintf(fp, "%d%s", lwin.sort[i], last_option ? "" : ",");
 		}
 		fprintf(fp, "\n");
 
@@ -767,14 +762,9 @@ write_info_file(void)
 		i = -1;
 		while(++i < SORT_OPTION_COUNT && rwin.sort[i] <= LAST_SORT_OPTION)
 		{
-			if(i < SORT_OPTION_COUNT - 1 && rwin.sort[i + 1] <= LAST_SORT_OPTION)
-			{
-				fprintf(fp, "%d,", rwin.sort[i]);
-			}
-			else
-			{
-				fprintf(fp, "%d", rwin.sort[i]);
-			}
+			int last_option = i >= SORT_OPTION_COUNT - 1;
+			last_option = last_option || rwin.sort[i + 1] > LAST_SORT_OPTION;
+			fprintf(fp, "%d%s", rwin.sort[i], last_option ? "" : ",");
 		}
 		fprintf(fp, "\n");
 	}
