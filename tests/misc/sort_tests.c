@@ -42,7 +42,7 @@ test_special_chars_ignore_case_sort(void)
 	lwin.sort[0] = SORT_BY_INAME;
 	for(i = 1; i < LAST_SORT_OPTION; i++)
 	{
-		lwin.sort[i] = LAST_SORT_OPTION + 1;
+		lwin.sort[i] = NO_SORT_OPTION;
 	}
 
 	sort_view(&lwin);

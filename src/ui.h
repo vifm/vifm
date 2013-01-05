@@ -61,7 +61,9 @@ enum
 	SORT_BY_TIME_MODIFIED,
 	SORT_BY_INAME,
 
-	LAST_SORT_OPTION = SORT_BY_INAME
+	LAST_SORT_OPTION = SORT_BY_INAME,
+	/* Special value to use for unset options. */
+	NO_SORT_OPTION = LAST_SORT_OPTION + 1
 };
 
 typedef struct

@@ -412,7 +412,7 @@ prepare_view(FileView *view)
 #endif
 	for(i = 1; i < LAST_SORT_OPTION; i++)
 	{
-		view->sort[i] = LAST_SORT_OPTION + 1;
+		view->sort[i] = NO_SORT_OPTION;
 	}
 }
 
@@ -2946,7 +2946,7 @@ change_sort_type(FileView *view, char type, char descending)
 	view->sort[0] = descending ? -type : type;
 	for(i = 1; i < LAST_SORT_OPTION; i++)
 	{
-		view->sort[i] = LAST_SORT_OPTION + 1;
+		view->sort[i] = NO_SORT_OPTION;
 	}
 
 	reset_view_sort(view);

@@ -964,7 +964,7 @@ sort_handler(OPT_OP op, optval_t val)
 #endif
 	while(i < LAST_SORT_OPTION)
 	{
-		curr_view->sort[i++] = LAST_SORT_OPTION + 1;
+		curr_view->sort[i++] = NO_SORT_OPTION;
 	}
 
 	reset_view_sort(curr_view);

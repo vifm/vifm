@@ -314,7 +314,7 @@ get_sort(FileView *view, const char *line)
 	while(*line != '\0');
 	while(j < LAST_SORT_OPTION)
 	{
-		view->sort[j++] = LAST_SORT_OPTION + 1;
+		view->sort[j++] = NO_SORT_OPTION;
 	}
 
 	reset_view_sort(view);
