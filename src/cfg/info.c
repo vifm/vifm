@@ -18,7 +18,7 @@
  */
 
 #include <ctype.h> /* isdigit() */
-#include <stdio.h> /* fscanf() fgets() snprintf() */
+#include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
 #include <string.h> /* memset() strcpy() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
@@ -48,6 +48,7 @@ static void get_history(FileView *view, int reread, const char *dir,
 		const char *file, int pos);
 static void prepare_line(char *line);
 static const char * escape_spaces(const char *str);
+static void put_sort_info(FILE *fp, char leading_char, const FileView *view);
 static int read_possible_possible_pos(FILE *f);
 static size_t add_to_int_array(int **array, size_t len, int what);
 
@@ -740,7 +741,6 @@ write_info_file(void)
 
 	if(cfg.vifm_info & VIFMINFO_TUI)
 	{
-		int i;
 		fputs("\n# TUI:\n", fp);
 		fprintf(fp, "a%c\n", (curr_view == &rwin) ? 'r' : 'l');
 		fprintf(fp, "q%d\n", curr_stats.view);
@@ -748,25 +748,8 @@ write_info_file(void)
 		fprintf(fp, "o%c\n", (curr_stats.split == VSPLIT) ? 'v' : 'h');
 		fprintf(fp, "m%d\n", curr_stats.splitter_pos);
 
-		fprintf(fp, "l");
-		i = -1;
-		while(++i < SORT_OPTION_COUNT && lwin.sort[i] <= LAST_SORT_OPTION)
-		{
-			int last_option = i >= SORT_OPTION_COUNT - 1;
-			last_option = last_option || lwin.sort[i + 1] > LAST_SORT_OPTION;
-			fprintf(fp, "%d%s", lwin.sort[i], last_option ? "" : ",");
-		}
-		fprintf(fp, "\n");
-
-		fprintf(fp, "r");
-		i = -1;
-		while(++i < SORT_OPTION_COUNT && rwin.sort[i] <= LAST_SORT_OPTION)
-		{
-			int last_option = i >= SORT_OPTION_COUNT - 1;
-			last_option = last_option || rwin.sort[i + 1] > LAST_SORT_OPTION;
-			fprintf(fp, "%d%s", rwin.sort[i], last_option ? "" : ",");
-		}
-		fprintf(fp, "\n");
+		put_sort_info(fp, 'l', &lwin);
+		put_sort_info(fp, 'r', &rwin);
 	}
 
 	if((cfg.vifm_info & VIFMINFO_DHISTORY) && cfg.history_len > 0)
@@ -919,6 +902,22 @@ escape_spaces(const char *str)
 	}
 	*p = '\0';
 	return buf;
+}
+
+/* Writes sort description line of the view to the fp file prepending the
+ * leading_char to it. */
+static void
+put_sort_info(FILE *fp, char leading_char, const FileView *view)
+{
+	int i = -1;
+	fputc(leading_char, fp);
+	while(++i < SORT_OPTION_COUNT && view->sort[i] <= LAST_SORT_OPTION)
+	{
+		int last_option = i >= SORT_OPTION_COUNT - 1;
+		last_option = last_option || view->sort[i + 1] > LAST_SORT_OPTION;
+		fprintf(fp, "%d%s", view->sort[i], last_option ? "" : ",");
+	}
+	fputc('\n', fp);
 }
 
 static int
