@@ -68,7 +68,7 @@ static int indexes[] = {
 	11 + CORRECTION, /* SORT_BY_TIME_MODIFIED */
 	2,               /* SORT_BY_INAME */
 };
-ARRAY_GUARD(indexes, LAST_SORT_OPTION + 1);
+ARRAY_GUARD(indexes, SORT_OPTION_COUNT + 1);
 
 static void leave_sort_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
@@ -138,7 +138,7 @@ enter_sort_mode(FileView *active_view)
 	update_all_windows();
 
 	top = 3;
-	bottom = top + LAST_SORT_OPTION - 1;
+	bottom = top + SORT_OPTION_COUNT - 1;
 	curr = top + indexes[abs(view->sort[0])];
 	col = 6;
 
@@ -150,7 +150,7 @@ redraw_sort_dialog(void)
 {
 	int x, y, cy;
 
-	wresize(sort_win, LAST_SORT_OPTION + 5, SORT_WIN_WIDTH);
+	wresize(sort_win, SORT_OPTION_COUNT + 5, SORT_WIN_WIDTH);
 
 	werase(sort_win);
 	box(sort_win, ACS_VLINE, ACS_HLINE);

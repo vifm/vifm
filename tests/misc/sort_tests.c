@@ -40,7 +40,7 @@ test_special_chars_ignore_case_sort(void)
 	int i;
 
 	lwin.sort[0] = SORT_BY_INAME;
-	for(i = 1; i < LAST_SORT_OPTION; i++)
+	for(i = 1; i < SORT_OPTION_COUNT; i++)
 	{
 		lwin.sort[i] = NO_SORT_OPTION;
 	}

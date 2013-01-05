@@ -410,7 +410,7 @@ prepare_view(FileView *view)
 #else
 	view->sort[0] = SORT_BY_INAME;
 #endif
-	for(i = 1; i < LAST_SORT_OPTION; i++)
+	for(i = 1; i < SORT_OPTION_COUNT; i++)
 	{
 		view->sort[i] = NO_SORT_OPTION;
 	}
@@ -2944,7 +2944,7 @@ change_sort_type(FileView *view, char type, char descending)
 	int i;
 
 	view->sort[0] = descending ? -type : type;
-	for(i = 1; i < LAST_SORT_OPTION; i++)
+	for(i = 1; i < SORT_OPTION_COUNT; i++)
 	{
 		view->sort[i] = NO_SORT_OPTION;
 	}

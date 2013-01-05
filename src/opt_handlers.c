@@ -141,7 +141,7 @@ static const char * sort_enum[] = {
 	"mtime",
 	"iname",
 };
-ARRAY_GUARD(sort_enum, LAST_SORT_OPTION);
+ARRAY_GUARD(sort_enum, SORT_OPTION_COUNT);
 
 static const char * dotdirs_vals[] = {
 	"rootparent",
@@ -165,7 +165,7 @@ static const char * sort_types[] = {
 	"mtime", "+mtime", "-mtime",
 	"iname", "+iname", "-iname",
 };
-ARRAY_GUARD(sort_types, LAST_SORT_OPTION*3);
+ARRAY_GUARD(sort_types, SORT_OPTION_COUNT*3);
 
 static const char * sortorder_enum[] = {
 	"ascending",
@@ -431,7 +431,7 @@ load_sort_option(FileView *view)
 	char buf[64] = "";
 	int j, i;
 
-	for(j = 0; j < LAST_SORT_OPTION && view->sort[j] <= LAST_SORT_OPTION; j++)
+	for(j = 0; j < SORT_OPTION_COUNT && view->sort[j] <= LAST_SORT_OPTION; j++)
 	{
 		const int sort_option = abs(view->sort[j]);
 		if(sort_option == SORT_BY_NAME || sort_option == SORT_BY_INAME)
@@ -439,7 +439,7 @@ load_sort_option(FileView *view)
 			break;
 		}
 	}
-	if(j < LAST_SORT_OPTION && view->sort[j] > LAST_SORT_OPTION)
+	if(j < SORT_OPTION_COUNT && view->sort[j] > LAST_SORT_OPTION)
 	{
 #ifndef _WIN32
 		view->sort[j++] = SORT_BY_NAME;
@@ -449,7 +449,7 @@ load_sort_option(FileView *view)
 	}
 
 	i = -1;
-	while(++i < LAST_SORT_OPTION && view->sort[i] <= LAST_SORT_OPTION)
+	while(++i < SORT_OPTION_COUNT && view->sort[i] <= LAST_SORT_OPTION)
 	{
 		const int sort_option = view->sort[i];
 		if(buf[0] != '\0')
@@ -962,7 +962,7 @@ sort_handler(OPT_OP op, optval_t val)
 #else
 		curr_view->sort[i++] = SORT_BY_INAME;
 #endif
-	while(i < LAST_SORT_OPTION)
+	while(i < SORT_OPTION_COUNT)
 	{
 		curr_view->sort[i++] = NO_SORT_OPTION;
 	}

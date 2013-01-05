@@ -312,7 +312,7 @@ get_sort(FileView *view, const char *line)
 		view->sort[j++] = n;
 	}
 	while(*line != '\0');
-	while(j < LAST_SORT_OPTION)
+	while(j < SORT_OPTION_COUNT)
 	{
 		view->sort[j++] = NO_SORT_OPTION;
 	}
@@ -753,9 +753,9 @@ write_info_file(void)
 
 		fprintf(fp, "l");
 		i = -1;
-		while(++i < LAST_SORT_OPTION && lwin.sort[i] <= LAST_SORT_OPTION)
+		while(++i < SORT_OPTION_COUNT && lwin.sort[i] <= LAST_SORT_OPTION)
 		{
-			if(i < LAST_SORT_OPTION - 1 && lwin.sort[i + 1] <= LAST_SORT_OPTION)
+			if(i < SORT_OPTION_COUNT - 1 && lwin.sort[i + 1] <= LAST_SORT_OPTION)
 			{
 				fprintf(fp, "%d,", lwin.sort[i]);
 			}
@@ -768,9 +768,9 @@ write_info_file(void)
 
 		fprintf(fp, "r");
 		i = -1;
-		while(++i < LAST_SORT_OPTION && rwin.sort[i] <= LAST_SORT_OPTION)
+		while(++i < SORT_OPTION_COUNT && rwin.sort[i] <= LAST_SORT_OPTION)
 		{
-			if(i < LAST_SORT_OPTION - 1 && rwin.sort[i + 1] <= LAST_SORT_OPTION)
+			if(i < SORT_OPTION_COUNT - 1 && rwin.sort[i + 1] <= LAST_SORT_OPTION)
 			{
 				fprintf(fp, "%d,", rwin.sort[i]);
 			}

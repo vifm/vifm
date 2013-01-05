@@ -61,7 +61,10 @@ enum
 	SORT_BY_TIME_MODIFIED,
 	SORT_BY_INAME,
 
+	/* Value of the last sort option. */
 	LAST_SORT_OPTION = SORT_BY_INAME,
+	/* Number of sort options. */
+	SORT_OPTION_COUNT = SORT_BY_INAME,
 	/* Special value to use for unset options. */
 	NO_SORT_OPTION = LAST_SORT_OPTION + 1
 };
@@ -139,7 +142,7 @@ typedef struct _FileView
 	int filter_is_valid;
 	regex_t filter_regex;
 
-	char sort[LAST_SORT_OPTION];
+	char sort[SORT_OPTION_COUNT];
 
 	int history_num;
 	int history_pos;

@@ -58,7 +58,7 @@ sort_view(FileView *v)
 	int i;
 
 	view = v;
-	i = LAST_SORT_OPTION;
+	i = SORT_OPTION_COUNT;
 	while(--i >= 0)
 	{
 		int j;
