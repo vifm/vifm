@@ -58,19 +58,23 @@ sort_view(FileView *v)
 	int i;
 
 	view = v;
-	i = NUM_SORT_OPTIONS;
+	i = SORT_OPTION_COUNT;
 	while(--i >= 0)
 	{
 		int j;
 
-		if(view->sort[i] > NUM_SORT_OPTIONS)
+		if(abs(view->sort[i]) > LAST_SORT_OPTION)
+		{
 			continue;
+		}
 
 		sort_descending = (view->sort[i] < 0);
 		sort_type = abs(view->sort[i]);
 
 		for(j = 0; j < view->list_rows; j++)
+		{
 			view->dir_entry[j].list_num = j;
+		}
 
 		qsort(view->dir_entry, view->list_rows, sizeof(dir_entry_t), sort_dir_list);
 	}

@@ -21,7 +21,7 @@
 #include <math.h> /* abs() */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h>
-#include <string.h> /* memcpy() strstr() */
+#include <string.h> /* memcpy() memset() strstr() */
 
 #include "cfg/config.h"
 #include "engine/options.h"
@@ -141,7 +141,7 @@ static const char * sort_enum[] = {
 	"mtime",
 	"iname",
 };
-ARRAY_GUARD(sort_enum, NUM_SORT_OPTIONS);
+ARRAY_GUARD(sort_enum, SORT_OPTION_COUNT);
 
 static const char * dotdirs_vals[] = {
 	"rootparent",
@@ -165,7 +165,7 @@ static const char * sort_types[] = {
 	"mtime", "+mtime", "-mtime",
 	"iname", "+iname", "-iname",
 };
-ARRAY_GUARD(sort_types, NUM_SORT_OPTIONS*3);
+ARRAY_GUARD(sort_types, SORT_OPTION_COUNT*3);
 
 static const char * sortorder_enum[] = {
 	"ascending",
@@ -431,27 +431,34 @@ load_sort_option(FileView *view)
 	char buf[64] = "";
 	int j, i;
 
-	for(j = 0; j < NUM_SORT_OPTIONS && view->sort[j] <= NUM_SORT_OPTIONS; j++)
-		if(abs(view->sort[j]) == SORT_BY_NAME ||
-				abs(view->sort[j]) == SORT_BY_INAME)
+	j = -1;
+	while(++j < SORT_OPTION_COUNT && abs(view->sort[j]) <= LAST_SORT_OPTION)
+	{
+		const int sort_option = abs(view->sort[j]);
+		if(sort_option == SORT_BY_NAME || sort_option == SORT_BY_INAME)
+		{
 			break;
-	if(j < NUM_SORT_OPTIONS && view->sort[j] > NUM_SORT_OPTIONS)
+		}
+	}
+	if(j < SORT_OPTION_COUNT && abs(view->sort[j]) > LAST_SORT_OPTION)
+	{
 #ifndef _WIN32
 		view->sort[j++] = SORT_BY_NAME;
 #else
 		view->sort[j++] = SORT_BY_INAME;
 #endif
+	}
 
 	i = -1;
-	while(++i < NUM_SORT_OPTIONS && view->sort[i] <= NUM_SORT_OPTIONS)
+	while(++i < SORT_OPTION_COUNT && abs(view->sort[i]) <= LAST_SORT_OPTION)
 	{
+		const int sort_option = view->sort[i];
 		if(buf[0] != '\0')
+		{
 			strcat(buf, ",");
-		if(view->sort[i] < 0)
-			strcat(buf, "-");
-		else
-			strcat(buf, "+");
-		strcat(buf, sort_enum[abs(view->sort[i]) - 1]);
+		}
+		strcat(buf, (sort_option < 0) ? "-" : "+");
+		strcat(buf, sort_enum[abs(sort_option) - 1]);
 	}
 
 	val.str_val = buf;
@@ -956,8 +963,7 @@ sort_handler(OPT_OP op, optval_t val)
 #else
 		curr_view->sort[i++] = SORT_BY_INAME;
 #endif
-	while(i < NUM_SORT_OPTIONS)
-		curr_view->sort[i++] = NUM_SORT_OPTIONS + 1;
+	memset(&curr_view->sort[i], NO_SORT_OPTION, sizeof(curr_view->sort) - i);
 
 	reset_view_sort(curr_view);
 	resort_view(curr_view);

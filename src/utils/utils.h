@@ -70,7 +70,9 @@ const char * enclose_in_dquotes(const char *str);
 int my_chdir(const char *path);
 /* Makes filename unique by adding an unique suffix to it.
  * Returns pointer to a statically allocated buffer */
-const char * make_name_unique(const char *filename);
+const char * make_name_unique(const char filename[]);
+/* Returns process identification in a portable way. */
+unsigned int get_pid(void);
 /* Finds command name in the command line and writes it to the buf.
  * Raw mode will preserve quotes on Windows.
  * Returns a pointer to the argument list. */

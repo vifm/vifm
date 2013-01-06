@@ -406,7 +406,7 @@ enclose_in_dquotes(const char *str)
 }
 
 const char *
-make_name_unique(const char *filename)
+make_name_unique(const char filename[])
 {
 	static char unique[PATH_MAX];
 	size_t len;
@@ -414,10 +414,10 @@ make_name_unique(const char *filename)
 
 #ifndef _WIN32
 	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, getppid(),
-			getpid());
+			get_pid());
 #else
-	/* TODO: fix name uniqualization on Windows */
-	len = snprintf(unique, sizeof(unique), "%s_%u%u_00", filename, 0, 0);
+	/* TODO: think about better name uniqualization on Windows. */
+	len = snprintf(unique, sizeof(unique), "%s_%u_00", filename, get_pid());
 #endif
 	i = 0;
 
@@ -426,6 +426,16 @@ make_name_unique(const char *filename)
 		sprintf(unique + len - 2, "%d", ++i);
 	}
 	return unique;
+}
+
+unsigned int
+get_pid(void)
+{
+#ifndef _WIN32
+	return getpid();
+#else
+	return GetCurrentProcessId();
+#endif
 }
 
 char *

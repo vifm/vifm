@@ -18,14 +18,15 @@
  */
 
 #include <ctype.h> /* isdigit() */
-#include <stdio.h> /* fscanf() fgets() snprintf() */
-#include <string.h> /* strcpy() strtol() strcmp() strchr() strlen() */
+#include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
+#include <string.h> /* memset() strcpy() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
+#include "../utils/utils.h"
 #include "../bookmarks.h"
 #include "../commands.h"
 #include "../dir_stack.h"
@@ -42,12 +43,16 @@
 
 #define MAX_LEN 1024
 
-static void get_sort(FileView *view, const char *line);
+static void get_sort_info(FileView *view, const char line[]);
 static void inc_history(char ***hist, int *num, int *len);
 static void get_history(FileView *view, int reread, const char *dir,
 		const char *file, int pos);
+static int copy_file(const char src[], const char dst[]);
+static int copy_file_internal(FILE *const src, FILE *const dst);
+static void update_info_file(const char filename[]);
 static void prepare_line(char *line);
 static const char * escape_spaces(const char *str);
+static void put_sort_info(FILE *fp, char leading_char, const FileView *view);
 static int read_possible_possible_pos(FILE *f);
 static size_t add_to_int_array(int **array, size_t len, int what);
 
@@ -169,11 +174,11 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'l') /* left pane sort */
 		{
-			get_sort(&lwin, line + 1);
+			get_sort_info(&lwin, line + 1);
 		}
 		else if(line[0] == 'r') /* right pane sort */
 		{
-			get_sort(&rwin, line + 1);
+			get_sort_info(&rwin, line + 1);
 		}
 		else if(line[0] == 'd') /* left pane history */
 		{
@@ -296,24 +301,30 @@ read_info_file(int reread)
 	fclose(fp);
 }
 
+/* Parses sort description line of the view and initialized its sort field. */
 static void
-get_sort(FileView *view, const char *line)
+get_sort_info(FileView *view, const char line[])
 {
-	int j;
-
-	j = 0;
-	do
+	int j = 0;
+	while(*line != '\0' && j < SORT_OPTION_COUNT)
 	{
-		char *t;
-		int n = strtol(line, &t, 10);
-		line = t;
-		if(*line == ',')
+		char *endptr;
+		const int sort_opt = strtol(line, &endptr, 10);
+		if(endptr != line)
+		{
+			line = endptr;
+			view->sort[j++] = MIN(LAST_SORT_OPTION, MAX(-LAST_SORT_OPTION, sort_opt));
+		}
+		else
+		{
 			line++;
-		view->sort[j++] = n;
+		}
+		while(*line == ',')
+		{
+			line++;
+		}
 	}
-	while(*line != '\0');
-	while(j < NUM_SORT_OPTIONS)
-		view->sort[j++] = NUM_SORT_OPTIONS + 1;
+	memset(&view->sort[j], NO_SORT_OPTION, sizeof(view->sort) - j);
 
 	reset_view_sort(view);
 }
@@ -353,10 +364,82 @@ get_history(FileView *view, int reread, const char *dir, const char *file,
 void
 write_info_file(void)
 {
+	char info_file[PATH_MAX];
+	char tmp_file[PATH_MAX];
+
+	(void)snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
+	(void)snprintf(tmp_file, sizeof(tmp_file), "%s_%u", info_file, get_pid());
+
+	if(access(info_file, R_OK) != 0 || copy_file(info_file, tmp_file) == 0)
+	{
+		update_info_file(tmp_file);
+
+		if(rename(tmp_file, info_file) != 0)
+		{
+			(void)unlink(tmp_file);
+		}
+	}
+}
+
+/* Copies the src file to the dst location.  Returns zero on success. */
+static int
+copy_file(const char src[], const char dst[])
+{
+	FILE *const src_fp = fopen(src, "rb");
+	FILE *const dst_fp = fopen(dst, "wb");
+	int result;
+
+	result = copy_file_internal(src_fp, dst_fp);
+
+	if(dst_fp != NULL)
+	{
+		(void)fclose(dst_fp);
+	}
+	if(src_fp != NULL)
+	{
+		(void)fclose(src_fp);
+	}
+
+	if(result != 0)
+	{
+		(void)unlink(dst);
+	}
+
+	return result;
+}
+
+/* Internal sub-function of the copy_file() function.  Returns zero on
+ * success. */
+static int
+copy_file_internal(FILE *const src, FILE *const dst)
+{
+	char buffer[4*1024];
+	size_t nread;
+
+	if(src == NULL || dst == NULL)
+	{
+		return 1;
+	}
+
+	while((nread = fread(&buffer[0], 1, sizeof(buffer), src)))
+	{
+		if(fwrite(&buffer[0], 1, nread, dst) != nread)
+		{
+			break;
+		}
+	}
+
+	return nread > 0;
+}
+
+/* Reads contents of the filename file as an info file and updates it with the
+ * state of current instance. */
+static void
+update_info_file(const char filename[])
+{
 	/* TODO: refactor this function write_info_file() */
 
 	FILE *fp;
-	char info_file[PATH_MAX];
 	char ** list;
 	int nlist = -1;
 	char **ft = NULL, **fx = NULL , **fv = NULL, **cmds = NULL, **marks = NULL;
@@ -371,12 +454,10 @@ write_info_file(void)
 	if(cfg.vifm_info == 0)
 		return;
 
-	snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
-
 	list = list_udf();
 	while(list[++nlist] != NULL);
 
-	if((fp = fopen(info_file, "r")) != NULL)
+	if((fp = fopen(filename, "r")) != NULL)
 	{
 		char line[MAX_LEN], line2[MAX_LEN], line3[MAX_LEN];
 		while(fgets(line, sizeof(line), fp) == line)
@@ -562,8 +643,10 @@ write_info_file(void)
 		fclose(fp);
 	}
 
-	if((fp = fopen(info_file, "w")) == NULL)
+	if((fp = fopen(filename, "w")) == NULL)
+	{
 		return;
+	}
 
 	fprintf(fp, "# You can edit this file by hand, but it's recommended not to do that.\n");
 
@@ -741,7 +824,6 @@ write_info_file(void)
 
 	if(cfg.vifm_info & VIFMINFO_TUI)
 	{
-		int i;
 		fputs("\n# TUI:\n", fp);
 		fprintf(fp, "a%c\n", (curr_view == &rwin) ? 'r' : 'l');
 		fprintf(fp, "q%d\n", curr_stats.view);
@@ -749,23 +831,8 @@ write_info_file(void)
 		fprintf(fp, "o%c\n", (curr_stats.split == VSPLIT) ? 'v' : 'h');
 		fprintf(fp, "m%d\n", curr_stats.splitter_pos);
 
-		fprintf(fp, "l");
-		i = -1;
-		while(++i < NUM_SORT_OPTIONS && lwin.sort[i] <= NUM_SORT_OPTIONS)
-			if(i < NUM_SORT_OPTIONS - 1 && lwin.sort[i + 1] <= NUM_SORT_OPTIONS)
-				fprintf(fp, "%d,", lwin.sort[i]);
-			else
-				fprintf(fp, "%d", lwin.sort[i]);
-		fprintf(fp, "\n");
-
-		fprintf(fp, "r");
-		i = -1;
-		while(++i < NUM_SORT_OPTIONS && rwin.sort[i] <= NUM_SORT_OPTIONS)
-			if(i < NUM_SORT_OPTIONS - 1 && rwin.sort[i + 1] <= NUM_SORT_OPTIONS)
-				fprintf(fp, "%d,", rwin.sort[i]);
-			else
-				fprintf(fp, "%d", rwin.sort[i]);
-		fprintf(fp, "\n");
+		put_sort_info(fp, 'l', &lwin);
+		put_sort_info(fp, 'r', &rwin);
 	}
 
 	if((cfg.vifm_info & VIFMINFO_DHISTORY) && cfg.history_len > 0)
@@ -918,6 +985,22 @@ escape_spaces(const char *str)
 	}
 	*p = '\0';
 	return buf;
+}
+
+/* Writes sort description line of the view to the fp file prepending the
+ * leading_char to it. */
+static void
+put_sort_info(FILE *fp, char leading_char, const FileView *view)
+{
+	int i = -1;
+	fputc(leading_char, fp);
+	while(++i < SORT_OPTION_COUNT && abs(view->sort[i]) <= LAST_SORT_OPTION)
+	{
+		int last_option = i >= SORT_OPTION_COUNT - 1;
+		last_option = last_option || abs(view->sort[i + 1]) > LAST_SORT_OPTION;
+		fprintf(fp, "%d%s", view->sort[i], last_option ? "" : ",");
+	}
+	fputc('\n', fp);
 }
 
 static int

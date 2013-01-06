@@ -46,7 +46,7 @@
 #include <stddef.h> /* size_t */
 #include <stdint.h> /* uint64_t */
 #include <stdlib.h> /* calloc() malloc() */
-#include <string.h> /* strcat() strlen() */
+#include <string.h> /* memset() strcat() strlen() */
 #include <time.h>
 
 #include "cfg/config.h"
@@ -394,8 +394,6 @@ prepare_views(void)
 static void
 prepare_view(FileView *view)
 {
-	int i;
-
 	strncpy(view->regexp, "", sizeof(view->regexp));
 	(void)replace_string(&view->prev_filter, "");
 	set_filename_filter(view, "");
@@ -410,8 +408,7 @@ prepare_view(FileView *view)
 #else
 	view->sort[0] = SORT_BY_INAME;
 #endif
-	for(i = 1; i < NUM_SORT_OPTIONS; i++)
-		view->sort[i] = NUM_SORT_OPTIONS + 1;
+	memset(&view->sort[1], NO_SORT_OPTION, sizeof(view->sort) - 1);
 }
 
 /* Allocates memory for view history smartly (handles huge values). */
@@ -2939,11 +2936,8 @@ window_shows_dirlist(const FileView *const view)
 void
 change_sort_type(FileView *view, char type, char descending)
 {
-	int i;
-
 	view->sort[0] = descending ? -type : type;
-	for(i = 1; i < NUM_SORT_OPTIONS; i++)
-		view->sort[i] = NUM_SORT_OPTIONS + 1;
+	memset(&view->sort[1], NO_SORT_OPTION, sizeof(view->sort) - 1);
 
 	reset_view_sort(view);
 
