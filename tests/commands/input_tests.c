@@ -586,6 +586,17 @@ test_qmark_and_bg(void)
 	assert_true(cmdi.qmark);
 }
 
+static void
+test_extra_long_command_name(void)
+{
+	char cmd_name[1024];
+
+	memset(cmd_name, 'a', sizeof(cmd_name) - 1);
+	cmd_name[sizeof(cmd_name) - 1] = '\0';
+
+	assert_false(execute_cmd(cmd_name) == 0);
+}
+
 void
 input_tests(void)
 {
@@ -620,6 +631,7 @@ input_tests(void)
 	run_test(test_bg_and_no_args);
 	run_test(test_short_forms);
 	run_test(test_qmark_and_bg);
+	run_test(test_extra_long_command_name);
 
 	test_fixture_end();
 }
