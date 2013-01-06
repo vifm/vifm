@@ -74,7 +74,7 @@ popd(void)
 	if(stack_top == 0)
 		return -1;
 
-	stack_top -= 1;
+	stack_top--;
 
 	if(change_directory(&lwin, stack[stack_top].lpane_dir) >= 0)
 		load_dir_list(&lwin, 0);
