@@ -63,7 +63,7 @@ sort_view(FileView *v)
 	{
 		int j;
 
-		if(view->sort[i] > LAST_SORT_OPTION)
+		if(abs(view->sort[i]) > LAST_SORT_OPTION)
 		{
 			continue;
 		}

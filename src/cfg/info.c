@@ -918,10 +918,10 @@ put_sort_info(FILE *fp, char leading_char, const FileView *view)
 {
 	int i = -1;
 	fputc(leading_char, fp);
-	while(++i < SORT_OPTION_COUNT && view->sort[i] <= LAST_SORT_OPTION)
+	while(++i < SORT_OPTION_COUNT && abs(view->sort[i]) <= LAST_SORT_OPTION)
 	{
 		int last_option = i >= SORT_OPTION_COUNT - 1;
-		last_option = last_option || view->sort[i + 1] > LAST_SORT_OPTION;
+		last_option = last_option || abs(view->sort[i + 1]) > LAST_SORT_OPTION;
 		fprintf(fp, "%d%s", view->sort[i], last_option ? "" : ",");
 	}
 	fputc('\n', fp);

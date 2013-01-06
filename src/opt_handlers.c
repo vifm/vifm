@@ -431,7 +431,8 @@ load_sort_option(FileView *view)
 	char buf[64] = "";
 	int j, i;
 
-	for(j = 0; j < SORT_OPTION_COUNT && view->sort[j] <= LAST_SORT_OPTION; j++)
+	j = -1;
+	while(++j < SORT_OPTION_COUNT && abs(view->sort[j]) <= LAST_SORT_OPTION)
 	{
 		const int sort_option = abs(view->sort[j]);
 		if(sort_option == SORT_BY_NAME || sort_option == SORT_BY_INAME)
@@ -439,7 +440,7 @@ load_sort_option(FileView *view)
 			break;
 		}
 	}
-	if(j < SORT_OPTION_COUNT && view->sort[j] > LAST_SORT_OPTION)
+	if(j < SORT_OPTION_COUNT && abs(view->sort[j]) > LAST_SORT_OPTION)
 	{
 #ifndef _WIN32
 		view->sort[j++] = SORT_BY_NAME;
@@ -449,7 +450,7 @@ load_sort_option(FileView *view)
 	}
 
 	i = -1;
-	while(++i < SORT_OPTION_COUNT && view->sort[i] <= LAST_SORT_OPTION)
+	while(++i < SORT_OPTION_COUNT && abs(view->sort[i]) <= LAST_SORT_OPTION)
 	{
 		const int sort_option = view->sort[i];
 		if(buf[0] != '\0')
