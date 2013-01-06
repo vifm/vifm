@@ -259,6 +259,7 @@ execute_keys_inner(const wchar_t keys[], keys_info_t *keys_info, int no_remap,
 		return 0;
 	keys = get_count(keys, &key_info.count);
 	key_info.count = combine_counts(key_info.count, prev_count);
+	key_info.multi = L'\0';
 	root = keys_info->selector ? &selectors_root[*mode] : &user_cmds_root[*mode];
 
 	if(!no_remap)
@@ -665,7 +666,7 @@ remove_user_keys(const wchar_t *keys, int mode)
 
 	do
 	{
-		key_chunk_t *parent = curr->parent;
+		key_chunk_t *const parent = curr->parent;
 		if(curr->prev != NULL)
 			curr->prev->next = curr->next;
 		else
@@ -685,10 +686,10 @@ remove_user_keys(const wchar_t *keys, int mode)
 static key_chunk_t *
 find_user_keys(const wchar_t *keys, int mode)
 {
-	key_chunk_t *curr = &user_cmds_root[mode], *p;
+	key_chunk_t *curr = &user_cmds_root[mode];
 	while(*keys != L'\0')
 	{
-		p = curr->child;
+		key_chunk_t *p = curr->child;
 		while(p != NULL && p->key < *keys)
 			p = p->next;
 		if(p == NULL || p->key != *keys)
@@ -696,10 +697,7 @@ find_user_keys(const wchar_t *keys, int mode)
 		curr = p;
 		keys++;
 	}
-
-	if(curr->conf.type != USER_CMD)
-		return NULL;
-	return curr;
+	return (curr->conf.type == USER_CMD) ? curr : NULL;
 }
 
 TSTATIC key_conf_t *
