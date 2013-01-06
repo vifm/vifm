@@ -58,7 +58,7 @@ typedef struct
 column_t;
 
 /* Column view description structure.  Typedef is in the header file. */
-struct columns_t
+struct columns_list_t
 {
 	size_t max_width; /* Maximum width of one line of the view. */
 	size_t count; /* Number of columns in the list. */
@@ -141,7 +141,7 @@ init_new_column_desc(column_desc_t *desc, int column_id, column_func func)
 columns_t
 columns_create(void)
 {
-	struct columns_t *const result = malloc(sizeof(struct columns_t));
+	struct columns_list_t *const result = malloc(sizeof(struct columns_list_t));
 	if(result == NULL)
 	{
 		return NULL_COLUMNS;
