@@ -33,6 +33,7 @@
 #include "cmds.h"
 
 #define MAX_CMD_RECURSION 16
+#define MAX_CMD_NAME_LEN 256
 #define INVALID_MARK -4096
 
 typedef enum
@@ -170,7 +171,7 @@ int
 execute_cmd(const char cmd[])
 {
 	cmd_info_t cmd_info;
-	char cmd_name[256];
+	char cmd_name[MAX_CMD_NAME_LEN];
 	cmd_t *cur;
 	const char *args;
 	int execution_code;
@@ -476,7 +477,7 @@ int
 get_cmd_info(const char cmd[], cmd_info_t *info)
 {
 	cmd_info_t cmd_info;
-	char cmd_name[256];
+	char cmd_name[MAX_CMD_NAME_LEN];
 	cmd_t *cur;
 	size_t len;
 
@@ -518,7 +519,7 @@ complete_cmd(const char cmd[])
 	cmd_name_pos = parse_range(cmd, &cmd_info);
 	if(cmd_name_pos != NULL)
 	{
-		char cmd_name[256];
+		char cmd_name[MAX_CMD_NAME_LEN];
 		const char *args;
 		cmd_t *cur;
 
@@ -553,7 +554,7 @@ skip_prefix_commands(const char cmd[])
 	cmd_name_pos = parse_range(cmd, &cmd_info);
 	if(cmd_name_pos != NULL)
 	{
-		char cmd_name[256];
+		char cmd_name[MAX_CMD_NAME_LEN];
 		const char *args;
 		cmd_t *cur;
 
@@ -865,7 +866,7 @@ static int
 command_cmd(const cmd_info_t *cmd_info)
 {
 	int cmp;
-	char cmd_name[256];
+	char cmd_name[MAX_CMD_NAME_LEN];
 	const char *args;
 	cmd_t *new, *cur;
 
