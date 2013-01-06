@@ -902,7 +902,10 @@ command_cmd(const cmd_info_t *cmd_info)
 	}
 	else
 	{
-		new = insert_cmd(cur);
+		if((new = insert_cmd(cur)) == NULL)
+		{
+			return CMDS_ERR_NO_MEM;
+		}
 	}
 
 	new->name = strdup(cmd_name);
