@@ -1,3 +1,31 @@
+January 7, 2013
+===============
+
+vifm v0.7.4b beta testing has started
+-------------------------------------
+
+This version is a minor bugfix release.  It doesn't contain any new
+features.  The release fixes more than 17 bugs found since version
+0.7.4a.
+
+Because of promise not to release anything without beta-testing,
+even this bugfix release has a beta stage, which should last about
+two weeks. In case some bugs will be found, a second beta will be
+released in a week.
+
+Fixes are related to the following subjects:
+ - interaction with the screen tool (thanks to Jing Liu);
+ - working with registers (old, but unreported bugs);
+ - rights elevation and dot directories on Windows;
+ - processing of vifminfo file (thanks to Christoph, a.k.a informationen);
+ - handling of colorscheme files (thanks to Charles Kauffman);
+ - displaying of CJK characters (thanks to lcj);
+ - 'classify' option (thanks to Thomas Nemeth).
+
+See change log for full list of fixes.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 October 22, 2012
 ================
 
@@ -256,9 +284,9 @@ Menus and dialogs:
 
 Other changes:
  - added notes about automatic FUSE mounts to the documentation;
- - now vifm removes scripts ($VIFM/scripts/**) from PATH for :shell command;
+ - now vifm removes scripts (`$VIFM/scripts/**`) from PATH for :shell command;
  - use common search history for normal, visual and menu modes;
- - increased directory modification stamp precision on *nix.
+ - increased directory modification stamp precision on Unix.
 
 Plus bug fixes of course.
 
@@ -354,7 +382,7 @@ Angle bracket notation:
    only for Windows;
  - added <a-X> as synonyms for <m-X> (where X is a key);
  - added angle bracket notation <c-s-X> and <s-c-X> as synonyms for <c-X>;
- - added Ctrl + Alt + letter combinations, only for *nix.
+ - added Ctrl + Alt + letter combinations, only for Unix.
 
 Command-line mode related changes:
  - added :split! to toggle between only and split view;
@@ -635,7 +663,7 @@ Vifm-0.6.1 is available.
 ------------------------
 
 Windows version remains unchanged for now.  I'm planning to use one code base
-for both *nix and Windows platforms and it would take some time to do that.
+for both Unix and Windows platforms and it would take some time to do that.
 
 Major changes since 0.5:
  - added support for user mappings;
