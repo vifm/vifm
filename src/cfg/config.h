@@ -135,7 +135,7 @@ void resize_history(size_t new_len);
  * error. */
 int set_fuse_home(const char new_value[]);
 /* Sets whether screen support is enabled. */
-int set_use_screen(int use_screen);
+void set_use_screen(int use_screen);
 /* Frees memory previously allocated for specified history items. */
 void free_history_items(const history_t history[], size_t len);
 
