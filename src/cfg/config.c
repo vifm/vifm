@@ -777,7 +777,7 @@ set_fuse_home(const char new_value[])
 	return replace_string(&cfg.fuse_home, canonicalized);
 }
 
-int
+void
 set_use_screen(int use_screen)
 {
 	cfg.use_screen = use_screen;

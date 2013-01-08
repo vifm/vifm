@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(configure.in)
-AM_INIT_AUTOMAKE(vifm, 0.7.4a)
+AM_INIT_AUTOMAKE(vifm, 0.7.4b-beta)
 AM_CONFIG_HEADER(config.h)
 
 
