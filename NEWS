@@ -1,3 +1,30 @@
+January 21, 2013
+================
+
+vifm v0.7.4b release
+--------------------
+
+This version is a minor bugfix release.  It doesn't contain any new
+features.  The release fixes more than 17 bugs found since version
+0.7.4a.
+
+Two weeks since beta version was published have passed.  Since no bugs
+were reported, the beta version is now released as 0.7.4b without
+any changes except version number.
+
+Fixes in this version are related to the following subjects:
+ - interaction with the screen tool (thanks to Jing Liu);
+ - working with registers (old, but unreported bugs);
+ - rights elevation and dot directories on Windows;
+ - processing of vifminfo file (thanks to Christoph, a.k.a informationen);
+ - handling of colorscheme files (thanks to Charles Kauffman);
+ - displaying of CJK characters (thanks to lcj);
+ - 'classify' option (thanks to Thomas Nemeth).
+
+See change log for full list of fixes.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 January 7, 2013
 ===============
 
