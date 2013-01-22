@@ -12899,6 +12899,20 @@ fi
 
 
 
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking host" >&5
+$as_echo_n "checking host... " >&6; }
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $host" >&5
+$as_echo "$host" >&6; }
+case "$host_os" in
+	macos* | darwin*)
+		OSX_HOST=1
+		;;
+	*)
+		OSX_HOST=
+		;;
+esac
+
 ac_fn_c_check_header_mongrel "$LINENO" "assert.h" "ac_cv_header_assert_h" "$ac_includes_default"
 if test "x$ac_cv_header_assert_h" = xyes; then :
 
@@ -12979,7 +12993,8 @@ else
 fi
 
 
-ac_fn_c_check_header_mongrel "$LINENO" "mntent.h" "ac_cv_header_mntent_h" "$ac_includes_default"
+if test -z "$OSX_HOST" ; then
+	ac_fn_c_check_header_mongrel "$LINENO" "mntent.h" "ac_cv_header_mntent_h" "$ac_includes_default"
 if test "x$ac_cv_header_mntent_h" = xyes; then :
 
 else
@@ -12987,6 +13002,7 @@ else
 fi
 
 
+fi
 ac_fn_c_check_header_mongrel "$LINENO" "pwd.h" "ac_cv_header_pwd_h" "$ac_includes_default"
 if test "x$ac_cv_header_pwd_h" = xyes; then :
 
@@ -13175,11 +13191,13 @@ if test "x$ac_cv_type_direntry_t" = xyes; then :
 
 fi
 
-ac_fn_c_check_type "$LINENO" "mntent" "ac_cv_type_mntent" "$ac_includes_default"
+if test -z "$OSX_HOST" ; then
+	ac_fn_c_check_type "$LINENO" "mntent" "ac_cv_type_mntent" "$ac_includes_default"
 if test "x$ac_cv_type_mntent" = xyes; then :
 
 fi
 
+fi
 ac_fn_c_check_type "$LINENO" "stat" "ac_cv_type_stat" "$ac_includes_default"
 if test "x$ac_cv_type_stat" = xyes; then :
 
@@ -13266,13 +13284,15 @@ else
   as_fn_error $? "dup2() function not found." "$LINENO" 5
 fi
 
-ac_fn_c_check_func "$LINENO" "endmntent" "ac_cv_func_endmntent"
+if test -z "$OSX_HOST" ; then
+	ac_fn_c_check_func "$LINENO" "endmntent" "ac_cv_func_endmntent"
 if test "x$ac_cv_func_endmntent" = xyes; then :
 
 else
   as_fn_error $? "endmntent() function not found." "$LINENO" 5
 fi
 
+fi
 ac_fn_c_check_func "$LINENO" "execve" "ac_cv_func_execve"
 if test "x$ac_cv_func_execve" = xyes; then :
 
@@ -13420,13 +13440,15 @@ else
   as_fn_error $? "getgrnam() function not found." "$LINENO" 5
 fi
 
-ac_fn_c_check_func "$LINENO" "getmntent" "ac_cv_func_getmntent"
+if test -z "$OSX_HOST" ; then
+	ac_fn_c_check_func "$LINENO" "getmntent" "ac_cv_func_getmntent"
 if test "x$ac_cv_func_getmntent" = xyes; then :
 
 else
   as_fn_error $? "getmntent() function not found." "$LINENO" 5
 fi
 
+fi
 ac_fn_c_check_func "$LINENO" "getpid" "ac_cv_func_getpid"
 if test "x$ac_cv_func_getpid" = xyes; then :
 
@@ -13707,13 +13729,15 @@ else
   as_fn_error $? "setlocale() function not found." "$LINENO" 5
 fi
 
-ac_fn_c_check_func "$LINENO" "setmntent" "ac_cv_func_setmntent"
+if test -z "$OSX_HOST" ; then
+	ac_fn_c_check_func "$LINENO" "setmntent" "ac_cv_func_setmntent"
 if test "x$ac_cv_func_setmntent" = xyes; then :
 
 else
   as_fn_error $? "setmntent() function not found." "$LINENO" 5
 fi
 
+fi
 ac_fn_c_check_func "$LINENO" "setpgid" "ac_cv_func_setpgid"
 if test "x$ac_cv_func_setpgid" = xyes; then :
 
