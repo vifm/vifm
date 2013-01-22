@@ -3,7 +3,7 @@
 	Removed 'slowfs' option for OS X, it didn't effect anything there anyway.
 
 	Fixed configuration on OS X because of unavailable mntent.h header and
-	corresponding symbols (reported by Daniel R., aka r1chelt).
+	strverscmp() function (reported by Daniel R., aka r1chelt).
 
 0.7.4a to 0.7.4b
 

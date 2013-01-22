@@ -13955,13 +13955,15 @@ else
   as_fn_error $? "strtoll() function not found." "$LINENO" 5
 fi
 
-ac_fn_c_check_func "$LINENO" "strverscmp" "ac_cv_func_strverscmp"
+if test -z "$OSX_HOST" ; then
+	ac_fn_c_check_func "$LINENO" "strverscmp" "ac_cv_func_strverscmp"
 if test "x$ac_cv_func_strverscmp" = xyes; then :
 
 else
   as_fn_error $? "strverscmp() function not found." "$LINENO" 5
 fi
 
+fi
 ac_fn_c_check_func "$LINENO" "sysconf" "ac_cv_func_sysconf"
 if test "x$ac_cv_func_sysconf" = xyes; then :
 
