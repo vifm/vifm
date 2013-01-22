@@ -138,7 +138,7 @@ init_config(void)
 	cfg.timeout_len = 1000;
 	cfg.scroll_off = 0;
 	cfg.gdefault = 0;
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
 	cfg.slow_fs_list = strdup("");
 #endif
 	cfg.scroll_bind = 0;
