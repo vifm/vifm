@@ -812,11 +812,7 @@ scroll_line_down(FileView *view)
 static void
 rulerformat_handler(OPT_OP op, optval_t val)
 {
-	char *s;
-	if((s = strdup(val.str_val)) == NULL)
-		return;
-	free(cfg.ruler_format);
-	cfg.ruler_format = s;
+	(void)replace_string(&cfg.ruler_format, val.str_val);
 }
 
 static void
@@ -851,22 +847,14 @@ scrolloff_handler(OPT_OP op, optval_t val)
 static void
 shell_handler(OPT_OP op, optval_t val)
 {
-	char *s;
-	if((s = strdup(val.str_val)) == NULL)
-		return;
-	free(cfg.shell);
-	cfg.shell = s;
+	(void)replace_string(&cfg.shell, val.str_val);
 }
 
 #if !defined(_WIN32) && !defined(__APPLE__)
 static void
 slowfs_handler(OPT_OP op, optval_t val)
 {
-	char *s;
-	if((s = strdup(val.str_val)) == NULL)
-		return;
-	free(cfg.slow_fs_list);
-	cfg.slow_fs_list = s;
+	(void)replace_string(&cfg.slow_fs_list, val.str_val);
 }
 #endif
 
@@ -1055,11 +1043,7 @@ resort_view(FileView * view)
 static void
 statusline_handler(OPT_OP op, optval_t val)
 {
-	char *s;
-	if((s = strdup(val.str_val)) == NULL)
-		return;
-	free(cfg.status_line);
-	cfg.status_line = s;
+	(void)replace_string(&cfg.status_line, val.str_val);
 }
 
 static void
