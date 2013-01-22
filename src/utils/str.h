@@ -61,8 +61,8 @@ char * after_last(const char *str, char c);
 /* Returns pointer to the first occurrence of c in str or a pointer to its
  * end. */
 char * until_first(const char str[], char c);
-/* Replaces *str with a copy of with string.  *str can be NULL or equal to
- * with (then function does nothing).  Returns non-zero if memory allocation
+/* Replaces *str with a copy of the with string.  *str can be NULL or equal to
+ * the with (then function does nothing).  Returns non-zero if memory allocation
  * failed. */
 int replace_string(char **str, const char with[]);
 /* Adds a character to the end of a string. */

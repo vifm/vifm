@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Jan 20
+*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Jan 22
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1722,7 +1722,7 @@ default: $SHELL or "sh" or "cmd" (on MS-Windows)
 Full path to the shell to use to run external commands.
 
                                                *vifm-'slowfs'*
-                                               {only for *nix}
+                                               {only for *nix except Mac OS X}
 slowfs
 type: string list
 default: ""

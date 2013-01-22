@@ -13,6 +13,21 @@ AM_PROG_LIBTOOL
 AM_PROG_CC_C_O
 AC_CONFIG_MACRO_DIR([m4])
 
+dnl Determine host machine type.
+AC_CANONICAL_HOST
+dnl Require $host variable presence.
+AC_MSG_CHECKING([host])
+AC_MSG_RESULT([$host])
+dnl Define $OSX_HOST variable for OS Xx
+case "$host_os" in
+	macos* | darwin*)
+		OSX_HOST=1
+		;;
+	*)
+		OSX_HOST=
+		;;
+esac
+
 dnl Check for system headers.
 AC_CHECK_HEADER([assert.h], [], [AC_MSG_ERROR([assert.h header not found.])])
 AC_CHECK_HEADER([ctype.h], [], [AC_MSG_ERROR([ctype.h header not found.])])
@@ -24,7 +39,9 @@ AC_CHECK_HEADER([inttypes.h], [], [AC_MSG_ERROR([inttypes.h header not found.])]
 AC_CHECK_HEADER([limits.h], [], [AC_MSG_ERROR([limits.h header not found.])])
 AC_CHECK_HEADER([locale.h], [], [AC_MSG_ERROR([locale.h header not found.])])
 AC_CHECK_HEADER([math.h], [], [AC_MSG_ERROR([math.h header not found.])])
-AC_CHECK_HEADER([mntent.h], [], [AC_MSG_ERROR([mntent.h header not found.])])
+if test -z "$OSX_HOST" ; then
+	AC_CHECK_HEADER([mntent.h], [], [AC_MSG_ERROR([mntent.h header not found.])])
+fi
 AC_CHECK_HEADER([pwd.h], [], [AC_MSG_ERROR([pwd.h header not found.])])
 AC_CHECK_HEADER([signal.h], [], [AC_MSG_ERROR([signal.h header not found.])])
 AC_CHECK_HEADER([stdarg.h], [], [AC_MSG_ERROR([stdarg.h header not found.])])
@@ -53,7 +70,9 @@ AC_CHECK_TYPE([off_t])
 AC_CHECK_TYPE([time_t])
 AC_CHECK_TYPE([uint64_t])
 AC_CHECK_TYPE([direntry_t])
-AC_CHECK_TYPE([mntent])
+if test -z "$OSX_HOST" ; then
+	AC_CHECK_TYPE([mntent])
+fi
 AC_CHECK_TYPE([stat])
 AC_CHECK_TYPE([FILE])
 AC_CHECK_TYPE([wchar_t])
@@ -69,7 +88,9 @@ AC_CHECK_FUNC([close], [], [AC_MSG_ERROR([close() function not found.])])
 AC_CHECK_FUNC([closedir], [], [AC_MSG_ERROR([closedir() function not found.])])
 AC_CHECK_FUNC([dup], [], [AC_MSG_ERROR([dup() function not found.])])
 AC_CHECK_FUNC([dup2], [], [AC_MSG_ERROR([dup2() function not found.])])
-AC_CHECK_FUNC([endmntent], [], [AC_MSG_ERROR([endmntent() function not found.])])
+if test -z "$OSX_HOST" ; then
+	AC_CHECK_FUNC([endmntent], [], [AC_MSG_ERROR([endmntent() function not found.])])
+fi
 AC_CHECK_FUNC([execve], [], [AC_MSG_ERROR([execve() function not found.])])
 AC_CHECK_FUNC([execvp], [], [AC_MSG_ERROR([execvp() function not found.])])
 AC_CHECK_FUNC([exit], [], [AC_MSG_ERROR([exit() function not found.])])
@@ -91,7 +112,9 @@ AC_CHECK_FUNC([getgrent], [], [AC_MSG_ERROR([getgrent() function not found.])])
 AC_CHECK_FUNC([getgrgid], [], [AC_MSG_ERROR([getgrgid() function not found.])])
 AC_CHECK_FUNC([getgrgid_r], [], [AC_MSG_ERROR([getgrgid_r() function not found.])])
 AC_CHECK_FUNC([getgrnam], [], [AC_MSG_ERROR([getgrnam() function not found.])])
-AC_CHECK_FUNC([getmntent], [], [AC_MSG_ERROR([getmntent() function not found.])])
+if test -z "$OSX_HOST" ; then
+	AC_CHECK_FUNC([getmntent], [], [AC_MSG_ERROR([getmntent() function not found.])])
+fi
 AC_CHECK_FUNC([getpid], [], [AC_MSG_ERROR([getpid() function not found.])])
 AC_CHECK_FUNC([getppid], [], [AC_MSG_ERROR([getppid() function not found.])])
 AC_CHECK_FUNC([getpwent], [], [AC_MSG_ERROR([getpwent() function not found.])])
@@ -132,7 +155,9 @@ AC_CHECK_FUNC([select], [], [AC_MSG_ERROR([select() function not found.])])
 AC_CHECK_FUNC([setenv], [], [AC_MSG_ERROR([setenv() function not found.])])
 AC_CHECK_FUNC([setgrent], [], [AC_MSG_ERROR([setgrent() function not found.])])
 AC_CHECK_FUNC([setlocale], [], [AC_MSG_ERROR([setlocale() function not found.])])
-AC_CHECK_FUNC([setmntent], [], [AC_MSG_ERROR([setmntent() function not found.])])
+if test -z "$OSX_HOST" ; then
+	AC_CHECK_FUNC([setmntent], [], [AC_MSG_ERROR([setmntent() function not found.])])
+fi
 AC_CHECK_FUNC([setpgid], [], [AC_MSG_ERROR([setpgid() function not found.])])
 AC_CHECK_FUNC([setpwent], [], [AC_MSG_ERROR([setpwent() function not found.])])
 AC_CHECK_FUNC([setsid], [], [AC_MSG_ERROR([setsid() function not found.])])
@@ -258,8 +283,8 @@ if test "x$GCC" = "xyes"; then
 fi
 changequote([,])dnl
 
-dnl This is for Mac OS
-if test "x$(uname)" = "xDarwin"; then
+dnl Define _DARWIN_C_SOURCE macro while compiling on OS X.
+if test -n "$OSX_HOST" ; then
   CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE"
 fi
 

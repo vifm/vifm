@@ -35,7 +35,7 @@
 #endif
 
 #if !defined(_WIN32) && !defined(__APPLE__)
-#include <mntent.h> /* getmntent() */
+#include <mntent.h> /* mntent setmntent() getmntent() endmntent() */
 #endif
 
 #include <unistd.h> /* chdir() */
