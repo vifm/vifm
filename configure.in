@@ -283,8 +283,8 @@ if test "x$GCC" = "xyes"; then
 fi
 changequote([,])dnl
 
-dnl This is for Mac OS
-if test "x$(uname)" = "xDarwin"; then
+dnl Define _DARWIN_C_SOURCE macro while compiling on OS X.
+if test -n "$OSX_HOST" ; then
   CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE"
 fi
 

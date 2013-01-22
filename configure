@@ -14658,7 +14658,7 @@ if test "x$GCC" = "xyes"; then
   esac
 fi
 
-if test "x$(uname)" = "xDarwin"; then
+if test -n "$OSX_HOST" ; then
   CFLAGS="$CFLAGS -D_DARWIN_C_SOURCE"
 fi
 
