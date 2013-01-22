@@ -1,3 +1,8 @@
+0.7.4b to current
+
+	Fixed configuration on OS X because of unavailable mntent.h header and
+	corresponding symbols (reported by Daniel R., aka r1chelt).
+
 0.7.4a to 0.7.4b
 
 	Removed screen title forcing for shell commands.
