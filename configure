@@ -14919,7 +14919,8 @@ else
   as_fn_error $? "TABSIZE not found in curses.h" "$LINENO" 5
 fi
 
-ac_fn_c_check_type "$LINENO" "WINDOW" "ac_cv_type_WINDOW" "#include <curses.h>
+if test -z "$OSX_HOST" ; then
+	ac_fn_c_check_type "$LINENO" "WINDOW" "ac_cv_type_WINDOW" "#include <curses.h>
 "
 if test "x$ac_cv_type_WINDOW" = xyes; then :
 
@@ -14927,6 +14928,7 @@ else
   as_fn_error $? "WINDOW type not found in curses.h" "$LINENO" 5
 fi
 
+fi
 ac_fn_c_check_func "$LINENO" "curs_set" "ac_cv_func_curs_set"
 if test "x$ac_cv_func_curs_set" = xyes; then :
 
