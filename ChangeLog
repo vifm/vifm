@@ -3,7 +3,14 @@
 	Removed 'slowfs' option for OS X, it didn't effect anything there anyway.
 
 	Fixed configuration on OS X because of unavailable mntent.h header and
-	corresponding symbols (reported by Daniel R., aka r1chelt).
+	strverscmp() function (reported by Daniel R., aka r1chelt).
+
+	Fixed configuration when libmagic is not available, but selected (tried
+	to check its symbols).
+
+	Fixed configuration on OS X when libncursesw is installed as libncurses.
+	Now configure script checks for libncurses if libncursesw is not found.
+	Thanks to Daniel R. (aka r1chelt).
 
 0.7.4a to 0.7.4b
 

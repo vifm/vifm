@@ -189,7 +189,9 @@ AC_CHECK_FUNC([strstr], [], [AC_MSG_ERROR([strstr() function not found.])])
 AC_CHECK_FUNC([strtok_r], [], [AC_MSG_ERROR([strtok_r() function not found.])])
 AC_CHECK_FUNC([strtol], [], [AC_MSG_ERROR([strtol() function not found.])])
 AC_CHECK_FUNC([strtoll], [], [AC_MSG_ERROR([strtoll() function not found.])])
-AC_CHECK_FUNC([strverscmp], [], [AC_MSG_ERROR([strverscmp() function not found.])])
+if test -z "$OSX_HOST" ; then
+	AC_CHECK_FUNC([strverscmp], [], [AC_MSG_ERROR([strverscmp() function not found.])])
+fi
 AC_CHECK_FUNC([sysconf], [], [AC_MSG_ERROR([sysconf() function not found.])])
 AC_CHECK_FUNC([time], [], [AC_MSG_ERROR([time() function not found.])])
 AC_CHECK_FUNC([tolower], [], [AC_MSG_ERROR([tolower() function not found.])])
@@ -324,22 +326,33 @@ AC_ARG_WITH(curses, [  --with-curses=DIR       where ncurses is installed ],
 		CPPFLAGS="$CPPFLAGS -I${vifm_cv_curses}/include"
 	fi])
 
+dnl Try to find ncurses library.
+ncurses_found=no
+dnl Firstly check for libncursesw.
 AC_CHECK_LIB(ncursesw, initscr,
 	[LIBS="$LIBS -lncursesw"
 	if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncursesw; then
 		CPPFLAGS="$CPPFLAGS -I/usr/include/ncursesw"
 	fi
-    ],
-	[AC_MSG_ERROR([libncursesw not found])])
-	#[ac_widec_possible=no
-	#AC_CHECK_LIB(ncurses, initscr,
-		#[LIBS="$LIBS -lncurses"
-		#if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
-			#CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
-		#fi
-		#AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])],
-		#[CF_CURSES_LIBS])
-	#])
+	ncurses_found=yes])
+dnl If libncursesw is not found on OS X, check for libncurses.  On OS X it has
+dnl support of wide characters.
+if test -n "$OSX_HOST" -a "x$ncurses_found" != "xyes"; then
+	AC_CHECK_LIB(ncurses, initscr,
+		[LIBS="$LIBS -lncurses"
+		if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
+			CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
+		fi
+		ncurses_found=yes])
+fi
+dnl Quit with appropriate error message if ncurses library wasn't found.
+if test "x$ncurses_found" != "xyes"; then
+	if test -z "$OSX_HOST"; then
+		AC_MSG_ERROR([libncursesw not found])
+	else
+		AC_MSG_ERROR([libncursesw and libncurses not found])
+	fi
+fi
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
 dnl Check for curses.h header and all its required elements.
@@ -347,7 +360,9 @@ AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])
 AC_CHECK_DECL([COLORS], [], [AC_MSG_ERROR([COLORS not found in curses.h])], [[#include <curses.h>]])
 AC_CHECK_DECL([COLOR_PAIR], [], [AC_MSG_ERROR([COLOR_PAIR not found in curses.h])], [[#include <curses.h>]])
 AC_CHECK_DECL([TABSIZE], [], [AC_MSG_ERROR([TABSIZE not found in curses.h])], [[#include <curses.h>]])
-AC_CHECK_TYPE([WINDOW], [], [AC_MSG_ERROR([WINDOW type not found in curses.h])], [[#include <curses.h>]])
+if test -z "$OSX_HOST" ; then
+	AC_CHECK_TYPE([WINDOW], [], [AC_MSG_ERROR([WINDOW type not found in curses.h])], [[#include <curses.h>]])
+fi
 AC_CHECK_FUNC([curs_set], [], [AC_MSG_ERROR([curs_set() function not found.])])
 AC_CHECK_FUNC([def_prog_mode], [], [AC_MSG_ERROR([def_prog_mode() function not found.])])
 AC_CHECK_FUNC([doupdate], [], [AC_MSG_ERROR([doupdate() function not found.])])
@@ -456,13 +471,15 @@ if test "$use_gtk" = "yes"; then
 fi
 
 if test "$use_libmagic" = "yes"; then
-	AC_CHECK_LIB(magic, magic_open)
-	AC_CHECK_FUNC([magic_close], [], [AC_MSG_ERROR([magic_close() function not found.])])
-	AC_CHECK_FUNC([magic_file], [], [AC_MSG_ERROR([magic_file() function not found.])])
-	AC_CHECK_FUNC([magic_load], [], [AC_MSG_ERROR([magic_load() function not found.])])
-	AC_CHECK_FUNC([magic_open], [], [AC_MSG_ERROR([magic_open() function not found.])])
-	AC_CHECK_HEADER([magic.h], [], [AC_MSG_ERROR([magic.h header not found.])])
-	AC_CHECK_DECLS([MAGIC_MIME_TYPE], [], [], [[#include <magic.h>]])
+	AC_CHECK_LIB(magic, magic_open,
+		[LIBS="$LIBS -lmagic"
+		 AC_CHECK_FUNC([magic_close], [], [AC_MSG_ERROR([magic_close() function not found.])])
+		 AC_CHECK_FUNC([magic_file], [], [AC_MSG_ERROR([magic_file() function not found.])])
+		 AC_CHECK_FUNC([magic_load], [], [AC_MSG_ERROR([magic_load() function not found.])])
+		 AC_CHECK_FUNC([magic_open], [], [AC_MSG_ERROR([magic_open() function not found.])])
+		 AC_CHECK_HEADER([magic.h], [], [AC_MSG_ERROR([magic.h header not found.])])
+		 AC_CHECK_DECLS([MAGIC_MIME_TYPE], [], [], [[#include <magic.h>]])
+		 AC_DEFINE([HAVE_LIBMAGIC], [1], [Define to 1 if you have the `magic' library (-lmagic).])])
 fi
 
 dnl ----------------------------------------------------------------------------

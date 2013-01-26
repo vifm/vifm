@@ -13955,13 +13955,15 @@ else
   as_fn_error $? "strtoll() function not found." "$LINENO" 5
 fi
 
-ac_fn_c_check_func "$LINENO" "strverscmp" "ac_cv_func_strverscmp"
+if test -z "$OSX_HOST" ; then
+	ac_fn_c_check_func "$LINENO" "strverscmp" "ac_cv_func_strverscmp"
 if test "x$ac_cv_func_strverscmp" = xyes; then :
 
 else
   as_fn_error $? "strverscmp() function not found." "$LINENO" 5
 fi
 
+fi
 ac_fn_c_check_func "$LINENO" "sysconf" "ac_cv_func_sysconf"
 if test "x$ac_cv_func_sysconf" = xyes; then :
 
@@ -14828,6 +14830,7 @@ if test "${with_curses+set}" = set; then :
 fi
 
 
+ncurses_found=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for initscr in -lncursesw" >&5
 $as_echo_n "checking for initscr in -lncursesw... " >&6; }
 if ${ac_cv_lib_ncursesw_initscr+:} false; then :
@@ -14869,20 +14872,62 @@ if test "x$ac_cv_lib_ncursesw_initscr" = xyes; then :
 	if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncursesw; then
 		CPPFLAGS="$CPPFLAGS -I/usr/include/ncursesw"
 	fi
-
-else
-  as_fn_error $? "libncursesw not found" "$LINENO" 5
+	ncurses_found=yes
 fi
 
-	#[ac_widec_possible=no
-	#AC_CHECK_LIB(ncurses, initscr,
-		#[LIBS="$LIBS -lncurses"
-		#if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
-			#CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
-		#fi
-		#AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])],
-		#[CF_CURSES_LIBS])
-	#])
+if test -n "$OSX_HOST" -a "x$ncurses_found" != "xyes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for initscr in -lncurses" >&5
+$as_echo_n "checking for initscr in -lncurses... " >&6; }
+if ${ac_cv_lib_ncurses_initscr+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lncurses  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char initscr ();
+int
+main ()
+{
+return initscr ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_ncurses_initscr=yes
+else
+  ac_cv_lib_ncurses_initscr=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ncurses_initscr" >&5
+$as_echo "$ac_cv_lib_ncurses_initscr" >&6; }
+if test "x$ac_cv_lib_ncurses_initscr" = xyes; then :
+  LIBS="$LIBS -lncurses"
+		if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
+			CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
+		fi
+		ncurses_found=yes
+fi
+
+fi
+if test "x$ncurses_found" != "xyes"; then
+	if test -z "$OSX_HOST"; then
+		as_fn_error $? "libncursesw not found" "$LINENO" 5
+	else
+		as_fn_error $? "libncursesw and libncurses not found" "$LINENO" 5
+	fi
+fi
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
 ac_fn_c_check_header_mongrel "$LINENO" "curses.h" "ac_cv_header_curses_h" "$ac_includes_default"
@@ -14917,7 +14962,8 @@ else
   as_fn_error $? "TABSIZE not found in curses.h" "$LINENO" 5
 fi
 
-ac_fn_c_check_type "$LINENO" "WINDOW" "ac_cv_type_WINDOW" "#include <curses.h>
+if test -z "$OSX_HOST" ; then
+	ac_fn_c_check_type "$LINENO" "WINDOW" "ac_cv_type_WINDOW" "#include <curses.h>
 "
 if test "x$ac_cv_type_WINDOW" = xyes; then :
 
@@ -14925,6 +14971,7 @@ else
   as_fn_error $? "WINDOW type not found in curses.h" "$LINENO" 5
 fi
 
+fi
 ac_fn_c_check_func "$LINENO" "curs_set" "ac_cv_func_curs_set"
 if test "x$ac_cv_func_curs_set" = xyes; then :
 
@@ -15388,43 +15435,36 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_magic_magic_open" >&5
 $as_echo "$ac_cv_lib_magic_magic_open" >&6; }
 if test "x$ac_cv_lib_magic_magic_open" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBMAGIC 1
-_ACEOF
-
-  LIBS="-lmagic $LIBS"
-
-fi
-
-	ac_fn_c_check_func "$LINENO" "magic_close" "ac_cv_func_magic_close"
+  LIBS="$LIBS -lmagic"
+		 ac_fn_c_check_func "$LINENO" "magic_close" "ac_cv_func_magic_close"
 if test "x$ac_cv_func_magic_close" = xyes; then :
 
 else
   as_fn_error $? "magic_close() function not found." "$LINENO" 5
 fi
 
-	ac_fn_c_check_func "$LINENO" "magic_file" "ac_cv_func_magic_file"
+		 ac_fn_c_check_func "$LINENO" "magic_file" "ac_cv_func_magic_file"
 if test "x$ac_cv_func_magic_file" = xyes; then :
 
 else
   as_fn_error $? "magic_file() function not found." "$LINENO" 5
 fi
 
-	ac_fn_c_check_func "$LINENO" "magic_load" "ac_cv_func_magic_load"
+		 ac_fn_c_check_func "$LINENO" "magic_load" "ac_cv_func_magic_load"
 if test "x$ac_cv_func_magic_load" = xyes; then :
 
 else
   as_fn_error $? "magic_load() function not found." "$LINENO" 5
 fi
 
-	ac_fn_c_check_func "$LINENO" "magic_open" "ac_cv_func_magic_open"
+		 ac_fn_c_check_func "$LINENO" "magic_open" "ac_cv_func_magic_open"
 if test "x$ac_cv_func_magic_open" = xyes; then :
 
 else
   as_fn_error $? "magic_open() function not found." "$LINENO" 5
 fi
 
-	ac_fn_c_check_header_mongrel "$LINENO" "magic.h" "ac_cv_header_magic_h" "$ac_includes_default"
+		 ac_fn_c_check_header_mongrel "$LINENO" "magic.h" "ac_cv_header_magic_h" "$ac_includes_default"
 if test "x$ac_cv_header_magic_h" = xyes; then :
 
 else
@@ -15432,7 +15472,7 @@ else
 fi
 
 
-	ac_fn_c_check_decl "$LINENO" "MAGIC_MIME_TYPE" "ac_cv_have_decl_MAGIC_MIME_TYPE" "#include <magic.h>
+		 ac_fn_c_check_decl "$LINENO" "MAGIC_MIME_TYPE" "ac_cv_have_decl_MAGIC_MIME_TYPE" "#include <magic.h>
 "
 if test "x$ac_cv_have_decl_MAGIC_MIME_TYPE" = xyes; then :
   ac_have_decl=1
@@ -15443,6 +15483,11 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_MAGIC_MIME_TYPE $ac_have_decl
 _ACEOF
+
+
+$as_echo "#define HAVE_LIBMAGIC 1" >>confdefs.h
+
+fi
 
 fi
 
