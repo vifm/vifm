@@ -14876,15 +14876,6 @@ else
   as_fn_error $? "libncursesw not found" "$LINENO" 5
 fi
 
-	#[ac_widec_possible=no
-	#AC_CHECK_LIB(ncurses, initscr,
-		#[LIBS="$LIBS -lncurses"
-		#if test x$vifm_cv_curses = x/usr -a -d /usr/include/ncurses; then
-			#CPPFLAGS="$CPPFLAGS -I/usr/include/ncurses"
-		#fi
-		#AC_CHECK_HEADER([curses.h], [], [AC_MSG_ERROR([curses.h header not found.])])],
-		#[CF_CURSES_LIBS])
-	#])
 LIBS=$LIBS $GUI_LINK_OPTS_TERM
 
 ac_fn_c_check_header_mongrel "$LINENO" "curses.h" "ac_cv_header_curses_h" "$ac_includes_default"
