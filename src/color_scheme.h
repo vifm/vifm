@@ -24,39 +24,9 @@
 #ifdef _WIN32
 #include "utils/utils.h"
 #endif
+#include "colors.h"
 
 #define MAX_COLOR_SCHEMES 8
-
-enum
-{
-	WIN_COLOR,
-	DIRECTORY_COLOR,
-	LINK_COLOR,
-	BROKEN_LINK_COLOR,
-	SOCKET_COLOR,
-	DEVICE_COLOR,
-	FIFO_COLOR,
-	EXECUTABLE_COLOR,
-	SELECTED_COLOR,
-	CURR_LINE_COLOR,
-	TOP_LINE_COLOR,
-	TOP_LINE_SEL_COLOR,
-	STATUS_LINE_COLOR,
-	MENU_COLOR,
-	CMD_LINE_COLOR,
-	ERROR_MSG_COLOR,
-	BORDER_COLOR,
-	CURRENT_COLOR,      /* for internal use only */
-	MENU_CURRENT_COLOR, /* for internal use only */
-	MAXNUM_COLOR
-};
-
-enum
-{
-	DCOLOR_BASE = 1,
-	LCOLOR_BASE = DCOLOR_BASE + MAXNUM_COLOR,
-	RCOLOR_BASE = LCOLOR_BASE + MAXNUM_COLOR,
-};
 
 typedef struct
 {
