@@ -26,8 +26,6 @@
 #endif
 #include "colors.h"
 
-#define MAX_COLOR_SCHEMES 8
-
 typedef struct
 {
 	int fg;
