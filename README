@@ -118,6 +118,7 @@ Package content
     |  |-- background.c - runs commands in background
     |  |-- bookmarks.c - stores information about bookmarked directories
     |  |-- bracket_notation.c - list of bracket notation entries
+    |  |-- color_manager.c - manager of curses color pairs
     |  |-- color_scheme.c - color schemes
     |  |-- column_view.c - column formatting unit
     |  |-- commands.c - handles command line commands
