@@ -563,7 +563,7 @@ complete_filename_only(const char *str)
 }
 
 void
-rename_file(FileView *view, int name_only)
+rename_current_file(FileView *view, int name_only)
 {
 	char filename[NAME_MAX + 1];
 

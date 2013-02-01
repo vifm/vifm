@@ -171,7 +171,7 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	leave_change_mode(0);
 
 	if(curr == 2)
-		rename_file(view, 0);
+		rename_current_file(view, 0);
 #ifndef _WIN32
 	else if(curr == 4)
 		change_owner();

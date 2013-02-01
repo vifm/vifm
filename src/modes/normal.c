@@ -1398,7 +1398,7 @@ cmd_al(key_info_t key_info, keys_info_t *keys_info)
 static void
 cmd_cW(key_info_t key_info, keys_info_t *keys_info)
 {
-	rename_file(curr_view, 1);
+	rename_current_file(curr_view, 1);
 }
 
 #ifndef _WIN32
@@ -1440,7 +1440,7 @@ cmd_cw(key_info_t key_info, keys_info_t *keys_info)
 	if(curr_view->selected_files > 1)
 		rename_files(curr_view, NULL, 0, 0);
 	else
-		rename_file(curr_view, 0);
+		rename_current_file(curr_view, 0);
 }
 
 /* Delete file. */

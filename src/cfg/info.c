@@ -24,6 +24,7 @@
 #include "../engine/cmds.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
+#include "../utils/log.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utils.h"
@@ -374,9 +375,10 @@ write_info_file(void)
 	{
 		update_info_file(tmp_file);
 
-		if(rename(tmp_file, info_file) != 0)
+		if(rename_file(tmp_file, info_file) != 0)
 		{
-			(void)unlink(tmp_file);
+			LOG_ERROR_MSG("Can't replace vifminfo file with its temporary copy");
+			(void)remove(tmp_file);
 		}
 	}
 }
@@ -402,7 +404,7 @@ copy_file(const char src[], const char dst[])
 
 	if(result != 0)
 	{
-		(void)unlink(dst);
+		(void)remove(dst);
 	}
 
 	return result;
