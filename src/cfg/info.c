@@ -18,12 +18,14 @@
  */
 
 #include <ctype.h> /* isdigit() */
+#include <errno.h> /* errno */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
 #include <string.h> /* memset() strcpy() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
+#include "../utils/log.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utils.h"
@@ -376,6 +378,8 @@ write_info_file(void)
 
 		if(rename(tmp_file, info_file) != 0)
 		{
+			LOG_SERROR_MSG(errno,
+					"Can't replace vifminfo file with its temporary copy");
 			(void)unlink(tmp_file);
 		}
 	}
