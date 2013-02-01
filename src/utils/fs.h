@@ -52,6 +52,10 @@ char ** list_regular_files(const char path[], int *len);
 /* Returns non-zero if file (or symbolic link target) path points to is a
  * regular file. */
 int is_regular_file(const char path[]);
+/* Renames file specified by the src argument to the path specified by the dst
+ * argument.  Overwrites destination file if it exists.  Returns non-zero on
+ * error, otherwise zero is returned. */
+int rename_file(const char src[], const char dst[]);
 
 #ifdef _WIN32
 

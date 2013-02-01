@@ -32,7 +32,7 @@
 #include <ctype.h> /* touuper() */
 #include <errno.h> /* errno */
 #include <stddef.h> /* NULL */
-#include <stdio.h> /* snprintf() */
+#include <stdio.h> /* snprintf() remove() rename() */
 #include <stdlib.h> /* realpath() */
 #include <string.h> /* strdup() strncmp() strncpy() */
 
@@ -384,6 +384,20 @@ is_regular_file(const char path[])
 	}
 	return (attrs & FILE_ATTRIBUTE_DIRECTORY) == 0UL;
 #endif
+}
+
+int
+rename_file(const char src[], const char dst[])
+{
+	int error;
+#ifdef _WIN32
+	(void)remove(dst);
+#endif
+	if((error = rename(src, dst)))
+	{
+		LOG_SERROR_MSG(errno, "Rename operation failed: {%s => %s}", src, dst);
+	}
+	return error != 0;
 }
 
 #ifdef _WIN32

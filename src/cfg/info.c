@@ -18,7 +18,6 @@
  */
 
 #include <ctype.h> /* isdigit() */
-#include <errno.h> /* errno */
 #include <stdio.h> /* fscanf() fgets() fputc() snprintf() */
 #include <string.h> /* memset() strcpy() strtol() strcmp() strchr() strlen() */
 
@@ -376,10 +375,9 @@ write_info_file(void)
 	{
 		update_info_file(tmp_file);
 
-		if(rename(tmp_file, info_file) != 0)
+		if(rename_file(tmp_file, info_file) != 0)
 		{
-			LOG_SERROR_MSG(errno,
-					"Can't replace vifminfo file with its temporary copy");
+			LOG_ERROR_MSG("Can't replace vifminfo file with its temporary copy");
 			(void)remove(tmp_file);
 		}
 	}

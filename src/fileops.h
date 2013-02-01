@@ -46,7 +46,7 @@ int yank_files(FileView *view, int reg, int count, int *indexes);
 void yank_selected_files(FileView *view, int reg);
 int file_exec(char *command);
 void show_change_window(FileView *view, int type);
-void rename_file(FileView *view, int name_only);
+void rename_current_file(FileView *view, int name_only);
 int rename_files(FileView *view, char **list, int nlines, int recursive);
 /* Returns new value for save_msg flag. */
 int incdec_names(FileView *view, int k);
