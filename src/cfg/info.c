@@ -380,7 +380,7 @@ write_info_file(void)
 		{
 			LOG_SERROR_MSG(errno,
 					"Can't replace vifminfo file with its temporary copy");
-			(void)unlink(tmp_file);
+			(void)remove(tmp_file);
 		}
 	}
 }
@@ -406,7 +406,7 @@ copy_file(const char src[], const char dst[])
 
 	if(result != 0)
 	{
-		(void)unlink(dst);
+		(void)remove(dst);
 	}
 
 	return result;
