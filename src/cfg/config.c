@@ -610,7 +610,8 @@ is_conf_file(const char *file)
 int
 is_old_config(void)
 {
-	return is_conf_file(env_get(MYVIFMRC_EV));
+	const char *const myvifmrc = env_get(MYVIFMRC_EV);
+	return (myvifmrc != NULL) && is_conf_file(myvifmrc);
 }
 
 int

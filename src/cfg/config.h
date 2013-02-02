@@ -123,6 +123,8 @@ void set_config_paths(void);
 void exec_config(void);
 /* Returns non-zero on error. */
 int source_file(const char filename[]);
+/* Checks whether vifmrc file (pointed to by the $MYVIFMRC) has old format.
+ * Returns non-zero if so, otherwise zero is returned. */
 int is_old_config(void);
 int are_old_color_schemes(void);
 const char * get_vicmd(int *bg);
