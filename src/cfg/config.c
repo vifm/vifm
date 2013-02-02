@@ -510,7 +510,11 @@ create_trash_dir(void)
 void
 exec_config(void)
 {
-	(void)source_file(env_get(MYVIFMRC_EV));
+	const char *const myvifmrc = env_get(MYVIFMRC_EV);
+	if(myvifmrc != NULL)
+	{
+		(void)source_file(myvifmrc);
+	}
 }
 
 int

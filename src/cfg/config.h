@@ -120,6 +120,7 @@ extern config_t cfg;
 
 void init_config(void);
 void set_config_paths(void);
+/* Sources vifmrc file (pointed to by the $MYVIFMRC). */
 void exec_config(void);
 /* Returns non-zero on error. */
 int source_file(const char filename[]);
