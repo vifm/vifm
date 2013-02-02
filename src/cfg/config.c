@@ -508,7 +508,7 @@ create_trash_dir(void)
 }
 
 void
-exec_config(void)
+source_config(void)
 {
 	const char *const myvifmrc = env_get(MYVIFMRC_EV);
 	if(myvifmrc != NULL)

@@ -121,7 +121,7 @@ extern config_t cfg;
 void init_config(void);
 void set_config_paths(void);
 /* Sources vifmrc file (pointed to by the $MYVIFMRC). */
-void exec_config(void);
+void source_config(void);
 /* Returns non-zero on error. */
 int source_file(const char filename[]);
 /* Checks whether vifmrc file (pointed to by the $MYVIFMRC) has old format.

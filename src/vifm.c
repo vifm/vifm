@@ -369,7 +369,7 @@ main(int argc, char *argv[])
 			load_color_scheme(curr_stats.color_scheme);
 		}
 		load_color_scheme_colors();
-		exec_config();
+		source_config();
 	}
 
 	write_color_scheme_file();
@@ -421,7 +421,7 @@ main(int argc, char *argv[])
 		load_initial_directory(&lwin, dir);
 		load_initial_directory(&rwin, dir);
 
-		exec_config();
+		source_config();
 	}
 
 	create_trash_dir();
