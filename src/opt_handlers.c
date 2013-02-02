@@ -442,11 +442,7 @@ load_sort_option(FileView *view)
 	}
 	if(j < SORT_OPTION_COUNT && abs(view->sort[j]) > LAST_SORT_OPTION)
 	{
-#ifndef _WIN32
-		view->sort[j++] = SORT_BY_NAME;
-#else
-		view->sort[j++] = SORT_BY_INAME;
-#endif
+		view->sort[j++] = DEFAULT_SORT_KEY;
 	}
 
 	i = -1;
@@ -946,11 +942,9 @@ sort_handler(OPT_OP op, optval_t val)
 			break;
 	}
 	if(j == i)
-#ifndef _WIN32
-		curr_view->sort[i++] = SORT_BY_NAME;
-#else
-		curr_view->sort[i++] = SORT_BY_INAME;
-#endif
+	{
+		curr_view->sort[i++] = DEFAULT_SORT_KEY;
+	}
 	memset(&curr_view->sort[i], NO_SORT_OPTION, sizeof(curr_view->sort) - i);
 
 	reset_view_sort(curr_view);
