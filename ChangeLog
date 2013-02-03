@@ -3,19 +3,22 @@
 	Removed 'slowfs' option for OS X, it didn't effect anything there anyway.
 
 	Fixed configuration on OS X because of unavailable mntent.h header and
-	strverscmp() function (reported by Daniel R., aka r1chelt).
+	strverscmp() function (reported by Daniel R., a.k.a. r1chelt).
 
 	Fixed configuration when libmagic is not available, but selected (tried
 	to check its symbols).
 
 	Fixed configuration on OS X when libncursesw is installed as libncurses.
 	Now configure script checks for libncurses if libncursesw is not found.
-	Thanks to Daniel R. (aka r1chelt).
+	Thanks to Daniel R. (a.k.a. r1chelt).
 
 	Fixed vifminfo file update on Windows (wasn't updated at all).
 
 	Fixed "Press return..." message appearing always on OSX (yes, again; hope
 	this is final fix).  Thanks to Daniel R. (aka r1chelt).
+
+	Fixed buffer overflow on composing very long list of sorting keys.
+	Thanks to Christoph (a.k.a. informationen).
 
 0.7.4a to 0.7.4b
 

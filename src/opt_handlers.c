@@ -427,10 +427,15 @@ load_local_options(FileView *view)
 void
 load_sort_option(FileView *view)
 {
+	/* This approximate maximum length also includes "+" or "-" sign and a
+	 * comma (",") between items. */
+	enum { MAX_SORT_OPTION_NAME_LEN = 16 };
+
 	optval_t val;
-	char buf[64] = "";
+	char buf[MAX_SORT_OPTION_NAME_LEN*SORT_OPTION_COUNT] = "";
 	int j, i;
 
+	/* Ensure that list of sorting keys contains either "name" or "iname". */
 	j = -1;
 	while(++j < SORT_OPTION_COUNT && abs(view->sort[j]) <= LAST_SORT_OPTION)
 	{
@@ -445,6 +450,7 @@ load_sort_option(FileView *view)
 		view->sort[j++] = DEFAULT_SORT_KEY;
 	}
 
+	/* Produce a string, which represents a list of sorting keys. */
 	i = -1;
 	while(++i < SORT_OPTION_COUNT && abs(view->sort[i]) <= LAST_SORT_OPTION)
 	{
