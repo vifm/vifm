@@ -79,17 +79,17 @@ my_system(char *command)
 	int pid;
 	int result;
 	extern char **environ;
-	sig_handler saved_dfl_sig_handler;
+	sig_handler sigtstp_handler;
 
 	if(command == NULL)
 		return 1;
 
-	saved_dfl_sig_handler = signal(SIGTSTP, SIG_DFL);
+	sigtstp_handler = signal(SIGTSTP, SIG_DFL);
 
 	pid = fork();
 	if(pid == -1)
 	{
-		signal(SIGTSTP, saved_dfl_sig_handler);
+		signal(SIGTSTP, sigtstp_handler);
 		return -1;
 	}
 	if(pid == 0)
@@ -123,7 +123,7 @@ my_system(char *command)
 			break;
 		}
 	}while(1);
-	signal(SIGTSTP, saved_dfl_sig_handler);
+	signal(SIGTSTP, sigtstp_handler);
 	return result;
 #else
 	char buf[strlen(cfg.shell) + 5 + strlen(command)*4 + 1 + 1];
