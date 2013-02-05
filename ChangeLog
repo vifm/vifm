@@ -14,6 +14,9 @@
 
 	Fixed vifminfo file update on Windows (wasn't updated at all).
 
+	Fixed "Press return..." message appearing always on OSX (yes, again; hope
+	this is final fix).  Thanks to Daniel R. (aka r1chelt).
+
 0.7.4a to 0.7.4b
 
 	Removed screen title forcing for shell commands.

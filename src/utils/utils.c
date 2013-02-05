@@ -42,7 +42,9 @@
 
 #include <ctype.h>
 #include <errno.h>
-#include <signal.h> /* signal() SIGINT SIGTSTP SIG_DFL */
+#include <signal.h> /* signal() SIGINT SIGTSTP SIGCHLD SIG_DFL sigset_t
+                       sigemptyset() sigaddset() sigprocmask() SIG_BLOCK
+                       SIG_UNBLOCK */
 #include <stddef.h> /* size_t */
 #include <string.h>
 #include <wctype.h>
@@ -80,16 +82,25 @@ my_system(char *command)
 	int result;
 	extern char **environ;
 	sig_handler sigtstp_handler;
+	sigset_t sigchld_mask;
 
 	if(command == NULL)
 		return 1;
 
 	sigtstp_handler = signal(SIGTSTP, SIG_DFL);
 
+	/* We need to block SIGCHLD signal.  One can't just set it to SIG_DFL, because
+	 * it will possibly cause missing of SIGCHLD from a background process
+	 * (job). */
+	sigemptyset(&sigchld_mask);
+	sigaddset(&sigchld_mask, SIGCHLD);
+	sigprocmask(SIG_BLOCK, &sigchld_mask, NULL);
+
 	pid = fork();
 	if(pid == -1)
 	{
 		signal(SIGTSTP, sigtstp_handler);
+		sigprocmask(SIG_UNBLOCK, &sigchld_mask, NULL);
 		return -1;
 	}
 	if(pid == 0)
@@ -98,6 +109,7 @@ my_system(char *command)
 
 		signal(SIGTSTP, SIG_DFL);
 		signal(SIGINT, SIG_DFL);
+		sigprocmask(SIG_UNBLOCK, &sigchld_mask, NULL);
 
 		args[0] = cfg.shell;
 		args[1] = "-c";
@@ -124,6 +136,7 @@ my_system(char *command)
 		}
 	}while(1);
 	signal(SIGTSTP, sigtstp_handler);
+	sigprocmask(SIG_UNBLOCK, &sigchld_mask, NULL);
 	return result;
 #else
 	char buf[strlen(cfg.shell) + 5 + strlen(command)*4 + 1 + 1];
