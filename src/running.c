@@ -893,7 +893,11 @@ shellout(const char *command, int pause, int allow_screen)
 
 #ifndef _WIN32
 	if(result != 0 && pause < 0)
+	{
+		LOG_ERROR_MSG("Subprocess (%s) exit code: %d (0x%x); status = 0x%x", buf,
+				result, result, ec);
 		my_system(PAUSE_CMD);
+	}
 #endif
 
 	/* force views update */

@@ -125,6 +125,7 @@ my_system(char *command)
 		{
 			if(errno != EINTR)
 			{
+				LOG_SERROR_MSG(errno, "waitpid()");
 				result = -1;
 				break;
 			}
