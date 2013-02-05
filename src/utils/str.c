@@ -19,6 +19,7 @@
 
 #include <ctype.h> /* tolower() isspace() */
 #include <stdarg.h> /* va_list va_start() va_copy() va_end() */
+#include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() mbstowcs() wcstombs() */
 #include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr() */
@@ -27,16 +28,16 @@
 #include "str.h"
 
 void
-chomp(char *text)
+chomp(char str[])
 {
-	size_t len;
-
-	if(text[0] == '\0')
-		return;
-
-	len = strlen(text);
-	if(text[len - 1] == '\n')
-		text[len - 1] = '\0';
+	if(str[0] != '\0')
+	{
+		const size_t last_char_pos = strlen(str) - 1;
+		if(str[last_char_pos] == '\n')
+		{
+			str[last_char_pos] = '\0';
+		}
+	}
 }
 
 size_t

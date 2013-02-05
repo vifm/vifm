@@ -20,6 +20,7 @@
 #ifndef __STR_H__
 #define __STR_H__
 
+#include <stddef.h> /* size_t */
 #include <wchar.h> /* wchar_t */
 
 #ifndef _WIN32
@@ -32,7 +33,8 @@
 
 /* Various string functions. */
 
-void chomp(char *text);
+/* Removes at most one trailing newline character. */
+void chomp(char str[]);
 /* Removes all trailing whitespace. Returns new length of the string. */
 size_t trim_right(char *text);
 /* Converts multibyte string to a wide string.  On success returns newly
