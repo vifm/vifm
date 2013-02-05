@@ -74,10 +74,12 @@ int
 my_system(char *command)
 {
 #ifndef _WIN32
+	typedef void (*sig_handler)(int);
+
 	int pid;
 	int result;
 	extern char **environ;
-	void (*saved_dfl_sig_handler)(int);
+	sig_handler saved_dfl_sig_handler;
 
 	if(command == NULL)
 		return 1;
