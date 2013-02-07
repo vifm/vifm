@@ -50,7 +50,7 @@ static void get_history(FileView *view, int reread, const char *dir,
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
 static void update_info_file(const char filename[]);
-static void prepare_line(char *line);
+static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
 static void put_sort_info(FILE *fp, char leading_char, const FileView *view);
 static int read_possible_possible_pos(FILE *f);
@@ -72,7 +72,7 @@ read_info_file(int reread)
 
 	while((line = read_line(fp, line)) != NULL)
 	{
-		prepare_line(line);
+		remove_leading_whitespace(line);
 		if(line[0] == '#' || line[0] == '\0')
 			continue;
 
@@ -94,7 +94,7 @@ read_info_file(int reread)
 		{
 			if((line2 = read_line(fp, line2)) != NULL)
 			{
-				prepare_line(line2);
+				remove_leading_whitespace(line2);
 				/* This is to prevent old builtin fake associations to be loaded. */
 				if(!ends_with(line2, "}" VIFM_PSEUDO_CMD))
 				{
@@ -107,7 +107,7 @@ read_info_file(int reread)
 		{
 			if((line2 = read_line(fp, line2)) != NULL)
 			{
-				prepare_line(line2);
+				remove_leading_whitespace(line2);
 				set_programs(line + 1, line2, 1,
 						curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 			}
@@ -116,7 +116,7 @@ read_info_file(int reread)
 		{
 			if((line2 = read_line(fp, line2)) != NULL)
 			{
-				prepare_line(line2);
+				remove_leading_whitespace(line2);
 				set_fileviewer(line + 1, line2);
 			}
 		}
@@ -125,7 +125,7 @@ read_info_file(int reread)
 			if((line2 = read_line(fp, line2)) != NULL)
 			{
 				char *cmdadd_cmd;
-				prepare_line(line2);
+				remove_leading_whitespace(line2);
 				if((cmdadd_cmd = format_str("command %s %s", line + 1, line2)) != NULL)
 				{
 					exec_commands(cmdadd_cmd, curr_view, GET_COMMAND);
@@ -137,10 +137,10 @@ read_info_file(int reread)
 		{
 			if((line2 = read_line(fp, line2)) != NULL)
 			{
-				prepare_line(line2);
+				remove_leading_whitespace(line2);
 				if((line3 = read_line(fp, line3)) != NULL)
 				{
-					prepare_line(line3);
+					remove_leading_whitespace(line3);
 					add_bookmark(line[1], line2, line3);
 				}
 			}
@@ -198,7 +198,7 @@ read_info_file(int reread)
 
 			if((line2 = read_line(fp, line2)) == NULL)
 				continue;
-			prepare_line(line2);
+			remove_leading_whitespace(line2);
 
 			pos = read_possible_possible_pos(fp);
 			get_history(&lwin, reread, line + 1, line2, pos);
@@ -218,7 +218,7 @@ read_info_file(int reread)
 
 			if((line2 = read_line(fp, line2)) == NULL)
 				continue;
-			prepare_line(line2);
+			remove_leading_whitespace(line2);
 
 			pos = read_possible_possible_pos(fp);
 			get_history(&rwin, reread, line + 1, line2, pos);
@@ -244,13 +244,13 @@ read_info_file(int reread)
 		{
 			if((line2 = read_line(fp, line2)) != NULL)
 			{
-				prepare_line(line2);
+				remove_leading_whitespace(line2);
 				if((line3 = read_line(fp, line3)) != NULL)
 				{
-					prepare_line(line3);
+					remove_leading_whitespace(line3);
 					if((line4 = read_line(fp, line4)) != NULL)
 					{
-						prepare_line(line4);
+						remove_leading_whitespace(line4);
 						push_to_dirstack(line + 1, line2, line3 + 1, line4);
 					}
 				}
@@ -262,7 +262,7 @@ read_info_file(int reread)
 			{
 				if(!path_exists_at(cfg.trash_dir, line + 1))
 					continue;
-				prepare_line(line2);
+				remove_leading_whitespace(line2);
 				add_to_trash(line2, line + 1);
 			}
 		}
@@ -470,7 +470,7 @@ update_info_file(const char filename[])
 		char *line = NULL, *line2 = NULL, *line3 = NULL;
 		while((line = read_line(fp, line)) != NULL)
 		{
-			prepare_line(line);
+			remove_leading_whitespace(line);
 			if(line[0] == '#' || line[0] == '\0')
 				continue;
 
@@ -484,7 +484,7 @@ update_info_file(const char filename[])
 						free_assoc_record(&prog);
 						continue;
 					}
-					prepare_line(line2);
+					remove_leading_whitespace(line2);
 					nft = add_to_string_array(&ft, nft, 2, line + 1, line2);
 				}
 			}
@@ -507,7 +507,7 @@ update_info_file(const char filename[])
 						}
 						free_assoc_record(&x_prog);
 					}
-					prepare_line(line2);
+					remove_leading_whitespace(line2);
 					nfx = add_to_string_array(&fx, nfx, 2, line + 1, line2);
 				}
 			}
@@ -517,7 +517,7 @@ update_info_file(const char filename[])
 				{
 					if(get_viewer_for_file(line + 1) != NULL)
 						continue;
-					prepare_line(line2);
+					remove_leading_whitespace(line2);
 					nfv = add_to_string_array(&fv, nfv, 2, line + 1, line2);
 				}
 			}
@@ -539,7 +539,7 @@ update_info_file(const char filename[])
 					}
 					if(p == NULL)
 						continue;
-					prepare_line(line2);
+					remove_leading_whitespace(line2);
 					ncmds = add_to_string_array(&cmds, ncmds, 2, line + 1, line2);
 				}
 			}
@@ -555,7 +555,7 @@ update_info_file(const char filename[])
 						continue;
 					if(is_in_view_history(&lwin, line + 1))
 						continue;
-					prepare_line(line2);
+					remove_leading_whitespace(line2);
 
 					pos = read_possible_possible_pos(fp);
 					nlh = add_to_string_array(&lh, nlh, 2, line + 1, line2);
@@ -578,7 +578,7 @@ update_info_file(const char filename[])
 						continue;
 					if(is_in_view_history(&rwin, line + 1))
 						continue;
-					prepare_line(line2);
+					remove_leading_whitespace(line2);
 
 					pos = read_possible_possible_pos(fp);
 					nrh = add_to_string_array(&rh, nrh, 2, line + 1, line2);
@@ -594,14 +594,14 @@ update_info_file(const char filename[])
 				line[2] = '\0';
 				if((line2 = read_line(fp, line2)) != NULL)
 				{
-					prepare_line(line2);
+					remove_leading_whitespace(line2);
 					if((line3 = read_line(fp, line3)) != NULL)
 					{
 						if(!char_is_one_of(valid_bookmarks, line[1]))
 							continue;
 						if(!is_bookmark_empty(mark2index(line[1])))
 							continue;
-						prepare_line(line3);
+						remove_leading_whitespace(line3);
 						nmarks = add_to_string_array(&marks, nmarks, 3, line + 1, line2,
 								line3);
 					}
@@ -611,7 +611,7 @@ update_info_file(const char filename[])
 			{
 				if((line2 = read_line(fp, line2)) != NULL)
 				{
-					prepare_line(line2);
+					remove_leading_whitespace(line2);
 					if(!path_exists_at(cfg.trash_dir, line + 1))
 						continue;
 					if(is_in_trash(line + 1))
@@ -967,15 +967,15 @@ update_info_file(const char filename[])
 	free_string_array(trash, ntrash);
 }
 
+/* Removes leading whitespace from the line in place. */
 static void
-prepare_line(char *line)
+remove_leading_whitespace(char line[])
 {
-	int i;
-
-	chomp(line);
-	i = skip_whitespace(line) - line;
-	if(i > 0)
-		memmove(line, line + i, strlen(line + i) + 1);
+	const char *const non_whitespace = skip_whitespace(line);
+	if(non_whitespace != line)
+	{
+		memmove(line, non_whitespace, strlen(non_whitespace) + 1);
+	}
 }
 
 /* Returns pointer to a statically allocated buffer */
