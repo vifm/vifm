@@ -43,8 +43,6 @@
 
 #include "info.h"
 
-#define MAX_LEN 1024
-
 static void get_sort_info(FileView *view, const char line[]);
 static void inc_history(char ***hist, int *num, int *len);
 static void get_history(FileView *view, int reread, const char *dir,
@@ -126,10 +124,13 @@ read_info_file(int reread)
 		{
 			if((line2 = read_line(fp, line2)) != NULL)
 			{
-				char buf[MAX_LEN*2];
+				char *cmdadd_cmd;
 				prepare_line(line2);
-				snprintf(buf, sizeof(buf), "command %s %s", line + 1, line2);
-				exec_commands(buf, curr_view, GET_COMMAND);
+				if((cmdadd_cmd = format_str("command %s %s", line + 1, line2)) != NULL)
+				{
+					exec_commands(cmdadd_cmd, curr_view, GET_COMMAND);
+					free(cmdadd_cmd);
+				}
 			}
 		}
 		else if(line[0] == '\'') /* bookmark */

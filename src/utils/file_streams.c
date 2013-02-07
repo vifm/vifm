@@ -18,7 +18,7 @@
  */
 
 #include <stddef.h> /* size_t ssize_t */
-#include <stdio.h> /* FILE */
+#include <stdio.h> /* FILE getline() */
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strlen() */
 
