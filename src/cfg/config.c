@@ -84,6 +84,7 @@ static void create_rc_file(void);
 static void add_default_bookmarks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
 static const char * get_tmpdir(void);
+static int is_conf_file(const char file[]);
 static void free_view_history(FileView *view);
 static void reduce_view_history(FileView *view, size_t size);
 
@@ -589,8 +590,17 @@ source_file_internal(FILE *fp, const char filename[])
 	return 0;
 }
 
+int
+is_old_config(void)
+{
+	const char *const myvifmrc = env_get(MYVIFMRC_EV);
+	return (myvifmrc != NULL) && is_conf_file(myvifmrc);
+}
+
+/* Checks whether file is configuration file (has at least one line which starts
+ * with a hash symbol).  Returns non-zero if yes, otherwise zero is returned. */
 static int
-is_conf_file(const char *file)
+is_conf_file(const char file[])
 {
 	FILE *const fp = fopen(file, "r");
 	char *line = NULL;
@@ -608,13 +618,6 @@ is_conf_file(const char *file)
 		free(line);
 	}
 	return line != NULL;
-}
-
-int
-is_old_config(void)
-{
-	const char *const myvifmrc = env_get(MYVIFMRC_EV);
-	return (myvifmrc != NULL) && is_conf_file(myvifmrc);
 }
 
 int
