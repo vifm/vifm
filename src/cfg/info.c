@@ -22,6 +22,7 @@
 #include <string.h> /* memset() strcpy() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
+#include "../utils/file_streams.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
@@ -64,14 +65,14 @@ read_info_file(int reread)
 
 	FILE *fp;
 	char info_file[PATH_MAX];
-	char line[MAX_LEN], line2[MAX_LEN], line3[MAX_LEN], line4[MAX_LEN];
+	char *line = NULL, *line2 = NULL, *line3 = NULL, *line4 = NULL;
 
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
 
 	if((fp = fopen(info_file, "r")) == NULL)
 		return;
 
-	while(fgets(line, sizeof(line), fp) == line)
+	while((line = read_line(fp, line)) != NULL)
 	{
 		prepare_line(line);
 		if(line[0] == '#' || line[0] == '\0')
@@ -93,7 +94,7 @@ read_info_file(int reread)
 		}
 		else if(line[0] == '.') /* filetype */
 		{
-			if(fgets(line2, sizeof(line2), fp) == line2)
+			if((line2 = read_line(fp, line2)) != NULL)
 			{
 				prepare_line(line2);
 				/* This is to prevent old builtin fake associations to be loaded. */
@@ -106,7 +107,7 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'x') /* xfiletype */
 		{
-			if(fgets(line2, sizeof(line2), fp) == line2)
+			if((line2 = read_line(fp, line2)) != NULL)
 			{
 				prepare_line(line2);
 				set_programs(line + 1, line2, 1,
@@ -115,7 +116,7 @@ read_info_file(int reread)
 		}
 		else if(line[0] == ',') /* fileviewer */
 		{
-			if(fgets(line2, sizeof(line2), fp) == line2)
+			if((line2 = read_line(fp, line2)) != NULL)
 			{
 				prepare_line(line2);
 				set_fileviewer(line + 1, line2);
@@ -123,7 +124,7 @@ read_info_file(int reread)
 		}
 		else if(line[0] == '!') /* command */
 		{
-			if(fgets(line2, sizeof(line2), fp) == line2)
+			if((line2 = read_line(fp, line2)) != NULL)
 			{
 				char buf[MAX_LEN*2];
 				prepare_line(line2);
@@ -133,10 +134,10 @@ read_info_file(int reread)
 		}
 		else if(line[0] == '\'') /* bookmark */
 		{
-			if(fgets(line2, sizeof(line2), fp) == line2)
+			if((line2 = read_line(fp, line2)) != NULL)
 			{
 				prepare_line(line2);
-				if(fgets(line3, sizeof(line3), fp) == line3)
+				if((line3 = read_line(fp, line3)) != NULL)
 				{
 					prepare_line(line3);
 					add_bookmark(line[1], line2, line3);
@@ -194,7 +195,7 @@ read_info_file(int reread)
 				continue;
 			}
 
-			if(fgets(line2, sizeof(line2), fp) != line2)
+			if((line2 = read_line(fp, line2)) == NULL)
 				continue;
 			prepare_line(line2);
 
@@ -214,7 +215,7 @@ read_info_file(int reread)
 				continue;
 			}
 
-			if(fgets(line2, sizeof(line2), fp) != line2)
+			if((line2 = read_line(fp, line2)) == NULL)
 				continue;
 			prepare_line(line2);
 
@@ -240,13 +241,13 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'S') /* directory stack */
 		{
-			if(fgets(line2, sizeof(line2), fp) == line2)
+			if((line2 = read_line(fp, line2)) != NULL)
 			{
 				prepare_line(line2);
-				if(fgets(line3, sizeof(line3), fp) == line3)
+				if((line3 = read_line(fp, line3)) != NULL)
 				{
 					prepare_line(line3);
-					if(fgets(line4, sizeof(line4), fp) == line4)
+					if((line4 = read_line(fp, line4)) != NULL)
 					{
 						prepare_line(line4);
 						push_to_dirstack(line + 1, line2, line3 + 1, line4);
@@ -256,7 +257,7 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 't') /* trash */
 		{
-			if(fgets(line2, sizeof(line2), fp) == line2)
+			if((line2 = read_line(fp, line2)) != NULL)
 			{
 				if(!path_exists_at(cfg.trash_dir, line + 1))
 					continue;
@@ -299,6 +300,10 @@ read_info_file(int reread)
 		}
 	}
 
+	free(line);
+	free(line2);
+	free(line3);
+	free(line4);
 	fclose(fp);
 }
 
