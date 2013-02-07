@@ -38,6 +38,7 @@
 
 #include "../menus/menus.h"
 #include "../utils/env.h"
+#include "../utils/file_streams.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
@@ -591,24 +592,22 @@ source_file_internal(FILE *fp, const char filename[])
 static int
 is_conf_file(const char *file)
 {
-	FILE *fp;
-	char line[MAX_LEN];
+	FILE *const fp = fopen(file, "r");
+	char *line = NULL;
 
-	if((fp = fopen(file, "r")) == NULL)
-		return 0;
-
-	while(fgets(line, sizeof(line), fp))
+	if(fp != NULL)
 	{
-		if(skip_whitespace(line)[0] == '#')
+		while((line = read_line(fp, line)) != NULL)
 		{
-			fclose(fp);
-			return 1;
+			if(skip_whitespace(line)[0] == '#')
+			{
+				break;
+			}
 		}
+		fclose(fp);
+		free(line);
 	}
-
-	fclose(fp);
-
-	return 0;
+	return line != NULL;
 }
 
 int
