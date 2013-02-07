@@ -18,7 +18,7 @@ AC_CANONICAL_HOST
 dnl Require $host variable presence.
 AC_MSG_CHECKING([host])
 AC_MSG_RESULT([$host])
-dnl Define $OSX_HOST variable for OS Xx
+dnl Define $OSX_HOST variable for OS X
 case "$host_os" in
 	macos* | darwin*)
 		OSX_HOST=1
@@ -112,6 +112,8 @@ AC_CHECK_FUNC([getgrent], [], [AC_MSG_ERROR([getgrent() function not found.])])
 AC_CHECK_FUNC([getgrgid], [], [AC_MSG_ERROR([getgrgid() function not found.])])
 AC_CHECK_FUNC([getgrgid_r], [], [AC_MSG_ERROR([getgrgid_r() function not found.])])
 AC_CHECK_FUNC([getgrnam], [], [AC_MSG_ERROR([getgrnam() function not found.])])
+AC_CHECK_FUNC([getline],
+    [AC_DEFINE_UNQUOTED(HAVE_GETLINE_FUNC, 1, [Define if getline function present])])
 if test -z "$OSX_HOST" ; then
 	AC_CHECK_FUNC([getmntent], [], [AC_MSG_ERROR([getmntent() function not found.])])
 fi

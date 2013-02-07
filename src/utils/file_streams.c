@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* size_t ssize_t */
 #include <stdio.h> /* FILE */
 #include <stdlib.h> /* free() realloc() */
 #include <string.h> /* strlen() */
@@ -78,6 +78,21 @@ remove_eol(FILE *fp)
 char *
 read_line(FILE *fp, char buffer[])
 {
+#if defined(HAVE_GETLINE_FUNC) && HAVE_GETLINE_FUNC
+	size_t size = 0;
+	ssize_t len;
+	if((len = getline(&buffer, &size, fp)) == -1)
+	{
+		free(buffer);
+		return NULL;
+	}
+
+	if(len > 0 && buffer[len - 1] == '\n')
+	{
+		buffer[len - 1] = '\0';
+	}
+	return buffer;
+#else
 	enum { PART_BUFFER_LEN = 512 };
 	char part_buffer[PART_BUFFER_LEN];
 	char *last_allocated_block = NULL;
@@ -117,6 +132,7 @@ read_line(FILE *fp, char buffer[])
 	}
 
 	return buffer;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
