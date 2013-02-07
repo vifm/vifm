@@ -466,8 +466,8 @@ update_info_file(const char filename[])
 
 	if((fp = fopen(filename, "r")) != NULL)
 	{
-		char line[MAX_LEN], line2[MAX_LEN], line3[MAX_LEN];
-		while(fgets(line, sizeof(line), fp) == line)
+		char *line = NULL, *line2 = NULL, *line3 = NULL;
+		while((line = read_line(fp, line)) != NULL)
 		{
 			prepare_line(line);
 			if(line[0] == '#' || line[0] == '\0')
@@ -475,7 +475,7 @@ update_info_file(const char filename[])
 
 			if(line[0] == '.') /* filetype */
 			{
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_line(fp, line2)) != NULL)
 				{
 					assoc_record_t prog;
 					if(get_default_program_for_file(line + 1, &prog))
@@ -489,7 +489,7 @@ update_info_file(const char filename[])
 			}
 			else if(line[0] == 'x') /* xfiletype */
 			{
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_line(fp, line2)) != NULL)
 				{
 					assoc_record_t x_prog;
 					if(get_default_program_for_file(line + 1, &x_prog))
@@ -512,7 +512,7 @@ update_info_file(const char filename[])
 			}
 			else if(line[0] == ',') /* fileviewer */
 			{
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_line(fp, line2)) != NULL)
 				{
 					if(get_viewer_for_file(line + 1) != NULL)
 						continue;
@@ -524,7 +524,7 @@ update_info_file(const char filename[])
 			{
 				if(line[1] == '\0')
 					continue;
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_line(fp, line2)) != NULL)
 				{
 					char *p = line + 1;
 					for(i = 0; i < nlist; i += 2)
@@ -546,7 +546,7 @@ update_info_file(const char filename[])
 			{
 				if(line[1] == '\0')
 					continue;
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_line(fp, line2)) != NULL)
 				{
 					int pos;
 
@@ -569,7 +569,7 @@ update_info_file(const char filename[])
 			{
 				if(line[1] == '\0')
 					continue;
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_line(fp, line2)) != NULL)
 				{
 					int pos;
 
@@ -591,10 +591,10 @@ update_info_file(const char filename[])
 			else if(line[0] == '\'') /* bookmark */
 			{
 				line[2] = '\0';
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_line(fp, line2)) != NULL)
 				{
 					prepare_line(line2);
-					if(fgets(line3, sizeof(line3), fp) == line3)
+					if((line3 = read_line(fp, line3)) != NULL)
 					{
 						if(!char_is_one_of(valid_bookmarks, line[1]))
 							continue;
@@ -608,7 +608,7 @@ update_info_file(const char filename[])
 			}
 			else if(line[0] == 't') /* trash */
 			{
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_line(fp, line2)) != NULL)
 				{
 					prepare_line(line2);
 					if(!path_exists_at(cfg.trash_dir, line + 1))
@@ -647,6 +647,9 @@ update_info_file(const char filename[])
 				nregs = add_to_string_array(&regs, nregs, 1, line);
 			}
 		}
+		free(line);
+		free(line2);
+		free(line3);
 		fclose(fp);
 	}
 
