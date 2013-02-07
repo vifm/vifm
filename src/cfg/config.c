@@ -58,7 +58,8 @@
 
 #include "config.h"
 
-#define MAX_LEN 1024
+/* Maximum supported by the implementation length of line in vifmrc file. */
+#define MAX_VIFMRC_LINE_LEN 4*1024
 
 config_t cfg;
 
@@ -544,7 +545,8 @@ source_file(const char filename[])
 static int
 source_file_internal(FILE *fp, const char filename[])
 {
-	char line[MAX_LEN*2];
+	char line[MAX_VIFMRC_LINE_LEN + 1];
+	char *next_line = NULL;
 	int line_num;
 
 	if(fgets(line, sizeof(line), fp) == NULL)
@@ -552,19 +554,18 @@ source_file_internal(FILE *fp, const char filename[])
 		/* File is empty. */
 		return 0;
 	}
+	chomp(line);
 
 	line_num = 1;
 	for(;;)
 	{
-		char next_line[MAX_LEN];
 		char *p;
 		int line_num_delta = 0;
 
-		while((p = fgets(next_line, sizeof(next_line), fp)) != NULL)
+		while((p = next_line = read_line(fp, next_line)) != NULL)
 		{
 			line_num_delta++;
 			p = skip_whitespace(p);
-			chomp(p);
 			if(*p == '"')
 				continue;
 			else if(*p == '\\')
@@ -572,7 +573,6 @@ source_file_internal(FILE *fp, const char filename[])
 			else
 				break;
 		}
-		chomp(line);
 		if(exec_commands(line, curr_view, GET_COMMAND) < 0)
 		{
 			/* User choice is saved by show_error_promptf internally. */
@@ -583,10 +583,12 @@ source_file_internal(FILE *fp, const char filename[])
 			break;
 		if(p == NULL)
 			break;
-		strcpy(line, p);
+		strncpy(line, p, sizeof(line));
+		line[sizeof(line) - 1] = '\0';
 		line_num += line_num_delta;
 	}
 
+	free(next_line);
 	return 0;
 }
 
