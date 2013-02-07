@@ -50,6 +50,7 @@ static void get_history(FileView *view, int reread, const char *dir,
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
 static void update_info_file(const char filename[]);
+static char * read_vifminfo_line(FILE *fp, char buffer[]);
 static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
 static void put_sort_info(FILE *fp, char leading_char, const FileView *view);
@@ -70,9 +71,8 @@ read_info_file(int reread)
 	if((fp = fopen(info_file, "r")) == NULL)
 		return;
 
-	while((line = read_line(fp, line)) != NULL)
+	while((line = read_vifminfo_line(fp, line)) != NULL)
 	{
-		remove_leading_whitespace(line);
 		if(line[0] == '#' || line[0] == '\0')
 			continue;
 
@@ -92,9 +92,8 @@ read_info_file(int reread)
 		}
 		else if(line[0] == '.') /* filetype */
 		{
-			if((line2 = read_line(fp, line2)) != NULL)
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				remove_leading_whitespace(line2);
 				/* This is to prevent old builtin fake associations to be loaded. */
 				if(!ends_with(line2, "}" VIFM_PSEUDO_CMD))
 				{
@@ -105,27 +104,24 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'x') /* xfiletype */
 		{
-			if((line2 = read_line(fp, line2)) != NULL)
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				remove_leading_whitespace(line2);
 				set_programs(line + 1, line2, 1,
 						curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 			}
 		}
 		else if(line[0] == ',') /* fileviewer */
 		{
-			if((line2 = read_line(fp, line2)) != NULL)
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				remove_leading_whitespace(line2);
 				set_fileviewer(line + 1, line2);
 			}
 		}
 		else if(line[0] == '!') /* command */
 		{
-			if((line2 = read_line(fp, line2)) != NULL)
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				char *cmdadd_cmd;
-				remove_leading_whitespace(line2);
 				if((cmdadd_cmd = format_str("command %s %s", line + 1, line2)) != NULL)
 				{
 					exec_commands(cmdadd_cmd, curr_view, GET_COMMAND);
@@ -135,12 +131,10 @@ read_info_file(int reread)
 		}
 		else if(line[0] == '\'') /* bookmark */
 		{
-			if((line2 = read_line(fp, line2)) != NULL)
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				remove_leading_whitespace(line2);
-				if((line3 = read_line(fp, line3)) != NULL)
+				if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 				{
-					remove_leading_whitespace(line3);
 					add_bookmark(line[1], line2, line3);
 				}
 			}
@@ -196,9 +190,8 @@ read_info_file(int reread)
 				continue;
 			}
 
-			if((line2 = read_line(fp, line2)) == NULL)
+			if((line2 = read_vifminfo_line(fp, line2)) == NULL)
 				continue;
-			remove_leading_whitespace(line2);
 
 			pos = read_possible_possible_pos(fp);
 			get_history(&lwin, reread, line + 1, line2, pos);
@@ -216,9 +209,8 @@ read_info_file(int reread)
 				continue;
 			}
 
-			if((line2 = read_line(fp, line2)) == NULL)
+			if((line2 = read_vifminfo_line(fp, line2)) == NULL)
 				continue;
-			remove_leading_whitespace(line2);
 
 			pos = read_possible_possible_pos(fp);
 			get_history(&rwin, reread, line + 1, line2, pos);
@@ -242,15 +234,12 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'S') /* directory stack */
 		{
-			if((line2 = read_line(fp, line2)) != NULL)
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				remove_leading_whitespace(line2);
-				if((line3 = read_line(fp, line3)) != NULL)
+				if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 				{
-					remove_leading_whitespace(line3);
-					if((line4 = read_line(fp, line4)) != NULL)
+					if((line4 = read_vifminfo_line(fp, line4)) != NULL)
 					{
-						remove_leading_whitespace(line4);
 						push_to_dirstack(line + 1, line2, line3 + 1, line4);
 					}
 				}
@@ -258,11 +247,10 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 't') /* trash */
 		{
-			if((line2 = read_line(fp, line2)) != NULL)
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				if(!path_exists_at(cfg.trash_dir, line + 1))
 					continue;
-				remove_leading_whitespace(line2);
 				add_to_trash(line2, line + 1);
 			}
 		}
@@ -468,15 +456,14 @@ update_info_file(const char filename[])
 	if((fp = fopen(filename, "r")) != NULL)
 	{
 		char *line = NULL, *line2 = NULL, *line3 = NULL;
-		while((line = read_line(fp, line)) != NULL)
+		while((line = read_vifminfo_line(fp, line)) != NULL)
 		{
-			remove_leading_whitespace(line);
 			if(line[0] == '#' || line[0] == '\0')
 				continue;
 
 			if(line[0] == '.') /* filetype */
 			{
-				if((line2 = read_line(fp, line2)) != NULL)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					assoc_record_t prog;
 					if(get_default_program_for_file(line + 1, &prog))
@@ -484,13 +471,12 @@ update_info_file(const char filename[])
 						free_assoc_record(&prog);
 						continue;
 					}
-					remove_leading_whitespace(line2);
 					nft = add_to_string_array(&ft, nft, 2, line + 1, line2);
 				}
 			}
 			else if(line[0] == 'x') /* xfiletype */
 			{
-				if((line2 = read_line(fp, line2)) != NULL)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					assoc_record_t x_prog;
 					if(get_default_program_for_file(line + 1, &x_prog))
@@ -507,17 +493,15 @@ update_info_file(const char filename[])
 						}
 						free_assoc_record(&x_prog);
 					}
-					remove_leading_whitespace(line2);
 					nfx = add_to_string_array(&fx, nfx, 2, line + 1, line2);
 				}
 			}
 			else if(line[0] == ',') /* fileviewer */
 			{
-				if((line2 = read_line(fp, line2)) != NULL)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					if(get_viewer_for_file(line + 1) != NULL)
 						continue;
-					remove_leading_whitespace(line2);
 					nfv = add_to_string_array(&fv, nfv, 2, line + 1, line2);
 				}
 			}
@@ -525,7 +509,7 @@ update_info_file(const char filename[])
 			{
 				if(line[1] == '\0')
 					continue;
-				if((line2 = read_line(fp, line2)) != NULL)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					char *p = line + 1;
 					for(i = 0; i < nlist; i += 2)
@@ -539,7 +523,6 @@ update_info_file(const char filename[])
 					}
 					if(p == NULL)
 						continue;
-					remove_leading_whitespace(line2);
 					ncmds = add_to_string_array(&cmds, ncmds, 2, line + 1, line2);
 				}
 			}
@@ -547,7 +530,7 @@ update_info_file(const char filename[])
 			{
 				if(line[1] == '\0')
 					continue;
-				if((line2 = read_line(fp, line2)) != NULL)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					int pos;
 
@@ -555,7 +538,6 @@ update_info_file(const char filename[])
 						continue;
 					if(is_in_view_history(&lwin, line + 1))
 						continue;
-					remove_leading_whitespace(line2);
 
 					pos = read_possible_possible_pos(fp);
 					nlh = add_to_string_array(&lh, nlh, 2, line + 1, line2);
@@ -570,7 +552,7 @@ update_info_file(const char filename[])
 			{
 				if(line[1] == '\0')
 					continue;
-				if((line2 = read_line(fp, line2)) != NULL)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					int pos;
 
@@ -578,7 +560,6 @@ update_info_file(const char filename[])
 						continue;
 					if(is_in_view_history(&rwin, line + 1))
 						continue;
-					remove_leading_whitespace(line2);
 
 					pos = read_possible_possible_pos(fp);
 					nrh = add_to_string_array(&rh, nrh, 2, line + 1, line2);
@@ -592,16 +573,14 @@ update_info_file(const char filename[])
 			else if(line[0] == '\'') /* bookmark */
 			{
 				line[2] = '\0';
-				if((line2 = read_line(fp, line2)) != NULL)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					remove_leading_whitespace(line2);
-					if((line3 = read_line(fp, line3)) != NULL)
+					if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 					{
 						if(!char_is_one_of(valid_bookmarks, line[1]))
 							continue;
 						if(!is_bookmark_empty(mark2index(line[1])))
 							continue;
-						remove_leading_whitespace(line3);
 						nmarks = add_to_string_array(&marks, nmarks, 3, line + 1, line2,
 								line3);
 					}
@@ -609,9 +588,8 @@ update_info_file(const char filename[])
 			}
 			else if(line[0] == 't') /* trash */
 			{
-				if((line2 = read_line(fp, line2)) != NULL)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					remove_leading_whitespace(line2);
 					if(!path_exists_at(cfg.trash_dir, line + 1))
 						continue;
 					if(is_in_trash(line + 1))
@@ -965,6 +943,20 @@ update_info_file(const char filename[])
 	free_string_array(regs, nregs);
 	free_string_array(prompt, nprompt);
 	free_string_array(trash, ntrash);
+}
+
+/* Reads line from configuration file.  Takes care of trailing newline character
+ * (removes it) and leading whitespace.  Buffer should be NULL or valid memory
+ * buffer allocated on heap.  Returns reallocated buffer or NULL on error or
+ * when end of file is reached. */
+static char *
+read_vifminfo_line(FILE *fp, char buffer[])
+{
+	if((buffer = read_line(fp, buffer)) != NULL)
+	{
+		remove_leading_whitespace(buffer);
+	}
+	return buffer;
 }
 
 /* Removes leading whitespace from the line in place. */
