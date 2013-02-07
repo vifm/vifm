@@ -79,7 +79,10 @@ char *
 read_line(FILE *fp, char buffer[])
 {
 #if defined(HAVE_GETLINE_FUNC) && HAVE_GETLINE_FUNC
-	size_t size = 0;
+	/* When buffer is NULL, size argument of getline() is ignored, otherwise it
+	 * should contain at least one byte, so using 1 as start value should be
+	 * safe. */
+	size_t size = 1;
 	ssize_t len;
 	if((len = getline(&buffer, &size, fp)) == -1)
 	{
