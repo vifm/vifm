@@ -22,6 +22,7 @@
 #include <string.h> /* memset() strcpy() strtol() strcmp() strchr() strlen() */
 
 #include "../engine/cmds.h"
+#include "../utils/file_streams.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
@@ -42,8 +43,6 @@
 
 #include "info.h"
 
-#define MAX_LEN 1024
-
 static void get_sort_info(FileView *view, const char line[]);
 static void inc_history(char ***hist, int *num, int *len);
 static void get_history(FileView *view, int reread, const char *dir,
@@ -51,7 +50,8 @@ static void get_history(FileView *view, int reread, const char *dir,
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
 static void update_info_file(const char filename[]);
-static void prepare_line(char *line);
+static char * read_vifminfo_line(FILE *fp, char buffer[]);
+static void remove_leading_whitespace(char line[]);
 static const char * escape_spaces(const char *str);
 static void put_sort_info(FILE *fp, char leading_char, const FileView *view);
 static int read_possible_possible_pos(FILE *f);
@@ -64,16 +64,15 @@ read_info_file(int reread)
 
 	FILE *fp;
 	char info_file[PATH_MAX];
-	char line[MAX_LEN], line2[MAX_LEN], line3[MAX_LEN], line4[MAX_LEN];
+	char *line = NULL, *line2 = NULL, *line3 = NULL, *line4 = NULL;
 
 	snprintf(info_file, sizeof(info_file), "%s/vifminfo", cfg.config_dir);
 
 	if((fp = fopen(info_file, "r")) == NULL)
 		return;
 
-	while(fgets(line, sizeof(line), fp) == line)
+	while((line = read_vifminfo_line(fp, line)) != NULL)
 	{
-		prepare_line(line);
 		if(line[0] == '#' || line[0] == '\0')
 			continue;
 
@@ -93,9 +92,8 @@ read_info_file(int reread)
 		}
 		else if(line[0] == '.') /* filetype */
 		{
-			if(fgets(line2, sizeof(line2), fp) == line2)
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				prepare_line(line2);
 				/* This is to prevent old builtin fake associations to be loaded. */
 				if(!ends_with(line2, "}" VIFM_PSEUDO_CMD))
 				{
@@ -106,39 +104,37 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'x') /* xfiletype */
 		{
-			if(fgets(line2, sizeof(line2), fp) == line2)
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				prepare_line(line2);
 				set_programs(line + 1, line2, 1,
 						curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 			}
 		}
 		else if(line[0] == ',') /* fileviewer */
 		{
-			if(fgets(line2, sizeof(line2), fp) == line2)
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				prepare_line(line2);
 				set_fileviewer(line + 1, line2);
 			}
 		}
 		else if(line[0] == '!') /* command */
 		{
-			if(fgets(line2, sizeof(line2), fp) == line2)
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				char buf[MAX_LEN*2];
-				prepare_line(line2);
-				snprintf(buf, sizeof(buf), "command %s %s", line + 1, line2);
-				exec_commands(buf, curr_view, GET_COMMAND);
+				char *cmdadd_cmd;
+				if((cmdadd_cmd = format_str("command %s %s", line + 1, line2)) != NULL)
+				{
+					exec_commands(cmdadd_cmd, curr_view, GET_COMMAND);
+					free(cmdadd_cmd);
+				}
 			}
 		}
 		else if(line[0] == '\'') /* bookmark */
 		{
-			if(fgets(line2, sizeof(line2), fp) == line2)
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				prepare_line(line2);
-				if(fgets(line3, sizeof(line3), fp) == line3)
+				if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 				{
-					prepare_line(line3);
 					add_bookmark(line[1], line2, line3);
 				}
 			}
@@ -194,9 +190,8 @@ read_info_file(int reread)
 				continue;
 			}
 
-			if(fgets(line2, sizeof(line2), fp) != line2)
+			if((line2 = read_vifminfo_line(fp, line2)) == NULL)
 				continue;
-			prepare_line(line2);
 
 			pos = read_possible_possible_pos(fp);
 			get_history(&lwin, reread, line + 1, line2, pos);
@@ -214,9 +209,8 @@ read_info_file(int reread)
 				continue;
 			}
 
-			if(fgets(line2, sizeof(line2), fp) != line2)
+			if((line2 = read_vifminfo_line(fp, line2)) == NULL)
 				continue;
-			prepare_line(line2);
 
 			pos = read_possible_possible_pos(fp);
 			get_history(&rwin, reread, line + 1, line2, pos);
@@ -240,15 +234,12 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 'S') /* directory stack */
 		{
-			if(fgets(line2, sizeof(line2), fp) == line2)
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				prepare_line(line2);
-				if(fgets(line3, sizeof(line3), fp) == line3)
+				if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 				{
-					prepare_line(line3);
-					if(fgets(line4, sizeof(line4), fp) == line4)
+					if((line4 = read_vifminfo_line(fp, line4)) != NULL)
 					{
-						prepare_line(line4);
 						push_to_dirstack(line + 1, line2, line3 + 1, line4);
 					}
 				}
@@ -256,11 +247,10 @@ read_info_file(int reread)
 		}
 		else if(line[0] == 't') /* trash */
 		{
-			if(fgets(line2, sizeof(line2), fp) == line2)
+			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				if(!path_exists_at(cfg.trash_dir, line + 1))
 					continue;
-				prepare_line(line2);
 				add_to_trash(line2, line + 1);
 			}
 		}
@@ -299,6 +289,10 @@ read_info_file(int reread)
 		}
 	}
 
+	free(line);
+	free(line2);
+	free(line3);
+	free(line4);
 	fclose(fp);
 }
 
@@ -461,16 +455,15 @@ update_info_file(const char filename[])
 
 	if((fp = fopen(filename, "r")) != NULL)
 	{
-		char line[MAX_LEN], line2[MAX_LEN], line3[MAX_LEN];
-		while(fgets(line, sizeof(line), fp) == line)
+		char *line = NULL, *line2 = NULL, *line3 = NULL;
+		while((line = read_vifminfo_line(fp, line)) != NULL)
 		{
-			prepare_line(line);
 			if(line[0] == '#' || line[0] == '\0')
 				continue;
 
 			if(line[0] == '.') /* filetype */
 			{
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					assoc_record_t prog;
 					if(get_default_program_for_file(line + 1, &prog))
@@ -478,13 +471,12 @@ update_info_file(const char filename[])
 						free_assoc_record(&prog);
 						continue;
 					}
-					prepare_line(line2);
 					nft = add_to_string_array(&ft, nft, 2, line + 1, line2);
 				}
 			}
 			else if(line[0] == 'x') /* xfiletype */
 			{
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					assoc_record_t x_prog;
 					if(get_default_program_for_file(line + 1, &x_prog))
@@ -501,17 +493,15 @@ update_info_file(const char filename[])
 						}
 						free_assoc_record(&x_prog);
 					}
-					prepare_line(line2);
 					nfx = add_to_string_array(&fx, nfx, 2, line + 1, line2);
 				}
 			}
 			else if(line[0] == ',') /* fileviewer */
 			{
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					if(get_viewer_for_file(line + 1) != NULL)
 						continue;
-					prepare_line(line2);
 					nfv = add_to_string_array(&fv, nfv, 2, line + 1, line2);
 				}
 			}
@@ -519,7 +509,7 @@ update_info_file(const char filename[])
 			{
 				if(line[1] == '\0')
 					continue;
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					char *p = line + 1;
 					for(i = 0; i < nlist; i += 2)
@@ -533,7 +523,6 @@ update_info_file(const char filename[])
 					}
 					if(p == NULL)
 						continue;
-					prepare_line(line2);
 					ncmds = add_to_string_array(&cmds, ncmds, 2, line + 1, line2);
 				}
 			}
@@ -541,7 +530,7 @@ update_info_file(const char filename[])
 			{
 				if(line[1] == '\0')
 					continue;
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					int pos;
 
@@ -549,7 +538,6 @@ update_info_file(const char filename[])
 						continue;
 					if(is_in_view_history(&lwin, line + 1))
 						continue;
-					prepare_line(line2);
 
 					pos = read_possible_possible_pos(fp);
 					nlh = add_to_string_array(&lh, nlh, 2, line + 1, line2);
@@ -564,7 +552,7 @@ update_info_file(const char filename[])
 			{
 				if(line[1] == '\0')
 					continue;
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					int pos;
 
@@ -572,7 +560,6 @@ update_info_file(const char filename[])
 						continue;
 					if(is_in_view_history(&rwin, line + 1))
 						continue;
-					prepare_line(line2);
 
 					pos = read_possible_possible_pos(fp);
 					nrh = add_to_string_array(&rh, nrh, 2, line + 1, line2);
@@ -586,16 +573,14 @@ update_info_file(const char filename[])
 			else if(line[0] == '\'') /* bookmark */
 			{
 				line[2] = '\0';
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					prepare_line(line2);
-					if(fgets(line3, sizeof(line3), fp) == line3)
+					if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 					{
 						if(!char_is_one_of(valid_bookmarks, line[1]))
 							continue;
 						if(!is_bookmark_empty(mark2index(line[1])))
 							continue;
-						prepare_line(line3);
 						nmarks = add_to_string_array(&marks, nmarks, 3, line + 1, line2,
 								line3);
 					}
@@ -603,9 +588,8 @@ update_info_file(const char filename[])
 			}
 			else if(line[0] == 't') /* trash */
 			{
-				if(fgets(line2, sizeof(line2), fp) == line2)
+				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					prepare_line(line2);
 					if(!path_exists_at(cfg.trash_dir, line + 1))
 						continue;
 					if(is_in_trash(line + 1))
@@ -642,6 +626,9 @@ update_info_file(const char filename[])
 				nregs = add_to_string_array(&regs, nregs, 1, line);
 			}
 		}
+		free(line);
+		free(line2);
+		free(line3);
 		fclose(fp);
 	}
 
@@ -958,15 +945,29 @@ update_info_file(const char filename[])
 	free_string_array(trash, ntrash);
 }
 
-static void
-prepare_line(char *line)
+/* Reads line from configuration file.  Takes care of trailing newline character
+ * (removes it) and leading whitespace.  Buffer should be NULL or valid memory
+ * buffer allocated on heap.  Returns reallocated buffer or NULL on error or
+ * when end of file is reached. */
+static char *
+read_vifminfo_line(FILE *fp, char buffer[])
 {
-	int i;
+	if((buffer = read_line(fp, buffer)) != NULL)
+	{
+		remove_leading_whitespace(buffer);
+	}
+	return buffer;
+}
 
-	chomp(line);
-	i = skip_whitespace(line) - line;
-	if(i > 0)
-		memmove(line, line + i, strlen(line + i) + 1);
+/* Removes leading whitespace from the line in place. */
+static void
+remove_leading_whitespace(char line[])
+{
+	const char *const non_whitespace = skip_whitespace(line);
+	if(non_whitespace != line)
+	{
+		memmove(line, non_whitespace, strlen(non_whitespace) + 1);
+	}
 }
 
 /* Returns pointer to a statically allocated buffer */

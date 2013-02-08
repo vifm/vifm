@@ -38,6 +38,7 @@
 
 #include "../menus/menus.h"
 #include "../utils/env.h"
+#include "../utils/file_streams.h"
 #include "../utils/fs.h"
 #include "../utils/fs_limits.h"
 #include "../utils/log.h"
@@ -57,7 +58,8 @@
 
 #include "config.h"
 
-#define MAX_LEN 1024
+/* Maximum supported by the implementation length of line in vifmrc file. */
+#define MAX_VIFMRC_LINE_LEN 4*1024
 
 config_t cfg;
 
@@ -83,6 +85,7 @@ static void create_rc_file(void);
 static void add_default_bookmarks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
 static const char * get_tmpdir(void);
+static int is_conf_file(const char file[]);
 static void free_view_history(FileView *view);
 static void reduce_view_history(FileView *view, size_t size);
 
@@ -508,9 +511,13 @@ create_trash_dir(void)
 }
 
 void
-exec_config(void)
+source_config(void)
 {
-	(void)source_file(env_get(MYVIFMRC_EV));
+	const char *const myvifmrc = env_get(MYVIFMRC_EV);
+	if(myvifmrc != NULL)
+	{
+		(void)source_file(myvifmrc);
+	}
 }
 
 int
@@ -538,7 +545,8 @@ source_file(const char filename[])
 static int
 source_file_internal(FILE *fp, const char filename[])
 {
-	char line[MAX_LEN*2];
+	char line[MAX_VIFMRC_LINE_LEN + 1];
+	char *next_line = NULL;
 	int line_num;
 
 	if(fgets(line, sizeof(line), fp) == NULL)
@@ -546,19 +554,18 @@ source_file_internal(FILE *fp, const char filename[])
 		/* File is empty. */
 		return 0;
 	}
+	chomp(line);
 
 	line_num = 1;
 	for(;;)
 	{
-		char next_line[MAX_LEN];
 		char *p;
 		int line_num_delta = 0;
 
-		while((p = fgets(next_line, sizeof(next_line), fp)) != NULL)
+		while((p = next_line = read_line(fp, next_line)) != NULL)
 		{
 			line_num_delta++;
 			p = skip_whitespace(p);
-			chomp(p);
 			if(*p == '"')
 				continue;
 			else if(*p == '\\')
@@ -566,7 +573,6 @@ source_file_internal(FILE *fp, const char filename[])
 			else
 				break;
 		}
-		chomp(line);
 		if(exec_commands(line, curr_view, GET_COMMAND) < 0)
 		{
 			/* User choice is saved by show_error_promptf internally. */
@@ -577,40 +583,43 @@ source_file_internal(FILE *fp, const char filename[])
 			break;
 		if(p == NULL)
 			break;
-		strcpy(line, p);
+		strncpy(line, p, sizeof(line));
+		line[sizeof(line) - 1] = '\0';
 		line_num += line_num_delta;
 	}
 
-	return 0;
-}
-
-static int
-is_conf_file(const char *file)
-{
-	FILE *fp;
-	char line[MAX_LEN];
-
-	if((fp = fopen(file, "r")) == NULL)
-		return 0;
-
-	while(fgets(line, sizeof(line), fp))
-	{
-		if(skip_whitespace(line)[0] == '#')
-		{
-			fclose(fp);
-			return 1;
-		}
-	}
-
-	fclose(fp);
-
+	free(next_line);
 	return 0;
 }
 
 int
 is_old_config(void)
 {
-	return is_conf_file(env_get(MYVIFMRC_EV));
+	const char *const myvifmrc = env_get(MYVIFMRC_EV);
+	return (myvifmrc != NULL) && is_conf_file(myvifmrc);
+}
+
+/* Checks whether file is configuration file (has at least one line which starts
+ * with a hash symbol).  Returns non-zero if yes, otherwise zero is returned. */
+static int
+is_conf_file(const char file[])
+{
+	FILE *const fp = fopen(file, "r");
+	char *line = NULL;
+
+	if(fp != NULL)
+	{
+		while((line = read_line(fp, line)) != NULL)
+		{
+			if(skip_whitespace(line)[0] == '#')
+			{
+				break;
+			}
+		}
+		fclose(fp);
+		free(line);
+	}
+	return line != NULL;
 }
 
 int

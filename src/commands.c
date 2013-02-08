@@ -3033,7 +3033,7 @@ restart_cmd(const cmd_info_t *cmd_info)
 	save_view_history(&lwin, NULL, NULL, -1);
 	save_view_history(&rwin, NULL, NULL, -1);
 	load_color_scheme_colors();
-	exec_config();
+	source_config();
 	exec_startup_commands(0, NULL);
 
 	curr_stats.restart_in_progress = 0;

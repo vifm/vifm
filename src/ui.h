@@ -61,6 +61,12 @@ enum
 	SORT_BY_TIME_MODIFIED,
 	SORT_BY_INAME,
 
+	/* Default sort key. */
+#ifndef _WIN32
+	DEFAULT_SORT_KEY = SORT_BY_NAME,
+#else
+	DEFAULT_SORT_KEY = SORT_BY_INAME,
+#endif
 	/* Value of the last sort option. */
 	LAST_SORT_OPTION = SORT_BY_INAME,
 	/* Number of sort options. */

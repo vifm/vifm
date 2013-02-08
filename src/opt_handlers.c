@@ -427,10 +427,15 @@ load_local_options(FileView *view)
 void
 load_sort_option(FileView *view)
 {
+	/* This approximate maximum length also includes "+" or "-" sign and a
+	 * comma (",") between items. */
+	enum { MAX_SORT_OPTION_NAME_LEN = 16 };
+
 	optval_t val;
-	char buf[64] = "";
+	char buf[MAX_SORT_OPTION_NAME_LEN*SORT_OPTION_COUNT] = "";
 	int j, i;
 
+	/* Ensure that list of sorting keys contains either "name" or "iname". */
 	j = -1;
 	while(++j < SORT_OPTION_COUNT && abs(view->sort[j]) <= LAST_SORT_OPTION)
 	{
@@ -442,13 +447,10 @@ load_sort_option(FileView *view)
 	}
 	if(j < SORT_OPTION_COUNT && abs(view->sort[j]) > LAST_SORT_OPTION)
 	{
-#ifndef _WIN32
-		view->sort[j++] = SORT_BY_NAME;
-#else
-		view->sort[j++] = SORT_BY_INAME;
-#endif
+		view->sort[j++] = DEFAULT_SORT_KEY;
 	}
 
+	/* Produce a string, which represents a list of sorting keys. */
 	i = -1;
 	while(++i < SORT_OPTION_COUNT && abs(view->sort[i]) <= LAST_SORT_OPTION)
 	{
@@ -946,11 +948,9 @@ sort_handler(OPT_OP op, optval_t val)
 			break;
 	}
 	if(j == i)
-#ifndef _WIN32
-		curr_view->sort[i++] = SORT_BY_NAME;
-#else
-		curr_view->sort[i++] = SORT_BY_INAME;
-#endif
+	{
+		curr_view->sort[i++] = DEFAULT_SORT_KEY;
+	}
 	memset(&curr_view->sort[i], NO_SORT_OPTION, sizeof(curr_view->sort) - i);
 
 	reset_view_sort(curr_view);

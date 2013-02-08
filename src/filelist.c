@@ -403,11 +403,7 @@ prepare_view(FileView *view)
 	view->max_filename_len = 0;
 	view->column_count = 1;
 
-#ifndef _WIN32
-	view->sort[0] = SORT_BY_NAME;
-#else
-	view->sort[0] = SORT_BY_INAME;
-#endif
+	view->sort[0] = DEFAULT_SORT_KEY;
 	memset(&view->sort[1], NO_SORT_OPTION, sizeof(view->sort) - 1);
 }
 

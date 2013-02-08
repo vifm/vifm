@@ -29,6 +29,7 @@ void trim_right_tests(void);
 void echo_tests(void);
 void format_str_tests(void);
 void utf8_tests(void);
+void read_line_tests(void);
 
 void
 all_tests(void)
@@ -62,6 +63,7 @@ all_tests(void)
 	echo_tests();
 	format_str_tests();
 	utf8_tests();
+	read_line_tests();
 }
 
 int

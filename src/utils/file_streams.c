@@ -17,7 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <stdio.h>
+#include <stddef.h> /* size_t ssize_t */
+#include <stdio.h> /* FILE getline() */
+#include <stdlib.h> /* free() realloc() */
+#include <string.h> /* strlen() */
 
 #include "file_streams.h"
 
@@ -70,6 +73,69 @@ remove_eol(FILE *fp)
 		c = fgetc(fp);
 	if(c != '\n')
 		ungetc(c, fp);
+}
+
+char *
+read_line(FILE *fp, char buffer[])
+{
+#if defined(HAVE_GETLINE_FUNC) && HAVE_GETLINE_FUNC
+	/* When buffer is NULL, size argument of getline() is ignored, otherwise it
+	 * should contain at least one byte, so using 1 as start value should be
+	 * safe. */
+	size_t size = 1;
+	ssize_t len;
+	if((len = getline(&buffer, &size, fp)) == -1)
+	{
+		free(buffer);
+		return NULL;
+	}
+
+	if(len > 0 && buffer[len - 1] == '\n')
+	{
+		buffer[len - 1] = '\0';
+	}
+	return buffer;
+#else
+	enum { PART_BUFFER_LEN = 512 };
+	char part_buffer[PART_BUFFER_LEN];
+	char *last_allocated_block = NULL;
+	size_t len = 0;
+
+	while(fgets(part_buffer, sizeof(part_buffer), fp) != NULL)
+	{
+		const size_t part_len = strlen(part_buffer);
+		const int eol = (part_len > 0) && (part_buffer[part_len - 1] == '\n');
+		const size_t new_len = len + (part_len - eol);
+
+		if((last_allocated_block = realloc(buffer, new_len + 1)) == NULL)
+		{
+			break;
+		}
+
+		if(eol)
+		{
+			part_buffer[part_len - 1] = '\0';
+		}
+
+		buffer = last_allocated_block;
+		strcpy(buffer + len, part_buffer);
+
+		if(eol)
+		{
+			break;
+		}
+
+		len = new_len;
+	}
+
+	if(last_allocated_block == NULL)
+	{
+		free(buffer);
+		buffer = NULL;
+	}
+
+	return buffer;
+#endif
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
