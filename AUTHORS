@@ -67,3 +67,5 @@ Chris Skalenda wrote a patch to allow setting the trash directory location.
 
 Miles (pkordy) provided a patch to fix opening of tagged (selected) symbolic
 links to a directory.
+
+Gentoo ebuild by Oleg Gordienko (gordio).
