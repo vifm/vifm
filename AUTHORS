@@ -9,8 +9,8 @@ Some of the code is from emelfm by Michael Clark.
 The screen-open-region-with-program and screen-ren-program-in-region were
 written by Miciah Dashiel Butler Masters.
 
-The file sorting function is from the git program by Tudor Hulubei 
-	and Andrei Pitis.  
+The file sorting function is from the git program by Tudor Hulubei
+	and Andrei Pitis.
 
 A patch for filetypes detection was written by Stefan Walter.
 
