@@ -1,5 +1,5 @@
 Vifm - vi[m] like file manager
-2001 - 2012
+2001 - 2013
 
 Updated: 20 January, 2013
 Version: 0.7.4b
@@ -34,6 +34,12 @@ Contacts
 Package content
 
     .
+    |
+    |-- data/ - documentation, sample vifmrc, icons
+    |  |
+    |  `-- vim/ - plugin for Vim
+    |
+    |-- pkgs/ - package build-scripts
     |
     |-- src/ - the source code of vifm
     |  |
@@ -159,5 +165,7 @@ Package content
     |-- ChangeLog - list of changes
     |-- FAQ - some common questions
     |-- INSTALL - building instructions
+    |-- NEWS - like the ChangeLog, but in more human-readable format
+    |-- README - this file
     |-- THANKS - thanks to people that help to improve vifm
     `-- TODO - what still needs to be implemented
