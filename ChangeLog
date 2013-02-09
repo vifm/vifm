@@ -1,5 +1,7 @@
 0.7.4b to current
 
+	Added Gentoo ebuild.  Thanks to Oleg Gordienko (a.k.a. gordio).
+
 	Removed 'slowfs' option for OS X, it didn't effect anything there anyway.
 
 	Fixed configuration on OS X because of unavailable mntent.h header and
