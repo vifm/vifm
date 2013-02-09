@@ -28,10 +28,10 @@
 #include <sys/types.h>
 #include <unistd.h> /* access() */
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
 #include <stddef.h> /* size_t */
-#include <string.h> /* memset() strdup() strchr() */
+#include <string.h> /* memset() strdup() strchr() strlen() */
 #include <stdarg.h>
 #include <signal.h>
 
@@ -59,6 +59,7 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
 static void normalize_top(menu_info *m);
+static char * expand_tabulation(const char line[], size_t tab_stops);
 static size_t chars_in_str(const char s[], char c);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
 		int prompt_skip);
@@ -691,39 +692,52 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 	show_progress("", 0);
 	while((line = read_line(file, line)) != NULL)
 	{
-		int i, j;
-		size_t len;
-
 		show_progress("Loading menu", 1000);
 		m->items = realloc(m->items, sizeof(char *)*(x + 1));
-		len = strlen(line) + chars_in_str(line, '\t')*(cfg.tab_stop - 1) + 2;
-		m->items[x] = malloc(len);
-
-		j = 0;
-		for(i = 0; line[i] != '\0'; i++)
-		{
-			if(line[i] == '\t')
-			{
-				const size_t space_count = cfg.tab_stop - j%cfg.tab_stop;
-				memset(m->items[x] + j, ' ', space_count);
-				j += space_count;
-			}
-			else
-			{
-				m->items[x][j++] = line[i];
-			}
-		}
-		m->items[x][j] = '\0';
-
-		x++;
+		m->items[x++] = expand_tabulation(line, cfg.tab_stop);
 	}
-
-	fclose(file);
 	m->len = x;
 
+	fclose(file);
 	print_errors(err);
 
 	return display_menu(m, view);
+}
+
+/* Clones the line replacing all occurrences of horizontal tabulation character
+ * with appropriate number of spaces.  The tab_stops parameter shows how many
+ * character position are taken by one tabulation.  Returns newly allocated
+ * string. */
+static char *
+expand_tabulation(const char line[], size_t tab_stops)
+{
+	const size_t tab_count = chars_in_str(line, '\t');
+	const size_t extra_line_len = tab_count*(tab_stops - 1);
+	const size_t expanded_line_len = (strlen(line) - tab_count) + extra_line_len;
+	char *const expanded_line = malloc(expanded_line_len + 1);
+
+	if(expanded_line != NULL)
+	{
+		size_t col = 0;
+		while(*line != '\0')
+		{
+			if(*line == '\t')
+			{
+				const size_t space_count = tab_stops - col%tab_stops;
+				memset(&expanded_line[col], ' ', space_count);
+				col += space_count;
+			}
+			else
+			{
+				expanded_line[col++] = *line;
+			}
+			line++;
+		}
+		assert(col <= expanded_line_len && "Buffer overflow shouldn't occur");
+		expanded_line[col] = '\0';
+	}
+
+	return expanded_line;
 }
 
 /* Returns number of c char occurrences in the s string. */
