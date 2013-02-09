@@ -10,7 +10,5 @@ Case insensitive rename can not be undone on Windows.
 
 Files with names containing Unicode characters are not always processed correctly.
 
-See capture_output_to_menu() (of menus.c) concerning reading very long lines.
-
 %s macro depends on undocumented external dependency (script called
 screen-open-region-with-program).

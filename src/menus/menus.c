@@ -38,6 +38,7 @@
 #include "../modes/cmdline.h"
 #include "../modes/menu.h"
 #include "../modes/modes.h"
+#include "../utils/file_streams.h"
 #include "../utils/fs.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -675,7 +676,7 @@ int
 capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 {
 	FILE *file, *err;
-	char buf[4096];
+	char *line = NULL;
 	int x;
 
 	if(background_and_capture((char *)cmd, &file, &err) != 0)
@@ -688,24 +689,24 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 
 	x = 0;
 	show_progress("", 0);
-	while(fgets(buf, sizeof(buf), file) == buf)
+	while((line = read_line(file, line)) != NULL)
 	{
 		int i, j;
 		size_t len;
 
 		j = 0;
-		for(i = 0; buf[i] != '\0'; i++)
+		for(i = 0; line[i] != '\0'; i++)
 			j++;
 
 		show_progress("Loading menu", 1000);
 		m->items = realloc(m->items, sizeof(char *)*(x + 1));
-		len = strlen(buf) + j*(cfg.tab_stop - 1) + 2;
+		len = strlen(line) + j*(cfg.tab_stop - 1) + 2;
 		m->items[x] = malloc(len);
 
 		j = 0;
-		for(i = 0; buf[i] != '\0'; i++)
+		for(i = 0; line[i] != '\0'; i++)
 		{
-			if(buf[i] == '\t')
+			if(line[i] == '\t')
 			{
 				int k = cfg.tab_stop - j%cfg.tab_stop;
 				while(k-- > 0)
@@ -713,7 +714,7 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 			}
 			else
 			{
-				m->items[x][j++] = buf[i];
+				m->items[x][j++] = line[i];
 			}
 		}
 		m->items[x][j] = '\0';

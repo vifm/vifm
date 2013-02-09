@@ -28,6 +28,8 @@
 	Fixed displaying of very long lines correctly in explore mode when 'wrap'
 	is off.
 
+	Fixed displaying of very long lines correctly in menu mode.
+
 0.7.4a to 0.7.4b
 
 	Removed screen title forcing for shell commands.
