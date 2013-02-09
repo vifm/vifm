@@ -61,7 +61,6 @@ typedef struct
 {
 	UpdateType need_update;
 	int last_char;
-	int search;
 	int save_msg; /* zero - don't save, 2 - save after resize, other - save */
 	int use_register;
 	int use_input_bar;

@@ -687,8 +687,6 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 		return 0;
 	}
 
-	curr_stats.search = 1;
-
 	x = 0;
 	show_progress("", 0);
 	while((line = read_line(file, line)) != NULL)
@@ -722,7 +720,6 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 
 	fclose(file);
 	m->len = x;
-	curr_stats.search = 0;
 
 	print_errors(err);
 
