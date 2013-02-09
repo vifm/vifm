@@ -35,6 +35,12 @@ Package content
 
     .
     |
+    |-- data/ - documentation, sample vifmrc, icons
+    |  |
+    |  `-- vim/ - plugin for Vim
+    |
+    |-- pkgs/ - package build-scripts
+    |
     |-- src/ - the source code of vifm
     |  |
     |  |-- cfg/ - code related to configuration
