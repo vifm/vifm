@@ -30,6 +30,7 @@
 
 #include <assert.h>
 #include <ctype.h> /* isspace() */
+#include <stddef.h> /* size_t */
 #include <string.h> /* strdup() strchr() */
 #include <stdarg.h>
 #include <signal.h>
@@ -58,6 +59,7 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
 static void normalize_top(menu_info *m);
+static size_t chars_in_str(const char s[], char c);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
 		int prompt_skip);
 
@@ -694,13 +696,9 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 		int i, j;
 		size_t len;
 
-		j = 0;
-		for(i = 0; line[i] != '\0'; i++)
-			j++;
-
 		show_progress("Loading menu", 1000);
 		m->items = realloc(m->items, sizeof(char *)*(x + 1));
-		len = strlen(line) + j*(cfg.tab_stop - 1) + 2;
+		len = strlen(line) + chars_in_str(line, '\t')*(cfg.tab_stop - 1) + 2;
 		m->items[x] = malloc(len);
 
 		j = 0;
@@ -729,6 +727,21 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 	print_errors(err);
 
 	return display_menu(m, view);
+}
+
+/* Returns number of c char occurrences in the s string. */
+static size_t
+chars_in_str(const char s[], char c)
+{
+	size_t char_count = 0;
+	while(*s != '\0')
+	{
+		if(*s++ == c)
+		{
+			char_count++;
+		}
+	}
+	return char_count;
 }
 
 int
