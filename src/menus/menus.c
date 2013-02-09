@@ -31,7 +31,7 @@
 #include <assert.h>
 #include <ctype.h> /* isspace() */
 #include <stddef.h> /* size_t */
-#include <string.h> /* strdup() strchr() */
+#include <string.h> /* memset() strdup() strchr() */
 #include <stdarg.h>
 #include <signal.h>
 
@@ -704,9 +704,9 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 		{
 			if(line[i] == '\t')
 			{
-				int k = cfg.tab_stop - j%cfg.tab_stop;
-				while(k-- > 0)
-					m->items[x][j++] = ' ';
+				const size_t space_count = cfg.tab_stop - j%cfg.tab_stop;
+				memset(m->items[x] + j, ' ', space_count);
+				j += space_count;
 			}
 			else
 			{
