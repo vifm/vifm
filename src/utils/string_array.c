@@ -141,13 +141,12 @@ char **
 read_file_lines(FILE *f, int *nlines)
 {
 	char **list = NULL;
-	char name[NAME_MAX];
+	char *line = NULL;
 
 	*nlines = 0;
-	while(get_line(f, name, sizeof(name)) != NULL)
+	while((line = read_line(f, line)) != NULL)
 	{
-		chomp(name);
-		*nlines = add_to_string_array(&list, *nlines, 1, name);
+		*nlines = add_to_string_array(&list, *nlines, 1, line);
 	}
 	return list;
 }

@@ -10,9 +10,7 @@ Case insensitive rename can not be undone on Windows.
 
 Files with names containing Unicode characters are not always processed correctly.
 
-Exploring doesn't display very long lines correctly when 'wrap' is off, need
-to make read_file_lines() (of string_array.c) read lines of unlimited length.
-See also capture_output_to_menu() (of menus.c).  So we need a readline() function.
+See capture_output_to_menu() (of menus.c) concerning reading very long lines.
 
 %s macro depends on undocumented external dependency (script called
 screen-open-region-with-program).
