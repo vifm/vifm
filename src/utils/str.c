@@ -17,13 +17,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#define _GNU_SOURCE /* I don't know how portable this is but it is
+                     * needed in Linux for wide char function wcwidth().
+                     */
+
 #include <ctype.h> /* tolower() isspace() */
 #include <stdarg.h> /* va_list va_start() va_copy() va_end() */
 #include <stddef.h> /* size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() mbstowcs() wcstombs() */
 #include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr() */
-#include <wchar.h> /* vswprintf() wchar_t */
+#include <wchar.h> /* vswprintf() wchar_t wcwidth() */
+
+#include "macros.h"
+#include "utf8.h"
+#ifdef _WIN32
+/* For wcwidth() stub. */
+#include "utils.h"
+#endif
 
 #include "macros.h"
 
@@ -310,6 +321,42 @@ format_str(const char format[], ...)
 	va_end(aq);
 
 	return result_buf;
+}
+
+const char *
+expand_tabulation(const char line[], size_t max, size_t tab_stops, char buf[])
+{
+	size_t col = 0;
+	while(col < max && *line != '\0')
+	{
+		const size_t char_width = get_char_width(line);
+		const size_t char_screen_width = wcwidth(get_first_wchar(line));
+		if(col + char_screen_width > max)
+		{
+			break;
+		}
+
+		if(char_width == 1 && *line == '\t')
+		{
+			const size_t space_count = tab_stops - col%tab_stops;
+
+			memset(buf, ' ', space_count);
+			buf += space_count;
+
+			col += space_count;
+		}
+		else
+		{
+			strncpy(buf, line, char_width);
+			buf += char_width;
+
+			col += char_screen_width;
+		}
+
+		line += char_width;
+	}
+	*buf = '\0';
+	return line;
 }
 
 wchar_t

@@ -59,7 +59,7 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
 static void normalize_top(menu_info *m);
-static char * expand_tabulation(const char line[], size_t tab_stops);
+static char * expand_tabulation_a(const char line[], size_t tab_stops);
 static size_t chars_in_str(const char s[], char c);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
 		int prompt_skip);
@@ -694,7 +694,7 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 	{
 		show_progress("Loading menu", 1000);
 		m->items = realloc(m->items, sizeof(char *)*(x + 1));
-		m->items[x++] = expand_tabulation(line, cfg.tab_stop);
+		m->items[x++] = expand_tabulation_a(line, cfg.tab_stop);
 	}
 	m->len = x;
 
@@ -709,7 +709,7 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
  * character position are taken by one tabulation.  Returns newly allocated
  * string. */
 static char *
-expand_tabulation(const char line[], size_t tab_stops)
+expand_tabulation_a(const char line[], size_t tab_stops)
 {
 	const size_t tab_count = chars_in_str(line, '\t');
 	const size_t extra_line_len = tab_count*(tab_stops - 1);
@@ -718,23 +718,9 @@ expand_tabulation(const char line[], size_t tab_stops)
 
 	if(expanded_line != NULL)
 	{
-		size_t col = 0;
-		while(*line != '\0')
-		{
-			if(*line == '\t')
-			{
-				const size_t space_count = tab_stops - col%tab_stops;
-				memset(&expanded_line[col], ' ', space_count);
-				col += space_count;
-			}
-			else
-			{
-				expanded_line[col++] = *line;
-			}
-			line++;
-		}
-		assert(col <= expanded_line_len && "Buffer overflow shouldn't occur");
-		expanded_line[col] = '\0';
+		const char *const end = expand_tabulation(line, (size_t)-1, tab_stops,
+				expanded_line);
+		assert(*end == '\0' && "The line should be processed till the end");
 	}
 
 	return expanded_line;

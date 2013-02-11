@@ -84,6 +84,13 @@ int is_null_or_empty(const char string[]);
  * and prints it there.  Returns newly allocated string, which should be freed
  * by the caller, or NULL if there is not enough memory. */
 char * format_str(const char format[], ...);
+/* Replaces all occurrences of horizontal tabulation character with appropriate
+ * number of spaces.  The max parameter designates the maximum number of screen
+ * characters to put into the buf.  The tab_stops parameter shows how many
+ * character position are taken by one tabulation.  Returns pointer to the first
+ * unprocessed character of the line. */
+const char * expand_tabulation(const char line[], size_t max, size_t tab_stops,
+		char buf[]);
 /* Returns the first wide character of a multi-byte string. */
 wchar_t get_first_wchar(const char str[]);
 #ifdef _WIN32
