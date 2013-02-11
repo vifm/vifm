@@ -86,6 +86,7 @@ static void add_default_bookmarks(void);
 static int source_file_internal(FILE *fp, const char filename[]);
 static const char * get_tmpdir(void);
 static int is_conf_file(const char file[]);
+static void disable_history(void);
 static void free_view_history(FileView *view);
 static void reduce_view_history(FileView *view, size_t size);
 
@@ -676,21 +677,7 @@ resize_history(size_t new_len)
 
 	if(new_len == 0)
 	{
-		free_view_history(&lwin);
-		free_view_history(&rwin);
-
-		cfg.cmd_history_num = -1;
-		cfg.prompt_history_num = -1;
-		cfg.search_history_num = -1;
-
-		free_string_array(cfg.cmd_history, cfg.history_len);
-		cfg.cmd_history = NULL;
-		free_string_array(cfg.prompt_history, cfg.history_len);
-		cfg.prompt_history = NULL;
-		free_string_array(cfg.search_history, cfg.history_len);
-		cfg.search_history = NULL;
-
-		cfg.history_len = 0;
+		disable_history();
 		return;
 	}
 
@@ -732,6 +719,7 @@ resize_history(size_t new_len)
 	cfg.cmd_history = realloc(cfg.cmd_history, new_len*sizeof(char *));
 	cfg.prompt_history = realloc(cfg.prompt_history, new_len*sizeof(char *));
 	cfg.search_history = realloc(cfg.search_history, new_len*sizeof(char *));
+
 	if(delta > 0)
 	{
 		const size_t len = sizeof(char *)*delta;
@@ -739,6 +727,28 @@ resize_history(size_t new_len)
 		memset(cfg.prompt_history + old_len, 0, len);
 		memset(cfg.search_history + old_len, 0, len);
 	}
+}
+
+/* Completely disables all histories and clears all of them. */
+static void
+disable_history(void)
+{
+	free_view_history(&lwin);
+	free_view_history(&rwin);
+
+	free_string_array(cfg.cmd_history, cfg.history_len);
+	cfg.cmd_history = NULL;
+	cfg.cmd_history_num = -1;
+
+	free_string_array(cfg.prompt_history, cfg.history_len);
+	cfg.prompt_history = NULL;
+	cfg.prompt_history_num = -1;
+
+	free_string_array(cfg.search_history, cfg.history_len);
+	cfg.search_history = NULL;
+	cfg.search_history_num = -1;
+
+	cfg.history_len = 0;
 }
 
 /* Clears and frees directory history of the view. */
