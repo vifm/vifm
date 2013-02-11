@@ -25,6 +25,8 @@
 #include <string.h> /* strncmp() strlen() strcmp() strchr() strrchr() */
 #include <wchar.h> /* vswprintf() wchar_t */
 
+#include "macros.h"
+
 #include "str.h"
 
 void
@@ -308,6 +310,13 @@ format_str(const char format[], ...)
 	va_end(aq);
 
 	return result_buf;
+}
+
+wchar_t
+get_first_wchar(const char str[])
+{
+	wchar_t wc[2];
+	return (mbstowcs(wc, str, ARRAY_LEN(wc)) >= 1) ? wc[0] : str[0];
 }
 
 #ifdef _WIN32

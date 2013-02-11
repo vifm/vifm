@@ -84,6 +84,8 @@ int is_null_or_empty(const char string[]);
  * and prints it there.  Returns newly allocated string, which should be freed
  * by the caller, or NULL if there is not enough memory. */
 char * format_str(const char format[], ...);
+/* Returns the first wide character of a multi-byte string. */
+wchar_t get_first_wchar(const char str[]);
 #ifdef _WIN32
 char * strtok_r(char str[], const char delim[], char *saveptr[]);
 #endif
