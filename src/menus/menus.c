@@ -28,9 +28,10 @@
 #include <sys/types.h>
 #include <unistd.h> /* access() */
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
-#include <string.h> /* strdup() strchr() */
+#include <stddef.h> /* size_t */
+#include <string.h> /* memset() strdup() strchr() strlen() */
 #include <stdarg.h>
 #include <signal.h>
 
@@ -38,6 +39,7 @@
 #include "../modes/cmdline.h"
 #include "../modes/menu.h"
 #include "../modes/modes.h"
+#include "../utils/file_streams.h"
 #include "../utils/fs.h"
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -57,6 +59,8 @@ static int prompt_error_msg_internalv(const char title[], const char format[],
 static int prompt_error_msg_internal(const char title[], const char message[],
 		int prompt_skip);
 static void normalize_top(menu_info *m);
+static char * expand_tabulation_a(const char line[], size_t tab_stops);
+static size_t chars_in_str(const char s[], char c);
 static void redraw_error_msg(const char title_arg[], const char message_arg[],
 		int prompt_skip);
 
@@ -675,7 +679,7 @@ int
 capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 {
 	FILE *file, *err;
-	char buf[4096];
+	char *line = NULL;
 	int x;
 
 	if(background_and_capture((char *)cmd, &file, &err) != 0)
@@ -684,50 +688,57 @@ capture_output_to_menu(FileView *view, const char cmd[], menu_info *m)
 		return 0;
 	}
 
-	curr_stats.search = 1;
-
 	x = 0;
 	show_progress("", 0);
-	while(fgets(buf, sizeof(buf), file) == buf)
+	while((line = read_line(file, line)) != NULL)
 	{
-		int i, j;
-		size_t len;
-
-		j = 0;
-		for(i = 0; buf[i] != '\0'; i++)
-			j++;
-
 		show_progress("Loading menu", 1000);
 		m->items = realloc(m->items, sizeof(char *)*(x + 1));
-		len = strlen(buf) + j*(cfg.tab_stop - 1) + 2;
-		m->items[x] = malloc(len);
-
-		j = 0;
-		for(i = 0; buf[i] != '\0'; i++)
-		{
-			if(buf[i] == '\t')
-			{
-				int k = cfg.tab_stop - j%cfg.tab_stop;
-				while(k-- > 0)
-					m->items[x][j++] = ' ';
-			}
-			else
-			{
-				m->items[x][j++] = buf[i];
-			}
-		}
-		m->items[x][j] = '\0';
-
-		x++;
+		m->items[x++] = expand_tabulation_a(line, cfg.tab_stop);
 	}
+	m->len = x;
 
 	fclose(file);
-	m->len = x;
-	curr_stats.search = 0;
-
 	print_errors(err);
 
 	return display_menu(m, view);
+}
+
+/* Clones the line replacing all occurrences of horizontal tabulation character
+ * with appropriate number of spaces.  The tab_stops parameter shows how many
+ * character position are taken by one tabulation.  Returns newly allocated
+ * string. */
+static char *
+expand_tabulation_a(const char line[], size_t tab_stops)
+{
+	const size_t tab_count = chars_in_str(line, '\t');
+	const size_t extra_line_len = tab_count*(tab_stops - 1);
+	const size_t expanded_line_len = (strlen(line) - tab_count) + extra_line_len;
+	char *const expanded_line = malloc(expanded_line_len + 1);
+
+	if(expanded_line != NULL)
+	{
+		const char *const end = expand_tabulation(line, (size_t)-1, tab_stops,
+				expanded_line);
+		assert(*end == '\0' && "The line should be processed till the end");
+	}
+
+	return expanded_line;
+}
+
+/* Returns number of c char occurrences in the s string. */
+static size_t
+chars_in_str(const char s[], char c)
+{
+	size_t char_count = 0;
+	while(*s != '\0')
+	{
+		if(*s++ == c)
+		{
+			char_count++;
+		}
+	}
+	return char_count;
 }
 
 int

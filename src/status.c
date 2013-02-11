@@ -67,7 +67,6 @@ load_def_values(status_t *stats)
 
 	stats->need_update = UT_NONE;
 	stats->last_char = 0;
-	stats->search = 0;
 	stats->save_msg = 0;
 	stats->use_register = 0;
 	stats->curr_register = -1;

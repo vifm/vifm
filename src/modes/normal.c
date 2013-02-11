@@ -188,7 +188,6 @@ static void cmd_zo(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_left_paren(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_right_paren(key_info_t key_info, keys_info_t *keys_info);
 static const char * get_last_ext(const char *name);
-static wchar_t get_first_wchar(const char *str);
 static void pick_files(FileView *view, int end, keys_info_t *keys_info);
 static void selector_S(key_info_t key_info, keys_info_t *keys_info);
 static void selector_a(key_info_t key_info, keys_info_t *keys_info);
@@ -2022,19 +2021,6 @@ get_last_ext(const char *name)
 		return "";
 	else
 		return ext + 1;
-}
-
-static wchar_t
-get_first_wchar(const char *str)
-{
-	char tbuf[9];
-	wchar_t wbuf[8];
-
-	strncpy(tbuf, str, ARRAY_LEN(tbuf) - 1);
-	tbuf[ARRAY_LEN(tbuf) - 1] = '\0';
-	mbstowcs(wbuf, tbuf, ARRAY_LEN(wbuf));
-
-	return wbuf[0];
 }
 
 /* Redraw with file in top of list. */

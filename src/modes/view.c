@@ -20,8 +20,9 @@
 
 #include <curses.h>
 
-#include <assert.h>
-#include <string.h>
+#include <assert.h> /* assert() */
+#include <stddef.h> /* size_t */
+#include <string.h> /* strcpy() strlen() */
 
 #include "../cfg/config.h"
 #include "../engine/keys.h"
@@ -30,6 +31,7 @@
 #include "../utils/fs_limits.h"
 #include "../utils/macros.h"
 #include "../utils/path.h"
+#include "../utils/str.h"
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
@@ -69,7 +71,7 @@ static void pick_vi(void);
 static void init_view_info(view_info_t *vi);
 static void calc_vlines(void);
 static void draw(void);
-static int gets_line(const char *line, int offset, int max_len, char *buf);
+static int get_part(const char line[], int offset, size_t max_len, char part[]);
 static void puts_line(FileView *view, char *line);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
@@ -451,7 +453,7 @@ draw(void)
 		do
 		{
 			char buf[vi->view->window_width*4];
-			offset = gets_line(vi->lines[l], offset, vi->view->window_width - 1, buf);
+			offset = get_part(vi->lines[l], offset, vi->view->window_width - 1, buf);
 
 			if(l != vi->line || vl + t >= vi->linev - vi->widths[vi->line][0])
 			{
@@ -461,42 +463,10 @@ draw(void)
 			}
 			t++;
 		}
-		while(vi->lines[l][offset] != '\0' && vl < vi->view->window_rows - 1 &&
-				cfg.wrap_quick_view);
+		while(cfg.wrap_quick_view && vi->lines[l][offset] != '\0' &&
+				vl < vi->view->window_rows - 1);
 	}
 	refresh_view_win(vi->view);
-}
-
-static int
-gets_line(const char *line, int offset, int max_len, char *buf)
-{
-	int i = 0;
-	size_t len = 0;
-	buf[0] = '\0';
-	while(i < max_len && line[offset] != '\0')
-	{
-		size_t char_width = get_char_width(line + offset);
-		if(char_width == 1 && line[offset] == '\t')
-		{
-			int k;
-			char_width = cfg.tab_stop - i%cfg.tab_stop;
-
-			k = char_width;
-			while(k-- > 0)
-				strcat(buf + len, " ");
-
-			offset += 1;
-			i += char_width;
-		}
-		else
-		{
-			snprintf(buf + len, char_width + 1, "%s", line + offset);
-			offset += char_width;
-			i += 1;
-		}
-		len += char_width;
-	}
-	return offset;
 }
 
 static void
@@ -886,7 +856,7 @@ find_previous(int o)
 		l--;
 
 	for(i = 0; i <= vl - vi->widths[l][0]; i++)
-		offset = gets_line(vi->lines[l], offset, vi->view->window_width - 1, buf);
+		offset = get_part(vi->lines[l], offset, vi->view->window_width - 1, buf);
 
 	while(l > 0)
 	{
@@ -901,11 +871,11 @@ find_previous(int o)
 			l--;
 			offset = 0;
 			for(i = 0; i <= vl - 1 - vi->widths[l][0]; i++)
-				offset = gets_line(vi->lines[l], offset, vi->view->window_width - 1,
+				offset = get_part(vi->lines[l], offset, vi->view->window_width - 1,
 						buf);
 		}
 		else
-			offset = gets_line(vi->lines[l], offset, vi->view->window_width - 1, buf);
+			offset = get_part(vi->lines[l], offset, vi->view->window_width - 1, buf);
 		vl--;
 	}
 	draw();
@@ -934,7 +904,7 @@ find_next(int o)
 		l++;
 
 	for(i = 0; i <= vl - vi->widths[l][0]; i++)
-		offset = gets_line(vi->lines[l], offset, vi->view->window_width - 1, buf);
+		offset = get_part(vi->lines[l], offset, vi->view->window_width - 1, buf);
 
 	while(l < vi->nlines)
 	{
@@ -952,7 +922,7 @@ find_next(int o)
 			l++;
 			offset = 0;
 		}
-		offset = gets_line(vi->lines[l], offset, vi->view->window_width - 1, buf);
+		offset = get_part(vi->lines[l], offset, vi->view->window_width - 1, buf);
 		vl++;
 	}
 	draw();
@@ -961,6 +931,19 @@ find_next(int o)
 		status_bar_error("Pattern not found");
 		curr_stats.save_msg = 1;
 	}
+}
+
+/* Extracts part of the line replacing all occurrences of horizontal tabulation
+ * character with appropriate number of spaces.  The offset specifies beginning
+ * of the part in the line.  The max_len parameter designates the maximum number
+ * of screen characters to put into the part.  Returns newly allocated
+ * string. */
+static int
+get_part(const char line[], int offset, size_t max_len, char part[])
+{
+	const char *const begin = line + offset;
+	const char *const end = expand_tabulation(begin, max_len, cfg.tab_stop, part);
+	return end - line;
 }
 
 static void
