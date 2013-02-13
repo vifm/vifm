@@ -88,7 +88,10 @@ static const char * get_tmpdir(void);
 static int is_conf_file(const char file[]);
 static void disable_history(void);
 static void free_view_history(FileView *view);
+static void decrease_history(size_t new_len, size_t delta);
 static void reduce_view_history(FileView *view, size_t size);
+static void reallocate_history(size_t new_len);
+static void zero_new_history_items(size_t old_len, size_t delta);
 
 void
 init_config(void)
@@ -672,8 +675,8 @@ get_tmpdir(void)
 void
 resize_history(size_t new_len)
 {
-	int delta;
 	const int old_len = MAX(cfg.history_len, 0);
+	const int delta = (int)new_len - old_len;
 
 	if(new_len == 0)
 	{
@@ -681,51 +684,24 @@ resize_history(size_t new_len)
 		return;
 	}
 
-	if(old_len > new_len)
+	if(delta < 0)
 	{
-		reduce_view_history(&lwin, new_len);
-		reduce_view_history(&rwin, new_len);
+		decrease_history(new_len, -delta);
 	}
 
-	delta = (int)new_len - old_len;
-	if(delta < 0 && old_len != 0)
-	{
-		const size_t abs_delta = -delta;
-
-		free_strings(cfg.cmd_history + new_len, abs_delta);
-		free_strings(cfg.prompt_history + new_len, abs_delta);
-		free_strings(cfg.search_history + new_len, abs_delta);
-		free_history_items(lwin.history + new_len, abs_delta);
-		free_history_items(rwin.history + new_len, abs_delta);
-	}
-
-	lwin.history = realloc(lwin.history, sizeof(history_t)*new_len);
-	rwin.history = realloc(rwin.history, sizeof(history_t)*new_len);
+	reallocate_history(new_len);
 
 	if(delta > 0)
 	{
-		memset(lwin.history + old_len, 0, sizeof(history_t)*delta);
-		memset(rwin.history + old_len, 0, sizeof(history_t)*delta);
+		zero_new_history_items(old_len, delta);
 	}
 
 	cfg.history_len = new_len;
 
-	if(old_len <= 0)
+	if(old_len == 0)
 	{
 		save_view_history(&lwin, NULL, NULL, -1);
 		save_view_history(&rwin, NULL, NULL, -1);
-	}
-
-	cfg.cmd_history = realloc(cfg.cmd_history, new_len*sizeof(char *));
-	cfg.prompt_history = realloc(cfg.prompt_history, new_len*sizeof(char *));
-	cfg.search_history = realloc(cfg.search_history, new_len*sizeof(char *));
-
-	if(delta > 0)
-	{
-		const size_t len = sizeof(char *)*delta;
-		memset(cfg.cmd_history + old_len, 0, len);
-		memset(cfg.prompt_history + old_len, 0, len);
-		memset(cfg.search_history + old_len, 0, len);
 	}
 }
 
@@ -763,13 +739,29 @@ free_view_history(FileView *view)
 	view->history_pos = 0;
 }
 
+/* Reduces amount of memory taken by the history.  The new_len specifies new
+ * size of the history, while delta parameter designates number of removed
+ * elements. */
+static void
+decrease_history(size_t new_len, size_t delta)
+{
+	reduce_view_history(&lwin, new_len);
+	reduce_view_history(&rwin, new_len);
+
+	free_strings(cfg.cmd_history + new_len, delta);
+	free_strings(cfg.prompt_history + new_len, delta);
+	free_strings(cfg.search_history + new_len, delta);
+
+	cfg.cmd_history_num = MIN(cfg.cmd_history_num, new_len - 1);
+	cfg.prompt_history_num = MIN(cfg.prompt_history_num, new_len - 1);
+	cfg.search_history_num = MIN(cfg.search_history_num, new_len - 1);
+}
+
 /* Moves items of directory history when size of history becomes smaller. */
 static void
 reduce_view_history(FileView *view, size_t size)
 {
-	int delta;
-
-	delta = MIN(view->history_num - (int)size, view->history_pos);
+	const int delta = MIN(view->history_num - (int)size, view->history_pos);
 	if(delta <= 0)
 		return;
 
@@ -780,6 +772,38 @@ reduce_view_history(FileView *view, size_t size)
 	if(view->history_num >= size)
 		view->history_num = size - 1;
 	view->history_pos -= delta;
+}
+
+/* Reallocates memory taken by history elements.  The new_len specifies new
+ * size of the history. */
+static void
+reallocate_history(size_t new_len)
+{
+	const size_t hist_item_len = sizeof(history_t)*new_len;
+	const size_t str_item_len = sizeof(char *)*new_len;
+
+	lwin.history = realloc(lwin.history, hist_item_len);
+	rwin.history = realloc(rwin.history, hist_item_len);
+
+	cfg.cmd_history = realloc(cfg.cmd_history, str_item_len);
+	cfg.prompt_history = realloc(cfg.prompt_history, str_item_len);
+	cfg.search_history = realloc(cfg.search_history, str_item_len);
+}
+
+/* Zeroes new elements of the history.  The old_len specifies old history size,
+ * while delta parameter designates number of new elements. */
+static void
+zero_new_history_items(size_t old_len, size_t delta)
+{
+	const size_t hist_item_len = sizeof(history_t)*delta;
+	const size_t str_item_len = sizeof(char *)*delta;
+
+	memset(lwin.history + old_len, 0, hist_item_len);
+	memset(rwin.history + old_len, 0, hist_item_len);
+
+	memset(cfg.cmd_history + old_len, 0, str_item_len);
+	memset(cfg.prompt_history + old_len, 0, str_item_len);
+	memset(cfg.search_history + old_len, 0, str_item_len);
 }
 
 int
