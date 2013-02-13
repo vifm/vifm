@@ -13440,15 +13440,6 @@ else
   as_fn_error $? "getgrnam() function not found." "$LINENO" 5
 fi
 
-ac_fn_c_check_func "$LINENO" "getline" "ac_cv_func_getline"
-if test "x$ac_cv_func_getline" = xyes; then :
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_GETLINE_FUNC 1
-_ACEOF
-
-fi
-
 if test -z "$OSX_HOST" ; then
 	ac_fn_c_check_func "$LINENO" "getmntent" "ac_cv_func_getmntent"
 if test "x$ac_cv_func_getmntent" = xyes; then :
