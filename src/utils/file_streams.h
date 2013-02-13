@@ -26,18 +26,18 @@
 /* File stream reading related functions, that treat all eols (unix, mac, dos)
  * right. */
 
-/* Reads line from file stream to buffer of predefined size.  Returns value of
- * the buf on success, otherwise NULL is returned. */
-char * get_line(FILE *fp, char *buf, size_t bufsz);
-/* Skips file stream content until and including eol character. */
-void skip_until_eol(FILE *fp);
-/* Removes eol symbols from file stream. */
-void remove_eol(FILE *fp);
 /* Reads line of dynamic size from the file stream.  The buffer can be NULL.
  * Trailing eol character is removed.  Returns reallocated buffer or NULL when
  * eof is reached and on not enough memory error (in this case the buffer is
  * freed by the function). */
 char * read_line(FILE *fp, char buffer[]);
+/* Reads line from file stream to buffer of predefined size.  Returns value of
+ * the buf on success, otherwise NULL is returned. */
+char * get_line(FILE *fp, char buf[], size_t bufsz);
+/* Skips file stream content until and including eol character. */
+void skip_until_eol(FILE *fp);
+/* Removes eol symbols from file stream. */
+void remove_eol(FILE *fp);
 
 #endif
 
