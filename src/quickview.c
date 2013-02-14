@@ -38,6 +38,8 @@
 
 static void view_wraped(FILE *fp, int x);
 static void view_not_wraped(FILE *fp, int x);
+static int print_line_esc(const char line[], WINDOW *win, int col, int row,
+		int max_width);
 static size_t get_esc_overhead(const char str[]);
 static size_t get_char_width_esc(const char str[]);
 static void print_char_esc(WINDOW *win, const char str[]);
@@ -164,16 +166,17 @@ view_wraped(FILE *fp, int x)
 	char line[1024];
 	int y = 1;
 	int offset = 0;
-	char *res = get_line(fp, line + offset, other_view->window_width);
-	while(res != NULL && x <= other_view->window_rows - 2)
+	const size_t max_width = other_view->window_width - 1;
+	const size_t max_height = other_view->window_rows - 2;
+	char *res = get_line(fp, line, max_width + 1);
+	while(res != NULL && x <= max_height)
 	{
-		int i, k;
+		int line_offset;
 		size_t n_len = get_normal_utf8_string_length(line);
 		size_t len = strlen(line);
-		while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
-				&& !feof(fp))
+		while(n_len < max_width && line[len - 1] != '\n' && !feof(fp))
 		{
-			if(get_line(fp, line + len, other_view->window_width - n_len) == NULL)
+			if(get_line(fp, line + len, max_width - n_len + 1) == NULL)
 				break;
 			n_len = get_normal_utf8_string_length(line);
 			len = strlen(line);
@@ -182,41 +185,20 @@ view_wraped(FILE *fp, int x)
 		if(len > 0 && line[len - 1] != '\n')
 			remove_eol(fp);
 
-		x++;
-		wmove(other_view->win, x, y);
-		i = 0;
-		k = other_view->window_width - 1;
-		len = 0;
-		while(k-- > 0 && line[i] != '\0')
-		{
-			size_t char_width_esc;
-			wprint(other_view->win, strchar2str(line + i, len, &char_width_esc));
-			if(line[i] == '\t')
-			{
-				int tab_width = cfg.tab_stop - len%cfg.tab_stop;
-				len += tab_width;
-				k -= tab_width - 1;
-			}
-			else
-			{
-				len++;
-			}
-			i += get_char_width(line + i);
-		}
+		line_offset = print_line_esc(line, other_view->win, y, ++x, max_width);
 
-		offset = strlen(line) - i;
+		offset = strlen(line) - line_offset;
 		if(offset != 0)
 		{
-			memmove(line, line + i, offset + 1);
+			memmove(line, line + line_offset, offset + 1);
 			if(offset == 1 && line[0] == '\n')
 			{
 				offset = 0;
-				res = get_line(fp, line + offset, other_view->window_width);
 			}
 		}
-		else
+		if(offset == 0)
 		{
-			res = get_line(fp, line + offset, other_view->window_width);
+			res = get_line(fp, line, max_width + 1);
 		}
 	}
 }
@@ -226,17 +208,16 @@ view_not_wraped(FILE *fp, int x)
 {
 	char line[1024];
 	int y = 1;
+	const size_t max_width = other_view->window_width - 1;
+	const size_t max_height = other_view->window_rows - 2;
 
-	while(get_line(fp, line, other_view->window_width - 2) == line &&
-			x <= other_view->window_rows - 2)
+	while(get_line(fp, line, max_width + 1) == line && x <= max_height)
 	{
-		int i;
 		size_t n_len = get_normal_utf8_string_length(line) - get_esc_overhead(line);
 		size_t len = strlen(line);
-		while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
-				&& !feof(fp))
+		while(n_len < max_width && line[len - 1] != '\n' && !feof(fp))
 		{
-			if(get_line(fp, line + len, other_view->window_width - n_len) == NULL)
+			if(get_line(fp, line + len, max_width - n_len + 1) == NULL)
 				break;
 			n_len = get_normal_utf8_string_length(line) - get_esc_overhead(line);
 			len = strlen(line);
@@ -245,19 +226,28 @@ view_not_wraped(FILE *fp, int x)
 		if(line[len - 1] != '\n')
 			skip_until_eol(fp);
 
-		x++;
-		wmove(other_view->win, x, y);
-		i = 0;
-		len = 0;
-		while(len <= other_view->window_width - 1 && line[i] != '\0')
-		{
-			size_t char_width_esc;
-			const char *const char_str = strchar2str(line + i, len, &char_width_esc);
-			print_char_esc(other_view->win, char_str);
-			len += char_width_esc;
-			i += get_char_width_esc(line + i);
-		}
+		(void)print_line_esc(line, other_view->win, y, ++x, max_width);
 	}
+}
+
+/* Prints at most whole line to a window with col and row initial offsets and
+ * honoring maximum character positions specified by the max_width parameter.
+ * Returns offset in the line at which line processing was stopped. */
+static int
+print_line_esc(const char line[], WINDOW *win, int col, int row, int max_width)
+{
+	size_t len = 0;
+	int i = 0;
+	wmove(win, row, col);
+	while(len <= max_width && line[i] != '\0')
+	{
+		size_t char_width_esc;
+		const char *const char_str = strchar2str(line + i, len, &char_width_esc);
+		print_char_esc(win, char_str);
+		len += char_width_esc;
+		i += get_char_width_esc(line + i);
+	}
+	return i;
 }
 
 /* Returns number of characters in the str taken by terminal escape
