@@ -53,7 +53,7 @@
 static void view_wraped(FILE *fp, int x);
 static void view_not_wraped(FILE *fp, int x);
 static int print_line_esc(const char line[], WINDOW *win, int col, int row,
-		int max_width);
+		int max_width, int *printed);
 static size_t get_esc_overhead(const char str[]);
 static size_t get_char_width_esc(const char str[]);
 static void print_char_esc(WINDOW *win, const char str[]);
@@ -178,28 +178,32 @@ view_wraped(FILE *fp, int x)
 {
 	char line[1024];
 	int offset = 0;
+	int continued = 0;
 	const size_t max_width = other_view->window_width - 1;
 	const size_t max_height = other_view->window_rows - 2;
 	char *res = get_line(fp, line, max_width + 1);
 	while(res != NULL && x <= max_height)
 	{
 		int line_offset;
+		int printed;
 		size_t n_len = get_normal_utf8_string_length(line);
 		size_t len = strlen(line);
 		while(n_len < max_width && line[len - 1] != '\n' && !feof(fp))
 		{
 			if(get_line(fp, line + len, max_width - n_len + 1) == NULL)
 				break;
-			n_len = get_normal_utf8_string_length(line);
+			n_len = get_normal_utf8_string_length(line) - get_esc_overhead(line);
 			len = strlen(line);
 		}
 
 		if(len > 0 && line[len - 1] != '\n')
 			remove_eol(fp);
 
-		line_offset = print_line_esc(line, other_view->win, COL, ++x, max_width);
+		line_offset = print_line_esc(line, other_view->win, COL, x + 1, max_width,
+				&printed);
+		x += !continued || printed;
 
-		offset = strlen(line) - line_offset;
+		offset = len - line_offset;
 		if(offset != 0)
 		{
 			memmove(line, line + line_offset, offset + 1);
@@ -212,6 +216,7 @@ view_wraped(FILE *fp, int x)
 		{
 			res = get_line(fp, line, max_width + 1);
 		}
+		continued = (len > 0 && line[len - 1] != '\n');
 	}
 }
 
@@ -224,6 +229,7 @@ view_not_wraped(FILE *fp, int x)
 
 	while(get_line(fp, line, max_width + 1) == line && x <= max_height)
 	{
+		int printed;
 		size_t n_len = get_normal_utf8_string_length(line) - get_esc_overhead(line);
 		size_t len = strlen(line);
 		while(n_len < max_width && line[len - 1] != '\n' && !feof(fp))
@@ -237,15 +243,18 @@ view_not_wraped(FILE *fp, int x)
 		if(line[len - 1] != '\n')
 			skip_until_eol(fp);
 
-		(void)print_line_esc(line, other_view->win, COL, ++x, max_width);
+		(void)print_line_esc(line, other_view->win, COL, ++x, max_width, &printed);
 	}
 }
 
 /* Prints at most whole line to a window with col and row initial offsets and
  * honoring maximum character positions specified by the max_width parameter.
- * Returns offset in the line at which line processing was stopped. */
+ * Sets *printed to non-zero if at least one character was actually printed,
+ * it's set to zero otherwise.  Returns offset in the line at which line
+ * processing was stopped. */
 static int
-print_line_esc(const char line[], WINDOW *win, int col, int row, int max_width)
+print_line_esc(const char line[], WINDOW *win, int col, int row, int max_width,
+		int *printed)
 {
 	const char *curr = line;
 	size_t pos = 0;
@@ -260,6 +269,7 @@ print_line_esc(const char line[], WINDOW *win, int col, int row, int max_width)
 			curr += get_char_width_esc(curr);
 		}
 	}
+	*printed = pos != 0;
 	return curr - line;
 }
 
