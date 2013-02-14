@@ -17,7 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <string.h> /* strcpy() strlen() strcat() */
+#include <ctype.h> /* isdigit() */
+#include <stddef.h> /* size_t */
+#include <string.h> /* memset() strcpy() strlen() strcat() */
 
 #include "cfg/config.h"
 #include "modes/modes.h"
@@ -26,6 +28,7 @@
 #include "utils/fs_limits.h"
 #include "utils/path.h"
 #include "utils/utf8.h"
+#include "color_manager.h"
 #include "filelist.h"
 #include "filetype.h"
 #include "status.h"
@@ -35,7 +38,15 @@
 
 static void view_wraped(FILE *fp, int x);
 static void view_not_wraped(FILE *fp, int x);
-static char * strchar2str(const char *str, int pos);
+static size_t get_esc_overhead(const char str[]);
+static size_t get_char_width_esc(const char str[]);
+static void print_char_esc(WINDOW *win, const char str[]);
+static const char * strchar2str(const char str[], int pos,
+		size_t *char_width_esc);
+
+static int attrs = 0;
+static int fg = -1;
+static int bg = -1;
 
 void
 toggle_quick_view(void)
@@ -129,6 +140,11 @@ quick_view_file(FileView *view)
 					break;
 				}
 
+				colmgr_reset();
+				wattrset(other_view->win, 0);
+				attrs = 0;
+				fg = -1;
+				bg = -1;
 				if(cfg.wrap_quick_view)
 					view_wraped(fp, x);
 				else
@@ -166,14 +182,15 @@ view_wraped(FILE *fp, int x)
 		if(len > 0 && line[len - 1] != '\n')
 			remove_eol(fp);
 
-		++x;
+		x++;
 		wmove(other_view->win, x, y);
 		i = 0;
 		k = other_view->window_width - 1;
 		len = 0;
 		while(k-- > 0 && line[i] != '\0')
 		{
-			wprint(other_view->win, strchar2str(line + i, len));
+			size_t char_width_esc;
+			wprint(other_view->win, strchar2str(line + i, len, &char_width_esc));
 			if(line[i] == '\t')
 			{
 				int tab_width = cfg.tab_stop - len%cfg.tab_stop;
@@ -214,65 +231,181 @@ view_not_wraped(FILE *fp, int x)
 			x <= other_view->window_rows - 2)
 	{
 		int i;
-		size_t n_len = get_normal_utf8_string_length(line);
+		size_t n_len = get_normal_utf8_string_length(line) - get_esc_overhead(line);
 		size_t len = strlen(line);
 		while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
 				&& !feof(fp))
 		{
 			if(get_line(fp, line + len, other_view->window_width - n_len) == NULL)
 				break;
-			n_len = get_normal_utf8_string_length(line);
+			n_len = get_normal_utf8_string_length(line) - get_esc_overhead(line);
 			len = strlen(line);
 		}
 
 		if(line[len - 1] != '\n')
 			skip_until_eol(fp);
 
-		len = 0;
-		n_len = 0;
-		for(i = 0; line[i] != '\0' && len <= other_view->window_width - 1;)
-		{
-			size_t cl = get_char_width(line + i);
-			n_len++;
-
-			if(cl == 1 && (unsigned char)line[i] == '\t')
-				len += cfg.tab_stop - len%cfg.tab_stop;
-			else if(cl == 1 && (unsigned char)line[i] < ' ')
-				len += 2;
-			else
-				len++;
-
-			if(len <= other_view->window_width - 1)
-				i += cl;
-		}
-		line[i] = '\0';
-
-		++x;
+		x++;
 		wmove(other_view->win, x, y);
 		i = 0;
 		len = 0;
-		while(n_len--)
+		while(len <= other_view->window_width - 1 && line[i] != '\0')
 		{
-			wprint(other_view->win, strchar2str(line + i, len));
-			if(line[i] == '\t')
-				len += cfg.tab_stop - len%cfg.tab_stop;
-			else
-				len++;
-			i += get_char_width(line + i);
+			size_t char_width_esc;
+			const char *const char_str = strchar2str(line + i, len, &char_width_esc);
+			print_char_esc(other_view->win, char_str);
+			len += char_width_esc;
+			i += get_char_width_esc(line + i);
 		}
 	}
 }
 
-static char *
-strchar2str(const char *str, int pos)
+/* Returns number of characters in the str taken by terminal escape
+ * sequences. */
+static size_t
+get_esc_overhead(const char str[])
 {
-	static char buf[16];
-
-	size_t len = get_char_width(str);
-	if(len != 1 || str[0] >= ' ' || str[0] == '\n')
+	size_t overhead = 0U;
+	while(*str != '\0')
 	{
-		memcpy(buf, str, len);
-		buf[len] = '\0';
+		const size_t char_width_esc = get_char_width_esc(str);
+		if(*str == '\033')
+		{
+			overhead += char_width_esc;
+		}
+		str += char_width_esc;
+	}
+	return overhead;
+}
+
+/* Returns number of characters at the beginning of the str which form one
+ * logical symbol.  Takes UTF-8 encoding and terminal escape sequences into
+ * account. */
+static size_t
+get_char_width_esc(const char str[])
+{
+	if(*str != '\033')
+	{
+		return get_char_width(str);
+	}
+	else
+	{
+		const char *pos = strchr(str, 'm');
+		pos = (pos == NULL) ? (str + strlen(str)) : (pos + 1);
+		return pos - str;
+	}
+}
+
+/* Prints the leading character of the str to the win window parsing terminal
+ * escape sequences. */
+static void
+print_char_esc(WINDOW *win, const char str[])
+{
+	if(str[0] == '\033')
+	{
+		int next_pair;
+
+		/* Handle escape sequence. */
+		str++;
+		do
+		{
+			int n = 0;
+			if(isdigit(str[1]))
+			{
+				char *end;
+				n = strtol(str + 1, &end, 10);
+				str = end;
+			}
+			else
+			{
+				str++;
+			}
+			if(n == 0)
+			{
+				attrs = A_NORMAL;
+				fg = -1;
+				bg = -1;
+			}
+			else if(n == 1)
+			{
+				attrs |= A_BOLD;
+			}
+			else if(n == 1)
+			{
+				attrs |= A_DIM;
+			}
+			else if(n == 3 || n == 7)
+			{
+				attrs |= A_REVERSE;
+			}
+			else if(n == 4)
+			{
+				attrs |= A_UNDERLINE;
+			}
+			else if(n == 5 || n == 6)
+			{
+				attrs |= A_BLINK;
+			}
+			else if(n == 22)
+			{
+				attrs &= ~(A_BOLD | A_UNDERLINE | A_BLINK | A_REVERSE | A_DIM);
+			}
+			else if(n == 24)
+			{
+				attrs &= ~A_UNDERLINE;
+			}
+			else if(n == 25)
+			{
+				attrs &= ~A_BLINK;
+			}
+			else if(n == 27)
+			{
+				attrs &= ~A_REVERSE;
+			}
+			else if(n >= 30 && n <= 37)
+			{
+				fg = n - 30;
+			}
+			else if(n == 39)
+			{
+				fg = -1;
+			}
+			else if(n >= 40 && n <= 47)
+			{
+				bg = n - 40;
+			}
+			else if(n == 49)
+			{
+				bg = -1;
+			}
+		}
+		while(str[0] == ';');
+
+		next_pair = colmgr_alloc_pair(fg, bg);
+		wattrset(win, COLOR_PAIR(next_pair) | attrs);
+	}
+	else
+	{
+		/* Print symbol. */
+		wprint(win, str);
+	}
+}
+
+/* Converts first the leading character of the str string to a printable string.
+ * Puts number of screen character positions taken by the resulting string
+ * representation of a character.  Returns pointer to a statically allocated
+ * buffer. */
+static const char *
+strchar2str(const char str[], int pos, size_t *char_width_esc)
+{
+	static char buf[32];
+
+	const size_t char_width = get_char_width(str);
+	*char_width_esc = char_width;
+	if(char_width != 1 || str[0] >= ' ' || str[0] == '\n')
+	{
+		memcpy(buf, str, char_width);
+		buf[char_width] = '\0';
 	}
 	else if(str[0] == '\r')
 	{
@@ -280,10 +413,20 @@ strchar2str(const char *str, int pos)
 	}
 	else if(str[0] == '\t')
 	{
-		len = cfg.tab_stop - pos%cfg.tab_stop;
-		buf[0] = '\0';
-		while(len-- > 0)
-			strcat(buf, " ");
+		const size_t space_count = cfg.tab_stop - pos%cfg.tab_stop;
+		*char_width_esc = space_count;
+		memset(buf, ' ', space_count);
+		buf[space_count] = '\0';
+	}
+	else if(str[0] == '\033')
+	{
+		char *dst = buf;
+		*char_width_esc = 0;
+		while(str[0] != 'm' && str[0] != '\0' && dst - buf < sizeof(buf) - 1)
+		{
+			*dst++ = *str++;
+		}
+		*dst = '\0';
 	}
 	else if((unsigned char)str[0] < (unsigned char)' ')
 	{
