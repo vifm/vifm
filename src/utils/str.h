@@ -75,6 +75,8 @@ int my_swprintf(wchar_t *str, size_t len, const wchar_t *format, ...);
 /* Extracts next part of string with separators.  Call with str - 1 first time,
  * and with value returned until pointer to '\0' is returned. */
 const char * extract_part(const char str[], char separator, char part_buf[]);
+/* Skips all leading characters of the str which are equal to the c. */
+char * skip_char(const char str[], char c);
 /* Escapes chars symbols in the string.  Returns new string, caller should free
  * it. */
 char * escape_chars(const char string[], const char chars[]);

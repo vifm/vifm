@@ -272,6 +272,16 @@ extract_part(const char str[], char separator, char part_buf[])
 }
 
 char *
+skip_char(const char str[], char c)
+{
+	while(*str == c)
+	{
+		str++;
+	}
+	return (char *)str;
+}
+
+char *
 escape_chars(const char string[], const char chars[])
 {
 	size_t len;
