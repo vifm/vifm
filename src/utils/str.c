@@ -266,8 +266,17 @@ my_swprintf(wchar_t *str, size_t len, const wchar_t *format, ...)
 const char *
 extract_part(const char str[], char separator, char part_buf[])
 {
-	const char *end = until_first(++str, separator);
-	snprintf(part_buf, end - str + 1, "%s", str);
+	const char *end = NULL;
+	str = skip_char(str, separator);
+	if(str[0] != '\0')
+	{
+		end = until_first(str, separator);
+		snprintf(part_buf, end - str + 1, "%s", str);
+		if(*end != '\0')
+		{
+			end++;
+		}
+	}
 	return end;
 }
 

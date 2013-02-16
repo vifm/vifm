@@ -36,6 +36,9 @@
 	Fixed segmentation fault on adding new elements to history after decreasing
 	'history' option.  Thanks to Oleg Gordienko (a.k.a. gordio).
 
+	Fixed determining of executable files on Windows (particularly parsing
+	the last item of $PATHEXT environment variable).
+
 0.7.4a to 0.7.4b
 
 	Removed screen title forcing for shell commands.
