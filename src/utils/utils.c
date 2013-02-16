@@ -67,7 +67,7 @@
 
 #ifdef _WIN32
 
-static const char PATHEXT_EXT[] = ".bat;.exe;.com";
+static const char PATHEXT_EXT_DEF[] = ".bat;.exe;.com";
 
 static void unquote(char quoted[]);
 #endif
@@ -644,7 +644,7 @@ win_executable_exists(const char *path)
 	snprintf(path_buf, sizeof(path_buf), "%s", path);
 	pos = strlen(path_buf);
 
-	p = env_get_def("PATHEXT", PATHEXT_EXT);
+	p = env_get_def("PATHEXT", PATHEXT_EXT_DEF);
 	while((p = extract_part(p, ';', path_buf + pos)) != NULL)
 	{
 		if(path_exists(path_buf))
@@ -665,7 +665,7 @@ is_win_executable(const char *name)
 	snprintf(name_buf, sizeof(name_buf), "%s", name);
 	strtoupper(name_buf);
 
-	p = env_get_def("PATHEXT", PATHEXT_EXT);
+	p = env_get_def("PATHEXT", PATHEXT_EXT_DEF);
 	while((p = extract_part(p, ';', ext_buf)) != NULL)
 	{
 		strtoupper(ext_buf);
