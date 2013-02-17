@@ -23,7 +23,7 @@
 
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* size_t */
-#include <string.h> /* memset() strcpy() strlen() strcat() */
+#include <string.h> /* memmove() memset() strcpy() strlen() strcat() */
 #include <wchar.h> /* wcwidth() */
 
 #include "cfg/config.h"
@@ -53,6 +53,8 @@
 #define COL 1
 
 static void view_file(FILE *fp, int wrapped);
+static int shift_line(char line[], size_t len, size_t offset);
+static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
 static int print_line_esc(const char line[], WINDOW *win, int col, int row,
 		int max_width, int *printed);
 static size_t get_esc_overhead(const char str[]);
@@ -176,62 +178,67 @@ quick_view_file(FileView *view)
 static void
 view_file(FILE *fp, int wrapped)
 {
-	char line[1024];
-	int offset = 0;
-	int continued = 0;
-	int y = LINE;
 	const size_t max_width = other_view->window_width - 1;
-	const size_t max_height = other_view->window_rows - 2;
-	char *res = get_line(fp, line, max_width + 1);
-	while(res != NULL && y <= max_height)
+	const size_t max_y = other_view->window_rows - 1;
+
+	char line[1024];
+	int line_continued = 0;
+	int y = LINE;
+	const char *res = get_line(fp, line, sizeof(line));
+	while(res != NULL && y <= max_y)
 	{
-		int line_offset;
+		int offset;
 		int printed;
-		size_t n_len = get_normal_utf8_string_length(line);
-		size_t len = strlen(line);
-		while(n_len < max_width && line[len - 1] != '\n' && !feof(fp))
+		const size_t len = add_to_line(fp, max_width, line, sizeof(line));
+		if(!wrapped && line[len - 1] != '\n')
 		{
-			if(get_line(fp, line + len, max_width - n_len + 1) == NULL)
-				break;
-			n_len = get_normal_utf8_string_length(line) - get_esc_overhead(line);
-			len = strlen(line);
+			skip_until_eol(fp);
 		}
 
-		if(wrapped)
-		{
-			if(len > 0 && line[len - 1] != '\n')
-			{
-				remove_eol(fp);
-			}
-		}
-		else
-		{
-			if(line[len - 1] != '\n')
-				skip_until_eol(fp);
-		}
+		offset = print_line_esc(line, other_view->win, COL, y, max_width, &printed);
+		y += !wrapped || (!line_continued || printed);
+		line_continued = line[len - 1] != '\n';
 
-		line_offset = print_line_esc(line, other_view->win, COL, y, max_width,
-				&printed);
-		y += !wrapped || (!continued || printed);
-
-		if(wrapped)
+		if(!wrapped || shift_line(line, len, offset))
 		{
-			offset = len - line_offset;
-			if(offset != 0)
-			{
-				memmove(line, line + line_offset, offset + 1);
-				if(offset == 1 && line[0] == '\n')
-				{
-					offset = 0;
-				}
-			}
+			res = get_line(fp, line, sizeof(line));
 		}
-		if(offset == 0)
-		{
-			res = get_line(fp, line, max_width + 1);
-		}
-		continued = (len > 0 && line[len - 1] != '\n');
 	}
+}
+
+/* Shifts characters in the line of length len, so that characters at the offset
+ * position are moved to the beginning of the line.  Returns non-zero if new
+ * buffer should be threated as empty. */
+static int
+shift_line(char line[], size_t len, size_t offset)
+{
+	const size_t shift_width = len - offset;
+	if(shift_width != 0)
+	{
+		memmove(line, line + offset, shift_width + 1);
+		return (shift_width == 1 && line[0] == '\n');
+	}
+	return 1;
+}
+
+/* Tries to add more characters from the fp file, but not exceed length of the
+ * line buffer (the len parameter) and maximum number of printable character
+ * positions (the max parameter).  Returns new length of the line buffer. */
+static size_t
+add_to_line(FILE *fp, size_t max, char line[], size_t len)
+{
+	size_t n_len = get_normal_utf8_string_length(line) - get_esc_overhead(line);
+	size_t curr_len = strlen(line);
+	while(n_len < max && line[curr_len - 1] != '\n' && !feof(fp))
+	{
+		if(get_line(fp, line + curr_len, len - curr_len) == NULL)
+		{
+			break;
+		}
+		n_len = get_normal_utf8_string_length(line) - get_esc_overhead(line);
+		curr_len = strlen(line);
+	}
+	return curr_len;
 }
 
 /* Prints at most whole line to a window with col and row initial offsets and
