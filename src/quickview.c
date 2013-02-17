@@ -52,20 +52,26 @@
 /* Column at which quickview content should be displayed. */
 #define COL 1
 
+/* Holds state of escape sequence parsing. */
+typedef struct
+{
+	int attrs;
+	int fg;
+	int bg;
+}
+esc_state;
+
 static void view_file(FILE *fp, int wrapped);
 static int shift_line(char line[], size_t len, size_t offset);
 static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
 static int print_line_esc(const char line[], WINDOW *win, int col, int row,
-		int max_width, int *printed);
+		int max_width, esc_state *state, int *printed);
 static size_t get_esc_overhead(const char str[]);
 static size_t get_char_width_esc(const char str[]);
-static void print_char_esc(WINDOW *win, const char str[]);
+static void print_char_esc(WINDOW *win, const char str[], esc_state *state);
+static void esc_state_init(esc_state *state);
 TSTATIC const char * strchar2str(const char str[], int pos,
 		size_t *screen_width);
-
-static int attrs = 0;
-static int fg = -1;
-static int bg = -1;
 
 void
 toggle_quick_view(void)
@@ -159,9 +165,6 @@ quick_view_file(FileView *view)
 
 				colmgr_reset();
 				wattrset(other_view->win, 0);
-				attrs = 0;
-				fg = -1;
-				bg = -1;
 				view_file(fp, cfg.wrap_quick_view);
 
 				fclose(fp);
@@ -185,6 +188,8 @@ view_file(FILE *fp, int wrapped)
 	int line_continued = 0;
 	int y = LINE;
 	const char *res = get_line(fp, line, sizeof(line));
+	esc_state state;
+	esc_state_init(&state);
 	while(res != NULL && y <= max_y)
 	{
 		int offset;
@@ -195,7 +200,8 @@ view_file(FILE *fp, int wrapped)
 			skip_until_eol(fp);
 		}
 
-		offset = print_line_esc(line, other_view->win, COL, y, max_width, &printed);
+		offset = print_line_esc(line, other_view->win, COL, y, max_width, &state,
+				&printed);
 		y += !wrapped || (!line_continued || printed);
 		line_continued = line[len - 1] != '\n';
 
@@ -248,7 +254,7 @@ add_to_line(FILE *fp, size_t max, char line[], size_t len)
  * processing was stopped. */
 static int
 print_line_esc(const char line[], WINDOW *win, int col, int row, int max_width,
-		int *printed)
+		esc_state *state, int *printed)
 {
 	const char *curr = line;
 	size_t pos = 0;
@@ -259,7 +265,7 @@ print_line_esc(const char line[], WINDOW *win, int col, int row, int max_width,
 		const char *const char_str = strchar2str(curr, pos, &screen_width);
 		if((pos += screen_width) <= max_width)
 		{
-			print_char_esc(win, char_str);
+			print_char_esc(win, char_str, state);
 			curr += get_char_width_esc(curr);
 		}
 	}
@@ -306,7 +312,7 @@ get_char_width_esc(const char str[])
 /* Prints the leading character of the str to the win window parsing terminal
  * escape sequences. */
 static void
-print_char_esc(WINDOW *win, const char str[])
+print_char_esc(WINDOW *win, const char str[], esc_state *state)
 {
 	if(str[0] == '\033')
 	{
@@ -329,73 +335,80 @@ print_char_esc(WINDOW *win, const char str[])
 			}
 			if(n == 0)
 			{
-				attrs = A_NORMAL;
-				fg = -1;
-				bg = -1;
+				esc_state_init(state);
 			}
 			else if(n == 1)
 			{
-				attrs |= A_BOLD;
+				state->attrs |= A_BOLD;
 			}
 			else if(n == 1)
 			{
-				attrs |= A_DIM;
+				state->attrs |= A_DIM;
 			}
 			else if(n == 3 || n == 7)
 			{
-				attrs |= A_REVERSE;
+				state->attrs |= A_REVERSE;
 			}
 			else if(n == 4)
 			{
-				attrs |= A_UNDERLINE;
+				state->attrs |= A_UNDERLINE;
 			}
 			else if(n == 5 || n == 6)
 			{
-				attrs |= A_BLINK;
+				state->attrs |= A_BLINK;
 			}
 			else if(n == 22)
 			{
-				attrs &= ~(A_BOLD | A_UNDERLINE | A_BLINK | A_REVERSE | A_DIM);
+				state->attrs &= ~(A_BOLD | A_UNDERLINE | A_BLINK | A_REVERSE | A_DIM);
 			}
 			else if(n == 24)
 			{
-				attrs &= ~A_UNDERLINE;
+				state->attrs &= ~A_UNDERLINE;
 			}
 			else if(n == 25)
 			{
-				attrs &= ~A_BLINK;
+				state->attrs &= ~A_BLINK;
 			}
 			else if(n == 27)
 			{
-				attrs &= ~A_REVERSE;
+				state->attrs &= ~A_REVERSE;
 			}
 			else if(n >= 30 && n <= 37)
 			{
-				fg = n - 30;
+				state->fg = n - 30;
 			}
 			else if(n == 39)
 			{
-				fg = -1;
+				state->fg = -1;
 			}
 			else if(n >= 40 && n <= 47)
 			{
-				bg = n - 40;
+				state->bg = n - 40;
 			}
 			else if(n == 49)
 			{
-				bg = -1;
+				state->bg = -1;
 			}
 		}
 		while(str[0] == ';');
 
-		next_pair = colmgr_alloc_pair(fg, bg);
-		wattrset(win, COLOR_PAIR(next_pair) | attrs);
+		next_pair = colmgr_alloc_pair(state->fg, state->bg);
+		wattrset(win, COLOR_PAIR(next_pair) | state->attrs);
 	}
 	else
 	{
 		/* Print symbol. */
 		wprint(win, str);
 	}
+}
+
+/* Initializes escape sequence parsing state with default values. */
+static void
+esc_state_init(esc_state *state)
+{
+	state->attrs = 0;
+	state->fg = -1;
+	state->bg = -1;
 }
 
 /* Converts the leading character of the str string to a printable string.  Puts
