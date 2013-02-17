@@ -20,10 +20,15 @@
 #ifndef __QUICKVIEW_H__
 #define __QUICKVIEW_H__
 
+#include "utils/test_helpers.h"
 #include "ui.h"
 
 void quick_view_file(FileView * view);
 void toggle_quick_view(void);
+
+TSTATIC_DEFS(
+	const char * strchar2str(const char str[], int pos, size_t *screen_width);
+)
 
 #endif
 

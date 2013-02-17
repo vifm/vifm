@@ -32,6 +32,7 @@ void utf8_tests(void);
 void read_line_tests(void);
 void history_tests(void);
 void extract_part_tests(void);
+void strchar2str_tests(void);
 
 void
 all_tests(void)
@@ -68,6 +69,7 @@ all_tests(void)
 	read_line_tests();
 	history_tests();
 	extract_part_tests();
+	strchar2str_tests();
 }
 
 int

@@ -17,9 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
+#define _GNU_SOURCE /* I don't know how portable this is but it is
+                     * needed in Linux for wide char function wcwidth().
+                     */
+
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* size_t */
 #include <string.h> /* memset() strcpy() strlen() strcat() */
+#include <wchar.h> /* wcwidth() */
 
 #include "cfg/config.h"
 #include "modes/modes.h"
@@ -27,7 +32,13 @@
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/path.h"
+#include "utils/str.h"
+#include "utils/test_helpers.h"
 #include "utils/utf8.h"
+#ifdef _WIN32
+/* For wcwidth() stub. */
+#include "utils/utils.h"
+#endif
 #include "color_manager.h"
 #include "filelist.h"
 #include "filetype.h"
@@ -46,8 +57,8 @@ static int print_line_esc(const char line[], WINDOW *win, int col, int row,
 static size_t get_esc_overhead(const char str[]);
 static size_t get_char_width_esc(const char str[]);
 static void print_char_esc(WINDOW *win, const char str[]);
-static const char * strchar2str(const char str[], int pos,
-		size_t *char_width_esc);
+TSTATIC const char * strchar2str(const char str[], int pos,
+		size_t *screen_width);
 
 static int attrs = 0;
 static int fg = -1;
@@ -236,18 +247,20 @@ view_not_wraped(FILE *fp, int x)
 static int
 print_line_esc(const char line[], WINDOW *win, int col, int row, int max_width)
 {
-	size_t len = 0;
-	int i = 0;
+	const char *curr = line;
+	size_t pos = 0;
 	wmove(win, row, col);
-	while(len <= max_width && line[i] != '\0')
+	while(pos <= max_width && *curr != '\0')
 	{
-		size_t char_width_esc;
-		const char *const char_str = strchar2str(line + i, len, &char_width_esc);
-		print_char_esc(win, char_str);
-		len += char_width_esc;
-		i += get_char_width_esc(line + i);
+		size_t screen_width;
+		const char *const char_str = strchar2str(curr, pos, &screen_width);
+		if((pos += screen_width) <= max_width)
+		{
+			print_char_esc(win, char_str);
+			curr += get_char_width_esc(curr);
+		}
 	}
-	return i;
+	return curr - line;
 }
 
 /* Returns number of characters in the str taken by terminal escape
@@ -381,53 +394,69 @@ print_char_esc(WINDOW *win, const char str[])
 	}
 }
 
-/* Converts first the leading character of the str string to a printable string.
- * Puts number of screen character positions taken by the resulting string
- * representation of a character.  Returns pointer to a statically allocated
- * buffer. */
-static const char *
-strchar2str(const char str[], int pos, size_t *char_width_esc)
+/* Converts the leading character of the str string to a printable string.  Puts
+ * number of screen character positions taken by the resulting string
+ * representation of a character into *screen_width.  Returns pointer to a
+ * statically allocated buffer. */
+TSTATIC const char *
+strchar2str(const char str[], int pos, size_t *screen_width)
 {
 	static char buf[32];
 
 	const size_t char_width = get_char_width(str);
-	*char_width_esc = char_width;
-	if(char_width != 1 || str[0] >= ' ' || str[0] == '\n')
+	if(char_width != 1 || str[0] >= ' ')
 	{
 		memcpy(buf, str, char_width);
 		buf[char_width] = '\0';
+		*screen_width = wcwidth(get_first_wchar(str));
+	}
+	else if(str[0] == '\n')
+	{
+		buf[0] = '\0';
+		*screen_width = 0;
 	}
 	else if(str[0] == '\r')
 	{
 		strcpy(buf, "<cr>");
+		*screen_width = 4;
 	}
 	else if(str[0] == '\t')
 	{
 		const size_t space_count = cfg.tab_stop - pos%cfg.tab_stop;
-		*char_width_esc = space_count;
 		memset(buf, ' ', space_count);
 		buf[space_count] = '\0';
+		*screen_width = space_count;
 	}
 	else if(str[0] == '\033')
 	{
 		char *dst = buf;
-		*char_width_esc = 0;
-		while(str[0] != 'm' && str[0] != '\0' && dst - buf < sizeof(buf) - 1)
+		while(*str != 'm' && *str != '\0' && dst - buf < sizeof(buf) - 2)
 		{
 			*dst++ = *str++;
 		}
-		*dst = '\0';
+		if(*str != 'm')
+		{
+			buf[0] = '\0';
+		}
+		else
+		{
+			*dst++ = 'm';
+			*dst = '\0';
+		}
+		*screen_width = 0;
 	}
 	else if((unsigned char)str[0] < (unsigned char)' ')
 	{
 		buf[0] = '^';
 		buf[1] = ('A' - 1) + str[0];
 		buf[2] = '\0';
+		*screen_width = 2;
 	}
 	else
 	{
 		buf[0] = str[0];
 		buf[1] = '\0';
+		*screen_width = 1;
 	}
 	return buf;
 }
