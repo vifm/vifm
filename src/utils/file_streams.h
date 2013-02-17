@@ -38,8 +38,6 @@ char * read_line(FILE *fp, char buffer[]);
 char * get_line(FILE *fp, char buf[], size_t bufsz);
 /* Skips file stream content until and including eol character. */
 void skip_until_eol(FILE *fp);
-/* Removes eol symbols from file stream. */
-void remove_eol(FILE *fp);
 
 #endif
 
