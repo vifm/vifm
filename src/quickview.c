@@ -47,11 +47,12 @@
 
 #include "quickview.h"
 
+/* Line at which quickview content should be displayed. */
+#define LINE 1
 /* Column at which quickview content should be displayed. */
 #define COL 1
 
-static void view_wraped(FILE *fp, int x);
-static void view_not_wraped(FILE *fp, int x);
+static void view_file(FILE *fp, int wrapped);
 static int print_line_esc(const char line[], WINDOW *win, int col, int row,
 		int max_width, int *printed);
 static size_t get_esc_overhead(const char str[]);
@@ -84,7 +85,6 @@ toggle_quick_view(void)
 void
 quick_view_file(FileView *view)
 {
-	int x = 0;
 	char buf[PATH_MAX];
 	char link[PATH_MAX];
 
@@ -108,23 +108,23 @@ quick_view_file(FileView *view)
 	switch(view->dir_entry[view->list_pos].type)
 	{
 		case CHARACTER_DEVICE:
-			mvwaddstr(other_view->win, ++x, COL, "File is a Character Device");
+			mvwaddstr(other_view->win, LINE, COL, "File is a Character Device");
 			break;
 		case BLOCK_DEVICE:
-			mvwaddstr(other_view->win, ++x, COL, "File is a Block Device");
+			mvwaddstr(other_view->win, LINE, COL, "File is a Block Device");
 			break;
 #ifndef _WIN32
 		case SOCKET:
-			mvwaddstr(other_view->win, ++x, COL, "File is a Socket");
+			mvwaddstr(other_view->win, LINE, COL, "File is a Socket");
 			break;
 #endif
 		case FIFO:
-			mvwaddstr(other_view->win, ++x, COL, "File is a Named Pipe");
+			mvwaddstr(other_view->win, LINE, COL, "File is a Named Pipe");
 			break;
 		case LINK:
 			if(get_link_target_abs(buf, view->curr_dir, buf, sizeof(buf)) != 0)
 			{
-				mvwaddstr(other_view->win, ++x, COL, "Cannot resolve Link");
+				mvwaddstr(other_view->win, LINE, COL, "Cannot resolve Link");
 				break;
 			}
 			if(!ends_with_slash(buf) && is_dir(buf))
@@ -141,7 +141,7 @@ quick_view_file(FileView *view)
 				viewer = get_viewer_for_file(buf);
 				if(viewer == NULL && is_dir(buf))
 				{
-					mvwaddstr(other_view->win, ++x, COL, "File is a Directory");
+					mvwaddstr(other_view->win, LINE, COL, "File is a Directory");
 					break;
 				}
 				if(viewer != NULL && viewer[0] != '\0')
@@ -151,7 +151,7 @@ quick_view_file(FileView *view)
 
 				if(fp == NULL)
 				{
-					mvwaddstr(other_view->win, x, COL, "Cannot open file");
+					mvwaddstr(other_view->win, LINE, COL, "Cannot open file");
 					break;
 				}
 
@@ -160,10 +160,7 @@ quick_view_file(FileView *view)
 				attrs = 0;
 				fg = -1;
 				bg = -1;
-				if(cfg.wrap_quick_view)
-					view_wraped(fp, x);
-				else
-					view_not_wraped(fp, x);
+				view_file(fp, cfg.wrap_quick_view);
 
 				fclose(fp);
 			}
@@ -173,16 +170,20 @@ quick_view_file(FileView *view)
 	wrefresh(other_view->title);
 }
 
+/* Displays contents read from the fp in the other pane starting from the second
+ * line and second column.  The wrapped parameter determines whether lines
+ * should be wrapped. */
 static void
-view_wraped(FILE *fp, int x)
+view_file(FILE *fp, int wrapped)
 {
 	char line[1024];
 	int offset = 0;
 	int continued = 0;
+	int y = LINE;
 	const size_t max_width = other_view->window_width - 1;
 	const size_t max_height = other_view->window_rows - 2;
 	char *res = get_line(fp, line, max_width + 1);
-	while(res != NULL && x <= max_height)
+	while(res != NULL && y <= max_height)
 	{
 		int line_offset;
 		int printed;
@@ -196,20 +197,33 @@ view_wraped(FILE *fp, int x)
 			len = strlen(line);
 		}
 
-		if(len > 0 && line[len - 1] != '\n')
-			remove_eol(fp);
-
-		line_offset = print_line_esc(line, other_view->win, COL, x + 1, max_width,
-				&printed);
-		x += !continued || printed;
-
-		offset = len - line_offset;
-		if(offset != 0)
+		if(wrapped)
 		{
-			memmove(line, line + line_offset, offset + 1);
-			if(offset == 1 && line[0] == '\n')
+			if(len > 0 && line[len - 1] != '\n')
 			{
-				offset = 0;
+				remove_eol(fp);
+			}
+		}
+		else
+		{
+			if(line[len - 1] != '\n')
+				skip_until_eol(fp);
+		}
+
+		line_offset = print_line_esc(line, other_view->win, COL, y, max_width,
+				&printed);
+		y += !wrapped || (!continued || printed);
+
+		if(wrapped)
+		{
+			offset = len - line_offset;
+			if(offset != 0)
+			{
+				memmove(line, line + line_offset, offset + 1);
+				if(offset == 1 && line[0] == '\n')
+				{
+					offset = 0;
+				}
 			}
 		}
 		if(offset == 0)
@@ -217,33 +231,6 @@ view_wraped(FILE *fp, int x)
 			res = get_line(fp, line, max_width + 1);
 		}
 		continued = (len > 0 && line[len - 1] != '\n');
-	}
-}
-
-static void
-view_not_wraped(FILE *fp, int x)
-{
-	char line[1024];
-	const size_t max_width = other_view->window_width - 1;
-	const size_t max_height = other_view->window_rows - 2;
-
-	while(get_line(fp, line, max_width + 1) == line && x <= max_height)
-	{
-		int printed;
-		size_t n_len = get_normal_utf8_string_length(line) - get_esc_overhead(line);
-		size_t len = strlen(line);
-		while(n_len < max_width && line[len - 1] != '\n' && !feof(fp))
-		{
-			if(get_line(fp, line + len, max_width - n_len + 1) == NULL)
-				break;
-			n_len = get_normal_utf8_string_length(line) - get_esc_overhead(line);
-			len = strlen(line);
-		}
-
-		if(line[len - 1] != '\n')
-			skip_until_eol(fp);
-
-		(void)print_line_esc(line, other_view->win, COL, ++x, max_width, &printed);
 	}
 }
 
