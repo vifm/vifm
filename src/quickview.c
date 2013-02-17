@@ -69,6 +69,8 @@ static int print_line_esc(const char line[], WINDOW *win, int col, int row,
 static size_t get_esc_overhead(const char str[]);
 static size_t get_char_width_esc(const char str[]);
 static void print_char_esc(WINDOW *win, const char str[], esc_state *state);
+static void esc_state_update(esc_state *state, const char str[]);
+static void esc_state_set_attr(esc_state *state, int n);
 static void esc_state_init(esc_state *state);
 TSTATIC const char * strchar2str(const char str[], int pos,
 		size_t *screen_width);
@@ -318,87 +320,91 @@ print_char_esc(WINDOW *win, const char str[], esc_state *state)
 	{
 		int next_pair;
 
-		/* Handle escape sequence. */
-		str++;
-		do
-		{
-			int n = 0;
-			if(isdigit(str[1]))
-			{
-				char *end;
-				n = strtol(str + 1, &end, 10);
-				str = end;
-			}
-			else
-			{
-				str++;
-			}
-			if(n == 0)
-			{
-				esc_state_init(state);
-			}
-			else if(n == 1)
-			{
-				state->attrs |= A_BOLD;
-			}
-			else if(n == 1)
-			{
-				state->attrs |= A_DIM;
-			}
-			else if(n == 3 || n == 7)
-			{
-				state->attrs |= A_REVERSE;
-			}
-			else if(n == 4)
-			{
-				state->attrs |= A_UNDERLINE;
-			}
-			else if(n == 5 || n == 6)
-			{
-				state->attrs |= A_BLINK;
-			}
-			else if(n == 22)
-			{
-				state->attrs &= ~(A_BOLD | A_UNDERLINE | A_BLINK | A_REVERSE | A_DIM);
-			}
-			else if(n == 24)
-			{
-				state->attrs &= ~A_UNDERLINE;
-			}
-			else if(n == 25)
-			{
-				state->attrs &= ~A_BLINK;
-			}
-			else if(n == 27)
-			{
-				state->attrs &= ~A_REVERSE;
-			}
-			else if(n >= 30 && n <= 37)
-			{
-				state->fg = n - 30;
-			}
-			else if(n == 39)
-			{
-				state->fg = -1;
-			}
-			else if(n >= 40 && n <= 47)
-			{
-				state->bg = n - 40;
-			}
-			else if(n == 49)
-			{
-				state->bg = -1;
-			}
-		}
-		while(str[0] == ';');
+		esc_state_update(state, str);
 
 		next_pair = colmgr_alloc_pair(state->fg, state->bg);
 		wattrset(win, COLOR_PAIR(next_pair) | state->attrs);
 	}
 	else
 	{
-		/* Print symbol. */
 		wprint(win, str);
+	}
+}
+
+/* Handles escape sequence.  Applies whole escape sequence specified by the str
+ * to the state. */
+static void
+esc_state_update(esc_state *state, const char str[])
+{
+	str++;
+	do
+	{
+		int n = 0;
+		if(isdigit(str[1]))
+		{
+			char *end;
+			n = strtol(str + 1, &end, 10);
+			str = end;
+		}
+		else
+		{
+			str++;
+		}
+
+		esc_state_set_attr(state, n);
+	}
+	while(str[0] == ';');
+}
+
+/* Applies one escape sequence attribute (the n parameter) to the state at a
+ * time. */
+static void
+esc_state_set_attr(esc_state *state, int n)
+{
+	switch(n)
+	{
+		case 0:
+			esc_state_init(state);
+			break;
+		case 1:
+			state->attrs |= A_BOLD;
+			break;
+		case 2:
+			state->attrs |= A_DIM;
+			break;
+		case 3: case 7:
+			state->attrs |= A_REVERSE;
+			break;
+		case 4:
+			state->attrs |= A_UNDERLINE;
+			break;
+		case 5: case 6:
+			state->attrs |= A_BLINK;
+			break;
+		case 22:
+			state->attrs &= ~(A_BOLD | A_UNDERLINE | A_BLINK | A_REVERSE | A_DIM);
+			break;
+		case 24:
+			state->attrs &= ~A_UNDERLINE;
+			break;
+		case 25:
+			state->attrs &= ~A_BLINK;
+			break;
+		case 27:
+			state->attrs &= ~A_REVERSE;
+			break;
+		case 30: case 31: case 32: case 33: case 34: case 35: case 36: case 37:
+			state->fg = n - 30;
+			break;
+		case 39:
+			state->fg = -1;
+			break;
+		case 40: case 41: case 42: case 43: case 44: case 45: case 46: case 47:
+			state->bg = n - 40;
+			break;
+		case 49:
+			state->bg = -1;
+			break;
 	}
 }
 
