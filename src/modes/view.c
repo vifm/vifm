@@ -49,6 +49,9 @@
 
 #include "view.h"
 
+/* Column at which view content should be displayed. */
+#define COL 1
+
 typedef struct
 {
 	char **lines;
@@ -454,7 +457,7 @@ draw(void)
 
 			if(l != vi->line || vl + t >= vi->linev - vi->widths[vi->line][0])
 			{
-				wmove(vi->view->win, 1 + vl, 1);
+				wmove(vi->view->win, 1 + vl, COL);
 				puts_line(vi->view, buf);
 				vl++;
 			}

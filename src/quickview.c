@@ -36,6 +36,9 @@
 
 #include "quickview.h"
 
+/* Column at which quickview content should be displayed. */
+#define COL 1
+
 static void view_wraped(FILE *fp, int x);
 static void view_not_wraped(FILE *fp, int x);
 static int print_line_esc(const char line[], WINDOW *win, int col, int row,
@@ -71,7 +74,6 @@ void
 quick_view_file(FileView *view)
 {
 	int x = 0;
-	int y = 1;
 	char buf[PATH_MAX];
 	char link[PATH_MAX];
 
@@ -95,23 +97,23 @@ quick_view_file(FileView *view)
 	switch(view->dir_entry[view->list_pos].type)
 	{
 		case CHARACTER_DEVICE:
-			mvwaddstr(other_view->win, ++x, y, "File is a Character Device");
+			mvwaddstr(other_view->win, ++x, COL, "File is a Character Device");
 			break;
 		case BLOCK_DEVICE:
-			mvwaddstr(other_view->win, ++x, y, "File is a Block Device");
+			mvwaddstr(other_view->win, ++x, COL, "File is a Block Device");
 			break;
 #ifndef _WIN32
 		case SOCKET:
-			mvwaddstr(other_view->win, ++x, y, "File is a Socket");
+			mvwaddstr(other_view->win, ++x, COL, "File is a Socket");
 			break;
 #endif
 		case FIFO:
-			mvwaddstr(other_view->win, ++x, y, "File is a Named Pipe");
+			mvwaddstr(other_view->win, ++x, COL, "File is a Named Pipe");
 			break;
 		case LINK:
 			if(get_link_target_abs(buf, view->curr_dir, buf, sizeof(buf)) != 0)
 			{
-				mvwaddstr(other_view->win, ++x, y, "Cannot resolve Link");
+				mvwaddstr(other_view->win, ++x, COL, "Cannot resolve Link");
 				break;
 			}
 			if(!ends_with_slash(buf) && is_dir(buf))
@@ -128,7 +130,7 @@ quick_view_file(FileView *view)
 				viewer = get_viewer_for_file(buf);
 				if(viewer == NULL && is_dir(buf))
 				{
-					mvwaddstr(other_view->win, ++x, y, "File is a Directory");
+					mvwaddstr(other_view->win, ++x, COL, "File is a Directory");
 					break;
 				}
 				if(viewer != NULL && viewer[0] != '\0')
@@ -138,7 +140,7 @@ quick_view_file(FileView *view)
 
 				if(fp == NULL)
 				{
-					mvwaddstr(other_view->win, x, y, "Cannot open file");
+					mvwaddstr(other_view->win, x, COL, "Cannot open file");
 					break;
 				}
 
@@ -164,7 +166,6 @@ static void
 view_wraped(FILE *fp, int x)
 {
 	char line[1024];
-	int y = 1;
 	int offset = 0;
 	const size_t max_width = other_view->window_width - 1;
 	const size_t max_height = other_view->window_rows - 2;
@@ -185,7 +186,7 @@ view_wraped(FILE *fp, int x)
 		if(len > 0 && line[len - 1] != '\n')
 			remove_eol(fp);
 
-		line_offset = print_line_esc(line, other_view->win, y, ++x, max_width);
+		line_offset = print_line_esc(line, other_view->win, COL, ++x, max_width);
 
 		offset = strlen(line) - line_offset;
 		if(offset != 0)
@@ -207,7 +208,6 @@ static void
 view_not_wraped(FILE *fp, int x)
 {
 	char line[1024];
-	int y = 1;
 	const size_t max_width = other_view->window_width - 1;
 	const size_t max_height = other_view->window_rows - 2;
 
@@ -226,7 +226,7 @@ view_not_wraped(FILE *fp, int x)
 		if(line[len - 1] != '\n')
 			skip_until_eol(fp);
 
-		(void)print_line_esc(line, other_view->win, y, ++x, max_width);
+		(void)print_line_esc(line, other_view->win, COL, ++x, max_width);
 	}
 }
 
