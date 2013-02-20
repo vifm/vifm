@@ -66,7 +66,7 @@ typedef struct
 	int search_repeat;
 }view_info_t;
 
-static int can_be_explored(FileView *view, char *buf);
+static int get_file_to_explore(const FileView *view, char buf[]);
 static void pick_vi(void);
 static void init_view_info(view_info_t *vi);
 static void calc_vlines(void);
@@ -211,7 +211,7 @@ enter_view_mode(int explore)
 	const char *viewer;
 	FILE *fp;
 
-	if(!can_be_explored(curr_view, buf))
+	if(!get_file_to_explore(curr_view, buf))
 	{
 		show_error_msg("File exploring", "The file cannot be explored");
 		return;
@@ -273,7 +273,7 @@ enter_view_mode(int explore)
 
 /* assumed that buf size is at least PATH_MAX characters */
 static int
-can_be_explored(FileView *view, char *buf)
+get_file_to_explore(const FileView *view, char buf[])
 {
 	char link[PATH_MAX];
 
