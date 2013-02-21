@@ -35,6 +35,12 @@ int path_exists(const char *path);
 /* Checks whether path/file exists. */
 int path_exists_at(const char *path, const char *filename);
 int check_link_is_dir(const char *filename);
+/* Fills the buf of size buf_len with the absolute path to a file pointed to by
+ * the link symbolic link.  Uses the cwd parameter to make absolute path from
+ * relative symbolic links.  The link and buf can point to the same piece of
+ * memory.  Returns non-zero on error. */
+int get_link_target_abs(const char link[], const char cwd[], char buf[],
+		size_t buf_len);
 int get_link_target(const char *link, char *buf, size_t buf_len);
 int make_dir(const char *dir_name, mode_t mode);
 int symlinks_available(void);

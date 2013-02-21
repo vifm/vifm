@@ -164,6 +164,27 @@ check_link_is_dir(const char *filename)
 }
 
 int
+get_link_target_abs(const char link[], const char cwd[], char buf[],
+		size_t buf_len)
+{
+	char link_target[PATH_MAX];
+	if(get_link_target(link, link_target, sizeof(link_target)) != 0)
+	{
+		return 1;
+	}
+	if(is_path_absolute(link_target))
+	{
+		strncpy(buf, link_target, buf_len);
+		buf[buf_len - 1] = '\0';
+	}
+	else
+	{
+		snprintf(buf, buf_len, "%s/%s", cwd, link_target);
+	}
+	return 0;
+}
+
+int
 get_link_target(const char *link, char *buf, size_t buf_len)
 {
 	LOG_FUNC_ENTER;

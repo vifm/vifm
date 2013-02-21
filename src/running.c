@@ -563,7 +563,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 static void
 follow_link(FileView *view, int follow_dirs)
 {
-	/* TODO: refactor this big function shellout() */
+	/* TODO: refactor this big function follow_link() */
 
 	struct stat s;
 	int is_dir = 0;

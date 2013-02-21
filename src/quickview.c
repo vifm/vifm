@@ -96,18 +96,14 @@ quick_view_file(FileView *view)
 			mvwaddstr(other_view->win, ++x, y, "File is a Named Pipe");
 			break;
 		case LINK:
-			if(get_link_target(buf, link, sizeof(link)) != 0)
+			if(get_link_target_abs(buf, view->curr_dir, buf, sizeof(buf)) != 0)
 			{
 				mvwaddstr(other_view->win, ++x, y, "Cannot resolve Link");
 				break;
 			}
-			if(is_path_absolute(link))
-				strcpy(buf, link);
-			else
-				snprintf(buf, sizeof(buf), "%s/%s", view->curr_dir, link);
 			if(!ends_with_slash(buf) && is_dir(buf))
 			{
-				strcat(buf, "/");
+				strncat(buf, "/", sizeof(buf) - 1);
 			}
 			/* break intensionally omitted */
 		case UNKNOWN:

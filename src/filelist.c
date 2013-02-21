@@ -458,17 +458,12 @@ get_line_color(FileView* view, int pos)
 			else
 			{
 				char full[PATH_MAX];
-				char linkto[PATH_MAX];
 				snprintf(full, sizeof(full), "%s/%s", view->curr_dir,
 						view->dir_entry[pos].name);
-				if(get_link_target(full, linkto, sizeof(linkto)) != 0)
+				if(get_link_target_abs(full, view->curr_dir, full, sizeof(full)) != 0)
+				{
 					return BROKEN_LINK_COLOR;
-
-				if(is_path_absolute(linkto))
-					strcpy(full, linkto);
-				else
-					snprintf(full, sizeof(full), "%s/%s", view->curr_dir, linkto);
-
+				}
 				return path_exists(full) ? LINK_COLOR : BROKEN_LINK_COLOR;
 			}
 #ifndef _WIN32
