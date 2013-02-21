@@ -71,7 +71,6 @@ typedef struct
 
 static int get_file_to_explore(const FileView *view, char buf[],
 		size_t buf_len);
-static void pick_vi(void);
 static void init_view_info(view_info_t *vi);
 static void calc_vlines(void);
 static void draw(void);
@@ -88,6 +87,7 @@ static void cmd_meta_space(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_tab(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
+static void pick_vi(int explore);
 static void cmd_qmark(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
@@ -233,13 +233,7 @@ enter_view_mode(int explore)
 		return;
 	}
 
-	if(!explore)
-		vi = &view_info[0];
-	else if(curr_view == &lwin)
-		vi = &view_info[1];
-	else
-		vi = &view_info[2];
-
+	pick_vi(explore);
 	vi->lines = read_file_lines(fp, &vi->nlines);
 	fclose(fp);
 
@@ -308,18 +302,7 @@ void
 activate_view_mode(void)
 {
 	*mode = VIEW_MODE;
-	pick_vi();
-}
-
-static void
-pick_vi(void)
-{
-	if(!curr_view->explore_mode)
-		vi = &view_info[0];
-	else if(curr_view == &lwin)
-		vi = &view_info[1];
-	else
-		vi = &view_info[2];
+	pick_vi(curr_view->explore_mode);
 }
 
 void
@@ -651,10 +634,19 @@ cmd_tab(key_info_t key_info, keys_info_t *keys_info)
 	change_window();
 	if(!curr_view->explore_mode)
 		*mode = NORMAL_MODE;
-	pick_vi();
+	pick_vi(curr_view->explore_mode);
 
 	update_view_title(&lwin);
 	update_view_title(&rwin);
+}
+
+/* Updates value of the vi variable and points it to the correct element of the
+ * view_info array according to view mode. */
+static void
+pick_vi(int explore)
+{
+	const int index = !explore ? 0 : (curr_view == &lwin ? 1 : 2);
+	vi = &view_info[index];
 }
 
 static void
