@@ -66,7 +66,8 @@ typedef struct
 	int search_repeat;
 }view_info_t;
 
-static int get_file_to_explore(const FileView *view, char buf[]);
+static int get_file_to_explore(const FileView *view, char buf[],
+		size_t buf_len);
 static void pick_vi(void);
 static void init_view_info(view_info_t *vi);
 static void calc_vlines(void);
@@ -211,7 +212,7 @@ enter_view_mode(int explore)
 	const char *viewer;
 	FILE *fp;
 
-	if(!get_file_to_explore(curr_view, buf))
+	if(get_file_to_explore(curr_view, buf, sizeof(buf)) != 0)
 	{
 		show_error_msg("File exploring", "The file cannot be explored");
 		return;
@@ -271,13 +272,14 @@ enter_view_mode(int explore)
 	view_redraw();
 }
 
-/* assumed that buf size is at least PATH_MAX characters */
+/* Gets full path to the file that will be explored (the current file of the
+ * view).  Returns non-zero if file cannot be explored. */
 static int
-get_file_to_explore(const FileView *view, char buf[])
+get_file_to_explore(const FileView *view, char buf[], size_t buf_len)
 {
 	const dir_entry_t *entry = &view->dir_entry[view->list_pos];
 
-	snprintf(buf, PATH_MAX, "%s/%s", view->curr_dir, entry->name);
+	snprintf(buf, buf_len, "%s/%s", view->curr_dir, entry->name);
 	switch(entry->type)
 	{
 		case CHARACTER_DEVICE:
@@ -286,16 +288,16 @@ get_file_to_explore(const FileView *view, char buf[])
 #ifndef _WIN32
 		case SOCKET:
 #endif
-			return 0;
+			return 1;
 		case LINK:
-			if(get_link_target_abs(buf, view->curr_dir, buf, PATH_MAX) != 0)
+			if(get_link_target_abs(buf, view->curr_dir, buf, buf_len) != 0)
 			{
-				return 0;
+				return 1;
 			}
-			return (access(buf, R_OK) == 0);
+			return (access(buf, R_OK) != 0);
 
 		default:
-			return 1;
+			return 0;
 	}
 }
 
