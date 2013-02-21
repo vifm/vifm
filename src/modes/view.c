@@ -222,10 +222,10 @@ enter_view_mode(int explore)
 	}
 
 	viewer = get_viewer_for_file(buf);
-	if(viewer != NULL && viewer[0] != '\0')
-		fp = use_info_prog(viewer);
-	else
+	if(is_null_or_empty(viewer))
 		fp = fopen(buf, "r");
+	else
+		fp = use_info_prog(viewer);
 
 	if(fp == NULL)
 	{

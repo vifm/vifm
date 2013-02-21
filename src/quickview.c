@@ -154,10 +154,10 @@ quick_view_file(FileView *view)
 					mvwaddstr(other_view->win, LINE, COL, "File is a Directory");
 					break;
 				}
-				if(viewer != NULL && viewer[0] != '\0')
-					fp = use_info_prog(viewer);
-				else
+				if(is_null_or_empty(viewer))
 					fp = fopen(buf, "r");
+				else
+					fp = use_info_prog(viewer);
 
 				if(fp == NULL)
 				{
