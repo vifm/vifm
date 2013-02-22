@@ -72,6 +72,7 @@ typedef struct
 static int get_file_to_explore(const FileView *view, char buf[],
 		size_t buf_len);
 static void init_view_info(view_info_t *vi);
+static void redraw(void);
 static void calc_vlines(void);
 static void draw(void);
 static int get_part(const char line[], int offset, size_t max_len, char part[]);
@@ -336,19 +337,16 @@ view_redraw(void)
 	if(lwin.explore_mode)
 	{
 		vi = &view_info[1];
-		calc_vlines();
-		draw();
+		redraw();
 	}
 	if(rwin.explore_mode)
 	{
 		vi = &view_info[2];
-		calc_vlines();
-		draw();
+		redraw();
 	}
 	if(!lwin.explore_mode && !rwin.explore_mode)
 	{
-		calc_vlines();
-		draw();
+		redraw();
 	}
 
 	vi = saved_vi;
@@ -390,6 +388,14 @@ init_view_info(view_info_t *vi)
 	vi->half_win = -1;
 	vi->width = -1;
 	vi->last_search_backward = -1;
+}
+
+/* Updates line width and redraws the view. */
+static void
+redraw(void)
+{
+	calc_vlines();
+	draw();
 }
 
 static void
