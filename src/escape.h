@@ -37,12 +37,12 @@ esc_state;
  * Sets *printed to non-zero if at least one character was actually printed,
  * it's set to zero otherwise.  Returns offset in the line at which line
  * processing was stopped. */
-int print_line_esc(const char line[], WINDOW *win, int col, int row,
+int esc_print_line(const char line[], WINDOW *win, int col, int row,
 		int max_width, esc_state *state, int *printed);
 
 /* Returns number of characters in the str taken by terminal escape
  * sequences. */
-size_t get_esc_overhead(const char str[]);
+size_t esc_str_overhead(const char str[]);
 
 /* Initializes escape sequence parsing state with default values. */
 void esc_state_init(esc_state *state);

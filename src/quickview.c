@@ -172,7 +172,7 @@ view_file(FILE *fp, int wrapped)
 			skip_until_eol(fp);
 		}
 
-		offset = print_line_esc(line, other_view->win, COL, y, max_width, &state,
+		offset = esc_print_line(line, other_view->win, COL, y, max_width, &state,
 				&printed);
 		y += !wrapped || (!line_continued || printed);
 		line_continued = line[len - 1] != '\n';
@@ -205,7 +205,7 @@ shift_line(char line[], size_t len, size_t offset)
 static size_t
 add_to_line(FILE *fp, size_t max, char line[], size_t len)
 {
-	size_t n_len = get_normal_utf8_string_length(line) - get_esc_overhead(line);
+	size_t n_len = get_normal_utf8_string_length(line) - esc_str_overhead(line);
 	size_t curr_len = strlen(line);
 	while(n_len < max && line[curr_len - 1] != '\n' && !feof(fp))
 	{
@@ -213,7 +213,7 @@ add_to_line(FILE *fp, size_t max, char line[], size_t len)
 		{
 			break;
 		}
-		n_len = get_normal_utf8_string_length(line) - get_esc_overhead(line);
+		n_len = get_normal_utf8_string_length(line) - esc_str_overhead(line);
 		curr_len = strlen(line);
 	}
 	return curr_len;

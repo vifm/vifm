@@ -49,7 +49,7 @@ TSTATIC const char * strchar2str(const char str[], int pos,
 		size_t *screen_width);
 
 int
-print_line_esc(const char line[], WINDOW *win, int col, int row, int max_width,
+esc_print_line(const char line[], WINDOW *win, int col, int row, int max_width,
 		esc_state *state, int *printed)
 {
 	const char *curr = line;
@@ -70,7 +70,7 @@ print_line_esc(const char line[], WINDOW *win, int col, int row, int max_width,
 }
 
 size_t
-get_esc_overhead(const char str[])
+esc_str_overhead(const char str[])
 {
 	size_t overhead = 0U;
 	while(*str != '\0')
