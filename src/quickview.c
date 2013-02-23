@@ -172,7 +172,7 @@ view_file(FILE *fp, int wrapped)
 			skip_until_eol(fp);
 		}
 
-		offset = esc_print_line(line, other_view->win, COL, y, max_width, &state,
+		offset = esc_print_line(line, other_view->win, COL, y, max_width, 0, &state,
 				&printed);
 		y += !wrapped || (!line_continued || printed);
 		line_continued = line[len - 1] != '\n';

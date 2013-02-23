@@ -88,7 +88,7 @@ esc_str_overhead(const char str[])
 
 int
 esc_print_line(const char line[], WINDOW *win, int col, int row, int max_width,
-		esc_state *state, int *printed)
+		int dry_run, esc_state *state, int *printed)
 {
 	const char *curr = line;
 	size_t pos = 0;
@@ -99,11 +99,14 @@ esc_print_line(const char line[], WINDOW *win, int col, int row, int max_width,
 		const char *const char_str = strchar2str(curr, pos, &screen_width);
 		if((pos += screen_width) <= max_width)
 		{
-			print_char_esc(win, char_str, state);
+			if(!dry_run || screen_width == 0)
+			{
+				print_char_esc(win, char_str, state);
+			}
 			curr += get_char_width_esc(curr);
 		}
 	}
-	*printed = pos != 0;
+	*printed = pos;
 	return curr - line;
 }
 

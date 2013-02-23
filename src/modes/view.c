@@ -23,6 +23,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
 #include <string.h> /* strcpy() strlen() */
+#include <stdlib.h> /* free() */
 
 #include "../cfg/config.h"
 #include "../engine/keys.h"
@@ -36,6 +37,7 @@
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
 #include "../commands.h"
+#include "../escape.h"
 #include "../filelist.h"
 #include "../fileops.h"
 #include "../filetype.h"
@@ -76,7 +78,8 @@ static void redraw(void);
 static void calc_vlines(void);
 static void draw(void);
 static int get_part(const char line[], int offset, size_t max_len, char part[]);
-static void puts_line(FileView *view, char *line);
+static int puts_line(FileView *view, char line[], int col, int row,
+		esc_state *state);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
@@ -413,7 +416,8 @@ calc_vlines(void)
 		for(i = 0; i < vi->nlines; i++)
 		{
 			vi->widths[i][0] = vi->nlinesv++;
-			vi->widths[i][1] = get_utf8_string_length(vi->lines[i]);
+			vi->widths[i][1] = get_utf8_string_length(vi->lines[i]) -
+				esc_str_overhead(vi->lines[i]);
 			vi->nlinesv += vi->widths[i][1]/vi->width;
 		}
 	}
@@ -434,6 +438,8 @@ draw(void)
 {
 	int l, vl;
 	int max = MIN(vi->line + vi->view->window_rows - 1, vi->nlines);
+	esc_state state;
+	esc_state_init(&state);
 	werase(vi->view->win);
 	for(vl = 0, l = vi->line; l < max && vl < vi->view->window_rows - 1; l++)
 	{
@@ -441,15 +447,19 @@ draw(void)
 		int t = 0;
 		do
 		{
-			char buf[vi->view->window_width*4];
-			offset = get_part(vi->lines[l], offset, vi->view->window_width - 1, buf);
-
 			if(l != vi->line || vl + t >= vi->linev - vi->widths[vi->line][0])
 			{
-				wmove(vi->view->win, 1 + vl, COL);
-				puts_line(vi->view, buf);
+				offset += puts_line(vi->view, vi->lines[l] + offset, COL, 1 + vl,
+						&state);
 				vl++;
 			}
+			else
+			{
+				int printed;
+				offset += esc_print_line(vi->lines[l] + offset, vi->view->win, COL,
+						1 + vl, vi->view->window_width - 1, 1, &state, &printed);
+			}
+
 			t++;
 		}
 		while(cfg.wrap_quick_view && vi->lines[l][offset] != '\0' &&
@@ -458,39 +468,44 @@ draw(void)
 	refresh_view_win(vi->view);
 }
 
-static void
-puts_line(FileView *view, char *line)
+static int
+puts_line(FileView *view, char line[], int col, int row, esc_state *state)
 {
 	regmatch_t match;
 	char c;
+	int printed;
+	int left = view->window_width - 1;
+	int offset = 0;
 
-	if(vi->last_search_backward == -1)
+	if(vi->last_search_backward == -1 ||
+			regexec(&vi->re, line, 1, &match, 0) != 0)
 	{
-		wprint(view->win, line);
-		return;
-	}
-
-	if(regexec(&vi->re, line, 1, &match, 0) != 0)
-	{
-		wprint(view->win, line);
-		return;
+		return esc_print_line(line, view->win, col, row, left, 0, state, &printed);
 	}
 
 	c = line[match.rm_so];
 	line[match.rm_so] = '\0';
-	wprint(view->win, line);
+	offset += esc_print_line(line, view->win, col, row, left, 0, state, &printed);
+	col += printed;
+	left -= printed;
 	line[match.rm_so] = c;
 
 	wattron(view->win, A_REVERSE | A_BOLD);
 
 	c = line[match.rm_eo];
 	line[match.rm_eo] = '\0';
-	wprint(view->win, line + match.rm_so);
+	offset += esc_print_line(line + match.rm_so, view->win, col, row, left, 0,
+			state, &printed);
+	col += printed;
+	left -= printed;
 	line[match.rm_eo] = c;
 
 	wattroff(view->win, A_REVERSE | A_BOLD);
 
-	wprint(view->win, line + match.rm_eo);
+	offset += esc_print_line(line + match.rm_eo, view->win, col, row, left, 0,
+			state, &printed);
+
+	return offset;
 }
 
 int
@@ -939,9 +954,11 @@ find_next(int o)
 static int
 get_part(const char line[], int offset, size_t max_len, char part[])
 {
-	const char *const begin = line + offset;
+	char *no_esc = esc_remove(line);
+	const char *const begin = no_esc + offset;
 	const char *const end = expand_tabulation(begin, max_len, cfg.tab_stop, part);
-	return end - line;
+	free(no_esc);
+	return end - no_esc;
 }
 
 static void

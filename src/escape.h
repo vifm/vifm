@@ -42,11 +42,11 @@ size_t esc_str_overhead(const char str[]);
 
 /* Prints at most whole line to a window with col and row initial offsets and
  * honoring maximum character positions specified by the max_width parameter.
- * Sets *printed to non-zero if at least one character was actually printed,
- * it's set to zero otherwise.  Returns offset in the line at which line
- * processing was stopped. */
+ * Sets *printed to number of screen characters actually printed, it's set to
+ * zero otherwise.  Returns offset in the line at which line processing was
+ * stopped. */
 int esc_print_line(const char line[], WINDOW *win, int col, int row,
-		int max_width, esc_state *state, int *printed);
+		int max_width, int dry_run, esc_state *state, int *printed);
 
 /* Initializes escape sequence parsing state with default values. */
 void esc_state_init(esc_state *state);
