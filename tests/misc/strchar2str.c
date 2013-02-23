@@ -3,7 +3,7 @@
 #include "seatest.h"
 
 #include "../../src/cfg/config.h"
-#include "../../src/quickview.h"
+#include "../../src/escape.h"
 
 static void
 test_chinese_character_width_is_determined_correctly(void)

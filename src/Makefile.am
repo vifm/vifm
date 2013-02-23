@@ -91,6 +91,7 @@ vifm_SOURCES = \
 	commands_completion.c commands_completion.h \
 	desktop.c desktop.h \
 	dir_stack.c dir_stack.h \
+	escape.c escape.h \
 	globals.c globals.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \
