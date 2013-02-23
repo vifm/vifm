@@ -23,9 +23,9 @@
 #include <curses.h>
 
 #include <ctype.h> /* isdigit() */
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* strtol() */
-#include <string.h> /* memset() strchr() strcpy() strlen() */
+#include <string.h> /* memcpy() memset() strchr() strcpy() strdup() strlen() */
 #include <wchar.h> /* wcwidth() */
 
 #include "cfg/config.h"
@@ -48,6 +48,44 @@ static void esc_state_set_attr(esc_state *state, int n);
 TSTATIC const char * strchar2str(const char str[], int pos,
 		size_t *screen_width);
 
+char *
+esc_remove(const char str[])
+{
+	char *no_esc = strdup(str);
+	if(no_esc != NULL)
+	{
+		char *p = no_esc;
+		while(*str != '\0')
+		{
+			const size_t char_width_esc = get_char_width_esc(str);
+			if(*str != '\033')
+			{
+				memcpy(p, str, char_width_esc);
+				p += char_width_esc;
+			}
+			str += char_width_esc;
+		}
+		*p = '\0';
+	}
+	return no_esc;
+}
+
+size_t
+esc_str_overhead(const char str[])
+{
+	size_t overhead = 0U;
+	while(*str != '\0')
+	{
+		const size_t char_width_esc = get_char_width_esc(str);
+		if(*str == '\033')
+		{
+			overhead += char_width_esc;
+		}
+		str += char_width_esc;
+	}
+	return overhead;
+}
+
 int
 esc_print_line(const char line[], WINDOW *win, int col, int row, int max_width,
 		esc_state *state, int *printed)
@@ -67,22 +105,6 @@ esc_print_line(const char line[], WINDOW *win, int col, int row, int max_width,
 	}
 	*printed = pos != 0;
 	return curr - line;
-}
-
-size_t
-esc_str_overhead(const char str[])
-{
-	size_t overhead = 0U;
-	while(*str != '\0')
-	{
-		const size_t char_width_esc = get_char_width_esc(str);
-		if(*str == '\033')
-		{
-			overhead += char_width_esc;
-		}
-		str += char_width_esc;
-	}
-	return overhead;
 }
 
 /* Returns number of characters at the beginning of the str which form one
@@ -274,7 +296,6 @@ strchar2str(const char str[], int pos, size_t *screen_width)
 	}
 	return buf;
 }
-
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
