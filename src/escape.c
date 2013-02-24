@@ -20,11 +20,13 @@
                      * needed in Linux for wide char function wcwidth().
                      */
 
+#include <regex.h>
+
 #include <curses.h>
 
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h> /* strtol() */
+#include <stdlib.h> /* free() malloc() strtol() */
 #include <string.h> /* memcpy() memset() strchr() strcpy() strdup() strlen() */
 #include <wchar.h> /* wcwidth() */
 
@@ -41,6 +43,8 @@
 
 #include "escape.h"
 
+static char * add_pattern_highlights(const char line[], size_t len,
+		const char no_esc[], const int offsets[], const regex_t *re);
 static size_t get_char_width_esc(const char str[]);
 static void print_char_esc(WINDOW *win, const char str[], esc_state *state);
 static void esc_state_update(esc_state *state, const char str[]);
@@ -84,6 +88,77 @@ esc_str_overhead(const char str[])
 		str += char_width_esc;
 	}
 	return overhead;
+}
+
+char *
+esc_highlight_pattern(const char line[], const regex_t *re)
+{
+	char *processed;
+	const size_t len = strlen(line);
+
+	int *const offsets = malloc(sizeof(int)*(len + 1));
+	int noffsets = 0;
+
+	char *const no_esc = malloc(len + 1);
+	char *no_esc_sym = no_esc;
+
+	/* Fill no_esc and offsets. */
+	const char *src_sym = line;
+	while(*src_sym != '\0')
+	{
+		const size_t char_width_esc = get_char_width_esc(src_sym);
+		if(*src_sym != '\033')
+		{
+			offsets[noffsets++] = src_sym - line;
+			memcpy(no_esc_sym, src_sym, char_width_esc);
+			no_esc_sym += char_width_esc;
+		}
+		src_sym += char_width_esc;
+	}
+	offsets[noffsets++] = src_sym - line;
+	*no_esc_sym = '\0';
+
+	processed = add_pattern_highlights(line, len, no_esc, offsets, re);
+
+	free(offsets);
+	free(no_esc);
+
+	return (processed == NULL) ? strdup(line) : processed;
+}
+
+/* Forms new line with highlights of matcher of the re regular expression using
+ * escape sequences that invert colors.  Returns NULL when no match found or
+ * memory allocation error occured. */
+static char * add_pattern_highlights(const char line[], size_t len,
+		const char no_esc[], const int offsets[], const regex_t *re)
+{
+	static const char INV_START[] = "\033[7,1m";
+	static const char INV_END[] = "\033[27,22m";
+
+	regmatch_t match;
+	char *next;
+	char *processed;
+
+	if(regexec(re, no_esc, 1, &match, 0) != 0)
+	{
+		return NULL;
+	}
+
+	processed = malloc(len + (sizeof(INV_START) - 1 + sizeof(INV_END) - 1)*1 + 1);
+
+	next = processed;
+	strncpy(next, line, offsets[match.rm_so]);
+	next += offsets[match.rm_so];
+	strncpy(next, INV_START, sizeof(INV_START) - 1);
+	next += sizeof(INV_START) - 1;
+	strncpy(next, line + offsets[match.rm_so],
+			offsets[match.rm_eo] - offsets[match.rm_so]);
+	next += offsets[match.rm_eo] - offsets[match.rm_so];
+	strncpy(next, INV_END, sizeof(INV_END) - 1);
+	next += sizeof(INV_END) - 1;
+	strcpy(next, line + offsets[match.rm_eo]);
+
+	return processed;
 }
 
 int

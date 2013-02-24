@@ -19,6 +19,8 @@
 #ifndef __ESCAPE_H__
 #define __ESCAPE_H__
 
+#include <regex.h>
+
 #include <curses.h>
 
 #include "colors.h"
@@ -41,6 +43,11 @@ char * esc_remove(const char str[]);
 /* Returns number of characters in the str taken by terminal escape
  * sequences. */
 size_t esc_str_overhead(const char str[]);
+
+/* Highlights all matches of the re regular expression in the line using color
+ * inversion considering escape sequences in the line.  Returns processed string
+ * that should be freed by the caller or NULL on error. */
+char * esc_highlight_pattern(const char line[], const regex_t *re);
 
 /* Prints at most whole line to a window with col and row initial offsets and
  * honoring maximum character positions specified by the max_width parameter.
