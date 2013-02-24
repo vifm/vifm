@@ -14,3 +14,5 @@ Files with names containing Unicode characters are not always processed correctl
 screen-open-region-with-program).
 
 Less-like mode highlights only the first match in each line.
+
+Less-like mode is not able to highlight parts of different color.

@@ -78,8 +78,6 @@ static void redraw(void);
 static void calc_vlines(void);
 static void draw(void);
 static int get_part(const char line[], int offset, size_t max_len, char part[]);
-static int puts_line(FileView *view, char line[], int col, int row,
-		esc_state *state);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
@@ -437,75 +435,35 @@ static void
 draw(void)
 {
 	int l, vl;
-	int max = MIN(vi->line + vi->view->window_rows - 1, vi->nlines);
+	const int height = vi->view->window_rows - 1;
+	const int width = vi->view->window_width - 1;
+	const int max_l = MIN(vi->line + height, vi->nlines);
+	const int searched = (vi->last_search_backward != -1);
 	esc_state state;
 	esc_state_init(&state, &vi->view->cs.color[WIN_COLOR]);
 	werase(vi->view->win);
-	for(vl = 0, l = vi->line; l < max && vl < vi->view->window_rows - 1; l++)
+	for(vl = 0, l = vi->line; l < max_l && vl < height; l++)
 	{
 		int offset = 0;
 		int t = 0;
+		const char *line = vi->lines[l];
+		char *p = searched ? esc_highlight_pattern(line, &vi->re) : line;
 		do
 		{
-			if(l != vi->line || vl + t >= vi->linev - vi->widths[vi->line][0])
-			{
-				offset += puts_line(vi->view, vi->lines[l] + offset, COL, 1 + vl,
-						&state);
-				vl++;
-			}
-			else
-			{
-				int printed;
-				offset += esc_print_line(vi->lines[l] + offset, vi->view->win, COL,
-						1 + vl, vi->view->window_width - 1, 1, &state, &printed);
-			}
-
+			int printed;
+			int vis = l != vi->line || vl + t >= vi->linev - vi->widths[vi->line][0];
+			offset += esc_print_line(p + offset, vi->view->win, COL, 1 + vl, width,
+					!vis, &state, &printed);
+			vl += vis;
 			t++;
 		}
-		while(cfg.wrap_quick_view && vi->lines[l][offset] != '\0' &&
-				vl < vi->view->window_rows - 1);
+		while(cfg.wrap_quick_view && p[offset] != '\0' && vl < height);
+		if(searched)
+		{
+			free(p);
+		}
 	}
 	refresh_view_win(vi->view);
-}
-
-static int
-puts_line(FileView *view, char line[], int col, int row, esc_state *state)
-{
-	regmatch_t match;
-	char c;
-	int printed;
-	int left = view->window_width - 1;
-	int offset = 0;
-
-	if(vi->last_search_backward == -1 ||
-			regexec(&vi->re, line, 1, &match, 0) != 0)
-	{
-		return esc_print_line(line, view->win, col, row, left, 0, state, &printed);
-	}
-
-	c = line[match.rm_so];
-	line[match.rm_so] = '\0';
-	offset += esc_print_line(line, view->win, col, row, left, 0, state, &printed);
-	col += printed;
-	left -= printed;
-	line[match.rm_so] = c;
-
-	wattron(view->win, A_REVERSE | A_BOLD);
-
-	c = line[match.rm_eo];
-	line[match.rm_eo] = '\0';
-	offset += esc_print_line(line + match.rm_so, view->win, col, row, left, 0,
-			state, &printed);
-	col += printed;
-	left -= printed;
-	line[match.rm_eo] = c;
-
-	wattroff(view->win, A_REVERSE | A_BOLD);
-
-	offset += esc_print_line(line + match.rm_eo, view->win, col, row, left, 0,
-			state, &printed);
-
-	return offset;
 }
 
 int
