@@ -161,7 +161,7 @@ view_file(FILE *fp, int wrapped)
 	int y = LINE;
 	const char *res = get_line(fp, line, sizeof(line));
 	esc_state state;
-	esc_state_init(&state);
+	esc_state_init(&state, &other_view->cs.color[WIN_COLOR]);
 	while(res != NULL && y <= max_y)
 	{
 		int offset;

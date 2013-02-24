@@ -21,6 +21,7 @@
 
 #include <curses.h>
 
+#include "colors.h"
 #include "utils/test_helpers.h"
 
 /* Holds state of escape sequence parsing. */
@@ -29,6 +30,7 @@ typedef struct
 	int attrs;
 	int fg;
 	int bg;
+	col_attr_t initial;
 }
 esc_state;
 
@@ -48,8 +50,8 @@ size_t esc_str_overhead(const char str[]);
 int esc_print_line(const char line[], WINDOW *win, int col, int row,
 		int max_width, int dry_run, esc_state *state, int *printed);
 
-/* Initializes escape sequence parsing state with default values. */
-void esc_state_init(esc_state *state);
+/* Initializes escape sequence parsing state with values from the initial. */
+void esc_state_init(esc_state *state, const col_attr_t *initial);
 
 TSTATIC_DEFS(
 	const char * strchar2str(const char str[], int pos, size_t *screen_width);

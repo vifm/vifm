@@ -439,7 +439,7 @@ draw(void)
 	int l, vl;
 	int max = MIN(vi->line + vi->view->window_rows - 1, vi->nlines);
 	esc_state state;
-	esc_state_init(&state);
+	esc_state_init(&state, &vi->view->cs.color[WIN_COLOR]);
 	werase(vi->view->win);
 	for(vl = 0, l = vi->line; l < max && vl < vi->view->window_rows - 1; l++)
 	{

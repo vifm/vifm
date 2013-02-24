@@ -181,7 +181,9 @@ esc_state_set_attr(esc_state *state, int n)
 	switch(n)
 	{
 		case 0:
-			esc_state_init(state);
+			state->attrs = state->initial.attr;
+			state->fg = state->initial.fg;
+			state->bg = state->initial.bg;
 			break;
 		case 1:
 			state->attrs |= A_BOLD;
@@ -226,11 +228,12 @@ esc_state_set_attr(esc_state *state, int n)
 }
 
 void
-esc_state_init(esc_state *state)
+esc_state_init(esc_state *state, const col_attr_t *initial)
 {
-	state->attrs = 0;
-	state->fg = -1;
-	state->bg = -1;
+	state->attrs = initial->attr;
+	state->fg = initial->fg;
+	state->bg = initial->bg;
+	state->initial = *initial;
 }
 
 /* Converts the leading character of the str string to a printable string.  Puts
