@@ -28,13 +28,6 @@
 
 typedef struct
 {
-	int fg;
-	int bg;
-	int attr;
-}col_attr_t;
-
-typedef struct
-{
 	char name[NAME_MAX];
 	char dir[PATH_MAX];
 	int defaulted;

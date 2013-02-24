@@ -20,6 +20,15 @@
 #ifndef __COLORS_H__
 #define __COLORS_H__
 
+/* Color information structure. */
+typedef struct
+{
+	int fg;   /* Foreground color. */
+	int bg;   /* Background color. */
+	int attr; /* Attributes (bold, inverse, etc.). */
+}
+col_attr_t;
+
 /* Elements of a color scheme.  Each one is an offset of a color pair inside of
  * color scheme. */
 enum
