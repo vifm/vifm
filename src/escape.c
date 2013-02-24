@@ -45,12 +45,21 @@
 
 static char * add_pattern_highlights(const char line[], size_t len,
 		const char no_esc[], const int offsets[], const regex_t *re);
+static char * add_highlighted_substr(const char sub[], size_t sub_len,
+		char out[]);
+static char * add_highlighted_sym(const char sym[], size_t sym_width,
+		char out[]);
 static size_t get_char_width_esc(const char str[]);
 static void print_char_esc(WINDOW *win, const char str[], esc_state *state);
 static void esc_state_update(esc_state *state, const char str[]);
 static void esc_state_set_attr(esc_state *state, int n);
 TSTATIC const char * strchar2str(const char str[], int pos,
 		size_t *screen_width);
+
+/* Escape sequence which starts block of highlighted symbols. */
+static const char INV_START[] = "\033[7,1m";
+/* Escape sequence which ends block of highlighted symbols. */
+static const char INV_END[] = "\033[27,22m";
 
 char *
 esc_remove(const char str[])
@@ -132,33 +141,75 @@ esc_highlight_pattern(const char line[], const regex_t *re)
 static char * add_pattern_highlights(const char line[], size_t len,
 		const char no_esc[], const int offsets[], const regex_t *re)
 {
-	static const char INV_START[] = "\033[7,1m";
-	static const char INV_END[] = "\033[27,22m";
-
 	regmatch_t match;
 	char *next;
 	char *processed;
+	size_t match_len;
 
 	if(regexec(re, no_esc, 1, &match, 0) != 0)
 	{
 		return NULL;
 	}
+	match_len = offsets[match.rm_eo] - offsets[match.rm_so];
 
-	processed = malloc(len + (sizeof(INV_START) - 1 + sizeof(INV_END) - 1)*1 + 1);
+	processed = malloc(
+			len + (sizeof(INV_START) - 1 + sizeof(INV_END) - 1)*match_len*1 + 1);
+	if(processed == NULL)
+	{
+		return NULL;
+	}
 
-	next = processed;
-	strncpy(next, line, offsets[match.rm_so]);
-	next += offsets[match.rm_so];
-	strncpy(next, INV_START, sizeof(INV_START) - 1);
-	next += sizeof(INV_START) - 1;
-	strncpy(next, line + offsets[match.rm_so],
-			offsets[match.rm_eo] - offsets[match.rm_so]);
-	next += offsets[match.rm_eo] - offsets[match.rm_so];
-	strncpy(next, INV_END, sizeof(INV_END) - 1);
-	next += sizeof(INV_END) - 1;
+	/* Before the match. */
+	strncpy(processed, line, offsets[match.rm_so]);
+	next = processed + offsets[match.rm_so];
+
+	/* The match. */
+	next = add_highlighted_substr(line + offsets[match.rm_so], match_len, next);
+
+	/* After the match. */
 	strcpy(next, line + offsets[match.rm_eo]);
 
 	return processed;
+}
+
+/* Adds all symbols of substring pointed to by the sub parameter of the length
+ * sub_len to the out buffer with highlight effect applied.  Returns next
+ * position in the out buffer. */
+static char *
+add_highlighted_substr(const char sub[], size_t sub_len, char out[])
+{
+	size_t i = 0;
+	while(i < sub_len)
+	{
+		const size_t char_width_esc = get_char_width_esc(sub + i);
+		out = add_highlighted_sym(sub + i, char_width_esc, out);
+		i += char_width_esc;
+	}
+	return out;
+}
+
+/* Adds one symbol pointed to by the sym parameter of the length sym_width to
+ * the out buffer with highlight effect applied.  Returns next position in the
+ * out buffer. */
+static char *
+add_highlighted_sym(const char sym[], size_t sym_width, char out[])
+{
+	if(sym[0] != '\033')
+	{
+		strncpy(out, INV_START, sizeof(INV_START) - 1);
+		out += sizeof(INV_START) - 1;
+	}
+
+	strncpy(out, sym, sym_width);
+	out += sym_width;
+
+	if(sym[0] != '\033')
+	{
+		strncpy(out, INV_END, sizeof(INV_END) - 1);
+		out += sizeof(INV_END) - 1;
+	}
+
+	return out;
 }
 
 int
