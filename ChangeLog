@@ -2,6 +2,10 @@
 
 	Added Gentoo ebuild.  Thanks to Oleg Gordienko (a.k.a. gordio).
 
+	Added parsing of escape codes in the preview pane.
+
+	Added parsing of escape codes in explore (less-like) mode.
+
 	Removed 'slowfs' option for OS X, it didn't effect anything there anyway.
 
 	Less-like mode now highlights multiple matches in a line.
