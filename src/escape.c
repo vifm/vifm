@@ -205,7 +205,7 @@ add_pattern_highlights(const char line[], size_t len, const char no_esc[],
 	while(regexec(re, no_esc + shift, 1, &match, 0) == 0);
 
 	/* After the last match. */
-	strcpy(next, line + offsets[shift]);
+	strcpy(next, line + correct_offset(line, offsets, shift));
 
 	return processed;
 }
