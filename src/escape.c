@@ -24,9 +24,10 @@
 
 #include <curses.h>
 
+#include <assert.h> /* assert() */
 #include <ctype.h> /* isdigit() */
 #include <stddef.h> /* NULL size_t */
-#include <stdlib.h> /* free() malloc() strtol() */
+#include <stdlib.h> /* free() malloc() realloc() strtol() */
 #include <string.h> /* memcpy() memset() strchr() strcpy() strdup() strlen() */
 #include <wchar.h> /* wcwidth() */
 
@@ -45,6 +46,9 @@
 
 static char * add_pattern_highlights(const char line[], size_t len,
 		const char no_esc[], const int offsets[], const regex_t *re);
+static size_t correct_offset(const char line[], const int offsets[],
+		size_t offset);
+static size_t count_substr_chars(const char line[], regmatch_t *match);
 static char * add_highlighted_substr(const char sub[], size_t sub_len,
 		char out[]);
 static char * add_highlighted_sym(const char sym[], size_t sym_width,
@@ -60,6 +64,8 @@ TSTATIC const char * strchar2str(const char str[], int pos,
 static const char INV_START[] = "\033[7,1m";
 /* Escape sequence which ends block of highlighted symbols. */
 static const char INV_END[] = "\033[27,22m";
+/* Number of extra characters added to highlight one string object. */
+static const size_t INV_OVERHEAD = sizeof(INV_START) - 1 + sizeof(INV_END) - 1;
 
 char *
 esc_remove(const char str[])
@@ -138,38 +144,99 @@ esc_highlight_pattern(const char line[], const regex_t *re)
 /* Forms new line with highlights of matcher of the re regular expression using
  * escape sequences that invert colors.  Returns NULL when no match found or
  * memory allocation error occured. */
-static char * add_pattern_highlights(const char line[], size_t len,
-		const char no_esc[], const int offsets[], const regex_t *re)
+static char *
+add_pattern_highlights(const char line[], size_t len, const char no_esc[],
+		const int offsets[], const regex_t *re)
 {
 	regmatch_t match;
 	char *next;
-	char *processed;
-	size_t match_len;
+	char *processed = NULL;
+	int shift = 0;
+	int overhead = 0;
 
 	if(regexec(re, no_esc, 1, &match, 0) != 0)
 	{
 		return NULL;
 	}
-	match_len = offsets[match.rm_eo] - offsets[match.rm_so];
-
-	processed = malloc(
-			len + (sizeof(INV_START) - 1 + sizeof(INV_END) - 1)*match_len*1 + 1);
-	if(processed == NULL)
+	if((processed = malloc(len + 1)) == NULL)
 	{
 		return NULL;
 	}
 
-	/* Before the match. */
+	/* Before the first match. */
 	strncpy(processed, line, offsets[match.rm_so]);
-	next = processed + offsets[match.rm_so];
 
-	/* The match. */
-	next = add_highlighted_substr(line + offsets[match.rm_so], match_len, next);
+	/* All matches. */
+	do
+	{
+		size_t match_len;
+		size_t new_overhead;
+		int so_offset;
+		void *ptr;
 
-	/* After the match. */
-	strcpy(next, line + offsets[match.rm_eo]);
+		match.rm_so += shift;
+		match.rm_eo += shift;
+
+		so_offset = offsets[match.rm_so];
+
+		/* Between matches. */
+		if(shift != 0)
+		{
+			const int corrected = correct_offset(line, offsets, shift);
+			strncpy(next, line + corrected, so_offset - corrected);
+		}
+
+		new_overhead = INV_OVERHEAD*count_substr_chars(no_esc, &match);
+		len += new_overhead;
+		if((ptr = realloc(processed, len + 1)) == NULL)
+		{
+			free(processed);
+			return NULL;
+		}
+		processed = ptr;
+
+		match_len = correct_offset(line, offsets, match.rm_eo) - so_offset;
+		next = processed + so_offset + overhead;
+		next = add_highlighted_substr(line + so_offset, match_len, next);
+
+		shift = match.rm_eo;
+		overhead += new_overhead;
+	}
+	while(regexec(re, no_esc + shift, 1, &match, 0) == 0);
+
+	/* After the last match. */
+	strcpy(next, line + offsets[shift]);
 
 	return processed;
+}
+
+/* Corrects offset inside the line so that it points to the char after previous
+ * character instead of the beginning of the current one.. */
+static size_t
+correct_offset(const char line[], const int offsets[], size_t offset)
+{
+	assert(offset != 0U && "Offset has to be greater than zero.");
+	const int prev_offset = offsets[offset - 1];
+	const size_t char_width = get_char_width(line + prev_offset);
+	return prev_offset + char_width;
+}
+
+/* Counts number of multi-byte characters inside the match of a regular
+ * expression. */
+static size_t
+count_substr_chars(const char line[], regmatch_t *match)
+{
+	const size_t sub_len = match->rm_eo - match->rm_so;
+	const char *const sub = line + match->rm_so;
+	size_t count = 0;
+	size_t i = 0;
+	while(i < sub_len)
+	{
+		const size_t char_width_esc = get_char_width_esc(sub + i);
+		i += char_width_esc;
+		count++;
+	}
+	return count;
 }
 
 /* Adds all symbols of substring pointed to by the sub parameter of the length

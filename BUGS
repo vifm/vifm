@@ -13,4 +13,5 @@ Files with names containing Unicode characters are not always processed correctl
 %s macro depends on undocumented external dependency (script called
 screen-open-region-with-program).
 
-Less-like mode highlights only the first match in each line.
+Less-like mode is not updated immediately when one changes 'wrap' option. (Do
+we need some kind of subscription mechanism for such cases?)
