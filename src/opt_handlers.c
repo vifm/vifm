@@ -123,6 +123,7 @@ static void vifminfo_handler(OPT_OP op, optval_t val);
 static void vimhelp_handler(OPT_OP op, optval_t val);
 static void wildmenu_handler(OPT_OP op, optval_t val);
 static void wrap_handler(OPT_OP op, optval_t val);
+static void text_option_changed(void);
 static void wrapscan_handler(OPT_OP op, optval_t val);
 
 static const char * sort_enum[] = {
@@ -1058,10 +1059,7 @@ tabstop_handler(OPT_OP op, optval_t val)
 	}
 
 	cfg.tab_stop = val.int_val;
-	if(curr_stats.view)
-		quick_view_file(curr_view);
-	else if(other_view->explore_mode)
-		view_redraw();
+	text_option_changed();
 }
 
 static void
@@ -1151,8 +1149,22 @@ static void
 wrap_handler(OPT_OP op, optval_t val)
 {
 	cfg.wrap_quick_view = val.bool_val;
+	text_option_changed();
+}
+
+/* Updates preview pane and explore mode.  Should be called when any of options
+ * that affect those modes is changed. */
+static void
+text_option_changed(void)
+{
 	if(curr_stats.view)
+	{
 		quick_view_file(curr_view);
+	}
+	else if(other_view->explore_mode)
+	{
+		view_redraw();
+	}
 }
 
 static void
