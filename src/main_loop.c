@@ -184,6 +184,8 @@ main_loop(void)
 		/* This waits for timeout then skips if no keypress. */
 		ret = read_char(status_bar, (wint_t*)&c, timeout);
 
+		/* Ensure that current working directory is set correctly (some pieces of
+		 * code rely on this). */
 		(void)my_chdir(curr_view->curr_dir);
 
 		if(ret != ERR && pos != ARRAY_LEN(buf) - 2)
@@ -276,6 +278,11 @@ main_loop(void)
 			update_all_windows();
 			continue;
 		}
+
+		/* Ensure that current working directory is set correctly (some pieces of
+		 * code rely on this).  PWD could be changed during command execution, but
+		 * it should be correct for modes_post() in case of preview modes. */
+		(void)my_chdir(curr_view->curr_dir);
 		modes_post();
 	}
 }
