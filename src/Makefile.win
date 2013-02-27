@@ -21,8 +21,8 @@ engine := $(addprefix engine/, $(engine))
 menus := apropos_menu.c bookmarks_menu.c colorscheme_menu.c commands_menu.c \
          dirhistory_menu.c dirstask_menu.c filetypes_menu.c find_menu.c \
          grep_menu.c history_menu.c jobs_menu.c locate_menu.c map_menu.c \
-         menus.c quickview.c registers_menu.c undolist_menu.c users_menu.c \
-         vifm_menu.c volumes_menu.c
+         menus.c registers_menu.c undolist_menu.c users_menu.c vifm_menu.c \
+         volumes_menu.c
 menus := $(addprefix menus/, $(menus))
 
 dialogs := attr_dialog_win.c change_dialog.c sort_dialog.c
@@ -38,13 +38,14 @@ utilities := $(addprefix utils/, $(utilities))
 
 vifm_SOURCES := $(cfg) $(engine) $(menus) $(modes) $(utilities) background.c \
                 bookmarks.c bracket_notation.c builtin_functions.c \
-                color_scheme.c column_view.c commands.c commands_completion.c \
-                compile_info.c dir_stack.c escape.c file_magic.c filelist.c \
-                filename_modifiers.c fileops.c filetype.c fuse.c globals.c \
-                ipc.c macros.c main_loop.c ops.c opt_handlers.c path_env.c \
-                quickview.c registers.c running.c search.c signals.c sort.c \
-                status.c tags.c term_title.c trash.c types.c ui.c undo.c \
-                version.c viewcolumns_parser.c vifmres.o vifm.c
+                color_manager.c color_scheme.c column_view.c commands.c \
+                commands_completion.c compile_info.c dir_stack.c escape.c \
+                file_magic.c filelist.c filename_modifiers.c fileops.c \
+                filetype.c fuse.c globals.c ipc.c macros.c main_loop.c ops.c \
+                opt_handlers.c path_env.c quickview.c registers.c running.c \
+                search.c signals.c sort.c status.c tags.c term_title.c trash.c \
+                types.c ui.c undo.c version.c viewcolumns_parser.c vifmres.o \
+                vifm.c
 
 vifm_OBJECTS := $(vifm_SOURCES:.c=.o)
 vifm_EXECUTABLE := vifm.exe

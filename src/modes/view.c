@@ -446,7 +446,7 @@ draw(void)
 	{
 		int offset = 0;
 		int t = 0;
-		const char *line = vi->lines[l];
+		char *const line = vi->lines[l];
 		char *p = searched ? esc_highlight_pattern(line, &vi->re) : line;
 		do
 		{
