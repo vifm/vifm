@@ -103,7 +103,7 @@ break_in_two(char *str, size_t max)
 	if(break_point == NULL)
 		return str;
 
-	len = get_utf8_string_length(str) - 2;
+	len = get_screen_string_length(str) - 2;
 	size = strlen(str);
 	size = MAX(size, max);
 	result = malloc(size*4 + 2);
@@ -112,7 +112,7 @@ break_in_two(char *str, size_t max)
 
 	if(len > max)
 	{
-		int l = get_utf8_string_length(result) - (len - max);
+		const int l = get_screen_string_length(result) - (len - max);
 		break_point = str + get_real_string_width(str, MAX(l, 0));
 	}
 
