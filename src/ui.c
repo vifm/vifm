@@ -1442,13 +1442,14 @@ redraw_lists(void)
 		if(curr_stats.view)
 		{
 			quick_view_file(curr_view);
+			refresh_view_win(other_view);
 		}
-		else
+		else if(!other_view->explore_mode)
 		{
 			(void)move_curr_line(other_view);
 			draw_dir_list(other_view);
+			refresh_view_win(other_view);
 		}
-		refresh_view_win(other_view);
 	}
 }
 

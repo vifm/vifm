@@ -12,6 +12,8 @@
 
 	Less-like mode is now updated immediately when one changes 'wrap' option.
 
+	Don't redraw file list for explore window on resize.
+
 	Fixed configuration on OS X because of unavailable mntent.h header and
 	strverscmp() function (reported by Daniel R., a.k.a. r1chelt).
 

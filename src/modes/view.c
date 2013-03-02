@@ -269,7 +269,6 @@ enter_view_mode(int explore)
 		vi->view = other_view;
 	}
 
-	update_view_title(vi->view);
 	view_redraw();
 }
 
@@ -404,6 +403,7 @@ init_view_info(view_info_t *vi)
 static void
 redraw(void)
 {
+	update_view_title(vi->view);
 	calc_vlines();
 	draw();
 }
