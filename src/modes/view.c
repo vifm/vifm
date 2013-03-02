@@ -36,6 +36,7 @@
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
+#include "../color_manager.h"
 #include "../commands.h"
 #include "../escape.h"
 #include "../filelist.h"
@@ -334,6 +335,8 @@ void
 view_redraw(void)
 {
 	view_info_t *saved_vi = vi;
+
+	colmgr_reset();
 
 	if(lwin.explore_mode)
 	{
