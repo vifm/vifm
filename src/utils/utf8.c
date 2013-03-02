@@ -97,16 +97,19 @@ get_normal_utf8_string_widthn(const char str[], size_t max_screen_width)
 	while(*str != '\0' && max_screen_width > 0)
 	{
 		size_t char_screen_width;
-		size_t char_width = guess_char_width(*str);
-		if(char_width <= strlen(str))
-			length += char_width;
-		else
+		const size_t char_width = guess_char_width(*str);
+		if(char_width > strlen(str))
+		{
 			break;
+		}
+
 		char_screen_width = get_char_screen_width(str, char_width);
 		if(char_screen_width > max_screen_width)
 		{
 			break;
 		}
+
+		length += char_width;
 		max_screen_width -= char_screen_width;
 		str += char_width;
 	}
