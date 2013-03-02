@@ -738,7 +738,7 @@ cmd_g(key_info_t key_info, keys_info_t *keys_info)
 
 	key_info.count = MIN(vi->nlinesv - (vi->view->window_rows - 1),
 			key_info.count);
-	key_info.count = MAX(0, key_info.count);
+	key_info.count = MAX(1, key_info.count);
 
 	if(vi->linev == vi->widths[key_info.count - 1][0])
 		return;
