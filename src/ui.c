@@ -1203,6 +1203,9 @@ update_screen(UpdateType update_kind)
 	if(curr_stats.save_msg == 0)
 		status_bar_message("");
 
+	if(get_mode() == VIEW_MODE || lwin.explore_mode || rwin.explore_mode)
+		view_redraw();
+
 	update_all_windows();
 
 	if(!curr_view->explore_mode)
@@ -1217,9 +1220,6 @@ update_screen(UpdateType update_kind)
 
 	update_input_buf();
 	
-	if(get_mode() == VIEW_MODE || lwin.explore_mode || rwin.explore_mode)
-		view_redraw();
-
 	curr_stats.need_update = UT_NONE;
 }
 
