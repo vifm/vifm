@@ -20,7 +20,7 @@
 #define _XOPEN_SOURCE
 
 #include <assert.h> /* assert() */
-#include <stddef.h> /* wchar_t */
+#include <stddef.h> /* size_t wchar_t */
 #include <string.h> /* strlen() */
 #include <wchar.h> /* wcwidth() */
 
@@ -33,8 +33,8 @@
 #include "utf8.h"
 
 static size_t guess_char_width(char c);
-static size_t get_char_screen_width(const char str[], size_t char_width);
 static wchar_t utf8_char_to_wchar(const char str[], size_t char_width);
+static size_t get_char_screen_width(const char str[], size_t char_width);
 
 size_t
 get_char_width(const char str[])
@@ -129,15 +129,6 @@ guess_char_width(char c)
 	return 1;
 }
 
-/* Returns width of the character in the terminal. */
-static size_t
-get_char_screen_width(const char str[], size_t char_width)
-{
-	const wchar_t wide = utf8_char_to_wchar(str, char_width);
-	const size_t result = wcwidth(wide);
-	return (result == (size_t)-1) ? 1 : result;
-}
-
 /* Converts one utf-8 encoded character to wide character form. */
 static wchar_t
 utf8_char_to_wchar(const char str[], size_t char_width)
@@ -170,6 +161,29 @@ get_utf8_string_length(const char str[])
 		length++;
 	}
 	return length;
+}
+
+size_t
+get_screen_string_length(const char str[])
+{
+	size_t length = 0;
+	while(*str != '\0')
+	{
+		const size_t char_width = get_char_width(str);
+		const size_t char_screen_width = get_char_screen_width(str, char_width);
+		str += char_width;
+		length += char_screen_width;
+	}
+	return length;
+}
+
+/* Returns width of the character in the terminal. */
+static size_t
+get_char_screen_width(const char str[], size_t char_width)
+{
+	const wchar_t wide = utf8_char_to_wchar(str, char_width);
+	const size_t result = wcwidth(wide);
+	return (result == (size_t)-1) ? 1 : result;
 }
 
 size_t
