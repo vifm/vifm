@@ -16,7 +16,7 @@ setup(void)
 static void
 test_number_of_available_pairs(void)
 {
-	assert_int_equal(COLOR_PAIRS - FCOLOR_BASE, count_available_pairs());
+	assert_true(count_available_pairs() >= COLOR_PAIRS - FCOLOR_BASE);
 }
 
 static void
@@ -24,7 +24,7 @@ test_number_of_available_pairs_after_reset(void)
 {
 	(void)count_available_pairs();
 	colmgr_reset();
-	assert_int_equal(COLOR_PAIRS - FCOLOR_BASE, count_available_pairs());
+	assert_true(count_available_pairs() >= COLOR_PAIRS - FCOLOR_BASE);
 }
 
 static int

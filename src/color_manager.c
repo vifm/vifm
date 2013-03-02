@@ -28,6 +28,7 @@
 #include "color_manager.h"
 
 static int find_pair(int fg, int bg);
+static int color_pair_matches(int pair, int fg, int bg);
 static int allocate_pair(int fg, int bg);
 
 /* Number of color pairs available. */
@@ -65,19 +66,36 @@ static int
 find_pair(int fg, int bg)
 {
 	int i;
+
+	for(i = 0; i < DCOLOR_BASE + MAXNUM_COLOR; i++)
+	{
+		if(color_pair_matches(i, fg, bg))
+		{
+			return i;
+		}
+	}
+
 	for(i = 0; i < avail_pairs; i++)
 	{
 		if(color_pair_map[i])
 		{
-			short pair_fg, pair_bg;
-			pair_content(FCOLOR_BASE + i, &pair_fg, &pair_bg);
-			if(pair_fg == fg && pair_bg == bg)
+			if(color_pair_matches(FCOLOR_BASE + i, fg, bg))
 			{
 				break;
 			}
 		}
 	}
 	return (i < avail_pairs) ? (FCOLOR_BASE + i) : -1;
+}
+
+/* Checks whether color pair number pair has specified foreground (fg) and
+ * background (bg) colors. */
+static int
+color_pair_matches(int pair, int fg, int bg)
+{
+	short pair_fg, pair_bg;
+	pair_content(pair, &pair_fg, &pair_bg);
+	return (pair_fg == fg && pair_bg == bg);
 }
 
 /* Allocates new color pair.  Returns new pair index, or -1 on failure. */
