@@ -224,6 +224,7 @@ enter_view_mode(int explore)
 		return;
 	}
 
+	/* FIXME: same code is in ../quickview.c */
 	viewer = get_viewer_for_file(buf);
 	if(is_null_or_empty(viewer))
 		fp = fopen(buf, "r");
