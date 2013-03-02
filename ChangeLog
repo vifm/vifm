@@ -69,6 +69,9 @@
 	Fixed displaying of status line for file names that contain characters
 	taking more than one character position.
 
+	Fixed displaying of menus for lines that contain characters taking more
+	than one character position.
+
 0.7.4a to 0.7.4b
 
 	Removed screen title forcing for shell commands.

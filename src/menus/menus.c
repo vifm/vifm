@@ -78,20 +78,18 @@ void
 clean_menu_position(menu_info *m)
 {
 	int x, z;
+	int off = 0;
 	char * buf = (char *)NULL;
 	col_attr_t col;
 	int type = MENU_COLOR;
 
-	x = getmaxx(menu_win);
-
-	x += get_utf8_overhead(m->items[m->pos]);
+	x = getmaxx(menu_win) + get_utf8_overhead(m->items[m->pos]);
 
 	buf = malloc(x + 2);
 
 	/* TODO: check if this can be false. */
 	if(m->items != NULL && m->items[m->pos] != NULL)
 	{
-		int off = 0;
 		z = m->hor_pos;
 		while(z-- > 0 && m->items[m->pos][off] != '\0')
 		{
@@ -128,19 +126,19 @@ clean_menu_position(menu_info *m)
 	wattrset(menu_win, COLOR_PAIR(type + DCOLOR_BASE) | col.attr);
 
 	wmove(menu_win, m->current, 1);
-	if(strlen(m->items[m->pos]) > x - 4)
+	if(get_screen_string_length(m->items[m->pos] + off) > getmaxx(menu_win) - 4)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf,
 				getmaxx(menu_win) - 3 - 4 + 1);
-		if(strlen(buf) > len)
-			buf[len] = '\0';
+		memset(buf + len, ' ', strlen(buf) - len);
+		buf[len + 3] = '\0';
 		wprint(menu_win, buf);
-		waddstr(menu_win, "...");
+		mvwaddstr(menu_win, m->current, getmaxx(menu_win) - 5, "...");
 	}
 	else
 	{
-		if(strlen(buf) > x - 4 + 1)
-			buf[x - 4 + 1] = '\0';
+		size_t len = get_normal_utf8_string_widthn(buf, getmaxx(menu_win) - 4 + 1);
+		buf[len] = '\0';
 		wprint(menu_win, buf);
 	}
 	waddstr(menu_win, " ");
@@ -297,16 +295,13 @@ move_to_menu_pos(int pos, menu_info *m)
 	int x, z;
 	char *buf = NULL;
 	col_attr_t col;
-
-	x = getmaxx(menu_win);
+	int off = 0;
 
 	pos = MIN(m->len - 1, MAX(0, pos));
 	if(pos < 0)
 		return;
 
 	normalize_top(m);
-
-	x += get_utf8_overhead(m->items[pos]);
 
 	if(pos > get_last_visible_line(m))
 	{
@@ -341,13 +336,13 @@ move_to_menu_pos(int pos, menu_info *m)
 	if(redraw)
 		draw_menu(m);
 
+	x = getmaxx(menu_win) + get_utf8_overhead(m->items[pos]);
 	buf = malloc(x + 2);
 	if(buf == NULL)
 		return;
 	/* TODO: check if this can be false. */
 	if(m->items[pos] != NULL)
 	{
-		int off = 0;
 		z = m->hor_pos;
 		while(z-- > 0 && m->items[pos][off] != '\0')
 		{
@@ -384,19 +379,19 @@ move_to_menu_pos(int pos, menu_info *m)
 	wattrset(menu_win, COLOR_PAIR(DCOLOR_BASE + MENU_CURRENT_COLOR) | col.attr);
 
 	wmove(menu_win, m->current, 1);
-	if(strlen(m->items[pos]) > x - 4)
+	if(get_screen_string_length(m->items[pos] + off) > getmaxx(menu_win) - 4)
 	{
 		size_t len = get_normal_utf8_string_widthn(buf,
 				getmaxx(menu_win) - 3 - 4 + 1);
-		if(strlen(buf) > len)
-			buf[len] = '\0';
+		memset(buf + len, ' ', strlen(buf) - len);
+		buf[len + 3] = '\0';
 		wprint(menu_win, buf);
-		waddstr(menu_win, "...");
+		mvwaddstr(menu_win, m->current, getmaxx(menu_win) - 5, "...");
 	}
 	else
 	{
-		if(strlen(buf) > x - 4 + 1)
-			buf[x - 4 + 1] = '\0';
+		size_t len = get_normal_utf8_string_widthn(buf, getmaxx(menu_win) - 4 + 1);
+		buf[len] = '\0';
 		wprint(menu_win, buf);
 	}
 	waddstr(menu_win, " ");
@@ -587,18 +582,16 @@ draw_menu(menu_info *m)
 	int i;
 	int win_len;
 	int x, y;
-	int len;
 
 	getmaxyx(menu_win, y, x);
 	win_len = x;
 	werase(menu_win);
 
-	box(menu_win, 0, 0);
-
 	normalize_top(m);
 
 	x = m->top;
 
+	box(menu_win, 0, 0);
 	wattron(menu_win, A_BOLD);
 	wmove(menu_win, 0, 3);
 	wprint(menu_win, m->title);
@@ -615,7 +608,6 @@ draw_menu(menu_info *m)
 		chomp(m->items[x]);
 		if((ptr = strchr(m->items[x], '\n')) || (ptr = strchr(m->items[x], '\r')))
 			*ptr = '\0';
-		len = win_len + get_utf8_overhead(m->items[x]);
 
 		col = cfg.cs.color[WIN_COLOR];
 
@@ -634,7 +626,6 @@ draw_menu(menu_info *m)
 		{
 			size_t l = get_char_width(m->items[x] + off);
 			off += l;
-			len -= l - 1;
 		}
 
 		buf = strdup(m->items[x] + off);
@@ -643,18 +634,18 @@ draw_menu(menu_info *m)
 				buf[z] = ' ';
 
 		wmove(menu_win, i, 2);
-		if(strlen(buf) > len - 4)
+		if(get_screen_string_length(buf) > win_len - 4)
 		{
 			size_t len = get_normal_utf8_string_widthn(buf, win_len - 3 - 4);
-			if(strlen(buf) > len)
-				buf[len] = '\0';
+			memset(buf + len, ' ', strlen(buf) - len);
+			buf[len + 3] = '\0';
 			wprint(menu_win, buf);
-			waddstr(menu_win, "...");
+			mvwaddstr(menu_win, i, win_len - 5, "...");
 		}
 		else
 		{
-			if(strlen(buf) > len - 4)
-				buf[len - 4] = '\0';
+			const size_t len = get_normal_utf8_string_widthn(buf, win_len - 4);
+			buf[len] = '\0';
 			wprint(menu_win, buf);
 		}
 		waddstr(menu_win, " ");
