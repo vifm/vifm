@@ -423,7 +423,7 @@ calc_vlines(void)
 		for(i = 0; i < vi->nlines; i++)
 		{
 			vi->widths[i][0] = vi->nlinesv++;
-			vi->widths[i][1] = get_utf8_string_length(vi->lines[i]) -
+			vi->widths[i][1] = get_screen_string_length(vi->lines[i]) -
 				esc_str_overhead(vi->lines[i]);
 			vi->nlinesv += vi->widths[i][1]/vi->width;
 		}
