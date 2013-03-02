@@ -139,7 +139,7 @@ utf8_char_to_wchar(const char str[], size_t char_width)
 	wchar_t result;
 
 	assert(char_width != 0 && "There are no zero width utf-8 characters.");
-	assert(char_width < ARRAY_LEN(masks) && "To long utf-8 character.");
+	assert(char_width < ARRAY_LEN(masks) && "Too long utf-8 character.");
 
 	result = *str&masks[char_width];
 	while(--char_width != 0)
