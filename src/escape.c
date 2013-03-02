@@ -333,6 +333,8 @@ print_char_esc(WINDOW *win, const char str[], esc_state *state)
 		esc_state_update(state, str);
 
 		next_pair = colmgr_alloc_pair(state->fg, state->bg);
+		/* Fallback to default color pair on pair allocation failure. */
+		next_pair = (next_pair == -1) ? 0 : next_pair;
 		wattrset(win, COLOR_PAIR(next_pair) | state->attrs);
 	}
 	else
