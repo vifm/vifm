@@ -53,7 +53,7 @@ show_bookmarks_menu(FileView *view, const char marks[])
 	{
 		size_t len;
 
-		len = get_utf8_string_length(bookmarks[active_bookmarks[i]].directory);
+		len = get_screen_string_length(bookmarks[active_bookmarks[i]].directory);
 		if(len > max_len)
 			max_len = len;
 		i++;
@@ -70,12 +70,12 @@ show_bookmarks_menu(FileView *view, const char marks[])
 
 		j = active_bookmarks[i];
 		with_tilde = replace_home_part(bookmarks[j].directory);
-		if(get_utf8_string_length(with_tilde) > max_len - 3)
+		if(get_screen_string_length(with_tilde) > max_len - 3)
 		{
 			size_t width = get_normal_utf8_string_widthn(with_tilde, max_len - 6);
 			strcpy(with_tilde + width, "...");
 		}
-		overhead = get_utf8_overhead(with_tilde);
+		overhead = get_screen_overhead(with_tilde);
 		if(!is_bookmark(j))
 		{
 			snprintf(item_buf, sizeof(item_buf), "%c   %-*s%s", index2mark(j),

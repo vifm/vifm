@@ -38,6 +38,8 @@ size_t get_utf8_string_length(const char str[]);
 size_t get_screen_string_length(const char str[]);
 /* Returns (string_width - string_length). */
 size_t get_utf8_overhead(const char str[]);
+/* Returns (string_screen_width - string_length). */
+size_t get_screen_overhead(const char str[]);
 
 #endif
 

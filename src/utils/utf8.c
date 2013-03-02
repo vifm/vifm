@@ -199,5 +199,19 @@ get_utf8_overhead(const char str[])
 	return overhead;
 }
 
+size_t
+get_screen_overhead(const char str[])
+{
+	size_t overhead = 0;
+	while(*str != '\0')
+	{
+		const size_t char_width = get_char_width(str);
+		const size_t char_screen_width = get_char_screen_width(str, char_width);
+		str += char_width;
+		overhead += (char_width - 1) - (char_screen_width - 1);
+	}
+	return overhead;
+}
+
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */
