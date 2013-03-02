@@ -378,6 +378,11 @@ leave_view_mode(void)
 	if(vi->last_search_backward != -1)
 		regfree(&vi->re);
 	init_view_info(vi);
+
+	if(curr_view->explore_mode || other_view->explore_mode)
+	{
+		view_redraw();
+	}
 }
 
 static void
