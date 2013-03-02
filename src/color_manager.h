@@ -1,6 +1,5 @@
 /* vifm
- * Copyright (C) 2001 Ken Steen.
- * Copyright (C) 2011 xaizek.
+ * Copyright (C) 2013 xaizek.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,15 +16,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#ifndef __QUICKVIEW_H__
-#define __QUICKVIEW_H__
+#ifndef __COLOR_MANAGER_H__
+#define __COLOR_MANAGER_H__
 
-#include "ui.h"
+/* Initializes color manager unit.  Creates and prepares internal variables. */
+void colmgr_init(void);
+/* Resets all color pairs that are available for dynamic allocation. */
+void colmgr_reset(void);
+/* Dynamically allocates color pair of specified foreground (fg) and background
+ * (bg) colors.  Returns -1 on allocation failure. */
+int colmgr_alloc_pair(int fg, int bg);
 
-void quick_view_file(FileView * view);
-void toggle_quick_view(void);
-
-#endif /* __QUICKVIEW_H__ */
+#endif /* __COLOR_MANAGER_H__ */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

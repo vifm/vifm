@@ -350,7 +350,7 @@ expand_tabulation(const char line[], size_t max, size_t tab_stops, char buf[])
 	{
 		const size_t char_width = get_char_width(line);
 		const size_t char_screen_width = wcwidth(get_first_wchar(line));
-		if(col + char_screen_width > max)
+		if(char_screen_width != (size_t)-1 && col + char_screen_width > max)
 		{
 			break;
 		}

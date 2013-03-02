@@ -49,6 +49,7 @@
 #include "background.h"
 #include "bookmarks.h"
 #include "builtin_functions.h"
+#include "color_manager.h"
 #include "color_scheme.h"
 #include "commands.h"
 #include "commands_completion.h"
@@ -347,6 +348,7 @@ main(int argc, char *argv[])
 	if(!setup_ncurses_interface())
 		return -1;
 
+	colmgr_init();
 	init_modes();
 	init_undo_list(&perform_operation, NULL, &cfg.undo_levels);
 	load_local_options(curr_view);

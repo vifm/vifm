@@ -23,6 +23,7 @@
 #include <assert.h> /* assert() */
 #include <stddef.h> /* size_t */
 #include <string.h> /* strcpy() strlen() */
+#include <stdlib.h> /* free() */
 
 #include "../cfg/config.h"
 #include "../engine/keys.h"
@@ -35,7 +36,9 @@
 #include "../utils/string_array.h"
 #include "../utils/utf8.h"
 #include "../utils/utils.h"
+#include "../color_manager.h"
 #include "../commands.h"
+#include "../escape.h"
 #include "../filelist.h"
 #include "../fileops.h"
 #include "../filetype.h"
@@ -48,6 +51,9 @@
 #include "normal.h"
 
 #include "view.h"
+
+/* Column at which view content should be displayed. */
+#define COL 1
 
 typedef struct
 {
@@ -68,12 +74,11 @@ typedef struct
 
 static int get_file_to_explore(const FileView *view, char buf[],
 		size_t buf_len);
-static void pick_vi(void);
 static void init_view_info(view_info_t *vi);
+static void redraw(void);
 static void calc_vlines(void);
 static void draw(void);
 static int get_part(const char line[], int offset, size_t max_len, char part[]);
-static void puts_line(FileView *view, char *line);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info);
@@ -85,6 +90,7 @@ static void cmd_meta_space(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_percent(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_tab(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_slash(key_info_t key_info, keys_info_t *keys_info);
+static void pick_vi(int explore);
 static void cmd_qmark(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_G(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_N(key_info_t key_info, keys_info_t *keys_info);
@@ -218,11 +224,12 @@ enter_view_mode(int explore)
 		return;
 	}
 
+	/* FIXME: same code is in ../quickview.c */
 	viewer = get_viewer_for_file(buf);
-	if(viewer != NULL && viewer[0] != '\0')
-		fp = use_info_prog(viewer);
-	else
+	if(is_null_or_empty(viewer))
 		fp = fopen(buf, "r");
+	else
+		fp = use_info_prog(viewer);
 
 	if(fp == NULL)
 	{
@@ -230,13 +237,7 @@ enter_view_mode(int explore)
 		return;
 	}
 
-	if(!explore)
-		vi = &view_info[0];
-	else if(curr_view == &lwin)
-		vi = &view_info[1];
-	else
-		vi = &view_info[2];
-
+	pick_vi(explore);
 	vi->lines = read_file_lines(fp, &vi->nlines);
 	fclose(fp);
 
@@ -305,18 +306,7 @@ void
 activate_view_mode(void)
 {
 	*mode = VIEW_MODE;
-	pick_vi();
-}
-
-static void
-pick_vi(void)
-{
-	if(!curr_view->explore_mode)
-		vi = &view_info[0];
-	else if(curr_view == &lwin)
-		vi = &view_info[1];
-	else
-		vi = &view_info[2];
+	pick_vi(curr_view->explore_mode);
 }
 
 void
@@ -347,22 +337,21 @@ view_redraw(void)
 {
 	view_info_t *saved_vi = vi;
 
+	colmgr_reset();
+
 	if(lwin.explore_mode)
 	{
 		vi = &view_info[1];
-		calc_vlines();
-		draw();
+		redraw();
 	}
 	if(rwin.explore_mode)
 	{
 		vi = &view_info[2];
-		calc_vlines();
-		draw();
+		redraw();
 	}
 	if(!lwin.explore_mode && !rwin.explore_mode)
 	{
-		calc_vlines();
-		draw();
+		redraw();
 	}
 
 	vi = saved_vi;
@@ -390,6 +379,11 @@ leave_view_mode(void)
 	if(vi->last_search_backward != -1)
 		regfree(&vi->re);
 	init_view_info(vi);
+
+	if(curr_view->explore_mode || other_view->explore_mode)
+	{
+		view_redraw();
+	}
 }
 
 static void
@@ -404,6 +398,14 @@ init_view_info(view_info_t *vi)
 	vi->half_win = -1;
 	vi->width = -1;
 	vi->last_search_backward = -1;
+}
+
+/* Updates line width and redraws the view. */
+static void
+redraw(void)
+{
+	calc_vlines();
+	draw();
 }
 
 static void
@@ -421,7 +423,8 @@ calc_vlines(void)
 		for(i = 0; i < vi->nlines; i++)
 		{
 			vi->widths[i][0] = vi->nlinesv++;
-			vi->widths[i][1] = get_utf8_string_length(vi->lines[i]);
+			vi->widths[i][1] = get_utf8_string_length(vi->lines[i]) -
+				esc_str_overhead(vi->lines[i]);
 			vi->nlinesv += vi->widths[i][1]/vi->width;
 		}
 	}
@@ -441,64 +444,35 @@ static void
 draw(void)
 {
 	int l, vl;
-	int max = MIN(vi->line + vi->view->window_rows - 1, vi->nlines);
+	const int height = vi->view->window_rows - 1;
+	const int width = vi->view->window_width - 1;
+	const int max_l = MIN(vi->line + height, vi->nlines);
+	const int searched = (vi->last_search_backward != -1);
+	esc_state state;
+	esc_state_init(&state, &vi->view->cs.color[WIN_COLOR]);
 	werase(vi->view->win);
-	for(vl = 0, l = vi->line; l < max && vl < vi->view->window_rows - 1; l++)
+	for(vl = 0, l = vi->line; l < max_l && vl < height; l++)
 	{
 		int offset = 0;
 		int t = 0;
+		char *const line = vi->lines[l];
+		char *p = searched ? esc_highlight_pattern(line, &vi->re) : line;
 		do
 		{
-			char buf[vi->view->window_width*4];
-			offset = get_part(vi->lines[l], offset, vi->view->window_width - 1, buf);
-
-			if(l != vi->line || vl + t >= vi->linev - vi->widths[vi->line][0])
-			{
-				wmove(vi->view->win, 1 + vl, 1);
-				puts_line(vi->view, buf);
-				vl++;
-			}
+			int printed;
+			int vis = l != vi->line || vl + t >= vi->linev - vi->widths[vi->line][0];
+			offset += esc_print_line(p + offset, vi->view->win, COL, 1 + vl, width,
+					!vis, &state, &printed);
+			vl += vis;
 			t++;
 		}
-		while(cfg.wrap_quick_view && vi->lines[l][offset] != '\0' &&
-				vl < vi->view->window_rows - 1);
+		while(cfg.wrap_quick_view && p[offset] != '\0' && vl < height);
+		if(searched)
+		{
+			free(p);
+		}
 	}
 	refresh_view_win(vi->view);
-}
-
-static void
-puts_line(FileView *view, char *line)
-{
-	regmatch_t match;
-	char c;
-
-	if(vi->last_search_backward == -1)
-	{
-		wprint(view->win, line);
-		return;
-	}
-
-	if(regexec(&vi->re, line, 1, &match, 0) != 0)
-	{
-		wprint(view->win, line);
-		return;
-	}
-
-	c = line[match.rm_so];
-	line[match.rm_so] = '\0';
-	wprint(view->win, line);
-	line[match.rm_so] = c;
-
-	wattron(view->win, A_REVERSE | A_BOLD);
-
-	c = line[match.rm_eo];
-	line[match.rm_eo] = '\0';
-	wprint(view->win, line + match.rm_so);
-	line[match.rm_eo] = c;
-
-	wattroff(view->win, A_REVERSE | A_BOLD);
-
-	wprint(view->win, line + match.rm_eo);
 }
 
 int
@@ -514,7 +488,7 @@ find_vwpattern(const char *pattern, int backward)
 	vi->last_search_backward = -1;
 	if((err = regcomp(&vi->re, pattern, get_regexp_cflags(pattern))) != 0)
 	{
-		status_bar_errorf("Filter not set: %s", get_regexp_error(err, &vi->re));
+		status_bar_errorf("Invalid pattern: %s", get_regexp_error(err, &vi->re));
 		regfree(&vi->re);
 		draw();
 		return 1;
@@ -648,10 +622,19 @@ cmd_tab(key_info_t key_info, keys_info_t *keys_info)
 	change_window();
 	if(!curr_view->explore_mode)
 		*mode = NORMAL_MODE;
-	pick_vi();
+	pick_vi(curr_view->explore_mode);
 
 	update_view_title(&lwin);
 	update_view_title(&rwin);
+}
+
+/* Updates value of the vi variable and points it to the correct element of the
+ * view_info array according to view mode. */
+static void
+pick_vi(int explore)
+{
+	const int index = !explore ? 0 : (curr_view == &lwin ? 1 : 2);
+	vi = &view_info[index];
 }
 
 static void
@@ -938,9 +921,11 @@ find_next(int o)
 static int
 get_part(const char line[], int offset, size_t max_len, char part[])
 {
-	const char *const begin = line + offset;
+	char *no_esc = esc_remove(line);
+	const char *const begin = no_esc + offset;
 	const char *const end = expand_tabulation(begin, max_len, cfg.tab_stop, part);
-	return end - line;
+	free(no_esc);
+	return end - no_esc;
 }
 
 static void

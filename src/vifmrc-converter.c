@@ -38,6 +38,10 @@
 
 #define MAX_LEN 1024
 
+/* Maximum number of color scheme files to convert supported by the
+ * implementation. */
+#define MAX_COLOR_SCHEMES 8
+
 enum
 {
 	VIFMINFO_OPTIONS   = 1 << 0,

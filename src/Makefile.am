@@ -85,10 +85,13 @@ vifm_SOURCES = \
 	builtin_functions.c builtin_functions.h \
 	color_scheme.c colorscheme.h \
 	column_view.c column_view.h \
+	colors.h \
+	color_manager.c color_manager.h \
 	commands.c commands.h \
 	commands_completion.c commands_completion.h \
 	desktop.c desktop.h \
 	dir_stack.c dir_stack.h \
+	escape.c escape.h \
 	globals.c globals.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \

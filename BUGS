@@ -12,3 +12,12 @@ Files with names containing Unicode characters are not always processed correctl
 
 %s macro depends on undocumented external dependency (script called
 screen-open-region-with-program).
+
+Some strange behaviour of Ctrl-U on top of file list.
+
+"Can't open file for reading" message for directories on e.
+
+Enter explore mode on one pane, press Ctrl-WO on other (or :only, or :split!), see the bug.
+
+Enter explore mode on one pane, go to other, do :colorscheme Chlordane, press Enter.
+Mind title of current window and redraw of the other window.

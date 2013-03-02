@@ -97,8 +97,9 @@ am_vifm_OBJECTS = cfg/config.$(OBJEXT) cfg/info.$(OBJEXT) \
 	background.$(OBJEXT) bookmarks.$(OBJEXT) \
 	bracket_notation.$(OBJEXT) builtin_functions.$(OBJEXT) \
 	color_scheme.$(OBJEXT) column_view.$(OBJEXT) \
-	commands.$(OBJEXT) commands_completion.$(OBJEXT) \
-	desktop.$(OBJEXT) dir_stack.$(OBJEXT) globals.$(OBJEXT) \
+	color_manager.$(OBJEXT) commands.$(OBJEXT) \
+	commands_completion.$(OBJEXT) desktop.$(OBJEXT) \
+	dir_stack.$(OBJEXT) escape.$(OBJEXT) globals.$(OBJEXT) \
 	file_magic.$(OBJEXT) filelist.$(OBJEXT) \
 	filename_modifiers.$(OBJEXT) fileops.$(OBJEXT) \
 	filetype.$(OBJEXT) fuse.$(OBJEXT) ipc.$(OBJEXT) \
@@ -365,10 +366,13 @@ vifm_SOURCES = \
 	builtin_functions.c builtin_functions.h \
 	color_scheme.c colorscheme.h \
 	column_view.c column_view.h \
+	colors.h \
+	color_manager.c color_manager.h \
 	commands.c commands.h \
 	commands_completion.c commands_completion.h \
 	desktop.c desktop.h \
 	dir_stack.c dir_stack.h \
+	escape.c escape.h \
 	globals.c globals.h \
 	file_magic.c file_magic.h \
 	filelist.c filelist.h \
@@ -725,6 +729,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bookmarks.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bracket_notation.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/builtin_functions.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_manager.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/color_scheme.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/column_view.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/commands.Po@am__quote@
@@ -732,6 +737,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compile_info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/desktop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dir_stack.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/escape.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file_magic.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filelist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filename_modifiers.Po@am__quote@

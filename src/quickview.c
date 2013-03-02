@@ -17,7 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <string.h> /* strcpy() strlen() strcat() */
+#include <stddef.h> /* size_t */
+#include <string.h> /* memmove() strlen() */
 
 #include "cfg/config.h"
 #include "modes/modes.h"
@@ -25,7 +26,10 @@
 #include "utils/fs.h"
 #include "utils/fs_limits.h"
 #include "utils/path.h"
+#include "utils/str.h"
 #include "utils/utf8.h"
+#include "color_manager.h"
+#include "escape.h"
 #include "filelist.h"
 #include "filetype.h"
 #include "status.h"
@@ -33,9 +37,14 @@
 
 #include "quickview.h"
 
-static void view_wraped(FILE *fp, int x);
-static void view_not_wraped(FILE *fp, int x);
-static char * strchar2str(const char *str, int pos);
+/* Line at which quickview content should be displayed. */
+#define LINE 1
+/* Column at which quickview content should be displayed. */
+#define COL 1
+
+static void view_file(FILE *fp, int wrapped);
+static int shift_line(char line[], size_t len, size_t offset);
+static size_t add_to_line(FILE *fp, size_t max, char line[], size_t len);
 
 void
 toggle_quick_view(void)
@@ -57,10 +66,7 @@ toggle_quick_view(void)
 void
 quick_view_file(FileView *view)
 {
-	int x = 0;
-	int y = 1;
 	char buf[PATH_MAX];
-	char link[PATH_MAX];
 
 	if(curr_stats.load_stage < 2)
 		return;
@@ -82,23 +88,23 @@ quick_view_file(FileView *view)
 	switch(view->dir_entry[view->list_pos].type)
 	{
 		case CHARACTER_DEVICE:
-			mvwaddstr(other_view->win, ++x, y, "File is a Character Device");
+			mvwaddstr(other_view->win, LINE, COL, "File is a Character Device");
 			break;
 		case BLOCK_DEVICE:
-			mvwaddstr(other_view->win, ++x, y, "File is a Block Device");
+			mvwaddstr(other_view->win, LINE, COL, "File is a Block Device");
 			break;
 #ifndef _WIN32
 		case SOCKET:
-			mvwaddstr(other_view->win, ++x, y, "File is a Socket");
+			mvwaddstr(other_view->win, LINE, COL, "File is a Socket");
 			break;
 #endif
 		case FIFO:
-			mvwaddstr(other_view->win, ++x, y, "File is a Named Pipe");
+			mvwaddstr(other_view->win, LINE, COL, "File is a Named Pipe");
 			break;
 		case LINK:
 			if(get_link_target_abs(buf, view->curr_dir, buf, sizeof(buf)) != 0)
 			{
-				mvwaddstr(other_view->win, ++x, y, "Cannot resolve Link");
+				mvwaddstr(other_view->win, LINE, COL, "Cannot resolve Link");
 				break;
 			}
 			if(!ends_with_slash(buf) && is_dir(buf))
@@ -115,24 +121,23 @@ quick_view_file(FileView *view)
 				viewer = get_viewer_for_file(buf);
 				if(viewer == NULL && is_dir(buf))
 				{
-					mvwaddstr(other_view->win, ++x, y, "File is a Directory");
+					mvwaddstr(other_view->win, LINE, COL, "File is a Directory");
 					break;
 				}
-				if(viewer != NULL && viewer[0] != '\0')
-					fp = use_info_prog(viewer);
-				else
+				if(is_null_or_empty(viewer))
 					fp = fopen(buf, "r");
+				else
+					fp = use_info_prog(viewer);
 
 				if(fp == NULL)
 				{
-					mvwaddstr(other_view->win, x, y, "Cannot open file");
+					mvwaddstr(other_view->win, LINE, COL, "Cannot open file");
 					break;
 				}
 
-				if(cfg.wrap_quick_view)
-					view_wraped(fp, x);
-				else
-					view_not_wraped(fp, x);
+				colmgr_reset();
+				wattrset(other_view->win, 0);
+				view_file(fp, cfg.wrap_quick_view);
 
 				fclose(fp);
 			}
@@ -142,161 +147,76 @@ quick_view_file(FileView *view)
 	wrefresh(other_view->title);
 }
 
+/* Displays contents read from the fp in the other pane starting from the second
+ * line and second column.  The wrapped parameter determines whether lines
+ * should be wrapped. */
 static void
-view_wraped(FILE *fp, int x)
+view_file(FILE *fp, int wrapped)
 {
+	const size_t max_width = other_view->window_width - 1;
+	const size_t max_y = other_view->window_rows - 1;
+
 	char line[1024];
-	int y = 1;
-	int offset = 0;
-	char *res = get_line(fp, line + offset, other_view->window_width);
-	while(res != NULL && x <= other_view->window_rows - 2)
+	int line_continued = 0;
+	int y = LINE;
+	const char *res = get_line(fp, line, sizeof(line));
+	esc_state state;
+	esc_state_init(&state, &other_view->cs.color[WIN_COLOR]);
+	while(res != NULL && y <= max_y)
 	{
-		int i, k;
-		size_t n_len = get_normal_utf8_string_length(line);
-		size_t len = strlen(line);
-		while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
-				&& !feof(fp))
+		int offset;
+		int printed;
+		const size_t len = add_to_line(fp, max_width, line, sizeof(line));
+		if(!wrapped && line[len - 1] != '\n')
 		{
-			if(get_line(fp, line + len, other_view->window_width - n_len) == NULL)
-				break;
-			n_len = get_normal_utf8_string_length(line);
-			len = strlen(line);
-		}
-
-		if(len > 0 && line[len - 1] != '\n')
-			remove_eol(fp);
-
-		++x;
-		wmove(other_view->win, x, y);
-		i = 0;
-		k = other_view->window_width - 1;
-		len = 0;
-		while(k-- > 0 && line[i] != '\0')
-		{
-			wprint(other_view->win, strchar2str(line + i, len));
-			if(line[i] == '\t')
-			{
-				int tab_width = cfg.tab_stop - len%cfg.tab_stop;
-				len += tab_width;
-				k -= tab_width - 1;
-			}
-			else
-			{
-				len++;
-			}
-			i += get_char_width(line + i);
-		}
-
-		offset = strlen(line) - i;
-		if(offset != 0)
-		{
-			memmove(line, line + i, offset + 1);
-			if(offset == 1 && line[0] == '\n')
-			{
-				offset = 0;
-				res = get_line(fp, line + offset, other_view->window_width);
-			}
-		}
-		else
-		{
-			res = get_line(fp, line + offset, other_view->window_width);
-		}
-	}
-}
-
-static void
-view_not_wraped(FILE *fp, int x)
-{
-	char line[1024];
-	int y = 1;
-
-	while(get_line(fp, line, other_view->window_width - 2) == line &&
-			x <= other_view->window_rows - 2)
-	{
-		int i;
-		size_t n_len = get_normal_utf8_string_length(line);
-		size_t len = strlen(line);
-		while(n_len < other_view->window_width - 1 && line[len - 1] != '\n'
-				&& !feof(fp))
-		{
-			if(get_line(fp, line + len, other_view->window_width - n_len) == NULL)
-				break;
-			n_len = get_normal_utf8_string_length(line);
-			len = strlen(line);
-		}
-
-		if(line[len - 1] != '\n')
 			skip_until_eol(fp);
-
-		len = 0;
-		n_len = 0;
-		for(i = 0; line[i] != '\0' && len <= other_view->window_width - 1;)
-		{
-			size_t cl = get_char_width(line + i);
-			n_len++;
-
-			if(cl == 1 && (unsigned char)line[i] == '\t')
-				len += cfg.tab_stop - len%cfg.tab_stop;
-			else if(cl == 1 && (unsigned char)line[i] < ' ')
-				len += 2;
-			else
-				len++;
-
-			if(len <= other_view->window_width - 1)
-				i += cl;
 		}
-		line[i] = '\0';
 
-		++x;
-		wmove(other_view->win, x, y);
-		i = 0;
-		len = 0;
-		while(n_len--)
+		offset = esc_print_line(line, other_view->win, COL, y, max_width, 0, &state,
+				&printed);
+		y += !wrapped || (!line_continued || printed);
+		line_continued = line[len - 1] != '\n';
+
+		if(!wrapped || shift_line(line, len, offset))
 		{
-			wprint(other_view->win, strchar2str(line + i, len));
-			if(line[i] == '\t')
-				len += cfg.tab_stop - len%cfg.tab_stop;
-			else
-				len++;
-			i += get_char_width(line + i);
+			res = get_line(fp, line, sizeof(line));
 		}
 	}
 }
 
-static char *
-strchar2str(const char *str, int pos)
+/* Shifts characters in the line of length len, so that characters at the offset
+ * position are moved to the beginning of the line.  Returns non-zero if new
+ * buffer should be threated as empty. */
+static int
+shift_line(char line[], size_t len, size_t offset)
 {
-	static char buf[16];
+	const size_t shift_width = len - offset;
+	if(shift_width != 0)
+	{
+		memmove(line, line + offset, shift_width + 1);
+		return (shift_width == 1 && line[0] == '\n');
+	}
+	return 1;
+}
 
-	size_t len = get_char_width(str);
-	if(len != 1 || str[0] >= ' ' || str[0] == '\n')
+/* Tries to add more characters from the fp file, but not exceed length of the
+ * line buffer (the len parameter) and maximum number of printable character
+ * positions (the max parameter).  Returns new length of the line buffer. */
+static size_t
+add_to_line(FILE *fp, size_t max, char line[], size_t len)
+{
+	size_t n_len = get_normal_utf8_string_length(line) - esc_str_overhead(line);
+	size_t curr_len = strlen(line);
+	while(n_len < max && line[curr_len - 1] != '\n' && !feof(fp))
 	{
-		memcpy(buf, str, len);
-		buf[len] = '\0';
+		if(get_line(fp, line + curr_len, len - curr_len) == NULL)
+		{
+			break;
+		}
+		n_len = get_normal_utf8_string_length(line) - esc_str_overhead(line);
+		curr_len = strlen(line);
 	}
-	else if(str[0] == '\r')
-	{
-		strcpy(buf, "<cr>");
-	}
-	else if(str[0] == '\t')
-	{
-		len = cfg.tab_stop - pos%cfg.tab_stop;
-		buf[0] = '\0';
-		while(len-- > 0)
-			strcat(buf, " ");
-	}
-	else if((unsigned char)str[0] < (unsigned char)' ')
-	{
-		buf[0] = '^';
-		buf[1] = ('A' - 1) + str[0];
-		buf[2] = '\0';
-	}
-	else
-	{
-		buf[0] = str[0];
-		buf[1] = '\0';
-	}
-	return buf;
+	return curr_len;
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
