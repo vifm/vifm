@@ -154,19 +154,6 @@ utf8_char_to_wchar(const char str[], size_t char_width)
 }
 
 size_t
-get_utf8_string_length(const char str[])
-{
-	size_t length = 0;
-	while(*str != '\0')
-	{
-		size_t char_width = get_char_width(str);
-		str += char_width;
-		length++;
-	}
-	return length;
-}
-
-size_t
 get_screen_string_length(const char str[])
 {
 	size_t length = 0;
