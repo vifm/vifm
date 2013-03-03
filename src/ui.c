@@ -1203,7 +1203,8 @@ update_screen(UpdateType update_kind)
 	if(curr_stats.save_msg == 0)
 		status_bar_message("");
 
-	if(get_mode() == VIEW_MODE || lwin.explore_mode || rwin.explore_mode)
+	if(get_mode() == VIEW_MODE || curr_view->explore_mode ||
+			(curr_stats.number_of_windows == 2 && other_view->explore_mode))
 		view_redraw();
 
 	update_all_windows();
