@@ -16,6 +16,9 @@
 
 	Less updates for window in explore mode on resize.
 
+	Don't fallback to default colors on try to switch to a colorscheme, which
+	is not supported by terminal.
+
 	Fixed configuration on OS X because of unavailable mntent.h header and
 	strverscmp() function (reported by Daniel R., a.k.a. r1chelt).
 

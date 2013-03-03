@@ -1457,6 +1457,7 @@ redraw_lists(void)
 int
 load_color_scheme(const char name[])
 {
+	col_scheme_t prev_cs;
 	char full[PATH_MAX];
 
 	if(!color_scheme_exists(name))
@@ -1465,6 +1466,7 @@ load_color_scheme(const char name[])
 		return 0;
 	}
 
+	prev_cs = cfg.cs;
 	curr_stats.cs_base = DCOLOR_BASE;
 	curr_stats.cs = &cfg.cs;
 	cfg.cs.defaulted = 0;
@@ -1482,7 +1484,9 @@ load_color_scheme(const char name[])
 
 	if(curr_stats.load_stage >= 2 && cfg.cs.defaulted)
 	{
+		cfg.cs = prev_cs;
 		load_color_scheme_colors();
+		update_screen(UT_REDRAW);
 		show_error_msg("Color Scheme Error", "Not supported by the terminal");
 		return 1;
 	}
