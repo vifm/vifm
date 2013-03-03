@@ -398,6 +398,7 @@ static void
 init_view_info(view_info_t *vi)
 {
 	vi->lines = NULL;
+	vi->widths = NULL;
 	vi->nlines = 0;
 	vi->nlinesv = 0;
 	vi->line = 0;
@@ -405,7 +406,9 @@ init_view_info(view_info_t *vi)
 	vi->win = -1;
 	vi->half_win = -1;
 	vi->width = -1;
+	vi->view = NULL;
 	vi->last_search_backward = -1;
+	vi->search_repeat = 0;
 }
 
 /* Updates line width and redraws the view. */
