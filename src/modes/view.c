@@ -87,6 +87,8 @@ static int get_file_to_explore(const FileView *view, char buf[],
 static void init_view_info(view_info_t *vi);
 static void redraw(void);
 static void calc_vlines(void);
+static void calc_vlines_wrapped(view_info_t *vi);
+static void calc_vlines_non_wrapped(view_info_t *vi);
 static void draw(void);
 static int get_part(const char line[], int offset, size_t max_len, char part[]);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
@@ -422,6 +424,7 @@ redraw(void)
 	draw();
 }
 
+/* Recalculates virtual lines of a view if display options require it. */
 static void
 calc_vlines(void)
 {
@@ -435,25 +438,39 @@ calc_vlines(void)
 
 	if(vi->wrap)
 	{
-		int i;
-		vi->nlinesv = 0;
-		for(i = 0; i < vi->nlines; i++)
-		{
-			vi->widths[i][0] = vi->nlinesv++;
-			vi->widths[i][1] = get_screen_string_length(vi->lines[i]) -
-				esc_str_overhead(vi->lines[i]);
-			vi->nlinesv += vi->widths[i][1]/vi->width;
-		}
+		calc_vlines_wrapped(vi);
 	}
 	else
 	{
-		int i;
-		vi->nlinesv = vi->nlines;
-		for(i = 0; i < vi->nlines; i++)
-		{
-			vi->widths[i][0] = i;
-			vi->widths[i][1] = vi->width;
-		}
+		calc_vlines_non_wrapped(vi);
+	}
+}
+
+/* Recalculates virtual lines of a view with line wrapping. */
+static void
+calc_vlines_wrapped(view_info_t *vi)
+{
+	int i;
+	vi->nlinesv = 0;
+	for(i = 0; i < vi->nlines; i++)
+	{
+		vi->widths[i][0] = vi->nlinesv++;
+		vi->widths[i][1] = get_screen_string_length(vi->lines[i]) -
+			esc_str_overhead(vi->lines[i]);
+		vi->nlinesv += vi->widths[i][1]/vi->width;
+	}
+}
+
+/* Recalculates virtual lines of a view without line wrapping. */
+static void
+calc_vlines_non_wrapped(view_info_t *vi)
+{
+	int i;
+	vi->nlinesv = vi->nlines;
+	for(i = 0; i < vi->nlines; i++)
+	{
+		vi->widths[i][0] = i;
+		vi->widths[i][1] = vi->width;
 	}
 }
 
