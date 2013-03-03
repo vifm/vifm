@@ -80,7 +80,7 @@
 
 	Fixed Ctrl-W H/J/K/L keys in less-like mode activated by <s-tab>.
 
-	Fixed Ctrl-W H/J/K/L keys in normal mode when explore mode is active in
+	Fixed Ctrl-W H/J/K/L/X keys in normal mode when explore mode is active in
 	the other pane.
 
 0.7.4a to 0.7.4b

@@ -855,6 +855,11 @@ static void
 cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 {
 	switch_panes();
+	/* In case ex-other pane was in explore mode, activate it. */
+	if(curr_view->explore_mode)
+	{
+		activate_view_mode();
+	}
 }
 
 /* Switch panes. */
