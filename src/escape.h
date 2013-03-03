@@ -29,10 +29,11 @@
 /* Holds state of escape sequence parsing. */
 typedef struct
 {
-	int attrs;
-	int fg;
-	int bg;
-	col_attr_t initial;
+	int attrs;          /* Current set of attributes. */
+	int fg;             /* Current foreground color. */
+	int bg;             /* Current background color. */
+
+	col_attr_t initial; /* Default values of other fields. */
 }
 esc_state;
 
