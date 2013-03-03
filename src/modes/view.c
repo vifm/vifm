@@ -70,6 +70,7 @@ typedef struct
 	regex_t re;
 	int last_search_backward;
 	int search_repeat;
+	int wrap;
 }view_info_t;
 
 /* View information structure indexes and count. */
@@ -409,6 +410,7 @@ init_view_info(view_info_t *vi)
 	vi->view = NULL;
 	vi->last_search_backward = -1;
 	vi->search_repeat = 0;
+	vi->wrap = 0;
 }
 
 /* Updates line width and redraws the view. */
@@ -423,12 +425,15 @@ redraw(void)
 static void
 calc_vlines(void)
 {
-	if(vi->view->window_width - 1 == vi->width)
+	if(vi->view->window_width - 1 == vi->width && vi->wrap == cfg.wrap_quick_view)
+	{
 		return;
+	}
 
 	vi->width = vi->view->window_width - 1;
+	vi->wrap = cfg.wrap_quick_view;
 
-	if(cfg.wrap_quick_view)
+	if(vi->wrap)
 	{
 		int i;
 		vi->nlinesv = 0;
@@ -478,7 +483,7 @@ draw(void)
 			vl += vis;
 			t++;
 		}
-		while(cfg.wrap_quick_view && p[offset] != '\0' && vl < height);
+		while(vi->wrap && p[offset] != '\0' && vl < height);
 		if(searched)
 		{
 			free(p);
