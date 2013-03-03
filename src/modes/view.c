@@ -514,25 +514,11 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-switch_vi(void)
-{
-	view_info_t saved_vi = *vi;
-	int i = (curr_view == &lwin) ? 2 : 1;
-
-	*vi = view_info[i];
-	view_info[i] = saved_vi;
-	vi = &view_info[i];
-
-	view_info[1].view = &lwin;
-	view_info[2].view = &rwin;
-}
-
-static void
 cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(curr_view != &lwin)
 	{
-		switch_vi();
+		view_switch_views();
 	}
 	normal_cmd_ctrl_wH(key_info, keys_info);
 }
@@ -542,7 +528,7 @@ cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(curr_view != &rwin)
 	{
-		switch_vi();
+		view_switch_views();
 	}
 	normal_cmd_ctrl_wJ(key_info, keys_info);
 }
@@ -552,7 +538,7 @@ cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(curr_view != &lwin)
 	{
-		switch_vi();
+		view_switch_views();
 	}
 	normal_cmd_ctrl_wK(key_info, keys_info);
 }
@@ -562,9 +548,33 @@ cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(curr_view != &rwin)
 	{
-		switch_vi();
+		view_switch_views();
 	}
 	normal_cmd_ctrl_wL(key_info, keys_info);
+}
+
+void
+view_switch_views(void)
+{
+	view_info_t saved_vi = view_info[1];
+	view_info[1] = view_info[2];
+	view_info[2] = saved_vi;
+
+	if(vi == &view_info[1])
+	{
+		vi = &view_info[2];
+	}
+	else if(vi == &view_info[2])
+	{
+		vi = &view_info[1];
+	}
+	else
+	{
+		vi->view = curr_view;
+	}
+
+	view_info[1].view = &lwin;
+	view_info[2].view = &rwin;
 }
 
 static void
