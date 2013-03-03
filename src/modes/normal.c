@@ -865,6 +865,11 @@ switch_panes(void)
 	WINDOW* tmp;
 	int t;
 
+	if(get_mode() != VIEW_MODE)
+	{
+		view_switch_views();
+	}
+
 	tmp = lwin.win;
 	lwin.win = rwin.win;
 	rwin.win = tmp;
