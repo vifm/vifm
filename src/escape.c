@@ -56,6 +56,7 @@ static char * add_highlighted_sym(const char sym[], size_t sym_width,
 static size_t get_char_width_esc(const char str[]);
 static void print_char_esc(WINDOW *win, const char str[], esc_state *state);
 static void esc_state_update(esc_state *state, const char str[]);
+static void esc_state_process_attr(esc_state *state, int n);
 static void esc_state_set_attr(esc_state *state, int n);
 TSTATIC const char * strchar2str(const char str[], int pos,
 		size_t *screen_width);
@@ -363,9 +364,53 @@ esc_state_update(esc_state *state, const char str[])
 			str++;
 		}
 
-		esc_state_set_attr(state, n);
+		esc_state_process_attr(state, n);
 	}
 	while(str[0] == ';');
+}
+
+/* Processes one escape sequence attribute at a time.  Handles both standard and
+ * extended (xterm256) escape sequences. */
+static void
+esc_state_process_attr(esc_state *state, int n)
+{
+	switch(state->mode)
+	{
+		case ESM_SHORT:
+			switch(n)
+			{
+				case 38:
+					state->mode = ESM_GOT_FG_PREFIX;
+					break;
+				case 48:
+					state->mode = ESM_GOT_BG_PREFIX;
+					break;
+				default:
+					esc_state_set_attr(state, n);
+					break;
+			}
+			break;
+		case ESM_GOT_FG_PREFIX:
+			state->mode = (n == 5) ? ESM_WAIT_FG_COLOR : ESM_SHORT;
+			break;
+		case ESM_GOT_BG_PREFIX:
+			state->mode = (n == 5) ? ESM_WAIT_BG_COLOR : ESM_SHORT;
+			break;
+		case ESM_WAIT_FG_COLOR:
+			if(n < COLORS)
+			{
+				state->fg = n;
+			}
+			state->mode = ESM_SHORT;
+			break;
+		case ESM_WAIT_BG_COLOR:
+			if(n < COLORS)
+			{
+				state->bg = n;
+			}
+			state->mode = ESM_SHORT;
+			break;
+	}
 }
 
 /* Applies one escape sequence attribute (the n parameter) to the state at a
@@ -425,6 +470,7 @@ esc_state_set_attr(esc_state *state, int n)
 void
 esc_state_init(esc_state *state, const col_attr_t *defaults)
 {
+	state->mode = ESM_SHORT;
 	state->attrs = defaults->attr;
 	state->fg = defaults->fg;
 	state->bg = defaults->bg;

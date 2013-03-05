@@ -26,9 +26,22 @@
 #include "colors.h"
 #include "utils/test_helpers.h"
 
+/* Possible modes of processing escape codes. */
+typedef enum
+{
+	ESM_SHORT,         /* "Normal" state for standard escape codes. */
+	ESM_GOT_FG_PREFIX, /* After first number of xterm256 foreground sequence. */
+	ESM_GOT_BG_PREFIX, /* After first number of xterm256 background sequence. */
+	ESM_WAIT_FG_COLOR, /* After second number of xterm256 foreground sequence. */
+	ESM_WAIT_BG_COLOR, /* After second number of xterm256 background sequence. */
+}
+EscStateMode;
+
 /* Holds state of escape sequence parsing. */
 typedef struct
 {
+	EscStateMode mode;   /* Current mode of processing escape codes. */
+
 	int attrs;           /* Current set of attributes. */
 	int fg;              /* Current foreground color. */
 	int bg;              /* Current background color. */
