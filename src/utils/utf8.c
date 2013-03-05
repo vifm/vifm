@@ -20,7 +20,7 @@
 #define _XOPEN_SOURCE
 
 #include <assert.h> /* assert() */
-#include <stddef.h> /* wchar_t */
+#include <stddef.h> /* size_t wchar_t */
 #include <string.h> /* strlen() */
 #include <wchar.h> /* wcwidth() */
 
@@ -33,8 +33,8 @@
 #include "utf8.h"
 
 static size_t guess_char_width(char c);
-static size_t get_char_screen_width(const char str[], size_t char_width);
 static wchar_t utf8_char_to_wchar(const char str[], size_t char_width);
+static size_t get_char_screen_width(const char str[], size_t char_width);
 
 size_t
 get_char_width(const char str[])
@@ -97,16 +97,19 @@ get_normal_utf8_string_widthn(const char str[], size_t max_screen_width)
 	while(*str != '\0' && max_screen_width > 0)
 	{
 		size_t char_screen_width;
-		size_t char_width = guess_char_width(*str);
-		if(char_width <= strlen(str))
-			length += char_width;
-		else
+		const size_t char_width = guess_char_width(*str);
+		if(char_width > strlen(str))
+		{
 			break;
+		}
+
 		char_screen_width = get_char_screen_width(str, char_width);
 		if(char_screen_width > max_screen_width)
 		{
 			break;
 		}
+
+		length += char_width;
 		max_screen_width -= char_screen_width;
 		str += char_width;
 	}
@@ -129,15 +132,6 @@ guess_char_width(char c)
 	return 1;
 }
 
-/* Returns width of the character in the terminal. */
-static size_t
-get_char_screen_width(const char str[], size_t char_width)
-{
-	const wchar_t wide = utf8_char_to_wchar(str, char_width);
-	const size_t result = wcwidth(wide);
-	return (result == (size_t)-1) ? 1 : result;
-}
-
 /* Converts one utf-8 encoded character to wide character form. */
 static wchar_t
 utf8_char_to_wchar(const char str[], size_t char_width)
@@ -148,7 +142,7 @@ utf8_char_to_wchar(const char str[], size_t char_width)
 	wchar_t result;
 
 	assert(char_width != 0 && "There are no zero width utf-8 characters.");
-	assert(char_width < ARRAY_LEN(masks) && "To long utf-8 character.");
+	assert(char_width < ARRAY_LEN(masks) && "Too long utf-8 character.");
 
 	result = *str&masks[char_width];
 	while(--char_width != 0)
@@ -160,16 +154,26 @@ utf8_char_to_wchar(const char str[], size_t char_width)
 }
 
 size_t
-get_utf8_string_length(const char str[])
+get_screen_string_length(const char str[])
 {
 	size_t length = 0;
 	while(*str != '\0')
 	{
-		size_t char_width = get_char_width(str);
+		const size_t char_width = get_char_width(str);
+		const size_t char_screen_width = get_char_screen_width(str, char_width);
 		str += char_width;
-		length++;
+		length += char_screen_width;
 	}
 	return length;
+}
+
+/* Returns width of the character in the terminal. */
+static size_t
+get_char_screen_width(const char str[], size_t char_width)
+{
+	const wchar_t wide = utf8_char_to_wchar(str, char_width);
+	const size_t result = wcwidth(wide);
+	return (result == (size_t)-1) ? 1 : result;
 }
 
 size_t
@@ -181,6 +185,20 @@ get_utf8_overhead(const char str[])
 		size_t char_width = get_char_width(str);
 		str += char_width;
 		overhead += char_width - 1;
+	}
+	return overhead;
+}
+
+size_t
+get_screen_overhead(const char str[])
+{
+	size_t overhead = 0;
+	while(*str != '\0')
+	{
+		const size_t char_width = get_char_width(str);
+		const size_t char_screen_width = get_char_screen_width(str, char_width);
+		str += char_width;
+		overhead += (char_width - 1) - (char_screen_width - 1);
 	}
 	return overhead;
 }

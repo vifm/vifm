@@ -27,6 +27,8 @@ void view_pre(void);
 void view_post(void);
 void view_redraw(void);
 int find_vwpattern(const char *pattern, int backward);
+/* Handles switch of panes. */
+void view_switch_views(void);
 
 #endif
 

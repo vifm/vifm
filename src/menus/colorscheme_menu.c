@@ -41,6 +41,8 @@ show_colorschemes_menu(FileView *view)
 
 	m.items = list_color_schemes(&m.len);
 
+	qsort(m.items, m.len, sizeof(*m.items), &sorter);
+
 	/* It's safe to set m.pos to negative value, since menus.c handles this
 	 * correctly. */
 #ifndef _WIN32
@@ -48,8 +50,6 @@ show_colorschemes_menu(FileView *view)
 #else
 	m.pos = string_array_pos_case(m.items, m.len, cfg.cs.name);
 #endif
-
-	qsort(m.items, m.len, sizeof(*m.items), &sorter);
 
 	return display_menu(&m, view);
 }

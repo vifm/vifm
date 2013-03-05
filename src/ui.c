@@ -103,7 +103,7 @@ break_in_two(char *str, size_t max)
 	if(break_point == NULL)
 		return str;
 
-	len = get_utf8_string_length(str) - 2;
+	len = get_screen_string_length(str) - 2;
 	size = strlen(str);
 	size = MAX(size, max);
 	result = malloc(size*4 + 2);
@@ -112,7 +112,7 @@ break_in_two(char *str, size_t max)
 
 	if(len > max)
 	{
-		int l = get_utf8_string_length(result) - (len - max);
+		const int l = get_screen_string_length(result) - (len - max);
 		break_point = str + get_real_string_width(str, MAX(l, 0));
 	}
 
@@ -1203,6 +1203,10 @@ update_screen(UpdateType update_kind)
 	if(curr_stats.save_msg == 0)
 		status_bar_message("");
 
+	if(get_mode() == VIEW_MODE || curr_view->explore_mode ||
+			(curr_stats.number_of_windows == 2 && other_view->explore_mode))
+		view_redraw();
+
 	update_all_windows();
 
 	if(!curr_view->explore_mode)
@@ -1217,9 +1221,6 @@ update_screen(UpdateType update_kind)
 
 	update_input_buf();
 	
-	if(get_mode() == VIEW_MODE || lwin.explore_mode || rwin.explore_mode)
-		view_redraw();
-
 	curr_stats.need_update = UT_NONE;
 }
 
@@ -1442,19 +1443,21 @@ redraw_lists(void)
 		if(curr_stats.view)
 		{
 			quick_view_file(curr_view);
+			refresh_view_win(other_view);
 		}
-		else
+		else if(!other_view->explore_mode)
 		{
 			(void)move_curr_line(other_view);
 			draw_dir_list(other_view);
+			refresh_view_win(other_view);
 		}
-		refresh_view_win(other_view);
 	}
 }
 
 int
 load_color_scheme(const char name[])
 {
+	col_scheme_t prev_cs;
 	char full[PATH_MAX];
 
 	if(!color_scheme_exists(name))
@@ -1463,6 +1466,7 @@ load_color_scheme(const char name[])
 		return 0;
 	}
 
+	prev_cs = cfg.cs;
 	curr_stats.cs_base = DCOLOR_BASE;
 	curr_stats.cs = &cfg.cs;
 	cfg.cs.defaulted = 0;
@@ -1480,7 +1484,9 @@ load_color_scheme(const char name[])
 
 	if(curr_stats.load_stage >= 2 && cfg.cs.defaulted)
 	{
+		cfg.cs = prev_cs;
 		load_color_scheme_colors();
+		update_screen(UT_REDRAW);
 		show_error_msg("Color Scheme Error", "Not supported by the terminal");
 		return 1;
 	}

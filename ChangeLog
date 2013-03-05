@@ -12,6 +12,13 @@
 
 	Less-like mode is now updated immediately when one changes 'wrap' option.
 
+	Don't redraw file list for explore window on resize.
+
+	Less updates for window in explore mode on resize.
+
+	Don't fallback to default colors on try to switch to a colorscheme, which
+	is not supported by terminal.
+
 	Fixed configuration on OS X because of unavailable mntent.h header and
 	strverscmp() function (reported by Daniel R., a.k.a. r1chelt).
 
@@ -53,6 +60,33 @@
 	explorer mode when wrapping is on.
 
 	Fixed file preview pane update on Ctrl-W X.
+
+	Fixed segmentation fault on < or g keys in explore mode when file is fully
+	visible.
+
+	Fixed displaying of last lines in explore mode with wrapping turned on for
+	texts that contain characters taking more than one character position.
+
+	Fixed displaying of pane title for paths that contain characters taking
+	more than one character position.
+
+	Fixed displaying of bookmark menu for paths that contain characters taking
+	more than one character position.
+
+	Fixed displaying of status line for file names that contain characters
+	taking more than one character position.
+
+	Fixed displaying of menus for lines that contain characters taking more
+	than one character position.
+
+	Fixed screen update after v in explore mode.
+
+	Fixed Ctrl-W H/J/K/L keys in less-like mode activated by <s-tab>.
+
+	Fixed Ctrl-W H/J/K/L/X keys in normal mode when explore mode is active in
+	the other pane.
+
+	Fixed initial cursor position in the :colorscheme menu.
 
 0.7.4a to 0.7.4b
 

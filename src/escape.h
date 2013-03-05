@@ -26,13 +26,27 @@
 #include "colors.h"
 #include "utils/test_helpers.h"
 
+/* Possible modes of processing escape codes. */
+typedef enum
+{
+	ESM_SHORT,         /* "Normal" state for standard escape codes. */
+	ESM_GOT_FG_PREFIX, /* After first number of xterm256 foreground sequence. */
+	ESM_GOT_BG_PREFIX, /* After first number of xterm256 background sequence. */
+	ESM_WAIT_FG_COLOR, /* After second number of xterm256 foreground sequence. */
+	ESM_WAIT_BG_COLOR, /* After second number of xterm256 background sequence. */
+}
+EscStateMode;
+
 /* Holds state of escape sequence parsing. */
 typedef struct
 {
-	int attrs;
-	int fg;
-	int bg;
-	col_attr_t initial;
+	EscStateMode mode;   /* Current mode of processing escape codes. */
+
+	int attrs;           /* Current set of attributes. */
+	int fg;              /* Current foreground color. */
+	int bg;              /* Current background color. */
+
+	col_attr_t defaults; /* Default values of other fields. */
 }
 esc_state;
 
@@ -57,8 +71,8 @@ char * esc_highlight_pattern(const char line[], const regex_t *re);
 int esc_print_line(const char line[], WINDOW *win, int col, int row,
 		int max_width, int dry_run, esc_state *state, int *printed);
 
-/* Initializes escape sequence parsing state with values from the initial. */
-void esc_state_init(esc_state *state, const col_attr_t *initial);
+/* Initializes escape sequence parsing state with values from the defaults. */
+void esc_state_init(esc_state *state, const col_attr_t *defaults);
 
 TSTATIC_DEFS(
 	const char * strchar2str(const char str[], int pos, size_t *screen_width);

@@ -70,13 +70,25 @@ typedef struct
 	regex_t re;
 	int last_search_backward;
 	int search_repeat;
+	int wrap;
 }view_info_t;
+
+/* View information structure indexes and count. */
+enum
+{
+	VI_QV,    /* Index of view information structure for quickview window. */
+	VI_LWIN,  /* Index of view information structure for left window. */
+	VI_RWIN,  /* Index of view information structure for right window. */
+	VI_COUNT, /* Number of view information structures. */
+};
 
 static int get_file_to_explore(const FileView *view, char buf[],
 		size_t buf_len);
 static void init_view_info(view_info_t *vi);
 static void redraw(void);
 static void calc_vlines(void);
+static void calc_vlines_wrapped(view_info_t *vi);
+static void calc_vlines_non_wrapped(view_info_t *vi);
 static void draw(void);
 static int get_part(const char line[], int offset, size_t max_len, char part[]);
 static void cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info);
@@ -110,8 +122,8 @@ static void cmd_w(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_z(key_info_t key_info, keys_info_t *keys_info);
 
 static int *mode;
-view_info_t view_info[3];
-view_info_t* vi = &view_info[0];
+view_info_t view_info[VI_COUNT];
+view_info_t* vi = &view_info[VI_QV];
 
 static keys_add_info_t builtin_cmds[] = {
 	{L"\x02", {BUILTIN_KEYS, FOLLOWED_BY_NONE, {.handler = cmd_b}}},
@@ -206,9 +218,9 @@ init_view_mode(int *key_mode)
 	ret_code = add_cmds(builtin_cmds, ARRAY_LEN(builtin_cmds), VIEW_MODE);
 	assert(ret_code == 0);
 
-	init_view_info(&view_info[0]);
-	init_view_info(&view_info[1]);
-	init_view_info(&view_info[2]);
+	init_view_info(&view_info[VI_QV]);
+	init_view_info(&view_info[VI_LWIN]);
+	init_view_info(&view_info[VI_RWIN]);
 }
 
 void
@@ -269,7 +281,6 @@ enter_view_mode(int explore)
 		vi->view = other_view;
 	}
 
-	update_view_title(vi->view);
 	view_redraw();
 }
 
@@ -341,12 +352,12 @@ view_redraw(void)
 
 	if(lwin.explore_mode)
 	{
-		vi = &view_info[1];
+		vi = &view_info[VI_LWIN];
 		redraw();
 	}
 	if(rwin.explore_mode)
 	{
-		vi = &view_info[2];
+		vi = &view_info[VI_RWIN];
 		redraw();
 	}
 	if(!lwin.explore_mode && !rwin.explore_mode)
@@ -390,6 +401,7 @@ static void
 init_view_info(view_info_t *vi)
 {
 	vi->lines = NULL;
+	vi->widths = NULL;
 	vi->nlines = 0;
 	vi->nlinesv = 0;
 	vi->line = 0;
@@ -397,46 +409,68 @@ init_view_info(view_info_t *vi)
 	vi->win = -1;
 	vi->half_win = -1;
 	vi->width = -1;
+	vi->view = NULL;
 	vi->last_search_backward = -1;
+	vi->search_repeat = 0;
+	vi->wrap = 0;
 }
 
 /* Updates line width and redraws the view. */
 static void
 redraw(void)
 {
+	update_view_title(vi->view);
 	calc_vlines();
 	draw();
 }
 
+/* Recalculates virtual lines of a view if display options require it. */
 static void
 calc_vlines(void)
 {
-	if(vi->view->window_width - 1 == vi->width)
+	if(vi->view->window_width - 1 == vi->width && vi->wrap == cfg.wrap_quick_view)
+	{
 		return;
+	}
 
 	vi->width = vi->view->window_width - 1;
+	vi->wrap = cfg.wrap_quick_view;
 
-	if(cfg.wrap_quick_view)
+	if(vi->wrap)
 	{
-		int i;
-		vi->nlinesv = 0;
-		for(i = 0; i < vi->nlines; i++)
-		{
-			vi->widths[i][0] = vi->nlinesv++;
-			vi->widths[i][1] = get_utf8_string_length(vi->lines[i]) -
-				esc_str_overhead(vi->lines[i]);
-			vi->nlinesv += vi->widths[i][1]/vi->width;
-		}
+		calc_vlines_wrapped(vi);
 	}
 	else
 	{
-		int i;
-		vi->nlinesv = vi->nlines;
-		for(i = 0; i < vi->nlines; i++)
-		{
-			vi->widths[i][0] = i;
-			vi->widths[i][1] = vi->width;
-		}
+		calc_vlines_non_wrapped(vi);
+	}
+}
+
+/* Recalculates virtual lines of a view with line wrapping. */
+static void
+calc_vlines_wrapped(view_info_t *vi)
+{
+	int i;
+	vi->nlinesv = 0;
+	for(i = 0; i < vi->nlines; i++)
+	{
+		vi->widths[i][0] = vi->nlinesv++;
+		vi->widths[i][1] = get_screen_string_length(vi->lines[i]) -
+			esc_str_overhead(vi->lines[i]);
+		vi->nlinesv += vi->widths[i][1]/vi->width;
+	}
+}
+
+/* Recalculates virtual lines of a view without line wrapping. */
+static void
+calc_vlines_non_wrapped(view_info_t *vi)
+{
+	int i;
+	vi->nlinesv = vi->nlines;
+	for(i = 0; i < vi->nlines; i++)
+	{
+		vi->widths[i][0] = i;
+		vi->widths[i][1] = vi->width;
 	}
 }
 
@@ -466,7 +500,7 @@ draw(void)
 			vl += vis;
 			t++;
 		}
-		while(cfg.wrap_quick_view && p[offset] != '\0' && vl < height);
+		while(vi->wrap && p[offset] != '\0' && vl < height);
 		if(searched)
 		{
 			free(p);
@@ -514,25 +548,11 @@ cmd_ctrl_l(key_info_t key_info, keys_info_t *keys_info)
 }
 
 static void
-switch_vi(void)
-{
-	view_info_t saved_vi = *vi;
-	int i = (curr_view == &lwin) ? 2 : 1;
-
-	*vi = view_info[i];
-	view_info[i] = saved_vi;
-	vi = &view_info[i];
-
-	view_info[1].view = &lwin;
-	view_info[2].view = &rwin;
-}
-
-static void
 cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(curr_view != &lwin)
 	{
-		switch_vi();
+		view_switch_views();
 	}
 	normal_cmd_ctrl_wH(key_info, keys_info);
 }
@@ -542,7 +562,7 @@ cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(curr_view != &rwin)
 	{
-		switch_vi();
+		view_switch_views();
 	}
 	normal_cmd_ctrl_wJ(key_info, keys_info);
 }
@@ -552,7 +572,7 @@ cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(curr_view != &lwin)
 	{
-		switch_vi();
+		view_switch_views();
 	}
 	normal_cmd_ctrl_wK(key_info, keys_info);
 }
@@ -562,9 +582,33 @@ cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 {
 	if(curr_view != &rwin)
 	{
-		switch_vi();
+		view_switch_views();
 	}
 	normal_cmd_ctrl_wL(key_info, keys_info);
+}
+
+void
+view_switch_views(void)
+{
+	view_info_t saved_vi = view_info[VI_LWIN];
+	view_info[VI_LWIN] = view_info[VI_RWIN];
+	view_info[VI_RWIN] = saved_vi;
+
+	if(vi == &view_info[VI_LWIN])
+	{
+		vi = &view_info[VI_RWIN];
+	}
+	else if(vi == &view_info[VI_RWIN])
+	{
+		vi = &view_info[VI_LWIN];
+	}
+	else
+	{
+		view_info[VI_QV].view = curr_view;
+	}
+
+	view_info[VI_LWIN].view = &lwin;
+	view_info[VI_RWIN].view = &rwin;
 }
 
 static void
@@ -633,7 +677,7 @@ cmd_tab(key_info_t key_info, keys_info_t *keys_info)
 static void
 pick_vi(int explore)
 {
-	const int index = !explore ? 0 : (curr_view == &lwin ? 1 : 2);
+	const int index = !explore ? VI_QV : (curr_view == &lwin ? VI_LWIN : VI_RWIN);
 	vi = &view_info[index];
 }
 
@@ -738,7 +782,7 @@ cmd_g(key_info_t key_info, keys_info_t *keys_info)
 
 	key_info.count = MIN(vi->nlinesv - (vi->view->window_rows - 1),
 			key_info.count);
-	key_info.count = MAX(0, key_info.count);
+	key_info.count = MAX(1, key_info.count);
 
 	if(vi->linev == vi->widths[key_info.count - 1][0])
 		return;
@@ -953,6 +997,7 @@ cmd_v(key_info_t key_info, keys_info_t *keys_info)
 	snprintf(buf, sizeof(buf), "%s/%s", curr_view->curr_dir,
 			curr_view->dir_entry[curr_view->list_pos].name);
 	view_file(buf, vi->line + (vi->view->window_rows - 1)/2, 1);
+	schedule_redraw();
 }
 
 static void

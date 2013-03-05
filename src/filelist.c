@@ -781,7 +781,7 @@ update_view_title(FileView *view)
 		strcat(buf, get_current_file_name(view));
 	}
 
-	len = get_utf8_string_length(buf);
+	len = get_screen_string_length(buf);
 	if(len > view->window_width + 1 && view == selected)
 	{ /* Truncate long directory names */
 		const char *ptr;

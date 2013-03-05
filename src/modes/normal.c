@@ -93,6 +93,7 @@ static void cmd_ctrl_wv(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_ww(key_info_t key_info, keys_info_t *keys_info);
 static void go_to_other_window(void);
 static void cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info);
+static void switch_panes(void);
 static FileView * get_view(void);
 static void move_splitter(key_info_t key_info, int fact);
 static void cmd_ctrl_x(key_info_t key_info, keys_info_t *keys_info);
@@ -742,7 +743,7 @@ normal_cmd_ctrl_wH(key_info_t key_info, keys_info_t *keys_info)
 	comm_split(VSPLIT);
 	if(curr_view != &lwin)
 	{
-		cmd_ctrl_wx(key_info, NULL);
+		switch_panes();
 		go_to_other_window();
 	}
 }
@@ -753,7 +754,7 @@ normal_cmd_ctrl_wJ(key_info_t key_info, keys_info_t *keys_info)
 	comm_split(HSPLIT);
 	if(curr_view != &rwin)
 	{
-		cmd_ctrl_wx(key_info, NULL);
+		switch_panes();
 		go_to_other_window();
 	}
 }
@@ -764,7 +765,7 @@ normal_cmd_ctrl_wK(key_info_t key_info, keys_info_t *keys_info)
 	comm_split(HSPLIT);
 	if(curr_view != &lwin)
 	{
-		cmd_ctrl_wx(key_info, NULL);
+		switch_panes();
 		go_to_other_window();
 	}
 }
@@ -775,7 +776,7 @@ normal_cmd_ctrl_wL(key_info_t key_info, keys_info_t *keys_info)
 	comm_split(VSPLIT);
 	if(curr_view != &rwin)
 	{
-		cmd_ctrl_wx(key_info, NULL);
+		switch_panes();
 		go_to_other_window();
 	}
 }
@@ -853,9 +854,26 @@ move_splitter(key_info_t key_info, int fact)
 static void
 cmd_ctrl_wx(key_info_t key_info, keys_info_t *keys_info)
 {
+	switch_panes();
+	/* In case ex-other pane was in explore mode, activate it. */
+	if(curr_view->explore_mode)
+	{
+		activate_view_mode();
+	}
+}
+
+/* Switch panes. */
+static void
+switch_panes(void)
+{
 	FileView tmp_view;
 	WINDOW* tmp;
 	int t;
+
+	if(get_mode() != VIEW_MODE)
+	{
+		view_switch_views();
+	}
 
 	tmp = lwin.win;
 	lwin.win = rwin.win;
