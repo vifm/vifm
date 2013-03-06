@@ -78,25 +78,25 @@ teardown(void)
 }
 
 static void
-test_edit_cmd_selection(void)
+test_selection(void)
 {
 	char *cmd;
 	int bg;
 
-	cmd = edit_selection(&bg);
+	cmd = format_edit_selection_cmd(&bg);
 	assert_string_equal("vim -p lfile0 lfile2", cmd);
 	free(cmd);
 }
 
 void
-edit_cmd_selection_tests(void)
+format_edit_selection_cmd_tests(void)
 {
 	test_fixture_start();
 
 	fixture_setup(setup);
 	fixture_teardown(teardown);
 
-	run_test(test_edit_cmd_selection);
+	run_test(test_selection);
 
 	test_fixture_end();
 }

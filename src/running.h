@@ -24,7 +24,9 @@
 #include "ui.h"
 
 void handle_file(FileView *view, int dont_execute, int force_follow);
-char * edit_selection(int *bg);
+/* Formats a command to edit selected files of the current view in an editor.
+ * Returns a newly allocated string, which should be freed by the caller. */
+char * format_edit_selection_cmd(int *bg);
 void run_using_prog(FileView *view, const char *program, int dont_execute,
 		int force_background);
 void view_file(const char *filename, int line, int do_fork);

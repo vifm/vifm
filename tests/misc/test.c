@@ -5,7 +5,7 @@ void test_append_selected_files(void);
 void test_expand_macros(void);
 void path_starts_with_tests(void);
 void comments_tests(void);
-void edit_cmd_selection_tests(void);
+void format_edit_selection_cmd_tests(void);
 void test_reserved_commands(void);
 void test_user_commands(void);
 void test_cmdline_completion(void);
@@ -42,7 +42,7 @@ all_tests(void)
 	test_expand_macros();
 	path_starts_with_tests();
 	comments_tests();
-	edit_cmd_selection_tests();
+	format_edit_selection_cmd_tests();
 	test_reserved_commands();
 	test_user_commands();
 	test_cmdline_completion();

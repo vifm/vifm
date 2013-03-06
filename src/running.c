@@ -385,7 +385,7 @@ run_file(FileView *view, int dont_execute)
 		else
 		{
 			int bg;
-			char *cmd = edit_selection(&bg);
+			char *cmd = format_edit_selection_cmd(&bg);
 			if(bg)
 				start_background_job(cmd, 0);
 			else
@@ -488,7 +488,7 @@ view_file(const char *filename, int line, int do_fork)
 }
 
 char *
-edit_selection(int *bg)
+format_edit_selection_cmd(int *bg)
 {
 	char *const files = expand_macros("%f", NULL, NULL);
 	char *const cmd = format_str("%s %s", get_vicmd(bg), files);
