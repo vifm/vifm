@@ -41,7 +41,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 	m.title = format_str("find %s", args);
 
 	if(view->selected_files > 0)
-		files = expand_macros(view, "%f", NULL, NULL);
+		files = expand_macros("%f", NULL, NULL);
 	else
 		files = strdup(".");
 

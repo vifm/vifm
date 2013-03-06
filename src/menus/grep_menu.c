@@ -43,7 +43,7 @@ show_grep_menu(FileView *view, const char args[], int invert)
 	m.title = format_str("grep %s", args);
 
 	if(view->selected_files > 0)
-		files = expand_macros(view, "%f", NULL, NULL);
+		files = expand_macros("%f", NULL, NULL);
 	else
 		files = strdup(".");
 

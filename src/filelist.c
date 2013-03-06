@@ -606,7 +606,7 @@ get_viewer_command(const char *viewer)
 	}
 	else
 	{
-		result = expand_macros(curr_view, viewer, NULL, NULL);
+		result = expand_macros(viewer, NULL, NULL);
 	}
 	return result;
 }

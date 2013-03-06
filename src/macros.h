@@ -38,8 +38,7 @@ MacroFlags;
 /* args and flags parameters can equal NULL. The string returned needs to be
  * freed in the calling function. After executing flags is one of MACRO_*
  * values. */
-char * expand_macros(FileView *view, const char *command, const char *args,
-		MacroFlags *flags);
+char * expand_macros(const char *command, const char *args, MacroFlags *flags);
 
 #ifdef TEST
 #include "engine/cmds.h"

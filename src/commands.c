@@ -514,7 +514,7 @@ cmds_expand_macros(const char *str, int *usr1, int *usr2)
 	char *result;
 	MacroFlags flags = MACRO_NONE;
 
-	result = expand_macros(curr_view, str, NULL, &flags);
+	result = expand_macros(str, NULL, &flags);
 
 	*usr1 = flags;
 
@@ -3629,8 +3629,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	int save_msg = 0;
 
 	/* Expand macros in a binded command. */
-	expanded_com = expand_macros(curr_view, cmd_info->cmd, cmd_info->args,
-			&flags);
+	expanded_com = expand_macros(cmd_info->cmd, cmd_info->args, &flags);
 
 	len = trim_right(expanded_com);
 	if((bg = ends_with(expanded_com, " &")))

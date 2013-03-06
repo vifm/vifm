@@ -490,7 +490,7 @@ char *
 edit_selection(FileView *view, int *bg)
 {
 	char *buf;
-	char *files = expand_macros(view, "%f", NULL, NULL);
+	char *files = expand_macros("%f", NULL, NULL);
 
 	if((buf = malloc(strlen(get_vicmd(bg)) + strlen(files) + 2)) != NULL)
 		snprintf(buf, strlen(get_vicmd(bg)) + 1 + strlen(files) + 1, "%s %s",
@@ -534,7 +534,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 	{
 		int background;
 		MacroFlags flags;
-		char *command = expand_macros(view, program, NULL, &flags);
+		char *command = expand_macros(program, NULL, &flags);
 
 		background = ends_with(command, " &");
 		if(background)
