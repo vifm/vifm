@@ -83,7 +83,7 @@ test_edit_cmd_selection(void)
 	char *cmd;
 	int bg;
 
-	cmd = edit_selection(&lwin, &bg);
+	cmd = edit_selection(&bg);
 	assert_string_equal("vim -p lfile0 lfile2", cmd);
 	free(cmd);
 }
@@ -101,4 +101,5 @@ edit_cmd_selection_tests(void)
 	test_fixture_end();
 }
 
-/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab : */
+/* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
+/* vim: set cinoptions+=t0 : */

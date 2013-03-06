@@ -30,6 +30,7 @@
 #endif
 
 #include <signal.h> /* sighandler_t, signal() */
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h> /* snprintf() */
 #include <stdlib.h> /* malloc() free() */
 #include <string.h> /* strcmp() strrchr() strcat() strstr() strlen() strchr()
@@ -384,7 +385,7 @@ run_file(FileView *view, int dont_execute)
 		else
 		{
 			int bg;
-			char *cmd = edit_selection(view, &bg);
+			char *cmd = edit_selection(&bg);
 			if(bg)
 				start_background_job(cmd, 0);
 			else
@@ -487,17 +488,12 @@ view_file(const char *filename, int line, int do_fork)
 }
 
 char *
-edit_selection(FileView *view, int *bg)
+edit_selection(int *bg)
 {
-	char *buf;
-	char *files = expand_macros("%f", NULL, NULL);
-
-	if((buf = malloc(strlen(get_vicmd(bg)) + strlen(files) + 2)) != NULL)
-		snprintf(buf, strlen(get_vicmd(bg)) + 1 + strlen(files) + 1, "%s %s",
-				get_vicmd(bg), files);
-
+	char *const files = expand_macros("%f", NULL, NULL);
+	char *const cmd = format_str("%s %s", get_vicmd(bg), files);
 	free(files);
-	return buf;
+	return cmd;
 }
 
 void

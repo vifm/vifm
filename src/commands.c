@@ -1925,7 +1925,7 @@ edit_cmd(const cmd_info_t *cmd_info)
 		if(cfg.vim_filter)
 			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
 
-		if((cmd = edit_selection(curr_view, &bg)) == NULL)
+		if((cmd = edit_selection(&bg)) == NULL)
 		{
 			show_error_msg("Memory error", "Unable to allocate enough memory");
 			return 0;

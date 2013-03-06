@@ -24,7 +24,7 @@
 #include "ui.h"
 
 void handle_file(FileView *view, int dont_execute, int force_follow);
-char * edit_selection(FileView *view, int *bg);
+char * edit_selection(int *bg);
 void run_using_prog(FileView *view, const char *program, int dont_execute,
 		int force_background);
 void view_file(const char *filename, int line, int do_fork);
