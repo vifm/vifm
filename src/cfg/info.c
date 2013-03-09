@@ -663,7 +663,7 @@ update_info_file(const char filename[])
 		fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");
 		fprintf(fp, "=scrolloff=%d\n", cfg.scroll_off);
 		fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
-#if !defined(_WIN32) && !defined(__APPLE__)
+#ifndef _WIN32
 		fprintf(fp, "=slowfs=%s\n", escape_spaces(cfg.slow_fs_list));
 #endif
 		fprintf(fp, "=%ssmartcase\n", cfg.smart_case ? "" : "no");
