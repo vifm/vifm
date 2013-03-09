@@ -61,6 +61,9 @@
 /* Define to 1 if `st_mtim' is a member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_MTIM
 
+/* strverscmp() funcion is available. */
+#undef HAVE_STRVERSCMP_FUNC
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 

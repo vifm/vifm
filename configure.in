@@ -187,9 +187,7 @@ AC_CHECK_FUNC([strstr], [], [AC_MSG_ERROR([strstr() function not found.])])
 AC_CHECK_FUNC([strtok_r], [], [AC_MSG_ERROR([strtok_r() function not found.])])
 AC_CHECK_FUNC([strtol], [], [AC_MSG_ERROR([strtol() function not found.])])
 AC_CHECK_FUNC([strtoll], [], [AC_MSG_ERROR([strtoll() function not found.])])
-if test -z "$OSX_HOST" ; then
-	AC_CHECK_FUNC([strverscmp], [], [AC_MSG_ERROR([strverscmp() function not found.])])
-fi
+AC_CHECK_FUNC([strverscmp], [AC_DEFINE([HAVE_STRVERSCMP_FUNC], [1], [strverscmp() funcion is available.])])
 AC_CHECK_FUNC([sysconf], [], [AC_MSG_ERROR([sysconf() function not found.])])
 AC_CHECK_FUNC([time], [], [AC_MSG_ERROR([time() function not found.])])
 AC_CHECK_FUNC([tolower], [], [AC_MSG_ERROR([tolower() function not found.])])

@@ -46,7 +46,7 @@ static int sort_type;
 
 static int sort_dir_list(const void *one, const void *two);
 TSTATIC int strnumcmp(const char s[], const char t[]);
-#if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
+#if !defined(HAVE_STRVERSCMP_FUNC) || !HAVE_STRVERSCMP_FUNC
 static int vercmp(const char s[], const char t[]);
 #else
 static char * skip_leading_zeros(const char str[]);
@@ -106,7 +106,7 @@ compare_file_names(const char *s, const char *t, int ignore_case)
 TSTATIC int
 strnumcmp(const char s[], const char t[])
 {
-#if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
+#if !defined(HAVE_STRVERSCMP_FUNC) || !HAVE_STRVERSCMP_FUNC
 	return vercmp(s, t);
 #else
 	const char *new_s = skip_leading_zeros(s);
@@ -115,7 +115,7 @@ strnumcmp(const char s[], const char t[])
 #endif
 }
 
-#if defined(_WIN32) || defined(__APPLE__) || defined(__CYGWIN__)
+#if !defined(HAVE_STRVERSCMP_FUNC) || !HAVE_STRVERSCMP_FUNC
 static int
 vercmp(const char s[], const char t[])
 {
