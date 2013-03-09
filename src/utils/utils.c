@@ -34,9 +34,7 @@
 #include <sys/wait.h> /* waitpid() */
 #endif
 
-#if !defined(_WIN32) && !defined(__APPLE__)
-#include <mntent.h> /* mntent setmntent() getmntent() endmntent() */
-#endif
+#include "mntent.h" /* mntent setmntent() getmntent() endmntent() */
 
 #include <unistd.h> /* chdir() */
 
@@ -283,7 +281,7 @@ begins_with_list_item(const char *pattern, const char *list)
 int
 is_on_slow_fs(const char *full_path)
 {
-#if defined(_WIN32) || defined(__APPLE__)
+#ifdef _WIN32
 	return 0;
 #else
 	FILE *f;

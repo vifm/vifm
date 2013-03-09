@@ -98,7 +98,7 @@ static void runexec_handler(OPT_OP op, optval_t val);
 static void scrollbind_handler(OPT_OP op, optval_t val);
 static void scrolloff_handler(OPT_OP op, optval_t val);
 static void shell_handler(OPT_OP op, optval_t val);
-#if !defined(_WIN32) && !defined(__APPLE__)
+#ifndef _WIN32
 static void slowfs_handler(OPT_OP op, optval_t val);
 #endif
 static void smartcase_handler(OPT_OP op, optval_t val);
@@ -246,7 +246,7 @@ static struct
 		{ .ref.int_val = &cfg.scroll_off }                                                                     },
 	{ "shell",       "sh",   OPT_STR,     0,                          NULL,            &shell_handler,
 		{ .ref.str_val = &cfg.shell }                                                                          },
-#if !defined(_WIN32) && !defined(__APPLE__)
+#ifndef _WIN32
 	{ "slowfs",      "",     OPT_STRLIST, 0,                          NULL,            &slowfs_handler,
 		{ .ref.str_val = &cfg.slow_fs_list }                                                                   },
 #endif
@@ -853,7 +853,7 @@ shell_handler(OPT_OP op, optval_t val)
 	(void)replace_string(&cfg.shell, val.str_val);
 }
 
-#if !defined(_WIN32) && !defined(__APPLE__)
+#ifndef _WIN32
 static void
 slowfs_handler(OPT_OP op, optval_t val)
 {
