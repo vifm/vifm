@@ -12993,16 +12993,18 @@ else
 fi
 
 
-if test -z "$OSX_HOST" ; then
-	ac_fn_c_check_header_mongrel "$LINENO" "mntent.h" "ac_cv_header_mntent_h" "$ac_includes_default"
+for ac_header in mntent.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "mntent.h" "ac_cv_header_mntent_h" "$ac_includes_default"
 if test "x$ac_cv_header_mntent_h" = xyes; then :
-
-else
-  as_fn_error $? "mntent.h header not found." "$LINENO" 5
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_MNTENT_H 1
+_ACEOF
+ HAVE_MNTENT_H=1
 fi
 
+done
 
-fi
 ac_fn_c_check_header_mongrel "$LINENO" "pwd.h" "ac_cv_header_pwd_h" "$ac_includes_default"
 if test "x$ac_cv_header_pwd_h" = xyes; then :
 
@@ -13191,7 +13193,7 @@ if test "x$ac_cv_type_direntry_t" = xyes; then :
 
 fi
 
-if test -z "$OSX_HOST" ; then
+if test -n "$HAVE_MNTENT_H" ; then
 	ac_fn_c_check_type "$LINENO" "mntent" "ac_cv_type_mntent" "$ac_includes_default"
 if test "x$ac_cv_type_mntent" = xyes; then :
 
@@ -13284,7 +13286,7 @@ else
   as_fn_error $? "dup2() function not found." "$LINENO" 5
 fi
 
-if test -z "$OSX_HOST" ; then
+if test -z "$HAVE_MNTENT_H" ; then
 	ac_fn_c_check_func "$LINENO" "endmntent" "ac_cv_func_endmntent"
 if test "x$ac_cv_func_endmntent" = xyes; then :
 
@@ -13440,7 +13442,7 @@ else
   as_fn_error $? "getgrnam() function not found." "$LINENO" 5
 fi
 
-if test -z "$OSX_HOST" ; then
+if test -z "$HAVE_MNTENT_H" ; then
 	ac_fn_c_check_func "$LINENO" "getmntent" "ac_cv_func_getmntent"
 if test "x$ac_cv_func_getmntent" = xyes; then :
 
@@ -13729,7 +13731,7 @@ else
   as_fn_error $? "setlocale() function not found." "$LINENO" 5
 fi
 
-if test -z "$OSX_HOST" ; then
+if test -z "$HAVE_MNTENT_H" ; then
 	ac_fn_c_check_func "$LINENO" "setmntent" "ac_cv_func_setmntent"
 if test "x$ac_cv_func_setmntent" = xyes; then :
 
