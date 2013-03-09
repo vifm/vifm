@@ -3,6 +3,8 @@
  *      The Regents of the University of California.  All rights reserved.
  * Copyright (c) 2001
  *      David Rufino <daverufino@btinternet.com>
+ * Copyright (c) 2013
+ *      xaizek <xaizek@lavabit.com>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -121,7 +123,7 @@ statfs_to_mntent(struct statfs *mntbuf)
 static char *
 flags2opts(int flags)
 {
-	char *res = catopt(res, (flags & MNT_RDONLY) ? "ro" : "rw");
+	char *res = catopt(NULL, (flags & MNT_RDONLY) ? "ro" : "rw");
 	if(flags & MNT_SYNCHRONOUS) res = catopt(res, "sync");
 	if(flags & MNT_NOEXEC)      res = catopt(res, "noexec");
 	if(flags & MNT_NOSUID)      res = catopt(res, "nosuid");
