@@ -13286,7 +13286,7 @@ else
   as_fn_error $? "dup2() function not found." "$LINENO" 5
 fi
 
-if test -z "$HAVE_MNTENT_H" ; then
+if test -n "$HAVE_MNTENT_H" ; then
 	ac_fn_c_check_func "$LINENO" "endmntent" "ac_cv_func_endmntent"
 if test "x$ac_cv_func_endmntent" = xyes; then :
 
@@ -13442,7 +13442,7 @@ else
   as_fn_error $? "getgrnam() function not found." "$LINENO" 5
 fi
 
-if test -z "$HAVE_MNTENT_H" ; then
+if test -n "$HAVE_MNTENT_H" ; then
 	ac_fn_c_check_func "$LINENO" "getmntent" "ac_cv_func_getmntent"
 if test "x$ac_cv_func_getmntent" = xyes; then :
 
@@ -13731,7 +13731,7 @@ else
   as_fn_error $? "setlocale() function not found." "$LINENO" 5
 fi
 
-if test -z "$HAVE_MNTENT_H" ; then
+if test -n "$HAVE_MNTENT_H" ; then
 	ac_fn_c_check_func "$LINENO" "setmntent" "ac_cv_func_setmntent"
 if test "x$ac_cv_func_setmntent" = xyes; then :
 

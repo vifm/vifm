@@ -86,7 +86,7 @@ AC_CHECK_FUNC([close], [], [AC_MSG_ERROR([close() function not found.])])
 AC_CHECK_FUNC([closedir], [], [AC_MSG_ERROR([closedir() function not found.])])
 AC_CHECK_FUNC([dup], [], [AC_MSG_ERROR([dup() function not found.])])
 AC_CHECK_FUNC([dup2], [], [AC_MSG_ERROR([dup2() function not found.])])
-if test -z "$HAVE_MNTENT_H" ; then
+if test -n "$HAVE_MNTENT_H" ; then
 	AC_CHECK_FUNC([endmntent], [], [AC_MSG_ERROR([endmntent() function not found.])])
 fi
 AC_CHECK_FUNC([execve], [], [AC_MSG_ERROR([execve() function not found.])])
@@ -110,7 +110,7 @@ AC_CHECK_FUNC([getgrent], [], [AC_MSG_ERROR([getgrent() function not found.])])
 AC_CHECK_FUNC([getgrgid], [], [AC_MSG_ERROR([getgrgid() function not found.])])
 AC_CHECK_FUNC([getgrgid_r], [], [AC_MSG_ERROR([getgrgid_r() function not found.])])
 AC_CHECK_FUNC([getgrnam], [], [AC_MSG_ERROR([getgrnam() function not found.])])
-if test -z "$HAVE_MNTENT_H" ; then
+if test -n "$HAVE_MNTENT_H" ; then
 	AC_CHECK_FUNC([getmntent], [], [AC_MSG_ERROR([getmntent() function not found.])])
 fi
 AC_CHECK_FUNC([getpid], [], [AC_MSG_ERROR([getpid() function not found.])])
@@ -153,7 +153,7 @@ AC_CHECK_FUNC([select], [], [AC_MSG_ERROR([select() function not found.])])
 AC_CHECK_FUNC([setenv], [], [AC_MSG_ERROR([setenv() function not found.])])
 AC_CHECK_FUNC([setgrent], [], [AC_MSG_ERROR([setgrent() function not found.])])
 AC_CHECK_FUNC([setlocale], [], [AC_MSG_ERROR([setlocale() function not found.])])
-if test -z "$HAVE_MNTENT_H" ; then
+if test -n "$HAVE_MNTENT_H" ; then
 	AC_CHECK_FUNC([setmntent], [], [AC_MSG_ERROR([setmntent() function not found.])])
 fi
 AC_CHECK_FUNC([setpgid], [], [AC_MSG_ERROR([setpgid() function not found.])])
