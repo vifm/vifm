@@ -128,10 +128,12 @@ flags2opts(int flags)
 	if(flags & MNT_UNION)       res = catopt(res, "union");
 	if(flags & MNT_ASYNC)       res = catopt(res, "async");
 	if(flags & MNT_NOATIME)     res = catopt(res, "noatime");
+#ifndef __APPLE__
 	if(flags & MNT_NOCLUSTERR)  res = catopt(res, "noclusterr");
 	if(flags & MNT_NOCLUSTERW)  res = catopt(res, "noclusterw");
 	if(flags & MNT_NOSYMFOLLOW) res = catopt(res, "nosymfollow");
 	if(flags & MNT_SUIDDIR)     res = catopt(res, "suiddir");
+#endif
 
 	return res;
 }
