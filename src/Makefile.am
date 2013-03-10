@@ -72,6 +72,7 @@ vifm_SOURCES = \
 	utils/int_stack.c utils/int_stack.h \
 	utils/log.c utils/log.h \
 	utils/macros.h \
+	utils/mntent.c utils/mntent.h \
 	utils/path.c utils/path.h \
 	utils/str.c utils/str.h \
 	utils/string_array.c utils/string_array.h \

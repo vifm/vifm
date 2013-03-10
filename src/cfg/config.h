@@ -98,7 +98,7 @@ typedef struct
 	int timeout_len;
 	int scroll_off;
 	int gdefault;
-#if !defined(_WIN32) && !defined(__APPLE__)
+#ifndef _WIN32
 	char *slow_fs_list;
 #endif
 	int scroll_bind;

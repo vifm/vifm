@@ -6,8 +6,6 @@
 
 	Added parsing of escape codes in explore (less-like) mode.
 
-	Removed 'slowfs' option for OS X, it didn't effect anything there anyway.
-
 	Less-like mode now highlights multiple matches in a line.
 
 	Less-like mode is now updated immediately when one changes 'wrap' option.
@@ -19,8 +17,12 @@
 	Don't fallback to default colors on try to switch to a colorscheme, which
 	is not supported by terminal.
 
-	Fixed configuration on OS X because of unavailable mntent.h header and
-	strverscmp() function (reported by Daniel R., a.k.a. r1chelt).
+	Made 'slowfs' option actually work on OS X (thanks to Daniel Dettlaff,
+	a.k.a. dmilith).
+
+	Fixed configuration on OS X and FreeBSD because of unavailable mntent.h
+	header and strverscmp() function (reported by Daniel R., a.k.a. r1chelt,
+	and Daniel Dettlaff, a.k.a. dmilith).
 
 	Fixed configuration when libmagic is not available, but selected (tried
 	to check its symbols).

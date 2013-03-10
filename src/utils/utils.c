@@ -34,9 +34,7 @@
 #include <sys/wait.h> /* waitpid() */
 #endif
 
-#if !defined(_WIN32) && !defined(__APPLE__)
-#include <mntent.h> /* mntent setmntent() getmntent() endmntent() */
-#endif
+#include "mntent.h" /* mntent setmntent() getmntent() endmntent() */
 
 #include <unistd.h> /* chdir() */
 
@@ -254,7 +252,7 @@ my_chdir(const char *path)
 	return chdir(path);
 }
 
-#if !defined(_WIN32) && !defined(__APPLE__)
+#ifndef _WIN32
 static int
 begins_with_list_item(const char *pattern, const char *list)
 {
@@ -283,13 +281,18 @@ begins_with_list_item(const char *pattern, const char *list)
 int
 is_on_slow_fs(const char *full_path)
 {
-#if defined(_WIN32) || defined(__APPLE__)
+#ifdef _WIN32
 	return 0;
 #else
 	FILE *f;
 	struct mntent *ent;
 	size_t len = 0;
 	char max[PATH_MAX] = "";
+
+	if(cfg.slow_fs_list[0] == '\0')
+	{
+		return 0;
+	}
 
 	if((f = setmntent("/etc/mtab", "r")) == NULL)
 	{
@@ -300,7 +303,7 @@ is_on_slow_fs(const char *full_path)
 	{
 		if(path_starts_with(full_path, ent->mnt_dir))
 		{
-			size_t new_len = strlen(ent->mnt_dir);
+			const size_t new_len = strlen(ent->mnt_dir);
 			if(new_len > len)
 			{
 				len = new_len;
@@ -309,17 +312,8 @@ is_on_slow_fs(const char *full_path)
 		}
 	}
 
-	if(max[0] != '\0')
-	{
-		if(begins_with_list_item(max, cfg.slow_fs_list))
-		{
-			endmntent(f);
-			return 1;
-		}
-	}
-
 	endmntent(f);
-	return 0;
+	return (max[0] == '\0') ? 0 : begins_with_list_item(max, cfg.slow_fs_list);
 #endif
 }
 

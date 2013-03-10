@@ -108,6 +108,7 @@ Package content
     |  |  |-- file_streams.c - file stream reading related functions
     |  |  |-- int_stack.c - int stack "object"
     |  |  |-- log.c - primitive logging
+    |  |  |-- mntent.c - compatibility file for FreeBSD-like systems
     |  |  |-- path.c - various functions to work with paths
     |  |  |-- str.c - various string functions
     |  |  |-- string_array.c - functions to work with arrays of strings
