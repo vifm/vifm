@@ -243,7 +243,6 @@ sort_dir_list(const void *one, const void *two)
 			retval = first->ctime - second->ctime;
 			break;
 #ifndef _WIN32
-
 		case SORT_BY_MODE:
 			retval = first->mode - second->mode;
 			break;
