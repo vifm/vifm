@@ -19,7 +19,7 @@ test_one_arg(void)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_echo(args, &stop_ptr);
+	result = eval_arglist(args, &stop_ptr);
 	assert_true(result != NULL);
 	assert_string_equal("a", result);
 	free(result);
@@ -32,7 +32,7 @@ test_two_space_separated_args(void)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_echo(args, &stop_ptr);
+	result = eval_arglist(args, &stop_ptr);
 	assert_true(result != NULL);
 	assert_string_equal("a b", result);
 	free(result);
@@ -45,7 +45,7 @@ test_two_dot_separated_args(void)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_echo(args, &stop_ptr);
+	result = eval_arglist(args, &stop_ptr);
 	assert_true(result != NULL);
 	assert_string_equal("ab", result);
 	free(result);
@@ -58,7 +58,7 @@ test_double_single_quote(void)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_echo(args, &stop_ptr);
+	result = eval_arglist(args, &stop_ptr);
 	assert_true(result != NULL);
 	assert_string_equal("a'b", result);
 	free(result);
@@ -71,7 +71,7 @@ test_wrong_expression_position(void)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_echo(args, &stop_ptr);
+	result = eval_arglist(args, &stop_ptr);
 	assert_true(result == NULL);
 	assert_true(args + 4 == stop_ptr);
 	free(result);
@@ -84,7 +84,7 @@ test_empty_parens_fail(void)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_echo(args, &stop_ptr);
+	result = eval_arglist(args, &stop_ptr);
 	assert_true(result == NULL);
 	free(result);
 }
@@ -96,7 +96,7 @@ test_chars_after_function_call_fail(void)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_echo(args, &stop_ptr);
+	result = eval_arglist(args, &stop_ptr);
 	assert_true(result == NULL);
 	free(result);
 }
@@ -108,7 +108,7 @@ test_statement(void)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_echo(args, &stop_ptr);
+	result = eval_arglist(args, &stop_ptr);
 	assert_true(result != NULL);
 	assert_string_equal("1", result);
 	free(result);
@@ -121,7 +121,7 @@ test_statement_and_not_statement(void)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_echo(args, &stop_ptr);
+	result = eval_arglist(args, &stop_ptr);
 	assert_true(result != NULL);
 	assert_string_equal("1 b", result);
 	free(result);
@@ -134,7 +134,7 @@ test_function_call(void)
 	const char *stop_ptr;
 	char *result;
 
-	result = eval_echo(args, &stop_ptr);
+	result = eval_arglist(args, &stop_ptr);
 	assert_true(result != NULL);
 	assert_string_equal("hello", result);
 	free(result);

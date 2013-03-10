@@ -54,6 +54,7 @@ enum
 	COM_VSPLIT,
 	COM_RENAME,
 	COM_ECHO,
+	COM_EXE,
 };
 
 /* values of type argument for filename_completion() function */

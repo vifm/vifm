@@ -100,7 +100,7 @@ complete_args(int id, const char args[], int argc, char *argv[], int arg_pos)
 
 	if(id == COM_SET)
 		complete_options(args, &start);
-	else if(id == COM_LET || id == COM_ECHO)
+	else if(id == COM_LET || id == COM_ECHO || id == COM_EXE)
 		complete_variables((dollar > arg) ? dollar : arg, &start);
 	else if(id == COM_UNLET)
 		complete_variables(arg, &start);
