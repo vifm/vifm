@@ -19,7 +19,7 @@
 
 #include <curses.h>
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h>
 #include <string.h>
 
@@ -177,6 +177,8 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, cy++, 4, " [   ] Time Created");
 #endif
 	mvwaddstr(sort_win, cy++, 4, " [   ] Time Modified");
+	assert(cy - top == SORT_OPTION_COUNT &&
+			"Sort dialog and sort options should not diverge");
 	mvwaddstr(sort_win, curr, 6, caps[descending]);
 
 	getmaxyx(stdscr, y, x);
