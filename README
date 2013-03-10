@@ -37,6 +37,7 @@ Package content
     |
     |-- data/ - documentation, sample vifmrc, icons
     |  |
+    |  |-- colors/ - sample color schemes
     |  `-- vim/ - plugin for Vim
     |
     |-- pkgs/ - package build-scripts

@@ -105,6 +105,9 @@ if [ "x$target" == "xall" -o "x$target" == "xarchive" ]; then
         rm -rf "$dir"
         mkdir "$dir"
         cp -R data "$dir"
+        for i in "$dir/colors"/*; do
+            dos2unix "$i"
+        done
         dos2unix "$dir/data/vifm-help.txt"
         dos2unix "$dir/data/vifmrc"
         rm -f "$dir/data/vim/doc/tags"

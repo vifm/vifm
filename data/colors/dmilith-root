@@ -1,0 +1,48 @@
+" vim: filetype=vifm :
+" You can edit this file by hand.
+" The " character at the beginning of a line comments out the line.
+" Blank lines are ignored.
+
+" The standard ncurses colors are:
+" Default = -1 = None, can be used for transparency or default color
+" Black = 0
+" Red = 1
+" Green = 2
+" Yellow = 3
+" Blue = 4
+" Magenta = 5
+" Cyan = 6
+" White = 7
+
+" Available style values (some of them can be combined):
+" bold
+" underline
+" reverse or inverse
+" standout
+" none
+
+" Vifm supports 256 colors you can use color numbers 0-255
+" (requires properly set up terminal: set your TERM environment variable
+" (directly or using resources) to some color terminal name (e.g.
+" xterm-256color) from /usr/lib/terminfo/; you can check current number
+" of colors in your terminal with tput colors command)
+
+" highlight group cterm=style ctermfg=foreground_color ctermbg=background_color
+
+highlight Win cterm=none ctermfg=white ctermbg=black
+highlight Directory cterm=bold ctermfg=cyan ctermbg=black
+highlight Link cterm=bold ctermfg=yellow ctermbg=black
+highlight BrokenLink cterm=bold ctermfg=red ctermbg=none
+highlight Socket cterm=bold ctermfg=magenta ctermbg=black
+highlight Device cterm=bold ctermfg=red ctermbg=black
+highlight Fifo cterm=bold ctermfg=cyan ctermbg=none
+highlight Executable cterm=bold ctermfg=green ctermbg=black
+highlight Selected cterm=bold ctermfg=magenta ctermbg=black
+highlight CurrLine cterm=bold ctermfg=white ctermbg=30
+highlight TopLine cterm=bold ctermfg=white ctermbg=red
+highlight TopLineSel cterm=bold ctermfg=yellow ctermbg=red
+highlight StatusLine cterm=bold ctermfg=white ctermbg=red
+highlight WildMenu cterm=underline,reverse ctermfg=white ctermbg=black
+highlight CmdLine cterm=none ctermfg=white ctermbg=black
+highlight ErrorMsg cterm=none ctermfg=red ctermbg=black
+highlight Border cterm=none ctermfg=black ctermbg=red
