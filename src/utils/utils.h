@@ -61,7 +61,8 @@ void _gnuc_noreturn run_from_fork(int pipe[2], int err, char *cmd);
 
 /* Other functions. */
 
-void get_perm_string(char *buf, int len, mode_t mode);
+/* Converts the mode to string representation of permissions. */
+void get_perm_string(char buf[], int len, mode_t mode);
 int is_on_slow_fs(const char *full_path);
 /* Fills supplied buffer with user friendly representation of file size.
  * Returns non-zero in case resulting string is a shortened variant of size. */

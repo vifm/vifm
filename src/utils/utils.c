@@ -205,9 +205,9 @@ run_from_fork(int pipe[2], int err, char *cmd)
 }
 
 void
-get_perm_string(char * buf, int len, mode_t mode)
+get_perm_string(char buf[], int len, mode_t mode)
 {
-	char *perm_sets[] =
+	static const char *const perm_sets[] =
 	{ "---", "--x", "-w-", "-wx", "r--", "r-x", "rw-", "rwx" };
 	int u, g, o;
 

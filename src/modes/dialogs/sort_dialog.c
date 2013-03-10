@@ -19,7 +19,7 @@
 
 #include <curses.h>
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h>
 #include <string.h>
 
@@ -48,7 +48,7 @@ static const char * caps[] = { "a-z", "z-a" };
 #ifndef _WIN32
 #define CORRECTION 0
 #else
-#define CORRECTION -5
+#define CORRECTION -6
 #endif
 
 static int indexes[] = {
@@ -59,16 +59,19 @@ static int indexes[] = {
 	3,               /* SORT_BY_GROUP_ID */
 	4,               /* SORT_BY_GROUP_NAME */
 	5,               /* SORT_BY_MODE */
-	6,               /* SORT_BY_OWNER_ID */
-	7,               /* SORT_BY_OWNER_NAME */
+	7,               /* SORT_BY_OWNER_ID */
+	8,               /* SORT_BY_OWNER_NAME */
 #endif
-	8 + CORRECTION,  /* SORT_BY_SIZE */
-	9 + CORRECTION,  /* SORT_BY_TIME_ACCESSED */
-	10 + CORRECTION, /* SORT_BY_TIME_CHANGED */
-	11 + CORRECTION, /* SORT_BY_TIME_MODIFIED */
+	9 + CORRECTION,  /* SORT_BY_SIZE */
+	10 + CORRECTION, /* SORT_BY_TIME_ACCESSED */
+	11 + CORRECTION, /* SORT_BY_TIME_CHANGED */
+	12 + CORRECTION, /* SORT_BY_TIME_MODIFIED */
 	2,               /* SORT_BY_INAME */
+#ifndef _WIN32
+	6,               /* SORT_BY_PERMISSIONS */
+#endif
 };
-ARRAY_GUARD(indexes, SORT_OPTION_COUNT + 1);
+ARRAY_GUARD(indexes, 1 + SORT_OPTION_COUNT);
 
 static void leave_sort_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
@@ -166,6 +169,7 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, cy++, 4, " [   ] Group ID");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Group Name");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Mode");
+	mvwaddstr(sort_win, cy++, 4, " [   ] Permissions");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Owner ID");
 	mvwaddstr(sort_win, cy++, 4, " [   ] Owner Name");
 #endif
@@ -177,6 +181,8 @@ redraw_sort_dialog(void)
 	mvwaddstr(sort_win, cy++, 4, " [   ] Time Created");
 #endif
 	mvwaddstr(sort_win, cy++, 4, " [   ] Time Modified");
+	assert(cy - top == SORT_OPTION_COUNT &&
+			"Sort dialog and sort options should not diverge");
 	mvwaddstr(sort_win, curr, 6, caps[descending]);
 
 	getmaxyx(stdscr, y, x);

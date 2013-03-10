@@ -1753,6 +1753,7 @@ key, etc.):
    [+-]gid   - sort by group id (*nix only)
    [+-]gname - sort by group name (*nix only)
    [+-]mode  - sort by mode (*nix only)
+   [+-]perms - sort by permissions string (*nix only)
    [+-]uid   - sort by owner id (*nix only)
    [+-]uname - sort by owner name (*nix only)
    [+-]size  - sort by size
@@ -2353,10 +2354,10 @@ Alignment specifier~
 
 It's an optional minus sign as the first symbol of the string.
 
-Specifies type of text alignment within a column. Two types are supported:
- - left align (default) >
+Specifies type of text alignment within a column.  Two types are supported:
+ - left align >
      set viewcolumns=-{name}
-<- right align >
+<- right align (default) >
      set viewcolumns={name}
 <
 Width specifier~

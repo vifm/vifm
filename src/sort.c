@@ -24,6 +24,7 @@
 #include <fcntl.h> /* access */
 #include <sys/stat.h>
 
+#include <assert.h> /* assert() */
 #include <ctype.h>
 #include <string.h> /* strrchr */
 
@@ -34,6 +35,7 @@
 #include "utils/str.h"
 #include "utils/test_helpers.h"
 #include "utils/tree.h"
+#include "utils/utils.h"
 #include "filelist.h"
 #include "status.h"
 #include "ui.h"
@@ -242,7 +244,6 @@ sort_dir_list(const void *one, const void *two)
 			retval = first->ctime - second->ctime;
 			break;
 #ifndef _WIN32
-
 		case SORT_BY_MODE:
 			retval = first->mode - second->mode;
 			break;
@@ -256,7 +257,20 @@ sort_dir_list(const void *one, const void *two)
 		case SORT_BY_GROUP_ID:
 			retval = first->gid - second->gid;
 			break;
+
+		case SORT_BY_PERMISSIONS:
+			{
+				char first_perm[11], second_perm[11];
+				get_perm_string(first_perm, sizeof(first_perm), first->mode);
+				get_perm_string(second_perm, sizeof(second_perm), second->mode);
+				retval = strcmp(first_perm, second_perm);
+			}
+			break;
 #endif
+
+		default:
+			assert(0 && "All possible sort options should be handled");
+			break;
 	}
 
 	if(retval == 0)
@@ -278,6 +292,7 @@ get_secondary_key(int primary_key)
 		case SORT_BY_GROUP_NAME:
 		case SORT_BY_GROUP_ID:
 		case SORT_BY_MODE:
+		case SORT_BY_PERMISSIONS:
 #endif
 		case SORT_BY_TIME_MODIFIED:
 		case SORT_BY_TIME_ACCESSED:
