@@ -9,6 +9,8 @@
 	Added "perms" sorting key on *nix (proposed by Daniel Dettlaff, a.k.a.
 	dmilith).
 
+	Added sample color schemes.
+
 	Less-like mode now highlights multiple matches in a line.
 
 	Less-like mode is now updated immediately when one changes 'wrap' option.
