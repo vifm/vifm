@@ -146,7 +146,7 @@ static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
 static int dirs_cmd(const cmd_info_t *cmd_info);
 static int echo_cmd(const cmd_info_t *cmd_info);
-TSTATIC char * eval_echo(const char args[], const char **stop_ptr);
+TSTATIC char * eval_arglist(const char args[], const char **stop_ptr);
 static char * extend_string(char *str, const char with[], size_t *len);
 static int edit_cmd(const cmd_info_t *cmd_info);
 static int else_cmd(const cmd_info_t *cmd_info);
@@ -1849,7 +1849,7 @@ echo_cmd(const cmd_info_t *cmd_info)
 	}
 
 	text_buffer_clear();
-	eval_result = eval_echo(cmd_info->args, &error_pos);
+	eval_result = eval_arglist(cmd_info->args, &error_pos);
 
 	if(eval_result == NULL)
 	{
@@ -1864,12 +1864,12 @@ echo_cmd(const cmd_info_t *cmd_info)
 	return 1;
 }
 
-/* Evaluates :echo result for arguments.  args can not be empty string.  Returns
- * pointer to newly allocated string, which should be freed by caller, or NULL
- * on error.  stop_ptr will point to the beginning of invalid expression in case
- * of error. */
+/* Evaluates a set of expressions and concatenates results with a space.  args
+ * can not be empty string.  Returns pointer to newly allocated string, which
+ * should be freed by caller, or NULL on error.  stop_ptr will point to the
+ * beginning of invalid expression in case of error. */
 TSTATIC char *
-eval_echo(const char args[], const char **stop_ptr)
+eval_arglist(const char args[], const char **stop_ptr)
 {
 	size_t len = 0;
 	char *eval_result = NULL;
