@@ -294,7 +294,7 @@ static const cmd_add_t commands[] = {
 		.handler = empty_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "endif",            .abbr = "en",    .emark = 0,  .id = COM_IF_STMT,     .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = endif_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "execute",          .abbr = "exe",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "execute",          .abbr = "exe",   .emark = 0,  .id = COM_EXE,         .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = exe_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "exit",             .abbr = "exi",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
