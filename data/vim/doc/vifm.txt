@@ -888,9 +888,8 @@ The builtin commands are:
 :dirs - display directory stack.
 
                                                *vifm-:echo* *vifm-:ec*
-:ec[ho] [<expr>...] - echoes each of argument as expressions and
-    outputs them separated by a space.  See |vifm-:let| for definition of
-    <expr>.
+:ec[ho] [<expr>...] - evaluates each argument as an expression and outputs
+    them separated by a space.  See |vifm-:let| for definition of <expr>.
 
                                                *vifm-:edit* *vifm-:e*
 :[range]e[dit] [file...] - will load the selected or passed file or files
@@ -909,8 +908,9 @@ The builtin commands are:
 :en[dif] - ends conditional block.  See also |vifm-:if| and |vifm-:else|.
 
                                                *vifm-:execute* *vifm-:exe*
-:exe[cute] [arg...] - will join all passed arguments by inserting a single
-    space between them and execute resulting string as a command-line command.
+:exe[cute] [<expr>...] - evaluates each argument as an expression and joins
+    results separated by a space to get a single string which is then executed
+    as a command-line command.  See |vifm-:let| for definition of <expr>.
 
                                                *vifm-:exit* *vifm-:exi*
 :exi[t][!] - same as :quit.

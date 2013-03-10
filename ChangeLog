@@ -25,6 +25,9 @@
 	Made 'slowfs' option actually work on OS X (thanks to Daniel Dettlaff,
 	a.k.a. dmilith).
 
+	Made :execute process its arguments just like :echo command (thanks to
+	Daniel Dettlaff, a.k.a. dmilith, which made me discover old behaviour).
+
 	Fixed configuration on OS X and FreeBSD because of unavailable mntent.h
 	header and strverscmp() function (reported by Daniel R., a.k.a. r1chelt,
 	and Daniel Dettlaff, a.k.a. dmilith).

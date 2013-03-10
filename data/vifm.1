@@ -1006,8 +1006,8 @@ list (for example "az to display "", "a and "z content).
 display directory stack.
 .TP
 .BI ":ec[ho] [<expr>...]"
-echoes each of argument as expressions and outputs them separated by a space.
-See help on :let command for definition of <expr>.
+evaluates each argument as an expression and outputs them separated by a space.
+See help on :let command for a definition of <expr>.
 .TP
 .BI ":[range]e[dit] [file...]"
 will load the selected or passed file or files into vi.  Accepts macros.
@@ -1025,9 +1025,10 @@ all records about files in trash directory from all registers.  See
 .BI :en[dif]
 ends conditional block.  See also help on :if and :else commands.
 .TP
-.BI ":exe[cute] [arg...]"
-will join all passed arguments by inserting a single space between them and
-execute resulting string as a command-line command.
+.BI ":exe[cute] [<expr>...]"
+evaluates each argument as an expression and joins results separated by a
+space to get a single string, which is then executed as a command-line command.
+See help on :let command for a definition of <expr>.
 .TP
 .BI :exi[t][!]
 same as :quit.
