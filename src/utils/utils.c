@@ -298,7 +298,7 @@ is_on_slow_fs(const char *full_path)
 	{
 		if(path_starts_with(full_path, ent->mnt_dir))
 		{
-			size_t new_len = strlen(ent->mnt_dir);
+			const size_t new_len = strlen(ent->mnt_dir);
 			if(new_len > len)
 			{
 				len = new_len;
@@ -307,17 +307,8 @@ is_on_slow_fs(const char *full_path)
 		}
 	}
 
-	if(max[0] != '\0')
-	{
-		if(begins_with_list_item(max, cfg.slow_fs_list))
-		{
-			endmntent(f);
-			return 1;
-		}
-	}
-
 	endmntent(f);
-	return 0;
+	return (max[0] == '\0') ? 0 : begins_with_list_item(max, cfg.slow_fs_list);
 #endif
 }
 
