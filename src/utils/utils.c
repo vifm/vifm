@@ -289,6 +289,11 @@ is_on_slow_fs(const char *full_path)
 	size_t len = 0;
 	char max[PATH_MAX] = "";
 
+	if(cfg.slow_fs_list[0] == '\0')
+	{
+		return 0;
+	}
+
 	if((f = setmntent("/etc/mtab", "r")) == NULL)
 	{
 		return 0;
