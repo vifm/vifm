@@ -44,6 +44,9 @@
 
 #define SORT_WIN_WIDTH 32
 
+/* New values should be added at the end of enumeration to do not brake sort
+ * settings stored in vifminfo files.  Also LAST_SORT_OPTION and
+ * SORT_OPTION_COUNT should be updated accordingly. */
 enum
 {
 	SORT_BY_EXTENSION = 1,
@@ -60,6 +63,9 @@ enum
 	SORT_BY_TIME_CHANGED,
 	SORT_BY_TIME_MODIFIED,
 	SORT_BY_INAME,
+#ifndef _WIN32
+	SORT_BY_PERMISSIONS,
+#endif
 
 	/* Default sort key. */
 #ifndef _WIN32
@@ -68,9 +74,9 @@ enum
 	DEFAULT_SORT_KEY = SORT_BY_INAME,
 #endif
 	/* Value of the last sort option. */
-	LAST_SORT_OPTION = SORT_BY_INAME,
+	LAST_SORT_OPTION = SORT_BY_PERMISSIONS,
 	/* Number of sort options. */
-	SORT_OPTION_COUNT = SORT_BY_INAME,
+	SORT_OPTION_COUNT = SORT_BY_PERMISSIONS,
 	/* Special value to use for unset options. */
 	NO_SORT_OPTION = LAST_SORT_OPTION + 1
 };

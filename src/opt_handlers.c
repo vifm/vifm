@@ -141,6 +141,9 @@ static const char * sort_enum[] = {
 	"ctime",
 	"mtime",
 	"iname",
+#ifndef _WIN32
+	"perms",
+#endif
 };
 ARRAY_GUARD(sort_enum, SORT_OPTION_COUNT);
 
@@ -165,6 +168,9 @@ static const char * sort_types[] = {
 	"ctime", "+ctime", "-ctime",
 	"mtime", "+mtime", "-mtime",
 	"iname", "+iname", "-iname",
+#ifndef _WIN32
+	"perms", "+perms", "-perms",
+#endif
 };
 ARRAY_GUARD(sort_types, SORT_OPTION_COUNT*3);
 
