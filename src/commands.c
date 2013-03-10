@@ -146,13 +146,14 @@ static int delete_cmd(const cmd_info_t *cmd_info);
 static int delmarks_cmd(const cmd_info_t *cmd_info);
 static int dirs_cmd(const cmd_info_t *cmd_info);
 static int echo_cmd(const cmd_info_t *cmd_info);
-TSTATIC char * eval_arglist(const char args[], const char **stop_ptr);
 static char * extend_string(char *str, const char with[], size_t *len);
 static int edit_cmd(const cmd_info_t *cmd_info);
 static int else_cmd(const cmd_info_t *cmd_info);
 static int empty_cmd(const cmd_info_t *cmd_info);
 static int endif_cmd(const cmd_info_t *cmd_info);
 static int exe_cmd(const cmd_info_t *cmd_info);
+static char * try_eval_arglist(const cmd_info_t *cmd_info);
+TSTATIC char * eval_arglist(const char args[], const char **stop_ptr);
 static int file_cmd(const cmd_info_t *cmd_info);
 static int filetype_cmd(const cmd_info_t *cmd_info);
 static int filextype_cmd(const cmd_info_t *cmd_info);
@@ -293,7 +294,7 @@ static const cmd_add_t commands[] = {
 		.handler = empty_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "endif",            .abbr = "en",    .emark = 0,  .id = COM_IF_STMT,     .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = endif_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
-	{ .name = "execute",          .abbr = "exe",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
+	{ .name = "execute",          .abbr = "exe",   .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = exe_cmd,         .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 0, },
 	{ .name = "exit",             .abbr = "exi",   .emark = 1,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = quit_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
@@ -1840,85 +1841,10 @@ dirs_cmd(const cmd_info_t *cmd_info)
 static int
 echo_cmd(const cmd_info_t *cmd_info)
 {
-	char *eval_result;
-	const char *error_pos;
-
-	if(cmd_info->argc == 0)
-	{
-		return 0;
-	}
-
-	text_buffer_clear();
-	eval_result = eval_arglist(cmd_info->args, &error_pos);
-
-	if(eval_result == NULL)
-	{
-		text_buffer_addf("%s: %s", "Invalid expression", error_pos);
-		status_bar_errorf(text_buffer_get());
-	}
-	else
-	{
-		status_bar_message(eval_result);
-		free(eval_result);
-	}
+	char *const eval_result = try_eval_arglist(cmd_info);
+	status_bar_message(eval_result);
+	free(eval_result);
 	return 1;
-}
-
-/* Evaluates a set of expressions and concatenates results with a space.  args
- * can not be empty string.  Returns pointer to newly allocated string, which
- * should be freed by caller, or NULL on error.  stop_ptr will point to the
- * beginning of invalid expression in case of error. */
-TSTATIC char *
-eval_arglist(const char args[], const char **stop_ptr)
-{
-	size_t len = 0;
-	char *eval_result = NULL;
-
-	assert(args[0] != '\0');
-
-	while(args[0] != '\0')
-	{
-		var_t result = var_false();
-		const ParsingErrors parsing_error = parse(args, &result);
-		char *free_this = NULL;
-		const char *tmp_result = NULL;
-		if(parsing_error == PE_INVALID_EXPRESSION && is_prev_token_whitespace())
-		{
-			result = get_parsing_result();
-			tmp_result = free_this = var_to_string(result);
-			args = get_last_parsed_char();
-		}
-		else if(parsing_error == PE_NO_ERROR)
-		{
-			tmp_result = free_this = var_to_string(result);
-			args = get_last_position();
-		}
-
-		if(tmp_result == NULL)
-		{
-			var_free(result);
-			break;
-		}
-
-		if(!is_null_or_empty(eval_result))
-		{
-			eval_result = extend_string(eval_result, " ", &len);
-		}
-		eval_result = extend_string(eval_result, tmp_result, &len);
-
-		var_free(result);
-		free(free_this);
-	}
-	if(args[0] == '\0')
-	{
-		return eval_result;
-	}
-	else
-	{
-		free(eval_result);
-		*stop_ptr = args;
-		return NULL;
-	}
 }
 
 /* Concatenates the str with the with by reallocating string.  Returns str, when
@@ -2047,37 +1973,101 @@ endif_cmd(const cmd_info_t *cmd_info)
 	return 0;
 }
 
+/* This command composes a string from expressions and runs it as a command. */
 static int
 exe_cmd(const cmd_info_t *cmd_info)
 {
-	size_t len = 0;
-	char *line = NULL;
-	int i;
-	int result;
-
-	for(i = 0; i < cmd_info->argc; i++)
+	int result = 1;
+	char *const eval_result = try_eval_arglist(cmd_info);
+	if(eval_result != NULL)
 	{
-		char *p;
-		if(line != NULL)
-			strcat(line, " ");
-		len += 1 + strlen(cmd_info->argv[i]) + 1;
-		p = realloc(line, len);
-		if(p == NULL)
+		result = exec_commands(eval_result, curr_view, GET_COMMAND);
+		free(eval_result);
+	}
+	return result != 0;
+}
+
+/* Tries to evaluate a set of expressions and concatenate results with a space.
+ * Returns pointer to newly allocated string, which should be freed by caller,
+ * or NULL on error. */
+static char *
+try_eval_arglist(const cmd_info_t *cmd_info)
+{
+	char *eval_result;
+	const char *error_pos;
+
+	if(cmd_info->argc == 0)
+	{
+		return NULL;
+	}
+
+	text_buffer_clear();
+	eval_result = eval_arglist(cmd_info->raw_args, &error_pos);
+
+	if(eval_result == NULL)
+	{
+		text_buffer_addf("%s: %s", "Invalid expression", error_pos);
+		status_bar_errorf(text_buffer_get());
+	}
+
+	return eval_result;
+}
+
+/* Evaluates a set of expressions and concatenates results with a space.  args
+ * can not be empty string.  Returns pointer to newly allocated string, which
+ * should be freed by caller, or NULL on error.  stop_ptr will point to the
+ * beginning of invalid expression in case of error. */
+TSTATIC char *
+eval_arglist(const char args[], const char **stop_ptr)
+{
+	size_t len = 0;
+	char *eval_result = NULL;
+
+	assert(args[0] != '\0');
+
+	while(args[0] != '\0')
+	{
+		var_t result = var_false();
+		const ParsingErrors parsing_error = parse(args, &result);
+		char *free_this = NULL;
+		const char *tmp_result = NULL;
+		if(parsing_error == PE_INVALID_EXPRESSION && is_prev_token_whitespace())
 		{
-			show_error_msg("Memory error", "Unable to allocate enough memory");
+			result = get_parsing_result();
+			tmp_result = free_this = var_to_string(result);
+			args = get_last_parsed_char();
+		}
+		else if(parsing_error == PE_NO_ERROR)
+		{
+			tmp_result = free_this = var_to_string(result);
+			args = get_last_position();
+		}
+
+		if(tmp_result == NULL)
+		{
+			var_free(result);
 			break;
 		}
-		if(line == NULL)
-			*p = '\0';
-		line = p;
-		strcat(line, cmd_info->argv[i]);
-	}
-	if(line == NULL)
-		return 0;
 
-	result = exec_commands(line, curr_view, GET_COMMAND);
-	free(line);
-	return result != 0;
+		if(!is_null_or_empty(eval_result))
+		{
+			eval_result = extend_string(eval_result, " ", &len);
+		}
+		eval_result = extend_string(eval_result, tmp_result, &len);
+
+		var_free(result);
+		free(free_this);
+	}
+	if(args[0] == '\0')
+	{
+		return eval_result;
+	}
+	else
+	{
+		free(eval_result);
+		*stop_ptr = args;
+		return NULL;
+	}
 }
 
 static int
