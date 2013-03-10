@@ -24,6 +24,7 @@
 #include <fcntl.h> /* access */
 #include <sys/stat.h>
 
+#include <assert.h> /* assert() */
 #include <ctype.h>
 #include <string.h> /* strrchr */
 
@@ -257,6 +258,10 @@ sort_dir_list(const void *one, const void *two)
 			retval = first->gid - second->gid;
 			break;
 #endif
+
+		default:
+			assert(0 && "All possible sort options should be handled");
+			break;
 	}
 
 	if(retval == 0)
