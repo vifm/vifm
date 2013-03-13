@@ -23,7 +23,6 @@
 
 #include "../utils/path.h"
 #include "../utils/str.h"
-#include "../macros.h"
 #include "../ui.h"
 #include "menus.h"
 
@@ -40,11 +39,7 @@ show_find_menu(FileView *view, int with_path, const char args[])
 
 	m.title = format_str("find %s", args);
 
-	if(view->selected_files > 0)
-		files = expand_macros("%f", NULL, NULL);
-	else
-		files = strdup(".");
-
+	files = get_cmd_target();
 	if(args[0] == '-')
 		snprintf(cmd_buf, sizeof(cmd_buf), "find %s %s", files, args);
 	else if(with_path)

@@ -22,7 +22,6 @@
 
 #include "../utils/path.h"
 #include "../utils/str.h"
-#include "../macros.h"
 #include "../ui.h"
 #include "menus.h"
 
@@ -39,13 +38,10 @@ show_grep_menu(FileView *view, const char args[], int invert)
 
 	static menu_info m;
 	init_menu_info(&m, GREP, strdup("No matches found"));
+
 	m.title = format_str("grep %s", args);
 
-	if(view->selected_files > 0)
-		files = expand_macros("%f", NULL, NULL);
-	else
-		files = strdup(".");
-
+	files = get_cmd_target();
 	if(args[0] == '-')
 	{
 		cmd = format_str("%s %s %s %s", grep_cmd, inv_str, args, files);
