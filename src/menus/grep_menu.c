@@ -17,9 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() malloc() */
-#include <string.h> /* strdup() strlen() */
+#include <stdlib.h> /* free() */
+#include <string.h> /* strdup() */
 
 #include "../utils/path.h"
 #include "../utils/str.h"
@@ -49,18 +48,12 @@ show_grep_menu(FileView *view, const char args[], int invert)
 
 	if(args[0] == '-')
 	{
-		size_t var_len = strlen(inv_str) + 1 + strlen(args) + 1 + strlen(files);
-		cmd = malloc(sizeof(grep_cmd) + 1 + var_len);
-		sprintf(cmd, "%s %s %s %s", grep_cmd, inv_str, args, files);
+		cmd = format_str("%s %s %s %s", grep_cmd, inv_str, args, files);
 	}
 	else
 	{
-		size_t var_len;
-		char *escaped_args;
-		escaped_args = escape_filename(args, 0);
-		var_len = strlen(inv_str) + 1 + strlen(escaped_args) + 1 + strlen(files);
-		cmd = malloc(sizeof(grep_cmd) + 1 + var_len);
-		sprintf(cmd, "%s %s %s %s", grep_cmd, inv_str, escaped_args, files);
+		char *const escaped_args = escape_filename(args, 0);
+		cmd = format_str("%s %s %s %s", grep_cmd, inv_str, escaped_args, files);
 		free(escaped_args);
 	}
 	free(files);
