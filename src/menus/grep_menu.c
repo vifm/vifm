@@ -30,7 +30,7 @@
 int
 show_grep_menu(FileView *view, const char args[], int invert)
 {
-	char *files;
+	char *targets;
 	int result;
 	const char *inv_str = invert ? "-v" : "";
 	const char grep_cmd[] = "grep -n -H -I -r";
@@ -41,18 +41,18 @@ show_grep_menu(FileView *view, const char args[], int invert)
 
 	m.title = format_str("grep %s", args);
 
-	files = get_cmd_target();
+	targets = get_cmd_target();
 	if(args[0] == '-')
 	{
-		cmd = format_str("%s %s %s %s", grep_cmd, inv_str, args, files);
+		cmd = format_str("%s %s %s %s", grep_cmd, inv_str, args, targets);
 	}
 	else
 	{
 		char *const escaped_args = escape_filename(args, 0);
-		cmd = format_str("%s %s %s %s", grep_cmd, inv_str, escaped_args, files);
+		cmd = format_str("%s %s %s %s", grep_cmd, inv_str, escaped_args, targets);
 		free(escaped_args);
 	}
-	free(files);
+	free(targets);
 
 	status_bar_message("grep...");
 
