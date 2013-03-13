@@ -46,6 +46,7 @@
 #include "utils/macros.h"
 #include "utils/path.h"
 #include "utils/str.h"
+#include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "background.h"
 #include "file_magic.h"
@@ -80,6 +81,7 @@ static void execute_file(char full_path[]);
 static void run_selection(FileView *view, int dont_execute);
 static void run_file(FileView *view, int dont_execute);
 static int multi_run_compat(FileView *view, const char *program);
+TSTATIC char * format_edit_selection_cmd(int *bg);
 static void follow_link(FileView *view, int follow_dirs);
 static void get_last_path_component(const char *path, char* buf);
 static int try_run_with_filetype(FileView *view, const assoc_records_t assocs,
@@ -384,13 +386,10 @@ run_file(FileView *view, int dont_execute)
 		}
 		else
 		{
-			int bg;
-			char *cmd = format_edit_selection_cmd(&bg);
-			if(bg)
-				start_background_job(cmd, 0);
-			else
-				shellout(cmd, -1, 1);
-			free(cmd);
+			if(edit_selection() != 0)
+			{
+				show_error_msg("Running error", "Can't edit selection");
+			}
 		}
 		return;
 	}
@@ -487,7 +486,24 @@ view_file(const char *filename, int line, int do_fork)
 	curs_set(FALSE);
 }
 
-char *
+int
+edit_selection(void)
+{
+	int error = 1;
+	int bg;
+	char *const cmd = format_edit_selection_cmd(&bg);
+	if(cmd != NULL)
+	{
+		/* TODO: move next line to a separate function. */
+		error = bg ? start_background_job(cmd, 0) : shellout(cmd, -1, 1);
+		free(cmd);
+	}
+	return error;
+}
+
+/* Formats a command to edit selected files of the current view in an editor.
+ * Returns a newly allocated string, which should be freed by the caller. */
+TSTATIC char *
 format_edit_selection_cmd(int *bg)
 {
 	char *const files = expand_macros("%f", NULL, NULL);
