@@ -509,7 +509,7 @@ wchar_t *
 substitute_specs(const char cmd[])
 {
 	wchar_t *buf, *p;
-	size_t len = strlen(cmd) + 1;
+	const size_t len = strlen(cmd) + 1;
 	wchar_t *const cmdw = to_wide(cmd);
 	wchar_t *s = cmdw;
 
@@ -551,8 +551,8 @@ find_notation(const wchar_t str[])
 	int l = 0, u = ARRAY_LEN(key_pairs) - 1;
 	while(l <= u)
 	{
-		int i = (l + u)/2;
-		int comp = wcsncasecmp(str, key_pairs[i].notation, key_pairs[i].len);
+		const int i = (l + u)/2;
+		const int comp = wcsncasecmp(str, key_pairs[i].notation, key_pairs[i].len);
 		if(comp == 0)
 		{
 			return &key_pairs[i];
