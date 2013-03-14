@@ -19,8 +19,8 @@
 #include <curses.h>
 
 #include <assert.h> /* assert() */
-#include <stddef.h> /* wchar_t */
-#include <stdlib.h> /* qsort() */
+#include <stddef.h> /* NULL size_t wchar_t */
+#include <stdlib.h> /* free() malloc() qsort() */
 #include <string.h> /* strlen() */
 #include <wchar.h> /* wcscpy() wcslen() wcscasecmp() wcsncasecmp() */
 
