@@ -537,7 +537,7 @@ substitute_specs(const char cmd[])
 		}
 	}
 	*p = L'\0';
-	assert(p + 1 - buf <= len);
+	assert(p + 1 - buf <= len && "Destination buffer was too small.");
 
 	free(cmdw);
 	return buf;
