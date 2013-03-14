@@ -35,7 +35,8 @@ typedef struct
 	const wchar_t *notation; /* The notation itself. */
 	const wchar_t key[8]; /* The replacement for the notation. */
 	size_t len; /* Length of the notation. */
-}key_pair_t;
+}
+key_pair_t;
 
 static int notation_sorter(const void *first, const void *second);
 static key_pair_t * find_notation(const wchar_t str[]);
