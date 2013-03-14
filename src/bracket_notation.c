@@ -39,7 +39,7 @@ typedef struct
 key_pair_t;
 
 static int notation_sorter(const void *first, const void *second);
-static key_pair_t * find_notation(const wchar_t str[]);
+static const key_pair_t * find_notation(const wchar_t str[]);
 
 static key_pair_t key_pairs[] = {
 	{ L"<esc>",      L"\x1b"              },
@@ -524,8 +524,7 @@ substitute_specs(const char cmd[])
 	p = buf;
 	while(*s != L'\0')
 	{
-		key_pair_t *pair;
-		pair = find_notation(s);
+		const key_pair_t *const pair = find_notation(s);
 		if(pair == NULL)
 		{
 			*p++ = *s++;
@@ -546,7 +545,7 @@ substitute_specs(const char cmd[])
 
 /* Performs binary search in the list of bracket notations.  Returns NULL if
  * str wasn't found in the list. */
-static key_pair_t *
+static const key_pair_t *
 find_notation(const wchar_t str[])
 {
 	int l = 0, u = ARRAY_LEN(key_pairs) - 1;
