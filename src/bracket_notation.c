@@ -494,7 +494,7 @@ init_bracket_notation(void)
 	qsort(key_pairs, ARRAY_LEN(key_pairs), sizeof(key_pairs[0]), notation_sorter);
 }
 
-/* Sorter function to called by qsort. */
+/* Sorter function to be called by qsort. */
 static int
 notation_sorter(const void *first, const void *second)
 {
