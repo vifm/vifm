@@ -1,4 +1,4 @@
-.TH vifm 1 "March 10, 2013" "" "Vifm"
+.TH vifm 1 "March 16, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2473,7 +2473,20 @@ Examples:
 .\" ---------------------------------------------------------------------------
 USAGE             RESULT        DESCRIPTION
 
+expand({expr})    String        Expand macros in {expr}.
 filetype({fnum})  String        Returns file type from position.
+
+expand({expr})
+.br
+Expands macros in {expr} just like it's done for command-line commands.
+Returns a string.  See "Command macros" section above.
+Examples:
+.EX
+  " percent sign
+  :echo expand('%%')
+  " the last part of directory name of the other pane
+  :echo expand('%D:t')
+.EE
 
 filetype({fnum})
 .br
