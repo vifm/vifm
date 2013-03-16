@@ -116,6 +116,10 @@ void draw_menu(menu_info *m);
 int execute_menu_cb(FileView *view, menu_info *m);
 /* Closes ef. */
 void print_errors(FILE *ef);
+/* Gets list of target files/directories in the current view.  On success
+ * returns newly allocated string, which should be freed by the caller,
+ * otherwise NULL is returned. */
+char * get_cmd_target(void);
 
 /* Runs external command and puts its output to the m menu.  Returns non-zero if
  * status bar message should be saved. */

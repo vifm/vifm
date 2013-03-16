@@ -23,7 +23,6 @@
 
 #include "../utils/path.h"
 #include "../utils/str.h"
-#include "../macros.h"
 #include "../ui.h"
 #include "menus.h"
 
@@ -33,20 +32,16 @@ int
 show_find_menu(FileView *view, int with_path, const char args[])
 {
 	char cmd_buf[256];
-	char *files;
+	char *targets;
 
 	static menu_info m;
 	init_menu_info(&m, FIND, strdup("No files found"));
 
 	m.title = format_str("find %s", args);
 
-	if(view->selected_files > 0)
-		files = expand_macros(view, "%f", NULL, NULL);
-	else
-		files = strdup(".");
-
+	targets = get_cmd_target();
 	if(args[0] == '-')
-		snprintf(cmd_buf, sizeof(cmd_buf), "find %s %s", files, args);
+		snprintf(cmd_buf, sizeof(cmd_buf), "find %s %s", targets, args);
 	else if(with_path)
 		snprintf(cmd_buf, sizeof(cmd_buf), "find %s", args);
 	else
@@ -54,10 +49,10 @@ show_find_menu(FileView *view, int with_path, const char args[])
 		char *escaped_args = escape_filename(args, 0);
 		snprintf(cmd_buf, sizeof(cmd_buf),
 				"find %s -type d \\( ! -readable -o ! -executable \\) -prune -o "
-				"-name %s -print", files, escaped_args);
+				"-name %s -print", targets, escaped_args);
 		free(escaped_args);
 	}
-	free(files);
+	free(targets);
 
 	status_bar_message("find...");
 

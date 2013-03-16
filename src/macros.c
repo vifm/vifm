@@ -41,8 +41,7 @@ static char * expand_directory_path(FileView *view, char *expanded, int quotes,
 static char * append_to_expanded(char *expanded, const char* str);
 
 char *
-expand_macros(FileView *view, const char *command, const char *args,
-		MacroFlags *flags)
+expand_macros(const char *command, const char *args, MacroFlags *flags)
 {
 	/* TODO: refactor this function expand_macros() */
 

@@ -514,7 +514,7 @@ cmds_expand_macros(const char *str, int *usr1, int *usr2)
 	char *result;
 	MacroFlags flags = MACRO_NONE;
 
-	result = expand_macros(curr_view, str, NULL, &flags);
+	result = expand_macros(str, NULL, &flags);
 
 	*usr1 = flags;
 
@@ -1904,8 +1904,6 @@ edit_cmd(const cmd_info_t *cmd_info)
 	else
 	{
 		int i;
-		char *cmd;
-		int bg;
 
 		for(i = 0; i < curr_view->list_rows; i++)
 		{
@@ -1925,16 +1923,10 @@ edit_cmd(const cmd_info_t *cmd_info)
 		if(cfg.vim_filter)
 			use_vim_plugin(curr_view, cmd_info->argc, cmd_info->argv); /* no return */
 
-		if((cmd = edit_selection(curr_view, &bg)) == NULL)
+		if(edit_selection() != 0)
 		{
-			show_error_msg("Memory error", "Unable to allocate enough memory");
-			return 0;
+			show_error_msg("Edit error", "Can't edit selection");
 		}
-		if(bg)
-			start_background_job(cmd, 0);
-		else
-			shellout(cmd, -1, 1);
-		free(cmd);
 	}
 	return 0;
 }
@@ -3629,8 +3621,7 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	int save_msg = 0;
 
 	/* Expand macros in a binded command. */
-	expanded_com = expand_macros(curr_view, cmd_info->cmd, cmd_info->args,
-			&flags);
+	expanded_com = expand_macros(cmd_info->cmd, cmd_info->args, &flags);
 
 	len = trim_right(expanded_com);
 	if((bg = ends_with(expanded_com, " &")))

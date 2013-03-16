@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Mar 10
+*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Mar 16
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1430,7 +1430,7 @@ user can chose what to do next.
 The builtin commands that accept a range are :d[elete] and :y[ank].
 
 Command macros~
-
+                                                               *vifm-macros*
 The command macros may be used in user commands.
   %a      user arguments.  When user arguments contain macros, they are
           expanded before preforming substitution of %a.
@@ -2069,7 +2069,18 @@ Examples: >
 
 USAGE             RESULT        DESCRIPTION	~
 
+expand({expr})    String        Expand macros in {expr}.
 filetype({fnum})  String        Returns file type from position.
+
+expand({expr})                                 *vifm-expand()*
+Expands macros in {expr} just like it's done for command-line commands.
+Returns a string.  See |vifm-macros|.
+
+Examples: >
+  " percent sign
+  :echo expand('%%')
+  " the last part of directory name of the other pane
+  :echo expand('%D:t')
 
 filetype({fnum})                               *vifm-filetype()*
 The result is a string, which represents file type and is one of the list:

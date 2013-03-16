@@ -30,7 +30,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h> /* isspace() */
-#include <stddef.h> /* size_t */
+#include <stddef.h> /* NULL size_t */
 #include <string.h> /* memset() strdup() strchr() strlen() */
 #include <stdarg.h>
 #include <signal.h>
@@ -48,6 +48,7 @@
 #include "../bookmarks.h"
 #include "../commands.h"
 #include "../filelist.h"
+#include "../macros.h"
 #include "../running.h"
 #include "../search.h"
 #include "../status.h"
@@ -919,6 +920,13 @@ print_errors(FILE *ef)
 		show_error_msg("Background Process Error", buf);
 
 	fclose(ef);
+}
+
+char *
+get_cmd_target(void)
+{
+	return (curr_view->selected_files > 0) ?
+		expand_macros("%f", NULL, NULL) : strdup(".");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

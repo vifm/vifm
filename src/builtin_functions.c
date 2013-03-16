@@ -18,7 +18,8 @@
 
 #include <sys/types.h> /* mode_t */
 
-#include <assert.h>
+#include <assert.h> /* assert() */
+#include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* free() */
 #include <string.h> /* strcmp() strdup() */
 
@@ -26,15 +27,18 @@
 #include "engine/var.h"
 #include "utils/macros.h"
 #include "utils/utils.h"
+#include "macros.h"
 #include "ui.h"
 
 #include "builtin_functions.h"
 
+static var_t expand_builtin(const call_info_t *call_info);
 static var_t filetype_builtin(const call_info_t *call_info);
 static int get_fnum(const char position[]);
 
 static const function_t functions[] =
 {
+	{ "expand",   1, &expand_builtin },
 	{ "filetype", 1, &filetype_builtin },
 };
 
@@ -47,6 +51,24 @@ init_builtin_functions(void)
 		int result = function_register(&functions[i]);
 		assert(result == 0 && "Builtin function registration error");
 	}
+}
+
+/* Returns string after expanding expression. */
+static var_t
+expand_builtin(const call_info_t *call_info)
+{
+	var_t result;
+	var_val_t var_val;
+	char *str_val;
+
+	str_val = var_to_string(call_info->argv[0]);
+	var_val.string = expand_macros(str_val, NULL, NULL);
+	free(str_val);
+
+	result = var_new(VTYPE_STRING, var_val);
+	free(var_val.string);
+
+	return result;
 }
 
 /* Returns string representation of file type. */

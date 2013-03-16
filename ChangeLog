@@ -9,7 +9,10 @@
 	Added "perms" sorting key on *nix (proposed by Daniel Dettlaff, a.k.a.
 	dmilith).
 
-	Added sample color schemes.
+	Added sample color schemes (proposed by Daniel Dettlaff, a.k.a. dmilith).
+
+	Added expand() builtin function to expand macros (thanks to Sebastian
+	Cyprych for the use case).
 
 	Less-like mode now highlights multiple matches in a line.
 
@@ -97,6 +100,9 @@
 	the other pane.
 
 	Fixed initial cursor position in the :colorscheme menu.
+
+	Fixed mappings of sequences containing non-ascii characters (thanks to
+	ksandr1v).
 
 0.7.4a to 0.7.4b
 

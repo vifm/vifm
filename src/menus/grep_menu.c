@@ -17,13 +17,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <stdio.h> /* snprintf() */
-#include <stdlib.h> /* free() malloc() */
-#include <string.h> /* strdup() strlen() */
+#include <stdlib.h> /* free() */
+#include <string.h> /* strdup() */
 
 #include "../utils/path.h"
 #include "../utils/str.h"
-#include "../macros.h"
 #include "../ui.h"
 #include "menus.h"
 
@@ -32,7 +30,7 @@
 int
 show_grep_menu(FileView *view, const char args[], int invert)
 {
-	char *files;
+	char *targets;
 	int result;
 	const char *inv_str = invert ? "-v" : "";
 	const char grep_cmd[] = "grep -n -H -I -r";
@@ -40,30 +38,21 @@ show_grep_menu(FileView *view, const char args[], int invert)
 
 	static menu_info m;
 	init_menu_info(&m, GREP, strdup("No matches found"));
+
 	m.title = format_str("grep %s", args);
 
-	if(view->selected_files > 0)
-		files = expand_macros(view, "%f", NULL, NULL);
-	else
-		files = strdup(".");
-
+	targets = get_cmd_target();
 	if(args[0] == '-')
 	{
-		size_t var_len = strlen(inv_str) + 1 + strlen(args) + 1 + strlen(files);
-		cmd = malloc(sizeof(grep_cmd) + 1 + var_len);
-		sprintf(cmd, "%s %s %s %s", grep_cmd, inv_str, args, files);
+		cmd = format_str("%s %s %s %s", grep_cmd, inv_str, args, targets);
 	}
 	else
 	{
-		size_t var_len;
-		char *escaped_args;
-		escaped_args = escape_filename(args, 0);
-		var_len = strlen(inv_str) + 1 + strlen(escaped_args) + 1 + strlen(files);
-		cmd = malloc(sizeof(grep_cmd) + 1 + var_len);
-		sprintf(cmd, "%s %s %s %s", grep_cmd, inv_str, escaped_args, files);
+		char *const escaped_args = escape_filename(args, 0);
+		cmd = format_str("%s %s %s %s", grep_cmd, inv_str, escaped_args, targets);
 		free(escaped_args);
 	}
-	free(files);
+	free(targets);
 
 	status_bar_message("grep...");
 

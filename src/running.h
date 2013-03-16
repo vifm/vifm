@@ -21,10 +21,13 @@
 #define __RUNNING_H__
 
 #include "utils/macros.h"
+#include "utils/test_helpers.h"
 #include "ui.h"
 
 void handle_file(FileView *view, int dont_execute, int force_follow);
-char * edit_selection(FileView *view, int *bg);
+/* Opens external editor to edit selected files of the current view.  Returns
+ * non-zero on error, otherwise zero is returned. */
+int edit_selection(void);
 void run_using_prog(FileView *view, const char *program, int dont_execute,
 		int force_background);
 void view_file(const char *filename, int line, int do_fork);
@@ -35,6 +38,10 @@ int shellout(const char *command, int pause, int allow_screen);
 void output_to_nowhere(const char *cmd);
 /* Returns zero on successful running. */
 int run_with_filetype(FileView *view, const char beginning[], int background);
+
+TSTATIC_DEFS(
+	char * format_edit_selection_cmd(int *bg);
+)
 
 #endif
 
