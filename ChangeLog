@@ -98,6 +98,9 @@
 
 	Fixed initial cursor position in the :colorscheme menu.
 
+	Fixed mappings of sequences containing non-ascii characters (thanks to
+	ksandr1v).
+
 0.7.4a to 0.7.4b
 
 	Removed screen title forcing for shell commands.
