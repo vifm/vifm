@@ -27,6 +27,7 @@
  * SUCH DAMAGE.
  */
 
+#ifndef _WIN32
 #if defined(HAVE_MNTENT_H) && HAVE_MNTENT_H
 #include <mntent.h>
 #else
@@ -56,6 +57,7 @@ char *hasmntopt __P ((const struct mntent *mnt, const char option[]));
 
 #endif /* __MNTENT_H__ */
 #endif /* HAVE_MNTENT_H */
+#endif /* __WIN32 */
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */
 /* vim: set cinoptions+=t0 : */

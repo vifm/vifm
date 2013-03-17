@@ -104,7 +104,9 @@ static void format_mode(int id, const void *data, size_t buf_len, char *buf);
 static void format_owner(int id, const void *data, size_t buf_len, char *buf);
 #endif
 static void format_time(int id, const void *data, size_t buf_len, char *buf);
+#ifndef _WIN32
 static void format_perms(int id, const void *data, size_t buf_len, char buf[]);
+#endif
 static void init_view(FileView *view);
 static void prepare_view(FileView *view);
 static void init_view_history(FileView *view);
@@ -362,6 +364,7 @@ format_time(int id, const void *data, size_t buf_len, char *buf)
 	strftime(buf, buf_len + 1, cfg.time_format, tm_ptr);
 }
 
+#ifndef _WIN32
 /* File permissions mask format callback for column_view unit. */
 static void
 format_perms(int id, const void *data, size_t buf_len, char buf[])
@@ -371,6 +374,7 @@ format_perms(int id, const void *data, size_t buf_len, char buf[])
 	dir_entry_t *entry = &view->dir_entry[cdt->line];
 	get_perm_string(buf, buf_len, entry->mode);
 }
+#endif
 
 /* Loads initial display values into view structure. */
 static void
