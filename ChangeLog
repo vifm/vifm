@@ -104,6 +104,9 @@
 	Fixed mappings of sequences containing non-ascii characters (thanks to
 	ksandr1v).
 
+	Fixed strange behaviour of Ctrl-U on top of file list in visual and normal
+	modes.
+
 0.7.4a to 0.7.4b
 
 	Removed screen title forcing for shell commands.
