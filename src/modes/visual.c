@@ -360,7 +360,7 @@ cmd_ctrl_u(key_info_t key_info, keys_info_t *keys_info)
 		size_t offset = view->window_cells/2;
 		offset = ROUND_DOWN(offset, view->column_count);
 		new_pos = get_corrected_list_pos_up(view, offset);
-		new_pos = MIN(new_pos, view->list_pos - offset);
+		new_pos = MIN(new_pos, view->list_pos - (int)offset);
 		new_pos = MAX(new_pos, 0);
 		new_pos = ROUND_DOWN(new_pos, view->column_count);
 		view->top_line += new_pos - view->list_pos;

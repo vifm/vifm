@@ -1029,7 +1029,7 @@ get_corrected_list_pos_up(const FileView *view, size_t pos_delta)
 {
 	int scroll_offset = get_effective_scroll_offset(view);
 	int last = get_last_visible_file(view);
-	if(view->list_pos >= last - scroll_offset - (MAX(pos_delta, 1) - 1))
+	if(view->list_pos >= last - scroll_offset - (MAX((int)pos_delta, 1) - 1))
 	{
 		size_t column_correction = (view->column_count - 1) -
 				view->list_pos%view->column_count;
