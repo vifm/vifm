@@ -74,9 +74,13 @@ enum
 	DEFAULT_SORT_KEY = SORT_BY_INAME,
 #endif
 	/* Value of the last sort option. */
+#ifndef _WIN32
 	LAST_SORT_OPTION = SORT_BY_PERMISSIONS,
+#else
+	LAST_SORT_OPTION = SORT_BY_INAME,
+#endif
 	/* Number of sort options. */
-	SORT_OPTION_COUNT = SORT_BY_PERMISSIONS,
+	SORT_OPTION_COUNT = LAST_SORT_OPTION,
 	/* Special value to use for unset options. */
 	NO_SORT_OPTION = LAST_SORT_OPTION + 1
 };
