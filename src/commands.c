@@ -124,6 +124,7 @@ static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
 static int is_whole_line_command(const char cmd[]);
+static char * skip_command_beginning(const char cmd[]);
 
 static int goto_cmd(const cmd_info_t *cmd_info);
 static int emark_cmd(const cmd_info_t *cmd_info);
@@ -843,8 +844,7 @@ execute_command(FileView *view, const char command[], int menu)
 		return 0;
 	}
 
-	while(isspace(*command) || *command == ':')
-		command++;
+	command = skip_command_beginning(command);
 
 	if(command[0] == '"')
 		return 0;
@@ -1109,10 +1109,7 @@ exec_commands(const char cmd[], FileView *view, int type)
 				*q = '\0';
 			}
 
-			while(*cmd == ' ' || *cmd == ':')
-			{
-				cmd++;
-			}
+			cmd = skip_command_beginning(cmd);
 
 			/* For non-menu commands set command-line mode configuration before
 			 * calling is_whole_line_command() function, which calls functions of the
@@ -1178,7 +1175,6 @@ is_whole_line_command(const char cmd[])
 	}
 }
 
-
 char *
 find_last_command(char *cmd)
 {
@@ -1202,8 +1198,7 @@ find_last_command(char *cmd)
 			if(*p != '\0')
 				p++;
 
-			while(*cmd == ' ' || *cmd == ':')
-				cmd++;
+			cmd = skip_command_beginning(cmd);
 			if(*cmd == '!' || strncmp(cmd, "com", 3) == 0)
 				break;
 
@@ -1222,6 +1217,18 @@ find_last_command(char *cmd)
 	}
 
 	return cmd;
+}
+
+/* Skips consecutive whitespace or colon characters at the beginning of the
+ * command.  Returns pointer to the first non whitespace and color character. */
+static char *
+skip_command_beginning(const char cmd[])
+{
+	while(isspace(*cmd) || *cmd == ':')
+	{
+		cmd++;
+	}
+	return (char *)cmd;
 }
 
 int
