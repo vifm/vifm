@@ -1104,6 +1104,10 @@ exec_commands(const char cmd[], FileView *view, int type)
 			{
 				p++;
 			}
+			else
+			{
+				*q = '\0';
+			}
 
 			while(*cmd == ' ' || *cmd == ':')
 			{

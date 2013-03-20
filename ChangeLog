@@ -110,6 +110,9 @@
 	Fixed a bug with loading multiline commands containing bars ('|') from a
 	vifmrc file (thanks to Sebastian Cyprych).
 
+	Fixed a bug with trailing characters on loading multiline commands
+	containing bars ('|') from a vifmrc file.
+
 0.7.4a to 0.7.4b
 
 	Removed screen title forcing for shell commands.
