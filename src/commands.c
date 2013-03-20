@@ -1109,6 +1109,15 @@ exec_commands(const char cmd[], FileView *view, int type)
 			{
 				cmd++;
 			}
+
+			/* For non-menu commands set command-line mode configuration before
+			 * calling is_whole_line_command() function, which calls functions of the
+			 * cmds module of the engine that use context. */
+			if(type != GET_MENU_COMMAND)
+			{
+				init_cmds(1, &cmds_conf);
+			}
+
 			if(is_whole_line_command(cmd))
 			{
 				save_msg += exec_command(cmd, view, type) != 0;
