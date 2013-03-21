@@ -905,12 +905,13 @@ draw_dir_list(FileView *view)
 			break;
 	}
 
+	view->top_line = top;
+	view->curr_line = view->list_pos - view->top_line;
+
 	if(view != curr_view)
 	{
 		put_inactive_mark(view);
 	}
-
-	view->top_line = top;
 
 	if(view == curr_view)
 	{
