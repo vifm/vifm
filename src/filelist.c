@@ -610,7 +610,7 @@ get_viewer_command(const char *viewer)
 	}
 	else
 	{
-		result = expand_macros(viewer, NULL, NULL);
+		result = expand_macros(viewer, NULL, NULL, 1);
 	}
 	return result;
 }

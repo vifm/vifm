@@ -14,7 +14,8 @@ static int complete_args(int id, const char *args, int argc, char **argv,
 		int arg_pos);
 static int swap_range(void);
 static int resolve_mark(char mark);
-static char * expand_macros(const char *str, int *usr1, int *usr2);
+static char * expand_macros(const char *str, int for_shell, int *usr1,
+		int *usr2);
 static char * expand_envvars(const char *str);
 static void post(int id);
 static void select_range(int id, const cmd_info_t *cmd_info);
@@ -87,7 +88,7 @@ resolve_mark(char mark)
 }
 
 static char *
-expand_macros(const char *str, int *usr1, int *usr2)
+expand_macros(const char *str, int for_shell, int *usr1, int *usr2)
 {
 	return strdup(str);
 }

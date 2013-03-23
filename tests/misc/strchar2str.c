@@ -1,9 +1,14 @@
+/* UTF-8 isn't used on Windows yet. */
+
 #include <string.h>
 
 #include "seatest.h"
 
 #include "../../src/cfg/config.h"
 #include "../../src/escape.h"
+
+#ifndef _WIN32
+/* UTF-8 isn't used on Windows yet. */
 
 static void
 test_chinese_character_width_is_determined_correctly(void)
@@ -22,6 +27,8 @@ test_cyrillic_character_width_is_determined_correctly(void)
 	assert_string_equal("й", str);
 	assert_int_equal(1, screen_width);
 }
+
+#endif
 
 static void
 test_tabulation_is_expanded_properly(void)
@@ -103,8 +110,11 @@ strchar2str_tests(void)
 
 	cfg.tab_stop = 8;
 
+#ifndef _WIN32
+	/* UTF-8 isn't used on Windows yet. */
 	run_test(test_chinese_character_width_is_determined_correctly);
 	run_test(test_cyrillic_character_width_is_determined_correctly);
+#endif
 	run_test(test_tabulation_is_expanded_properly);
 	run_test(test_space_is_untouched_and_has_width_of_one_character);
 	run_test(test_newline_is_ignored_and_has_zero_width);

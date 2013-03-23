@@ -232,8 +232,8 @@ execute_cmd(const char cmd[])
 	{
 		char *p = NULL;
 		if(cur->expand & 1)
-			cmd_info.args = cc->expand_macros(cmd_info.raw_args, &cmd_info.usr1,
-					&cmd_info.usr2);
+			cmd_info.args = cc->expand_macros(cmd_info.raw_args, cur->expand & 4,
+					&cmd_info.usr1, &cmd_info.usr2);
 		if(cur->expand & 2)
 		{
 			p = cmd_info.args;

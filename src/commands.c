@@ -119,7 +119,8 @@ enum
 
 static int swap_range(void);
 static int resolve_mark(char mark);
-static char * cmds_expand_macros(const char *str, int *usr1, int *usr2);
+static char * cmds_expand_macros(const char *str, int for_shell, int *usr1,
+		int *usr2);
 static void post(int id);
 TSTATIC void select_range(int id, const cmd_info_t *cmd_info);
 static int skip_at_beginning(int id, const char *args);
@@ -245,7 +246,7 @@ static const cmd_add_t commands[] = {
 	{ .name = "",                 .abbr = NULL,    .emark = 0,  .id = COM_GOTO,        .range = 1,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = goto_cmd,        .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 0,       .select = 0, },
 	{ .name = "!",                .abbr = NULL,    .emark = 1,  .id = COM_EXECUTE,     .range = 1,    .bg = 1, .quote = 0, .regexp = 0,
-		.handler = emark_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 1, },
+		.handler = emark_cmd,       .qmark = 0,      .expand = 5, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "alink",            .abbr = NULL,    .emark = 1,  .id = COM_ALINK,       .range = 1,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = alink_cmd,       .qmark = 1,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = NOT_DEF, .select = 1, },
 	{ .name = "apropos",          .abbr = NULL,    .emark = 0,  .id = -1,              .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
@@ -510,12 +511,12 @@ resolve_mark(char mark)
 }
 
 static char *
-cmds_expand_macros(const char *str, int *usr1, int *usr2)
+cmds_expand_macros(const char *str, int for_shell, int *usr1, int *usr2)
 {
 	char *result;
 	MacroFlags flags = MACRO_NONE;
 
-	result = expand_macros(str, NULL, &flags);
+	result = expand_macros(str, NULL, &flags, for_shell);
 
 	*usr1 = flags;
 
@@ -3641,7 +3642,8 @@ usercmd_cmd(const cmd_info_t *cmd_info)
 	int save_msg = 0;
 
 	/* Expand macros in a binded command. */
-	expanded_com = expand_macros(cmd_info->cmd, cmd_info->args, &flags);
+	expanded_com = expand_macros(cmd_info->cmd, cmd_info->args, &flags,
+			get_cmd_id(cmd_info->cmd) == COM_EXECUTE);
 
 	len = trim_right(expanded_com);
 	if((bg = ends_with(expanded_com, " &")))

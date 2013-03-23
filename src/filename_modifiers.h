@@ -20,7 +20,8 @@
 #define __FILENAME_MODIFIERS_H__
 
 /* Applies all filename modifiers. */
-const char * apply_mods(const char *path, const char *parent, const char *mod);
+const char * apply_mods(const char *path, const char *parent, const char *mod,
+		int for_shell);
 size_t get_mods_len(const char *str);
 
 #endif
