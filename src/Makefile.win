@@ -11,6 +11,8 @@ LDFLAGS := $(LDFLAGS)
 
 LIBS := -lregex -lpdcurses -lnetapi32 -lpthread -lws2_32
 
+DIRS := ./ cfg/ engine/ menus/ modes/ modes/dialogs/ utils/
+
 cfg := config.c info.c
 cfg := $(addprefix cfg/, $(cfg))
 
@@ -124,8 +126,8 @@ tests:
 	make -C ../tests
 
 clean:
-	-$(RM) *.o
-	-$(RM) *.d
+	-$(RM) $(addsuffix *.o, $(DIRS))
+	-$(RM) $(addsuffix *.d, $(DIRS))
 	-$(RM) *.exe
 
 include $(wildcard *.d)
