@@ -130,4 +130,4 @@ clean:
 	-$(RM) $(addsuffix *.d, $(DIRS))
 	-$(RM) *.exe
 
-include $(wildcard *.d)
+include $(wildcard $(addsuffix *.d, $(DIRS)))
