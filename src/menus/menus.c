@@ -926,7 +926,7 @@ char *
 get_cmd_target(void)
 {
 	return (curr_view->selected_files > 0) ?
-		expand_macros("%f", NULL, NULL) : strdup(".");
+		expand_macros("%f", NULL, NULL, 1) : strdup(".");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

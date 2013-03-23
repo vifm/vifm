@@ -62,7 +62,7 @@ expand_builtin(const call_info_t *call_info)
 	char *str_val;
 
 	str_val = var_to_string(call_info->argv[0]);
-	var_val.string = expand_macros(str_val, NULL, NULL);
+	var_val.string = expand_macros(str_val, NULL, NULL, 0);
 	free(str_val);
 
 	result = var_new(VTYPE_STRING, var_val);

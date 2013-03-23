@@ -506,7 +506,7 @@ edit_selection(void)
 TSTATIC char *
 format_edit_selection_cmd(int *bg)
 {
-	char *const files = expand_macros("%f", NULL, NULL);
+	char *const files = expand_macros("%f", NULL, NULL, 1);
 	char *const cmd = format_str("%s %s", get_vicmd(bg), files);
 	free(files);
 	return cmd;
@@ -546,7 +546,7 @@ run_using_prog(FileView *view, const char *program, int dont_execute,
 	{
 		int background;
 		MacroFlags flags;
-		char *command = expand_macros(program, NULL, &flags);
+		char *command = expand_macros(program, NULL, &flags, 1);
 
 		background = ends_with(command, " &");
 		if(background)

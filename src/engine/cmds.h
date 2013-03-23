@@ -79,7 +79,8 @@ typedef struct
 	int emark;
 	int qmark; /* 1 - no args after qmark, other value - args are allowed */
 	int min_args, max_args;
-	int expand; /* 1 - expand macros, 2 - expand envvars, 3 - expand both */
+	/* 0x01 - expand macros, 0x02 - expand envvars, 0x04 - expand for shell */
+	int expand;
 	int regexp;
 	int select; /* select files in range */
 	int bg; /* background */
@@ -99,7 +100,7 @@ typedef struct
 	int (*swap_range)(void);
 	int (*resolve_mark)(char mark); /* should return value < 0 on error */
 	/* should allocate memory */
-	char *(*expand_macros)(const char str[], int *usr1, int *usr2);
+	char *(*expand_macros)(const char str[], int for_shell, int *usr1, int *usr2);
 	/* should allocate memory */
 	char *(*expand_envvars)(const char str[]);
 	void (*post)(int id); /* called after successful processing command */

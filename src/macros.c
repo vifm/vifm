@@ -33,15 +33,16 @@
 #include "macros.h"
 
 TSTATIC char * append_selected_files(FileView *view, char expanded[],
-		int under_cursor, int quotes, const char mod[]);
+		int under_cursor, int quotes, const char mod[], int for_shell);
 static char * append_selected_file(FileView *view, char *expanded,
-		int dir_name_len, int pos, int quotes, const char *mod);
+		int dir_name_len, int pos, int quotes, const char *mod, int for_shell);
 static char * expand_directory_path(FileView *view, char *expanded, int quotes,
-		const char *mod);
+		const char *mod, int for_shell);
 static char * append_to_expanded(char *expanded, const char* str);
 
 char *
-expand_macros(const char *command, const char *args, MacroFlags *flags)
+expand_macros(const char *command, const char *args, MacroFlags *flags,
+		int for_shell)
 {
 	/* TODO: refactor this function expand_macros() */
 
@@ -98,42 +99,42 @@ expand_macros(const char *command, const char *args, MacroFlags *flags)
 				break;
 			case 'b': /* selected files of both dirs */
 				expanded = append_selected_files(curr_view, expanded, 0, quotes,
-						command + x + 1);
+						command + x + 1, for_shell);
 				len = strlen(expanded);
 				expanded = realloc(expanded, len + 1 + 1);
 				strcat(expanded, " ");
 				expanded = append_selected_files(other_view, expanded, 0, quotes,
-						command + x + 1);
+						command + x + 1, for_shell);
 				len = strlen(expanded);
 				break;
 			case 'c': /* current dir file under the cursor */
 				expanded = append_selected_files(curr_view, expanded, 1, quotes,
-						command + x + 1);
+						command + x + 1, for_shell);
 				len = strlen(expanded);
 				break;
 			case 'C': /* other dir file under the cursor */
 				expanded = append_selected_files(other_view, expanded, 1, quotes,
-						command + x + 1);
+						command + x + 1, for_shell);
 				len = strlen(expanded);
 				break;
 			case 'f': /* current dir selected files */
 				expanded = append_selected_files(curr_view, expanded, 0, quotes,
-						command + x + 1);
+						command + x + 1, for_shell);
 				len = strlen(expanded);
 				break;
 			case 'F': /* other dir selected files */
 				expanded = append_selected_files(other_view, expanded, 0, quotes,
-						command + x + 1);
+						command + x + 1, for_shell);
 				len = strlen(expanded);
 				break;
 			case 'd': /* current directory */
 				expanded = expand_directory_path(curr_view, expanded, quotes,
-						command + x + 1);
+						command + x + 1, for_shell);
 				len = strlen(expanded);
 				break;
 			case 'D': /* other directory */
 				expanded = expand_directory_path(other_view, expanded, quotes,
-						command + x + 1);
+						command + x + 1, for_shell);
 				len = strlen(expanded);
 				break;
 			case 'm': /* use menu */
@@ -214,7 +215,7 @@ expand_macros(const char *command, const char *args, MacroFlags *flags)
 
 TSTATIC char *
 append_selected_files(FileView *view, char expanded[], int under_cursor,
-		int quotes, const char mod[])
+		int quotes, const char mod[], int for_shell)
 {
 	int dir_name_len = 0;
 #ifdef _WIN32
@@ -233,7 +234,7 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 				continue;
 
 			expanded = append_selected_file(view, expanded, dir_name_len, y, quotes,
-					mod);
+					mod, for_shell);
 
 			if(++x != view->selected_files)
 				strcat(expanded, " ");
@@ -242,11 +243,11 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 	else
 	{
 		expanded = append_selected_file(view, expanded, dir_name_len,
-				view->list_pos, quotes, mod);
+				view->list_pos, quotes, mod, for_shell);
 	}
 
 #ifdef _WIN32
-	if(stroscmp(cfg.shell, "cmd") == 0)
+	if(for_shell && stroscmp(cfg.shell, "cmd") == 0)
 		to_back_slash(expanded + old_len);
 #endif
 
@@ -255,7 +256,7 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 
 static char *
 append_selected_file(FileView *view, char *expanded, int dir_name_len, int pos,
-		int quotes, const char *mod)
+		int quotes, const char *mod, int for_shell)
 {
 	char buf[PATH_MAX] = "";
 
@@ -266,7 +267,8 @@ append_selected_file(FileView *view, char *expanded, int dir_name_len, int pos,
 
 	if(quotes)
 	{
-		const char *s = enclose_in_dquotes(apply_mods(buf, view->curr_dir, mod));
+		const char *s = enclose_in_dquotes(apply_mods(buf, view->curr_dir, mod,
+				for_shell));
 		expanded = realloc(expanded, strlen(expanded) + strlen(s) + 1 + 1);
 		strcat(expanded, s);
 	}
@@ -274,7 +276,7 @@ append_selected_file(FileView *view, char *expanded, int dir_name_len, int pos,
 	{
 		char *temp;
 
-		temp = escape_filename(apply_mods(buf, view->curr_dir, mod), 0);
+		temp = escape_filename(apply_mods(buf, view->curr_dir, mod, for_shell), 0);
 		expanded = realloc(expanded, strlen(expanded) + strlen(temp) + 1 + 1);
 		strcat(expanded, temp);
 		free(temp);
@@ -285,19 +287,21 @@ append_selected_file(FileView *view, char *expanded, int dir_name_len, int pos,
 
 static char *
 expand_directory_path(FileView *view, char *expanded, int quotes,
-		const char *mod)
+		const char *mod, int for_shell)
 {
 	char *result;
 	if(quotes)
 	{
-		const char *s = enclose_in_dquotes(apply_mods(view->curr_dir, "/", mod));
+		const char *s = enclose_in_dquotes(apply_mods(view->curr_dir, "/", mod,
+				for_shell));
 		result = append_to_expanded(expanded, s);
 	}
 	else
 	{
 		char *escaped;
 
-		escaped = escape_filename(apply_mods(view->curr_dir, "/", mod), 0);
+		escaped = escape_filename(apply_mods(view->curr_dir, "/", mod, for_shell),
+				0);
 		if(escaped == NULL)
 		{
 			show_error_msg("Memory Error", "Unable to allocate enough memory");
@@ -310,7 +314,7 @@ expand_directory_path(FileView *view, char *expanded, int quotes,
 	}
 
 #ifdef _WIN32
-	if(stroscmp(cfg.shell, "cmd") == 0)
+	if(for_shell && stroscmp(cfg.shell, "cmd") == 0)
 		to_back_slash(result);
 #endif
 

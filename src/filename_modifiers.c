@@ -30,7 +30,7 @@
 #include "filename_modifiers.h"
 
 static const char * apply_mod(const char *path, const char *parent,
-		const char *mod, int *mod_len);
+		const char *mod, int *mod_len, int for_shell);
 static int apply_p_mod(const char *path, const char *parent, char *buf,
 		size_t buf_len);
 static int apply_tilde_mod(const char *path, char *buf, size_t buf_len);
@@ -47,7 +47,7 @@ static int apply_s_gs_mod(const char *path, const char *mod,
 static const char * find_nth_chr(const char *str, char c, int n);
 
 const char *
-apply_mods(const char *path, const char *parent, const char *mod)
+apply_mods(const char *path, const char *parent, const char *mod, int for_shell)
 {
 	static char buf[PATH_MAX];
 	int napplied = 0;
@@ -56,7 +56,7 @@ apply_mods(const char *path, const char *parent, const char *mod)
 	while(*mod != '\0')
 	{
 		int mod_len;
-		const char *p = apply_mod(buf, parent, mod, &mod_len);
+		const char *p = apply_mod(buf, parent, mod, &mod_len, for_shell);
 		if(p == NULL)
 			break;
 		strcpy(buf, p);
@@ -67,7 +67,7 @@ apply_mods(const char *path, const char *parent, const char *mod)
 #ifdef _WIN32
 	/* this is needed to run something like explorer.exe, which isn't smart enough
 	 * to understand forward slashes */
-	if(napplied == 0 && stroscmp(cfg.shell, "cmd") != 0)
+	if(napplied == 0 && for_shell && stroscmp(cfg.shell, "cmd") != 0)
 		to_back_slash(buf);
 #endif
 
@@ -76,7 +76,8 @@ apply_mods(const char *path, const char *parent, const char *mod)
 
 /* Applies one filename modifiers per call. */
 static const char *
-apply_mod(const char *path, const char *parent, const char *mod, int *mod_len)
+apply_mod(const char *path, const char *parent, const char *mod, int *mod_len,
+		int for_shell)
 {
 	char path_buf[PATH_MAX];
 	static char buf[PATH_MAX];
@@ -113,7 +114,7 @@ apply_mod(const char *path, const char *parent, const char *mod, int *mod_len)
 #ifdef _WIN32
 	/* this is needed to run something like explorer.exe, which isn't smart enough
 	 * to understand forward slashes */
-	if(strncmp(mod, ":s", 2) != 0 && strncmp(mod, ":gs", 3) != 0)
+	if(for_shell && strncmp(mod, ":s", 2) != 0 && strncmp(mod, ":gs", 3) != 0)
 	{
 		if(stroscmp(cfg.shell, "cmd") != 0)
 			to_back_slash(buf);
