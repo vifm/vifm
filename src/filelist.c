@@ -126,6 +126,7 @@ static void save_selection(FileView *view);
 static int consider_scroll_offset(FileView *view);
 static void free_saved_selection(FileView *view);
 static size_t get_filetype_decoration_width(FileType type);
+static int is_dir_big(const char path[]);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
 static int file_can_be_displayed(const char directory[], const char filename[]);
@@ -2412,21 +2413,10 @@ get_filetype_decoration_width(FileType type)
 void
 load_dir_list(FileView *view, int reload)
 {
-#ifndef _WIN32
-	struct stat s;
-#endif
 	int old_list = view->list_rows;
 	int need_free = (view->selected_filelist == NULL);
 
 	view->filtered = 0;
-
-#ifndef _WIN32
-	if(stat(view->curr_dir, &s) != 0)
-	{
-		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
-		return;
-	}
-#endif
 
 	if(update_dir_mtime(view) != 0 && !is_unc_root(view->curr_dir))
 	{
@@ -2434,11 +2424,7 @@ load_dir_list(FileView *view, int reload)
 		return;
 	}
 
-#ifndef _WIN32
-	if(!reload && s.st_size > s.st_blksize)
-#else
-	if(!reload)
-#endif
+	if(!reload && is_dir_big(view->curr_dir))
 	{
 		if(get_mode() != CMDLINE_MODE)
 		{
@@ -2520,6 +2506,25 @@ load_dir_list(FileView *view, int reload)
 				stroscmp(other_view->curr_dir, view->curr_dir) == 0)
 			load_dir_list(other_view, 1);
 	}
+}
+
+/* Checks for subjectively relative size of a directory specified by the path
+ * parameter.  Returns non-zero if size of the directory in question is
+ * considered to be big. */
+static int
+is_dir_big(const char path[])
+{
+#ifndef _WIN32
+	struct stat s;
+	if(stat(path, &s) != 0)
+	{
+		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", path);
+		return 1;
+	}
+	return s.st_size > s.st_blksize;
+#else
+	return 1;
+#endif
 }
 
 void
