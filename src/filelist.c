@@ -2512,8 +2512,7 @@ load_dir_list(FileView *view, int reload)
 	else if(view->selected_files)
 		view->selected_files = 0;
 
-	if(curr_stats.load_stage >= 2)
-		draw_dir_list(view);
+	draw_dir_list(view);
 
 	if(view == curr_view)
 	{
