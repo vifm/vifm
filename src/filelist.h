@@ -147,6 +147,9 @@ void toggle_dot_files(FileView *view);
 void filter_selected_files(FileView *view);
 void remove_filename_filter(FileView *view);
 void restore_filename_filter(FileView *view);
+/* Toggles filter inversion state of the view.  Reloads filelist and resets
+ * cursor position. */
+void toggle_filter_inversion(FileView *view);
 /* Sets filter regexp for the view. */
 void set_filename_filter(FileView *view, const char *filter);
 

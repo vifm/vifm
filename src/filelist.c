@@ -2768,6 +2768,14 @@ restore_filename_filter(FileView *view)
 }
 
 void
+toggle_filter_inversion(FileView *view)
+{
+	view->invert = !view->invert;
+	load_dir_list(view, 1);
+	move_to_list_pos(view, 0);
+}
+
+void
 set_filename_filter(FileView *view, const char *filter)
 {
 	int ret;

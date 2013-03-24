@@ -2155,9 +2155,7 @@ filter_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cmd_info->emark)
 		{
-			curr_view->invert = !curr_view->invert;
-			load_dir_list(curr_view, 1);
-			move_to_list_pos(curr_view, 0);
+			toggle_filter_inversion(curr_view);
 		}
 		else
 		{
@@ -2532,9 +2530,7 @@ invert_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	curr_view->invert = !curr_view->invert;
-	load_dir_list(curr_view, 1);
-	move_to_list_pos(curr_view, 0);
+	toggle_filter_inversion(curr_view);
 	return 0;
 }
 
