@@ -195,12 +195,12 @@ void seatest_assert_string_equal(const char* expected, const char* actual, const
           sprintf(s, "Expected <NULL> but was <NULL>");
 	  comparison = 1;
 	}
-        else if ((expected == (char *)0))
+        else if (expected == (char *)0)
 	{
 	  sprintf(s, "Expected <NULL> but was \"%s\"", actual);
 	  comparison = 0;
 	}
-        else if ((actual == (char *)0))
+        else if (actual == (char *)0)
 	{
 	  sprintf(s, "Expected \"%s\" but was <NULL>", expected);
 	  comparison = 0;
