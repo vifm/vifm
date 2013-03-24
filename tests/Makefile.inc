@@ -37,6 +37,7 @@ CFLAGS := -MMD -g -Werror -I../seatest -DTEST -include ../../config.h
 LDFLAGS := -lpthread
 ifneq ($(OS),Windows_NT)
     LDFLAGS += `grep LIBS\ = ../../src/Makefile | sed 's/^[^=]\+=//'`
+    LDFLAGS += `grep LDFLAGS\ = ../../src/Makefile | sed 's/^[^=]\+=//'`
     CFLAGS += `grep CPPFLAGS\ = ../../src/Makefile | sed 's/^[^=]\+=//'`
 else
     LDFLAGS += `grep LIBS\ := ../../src/Makefile.win | sed 's/^[^=]\+=//'`
