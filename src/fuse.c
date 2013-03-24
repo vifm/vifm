@@ -125,7 +125,7 @@ fuse_try_mount(FileView *view, const char *program)
 	if(change_directory(view, mount_point) >= 0)
 	{
 		load_dir_list(view, 0);
-		move_to_list_pos(view, view->curr_line);
+		move_to_list_pos(view, view->list_pos);
 	}
 }
 
