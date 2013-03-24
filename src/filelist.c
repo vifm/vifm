@@ -1830,6 +1830,16 @@ handle_mount_points(const char *path)
 }
 #endif
 
+void
+navigate_to(FileView *view, const char path[])
+{
+	if(change_directory(view, path) >= 0)
+	{
+		load_dir_list(view, 0);
+		move_to_list_pos(view, view->list_pos);
+	}
+}
+
 /*
  * The directory can either be relative to the current
  * directory - ../

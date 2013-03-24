@@ -120,6 +120,10 @@ size_t calculate_columns_count(FileView *view);
 
 /* Directory traversing functions. */
 
+/* Changes current directory of the view to the path if it's possible and in
+ * case of success reloads filelist of the view and sets its cursor position
+ * according to directory history of the view. */
+void navigate_to(FileView *view, const char path[]);
 int change_directory(FileView *view, const char *path);
 /* Changes pane directory handling path just like cd command does. */
 int cd(FileView *view, const char *base_dir, const char *path);

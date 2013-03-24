@@ -542,11 +542,7 @@ execute_menu_cb(FileView *view, menu_info *m)
 				clean_positions_in_history(curr_view);
 				curr_stats.ch_pos = 0;
 			}
-			if(change_directory(view, m->items[m->pos]) >= 0)
-			{
-				load_dir_list(view, 0);
-				move_to_list_pos(view, view->list_pos);
-			}
+			navigate_to(view, m->items[m->pos]);
 			if(!cfg.auto_ch_pos)
 				curr_stats.ch_pos = 1;
 			break;

@@ -122,11 +122,7 @@ fuse_try_mount(FileView *view, const char *program)
 			return;
 	}
 
-	if(change_directory(view, mount_point) >= 0)
-	{
-		load_dir_list(view, 0);
-		move_to_list_pos(view, view->list_pos);
-	}
+	navigate_to(view, mount_point);
 }
 
 /* Searchers for mount record by source file path. */
