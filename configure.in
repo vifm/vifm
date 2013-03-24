@@ -318,7 +318,7 @@ AC_ARG_WITH(curses, [  --with-curses=DIR       where ncurses is installed ],
 		vifm_cv_curses=$withval
 	fi
 	if test x$vifm_cv_curses != x/usr; then
-		LDFLAGS="-L${abook_cv_curses}/lib $LDFLAGS"
+		LDFLAGS="-L${vifm_cv_curses}/lib $LDFLAGS"
 		CPPFLAGS="$CPPFLAGS -I${vifm_cv_curses}/include"
 	fi])
 
