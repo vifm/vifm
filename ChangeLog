@@ -120,6 +120,12 @@
 	Fixed a macro expansion in command-line on Windows when 'shell' is set to
 	"cmd" (thanks to Sebastian Cyprych).
 
+	Fixed a typo in configure.in file, which didn't allow to specify custom
+	location of curses library.
+
+	Fixed setting of value of $CPPFLAGS in configure.in, which didn't allow
+	to specify custom location of curses library.
+
 0.7.4a to 0.7.4b
 
 	Removed screen title forcing for shell commands.
