@@ -14825,7 +14825,7 @@ if test "${with_curses+set}" = set; then :
 	fi
 	if test x$vifm_cv_curses != x/usr; then
 		LDFLAGS="-L${vifm_cv_curses}/lib $LDFLAGS"
-		CPPFLAGS="$CPPFLAGS -I${vifm_cv_curses}/include"
+		CPPFLAGS="$CPPFLAGS -I${vifm_cv_curses}/include -I${vifm_cv_curses}/include/ncursesw"
 	fi
 fi
 
