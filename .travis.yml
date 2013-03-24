@@ -1,0 +1,12 @@
+language: c
+
+script: autoreconf && ./configure && make && make check
+
+compiler:
+ - gcc
+ - clang
+
+notifications:
+  email:
+    recipients:
+      - xaizek@lavabit.com
