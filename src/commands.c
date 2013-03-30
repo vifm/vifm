@@ -404,7 +404,7 @@ static const cmd_add_t commands[] = {
 		.handler = split_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "substitute",       .abbr = "s",     .emark = 0,  .id = COM_SUBSTITUTE,  .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
 		.handler = substitute_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 0, .max_args = 3,       .select = 1, },
-	{ .name = "sync",             .abbr = NULL,    .emark = 0,  .id = COM_SYNC,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "sync",             .abbr = NULL,    .emark = 1,  .id = COM_SYNC,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = sync_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "touch",            .abbr = NULL,    .emark = 0,  .id = COM_TOUCH,       .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = touch_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
@@ -2155,9 +2155,7 @@ filter_cmd(const cmd_info_t *cmd_info)
 	{
 		if(cmd_info->emark)
 		{
-			curr_view->invert = !curr_view->invert;
-			load_dir_list(curr_view, 1);
-			move_to_list_pos(curr_view, 0);
+			toggle_filter_inversion(curr_view);
 		}
 		else
 		{
@@ -2532,9 +2530,7 @@ invert_cmd(const cmd_info_t *cmd_info)
 		return 1;
 	}
 
-	curr_view->invert = !curr_view->invert;
-	load_dir_list(curr_view, 1);
-	move_to_list_pos(curr_view, 0);
+	toggle_filter_inversion(curr_view);
 	return 0;
 }
 
@@ -3231,13 +3227,32 @@ sync_cmd(const cmd_info_t *cmd_info)
 {
 	char buf[PATH_MAX];
 
+	if(cmd_info->emark && cmd_info->argc != 0)
+	{
+		status_bar_error("No arguments are allowed if you use \"!\"");
+		return 1;
+	}
+
 	snprintf(buf, sizeof(buf), "%s/", curr_view->curr_dir);
 	if(cmd_info->argc > 0)
 		strcat(buf, cmd_info->argv[0]);
 
 	if(change_directory(other_view, buf) >= 0)
 	{
-		load_dir_list(other_view, 0);
+		populate_dir_list(other_view, 0);
+
+		if(cmd_info->emark)
+		{
+			const int offset = (curr_view->list_pos - curr_view->top_line);
+			const int shift = (offset*other_view->window_rows)/curr_view->window_rows;
+			other_view->top_line = curr_view->list_pos - shift;
+			other_view->list_pos = curr_view->list_pos;
+			(void)consider_scroll_offset(other_view);
+
+			save_view_history(other_view, NULL, NULL, -1);
+		}
+
+		draw_dir_list(other_view);
 		refresh_view_win(other_view);
 	}
 	return 0;

@@ -123,9 +123,10 @@ size_t calculate_columns_count(FileView *view);
 static size_t calculate_column_width(FileView *view);
 static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
-static int consider_scroll_offset(FileView *view);
 static void free_saved_selection(FileView *view);
 static size_t get_filetype_decoration_width(FileType type);
+static int populate_dir_list_internal(FileView *view, int reload);
+static int is_dir_big(const char path[]);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
 static int file_can_be_displayed(const char directory[], const char filename[]);
@@ -1321,7 +1322,7 @@ save_view_history(FileView *view, const char *path, const char *file, int pos)
 	if(view->history_num > 0 &&
 			stroscmp(view->history[view->history_pos].dir, path) == 0)
 	{
-		if(curr_stats.load_stage < 2)
+		if(curr_stats.load_stage < 2 || file[0] == '\0')
 			return;
 		x = view->history_pos;
 		(void)replace_string(&view->history[x].file, file);
@@ -1447,9 +1448,7 @@ check_view_dir_history(FileView *view)
 	(void)consider_scroll_offset(view);
 }
 
-/* Updates current and top line of a view according to scrolloff option value.
- * Returns non-zero if redraw is needed. */
-static int
+int
 consider_scroll_offset(FileView *view)
 {
 	int need_redraw = 0;
@@ -1828,6 +1827,16 @@ handle_mount_points(const char *path)
 	return buf;
 }
 #endif
+
+void
+navigate_to(FileView *view, const char path[])
+{
+	if(change_directory(view, path) >= 0)
+	{
+		load_dir_list(view, 0);
+		move_to_list_pos(view, view->list_pos);
+	}
+}
 
 /*
  * The directory can either be relative to the current
@@ -2410,35 +2419,46 @@ get_filetype_decoration_width(FileType type)
 }
 
 void
+populate_dir_list(FileView *view, int reload)
+{
+	(void)populate_dir_list_internal(view, reload);
+}
+
+void
 load_dir_list(FileView *view, int reload)
 {
-#ifndef _WIN32
-	struct stat s;
-#endif
+	if(populate_dir_list_internal(view, reload) != 0)
+	{
+		return;
+	}
+
+	draw_dir_list(view);
+
+	if(view == curr_view)
+	{
+		if(strnoscmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)) == 0 &&
+				stroscmp(other_view->curr_dir, view->curr_dir) == 0)
+			load_dir_list(other_view, 1);
+	}
+}
+
+/* Loads filelist for the view.  The reload parameter should be set in case of
+ * view refresh operation.  Returns non-zero on error. */
+static int
+populate_dir_list_internal(FileView *view, int reload)
+{
 	int old_list = view->list_rows;
 	int need_free = (view->selected_filelist == NULL);
 
 	view->filtered = 0;
 
-#ifndef _WIN32
-	if(stat(view->curr_dir, &s) != 0)
-	{
-		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", view->curr_dir);
-		return;
-	}
-#endif
-
 	if(update_dir_mtime(view) != 0 && !is_unc_root(view->curr_dir))
 	{
 		LOG_SERROR_MSG(errno, "Can't get directory mtime \"%s\"", view->curr_dir);
-		return;
+		return 1;
 	}
 
-#ifndef _WIN32
-	if(!reload && s.st_size > s.st_blksize)
-#else
-	if(!reload)
-#endif
+	if(!reload && is_dir_big(view->curr_dir))
 	{
 		if(get_mode() != CMDLINE_MODE)
 		{
@@ -2453,7 +2473,7 @@ load_dir_list(FileView *view, int reload)
 	if(my_chdir(view->curr_dir) != 0 && !is_unc_root(view->curr_dir))
 	{
 		LOG_SERROR_MSG(errno, "Can't chdir() into \"%s\"", view->curr_dir);
-		return;
+		return 1;
 	}
 
 	if(reload && view->selected_files > 0 && view->selected_filelist == NULL)
@@ -2472,7 +2492,7 @@ load_dir_list(FileView *view, int reload)
 	if(view->dir_entry == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory.");
-		return;
+		return 1;
 	}
 
 	if(fill_dir_list(view) != 0)
@@ -2504,7 +2524,7 @@ load_dir_list(FileView *view, int reload)
 	if(view->list_rows < 1)
 	{
 		rescue_from_empty_filelist(view);
-		return;
+		return 1;
 	}
 
 	if(reload && view->selected_files)
@@ -2512,15 +2532,26 @@ load_dir_list(FileView *view, int reload)
 	else if(view->selected_files)
 		view->selected_files = 0;
 
-	if(curr_stats.load_stage >= 2)
-		draw_dir_list(view);
+	return 0;
+}
 
-	if(view == curr_view)
+/* Checks for subjectively relative size of a directory specified by the path
+ * parameter.  Returns non-zero if size of the directory in question is
+ * considered to be big. */
+static int
+is_dir_big(const char path[])
+{
+#ifndef _WIN32
+	struct stat s;
+	if(stat(path, &s) != 0)
 	{
-		if(strnoscmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)) == 0 &&
-				stroscmp(other_view->curr_dir, view->curr_dir) == 0)
-			load_dir_list(other_view, 1);
+		LOG_SERROR_MSG(errno, "Can't stat() \"%s\"", path);
+		return 1;
 	}
+	return s.st_size > s.st_blksize;
+#else
+	return 1;
+#endif
 }
 
 void
@@ -2761,6 +2792,14 @@ restore_filename_filter(FileView *view)
 	set_filename_filter(view, view->prev_filter);
 	view->invert = view->prev_invert;
 	load_saving_pos(view, 0);
+}
+
+void
+toggle_filter_inversion(FileView *view)
+{
+	view->invert = !view->invert;
+	load_dir_list(view, 1);
+	move_to_list_pos(view, 0);
 }
 
 void

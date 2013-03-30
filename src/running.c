@@ -640,11 +640,7 @@ follow_link(FileView *view, int follow_dirs)
 	}
 	if(is_dir)
 	{
-		if(change_directory(view, dir) >= 0)
-		{
-			load_dir_list(view, 0);
-			move_to_list_pos(view, view->curr_line);
-		}
+		navigate_to(view, dir);
 	}
 	if(file != NULL)
 	{
@@ -683,15 +679,9 @@ handle_dir(FileView *view)
 
 	snprintf(full_path, sizeof(full_path), "%s%s%s", view->curr_dir,
 			ends_with_slash(view->curr_dir) ? "" : "/", filename);
-	if(!cd_is_possible(full_path))
+	if(cd_is_possible(full_path))
 	{
-		return;
-	}
-
-	if(change_directory(view, filename) >= 0)
-	{
-		load_dir_list(view, 0);
-		move_to_list_pos(view, view->list_pos);
+		navigate_to(view, filename);
 	}
 }
 

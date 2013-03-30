@@ -232,11 +232,7 @@ get_bookmark(FileView *view, char key)
 	switch(key)
 	{
 		case '\'':
-			if(change_directory(view, view->last_dir) >= 0)
-			{
-				load_dir_list(view, 0);
-				move_to_list_pos(view, view->list_pos);
-			}
+			navigate_to(view, view->last_dir);
 			return 0;
 		case 27: /* ascii Escape */
 		case 3: /* ascii ctrl c */

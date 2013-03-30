@@ -95,6 +95,9 @@ int get_end_of_line(const FileView *view);
  * greater than or equal to number of files in the view, which should be
  * threated correctly. */
 size_t get_last_visible_file(const FileView *view);
+/* Updates current and top line of a view according to scrolloff option value.
+ * Returns non-zero if redraw is needed. */
+int consider_scroll_offset(FileView *view);
 
 /* Appearance related functions. */
 
@@ -120,6 +123,10 @@ size_t calculate_columns_count(FileView *view);
 
 /* Directory traversing functions. */
 
+/* Changes current directory of the view to the path if it's possible and in
+ * case of success reloads filelist of the view and sets its cursor position
+ * according to directory history of the view. */
+void navigate_to(FileView *view, const char path[]);
 int change_directory(FileView *view, const char *path);
 /* Changes pane directory handling path just like cd command does. */
 int cd(FileView *view, const char *base_dir, const char *path);
@@ -147,6 +154,9 @@ void toggle_dot_files(FileView *view);
 void filter_selected_files(FileView *view);
 void remove_filename_filter(FileView *view);
 void restore_filename_filter(FileView *view);
+/* Toggles filter inversion state of the view.  Reloads filelist and resets
+ * cursor position. */
+void toggle_filter_inversion(FileView *view);
 /* Sets filter regexp for the view. */
 void set_filename_filter(FileView *view, const char *filter);
 
@@ -161,6 +171,11 @@ void clean_positions_in_history(FileView *view);
 /* Other functions. */
 
 FILE * use_info_prog(const char *viewer);
+/* Loads filelist for the view, but doesn't redraw the view.  The reload
+ * parameter should be set in case of view refresh operation. */
+void populate_dir_list(FileView *view, int reload);
+/* Loads filelist for the view and redraws the view.  The reload parameter
+ * should be set in case of view refresh operation. */
 void load_dir_list(FileView *view, int reload);
 /* Resorts view without reloading it.  msg parameter controls whether to show
  * "Sorting..." statusbar message. */
