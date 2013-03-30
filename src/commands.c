@@ -404,7 +404,7 @@ static const cmd_add_t commands[] = {
 		.handler = split_cmd,       .qmark = 0,      .expand = 0, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "substitute",       .abbr = "s",     .emark = 0,  .id = COM_SUBSTITUTE,  .range = 1,    .bg = 0, .quote = 0, .regexp = 1,
 		.handler = substitute_cmd,  .qmark = 0,      .expand = 0, .cust_sep = 1,         .min_args = 0, .max_args = 3,       .select = 1, },
-	{ .name = "sync",             .abbr = NULL,    .emark = 0,  .id = COM_SYNC,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
+	{ .name = "sync",             .abbr = NULL,    .emark = 1,  .id = COM_SYNC,        .range = 0,    .bg = 0, .quote = 0, .regexp = 0,
 		.handler = sync_cmd,        .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 0, .max_args = 1,       .select = 0, },
 	{ .name = "touch",            .abbr = NULL,    .emark = 0,  .id = COM_TOUCH,       .range = 0,    .bg = 0, .quote = 1, .regexp = 0,
 		.handler = touch_cmd,       .qmark = 0,      .expand = 1, .cust_sep = 0,         .min_args = 1, .max_args = NOT_DEF, .select = 0, },
@@ -3233,7 +3233,16 @@ sync_cmd(const cmd_info_t *cmd_info)
 
 	if(change_directory(other_view, buf) >= 0)
 	{
-		load_dir_list(other_view, 0);
+		populate_dir_list(other_view, 0);
+
+		if(cmd_info->emark)
+		{
+			other_view->top_line = curr_view->top_line;
+			other_view->list_pos = curr_view->list_pos;
+			save_view_history(other_view, NULL, NULL, -1);
+		}
+
+		draw_dir_list(other_view);
 		refresh_view_win(other_view);
 	}
 	return 0;
