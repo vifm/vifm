@@ -2422,6 +2422,12 @@ get_filetype_decoration_width(FileType type)
 }
 
 void
+populate_dir_list(FileView *view, int reload)
+{
+	(void)populate_dir_list_internal(view, reload);
+}
+
+void
 load_dir_list(FileView *view, int reload)
 {
 	if(populate_dir_list_internal(view, reload) != 0)

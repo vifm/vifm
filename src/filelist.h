@@ -168,6 +168,9 @@ void clean_positions_in_history(FileView *view);
 /* Other functions. */
 
 FILE * use_info_prog(const char *viewer);
+/* Loads filelist for the view, but doesn't redraw the view.  The reload
+ * parameter should be set in case of view refresh operation. */
+void populate_dir_list(FileView *view, int reload);
 /* Loads filelist for the view and redraws the view.  The reload parameter
  * should be set in case of view refresh operation. */
 void load_dir_list(FileView *view, int reload);
