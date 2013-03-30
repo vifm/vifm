@@ -123,7 +123,6 @@ size_t calculate_columns_count(FileView *view);
 static size_t calculate_column_width(FileView *view);
 static size_t get_effective_scroll_offset(const FileView *view);
 static void save_selection(FileView *view);
-static int consider_scroll_offset(FileView *view);
 static void free_saved_selection(FileView *view);
 static size_t get_filetype_decoration_width(FileType type);
 static int populate_dir_list_internal(FileView *view, int reload);
@@ -1449,9 +1448,7 @@ check_view_dir_history(FileView *view)
 	(void)consider_scroll_offset(view);
 }
 
-/* Updates current and top line of a view according to scrolloff option value.
- * Returns non-zero if redraw is needed. */
-static int
+int
 consider_scroll_offset(FileView *view)
 {
 	int need_redraw = 0;

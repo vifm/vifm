@@ -95,6 +95,9 @@ int get_end_of_line(const FileView *view);
  * greater than or equal to number of files in the view, which should be
  * threated correctly. */
 size_t get_last_visible_file(const FileView *view);
+/* Updates current and top line of a view according to scrolloff option value.
+ * Returns non-zero if redraw is needed. */
+int consider_scroll_offset(FileView *view);
 
 /* Appearance related functions. */
 

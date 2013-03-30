@@ -3237,8 +3237,12 @@ sync_cmd(const cmd_info_t *cmd_info)
 
 		if(cmd_info->emark)
 		{
-			other_view->top_line = curr_view->top_line;
+			const int offset = (curr_view->list_pos - curr_view->top_line);
+			const int shift = (offset*other_view->window_rows)/curr_view->window_rows;
+			other_view->top_line = curr_view->list_pos - shift;
 			other_view->list_pos = curr_view->list_pos;
+			(void)consider_scroll_offset(other_view);
+
 			save_view_history(other_view, NULL, NULL, -1);
 		}
 
