@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Mar 16
+*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Mar 30
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1283,6 +1283,8 @@ particular the second column of the view will be changed).
 :sync [relative path] - change the other panel to the current panel
     directory or to some path relative to the current directory.  Using
     macros is allowed.
+:sync! - change the other panel to the current panel directory and
+    synchronize cursor position.
 
                                                *vifm-:undolist* *vifm-:undol*
 :undol[ist] - show list of latest changes.  Add ! to see commands.
