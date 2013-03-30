@@ -887,6 +887,10 @@ switch_panes(void)
 	lwin.window_width = rwin.window_width;
 	rwin.window_width = t;
 
+	t = lwin.color_scheme;
+	lwin.color_scheme = rwin.color_scheme;
+	rwin.color_scheme = t;
+
 	tmp = lwin.title;
 	lwin.title = rwin.title;
 	rwin.title = tmp;
