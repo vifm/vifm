@@ -126,6 +126,7 @@ static void save_selection(FileView *view);
 static int consider_scroll_offset(FileView *view);
 static void free_saved_selection(FileView *view);
 static size_t get_filetype_decoration_width(FileType type);
+static int populate_dir_list_internal(FileView *view, int reload);
 static int is_dir_big(const char path[]);
 static void rescue_from_empty_filelist(FileView * view);
 static void add_parent_dir(FileView *view);
@@ -1322,7 +1323,7 @@ save_view_history(FileView *view, const char *path, const char *file, int pos)
 	if(view->history_num > 0 &&
 			stroscmp(view->history[view->history_pos].dir, path) == 0)
 	{
-		if(curr_stats.load_stage < 2)
+		if(curr_stats.load_stage < 2 || file[0] == '\0')
 			return;
 		x = view->history_pos;
 		(void)replace_string(&view->history[x].file, file);
@@ -2423,6 +2424,26 @@ get_filetype_decoration_width(FileType type)
 void
 load_dir_list(FileView *view, int reload)
 {
+	if(populate_dir_list_internal(view, reload) != 0)
+	{
+		return;
+	}
+
+	draw_dir_list(view);
+
+	if(view == curr_view)
+	{
+		if(strnoscmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)) == 0 &&
+				stroscmp(other_view->curr_dir, view->curr_dir) == 0)
+			load_dir_list(other_view, 1);
+	}
+}
+
+/* Loads filelist for the view.  The reload parameter should be set in case of
+ * view refresh operation.  Returns non-zero on error. */
+static int
+populate_dir_list_internal(FileView *view, int reload)
+{
 	int old_list = view->list_rows;
 	int need_free = (view->selected_filelist == NULL);
 
@@ -2431,7 +2452,7 @@ load_dir_list(FileView *view, int reload)
 	if(update_dir_mtime(view) != 0 && !is_unc_root(view->curr_dir))
 	{
 		LOG_SERROR_MSG(errno, "Can't get directory mtime \"%s\"", view->curr_dir);
-		return;
+		return 1;
 	}
 
 	if(!reload && is_dir_big(view->curr_dir))
@@ -2449,7 +2470,7 @@ load_dir_list(FileView *view, int reload)
 	if(my_chdir(view->curr_dir) != 0 && !is_unc_root(view->curr_dir))
 	{
 		LOG_SERROR_MSG(errno, "Can't chdir() into \"%s\"", view->curr_dir);
-		return;
+		return 1;
 	}
 
 	if(reload && view->selected_files > 0 && view->selected_filelist == NULL)
@@ -2468,7 +2489,7 @@ load_dir_list(FileView *view, int reload)
 	if(view->dir_entry == NULL)
 	{
 		show_error_msg("Memory Error", "Unable to allocate enough memory.");
-		return;
+		return 1;
 	}
 
 	if(fill_dir_list(view) != 0)
@@ -2500,7 +2521,7 @@ load_dir_list(FileView *view, int reload)
 	if(view->list_rows < 1)
 	{
 		rescue_from_empty_filelist(view);
-		return;
+		return 1;
 	}
 
 	if(reload && view->selected_files)
@@ -2508,14 +2529,7 @@ load_dir_list(FileView *view, int reload)
 	else if(view->selected_files)
 		view->selected_files = 0;
 
-	draw_dir_list(view);
-
-	if(view == curr_view)
-	{
-		if(strnoscmp(view->curr_dir, cfg.fuse_home, strlen(cfg.fuse_home)) == 0 &&
-				stroscmp(other_view->curr_dir, view->curr_dir) == 0)
-			load_dir_list(other_view, 1);
-	}
+	return 0;
 }
 
 /* Checks for subjectively relative size of a directory specified by the path
