@@ -3227,6 +3227,12 @@ sync_cmd(const cmd_info_t *cmd_info)
 {
 	char buf[PATH_MAX];
 
+	if(cmd_info->emark && cmd_info->argc != 0)
+	{
+		status_bar_error("No arguments are allowed if you use \"!\"");
+		return 1;
+	}
+
 	snprintf(buf, sizeof(buf), "%s/", curr_view->curr_dir);
 	if(cmd_info->argc > 0)
 		strcat(buf, cmd_info->argv[0]);
