@@ -20,6 +20,8 @@
 #ifndef __REGISTERS_H_
 #define __REGISTERS_H_
 
+#define DEFAULT_REG_NAME '"'
+
 typedef struct
 {
 	int name;

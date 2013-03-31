@@ -30,6 +30,7 @@
 #include "../commands.h"
 #include "../filelist.h"
 #include "../fileops.h"
+#include "../registers.h"
 #include "../running.h"
 #include "../search.h"
 #include "../status.h"
