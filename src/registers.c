@@ -113,6 +113,16 @@ append_to_register(int key, const char file[])
 }
 
 void
+clear_registers(void)
+{
+	const char *p = valid_registers;
+	while(*p != '\0')
+	{
+		clear_register(*p++);
+	}
+}
+
+void
 clear_register(int key)
 {
 	registers_t *reg;

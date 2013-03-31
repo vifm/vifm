@@ -3005,9 +3005,7 @@ restart_cmd(const cmd_info_t *cmd_info)
 	clean_stack();
 
 	/* registers */
-	p = valid_registers;
-	while(*p != '\0')
-		clear_register(*p++);
+	clear_registers();
 
 	/* color schemes */
 	load_def_scheme();
