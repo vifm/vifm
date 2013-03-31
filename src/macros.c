@@ -38,6 +38,8 @@ static char * append_selected_file(FileView *view, char *expanded,
 		int dir_name_len, int pos, int quotes, const char *mod, int for_shell);
 static char * expand_directory_path(FileView *view, char *expanded, int quotes,
 		const char *mod, int for_shell);
+static char * append_path_to_expanded(char expanded[], int quotes,
+		const char path[]);
 static char * append_to_expanded(char *expanded, const char* str);
 
 char *
@@ -237,7 +239,9 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 					mod, for_shell);
 
 			if(++x != view->selected_files)
-				strcat(expanded, " ");
+			{
+				expanded = append_to_expanded(expanded, " ");
+			}
 		}
 	}
 	else
@@ -259,28 +263,15 @@ append_selected_file(FileView *view, char *expanded, int dir_name_len, int pos,
 		int quotes, const char *mod, int for_shell)
 {
 	char buf[PATH_MAX] = "";
+	const char *modified;
 
 	if(dir_name_len != 0)
 		strcat(strcpy(buf, view->curr_dir), "/");
 	strcat(buf, view->dir_entry[pos].name);
 	chosp(buf);
 
-	if(quotes)
-	{
-		const char *s = enclose_in_dquotes(apply_mods(buf, view->curr_dir, mod,
-				for_shell));
-		expanded = realloc(expanded, strlen(expanded) + strlen(s) + 1 + 1);
-		strcat(expanded, s);
-	}
-	else
-	{
-		char *temp;
-
-		temp = escape_filename(apply_mods(buf, view->curr_dir, mod, for_shell), 0);
-		expanded = realloc(expanded, strlen(expanded) + strlen(temp) + 1 + 1);
-		strcat(expanded, temp);
-		free(temp);
-	}
+	modified = apply_mods(buf, view->curr_dir, mod, for_shell);
+	expanded = append_path_to_expanded(expanded, quotes, modified);
 
 	return expanded;
 }
@@ -289,29 +280,8 @@ static char *
 expand_directory_path(FileView *view, char *expanded, int quotes,
 		const char *mod, int for_shell)
 {
-	char *result;
-	if(quotes)
-	{
-		const char *s = enclose_in_dquotes(apply_mods(view->curr_dir, "/", mod,
-				for_shell));
-		result = append_to_expanded(expanded, s);
-	}
-	else
-	{
-		char *escaped;
-
-		escaped = escape_filename(apply_mods(view->curr_dir, "/", mod, for_shell),
-				0);
-		if(escaped == NULL)
-		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			free(expanded);
-			return NULL;
-		}
-
-		result = append_to_expanded(expanded, escaped);
-		free(escaped);
-	}
+	const char *const modified = apply_mods(view->curr_dir, "/", mod, for_shell);
+	char *const result = append_path_to_expanded(expanded, quotes, modified);
 
 #ifdef _WIN32
 	if(for_shell && stroscmp(cfg.shell, "cmd") == 0)
@@ -319,6 +289,33 @@ expand_directory_path(FileView *view, char *expanded, int quotes,
 #endif
 
 	return result;
+}
+
+/* Appends the path to the expanded string with either proper escaping or
+ * quoting.  Returns NULL on not enough memory error. */
+static char *
+append_path_to_expanded(char expanded[], int quotes, const char path[])
+{
+	if(quotes)
+	{
+		const char *const dquoted = enclose_in_dquotes(path);
+		expanded = append_to_expanded(expanded, dquoted);
+	}
+	else
+	{
+		char *const escaped = escape_filename(path, 0);
+		if(escaped == NULL)
+		{
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			free(expanded);
+			return NULL;
+		}
+
+		expanded = append_to_expanded(expanded, escaped);
+		free(escaped);
+	}
+
+	return expanded;
 }
 
 static char *
