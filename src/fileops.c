@@ -97,6 +97,7 @@ typedef struct
 	job_t *job;
 }bg_args_t;
 
+static int prepare_register(int reg);
 static void delete_file_bg_i(const char curr_dir[], char *list[], int count,
 		int use_trash);
 TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
@@ -143,11 +144,7 @@ yank_selected_files(FileView *view, int reg)
 {
 	int x;
 
-	/* A - Z  append to register otherwise replace */
-	if(reg >= 'A' && reg <= 'Z')
-		reg += 'a' - 'A';
-	else
-		clear_register(reg);
+	reg = prepare_register(reg);
 
 	for(x = 0; x < view->selected_files; x++)
 	{
@@ -252,11 +249,7 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	if(cfg.use_trash && use_trash)
 	{
-		/* A - Z  append to register otherwise replace */
-		if(reg >= 'A' && reg <= 'Z')
-			reg += 'a' - 'A';
-		else
-			clear_register(reg);
+		reg = prepare_register(reg);
 	}
 
 	if(cfg.use_trash && use_trash)
@@ -343,6 +336,23 @@ delete_file(FileView *view, int reg, int count, int *indexes, int use_trash)
 
 	status_bar_messagef("%d %s deleted", y, y == 1 ? "file" : "files");
 	return 1;
+}
+
+/* Transforms "A-"Z register to "a-"z or clears the reg.  So that for "A-"Z new
+ * values will be appended to "a-"z, for other registers old values will be
+ * removed.  Returns possibly modified value of the reg parameter. */
+static int
+prepare_register(int reg)
+{
+	if(reg >= 'A' && reg <= 'Z')
+	{
+		reg += 'a' - 'A';
+	}
+	else
+	{
+		clear_register(reg);
+	}
+	return reg;
 }
 
 static void *
