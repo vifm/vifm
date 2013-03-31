@@ -20,6 +20,7 @@
 #ifndef __REGISTERS_H_
 #define __REGISTERS_H_
 
+/* Name of the default register. */
 #define DEFAULT_REG_NAME '"'
 
 typedef struct
