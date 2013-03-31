@@ -33,6 +33,10 @@
 
 #include "registers.h"
 
+/* Name of the "unnamed" (the default) register. */
+#define UNNAMED_REG_NAME '"'
+/* Name of the "blackhole" register. */
+#define BLACKHOLE_REG_NAME '_'
 /* Number of registers named as alphabet letters. */
 #define NUM_LETTER_REGISTERS 26
 /* Number of all available registers (excludes 26 uppercase letters). */
@@ -44,7 +48,7 @@ static registers_t registers[NUM_REGISTERS];
 /* Names of registers + names of 26 uppercase register names + termination null
  * character. */
 const char valid_registers[] = {
-	'_', '"',
+	BLACKHOLE_REG_NAME, UNNAMED_REG_NAME,
 	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
 	'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
@@ -97,7 +101,7 @@ append_to_register(int key, const char file[])
 	registers_t *reg;
 	struct stat st;
 
-	if(key == '_')
+	if(key == BLACKHOLE_REG_NAME)
 		return;
 
 	if((reg = find_register(key)) == NULL)
@@ -233,16 +237,16 @@ update_unnamed_reg(int key)
 	registers_t *unnamed, *reg;
 	int i;
 
-	if(key == '"')
+	if(key == UNNAMED_REG_NAME)
 		return;
 
 	if((reg = find_register(key)) == NULL)
 		return;
 
-	if((unnamed = find_register('"')) == NULL)
+	if((unnamed = find_register(UNNAMED_REG_NAME)) == NULL)
 		return;
 
-	clear_register('"');
+	clear_register(UNNAMED_REG_NAME);
 
 	unnamed->num_files = reg->num_files;
 	unnamed->files = (char **)realloc(unnamed->files,
