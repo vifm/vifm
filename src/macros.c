@@ -18,6 +18,8 @@
  */
 
 #include <assert.h> /* assert() */
+#include <ctype.h> /* tolower() */
+#include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* realloc() free() calloc() */
 #include <string.h> /* strchr() strncat() strcpy() strlen() strcat() */
 
@@ -29,6 +31,7 @@
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "filename_modifiers.h"
+#include "registers.h"
 
 #include "macros.h"
 
@@ -38,6 +41,8 @@ static char * append_selected_file(FileView *view, char *expanded,
 		int dir_name_len, int pos, int quotes, const char *mod, int for_shell);
 static char * expand_directory_path(FileView *view, char *expanded, int quotes,
 		const char *mod, int for_shell);
+static char * expand_register(const char curr_dir[], char expanded[],
+		int quotes, const char mod[], int key, int *well_formed, int for_shell);
 static char * append_path_to_expanded(char expanded[], int quotes,
 		const char path[]);
 static char * append_to_expanded(char *expanded, const char* str);
@@ -48,7 +53,7 @@ expand_macros(const char *command, const char *args, MacroFlags *flags,
 {
 	/* TODO: refactor this function expand_macros() */
 
-	static const char MACROS_WITH_QUOTING[] = "cCfFbdD";
+	static const char MACROS_WITH_QUOTING[] = "cCfFbdDr";
 
 	size_t cmd_len;
 	char *expanded;
@@ -167,6 +172,18 @@ expand_macros(const char *command, const char *args, MacroFlags *flags,
 				if(flags != NULL)
 				{
 					*flags = MACRO_IGNORE;
+				}
+				break;
+			case 'r': /* register's content */
+				{
+					int well_formed;
+					expanded = expand_register(curr_view->curr_dir, expanded, quotes,
+							command + x + 2, command[x + 1], &well_formed, for_shell);
+					len = strlen(expanded);
+					if(well_formed)
+					{
+						x++;
+					}
 				}
 				break;
 			case '%':
@@ -289,6 +306,45 @@ expand_directory_path(FileView *view, char *expanded, int quotes,
 #endif
 
 	return result;
+}
+
+/* Expands content of a register specified by the key argument considering
+ * filename-modifiers.  If key is unknown, fallbacks to the default register.
+ * Sets *well_formed to non-zero for valid value of the key.  Reallocates the
+ * expanded string and returns result (possibly NULL). */
+static char *
+expand_register(const char curr_dir[], char expanded[], int quotes,
+		const char mod[], int key, int *well_formed, int for_shell)
+{
+	int i;
+
+	*well_formed = 1;
+	registers_t *reg = find_register(tolower(key));
+	if(reg == NULL)
+	{
+		*well_formed = 0;
+		reg = find_register(DEFAULT_REG_NAME);
+		assert(reg != NULL);
+		mod--;
+	}
+
+	for(i = 0; i < reg->num_files; i++)
+	{
+		const char *const modified = apply_mods(reg->files[i], curr_dir, mod,
+				for_shell);
+		expanded = append_path_to_expanded(expanded, quotes, modified);
+		if(i != reg->num_files - 1)
+		{
+			expanded = append_to_expanded(expanded, " ");
+		}
+	}
+
+#ifdef _WIN32
+	if(for_shell && stroscmp(cfg.shell, "cmd") == 0)
+		to_back_slash(expanded);
+#endif
+
+	return expanded;
 }
 
 /* Appends the path to the expanded string with either proper escaping or

@@ -6,6 +6,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/filelist.h"
 #include "../../src/macros.h"
+#include "../../src/registers.h"
 #include "../../src/ui.h"
 
 #ifdef _WIN32
@@ -212,6 +213,74 @@ test_m(void)
 }
 
 static void
+test_r_well_formed(void)
+{
+	const char *p;
+
+	chdir("test-data/existing-files");
+
+	init_registers();
+
+	p = valid_registers;
+	while(*p != '\0')
+	{
+		char line[32];
+		char *expanded;
+		const char key = *p++;
+		snprintf(line, sizeof(line), "%%r%c", key);
+
+		append_to_register(key, "a");
+		append_to_register(key, "b");
+		append_to_register(key, "c");
+
+		expanded = expand_macros(line, NULL, NULL, 0);
+		if(key == '_')
+		{
+			assert_string_equal("", expanded);
+		}
+		else
+		{
+			assert_string_equal("a b c", expanded);
+		}
+		free(expanded);
+	}
+
+	clear_registers();
+
+	chdir("../..");
+}
+
+static void
+test_r_ill_formed(void)
+{
+	char key;
+
+	chdir("test-data/existing-files");
+
+	init_registers();
+
+	append_to_register(DEFAULT_REG_NAME, "a");
+	append_to_register(DEFAULT_REG_NAME, "b");
+	append_to_register(DEFAULT_REG_NAME, "c");
+
+	do
+	{
+		char line[32];
+		char *expanded;
+		snprintf(line, sizeof(line), "%%r%c", key);
+
+		expanded = expand_macros(line, NULL, NULL, 0);
+		assert_string_equal("a b c", expanded);
+		free(expanded);
+	}
+	while(key != '\0');
+
+	clear_registers();
+
+	chdir("../..");
+}
+
+static void
 test_with_quotes(void)
 {
 	char *expanded;
@@ -250,6 +319,20 @@ test_with_quotes(void)
 	expanded = expand_macros(" %\"a %\"m %\"M %\"s ", "", NULL, 0);
 	assert_string_equal(" a m M s ", expanded);
 	free(expanded);
+
+	chdir("test-data/existing-files");
+	init_registers();
+
+	append_to_register(DEFAULT_REG_NAME, "a");
+	append_to_register(DEFAULT_REG_NAME, "b");
+	append_to_register(DEFAULT_REG_NAME, "c");
+
+	expanded = expand_macros("/%\"r ", "", NULL, 1);
+	assert_string_equal("/\"a\" \"b\" \"c\" ", expanded);
+	free(expanded);
+
+	clear_registers();
+	chdir("../..");
 }
 
 static void
@@ -298,6 +381,8 @@ test_expand_macros(void)
 	run_test(test_no_slash_after_dirname);
 	run_test(test_forward_slashes_on_win_for_non_shell);
 	run_test(test_m);
+	run_test(test_r_well_formed);
+	run_test(test_r_ill_formed);
 	run_test(test_with_quotes);
 	run_test(test_single_percent_sign);
 	run_test(test_percent_sign_and_double_quote);
