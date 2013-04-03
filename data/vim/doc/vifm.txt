@@ -1434,21 +1434,35 @@ The builtin commands that accept a range are :d[elete] and :y[ank].
 Command macros~
                                                                *vifm-macros*
 The command macros may be used in user commands.
+                                                               *vifm-%a*
   %a        user arguments.  When user arguments contain macros, they are
             expanded before preforming substitution of %a.
+                                                               *vifm-%c*
   %c  %"c   the current file under the cursor.
+                                                               *vifm-%C*
   %C  %"C   the current file under the cursor in the other directory.
+                                                               *vifm-%f*
   %f  %"f   all of the selected files.
+                                                               *vifm-%F*
   %F  %"F   all of the selected files in the other directory list.
+                                                               *vifm-%b*
   %b  %"b   same as %f %F.
+                                                               *vifm-%d*
   %d  %"d   full path to current directory.
+                                                               *vifm-%D*
   %D  %"D   full path to other file list directory.
+                                                               *vifm-%r*
   %rx %"rx  full paths to files in the register {x}.
+                                                               *vifm-%m*
   %m        show command output in a menu.
+                                                               *vifm-%M*
   %M        same as %m, but l (or Enter) key is handled like for :locate
             and :find commands.
+                                                               *vifm-%S*
   %S        show command output in the status bar.
+                                                               *vifm-%s*
   %s        execute command in screen split (ignored if not running in screen).
+                                                               *vifm-%i*
   %i        completely ignore command output.
 
 Use %% if you need to put a percent sign in your command.
