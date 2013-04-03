@@ -17,6 +17,8 @@
 	Allowed exclamation mark for the :sync command (to force synchronization
 	of cursor position when used without arguments).
 
+	Added macros that are expanded to register's content.
+
 	Less-like mode now highlights multiple matches in a line.
 
 	Less-like mode is now updated immediately when one changes 'wrap' option.

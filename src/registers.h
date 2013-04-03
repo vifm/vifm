@@ -20,6 +20,9 @@
 #ifndef __REGISTERS_H_
 #define __REGISTERS_H_
 
+/* Name of the default register. */
+#define DEFAULT_REG_NAME '"'
+
 typedef struct
 {
 	int name;
@@ -33,6 +36,8 @@ extern const char valid_registers[];
 void init_registers(void);
 registers_t * find_register(int key);
 void append_to_register(int reg, const char file[]);
+/* Clears all registers. */
+void clear_registers(void);
 void clear_register(int reg);
 void pack_register(int reg);
 char ** list_registers_content(const char registers[]);

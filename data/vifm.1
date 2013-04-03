@@ -1,4 +1,4 @@
-.TH vifm 1 "March 30, 2013" "" "Vifm"
+.TH vifm 1 "April 03, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1692,6 +1692,11 @@ Full path to current directory.
 .TP
 .BI "%D %""d"
 Full path to other file list directory.
+.TP
+.BI "%rx %""rx"
+Full paths to files in the register {x}.
+In case of invalid symbol in place of {x}, it's processed with the rest of the
+line and default register is used.
 .TP
 .BI %m
 Show command output in a menu.

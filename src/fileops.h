@@ -25,8 +25,6 @@
 #include "utils/test_helpers.h"
 #include "ui.h"
 
-#define DEFAULT_REG_NAME '"'
-
 typedef enum
 {
 	DR_CURRENT,

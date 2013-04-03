@@ -18,6 +18,8 @@
  */
 
 #include <assert.h> /* assert() */
+#include <ctype.h> /* tolower() */
+#include <stddef.h> /* NULL size_t */
 #include <stdlib.h> /* realloc() free() calloc() */
 #include <string.h> /* strchr() strncat() strcpy() strlen() strcat() */
 
@@ -29,6 +31,7 @@
 #include "utils/test_helpers.h"
 #include "utils/utils.h"
 #include "filename_modifiers.h"
+#include "registers.h"
 
 #include "macros.h"
 
@@ -38,6 +41,10 @@ static char * append_selected_file(FileView *view, char *expanded,
 		int dir_name_len, int pos, int quotes, const char *mod, int for_shell);
 static char * expand_directory_path(FileView *view, char *expanded, int quotes,
 		const char *mod, int for_shell);
+static char * expand_register(const char curr_dir[], char expanded[],
+		int quotes, const char mod[], int key, int *well_formed, int for_shell);
+static char * append_path_to_expanded(char expanded[], int quotes,
+		const char path[]);
 static char * append_to_expanded(char *expanded, const char* str);
 
 char *
@@ -46,7 +53,7 @@ expand_macros(const char *command, const char *args, MacroFlags *flags,
 {
 	/* TODO: refactor this function expand_macros() */
 
-	static const char MACROS_WITH_QUOTING[] = "cCfFbdD";
+	static const char MACROS_WITH_QUOTING[] = "cCfFbdDr";
 
 	size_t cmd_len;
 	char *expanded;
@@ -167,6 +174,18 @@ expand_macros(const char *command, const char *args, MacroFlags *flags,
 					*flags = MACRO_IGNORE;
 				}
 				break;
+			case 'r': /* register's content */
+				{
+					int well_formed;
+					expanded = expand_register(curr_view->curr_dir, expanded, quotes,
+							command + x + 2, command[x + 1], &well_formed, for_shell);
+					len = strlen(expanded);
+					if(well_formed)
+					{
+						x++;
+					}
+				}
+				break;
 			case '%':
 				expanded = (char *)realloc(expanded, len + 2);
 				strcat(expanded, "%");
@@ -237,7 +256,9 @@ append_selected_files(FileView *view, char expanded[], int under_cursor,
 					mod, for_shell);
 
 			if(++x != view->selected_files)
-				strcat(expanded, " ");
+			{
+				expanded = append_to_expanded(expanded, " ");
+			}
 		}
 	}
 	else
@@ -259,28 +280,15 @@ append_selected_file(FileView *view, char *expanded, int dir_name_len, int pos,
 		int quotes, const char *mod, int for_shell)
 {
 	char buf[PATH_MAX] = "";
+	const char *modified;
 
 	if(dir_name_len != 0)
 		strcat(strcpy(buf, view->curr_dir), "/");
 	strcat(buf, view->dir_entry[pos].name);
 	chosp(buf);
 
-	if(quotes)
-	{
-		const char *s = enclose_in_dquotes(apply_mods(buf, view->curr_dir, mod,
-				for_shell));
-		expanded = realloc(expanded, strlen(expanded) + strlen(s) + 1 + 1);
-		strcat(expanded, s);
-	}
-	else
-	{
-		char *temp;
-
-		temp = escape_filename(apply_mods(buf, view->curr_dir, mod, for_shell), 0);
-		expanded = realloc(expanded, strlen(expanded) + strlen(temp) + 1 + 1);
-		strcat(expanded, temp);
-		free(temp);
-	}
+	modified = apply_mods(buf, view->curr_dir, mod, for_shell);
+	expanded = append_path_to_expanded(expanded, quotes, modified);
 
 	return expanded;
 }
@@ -289,29 +297,8 @@ static char *
 expand_directory_path(FileView *view, char *expanded, int quotes,
 		const char *mod, int for_shell)
 {
-	char *result;
-	if(quotes)
-	{
-		const char *s = enclose_in_dquotes(apply_mods(view->curr_dir, "/", mod,
-				for_shell));
-		result = append_to_expanded(expanded, s);
-	}
-	else
-	{
-		char *escaped;
-
-		escaped = escape_filename(apply_mods(view->curr_dir, "/", mod, for_shell),
-				0);
-		if(escaped == NULL)
-		{
-			show_error_msg("Memory Error", "Unable to allocate enough memory");
-			free(expanded);
-			return NULL;
-		}
-
-		result = append_to_expanded(expanded, escaped);
-		free(escaped);
-	}
+	const char *const modified = apply_mods(view->curr_dir, "/", mod, for_shell);
+	char *const result = append_path_to_expanded(expanded, quotes, modified);
 
 #ifdef _WIN32
 	if(for_shell && stroscmp(cfg.shell, "cmd") == 0)
@@ -319,6 +306,72 @@ expand_directory_path(FileView *view, char *expanded, int quotes,
 #endif
 
 	return result;
+}
+
+/* Expands content of a register specified by the key argument considering
+ * filename-modifiers.  If key is unknown, fallbacks to the default register.
+ * Sets *well_formed to non-zero for valid value of the key.  Reallocates the
+ * expanded string and returns result (possibly NULL). */
+static char *
+expand_register(const char curr_dir[], char expanded[], int quotes,
+		const char mod[], int key, int *well_formed, int for_shell)
+{
+	int i;
+
+	*well_formed = 1;
+	registers_t *reg = find_register(tolower(key));
+	if(reg == NULL)
+	{
+		*well_formed = 0;
+		reg = find_register(DEFAULT_REG_NAME);
+		assert(reg != NULL);
+		mod--;
+	}
+
+	for(i = 0; i < reg->num_files; i++)
+	{
+		const char *const modified = apply_mods(reg->files[i], curr_dir, mod,
+				for_shell);
+		expanded = append_path_to_expanded(expanded, quotes, modified);
+		if(i != reg->num_files - 1)
+		{
+			expanded = append_to_expanded(expanded, " ");
+		}
+	}
+
+#ifdef _WIN32
+	if(for_shell && stroscmp(cfg.shell, "cmd") == 0)
+		to_back_slash(expanded);
+#endif
+
+	return expanded;
+}
+
+/* Appends the path to the expanded string with either proper escaping or
+ * quoting.  Returns NULL on not enough memory error. */
+static char *
+append_path_to_expanded(char expanded[], int quotes, const char path[])
+{
+	if(quotes)
+	{
+		const char *const dquoted = enclose_in_dquotes(path);
+		expanded = append_to_expanded(expanded, dquoted);
+	}
+	else
+	{
+		char *const escaped = escape_filename(path, 0);
+		if(escaped == NULL)
+		{
+			show_error_msg("Memory Error", "Unable to allocate enough memory");
+			free(expanded);
+			return NULL;
+		}
+
+		expanded = append_to_expanded(expanded, escaped);
+		free(escaped);
+	}
+
+	return expanded;
 }
 
 static char *

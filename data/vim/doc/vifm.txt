@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Mar 30
+*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Apr 03
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1434,25 +1434,42 @@ The builtin commands that accept a range are :d[elete] and :y[ank].
 Command macros~
                                                                *vifm-macros*
 The command macros may be used in user commands.
-  %a      user arguments.  When user arguments contain macros, they are
-          expanded before preforming substitution of %a.
-  %c %"c  the current file under the cursor.
-  %C %"C  the current file under the cursor in the other directory.
-  %f %"f  all of the selected files.
-  %F %"F  all of the selected files in the other directory list.
-  %b %"b  same as %f %F.
-  %d %"d  full path to current directory.
-  %D %"D  full path to other file list directory.
-  %m      show command output in a menu.
-  %M      same as %m, but l (or Enter) key is handled like for :locate
-          and :find commands.
-  %S      show command output in the status bar.
-  %s      execute command in screen split (ignored if not running in screen).
-  %i      completely ignore command output.
+                                                               *vifm-%a*
+  %a        user arguments.  When user arguments contain macros, they are
+            expanded before preforming substitution of %a.
+                                                               *vifm-%c*
+  %c  %"c   the current file under the cursor.
+                                                               *vifm-%C*
+  %C  %"C   the current file under the cursor in the other directory.
+                                                               *vifm-%f*
+  %f  %"f   all of the selected files.
+                                                               *vifm-%F*
+  %F  %"F   all of the selected files in the other directory list.
+                                                               *vifm-%b*
+  %b  %"b   same as %f %F.
+                                                               *vifm-%d*
+  %d  %"d   full path to current directory.
+                                                               *vifm-%D*
+  %D  %"D   full path to other file list directory.
+                                                               *vifm-%r*
+  %rx %"rx  full paths to files in the register {x}.  In case of invalid
+            symbol in place of {x}, it's processed with the rest of the
+            line and default register is used.
+                                                               *vifm-%m*
+  %m        show command output in a menu.
+                                                               *vifm-%M*
+  %M        same as %m, but l (or Enter) key is handled like for :locate
+            and :find commands.
+                                                               *vifm-%S*
+  %S        show command output in the status bar.
+                                                               *vifm-%s*
+  %s        execute command in screen split (ignored if not running in screen).
+                                                               *vifm-%i*
+  %i        completely ignore command output.
 
 Use %% if you need to put a percent sign in your command.
 
-Note that %m, %M, %s, %S and %i macros are mutually exclusive. Only the
+Note that %m, %M, %s, %S and %i macros are mutually exclusive.  Only the
 last one of them in the command will take effect.
 
 You can use filename modifiers after %c, %C, %f, %F, %b, %d and %D macros.

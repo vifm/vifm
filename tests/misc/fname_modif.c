@@ -6,6 +6,7 @@
 #include "../../src/cfg/config.h"
 #include "../../src/filelist.h"
 #include "../../src/macros.h"
+#include "../../src/registers.h"
 #include "../../src/ui.h"
 
 #ifdef _WIN32
@@ -56,6 +57,15 @@ setup_rwin(void)
 }
 
 static void
+setup_registers(void)
+{
+	init_registers();
+	append_to_register('z', "test-data/existing-files/a");
+	append_to_register('z', "test-data/existing-files/b");
+	append_to_register('z', "test-data/existing-files/c");
+}
+
+static void
 setup(void)
 {
 	setup_lwin();
@@ -66,6 +76,8 @@ setup(void)
 
 	cfg.max_args = 8192;
 	strcpy(cfg.home_dir, "/rwin/");
+
+	setup_registers();
 }
 
 static void
@@ -80,6 +92,8 @@ teardown(void)
 	for(i = 0; i < rwin.list_rows; i++)
 		free(rwin.dir_entry[i].name);
 	free(rwin.dir_entry);
+
+	clear_registers();
 }
 
 static void
@@ -118,6 +132,10 @@ test_colon_p(void)
 
 	expanded = expand_macros(" cp %D:p ", "", &flags, 1);
 	assert_string_equal(" cp " SL "rwin ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(" cp %rz:p ", "", &flags, 1);
+	assert_string_equal(" cp " SL "lwin" SL "test-data" SL "existing-files" SL "a " SL "lwin" SL "test-data" SL "existing-files" SL "b " SL "lwin" SL "test-data" SL "existing-files" SL "c ", expanded);
 	free(expanded);
 }
 
@@ -158,6 +176,10 @@ test_colon_p_in_root(void)
 
 	expanded = expand_macros(" cp %D:p ", "", &flags, 1);
 	assert_string_equal(" cp " SL "rwin ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(" cp %rz:p ", "", &flags, 1);
+	assert_string_equal(" cp " SL "test-data" SL "existing-files" SL "a " SL "test-data" SL "existing-files" SL "b " SL "test-data" SL "existing-files" SL "c ", expanded);
 	free(expanded);
 }
 
@@ -210,6 +232,10 @@ test_colon_tilde(void)
 
 	expanded = expand_macros(" cp %D:~ ", "", &flags, 1);
 	assert_string_equal(" cp ~ ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(" cp %rz:~ ", "", &flags, 1);
+	assert_string_equal(" cp test-data" SL "existing-files" SL "a test-data" SL "existing-files" SL "b test-data" SL "existing-files" SL "c ", expanded);
 	free(expanded);
 }
 
@@ -268,6 +294,10 @@ test_colon_dot(void)
 	expanded = expand_macros(" cp %D:. ", "", &flags, 1);
 	assert_string_equal(" cp " SL "rwin ", expanded);
 	free(expanded);
+
+	expanded = expand_macros(" cp %rz:. ", "", &flags, 1);
+	assert_string_equal(" cp test-data" SL "existing-files" SL "a test-data" SL "existing-files" SL "b test-data" SL "existing-files" SL "c ", expanded);
+	free(expanded);
 }
 
 static void
@@ -316,6 +346,10 @@ test_colon_h(void)
 	expanded = expand_macros(" cp %D:h:h ", "", &flags, 1);
 	assert_string_equal(" cp " SL " ", expanded);
 	free(expanded);
+
+	expanded = expand_macros(" cp %rz:h ", "", &flags, 1);
+	assert_string_equal(" cp test-data" SL "existing-files test-data" SL "existing-files test-data" SL "existing-files ", expanded);
+	free(expanded);
 }
 
 static void
@@ -362,6 +396,10 @@ test_colon_t(void)
 
 	expanded = expand_macros(" cp %D:t:t ", "", &flags, 1);
 	assert_string_equal(" cp rwin ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(" cp %rz:t ", "", &flags, 1);
+	assert_string_equal(" cp a b c ", expanded);
 	free(expanded);
 }
 
@@ -414,6 +452,10 @@ test_colon_r(void)
 
 	expanded = expand_macros(" cp %c:p:r ", "", &flags, 1);
 	assert_string_equal(" cp " SL "lwin" SL ".lfile4 ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(" cp %rz:t:r ", "", &flags, 1);
+	assert_string_equal(" cp a b c ", expanded);
 	free(expanded);
 }
 
@@ -469,6 +511,10 @@ test_colon_e(void)
 	expanded = expand_macros(" cp %c:p:e ", "", &flags, 1);
 	assert_string_equal(" cp  ", expanded);
 	free(expanded);
+
+	expanded = expand_macros(" cp %rz:t:. ", "", &flags, 1);
+	assert_string_equal(" cp a b c ", expanded);
+	free(expanded);
 }
 
 static void
@@ -496,6 +542,10 @@ test_colon_s(void)
 	expanded = expand_macros(" cp %f:s?l?r?:s!f!k!k? ", "", &flags, 1);
 	assert_string_equal(" cp rkile0 rkile2k? ", expanded);
 	free(expanded);
+
+	expanded = expand_macros(" cp %rz:t:s?a?y? ", "", &flags, 1);
+	assert_string_equal(" cp y b c ", expanded);
+	free(expanded);
 }
 
 static void
@@ -518,6 +568,10 @@ test_colon_gs(void)
 
 	expanded = expand_macros(" cp %f:gs?l?r?k? ", "", &flags, 1);
 	assert_string_equal(" cp rfire0 rfire2k? ", expanded);
+	free(expanded);
+
+	expanded = expand_macros(" cp %rz:t:gs?b?y? ", "", &flags, 1);
+	assert_string_equal(" cp a y c ", expanded);
 	free(expanded);
 
 #ifdef _WIN32
