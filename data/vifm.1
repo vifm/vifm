@@ -1695,6 +1695,8 @@ Full path to other file list directory.
 .TP
 .BI "%rx %""rx"
 Full paths to files in the register {x}.
+In case of invalid symbol in place of {x}, it's processed with the rest of the
+line and default register is used.
 .TP
 .BI %m
 Show command output in a menu.

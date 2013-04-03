@@ -1452,7 +1452,9 @@ The command macros may be used in user commands.
                                                                *vifm-%D*
   %D  %"D   full path to other file list directory.
                                                                *vifm-%r*
-  %rx %"rx  full paths to files in the register {x}.
+  %rx %"rx  full paths to files in the register {x}.  In case of invalid
+            symbol in place of {x}, it's processed with the rest of the
+            line and default register is used.
                                                                *vifm-%m*
   %m        show command output in a menu.
                                                                *vifm-%M*
@@ -1467,7 +1469,7 @@ The command macros may be used in user commands.
 
 Use %% if you need to put a percent sign in your command.
 
-Note that %m, %M, %s, %S and %i macros are mutually exclusive. Only the
+Note that %m, %M, %s, %S and %i macros are mutually exclusive.  Only the
 last one of them in the command will take effect.
 
 You can use filename modifiers after %c, %C, %f, %F, %b, %d and %D macros.
