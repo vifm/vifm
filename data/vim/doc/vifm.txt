@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Mar 30
+*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Apr 03
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1434,21 +1434,22 @@ The builtin commands that accept a range are :d[elete] and :y[ank].
 Command macros~
                                                                *vifm-macros*
 The command macros may be used in user commands.
-  %a      user arguments.  When user arguments contain macros, they are
-          expanded before preforming substitution of %a.
-  %c %"c  the current file under the cursor.
-  %C %"C  the current file under the cursor in the other directory.
-  %f %"f  all of the selected files.
-  %F %"F  all of the selected files in the other directory list.
-  %b %"b  same as %f %F.
-  %d %"d  full path to current directory.
-  %D %"D  full path to other file list directory.
-  %m      show command output in a menu.
-  %M      same as %m, but l (or Enter) key is handled like for :locate
-          and :find commands.
-  %S      show command output in the status bar.
-  %s      execute command in screen split (ignored if not running in screen).
-  %i      completely ignore command output.
+  %a        user arguments.  When user arguments contain macros, they are
+            expanded before preforming substitution of %a.
+  %c  %"c   the current file under the cursor.
+  %C  %"C   the current file under the cursor in the other directory.
+  %f  %"f   all of the selected files.
+  %F  %"F   all of the selected files in the other directory list.
+  %b  %"b   same as %f %F.
+  %d  %"d   full path to current directory.
+  %D  %"D   full path to other file list directory.
+  %rx %"rx  full paths to files in the register {x}.
+  %m        show command output in a menu.
+  %M        same as %m, but l (or Enter) key is handled like for :locate
+            and :find commands.
+  %S        show command output in the status bar.
+  %s        execute command in screen split (ignored if not running in screen).
+  %i        completely ignore command output.
 
 Use %% if you need to put a percent sign in your command.
 
