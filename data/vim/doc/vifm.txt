@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Apr 03
+*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Apr 04
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1909,7 +1909,7 @@ Controls what will be saved in the $VIFM/vifminfo file.
    tui       - state of the user interface (sorting, number of windows, quick
                view state, active view)
    dhistory  - directory history
-   state     - filters and screen program using state
+   state     - file name and dot filters and screen program using state
    cs        - default color scheme
    savedirs  - save last visited directory (needs dhistory)
    chistory  - command line history

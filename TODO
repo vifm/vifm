@@ -112,7 +112,6 @@ Possible things to add.
         help files available were those provided by vifm.
     Maybe provide a way to skip non-existent directory errors on <c-o>/<c-i>.
     Something to control the frequency of directory change changes.
-    Save dot files filter state in vifminfo.
     Invalidate calculated directory size if it's modification time changed.
 
 Other (questionable) things.
