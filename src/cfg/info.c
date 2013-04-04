@@ -481,10 +481,12 @@ update_info_file(const char filename[])
 		char *line = NULL, *line2 = NULL, *line3 = NULL;
 		while((line = read_vifminfo_line(fp, line)) != NULL)
 		{
-			if(line[0] == '#' || line[0] == '\0')
+			const char type = line[0];
+
+			if(type == '#' || type == '\0')
 				continue;
 
-			if(line[0] == '.') /* filetype */
+			if(type == '.') /* filetype */
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -497,7 +499,7 @@ update_info_file(const char filename[])
 					nft = add_to_string_array(&ft, nft, 2, line + 1, line2);
 				}
 			}
-			else if(line[0] == 'x') /* xfiletype */
+			else if(type == 'x') /* xfiletype */
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -519,7 +521,7 @@ update_info_file(const char filename[])
 					nfx = add_to_string_array(&fx, nfx, 2, line + 1, line2);
 				}
 			}
-			else if(line[0] == ',') /* fileviewer */
+			else if(type == ',') /* fileviewer */
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -528,7 +530,7 @@ update_info_file(const char filename[])
 					nfv = add_to_string_array(&fv, nfv, 2, line + 1, line2);
 				}
 			}
-			else if(line[0] == '!') /* user defined command */
+			else if(type == '!') /* user defined command */
 			{
 				if(line[1] == '\0')
 					continue;
@@ -549,7 +551,7 @@ update_info_file(const char filename[])
 					ncmds = add_to_string_array(&cmds, ncmds, 2, line + 1, line2);
 				}
 			}
-			else if(line[0] == 'd') /* left view directory history */
+			else if(type == 'd') /* left view directory history */
 			{
 				if(line[1] == '\0')
 					continue;
@@ -571,7 +573,7 @@ update_info_file(const char filename[])
 					}
 				}
 			}
-			else if(line[0] == 'D') /* right view directory history */
+			else if(type == 'D') /* right view directory history */
 			{
 				if(line[1] == '\0')
 					continue;
@@ -593,7 +595,7 @@ update_info_file(const char filename[])
 					}
 				}
 			}
-			else if(line[0] == '\'') /* bookmark */
+			else if(type == '\'') /* bookmark */
 			{
 				line[2] = '\0';
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
@@ -609,7 +611,7 @@ update_info_file(const char filename[])
 					}
 				}
 			}
-			else if(line[0] == 't') /* trash */
+			else if(type == 't') /* trash */
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -620,28 +622,28 @@ update_info_file(const char filename[])
 					ntrash = add_to_string_array(&trash, ntrash, 2, line + 1, line2);
 				}
 			}
-			else if(line[0] == ':') /* command line history */
+			else if(type == ':') /* command line history */
 			{
 				if(cfg.cmd_history_num >= 0 && is_in_string_array(cfg.cmd_history,
 						cfg.cmd_history_num + 1, line + 1))
 					continue;
 				ncmdh = add_to_string_array(&cmdh, ncmdh, 1, line + 1);
 			}
-			else if(line[0] == '/') /* search history */
+			else if(type == '/') /* search history */
 			{
 				if(cfg.search_history_num >= 0 && is_in_string_array(cfg.search_history,
 						cfg.search_history_num + 1, line + 1))
 					continue;
 				nsrch = add_to_string_array(&srch, nsrch, 1, line + 1);
 			}
-			else if(line[0] == 'p') /* prompt history */
+			else if(type == 'p') /* prompt history */
 			{
 				if(cfg.prompt_history_num >= 0 && is_in_string_array(cfg.prompt_history,
 						cfg.prompt_history_num + 1, line + 1))
 					continue;
 				nprompt = add_to_string_array(&prompt, nprompt, 1, line + 1);
 			}
-			else if(line[0] == '"') /* registers */
+			else if(type == '"') /* registers */
 			{
 				registers_t *reg = find_register(line[1]);
 				if(reg != NULL)
