@@ -700,7 +700,7 @@ static char *
 expand_tabulation_a(const char line[], size_t tab_stops)
 {
 	const size_t tab_count = chars_in_str(line, '\t');
-	const size_t extra_line_len = tab_count*(tab_stops - 1);
+	const size_t extra_line_len = tab_count*tab_stops;
 	const size_t expanded_line_len = (strlen(line) - tab_count) + extra_line_len;
 	char *const expanded_line = malloc(expanded_line_len + 1);
 
