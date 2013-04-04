@@ -40,6 +40,7 @@
 #include "../trash.h"
 #include "../ui.h"
 #include "config.h"
+#include "info_chars.h"
 
 #include "info.h"
 
@@ -77,10 +78,10 @@ read_info_file(int reread)
 		const char type = line[0];
 		const char *const line_val = line + 1;
 
-		if(type == '#' || type == '\0')
+		if(type == LINE_TYPE_COMMENT || type == '\0')
 			continue;
 
-		if(type == '=') /* option */
+		if(type == LINE_TYPE_OPTION)
 		{
 			if(line[1] == '[' || line[1] == ']')
 			{
@@ -94,7 +95,7 @@ read_info_file(int reread)
 				process_set_args(line_val);
 			}
 		}
-		else if(type == '.') /* filetype */
+		else if(type == LINE_TYPE_FILETYPE)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -106,7 +107,7 @@ read_info_file(int reread)
 				}
 			}
 		}
-		else if(type == 'x') /* xfiletype */
+		else if(type == LINE_TYPE_XFILETYPE)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -114,14 +115,14 @@ read_info_file(int reread)
 						curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 			}
 		}
-		else if(type == ',') /* fileviewer */
+		else if(type == LINE_TYPE_FILEVIEWER)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				set_fileviewer(line_val, line2);
 			}
 		}
-		else if(type == '!') /* command */
+		else if(type == LINE_TYPE_COMMAND)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -133,7 +134,7 @@ read_info_file(int reread)
 				}
 			}
 		}
-		else if(type == '\'') /* bookmark */
+		else if(type == LINE_TYPE_BOOKMARK)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -143,7 +144,7 @@ read_info_file(int reread)
 				}
 			}
 		}
-		else if(type == 'a') /* active view */
+		else if(type == LINE_TYPE_ACTIVE_VIEW)
 		{
 			/* don't change active view on :restart command */
 			if(line[1] == 'r' && !reread)
@@ -154,34 +155,34 @@ read_info_file(int reread)
 				other_view = &lwin;
 			}
 		}
-		else if(type == 'q') /* state of quick view */
+		else if(type == LINE_TYPE_QUICK_VIEW_STATE)
 		{
 			const int i = atoi(line_val);
 			curr_stats.view = (i == 1);
 		}
-		else if(type == 'v') /* number of windows */
+		else if(type == LINE_TYPE_WIN_COUNT)
 		{
 			const int i = atoi(line_val);
 			cfg.show_one_window = (i == 1);
 			curr_stats.number_of_windows = (i == 1) ? 1 : 2;
 		}
-		else if(type == 'o') /* split orientation */
+		else if(type == LINE_TYPE_SPLIT_ORIENTATION)
 		{
 			curr_stats.split = (line[1] == 'v') ? VSPLIT : HSPLIT;
 		}
-		else if(type == 'm') /* split position */
+		else if(type == LINE_TYPE_SPLIT_POSITION)
 		{
 			curr_stats.splitter_pos = atof(line_val);
 		}
-		else if(type == 'l') /* left pane sort */
+		else if(type == LINE_TYPE_LWIN_SORT)
 		{
 			get_sort_info(&lwin, line_val);
 		}
-		else if(type == 'r') /* right pane sort */
+		else if(type == LINE_TYPE_RWIN_SORT)
 		{
 			get_sort_info(&rwin, line_val);
 		}
-		else if(type == 'd') /* left pane history */
+		else if(type == LINE_TYPE_LWIN_HIST)
 		{
 			int pos;
 
@@ -200,7 +201,7 @@ read_info_file(int reread)
 			pos = read_possible_possible_pos(fp);
 			get_history(&lwin, reread, line_val, line2, pos);
 		}
-		else if(type == 'D') /* right pane history */
+		else if(type == LINE_TYPE_RWIN_HIST)
 		{
 			int pos;
 
@@ -219,24 +220,24 @@ read_info_file(int reread)
 			pos = read_possible_possible_pos(fp);
 			get_history(&rwin, reread, line_val, line2, pos);
 		}
-		else if(type == ':') /* command line history */
+		else if(type == LINE_TYPE_CMDLINE_HIST)
 		{
 			inc_history(&cfg.cmd_history, &cfg.cmd_history_num, &cfg.history_len);
 			save_command_history(line_val);
 		}
-		else if(type == '/') /* search history */
+		else if(type == LINE_TYPE_SEARCH_HIST)
 		{
 			inc_history(&cfg.search_history, &cfg.search_history_num,
 					&cfg.history_len);
 			save_search_history(line_val);
 		}
-		else if(type == 'p') /* prompt history */
+		else if(type == LINE_TYPE_PROMPT_HIST)
 		{
 			inc_history(&cfg.prompt_history, &cfg.prompt_history_num,
 					&cfg.history_len);
 			save_prompt_history(line_val);
 		}
-		else if(type == 'S') /* directory stack */
+		else if(type == LINE_TYPE_DIR_STACK)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -249,7 +250,7 @@ read_info_file(int reread)
 				}
 			}
 		}
-		else if(type == 't') /* trash */
+		else if(type == LINE_TYPE_TRASH)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -258,42 +259,43 @@ read_info_file(int reread)
 				add_to_trash(line2, line_val);
 			}
 		}
-		else if(type == '"') /* registers */
+		else if(type == LINE_TYPE_REG)
 		{
 			append_to_register(line[1], line + 2);
 		}
-		else if(type == 'f') /* left pane filter */
+		else if(type == LINE_TYPE_LWIN_FILT)
 		{
 			(void)replace_string(&lwin.prev_filter, line_val);
 			set_filename_filter(&lwin, line_val);
 		}
-		else if(type == 'F') /* right pane filter */
+		else if(type == LINE_TYPE_RWIN_FILT)
 		{
 			(void)replace_string(&rwin.prev_filter, line_val);
 			set_filename_filter(&rwin, line_val);
 		}
-		else if(type == 'i') /* left pane filter inverted */
+		else if(type == LINE_TYPE_LWIN_FILT_INV)
 		{
 			const int i = atoi(line_val);
 			lwin.invert = (i != 0);
 		}
-		else if(type == 'I') /* right pane filter inverted */
+		else if(type == LINE_TYPE_RWIN_FILT_INV)
 		{
 			const int i = atoi(line_val);
 			rwin.invert = (i != 0);
 		}
-		else if(type == 's') /* use screen program */
+		else if(type == LINE_TYPE_USE_SCREEN)
 		{
 			const int i = atoi(line_val);
 			set_use_screen(i != 0);
 		}
-		else if(type == 'c') /* default color scheme */
+		else if(type == LINE_TYPE_COLORSCHEME)
 		{
 			strcpy(curr_stats.color_scheme, line_val);
 		}
-		else if(type == '[' || type == ']') /* left or right pane property */
+		else if(type == LINE_TYPE_LWIN_SPECIFIC || type == LINE_TYPE_RWIN_SPECIFIC)
 		{
-			set_view_property((type == '[') ? &lwin : &rwin, line[1], line + 2);
+			FileView *view = (type == LINE_TYPE_LWIN_SPECIFIC) ? &lwin : &rwin;
+			set_view_property(view, line_val[0], line_val + 1);
 		}
 	}
 
@@ -368,7 +370,7 @@ get_history(FileView *view, int reread, const char *dir, const char *file,
 static void
 set_view_property(FileView *view, char type, const char value[])
 {
-	if(type == '.')
+	if(type == PROP_TYPE_DOTFILES)
 	{
 		const int bool_val = atoi(value);
 		view->hide_dot = bool_val;
@@ -485,10 +487,10 @@ update_info_file(const char filename[])
 			const char type = line[0];
 			const char *const line_val = line + 1;
 
-			if(type == '#' || type == '\0')
+			if(type == LINE_TYPE_COMMENT || type == '\0')
 				continue;
 
-			if(type == '.') /* filetype */
+			if(type == LINE_TYPE_FILETYPE)
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -501,7 +503,7 @@ update_info_file(const char filename[])
 					nft = add_to_string_array(&ft, nft, 2, line_val, line2);
 				}
 			}
-			else if(type == 'x') /* xfiletype */
+			else if(type == LINE_TYPE_XFILETYPE)
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -523,7 +525,7 @@ update_info_file(const char filename[])
 					nfx = add_to_string_array(&fx, nfx, 2, line_val, line2);
 				}
 			}
-			else if(type == ',') /* fileviewer */
+			else if(type == LINE_TYPE_FILEVIEWER)
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -532,7 +534,7 @@ update_info_file(const char filename[])
 					nfv = add_to_string_array(&fv, nfv, 2, line_val, line2);
 				}
 			}
-			else if(type == '!') /* user defined command */
+			else if(type == LINE_TYPE_COMMAND)
 			{
 				if(line[1] == '\0')
 					continue;
@@ -553,7 +555,7 @@ update_info_file(const char filename[])
 					ncmds = add_to_string_array(&cmds, ncmds, 2, line_val, line2);
 				}
 			}
-			else if(type == 'd') /* left view directory history */
+			else if(type == LINE_TYPE_LWIN_HIST)
 			{
 				if(line[1] == '\0')
 					continue;
@@ -575,7 +577,7 @@ update_info_file(const char filename[])
 					}
 				}
 			}
-			else if(type == 'D') /* right view directory history */
+			else if(type == LINE_TYPE_RWIN_HIST)
 			{
 				if(line[1] == '\0')
 					continue;
@@ -597,7 +599,7 @@ update_info_file(const char filename[])
 					}
 				}
 			}
-			else if(type == '\'') /* bookmark */
+			else if(type == LINE_TYPE_BOOKMARK)
 			{
 				line[2] = '\0';
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
@@ -613,7 +615,7 @@ update_info_file(const char filename[])
 					}
 				}
 			}
-			else if(type == 't') /* trash */
+			else if(type == LINE_TYPE_TRASH)
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -624,28 +626,28 @@ update_info_file(const char filename[])
 					ntrash = add_to_string_array(&trash, ntrash, 2, line_val, line2);
 				}
 			}
-			else if(type == ':') /* command line history */
+			else if(type == LINE_TYPE_CMDLINE_HIST)
 			{
 				if(cfg.cmd_history_num >= 0 && is_in_string_array(cfg.cmd_history,
 						cfg.cmd_history_num + 1, line_val))
 					continue;
 				ncmdh = add_to_string_array(&cmdh, ncmdh, 1, line_val);
 			}
-			else if(type == '/') /* search history */
+			else if(type == LINE_TYPE_SEARCH_HIST)
 			{
 				if(cfg.search_history_num >= 0 && is_in_string_array(cfg.search_history,
 						cfg.search_history_num + 1, line_val))
 					continue;
 				nsrch = add_to_string_array(&srch, nsrch, 1, line_val);
 			}
-			else if(type == 'p') /* prompt history */
+			else if(type == LINE_TYPE_PROMPT_HIST)
 			{
 				if(cfg.prompt_history_num >= 0 && is_in_string_array(cfg.prompt_history,
 						cfg.prompt_history_num + 1, line_val))
 					continue;
 				nprompt = add_to_string_array(&prompt, nprompt, 1, line_val);
 			}
-			else if(type == '"') /* registers */
+			else if(type == LINE_TYPE_REG)
 			{
 				registers_t *reg = find_register(line[1]);
 				if(reg != NULL)
