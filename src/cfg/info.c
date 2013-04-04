@@ -74,10 +74,12 @@ read_info_file(int reread)
 
 	while((line = read_vifminfo_line(fp, line)) != NULL)
 	{
-		if(line[0] == '#' || line[0] == '\0')
+		const char type = line[0];
+
+		if(type == '#' || type == '\0')
 			continue;
 
-		if(line[0] == '=') /* option */
+		if(type == '=') /* option */
 		{
 			if(line[1] == '[' || line[1] == ']')
 			{
@@ -91,7 +93,7 @@ read_info_file(int reread)
 				process_set_args(line + 1);
 			}
 		}
-		else if(line[0] == '.') /* filetype */
+		else if(type == '.') /* filetype */
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -103,7 +105,7 @@ read_info_file(int reread)
 				}
 			}
 		}
-		else if(line[0] == 'x') /* xfiletype */
+		else if(type == 'x') /* xfiletype */
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -111,14 +113,14 @@ read_info_file(int reread)
 						curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 			}
 		}
-		else if(line[0] == ',') /* fileviewer */
+		else if(type == ',') /* fileviewer */
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				set_fileviewer(line + 1, line2);
 			}
 		}
-		else if(line[0] == '!') /* command */
+		else if(type == '!') /* command */
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -130,7 +132,7 @@ read_info_file(int reread)
 				}
 			}
 		}
-		else if(line[0] == '\'') /* bookmark */
+		else if(type == '\'') /* bookmark */
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -140,7 +142,7 @@ read_info_file(int reread)
 				}
 			}
 		}
-		else if(line[0] == 'a') /* active view */
+		else if(type == 'a') /* active view */
 		{
 			/* don't change active view on :restart command */
 			if(line[1] == 'r' && !reread)
@@ -151,34 +153,34 @@ read_info_file(int reread)
 				other_view = &lwin;
 			}
 		}
-		else if(line[0] == 'q') /* state of quick view */
+		else if(type == 'q') /* state of quick view */
 		{
 			int i = atoi(line + 1);
 			curr_stats.view = (i == 1);
 		}
-		else if(line[0] == 'v') /* number of windows */
+		else if(type == 'v') /* number of windows */
 		{
 			int i = atoi(line + 1);
 			cfg.show_one_window = (i == 1);
 			curr_stats.number_of_windows = (i == 1) ? 1 : 2;
 		}
-		else if(line[0] == 'o') /* split orientation */
+		else if(type == 'o') /* split orientation */
 		{
 			curr_stats.split = (line[1] == 'v') ? VSPLIT : HSPLIT;
 		}
-		else if(line[0] == 'm') /* split position */
+		else if(type == 'm') /* split position */
 		{
 			curr_stats.splitter_pos = atof(line + 1);
 		}
-		else if(line[0] == 'l') /* left pane sort */
+		else if(type == 'l') /* left pane sort */
 		{
 			get_sort_info(&lwin, line + 1);
 		}
-		else if(line[0] == 'r') /* right pane sort */
+		else if(type == 'r') /* right pane sort */
 		{
 			get_sort_info(&rwin, line + 1);
 		}
-		else if(line[0] == 'd') /* left pane history */
+		else if(type == 'd') /* left pane history */
 		{
 			int pos;
 
@@ -197,7 +199,7 @@ read_info_file(int reread)
 			pos = read_possible_possible_pos(fp);
 			get_history(&lwin, reread, line + 1, line2, pos);
 		}
-		else if(line[0] == 'D') /* right pane history */
+		else if(type == 'D') /* right pane history */
 		{
 			int pos;
 
@@ -216,24 +218,24 @@ read_info_file(int reread)
 			pos = read_possible_possible_pos(fp);
 			get_history(&rwin, reread, line + 1, line2, pos);
 		}
-		else if(line[0] == ':') /* command line history */
+		else if(type == ':') /* command line history */
 		{
 			inc_history(&cfg.cmd_history, &cfg.cmd_history_num, &cfg.history_len);
 			save_command_history(line + 1);
 		}
-		else if(line[0] == '/') /* search history */
+		else if(type == '/') /* search history */
 		{
 			inc_history(&cfg.search_history, &cfg.search_history_num,
 					&cfg.history_len);
 			save_search_history(line + 1);
 		}
-		else if(line[0] == 'p') /* prompt history */
+		else if(type == 'p') /* prompt history */
 		{
 			inc_history(&cfg.prompt_history, &cfg.prompt_history_num,
 					&cfg.history_len);
 			save_prompt_history(line + 1);
 		}
-		else if(line[0] == 'S') /* directory stack */
+		else if(type == 'S') /* directory stack */
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -246,7 +248,7 @@ read_info_file(int reread)
 				}
 			}
 		}
-		else if(line[0] == 't') /* trash */
+		else if(type == 't') /* trash */
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -255,42 +257,42 @@ read_info_file(int reread)
 				add_to_trash(line2, line + 1);
 			}
 		}
-		else if(line[0] == '"') /* registers */
+		else if(type == '"') /* registers */
 		{
 			append_to_register(line[1], line + 2);
 		}
-		else if(line[0] == 'f') /* left pane filter */
+		else if(type == 'f') /* left pane filter */
 		{
 			(void)replace_string(&lwin.prev_filter, line + 1);
 			set_filename_filter(&lwin, line + 1);
 		}
-		else if(line[0] == 'F') /* right pane filter */
+		else if(type == 'F') /* right pane filter */
 		{
 			(void)replace_string(&rwin.prev_filter, line + 1);
 			set_filename_filter(&rwin, line + 1);
 		}
-		else if(line[0] == 'i') /* left pane filter inverted */
+		else if(type == 'i') /* left pane filter inverted */
 		{
 			int i = atoi(line + 1);
 			lwin.invert = (i != 0);
 		}
-		else if(line[0] == 'I') /* right pane filter inverted */
+		else if(type == 'I') /* right pane filter inverted */
 		{
 			int i = atoi(line + 1);
 			rwin.invert = (i != 0);
 		}
-		else if(line[0] == 's') /* use screen program */
+		else if(type == 's') /* use screen program */
 		{
 			int i = atoi(line + 1);
 			set_use_screen(i != 0);
 		}
-		else if(line[0] == 'c') /* default color scheme */
+		else if(type == 'c') /* default color scheme */
 		{
 			strcpy(curr_stats.color_scheme, line + 1);
 		}
-		else if(line[0] == '[' || line[0] == ']') /* left or right pane property */
+		else if(type == '[' || type == ']') /* left or right pane property */
 		{
-			set_view_property((line[0] == '[') ? &lwin : &rwin, line[1], line + 2);
+			set_view_property((type == '[') ? &lwin : &rwin, line[1], line + 2);
 		}
 	}
 
