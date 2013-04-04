@@ -47,6 +47,7 @@ static void get_sort_info(FileView *view, const char line[]);
 static void inc_history(char ***hist, int *num, int *len);
 static void get_history(FileView *view, int reread, const char *dir,
 		const char *file, int pos);
+static void set_view_property(FileView *view, char type, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
 static void update_info_file(const char filename[]);
@@ -287,6 +288,10 @@ read_info_file(int reread)
 		{
 			strcpy(curr_stats.color_scheme, line + 1);
 		}
+		else if(line[0] == '[' || line[0] == ']') /* left or right pane property */
+		{
+			set_view_property((line[0] == '[') ? &lwin : &rwin, line[1], line + 2);
+		}
 	}
 
 	free(line);
@@ -354,6 +359,22 @@ get_history(FileView *view, int reread, const char *dir, const char *file,
 	save_view_history(view, dir, file, pos);
 	if(!reread)
 		view->list_rows = 0;
+}
+
+/* Sets view property specified by the type to the value. */
+static void
+set_view_property(FileView *view, char type, const char value[])
+{
+	if(type == '.')
+	{
+		const int bool_val = atoi(value);
+		view->hide_dot = bool_val;
+	}
+	else
+	{
+		LOG_ERROR_MSG("Unknown view property type (%c) with value: %s", type,
+				value);
+	}
 }
 
 void
@@ -915,8 +936,10 @@ update_info_file(const char filename[])
 		fputs("\n# State:\n", fp);
 		fprintf(fp, "f%s\n", lwin.filename_filter);
 		fprintf(fp, "i%d\n", lwin.invert);
+		fprintf(fp, "[.%d\n", lwin.hide_dot);
 		fprintf(fp, "F%s\n", rwin.filename_filter);
 		fprintf(fp, "I%d\n", rwin.invert);
+		fprintf(fp, "].%d\n", rwin.hide_dot);
 		fprintf(fp, "s%d\n", cfg.use_screen);
 	}
 
