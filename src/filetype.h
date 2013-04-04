@@ -77,7 +77,7 @@ assoc_list_t fileviewers;
 void config_filetypes(external_command_exists_t ece_func);
 /* Returns non-zero on success. */
 int get_default_program_for_file(const char *file, assoc_record_t *result);
-char * get_viewer_for_file(char *file);
+char * get_viewer_for_file(const char file[]);
 /* Associates list of comma separated patters with list of comma separated
  * programs either for X or non-X associations and depending on current
  * execution environment. */

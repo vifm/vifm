@@ -483,6 +483,7 @@ update_info_file(const char filename[])
 		while((line = read_vifminfo_line(fp, line)) != NULL)
 		{
 			const char type = line[0];
+			const char *const line_val = line + 1;
 
 			if(type == '#' || type == '\0')
 				continue;
@@ -492,12 +493,12 @@ update_info_file(const char filename[])
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					assoc_record_t prog;
-					if(get_default_program_for_file(line + 1, &prog))
+					if(get_default_program_for_file(line_val, &prog))
 					{
 						free_assoc_record(&prog);
 						continue;
 					}
-					nft = add_to_string_array(&ft, nft, 2, line + 1, line2);
+					nft = add_to_string_array(&ft, nft, 2, line_val, line2);
 				}
 			}
 			else if(type == 'x') /* xfiletype */
@@ -505,10 +506,10 @@ update_info_file(const char filename[])
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					assoc_record_t x_prog;
-					if(get_default_program_for_file(line + 1, &x_prog))
+					if(get_default_program_for_file(line_val, &x_prog))
 					{
 						assoc_record_t console_prog;
-						if(get_default_program_for_file(line + 1, &console_prog))
+						if(get_default_program_for_file(line_val, &console_prog))
 						{
 							if(strcmp(x_prog.command, console_prog.command) == 0)
 							{
@@ -519,16 +520,16 @@ update_info_file(const char filename[])
 						}
 						free_assoc_record(&x_prog);
 					}
-					nfx = add_to_string_array(&fx, nfx, 2, line + 1, line2);
+					nfx = add_to_string_array(&fx, nfx, 2, line_val, line2);
 				}
 			}
 			else if(type == ',') /* fileviewer */
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					if(get_viewer_for_file(line + 1) != NULL)
+					if(get_viewer_for_file(line_val) != NULL)
 						continue;
-					nfv = add_to_string_array(&fv, nfv, 2, line + 1, line2);
+					nfv = add_to_string_array(&fv, nfv, 2, line_val, line2);
 				}
 			}
 			else if(type == '!') /* user defined command */
@@ -537,7 +538,7 @@ update_info_file(const char filename[])
 					continue;
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					char *p = line + 1;
+					const char *p = line_val;
 					for(i = 0; i < nlist; i += 2)
 					{
 						int cmp = strcmp(list[i], p);
@@ -549,7 +550,7 @@ update_info_file(const char filename[])
 					}
 					if(p == NULL)
 						continue;
-					ncmds = add_to_string_array(&cmds, ncmds, 2, line + 1, line2);
+					ncmds = add_to_string_array(&cmds, ncmds, 2, line_val, line2);
 				}
 			}
 			else if(type == 'd') /* left view directory history */
@@ -562,11 +563,11 @@ update_info_file(const char filename[])
 
 					if(lwin.history_pos + nlh/2 == cfg.history_len - 1)
 						continue;
-					if(is_in_view_history(&lwin, line + 1))
+					if(is_in_view_history(&lwin, line_val))
 						continue;
 
 					pos = read_possible_possible_pos(fp);
-					nlh = add_to_string_array(&lh, nlh, 2, line + 1, line2);
+					nlh = add_to_string_array(&lh, nlh, 2, line_val, line2);
 					if(nlh/2 > nlhp)
 					{
 						nlhp = add_to_int_array(&lhp, nlhp, pos);
@@ -584,11 +585,11 @@ update_info_file(const char filename[])
 
 					if(rwin.history_pos + nrh/2 == cfg.history_len - 1)
 						continue;
-					if(is_in_view_history(&rwin, line + 1))
+					if(is_in_view_history(&rwin, line_val))
 						continue;
 
 					pos = read_possible_possible_pos(fp);
-					nrh = add_to_string_array(&rh, nrh, 2, line + 1, line2);
+					nrh = add_to_string_array(&rh, nrh, 2, line_val, line2);
 					if(nrh/2 > nrhp)
 					{
 						nrhp = add_to_int_array(&rhp, nrhp, pos);
@@ -607,7 +608,7 @@ update_info_file(const char filename[])
 							continue;
 						if(!is_bookmark_empty(mark2index(line[1])))
 							continue;
-						nmarks = add_to_string_array(&marks, nmarks, 3, line + 1, line2,
+						nmarks = add_to_string_array(&marks, nmarks, 3, line_val, line2,
 								line3);
 					}
 				}
@@ -616,33 +617,33 @@ update_info_file(const char filename[])
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					if(!path_exists_at(cfg.trash_dir, line + 1))
+					if(!path_exists_at(cfg.trash_dir, line_val))
 						continue;
-					if(is_in_trash(line + 1))
+					if(is_in_trash(line_val))
 						continue;
-					ntrash = add_to_string_array(&trash, ntrash, 2, line + 1, line2);
+					ntrash = add_to_string_array(&trash, ntrash, 2, line_val, line2);
 				}
 			}
 			else if(type == ':') /* command line history */
 			{
 				if(cfg.cmd_history_num >= 0 && is_in_string_array(cfg.cmd_history,
-						cfg.cmd_history_num + 1, line + 1))
+						cfg.cmd_history_num + 1, line_val))
 					continue;
-				ncmdh = add_to_string_array(&cmdh, ncmdh, 1, line + 1);
+				ncmdh = add_to_string_array(&cmdh, ncmdh, 1, line_val);
 			}
 			else if(type == '/') /* search history */
 			{
 				if(cfg.search_history_num >= 0 && is_in_string_array(cfg.search_history,
-						cfg.search_history_num + 1, line + 1))
+						cfg.search_history_num + 1, line_val))
 					continue;
-				nsrch = add_to_string_array(&srch, nsrch, 1, line + 1);
+				nsrch = add_to_string_array(&srch, nsrch, 1, line_val);
 			}
 			else if(type == 'p') /* prompt history */
 			{
 				if(cfg.prompt_history_num >= 0 && is_in_string_array(cfg.prompt_history,
-						cfg.prompt_history_num + 1, line + 1))
+						cfg.prompt_history_num + 1, line_val))
 					continue;
-				nprompt = add_to_string_array(&prompt, nprompt, 1, line + 1);
+				nprompt = add_to_string_array(&prompt, nprompt, 1, line_val);
 			}
 			else if(type == '"') /* registers */
 			{
