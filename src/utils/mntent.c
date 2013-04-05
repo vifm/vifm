@@ -79,7 +79,7 @@ hasmntopt(const struct mntent *mnt, const char option[])
 struct mntent *
 getmntent(FILE *fp)
 {
-	struct statfs *mntbuf;
+	static struct statfs *mntbuf;
 
 	if(pos == -1 || mntsize == -1)
 	{
