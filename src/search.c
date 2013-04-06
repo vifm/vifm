@@ -154,6 +154,7 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 	/* Need to redraw the list so that the matching files are highlighted */
 	draw_dir_list(view);
 
+	view->matches = found;
 	if(found > 0)
 	{
 		int was_found = 1;
@@ -166,8 +167,6 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 		}
 		if(!cfg.hl_search)
 		{
-			view->matches = found;
-
 			if(!was_found)
 			{
 				print_search_fail_msg(view, backward);
