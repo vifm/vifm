@@ -1,4 +1,4 @@
-.TH vifm 1 "April 04, 2013" "" "Vifm"
+.TH vifm 1 "April 06, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -3015,7 +3015,11 @@ Commands:
   :TabVifm    select a file or files to open in tabs.
 
 Each command accepts up to two arguments: left pane directory and right pane
-directory.
+directory.  After arguments are checked, vifm process is spawned in a special
+"file-picker" mode.  To pick files just open them either by pressing l, i or
+Enter keys, or by running :edit command.  If no files are selected, file
+under the cursor is opened, otherwise whole selection is passed to the plugin
+and opened in vim.
 
 The plugin have only two settings.  It's a string variable named g:vifm_term to
 let user specify command to run gui terminal.  By default it's equal to
