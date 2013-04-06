@@ -914,9 +914,9 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 			curr_stats.save_msg = exec_command(p, curr_view, GET_VWBSEARCH_PATTERN);
 		}
 	}
-	else if(cfg.inc_search && input_stat.search_mode && curr_view->matches == 0)
+	else if(cfg.inc_search && input_stat.search_mode)
 	{
-		print_search_fail_msg(curr_view, is_backward_search(sub_mode));
+		print_search_msg(curr_view, is_backward_search(sub_mode));
 		curr_stats.save_msg = 1;
 	}
 
