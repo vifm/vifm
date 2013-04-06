@@ -83,11 +83,11 @@ read_info_file(int reread)
 
 		if(type == LINE_TYPE_OPTION)
 		{
-			if(line[1] == '[' || line[1] == ']')
+			if(line_val[0] == '[' || line_val[0] == ']')
 			{
 				FileView *v = curr_view;
-				curr_view = (line[1] == '[') ? &lwin : &rwin;
-				process_set_args(line + 2);
+				curr_view = (line_val[0] == '[') ? &lwin : &rwin;
+				process_set_args(line_val + 1);
 				curr_view = v;
 			}
 			else
@@ -140,14 +140,14 @@ read_info_file(int reread)
 			{
 				if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 				{
-					add_bookmark(line[1], line2, line3);
+					add_bookmark(line_val[0], line2, line3);
 				}
 			}
 		}
 		else if(type == LINE_TYPE_ACTIVE_VIEW)
 		{
 			/* don't change active view on :restart command */
-			if(line[1] == 'r' && !reread)
+			if(line_val[0] == 'r' && !reread)
 			{
 				update_view_title(&lwin);
 				update_view_title(&rwin);
@@ -168,7 +168,7 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_SPLIT_ORIENTATION)
 		{
-			curr_stats.split = (line[1] == 'v') ? VSPLIT : HSPLIT;
+			curr_stats.split = (line_val[0] == 'v') ? VSPLIT : HSPLIT;
 		}
 		else if(type == LINE_TYPE_SPLIT_POSITION)
 		{
@@ -186,7 +186,7 @@ read_info_file(int reread)
 		{
 			int pos;
 
-			if(line[1] == '\0')
+			if(line_val[0] == '\0')
 			{
 				if(reread)
 					continue;
@@ -205,7 +205,7 @@ read_info_file(int reread)
 		{
 			int pos;
 
-			if(line[1] == '\0')
+			if(line_val[0] == '\0')
 			{
 				if(reread)
 					continue;
@@ -261,7 +261,7 @@ read_info_file(int reread)
 		}
 		else if(type == LINE_TYPE_REG)
 		{
-			append_to_register(line[1], line + 2);
+			append_to_register(line_val[0], line_val + 1);
 		}
 		else if(type == LINE_TYPE_LWIN_FILT)
 		{
@@ -536,7 +536,7 @@ update_info_file(const char filename[])
 			}
 			else if(type == LINE_TYPE_COMMAND)
 			{
-				if(line[1] == '\0')
+				if(line_val[0] == '\0')
 					continue;
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -557,7 +557,7 @@ update_info_file(const char filename[])
 			}
 			else if(type == LINE_TYPE_LWIN_HIST)
 			{
-				if(line[1] == '\0')
+				if(line_val[0] == '\0')
 					continue;
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -579,7 +579,7 @@ update_info_file(const char filename[])
 			}
 			else if(type == LINE_TYPE_RWIN_HIST)
 			{
-				if(line[1] == '\0')
+				if(line_val[0] == '\0')
 					continue;
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -601,16 +601,21 @@ update_info_file(const char filename[])
 			}
 			else if(type == LINE_TYPE_BOOKMARK)
 			{
-				line[2] = '\0';
+				const char mark = line_val[0];
+				if(line_val[1] != '\0')
+				{
+					LOG_ERROR_MSG("Expected end of line, but got: %s", line_val + 1);
+				}
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 					{
-						if(!char_is_one_of(valid_bookmarks, line[1]))
+						const char mark_str[] = { mark, '\0' };
+						if(!char_is_one_of(valid_bookmarks, mark))
 							continue;
-						if(!is_bookmark_empty(mark2index(line[1])))
+						if(!is_bookmark_empty(mark2index(mark)))
 							continue;
-						nmarks = add_to_string_array(&marks, nmarks, 3, line_val, line2,
+						nmarks = add_to_string_array(&marks, nmarks, 3, mark_str, line2,
 								line3);
 					}
 				}
@@ -649,8 +654,7 @@ update_info_file(const char filename[])
 			}
 			else if(type == LINE_TYPE_REG)
 			{
-				registers_t *reg = find_register(line[1]);
-				if(reg != NULL)
+				if(find_register(line_val[0]) != NULL)
 					continue;
 				nregs = add_to_string_array(&regs, nregs, 1, line);
 			}
