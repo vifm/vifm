@@ -123,6 +123,8 @@ static void draw_wild_menu(int op);
 static void cmd_ctrl_k(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
 static void save_command(const keys_info_t *keys_info, const char cmd[]);
+static int is_forward_search(CMD_LINE_SUBMODES sub_mode);
+static int is_backward_search(CMD_LINE_SUBMODES sub_mode);
 static void cmd_ctrl_n(key_info_t key_info, keys_info_t *keys_info);
 #ifdef ENABLE_EXTENDED_KEYS
 static void cmd_down(key_info_t key_info, keys_info_t *keys_info);
@@ -436,15 +438,9 @@ enter_cmdline_mode(CMD_LINE_SUBMODES cl_sub_mode, const wchar_t *cmd, void *ptr)
 
 	if(sub_mode == CMD_SUBMODE || sub_mode == MENU_CMD_SUBMODE)
 		prompt = L":";
-	else if(sub_mode == SEARCH_FORWARD_SUBMODE
-			|| sub_mode == VSEARCH_FORWARD_SUBMODE
-			|| sub_mode == MENU_SEARCH_FORWARD_SUBMODE
-			|| sub_mode == VIEW_SEARCH_FORWARD_SUBMODE)
+	else if(is_forward_search(sub_mode))
 		prompt = L"/";
-	else if(sub_mode == SEARCH_BACKWARD_SUBMODE
-			|| sub_mode == VSEARCH_BACKWARD_SUBMODE
-			|| sub_mode == MENU_SEARCH_BACKWARD_SUBMODE
-			|| sub_mode == VIEW_SEARCH_BACKWARD_SUBMODE)
+	else if(is_backward_search(sub_mode))
 		prompt = L"?";
 	else
 		prompt = L"E";
@@ -940,6 +936,28 @@ save_command(const keys_info_t *keys_info, const char cmd[])
 			}
 		}
 	}
+}
+
+/* Checks whether specified mode is one of forward searching modes.  Returns
+ * non-zero if it is, otherwise zero is returned. */
+static int
+is_forward_search(CMD_LINE_SUBMODES sub_mode)
+{
+	return sub_mode == SEARCH_FORWARD_SUBMODE
+			|| sub_mode == VSEARCH_FORWARD_SUBMODE
+			|| sub_mode == MENU_SEARCH_FORWARD_SUBMODE
+			|| sub_mode == VIEW_SEARCH_FORWARD_SUBMODE;
+}
+
+/* Checks whether specified mode is one of backward searching modes.  Returns
+ * non-zero if it is, otherwise zero is returned. */
+static int
+is_backward_search(CMD_LINE_SUBMODES sub_mode)
+{
+	return sub_mode == SEARCH_BACKWARD_SUBMODE
+			|| sub_mode == VSEARCH_BACKWARD_SUBMODE
+			|| sub_mode == MENU_SEARCH_BACKWARD_SUBMODE
+			|| sub_mode == VIEW_SEARCH_BACKWARD_SUBMODE;
 }
 
 static void
