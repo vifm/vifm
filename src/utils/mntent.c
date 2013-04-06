@@ -51,10 +51,6 @@ static struct mntent * statfs_to_mntent(struct statfs *mntbuf);
 static char * flags2opts(int flags);
 static char * catopt(char s0[], const char s1[]);
 
-static int pos = -1;
-static int mntsize = -1;
-static struct mntent _mntent;
-
 char *
 hasmntopt(const struct mntent *mnt, const char option[])
 {
@@ -79,7 +75,10 @@ hasmntopt(const struct mntent *mnt, const char option[])
 struct mntent *
 getmntent(FILE *fp)
 {
-	struct statfs *mntbuf;
+	static int pos = -1;
+	static int mntsize = -1;
+
+	static struct statfs *mntbuf;
 
 	if(pos == -1 || mntsize == -1)
 	{
@@ -99,6 +98,7 @@ getmntent(FILE *fp)
 static struct mntent *
 statfs_to_mntent(struct statfs *mntbuf)
 {
+	static struct mntent _mntent;
 	static char opts_buf[40], *tmp;
 
 	_mntent.mnt_fsname = mntbuf->f_mntfromname;
