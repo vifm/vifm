@@ -173,8 +173,7 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 				return 1;
 			}
 
-			status_bar_messagef("%d matching file%s for: %s", found,
-					(found == 1) ? "" : "s", view->regexp);
+			print_search_msg(view, backward);
 			return 1;
 		}
 		return 0;
@@ -188,7 +187,21 @@ find_pattern(FileView *view, const char *pattern, int backward, int move)
 }
 
 void
-print_search_fail_msg(FileView *view, int backward)
+print_search_msg(const FileView *view, int backward)
+{
+	if(view->matches == 0)
+	{
+		print_search_fail_msg(view, backward);
+	}
+	else
+	{
+		status_bar_messagef("%d matching file%s for: %s", view->matches,
+				(view->matches == 1) ? "" : "s", view->regexp);
+	}
+}
+
+void
+print_search_fail_msg(const FileView *view, int backward)
 {
 	if(!cfg.wrap_scan)
 	{
