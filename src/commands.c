@@ -3607,7 +3607,7 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 
 		if(cmd_info->argv[0][1] != '\0')
 			return CMDS_ERR_TRAILING_CHARS;
-		if(find_register(cmd_info->argv[0][0]) == NULL)
+		if(!register_exists(cmd_info->argv[0][0]))
 			return CMDS_ERR_TRAILING_CHARS;
 		*reg = cmd_info->argv[0][0];
 
@@ -3632,7 +3632,7 @@ get_reg_and_count(const cmd_info_t *cmd_info, int *reg)
 		{
 			if(cmd_info->argv[0][1] != '\0')
 				return CMDS_ERR_TRAILING_CHARS;
-			if(find_register(cmd_info->argv[0][0]) == NULL)
+			if(!register_exists(cmd_info->argv[0][0]))
 				return CMDS_ERR_TRAILING_CHARS;
 			*reg = cmd_info->argv[0][0];
 		}

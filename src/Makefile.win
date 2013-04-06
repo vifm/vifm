@@ -89,6 +89,7 @@ compile_info.c: update_compile_info
 update_compile_info:
 	@before="$$(cat "compile_info.c" 2> /dev/null)"; \
 	if [ "x$$(which git)" != "x" ]; then \
+		unset GIT_DIR; \
 		new="const char GIT_HASH[] = \"$$(git rev-parse HEAD)\";"; \
 	else \
 		new='const char GIT_HASH[] = "";'; \

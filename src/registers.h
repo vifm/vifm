@@ -34,6 +34,9 @@ typedef struct
 extern const char valid_registers[];
 
 void init_registers(void);
+/* Checks whether register with the key name exists (A-Z will be rejected).
+ * Returns non-zero if it exists, otherwise zero is returned. */
+int register_exists(int key);
 registers_t * find_register(int key);
 void append_to_register(int reg, const char file[]);
 /* Clears all registers. */

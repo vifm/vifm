@@ -145,6 +145,7 @@ compile_info.c: update_compile_info
 update_compile_info:
 	@before="$$(cat "compile_info.c" 2> /dev/null)"; \
 	if [ "x$$(which git 2> /dev/null)" != "x" ]; then \
+		unset GIT_DIR; \
 		new="const char GIT_HASH[] = \"$$(git rev-parse HEAD)\";"; \
 	else \
 		new='const char GIT_HASH[] = "";'; \
@@ -160,7 +161,7 @@ update_compile_info:
 
 tags.c: ../data/vim/doc/vifm.txt
 	@if [ "x$$(whereis vim)" != "x" -a "x$$(whereis cat)" != "x" -a "x$$(whereis awk)" != "x" ]; then \
-		vim -c 'helptags $(dir $<)|q'; \
+		vim -c 'helptags $(dir $<)|q' < /dev/tty; \
 		cat $(dir $<)/tags | awk ' \
 			BEGIN { \
 				print "const char *tags[] = {" \

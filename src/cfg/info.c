@@ -40,6 +40,7 @@
 #include "../trash.h"
 #include "../ui.h"
 #include "config.h"
+#include "info_chars.h"
 
 #include "info.h"
 
@@ -47,6 +48,7 @@ static void get_sort_info(FileView *view, const char line[]);
 static void inc_history(char ***hist, int *num, int *len);
 static void get_history(FileView *view, int reread, const char *dir,
 		const char *file, int pos);
+static void set_view_property(FileView *view, char type, const char value[]);
 static int copy_file(const char src[], const char dst[]);
 static int copy_file_internal(FILE *const src, FILE *const dst);
 static void update_info_file(const char filename[]);
@@ -73,76 +75,79 @@ read_info_file(int reread)
 
 	while((line = read_vifminfo_line(fp, line)) != NULL)
 	{
-		if(line[0] == '#' || line[0] == '\0')
+		const char type = line[0];
+		const char *const line_val = line + 1;
+
+		if(type == LINE_TYPE_COMMENT || type == '\0')
 			continue;
 
-		if(line[0] == '=') /* option */
+		if(type == LINE_TYPE_OPTION)
 		{
-			if(line[1] == '[' || line[1] == ']')
+			if(line_val[0] == '[' || line_val[0] == ']')
 			{
 				FileView *v = curr_view;
-				curr_view = (line[1] == '[') ? &lwin : &rwin;
-				process_set_args(line + 2);
+				curr_view = (line_val[0] == '[') ? &lwin : &rwin;
+				process_set_args(line_val + 1);
 				curr_view = v;
 			}
 			else
 			{
-				process_set_args(line + 1);
+				process_set_args(line_val);
 			}
 		}
-		else if(line[0] == '.') /* filetype */
+		else if(type == LINE_TYPE_FILETYPE)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				/* This is to prevent old builtin fake associations to be loaded. */
 				if(!ends_with(line2, "}" VIFM_PSEUDO_CMD))
 				{
-					set_programs(line + 1, line2, 0,
+					set_programs(line_val, line2, 0,
 							curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 				}
 			}
 		}
-		else if(line[0] == 'x') /* xfiletype */
+		else if(type == LINE_TYPE_XFILETYPE)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				set_programs(line + 1, line2, 1,
+				set_programs(line_val, line2, 1,
 						curr_stats.env_type == ENVTYPE_EMULATOR_WITH_X);
 			}
 		}
-		else if(line[0] == ',') /* fileviewer */
+		else if(type == LINE_TYPE_FILEVIEWER)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				set_fileviewer(line + 1, line2);
+				set_fileviewer(line_val, line2);
 			}
 		}
-		else if(line[0] == '!') /* command */
+		else if(type == LINE_TYPE_COMMAND)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				char *cmdadd_cmd;
-				if((cmdadd_cmd = format_str("command %s %s", line + 1, line2)) != NULL)
+				if((cmdadd_cmd = format_str("command %s %s", line_val, line2)) != NULL)
 				{
 					exec_commands(cmdadd_cmd, curr_view, GET_COMMAND);
 					free(cmdadd_cmd);
 				}
 			}
 		}
-		else if(line[0] == '\'') /* bookmark */
+		else if(type == LINE_TYPE_BOOKMARK)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
 				if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 				{
-					add_bookmark(line[1], line2, line3);
+					add_bookmark(line_val[0], line2, line3);
 				}
 			}
 		}
-		else if(line[0] == 'a') /* active view */
+		else if(type == LINE_TYPE_ACTIVE_VIEW)
 		{
 			/* don't change active view on :restart command */
-			if(line[1] == 'r' && !reread)
+			if(line_val[0] == 'r' && !reread)
 			{
 				update_view_title(&lwin);
 				update_view_title(&rwin);
@@ -150,38 +155,38 @@ read_info_file(int reread)
 				other_view = &lwin;
 			}
 		}
-		else if(line[0] == 'q') /* state of quick view */
+		else if(type == LINE_TYPE_QUICK_VIEW_STATE)
 		{
-			int i = atoi(line + 1);
+			const int i = atoi(line_val);
 			curr_stats.view = (i == 1);
 		}
-		else if(line[0] == 'v') /* number of windows */
+		else if(type == LINE_TYPE_WIN_COUNT)
 		{
-			int i = atoi(line + 1);
+			const int i = atoi(line_val);
 			cfg.show_one_window = (i == 1);
 			curr_stats.number_of_windows = (i == 1) ? 1 : 2;
 		}
-		else if(line[0] == 'o') /* split orientation */
+		else if(type == LINE_TYPE_SPLIT_ORIENTATION)
 		{
-			curr_stats.split = (line[1] == 'v') ? VSPLIT : HSPLIT;
+			curr_stats.split = (line_val[0] == 'v') ? VSPLIT : HSPLIT;
 		}
-		else if(line[0] == 'm') /* split position */
+		else if(type == LINE_TYPE_SPLIT_POSITION)
 		{
-			curr_stats.splitter_pos = atof(line + 1);
+			curr_stats.splitter_pos = atof(line_val);
 		}
-		else if(line[0] == 'l') /* left pane sort */
+		else if(type == LINE_TYPE_LWIN_SORT)
 		{
-			get_sort_info(&lwin, line + 1);
+			get_sort_info(&lwin, line_val);
 		}
-		else if(line[0] == 'r') /* right pane sort */
+		else if(type == LINE_TYPE_RWIN_SORT)
 		{
-			get_sort_info(&rwin, line + 1);
+			get_sort_info(&rwin, line_val);
 		}
-		else if(line[0] == 'd') /* left pane history */
+		else if(type == LINE_TYPE_LWIN_HIST)
 		{
 			int pos;
 
-			if(line[1] == '\0')
+			if(line_val[0] == '\0')
 			{
 				if(reread)
 					continue;
@@ -194,13 +199,13 @@ read_info_file(int reread)
 				continue;
 
 			pos = read_possible_possible_pos(fp);
-			get_history(&lwin, reread, line + 1, line2, pos);
+			get_history(&lwin, reread, line_val, line2, pos);
 		}
-		else if(line[0] == 'D') /* right pane history */
+		else if(type == LINE_TYPE_RWIN_HIST)
 		{
 			int pos;
 
-			if(line[1] == '\0')
+			if(line_val[0] == '\0')
 			{
 				if(reread)
 					continue;
@@ -213,26 +218,26 @@ read_info_file(int reread)
 				continue;
 
 			pos = read_possible_possible_pos(fp);
-			get_history(&rwin, reread, line + 1, line2, pos);
+			get_history(&rwin, reread, line_val, line2, pos);
 		}
-		else if(line[0] == ':') /* command line history */
+		else if(type == LINE_TYPE_CMDLINE_HIST)
 		{
 			inc_history(&cfg.cmd_history, &cfg.cmd_history_num, &cfg.history_len);
-			save_command_history(line + 1);
+			save_command_history(line_val);
 		}
-		else if(line[0] == '/') /* search history */
+		else if(type == LINE_TYPE_SEARCH_HIST)
 		{
 			inc_history(&cfg.search_history, &cfg.search_history_num,
 					&cfg.history_len);
-			save_search_history(line + 1);
+			save_search_history(line_val);
 		}
-		else if(line[0] == 'p') /* prompt history */
+		else if(type == LINE_TYPE_PROMPT_HIST)
 		{
 			inc_history(&cfg.prompt_history, &cfg.prompt_history_num,
 					&cfg.history_len);
-			save_prompt_history(line + 1);
+			save_prompt_history(line_val);
 		}
-		else if(line[0] == 'S') /* directory stack */
+		else if(type == LINE_TYPE_DIR_STACK)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
@@ -240,52 +245,57 @@ read_info_file(int reread)
 				{
 					if((line4 = read_vifminfo_line(fp, line4)) != NULL)
 					{
-						push_to_dirstack(line + 1, line2, line3 + 1, line4);
+						push_to_dirstack(line_val, line2, line3 + 1, line4);
 					}
 				}
 			}
 		}
-		else if(line[0] == 't') /* trash */
+		else if(type == LINE_TYPE_TRASH)
 		{
 			if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 			{
-				if(!path_exists_at(cfg.trash_dir, line + 1))
+				if(!path_exists_at(cfg.trash_dir, line_val))
 					continue;
-				add_to_trash(line2, line + 1);
+				add_to_trash(line2, line_val);
 			}
 		}
-		else if(line[0] == '"') /* registers */
+		else if(type == LINE_TYPE_REG)
 		{
-			append_to_register(line[1], line + 2);
+			append_to_register(line_val[0], line_val + 1);
 		}
-		else if(line[0] == 'f') /* left pane filter */
+		else if(type == LINE_TYPE_LWIN_FILT)
 		{
-			(void)replace_string(&lwin.prev_filter, line + 1);
-			set_filename_filter(&lwin, line + 1);
+			(void)replace_string(&lwin.prev_filter, line_val);
+			set_filename_filter(&lwin, line_val);
 		}
-		else if(line[0] == 'F') /* right pane filter */
+		else if(type == LINE_TYPE_RWIN_FILT)
 		{
-			(void)replace_string(&rwin.prev_filter, line + 1);
-			set_filename_filter(&rwin, line + 1);
+			(void)replace_string(&rwin.prev_filter, line_val);
+			set_filename_filter(&rwin, line_val);
 		}
-		else if(line[0] == 'i') /* left pane filter inverted */
+		else if(type == LINE_TYPE_LWIN_FILT_INV)
 		{
-			int i = atoi(line + 1);
+			const int i = atoi(line_val);
 			lwin.invert = (i != 0);
 		}
-		else if(line[0] == 'I') /* right pane filter inverted */
+		else if(type == LINE_TYPE_RWIN_FILT_INV)
 		{
-			int i = atoi(line + 1);
+			const int i = atoi(line_val);
 			rwin.invert = (i != 0);
 		}
-		else if(line[0] == 's') /* use screen program */
+		else if(type == LINE_TYPE_USE_SCREEN)
 		{
-			int i = atoi(line + 1);
+			const int i = atoi(line_val);
 			set_use_screen(i != 0);
 		}
-		else if(line[0] == 'c') /* default color scheme */
+		else if(type == LINE_TYPE_COLORSCHEME)
 		{
-			strcpy(curr_stats.color_scheme, line + 1);
+			strcpy(curr_stats.color_scheme, line_val);
+		}
+		else if(type == LINE_TYPE_LWIN_SPECIFIC || type == LINE_TYPE_RWIN_SPECIFIC)
+		{
+			FileView *view = (type == LINE_TYPE_LWIN_SPECIFIC) ? &lwin : &rwin;
+			set_view_property(view, line_val[0], line_val + 1);
 		}
 	}
 
@@ -354,6 +364,22 @@ get_history(FileView *view, int reread, const char *dir, const char *file,
 	save_view_history(view, dir, file, pos);
 	if(!reread)
 		view->list_rows = 0;
+}
+
+/* Sets view property specified by the type to the value. */
+static void
+set_view_property(FileView *view, char type, const char value[])
+{
+	if(type == PROP_TYPE_DOTFILES)
+	{
+		const int bool_val = atoi(value);
+		view->hide_dot = bool_val;
+	}
+	else
+	{
+		LOG_ERROR_MSG("Unknown view property type (%c) with value: %s", type,
+				value);
+	}
 }
 
 void
@@ -458,31 +484,34 @@ update_info_file(const char filename[])
 		char *line = NULL, *line2 = NULL, *line3 = NULL;
 		while((line = read_vifminfo_line(fp, line)) != NULL)
 		{
-			if(line[0] == '#' || line[0] == '\0')
+			const char type = line[0];
+			const char *const line_val = line + 1;
+
+			if(type == LINE_TYPE_COMMENT || type == '\0')
 				continue;
 
-			if(line[0] == '.') /* filetype */
+			if(type == LINE_TYPE_FILETYPE)
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					assoc_record_t prog;
-					if(get_default_program_for_file(line + 1, &prog))
+					if(get_default_program_for_file(line_val, &prog))
 					{
 						free_assoc_record(&prog);
 						continue;
 					}
-					nft = add_to_string_array(&ft, nft, 2, line + 1, line2);
+					nft = add_to_string_array(&ft, nft, 2, line_val, line2);
 				}
 			}
-			else if(line[0] == 'x') /* xfiletype */
+			else if(type == LINE_TYPE_XFILETYPE)
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					assoc_record_t x_prog;
-					if(get_default_program_for_file(line + 1, &x_prog))
+					if(get_default_program_for_file(line_val, &x_prog))
 					{
 						assoc_record_t console_prog;
-						if(get_default_program_for_file(line + 1, &console_prog))
+						if(get_default_program_for_file(line_val, &console_prog))
 						{
 							if(strcmp(x_prog.command, console_prog.command) == 0)
 							{
@@ -493,25 +522,25 @@ update_info_file(const char filename[])
 						}
 						free_assoc_record(&x_prog);
 					}
-					nfx = add_to_string_array(&fx, nfx, 2, line + 1, line2);
+					nfx = add_to_string_array(&fx, nfx, 2, line_val, line2);
 				}
 			}
-			else if(line[0] == ',') /* fileviewer */
+			else if(type == LINE_TYPE_FILEVIEWER)
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					if(get_viewer_for_file(line + 1) != NULL)
+					if(get_viewer_for_file(line_val) != NULL)
 						continue;
-					nfv = add_to_string_array(&fv, nfv, 2, line + 1, line2);
+					nfv = add_to_string_array(&fv, nfv, 2, line_val, line2);
 				}
 			}
-			else if(line[0] == '!') /* user defined command */
+			else if(type == LINE_TYPE_COMMAND)
 			{
-				if(line[1] == '\0')
+				if(line_val[0] == '\0')
 					continue;
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					char *p = line + 1;
+					const char *p = line_val;
 					for(i = 0; i < nlist; i += 2)
 					{
 						int cmp = strcmp(list[i], p);
@@ -523,12 +552,12 @@ update_info_file(const char filename[])
 					}
 					if(p == NULL)
 						continue;
-					ncmds = add_to_string_array(&cmds, ncmds, 2, line + 1, line2);
+					ncmds = add_to_string_array(&cmds, ncmds, 2, line_val, line2);
 				}
 			}
-			else if(line[0] == 'd') /* left view directory history */
+			else if(type == LINE_TYPE_LWIN_HIST)
 			{
-				if(line[1] == '\0')
+				if(line_val[0] == '\0')
 					continue;
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -536,11 +565,11 @@ update_info_file(const char filename[])
 
 					if(lwin.history_pos + nlh/2 == cfg.history_len - 1)
 						continue;
-					if(is_in_view_history(&lwin, line + 1))
+					if(is_in_view_history(&lwin, line_val))
 						continue;
 
 					pos = read_possible_possible_pos(fp);
-					nlh = add_to_string_array(&lh, nlh, 2, line + 1, line2);
+					nlh = add_to_string_array(&lh, nlh, 2, line_val, line2);
 					if(nlh/2 > nlhp)
 					{
 						nlhp = add_to_int_array(&lhp, nlhp, pos);
@@ -548,9 +577,9 @@ update_info_file(const char filename[])
 					}
 				}
 			}
-			else if(line[0] == 'D') /* right view directory history */
+			else if(type == LINE_TYPE_RWIN_HIST)
 			{
-				if(line[1] == '\0')
+				if(line_val[0] == '\0')
 					continue;
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
@@ -558,11 +587,11 @@ update_info_file(const char filename[])
 
 					if(rwin.history_pos + nrh/2 == cfg.history_len - 1)
 						continue;
-					if(is_in_view_history(&rwin, line + 1))
+					if(is_in_view_history(&rwin, line_val))
 						continue;
 
 					pos = read_possible_possible_pos(fp);
-					nrh = add_to_string_array(&rh, nrh, 2, line + 1, line2);
+					nrh = add_to_string_array(&rh, nrh, 2, line_val, line2);
 					if(nrh/2 > nrhp)
 					{
 						nrhp = add_to_int_array(&rhp, nrhp, pos);
@@ -570,58 +599,62 @@ update_info_file(const char filename[])
 					}
 				}
 			}
-			else if(line[0] == '\'') /* bookmark */
+			else if(type == LINE_TYPE_BOOKMARK)
 			{
-				line[2] = '\0';
+				const char mark = line_val[0];
+				if(line_val[1] != '\0')
+				{
+					LOG_ERROR_MSG("Expected end of line, but got: %s", line_val + 1);
+				}
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
 					if((line3 = read_vifminfo_line(fp, line3)) != NULL)
 					{
-						if(!char_is_one_of(valid_bookmarks, line[1]))
+						const char mark_str[] = { mark, '\0' };
+						if(!char_is_one_of(valid_bookmarks, mark))
 							continue;
-						if(!is_bookmark_empty(mark2index(line[1])))
+						if(!is_bookmark_empty(mark2index(mark)))
 							continue;
-						nmarks = add_to_string_array(&marks, nmarks, 3, line + 1, line2,
+						nmarks = add_to_string_array(&marks, nmarks, 3, mark_str, line2,
 								line3);
 					}
 				}
 			}
-			else if(line[0] == 't') /* trash */
+			else if(type == LINE_TYPE_TRASH)
 			{
 				if((line2 = read_vifminfo_line(fp, line2)) != NULL)
 				{
-					if(!path_exists_at(cfg.trash_dir, line + 1))
+					if(!path_exists_at(cfg.trash_dir, line_val))
 						continue;
-					if(is_in_trash(line + 1))
+					if(is_in_trash(line_val))
 						continue;
-					ntrash = add_to_string_array(&trash, ntrash, 2, line + 1, line2);
+					ntrash = add_to_string_array(&trash, ntrash, 2, line_val, line2);
 				}
 			}
-			else if(line[0] == ':') /* command line history */
+			else if(type == LINE_TYPE_CMDLINE_HIST)
 			{
 				if(cfg.cmd_history_num >= 0 && is_in_string_array(cfg.cmd_history,
-						cfg.cmd_history_num + 1, line + 1))
+						cfg.cmd_history_num + 1, line_val))
 					continue;
-				ncmdh = add_to_string_array(&cmdh, ncmdh, 1, line + 1);
+				ncmdh = add_to_string_array(&cmdh, ncmdh, 1, line_val);
 			}
-			else if(line[0] == '/') /* search history */
+			else if(type == LINE_TYPE_SEARCH_HIST)
 			{
 				if(cfg.search_history_num >= 0 && is_in_string_array(cfg.search_history,
-						cfg.search_history_num + 1, line + 1))
+						cfg.search_history_num + 1, line_val))
 					continue;
-				nsrch = add_to_string_array(&srch, nsrch, 1, line + 1);
+				nsrch = add_to_string_array(&srch, nsrch, 1, line_val);
 			}
-			else if(line[0] == 'p') /* prompt history */
+			else if(type == LINE_TYPE_PROMPT_HIST)
 			{
 				if(cfg.prompt_history_num >= 0 && is_in_string_array(cfg.prompt_history,
-						cfg.prompt_history_num + 1, line + 1))
+						cfg.prompt_history_num + 1, line_val))
 					continue;
-				nprompt = add_to_string_array(&prompt, nprompt, 1, line + 1);
+				nprompt = add_to_string_array(&prompt, nprompt, 1, line_val);
 			}
-			else if(line[0] == '"') /* registers */
+			else if(type == LINE_TYPE_REG)
 			{
-				registers_t *reg = find_register(line[1]);
-				if(reg != NULL)
+				if(register_exists(line_val[0]))
 					continue;
 				nregs = add_to_string_array(&regs, nregs, 1, line);
 			}
@@ -915,8 +948,10 @@ update_info_file(const char filename[])
 		fputs("\n# State:\n", fp);
 		fprintf(fp, "f%s\n", lwin.filename_filter);
 		fprintf(fp, "i%d\n", lwin.invert);
+		fprintf(fp, "[.%d\n", lwin.hide_dot);
 		fprintf(fp, "F%s\n", rwin.filename_filter);
 		fprintf(fp, "I%d\n", rwin.invert);
+		fprintf(fp, "].%d\n", rwin.hide_dot);
 		fprintf(fp, "s%d\n", cfg.use_screen);
 	}
 

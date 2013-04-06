@@ -17,7 +17,8 @@
 	Allowed exclamation mark for the :sync command (to force synchronization
 	of cursor position when used without arguments).
 
-	Added macros that are expanded to register's content.
+	Added macros that are expanded to register's content (thanks to Florian
+	Baumann, a.k.a. derflob).
 
 	Less-like mode now highlights multiple matches in a line.
 
@@ -35,6 +36,9 @@
 
 	Made :execute process its arguments just like :echo command (thanks to
 	Daniel Dettlaff, a.k.a. dmilith, which made me discover old behaviour).
+
+	Save dot files filter state in vifminfo (thanks to Daniel Dettlaff,
+	a.k.a. dmilith).
 
 	Fixed configuration on OS X and FreeBSD because of unavailable mntent.h
 	header and strverscmp() function (reported by Daniel R., a.k.a. r1chelt,

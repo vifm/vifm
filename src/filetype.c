@@ -108,7 +108,7 @@ get_default_program_for_file(const char *file, assoc_record_t *result)
 }
 
 char *
-get_viewer_for_file(char *file)
+get_viewer_for_file(const char file[])
 {
 	int i = get_filetype_number(file, fileviewers);
 
