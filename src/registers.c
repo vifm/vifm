@@ -71,6 +71,20 @@ init_registers(void)
 	}
 }
 
+int
+register_exists(int key)
+{
+	int i;
+	for(i = 0; i < NUM_REGISTERS; i++)
+	{
+		if(valid_registers[i] == key)
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
 registers_t *
 find_register(int key)
 {

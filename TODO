@@ -154,3 +154,5 @@ Code improvements.
         do they contain (rows - 1) and (width - 1) ?
     Get file size on Windows using GetFileAttributesEx().
     Reduce number of magic numbers.
+    List of errors, which are accumulated and shown at appropriate time (try
+        sourcing colorscheme with scripting errors to understand the issue).

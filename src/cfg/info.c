@@ -654,7 +654,7 @@ update_info_file(const char filename[])
 			}
 			else if(type == LINE_TYPE_REG)
 			{
-				if(find_register(line_val[0]) != NULL)
+				if(register_exists(line_val[0]))
 					continue;
 				nregs = add_to_string_array(&regs, nregs, 1, line);
 			}
