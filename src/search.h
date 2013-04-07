@@ -28,8 +28,10 @@ int find_next_pattern(FileView *view, int wrap);
 /* returns non-zero if pattern was found */
 int find_previous_pattern(FileView *view, int wrap);
 
+/* Prints results or error message about search operation to the user. */
+void print_search_msg(const FileView *view, int backward);
 /* Prints error message about failed search to the user. */
-void print_search_fail_msg(FileView *view, int backward);
+void print_search_fail_msg(const FileView *view, int backward);
 
 #endif
 
