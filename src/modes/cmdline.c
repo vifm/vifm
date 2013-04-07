@@ -55,6 +55,7 @@
 #include "../color_scheme.h"
 #include "../commands.h"
 #include "../filelist.h"
+#include "../search.h"
 #include "../status.h"
 #include "../ui.h"
 #include "dialogs/attr_dialog.h"
@@ -916,8 +917,13 @@ cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info)
 	}
 	else if(cfg.inc_search && input_stat.search_mode)
 	{
-		print_search_msg(curr_view, is_backward_search(sub_mode));
-		curr_stats.save_msg = 1;
+		/* In case of successful search and 'hlsearch' option set, a message like
+		 * "n files selected" is printed automatically. */
+		if(curr_view->matches == 0 || !cfg.hl_search)
+		{
+			print_search_msg(curr_view, is_backward_search(sub_mode));
+			curr_stats.save_msg = 1;
+		}
 	}
 
 	free(p);
