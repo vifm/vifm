@@ -60,6 +60,8 @@ init_status(void)
 	return reset_status();
 }
 
+/* Initializes most fields of the status structure, some are left to be
+ * initialized by the reset_status() function. */
 static void
 load_def_values(status_t *stats)
 {
