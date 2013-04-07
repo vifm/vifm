@@ -61,7 +61,6 @@ typedef struct
 	int vim_filter;
 	int use_screen;
 	int use_vim_help;
-	int command_num;
 	int history_len;
 
 	int auto_execute;
