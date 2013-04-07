@@ -104,8 +104,8 @@ TSTATIC int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
 TSTATIC int is_rename_list_ok(char *files[], int *is_dup, int len,
 		char *list[]);
 TSTATIC const char * add_to_name(const char filename[], int k);
-TSTATIC int check_file_rename(const char old[], const char new[],
-		SignalType signal_type);
+TSTATIC int check_file_rename(const char dir[], const char old[],
+		const char new[], SignalType signal_type);
 static void put_confirm_cb(const char *dest_name);
 TSTATIC const char * gen_clone_name(const char normal_name[]);
 static void put_decide_cb(const char *dest_name);
@@ -543,7 +543,7 @@ rename_file_cb(const char *new_name)
 			(rename_file_ext[0] == '\0') ? "" : ".", rename_file_ext,
 			(filename[len - 1] == '/') ? "/" : "");
 
-	if(check_file_rename(filename, new, ST_DIALOG) <= 0)
+	if(check_file_rename(curr_view->curr_dir, filename, new, ST_DIALOG) <= 0)
 	{
 		return;
 	}
@@ -944,7 +944,8 @@ is_rename_list_ok(char *files[], int *is_dup, int len, char *list[])
 		int j;
 		int check_result;
 
-		check_result = check_file_rename(files[i], list[i], ST_STATUS_BAR);
+		check_result = check_file_rename(curr_view->curr_dir, files[i], list[i],
+				ST_STATUS_BAR);
 		if(check_result < 0)
 		{
 			continue;
@@ -1080,7 +1081,7 @@ incdec_names(FileView *view, int k)
 		if(is_in_string_array_case(names, names_len, p))
 #endif
 			continue;
-		if(check_file_rename(names[i], p, ST_STATUS_BAR) != 0)
+		if(check_file_rename(view->curr_dir, names[i], p, ST_STATUS_BAR) != 0)
 			continue;
 
 		err = -1;
@@ -1146,13 +1147,14 @@ incdec_names(FileView *view, int k)
  * when rename operation should be aborted. silent parameter controls whether
  * error dialog or status bar message should be shown, 0 means dialog. */
 TSTATIC int
-check_file_rename(const char old[], const char new[], SignalType signal_type)
+check_file_rename(const char dir[], const char old[], const char new[],
+		SignalType signal_type)
 {
 	/* Filename unchanged */
 	if(new[0] == '\0' || strcmp(old, new) == 0)
 		return -1;
 
-	if(path_exists(new) && stroscmp(old, new) != 0)
+	if(path_exists_at(dir, new) && stroscmp(old, new) != 0)
 	{
 		if(signal_type == ST_STATUS_BAR)
 		{

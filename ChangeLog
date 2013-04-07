@@ -145,6 +145,8 @@
 
 	Fixed displaying of search results message when 'incsearch' option is on.
 
+	Fixed destination file name existence on rename operation.
+
 0.7.4a to 0.7.4b
 
 	Removed screen title forcing for shell commands.

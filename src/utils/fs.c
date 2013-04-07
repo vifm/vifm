@@ -92,8 +92,13 @@ is_valid_dir(const char *path)
 }
 
 int
-path_exists(const char *path)
+path_exists(const char path[])
 {
+	if(!is_path_absolute(path))
+	{
+		LOG_ERROR_MSG("Passed relative path where absolute one is expected: %s",
+				path);
+	}
 	return path_exists_internal(NULL, path);
 }
 
