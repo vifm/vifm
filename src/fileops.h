@@ -80,7 +80,7 @@ int make_files(FileView *view, char **names, int count);
 
 TSTATIC_DEFS(
 	int is_rename_list_ok(char *files[], int *is_dup, int len, char *list[]);
-	int check_file_rename(const char old[], const char new[],
+	int check_file_rename(const char dir[], const char old[], const char new[],
 		SignalType signal_type);
 	const char * gen_clone_name(const char normal_name[]);
 	int is_name_list_ok(int count, int nlines, char *list[], char *files[]);
