@@ -122,7 +122,8 @@ extern status_t curr_stats;
 /* Returns non-zero on error. */
 int init_status(void);
 
-/* Returns non-zero on error. */
+/* Resets some part of runtime status information to its initial values.
+ * Returns non-zero on error. */
 int reset_status(void);
 
 /* Sets internal flag to schedule postponed redraw operation. */
