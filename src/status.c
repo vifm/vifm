@@ -24,11 +24,13 @@
 #undef MIN
 #endif
 
+#include <assert.h> /* assert() */
 #include <limits.h>
 #include <string.h>
 
 #include "cfg/config.h"
 #include "utils/env.h"
+#include "utils/log.h"
 #include "utils/macros.h"
 #include "utils/str.h"
 #include "utils/tree.h"
@@ -41,6 +43,7 @@ static void set_gtk_available(status_t *stats);
 static void set_number_of_windows(status_t *stats);
 static void set_env_type(status_t *stats);
 static int reset_dircache(status_t *stats);
+static void set_last_cmdline_command(const char cmd[]);
 
 status_t curr_stats;
 
@@ -60,6 +63,8 @@ init_status(void)
 	return reset_status();
 }
 
+/* Initializes most fields of the status structure, some are left to be
+ * initialized by the reset_status() function. */
 static void
 load_def_values(status_t *stats)
 {
@@ -153,6 +158,8 @@ set_env_type(status_t *stats)
 int
 reset_status(void)
 {
+	set_last_cmdline_command("");
+
 	return reset_dircache(&curr_stats);
 }
 
@@ -186,6 +193,28 @@ void
 set_using_screen(int use_screen)
 {
 	curr_stats.using_screen = inside_screen && use_screen;
+}
+
+void
+update_last_cmdline_command(const char cmd[])
+{
+	if(!curr_stats.restart_in_progress && curr_stats.load_stage == 3)
+	{
+		set_last_cmdline_command(cmd);
+	}
+}
+
+/* Sets last_cmdline_command field of the status structure. */
+static void
+set_last_cmdline_command(const char cmd[])
+{
+	const int success = replace_string(&curr_stats.last_cmdline_command, cmd);
+	if(!success)
+	{
+		LOG_ERROR_MSG("replace_string() failed on duplicating: %s", cmd);
+	}
+	assert(curr_stats.last_cmdline_command != NULL &&
+			"The field was not initialized properly");
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

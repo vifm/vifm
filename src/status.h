@@ -114,14 +114,20 @@ typedef struct
 
 	/* Shows whether screen functionality is active at the moment. */
 	int using_screen;
-}status_t;
+
+	/* Stores last command-line mode command that was executed or an empty line
+	 * (e.g. right after startup or :restart command). */
+	char *last_cmdline_command;
+}
+status_t;
 
 extern status_t curr_stats;
 
 /* Returns non-zero on error. */
 int init_status(void);
 
-/* Returns non-zero on error. */
+/* Resets some part of runtime status information to its initial values.
+ * Returns non-zero on error. */
 int reset_status(void);
 
 /* Sets internal flag to schedule postponed redraw operation. */
@@ -134,6 +140,9 @@ int is_redraw_scheduled(void);
 /* Updates curr_stats.using_screen using parameter, which shows whether screen
  * support is enabled. */
 void set_using_screen(int use_screen);
+
+/* Updates last_cmdline_command field of the status structure. */
+void update_last_cmdline_command(const char cmd[]);
 
 #endif
 

@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Apr 06
+*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Apr 07
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -418,8 +418,12 @@ v, V - start visual selection of files.        *vifm-v* *vifm-V*
 ZQ - same as :quit!                            *vifm-ZQ*
 ZZ - same as :quit                             *vifm-ZZ*
 
+
                                                *vifm-.*
-. - repeat last command line command (not normal mode command).
+. - repeat last command line command (not normal mode command) of this
+    session (does nothing right after startup or |vifm-:restart| command).
+    The command doesn't depend on command-line history and can be used
+    with completely disabled history.
 
 
                                                *vifm-(*

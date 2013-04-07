@@ -97,7 +97,6 @@ void
 init_config(void)
 {
 	cfg.num_bookmarks = 0;
-	cfg.command_num = 0;
 	cfg.vim_filter = 0;
 	cfg.show_one_window = 0;
 	cfg.history_len = 15;

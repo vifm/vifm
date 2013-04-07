@@ -764,6 +764,7 @@ save_command_history(const char *command)
 	/* Don't add :!! or :! to history list. */
 	if(strcmp(command, "!!") != 0 && strcmp(command, "!") != 0)
 	{
+		update_last_cmdline_command(command);
 		save_history(command, cfg.cmd_history, &cfg.cmd_history_num,
 				&cfg.history_len);
 	}

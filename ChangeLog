@@ -42,6 +42,10 @@
 
 	Slightly updated plugin related documentation.
 
+	Don't store last command-line command for the dot normal mode command
+	between sessions.  Also it doesn't depend on command-line history anymore
+	and can be used with completely disabled history.
+
 	Fixed configuration on OS X and FreeBSD because of unavailable mntent.h
 	header and strverscmp() function (reported by Daniel R., a.k.a. r1chelt,
 	and Daniel Dettlaff, a.k.a. dmilith).
