@@ -92,7 +92,7 @@ is_valid_dir(const char *path)
 }
 
 int
-path_exists(const char *path)
+path_exists(const char path[])
 {
 	if(!is_path_absolute(path))
 	{

@@ -33,7 +33,7 @@ int is_valid_dir(const char *path);
 /* Checks whether file at path exists.  The path should be an absolute path.
  * Relative paths are checked relatively to the working directory, which might
  * produce incorrect results. */
-int path_exists(const char *path);
+int path_exists(const char path[]);
 /* Checks whether path/file exists. */
 int path_exists_at(const char *path, const char *filename);
 int check_link_is_dir(const char *filename);
