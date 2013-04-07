@@ -209,10 +209,14 @@ split_path_list(void)
 
 		s = expand_tilde(s);
 
-		if(!path_exists(s))
+		/* No need to check "." path for existence. */
+		if(strcmp(s, ".") != 0)
 		{
-			free(s);
-			continue;
+			if(!path_exists(s))
+			{
+				free(s);
+				continue;
+			}
 		}
 
 		paths[i++] = s;
