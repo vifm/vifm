@@ -1,4 +1,4 @@
-.TH vifm 1 "April 06, 2013" "" "Vifm"
+.TH vifm 1 "April 07, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -474,7 +474,9 @@ same as :quit!
 same as :quit
 .TP
 .BI .
-repeat last command line command (not normal mode command).
+repeat last command line command (not normal mode command) of this session (does
+nothing right after startup or :restart command).  The command doesn't depend on
+command-line history and can be used with completely disabled history.
 .TP
 .BI (
 goto previous group.  Groups are defined by primary sorting key.  For name and
