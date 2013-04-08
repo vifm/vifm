@@ -151,6 +151,8 @@
 
 	Fixed destination file name existence on rename operation.
 
+	Fixed very rare crash on :chmod (thanks to Marton Balazs, a.k.a. balmar).
+
 0.7.4a to 0.7.4b
 
 	Removed screen title forcing for shell commands.

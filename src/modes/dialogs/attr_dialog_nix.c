@@ -20,7 +20,8 @@
 #include <fcntl.h>
 
 #include <assert.h> /* assert() */
-#include <string.h>
+#include <stddef.h> /* NULL size_t */
+#include <string.h> /* strncat() strlen() */
 
 #include "../../engine/keys.h"
 #include "../../menus/menus.h"
@@ -405,14 +406,17 @@ files_chmod(FileView *view, const char *mode, int recurse_dirs)
 		len = snprintf(buf, sizeof(buf), "chmod in %s: ",
 				replace_home_part(view->curr_dir));
 
-		while(i < view->list_rows && len < COMMAND_GROUP_INFO_LEN)
+		while(i < view->list_rows && len < sizeof(buf))
 		{
 			if(view->dir_entry[i].selected)
 			{
-				if(buf[len - 2] != ':')
-					strncat(buf, ", ", sizeof(buf) - len - 1);
-				strncat(buf, view->dir_entry[i].name, sizeof(buf) - len - 1);
-				len = strlen(buf);
+				if(len >= 2 && buf[len - 2] != ':')
+				{
+					strncat(buf + len, ", ", sizeof(buf) - len - 1);
+					len += strlen(buf + len);
+				}
+				strncat(buf + len, view->dir_entry[i].name, sizeof(buf) - len - 1);
+				len += strlen(buf + len);
 			}
 			i++;
 		}
