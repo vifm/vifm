@@ -156,3 +156,4 @@ Code improvements.
     Reduce number of magic numbers.
     List of errors, which are accumulated and shown at appropriate time (try
         sourcing colorscheme with scripting errors to understand the issue).
+    Fix code duplication related to composing of undo messages.
