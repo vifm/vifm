@@ -153,6 +153,9 @@
 
 	Fixed very rare crash on :chmod (thanks to Marton Balazs, a.k.a. balmar).
 
+	Fixed chmod on files with long names (they were truncated and appended by
+	ellipsis).
+
 0.7.4a to 0.7.4b
 
 	Removed screen title forcing for shell commands.

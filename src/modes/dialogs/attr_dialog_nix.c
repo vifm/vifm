@@ -209,8 +209,10 @@ enter_attr_mode(FileView *active_view)
 void
 redraw_attr_dialog(void)
 {
-	char *filename;
+	const char *filename;
 	int x, y;
+	size_t filename_len;
+	int need_ellipsis;
 
 	werase(change_win);
 	if(file_is_dir)
@@ -275,13 +277,20 @@ redraw_attr_dialog(void)
 
 	x = getmaxx(change_win);
 	filename = get_current_file_name(view);
-	if(strlen(filename) > (size_t)x - 2)
+	filename_len = strlen(filename);
+	need_ellipsis = (filename_len > (size_t)x - 2);
+
+	if(need_ellipsis)
 	{
-		filename[x - 5] = '\0';
-		strcat(filename, "...");
+		x -= 3;
+		filename_len = x;
 	}
-	mvwaddnstr(change_win, 0, (getmaxx(change_win) - strlen(filename))/2,
-			filename, x - 2);
+	mvwaddnstr(change_win, 0, (getmaxx(change_win) - filename_len)/2, filename,
+			x - 2);
+	if(need_ellipsis)
+	{
+		waddstr(change_win, "...");
+	}
 
 	curs_set(TRUE);
 	wmove(change_win, curr, col);
