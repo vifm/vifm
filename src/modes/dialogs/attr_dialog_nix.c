@@ -20,7 +20,8 @@
 #include <fcntl.h>
 
 #include <assert.h> /* assert() */
-#include <string.h>
+#include <stddef.h> /* NULL size_t */
+#include <string.h> /* strncat() strlen() */
 
 #include "../../engine/keys.h"
 #include "../../menus/menus.h"
@@ -37,6 +38,10 @@
 
 #include "attr_dialog_nix.h"
 
+static const char * get_title(void);
+static int is_one_file_selected(int first_file_index);
+static int get_first_file_index(void);
+static int get_selection_size(int first_file_index);
 static void leave_attr_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
@@ -208,8 +213,10 @@ enter_attr_mode(FileView *active_view)
 void
 redraw_attr_dialog(void)
 {
-	char *filename;
+	const char *title;
 	int x, y;
+	size_t title_len;
+	int need_ellipsis;
 
 	werase(change_win);
 	if(file_is_dir)
@@ -273,18 +280,90 @@ redraw_attr_dialog(void)
 	box(change_win, ACS_VLINE, ACS_HLINE);
 
 	x = getmaxx(change_win);
-	filename = get_current_file_name(view);
-	if(strlen(filename) > (size_t)x - 2)
+	title = get_title();
+	title_len = strlen(title);
+	need_ellipsis = (title_len > (size_t)x - 2);
+
+	if(need_ellipsis)
 	{
-		filename[x - 5] = '\0';
-		strcat(filename, "...");
+		x -= 3;
+		title_len = x;
 	}
-	mvwaddnstr(change_win, 0, (getmaxx(change_win) - strlen(filename))/2,
-			filename, x - 2);
+	mvwaddnstr(change_win, 0, (getmaxx(change_win) - title_len)/2, title, x - 2);
+	if(need_ellipsis)
+	{
+		waddstr(change_win, "...");
+	}
 
 	curs_set(TRUE);
 	wmove(change_win, curr, col);
 	wrefresh(change_win);
+}
+
+/* Gets title of the permissions dialog.  Returns pointer to a temporary string
+ * of file name in the view or to a statically allocated string. */
+static const char *
+get_title(void)
+{
+	static char title[64];
+
+	const int first_file_index = get_first_file_index();
+	if(is_one_file_selected(first_file_index))
+	{
+		return view->dir_entry[first_file_index].name;
+	}
+
+	snprintf(title, sizeof(title), "%d files",
+			get_selection_size(first_file_index));
+	return title;
+}
+
+/* Checks whether single file is selected.  Returns non-zero if so, otherwise
+ * zero is returned. */
+static int
+is_one_file_selected(int first_file_index)
+{
+	int i;
+	if(!view->dir_entry[first_file_index].selected)
+	{
+		return 1;
+	}
+	i = first_file_index + 1;
+	while(i < view->list_rows && !view->dir_entry[i].selected)
+	{
+		i++;
+	}
+	return i >= view->list_rows;
+}
+
+/* Gets index of the first one on which chmod operation applies.  Returns index
+ * of the first subjected file. */
+static int
+get_first_file_index(void)
+{
+	int i = 0;
+	while(i < view->list_rows && !view->dir_entry[i].selected)
+	{
+		i++;
+	}
+	return (i == view->list_rows) ? view->list_pos : i;
+}
+
+/* Gets number of files, which will be affected by the chmod operation. */
+static int
+get_selection_size(int first_file_index)
+{
+	int selection_size = 1;
+	int i = first_file_index + 1;
+	while(i < view->list_rows)
+	{
+		if(view->dir_entry[i].selected)
+		{
+			selection_size++;
+		}
+		i++;
+	}
+	return selection_size;
 }
 
 static void
@@ -405,14 +484,17 @@ files_chmod(FileView *view, const char *mode, int recurse_dirs)
 		len = snprintf(buf, sizeof(buf), "chmod in %s: ",
 				replace_home_part(view->curr_dir));
 
-		while(i < view->list_rows && len < COMMAND_GROUP_INFO_LEN)
+		while(i < view->list_rows && len < sizeof(buf))
 		{
 			if(view->dir_entry[i].selected)
 			{
-				if(buf[len - 2] != ':')
-					strncat(buf, ", ", sizeof(buf) - len - 1);
-				strncat(buf, view->dir_entry[i].name, sizeof(buf) - len - 1);
-				len = strlen(buf);
+				if(len >= 2 && buf[len - 2] != ':')
+				{
+					strncat(buf + len, ", ", sizeof(buf) - len - 1);
+					len += strlen(buf + len);
+				}
+				strncat(buf + len, view->dir_entry[i].name, sizeof(buf) - len - 1);
+				len += strlen(buf + len);
 			}
 			i++;
 		}
