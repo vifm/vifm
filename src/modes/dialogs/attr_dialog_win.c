@@ -50,6 +50,10 @@ enum
 
 static void init(void);
 static void get_attrs(void);
+static const char * get_title(void);
+static int is_one_file_selected(int first_file_index);
+static int get_first_file_index(void);
+static int get_selection_size(int first_file_index);
 static void leave_attr_mode(void);
 static void cmd_ctrl_c(key_info_t key_info, keys_info_t *keys_info);
 static void cmd_ctrl_m(key_info_t key_info, keys_info_t *keys_info);
@@ -216,14 +220,80 @@ get_attrs(void)
 	memcpy(origin_attrs, attrs, sizeof(attrs));
 }
 
+/* Gets title of the permissions dialog.  Returns pointer to a temporary string
+ * of file name in the view or to a statically allocated string. */
+static const char *
+get_title(void)
+{
+	static char title[64];
+
+	const int first_file_index = get_first_file_index();
+	if(is_one_file_selected(first_file_index))
+	{
+		return view->dir_entry[first_file_index].name;
+	}
+
+	snprintf(title, sizeof(title), "%d files",
+			get_selection_size(first_file_index));
+	return title;
+}
+
+/* Checks whether single file is selected.  Returns non-zero if so, otherwise
+ * zero is returned. */
+static int
+is_one_file_selected(int first_file_index)
+{
+	int i;
+	if(!view->dir_entry[first_file_index].selected)
+	{
+		return 1;
+	}
+	i = first_file_index + 1;
+	while(i < view->list_rows && !view->dir_entry[i].selected)
+	{
+		i++;
+	}
+	return i >= view->list_rows;
+}
+
+/* Gets index of the first one on which chmod operation applies.  Returns index
+ * of the first subjected file. */
+static int
+get_first_file_index(void)
+{
+	int i = 0;
+	while(i < view->list_rows && !view->dir_entry[i].selected)
+	{
+		i++;
+	}
+	return (i == view->list_rows) ? view->list_pos : i;
+}
+
+/* Gets number of files, which will be affected by the chmod operation. */
+static int
+get_selection_size(int first_file_index)
+{
+	int selection_size = 1;
+	int i = first_file_index + 1;
+	while(i < view->list_rows)
+	{
+		if(view->dir_entry[i].selected)
+		{
+			selection_size++;
+		}
+		i++;
+	}
+	return selection_size;
+}
+
 /* redraws properties change dialog */
 void
 redraw_attr_dialog(void)
 {
-	const char *filename;
+	const char *title;
 	int i;
 	int x, y;
-	size_t filename_len;
+	size_t title_len;
 	int need_ellipsis;
 
 	werase(change_win);
@@ -252,17 +322,16 @@ redraw_attr_dialog(void)
 	box(change_win, ACS_VLINE, ACS_HLINE);
 
 	x = getmaxx(change_win);
-	filename = get_current_file_name(view);
-	filename_len = strlen(filename);
-	need_ellipsis = (filename_len > (size_t)x - 2);
+	title = get_title();
+	title_len = strlen(title);
+	need_ellipsis = (title_len > (size_t)x - 2);
 
 	if(need_ellipsis)
 	{
 		x -= 3;
-		filename_len = x;
+		title_len = x;
 	}
-	mvwaddnstr(change_win, 0, (getmaxx(change_win) - filename_len)/2, filename,
-			x - 2);
+	mvwaddnstr(change_win, 0, (getmaxx(change_win) - title_len)/2, title, x - 2);
 	if(need_ellipsis)
 	{
 		waddstr(change_win, "...");
