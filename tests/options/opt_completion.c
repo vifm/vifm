@@ -25,6 +25,10 @@ test_space_at_the_end(void)
 	free(completed);
 
 	completed = next_completion();
+	assert_string_equal("cpoptions", completed);
+	free(completed);
+
+	completed = next_completion();
 	assert_string_equal("fastrun", completed);
 	free(completed);
 }
@@ -99,6 +103,10 @@ test_skip_abbreviations(void)
 
 	completed = next_completion();
 	assert_string_equal("all", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("cpoptions", completed);
 	free(completed);
 
 	completed = next_completion();
@@ -249,6 +257,10 @@ test_colon(void)
 
 	completed = next_completion();
 	assert_string_equal("all", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("cpoptions", completed);
 	free(completed);
 
 	completed = next_completion();

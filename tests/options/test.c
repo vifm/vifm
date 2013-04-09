@@ -1,13 +1,19 @@
 #include "seatest.h"
 
+#include <string.h>
+
 #include "../../src/engine/options.h"
 #include "../../src/utils/macros.h"
 
+char cpoptions[10];
+int cpoptions_handler_calls;
 int fastrun;
 int tabstop;
 const char *value;
 int vifminfo;
 int vifminfo_handler_calls;
+
+static const char cpoptions_charset[] = "abc";
 
 static const char * sort_enum[] = {
 	"ext",
@@ -39,6 +45,7 @@ void opt_completion(void);
 void with_spaces_tests(void);
 void input_tests(void);
 void set_tests(void);
+void charset_tests(void);
 
 void
 all_tests(void)
@@ -48,6 +55,14 @@ all_tests(void)
 	with_spaces_tests();
 	input_tests();
 	set_tests();
+	charset_tests();
+}
+
+static void
+cpoptions_handler(OPT_OP op, optval_t val)
+{
+	strcpy(cpoptions, val.str_val);
+	cpoptions_handler_calls++;
 }
 
 static void
@@ -88,6 +103,9 @@ setup(void)
 
 	init_options(&option_changed);
 
+	val.str_val = "";
+	add_option("cpoptions", "cpo", OPT_CHARSET, ARRAY_LEN(cpoptions_charset),
+			(const char **)&cpoptions_charset, cpoptions_handler, val);
 	val.bool_val = 0;
 	add_option("fastrun", "fr", OPT_BOOL, 0, NULL, fastrun_handler, val);
 	val.str_val = "";
