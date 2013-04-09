@@ -31,6 +31,8 @@ typedef enum
 	OPT_STRLIST, /* A comma separated list of strings. */
 	OPT_ENUM,    /* An enumeration (one value at a time). */
 	OPT_SET,     /* A set (multiple or none values at a time). */
+	OPT_CHARSET, /* A set of single characters (multiple or none values at a
+	                time). */
 }OPT_TYPE;
 
 /* Operation on an option. */

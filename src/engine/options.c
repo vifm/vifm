@@ -53,8 +53,8 @@ typedef struct
 	optval_t val;        /* Current value of an option. */
 	optval_t def;        /* Default value of an option. */
 	opt_handler handler; /* A pointer to option handler. */
-	int val_count;       /* For OPT_ENUM and OPT_SET types. */
-	const char **vals;   /* For OPT_ENUM and OPT_SET types. */
+	int val_count;       /* For OPT_ENUM, OPT_SET and OPT_CHARSET types. */
+	const char **vals;   /* For OPT_ENUM, OPT_SET and OPT_CHARSET types. */
 
 	const char *full;    /* Points to full name of an option. */
 }opt_t;
