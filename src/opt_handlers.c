@@ -69,6 +69,7 @@ static void init_cpoptions(optval_t *val);
 static void init_timefmt(optval_t *val);
 static void init_trash_dir(optval_t *val);
 static void init_lsview(optval_t *val);
+static void init_shortmess(optval_t *val);
 static void init_sort(optval_t *val);
 static void init_sortorder(optval_t *val);
 static void init_viewcolumns(optval_t *val);
@@ -98,6 +99,7 @@ static void runexec_handler(OPT_OP op, optval_t val);
 static void scrollbind_handler(OPT_OP op, optval_t val);
 static void scrolloff_handler(OPT_OP op, optval_t val);
 static void shell_handler(OPT_OP op, optval_t val);
+static void shortmess_handler(OPT_OP op, optval_t val);
 #ifndef _WIN32
 static void slowfs_handler(OPT_OP op, optval_t val);
 #endif
@@ -252,6 +254,8 @@ static struct
 		{ .ref.int_val = &cfg.scroll_off }                                                                     },
 	{ "shell",       "sh",   OPT_STR,     0,                          NULL,            &shell_handler,
 		{ .ref.str_val = &cfg.shell }                                                                          },
+	{ "shortmess",   "shm",  OPT_STR,     0,                          NULL,            &shortmess_handler,
+		{ .init = &init_shortmess }                                                                            },
 #ifndef _WIN32
 	{ "slowfs",      "",     OPT_STRLIST, 0,                          NULL,            &slowfs_handler,
 		{ .ref.str_val = &cfg.slow_fs_list }                                                                   },
@@ -368,6 +372,13 @@ static void
 init_lsview(optval_t *val)
 {
 	val->bool_val = curr_view->ls_view;
+}
+
+static void
+init_shortmess(optval_t *val)
+{
+	/* TODO: add logic for the 'shortmess' option. */
+	val->str_val = "";
 }
 
 static void
@@ -857,6 +868,14 @@ static void
 shell_handler(OPT_OP op, optval_t val)
 {
 	(void)replace_string(&cfg.shell, val.str_val);
+}
+
+static void
+shortmess_handler(OPT_OP op, optval_t val)
+{
+	/* TODO: add logic for the 'shortmess' option. */
+	val.str_val = "";
+	set_option("shortmess", val);
 }
 
 #ifndef _WIN32
