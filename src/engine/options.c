@@ -489,6 +489,7 @@ set_set(opt_t *opt, const char value[])
 	{
 		if(set_op(opt, value, SO_SET))
 		{
+			*opts_changed = 1;
 			opt->handler(OP_SET, opt->val);
 		}
 	}
