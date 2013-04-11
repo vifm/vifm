@@ -567,6 +567,7 @@ set_reset(opt_t *opt)
 			return -1;
 		free(opt->val.str_val);
 		opt->val.str_val = p;
+		*opts_changed = 1;
 		opt->handler(OP_RESET, opt->val);
 	}
 	else if(opt->val.int_val != opt->def.int_val)
