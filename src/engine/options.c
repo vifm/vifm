@@ -20,7 +20,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h> /* memset() */
+#include <string.h> /* memset() strcmp() strcpy() */
 
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -59,6 +59,9 @@ typedef struct
 	const char *full;    /* Points to full name of an option. */
 }opt_t;
 
+/* Type of function accepted by the for_each_char_of() function. */
+typedef void (*mod_t)(char buffer[], char value);
+
 static opt_t * add_option_inner(const char name[], OPT_TYPE type, int val_count,
 		const char *vals[], opt_handler handler);
 static void print_changed_options(void);
@@ -74,6 +77,13 @@ static int set_reset(opt_t *opt);
 static int set_add(opt_t *opt, const char value[]);
 static int set_remove(opt_t *opt, const char value[]);
 static int set_op(opt_t *opt, const char value[], SetOp op);
+static int charset_set(opt_t *opt, const char value[]);
+static int charset_add_all(opt_t *opt, const char value[]);
+static void charset_add(char buffer[], char value);
+static int charset_remove_all(opt_t *opt, const char value[]);
+static void charset_remove(char buffer[], char value);
+static void for_each_char_of(char buffer[], mod_t func, const char input[]);
+static int replace_if_changed(char **current, const char new[]);
 static char * str_add(char old[], const char value[]);
 static void str_remove(char old[], const char value[]);
 static int find_val(const opt_t *opt, const char value[]);
@@ -164,7 +174,7 @@ add_option(const char name[], const char abbr[], OPT_TYPE type, int val_count,
 			abbreviated->full = full_name;
 		full = find_option(full_name);
 	}
-	if(type == OPT_STR || type == OPT_STRLIST)
+	if(type == OPT_STR || type == OPT_STRLIST || type == OPT_CHARSET)
 	{
 		full->def.str_val = strdup(def.str_val);
 		full->val.str_val = strdup(def.str_val);
@@ -515,6 +525,14 @@ set_set(opt_t *opt, const char value[])
 			opt->handler(OP_SET, opt->val);
 		}
 	}
+	else if(opt->type == OPT_CHARSET)
+	{
+		if(charset_set(opt, value))
+		{
+			*opts_changed = 1;
+			opt->handler(OP_SET, opt->val);
+		}
+	}
 	else
 	{
 		assert(0 && "Unknown type of option.");
@@ -554,7 +572,8 @@ set_reset(opt_t *opt)
 static int
 set_add(opt_t *opt, const char value[])
 {
-	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST)
+	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST &&
+			opt->type != OPT_CHARSET)
 		return -1;
 
 	if(opt->type == OPT_INT)
@@ -580,6 +599,14 @@ set_add(opt_t *opt, const char value[])
 			opt->handler(OP_MODIFIED, opt->val);
 		}
 	}
+	else if(opt->type == OPT_CHARSET)
+	{
+		if(charset_add_all(opt, value))
+		{
+			*opts_changed = 1;
+			opt->handler(OP_MODIFIED, opt->val);
+		}
+	}
 	else if(*value != '\0')
 	{
 		opt->val.str_val = str_add(opt->val.str_val, value);
@@ -595,7 +622,8 @@ set_add(opt_t *opt, const char value[])
 static int
 set_remove(opt_t *opt, const char value[])
 {
-	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST)
+	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST &&
+			opt->type != OPT_CHARSET)
 		return -1;
 
 	if(opt->type == OPT_INT)
@@ -616,6 +644,14 @@ set_remove(opt_t *opt, const char value[])
 	else if(opt->type == OPT_SET)
 	{
 		if(set_op(opt, value, SO_REMOVE))
+		{
+			*opts_changed = 1;
+			opt->handler(OP_MODIFIED, opt->val);
+		}
+	}
+	else if(opt->type == OPT_CHARSET)
+	{
+		if(charset_remove_all(opt, value))
 		{
 			*opts_changed = 1;
 			opt->handler(OP_MODIFIED, opt->val);
@@ -677,6 +713,98 @@ set_op(opt_t *opt, const char value[], SetOp op)
 
 	opt->val.set_items = new_val;
 	return new_val != old_val;
+}
+
+/* Sets new value of an option of type OPT_CHARSET.  Returns non-zero when value
+ * of the option was changed, otherwise zero is returned. */
+static int
+charset_set(opt_t *opt, const char value[])
+{
+	char new_val[opt->val_count + 1];
+	new_val[0] = '\0';
+
+	for_each_char_of(new_val, charset_add, value);
+	return replace_if_changed(&opt->val.str_val, new_val);
+}
+
+/* Adds set of new items to the value of an option of type OPT_CHARSET.  Returns
+ * non-zero when value of the option was changed, otherwise zero is returned. */
+static int
+charset_add_all(opt_t *opt, const char value[])
+{
+	char new_val[opt->val_count + 1];
+	strcpy(new_val, opt->val.str_val);
+
+	for_each_char_of(new_val, charset_add, value);
+	return replace_if_changed(&opt->val.str_val, new_val);
+}
+
+/* Adds an item to the value of an option of type OPT_CHARSET.  Returns non-zero
+ * when value of the option was changed, otherwise zero is returned. */
+static void
+charset_add(char buffer[], char value)
+{
+	const char value_str[] = { value, '\0' };
+	charset_remove(buffer, value);
+	strcat(buffer, value_str);
+}
+
+/* Removes set of items from the value of an option of type OPT_CHARSET.
+ * Returns non-zero when value of the option was changed, otherwise zero is
+ * returned. */
+static int
+charset_remove_all(opt_t *opt, const char value[])
+{
+	char new_val[opt->val_count + 1];
+	strcpy(new_val, opt->val.str_val);
+
+	for_each_char_of(new_val, charset_remove, value);
+	return replace_if_changed(&opt->val.str_val, new_val);
+}
+
+/* Removes an item from the value of an option of type OPT_CHARSET.  Returns
+ * non-zero when value of the option was changed, otherwise zero is returned. */
+static void
+charset_remove(char buffer[], char value)
+{
+	char *l = buffer;
+	const char *r = buffer;
+	while(*r != '\0')
+	{
+		if(*r != value)
+		{
+			*l++ = *r;
+		}
+		r++;
+	}
+	*l++ = '\0';
+}
+
+/* Calls the func once for each character in the input argument, passing the
+ * buffer and the character as its arguments. */
+static void
+for_each_char_of(char buffer[], mod_t func, const char input[])
+{
+	const char *val = input;
+	while(*val != '\0')
+	{
+		func(buffer, *val++);
+	}
+}
+
+/* Compares *current and new strings and replaces *current with a copy of the
+ * new if they differ.  Returns non-zero when replace was performed, otherwise
+ * zero is returned. */
+static int
+replace_if_changed(char **current, const char new[])
+{
+	if(strcmp(*current, new) == 0)
+	{
+		return 0;
+	}
+
+	replace_string(current, new);
+	return 1;
 }
 
 /* And an element to string list.  Reallocates the memory of old and returns
@@ -771,7 +899,8 @@ get_value(const opt_t *opt)
 	{
 		snprintf(buf, sizeof(buf), "%d", opt->val.int_val);
 	}
-	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
+	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST ||
+			opt->type == OPT_CHARSET)
 	{
 		snprintf(buf, sizeof(buf), "%s", opt->val.str_val ? opt->val.str_val : "");
 	}
