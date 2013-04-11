@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -514,6 +514,10 @@ set_set(opt_t *opt, const char value[])
 			*opts_changed = 1;
 			opt->handler(OP_SET, opt->val);
 		}
+	}
+	else
+	{
+		assert(0 && "Unknown type of option.");
 	}
 
 	return 0;
