@@ -93,7 +93,9 @@ static const char * get_value(const opt_t *opt);
 static const char * extract_option(const char args[], char buf[], int replace);
 static char * skip_alphas(const char str[]);
 static void complete_option_name(const char buf[], int bool_only);
-static void complete_option_value(const opt_t *opt, const char beginning[]);
+static int complete_option_value(const opt_t *opt, const char beginning[]);
+static int complete_list_value(const opt_t *opt, const char beginning[]);
+static int complete_char_value(const opt_t *opt, const char beginning[]);
 
 static const char ENDING_CHARS[] = "!?&";
 static const char MIDDLE_CHARS[] = "+-=:";
@@ -1013,7 +1015,7 @@ complete_options(const char args[], const char **start)
 	{
 		if(opt->val_count > 0)
 		{
-			complete_option_value(opt, p);
+			*start += complete_option_value(opt, p);
 		}
 		else if(*p == '\0' && opt->type != OPT_BOOL)
 		{
@@ -1024,10 +1026,17 @@ complete_options(const char args[], const char **start)
 	}
 
 	completion_group_end();
-	if(!is_value_completion)
-		add_completion(buf);
+	if(opt != NULL && opt->type == OPT_CHARSET)
+	{
+		add_completion("");
+	}
 	else
-		add_completion(p);
+	{
+		if(!is_value_completion)
+			add_completion(buf);
+		else
+			add_completion(p);
+	}
 }
 
 /* Extracts next option from option list.  Returns NULL on error and next call
@@ -1142,9 +1151,24 @@ complete_option_name(const char buf[], int bool_only)
 	}
 }
 
-/* Completes value of the given option. */
-static void
+/* Completes value of the given option.  Returns offset for the beginning. */
+static int
 complete_option_value(const opt_t *opt, const char beginning[])
+{
+	if(opt->type == OPT_CHARSET)
+	{
+		return complete_char_value(opt, beginning);
+	}
+	else
+	{
+		return complete_list_value(opt, beginning);
+	}
+}
+
+/* Completes value of the given option with string type of values.  Returns
+ * offset for the beginning. */
+static int
+complete_list_value(const opt_t *opt, const char beginning[])
 {
 	size_t len;
 	int i;
@@ -1156,6 +1180,28 @@ complete_option_value(const opt_t *opt, const char beginning[])
 		if(strncmp(beginning, opt->vals[i], len) == 0)
 			add_completion(opt->vals[i]);
 	}
+
+	return 0;
+}
+
+/* Completes value of the given option with char type of values.  Returns offset
+ * for the beginning. */
+static int
+complete_char_value(const opt_t *opt, const char beginning[])
+{
+	const char *vals = *opt->vals;
+	int i;
+
+	for(i = 0; i < opt->val_count; i++)
+	{
+		if(strchr(beginning, vals[i]) == NULL)
+		{
+			const char char_str[] = { vals[i], '\0' };
+			add_completion(char_str);
+		}
+	}
+
+	return strlen(beginning);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

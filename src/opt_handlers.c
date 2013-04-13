@@ -150,8 +150,8 @@ static const char * sort_enum[] = {
 ARRAY_GUARD(sort_enum, SORT_OPTION_COUNT);
 
 static const char cpoptions_list[] = "st";
+static const char * cpoptions_vals = cpoptions_list;
 #define cpoptions_count ARRAY_LEN(cpoptions_list)
-#define cpoptions_vals (const char **)&cpoptions_list
 
 static const char * dotdirs_vals[] = {
 	"rootparent",
@@ -159,9 +159,9 @@ static const char * dotdirs_vals[] = {
 };
 ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
 
-static const char shortmess_list[] = "st";
+static const char shortmess_list[] = "";
+static const char * shortmess_vals = shortmess_list;
 #define shortmess_count ARRAY_LEN(shortmess_list)
-#define shortmess_vals (const char **)&shortmess_list
 
 static const char * sort_types[] = {
 	"ext",   "+ext",   "-ext",
@@ -226,7 +226,7 @@ static struct
 		{ .ref.int_val = &cfg.columns }                                                                        },
 	{ "confirm",     "cf",   OPT_BOOL,    0,                          NULL,            &confirm_handler,
 		{ .ref.bool_val = &cfg.confirm }                                                                       },
-	{ "cpoptions",   "cpo",  OPT_CHARSET, cpoptions_count,            cpoptions_vals,  &cpoptions_handler,
+	{ "cpoptions",   "cpo",  OPT_CHARSET, cpoptions_count,            &cpoptions_vals, &cpoptions_handler,
 		{ .init = &init_cpoptions }                                                                            },
 	{ "dotdirs",     "",     OPT_SET,     ARRAY_LEN(dotdirs_vals),    dotdirs_vals,    &dotdirs_handler,
 		{ .ref.set_items = &cfg.dot_dirs }                                                                     },
@@ -262,7 +262,7 @@ static struct
 		{ .ref.int_val = &cfg.scroll_off }                                                                     },
 	{ "shell",       "sh",   OPT_STR,     0,                          NULL,            &shell_handler,
 		{ .ref.str_val = &cfg.shell }                                                                          },
-	{ "shortmess",   "shm",  OPT_CHARSET, shortmess_count,            shortmess_vals,  &shortmess_handler,
+	{ "shortmess",   "shm",  OPT_CHARSET, shortmess_count,            &shortmess_vals, &shortmess_handler,
 		{ .init = &init_shortmess }                                                                            },
 #ifndef _WIN32
 	{ "slowfs",      "",     OPT_STRLIST, 0,                          NULL,            &slowfs_handler,
