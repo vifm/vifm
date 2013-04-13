@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Apr 07
+*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Apr 13
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1226,6 +1226,7 @@ order using the '.' operator.  Any whitespace is ignored.
      - for enumeration options - option=x, option+=x and option-=x
      - for enumeration options - option=x
      - for set options - option=x, option+=x and option-=x
+     - for charset options - option=x, option+=x and option-=x
     the meaning:
      - option - turn option on (for boolean) or print its value (for all
          others)
@@ -1600,7 +1601,7 @@ undo/redo operation).
 
                                                *vifm-'cpoptions'* *vifm-'cpo'*
 cpoptions cpo
-type: string
+type: charset
 default: "st"
 Contains a sequence of single-character flags.  Each flag enables behaviour of
 older versions of vifm.  Flags:

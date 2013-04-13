@@ -1,4 +1,4 @@
-.TH vifm 1 "April 07, 2013" "" "Vifm"
+.TH vifm 1 "April 13, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1390,6 +1390,7 @@ You can use following syntax:
  \- for enumeration options \- option=x, option+=x and option\-=x
  \- for enumeration options \- option=x
  \- for set options \- option=x, option+=x and option\-=x
+ \- for charset options \- option=x, option+=x and option\-=x
 
 the meaning:
  \- option \- turn option on (for boolean) or print its value (for all others)
@@ -1855,7 +1856,7 @@ Ask about permanent deletion of files (on D or :delete! command or on undo/redo
 operation).
 .TP
 .BI "cpoptions cpo"
-type: string
+type: charset
 .br
 default: "st"
 .br
