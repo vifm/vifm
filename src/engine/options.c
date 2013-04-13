@@ -557,18 +557,10 @@ set_reset(opt_t *opt)
 {
 	if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
 	{
-		char *p;
-
-		if(strcmp(opt->val.str_val, opt->def.str_val) == 0)
-			return 0;
-
-		p = strdup(opt->def.str_val);
-		if(p == NULL)
-			return -1;
-		free(opt->val.str_val);
-		opt->val.str_val = p;
-		*opts_changed = 1;
-		opt->handler(OP_RESET, opt->val);
+		if(replace_if_changed(&opt->val.str_val, opt->def.str_val))
+		{
+			opt->handler(OP_RESET, opt->val);
+		}
 	}
 	else if(opt->val.int_val != opt->def.int_val)
 	{
