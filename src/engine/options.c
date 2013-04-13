@@ -18,6 +18,7 @@
 
 #include <assert.h> /* assert() */
 #include <ctype.h>
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h> /* memset() strcmp() strcpy() */
@@ -528,6 +529,12 @@ set_set(opt_t *opt, const char value[])
 	}
 	else if(opt->type == OPT_CHARSET)
 	{
+		const size_t valid_len = strspn(value, *opt->vals);
+		if(valid_len != strlen(value))
+		{
+			text_buffer_addf("Illegal character: <%c>", value[valid_len]);
+			return -1;
+		}
 		if(charset_set(opt, value))
 		{
 			*opts_changed = 1;
@@ -602,6 +609,12 @@ set_add(opt_t *opt, const char value[])
 	}
 	else if(opt->type == OPT_CHARSET)
 	{
+		const size_t valid_len = strspn(value, *opt->vals);
+		if(valid_len != strlen(value))
+		{
+			text_buffer_addf("Illegal character: <%c>", value[valid_len]);
+			return -1;
+		}
 		if(charset_add_all(opt, value))
 		{
 			*opts_changed = 1;

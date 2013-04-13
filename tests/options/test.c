@@ -14,6 +14,7 @@ int vifminfo;
 int vifminfo_handler_calls;
 
 static const char cpoptions_charset[] = "abc";
+static const char * cpoptions_vals = cpoptions_charset;
 
 static const char * sort_enum[] = {
 	"ext",
@@ -105,7 +106,7 @@ setup(void)
 
 	val.str_val = "";
 	add_option("cpoptions", "cpo", OPT_CHARSET, ARRAY_LEN(cpoptions_charset),
-			(const char **)&cpoptions_charset, cpoptions_handler, val);
+			&cpoptions_vals, cpoptions_handler, val);
 	val.bool_val = 0;
 	add_option("fastrun", "fr", OPT_BOOL, 0, NULL, fastrun_handler, val);
 	val.str_val = "";

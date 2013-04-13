@@ -118,6 +118,40 @@ test_multiple_char_removal(void)
 	assert_string_equal("b", cpoptions);
 }
 
+static void
+test_chars_not_from_the_list_are_rejected_on_assignment(void)
+{
+	const int res = set_options("cpoptions=yxz");
+	assert_false(res == 0);
+}
+
+static void
+test_chars_not_from_the_list_are_rejected_on_addition(void)
+{
+	int res;
+
+	res = set_options("cpoptions=abc");
+	assert_int_equal(0, res);
+	assert_string_equal("abc", cpoptions);
+
+	res = set_options("cpoptions+=az");
+	assert_false(res == 0);
+}
+
+static void
+test_chars_not_from_the_list_are_ignored_on_removal(void)
+{
+	int res;
+
+	res = set_options("cpoptions=abc");
+	assert_int_equal(0, res);
+	assert_string_equal("abc", cpoptions);
+
+	res = set_options("cpoptions-=xyz");
+	assert_int_equal(0, res);
+	assert_string_equal("abc", cpoptions);
+}
+
 void
 charset_tests(void)
 {
@@ -131,6 +165,9 @@ charset_tests(void)
 	run_test(test_char_removal);
 	run_test(test_multiple_char_addition);
 	run_test(test_multiple_char_removal);
+	run_test(test_chars_not_from_the_list_are_rejected_on_assignment);
+	run_test(test_chars_not_from_the_list_are_rejected_on_addition);
+	run_test(test_chars_not_from_the_list_are_ignored_on_removal);
 
 	test_fixture_end();
 }
