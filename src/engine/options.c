@@ -1032,10 +1032,7 @@ complete_options(const char args[], const char **start)
 	}
 	else
 	{
-		if(!is_value_completion)
-			add_completion(buf);
-		else
-			add_completion(p);
+		add_completion(is_value_completion ? p : buf);
 	}
 }
 
