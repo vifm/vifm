@@ -77,6 +77,7 @@ static int set_set(opt_t *opt, const char value[]);
 static int set_reset(opt_t *opt);
 static int set_add(opt_t *opt, const char value[]);
 static int set_remove(opt_t *opt, const char value[]);
+static void notify_option_update(opt_t *opt, OPT_OP op, optval_t val);
 static int set_op(opt_t *opt, const char value[], SetOp op);
 static int charset_set(opt_t *opt, const char value[]);
 static int charset_add_all(opt_t *opt, const char value[]);
@@ -442,8 +443,7 @@ set_on(opt_t *opt)
 	if(!opt->val.bool_val)
 	{
 		opt->val.bool_val = 1;
-		*opts_changed = 1;
-		opt->handler(OP_ON, opt->val);
+		notify_option_update(opt, OP_ON, opt->val);
 	}
 
 	return 0;
@@ -459,8 +459,7 @@ set_off(opt_t *opt)
 	if(opt->val.bool_val)
 	{
 		opt->val.bool_val = 0;
-		*opts_changed = 1;
-		opt->handler(OP_OFF, opt->val);
+		notify_option_update(opt, OP_OFF, opt->val);
 	}
 
 	return 0;
@@ -474,8 +473,7 @@ set_inv(opt_t *opt)
 		return -1;
 
 	opt->val.bool_val = !opt->val.bool_val;
-	*opts_changed = 1;
-	opt->handler(opt->val.bool_val ? OP_ON : OP_OFF, opt->val);
+	notify_option_update(opt, opt->val.bool_val ? OP_ON : OP_OFF, opt->val);
 
 	return 0;
 }
@@ -492,8 +490,7 @@ set_set(opt_t *opt, const char value[])
 	{
 		if(set_op(opt, value, SO_SET))
 		{
-			*opts_changed = 1;
-			opt->handler(OP_SET, opt->val);
+			notify_option_update(opt, OP_SET, opt->val);
 		}
 	}
 	else if(opt->type == OPT_ENUM)
@@ -505,8 +502,7 @@ set_set(opt_t *opt, const char value[])
 		if(opt->val.enum_item != i)
 		{
 			opt->val.enum_item = i;
-			*opts_changed = 1;
-			opt->handler(OP_SET, opt->val);
+			notify_option_update(opt, OP_SET, opt->val);
 		}
 	}
 	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
@@ -514,8 +510,7 @@ set_set(opt_t *opt, const char value[])
 		if(opt->val.str_val == NULL || strcmp(opt->val.str_val, value) != 0)
 		{
 			(void)replace_string(&opt->val.str_val, value);
-			*opts_changed = 1;
-			opt->handler(OP_SET, opt->val);
+			notify_option_update(opt, OP_SET, opt->val);
 		}
 	}
 	else if(opt->type == OPT_INT)
@@ -525,8 +520,7 @@ set_set(opt_t *opt, const char value[])
 		if(opt->val.int_val != int_val)
 		{
 			opt->val.int_val = int_val;
-			*opts_changed = 1;
-			opt->handler(OP_SET, opt->val);
+			notify_option_update(opt, OP_SET, opt->val);
 		}
 	}
 	else if(opt->type == OPT_CHARSET)
@@ -539,8 +533,7 @@ set_set(opt_t *opt, const char value[])
 		}
 		if(charset_set(opt, value))
 		{
-			*opts_changed = 1;
-			opt->handler(OP_SET, opt->val);
+			notify_option_update(opt, OP_SET, opt->val);
 		}
 	}
 	else
@@ -559,14 +552,13 @@ set_reset(opt_t *opt)
 	{
 		if(replace_if_changed(&opt->val.str_val, opt->def.str_val))
 		{
-			opt->handler(OP_RESET, opt->val);
+			notify_option_update(opt, OP_RESET, opt->val);
 		}
 	}
 	else if(opt->val.int_val != opt->def.int_val)
 	{
 		opt->val.int_val = opt->def.int_val;
-		*opts_changed = 1;
-		opt->handler(OP_RESET, opt->val);
+		notify_option_update(opt, OP_RESET, opt->val);
 	}
 	return 0;
 }
@@ -590,16 +582,14 @@ set_add(opt_t *opt, const char value[])
 		if(i == 0)
 			return 0;
 
-		*opts_changed = 1;
 		opt->val.int_val += i;
-		opt->handler(OP_MODIFIED, opt->val);
+		notify_option_update(opt, OP_MODIFIED, opt->val);
 	}
 	else if(opt->type == OPT_SET)
 	{
 		if(set_op(opt, value, SO_ADD))
 		{
-			*opts_changed = 1;
-			opt->handler(OP_MODIFIED, opt->val);
+			notify_option_update(opt, OP_MODIFIED, opt->val);
 		}
 	}
 	else if(opt->type == OPT_CHARSET)
@@ -612,15 +602,13 @@ set_add(opt_t *opt, const char value[])
 		}
 		if(charset_add_all(opt, value))
 		{
-			*opts_changed = 1;
-			opt->handler(OP_MODIFIED, opt->val);
+			notify_option_update(opt, OP_MODIFIED, opt->val);
 		}
 	}
 	else if(*value != '\0')
 	{
 		opt->val.str_val = str_add(opt->val.str_val, value);
-		*opts_changed = 1;
-		opt->handler(OP_MODIFIED, opt->val);
+		notify_option_update(opt, OP_MODIFIED, opt->val);
 	}
 
 	return 0;
@@ -646,24 +634,21 @@ set_remove(opt_t *opt, const char value[])
 		if(i == 0)
 			return 0;
 
-		*opts_changed = 1;
 		opt->val.int_val -= i;
-		opt->handler(OP_MODIFIED, opt->val);
+		notify_option_update(opt, OP_MODIFIED, opt->val);
 	}
 	else if(opt->type == OPT_SET)
 	{
 		if(set_op(opt, value, SO_REMOVE))
 		{
-			*opts_changed = 1;
-			opt->handler(OP_MODIFIED, opt->val);
+			notify_option_update(opt, OP_MODIFIED, opt->val);
 		}
 	}
 	else if(opt->type == OPT_CHARSET)
 	{
 		if(charset_remove_all(opt, value))
 		{
-			*opts_changed = 1;
-			opt->handler(OP_MODIFIED, opt->val);
+			notify_option_update(opt, OP_MODIFIED, opt->val);
 		}
 	}
 	else if(*value != '\0')
@@ -676,12 +661,20 @@ set_remove(opt_t *opt, const char value[])
 
 		if(opt->val.str_val != NULL && len != strlen(opt->val.str_val))
 		{
-			*opts_changed = 1;
-			opt->handler(OP_MODIFIED, opt->val);
+			notify_option_update(opt, OP_MODIFIED, opt->val);
 		}
 	}
 
 	return 0;
+}
+
+/* Calls option handler to notify about option change.  Also updates
+ * opts_changed flag. */
+static void
+notify_option_update(opt_t *opt, OPT_OP op, optval_t val)
+{
+	*opts_changed = 1;
+	opt->handler(op, val);
 }
 
 /* Performs set/add/remove operations on options of set kind.  Returns not zero
