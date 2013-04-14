@@ -159,7 +159,7 @@ static const char * dotdirs_vals[] = {
 };
 ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
 
-static const char shortmess_list[] = "";
+static const char shortmess_list[] = "T";
 static const char * shortmess_vals = shortmess_list;
 #define shortmess_count ARRAY_LEN(shortmess_list)
 
@@ -385,8 +385,9 @@ init_lsview(optval_t *val)
 static void
 init_shortmess(optval_t *val)
 {
-	/* TODO: add logic for the 'shortmess' option. */
-	val->str_val = "";
+	static char buf[32];
+	snprintf(buf, sizeof(buf), "%s", cfg.trunc_normal_sb_msgs ? "T" : "");
+	val->str_val = buf;
 }
 
 static void
@@ -860,8 +861,19 @@ shell_handler(OPT_OP op, optval_t val)
 static void
 shortmess_handler(OPT_OP op, optval_t val)
 {
-	/* TODO: add logic for the 'shortmess' option. */
-	set_option("shortmess", val);
+	const char *p;
+
+	cfg.trunc_normal_sb_msgs = 0;
+
+	p = val.str_val;
+	while(*p != '\0')
+	{
+		if(*p == 'T')
+		{
+			cfg.trunc_normal_sb_msgs = 1;
+		}
+		p++;
+	}
 }
 
 #ifndef _WIN32

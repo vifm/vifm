@@ -162,6 +162,8 @@ init_config(void)
 
 	cfg.dot_dirs = DD_NONROOT_PARENT;
 
+	cfg.trunc_normal_sb_msgs = 0;
+
 #ifndef _WIN32
 	snprintf(cfg.log_file, sizeof(cfg.log_file), "/var/log/vifm-startup-log");
 #else
