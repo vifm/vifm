@@ -546,13 +546,11 @@ status_bar_message_i(const char *message, int error)
 
 	if(message != NULL)
 	{
-		char *p;
-
-		if((p = strdup(message)) == NULL)
+		if(replace_string(&msg, message))
+		{
 			return;
+		}
 
-		free(msg);
-		msg = p;
 		err = error;
 
 		save_status_bar_msg(msg);
