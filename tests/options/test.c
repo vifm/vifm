@@ -8,6 +8,7 @@
 char cpoptions[10];
 int cpoptions_handler_calls;
 int fastrun;
+int fusehome_handler_calls;
 int tabstop;
 const char *value;
 int vifminfo;
@@ -47,6 +48,7 @@ void with_spaces_tests(void);
 void input_tests(void);
 void set_tests(void);
 void charset_tests(void);
+void reset_tests(void);
 
 void
 all_tests(void)
@@ -57,6 +59,7 @@ all_tests(void)
 	input_tests();
 	set_tests();
 	charset_tests();
+	reset_tests();
 }
 
 static void
@@ -76,6 +79,7 @@ static void
 fusehome_handler(OPT_OP op, optval_t val)
 {
 	value = val.str_val;
+	fusehome_handler_calls++;
 }
 
 static void
@@ -109,7 +113,7 @@ setup(void)
 			&cpoptions_vals, cpoptions_handler, val);
 	val.bool_val = 0;
 	add_option("fastrun", "fr", OPT_BOOL, 0, NULL, fastrun_handler, val);
-	val.str_val = "";
+	val.str_val = "fusehome-default";
 	add_option("fusehome", "fh", OPT_STR, 0, NULL, fusehome_handler, val);
 	val.enum_item = 1;
 	add_option("sort", "so", OPT_ENUM, ARRAY_LEN(sort_enum), sort_enum,
