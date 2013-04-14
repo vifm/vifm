@@ -2467,7 +2467,7 @@ Both types are set using |vifm-:colorscheme| command, but of different forms:
    - :colorscheme color_scheme_name - for the default color scheme
    - :colorscheme color_scheme_name directory - for local color schemes
 
-Look of different parts of the TUI (Terminal User Interface) is determined in
+Look of different parts of the TUI (Text User Interface) is determined in
 this way:
    - Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine and WildMenu
      are always determined by the default color scheme
