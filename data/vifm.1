@@ -1,4 +1,4 @@
-.TH vifm 1 "April 13, 2013" "" "Vifm"
+.TH vifm 1 "April 14, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -2036,6 +2036,17 @@ type: string
 default: $SHELL or "sh" or "cmd" (on MS-Windows)
 .br
 Full path to the shell to use to run external commands.
+.TP
+.BI "shortmess shm"
+type: charset
+.br
+default: ""
+.br
+Contains a sequence of single-character flags.  Each flag enables shortening
+of some message displayed by vifm in the TUI.  Flags:
+.br
+T \- truncate status-bar messages in the middle if they are too long to fit on \
+the command line.  "..." will appear in the middle.
 .TP
 .BI slowfs
 type: string list

@@ -20,6 +20,9 @@
 	Added macros that are expanded to register's content (thanks to Florian
 	Baumann, a.k.a. derflob).
 
+	Added 'shortmess' option and its first flag: "T" to shorten long
+	status-bar messages.
+
 	Less-like mode now highlights multiple matches in a line.
 
 	Less-like mode is now updated immediately when one changes 'wrap' option.
