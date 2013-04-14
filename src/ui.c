@@ -77,6 +77,8 @@ static WINDOW *ltop_line2;
 static WINDOW *rtop_line1;
 static WINDOW *rtop_line2;
 
+static void truncate_with_ellipsis(const char msg[], size_t width,
+		char buffer[]);
 static void update_attributes(void);
 static void update_views(int reload);
 static void reload_lists(void);
@@ -533,6 +535,8 @@ save_status_bar_msg(const char *msg)
 static void
 status_bar_message_i(const char *message, int error)
 {
+	/* TODO: Refactor this function status_bar_message_i() */
+
 	static char *msg;
 	static int err;
 
@@ -540,6 +544,9 @@ status_bar_message_i(const char *message, int error)
 	const char *p, *q;
 	int lines;
 	int status_bar_lines;
+	size_t screen_length;
+	const char *out_msg;
+	char truncated_msg[2048];
 
 	if(curr_stats.load_stage == 0)
 		return;
@@ -578,18 +585,30 @@ status_bar_message_i(const char *message, int error)
 	{
 		status_bar_lines++;
 	}
-	status_bar_lines += DIV_ROUND_UP(strlen(p), len);
+	screen_length = get_screen_string_length(p);
+	status_bar_lines += DIV_ROUND_UP(screen_length, len);
 	if(status_bar_lines == 0)
 		status_bar_lines = 1;
 
 	lines = status_bar_lines;
-	if(status_bar_lines > 1 || strlen(p) > getmaxx(status_bar))
+	if(status_bar_lines > 1 || screen_length > getmaxx(status_bar))
 		lines++;
+
+	out_msg = msg;
 
 	if(lines > 1)
 	{
-		int extra = DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG) - 1, len) - 1;
-		lines += extra;
+		if(cfg.trunc_normal_sb_msgs && !err && curr_stats.allow_sb_msg_truncation)
+		{
+			truncate_with_ellipsis(msg, getmaxx(stdscr) - 19, truncated_msg);
+			out_msg = truncated_msg;
+			lines = 1;
+		}
+		else
+		{
+			const int extra = DIV_ROUND_UP(ARRAY_LEN(PRESS_ENTER_MSG) - 1, len) - 1;
+			lines += extra;
+		}
 	}
 
 	if(lines > getmaxy(stdscr))
@@ -621,7 +640,7 @@ status_bar_message_i(const char *message, int error)
 	}
 	werase(status_bar);
 
-	wprint(status_bar, msg);
+	wprint(status_bar, out_msg);
 	multiline_status_bar = lines > 1;
 	if(multiline_status_bar)
 	{
@@ -639,6 +658,23 @@ status_bar_message_i(const char *message, int error)
 		update_window_lazy(stat_win);
 	}
 	doupdate();
+}
+
+/* Truncate the msg to the width by placing ellipsis in the middle and put the
+ * result to the buffer. */
+static void
+truncate_with_ellipsis(const char msg[], size_t width, char buffer[])
+{
+	const size_t screen_len = get_screen_string_length(msg);
+	const size_t screen_left_len = (width - 3)/2;
+	const size_t screen_right_len = (width - 3) - screen_left_len;
+	const size_t left = get_normal_utf8_string_widthn(msg, screen_left_len);
+	const size_t right = get_normal_utf8_string_widthn(msg,
+			screen_len - screen_right_len);
+	strncpy(buffer, msg, left);
+	strcpy(buffer + left, "...");
+	strcpy(buffer + left + 3, msg + right);
+	assert(get_screen_string_length(buffer) == width);
 }
 
 static void
