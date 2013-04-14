@@ -600,7 +600,8 @@ status_bar_message_i(const char *message, int error)
 	{
 		if(cfg.trunc_normal_sb_msgs && !err && curr_stats.allow_sb_msg_truncation)
 		{
-			truncate_with_ellipsis(msg, getmaxx(stdscr) - 19, truncated_msg);
+			truncate_with_ellipsis(msg, getmaxx(stdscr) - FIELDS_WIDTH,
+					truncated_msg);
 			out_msg = truncated_msg;
 			lines = 1;
 		}
@@ -618,7 +619,7 @@ status_bar_message_i(const char *message, int error)
 	mvwin(status_bar, getmaxy(stdscr) - lines, 0);
 	if(lines == 1)
 	{
-		wresize(status_bar, lines, getmaxx(stdscr) - 19);
+		wresize(status_bar, lines, getmaxx(stdscr) - FIELDS_WIDTH);
 	}
 	else
 	{
@@ -736,7 +737,7 @@ clean_status_bar(void)
 {
 	werase(status_bar);
 	mvwin(stat_win, getmaxy(stdscr) - 2, 0);
-	wresize(status_bar, 1, getmaxx(stdscr) - 19);
+	wresize(status_bar, 1, getmaxx(stdscr) - FIELDS_WIDTH);
 	mvwin(status_bar, getmaxy(stdscr) - 1, 0);
 	wnoutrefresh(status_bar);
 
@@ -903,7 +904,7 @@ setup_ncurses_interface(void)
 			cfg.cs.color[STATUS_LINE_COLOR].attr);
 	werase(stat_win);
 
-	status_bar = newwin(1, screen_x - 19, screen_y -1, 0);
+	status_bar = newwin(1, screen_x - FIELDS_WIDTH, screen_y - 1, 0);
 #ifdef ENABLE_EXTENDED_KEYS
 	keypad(status_bar, TRUE);
 #endif /* ENABLE_EXTENDED_KEYS */
@@ -916,7 +917,7 @@ setup_ncurses_interface(void)
 	wbkgdset(pos_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
 	werase(pos_win);
 
-	input_win = newwin(1, INPUT_WIN_WIDTH, screen_y - 1, screen_x -19);
+	input_win = newwin(1, INPUT_WIN_WIDTH, screen_y - 1, screen_x - FIELDS_WIDTH);
 	wattrset(input_win, cfg.cs.color[CMD_LINE_COLOR].attr);
 	wbkgdset(input_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
 	werase(input_win);
@@ -1179,7 +1180,7 @@ resize_all(void)
 
 	wresize(stat_win, 1, screen_x);
 	mvwin(stat_win, screen_y - 2, 0);
-	wresize(status_bar, 1, screen_x - 19);
+	wresize(status_bar, 1, screen_x - FIELDS_WIDTH);
 
 #ifdef ENABLE_EXTENDED_KEYS
 	/* For FreeBSD */
@@ -1191,7 +1192,7 @@ resize_all(void)
 	mvwin(pos_win, screen_y - 1, screen_x - POS_WIN_WIDTH);
 
 	wresize(input_win, 1, INPUT_WIN_WIDTH);
-	mvwin(input_win, screen_y - 1, screen_x - 19);
+	mvwin(input_win, screen_y - 1, screen_x - FIELDS_WIDTH);
 
 	curs_set(FALSE);
 }
@@ -1617,11 +1618,11 @@ resize_for_menu_like(void)
 	werase(pos_win);
 
 	wresize(menu_win, screen_y - 1, screen_x);
-	wresize(status_bar, 1, screen_x - 19);
+	wresize(status_bar, 1, screen_x - FIELDS_WIDTH);
 	mvwin(status_bar, screen_y - 1, 0);
 	wresize(pos_win, 1, POS_WIN_WIDTH);
 	mvwin(pos_win, screen_y - 1, screen_x - POS_WIN_WIDTH);
-	mvwin(input_win, screen_y - 1, screen_x - 19);
+	mvwin(input_win, screen_y - 1, screen_x - FIELDS_WIDTH);
 	wrefresh(status_bar);
 	wrefresh(pos_win);
 	wrefresh(input_win);

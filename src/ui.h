@@ -50,6 +50,9 @@
 /* Width of the position window (located in the right corner of status line). */
 #define POS_WIN_WIDTH 13
 
+/* Width of the position and input windows. */
+#define FIELDS_WIDTH (INPUT_WIN_WIDTH + POS_WIN_WIDTH)
+
 /* New values should be added at the end of enumeration to do not brake sort
  * settings stored in vifminfo files.  Also LAST_SORT_OPTION and
  * SORT_OPTION_COUNT should be updated accordingly. */
