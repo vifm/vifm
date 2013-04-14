@@ -44,6 +44,9 @@
 
 #define SORT_WIN_WIDTH 32
 
+/* Width of the input window (located to the left of position window). */
+#define INPUT_WIN_WIDTH 6
+
 /* Width of the position window (located in the right corner of status line). */
 #define POS_WIN_WIDTH 13
 

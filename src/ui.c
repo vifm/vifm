@@ -916,7 +916,7 @@ setup_ncurses_interface(void)
 	wbkgdset(pos_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
 	werase(pos_win);
 
-	input_win = newwin(1, 6, screen_y - 1, screen_x -19);
+	input_win = newwin(1, INPUT_WIN_WIDTH, screen_y - 1, screen_x -19);
 	wattrset(input_win, cfg.cs.color[CMD_LINE_COLOR].attr);
 	wbkgdset(input_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
 	werase(input_win);
@@ -1190,7 +1190,7 @@ resize_all(void)
 	wresize(pos_win, 1, POS_WIN_WIDTH);
 	mvwin(pos_win, screen_y - 1, screen_x - POS_WIN_WIDTH);
 
-	wresize(input_win, 1, 6);
+	wresize(input_win, 1, INPUT_WIN_WIDTH);
 	mvwin(input_win, screen_y - 1, screen_x - 19);
 
 	curs_set(FALSE);
