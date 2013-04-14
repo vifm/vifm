@@ -218,7 +218,7 @@ update_pos_window(FileView *view)
 	char *buf;
 
 	buf = expand_ruler_macros(view, cfg.ruler_format);
-	buf = break_in_two(buf, 13);
+	buf = break_in_two(buf, POS_WIN_WIDTH);
 
 	werase(pos_win);
 	mvwaddstr(pos_win, 0, 0, buf);
@@ -911,7 +911,7 @@ setup_ncurses_interface(void)
 	wbkgdset(status_bar, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
 	werase(status_bar);
 
-	pos_win = newwin(1, 13, screen_y - 1, screen_x - 13);
+	pos_win = newwin(1, POS_WIN_WIDTH, screen_y - 1, screen_x - POS_WIN_WIDTH);
 	wattrset(pos_win, cfg.cs.color[CMD_LINE_COLOR].attr);
 	wbkgdset(pos_win, COLOR_PAIR(DCOLOR_BASE + CMD_LINE_COLOR));
 	werase(pos_win);
@@ -1187,8 +1187,8 @@ resize_all(void)
 #endif /* ENABLE_EXTENDED_KEYS */
 
 	mvwin(status_bar, screen_y - 1, 0);
-	wresize(pos_win, 1, 13);
-	mvwin(pos_win, screen_y - 1, screen_x - 13);
+	wresize(pos_win, 1, POS_WIN_WIDTH);
+	mvwin(pos_win, screen_y - 1, screen_x - POS_WIN_WIDTH);
 
 	wresize(input_win, 1, 6);
 	mvwin(input_win, screen_y - 1, screen_x - 19);
@@ -1619,8 +1619,8 @@ resize_for_menu_like(void)
 	wresize(menu_win, screen_y - 1, screen_x);
 	wresize(status_bar, 1, screen_x - 19);
 	mvwin(status_bar, screen_y - 1, 0);
-	wresize(pos_win, 1, 13);
-	mvwin(pos_win, screen_y - 1, screen_x - 13);
+	wresize(pos_win, 1, POS_WIN_WIDTH);
+	mvwin(pos_win, screen_y - 1, screen_x - POS_WIN_WIDTH);
 	mvwin(input_win, screen_y - 1, screen_x - 19);
 	wrefresh(status_bar);
 	wrefresh(pos_win);
