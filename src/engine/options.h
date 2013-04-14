@@ -31,6 +31,8 @@ typedef enum
 	OPT_STRLIST, /* A comma separated list of strings. */
 	OPT_ENUM,    /* An enumeration (one value at a time). */
 	OPT_SET,     /* A set (multiple or none values at a time). */
+	OPT_CHARSET, /* A set of single characters (multiple or none values at a
+	                time). */
 }OPT_TYPE;
 
 /* Operation on an option. */
@@ -38,7 +40,7 @@ typedef enum
 {
 	OP_ON,       /* Boolean value was turned on. */
 	OP_OFF,      /* Boolean value was turned off. */
-	OP_SET,      /* Velue set. */
+	OP_SET,      /* Value set. */
 	OP_MODIFIED, /* Value added/removed (for OPT_INT,  OPT_SET and OPT_STR). */
 	OP_RESET,    /* Value reseted to default. */
 }OPT_OP;

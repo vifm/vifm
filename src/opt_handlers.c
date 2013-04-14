@@ -69,6 +69,7 @@ static void init_cpoptions(optval_t *val);
 static void init_timefmt(optval_t *val);
 static void init_trash_dir(optval_t *val);
 static void init_lsview(optval_t *val);
+static void init_shortmess(optval_t *val);
 static void init_sort(optval_t *val);
 static void init_sortorder(optval_t *val);
 static void init_viewcolumns(optval_t *val);
@@ -98,6 +99,7 @@ static void runexec_handler(OPT_OP op, optval_t val);
 static void scrollbind_handler(OPT_OP op, optval_t val);
 static void scrolloff_handler(OPT_OP op, optval_t val);
 static void shell_handler(OPT_OP op, optval_t val);
+static void shortmess_handler(OPT_OP op, optval_t val);
 #ifndef _WIN32
 static void slowfs_handler(OPT_OP op, optval_t val);
 #endif
@@ -147,11 +149,19 @@ static const char * sort_enum[] = {
 };
 ARRAY_GUARD(sort_enum, SORT_OPTION_COUNT);
 
+static const char cpoptions_list[] = "st";
+static const char * cpoptions_vals = cpoptions_list;
+#define cpoptions_count ARRAY_LEN(cpoptions_list)
+
 static const char * dotdirs_vals[] = {
 	"rootparent",
 	"nonrootparent",
 };
 ARRAY_GUARD(dotdirs_vals, NUM_DOT_DIRS);
+
+static const char shortmess_list[] = "T";
+static const char * shortmess_vals = shortmess_list;
+#define shortmess_count ARRAY_LEN(shortmess_list)
 
 static const char * sort_types[] = {
 	"ext",   "+ext",   "-ext",
@@ -216,7 +226,7 @@ static struct
 		{ .ref.int_val = &cfg.columns }                                                                        },
 	{ "confirm",     "cf",   OPT_BOOL,    0,                          NULL,            &confirm_handler,
 		{ .ref.bool_val = &cfg.confirm }                                                                       },
-	{ "cpoptions",   "cpo",  OPT_STR,     0,                          NULL,            &cpoptions_handler,
+	{ "cpoptions",   "cpo",  OPT_CHARSET, cpoptions_count,            &cpoptions_vals, &cpoptions_handler,
 		{ .init = &init_cpoptions }                                                                            },
 	{ "dotdirs",     "",     OPT_SET,     ARRAY_LEN(dotdirs_vals),    dotdirs_vals,    &dotdirs_handler,
 		{ .ref.set_items = &cfg.dot_dirs }                                                                     },
@@ -252,6 +262,8 @@ static struct
 		{ .ref.int_val = &cfg.scroll_off }                                                                     },
 	{ "shell",       "sh",   OPT_STR,     0,                          NULL,            &shell_handler,
 		{ .ref.str_val = &cfg.shell }                                                                          },
+	{ "shortmess",   "shm",  OPT_CHARSET, shortmess_count,            &shortmess_vals, &shortmess_handler,
+		{ .init = &init_shortmess }                                                                            },
 #ifndef _WIN32
 	{ "slowfs",      "",     OPT_STRLIST, 0,                          NULL,            &slowfs_handler,
 		{ .ref.str_val = &cfg.slow_fs_list }                                                                   },
@@ -368,6 +380,14 @@ static void
 init_lsview(optval_t *val)
 {
 	val->bool_val = curr_view->ls_view;
+}
+
+static void
+init_shortmess(optval_t *val)
+{
+	static char buf[32];
+	snprintf(buf, sizeof(buf), "%s", cfg.trunc_normal_sb_msgs ? "T" : "");
+	val->str_val = buf;
 }
 
 static void
@@ -627,33 +647,12 @@ confirm_handler(OPT_OP op, optval_t val)
 static void
 cpoptions_handler(OPT_OP op, optval_t val)
 {
-	const char VALID[] = "st";
-	char buf[ARRAY_LEN(VALID)];
 	char *p;
-
-	buf[0] = '\0';
-	p = val.str_val;
-	while(*p != '\0')
-	{
-		if(char_is_one_of(VALID, *p))
-		{
-			buf[strlen(buf) + 1] = '\0';
-			buf[strlen(buf)] = *p;
-		}
-		p++;
-	}
-
-	if(strcmp(val.str_val, buf) != 0)
-	{
-		val.str_val = buf;
-		set_option("cpoptions", val);
-		return;
-	}
 
 	cfg.selection_is_primary = 0;
 	cfg.tab_switches_pane = 0;
 
-	p = buf;
+	p = val.str_val;
 	while(*p != '\0')
 	{
 		if(*p == 's')
@@ -857,6 +856,24 @@ static void
 shell_handler(OPT_OP op, optval_t val)
 {
 	(void)replace_string(&cfg.shell, val.str_val);
+}
+
+static void
+shortmess_handler(OPT_OP op, optval_t val)
+{
+	const char *p;
+
+	cfg.trunc_normal_sb_msgs = 0;
+
+	p = val.str_val;
+	while(*p != '\0')
+	{
+		if(*p == 'T')
+		{
+			cfg.trunc_normal_sb_msgs = 1;
+		}
+		p++;
+	}
 }
 
 #ifndef _WIN32

@@ -25,6 +25,10 @@ test_space_at_the_end(void)
 	free(completed);
 
 	completed = next_completion();
+	assert_string_equal("cpoptions", completed);
+	free(completed);
+
+	completed = next_completion();
 	assert_string_equal("fastrun", completed);
 	free(completed);
 }
@@ -99,6 +103,10 @@ test_skip_abbreviations(void)
 
 	completed = next_completion();
 	assert_string_equal("all", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("cpoptions", completed);
 	free(completed);
 
 	completed = next_completion();
@@ -252,6 +260,10 @@ test_colon(void)
 	free(completed);
 
 	completed = next_completion();
+	assert_string_equal("cpoptions", completed);
+	free(completed);
+
+	completed = next_completion();
 	assert_string_equal("fastrun", completed);
 	free(completed);
 }
@@ -361,6 +373,32 @@ test_all_completion_ok(void)
 	free(completed);
 }
 
+static void
+test_charset_completion_skips_entered_elements(void)
+{
+	const char *start;
+	char *completed;
+
+	reset_completion();
+	complete_options("cpo=a", &start);
+
+	completed = next_completion();
+	assert_string_equal("b", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("c", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("", completed);
+	free(completed);
+
+	completed = next_completion();
+	assert_string_equal("b", completed);
+	free(completed);
+}
+
 void
 opt_completion(void)
 {
@@ -383,6 +421,7 @@ opt_completion(void)
 	run_test(test_after_equal_sign_completion_spaces_ok);
 	run_test(test_after_fake_equal_sign_completion_fail);
 	run_test(test_all_completion_ok);
+	run_test(test_charset_completion_skips_entered_elements);
 
 	test_fixture_end();
 }

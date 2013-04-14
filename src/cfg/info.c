@@ -459,7 +459,7 @@ copy_file_internal(FILE *const src, FILE *const dst)
 static void
 update_info_file(const char filename[])
 {
-	/* TODO: refactor this function write_info_file() */
+	/* TODO: refactor this function update_info_file() */
 
 	FILE *fp;
 	char ** list;
@@ -696,6 +696,7 @@ update_info_file(const char filename[])
 		fprintf(fp, "=%sscrollbind\n", cfg.scroll_bind ? "" : "no");
 		fprintf(fp, "=scrolloff=%d\n", cfg.scroll_off);
 		fprintf(fp, "=shell=%s\n", escape_spaces(cfg.shell));
+		fprintf(fp, "=shortmess=%s\n", cfg.trunc_normal_sb_msgs ? "T" : "");
 #ifndef _WIN32
 		fprintf(fp, "=slowfs=%s\n", escape_spaces(cfg.slow_fs_list));
 #endif

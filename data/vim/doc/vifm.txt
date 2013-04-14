@@ -1,4 +1,4 @@
-*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Apr 07
+*vifm.txt*    For Vifm version 0.7.4b  Last change: 2013 Apr 14
 
  Email for bugs and suggestions: <xaizek@lavabit.com>
 
@@ -1226,6 +1226,7 @@ order using the '.' operator.  Any whitespace is ignored.
      - for enumeration options - option=x, option+=x and option-=x
      - for enumeration options - option=x
      - for set options - option=x, option+=x and option-=x
+     - for charset options - option=x, option+=x and option-=x
     the meaning:
      - option - turn option on (for boolean) or print its value (for all
          others)
@@ -1600,7 +1601,7 @@ undo/redo operation).
 
                                                *vifm-'cpoptions'* *vifm-'cpo'*
 cpoptions cpo
-type: string
+type: charset
 default: "st"
 Contains a sequence of single-character flags.  Each flag enables behaviour of
 older versions of vifm.  Flags:
@@ -1743,6 +1744,15 @@ shell sh
 type: string
 default: $SHELL or "sh" or "cmd" (on MS-Windows)
 Full path to the shell to use to run external commands.
+
+                                               *vifm-'shortmess'* *vifm-'shm'*
+shortmess shm
+type: charset
+default: ""
+Contains a sequence of single-character flags.  Each flag enables shortening
+of some message displayed by vifm in the TUI.  Flags:
+T - truncate status-bar messages in the middle if they are too long to fit on
+    the command line.  "..." will appear in the middle.
 
                                                *vifm-'slowfs'*
                                                {only for *nix}
@@ -2457,7 +2467,7 @@ Both types are set using |vifm-:colorscheme| command, but of different forms:
    - :colorscheme color_scheme_name - for the default color scheme
    - :colorscheme color_scheme_name directory - for local color schemes
 
-Look of different parts of the TUI (Terminal User Interface) is determined in
+Look of different parts of the TUI (Text User Interface) is determined in
 this way:
    - Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine and WildMenu
      are always determined by the default color scheme

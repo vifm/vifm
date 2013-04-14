@@ -16,11 +16,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#include <assert.h>
+#include <assert.h> /* assert() */
 #include <ctype.h>
+#include <stddef.h> /* NULL size_t */
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h> /* memset() */
+#include <string.h> /* memset() strcmp() strcpy() */
 
 #include "../utils/str.h"
 #include "../utils/string_array.h"
@@ -53,11 +54,14 @@ typedef struct
 	optval_t val;        /* Current value of an option. */
 	optval_t def;        /* Default value of an option. */
 	opt_handler handler; /* A pointer to option handler. */
-	int val_count;       /* For OPT_ENUM and OPT_SET types. */
-	const char **vals;   /* For OPT_ENUM and OPT_SET types. */
+	int val_count;       /* For OPT_ENUM, OPT_SET and OPT_CHARSET types. */
+	const char **vals;   /* For OPT_ENUM, OPT_SET and OPT_CHARSET types. */
 
 	const char *full;    /* Points to full name of an option. */
 }opt_t;
+
+/* Type of function accepted by the for_each_char_of() function. */
+typedef void (*mod_t)(char buffer[], char value);
 
 static opt_t * add_option_inner(const char name[], OPT_TYPE type, int val_count,
 		const char *vals[], opt_handler handler);
@@ -73,7 +77,15 @@ static int set_set(opt_t *opt, const char value[]);
 static int set_reset(opt_t *opt);
 static int set_add(opt_t *opt, const char value[]);
 static int set_remove(opt_t *opt, const char value[]);
+static void notify_option_update(opt_t *opt, OPT_OP op, optval_t val);
 static int set_op(opt_t *opt, const char value[], SetOp op);
+static int charset_set(opt_t *opt, const char value[]);
+static int charset_add_all(opt_t *opt, const char value[]);
+static void charset_add(char buffer[], char value);
+static int charset_remove_all(opt_t *opt, const char value[]);
+static void charset_remove(char buffer[], char value);
+static void for_each_char_of(char buffer[], mod_t func, const char input[]);
+static int replace_if_changed(char **current, const char new[]);
 static char * str_add(char old[], const char value[]);
 static void str_remove(char old[], const char value[]);
 static int find_val(const opt_t *opt, const char value[]);
@@ -82,7 +94,9 @@ static const char * get_value(const opt_t *opt);
 static const char * extract_option(const char args[], char buf[], int replace);
 static char * skip_alphas(const char str[]);
 static void complete_option_name(const char buf[], int bool_only);
-static void complete_option_value(const opt_t *opt, const char beginning[]);
+static int complete_option_value(const opt_t *opt, const char beginning[]);
+static int complete_list_value(const opt_t *opt, const char beginning[]);
+static int complete_char_value(const opt_t *opt, const char beginning[]);
 
 static const char ENDING_CHARS[] = "!?&";
 static const char MIDDLE_CHARS[] = "+-=:";
@@ -164,7 +178,7 @@ add_option(const char name[], const char abbr[], OPT_TYPE type, int val_count,
 			abbreviated->full = full_name;
 		full = find_option(full_name);
 	}
-	if(type == OPT_STR || type == OPT_STRLIST)
+	if(type == OPT_STR || type == OPT_STRLIST || type == OPT_CHARSET)
 	{
 		full->def.str_val = strdup(def.str_val);
 		full->val.str_val = strdup(def.str_val);
@@ -429,8 +443,7 @@ set_on(opt_t *opt)
 	if(!opt->val.bool_val)
 	{
 		opt->val.bool_val = 1;
-		*opts_changed = 1;
-		opt->handler(OP_ON, opt->val);
+		notify_option_update(opt, OP_ON, opt->val);
 	}
 
 	return 0;
@@ -446,8 +459,7 @@ set_off(opt_t *opt)
 	if(opt->val.bool_val)
 	{
 		opt->val.bool_val = 0;
-		*opts_changed = 1;
-		opt->handler(OP_OFF, opt->val);
+		notify_option_update(opt, OP_OFF, opt->val);
 	}
 
 	return 0;
@@ -461,8 +473,7 @@ set_inv(opt_t *opt)
 		return -1;
 
 	opt->val.bool_val = !opt->val.bool_val;
-	*opts_changed = 1;
-	opt->handler(opt->val.bool_val ? OP_ON : OP_OFF, opt->val);
+	notify_option_update(opt, opt->val.bool_val ? OP_ON : OP_OFF, opt->val);
 
 	return 0;
 }
@@ -479,7 +490,7 @@ set_set(opt_t *opt, const char value[])
 	{
 		if(set_op(opt, value, SO_SET))
 		{
-			opt->handler(OP_SET, opt->val);
+			notify_option_update(opt, OP_SET, opt->val);
 		}
 	}
 	else if(opt->type == OPT_ENUM)
@@ -491,8 +502,7 @@ set_set(opt_t *opt, const char value[])
 		if(opt->val.enum_item != i)
 		{
 			opt->val.enum_item = i;
-			*opts_changed = 1;
-			opt->handler(OP_SET, opt->val);
+			notify_option_update(opt, OP_SET, opt->val);
 		}
 	}
 	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
@@ -500,8 +510,7 @@ set_set(opt_t *opt, const char value[])
 		if(opt->val.str_val == NULL || strcmp(opt->val.str_val, value) != 0)
 		{
 			(void)replace_string(&opt->val.str_val, value);
-			*opts_changed = 1;
-			opt->handler(OP_SET, opt->val);
+			notify_option_update(opt, OP_SET, opt->val);
 		}
 	}
 	else if(opt->type == OPT_INT)
@@ -511,9 +520,25 @@ set_set(opt_t *opt, const char value[])
 		if(opt->val.int_val != int_val)
 		{
 			opt->val.int_val = int_val;
-			*opts_changed = 1;
-			opt->handler(OP_SET, opt->val);
+			notify_option_update(opt, OP_SET, opt->val);
 		}
+	}
+	else if(opt->type == OPT_CHARSET)
+	{
+		const size_t valid_len = strspn(value, *opt->vals);
+		if(valid_len != strlen(value))
+		{
+			text_buffer_addf("Illegal character: <%c>", value[valid_len]);
+			return -1;
+		}
+		if(charset_set(opt, value))
+		{
+			notify_option_update(opt, OP_SET, opt->val);
+		}
+	}
+	else
+	{
+		assert(0 && "Unknown type of option.");
 	}
 
 	return 0;
@@ -525,23 +550,15 @@ set_reset(opt_t *opt)
 {
 	if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
 	{
-		char *p;
-
-		if(strcmp(opt->val.str_val, opt->def.str_val) == 0)
-			return 0;
-
-		p = strdup(opt->def.str_val);
-		if(p == NULL)
-			return -1;
-		free(opt->val.str_val);
-		opt->val.str_val = p;
-		opt->handler(OP_RESET, opt->val);
+		if(replace_if_changed(&opt->val.str_val, opt->def.str_val))
+		{
+			notify_option_update(opt, OP_RESET, opt->val);
+		}
 	}
 	else if(opt->val.int_val != opt->def.int_val)
 	{
 		opt->val.int_val = opt->def.int_val;
-		*opts_changed = 1;
-		opt->handler(OP_RESET, opt->val);
+		notify_option_update(opt, OP_RESET, opt->val);
 	}
 	return 0;
 }
@@ -550,7 +567,8 @@ set_reset(opt_t *opt)
 static int
 set_add(opt_t *opt, const char value[])
 {
-	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST)
+	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST &&
+			opt->type != OPT_CHARSET)
 		return -1;
 
 	if(opt->type == OPT_INT)
@@ -564,23 +582,33 @@ set_add(opt_t *opt, const char value[])
 		if(i == 0)
 			return 0;
 
-		*opts_changed = 1;
 		opt->val.int_val += i;
-		opt->handler(OP_MODIFIED, opt->val);
+		notify_option_update(opt, OP_MODIFIED, opt->val);
 	}
 	else if(opt->type == OPT_SET)
 	{
 		if(set_op(opt, value, SO_ADD))
 		{
-			*opts_changed = 1;
-			opt->handler(OP_MODIFIED, opt->val);
+			notify_option_update(opt, OP_MODIFIED, opt->val);
+		}
+	}
+	else if(opt->type == OPT_CHARSET)
+	{
+		const size_t valid_len = strspn(value, *opt->vals);
+		if(valid_len != strlen(value))
+		{
+			text_buffer_addf("Illegal character: <%c>", value[valid_len]);
+			return -1;
+		}
+		if(charset_add_all(opt, value))
+		{
+			notify_option_update(opt, OP_MODIFIED, opt->val);
 		}
 	}
 	else if(*value != '\0')
 	{
 		opt->val.str_val = str_add(opt->val.str_val, value);
-		*opts_changed = 1;
-		opt->handler(OP_MODIFIED, opt->val);
+		notify_option_update(opt, OP_MODIFIED, opt->val);
 	}
 
 	return 0;
@@ -591,7 +619,8 @@ set_add(opt_t *opt, const char value[])
 static int
 set_remove(opt_t *opt, const char value[])
 {
-	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST)
+	if(opt->type != OPT_INT && opt->type != OPT_SET && opt->type != OPT_STRLIST &&
+			opt->type != OPT_CHARSET)
 		return -1;
 
 	if(opt->type == OPT_INT)
@@ -605,16 +634,21 @@ set_remove(opt_t *opt, const char value[])
 		if(i == 0)
 			return 0;
 
-		*opts_changed = 1;
 		opt->val.int_val -= i;
-		opt->handler(OP_MODIFIED, opt->val);
+		notify_option_update(opt, OP_MODIFIED, opt->val);
 	}
 	else if(opt->type == OPT_SET)
 	{
 		if(set_op(opt, value, SO_REMOVE))
 		{
-			*opts_changed = 1;
-			opt->handler(OP_MODIFIED, opt->val);
+			notify_option_update(opt, OP_MODIFIED, opt->val);
+		}
+	}
+	else if(opt->type == OPT_CHARSET)
+	{
+		if(charset_remove_all(opt, value))
+		{
+			notify_option_update(opt, OP_MODIFIED, opt->val);
 		}
 	}
 	else if(*value != '\0')
@@ -627,12 +661,20 @@ set_remove(opt_t *opt, const char value[])
 
 		if(opt->val.str_val != NULL && len != strlen(opt->val.str_val))
 		{
-			*opts_changed = 1;
-			opt->handler(OP_MODIFIED, opt->val);
+			notify_option_update(opt, OP_MODIFIED, opt->val);
 		}
 	}
 
 	return 0;
+}
+
+/* Calls option handler to notify about option change.  Also updates
+ * opts_changed flag. */
+static void
+notify_option_update(opt_t *opt, OPT_OP op, optval_t val)
+{
+	*opts_changed = 1;
+	opt->handler(op, val);
 }
 
 /* Performs set/add/remove operations on options of set kind.  Returns not zero
@@ -673,6 +715,97 @@ set_op(opt_t *opt, const char value[], SetOp op)
 
 	opt->val.set_items = new_val;
 	return new_val != old_val;
+}
+
+/* Sets new value of an option of type OPT_CHARSET.  Returns non-zero when value
+ * of the option was changed, otherwise zero is returned. */
+static int
+charset_set(opt_t *opt, const char value[])
+{
+	char new_val[opt->val_count + 1];
+	new_val[0] = '\0';
+
+	for_each_char_of(new_val, charset_add, value);
+	return replace_if_changed(&opt->val.str_val, new_val);
+}
+
+/* Adds set of new items to the value of an option of type OPT_CHARSET.  Returns
+ * non-zero when value of the option was changed, otherwise zero is returned. */
+static int
+charset_add_all(opt_t *opt, const char value[])
+{
+	char new_val[opt->val_count + 1];
+	strcpy(new_val, opt->val.str_val);
+
+	for_each_char_of(new_val, charset_add, value);
+	return replace_if_changed(&opt->val.str_val, new_val);
+}
+
+/* Adds an item to the value of an option of type OPT_CHARSET.  Returns non-zero
+ * when value of the option was changed, otherwise zero is returned. */
+static void
+charset_add(char buffer[], char value)
+{
+	const char value_str[] = { value, '\0' };
+	charset_remove(buffer, value);
+	strcat(buffer, value_str);
+}
+
+/* Removes set of items from the value of an option of type OPT_CHARSET.
+ * Returns non-zero when value of the option was changed, otherwise zero is
+ * returned. */
+static int
+charset_remove_all(opt_t *opt, const char value[])
+{
+	char new_val[opt->val_count + 1];
+	strcpy(new_val, opt->val.str_val);
+
+	for_each_char_of(new_val, charset_remove, value);
+	return replace_if_changed(&opt->val.str_val, new_val);
+}
+
+/* Removes an item from the value of an option of type OPT_CHARSET.  Returns
+ * non-zero when value of the option was changed, otherwise zero is returned. */
+static void
+charset_remove(char buffer[], char value)
+{
+	char *l = buffer;
+	const char *r = buffer;
+	while(*r != '\0')
+	{
+		if(*r != value)
+		{
+			*l++ = *r;
+		}
+		r++;
+	}
+	*l++ = '\0';
+}
+
+/* Calls the func once for each character in the input argument, passing the
+ * buffer and the character as its arguments. */
+static void
+for_each_char_of(char buffer[], mod_t func, const char input[])
+{
+	const char *val = input;
+	while(*val != '\0')
+	{
+		func(buffer, *val++);
+	}
+}
+
+/* Compares *current and new strings and replaces *current with a copy of the
+ * new if they differ.  Returns non-zero when replace was performed, otherwise
+ * zero is returned. */
+static int
+replace_if_changed(char **current, const char new[])
+{
+	if(strcmp(*current, new) == 0)
+	{
+		return 0;
+	}
+
+	return (replace_string(current, new) == 0) ? 1 : 0;
 }
 
 /* And an element to string list.  Reallocates the memory of old and returns
@@ -767,7 +900,8 @@ get_value(const opt_t *opt)
 	{
 		snprintf(buf, sizeof(buf), "%d", opt->val.int_val);
 	}
-	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST)
+	else if(opt->type == OPT_STR || opt->type == OPT_STRLIST ||
+			opt->type == OPT_CHARSET)
 	{
 		snprintf(buf, sizeof(buf), "%s", opt->val.str_val ? opt->val.str_val : "");
 	}
@@ -866,7 +1000,7 @@ complete_options(const char args[], const char **start)
 	{
 		if(opt->val_count > 0)
 		{
-			complete_option_value(opt, p);
+			*start += complete_option_value(opt, p);
 		}
 		else if(*p == '\0' && opt->type != OPT_BOOL)
 		{
@@ -877,10 +1011,14 @@ complete_options(const char args[], const char **start)
 	}
 
 	completion_group_end();
-	if(!is_value_completion)
-		add_completion(buf);
+	if(opt != NULL && opt->type == OPT_CHARSET)
+	{
+		add_completion("");
+	}
 	else
-		add_completion(p);
+	{
+		add_completion(is_value_completion ? p : buf);
+	}
 }
 
 /* Extracts next option from option list.  Returns NULL on error and next call
@@ -995,9 +1133,24 @@ complete_option_name(const char buf[], int bool_only)
 	}
 }
 
-/* Completes value of the given option. */
-static void
+/* Completes value of the given option.  Returns offset for the beginning. */
+static int
 complete_option_value(const opt_t *opt, const char beginning[])
+{
+	if(opt->type == OPT_CHARSET)
+	{
+		return complete_char_value(opt, beginning);
+	}
+	else
+	{
+		return complete_list_value(opt, beginning);
+	}
+}
+
+/* Completes value of the given option with string type of values.  Returns
+ * offset for the beginning. */
+static int
+complete_list_value(const opt_t *opt, const char beginning[])
 {
 	size_t len;
 	int i;
@@ -1009,6 +1162,28 @@ complete_option_value(const opt_t *opt, const char beginning[])
 		if(strncmp(beginning, opt->vals[i], len) == 0)
 			add_completion(opt->vals[i]);
 	}
+
+	return 0;
+}
+
+/* Completes value of the given option with char type of values.  Returns offset
+ * for the beginning. */
+static int
+complete_char_value(const opt_t *opt, const char beginning[])
+{
+	const char *vals = *opt->vals;
+	int i;
+
+	for(i = 0; i < opt->val_count; i++)
+	{
+		if(strchr(beginning, vals[i]) == NULL)
+		{
+			const char char_str[] = { vals[i], '\0' };
+			add_completion(char_str);
+		}
+	}
+
+	return strlen(beginning);
 }
 
 /* vim: set tabstop=2 softtabstop=2 shiftwidth=2 noexpandtab cinoptions-=(0 : */

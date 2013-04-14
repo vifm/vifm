@@ -113,6 +113,7 @@ typedef struct
 	int columns; /* Terminal width in characters. */
 	int dot_dirs; /* Controls displaying of dot directories. */
 	char decorations[FILE_TYPE_COUNT][2]; /* Prefixes and suffixes of files. */
+	int trunc_normal_sb_msgs; /* Truncate normal status bar messages if needed. */
 }config_t;
 
 extern config_t cfg;

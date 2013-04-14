@@ -1,4 +1,4 @@
-.TH vifm 1 "April 07, 2013" "" "Vifm"
+.TH vifm 1 "April 14, 2013" "" "Vifm"
 .\" ---------------------------------------------------------------------------
 .SH NAME
 .\" ---------------------------------------------------------------------------
@@ -1390,6 +1390,7 @@ You can use following syntax:
  \- for enumeration options \- option=x, option+=x and option\-=x
  \- for enumeration options \- option=x
  \- for set options \- option=x, option+=x and option\-=x
+ \- for charset options \- option=x, option+=x and option\-=x
 
 the meaning:
  \- option \- turn option on (for boolean) or print its value (for all others)
@@ -1855,7 +1856,7 @@ Ask about permanent deletion of files (on D or :delete! command or on undo/redo
 operation).
 .TP
 .BI "cpoptions cpo"
-type: string
+type: charset
 .br
 default: "st"
 .br
@@ -2035,6 +2036,17 @@ type: string
 default: $SHELL or "sh" or "cmd" (on MS-Windows)
 .br
 Full path to the shell to use to run external commands.
+.TP
+.BI "shortmess shm"
+type: charset
+.br
+default: ""
+.br
+Contains a sequence of single-character flags.  Each flag enables shortening
+of some message displayed by vifm in the TUI.  Flags:
+.br
+T \- truncate status-bar messages in the middle if they are too long to fit on \
+the command line.  "..." will appear in the middle.
 .TP
 .BI slowfs
 type: string list
@@ -2884,7 +2896,7 @@ Both types are set using |vifm\-:colorscheme| command, but of different forms:
 .IP \- 2
 :colorscheme color_scheme_name directory \- for local color schemes
 .LP
-Look of different parts of the TUI (Terminal User Interface) is determined in \
+Look of different parts of the TUI (Text User Interface) is determined in \
 this way:
 .IP \- 2
 Border, TopLineSel, TopLine, CmdLine, ErrorMsg, StatusLine and WildMenu are \
