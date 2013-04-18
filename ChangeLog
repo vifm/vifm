@@ -23,6 +23,8 @@
 	Added 'shortmess' option and its first flag: "T" to shorten long
 	status-bar messages.
 
+	Don't use libtool in build process on *nix platforms.
+
 	Less-like mode now highlights multiple matches in a line.
 
 	Less-like mode is now updated immediately when one changes 'wrap' option.
